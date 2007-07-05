@@ -151,12 +151,16 @@ static void netboot_update_env (void)
 #endif
 }
 
+#ifndef CFG_DIRECT_FLASH_TFTP
+extern flash_info_t flash_info[];
+#endif
+
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char *s;
 	int   rcode = 0;
-	int   size;
+	int   size, i;
 
 	/* pre-set load_addr */
 	if ((s = getenv("loadaddr")) != NULL) {
@@ -186,6 +190,17 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	default: printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
+
+#ifndef CFG_DIRECT_FLASH_TFTP
+	for (i=0; i<CFG_MAX_FLASH_BANKS; i++) {
+		/* start address in flash? */
+		if (load_addr >= flash_info[i].start[0] &&
+		    load_addr < flash_info[i].start[0] + flash_info[i].size) {
+			printf("load address is in flash. Will not overwrite\n");
+			return 1;
+		}
+	}
+#endif
 
 	if ((size = NetLoop(proto)) < 0)
 		return 1;

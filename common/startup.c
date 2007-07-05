@@ -50,8 +50,6 @@
 
 ulong load_addr = 0;               /* Default Load Address */
 
-DECLARE_GLOBAL_DATA_PTR;
-
 #ifndef CONFIG_IDENT_STRING
 #define CONFIG_IDENT_STRING ""
 #endif
@@ -115,7 +113,6 @@ void start_uboot (void)
 	/* compiler optimization barrier needed for GCC >= 3.4 */
 //	__asm__ __volatile__("": : :"memory");
 
-//	serial_init();		/* serial communications setup */
         for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
 //		PUTHEX_LL(*initcall);
 //		PUTC('\n');
@@ -125,9 +122,6 @@ void start_uboot (void)
         }
 
         display_banner();
-
-	/* enable exceptions */
-	enable_interrupts ();
 
 	run_command("mount none ramfs /", 0);
 	run_command("mkdir /dev", 0);

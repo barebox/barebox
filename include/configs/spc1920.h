@@ -56,11 +56,7 @@
 #define CONFIG_BOARD_EARLY_INIT_F
 
 
-#if 1
 #define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
-#define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 #define CONFIG_ENV_OVERWRITE
 

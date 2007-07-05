@@ -532,18 +532,6 @@ static void rtl8169_hw_start(struct eth_device *dev)
 	printf ("%s\n", __FUNCTION__);
 #endif
 
-#if 0
-	/* Soft reset the chip. */
-	RTL_W8(ChipCmd, CmdReset);
-
-	/* Check that the chip has finished the reset. */
-	for (i = 1000; i > 0; i--) {
-		if ((RTL_R8(ChipCmd) & CmdReset) == 0)
-			break;
-		else
-			udelay(10);
-	}
-#endif
 
 	RTL_W8(Cfg9346, Cfg9346_Unlock);
 	RTL_W8(ChipCmd, CmdTxEnb | CmdRxEnb);

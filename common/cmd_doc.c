@@ -1551,10 +1551,6 @@ static inline int doccheck(unsigned long potential, unsigned long physadr)
  * if the ID isn't the DoC2000 or DoCMillenium ID, so we can assume
  * the DOC is missing
  */
-# if 0
-		printf("Possible DiskOnChip with unknown ChipID %2.2X found at 0x%lx\n",
-		       ChipID, physadr);
-# endif
 #endif
 #ifndef DOC_PASSIVE_PROBE
 		/* Put back the contents of the DOCControl register, in case it's not

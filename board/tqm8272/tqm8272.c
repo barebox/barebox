@@ -35,13 +35,8 @@
 #include <image.h>
 #endif
 
-#if 0
-#define deb_printf(fmt,arg...) \
-	printf ("TQM8272 %s %s: " fmt,__FILE__, __FUNCTION__, ##arg)
-#else
 #define deb_printf(fmt,arg...) \
 	do { } while (0)
-#endif
 
 #if defined(CONFIG_BOARD_GET_CPU_CLK_F)
 unsigned long board_get_cpu_clk_f (void);

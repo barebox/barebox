@@ -55,11 +55,7 @@
 
 #define	CONFIG_CLOCKS_IN_MHZ	1	/* clocks passsed to Linux in MHz */
 #define CONFIG_8xx_GCLK_FREQ    (50000000UL)
-#if 1
 #define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
-#define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 #define CONFIG_BOOTCOMMAND	"bootm 20000" /* autoboot command	*/
 
 #define CONFIG_BOOTARGS		"root=/dev/nfs rw "			\

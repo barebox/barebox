@@ -232,24 +232,5 @@ UnknownException(struct pt_regs *regs)
 int
 addr_probe(uint *addr)
 {
-#if 0
-	int	retval;
-
-	__asm__ __volatile__(			\
-		"1:	lwz %0,0(%1)\n"		\
-		"	eieio\n"		\
-		"	li %0,0\n"		\
-		"2:\n"				\
-		".section .fixup,\"ax\"\n"	\
-		"3:	li %0,-1\n"		\
-		"	b 2b\n"			\
-		".section __ex_table,\"a\"\n"	\
-		"	.align 2\n"		\
-		"	.long 1b,3b\n"		\
-		".text"				\
-		: "=r" (retval) : "r"(addr));
-
-	return (retval);
-#endif
 	return 0;
 }

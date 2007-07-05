@@ -217,12 +217,6 @@ typedef struct
 	 * specific hardware/protocol combinations.
 	 */
 	uchar		ar_data[0];
-#if 0
-	uchar		ar_sha[];	/* Sender hardware address	*/
-	uchar		ar_spa[];	/* Sender protocol address	*/
-	uchar		ar_tha[];	/* Target hardware address	*/
-	uchar		ar_tpa[];	/* Target protocol address	*/
-#endif /* 0 */
 } ARP_t;
 
 #define ARP_HDR_SIZE	(8+20)		/* Size assuming ethernet	*/

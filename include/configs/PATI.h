@@ -48,11 +48,7 @@
 /* This must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <cmd_confdefs.h>
 
-#if 0
-#define CONFIG_BOOTDELAY	-1		/* autoboot disabled			*/
-#else
 #define CONFIG_BOOTDELAY	5		/* autoboot after 5 seconds		*/
-#endif
 #define CONFIG_BOOTCOMMAND	"" 	/* autoboot command			*/
 
 #define CONFIG_BOOTARGS		""		/* */

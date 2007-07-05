@@ -193,14 +193,6 @@ _copy_flash:
 _after_flash_copy:
 #endif
 
-#if 0
-	/* invalidate and disable cache */
-	move.l	#0x01000000, %d0		/* Invalidate cache cmd */
-	movec	%d0, %CACR			/* Invalidate cache */
-	move.l	#0, %d0
-	movec	%d0, %ACR0
-	movec	%d0, %ACR1
-#endif
 
 	/* set stackpointer to end of internal ram to get some stackspace for the first c-code */
 	move.l	#(CFG_INIT_RAM_ADDR + CFG_INIT_SP_OFFSET), %sp

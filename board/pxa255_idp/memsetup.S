@@ -323,13 +323,6 @@ mem_init:
 	str     r2,  [r1, #MDMRS_OFFSET]
 
 	/* We are finished with Intel's memory controller initialisation    */
-#if 0
-	/* FIXME turn on serial ports */
-	/* look into moving this to board_init() */
-	ldr 	r2, =(PXA_CS5_PHYS + 0x03C0002c)
-	mov	r3, #0x13
-	str	r3, [r2]
-#endif
 
 #ifdef DEBUG_BLINK_ENABLE
 	/* 6th blink */
@@ -360,19 +353,6 @@ initclks:
 
 	/* Turn Off ALL on-chip peripheral clocks for re-configuration      */
 	/* Note: See label 'ENABLECLKS' for the re-enabling                 */
-#if 0
-	ldr     r1,  =CKEN
-	mov     r2,  #0
-	str     r2,  [r1]
-
-	/* default value in case no valid rotary switch setting is found    */
-	ldr     r2, =(CCCR_L27|CCCR_M2|CCCR_N10)  /* DEFAULT: {200/200/100} */
-
-	/* ... and write the core clock config register                     */
-	ldr     r1,  =CCCR
-	str     r2,  [r1]
-
-#endif
 
 #ifdef RTC
 	/* enable the 32Khz oscillator for RTC and PowerManager             */

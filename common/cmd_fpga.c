@@ -33,9 +33,6 @@
 #include <fpga.h>
 #include <malloc.h>
 
-#if 0
-#define	FPGA_DEBUG
-#endif
 
 #ifdef	FPGA_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)

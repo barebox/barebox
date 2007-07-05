@@ -64,9 +64,6 @@ struct pt_regs {
 /* options set using PTRACE_SETOPTIONS */
 #define PTRACE_O_TRACESYSGOOD	0x00000001
 
-#if 0 /* def _LANGUAGE_ASSEMBLY */
-#include <asm/offset.h>
-#endif
 
 #ifdef __KERNEL__
 

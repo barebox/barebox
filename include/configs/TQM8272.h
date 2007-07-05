@@ -237,7 +237,6 @@
 #define CFG_MDC_PIN	0x00000001	/* PC31 */
 #endif
 
-#if 1
 #define MDIO_ACTIVE	(iop->pdir |=  CFG_MDIO_PIN)
 #define MDIO_TRISTATE	(iop->pdir &= ~CFG_MDIO_PIN)
 #define MDIO_READ	((iop->pdat &  CFG_MDIO_PIN) != 0)
@@ -247,17 +246,6 @@
 
 #define MDC(bit)	if(bit) iop->pdat |=  CFG_MDC_PIN; \
 			else	iop->pdat &= ~CFG_MDC_PIN
-#else
-#define MDIO_ACTIVE	({unsigned long tmp; tmp = iop->pdir; tmp |=  CFG_MDIO_PIN; iop->pdir = tmp;})
-#define MDIO_TRISTATE	({unsigned long tmp; tmp = iop->pdir; tmp &= ~CFG_MDIO_PIN; iop->pdir = tmp;})
-#define MDIO_READ	((iop->pdat &  CFG_MDIO_PIN) != 0)
-
-#define MDIO(bit)	if(bit) {unsigned long tmp; tmp = iop->pdat; tmp |=  CFG_MDIO_PIN; iop->pdat = tmp;}\
-			else	{unsigned long tmp; tmp = iop->pdat; tmp &= ~CFG_MDIO_PIN; iop->pdat = tmp;}
-
-#define MDC(bit)	if(bit) {unsigned long tmp; tmp = iop->pdat; tmp |=  CFG_MDC_PIN; iop->pdat = tmp;}\
-			else	{unsigned long tmp; tmp = iop->pdat; tmp &= ~CFG_MDC_PIN; iop->pdat = tmp;}
-#endif
 
 #define MIIDELAY	udelay(1)
 
@@ -293,13 +281,6 @@
 #define	CFG_LONGHELP			/* undef to save memory		*/
 #define	CFG_PROMPT	"=> "		/* Monitor Command Prompt	*/
 
-#if 0
-#define CONFIG_CMDLINE_EDITING	1	/* add command line history	*/
-#define CFG_HUSH_PARSER		1	/* Use the HUSH parser		*/
-#ifdef	CFG_HUSH_PARSER
-#define	CFG_PROMPT_HUSH_PS2	"> "
-#endif
-#endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_KGDB)
 #define	CFG_CBSIZE	1024		/* Console I/O Buffer Size	*/
@@ -448,13 +429,7 @@
  * defines for the various registers affected by the HRCW e.g. changing
  * HRCW_DPPCxx requires you to also change CFG_SIUMCR.
  */
-#if 0
-#define	__HRCW__ALL__		(HRCW_CIP | HRCW_ISB111 | HRCW_BMS)
-
-#  define CFG_HRCW_MASTER	(__HRCW__ALL__ | HRCW_MODCK_H0111)
-#else
 #define CFG_HRCW_MASTER	(HRCW_BPS11 | HRCW_ISB111 | HRCW_BMS | HRCW_MODCK_H0111)
-#endif
 
 /* no slaves so just fill with zeros */
 #define CFG_HRCW_SLAVE1		0

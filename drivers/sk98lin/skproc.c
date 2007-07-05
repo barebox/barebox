@@ -239,14 +239,6 @@ void *data)
 					"Received packets               %s\n",
 					SkNumber(test_buf, pPnmiStat->StatRxOkCts,
 					10,0,-1,0));
-#if 0
-				if (pAC->GIni.GP[0].PhyType == SK_PHY_XMAC &&
-					pAC->HWRevision < 12) {
-					pPnmiStruct->InErrorsCts = pPnmiStruct->InErrorsCts -
-						pPnmiStat->StatRxShortsCts;
-					pPnmiStat->StatRxShortsCts = 0;
-				}
-#endif
 				if (pNet->Mtu > 1500)
 					pPnmiStruct->InErrorsCts = pPnmiStruct->InErrorsCts -
 						pPnmiStat->StatRxTooLongCts;
@@ -421,14 +413,6 @@ static long SkDoDiv (long long Dividend, int Divisor, long long *pErg)
 }
 
 
-#if 0
-#define do_div(n,base) ({ \
-long long __res; \
-__res = ((unsigned long long) n) % (unsigned) base; \
-n = ((unsigned long long) n) / (unsigned) base; \
-__res; })
-
-#endif
 
 
 /*****************************************************************************

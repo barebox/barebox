@@ -63,16 +63,6 @@
 #define CONFIG_ROOTPATH		/opt/eldk/ppc_82xx
 #define CONFIG_NETMASK		255.255.255.0
 #undef CONFIG_BOOTARGS
-#if 0
-/* Boot Linux with NFS root filesystem */
-#define CONFIG_BOOTCOMMAND \
-			"setenv verify y;" \
-       			"setenv bootargs console=ttyS0,19200 mem=31M quiet " \
-			"root=/dev/nfs rw nfsroot=${serverip}:${rootpath} " \
-			"ip=${ipaddr}:${serverip}::${netmask}:pn62:eth0:off;" \
-			"loadp 100000; bootm"
-			/* "tftpboot 100000 uImage; bootm" */
-#else
 /* Boot Linux with RAMdisk based filesystem (initrd, BusyBox) */
 #define CONFIG_BOOTCOMMAND \
 			"setenv verify n;" \
@@ -80,7 +70,6 @@
 			"root=/dev/ram rw " \
 			"ip=${ipaddr}:${serverip}::${netmask}:pn62:eth0:off;" \
 			"loadp 200000; bootm"
-#endif
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any)	*/
 #include <cmd_confdefs.h>
@@ -111,9 +100,6 @@
  */
 #define CONFIG_PCI				/* include pci support		*/
 #define CONFIG_PCI_PNP				/* we need Plug 'n Play		*/
-#if 0
-#define CONFIG_PCI_SCAN_SHOW			/* show PCI auto-scan at boot	*/
-#endif
 
 /*
  * Networking stuff

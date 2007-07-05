@@ -240,18 +240,6 @@ IxEthDBStatus ixEthDBPortEnable(IxEthDBPortId portID)
             ixEthDBFirewallInvalidAddressFilterEnable(portID, ixEthDBPortState[portID].srcAddressFilterEnabled);
         }
 
-#if 0 /* test-only */
-        if ((portInfo->featureCapability & IX_ETH_DB_VLAN_QOS) != 0)
-        {
-            ixEthDBAcceptableFrameTypeSet(portID, ixEthDBPortState[portID].frameFilter);
-            ixEthDBIngressVlanTaggingEnabledSet(portID, ixEthDBPortState[portID].taggingAction);
-
-            ixEthDBEgressVlanTaggingEnabledSet(portID, ixEthDBPortState[portID].transmitTaggingInfo);
-            ixEthDBPortVlanMembershipSet(portID, ixEthDBPortState[portID].vlanMembership);
-
-            ixEthDBPriorityMappingTableSet(portID, ixEthDBPortState[portID].priorityTable);
-        }
-#endif
 
         if ((portInfo->featureCapability & IX_ETH_DB_SPANNING_TREE_PROTOCOL) != 0)
         {
@@ -290,9 +278,6 @@ IxEthDBStatus ixEthDBPortDisable(IxEthDBPortId portID)
     BOOL result;
     PortInfo *portInfo;
     IxEthDBFeature learningEnabled;
-#if 0 /* test-only */
-    IxEthDBPriorityTable classZeroTable;
-#endif
 
     IX_ETH_DB_CHECK_PORT_EXISTS(portID);
 
@@ -325,19 +310,6 @@ IxEthDBStatus ixEthDBPortDisable(IxEthDBPortId portID)
 
         /* now turn off all EthDB filtering features on the port */
 
-#if 0 /* test-only */
-        /* VLAN & QoS */
-        if ((portInfo->featureCapability & IX_ETH_DB_VLAN_QOS) != 0)
-        {
-            ixEthDBPortVlanMembershipRangeAdd((IxEthDBPortId) portID, 0, IX_ETH_DB_802_1Q_MAX_VLAN_ID);
-            ixEthDBEgressVlanRangeTaggingEnabledSet((IxEthDBPortId) portID, 0, IX_ETH_DB_802_1Q_MAX_VLAN_ID, FALSE);
-            ixEthDBAcceptableFrameTypeSet((IxEthDBPortId) portID, IX_ETH_DB_ACCEPT_ALL_FRAMES);
-            ixEthDBIngressVlanTaggingEnabledSet((IxEthDBPortId) portID, IX_ETH_DB_PASS_THROUGH);
-
-            memset(classZeroTable, 0, sizeof (classZeroTable));
-            ixEthDBPriorityMappingTableSet((IxEthDBPortId) portID, classZeroTable);
-        }
-#endif
 
         /* STP */
         if ((portInfo->featureCapability & IX_ETH_DB_SPANNING_TREE_PROTOCOL) != 0)

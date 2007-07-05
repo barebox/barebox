@@ -282,20 +282,6 @@ int do_ide (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			rcode = 1;
 		}
 		return rcode;
-#if 0
-	} else if (strncmp(argv[1],"pio",4) == 0) {
-		int mode = (int)simple_strtoul(argv[2], NULL, 10);
-
-		if ((mode >= 0) && (mode <= IDE_MAX_PIO_MODE)) {
-			puts ("\nSetting ");
-			pio_mode = mode;
-			ide_init ();
-		} else {
-			printf ("\nInvalid PIO mode %d (0 ... %d only)\n",
-				mode, IDE_MAX_PIO_MODE);
-		}
-		return;
-#endif
 	}
 
 	printf ("Usage:\n%s\n", cmdtp->usage);
@@ -1029,9 +1015,6 @@ static void ide_ident (block_dev_desc_t *dev_desc)
 	int do_retry = 0;
 #endif
 
-#if 0
-	int mode, cycle_time;
-#endif
 	int device;
 	device=dev_desc->dev;
 	printf ("  Device %d: ", device);
@@ -1144,34 +1127,6 @@ static void ide_ident (block_dev_desc_t *dev_desc)
 	else
 		dev_desc->removable = 0;
 
-#if 0
-	/*
-	 * Drive PIO mode autoselection
-	 */
-	mode = iop->tPIO;
-
-	printf ("tPIO = 0x%02x = %d\n",mode, mode);
-	if (mode > 2) {		/* 2 is maximum allowed tPIO value */
-		mode = 2;
-		debug ("Override tPIO -> 2\n");
-	}
-	if (iop->field_valid & 2) {	/* drive implements ATA2? */
-		debug ("Drive implements ATA2\n");
-		if (iop->capability & 8) {	/* drive supports use_iordy? */
-			cycle_time = iop->eide_pio_iordy;
-		} else {
-			cycle_time = iop->eide_pio;
-		}
-		debug ("cycle time = %d\n", cycle_time);
-		mode = 4;
-		if (cycle_time > 120) mode = 3;	/* 120 ns for PIO mode 4 */
-		if (cycle_time > 180) mode = 2;	/* 180 ns for PIO mode 3 */
-		if (cycle_time > 240) mode = 1;	/* 240 ns for PIO mode 4 */
-		if (cycle_time > 383) mode = 0;	/* 383 ns for PIO mode 4 */
-	}
-	printf ("PIO mode to use: PIO %d\n", mode);
-#endif /* 0 */
-
 #ifdef CONFIG_ATAPI
 	if (dev_desc->if_type==IF_TYPE_ATAPI) {
 		atapi_inquiry(dev_desc);
@@ -1207,21 +1162,6 @@ static void ide_ident (block_dev_desc_t *dev_desc)
 	dev_desc->type=DEV_TYPE_HARDDISK;
 	dev_desc->blksz=ATA_BLOCKSIZE;
 	dev_desc->lun=0; /* just to fill something in... */
-
-#if 0 	/* only used to test the powersaving mode,
-	 * if enabled, the drive goes after 5 sec
-	 * in standby mode */
-	ide_outb (device, ATA_DEV_HD, ATA_LBA | ATA_DEVICE(device));
-	c = ide_wait (device, IDE_TIME_OUT);
-	ide_outb (device, ATA_SECT_CNT, 1);
-	ide_outb (device, ATA_LBA_LOW,  0);
-	ide_outb (device, ATA_LBA_MID,  0);
-	ide_outb (device, ATA_LBA_HIGH, 0);
-	ide_outb (device, ATA_DEV_HD,   ATA_LBA | ATA_DEVICE(device));
-	ide_outb (device, ATA_COMMAND,  0xe3);
-	udelay (50);
-	c = ide_wait (device, IDE_TIME_OUT);	/* can't take over 500 ms */
-#endif
 }
 
 

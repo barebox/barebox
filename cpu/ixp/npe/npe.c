@@ -21,9 +21,6 @@
  * MA 02111-1307 USA
  */
 
-#if 0
-#define DEBUG		/* define for debug output */
-#endif
 
 #include <config.h>
 #include <common.h>
@@ -429,28 +426,6 @@ static int npe_init(struct eth_device *dev, bd_t * bis)
 	return 1;
 }
 
-#if 0 /* test-only: probably have to deal with it when booting linux (for a clean state) */
-/* Uninitialize CSR library. */
-static void npe_csr_unload(void)
-{
-	ixEthAccUnload();
-	ixEthDBUnload();
-	ixNpeMhUnload();
-	ixQMgrUnload();
-}
-
-/* callback which is used by ethAcc to recover RX buffers when stopping */
-static void npe_rx_stop_callback(u32 cbTag, IX_OSAL_MBUF *m, IxEthAccPortId portid)
-{
-	debug("%s\n", __FUNCTION__);
-}
-
-/* callback which is used by ethAcc to recover TX buffers when stopping */
-static void npe_tx_stop_callback(u32 cbTag, IX_OSAL_MBUF *m)
-{
-	debug("%s\n", __FUNCTION__);
-}
-#endif
 
 static void npe_halt(struct eth_device *dev)
 {
@@ -465,40 +440,6 @@ static void npe_halt(struct eth_device *dev)
 		udelay(100);
 	}
 
-#if 0 /* test-only: probably have to deal with it when booting linux (for a clean state) */
-	if (ixEthAccPortRxCallbackRegister(p_npe->eth_id, npe_rx_stop_callback,
-					   (u32)p_npe) != IX_ETH_ACC_SUCCESS) {
-		debug("Error registering rx callback!\n");
-	}
-
-	if (ixEthAccPortTxDoneCallbackRegister(p_npe->eth_id, npe_tx_stop_callback,
-					       (u32)p_npe) != IX_ETH_ACC_SUCCESS) {
-		debug("Error registering tx callback!\n");
-	}
-
-	if (ixEthAccPortDisable(p_npe->eth_id) != IX_ETH_ACC_SUCCESS) {
-		debug("npe_stop: Error disabling NPEB!\n");
-	}
-
-	/* Delay to give time for recovery of mbufs */
-	for (i = 0; i < 100; i++) {
-		npe_poll(p_npe->eth_id);
-		udelay(10000);
-	}
-
-	/*
-	 * For U-Boot only, we are probably launching Linux or other OS that
-	 * needs a clean slate for its NPE library.
-	 */
-#if 0 /* test-only */
-	for (i = 0; i < IX_ETH_ACC_NUMBER_OF_PORTS; i++) {
-		if (npe_used[i] && npe_exists[i])
-			if (ixNpeDlNpeStopAndReset(__eth_to_npe(i)) != IX_SUCCESS)
-				printf("Failed to stop and reset NPE B.\n");
-	}
-#endif
-
-#endif
 	p_npe->active = 0;
 }
 

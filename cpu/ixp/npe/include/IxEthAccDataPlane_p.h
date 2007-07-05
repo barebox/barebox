@@ -119,7 +119,6 @@ void ixEthAccDataPlaneShow(void);
 #define IX_ETHACC_NE_SHARED(mBufPtr) \
  ((IxEthAccNe *)&((mBufPtr)->ix_ne))
 
-#if 1
 
 #define IX_ETHACC_NE_NEXT(mBufPtr) (mBufPtr)->ix_ne.reserved[0]
 
@@ -128,17 +127,6 @@ void ixEthAccDataPlaneShow(void);
 
 #define IX_ETHACC_NE_DATA(mBufPtr)(mBufPtr)->ix_ne.reserved[2]
 
-#else
-
-#define IX_ETHACC_NE_NEXT(mBufPtr) \
-  IX_ETHACC_NE_SHARED(mBufPtr)->ixReserved_next
-
-#define IX_ETHACC_NE_LEN(mBufPtr) \
-  IX_ETHACC_NE_SHARED(mBufPtr)->ixReserved_lengths
-
-#define IX_ETHACC_NE_DATA(mBufPtr) \
-  IX_ETHACC_NE_SHARED(mBufPtr)->ixReserved_data
-#endif
 
 /*
  * Use MBUF  next pointer field to chain data.

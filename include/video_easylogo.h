@@ -10,9 +10,6 @@
 #ifndef _EASYLOGO_H_
 #define _EASYLOGO_H_
 
-#if 0
-#define ENABLE_ASCII_BANNERS
-#endif
 
 typedef struct {
 	unsigned char 	*data;

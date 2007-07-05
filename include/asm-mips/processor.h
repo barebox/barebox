@@ -22,9 +22,6 @@
 #define current_text_addr() ({ __label__ _l; _l: &&_l;})
 
 #if !defined (_LANGUAGE_ASSEMBLY)
-#if 0
-#include <linux/threads.h>
-#endif
 #include <asm/cachectl.h>
 #include <asm/mipsregs.h>
 #include <asm/reg.h>

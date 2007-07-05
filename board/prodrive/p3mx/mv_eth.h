@@ -788,12 +788,6 @@ static bool eth_port_start(ETH_PORT_INFO *p_eth_port_ctrl);
 static void eth_port_uc_addr_set (ETH_PORT eth_port_num,
 				  unsigned char *p_addr,
 				  ETH_QUEUE queue);
-#if 0	/* FIXME */
-static void eth_port_mc_addr	(ETH_PORT eth_port_num,
-				 unsigned char *p_addr,
-				 ETH_QUEUE queue,
-				 int option);
-#endif
 
 /* PHY and MIB routines */
 static bool ethernet_phy_reset(ETH_PORT eth_port_num);

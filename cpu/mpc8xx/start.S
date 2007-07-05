@@ -384,20 +384,11 @@ icache_status:
 
 	.globl	dcache_enable
 dcache_enable:
-#if 0
-	SYNC
-#endif
-#if 1
 	lis	r3, 0x0400		/* Set cache mode with MMU off */
 	mtspr	MD_CTR, r3
-#endif
 
 	lis	r3, IDC_INVALL@h
 	mtspr	DC_CST, r3
-#if 0
-	lis	r3, DC_SFWT@h
-	mtspr	DC_CST, r3
-#endif
 	lis	r3, IDC_ENABLE@h
 	mtspr	DC_CST, r3
 	blr

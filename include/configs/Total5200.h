@@ -63,7 +63,6 @@
 /*
  * Video console
  */
-#if 1
 #define CONFIG_VIDEO
 #define CONFIG_VIDEO_SED13806
 #define CONFIG_VIDEO_SED13806_16BPP
@@ -77,9 +76,6 @@
 #define CONFIG_SPLASH_SCREEN
 
 #define ADD_VIDEO_CMD	CFG_CMD_BMP
-#else
-#define ADD_VIDEO_CMD	0
-#endif
 
 #ifdef CONFIG_MPC5200	/* MGT5100 PCI is not supported yet. */
 /*
@@ -119,13 +115,9 @@
 #define CONFIG_DOS_PARTITION
 
 /* USB */
-#if 1
 #define CONFIG_USB_OHCI
 #define ADD_USB_CMD             CFG_CMD_USB | CFG_CMD_FAT
 #define CONFIG_USB_STORAGE
-#else
-#define ADD_USB_CMD             0
-#endif
 
 /*
  * Supported commands

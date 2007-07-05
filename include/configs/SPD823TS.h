@@ -40,11 +40,7 @@
 #undef	CONFIG_8xx_CONS_SMC2
 #undef	CONFIG_8xx_CONS_NONE
 #define CONFIG_BAUDRATE		115200
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 #define	CONFIG_CLOCKS_IN_MHZ	1	/* clocks passsed to Linux in MHz */
 

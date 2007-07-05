@@ -199,26 +199,6 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 	cmp	r0, r1
 	ble	clbss_l
 
-#if 0
-	/* try doing this stuff after the relocation */
-	ldr     r0, =pWTCON
-	mov     r1, #0x0
-	str     r1, [r0]
-
-	/*
-	 * mask all IRQs by setting all bits in the INTMR - default
-	 */
-	mov	r1, #0xffffffff
-	ldr	r0, =INTMR
-	str	r1, [r0]
-
-	/* FCLK:HCLK:PCLK = 1:2:4 */
-	/* default FCLK is 120 MHz ! */
-	ldr	r0, =CLKDIVN
-	mov	r1, #3
-	str	r1, [r0]
-	/* END stuff after relocation */
-#endif
 
 	ldr	pc, _start_armboot
 

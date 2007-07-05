@@ -419,19 +419,6 @@ int testdram(void)
 int pci_pre_init(struct pci_controller *hose)
 {
 	unsigned long addr;
-#if 0
-	/*--------------------------------------------------------------------------+
-	 *	Cactus is always configured as the host & requires the
-	 *	PCI arbiter to be enabled ???
-	 *--------------------------------------------------------------------------*/
-	unsigned long strap;
-	mfsdr(sdr_sdstp1, strap);
-	if ((strap & SDR0_SDSTP1_PAE_MASK) == 0) {
-		printf("PCI: SDR0_STRP1[PAE] not set.\n");
-		printf("PCI: Configuration aborted.\n");
-		return 0;
-	}
-#endif
 
 	/*-------------------------------------------------------------------------+
 	  | Set priority for all PLB3 devices to 0.

@@ -42,13 +42,8 @@
 
 #define	CONFIG_CLOCKS_IN_MHZ	1	/* clocks passsed to Linux in MHz */
 
-#if 1
 #define CONFIG_8xx_BOOTDELAY	-1	/* autoboot disabled		*/
 #define CONFIG_8xx_TFTP_MODE
-#else
-#define CONFIG_8xx_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#undef	CONFIG_8xx_TFTP_MODE
-#endif
 
 #define CONFIG_DRAM_SPEED	(CONFIG_8xx_BUSCLOCK)	/* MHz		*/
 #define CONFIG_BOOTCOMMAND	"bootm FE020000"	/* autoboot command */

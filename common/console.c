@@ -474,11 +474,6 @@ int console_init_r (void)
 	}
 #endif /* CFG_CONSOLE_ENV_OVERWRITE */
 
-#if 0
-	/* If nothing usable installed, use only the initial console */
-	if ((stdio_devices[stdin] == NULL) && (stdio_devices[stdout] == NULL))
-		return (0);
-#endif
 	return (0);
 }
 
@@ -560,11 +555,6 @@ int console_init_r (void)
 		setenv (stdio_names[i], stdio_devices[i]->name);
 	}
 
-#if 0
-	/* If nothing usable installed, use only the initial console */
-	if ((stdio_devices[stdin] == NULL) && (stdio_devices[stdout] == NULL))
-		return (0);
-#endif
 
 	return (0);
 }

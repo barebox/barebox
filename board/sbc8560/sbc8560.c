@@ -265,13 +265,6 @@ long int initdram (int board_type)
 	long dram_size = 0;
 	extern long spd_sdram (void);
 	volatile immap_t *immap = (immap_t *)CFG_IMMR;
-#if 0
-#if !defined(CONFIG_RAM_AS_FLASH)
-	volatile ccsr_lbc_t *lbc= &immap->im_lbc;
-	sys_info_t sysinfo;
-	uint temp_lbcdll = 0;
-#endif
-#endif /* 0 */
 #if !defined(CONFIG_RAM_AS_FLASH) || defined(CONFIG_DDR_DLL)
 	volatile ccsr_gur_t *gur= &immap->im_gur;
 #endif
@@ -290,45 +283,6 @@ long int initdram (int board_type)
 	dram_size = fixed_sdram ();
 #endif
 
-#if 0
-#if !defined(CONFIG_RAM_AS_FLASH) /* LocalBus SDRAM is not emulating flash */
-	get_sys_info(&sysinfo);
-	/* if localbus freq is less than 66Mhz,we use bypass mode,otherwise use DLL */
-	if(sysinfo.freqSystemBus/(CFG_LBC_LCRR & 0x0f) < 66000000) {
-		lbc->lcrr = (CFG_LBC_LCRR & 0x0fffffff)| 0x80000000;
-	} else {
-#if defined(CONFIG_MPC85xx_REV1) /* need change CLKDIV before enable DLL */
-		lbc->lcrr = 0x10000004; /* default CLKDIV is 8, change it to 4 temporarily */
-#endif
-		lbc->lcrr = CFG_LBC_LCRR & 0x7fffffff;
-		udelay(200);
-		temp_lbcdll = gur->lbcdllcr;
-		gur->lbcdllcr = ((temp_lbcdll & 0xff) << 16 ) | 0x80000000;
-		asm("sync;isync;msync");
-	}
-	lbc->or2 = CFG_OR2_PRELIM; /* 64MB SDRAM */
-	lbc->br2 = CFG_BR2_PRELIM;
-	lbc->lbcr = CFG_LBC_LBCR;
-	lbc->lsdmr = CFG_LBC_LSDMR_1;
-	asm("sync");
-	(unsigned int) * (ulong *)0 = 0x000000ff;
-	lbc->lsdmr = CFG_LBC_LSDMR_2;
-	asm("sync");
-	(unsigned int) * (ulong *)0 = 0x000000ff;
-	lbc->lsdmr = CFG_LBC_LSDMR_3;
-	asm("sync");
-	(unsigned int) * (ulong *)0 = 0x000000ff;
-	lbc->lsdmr = CFG_LBC_LSDMR_4;
-	asm("sync");
-	(unsigned int) * (ulong *)0 = 0x000000ff;
-	lbc->lsdmr = CFG_LBC_LSDMR_5;
-	asm("sync");
-	lbc->lsrt = CFG_LBC_LSRT;
-	asm("sync");
-	lbc->mrtpr = CFG_LBC_MRTPR;
-	asm("sync");
-#endif
-#endif
 
 #if defined(CONFIG_DDR_ECC)
 	{

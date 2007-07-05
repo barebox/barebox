@@ -92,12 +92,6 @@
 #ifndef __INC_SKDRV1ST_H
 #define __INC_SKDRV1ST_H
 
-#if 0
-/* Check kernel version */
-#include <linux/version.h>
-#if (LINUX_VERSION_CODE > 0x020300)
-#endif
-#endif
 
 typedef struct s_AC	SK_AC;
 
@@ -121,33 +115,11 @@ typedef struct s_AC	SK_AC;
 #error You must compile this driver with "-O".
 #endif
 
-#if 0
-#include <linux/version.h>
-#endif
 #include <linux/types.h>
-#if 0
-#include <linux/kernel.h>
-#endif
 #include <linux/string.h>
-#if 0
-#include <linux/errno.h>
-#include <linux/ioport.h>
-#include <linux/slab.h>
-#include <linux/interrupt.h>
-#include <linux/pci.h>
-#endif
 #include <asm/byteorder.h>
 #include <asm/bitops.h>
 #include <asm/io.h>
-#if 0
-#include <linux/netdevice.h>
-#include <linux/etherdevice.h>
-#include <linux/skbuff.h>
-
-#include <linux/init.h>
-#include <asm/uaccess.h>
-#include <net/checksum.h>
-#endif
 
 #include	"h/sktypes.h"
 #include	"h/skerror.h"
@@ -163,19 +135,11 @@ typedef struct s_AC	SK_AC;
 #define SK_BIG_ENDIAN
 #endif
 
-#if 0
-#define SK_NET_DEVICE	net_device
-#else
 #define SK_NET_DEVICE	eth_device
-#endif
 
 
 /* we use gethrtime(), return unit: nanoseconds */
-#if 0
-#define SK_TICKS_PER_SEC	HZ
-#else
 #define SK_TICKS_PER_SEC	CFG_HZ
-#endif
 
 #define	SK_MEM_MAPPED_IO
 

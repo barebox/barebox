@@ -53,11 +53,7 @@
 
 #define CONFIG_8xx_GCLK_FREQ	MPC8XX_HZ
 
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 #undef	CONFIG_CLOCKS_IN_MHZ	/* clocks NOT passsed to Linux in MHz */
 

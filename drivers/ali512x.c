@@ -64,13 +64,6 @@ static void ali_write(u8 index, u8 value)
 	outb(value, ALI_DATA);
 }
 
-#if 0
-static int ali_read(u8 index)
-{
-	outb(index, ALI_INDEX);
-	return inb(ALI_DATA);
-}
-#endif
 
 #define ALI_OPEN() \
 	outb(0x51, ALI_INDEX); \

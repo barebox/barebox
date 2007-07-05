@@ -236,9 +236,6 @@ unsigned long init_sc520_dram(void)
 	}
 
 
-#if 0
-	printf("Configured %d bytes of dram\n", dram_present);
-#endif
 	gd->ram_size = dram_present;
 
 	return dram_present;
@@ -284,9 +281,7 @@ int pci_sc520_set_irq(int pci_pin, int irq)
 {
 	int i;
 
-# if 1
 	printf("set_irq(): map INT%c to IRQ%d\n", pci_pin + 'A', irq);
-#endif
 	if (irq < 0 || irq > 15) {
 		return -1; /* illegal irq */
 	}
@@ -426,10 +421,6 @@ void udelay(unsigned long usec)
 	read_mmcr_word(SC520_SWTMRMILLI);
 	read_mmcr_word(SC520_SWTMRMICRO);
 
-#if 0
-	/* do not enable this line, udelay is used in the serial driver -> recursion */
-	printf("udelay: %ld m.u %d.%d  tm.tu %d.%d\n", usec, m, u, tm, tu);
-#endif
 	while (1) {
 
 		m += read_mmcr_word(SC520_SWTMRMILLI);

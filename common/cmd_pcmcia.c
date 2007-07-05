@@ -352,13 +352,6 @@ int check_ide_device (int slot)
 	/* set I/O area in config reg -> only valid for ARGOSY D5!!! */
 	*((uchar *)(addr + config_base)) = 1;
 #endif
-#if 0
-	printf("\n## Config_base = %04x ###\n", config_base);
-	printf("Configuration Option Register: %02x @ %x\n", readb(addr + config_base), addr + config_base);
-	printf("Card Configuration and Status Register: %02x\n", readb(addr + config_base + 2));
-	printf("Pin Replacement Register Register: %02x\n", readb(addr + config_base + 4));
-	printf("Socket and Copy Register: %02x\n", readb(addr + config_base + 6));
-#endif
 	return (0);
 }
 

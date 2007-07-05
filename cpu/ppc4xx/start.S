@@ -902,11 +902,6 @@ _start:
 	.globl	_start_of_vectors
 _start_of_vectors:
 
-#if 0
-/*TODO Fixup _start above so we can do this*/
-/* Critical input. */
-	CRIT_EXCEPTION(0x100, CritcalInput, CritcalInputException)
-#endif
 
 /* Machine check */
 	CRIT_EXCEPTION(0x200, MachineCheck, MachineCheckException)
@@ -1014,28 +1009,12 @@ transfer_to_handler:
 	SAVE_4GPRS(8, r21)
 	SAVE_8GPRS(12, r21)
 	SAVE_8GPRS(24, r21)
-#if 0
-	andi.	r23,r23,MSR_PR
-	mfspr	r23,SPRG3		/* if from user, fix up tss.regs */
-	beq	2f
-	addi	r24,r1,STACK_FRAME_OVERHEAD
-	stw	r24,PT_REGS(r23)
-2:	addi	r2,r23,-TSS		/* set r2 to current */
-	tovirt(r2,r2,r23)
-#endif
 	mflr	r23
 	andi.	r24,r23,0x3f00		/* get vector offset */
 	stw	r24,TRAP(r21)
 	li	r22,0
 	stw	r22,RESULT(r21)
 	mtspr	SPRG2,r22		/* r1 is now kernel sp */
-#if 0
-	addi	r24,r2,TASK_STRUCT_SIZE /* check for kernel stack overflow */
-	cmplw	0,r1,r2
-	cmplw	1,r1,r24
-	crand	1,1,4
-	bgt	stack_ovf		/* if r2 < r1 < r2+TASK_STRUCT_SIZE */
-#endif
 	lwz	r24,0(r23)		/* virtual address of handler */
 	lwz	r23,4(r23)		/* where to go when done */
 	mtspr	SRR0,r24

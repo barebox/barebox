@@ -28,9 +28,6 @@ extern int pcmcia_hardware_disable(int slot);
 #endif
 
 static u_int m8xx_get_graycode(u_int size);
-#if 0 /* Disabled */
-static u_int m8xx_get_speed(u_int ns, u_int is_io);
-#endif
 
 /* look up table for pgcrx registers */
 u_int *pcmcia_pgcrx[2] = {
@@ -239,66 +236,5 @@ static u_int m8xx_get_graycode(u_int size)
 	return k;
 }
 
-#if	0
-
-#if	defined(CONFIG_RPXCLASSIC) || defined(CONFIG_RPXLITE)
-
-/* The RPX boards seems to have it's bus monitor timeout set to 6*8 clocks.
- * SYPCR is write once only, therefore must the slowest memory be faster
- * than the bus monitor or we will get a machine check due to the bus timeout.
- */
-#undef	PCMCIA_BMT_LIMIT
-#define	PCMCIA_BMT_LIMIT (6*8)
-#endif
-
-static u_int m8xx_get_speed(u_int ns, u_int is_io)
-{
-	u_int reg, clocks, psst, psl, psht;
-
-	if(!ns) {
-
-		/*
-		* We get called with IO maps setup to 0ns
-		* if not specified by the user.
-		* They should be 255ns.
-		*/
-
-		if(is_io)
-			ns = 255;
-		else
-			ns = 100;  /* fast memory if 0 */
-	}
-
-	/*
-	* In PSST, PSL, PSHT fields we tell the controller
-	* timing parameters in CLKOUT clock cycles.
-	* CLKOUT is the same as GCLK2_50.
-	*/
-
-	/* how we want to adjust the timing - in percent */
-
-#define ADJ 180 /* 80 % longer accesstime - to be sure */
-
-	clocks = ((M8XX_BUSFREQ / 1000) * ns) / 1000;
-	clocks = (clocks * ADJ) / (100*1000);
-
-	if(clocks >= PCMCIA_BMT_LIMIT) {
-		DEBUG(0, "Max access time limit reached\n");
-		clocks = PCMCIA_BMT_LIMIT-1;
-	}
-
-	psst = clocks / 7;          /* setup time */
-	psht = clocks / 7;          /* hold time */
-	psl  = (clocks * 5) / 7;    /* strobe length */
-
-	psst += clocks - (psst + psht + psl);
-
-	reg =  psst << 12;
-	reg |= psl  << 7;
-	reg |= psht << 16;
-
-	return reg;
-}
-#endif	/* 0 */
 
 #endif	/* CONFIG_8xx && CONFIG_PCMCIA */

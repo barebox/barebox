@@ -252,26 +252,13 @@ ixOsalWinCEReadLCookie (volatile UINT32 * lCookie)
 static __inline__ UINT16
 ixOsalWinCEReadWCookie (volatile UINT16 * wCookie)
 {
-#if 0
-    UINT32 auxVal = *((volatile UINT32 *) wCookie);
-    if ((unsigned) wCookie & 3)
-	return (UINT16) (auxVal >> 16);
-    else
-	return (UINT16) (auxVal & 0xffff);
-#else
     return *wCookie;
-#endif
 }
 
 static __inline__ UINT8
 ixOsalWinCEReadBCookie (volatile UINT8 * bCookie)
 {
-#if 0
-    UINT32 auxVal = *((volatile UINT32 *) bCookie);
-    return (UINT8) ((auxVal >> (3 - (((unsigned) bCookie & 3) << 3)) & 0xff));
-#else
     return *bCookie;
-#endif
 }
 
 static __inline__ void
@@ -283,35 +270,13 @@ ixOsalWinCEWriteLCookie (volatile UINT32 * lCookie, UINT32 lVal)
 static __inline__ void
 ixOsalWinCEWriteWCookie (volatile UINT16 * wCookie, UINT16 wVal)
 {
-#if 0
-    volatile UINT32 *auxCookie =
-	(volatile UINT32 *) ((unsigned) wCookie & ~3);
-    if ((unsigned) wCookie & 3)
-    {
-	*auxCookie &= 0xffff;
-	*auxCookie |= (UINT32) wVal << 16;
-    }
-    else
-    {
-	*auxCookie &= ~0xffff;
-	*auxCookie |= (UINT32) wVal & 0xffff;
-    }
-#else
     *wCookie = wVal;
-#endif
 }
 
 static __inline__ void
 ixOsalWinCEWriteBCookie (volatile UINT8 * bCookie, UINT8 bVal)
 {
-#if 0
-    volatile UINT32 *auxCookie =
-	(volatile UINT32 *) ((unsigned) bCookie & ~3);
-    *auxCookie &= 0xff << (3 - (((unsigned) bCookie & 3) << 3));
-    *auxCookie |= (UINT32) bVal << (3 - (((unsigned) bCookie & 3) << 3));
-#else
     *bCookie = bVal;
-#endif
 }
 
 

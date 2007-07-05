@@ -104,9 +104,7 @@ static void ps2mult_receive_byte(u_char byte, u_char sel)
 {
 	u_char status = KBD_STAT_DEFAULT;
 
-#if 1 /* Ignore mouse in U-Boot */
 	if (sel == PS2MULT_MS_SELECTOR) return;
-#endif
 
 	if (sel == PS2MULT_KB_SELECTOR) {
 		if (kbd_command_active) {
@@ -395,7 +393,6 @@ int ps2mult_init (void)
 		}
 	}
 
-#if 1 /* detect mouse */
 	ps2ser_putc(PS2MULT_MS_SELECTOR);
 	ps2ser_putc(AUX_RESET);
 
@@ -419,7 +416,6 @@ int ps2mult_init (void)
 			byte = ps2mult_getc_w();
 		}
 	}
-#endif
 
 	if (mouse_found || kbd_found) {
 		if (!received_selector) {
@@ -437,21 +433,6 @@ int ps2mult_init (void)
 
 	puts("\n");
 
-#if 0 /* for testing */
-	{
-		int i;
-		u_char key[] = {
-			0x1f, 0x12, 0x14, 0x12, 0x31, 0x2f, 0x39,	/* setenv */
-			0x1f, 0x14, 0x20, 0x17, 0x31, 0x39,		/* stdin */
-			0x1f, 0x12, 0x13, 0x17, 0x1e, 0x26, 0x1c,	/* serial */
-		};
-
-		for (i = 0; i < sizeof (key); i++) {
-			ps2mult_receive_byte (key[i],	     PS2MULT_KB_SELECTOR);
-			ps2mult_receive_byte (key[i] | 0x80, PS2MULT_KB_SELECTOR);
-		}
-	}
-#endif
 
 	return init_done ? 0 : -1;
 }

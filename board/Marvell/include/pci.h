@@ -196,49 +196,6 @@ unsigned int pciGetSpaceSize(PCI_HOST host, PCI_REGION region);
 void pciMapMemoryBank(PCI_HOST host, MEMORY_BANK bank,
 		      unsigned int pci0Dram0Base, unsigned int pci0Dram0Size);
 
-#if 0 /* GARBAGE routines - dont use till they get cleaned up */
-void pci0ScanSelfBars(PCI_SELF_BARS *pci0SelfBars);
-void pci1ScanSelfBars(PCI_SELF_BARS *pci1SelfBars);
-void pci0MapInternalRegSpace(unsigned int pci0InternalBase);
-void pci1MapInternalRegSpace(unsigned int pci1InternalBase);
-void pci0MapInternalRegIOSpace(unsigned int pci0InternalBase);
-void pci1MapInternalRegIOSpace(unsigned int pci1InternalBase);
-void pci0MapDevice0MemorySpace(unsigned int pci0Dev0Base,
-			       unsigned int pci0Dev0Length);
-void pci1MapDevice0MemorySpace(unsigned int pci1Dev0Base,
-			       unsigned int pci1Dev0Length);
-void pci0MapDevice1MemorySpace(unsigned int pci0Dev1Base,
-			       unsigned int pci0Dev1Length);
-void pci1MapDevice1MemorySpace(unsigned int pci1Dev1Base,
-			       unsigned int pci1Dev1Length);
-void pci0MapDevice2MemorySpace(unsigned int pci0Dev2Base,
-			       unsigned int pci0Dev2Length);
-void pci1MapDevice2MemorySpace(unsigned int pci1Dev2Base,
-			       unsigned int pci1Dev2Length);
-void pci0MapDevice3MemorySpace(unsigned int pci0Dev3Base,
-			       unsigned int pci0Dev3Length);
-void pci1MapDevice3MemorySpace(unsigned int pci1Dev3Base,
-			       unsigned int pci1Dev3Length);
-void pci0MapBootDeviceMemorySpace(unsigned int pci0DevBootBase,
-				  unsigned int pci0DevBootLength);
-void pci1MapBootDeviceMemorySpace(unsigned int pci1DevBootBase,
-				  unsigned int pci1DevBootLength);
-void pci0MapP2pMem0Space(unsigned int pci0P2pMem0Base,
-			 unsigned int pci0P2pMem0Length);
-void pci1MapP2pMem0Space(unsigned int pci1P2pMem0Base,
-			 unsigned int pci1P2pMem0Length);
-void pci0MapP2pMem1Space(unsigned int pci0P2pMem1Base,
-			 unsigned int pci0P2pMem1Length);
-void pci1MapP2pMem1Space(unsigned int pci1P2pMem1Base,
-			 unsigned int pci1P2pMem1Length);
-void pci0MapP2pIoSpace(unsigned int pci0P2pIoBase,
-		       unsigned int pci0P2pIoLength);
-void pci1MapP2pIoSpace(unsigned int pci1P2pIoBase,
-		       unsigned int pci1P2pIoLength);
-
-void pci0MapCPUspace(unsigned int pci0CpuBase, unsigned int pci0CpuLengs);
-void pci1MapCPUspace(unsigned int pci1CpuBase, unsigned int pci1CpuLengs);
-#endif
 
 /* PCI region options */
 

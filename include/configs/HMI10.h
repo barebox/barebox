@@ -157,9 +157,6 @@
 #define CFG_LONGHELP			/* undef to save memory		*/
 #define CFG_PROMPT		"=> "	/* Monitor Command Prompt	*/
 
-#if 0
-#define CFG_HUSH_PARSER		1	/* use "hush" command parser	*/
-#endif
 #ifdef	CFG_HUSH_PARSER
 #define CFG_PROMPT_HUSH_PS2	"> "
 #endif

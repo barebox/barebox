@@ -745,14 +745,12 @@ static void pcnet_reset_8390(void)
 
 	PRINTK("nic base is %lx\n", nic_base);
 
-#if 1
 	n2k_outb(E8390_NODMA+E8390_PAGE0+E8390_STOP, E8390_CMD);
 	PRINTK("cmd (at %lx) is %x\n", nic_base+ E8390_CMD, n2k_inb(E8390_CMD));
 	n2k_outb(E8390_NODMA+E8390_PAGE1+E8390_STOP, E8390_CMD);
 	PRINTK("cmd (at %lx) is %x\n", nic_base+ E8390_CMD, n2k_inb(E8390_CMD));
 	n2k_outb(E8390_NODMA+E8390_PAGE0+E8390_STOP, E8390_CMD);
 	PRINTK("cmd (at %lx) is %x\n", nic_base+ E8390_CMD, n2k_inb(E8390_CMD));
-#endif
 	n2k_outb(E8390_NODMA+E8390_PAGE0+E8390_STOP, E8390_CMD);
 
 	n2k_outb(n2k_inb(nic_base + PCNET_RESET), PCNET_RESET);

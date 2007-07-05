@@ -33,9 +33,6 @@
 
 #if (CONFIG_FPGA & (CFG_XILINX | CFG_VIRTEX2))
 
-#if 0
-#define FPGA_DEBUG
-#endif
 
 #ifdef	FPGA_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)

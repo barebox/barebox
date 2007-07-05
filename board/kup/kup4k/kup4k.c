@@ -200,19 +200,6 @@ long int initdram (int board_type)
 	memctl->memc_mamr |= MAMR_PTAE;	/* enable refresh */
 	udelay (1000);
 
-#if 0							/* 3 x 8MB */
-	size_b0 = 0x00800000;
-	size_b1 = 0x00800000;
-	size_b2 = 0x00800000;
-	memctl->memc_mptpr = CFG_MPTPR;
-	udelay (1000);
-	memctl->memc_or1 = 0xFF800A00;
-	memctl->memc_br1 = 0x00000081;
-	memctl->memc_or2 = 0xFF000A00;
-	memctl->memc_br2 = 0x00800081;
-	memctl->memc_or3 = 0xFE000A00;
-	memctl->memc_br3 = 0x01000081;
-#else							/* 3 x 16 MB */
 	size_b0 = 0x01000000;
 	size_b1 = 0x01000000;
 	size_b2 = 0x01000000;
@@ -224,7 +211,6 @@ long int initdram (int board_type)
 	memctl->memc_br2 = 0x01000081;
 	memctl->memc_or3 = 0xFC000A00;
 	memctl->memc_br3 = 0x02000081;
-#endif
 
 	udelay (10000);
 
@@ -320,12 +306,6 @@ void lcd_logo (bd_t * bd)
 		else
 			tft = 0;
 	}
-#if 0
-	if (((S1D_VALUE *) fb_info.RegAddr)[0xAC] & 0x04)
-		tft = 0;
-	else
-		tft = 1;
-#endif
 
 	debugk ("Port=0x%02x -> TFT=%d\n", tft,
 		((S1D_VALUE *) fb_info.RegAddr)[0xAC]);

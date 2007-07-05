@@ -710,7 +710,6 @@
 #define CONFIG_ETH1ADDR		00:E0:0C:00:8C:02
 #endif
 
-#if 1
 #define CONFIG_IPADDR		10.82.19.159
 #define CONFIG_SERVERIP		10.82.48.106
 #define CONFIG_GATEWAYIP	10.82.19.254
@@ -722,19 +721,6 @@
 #define CONFIG_BOOTFILE		timur/uImage
 
 #define CONFIG_UBOOTPATH	timur/u-boot.bin
-#else
-#define CONFIG_IPADDR		192.168.1.253
-#define CONFIG_SERVERIP		192.168.1.1
-#define CONFIG_GATEWAYIP	192.168.1.1
-#define CONFIG_NETMASK		255.255.252.0
-#define CONFIG_NETDEV		eth0
-
-#define CONFIG_HOSTNAME		mpc8349emitx
-#define CONFIG_ROOTPATH		/nfsroot/rootfs
-#define CONFIG_BOOTFILE		uImage
-
-#define CONFIG_UBOOTPATH	u-boot.bin
-#endif
 
 #define CONFIG_UBOOTSTART	fe700000
 #define CONFIG_UBOOTEND		fe77ffff

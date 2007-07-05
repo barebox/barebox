@@ -159,12 +159,6 @@ reset:
 	str     r1, [r2]
 
 	/* make sure flash is visible at 0 */
-#if 0
-	ldr 	r2, =IXP425_EXP_CFG0
-	ldr     r1, [r2]
-	orr     r1, r1, #0x80000000
-	str     r1, [r2]
-#endif
 	mov 	r1, #CFG_SDR_CONFIG
 	ldr     r2, =IXP425_SDR_CONFIG
 	str     r1, [r2]

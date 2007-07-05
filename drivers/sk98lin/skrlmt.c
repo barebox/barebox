@@ -1249,10 +1249,6 @@ SK_MBUF	*pMb)	/* Received packet */
 
 		switch (PacketType) {
 		case SK_PACKET_ANNOUNCE:	/* Not yet used. */
-#if 0
-			/* Build the check chain. */
-			SkRlmtBuildCheckChain(pAC);
-#endif	/* 0 */
 
 			SK_DBG_MSG(pAC, SK_DBGMOD_RLMT, SK_DBGCAT_RX,
 				("SkRlmtPacketReceive: Announce.\n"))
@@ -1876,12 +1872,6 @@ SK_U32	NetIdx)	/* Net index */
 	PortFound = SK_FALSE;
 	pAC->Rlmt.CheckSwitch = SK_FALSE;
 
-#if 0	/* RW 2001/10/18 - active port becomes always prefered one */
-	if (pAC->Rlmt.Net[NetIdx].Preference == 0xFFFFFFFF) { /* Automatic */
-		/* disable auto-fail back */
-		PrefPort = Active;
-	}
-#endif
 
 	if (pAC->Rlmt.Net[NetIdx].LinksUp == 0) {
 		/* Last link went down - shut down the net. */
@@ -2823,12 +2813,6 @@ SK_EVPARA	Para)	/* SK_U32 NetNumber; SK_U32 -1 */
 		return;
 	}
 
-#if 0
-	pAC->Rlmt.SwitchCheckCounter--;
-	if (pAC->Rlmt.SwitchCheckCounter == 0) {
-		pAC->Rlmt.SwitchCheckCounter;
-	}
-#endif	/* 0 */
 
 	NewTimeout = SK_RLMT_DEF_TO_VAL;
 	for (i = 0; i < pAC->Rlmt.Net[Para.Para32[0]].NumPorts; i++) {

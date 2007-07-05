@@ -46,9 +46,6 @@
 #define KERN_ERR		"Error:"
 #define KERN_INFO		"Info:"
 
-#if 0
-# define DEBUG
-#endif
 
 #ifdef	DEBUG
 # define printk			printf

@@ -391,9 +391,6 @@
 #define IXP425_TIMER_REG(x) (IXP425_TIMER_BASE_PHYS+(x))
 #endif
 
-#if 0 /* test-only: also defined in npe/include/... */
-#define IXP425_OSTS	IXP425_TIMER_REG(IXP425_OSTS_OFFSET)
-#endif
 #define IXP425_OST1	IXP425_TIMER_REG(IXP425_OST1_OFFSET)
 #define IXP425_OSRT1	IXP425_TIMER_REG(IXP425_OSRT1_OFFSET)
 #define IXP425_OST2	IXP425_TIMER_REG(IXP425_OST2_OFFSET)
@@ -520,13 +517,6 @@
 #define NP_CMD_MEMREAD			0x6
 #define	NP_CMD_MEMWRITE			0x7
 
-#if 0
-#ifndef __ASSEMBLY__
-extern int ixp425_pci_read(u32 addr, u32 cmd, u32* data);
-extern int ixp425_pci_write(u32 addr, u32 cmd, u32 data);
-extern void ixp425_pci_init(void *);
-#endif
-#endif
 
 /*
  * Constants for CRP access into local config space

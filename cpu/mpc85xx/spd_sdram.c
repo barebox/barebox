@@ -290,12 +290,6 @@ spd_sdram(void)
 	odt_wr_cfg = 0;			/* Never assert ODT */
 	if (spd.mem_type == SPD_MEMTYPE_DDR2) {
 		odt_wr_cfg = 1;		/* Assert ODT on writes to CS0 */
-#if 0
-		/* FIXME: How to determine the number of dimm modules? */
-		if (n_dimm_modules == 2) {
-			odt_rd_cfg = 1;	/* Assert ODT on reads to CS0 */
-		}
-#endif
 	}
 
 	ddr->cs0_config = ( 1 << 31
@@ -483,21 +477,9 @@ spd_sdram(void)
 			| ((taxpd_clk & 0xf) << 8)	/* ODT_PD_EXIT */
 			| ((tmrd_clk & 0xf) << 0)	/* MRS_CYC */
 			);
-#if 0
-		ddr->timing_cfg_0 |= 0xaa000000;	/* extra cycles */
-#endif
 		debug("DDR: timing_cfg_0 = 0x%08x\n", ddr->timing_cfg_0);
 
 	} else {
-#if 0
-		/*
-		 * Force extra cycles with 0xaa bits.
-		 * Incidentally supply the dreamt-up backwards compat value!
-		 */
-		ddr->timing_cfg_0 = 0x00110105;	/* backwards compat value */
-		ddr->timing_cfg_0 |= 0xaa000000;	/* extra cycles */
-		debug("DDR: HACK timing_cfg_0 = 0x%08x\n", ddr->timing_cfg_0);
-#endif
 	}
 
 

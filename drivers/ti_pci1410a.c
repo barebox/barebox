@@ -381,12 +381,6 @@ static int check_ide_device(int slot, int ide_base_bus)
 	/* select config index 1 */
 	writeb(1, pcmcia_cis_ptr + config_base);
 
-#if 0
-	printf("Confiuration Option Register: %02x\n", readb(pcmcia_cis_ptr + config_base));
-	printf("Card Confiuration and Status Register: %02x\n", readb(pcmcia_cis_ptr + config_base + 2));
-	printf("Pin Replacement Register Register: %02x\n", readb(pcmcia_cis_ptr + config_base + 4));
-	printf("Socket and Copy Register: %02x\n", readb(pcmcia_cis_ptr + config_base + 6));
-#endif
 	ide_devices_found |= (1 << (slot+ide_base_bus));
 
 	return 0;
@@ -481,11 +475,6 @@ static int hardware_enable(int slot)
 	writeb(is_82365sl?0x90:0x98, socket_base+0x802);
 	writeb(0x67, socket_base+0x803);
 	udelay(100000);
-#if 0
-	printf("ExCA Id %02x, Card Status %02x, Power config %02x, Interrupt Config %02x, bridge control %04x %d\n",
-	       readb(socket_base+0x800), readb(socket_base+0x801),
-	       readb(socket_base+0x802), readb(socket_base+0x803), brg_ctrl, is_82365sl);
-#endif
 
 	return ((readb(socket_base+0x801)&0x6c)==0x6c)?0:1;
 }

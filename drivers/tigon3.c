@@ -190,10 +190,6 @@ PLM_DEVICE_BLOCK pDevice) {
 		pRcvBd->Len = (LM_UINT16) pDevice->RxJumboBufferSize;
 
 		/* Initialize the receive buffer pointer */
-#if 0 /* Jimmy, deleted in new */
-		pRcvBd->HostAddr.Low = pPacket->u.Rx.RxBufferPhy.Low;
-		pRcvBd->HostAddr.High = pPacket->u.Rx.RxBufferPhy.High;
-#endif
 		MM_MapRxDma(pDevice, pPacket, &pRcvBd->HostAddr);
 
 		/* The opaque field may point to an offset from a fix addr. */
@@ -215,10 +211,6 @@ PLM_DEVICE_BLOCK pDevice) {
 		pRcvBd->Len = MAX_STD_RCV_BUFFER_SIZE;
 
 		/* Initialize the receive buffer pointer */
-#if 0  /* Jimmy, deleted in new replaced with MM_MapRxDma */
-		pRcvBd->HostAddr.Low = pPacket->u.Rx.RxBufferPhy.Low;
-		pRcvBd->HostAddr.High = pPacket->u.Rx.RxBufferPhy.High;
-#endif
 		MM_MapRxDma(pDevice, pPacket, &pRcvBd->HostAddr);
 
 		/* The opaque field may point to an offset from a fix addr. */
@@ -908,14 +900,12 @@ PLM_DEVICE_BLOCK pDevice)
 	}
     }
 #endif
-#if 1
     /*
     *  This code was at the beginning of else block below, but that's
     *  a bug if node address in shared memory.
     */
     MM_Wait(50);
     LM_NvramInit(pDevice);
-#endif
     /* Get the node address.  First try to get in from the shared memory. */
     /* If the signature is not present, then get it from the NVRAM. */
     Value32 = MEM_RD_OFFSET(pDevice, T3_MAC_ADDR_HIGH_MAILBOX);
@@ -3026,137 +3016,6 @@ LM_EnableInterrupt(
 /* Return:                                                                    */
 /*    LM_STATUS_SUCCESS                                                       */
 /******************************************************************************/
-#if 0
-LM_STATUS
-LM_SendPacket(PLM_DEVICE_BLOCK pDevice, PLM_PACKET pPacket)
-{
-    LM_UINT32 FragCount;
-    PT3_SND_BD pSendBd;
-    PT3_SND_BD pShadowSendBd;
-    LM_UINT32 Value32, Len;
-    LM_UINT32 Idx;
-
-    if (T3_ASIC_REV(pDevice->ChipRevId) == T3_ASIC_REV_5700) {
-	return LM_5700SendPacket(pDevice, pPacket);
-    }
-
-    /* Update the SendBdLeft count. */
-    atomic_sub(pPacket->u.Tx.FragCount, &pDevice->SendBdLeft);
-
-    /* Initalize the send buffer descriptors. */
-    Idx = pDevice->SendProdIdx;
-
-    pSendBd = &pDevice->pSendBdVirt[Idx];
-
-    /* Next producer index. */
-    if (pDevice->NicSendBd == TRUE)
-    {
-	T3_64BIT_HOST_ADDR paddr;
-
-	pShadowSendBd = &pDevice->ShadowSendBd[Idx];
-	for(FragCount = 0; ; )
-	{
-	    MM_MapTxDma(pDevice, pPacket, &paddr, &Len, FragCount);
-	    /* Initialize the pointer to the send buffer fragment. */
-	    if (paddr.High != pShadowSendBd->HostAddr.High)
-	    {
-		__raw_writel(paddr.High, &(pSendBd->HostAddr.High));
-		pShadowSendBd->HostAddr.High = paddr.High;
-	    }
-	    __raw_writel(paddr.Low, &(pSendBd->HostAddr.Low));
-
-	    /* Setup the control flags and send buffer size. */
-	    Value32 = (Len << 16) | pPacket->Flags;
-
-	    Idx = (Idx + 1) & T3_SEND_RCB_ENTRY_COUNT_MASK;
-
-	    FragCount++;
-	    if (FragCount >= pPacket->u.Tx.FragCount)
-	    {
-		Value32 |= SND_BD_FLAG_END;
-		if (Value32 != pShadowSendBd->u1.Len_Flags)
-		{
-		    __raw_writel(Value32, &(pSendBd->u1.Len_Flags));
-		    pShadowSendBd->u1.Len_Flags = Value32;
-		}
-		if (pPacket->Flags & SND_BD_FLAG_VLAN_TAG) {
-		    __raw_writel(pPacket->VlanTag, &(pSendBd->u2.VlanTag));
-		}
-		break;
-	    }
-	    else
-	    {
-		if (Value32 != pShadowSendBd->u1.Len_Flags)
-		{
-		    __raw_writel(Value32, &(pSendBd->u1.Len_Flags));
-		    pShadowSendBd->u1.Len_Flags = Value32;
-		}
-		if (pPacket->Flags & SND_BD_FLAG_VLAN_TAG) {
-		    __raw_writel(pPacket->VlanTag, &(pSendBd->u2.VlanTag));
-		}
-	    }
-
-	    pSendBd++;
-	    pShadowSendBd++;
-	    if (Idx == 0)
-	    {
-		pSendBd = &pDevice->pSendBdVirt[0];
-		pShadowSendBd = &pDevice->ShadowSendBd[0];
-	    }
-	} /* for */
-
-	/* Put the packet descriptor in the ActiveQ. */
-	QQ_PushTail(&pDevice->TxPacketActiveQ.Container, pPacket);
-
-	wmb();
-	MB_REG_WR(pDevice, Mailbox.SendNicProdIdx[0].Low, Idx);
-
-    }
-    else
-    {
-	for(FragCount = 0; ; )
-	{
-	    /* Initialize the pointer to the send buffer fragment. */
-	    MM_MapTxDma(pDevice, pPacket, &pSendBd->HostAddr, &Len, FragCount);
-
-	    pSendBd->u2.VlanTag = pPacket->VlanTag;
-
-	    /* Setup the control flags and send buffer size. */
-	    Value32 = (Len << 16) | pPacket->Flags;
-
-	    Idx = (Idx + 1) & T3_SEND_RCB_ENTRY_COUNT_MASK;
-
-	    FragCount++;
-	    if (FragCount >= pPacket->u.Tx.FragCount)
-	    {
-		pSendBd->u1.Len_Flags = Value32 | SND_BD_FLAG_END;
-		break;
-	    }
-	    else
-	    {
-		pSendBd->u1.Len_Flags = Value32;
-	    }
-	    pSendBd++;
-	    if (Idx == 0)
-	    {
-		pSendBd = &pDevice->pSendBdVirt[0];
-	    }
-	} /* for */
-
-	/* Put the packet descriptor in the ActiveQ. */
-	QQ_PushTail(&pDevice->TxPacketActiveQ.Container, pPacket);
-
-	wmb();
-	MB_REG_WR(pDevice, Mailbox.SendHostProdIdx[0].Low, Idx);
-
-    }
-
-    /* Update the producer index. */
-    pDevice->SendProdIdx = Idx;
-
-    return LM_STATUS_SUCCESS;
-}
-#endif
 
 LM_STATUS
 LM_SendPacket(PLM_DEVICE_BLOCK pDevice, PLM_PACKET pPacket)
@@ -4287,9 +4146,7 @@ PLM_DEVICE_BLOCK pDevice)
     LM_UINT32 Value32;
     LM_UINT32 j;
 
-#if 1  /* jmb: bugfix -- moved here, out of code that sets initial pwr state */
     LM_WritePhy(pDevice, BCM5401_AUX_CTRL, 0x2);
-#endif
     if((pDevice->PhyId & PHY_ID_MASK) == PHY_BCM5401_PHY_ID)
     {
 	LM_ReadPhy(pDevice, PHY_STATUS_REG, &Value32);
@@ -5362,9 +5219,6 @@ LM_POWER_STATE PowerLevel) {
 
 	REG_WR(pDevice, Grc.LocalCtrl, pDevice->GrcLocalCtrl);
 	MM_Wait (40);
-#if 0   /* Bugfix by jmb...can't call WritePhy here because pDevice not fully initialized */
-	LM_WritePhy(pDevice, BCM5401_AUX_CTRL, 0x02);
-#endif
 
 	return LM_STATUS_SUCCESS;
     }

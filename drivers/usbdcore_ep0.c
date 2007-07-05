@@ -46,11 +46,7 @@
 #if defined(CONFIG_OMAP1510) && defined(CONFIG_USB_DEVICE)
 #include "usbdcore.h"
 
-#if 0
-#define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
-#else
 #define dbg_ep0(lvl,fmt,args...)
-#endif
 
 /* EP0 Configuration Set ********************************************************************* */
 
@@ -309,24 +305,6 @@ static int ep0_get_descriptor (struct usb_device_instance *device,
 					/*        alternate_instance->classes, alternate_instance->endpoints); */
 
 					/* iterate across classes for this alternate interface */
-#if 0
-					for (class = 0;
-					     class < alternate_instance->classes;
-					     class++) {
-						struct usb_class_descriptor *class_descriptor;
-						/*dbg_ep0(3, "[%d:%d:%d] classes: %d", bNumInterface, bAlternateSetting, */
-						/*        class, alternate_instance->classes); */
-						if (!(class_descriptor = usbd_device_class_descriptor_index (device, port, index, bNumInterface, bAlternateSetting, class))) {
-							dbg_ep0 (3, "[%d] class NULL",
-								 class);
-							return -1;
-						}
-						/* copy descriptor for this class */
-						copy_config (urb, class_descriptor,
-							sizeof (struct usb_class_descriptor),
-							max);
-					}
-#endif
 
 					/* iterate across endpoints for this alternate interface */
 					interface_descriptor = alternate_instance->interface_descriptor;
@@ -376,62 +354,11 @@ static int ep0_get_descriptor (struct usb_device_instance *device,
 	case USB_DESCRIPTOR_TYPE_HID:
 		{
 			return -1;	/* unsupported at this time */
-#if 0
-			int bNumInterface =
-				le16_to_cpu (urb->device_request.wIndex);
-			int bAlternateSetting = 0;
-			int class = 0;
-			struct usb_class_descriptor *class_descriptor;
-
-			if (!(class_descriptor =
-			      usbd_device_class_descriptor_index (device,
-								  port, 0,
-								  bNumInterface,
-								  bAlternateSetting,
-								  class))
-			    || class_descriptor->descriptor.hid.bDescriptorType != USB_DT_HID) {
-				dbg_ep0 (3, "[%d] interface is not HID",
-					 bNumInterface);
-				return -1;
-			}
-			/* copy descriptor for this class */
-			copy_config (urb, class_descriptor,
-				     class_descriptor->descriptor.hid.bLength,
-				     max);
-#endif
 		}
 		break;
 	case USB_DESCRIPTOR_TYPE_REPORT:
 		{
 			return -1;	/* unsupported at this time */
-#if 0
-			int bNumInterface =
-				le16_to_cpu (urb->device_request.wIndex);
-			int bAlternateSetting = 0;
-			int class = 0;
-			struct usb_class_report_descriptor *report_descriptor;
-
-			if (!(report_descriptor =
-			      usbd_device_class_report_descriptor_index
-			      (device, port, 0, bNumInterface,
-			       bAlternateSetting, class))
-			    || report_descriptor->bDescriptorType !=
-			    USB_DT_REPORT) {
-				dbg_ep0 (3, "[%d] descriptor is not REPORT",
-					 bNumInterface);
-				return -1;
-			}
-			/* copy report descriptor for this class */
-			/*copy_config(urb, &report_descriptor->bData[0], report_descriptor->wLength, max); */
-			if (max - urb->actual_length > 0) {
-				int length =
-					MIN (report_descriptor->wLength,
-					     max - urb->actual_length);
-				memcpy (urb->buffer + urb->actual_length,
-					&report_descriptor->bData[0], length);
-				urb->actual_length += length;
-			}
-#endif
 		}
 		break;
 	default:

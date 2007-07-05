@@ -42,11 +42,7 @@
 #undef	CONFIG_8xx_CONS_SMC2
 #undef	CONFIG_8xx_CONS_NONE
 #define CONFIG_BAUDRATE		115200	/* console baudrate		*/
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	1	/* autoboot after 1 second	*/
-#endif
 
 #define CONFIG_BOARD_TYPES	1	/* support board types		*/
 
@@ -143,14 +139,10 @@
 #define CFG_DISCOVER_PHY
 #define CONFIG_MII
 
-#if 0
-#define CONFIG_ETHADDR                  00:0B:64:00:00:00 /* our OUI from IEEE */
-#endif
 #define CONFIG_KUP4K_LOGO               0x40050000  /* Address of logo bitmap */
 
 /* Define to allow the user to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
-#if 1
 /* POST support */
 
 #define CONFIG_POST		(CFG_POST_CPU	   | \
@@ -161,7 +153,6 @@
 #define CFG_CMD_POST_DIAG CFG_CMD_DIAG
 #else
 #define CFG_CMD_POST_DIAG 0
-#endif
 #endif
 
 #define CONFIG_COMMANDS	      ( CONFIG_CMD_DFL	| \
@@ -253,18 +244,12 @@
 #define CFG_ENV_SECT_SIZE	0x10000
 
 /* Address and size of Redundant Environment Sector	*/
-#if 0
-#define CFG_ENV_OFFSET_REDUND	(CFG_ENV_OFFSET+CFG_ENV_SIZE)
-#define CFG_ENV_SIZE_REDUND	(CFG_ENV_SIZE)
-#endif
 /*-----------------------------------------------------------------------
  * Hardware Information Block
  */
-#if 1
 #define CFG_HWINFO_OFFSET	0x000F0000	/* offset of HW Info block */
 #define CFG_HWINFO_SIZE		0x00000100	/* size   of HW Info block */
 #define CFG_HWINFO_MAGIC	0x4B26500D	/* 'K&P<CR>' */
-#endif
 /*-----------------------------------------------------------------------
  * Cache Configuration
  */
@@ -480,9 +465,6 @@
 
 
 #define CONFIG_AUTOBOOT_KEYED		/* use key strings to stop autoboot */
-#if 0
-#define CONFIG_AUTOBOOT_PROMPT		"Boote in %d Sekunden - stop mit \"2\"\n"
-#endif
 #define CONFIG_AUTOBOOT_STOP_STR	"." /* easy to stop for now */
 #define CONFIG_SILENT_CONSOLE	1
 

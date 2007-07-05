@@ -279,7 +279,6 @@ in_flash:
 	stw	r4, 0(r3)
 	sync
 #endif
-#if 1
 	/* make sure timer enabled in guts register too */
 	lis	r3, CFG_CCSRBAR@h
 	oris	r3,r3, 0xE
@@ -289,7 +288,6 @@ in_flash:
 	ori	r5,r5,0x5FFF
 	and	r4,r4,r5
 	stw	r4,0(r3)
-#endif
 	/*
 	 * Cache must be enabled here for stack-in-cache trick.
 	 * This means we need to enable the BATS.
@@ -306,9 +304,7 @@ in_flash:
 	bl	dcache_enable
 	sync
 
-#if 1
 	bl	icache_enable
-#endif
 
 #ifdef CFG_INIT_RAM_LOCK
 	bl	lock_ram_in_cache
@@ -1096,7 +1092,6 @@ lock_ram_in_cache:
 	dcbz	r0, r3
 	addi	r3, r3, 32
 	bdnz	1b
-#if 1
 /* Lock the data cache */
 	mfspr	r0, HID0
 	ori	r0, r0, 0x1000
@@ -1104,20 +1099,6 @@ lock_ram_in_cache:
 	mtspr	HID0, r0
 	sync
 	blr
-#endif
-#if 0
-	/* Lock the first way of the data cache */
-	mfspr	r0, LDSTCR
-	ori	r0, r0, 0x0080
-#if defined(CONFIG_ALTIVEC)
-	dssall
-#endif
-	sync
-	mtspr	LDSTCR, r0
-	sync
-	isync
-	blr
-#endif
 
 .globl unlock_ram_in_cache
 unlock_ram_in_cache:
@@ -1132,7 +1113,6 @@ unlock_ram_in_cache:
 	bdnz	1b
 	sync			/* Wait for all icbi to complete on bus */
 	isync
-#if 1
 /* Unlock the data cache and invalidate it */
 	mfspr	r0, HID0
 	li	r3,0x1000
@@ -1143,26 +1123,6 @@ unlock_ram_in_cache:
 	mtspr	HID0, r0
 	sync
 	blr
-#endif
-#if 0
-	/* Unlock the first way of the data cache */
-	mfspr	r0, LDSTCR
-	li	r3,0x0080
-	andc	r0,r0,r3
-#ifdef CONFIG_ALTIVEC
-	dssall
-#endif
-	sync
-	mtspr	LDSTCR, r0
-	sync
-	isync
-	li	r3,0x0400
-	or	r0,r0,r3
-	sync
-	mtspr	HID0, r0
-	sync
-	blr
-#endif
 #endif
 
 /* If this is a multi-cpu system then we need to handle the

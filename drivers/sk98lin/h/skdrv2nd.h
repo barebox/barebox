@@ -208,13 +208,8 @@ struct s_IOCTL {
  * define sizes of descriptor rings in bytes
  */
 
-#if 0
-#define		TX_RING_SIZE	(8*1024)
-#define		RX_RING_SIZE	(24*1024)
-#else
 #define		TX_RING_SIZE	(10 * 40)
 #define		RX_RING_SIZE	(10 * 40)
-#endif
 
 /*
  * Buffer size for ethernet packets
@@ -451,9 +446,6 @@ struct s_TxPort {
 	TXD		*pTxdRingTail;	/* Tail of Tx rings */
 	TXD		*pTxdRingPrev;	/* descriptor sent previously */
 	int		TxdRingFree;	/* # of free entrys */
-#if 0
-	spinlock_t	TxDesRingLock;	/* serialize descriptor accesses */
-#endif
 	caddr_t		HwAddr;		/* bmu registers address */
 	int		PortIndex;	/* index number of port (0 or 1) */
 };
@@ -468,9 +460,6 @@ struct s_RxPort {
 	RXD		*pRxdRingTail;	/* Tail of Rx rings */
 	RXD		*pRxdRingPrev;	/* descriptor given to BMU previously */
 	int		RxdRingFree;	/* # of free entrys */
-#if 0
-	spinlock_t	RxDesRingLock;	/* serialize descriptor accesses */
-#endif
 	int		RxFillLimit;	/* limit for buffers in ring */
 	caddr_t		HwAddr;		/* bmu registers address */
 	int		PortIndex;	/* index number of port (0 or 1) */
@@ -496,9 +485,6 @@ struct s_AC  {
 	SK_ADDR		Addr;		/* for Address module */
 	SK_CSUM		Csum;		/* for checksum module */
 	SK_RLMT		Rlmt;		/* for rlmt module */
-#if 0
-	spinlock_t	SlowPathLock;	/* Normal IRQ lock */
-#endif
 	SK_PNMI_STRUCT_DATA PnmiStruct;	/* structure to get all Pnmi-Data */
 	int			RlmtMode;	/* link check mode to set */
 	int			RlmtNets;	/* Number of nets */
@@ -507,19 +493,11 @@ struct s_AC  {
 	int		BoardLevel;	/* level of active hw init (0-2) */
 	char		DeviceStr[80];	/* adapter string from vpd */
 	SK_U32		AllocFlag;	/* flag allocation of resources */
-#if 0
-	struct pci_dev	*PciDev;	/* for access to pci config space */
-	SK_U32		PciDevId;	/* pci device id */
-#else
 	int		PciDev;
-#endif
 	struct SK_NET_DEVICE	*dev[2];	/* pointer to device struct */
 	char		Name[30];	/* driver name */
 	struct SK_NET_DEVICE	*Next;		/* link all devices (for clearing) */
 	int		RxBufSize;	/* length of receive buffers */
-#if 0
-	struct net_device_stats stats;	/* linux 'netstat -i' statistics */
-#endif
 	int		Index;		/* internal board index number */
 
 	/* adapter RAM sizes for queues of active port */

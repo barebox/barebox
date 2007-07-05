@@ -126,10 +126,6 @@
 #define CONFIG_NR_DRAM_BANKS		1
 
 /* External flash on STK1000 */
-#if 0
-#define CFG_FLASH_CFI			1
-#define CFG_FLASH_CFI_DRIVER		1
-#endif
 
 #define CFG_FLASH_BASE			0x00000000
 #define CFG_FLASH_SIZE			0x800000

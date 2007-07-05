@@ -111,9 +111,6 @@ static int do_eeprom_cmd(long ioaddr, int cmd, int cmd_len)
 		eeprom_delay(ee_addr);
 		retval = (retval << 1) | ((inw(ee_addr) & EE_DATA_READ) ? 1 : 0);
 	} while (--cmd_len >= 0);
-#if 0
-	outw(EE_ENB, ee_addr);
-#endif
 	/* Terminate the EEPROM access. */
 	outw(EE_ENB & ~EE_CS, ee_addr);
 	if (debug > 1)

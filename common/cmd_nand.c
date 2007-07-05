@@ -629,10 +629,6 @@ U_BOOT_CMD(nboot, 4, 1, do_nandboot,
 
 #if (CONFIG_COMMANDS & CFG_CMD_NAND)
 #include <linux/mtd/nand_legacy.h>
-#if 0
-#include <linux/mtd/nand_ids.h>
-#include <jffs2/jffs2.h>
-#endif
 
 #ifdef CONFIG_OMAP1510
 void archflashwp(void *archdata, int wp);

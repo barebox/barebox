@@ -69,12 +69,6 @@ open_console(void)
 	close(fd);
 	return Con;
     }
-#if 0
-    if (ioctl(fd, KDSETMODE, KD_GRAPHICS) < 0) {
-	close(fd);
-	return Con;
-    }
-#endif
     Con.fd = fd;
     return Con;
 }
@@ -85,9 +79,6 @@ close_console(console Con)
     if (Con.fd == -1)
 	return;
 
-#if 0
-    ioctl(Con.fd, KDSETMODE, KD_TEXT);
-#endif
     if (Con.vt >=0)
 	ioctl(Con.fd, VT_ACTIVATE, Con.vt);
 

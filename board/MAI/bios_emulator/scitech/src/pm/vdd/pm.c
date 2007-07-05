@@ -359,24 +359,6 @@ ulong MapPhysicalToLinear(
 {
     ulong   linear,length = limit+1;
     int     i,ppage,flags;
-#if 0
-    ppage = base >> 12;
-    *npages = (length + (base & 0xFFF) + 4095) >> 12;
-    flags = PR_FIXED | PR_STATIC;
-    if (base == 0xA0000) {
-	/* We require the linear address to be aligned to a 64Kb boundary
-	 * for mapping the banked framebuffer (so we can do efficient
-	 * carry checking for bank changes in the assembler code). The only
-	 * way to ensure this is to force the linear address to be aligned
-	 * to a 4Mb boundary.
-	 */
-	flags |= PR_4MEG;
-	}
-    if ((linear = (ulong)PageReserve(PR_SYSTEM,*npages,flags)) == (ulong)-1)
-	return 0;
-    if (!PageCommitPhys(linear >> 12,*npages,ppage,PC_INCR | PC_USER | PC_WRITEABLE))
-	return 0;
-#endif
     return linear + (base & 0xFFF);
 }
 
@@ -434,37 +416,6 @@ void * PMAPI PM_mapPhysicalAddr(
     maps[numMappings].isCached = isCached;
     numMappings++;
 
-#if 0
-    /* Finally disable caching where necessary */
-    if (!isCached && (PDB = _PM_getPDB()) != 0) {
-	int     startPDB,endPDB,iPDB,startPage,endPage,start,end,iPage;
-	ulong   pageTable,*pPageTable;
-
-	if (PDB >= 0x100000)
-	    pPDB = (ulong*)MapPhysicalToLinear(PDB,0xFFF,&npages);
-	else
-	    pPDB = (ulong*)PDB;
-	if (pPDB) {
-	    startPDB = (linear >> 22) & 0x3FF;
-	    startPage = (linear >> 12) & 0x3FF;
-	    endPDB = ((linear+limit) >> 22) & 0x3FF;
-	    endPage = ((linear+limit) >> 12) & 0x3FF;
-	    for (iPDB = startPDB; iPDB <= endPDB; iPDB++) {
-		pageTable = pPDB[iPDB] & ~0xFFF;
-		if (pageTable >= 0x100000)
-		    pPageTable = (ulong*)MapPhysicalToLinear(pageTable,0xFFF,&npages);
-		else
-		    pPageTable = (ulong*)pageTable;
-		start = (iPDB == startPDB) ? startPage : 0;
-		end = (iPDB == endPDB) ? endPage : 0x3FF;
-		for (iPage = start; iPage <= end; iPage++)
-		    pPageTable[iPage] |= 0x10;
-		PageFree((ulong)pPageTable,PR_STATIC);
-		}
-	    PageFree((ulong)pPDB,PR_STATIC);
-	    }
-	}
-#endif
     return (void*)linear;
 }
 
@@ -662,14 +613,6 @@ int PMAPI PM_int86(
 
     memset(SSToDS(&sregs), 0, sizeof(sregs));
 
-#if 0   /* do we need this?? */
-    /* Disable pass-up to our VDD handler so we directly call BIOS */
-    TRACE("SDDHELP: Entering PM_int86()\n");
-    if (disableTSRFlag) {
-	oldDisable = *disableTSRFlag;
-	*disableTSRFlag = 0;
-	}
-#endif
 
     LoadV86Registers(SSToDS(&saveRegs), in, SSToDS(&sregs));
 
@@ -686,11 +629,6 @@ int PMAPI PM_int86(
 
     ReadV86Registers(SSToDS(&saveRegs), out, SSToDS(&sregs));
 
-#if 0
-    /* Re-enable pass-up to our VDD handler if previously enabled */
-    if (disableTSRFlag)
-	*disableTSRFlag = oldDisable;
-#endif
 
     TRACE("SDDHELP: Exiting PM_int86()\n");
     return out->x.ax;
@@ -712,14 +650,6 @@ int PMAPI PM_int86x(
     ushort          oldDisable;
     ULONG       rc;
 
-#if 0
-    /* Disable pass-up to our VxD handler so we directly call BIOS */
-    TRACE("SDDHELP: Entering PM_int86x()\n");
-    if (disableTSRFlag) {
-	oldDisable = *disableTSRFlag;
-	*disableTSRFlag = 0;
-	}
-#endif
     LoadV86Registers(SSToDS(&saveRegs), in, sregs);
 
     VDHResetEventSem(hevIRet);
@@ -735,11 +665,6 @@ int PMAPI PM_int86x(
 
     ReadV86Registers(SSToDS(&saveRegs), out, sregs);
 
-#if 0
-    /* Re-enable pass-up to our VxD handler if previously enabled */
-    if (disableTSRFlag)
-	*disableTSRFlag = oldDisable;
-#endif
 
     TRACE("SDDHELP: Exiting PM_int86x()\n");
     return out->x.ax;

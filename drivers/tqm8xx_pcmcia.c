@@ -217,12 +217,6 @@ int pcmcia_hardware_enable(int slot)
 		puts (" 3.3V card found: ");
 	}
 
-#if 0
-	/*  VCC switch error flag, PCMCIA slot INPACK_ pin */
-	cp->cp_pbdir &= ~(0x0020 | 0x0010);
-	cp->cp_pbpar &= ~(0x0020 | 0x0010);
-	udelay(500000);
-#endif
 
 	udelay(1000);
 	debug ("Enable PCMCIA buffers and stop RESET\n");

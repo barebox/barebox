@@ -842,12 +842,6 @@ static int k_recv (void)
 		   If a character less than SPACE (0x20) is received - error.
 		 */
 
-#if 0
-		/* OLD CODE, Prior to checking sequence numbers */
-		/* first have all state machines save current states */
-		k_state_saved = k_state;
-		k_data_save ();
-#endif
 
 		/* get a packet */
 		/* wait for the starting character or ^C */

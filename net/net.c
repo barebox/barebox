@@ -101,9 +101,6 @@ DECLARE_GLOBAL_DATA_PTR;
 # define ARP_TIMEOUT_COUNT  (CONFIG_NET_RETRY_COUNT)
 #endif
 
-#if 0
-#define ET_DEBUG
-#endif
 
 /** BOOTP EXTENTIONS **/
 

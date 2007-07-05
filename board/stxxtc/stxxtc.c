@@ -536,19 +536,16 @@ int board_early_init_f(void)
 
 	(void)ioport;
 	(void)cpm;
-#if 1
 	/* NAND chip select */
 	upmconfig(UPMB, (uint *) nandcs_table, sizeof(nandcs_table) / sizeof(nandcs_table[0]));
 	memctl->memc_or2 = ((0xFFFFFFFFLU & ~(NAND_SIZE - 1)) | OR_BI | OR_G5LS);
 	memctl->memc_br2 = ((NAND_BASE & BR_BA_MSK) | BR_PS_8 | BR_V | BR_MS_UPMB);
 	memctl->memc_mbmr = 0;	/* all clear */
-#endif
 
 	memctl->memc_br5 &= ~BR_V;
 	memctl->memc_br6 &= ~BR_V;
 	memctl->memc_br7 &= ~BR_V;
 
-#if 1
 	ioport->iop_padat	= PA_GP_OUTVAL;
 	ioport->iop_paodr	= PA_ODR_VAL;
 	ioport->iop_padir	= PA_GP_OUTMASK | PA_SP_DIRVAL;
@@ -569,7 +566,6 @@ int board_early_init_f(void)
 	cpm->cp_peodr		= PE_ODR_VAL;
 	cpm->cp_pedir		= PE_GP_OUTMASK | PE_SP_DIRVAL;
 	cpm->cp_pepar		= PE_SP_MASK;
-#endif
 
 	return 0;
 }

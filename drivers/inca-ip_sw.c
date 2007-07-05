@@ -172,9 +172,6 @@ int inca_switch_initialize(bd_t * bis)
 {
 	struct eth_device *dev;
 
-#if 0
-	printf("Entered inca_switch_initialize()\n");
-#endif
 
 	if (!(dev = (struct eth_device *) malloc (sizeof *dev))) {
 		printf("Failed to allocate memory\n");
@@ -198,9 +195,6 @@ int inca_switch_initialize(bd_t * bis)
 
 	eth_register(dev);
 
-#if 0
-	printf("Leaving inca_switch_initialize()\n");
-#endif
 
 	return 1;
 }
@@ -212,9 +206,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 	u32 v, regValue;
 	u16 wTmp;
 
-#if 0
-	printf("Entering inca_switch_init()\n");
-#endif
 
 	/* Set MAC address.
 	 */
@@ -262,10 +253,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 		rx_desc->RxDataPtr = (u32)KSEG1ADDR(NetRxPackets[i]);
 	}
 
-#if 0
-	printf("rx_ring = 0x%08X 0x%08X\n", (u32)rx_ring, (u32)&rx_ring[0]);
-	printf("tx_ring = 0x%08X 0x%08X\n", (u32)tx_ring, (u32)&tx_ring[0]);
-#endif
 
 	for (i = 0; i < NUM_TX_DESC; i++) {
 		inca_tx_descriptor_t * tx_desc = KSEG1ADDR(&tx_ring[i]);
@@ -293,9 +280,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 	/* Initialize RxDMA.
 	 */
 	DMA_READ_REG(INCA_IP_DMA_DMA_RXISR, v);
-#if 0
-	printf("RX status = 0x%08X\n", v);
-#endif
 
 	/* Writing to the FRDA of CHANNEL.
 	 */
@@ -308,9 +292,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 	/* Initialize TxDMA.
 	 */
 	DMA_READ_REG(INCA_IP_DMA_DMA_TXISR, v);
-#if 0
-	printf("TX status = 0x%08X\n", v);
-#endif
 
 	/* Writing to the FRDA of CHANNEL.
 	 */
@@ -321,9 +302,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 	tx_hold = NUM_TX_DESC - 1;
 	rx_hold = NUM_RX_DESC - 1;
 
-#if 0
-	rx_ring[rx_hold].params.field.HOLD = 1;
-#endif
 	/* enable spanning tree forwarding, enable the CPU port */
 	/* ST_PT:
 	 *	CPS (CPU port status)	0x3 (forwarding)
@@ -332,9 +310,6 @@ static int inca_switch_init(struct eth_device *dev, bd_t * bis)
 	 */
 	SW_WRITE_REG(INCA_IP_Switch_ST_PT,0x3f);
 
-#if 0
-	printf("Leaving inca_switch_init()\n");
-#endif
 
 	return 0;
 }
@@ -348,9 +323,6 @@ static int inca_switch_send(struct eth_device *dev, volatile void *packet, int l
 	u32		       regValue;
 	inca_tx_descriptor_t * tx_desc	= KSEG1ADDR(&tx_ring[tx_new]);
 
-#if 0
-	printf("Entered inca_switch_send()\n");
-#endif
 
 	if (length <= 0) {
 		printf ("%s: bad packet size: %d\n", dev->name, length);
@@ -391,24 +363,16 @@ static int inca_switch_send(struct eth_device *dev, volatile void *packet, int l
 
 	DMA_READ_REG(INCA_IP_DMA_DMA_TXCCR0, regValue);
 	regValue |= command;
-#if 0
-	printf("regValue = 0x%x\n", regValue);
-#endif
 	DMA_WRITE_REG(INCA_IP_DMA_DMA_TXCCR0, regValue);
 
-#if 1
 	for(i = 0; KSEG1ADDR(&tx_ring[tx_hold])->C == 0; i++) {
 		if (i >= TOUT_LOOP) {
 			printf("%s: tx buffer not ready\n", dev->name);
 			goto Done;
 		}
 	}
-#endif
 	res = length;
 Done:
-#if 0
-	printf("Leaving inca_switch_send()\n");
-#endif
 	return res;
 }
 
@@ -418,9 +382,6 @@ static int inca_switch_recv(struct eth_device *dev)
 	int		       length  = 0;
 	inca_rx_descriptor_t * rx_desc;
 
-#if 0
-	printf("Entered inca_switch_recv()\n");
-#endif
 
 	for (;;) {
 		rx_desc = KSEG1ADDR(&rx_ring[rx_new]);
@@ -429,9 +390,6 @@ static int inca_switch_recv(struct eth_device *dev)
 			break;
 		}
 
-#if 0
-		rx_ring[rx_new].params.field.HOLD = 1;
-#endif
 
 		if (! rx_desc->status.field.Eop) {
 			printf("Partly received packet!!!\n");
@@ -441,26 +399,11 @@ static int inca_switch_recv(struct eth_device *dev)
 		length = rx_desc->status.field.NBT;
 		rx_desc->status.word &=
 			 ~(INCA_DMA_RX_EOP | INCA_DMA_RX_SOP | INCA_DMA_RX_C);
-#if 0
-{
-  int i;
-  for (i=0;i<length - 4;i++) {
-    if (i % 16 == 0) printf("\n%04x: ", i);
-    printf("%02X ", NetRxPackets[rx_new][i]);
-  }
-  printf("\n");
-}
-#endif
 
 		if (length) {
-#if 0
-			printf("Received %d bytes\n", length);
-#endif
 			NetReceive((void*)KSEG1ADDR(NetRxPackets[rx_new]), length - 4);
 		} else {
-#if 1
 			printf("Zero length!!!\n");
-#endif
 		}
 
 
@@ -471,9 +414,6 @@ static int inca_switch_recv(struct eth_device *dev)
 		rx_new = (rx_new + 1) % NUM_RX_DESC;
 	}
 
-#if 0
-	printf("Leaving inca_switch_recv()\n");
-#endif
 
 	return length;
 }
@@ -481,14 +421,8 @@ static int inca_switch_recv(struct eth_device *dev)
 
 static void inca_switch_halt(struct eth_device *dev)
 {
-#if 0
-	printf("Entered inca_switch_halt()\n");
-#endif
 
-#if 1
 	initialized = 0;
-#endif
-#if 1
 	/* Disable forwarding to the CPU port.
 	 */
 	SW_WRITE_REG(INCA_IP_Switch_ST_PT,0xf);
@@ -502,10 +436,6 @@ static void inca_switch_halt(struct eth_device *dev)
 	DMA_WRITE_REG(INCA_IP_DMA_DMA_TXCCR0, INCA_IP_DMA_DMA_TXCCR0_OFF);
 
 
-#endif
-#if 0
-	printf("Leaving inca_switch_halt()\n");
-#endif
 }
 
 
@@ -519,7 +449,6 @@ static void inca_init_switch_chip(void)
 	SW_WRITE_REG(INCA_IP_Switch_PC_TX_CTL, 0x00000001);
 	SW_WRITE_REG(INCA_IP_Switch_LAN_TX_CTL, 0x00000001);
 
-#if 1
 	/* init MDIO configuration:
 	 *	MDS (Poll speed):	0x01 (4ms)
 	 *	PHY_LAN_ADDR:		0x06
@@ -579,7 +508,6 @@ static void inca_init_switch_chip(void)
 	 */
 	SW_WRITE_REG(INCA_IP_Switch_MDIO_ACC, 0xc0c09000);
 
-#endif
 
 	/* Make sure the CPU port is disabled for now. We
 	 * don't want packets to get stacked for us until
@@ -650,29 +578,6 @@ static int inca_amdix(void)
 	*INCA_IP_AUTO_MDIX_LAN_PORTS_DIR    |= (1 << INCA_IP_AUTO_MDIX_LAN_GPIO_PIN_RXTX);
 	*INCA_IP_AUTO_MDIX_LAN_PORTS_ALTSEL |= (1 << INCA_IP_AUTO_MDIX_LAN_GPIO_PIN_RXTX);
 
-#if 0
-	/* Wait for signal.
-	 */
-	retries = WAIT_SIGNAL_RETRIES;
-	while (--retries) {
-		SW_WRITE_REG(INCA_IP_Switch_MDIO_ACC,
-				(0x1 << 31) |	/* RA		*/
-				(0x0 << 30) |	/* Read		*/
-				(0x6 << 21) |	/* LAN		*/
-				(17  << 16));	/* PHY_MCSR	*/
-		do {
-			SW_READ_REG(INCA_IP_Switch_MDIO_ACC, phyReg1);
-		} while (phyReg1 & (1 << 31));
-
-		if (phyReg1 & (1 << 1)) {
-			/* Signal detected */
-			break;
-		}
-	}
-
-	if (!retries)
-		goto Fail;
-#endif
 
 	/* Set MDI mode.
 	 */

@@ -44,10 +44,6 @@ int pci_shadow_rom(pci_dev_t dev, unsigned char *dest)
 	u32 class_code;
 
 	hose = pci_bus_to_hose(PCI_BUS(dev));
-#if 0
-	printf("pci_shadow_rom() asked to shadow device %x to %x\n",
-	       dev, (u32)dest);
-#endif
 	pci_read_config_word(dev, PCI_VENDOR_ID, &vendor);
 	pci_read_config_word(dev, PCI_DEVICE_ID, &device);
 	pci_read_config_dword(dev, PCI_CLASS_REVISION, &class_code);
@@ -55,10 +51,6 @@ int pci_shadow_rom(pci_dev_t dev, unsigned char *dest)
  	class_code &= 0xffffff00;
 	class_code >>= 8;
 
-#if 0
-	printf("PCI Header Vendor %04x device %04x class %06x\n",
-	       vendor, device, class_code);
-#endif
 	/* Enable the rom addess decoder */
 	pci_write_config_dword(dev, PCI_ROM_ADDRESS, PCI_ROM_ADDRESS_MASK);
 	pci_read_config_dword(dev, PCI_ROM_ADDRESS, &addr_reg);
@@ -71,13 +63,7 @@ int pci_shadow_rom(pci_dev_t dev, unsigned char *dest)
 
 	size = (~(addr_reg&PCI_ROM_ADDRESS_MASK))+1;
 
-#if 0
-	printf("ROM is %d bytes\n", size);
-#endif
 	rom_addr = pci_get_rom_window(hose, size);
-#if 0
-	printf("ROM mapped at %x \n", rom_addr);
-#endif
 	pci_write_config_dword(dev, PCI_ROM_ADDRESS,
 			       pci_phys_to_mem(dev, rom_addr)
 			       |PCI_ROM_ADDRESS_ENABLE);

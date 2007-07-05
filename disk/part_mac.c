@@ -175,10 +175,6 @@ static int part_mac_read_ddb (block_dev_desc_t *dev_desc, mac_driver_desc_t *ddb
 	}
 
 	if (ddb_p->signature != MAC_DRIVER_MAGIC) {
-#if 0
-		printf ("** Bad Signature: expected 0x%04x, got 0x%04x\n",
-			MAC_DRIVER_MAGIC, ddb_p->signature);
-#endif
 		return (-1);
 	}
 	return (0);

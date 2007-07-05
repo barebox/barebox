@@ -34,9 +34,6 @@
 
 #if (CONFIG_FPGA & CFG_FPGA_XILINX)
 
-#if 0
-#define FPGA_DEBUG
-#endif
 
 /* Define FPGA_DEBUG to get debug printf's */
 #ifdef	FPGA_DEBUG

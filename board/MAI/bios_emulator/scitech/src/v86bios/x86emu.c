@@ -297,17 +297,6 @@ getIntVect(int num)
 {
   return ((CARD32*)0)[num];
 }
-#if 0
-void
-printk(const char *fmt, ...)
-{
-    va_list argptr;
-    va_start(argptr, fmt);
-    vfprintf(stdout, fmt, argptr);
-    fflush(stdout);
-    va_end(argptr);
-}
-#endif
 
 CARD32
 getIP(void)

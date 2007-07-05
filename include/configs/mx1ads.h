@@ -47,11 +47,6 @@
 #define BOARD_LATE_INIT		1
 #define USE_920T_MMU		1
 
-#if 0
-#define CFG_MX1_GPCR		0x000003AB	/* for MX1ADS 0L44N		*/
-#define CFG_MX1_GPCR		0x000003AB	/* for MX1ADS 0L44N		*/
-#define CFG_MX1_GPCR		0x000003AB	/* for MX1ADS 0L44N		*/
-#endif
 
 /*
  * Size of malloc() pool

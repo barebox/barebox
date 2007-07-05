@@ -93,32 +93,10 @@ int scc_initialize(bd_t *bis)
 static int scc_send(struct eth_device* dev, volatile void *packet, int length)
 {
 	int i, j=0;
-#if 0
-	volatile char *in, *out;
-#endif
 
 	/* section 16.9.23.3
 	 * Wait for ready
 	 */
-#if 0
-	while (rtx->txbd[txIdx].cbd_sc & BD_ENET_TX_READY);
-	out = (char *)(rtx->txbd[txIdx].cbd_bufaddr);
-	in = packet;
-	for(i = 0; i < length; i++) {
-		*out++ = *in++;
-	}
-	rtx->txbd[txIdx].cbd_datlen = length;
-	rtx->txbd[txIdx].cbd_sc |= (BD_ENET_TX_READY | BD_ENET_TX_LAST);
-	while (rtx->txbd[txIdx].cbd_sc & BD_ENET_TX_READY) j++;
-
-#ifdef ET_DEBUG
-	printf("cycles: %d    status: %x\n", j, rtx->txbd[txIdx].cbd_sc);
-#endif
-	i = (rtx->txbd[txIdx++].cbd_sc & BD_ENET_TX_STATS) /* return only status bits */;
-
-	/* wrap around buffer index when necessary */
-	if (txIdx >= TX_BUF_CNT) txIdx = 0;
-#endif
 
 	while ((rtx->txbd[txIdx].cbd_sc & BD_ENET_TX_READY) && (j<TOUT_LOOP)) {
 		udelay (1);	/* will also trigger Wd if needed */
@@ -558,13 +536,4 @@ static void scc_halt (struct eth_device *dev)
 	immr->im_ioport.iop_pcso  &=  ~(PC_ENET_CLSN | PC_ENET_RENA);
 }
 
-#if 0
-void restart (void)
-{
-	volatile immap_t *immr = (immap_t *) CFG_IMMR;
-
-	immr->im_cpm.cp_scc[SCC_ENET].scc_gsmrl |=
-		(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-}
-#endif
 #endif	/* CFG_CMD_NET, SCC_ENET */

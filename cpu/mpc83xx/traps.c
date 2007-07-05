@@ -123,17 +123,6 @@ MachineCheckException(struct pt_regs *regs)
 	 * the PCI exception handler.
 	 */
 #ifdef CONFIG_PCI
-#if 0
-	volatile immap_t *immap  = (immap_t *)CFG_IMMR;
-#ifdef DEBUG
-	dump_pci();
-#endif
-	/* clear the error in the error status register */
-	if(immap->im_pci.pci_esr & cpu_to_le32(PCI_ERROR_PCI_NO_RSP)) {
-		immap->im_pci.pci_esr = cpu_to_le32(PCI_ERROR_PCI_NO_RSP);
-		return;
-	}
-#endif
 #endif /* CONFIG_PCI */
 	if ((fixup = search_exception_table(regs->nip)) != 0) {
 		regs->nip = fixup;
@@ -242,24 +231,5 @@ DebugException(struct pt_regs *regs)
 int
 addr_probe(uint *addr)
 {
-#if 0
-	int	retval;
-
-	__asm__ __volatile__(			\
-		"1:	lwz %0,0(%1)\n"		\
-		"	eieio\n"		\
-		"	li %0,0\n"		\
-		"2:\n"				\
-		".section .fixup,\"ax\"\n"	\
-		"3:	li %0,-1\n"		\
-		"	b 2b\n"			\
-		".section __ex_table,\"a\"\n"	\
-		"	.align 2\n"		\
-		"	.long 1b,3b\n"		\
-		".text"				\
-		: "=r" (retval) : "r"(addr));
-
-	return (retval);
-#endif
 	return 0;
 }

@@ -74,17 +74,6 @@ static void dfc_hwcontrol(struct mtd_info *mtdinfo, int cmd)
 	return;
 }
 
-#if 0
-/* read device ready pin */
-static int dfc_device_ready(struct mtd_info *mtdinfo)
-{
-	if(NDSR & NDSR_RDY)
-		return 1;
-	else
-		return 0;
-	return 0;
-}
-#endif
 
 /*
  * Write buf to the DFC Controller Data Buffer

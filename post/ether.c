@@ -152,52 +152,6 @@ CPM_CR_CH_SCC4 };
 	rtx = (RTXBD *) (immr->im_cpm.cp_dpmem + CPM_SCC_BASE);
 #endif
 
-#if 0
-
-#if (defined(PA_ENET_RXD) && defined(PA_ENET_TXD))
-	/* Configure port A pins for Txd and Rxd.
-	 */
-	immr->im_ioport.iop_papar |= (PA_ENET_RXD | PA_ENET_TXD);
-	immr->im_ioport.iop_padir &= ~(PA_ENET_RXD | PA_ENET_TXD);
-	immr->im_ioport.iop_paodr &= ~PA_ENET_TXD;
-#elif (defined(PB_ENET_RXD) && defined(PB_ENET_TXD))
-	/* Configure port B pins for Txd and Rxd.
-	 */
-	immr->im_cpm.cp_pbpar |= (PB_ENET_RXD | PB_ENET_TXD);
-	immr->im_cpm.cp_pbdir &= ~(PB_ENET_RXD | PB_ENET_TXD);
-	immr->im_cpm.cp_pbodr &= ~PB_ENET_TXD;
-#else
-#error Configuration Error: exactly ONE of PA_ENET_[RT]XD, PB_ENET_[RT]XD must be defined
-#endif
-
-#if defined(PC_ENET_LBK)
-	/* Configure port C pins to disable External Loopback
-	 */
-	immr->im_ioport.iop_pcpar &= ~PC_ENET_LBK;
-	immr->im_ioport.iop_pcdir |= PC_ENET_LBK;
-	immr->im_ioport.iop_pcso &= ~PC_ENET_LBK;
-	immr->im_ioport.iop_pcdat &= ~PC_ENET_LBK;	/* Disable Loopback */
-#endif /* PC_ENET_LBK */
-
-	/* Configure port C pins to enable CLSN and RENA.
-	 */
-	immr->im_ioport.iop_pcpar &= ~(PC_ENET_CLSN | PC_ENET_RENA);
-	immr->im_ioport.iop_pcdir &= ~(PC_ENET_CLSN | PC_ENET_RENA);
-	immr->im_ioport.iop_pcso |= (PC_ENET_CLSN | PC_ENET_RENA);
-
-	/* Configure port A for TCLK and RCLK.
-	 */
-	immr->im_ioport.iop_papar |= (PA_ENET_TCLK | PA_ENET_RCLK);
-	immr->im_ioport.iop_padir &= ~(PA_ENET_TCLK | PA_ENET_RCLK);
-
-	/*
-	 * Configure Serial Interface clock routing -- see section 16.7.5.3
-	 * First, clear all SCC bits to zero, then set the ones we want.
-	 */
-
-	immr->im_cpm.cp_sicr &= ~SICR_ENET_MASK;
-	immr->im_cpm.cp_sicr |= SICR_ENET_CLKRT;
-#else
 	/*
 	 * SCC2 receive clock is BRG2
 	 * SCC2 transmit clock is BRG3
@@ -207,7 +161,6 @@ CPM_CR_CH_SCC4 };
 
 	immr->im_cpm.cp_sicr &= ~0x00003F00;
 	immr->im_cpm.cp_sicr |=  0x00000a00;
-#endif /* 0 */
 
 
 	/*
@@ -379,48 +332,6 @@ CPM_CR_CH_SCC4 };
 	immr->im_cpm.cp_scc[scc_index].scc_psmr = SCC_PSMR_ENCRC |
 			SCC_PSMR_NIB22 | SCC_PSMR_LPB;
 
-#if 0
-	/*
-	 * Configure Ethernet TENA Signal
-	 */
-
-#if (defined(PC_ENET_TENA) && !defined(PB_ENET_TENA))
-	immr->im_ioport.iop_pcpar |= PC_ENET_TENA;
-	immr->im_ioport.iop_pcdir &= ~PC_ENET_TENA;
-#elif (defined(PB_ENET_TENA) && !defined(PC_ENET_TENA))
-	immr->im_cpm.cp_pbpar |= PB_ENET_TENA;
-	immr->im_cpm.cp_pbdir |= PB_ENET_TENA;
-#else
-#error Configuration Error: exactly ONE of PB_ENET_TENA, PC_ENET_TENA must be defined
-#endif
-
-#if defined(CONFIG_ADS) && defined(CONFIG_MPC860)
-	/*
-	 * Port C is used to control the PHY,MC68160.
-	 */
-	immr->im_ioport.iop_pcdir |=
-			(PC_ENET_ETHLOOP | PC_ENET_TPFLDL | PC_ENET_TPSQEL);
-
-	immr->im_ioport.iop_pcdat |= PC_ENET_TPFLDL;
-	immr->im_ioport.iop_pcdat &= ~(PC_ENET_ETHLOOP | PC_ENET_TPSQEL);
-	*((uint *) BCSR1) &= ~BCSR1_ETHEN;
-#endif /* MPC860ADS */
-
-#if defined(CONFIG_AMX860)
-	/*
-	 * Port B is used to control the PHY,MC68160.
-	 */
-	immr->im_cpm.cp_pbdir |=
-			(PB_ENET_ETHLOOP | PB_ENET_TPFLDL | PB_ENET_TPSQEL);
-
-	immr->im_cpm.cp_pbdat |= PB_ENET_TPFLDL;
-	immr->im_cpm.cp_pbdat &= ~(PB_ENET_ETHLOOP | PB_ENET_TPSQEL);
-
-	immr->im_ioport.iop_pddir |= PD_ENET_ETH_EN;
-	immr->im_ioport.iop_pddat &= ~PD_ENET_ETH_EN;
-#endif /* AMX860 */
-
-#endif /* 0 */
 
 #ifdef CONFIG_RPXCLASSIC
 	*((uchar *) BCSR0) &= ~BCSR0_ETHLPBK;

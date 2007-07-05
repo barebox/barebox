@@ -181,11 +181,7 @@
  * Define here the location of the environment variables (FLASH or EEPROM).
  * Note: DENX encourages to use redundant environment in FLASH.
  */
-#if 1
 #define CFG_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
-#else
-#define CFG_ENV_IS_IN_EEPROM	1	/* use EEPROM for environment vars	*/
-#endif
 
 /*-----------------------------------------------------------------------
  * FLASH related

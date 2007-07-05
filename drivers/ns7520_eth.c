@@ -42,9 +42,7 @@ do { \
 #define KERN_ERR		"Error:"
 #define KERN_INFO		"Info:"
 
-#if 1
 # define DEBUG
-#endif
 
 #ifdef	DEBUG
 # define printk			printf

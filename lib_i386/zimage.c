@@ -246,11 +246,7 @@ image_header_t *fake_zimage_header(image_header_t *hdr, void *ptr, int size)
 	if (-1 == size) {
 		size = ZIMAGE_SIZE;
 	}
-#if 0
-	checksum = crc32 (0, ptr, size);
-#else
 	checksum = 0;
-#endif
 	memset(hdr, 0, sizeof(image_header_t));
 
 	/* Build new header */

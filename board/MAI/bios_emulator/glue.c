@@ -379,10 +379,6 @@ int attempt_map_rom(pci_dev_t dev, void *copy_address)
 	    /*
 	     * Set the interrupt pin to 0
 	     */
-#if 0
-	    pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 0);
-	    pci_write_config_byte(dev, PCI_INTERRUPT_PIN, 0);
-#endif
 	    pci_write_config_byte(bridge, PCI_INTERRUPT_LINE, 0);
 	    pci_write_config_byte(bridge, PCI_INTERRUPT_PIN, 0);
 

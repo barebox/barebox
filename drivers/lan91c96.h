@@ -165,9 +165,6 @@ typedef unsigned long int 		dword;
 				__w |= ((r)&1) ? __d<<8 : __d;  \
 				SMC_outw(__w,(r)&~1);  \
 			})
-#if 0
-#define	SMC_outsw(r,b,l)	outsw(SMC_BASE_ADDRESS+(r), (b), (l))
-#else
 #define SMC_outsw(r,b,l)	({	int __i; \
 					word *__b2; \
 					__b2 = (word *) b; \
@@ -175,11 +172,7 @@ typedef unsigned long int 		dword;
 					    SMC_outw( *(__b2 + __i), r); \
 					} \
 				})
-#endif
 
-#if 0
-#define	SMC_insw(r,b,l) 	insw(SMC_BASE_ADDRESS+(r), (b), (l))
-#else
 #define SMC_insw(r,b,l) 	({	int __i ;  \
 					word *__b2;  \
 					__b2 = (word *) b;  \
@@ -188,7 +181,6 @@ typedef unsigned long int 		dword;
 					  SMC_inw(0);  \
 					};  \
 				})
-#endif
 
 #endif
 

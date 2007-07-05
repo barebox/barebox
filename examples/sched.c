@@ -90,9 +90,6 @@ static void thread_yield (void);
 static int thread_delete (int id);
 static int thread_join (int *ret);
 
-#if 0							/* not used yet */
-static int thread_stop (int id);
-#endif							/* not used yet */
 
 /* An example of schedular test */
 
@@ -301,19 +298,6 @@ static int thread_start (int id)
 	return RC_SUCCESS;
 }
 
-#if 0	/* not used so far */
-static int thread_stop (int id)
-{
-	if (id <= MASTER_THREAD || id >= MAX_THREADS)
-		return RC_FAILURE;
-
-	if (current_tid == id)
-		return RC_FAILURE;
-
-	lthreads[id].state = STATE_STOPPED;
-	return RC_SUCCESS;
-}
-#endif	/* not used so far */
 
 static int thread_join (int *ret)
 {

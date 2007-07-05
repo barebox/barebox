@@ -672,9 +672,6 @@ read_bootsectandvi(boot_sector *bs, volume_info *volinfo, int *fatsize)
 	bs->fat_length	= FAT2CPU16(bs->fat_length);
 	bs->secs_track	= FAT2CPU16(bs->secs_track);
 	bs->heads	= FAT2CPU16(bs->heads);
-#if 0 /* UNUSED */
-	bs->hidden	= FAT2CPU32(bs->hidden);
-#endif
 	bs->total_sect	= FAT2CPU32(bs->total_sect);
 
 	/* FAT32 entries */

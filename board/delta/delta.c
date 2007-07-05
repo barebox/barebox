@@ -219,9 +219,6 @@ static uchar *key_match (uchar *kbd_data)
 	 */
 	for (suffix=(uchar *)kbd_magic_keys; *suffix || suffix==(uchar *)kbd_magic_keys; ++suffix) {
 		sprintf (magic, "%s%c", kbd_magic_prefix, *suffix);
-#if 0
-		printf ("### Check magic \"%s\"\n", magic);
-#endif
 		if (compare_magic(kbd_data, (uchar *)getenv(magic)) == 0) {
 			char cmd_name[sizeof (kbd_command_prefix) + 1];
 			char *cmd;
@@ -229,17 +226,10 @@ static uchar *key_match (uchar *kbd_data)
 			sprintf (cmd_name, "%s%c", kbd_command_prefix, *suffix);
 
 			cmd = getenv (cmd_name);
-#if 0
-			printf ("### Set PREBOOT to $(%s): \"%s\"\n",
-				cmd_name, cmd ? cmd : "<<NULL>>");
-#endif
 			*kbd_data = *suffix;
 			return ((uchar *)cmd);
 		}
 	}
-#if 0
-	printf ("### Delete PREBOOT\n");
-#endif
 	*kbd_data = '\0';
 	return (NULL);
 }
@@ -352,13 +342,3 @@ static void init_DA9030()
 }
 
 
-#if 0
-/* reset the DA9030 watchdog */
-void hw_watchdog_reset(void)
-{
-	uchar addr = (uchar) DA9030_I2C_ADDR, val = 0;
-	val = i2c_reg_read(addr, SYS_CONTROL_A);
-	val |= SYS_CONTROL_A_WATCHDOG;
-	i2c_reg_write(addr, SYS_CONTROL_A, val);
-}
-#endif

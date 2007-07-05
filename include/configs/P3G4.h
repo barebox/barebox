@@ -73,11 +73,7 @@
 
 #undef CONFIG_ETHER_PORT_MII	/* use RMII */
 
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 
 #define CONFIG_PREBOOT	"echo;"	\
@@ -216,43 +212,25 @@
 #define CFG_16BIT_BOOT_PAR	0xc01b5e7c
 #define CFG_DEV0_PAR		CFG_16BIT_BOOT_PAR
 
-#if 0 /* Wrong?? NTL */
-#define CFG_MPP_CONTROL_0	0x53541717	/* InitAct EOT[4] DBurst TCEn[1] */
-						/* DMAAck[1:0] GNT0[1:0] */
-#else
 #define CFG_MPP_CONTROL_0	0x53547777	/* InitAct EOT[4] DBurst TCEn[1] */
 						/* REQ0[1:0] GNT0[1:0] */
-#endif
 #define CFG_MPP_CONTROL_1	0x44009911	/* TCEn[4] TCTcnt[4] GPP[13:12] */
 						/* DMAReq[4] DMAAck[4] WDNMI WDE */
-#if 0 /* Wrong?? NTL */
-#define CFG_MPP_CONTROL_2	0x40091818	/* TCTcnt[0] GPP[22:21] BClkIn */
-						/* DMAAck[1:0] GNT1[1:0] */
-#else
 #define CFG_MPP_CONTROL_2	0x40098888	/* TCTcnt[0] */
 						/* GPP[22] (RS232IntB or PCI1Int) */
 						/* GPP[21] (RS323IntA) */
 						/* BClkIn */
 						/* REQ1[1:0] GNT1[1:0] */
-#endif
 
-#if 0 /* Wrong?? NTL */
-# define CFG_MPP_CONTROL_3	0x00090066	/* GPP[31:29] BClkOut0 */
-						/* GPP[27:26] Int[1:0] */
-#else
 # define CFG_MPP_CONTROL_3	0x22090066      /* MREQ MGNT */
 						/* GPP[29]    (PCI1Int) */
 						/* BClkOut0 */
 						/* GPP[27]    (PCI0Int) */
 						/* GPP[26]    (RtcInt or PCI1Int) */
 						/* CPUInt[25:24] */
-#endif
 
 #define CFG_SERIAL_PORT_MUX	0x00001102	/* 11=MPSC1/MPSC0 02=ETH 0 and 2 RMII */
 
-#if 0 /* Wrong?? - NTL */
-# define CFG_GPP_LEVEL_CONTROL	0x000002c6
-#else
 # define CFG_GPP_LEVEL_CONTROL	0x2c600000	/* 0010 1100 0110 0000 */
 						/* gpp[29] */
 						/* gpp[27:26] */
@@ -273,18 +251,9 @@
 				   virtual interleaving enable */
 				/* 15 14 13:0 */
 				/* 1  0  0x200 */
-#endif
 
-#if 0
-#define CFG_DUART_IO		CFG_DEV2_SPACE
-#define CFG_DUART_CHAN		1		/* channel to use for console */
-#endif
 #undef CFG_INIT_CHAN1
 #undef CFG_INIT_CHAN2
-#if 0
-#define SRAM_BASE		CFG_DEV0_SPACE
-#define SRAM_SIZE		0x00100000		/* 1 MB of sram */
-#endif
 
 
 /*-----------------------------------------------------------------------

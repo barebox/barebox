@@ -212,17 +212,6 @@ typedef enum {
 /* Keep gcc happy */
 struct nand_chip;
 
-#if 0
-/**
- * struct nand_hw_control - Control structure for hardware controller (e.g ECC generator) shared among independend devices
- * @lock:		protection lock
- * @active:		the mtd device which holds the controller currently
- */
-struct nand_hw_control {
-	spinlock_t	 lock;
-	struct nand_chip *active;
-};
-#endif
 
 /**
  * struct nand_chip - NAND Private Flash Chip Data
@@ -311,11 +300,6 @@ struct nand_chip {
 	int		eccbytes;
 	int		eccsteps;
 	int		chip_delay;
-#if 0
-	spinlock_t	chip_lock;
-	wait_queue_head_t wq;
-	nand_state_t	state;
-#endif
 	int		page_shift;
 	int		phys_erase_shift;
 	int		bbt_erase_shift;

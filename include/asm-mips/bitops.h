@@ -776,17 +776,6 @@ found_middle:
  * holds on the Sparc as it does for the ALPHA.
  */
 
-#if 0 /* Fool kernel-doc since it doesn't do macros yet */
-/*
- * find_first_zero_bit - find the first zero bit in a memory region
- * @addr: The address to start the search at
- * @size: The maximum size to search
- *
- * Returns the bit-number of the first zero bit, not the number of the byte
- * containing a bit.
- */
-extern int find_first_zero_bit (void *addr, unsigned size);
-#endif
 
 #define find_first_zero_bit(addr, size) \
 	find_next_zero_bit((addr), (size), 0)

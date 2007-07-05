@@ -44,21 +44,11 @@
 #define UDC_MAX_ENDPOINTS	     31 /* Number of endpoints on this UDC */
 
 /* Some kind of debugging output... */
-#if 1
 #define UDCDBG(str)
 #define UDCDBGA(fmt,args...)
-#else  /* The bugs still exists... */
-#define UDCDBG(str) serial_printf("[%s] %s:%d: " str "\n", __FILE__,__FUNCTION__,__LINE__)
-#define UDCDBGA(fmt,args...) serial_printf("[%s] %s:%d: " fmt "\n", __FILE__,__FUNCTION__,__LINE__, ##args)
-#endif
 
-#if 1
 #define UDCREG(name)
 #define UDCREGL(name)
-#else  /* The bugs still exists... */
-#define UDCREG(name)	 serial_printf("%s():%d: %s[%08x]=%.4x\n",__FUNCTION__,__LINE__, (#name), name, inw(name))	/* For 16-bit regs */
-#define UDCREGL(name)	 serial_printf("%s():%d: %s[%08x]=%.8x\n",__FUNCTION__,__LINE__, (#name), name, inl(name))	/* For 32-bit regs */
-#endif
 
 
 static struct urb *ep0_urb = NULL;
@@ -689,20 +679,10 @@ static void omap1510_udc_setup (struct usb_endpoint_instance *endpoint)
 			 * so we'll just stall it.  It seems like the API isn't
 			 * quite right here.
 			 */
-#if 0
-			/* Here is what we would do if we did support control
-			 * write data stages.
-			 */
-			ep0_urb->actual_length = 0;
-			outw (0, UDC_EP_NUM);
-			/* enable the EP0 rx FIFO */
-			outw (UDC_Set_FIFO_En, UDC_CTRL);
-#else
 			/* Stall this request */
 			UDCDBG ("Stalling unsupported EP0 control write data "
 				"stage.");
 			udc_stall_ep (0);
-#endif
 		} else {
 			omap1510_prepare_for_control_write_status (ep0_urb);
 		}
@@ -1215,46 +1195,6 @@ static void udc_stall_ep (unsigned int ep_addr)
 }
 
 /* Reset endpoint */
-#if 0
-static void udc_reset_ep (unsigned int ep_addr)
-{
-	/*int ep_addr = PHYS_EP_TO_EP_ADDR(ep); */
-	int ep_num = ep_addr & USB_ENDPOINT_NUMBER_MASK;
-
-	UDCDBGA ("reset ep_addr %d", ep_addr);
-
-	if (!ep_num) {
-		/* control endpoint 0 can't be reset */
-	} else if ((ep_addr & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT) {
-		UDCDBGA ("UDC_EP_RX(%d) = 0x%04x", ep_num,
-			 inw (UDC_EP_RX (ep_num)));
-		if (inw (UDC_EP_RX (ep_num)) & UDC_EPn_RX_Valid) {
-			/* we have a valid rx endpoint, so reset it */
-			outw (ep_num | UDC_EP_Sel, UDC_EP_NUM);
-			outw (UDC_Reset_EP, UDC_CTRL);
-			outw (ep_num, UDC_EP_NUM);
-			UDCDBGA ("OUT endpoint %d reset", ep_num);
-		}
-	} else {
-		UDCDBGA ("UDC_EP_TX(%d) = 0x%04x", ep_num,
-			 inw (UDC_EP_TX (ep_num)));
-		/* Resetting of tx endpoints seems to be causing the USB function
-		 * module to fail, which causes problems when the driver is
-		 * uninstalled.	 We'll skip resetting tx endpoints for now until
-		 * we figure out what the problem is.
-		 */
-#if 0
-		if (inw (UDC_EP_TX (ep_num)) & UDC_EPn_TX_Valid) {
-			/* we have a valid tx endpoint, so reset it */
-			outw (ep_num | UDC_EP_Dir | UDC_EP_Sel, UDC_EP_NUM);
-			outw (UDC_Reset_EP, UDC_CTRL);
-			outw (ep_num | UDC_EP_Dir, UDC_EP_NUM);
-			UDCDBGA ("IN endpoint %d reset", ep_num);
-		}
-#endif
-	}
-}
-#endif
 
 /* ************************************************************************** */
 
@@ -1263,30 +1203,6 @@ static void udc_reset_ep (unsigned int ep_addr)
   *
  * Return physical endpoint number to use for this logical endpoint or zero if not valid.
  */
-#if 0
-int udc_check_ep (int logical_endpoint, int packetsize)
-{
-	if ((logical_endpoint == 0x80) ||
-	    ((logical_endpoint & 0x8f) != logical_endpoint)) {
-		return 0;
-	}
-
-	switch (packetsize) {
-	case 8:
-	case 16:
-	case 32:
-	case 64:
-	case 128:
-	case 256:
-	case 512:
-		break;
-	default:
-		return 0;
-	}
-
-	return EP_ADDR_TO_PHYS_EP (logical_endpoint);
-}
-#endif
 
 /*
  * udc_setup_ep - setup endpoint
@@ -1343,32 +1259,6 @@ void udc_setup_ep (struct usb_device_instance *device,
  *
  * Disable specified endpoint
  */
-#if 0
-void udc_disable_ep (unsigned int ep_addr)
-{
-	/*int ep_addr = PHYS_EP_TO_EP_ADDR(ep); */
-	int ep_num = ep_addr & USB_ENDPOINT_NUMBER_MASK;
-	struct usb_endpoint_instance *endpoint = omap1510_find_ep (ep_addr);	/*udc_device->bus->endpoint_array + ep; */
-
-	UDCDBGA ("disable ep_addr %d", ep_addr);
-
-	if (!ep_num) {
-		/* nothing to do for endpoint 0 */ ;
-	} else if ((ep_addr & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN) {
-		if (endpoint->tx_packetSize) {
-			/* we have a valid tx endpoint */
-			/*usbd_flush_tx(endpoint); */
-			endpoint->tx_urb = NULL;
-		}
-	} else {
-		if (endpoint->rcv_packetSize) {
-			/* we have a valid rx endpoint */
-			/*usbd_flush_rcv(endpoint); */
-			endpoint->rcv_urb = NULL;
-		}
-	}
-}
-#endif
 
 /* ************************************************************************** */
 
@@ -1377,12 +1267,6 @@ void udc_disable_ep (unsigned int ep_addr)
  *
  * Return non-zero if cable is connected.
  */
-#if 0
-int udc_connected (void)
-{
-	return ((inw (UDC_DEVSTAT) & UDC_ATT) == UDC_ATT);
-}
-#endif
 
 /* Turn on the USB connection by enabling the pullup resistor */
 void udc_connect (void)
@@ -1405,25 +1289,12 @@ void udc_disconnect (void)
  * udc_disable_interrupts - disable interrupts
  * switch off interrupts
  */
-#if 0
-void udc_disable_interrupts (struct usb_device_instance *device)
-{
-	UDCDBG ("disabling all interrupts");
-	outw (0, UDC_IRQ_EN);
-}
-#endif
 
 /* ************************************************************************** */
 
 /**
  * udc_ep0_packetsize - return ep0 packetsize
  */
-#if 0
-int udc_ep0_packetsize (void)
-{
-	return EP0_PACKETSIZE;
-}
-#endif
 
 /* Switch on the UDC */
 void udc_enable (struct usb_device_instance *device)

@@ -741,18 +741,6 @@ putpkt_binary (buf, cnt)
 	  break;		/* Here to retransmit */
 	}
 
-#if 0
-      /* This is wrong.  If doing a long backtrace, the user should be
-	 able to get out next time we call QUIT, without anything as
-	 violent as interrupt_query.  If we want to provide a way out of
-	 here without getting to the next QUIT, it should be based on
-	 hitting ^C twice as in remote_wait.  */
-      if (quit_flag)
-	{
-	  quit_flag = 0;
-	  interrupt_query ();
-	}
-#endif
     }
 }
 

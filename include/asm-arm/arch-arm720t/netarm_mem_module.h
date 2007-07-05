@@ -88,15 +88,6 @@
 					 (((((NETARM_XTAL_FREQ/(1000))*p)/(20000) \
 					    ) - (1) ) << (24)))
 
-#if 0
-/* range on this period is about 1 to 275 usec (with 18.432MHz clock) */
-/* the expression will round down, so make sure to reverse it toverify */
-/* it is what you want. period = [( count + 1 ) * 4] / Fxtal          */
-
-#define	NETARM_MEM_REFR_PERIOD_USEC(p)	(NETARM_MEM_CFG_REFR_COUNT_MASK & \
-					 (((((NETARM_XTAL_FREQ/(1000))*p)/(4000) \
-					    ) - (1) ) << (24)))
-#endif
 
 /* Base Address Registers (0xFFC0_00X0) */
 

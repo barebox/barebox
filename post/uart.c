@@ -231,20 +231,13 @@ static void smc_putc (int smc_index, const char c)
 	 */
 
 	buf = (char *) tbdf->cbd_bufaddr;
-#if 0
-	__asm__ ("eieio");
-	while (tbdf->cbd_sc & BD_SC_READY)
-		__asm__ ("eieio");
-#endif
 
 	*buf = c;
 	tbdf->cbd_datlen = 1;
 	tbdf->cbd_sc |= BD_SC_READY;
 	__asm__ ("eieio");
-#if 1
 	while (tbdf->cbd_sc & BD_SC_READY)
 		__asm__ ("eieio");
-#endif
 }
 
 static int smc_getc (int smc_index)
@@ -264,9 +257,6 @@ static int smc_getc (int smc_index)
 	/* Wait for character to show up.
 	 */
 	buf = (unsigned char *) rbdf->cbd_bufaddr;
-#if 0
-	while (rbdf->cbd_sc & BD_SC_EMPTY);
-#else
 	for (i = 100; i > 0; i--) {
 		if (!(rbdf->cbd_sc & BD_SC_EMPTY))
 			break;
@@ -275,7 +265,6 @@ static int smc_getc (int smc_index)
 
 	if (i == 0)
 		return -1;
-#endif
 	c = *buf;
 	rbdf->cbd_sc |= BD_SC_EMPTY;
 
@@ -445,20 +434,13 @@ static void scc_putc (int scc_index, const char c)
 	 */
 
 	buf = (char *) tbdf->cbd_bufaddr;
-#if 0
-	__asm__ ("eieio");
-	while (tbdf->cbd_sc & BD_SC_READY)
-		__asm__ ("eieio");
-#endif
 
 	*buf = c;
 	tbdf->cbd_datlen = 1;
 	tbdf->cbd_sc |= BD_SC_READY;
 	__asm__ ("eieio");
-#if 1
 	while (tbdf->cbd_sc & BD_SC_READY)
 		__asm__ ("eieio");
-#endif
 }
 
 static int scc_getc (int scc_index)
@@ -478,9 +460,6 @@ static int scc_getc (int scc_index)
 	/* Wait for character to show up.
 	 */
 	buf = (unsigned char *) rbdf->cbd_bufaddr;
-#if 0
-	while (rbdf->cbd_sc & BD_SC_EMPTY);
-#else
 	for (i = 100; i > 0; i--) {
 		if (!(rbdf->cbd_sc & BD_SC_EMPTY))
 			break;
@@ -489,7 +468,6 @@ static int scc_getc (int scc_index)
 
 	if (i == 0)
 		return -1;
-#endif
 	c = *buf;
 	rbdf->cbd_sc |= BD_SC_EMPTY;
 

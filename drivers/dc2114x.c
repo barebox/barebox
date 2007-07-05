@@ -416,10 +416,6 @@ static int dc21x4x_send(struct eth_device* dev, volatile void *packet, int lengt
 	}
 
 	if (le32_to_cpu(tx_ring[tx_new].status) & TD_ES) {
-#if 0 /* test-only */
-		printf("TX error status = 0x%08X\n",
-			le32_to_cpu(tx_ring[tx_new].status));
-#endif
 		tx_ring[tx_new].status = 0x0;
 		goto Done;
 	}

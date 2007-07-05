@@ -620,10 +620,6 @@ eth_send(volatile void *packet, int length)
 
     /* Link down, return */
     while(pDevice->LinkStatus == LM_STATUS_LINK_DOWN) {
-#if 0
-	printf("eth%d: link down - check cable or link partner.\n",
-	       pUmDevice->index);
-#endif
 	eth_isr();
 
 	/* Wait to see link for one-half a second before sending ... */
@@ -1218,9 +1214,6 @@ MM_IndicateStatus(PLM_DEVICE_BLOCK pDevice, LM_STATUS Status)
 	strcat(buf,"\n");
 	printf("%s",buf);
     }
-#if 0
-    sysLedDsply(lcd[0],lcd[1],lcd[2],lcd[3]);
-#endif
     return LM_STATUS_SUCCESS;
 }
 

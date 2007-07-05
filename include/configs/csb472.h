@@ -45,32 +45,17 @@
  *
  */
 
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled */
-#else
 #define CONFIG_BOOTDELAY	3	/* autoboot after X seconds	*/
-#endif
 
 #define CONFIG_ZERO_BOOTDELAY_CHECK	/* check keypress when bootdelay = 0 */
 
-#if 1
 #undef  CONFIG_BOOTARGS
 #define CONFIG_BOOTCOMMAND \
 	"setenv bootargs console=ttyS0,38400 debug " \
 	"root=/dev/ram rw ramdisk_size=4096 " \
 	"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}::off; " \
 	"bootm ff800000 ff900000"
-#endif
 
-#if 0
-#undef	CONFIG_BOOTARGS
-#define CONFIG_BOOTCOMMAND \
-	"bootp; " \
-	"setenv bootargs console=ttyS0,38400 debug " \
-	"root=/dev/nfs rw nfsroot=${serverip}:${rootpath} " \
-	"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}::off; " \
-	"bootm"
-#endif
 
 /*
  * BOOTP/DHCP protocol configuration

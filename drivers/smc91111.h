@@ -205,9 +205,6 @@ typedef unsigned long int 		dword;
 				__w |= ((r)&1) ? __d<<8 : __d;  \
 				SMC_outw(__w,(r)&~1);  \
 			})
-#if 0
-#define	SMC_outsw(r,b,l)	outsw(SMC_BASE_ADDRESS+(r), (b), (l))
-#else
 #define SMC_outsw(r,b,l)	({	int __i; \
 					word *__b2; \
 					__b2 = (word *) b; \
@@ -215,11 +212,7 @@ typedef unsigned long int 		dword;
 					    SMC_outw( *(__b2 + __i), r); \
 					} \
 				})
-#endif
 
-#if 0
-#define	SMC_insw(r,b,l) 	insw(SMC_BASE_ADDRESS+(r), (b), (l))
-#else
 #define SMC_insw(r,b,l) 	({	int __i ;  \
 					word *__b2;  \
 			    		__b2 = (word *) b;  \
@@ -228,7 +221,6 @@ typedef unsigned long int 		dword;
 					  SMC_inw(0);  \
 					};  \
 				})
-#endif
 
 #endif  /* CONFIG_SMC_USE_IOFUNCS */
 
@@ -545,19 +537,6 @@ typedef unsigned long int 		dword;
 #define CHIP_91100FD	8
 #define CHIP_91111FD	9
 
-#if 0
-static const char * chip_ids[ 15 ] =  {
-	NULL, NULL, NULL,
-	/* 3 */ "SMC91C90/91C92",
-	/* 4 */ "SMC91C94",
-	/* 5 */ "SMC91C95",
-	/* 6 */ "SMC91C96",
-	/* 7 */ "SMC91C100",
-	/* 8 */ "SMC91C100FD",
-	/* 9 */ "SMC91C111",
-	NULL, NULL,
-	NULL, NULL, NULL};
-#endif
 
 /*
  . Transmit status bits

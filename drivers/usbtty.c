@@ -26,17 +26,9 @@
 #include <devices.h>
 #include "usbtty.h"
 
-#if 0
-#define TTYDBG(fmt,args...) serial_printf("[%s] %s %d: "fmt, __FILE__,__FUNCTION__,__LINE__,##args)
-#else
 #define TTYDBG(fmt,args...) do{}while(0)
-#endif
 
-#if 0
-#define TTYERR(fmt,args...) serial_printf("ERROR![%s] %s %d: "fmt, __FILE__,__FUNCTION__,__LINE__,##args)
-#else
 #define TTYERR(fmt,args...) do{}while(0)
-#endif
 
 /*
  * Buffers to hold input and output data

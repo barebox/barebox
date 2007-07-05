@@ -1302,29 +1302,6 @@ int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		}
 	}
 
-#if 0
-	/* we got an Root Hub Status Change interrupt */
-	if (got_rhsc) {
-#ifdef DEBUG
-		ohci_dump_roothub (&gohci, 1);
-#endif
-		got_rhsc = 0;
-		/* abuse timeout */
-		timeout = rh_check_port_status(&gohci);
-		if (timeout >= 0) {
-#if 0 /* this does nothing useful, but leave it here in case that changes */
-			/* the called routine adds 1 to the passed value */
-			usb_hub_port_connect_change(gohci.rh.dev, timeout - 1);
-#endif
-			/*
-			 * XXX
-			 * This is potentially dangerous because it assumes
-			 * that only one device is ever plugged in!
-			 */
-			devgone = dev;
-		}
-	}
-#endif
 
 	dev->status = stat;
 	dev->act_len = transfer_len;

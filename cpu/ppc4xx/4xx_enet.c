@@ -776,10 +776,6 @@ static int ppc_4xx_eth_init (struct eth_device *dev, bd_t * bis)
 		if ((NUM_TX_BUFF - 1) == i)
 			hw_p->tx[i].ctrl |= MAL_TX_CTRL_WRAP;
 		hw_p->tx_run[i] = -1;
-#if 0
-		printf ("TX_BUFF %d @ 0x%08lx\n", i,
-			(ulong) hw_p->tx[i].data_ptr);
-#endif
 	}
 
 	for (i = 0; i < NUM_RX_BUFF; i++) {
@@ -791,9 +787,6 @@ static int ppc_4xx_eth_init (struct eth_device *dev, bd_t * bis)
 			hw_p->rx[i].ctrl |= MAL_RX_CTRL_WRAP;
 		hw_p->rx[i].ctrl |= MAL_RX_CTRL_EMPTY | MAL_RX_CTRL_INTR;
 		hw_p->rx_ready[i] = -1;
-#if 0
-		printf ("RX_BUFF %d @ 0x%08lx\n", i, (ulong) hw_p->rx[i].data_ptr);
-#endif
 	}
 
 	reg = 0x00000000;

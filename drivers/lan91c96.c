@@ -139,9 +139,6 @@ extern int eth_init (bd_t * bd);
 extern void eth_halt (void);
 extern int eth_rx (void);
 extern int eth_send (volatile void *packet, int length);
-#if 0
-static int smc_hw_init (void);
-#endif
 
 /*
  * This is called by  register_netdev().  It is responsible for
@@ -213,24 +210,6 @@ void smc_set_mac_addr (const unsigned char *addr)
  * mac address, call smc_get_mac_addr as a part of the board initialisation.
  */
 
-#if 0
-void smc_get_macaddr (byte * addr)
-{
-	/* MAC ADDRESS AT FLASHBLOCK 1 / OFFSET 0x10 */
-	unsigned char *dnp1110_mac = (unsigned char *) (0xE8000000 + 0x20010);
-	int i;
-
-
-	for (i = 0; i < 6; i++) {
-		addr[0] = *(dnp1110_mac + 0);
-		addr[1] = *(dnp1110_mac + 1);
-		addr[2] = *(dnp1110_mac + 2);
-		addr[3] = *(dnp1110_mac + 3);
-		addr[4] = *(dnp1110_mac + 4);
-		addr[5] = *(dnp1110_mac + 5);
-	}
-}
-#endif /* 0 */
 
 /***********************************************
  * Show available memory                       *
@@ -764,37 +743,6 @@ static int smc_close ()
 #if SMC_DEBUG > 2
 static void print_packet (byte * buf, int length)
 {
-#if 0
-	int i;
-	int remainder;
-	int lines;
-
-	printf ("Packet of length %d \n", length);
-
-	lines = length / 16;
-	remainder = length % 16;
-
-	for (i = 0; i < lines; i++) {
-		int cur;
-
-		for (cur = 0; cur < 8; cur++) {
-			byte a, b;
-
-			a = *(buf++);
-			b = *(buf++);
-			printf ("%02x%02x ", a, b);
-		}
-		printf ("\n");
-	}
-	for (i = 0; i < remainder / 2; i++) {
-		byte a, b;
-
-		a = *(buf++);
-		b = *(buf++);
-		printf ("%02x%02x ", a, b);
-	}
-	printf ("\n");
-#endif /* 0 */
 }
 #endif /* SMC_DEBUG > 2 */
 
@@ -819,51 +767,6 @@ int eth_send (volatile void *packet, int length)
 }
 
 
-#if 0
-/*-------------------------------------------------------------------------
- * smc_hw_init()
- *
- *   Function:
- *      Reset and enable the device, check if the I/O space location
- *      is correct
- *
- *   Input parameters:
- *      None
- *
- *   Output:
- *	0 --> success
- *	1 --> error
- *--------------------------------------------------------------------------
- */
-static int smc_hw_init ()
-{
-	unsigned short status_test;
-
-	/* The attribute register of the LAN91C96 is located at address
-	   0x0e000000 on the lubbock platform */
-	volatile unsigned *attaddr = (unsigned *) (0x0e000000);
-
-	/* first reset, then enable the device. Sequence is critical */
-	attaddr[LAN91C96_ECOR] |= LAN91C96_ECOR_SRESET;
-	udelay (100);
-	attaddr[LAN91C96_ECOR] &= ~LAN91C96_ECOR_SRESET;
-	attaddr[LAN91C96_ECOR] |= LAN91C96_ECOR_ENABLE;
-
-	/* force 16-bit mode */
-	attaddr[LAN91C96_ECSR] &= ~LAN91C96_ECSR_IOIS8;
-	udelay (100);
-
-	/* check if the I/O address is correct, the upper byte of the
-	   bank select register should read 0x33 */
-
-	status_test = SMC_inw (LAN91C96_BANK_SELECT);
-	if ((status_test & 0xFF00) != 0x3300) {
-		printf ("Failed to initialize ethernetchip\n");
-		return 1;
-	}
-	return 0;
-}
-#endif /* 0 */
 
 #endif /* COMMANDS & CFG_NET */
 

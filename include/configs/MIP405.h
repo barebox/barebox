@@ -276,13 +276,6 @@
 /*-----------------------------------------------------------------------
  * POST Configuration
  */
-#if 0 /* enable this if POST is desired (is supported but not enabled) */
-#define CONFIG_POST		(CFG_POST_MEMORY	| \
-				 CFG_POST_CPU 		| \
-				 CFG_POST_RTC 		| \
-				 CFG_POST_I2C)
-
-#endif
 /*
  * Init Memory Controller:
  */

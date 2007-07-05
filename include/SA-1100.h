@@ -590,11 +590,6 @@ typedef PCMCIAPrtType	PCMCIAType [PCMCIASp/PCMCIAPrtSp] ;
 #define UTCR4_Z1_6us	(UTCR4_LPM*1)	/*  Zero pulse = 1.6 us            */
 
 #define UTDR_DATA	Fld (8, 0)	/* receive/transmit DATA FIFOs     */
-#if 0           	        	/* Hidden receive FIFO bits        */
-#define UTDR_PRE	0x00000100	/*  receive PaRity Error (read)    */
-#define UTDR_FRE	0x00000200	/*  receive FRaming Error (read)   */
-#define UTDR_ROR	0x00000400	/*  Receive FIFO Over-Run (read)   */
-#endif /* 0 */
 
 #define UTSR0_TFS	0x00000001	/* Transmit FIFO 1/2-full or less  */
 					/* Service request (read)          */
@@ -728,11 +723,6 @@ typedef PCMCIAPrtType	PCMCIAType [PCMCIASp/PCMCIAPrtSp] ;
 					/*  Tsd = 16*Ceil (Div/16)*Txtl    */
 
 #define SDDR_DATA	Fld (8, 0)	/* receive/transmit DATA FIFOs     */
-#if 0           	        	/* Hidden receive FIFO bits        */
-#define SDDR_EOF	0x00000100	/*  receive End-Of-Frame (read)    */
-#define SDDR_CRE	0x00000200	/*  receive CRC Error (read)       */
-#define SDDR_ROR	0x00000400	/*  Receive FIFO Over-Run (read)   */
-#endif /* 0 */
 
 #define SDSR0_EIF	0x00000001	/* Error In FIFO (read)            */
 #define SDSR0_TUR	0x00000002	/* Transmit FIFO Under-Run         */
@@ -813,11 +803,6 @@ typedef PCMCIAPrtType	PCMCIAType [PCMCIASp/PCMCIAPrtSp] ;
 #define HSCR1_AMV	Fld (8, 0)	/* Address Match Value             */
 
 #define HSDR_DATA	Fld (8, 0)	/* receive/transmit DATA FIFOs     */
-#if 0           	        	/* Hidden receive FIFO bits        */
-#define HSDR_EOF	0x00000100	/*  receive End-Of-Frame (read)    */
-#define HSDR_CRE	0x00000200	/*  receive CRC Error (read)       */
-#define HSDR_ROR	0x00000400	/*  Receive FIFO Over-Run (read)   */
-#endif /* 0 */
 
 #define HSSR0_EIF	0x00000001	/* Error In FIFO (read)            */
 #define HSSR0_TUR	0x00000002	/* Transmit FIFO Under-Run         */

@@ -806,14 +806,6 @@ reiserfs_dir (char *dirname)
 	  filemax = stat_data_v1(INFO->current_ih) ?
 		      sd_v1_size((struct stat_data_v1 *) INFO->current_item) :
 		      sd_v2_size((struct stat_data *) INFO->current_item);
-#if 0
-	  /* If this is a new stat data and size is > 4GB set filemax to
-	   * maximum
-	   */
-	  if (__le16_to_cpu(INFO->current_ih->ih_version) == ITEM_VERSION_2
-	      && sd_size_hi((struct stat_data *) INFO->current_item) > 0)
-	    filemax = 0xffffffff;
-#endif
 	  INFO->fileinfo.k_dir_id = dir_id;
 	  INFO->fileinfo.k_objectid = objectid;
 	  return next_key ();

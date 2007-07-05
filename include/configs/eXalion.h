@@ -286,12 +286,6 @@
 #define CFG_ACTORW		5	/* Activate to R/W			*/
 #define CFG_SDMODE_CAS_LAT	3	/* SDMODE CAS latency			*/
 #else
-#if 0
-#define CFG_PRETOACT		2	/* Precharge to activate interval	*/
-#define CFG_ACTTOPRE		3	/* Activate to Precharge interval	*/
-#define CFG_ACTORW		3	/* Activate to R/W			*/
-#define CFG_SDMODE_CAS_LAT	2	/* SDMODE CAS latency			*/
-#endif
 #define CFG_PRETOACT		2	/* Precharge to activate interval	*/
 #define CFG_ACTTOPRE		5	/* Activate to Precharge interval	*/
 #define CFG_ACTORW		3	/* Activate to R/W			*/

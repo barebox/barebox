@@ -186,9 +186,6 @@ int video_init(void)
 	orig_x = pos%cols;
 	orig_y = pos/cols;
 
-#if 0
-	printf("pos %x %d %d\n", pos, orig_x, orig_y);
-#endif
 	if (orig_y > lines) {
 		orig_x = orig_y =0;
 	}

@@ -399,10 +399,6 @@ add_node(struct b_list *list)
 	memBase = list->listMemBase;
 	if (memBase != NULL)
 		index = memBase->index;
-#if 0
-	putLabeledWord("add_node: index = ", index);
-	putLabeledWord("add_node: memBase = ", list->listMemBase);
-#endif
 
 	if (memBase == NULL || index >= NODE_CHUNK) {
 		/* we need more space before we continue */
@@ -413,9 +409,6 @@ add_node(struct b_list *list)
 		}
 		memBase->next = list->listMemBase;
 		index = 0;
-#if 0
-		putLabeledWord("add_node: alloced a new membase at ", *memBase);
-#endif
 
 	}
 	/* now we have room to add it. */
@@ -628,18 +621,6 @@ jffs2_1pass_read_inode(struct b_lists *pL, u32 inode, char *dest)
 	for (b = pL->frag.listHead; b != NULL; b = b->next) {
 		jNode = (struct jffs2_raw_inode *) get_node_mem(b->offset);
 		if ((inode == jNode->ino)) {
-#if 0
-			putLabeledWord("\r\n\r\nread_inode: totlen = ", jNode->totlen);
-			putLabeledWord("read_inode: inode = ", jNode->ino);
-			putLabeledWord("read_inode: version = ", jNode->version);
-			putLabeledWord("read_inode: isize = ", jNode->isize);
-			putLabeledWord("read_inode: offset = ", jNode->offset);
-			putLabeledWord("read_inode: csize = ", jNode->csize);
-			putLabeledWord("read_inode: dsize = ", jNode->dsize);
-			putLabeledWord("read_inode: compr = ", jNode->compr);
-			putLabeledWord("read_inode: usercompr = ", jNode->usercompr);
-			putLabeledWord("read_inode: flags = ", jNode->flags);
-#endif
 
 #ifndef CFG_JFFS2_SORT_FRAGMENTS
 			/* get actual file length from the newest node */
@@ -658,10 +639,6 @@ jffs2_1pass_read_inode(struct b_lists *pL, u32 inode, char *dest)
 				}
 
 				lDest = (uchar *) (dest + jNode->offset);
-#if 0
-				putLabeledWord("read_inode: src = ", src);
-				putLabeledWord("read_inode: dest = ", lDest);
-#endif
 				switch (jNode->compr) {
 				case JFFS2_COMPR_NONE:
 					ret = (unsigned long) ldr_memcpy(lDest, src, jNode->dsize);
@@ -700,18 +677,11 @@ jffs2_1pass_read_inode(struct b_lists *pL, u32 inode, char *dest)
 				}
 			}
 
-#if 0
-			putLabeledWord("read_inode: totalSize = ", totalSize);
-			putLabeledWord("read_inode: compr ret = ", ret);
-#endif
 		}
 		counter++;
 		put_fl_mem(jNode);
 	}
 
-#if 0
-	putLabeledWord("read_inode: returning = ", totalSize);
-#endif
 	return totalSize;
 }
 
@@ -750,15 +720,6 @@ jffs2_1pass_find_inode(struct b_lists * pL, const char *name, u32 pino)
 			inode = jDir->ino;
 			version = jDir->version;
 		}
-#if 0
-		putstr("\r\nfind_inode:p&l ->");
-		putnstr(jDir->name, jDir->nsize);
-		putstr("\r\n");
-		putLabeledWord("pino = ", jDir->pino);
-		putLabeledWord("nsize = ", jDir->nsize);
-		putLabeledWord("b = ", (u32) b);
-		putLabeledWord("counter = ", counter);
-#endif
 		put_fl_mem(jDir);
 	}
 	return inode;
@@ -903,25 +864,9 @@ jffs2_1pass_search_inode(struct b_lists * pL, const char *fname, u32 pino)
 	{
 		strncpy(working_tmp, tmp, c - tmp);
 		working_tmp[c - tmp] = '\0';
-#if 0
-		putstr("search_inode: tmp = ");
-		putstr(tmp);
-		putstr("\r\n");
-		putstr("search_inode: wtmp = ");
-		putstr(working_tmp);
-		putstr("\r\n");
-		putstr("search_inode: c = ");
-		putstr(c);
-		putstr("\r\n");
-#endif
 		for (i = 0; i < strlen(c) - 1; i++)
 			tmp[i] = c[i + 1];
 		tmp[i] = '\0';
-#if 0
-		putstr("search_inode: post tmp = ");
-		putstr(tmp);
-		putstr("\r\n");
-#endif
 
 		if (!(pino = jffs2_1pass_find_inode(pL, working_tmp, pino))) {
 			putstr("find_inode failed for name=");
@@ -991,12 +936,6 @@ jffs2_1pass_resolve_inode(struct b_lists * pL, u32 ino)
 		if (jNode->ino == jDirFoundIno) {
 			src = (unsigned char *)jNode + sizeof(struct jffs2_raw_inode);
 
-#if 0
-			putLabeledWord("\t\t dsize = ", jNode->dsize);
-			putstr("\t\t target = ");
-			putnstr(src, jNode->dsize);
-			putstr("\r\n");
-#endif
 			strncpy(tmp, (char *)src, jNode->dsize);
 			tmp[jNode->dsize] = '\0';
 			put_fl_mem(jNode);
@@ -1243,13 +1182,6 @@ jffs2_1pass_build_lists(struct part_info * part)
 	/* turn the lcd back on. */
 	/* splash(); */
 
-#if 0
-	putLabeledWord("dir entries = ", pL->dir.listCount);
-	putLabeledWord("frag entries = ", pL->frag.listCount);
-	putLabeledWord("+4 increments = ", counter4);
-	putLabeledWord("+file_offset increments = ", counterF);
-
-#endif
 
 #ifdef DEBUG_DIRENTS
 	dump_dirents(pL);
@@ -1327,10 +1259,6 @@ jffs2_1pass_ls(struct part_info * part, const char *fname)
 	}
 
 
-#if 0
-	putLabeledWord("found file at inode = ", inode);
-	putLabeledWord("read_inode returns = ", ret);
-#endif
 
 	return ret;
 }

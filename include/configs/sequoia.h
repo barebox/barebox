@@ -249,11 +249,7 @@
 	""
 #define CONFIG_BOOTCOMMAND	"run flash_self"
 
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download	*/
 #define CFG_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/

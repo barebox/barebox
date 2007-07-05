@@ -802,66 +802,26 @@ struct e1000_hw {
 	e1000_media_type media_type;
 	e1000_lan_loc lan_loc;
 	e1000_fc_type fc;
-#if 0
-	e1000_bus_speed bus_speed;
-	e1000_bus_width bus_width;
-	e1000_bus_type bus_type;
-	uint32_t io_base;
-#endif
 	uint32_t phy_id;
 	uint32_t phy_addr;
 	uint32_t original_fc;
 	uint32_t txcw;
 	uint32_t autoneg_failed;
-#if 0
-	uint32_t max_frame_size;
-	uint32_t min_frame_size;
-	uint32_t mc_filter_type;
-	uint32_t num_mc_addrs;
-	uint32_t collision_delta;
-	uint32_t tx_packet_delta;
-	uint32_t ledctl_default;
-	uint32_t ledctl_mode1;
-	uint32_t ledctl_mode2;
-#endif
 	uint16_t autoneg_advertised;
 	uint16_t pci_cmd_word;
 	uint16_t fc_high_water;
 	uint16_t fc_low_water;
 	uint16_t fc_pause_time;
-#if 0
-	uint16_t current_ifs_val;
-	uint16_t ifs_min_val;
-	uint16_t ifs_max_val;
-	uint16_t ifs_step_size;
-	uint16_t ifs_ratio;
-#endif
 	uint16_t device_id;
 	uint16_t vendor_id;
 	uint16_t subsystem_id;
 	uint16_t subsystem_vendor_id;
 	uint8_t revision_id;
-#if 0
-	uint8_t autoneg;
-	uint8_t mdix;
-	uint8_t forced_speed_duplex;
-	uint8_t wait_autoneg_complete;
-	uint8_t dma_fairness;
-#endif
-#if 0
-	uint8_t perm_mac_addr[NODE_ADDRESS_SIZE];
-	boolean_t disable_polarity_correction;
-#endif
 	boolean_t get_link_status;
 	boolean_t tbi_compatibility_en;
 	boolean_t tbi_compatibility_on;
 	boolean_t fc_send_xon;
 	boolean_t report_tx_early;
-#if 0
-	boolean_t adaptive_ifs;
-	boolean_t ifs_params_forced;
-	boolean_t in_ifs_mode;
-#endif
 };
 
 #define E1000_EEPROM_SWDPIN0   0x0001	/* SWDPIN 0 EEPROM Value */

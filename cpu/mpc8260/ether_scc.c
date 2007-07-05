@@ -344,13 +344,5 @@ void eth_halt(void)
 						      SCC_GSMRL_ENT);
 }
 
-#if 0
-void restart(void)
-{
-    volatile immap_t *immr = (immap_t *)CFG_IMMR;
-    immr->im_cpm.cp_scc[CONFIG_ETHER_INDEX-1].scc_gsmrl |= (SCC_GSMRL_ENR |
-							    SCC_GSMRL_ENT);
-}
-#endif
 
 #endif  /* CONFIG_ETHER_ON_SCC && CFG_CMD_NET */

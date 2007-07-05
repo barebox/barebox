@@ -18,9 +18,6 @@
 #ifndef __MICROBLAZE_SYSTEM_H__
 #define __MICROBLAZE_SYSTEM_H__
 
-#if 0
-#include <linux/linkage.h>
-#endif
 #include <asm/ptrace.h>
 
 #define prepare_to_switch()	do { } while (0)

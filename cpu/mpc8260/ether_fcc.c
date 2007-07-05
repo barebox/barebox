@@ -230,9 +230,6 @@ static int fec_init(struct eth_device* dev, bd_t *bis)
     fcc_enet_t *pram_ptr;
     unsigned long mem_addr;
 
-#if 0
-    mii_discover_phy();
-#endif
 
     /* 28.9 - (1-2): ioports have been set up already */
 
@@ -328,12 +325,6 @@ static int fec_init(struct eth_device* dev, bd_t *bis)
     pram_ptr->fen_maxd2 = PKT_MAXDMA_SIZE;	/* maximum DMA2 length */
     pram_ptr->fen_rfthr = 1;
     pram_ptr->fen_rfcnt = 1;
-#if 0
-    printf("pram_ptr->fen_genfcc.fcc_rbase %08lx\n",
-	pram_ptr->fen_genfcc.fcc_rbase);
-    printf("pram_ptr->fen_genfcc.fcc_tbase %08lx\n",
-	pram_ptr->fen_genfcc.fcc_tbase);
-#endif
 
     /* 28.9 - (8): clear out events in FCCE */
     immr->im_fcc[info->ether_index].fcc_fcce = ~0x0;
@@ -560,7 +551,6 @@ static uint __inline__
 nbs (uint value, uint nbits)
 {
 	uint cnt = 0;
-#if 1
 	uint pos = sizeof (uint) * 8;
 
 	__asm__ __volatile__ ("\
@@ -573,15 +563,6 @@ nbs (uint value, uint nbits)
 	: "=r"(cnt)
 	: "r"(value), "r"(nbits), "r"(cnt), "r"(pos)
 	: "ctr", "cc" );
-#else
-	uint mask = 1;
-
-	do {
-		if (value & mask)
-			cnt++;
-		mask <<= 1;
-	} while (--nbits);
-#endif
 
 	return (cnt);
 }

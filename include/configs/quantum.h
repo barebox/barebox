@@ -43,11 +43,7 @@
 #undef	CONFIG_8xx_CONS_SMC2
 #undef	CONFIG_8xx_CONS_NONE
 #define CONFIG_BAUDRATE		9600	/* console baudrate = 9600bps	*/
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 /* default developmenmt environment */
 
@@ -81,11 +77,7 @@
 /* M48T02 Paralled access timekeeper with same interface as the M48T35A*/
 #define CONFIG_RTC_M48T35A 1
 
-#if 0
-#define CONFIG_WATCHDOG 1		/* watchdog enabled		*/
-#else
 #undef CONFIG_WATCHDOG
-#endif
 
 /*  NVRAM and RTC */
 #define CFG_NVRAM_BASE_ADDR 0xFA000000
@@ -158,11 +150,7 @@
 #define CFG_SDRAM_BASE		0x00000000
 #define CFG_FLASH_BASE	0xFF000000
 
-#if 1
     #define CFG_FLASH_CFI_DRIVER
-#else
-    #undef CFG_FLASH_CFI_DRIVER
-#endif
 
 
 #ifdef CFG_FLASH_CFI_DRIVER

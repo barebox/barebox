@@ -562,13 +562,6 @@
 #define CFG_FLASH_WRITE_TOUT	500	/* Timeout for Flash Write (in ms) */
 #define CFG_FLASH_LOCK_TOUT	500	/* Timeout for Flash Lock (in ms) */
 
-#if 0
-#define CFG_ENV_IS_IN_FLASH	0
-#define CFG_ENV_SIZE		0x1000	/* Total Size of Environment Sector */
-#define CFG_ENV_SECT_SIZE	0x10000
-#define CFG_ENV_ADDR		0xFFF78000 /* Marvell 8-Bit Bootflash last sector */
-/* #define CFG_ENV_ADDR	   (CFG_FLASH_BASE+CFG_MONITOR_LEN-CFG_ENV_SECT_SIZE) */
-#endif
 
 #define CFG_ENV_IS_IN_EEPROM	1	/* use EEPROM for environment vars */
 #define CFG_EEPROM_PAGE_WRITE_BITS 5

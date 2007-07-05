@@ -70,14 +70,6 @@ extern inline void wrusp(unsigned long usp)
  *  it indirectly
  */
 
-#if 0
-inline unsigned long obtain_pc_indirectly(void)
-{
-	unsigned long pc;
-	__asm__ __volatile__("%0 = rets;\n":"=d"(pc));
-	return (pc - 4);	/* call pcrel24 is 4 bytes long  */
-}
-#endif
 
 /*
  * if you change this structure, you must change the code and offsets

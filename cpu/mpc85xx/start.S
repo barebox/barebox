@@ -446,10 +446,6 @@ in_flash:
 
 	.globl	_start_of_vectors
 _start_of_vectors:
-#if 0
-/* Critical input. */
-	CRIT_EXCEPTION(0x0100, CritcalInput, CritcalInputException)
-#endif
 /* Machine check --FIXME-- Should be MACH_EXCEPTION */
 	CRIT_EXCEPTION(0x0200, MachineCheck, MachineCheckException)
 

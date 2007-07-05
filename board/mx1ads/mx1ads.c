@@ -53,16 +53,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define U_M_SDIV	0x2
 #endif
 
-#if 0
-
-static inline void delay (unsigned long loops)
-{
-	__asm__ volatile ("1:\n"
-			  "subs %0, %1, #1\n"
-			  "bne 1b":"=r" (loops):"0" (loops));
-}
-
-#endif
 
 /*
  * Miscellaneous platform dependent initialisations

@@ -348,14 +348,12 @@ static int mpc8220_fec_init (struct eth_device *dev, bd_t * bis)
 	 */
 	fec->eth->xmit_fsm = 0x03000000;
 
-#if 1
 /*#if defined(CONFIG_MPC5200)*/
 	/*
 	 * Turn off COMM bus prefetch in the MGT5200 BestComm. It doesn't
 	 * work w/ the current receive task.
 	 */
 	dma->PtdCntrl |= 0x00000001;
-#endif
 
 	/*
 	 * Set priority of different initiators
@@ -777,16 +775,6 @@ static int mpc8220_fec_recv (struct eth_device *dev)
 			frame = (NBUF *) pRbd->dataPointer;
 			frame_length = pRbd->dataLength - 4;
 
-#if (0)
-			{
-				int i;
-
-				printf ("recv data hdr:");
-				for (i = 0; i < 14; i++)
-					printf ("%x ", *(frame->head + i));
-				printf ("\n");
-			}
-#endif
 			/*
 			 *  Fill the buffer and pass it to upper layers
 			 */

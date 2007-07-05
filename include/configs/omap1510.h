@@ -534,19 +534,6 @@
 #define CAM_GPIO_REG		(CAMERA_BASE + 0x14)
 #define CAM_PEAK_CTR_REG	(CAMERA_BASE + 0x18)
 
-#if 0
-#ifndef __ASSEMBLY__
-typedef struct {
-	__u32 ctrlclock;
-	__u32 it_status;
-	__u32 mode;
-	__u32 status;
-	__u32 camdata;
-	__u32 gpio;
-	__u32 peak_counter;
-} camera_regs_t;
-#endif
-#endif
 
 /* CTRLCLOCK bit shifts */
 #define FOSCMOD_BIT	0

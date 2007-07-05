@@ -26,21 +26,10 @@
 
 void pcmcia_power_on(void)
 {
-#if 0
-	if (!(GPLR(20) & GPIO_bit(20))) { /* 3.3V */
-		GPCR(81) = GPIO_bit(81);
-		GPSR(82) = GPIO_bit(82);
-	}
-	else if (!(GPLR(21) & GPIO_bit(21))) { /* 5.0V */
-		GPCR(81) = GPIO_bit(81);
-		GPCR(82) = GPIO_bit(82);
-	}
-#else
 #warning "Board will only supply 5V, wait for next HW spin for selectable power"
 	/* 5.0V */
 	GPCR(81) = GPIO_bit(81);
 	GPCR(82) = GPIO_bit(82);
-#endif
 
 	udelay(300000);
 

@@ -520,25 +520,9 @@ jffs2_1pass_search_inode(struct b_lists * pL, const char *fname, u32 pino)
 	{
 		strncpy(working_tmp, tmp, c - tmp);
 		working_tmp[c - tmp] = '\0';
-#if 0
-		putstr("search_inode: tmp = ");
-		putstr(tmp);
-		putstr("\r\n");
-		putstr("search_inode: wtmp = ");
-		putstr(working_tmp);
-		putstr("\r\n");
-		putstr("search_inode: c = ");
-		putstr(c);
-		putstr("\r\n");
-#endif
 		for (i = 0; i < strlen(c) - 1; i++)
 			tmp[i] = c[i + 1];
 		tmp[i] = '\0';
-#if 0
-		putstr("search_inode: post tmp = ");
-		putstr(tmp);
-		putstr("\r\n");
-#endif
 
 		if (!(pino = jffs2_1pass_find_inode(pL, working_tmp, pino))) {
 			putstr("find_inode failed for name=");
@@ -686,20 +670,6 @@ jffs2_1pass_rescan_needed(struct part_info *part)
 	}
 
 	/* FIXME */
-#if 0
-	/* but suppose someone reflashed a partition at the same offset... */
-	b = pL->dir.listHead;
-	while (b) {
-		node = (struct jffs2_unknown_node *) get_fl_mem(b->offset,
-			sizeof(onode), &onode);
-		if (node->nodetype != JFFS2_NODETYPE_DIRENT) {
-			DEBUGF ("rescan: fs changed beneath me? (%lx)\n",
-					(unsigned long) b->offset);
-			return 1;
-		}
-		b = b->next;
-	}
-#endif
 	return 0;
 }
 
@@ -884,12 +854,6 @@ jffs2_1pass_build_lists(struct part_info * part)
 
 	putstr("\b\b done.\r\n");		/* close off the dots */
 
-#if 0
-	putLabeledWord("dir entries = ", pL->dir.listCount);
-	putLabeledWord("frag entries = ", pL->frag.listCount);
-	putLabeledWord("+4 increments = ", counter4);
-	putLabeledWord("+file_offset increments = ", counterF);
-#endif
 
 #ifdef DEBUG_DIRENTS
 	dump_dirents(pL);
@@ -966,10 +930,6 @@ jffs2_1pass_ls(struct part_info * part, const char *fname)
 		return 0;
 	}
 
-#if 0
-	putLabeledWord("found file at inode = ", inode);
-	putLabeledWord("read_inode returns = ", ret);
-#endif
 
 	return ret;
 }

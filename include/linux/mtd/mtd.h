@@ -106,30 +106,8 @@ struct mtd_info {
 
 	/* This function is not yet implemented */
 	int (*write_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
-#if 0
-	/* kvec-based read/write methods. We need these especially for NAND flash,
-	   with its limited number of write cycles per erase.
-	   NB: The 'count' parameter is the number of _vectors_, each of
-	   which contains an (ofs, len) tuple.
-	*/
-	int (*readv) (struct mtd_info *mtd, struct kvec *vecs, unsigned long count, loff_t from, size_t *retlen);
-	int (*readv_ecc) (struct mtd_info *mtd, struct kvec *vecs, unsigned long count, loff_t from,
-		size_t *retlen, u_char *eccbuf, struct nand_oobinfo *oobsel);
-	int (*writev) (struct mtd_info *mtd, const struct kvec *vecs, unsigned long count, loff_t to, size_t *retlen);
-	int (*writev_ecc) (struct mtd_info *mtd, const struct kvec *vecs, unsigned long count, loff_t to,
-		size_t *retlen, u_char *eccbuf, struct nand_oobinfo *oobsel);
-#endif
 	/* Sync */
 	void (*sync) (struct mtd_info *mtd);
-#if 0
-	/* Chip-supported device locking */
-	int (*lock) (struct mtd_info *mtd, loff_t ofs, size_t len);
-	int (*unlock) (struct mtd_info *mtd, loff_t ofs, size_t len);
-
-	/* Power Management functions */
-	int (*suspend) (struct mtd_info *mtd);
-	void (*resume) (struct mtd_info *mtd);
-#endif
 	/* Bad block management functions */
 	int (*block_isbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*block_markbad) (struct mtd_info *mtd, loff_t ofs);
@@ -150,23 +128,6 @@ extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
 
 extern void put_mtd_device(struct mtd_info *mtd);
 
-#if 0
-struct mtd_notifier {
-	void (*add)(struct mtd_info *mtd);
-	void (*remove)(struct mtd_info *mtd);
-	struct list_head list;
-};
-
-
-extern void register_mtd_user (struct mtd_notifier *new);
-extern int unregister_mtd_user (struct mtd_notifier *old);
-
-int default_mtd_writev(struct mtd_info *mtd, const struct kvec *vecs,
-		       unsigned long count, loff_t to, size_t *retlen);
-
-int default_mtd_readv(struct mtd_info *mtd, struct kvec *vecs,
-		      unsigned long count, loff_t from, size_t *retlen);
-#endif
 
 #define MTD_ERASE(mtd, args...) (*(mtd->erase))(mtd, args)
 #define MTD_POINT(mtd, a,b,c,d) (*(mtd->point))(mtd, a,b,c, (u_char **)(d))

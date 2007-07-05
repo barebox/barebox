@@ -206,27 +206,6 @@ extern "C" {
 
 /* Macros */
 
-#if 0
-#ifndef SK_ADDR_EQUAL
-/*
- * "&" instead of "&&" allows better optimization on IA-64.
- * The replacement is safe here, as all bytes exist.
- */
-#ifndef SK_ADDR_DWORD_COMPARE
-#define SK_ADDR_EQUAL(A1,A2)	( \
-	(((SK_U8 *)(A1))[5] == ((SK_U8 *)(A2))[5]) & \
-	(((SK_U8 *)(A1))[4] == ((SK_U8 *)(A2))[4]) & \
-	(((SK_U8 *)(A1))[3] == ((SK_U8 *)(A2))[3]) & \
-	(((SK_U8 *)(A1))[2] == ((SK_U8 *)(A2))[2]) & \
-	(((SK_U8 *)(A1))[1] == ((SK_U8 *)(A2))[1]) & \
-	(((SK_U8 *)(A1))[0] == ((SK_U8 *)(A2))[0]))
-#else	/* SK_ADDR_DWORD_COMPARE */
-#define SK_ADDR_EQUAL(A1,A2)	( \
-	(*(SK_U32 *)&(((SK_U8 *)(A1))[2]) == *(SK_U32 *)&(((SK_U8 *)(A2))[2])) & \
-	(*(SK_U32 *)&(((SK_U8 *)(A1))[0]) == *(SK_U32 *)&(((SK_U8 *)(A2))[0])))
-#endif	/* SK_ADDR_DWORD_COMPARE */
-#endif	/* SK_ADDR_EQUAL */
-#endif /* 0 */
 
 #ifndef SK_ADDR_EQUAL
 #ifndef SK_ADDR_DWORD_COMPARE

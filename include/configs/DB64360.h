@@ -160,11 +160,7 @@ if we use PCI it has its own MAC addr */
 #define MV_ETH_DEVS 2
 
 /* #undef CONFIG_ETHER_PORT_MII	 */
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	3	/* autoboot after 5 seconds	*/
-#endif
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 
 

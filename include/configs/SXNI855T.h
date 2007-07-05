@@ -75,11 +75,7 @@
 
 #define	CONFIG_CLOCKS_IN_MHZ	1	/* clocks passsed to Linux in MHz */
 
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 
 #define CONFIG_HAS_ETH1
 
@@ -451,11 +447,9 @@
   #define CFG_ENV_SIZE		     1024	/* Use only a part of it*/
 #endif
 
-#if 1
 #define CONFIG_AUTOBOOT_KEYED		/* use key strings to stop autoboot */
 #define CONFIG_AUTOBOOT_PROMPT		"autoboot in %d seconds\n"
 #define CONFIG_AUTOBOOT_DELAY_STR	"delayabit"
 #define CONFIG_AUTOBOOT_STOP_STR	" " /* easy to stop for now */
-#endif
 
 #endif	/* __CONFIG_H */

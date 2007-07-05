@@ -13,9 +13,6 @@
 #ifndef _ASM_MIPSREGS_H
 #define _ASM_MIPSREGS_H
 
-#if 0
-#include <linux/linkage.h>
-#endif
 
 /*
  * The following macros are especially useful for __asm__

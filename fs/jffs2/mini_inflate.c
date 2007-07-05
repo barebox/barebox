@@ -383,13 +383,6 @@ long decompress_block(unsigned char *dest, unsigned char *source,
 		else stream.error = COMP_UNKNOWN;
 	} while (!bfinal && !stream.error);
 
-#if 0
-	putstr("decompress_block start\r\n");
-	putLabeledWord("stream.error = ",stream.error);
-	putLabeledWord("stream.decoded = ",stream.decoded);
-	putLabeledWord("dest = ",dest);
-	putstr("decompress_block end\r\n");
-#endif
 	return stream.error ? -stream.error : stream.decoded;
 }
 

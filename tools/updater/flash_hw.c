@@ -254,15 +254,6 @@ static ulong flash_get_size (ulong addr, flash_info_t *info)
 			info->size = 0x00800000;
 			break;			/* => 8 MB		*/
 
-#if 0
-		/* Has the same ID as AMD_ID_LV320T, to be fixed */
-		case AMD_ID_LV320B:
-			DEBUGF("Am29LV320B\n");
-			info->flash_id += FLASH_AM320B;
-			info->sector_count = 67;
-			info->size = 0x00800000;
-			break;			/* => 8 MB		*/
-#endif
 
 		case AMD_ID_LV033C:
 			DEBUGF("Am29LV033C\n");

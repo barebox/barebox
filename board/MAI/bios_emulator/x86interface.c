@@ -437,7 +437,6 @@ int execute_bios(pci_dev_t gr_dev, void *reloc_addr)
 	return 0;
     }
 
-#if 1 /*def DEBUG*/
     s = getenv("x86_ask_start");
     if (s)
     {
@@ -455,7 +454,6 @@ int execute_bios(pci_dev_t gr_dev, void *reloc_addr)
     }
 
 
-#endif
 
 #ifdef EASTEREGG
 /*    if (tstc())
@@ -507,13 +505,11 @@ int execute_bios(pci_dev_t gr_dev, void *reloc_addr)
     *strap++ = 0x9A; *strap++ = 0x03; *strap++ = 0x00;
     *strap++ = 0x00; *strap++ = 0xC0;
 
-#if 1
     /* insert additional strap code */
     for (i=0; i < MORE_STRAP_BYTES; i++)
     {
 	*strap++ = more_strap[i];
     }
-#endif
     /* HALT */
     *strap++ = 0xF4;
 

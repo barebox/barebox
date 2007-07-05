@@ -45,24 +45,14 @@ DECLARE_GLOBAL_DATA_PTR;
 /* ** DEBUG SETTINGS							*/
 /************************************************************************/
 
-#if 0
-#define VIDEO_DEBUG_COLORBARS	/* Force colorbars output */
-#endif
 
 /************************************************************************/
 /* ** VIDEO MODE SETTINGS						*/
 /************************************************************************/
 
-#if 0
-#define VIDEO_MODE_EXTENDED		/* Allow screen size bigger than visible area */
-#define VIDEO_MODE_NTSC
-#endif
 
 #define VIDEO_MODE_PAL
 
-#if 0
-#define VIDEO_BLINK			/* This enables cursor blinking (under construction) */
-#endif
 
 #define VIDEO_INFO			/* Show U-Boot information */
 #define VIDEO_INFO_X		VIDEO_LOGO_WIDTH+8

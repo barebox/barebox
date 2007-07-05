@@ -110,12 +110,3 @@ extern unsigned char aux_device_present;
 					   but then the read function would need
 					   a lock etc - ick */
 
-#if 0
-struct aux_queue {
-	unsigned long head;
-	unsigned long tail;
-	wait_queue_head_t proc_list;
-	struct fasync_struct *fasync;
-	unsigned char buf[AUX_BUF_SIZE];
-};
-#endif

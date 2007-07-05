@@ -38,23 +38,11 @@
 #define MAX_URBS_QUEUED 5
 
 
-#if 1
 #define usberr(fmt,args...) serial_printf("ERROR: %s(), %d: "fmt"\n",__FUNCTION__,__LINE__,##args)
-#else
-#define usberr(fmt,args...) do{}while(0)
-#endif
 
-#if 0
-#define usbdbg(fmt,args...) serial_printf("debug: %s(), %d: "fmt"\n",__FUNCTION__,__LINE__,##args)
-#else
 #define usbdbg(fmt,args...) do{}while(0)
-#endif
 
-#if 0
-#define usbinfo(fmt,args...) serial_printf("info: %s(), %d: "fmt"\n",__FUNCTION__,__LINE__,##args)
-#else
 #define usbinfo(fmt,args...) do{}while(0)
-#endif
 
 #ifndef le16_to_cpu
 #define le16_to_cpu(x)	(x)

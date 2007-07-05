@@ -26,11 +26,7 @@
 
 #define CONFIG_BAUDRATE		38400	/* Console baudrate */
 
-#if 0
-#define CFG_8XX_FACT		1526	/* 32.768 kHz crystal on XTAL/EXTAL */
-#else
 #define CFG_8XX_FACT		12	/* 4 MHz oscillator on EXTCLK */
-#endif
 
 #define CFG_PLPRCR  (((CFG_8XX_FACT-1) << PLPRCR_MF_SHIFT) |	\
 		PLPRCR_SPLSS | PLPRCR_TEXPS | PLPRCR_TMIST)

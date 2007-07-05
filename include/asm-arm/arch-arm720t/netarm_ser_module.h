@@ -324,16 +324,6 @@ typedef struct {
 #endif
 */
 
-#if 0
-#define	NETARM_SER_RXGAP(x)	( NETARM_SER_RX_GAP_TIMER_EN |		\
-				  ( ( ( ( 2 * NETARM_PLLED_SYSCLK_FREQ ) /	\
-				        ( x * 5 * 512 ) ) - 1 ) & 	\
-			              NETARM_SER_RX_GAP_MASK ) )
-#define	NETARM_SER_RXGAP(x)	( NETARM_SER_RX_GAP_TIMER_EN |		\
-				  ( ( ( ( 10 * NETARM_XTAL_FREQ ) /	\
-				        ( x * 512 ) ) - 1 ) & 	\
-			              NETARM_SER_RX_GAP_MASK ) )
-#endif
 
 #define MIN_BAUD_RATE        600
 #define MAX_BAUD_RATE     115200

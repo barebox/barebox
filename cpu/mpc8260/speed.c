@@ -144,12 +144,6 @@ int get_clocks (void)
 		plldf = (scmr & SCMR_PLLDF) ? 1 : 0;
 		gd->vco_out = (clkin * 2 * (pllmf + 1)) / (plldf + 1);
 	}
-#if 0
-	if (gd->vco_out / (busdf + 1) != clkin) {
-		/* aaarrrggghhh!!! */
-		return (1);
-	}
-#endif
 
 	gd->cpm_clk = gd->vco_out / 2;
 	gd->bus_clk = clkin;

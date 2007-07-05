@@ -97,7 +97,6 @@
 /*
  * Video console
  */
-#if 1
 #define CONFIG_VIDEO
 #define CONFIG_VIDEO_SM501
 #define CONFIG_VIDEO_SM501_32BPP
@@ -108,7 +107,6 @@
 #define CONFIG_VIDEO_SW_CURSOR
 #define CONFIG_SPLASH_SCREEN
 #define CFG_CONSOLE_IS_IN_ENV
-#endif
 
 #ifdef CONFIG_VIDEO
 #define ADD_BMP_CMD		CFG_CMD_BMP

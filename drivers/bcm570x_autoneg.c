@@ -397,19 +397,7 @@ Autoneg8023z(
 	    Delta_us = pAnInfo->CurrentTime_us - pAnInfo->LinkTime_us;
 	    if(Delta_us > AN_LINK_TIMER_INTERVAL_US)
 	    {
-#if 0
-/*                if(pAnInfo->IdleMatch == AN_TRUE) */
-/*                { */
-#endif
 		    pAnInfo->State = AN_STATE_LINK_OK;
-#if 0
-/*                } */
-/*                else */
-/*                { */
-/*                    AnRet = AUTONEG_STATUS_FAILED; */
-/*                    break; */
-/*                } */
-#endif
 	    }
 
 	    break;

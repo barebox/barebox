@@ -324,14 +324,9 @@ int eth_init (bd_t * bd)
 	/* Enable MII mode
 	 */
 
-#if 0	/* Full duplex mode */
-	fecp->fec_r_cntrl = FEC_RCNTRL_MII_MODE;
-	fecp->fec_x_cntrl = FEC_TCNTRL_FDEN;
-#else	/* Half duplex mode */
 	fecp->fec_r_cntrl = (PKT_MAXBUF_SIZE << 16); /* set max frame length */
 	fecp->fec_r_cntrl |= FEC_RCNTRL_MII_MODE | FEC_RCNTRL_DRT;
 	fecp->fec_x_cntrl = 0;
-#endif
 	/* Set MII speed */
 	fecp->fec_mii_speed = (((CFG_CLK / 2) / (2500000 / 10)) + 5) / 10;
 	fecp->fec_mii_speed *= 2;

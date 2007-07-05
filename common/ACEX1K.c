@@ -209,13 +209,6 @@ static int ACEX1K_ps_load (Altera_desc * desc, void *buf, size_t bsize)
 #endif
 			/* Altera detects an error if INIT goes low (active)
 			   while DONE is low (inactive) */
-#if 0 /* not yet implemented */
-			if ((*fn->done) (cookie) == 0 && (*fn->init) (cookie)) {
-				puts ("** CRC error during FPGA load.\n");
-				(*fn->abort) (cookie);
-				return (FPGA_FAIL);
-			}
-#endif
 			val = data [bytecount ++ ];
 			i = 8;
 			do {

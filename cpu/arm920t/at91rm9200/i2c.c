@@ -126,9 +126,6 @@ i2c_read (unsigned char chip, unsigned int addr, int alen,
 		return 1;
 	/* XXX assume an ATMEL AT24C16 */
 	if (alen == 1) {
-#if 0 /* EEPROM code already sets this correctly */
-		chip |= (addr >> 8) & 0xff;
-#endif
 		addr = addr & 0xff;
 	}
 #endif
@@ -151,9 +148,6 @@ i2c_write(unsigned char chip, unsigned int addr, int alen,
 		buf = buffer;
 		/* do single byte writes */
 		for (i = 0; i < len; i++) {
-#if 0 /* EEPROM code already sets this correctly */
-			chip |= (addr >> 8) & 0xff;
-#endif
 			addr = addr & 0xff;
 			if (at91_xfer(chip, addr, alen, buf++, 1, 0))
 				return 1;

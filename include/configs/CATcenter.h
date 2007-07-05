@@ -315,29 +315,6 @@
  * PCI stuff
  *-----------------------------------------------------------------------
  */
-#if 0	/* No PCI on CATcenter */
-#define PCI_HOST_ADAPTER 0		/* configure as pci adapter	*/
-#define PCI_HOST_FORCE	1		/* configure as pci host	*/
-#define PCI_HOST_AUTO	2		/* detected via arbiter enable	*/
-
-#define CONFIG_PCI			/* include pci support		*/
-#define CONFIG_PCI_HOST PCI_HOST_FORCE	 /* select pci host function	 */
-#undef	CONFIG_PCI_PNP			/* do pci plug-and-play		*/
-					/* resource configuration	*/
-
-#define CONFIG_PCI_SCAN_SHOW		/* print pci devices @ startup	*/
-
-#define CFG_PCI_SUBSYS_VENDORID 0x1014	/* PCI Vendor ID: IBM	*/
-#define CFG_PCI_SUBSYS_DEVICEID 0x0000	/* PCI Device ID: ---	*/
-#define CFG_PCI_CLASSCODE	0x0b20	/* PCI Class Code: Processor/PPC*/
-
-#define CFG_PCI_PTM1LA	0x00000000	/* point to sdram		*/
-#define CFG_PCI_PTM1MS	0xfc000001	/* 64MB, enable hard-wired to 1 */
-#define CFG_PCI_PTM1PCI 0x00000000	/* Host: use this pci address	*/
-#define CFG_PCI_PTM2LA	0xffc00000	/* point to flash		*/
-#define CFG_PCI_PTM2MS	0xffc00001	/* 4MB, enable			*/
-#define CFG_PCI_PTM2PCI 0x04000000	/* Host: use this pci address	*/
-#endif	/* No PCI */
 
 /*-----------------------------------------------------------------------
  * Start addresses for the final memory configuration

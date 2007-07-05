@@ -320,23 +320,6 @@ void smc_set_mac_addr(const unsigned char *addr) {
  * mac address, call smc_get_mac_addr as a part of the board initialization.
  */
 
-#if 0
-void smc_get_macaddr( byte *addr ) {
-	/* MAC ADDRESS AT FLASHBLOCK 1 / OFFSET 0x10 */
-	unsigned char *dnp1110_mac = (unsigned char *) (0xE8000000 + 0x20010);
-	int i;
-
-
-	for (i=0; i<6; i++) {
-	    addr[0] = *(dnp1110_mac+0);
-	    addr[1] = *(dnp1110_mac+1);
-	    addr[2] = *(dnp1110_mac+2);
-	    addr[3] = *(dnp1110_mac+3);
-	    addr[4] = *(dnp1110_mac+4);
-	    addr[5] = *(dnp1110_mac+5);
-	}
-}
-#endif /* 0 */
 
 /***********************************************
  * Show available memory		       *
@@ -1005,61 +988,6 @@ static int smc_close()
 }
 
 
-#if 0
-/*------------------------------------------------------------
- . Modify a bit in the LAN91C111 register set
- .-------------------------------------------------------------*/
-static word smc_modify_regbit(int bank, int ioaddr, int reg,
-	unsigned int bit, int val)
-{
-	word regval;
-
-	SMC_SELECT_BANK( bank );
-
-	regval = SMC_inw( reg );
-	if (val)
-		regval |= bit;
-	else
-		regval &= ~bit;
-
-	SMC_outw( regval, 0 );
-	return(regval);
-}
-
-
-/*------------------------------------------------------------
- . Retrieve a bit in the LAN91C111 register set
- .-------------------------------------------------------------*/
-static int smc_get_regbit(int bank, int ioaddr, int reg, unsigned int bit)
-{
-	SMC_SELECT_BANK( bank );
-	if ( SMC_inw( reg ) & bit)
-		return(1);
-	else
-		return(0);
-}
-
-
-/*------------------------------------------------------------
- . Modify a LAN91C111 register (word access only)
- .-------------------------------------------------------------*/
-static void smc_modify_reg(int bank, int ioaddr, int reg, word val)
-{
-	SMC_SELECT_BANK( bank );
-	SMC_outw( val, reg );
-}
-
-
-/*------------------------------------------------------------
- . Retrieve a LAN91C111 register (word access only)
- .-------------------------------------------------------------*/
-static int smc_get_reg(int bank, int ioaddr, int reg)
-{
-	SMC_SELECT_BANK( bank );
-	return(SMC_inw( reg ));
-}
-
-#endif /* 0 */
 
 /*---PHY CONTROL AND CONFIGURATION----------------------------------------- */
 

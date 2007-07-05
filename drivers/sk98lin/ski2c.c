@@ -1321,44 +1321,6 @@ SK_SENSOR	*pSen)
 		}
 	}
 
-#if 0
-    /* Dynamic thresholds also for VAUX of LM80 sensor */
-	if (pSen->SenInit == SK_SEN_DYN_INIT_VAUX) {
-
-	pSen->SenInit = SK_SEN_DYN_INIT_NONE;
-
-		/* 3.3V VAUX Voltage */
-		if (pSen->SenValue > SK_SEN_VAUX_RANGE_LIMITER) {
-			pSen->SenThreWarnLow = SK_SEN_VAUX_3V3_LOW_WARN;
-			pSen->SenThreErrLow = SK_SEN_VAUX_3V3_LOW_ERR;
-		}
-		/* 0V VAUX Voltage */
-		else {
-			pSen->SenThreWarnHigh = SK_SEN_VAUX_0V_WARN_ERR;
-			pSen->SenThreErrHigh = SK_SEN_VAUX_0V_WARN_ERR;
-		}
-	}
-
-	/*
-	 * Check initialization state:
-	 * The VIO Thresholds need adaption
-	 */
-	if (!pSen->SenInit && pSen->SenReg == LM80_VT1_IN &&
-	     pSen->SenValue > SK_SEN_WARNLOW2C &&
-	     pSen->SenValue < SK_SEN_WARNHIGH2) {
-		pSen->SenThreErrLow = SK_SEN_ERRLOW2C;
-		pSen->SenThreWarnLow = SK_SEN_WARNLOW2C;
-		pSen->SenInit = SK_TRUE;
-	}
-
-	if (!pSen->SenInit && pSen->SenReg == LM80_VT1_IN &&
-	     pSen->SenValue > SK_SEN_WARNLOW2 &&
-	     pSen->SenValue < SK_SEN_WARNHIGH2C) {
-		pSen->SenThreErrHigh = SK_SEN_ERRHIGH2C;
-		pSen->SenThreWarnHigh = SK_SEN_WARNHIGH2C;
-		pSen->SenInit = SK_TRUE;
-	}
-#endif
 
 	if (pSen->SenInit != SK_SEN_DYN_INIT_NONE) {
 		SK_ERR_LOG(pAC, SK_ERRCL_HW, SKERR_I2C_E013, SKERR_I2C_E013MSG);

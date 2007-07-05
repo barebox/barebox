@@ -19,9 +19,6 @@
 #include <linux/config.h>
 #include <asm/sgidefs.h>
 #include <asm/ptrace.h>
-#if 0
-#include <linux/kernel.h>
-#endif
 
 extern __inline__ void
 __sti(void)
@@ -193,9 +190,6 @@ do { var = value; wmb(); } while (0)
  * switch_to(n) should switch tasks to task nr n, first
  * checking that n isn't the current task, in which case it does nothing.
  */
-#if 0
-extern asmlinkage void *resume(void *last, void *next);
-#endif
 #endif /* !defined (_LANGUAGE_ASSEMBLY) */
 
 #define prepare_to_switch()	do { } while(0)

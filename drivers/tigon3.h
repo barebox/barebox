@@ -29,30 +29,8 @@
 #define writel(b,addr) \
 	      ((*(volatile unsigned int *)(addr)) = (LONGSWAP(b)))
 #else
-#if 0 /* !defined(PPC603) */
-#define readl(addr) (*(volatile unsigned int*)(0xa0000000 + (unsigned long)(addr)))
-#define writel(b,addr) ((*(volatile unsigned int *) ((unsigned long)(addr) + 0xa0000000)) = (b))
-#else
-#if 1
 #define readl(addr) (*(volatile unsigned int*)(addr))
 #define writel(b,addr) ((*(volatile unsigned int *) (addr)) = (b))
-#else
-extern int sprintf(char* buf, const char* f, ...);
-static __inline unsigned int readl(void* addr){
-    char buf[128];
-    unsigned int tmp = (*(volatile unsigned int*)(addr));
-    sprintf(buf,"%s:%s: read 0x%x from 0x%x\n",__FILE__,__LINE__,tmp,addr,0,0);
-    sysSerialPrintString(buf);
-    return tmp;
-}
-static __inline void writel(unsigned int b, unsigned int addr){
-    char buf[128];
-    ((*(volatile unsigned int *) (addr)) = (b));
-    sprintf(buf,"%s:%s: write 0x%x to 0x%x\n",__FILE__,__LINE__,b,addr,0,0);
-    sysSerialPrintString(buf);
-}
-#endif
-#endif /* PPC603 */
 #endif
 
 
@@ -2964,11 +2942,6 @@ typedef struct _LM_DEVICE_BLOCK {
     LM_UINT32 ChipRevId;
     LM_UINT16 SubsystemVendorId;
     LM_UINT16 SubsystemId;
-#if 0  /* Jimmy, deleted in new driver */
-    LM_UINT32 MemBaseLow;
-    LM_UINT32 MemBaseHigh;
-    LM_UINT32 MemBaseSize;
-#endif
     PLM_UINT8 pMappedMemBase;
 
     /* Saved PCI configuration registers for restoring after a reset. */
@@ -3292,85 +3265,6 @@ LM_STATUS LM_LoadFirmware(PLM_DEVICE_BLOCK pDevice,
 /* NIC register read/write macros. */
 /******************************************************************************/
 
-#if 0  /* Jimmy */
-/* MAC register access. */
-LM_UINT32 LM_RegRdInd(PLM_DEVICE_BLOCK pDevice, LM_UINT32 Register);
-LM_VOID LM_RegWrInd(PLM_DEVICE_BLOCK pDevice, LM_UINT32 Register,
-    LM_UINT32 Value32);
-
-/* MAC memory access. */
-LM_UINT32 LM_MemRdInd(PLM_DEVICE_BLOCK pDevice, LM_UINT32 MemAddr);
-LM_VOID LM_MemWrInd(PLM_DEVICE_BLOCK pDevice, LM_UINT32 MemAddr,
-    LM_UINT32 Value32);
-
-#if PCIX_TARGET_WORKAROUND
-
-/* use memory-mapped accesses for mailboxes and reads, UNDI accesses
-   for writes to all other registers */
-#define REG_RD(pDevice, OffsetName)                              \
-    readl(&((pDevice)->pMemView->OffsetName))
-
-#define REG_WR(pDevice, OffsetName, Value32)                     \
-    (((OFFSETOF(T3_STD_MEM_MAP, OffsetName) >=0x200 ) &&         \
-      (OFFSETOF(T3_STD_MEM_MAP, OffsetName) <0x400)) ||	         \
-	 ((pDevice)->EnablePciXFix == FALSE)) ?                  \
-    (void) writel(Value32, &((pDevice)->pMemView->OffsetName)) : \
-    LM_RegWrInd(pDevice, OFFSETOF(T3_STD_MEM_MAP, OffsetName), Value32)
-
-#define MB_REG_RD(pDevice, OffsetName)                           \
-    readl(&((pDevice)->pMemView->OffsetName))
-
-#define MB_REG_WR(pDevice, OffsetName, Value32)                  \
-    writel(Value32, &((pDevice)->pMemView->OffsetName))
-
-#define REG_RD_OFFSET(pDevice, Offset)                           \
-    readl(&((LM_UINT8 *) (pDevice)->pMemView + Offset))
-
-#define REG_WR_OFFSET(pDevice, Offset, Value32)                  \
-	(((Offset >=0x200 ) && (Offset < 0x400)) ||		 \
-	 ((pDevice)->EnablePciXFix == FALSE)) ?	   		 \
-    (void) writel(Value32, ((LM_UINT8 *) (pDevice)->pMemView + Offset)) : \
-    LM_RegWrInd(pDevice, Offset, Value32)
-
-#define MEM_RD(pDevice, AddrName)                                \
-    LM_MemRdInd(pDevice, OFFSETOF(T3_FIRST_32K_SRAM, AddrName))
-#define MEM_WR(pDevice, AddrName, Value32)                       \
-    LM_MemWrInd(pDevice, OFFSETOF(T3_FIRST_32K_SRAM, AddrName), Value32)
-
-#define MEM_RD_OFFSET(pDevice, Offset)                           \
-    LM_MemRdInd(pDevice, Offset)
-#define MEM_WR_OFFSET(pDevice, Offset, Value32)                  \
-    LM_MemWrInd(pDevice, Offset, Value32)
-
-#else /* normal target access path below */
-
-/* Register access. */
-#define REG_RD(pDevice, OffsetName)                                         \
-    readl(&((pDevice)->pMemView->OffsetName))
-#define REG_WR(pDevice, OffsetName, Value32)                                \
-    writel(Value32, &((pDevice)->pMemView->OffsetName))
-
-#define REG_RD_OFFSET(pDevice, Offset)                                      \
-    readl(((LM_UINT8 *) (pDevice)->pMemView + Offset))
-#define REG_WR_OFFSET(pDevice, Offset, Value32)                             \
-    writel(Value32, ((LM_UINT8 *) (pDevice)->pMemView + Offset))
-
-
-/* There could be problem access the memory window directly.  For now, */
-/* we have to go through the PCI configuration register. */
-#define MEM_RD(pDevice, AddrName)                                           \
-    LM_MemRdInd(pDevice, OFFSETOF(T3_FIRST_32K_SRAM, AddrName))
-#define MEM_WR(pDevice, AddrName, Value32)                                  \
-    LM_MemWrInd(pDevice, OFFSETOF(T3_FIRST_32K_SRAM, AddrName), Value32)
-
-#define MEM_RD_OFFSET(pDevice, Offset)                                      \
-    LM_MemRdInd(pDevice, Offset)
-#define MEM_WR_OFFSET(pDevice, Offset, Value32)                             \
-    LM_MemWrInd(pDevice, Offset, Value32)
-
-#endif  /* PCIX_TARGET_WORKAROUND */
-
-#endif  /* Jimmy, merging */
 
   /* Jimmy...rest of file is new stuff! */
 /******************************************************************************/

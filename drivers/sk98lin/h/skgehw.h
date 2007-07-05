@@ -327,9 +327,6 @@ extern "C" {
 #define PCI_COMMAND		0x04	/* 16 bit	Command */
 #define PCI_STATUS		0x06	/* 16 bit	Status */
 #define PCI_REV_ID		0x08	/*  8 bit	Revision ID */
-#if 0
-#define PCI_CLASS_CODE	0x09	/* 24 bit	Class Code */
-#endif
 #define PCI_CACHE_LSZ	0x0c	/*  8 bit	Cache Line Size */
 #define PCI_LAT_TIM		0x0d	/*  8 bit	Latency Timer */
 #define PCI_HEADER_T	0x0e	/*  8 bit	Header Type */

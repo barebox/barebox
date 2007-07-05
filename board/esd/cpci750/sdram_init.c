@@ -404,19 +404,6 @@ static int check_dimm (uchar slot, AUX_MEM_DIMM_INFO * dimmInfo)
 /* calculate SPD checksum */
 /*------------------------------------------------------------------------------------------------------------------------------*/
 	spd_checksum = 0;
-#if 0				/* test-only */
-	for (i = 0; i <= 62; i++) {
-		spd_checksum += data[i];
-	}
-
-	if ((spd_checksum & 0xff) != data[63]) {
-		printf ("### Error in SPD Checksum !!! Is_value: %2x should value %2x\n", (unsigned int) (spd_checksum & 0xff), data[63]);
-		hang ();
-	}
-
-	else
-		printf ("SPD Checksum ok!\n");
-#endif /* test-only */
 
 /*------------------------------------------------------------------------------------------------------------------------------*/
 	for (i = 2; i <= 35; i++) {
@@ -1510,7 +1497,6 @@ int setup_sdram (AUX_MEM_DIMM_INFO * info)
 
 		/* map the bank */
 		memory_map_bank (i, 0, GB / 4);
-#if 1				/* test only */
 		/* set SDRAM mode */ /* To_do check it */
 		GT_REG_WRITE (SDRAM_OPERATION, 0x3);
 		check = GTREGREAD (SDRAM_OPERATION);
@@ -1525,7 +1511,6 @@ int setup_sdram (AUX_MEM_DIMM_INFO * info)
 		DP (printf
 		    ("\n*** SDRAM_OPERATION 1418 (0 = Normal Operation) = %08lx ***\n",
 		     check));
-#endif /* test only */
 		/* unmap the bank */
 		memory_map_bank (i, 0, 0);
 	}

@@ -356,95 +356,6 @@ e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset, uint16_t * data)
 	return 0;
 }
 
-#if 0
-static void
-e1000_eeprom_cleanup(struct e1000_hw *hw)
-{
-	uint32_t eecd;
-
-	eecd = E1000_READ_REG(hw, EECD);
-	eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
-	E1000_WRITE_REG(hw, EECD, eecd);
-	e1000_raise_ee_clk(hw, &eecd);
-	e1000_lower_ee_clk(hw, &eecd);
-}
-
-static uint16_t
-e1000_wait_eeprom_done(struct e1000_hw *hw)
-{
-	uint32_t eecd;
-	uint32_t i;
-
-	e1000_standby_eeprom(hw);
-	for (i = 0; i < 200; i++) {
-		eecd = E1000_READ_REG(hw, EECD);
-		if (eecd & E1000_EECD_DO)
-			return (TRUE);
-		udelay(5);
-	}
-	return (FALSE);
-}
-
-static int
-e1000_write_eeprom(struct e1000_hw *hw, uint16_t Reg, uint16_t Data)
-{
-	uint32_t eecd;
-	int large_eeprom = FALSE;
-	int i = 0;
-
-	/* Request EEPROM Access */
-	if (hw->mac_type > e1000_82544) {
-		eecd = E1000_READ_REG(hw, EECD);
-		if (eecd & E1000_EECD_SIZE)
-			large_eeprom = TRUE;
-		eecd |= E1000_EECD_REQ;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		eecd = E1000_READ_REG(hw, EECD);
-		while ((!(eecd & E1000_EECD_GNT)) && (i < 100)) {
-			i++;
-			udelay(5);
-			eecd = E1000_READ_REG(hw, EECD);
-		}
-		if (!(eecd & E1000_EECD_GNT)) {
-			eecd &= ~E1000_EECD_REQ;
-			E1000_WRITE_REG(hw, EECD, eecd);
-			DEBUGOUT("Could not acquire EEPROM grant\n");
-			return FALSE;
-		}
-	}
-	e1000_setup_eeprom(hw);
-	e1000_shift_out_ee_bits(hw, EEPROM_EWEN_OPCODE, 5);
-	e1000_shift_out_ee_bits(hw, Reg, (large_eeprom) ? 6 : 4);
-	e1000_standby_eeprom(hw);
-	e1000_shift_out_ee_bits(hw, EEPROM_WRITE_OPCODE, 3);
-	e1000_shift_out_ee_bits(hw, Reg, (large_eeprom) ? 8 : 6);
-	e1000_shift_out_ee_bits(hw, Data, 16);
-	if (!e1000_wait_eeprom_done(hw)) {
-		return FALSE;
-	}
-	e1000_shift_out_ee_bits(hw, EEPROM_EWDS_OPCODE, 5);
-	e1000_shift_out_ee_bits(hw, Reg, (large_eeprom) ? 6 : 4);
-	e1000_eeprom_cleanup(hw);
-
-	/* Stop requesting EEPROM access */
-	if (hw->mac_type > e1000_82544) {
-		eecd = E1000_READ_REG(hw, EECD);
-		eecd &= ~E1000_EECD_REQ;
-		E1000_WRITE_REG(hw, EECD, eecd);
-	}
-	i = 0;
-	eecd = E1000_READ_REG(hw, EECD);
-	while (((eecd & E1000_EECD_GNT)) && (i < 500)) {
-		i++;
-		udelay(10);
-		eecd = E1000_READ_REG(hw, EECD);
-	}
-	if ((eecd & E1000_EECD_GNT)) {
-		DEBUGOUT("Could not release EEPROM grant\n");
-	}
-	return TRUE;
-}
-#endif
 
 /******************************************************************************
  * Verifies that the EEPROM has a valid checksum
@@ -697,11 +608,6 @@ e1000_reset_hw(struct e1000_hw *hw)
 	DEBUGOUT("Issuing a global reset to MAC\n");
 	ctrl = E1000_READ_REG(hw, CTRL);
 
-#if 0
-	if (hw->mac_type > e1000_82543)
-		E1000_WRITE_REG_IO(hw, CTRL, (ctrl | E1000_CTRL_RST));
-	else
-#endif
 		E1000_WRITE_REG(hw, CTRL, (ctrl | E1000_CTRL_RST));
 
 	/* Force a reload from the EEPROM if necessary */
@@ -761,14 +667,6 @@ e1000_init_hw(struct eth_device *nic)
 	e1000_bus_type bus_type = e1000_bus_type_unknown;
 
 	DEBUGFUNC();
-#if 0
-	/* Initialize Identification LED */
-	ret_val = e1000_id_led_init(hw);
-	if (ret_val < 0) {
-		DEBUGOUT("Error Initializing Identification LED\n");
-		return ret_val;
-	}
-#endif
 	/* Set the Media Type and exit with error if it is not valid. */
 	if (hw->mac_type != e1000_82543) {
 		/* tbi_compatibility is only valid on 82543 */
@@ -824,16 +722,6 @@ e1000_init_hw(struct eth_device *nic)
 	for (i = 0; i < E1000_MC_TBL_SIZE; i++)
 		E1000_WRITE_REG_ARRAY(hw, MTA, i, 0);
 
-#if 0
-	/* Set the PCI priority bit correctly in the CTRL register.  This
-	 * determines if the adapter gives priority to receives, or if it
-	 * gives equal priority to transmits and receives.
-	 */
-	if (hw->dma_fairness) {
-		ctrl = E1000_READ_REG(hw, CTRL);
-		E1000_WRITE_REG(hw, CTRL, ctrl | E1000_CTRL_PRIOR);
-	}
-#endif
 	if (hw->mac_type >= e1000_82543) {
 		status = E1000_READ_REG(hw, STATUS);
 		bus_type = (status & E1000_STATUS_PCIX_MODE) ?
@@ -872,14 +760,6 @@ e1000_init_hw(struct eth_device *nic)
 		    E1000_TXDCTL_FULL_TX_DESC_WB;
 		E1000_WRITE_REG(hw, TXDCTL, ctrl);
 	}
-#if 0
-	/* Clear all of the statistics registers (clear on read).  It is
-	 * important that we do this after we have tried to establish link
-	 * because the symbol error count will increment wildly if there
-	 * is no link.
-	 */
-	e1000_clear_hw_cntrs(hw);
-#endif
 
 	return ret_val;
 }
@@ -1189,47 +1069,9 @@ e1000_setup_copper_link(struct eth_device *nic)
 	}
 	phy_data |= M88E1000_PSCR_ASSERT_CRS_ON_TX;
 
-#if 0
-	/* Options:
-	 *   MDI/MDI-X = 0 (default)
-	 *   0 - Auto for all speeds
-	 *   1 - MDI mode
-	 *   2 - MDI-X mode
-	 *   3 - Auto for 1000Base-T only (MDI-X for 10/100Base-T modes)
-	 */
-	phy_data &= ~M88E1000_PSCR_AUTO_X_MODE;
-	switch (hw->mdix) {
-	case 1:
-		phy_data |= M88E1000_PSCR_MDI_MANUAL_MODE;
-		break;
-	case 2:
-		phy_data |= M88E1000_PSCR_MDIX_MANUAL_MODE;
-		break;
-	case 3:
-		phy_data |= M88E1000_PSCR_AUTO_X_1000T;
-		break;
-	case 0:
-	default:
-		phy_data |= M88E1000_PSCR_AUTO_X_MODE;
-		break;
-	}
-#else
 	phy_data |= M88E1000_PSCR_AUTO_X_MODE;
-#endif
 
-#if 0
-	/* Options:
-	 *   disable_polarity_correction = 0 (default)
-	 *       Automatic Correction for Reversed Cable Polarity
-	 *   0 - Disabled
-	 *   1 - Enabled
-	 */
 	phy_data &= ~M88E1000_PSCR_POLARITY_REVERSAL;
-	if (hw->disable_polarity_correction == 1)
-		phy_data |= M88E1000_PSCR_POLARITY_REVERSAL;
-#else
-	phy_data &= ~M88E1000_PSCR_POLARITY_REVERSAL;
-#endif
 	if (e1000_write_phy_reg(hw, M88E1000_PHY_SPEC_CTRL, phy_data) < 0) {
 		DEBUGOUT("PHY Write Error\n");
 		return -E1000_ERR_PHY;
@@ -1306,19 +1148,6 @@ e1000_setup_copper_link(struct eth_device *nic)
 		DEBUGOUT("PHY Write Error\n");
 		return -E1000_ERR_PHY;
 	}
-#if 0
-	/* Does the user want to wait for Auto-Neg to complete here, or
-	 * check at a later time (for example, callback routine).
-	 */
-	if (hw->wait_autoneg_complete) {
-		ret_val = e1000_wait_autoneg(hw);
-		if (ret_val < 0) {
-			DEBUGOUT
-			    ("Error while waiting for autoneg to complete\n");
-			return ret_val;
-		}
-	}
-#else
 	/* If we do not wait for autonegtation to complete I
 	 * do not see a valid link status.
 	 */
@@ -1327,7 +1156,6 @@ e1000_setup_copper_link(struct eth_device *nic)
 		DEBUGOUT("Error while waiting for autoneg to complete\n");
 		return ret_val;
 	}
-#endif
 
 	/* Check link status. Wait up to 100 microseconds for link to become
 	 * valid.
@@ -2605,16 +2433,6 @@ e1000_sw_init(struct eth_device *nic, int cardnum)
 		hw->report_tx_early = 1;
 
 	hw->tbi_compatibility_en = TRUE;
-#if 0
-	hw->wait_autoneg_complete = FALSE;
-	hw->adaptive_ifs = TRUE;
-
-	/* Copper options */
-	if (hw->media_type == e1000_media_type_copper) {
-		hw->mdix = AUTO_ALL_MODES;
-		hw->disable_polarity_correction = FALSE;
-	}
-#endif
 	return E1000_SUCCESS;
 }
 
@@ -2678,12 +2496,6 @@ e1000_configure_tx(struct e1000_hw *hw)
 		tipg |= DEFAULT_82543_TIPG_IPGR2 << E1000_TIPG_IPGR2_SHIFT;
 	}
 	E1000_WRITE_REG(hw, TIPG, tipg);
-#if 0
-	/* Set the Tx Interrupt Delay register */
-	E1000_WRITE_REG(hw, TIDV, adapter->tx_int_delay);
-	if (hw->mac_type >= e1000_82540)
-		E1000_WRITE_REG(hw, TADV, adapter->tx_abs_int_delay);
-#endif
 	/* Program the Transmit Control Register */
 	tctl = E1000_READ_REG(hw, TCTL);
 	tctl &= ~E1000_TCTL_CT;
@@ -2692,15 +2504,6 @@ e1000_configure_tx(struct e1000_hw *hw)
 	E1000_WRITE_REG(hw, TCTL, tctl);
 
 	e1000_config_collision_dist(hw);
-#if 0
-	/* Setup Transmit Descriptor Settings for this adapter */
-	adapter->txd_cmd = E1000_TXD_CMD_IFCS | E1000_TXD_CMD_IDE;
-
-	if (adapter->hw.report_tx_early == 1)
-		adapter->txd_cmd |= E1000_TXD_CMD_RS;
-	else
-		adapter->txd_cmd |= E1000_TXD_CMD_RPS;
-#endif
 }
 
 /**
@@ -2725,26 +2528,8 @@ e1000_setup_rctl(struct e1000_hw *hw)
 		rctl &= ~E1000_RCTL_SBP;
 
 	rctl &= ~(E1000_RCTL_SZ_4096);
-#if 0
-	switch (adapter->rx_buffer_len) {
-	case E1000_RXBUFFER_2048:
-	default:
-#endif
 		rctl |= E1000_RCTL_SZ_2048;
 		rctl &= ~(E1000_RCTL_BSEX | E1000_RCTL_LPE);
-#if 0
-		break;
-	case E1000_RXBUFFER_4096:
-		rctl |= E1000_RCTL_SZ_4096 | E1000_RCTL_BSEX | E1000_RCTL_LPE;
-		break;
-	case E1000_RXBUFFER_8192:
-		rctl |= E1000_RCTL_SZ_8192 | E1000_RCTL_BSEX | E1000_RCTL_LPE;
-		break;
-	case E1000_RXBUFFER_16384:
-		rctl |= E1000_RCTL_SZ_16384 | E1000_RCTL_BSEX | E1000_RCTL_LPE;
-		break;
-	}
-#endif
 	E1000_WRITE_REG(hw, RCTL, rctl);
 }
 
@@ -2759,22 +2544,11 @@ e1000_configure_rx(struct e1000_hw *hw)
 {
 	unsigned long ptr;
 	unsigned long rctl;
-#if 0
-	unsigned long rxcsum;
-#endif
 	rx_tail = 0;
 	/* make sure receives are disabled while setting up the descriptors */
 	rctl = E1000_READ_REG(hw, RCTL);
 	E1000_WRITE_REG(hw, RCTL, rctl & ~E1000_RCTL_EN);
-#if 0
-	/* set the Receive Delay Timer Register */
-
-	E1000_WRITE_REG(hw, RDTR, adapter->rx_int_delay);
-#endif
 	if (hw->mac_type >= e1000_82540) {
-#if 0
-		E1000_WRITE_REG(hw, RADV, adapter->rx_abs_int_delay);
-#endif
 		/* Set the interrupt throttling rate.  Value is calculated
 		 * as DEFAULT_ITR = 1/(MAX_INTS_PER_SEC * 256ns) */
 #define MAX_INTS_PER_SEC        8000
@@ -2795,14 +2569,6 @@ e1000_configure_rx(struct e1000_hw *hw)
 	/* Setup the HW Rx Head and Tail Descriptor Pointers */
 	E1000_WRITE_REG(hw, RDH, 0);
 	E1000_WRITE_REG(hw, RDT, 0);
-#if 0
-	/* Enable 82543 Receive Checksum Offload for TCP and UDP */
-	if ((adapter->hw.mac_type >= e1000_82543) && (adapter->rx_csum == TRUE)) {
-		rxcsum = E1000_READ_REG(hw, RXCSUM);
-		rxcsum |= E1000_RXCSUM_TUOFL;
-		E1000_WRITE_REG(hw, RXCSUM, rxcsum);
-	}
-#endif
 	/* Enable Receives */
 
 	E1000_WRITE_REG(hw, RCTL, rctl);
@@ -2890,9 +2656,6 @@ e1000_disable(struct eth_device *nic)
 	E1000_WRITE_REG(hw, RDT, 0);
 
 	/* put the card in its initial state */
-#if 0
-	E1000_WRITE_REG(hw, CTRL, E1000_CTRL_RST);
-#endif
 	mdelay(10);
 
 }
@@ -2967,13 +2730,8 @@ e1000_initialize(bd_t * bis)
 		sprintf(nic->name, "e1000#%d", card_number);
 
 		/* Are these variables needed? */
-#if 0
-		hw->fc = e1000_fc_none;
-		hw->original_fc = e1000_fc_none;
-#else
 		hw->fc = e1000_fc_default;
 		hw->original_fc = e1000_fc_default;
-#endif
 		hw->autoneg_failed = 0;
 		hw->get_link_status = TRUE;
 		hw->hw_addr = (typeof(hw->hw_addr)) iobase;

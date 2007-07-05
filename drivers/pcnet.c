@@ -29,9 +29,6 @@
 #include <asm/io.h>
 #include <pci.h>
 
-#if 0
-#define	PCNET_DEBUG_LEVEL	0 /* 0=off, 1=init, 2=rx/tx */
-#endif
 
 #if PCNET_DEBUG_LEVEL > 0
 #define	PCNET_DEBUG1(fmt,args...)	printf (fmt ,##args)

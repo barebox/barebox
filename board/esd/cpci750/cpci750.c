@@ -360,10 +360,6 @@ int misc_init_r ()
 	mpsc_init2 ();
 #endif
 
-#if 0
-	/* disable the dcache and MMU */
-	dcache_lock ();
-#endif
 	if (flash_info[3].size < CFG_FLASH_INCREMENT) {
 	        unsigned int flash_offset;
 		unsigned int l;

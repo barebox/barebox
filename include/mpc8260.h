@@ -210,12 +210,6 @@
 /*-----------------------------------------------------------------------
  * PISCR - Periodic Interrupt Status and Control Register		 4-42
  */
-#if 0	/* already defined in asm/immap_8260.h */
-#define PISCR_PS	0x0080		/* Periodic Interrupt Status	*/
-#define PISCR_PIE	0x0004		/* Periodic Interrupt Enable	*/
-#define PISCR_PTF	0x0002		/* Periodic Timer Frequency	*/
-#define PISCR_PTE	0x0001		/* Periodic Timer Enable	*/
-#endif
 
 /*-----------------------------------------------------------------------
  * RSR - Reset Status Register						 5-4

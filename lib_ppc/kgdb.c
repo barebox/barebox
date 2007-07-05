@@ -131,9 +131,6 @@ kgdb_exit(struct pt_regs *regs, kgdb_data *kdp)
 
 	case KGDBEXIT_SINGLE:
 		regs->msr |= MSR_SE;
-#if 0
-		set_msr(msr | MSR_SE);
-#endif
 		break;
 	}
 }

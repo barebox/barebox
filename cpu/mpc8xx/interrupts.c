@@ -178,10 +178,6 @@ void irq_install_handler (int vec, interrupt_handler_t * handler,
 		cpm_vecs[vec].handler = handler;
 		cpm_vecs[vec].arg = arg;
 		immr->im_cpic.cpic_cimr |= (1 << vec);
-#if 0
-		printf ("Install CPM interrupt for vector %d ==> %p\n",
-			vec, handler);
-#endif
 	} else {
 		/* SIU interrupt */
 		if (irq_vecs[vec].handler != NULL) {
@@ -193,10 +189,6 @@ void irq_install_handler (int vec, interrupt_handler_t * handler,
 		irq_vecs[vec].handler = handler;
 		irq_vecs[vec].arg = arg;
 		immr->im_siu_conf.sc_simask |= 1 << (31 - vec);
-#if 0
-		printf ("Install SIU interrupt for vector %d ==> %p\n",
-			vec, handler);
-#endif
 	}
 }
 
@@ -207,19 +199,11 @@ void irq_free_handler (int vec)
 	if ((vec & CPMVEC_OFFSET) != 0) {
 		/* CPM interrupt */
 		vec &= 0xffff;
-#if 0
-		printf ("Free CPM interrupt for vector %d ==> %p\n",
-			vec, cpm_vecs[vec].handler);
-#endif
 		immr->im_cpic.cpic_cimr &= ~(1 << vec);
 		cpm_vecs[vec].handler = NULL;
 		cpm_vecs[vec].arg = NULL;
 	} else {
 		/* SIU interrupt */
-#if 0
-		printf ("Free CPM interrupt for vector %d ==> %p\n",
-			vec, cpm_vecs[vec].handler);
-#endif
 		immr->im_siu_conf.sc_simask &= ~(1 << (31 - vec));
 		irq_vecs[vec].handler = NULL;
 		irq_vecs[vec].arg = NULL;
@@ -268,9 +252,6 @@ void timer_interrupt_cpu (struct pt_regs *regs)
 {
 	volatile immap_t *immr = (immap_t *) CFG_IMMR;
 
-#if 0
-	printf ("*** Timer Interrupt *** ");
-#endif
 	/* Reset Timer Expired and Timers Interrupt Status */
 	immr->im_clkrstk.cark_plprcrk = KAPWR_KEY;
 	__asm__ ("nop");

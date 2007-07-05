@@ -31,9 +31,6 @@
 
 #if defined(CONFIG_FPGA)
 
-#if 0
-#define FPGA_DEBUG              /* define FPGA_DEBUG to get debug messages */
-#endif
 
 /* Local definitions */
 #ifndef CONFIG_MAX_FPGA_DEVICES
@@ -207,10 +204,6 @@ void fpga_init( ulong reloc_off )
 	memset( desc_table, 0, sizeof(desc_table));
 
 	PRINTF( "%s: CONFIG_FPGA = 0x%x\n", __FUNCTION__, CONFIG_FPGA );
-#if 0
-	PRINTF( "%s: CFG_FPGA_XILINX = 0x%x\n", __FUNCTION__, CFG_FPGA_XILINX );
-	PRINTF( "%s: CFG_FPGA_ALTERA = 0x%x\n", __FUNCTION__, CFG_FPGA_ALTERA );
-#endif
 }
 
 /* fpga_count

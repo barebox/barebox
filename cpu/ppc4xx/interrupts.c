@@ -567,9 +567,6 @@ void irq_install_handler (int vec, interrupt_handler_t * handler, void *arg)
 	else
 #endif
 		mtdcr (uicer, mfdcr (uicer) | (0x80000000 >> i));
-#if 0
-	printf ("Install interrupt for vector %d ==> %p\n", vec, handler);
-#endif
 }
 
 void irq_free_handler (int vec)
@@ -594,10 +591,6 @@ void irq_free_handler (int vec)
 	}
 #endif
 
-#if 0
-	printf ("Free interrupt for vector %d ==> %p\n",
-		vec, irq_vecs[vec].handler);
-#endif
 
 #if defined(CONFIG_440)
 #if defined(CONFIG_440GX) || defined(CONFIG_440SPE) || \

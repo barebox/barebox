@@ -370,10 +370,6 @@ int misc_init_r ()
 	mpsc_init2 ();
 #endif
 
-#if 0
-	/* disable the dcache and MMU */
-	dcache_lock ();
-#endif
 	return 0;
 }
 

@@ -144,24 +144,6 @@ void PMAPI PM_callRealMode(
     RMSREGS *sregs)
 {
     /* TODO!! */
-#if 0
-    CLIENT_STRUCT saveRegs;
-
-    /* Bail if we do not have BIOS access (ie: the VxD was dynamically
-     * loaded, and not statically loaded.
-     */
-    if (!_PM_haveBIOS)
-	return;
-
-    TRACE("SDDHELP: Entering PM_callRealMode()\n");
-    Begin_Nest_V86_Exec();
-    LoadV86Registers(&saveRegs,regs,sregs);
-    Simulate_Far_Call(seg, off);
-    Resume_Exec();
-    ReadV86Registers(&saveRegs,regs,sregs);
-    End_Nest_Exec();
-    TRACE("SDDHELP: Exiting PM_callRealMode()\n");
-#endif
 }
 
 /****************************************************************************
@@ -175,31 +157,7 @@ int PMAPI PM_int86(
     RMREGS *out)
 {
     /* TODO!! */
-#if 0
-    RMSREGS         sregs = {0};
-    CLIENT_STRUCT   saveRegs;
-    ushort          oldDisable;
-
-    /* Disable pass-up to our VxD handler so we directly call BIOS */
-    TRACE("SDDHELP: Entering PM_int86()\n");
-    if (disableTSRFlag) {
-	oldDisable = *disableTSRFlag;
-	*disableTSRFlag = 0;
-	}
-    Begin_Nest_V86_Exec();
-    LoadV86Registers(&saveRegs,in,&sregs);
-    Exec_Int(intno);
-    ReadV86Registers(&saveRegs,out,&sregs);
-    End_Nest_Exec();
-
-    /* Re-enable pass-up to our VxD handler if previously enabled */
-    if (disableTSRFlag)
-	*disableTSRFlag = oldDisable;
-
-    TRACE("SDDHELP: Exiting PM_int86()\n");
-#else
     *out = *in;
-#endif
     return out->x.ax;
 }
 
@@ -215,37 +173,6 @@ int PMAPI PM_int86x(
     RMSREGS *sregs)
 {
     /* TODO!! */
-#if 0
-    CLIENT_STRUCT   saveRegs;
-    ushort          oldDisable;
-
-    /* Bail if we do not have BIOS access (ie: the VxD was dynamically
-     * loaded, and not statically loaded.
-     */
-    if (!_PM_haveBIOS) {
-	*out = *in;
-	return out->x.ax;
-	}
-
-    /* Disable pass-up to our VxD handler so we directly call BIOS */
-    TRACE("SDDHELP: Entering PM_int86x()\n");
-    if (disableTSRFlag) {
-	oldDisable = *disableTSRFlag;
-	*disableTSRFlag = 0;
-	}
-    Begin_Nest_V86_Exec();
-    LoadV86Registers(&saveRegs,in,sregs);
-    Exec_Int(intno);
-    ReadV86Registers(&saveRegs,out,sregs);
-    End_Nest_Exec();
-
-    /* Re-enable pass-up to our VxD handler if previously enabled */
-    if (disableTSRFlag)
-	*disableTSRFlag = oldDisable;
-
-    TRACE("SDDHELP: Exiting PM_int86x()\n");
-#else
     *out = *in;
-#endif
     return out->x.ax;
 }

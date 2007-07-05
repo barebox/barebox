@@ -8,10 +8,6 @@
  *	Copyright 2000-2004 Wolfgang Denk, wd@denx.de
  */
 
-#if 0
-#define DEBUG		1	/* general debug */
-#define DEBUG_BOOTP_EXT 1	/* Debug received vendor fields */
-#endif
 
 #ifdef DEBUG_BOOTP_EXT
 #define debug_ext(fmt,args...)	printf (fmt ,##args)
@@ -60,21 +56,6 @@ IPaddr_t NetDHCPServerIP = 0;
 static void DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len);
 
 /* For Debug */
-#if 0
-static char *dhcpmsg2str(int type)
-{
-	switch (type) {
-	case 1:	 return "DHCPDISCOVER"; break;
-	case 2:	 return "DHCPOFFER";	break;
-	case 3:	 return "DHCPREQUEST";	break;
-	case 4:	 return "DHCPDECLINE";	break;
-	case 5:	 return "DHCPACK";	break;
-	case 6:	 return "DHCPNACK";	break;
-	case 7:	 return "DHCPRELEASE";	break;
-	default: return "UNKNOWN/INVALID MSG TYPE"; break;
-	}
-}
-#endif
 
 #if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_VENDOREX)
 extern u8 *dhcp_vendorex_prep (u8 *e); /*rtn new e after add own opts. */

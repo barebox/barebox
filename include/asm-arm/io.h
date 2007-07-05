@@ -25,9 +25,6 @@
 #include <linux/types.h>
 #include <asm/byteorder.h>
 #include <asm/memory.h>
-#if 0	/* XXX###XXX */
-#include <asm/arch/hardware.h>
-#endif	/* XXX###XXX */
 
 /*
  * Generic virtual read/write.  Note that we don't support half-word
@@ -82,9 +79,6 @@ extern void __raw_readsl(unsigned int addr, void *data, int longlen);
 /*
  * Now, pick up the machine-defined IO definitions
  */
-#if 0	/* XXX###XXX */
-#include <asm/arch/io.h>
-#endif	/* XXX###XXX */
 
 /*
  *  IO port access primitives

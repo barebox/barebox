@@ -154,7 +154,4 @@ extern void sysSerialPrintString (char *s);
 /* Define memory barrier function here if needed */
 #define wmb()
 
-#if 0
-#define cpu_to_le32(val) LONGSWAP(val)
-#endif
 #endif /* MM_H */

@@ -253,18 +253,6 @@
 /*
  * DRAM configuration - will be read from VPD later... TODO!
  */
-#if 0
-/* 2x MT48LC16M16A2 - 7.0 ns SDRAMS = 64 MegaBytes Total */
-#define	CFG_DRAM_DDR		0
-#define CFG_DRAM_EMODE		0
-#define CFG_DRAM_MODE		0x008D
-#define CFG_DRAM_CONTROL	0x514F0000
-#define CFG_DRAM_CONFIG1	0xC2233A00
-#define CFG_DRAM_CONFIG2	0x88B70004
-#define	CFG_DRAM_TAP_DEL	0x08
-#define CFG_DRAM_RAM_SIZE	0x19
-#endif
-#if 1
 /* 2x MT48LC16M16A2 - 7.5 ns SDRAMS = 64 MegaBytes Total */
 #define	CFG_DRAM_DDR		0
 #define CFG_DRAM_EMODE		0
@@ -274,7 +262,6 @@
 #define CFG_DRAM_CONFIG2	0x8AD70004
 #define	CFG_DRAM_TAP_DEL	0x08
 #define CFG_DRAM_RAM_SIZE	0x19
-#endif
 
 /*
  * Environment settings

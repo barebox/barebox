@@ -205,11 +205,9 @@
 #ifndef VOICEBLUE_SMALL_FLASH
 #define CONFIG_SILENT_CONSOLE		1	/* enable silent startup */
 
-#if 1	/* feel free to disable for development */
 #define CONFIG_AUTOBOOT_KEYED		/* Enable password protection	*/
 #define CONFIG_AUTOBOOT_PROMPT	"\nVoiceBlue Enterprise - booting...\n"
 #define CONFIG_AUTOBOOT_DELAY_STR	"."	/* 1st "password"	*/
-#endif
 
 /*
  * JFFS2 partitions (mtdparts command line support)

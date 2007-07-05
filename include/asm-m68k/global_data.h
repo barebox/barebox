@@ -58,11 +58,6 @@ typedef	struct	global_data {
 #define	GD_FLG_DEVINIT	0x00002		/* Devices have been initialized	*/
 #define	GD_FLG_SILENT	0x00004		/* Silent mode				*/
 
-#if 0
-extern gd_t *global_data;
-#define DECLARE_GLOBAL_DATA_PTR     gd_t *gd = global_data
-#else
 #define DECLARE_GLOBAL_DATA_PTR     register volatile gd_t *gd asm ("d7")
-#endif
 
 #endif /* __ASM_GBL_DATA_H */

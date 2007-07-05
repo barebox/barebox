@@ -321,10 +321,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 		ulong addr;
 
 		addr = (ulong) (cmdtp->cmd) + gd->reloc_off;
-#if 0
-		printf ("Command \"%s\": 0x%08lx => 0x%08lx\n",
-				cmdtp->name, (ulong) (cmdtp->cmd), addr);
-#endif
 		cmdtp->cmd =
 			(int (*)(struct cmd_tbl_s *, int, int, char *[]))addr;
 

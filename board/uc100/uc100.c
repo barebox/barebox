@@ -21,9 +21,6 @@
  * MA 02111-1307 USA
  */
 
-#if 0
-#define DEBUG
-#endif
 
 #include <common.h>
 #include <mpc8xx.h>

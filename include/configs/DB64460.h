@@ -98,11 +98,7 @@
 #define MV_ETH_DEVS 3
 
 /* #undef CONFIG_ETHER_PORT_MII	 */
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
 #define CONFIG_BOOTDELAY	3	/* autoboot after 5 seconds	*/
-#endif
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 
 

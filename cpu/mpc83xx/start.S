@@ -174,9 +174,7 @@ boot_warm: /* time t 5 */
 	mtlr r5
 	blr
 in_flash:
-#if 1 /* Remapping flash with LAW0. */
 	bl remap_flash_by_law0
-#endif
 #endif	/* CFG_RAMBOOT */
 
 	/* setup the bats */

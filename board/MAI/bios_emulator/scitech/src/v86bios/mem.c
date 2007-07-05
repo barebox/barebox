@@ -36,7 +36,6 @@ CARD8
 mem_rb(CARD32 addr)
 {
   unsigned long result, shift;
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     shift = (addr & 0x3) * 8;
@@ -44,7 +43,6 @@ mem_rb(CARD32 addr)
     result >>= shift;
     return 0xffUL & result;
   } else
-#endif
     return rdb(addr);
 }
 
@@ -52,7 +50,6 @@ CARD16
 mem_rw(CARD32 addr)
 {
   unsigned long result, shift;
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     shift = (addr & 0x2) * 8;
@@ -61,7 +58,6 @@ mem_rw(CARD32 addr)
     result >>= shift;
     return 0xffffUL & result;
   } else
-#endif
     return rdw(addr);
 }
 
@@ -69,13 +65,11 @@ CARD32
 mem_rl(CARD32 addr)
 {
   unsigned long result;
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     result = *(vuip)((unsigned long)vram_map+(addr<<sparse_shift)+(3<<(sparse_shift-2)));
     return result;
   } else
-#endif
     return rdl(addr);
 }
 
@@ -83,13 +77,11 @@ void
 mem_wb(CARD32 addr, CARD8 val)
 {
     unsigned int b = val & 0xffU;
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     *(vuip) ((unsigned long)vram_map + (addr << sparse_shift)) = b * 0x01010101;
     mem_barrier();
   } else
-#endif
     wrb(addr,val);
 }
 
@@ -97,28 +89,24 @@ void
 mem_ww(CARD32 addr, CARD16 val)
 {
   unsigned int w = val & 0xffffU;
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     *(vuip)((unsigned long)vram_map+(addr<<sparse_shift)
 	+(1<<(sparse_shift-2))) = w * 0x00010001;
     mem_barrier();
   } else
-#endif
     wrw(addr,val);
 }
 
 void
 mem_wl(CARD32 addr, CARD32 val)
 {
-#if 1
   if (addr >= 0xA0000 && addr <= 0xBFFFF) {
     addr -= 0xA0000;
     *(vuip)((unsigned long)vram_map+(addr<<sparse_shift)
 	+(3<<(sparse_shift-2))) = val;
     mem_barrier();
   } else
-#endif
     wrl(addr,val);
 }
 #endif

@@ -337,10 +337,6 @@ void lcd_ctrl_init (void *lcdbase)
 		   LCDBIT (LCCR_CLOR_BIT, panel_info.vl_clor)	|
 		   LCDBIT (LCCR_TFT_BIT,  panel_info.vl_tft);
 
-#if 0
-	lccrtmp |= ((SIU_LEVEL5 / 2) << 12);
-	lccrtmp |= LCCR_EIEN;
-#endif
 
 	lcdp->lcd_lccr = lccrtmp;
 	lcdp->lcd_lcsr = 0xFF;		/* Clear pending interrupts */

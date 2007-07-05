@@ -12,9 +12,6 @@
 #define _ASM_IO_H
 
 #include <linux/config.h>
-#if 0
-#include <linux/pagemap.h>
-#endif
 #include <asm/addrspace.h>
 #include <asm/byteorder.h>
 
@@ -135,19 +132,6 @@ extern unsigned long isa_slot_offset;
 
 extern void * __ioremap(unsigned long offset, unsigned long size, unsigned long flags);
 
-#if 0
-extern inline void *ioremap(unsigned long offset, unsigned long size)
-{
-	return __ioremap(offset, size, _CACHE_UNCACHED);
-}
-
-extern inline void *ioremap_nocache(unsigned long offset, unsigned long size)
-{
-	return __ioremap(offset, size, _CACHE_UNCACHED);
-}
-
-extern void iounmap(void *addr);
-#endif
 
 /*
  * XXX We need system specific versions of these to handle EISA address bits

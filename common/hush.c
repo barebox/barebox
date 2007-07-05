@@ -118,16 +118,8 @@ extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /
 /* #include <dmalloc.h> */
 /* #define DEBUG_SHELL */
 
-#if 1
 #include "busybox.h"
 #include "cmdedit.h"
-#else
-#define applet_name "hush"
-#include "standalone.h"
-#define hush_main main
-#undef CONFIG_FEATURE_SH_FANCY_PROMPT
-#define BB_BANNER
-#endif
 #endif
 #define SPECIAL_VAR_SYMBOL 03
 #ifndef __U_BOOT__
@@ -1480,14 +1472,6 @@ static int checkjobs(struct pipe* fg_pipe)
 			pi->stopped_progs++;
 			pi->progs[prognum].is_stopped = 1;
 
-#if 0
-			/* Printing this stuff is a pain, since it tends to
-			 * overwrite the prompt an inconveinient moments.  So
-			 * don't do that.  */
-			if (pi->stopped_progs == pi->num_progs) {
-				printf("\n"JOB_STATUS_FORMAT, pi->jobid, "Stopped", pi->text);
-			}
-#endif
 		}
 	}
 
@@ -2125,18 +2109,6 @@ static int glob_needed(const char *s)
 	return 0;
 }
 
-#if 0
-static void globprint(glob_t *pglob)
-{
-	int i;
-	debug_printf("glob_t at %p:\n", pglob);
-	debug_printf("  gl_pathc=%d  gl_pathv=%p  gl_offs=%d  gl_flags=%d\n",
-		pglob->gl_pathc, pglob->gl_pathv, pglob->gl_offs, pglob->gl_flags);
-	for (i=0; i<pglob->gl_pathc; i++)
-		debug_printf("pglob->gl_pathv[%d] = %p = %s\n", i,
-			pglob->gl_pathv[i], pglob->gl_pathv[i]);
-}
-#endif
 
 static int xglob(o_string *dest, int flags, glob_t *pglob)
 {
@@ -2693,7 +2665,6 @@ static int redirect_opt_num(o_string *o)
 FILE *generate_stream_from_list(struct pipe *head)
 {
 	FILE *pf;
-#if 1
 	int pid, channel[2];
 	if (pipe(channel)<0) perror_msg_and_die("pipe");
 	pid=fork();
@@ -2705,23 +2676,12 @@ FILE *generate_stream_from_list(struct pipe *head)
 			dup2(channel[1],1);
 			close(channel[1]);
 		}
-#if 0
-#define SURROGATE "surrogate response"
-		write(1,SURROGATE,sizeof(SURROGATE));
-		_exit(run_list(head));
-#else
 		_exit(run_list_real(head));   /* leaks memory */
-#endif
 	}
 	debug_printf("forked child %d\n",pid);
 	close(channel[1]);
 	pf = fdopen(channel[0],"r");
 	debug_printf("pipe on FILE *%p\n",pf);
-#else
-	free_pipe_list(head,0);
-	pf=popen("echo surrogate response","r");
-	debug_printf("started fake pipe on FILE *%p\n",pf);
-#endif
 	return pf;
 }
 
@@ -2984,14 +2944,6 @@ int parse_stream(o_string *dest, struct p_context *ctx,
 				debug_printf("leaving parse_stream (triggered)\n");
 				return 0;
 			}
-#if 0
-			if (ch=='\n') {
-				/* Yahoo!  Time to run with it! */
-				done_pipe(ctx,PIPE_SEQ);
-				run_list(ctx->list_head);
-				initialize_context(ctx);
-			}
-#endif
 			if (m!=2) switch (ch) {
 		case '#':
 			if (dest->length == 0 && !dest->quote) {

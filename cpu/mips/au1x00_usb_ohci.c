@@ -1284,10 +1284,6 @@ int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		/* abuse timeout */
 		timeout = rh_check_port_status(&gohci);
 		if (timeout >= 0) {
-#if 0 /* this does nothing useful, but leave it here in case that changes */
-			/* the called routine adds 1 to the passed value */
-			usb_hub_port_connect_change(gohci.rh.dev, timeout - 1);
-#endif
 			/*
 			 * XXX
 			 * This is potentially dangerous because it assumes

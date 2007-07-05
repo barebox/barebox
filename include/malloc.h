@@ -250,9 +250,6 @@
 extern "C" {
 #endif
 
-#if 0	/* not for U-Boot */
-#include <stdio.h>	/* needed for malloc_stats */
-#endif
 
 
 /*

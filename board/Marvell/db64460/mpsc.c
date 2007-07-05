@@ -193,11 +193,6 @@ static int mpsc_putchar_sdma (char ch)
 	p[2] = 0;		/* 8 */
 	p[3] = (unsigned int) &p[4];	/* c */
 
-#if 0
-	p[9] = DESC_FIRST | DESC_LAST;
-	p[10] = (unsigned int) &p[0];
-	p[11] = (unsigned int) &p[12];
-#endif
 
 	FLUSH_DCACHE (&p[0], &p[8]);
 
@@ -587,18 +582,6 @@ static int galbrg_set_CUV (int channel, int value)
 	return 0;
 }
 
-#if 0
-static int galbrg_reset (int channel)
-{
-	unsigned int temp;
-
-	temp = GTREGREAD (GALBRG_0_CONFREG + (channel * GALBRG_REG_GAP));
-	temp |= 0x20000;
-	GT_REG_WRITE (GALBRG_0_CONFREG + (channel * GALBRG_REG_GAP), temp);
-
-	return 0;
-}
-#endif
 
 static int galsdma_set_RFT (int channel)
 {

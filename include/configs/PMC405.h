@@ -169,15 +169,9 @@
 #define CFG_PCI_PTM1LA  (bd->bi_memstart) /* point to sdram               */
 #define CFG_PCI_PTM1MS  (~(bd->bi_memsize - 1) | 1) /* memsize, enable hard-wired to 1 */
 #define CFG_PCI_PTM1PCI 0x00000000      /* Host: use this pci address   */
-#if 1
 #define CFG_PCI_PTM2LA	0xef000000	/* point to internal regs       */
 #define CFG_PCI_PTM2MS  0xff000001      /* 16MB, enable                 */
 #define CFG_PCI_PTM2PCI 0x00000000      /* Host: use this pci address   */
-#else /* old mapping */
-#define CFG_PCI_PTM2LA  0xffc00000      /* point to flash               */
-#define CFG_PCI_PTM2MS  0xffc00001      /* 4MB, enable                  */
-#define CFG_PCI_PTM2PCI 0x04000000      /* Host: use this pci address   */
-#endif
 /*-----------------------------------------------------------------------
  * Start addresses for the final memory configuration
  * (Set up by the startup code)

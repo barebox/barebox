@@ -859,14 +859,8 @@ void get_spd_info(unsigned long*   dimm_populated,
 		if ((num_of_bytes != 0) && (total_size != 0)) {
 			dimm_populated[dimm_num] = TRUE;
 			dimm_found = TRUE;
-#if 0
-			printf("DIMM slot %lu: populated\n", dimm_num);
-#endif
 		} else {
 			dimm_populated[dimm_num] = FALSE;
-#if 0
-			printf("DIMM slot %lu: Not populated\n", dimm_num);
-#endif
 		}
 	}
 
@@ -888,9 +882,6 @@ void check_mem_type(unsigned long*   dimm_populated,
 			dimm_type = spd_read(iic0_dimm_addr[dimm_num], 2);
 			switch (dimm_type) {
 			case 7:
-#if 0
-				printf("DIMM slot %lu: DDR SDRAM detected\n", dimm_num);
-#endif
 				break;
 			default:
 				printf("ERROR: Unsupported DIMM detected in slot %lu.\n",
@@ -920,9 +911,6 @@ void check_volt_type(unsigned long*   dimm_populated,
 				       dimm_num);
 				hang();
 			} else {
-#if 0
-				printf("DIMM %lu voltage level supported.\n", dimm_num);
-#endif
 			}
 			break;
 		}
@@ -1380,9 +1368,6 @@ void program_tr0 (unsigned long* dimm_populated,
 		break;
 	}
 
-#if 0
-	printf("tr0: %x\n", tr0);
-#endif
 	mtsdram(mem_tr0, tr0);
 }
 
@@ -1597,9 +1582,6 @@ void program_tr1 (void)
 	}
 	tr1 |= SDRAM_TR1_RDCT_ENCODE(rdclt_average);
 
-#if 0
-	printf("tr1: %x\n", tr1);
-#endif
 	/*
 	 * program SDRAM Timing Register 1 TR1
 	 */

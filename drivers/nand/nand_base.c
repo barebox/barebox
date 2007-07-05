@@ -50,25 +50,6 @@
  */
 
 /* XXX U-BOOT XXX */
-#if 0
-#include <linux/delay.h>
-#include <linux/errno.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
-#include <linux/types.h>
-#include <linux/mtd/mtd.h>
-#include <linux/mtd/nand.h>
-#include <linux/mtd/nand_ecc.h>
-#include <linux/mtd/compatmac.h>
-#include <linux/interrupt.h>
-#include <linux/bitops.h>
-#include <asm/io.h>
-
-#ifdef CONFIG_MTD_PARTITIONS
-#include <linux/mtd/partitions.h>
-#endif
-
-#endif
 
 #include <common.h>
 
@@ -141,12 +122,6 @@ static int nand_write_ecc (struct mtd_info *mtd, loff_t to, size_t len,
 			   size_t * retlen, const u_char * buf, u_char * eccbuf, struct nand_oobinfo *oobsel);
 static int nand_write_oob (struct mtd_info *mtd, loff_t to, size_t len, size_t * retlen, const u_char *buf);
 /* XXX U-BOOT XXX */
-#if 0
-static int nand_writev (struct mtd_info *mtd, const struct kvec *vecs,
-			unsigned long count, loff_t to, size_t * retlen);
-static int nand_writev_ecc (struct mtd_info *mtd, const struct kvec *vecs,
-			unsigned long count, loff_t to, size_t * retlen, u_char *eccbuf, struct nand_oobinfo *oobsel);
-#endif
 static int nand_erase (struct mtd_info *mtd, struct erase_info *instr);
 static void nand_sync (struct mtd_info *mtd);
 
@@ -169,32 +144,11 @@ static void nand_get_device (struct nand_chip *this, struct mtd_info *mtd, int n
  * Deselect, release chip lock and wake up anyone waiting on the device
  */
 /* XXX U-BOOT XXX */
-#if 0
-static void nand_release_device (struct mtd_info *mtd)
-{
-	struct nand_chip *this = mtd->priv;
-
-	/* De-select the NAND device */
-	this->select_chip(mtd, -1);
-	/* Do we have a hardware controller ? */
-	if (this->controller) {
-		spin_lock(&this->controller->lock);
-		this->controller->active = NULL;
-		spin_unlock(&this->controller->lock);
-	}
-	/* Release the chip */
-	spin_lock (&this->chip_lock);
-	this->state = FL_READY;
-	wake_up (&this->wq);
-	spin_unlock (&this->chip_lock);
-}
-#else
 static void nand_release_device (struct mtd_info *mtd)
 {
 	struct nand_chip *this = mtd->priv;
 	this->select_chip(mtd, -1);	/* De-select the NAND device */
 }
-#endif
 
 /**
  * nand_read_byte - [DEFAULT] read one byte from the chip
@@ -741,45 +695,7 @@ static void nand_command_lp (struct mtd_info *mtd, unsigned command, int column,
  * Get the device and lock it for exclusive access
  */
 /* XXX U-BOOT XXX */
-#if 0
-static void nand_get_device (struct nand_chip *this, struct mtd_info *mtd, int new_state)
-{
-	struct nand_chip *active = this;
-
-	DECLARE_WAITQUEUE (wait, current);
-
-	/*
-	 * Grab the lock and see if the device is available
-	*/
-retry:
-	/* Hardware controller shared among independend devices */
-	if (this->controller) {
-		spin_lock (&this->controller->lock);
-		if (this->controller->active)
-			active = this->controller->active;
-		else
-			this->controller->active = this;
-		spin_unlock (&this->controller->lock);
-	}
-
-	if (active == this) {
-		spin_lock (&this->chip_lock);
-		if (this->state == FL_READY) {
-			this->state = new_state;
-			spin_unlock (&this->chip_lock);
-			return;
-		}
-	}
-	set_current_state (TASK_UNINTERRUPTIBLE);
-	add_wait_queue (&active->wq, &wait);
-	spin_unlock (&active->chip_lock);
-	schedule ();
-	remove_wait_queue (&active->wq, &wait);
-	goto retry;
-}
-#else
 static void nand_get_device (struct nand_chip *this, struct mtd_info *mtd, int new_state) {}
-#endif
 
 /**
  * nand_wait - [DEFAULT]  wait until the command is done
@@ -793,46 +709,6 @@ static void nand_get_device (struct nand_chip *this, struct mtd_info *mtd, int n
  *
 */
 /* XXX U-BOOT XXX */
-#if 0
-static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
-{
-	unsigned long	timeo = jiffies;
-	int	status;
-
-	if (state == FL_ERASING)
-		 timeo += (HZ * 400) / 1000;
-	else
-		 timeo += (HZ * 20) / 1000;
-
-	/* Apply this short delay always to ensure that we do wait tWB in
-	 * any case on any machine. */
-	ndelay (100);
-
-	if ((state == FL_ERASING) && (this->options & NAND_IS_AND))
-		this->cmdfunc (mtd, NAND_CMD_STATUS_MULTI, -1, -1);
-	else
-		this->cmdfunc (mtd, NAND_CMD_STATUS, -1, -1);
-
-	while (time_before(jiffies, timeo)) {
-		/* Check, if we were interrupted */
-		if (this->state != state)
-			return 0;
-
-		if (this->dev_ready) {
-			if (this->dev_ready(mtd))
-				break;
-		} else {
-			if (this->read_byte(mtd) & NAND_STATUS_READY)
-				break;
-		}
-		yield ();
-	}
-	status = (int) this->read_byte(mtd);
-	return status;
-
-	return 0;
-}
-#else
 static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
 {
 	unsigned long	timeo;
@@ -870,7 +746,6 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
 
 	return this->read_byte(mtd);
 }
-#endif
 
 /**
  * nand_write_page - [GENERIC] write one page
@@ -1209,15 +1084,7 @@ static int nand_read_ecc (struct mtd_info *mtd, loff_t from, size_t len,
 		switch (eccmode) {
 		case NAND_ECC_NONE: {	/* No ECC, Read in a page */
 /* XXX U-BOOT XXX */
-#if 0
-			static unsigned long lastwhinge = 0;
-			if ((lastwhinge / HZ) != (jiffies / HZ)) {
-				printk (KERN_WARNING "Reading data from NAND FLASH without ECC is not recommended\n");
-				lastwhinge = jiffies;
-			}
-#else
 			puts("Reading data from NAND FLASH without ECC is not recommended\n");
-#endif
 			this->read_buf(mtd, data_poi, end);
 			break;
 		}
@@ -1854,190 +1721,6 @@ out:
 }
 
 /* XXX U-BOOT XXX */
-#if 0
-/**
- * nand_writev - [MTD Interface] compabilty function for nand_writev_ecc
- * @mtd:	MTD device structure
- * @vecs:	the iovectors to write
- * @count:	number of vectors
- * @to:		offset to write to
- * @retlen:	pointer to variable to store the number of written bytes
- *
- * NAND write with kvec. This just calls the ecc function
- */
-static int nand_writev (struct mtd_info *mtd, const struct kvec *vecs, unsigned long count,
-		loff_t to, size_t * retlen)
-{
-	return (nand_writev_ecc (mtd, vecs, count, to, retlen, NULL, NULL));
-}
-
-/**
- * nand_writev_ecc - [MTD Interface] write with iovec with ecc
- * @mtd:	MTD device structure
- * @vecs:	the iovectors to write
- * @count:	number of vectors
- * @to:		offset to write to
- * @retlen:	pointer to variable to store the number of written bytes
- * @eccbuf:	filesystem supplied oob data buffer
- * @oobsel:	oob selection structure
- *
- * NAND write with iovec with ecc
- */
-static int nand_writev_ecc (struct mtd_info *mtd, const struct kvec *vecs, unsigned long count,
-		loff_t to, size_t * retlen, u_char *eccbuf, struct nand_oobinfo *oobsel)
-{
-	int i, page, len, total_len, ret = -EIO, written = 0, chipnr;
-	int oob, numpages, autoplace = 0, startpage;
-	struct nand_chip *this = mtd->priv;
-	int	ppblock = (1 << (this->phys_erase_shift - this->page_shift));
-	u_char *oobbuf, *bufstart;
-
-	/* Preset written len for early exit */
-	*retlen = 0;
-
-	/* Calculate total length of data */
-	total_len = 0;
-	for (i = 0; i < count; i++)
-		total_len += (int) vecs[i].iov_len;
-
-	DEBUG (MTD_DEBUG_LEVEL3,
-	       "nand_writev: to = 0x%08x, len = %i, count = %ld\n", (unsigned int) to, (unsigned int) total_len, count);
-
-	/* Do not allow write past end of page */
-	if ((to + total_len) > mtd->size) {
-		DEBUG (MTD_DEBUG_LEVEL0, "nand_writev: Attempted write past end of device\n");
-		return -EINVAL;
-	}
-
-	/* reject writes, which are not page aligned */
-	if (NOTALIGNED (to) || NOTALIGNED(total_len)) {
-		printk (KERN_NOTICE "nand_write_ecc: Attempt to write not page aligned data\n");
-		return -EINVAL;
-	}
-
-	/* Grab the lock and see if the device is available */
-	nand_get_device (this, mtd, FL_WRITING);
-
-	/* Get the current chip-nr */
-	chipnr = (int) (to >> this->chip_shift);
-	/* Select the NAND device */
-	this->select_chip(mtd, chipnr);
-
-	/* Check, if it is write protected */
-	if (nand_check_wp(mtd))
-		goto out;
-
-	/* if oobsel is NULL, use chip defaults */
-	if (oobsel == NULL)
-		oobsel = &mtd->oobinfo;
-
-	/* Autoplace of oob data ? Use the default placement scheme */
-	if (oobsel->useecc == MTD_NANDECC_AUTOPLACE) {
-		oobsel = this->autooob;
-		autoplace = 1;
-	}
-	if (oobsel->useecc == MTD_NANDECC_AUTOPL_USR)
-		autoplace = 1;
-
-	/* Setup start page */
-	page = (int) (to >> this->page_shift);
-	/* Invalidate the page cache, if we write to the cached page */
-	if (page <= this->pagebuf && this->pagebuf < ((to + total_len) >> this->page_shift))
-		this->pagebuf = -1;
-
-	startpage = page & this->pagemask;
-
-	/* Loop until all kvec' data has been written */
-	len = 0;
-	while (count) {
-		/* If the given tuple is >= pagesize then
-		 * write it out from the iov
-		 */
-		if ((vecs->iov_len - len) >= mtd->oobblock) {
-			/* Calc number of pages we can write
-			 * out of this iov in one go */
-			numpages = (vecs->iov_len - len) >> this->page_shift;
-			/* Do not cross block boundaries */
-			numpages = min (ppblock - (startpage & (ppblock - 1)), numpages);
-			oobbuf = nand_prepare_oobbuf (mtd, NULL, oobsel, autoplace, numpages);
-			bufstart = (u_char *)vecs->iov_base;
-			bufstart += len;
-			this->data_poi = bufstart;
-			oob = 0;
-			for (i = 1; i <= numpages; i++) {
-				/* Write one page. If this is the last page to write
-				 * then use the real pageprogram command, else select
-				 * cached programming if supported by the chip.
-				 */
-				ret = nand_write_page (mtd, this, page & this->pagemask,
-					&oobbuf[oob], oobsel, i != numpages);
-				if (ret)
-					goto out;
-				this->data_poi += mtd->oobblock;
-				len += mtd->oobblock;
-				oob += mtd->oobsize;
-				page++;
-			}
-			/* Check, if we have to switch to the next tuple */
-			if (len >= (int) vecs->iov_len) {
-				vecs++;
-				len = 0;
-				count--;
-			}
-		} else {
-			/* We must use the internal buffer, read data out of each
-			 * tuple until we have a full page to write
-			 */
-			int cnt = 0;
-			while (cnt < mtd->oobblock) {
-				if (vecs->iov_base != NULL && vecs->iov_len)
-					this->data_buf[cnt++] = ((u_char *) vecs->iov_base)[len++];
-				/* Check, if we have to switch to the next tuple */
-				if (len >= (int) vecs->iov_len) {
-					vecs++;
-					len = 0;
-					count--;
-				}
-			}
-			this->pagebuf = page;
-			this->data_poi = this->data_buf;
-			bufstart = this->data_poi;
-			numpages = 1;
-			oobbuf = nand_prepare_oobbuf (mtd, NULL, oobsel, autoplace, numpages);
-			ret = nand_write_page (mtd, this, page & this->pagemask,
-				oobbuf, oobsel, 0);
-			if (ret)
-				goto out;
-			page++;
-		}
-
-		this->data_poi = bufstart;
-		ret = nand_verify_pages (mtd, this, startpage, numpages, oobbuf, oobsel, chipnr, 0);
-		if (ret)
-			goto out;
-
-		written += mtd->oobblock * numpages;
-		/* All done ? */
-		if (!count)
-			break;
-
-		startpage = page & this->pagemask;
-		/* Check, if we cross a chip boundary */
-		if (!startpage) {
-			chipnr++;
-			this->select_chip(mtd, -1);
-			this->select_chip(mtd, chipnr);
-		}
-	}
-	ret = 0;
-out:
-	/* Deselect and wake up anyone waiting on the device */
-	nand_release_device(mtd);
-
-	*retlen = written;
-	return ret;
-}
-#endif
 
 /**
  * single_erease_cmd - [GENERIC] NAND standard block erase command function
@@ -2584,12 +2267,6 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 	}
 
 /* XXX U-BOOT XXX */
-#if 0
-	/* Initialize state, waitqueue and spinlock */
-	this->state = FL_READY;
-	init_waitqueue_head (&this->wq);
-	spin_lock_init (&this->chip_lock);
-#endif
 
 	/* De-select the device */
 	this->select_chip(mtd, -1);
@@ -2611,28 +2288,14 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 	mtd->read_oob = nand_read_oob;
 	mtd->write_oob = nand_write_oob;
 /* XXX U-BOOT XXX */
-#if 0
-	mtd->readv = NULL;
-	mtd->writev = nand_writev;
-	mtd->writev_ecc = nand_writev_ecc;
-#endif
 	mtd->sync = nand_sync;
 /* XXX U-BOOT XXX */
-#if 0
-	mtd->lock = NULL;
-	mtd->unlock = NULL;
-	mtd->suspend = NULL;
-	mtd->resume = NULL;
-#endif
 	mtd->block_isbad = nand_block_isbad;
 	mtd->block_markbad = nand_block_markbad;
 
 	/* and make the autooob the default one */
 	memcpy(&mtd->oobinfo, this->autooob, sizeof(mtd->oobinfo));
 /* XXX U-BOOT XXX */
-#if 0
-	mtd->owner = THIS_MODULE;
-#endif
 	/* Build bad block table */
 	return this->scan_bbt (mtd);
 }
@@ -2651,9 +2314,6 @@ void nand_release (struct mtd_info *mtd)
 #endif
 	/* Deregister the device */
 /* XXX U-BOOT XXX */
-#if 0
-	del_mtd_device (mtd);
-#endif
 	/* Free bad block table memory, if allocated */
 	if (this->bbt)
 		kfree (this->bbt);

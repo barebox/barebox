@@ -812,21 +812,6 @@ static void gt_setup_ide (struct pci_controller *hose,
 
 /* TODO BJW: Change this for DB64360. This was pulled from the EV64260  */
 /* and is curently not called *. */
-#if 0
-static void gt_fixup_irq (struct pci_controller *hose, pci_dev_t dev)
-{
-	unsigned char pin, irq;
-
-	pci_read_config_byte (dev, PCI_INTERRUPT_PIN, &pin);
-
-	if (pin == 1) {		/* only allow INT A */
-		irq = pci_irq_swizzle[(PCI_HOST) hose->
-				      cfg_addr][PCI_DEV (dev)];
-		if (irq)
-			pci_write_config_byte (dev, PCI_INTERRUPT_LINE, irq);
-	}
-}
-#endif
 
 struct pci_config_table gt_config_table[] = {
 	{PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE,

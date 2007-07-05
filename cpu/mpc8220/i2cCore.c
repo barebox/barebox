@@ -191,9 +191,7 @@ STATUS i2c_start (PSI2C pi2c, PI2CSET pi2cSet)
 #else
 	UINT8 ByteOffset = pi2cSet->str_adr;
 #endif
-#if 1
 	UINT8 tmp = 0;
-#endif
 	UINT8 Addr = pi2cSet->slv_adr;
 
 	pi2c->cr |= I2C_CTL_STA;	/* Generate start signal	*/
@@ -207,13 +205,6 @@ STATUS i2c_start (PSI2C pi2c, PI2CSET pi2cSet)
 		return ERROR;
 	}
 #ifdef TWOBYTES
-#   if 0
-	/* Issue the offset to start */
-	if (i2c_write2byte (pi2c, &ByteOffset) != OK) {
-		i2c_stop (pi2c);	/* Disable I2c			*/
-		return ERROR;
-	}
-#endif
 	tmp = (ByteOffset >> 8) & 0xff;
 	if (i2c_writebyte (pi2c, &tmp) != OK) {
 		i2c_stop (pi2c);	/* Disable I2c			*/

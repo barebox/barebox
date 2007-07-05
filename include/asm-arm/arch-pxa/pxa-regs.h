@@ -1899,11 +1899,6 @@ typedef void		(*ExcpHndlr) (void) ;
 					/*  [0..255 Tln]		   */ \
 			((Tln) << FShft (LCCR2_BFW))
 
-#if 0
-#define LCCR3_PCD	(0xff)		/* Pixel clock divisor */
-#define LCCR3_ACB	(0xff << 8)	/* AC Bias pin frequency */
-#define LCCR3_ACB_S	8
-#endif
 
 #define LCCR3_API	(0xf << 16)	/* AC Bias pin trasitions per interrupt */
 #define LCCR3_API_S	16
@@ -1911,10 +1906,6 @@ typedef void		(*ExcpHndlr) (void) ;
 #define LCCR3_HSP	(1 << 21)	/* horizontal sync polarity */
 #define LCCR3_PCP	(1 << 22)	/* pixel clock polarity */
 #define LCCR3_OEP	(1 << 23)	/* output enable polarity */
-#if 0
-#define LCCR3_BPP	(7 << 24)	/* bits per pixel */
-#define LCCR3_BPP_S	24
-#endif
 #define LCCR3_DPC	(1 << 27)	/* double pixel clock mode */
 
 #define LCCR3_PDFOR_0	 (0 << 30)

@@ -285,9 +285,7 @@ static int plb2800_eth_recv(struct eth_device *dev)
 		}
 		else
 		{
-#if 1
 			printf("Zero length!!!\n");
-#endif
 		}
 
 		rx_new = (rx_new + 1) % NUM_RX_DESC;

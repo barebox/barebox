@@ -40,14 +40,7 @@ struct b_jffs2_info {
 static inline int
 hdr_crc(struct jffs2_unknown_node *node)
 {
-#if 1
 	u32 crc = crc32_no_comp(0, (unsigned char *)node, sizeof(struct jffs2_unknown_node) - 4);
-#else
-	/* what's the semantics of this? why is this here? */
-	u32 crc = crc32_no_comp(~0, (unsigned char *)node, sizeof(struct jffs2_unknown_node) - 4);
-
-	crc ^= ~0;
-#endif
 	if (node->hdr_crc != crc) {
 		return 0;
 	} else {

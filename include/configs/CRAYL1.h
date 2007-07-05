@@ -209,7 +209,6 @@
 /*-----------------------------------------------------------------------
  * Definitions for initial stack pointer and data area (in OnChipMem )
  */
-#if 1
 /* On Chip Memory location */
 #define CFG_TEMP_STACK_OCM	1
 #define CFG_OCM_DATA_ADDR	0xF0000000
@@ -220,15 +219,6 @@
 #define CFG_GBL_DATA_SIZE      256  /* size in bytes reserved for initial data */
 #define CFG_GBL_DATA_OFFSET    (CFG_INIT_RAM_END - CFG_GBL_DATA_SIZE)
 #define CFG_INIT_SP_OFFSET      CFG_GBL_DATA_OFFSET
-#else
-#define CFG_OCM_DATA_ADDR	0xF0000000
-#define CFG_OCM_DATA_SIZE	0x1000
-#define CFG_INIT_RAM_ADDR	CFG_OCM_DATA_ADDR 	/* inside of On Chip SRAM    */
-#define CFG_INIT_RAM_END	CFG_OCM_DATA_SIZE	/* End of On Chip SRAM	     */
-#define CFG_GBL_DATA_SIZE	64	/* size in bytes reserved for initial data */
-#define CFG_GBL_DATA_OFFSET	(CFG_INIT_RAM_END - CFG_GBL_DATA_SIZE)
-#define CFG_INIT_SP_OFFSET	CFG_GBL_DATA_OFFSET
-#endif
 
 /*-----------------------------------------------------------------------
  * Definitions for Serial Presence Detect EEPROM address

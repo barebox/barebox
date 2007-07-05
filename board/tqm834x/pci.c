@@ -100,10 +100,6 @@ pci_init_board(void)
 	 * (13 oct 05)
 	 */
 	reg32 = OCCR_PCICOE1;
-#if 0
-	/* enabling all PCI_CLK_OUTPUT lines HANGS the board... */
-	reg32 = 0xff000000;
-#endif
 	if (clk->spmr & SPMR_CKID) {
 		/* PCI Clock is half CONFIG_83XX_CLKIN so need to set up OCCR
 		 * fields accordingly */

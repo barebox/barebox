@@ -235,9 +235,6 @@ static int fec_init(struct eth_device* dev, bd_t *bis)
     fcc_enet_t *pram_ptr;
     unsigned long mem_addr;
 
-#if 0
-    mii_discover_phy();
-#endif
 
     /* 28.9 - (1-2): ioports have been set up already */
 

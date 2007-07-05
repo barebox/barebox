@@ -145,11 +145,7 @@
 #define CFG_OR4_PRELIM		0xfc000cc1
 
 #define CFG_BR5_PRELIM		0xfc000801	/* 16M CS5 misc devices */
-#if 1
   #define CFG_OR5_PRELIM	0xff000ff7
-#else
-  #define CFG_OR5_PRELIM	0xff0000f0
-#endif
 
 #define CFG_BR6_PRELIM		0xe0001801	/* 64M, 32-bit flash */
 #define CFG_OR6_PRELIM		0xfc000ff7
@@ -188,25 +184,16 @@
 #define CFG_NS16550
 #define CFG_NS16550_SERIAL
 #define CFG_NS16550_REG_SIZE	1
-#if 0
-#define CFG_NS16550_CLK		1843200 /* get_bus_freq(0) */
-#else
 #define CFG_NS16550_CLK		264000000 /* get_bus_freq(0) */
-#endif
 
 #define CONFIG_BAUDRATE		9600
 
 #define CFG_BAUDRATE_TABLE  \
 	{300, 600, 1200, 2400, 4800, 9600, 19200, 38400,115200}
 
-#if 0
-#define CFG_NS16550_COM1	((CFG_BR5_PRELIM & 0xff000000)+0x00700000)
-#define CFG_NS16550_COM2	((CFG_BR5_PRELIM & 0xff000000)+0x00800000)
-#else
 /* SBC8540 uses internal COMM controller */
 #define CFG_NS16550_COM1	((CFG_CCSRBAR & 0xfff00000)+0x00004500)
 #define CFG_NS16550_COM2	((CFG_CCSRBAR & 0xfff00000)+0x00004600)
-#endif
 
 /* Use the HUSH parser */
 #define CFG_HUSH_PARSER
@@ -289,10 +276,6 @@
 
 #define CFG_FLASH_CFI		1	/* Flash is CFI conformant		*/
 #define CFG_FLASH_CFI_DRIVER	1	/* Use the common driver		*/
-#if 0
-#define CFG_FLASH_USE_BUFFER_WRITE 1    /* use buffered writes (20x faster)     */
-#define CFG_FLASH_PROTECTION		/* use hardware protection		*/
-#endif
 #define CFG_MAX_FLASH_SECT	64	/* max number of sectors on one chip	*/
 #define CFG_MAX_FLASH_BANKS	1	/* max number of memory banks		*/
 
@@ -302,14 +285,6 @@
 
 #define CFG_MONITOR_BASE	TEXT_BASE	/* start of monitor	*/
 
-#if 0
-/* XXX This doesn't work and I don't want to fix it */
-#if (CFG_MONITOR_BASE < CFG_FLASH_BASE)
-  #define CFG_RAMBOOT
-#else
-  #undef  CFG_RAMBOOT
-#endif
-#endif
 
 /* Environment */
 #if !defined(CFG_RAMBOOT)

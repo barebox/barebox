@@ -840,10 +840,3 @@ xyzModem_error (int err)
 /*
  * RedBoot interface
  */
-#if 0				/* SB */
-GETC_IO_FUNCS (xyzModem_io, xyzModem_stream_open, xyzModem_stream_close,
-	       xyzModem_stream_terminate, xyzModem_stream_read,
-	       xyzModem_error);
-RedBoot_load (xmodem, xyzModem_io, false, false, xyzModem_xmodem);
-RedBoot_load (ymodem, xyzModem_io, false, false, xyzModem_ymodem);
-#endif

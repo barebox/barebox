@@ -276,14 +276,6 @@ extern "C" {
 
 /* Macros */
 
-#if 0
-SK_AC		*pAC		/* adapter context */
-SK_U32		PortNum		/* receiving port */
-unsigned	PktLen		/* received packet's length */
-SK_BOOL		IsBc		/* Flag: packet is broadcast */
-unsigned	*pOffset	/* offs. of bytes to present to SK_RLMT_LOOKAHEAD */
-unsigned	*pNumBytes	/* #Bytes to present to SK_RLMT_LOOKAHEAD */
-#endif	/* 0 */
 
 #define SK_RLMT_PRE_LOOKAHEAD(pAC,PortNum,PktLen,IsBc,pOffset,pNumBytes) { \
 	SK_AC	*_pAC; \
@@ -321,20 +313,6 @@ unsigned	*pNumBytes	/* #Bytes to present to SK_RLMT_LOOKAHEAD */
     } \
 }
 
-#if 0
-SK_AC		*pAC		/* adapter context */
-SK_U32		PortNum		/* receiving port */
-SK_U8		*pLaPacket,	/* received packet's data (points to pOffset) */
-SK_BOOL		IsBc		/* Flag: packet is broadcast */
-SK_BOOL		IsMc		/* Flag: packet is multicast */
-unsigned	*pForRlmt	/* Result: bits SK_RLMT_RX_RLMT, SK_RLMT_RX_PROTOCOL */
-SK_RLMT_LOOKAHEAD() expects *pNumBytes from
-packet offset *pOffset (s.a.) at *pLaPacket.
-
-If you use SK_RLMT_LOOKAHEAD in a path where you already know if the packet is
-BC, MC, or UC, you should use constants for IsBc and IsMc, so that your compiler
-can trash unneeded parts of the if construction.
-#endif	/* 0 */
 
 #define SK_RLMT_LOOKAHEAD(pAC,PortNum,pLaPacket,IsBc,IsMc,pForRlmt) { \
 	SK_AC	*_pAC; \

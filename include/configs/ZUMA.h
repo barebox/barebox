@@ -80,11 +80,7 @@
 /* define this if you want to enable GT MAC filtering */
 #define CONFIG_GT_USE_MAC_HASH_TABLE
 
-#if 1
 #define CONFIG_BOOTDELAY	-1	/* autoboot disabled		*/
-#else
-#define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#endif
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 
 #undef	CONFIG_BOOTARGS

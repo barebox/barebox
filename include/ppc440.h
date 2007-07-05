@@ -2960,42 +2960,6 @@
 #define   CPR0_PRIMBD_PRBDV0_ENCODE(n) ((((unsigned long)(n))&0x07)<<24)
 #define   CPR0_PRIMBD_PRBDV0_DECODE(n) ((((((unsigned long)(n))>>24)-1)&0x07)+1)
 /*--------------------------------------*/
-#if 0
-#define CPR0_CPM0_ER                0xB0    /* CPM Enable Register */
-#define CPR0_CPM0_FR                0xB1    /* CPM Force Register */
-#define CPR0_CPM0_SR                0xB2    /* CPM Status Register */
-#define CPR0_CPM0_IIC0               0x80000000    /* Inter-Intergrated Circuit0 */
-#define CPR0_CPM0_IIC1               0x40000000    /* Inter-Intergrated Circuit1 */
-#define CPR0_CPM0_PCI                0x20000000    /* Peripheral Component Interconnect */
-#define CPR0_CPM0_USB1H              0x08000000    /* USB1.1 Host */
-#define CPR0_CPM0_FPU                0x04000000    /* PPC440 FPU */
-#define CPR0_CPM0_CPU                0x02000000    /* PPC440x5 Processor Core */
-#define CPR0_CPM0_DMA                0x01000000    /* Direct Memory Access Controller */
-#define CPR0_CPM0_BGO                0x00800000    /* PLB to OPB Bridge */
-#define CPR0_CPM0_BGI                0x00400000    /* OPB to PLB Bridge */
-#define CPR0_CPM0_EBC                0x00200000    /* External Bus Controller */
-#define CPR0_CPM0_NDFC               0x00100000    /* Nand Flash Controller */
-#define CPR0_CPM0_MADMAL             0x00080000    /* DDR SDRAM Controller or MADMAL ??? */
-#define CPR0_CPM0_DMC                0x00080000    /* DDR SDRAM Controller or MADMAL ??? */
-#define CPR0_CPM0_PLB4               0x00040000    /* PLB4 Arbiter */
-#define CPR0_CPM0_PLB4x3x            0x00020000    /* PLB4 to PLB3 */
-#define CPR0_CPM0_PLB3x4x            0x00010000    /* PLB3 to PLB4 */
-#define CPR0_CPM0_PLB3               0x00008000    /* PLB3 Arbiter */
-#define CPR0_CPM0_PPM                0x00002000    /* PLB Performance Monitor */
-#define CPR0_CPM0_UIC1               0x00001000    /* Universal Interrupt Controller 1 */
-#define CPR0_CPM0_GPIO               0x00000800    /* General Purpose IO */
-#define CPR0_CPM0_GPT                0x00000400    /* General Purpose Timer */
-#define CPR0_CPM0_UART0              0x00000200    /* Universal Asynchronous Rcver/Xmitter 0 */
-#define CPR0_CPM0_UART1              0x00000100    /* Universal Asynchronous Rcver/Xmitter 1 */
-#define CPR0_CPM0_UIC0               0x00000080    /* Universal Interrupt Controller 0 */
-#define CPR0_CPM0_TMRCLK             0x00000040    /* CPU Timer */
-#define CPR0_CPM0_EMC0               0x00000020    /* Ethernet 0 */
-#define CPR0_CPM0_EMC1               0x00000010    /* Ethernet 1 */
-#define CPR0_CPM0_UART2              0x00000008    /* Universal Asynchronous Rcver/Xmitter 2 */
-#define CPR0_CPM0_UART3              0x00000004    /* Universal Asynchronous Rcver/Xmitter 3 */
-#define CPR0_CPM0_USB2D              0x00000002    /* USB2.0 Device */
-#define CPR0_CPM0_USB2H              0x00000001    /* USB2.0 Host */
-#endif
 /*--------------------------------------*/
 #define CPR0_OPBD                   0xC0
 #define   CPR0_OPBD_OPBDV0_MASK        0x03000000

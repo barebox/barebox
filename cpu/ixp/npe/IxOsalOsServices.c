@@ -135,15 +135,9 @@ ixOsalLog (IxOsalLogLevel level,
 
     if (level <= ixOsalCurrLogLevel && level != IX_OSAL_LOG_LVL_NONE)
     {
-#if 0 /* sr: U-Boots printf or debug doesn't return a length */
-        int headerByteCount = (level == IX_OSAL_LOG_LVL_USER) ? 0 : diag_printf(traceHeaders[level - 1]);
-
-        return headerByteCount + diag_printf (format, arg1, arg2, arg3, arg4, arg5, arg6);
-#else
         int headerByteCount = (level == IX_OSAL_LOG_LVL_USER) ? 0 : strlen(traceHeaders[level - 1]);
 
         return headerByteCount + strlen(format);
-#endif
     }
     else
     {
@@ -191,7 +185,6 @@ PUBLIC void
 ixOsalSleep (UINT32 milliseconds)
 {
     if (milliseconds != 0) {
-#if 1
 	/*
 	 * sr: We poll while we wait because interrupts are off in U-Boot
 	 * and CSR expects messages, etc to be dispatched while sleeping.
@@ -208,7 +201,6 @@ ixOsalSleep (UINT32 milliseconds)
 
 		udelay(1000);
 	}
-#endif
     }
 }
 

@@ -674,13 +674,8 @@ static int fec_init (struct eth_device *dev, bd_t * bd)
 
 	/* Enable MII mode
 	 */
-#if 0				/* Full duplex mode */
-	fecp->fec_r_cntrl = FEC_RCNTRL_MII_MODE;
-	fecp->fec_x_cntrl = FEC_TCNTRL_FDEN;
-#else  /* Half duplex mode */
 	fecp->fec_r_cntrl = FEC_RCNTRL_MII_MODE | FEC_RCNTRL_DRT;
 	fecp->fec_x_cntrl = 0;
-#endif
 
 	/* Enable big endian and don't care about SDMA FC.
 	 */
@@ -846,10 +841,6 @@ mii_send(uint mii_cmd)
 	}
 	mii_reply = ep->fec_mii_data;		/* result from phy */
 	ep->fec_ievent = FEC_ENET_MII;		/* clear MII complete */
-#if 0
-	printf("%s[%d] %s: sent=0x%8.8x, reply=0x%8.8x\n",
-		__FILE__,__LINE__,__FUNCTION__,mii_cmd,mii_reply);
-#endif
 	return (mii_reply & 0xffff);		/* data read from phy */
 }
 #endif /* CFG_DISCOVER_PHY || (CONFIG_COMMANDS & CFG_CMD_MII) */

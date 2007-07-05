@@ -226,10 +226,6 @@ static unsigned char rxb[NUM_RX_DESC * RX_BUF_SIZE]
     __attribute__ ((aligned(4)));
 
 /* Function Prototypes */
-#if 0
-static void write_eeprom(struct eth_device *dev, long addr, int location,
-			 short value);
-#endif
 static int read_eeprom(struct eth_device *dev, long addr, int location);
 static int mdio_read(struct eth_device *dev, int phy_id, int location);
 static int natsemi_init(struct eth_device *dev, bd_t * bis);
@@ -430,65 +426,6 @@ enum EEPROM_Cmds {
 	EE_ReadCmd = (6 << 6), EE_EraseCmd = (7 << 6),
 };
 
-#if 0
-static void
-write_eeprom(struct eth_device *dev, long addr, int location, short value)
-{
-	int i;
-	int ee_addr = (typeof(ee_addr))addr;
-	short wren_cmd = EE_WrEnCmd | 0x30; /*wren is 100 + 11XXXX*/
-	short write_cmd = location | EE_WriteCmd;
-
-#ifdef NATSEMI_DEBUG
-	printf("write_eeprom: %08x, %04hx, %04hx\n",
-		dev->iobase + ee_addr, write_cmd, value);
-#endif
-	/* Shift the write enable command bits out. */
-	for (i = 9; i >= 0; i--) {
-		short cmdval = (wren_cmd & (1 << i)) ? EE_Write1 : EE_Write0;
-		OUTL(dev, cmdval, ee_addr);
-		eeprom_delay(ee_addr);
-		OUTL(dev, cmdval | EE_ShiftClk, ee_addr);
-		eeprom_delay(ee_addr);
-	}
-
-	OUTL(dev, 0, ee_addr); /*bring chip select low*/
-	OUTL(dev, EE_ShiftClk, ee_addr);
-	eeprom_delay(ee_addr);
-
-	/* Shift the write command bits out. */
-	for (i = 9; i >= 0; i--) {
-		short cmdval = (write_cmd & (1 << i)) ? EE_Write1 : EE_Write0;
-		OUTL(dev, cmdval, ee_addr);
-		eeprom_delay(ee_addr);
-		OUTL(dev, cmdval | EE_ShiftClk, ee_addr);
-		eeprom_delay(ee_addr);
-	}
-
-	for (i = 0; i < 16; i++) {
-		short cmdval = (value & (1 << i)) ? EE_Write1 : EE_Write0;
-		OUTL(dev, cmdval, ee_addr);
-		eeprom_delay(ee_addr);
-		OUTL(dev, cmdval | EE_ShiftClk, ee_addr);
-		eeprom_delay(ee_addr);
-	}
-
-	OUTL(dev, 0, ee_addr); /*bring chip select low*/
-	OUTL(dev, EE_ShiftClk, ee_addr);
-	for (i = 0; i < 200000; i++) {
-		OUTL(dev, EE_Write0, ee_addr); /*poll for done*/
-		if (INL(dev, ee_addr) & EE_DataOut) {
-		    break; /*finished*/
-		}
-	}
-	eeprom_delay(ee_addr);
-
-	/* Terminate the EEPROM access. */
-	OUTL(dev, EE_Write0, ee_addr);
-	OUTL(dev, 0, ee_addr);
-	return;
-}
-#endif
 
 static int
 read_eeprom(struct eth_device *dev, long addr, int location)

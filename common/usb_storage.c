@@ -1022,15 +1022,6 @@ int usb_storage_probe(struct usb_device *dev, unsigned int ifnum,struct us_data 
 	/* let's examine the device now */
 	iface = &dev->config.if_desc[ifnum];
 
-#if 0
-	/* this is the place to patch some storage devices */
-	USB_STOR_PRINTF("iVendor %X iProduct %X\n",dev->descriptor.idVendor,dev->descriptor.idProduct);
-	if ((dev->descriptor.idVendor) == 0x066b && (dev->descriptor.idProduct) == 0x0103) {
-		USB_STOR_PRINTF("patched for E-USB\n");
-		protocol = US_PR_CB;
-		subclass = US_SC_UFI;	    /* an assumption */
-	}
-#endif
 
 	if (dev->descriptor.bDeviceClass != 0 ||
 			iface->bInterfaceClass != USB_CLASS_MASS_STORAGE ||
@@ -1214,10 +1205,6 @@ int usb_stor_get_info(struct usb_device *dev,struct us_data *ss,block_dev_desc_t
 		cap[1] = 0x200;
 	}
 	USB_STOR_PRINTF("Read Capacity returns: 0x%lx, 0x%lx\n",cap[0],cap[1]);
-#if 0
-	if(cap[0]>(0x200000 * 10)) /* greater than 10 GByte */
-		cap[0]>>=16;
-#endif
 #ifdef LITTLEENDIAN
 	cap[0] = ((unsigned long)(
 		(((unsigned long)(cap[0]) & (unsigned long)0x000000ffUL) << 24) |

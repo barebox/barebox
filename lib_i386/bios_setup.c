@@ -126,10 +126,6 @@ static void setvector(int vector, u16 segment, void *handler)
 	ptr[0] = ((u32)handler - (segment << 4))&0xffff;
 	ptr[1] = segment;
 
-#if 0
-	printf("setvector: int%02x -> %04x:%04x\n",
-	       vector, ptr[1], ptr[0]);
-#endif
 }
 
 #define RELOC_16_LONG(seg, off) *(u32*)(seg << 4 | (u32)&off)

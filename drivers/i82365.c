@@ -209,19 +209,6 @@ static void i365_bclr (socket_info_t * s, u_short reg, u_char mask)
 	i365_set (s, reg, i365_get (s, reg) & ~mask);
 }
 
-#if 0	/* not used */
-static void i365_bflip (socket_info_t * s, u_short reg, u_char mask, int b)
-{
-	u_char d = i365_get (s, reg);
-
-	i365_set (s, reg, (b) ? (d | mask) : (d & ~mask));
-}
-
-static u_short i365_get_pair (socket_info_t * s, u_short reg)
-{
-	return (i365_get (s, reg) + (i365_get (s, reg + 1) << 8));
-}
-#endif	/* not used */
 
 static void i365_set_pair (socket_info_t * s, u_short reg, u_short data)
 {
@@ -684,25 +671,6 @@ static int i365_set_socket (socket_info_t * s, socket_state_t * state)
 #ifdef CONFIG_CPC45
 	cb_set_power (s, state);
 
-#if 0
-	/* Card status change interrupt mask */
-	reg = s->cs_irq << 4;
-	if (state->csc_mask & SS_DETECT)
-		reg |= I365_CSC_DETECT;
-	if (state->flags & SS_IOCARD) {
-		if (state->csc_mask & SS_STSCHG)
-			reg |= I365_CSC_STSCHG;
-	} else {
-		if (state->csc_mask & SS_BATDEAD)
-			reg |= I365_CSC_BVD1;
-		if (state->csc_mask & SS_BATWARN)
-			reg |= I365_CSC_BVD2;
-		if (state->csc_mask & SS_READY)
-			reg |= I365_CSC_READY;
-	}
-	i365_set (s, I365_CSCINT, reg);
-	i365_get (s, I365_CSC);
-#endif	/* 0 */
 
 #else	/* !CONFIG_CPC45 */
 

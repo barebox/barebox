@@ -202,22 +202,6 @@ long int initdram (int board_type)
 
 	memctl->memc_mamr |= MAMR_PTAE;	/* enable refresh */
 	udelay (1000);
-#if 0				/* 4 x 8MB */
-	size_b0 = 0x00800000;
-	size_b1 = 0x00800000;
-	size_b2 = 0x00800000;
-	size_b3 = 0x00800000;
-	memctl->memc_mptpr = CFG_MPTPR;
-	udelay (1000);
-	memctl->memc_or1 = 0xFF800A00;
-	memctl->memc_br1 = 0x00000081;
-	memctl->memc_or2 = 0xFF000A00;
-	memctl->memc_br2 = 0x00800081;
-	memctl->memc_or3 = 0xFE000A00;
-	memctl->memc_br3 = 0x01000081;
-	memctl->memc_or6 = 0xFE000A00;
-	memctl->memc_br6 = 0x01800081;
-#else  /* 4 x 16 MB */
 	size_b0 = 0x01000000;
 	size_b1 = 0x01000000;
 	size_b2 = 0x01000000;
@@ -232,7 +216,6 @@ long int initdram (int board_type)
 	memctl->memc_br3 = 0x02000081;
 	memctl->memc_or6 = 0xFC000A00;
 	memctl->memc_br6 = 0x03000081;
-#endif
 	udelay (10000);
 
 	return (size_b0 + size_b1 + size_b2 + size_b3);
@@ -247,50 +230,6 @@ long int initdram (int board_type)
  * - short between address lines
  * - short between data lines
  */
-#if 0
-static long int dram_size (long int mamr_value, long int *base,
-			   long int maxsize)
-{
-	volatile immap_t *immap = (immap_t *) CFG_IMMR;
-	volatile memctl8xx_t *memctl = &immap->im_memctl;
-	volatile long int *addr;
-	ulong cnt, val;
-	ulong save[32];		/* to make test non-destructive */
-	unsigned char i = 0;
-
-	memctl->memc_mamr = mamr_value;
-
-	for (cnt = maxsize / sizeof (long); cnt > 0; cnt >>= 1) {
-		addr = base + cnt;	/* pointer arith! */
-
-		save[i++] = *addr;
-		*addr = ~cnt;
-	}
-
-	/* write 0 to base address */
-	addr = base;
-	save[i] = *addr;
-	*addr = 0;
-
-	/* check at base address */
-	if ((val = *addr) != 0) {
-		*addr = save[i];
-		return (0);
-	}
-
-	for (cnt = 1; cnt <= maxsize / sizeof (long); cnt <<= 1) {
-		addr = base + cnt;	/* pointer arith! */
-
-		val = *addr;
-		*addr = save[--i];
-
-		if (val != (~cnt)) {
-			return (cnt * sizeof (long));
-		}
-	}
-	return (maxsize);
-}
-#endif
 
 int misc_init_r (void)
 {

@@ -1564,11 +1564,6 @@ int		Port)		/* Port Index (MAC_1 + n) */
 		 */
 		SkMacInitPhy(pAC, IoC, Port, SK_FALSE);
 
-#if 0
-		/* temp. code: enable signal detect */
-		/* WARNING: do not override GMII setting above */
-		XM_OUT16(pAC, Port, XM_HW_CFG, XM_HW_COM4SIG);
-#endif
 	}
 
 	/*
@@ -2525,18 +2520,6 @@ SK_BOOL	DoLoop)		/* Should a Phy LoopBack be set-up? */
 		/* Program PHY register 16 as 16'h0400 to force link good */
 		SkGmPhyWrite(pAC, IoC, Port, PHY_MARV_PHY_CTRL, PHY_M_PC_FL_GOOD);
 
-#if 0
-		if (pPrt->PLinkSpeed != SK_LSPEED_AUTO) {
-			/* Write Ext. PHY Specific Control */
-			SkGmPhyWrite(pAC, IoC, Port, PHY_MARV_EXT_CTRL,
-				(SK_U16)((pPrt->PLinkSpeed + 2) << 4));
-		}
-	}
-	else if (pPrt->PLinkSpeed == SK_LSPEED_10MBPS) {
-			/* Write PHY Specific Control */
-			SkGmPhyWrite(pAC, IoC, Port, PHY_MARV_PHY_CTRL, PHY_M_PC_EN_DET_MSK);
-		}
-#endif /* 0 */
 	}
 
 	/* Write to the PHY Control register */
@@ -2974,10 +2957,6 @@ int		Port)		/* Port Index (MAC_1 + n) */
 	SK_U16		LPAb;		/* Link Partner Ability */
 	SK_U16		AuxStat;	/* Auxiliary Status */
 
-#if 0
-01-Sep-2000 RA;:;:
-	SK_U16		ResAb;		/* Resolved Ability */
-#endif	/* 0 */
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_CTRL,
 		("AutoNegDoneBcom, Port %d\n", Port));
@@ -2985,10 +2964,6 @@ int		Port)		/* Port Index (MAC_1 + n) */
 
 	/* Get PHY parameters */
 	SkXmPhyRead(pAC, IoC, Port, PHY_BCOM_AUNE_LP, &LPAb);
-#if 0
-01-Sep-2000 RA;:;:
-	SkXmPhyRead(pAC, IoC, Port, PHY_BCOM_1000T_STAT, &ResAb);
-#endif	/* 0 */
 
 	SkXmPhyRead(pAC, IoC, Port, PHY_BCOM_AUX_STAT, &AuxStat);
 
@@ -3015,20 +2990,6 @@ int		Port)		/* Port Index (MAC_1 + n) */
 		return(SK_AND_DUP_CAP);
 	}
 
-#if 0
-01-Sep-2000 RA;:;:
-	/* Check Master/Slave resolution */
-	if ((ResAb & PHY_B_1000S_MSF) != 0) {
-		SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_CTRL,
-			("Master/Slave Fault Port %d\n", Port));
-		pPrt->PAutoNegFail = SK_TRUE;
-		pPrt->PMSStatus = SK_MS_STAT_FAULT;
-		return(SK_AND_OTHER);
-	}
-
-	pPrt->PMSStatus = ((ResAb & PHY_B_1000S_MSR) != 0) ?
-		SK_MS_STAT_MASTER : SK_MS_STAT_SLAVE;
-#endif	/* 0 */
 
 	/* Check PAUSE mismatch */
 	/* We are using IEEE 802.3z/D5.0 Table 37-4 */

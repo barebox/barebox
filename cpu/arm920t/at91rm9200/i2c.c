@@ -25,8 +25,6 @@
 */
 #include <common.h>
 
-#ifdef CONFIG_HARD_I2C
-
 #include <i2c.h>
 #include <asm/io.h>
 #include <asm/arch/hardware.h>
@@ -196,5 +194,3 @@ void i2c_reg_write(uchar i2c_addr, uchar reg, uchar val)
 {
 	i2c_write(i2c_addr, reg, 1, &val, 1);
 }
-
-#endif /* CONFIG_HARD_I2C */

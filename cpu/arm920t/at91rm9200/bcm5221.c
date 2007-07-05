@@ -30,10 +30,6 @@
 #include <net.h>
 #include <bcm5221.h>
 
-#ifdef CONFIG_DRIVER_ETHER
-
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
 /*
  * Name:
  *	bcm5221_IsPhyConnected
@@ -226,7 +222,3 @@ unsigned char bcm5221_AutoNegotiate (AT91PS_EMAC p_mac, int *status)
 	}
 	return FALSE;
 }
-
-#endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
-
-#endif	/* CONFIG_DRIVER_ETHER */

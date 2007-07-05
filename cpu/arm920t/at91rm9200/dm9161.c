@@ -25,10 +25,6 @@
 #include <net.h>
 #include <dm9161.h>
 
-#ifdef CONFIG_DRIVER_ETHER
-
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
 /*
  * Name:
  *	dm9161_IsPhyConnected
@@ -218,7 +214,3 @@ UCHAR dm9161_AutoNegotiate (AT91PS_EMAC p_mac, int *status)
 	}
 	return FALSE;
 }
-
-#endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
-
-#endif	/* CONFIG_DRIVER_ETHER */

@@ -9,3 +9,5 @@ obj-y += ticks.o
 obj-y += time.o
 obj-y += misc.o
 obj-y += ppclinux.o
+obj-y += board_data.o
+

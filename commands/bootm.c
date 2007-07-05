@@ -40,61 +40,13 @@
 #include <fs.h>
 #include <errno.h>
 #include <boot.h>
-
- /*cmd_boot.c*/
-
-#if (CONFIG_COMMANDS & CFG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
 #include <rtc.h>
-#endif
-
-#ifdef CONFIG_HUSH_PARSER
-#include <hush.h>
-#endif
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 # include <status_led.h>
 # define SHOW_BOOT_PROGRESS(arg)	show_boot_progress(arg)
 #else
 # define SHOW_BOOT_PROGRESS(arg)
-#endif
-
-#ifdef CFG_INIT_RAM_LOCK
-#include <asm/cache.h>
-#endif
-
-#ifdef CONFIG_LOGBUFFER
-#include <logbuff.h>
-#endif
-
-/*
- * Some systems (for example LWMON) have very short watchdog periods;
- * we must make sure to split long operations like memmove() or
- * crc32() into reasonable chunks.
- */
-#if defined(CONFIG_HW_WATCHDOG) || defined(CONFIG_WATCHDOG)
-# define CHUNKSZ (64 * 1024)
-#endif
-
-#ifdef CONFIG_CMD_BOOTM_ZLIB
-int  gunzip (void *, int, unsigned char *, unsigned long *);
-
-static void *zalloc(void *, unsigned, unsigned);
-static void zfree(void *, void *, unsigned);
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_IMI)
-static int image_info (unsigned long addr);
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_IMLS)
-#include <flash.h>
-static int do_imls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-#endif
-
-static void print_type (image_header_t *hdr);
-
-#ifdef __I386__
-image_header_t *fake_header(image_header_t *hdr, void *ptr, int size);
 #endif
 
 /*
@@ -111,36 +63,114 @@ typedef void boot_os_Fcn (cmd_tbl_t *cmdtp, int flag,
 			  ulong	*len_ptr,	/* multi-file image length table */
 			  int	verify);	/* getenv("verify")[0] != 'n' */
 
-#ifdef	DEBUG
-extern int do_bdinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-#endif
-
-#ifdef CONFIG_SILENT_CONSOLE
-static void fixup_silent_linux (void);
-#endif
-#if (CONFIG_COMMANDS & CFG_CMD_ELF)
-int do_bootvx ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[] );
-int do_bootelf (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[] );
-#endif /* CFG_CMD_ELF */
-#ifdef CONFIG_LYNXKDI
-extern void lynxkdi_boot( image_header_t * );
-#endif
-
 #ifndef CFG_BOOTM_LEN
 #define CFG_BOOTM_LEN	0x800000	/* use 8MByte as default max gunzip size */
 #endif
 
-#ifdef CONFIG_OF_FLAT_TREE
-#define OPT_OFTREE "o:"
-#else
-#define OPT_OFTREE
+#ifdef CONFIG_SILENT_CONSOLE
+static void
+fixup_silent_linux ()
+{
+	char buf[256], *start, *end;
+	char *cmdline = getenv ("bootargs");
+
+	/* Only fix cmdline when requested */
+	if (!(gd->flags & GD_FLG_SILENT))
+		return;
+
+	debug ("before silent fix-up: %s\n", cmdline);
+	if (cmdline) {
+		if ((start = strstr (cmdline, "console=")) != NULL) {
+			end = strchr (start, ' ');
+			strncpy (buf, cmdline, (start - cmdline + 8));
+			if (end)
+				strcpy (buf + (start - cmdline + 8), end);
+			else
+				buf[start - cmdline + 8] = '\0';
+		} else {
+			strcpy (buf, cmdline);
+			strcat (buf, " console=");
+		}
+	} else {
+		strcpy (buf, "console=");
+	}
+
+	setenv ("bootargs", buf);
+	debug ("after silent fix-up: %s\n", buf);
+}
+#endif /* CONFIG_SILENT_CONSOLE */
+
+#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
+static void
+print_type (image_header_t *hdr)
+{
+	char *os, *arch, *type, *comp;
+
+	switch (hdr->ih_os) {
+	case IH_OS_INVALID:	os = "Invalid OS";		break;
+	case IH_OS_NETBSD:	os = "NetBSD";			break;
+	case IH_OS_LINUX:	os = "Linux";			break;
+	case IH_OS_VXWORKS:	os = "VxWorks";			break;
+	case IH_OS_QNX:		os = "QNX";			break;
+	case IH_OS_U_BOOT:	os = "U-Boot";			break;
+	case IH_OS_RTEMS:	os = "RTEMS";			break;
+#ifdef CONFIG_ARTOS
+	case IH_OS_ARTOS:	os = "ARTOS";			break;
+#endif
+#ifdef CONFIG_LYNXKDI
+	case IH_OS_LYNXOS:	os = "LynxOS";			break;
+#endif
+	default:		os = "Unknown OS";		break;
+	}
+
+	switch (hdr->ih_arch) {
+	case IH_CPU_INVALID:	arch = "Invalid CPU";		break;
+	case IH_CPU_ALPHA:	arch = "Alpha";			break;
+	case IH_CPU_ARM:	arch = "ARM";			break;
+	case IH_CPU_AVR32:	arch = "AVR32";			break;
+	case IH_CPU_I386:	arch = "Intel x86";		break;
+	case IH_CPU_IA64:	arch = "IA64";			break;
+	case IH_CPU_MIPS:	arch = "MIPS";			break;
+	case IH_CPU_MIPS64:	arch = "MIPS 64 Bit";		break;
+	case IH_CPU_PPC:	arch = "PowerPC";		break;
+	case IH_CPU_S390:	arch = "IBM S390";		break;
+	case IH_CPU_SH:		arch = "SuperH";		break;
+	case IH_CPU_SPARC:	arch = "SPARC";			break;
+	case IH_CPU_SPARC64:	arch = "SPARC 64 Bit";		break;
+	case IH_CPU_M68K:	arch = "M68K"; 			break;
+	case IH_CPU_MICROBLAZE:	arch = "Microblaze"; 		break;
+	case IH_CPU_NIOS:	arch = "Nios";			break;
+	case IH_CPU_NIOS2:	arch = "Nios-II";		break;
+	default:		arch = "Unknown Architecture";	break;
+	}
+
+	switch (hdr->ih_type) {
+	case IH_TYPE_INVALID:	type = "Invalid Image";		break;
+	case IH_TYPE_STANDALONE:type = "Standalone Program";	break;
+	case IH_TYPE_KERNEL:	type = "Kernel Image";		break;
+	case IH_TYPE_RAMDISK:	type = "RAMDisk Image";		break;
+	case IH_TYPE_MULTI:	type = "Multi-File Image";	break;
+	case IH_TYPE_FIRMWARE:	type = "Firmware";		break;
+	case IH_TYPE_SCRIPT:	type = "Script";		break;
+	case IH_TYPE_FLATDT:	type = "Flat Device Tree";	break;
+	default:		type = "Unknown Image";		break;
+	}
+
+	switch (hdr->ih_comp) {
+	case IH_COMP_NONE:	comp = "uncompressed";		break;
+	case IH_COMP_GZIP:	comp = "gzip compressed";	break;
+	case IH_COMP_BZIP2:	comp = "bzip2 compressed";	break;
+	default:		comp = "unknown compression";	break;
+	}
+
+	printf ("%s %s %s (%s)", arch, os, type, comp);
+}
 #endif
 
 int relocate_image(image_header_t *hdr, void *load_address)
 {
 	unsigned long data = (unsigned long)(hdr + 1);
 	unsigned long len  = ntohl(hdr->ih_size);
-	int ret;
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
@@ -250,6 +280,12 @@ err_out:
 	free(header);
 	return NULL;
 }
+
+#ifdef CONFIG_OF_FLAT_TREE
+#define OPT_OFTREE "o:"
+#else
+#define OPT_OFTREE
+#endif
 
 int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -422,39 +458,6 @@ U_BOOT_CMD_START(bootm)
 #endif
 	)
 U_BOOT_CMD_END
-
-#ifdef CONFIG_SILENT_CONSOLE
-static void
-fixup_silent_linux ()
-{
-	char buf[256], *start, *end;
-	char *cmdline = getenv ("bootargs");
-
-	/* Only fix cmdline when requested */
-	if (!(gd->flags & GD_FLG_SILENT))
-		return;
-
-	debug ("before silent fix-up: %s\n", cmdline);
-	if (cmdline) {
-		if ((start = strstr (cmdline, "console=")) != NULL) {
-			end = strchr (start, ' ');
-			strncpy (buf, cmdline, (start - cmdline + 8));
-			if (end)
-				strcpy (buf + (start - cmdline + 8), end);
-			else
-				buf[start - cmdline + 8] = '\0';
-		} else {
-			strcpy (buf, cmdline);
-			strcat (buf, " console=");
-		}
-	} else {
-		strcpy (buf, "console=");
-	}
-
-	setenv ("bootargs", buf);
-	debug ("after silent fix-up: %s\n", buf);
-}
-#endif /* CONFIG_SILENT_CONSOLE */
 
 #ifdef CONFIG_NETBSD
 static void
@@ -632,7 +635,7 @@ do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
 }
 #endif
 
-#if 0
+#ifdef CONFIG_CMD_IMI
 int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int	arg;
@@ -700,67 +703,7 @@ U_BOOT_CMD(
 	"      image contents (magic number, header and payload checksums)\n"
 );
 
-#endif	/* CFG_CMD_IMI */
-
-#if (CONFIG_COMMANDS & CFG_CMD_IMLS)
-#if 0
-/*-----------------------------------------------------------------------
- * List all images found in flash.
- */
-int do_imls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	flash_info_t *info;
-	int i, j;
-	image_header_t *hdr;
-	ulong data, len, checksum;
-
-	for (i=0, info=&flash_info[0]; i<CFG_MAX_FLASH_BANKS; ++i, ++info) {
-		if (info->flash_id == FLASH_UNKNOWN)
-			goto next_bank;
-		for (j=0; j<info->sector_count; ++j) {
-
-			if (!(hdr=(image_header_t *)info->start[j]) ||
-			    (ntohl(hdr->ih_magic) != IH_MAGIC))
-				goto next_sector;
-
-			/* Copy header so we can blank CRC field for re-calculation */
-			memmove (&header, (char *)hdr, sizeof(image_header_t));
-
-			checksum = ntohl(header.ih_hcrc);
-			header.ih_hcrc = 0;
-
-			if (crc32 (0, (uchar *)&header, sizeof(image_header_t))
-			    != checksum)
-				goto next_sector;
-
-			printf ("Image at %08lX:\n", (ulong)hdr);
-			print_image_hdr( hdr );
-
-			data = (ulong)hdr + sizeof(image_header_t);
-			len  = ntohl(hdr->ih_size);
-
-			puts ("   Verifying Checksum ... ");
-			if (crc32 (0, (uchar *)data, len) != ntohl(hdr->ih_dcrc)) {
-				puts ("   Bad Data CRC\n");
-			}
-			puts ("OK\n");
-next_sector:		;
-		}
-next_bank:	;
-	}
-
-	return (0);
-}
-
-U_BOOT_CMD(
-	imls,	1,		1,	do_imls,
-	"imls    - list all images found in flash\n",
-	"\n"
-	"    - Prints information about all images found at sector\n"
-	"      boundaries in flash.\n"
-);
-#endif	/* CFG_CMD_IMLS */
-#endif
+#endif	/* CONFIG_CMD_IMI */
 
 void
 print_image_hdr (image_header_t *hdr)
@@ -777,7 +720,9 @@ print_image_hdr (image_header_t *hdr)
 		tm.tm_year, tm.tm_mon, tm.tm_mday,
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
+#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
 	puts ("   Image Type:   "); print_type(hdr);
+#endif
 	printf ("\n   Data Size:    %d Bytes = ", ntohl(hdr->ih_size));
 	print_size (ntohl(hdr->ih_size), "\n");
 	printf ("   Load Address: %08x\n"
@@ -796,157 +741,6 @@ print_image_hdr (image_header_t *hdr)
 		}
 	}
 }
-
-
-static void
-print_type (image_header_t *hdr)
-{
-	char *os, *arch, *type, *comp;
-
-	switch (hdr->ih_os) {
-	case IH_OS_INVALID:	os = "Invalid OS";		break;
-	case IH_OS_NETBSD:	os = "NetBSD";			break;
-	case IH_OS_LINUX:	os = "Linux";			break;
-	case IH_OS_VXWORKS:	os = "VxWorks";			break;
-	case IH_OS_QNX:		os = "QNX";			break;
-	case IH_OS_U_BOOT:	os = "U-Boot";			break;
-	case IH_OS_RTEMS:	os = "RTEMS";			break;
-#ifdef CONFIG_ARTOS
-	case IH_OS_ARTOS:	os = "ARTOS";			break;
-#endif
-#ifdef CONFIG_LYNXKDI
-	case IH_OS_LYNXOS:	os = "LynxOS";			break;
-#endif
-	default:		os = "Unknown OS";		break;
-	}
-
-	switch (hdr->ih_arch) {
-	case IH_CPU_INVALID:	arch = "Invalid CPU";		break;
-	case IH_CPU_ALPHA:	arch = "Alpha";			break;
-	case IH_CPU_ARM:	arch = "ARM";			break;
-	case IH_CPU_AVR32:	arch = "AVR32";			break;
-	case IH_CPU_I386:	arch = "Intel x86";		break;
-	case IH_CPU_IA64:	arch = "IA64";			break;
-	case IH_CPU_MIPS:	arch = "MIPS";			break;
-	case IH_CPU_MIPS64:	arch = "MIPS 64 Bit";		break;
-	case IH_CPU_PPC:	arch = "PowerPC";		break;
-	case IH_CPU_S390:	arch = "IBM S390";		break;
-	case IH_CPU_SH:		arch = "SuperH";		break;
-	case IH_CPU_SPARC:	arch = "SPARC";			break;
-	case IH_CPU_SPARC64:	arch = "SPARC 64 Bit";		break;
-	case IH_CPU_M68K:	arch = "M68K"; 			break;
-	case IH_CPU_MICROBLAZE:	arch = "Microblaze"; 		break;
-	case IH_CPU_NIOS:	arch = "Nios";			break;
-	case IH_CPU_NIOS2:	arch = "Nios-II";		break;
-	default:		arch = "Unknown Architecture";	break;
-	}
-
-	switch (hdr->ih_type) {
-	case IH_TYPE_INVALID:	type = "Invalid Image";		break;
-	case IH_TYPE_STANDALONE:type = "Standalone Program";	break;
-	case IH_TYPE_KERNEL:	type = "Kernel Image";		break;
-	case IH_TYPE_RAMDISK:	type = "RAMDisk Image";		break;
-	case IH_TYPE_MULTI:	type = "Multi-File Image";	break;
-	case IH_TYPE_FIRMWARE:	type = "Firmware";		break;
-	case IH_TYPE_SCRIPT:	type = "Script";		break;
-	case IH_TYPE_FLATDT:	type = "Flat Device Tree";	break;
-	default:		type = "Unknown Image";		break;
-	}
-
-	switch (hdr->ih_comp) {
-	case IH_COMP_NONE:	comp = "uncompressed";		break;
-	case IH_COMP_GZIP:	comp = "gzip compressed";	break;
-	case IH_COMP_BZIP2:	comp = "bzip2 compressed";	break;
-	default:		comp = "unknown compression";	break;
-	}
-
-	printf ("%s %s %s (%s)", arch, os, type, comp);
-}
-
-#ifdef CONFIG_ZLIB
-
-#define	ZALLOC_ALIGNMENT	16
-
-static void *zalloc(void *x, unsigned items, unsigned size)
-{
-	void *p;
-
-	size *= items;
-	size = (size + ZALLOC_ALIGNMENT - 1) & ~(ZALLOC_ALIGNMENT - 1);
-
-	p = malloc (size);
-
-	return (p);
-}
-
-static void zfree(void *x, void *addr, unsigned nb)
-{
-	free (addr);
-}
-
-#define HEAD_CRC	2
-#define EXTRA_FIELD	4
-#define ORIG_NAME	8
-#define COMMENT		0x10
-#define RESERVED	0xe0
-
-#define DEFLATED	8
-
-int gunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp)
-{
-	z_stream s;
-	int r, i, flags;
-
-	/* skip header */
-	i = 10;
-	flags = src[3];
-	if (src[2] != DEFLATED || (flags & RESERVED) != 0) {
-		puts ("Error: Bad gzipped data\n");
-		return (-1);
-	}
-	if ((flags & EXTRA_FIELD) != 0)
-		i = 12 + src[10] + (src[11] << 8);
-	if ((flags & ORIG_NAME) != 0)
-		while (src[i++] != 0)
-			;
-	if ((flags & COMMENT) != 0)
-		while (src[i++] != 0)
-			;
-	if ((flags & HEAD_CRC) != 0)
-		i += 2;
-	if (i >= *lenp) {
-		puts ("Error: gunzip out of data in header\n");
-		return (-1);
-	}
-
-	s.zalloc = zalloc;
-	s.zfree = zfree;
-#if defined(CONFIG_HW_WATCHDOG) || defined(CONFIG_WATCHDOG)
-	s.outcb = (cb_func)WATCHDOG_RESET;
-#else
-	s.outcb = Z_NULL;
-#endif	/* CONFIG_HW_WATCHDOG */
-
-	r = inflateInit2(&s, -MAX_WBITS);
-	if (r != Z_OK) {
-		printf ("Error: inflateInit2() returned %d\n", r);
-		return (-1);
-	}
-	s.next_in = src + i;
-	s.avail_in = *lenp - i;
-	s.next_out = dst;
-	s.avail_out = dstlen;
-	r = inflate(&s, Z_FINISH);
-	if (r != Z_OK && r != Z_STREAM_END) {
-		printf ("Error: inflate() returned %d\n", r);
-		return (-1);
-	}
-	*lenp = s.next_out - (unsigned char *) dst;
-	inflateEnd(&s);
-
-	return (0);
-}
-#endif
 
 #ifdef CONFIG_BZLIB
 void bz_internal_error(int errcode)

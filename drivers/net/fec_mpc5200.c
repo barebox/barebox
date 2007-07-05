@@ -76,7 +76,7 @@ static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 {
 	int ix;
 
-        for (ix = 0; ix < FEC_TBD_NUM; ix++) {
+	for (ix = 0; ix < FEC_TBD_NUM; ix++) {
 		fec->tbdBase[ix].status = 0;
 	}
 
@@ -158,9 +158,8 @@ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 /********************************************************************/
 static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-        printf("%s\n",__FUNCTION__);
-        /* no eeprom */
-        return -1;
+	/* no eeprom */
+	return -1;
 }
 
 static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
@@ -171,7 +170,6 @@ static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 	int bit;			/* loop - counter */
 	uint32 crc = 0xffffffff;	/* initial value */
 
-        printf("%s: %s\n",__FUNCTION__, mac);
 	/*
 	 * The algorithm used is the following:
 	 * we loop on each of the six bytes of the provided address,
@@ -232,13 +230,13 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	printf ("mpc5xxx_fec_init... Begin\n");
 #endif
 
-        /*
+	/*
 	 * Initialize RxBD/TxBD rings
 	 */
 	mpc5xxx_fec_rbd_init(fec);
 	mpc5xxx_fec_tbd_init(fec);
 
-        /*
+	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
 	fec->eth->ievent = 0xffffffff;
@@ -275,7 +273,7 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
-	fec->eth->op_pause = 0x00010020;	/*FIXME0xffff0020; */
+	fec->eth->op_pause = 0x00010020;	/*FIXME 0xffff0020; */
 
 	/*
 	 * Set Rx FIFO alarm and granularity value
@@ -387,14 +385,14 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev)
 	fec->eth->imask = 0x00000000;
 
 	if (fec->xcv_type != SEVENWIRE) {
+		int timeout = 1;
+		uint16 phyStatus;
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
 		fec->eth->mii_speed = (((gd->ipb_clk >> 20) / 5) << 1);	/* No MII for 7-wire mode */
-	}
 
-	if (fec->xcv_type != SEVENWIRE) {
 		/*
 		 * Initialize PHY(LXT971A):
 		 *
@@ -416,8 +414,6 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev)
 		 *   The physical address is dependent on hardware configuration.
 		 *
 		 */
-		int timeout = 1;
-		uint16 phyStatus;
 
 		/*
 		 * Reset PHY, then delay 300ns
@@ -637,7 +633,7 @@ static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 
 /********************************************************************/
 
-static int mpc5xxx_fec_send(struct eth_device *dev, volatile void *eth_data,
+static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 		int data_length)
 {
 	/*
@@ -646,7 +642,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, volatile void *eth_data,
 	 */
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	volatile FEC_TBD *pTbd;
-printf("%s\n",__FUNCTION__);
+
 #if (DEBUG & 0x20)
 	printf("tbd status: 0x%04x\n", fec->tbdBase[0].status);
 	tfifo_print(dev->name, fec);
@@ -774,7 +770,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	}
 
 	if (!(pRbd->status & FEC_RBD_EMPTY)) {
-		printf("huhu\n");
 		if ((pRbd->status & FEC_RBD_LAST) && !(pRbd->status & FEC_RBD_ERR) &&
 			((pRbd->dataLength - 4) > 14)) {
 
@@ -784,15 +779,15 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			frame = (NBUF *)pRbd->dataPointer;
 			frame_length = pRbd->dataLength - 4;
 
-//#if (DEBUG & 0x20)
+#if (DEBUG & 0x20)
 			{
 				int i;
 				printf("recv data hdr:");
 				for (i = 0; i < 14; i++)
-					printf("%x ", *(frame->head + i));
+					printf("%02x ", *(frame->head + i));
 				printf("\n");
 			}
-//#endif
+#endif
 			/*
 			 *  Fill the buffer and pass it to upper layers
 			 */
@@ -806,6 +801,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 		 */
 		mpc5xxx_fec_rbd_clean(fec, pRbd);
 	}
+
 	SDMA_CLEAR_IEVENT (FEC_RECV_TASK_NO);
 	return len;
 }
@@ -817,8 +813,6 @@ int mpc5xxx_fec_probe(struct device_d *dev)
         struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
         struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
-	char *tmp, *end;
-	int i;
 
         edev = (struct eth_device *)malloc(sizeof(struct eth_device));
         dev->type_data = edev;

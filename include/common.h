@@ -319,8 +319,13 @@ int	prt_8260_rsr  (void);
 //void	external_interrupt (struct pt_regs *);
 void	irq_install_handler(int, interrupt_handler_t *, void *);
 void	irq_free_handler   (int);
+#ifdef CONFIG_INTERRUPTS
 void	enable_interrupts  (void);
 int	disable_interrupts (void);
+#else
+#define enable_interrupts() do {} while (0)
+#define disable_interrupts() 0
+#endif
 
 /* $(CPU)/.../commproc.c */
 int	dpram_init (void);
@@ -356,8 +361,6 @@ void	wait_ticks    (unsigned long);
 
 /* lib_$(ARCH)/time.c */
 int	udelay	      (unsigned long);
-ulong	usec2ticks    (unsigned long usec);
-ulong	ticks2usec    (unsigned long ticks);
 
 /* lib_generic/vsprintf.c */
 ulong	simple_strtoul(const char *cp,char **endp,unsigned int base);

@@ -284,6 +284,7 @@ int open(const char *pathname, int flags)
 
 	if (flags & O_TRUNC) {
 		errno = fsdrv->truncate(dev, f, 0);
+		f->size = 0;
 		if (errno)
 			goto out;
 	}

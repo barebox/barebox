@@ -43,7 +43,10 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	delay = simple_strtoul(argv[1], NULL, 10);
 
 	start = get_time_ns();
-	while (!is_timeout(start, delay * SECOND));
+	while (!is_timeout(start, delay * SECOND)) {
+		if (ctrlc())
+			return 1;
+	}
 
 	return 0;
 }

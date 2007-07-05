@@ -12,3 +12,4 @@ obj-y	+= vsprintf.o
 obj-y	+= zlib.o
 obj-y	+= div64.o
 
+obj-y	+= misc.o

@@ -1,3 +1,47 @@
+menuconfig COMMANDS
+	bool "Commands"
+
+if COMMANDS
+
 config COMMON_ENV_FLASH
 	bool
 	prompt "Environment in flash"
+
+config CMD_CONSOLE
+	bool
+	prompt "coninfo"
+
+config CMD_MII
+	bool
+	prompt "mii"
+
+config CMD_MEMORY
+	bool
+	prompt "md, mm, mw and several others"
+
+config CMD_I2C
+	bool
+	prompt "i2c"
+
+config CMD_AUTOSCRIPT
+	bool
+	prompt "autoscript"
+
+config CMD_FLASH
+	bool
+	prompt "protect/erase/flinfo"
+
+config CMD_LOADB
+	bool
+	prompt "loadb"
+
+config CMD_LOADS
+	bool
+	prompt "loads"
+
+config CMD_SAVES
+	bool
+	depends on CMD_LOADS
+	prompt "saves"
+
+endif

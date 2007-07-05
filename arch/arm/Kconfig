@@ -1,20 +1,30 @@
-# placeholder
 
-choice
-	prompt "Select target board"
+config ARM920T
+	bool
 
 config ARCH_IMX
+	bool
 	select ARM920T
-	bool "Motorola i.MX"
 
-endchoice
+config ARCH_AT91RM9200
+	bool
+	select ARM920T
 
 choice
-	prompt "Select i.MX implementation"
+	prompt "Select your board"
 
 config MACH_MX1ADS
 	bool "mx1ads"
-	depends on ARCH_IMX
+	select HAS_CS8900
+	select ARCH_IMX
+	help
+	  Say Y here if you are using the Motorola MX1ADS board
+
+config MACH_ECO920
+	bool "eco920"
+	select HAS_AT91_ETHER
+	select HAS_CFI
+	select ARCH_AT91RM9200
 	help
 	  Say Y here if you are using the Motorola MX1ADS board
 
@@ -22,3 +32,6 @@ endchoice
 
 config ARM920T
 	bool
+
+source common/Kconfig
+source drivers/Kconfig

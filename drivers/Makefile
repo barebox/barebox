@@ -6,8 +6,8 @@
 #obj-y += bcm570x_autoneg.o
 #obj-y += bcm570x.o
 #obj-y += cfb_console.o
-obj-y += cfi_flash.o
-obj-y += cs8900.o
+obj-$(CONFIG_DRIVER_CFI) += cfi_flash.o
+obj-$(CONFIG_DRIVER_NET_CS8900) += cs8900.o
 #obj-y += ct69000.o
 #obj-y += dc2114x.o
 #obj-y += dm9000x.o

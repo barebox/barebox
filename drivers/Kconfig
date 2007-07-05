@@ -1,0 +1,31 @@
+menuconfig DRIVERS
+	bool "drivers"
+
+if DRIVERS
+
+config HAS_CS8900
+	bool
+
+config HAS_AT91_ETHER
+	bool
+
+config HAS_CFI
+	bool
+
+comment "Network drivers"
+
+config DRIVER_NET_CS8900
+	bool "cs8900 ethernet driver"
+	depends on HAS_CS8900
+
+config DRIVER_NET_AT91_ETHER
+	bool "at91 ethernet driver"
+	depends on HAS_AT91_ETHER
+
+comment "Flash drivers"
+
+config DRIVER_CFI
+	bool "cfi flash driver"
+	depends on HAS_CFI
+
+endif

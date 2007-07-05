@@ -34,6 +34,7 @@
 #include <clock.h>
 #include <arm920t.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/clock.h>
 
 uint64_t imx_clocksource_read(void)
 {

@@ -19,7 +19,6 @@
  */
 
 #include <config.h>
-#include <version.h>
 #include <asm/arch/imx-regs.h>
 
 #define CFG_GPR_A_VAL		0x00800000

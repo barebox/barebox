@@ -32,7 +32,6 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <arm920t.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 

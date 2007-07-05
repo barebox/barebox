@@ -26,7 +26,6 @@
 
 
 #include <config.h>
-#include <version.h>
 
 
 /*

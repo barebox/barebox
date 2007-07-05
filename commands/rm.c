@@ -1,3 +1,8 @@
+#include <common.h>
+#include <command.h>
+#include <fs.h>
+#include <errno.h>
+
 static int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int i = 1;

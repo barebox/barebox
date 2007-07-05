@@ -296,6 +296,7 @@ U_BOOT_CMD_START(mw)
 	U_BOOT_CMD_HELP(cmd_mw_help)
 U_BOOT_CMD_END
 
+#if 0
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	addr1, addr2, count, ngood;
@@ -364,6 +365,16 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		ngood == 1 ? "" : "s");
 	return rcode;
 }
+
+U_BOOT_CMD_START(cmp)
+	.maxargs	= 4,
+	.cmd		= do_mem_cmp,
+	.usage		= "memory compare",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
+
+#endif
+
 #if 0
 int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -549,13 +560,6 @@ static int mem_init(void)
 }
 
 device_initcall(mem_init);
-
-U_BOOT_CMD_START(cmp)
-	.maxargs	= 4,
-	.cmd		= do_mem_cmp,
-	.usage		= "memory compare",
-	U_BOOT_CMD_HELP("write me\n")
-U_BOOT_CMD_END
 
 #ifndef CONFIG_CRC32_VERIFY
 

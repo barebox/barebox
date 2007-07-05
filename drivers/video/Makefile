@@ -1,0 +1,1 @@
+obj-$(CONFIG_DRIVER_VIDEO_S1D13706)	+=epson_s1d13706fb.o

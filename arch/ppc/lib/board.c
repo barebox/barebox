@@ -28,7 +28,6 @@
 #include <malloc.h>
 #include <mem_malloc.h>
 #include <init.h>
-#include <devices.h>
 #include <net.h>
 #include <serial.h>
 

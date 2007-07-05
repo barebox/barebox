@@ -5,6 +5,7 @@
 
 #define FS_TYPE_CRAMFS 1
 #define FS_TYPE_RAMFS  2
+#define FS_TYPE_DEVFS  3
 
 #define PATH_MAX       1024        /* include/linux/limits.h */
 
@@ -28,6 +29,7 @@ typedef struct filep {
 	struct device_d *dev; /* The device this FILE belongs to              */
 	ulong pos;            /* current position in stream                   */
 	ulong size;           /* The size of this inode                       */
+	ulong flags;          /* the O_* flags from open                      */
 
 	void *inode;         /* private to the filesystem driver              */
 
@@ -78,7 +80,13 @@ int close(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
 ssize_t write(int fd, const void *buf, size_t count);
-int ls(const char *path);
+
+#define SEEK_SET	1
+#define SEEK_CUR	2
+#define SEEK_END	3
+
+off_t lseek(int fildes, off_t offset, int whence);
+int ls(const char *path, ulong flags);
 int mkdir (const char *pathname);
 int mount (struct device_d *dev, char *fsname, char *path);
 int umount(const char *pathname);

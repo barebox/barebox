@@ -49,7 +49,7 @@ SECTIONS
 
 	. = .;
 	__u_boot_cmd_start = .;
-	.u_boot_cmd : { *(.u_boot_cmd) }
+	.u_boot_cmd : { U_BOOT_CMDS }
 	__u_boot_cmd_end = .;
 
 	__u_boot_initcalls_start = .;

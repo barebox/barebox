@@ -90,3 +90,6 @@ obj-y	+= mtdpart.o
 obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
+
+obj-y += cmd_fs.o
+

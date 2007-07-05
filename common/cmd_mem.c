@@ -131,9 +131,9 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	do {
 		now = min(RW_BUF_SIZE, nbytes);
-		r = read(mem.device, rw_buf, now, offs, RW_SIZE(size));
+		r = dev_read(mem.device, rw_buf, now, offs, RW_SIZE(size));
 		if (r <= 0) {
-                        perror("read", r);
+                        perror("read");
 			return r;
                 }
 
@@ -184,7 +184,7 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		count = size;
 
 	if (count == size) {
-		return write(mem.device, (uchar *)&writeval, count, mem.start, RW_SIZE(size));
+		return dev_write(mem.device, (uchar *)&writeval, count, mem.start, RW_SIZE(size));
 	} else {
 		printf("write multiple not yet implemented\n");
 	}
@@ -300,11 +300,11 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	while (count > 0) {
 		now = min(RW_BUF_SIZE, count);
 
-		ret = read(src.device, rw_buf, now, src.start + offset, RW_SIZE(size));
+		ret = dev_read(src.device, rw_buf, now, src.start + offset, RW_SIZE(size));
 		if (ret <= 0)
 			return ret;
 
-		ret = write(dst.device, rw_buf, ret, dst.start + offset, RW_SIZE(size));
+		ret = dev_write(dst.device, rw_buf, ret, dst.start + offset, RW_SIZE(size));
 		if (ret <= 0)
 			return ret;
 		if (ret < now)
@@ -432,14 +432,19 @@ static void memcpy_sz(void *_dst, void *_src, ulong count, ulong rwsize)
 
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
 {
-	memcpy_sz(buf, (void *)(dev->map_base + offset), count, rwflags & RW_SIZE_MASK);
-	return count;
+	ulong size;
+	size = min(count, dev->size - offset);
+	printf("mem_read: dev->map_base: %p size: %d offset: %d\n",dev->map_base, size, offset);
+	memcpy_sz(buf, (void *)(dev->map_base + offset), size, rwflags & RW_SIZE_MASK);
+	return size;
 }
 
 ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
 {
-	memcpy_sz((void *)(dev->map_base + offset), buf, count, rwflags & RW_SIZE_MASK);
-	return count;
+	ulong size;
+	size = min(count, dev->size - offset);
+	memcpy_sz((void *)(dev->map_base + offset), buf, size, rwflags & RW_SIZE_MASK);
+	return size;
 }
 
 static struct device_d mem_dev = {

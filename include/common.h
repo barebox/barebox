@@ -593,7 +593,7 @@ void	vprintf(const char *fmt, va_list args);
 #define stdin		0
 #define stdout		1
 #define stderr		2
-#define MAX_FILES	3
+#define MAX_FILES	16
 
 void	fprintf(int file, const char *fmt, ...);
 void	fputs(int file, const char *s);

@@ -1,5 +1,4 @@
 #include <common.h>
-#include <command.h>
 #include <fs.h>
 #include <driver.h>
 #include <errno.h>
@@ -37,11 +36,35 @@ char *mkmodestr(unsigned long mode, char *str)
 	return str;
 }
 
-struct mtab_entry {
-	char path[PATH_MAX];
-	struct mtab_entry *next;
-	struct device_d *dev;
-};
+/*
+ * - Remove all multiple slashes
+ * - Remove trailing slashes (except path consists of only
+ *   a single slash)
+ * - TODO: illegal characters?
+ */
+void normalise_path(char *path)
+{
+        char *out = path, *in = path;
+
+        while(*in) {
+                if(*in == '/') {
+                        *out++ = *in++;
+                        while(*in == '/')
+                                in++;
+                } else {
+                        *out++ = *in++;
+                }
+        }
+
+        /*
+         * Remove trailing slash, but only if
+         * we were given more than a single slash
+         */
+        if (out > path + 1 && *(out - 1) == '/')
+                *(out - 1) = 0;
+
+        *out = 0;
+}
 
 static struct mtab_entry *mtab;
 
@@ -72,30 +95,149 @@ struct mtab_entry *get_mtab_entry_by_path(const char *_path)
 	return match ? match : mtab;
 }
 
+FILE files[MAX_FILES];
+
+FILE *get_file(void)
+{
+	int i;
+
+	for (i = 3; i < MAX_FILES; i++) {
+		if (!files[i].used) {
+			files[i].used = 1;
+			files[i].no = i;
+			memset(&files[i], 0, sizeof(FILE));
+			return &files[i];
+		}
+	}
+	return NULL;
+}
+
+void put_file(FILE *f)
+{
+	files[f->no].used = 0;
+}
+
+int open(const char *pathname, int flags)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	struct mtab_entry *e;
+	FILE *f;
+	int ret;
+
+	f = get_file();
+	if (!f) {
+		errno = -EMFILE;
+		return errno;
+	}
+
+	if (!strncmp(pathname, "/dev/", 5)) {
+		dev = get_device_by_id(pathname + 5);
+		f->dev = dev;
+	} else {
+		e = get_mtab_entry_by_path(pathname);
+		if (!e) {
+			errno = -ENOENT;
+			goto out;
+		}
+
+		if (e != mtab)
+			pathname += strlen(e->path);
+
+		dev = e->dev;
+
+		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		f->dev = dev;
+
+		ret = fsdrv->open(dev, f, pathname);
+		if (ret) {
+			errno = ret;
+			goto out;
+		}
+	}
+
+	return f->no;
+
+out:
+	put_file(f);
+	return errno;
+}
+
+int read(int fd, void *buf, size_t count)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+	if (dev->type == DEVICE_TYPE_FS) {
+		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		errno = fsdrv->read(dev, f, buf, count);
+		return errno;
+	} else {
+		errno = dev->driver->read(dev, buf, count, f->pos, 0); /* FIXME: flags */
+		if (errno > 0)
+			f->pos += errno;
+		return errno;
+	}
+}
+
+ssize_t write(int fd, const void *buf, size_t count)
+{
+	return -EROFS;
+}
+
+int close(int fd)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	put_file(f);
+	return fsdrv->close(dev, f);
+}
+
 int mount (struct device_d *dev, char *fsname, char *path)
 {
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
+	struct dir *dir;
 	int ret;
+
+	errno = 0;
 
 	drv = get_driver_by_name(fsname);
 	if (!drv) {
-		printf("no driver for fstype %s\n", fsname);
-		return -EINVAL;
+		errno = -ENODEV;
+		goto out;
 	}
 
 	if (drv->type != DEVICE_TYPE_FS) {
-		printf("driver %s is no filesystem driver\n");
-		return -EINVAL;
+		errno = -EINVAL;
+		goto out;
 	}
 
-	/* check if path exists */
-	/* TODO */
+	if (mtab) {
+		/* check if path exists and is a directory */
+		if (!(dir = opendir(path))) {
+			errno = -ENOTDIR;
+			goto out;
+		}
+		closedir(dir);
+	} else {
+		/* no mtab, so we only allow to mount on '/' */
+		if (*path != '/' || *(path + 1)) {
+			errno = -ENOTDIR;
+			goto out;
+		}
+	}
 
 	fs_drv = drv->type_data;
-	printf("mount: fs_drv: %p\n", fs_drv);
 
 	if (fs_drv->flags & FS_DRIVER_NO_DEV) {
 		dev = malloc(sizeof(struct device_d));
@@ -104,12 +246,14 @@ int mount (struct device_d *dev, char *fsname, char *path)
 		dev->type = DEVICE_TYPE_FS;
 		if ((ret = register_device(dev))) {
 			free(dev);
-			return ret;
+			errno = ret;
+			goto out;
 		}
 		if (!dev->driver) {
 			/* driver didn't accept the device. Bail out */
 			free(dev);
-			return -EINVAL;
+			errno = -EINVAL;
+			goto out;
 		}
 	} else {
 		fsdev = malloc(sizeof(struct fs_device_d));
@@ -120,12 +264,14 @@ int mount (struct device_d *dev, char *fsname, char *path)
 		fsdev->dev.type_data = fsdev;
 		if ((ret = register_device(&fsdev->dev))) {
 			free(fsdev);
-			return ret;
+			errno = ret;
+			goto out;
 		}
 		if (!fsdev->dev.driver) {
 			/* driver didn't accept the device. Bail out */
 			free(fsdev);
-			return -EINVAL;
+			errno = -EINVAL;
+			goto out;
 		}
 		dev = &fsdev->dev;
 	}
@@ -144,28 +290,38 @@ int mount (struct device_d *dev, char *fsname, char *path)
 			e = e->next;
 		e->next = entry;
 	}
-
-	printf("mount: mtab->dev: %p\n", mtab->dev);
-
-	return 0;
+out:
+	return errno;
 }
 
-int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int umount(const char *pathname)
 {
-	struct device_d *dev;
-	int ret = 0;
+	struct mtab_entry *entry = mtab;
+	struct mtab_entry *last = mtab;
+	char *p = strdup(pathname);
 
-	if (argc != 4) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
+	normalise_path(p);
+
+	while(entry && strcmp(p, entry->path)) {
+		last = entry;
+		entry = entry->next;
 	}
 
-	dev = get_device_by_id(argv[1]);
+	free(p);
 
-	if ((ret = mount(dev, argv[2], argv[3]))) {
-		perror("mount", ret);
-		return 1;
+	if (!entry) {
+		errno = -EFAULT;
+		return errno;
 	}
+
+	if (entry == mtab)
+		mtab = mtab->next;
+	else
+		last->next = entry->next;
+
+	unregister_device(entry->dev);
+	free(entry);
+
 	return 0;
 }
 
@@ -207,45 +363,65 @@ int closedir(struct dir *dir)
 	return dir->fsdrv->closedir(dir->dev, dir);
 }
 
-static int ls(const char *path)
+int stat(const char *filename, struct stat *s)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	struct mtab_entry *e;
+	char *f = strdup(filename);
+
+	memset(s, 0, sizeof(struct stat));
+
+	normalise_path(f);
+
+	e = get_mtab_entry_by_path(f);
+	if (!e) {
+		errno = -ENOENT;
+		goto out;
+	}
+	if (e != mtab)
+		f += strlen(e->path);
+
+	dev = e->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	errno = fsdrv->stat(dev, f, s);
+out:
+	free(f);
+	return errno;
+}
+
+int ls(const char *path)
 {
 	struct dir *dir;
 	struct dirent *d;
 	char modestr[11];
+	char tmp[PATH_MAX];
+	struct stat s;
 
 	dir = opendir(path);
-	if (!dir)
+	if (!dir) {
+		errno = -ENOENT;
 		return -ENOENT;
+	}
 
 	while ((d = readdir(dir))) {
 		unsigned long namelen = strlen(d->name);
-		mkmodestr(d->mode, modestr);
-		printf("%s %8d %*.*s\n",modestr, d->size, namelen, namelen, d->name);
+		sprintf(tmp, "%s/%s", path, d->name);
+		if (stat(tmp, &s)) {
+			perror("stat");
+			return errno;
+		}
+
+		mkmodestr(s.st_mode, modestr);
+		printf("%s %8d %*.*s\n",modestr, s.st_size, namelen, namelen, d->name);
 	}
 
 	closedir(dir);
 
 	return 0;
 }
-
-int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int ret;
-
-	ret = ls(argv[1]);
-	if (ret) {
-		perror("ls", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-U_BOOT_CMD(
-	ls,     2,     0,      do_ls,
-	"ls      - list a file or directory\n",
-	"<path> list files on path"
-);
 
 int mkdir (const char *pathname)
 {
@@ -254,8 +430,11 @@ int mkdir (const char *pathname)
 	struct mtab_entry *e;
 
 	e = get_mtab_entry_by_path(pathname);
-	if (!e)
-		return NULL;
+	if (!e) {
+		errno = -ENOENT;
+		return -ENOENT;
+	}
+
 	if (e != mtab)
 		pathname += strlen(e->path);
 
@@ -265,37 +444,8 @@ int mkdir (const char *pathname)
 
 	if (fsdrv->mkdir)
 		return fsdrv->mkdir(dev, pathname);
+
+	errno = -EROFS;
 	return -EROFS;
 }
 
-int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int ret;
-
-	ret = mkdir(argv[1]);
-	if (ret) {
-		perror("ls", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-U_BOOT_CMD(
-	mkdir,     2,     0,      do_mkdir,
-	"mkdir    - create a new directory\n",
-	""
-);
-
-U_BOOT_CMD(
-	mount,     4,     0,      do_mount,
-	"mount   - mount a filesystem to a device\n",
-	" <device> <type> <path> add a filesystem of type 'type' on the given device"
-);
-#if 0
-U_BOOT_CMD(
-	delfs,     2,     0,      do_delfs,
-	"delfs   - delete a filesystem from a device\n",
-	""
-);
-#endif

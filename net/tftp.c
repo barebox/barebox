@@ -65,7 +65,7 @@ store_block (unsigned block, uchar * src, unsigned len)
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
 
-	write(net_store_mem.device, src, len, net_store_mem.start + offset, 0);
+	dev_write(net_store_mem.device, src, len, net_store_mem.start + offset, 0);
 
 	if (NetBootFileXferSize < newsize)
 		NetBootFileXferSize = newsize;

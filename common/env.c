@@ -123,7 +123,7 @@ int add_env_spec(char *spec)
 
         env_list->next = NULL;
 
-        err = read(info.device, env, env_size, info.start, 0);
+        err = dev_read(info.device, env, env_size, info.start, 0);
         if (err != env_size)
                 goto err_out;
 
@@ -206,13 +206,13 @@ int saveenv(void)
 
         *(ulong *)env = crc32(0, env + sizeof(ulong), env_size - sizeof(ulong));
 
-        ret = erase(info.device, info.size, info.start);
+        ret = dev_erase(info.device, info.size, info.start);
         if (ret) {
                 printf("unable to erase\n");
                 goto err_out;
         }
 
-        ret = write(info.device, env, info.size, info.start, 0);
+        ret = dev_write(info.device, env, info.size, info.start, 0);
         if (ret < 0) {
                 printf("unable to write\n");
                 goto err_out;

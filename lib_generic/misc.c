@@ -5,6 +5,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <linux/ctype.h>
+#include <errno.h>
 #include <asm-generic/errno.h>
 
 int cmd_get_data_size(char* arg, int default_size)
@@ -32,7 +33,7 @@ int cmd_get_data_size(char* arg, int default_size)
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
-struct device_d *get_device_by_id(char *id)
+struct device_d *get_device_by_id(const char *id)
 {
 	struct device_d *d;
 
@@ -357,25 +358,28 @@ out:
 	return 0;
 }
 
-ssize_t read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
         if (dev->driver->read)
                 return dev->driver->read(dev, buf, count, offset, flags);
-        return -1;
+	errno = -ENOSYS;
+        return -ENOSYS;
 }
 
-ssize_t write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+ssize_t dev_write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
         if (dev->driver->write)
                 return dev->driver->write(dev, buf, count, offset, flags);
-        return -1;
+	errno = -ENOSYS;
+        return -ENOSYS;
 }
 
-ssize_t erase(struct device_d *dev, size_t count, unsigned long offset)
+ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
         if (dev->driver->erase)
                 return dev->driver->erase(dev, count, offset);
-        return -1;
+	errno = -ENOSYS;
+        return -ENOSYS;
 }
 
 int dummy_probe(struct device_d *dev)
@@ -414,7 +418,12 @@ struct param_d* dev_get_param(struct device_d *dev, char *name)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
-        if (param && param->get)
+	if (!param) {
+		errno = -EINVAL;
+		return NULL;
+	}
+
+        if (param->get)
                 return param->get(dev, param);
 
         return param;
@@ -424,8 +433,10 @@ IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
 {
 	struct param_d *param = dev_get_param(dev, name);
 
-	if (!param || param->type != PARAM_TYPE_IPADDR)
-		return -1;
+	if (!param || param->type != PARAM_TYPE_IPADDR) {
+		errno = -EINVAL;
+		return 0;
+	}
 
 	return param->value.val_ip;
 }
@@ -443,11 +454,15 @@ int dev_set_param(struct device_d *dev, char *name, value_t val)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
-	if (!param)
+	if (!param) {
+		errno = -EINVAL;
 		return -EINVAL;
+	}
 
-	if (param->flags & PARAM_FLAG_RO)
+	if (param->flags & PARAM_FLAG_RO) {
+		errno = -EACCES;
 		return -EACCES;
+	}
 
         if (param->set)
                 return param->set(dev, param, val);

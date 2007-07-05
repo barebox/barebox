@@ -8,13 +8,6 @@
 #include <asm-generic/errno.h>
 #include <linux/stat.h>
 
-struct handle_d {
-	int (*read)(struct handle_d *, ...);
-	int (*write)(struct handle_d *, ...);
-
-	struct device_d *dev;
-};
-
 struct data_d {
 	char *data;
 	ulong size;
@@ -31,19 +24,6 @@ struct node_d {
 
 	struct data_d *data;
 };
-
-struct filesystem_d {
-	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
-	struct handle_d *(*open)(struct device_d *dev, const char *pathname, mode_t mode);
-	int (*remove)(struct device_d *dev, const char *pathname);
-	int (*mknod)(struct device_d *dev, const char *pathname, struct handle_d *handle);
-	int (*ls)(struct device_d *dev, const char *pathname);
-};
-
-int create(const char *pathname, ulong mode);
-struct handle_d *open(const char *pathname, ulong type);
-int remove(const char *pathname);
-int mknod(const char *pathname, struct handle_d *handle);
 
 struct ramfs_priv {
 	struct node_d root;
@@ -86,36 +66,6 @@ struct node_d* rlookup(struct node_d *node, const char *path)
 out:
 	free(buf);
         return node;
-}
-
-/*
- * - Remove all multiple slashes
- * - Remove trailing slashes (except path consists of only
- *   a single slash)
- * - TODO: illegal characters?
- */
-void normalise_path(char *path)
-{
-        char *out = path, *in = path;
-
-        while(*in) {
-                if(*in == '/') {
-                        *out++ = *in++;
-                        while(*in == '/')
-                                in++;
-                } else {
-                        *out++ = *in++;
-                }
-        }
-
-        /*
-         * Remove trailing slash, but only if
-         * we were given more than a single slash
-         */
-        if (out > path + 1 && *(out - 1) == '/')
-                *(out - 1) = 0;
-
-        *out = 0;
 }
 
 int node_add_child(struct node_d *node, const char *filename, ulong mode)
@@ -192,9 +142,9 @@ int ramfs_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct handle_d *ramfs_open(struct device_d *dev, const char *pathname)
+static int ramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 {
-	return NULL;
+	return -ENOENT;
 }
 
 struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
@@ -222,7 +172,6 @@ struct dirent* ramfs_readdir(struct device_d *dev, struct dir *dir)
 {
 	if (dir->node) {
 		strcpy(dir->d.name, dir->node->name);
-		dir->d.mode = dir->node->mode;
 		dir->node = dir->node->next;
 		return &dir->d;
 	}
@@ -232,6 +181,21 @@ struct dirent* ramfs_readdir(struct device_d *dev, struct dir *dir)
 int ramfs_closedir(struct device_d *dev, struct dir *dir)
 {
 	free(dir);
+	return 0;
+}
+
+int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
+{
+	struct ramfs_priv *priv = dev->priv;
+	struct node_d *node = rlookup(&priv->root, filename);
+
+	if (!node) {
+		errno = -ENOENT;
+		return -ENOENT;
+	}
+
+	s->st_mode = node->mode;
+
 	return 0;
 }
 
@@ -245,6 +209,7 @@ static struct fs_driver_d ramfs_driver = {
 	.opendir  = ramfs_opendir,
 	.readdir  = ramfs_readdir,
 	.closedir = ramfs_closedir,
+	.stat     = ramfs_stat,
 
 	.flags    = FS_DRIVER_NO_DEV,
 	.drv = {
@@ -261,22 +226,4 @@ int ramfs_init(void)
 }
 
 device_initcall(ramfs_init);
-
-/* --------- Testing --------- */
-
-static int do_create ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-//	int ret;
-
-	printf("create %s\n",argv[1]);
-//	ret = ramfs_create(&ramfs_device, argv[1], S_IFDIR);
-//	perror("create", ret);
-	return 0;
-}
-
-U_BOOT_CMD(
-	create,     2,     0,      do_create,
-	"ls      - list a file or directory\n",
-	"<dev:path> list files on device"
-);
 

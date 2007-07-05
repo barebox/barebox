@@ -293,8 +293,7 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 	if (offset <= 0)
 		return -ENOENT;
 
-	file->pos = 0;
-	file->inode = dev->map_base + offset;
+	file->inode = (void*)dev->map_base + offset;
 
 	return 0;
 }
@@ -323,7 +322,7 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 		unsigned long base;
 		int copy;
 
-		blocknr = f->pos >> 12;
+		blocknr = (f->pos + outsize) >> 12;
 		if (blocknr != priv->curr_block || priv->inode != inode) {
 			if (blocknr)
 				base = CRAMFS_32 (block_ptrs[blocknr - 1]);
@@ -346,7 +345,6 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 		memcpy(buf, priv->buf + ofs, copy);
 		ofs = 0;
 
-		f->pos += copy;
 		outsize += copy;
 		size -= copy;
 		buf += copy;
@@ -364,13 +362,18 @@ static int cramfs_stat(struct device_d *_dev, const char *filename, struct stat 
 	char *f;
 	unsigned long offset;
 
-	f = strdup(filename);
-	offset = cramfs_resolve (dev->map_base,
+	if (strlen (filename) == 0 || !strcmp (filename, "/")) {
+		/* Root directory. Use root inode in super block */
+		offset = CRAMFS_GET_OFFSET (&(priv->super.root)) << 2;
+	} else {
+		f = strdup(filename);
+		offset = cramfs_resolve (dev->map_base,
 				 CRAMFS_GET_OFFSET (&(priv->super.root)) << 2,
 				 CRAMFS_24 (priv->super.root.size), 1,
 				 strtok (f, "/"));
 
-	free(f);
+		free(f);
+	}
 
 	if (offset < 0)
 		return -ENOENT;

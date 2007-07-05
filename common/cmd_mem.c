@@ -340,11 +340,6 @@ int do_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	if(creat(argv[2], 0)) {
-		perror("create");
-		return 1;
-	}
-
 	dst = open(argv[2], O_WRONLY | O_CREAT);
 	if ( dst < 0) {
 		perror("open");

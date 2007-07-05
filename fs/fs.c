@@ -5,6 +5,7 @@
 #include <asm-generic/errno.h>
 #include <malloc.h>
 #include <linux/stat.h>
+#include <fcntl.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -152,7 +153,7 @@ int creat(const char *pathname, mode_t mode)
 	dev = e->dev;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
-	errno = fsdrv->create(dev, pathname, mode);
+	errno = fsdrv->create(dev, pathname, S_IFREG);
 
 	return errno;
 }
@@ -163,32 +164,58 @@ int open(const char *pathname, int flags)
 	struct fs_driver_d *fsdrv;
 	struct mtab_entry *e;
 	FILE *f;
-	int ret;
+	int exist;
+	struct stat s;
+
+	exist = stat(pathname, &s) == 0 ? 1 : 0;
+
+	if (!exist && !(flags & O_CREAT))
+		return -EEXIST;
 
 	f = get_file_by_pathname(pathname);
 
-	if (!f->dev) {
-		e = get_mtab_entry_by_path(pathname);
-		if (!e) {
-			errno = -ENOENT;
-			goto out;
-		}
+	if (f->dev)
+		return f->no;
 
-		if (e != mtab)
-			pathname += strlen(e->path);
-
-		dev = e->dev;
-
-		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-		f->dev = dev;
-
-		ret = fsdrv->open(dev, f, pathname);
-		if (ret) {
-			errno = ret;
-			goto out;
-		}
+	e = get_mtab_entry_by_path(pathname);
+	if (!e) {
+		/* This can only happen when nothing is mounted */
+		errno = -ENOENT;
+		goto out;
 	}
-printf("open: %d\n",f->no);
+
+	/* Adjust the pathname to the root of the device */
+	if (e != mtab)
+		pathname += strlen(e->path);
+
+	dev = e->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	f->dev = dev;
+
+	if ((flags & O_ACCMODE) && !fsdrv->write) {
+		errno = -EROFS;
+		goto out;
+	}
+
+	if (!exist) {
+		errno = fsdrv->create(dev, pathname, S_IFREG);
+		if (errno)
+			goto out;
+	}
+	errno = fsdrv->open(dev, f, pathname);
+	if (errno)
+		goto out;
+
+	if (flags & O_APPEND)
+		f->pos = f->size;
+
+	if (flags & O_TRUNC) {
+		errno = fsdrv->truncate(dev, f, 0);
+		if (errno)
+			goto out;
+	}
+
 	return f->no;
 
 out:
@@ -206,6 +233,7 @@ int read(int fd, void *buf, size_t count)
 	printf("READ: dev: %p\n",dev);
 	if (dev->type == DEVICE_TYPE_FS) {
 		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		printf("\nreading %d bytes at %d\n",count, f->pos);
 		errno = fsdrv->read(dev, f, buf, count);
 	} else {
 		errno = dev->driver->read(dev, buf, count, f->pos, 0); /* FIXME: flags */
@@ -225,6 +253,12 @@ ssize_t write(int fd, const void *buf, size_t count)
 	printf("WRITE: dev: %p\n",dev);
 	if (dev->type == DEVICE_TYPE_FS) {
 		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		if (f->pos + count > f->size) {
+			errno = fsdrv->truncate(dev, f, f->pos + count);
+			if (errno)
+				return errno;
+			f->size = f->pos + count;
+		}
 		errno = fsdrv->write(dev, f, buf, count);
 	} else {
 		errno = dev->driver->write(dev, buf, count, f->pos, 0); /* FIXME: flags */

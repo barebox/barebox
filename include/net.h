@@ -376,7 +376,11 @@ extern int	NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, i
 extern void	NetReceive(volatile uchar *, int);
 
 /* Print an IP address on the console */
+#ifdef CONFIG_NET
 extern void	print_IPaddr (IPaddr_t);
+#else
+#define print_IPaddr(IPaddr_t);
+#endif
 
 /*
  * The following functions are a bit ugly, but necessary to deal with

@@ -10,9 +10,9 @@
 
 #define CHUNK_SIZE	512
 
-struct data_d {
+struct ramfs_chunk {
 	char *data;
-	struct data_d *next;
+	struct ramfs_chunk *next;
 };
 
 struct ramfs_inode {
@@ -24,7 +24,7 @@ struct ramfs_inode {
 	struct handle_d *handle;
 
 	ulong size;
-	struct data_d *data;
+	struct ramfs_chunk *data;
 };
 
 struct ramfs_priv {
@@ -73,17 +73,36 @@ out:
         return node;
 }
 
-int node_add_child(struct ramfs_inode *node, const char *filename, ulong mode)
+struct ramfs_chunk *ramfs_get_chunk(void)
+{
+	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
+	printf("get chunk\n");
+	data->data = malloc(CHUNK_SIZE);
+	data->next = NULL;
+	return data;
+}
+
+void ramfs_put_chunk(struct ramfs_chunk *data)
+{
+	printf("put chunk\n");
+	free(data->data);
+	free(data);
+}
+
+struct ramfs_inode* node_add_child(struct ramfs_inode *node, const char *filename, ulong mode)
 {
 	struct ramfs_inode *new_node = malloc(sizeof(struct ramfs_inode));
 	memset(new_node, 0, sizeof(struct ramfs_inode));
 	new_node->name = strdup(filename);
 	new_node->mode = mode;
 
+	if (!(mode & S_IFDIR))
+		new_node->data = ramfs_get_chunk();
+
 	printf("node_add_child: %p -> %p\n", node, new_node);
 	if (!node->child) {
 		node->child = new_node;
-		return 0;
+		return new_node;
 	}
 
 	node = node->child;
@@ -92,7 +111,7 @@ int node_add_child(struct ramfs_inode *node, const char *filename, ulong mode)
 		node = node->next;
 
 	node->next = new_node;
-	return 0;
+	return new_node;
 }
 
 /* ---------------------------------------------------------------*/
@@ -124,7 +143,8 @@ int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
 	if(__lookup(node, file))
 		return -EEXIST;
 printf("CREATE\n");
-	return node_add_child(node, file, mode);
+	node_add_child(node, file, mode);
+	return 0;
 }
 
 int ramfs_mkdir(struct device_d *dev, const char *pathname)
@@ -156,7 +176,7 @@ static int ramfs_open(struct device_d *dev, FILE *file, const char *filename)
 	if (!node)
 		return -ENOENT;
 
-	file->pos = 0;
+	file->size = node->size;
 	file->inode = node;
 	return 0;
 }
@@ -171,52 +191,92 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 	return 0;
 }
 
-struct data_d *ramfs_get_chunk(void)
-{
-	struct data_d *data = malloc(sizeof(struct data_d));
-	data->data = malloc(CHUNK_SIZE);
-	data->next = NULL;
-	return data;
-}
-
-static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
+static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
 	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
 	int chunk;
-	struct data_d *data = node->data;
+	struct ramfs_chunk *data;
 	int ofs;
-	int outsize = 0;
 	int now;
+	int pos = f->pos;
+	int size = insize;
 
 	chunk = f->pos / CHUNK_SIZE;
-	printf("%s: wrinting to chunk %d\n", __FUNCTION__, chunk);
+	printf("%s: writing to chunk %d\n", __FUNCTION__, chunk);
 
-	if (!node->data)
-		node->data = ramfs_get_chunk();
-
+	/* Position ourself in stream */
+	data = node->data;
 	while (chunk) {
 		data = data->next;
 		chunk--;
 	}
-
 	ofs = f->pos % CHUNK_SIZE;
 
-	while (size) {
-		if (ofs == CHUNK_SIZE) {
-			printf("get new chunk\n");
-			data->next = ramfs_get_chunk();
+	/* Write till end of current chunk */
+	if (ofs) {
+		now = min(size, CHUNK_SIZE - ofs);
+		printf("writing till end of node. size: %d\n", size);
+		memcpy(data->data, buf, now);
+		size -= now;
+		pos += now;
+		buf += now;
+		if (pos > node->size)
+			node->size = now;
+	}
+
+	/* Do full chunks */
+	while (size >= CHUNK_SIZE) {
+		printf("do full chunk. size: %d\n", size);
+		data = data->next;
+		memcpy(data->data, buf, CHUNK_SIZE);
+		size -= CHUNK_SIZE;
+		pos += CHUNK_SIZE;
+		buf += CHUNK_SIZE;
+	}
+
+	/* And the rest */
+	if (size) {
+		printf("do rest. size: %d\n", size);
+		data = data->next;
+		memcpy(data->data, buf, size);
+	}
+
+	return insize;
+}
+
+int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
+{
+	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	int oldchunks, newchunks;
+	struct ramfs_chunk *data = node->data;
+
+	newchunks = (size + CHUNK_SIZE - 1) / CHUNK_SIZE;
+	oldchunks = (node->size + CHUNK_SIZE - 1) / CHUNK_SIZE;
+
+	if (newchunks < oldchunks) {
+		while (newchunks--)
+			data = data->next;
+		while (data->next) {
+			struct ramfs_chunk *tmp;
+			tmp = data->next;
+			ramfs_put_chunk(data);
+			data = tmp;
+		}
+	}
+
+	if (newchunks > oldchunks) {
+		while (data->next) {
+			newchunks--;
 			data = data->next;
 		}
 
-		now = min(size, CHUNK_SIZE - ofs);
-		printf("now: %d data->data: %p buf: %p\n", now, data->data, buf);
-		memcpy(data->data, buf, now);
-		size -= now;
-		buf += now;
-		ofs += now;
-		outsize += now;
+		while (newchunks--) {
+			data->next = ramfs_get_chunk();
+			data = data->next;
+		}
 	}
-	return outsize;
+	node->size = size;
+	return 0;
 }
 
 struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
@@ -262,34 +322,32 @@ int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node = rlookup(&priv->root, filename);
-printf("%s: %s node: %p\n",__FUNCTION__, filename, node);
+
 	if (!node) {
 		errno = -ENOENT;
 		return -ENOENT;
 	}
 
+	s->st_size = node->size;
 	s->st_mode = node->mode;
 
 	return 0;
 }
 
 static struct fs_driver_d ramfs_driver = {
-	.type   = FS_TYPE_RAMFS,
-	.create = ramfs_create,
-	.open   = ramfs_open,
-	.close  = ramfs_close,
-
-	.read   = ramfs_read,
-	.write  = ramfs_write,
-
-	.mkdir    = ramfs_mkdir,
-
-	.opendir  = ramfs_opendir,
-	.readdir  = ramfs_readdir,
-	.closedir = ramfs_closedir,
-	.stat     = ramfs_stat,
-
-	.flags    = FS_DRIVER_NO_DEV,
+	.type      = FS_TYPE_RAMFS,
+	.create    = ramfs_create,
+	.open      = ramfs_open,
+	.close     = ramfs_close,
+	.truncate  = ramfs_truncate,
+	.read      = ramfs_read,
+	.write     = ramfs_write,
+	.mkdir     = ramfs_mkdir,
+	.opendir   = ramfs_opendir,
+	.readdir   = ramfs_readdir,
+	.closedir  = ramfs_closedir,
+	.stat      = ramfs_stat,
+	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.type   = DEVICE_TYPE_FS,
 		.probe  = ramfs_probe,

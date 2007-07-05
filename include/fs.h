@@ -27,6 +27,7 @@ struct dir {
 typedef struct filep {
 	struct device_d *dev; /* The device this FILE belongs to              */
 	ulong pos;            /* current position in stream                   */
+	ulong size;           /* The size of this inode                       */
 
 	void *inode;         /* private to the filesystem driver              */
 
@@ -43,8 +44,13 @@ struct fs_driver_d {
 	int (*probe) (struct device_d *dev);
 	int (*mkdir)(struct device_d *dev, const char *pathname);
 
-	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
+	/* create a file. The file is guaranteed to not exist */
 	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
+
+	/* Truncate a file to given size */
+	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
+
+	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
 	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
@@ -69,6 +75,7 @@ struct fs_device_d {
 int open(const char *pathname, int flags);
 int creat(const char *pathname, mode_t mode);
 int close(int fd);
+int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
 ssize_t write(int fd, const void *buf, size_t count);
 int ls(const char *path);

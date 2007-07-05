@@ -26,23 +26,21 @@
  */
 
 #include <common.h>
-#include <watchdog.h>
 #include <command.h>
 #include <mpc5xxx.h>
 #include <asm/processor.h>
 #include <asm/byteorder.h>
 #include <init.h>
 #include <types.h>
+#include <asm/arch/clocks.h>
 
 #if defined(CONFIG_OF_FLAT_TREE)
 #include <ft_build.h>
 #endif
 
-DECLARE_GLOBAL_DATA_PTR;
-
 int checkcpu (void)
 {
-	ulong clock = gd->cpu_clk;
+	ulong clock = get_cpu_clock();
 	char buf[32];
 #ifndef CONFIG_MGT5100
 	uint svr, pvr;
@@ -91,21 +89,6 @@ void do_reset (void)
 
 /* ------------------------------------------------------------------------- */
 
-/*
- * Get timebase clock frequency (like cpu_clk in Hz)
- *
- */
-unsigned long get_tbclk (void)
-{
-	ulong tbclk;
-
-	tbclk = (gd->bus_clk + 3L) / 4L;
-
-	return (tbclk);
-}
-
-/* ------------------------------------------------------------------------- */
-
 #ifdef CONFIG_OF_FLAT_TREE
 void
 ft_cpu_setup(void *blob, bd_t *bd)
@@ -129,15 +112,12 @@ ft_cpu_setup(void *blob, bd_t *bd)
 }
 #endif
 
-static int mpc5xxx_bd_init(void)
+int cpu_init_board_data(bd_t *bd)
 {
-	bd_t *bd = gd->bd;
-
-//	bd->bi_mbar_base = CFG_MBAR;	/* base of internal registers */
-	bd->bi_ipbfreq = gd->ipb_clk;
-	bd->bi_pcifreq = gd->pci_clk;
+	bd->bi_intfreq = get_cpu_clock();	/* Internal Freq, in Hz */
+	bd->bi_busfreq = get_bus_clock();	/* Bus Freq,      in Hz */
+	bd->bi_mbar_base = CFG_MBAR;		/* base of internal registers */
+	bd->bi_ipbfreq = get_ipb_clock();
+	bd->bi_pcifreq = get_pci_clock();
 	return 0;
 }
-
-core_initcall(mpc5xxx_bd_init);
-

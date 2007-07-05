@@ -52,11 +52,6 @@ void ixp425_udelay(unsigned long usec)
 	while (!(*IXP425_OSST & IXP425_OSST_TIMER_1_PEND));
 }
 
-void udelay (unsigned long usec)
-{
-	while (usec--) ixp425_udelay(1);
-}
-
 static ulong reload_constant = 0xfffffff0;
 
 void reset_timer_masked (void)

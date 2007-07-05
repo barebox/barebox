@@ -77,25 +77,6 @@ void set_timer(unsigned long t)
 	} while (hi_new != hi);
 }
 
-/*
- * For short delays only. It will overflow after a few seconds.
- */
-void udelay(unsigned long usec)
-{
-	unsigned long now, end;
-
-	now = sysreg_read(COUNT);
-
-	end = ((usec * (get_tbclk() / 10000)) + 50) / 100;
-	end += now;
-
-	while (now > end)
-		now = sysreg_read(COUNT);
-
-	while (now < end)
-		now = sysreg_read(COUNT);
-}
-
 static int set_interrupt_handler(unsigned int nr, void (*handler)(void),
 				 unsigned int priority)
 {

@@ -214,30 +214,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-/* delay x useconds AND preserve advance timestamp value */
-void udelay (unsigned long usec)
-{
-	ulong tmo, tmp;
-
-	if(usec >= 1000){		/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
-		tmo *= CFG_HZ;		/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;		/* finish normalize. */
-	}else{				/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CFG_HZ;
-		tmo /= (1000*1000);
-	}
-
-	tmp = get_timer (0);		/* get current timestamp */
-	if( (tmo + tmp + 1) < tmp )	/* if setting this fordward will roll time stamp */
-		reset_timer_masked ();	/* reset "advancing" timestamp to 0, set lastdec value */
-	else
-		tmo += tmp;		/* else, set advancing stamp wake up time */
-
-	while (get_timer_masked () < tmo) /* loop till event */
-		/*NOP*/;
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -263,35 +239,4 @@ ulong get_timer_masked (void)
 	lastdec = now;
 
 	return timestamp;
-}
-
-/* waits specified delay value and resets timestamp */
-void udelay_masked (unsigned long usec)
-{
-#ifdef CONFIG_INNOVATOROMAP1510
-	#define LOOPS_PER_MSEC 60 /* tuned on omap1510 */
-	volatile int i, time_remaining = LOOPS_PER_MSEC*usec;
-    for (i=time_remaining; i>0; i--) { }
-#else
-
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	if (usec >= 1000) {		/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
-		tmo *= CFG_HZ;		/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;		/* finish normalize. */
-	} else {			/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CFG_HZ;
-		tmo /= (1000*1000);
-	}
-
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
-#endif
 }

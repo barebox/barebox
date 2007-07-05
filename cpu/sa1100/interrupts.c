@@ -187,12 +187,6 @@ void set_timer (ulong t)
 	/* nop */
 }
 
-void udelay (unsigned long usec)
-{
-	udelay_masked (usec);
-}
-
-
 void reset_timer_masked (void)
 {
 	OSCR = 0;
@@ -201,27 +195,4 @@ void reset_timer_masked (void)
 ulong get_timer_masked (void)
 {
 	return OSCR;
-}
-
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	if (usec >= 1000) {
-		tmo = usec / 1000;
-		tmo *= CFG_HZ;
-		tmo /= 1000;
-	} else {
-		tmo = usec * CFG_HZ;
-		tmo /= (1000*1000);
-	}
-
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
 }

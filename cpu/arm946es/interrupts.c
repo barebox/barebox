@@ -210,12 +210,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-/* delay x useconds AND perserve advance timstamp value */
-void udelay(unsigned long usec)
-{
-	udelay_masked(usec);
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -246,26 +240,6 @@ ulong get_timer_raw (void)
 ulong get_timer_masked (void)
 {
 	return get_timer_raw() / TIMER_LOAD_VAL;
-}
-
-/* waits specified delay value and resets timestamp */
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-
-	if(usec >= 1000){               /* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;      /* start to normalize for usec to ticks per sec */
-		tmo *= CFG_HZ_CLOCK;    /* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;            /* finish normalize. */
-	}else{                          /* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CFG_HZ_CLOCK;
-		tmo /= (1000*1000);
-	}
-
-	reset_timer_masked ();	/* set "advancing" timestamp to 0, set lastdec vaule */
-
-	while (get_timer_raw () < tmo) /* wait for time stamp to overtake tick number.*/
-		/*NOP*/;
 }
 
 #endif /* CONFIG_INTEGRATOR */

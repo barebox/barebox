@@ -326,20 +326,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-void udelay (unsigned long usec)
-{
-	ulong tmo;
-
-	tmo = usec / 1000;
-	tmo *= CFG_HZ;
-	tmo /= 1000;
-
-	tmo += get_timer (0);
-
-	while (get_timer_masked () < tmo)
-		/*NOP*/;
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -363,47 +349,11 @@ ulong get_timer_masked (void)
 	return timestamp;
 }
 
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	if (usec >= 1000) {
-		tmo = usec / 1000;
-		tmo *= CFG_HZ;
-		tmo /= 1000;
-	} else {
-		tmo = usec * CFG_HZ;
-		tmo /= (1000*1000);
-	}
-
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
-}
-
 #elif defined(CONFIG_S3C4510B)
 
 ulong get_timer (ulong base)
 {
 	return timestamp - base;
-}
-
-void udelay (unsigned long usec)
-{
-	u32 ticks;
-
-	ticks = (usec * CFG_HZ) / 1000000;
-
-	ticks += get_timer (0);
-
-	while (get_timer (0) < ticks)
-		/*NOP*/;
-
 }
 
 #elif defined(CONFIG_INTEGRATOR) && defined(CONFIG_ARCH_INTEGRATOR)

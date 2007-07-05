@@ -82,20 +82,6 @@ void set_timer(ulong t)
 	timer_ticks = t;
 }
 
-void udelay(ulong usec)
-{
-	ulong start = get_timer_masked();
-	ulong end;
-
-	if (!timer_inited)
-		reset_timer();
-
-	/* Only 1ms resolution :-( */
-	end = usec / 1000;
-	while (get_timer(start) < end)
-		;
-}
-
 void reset_cpu (ulong ignored)
 {
 	ulong tc;

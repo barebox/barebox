@@ -64,34 +64,6 @@ int interrupt_init(void)
 	return (0);
 }
 
-void udelay(unsigned long usec)
-{
-	unsigned long delay, start, stop;
-	unsigned long cclk;
-	cclk = (CONFIG_CCLK_HZ);
-
-	while ( usec > 1 ) {
-	       /*
-		* how many clock ticks to delay?
-		*  - request(in useconds) * clock_ticks(Hz) / useconds/second
-		*/
-		if (usec < 1000) {
-			delay = (usec * (cclk/244)) >> 12 ;
-			usec = 0;
-		} else {
-			delay = (1000 * (cclk/244)) >> 12 ;
-			usec -= 1000;
-		}
-
-		asm volatile (" %0 = CYCLES;": "=g"(start));
-		do {
-			asm volatile (" %0 = CYCLES; ": "=g"(stop));
-		} while (stop - start < delay);
-	}
-
-	return;
-}
-
 void timer_init(void)
 {
 	*pTCNTL = 0x1;

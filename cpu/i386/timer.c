@@ -100,40 +100,4 @@ static u16 read_pit(void)
 	return ((inb(PIT_BASE + PIT_T0) << 8) | low);
 }
 
-/* this is not very exact */
-void udelay (unsigned long usec)
-{
-	int counter;
-	int wraps;
-
-	if (!timer_init_done) {
-		return;
-	}
-	counter = read_pit();
-	wraps = usec/1000;
-	usec = usec%1000;
-
-	usec*=1194;
-	usec/=1000;
-	usec+=counter;
-	if (usec > 1194) {
-		usec-=1194;
-		wraps++;
-	}
-
-	while (1) {
-		int new_count = read_pit();
-
-		if (((new_count < usec) && !wraps) || wraps < 0) {
-			break;
-		}
-
-		if (new_count > counter) {
-			wraps--;
-		}
-		counter = new_count;
-	}
-
-}
-
 #endif

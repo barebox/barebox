@@ -87,11 +87,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-void udelay (unsigned long usec)
-{
-	udelay_masked(usec);
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -118,24 +113,6 @@ ulong get_timer_raw (void)
 ulong get_timer_masked (void)
 {
 	return get_timer_raw()/TIMER_LOAD_VAL;
-}
-
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	tmo = CFG_HZ_CLOCK / 1000;
-	tmo *= usec;
-	tmo /= 1000;
-
-	endtime = get_timer_raw () + tmo;
-
-	do {
-		ulong now = get_timer_raw ();
-		diff = endtime - now;
-	} while (diff >= 0);
 }
 
 /*

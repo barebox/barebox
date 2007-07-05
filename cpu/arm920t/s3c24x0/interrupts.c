@@ -98,19 +98,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-void udelay (unsigned long usec)
-{
-	ulong tmo;
-	ulong start = get_timer(0);
-
-	tmo = usec / 1000;
-	tmo *= (timer_load_val * 100);
-	tmo /= 1000;
-
-	while ((ulong)(get_timer_masked () - start) < tmo)
-		/*NOP*/;
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -132,29 +119,6 @@ ulong get_timer_masked (void)
 	lastdec = now;
 
 	return timestamp;
-}
-
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	if (usec >= 1000) {
-		tmo = usec / 1000;
-		tmo *= (timer_load_val * 100);
-		tmo /= 1000;
-	} else {
-		tmo = usec * (timer_load_val * 100);
-		tmo /= (1000*1000);
-	}
-
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
 }
 
 /*

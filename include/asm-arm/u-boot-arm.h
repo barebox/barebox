@@ -57,6 +57,5 @@ void	setenv		(char *, char *);
 /* cpu/.../interrupt.c */
 void	reset_timer_masked	(void);
 ulong	get_timer_masked	(void);
-void	udelay_masked		(unsigned long usec);
 
 #endif	/* _U_BOOT_ARM_H_ */

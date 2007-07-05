@@ -226,35 +226,6 @@ void set_timer (ulong t)
 	timestamp = t;
 }
 
-void udelay (unsigned long usec)
-{
-	ulong tmo,tmp;
-
-	/* normalize */
-	if (usec >= 1000) {
-		tmo = usec / 1000;
-		tmo *= CFG_HZ;
-		tmo /= 1000;
-	}
-	else {
-		if (usec > 1) {
-			tmo = usec * CFG_HZ;
-			tmo /= (1000*1000);
-		}
-		else
-			tmo = 1;
-	}
-
-	/* check for rollover during this delay */
-	tmp = get_timer (0);
-	if ((tmp + tmo) < tmp )
-		reset_timer_masked();  /* timer would roll over */
-	else
-		tmo += tmp;
-
-	while (get_timer_masked () < tmo);
-}
-
 void reset_timer_masked (void)
 {
 	/* reset time */
@@ -276,32 +247,4 @@ ulong get_timer_masked (void)
 	lastdec = now;
 
 	return timestamp;
-}
-
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	/* normalize */
-	if (usec >= 1000) {
-		tmo = usec / 1000;
-		tmo *= CFG_HZ;
-		tmo /= 1000;
-	} else {
-		if (usec > 1) {
-			tmo = usec * CFG_HZ;
-			tmo /= (1000*1000);
-		} else {
-			tmo = 1;
-		}
-	}
-
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
 }

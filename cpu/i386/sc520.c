@@ -412,26 +412,6 @@ void set_timer(ulong t)
 	write_mmcr_word(SC520_GPTMR0CTL, 0x6001);
 }
 
-
-void udelay(unsigned long usec)
-{
-	int m=0;
-	long u;
-
-	read_mmcr_word(SC520_SWTMRMILLI);
-	read_mmcr_word(SC520_SWTMRMICRO);
-
-	while (1) {
-
-		m += read_mmcr_word(SC520_SWTMRMILLI);
-		u = read_mmcr_word(SC520_SWTMRMICRO) + (m * 1000);
-
-		if (usec <= u) {
-			break;
-		}
-	}
-}
-
 #endif
 
 int ssi_set_interface(int freq, int lsb_first, int inv_clock, int inv_phase)

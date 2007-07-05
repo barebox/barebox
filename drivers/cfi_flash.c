@@ -38,6 +38,7 @@
 #include <asm/processor.h>
 #include <asm/byteorder.h>
 #include <environment.h>
+#include <clock.h>
 #ifdef	CFG_FLASH_CFI_DRIVER
 
 /*
@@ -191,7 +192,7 @@ static void flash_read_jedec_ids (flash_info_t * info);
 static int flash_detect_cfi (flash_info_t * info);
 static int flash_write_cfiword (flash_info_t * info, ulong dest, cfiword_t cword);
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
-				    ulong tout, char *prompt);
+				    uint64_t tout, char *prompt);
 ulong flash_get_size (ulong base, int banknum);
 #if defined(CFG_ENV_IS_IN_FLASH) || defined(CFG_ENV_ADDR_REDUND) || (CFG_MONITOR_BASE >= CFG_FLASH_BASE)
 static flash_info_t *flash_get_info(ulong base);

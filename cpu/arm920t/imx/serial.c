@@ -18,39 +18,43 @@
  */
 
 #include <common.h>
-#if defined (CONFIG_IMX)
-
 #include <asm/arch/imx-regs.h>
 
-#ifndef CONFIG_IMX_SERIAL_NONE
-
 #if defined CONFIG_IMX_SERIAL1
-#define UART_BASE IMX_UART1_BASE
+#define IMX_UART_BASE IMX_UART1_BASE
 #elif defined CONFIG_IMX_SERIAL2
-#define UART_BASE IMX_UART2_BASE
+#define IMX_UART_BASE IMX_UART2_BASE
 #else
 #error "define CONFIG_IMX_SERIAL1, CONFIG_IMX_SERIAL2 or CONFIG_IMX_SERIAL_NONE"
 #endif
 
-struct imx_serial {
-	volatile uint32_t urxd[16];
-	volatile uint32_t utxd[16];
-	volatile uint32_t ucr1;
-	volatile uint32_t ucr2;
-	volatile uint32_t ucr3;
-	volatile uint32_t ucr4;
-	volatile uint32_t ufcr;
-	volatile uint32_t usr1;
-	volatile uint32_t usr2;
-	volatile uint32_t uesc;
-	volatile uint32_t utim;
-	volatile uint32_t ubir;
-	volatile uint32_t ubmr;
-	volatile uint32_t ubrc;
-	volatile uint32_t bipr[4];
-	volatile uint32_t bmpr[4];
-	volatile uint32_t uts;
-};
+#define URXD0(base) __REG( 0x0 +(base))  /* Receiver Register */
+#define URTX0(base) __REG( 0x40 +(base)) /* Transmitter Register */
+#define UCR1(base)  __REG( 0x80 +(base)) /* Control Register 1 */
+#define UCR2(base)  __REG( 0x84 +(base)) /* Control Register 2 */
+#define UCR3(base)  __REG( 0x88 +(base)) /* Control Register 3 */
+#define UCR4(base)  __REG( 0x8c +(base)) /* Control Register 4 */
+#define UFCR(base)  __REG( 0x90 +(base)) /* FIFO Control Register */
+#define USR1(base)  __REG( 0x94 +(base)) /* Status Register 1 */
+#define USR2(base)  __REG( 0x98 +(base)) /* Status Register 2 */
+#define UESC(base)  __REG( 0x9c +(base)) /* Escape Character Register */
+#define UTIM(base)  __REG( 0xa0 +(base)) /* Escape Timer Register */
+#define UBIR(base)  __REG( 0xa4 +(base)) /* BRM Incremental Register */
+#define UBMR(base)  __REG( 0xa8 +(base)) /* BRM Modulator Register */
+#define UBRC(base)  __REG( 0xac +(base)) /* Baud Rate Count Register */
+#define BIPR1(base) __REG( 0xb0 +(base)) /* Incremental Preset Register 1 */
+#define BIPR2(base) __REG( 0xb4 +(base)) /* Incremental Preset Register 2 */
+#define BIPR3(base) __REG( 0xb8 +(base)) /* Incremental Preset Register 3 */
+#define BIPR4(base) __REG( 0xbc +(base)) /* Incremental Preset Register 4 */
+#define BMPR1(base) __REG( 0xc0 +(base)) /* BRM Modulator Register 1 */
+#define BMPR2(base) __REG( 0xc4 +(base)) /* BRM Modulator Register 2 */
+#define BMPR3(base) __REG( 0xc8 +(base)) /* BRM Modulator Register 3 */
+#define BMPR4(base) __REG( 0xcc +(base)) /* BRM Modulator Register 4 */
+#define UTS(base)   __REG( 0xd0 +(base)) /* UART Test Register */
+
+#define  UTS_RXEMPTY	 (1<<5)	/* RxFIFO empty */
+#define  UTS_TXFULL 	 (1<<4)	/* TxFIFO full */
+#define  UTS_TXEMPTY	 (1<<6)	/* TxFIFO empty */
 
 void serial_setbrg (void)
 {
@@ -66,6 +70,7 @@ extern void imx_gpio_mode(int gpio_mode);
  */
 int serial_init (void)
 {
+#if 0
 	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
 #ifdef CONFIG_IMX_SERIAL1
 	imx_gpio_mode(PC11_PF_UART1_TXD);
@@ -133,7 +138,8 @@ int serial_init (void)
 	          USR1_FRAMERR   |
 	          USR1_AIRINT    |
 	          USR1_AWAKE;
-	return (0);
+#endif
+	return 0;
 }
 
 /*
@@ -143,34 +149,24 @@ int serial_init (void)
  */
 int serial_getc (void)
 {
-	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
 	unsigned char ch;
 
-	while(base->uts & UTS_RXEMPTY);
+	while(UTS(IMX_UART_BASE) & UTS_RXEMPTY);
 
-	ch = (char)base->urxd[0];
+	ch = URXD0(IMX_UART_BASE);
 
 	return ch;
 }
-
-#ifdef CONFIG_HWFLOW
-static int hwflow = 0; /* turned off by default */
-int hwflow_onoff(int on)
-{
-}
-#endif
 
 /*
  * Output a single byte to the serial port.
  */
 void serial_putc (const char c)
 {
-	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
-
 	/* Wait for Tx FIFO not full */
-	while (base->uts & UTS_TXFULL);
+	while (UTS(IMX_UART_BASE) & UTS_TXFULL);
 
-	base->utxd[0] = c;
+        URTX0(IMX_UART_BASE) = c;
 
 	/* If \n, also do \r */
 	if (c == '\n')
@@ -182,10 +178,8 @@ void serial_putc (const char c)
  */
 int serial_tstc (void)
 {
-	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
-
 	/* If receive fifo is empty, return false */
-	if (base->uts & UTS_RXEMPTY)
+	if (UTS(IMX_UART_BASE) & UTS_RXEMPTY)
 		return 0;
 	return 1;
 }
@@ -197,5 +191,4 @@ serial_puts (const char *s)
 		serial_putc (*s++);
 	}
 }
-#endif /* CONFIG_IMX_SERIAL_NONE */
-#endif /* defined CONFIG_IMX */
+

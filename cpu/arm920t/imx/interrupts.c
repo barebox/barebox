@@ -34,8 +34,6 @@
 #include <arm920t.h>
 #include <asm/arch/imx-regs.h>
 
-#define CLOCK_TICK_RATE 1000000
-
 uint64_t imx_clocksource_read(void)
 {
 	return TCN1;
@@ -53,14 +51,15 @@ int interrupt_init (void)
 	/* setup GP Timer 1 */
 	TCTL1 = TCTL_SWR;
 	for ( i=0; i<100; i++) TCTL1 = 0; /* We have no udelay by now */
-	TPRER1 = get_PERCLK1() / 1000000; /* 1 MHz */
+	TPRER1 = 0;
 	TCTL1 |= TCTL_FRR | (1<<1); /* Freerun Mode, PERCLK1 input */
 
 	TCTL1 &= ~TCTL_TEN;
 	TCTL1 |= TCTL_TEN; /* Enable timer */
 
-	cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, cs.shift);
-	init_clock(&cs);
+        cs.mult = clocksource_hz2mult(get_PERCLK1(), cs.shift);
+
+        init_clock(&cs);
 
 	return 0;
 }

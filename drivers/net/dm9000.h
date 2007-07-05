@@ -2,8 +2,6 @@
  * dm9000 Ethernet
  */
 
-#ifdef CONFIG_DRIVER_DM9000
-
 #define DM9000_ID		0x90000A46
 #define DM9000_PKT_MAX		1536	/* Received packet max size */
 #define DM9000_PKT_RDY		0x01	/* Packet ready to receive */
@@ -116,4 +114,3 @@
 #define IMR_PTM			(1<<1)
 #define IMR_PRM			(1<<0)
 
-#endif

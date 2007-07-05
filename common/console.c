@@ -28,42 +28,112 @@
 #include <console.h>
 #include <exports.h>
 #include <serial.h>
+#include <driver.h>
+#include <fs.h>
 
-void serial_printf (const char *fmt, ...)
+static struct console_device *first_console;
+
+int console_register(struct console_device *newcdev)
 {
-	va_list args;
-	uint i;
-	char printbuffer[CFG_PBSIZE];
+        struct console_device *cdev = first_console;
 
-	va_start (args, fmt);
+        if (!first_console) {
+		first_console = newcdev;
+                return 0;
+        }
 
-	/* For this to work, printbuffer must be larger than
-	 * anything we ever want to print.
-	 */
-	i = vsprintf (printbuffer, fmt, args);
-	va_end (args);
-
-	serial_puts (printbuffer);
+        while (1) {
+                if (!cdev->next) {
+                        cdev->next = newcdev;
+                        return 0;
+                }
+                cdev = cdev->next;
+        }
 }
 
 int getc (void)
 {
-	return serial_getc ();
+	struct console_device *cdev = NULL;
+
+	while (1) {
+		if (!cdev)
+			cdev = first_console;
+		if (cdev->flags & CONSOLE_STDIN && !cdev->tstc(cdev))
+			return cdev->getc(cdev);
+		cdev = cdev->next;
+	}
+}
+
+int fgetc(int fd)
+{
+	char c;
+
+	if (!fd)
+		return getc();
+	return read(fd, &c, 1);
 }
 
 int tstc (void)
 {
-	return serial_tstc ();
+	struct console_device *cdev = first_console;
+
+	while (cdev) {
+		if (cdev->flags & CONSOLE_STDIN && cdev->tstc(cdev))
+			return 1;
+		cdev = cdev->next;
+	}
+
+	return 0;
 }
 
-void putc (const char c)
+void console_putc(unsigned int ch, char c)
 {
-	serial_putc (c);
+	struct console_device *cdev = first_console;
+
+	while (cdev) {
+		if (cdev->flags & ch)
+			cdev->putc(cdev, c);
+		cdev = cdev->next;
+	}
 }
 
-void puts (const char *s)
+int fputc(int fd, char c)
 {
-	serial_puts (s);
+	if (fd == 1)
+		putc(c);
+	else if (fd == 2)
+		eputc(c);
+	else
+		return write(fd, &c, 1);
+	return 0;
+}
+
+void console_puts(unsigned int ch, const char *str)
+{
+	struct console_device *cdev = first_console;
+
+	while (cdev) {
+		if (cdev->flags & ch) {
+			const char *s = str;
+			while (*s) {
+				cdev->putc(cdev, *s);
+				if (*s++ == '\n')
+					cdev->putc(cdev, '\r');
+			}
+		}
+		cdev = cdev->next;
+	}
+}
+
+int fputs(int fd, const char *s)
+{
+	if (fd == 1)
+		puts(s);
+	else if (fd == 2)
+		eputs(s);
+	else
+		return write(fd, s, strlen(s));
+	return 0;
 }
 
 void printf (const char *fmt, ...)
@@ -137,3 +207,4 @@ void clear_ctrlc (void)
 {
 	ctrlc_was_pressed = 0;
 }
+

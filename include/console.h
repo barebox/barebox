@@ -24,15 +24,20 @@
 #ifndef _CONSOLE_H_
 #define _CONSOLE_H_
 
-#include <devices.h>
+#define CONSOLE_STDIN           (1 << 0)
+#define CONSOLE_STDOUT          (1 << 1)
+#define CONSOLE_STDERR          (1 << 2)
 
-/*
-** VARIABLES
-*/
+struct console_device {
+	struct device_d *dev;
+	unsigned long flags;
+	int (*tstc)(struct console_device *cdev);
+	void (*putc)(struct console_device *cdev, char c);
+	int  (*getc)(struct console_device *cdev);
+	struct console_device *next;
+};
 
-extern device_t	*stdio_devices[] ;
-extern char *stdio_names[MAX_FILES] ;
-
-int console_realloc(int top);
+int console_register(struct console_device *cdev);
 
 #endif
+

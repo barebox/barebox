@@ -59,14 +59,8 @@ int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		if (!script)
 			return 1;
 
-#ifndef CONFIG_HUSH_PARSER
 		if (run_command (script, flag) == -1)
 			goto out;
-#else
-		if (parse_string_outer(script,
-		    FLAG_PARSE_SEMICOLON) != 0)
-			goto out;
-#endif
 		free(script);
 	}
 	return 0;

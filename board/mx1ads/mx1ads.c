@@ -92,9 +92,9 @@ int board_init (void)
 
 	CS4U = 0x00000F00;	/* Initialize CS4 for CS8900 ethernet   */
 	CS4L = 0x00001501;
-
-	GIUS (0) &= 0xFF3FFFFF;
-	GPR (0) &= 0xFF3FFFFF;
+/* FIXME: Use reg2-fix for this */
+//	GIUS (0) &= 0xFF3FFFFF;
+//	GPR (0) &= 0xFF3FFFFF;
 
 	tmp = *(unsigned int *) (0x1500000C);
 	tmp = *(unsigned int *) (0x1500000C);

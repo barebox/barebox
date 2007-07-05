@@ -35,7 +35,7 @@ void imx_gpio_mode(int gpio_mode)
 	unsigned int port = (gpio_mode & GPIO_PORT_MASK) >> 5;
 	unsigned int ocr = (gpio_mode & GPIO_OCR_MASK) >> 10;
 	unsigned int tmp;
-
+#if 0
 	/* Pullup enable */
 	if(gpio_mode & GPIO_PUEN)
 		PUEN(port) |= (1<<pin);
@@ -85,6 +85,7 @@ void imx_gpio_mode(int gpio_mode)
 		if( gpio_mode &	GPIO_BOUT )
 			ICONFB2(port) &= ~( 3<<((pin-16)*2));
 	}
+#endif
 }
 
 #endif /* CONFIG_IMX */

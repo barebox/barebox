@@ -53,14 +53,26 @@ static struct device_d dm9000_dev = {
         .type     = DEVICE_TYPE_ETHER,
 };
 
+/* Do not collide with the env from our first stage loader for now */
+static char *env_spec = "nor0:256k+128k";
+
 static int scb9328_devices_init(void) {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&dm9000_dev);
+
 	return 0;
 }
 
 device_initcall(scb9328_devices_init);
+
+static int scb9328_init_env(void)
+{
+        add_env_spec(env_spec);
+        return 0;
+}
+
+late_initcall(scb9328_init_env);
 
 static int late_init (void)
 {
@@ -68,19 +80,6 @@ static int late_init (void)
 	gd->bd->bi_dram[0].start = SCB9328_SDRAM_1;
 	gd->bd->bi_dram[0].size = SCB9328_SDRAM_1_SIZE;
 #endif
-#if ( CONFIG_NR_DRAM_BANKS > 1 )
-	gd->bd->bi_dram[1].start = SCB9328_SDRAM_2;
-	gd->bd->bi_dram[1].size = SCB9328_SDRAM_2_SIZE;
-#endif
-#if ( CONFIG_NR_DRAM_BANKS > 2 )
-	gd->bd->bi_dram[2].start = SCB9328_SDRAM_3;
-	gd->bd->bi_dram[2].size = SCB9328_SDRAM_3_SIZE;
-#endif
-#if ( CONFIG_NR_DRAM_BANKS > 3 )
-	gd->bd->bi_dram[3].start = SCB9328_SDRAM_4;
-	gd->bd->bi_dram[3].size = SCB9328_SDRAM_4_SIZE;
-#endif
-
 	return 0;
 }
 

@@ -7,9 +7,9 @@
 
 static struct device_d global_dev;
 
-int global_add_parameter(struct param_d *param)
+int global_add_param(struct param_d *param)
 {
-        return dev_add_parameter(&global_dev, param);
+        return dev_add_param(&global_dev, param);
 }
 
 static struct device_d global_dev = {

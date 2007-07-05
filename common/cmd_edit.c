@@ -179,7 +179,7 @@ static int read_file(const char *path)
 				break;
 			tmp++;
 		}
-		if (tmp == rbuf)
+		if (!r && tmp == rbuf)
 			break;
 		*tmp = 0;
 		line = line_realloc(strlen(rbuf + 1), NULL);
@@ -315,6 +315,8 @@ static void getwinsize(void) {
 	pos(0,0);
 	screenheight = yy;
 	screenwidth = xx;
+	printf("%d %d\n", xx, yy);
+	mdelay(1000);
 }
 #endif
 
@@ -330,6 +332,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		return 1;
 
 #ifdef GETWINSIZE
+	/* not a good idead on slow serial lines */
 	getwinsize();
 #endif
 

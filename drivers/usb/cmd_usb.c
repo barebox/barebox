@@ -29,11 +29,9 @@
 #include <command.h>
 #include <asm/byteorder.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_USB)
-
 #include <usb.h>
 
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 static int usb_stor_curr_dev=-1; /* current device */
 #endif
 
@@ -307,7 +305,7 @@ void usb_show_tree(struct usb_device *dev)
 /******************************************************************************
  * usb boot command intepreter. Derived from diskboot
  */
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 int do_usbboot (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	char *boot_device = NULL;
@@ -359,7 +357,10 @@ int do_usbboot (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 		part = simple_strtoul(++ep, NULL, 16);
 	}
-
+#warning get_partition_info missing
+#if 1
+	printf("call get_partition_info\n");
+#else
 	if (get_partition_info (stor_dev, part, &info)) {
 		/* try to boot raw .... */
 		strncpy((char *)&info.type[0], BOOT_PART_TYPE, sizeof(BOOT_PART_TYPE));
@@ -369,6 +370,7 @@ int do_usbboot (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		info.size=2880;
 		printf("error reading partinfo...try to boot raw\n");
 	}
+#endif
 	if ((strncmp((char *)info.type, BOOT_PART_TYPE, sizeof(info.type)) != 0) &&
 	    (strncmp((char *)info.type, BOOT_PART_COMP, sizeof(info.type)) != 0)) {
 		printf ("\n** Invalid partition type \"%.32s\""
@@ -423,7 +425,7 @@ int do_usbboot (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	return 0;
 }
-#endif /* CONFIG_USB_STORAGE */
+#endif /* CONFIG_DRIVER_USB_MASS_STORAGE */
 
 
 /*********************************************************************************
@@ -435,7 +437,7 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	int i;
 	struct usb_device *dev = NULL;
 	extern char usb_started;
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 	block_dev_desc_t *stor_dev;
 #endif
 
@@ -444,7 +446,7 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		usb_stop();
 		printf("(Re)start USB...\n");
 		i = usb_init();
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 		/* try to recognize storage devices immediately */
 		if (i >= 0)
 	 		usb_stor_curr_dev = usb_stor_scan(1);
@@ -512,7 +514,7 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 		return 0;
 	}
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 	if (strncmp(argv[1], "scan", 4) == 0) {
 		printf("  NOTE: this command is obsolete and will be phased out\n");
 		printf("  please use 'usb storage' for USB storage devices information\n\n");
@@ -534,7 +536,9 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 				if (devno)
 					printf("\n");
 				printf("print_part of %x\n",devno);
-				print_part(stor_dev);
+#warning print_part missing
+			printf("call print_part\n");
+//				print_part(stor_dev);
 			}
 		}
 		if (!ok) {
@@ -573,7 +577,9 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			}
 			printf ("\n    Device %d: ", dev);
 			stor_dev=usb_stor_get_dev(dev);
-			dev_print(stor_dev);
+#warning dev_print missing
+			printf("call dev_print\n");
+//			dev_print(stor_dev);
 			if (stor_dev->type == DEV_TYPE_UNKNOWN) {
 				return 1;
 			}
@@ -584,7 +590,9 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		else {
 			printf ("\nUSB device %d: ", usb_stor_curr_dev);
 			stor_dev=usb_stor_get_dev(usb_stor_curr_dev);
-			dev_print(stor_dev);
+#warning dev_print missing
+			printf("call dev_print\n");
+//			dev_print(stor_dev);
 			if (stor_dev->type == DEV_TYPE_UNKNOWN) {
 				return 1;
 			}
@@ -592,18 +600,12 @@ int do_usb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 		return 0;
 	}
-#endif /* CONFIG_USB_STORAGE */
+#endif /* CONFIG_DRIVER_USB_MASS_STORAGE */
 	printf ("Usage:\n%s\n", cmdtp->usage);
 	return 1;
 }
 
-
-#endif /* (CONFIG_COMMANDS & CFG_CMD_USB) */
-
-
-#if (CONFIG_COMMANDS & CFG_CMD_USB)
-
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 U_BOOT_CMD(
 	usb,	5,	1,	do_usb,
 	"usb     - USB sub-system\n",
@@ -634,4 +636,4 @@ U_BOOT_CMD(
 	"usb  info [dev] - show available USB devices\n"
 );
 #endif
-#endif
+

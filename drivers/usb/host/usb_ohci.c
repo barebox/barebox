@@ -43,8 +43,6 @@
 #include <common.h>
 /* #include <pci.h> no PCI on the S3C24X0 */
 
-#ifdef CONFIG_USB_OHCI_NEW
-
 /* mk: are these really required? */
 #if defined(CONFIG_S3C2400)
 # include <s3c2400.h>
@@ -84,7 +82,7 @@
 
 #define min_t(type,x,y) ({ type __x = (x); type __y = (y); __x < __y ? __x: __y; })
 
-#undef DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define dbg(format, arg...) printf("DEBUG: " format "\n", ## arg)
 #else
@@ -877,7 +875,7 @@ static int dl_done_list (ohci_t *ohci, td_t *td_list)
 		/* see if this done list makes for all TD's of current URB,
 		 * and mark the URB finished if so */
 		if (++(lurb_priv->td_cnt) == lurb_priv->length) {
-#if 1
+#if 0
 			if ((ed->state & (ED_OPER | ED_UNLINK)) &&
 			    (lurb_priv->state != URB_DEL))
 #else
@@ -889,6 +887,7 @@ static int dl_done_list (ohci_t *ohci, td_t *td_list)
 			dbg("dl_done_list: processing TD %x, len %x\n", lurb_priv->td_cnt,
 				lurb_priv->length);
 #endif
+
 		if (ed->state != ED_NEW) {
 			edHeadP = m32_swap (ed->hwHeadP) & 0xfffffff0;
 			edTailP = m32_swap (ed->hwTailP);
@@ -1635,6 +1634,11 @@ static char ohci_inited = 0;
 int usb_lowlevel_init(void)
 {
 
+	/* FIXME */
+	/* Enable USB host clock. */
+	*AT91C_PMC_SCER = AT91C_PMC_UHP;	/* 48MHz clock enabled for UHP */
+	*AT91C_PMC_PCER = 1 << AT91C_ID_UHP;	/* Peripheral Clock Enable Register */
+
 #ifdef CFG_USB_OHCI_CPU_INIT
 	/* cpu dependant init */
 	if(usb_cpu_init())
@@ -1746,4 +1750,4 @@ int usb_lowlevel_stop(void)
 
 	return 0;
 }
-#endif /* CONFIG_USB_OHCI_NEW */
+

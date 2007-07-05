@@ -1,0 +1,24 @@
+config HAS_OHCI
+	bool
+
+config USB_HOST
+	bool
+
+config HAS_USB_DEVICE
+	bool
+
+menu "USB host support"
+
+config DRIVER_USB_HOST_OHCI
+	bool
+	depends on HAS_OHCI
+	select USB_HOST
+	prompt "OHCI host driver"
+
+config DRIVER_USB_MASS_STORAGE
+	bool
+	depends on USB_HOST
+	prompt "USB mass storage support"
+
+endmenu
+

@@ -49,8 +49,6 @@
 #include <asm/processor.h>
 #include <linux/ctype.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_USB)
-
 #include <usb.h>
 #ifdef CONFIG_4xx
 #include <405gp_pci.h>
@@ -727,7 +725,7 @@ int usb_new_device(struct usb_device *dev)
 	addr = dev->devnum;
 	dev->devnum = 0;
 
-#undef NEW_INIT_SEQ
+#define NEW_INIT_SEQ
 #ifdef NEW_INIT_SEQ
 	/* this is a Windows scheme of initialization sequence, with double
 	 * reset of the device. Some equipment is said to work only with such
@@ -961,7 +959,7 @@ struct usb_hub_device *usb_hub_allocate(void)
 
 #define MAX_TRIES 5
 
-static int hub_port_reset(struct usb_device *dev, int port,
+int hub_port_reset(struct usb_device *dev, int port,
 			unsigned short *portstat)
 {
 	int tries;
@@ -1247,6 +1245,3 @@ int usb_hub_probe(struct usb_device *dev, int ifnum)
 	return ret;
 }
 
-#endif /* (CONFIG_COMMANDS & CFG_CMD_USB) */
-
-/* EOF */

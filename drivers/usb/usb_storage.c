@@ -55,10 +55,7 @@
 #include <asm/processor.h>
 
 
-#if (CONFIG_COMMANDS & CFG_CMD_USB)
 #include <usb.h>
-
-#ifdef CONFIG_USB_STORAGE
 
 #undef USB_STOR_DEBUG
 #undef BBB_COMDAT_TRACE
@@ -194,7 +191,9 @@ void usb_stor_info(void)
 	if (usb_max_devs > 0)
 		for (i = 0; i < usb_max_devs; i++) {
 			printf ("  Device %d: ", i);
-			dev_print(&usb_dev_desc[i]);
+#warning dev_print missing
+			printf("call dev_print\n");
+//			dev_print(&usb_dev_desc[i]);
 		}
 	else
 		printf("No storage devices, perhaps not 'usb start'ed..?\n");
@@ -1228,11 +1227,11 @@ int usb_stor_get_info(struct usb_device *dev,struct us_data *ss,block_dev_desc_t
 	USB_STOR_PRINTF(" address %d\n",dev_desc->target);
 	USB_STOR_PRINTF("partype: %d\n",dev_desc->part_type);
 
-	init_part(dev_desc);
+	printf("init_part\n");
+#warning init_part missing
+//	init_part(dev_desc);
 
 	USB_STOR_PRINTF("partype: %d\n",dev_desc->part_type);
 	return 1;
 }
 
-#endif /* CONFIG_USB_STORAGE */
-#endif /* CFG_CMD_USB */

@@ -76,7 +76,7 @@ struct device_d *device_from_spec_str(const char *str, char **endp);
 struct device_d *get_device_by_name(char *name);
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
-struct device_d *get_first_device(const char *id);
+struct device_d *get_first_device(void);
 
 struct driver_d *get_driver_by_name(char *name);
 

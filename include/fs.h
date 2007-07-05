@@ -64,6 +64,9 @@ struct fs_driver_d {
 	int (*closedir)(struct device_d *dev, DIR *dir);
 	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
+	int (*erase)(struct device_d *dev, FILE *f, size_t count,
+			unsigned long offset);
+
 	struct driver_d drv;
 
 	unsigned long flags;
@@ -82,6 +85,7 @@ int unlink(const char *pathname);
 int close(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
+int erase(int fd, size_t count, unsigned long offset);
 ssize_t write(int fd, const void *buf, size_t count);
 
 #define SEEK_SET	1

@@ -159,7 +159,7 @@ static struct line *line_realloc(int len, struct line *line)
 	return line;
 }
 
-static int read_file(const char *path)
+static int edit_read_file(const char *path)
 {
 	static char rbuf[1024];
 	struct line *line;
@@ -329,7 +329,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	char c;
 
 	buffer = NULL;
-	if(read_file(argv[1]))
+	if(edit_read_file(argv[1]))
 		return 1;
 
 #ifdef GETWINSIZE

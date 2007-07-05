@@ -31,6 +31,7 @@
 #include <mpc5xxx.h>
 #include <asm/processor.h>
 #include <init.h>
+#include <types.h>
 
 #if defined(CONFIG_OF_FLAT_TREE)
 #include <ft_build.h>
@@ -141,5 +142,5 @@ static int mpc5xxx_bd_init(void)
 	return 0;
 }
 
-bd_initcall(mpc5xxx_bd_init);
+core_initcall(mpc5xxx_bd_init);
 

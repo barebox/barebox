@@ -5,6 +5,10 @@ config TEXT_BASE
 	default "0x08f80000" if MACH_SCB9328
 	default "0x21e00000" if MACH_ECO920
 
+config ARM
+	bool
+	default y
+
 config ARM920T
 	bool
 

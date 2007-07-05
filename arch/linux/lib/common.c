@@ -81,6 +81,10 @@ void enable_interrupts (void)
 {
 }
 
+void disable_interrupt (void)
+{
+}
+
 int serial_getc (void)
 {
 	return fgetc(stdin);

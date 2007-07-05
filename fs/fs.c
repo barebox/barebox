@@ -77,19 +77,14 @@ static int init_cwd(void)
 
 postcore_initcall(init_cwd);
 
-/*
- * - Remove all multiple slashes
- * - Remove trailing slashes (except path consists of only
- *   a single slash)
- * - TODO: illegal characters?
- */
 char *normalise_path(const char *pathname)
 {
 	char *path = xzalloc(strlen(pathname) + strlen(cwd) + 2);
         char *in, *out, *slashes[32];
 	int sl = 0;
 
-//printf("in: %s\n", pathname);
+	debug("in: %s\n", pathname);
+
 	if (*pathname != '/')
 		strcpy(path, cwd);
 	strcat(path, "/");
@@ -237,12 +232,15 @@ int dir_is_empty(const char *pathname)
 	return ret;
 }
 
-// S_IFREG
-// S_IFDIR
-#define S_UB_IS_EMPTY		(1<<31)
-#define S_UB_EXISTS		(1<<30)
-#define S_UB_DOES_NOT_EXIST	(1<<29)
-//
+#define S_UB_IS_EMPTY		(1 << 31)
+#define S_UB_EXISTS		(1 << 30)
+#define S_UB_DOES_NOT_EXIST	(1 << 29)
+
+/*
+ * Helper function to check the prerequisites of a path given
+ * to fs functions. Besides the flags above S_IFREG and S_IFDIR
+ * can be passed in.
+ */
 static int path_check_prereq(const char *path, unsigned int flags)
 {
 	struct stat s;
@@ -410,10 +408,9 @@ int read(int fd, void *buf, size_t count)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
-//	printf("READ: dev: %p\n",dev);
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-//	printf("\nreading %d bytes at %d\n",count, f->pos);
+
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
 	errno = fsdrv->read(dev, f, buf, count);
@@ -430,7 +427,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
-//	printf("WRITE: dev: %p\n",dev);
+
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 	if (f->pos + count > f->size) {
 		errno = fsdrv->truncate(dev, f, f->pos + count);
@@ -508,6 +505,12 @@ int close(int fd)
 	return errno;
 }
 
+/*
+ * Mount a device to a directory.
+ * We do this by registering a new device on which the filesystem
+ * driver will match. The filesystem driver then grabs the infomation
+ * it needs from the new devices type_data.
+ */
 int mount(const char *device, const char *fsname, const char *path)
 {
 	struct driver_d *drv;
@@ -518,7 +521,9 @@ int mount(const char *device, const char *fsname, const char *path)
 	int ret;
 
 	errno = 0;
-printf("mount: %s on %s type %s\n", device, path, fsname);
+
+	debug("mount: %s on %s type %s\n", device, path, fsname);
+
 	drv = get_driver_by_name(fsname);
 	if (!drv) {
 		errno = -ENODEV;
@@ -636,7 +641,7 @@ DIR *opendir(const char *pathname)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
-//	printf("opendir: fsdrv: %p\n",fsdrv);
+	debug("opendir: fsdrv: %p\n",fsdrv);
 
 	dir = fsdrv->opendir(dev, p);
 	if (dir) {

@@ -3,6 +3,9 @@ config TEXT_BASE
 	string
 	default "0x0" if MACH_PHYCORE_MPC5200B_TINY
 
+config ARCH_MPC5200
+	bool
+
 config MPC5200
 	bool
 
@@ -11,7 +14,9 @@ choice
 
 config MACH_PHYCORE_MPC5200B_TINY
 	bool "Phycore mpc5200b tiny"
+	select ARCH_MPC5200
 	select MPC5200
+	select HAS_CFI
 	help
 	  Say Y here if you are using the Motorola MX1ADS board
 

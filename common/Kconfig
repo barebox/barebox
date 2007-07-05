@@ -5,6 +5,15 @@ config ZLIB
 config BZLIB
 	bool
 
+menu "general settings"
+
+config PROMPT
+	string
+	prompt "U-Boot command prompt"
+	default "uboot> "
+
+endmenu
+
 menu "Commands"
 
 config CMD_ECHO

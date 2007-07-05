@@ -419,7 +419,7 @@ void main_loop (void)
 			reset_cmd_timeout();
 		}
 #endif
-		len = readline (CFG_PROMPT);
+		len = readline (CONFIG_PROMPT);
 
 		flag = 0;	/* assume no special flags for now */
 		if (len > 0)

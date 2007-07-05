@@ -7,6 +7,7 @@ CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall \
 machine-y	   := linux
 
 BOARD:= arch/linux/lib
+board-y := linux
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 

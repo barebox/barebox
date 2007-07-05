@@ -19,14 +19,9 @@
 
 #include <common.h>
 #include <asm/arch/imx-regs.h>
-
-#if defined CONFIG_IMX_SERIAL1
-#define IMX_UART_BASE IMX_UART1_BASE
-#elif defined CONFIG_IMX_SERIAL2
-#define IMX_UART_BASE IMX_UART2_BASE
-#else
-#error "define CONFIG_IMX_SERIAL1, CONFIG_IMX_SERIAL2 or CONFIG_IMX_SERIAL_NONE"
-#endif
+#include <driver.h>
+#include <init.h>
+#include <malloc.h>
 
 #define URXD0(base) __REG( 0x0 +(base))  /* Receiver Register */
 #define URTX0(base) __REG( 0x40 +(base)) /* Transmitter Register */
@@ -63,7 +58,7 @@ extern void imx_gpio_mode(int gpio_mode);
  * are always 8 data bits, no parity, 1 stop bit, no start bits.
  *
  */
-int serial_init (void)
+static int imx_serial_init_port(struct console_device *cdev)
 {
 #if 0
 	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
@@ -137,58 +132,68 @@ int serial_init (void)
 	return 0;
 }
 
-void serial_setbrg (void)
+static void imx_serial_putc(struct console_device *cdev, char c)
 {
-	serial_init();
-}
+	struct device_d *dev = cdev->dev;
 
-/*
- * Read a single byte from the serial port. Returns 1 on success, 0
- * otherwise. When the function is successful, the character read is
- * written into its argument c.
- */
-int serial_getc (void)
-{
-	unsigned char ch;
-
-	while(UTS(IMX_UART_BASE) & UTS_RXEMPTY);
-
-	ch = URXD0(IMX_UART_BASE);
-
-	return ch;
-}
-
-/*
- * Output a single byte to the serial port.
- */
-void serial_putc (const char c)
-{
 	/* Wait for Tx FIFO not full */
-	while (UTS(IMX_UART_BASE) & UTS_TXFULL);
+	while (UTS(dev->map_base) & UTS_TXFULL);
 
-        URTX0(IMX_UART_BASE) = c;
-
-	/* If \n, also do \r */
-	if (c == '\n')
-		serial_putc ('\r');
+        URTX0(dev->map_base) = c;
 }
 
-/*
- * Test whether a character is in the RX buffer
- */
-int serial_tstc (void)
+static int imx_serial_tstc(struct console_device *cdev)
 {
+	struct device_d *dev = cdev->dev;
+
 	/* If receive fifo is empty, return false */
-	if (UTS(IMX_UART_BASE) & UTS_RXEMPTY)
+	if (UTS(dev->map_base) & UTS_RXEMPTY)
 		return 0;
 	return 1;
 }
 
-void
-serial_puts (const char *s)
+static int imx_serial_getc(struct console_device *cdev)
 {
-	while (*s) {
-		serial_putc (*s++);
-	}
+	struct device_d *dev = cdev->dev;
+
+	unsigned char ch;
+
+	while(UTS(dev->map_base) & UTS_RXEMPTY);
+
+	ch = URXD0(dev->map_base);
+
+	return ch;
 }
 
+static int imx_serial_probe(struct device_d *dev)
+{
+	struct console_device *cdev;
+
+	cdev = malloc(sizeof(struct console_device));
+	dev->type_data = cdev;
+	cdev->dev = dev;
+	cdev->flags = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
+	cdev->tstc = imx_serial_tstc;
+	cdev->putc = imx_serial_putc;
+	cdev->getc = imx_serial_getc;
+
+	imx_serial_init_port(cdev);
+
+	console_register(cdev);
+
+	return 0;
+}
+
+static struct driver_d imx_serial_driver = {
+        .name  = "imx_serial",
+        .probe = imx_serial_probe,
+        .type  = DEVICE_TYPE_CONSOLE,
+};
+
+static int imx_serial_init(void)
+{
+	register_driver(&imx_serial_driver);
+	return 0;
+}
+
+console_initcall(imx_serial_init);

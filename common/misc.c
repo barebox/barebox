@@ -14,9 +14,6 @@ void mem_malloc_init (void *start, void *end)
 	mem_malloc_start = (ulong)start;
 	mem_malloc_end = (ulong)end;
 	mem_malloc_brk = mem_malloc_start;
-
-	memset ((void *) mem_malloc_start, 0,
-			mem_malloc_end - mem_malloc_start);
 }
 
 void *sbrk (ptrdiff_t increment)
@@ -34,7 +31,11 @@ void *sbrk (ptrdiff_t increment)
 
 int errno;
 
-void perror(const char *s)
+#ifndef CONFIG_ERRNO_MESSAGES
+static char errno_str[5];
+#endif
+
+const char *errno_str(void)
 {
 #ifdef CONFIG_ERRNO_MESSAGES
 	char *str;
@@ -104,9 +105,18 @@ void perror(const char *s)
 	default			: str = "unknown error"; break;
 	};
 
-        printf("%s: %s\n", s, str);
+        return str;
+#else
+	sprintf(errno_str, "%d", errno);
+	return errno_str;
+#endif
+}
+
+void perror(const char *s)
+{
+#ifdef CONFIG_ERRNO_MESSAGES
+	printf("%s: %s\n", s, errno_str());
 #else
 	printf("%s returned with %d\n", s, errno);
 #endif
 }
-

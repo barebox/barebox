@@ -220,7 +220,7 @@ ssize_t part_write(struct device_d *dev, void *buf, size_t count, unsigned long 
         return write(part->parent, buf, count, offset + part->offset, flags);
 }
 
-static struct driver_d part_driver = {
+struct driver_d part_driver = {
         .name  = "partition",
         .probe = part_probe,
         .read  = part_read,

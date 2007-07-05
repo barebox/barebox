@@ -15,6 +15,8 @@
 #include <asm/arch/linux.h>
 #include <asm/arch/hostfile.h>
 #include <errno.h>
+#include <signal.h>
+#include <sys/select.h>
 
 static struct termios term_orig, term_vi;
 static char erase_char;         // the users erase character
@@ -23,7 +25,7 @@ static void rawmode(void)
 {
 	tcgetattr(0, &term_orig);
 	term_vi = term_orig;
-	term_vi.c_lflag &= (~ICANON & ~ECHO);	// leave ISIG ON- allow intr's
+	term_vi.c_lflag &= (~ICANON & ~ECHO & ~ISIG);	// leave ISIG ON- allow intr's
 	term_vi.c_iflag &= (~IXON & ~ICRNL);
 	term_vi.c_oflag &= (~ONLCR);
 	term_vi.c_cc[VMIN] = 1;
@@ -38,25 +40,44 @@ static void cookmode(void)
 	tcsetattr(0, TCSANOW, &term_orig);
 }
 
-void serial_putc (const char c)
+void linux_putc (const char c)
 {
 	fputc(c, stdout);
 
 	/* If \n, also do \r */
 	if (c == '\n')
-		serial_putc ('\r');
+		linux_putc ('\r');
+
+	fflush(stdout);
 }
 
-int serial_tstc (void)
+int linux_tstc (void)
 {
+	fd_set rfds;
+	struct timeval tv;
+	int ret;
+
+	FD_ZERO(&rfds);
+	FD_SET(0, &rfds);
+
+	tv.tv_sec = 0;
+	tv.tv_usec = 100;
+
+	ret = select(1, &rfds, NULL, NULL, &tv);
+
+	if (ret)
+		return 1;
+
 	return 0;
 }
 
-void serial_puts (const char *s)
+int linux_getc (void)
 {
-	while (*s) {
-		serial_putc (*s++);
-	}
+	char ret;
+
+	read(0, &ret, 1);
+
+	return ret;
 }
 
 uint64_t linux_get_time(void)
@@ -83,11 +104,6 @@ void enable_interrupts (void)
 
 void disable_interrupt (void)
 {
-}
-
-int serial_getc (void)
-{
-	return fgetc(stdin);
 }
 
 int linux_read(int fd, void *buf, size_t count)

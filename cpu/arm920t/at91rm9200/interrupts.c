@@ -31,19 +31,21 @@
  */
 
 #include <common.h>
-/*#include <asm/io.h>*/
+#include <clock.h>
 #include <asm/arch/hardware.h>
-/*#include <asm/proc/ptrace.h>*/
 
-/* the number of clocks per CFG_HZ */
-#define TIMER_LOAD_VAL (CFG_HZ_CLOCK/CFG_HZ)
-
-/* macro to read the 16 bit timer */
-#define READ_TIMER (tmr->TC_CV & 0x0000ffff)
 AT91PS_TC tmr;
 
-static ulong timestamp;
-static ulong lastinc;
+uint64_t at91rm9200_clocksource_read(void)
+{
+	return (tmr->TC_CV & 0x0000ffff);
+}
+
+static struct clocksource cs = {
+	.read	= at91rm9200_clocksource_read,
+	.mask	= 0x0000ffff,
+	.shift	= 10,
+};
 
 int interrupt_init (void)
 {
@@ -60,59 +62,12 @@ int interrupt_init (void)
 	tmr->TC_CMR = AT91C_TC_TIMER_DIV1_CLOCK | AT91C_TC_CMR_CPCTRG;
 
 	tmr->TC_IDR = ~0ul;
-	tmr->TC_RC = TIMER_LOAD_VAL;
-	lastinc = 0;
+	tmr->TC_RC = 0xffff;
 	tmr->TC_CCR = AT91C_TC_SWTRG | AT91C_TC_CLKEN;
-	timestamp = 0;
 
-	return (0);
-}
-
-/*
- * timer without interrupts
- */
-
-void reset_timer (void)
-{
-	reset_timer_masked ();
-}
-
-ulong get_timer (ulong base)
-{
-	return get_timer_masked () - base;
-}
-
-void set_timer (ulong t)
-{
-	timestamp = t;
-}
-
-void reset_timer_masked (void)
-{
-	/* reset time */
-	lastinc = READ_TIMER;
-	timestamp = 0;
-}
-
-ulong get_timer_raw (void)
-{
-	ulong now = READ_TIMER;
-
-	if (now >= lastinc) {
-		/* normal mode */
-		timestamp += now - lastinc;
-	} else {
-		/* we have an overflow ... */
-		timestamp += now + TIMER_LOAD_VAL - lastinc;
-	}
-	lastinc = now;
-
-	return timestamp;
-}
-
-ulong get_timer_masked (void)
-{
-	return get_timer_raw()/TIMER_LOAD_VAL;
+	cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, cs.shift);
+	init_clock(&cs);
+	return 0;
 }
 
 /*

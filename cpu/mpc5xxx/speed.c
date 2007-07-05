@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <mpc5xxx.h>
+#include <init.h>
 #include <asm/processor.h>
 
 DECLARE_GLOBAL_DATA_PTR;

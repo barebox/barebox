@@ -33,7 +33,7 @@ with the initial value of the parameter. If the framework handles the set
 function it will try to free the value of the parameter. If this is a
 static array bad things will happen. A parameter can have the flag
 PARAM_FLAG_RO which means that the parameter is readonly. It is perfectly ok
-then to point value to a static array.
+then to point the value to a static array.
 
 const char *dev_get_param(struct device_d *dev, const char *name);
 

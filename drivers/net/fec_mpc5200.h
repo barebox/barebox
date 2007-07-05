@@ -14,6 +14,7 @@
 #include <common.h>
 #include <mpc5xxx.h>
 #include <asm/arch/sdma.h>
+#include <mii_phy.h>
 
 typedef unsigned long uint32;
 typedef unsigned short uint16;
@@ -226,6 +227,8 @@ typedef struct {
 	uint16 tbdIndex;		/* next transmit BD to send */
 	uint16 usedTbdIndex;		/* next transmit BD to clean */
 	uint16 cleanTbdNum;		/* the number of available transmit BDs */
+
+	struct miiphy_device miiphy;
 } mpc5xxx_fec_priv;
 
 /* Ethernet parameter area */

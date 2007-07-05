@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <asm/arch/sdma.h>
 #include <asm/arch/fec.h>
+#include <mii_phy.h>
 #include "fec_mpc5200.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -27,10 +28,6 @@ static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec);
 static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec);
 #endif /* DEBUG */
 
-#if (DEBUG & 0x40)
-static uint32 local_crc32(char *string, unsigned int crc_value, int len);
-#endif
-
 typedef struct {
     uint8 data[1500];           /* actual data */
     int length;                 /* actual length */
@@ -38,8 +35,8 @@ typedef struct {
     uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
-int fec5xxx_miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal);
-int fec5xxx_miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data);
+static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8 phyAddr, uint8 regAddr, uint16 * retVal);
+static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8 phyAddr, uint8 regAddr, uint16 data);
 
 /********************************************************************/
 static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
@@ -261,7 +258,6 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 		fec->eth->r_cntrl = 0x05ee0024;	/*0x05ee0004;FIXME */
 	}
 
-	fec->eth->x_cntrl = 0x00000000;	/* half-duplex, heartbeat disabled */
 	if (fec->xcv_type != SEVENWIRE) {
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
@@ -314,14 +310,6 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	 */
 	fec->eth->xmit_fsm = 0x03000000;
 
-#if defined(CONFIG_MPC5200)
-	/*
-	 * Turn off COMM bus prefetch in the MGT5200 BestComm. It doesn't
-	 * work w/ the current receive task.
-	 */
-	 sdma->PtdCntrl |= 0x00000001;
-#endif
-
 	/*
 	 * Set priority of different initiators
 	 */
@@ -342,173 +330,48 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	*(volatile int *)FEC_TBD_NEXT = (int)fec->tbdBase;
 	*(volatile int *)FEC_RBD_NEXT = (int)fec->rbdBase;
 
+#if (DEBUG & 0x1)
+	printf("mpc5xxx_fec_init... Done \n");
+#endif
+	if (fec->xcv_type != SEVENWIRE)
+		miiphy_restart_aneg(&fec->miiphy);
+
+	return 0;
+}
+
+static int mpc5xxx_fec_open(struct eth_device *edev)
+{
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
+
+#if defined(CONFIG_MPC5200)
+	struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA;
+	/*
+	 * Turn off COMM bus prefetch in the MGT5200 BestComm. It doesn't
+	 * work w/ the current receive task.
+	 */
+	 sdma->PtdCntrl |= 0x00000001;
+#endif
+
+	fec->eth->x_cntrl = 0x00000000;	/* half-duplex, heartbeat disabled */
+
 	/*
 	 * Enable FEC-Lite controller
 	 */
 	fec->eth->ecntrl |= 0x00000006;
-
-#if (DEBUG & 0x2)
-	if (fec->xcv_type != SEVENWIRE)
-		mpc5xxx_fec_phydump ();
-#endif
 
 	/*
 	 * Enable SmartDMA receive task
 	 */
 	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
 
-#if (DEBUG & 0x1)
-	printf("mpc5xxx_fec_init... Done \n");
-#endif
+	if (fec->xcv_type != SEVENWIRE) {
+		miiphy_wait_aneg(&fec->miiphy);
+		miiphy_print_status(&fec->miiphy);
+	}
 
 	return 0;
 }
 
-/********************************************************************/
-static int mpc5xxx_fec_init_phy(struct eth_device *dev)
-{
-	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
-	const uint8 phyAddr = CONFIG_PHY_ADDR;	/* Only one PHY */
-
-#if (DEBUG & 0x1)
-	printf ("mpc5xxx_fec_init_phy... Begin\n");
-#endif
-
-	/*
-	 * Clear FEC-Lite interrupt event register(IEVENT)
-	 */
-	fec->eth->ievent = 0xffffffff;
-
-	/*
-	 * Set interrupt mask register
-	 */
-	fec->eth->imask = 0x00000000;
-
-	if (fec->xcv_type != SEVENWIRE) {
-		int timeout = 1;
-		uint16 phyStatus;
-		/*
-		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
-		 * and do not drop the Preamble.
-		 */
-		fec->eth->mii_speed = (((gd->ipb_clk >> 20) / 5) << 1);	/* No MII for 7-wire mode */
-
-		/*
-		 * Initialize PHY(LXT971A):
-		 *
-		 *   Generally, on power up, the LXT971A reads its configuration
-		 *   pins to check for forced operation, If not cofigured for
-		 *   forced operation, it uses auto-negotiation/parallel detection
-		 *   to automatically determine line operating conditions.
-		 *   If the PHY device on the other side of the link supports
-		 *   auto-negotiation, the LXT971A auto-negotiates with it
-		 *   using Fast Link Pulse(FLP) Bursts. If the PHY partner does not
-		 *   support auto-negotiation, the LXT971A automatically detects
-		 *   the presence of either link pulses(10Mbps PHY) or Idle
-		 *   symbols(100Mbps) and sets its operating conditions accordingly.
-		 *
-		 *   When auto-negotiation is controlled by software, the following
-		 *   steps are recommended.
-		 *
-		 * Note:
-		 *   The physical address is dependent on hardware configuration.
-		 *
-		 */
-
-		/*
-		 * Reset PHY, then delay 300ns
-		 */
-		miiphy_write(dev->name, phyAddr, 0x0, 0x8000);
-		udelay(1000);
-
-		if (fec->xcv_type == MII10) {
-			/*
-			 * Force 10Base-T, FDX operation
-			 */
-			printf("Forcing 10 Mbps ethernet link... ");
-			miiphy_read(dev->name, phyAddr, 0x1, &phyStatus);
-			/*
-			miiphy_write(dev->name, fec, phyAddr, 0x0, 0x0100);
-			*/
-			miiphy_write(dev->name, phyAddr, 0x0, 0x0180);
-
-			timeout = 20;
-			do {	/* wait for link status to go down */
-				udelay(10000);
-				if ((timeout--) == 0) {
-#if (DEBUG & 0x2)
-					printf("hmmm, should not have waited...");
-#endif
-					break;
-				}
-				miiphy_read(dev->name, phyAddr, 0x1, &phyStatus);
-#if (DEBUG & 0x2)
-				printf("=");
-#endif
-			} while ((phyStatus & 0x0004));	/* !link up */
-
-			timeout = 1000;
-			do {	/* wait for link status to come back up */
-				udelay(10000);
-				if ((timeout--) == 0) {
-					printf("failed. Link is down.\n");
-					break;
-				}
-				miiphy_read(dev->name, phyAddr, 0x1, &phyStatus);
-#if (DEBUG & 0x2)
-				printf("+");
-#endif
-			} while (!(phyStatus & 0x0004));	/* !link up */
-
-			printf ("done.\n");
-		} else {	/* MII100 */
-			/*
-			 * Set the auto-negotiation advertisement register bits
-			 */
-			miiphy_write(dev->name, phyAddr, 0x4, 0x01e1);
-
-			/*
-			 * Set MDIO bit 0.12 = 1(&& bit 0.9=1?) to enable auto-negotiation
-			 */
-			miiphy_write(dev->name, phyAddr, 0x0, 0x1200);
-
-			/*
-			 * Wait for AN completion
-			 */
-			timeout = 5000;
-			do {
-				udelay(1000);
-
-				if ((timeout--) == 0) {
-					printf("PHY auto neg 0 failed...\n");
-					return -1;
-				}
-
-				if (miiphy_read(dev->name, phyAddr, 0x1, &phyStatus) != 0) {
-					printf("PHY auto neg 1 failed 0x%04x...\n", phyStatus);
-					return -1;
-				}
-			} while (!(phyStatus & 0x0004));
-
-			printf("PHY auto neg complete! \n");
-		}
-
-	}
-
-#if (DEBUG & 0x2)
-	if (fec->xcv_type != SEVENWIRE)
-		mpc5xxx_fec_phydump (dev->name);
-#endif
-
-
-#if (DEBUG & 0x1)
-	printf("mpc5xxx_fec_init_phy... Done \n");
-#endif
-
-	return 1;
-}
-
-/********************************************************************/
 static void mpc5xxx_fec_halt(struct eth_device *dev)
 {
 #if defined(CONFIG_MPC5200)
@@ -521,11 +384,6 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	if (fec->xcv_type != SEVENWIRE)
 		mpc5xxx_fec_phydump ();
 #endif
-
-	/*
-	 * mask FEC chip interrupts
-	 */
-	fec->eth->imask = 0;
 
 	/*
 	 * issue graceful stop command to the FEC transmitter if necessary
@@ -562,17 +420,7 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	fec->eth->rfifo_status &= 0x00700000;
 	fec->eth->tfifo_status &= 0x00700000;
 
-	fec->eth->reset_cntrl = 0x01000000;
-
-	/*
-	 * Issue a reset command to the FEC chip
-	 */
-	fec->eth->ecntrl |= 0x1;
-
-	/*
-	 * wait at least 16 clock cycles
-	 */
-	udelay(10);
+//	fec->eth->reset_cntrl = 0x01000000;
 
 #if (DEBUG & 0x3)
 	printf("Ethernet task stopped\n");
@@ -590,7 +438,7 @@ static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 	if ((fec->eth->tfifo_lrf_ptr != fec->eth->tfifo_lwf_ptr)
 		|| (fec->eth->tfifo_rdptr != fec->eth->tfifo_wrptr)) {
 
-		miiphy_read(devname, phyAddr, 0x1, &phyStatus);
+		fec5xxx_miiphy_read(devname, phyAddr, 0x1, &phyStatus);
 		printf("\nphyStatus: 0x%04x\n", phyStatus);
 		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
 		printf("ievent:   0x%08x\n", fec->eth->ievent);
@@ -614,7 +462,7 @@ static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 	if ((fec->eth->rfifo_lrf_ptr != fec->eth->rfifo_lwf_ptr)
 		|| (fec->eth->rfifo_rdptr != fec->eth->rfifo_wrptr)) {
 
-		miiphy_read(devname, phyAddr, 0x1, &phyStatus);
+		fec5xxx_miiphy_read(devname, phyAddr, 0x1, &phyStatus);
 		printf("\nphyStatus: 0x%04x\n", phyStatus);
 		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
 		printf("ievent:   0x%08x\n", fec->eth->ievent);
@@ -688,7 +536,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	if (fec->xcv_type != SEVENWIRE) {
 		uint16 phyStatus;
-		miiphy_read(dev->name, 0, 0x1, &phyStatus);
+		fec5xxx_miiphy_read(&fec->miiphy, 0, 0x1, &phyStatus);
 	}
 
 	/*
@@ -806,7 +654,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	return len;
 }
 
-
 /********************************************************************/
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
@@ -819,7 +666,8 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	fec = (mpc5xxx_fec_priv *)malloc(sizeof(*fec));
         edev->priv = fec;
         edev->dev  = dev;
-	edev->open = mpc5xxx_fec_init,
+	edev->open = mpc5xxx_fec_open,
+	edev->init = mpc5xxx_fec_init,
 	edev->send = mpc5xxx_fec_send,
 	edev->recv = mpc5xxx_fec_recv,
 	edev->halt = mpc5xxx_fec_halt,
@@ -834,21 +682,22 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 
 	sprintf(dev->name, "FEC ETHERNET");
 
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-	miiphy_register (dev->name,
-			fec5xxx_miiphy_read, fec5xxx_miiphy_write);
-#endif
+	if (fec->xcv_type != SEVENWIRE) {
+		fec->miiphy.read = fec5xxx_miiphy_read;
+		fec->miiphy.write = fec5xxx_miiphy_write;
+		fec->miiphy.address = CONFIG_PHY_ADDR;
+		fec->miiphy.flags = pdata->xcv_type == MII10 ? MIIPHY_FORCE_10 : 0;
 
-        eth_register(edev);
+		miiphy_register(&fec->miiphy);
+	}
 
-	mpc5xxx_fec_init_phy(edev);
-
+	eth_register(edev);
 	return 0;
 }
 
 /* MII-interface related functions */
 /********************************************************************/
-int miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal)
+static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr, uint8_t regAddr, uint16_t * retVal)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
@@ -890,7 +739,7 @@ int miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal)
 }
 
 /********************************************************************/
-int miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data)
+static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr, uint8_t regAddr, uint16_t data)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
@@ -922,41 +771,6 @@ int miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data)
 
 	return 0;
 }
-
-#if (DEBUG & 0x40)
-static uint32 local_crc32(char *string, unsigned int crc_value, int len)
-{
-	int i;
-	char c;
-	unsigned int crc, count;
-
-	/*
-	 * crc32 algorithm
-	 */
-	/*
-	 * crc = 0xffffffff; * The initialized value should be 0xffffffff
-	 */
-	crc = crc_value;
-
-	for (i = len; --i >= 0;) {
-		c = *string++;
-		for (count = 0; count < 8; count++) {
-			if ((c & 0x01) ^ (crc & 0x01)) {
-				crc >>= 1;
-				crc = crc ^ 0xedb88320;
-			} else {
-				crc >>= 1;
-			}
-			c >>= 1;
-		}
-	}
-
-	/*
-	 * In big endian system, do byte swaping for crc value
-	 */
-	 /**/ return crc;
-}
-#endif	/* DEBUG */
 
 static struct driver_d mpc5xxx_driver = {
         .name  = "fec_mpc5xxx",

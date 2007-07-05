@@ -5,6 +5,9 @@ config ZLIB
 config BZLIB
 	bool
 
+config GREGORIAN_CALENDER
+	bool
+
 menu "general settings"
 
 config PROMPT
@@ -76,6 +79,17 @@ config ERRNO_MESSAGES
 	bool
 	prompt "print error values as text"
 	default y
+
+config TIMESTAMP
+	bool
+	default y
+	select GREGORIAN_CALENDER
+	prompt "print timestamp information from images"
+	help
+	  When CONFIG_TIMESTAMP is selected, the timestamp
+	  (date and time) of an image is printed by image
+	  commands like bootm or iminfo. This option is
+	  automatically enabled when you select CFG_CMD_DATE .
 
 endmenu
 

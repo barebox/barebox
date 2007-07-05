@@ -10,3 +10,5 @@ obj-y	+= ldiv.o
 obj-y	+= string.o
 obj-y	+= vsprintf.o
 obj-y	+= zlib.o
+obj-y	+= div64.o
+

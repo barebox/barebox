@@ -43,7 +43,7 @@ struct cmd_tbl_s {
 					/* Implementation function	*/
 	int		(*cmd)(struct cmd_tbl_s *, int, int, char *[]);
 	char		*usage;		/* Usage message	(short)	*/
-#ifdef	CFG_LONGHELP
+#ifdef	CONFIG_LONGHELP
 	char		*help;		/* Help  message	(long)	*/
 #endif
 #ifdef CONFIG_AUTO_COMPLETE
@@ -92,7 +92,7 @@ typedef	void 	command_t (cmd_tbl_t *, int, int, char *[]);
 
 #define Struct_Section  __attribute__ ((unused,section (".u_boot_cmd")))
 
-#ifdef  CFG_LONGHELP
+#ifdef  CONFIG_LONGHELP
 
 #define U_BOOT_CMD(name,maxargs,rep,cmd,usage,help) \
 cmd_tbl_t __u_boot_cmd_##name Struct_Section = {#name, maxargs, rep, cmd, usage, help}
@@ -102,6 +102,6 @@ cmd_tbl_t __u_boot_cmd_##name Struct_Section = {#name, maxargs, rep, cmd, usage,
 #define U_BOOT_CMD(name,maxargs,rep,cmd,usage,help) \
 cmd_tbl_t __u_boot_cmd_##name Struct_Section = {#name, maxargs, rep, cmd, usage}
 
-#endif	/* CFG_LONGHELP */
+#endif	/* CONFIG_LONGHELP */
 
 #endif	/* __COMMAND_H */

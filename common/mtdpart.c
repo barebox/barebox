@@ -5,17 +5,7 @@
 #include <driver.h>
 #include <malloc.h>
 #include <asm-generic/errno.h>
-
-struct partition {
-        int num;
-
-        unsigned long offset;
-
-        struct device_d *parent;
-        struct device_d device;
-
-        char name[16];
-};
+#include <partition.h>
 
 static void dev_del_partitions(struct device_d *dev)
 {

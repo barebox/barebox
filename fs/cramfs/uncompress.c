@@ -25,8 +25,6 @@
 #include <watchdog.h>
 #include <zlib.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_JFFS2)
-
 static z_stream stream;
 
 #define ZALLOC_ALIGNMENT	16
@@ -102,5 +100,3 @@ int cramfs_uncompress_exit (void)
 	inflateEnd (&stream);
 	return 0;
 }
-
-#endif /* CFG_FS_CRAMFS */

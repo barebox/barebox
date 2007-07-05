@@ -26,8 +26,10 @@
 
 #include <common.h>
 #include <malloc.h>
-
-#if (CONFIG_COMMANDS & CFG_CMD_JFFS2)
+#include <driver.h>
+#include <init.h>
+#include <asm-generic/errno.h>
+#include <fs.h>
 
 #include <asm/byteorder.h>
 #include <linux/stat.h>
@@ -42,22 +44,22 @@
 
 struct cramfs_super super;
 
-/* CPU address space offset calculation macro, struct part_info offset is
- * device address space offset, so we need to shift it by a device start address. */
-extern flash_info_t flash_info[];
-#define PART_OFFSET(x)	(x->offset + flash_info[x->dev->id->num].start[0])
-
-static int cramfs_read_super (struct part_info *info)
+static int cramfs_read_super (struct device_d *dev)
 {
 	unsigned long root_offset;
 
-	/* Read the first block and get the superblock from it */
-	memcpy (&super, (void *) PART_OFFSET(info), sizeof (super));
+	if (read(dev, &super, sizeof (super), 0, 0) < sizeof (super)) {
+		printf("read superblock failed\n");
+		return -EINVAL;
+	}
 
 	/* Do sanity checks on the superblock */
 	if (super.magic != CRAMFS_32 (CRAMFS_MAGIC)) {
 		/* check at 512 byte offset */
-		memcpy (&super, (void *) PART_OFFSET(info) + 512, sizeof (super));
+		if (read(dev, &super, sizeof (super), 512, 0) < sizeof (super)) {
+			printf("read superblock failed\n");
+			return -EINVAL;
+		}
 		if (super.magic != CRAMFS_32 (CRAMFS_MAGIC)) {
 			printf ("cramfs: wrong magic\n");
 			return -1;
@@ -185,29 +187,32 @@ static int cramfs_uncompress (unsigned long begin, unsigned long offset,
 	return total_size;
 }
 
-int cramfs_load (char *loadoffset, struct part_info *info, char *filename)
+int cramfs_load (char *loadoffset, struct device_d *dev, const char *filename)
 {
 	unsigned long offset;
-
-	if (cramfs_read_super (info))
+	char *f;
+	if (cramfs_read_super (dev))
 		return -1;
 
-	offset = cramfs_resolve (PART_OFFSET(info),
+	f = strdup(filename);
+	offset = cramfs_resolve (dev->map_base,
 				 CRAMFS_GET_OFFSET (&(super.root)) << 2,
 				 CRAMFS_24 (super.root.size), 0,
-				 strtok (filename, "/"));
+				 strtok (f, "/"));
+
+	free(f);
 
 	if (offset <= 0)
 		return offset;
 
-	return cramfs_uncompress (PART_OFFSET(info), offset,
+	return cramfs_uncompress (dev->map_base, offset,
 				  (unsigned long) loadoffset);
 }
 
-static int cramfs_list_inode (struct part_info *info, unsigned long offset)
+static int cramfs_list_inode (struct device_d *dev, unsigned long offset)
 {
 	struct cramfs_inode *inode = (struct cramfs_inode *)
-		(PART_OFFSET(info) + offset);
+		(dev->map_base + offset);
 	char *name, str[20];
 	int namelen, nextoff;
 
@@ -238,7 +243,7 @@ static int cramfs_list_inode (struct part_info *info, unsigned long offset)
 		unsigned long size = CRAMFS_24 (inode->size);
 		char *link = malloc (size);
 
-		if (link != NULL && cramfs_uncompress (PART_OFFSET(info), offset,
+		if (link != NULL && cramfs_uncompress (dev->map_base, offset,
 						       (unsigned long) link)
 		    == size)
 			printf (" -> %*.*s\n", (int) size, (int) size, link);
@@ -252,13 +257,16 @@ static int cramfs_list_inode (struct part_info *info, unsigned long offset)
 	return nextoff;
 }
 
-int cramfs_ls (struct part_info *info, char *filename)
+int cramfs_ls (struct device_d *dev, const char *filename)
 {
 	struct cramfs_inode *inode;
 	unsigned long inodeoffset = 0, nextoffset;
 	unsigned long offset, size;
+	char *f;
 
-	if (cramfs_read_super (info))
+	printf("cramfs_ls: %s\n", filename);
+
+	if (cramfs_read_super (dev))
 		return -1;
 
 	if (strlen (filename) == 0 || !strcmp (filename, "/")) {
@@ -266,20 +274,21 @@ int cramfs_ls (struct part_info *info, char *filename)
 		offset = CRAMFS_GET_OFFSET (&(super.root)) << 2;
 		size = CRAMFS_24 (super.root.size);
 	} else {
+		f = strdup(filename);
 		/* Resolve the path */
-		offset = cramfs_resolve (PART_OFFSET(info),
+		offset = cramfs_resolve (dev->map_base,
 					 CRAMFS_GET_OFFSET (&(super.root)) <<
 					 2, CRAMFS_24 (super.root.size), 1,
-					 strtok (filename, "/"));
-
+					 strtok (f, "/"));
+		free(f);
 		if (offset <= 0)
 			return offset;
 
 		/* Resolving was successful. Examine the inode */
-		inode = (struct cramfs_inode *) (PART_OFFSET(info) + offset);
+		inode = (struct cramfs_inode *) (dev->map_base + offset);
 		if (!S_ISDIR (CRAMFS_16 (inode->mode))) {
 			/* It's not a directory - list it, and that's that */
-			return (cramfs_list_inode (info, offset) > 0);
+			return (cramfs_list_inode (dev, offset) > 0);
 		}
 
 		/* It's a directory. List files within */
@@ -289,21 +298,21 @@ int cramfs_ls (struct part_info *info, char *filename)
 
 	/* List the given directory */
 	while (inodeoffset < size) {
-		inode = (struct cramfs_inode *) (PART_OFFSET(info) + offset +
+		inode = (struct cramfs_inode *) (dev->map_base + offset +
 						 inodeoffset);
 
-		nextoffset = cramfs_list_inode (info, offset + inodeoffset);
+		nextoffset = cramfs_list_inode (dev, offset + inodeoffset);
 		if (nextoffset == 0)
 			break;
 		inodeoffset += sizeof (struct cramfs_inode) + nextoffset;
 	}
 
-	return 1;
+	return 0;
 }
 
-int cramfs_info (struct part_info *info)
+int cramfs_info (struct device_d *dev)
 {
-	if (cramfs_read_super (info))
+	if (cramfs_read_super (dev))
 		return 0;
 
 	printf ("size: 0x%x (%u)\n", super.size, super.size);
@@ -327,21 +336,30 @@ int cramfs_info (struct part_info *info)
 	return 1;
 }
 
-int cramfs_check (struct part_info *info)
+int cramfs_probe(struct device_d *dev)
 {
-	struct cramfs_super *sb;
-
-	if (info->dev->id->type != MTD_DEV_TYPE_NOR)
-		return 0;
-
-	sb = (struct cramfs_super *) PART_OFFSET(info);
-	if (sb->magic != CRAMFS_32 (CRAMFS_MAGIC)) {
-		/* check at 512 byte offset */
-		sb = (struct cramfs_super *) (PART_OFFSET(info) + 512);
-		if (sb->magic != CRAMFS_32 (CRAMFS_MAGIC))
-			return 0;
+	if (cramfs_read_super (dev)) {
+		printf("no valid cramfs found on %s\n",dev->id);
+		return -EINVAL;
 	}
-	return 1;
+
+	return 0;
 }
 
-#endif /* CFG_FS_CRAMFS */
+static struct fs_driver_d cramfs_driver = {
+	.type  = FS_TYPE_CRAMFS,
+	.probe = cramfs_probe,
+	.ls    = cramfs_ls,
+	.drv = {
+		.type = DEVICE_TYPE_FS,
+		.name = "cramfs",
+		.driver_data = &cramfs_driver,
+	}
+};
+
+int cramfs_init(void)
+{
+	return register_fs_driver(&cramfs_driver);
+}
+
+device_initcall(cramfs_init);

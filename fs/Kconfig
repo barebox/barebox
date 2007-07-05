@@ -1,0 +1,12 @@
+
+menuconfig FS
+	bool "Filesystem support"
+
+if FS
+
+config FS_CRAMFS
+	bool
+	select ZLIB
+	prompt "cramfs support"
+
+endif

@@ -132,11 +132,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         offset = 0;
 
         while (1) {
-                part = malloc(sizeof(struct partition));
-                if(!part) {
-                        printf("-ENOMEM\n");
-                        return 1;
-                }
+                part = xzalloc(sizeof(struct partition));
 
                 part->offset = offset;
                 part->physdev = dev;

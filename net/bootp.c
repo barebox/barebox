@@ -318,26 +318,8 @@ BootpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 
 	debug ("Got good BOOTP\n");
 
-	if ((s = getenv("autoload")) != NULL) {
-		if (*s == 'n') {
-			/*
-			 * Just use BOOTP to configure system;
-			 * Do not use TFTP to load the bootfile.
-			 */
-			NetState = NETLOOP_SUCCESS;
-			return;
-#if (CONFIG_COMMANDS & CFG_CMD_NFS)
-		} else if (strcmp(s, "NFS") == 0) {
-			/*
-			 * Use NFS to load the bootfile.
-			 */
-			NfsStart();
-			return;
-#endif
-		}
-	}
-
-	TftpStart();
+	NetState = NETLOOP_SUCCESS;
+	return;
 }
 #endif	/* !CFG_CMD_DHCP */
 
@@ -925,26 +907,7 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			print_IPaddr(NetOurIP);
 			putc ('\n');
 
-			/* Obey the 'autoload' setting */
-			if ((s = getenv("autoload")) != NULL) {
-				if (*s == 'n') {
-					/*
-					 * Just use BOOTP to configure system;
-					 * Do not use TFTP to load the bootfile.
-					 */
-					NetState = NETLOOP_SUCCESS;
-					return;
-#if (CONFIG_COMMANDS & CFG_CMD_NFS)
-				} else if (strcmp(s, "NFS") == 0) {
-					/*
-					 * Use NFS to load the bootfile.
-					 */
-					NfsStart();
-					return;
-#endif
-				}
-			}
-			TftpStart();
+			NetState = NETLOOP_SUCCESS;
 			return;
 		}
 		break;

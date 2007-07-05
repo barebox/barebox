@@ -2558,11 +2558,6 @@ Some configuration options can be set using Environment Variables:
 
   bootfile	- Name of the image to load with TFTP
 
-  autoload	- if set to "no" (any string beginning with 'n'),
-		  "bootp" will just load perform a lookup of the
-		  configuration from the BOOTP server, but not try to
-		  load any image using TFTP
-
   autostart	- if set to "yes", an image loaded using the "bootp",
 		  "rarpboot", "tftpboot" or "diskboot" commands will
 		  be automatically started (by internally calling

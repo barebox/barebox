@@ -150,9 +150,6 @@ env_t environment __PPCENV__ = {
 #ifdef	CONFIG_SERVERIP
 	"serverip="	MK_STR(CONFIG_SERVERIP)		"\0"
 #endif
-#ifdef	CFG_AUTOLOAD
-	"autoload="	CFG_AUTOLOAD			"\0"
-#endif
 #ifdef	CONFIG_ROOTPATH
 	"rootpath="	MK_STR(CONFIG_ROOTPATH)		"\0"
 #endif

@@ -51,22 +51,7 @@ RarpHandler(uchar * dummi0, unsigned dummi1, unsigned dummi2, unsigned dummi3)
 #ifdef	DEBUG
 	puts ("Got good RARP\n");
 #endif
-	if ((s = getenv("autoload")) != NULL) {
-		if (*s == 'n') {
-			/*
-			 * Just use RARP to configure system;
-			 * Do not use TFTP/NFS to to load the bootfile.
-			 */
-			NetState = NETLOOP_SUCCESS;
-			return;
-#if (CONFIG_COMMANDS & CFG_CMD_NFS)
-		} else if ((s != NULL) && !strcmp(s, "NFS")) {
-			NfsStart();
-			return;
-#endif
-		}
-	}
-	TftpStart ();
+	NetState = NETLOOP_SUCCESS;
 }
 
 

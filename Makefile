@@ -147,18 +147,6 @@ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
 export srctree objtree VPATH TOPDIR
 
-
-# SUBARCH tells the usermode build what the underlying arch is.  That is set
-# first, and if a usermode build is happening, the "ARCH=um" on the command
-# line overrides the setting of ARCH below.  If a native build is happening,
-# then ARCH is assigned, getting whatever value it gets normally, and
-# SUBARCH is subsequently ignored.
-
-SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
-				  -e s/arm.*/arm/ -e s/sa110/arm/ \
-				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
-				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ )
-
 # Cross compiling and selecting different set of gcc/bin-utils
 # ---------------------------------------------------------------------------
 #
@@ -178,8 +166,8 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 
-ARCH		?= $(SUBARCH)
-CROSS_COMPILE	?=
+ARCH		?= $(shell readlink cross_arch)
+CROSS_COMPILE	?= $(shell readlink cross_compile)
 
 # Architecture as present in compile.h
 UTS_MACHINE := $(ARCH)
@@ -424,7 +412,6 @@ scripts: scripts_basic include/config/auto.conf
 
 # Objects we will link into vmlinux / subdirs we need to visit
 common-y		:= common/ drivers/ lib_generic/ net/
-head-y			:= cpu/arm920t/start.o
 
 ifeq ($(dot-config),1)
 # Read in config
@@ -560,9 +547,8 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 #
 # System.map is generated to document addresses of all kernel symbols
 
-vmlinux-init := $(head-y)
 vmlinux-common := $(common-y)
-vmlinux-all  := $(vmlinux-init) $(vmlinux-common)
+vmlinux-all  := $(vmlinux-common)
 vmlinux-lds  := $(BOARD)/u-boot.lds
 export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
 
@@ -570,7 +556,7 @@ export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_vmlinux__ ?= LD      $@
       cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-      -T $(vmlinux-lds) $(vmlinux-init)                         \
+      -T $(vmlinux-lds) $(vmlinux-head)                         \
       --start-group $(vmlinux-common) --end-group                  \
       $(filter-out $(vmlinux-lds) $(vmlinux-common) FORCE ,$^)
 
@@ -584,7 +570,7 @@ quiet_cmd_vmlinux_version = GEN     .version
 	  mv .version .old_version;			\
 	  expr 0$$(cat .old_version) + 1 >.version;	\
 	fi;						\
-	$(MAKE) $(build)=common
+
 
 # Generate System.map
 quiet_cmd_sysmap = SYSMAP
@@ -600,7 +586,11 @@ define rule_vmlinux__
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,vmlinux_version))
 
 	$(call cmd,vmlinux__)
+
 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux__)' > $(@D)/.$(@F).cmd
+
+	$(OBJCOPY) -O binary vmlinux vmlinux.bin
+	$(OBJDUMP) -d vmlinux > vmlinux.S
 
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
@@ -697,7 +687,7 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 endif # ifdef CONFIG_KALLSYMS
 
 # vmlinux image - including updated kernel symbols
-vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-common) $(kallsyms.o) FORCE
+vmlinux: $(vmlinux-lds) $(vmlinux-head) $(vmlinux-common) $(kallsyms.o) FORCE
 ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
@@ -706,7 +696,7 @@ endif
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(vmlinux-init) $(vmlinux-common) ) $(vmlinux-lds): $(vmlinux-dirs) ;
+$(sort $(vmlinux-head) $(vmlinux-common) ) $(vmlinux-lds): $(vmlinux-dirs) ;
 
 # Handle descending into subdirectories listed in $(vmlinux-dirs)
 # Preset locale variables to speed up the build process. Limit locale
@@ -814,7 +804,7 @@ endif
 prepare2: prepare3 outputmakefile
 
 prepare1: prepare2 include/linux/version.h include/linux/utsrelease.h \
-                   include/asm include/config/auto.conf
+                   include/asm include/config.h include/config/auto.conf
 ifneq ($(KBUILD_MODULES),)
 	$(Q)mkdir -p $(MODVERDIR)
 	$(Q)rm -f $(MODVERDIR)/*
@@ -841,6 +831,10 @@ include/asm:
 	@echo '  SYMLINK $@ -> include/asm-$(ARCH)'
 	$(Q)if [ ! -d include ]; then mkdir -p include; fi;
 	@ln -fsn asm-$(ARCH) $@
+
+include/config.h:
+	@echo '  SYMLINK $@ -> include/configs/$(board-y).h'
+	@ln -fsn configs/$(board-y).h $@
 
 # Generate some files
 # ---------------------------------------------------------------------------
@@ -885,13 +879,14 @@ depend dep:
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	vmlinux System.map \
-                .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
+                .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map \
+		vmlinux.bin vmlinux.S
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
 MRPROPER_FILES += .config .config.old include/asm .version .old_version \
                   include/linux/autoconf.h include/linux/version.h      \
-                  include/linux/utsrelease.h                            \
+                  include/linux/utsrelease.h include/config.h           \
 		  Module.symvers tags TAGS cscope*
 
 # clean - Delete most, but leave enough to build external modules

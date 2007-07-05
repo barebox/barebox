@@ -21,6 +21,8 @@
  * MA 02111-1307 USA
  */
 
+#include <asm-generic/u-boot.lds.h>
+
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 /*OUTPUT_FORMAT("elf32-arm", "elf32-arm", "elf32-arm")*/
 OUTPUT_ARCH(arm)
@@ -49,6 +51,10 @@ SECTIONS
 	__u_boot_cmd_start = .;
 	.u_boot_cmd : { *(.u_boot_cmd) }
 	__u_boot_cmd_end = .;
+
+	__u_boot_initcalls_start = .;
+	.u_boot_initcalls : { INITCALLS }
+	__u_boot_initcalls_end = .;
 
 	. = ALIGN(4);
 	__bss_start = .;

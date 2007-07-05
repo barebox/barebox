@@ -7,6 +7,7 @@
 #include <readkey.h>
 #include <errno.h>
 #include <xfuncs.h>
+#include <linux/stat.h>
 
 #define TABSPACE 8
 
@@ -33,8 +34,6 @@ static struct line *curline;	/* line where the cursor is */
 
 static struct line *scrline;	/* the first line on screen */
 int scrcol = 0;			/* the first column on screen */
-
-int edit_fd;
 
 static void pos(int x, int y)
 {
@@ -161,36 +160,32 @@ static struct line *line_realloc(int len, struct line *line)
 
 static int edit_read_file(const char *path)
 {
-	static char rbuf[1024];
 	struct line *line;
 	struct line *lastline = NULL;
-	int r = 1;
+	char *filebuffer;
+	char *linestr;
+	struct stat s;
 
-	edit_fd = open(path, O_RDWR | O_CREAT);
-	if (edit_fd < 0) {
-		perror("open");
-		return -1;
-	}
-
-	while (r) {
-		char *tmp = rbuf;
-		while((r = read(edit_fd, tmp, 1)) == 1) {
-			if (*tmp == '\n')
-				break;
-			tmp++;
+	if (!stat(path, &s)) {
+		filebuffer = read_file(path);
+		if (!filebuffer) {
+			printf("could not read %s: %s\n", path, errno_str());
+			return -1;
 		}
-		if (!r && tmp == rbuf)
-			break;
-		*tmp = 0;
-		line = line_realloc(strlen(rbuf) + 1, NULL);
-		if (!buffer)
-			buffer = line;
-		memcpy(line->data, rbuf, strlen(rbuf) + 1);
-		line->prev = lastline;
-		if (lastline)
-			lastline->next = line;
-		line->next = 0;
-		lastline = line;
+
+		linestr = strtok(filebuffer, "\r\n");
+		while (linestr) {
+			line = line_realloc(strlen(linestr) + 1, NULL);
+			if (!buffer)
+				buffer = line;
+			memcpy(line->data, linestr, strlen(linestr) + 1);
+			line->prev = lastline;
+			if (lastline)
+				lastline->next = line;
+			line->next = 0;
+			lastline = line;
+			linestr = strtok(NULL, "\r\n");
+		}
 	}
 
 	if (!buffer) {
@@ -204,18 +199,24 @@ static int edit_read_file(const char *path)
 static int save_file(const char *path)
 {
 	struct line *line, *tmp;
+	int fd;
 
-	lseek(edit_fd, 0, SEEK_SET);
+	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
+	if (fd < 0) {
+		printf("could not open file for writing: %s\n", errno_str());
+		return -1;
+	}
 
 	line = buffer;
 
 	while(line) {
 		tmp = line->next;
-		write(edit_fd, line->data, strlen(line->data));
-		write(edit_fd, "\n", 1);
+		write(fd, line->data, strlen(line->data));
+		write(fd, "\n", 1);
 		line_free(line);
 		line = tmp;
 	}
+	close(fd);
 	return 0;
 }
 

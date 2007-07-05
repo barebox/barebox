@@ -1,4 +1,3 @@
-<<<<<<< .mine
 TODO
 ----
 
@@ -55,51 +54,3 @@ DONE
 [x] Rename vmlinux -> u-boot
 [x] Implement current work directory
 
-=======
-- Every driver should have a remove function
-- Add/fix help texts for commands
-- mm is broken. Add common option parsing for mm/md
-- Clean up make system. Currently I think there are many things from the linux make
-  system which are not needed for U-Boot.
-- Rename vmlinux -> u-boot
-- get/set for nonextisting parameters crashes
-- There is a xmalloc function which panics when out of memory. Use this function
-  where we don't want to check for oom. Same applies to strdup/xstrdup.
-- Implement current work directory
-- cleanup common.h. There are far too many things in it where we better have a seperate
-  header file.
-- Rewrite network stack. The one-loop-for-all-protocols stack is just too ugly and
-  big and uses thousands of global variables. Identify common functions and make
-  a loop per network protocol
-- Cleanup cpu/*. Many functions there are not cpu specific. For example the cache
-  functions for arm are common for most arm processors.
-- Implement a info command for malloced space. Use it to find memory holes.
-- U-Boot used to have support for different consoles. The old code was huge and
-  ineffective, so I removed it. Reimplement it using the driver model.
-- Board support should go to arch/*/boards/*
-- Move SoC specific header files from include/ to include/asm/arch/
-- The header files in include/asm-linux/ are i386 specific. Make it work on your
-  i-Book (bigendian...)
-- Globbing support? Might be too expensive, but on the other hand, if you have the
-  space, why not?
-- FS support is not optional eventhough the Kconfig system claims it.
-- Implement protect/unprotect support for cfi devices.
-- patch hush.c so that you can get/set device parameters with dev.param= and remove
-  get/set applets
-- Implement a command 'countdown' or similar. It should delay the boot process and
-  interrupt it if a certain string is received. The string could be any key, ctrl-c
-  or a certain string. Maybe like this:
-  countdown -m msg -t timeout -x [ctrl-c|anykey|string]
-  If done, remove the corresponding stuff from common/main.c
-- Implement 'rm'
-- ARCH=linux should catch ctrl-c
-- Several .c/.h files do not have GNU/copyright headers.
-- the mount command currently does not accept a full path (i.e. /dev/nor0) but
-  only a device id string (nor0). This sucks.
-- The cramfs driver currently uses direct memory accesses instead of read(). This disqualifies it
-  for real block devices.
-- Add documentation for:
-  - driver model
-  - device parameter
-  - big picture
->>>>>>> .r539

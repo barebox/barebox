@@ -63,7 +63,6 @@ int tap_probe(struct device_d *dev)
 
 	priv->fd = tap_alloc(priv->name);
 	if (priv->fd < 0) {
-		printf("could not get tap device\n");
 		ret = priv->fd;
 		goto out;
 	}

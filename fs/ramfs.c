@@ -112,8 +112,14 @@ static int chunks = 0;
 struct ramfs_chunk *ramfs_get_chunk(void)
 {
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
+	if (!data)
+		return NULL;
 //	printf("get chunk\n");
 	data->data = malloc(CHUNK_SIZE);
+	if (!data->data) {
+		free(data);
+		return NULL;
+	}
 	data->next = NULL;
 	chunks++;
 //	printf("chunks: %d\n", chunks);
@@ -398,6 +404,8 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	if (newchunks > oldchunks) {
 		if (!data) {
 			node->data = ramfs_get_chunk();
+			if (!node->data)
+				return -ENOMEM;
 			data = node->data;
 		}
 
@@ -409,7 +417,9 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 
 		while (newchunks--) {
 			data->next = ramfs_get_chunk();
-			data = data->next;
+			if (!data->next)
+				return -ENOMEM;
+		data = data->next;
 		}
 	}
 	node->size = size;
@@ -431,9 +441,7 @@ struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
 	if (node->mode != S_IFDIR)
 		return NULL;
 
-	dir = malloc(sizeof(struct dir));
-	if (!dir)
-		return NULL;
+	dir = xmalloc(sizeof(struct dir));
 
 	dir->priv = node->child;
 

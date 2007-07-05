@@ -30,10 +30,22 @@
  */
 
 #include <common.h>
-#if defined (CONFIG_IMX)
-
+#include <clock.h>
 #include <arm920t.h>
 #include <asm/arch/imx-regs.h>
+
+#define CLOCK_TICK_RATE 1000000
+
+uint64_t imx_clocksource_read(void)
+{
+	return TCN1;
+}
+
+static struct clocksource cs = {
+	.read	= imx_clocksource_read,
+	.mask	= 0xffffffff,
+	.shift	= 10,
+};
 
 int interrupt_init (void)
 {
@@ -44,39 +56,13 @@ int interrupt_init (void)
 	TPRER1 = get_PERCLK1() / 1000000; /* 1 MHz */
 	TCTL1 |= TCTL_FRR | (1<<1); /* Freerun Mode, PERCLK1 input */
 
-	reset_timer_masked();
-
-	return (0);
-}
-
-/*
- * timer without interrupts
- */
-
-void reset_timer (void)
-{
-	reset_timer_masked ();
-}
-
-ulong get_timer (ulong base)
-{
-	return get_timer_masked ();
-}
-
-void set_timer (ulong t)
-{
-	/* nop */
-}
-
-void reset_timer_masked (void)
-{
 	TCTL1 &= ~TCTL_TEN;
 	TCTL1 |= TCTL_TEN; /* Enable timer */
-}
 
-ulong get_timer_masked (void)
-{
-	return TCN1;
+	cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, cs.shift);
+	init_clock(&cs);
+
+	return 0;
 }
 
 /*
@@ -97,5 +83,3 @@ void reset_cpu (ulong ignored)
 	while (1);
 	/*NOTREACHED*/
 }
-
-#endif /* defined (CONFIG_IMX) */

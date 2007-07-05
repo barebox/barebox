@@ -84,6 +84,7 @@ obj-y += cmd_universe.o
 obj-y += exports.o
 obj-y += main.o
 obj-y += s_record.o
+obj-y += clock.o
 
 # obj-y += spartan3.o
 # obj-y += spartan2.o

@@ -60,11 +60,6 @@ void nand_init (void);
 
 ulong monitor_flash_len;
 
-#ifdef CONFIG_HAS_DATAFLASH
-extern int  AT91F_DataflashInit(void);
-extern void dataflash_print_info(void);
-#endif
-
 #ifndef CONFIG_IDENT_STRING
 #define CONFIG_IDENT_STRING ""
 #endif
@@ -299,11 +294,6 @@ void start_armboot (void)
 #if (CONFIG_COMMANDS & CFG_CMD_NAND)
 	puts ("NAND:  ");
 	nand_init();		/* go init the NAND */
-#endif
-
-#ifdef CONFIG_HAS_DATAFLASH
-	AT91F_DataflashInit();
-	dataflash_print_info();
 #endif
 
 	/* initialize environment */

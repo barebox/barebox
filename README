@@ -1586,13 +1586,6 @@ The following options need to be configured:
 		the environment like the autoscript function or the
 		boot command first.
 
-- DataFlash Support:
-		CONFIG_HAS_DATAFLASH
-
-		Defining this option enables DataFlash features and
-		allows to read/write in Dataflash via the standard
-		commands cp, md...
-
 - SystemACE Support:
 		CONFIG_SYSTEMACE
 

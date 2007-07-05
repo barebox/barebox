@@ -26,9 +26,6 @@
 #include <image.h>
 #include <zlib.h>
 #include <asm/byteorder.h>
-#ifdef CONFIG_HAS_DATAFLASH
-#include <dataflash.h>
-#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -100,14 +97,8 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 		printf ("## Loading Ramdisk Image at %08lx ...\n", addr);
 
 		/* Copy header so we can blank CRC field for re-calculation */
-#ifdef CONFIG_HAS_DATAFLASH
-		if (addr_dataflash (addr)) {
-			read_dataflash (addr, sizeof (image_header_t),
-					(char *) &header);
-		} else
-#endif
-			memcpy (&header, (char *) addr,
-				sizeof (image_header_t));
+		memcpy (&header, (char *) addr,
+			sizeof (image_header_t));
 
 		if (ntohl (hdr->ih_magic) != IH_MAGIC) {
 			printf ("Bad Magic Number\n");
@@ -133,13 +124,6 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 
 		data = addr + sizeof (image_header_t);
 		len = ntohl (hdr->ih_size);
-
-#ifdef CONFIG_HAS_DATAFLASH
-		if (addr_dataflash (addr)) {
-			read_dataflash (data, len, (char *) CFG_LOAD_ADDR);
-			data = CFG_LOAD_ADDR;
-		}
-#endif
 
 		if (verify) {
 			ulong csum = 0;

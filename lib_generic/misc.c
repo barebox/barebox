@@ -7,6 +7,7 @@
 #include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
+#include <net.h>
 
 int cmd_get_data_size(char* arg, int default_size)
 {
@@ -386,7 +387,7 @@ int dummy_probe(struct device_d *dev)
         return 0;
 }
 
-struct param_d *get_param_by_name(struct device_d *dev, char *name)
+struct param_d *get_param_by_name(struct device_d *dev, const char *name)
 {
         struct param_d *param = dev->param;
 
@@ -399,21 +400,7 @@ struct param_d *get_param_by_name(struct device_d *dev, char *name)
         return NULL;
 }
 
-void print_param(struct param_d *param) {
-	switch (param->type) {
-	case PARAM_TYPE_STRING:
-		printf("%s", param->value.val_str);
-		break;
-	case PARAM_TYPE_ULONG:
-		printf("%ld", param->value.val_ulong);
-		break;
-	case PARAM_TYPE_IPADDR:
-		print_IPaddr(param->value.val_ip);
-		break;
-	}
-}
-
-struct param_d* dev_get_param(struct device_d *dev, char *name)
+char *dev_get_param(struct device_d *dev, const char *name)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
@@ -425,31 +412,23 @@ struct param_d* dev_get_param(struct device_d *dev, char *name)
         if (param->get)
                 return param->get(dev, param);
 
-        return param;
+        return param->value;
 }
 
 IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
 {
-	struct param_d *param = dev_get_param(dev, name);
-
-	if (!param || param->type != PARAM_TYPE_IPADDR) {
-		errno = -EINVAL;
-		return 0;
-	}
-
-	return param->value.val_ip;
+	return string_to_ip(dev_get_param(dev, name));
 }
 
 int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 {
-	value_t val;
+	char ipstr[16];
+	ip_to_string(ip, ipstr);
 
-	val.val_ip = ip;
-
-	return dev_set_param(dev, name, val);
+	return dev_set_param(dev, name, ipstr);
 }
 
-int dev_set_param(struct device_d *dev, char *name, value_t val)
+int dev_set_param(struct device_d *dev, const char *name, const char *val)
 {
         struct param_d *param;
 
@@ -473,14 +452,10 @@ int dev_set_param(struct device_d *dev, char *name, value_t val)
         if (param->set)
                 return param->set(dev, param, val);
 
-	if (param->type == PARAM_TYPE_STRING) {
-		if (param->value.val_str)
-			free(param->value.val_str);
-		param->value.val_str = strdup(val.val_str);
-		return 0;
-	}
+	if (param->value)
+		free(param->value);
 
-        param->value = val;
+        param->value = strdup(val);
 	return 0;
 }
 
@@ -537,9 +512,7 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 printf("%s\n", param ? "Parameters:" : "no parameters available");
 
                 while (param) {
-			printf("%16s = ", param->name);
-			print_param(param);
-			printf("\n");
+			printf("%16s = %s\n", param->name, param->value);
                         param = param->next;
                 }
 
@@ -553,4 +526,5 @@ U_BOOT_CMD(
 	"devinfo     - display info about devices and drivers\n",
 	""
 );
+
 

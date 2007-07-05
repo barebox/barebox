@@ -4,6 +4,7 @@
 #include <init.h>
 #include <driver.h>
 #include <malloc.h>
+#include <asm-generic/errno.h>
 
 struct partition {
         int num;
@@ -16,22 +17,23 @@ struct partition {
         char name[16];
 };
 
-#if 0
 static void dev_del_partitions(struct device_d *dev)
 {
-        struct partition *part = dev->part;
-        struct partition *oldpart;
+        struct device_d *p;
+        char buf[MAX_DRIVER_NAME];
+        int i = 0;
 
-        while (part) {
-                unregister_device(&part->device);
-                oldpart = part;
-                part = part->next;
-                free(oldpart);
+        /* This is lame. Devices should to able to have children */
+        while(1) {
+                sprintf(buf, "%s.%d", dev->id, i);
+                p = device_from_spec_str(buf, NULL);
+                if (p)
+                        unregister_device(p);
+                else
+                        break;
+                i++;
         }
-
-        dev->part = NULL;
 }
-#endif
 
 int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
 {
@@ -43,11 +45,16 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
 	memset(buf, 0, MAX_DRIVER_NAME);
 
         if (*str == '-') {
-                /* FIXME: The rest of the device */
-                return -1;
-        }
+                size = part->parent->size - part->offset;
+		end = (char *)str + 1;
+        } else {
+		size = strtoul_suffix(str, &end, 0);
+	}
 
-        size = strtoul_suffix(str, &end, 0);
+	if (size + part->offset > part->parent->size) {
+		printf("partition end is beyond device\n");
+		return -EINVAL;
+	}
 
         str = end;
 
@@ -56,11 +63,11 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
                 end = strchr(str, ')');
                 if (!end) {
                         printf("could not find matching ')'\n");
-                        return -1;
+                        return -EINVAL;
                 }
                 if (end - str >= MAX_DRIVER_NAME) {
                         printf("device name too long\n");
-                        return -1;
+                        return -EINVAL;
                 }
 
                 memcpy(part->name, str, end - str);
@@ -102,7 +109,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-//        dev_del_partitions(dev);
+	dev_del_partitions(dev);
 
         offset = 0;
 
@@ -119,7 +126,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 part->device.map_base = dev->map_base + offset;
 
                 if(mtd_part_do_parse_one(part, endp, &endp)) {
-//                        dev_del_partitions(dev);
+			dev_del_partitions(dev);
                         free(part);
                         return 1;
                 }
@@ -146,9 +153,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-        struct device_d *dev, *p;
-        int i = 0;
-        char buf[MAX_DRIVER_NAME];
+        struct device_d *dev;
 
         if (argc != 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -161,16 +166,7 @@ int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        /* This is lame. Devices should to able to have children */
-        while(1) {
-                sprintf(buf, "%s.%d", dev->id, i);
-                p = device_from_spec_str(buf, NULL);
-                if (p)
-                        unregister_device(p);
-                else
-                        break;
-                i++;
-        }
+	dev_del_partitions(dev);
 
         return 0;
 }

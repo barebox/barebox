@@ -198,13 +198,10 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 #endif /* CONFIG_MPC5xxx */
 	}
 
-	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))(32 * 1024 * 1024); /* FIXME */
+	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))ntohl(os_header->ih_ep); /* FIXME */
 
-	printf("uncompressing\n");
-	if (relocate_image(os_header, (void *)(32 * 1024 * 1024)))
+	if (relocate_image(os_header, (void *)ntohl(os_header->ih_load)))
 		return -1;
-	printf("done\n");
-
 
 #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
 	unlock_ram_in_cache();
@@ -255,6 +252,7 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 	 *   r7: NULL
 	 */
 	ft_setup(of_flat_tree, kbd, initrd_data, initrd_end);
+	ft_cpu_setup(of_flat_tree, kbd);
 	ft_dump_blob(of_flat_tree);
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);

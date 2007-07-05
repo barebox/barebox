@@ -21,6 +21,11 @@ config CMDLINE_EDITING
 	bool
 	prompt "Enable command line editing"
 
+config SIMPLE_READLINE
+	bool
+	default y
+	depends on !CMDLINE_EDITING
+
 config LONGHELP
 	bool
 	prompt "Enable long help texts"
@@ -38,6 +43,11 @@ config MAXARGS
 config HUSH_PARSER
 	bool
 	prompt "Use hush parser"
+
+config SIMPLE_PARSER
+	bool
+	default y
+	depends on !HUSH_PARSER
 
 config PROMPT_HUSH_PS2
 	string

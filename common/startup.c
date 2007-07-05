@@ -131,11 +131,11 @@ void start_uboot (void)
 	run_command("mkdir /env", 0);
 	run_command("mount none devfs /dev", 0);
 
-	run_command("set eth0 ip 10.4.0.3", 0);
-	run_command("set eth0 mac 80:81:82:83:84:85", 0);
-	run_command("set eth0 serverip 10.4.0.1", 0);
-	run_command("set eth0 gateway 10.4.0.1", 0);
-	run_command("set eth0 netmask 255.255.255.0", 0);
+	run_command("eth0.ip=172.0.0.2", 0);
+	run_command("eth0.mac=80:81:82:83:84:85", 0);
+	run_command("eth0.serverip=172.0.0.1", 0);
+	run_command("eth0.gateway=172.0.0.1", 0);
+	run_command("eth0.netmask=255.255.255.0", 0);
 
         /* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {

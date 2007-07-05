@@ -1,4 +1,4 @@
 obj-y	+= cpu.o interrupts.o
 head-y	+= start.o
-#obj-y	+= imx/
-obj-y	+= at91rm9200/
+obj-$(CONFIG_ARCH_IMX)		+= imx/
+obj-$(CONFIG_ARCH_AT91RM9200)	+= at91rm9200/

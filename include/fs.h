@@ -4,6 +4,7 @@
 #include <driver.h>
 
 #define FS_TYPE_CRAMFS 1
+#define FS_TYPE_RAMFS  2
 
 struct partition;
 
@@ -13,6 +14,8 @@ struct fs_driver_d {
 	int (*ls) (struct device_d *dev, const char *filename);
 	int (*load) (char *dst, struct device_d *dev, const char *filename);
 	int (*probe) (struct device_d *dev);
+	int (*create)(struct device_d *dev, const char *pathname, ulong type);
+	struct handle_d *(*open)(struct device_d *dev, const char *pathname);
 
 	struct driver_d drv;
 };

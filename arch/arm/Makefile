@@ -62,3 +62,4 @@ common-y += arch/arm/lib/
 
 head-y	:= cpu/arm920t/start.o
 
+CLEAN_FILES += include/asm-arm/arch

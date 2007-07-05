@@ -6,6 +6,7 @@
 #include <linux/stat.h>
 #include <fcntl.h>
 #include <xfuncs.h>
+#include <init.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -37,34 +38,78 @@ char *mkmodestr(unsigned long mode, char *str)
 	return str;
 }
 
+static char *cwd;
+
+static int init_cwd(void)
+{
+	cwd = xzalloc(PATH_MAX);
+	*cwd = '/';
+	return 0;
+}
+
+core_initcall(init_cwd);
+
 /*
  * - Remove all multiple slashes
  * - Remove trailing slashes (except path consists of only
  *   a single slash)
  * - TODO: illegal characters?
  */
-void normalise_path(char *path)
+char *normalise_path(const char *pathname)
 {
-        char *out = path, *in = path;
+	char *path = xzalloc(strlen(pathname) + strlen(cwd) + 2);
+        char *in, *out, *slashes[32];
+	int sl = 0;
 
-        while(*in) {
+//printf("in: %s\n", pathname);
+	if (*pathname != '/')
+		strcpy(path, cwd);
+	strcat(path, "/");
+	strcat(path, pathname);
+
+	slashes[0] = in = out = path;
+
+        while (*in) {
                 if(*in == '/') {
+			slashes[sl++] = out;
                         *out++ = *in++;
                         while(*in == '/')
                                 in++;
                 } else {
+			if (*in == '.' && (*(in + 1) == '/' || !*(in + 1))) {
+				sl--;
+				if (sl < 0)
+					sl = 0;
+				out = slashes[sl];
+				in++;
+				continue;
+			}
+			if (*in == '.' && *(in + 1) == '.') {
+				sl -= 2;
+				if (sl < 0)
+					sl = 0;
+				out = slashes[sl];
+				in += 2;
+				continue;
+			}
                         *out++ = *in++;
                 }
         }
 
-        /*
-         * Remove trailing slash, but only if
-         * we were given more than a single slash
-         */
-        if (out > path + 1 && *(out - 1) == '/')
-                *(out - 1) = 0;
+	*out-- = 0;
 
-        *out = 0;
+        /*
+         * Remove trailing slash
+         */
+        if (*out == '/')
+                *out = 0;
+
+	if (!*path) {
+		*path = '/';
+		*(path + 1) = 0;
+	}
+
+	return path;
 }
 
 static struct mtab_entry *mtab;
@@ -130,8 +175,6 @@ static struct device_d *get_device_by_path(char **path)
 	struct device_d *dev;
 	struct mtab_entry *e;
 
-	normalise_path(*path);
-
 	e = get_mtab_entry_by_path(*path);
 	if (!e)
 		return NULL;
@@ -177,11 +220,18 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	struct stat s;
 	unsigned int m;
 
+	errno = 0;
+
 	if (stat(path, &s)) {
 		if (flags & S_UB_DOES_NOT_EXIST)
 			return 0;
 		errno = -ENOENT;
-		return errno;
+		goto out;
+	}
+
+	if (flags & S_UB_DOES_NOT_EXIST) {
+		errno = -EEXIST;
+		goto out;
 	}
 
 	if (flags == S_UB_EXISTS)
@@ -192,29 +242,50 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	if (S_ISDIR(m)) {
 		if (flags & S_IFREG) {
 			errno = -EISDIR;
-			return errno;
+			goto out;
 		}
 		if ((flags & S_UB_IS_EMPTY) && !dir_is_empty(path)) {
 			errno = -ENOTEMPTY;
-			return errno;
+			goto out;
 		}
 	}
 	if ((flags & S_IFDIR) && S_ISREG(m)) {
 		errno = -ENOTDIR;
-		return errno;
+		goto out;
 	}
-	return 0;
+out:
+	return errno;
+}
+
+const char *getcwd(void)
+{
+	return cwd;
+}
+
+int chdir(const char *pathname)
+{
+	char *p = normalise_path(pathname);
+	errno = 0;
+
+	if (path_check_prereq(p, S_IFDIR))
+		goto out;
+
+	strcpy(cwd, p);
+
+	free(p);
+out:
+	return errno;
 }
 
 int unlink(const char *pathname)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	char *p = strdup(pathname);
+	char *p = normalise_path(pathname);
 	char *freep = p;
 
 	if (path_check_prereq(pathname, S_IFREG))
-		return errno;
+		goto out;
 
 	dev = get_device_by_path(&p);
 	if (!dev)
@@ -234,29 +305,26 @@ int open(const char *pathname, int flags)
 	FILE *f;
 	int exist;
 	struct stat s;
-	char *path;
-	char *freep;
+	char *path = normalise_path(pathname);
+	char *freep = path;
 
-	exist = (stat(pathname, &s) == 0) ? 1 : 0;
+	exist = (stat(path, &s) == 0) ? 1 : 0;
 
 	if (exist && (s.st_mode & S_IFDIR)) {
 		errno = -EISDIR;
-		return errno;
+		goto out1;
 	}
 
 	if (!exist && !(flags & O_CREAT)) {
 		errno = -ENOENT;
-		return errno;
+		goto out1;
 	}
 
 	f = get_file();
 	if (!f) {
 		errno = -EMFILE;
-		return errno;
+		goto out1;
 	}
-
-	path = strdup(pathname);
-	freep = path;
 
 	dev = get_device_by_path(&path);
 	if (!dev)
@@ -273,7 +341,7 @@ int open(const char *pathname, int flags)
 	}
 
 	if (!exist) {
-		errno = fsdrv->create(dev, pathname, S_IFREG);
+		errno = fsdrv->create(dev, path, S_IFREG);
 		if (errno)
 			goto out;
 	}
@@ -297,6 +365,7 @@ int open(const char *pathname, int flags)
 
 out:
 	put_file(f);
+out1:
 	free(freep);
 	return errno;
 }
@@ -481,9 +550,7 @@ int umount(const char *pathname)
 {
 	struct mtab_entry *entry = mtab;
 	struct mtab_entry *last = mtab;
-	char *p = strdup(pathname);
-
-	normalise_path(p);
+	char *p = normalise_path(pathname);
 
 	while(entry && strcmp(p, entry->path)) {
 		last = entry;
@@ -505,7 +572,6 @@ int umount(const char *pathname)
 	unregister_device(entry->dev);
 	free(entry->dev->type_data);
 	free(entry);
-
 	return 0;
 }
 
@@ -514,7 +580,7 @@ struct dir *opendir(const char *pathname)
 	struct dir *dir = NULL;
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	char *p = strdup(pathname);
+	char *p = normalise_path(pathname);
 	char *freep = p;
 
 	if (path_check_prereq(pathname, S_IFDIR))
@@ -553,12 +619,10 @@ int stat(const char *filename, struct stat *s)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	struct mtab_entry *e;
-	char *buf = strdup(filename);
-	char *f = buf;
+	char *f = normalise_path(filename);
+	char *freep = f;
 
 	memset(s, 0, sizeof(struct stat));
-
-	normalise_path(f);
 
 	e = get_mtab_entry_by_path(f);
 	if (!e) {
@@ -579,7 +643,7 @@ int stat(const char *filename, struct stat *s)
 
 	errno = fsdrv->stat(dev, f, s);
 out:
-	free(buf);
+	free(freep);
 	return errno;
 }
 
@@ -587,11 +651,11 @@ int mkdir (const char *pathname)
 {
 	struct fs_driver_d *fsdrv;
 	struct device_d *dev;
-	char *p = strdup(pathname);
+	char *p = normalise_path(pathname);
 	char *freep = p;
 
 	if (path_check_prereq(pathname, S_UB_DOES_NOT_EXIST))
-		return errno;
+		goto out;
 
 	dev = get_device_by_path(&p);
 	if (!dev)
@@ -613,11 +677,11 @@ int rmdir (const char *pathname)
 {
 	struct fs_driver_d *fsdrv;
 	struct device_d *dev;
-	char *p = strdup(pathname);
+	char *p = normalise_path(pathname);
 	char *freep = p;
 
 	if (path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY))
-		return errno;
+		goto out;
 
 	dev = get_device_by_path(&p);
 	if (!dev)

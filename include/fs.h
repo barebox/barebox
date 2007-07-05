@@ -95,6 +95,9 @@ int rmdir (const char *pathname);
 int mount (const char *device, const char *fsname, const char *path);
 int umount(const char *pathname);
 
+const char *getcwd(void);
+int chdir(const char *pathname);
+
 struct dir *opendir(const char *pathname);
 struct dirent *readdir(struct dir *dir);
 int closedir(struct dir *dir);
@@ -111,6 +114,6 @@ struct mtab_entry {
 	struct device_d *parent_device;
 };
 
-void normalise_path(char *path);
+char *normalise_path(const char *path);
 
 #endif /* __FS_H */

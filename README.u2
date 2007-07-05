@@ -19,13 +19,17 @@ the makefile infrastructure (kbuild), plus a configuration system
 (kconfig). So building U-Boot is very similar to building the Linux
 kernel.
 
-For the examples below, we use the User Mode U-Boot implementatio, which
+For the examples below, we use the User Mode U-Boot implementation, which
 is a port of U-Boot to the Linux userspace. This makes it possible to
 test drive the code without having real hardware. So for this test
 scenario, ARCH=linux is the valid architecture selection.
 
-First, select your architecture in a persistent way by creating a soft
-link:
+Selection of the architecture and the cross compiler can be done in two
+ways. You can either specify it using the environment variables ARCH
+and CROSS_COMPILE, or you can create the soft links cross_arch and
+cross_compile pointing to your architecture and compiler. For ARCH=linux
+we do not need a cross compiler so it is sufficient to specify the
+architecture:
 
   # ln -s linux cross_arch
 
@@ -45,7 +49,7 @@ a filesystem space for scripts etc. You can create one locally with
 
   # dd if=/dev/zero of=env.bin bs=1024 count=128
   # FIXME - what to do to get a solid environemt
-  # dd if=/dev/zero of=cramfs.bin bs=1024 count=128
+  # mkcramfs somedir/ cramfs.bin
   # FIXME - create filesystem
 
 Once U-Boot is configured, we can start the compilation

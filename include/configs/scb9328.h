@@ -29,11 +29,6 @@
 #define CONFIG_ARCH_NUMBER MACH_TYPE_SCB9328
 #define CONFIG_BOOT_PARAMS 0x08000100
 
-/*
- * General options for u-boot. Modify to save memory foot print
- */
-#define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16) /* print buffer size   */
-
 #define CFG_CPUSPEED		0x141	     /* core clock - register value  */
 
 /*

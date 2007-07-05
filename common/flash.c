@@ -25,7 +25,6 @@
 
 #include <common.h>
 #include <command.h>
-#include <flash.h>
 #include <cfi_flash.h>
 
 extern flash_info_t  flash_info[]; /* info for FLASH chips */

@@ -65,7 +65,7 @@ U_BOOT_CMD(
 	"[loadAddress] [bootfilename]\n"
 );
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	return netboot_common(DHCP, cmdtp, argc, argv);
@@ -76,9 +76,9 @@ U_BOOT_CMD(
 	"dhcp\t- invoke DHCP client to obtain IP/boot params\n",
 	"\n"
 );
-#endif	/* CFG_CMD_DHCP */
+#endif	/* CONFIG_NET_DHCP */
 
-#if (CONFIG_COMMANDS & CFG_CMD_NFS)
+#ifdef CONFIG_NET_NFS
 int do_nfs (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	return netboot_common(NFS, cmdtp, argc, argv);
@@ -89,7 +89,7 @@ U_BOOT_CMD(
 	"nfs\t- boot image via network using NFS protocol\n",
 	"[loadAddress] [host ip addr:bootfilename]\n"
 );
-#endif	/* CFG_CMD_NFS */
+#endif	/* CONFIG_NET_NFS */
 
 static void netboot_update_env (void)
 {
@@ -153,7 +153,7 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char *s;
 	int   rcode = 0;
-	int   size, i;
+	int   size;
 
 	/* pre-set load_addr */
 	if ((s = getenv("loadaddr")) != NULL) {

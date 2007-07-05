@@ -3,26 +3,17 @@
 #include <command.h>
 #include <driver.h>
 #include <malloc.h>
-#include <partition.h>
 
-static int dev_add_partition(struct device_d *dev, struct partition *new_part)
-{
-        struct partition *part = dev->part;
+struct partition {
+        int num;
 
-        new_part->next = NULL;
+        unsigned long offset;
 
-        if (!part) {
-                dev->part = new_part;
-                return 0;
-        }
+        struct device_d *parent;
+        struct device_d device;
+};
 
-        while (part->next)
-                part = part->next;
-
-        part->next = new_part;
-        return 0;
-}
-
+#if 0
 static void dev_del_partitions(struct device_d *dev)
 {
         struct partition *part = dev->part;
@@ -37,6 +28,7 @@ static void dev_del_partitions(struct device_d *dev)
 
         dev->part = NULL;
 }
+#endif
 
 int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
 {
@@ -82,7 +74,7 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
         if (endp)
                 *endp = end;
 
-        sprintf(part->device.name, "%s.%d", part->parent->name, part->num);
+        strcpy(part->device.name, "partition");
         part->device.size = size;
 
 //        printf("part: name=%10s size=0x%08x %s\n", part->device.name, size, ro ? "ro":"");
@@ -95,9 +87,9 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         struct device_d *dev;
         char *endp;
         int num = 0;
-        unsigned long base;
+        unsigned long offset;
 
-        if (argc < 2) {
+        if (argc != 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
@@ -108,9 +100,9 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        dev_del_partitions(dev);
+//        dev_del_partitions(dev);
 
-        base = dev->map_base;
+        offset = 0;
 
         while (1) {
                 part = malloc(sizeof(struct partition));
@@ -119,24 +111,24 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                         return 1;
                 }
 
+                part->offset = offset;
                 part->parent = dev;
-                part->num = num++;
-                part->device.map_base = base;
-                part->device.map_flags = dev->map_flags;
+                part->num = num;
+                part->device.map_base = dev->map_base + offset;
 
                 if(mtd_part_do_parse_one(part, endp, &endp)) {
-                        dev_del_partitions(dev);
+//                        dev_del_partitions(dev);
                         free(part);
                         return 1;
                 }
 
-                base += part->device.size;
-                dev_add_partition(dev, part);
+                offset += part->device.size;
 
-                /* FIXME: Frameork should handle this */
-                part->device.driver = dev->driver;
+                part->device.platform_data = part;
 
+                sprintf(part->device.id, "%s.%d", dev->id, num);
                 register_device(&part->device);
+                num++;
 
                 if(!*endp)
                         break;
@@ -152,7 +144,14 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-        struct device_d *dev;
+        struct device_d *dev, *p;
+        int i = 0;
+        char buf[MAX_DRIVER_NAME];
+
+        if (argc != 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
 
         dev = device_from_spec_str(argv[1], NULL);
         if (!dev) {
@@ -160,7 +159,16 @@ int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        dev_del_partitions(dev);
+        /* This is lame. Devices should to able to have children */
+        while(1) {
+                sprintf(buf, "%s.%d", dev->id, i);
+                p = device_from_spec_str(buf, NULL);
+                if (p)
+                        unregister_device(p);
+                else
+                        break;
+                i++;
+        }
 
         return 0;
 }
@@ -173,7 +181,50 @@ U_BOOT_CMD(
 
 U_BOOT_CMD(
 	delpart,     2,     0,      do_delpart,
-	"addpart     - delete a partition table from a device\n",
+	"delpart     - delete a partition table from a device\n",
 	""
 );
+
+int part_probe (struct device_d *dev)
+{
+//        printf("%s: devname: %s devid: %s drvname: %s\n",__FUNCTION__, dev->name, dev->id, dev->driver->name);
+        return 0;
+}
+
+int part_erase(struct device_d *dev, size_t count, unsigned long offset)
+{
+        struct partition *part = dev->platform_data;
+
+        if (part->parent->driver->erase)
+                return part->parent->driver->erase(part->parent, count, offset + part->offset);
+
+        return -1;
+}
+
+ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+{
+        struct partition *part = dev->platform_data;
+
+        return read(part->parent, buf, count, offset + part->offset, flags);
+}
+
+ssize_t part_write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+{
+        struct partition *part = dev->platform_data;
+
+        return write(part->parent, buf, count, offset + part->offset, flags);
+}
+
+static struct driver_d part_driver = {
+        .name  = "partition",
+        .probe = part_probe,
+        .read  = part_read,
+        .write = part_write,
+        .erase = part_erase,
+};
+
+int partition_init(void)
+{
+        return register_driver(&part_driver);
+}
 

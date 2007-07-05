@@ -28,8 +28,6 @@
 #include <command.h>
 #include <clock.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_MISC)
-
 int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	uint64_t start;
@@ -65,5 +63,3 @@ U_BOOT_CMD(
 	"N\n"
 	"    - delay execution for N seconds (N is _decimal_ !!!)\n"
 );
-
-#endif	/* CFG_CMD_MISC */

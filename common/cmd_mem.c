@@ -30,6 +30,7 @@
 #include <common.h>
 #include <command.h>
 #include <driver.h>
+#include <malloc.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -37,46 +38,20 @@
 #define PRINTF(fmt,args...)
 #endif
 
+#define RW_BUF_SIZE	(ulong)4096
+static char *rw_buf;
+
 /* Memory Display
  *
  * Syntax:
  *	md{.b, .w, .l} {addr} {len}
  */
 #define DISP_LINE_LEN	16
-int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+
+void memory_display(char *addr, ulong offs, ulong nbytes, int size)
 {
-	ulong	addr, offs;
-	ulong	i, nbytes = 0x100, linebytes;
-        struct memarea_info mem;
+	ulong linebytes, i;
 	u_char	*cp;
-	int	size;
-	int rc = 0;
-
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-        if (spec_str_to_info(argv[1], &mem)) {
-                printf("-ENOPARSE\n");
-                return -1;
-        }
-
-        offs = mem.start;
-        if (mem.device->map_flags & MAP_READ)
-                addr = mem.device->map_base + offs;
-        else {
-                printf("cannot yet show unmapped devices\n");
-                return -1;
-        }
-
-        if (mem.flags & MEMAREA_SIZE_SPECIFIED)
-                nbytes = mem.size;
-        else
-                nbytes = min(0x100, mem.size);
-
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
 
         /* Print the lines.
 	 *
@@ -116,9 +91,53 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		putc ('\n');
 		nbytes -= linebytes;
 		if (ctrlc()) {
-			rc = 1;
-			break;
+			return;
 		}
+	} while (nbytes > 0);
+
+}
+
+int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	ulong	offs, now;
+	ulong	nbytes = 0x100;
+        struct memarea_info mem;
+	int	size, r;
+	int rc = 0;
+
+	if (argc < 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+        if (spec_str_to_info(argv[1], &mem)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
+
+        if (mem.flags & MEMAREA_SIZE_SPECIFIED)
+                nbytes = mem.size;
+        else
+                nbytes = min((ulong)0x100, mem.size);
+
+	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
+		return 1;
+
+	offs = mem.start;
+
+	do {
+		now = min(RW_BUF_SIZE, nbytes);
+		r = read(mem.device, rw_buf, now, offs, RW_SIZE(size));
+		if (r <= 0)
+			return r;
+
+		memory_display(rw_buf, offs, r, size);
+
+		if (r < now)
+			return 0;
+
+		nbytes -= now;
+		offs += now;
 	} while (nbytes > 0);
 
 	return (rc);
@@ -127,8 +146,9 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	addr, writeval, count;
+
         struct memarea_info mem;
-	int	size;
+	ulong	size;
 
 	if ((argc < 3) || (argc > 4)) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -146,95 +166,24 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         }
         addr = mem.start;
 
-        if (mem.device->map_flags & MAP_WRITE)
-                addr += mem.device->map_base;
-        else {
-                printf("cannot yet modify unmapped devices\n");
-                return -1;
-        }
-
 	/* Get the value to write.
 	*/
 	writeval = simple_strtoul(argv[2], NULL, 16);
 
 	/* Count ? */
-	if (argc == 4) {
+	if (argc == 4)
 		count = simple_strtoul(argv[3], NULL, 16);
+	else
+		count = size;
+
+	if (count == size) {
+		return write(mem.device, (uchar *)&writeval, count, mem.start, RW_SIZE(size));
 	} else {
-		count = 1;
-	}
-
-	while (count-- > 0) {
-		if (size == 4)
-			*((ulong  *)addr) = (ulong )writeval;
-		else if (size == 2)
-			*((ushort *)addr) = (ushort)writeval;
-		else
-			*((u_char *)addr) = (u_char)writeval;
-		addr += size;
-	}
-	return 0;
-}
-
-#ifdef CONFIG_MX_CYCLIC
-int do_mem_mdc ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int i;
-	ulong count;
-
-	if (argc < 4) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	count = simple_strtoul(argv[3], NULL, 10);
-
-	for (;;) {
-		do_mem_md (NULL, 0, 3, argv);
-
-		/* delay for <count> ms... */
-		for (i=0; i<count; i++)
-			udelay (1000);
-
-		/* check for ctrl-c to abort... */
-		if (ctrlc()) {
-			puts("Abort\n");
-			return 0;
-		}
+		printf("write multiple not yet implemented\n");
 	}
 
 	return 0;
 }
-
-int do_mem_mwc ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int i;
-	ulong count;
-
-	if (argc < 4) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	count = simple_strtoul(argv[3], NULL, 10);
-
-	for (;;) {
-		do_mem_mw (NULL, 0, 3, argv);
-
-		/* delay for <count> ms... */
-		for (i=0; i<count; i++)
-			udelay (1000);
-
-		/* check for ctrl-c to abort... */
-		if (ctrlc()) {
-			puts("Abort\n");
-			return 0;
-		}
-	}
-
-	return 0;
-}
-#endif /* CONFIG_MX_CYCLIC */
 
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -307,7 +256,8 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	addr, dest, count;
+	ulong count, offset, now;
+	int ret;
         struct memarea_info dst, src;
 
 	int	size;
@@ -332,116 +282,32 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return -1;
         }
 
-        if (!src.size && !dst.size) {
-                printf("no size given. We should copy the whole device\n");
-                return 1;
-        }
-
         if (!src.size || !dst.size)
                 count = dst.size | src.size;
         else
                 count = min(src.size, dst.size);
 
-        count /= size;
+	printf("copy from 0x%08x to 0x%08x count %d\n",src.start, dst.start, count);
 
-        if ((dst.device->map_flags & MAP_WRITE) &&
-            (src.device->map_flags & MAP_READ)) {
-                addr = src.device->map_base + src.start;
-                dest  = dst.device->map_base + dst.start;
-                printf("copy from 0x%08x to 0x%08x count %d\n",addr, dest, count);
+	offset = 0;
+	while (count > 0) {
+		now = min(RW_BUF_SIZE, count);
 
-	        while (count-- > 0) {
-		        if (size == 4)
-			        *((ulong  *)dest) = *((ulong  *)addr);
-		        else if (size == 2)
-			        *((ushort *)dest) = *((ushort *)addr);
-		        else
-			        *((u_char *)dest) = *((u_char *)addr);
-		        addr += size;
-		        dest += size;
-        	}
-                return 0;
-        } else {
-                printf("can not yet copy to unmapped devices\n");
-                return -1;
-        }
+		ret = read(src.device, rw_buf, now, src.start + offset, RW_SIZE(size));
+		if (ret <= 0)
+			return ret;
+
+		ret = write(dst.device, rw_buf, ret, dst.start + offset, RW_SIZE(size));
+		if (ret <= 0)
+			return ret;
+		if (ret < now)
+			return 0;
+		offset += now;
+		count -= now;
+	}
+
 	return 0;
 }
-
-#ifdef CONFIG_LOOPW
-int do_mem_loopw (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	ulong	addr, length, i, data;
-	int	size;
-	volatile uint	*longp;
-	volatile ushort *shortp;
-	volatile u_char	*cp;
-
-	if (argc < 4) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	/* Check for a size spefication.
-	 * Defaults to long if no or incorrect specification.
-	 */
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
-
-	/* Address is always specified.
-	*/
-	addr = simple_strtoul(argv[1], NULL, 16);
-
-	/* Length is the number of objects, not number of bytes.
-	*/
-	length = simple_strtoul(argv[2], NULL, 16);
-
-	/* data to write */
-	data = simple_strtoul(argv[3], NULL, 16);
-
-	/* We want to optimize the loops to run as fast as possible.
-	 * If we have only one object, just run infinite loops.
-	 */
-	if (length == 1) {
-		if (size == 4) {
-			longp = (uint *)addr;
-			for (;;)
-				*longp = data;
-					}
-		if (size == 2) {
-			shortp = (ushort *)addr;
-			for (;;)
-				*shortp = data;
-		}
-		cp = (u_char *)addr;
-		for (;;)
-			*cp = data;
-	}
-
-	if (size == 4) {
-		for (;;) {
-			longp = (uint *)addr;
-			i = length;
-			while (i-- > 0)
-				*longp++ = data;
-		}
-	}
-	if (size == 2) {
-		for (;;) {
-			shortp = (ushort *)addr;
-			i = length;
-			while (i-- > 0)
-				*shortp++ = data;
-		}
-	}
-	for (;;) {
-		cp = (u_char *)addr;
-		i = length;
-		while (i-- > 0)
-			*cp++ = data;
-	}
-}
-#endif /* CONFIG_LOOPW */
 
 /*
  * Perform a memory test. A more complete alternative test can be
@@ -839,32 +705,79 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 int mem_probe(struct device_d *dev)
 {
-        printf("mem_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
-
-        dev->map_flags = MAP_READ | MAP_WRITE;
-
         return 0;
+}
+
+static void memcpy_sz(void *_dst, void *_src, ulong count, ulong rwsize)
+{
+	ulong dst = (ulong)_dst;
+	ulong src = (ulong)_src;
+
+	if (!rwsize) {
+		memcpy(_dst, _src, count);
+		return;
+	}
+
+	count /= rwsize;
+
+	while (count-- > 0) {
+		switch (rwsize) {
+		case 1:
+			*((u_char *)dst) = *((u_char *)src);
+			break;
+		case 2:
+			*((ushort *)dst) = *((ushort *)src);
+			break;
+		case 4:
+			*((ulong  *)dst) = *((ulong  *)src);
+			break;
+		}
+		dst += rwsize;
+		src += rwsize;
+	}
+}
+
+ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
+{
+	memcpy_sz(buf, (void *)(dev->map_base + offset), count, rwflags & RW_SIZE_MASK);
+	return count;
+}
+
+ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
+{
+	memcpy_sz((void *)(dev->map_base + offset), buf, count, rwflags & RW_SIZE_MASK);
+	return count;
 }
 
 struct device_d mem_dev = {
         .name  = "mem",
+	.id    = "mem",
         .map_base = 0,
         .size   = ~0, /* FIXME: should be 0x100000000, ahem... */
-        .map_flags = MAP_READ | MAP_WRITE,
 };
 
 struct driver_d mem_drv = {
         .name  = "mem",
         .probe = mem_probe,
+	.read  = mem_read,
+	.write = mem_write,
 };
 
 struct driver_d ram_drv = {
         .name  = "ram",
         .probe = mem_probe,
+	.read  = mem_read,
+	.write = mem_write,
 };
 
 int mem_init(void)
 {
+	rw_buf = malloc(RW_BUF_SIZE);
+	if(!rw_buf) {
+		printf("Out of memory\n");
+		return -1;
+	}
+
         register_device(&mem_dev);
         register_driver(&mem_drv);
         register_driver(&ram_drv);
@@ -872,25 +785,25 @@ int mem_init(void)
 }
 
 U_BOOT_CMD(
-	md,     3,     1,      do_mem_md,
+	md,     3,     0,      do_mem_md,
 	"md      - memory display\n",
 	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
 );
 
 U_BOOT_CMD(
-	mw,    4,    1,     do_mem_mw,
+	mw,    4,    0,     do_mem_mw,
 	"mw      - memory write (fill)\n",
 	"[.b, .w, .l] address value [count]\n    - write memory\n"
 );
 
 U_BOOT_CMD(
-	cp,    4,    1,    do_mem_cp,
+	cp,    4,    0,    do_mem_cp,
 	"cp      - memory copy\n",
 	"[.b, .w, .l] source target count\n    - copy memory\n"
 );
 
 U_BOOT_CMD(
-	cmp,    4,     1,     do_mem_cmp,
+	cmp,    4,     0,     do_mem_cmp,
 	"cmp     - memory compare\n",
 	"[.b, .w, .l] addr1 addr2 count\n    - compare memory\n"
 );
@@ -898,7 +811,7 @@ U_BOOT_CMD(
 #ifndef CONFIG_CRC32_VERIFY
 
 U_BOOT_CMD(
-	crc32,    4,    1,     do_mem_crc,
+	crc32,    4,    0,     do_mem_crc,
 	"crc32   - checksum calculation\n",
 	"address count [addr]\n    - compute CRC32 checksum [save at addr]\n"
 );
@@ -906,7 +819,7 @@ U_BOOT_CMD(
 #else	/* CONFIG_CRC32_VERIFY */
 
 U_BOOT_CMD(
-	crc32,    5,    1,     do_mem_crc,
+	crc32,    5,    0,     do_mem_crc,
 	"crc32   - checksum calculation\n",
 	"address count [addr]\n    - compute CRC32 checksum [save at addr]\n"
 	"-v address count crc\n    - verify crc of memory area\n"
@@ -916,7 +829,7 @@ U_BOOT_CMD(
 
 #ifdef CONFIG_LOOPW
 U_BOOT_CMD(
-	loopw,    4,    1,    do_mem_loopw,
+	loopw,    4,    0,    do_mem_loopw,
 	"loopw   - infinite write loop on address range\n",
 	"[.b, .w, .l] address number_of_objects data_to_write\n"
 	"    - loop on a set of addresses\n"
@@ -924,7 +837,7 @@ U_BOOT_CMD(
 #endif /* CONFIG_LOOPW */
 
 U_BOOT_CMD(
-	mtest,    4,    1,     do_mem_mtest,
+	mtest,    4,    0,     do_mem_mtest,
 	"mtest   - simple RAM test\n",
 	"[start [end [pattern]]]\n"
 	"    - simple RAM read/write test\n"
@@ -932,13 +845,13 @@ U_BOOT_CMD(
 
 #ifdef CONFIG_MX_CYCLIC
 U_BOOT_CMD(
-	mdc,     4,     1,      do_mem_mdc,
+	mdc,     4,     0,      do_mem_mdc,
 	"mdc     - memory display cyclic\n",
 	"[.b, .w, .l] address count delay(ms)\n    - memory display cyclic\n"
 );
 
 U_BOOT_CMD(
-	mwc,     4,     1,      do_mem_mwc,
+	mwc,     4,     0,      do_mem_mwc,
 	"mwc     - memory write cyclic\n",
 	"[.b, .w, .l] address value delay(ms)\n    - memory write cyclic\n"
 );

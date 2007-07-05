@@ -185,9 +185,6 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest, cfiword_t cword
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
 				    uint64_t tout, char *prompt);
 ulong flash_get_size (flash_info_t *info, ulong base);
-#if defined(CFG_ENV_IS_IN_FLASH) || defined(CFG_ENV_ADDR_REDUND) || (CFG_MONITOR_BASE >= CFG_FLASH_BASE)
-static flash_info_t *flash_get_info(ulong base);
-#endif
 #ifdef CFG_FLASH_USE_BUFFER_WRITE
 static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp, int len);
 #endif
@@ -328,9 +325,7 @@ int cfi_probe (struct device_d *dev)
         struct cfi_platform_data *pdev = (struct cfi_platform_data *)dev->platform_data;
         flash_info_t *info = &pdev->finfo;
 
-        dev->map_flags = MAP_READ;
-
-        printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+//        printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
 
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
@@ -396,43 +391,42 @@ int flash_erase_one (flash_info_t * info, long sect)
         return rcode;
 }
 
-int cfi_erase(struct device_d *dev, struct memarea_info *mem)
+int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
         struct cfi_platform_data *pdata = dev->platform_data;
         flash_info_t *finfo = &pdata->finfo;
         unsigned long start, end;
+        int i, ret = 0;
 
-        printf("start: 0x%08x\n",mem->start);
-        printf("end: 0x%08x\n",mem->end);
-        printf("base: 0x%08x\n",mem->device->map_base);
-        start = flash_find_sector(finfo, mem->start + mem->device->map_base);
-        end   = flash_find_sector(finfo, mem->end + mem->device->map_base);
+        start = flash_find_sector(finfo, dev->map_base + offset);
+        end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
 
-        printf("would erase sectors %d to %d\n",start, end);
-        return 0;
+        for (i = start; i <= end; i++) {
+                ret = flash_erase_one (finfo, i);
+                if (ret)
+                        goto out;
+        }
+out:
+        putc('\n');
+        return ret;
 }
 
-static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned long offset) {
-        printf("cfi_write: buf=0x%08x count=0x%08x offset=0x%08x\n",buf, count, offset);
-        return count;
-}
-
-static struct driver_d cfi_driver = {
-        .name  = "nor",
-        .probe = cfi_probe,
-        .write = cfi_write,
-        .erase = cfi_erase,
-};
-
-int flash_init(void)
+static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned long offset, ulong flags)
 {
-        return register_driver(&cfi_driver);
+        struct cfi_platform_data *pdata = dev->platform_data;
+        flash_info_t *finfo = &pdata->finfo;
+        int ret;
+
+//        printf("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
+
+        ret = write_buff (finfo, buf, dev->map_base + offset, count);
+        return ret == 0 ? count : -1;
 }
 
-/*-----------------------------------------------------------------------
- */
-void flash_print_info (flash_info_t * info)
+void cfi_info (struct device_d* dev)
 {
+        struct cfi_platform_data *pdata = dev->platform_data;
+        flash_info_t *info = &pdata->finfo;
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
@@ -516,6 +510,20 @@ void flash_print_info (flash_info_t * info)
 	}
 	putc ('\n');
 	return;
+}
+
+static struct driver_d cfi_driver = {
+        .name  = "cfi_flash",
+        .probe = cfi_probe,
+        .read  = mem_read,
+        .write = cfi_write,
+        .erase = cfi_erase,
+        .info  = cfi_info,
+};
+
+int flash_init(void)
+{
+        return register_driver(&cfi_driver);
 }
 
 /*-----------------------------------------------------------------------
@@ -718,6 +726,8 @@ static int flash_status_check (flash_info_t * info, flash_sect_t sector,
 			       uint64_t tout, char *prompt)
 {
 	uint64_t start;
+
+        tout *= 1000000;
 
 	/* Wait for command completion */
 	start = get_time_ns();

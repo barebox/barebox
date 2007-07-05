@@ -1,4 +1,10 @@
 
+config TEXT_BASE
+	string
+	default "0x08f00000" if MACH_MX1ADS
+	default "0x08f80000" if MACH_SCB9328
+	default "0x21e00000" if MACH_ECO920
+
 config ARM920T
 	bool
 
@@ -19,6 +25,14 @@ config MACH_MX1ADS
 	select ARCH_IMX
 	help
 	  Say Y here if you are using the Motorola MX1ADS board
+
+config MACH_SCB9328
+	bool "Syntertronixx scb9328"
+	select HAS_DM9000
+	select HAS_CFI
+	select ARCH_IMX
+	help
+	  Say Y here if you are using the Synertronixx scb9328 board
 
 config MACH_ECO920
 	bool "eco920"

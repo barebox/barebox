@@ -46,7 +46,7 @@
 #include <net.h>
 #include <cfi_flash.h>
 
-ulong load_addr = CFG_LOAD_ADDR;               /* Default Load Address */
+ulong load_addr = 0;               /* Default Load Address */
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -147,22 +147,6 @@ static int display_dram_config (void)
 	return (0);
 }
 
-#ifndef CFG_NO_FLASH
-extern flash_info_t flash_info[CFG_MAX_FLASH_BANKS];
-
-static void display_flash_config (ulong size)
-{
-	int i;
-
-	puts ("Flash Configuration:\n");
-	for(i=0; i<CFG_MAX_FLASH_BANKS; i++) {
-		printf ("Bank #%d: 0x%08lx ", i, flash_info[i].start[0]);
-		print_size (flash_info[i].size, "\n");
-	}
-}
-#endif /* CFG_NO_FLASH */
-
-
 /*
  * Breathe some life into the board...
  *
@@ -189,6 +173,7 @@ static void display_flash_config (ulong size)
 typedef int (init_fnc_t) (void);
 
 extern int mem_init(void);
+extern int partition_init(void);
 
 int print_cpuinfo (void); /* test-only */
 
@@ -203,6 +188,7 @@ init_fnc_t *init_sequence[] = {
 #ifdef CONFIG_DRIVER_CFI
         flash_init,
 #endif
+        partition_init,
 #ifdef CONFIG_CMD_MEMORY
         mem_init,
 #endif
@@ -221,15 +207,11 @@ init_fnc_t *init_sequence[] = {
 void start_armboot (void)
 {
 	init_fnc_t **init_fnc_ptr;
-	char *s;
-#ifndef CFG_NO_FLASH
-	ulong size;
-#endif
 #if defined(CONFIG_VFD) || defined(CONFIG_LCD)
 	unsigned long addr;
 #endif
 
-	/* Pointer is writable since we allocated a register for it */
+        /* Pointer is writable since we allocated a register for it */
 	gd = (gd_t*)(_armboot_start - CFG_MALLOC_LEN - sizeof(gd_t));
 	/* compiler optimization barrier needed for GCC >= 3.4 */
 	__asm__ __volatile__("": : :"memory");
@@ -240,45 +222,15 @@ void start_armboot (void)
 
 	monitor_flash_len = _bss_start - _armboot_start;
 
+        /* armboot_start is defined in the board-specific linker script */
+	mem_malloc_init (_armboot_start - CFG_MALLOC_LEN);
+
 	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
-		if ((*init_fnc_ptr)() != 0) {
+//                serial_putc(i++ + 'a');
+                if ((*init_fnc_ptr)() != 0) {
 			hang ();
 		}
 	}
-
-#ifndef CFG_NO_FLASH
-	/* configure available FLASH banks */
-//	display_flash_config (size);
-#endif /* CFG_NO_FLASH */
-
-#ifdef CONFIG_VFD
-#	ifndef PAGE_SIZE
-#	  define PAGE_SIZE 4096
-#	endif
-	/*
-	 * reserve memory for VFD display (always full pages)
-	 */
-	/* bss_end is defined in the board-specific linker script */
-	addr = (_bss_end + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
-	size = vfd_setmem (addr);
-	gd->fb_base = addr;
-#endif /* CONFIG_VFD */
-
-#ifdef CONFIG_LCD
-#	ifndef PAGE_SIZE
-#	  define PAGE_SIZE 4096
-#	endif
-	/*
-	 * reserve memory for LCD display (always full pages)
-	 */
-	/* bss_end is defined in the board-specific linker script */
-	addr = (_bss_end + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
-	size = lcd_setmem (addr);
-	gd->fb_base = addr;
-#endif /* CONFIG_LCD */
-
-	/* armboot_start is defined in the board-specific linker script */
-	mem_malloc_init (_armboot_start - CFG_MALLOC_LEN);
 
 #if (CONFIG_COMMANDS & CFG_CMD_NAND)
 	puts ("NAND:  ");
@@ -287,11 +239,6 @@ void start_armboot (void)
 
 	/* initialize environment */
 	env_relocate ();
-
-#ifdef CONFIG_VFD
-	/* must do this after the framebuffer is allocated */
-	drv_vfd_init();
-#endif /* CONFIG_VFD */
 
 	jumptable_init ();
 
@@ -306,13 +253,10 @@ void start_armboot (void)
 #ifdef BOARD_LATE_INIT
 	board_late_init ();
 #endif
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-#if defined(CONFIG_NET_MULTI)
-	puts ("Net:   ");
-#endif
+#ifdef CONFIG_NET
 	eth_initialize(gd->bd);
 #endif
-	/* main_loop() can return to retry autoboot, if so just run it again. */
+        /* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {
 		main_loop ();
 	}

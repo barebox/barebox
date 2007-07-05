@@ -134,11 +134,6 @@ uchar		NetCDPAddr[6] =		/* Ethernet bcast address		*/
 			{ 0x01, 0x00, 0x0c, 0xcc, 0xcc, 0xcc };
 #endif
 int		NetState;		/* Network loop state			*/
-#ifdef CONFIG_NET_MULTI
-int		NetRestartWrap = 0;	/* Tried all network devices		*/
-static int	NetRestarted = 0;	/* Network loop restarted		*/
-static int	NetDevExists = 0;	/* At least one device configured	*/
-#endif
 
 /* XXX in both little & big endian machines 0xFFFF == ntohs(-1) */
 ushort		NetOurVLAN = 0xFFFF;		/* default is without VLAN	*/
@@ -266,11 +261,6 @@ NetLoop(proto_t protocol)
 	ip = getenv_IPaddr ("ipaddr");
 	NetCopyIP(&NetOurIP, &ip);
 
-#ifdef CONFIG_NET_MULTI
-	NetRestarted = 0;
-	NetDevExists = 0;
-#endif
-
 	/* XXX problem with bss workaround */
 	NetArpWaitPacketMAC = NULL;
 	NetArpWaitTxPacket = NULL;
@@ -297,21 +287,11 @@ NetLoop(proto_t protocol)
 		NetArpWaitTxPacketSize = 0;
 	}
 
-	eth_halt();
-#ifdef CONFIG_NET_MULTI
-	eth_set_current();
-#endif
-	if (eth_init(bd) < 0) {
-		eth_halt();
-		return(-1);
-	}
+	if (eth_init(bd) < 0)
+		return -1;
 
 restart:
-#ifdef CONFIG_NET_MULTI
-	memcpy (NetOurEther, eth_get_dev()->enetaddr, 6);
-#else
 	memcpy (NetOurEther, &(eth_get_current()->enetaddr), 6);
-#endif
 
 	NetState = NETLOOP_CONTINUE;
 
@@ -383,18 +363,8 @@ restart:
 	case 1:
 		/* network not configured */
 		eth_halt();
-		return (-1);
-
-#ifdef CONFIG_NET_MULTI
-	case 2:
-		/* network device not configured */
-		break;
-#endif /* CONFIG_NET_MULTI */
-
+		return -1;
 	case 0:
-#ifdef CONFIG_NET_MULTI
-		NetDevExists = 1;
-#endif
 		switch (protocol) {
 #ifdef CONFIG_NET_TFTP
 		case TFTP:
@@ -527,9 +497,6 @@ restart:
 		switch (NetState) {
 
 		case NETLOOP_RESTART:
-#ifdef CONFIG_NET_MULTI
-			NetRestarted = 1;
-#endif
 			goto restart;
 
 		case NETLOOP_SUCCESS:
@@ -581,25 +548,8 @@ void NetStartAgain (void)
 		NetState = NETLOOP_FAIL;
 		return;
 	}
-#ifndef CONFIG_NET_MULTI
 	NetSetTimeout (10 * SECOND, startAgainTimeout);
 	NetSetHandler (startAgainHandler);
-#else	/* !CONFIG_NET_MULTI*/
-	eth_halt ();
-	eth_try_another (!NetRestarted);
-	eth_init (gd->bd);
-	if (NetRestartWrap) {
-		NetRestartWrap = 0;
-		if (NetDevExists && !once) {
-			NetSetTimeout (10 * SECOND, startAgainTimeout);
-			NetSetHandler (startAgainHandler);
-		} else {
-			NetState = NETLOOP_FAIL;
-		}
-	} else {
-		NetState = NETLOOP_RESTART;
-	}
-#endif	/* CONFIG_NET_MULTI */
 }
 
 /**********************************************************************/
@@ -1021,9 +971,6 @@ CDPHandler(const uchar * pkt, unsigned len)
 
 static void CDPStart(void)
 {
-#if defined(CONFIG_NET_MULTI)
-	printf ("Using %s device\n", eth_get_name());
-#endif
 	CDPSeq = 0;
 	CDPOK = 0;
 
@@ -1441,29 +1388,8 @@ static int net_check_prereq (proto_t protocol)
 	case BOOTP:
 	case CDP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
-#ifdef CONFIG_NET_MULTI
-			extern int eth_get_dev_index (void);
-			int num = eth_get_dev_index ();
-
-			switch (num) {
-			case -1:
-				puts ("*** ERROR: No ethernet found.\n");
-				return (1);
-			case 0:
-				puts ("*** ERROR: `ethaddr' not set\n");
-				break;
-			default:
-				printf ("*** ERROR: `eth%daddr' not set\n",
-					num);
-				break;
-			}
-
-			NetStartAgain ();
-			return (2);
-#else
 			puts ("*** ERROR: `ethaddr' not set\n");
 			return (1);
-#endif
 		}
 		/* Fall through */
 	default:

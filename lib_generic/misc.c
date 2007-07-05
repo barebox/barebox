@@ -29,58 +29,62 @@ int cmd_get_data_size(char* arg, int default_size)
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
+struct device_d *get_device_by_id(char *id)
+{
+	struct device_d *d;
+
+	d = first_device;
+
+	while(d) {
+		if(!strcmp(id, d->id))
+			break;
+		d = d->next;
+	}
+
+	return d;
+}
+
 int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
         struct device_d *dev = first_device;
         struct driver_d *drv = first_driver;
 
-        printf("devices:\n");
+        if (argc == 1) {
+                printf("devices:\n");
 
-        while(dev) {
-                printf("%10s: base=0x%08x size=0x%08x\n",dev->name, dev->map_base, dev->size);
-                dev = dev->next;
+                while(dev) {
+                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",dev->id, dev->map_base, dev->size, dev->name);
+                        dev = dev->next;
+                }
+
+                printf("drivers:\n");
+                while(drv) {
+                        printf("%10s\n",drv->name);
+                        drv = drv->next;
+                }
+        } else {
+                struct device_d *dev = get_device_by_id(argv[1]);
+
+                if (!dev) {
+                        printf("no such device: %s\n",argv[1]);
+                        return -1;
+                }
+                dev->driver->info(dev);
         }
 
-        printf("drivers:\n");
-        while(drv) {
-                printf("%10s\n",drv->name);
-                drv = drv->next;
-        }
         return 0;
 }
 
 U_BOOT_CMD(
-	devinfo,     1,     0,      do_devinfo,
+	devinfo,     2,     0,      do_devinfo,
 	"devinfo     - display info about devices and drivers\n",
 	""
 );
 
-static struct device_d *match_driver(struct driver_d *d, struct device_d *first_dev)
+static int match(struct driver_d *drv, struct device_d *dev)
 {
-        struct device_d *device;
-
-        if (first_dev)
-                device = first_dev->next;
-        else
-                device = first_device;
-
-        while (device) {
-                if (!strcmp(device->name, d->name))
-                        return device;
-                device = device->next;
-        }
-        return 0;
-}
-
-static struct driver_d *match_device(struct device_d *d)
-{
-        struct driver_d *driver = first_driver;
-
-        while (driver) {
-                if (!strcmp(driver->name, d->name))
-                        return driver;
-                driver = driver->next;
-        }
+        if (strcmp(dev->name, drv->name))
+                return -1;
         return 0;
 }
 
@@ -91,7 +95,7 @@ int register_device(struct device_d *new_device)
 
 	dev = first_device;
 
-        printf("register_device: %s\n",new_device->name);
+//        printf("register_device: %s\n",new_device->name);
 
 	if(!dev) {
 		first_device = new_device;
@@ -103,12 +107,14 @@ int register_device(struct device_d *new_device)
 	dev->next = new_device;
 	new_device->next = 0;
 
-        drv = match_device(new_device);
-        if (drv) {
-                if (!drv->probe(new_device)) {
-                        printf("setting driver to 0x%08x\n",drv);
+        drv = first_driver;
+
+        while(drv) {
+                if (!match(drv, new_device) && !drv->probe(new_device)) {
                         new_device->driver = drv;
+                        break;
                 }
+                drv = drv->next;
         }
 
 	return 0;
@@ -117,7 +123,7 @@ int register_device(struct device_d *new_device)
 void unregister_device(struct device_d *old_dev)
 {
         struct device_d *dev;
-        printf("unregister_device: %s\n",old_dev->name);
+//        printf("unregister_device: %s\n",old_dev->name);
 
 	dev = first_device;
 
@@ -145,19 +151,13 @@ struct driver_d *get_driver_by_name(char *name)
 	return d;
 }
 
-struct device_d *get_device_by_name(char *name)
+static void noinfo(struct device_d *dev)
 {
-	struct device_d *d;
+        printf("no info available for %s\n", dev->id);
+}
 
-	d = first_device;
-
-	while(d) {
-		if(!strcmp(name, d->name))
-			break;
-		d = d->next;
-	}
-
-	return d;
+static void noshortinfo(struct device_d *dev)
+{
 }
 
 int register_driver(struct driver_d *new_driver)
@@ -167,7 +167,7 @@ int register_driver(struct driver_d *new_driver)
 
 	drv = first_driver;
 
-        printf("register_driver: %s\n",new_driver->name);
+//        printf("register_driver: %s\n",new_driver->name);
 
 	if(!drv) {
 		first_driver = new_driver;
@@ -179,9 +179,16 @@ int register_driver(struct driver_d *new_driver)
 	drv->next = new_driver;
 	new_driver->next = 0;
 
-        while((dev = match_driver(new_driver, dev))) {
-                if(!new_driver->probe(dev))
+        if (!new_driver->info)
+                new_driver->info = noinfo;
+        if (!new_driver->shortinfo)
+                new_driver->shortinfo = noshortinfo;
+
+        dev = first_device;
+        while (dev) {
+                if (!match(new_driver, dev) && !new_driver->probe(dev))
                         dev->driver = new_driver;
+                dev = dev->next;
         }
 
 	return 0;
@@ -189,7 +196,7 @@ int register_driver(struct driver_d *new_driver)
 
 static char devicename_from_spec_str_buf[MAX_DRIVER_NAME];
 
-char *devicename_from_spec_str(const char *str, char **endp)
+char *deviceid_from_spec_str(const char *str, char **endp)
 {
         char *buf = devicename_from_spec_str_buf;
         const char *end;
@@ -230,8 +237,8 @@ char *devicename_from_spec_str(const char *str, char **endp)
 struct device_d *device_from_spec_str(const char *str, char **endp)
 {
         char *name;
-        name = devicename_from_spec_str(str, endp);
-        return get_device_by_name(name);
+        name = deviceid_from_spec_str(str, endp);
+        return get_device_by_id(name);
 }
 
 unsigned long strtoul_suffix(const char *str, char **endp, int base)
@@ -260,7 +267,6 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base)
 
 /*
  * Parse a string representing a memory area and fill in a struct memarea_info.
- * FIXME: Check for end of devices
  */
 int spec_str_to_info(const char *str, struct memarea_info *info)
 {
@@ -270,7 +276,7 @@ int spec_str_to_info(const char *str, struct memarea_info *info)
 
         info->device = device_from_spec_str(str, &endp);
         if (!info->device) {
-                printf("unknown device: %s\n", devicename_from_spec_str(str, NULL));
+                printf("unknown device: %s\n", deviceid_from_spec_str(str, NULL));
                 return 1;
         }
 
@@ -341,11 +347,28 @@ out:
                 info->end = info->device->size - 1;
                 info->size = info->end - info->start + 1;
         }
-#if 1
+#if 0
 	printf("start: 0x%08x\n",info->start);
 	printf("size: 0x%08x\n",info->size);
 	printf("end: 0x%08x\n",info->end);
 #endif
 	return 0;
+}
+
+ssize_t read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+{
+        return dev->driver->read(dev, buf, count, offset, flags);
+}
+
+ssize_t write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+{
+        return dev->driver->write(dev, buf, count, offset, flags);
+}
+
+ssize_t erase(struct device_d *dev, size_t count, unsigned long offset)
+{
+        if (dev->driver->erase)
+                return dev->driver->erase(dev, count, offset);
+        return -1;
 }
 

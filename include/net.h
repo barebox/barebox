@@ -462,6 +462,7 @@ extern void	copy_filename (char *dst, char *src, int size);
 extern void eth_set_current(struct eth_device *eth);
 extern struct eth_device *eth_get_current(void);
 
+extern struct eth_device dm9000_eth;
 extern struct eth_device at91rm9200_eth;
 extern struct eth_device smc91111_eth;
 

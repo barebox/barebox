@@ -8,9 +8,10 @@ machine-$(CONFIG_ARCH_IMX)	   := imx
 machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
 board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
 board-$(CONFIG_MACH_ECO920)	   := eco920
+board-$(CONFIG_MACH_SCB9328)	   := scb9328
 cpu-$(CONFIG_ARM920T)              := arm920t
 
-TEXT_BASE = 0x21e00000
+TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE)
 CFLAGS := -fno-common -msoft-float -Os

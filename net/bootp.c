@@ -128,7 +128,7 @@ static int truncate_sz (const char *name, int maxlen, int curlen)
 	return (curlen);
 }
 
-#if !(CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifndef CONFIG_NET_DHCP
 
 static void BootpVendorFieldProcess (u8 * ext)
 {
@@ -285,6 +285,7 @@ static void BootpVendorProcess (u8 * ext, int size)
 /*
  *	Handle a BOOTP received packet.
  */
+
 static void
 BootpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
@@ -821,8 +822,6 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 		debug ("DHCP State: REQUESTING\n");
 
 		if ( DhcpMessageType((u8 *)bp->bp_vend) == DHCP_ACK ) {
-			char *s;
-
 			if (NetReadLong((ulong*)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
 				DhcpOptionsProcess((u8 *)&bp->bp_vend[4], bp);
 			BootpCopyNetParams(bp); /* Store net params from reply */

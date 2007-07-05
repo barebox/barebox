@@ -557,7 +557,6 @@ U_BOOT_CMD(
 );
 #endif	/* CFG_CMD_ASKENV */
 
-#if (CONFIG_COMMANDS & CFG_CMD_RUN)
 int do_run (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 U_BOOT_CMD(
 	run,	CFG_MAXARGS,	1,	do_run,
@@ -565,4 +564,3 @@ U_BOOT_CMD(
 	"var [...]\n"
 	"    - run the commands in the environment variable(s) 'var'\n"
 );
-#endif  /* CFG_CMD_RUN */

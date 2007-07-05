@@ -154,6 +154,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
+	char buf[32];
 	int	i, verify;
 	char	*name, *s;
 	image_header_t *hdr = &header;
@@ -368,7 +369,6 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		if (iflag)
 			enable_interrupts();
 
-		char buf[32];
 		sprintf(buf, "%lX", len);
 		setenv("filesize", buf);
 		return 0;
@@ -1110,8 +1110,6 @@ do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
 }
 #endif
 
-
-#if (CONFIG_COMMANDS & CFG_CMD_BOOTD)
 int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int rcode = 0;
@@ -1136,8 +1134,6 @@ U_BOOT_CMD(
  	"bootd   - boot default, i.e., run 'bootcmd'\n",
 	NULL
 );
-
-#endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMI)
 int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

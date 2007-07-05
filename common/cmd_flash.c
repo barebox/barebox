@@ -26,12 +26,7 @@
  */
 #include <common.h>
 #include <command.h>
-
-int do_flinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	printf("%s is broken\n",__FUNCTION__);
-	return 0;
-}
+#include <cfi_flash.h>
 
 int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -56,7 +51,8 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        mem.device->driver->erase(mem.device, &mem);
+        erase(mem.device, mem.size, mem.start);
+
 	return 0;
 }
 
@@ -92,13 +88,6 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 /**************************************************/
-
-U_BOOT_CMD(
-	flinfo,    2,    1,    do_flinfo,
-	"flinfo  - print FLASH memory information\n",
-	"\n    - print information for all FLASH memory banks\n"
-	"flinfo N\n    - print information for FLASH memory bank # N\n"
-);
 
 U_BOOT_CMD(
 	erase,   2,   0,  do_flerase,

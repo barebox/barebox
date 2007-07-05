@@ -142,7 +142,7 @@ config CMD_SLEEP
 
 config CMD_ENVIRONMENT
 	bool
-	prompt "envsave / envload"
+	prompt "saveenv / loadenv"
 
 config CMD_ENV
 	bool

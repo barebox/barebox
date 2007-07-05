@@ -28,6 +28,7 @@
 #include <command.h>
 #include <clock.h>
 
+#ifdef CONFIG_CMD_SLEEP
 int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	uint64_t start;
@@ -46,6 +47,30 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
+U_BOOT_CMD(
+	sleep ,    2,    2,     do_sleep,
+	"sleep   - delay execution for some time\n",
+	"N\n"
+	"    - delay execution for N seconds (N is _decimal_ !!!)\n"
+);
+#endif
+
+#ifdef CONFIG_CMD_MALLOCINFO
+int do_mallocinfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	malloc_stats();
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	mallocinfo ,    1,    2,     do_mallocinfo,
+	"mallocinfo - print info about malloc usage\n",
+	"N\n"
+	"    - print info about malloc usage\n"
+);
+#endif
+
 /* Implemented in $(CPU)/interrupts.c */
 #if (CONFIG_COMMANDS & CFG_CMD_IRQ)
 int do_irqinfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
@@ -57,9 +82,3 @@ U_BOOT_CMD(
 );
 #endif  /* CONFIG_COMMANDS & CFG_CMD_IRQ */
 
-U_BOOT_CMD(
-	sleep ,    2,    2,     do_sleep,
-	"sleep   - delay execution for some time\n",
-	"N\n"
-	"    - delay execution for N seconds (N is _decimal_ !!!)\n"
-);

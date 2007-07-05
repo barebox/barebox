@@ -1,7 +1,8 @@
 
 #include <malloc.h>
 
-#include <common.h>
+#include <config.h>
+#include <stdio.h>
 
 /*
   Emulation of sbrk for WIN32
@@ -1932,6 +1933,46 @@ size_t malloc_usable_size(mem) Void_t* mem;
 
 /* Utility to update current_mallinfo for malloc_stats and mallinfo() */
 
+#ifdef CONFIG_CMD_MALLOCINFO
+static void malloc_update_mallinfo()
+{
+  int i;
+  mbinptr b;
+  mchunkptr p;
+#if DEBUG
+  mchunkptr q;
+#endif
+
+  INTERNAL_SIZE_T avail = chunksize(top);
+  int   navail = ((long)(avail) >= (long)MINSIZE)? 1 : 0;
+
+  for (i = 1; i < NAV; ++i)
+  {
+    b = bin_at(i);
+    for (p = last(b); p != b; p = p->bk)
+    {
+#if DEBUG
+      check_free_chunk(p);
+      for (q = next_chunk(p);
+	   q < top && inuse(q) && (long)(chunksize(q)) >= (long)MINSIZE;
+	   q = next_chunk(q))
+	check_inuse_chunk(q);
+#endif
+      avail += chunksize(p);
+      navail++;
+    }
+  }
+
+  current_mallinfo.ordblks = navail;
+  current_mallinfo.uordblks = sbrked_mem - avail;
+  current_mallinfo.fordblks = avail;
+#if HAVE_MMAP
+  current_mallinfo.hblks = n_mmaps;
+#endif
+  current_mallinfo.hblkhd = mmapped_mem;
+  current_mallinfo.keepcost = chunksize(top);
+
+}
 
 
 
@@ -1955,7 +1996,22 @@ size_t malloc_usable_size(mem) Void_t* mem;
   mallinfo returns a copy of updated current mallinfo.
 */
 
+void malloc_stats()
+{
+  malloc_update_mallinfo();
+  printf("max system bytes = %10u\n",
+	  (unsigned int)(max_total_mem));
+  printf("system bytes     = %10u\n",
+	  (unsigned int)(sbrked_mem + mmapped_mem));
+  printf("in use bytes     = %10u\n",
+	  (unsigned int)(current_mallinfo.uordblks + mmapped_mem));
+#if HAVE_MMAP
+  fprintf(stderr, "max mmap regions = %10u\n",
+	  (unsigned int)max_n_mmaps);
+#endif
+}
 
+#endif /* CONFIG_CMD_MALLOCINFO */
 
 
 

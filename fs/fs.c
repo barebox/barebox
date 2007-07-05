@@ -47,7 +47,7 @@ static int init_cwd(void)
 	return 0;
 }
 
-core_initcall(init_cwd);
+postcore_initcall(init_cwd);
 
 /*
  * - Remove all multiple slashes
@@ -445,6 +445,23 @@ off_t lseek(int fildes, off_t offset, int whence)
 	return 0;
 out:
 	errno = -EINVAL;
+	return errno;
+}
+
+int erase(int fd, size_t count, unsigned long offset)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (f->pos + count > f->size)
+		count = f->size - f->pos;
+	errno = fsdrv->erase(dev, f, count, offset);
+
 	return errno;
 }
 

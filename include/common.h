@@ -33,10 +33,6 @@
 #include <linux/string.h>
 #include <asm/ptrace.h>
 
-#ifdef CONFIG_ARM
-#define asmlinkage	/* nothing */
-#endif
-
 #include <part.h>
 
 #ifdef	DEBUG
@@ -106,15 +102,6 @@ int	autoscript (ulong addr);
 
 extern ulong load_addr;		/* Default Load Address */
 
-#ifdef CONFIG_ARM
-# include <asm/mach-types.h>
-# include <asm/setup.h>
-# include <asm/u-boot-arm.h>	/* ARM version to be fixed! */
-#endif /* CONFIG_ARM */
-#ifdef CONFIG_I386		/* x86 version to be fixed! */
-# include <asm/u-boot-i386.h>
-#endif /* CONFIG_I386 */
-
 #ifdef CONFIG_AUTO_COMPLETE
 int env_complete(char *var, int maxv, char *cmdv[], int maxsz, char *buf);
 #endif
@@ -127,10 +114,6 @@ void	jumptable_init(void);
 
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
-
-/* $(BOARD)/$(BOARD).c */
-void	reset_phy     (void);
-void	fdc_hw_init   (void);
 
 /* $(BOARD)/eeprom.c */
 void eeprom_init  (void);
@@ -159,19 +142,6 @@ extern void spi_init_f (void);
 extern void spi_init_r (void);
 extern ssize_t spi_read	 (uchar *, int, uchar *, int);
 extern ssize_t spi_write (uchar *, int, uchar *, int);
-#endif
-
-#ifdef CONFIG_RPXCLASSIC
-void rpxclassic_init (void);
-#endif
-
-void rpxlite_init (void);
-
-#ifdef CONFIG_MBX
-/* $(BOARD)/mbx8xx.c */
-void	mbx_init (void);
-void	board_serial_init (void);
-void	board_ether_init (void);
 #endif
 
 #if defined(CFG_DRAM_TEST)

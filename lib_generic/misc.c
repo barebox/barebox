@@ -333,7 +333,7 @@ ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long of
         return -ENOSYS;
 }
 
-ssize_t dev_write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
         if (dev->driver->write)
                 return dev->driver->write(dev, buf, count, offset, flags);

@@ -1,0 +1,179 @@
+#include <common.h>
+#include <command.h>
+
+typedef enum {
+	OPT_EQUAL,
+	OPT_NOT_EQUAL,
+	OPT_ARITH_EQUAL,
+	OPT_ARITH_NOT_EQUAL,
+	OPT_ARITH_GREATER_EQUAL,
+	OPT_ARITH_GREATER_THAN,
+	OPT_ARITH_LESS_EQUAL,
+	OPT_ARITH_LESS_THAN,
+	OPT_OR,
+	OPT_AND,
+	OPT_ZERO,
+	OPT_NONZERO,
+	OPT_MAX,
+} test_opts;
+
+static char *test_options[] = {
+	[OPT_EQUAL]			= "=",
+	[OPT_NOT_EQUAL]			= "!=",
+	[OPT_ARITH_EQUAL]		= "-eq",
+	[OPT_ARITH_NOT_EQUAL]		= "-ne",
+	[OPT_ARITH_GREATER_EQUAL]	= "-ge",
+	[OPT_ARITH_GREATER_THAN]	= "-gt",
+	[OPT_ARITH_LESS_EQUAL]		= "-le",
+	[OPT_ARITH_LESS_THAN]		= "-lt",
+	[OPT_OR]			= "-o",
+	[OPT_AND]			= "-a",
+	[OPT_ZERO]			= "-z",
+	[OPT_NONZERO]			= "-n",
+};
+
+static int parse_opt(const char *opt)
+{
+	char **opts = test_options;
+	int i;
+
+	for (i = 0; i < OPT_MAX; i++) {
+		if (!strcmp(opts[i], opt))
+			return i;
+	}
+	return -1;
+}
+
+int
+do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	char **ap;
+	int left, adv, expr, last_expr, neg, last_cmp, opt, zero;
+	ulong a, b;
+
+	if (*argv[0] == '[') {
+		if (*argv[argc - 1] != ']') {
+			printf("[: missing `]'\n");
+			return 1;
+		}
+		argc--;
+	}
+
+	/* args? */
+	if (argc < 2)
+		return 1;
+
+	last_expr = 0;
+	left = argc - 1;
+	ap = argv + 1;
+
+	if (strcmp(ap[0], "!") == 0) {
+		neg = 1;
+		ap++;
+		left--;
+	} else
+		neg = 0;
+
+	expr = -1;
+	last_cmp = -1;
+	last_expr = -1;
+	adv = 0;
+	while (left - adv > 0) {
+		ap += adv; left -= adv;
+
+		adv = 1;
+		opt = parse_opt(ap[0]);
+		switch (opt) {
+		/* one argument options */
+		case OPT_OR:
+			last_expr = expr;
+			last_cmp = 0;
+			continue;
+		case OPT_AND:
+			last_expr = expr;
+			last_cmp = 1;
+			continue;
+
+		/* two argument options */
+		case OPT_ZERO:
+		case OPT_NONZERO:
+			adv = 2;
+			zero = 1;
+			if (ap[1] && *ap[1] != ']' && strlen(ap[1]))
+				zero = 0;
+
+			expr = (opt == OPT_ZERO) ? zero : !zero;
+			break;
+
+		/* three argument options */
+		default:
+			adv = 3;
+			if (left < 3) {
+				expr = 1;
+				break;
+			}
+
+			a = simple_strtol(ap[0], NULL, 0);
+			b = simple_strtol(ap[2], NULL, 0);
+			switch (parse_opt(ap[1])) {
+			case OPT_EQUAL:
+				expr = strcmp(ap[0], ap[2]) == 0;
+				break;
+			case OPT_NOT_EQUAL:
+				expr = strcmp(ap[0], ap[2]) != 0;
+				break;
+			case OPT_ARITH_EQUAL:
+				printf("equal: %d %d\n", a, b);
+				expr = a == b;
+				break;
+			case OPT_ARITH_NOT_EQUAL:
+				expr = a != b;
+				break;
+			case OPT_ARITH_LESS_THAN:
+				expr = a < b;
+				break;
+			case OPT_ARITH_LESS_EQUAL:
+				expr = a <= b;
+				break;
+			case OPT_ARITH_GREATER_THAN:
+				expr = a > b;
+				break;
+			case OPT_ARITH_GREATER_EQUAL:
+				expr = a >= b;
+				break;
+			default:
+				expr = 1;
+				goto out;
+			}
+		}
+
+		if (last_cmp == 0)
+			expr = last_expr || expr;
+		else if (last_cmp == 1)
+			expr = last_expr && expr;
+		last_cmp = -1;
+	}
+out:
+	if (neg)
+		expr = !expr;
+
+	expr = !expr;
+
+
+	return expr;
+}
+
+char *test_aliases[] = { "[", NULL};
+
+static __maybe_unused char cmd_test_help[] =
+"Usage: test [OPTIONS]\n"
+"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n\n"
+"see 'man test' on your PC for more information.\n";
+
+U_BOOT_CMD_START(test)
+	.aliases	= test_aliases,
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_test,
+	.usage		= "minimal test like /bin/sh",
+	U_BOOT_CMD_HELP(cmd_test_help)
+U_BOOT_CMD_END

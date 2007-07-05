@@ -32,42 +32,52 @@ menu "file commands                 "
 
 config CMD_LS
 	bool
+	default y
 	prompt "ls"
 
 config CMD_RM
 	bool
+	default y
 	prompt "rm"
 
 config CMD_CAT
 	bool
+	default y
 	prompt "cat"
 
 config CMD_MKDIR
 	bool
+	default y
 	prompt "mkdir"
 
 config CMD_RMDIR
 	bool
+	default y
 	prompt "rmdir"
 
 config CMD_CP
 	bool
+	default y
 	prompt "cp"
 
 config CMD_PWD
 	bool
+	default y
 	prompt "pwd"
 
 config CMD_CD
 	bool
+	default y
 	prompt "cd"
 
 config CMD_MOUNT
 	bool
+	default y
 	prompt "mount"
 
 config CMD_UMOUNT
 	bool
+	default y
 	prompt "umount"
 
 endmenu
@@ -76,10 +86,12 @@ menu "console                       "
 
 config CMD_CLEAR
 	bool
+	default y
 	prompt "clear"
 
 config CMD_ECHO
 	bool
+	default y
 	prompt "echo"
 
 config CMD_SPLASH
@@ -125,6 +137,7 @@ config CMD_MEMINFO
 
 config CMD_MEMORY
 	bool
+	default y
 	prompt "md and mw"
 
 config CMD_CRC
@@ -177,6 +190,7 @@ menu "booting                       "
 
 config CMD_BOOTM
 	bool
+	default y
 	select CRC32
 	prompt "bootm"
 
@@ -205,6 +219,14 @@ endmenu
 config CMD_PARTITION
 	bool
 	prompt "addpart/delpart"
+
+config CMD_TEST
+	bool
+	depends on HUSH_PARSER
+	default y
+	prompt "test"
+	help
+	  shell like test function
 
 config CMD_REGINFO
 	depends on HAS_REGINFO

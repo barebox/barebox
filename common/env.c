@@ -157,7 +157,7 @@ U_BOOT_CMD_START(setenv)
 	"name value ...\n"
 	"    - set environment variable 'name' to 'value ...'\n"
 	"setenv name\n"
-	"    - delete environment variable 'name'\n"
+	"    - delete environment variable 'name'\n")
 U_BOOT_CMD_END
 
 #endif

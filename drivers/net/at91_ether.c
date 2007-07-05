@@ -48,10 +48,6 @@ typedef struct {
 #define RBF_FRAMEMAX 64
 #define RBF_FRAMELEN 0x600
 
-#ifdef CONFIG_DRIVER_ETHER
-
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
 /* alignment as per Errata #11 (64 bytes) is insufficient! */
 rbf_t rbfdt[RBF_FRAMEMAX] __attribute((aligned(512)));
 rbf_t *rbfp;
@@ -153,7 +149,6 @@ UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
 
 static int at91rm9200_eth_init (struct eth_device *ndev, bd_t * bd)
 {
-	int ret;
 	int i;
 
 	p_mac = AT91C_BASE_EMAC;
@@ -229,6 +224,7 @@ static int at91rm9200_eth_open (struct eth_device *ndev, bd_t * bd)
 		printf ("No link\n\r");
 		return 0;
 	}
+	return 0;
 }
 
 static int at91rm9200_eth_send (struct eth_device *ndev, volatile void *packet, int length)
@@ -303,10 +299,17 @@ static int at91rm9200_get_mac_address(struct eth_device *eth, unsigned char *adr
 
 static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr)
 {
+//	int i;
+
 	p_mac->EMAC_SA2L = (adr[3] << 24) | (adr[2] << 16)
 			 | (adr[1] <<  8) | (adr[0]);
 	p_mac->EMAC_SA2H = (adr[5] <<  8) | (adr[4]);
 
+#if 0
+	for (i = 0; i < 5; i++)
+		printf ("%02x:", adr[i]);
+	printf ("%02x\n", adr[5]);
+#endif
 	return -0;
 }
 
@@ -320,6 +323,3 @@ struct eth_device at91rm9200_eth = {
 	.set_mac_address = at91rm9200_set_mac_address,
 };
 
-#endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
-
-#endif	/* CONFIG_DRIVER_ETHER */

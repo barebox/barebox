@@ -336,10 +336,6 @@ _start_e500:
 	.text
 	.long	0x27051956		/* U-BOOT Magic Number			*/
 	.globl	version_string
-version_string:
-	.ascii U_BOOT_VERSION
-	.ascii " (", __DATE__, " - ", __TIME__, ")"
-	.ascii CONFIG_IDENT_STRING, "\0"
 
 	. = EXC_OFF_SYS_RESET
 	.globl	_start

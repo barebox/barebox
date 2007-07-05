@@ -102,19 +102,29 @@ static int cramfs_read_super (struct device_d *dev, struct cramfs_priv *priv)
 	return 0;
 }
 
-static unsigned long cramfs_resolve (unsigned long begin, unsigned long offset,
+static struct cramfs_inode *cramfs_get_inode(struct device_d *dev, unsigned long offset)
+{
+	struct cramfs_inode *inode = xmalloc(sizeof(struct cramfs_inode));
+
+	if (dev_read(dev, inode, sizeof(struct cramfs_inode), offset, 0) < 0) {
+		free(inode);
+		return NULL;
+	}
+
+	return inode;
+}
+
+static struct cramfs_inode *cramfs_resolve (struct device_d *dev, unsigned long offset,
 				     unsigned long size, int raw,
 				     char *filename)
 {
 	unsigned long inodeoffset = 0, nextoffset;
+	struct cramfs_inode *inode = NULL, *ret;
+	char *name = xmalloc(256);
 
 	while (inodeoffset < size) {
-		struct cramfs_inode *inode;
-		char *name;
 		int namelen;
-
-		inode = (struct cramfs_inode *) (begin + offset +
-						 inodeoffset);
+		inode = cramfs_get_inode(dev, offset + inodeoffset);
 
 		/*
 		 * Namelengths on disk are shifted by two
@@ -122,81 +132,72 @@ static unsigned long cramfs_resolve (unsigned long begin, unsigned long offset,
 		 * with zeroes.
 		 */
 		namelen = CRAMFS_GET_NAMELEN (inode) << 2;
-		name = (char *) inode + sizeof (struct cramfs_inode);
+		dev_read(dev, name, namelen, offset + inodeoffset + sizeof (struct cramfs_inode), 0);
 
 		nextoffset =
 			inodeoffset + sizeof (struct cramfs_inode) + namelen;
-
-		for (;;) {
-			if (!namelen)
-				return -1;
-			if (name[namelen - 1])
-				break;
-			namelen--;
-		}
 
 		if (!strncmp (filename, name, namelen)) {
 			char *p = strtok (NULL, "/");
 
 			if (raw && (p == NULL || *p == '\0'))
-				return offset + inodeoffset;
+				goto out1;
 
 			if (S_ISDIR (CRAMFS_16 (inode->mode))) {
-				return cramfs_resolve (begin,
-						       CRAMFS_GET_OFFSET
-						       (inode) << 2,
-						       CRAMFS_24 (inode->
-								  size), raw,
-						       p);
+				ret = cramfs_resolve (dev,
+					CRAMFS_GET_OFFSET(inode) << 2,
+					CRAMFS_24 (inode->size),
+					raw, p);
+				goto out;
 			} else if (S_ISREG (CRAMFS_16 (inode->mode))) {
-				return offset + inodeoffset;
+				goto out1;
 			} else {
 				printf ("%*.*s: unsupported file type (%x)\n",
 					namelen, namelen, name,
 					CRAMFS_16 (inode->mode));
-				return 0;
+				ret = NULL;
+				goto out;
 			}
 		}
 
+		free(inode);
 		inodeoffset = nextoffset;
 	}
 
-	printf ("can't find corresponding entry\n");
-	return 0;
+	free(name);
+	return NULL;
+
+out1:
+	ret = cramfs_get_inode(dev, offset + inodeoffset);
+out:
+	free(inode);
+	free(name);
+	return ret;
 }
 
 static int cramfs_fill_dirent (struct device_d *dev, unsigned long offset, struct dirent *d)
 {
-	struct cramfs_inode *inode = (struct cramfs_inode *)
-		(dev->map_base + offset);
-	char *name;
-	int namelen, nextoff;
+	struct cramfs_inode *inode = cramfs_get_inode(dev, offset);
+	int namelen;
+
+	if (!inode)
+		return -EINVAL;
+
+	memset(d->name, 0, 256);
 
 	/*
 	 * Namelengths on disk are shifted by two
 	 * and the name padded out to 4-byte boundaries
 	 * with zeroes.
 	 */
+
 	namelen = CRAMFS_GET_NAMELEN (inode) << 2;
-	name = (char *) inode + sizeof (struct cramfs_inode);
-	nextoff = namelen;
-
-	for (;;) {
-		if (!namelen)
-			return namelen;
-		if (name[namelen - 1])
-			break;
-		namelen--;
-	}
-
-	memset(d->name, 0, 256);
-	strncpy(d->name, name, namelen);
-
-	return nextoff;
+	dev_read(dev, d->name, namelen, offset + sizeof(struct cramfs_inode), 0);
+	free(inode);
+	return namelen;
 }
 
 struct cramfs_dir {
-	struct cramfs_inode *inode;
 	unsigned long offset, size;
 	unsigned long inodeoffset;
 	struct dir dir;
@@ -217,25 +218,28 @@ struct dir* cramfs_opendir(struct device_d *_dev, const char *filename)
 		dir->offset = CRAMFS_GET_OFFSET (&(priv->super.root)) << 2;
 		dir->size = CRAMFS_24 (priv->super.root.size);
 	} else {
+		struct cramfs_inode *inode;
+
 		f = strdup(filename);
 		/* Resolve the path */
-		dir->offset = cramfs_resolve (dev->map_base,
+		inode = cramfs_resolve (dev,
 					 CRAMFS_GET_OFFSET (&(priv->super.root)) <<
 					 2, CRAMFS_24 (priv->super.root.size), 1,
 					 strtok (f, "/"));
 		free(f);
-		if (dir->offset <= 0)
+		if (!inode)
 			goto err_free;
 
 		/* Resolving was successful. Examine the inode */
-		dir->inode = (struct cramfs_inode *) (dev->map_base + dir->offset);
-		if (!S_ISDIR (CRAMFS_16 (dir->inode->mode))) {
+		if (!S_ISDIR (CRAMFS_16 (inode->mode))) {
 			/* It's not a directory */
+			free(inode);
 			goto err_free;
 		}
 
-		dir->offset = CRAMFS_GET_OFFSET (dir->inode) << 2;
-		dir->size = CRAMFS_24 (dir->inode->size);
+		dir->offset = CRAMFS_GET_OFFSET (inode) << 2;
+		dir->size = CRAMFS_24 (inode->size);
+		free(inode);
 	}
 
 	return &dir->dir;
@@ -254,9 +258,6 @@ static struct dirent* cramfs_readdir(struct device_d *_dev, struct dir *_dir)
 
 	/* List the given directory */
 	if (dir->inodeoffset < dir->size) {
-		dir->inode = (struct cramfs_inode *) (dev->map_base + dir->offset +
-						 dir->inodeoffset);
-
 		nextoffset = cramfs_fill_dirent (dev, dir->offset + dir->inodeoffset, &_dir->d);
 
 		dir->inodeoffset += sizeof (struct cramfs_inode) + nextoffset;
@@ -279,28 +280,27 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 	struct fs_device_d *fsdev = _dev->type_data;
 	struct device_d *dev = fsdev->parent;
 	char *f;
-	unsigned long offset;
 
 	f = strdup(filename);
-	offset = cramfs_resolve (dev->map_base,
+	inode = cramfs_resolve (dev,
 				 CRAMFS_GET_OFFSET (&(priv->super.root)) << 2,
 				 CRAMFS_24 (priv->super.root.size), 0,
 				 strtok (f, "/"));
 
 	free(f);
 
-	if (offset <= 0)
+	if (!inode)
 		return -ENOENT;
 
-	inode = (void*)dev->map_base + offset;
 	file->inode = inode;
 	file->size = inode->size;
 
 	return 0;
 }
 
-static int cramfs_close(struct device_d *dev, FILE *f)
+static int cramfs_close(struct device_d *dev, FILE *file)
 {
+	free(file->inode);
 	return 0;
 }
 
@@ -361,22 +361,22 @@ static int cramfs_stat(struct device_d *_dev, const char *filename, struct stat 
 	struct device_d *dev = fsdev->parent;
 	struct cramfs_inode *inode;
 	char *f;
-	unsigned long offset;
 
 	f = strdup(filename);
-	offset = cramfs_resolve (dev->map_base,
+
+	inode = cramfs_resolve (dev,
 			 CRAMFS_GET_OFFSET (&(priv->super.root)) << 2,
 			 CRAMFS_24 (priv->super.root.size), 1,
 			 strtok (f, "/"));
 	free(f);
 
-	if (offset <= 0)
+	if (!inode)
 		return -ENOENT;
-
-	inode = (struct cramfs_inode *)	(dev->map_base + offset);
 
 	stat->st_mode = CRAMFS_16 (inode->mode);
 	stat->st_size = CRAMFS_24 (inode->size);
+
+	free(inode);
 
 	return 0;
 }
@@ -415,7 +415,7 @@ int cramfs_probe(struct device_d *dev)
 
 	fsdev = dev->type_data;
 
-	priv = malloc(sizeof(struct cramfs_priv));
+	priv = xmalloc(sizeof(struct cramfs_priv));
 	dev->priv = priv;
 
 	if (cramfs_read_super (fsdev->parent, priv)) {
@@ -434,7 +434,7 @@ int cramfs_remove(struct device_d *dev)
 {
 	struct cramfs_priv *priv = dev->priv;
 
-	cramfs_uncompress_exit ();
+	cramfs_uncompress_exit();
 	free(priv);
 
 	return 0;

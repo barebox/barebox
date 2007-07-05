@@ -1,4 +1,4 @@
-menu "serial drivers"
+menu "serial drivers                "
 
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX

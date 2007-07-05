@@ -58,10 +58,6 @@
  *
  */
 
-#ifndef CFG_FLASH_BANKS_LIST
-#define CFG_FLASH_BANKS_LIST { CFG_FLASH_BASE }
-#endif
-
 #define FLASH_CMD_CFI			0x98
 #define FLASH_CMD_READ_ID		0x90
 #define FLASH_CMD_RESET			0xff
@@ -186,7 +182,7 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest, cfiword_t cword
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
 				    uint64_t tout, char *prompt);
 ulong flash_get_size (flash_info_t *info, ulong base);
-#ifdef CFG_FLASH_USE_BUFFER_WRITE
+#ifdef CONFIG_CFI_BUFFER_WRITE
 static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp, int len);
 #endif
 
@@ -418,7 +414,7 @@ static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned
         flash_info_t *finfo = &pdata->finfo;
         int ret;
 
-//        printf("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
+        printf("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
 
         ret = write_buff (finfo, buf, dev->map_base + offset, count);
         return ret == 0 ? count : -1;
@@ -543,7 +539,7 @@ int write_buff (flash_info_t * info, uchar * src, ulong addr, ulong cnt)
 	cfiword_t cword;
 	int i, rc;
 
-#ifdef CFG_FLASH_USE_BUFFER_WRITE
+#ifdef CONFIG_CFI_BUFFER_WRITE
 	int buffered_size;
 #endif
 	/* get lower aligned address */
@@ -570,7 +566,7 @@ int write_buff (flash_info_t * info, uchar * src, ulong addr, ulong cnt)
 	}
 
 	/* handle the aligned part */
-#ifdef CFG_FLASH_USE_BUFFER_WRITE
+#ifdef CONFIG_CFI_BUFFER_WRITE
 	buffered_size = (info->portwidth / info->chipwidth);
 	buffered_size *= info->buffer_size;
 	while (cnt >= info->portwidth) {
@@ -608,7 +604,7 @@ int write_buff (flash_info_t * info, uchar * src, ulong addr, ulong cnt)
 		wp += info->portwidth;
 		cnt -= info->portwidth;
 	}
-#endif /* CFG_FLASH_USE_BUFFER_WRITE */
+#endif /* CONFIG_CFI_BUFFER_WRITE */
 	if (cnt == 0) {
 		return (0);
 	}
@@ -1354,7 +1350,7 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 					info->write_tout, "write");
 }
 
-#ifdef CFG_FLASH_USE_BUFFER_WRITE
+#ifdef CONFIG_CFI_BUFFER_WRITE
 
 static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 				  int len)
@@ -1465,5 +1461,5 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 		return ERR_INVAL;
 	}
 }
-#endif /* CFG_FLASH_USE_BUFFER_WRITE */
+#endif /* CONFIG_CFI_BUFFER_WRITE */
 

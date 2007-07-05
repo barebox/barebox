@@ -317,9 +317,11 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 
 	return -1;
 }
+
 int spec_str_to_info(const char *str, struct memarea_info *info)
 {
 	char *endp;
+	int ret;
 
 	info->device = device_from_spec_str(str, &endp);
 	if (!info->device) {
@@ -327,7 +329,14 @@ int spec_str_to_info(const char *str, struct memarea_info *info)
 		return -ENODEV;
 	}
 
-	return parse_area_spec(endp, &info->start, &info->size);
+	ret = parse_area_spec(endp, &info->start, &info->size);
+	if (ret)
+		return ret;
+
+	if (info->size == ~0)
+		info->size = info->device->size;
+
+	return 0;
 }
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)

@@ -11,9 +11,16 @@ config HAS_CFI
 
 config DRIVER_CFI
 	bool "cfi flash driver"
-	depends on HAS_CFI
+config DRIVER_CFI_NEW
+	bool "new cfi flash driver"
+config DRIVER_CFI_INTEL
+	depends on DRIVER_CFI_NEW
+	bool "Support Intel flash chips"
+config DRIVER_CFI_AMD
+	depends on DRIVER_CFI_NEW
+	bool "support AMD flash chips"
 config CFI_BUFFER_WRITE
 	bool "use cfi driver with buffer write"
-	depends on DRIVER_CFI
+	depends on DRIVER_CFI || DRIVER_CFI_NEW
 
 endmenu

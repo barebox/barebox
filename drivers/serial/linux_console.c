@@ -4,6 +4,7 @@
 #include <asm/arch/linux.h>
 #include <malloc.h>
 #include <console.h>
+#include <xfuncs.h>
 
 static void linux_console_putc(struct console_device *cdev, char c)
 {
@@ -37,7 +38,7 @@ static int linux_console_probe(struct device_d *dev)
 	struct console_device *cdev;
 	struct linux_console_data *data = dev->platform_data;
 
-	cdev = malloc(sizeof(struct console_device));
+	cdev = xzalloc(sizeof(struct console_device));
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = data->flags;

@@ -7,6 +7,7 @@
 #include <common.h>
 #include <command.h>
 #include <net.h>
+#include <clock.h>
 #include "tftp.h"
 #include "bootp.h"
 
@@ -369,7 +370,7 @@ TftpStart (void)
 	TftpTimeoutCount = 0;
 	TftpState = STATE_RRQ;
 	/* Use a pseudo-random port unless a specific port is set */
-	TftpOurPort = 1024 + (get_timer(0) % 3072);
+	TftpOurPort = 1024 + (get_time_ns() % 3072);
 #ifdef CONFIG_TFTP_PORT
 	if ((ep = getenv("tftpdstp")) != NULL) {
 		TftpServerPort = simple_strtol(ep, NULL, 10);

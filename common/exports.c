@@ -25,7 +25,7 @@ void jumptable_init (void)
 	gd->jt[XF_free] = (void *) free;
 	gd->jt[XF_getenv] = (void *) getenv;
 	gd->jt[XF_setenv] = (void *) setenv;
-	gd->jt[XF_get_timer] = (void *) get_timer;
+//	gd->jt[XF_get_timer] = (void *) get_timer;
 	gd->jt[XF_simple_strtoul] = (void *) simple_strtoul;
 	gd->jt[XF_udelay] = (void *) udelay;
 #if defined(CONFIG_I386) || defined(CONFIG_PPC)

@@ -517,7 +517,6 @@ void	external_interrupt (struct pt_regs *);
 void	irq_install_handler(int, interrupt_handler_t *, void *);
 void	irq_free_handler   (int);
 void	reset_timer	   (void);
-ulong	get_timer	   (ulong base);
 void	set_timer	   (ulong t);
 void	enable_interrupts  (void);
 int	disable_interrupts (void);
@@ -555,7 +554,7 @@ unsigned long long get_ticks(void);
 void	wait_ticks    (unsigned long);
 
 /* lib_$(ARCH)/time.c */
-void	udelay	      (unsigned long);
+int	udelay	      (unsigned long);
 ulong	usec2ticks    (unsigned long usec);
 ulong	ticks2usec    (unsigned long ticks);
 int	init_timebase (void);

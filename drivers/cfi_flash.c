@@ -788,18 +788,18 @@ static int flash_is_busy (flash_info_t * info, flash_sect_t sect)
  *  This routine does not set the flash to read-array mode.
  */
 static int flash_status_check (flash_info_t * info, flash_sect_t sector,
-			       ulong tout, char *prompt)
+			       uint64_t tout, char *prompt)
 {
-	ulong start;
+	uint64_t start;
 
 #if CFG_HZ != 1000
 	tout *= CFG_HZ/1000;
 #endif
 
 	/* Wait for command completion */
-	start = get_timer (0);
+	start = get_time_ns();
 	while (flash_is_busy (info, sector)) {
-		if (get_timer (start) > tout) {
+		if (is_timeout(start, tout)) {
 			printf ("Flash %s timeout at address %lx data %lx\n",
 				prompt, info->start[sector],
 				flash_read_long (info, sector, 0));
@@ -816,7 +816,7 @@ static int flash_status_check (flash_info_t * info, flash_sect_t sector,
  * This routine sets the flash to read-array mode.
  */
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
-				    ulong tout, char *prompt)
+				    uint64_t tout, char *prompt)
 {
 	int retcode;
 
@@ -1318,10 +1318,10 @@ ulong flash_get_size (ulong base, int banknum)
 		info->erase_blk_tout = (tmp * (1 << flash_read_uchar (info, FLASH_OFFSET_EMAX_TOUT)));
 		tmp = (1 << flash_read_uchar (info, FLASH_OFFSET_WBTOUT)) *
 			(1 << flash_read_uchar (info, FLASH_OFFSET_WBMAX_TOUT));
-		info->buffer_write_tout = tmp / 1000 + (tmp % 1000 ? 1 : 0); /* round up when converting to ms */
+		info->buffer_write_tout = tmp * 1000;
 		tmp = (1 << flash_read_uchar (info, FLASH_OFFSET_WTOUT)) *
 		      (1 << flash_read_uchar (info, FLASH_OFFSET_WMAX_TOUT));
-		info->write_tout = tmp / 1000 + (tmp % 1000 ? 1 : 0); /* round up when converting to ms */
+		info->write_tout = tmp * 1000;
 		info->flash_id = FLASH_MAN_CFI;
 		if ((info->interface == FLASH_CFI_X8X16) && (info->chipwidth == FLASH_CFI_BY8)) {
 			info->portwidth >>= 1;	/* XXX - Need to test on x8/x16 in parallel. */

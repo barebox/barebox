@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <clock.h>
 #include <net.h>
 #include "bootp.h"
 #include "tftp.h"
@@ -650,7 +651,8 @@ BootpRequest (void)
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
-	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
+	/* FIXME what is this? */
+//	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
 	NetWriteIP(&bp->bp_ciaddr, 0);
 	NetWriteIP(&bp->bp_yiaddr, 0);
 	NetWriteIP(&bp->bp_siaddr, 0);
@@ -673,7 +675,7 @@ BootpRequest (void)
 		| ((ulong)NetOurEther[3] << 16)
 		| ((ulong)NetOurEther[4] << 8)
 		| (ulong)NetOurEther[5];
-	BootpID += get_timer(0);
+	BootpID += (uint32_t)get_time_ns();
 	BootpID	 = htonl(BootpID);
 	NetCopyLong(&bp->bp_id, &BootpID);
 
@@ -828,7 +830,8 @@ static void DhcpSendRequestPkt(Bootp_t *bp_offer)
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
-	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
+	/* FIXME what is this? */
+//	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
 	NetCopyIP(&bp->bp_ciaddr, &bp_offer->bp_ciaddr); /* both in network byte order */
 	NetCopyIP(&bp->bp_yiaddr, &bp_offer->bp_yiaddr);
 	NetCopyIP(&bp->bp_siaddr, &bp_offer->bp_siaddr);

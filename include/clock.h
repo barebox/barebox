@@ -1,3 +1,5 @@
+#ifndef CLOCK_H
+#define CLOCK_H
 
 struct clocksource {
 	uint32_t	shift;
@@ -8,7 +10,7 @@ struct clocksource {
 
 };
 
-inline uint32_t cyc2ns(struct clocksource *cs, uint64_t cycles)
+static inline uint32_t cyc2ns(struct clocksource *cs, uint64_t cycles)
 {
         uint64_t ret = cycles;
         ret = (ret * cs->mult) >> cs->shift;
@@ -27,3 +29,8 @@ int is_timeout(uint64_t start_ns, uint64_t time_offset_ns);
 
 void mdelay(unsigned long msecs);
 
+#define SECOND ((uint64_t)(1000 * 1000 * 1000))
+#define MSECOND ((uint64_t)(1000 * 1000))
+#define USECOND ((uint64_t)(1000))
+
+#endif /* CLOCK_H */

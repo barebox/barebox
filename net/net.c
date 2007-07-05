@@ -75,6 +75,7 @@
 
 
 #include <common.h>
+#include <clock.h>
 #include <watchdog.h>
 #include <command.h>
 #include <net.h>
@@ -94,7 +95,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define ARP_TIMEOUT		5		/* Seconds before trying ARP again */
+#define ARP_TIMEOUT		(5 * SECOND)	/* Seconds before trying ARP again */
 #ifndef	CONFIG_NET_RETRY_COUNT
 # define ARP_TIMEOUT_COUNT	5		/* # of timeouts before giving up  */
 #else
@@ -235,15 +236,11 @@ void ArpRequest (void)
 
 void ArpTimeoutCheck(void)
 {
-	ulong t;
-
 	if (!NetArpWaitPacketIP)
 		return;
 
-	t = get_timer(0);
-
 	/* check for arp timeout */
-	if ((t - NetArpWaitTimerStart) > ARP_TIMEOUT * CFG_HZ) {
+	if (is_timeout(NetArpWaitTimerStart, ARP_TIMEOUT)) {
 		NetArpWaitTry++;
 
 		if (NetArpWaitTry >= ARP_TIMEOUT_COUNT) {
@@ -251,7 +248,7 @@ void ArpTimeoutCheck(void)
 			NetArpWaitTry = 0;
 			NetStartAgain();
 		} else {
-			NetArpWaitTimerStart = t;
+			NetArpWaitTimerStart = get_time_ns();
 			ArpRequest();
 		}
 	}
@@ -501,7 +498,7 @@ restart:
 		 *	Check for a timeout, and run the timeout handler
 		 *	if we have one.
 		 */
-		if (timeHandler && ((get_timer(0) - timeStart) > timeDelta)) {
+		if (timeHandler && ((get_time_ns() - timeStart) > timeDelta)) {
 			thand_f *x;
 
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
@@ -615,13 +612,13 @@ NetSetHandler(rxhand_f * f)
 
 
 void
-NetSetTimeout(ulong iv, thand_f * f)
+NetSetTimeout(uint64_t iv, thand_f * f)
 {
 	if (iv == 0) {
 		timeHandler = (thand_f *)0;
 	} else {
 		timeHandler = f;
-		timeStart = get_timer(0);
+		timeStart = get_time_ns();
 		timeDelta = iv;
 	}
 }
@@ -666,7 +663,7 @@ NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len)
 
 		/* and do the ARP request */
 		NetArpWaitTry = 1;
-		NetArpWaitTimerStart = get_timer(0);
+		NetArpWaitTimerStart = get_time_ns();
 		ArpRequest();
 		return 1;	/* waiting */
 	}
@@ -737,7 +734,7 @@ int PingSend(void)
 
 	/* and do the ARP request */
 	NetArpWaitTry = 1;
-	NetArpWaitTimerStart = get_timer(0);
+	NetArpWaitTimerStart = get_time_ns();
 	ArpRequest();
 	return 1;	/* waiting */
 }

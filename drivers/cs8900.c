@@ -40,6 +40,7 @@
 #include <command.h>
 #include "cs8900.h"
 #include <net.h>
+#include <clock.h>
 
 #ifdef CONFIG_DRIVER_CS8900
 
@@ -84,7 +85,7 @@ static void put_reg (int regno, unsigned short val)
 
 static void eth_reset (void)
 {
-	int tmo;
+	uint64_t start;
 	unsigned short us;
 
 	/* reset NIC */
@@ -94,9 +95,9 @@ static void eth_reset (void)
 	udelay (200000);
 	/* Wait until the chip is reset */
 
-	tmo = get_timer (0) + 1 * CFG_HZ;
+	start = get_time_ns();
 	while ((((us = get_reg_init_bus (PP_SelfSTAT)) & PP_SelfSTAT_InitD) == 0)
-		   && tmo < get_timer (0))
+		   && !is_timeout(start, SECOND))
 		/*NOP*/;
 }
 
@@ -236,7 +237,7 @@ extern int eth_rx (void)
 extern int eth_send (volatile void *packet, int length)
 {
 	volatile unsigned short *addr;
-	int tmo;
+	uint64_t start;
 	unsigned short s;
 
 retry:
@@ -250,8 +251,9 @@ retry:
 #ifdef DEBUG
 		printf ("cs: unable to send packet; retrying...\n");
 #endif
-		for (tmo = get_timer (0) + 5 * CFG_HZ; get_timer (0) < tmo;)
-			/*NOP*/;
+		/* FIXME */
+		udelay(5000);
+
 		eth_reset ();
 		eth_reginit ();
 		goto retry;
@@ -263,9 +265,9 @@ retry:
 		CS8900_RTDATA = *addr++;
 
 	/* wait for transfer to succeed */
-	tmo = get_timer (0) + 5 * CFG_HZ;
+	start = get_time_ns();
 	while ((s = get_reg (PP_TER) & ~0x1F) == 0) {
-		if (get_timer (0) >= tmo)
+		if (is_timeout(start, SECOND))
 			break;
 	}
 

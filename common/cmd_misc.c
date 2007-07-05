@@ -26,12 +26,13 @@
  */
 #include <common.h>
 #include <command.h>
+#include <clock.h>
 
 #if (CONFIG_COMMANDS & CFG_CMD_MISC)
 
 int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong start = get_timer(0);
+	uint64_t start;
 	ulong delay;
 
 	if (argc != 2) {
@@ -41,12 +42,8 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	delay = simple_strtoul(argv[1], NULL, 10) * CFG_HZ;
 
-	while (get_timer(start) < delay) {
-		if (ctrlc ()) {
-			return (-1);
-		}
-		udelay (100);
-	}
+	start = get_time_ns();
+	while (!is_timeout(start, delay * 1000000));
 
 	return 0;
 }

@@ -276,8 +276,6 @@ int flash_erase (flash_info_t *info, int s_first, int s_last) {
 
 /* arm simple, non interrupt dependent timer */
 
-		reset_timer_masked();
-
 		SF_NvmodeErase();
 		SF_NvmodeWrite();
 

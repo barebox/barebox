@@ -54,8 +54,4 @@ void	setup_revision_tag (struct tag **params);
 /* common/cmd_nvedit.c */
 void	setenv		(char *, char *);
 
-/* cpu/.../interrupt.c */
-void	reset_timer_masked	(void);
-ulong	get_timer_masked	(void);
-
 #endif	/* _U_BOOT_ARM_H_ */

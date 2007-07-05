@@ -169,7 +169,7 @@ struct usb_device {
  * this is how the lowlevel part communicate with the outer world
  */
 
-#if defined(CONFIG_USB_UHCI) || defined(CONFIG_USB_OHCI) || defined (CONFIG_USB_SL811HS)
+#ifdef CONFIG_USB_HOST
 int usb_lowlevel_init(void);
 int usb_lowlevel_stop(void);
 int submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,int transfer_len);
@@ -186,7 +186,7 @@ int submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 #error USB Lowlevel not defined
 #endif
 
-#ifdef CONFIG_USB_STORAGE
+#ifdef CONFIG_DRIVER_USB_MASS_STORAGE
 
 #define USB_MAX_STOR_DEV 5
 block_dev_desc_t *usb_stor_get_dev(int index);

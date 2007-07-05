@@ -20,7 +20,7 @@
 #ifndef __ASM_ARCH_HARDWARE_H
 #define __ASM_ARCH_HARDWARE_H
 
-#include <asm/sizes.h>
+#include <sizes.h>
 
 #ifndef __ASSEMBLY__
 #include "AT91RM9200.h"

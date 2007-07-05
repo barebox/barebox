@@ -491,17 +491,6 @@ do {                                                                          \
 ***/
 #undef	HAVE_MREMAP	/* Not available for U-Boot */
 
-#if HAVE_MMAP
-
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-
-#if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
-#define MAP_ANONYMOUS MAP_ANON
-#endif
-
-#endif /* HAVE_MMAP */
 
 /*
   Access to system page size. To the extent possible, this malloc
@@ -758,11 +747,7 @@ struct mallinfo {
 
 
 #ifndef DEFAULT_MMAP_MAX
-#if HAVE_MMAP
-#define DEFAULT_MMAP_MAX       (64)
-#else
 #define DEFAULT_MMAP_MAX       (0)
-#endif
 #endif
 
 /*

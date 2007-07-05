@@ -644,10 +644,6 @@ static struct mallinfo current_mallinfo = {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Tracking mmaps */
 
 static unsigned long mmapped_mem = 0;
-#if HAVE_MMAP
-static unsigned int max_n_mmaps = 0;
-static unsigned long max_mmapped_mem = 0;
-#endif
 
 
 
@@ -863,130 +859,6 @@ static void do_check_malloced_chunk(p, s) mchunkptr p; INTERNAL_SIZE_T s;
 
 /* Routines dealing with mmap(). */
 
-#if HAVE_MMAP
-
-#if __STD_C
-static mchunkptr mmap_chunk(size_t size)
-#else
-static mchunkptr mmap_chunk(size) size_t size;
-#endif
-{
-  size_t page_mask = malloc_getpagesize - 1;
-  mchunkptr p;
-
-#ifndef MAP_ANONYMOUS
-  static int fd = -1;
-#endif
-
-  if(n_mmaps >= n_mmaps_max) return 0; /* too many regions */
-
-  /* For mmapped chunks, the overhead is one SIZE_SZ unit larger, because
-   * there is no following chunk whose prev_size field could be used.
-   */
-  size = (size + SIZE_SZ + page_mask) & ~page_mask;
-
-#ifdef MAP_ANONYMOUS
-  p = (mchunkptr)mmap(0, size, PROT_READ|PROT_WRITE,
-		      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-#else /* !MAP_ANONYMOUS */
-  if (fd < 0)
-  {
-    fd = open("/dev/zero", O_RDWR);
-    if(fd < 0) return 0;
-  }
-  p = (mchunkptr)mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-#endif
-
-  if(p == (mchunkptr)-1) return 0;
-
-  n_mmaps++;
-  if (n_mmaps > max_n_mmaps) max_n_mmaps = n_mmaps;
-
-  /* We demand that eight bytes into a page must be 8-byte aligned. */
-  assert(aligned_OK(chunk2mem(p)));
-
-  /* The offset to the start of the mmapped region is stored
-   * in the prev_size field of the chunk; normally it is zero,
-   * but that can be changed in memalign().
-   */
-  p->prev_size = 0;
-  set_head(p, size|IS_MMAPPED);
-
-  mmapped_mem += size;
-  if ((unsigned long)mmapped_mem > (unsigned long)max_mmapped_mem)
-    max_mmapped_mem = mmapped_mem;
-  if ((unsigned long)(mmapped_mem + sbrked_mem) > (unsigned long)max_total_mem)
-    max_total_mem = mmapped_mem + sbrked_mem;
-  return p;
-}
-
-#if __STD_C
-static void munmap_chunk(mchunkptr p)
-#else
-static void munmap_chunk(p) mchunkptr p;
-#endif
-{
-  INTERNAL_SIZE_T size = chunksize(p);
-  int ret;
-
-  assert (chunk_is_mmapped(p));
-  assert(! ((char*)p >= sbrk_base && (char*)p < sbrk_base + sbrked_mem));
-  assert((n_mmaps > 0));
-  assert(((p->prev_size + size) & (malloc_getpagesize-1)) == 0);
-
-  n_mmaps--;
-  mmapped_mem -= (size + p->prev_size);
-
-  ret = munmap((char *)p - p->prev_size, size + p->prev_size);
-
-  /* munmap returns non-zero on failure */
-  assert(ret == 0);
-}
-
-#if HAVE_MREMAP
-
-#if __STD_C
-static mchunkptr mremap_chunk(mchunkptr p, size_t new_size)
-#else
-static mchunkptr mremap_chunk(p, new_size) mchunkptr p; size_t new_size;
-#endif
-{
-  size_t page_mask = malloc_getpagesize - 1;
-  INTERNAL_SIZE_T offset = p->prev_size;
-  INTERNAL_SIZE_T size = chunksize(p);
-  char *cp;
-
-  assert (chunk_is_mmapped(p));
-  assert(! ((char*)p >= sbrk_base && (char*)p < sbrk_base + sbrked_mem));
-  assert((n_mmaps > 0));
-  assert(((size + offset) & (malloc_getpagesize-1)) == 0);
-
-  /* Note the extra SIZE_SZ overhead as in mmap_chunk(). */
-  new_size = (new_size + offset + SIZE_SZ + page_mask) & ~page_mask;
-
-  cp = (char *)mremap((char *)p - offset, size + offset, new_size, 1);
-
-  if (cp == (char *)-1) return 0;
-
-  p = (mchunkptr)(cp + offset);
-
-  assert(aligned_OK(chunk2mem(p)));
-
-  assert((p->prev_size == offset));
-  set_head(p, (new_size - offset)|IS_MMAPPED);
-
-  mmapped_mem -= size + offset;
-  mmapped_mem += new_size;
-  if ((unsigned long)mmapped_mem > (unsigned long)max_mmapped_mem)
-    max_mmapped_mem = mmapped_mem;
-  if ((unsigned long)(mmapped_mem + sbrked_mem) > (unsigned long)max_total_mem)
-    max_total_mem = mmapped_mem + sbrked_mem;
-  return p;
-}
-
-#endif /* HAVE_MREMAP */
-
-#endif /* HAVE_MMAP */
 
 
 
@@ -1384,12 +1256,6 @@ Void_t* mALLOc(bytes) size_t bytes;
   if ( (remainder_size = chunksize(top) - nb) < (long)MINSIZE)
   {
 
-#if HAVE_MMAP
-    /* If big and would otherwise need to extend, try to use mmap instead */
-    if ((unsigned long)nb >= (unsigned long)mmap_threshold &&
-	(victim = mmap_chunk(nb)) != 0)
-      return chunk2mem(victim);
-#endif
 
     /* Try to extend */
     malloc_extend_top(nb);
@@ -1454,13 +1320,6 @@ void fREe(mem) Void_t* mem;
   p = mem2chunk(mem);
   hd = p->size;
 
-#if HAVE_MMAP
-  if (hd & IS_MMAPPED)                       /* release mmapped memory. */
-  {
-    munmap_chunk(p);
-    return;
-  }
-#endif
 
   check_inuse_chunk(p);
 
@@ -1605,23 +1464,6 @@ Void_t* rEALLOc(oldmem, bytes) Void_t* oldmem; size_t bytes;
 
   nb = request2size(bytes);
 
-#if HAVE_MMAP
-  if (chunk_is_mmapped(oldp))
-  {
-#if HAVE_MREMAP
-    newp = mremap_chunk(oldp, nb);
-    if(newp) return chunk2mem(newp);
-#endif
-    /* Note the extra SIZE_SZ overhead. */
-    if(oldsize - SIZE_SZ >= nb) return oldmem; /* do nothing */
-    /* Must alloc, copy, free. */
-    newmem = mALLOc(bytes);
-    if (newmem == 0) return 0; /* propagate failure */
-    MALLOC_COPY(newmem, oldmem, oldsize - 2*SIZE_SZ);
-    munmap_chunk(oldp);
-    return newmem;
-  }
-#endif
 
   check_inuse_chunk(oldp);
 
@@ -1819,10 +1661,6 @@ Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
 
   if ((((unsigned long)(m)) % alignment) == 0) /* aligned */
   {
-#if HAVE_MMAP
-    if(chunk_is_mmapped(p))
-      return chunk2mem(p); /* nothing more to do */
-#endif
   }
   else /* misaligned */
   {
@@ -1842,14 +1680,6 @@ Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
     leadsize = brk - (char*)(p);
     newsize = chunksize(p) - leadsize;
 
-#if HAVE_MMAP
-    if(chunk_is_mmapped(p))
-    {
-      newp->prev_size = p->prev_size + leadsize;
-      set_head(newp, newsize|IS_MMAPPED);
-      return chunk2mem(newp);
-    }
-#endif
 
     /* give back leader, use the rest */
 
@@ -1949,9 +1779,6 @@ Void_t* cALLOc(n, elem_size) size_t n; size_t elem_size;
     /* Two optional cases in which clearing not necessary */
 
 
-#if HAVE_MMAP
-    if (chunk_is_mmapped(p)) return mem;
-#endif
 
     csz = chunksize(p);
 
@@ -2162,11 +1989,7 @@ int mALLOPt(param_number, value) int param_number; int value;
     case M_MMAP_THRESHOLD:
       mmap_threshold = value; return 1;
     case M_MMAP_MAX:
-#if HAVE_MMAP
-      n_mmaps_max = value; return 1;
-#else
       if (value != 0) return 0; else  n_mmaps_max = value; return 1;
-#endif
 
     default:
       return 0;

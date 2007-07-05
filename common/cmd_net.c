@@ -34,65 +34,6 @@ extern int do_bootm (cmd_tbl_t *, int, int, char *[]);
 
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
-int do_bootp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return netboot_common (BOOTP, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD(
-	bootp,	3,	1,	do_bootp,
-	"bootp\t- boot image via network using BootP/TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
-
-int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return netboot_common (TFTP, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD(
-	tftpboot,	3,	1,	do_tftpb,
-	"tftpboot- boot image via network using TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
-
-int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return netboot_common (RARP, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD(
-	rarpboot,	3,	1,	do_rarpb,
-	"rarpboot- boot image via network using RARP/TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
-
-#ifdef CONFIG_NET_DHCP
-int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return netboot_common(DHCP, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD(
-	dhcp,	3,	1,	do_dhcp,
-	"dhcp\t- invoke DHCP client to obtain IP/boot params\n",
-	"\n"
-);
-#endif	/* CONFIG_NET_DHCP */
-
-#ifdef CONFIG_NET_NFS
-int do_nfs (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return netboot_common(NFS, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD(
-	nfs,	3,	1,	do_nfs,
-	"nfs\t- boot image via network using NFS protocol\n",
-	"[loadAddress] [host ip addr:bootfilename]\n"
-);
-#endif	/* CONFIG_NET_NFS */
-
 static void netboot_update_env (void)
 {
 	char tmp[22];
@@ -150,6 +91,73 @@ static void netboot_update_env (void)
 #endif
 }
 
+int do_bootp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	return netboot_common (BOOTP, cmdtp, argc, argv);
+}
+
+U_BOOT_CMD(
+	bootp,	3,	1,	do_bootp,
+	"bootp\t- boot image via network using BootP/TFTP protocol\n",
+	"[loadAddress] [bootfilename]\n"
+);
+
+int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	return netboot_common (TFTP, cmdtp, argc, argv);
+}
+
+U_BOOT_CMD(
+	tftpboot,	3,	1,	do_tftpb,
+	"tftpboot- boot image via network using TFTP protocol\n",
+	"[loadAddress] [bootfilename]\n"
+);
+
+int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	return netboot_common (RARP, cmdtp, argc, argv);
+}
+
+U_BOOT_CMD(
+	rarpboot,	3,	1,	do_rarpb,
+	"rarpboot- boot image via network using RARP/TFTP protocol\n",
+	"[loadAddress] [bootfilename]\n"
+);
+
+#ifdef CONFIG_NET_DHCP
+int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int size;
+
+	if ((size = NetLoop(DHCP)) < 0)
+		return 1;
+
+	/* NetLoop ok, update environment */
+	netboot_update_env();
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	dhcp,	3,	1,	do_dhcp,
+	"dhcp\t- invoke DHCP client to obtain IP/boot params\n",
+	"\n"
+);
+#endif	/* CONFIG_NET_DHCP */
+
+#ifdef CONFIG_NET_NFS
+int do_nfs (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	return netboot_common(NFS, cmdtp, argc, argv);
+}
+
+U_BOOT_CMD(
+	nfs,	3,	1,	do_nfs,
+	"nfs\t- boot image via network using NFS protocol\n",
+	"[loadAddress] [host ip addr:bootfilename]\n"
+);
+#endif	/* CONFIG_NET_NFS */
+
 struct memarea_info net_store_mem;
 
 static int
@@ -162,11 +170,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (argc < 3) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
-	}
-
-	/* pre-set load_addr */
-	if ((s = getenv("loadaddr")) != NULL) {
-		load_addr = simple_strtoul(s, NULL, 16);
 	}
 
 	if (spec_str_to_info(argv[1], &net_store_mem)) {

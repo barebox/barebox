@@ -380,13 +380,7 @@ ulong crc32 (ulong, const unsigned char *, uint);
 ulong crc32_no_comp (ulong, const unsigned char *, uint);
 
 /* common/console.c */
-int	console_init_f(void);	/* Before relocation; uses the serial  stuff	*/
-int	console_init_r(void);	/* After  relocation; uses the console stuff	*/
-int	console_assign (int file, char *devname);	/* Assign the console	*/
 int	ctrlc (void);
-int	had_ctrlc (void);	/* have we had a Control-C since last clear? */
-void	clear_ctrlc (void);	/* clear the Control-C condition */
-int	disable_ctrlc (int);	/* 1 to disable, 0 to enable Control-C detect */
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 void	show_boot_progress (int status);

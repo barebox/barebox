@@ -419,7 +419,7 @@ int cramfs_probe(struct device_d *dev)
 	dev->priv = priv;
 
 	if (cramfs_read_super (fsdev->parent, priv)) {
-		printf("no valid cramfs found on %s\n",dev->id);
+		printf("no valid cramfs found on %s\n",fsdev->parent->id);
 		free(priv);
 		return -EINVAL;
 	}

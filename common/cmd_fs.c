@@ -80,7 +80,7 @@ out:
 	return 0;
 }
 
-int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret, opt;
 	ulong flags = 0;
@@ -98,7 +98,12 @@ int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if (argc - optind > 1)
 		flags |= LS_SHOWARG;
 
-	while(optind < argc) {
+	if (optind == argc) {
+		ret = ls(getcwd(), flags);
+		return ret ? 1 : 0;
+	}
+
+	while (optind < argc) {
 		ret = ls(argv[optind], flags);
 		if (ret) {
 			perror("ls");
@@ -111,12 +116,47 @@ int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 U_BOOT_CMD(
-	ls,     10000,     0,      do_ls,
+	ls,     CONFIG_MAXARGS,     0,      do_ls,
 	"ls      - list a file or directory\n",
 	"<path> list files on path"
 );
 
-int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_cd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int ret;
+
+	if (argc == 1)
+		ret = chdir("/");
+	else
+		ret = chdir(argv[1]);
+
+	if (ret) {
+		perror("chdir");
+		return 1;
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	cd,     2,     0,      do_cd,
+	"cd      - change current directory\n",
+	"<path> cd to path"
+);
+
+static int do_pwd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	printf("%s\n", getcwd());
+	return 0;
+}
+
+U_BOOT_CMD(
+	pwd,     1,     0,      do_pwd,
+	"pwd      - display current directory\n",
+	NULL;
+);
+
+static int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret;
 
@@ -135,7 +175,7 @@ U_BOOT_CMD(
 	""
 );
 
-int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret;
 
@@ -154,7 +194,7 @@ U_BOOT_CMD(
 	""
 );
 
-int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret;
 

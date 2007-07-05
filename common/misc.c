@@ -21,14 +21,12 @@ void *sbrk_no_zero(ptrdiff_t increment)
 	ulong old = mem_malloc_brk;
 	ulong new = old + increment;
 
-        if ((new < mem_malloc_start) || (new > mem_malloc_end)) {
- 		return (NULL);
-	}
+        if ((new < mem_malloc_start) || (new > mem_malloc_end))
+ 		return NULL;
 
-	memset ((void *)old, 0, increment);
 	mem_malloc_brk = new;
 
-	return ((void *) old);
+	return (void *)old;
 }
 
 void *sbrk (ptrdiff_t increment)

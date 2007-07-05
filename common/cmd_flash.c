@@ -688,7 +688,7 @@ U_BOOT_CMD(
 );
 
 U_BOOT_CMD(
-	erase,   3,   1,  do_flerase,
+	erase,   3,   0,  do_flerase,
 	"erase   - erase FLASH memory\n",
 	"start end\n"
 	"    - erase FLASH from addr 'start' to addr 'end'\n"

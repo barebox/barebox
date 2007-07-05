@@ -517,7 +517,7 @@ struct dir *opendir(const char *pathname)
 	char *freep = p;
 
 	if (path_check_prereq(pathname, S_IFDIR))
-		return NULL;
+		goto out;
 
 	dev = get_device_by_path(&p);
 	if (!dev)

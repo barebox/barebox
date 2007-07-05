@@ -286,42 +286,7 @@ void start_armboot (void)
 	drv_vfd_init();
 #endif /* CONFIG_VFD */
 
-	/* IP Address */
-	gd->bd->bi_ip_addr = getenv_IPaddr ("ipaddr");
-
-	/* MAC Address */
-	{
-		int i;
-		ulong reg;
-		char *s, *e;
-		char tmp[64];
-
-		i = getenv_r ("ethaddr", tmp, sizeof (tmp));
-		s = (i > 0) ? tmp : NULL;
-
-		for (reg = 0; reg < 6; ++reg) {
-			gd->bd->bi_enetaddr[reg] = s ? simple_strtoul (s, &e, 16) : 0;
-			if (s)
-				s = (*e) ? e + 1 : e;
-		}
-
-#ifdef CONFIG_HAS_ETH1
-		i = getenv_r ("eth1addr", tmp, sizeof (tmp));
-		s = (i > 0) ? tmp : NULL;
-
-		for (reg = 0; reg < 6; ++reg) {
-			gd->bd->bi_enet1addr[reg] = s ? simple_strtoul (s, &e, 16) : 0;
-			if (s)
-				s = (*e) ? e + 1 : e;
-		}
-#endif
-	}
-
 	devices_init ();	/* get the devices list going. */
-
-#ifdef CONFIG_CMC_PU2
-	load_sernum_ethaddr ();
-#endif /* CONFIG_CMC_PU2 */
 
 	jumptable_init ();
 
@@ -334,16 +299,6 @@ void start_armboot (void)
 
 	/* enable exceptions */
 	enable_interrupts ();
-
-	/* Initialize from environment */
-	if ((s = getenv ("loadaddr")) != NULL) {
-		load_addr = simple_strtoul (s, NULL, 16);
-	}
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-	if ((s = getenv ("bootfile")) != NULL) {
-		copy_filename (BootFile, s, sizeof (BootFile));
-	}
-#endif	/* CFG_CMD_NET */
 
 #ifdef BOARD_LATE_INIT
 	board_late_init ();

@@ -28,9 +28,6 @@
 #include <command.h>
 #include <net.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
-
 extern int do_bootm (cmd_tbl_t *, int, int, char *[]);
 
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
@@ -137,23 +134,19 @@ static void netboot_update_env (void)
 	if (NetOurNISDomain[0])
 		setenv ("domain", NetOurNISDomain);
 
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP) && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
+#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
 	if (NetTimeOffset) {
 		sprintf (tmp, "%d", NetTimeOffset);
 		setenv ("timeoffset", tmp);
 	}
 #endif
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP) && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
+#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
 	if (NetNtpServerIP) {
 		ip_to_string (NetNtpServerIP, tmp);
 		setenv ("ntpserverip", tmp);
 	}
 #endif
 }
-
-#ifndef CFG_DIRECT_FLASH_TFTP
-extern flash_info_t flash_info[];
-#endif
 
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -191,17 +184,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-#ifndef CFG_DIRECT_FLASH_TFTP
-	for (i=0; i<CFG_MAX_FLASH_BANKS; i++) {
-		/* start address in flash? */
-		if (load_addr >= flash_info[i].start[0] &&
-		    load_addr < flash_info[i].start[0] + flash_info[i].size) {
-			printf("load address is in flash. Will not overwrite\n");
-			return 1;
-		}
-	}
-#endif
-
 	if ((size = NetLoop(proto)) < 0)
 		return 1;
 
@@ -217,35 +199,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	return rcode;
 }
-
-#if (CONFIG_COMMANDS & CFG_CMD_PING)
-int do_ping (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	if (argc < 2)
-		return -1;
-
-	NetPingIP = string_to_ip(argv[1]);
-	if (NetPingIP == 0) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return -1;
-	}
-
-	if (NetLoop(PING) < 0) {
-		printf("ping failed; host %s is not alive\n", argv[1]);
-		return 1;
-	}
-
-	printf("host %s is alive\n", argv[1]);
-
-	return 0;
-}
-
-U_BOOT_CMD(
-	ping,	2,	1,	do_ping,
-	"ping\t- send ICMP ECHO_REQUEST to network host\n",
-	"pingAddress\n"
-);
-#endif	/* CFG_CMD_PING */
 
 #if (CONFIG_COMMANDS & CFG_CMD_CDP)
 
@@ -289,43 +242,3 @@ U_BOOT_CMD(
 	"cdp\t- Perform CDP network configuration\n",
 );
 #endif	/* CFG_CMD_CDP */
-
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP)
-int do_sntp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	char *toff;
-
-	if (argc < 2) {
-		NetNtpServerIP = getenv_IPaddr ("ntpserverip");
-		if (NetNtpServerIP == 0) {
-			printf ("ntpserverip not set\n");
-			return (1);
-		}
-	} else {
-		NetNtpServerIP = string_to_ip(argv[1]);
-		if (NetNtpServerIP == 0) {
-			printf ("Bad NTP server IP address\n");
-			return (1);
-		}
-	}
-
-	toff = getenv ("timeoffset");
-	if (toff == NULL) NetTimeOffset = 0;
-	else NetTimeOffset = simple_strtol (toff, NULL, 10);
-
-	if (NetLoop(SNTP) < 0) {
-		printf("SNTP failed: host %s not responding\n", argv[1]);
-		return 1;
-	}
-
-	return 0;
-}
-
-U_BOOT_CMD(
-	sntp,	2,	1,	do_sntp,
-	"sntp\t- synchronize RTC via network\n",
-	"[NTP server IP]\n"
-);
-#endif	/* CFG_CMD_SNTP */
-
-#endif	/* CFG_CMD_NET */

@@ -45,7 +45,7 @@
 #define CONFIG_SETUP_MEMORY_TAGS     1	 /* send memory definition to kernel */
 #define CONFIG_INITRD_TAG	     1	 /* send initrd params		     */
 
-#define CFG_MALLOC_LEN		(512 << 10)
+#define CFG_MALLOC_LEN		(4096 << 10)
 
 #define CONFIG_STACKSIZE	(120<<10)      /* stack size		     */
 

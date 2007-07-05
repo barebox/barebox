@@ -32,6 +32,7 @@
 #include <init.h>
 #include <driver.h>
 #include <malloc.h>
+#include <asm-generic/errno.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -49,7 +50,7 @@ static char *rw_buf;
  */
 #define DISP_LINE_LEN	16
 
-void memory_display(char *addr, ulong offs, ulong nbytes, int size)
+int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -92,10 +93,11 @@ void memory_display(char *addr, ulong offs, ulong nbytes, int size)
 		putc ('\n');
 		nbytes -= linebytes;
 		if (ctrlc()) {
-			return;
+			return -EINTR;
 		}
 	} while (nbytes > 0);
 
+	return 0;
 }
 
 int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -104,7 +106,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	ulong	nbytes = 0x100;
         struct memarea_info mem;
 	int	size, r;
-	int rc = 0;
+	int	ret = 0;
 
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -113,7 +115,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
         if (spec_str_to_info(argv[1], &mem)) {
                 printf("-ENOPARSE\n");
-                return -1;
+                return -ENODEV;
         }
 
         if (mem.flags & MEMAREA_SIZE_SPECIFIED)
@@ -122,7 +124,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 nbytes = min((ulong)0x100, mem.size);
 
 	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
+		return -EINVAL;
 
 	offs = mem.start;
 
@@ -132,7 +134,8 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		if (r <= 0)
 			return r;
 
-		memory_display(rw_buf, offs, r, size);
+		if ((ret = memory_display(rw_buf, offs, r, size)))
+			return ret;
 
 		if (r < now)
 			return 0;
@@ -141,7 +144,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		offs += now;
 	} while (nbytes > 0);
 
-	return (rc);
+	return 0;
 }
 
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

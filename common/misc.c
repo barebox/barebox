@@ -9,10 +9,10 @@ static ulong mem_malloc_start = 0;
 static ulong mem_malloc_end = 0;
 static ulong mem_malloc_brk = 0;
 
-void mem_malloc_init (ulong start, ulong end)
+void mem_malloc_init (void *start, void *end)
 {
-	mem_malloc_start = start;
-	mem_malloc_end = end;
+	mem_malloc_start = (ulong)start;
+	mem_malloc_end = (ulong)end;
 	mem_malloc_brk = mem_malloc_start;
 
 	memset ((void *) mem_malloc_start, 0,
@@ -36,6 +36,7 @@ int errno;
 
 void perror(char *s)
 {
+#ifdef CONFIG_ERRNO_MESSAGES
 	char *str;
 	switch(-errno) {
 	case	0		: str = "No error"; break;
@@ -104,5 +105,8 @@ void perror(char *s)
 	};
 
         printf("%s: %s\n", s, str);
+#else
+	printf("%s returned with %d\n", s, errno);
+#endif
 }
 

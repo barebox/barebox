@@ -31,7 +31,7 @@ config MACH_MX1ADS
 	  Say Y here if you are using the Motorola MX1ADS board
 
 config MACH_SCB9328
-	bool "Syntertronixx scb9328"
+	bool "Synertronixx scb9328"
 	select HAS_DM9000
 	select HAS_CFI
 	select ARCH_IMX

@@ -40,6 +40,7 @@
 #include <environment.h>
 #include <clock.h>
 #include <init.h>
+#include <malloc.h>
 #include <cfi_flash.h>
 
 /*
@@ -319,10 +320,11 @@ ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
 int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
-        struct cfi_platform_data *pdev = (struct cfi_platform_data *)dev->platform_data;
-        flash_info_t *info = &pdev->finfo;
+        flash_info_t *info = malloc(sizeof(flash_info_t));
 
-//        printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+	dev->priv = (void *)info;
+
+	printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
 
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
@@ -390,8 +392,7 @@ int flash_erase_one (flash_info_t * info, long sect)
 
 int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
-        struct cfi_platform_data *pdata = dev->platform_data;
-        flash_info_t *finfo = &pdata->finfo;
+        flash_info_t *finfo = (flash_info_t *)dev->priv;
         unsigned long start, end;
         int i, ret = 0;
 
@@ -410,11 +411,10 @@ out:
 
 static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned long offset, ulong flags)
 {
-        struct cfi_platform_data *pdata = dev->platform_data;
-        flash_info_t *finfo = &pdata->finfo;
+        flash_info_t *finfo = (flash_info_t *)dev->priv;
         int ret;
 
-        printf("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
+	debug("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
 
         ret = write_buff (finfo, buf, dev->map_base + offset, count);
         return ret == 0 ? count : -1;
@@ -422,8 +422,7 @@ static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned
 
 void cfi_info (struct device_d* dev)
 {
-        struct cfi_platform_data *pdata = dev->platform_data;
-        flash_info_t *info = &pdata->finfo;
+        flash_info_t *info = (flash_info_t *)dev->priv;
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
@@ -1127,7 +1126,11 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 	info->legacy_unlock = 0;
 #endif
 
+	/* first only malloc space for the first sector */
+	info->start = malloc(sizeof(ulong));
+
 	info->start[0] = base;
+	info->protect = 0;
 
 	if (flash_detect_cfi (info)) {
 		info->vendor = flash_read_ushort (info, 0,
@@ -1200,6 +1203,7 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 		debug ("found %d erase regions\n", num_erase_regions);
 		sect_cnt = 0;
 		sector = base;
+
 		for (i = 0; i < num_erase_regions; i++) {
 			if (i > NUM_ERASE_REGIONS) {
 				printf ("%d erase regions found, only %d used\n",
@@ -1220,6 +1224,11 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 			erase_region_count = (tmp & 0xffff) + 1;
 			debug ("erase_region_count = %d erase_region_size = %d\n",
 				erase_region_count, erase_region_size);
+
+			/* increase the space malloced for the sector start addresses */
+			info->start = realloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
+			info->protect = realloc(info->protect, sizeof(ulong) * (erase_region_count + sect_cnt));
+
 			for (j = 0; j < erase_region_count; j++) {
 				info->start[sect_cnt] = sector;
 				sector += (erase_region_size * size_ratio);

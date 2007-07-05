@@ -35,8 +35,8 @@ typedef struct {
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/
-	ulong	start[CFG_MAX_FLASH_SECT];   /* physical sector start addresses */
-	uchar	protect[CFG_MAX_FLASH_SECT]; /* sector protection status	*/
+	ulong	*start;			/* physical sector start addresses	*/
+	uchar	*protect;		/* sector protection status		*/
 
 	uchar	portwidth;		/* the width of the port		*/
 	uchar	chipwidth;		/* the width of the chip		*/

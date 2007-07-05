@@ -308,10 +308,6 @@ void main_loop (void)
 	bootlimit = bcs ? simple_strtoul (bcs, NULL, 10) : 0;
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 
-#ifdef CONFIG_HUSH_PARSER
-	u_boot_hush_start ();
-#endif
-
 #ifdef CONFIG_AUTO_COMPLETE
 	install_auto_complete();
 #endif
@@ -406,7 +402,7 @@ void main_loop (void)
 			reset_cmd_timeout();
 		}
 #endif
-		len = readline (CONFIG_PROMPT);
+		len = readline (CONFIG_PROMPT, console_buffer, CONFIG_CBSIZE);
 
 		flag = 0;	/* assume no special flags for now */
 		if (len > 0)

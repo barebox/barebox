@@ -7,6 +7,7 @@
 #include <linux/ctype.h>
 #include <getopt.h>
 #include <linux/stat.h>
+#include <xfuncs.h>
 
 #define LS_RECURSIVE	1
 #define LS_SHOWARG	2
@@ -175,7 +176,6 @@ U_BOOT_CMD(
 
 static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	struct device_d *dev;
 	int ret = 0;
 	struct mtab_entry *entry = NULL;
 
@@ -197,9 +197,7 @@ static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	dev = get_device_by_id(argv[1]);
-
-	if ((ret = mount(dev, argv[2], argv[3]))) {
+	if ((ret = mount(argv[1], argv[2], argv[3]))) {
 		perror("mount");
 		return 1;
 	}
@@ -241,13 +239,16 @@ static int do_cat ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret;
 	int fd, i;
-	char *buf = malloc(1024);
+	char *buf;
+	int err = 0;
 
 	fd = open(argv[1], 0);
 	if (fd < 0) {
 		perror("open");
 		return 1;
 	}
+
+	buf = xmalloc(1024);
 
 	while((ret = read(fd, buf, 1024)) > 0) {
 		for(i = 0; i < ret; i++) {
@@ -256,13 +257,16 @@ static int do_cat ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			else
 				putc('.');
 		}
-		if(ctrlc())
-			return 1;
+		if(ctrlc()) {
+			err = 1;
+			goto out;
+		}
 	}
-
+out:
+	free(buf);
 	close(fd);
 
-	return 0;
+	return err;
 }
 
 U_BOOT_CMD(

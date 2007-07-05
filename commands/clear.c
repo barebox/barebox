@@ -1,5 +1,6 @@
 #include <common.h>
 #include <command.h>
+#include <readkey.h>
 
 int do_clear (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {

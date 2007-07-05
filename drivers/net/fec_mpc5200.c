@@ -7,7 +7,7 @@
  */
 
 #include <common.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
 #include <init.h>

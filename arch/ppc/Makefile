@@ -1,6 +1,7 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
 	-isystem $(gccincdir) -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
+	-fno-strict-aliasing
 
 
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200

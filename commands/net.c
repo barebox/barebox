@@ -196,9 +196,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (size == 0)
 		return 0;
 
-	/* flush cache */
-	flush_cache(load_addr, size);
-
 	return rcode;
 }
 

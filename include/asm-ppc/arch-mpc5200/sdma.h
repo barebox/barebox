@@ -12,7 +12,7 @@
 #define __MPC5XXX_SDMA_H
 
 #include <common.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 
 /* Task number assignment */
 #define FEC_RECV_TASK_NO            0

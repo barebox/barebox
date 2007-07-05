@@ -609,11 +609,12 @@ static mbinptr av_[NAV * 2 + 2] = {
 /*  Other static bookkeeping data */
 
 /* variables holding tunable values */
-
+#ifndef __U_BOOT__
 static unsigned long trim_threshold   = DEFAULT_TRIM_THRESHOLD;
-static unsigned long top_pad          = DEFAULT_TOP_PAD;
 static unsigned int  n_mmaps_max      = DEFAULT_MMAP_MAX;
 static unsigned long mmap_threshold   = DEFAULT_MMAP_THRESHOLD;
+#endif
+static unsigned long top_pad          = DEFAULT_TOP_PAD;
 
 /* The first value returned from sbrk */
 static char* sbrk_base = (char*)(-1);

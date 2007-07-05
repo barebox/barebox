@@ -12,7 +12,6 @@
 #define __MPC5XXX_FEC_H
 
 #include <common.h>
-#include <mpc5xxx.h>
 #include <asm/arch/sdma.h>
 
 typedef unsigned long uint32;

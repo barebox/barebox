@@ -176,4 +176,20 @@ extern inline void out_be32(volatile unsigned *addr, int val)
     __asm__ __volatile__("stw%U0%X0 %1,%0; eieio" : "=m" (*addr) : "r" (val));
 }
 
+/* these ones were originally in config.h */
+unsigned char	in8(unsigned int);
+void		out8(unsigned int, unsigned char);
+unsigned short	in16(unsigned int);
+unsigned short	in16r(unsigned int);
+void		out16(unsigned int, unsigned short value);
+void		out16r(unsigned int, unsigned short value);
+unsigned long	in32(unsigned int);
+unsigned long	in32r(unsigned int);
+void		out32(unsigned int, unsigned long value);
+void		out32r(unsigned int, unsigned long value);
+void		ppcDcbf(unsigned long value);
+void		ppcDcbi(unsigned long value);
+void		ppcSync(void);
+void		ppcDcbz(unsigned long value);
+
 #endif

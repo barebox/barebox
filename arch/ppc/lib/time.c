@@ -25,6 +25,7 @@
 #include <clock.h>
 #include <init.h>
 #include <asm/arch/clocks.h>
+#include <asm/common.h>
 
 /* ------------------------------------------------------------------------- */
 

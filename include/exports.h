@@ -14,7 +14,7 @@ void install_hdlr(int, interrupt_handler_t*, void*);
 void free_hdlr(int);
 void *malloc(size_t);
 void free(void*);
-int udelay(unsigned long);
+void udelay(unsigned long);
 void vprintf(const char *, va_list);
 void do_reset (void);
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base);

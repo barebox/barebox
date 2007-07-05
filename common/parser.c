@@ -1,5 +1,6 @@
 #include <common.h>
 #include <command.h>
+#include <environment.h>
 
 int parse_line (char *line, char *argv[])
 {
@@ -114,7 +115,8 @@ static void process_macros (const char *input, char *output)
 		case 2:	/* Waiting for )        */
 			if (c == ')' || c == '}') {
 				int i;
-				char envname[CONFIG_CBSIZE], *envval;
+				char envname[CONFIG_CBSIZE];
+				const char *envval;
 				int envcnt = input - varname_start - 1;	/* Varname # of chars */
 
 				/* Get the varname */

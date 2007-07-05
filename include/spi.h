@@ -70,4 +70,19 @@ void spi_init(void);
  */
 int  spi_xfer(spi_chipsel_type chipsel, int bitlen, uchar *dout, uchar *din);
 
+void spi_init_f (void);
+void spi_init_r (void);
+ssize_t spi_read	 (uchar *, int, uchar *, int);
+ssize_t spi_write (uchar *, int, uchar *, int);
+
+/*
+ * Set this up regardless of board
+ * type, to prevent errors.
+ */
+#if defined(CONFIG_SPI) || !defined(CFG_I2C_EEPROM_ADDR)
+# define CFG_DEF_EEPROM_ADDR 0
+#else
+# define CFG_DEF_EEPROM_ADDR CFG_I2C_EEPROM_ADDR
+#endif /* CONFIG_SPI || !defined(CFG_I2C_EEPROM_ADDR) */
+
 #endif	/* _SPI_H_ */

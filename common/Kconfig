@@ -95,7 +95,6 @@ config CMD_EXEC
 
 config CMD_ENVIRONMENT
 	bool
-	depends on FS
 	prompt "envsave / envload"
 
 config CMD_CLEAR

@@ -18,7 +18,7 @@ obj-$(CONFIG_HUSH_PARSER)	+= hush.o
 obj-$(CONFIG_SIMPLE_PARSER)	+= parser.o
 obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
-obj-$(CONFIG_FS)		+= cmd_fs.o
+obj-y				+= cmd_fs.o
 
 obj-y += exports.o
 obj-y += main.o

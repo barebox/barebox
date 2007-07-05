@@ -1,0 +1,89 @@
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.20-rc5
+# Fri Jun 15 22:07:49 2007
+#
+CONFIG_LINUX=y
+CONFIG_ZLIB=y
+
+#
+# general settings
+#
+CONFIG_PROMPT="uboot> "
+CONFIG_BAUDRATE=115200
+CONFIG_CMDLINE_EDITING=y
+# CONFIG_AUTO_COMPLETE is not set
+# CONFIG_LONGHELP is not set
+CONFIG_CBSIZE=1024
+CONFIG_MAXARGS=16
+CONFIG_HUSH_PARSER=y
+CONFIG_PROMPT_HUSH_PS2="> "
+CONFIG_ZERO_BOOTDELAY_CHECK=y
+CONFIG_DYNAMIC_CRC_TABLE=y
+CONFIG_ERRNO_MESSAGES=y
+
+#
+# Commands
+#
+CONFIG_CMD_ECHO=y
+CONFIG_CMD_EDIT=y
+CONFIG_CMD_EXEC=y
+CONFIG_CMD_ENVIRONMENT=y
+# CONFIG_CMD_CONSOLE is not set
+CONFIG_CMD_ENV=y
+CONFIG_CMD_HELP=y
+# CONFIG_CMD_MII is not set
+CONFIG_CMD_MEMORY=y
+# CONFIG_CMD_MTEST is not set
+# CONFIG_CMD_I2C is not set
+# CONFIG_CMD_AUTOSCRIPT is not set
+CONFIG_CMD_FLASH=y
+# CONFIG_CMD_LOADB is not set
+# CONFIG_CMD_LOADS is not set
+# CONFIG_CMD_SPLASH is not set
+CONFIG_CMD_SLEEP=y
+# CONFIG_CMD_BOOTM is not set
+
+#
+# Debugging
+#
+CONFIG_NET=y
+CONFIG_NET_BOOTP=y
+CONFIG_NET_DHCP=y
+# CONFIG_NET_RARP is not set
+# CONFIG_NET_SNTP is not set
+# CONFIG_NET_NFS is not set
+CONFIG_NET_PING=y
+CONFIG_NET_TFTP=y
+
+#
+# drivers
+#
+
+#
+# serial drivers
+#
+# CONFIG_DRIVER_SERIAL_DUMMY is not set
+
+#
+# Network drivers
+#
+CONFIG_DRIVER_NET_TAP=y
+
+#
+# video drivers
+#
+# CONFIG_DRIVER_VIDEO_S1D13706 is not set
+
+#
+# I2C drivers
+#
+
+#
+# USB host support
+#
+CONFIG_DRIVER_CFI=y
+# CONFIG_DRIVER_CFI_NEW is not set
+CONFIG_CFI_BUFFER_WRITE=y
+CONFIG_FS=y
+CONFIG_FS_CRAMFS=y

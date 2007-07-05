@@ -1,3 +1,4 @@
 obj-y	+= cpu.o interrupts.o
-obj-y += start.o
-obj-y	+= imx/
+head-y	+= start.o
+#obj-y	+= imx/
+obj-y	+= at91rm9200/

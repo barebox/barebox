@@ -1,6 +1,6 @@
 obj-y	+= bcm5221.o
 obj-y	+= dm9161.o
-obj-$(CONFIG_DRIVER_NET_AT91_ETHER	+= ether.o
+obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= ether.o
 obj-y	+= i2c.o
 obj-y	+= interrupts.o
 obj-y	+= lowlevel_init.o

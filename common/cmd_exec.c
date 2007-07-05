@@ -27,14 +27,13 @@ static void *read_file(const char *file)
 		return NULL;
 	}
 
-	buf = malloc(s.st_size + 1);
+	buf = xzalloc(s.st_size + 1);
 
 	if (read(fd, buf, s.st_size) < s.st_size) {
 		perror("read");
 		goto out;
 	}
 
-	*(char *)(buf + s.st_size) = 0;
 	close(fd);
 	return buf;
 

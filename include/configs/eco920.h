@@ -24,8 +24,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SKIP_LOWLEVEL_INIT
-
 /* ARM asynchronous clock */
 #define AT91C_MAIN_CLOCK	179712000	/* from 18.432 MHz crystal (18432000 / 4 * 39) */
 #define AT91C_MASTER_CLOCK	59904000	/* peripheral clock (AT91C_MASTER_CLOCK / 3) */
@@ -33,8 +31,6 @@
 
 #define AT91_SLOW_CLOCK		32768	/* slow clock */
 
-#define CONFIG_ARM920T		1	/* This is an ARM920T Core	*/
-#define CONFIG_AT91RM9200	1	/* It's an Atmel AT91RM9200 SoC	*/
 #undef  CONFIG_USE_IRQ			/* we don't need IRQ/FIQ stuff	*/
 #define USE_920T_MMU		1
 
@@ -75,7 +71,7 @@
 /*
  * Size of malloc() pool
  */
-#define CFG_MALLOC_LEN	(CFG_ENV_SIZE + 128*1024)
+#define CFG_MALLOC_LEN	(512*1024)
 #define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
 
 #define CONFIG_BAUDRATE 115200
@@ -88,8 +84,6 @@
 #define CONFIG_DBGU
 
 #define CONFIG_BOOTDELAY      3
-#define CONFIG_ZERO_BOOTDELAY_CHECK
-/* #define CONFIG_ENV_OVERWRITE	1 */
 
 #define CONFIG_CMDLINE_EDITING  1
 
@@ -120,19 +114,6 @@
 #define CONFIG_NET_RETRY_COUNT		20
 #define CONFIG_AT91C_USE_RMII
 
-#define CFG_FLASH_BASE		0x11000000
-#define CFG_MAX_FLASH_BANKS	1	/* max num of flash banks	*/
-#define CFG_FLASH_CFI
-#define CFG_FLASH_CFI_DRIVER
-#define CFG_FLASH_USE_BUFFER_WRITE 1
-#define PHYS_FLASH_SIZE		0x01000000
-#define CFG_MAX_FLASH_SECT	132	/* max number of sectors on one chip */
-#define CFG_FLASH_PROTECTION	1
-
-#define CFG_ENV_IS_IN_FLASH		1
-#define CFG_ENV_ADDR			(CFG_FLASH_BASE + 0x20000)
-#define CFG_ENV_SIZE			0x20000
-
 #define CFG_LOAD_ADDR		0x21000000  /* default load address */
 
 #define CFG_BAUDRATE_TABLE	{115200 , 19200, 38400, 57600, 9600 }
@@ -154,6 +135,11 @@
 
 #define CONFIG_ARCH_NUMBER      MACH_TYPE_ECO920
 #define CONFIG_BOOT_PARAMS      PHYS_SDRAM + 0x100
+
+#define CFG_USB_OHCI_MAX_ROOT_PORTS     15
+#define CFG_USB_OHCI_SLOT_NAME           "at91rm9200"
+#define LITTLEENDIAN
+#define CONFIG_AT91C_PQFP_UHPBUG
 
 #endif
 

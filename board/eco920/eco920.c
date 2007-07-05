@@ -73,8 +73,6 @@ static int devices_init (void)
 	register_device(&sdram_dev);
 	register_device(&at91_ath_dev);
 
-	gd->bd->bi_dram[0].start = PHYS_SDRAM;
-	gd->bd->bi_dram[0].size = PHYS_SDRAM_SIZE;
 	return 0;
 }
 
@@ -212,4 +210,15 @@ int misc_init_r(void)
 #endif
 	return 0;
 }
+
+/* Do not collide with the env from our first stage loader for now */
+static char *env_spec = "nor0:256k+128k";
+
+static int eco920_init_env(void)
+{
+        add_env_spec(env_spec);
+        return 0;
+}
+
+late_initcall(eco920_init_env);
 

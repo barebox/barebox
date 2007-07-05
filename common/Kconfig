@@ -4,10 +4,14 @@ config GREGORIAN_CALENDER
 
 menu "General Settings              "
 
+config BROKEN
+	bool
+	prompt "Prompt for broken or incomplete code"
+
 config PROMPT
 	string
 	prompt "U-Boot command prompt"
-	default "uboot> "
+	default "uboot:"
 
 config BAUDRATE
 	int

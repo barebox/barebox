@@ -48,6 +48,7 @@
 #define AT91_TCB0_BASE		0xFFFA0000 /*16K */
 
 #define AT91_USB_HOST_BASE	0x00300000
+#define CFG_USB_OHCI_REGS_BASE  AT91_USB_HOST_BASE
 
 /*
  * Where in virtual memory the IO devices (timers, system controllers

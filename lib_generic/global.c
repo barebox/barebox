@@ -83,6 +83,10 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         }
 
 	param = get_param_by_name(dev, argv[2]);
+	if (!param) {
+		printf("device %s has no parameter %s\n", dev->id, argv[2]);
+		return 1;
+	}
 
 	switch (param->type) {
 	case PARAM_TYPE_STRING:

@@ -10,8 +10,6 @@
 #ifndef __ASM_PROC_SYSTEM_H
 #define __ASM_PROC_SYSTEM_H
 
-#include <linux/config.h>
-
 #define set_cr(x)					\
 	__asm__ __volatile__(				\
 	"mcr	p15, 0, %0, c1, c0	@ set CR"	\

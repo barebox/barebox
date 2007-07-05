@@ -253,7 +253,7 @@ int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 U_BOOT_CMD(
-	printenv, CFG_MAXARGS, 1,	do_printenv,
+	printenv, CONFIG_MAXARGS, 1,	do_printenv,
 	"printenv- print environment variables\n",
 	"\n    - print values of all environment variables\n"
 	"printenv name ...\n"
@@ -273,7 +273,7 @@ int do_setenv ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 U_BOOT_CMD(
-	setenv, CFG_MAXARGS, 0,	do_setenv,
+	setenv, CONFIG_MAXARGS, 0,	do_setenv,
 	"setenv  - set environment variables\n",
 	"name value ...\n"
 	"    - set environment variable 'name' to 'value ...'\n"

@@ -83,6 +83,7 @@ obj-$(CONFIG_CMD_SPLASH) += cmd_splash.o
 # obj-y += fpga.o
 # obj-y += altera.o
 # obj-y += cyclon2.o
+obj-$(CONFIG_CMD_MTEST) += cmd_memtest.o
 obj-$(CONFIG_CMD_SLEEP)	+= cmd_misc.o
 obj-y	+= mtdpart.o
 

@@ -34,7 +34,7 @@
 #include <malloc.h>		/* for free() prototype */
 #endif
 
-#ifdef CFG_HUSH_PARSER
+#ifdef CONFIG_HUSH_PARSER
 #include <hush.h>
 #endif
 
@@ -56,7 +56,7 @@ static int abortboot(int);
 
 #undef DEBUG_PARSER
 
-char        console_buffer[CFG_CBSIZE];		/* console I/O buffer	*/
+char        console_buffer[CONFIG_CBSIZE];		/* console I/O buffer	*/
 
 #ifndef CONFIG_CMDLINE_EDITING
 static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
@@ -290,8 +290,8 @@ static __inline__ int abortboot(int bootdelay)
 
 void main_loop (void)
 {
-#ifndef CFG_HUSH_PARSER
-	static char lastcommand[CFG_CBSIZE] = { 0, };
+#ifndef CONFIG_HUSH_PARSER
+	static char lastcommand[CONFIG_CBSIZE] = { 0, };
 	int len;
 	int rc = 1;
 	int flag;
@@ -321,7 +321,7 @@ void main_loop (void)
 	bootlimit = bcs ? simple_strtoul (bcs, NULL, 10) : 0;
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 
-#ifdef CFG_HUSH_PARSER
+#ifdef CONFIG_HUSH_PARSER
 	u_boot_hush_start ();
 #endif
 
@@ -335,7 +335,7 @@ void main_loop (void)
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 # endif
 
-# ifndef CFG_HUSH_PARSER
+# ifndef CONFIG_HUSH_PARSER
 		run_command (p, 0);
 # else
 		parse_string_outer(p, FLAG_PARSE_SEMICOLON |
@@ -375,7 +375,7 @@ void main_loop (void)
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 # endif
 
-# ifndef CFG_HUSH_PARSER
+# ifndef CONFIG_HUSH_PARSER
 		run_command (s, 0);
 # else
 		parse_string_outer(s, FLAG_PARSE_SEMICOLON |
@@ -391,7 +391,7 @@ void main_loop (void)
 	if (menukey == CONFIG_MENUKEY) {
 	    s = getenv("menucmd");
 	    if (s) {
-# ifndef CFG_HUSH_PARSER
+# ifndef CONFIG_HUSH_PARSER
 		run_command (s, 0);
 # else
 		parse_string_outer(s, FLAG_PARSE_SEMICOLON |
@@ -405,7 +405,7 @@ void main_loop (void)
 	/*
 	 * Main Loop for Monitor Command Processing
 	 */
-#ifdef CFG_HUSH_PARSER
+#ifdef CONFIG_HUSH_PARSER
 	parse_file_outer();
 	/* This point is never reached */
 	for (;;);
@@ -450,7 +450,7 @@ void main_loop (void)
 			lastcommand[0] = 0;
 		}
 	}
-#endif /*CFG_HUSH_PARSER*/
+#endif /*CONFIG_HUSH_PARSER*/
 }
 
 #ifdef CONFIG_BOOT_RETRY_TIME
@@ -965,7 +965,7 @@ int readline (const char *const prompt)
 			/*
 			 * Must be a normal character then
 			 */
-			if (n < CFG_CBSIZE-2) {
+			if (n < CONFIG_CBSIZE-2) {
 				if (c == '\t') {	/* expand TABs		*/
 #ifdef CONFIG_AUTO_COMPLETE
 					/* if auto completion triggered just continue */
@@ -1034,7 +1034,7 @@ int parse_line (char *line, char *argv[])
 #ifdef DEBUG_PARSER
 	printf ("parse_line: \"%s\"\n", line);
 #endif
-	while (nargs < CFG_MAXARGS) {
+	while (nargs < CONFIG_MAXARGS) {
 
 		/* skip any white space */
 		while ((*line == ' ') || (*line == '\t')) {
@@ -1067,7 +1067,7 @@ int parse_line (char *line, char *argv[])
 		*line++ = '\0';		/* terminate current arg	 */
 	}
 
-	printf ("** Too many args (max. %d) **\n", CFG_MAXARGS);
+	printf ("** Too many args (max. %d) **\n", CONFIG_MAXARGS);
 
 #ifdef DEBUG_PARSER
 	printf ("parse_line: nargs=%d\n", nargs);
@@ -1082,7 +1082,7 @@ static void process_macros (const char *input, char *output)
 	char c, prev;
 	const char *varname_start = NULL;
 	int inputcnt = strlen (input);
-	int outputcnt = CFG_CBSIZE;
+	int outputcnt = CONFIG_CBSIZE;
 	int state = 0;		/* 0 = waiting for '$'  */
 
 	/* 1 = waiting for '(' or '{' */
@@ -1142,7 +1142,7 @@ static void process_macros (const char *input, char *output)
 		case 2:	/* Waiting for )        */
 			if (c == ')' || c == '}') {
 				int i;
-				char envname[CFG_CBSIZE], *envval;
+				char envname[CONFIG_CBSIZE], *envval;
 				int envcnt = input - varname_start - 1;	/* Varname # of chars */
 
 				/* Get the varname */
@@ -1191,7 +1191,7 @@ static void process_macros (const char *input, char *output)
  *	0  - command executed but not repeatable, interrupted commands are
  *	     always considered not repeatable
  *	-1 - not executed (unrecognized, bootd recursion or too many args)
- *           (If cmd is NULL or "" or longer than CFG_CBSIZE-1 it is
+ *           (If cmd is NULL or "" or longer than CONFIG_CBSIZE-1 it is
  *           considered unrecognized)
  *
  * WARNING:
@@ -1205,12 +1205,12 @@ static void process_macros (const char *input, char *output)
 int run_command (const char *cmd, int flag)
 {
 	cmd_tbl_t *cmdtp;
-	char cmdbuf[CFG_CBSIZE];	/* working copy of cmd		*/
+	char cmdbuf[CONFIG_CBSIZE];	/* working copy of cmd		*/
 	char *token;			/* start of token in cmdbuf	*/
 	char *sep;			/* end of token (separator) in cmdbuf */
-	char finaltoken[CFG_CBSIZE];
+	char finaltoken[CONFIG_CBSIZE];
 	char *str = cmdbuf;
-	char *argv[CFG_MAXARGS + 1];	/* NULL terminated	*/
+	char *argv[CONFIG_MAXARGS + 1];	/* NULL terminated	*/
 	int argc, inquotes;
 	int repeatable = 1;
 	int rc = 0;
@@ -1227,7 +1227,7 @@ int run_command (const char *cmd, int flag)
 		return -1;	/* empty command */
 	}
 
-	if (strlen(cmd) >= CFG_CBSIZE) {
+	if (strlen(cmd) >= CONFIG_CBSIZE) {
 		puts ("## Command too long!\n");
 		return -1;
 	}
@@ -1345,7 +1345,7 @@ int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			printf ("## Error: \"%s\" not defined\n", argv[i]);
 			return 1;
 		}
-#ifndef CFG_HUSH_PARSER
+#ifndef CONFIG_HUSH_PARSER
 		if (run_command (arg, flag) == -1)
 			return 1;
 #else
@@ -1359,7 +1359,7 @@ int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 
 int do_run (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 U_BOOT_CMD(
-	run,	CFG_MAXARGS,	1,	do_run,
+	run,	CONFIG_MAXARGS,	1,	do_run,
 	"run     - run commands in an environment variable\n",
 	"var [...]\n"
 	"    - run the commands in the environment variable(s) 'var'\n"

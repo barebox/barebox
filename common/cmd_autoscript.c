@@ -43,7 +43,7 @@
 #if defined(CONFIG_8xx)
 #include <mpc8xx.h>
 #endif
-#ifdef CFG_HUSH_PARSER
+#ifdef CONFIG_HUSH_PARSER
 #include <hush.h>
 #endif
 
@@ -113,7 +113,7 @@ autoscript (ulong addr)
 	memmove (cmd, (char *)len_ptr, len);
 	*(cmd + len) = 0;
 
-#ifdef CFG_HUSH_PARSER /*?? */
+#ifdef CONFIG_HUSH_PARSER /*?? */
 	rcode = parse_string_outer (cmd, FLAG_PARSE_SEMICOLON);
 #else
 	{

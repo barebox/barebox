@@ -12,6 +12,44 @@ config PROMPT
 	prompt "U-Boot command prompt"
 	default "uboot> "
 
+config BAUDRATE
+	int
+	prompt "Default baudrate"
+	default 115200
+
+config CMDLINE_EDITING
+	bool
+	prompt "Enable command line editing"
+
+config LONGHELP
+	bool
+	prompt "Enable long help texts"
+
+config CBSIZE
+	int
+	prompt "Buffer size for input from the Console"
+	default 1024
+
+config MAXARGS
+	int
+	prompt "max. Number of arguments accepted for monitor commands"
+	default 16
+
+config HUSH_PARSER
+	bool
+	prompt "Use hush parser"
+
+config PROMPT_HUSH_PS2
+	string
+	depends on HUSH_PARSER
+	prompt "hush PS2"
+	default "> "
+
+config ZERO_BOOTDELAY_CHECK
+	bool
+	prompt "Eanble stop boot process with bootdelay = 0"
+	default y
+
 endmenu
 
 menu "Commands"
@@ -31,6 +69,25 @@ config CMD_MII
 config CMD_MEMORY
 	bool
 	prompt "md, mm, mw and several others"
+
+config CMD_MTEST
+	bool
+	prompt "mtest"
+
+config CMD_MTEST_ALTERNATIVE
+	bool
+	depends on CMD_MTEST
+	prompt "use alternative mtest implementation"
+
+config CMD_MTEST_START
+	hex
+	depends on CMD_MTEST
+	prompt "mtest start address"
+
+config CMD_MTEST_END
+	hex
+	depends on CMD_MTEST
+	prompt "mtest end address"
 
 config CMD_I2C
 	bool
@@ -80,5 +137,15 @@ config CMD_BOOTM_BZLIB
 	depends on CMD_BOOTM
 	select BZLIB
 	prompt "bootm with bzlib support"
+
+endmenu
+
+menu "Debugging"
+
+config SKIP_LOWLEVEL_INIT
+	bool
+	depends on ARM
+	prompt "Skip lowlevel init"
+
 
 endmenu

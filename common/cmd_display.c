@@ -72,7 +72,7 @@ int do_display (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 /***************************************************/
 
 U_BOOT_CMD(
-	display,	CFG_MAXARGS,	1,	do_display,
+	display,	CONFIG_MAXARGS,	1,	do_display,
 	"display- display string on dot matrix display\n",
 	"[<string>]\n"
 	"    - with <string> argument: display <string> on dot matrix display\n"

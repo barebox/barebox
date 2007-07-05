@@ -48,7 +48,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #include <rtc.h>
 #endif
 
-#ifdef CFG_HUSH_PARSER
+#ifdef CONFIG_HUSH_PARSER
 #include <hush.h>
 #endif
 
@@ -446,7 +446,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 U_BOOT_CMD(
- 	bootm,	CFG_MAXARGS,	1,	do_bootm,
+ 	bootm,	CONFIG_MAXARGS,	1,	do_bootm,
  	"bootm   - boot application image from memory\n",
  	"[addr [arg ...]]\n    - boot application image stored in memory\n"
  	"\tpassing arguments 'arg ...'; when booting a Linux kernel,\n"
@@ -1126,7 +1126,7 @@ do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
 int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int rcode = 0;
-#ifndef CFG_HUSH_PARSER
+#ifndef CONFIG_HUSH_PARSER
 	if (run_command (getenv ("bootcmd"), flag) < 0) rcode = 1;
 #else
 	if (parse_string_outer(getenv("bootcmd"),
@@ -1208,7 +1208,7 @@ static int image_info (ulong addr)
 }
 
 U_BOOT_CMD(
-	iminfo,	CFG_MAXARGS,	1,	do_iminfo,
+	iminfo,	CONFIG_MAXARGS,	1,	do_iminfo,
 	"iminfo  - print header information for application image\n",
 	"addr [addr ...]\n"
 	"    - print header information for application image starting at\n"

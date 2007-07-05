@@ -28,11 +28,9 @@
 /* #define	DEBUG	*/
 
 #include <common.h>
+#include <environment.h>
 #include <watchdog.h>
 #include <command.h>
-#ifdef CONFIG_MODEM_SUPPORT
-#include <malloc.h>		/* for free() prototype */
-#endif
 
 #ifdef CONFIG_HUSH_PARSER
 #include <hush.h>
@@ -66,10 +64,6 @@ static int      retry_time = -1; /* -1 so can call readline before main_loop */
 #define CONFIG_BOOT_RETRY_MIN CONFIG_BOOT_RETRY_TIME
 #endif
 
-#ifdef CONFIG_MODEM_SUPPORT
-int do_mdm_init = 0;
-extern void mdm_init(void); /* defined in board.c */
-#endif
 
 /***************************************************************************
  * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
@@ -475,7 +469,7 @@ void reset_cmd_timeout(void)
 /****************************************************************************/
 
 /****************************************************************************/
-
+# if 0
 int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
 	int i;
@@ -504,10 +498,10 @@ int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-int do_run (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 U_BOOT_CMD(
 	run,	CONFIG_MAXARGS,	1,	do_run,
 	"run     - run commands in an environment variable\n",
 	"var [...]\n"
 	"    - run the commands in the environment variable(s) 'var'\n"
 );
+#endif

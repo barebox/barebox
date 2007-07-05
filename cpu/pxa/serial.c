@@ -61,7 +61,7 @@ void serial_setbrg (void)
 #endif /* CONFIG_CPU_MONAHANS */
 
 	FFIER = 0;					/* Disable for now */
-	FFFCR = 0;					/* No fifos enabled */
+	FFFCR = FCR_TRFIFOE;				/* Fifos enabled */
 
 	/* set baud rate */
 	FFLCR = LCR_WLS0 | LCR_WLS1 | LCR_DLAB;
@@ -79,7 +79,7 @@ void serial_setbrg (void)
 #endif /*  CONFIG_CPU_MONAHANS */
 
 	BTIER = 0;
-	BTFCR = 0;
+	BTFCR = FCR_TRFIFOE;				/* Fifos enabled */
 
 	/* set baud rate */
 	BTLCR = LCR_DLAB;

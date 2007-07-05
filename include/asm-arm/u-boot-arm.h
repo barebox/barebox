@@ -42,7 +42,5 @@ int	cleanup_before_linux(void);
 /* board/.../... */
 int	board_init(void);
 int	dram_init (void);
-void	setup_serial_tag (struct tag **params);
-void	setup_revision_tag (struct tag **params);
 
 #endif	/* _U_BOOT_ARM_H_ */

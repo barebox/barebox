@@ -867,7 +867,6 @@ eth_loopback_test (void)
 	 * test - the delays would probably stuff things up.
 	 */
 
-	clear_ctrlc ();
 	runtime = get_timer (0);
 
 	do {
@@ -896,10 +895,7 @@ eth_loopback_test (void)
 				 * (while Running only) check for
 				 * termination of the test
 				 */
-
-				(void)ctrlc ();
-
-				if (had_ctrlc ()) {
+				if (ctrlc ()) {
 					/*
 					 * initiate a "graceful stop transmit"
 					 * on the channel

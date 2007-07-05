@@ -57,8 +57,6 @@ int tap_probe(struct device_d *dev)
 	struct tap_priv *priv;
 	int ret = 0;
 
-	printf("tap_eth_init()\n");
-
 	priv = malloc(sizeof(struct tap_priv));
 
 	priv->fd = tap_alloc(priv->name);

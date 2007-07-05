@@ -50,7 +50,7 @@ static int do_get( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         }
 
         param = dev_get_param(dev, argv[2]);
-	print_param(param);
+	printf("%s\n", param->value);
 	printf("\n");
 
         return 0;
@@ -68,7 +68,6 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         char *endp;
         int ret;
 	struct param_d *param;
-	value_t val;
 
 	if (argc < 4) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -87,19 +86,7 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	switch (param->type) {
-	case PARAM_TYPE_STRING:
-		val.val_str = argv[3];
-		break;
-	case PARAM_TYPE_ULONG:
-		val.val_ulong = simple_strtoul(argv[3], NULL, 0);
-		break;
-	case PARAM_TYPE_IPADDR:
-		val.val_ip = string_to_ip(argv[3]);
-		break;
-	}
-
-	ret = dev_set_param(dev, argv[2], val);
+	ret = dev_set_param(dev, argv[2], argv[3]);
 
         if (ret)
                 perror("set parameter");

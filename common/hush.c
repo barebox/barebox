@@ -90,6 +90,7 @@
 #define __U_BOOT__
 #ifdef __U_BOOT__
 #include <malloc.h>         /* malloc, free, realloc*/
+#include <xfuncs.h>
 #include <linux/ctype.h>    /* isalpha, isdigit */
 #include <common.h>        /* readline */
 #include <hush.h>
@@ -382,10 +383,7 @@ static void __syntax(char *file, int line) {
 #define syntax() __syntax(__FILE__, __LINE__)
 #endif
 
-#ifdef __U_BOOT__
-static void *xmalloc(size_t size);
-static void *xrealloc(void *ptr, size_t size);
-#else
+#ifndef __U_BOOT__
 /* Index of subroutines: */
 /*   function prototypes for builtins */
 static int builtin_cd(struct child_prog *child);
@@ -3259,27 +3257,6 @@ int u_boot_hush_start(void)
 	return 0;
 }
 
-static void *xmalloc(size_t size)
-{
-	void *p = NULL;
-
-	if (!(p = malloc(size))) {
-	    printf("ERROR : memory not allocated\n");
-	    for(;;);
-	}
-	return p;
-}
-
-static void *xrealloc(void *ptr, size_t size)
-{
-	void *p = NULL;
-
-	if (!(p = realloc(ptr, size))) {
-	    printf("ERROR : memory not allocated\n");
-	    for(;;);
-	}
-	return p;
-}
 #endif /* __U_BOOT__ */
 
 #ifndef __U_BOOT__

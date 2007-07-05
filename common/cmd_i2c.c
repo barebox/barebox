@@ -86,9 +86,6 @@
 #include <i2c.h>
 #include <asm/byteorder.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_I2C)
-
-
 /* Display values from last command.
  * Memory modify remembered values are different from display memory.
  */
@@ -1016,4 +1013,3 @@ U_BOOT_CMD(
 );
 #endif  /* CONFIG_I2C_CMD_TREE */
 
-#endif	/* CFG_CMD_I2C */

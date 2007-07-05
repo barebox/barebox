@@ -34,16 +34,11 @@
  */
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16) /* print buffer size   */
 
-#define CONFIG_BOOTDELAY 3
-
 #define CFG_CPUSPEED		0x141	     /* core clock - register value  */
 
 /*
  * Definitions related to passing arguments to kernel.
  */
-#define CONFIG_CMDLINE_TAG	     1	 /* send commandline to Kernel	     */
-#define CONFIG_SETUP_MEMORY_TAGS     1	 /* send memory definition to kernel */
-#define CONFIG_INITRD_TAG	     1	 /* send initrd params		     */
 
 #define CFG_MALLOC_LEN		(4096 << 10)
 

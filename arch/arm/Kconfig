@@ -53,6 +53,29 @@ endchoice
 config ARM920T
 	bool
 
+menu "Arm specific settings"
+
+config CMDLINE_TAG
+	bool "Send commandline to kernel"
+	default y
+	help
+	  If you want to start a 2.6 kernel say y here.
+
+config SETUP_MEMORY_TAGS
+	bool "send memory definition to kernel"
+	default y
+	help
+	  If you want to start a 2.6 kernel say y here.
+
+config INITRD_TAG
+	bool "send initrd params to kernel"
+	default y
+	help
+	  If you want to start a 2.6 kernel and use an
+	  initrd image say y here.
+
+endmenu
+
 source common/Kconfig
 source net/Kconfig
 source drivers/Kconfig

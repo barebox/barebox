@@ -464,7 +464,7 @@ static int redirect_opt_num(o_string *o);
 static int process_command_subs(o_string *dest, struct p_context *ctx, struct in_str *input, int subst_end);
 static int parse_group(o_string *dest, struct p_context *ctx, struct in_str *input, int ch);
 #endif
-static char *lookup_param(char *src);
+static const char *lookup_param(char *src);
 static char *make_string(char **inp);
 static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *input);
 #ifndef __U_BOOT__
@@ -487,7 +487,7 @@ static void remove_bg_job(struct pipe *pi);
 /*     local variable support */
 static char **make_list_in(char **inp, char *name);
 static char *insert_var_value(char *inp);
-static char *get_local_var(const char *var);
+static const char *get_local_var(const char *var);
 #ifndef __U_BOOT__
 static void  unset_local_var(const char *name);
 #endif
@@ -2105,7 +2105,7 @@ static char *get_dollar_var(char ch);
 #endif
 
 /* This is used to get/check local shell variables */
-static char *get_local_var(const char *s)
+static const char *get_local_var(const char *s)
 {
 	if (!s)
 		return NULL;
@@ -2639,9 +2639,9 @@ static int parse_group(o_string *dest, struct p_context *ctx,
 
 /* basically useful version until someone wants to get fancier,
  * see the bash man page under "Parameter Expansion" */
-static char *lookup_param(char *src)
+static const char *lookup_param(char *src)
 {
-	char *p;
+	const char *p;
 
 	if (!src)
 		return NULL;
@@ -3261,7 +3261,8 @@ static char *insert_var_value(char *inp)
 	int res_str_len = 0;
 	int len;
 	int done = 0;
-	char *p, *p1, *res_str = NULL;
+	char *p, *res_str = NULL;
+	const char *p1;
 
 	while ((p = strchr(inp, SPECIAL_VAR_SYMBOL))) {
 		if (p != inp) {

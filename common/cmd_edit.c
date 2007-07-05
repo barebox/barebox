@@ -470,7 +470,7 @@ out:
 	return 0;
 }
 
-static char cmd_edit_help[] =
+static __maybe_unused char cmd_edit_help[] =
 "Usage: edit <file>\n"
 "This is a very small editor. Its only features are moving the cursor with\n"
 "the usual keys and typing characters.\n"

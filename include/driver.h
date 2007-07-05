@@ -88,6 +88,7 @@ struct device_d *get_first_device(void);
 int get_free_deviceid(char *id, char *id_template);
 
 struct device_d *device_from_spec_str(const char *str, char **endp);
+char *deviceid_from_spec_str(const char *str, char **endp);
 
 /* Find a driver with the given name. Currently the filesystem implementation
  * uses this to get the driver from the name the user specifies with the

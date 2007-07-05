@@ -40,7 +40,7 @@
 int add_env_spec(char *spec);
 
 /* common/cmd_nvedit.c */
-char    *getenv	     (const char *);
+const char    *getenv	     (const char *);
 int	saveenv	     (void);
 int	setenv	     (const char *, const char *);
 

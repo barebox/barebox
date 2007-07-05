@@ -176,7 +176,7 @@ out:
 	return errno;
 }
 
-static char cmd_md_help[] =
+static __maybe_unused char cmd_md_help[] =
 "Usage md [OPTIONS] <region>\n"
 "display (hexdump) a memory region.\n"
 "options:\n"
@@ -284,7 +284,7 @@ out:
 	return errno;
 }
 
-static char cmd_mw_help[] =
+static __maybe_unused char cmd_mw_help[] =
 "Usage mw [OPTIONS] <region> <value(s)>\n"
 "Write value(s) to the specifies region.\n"
 "see 'help md' for supported options.\n";
@@ -466,7 +466,7 @@ out:
 	return ret;
 }
 
-static char cmd_cp_help[] =
+static __maybe_unused char cmd_cp_help[] =
 "Usage: cp <source> <destination>\n"
 "cp copies file <source> to <destination>.\n"
 "Currently only this form is supported and you have to specify the exact target\n"

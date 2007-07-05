@@ -92,7 +92,7 @@ do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_readline_help[] =
+static __maybe_unused char cmd_readline_help[] =
 "Usage: readline <prompt> VAR\n"
 "readline reads a line of user input into variable VAR.\n";
 
@@ -317,7 +317,7 @@ int do_help (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	}
 }
 
-static char cmd_help_help[] =
+static __maybe_unused char cmd_help_help[] =
 "Show help information (for 'command')\n"
 "'help' prints online help for the monitor commands.\n\n"
 "Without arguments, it prints a short usage message for all commands.\n\n"

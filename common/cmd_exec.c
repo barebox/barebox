@@ -5,6 +5,7 @@
 #include <linux/stat.h>
 #include <errno.h>
 #include <malloc.h>
+#include <xfuncs.h>
 
 #ifdef CONFIG_HUSH_PARSER
 #include <hush.h>

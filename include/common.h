@@ -25,6 +25,7 @@
 #define __COMMON_H_	1
 
 #include <stdio.h>
+#include <compiler.h>
 
 #undef	_LINUX_CONFIG_H
 #define _LINUX_CONFIG_H 1	/* avoid reading Linux autoconf.h file	*/
@@ -46,7 +47,6 @@ typedef unsigned long          IPaddr_t;
 #endif
 
 #include <part.h>
-//#include <image.h>
 
 #ifdef	DEBUG
 #define debug(fmt,args...)	printf (fmt ,##args)

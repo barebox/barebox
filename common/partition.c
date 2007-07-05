@@ -167,7 +167,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-static char cmd_addpart_help[] =
+static __maybe_unused char cmd_addpart_help[] =
 "Usage: addpart <partition description>\n"
 "addpart adds a partition description to a device. The partition description\n"
 "has the form\n"
@@ -206,7 +206,7 @@ int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-static char cmd_delpart_help[] =
+static __maybe_unused char cmd_delpart_help[] =
 "Usage: delpart <dev>\n"
 "Delete partitions previously added to a device with addpart.\n"
 "Note: You have to specify the device as 'devid', _not_ as '/dev/devid'. This\n"

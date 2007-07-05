@@ -535,7 +535,7 @@ startAgainHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 
 void NetStartAgain (void)
 {
-	char *nretry;
+	const char *nretry;
 	int noretry = 0, once = 0;
 
 	if ((nretry = getenv ("netretry")) != NULL) {
@@ -1548,7 +1548,7 @@ void VLAN_to_string(ushort x, char *s)
 		sprintf(s, "%d", x & VLAN_IDMASK);
 }
 
-ushort string_to_VLAN(char *s)
+ushort string_to_VLAN(const char *s)
 {
 	ushort id;
 

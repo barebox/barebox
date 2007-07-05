@@ -105,7 +105,7 @@ int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
-static char cmd_tftpboot_help[] =
+static __maybe_unused char cmd_tftpboot_help[] =
 "Usage: tftpboot <localfile> <remotefile>\n"
 "Load a file via network using BootP/TFTP protocol\n";
 

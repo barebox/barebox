@@ -415,7 +415,7 @@ IPaddr_t string_to_ip(const char *s);
 void	VLAN_to_string (ushort x, char *s);
 
 /* Convert a string to a vlan id */
-ushort string_to_VLAN(char *s);
+ushort string_to_VLAN(const char *s);
 
 /* read an IP address from a environment variable */
 IPaddr_t getenv_IPaddr (char *);

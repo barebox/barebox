@@ -25,12 +25,12 @@ static char *var_name(struct variable_d *var)
         return var->data;
 }
 
-char *getenv (const char *name)
+const char *getenv (const char *name)
 {
         struct variable_d *var;
 
 	if (strchr(name, '.')) {
-		char *ret = 0;
+		const char *ret = 0;
 		char *devstr = strdup(name);
 		char *par = strchr(devstr, '.');
 		struct device_d *dev;
@@ -109,7 +109,7 @@ int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         struct variable_d *var = env_list->next;
 
 	if (argc == 2) {
-                char *val = getenv(argv[1]);
+                const char *val = getenv(argv[1]);
                 if (val) {
                         printf("%s=%s\n", argv[1], val);
                         return 0;

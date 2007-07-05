@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <environment.h>
 #include <clock.h>
 #include <net.h>
 #include "bootp.h"
@@ -528,7 +529,7 @@ static int BootpExtended (u8 * e)
 void
 BootpRequest (void)
 {
-	volatile uchar *pkt, *iphdr;
+	uchar *pkt, *iphdr;
 	Bootp_t *bp;
 	int ext_len, pktlen, iplen;
 
@@ -716,7 +717,7 @@ static int DhcpMessageType(unsigned char *popt)
 
 static void DhcpSendRequestPkt(Bootp_t *bp_offer)
 {
-	volatile uchar *pkt, *iphdr;
+	uchar *pkt, *iphdr;
 	Bootp_t *bp;
 	int pktlen, iplen, extlen;
 	IPaddr_t OfferedIP;

@@ -18,7 +18,7 @@
 #define ZEXPORT	/* empty */
 unsigned long crc32 (unsigned long, const unsigned char *, unsigned int);
 
-#ifdef DYNAMIC_CRC_TABLE
+#ifdef CONFIG_DYNAMIC_CRC_TABLE
 
 local int crc_table_empty = 1;
 local uLongf crc_table[256];
@@ -143,7 +143,7 @@ uLong ZEXPORT crc32(crc, buf, len)
     const Bytef *buf;
     uInt len;
 {
-#ifdef DYNAMIC_CRC_TABLE
+#ifdef CONFIG_DYNAMIC_CRC_TABLE
     if (crc_table_empty)
       make_crc_table();
 #endif
@@ -167,7 +167,7 @@ uLong ZEXPORT crc32(crc, buf, len)
  */
 uLong ZEXPORT crc32_no_comp(uLong crc, const Bytef *buf, uInt len)
 {
-#ifdef DYNAMIC_CRC_TABLE
+#ifdef CONFIG_DYNAMIC_CRC_TABLE
     if (crc_table_empty)
       make_crc_table();
 #endif

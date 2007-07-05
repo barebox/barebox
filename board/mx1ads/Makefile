@@ -1,0 +1,1 @@
+obj-y += mx1ads.o syncflash.o lowlevel_init.o

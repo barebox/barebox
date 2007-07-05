@@ -159,9 +159,7 @@ static void process_macros (const char *input, char *output)
 
 /****************************************************************************
  * returns:
- *	1  - command executed, repeatable
- *	0  - command executed but not repeatable, interrupted commands are
- *	     always considered not repeatable
+ *	0  - command executed
  *	-1 - not executed (unrecognized, bootd recursion or too many args)
  *           (If cmd is NULL or "" or longer than CONFIG_CBSIZE-1 it is
  *           considered unrecognized)
@@ -184,7 +182,6 @@ int run_command (const char *cmd, int flag)
 	char *str = cmdbuf;
 	char *argv[CONFIG_MAXARGS + 1];	/* NULL terminated	*/
 	int argc, inquotes;
-	int repeatable = 1;
 	int rc = 0;
 
 #ifdef DEBUG_PARSER
@@ -192,8 +189,6 @@ int run_command (const char *cmd, int flag)
 	puts (cmd ? cmd : "NULL");	/* use puts - string may be loooong */
 	puts ("\"\n");
 #endif
-
-	clear_ctrlc();		/* forget any previous Control C */
 
 	if (!cmd || !*cmd) {
 		return -1;	/* empty command */
@@ -285,18 +280,11 @@ int run_command (const char *cmd, int flag)
 #endif	/* CFG_CMD_BOOTD */
 
 		/* OK - call function to do the command */
-		if ((cmdtp->cmd) (cmdtp, flag, argc, argv) != 0) {
+		if ((cmdtp->cmd) (cmdtp, flag, argc, argv) != 0)
 			rc = -1;
-		}
-
-		repeatable &= cmdtp->repeatable;
-
-		/* Did the user stop this? */
-		if (had_ctrlc ())
-			return 0;	/* if stopped then not repeatable */
 	}
 
-	return rc ? rc : repeatable;
+	return rc;
 }
 
 /****************************************************************************/

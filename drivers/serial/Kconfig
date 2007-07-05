@@ -1,6 +1,8 @@
 menu "serial drivers"
 
-config DRIVER_SERIAL_DUMMY
-	bool "dummy entry"
+config DRIVER_SERIAL_IMX
+	depends on ARCH_IMX
+	default y
+	bool "i.MX serial driver"
 
 endmenu

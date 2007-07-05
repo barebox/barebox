@@ -23,6 +23,8 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
+#include <asm/arch/imx-regs.h>
+#include <partition.h>
 
 static struct device_d cfi_dev = {
         .name     = "cfi_flash",
@@ -54,7 +56,27 @@ static int scb9328_devices_init(void) {
 	register_device(&sdram_dev);
 	register_device(&dm9000_dev);
 
+	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");
+	dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
+
 	return 0;
 }
 
 device_initcall(scb9328_devices_init);
+
+static struct device_d scb9328_serial_device = {
+        .name     = "imx_serial",
+        .id       = "cs0",
+	.map_base = IMX_UART1_BASE,
+	.size     = 4096,
+        .type     = DEVICE_TYPE_CONSOLE,
+};
+
+static int scb9328_console_init(void)
+{
+	register_device(&scb9328_serial_device);
+	return 0;
+}
+
+console_initcall(scb9328_console_init);
+

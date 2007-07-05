@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <readkey.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <xfuncs.h>
 
 #define TABSPACE 8

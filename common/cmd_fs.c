@@ -2,7 +2,6 @@
 #include <command.h>
 #include <fs.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <malloc.h>
 #include <linux/ctype.h>
 #include <getopt.h>

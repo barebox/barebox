@@ -5,7 +5,6 @@
 #include <fs.h>
 #include <command.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <linux/stat.h>
 
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)

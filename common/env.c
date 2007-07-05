@@ -2,7 +2,7 @@
 #include <command.h>
 #include <driver.h>
 #include <malloc.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 
 static ulong env_size;
 static char *env_name_spec;

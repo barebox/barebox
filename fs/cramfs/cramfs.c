@@ -29,7 +29,6 @@
 #include <driver.h>
 #include <init.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <fs.h>
 #include <xfuncs.h>
 

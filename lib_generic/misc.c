@@ -6,7 +6,6 @@
 #include <malloc.h>
 #include <linux/ctype.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <fs.h>
 
 int cmd_get_data_size(char* arg, int default_size)

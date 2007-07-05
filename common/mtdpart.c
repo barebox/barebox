@@ -4,7 +4,7 @@
 #include <init.h>
 #include <driver.h>
 #include <malloc.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 #include <partition.h>
 
 static void dev_del_partitions(struct device_d *dev)

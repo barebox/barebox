@@ -5,7 +5,6 @@
 #include <fs.h>
 #include <command.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <linux/stat.h>
 #include <xfuncs.h>
 

@@ -3,7 +3,6 @@
 #include <init.h>
 #include <driver.h>
 #include <malloc.h>
-#include <asm-generic/errno.h>
 #include <errno.h>
 
 static struct device_d global_dev;

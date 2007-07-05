@@ -4,7 +4,6 @@
 #include <asm/arch/linux.h>
 #include <init.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <asm/arch/hostfile.h>
 #include <xfuncs.h>
 

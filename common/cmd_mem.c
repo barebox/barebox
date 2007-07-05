@@ -33,7 +33,6 @@
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <getopt.h>

@@ -2,7 +2,6 @@
 #include <fs.h>
 #include <driver.h>
 #include <errno.h>
-#include <asm-generic/errno.h>
 #include <malloc.h>
 #include <linux/stat.h>
 #include <fcntl.h>

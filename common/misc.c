@@ -1,6 +1,6 @@
 #include <common.h>
 #include <mem_malloc.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"

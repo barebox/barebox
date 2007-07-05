@@ -37,26 +37,48 @@ char *mkmodestr(unsigned long mode, char *str)
 	return str;
 }
 
-static int fs_probe(struct device_d *dev)
-{
-	struct fs_device_d *fs_dev = dev->platform_data;
+struct mtab_entry {
+	char path[PATH_MAX];
+	struct mtab_entry *next;
+	struct device_d *dev;
+};
 
-	return fs_dev->driver->probe(fs_dev->parent);
+static struct mtab_entry *mtab;
+
+struct mtab_entry *get_mtab_entry_by_path(const char *_path)
+{
+	struct mtab_entry *match = NULL, *e = mtab;
+	char *path, *tok;
+
+	if (*_path != '/')
+		return NULL;
+
+	path = strdup(_path);
+
+	tok = strchr(path + 1, '/');
+	if (tok)
+		*tok = 0;
+
+	while (e) {
+		if (!strcmp(path, e->path)) {
+			match = e;
+			break;
+		}
+		e = e->next;
+	}
+
+	free(path);
+
+	return match ? match : mtab;
 }
 
-int register_fs_driver(struct fs_driver_d *new_fs_drv)
+int mount (struct device_d *dev, char *fsname, char *path)
 {
-	new_fs_drv->drv.probe = fs_probe;
-	new_fs_drv->drv.driver_data = new_fs_drv;
-
-	return register_driver(&new_fs_drv->drv);
-}
-
-int register_filesystem(struct device_d *dev, char *fsname)
-{
-	struct fs_device_d *new_fs_dev;
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
+	struct mtab_entry *entry;
+	struct fs_device_d *fsdev;
+	int ret;
 
 	drv = get_driver_by_name(fsname);
 	if (!drv) {
@@ -69,72 +91,146 @@ int register_filesystem(struct device_d *dev, char *fsname)
 		return -EINVAL;
 	}
 
-	new_fs_dev = malloc(sizeof(struct fs_device_d));
+	/* check if path exists */
+	/* TODO */
 
-	fs_drv = drv->driver_data;
+	fs_drv = drv->type_data;
+	printf("mount: fs_drv: %p\n", fs_drv);
 
-	new_fs_dev->driver = fs_drv;
-	new_fs_dev->parent = dev;
-	new_fs_dev->dev.platform_data = new_fs_dev;
-	new_fs_dev->dev.type = DEVICE_TYPE_FS;
-	sprintf(new_fs_dev->dev.name, "%s", fsname);
-	sprintf(new_fs_dev->dev.id, "%s", "fs0");
-
-	register_device(&new_fs_dev->dev);
-
-	if (!new_fs_dev->dev.driver) {
-		unregister_device(&new_fs_dev->dev);
-		return -ENODEV;
+	if (fs_drv->flags & FS_DRIVER_NO_DEV) {
+		dev = malloc(sizeof(struct device_d));
+		memset(dev, 0, sizeof(struct device_d));
+		sprintf(dev->name, "%s", fsname);
+		dev->type = DEVICE_TYPE_FS;
+		if ((ret = register_device(dev))) {
+			free(dev);
+			return ret;
+		}
+		if (!dev->driver) {
+			/* driver didn't accept the device. Bail out */
+			free(dev);
+			return -EINVAL;
+		}
+	} else {
+		fsdev = malloc(sizeof(struct fs_device_d));
+		memset(fsdev, 0, sizeof(struct fs_device_d));
+		fsdev->parent = dev;
+		sprintf(fsdev->dev.name, "%s", fsname);
+		fsdev->dev.type = DEVICE_TYPE_FS;
+		fsdev->dev.type_data = fsdev;
+		if ((ret = register_device(&fsdev->dev))) {
+			free(fsdev);
+			return ret;
+		}
+		if (!fsdev->dev.driver) {
+			/* driver didn't accept the device. Bail out */
+			free(fsdev);
+			return -EINVAL;
+		}
+		dev = &fsdev->dev;
 	}
+
+	/* add mtab entry */
+	entry = malloc(sizeof(struct mtab_entry));
+	sprintf(entry->path, "%s", path);
+	entry->dev = dev;
+	entry->next = NULL;
+
+	if (!mtab)
+		mtab = entry;
+	else {
+		struct mtab_entry *e = mtab;
+		while (e->next)
+			e = e->next;
+		e->next = entry;
+	}
+
+	printf("mount: mtab->dev: %p\n", mtab->dev);
 
 	return 0;
 }
 
-int ls(struct device_d *dev, const char *filename)
-{
-	struct fs_device_d *fs_dev;
-
-	if (!dev || dev->type != DEVICE_TYPE_FS || !dev->driver)
-		return -ENODEV;
-
-	fs_dev = dev->platform_data;
-
-	return fs_dev->driver->ls(fs_dev->parent, filename);
-}
-
-/* addfs <device> <fstype> */
-int do_addfs ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	struct device_d *dev;
 	int ret = 0;
 
-	if (argc != 3) {
+	if (argc != 4) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
 	dev = get_device_by_id(argv[1]);
-	if (!dev) {
-		printf("no such device: %s\n", argv[1]);
-		return -ENODEV;
-	}
 
-	if ((ret = register_filesystem(dev, argv[2]))) {
-		perror("register_device", ret);
+	if ((ret = mount(dev, argv[2], argv[3]))) {
+		perror("mount", ret);
 		return 1;
 	}
 	return 0;
 }
 
-int do_ls ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+struct dir *opendir(const char *pathname)
 {
 	struct device_d *dev;
-	char *endp;
+	struct fs_driver_d *fsdrv;
+	struct dir *dir;
+	struct mtab_entry *e;
+
+	e = get_mtab_entry_by_path(pathname);
+	if (e != mtab)
+		pathname += strlen(e->path);
+
+	dev = e->dev;
+//	printf("opendir: dev: %p\n",dev);
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+//	printf("opendir: fsdrv: %p\n",fsdrv);
+
+	dir = fsdrv->opendir(dev, pathname);
+	if (dir) {
+		dir->dev = dev;
+		dir->fsdrv = fsdrv;
+	}
+
+	return dir;
+}
+
+struct dirent *readdir(struct dir *dir)
+{
+	return dir->fsdrv->readdir(dir->dev, dir);
+}
+
+int closedir(struct dir *dir)
+{
+	return dir->fsdrv->closedir(dir->dev, dir);
+}
+
+static int ls(const char *path)
+{
+	struct dir *dir;
+	struct dirent *d;
+	char modestr[11];
+
+	dir = opendir(path);
+	if (!dir)
+		return -ENOENT;
+
+	while ((d = readdir(dir))) {
+		unsigned long namelen = strlen(d->name);
+		mkmodestr(d->mode, modestr);
+		printf("%s %8d %*.*s\n",modestr, d->size, namelen, namelen, d->name);
+	}
+
+	closedir(dir);
+
+	return 0;
+}
+
+int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
 	int ret;
 
-	dev = device_from_spec_str(argv[1], &endp);
-
-	ret = ls(dev, endp);
+	ret = ls(argv[1]);
 	if (ret) {
 		perror("ls", ret);
 		return 1;
@@ -146,13 +242,51 @@ int do_ls ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD(
 	ls,     2,     0,      do_ls,
 	"ls      - list a file or directory\n",
-	"<dev:path> list files on device"
+	"<path> list files on path"
+);
+
+int mkdir (const char *pathname)
+{
+	struct fs_driver_d *fsdrv;
+	struct device_d *dev;
+	struct mtab_entry *e;
+
+	e = get_mtab_entry_by_path(pathname);
+	if (e != mtab)
+		pathname += strlen(e->path);
+
+	dev = e->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (fsdrv->mkdir)
+		return fsdrv->mkdir(dev, pathname);
+	return -EROFS;
+}
+
+int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int ret;
+
+	ret = mkdir(argv[1]);
+	if (ret) {
+		perror("ls", ret);
+		return 1;
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	mkdir,     2,     0,      do_mkdir,
+	"mkdir    - create a new directory\n",
+	""
 );
 
 U_BOOT_CMD(
-	addfs,     3,     0,      do_addfs,
-	"addfs   - add a filesystem to a device\n",
-	" <device> <type> add a filesystem of type 'type' on the given device"
+	mount,     4,     0,      do_mount,
+	"mount   - mount a filesystem to a device\n",
+	" <device> <type> <path> add a filesystem of type 'type' on the given device"
 );
 #if 0
 U_BOOT_CMD(

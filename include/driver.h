@@ -26,8 +26,11 @@ struct device_d {
          */
         unsigned long map_base;
 
-        void *platform_data;
-        void *priv;
+        void *platform_data; /* board specific information about this device */
+        void *priv;          /* data private to the driver */
+	void *type_data;     /* In case this device is a specific device, this pointer
+			      * points to the type specific device, i.e. eth_device
+			      */
 
         /* The driver for this device */
         struct driver_d *driver;
@@ -55,9 +58,10 @@ struct driver_d {
 	int	(*get) (struct device_d*, struct param_d *);
 	int	(*set) (struct device_d*, struct param_d *, value_t val);
 
-	void *driver_data;
         unsigned long type;
-        void *type_data;
+        void *type_data; /* In case this driver is of a specific type, i.e. a filesystem
+			  * driver, this pointer points to the corresponding data struct
+			  */
 };
 
 #define RW_SIZE(x)      (x)

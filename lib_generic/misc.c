@@ -68,7 +68,7 @@ int register_device(struct device_d *new_device)
 
 	dev = first_device;
 
-	if(get_device_by_id(new_device->id)) {
+	if(*new_device->id && get_device_by_id(new_device->id)) {
 		printf("device %s already exists\n", new_device->id);
 		return -EINVAL;
 	}

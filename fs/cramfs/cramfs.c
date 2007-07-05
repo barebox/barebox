@@ -209,11 +209,11 @@ int cramfs_load (char *loadoffset, struct device_d *dev, const char *filename)
 				  (unsigned long) loadoffset);
 }
 
-static int cramfs_list_inode (struct device_d *dev, unsigned long offset)
+static int cramfs_fill_dirent (struct device_d *dev, unsigned long offset, struct dirent *d)
 {
 	struct cramfs_inode *inode = (struct cramfs_inode *)
 		(dev->map_base + offset);
-	char *name, str[20];
+	char *name;
 	int namelen, nextoff;
 
 	/*
@@ -233,80 +233,89 @@ static int cramfs_list_inode (struct device_d *dev, unsigned long offset)
 		namelen--;
 	}
 
-	printf (" %s %8d %*.*s", mkmodestr (CRAMFS_16 (inode->mode), str),
-		CRAMFS_24 (inode->size), namelen, namelen, name);
-
-	if ((CRAMFS_16 (inode->mode) & S_IFMT) == S_IFLNK) {
-		/* symbolic link.
-		 * Unpack the link target, trusting in the inode's size field.
-		 */
-		unsigned long size = CRAMFS_24 (inode->size);
-		char *link = malloc (size);
-
-		if (link != NULL && cramfs_uncompress (dev->map_base, offset,
-						       (unsigned long) link)
-		    == size)
-			printf (" -> %*.*s\n", (int) size, (int) size, link);
-		else
-			printf (" [Error reading link]\n");
-		if (link)
-			free (link);
-	} else
-		printf ("\n");
+	d->mode = CRAMFS_16 (inode->mode);
+	d->size = CRAMFS_24 (inode->size);
+	memset(d->name, 0, 256);
+	strncpy(d->name, name, namelen);
 
 	return nextoff;
 }
 
-int cramfs_ls (struct device_d *dev, const char *filename)
-{
+struct cramfs_dir {
 	struct cramfs_inode *inode;
-	unsigned long inodeoffset = 0, nextoffset;
 	unsigned long offset, size;
+	unsigned long inodeoffset;
+	struct dir dir;
+};
+
+struct dir* cramfs_opendir(struct device_d *_dev, const char *filename)
+{
 	char *f;
+	struct fs_device_d *fsdev = _dev->type_data;
+	struct device_d *dev = fsdev->parent;
 
-	printf("cramfs_ls: %s\n", filename);
-
-	if (cramfs_read_super (dev))
-		return -1;
+	struct cramfs_dir *dir = malloc(sizeof(struct cramfs_dir));
+	memset(dir, 0, sizeof(struct cramfs_dir));
+	dir->dir.priv = dir;
 
 	if (strlen (filename) == 0 || !strcmp (filename, "/")) {
 		/* Root directory. Use root inode in super block */
-		offset = CRAMFS_GET_OFFSET (&(super.root)) << 2;
-		size = CRAMFS_24 (super.root.size);
+		dir->offset = CRAMFS_GET_OFFSET (&(super.root)) << 2;
+		dir->size = CRAMFS_24 (super.root.size);
 	} else {
 		f = strdup(filename);
 		/* Resolve the path */
-		offset = cramfs_resolve (dev->map_base,
+		dir->offset = cramfs_resolve (dev->map_base,
 					 CRAMFS_GET_OFFSET (&(super.root)) <<
 					 2, CRAMFS_24 (super.root.size), 1,
 					 strtok (f, "/"));
 		free(f);
-		if (offset <= 0)
-			return offset;
+		if (dir->offset <= 0)
+			goto err_free;
 
 		/* Resolving was successful. Examine the inode */
-		inode = (struct cramfs_inode *) (dev->map_base + offset);
-		if (!S_ISDIR (CRAMFS_16 (inode->mode))) {
-			/* It's not a directory - list it, and that's that */
-			return (cramfs_list_inode (dev, offset) > 0);
+		dir->inode = (struct cramfs_inode *) (dev->map_base + dir->offset);
+		if (!S_ISDIR (CRAMFS_16 (dir->inode->mode))) {
+			/* It's not a directory */
+			goto err_free;
 		}
 
 		/* It's a directory. List files within */
-		offset = CRAMFS_GET_OFFSET (inode) << 2;
-		size = CRAMFS_24 (inode->size);
+		dir->offset = CRAMFS_GET_OFFSET (dir->inode) << 2;
+		dir->size = CRAMFS_24 (dir->inode->size);
 	}
+
+	return &dir->dir;
+
+err_free:
+	free(dir);
+	return NULL;
+}
+
+struct dirent* cramfs_readdir(struct device_d *_dev, struct dir *_dir)
+{
+	struct fs_device_d *fsdev = _dev->type_data;
+	struct device_d *dev = fsdev->parent;
+	struct cramfs_dir *dir = _dir->priv;
+	unsigned long nextoffset;
 
 	/* List the given directory */
-	while (inodeoffset < size) {
-		inode = (struct cramfs_inode *) (dev->map_base + offset +
-						 inodeoffset);
+	if (dir->inodeoffset < dir->size) {
+		dir->inode = (struct cramfs_inode *) (dev->map_base + dir->offset +
+						 dir->inodeoffset);
 
-		nextoffset = cramfs_list_inode (dev, offset + inodeoffset);
-		if (nextoffset == 0)
-			break;
-		inodeoffset += sizeof (struct cramfs_inode) + nextoffset;
+		nextoffset = cramfs_fill_dirent (dev, dir->offset + dir->inodeoffset, &_dir->d);
+
+		dir->inodeoffset += sizeof (struct cramfs_inode) + nextoffset;
+		return &_dir->d;
 	}
+	return NULL;
+}
 
+int cramfs_closedir(struct device_d *dev, struct dir *_dir)
+{
+	struct cramfs_dir *dir = _dir->priv;
+	free(dir);
 	return 0;
 }
 
@@ -338,7 +347,14 @@ int cramfs_info (struct device_d *dev)
 
 int cramfs_probe(struct device_d *dev)
 {
-	if (cramfs_read_super (dev)) {
+	struct fs_device_d *fsdev;
+
+	printf("%s: dev: %p\n",__FUNCTION__, dev);
+
+	fsdev = dev->type_data;
+	printf("%s: fsdev: %p\n",__FUNCTION__, fsdev);
+
+	if (cramfs_read_super (fsdev->parent)) {
 		printf("no valid cramfs found on %s\n",dev->id);
 		return -EINVAL;
 	}
@@ -347,19 +363,21 @@ int cramfs_probe(struct device_d *dev)
 }
 
 static struct fs_driver_d cramfs_driver = {
-	.type  = FS_TYPE_CRAMFS,
-	.probe = cramfs_probe,
-	.ls    = cramfs_ls,
+	.type		= FS_TYPE_CRAMFS,
+	.opendir	= cramfs_opendir,
+	.readdir	= cramfs_readdir,
+	.closedir	= cramfs_closedir,
 	.drv = {
 		.type = DEVICE_TYPE_FS,
+		.probe = cramfs_probe,
 		.name = "cramfs",
-		.driver_data = &cramfs_driver,
+		.type_data = &cramfs_driver,
 	}
 };
 
 int cramfs_init(void)
 {
-	return register_fs_driver(&cramfs_driver);
+	return register_driver(&cramfs_driver.drv);
 }
 
 device_initcall(cramfs_init);

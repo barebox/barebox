@@ -12,7 +12,6 @@ obj-y += partition.o
 obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
-obj-y		+= misc.o
 
 #obj-y += cmd_elf.o
 #obj-y += cmd_itest.o

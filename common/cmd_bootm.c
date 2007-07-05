@@ -825,7 +825,7 @@ print_image_hdr (image_header_t *hdr)
 	printf ("   Created:      %4d-%02d-%02d  %2d:%02d:%02d UTC\n",
 		tm.tm_year, tm.tm_mon, tm.tm_mday,
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif	/* CFG_CMD_DATE, CONFIG_TIMESTAMP */
+#endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
 	puts ("   Image Type:   "); print_type(hdr);
 	printf ("\n   Data Size:    %d Bytes = ", ntohl(hdr->ih_size));
 	print_size (ntohl(hdr->ih_size), "\n");

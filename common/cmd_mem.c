@@ -36,6 +36,7 @@
 #include <asm-generic/errno.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -109,21 +110,46 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	int	r, now;
 	int	ret = 0;
 	int fd;
+	char *filename = "/dev/mem";
+	int mode = O_RWSIZE_4;
+	int opt;
 
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	fd = open("/dev/mem", O_RDONLY);
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
+		switch(opt) {
+		case 'b':
+			mode = O_RWSIZE_1;
+			break;
+		case 'w':
+			mode = O_RWSIZE_2;
+			break;
+		case 'l':
+			mode = O_RWSIZE_4;
+		case 'f':
+			filename = optarg;
+		}
+	}
+
+	fd = open(filename, mode | O_RDONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
 	}
 
-	parse_area_spec(argv[1], &start, &size);
+	parse_area_spec(argv[optind], &start, &size);
 	if (size == ~0)
 		size = 0x100;
+
+	if (lseek(fd, start, SEEK_SET)) {
+		perror("lseek");
+		return 1;
+	}
 
 	do {
 		now = min(size, RW_BUF_SIZE);
@@ -135,7 +161,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		if (!r)
 			goto out;
 
-		if ((ret = memory_display(rw_buf, start, r, 1)))
+		if ((ret = memory_display(rw_buf, start, r, mode >> O_RWSIZE_SHIFT)))
 			goto out;
 
 		start += r;
@@ -144,7 +170,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 out:
 	close(fd);
-printf("closed\n");
+
 	return 0;
 }
 #if 0
@@ -464,10 +490,13 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 	ulong dst = (ulong)_dst;
 	ulong src = (ulong)_src;
 
+	/* no rwsize specification given. Do whatever memcpy likes best */
 	if (!rwsize) {
 		memcpy(_dst, _src, count);
 		return;
 	}
+
+	rwsize = rwsize >> O_RWSIZE_SHIFT;
 
 	count /= rwsize;
 
@@ -488,20 +517,20 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 	}
 }
 
-ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
+ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
 {
 	ulong size;
 	size = min(count, dev->size - offset);
 	printf("mem_read: dev->map_base: %p size: %d offset: %d\n",dev->map_base, size, offset);
-	memcpy_sz(buf, (void *)(dev->map_base + offset), size, rwflags & RW_SIZE_MASK);
+	memcpy_sz(buf, (void *)(dev->map_base + offset), size, flags & O_RWSIZE_MASK);
 	return size;
 }
 
-ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong rwflags)
+ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
 {
 	ulong size;
 	size = min(count, dev->size - offset);
-	memcpy_sz((void *)(dev->map_base + offset), buf, size, rwflags & RW_SIZE_MASK);
+	memcpy_sz((void *)(dev->map_base + offset), buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }
 
@@ -544,7 +573,7 @@ static int mem_init(void)
 device_initcall(mem_init);
 
 U_BOOT_CMD(
-	md,     3,     0,      do_mem_md,
+	md,     10000,     0,      do_mem_md,
 	"md      - memory display\n",
 	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
 );

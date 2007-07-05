@@ -110,11 +110,10 @@ static int cpu_init (void)
 core_initcall(cpu_init);
 #endif
 
-int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+void do_reset (void)
 {
 	disable_interrupts();
 	reset_cpu(0);
 
 	/* NOT REACHED */
-	return 0;
 }

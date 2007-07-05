@@ -54,7 +54,7 @@ static int hist_init(void)
 	return 0;
 }
 
-core_initcall(hist_init);
+postcore_initcall(hist_init);
 
 static void cread_add_to_hist(char *line)
 {

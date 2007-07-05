@@ -1,3 +1,6 @@
+#include <common.h>
+#include <command.h>
+
 /* read co-processor 15, register #1 (control register) */
 static unsigned long read_p15_c1 (void)
 {
@@ -72,6 +75,8 @@ int icache_status (void)
 
 int cleanup_before_linux (void)
 {
+	int i;
+
 	/*
 	 * this function is called just before we call linux
 	 * it prepares the processor for linux
@@ -107,8 +112,8 @@ core_initcall(cpu_init);
 
 int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	disable_interrupts ();
-	reset_cpu 0;
+	disable_interrupts();
+	reset_cpu(0);
 
 	/* NOT REACHED */
 	return 0;

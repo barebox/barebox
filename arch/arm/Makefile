@@ -49,12 +49,12 @@ BOARD  :=
 endif
 
 ifneq ($(cpu-y),)
-CPU  := cpu/$(cpu-y)/
+MACH  := arch/arm/mach-$(machine-y)/
 else
-CPU  :=
+MACH  :=
 endif
 
-common-y += $(BOARD) $(CPU)
-common-y += arch/arm/lib/
+common-y += $(BOARD) $(MACH)
+common-y += arch/arm/lib/ arch/arm/cpu/
 
 MRPROPER_FILES += include/asm-arm/arch

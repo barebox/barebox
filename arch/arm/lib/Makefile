@@ -1,0 +1,10 @@
+obj-y	+= armlinux.o
+obj-y	+= _ashldi3.o
+obj-y	+= _ashrdi3.o
+obj-y	+= board.o
+obj-y	+= cache.o
+obj-y	+= div0.o
+obj-y	+= _divsi3.o
+obj-y	+= _modsi3.o
+obj-y	+= _udivsi3.o
+obj-y	+= _umodsi3.o

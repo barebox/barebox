@@ -30,57 +30,12 @@
 #include <malloc.h>
 #include <asm-generic/errno.h>
 
-typedef enum eth_cookies {
-        PARAM_IP,
-        PARAM_MAC,
-        PARAM_GW,
-        PARAM_NM,
-} eth_cookies_t;
-
-static char *eth_get(struct device_d* dev, struct param_d *param)
-{
-        struct eth_device *edev = dev->priv;
-	char *buf;
-
-	switch (param->cookie) {
-	case PARAM_MAC:
-		buf = malloc(18);
-		enet_addr_to_string(edev->enetaddr, buf);
-		break;
-	default:
-		buf = strdup((char *)param->val);
-	}
-
-	return buf;
-}
-
-static int eth_set(struct device_d* dev, struct param_d *param, char *newval)
-{
-        struct eth_device *edev = dev->priv;
-	int ret;
-
-	switch (param->cookie) {
-	case PARAM_MAC:
-		if (string_to_enet_addr(newval, edev->enetaddr))
-			return -EINVAL;
-
-		if ((ret = edev->set_mac_address(edev, newval)))
-			return ret;
-		/* Fall through */
-	default:
-		if (param->val)
-			free(param->val);
-		param->val = strdup(newval);
-	}
-
-        return 0;
-}
-
 static struct param_d eth_params[] = {
-        { .name = "ip", .cookie = PARAM_IP, .set = eth_set, .get = eth_get},
-        { .name = "mac", .cookie = PARAM_MAC, .set = eth_set, .get = eth_get},
-        { .name = "gateway", .cookie = PARAM_GW, .set = eth_set, .get = eth_get},
-        { .name = "netmask", .cookie = PARAM_NM, .set = eth_set, .get = eth_get},
+        { .name = "ip", .type = PARAM_TYPE_IPADDR,},
+        { .name = "mac", .type = PARAM_TYPE_STRING,},
+        { .name = "gateway", .type = PARAM_TYPE_IPADDR,},
+        { .name = "netmask", .type = PARAM_TYPE_IPADDR,},
+        { .name = "serverip", .type = PARAM_TYPE_IPADDR,},
 };
 
 static struct eth_device *eth_current;
@@ -137,6 +92,7 @@ int eth_register(struct eth_device *edev)
         struct device_d *dev = edev->dev;
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
+	value_t val;
 	int i;
 
 
@@ -147,14 +103,15 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
-        for (i = 0; i < 4; i++)
+        for (i = 0; i < 5; i++)
                 dev_add_parameter(dev, &eth_params[i]);
 
 	if (edev->get_mac_address(edev, ethaddr) == 0) {
 		sprintf (ethaddr_str, "%02X:%02X:%02X:%02X:%02X:%02X",
 			ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
 		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
-		dev_set_param(dev, "mac", ethaddr);
+		val.val_str = ethaddr_str;
+		dev_set_param(dev, "mac", val);
 		memcpy(edev->enetaddr, ethaddr, 6);
 	}
 

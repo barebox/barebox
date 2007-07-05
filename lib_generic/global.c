@@ -4,6 +4,7 @@
 #include <driver.h>
 #include <malloc.h>
 #include <asm-generic/errno.h>
+#include <errno.h>
 
 static struct device_d global_dev;
 
@@ -36,22 +37,22 @@ coredevice_initcall(global_init);
 static int do_get( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
         struct device_d *dev;
-        char *endp, *str;
+	struct param_d *param;
 
 	if (argc < 3) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-        dev = device_from_spec_str(argv[1], &endp);
+        dev = device_from_spec_str(argv[1], NULL);
         if (!dev) {
                 printf("no such device: %s\n", argv[1]);
                 return 1;
         }
 
-        str = dev_get_param(dev, argv[2]);
-        printf("%s\n",str);
-	free(str);
+        param = dev_get_param(dev, argv[2]);
+	print_param(param);
+	printf("\n");
 
         return 0;
 }
@@ -67,6 +68,8 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         struct device_d *dev;
         char *endp;
         int ret;
+	struct param_d *param;
+	value_t val;
 
 	if (argc < 4) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -79,9 +82,24 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        ret = dev_set_param(dev, argv[2], argv[3]);
+	param = get_param_by_name(dev, argv[2]);
+
+	switch (param->type) {
+	case PARAM_TYPE_STRING:
+		val.val_str = argv[3];
+		break;
+	case PARAM_TYPE_ULONG:
+		val.val_ulong = simple_strtoul(argv[3], NULL, 0);
+		break;
+	case PARAM_TYPE_IPADDR:
+		val.val_ip = string_to_ip(argv[3]);
+		break;
+	}
+
+	ret = dev_set_param(dev, argv[2], val);
+
         if (ret)
-                printf("failed\n");
+                perror("set parameter failed", ret);
         return ret;
 }
 

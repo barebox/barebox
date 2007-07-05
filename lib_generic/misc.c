@@ -396,7 +396,7 @@ int dummy_probe(struct device_d *dev)
         return 0;
 }
 
-static struct param_d *get_param_by_name(struct device_d *dev, char *name)
+struct param_d *get_param_by_name(struct device_d *dev, char *name)
 {
         struct param_d *param = dev->param;
 
@@ -409,29 +409,71 @@ static struct param_d *get_param_by_name(struct device_d *dev, char *name)
         return NULL;
 }
 
-/*
- * Get a parameter from a device.
- * The string is malloced with malloc and must be freed
- * with free after usage
- */
-char *dev_get_param(struct device_d *dev, char *name)
+void print_param(struct param_d *param) {
+	switch (param->type) {
+	case PARAM_TYPE_STRING:
+		printf("%s", param->value.val_str);
+		break;
+	case PARAM_TYPE_ULONG:
+		printf("%ld", param->value.val_ulong);
+		break;
+	case PARAM_TYPE_IPADDR:
+		print_IPaddr(param->value.val_ip);
+		break;
+	}
+}
+
+struct param_d* dev_get_param(struct device_d *dev, char *name)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
         if (param && param->get)
                 return param->get(dev, param);
 
-        return NULL;
+        return param;
 }
 
-int dev_set_param(struct device_d *dev, char *name, char *val)
+IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
+{
+	struct param_d *param = dev_get_param(dev, name);
+
+	if (!param || param->type != PARAM_TYPE_IPADDR)
+		return -1;
+
+	return param->value.val_ip;
+}
+
+int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
+{
+	value_t val;
+
+	val.val_ip = ip;
+
+	return dev_set_param(dev, name, val);
+}
+
+int dev_set_param(struct device_d *dev, char *name, value_t val)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
-        if (param && param->set)
+	if (!param)
+		return -EINVAL;
+
+	if (param->flags & PARAM_FLAG_RO)
+		return -EACCES;
+
+        if (param->set)
                 return param->set(dev, param, val);
 
-        return -1;
+	if (param->type == PARAM_TYPE_STRING) {
+		if (param->value.val_str)
+			free(param->value.val_str);
+		param->value.val_str = strdup(val.val_str);
+		return 0;
+	}
+
+        param->value = val;
+	return 0;
 }
 
 int dev_add_parameter(struct device_d *dev, struct param_d *newparam)
@@ -487,9 +529,9 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 printf("%s\n", param ? "Parameters:" : "no parameters available");
 
                 while (param) {
-			char *val = param->get(dev, param);
-                        printf("%16s = %s\n", param->name, val);
-			free(param);
+			printf("%16s = ", param->name);
+			print_param(param);
+			printf("\n");
                         param = param->next;
                 }
 

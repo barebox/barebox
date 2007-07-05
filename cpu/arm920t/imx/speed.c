@@ -96,7 +96,10 @@ ulong get_PERCLK3(void)
 	return get_systemPLLCLK() / (((PCDR>>16) & 0x7f)+1);
 }
 
+static int arch_number = CONFIG_ARCH_NUMBER;
+
 typedef enum imx_cookies {
+        PARAM_CPUCLK,
         PARAM_SYSCLOCK,
         PARAM_PERCLK1,
         PARAM_PERCLK2,
@@ -104,79 +107,35 @@ typedef enum imx_cookies {
         PARAM_BCLK,
         PARAM_HCLK,
         PARAM_FCLK,
-        PARAM_CPUCLK,
         PARAM_ARCH_NUMBER,
         PARAM_LAST,
 } imx_cookies_t;
 
-char *clk_get(struct device_d* dev, ulong cookie)
-{
-        ulong clock = 0;
-        static char buf[11];
-
-        switch (cookie) {
-        case PARAM_SYSCLOCK:
-                clock = get_systemPLLCLK();
-                break;
-        case PARAM_PERCLK1:
-                clock = get_PERCLK1();
-                break;
-        case PARAM_PERCLK2:
-                clock = get_PERCLK2();
-                break;
-        case PARAM_PERCLK3:
-                clock = get_PERCLK3();
-                break;
-        case PARAM_BCLK:
-                clock = get_BCLK();
-                break;
-        case PARAM_HCLK:
-                clock = get_HCLK();
-                break;
-        case PARAM_FCLK:
-                clock = get_FCLK();
-                break;
-        case PARAM_CPUCLK:
-                clock = get_mcuPLLCLK();
-                break;
-        }
-
-        sprintf(buf, "%ld",clock);
-        return buf;
-}
-
-static int arch_number = CONFIG_ARCH_NUMBER;
-
-static char *arch_number_get(struct device_d* dev, ulong cookie)
-{
-        static char buf[5];
-
-        sprintf(buf, "%d", arch_number);
-
-        return buf;
-}
-
-static int arch_number_set(struct device_d* dev, ulong cookie, char *newval)
-{
-        arch_number = simple_strtoul(newval, NULL, 10);
-        return 0;
-}
-
 static struct param_d imx_params[] = {
-        { .name = "imx_system_clk", .cookie = PARAM_SYSCLOCK, .get = clk_get},
-        { .name = "imx_perclk1", .cookie = PARAM_PERCLK1, .get = clk_get},
-        { .name = "imx_perclk2", .cookie = PARAM_PERCLK2, .get = clk_get},
-        { .name = "imx_perclk3", .cookie = PARAM_PERCLK3, .get = clk_get},
-        { .name = "imx_bclk", .cookie = PARAM_BCLK, .get = clk_get},
-        { .name = "imx_hclk", .cookie = PARAM_HCLK, .get = clk_get},
-        { .name = "imx_fclk", .cookie = PARAM_FCLK, .get = clk_get},
-        { .name = "imx_cpuclk", .cookie = PARAM_CPUCLK, .get = clk_get},
-        { .name = "arch_number", .cookie = PARAM_CPUCLK, .get = arch_number_get, .set = arch_number_set},
+        [PARAM_CPUCLK]      = { .name = "imx_cpuclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_SYSCLOCK]    = { .name = "imx_system_clk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK1]     = { .name = "imx_perclk1", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK2]     = { .name = "imx_perclk2", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK3]     = { .name = "imx_perclk3", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_BCLK]        = { .name = "imx_bclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_HCLK]        = { .name = "imx_hclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_FCLK]        = { .name = "imx_fclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
+        [PARAM_ARCH_NUMBER] = { .name = "arch_number", .type = PARAM_TYPE_ULONG},
 };
 
 static int imx_clk_init(void)
 {
         int i;
+
+	imx_params[PARAM_CPUCLK].value.val_ulong = get_mcuPLLCLK();
+	imx_params[PARAM_SYSCLOCK].value.val_ulong = get_systemPLLCLK();
+	imx_params[PARAM_PERCLK1].value.val_ulong = get_PERCLK1();
+	imx_params[PARAM_PERCLK2].value.val_ulong = get_PERCLK2();
+	imx_params[PARAM_PERCLK3].value.val_ulong = get_PERCLK3();
+	imx_params[PARAM_BCLK].value.val_ulong = get_BCLK();
+	imx_params[PARAM_HCLK].value.val_ulong = get_HCLK();
+	imx_params[PARAM_FCLK].value.val_ulong = get_FCLK();
+	imx_params[PARAM_ARCH_NUMBER].value.val_ulong = arch_number;
 
         for (i = 0; i < PARAM_LAST; i++)
                 global_add_parameter(&imx_params[i]);

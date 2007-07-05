@@ -253,9 +253,10 @@ void ArpTimeoutCheck(void)
 int
 NetLoop(proto_t protocol)
 {
+	struct eth_device *eth_current = eth_get_current();
 	IPaddr_t ip;
 
-	ip = getenv_IPaddr ("ipaddr");
+	ip = dev_get_param_ip(eth_current->dev, "ip");
 	NetCopyIP(&NetOurIP, &ip);
 
 	/* XXX problem with bss workaround */
@@ -310,8 +311,8 @@ restart:
 #endif
 	case NETCONS:
 	case TFTP:
-		NetOurGatewayIP = getenv_IPaddr ("gatewayip");
-		NetOurSubnetMask= getenv_IPaddr ("netmask");
+		NetOurGatewayIP = dev_get_param_ip(eth_current->dev, "gateway");
+		NetOurSubnetMask = dev_get_param_ip(eth_current->dev, "netmask");
 		NetOurVLAN = getenv_VLAN("vlan");
 		NetOurNativeVLAN = getenv_VLAN("nvlan");
 
@@ -321,7 +322,7 @@ restart:
 #endif
 		case NETCONS:
 		case TFTP:
-			NetServerIP = getenv_IPaddr ("serverip");
+			NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 			break;
 #ifdef CONFIG_NET_PING
 		case PING:
@@ -345,7 +346,7 @@ restart:
 		 * IP addr assigned to us by the BOOTP / RARP server
 		 */
 		NetOurIP = 0;
-		NetServerIP = getenv_IPaddr ("serverip");
+		NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 		NetOurVLAN = getenv_VLAN("vlan");	/* VLANs must be read */
 		NetOurNativeVLAN = getenv_VLAN("nvlan");
 	case CDP:
@@ -374,7 +375,7 @@ restart:
 			/* Start with a clean slate... */
 			BootpTry = 0;
 			NetOurIP = 0;
-			NetServerIP = getenv_IPaddr ("serverip");
+			NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 			DhcpRequest();		/* Basically same as BOOTP */
 			break;
 #endif

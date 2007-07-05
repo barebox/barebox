@@ -41,17 +41,13 @@ int ls(const char *path, ulong flags)
 	}
 
 	dir = opendir(path);
-	if (!dir) {
-		errno = -ENOENT;
-		return -ENOENT;
-	}
+	if (!dir)
+		return errno;
 
 	while ((d = readdir(dir))) {
 		sprintf(tmp, "%s/%s", path, d->name);
-		if (stat(tmp, &s)) {
-			perror("stat");
-			return errno;
-		}
+		if (stat(tmp, &s))
+			goto out;
 		ls_one(d->name, &s);
 	}
 
@@ -69,14 +65,16 @@ int ls(const char *path, ulong flags)
 	while ((d = readdir(dir))) {
 		sprintf(tmp, "%s/%s", path, d->name);
 		normalise_path(tmp);
-		if (stat(tmp, &s)) {
-			perror("stat");
-			return errno;
-		}
+		if (stat(tmp, &s))
+			goto out;
+		if (!strcmp(d->name, "."))
+			continue;
+		if (!strcmp(d->name, ".."))
+			continue;
 		if (s.st_mode & S_IFDIR)
 			ls(tmp, flags);
 	}
-
+out:
 	closedir(dir);
 
 	return 0;
@@ -137,10 +135,62 @@ U_BOOT_CMD(
 	""
 );
 
+int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int ret;
+
+	ret = unlink(argv[1]);
+	if (ret) {
+		perror("rm");
+		return 1;
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	rm,     2,     0,      do_rm,
+	"rm    - remove files\n",
+	""
+);
+
+int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int ret;
+
+	ret = rmdir(argv[1]);
+	if (ret) {
+		perror("rmdir");
+		return 1;
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	rmdir,     2,     0,      do_rmdir,
+	"rm    - remove files\n",
+	""
+);
+
 static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	struct device_d *dev;
 	int ret = 0;
+	struct mtab_entry *entry = NULL;
+
+	if (argc == 1) {
+		do {
+			entry = mtab_next_entry(entry);
+			if (entry) {
+				printf("%s on %s type %s\n",
+					entry->parent_device ? entry->parent_device->id : "none",
+					entry->path,
+					entry->dev->name);
+			}
+		} while (entry);
+		return 0;
+	}
 
 	if (argc != 4) {
 		printf ("Usage:\n%s\n", cmdtp->usage);

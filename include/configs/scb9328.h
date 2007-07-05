@@ -35,7 +35,6 @@
  * General options for u-boot. Modify to save memory foot print
  */
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16) /* print buffer size   */
-#define CFG_BARGSIZE		CFG_CBSIZE	      /* boot args buf size  */
 
 #define CONFIG_BOOTDELAY 3
 

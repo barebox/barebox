@@ -19,14 +19,31 @@
  */
 
 #include <common.h>
+#include <net.h>
+#include <cfi_flash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-# define SHOW_BOOT_PROGRESS(arg)        show_boot_progress(arg)
-#else
-# define SHOW_BOOT_PROGRESS(arg)
-#endif
+static struct cfi_platform_data cfi_info = {
+};
+
+static struct device_d cfi_dev = {
+        .name     = "cfi_flash",
+        .id       = "nor0",
+
+        .map_base = 0x10000000,
+        .size     = 16 * 1024 * 1024,
+
+        .platform_data = &cfi_info,
+};
+
+static struct device_d sdram_dev = {
+        .name     = "ram",
+        .id       = "ram0",
+
+        .map_base = 0x08000000,
+        .size     = 16 * 1024 * 1024,
+};
 
 int board_init (void)
 {
@@ -38,6 +55,9 @@ int board_init (void)
 
 int dram_init (void)
 {
+	register_device(&cfi_dev);
+	register_device(&sdram_dev);
+
 #if ( CONFIG_NR_DRAM_BANKS > 0 )
 	gd->bd->bi_dram[0].start = SCB9328_SDRAM_1;
 	gd->bd->bi_dram[0].size = SCB9328_SDRAM_1_SIZE;
@@ -54,19 +74,11 @@ int dram_init (void)
 	gd->bd->bi_dram[3].start = SCB9328_SDRAM_4;
 	gd->bd->bi_dram[3].size = SCB9328_SDRAM_4_SIZE;
 #endif
+
+#ifdef CONFIG_DRIVER_NET_DM9000
+	eth_set_current(&dm9000_eth);
+#endif
+
 	return 0;
 }
 
-/**
- * show_boot_progress: - indicate state of the boot process
- *
- * @param status: Status number - see README for details.
- *
- * The CSB226 does only have 3 LEDs, so we switch them on at the most
- * important states (1, 5, 15).
- */
-
-void show_boot_progress (int status)
-{
-	return;
-}

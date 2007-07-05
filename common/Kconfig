@@ -1,10 +1,4 @@
 
-config ZLIB
-	bool
-
-config BZLIB
-	bool
-
 config GREGORIAN_CALENDER
 	bool
 
@@ -67,14 +61,6 @@ config ZERO_BOOTDELAY_CHECK
 	prompt "Enable stop boot process with bootdelay = 0"
 	default y
 
-config DYNAMIC_CRC_TABLE
-	bool
-	prompt "Generate the crc32 table dynamically"
-	default y
-	help
-	  Saying yes to this option saves around 800 bytes of binary size.
-	  If unsure say yes.
-
 config ERRNO_MESSAGES
 	bool
 	prompt "print error values as text"
@@ -111,150 +97,6 @@ config CONSOLE_ACTIVATE_ALL
 config OF_FLAT_TREE
 	bool
 	prompt "Open Firmware flat device tree support"
-
-endmenu
-
-
-menu "Commands                      "
-
-menu "scripting                     "
-
-config CMD_EDIT
-	bool
-	prompt "edit"
-
-config CMD_EXEC
-	bool
-	prompt "exec"
-
-config CMD_SLEEP
-	bool
-	prompt "sleep"
-
-config CMD_ENVIRONMENT
-	bool
-	prompt "saveenv / loadenv"
-
-config CMD_HELP
-	bool
-	default y
-	prompt "help"
-
-endmenu
-
-
-menu "console                       "
-
-config CMD_CLEAR
-	bool
-	prompt "clear"
-
-config CMD_CONSOLE
-	bool
-	prompt "coninfo"
-
-config CMD_ECHO
-	bool
-	prompt "echo"
-
-config CMD_SPLASH
-	bool
-	prompt "splash"
-
-endmenu
-
-
-menu "i2c                           "
-
-config CMD_I2C
-	bool
-	prompt "i2c"
-
-endmenu
-
-
-menu "memory                        "
-
-config CMD_LOADB
-	bool
-	prompt "loadb"
-
-config CMD_LOADS
-	bool
-	prompt "loads"
-
-config CMD_SAVES
-	bool
-	depends on CMD_LOADS
-	prompt "saves"
-
-config CMD_MEMINFO
-	bool
-	prompt "meminfo"
-
-config CMD_MEMORY
-	bool
-	prompt "md, mm, mw and several others"
-
-config CMD_MTEST
-	bool
-	prompt "mtest"
-
-config CMD_MTEST_ALTERNATIVE
-	bool
-	depends on CMD_MTEST
-	prompt "alternative mtest implementation"
-
-config CMD_MTEST_START
-	hex
-	depends on CMD_MTEST
-	prompt "mtest start address"
-
-config CMD_MTEST_END
-	hex
-	depends on CMD_MTEST
-	prompt "mtest end address"
-
-endmenu
-
-
-menu "network                       "
-
-config CMD_MII
-	bool
-	prompt "mii"
-
-endmenu
-
-
-menu "flash                         "
-
-config CMD_FLASH
-	bool
-	prompt "protect/erase/flinfo"
-
-endmenu
-
-
-menu "booting                       "
-
-config CMD_BOOTM
-	bool
-	prompt "bootm"
-
-config CMD_BOOTM_ZLIB
-	bool
-	depends on CMD_BOOTM
-	select ZLIB
-	prompt "bootm with zlib support"
-
-config CMD_BOOTM_BZLIB
-	bool
-	depends on CMD_BOOTM
-	select BZLIB
-	prompt "bootm with bzlib support"
-
-endmenu
 
 endmenu
 

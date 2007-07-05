@@ -24,13 +24,9 @@
 /*
  * Misc boot support
  */
+
 #include <common.h>
 #include <command.h>
-#include <net.h>
-
-#if defined(CONFIG_I386)
-DECLARE_GLOBAL_DATA_PTR;
-#endif
 
 int do_go (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -80,16 +76,4 @@ U_BOOT_CMD_START(go)
 	U_BOOT_CMD_HELP(
 	"addr [arg ...]\n    - start application at address 'addr'\n"
 	"      passing 'arg' as arguments\n")
-U_BOOT_CMD_END
-
-static int cmd_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	do_reset();
-	return 1;
-}
-
-U_BOOT_CMD_START(reset)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_reset,
-	.usage		= "Perform RESET of the CPU",
 U_BOOT_CMD_END

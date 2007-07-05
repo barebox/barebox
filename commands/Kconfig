@@ -1,0 +1,152 @@
+menu "Commands                      "
+
+menu "scripting                     "
+
+config CMD_EDIT
+	bool
+	prompt "edit"
+
+config CMD_EXEC
+	bool
+	prompt "exec"
+
+config CMD_SLEEP
+	bool
+	prompt "sleep"
+
+config CMD_ENVIRONMENT
+	bool
+	prompt "saveenv / loadenv"
+
+config CMD_HELP
+	bool
+	default y
+	prompt "help"
+
+endmenu
+
+
+menu "console                       "
+
+config CMD_CLEAR
+	bool
+	prompt "clear"
+
+config CMD_CONSOLE
+	bool
+	prompt "coninfo"
+
+config CMD_ECHO
+	bool
+	prompt "echo"
+
+config CMD_SPLASH
+	bool
+	prompt "splash"
+
+endmenu
+
+
+menu "i2c                           "
+
+config CMD_I2C
+	bool
+	prompt "i2c"
+
+endmenu
+
+
+menu "memory                        "
+
+config CMD_LOADB
+	select CRC16
+	bool
+	prompt "loadb"
+
+config CMD_LOADS
+	bool
+	prompt "loads"
+
+config CMD_SAVES
+	bool
+	depends on CMD_LOADS
+	prompt "saves"
+
+config CMD_MEMINFO
+	bool
+	prompt "meminfo"
+
+config CMD_MEMORY
+	bool
+	prompt "md, mm, mw and several others"
+
+config CMD_MTEST
+	bool
+	prompt "mtest"
+
+config CMD_MTEST_ALTERNATIVE
+	bool
+	depends on CMD_MTEST
+	prompt "alternative mtest implementation"
+
+config CMD_MTEST_START
+	hex
+	depends on CMD_MTEST
+	prompt "mtest start address"
+
+config CMD_MTEST_END
+	hex
+	depends on CMD_MTEST
+	prompt "mtest end address"
+
+endmenu
+
+
+menu "network                       "
+
+config CMD_MII
+	bool
+	prompt "mii"
+
+endmenu
+
+
+menu "flash                         "
+
+config CMD_FLASH
+	bool
+	prompt "protect/erase/flinfo"
+
+endmenu
+
+
+menu "booting                       "
+
+config CMD_BOOTM
+	bool
+	select CRC32
+	prompt "bootm"
+
+config CMD_BOOTM_ZLIB
+	bool
+	depends on CMD_BOOTM
+	select ZLIB
+	prompt "bootm with zlib support"
+
+config CMD_BOOTM_BZLIB
+	bool
+	depends on CMD_BOOTM
+	select BZLIB
+	prompt "bootm with bzlib support"
+
+config CMD_RESET
+	bool
+	prompt "reset"
+
+config CMD_GO
+	bool
+	prompt "go"
+
+endmenu
+
+endmenu

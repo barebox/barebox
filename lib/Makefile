@@ -1,6 +1,3 @@
-obj-$(CONFIG_BZLIB)	+= bzlib.o bzlib_crctable.o bzlib_decompress.o bzlib_huffman.o bzlib_randtable.o
-obj-$(CONFIG_ZLIB)	+= zlib.o
-obj-y			+= crc32.o
 obj-y			+= ctype.o
 obj-y			+= display_options.o
 obj-y			+= ldiv.o
@@ -11,4 +8,11 @@ obj-y			+= misc.o
 obj-y			+= driver.o
 obj-y			+= parameter.o
 obj-y			+= global.o
-
+obj-y			+= xfuncs.o
+obj-y			+= getopt.o
+obj-y 			+= readkey.o
+obj-$(CONFIG_BZLIB)	+= bzlib.o bzlib_crctable.o bzlib_decompress.o bzlib_huffman.o bzlib_randtable.o
+obj-$(CONFIG_ZLIB)	+= zlib.o
+obj-$(CONFIG_CRC32)	+= crc32.o
+obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
+obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o

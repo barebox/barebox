@@ -140,6 +140,8 @@ int relocate_image(image_header_t *hdr, void *load_address)
 {
 	unsigned long data = (unsigned long)(hdr + 1);
 	unsigned long len  = ntohl(hdr->ih_size);
+	int ret;
+
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
@@ -168,10 +170,10 @@ int relocate_image(image_header_t *hdr, void *load_address)
 		 * use slower decompression algorithm which requires
 		 * at most 2300 KB of memory.
 		 */
-		i = BZ2_bzBuffToBuffDecompress (load_address,
+		ret = BZ2_bzBuffToBuffDecompress (load_address,
 						&unc_len, (char *)data, len,
 						CFG_MALLOC_LEN < (4096 * 1024), 0);
-		if (i != BZ_OK)
+		if (ret != BZ_OK)
 			return -1;
 		break;
 #endif

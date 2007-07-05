@@ -24,7 +24,7 @@ void *xmalloc(size_t size)
 }
 
 #include "../include/envfs.h"
-#include "../common/environment.c"
+#include "../commands/environment.c"
 
 void usage(char *prgname)
 {

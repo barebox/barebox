@@ -1,30 +1,10 @@
-obj-$(CONFIG_CMD_BOOTM)		+= cmd_bootm.o
 obj-$(CONFIG_NET)		+= cmd_net.o
-obj-$(CONFIG_CMD_LOADB)		+= cmd_loadb.o xyzModem.o crc16.o
-obj-$(CONFIG_CMD_LOADS)		+= cmd_loads.o
-obj-$(CONFIG_CMD_AUTOSCRIPT)	+= cmd_autoscript.o
-obj-$(CONFIG_CMD_ECHO)		+= cmd_echo.o
-obj-$(CONFIG_CMD_FLASH)		+= cmd_flash.o
-obj-$(CONFIG_CMD_MEMORY)	+= cmd_mem.o
-obj-$(CONFIG_CMD_MII)		+= cmd_mii.o
-obj-$(CONFIG_CMD_I2C)		+= cmd_i2c.o
-obj-$(CONFIG_CMD_LOADS)		+= s_record.o
-obj-$(CONFIG_CMD_SPLASH)	+= cmd_splash.o
-obj-$(CONFIG_CMD_MTEST)		+= cmd_memtest.o
-obj-$(CONFIG_CMD_SLEEP)		+= cmd_misc.o
-obj-$(CONFIG_CMD_EDIT)		+= cmd_edit.o
-obj-$(CONFIG_CMD_EXEC)		+= cmd_exec.o
 obj-$(CONFIG_HUSH_PARSER)	+= hush.o
 obj-$(CONFIG_SIMPLE_PARSER)	+= parser.o
-obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
-obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
-obj-y				+= cmd_fs.o
 obj-$(CONFIG_OF_FLAT_TREE)	+= ft_build.o
 
-obj-y += exports.o
 obj-y += main.o
-obj-y += cmd_boot.o
 obj-y += dlmalloc.o
 obj-y += clock.o
 # obj-y += flash.o
@@ -34,11 +14,7 @@ obj-y += partition.o
 obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
-obj-y += getopt.o
-obj-y += xfuncs.o
-obj-$(CONFIG_CMD_ENVIRONMENT) += environment.o
-
-obj-y += readkey.o
+obj-y		+= misc.o
 
 #obj-y += cmd_elf.o
 #obj-y += cmd_itest.o

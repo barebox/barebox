@@ -27,6 +27,7 @@
 #include <common.h>
 #include <command.h>
 #include <cfi_flash.h>
+#include <errno.h>
 
 int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {

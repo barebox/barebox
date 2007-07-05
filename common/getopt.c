@@ -79,14 +79,14 @@ int getopt(int argc, char *argv[], char *optstring)
 		return '?';
 	}
 
-	if (*(curoptp + 1) && *(curoptp + 1) != ':') {
+	if (*(curoptp + 1) != ':') {
 		/* option with no argument. Just return it */
 		optarg = NULL;
 		optindex++;
 		return curopt;
 	}
 
-	if (*(curoptp + 2) == ':') {
+	if (*(curoptp + 1) && *(curoptp + 2) == ':') {
 		/* optional argument */
 		if (argv[optind][optindex + 1]) {
 			/* optional argument with directly following optarg */

@@ -8,6 +8,8 @@
 #ifndef _MII_PHY_H_
 #define _MII_PHY_H_
 
+#include <driver.h>
+
 #define MIIPHY_FORCE_10	1
 
 #define MII_BMCR            0x00        /* Basic mode control register */

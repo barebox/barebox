@@ -1,7 +1,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <mii_phy.h>
+#include <miiphy.h>
 
 int miiphy_restart_aneg(struct miiphy_device *mdev)
 {
@@ -11,13 +11,13 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 	/*
 	 * Reset PHY, then delay 300ns
 	 */
-	mdev->write(mdev, mdev->address, PHY_BMCR, PHY_BMCR_RESET);
+	mdev->write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
 	udelay(1000);
 
 	if (mdev->flags & MIIPHY_FORCE_10) {
 		printf("Forcing 10 Mbps ethernet link... ");
-		mdev->read(mdev, mdev->address, PHY_BMSR, &status);
-		mdev->write(mdev, mdev->address, PHY_BMCR, PHY_BMCR_DPLX | PHY_BMCR_COL_TST);
+		mdev->read(mdev, mdev->address, MII_BMSR, &status);
+		mdev->write(mdev, mdev->address, MII_BMCR, BMCR_FULLDPLX | BMCR_CTST);
 
 		timeout = 20;
 		do {	/* wait for link status to go down */
@@ -28,16 +28,16 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 #endif
 				break;
 			}
-			mdev->read(mdev, mdev->address, PHY_BMSR, &status);
-		} while (status & PHY_BMSR_LS);
+			mdev->read(mdev, mdev->address, MII_BMSR, &status);
+		} while (status & BMSR_LSTATUS);
 
 	} else {	/* MII100 */
 		/*
 		 * Set the auto-negotiation advertisement register bits
 		 */
-		mdev->write(mdev, mdev->address, PHY_ANAR, 0x01e1);
+		mdev->write(mdev, mdev->address, MII_ADVERTISE, ADVERTISE_ALL);
 
-		mdev->write(mdev, mdev->address, PHY_BMCR, PHY_BMCR_AUTON | PHY_BMCR_RST_NEG);
+		mdev->write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
 	}
 
 	return 0;
@@ -60,37 +60,37 @@ int miiphy_wait_aneg(struct miiphy_device *mdev)
 			return -1;
 		}
 
-		if (mdev->read(mdev, mdev->address, PHY_BMSR, &status)) {
+		if (mdev->read(mdev, mdev->address, MII_BMSR, &status)) {
 			printf("%s: Autonegotiation failed. status: 0x%04x\n", mdev->dev.id, status);
 			return -1;
 		}
-	} while (!(status & PHY_BMSR_LS));
+	} while (!(status & BMSR_LSTATUS));
 
 	return 0;
 }
 
 int miiphy_print_status(struct miiphy_device *mdev)
 {
-	uint16_t bmsr, bmcr, anlpar;
+	uint16_t bmsr, bmcr, lpa;
 	char *duplex;
 	int speed;
 
-	if (mdev->read(mdev, mdev->address, PHY_BMSR, &bmsr) != 0)
+	if (mdev->read(mdev, mdev->address, MII_BMSR, &bmsr) != 0)
 		goto err_out;
-	if (mdev->read(mdev, mdev->address, PHY_BMCR, &bmcr) != 0)
+	if (mdev->read(mdev, mdev->address, MII_BMCR, &bmcr) != 0)
 		goto err_out;
-	if (mdev->read(mdev, mdev->address, PHY_ANLPAR, &anlpar) != 0)
+	if (mdev->read(mdev, mdev->address, MII_LPA, &lpa) != 0)
 		goto err_out;
 
 	printf("%s: Link is %s", mdev->dev.id,
-			bmsr & PHY_BMSR_LS ? "up" : "down");
+			bmsr & BMSR_LSTATUS ? "up" : "down");
 
-	if (bmcr & PHY_BMCR_AUTON) {
-		duplex = (PHY_ANLPAR_10FD | PHY_ANLPAR_TXFD) ? "Full" : "Half";
-		speed = anlpar & PHY_ANLPAR_100 ? 100 : 10;
+	if (bmcr & BMCR_ANENABLE) {
+		duplex = lpa & LPA_DUPLEX ? "Full" : "Half";
+		speed = lpa & LPA_100 ? 100 : 10;
 	} else {
-		duplex = bmcr & PHY_BMCR_DPLX ? "Full" : "Half";
-		speed = bmcr & PHY_BMCR_100MB ? 100 : 10;
+		duplex = bmcr & BMCR_FULLDPLX ? "Full" : "Half";
+		speed = bmcr & BMCR_SPEED100 ? 100 : 10;
 	}
 
 	printf(" - %d/%s\n", speed, duplex);

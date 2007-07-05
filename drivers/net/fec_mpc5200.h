@@ -14,7 +14,6 @@
 #include <common.h>
 #include <mpc5xxx.h>
 #include <asm/arch/sdma.h>
-#include <mii_phy.h>
 
 typedef unsigned long uint32;
 typedef unsigned short uint16;

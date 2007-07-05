@@ -15,7 +15,7 @@
 #include <driver.h>
 #include <asm/arch/sdma.h>
 #include <asm/arch/fec.h>
-#include <mii_phy.h>
+#include <miiphy.h>
 #include "fec_mpc5200.h"
 
 DECLARE_GLOBAL_DATA_PTR;

@@ -125,7 +125,12 @@ config CMD_MEMINFO
 
 config CMD_MEMORY
 	bool
-	prompt "md, mm, mw and several others"
+	prompt "md and mw"
+
+config CMD_CRC
+	bool
+	select CRC32
+	prompt "crc"
 
 config CMD_MTEST
 	bool

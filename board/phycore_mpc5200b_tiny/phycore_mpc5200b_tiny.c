@@ -35,6 +35,8 @@
 #include <openip.h>
 #endif
 
+#define CFG_RAMBOOT
+
 #include "mt46v32m16-75.h"
 
 #ifndef CFG_RAMBOOT

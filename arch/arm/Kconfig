@@ -55,3 +55,4 @@ config ARM920T
 source common/Kconfig
 source net/Kconfig
 source drivers/Kconfig
+source fs/Kconfig

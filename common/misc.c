@@ -14,12 +14,9 @@ void mem_malloc_init (void *start, void *end)
 	mem_malloc_start = (ulong)start;
 	mem_malloc_end = (ulong)end;
 	mem_malloc_brk = mem_malloc_start;
-
-	memset ((void *) mem_malloc_start, 0,
-			mem_malloc_end - mem_malloc_start);
 }
 
-void *sbrk (ptrdiff_t increment)
+void *sbrk_no_zero(ptrdiff_t increment)
 {
 	ulong old = mem_malloc_brk;
 	ulong new = old + increment;
@@ -27,9 +24,20 @@ void *sbrk (ptrdiff_t increment)
         if ((new < mem_malloc_start) || (new > mem_malloc_end)) {
  		return (NULL);
 	}
+
+	memset ((void *)old, 0, increment);
 	mem_malloc_brk = new;
 
 	return ((void *) old);
+}
+
+void *sbrk (ptrdiff_t increment)
+{
+	void *old = sbrk_no_zero(increment);
+
+	memset (old, 0, increment);
+
+	return old;
 }
 
 int errno;

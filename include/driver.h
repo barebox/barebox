@@ -12,7 +12,8 @@
 #define DEVICE_TYPE_DRAM	3
 #define DEVICE_TYPE_BLOCK	4
 #define DEVICE_TYPE_FS		5
-#define MAX_DEVICE_TYPE         5
+#define DEVICE_TYPE_CONSOLE	6
+#define MAX_DEVICE_TYPE         6
 
 #include <param.h>
 

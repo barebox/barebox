@@ -45,13 +45,6 @@
 #include <version.h>
 #include <net.h>
 
-#ifdef CONFIG_DRIVER_SMC91111
-#include "../drivers/smc91111.h"
-#endif
-#ifdef CONFIG_DRIVER_LAN91C96
-#include "../drivers/lan91c96.h"
-#endif
-
 DECLARE_GLOBAL_DATA_PTR;
 
 #if (CONFIG_COMMANDS & CFG_CMD_NAND)
@@ -66,14 +59,6 @@ ulong monitor_flash_len;
 
 const char version_string[] =
 	U_BOOT_VERSION" (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
-
-#ifdef CONFIG_DRIVER_CS8900
-extern void cs8900_get_enetaddr (uchar * addr);
-#endif
-
-#ifdef CONFIG_DRIVER_RTL8019
-extern void rtl8019_get_enetaddr (uchar * addr);
-#endif
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -352,17 +337,6 @@ void start_armboot (void)
 
 	/* enable exceptions */
 	enable_interrupts ();
-
-	/* Perform network card initialisation if necessary */
-#ifdef CONFIG_DRIVER_CS8900
-	cs8900_get_enetaddr (gd->bd->bi_enetaddr);
-#endif
-
-#if defined(CONFIG_DRIVER_SMC91111) || defined (CONFIG_DRIVER_LAN91C96)
-	if (getenv ("ethaddr")) {
-		smc_set_mac_addr(gd->bd->bi_enetaddr);
-	}
-#endif /* CONFIG_DRIVER_SMC91111 || CONFIG_DRIVER_LAN91C96 */
 
 	/* Initialize from environment */
 	if ((s = getenv ("loadaddr")) != NULL) {

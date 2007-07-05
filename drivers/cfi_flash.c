@@ -472,6 +472,7 @@ void cfi_info (struct device_d* dev)
 		if ((i % 5) == 0)
 			printf ("\n");
 #ifdef CFG_FLASH_EMPTY_INFO
+	{
 		int k;
 		int size;
 		int erased;
@@ -499,6 +500,7 @@ void cfi_info (struct device_d* dev)
 			info->start[i],
 			erased ? 'E' : ' ',
 			info->protect[i] ? "RO" : "  ");
+	}
 #else	/* ! CFG_FLASH_EMPTY_INFO */
 		printf ("  %08lX   %s ",
 			info->start[i],

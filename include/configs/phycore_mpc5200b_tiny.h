@@ -50,11 +50,8 @@ High Level Configuration Options
 /*------------------------------------------------------------------------------------------------------------------------------------------------------
 Serial console configuration
  ------------------------------------------------------------------------------------------------------------------------------------------------------*/
-#define CONFIG_PSC_CONSOLE	3	/* console is on PSC3 -> define gps port conf. register later on to enable UART function! */
 #define CONFIG_BAUDRATE		115200	/* ... at 115200 bps */
 #define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400 }
-
-#define	CONFIG_TIMESTAMP	1	/* Print image info with timestamp */
 
 #if (TEXT_BASE == 0xFF000000)		/* Boot low */
 #define CFG_LOWBOOT		1

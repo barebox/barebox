@@ -1,5 +1,4 @@
 - Every driver should have a remove function
-- Mount without options should show mounted filesystems
 - Add/fix help texts for commands
 - mm is broken. Add common option parsing for mm/md
 - Clean up make system. Currently I think there are many things from the linux make

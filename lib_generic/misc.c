@@ -44,6 +44,7 @@ struct device_d *get_device_by_id(const char *_id)
 	struct device_d *d;
 	char *id, *colon;
 
+	/* FIXME: is this still needed? */
 	id = strdup(_id);
 	if ((colon = strchr(id, ':')))
 		*colon = 0;
@@ -58,6 +59,20 @@ struct device_d *get_device_by_id(const char *_id)
 
 	free(id);
 	return d;
+}
+
+int get_free_deviceid(char *id, char *id_template)
+{
+	int i = 0;
+
+	while (1) {
+		sprintf(id, "%s%d", id_template, i);
+		if (!get_device_by_id(id))
+			return 0;
+		i++;
+	};
+
+	return -1;
 }
 
 static int match(struct driver_d *drv, struct device_d *dev)
@@ -89,6 +104,7 @@ int register_device(struct device_d *new_device)
 
 	if(!dev) {
 		first_device = new_device;
+		dev = first_device;
 	} else {
 		while(dev->next)
 			dev = dev->next;
@@ -159,6 +175,7 @@ int register_driver(struct driver_d *new_driver)
 
 	if(!drv) {
 		first_driver = new_driver;
+		drv = first_driver;
 	} else {
 		while(drv->next)
 			drv = drv->next;
@@ -433,7 +450,14 @@ int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 
 int dev_set_param(struct device_d *dev, char *name, value_t val)
 {
-        struct param_d *param = get_param_by_name(dev, name);
+        struct param_d *param;
+
+	if (!dev) {
+		errno = -ENODEV;
+		return -ENODEV;
+	}
+
+	param = get_param_by_name(dev, name);
 
 	if (!param) {
 		errno = -EINVAL;

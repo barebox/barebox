@@ -582,10 +582,19 @@ relocate_code:
 	mr	r10, r5		/* Save copy of Destination Address	*/
 
 	mr	r3,  r5				/* Destination Address	*/
+#if 0
 	lis	r4, CFG_MONITOR_BASE@h		/* Source      Address	*/
 	ori	r4, r4, CFG_MONITOR_BASE@l
-	lwz	r5, GOT(__init_end)
-	sub	r5, r5, r4
+#else
+	bl	gaga
+gaga:
+	mfspr	r4,  LR
+	subi	r4, r4, (gaga - _start)
+	subi	r4, r4, 0x100
+#endif
+	lis	r5, __init_size@h		/* Source      Address	*/
+	ori	r5, r5, __init_size@l
+
 	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
 
 	/*

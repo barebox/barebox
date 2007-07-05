@@ -291,7 +291,7 @@ NetLoop(proto_t protocol)
 		return -1;
 
 restart:
-	memcpy (NetOurEther, &(eth_get_current()->enetaddr), 6);
+	string_to_enet_addr(dev_get_param(eth_get_current()->dev, "mac"), NetOurEther);
 
 	NetState = NETLOOP_CONTINUE;
 
@@ -506,11 +506,8 @@ restart:
 				printf("Bytes transferred = %ld (%lx hex)\n",
 					NetBootFileXferSize,
 					NetBootFileXferSize);
-				sprintf(buf, "%lx", NetBootFileXferSize);
+				sprintf(buf, "0x%lx", NetBootFileXferSize);
 				setenv("filesize", buf);
-
-				sprintf(buf, "%lX", (unsigned long)load_addr);
-				setenv("fileaddr", buf);
 			}
 			eth_halt();
 			return NetBootFileXferSize;
@@ -1505,7 +1502,7 @@ void copy_filename (char *dst, char *src, int size)
 	*dst = '\0';
 }
 
-void ip_to_string (IPaddr_t x, char *s)
+char *ip_to_string (IPaddr_t x, char *s)
 {
 	x = ntohl (x);
 	sprintf (s, "%d.%d.%d.%d",
@@ -1513,6 +1510,7 @@ void ip_to_string (IPaddr_t x, char *s)
 		 (int) ((x >> 16) & 0xff),
 		 (int) ((x >> 8) & 0xff), (int) ((x >> 0) & 0xff)
 	);
+	return s;
 }
 
 IPaddr_t string_to_ip(char *s)

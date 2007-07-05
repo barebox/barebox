@@ -28,12 +28,72 @@
  */
 
 #include <common.h>
+#include <driver.h>
+#include <cfi_flash.h>
+#include <init.h>
 #include <mpc5xxx.h>
 #include <pci.h>
+#include <asm/arch/fec.h>
 
 #ifdef CONFIG_VIDEO_OPENIP
 #include <openip.h>
 #endif
+
+static struct cfi_platform_data cfi_info = {
+};
+
+struct device_d cfi_dev = {
+        .name     = "cfi_flash",
+        .id       = "nor0",
+
+        .map_base = 0xff000000,
+        .size     = 16 * 1024 * 1024,
+
+        .platform_data = &cfi_info,
+};
+
+struct device_d sdram_dev = {
+        .name     = "ram",
+        .id       = "ram0",
+
+        .map_base = 0x0,
+        .size     = 64 * 1024 * 1024,
+};
+
+static struct mpc5xxx_fec_platform_data fec_info = {
+        .xcv_type = MII100,
+};
+
+struct device_d eth_dev = {
+        .name     = "fec_mpc5xxx",
+        .id       = "eth0",
+
+        .platform_data = &fec_info,
+
+        .type     = DEVICE_TYPE_ETHER,
+};
+
+static int devices_init (void)
+{
+	register_device(&cfi_dev);
+	register_device(&sdram_dev);
+	register_device(&eth_dev);
+
+	return 0;
+}
+
+device_initcall(devices_init);
+
+/* Do not collide with the env from our first stage loader for now */
+static char *env_spec = "nor0:0+128k";
+
+static int init_env(void)
+{
+        add_env_spec(env_spec);
+        return 0;
+}
+
+late_initcall(init_env);
 
 #define CFG_RAMBOOT
 

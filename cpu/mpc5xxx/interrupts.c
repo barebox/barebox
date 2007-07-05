@@ -43,6 +43,7 @@
 #include <command.h>
 #include <asm/arch/sdma.h>
 #include <asm/bitops.h>
+#include <asm/arch/clocks.h>
 
 struct irq_action {
 	interrupt_handler_t *handler;
@@ -231,11 +232,11 @@ int mpc5xxx_get_irq(struct pt_regs *regs)
 
 int interrupt_init_cpu(ulong * decrementer_count)
 {
-	*decrementer_count = get_tbclk() / 1000;
+	*decrementer_count = get_timebase_clock() / 1000;
 
 	mpc5xxx_init_irq();
 
-	return (0);
+	return 0;
 }
 
 /****************************************************************************/

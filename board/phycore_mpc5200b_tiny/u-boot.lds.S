@@ -21,8 +21,9 @@
  * MA 02111-1307 USA
  */
 
+#include <asm-generic/u-boot.lds.h>
+
 OUTPUT_ARCH(powerpc)
-SEARCH_DIR(/lib); SEARCH_DIR(/usr/lib); SEARCH_DIR(/usr/local/lib); SEARCH_DIR(/usr/local/powerpc-any-elf/lib);
 /* Do we need any of these for elf?
    __DYNAMIC = 0;    */
 SECTIONS
@@ -81,6 +82,7 @@ SECTIONS
   __got2_entries = (_FIXUP_TABLE_ - _GOT2_TABLE_) >> 2;
   __fixup_entries = (. - _FIXUP_TABLE_) >> 2;
 
+
   .data    :
   {
     *(.data)
@@ -98,6 +100,10 @@ SECTIONS
   .u_boot_cmd : { *(.u_boot_cmd) }
   __u_boot_cmd_end = .;
 
+  __u_boot_initcalls_start = .;
+  .u_boot_initcalls : { INITCALLS }
+  __u_boot_initcalls_end = .;
+  __initcall_entries = (__u_boot_initcalls_end - __u_boot_initcalls_start) >> 2;
 
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }

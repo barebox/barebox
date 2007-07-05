@@ -28,6 +28,7 @@
 #include <net.h>
 #include <miiphy.h>
 #include <malloc.h>
+#include <asm-generic/errno.h>
 
 typedef enum eth_cookies {
         PARAM_IP,
@@ -36,25 +37,42 @@ typedef enum eth_cookies {
         PARAM_NM,
 } eth_cookies_t;
 
-static char *eth_get(struct device_d* dev, ulong cookie)
+static char *eth_get(struct device_d* dev, struct param_d *param)
 {
-        struct eth_device *ndev = dev->driver->type_data;
+        struct eth_device *edev = dev->priv;
+	char *buf;
 
-        if (cookie >= 4)
-                return 0;
+	switch (param->cookie) {
+	case PARAM_MAC:
+		buf = malloc(18);
+		enet_addr_to_string(edev->enetaddr, buf);
+		break;
+	default:
+		buf = strdup((char *)param->val);
+	}
 
-        return ndev->param[cookie];
+	return buf;
 }
 
-static int eth_set(struct device_d* dev, ulong cookie, char *newval)
+static int eth_set(struct device_d* dev, struct param_d *param, char *newval)
 {
-        struct eth_device *ndev = dev->driver->type_data;
-        char **val = &ndev->param[cookie];
+        struct eth_device *edev = dev->priv;
+	int ret;
 
-        if (*val)
-                free(*val);
+	switch (param->cookie) {
+	case PARAM_MAC:
+		if (string_to_enet_addr(newval, edev->enetaddr))
+			return -EINVAL;
 
-        *val = newval;
+		if ((ret = edev->set_mac_address(edev, newval)))
+			return ret;
+		/* Fall through */
+	default:
+		if (param->val)
+			free(param->val);
+		param->val = strdup(newval);
+	}
+
         return 0;
 }
 
@@ -114,15 +132,17 @@ int eth_rx(void)
 	return eth_current->recv(eth_current);
 }
 
-static int eth_handle(struct device_d *dev)
+int eth_register(struct eth_device *edev)
 {
-	unsigned char ethaddr_tmp[20];
-	unsigned char *ethaddr;
-	struct eth_device *ndev = dev->driver->type_data;
-	char *e = NULL;
+        struct device_d *dev = edev->dev;
+	unsigned char ethaddr_str[20];
+	unsigned char ethaddr[6];
 	int i;
 
-	if (!ndev->get_mac_address) {
+
+        printf("%s\n",__FUNCTION__);
+
+	if (!edev->get_mac_address) {
 		printf("no get_mac_address found for current eth device\n");
 		return -1;
 	}
@@ -130,42 +150,16 @@ static int eth_handle(struct device_d *dev)
         for (i = 0; i < 4; i++)
                 dev_add_parameter(dev, &eth_params[i]);
 
-	ethaddr = ndev->enetaddr;
-
-	/* Try to get a MAC address from the eeprom set 'ethaddr' to it.
-	 * If this fails we rely on 'ethaddr' being set by the user.
-	 */
-	if (ndev->get_mac_address(ndev, ethaddr) == 0) {
-		sprintf (ethaddr_tmp, "%02X:%02X:%02X:%02X:%02X:%02X",
+	if (edev->get_mac_address(edev, ethaddr) == 0) {
+		sprintf (ethaddr_str, "%02X:%02X:%02X:%02X:%02X:%02X",
 			ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
-		printf("got MAC address from EEPROM: %s\n",ethaddr_tmp);
-		setenv ("ethaddr", ethaddr_tmp);
-	} else {
-		ethaddr = getenv ("ethaddr");
-		if (!ethaddr){
-			printf("could not get MAC address from device and ethaddr not set\n");
-			return -1;
-		}
-
-		printf("got MAC address from Environment: %s\n",ethaddr);
-		for(i = 0; i < 6; i++) {
-			ndev->enetaddr[i] = ethaddr ? simple_strtoul (ethaddr, &e, 16) : 0;
-			if (ethaddr) {
-				ethaddr = (*e) ? e + 1 : e;
-			}
-			ndev->set_mac_address(eth_current, ndev->enetaddr);
-		}
+		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
+		dev_set_param(dev, "mac", ethaddr);
+		memcpy(edev->enetaddr, ethaddr, 6);
 	}
 
-	eth_current = ndev;
-	return 0;
-}
-
-int eth_initialize(void)
-{
-	register_device_type_handler(&eth_handle, DEVICE_TYPE_ETHER);
+	eth_current = edev;
 
 	return 0;
 }
 
-core_initcall(eth_initialize);

@@ -1,7 +1,7 @@
 
 config TEXT_BASE
 	string
-	default "0x0" if MACH_PHYCORE_MPC5200B_TINY
+	default "0x1000000" if MACH_PHYCORE_MPC5200B_TINY
 
 config ARCH_MPC5200
 	bool

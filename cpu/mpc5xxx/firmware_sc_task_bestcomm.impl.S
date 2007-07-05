@@ -4,16 +4,14 @@
  * This file contains microcode for the FEC controller of the MPC5200 CPU.
  */
 
-#include <config.h>
-
-#if defined(CONFIG_MPC5200)
-
 /* sas/sccg, gas target */
 .section        smartdmaInitData,"aw",@progbits	/* Initialized data for task variables */
 .section        smartdmaTaskTable,"aw",@progbits	/* Task tables */
 .align  9
+
 .globl taskTable
 taskTable:
+
 .globl scEthernetRecv_Entry
 scEthernetRecv_Entry:		/* Task 0 */
 .long   scEthernetRecv_TDT - taskTable	/* Task 0 Descriptor Table */
@@ -24,6 +22,7 @@ scEthernetRecv_Entry:		/* Task 0 */
 .long   0x00000000
 .long   scEthernetRecv_CSave - taskTable	/* Task 0 context save space */
 .long   0xf0000000
+
 .globl scEthernetXmit_Entry
 scEthernetXmit_Entry:		/* Task 1 */
 .long   scEthernetXmit_TDT - taskTable	/* Task 1 Descriptor Table */
@@ -360,4 +359,3 @@ scEthernetRecv_CSave:	/* Task 0 context save space */
 scEthernetXmit_CSave:	/* Task 1 context save space */
 .space  128, 0x0
 
-#endif /* CONFIG_MPC5200 */

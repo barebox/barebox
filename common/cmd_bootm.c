@@ -66,10 +66,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #include <logbuff.h>
 #endif
 
-#ifdef CONFIG_HAS_DATAFLASH
-#include <dataflash.h>
-#endif
-
 /*
  * Some systems (for example LWMON) have very short watchdog periods;
  * we must make sure to split long operations like memmove() or
@@ -79,10 +75,12 @@ DECLARE_GLOBAL_DATA_PTR;
 # define CHUNKSZ (64 * 1024)
 #endif
 
+#ifdef CONFIG_CMD_BOOTM_ZLIB
 int  gunzip (void *, int, unsigned char *, unsigned long *);
 
 static void *zalloc(void *, unsigned, unsigned);
 static void zfree(void *, void *, unsigned);
+#endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMI)
 static int image_info (unsigned long addr);
@@ -90,7 +88,6 @@ static int image_info (unsigned long addr);
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMLS)
 #include <flash.h>
-extern flash_info_t flash_info[]; /* info for FLASH chips */
 static int do_imls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 #endif
 
@@ -148,18 +145,17 @@ extern void lynxkdi_boot( image_header_t * );
 
 image_header_t header;
 
-ulong load_addr = CFG_LOAD_ADDR;		/* Default Load Address */
-
 int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	iflag;
 	ulong	addr;
 	ulong	data, len, checksum;
 	ulong  *len_ptr;
+#if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
+#endif
 	int	i, verify;
 	char	*name, *s;
-	int	(*appl)(int, char *[]);
 	image_header_t *hdr = &header;
 
 	s = getenv ("verify");
@@ -175,11 +171,6 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	printf ("## Booting image at %08lx ...\n", addr);
 
 	/* Copy header so we can blank CRC field for re-calculation */
-#ifdef CONFIG_HAS_DATAFLASH
-	if (addr_dataflash(addr)){
-		read_dataflash(addr, sizeof(image_header_t), (char *)&header);
-	} else
-#endif
 	memmove (&header, (char *)addr, sizeof(image_header_t));
 
 	if (ntohl(hdr->ih_magic) != IH_MAGIC) {
@@ -213,15 +204,6 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 	SHOW_BOOT_PROGRESS (3);
-
-#ifdef CONFIG_HAS_DATAFLASH
-	if (addr_dataflash(addr)){
-		len  = ntohl(hdr->ih_size) + sizeof(image_header_t);
-		read_dataflash(addr, len, (char *)CFG_LOAD_ADDR);
-		addr = CFG_LOAD_ADDR;
-	}
-#endif
-
 
 	/* for multi-file images we need the data part, too */
 	print_image_hdr ((image_header_t *)addr);
@@ -341,6 +323,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif	/* CONFIG_HW_WATCHDOG || CONFIG_WATCHDOG */
 		}
 		break;
+#ifdef CONFIG_CMD_BOOTM_ZLIB
 	case IH_COMP_GZIP:
 		printf ("   Uncompressing %s ... ", name);
 		if (gunzip ((void *)ntohl(hdr->ih_load), unc_len,
@@ -350,7 +333,8 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			do_reset (cmdtp, flag, argc, argv);
 		}
 		break;
-#ifdef CONFIG_BZIP2
+#endif
+#ifdef CONFIG_CMD_BOOTM_BZLIB
 	case IH_COMP_BZIP2:
 		printf ("   Uncompressing %s ... ", name);
 		/*
@@ -368,7 +352,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			do_reset (cmdtp, flag, argc, argv);
 		}
 		break;
-#endif /* CONFIG_BZIP2 */
+#endif
 	default:
 		if (iflag)
 			enable_interrupts();
@@ -1226,6 +1210,7 @@ U_BOOT_CMD(
 #endif	/* CFG_CMD_IMI */
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMLS)
+#if 0
 /*-----------------------------------------------------------------------
  * List all images found in flash.
  */
@@ -1282,6 +1267,7 @@ U_BOOT_CMD(
 	"      boundaries in flash.\n"
 );
 #endif	/* CFG_CMD_IMLS */
+#endif
 
 void
 print_image_hdr (image_header_t *hdr)
@@ -1384,6 +1370,8 @@ print_type (image_header_t *hdr)
 	printf ("%s %s %s (%s)", arch, os, type, comp);
 }
 
+#ifdef CONFIG_ZLIB
+
 #define	ZALLOC_ALIGNMENT	16
 
 static void *zalloc(void *x, unsigned items, unsigned size)
@@ -1465,13 +1453,14 @@ int gunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp)
 
 	return (0);
 }
+#endif
 
-#ifdef CONFIG_BZIP2
+#ifdef CONFIG_BZLIB
 void bz_internal_error(int errcode)
 {
 	printf ("BZIP2 internal error %d\n", errcode);
 }
-#endif /* CONFIG_BZIP2 */
+#endif /* CONFIG_BZLIB */
 
 static void
 do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],

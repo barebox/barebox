@@ -614,22 +614,7 @@ static ulong load_serial_ymodem (ulong offset)
 			store_addr = addr + offset;
 			size += res;
 			addr += res;
-#ifndef CFG_NO_FLASH
-			if (addr2info (store_addr)) {
-				int rc;
-
-				rc = flash_write ((char *) ymodemBuf,
-						  store_addr, res);
-				if (rc != 0) {
-					flash_perror (rc);
-					return (~0);
-				}
-			} else
-#endif
-			{
-				memcpy ((char *) (store_addr), ymodemBuf,
-					res);
-			}
+			memcpy ((char *) (store_addr), ymodemBuf, res);
 
 		}
 	} else {

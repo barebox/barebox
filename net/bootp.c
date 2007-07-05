@@ -557,9 +557,7 @@ BootpRequest (void)
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
-	/* FIXME what is this? */
-#warning this is broken
-//	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
+	bp->bp_secs = htons(get_time_ns() >> 30);
 	NetWriteIP(&bp->bp_ciaddr, 0);
 	NetWriteIP(&bp->bp_yiaddr, 0);
 	NetWriteIP(&bp->bp_siaddr, 0);

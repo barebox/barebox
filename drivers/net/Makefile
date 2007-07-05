@@ -3,3 +3,4 @@ obj-$(CONFIG_DRIVER_NET_DM9000)	        += dm9000.o
 obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= at91_ether.o
 obj-$(CONFIG_DRIVER_NET_MPC5200)	+= fec_mpc5200.o
 obj-$(CONFIG_DRIVER_NET_TAP)		+= tap.o
+obj-$(CONFIG_MIIPHY)			+= miiphy.o

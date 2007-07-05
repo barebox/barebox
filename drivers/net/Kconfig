@@ -7,6 +7,9 @@ config HAS_DM9000
 config HAS_AT91_ETHER
 	bool
 
+config MIIPHY
+	bool
+
 menu "Network drivers               "
 	depends on NET
 
@@ -25,6 +28,7 @@ config DRIVER_NET_AT91_ETHER
 config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"
 	depends on ARCH_MPC5200
+	select MIIPHY
 
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"

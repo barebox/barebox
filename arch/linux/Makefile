@@ -23,7 +23,7 @@ CFLAGS := -fno-common -Os -Dmalloc=u_boot_malloc \
 		-Dfputs=u_boot_fputs -Dsetenv=u_boot_setenv \
 		-Dgetenv=u_boot_getenv -Dprintf=u_boot_printf
 
-LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
+LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)
@@ -64,8 +64,8 @@ archprepare: maketools
 PHONY += maketools
 maketools: include/asm-linux/.arch
 
-cmd_vmlinux__ = $(CC) -o $@ -Wl,-T,$(vmlinux-lds) \
-	-Wl,--start-group $(vmlinux-common) -Wl,--end-group \
+cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
+	-Wl,--start-group $(uboot-common) -Wl,--end-group \
 	-lrt -Wl,-rpath,/lib -lrt -lpthread
 
 common-y += arch/linux/lib/ arch/linux/board/

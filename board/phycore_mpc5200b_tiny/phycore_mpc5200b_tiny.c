@@ -34,6 +34,7 @@
 #include <mpc5xxx.h>
 #include <pci.h>
 #include <asm/arch/fec.h>
+#include <types.h>
 
 #ifdef CONFIG_VIDEO_OPENIP
 #include <openip.h>
@@ -83,6 +84,31 @@ static int devices_init (void)
 }
 
 device_initcall(devices_init);
+
+static struct device_d psc3 = {
+        .name     = "mpc5xxx_serial",
+        .id       = "cs0",
+	.map_base = MPC5XXX_PSC3,
+	.size     = 4096,
+        .type     = DEVICE_TYPE_CONSOLE,
+};
+
+static struct device_d psc6 = {
+        .name     = "mpc5xxx_serial",
+        .id       = "cs1",
+	.map_base = MPC5XXX_PSC6,
+	.size     = 4096,
+        .type     = DEVICE_TYPE_CONSOLE,
+};
+
+static int console_init(void)
+{
+	register_device(&psc3);
+	register_device(&psc6);
+	return 0;
+}
+
+console_initcall(console_init);
 
 #define CFG_RAMBOOT
 

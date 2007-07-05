@@ -22,9 +22,7 @@
 #include <net.h>
 #include <cfi_flash.h>
 #include <init.h>
-
-static struct cfi_platform_data cfi_info = {
-};
+#include <environment.h>
 
 static struct device_d cfi_dev = {
         .name     = "cfi_flash",
@@ -32,8 +30,6 @@ static struct device_d cfi_dev = {
 
         .map_base = 0x10000000,
         .size     = 16 * 1024 * 1024,
-
-        .platform_data = &cfi_info,
 };
 
 static struct device_d sdram_dev = {

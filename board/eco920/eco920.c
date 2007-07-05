@@ -30,6 +30,7 @@
 #include <s1d13706fb.h>
 #include <net.h>
 #include <cfi_flash.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -38,11 +39,12 @@ DECLARE_GLOBAL_DATA_PTR;
  * Miscelaneous platform dependent initialisations
  */
 
-struct cfi_platform_data cfi_info = {
+static struct cfi_platform_data cfi_info = {
 };
 
 struct device_d cfi_dev = {
-        .name     = "nor",
+        .name     = "cfi_flash",
+        .id       = "nor0",
 
         .map_base = 0x11000000,
         .size     = 16 * 1024 * 1024,
@@ -52,34 +54,32 @@ struct device_d cfi_dev = {
 
 struct device_d sdram_dev = {
         .name     = "ram",
+        .id       = "ram0",
 
         .map_base = 0x20000000,
         .size     = 32 * 1024 * 1024,
 };
 
-int board_init (void)
-{
-	/* Enable Ctrlc */
-	console_init_f ();
+static struct device_d at91_ath_dev = {
+        .name     = "at91_eth",
+        .id       = "eth0",
 
+        .type     = DEVICE_TYPE_ETHER,
+};
 
-	gd->bd->bi_arch_number = MACH_TYPE_ECO920;
-	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-
-	return 0;
-}
-
-int dram_init (void)
+static int devices_init (void)
 {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
+	register_device(&at91_ath_dev);
 
 	gd->bd->bi_dram[0].start = PHYS_SDRAM;
 	gd->bd->bi_dram[0].size = PHYS_SDRAM_SIZE;
 	return 0;
 }
 
-#ifdef CONFIG_DRIVER_NET_AT91_ETHER
+device_initcall(devices_init);
+
 static unsigned int phy_is_connected (AT91PS_EMAC p_mac)
 {
 	return 1;
@@ -163,7 +163,6 @@ void at91rm9200_GetPhyInterface(AT91PS_PhyOps p_phyops)
 	/* ditto */
 	p_phyops->AutoNegotiate = NULL;
 }
-#endif
 
 #ifdef CONFIG_DRIVER_VIDEO_S1D13706
 static int efb_init(struct efb_info *efb)
@@ -210,9 +209,6 @@ int misc_init_r(void)
 #endif
 #ifdef CONFIG_CMD_SPLASH
 	splash_set_fb_data(&efb.fbd);
-#endif
-#ifdef CONFIG_DRIVER_NET_AT91_ETHER
-	eth_set_current(&at91rm9200_eth);
 #endif
 	return 0;
 }

@@ -151,5 +151,9 @@
 #define CONFIG_MISC_INIT_R      1       /* call misc_init_r() on init   */
 #define CFG_SPLASH		1
 #define CFG_S1D13706FB		1
+
+#define CONFIG_ARCH_NUMBER      MACH_TYPE_ECO920
+#define CONFIG_BOOT_PARAMS      PHYS_SDRAM + 0x100
+
 #endif
 

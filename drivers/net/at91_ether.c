@@ -22,8 +22,10 @@
  */
 
 #include <at91rm9200_net.h>
+#include <init.h>
 #include <net.h>
 #include <miiphy.h>
+#include <driver.h>
 
 /* ----- Ethernet Buffer definitions ----- */
 
@@ -147,7 +149,7 @@ UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
 	return TRUE;
 }
 
-static int at91rm9200_eth_init (struct eth_device *ndev, bd_t * bd)
+static int at91rm9200_eth_init (struct device_d *dev)
 {
 	int i;
 
@@ -205,7 +207,7 @@ static int at91rm9200_eth_init (struct eth_device *ndev, bd_t * bd)
 	return 0;
 }
 
-static int at91rm9200_eth_open (struct eth_device *ndev, bd_t * bd)
+static int at91rm9200_eth_open (struct eth_device *ndev)
 {
 	int ret;
 
@@ -314,7 +316,6 @@ static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr
 }
 
 struct eth_device at91rm9200_eth = {
-	.init = at91rm9200_eth_init,
 	.open = at91rm9200_eth_open,
 	.send = at91rm9200_eth_send,
 	.recv = at91rm9200_eth_rx,
@@ -322,4 +323,19 @@ struct eth_device at91rm9200_eth = {
 	.get_mac_address = at91rm9200_get_mac_address,
 	.set_mac_address = at91rm9200_set_mac_address,
 };
+
+static struct driver_d at91_eth_driver = {
+        .name  = "at91_eth",
+        .probe = at91rm9200_eth_init,
+        .type  = DEVICE_TYPE_ETHER,
+        .type_data = &at91rm9200_eth,
+};
+
+static int at91_eth_init(void)
+{
+        register_driver(&at91_eth_driver);
+        return 0;
+}
+
+device_initcall(at91_eth_init);
 

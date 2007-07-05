@@ -8,9 +8,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-#define LS_RECURSIVE	1
-#define LS_SHOWARG	2
-
 static void ls_one(const char *path, struct stat *s)
 {
 	char modestr[11];

@@ -3,8 +3,6 @@
 #include <init.h>
 #include <exports.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
 #if 0
 static void dummy(void)
 {

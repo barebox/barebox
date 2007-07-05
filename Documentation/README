@@ -1,0 +1,107 @@
+
+For long time U-Boot has served as a reliable and versatile bootloader for
+embedded systems, but over the time more and more limitations appeared.
+With U-Boot one hasd to know the memory layout of a particular device to work
+with it. For example to use tftpboot you need to know a memory address where
+you can store the file you are just loading. Saving it in flash requires you
+to know where in the memory space your flash device is and what erase block
+size it has. Configuring U-Boot means that you handle a lot of #defines. This
+usually starts with one define to activate a feature, compiling U-Boot and
+letting the compiler tell you what other defines you'll probably need.
+
+This is an attempt to rework U-Boot to fit the needs of modern embedded
+systems. Features include:
+
+- A posix based file API
+  inside U-Boot the usual open/close/read/write/lseek functions are used.
+  This makes it familiar to everyone who has programmed under unix systems.
+
+- usual shell commands like ls/cd/mkdir/echo/cat,...
+
+- The environment is not a variable store anymore, but a file store. It has
+  currently some limitations, of course. The environment is not a real
+  read/write filesystem, it is more like a tar archive, or even more like
+  an ar archive, because it cannot handle directories. The saveenv command
+  saves the files under a certain directory (by default /env) in persistent
+  storage (by default /dev/env0). There is a counterpart called loadenv, too.
+
+- Real filesystem support
+  The loader starts up with mounting a ramdisk on /. Then a devfs is mounted
+  on /dev allowing the user (or shell commands) to access devices. Apart from
+  these two filesystems there is currently one filesystem ported: cramfs. One
+  can mount it with the usual mount command.
+
+- device/driver model
+  Devices are no longer described by defines in the config file. Instead
+  there are devices which can be registered in the board .c file or
+  dynamically allocated. Drivers will match upon the devices automatically.
+
+- clocksource support
+  Timekeeping has been simplified by the use of the Linux clocksource API.
+  Only one function is needed for a new board, no [gs]et_timer[masked]() or
+  reset_timer[masked]() functions.
+
+- Kconfig and Kernel build system
+  Only targets which are really needed get recompiled. Parallel builds are
+  no problem anymore. This also removes the need for many many ifdefs in
+  the code.
+
+- simulation target
+  U-Boot can be compiled to run under Linux. While this is rather useless
+  in real world this is a great debugging and development aid. New features
+  can be easily developped and tested on long train journeys and started
+  under gdb. There is a console driver for linux which emulates a serial
+  device and a tap based ethernet driver. Linux files can be mapped to
+  devices under U-Boot to emulate storage devices.
+
+- device parameter support
+  Each device can have a unlimited number of parameters. They can be accessed
+  on the command line with <devid>.<param>="...", for example
+  'eth0.ip=192.168.0.7' or 'echo $eth0.ip'
+
+- initcalls
+  hooks in the startup process can be archieved with *_initcall() directives
+  in each file.
+
+- getopt
+  There is a small getopt implementation. Some commands got really
+  complicated (both in code and in usage) due to the fact that U-Boot only
+  allowed positional parameters.
+
+- editor
+  Scripts can be edited with a small editor. This editor has no features
+  except the ones really needed: moving the cursor and typing characters.
+
+To get started try
+
+ARCH=linux make linux_defconfig
+ARCH=linux make menuconfig
+ARCH=linux make
+./vmlinux
+
+(you can also do a 'ln -s linux cross_arch' to specify ARCH, the Makefile
+will read the link. Same with 'ln -s arm cross_compile', for example)
+
+This will currently only work on an IA32 architecture, because of some
+hardcoded values in the linker script because and little endian is assumed.
+Starting U-Boot as root will give you a new tap device which you can
+configure with
+
+ifconfig tap0 172.0.0.1 up
+
+After setting the network parameters under U-Boot (see 'devinfo eth0') you
+can start with sending a ping request to your host. If you have a tftp
+server running on your host try 'tftpboot <somefile> /target_file'
+
+For informations on how to map a file to U-Boot try ./vmlinux -h.
+For example if you wish to map a cramfs image to u-boot you can generate one
+with mkcramfs <dir> cramfs.bin and then start U-Boot with -i cramfs.bin. The
+image can be mounted with 'mkdir /cram; mount /dev/fd0 cramfs /cram'
+
+Still reading?
+Well, of course I only talked about the sunny side of life. This stuff is
+highly experimental. The code has so far only been tested under ARM and
+partly under PowerPC. On PowerPC This loader is not even able to start a
+kernel. Much work has to be done until this becomes a usable bootloader.
+Despite this I believe this _can_ become usable with reasonable effort.
+... to be continued

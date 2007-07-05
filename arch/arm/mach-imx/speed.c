@@ -96,7 +96,6 @@ ulong get_PERCLK3(void)
 	return get_systemPLLCLK() / (((PCDR>>16) & 0x7f)+1);
 }
 
-static int arch_number = CONFIG_ARCH_NUMBER;
 #if 0
 typedef enum imx_cookies {
         PARAM_CPUCLK,

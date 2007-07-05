@@ -194,7 +194,6 @@ void start_armboot (void)
 
 	env_init();		/* initialize environment */
 	serial_init();		/* serial communications setup */
-	console_init_f();	/* stage 1 init of console */
 
         for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
                 result = (*initcall)();

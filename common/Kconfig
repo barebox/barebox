@@ -47,9 +47,16 @@ config PROMPT_HUSH_PS2
 
 config ZERO_BOOTDELAY_CHECK
 	bool
-	prompt "Eanble stop boot process with bootdelay = 0"
+	prompt "Enable stop boot process with bootdelay = 0"
 	default y
 
+config DYNAMIC_CRC_TABLE
+	bool
+	prompt "Generate the crc32 table dynamically"
+	default y
+	help
+	  Saying yes to this option saves around 800 bytes of binary size.
+	  If unsure say yes.
 endmenu
 
 menu "Commands"
@@ -57,6 +64,10 @@ menu "Commands"
 config CMD_ECHO
 	bool
 	prompt "echo"
+
+config CMD_EDIT
+	bool
+	prompt "edit"
 
 config CMD_CONSOLE
 	bool

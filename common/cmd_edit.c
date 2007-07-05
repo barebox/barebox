@@ -152,7 +152,7 @@ static struct line *line_realloc(int len, struct line *line)
 		line->data = malloc(32);
 	}
 
-	while(size < len)
+	while (size < len)
 		size <<= 1;
 
 	line->data = realloc(line->data, size);
@@ -182,7 +182,7 @@ static int edit_read_file(const char *path)
 		if (!r && tmp == rbuf)
 			break;
 		*tmp = 0;
-		line = line_realloc(strlen(rbuf + 1), NULL);
+		line = line_realloc(strlen(rbuf) + 1, NULL);
 		if (!buffer)
 			buffer = line;
 		memcpy(line->data, rbuf, strlen(rbuf) + 1);

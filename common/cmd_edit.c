@@ -289,7 +289,8 @@ static void merge_line(struct line *line)
 	refresh(1);
 }
 
-#define GETWINSIZE
+/* not a good idead on slow serial lines */
+/* #define GETWINSIZE */
 
 #ifdef GETWINSIZE
 static void getwinsize(void) {
@@ -332,7 +333,6 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		return 1;
 
 #ifdef GETWINSIZE
-	/* not a good idead on slow serial lines */
 	getwinsize();
 #endif
 

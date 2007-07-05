@@ -28,8 +28,6 @@
 
 #define BOOTP_VENDOR_MAGIC	0x63825363	/* RFC1048 Magic Cookie		*/
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
 #define TIMEOUT		5		/* Seconds before trying BOOTP again	*/
 #ifndef CONFIG_NET_RETRY_COUNT
 # define TIMEOUT_COUNT	5		/* # of timeouts before giving up  */
@@ -50,7 +48,7 @@ int		BootpTry;
 ulong		seed1, seed2;
 #endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 dhcp_state_t dhcp_state = INIT;
 unsigned long dhcp_leasetime = 0;
 IPaddr_t NetDHCPServerIP = 0;
@@ -291,7 +289,6 @@ static void
 BootpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
 	Bootp_t *bp;
-	char	*s;
 
 	debug ("got BOOTP packet (src=%d, dst=%d, len=%d want_len=%d)\n",
 		src, dest, len, sizeof (Bootp_t));
@@ -333,7 +330,7 @@ BootpTimeout(void)
 		puts ("\nRetry count exceeded; starting again\n");
 		NetStartAgain ();
 	} else {
-		NetSetTimeout (TIMEOUT * CFG_HZ, BootpTimeout);
+		NetSetTimeout (TIMEOUT * SECOND, BootpTimeout);
 		BootpRequest ();
 	}
 }
@@ -341,7 +338,7 @@ BootpTimeout(void)
 /*
  *	Initialize BOOTP extension fields in the request.
  */
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 static int DhcpExtended (u8 * e, int message_type, IPaddr_t ServerID, IPaddr_t RequestedIP)
 {
 	u8 *start = e;
@@ -468,7 +465,7 @@ static int BootpExtended (u8 * e)
 	*e++ = 83;
 	*e++ = 99;
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 	*e++ = 53;		/* DHCP Message Type */
 	*e++ = 1;
 	*e++ = DHCP_DISCOVER;
@@ -534,83 +531,9 @@ BootpRequest (void)
 	Bootp_t *bp;
 	int ext_len, pktlen, iplen;
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 	dhcp_state = INIT;
 #endif
-
-#ifdef CONFIG_BOOTP_RANDOM_DELAY		/* Random BOOTP delay */
-	unsigned char bi_enetaddr[6];
-	int   reg;
-	char  *e,*s;
-	char tmp[64];
-	ulong tst1, tst2, sum, m_mask, m_value = 0;
-
-	if (BootpTry ==0) {
-		/* get our mac */
-		reg = getenv_r ("ethaddr", tmp, sizeof(tmp));
-		s = (reg > 0) ? tmp : NULL;
-
-		for (reg=0; reg<6; ++reg) {
-			bi_enetaddr[reg] = s ? simple_strtoul(s, &e, 16) : 0;
-			if (s) {
-				s = (*e) ? e+1 : e;
-			}
-		}
-#ifdef DEBUG
-		puts ("BootpRequest => Our Mac: ");
-		for (reg=0; reg<6; reg++) {
-			printf ("%x%c",
-				bi_enetaddr[reg],
-				reg==5 ? '\n' : ':');
-		}
-#endif /* DEBUG */
-
-		/* Mac-Manipulation 2 get seed1 */
-		tst1=0;
-		tst2=0;
-		for (reg=2; reg<6; reg++) {
-			tst1 = tst1 << 8;
-			tst1 = tst1 | bi_enetaddr[reg];
-		}
-		for (reg=0; reg<2; reg++) {
-			tst2 = tst2 | bi_enetaddr[reg];
-			tst2 = tst2 << 8;
-		}
-
-		seed1 = tst1^tst2;
-
-		/* Mirror seed1*/
-		m_mask=0x1;
-		for (reg=1;reg<=32;reg++) {
-			m_value |= (m_mask & seed1);
-			seed1 = seed1 >> 1;
-			m_value = m_value << 1;
-		}
-		seed1 = m_value;
-		seed2 = 0xB78D0945;
-	}
-
-	/* Random Number Generator */
-
-	for (reg=0;reg<=0;reg++) {
-		sum = seed1 + seed2;
-		if (sum < seed1 || sum < seed2)
-			sum++;
-		seed2 = seed1;
-		seed1 = sum;
-
-		if (BootpTry<=2) {	/* Start with max 1024 * 1ms */
-			sum = sum >> (22-BootpTry);
-		} else {		/*After 3rd BOOTP request max 8192 * 1ms */
-			sum = sum >> 19;
-		}
-	}
-
-	printf ("Random delay: %ld ms...\n", sum);
-	for (reg=0; reg <sum; reg++) {
-		udelay(1000); /*Wait 1ms*/
-	}
-#endif	/* CONFIG_BOOTP_RANDOM_DELAY */
 
 	printf("BOOTP broadcast %d\n", ++BootpTry);
 	pkt = NetTxPacket;
@@ -634,6 +557,7 @@ BootpRequest (void)
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
 	/* FIXME what is this? */
+#warning this is broken
 //	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
 	NetWriteIP(&bp->bp_ciaddr, 0);
 	NetWriteIP(&bp->bp_yiaddr, 0);
@@ -643,7 +567,7 @@ BootpRequest (void)
 	copy_filename (bp->bp_file, BootFile, sizeof(bp->bp_file));
 
 	/* Request additional information from the BOOTP/DHCP server */
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 	ext_len = DhcpExtended((u8 *)bp->bp_vend, DHCP_DISCOVER, 0, 0);
 #else
 	ext_len = BootpExtended((u8 *)bp->bp_vend);
@@ -668,9 +592,9 @@ BootpRequest (void)
 	pktlen = BOOTP_SIZE - sizeof(bp->bp_vend) + ext_len;
 	iplen = BOOTP_HDR_SIZE - sizeof(bp->bp_vend) + ext_len;
 	NetSetIP(iphdr, 0xFFFFFFFFL, PORT_BOOTPS, PORT_BOOTPC, iplen);
-	NetSetTimeout(SELECT_TIMEOUT * CFG_HZ, BootpTimeout);
+	NetSetTimeout(SELECT_TIMEOUT * SECOND, BootpTimeout);
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 	dhcp_state = SELECTING;
 	NetSetHandler(DhcpHandler);
 #else
@@ -679,7 +603,7 @@ BootpRequest (void)
 	NetSendPacket(NetTxPacket, pktlen);
 }
 
-#if (CONFIG_COMMANDS & CFG_CMD_DHCP)
+#ifdef CONFIG_NET_DHCP
 static void DhcpOptionsProcess (uchar * popt, Bootp_t *bp)
 {
 	uchar *end = popt + BOOTP_HDR_SIZE;
@@ -885,7 +809,7 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 
 			BootpCopyNetParams(bp); /* Store net params from reply */
 
-			NetSetTimeout(TIMEOUT * CFG_HZ, BootpTimeout);
+			NetSetTimeout(TIMEOUT * SECOND, BootpTimeout);
 			DhcpSendRequestPkt(bp);
 #ifdef CFG_BOOTFILE_PREFIX
 		}
@@ -924,4 +848,3 @@ void DhcpRequest(void)
 }
 #endif	/* CFG_CMD_DHCP */
 
-#endif /* CFG_CMD_NET */

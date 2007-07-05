@@ -13,8 +13,6 @@
 
 #undef	ET_DEBUG
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-
 #define WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
 #define TIMEOUT		5		/* Seconds to timeout for a lost pkt	*/
 #ifndef	CONFIG_NET_RETRY_COUNT
@@ -58,36 +56,11 @@ static int	TftpState;
 static char default_filename[DEFAULT_NAME_LEN];
 static char *tftp_filename;
 
-#ifdef CFG_DIRECT_FLASH_TFTP
-extern flash_info_t flash_info[];
-#endif
-
 static __inline__ void
 store_block (unsigned block, uchar * src, unsigned len)
 {
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
-#ifdef CFG_DIRECT_FLASH_TFTP
-	int i, rc = 0;
-
-	for (i=0; i<CFG_MAX_FLASH_BANKS; i++) {
-		/* start address in flash? */
-		if (load_addr + offset >= flash_info[i].start[0]) {
-			rc = 1;
-			break;
-		}
-	}
-
-	if (rc) { /* Flash is destination for this packet */
-		rc = flash_write ((char *)src, (ulong)(load_addr+offset), len);
-		if (rc) {
-			flash_perror (rc);
-			NetState = NETLOOP_FAIL;
-			return;
-		}
-	}
-	else
-#endif /* CFG_DIRECT_FLASH_TFTP */
 	{
 		(void)memcpy((void *)(load_addr + offset), src, len);
 	}
@@ -267,7 +240,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 		}
 
 		TftpLastBlock = TftpBlock;
-		NetSetTimeout (TIMEOUT * CFG_HZ, TftpTimeout);
+		NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 
 		store_block (TftpBlock - 1, pkt + 2, len);
 
@@ -305,7 +278,7 @@ TftpTimeout (void)
 		NetStartAgain ();
 	} else {
 		puts ("T ");
-		NetSetTimeout (TIMEOUT * CFG_HZ, TftpTimeout);
+		NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 		TftpSend ();
 	}
 }
@@ -363,7 +336,7 @@ TftpStart (void)
 
 	puts ("Loading: *\b");
 
-	NetSetTimeout (TIMEOUT * CFG_HZ, TftpTimeout);
+	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 	NetSetHandler (TftpHandler);
 
 	TftpServerPort = WELL_KNOWN_PORT;
@@ -386,5 +359,3 @@ TftpStart (void)
 
 	TftpSend ();
 }
-
-#endif /* CFG_CMD_NET */

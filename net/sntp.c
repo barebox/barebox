@@ -7,12 +7,11 @@
 
 #include <common.h>
 #include <command.h>
+#include <clock.h>
 #include <net.h>
 #include <rtc.h>
 
 #include "sntp.h"
-
-#if ((CONFIG_COMMANDS & CFG_CMD_NET) && (CONFIG_COMMANDS & CFG_CMD_SNTP))
 
 #define SNTP_TIMEOUT 10
 
@@ -35,7 +34,7 @@ SntpSend (void)
 
 	memcpy ((char *)NetTxPacket + NetEthHdrSize() + IP_HDR_SIZE, (char *)&pkt, pktlen);
 
-	SntpOurPort = 10000 + (get_timer(0) % 4096);
+	SntpOurPort = 10000 + ((uint32_t)get_time_ns() % 4096);
 	sport = NTP_SERVICE_PORT;
 
 	NetSendUDPPacket (NetServerEther, NetNtpServerIP, sport, SntpOurPort, pktlen);
@@ -82,11 +81,46 @@ SntpStart (void)
 {
 	debug ("%s\n", __FUNCTION__);
 
-	NetSetTimeout (SNTP_TIMEOUT * CFG_HZ, SntpTimeout);
+	NetSetTimeout (SNTP_TIMEOUT * SECOND, SntpTimeout);
 	NetSetHandler(SntpHandler);
 	memset (NetServerEther, 0, 6);
 
 	SntpSend ();
 }
 
-#endif /* CONFIG_COMMANDS & CFG_CMD_SNTP */
+int do_sntp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	char *toff;
+
+	if (argc < 2) {
+		NetNtpServerIP = getenv_IPaddr ("ntpserverip");
+		if (NetNtpServerIP == 0) {
+			printf ("ntpserverip not set\n");
+			return (1);
+		}
+	} else {
+		NetNtpServerIP = string_to_ip(argv[1]);
+		if (NetNtpServerIP == 0) {
+			printf ("Bad NTP server IP address\n");
+			return (1);
+		}
+	}
+
+	toff = getenv ("timeoffset");
+	if (toff == NULL) NetTimeOffset = 0;
+	else NetTimeOffset = simple_strtol (toff, NULL, 10);
+
+	if (NetLoop(SNTP) < 0) {
+		printf("SNTP failed: host %s not responding\n", argv[1]);
+		return 1;
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	sntp,	2,	1,	do_sntp,
+	"sntp\t- synchronize RTC via network\n",
+	"[NTP server IP]\n"
+);
+

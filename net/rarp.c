@@ -23,13 +23,12 @@
 
 #include <common.h>
 #include <command.h>
+#include <clock.h>
 #include <net.h>
 #include "nfs.h"
 #include "bootp.h"
 #include "rarp.h"
 #include "tftp.h"
-
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
 
 #define TIMEOUT		5		/* Seconds before trying BOOTP again */
 #ifndef	CONFIG_NET_RETRY_COUNT
@@ -47,7 +46,6 @@ int		RarpTry;
 static void
 RarpHandler(uchar * dummi0, unsigned dummi1, unsigned dummi2, unsigned dummi3)
 {
-	char *s;
 #ifdef	DEBUG
 	puts ("Got good RARP\n");
 #endif
@@ -65,7 +63,7 @@ RarpTimeout(void)
 		puts ("\nRetry count exceeded; starting again\n");
 		NetStartAgain ();
 	} else {
-		NetSetTimeout (TIMEOUT * CFG_HZ, RarpTimeout);
+		NetSetTimeout (TIMEOUT * SECOND, RarpTimeout);
 		RarpRequest ();
 	}
 }
@@ -100,8 +98,7 @@ RarpRequest (void)
 
 	NetSendPacket(NetTxPacket, (pkt - NetTxPacket) + ARP_HDR_SIZE);
 
-	NetSetTimeout(TIMEOUT * CFG_HZ, RarpTimeout);
+	NetSetTimeout(TIMEOUT * SECOND, RarpTimeout);
 	NetSetHandler(RarpHandler);
 }
 
-#endif /* CFG_CMD_NET */

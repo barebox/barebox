@@ -24,14 +24,13 @@
 
 #include <common.h>
 #include <command.h>
+#include <clock.h>
 #include <net.h>
 #include <malloc.h>
 #include "nfs.h"
 #include "bootp.h"
 
 /*#define NFS_DEBUG*/
-
-#if ((CONFIG_COMMANDS & CFG_CMD_NET) && (CONFIG_COMMANDS & CFG_CMD_NFS))
 
 #define HASHES_PER_LINE 65	/* Number of "loading" hashes per line	*/
 #define NFS_TIMEOUT 60
@@ -68,28 +67,8 @@ static __inline__ int
 store_block (uchar * src, unsigned offset, unsigned len)
 {
 	ulong newsize = offset + len;
-#ifdef CFG_DIRECT_FLASH_NFS
-	int i, rc = 0;
 
-	for (i=0; i<CFG_MAX_FLASH_BANKS; i++) {
-		/* start address in flash? */
-		if (load_addr + offset >= flash_info[i].start[0]) {
-			rc = 1;
-			break;
-		}
-	}
-
-	if (rc) { /* Flash is destination for this packet */
-		rc = flash_write ((uchar *)src, (ulong)(load_addr+offset), len);
-		if (rc) {
-			flash_perror (rc);
-			return -1;
-		}
-	} else
-#endif /* CFG_DIRECT_FLASH_NFS */
-	{
-		(void)memcpy ((void *)(load_addr + offset), src, len);
-	}
+	memcpy ((void *)(load_addr + offset), src, len);
 
 	if (NetBootFileXferSize < (offset+len))
 		NetBootFileXferSize = newsize;
@@ -670,7 +649,7 @@ NfsHandler (uchar *pkt, unsigned dest, unsigned src, unsigned len)
 
 	case STATE_READ_REQ:
 		rlen = nfs_read_reply (pkt, len);
-		NetSetTimeout (NFS_TIMEOUT * CFG_HZ, NfsTimeout);
+		NetSetTimeout (NFS_TIMEOUT * SECOND, NfsTimeout);
 		if (rlen > 0) {
 			nfs_offset += rlen;
 			NfsSend ();
@@ -759,7 +738,7 @@ NfsStart (void)
 	printf ("\nLoad address: 0x%lx\n"
 		"Loading: *\b", load_addr);
 
-	NetSetTimeout (NFS_TIMEOUT * CFG_HZ, NfsTimeout);
+	NetSetTimeout (NFS_TIMEOUT * SECOND, NfsTimeout);
 	NetSetHandler (NfsHandler);
 
 	NfsTimeoutCount = 0;
@@ -774,4 +753,3 @@ NfsStart (void)
 	NfsSend ();
 }
 
-#endif /* CONFIG_COMMANDS & CFG_CMD_NFS */

@@ -54,11 +54,10 @@ int console_register(struct console_device *newcdev)
 int getc (void)
 {
 	struct console_device *cdev = NULL;
-
 	while (1) {
 		if (!cdev)
 			cdev = first_console;
-		if (cdev->flags & CONSOLE_STDIN && !cdev->tstc(cdev))
+		if (cdev->flags & CONSOLE_STDIN && cdev->tstc(cdev))
 			return cdev->getc(cdev);
 		cdev = cdev->next;
 	}
@@ -73,7 +72,7 @@ int fgetc(int fd)
 	return read(fd, &c, 1);
 }
 
-int tstc (void)
+int tstc(void)
 {
 	struct console_device *cdev = first_console;
 
@@ -169,42 +168,10 @@ void vprintf (const char *fmt, va_list args)
 }
 
 /* test if ctrl-c was pressed */
-static int ctrlc_disabled = 0;	/* see disable_ctrl() */
-static int ctrlc_was_pressed = 0;
 int ctrlc (void)
 {
-	if (!ctrlc_disabled) {
-		if (tstc ()) {
-			switch (getc ()) {
-			case 0x03:		/* ^C - Control C */
-				ctrlc_was_pressed = 1;
-				return 1;
-			default:
-				break;
-			}
-		}
-	}
+	if (tstc() && getc() == 3)
+		return 1;
 	return 0;
-}
-
-/* pass 1 to disable ctrlc() checking, 0 to enable.
- * returns previous state
- */
-int disable_ctrlc (int disable)
-{
-	int prev = ctrlc_disabled;	/* save previous state */
-
-	ctrlc_disabled = disable;
-	return prev;
-}
-
-int had_ctrlc (void)
-{
-	return ctrlc_was_pressed;
-}
-
-void clear_ctrlc (void)
-{
-	ctrlc_was_pressed = 0;
 }
 

@@ -456,11 +456,9 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			}
 			break;
 		case 4:
-			printf("<ctrl-d>\n");
 			save_file(argv[1]);
 			goto out;
 		case 3:
-			printf("<???????\n");
 			goto out;
 		default:
 			if ((signed char)c != -1)
@@ -472,8 +470,16 @@ out:
 	return 0;
 }
 
+static char cmd_edit_help[] =
+"Usage: edit <file>\n"
+"This is a very small editor. Its only features are moving the cursor with\n"
+"the usual keys and typing characters.\n"
+"<ctrl-c> quits the editor without saving,\n"
+"<ctrl-d> quits the editor with saving the current file.\n";
+
 U_BOOT_CMD_START(edit)
 	.maxargs	= 2,
 	.cmd		= do_edit,
 	.usage		= "edit a file",
+	U_BOOT_CMD_HELP(cmd_edit_help)
 U_BOOT_CMD_END

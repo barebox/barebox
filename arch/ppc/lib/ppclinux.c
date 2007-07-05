@@ -1,18 +1,24 @@
 
 #include <common.h>
+#include <command.h>
 #include <watchdog.h>
+#include <image.h>
+#include <environment.h>
+#include <asm/global_data.h>
+#include <asm/bitops.h>
 
 #ifdef CONFIG_OF_FLAT_TREE
 #include <ft_build.h>
 #endif
 
-static void  __attribute__((noinline))
+void  __attribute__((noinline))
 do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		int	argc, char *argv[],
 		ulong	addr,
 		ulong	*len_ptr,
 		int	verify)
 {
+#if 0
 	ulong	sp;
 	ulong	len, checksum;
 	ulong	initrd_start, initrd_end;
@@ -457,6 +463,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 	/* ft_dump_blob(of_flat_tree); */
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
+#endif
 #endif
 }
 

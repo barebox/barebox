@@ -158,5 +158,6 @@ typedef struct image_header {
 
 /* common/cmd_bootm.c */
 void	print_image_hdr (image_header_t *hdr);
+extern image_header_t header;
 
 #endif	/* __IMAGE_H__ */

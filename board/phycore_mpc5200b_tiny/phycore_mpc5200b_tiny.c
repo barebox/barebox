@@ -84,17 +84,6 @@ static int devices_init (void)
 
 device_initcall(devices_init);
 
-/* Do not collide with the env from our first stage loader for now */
-static char *env_spec = "nor0:0+128k";
-
-static int init_env(void)
-{
-        add_env_spec(env_spec);
-        return 0;
-}
-
-late_initcall(init_env);
-
 #define CFG_RAMBOOT
 
 #include "mt46v32m16-75.h"

@@ -54,9 +54,6 @@ Serial console configuration
 #define CONFIG_BAUDRATE		115200	/* ... at 115200 bps */
 #define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400 }
 
-/* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
-#include <cmd_confdefs.h>
-
 #define	CONFIG_TIMESTAMP	1	/* Print image info with timestamp */
 
 #if (TEXT_BASE == 0xFF000000)		/* Boot low */
@@ -68,9 +65,6 @@ Serial console configuration
 Autobooting
  ------------------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CONFIG_BOOTDELAY	5   /* autoboot after 5 seconds */
-#define CONFIG_ZERO_BOOTDELAY_CHECK /* allow stopping of boot process even with bootdelay=0 */
-#undef	CONFIG_BOOTARGS
-
 
 #define CONFIG_PREBOOT	"echo;"	\
 	"echo Type \"run net_nfs\" to load Kernel over TFTP and to mount root filesystem over NFS;" \

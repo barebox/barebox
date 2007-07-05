@@ -12,4 +12,3 @@ obj-y += serial.o
 obj-y += speed.o
 extra-y += start.o
 obj-y += traps.o
-obj-y += usb_ohci.o

@@ -396,36 +396,6 @@ jffs2_1pass_find_inode(struct b_lists * pL, const char *name, u32 pino)
 	return inode;
 }
 
-char *mkmodestr(unsigned long mode, char *str)
-{
-	static const char *l = "xwr";
-	int mask = 1, i;
-	char c;
-
-	switch (mode & S_IFMT) {
-		case S_IFDIR:    str[0] = 'd'; break;
-		case S_IFBLK:    str[0] = 'b'; break;
-		case S_IFCHR:    str[0] = 'c'; break;
-		case S_IFIFO:    str[0] = 'f'; break;
-		case S_IFLNK:    str[0] = 'l'; break;
-		case S_IFSOCK:   str[0] = 's'; break;
-		case S_IFREG:    str[0] = '-'; break;
-		default:         str[0] = '?';
-	}
-
-	for(i = 0; i < 9; i++) {
-		c = l[i%3];
-		str[9-i] = (mode & mask)?c:'-';
-		mask = mask<<1;
-	}
-
-	if(mode & S_ISUID) str[3] = (mode & S_IXUSR)?'s':'S';
-	if(mode & S_ISGID) str[6] = (mode & S_IXGRP)?'s':'S';
-	if(mode & S_ISVTX) str[9] = (mode & S_IXOTH)?'t':'T';
-	str[10] = '\0';
-	return str;
-}
-
 static inline void dump_stat(struct stat *st, const char *name)
 {
 	char str[20];

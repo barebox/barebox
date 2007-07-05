@@ -56,14 +56,15 @@ static int	TftpState;
 static char default_filename[DEFAULT_NAME_LEN];
 static char *tftp_filename;
 
+extern struct memarea_info net_store_mem;
+
 static __inline__ void
 store_block (unsigned block, uchar * src, unsigned len)
 {
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
-	{
-		(void)memcpy((void *)(load_addr + offset), src, len);
-	}
+
+	write(net_store_mem.device, src, len, net_store_mem.start + offset, 0);
 
 	if (NetBootFileXferSize < newsize)
 		NetBootFileXferSize = newsize;

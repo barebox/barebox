@@ -315,17 +315,6 @@ void main_loop (void)
 	char bcs_set[16];
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 
-#if defined(CONFIG_VFD) && defined(VFD_TEST_LOGO)
-	ulong bmp = 0;		/* default bitmap */
-	extern int trab_vfd (ulong bitmap);
-
-#ifdef CONFIG_MODEM_SUPPORT
-	if (do_mdm_init)
-		bmp = 1;	/* alternate bitmap */
-#endif
-	trab_vfd (bmp);
-#endif	/* CONFIG_VFD && VFD_TEST_LOGO */
-
 #ifdef CONFIG_BOOTCOUNT_LIMIT
 	bootcount = bootcount_load();
 	bootcount++;
@@ -335,25 +324,6 @@ void main_loop (void)
 	bcs = getenv ("bootlimit");
 	bootlimit = bcs ? simple_strtoul (bcs, NULL, 10) : 0;
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
-
-#ifdef CONFIG_MODEM_SUPPORT
-	debug ("DEBUG: main_loop:   do_mdm_init=%d\n", do_mdm_init);
-	if (do_mdm_init) {
-		char *str = strdup(getenv("mdm_cmd"));
-		setenv ("preboot", str);  /* set or delete definition */
-		if (str != NULL)
-			free (str);
-		mdm_init(); /* wait for modem connection */
-	}
-#endif  /* CONFIG_MODEM_SUPPORT */
-
-#ifdef CONFIG_VERSION_VARIABLE
-	{
-		extern char version_string[];
-
-		setenv ("ver", version_string);  /* set version variable */
-	}
-#endif /* CONFIG_VERSION_VARIABLE */
 
 #ifdef CFG_HUSH_PARSER
 	u_boot_hush_start ();
@@ -435,13 +405,6 @@ void main_loop (void)
 	}
 #endif /* CONFIG_MENUKEY */
 #endif	/* CONFIG_BOOTDELAY */
-
-#ifdef CONFIG_AMIGAONEG3SE
-	{
-	    extern void video_banner(void);
-	    video_banner();
-	}
-#endif
 
 	/*
 	 * Main Loop for Monitor Command Processing
@@ -1397,3 +1360,11 @@ int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	}
 	return 0;
 }
+
+int do_run (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
+U_BOOT_CMD(
+	run,	CFG_MAXARGS,	1,	do_run,
+	"run     - run commands in an environment variable\n",
+	"var [...]\n"
+	"    - run the commands in the environment variable(s) 'var'\n"
+);

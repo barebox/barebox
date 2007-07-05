@@ -14,6 +14,9 @@ void mem_malloc_init (void *start, void *end)
 	mem_malloc_start = (ulong)start;
 	mem_malloc_end = (ulong)end;
 	mem_malloc_brk = mem_malloc_start;
+
+	memset ((void *) mem_malloc_start, 0,
+			mem_malloc_end - mem_malloc_start);
 }
 
 void *sbrk (ptrdiff_t increment)

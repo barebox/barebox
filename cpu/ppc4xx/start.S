@@ -1093,13 +1093,13 @@ invalidate_icache:
 invalidate_dcache:
 	addi	r6,0,0x0000		/* clear GPR 6 */
 	/* Do loop for # of dcache congruence classes. */
-	lis	r7, (CFG_DCACHE_SIZE / CFG_CACHELINE_SIZE / 2)@ha	/* TBS for large sized cache */
-	ori	r7, r7, (CFG_DCACHE_SIZE / CFG_CACHELINE_SIZE / 2)@l
+	lis	r7, (CFG_DCACHE_SIZE / CONFIG_CACHELINE_SIZE / 2)@ha	/* TBS for large sized cache */
+	ori	r7, r7, (CFG_DCACHE_SIZE / CONFIG_CACHELINE_SIZE / 2)@l
 					/* NOTE: dccci invalidates both */
 	mtctr	r7			/* ways in the D cache */
 ..dcloop:
 	dccci	0,r6			/* invalidate line */
-	addi	r6,r6, CFG_CACHELINE_SIZE /* bump to next line */
+	addi	r6,r6, CONFIG_CACHELINE_SIZE /* bump to next line */
 	bdnz	..dcloop
 	blr
 
@@ -1115,8 +1115,8 @@ flush_dcache:
 	mtdccr	r10
 
 	/* do loop for # of congruence classes. */
-	lis	r10,(CFG_DCACHE_SIZE / CFG_CACHELINE_SIZE / 2)@ha	/* TBS: for large cache sizes */
-	ori	r10,r10,(CFG_DCACHE_SIZE / CFG_CACHELINE_SIZE / 2)@l
+	lis	r10,(CFG_DCACHE_SIZE / CONFIG_CACHELINE_SIZE / 2)@ha	/* TBS: for large cache sizes */
+	ori	r10,r10,(CFG_DCACHE_SIZE / CONFIG_CACHELINE_SIZE / 2)@l
 	lis	r11,(CFG_DCACHE_SIZE / 2)@ha /* D cache set size - 2 way sets */
 	ori	r11,r11,(CFG_DCACHE_SIZE / 2)@l /* D cache set size - 2 way sets */
 	mtctr	r10
@@ -1126,8 +1126,8 @@ flush_dcache:
 	lwz	r3,0(r10)		/* least recently used side */
 	lwz	r3,0(r11)		/* the other side */
 	dccci	r0,r11			/* invalidate both sides */
-	addi	r10,r10,CFG_CACHELINE_SIZE /* bump to next line */
-	addi	r11,r11,CFG_CACHELINE_SIZE /* bump to next line */
+	addi	r10,r10,CONFIG_CACHELINE_SIZE /* bump to next line */
+	addi	r11,r11,CONFIG_CACHELINE_SIZE /* bump to next line */
 	bdnz	..flush_dcache_loop
 	sync				/* allow memory access to complete */
 	mtdccr	r9			/* restore dccr */
@@ -1365,7 +1365,7 @@ relocate_code:
 	ori	r4, r4, CFG_MONITOR_BASE@l
 	lwz	r5, GOT(__init_end)
 	sub	r5, r5, r4
-	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
+	li	r6, CONFIG_CACHELINE_SIZE		/* Cache Line Size	*/
 
 	/*
 	 * Fix GOT pointer:

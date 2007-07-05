@@ -128,7 +128,7 @@ mips_cache_reset:
 
 	li	t2, CFG_ICACHE_SIZE
 	li	t3, CFG_DCACHE_SIZE
-	li	t4, CFG_CACHELINE_SIZE
+	li	t4, CONFIG_CACHELINE_SIZE
 	move	t5, t4
 
 
@@ -261,7 +261,7 @@ mips_cache_lock:
 	li	a1, K0BASE - CACHE_LOCK_SIZE
 	addu	a0, a1
 	li	a2, CACHE_LOCK_SIZE
-	li	a3, CFG_CACHELINE_SIZE
+	li	a3, CONFIG_CACHELINE_SIZE
 	move	a1, a2
 	icacheop(a0,a1,a2,a3,0x1d)
 

@@ -9,6 +9,10 @@ config ARCH_MPC5200
 config MPC5200
 	bool
 
+config CACHELINE_SIZE
+	int
+	default 32 if MPC5200
+
 choice
 	prompt "Select your board"
 

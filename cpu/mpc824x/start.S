@@ -468,7 +468,7 @@ relocate_code:
 #endif
 	lwz	r5, GOT(__init_end)
 	sub	r5, r5, r4
-	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
+	li	r6, CONFIG_CACHELINE_SIZE		/* Cache Line Size	*/
 
 	/*
 	 * Fix GOT pointer:

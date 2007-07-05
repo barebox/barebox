@@ -922,7 +922,7 @@ relocate_code:
 	ori	r4, r4, CFG_MONITOR_BASE@l
 	lwz	r5,GOT(__init_end)
 	sub	r5,r5,r4
-	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
+	li	r6, CONFIG_CACHELINE_SIZE		/* Cache Line Size	*/
 
 	/*
 	 * Fix GOT pointer:

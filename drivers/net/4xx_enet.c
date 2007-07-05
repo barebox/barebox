@@ -723,13 +723,13 @@ static int ppc_4xx_eth_init (struct eth_device *dev, bd_t * bis)
 	 */
 	hw_p->alloc_tx_buf =
 		(mal_desc_t *) malloc ((sizeof (mal_desc_t) * NUM_TX_BUFF) +
-				       ((2 * CFG_CACHELINE_SIZE) - 2));
+				       ((2 * CONFIG_CACHELINE_SIZE) - 2));
 	if (NULL == hw_p->alloc_tx_buf)
 		return -1;
 	if (((int) hw_p->alloc_tx_buf & CACHELINE_MASK) != 0) {
 		hw_p->tx =
 			(mal_desc_t *) ((int) hw_p->alloc_tx_buf +
-					CFG_CACHELINE_SIZE -
+					CONFIG_CACHELINE_SIZE -
 					((int) hw_p->
 					 alloc_tx_buf & CACHELINE_MASK));
 	} else {
@@ -738,7 +738,7 @@ static int ppc_4xx_eth_init (struct eth_device *dev, bd_t * bis)
 
 	hw_p->alloc_rx_buf =
 		(mal_desc_t *) malloc ((sizeof (mal_desc_t) * NUM_RX_BUFF) +
-				       ((2 * CFG_CACHELINE_SIZE) - 2));
+				       ((2 * CONFIG_CACHELINE_SIZE) - 2));
 	if (NULL == hw_p->alloc_rx_buf) {
 		free(hw_p->alloc_tx_buf);
 		hw_p->alloc_tx_buf = NULL;
@@ -748,7 +748,7 @@ static int ppc_4xx_eth_init (struct eth_device *dev, bd_t * bis)
 	if (((int) hw_p->alloc_rx_buf & CACHELINE_MASK) != 0) {
 		hw_p->rx =
 			(mal_desc_t *) ((int) hw_p->alloc_rx_buf +
-					CFG_CACHELINE_SIZE -
+					CONFIG_CACHELINE_SIZE -
 					((int) hw_p->
 					 alloc_rx_buf & CACHELINE_MASK));
 	} else {

@@ -42,7 +42,6 @@ High Level Configuration Options
 #define CFG_MPC5XXX_CLKIN	33333333 /* ... running at 33.333333MHz */
 #define BOOTFLAG_COLD		0x01	/* Normal Power-On: Boot from FLASH  */
 #define BOOTFLAG_WARM		0x02	/* Software reboot	     */
-#define CFG_CACHELINE_SIZE	32	/* For MPC5xxx CPUs */
 #if (CONFIG_COMMANDS & CFG_CMD_KGDB)
 #  define CFG_CACHELINE_SHIFT	5	/* log base 2 of the above value */
 #endif

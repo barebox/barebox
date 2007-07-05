@@ -3298,7 +3298,7 @@ typedef struct {
 #endif	/* _ASMLANGUAGE */
 
 #define RESET_VECTOR		0xfffffffc
-#define CACHELINE_MASK		(CFG_CACHELINE_SIZE - 1) /* Address mask for		*/
+#define CACHELINE_MASK		(CONFIG_CACHELINE_SIZE - 1) /* Address mask for		*/
 							 /* cache line aligned data.	*/
 
 #endif	/* __PPC440_H__ */

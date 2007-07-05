@@ -29,18 +29,18 @@ void flush_cache (ulong start_addr, ulong size)
 #ifndef CONFIG_5xx
 	ulong addr, end_addr = start_addr + size;
 
-	if (CFG_CACHELINE_SIZE) {
-		addr = start_addr & (CFG_CACHELINE_SIZE - 1);
+	if (CONFIG_CACHELINE_SIZE) {
+		addr = start_addr & (CONFIG_CACHELINE_SIZE - 1);
 		for (addr = start_addr;
 		     addr < end_addr;
-		     addr += CFG_CACHELINE_SIZE) {
+		     addr += CONFIG_CACHELINE_SIZE) {
 			asm ("dcbst 0,%0": :"r" (addr));
 		}
 		asm ("sync");	/* Wait for all dcbst to complete on bus */
 
 		for (addr = start_addr;
 		     addr < end_addr;
-		     addr += CFG_CACHELINE_SIZE) {
+		     addr += CONFIG_CACHELINE_SIZE) {
 			asm ("icbi 0,%0": :"r" (addr));
 		}
 	}

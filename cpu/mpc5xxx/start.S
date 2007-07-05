@@ -327,7 +327,7 @@ calc_source:
 	lis	r5, __init_size@h		/* Size         	*/
 	ori	r5, r5, __init_size@l
 
-	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
+	li	r6, CONFIG_CACHELINE_SIZE		/* Cache Line Size	*/
 
 	/*
 	 * Fix GOT pointer:

@@ -1,46 +1,56 @@
-#
-# (C) Copyright 2000-2006
-# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
-#
-# See file CREDITS for list of people who contributed to this
-# project.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of
-# the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307 USA
-#
 
-include $(TOPDIR)/config.mk
+CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
+	-isystem $(gccincdir) -ffixed-r14 -meabi -Wstrict-prototypes -fPIC -D __PPC__ -D CONFIG_PPC \
 
-LIB	= $(obj)lib$(ARCH).a
 
-SOBJS	= ppcstring.o ticks.o
+machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200
+board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= phycore_mpc5200b_tiny
+cpu-$(CONFIG_MPC5200)				:= mpc5xxx
 
-COBJS	= board.o \
-	  bat_rw.o cache.o extable.o kgdb.o time.o interrupts.o
+TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-SRCS 	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
+CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
+CFLAGS := -fno-common -Os
+LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
 
-$(LIB):	$(obj).depend $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(OBJS)
+ifeq ($(incdir-y),)
+incdir-y := $(machine-y)
+endif
+INCDIR   := arch-$(incdir-y)
 
-#########################################################################
+#	Update machine arch and proc symlinks if something which affects
+#	them changed.  We use .arch to indicate when they were updated
+#	last, otherwise make uses the target directory mtime.
 
-# defines $(obj).depend target
-include $(SRCTREE)/rules.mk
+include/asm-ppc/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
+	@echo '  SYMLINK include/asm-ppc/arch -> include/asm-ppc/$(INCDIR)'
+ifneq ($(KBUILD_SRC),)
+	$(Q)mkdir -p include/asm-ppc
+	$(Q)ln -fsn $(srctree)/include/asm-ppc/$(INCDIR) include/asm-ppc/arch
+else
+	$(Q)ln -fsn $(INCDIR) include/asm-ppc/arch
+endif
+	@touch $@
 
-sinclude $(obj).depend
+archprepare: maketools
 
-#########################################################################
+PHONY += maketools
+maketools: include/asm-ppc/.arch
+
+
+ifneq ($(board-y),)
+BOARD  := board/$(board-y)/
+else
+BOARD  :=
+endif
+
+ifneq ($(cpu-y),)
+CPU  := cpu/$(cpu-y)/
+else
+CPU  :=
+endif
+
+common-y += $(BOARD) $(CPU)
+common-y += arch/ppc/lib/
+
+MRPROPER_FILES += include/asm-ppc/arch

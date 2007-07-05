@@ -878,6 +878,8 @@ int mpc5xxx_fec_initialize(bd_t * bis)
 	fec->eth = (ethernet_regs *)MPC5XXX_FEC;
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
+
+#if 0
 #if defined(CONFIG_CANMB)   || defined(CONFIG_HMI1001)	|| \
     defined(CONFIG_ICECUBE) || defined(CONFIG_INKA4X0)	|| \
     defined(CONFIG_MCC200)  || defined(CONFIG_O2DNT)	|| \
@@ -893,7 +895,9 @@ int mpc5xxx_fec_initialize(bd_t * bis)
 #else
 #error fec->xcv_type not initialized.
 #endif
-
+#else
+#warning FEC code is brocken
+#endif
 	dev->priv = (void *)fec;
 	dev->iobase = MPC5XXX_FEC;
 	dev->init = mpc5xxx_fec_init;

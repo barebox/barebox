@@ -22,7 +22,8 @@
  */
 
 #include <common.h>
-
+#include <clock.h>
+#include <init.h>
 
 /* ------------------------------------------------------------------------- */
 
@@ -42,20 +43,6 @@ unsigned long usec2ticks(unsigned long usec)
 	}
 
 	return (ticks);
-}
-
-/* ------------------------------------------------------------------------- */
-
-/*
- * We implement the delay by converting the delay (the number of
- * microseconds to wait) into a number of time base ticks; then we
- * watch the time base until it has incremented by that amount.
- */
-void udelay(unsigned long usec)
-{
-	ulong ticks = usec2ticks (usec);
-
-	wait_ticks (ticks);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -97,3 +84,26 @@ int init_timebase (void)
 	return (0);
 }
 /* ------------------------------------------------------------------------- */
+
+uint64_t ppc_clocksource_read(void)
+{
+	return get_ticks();
+}
+
+static struct clocksource cs = {
+	.read	= ppc_clocksource_read,
+	.mask	= 0xffffffff,
+	.shift	= 15,
+};
+
+static int clocksource_init (void)
+{
+
+        cs.mult = clocksource_hz2mult(get_tbclk(), cs.shift);
+
+        init_clock(&cs);
+
+	return 0;
+}
+
+core_initcall(clocksource_init);

@@ -182,24 +182,6 @@ char *strmhz (char *buf, long hz)
  */
 typedef int (init_fnc_t) (void);
 
-/************************************************************************
- * Init Utilities							*
- ************************************************************************
- * Some of this code should be moved into the core functions,
- * but let's get it working (again) first...
- */
-
-static int init_baudrate (void)
-{
-	char tmp[64];	/* long enough for environment variables */
-	int i = getenv_r ("baudrate", tmp, sizeof (tmp));
-
-	gd->baudrate = (i > 0)
-			? (int) simple_strtoul (tmp, NULL, 10)
-			: CONFIG_BAUDRATE;
-	return (0);
-}
-
 /***********************************************************************/
 
 #ifdef CONFIG_ADD_RAM_INFO
@@ -268,10 +250,6 @@ static int init_func_watchdog_reset (void)
 
 init_fnc_t *init_sequence[] = {
 
-#if defined(CONFIG_BOARD_EARLY_INIT_F)
-	board_early_init_f,
-#endif
-
 #if !defined(CONFIG_8xx_CPUCLK_DEFAULT)
 	get_clocks,		/* get CPU and bus clocks (etc.) */
 #if defined(CONFIG_TQM8xxL) && !defined(CONFIG_TQM866M) \
@@ -280,60 +258,23 @@ init_fnc_t *init_sequence[] = {
 #endif
 	init_timebase,
 #endif
-#ifdef CFG_ALLOC_DPRAM
-#if !defined(CONFIG_CPM2)
-	dpram_init,
-#endif
-#endif
 #if defined(CONFIG_BOARD_POSTCLK_INIT)
 	board_postclk_init,
 #endif
-	env_init,
 #if defined(CONFIG_8xx_CPUCLK_DEFAULT)
 	get_clocks_866,		/* get CPU and bus clocks according to the environment variable */
 	sdram_adjust_866,	/* adjust sdram refresh rate according to the new clock */
 	init_timebase,
 #endif
-	init_baudrate,
 	serial_init,
-	console_init_f,
-	display_options,
-#if defined(CONFIG_8260)
-	prt_8260_rsr,
-	prt_8260_clks,
-#endif /* CONFIG_8260 */
-
-#if defined(CONFIG_MPC83XX)
-	print_clock_conf,
-#endif
-
 	checkcpu,
 #if defined(CONFIG_MPC5xxx)
 	prt_mpc5xxx_clks,
 #endif /* CONFIG_MPC5xxx */
-#if defined(CONFIG_MPC8220)
-	prt_mpc8220_clks,
-#endif
 	checkboard,
 	INIT_FUNC_WATCHDOG_INIT
-#if defined(CONFIG_MISC_INIT_F)
-	misc_init_f,
-#endif
 	INIT_FUNC_WATCHDOG_RESET
-#if defined(CONFIG_HARD_I2C) || defined(CONFIG_SOFT_I2C)
-	init_func_i2c,
-#endif
-#if defined(CONFIG_DTT)		/* Digital Thermometers and Thermostats */
-	dtt_init,
-#endif
-#ifdef CONFIG_POST
-	post_init_f,
-#endif
 	INIT_FUNC_WATCHDOG_RESET
-	init_func_ram,
-#if defined(CFG_DRAM_TEST)
-	testdram,
-#endif /* CFG_DRAM_TEST */
 	INIT_FUNC_WATCHDOG_RESET
 
 	NULL,			/* Terminate this list */
@@ -603,9 +544,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	bd_t *bd;
 	int i;
 	extern void malloc_bin_reloc (void);
-#ifndef CFG_ENV_IS_NOWHERE
-	extern char * env_name_spec;
-#endif
 
 #ifndef CFG_NO_FLASH
 	ulong flash_size;
@@ -655,9 +593,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 #endif
 	}
 	/* there are some other pointer constants we must deal with */
-#ifndef CFG_ENV_IS_NOWHERE
-	env_name_spec += gd->reloc_off;
-#endif
 
 	WATCHDOG_RESET ();
 
@@ -702,56 +637,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	 */
 	trap_init (dest_addr);
 
-#if !defined(CFG_NO_FLASH)
-	puts ("FLASH: ");
-
-	if ((flash_size = flash_init ()) > 0) {
-# ifdef CFG_FLASH_CHECKSUM
-		print_size (flash_size, "");
-		/*
-		 * Compute and print flash CRC if flashchecksum is set to 'y'
-		 *
-		 * NOTE: Maybe we should add some WATCHDOG_RESET()? XXX
-		 */
-		s = getenv ("flashchecksum");
-		if (s && (*s == 'y')) {
-			printf ("  CRC: %08lX",
-				crc32 (0, (const unsigned char *) CFG_FLASH_BASE, flash_size)
-			);
-		}
-		putc ('\n');
-# else	/* !CFG_FLASH_CHECKSUM */
-		print_size (flash_size, "\n");
-# endif /* CFG_FLASH_CHECKSUM */
-	} else {
-		puts (failed);
-		hang ();
-	}
-
-	bd->bi_flashstart = CFG_FLASH_BASE;	/* update start of FLASH memory    */
-	bd->bi_flashsize = flash_size;	/* size of FLASH memory (final value) */
-
-#if defined(CFG_UPDATE_FLASH_SIZE)
-	/* Make a update of the Memctrl. */
-	update_flash_size (flash_size);
-#endif
-
-
-# if defined(CONFIG_PCU_E) || defined(CONFIG_OXC) || defined(CONFIG_RMU)
-	/* flash mapped at end of memory map */
-	bd->bi_flashoffset = TEXT_BASE + flash_size;
-# elif CFG_MONITOR_BASE == CFG_FLASH_BASE
-	bd->bi_flashoffset = monitor_flash_len;	/* reserved area for startup monitor  */
-# else
-	bd->bi_flashoffset = 0;
-# endif
-#else	/* CFG_NO_FLASH */
-
-	bd->bi_flashsize = 0;
-	bd->bi_flashstart = 0;
-	bd->bi_flashoffset = 0;
-#endif /* !CFG_NO_FLASH */
-
 	WATCHDOG_RESET ();
 
 	/* initialize higher level parts of CPU like time base and timers */
@@ -777,7 +662,7 @@ void board_init_r (gd_t *id, ulong dest_addr)
 #endif
 
 	/* relocate environment function pointers etc. */
-	env_relocate ();
+//	env_relocate ();
 
 	/*
 	 * Fill in missing fields of bd_info.
@@ -882,14 +767,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	mac_read_from_eeprom();
 #endif
 
-#if defined(CONFIG_TQM8xxL) || defined(CONFIG_TQM8260) || \
-    defined(CONFIG_TQM8272) || \
-    defined(CONFIG_CCM) || defined(CONFIG_KUP4K) || defined(CONFIG_KUP4X)
-	load_sernum_ethaddr ();
-#endif
-	/* IP Address */
-	bd->bi_ip_addr = getenv_IPaddr ("ipaddr");
-
 	WATCHDOG_RESET ();
 
 #if defined(CONFIG_PCI) && !defined(CONFIG_BAB7xx) && !defined(CONFIG_CPC45)
@@ -897,30 +774,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	 * Do pci configuration
 	 */
 	pci_init ();
-#endif
-
-/** leave this here (after malloc(), environment and PCI are working) **/
-	/* Initialize devices */
-	devices_init ();
-
-	/* Initialize the jump table for applications */
-	jumptable_init ();
-
-	/* Initialize the console (after the relocation and devices init) */
-	console_init_r ();
-
-#if defined(CONFIG_CCM)		|| \
-    defined(CONFIG_COGENT)	|| \
-    defined(CONFIG_CPCI405)	|| \
-    defined(CONFIG_EVB64260)	|| \
-    defined(CONFIG_KUP4K)	|| \
-    defined(CONFIG_KUP4X)	|| \
-    defined(CONFIG_LWMON)	|| \
-    defined(CONFIG_PCU_E)	|| \
-    defined(CONFIG_W7O)		|| \
-    defined(CONFIG_MISC_INIT_R)
-	/* miscellaneous platform dependent initialisations */
-	misc_init_r ();
 #endif
 
 #ifdef	CONFIG_HERMES
@@ -956,16 +809,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 
 	set_timer (0);
 
-	/* Initialize from environment */
-	if ((s = getenv ("loadaddr")) != NULL) {
-		load_addr = simple_strtoul (s, NULL, 16);
-	}
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
-	if ((s = getenv ("bootfile")) != NULL) {
-		copy_filename (BootFile, s, sizeof (BootFile));
-	}
-#endif /* CFG_CMD_NET */
-
 	WATCHDOG_RESET ();
 
 #if (CONFIG_COMMANDS & CFG_CMD_SCSI)
@@ -985,28 +828,7 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	WATCHDOG_RESET ();
 	puts ("Net:   ");
 #endif
-	eth_initialize (bd);
-#endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET) && ( \
-    defined(CONFIG_CCM)		|| \
-    defined(CONFIG_ELPT860)	|| \
-    defined(CONFIG_EP8260)	|| \
-    defined(CONFIG_IP860)	|| \
-    defined(CONFIG_IVML24)	|| \
-    defined(CONFIG_IVMS8)	|| \
-    defined(CONFIG_MPC8260ADS)	|| \
-    defined(CONFIG_MPC8266ADS)	|| \
-    defined(CONFIG_MPC8560ADS)	|| \
-    defined(CONFIG_PCU_E)	|| \
-    defined(CONFIG_RPXSUPER)	|| \
-    defined(CONFIG_STXGP3)	|| \
-    defined(CONFIG_SPD823TS)	|| \
-    defined(CONFIG_RESET_PHY_R)	)
-
-	WATCHDOG_RESET ();
-	debug ("Reset Ethernet PHY\n");
-	reset_phy ();
 #endif
 
 #ifdef CONFIG_POST

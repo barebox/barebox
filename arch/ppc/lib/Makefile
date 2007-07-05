@@ -1,0 +1,10 @@
+obj-y += bat_rw.o
+obj-y += board.o
+obj-y += cache.o
+obj-y += extable.o
+obj-y += interrupts.o
+obj-y += kgdb.o
+obj-y += ppcstring.o
+obj-y += ticks.o
+obj-y += time.o
+obj-y += misc.o

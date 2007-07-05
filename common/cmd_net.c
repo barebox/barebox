@@ -157,7 +157,6 @@ struct memarea_info net_store_mem;
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	char *s;
 	int   rcode = 0;
 	int   size;
 

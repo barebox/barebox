@@ -514,16 +514,6 @@ int do_load_serial_bin (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 	}
 
-#ifdef CONFIG_AUTOSCRIPT
-	if (load_addr) {
-		char *s;
-
-		if (((s = getenv("autoscript")) != NULL) && (strcmp(s,"yes") == 0)) {
-			printf("Running autoscript at addr 0x%08lX ...\n", load_addr);
-			rcode = autoscript (load_addr);
-		}
-	}
-#endif
 	return rcode;
 }
 

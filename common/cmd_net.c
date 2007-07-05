@@ -211,12 +211,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 		rcode = do_bootm (cmdtp, 0, 1, local_args);
 	}
 
-#ifdef CONFIG_AUTOSCRIPT
-	if (((s = getenv("autoscript")) != NULL) && (strcmp(s,"yes") == 0)) {
-		printf("Running autoscript at addr 0x%08lX ...\n", load_addr);
-		rcode = autoscript (load_addr);
-	}
-#endif
 	return rcode;
 }
 

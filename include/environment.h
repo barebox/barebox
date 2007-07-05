@@ -37,69 +37,7 @@
  **************************************************************************
  */
 
-#if defined(CFG_ENV_IS_IN_FLASH)
-# ifndef  CFG_ENV_ADDR
-#  define CFG_ENV_ADDR	(CFG_FLASH_BASE + CFG_ENV_OFFSET)
-# endif
-# ifndef  CFG_ENV_OFFSET
-#  define CFG_ENV_OFFSET (CFG_ENV_ADDR - CFG_FLASH_BASE)
-# endif
-# if !defined(CFG_ENV_ADDR_REDUND) && defined(CFG_ENV_OFFSET_REDUND)
-#  define CFG_ENV_ADDR_REDUND	(CFG_FLASH_BASE + CFG_ENV_OFFSET_REDUND)
-# endif
-# if defined(CFG_ENV_SECT_SIZE) || defined(CFG_ENV_SIZE)
-#  ifndef  CFG_ENV_SECT_SIZE
-#   define CFG_ENV_SECT_SIZE	CFG_ENV_SIZE
-#  endif
-#  ifndef  CFG_ENV_SIZE
-#   define CFG_ENV_SIZE	CFG_ENV_SECT_SIZE
-#  endif
-# else
-#  error "Both CFG_ENV_SECT_SIZE and CFG_ENV_SIZE undefined"
-# endif
-# if defined(CFG_ENV_ADDR_REDUND) && !defined(CFG_ENV_SIZE_REDUND)
-#  define CFG_ENV_SIZE_REDUND	CFG_ENV_SIZE
-# endif
-# if (CFG_ENV_ADDR >= CFG_MONITOR_BASE) && \
-     (CFG_ENV_ADDR+CFG_ENV_SIZE) <= (CFG_MONITOR_BASE + CFG_MONITOR_LEN)
-#  define ENV_IS_EMBEDDED	1
-# endif
-# if defined(CFG_ENV_ADDR_REDUND) || defined(CFG_ENV_OFFSET_REDUND)
-#  define CFG_REDUNDAND_ENVIRONMENT	1
-# endif
-#endif	/* CFG_ENV_IS_IN_FLASH */
-
-#if defined(CFG_ENV_IS_IN_NAND)
-# ifndef CFG_ENV_OFFSET
-#  error "Need to define CFG_ENV_OFFSET when using CFG_ENV_IS_IN_NAND"
-# endif
-# ifndef CFG_ENV_SIZE
-#  error "Need to define CFG_ENV_SIZE when using CFG_ENV_IS_IN_NAND"
-# endif
-# ifdef CFG_ENV_OFFSET_REDUND
-#  define CFG_REDUNDAND_ENVIRONMENT
-# endif
-# ifdef CFG_ENV_IS_EMBEDDED
-#  define ENV_IS_EMBEDDED	1
-# endif
-#endif /* CFG_ENV_IS_IN_NAND */
-
-
-#ifdef CFG_REDUNDAND_ENVIRONMENT
-# define ENV_HEADER_SIZE	(sizeof(unsigned long) + 1)
-#else
-# define ENV_HEADER_SIZE	(sizeof(unsigned long))
-#endif
-
-
-#define ENV_SIZE (CFG_ENV_SIZE - ENV_HEADER_SIZE)
-
-typedef	struct environment_s {
-	unsigned long	crc;		/* CRC32 over data bytes	*/
-#ifdef CFG_REDUNDAND_ENVIRONMENT
-	unsigned char	flags;		/* active/obsolete flags	*/
-#endif
-	unsigned char	data[ENV_SIZE]; /* Environment data		*/
-} env_t;
+int add_env_spec(char *spec);
 
 #endif	/* _ENVIRONMENT_H_ */
+

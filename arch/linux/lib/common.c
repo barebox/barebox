@@ -220,9 +220,21 @@ err_out:
 	return -1;
 }
 
-void print_usage(const char *prgname)
+static void print_usage(const char *prgname)
 {
-	printf("usage\n");
+	printf(
+"Usage: %s [OPTIONS]\n"
+"Start U-Boot.\n"
+"Options:\n"
+"  -i <file>   Map a file to U-Boot. This option can be given multiple\n"
+"              times. The files will show up as /dev/fd0 ... /dev/fdx\n"
+"              under U-Boot.\n"
+"  -e <file>   Map a file to U-Boot. With this option files are mapped as\n"
+"              /dev/env0 ... /dev/envx and thus are used as default\n"
+"              environment. An empty file generated with dd will do to get\n"
+"              started wth an empty environment\n",
+	prgname
+	);
 }
 
 int main(int argc, char *argv[])
@@ -239,7 +251,7 @@ int main(int argc, char *argv[])
 	}
 	mem_malloc_init(ram, ram + malloc_size);
 
-	while ((opt = getopt(argc, argv, "hi:m:e:")) != -1) {
+	while ((opt = getopt(argc, argv, "hi:e:")) != -1) {
 		switch (opt) {
 		case 'h':
 			print_usage(basename(argv[0]));
@@ -250,6 +262,10 @@ int main(int argc, char *argv[])
 				exit(1);
 			break;
 		case 'm':
+			/* This option is broken. add_image needs malloc, so
+			 * mem_alloc_init() has to be called before option
+			 * parsing
+			 */
 			malloc_size = strtoul(optarg, NULL, 0);
 			break;
 		case 'e':

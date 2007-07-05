@@ -51,7 +51,10 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        dev_erase(mem.device, mem.size, mem.start);
+        if(dev_erase(mem.device, mem.size, mem.start)) {
+		perror("erase");
+		return 1;
+	}
 
 	return 0;
 }

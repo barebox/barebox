@@ -51,8 +51,6 @@ uint	dp_last_addr, dp_last_size;
 uint	dp_last_length = 0x40;
 uint	mm_last_addr, mm_last_size;
 
-static	ulong	base_address = 0;
-
 /* Memory Display
  *
  * Syntax:
@@ -89,7 +87,6 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		/* Address is specified since argc > 1
 		*/
 		addr = simple_strtoul(argv[1], NULL, 16);
-		addr += base_address;
 
 		/* If another parameter, it is the length to display.
 		 * Length is the number of objects, not number of bytes.
@@ -198,7 +195,6 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	/* Address is specified since argc > 1
 	*/
 	addr = simple_strtoul(argv[1], NULL, 16);
-	addr += base_address;
 
 	/* Get the value to write.
 	*/
@@ -300,10 +296,8 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 
 	addr1 = simple_strtoul(argv[1], NULL, 16);
-	addr1 += base_address;
 
 	addr2 = simple_strtoul(argv[2], NULL, 16);
-	addr2 += base_address;
 
 	count = simple_strtoul(argv[3], NULL, 16);
 
@@ -377,10 +371,8 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 
 	addr = simple_strtoul(argv[1], NULL, 16);
-	addr += base_address;
 
 	dest = simple_strtoul(argv[2], NULL, 16);
-	dest += base_address;
 
 	count = simple_strtoul(argv[3], NULL, 16);
 
@@ -494,19 +486,6 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		addr += size;
 		dest += size;
 	}
-	return 0;
-}
-
-int do_mem_base (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	if (argc > 1) {
-		/* Set new base address.
-		*/
-		base_address = simple_strtoul(argv[1], NULL, 16);
-	}
-	/* Print the current base address.
-	*/
-	printf("Base Address: 0x%08lx\n", base_address);
 	return 0;
 }
 
@@ -1002,7 +981,6 @@ mod_mem(cmd_tbl_t *cmdtp, int incrflag, int flag, int argc, char *argv[])
 		/* Address is specified since argc > 1
 		*/
 		addr = simple_strtoul(argv[1], NULL, 16);
-		addr += base_address;
 	}
 
 #ifdef CONFIG_HAS_DATAFLASH
@@ -1082,7 +1060,6 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	}
 
 	addr = simple_strtoul (argv[1], NULL, 16);
-	addr += base_address;
 
 	length = simple_strtoul (argv[2], NULL, 16);
 
@@ -1129,7 +1106,6 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		verify = 0;
 
 	addr = simple_strtoul(*av++, NULL, 16);
-	addr += base_address;
 	length = simple_strtoul(*av++, NULL, 16);
 
 	crc = crc32(0, (const uchar *) addr, length);
@@ -1211,13 +1187,6 @@ U_BOOT_CMD(
 );
 
 #endif	/* CONFIG_CRC32_VERIFY */
-
-U_BOOT_CMD(
-	base,    2,    1,     do_mem_base,
-	"base    - print or set address offset\n",
-	"\n    - print address offset for memory commands\n"
-	"base off\n    - set address offset for memory commands to 'off'\n"
-);
 
 U_BOOT_CMD(
 	loop,    3,    1,    do_mem_loop,

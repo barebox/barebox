@@ -1,6 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <mem_malloc.h>
+#include <asm/u-boot-arm.h>
 
 int arm_mem_malloc_init(void)
 {

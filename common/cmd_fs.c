@@ -336,7 +336,7 @@ U_BOOT_CMD_START(umount)
 	U_BOOT_CMD_HELP(cmd_umount_help)
 U_BOOT_CMD_END
 
-static int do_cat ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_cat(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret;
 	int fd, i;
@@ -345,7 +345,7 @@ static int do_cat ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	int args = 1;
 
 	if (argc < 2) {
-		u_boot_cmd_usage(cmdtp);
+		perror("cat");
 		return 1;
 	}
 
@@ -389,6 +389,6 @@ static __maybe_unused char cmd_cat_help[] =
 U_BOOT_CMD_START(cat)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_cat,
-	.usage		= "Concatenate FILE(s)",
+	.usage		= "concatenate file(s)",
 	U_BOOT_CMD_HELP(cmd_cat_help)
 U_BOOT_CMD_END

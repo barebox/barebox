@@ -11,7 +11,7 @@ TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
 CFLAGS := -fno-common -Os -mrelocatable
-LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
+LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)

@@ -35,6 +35,8 @@
 
 #include <cmd_confdefs.h>
 
+#define CFG_HUSH_PARSER 1
+#define CFG_PROMPT_HUSH_PS2 "> "
 /*
  * General options for u-boot. Modify to save memory foot print
  */
@@ -63,10 +65,7 @@
 #define CONFIG_SETUP_MEMORY_TAGS     1	 /* send memory definition to kernel */
 #define CONFIG_INITRD_TAG	     1	 /* send initrd params		     */
 
-/*
- * Malloc pool need to host env + 128 Kb reserve for other allocations.
- */
-#define CFG_MALLOC_LEN		(CFG_ENV_SIZE + (128<<10) )
+#define CFG_MALLOC_LEN		(512 << 10)
 
 #define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
 

@@ -1,8 +1,11 @@
 #include <common.h>
+#include <driver.h>
+#include <init.h>
 #include <exports.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#if 0
 static void dummy(void)
 {
 }
@@ -12,7 +15,13 @@ unsigned long get_version(void)
 	return XF_VERSION;
 }
 
-void jumptable_init (void)
+/*
+ * FIXME: instead of using the global data struct for standalone
+ *        programs, just use a register to pass the jumptable.
+ *        For now, this is broken.
+ */
+
+int jumptable_init (void)
 {
 	int i;
 
@@ -36,4 +45,11 @@ void jumptable_init (void)
 	gd->jt[XF_i2c_write] = (void *) i2c_write;
 	gd->jt[XF_i2c_read] = (void *) i2c_read;
 #endif	/* CFG_CMD_I2C */
+
+	return 0;
 }
+
+late_initcall(jumptable_init);
+
+#endif
+

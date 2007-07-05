@@ -1024,7 +1024,11 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 	 *   r5: console device
 	 *   r6: boot args string
 	 */
+#if 0
 	(*loader) (gd->bd, img_addr, consdev, cmdline);
+#else
+#warning NetBSD Support is broken
+#endif
 }
 
 #if defined(CONFIG_ARTOS) && defined(CONFIG_PPC)
@@ -1484,8 +1488,11 @@ do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	 * RTEMS Parameters:
 	 *   r3: ptr to board info data
 	 */
-
+#if 0
 	(*entry_point ) ( gd->bd );
+#else
+#warning RTEMS support is broken
+#endif
 }
 
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)

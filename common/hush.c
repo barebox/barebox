@@ -3228,9 +3228,17 @@ static void u_boot_hush_reloc(void)
 {
 	unsigned long addr;
 	struct reserved_combo *r;
+    unsigned long reloc_off;
+
+#if 0
+	reloc_off = gd->reloc_off;
+#else
+	reloc_off = 0;
+#warning FIXME: This is broken on !ARM
+#endif
 
 	for (r=reserved_list; r<reserved_list+NRES; r++) {
-		addr = (ulong) (r->literal) + gd->reloc_off;
+		addr = (ulong) (r->literal) + reloc_off;
 		r->literal = (char *)addr;
 	}
 }

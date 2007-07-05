@@ -40,18 +40,18 @@ extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
     defined (CONFIG_REVISION_TAG) || \
     defined (CONFIG_VFD) || \
     defined (CONFIG_LCD)
-static void setup_start_tag (bd_t *bd);
+static void setup_start_tag (void);
 
 # ifdef CONFIG_SETUP_MEMORY_TAGS
-static void setup_memory_tags (bd_t *bd);
+static void setup_memory_tags (void);
 # endif
-static void setup_commandline_tag (bd_t *bd, char *commandline);
+static void setup_commandline_tag (char *commandline);
 
 # ifdef CONFIG_INITRD_TAG
-static void setup_initrd_tag (bd_t *bd, ulong initrd_start,
+static void setup_initrd_tag (ulong initrd_start,
 			      ulong initrd_end);
 # endif
-static void setup_end_tag (bd_t *bd);
+static void setup_end_tag (void);
 
 # if defined (CONFIG_VFD) || defined (CONFIG_LCD)
 static void setup_videolfb_tag (gd_t *gd);
@@ -79,7 +79,6 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	ulong data;
 	void (*theKernel)(int zero, int arch, uint params);
 	image_header_t *hdr = &header;
-	bd_t *bd = gd->bd;
 
 #ifdef CONFIG_CMDLINE_TAG
 	char *commandline = getenv ("bootargs");
@@ -214,7 +213,7 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
     defined (CONFIG_REVISION_TAG) || \
     defined (CONFIG_LCD) || \
     defined (CONFIG_VFD)
-	setup_start_tag (bd);
+	setup_start_tag ();
 #ifdef CONFIG_SERIAL_TAG
 	setup_serial_tag (&params);
 #endif
@@ -222,19 +221,19 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	setup_revision_tag (&params);
 #endif
 #ifdef CONFIG_SETUP_MEMORY_TAGS
-	setup_memory_tags (bd);
+	setup_memory_tags ();
 #endif
 #ifdef CONFIG_CMDLINE_TAG
-	setup_commandline_tag (bd, commandline);
+	setup_commandline_tag (commandline);
 #endif
 #ifdef CONFIG_INITRD_TAG
 	if (initrd_start && initrd_end)
-		setup_initrd_tag (bd, initrd_start, initrd_end);
+		setup_initrd_tag (initrd_start, initrd_end);
 #endif
 #if defined (CONFIG_VFD) || defined (CONFIG_LCD)
 	setup_videolfb_tag ((gd_t *) gd);
 #endif
-	setup_end_tag (bd);
+	setup_end_tag ();
 #endif
 
 	/* we assume that the kernel is in place */
@@ -260,9 +259,9 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
     defined (CONFIG_REVISION_TAG) || \
     defined (CONFIG_LCD) || \
     defined (CONFIG_VFD)
-static void setup_start_tag (bd_t *bd)
+static void setup_start_tag (void)
 {
-	params = (struct tag *) bd->bi_boot_params;
+	params = (struct tag *) CONFIG_BOOT_PARAMS;
 
 	params->hdr.tag = ATAG_CORE;
 	params->hdr.size = tag_size (tag_core);
@@ -276,7 +275,7 @@ static void setup_start_tag (bd_t *bd)
 
 
 #ifdef CONFIG_SETUP_MEMORY_TAGS
-static void setup_memory_tags (bd_t *bd)
+static void setup_memory_tags (void)
 {
 	struct device_d *dev = NULL;
 
@@ -298,7 +297,7 @@ static void setup_memory_tags (bd_t *bd)
 #endif /* CONFIG_SETUP_MEMORY_TAGS */
 
 
-static void setup_commandline_tag (bd_t *bd, char *commandline)
+static void setup_commandline_tag (char *commandline)
 {
 	char *p;
 
@@ -325,7 +324,7 @@ static void setup_commandline_tag (bd_t *bd, char *commandline)
 
 
 #ifdef CONFIG_INITRD_TAG
-static void setup_initrd_tag (bd_t *bd, ulong initrd_start, ulong initrd_end)
+static void setup_initrd_tag (ulong initrd_start, ulong initrd_end)
 {
 	/* an ATAG_INITRD node tells the kernel where the compressed
 	 * ramdisk can be found. ATAG_RDIMG is a better name, actually.
@@ -396,7 +395,7 @@ void setup_revision_tag(struct tag **in_params)
 #endif  /* CONFIG_REVISION_TAG */
 
 
-static void setup_end_tag (bd_t *bd)
+static void setup_end_tag (void)
 {
 	params->hdr.tag = ATAG_NONE;
 	params->hdr.size = 0;

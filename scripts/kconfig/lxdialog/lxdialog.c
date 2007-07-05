@@ -139,7 +139,7 @@ static void Usage(const char *name)
 	fprintf(stderr, "\
 \ndialog, by Savio Lam (lam836@cs.cuhk.hk).\
 \n  patched by Stuart Herbert (S.Herbert@shef.ac.uk)\
-\n  modified/gutted for use as a Linux kernel config tool by \
+\n  modified/gutted for use as a uboot config tool by \
 \n  William Roadcap (roadcapw@cfw.com)\
 \n\
 \n* Display dialog boxes from shell scripts *\

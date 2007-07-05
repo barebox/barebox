@@ -60,6 +60,7 @@ static unsigned int phy_is_connected (AT91PS_EMAC p_mac)
 	return 1;
 }
 
+#if 0
 static unsigned char phy_init_bogus (AT91PS_EMAC p_mac)
 {
 	unsigned short val;
@@ -139,7 +140,7 @@ void at91rm9200_GetPhyInterface(AT91PS_PhyOps p_phyops)
 	p_phyops->AutoNegotiate = NULL;
 }
 
-#if 0
+
 static int *efb_init(struct efb_info *efb)
 {
 	writeb(GPIO_CONTROL0_GPO, efb->regs + EFB_GPIO_CONTROL1);

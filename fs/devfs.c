@@ -67,6 +67,13 @@ static int devfs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
+static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
+{
+	if (size > f->dev->size)
+		return -ENOSPC;
+	return 0;
+}
+
 DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 {
 	DIR *dir;
@@ -135,6 +142,7 @@ static struct fs_driver_d devfs_driver = {
 	.close     = devfs_close,
 	.opendir   = devfs_opendir,
 	.readdir   = devfs_readdir,
+	.truncate  = devfs_truncate,
 	.closedir  = devfs_closedir,
 	.stat      = devfs_stat,
 	.erase     = devfs_erase,

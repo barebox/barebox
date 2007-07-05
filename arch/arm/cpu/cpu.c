@@ -73,16 +73,13 @@ int icache_status (void)
 	return (read_p15_c1 () & C1_IC) != 0;
 }
 
+/*
+ * this function is called just before we call linux
+ * it prepares the processor for linux
+ */
 int cleanup_before_linux (void)
 {
 	int i;
-
-	/*
-	 * this function is called just before we call linux
-	 * it prepares the processor for linux
-	 */
-
-	disable_interrupts ();
 
 	/*
 	 * we never enable dcache so we do not need to disable
@@ -109,11 +106,3 @@ static int cpu_init (void)
 
 core_initcall(cpu_init);
 #endif
-
-void do_reset (void)
-{
-	disable_interrupts();
-	reset_cpu(0);
-
-	/* NOT REACHED */
-}

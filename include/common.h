@@ -66,7 +66,6 @@ typedef void (interrupt_handler_t)(void *);
 /*
  * Function Prototypes
  */
-void do_reset(void);
 void reginfo(void);
 
 void	hang (void) __attribute__ ((noreturn));

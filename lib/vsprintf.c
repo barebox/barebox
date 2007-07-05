@@ -375,6 +375,6 @@ void panic(const char *fmt, ...)
 	hang();
 #else
 	udelay(100000);	/* allow messages to go out */
-	do_reset();
+	reset_cpu(0);
 #endif
 }

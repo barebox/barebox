@@ -3,7 +3,7 @@
 
 static int cmd_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	do_reset();
+	reset_cpu(0);
 
 	/* Not reached */
 	return 1;

@@ -1,4 +1,5 @@
 #include <common.h>
+#include <asm/ptrace.h>
 
 #ifdef CONFIG_USE_IRQ
 /* enable IRQ interrupts */

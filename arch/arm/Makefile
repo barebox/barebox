@@ -4,14 +4,16 @@ CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
 
 
 machine-$(CONFIG_ARCH_IMX)	   := imx
+machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
 board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
+board-$(CONFIG_MACH_ECO920)	   := eco920
 cpu-$(CONFIG_ARM920T)              := arm920t
 
 TEXT_BASE = 0x08400000
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE)
-CFLAGS := -fno-common -ffreestanding -nostdinc -msoft-float
-LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
+CFLAGS := -fno-common -ffreestanding -nostdinc -msoft-float -O2
+LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)
@@ -28,9 +30,11 @@ ifneq ($(KBUILD_SRC),)
 	echo incdir1: $(INCDIR)
 	$(Q)mkdir -p include/asm-arm
 	$(Q)ln -fsn $(srctree)/include/asm-arm/$(INCDIR) include/asm-arm/arch
+        $(Q)ln -fsn $(srctree)/include/configs/$(board-y) include/config.h
 else
 	echo incdir: $(INCDIR)
 	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
+	$(Q)ln -fsn configs/$(board-y).h include/config.h
 endif
 	@touch $@
 
@@ -52,6 +56,9 @@ else
 CPU  :=
 endif
 
-common-y		+= $(BOARD) $(CPU)
+common-y += $(BOARD) $(CPU)
 
 common-y += arch/arm/lib/
+
+head-y	:= cpu/arm920t/start.o
+

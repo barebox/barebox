@@ -267,7 +267,6 @@ static int mpc_get_fdr(int speed)
 		if (gd->flags & GD_FLG_RELOC) {
 			fdr = divider;
 		} else {
-			printf("%ld kHz, ", best_speed / 1000);
 			return divider;
 		}
 	}

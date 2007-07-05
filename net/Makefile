@@ -1,4 +1,4 @@
-obj-$(CONFIG_NET)	+= bootp.o
+obj-$(CONFIG_NET_BOOTP)	+= bootp.o
 obj-$(CONFIG_NET)	+= eth.o
 obj-$(CONFIG_NET)	+= net.o
 obj-$(CONFIG_NET_NFS)	+= nfs.o

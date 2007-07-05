@@ -1,5 +1,4 @@
 #include <common.h>
-#include <command.h>
 #include <driver.h>
 #include <malloc.h>
 #include <net.h>

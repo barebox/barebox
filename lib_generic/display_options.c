@@ -23,18 +23,6 @@
 
 #include <common.h>
 
-int display_options (void)
-{
-	extern char version_string[];
-
-#if defined(BUILD_TAG)
-	printf ("\n\n%s, Build: %s\n\n", version_string, BUILD_TAG);
-#else
-	printf ("\n\n%s\n\n", version_string);
-#endif
-	return 0;
-}
-
 /*
  * print sizes as "xxx kB", "xxx.y kB", "xxx MB" or "xxx.y MB" as needed;
  * allow for optional trailing string (like "\n")

@@ -1,5 +1,4 @@
 #include <config.h>
-#ifdef CONFIG_BZIP2
 
 /*-------------------------------------------------------------*/
 /*--- Table for randomising repetitive blocks               ---*/
@@ -125,4 +124,3 @@ Int32 BZ2_rNums[512] = {
 /*--- end                                       randtable.c ---*/
 /*-------------------------------------------------------------*/
 
-#endif /* CONFIG_BZIP2 */

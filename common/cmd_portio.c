@@ -32,8 +32,6 @@
 
 #if (CONFIG_COMMANDS & CFG_CMD_PORTIO)
 
-extern int cmd_get_data_size (char *arg, int default_size);
-
 /* Display values from last command.
  * Memory modify remembered values are different from display memory.
  */

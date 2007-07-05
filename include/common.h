@@ -630,4 +630,9 @@ void	show_boot_progress (int status);
 #error Read section CONFIG_SKIP_LOWLEVEL_INIT in README.
 #endif
 
+/* Reservoir for several functions in the code where
+ * previously no header file existed
+ */
+int cmd_get_data_size(char* arg, int default_size);
+
 #endif	/* __COMMON_H_ */

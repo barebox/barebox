@@ -489,76 +489,6 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-int do_mem_loop (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	ulong	addr, length, i, junk;
-	int	size;
-	volatile uint	*longp;
-	volatile ushort *shortp;
-	volatile u_char	*cp;
-
-	if (argc < 3) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	/* Check for a size spefication.
-	 * Defaults to long if no or incorrect specification.
-	 */
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
-
-	/* Address is always specified.
-	*/
-	addr = simple_strtoul(argv[1], NULL, 16);
-
-	/* Length is the number of objects, not number of bytes.
-	*/
-	length = simple_strtoul(argv[2], NULL, 16);
-
-	/* We want to optimize the loops to run as fast as possible.
-	 * If we have only one object, just run infinite loops.
-	 */
-	if (length == 1) {
-		if (size == 4) {
-			longp = (uint *)addr;
-			for (;;)
-				i = *longp;
-		}
-		if (size == 2) {
-			shortp = (ushort *)addr;
-			for (;;)
-				i = *shortp;
-		}
-		cp = (u_char *)addr;
-		for (;;)
-			i = *cp;
-	}
-
-	if (size == 4) {
-		for (;;) {
-			longp = (uint *)addr;
-			i = length;
-			while (i-- > 0)
-				junk = *longp++;
-		}
-	}
-	if (size == 2) {
-		for (;;) {
-			shortp = (ushort *)addr;
-			i = length;
-			while (i-- > 0)
-				junk = *shortp++;
-		}
-	}
-	for (;;) {
-		cp = (u_char *)addr;
-		i = length;
-		while (i-- > 0)
-			junk = *cp++;
-	}
-}
-
 #ifdef CONFIG_LOOPW
 int do_mem_loopw (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -1187,13 +1117,6 @@ U_BOOT_CMD(
 );
 
 #endif	/* CONFIG_CRC32_VERIFY */
-
-U_BOOT_CMD(
-	loop,    3,    1,    do_mem_loop,
-	"loop    - infinite loop on address range\n",
-	"[.b, .w, .l] address number_of_objects\n"
-	"    - loop on a set of addresses\n"
-);
 
 #ifdef CONFIG_LOOPW
 U_BOOT_CMD(

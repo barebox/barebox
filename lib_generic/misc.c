@@ -34,6 +34,11 @@ int cmd_get_data_size(char* arg, int default_size)
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
+struct device_d *get_first_device(void)
+{
+	return first_device;
+}
+
 struct device_d *get_device_by_id(const char *_id)
 {
 	struct device_d *d;

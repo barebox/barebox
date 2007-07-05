@@ -116,27 +116,6 @@ static int display_banner (void)
 }
 
 /*
- * WARNING: this code looks "cleaner" than the PowerPC version, but
- * has the disadvantage that you either get nothing, or everything.
- * On PowerPC, you might see "DRAM: " before the system hangs - which
- * gives a simple yet clear indication which part of the
- * initialization if failing.
- */
-static int display_dram_config (void)
-{
-	int i;
-
-	puts ("RAM Configuration:\n");
-
-	for(i=0; i<CONFIG_NR_DRAM_BANKS; i++) {
-		printf ("Bank #%d: 0x%08lx ", i, gd->bd->bi_dram[i].start);
-		print_size (gd->bd->bi_dram[i].size, "\n");
-	}
-
-	return (0);
-}
-
-/*
  * Breathe some life into the board...
  *
  * Initialize a serial port as console, and carry out some hardware
@@ -159,13 +138,6 @@ static int display_dram_config (void)
  * argument, and returns an integer return code, where 0 means
  * "continue" and != 0 means "fatal error, hang the system".
  */
-typedef int (init_fnc_t) (void);
-
-init_fnc_t *init_sequence[] = {
-	display_banner,		/* say that we are here */
-	display_dram_config,
-	NULL,
-};
 
 extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
 

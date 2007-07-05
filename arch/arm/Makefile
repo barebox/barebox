@@ -1,6 +1,6 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
-	-isystem $(gccincdir) -pipe -D __ARM__ -D CONFIG_ARM \
+	-isystem $(gccincdir) -pipe -D __ARM__ \
 	-ffixed-r8
 
 

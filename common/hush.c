@@ -96,6 +96,10 @@
 #include <hush.h>
 #include <environment.h>
 #include <command.h>        /* find_cmd */
+#include <driver.h>
+#include <errno.h>
+#include <fs.h>
+
 /*cmd_boot.c*/
 extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
 #endif
@@ -267,7 +271,6 @@ struct close_me {
 	int fd;
 	struct close_me *next;
 };
-#endif
 
 struct variables {
 	char *name;
@@ -276,6 +279,8 @@ struct variables {
 	int flg_read_only;
 	struct variables *next;
 };
+#endif
+
 
 /* globals, connect us to the outside world
  * the first three support $?, $#, and $1 */
@@ -305,10 +310,6 @@ static char *PS1;
 static char *PS2;
 struct variables shell_ver = { "HUSH_VERSION", "0.01", 1, 1, 0 };
 struct variables *top_vars = &shell_ver;
-#else
-static int flag_repeat = 0;
-static int do_repeat = 0;
-static struct variables *top_vars = NULL ;
 #endif /*__U_BOOT__ */
 
 #define B_CHUNK (100)
@@ -755,7 +756,7 @@ static int builtin_read(struct child_prog *child)
 		/* read string */
 		fgets(string, sizeof(string), stdin);
 		chomp(string);
-		var = malloc(strlen(child->argv[1])+strlen(string)+2);
+		var = xmalloc(strlen(child->argv[1])+strlen(string)+2);
 		if(var) {
 			sprintf(var, "%s=%s", child->argv[1], string);
 			res = set_local_var(var, 0);
@@ -986,6 +987,17 @@ static inline void setup_prompt_string(int promptmode, char **prompt_str)
 }
 #endif
 
+static char *getprompt(void)
+{
+	static char *prompt;
+
+	if (!prompt)
+		prompt = xmalloc(PATH_MAX + strlen(CONFIG_PROMPT) + 1);
+
+	sprintf(prompt, "%s%s ", CONFIG_PROMPT, getcwd());
+	return prompt;
+}
+
 static void get_user_input(struct in_str *i)
 {
 #ifndef __U_BOOT__
@@ -1014,56 +1026,23 @@ static void get_user_input(struct in_str *i)
 	int n;
 	static char the_command[CONFIG_CBSIZE];
 
-#ifdef CONFIG_BOOT_RETRY_TIME
-#  ifdef CONFIG_RESET_TO_RETRY
-	extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-#  else
-#	error "This currently only works with CONFIG_RESET_TO_RETRY enabled"
-#  endif
-	reset_cmd_timeout();
-#endif
 	i->__promptme = 1;
 	if (i->promptmode == 1) {
-		n = readline(CONFIG_PROMPT);
+		n = readline(getprompt(), console_buffer, CONFIG_CBSIZE);
 	} else {
-		n = readline(CONFIG_PROMPT_HUSH_PS2);
+		n = readline(CONFIG_PROMPT_HUSH_PS2, console_buffer, CONFIG_CBSIZE);
 	}
-#ifdef CONFIG_BOOT_RETRY_TIME
-	if (n == -2) {
-	  puts("\nTimeout waiting for command\n");
-#  ifdef CONFIG_RESET_TO_RETRY
-	  do_reset(NULL, 0, 0, NULL);
-#  else
-#	error "This currently only works with CONFIG_RESET_TO_RETRY enabled"
-#  endif
-	}
-#endif
 	if (n == -1 ) {
-		flag_repeat = 0;
 		i->__promptme = 0;
+		n = 0;
 	}
-	n = strlen(console_buffer);
+
 	console_buffer[n] = '\n';
 	console_buffer[n+1]= '\0';
-	if (had_ctrlc()) flag_repeat = 0;
-	clear_ctrlc();
-	do_repeat = 0;
 	if (i->promptmode == 1) {
-		if (console_buffer[0] == '\n'&& flag_repeat == 0) {
-			strcpy(the_command,console_buffer);
-		}
-		else {
-			if (console_buffer[0] != '\n') {
-				strcpy(the_command,console_buffer);
-				flag_repeat = 1;
-			}
-			else {
-				do_repeat = 1;
-			}
-		}
+		strcpy(the_command,console_buffer);
 		i->p = the_command;
-	}
-	else {
+	} else {
 		if (console_buffer[0] != '\n') {
 			if (strlen(the_command) + strlen(console_buffer)
 			    < CONFIG_CBSIZE) {
@@ -1074,7 +1053,6 @@ static void get_user_input(struct in_str *i)
 			else {
 				the_command[0] = '\n';
 				the_command[1] = '\0';
-				flag_repeat = 0;
 			}
 		}
 		if (i->__promptme == 0) {
@@ -1541,7 +1519,7 @@ static int run_pipe_real(struct pipe *pi)
 # endif
 #else
 	int nextin;
-	int flag = do_repeat ? CMD_FLAG_REPEAT : 0;
+	int flag = 0;
 	struct child_prog *child;
 	cmd_tbl_t *cmdtp;
 	char *p;
@@ -1648,17 +1626,7 @@ static int run_pipe_real(struct pipe *pi)
 				 * things seem to work with glibc. */
 				setup_redirects(child, squirrel);
 #else
-			/* check ";", because ,example , argv consist from
-			 * "help;flinfo" must not execute
-			 */
-			if (strchr(child->argv[i], ';')) {
-				printf ("Unknown command '%s' - try 'help' or use 'run' command\n",
-					child->argv[i]);
-				return -1;
-			}
 			/* Look up command in command table */
-
-
 			if ((cmdtp = find_cmd(child->argv[i])) == NULL) {
 				printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
 				return -1;	/* give up after bad command */
@@ -1689,10 +1657,7 @@ static int run_pipe_real(struct pipe *pi)
 #else
 				/* OK - call function to do the command */
 
-				rcode = (cmdtp->cmd)
-(cmdtp, flag,child->argc-i,&child->argv[i]);
-				if ( !cmdtp->repeatable )
-					flag_repeat = 0;
+				rcode = cmdtp->cmd(cmdtp, flag,child->argc-i,&child->argv[i]);
 
 
 #endif
@@ -1806,9 +1771,6 @@ static int run_list_real(struct pipe *pi)
 		    rpipe->r_mode == RES_FOR) &&
 		    (rpipe->next == NULL)) {
 				syntax();
-#ifdef __U_BOOT__
-				flag_repeat = 0;
-#endif
 				return 1;
 		}
 		if ((rpipe->r_mode == RES_IN &&
@@ -1817,9 +1779,6 @@ static int run_list_real(struct pipe *pi)
 			(rpipe->r_mode == RES_FOR &&
 			rpipe->next->r_mode != RES_IN)) {
 				syntax();
-#ifdef __U_BOOT__
-				flag_repeat = 0;
-#endif
 				return 1;
 		}
 	}
@@ -1828,10 +1787,8 @@ static int run_list_real(struct pipe *pi)
 			pi->r_mode == RES_FOR) {
 #ifdef __U_BOOT__
 				/* check Ctrl-C */
-				ctrlc();
-				if ((had_ctrlc())) {
+				if (ctrlc())
 					return 1;
-				}
 #endif
 				flag_restore = 0;
 				if (!rpipe) {
@@ -2151,8 +2108,6 @@ static char *get_dollar_var(char ch);
 /* This is used to get/check local shell variables */
 static char *get_local_var(const char *s)
 {
-	struct variables *cur;
-
 	if (!s)
 		return NULL;
 
@@ -2160,20 +2115,7 @@ static char *get_local_var(const char *s)
 	if (*s == '$')
 		return get_dollar_var(s[1]);
 #endif
-#if 0
-	if (strchr(s, '.')) {
-		char *dev = strdup(s);
-		char *par = strchr(str, '.');
-		*par = 0;
-		par++;
-		do_get_param(dev, par);
-		free(dev);
-	}
-#endif
-	for (cur = top_vars; cur; cur=cur->next)
-		if(strcmp(cur->name, s)==0)
-			return cur->value;
-	return NULL;
+	return getenv(s);
 }
 
 /* This is used to set local shell variables
@@ -2183,8 +2125,6 @@ static char *get_local_var(const char *s)
 static int set_local_var(const char *s, int flg_export)
 {
 	char *name, *value;
-	int result=0;
-	struct variables *cur;
 
 #ifdef __U_BOOT__
 	/* might be possible! */
@@ -2192,16 +2132,8 @@ static int set_local_var(const char *s, int flg_export)
 		return -1;
 #endif
 
-	name=strdup(s);
+	name = strdup(s);
 
-#ifdef __U_BOOT__
-	if (getenv(name) != NULL) {
-		printf ("ERROR: "
-				"There is a global environment variable with the same name.\n");
-		free(name);
-		return -1;
-	}
-#endif
 	/* Assume when we enter this function that we are already in
 	 * NAME=VALUE format.  So the first order of business is to
 	 * split 's' on the '=' into 'name' and 'value' */
@@ -2212,64 +2144,9 @@ static int set_local_var(const char *s, int flg_export)
 	}
 	*value++ = 0;
 
-	for(cur = top_vars; cur; cur = cur->next) {
-		if(strcmp(cur->name, name)==0)
-			break;
-	}
-
-	if(cur) {
-		if(strcmp(cur->value, value)==0) {
-			if(flg_export>0 && cur->flg_export==0)
-				cur->flg_export=flg_export;
-			else
-				result++;
-		} else {
-			if(cur->flg_read_only) {
-				error_msg("%s: readonly variable", name);
-				result = -1;
-			} else {
-				if(flg_export>0 || cur->flg_export>1)
-					cur->flg_export=1;
-				free(cur->value);
-
-				cur->value = strdup(value);
-			}
-		}
-	} else {
-		cur = malloc(sizeof(struct variables));
-		if(!cur) {
-			result = -1;
-		} else {
-			cur->name = strdup(name);
-			if(cur->name == 0) {
-				free(cur);
-				result = -1;
-			} else {
-				struct variables *bottom = top_vars;
-				cur->value = strdup(value);
-				cur->next = 0;
-				cur->flg_export = flg_export;
-				cur->flg_read_only = 0;
-				while(bottom->next) bottom=bottom->next;
-				bottom->next = cur;
-			}
-		}
-	}
-
-#ifndef __U_BOOT__
-	if(result==0 && cur->flg_export==1) {
-		*(value-1) = '=';
-		result = putenv(name);
-	} else {
-#endif
-		free(name);
-#ifndef __U_BOOT__
-		if(result>0)            /* equivalent to previous set */
-			result = 0;
-	}
-#endif
-	return result;
+	return setenv(name, value);
 }
+
 
 #ifndef __U_BOOT__
 static void unset_local_var(const char *name)
@@ -2308,7 +2185,7 @@ static int is_assignment(const char *s)
 
 	if (!isalpha(*s)) return 0;
 	++s;
-	while(isalnum(*s) || *s=='_') ++s;
+	while(isalnum(*s) || *s=='_' || *s=='.') ++s;
 	return *s=='=';
 }
 
@@ -2507,8 +2384,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 			if (*s == '\\') s++;
 			cnt++;
 		}
-		str = malloc(cnt);
-		if (!str) return 1;
+		str = xmalloc(cnt);
 		if ( child->argv == NULL) {
 			child->argc=0;
 		}
@@ -2811,7 +2687,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 	if (isalpha(ch)) {
 		b_addchr(dest, SPECIAL_VAR_SYMBOL);
 		ctx->child->sp++;
-		while(ch=b_peek(input),isalnum(ch) || ch=='_') {
+		while(ch=b_peek(input),isalnum(ch) || ch=='_' || ch=='.') {
 			b_getch(input);
 			b_addchr(dest,ch);
 		}
@@ -3095,8 +2971,7 @@ void mapset(const unsigned char *set, int code)
 void update_ifs_map(void)
 {
 	/* char *ifs and char map[256] are both globals. */
-#warning IFS is broken
-//	ifs = (uchar *)getenv("IFS");
+	ifs = (uchar *)getenv("IFS");
 	ifs = NULL;
 	if (ifs == NULL) ifs=(uchar *)" \t\n";
 	/* Precompute a list of 'flow through' behavior so it can be treated
@@ -3134,14 +3009,8 @@ int parse_stream_outer(struct in_str *inp, int flag)
 		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING)) mapset((uchar *)";$&|", 0);
 		inp->promptmode=1;
 		rcode = parse_stream(&temp, &ctx, inp, '\n');
-#ifdef __U_BOOT__
-		if (rcode == 1) flag_repeat = 0;
-#endif
 		if (rcode != 1 && ctx.old_flag != 0) {
 			syntax();
-#ifdef __U_BOOT__
-			flag_repeat = 0;
-#endif
 		}
 		if (rcode != 1 && ctx.old_flag == 0) {
 			done_word(&temp, &ctx);
@@ -3160,8 +3029,6 @@ int parse_stream_outer(struct in_str *inp, int flag)
 				}
 				break;
 			}
-			if (code == -1)
-			    flag_repeat = 0;
 #endif
 		} else {
 			if (ctx.old_flag != 0) {
@@ -3227,42 +3094,6 @@ int parse_file_outer(void)
 	rcode = parse_stream_outer(&input, FLAG_PARSE_SEMICOLON);
 	return rcode;
 }
-
-#ifdef __U_BOOT__
-static void u_boot_hush_reloc(void)
-{
-	unsigned long addr;
-	struct reserved_combo *r;
-    unsigned long reloc_off;
-
-#if 0
-	reloc_off = gd->reloc_off;
-#else
-	reloc_off = 0;
-#warning FIXME: This is broken on !ARM
-#endif
-
-	for (r=reserved_list; r<reserved_list+NRES; r++) {
-		addr = (ulong) (r->literal) + reloc_off;
-		r->literal = (char *)addr;
-	}
-}
-
-int u_boot_hush_start(void)
-{
-	if (top_vars == NULL) {
-		top_vars = malloc(sizeof(struct variables));
-		top_vars->name = "HUSH_VERSION";
-		top_vars->value = "0.01";
-		top_vars->next = 0;
-		top_vars->flg_export = 0;
-		top_vars->flg_read_only = 1;
-		u_boot_hush_reloc();
-	}
-	return 0;
-}
-
-#endif /* __U_BOOT__ */
 
 #ifndef __U_BOOT__
 /* Make sure we have a controlling tty.  If we get started under a job

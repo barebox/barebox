@@ -25,6 +25,7 @@
 #include <init.h>
 #include <net.h>
 #include <miiphy.h>
+#include <malloc.h>
 #include <driver.h>
 
 /* ----- Ethernet Buffer definitions ----- */
@@ -149,64 +150,6 @@ UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
 	return TRUE;
 }
 
-static int at91rm9200_eth_init (struct device_d *dev)
-{
-	int i;
-
-	p_mac = AT91C_BASE_EMAC;
-
-	/* PIO Disable Register */
-	*AT91C_PIOA_PDR = AT91C_PA16_EMDIO | AT91C_PA15_EMDC | AT91C_PA14_ERXER |
-			  AT91C_PA13_ERX1 | AT91C_PA12_ERX0 | AT91C_PA11_ECRS_ECRSDV |
-			  AT91C_PA10_ETX1 | AT91C_PA9_ETX0 | AT91C_PA8_ETXEN |
-			  AT91C_PA7_ETXCK_EREFCK;
-
-#ifdef CONFIG_AT91C_USE_RMII
-	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK;
-	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK;
-#else
-	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL | AT91C_PB17_ERXDV |
-			  AT91C_PB16_ERX3 | AT91C_PB15_ERX2 | AT91C_PB14_ETXER |
-			  AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
-
-	/* Select B Register */
-	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL |
-			  AT91C_PB17_ERXDV | AT91C_PB16_ERX3 | AT91C_PB15_ERX2 |
-			  AT91C_PB14_ETXER | AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
-#endif
-
-	*AT91C_PMC_PCER = 1 << AT91C_ID_EMAC;	/* Peripheral Clock Enable Register */
-
-	p_mac->EMAC_CFG |= AT91C_EMAC_CSR;	/* Clear statistics */
-
-	/* Init Ehternet buffers */
-	for (i = 0; i < RBF_FRAMEMAX; i++) {
-		rbfdt[i].addr = (unsigned long)rbf_framebuf[i];
-		rbfdt[i].size = 0;
-	}
-	rbfdt[RBF_FRAMEMAX - 1].addr |= RBF_WRAP;
-	rbfp = &rbfdt[0];
-
-	p_mac->EMAC_RBQP = (long) (&rbfdt[0]);
-	p_mac->EMAC_RSR &= ~(AT91C_EMAC_RSR_OVR | AT91C_EMAC_REC | AT91C_EMAC_BNA);
-
-	p_mac->EMAC_CFG = (p_mac->EMAC_CFG | AT91C_EMAC_CAF | AT91C_EMAC_NBC)
-			& ~AT91C_EMAC_CLK;
-
-#ifdef CONFIG_AT91C_USE_RMII
-	p_mac->EMAC_CFG |= AT91C_EMAC_RMII;
-#endif
-
-#if (AT91C_MASTER_CLOCK > 40000000)
-	/* MDIO clock must not exceed 2.5 MHz, so enable MCK divider */
-	p_mac->EMAC_CFG |= AT91C_EMAC_CLK_HCLK_64;
-#endif
-
-	p_mac->EMAC_CTL |= AT91C_EMAC_TE | AT91C_EMAC_RE;
-
-	return 0;
-}
-
 static int at91rm9200_eth_open (struct eth_device *ndev)
 {
 	int ret;
@@ -285,7 +228,7 @@ int  at91rm9200_miiphy_write(char *devname, unsigned char addr,
 
 #endif	/* defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII) */
 
-int at91rm9200_miiphy_initialize(bd_t *bis)
+int at91rm9200_miiphy_initialize(void)
 {
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
 	miiphy_register("at91rm9200phy", at91rm9200_miiphy_read, at91rm9200_miiphy_write);
@@ -301,13 +244,13 @@ static int at91rm9200_get_mac_address(struct eth_device *eth, unsigned char *adr
 
 static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr)
 {
-//	int i;
+	int i;
 
 	p_mac->EMAC_SA2L = (adr[3] << 24) | (adr[2] << 16)
 			 | (adr[1] <<  8) | (adr[0]);
 	p_mac->EMAC_SA2H = (adr[5] <<  8) | (adr[4]);
 
-#if 0
+#if 1
 	for (i = 0; i < 5; i++)
 		printf ("%02x:", adr[i]);
 	printf ("%02x\n", adr[5]);
@@ -315,20 +258,82 @@ static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr
 	return -0;
 }
 
-struct eth_device at91rm9200_eth = {
-	.open = at91rm9200_eth_open,
-	.send = at91rm9200_eth_send,
-	.recv = at91rm9200_eth_rx,
-	.halt = at91rm9200_eth_halt,
-	.get_mac_address = at91rm9200_get_mac_address,
-	.set_mac_address = at91rm9200_set_mac_address,
-};
+static int at91rm9200_eth_init (struct device_d *dev)
+{
+	struct eth_device *edev;
+	int i;
+
+	edev = malloc(sizeof(struct eth_device));
+	dev->priv = edev;
+	edev->dev = dev;
+
+	edev->open = at91rm9200_eth_open;
+	edev->send = at91rm9200_eth_send;
+	edev->recv = at91rm9200_eth_rx;
+	edev->halt = at91rm9200_eth_halt;
+	edev->get_mac_address = at91rm9200_get_mac_address;
+	edev->set_mac_address = at91rm9200_set_mac_address;
+
+	p_mac = AT91C_BASE_EMAC;
+
+	/* PIO Disable Register */
+	*AT91C_PIOA_PDR = AT91C_PA16_EMDIO | AT91C_PA15_EMDC | AT91C_PA14_ERXER |
+			  AT91C_PA13_ERX1 | AT91C_PA12_ERX0 | AT91C_PA11_ECRS_ECRSDV |
+			  AT91C_PA10_ETX1 | AT91C_PA9_ETX0 | AT91C_PA8_ETXEN |
+			  AT91C_PA7_ETXCK_EREFCK;
+
+#ifdef CONFIG_AT91C_USE_RMII
+	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK;
+	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK;
+#else
+	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL | AT91C_PB17_ERXDV |
+			  AT91C_PB16_ERX3 | AT91C_PB15_ERX2 | AT91C_PB14_ETXER |
+			  AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
+
+	/* Select B Register */
+	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL |
+			  AT91C_PB17_ERXDV | AT91C_PB16_ERX3 | AT91C_PB15_ERX2 |
+			  AT91C_PB14_ETXER | AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
+#endif
+
+	*AT91C_PMC_PCER = 1 << AT91C_ID_EMAC;	/* Peripheral Clock Enable Register */
+
+	p_mac->EMAC_CFG |= AT91C_EMAC_CSR;	/* Clear statistics */
+
+	/* Init Ehternet buffers */
+	for (i = 0; i < RBF_FRAMEMAX; i++) {
+		rbfdt[i].addr = (unsigned long)rbf_framebuf[i];
+		rbfdt[i].size = 0;
+	}
+	rbfdt[RBF_FRAMEMAX - 1].addr |= RBF_WRAP;
+	rbfp = &rbfdt[0];
+
+	p_mac->EMAC_RBQP = (long) (&rbfdt[0]);
+	p_mac->EMAC_RSR &= ~(AT91C_EMAC_RSR_OVR | AT91C_EMAC_REC | AT91C_EMAC_BNA);
+
+	p_mac->EMAC_CFG = (p_mac->EMAC_CFG | AT91C_EMAC_CAF | AT91C_EMAC_NBC)
+			& ~AT91C_EMAC_CLK;
+
+#ifdef CONFIG_AT91C_USE_RMII
+	p_mac->EMAC_CFG |= AT91C_EMAC_RMII;
+#endif
+
+#if (AT91C_MASTER_CLOCK > 40000000)
+	/* MDIO clock must not exceed 2.5 MHz, so enable MCK divider */
+	p_mac->EMAC_CFG |= AT91C_EMAC_CLK_HCLK_64;
+#endif
+
+	p_mac->EMAC_CTL |= AT91C_EMAC_TE | AT91C_EMAC_RE;
+
+	eth_register(edev);
+
+	return 0;
+}
 
 static struct driver_d at91_eth_driver = {
         .name  = "at91_eth",
         .probe = at91rm9200_eth_init,
         .type  = DEVICE_TYPE_ETHER,
-        .type_data = &at91rm9200_eth,
 };
 
 static int at91_eth_init(void)

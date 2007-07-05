@@ -29,15 +29,6 @@ int disable_interrupts (void)
 			     : "memory");
 	return(old & 0x80) == 0;
 }
-#else
-void enable_interrupts (void)
-{
-	return;
-}
-int disable_interrupts (void)
-{
-	return 0;
-}
 #endif
 
 void bad_mode (void)

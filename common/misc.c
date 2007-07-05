@@ -23,10 +23,16 @@ void *sbrk (ptrdiff_t increment)
 	ulong old = mem_malloc_brk;
 	ulong new = old + increment;
 
-	if ((new < mem_malloc_start) || (new > mem_malloc_end)) {
-		return (NULL);
+        if ((new < mem_malloc_start) || (new > mem_malloc_end)) {
+ 		return (NULL);
 	}
 	mem_malloc_brk = new;
 
 	return ((void *) old);
 }
+
+void perror(char *s, int errno)
+{
+        printf("%s failed with %d\n", s, errno);
+}
+

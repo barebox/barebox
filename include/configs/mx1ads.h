@@ -76,12 +76,12 @@
 /***********************************************************
  * Command definition
  ***********************************************************/
-
 #define CONFIG_COMMANDS \
-			(CONFIG_CMD_DFL	 | \
-			CFG_CMD_CACHE	 | \
-			CFG_CMD_REGINFO	 | \
-			CFG_CMD_ELF)
+                        (CONFIG_CMD_BDI | CFG_CMD_CONSOLE | CFG_CMD_LOADB | \
+                        CFG_CMD_LOADS | CFG_CMD_MEMORY | CFG_CMD_ENV | \
+                        CFG_CMD_RUN | CFG_CMD_FLASH | CFG_CMD_MISC | \
+                        CFG_CMD_NET | \
+                        CFG_CMD_BOOTD | CFG_CMD_DHCP)
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <cmd_confdefs.h>

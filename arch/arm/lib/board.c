@@ -134,31 +134,28 @@ static int display_dram_config (void)
 {
 	int i;
 
-#ifdef DEBUG
 	puts ("RAM Configuration:\n");
 
 	for(i=0; i<CONFIG_NR_DRAM_BANKS; i++) {
-		printf ("Bank #%d: %08lx ", i, gd->bd->bi_dram[i].start);
+		printf ("Bank #%d: 0x%08lx ", i, gd->bd->bi_dram[i].start);
 		print_size (gd->bd->bi_dram[i].size, "\n");
 	}
-#else
-	ulong size = 0;
-
-	for (i=0; i<CONFIG_NR_DRAM_BANKS; i++) {
-		size += gd->bd->bi_dram[i].size;
-	}
-	puts("DRAM:  ");
-	print_size(size, "\n");
-#endif
 
 	return (0);
 }
 
 #ifndef CFG_NO_FLASH
+extern flash_info_t flash_info[CFG_MAX_FLASH_BANKS];
+
 static void display_flash_config (ulong size)
 {
-	puts ("Flash: ");
-	print_size (size, "\n");
+	int i;
+
+	puts ("Flash Configuration:\n");
+	for(i=0; i<CFG_MAX_FLASH_BANKS; i++) {
+		printf ("Bank #%d: 0x%08lx ", i, flash_info[i].start[0]);
+		print_size (flash_info[i].size, "\n");
+	}
 }
 #endif /* CFG_NO_FLASH */
 

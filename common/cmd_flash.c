@@ -28,40 +28,61 @@
 #include <command.h>
 #include <cfi_flash.h>
 #include <errno.h>
+#include <getopt.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <linux/stat.h>
 
 int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-        struct memarea_info mem;
+	int opt, fd;
+	char *filename = NULL;
+	struct stat s;
+	unsigned long start = 0, size = ~0;
 
-	if (argc != 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "f:")) > 0) {
+		switch(opt) {
+		case 'f':
+			filename = optarg;
+			break;
+		}
+	}
+
+	if (stat(filename, &s)) {
+		printf("stat %s:", filename, errno_str());
 		return 1;
 	}
 
-        if (spec_str_to_info(argv[1], &mem)) {
-                printf("-ENOPARSE\n");
-                return 1;
-        }
+	size = s.st_size;
 
-        if (!mem.device->driver) {
-                printf("This device has no driver\n");
-                return 1;
-        }
-        if (!mem.device->driver->erase) {
-                printf("This device cannot be erased\n");
-                return 1;
-        }
+	if (!filename) {
+		printf("missing filename\n");
+		return 1;
+	}
 
-        if(dev_erase(mem.device, mem.size, mem.start)) {
+	fd = open(filename, O_WRONLY);
+	if (fd < 0) {
+		printf("open %s:", filename, errno_str());
+		return 1;
+	}
+
+	if (optind  < argc)
+		parse_area_spec(argv[optind], &start, &size);
+
+        if(erase(fd, size, start)) {
 		perror("erase");
 		return 1;
 	}
+
+	close(fd);
 
 	return 0;
 }
 
 U_BOOT_CMD_START(erase)
-	.maxargs	= 2,
+	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_flerase,
 	.usage		= "erase   - erase FLASH memory\n",
 	U_BOOT_CMD_HELP("write me\n")

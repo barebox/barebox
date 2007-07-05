@@ -198,8 +198,8 @@ int readline(const char *prompt, char *buf, int len)
 			BEGINNING_OF_LINE();
 			break;
 		case CTL_CH('c'):	/* ^C - break */
-			*buf = '\0';	/* discard input */
-			return (-1);
+			*buf = 0;	/* discard input */
+			return -1;
 		case KEY_RIGHT:
 			if (num < eol_num) {
 				getcmd_putch(buf[num]);

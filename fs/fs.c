@@ -177,6 +177,8 @@ struct dir *opendir(const char *pathname)
 	struct mtab_entry *e;
 
 	e = get_mtab_entry_by_path(pathname);
+	if (!e)
+		return NULL;
 	if (e != mtab)
 		pathname += strlen(e->path);
 
@@ -252,6 +254,8 @@ int mkdir (const char *pathname)
 	struct mtab_entry *e;
 
 	e = get_mtab_entry_by_path(pathname);
+	if (!e)
+		return NULL;
 	if (e != mtab)
 		pathname += strlen(e->path);
 

@@ -115,7 +115,7 @@ static int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_ls_help[] =
+static __maybe_unused char cmd_ls_help[] =
 "Usage: ls [OPTION]... [FILE]...\n"
 "List information about the FILEs (the current directory by default).\n"
 "  -R  list subdirectories recursively\n";
@@ -144,7 +144,7 @@ static int do_cd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_cd_help[] =
+static __maybe_unused char cmd_cd_help[] =
 "Usage: cd [directory]\n"
 "change to directory. If called without argument, change to /\n";
 
@@ -187,7 +187,7 @@ static int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_mkdir_help[] =
+static __maybe_unused char cmd_mkdir_help[] =
 "Usage: mkdir [directories]\n"
 "Create new directories\n";
 
@@ -218,7 +218,7 @@ static int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_rm_help[] =
+static __maybe_unused char cmd_rm_help[] =
 "Usage: rm [FILES]\n"
 "Remove files\n";
 
@@ -249,7 +249,7 @@ static int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_rmdir_help[] =
+static __maybe_unused char cmd_rmdir_help[] =
 "Usage: rmdir [directories]\n"
 "Remove directories. The directories have to be empty.\n";
 
@@ -290,7 +290,7 @@ static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_mount_help[] =
+static __maybe_unused char cmd_mount_help[] =
 "Usage: mount:         list mounted filesystems\n"
 "or:    mount <device> <fstype> <mountpoint>\n"
 "\n"
@@ -325,7 +325,7 @@ static int do_umount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-static char cmd_umount_help[] =
+static __maybe_unused char cmd_umount_help[] =
 "Usage: umount <mountpoint>\n"
 "umount a filesystem mounted on a specific mountpoint\n";
 
@@ -381,7 +381,7 @@ out:
 	return err;
 }
 
-static char cmd_cat_help[] =
+static __maybe_unused char cmd_cat_help[] =
 "Usage: cat [FILES]\n"
 "Concatenate files on stdout. Currently only printable characters\n"
 "and \\n and \\t are printed, but this should be optional\n";

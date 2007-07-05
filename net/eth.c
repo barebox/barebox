@@ -27,6 +27,43 @@
 #include <init.h>
 #include <net.h>
 #include <miiphy.h>
+#include <malloc.h>
+
+typedef enum eth_cookies {
+        PARAM_IP,
+        PARAM_MAC,
+        PARAM_GW,
+        PARAM_NM,
+} eth_cookies_t;
+
+static char *eth_get(struct device_d* dev, ulong cookie)
+{
+        struct eth_device *ndev = dev->driver->type_data;
+
+        if (cookie >= 4)
+                return 0;
+
+        return ndev->param[cookie];
+}
+
+static int eth_set(struct device_d* dev, ulong cookie, char *newval)
+{
+        struct eth_device *ndev = dev->driver->type_data;
+        char **val = &ndev->param[cookie];
+
+        if (*val)
+                free(*val);
+
+        *val = newval;
+        return 0;
+}
+
+static struct param_d eth_params[] = {
+        { .name = "ip", .cookie = PARAM_IP, .set = eth_set, .get = eth_get},
+        { .name = "mac", .cookie = PARAM_MAC, .set = eth_set, .get = eth_get},
+        { .name = "gateway", .cookie = PARAM_GW, .set = eth_set, .get = eth_get},
+        { .name = "netmask", .cookie = PARAM_NM, .set = eth_set, .get = eth_get},
+};
 
 static struct eth_device *eth_current;
 
@@ -85,11 +122,13 @@ static int eth_handle(struct device_d *dev)
 	char *e = NULL;
 	int i;
 
-	printf("%s: %s\n",__FUNCTION__, dev->id);
 	if (!ndev->get_mac_address) {
 		printf("no get_mac_address found for current eth device\n");
 		return -1;
 	}
+
+        for (i = 0; i < 4; i++)
+                dev_add_parameter(dev, &eth_params[i]);
 
 	ethaddr = ndev->enetaddr;
 

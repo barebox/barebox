@@ -55,43 +55,6 @@ struct device_d *get_device_by_id(char *id)
 	return d;
 }
 
-int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-        struct device_d *dev = first_device;
-        struct driver_d *drv = first_driver;
-
-        if (argc == 1) {
-                printf("devices:\n");
-
-                while(dev) {
-                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",dev->id, dev->map_base, dev->size, dev->name);
-                        dev = dev->next;
-                }
-
-                printf("drivers:\n");
-                while(drv) {
-                        printf("%10s\n",drv->name);
-                        drv = drv->next;
-                }
-        } else {
-                struct device_d *dev = get_device_by_id(argv[1]);
-
-                if (!dev) {
-                        printf("no such device: %s\n",argv[1]);
-                        return -1;
-                }
-                dev->driver->info(dev);
-        }
-
-        return 0;
-}
-
-U_BOOT_CMD(
-	devinfo,     2,     0,      do_devinfo,
-	"devinfo     - display info about devices and drivers\n",
-	""
-);
-
 static int match(struct driver_d *drv, struct device_d *dev)
 {
         int(*handler)(struct device_d *);
@@ -396,4 +359,107 @@ ssize_t erase(struct device_d *dev, size_t count, unsigned long offset)
                 return dev->driver->erase(dev, count, offset);
         return -1;
 }
+
+int dummy_probe(struct device_d *dev)
+{
+        return 0;
+}
+
+static struct param_d *get_param_by_name(struct device_d *dev, char *name)
+{
+        struct param_d *param = dev->param;
+
+        while (param) {
+                if (!strcmp(param->name, name))
+                        return param;
+                param = param->next;
+        }
+
+        return NULL;
+}
+
+char *dev_get_param(struct device_d *dev, char *name)
+{
+        struct param_d *param = get_param_by_name(dev, name);
+
+        if (param && param->get)
+                return param->get(dev, param->cookie);
+
+        return NULL;
+}
+
+int dev_set_param(struct device_d *dev, char *name, char *val)
+{
+        struct param_d *param = get_param_by_name(dev, name);
+
+        if (param && param->set)
+                return param->set(dev, param->cookie, val);
+
+        return -1;
+}
+
+int dev_add_parameter(struct device_d *dev, struct param_d *newparam)
+{
+        struct param_d *param = dev->param;
+
+        newparam->next = 0;
+
+        if (param) {
+                while (param->next)
+                        param = param->next;
+                        param->next = newparam;
+        } else {
+                dev->param = newparam;
+        }
+
+        return 0;
+}
+
+int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+        struct device_d *dev = first_device;
+        struct driver_d *drv = first_driver;
+        struct param_d *param;
+
+        if (argc == 1) {
+                printf("devices:\n");
+
+                while(dev) {
+                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",dev->id, dev->map_base, dev->size, dev->name);
+                        dev = dev->next;
+                }
+
+                printf("drivers:\n");
+                while(drv) {
+                        printf("%10s\n",drv->name);
+                        drv = drv->next;
+                }
+        } else {
+                struct device_d *dev = get_device_by_id(argv[1]);
+
+                if (!dev) {
+                        printf("no such device: %s\n",argv[1]);
+                        return -1;
+                }
+                dev->driver->info(dev);
+
+                param = dev->param;
+
+                printf("%s\n", param ? "Parameters:" : "no parameters available");
+
+                while (param) {
+                        printf("%16s = %s\n", param->name, param->get(dev, param->cookie));
+                        param = param->next;
+                }
+
+        }
+
+        return 0;
+}
+
+U_BOOT_CMD(
+	devinfo,     2,     0,      do_devinfo,
+	"devinfo     - display info about devices and drivers\n",
+	""
+);
 

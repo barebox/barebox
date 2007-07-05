@@ -704,11 +704,6 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 #endif	/* CONFIG_CRC32_VERIFY */
 
-int mem_probe(struct device_d *dev)
-{
-        return 0;
-}
-
 static void memcpy_sz(void *_dst, void *_src, ulong count, ulong rwsize)
 {
 	ulong dst = (ulong)_dst;
@@ -759,14 +754,14 @@ struct device_d mem_dev = {
 
 struct driver_d mem_drv = {
         .name  = "mem",
-        .probe = mem_probe,
+        .probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
 };
 
 struct driver_d ram_drv = {
         .name  = "ram",
-        .probe = mem_probe,
+        .probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
 };

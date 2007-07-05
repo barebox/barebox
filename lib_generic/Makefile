@@ -12,3 +12,5 @@ obj-y			+= vsprintf.o
 obj-$(CONFIG_ZLIB)	+= zlib.o
 obj-y			+= div64.o
 obj-y			+= misc.o
+obj-y			+= global.o
+

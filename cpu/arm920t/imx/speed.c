@@ -23,9 +23,9 @@
 
 
 #include <common.h>
-#if defined (CONFIG_IMX)
-
 #include <asm/arch/imx-regs.h>
+#include <init.h>
+#include <driver.h>
 
 /* ------------------------------------------------------------------------- */
 /* NOTE: This describes the proper use of this file.
@@ -70,15 +70,12 @@ ulong get_FCLK(void)
 	return (( CSCR>>15)&1) ? get_mcuPLLCLK()>>1 : get_mcuPLLCLK();
 }
 
-/* return HCLK frequency */
 ulong get_HCLK(void)
 {
 	u32 bclkdiv = (( CSCR >> 10 ) & 0xf) + 1;
-	printf("bclkdiv: %d\n", bclkdiv);
 	return get_systemPLLCLK() / bclkdiv;
 }
 
-/* return BCLK frequency */
 ulong get_BCLK(void)
 {
 	return get_HCLK();
@@ -99,4 +96,93 @@ ulong get_PERCLK3(void)
 	return get_systemPLLCLK() / (((PCDR>>16) & 0x7f)+1);
 }
 
-#endif /* defined (CONFIG_IMX) */
+typedef enum imx_cookies {
+        PARAM_SYSCLOCK,
+        PARAM_PERCLK1,
+        PARAM_PERCLK2,
+        PARAM_PERCLK3,
+        PARAM_BCLK,
+        PARAM_HCLK,
+        PARAM_FCLK,
+        PARAM_CPUCLK,
+        PARAM_ARCH_NUMBER,
+        PARAM_LAST,
+} imx_cookies_t;
+
+char *clk_get(struct device_d* dev, ulong cookie)
+{
+        ulong clock = 0;
+        static char buf[11];
+
+        switch (cookie) {
+        case PARAM_SYSCLOCK:
+                clock = get_systemPLLCLK();
+                break;
+        case PARAM_PERCLK1:
+                clock = get_PERCLK1();
+                break;
+        case PARAM_PERCLK2:
+                clock = get_PERCLK2();
+                break;
+        case PARAM_PERCLK3:
+                clock = get_PERCLK3();
+                break;
+        case PARAM_BCLK:
+                clock = get_BCLK();
+                break;
+        case PARAM_HCLK:
+                clock = get_HCLK();
+                break;
+        case PARAM_FCLK:
+                clock = get_FCLK();
+                break;
+        case PARAM_CPUCLK:
+                clock = get_mcuPLLCLK();
+                break;
+        }
+
+        sprintf(buf, "%ld",clock);
+        return buf;
+}
+
+static int arch_number = CONFIG_ARCH_NUMBER;
+
+static char *arch_number_get(struct device_d* dev, ulong cookie)
+{
+        static char buf[5];
+
+        sprintf(buf, "%d", arch_number);
+
+        return buf;
+}
+
+static int arch_number_set(struct device_d* dev, ulong cookie, char *newval)
+{
+        arch_number = simple_strtoul(newval, NULL, 10);
+        return 0;
+}
+
+static struct param_d imx_params[] = {
+        { .name = "imx_system_clk", .cookie = PARAM_SYSCLOCK, .get = clk_get},
+        { .name = "imx_perclk1", .cookie = PARAM_PERCLK1, .get = clk_get},
+        { .name = "imx_perclk2", .cookie = PARAM_PERCLK2, .get = clk_get},
+        { .name = "imx_perclk3", .cookie = PARAM_PERCLK3, .get = clk_get},
+        { .name = "imx_bclk", .cookie = PARAM_BCLK, .get = clk_get},
+        { .name = "imx_hclk", .cookie = PARAM_HCLK, .get = clk_get},
+        { .name = "imx_fclk", .cookie = PARAM_FCLK, .get = clk_get},
+        { .name = "imx_cpuclk", .cookie = PARAM_CPUCLK, .get = clk_get},
+        { .name = "arch_number", .cookie = PARAM_CPUCLK, .get = arch_number_get, .set = arch_number_set},
+};
+
+static int imx_clk_init(void)
+{
+        int i;
+
+        for (i = 0; i < PARAM_LAST; i++)
+                global_add_parameter(&imx_params[i]);
+
+        return 0;
+}
+
+device_initcall(imx_clk_init);
+

@@ -108,7 +108,12 @@ struct eth_device {
 
 	struct eth_device *next;
 	void *priv;
+
+	char *param[4];
 };
+
+struct param_d *eth_param_get(struct device_d* dev, int no);
+int eth_param_set(struct device_d* dev, struct param_d *param, char *val);
 
 extern int eth_register(struct eth_device* dev);/* Register network device	*/
 extern void eth_try_another(int first_restart);	/* Change the device		*/

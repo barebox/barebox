@@ -36,7 +36,7 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
-
+# if 0
         if (spec_str_to_info(argv[1], &mem)) {
                 printf("-ENOPARSE\n");
                 return 1;
@@ -52,7 +52,8 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         }
 
         dev_erase(mem.device, mem.size, mem.start);
-
+#endif
+#warning: do_flerase is broken
 	return 0;
 }
 
@@ -75,12 +76,12 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
-
+#if 0
 	if (spec_str_to_info(argv[2], &mem_info)) {
 		printf ("-EPARSE\n");
 		return 1;
 	}
-
+#endif
 
 
 //	rcode = flash_sect_protect (p, addr_first, addr_last);

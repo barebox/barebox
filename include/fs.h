@@ -25,11 +25,14 @@ struct dir {
 };
 
 typedef struct filep {
-	struct device_d *dev;
-	ulong pos;
-	char used;
+	struct device_d *dev; /* The device this FILE belongs to              */
+	ulong pos;            /* current position in stream                   */
+
+	void *inode;         /* private to the filesystem driver              */
+
+	/* private fields. Mapping between FILE and filedescriptor number     */
 	int no;
-	void *inode; /* private to the filesystem driver */
+	char in_use;
 } FILE;
 
 #define FS_DRIVER_NO_DEV	1
@@ -38,13 +41,13 @@ struct fs_driver_d {
 	ulong type;
 	char *name;
 	int (*probe) (struct device_d *dev);
-	int (*create)(struct device_d *dev, const char *pathname, ulong type);
 	int (*mkdir)(struct device_d *dev, const char *pathname);
 
 	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
+	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
-	int (*write)(struct device_d *dev, FILE *f, void *buf, size_t size);
+	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
 
 	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
 	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
@@ -64,6 +67,7 @@ struct fs_device_d {
 };
 
 int open(const char *pathname, int flags);
+int creat(const char *pathname, mode_t mode);
 int close(int fd);
 int read(int fd, void *buf, size_t count);
 ssize_t write(int fd, const void *buf, size_t count);

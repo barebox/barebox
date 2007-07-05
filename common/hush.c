@@ -3088,7 +3088,9 @@ void mapset(const unsigned char *set, int code)
 void update_ifs_map(void)
 {
 	/* char *ifs and char map[256] are both globals. */
-	ifs = (uchar *)getenv("IFS");
+#warning IFS is broken
+//	ifs = (uchar *)getenv("IFS");
+	ifs = NULL;
 	if (ifs == NULL) ifs=(uchar *)" \t\n";
 	/* Precompute a list of 'flow through' behavior so it can be treated
 	 * quickly up front.  Computation is necessary because of IFS.

@@ -9,6 +9,7 @@
 #include <net.h>
 #include <driver.h>
 #include <clock.h>
+#include <fs.h>
 #include "tftp.h"
 #include "bootp.h"
 
@@ -57,7 +58,7 @@ static int	TftpState;
 static char default_filename[DEFAULT_NAME_LEN];
 static char *tftp_filename;
 
-extern struct memarea_info net_store_mem;
+extern int net_store_fd;
 
 static __inline__ void
 store_block (unsigned block, uchar * src, unsigned len)
@@ -65,7 +66,7 @@ store_block (unsigned block, uchar * src, unsigned len)
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
 
-	dev_write(net_store_mem.device, src, len, net_store_mem.start + offset, 0);
+	write(net_store_fd, src, len);
 
 	if (NetBootFileXferSize < newsize)
 		NetBootFileXferSize = newsize;

@@ -169,11 +169,11 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-        if (spec_str_to_info(argv[1], &mem)) {
-                printf("-ENOPARSE\n");
-                return -1;
-        }
-
+//        if (spec_str_to_info(argv[1], &mem)) {
+//                printf("-ENOPARSE\n");
+//                return -1;
+//        }
+#warning: FIXME: bootm is broken
 	addr = mem.start + mem.device->map_base;
 
 	SHOW_BOOT_PROGRESS (1);

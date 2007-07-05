@@ -7,6 +7,7 @@
 #include <linux/ctype.h>
 #include <errno.h>
 #include <asm-generic/errno.h>
+#include <fs.h>
 
 int cmd_get_data_size(char* arg, int default_size)
 {
@@ -33,9 +34,14 @@ int cmd_get_data_size(char* arg, int default_size)
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
-struct device_d *get_device_by_id(const char *id)
+struct device_d *get_device_by_id(const char *_id)
 {
 	struct device_d *d;
+	char *id, *colon;
+
+	id = strdup(_id);
+	if ((colon = strchr(id, ':')))
+		*colon = 0;
 
 	d = first_device;
 
@@ -45,6 +51,7 @@ struct device_d *get_device_by_id(const char *id)
 		d = d->next;
 	}
 
+	free(id);
 	return d;
 }
 
@@ -169,7 +176,7 @@ int register_driver(struct driver_d *new_driver)
 	return 0;
 }
 
-static char devicename_from_spec_str_buf[MAX_DRIVER_NAME];
+static char devicename_from_spec_str_buf[PATH_MAX];
 
 char *deviceid_from_spec_str(const char *str, char **endp)
 {
@@ -263,99 +270,59 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base)
         return val;
 }
 
-/*
- * Parse a string representing a memory area and fill in a struct memarea_info.
- */
-int spec_str_to_info(const char *str, struct memarea_info *info)
+int parse_area_spec(const char *str, ulong *start, ulong *size)
 {
 	char *endp;
 
-	memset(info, 0, sizeof(struct memarea_info));
-
-        info->device = device_from_spec_str(str, &endp);
-        if (!info->device) {
-                printf("unknown device: %s\n", deviceid_from_spec_str(str, NULL));
-                return -ENODEV;
-        }
-
-	if (!info->device->driver) {
-		printf("no driver associated to device %s\n",deviceid_from_spec_str(str, NULL));
-		return -ENODEV;
+	if (*str == '+') {
+		/* no beginning given but size so start is 0 */
+		*start = 0;
+		*size = strtoul_suffix(str + 1, &endp, 0);
+		return 0;
 	}
 
-        str = endp;
+	if (*str == '-') {
+		/* no beginning given but end, so start is 0 */
+		*start = 0;
+		*size = strtoul_suffix(str + 1, &endp, 0) + 1;
+		return 0;
+	}
 
-        if (!*str) {
-                /* no area specification given, use whole device */
-                info->size = info->device->size;
-                info->end  = info->size - 1;
-                goto out;
-        }
+	*start = strtoul_suffix(str, &endp, 0);
 
-        if (*str == '+') {
-                /* no beginning given but size so start is 0 */
-                info->size = strtoul_suffix(str + 1, &endp, 0);
-                info->end  = info->size - 1;
-                info->flags = MEMAREA_SIZE_SPECIFIED;
-                goto out;
-        }
+	str = endp;
 
-        if (*str == '-') {
-                /* no beginning given but end, so start is 0 */
-                info->end = strtoul_suffix(str + 1, &endp, 0);
-                info->size  = info->end + 1;
-                info->flags = MEMAREA_SIZE_SPECIFIED;
-                goto out;
-        }
-
-        str = endp;
-        info->start = strtoul_suffix(str, &endp, 0);
-        str = endp;
-
-        if (info->start >= info->device->size) {
-                printf("Start address is beyond device\n");
-                return -1;
-        }
-
-        if (!*str) {
-                /* beginning given, but no size, pad to the and of the device */
-                info->end = info->device->size - 1;
-                info->size = info->end - info->start + 1;
-                goto out;
-        }
+	if (!*str) {
+		/* beginning given, but no size, assume maximum size */
+		*size = ~0;
+		return 0;
+	}
 
 	if (*str == '-') {
                 /* beginning and end given */
-		info->end = strtoul_suffix(str + 1, NULL, 0);
-		info->size = info->end - info->start + 1;
-                if (info->end < info->start) {
-                        printf("end < start\n");
-                        return -1;
-                }
-                info->flags = MEMAREA_SIZE_SPECIFIED;
-                goto out;
+		*size = strtoul_suffix(str + 1, NULL, 0) + 1;
+		return 0;
 	}
 
 	if (*str == '+') {
                 /* beginning and size given */
-		info->size = strtoul_suffix(str + 1, NULL, 0);
-                info->end = info->start + info->size - 1;
-                info->flags = MEMAREA_SIZE_SPECIFIED;
-                goto out;
+		*size = strtoul_suffix(str + 1, NULL, 0);
+		return 0;
 	}
 
-out:
-        /* check for device boundaries */
-        if (info->end > info->device->size) {
-                info->end = info->device->size - 1;
-                info->size = info->end - info->start + 1;
-        }
-#if 0
-	printf("start: 0x%08x\n",info->start);
-	printf("size: 0x%08x\n",info->size);
-	printf("end: 0x%08x\n",info->end);
-#endif
-	return 0;
+	return -1;
+}
+int spec_str_to_info(const char *str, struct memarea_info *info)
+{
+	char *endp;
+
+	info->device = device_from_spec_str(str, &endp);
+	if (!info->device) {
+		printf("unknown device: %s\n", deviceid_from_spec_str(str, NULL));
+		return -ENODEV;
+	}
+
+	return parse_area_spec(endp, &info->start, &info->size);
 }
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)

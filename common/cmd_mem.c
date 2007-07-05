@@ -34,6 +34,8 @@
 #include <malloc.h>
 #include <errno.h>
 #include <asm-generic/errno.h>
+#include <fs.h>
+#include <fcntl.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -103,53 +105,49 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 
 int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	offs, now;
-	ulong	nbytes = 0x100;
-        struct memarea_info mem;
-	int	size, r;
+	ulong	start;
+	int	size, r, now;
 	int	ret = 0;
+	int fd;
 
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-        if (spec_str_to_info(argv[1], &mem)) {
-                printf("-ENOPARSE\n");
-                return -ENODEV;
-        }
+	fd = open("/dev/mem", O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
 
-        if (mem.flags & MEMAREA_SIZE_SPECIFIED)
-                nbytes = mem.size;
-        else
-                nbytes = min((ulong)0x100, mem.size);
-
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return -EINVAL;
-
-	offs = mem.start;
+	parse_area_spec(argv[1], &start, &size);
+	if (size == ~0)
+		size = 0x100;
 
 	do {
-		now = min(RW_BUF_SIZE, nbytes);
-		r = dev_read(mem.device, rw_buf, now, offs, RW_SIZE(size));
-		if (r <= 0) {
+		now = min(size, RW_BUF_SIZE);
+		r = read(fd, rw_buf, now);
+		if (r < 0) {
                         perror("read");
 			return r;
                 }
+		if (!r)
+			goto out;
 
-		if ((ret = memory_display(rw_buf, offs, r, size)))
-			return ret;
+		if ((ret = memory_display(rw_buf, start, r, 1)))
+			goto out;
 
-		if (r < now)
-			return 0;
+		start += r;
+		size  -= r;
+	} while (size);
 
-		nbytes -= now;
-		offs += now;
-	} while (nbytes > 0);
-
+out:
+	close(fd);
+printf("closed\n");
 	return 0;
 }
-
+#if 0
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	addr, writeval, count;
@@ -191,6 +189,14 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	return 0;
 }
+
+U_BOOT_CMD(
+	mw,    4,    0,     do_mem_mw,
+	"mw      - memory write (fill)\n",
+	"[.b, .w, .l] address value [count]\n    - write memory\n"
+);
+
+#endif
 
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -260,7 +266,7 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		ngood == 1 ? "" : "s");
 	return rcode;
 }
-
+#if 0
 int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong count, offset, now;
@@ -315,6 +321,63 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	return 0;
 }
+
+U_BOOT_CMD(
+	cp,    4,    0,    do_mem_cp,
+	"cp      - memory copy\n",
+	"[.b, .w, .l] source target count\n    - copy memory\n"
+);
+#endif
+
+int do_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int r, w, ret = 1;
+	int src, dst;
+
+	src = open(argv[1], O_RDONLY);
+	if (src < 0) {
+		perror("open");
+		return 1;
+	}
+
+	if(creat(argv[2], 0)) {
+		perror("create");
+		return 1;
+	}
+
+	dst = open(argv[2], O_WRONLY | O_CREAT);
+	if ( dst < 0) {
+		perror("open");
+		close(src);
+		return 1;
+	}
+
+	while(1) {
+		r = read(src, rw_buf, RW_BUF_SIZE);
+		if (read < 0) {
+			perror("read");
+			goto out;
+		}
+		if (!r)
+			break;
+		w = write(dst, rw_buf, r);
+		if (w < 0) {
+			perror("write");
+			goto out;
+		}
+	}
+	ret = 0;
+out:
+	close(src);
+	close(dst);
+	return ret;
+}
+
+U_BOOT_CMD(
+	cp,    4,    0,    do_cp,
+	"cp      - memory copy\n",
+	"[.b, .w, .l] source target count\n    - copy memory\n"
+);
 
 #ifndef CONFIG_CRC32_VERIFY
 
@@ -489,18 +552,6 @@ U_BOOT_CMD(
 	md,     3,     0,      do_mem_md,
 	"md      - memory display\n",
 	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
-);
-
-U_BOOT_CMD(
-	mw,    4,    0,     do_mem_mw,
-	"mw      - memory write (fill)\n",
-	"[.b, .w, .l] address value [count]\n    - write memory\n"
-);
-
-U_BOOT_CMD(
-	cp,    4,    0,    do_mem_cp,
-	"cp      - memory copy\n",
-	"[.b, .w, .l] source target count\n    - copy memory\n"
 );
 
 U_BOOT_CMD(

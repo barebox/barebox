@@ -8,33 +8,38 @@
 #include <asm-generic/errno.h>
 #include <linux/stat.h>
 
+#define CHUNK_SIZE	512
+
 struct data_d {
 	char *data;
-	ulong size;
 	struct data_d *next;
 };
 
-struct node_d {
+struct ramfs_inode {
 	char *name;
-	struct node_d *next;
-	struct node_d *child;
+	struct ramfs_inode *next;
+	struct ramfs_inode *child;
 	ulong mode;
 
 	struct handle_d *handle;
 
+	ulong size;
 	struct data_d *data;
 };
 
 struct ramfs_priv {
-	struct node_d root;
+	struct ramfs_inode root;
 };
 
 /* ---------------------------------------------------------------*/
-struct node_d * __lookup(struct node_d *node, const char *name)
+struct ramfs_inode * __lookup(struct ramfs_inode *node, const char *name)
 {
 //	printf("__lookup: %s in %p\n",name, node);
+	if(node->mode != S_IFDIR)
+		return NULL;
+
 	node = node->child;
-	if (!node || node->mode != S_IFDIR)
+	if (!node)
 		return NULL;
 
 	while (node) {
@@ -45,7 +50,7 @@ struct node_d * __lookup(struct node_d *node, const char *name)
         return NULL;
 }
 
-struct node_d* rlookup(struct node_d *node, const char *path)
+struct ramfs_inode* rlookup(struct ramfs_inode *node, const char *path)
 {
         static char *buf;
         char *part;
@@ -68,14 +73,14 @@ out:
         return node;
 }
 
-int node_add_child(struct node_d *node, const char *filename, ulong mode)
+int node_add_child(struct ramfs_inode *node, const char *filename, ulong mode)
 {
-	struct node_d *new_node = malloc(sizeof(struct node_d));
-	memset(new_node, 0, sizeof(struct node_d));
+	struct ramfs_inode *new_node = malloc(sizeof(struct ramfs_inode));
+	memset(new_node, 0, sizeof(struct ramfs_inode));
 	new_node->name = strdup(filename);
 	new_node->mode = mode;
 
-//	printf("node_add_child: %p -> %p\n", node, new_node);
+	printf("node_add_child: %p -> %p\n", node, new_node);
 	if (!node->child) {
 		node->child = new_node;
 		return 0;
@@ -92,18 +97,18 @@ int node_add_child(struct node_d *node, const char *filename, ulong mode)
 
 /* ---------------------------------------------------------------*/
 
-int ramfs_create(struct device_d *dev, const char *pathname, ulong mode)
+int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
 {
 	struct ramfs_priv *priv = dev->priv;
 	char *path = strdup(pathname);
 	char *file;
-	struct node_d *node;
+	struct ramfs_inode *node;
 
 	normalise_path(path);
 	if (*path == '/')
 		path++;
 
-//	printf("after normalise: %s\n",path);
+	printf("ramfs create: %s\n",path);
 
 	if ((file = strrchr(path, '/'))) {
 		*file = 0;
@@ -118,7 +123,7 @@ int ramfs_create(struct device_d *dev, const char *pathname, ulong mode)
 
 	if(__lookup(node, file))
 		return -EEXIST;
-
+printf("CREATE\n");
 	return node_add_child(node, file, mode);
 }
 
@@ -139,20 +144,87 @@ int ramfs_probe(struct device_d *dev)
 	priv->root.name = "/";
 	priv->root.mode = S_IFDIR;
 
+	printf("root node: %p\n",&priv->root);
 	return 0;
 }
 
-static int ramfs_open(struct device_d *_dev, FILE *file, const char *filename)
+static int ramfs_open(struct device_d *dev, FILE *file, const char *filename)
 {
-	return -ENOENT;
+	struct ramfs_priv *priv = dev->priv;
+	struct ramfs_inode *node = rlookup(&priv->root, filename);
+
+	if (!node)
+		return -ENOENT;
+
+	file->pos = 0;
+	file->inode = node;
+	return 0;
+}
+
+static int ramfs_close(struct device_d *dev, FILE *f)
+{
+	return 0;
+}
+
+static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+{
+	return 0;
+}
+
+struct data_d *ramfs_get_chunk(void)
+{
+	struct data_d *data = malloc(sizeof(struct data_d));
+	data->data = malloc(CHUNK_SIZE);
+	data->next = NULL;
+	return data;
+}
+
+static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
+{
+	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	int chunk;
+	struct data_d *data = node->data;
+	int ofs;
+	int outsize = 0;
+	int now;
+
+	chunk = f->pos / CHUNK_SIZE;
+	printf("%s: wrinting to chunk %d\n", __FUNCTION__, chunk);
+
+	if (!node->data)
+		node->data = ramfs_get_chunk();
+
+	while (chunk) {
+		data = data->next;
+		chunk--;
+	}
+
+	ofs = f->pos % CHUNK_SIZE;
+
+	while (size) {
+		if (ofs == CHUNK_SIZE) {
+			printf("get new chunk\n");
+			data->next = ramfs_get_chunk();
+			data = data->next;
+		}
+
+		now = min(size, CHUNK_SIZE - ofs);
+		printf("now: %d data->data: %p buf: %p\n", now, data->data, buf);
+		memcpy(data->data, buf, now);
+		size -= now;
+		buf += now;
+		ofs += now;
+		outsize += now;
+	}
+	return outsize;
 }
 
 struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
 {
 	struct dir *dir;
 	struct ramfs_priv *priv = dev->priv;
-	struct node_d *node = rlookup(&priv->root, pathname);
-
+	struct ramfs_inode *node = rlookup(&priv->root, pathname);
+printf("opendir: %s\n",pathname);
 	if (!node)
 		return NULL;
 
@@ -163,16 +235,18 @@ struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
 	if (!dir)
 		return NULL;
 
-	dir->node = node->child;
+	dir->priv = node->child;
 
 	return dir;
 }
 
 struct dirent* ramfs_readdir(struct device_d *dev, struct dir *dir)
 {
-	if (dir->node) {
-		strcpy(dir->d.name, dir->node->name);
-		dir->node = dir->node->next;
+	struct ramfs_inode *node = dir->priv;
+
+	if (node) {
+		strcpy(dir->d.name, node->name);
+		dir->priv = node->next;
 		return &dir->d;
 	}
 	return NULL;
@@ -187,8 +261,8 @@ int ramfs_closedir(struct device_d *dev, struct dir *dir)
 int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 {
 	struct ramfs_priv *priv = dev->priv;
-	struct node_d *node = rlookup(&priv->root, filename);
-
+	struct ramfs_inode *node = rlookup(&priv->root, filename);
+printf("%s: %s node: %p\n",__FUNCTION__, filename, node);
 	if (!node) {
 		errno = -ENOENT;
 		return -ENOENT;
@@ -203,6 +277,10 @@ static struct fs_driver_d ramfs_driver = {
 	.type   = FS_TYPE_RAMFS,
 	.create = ramfs_create,
 	.open   = ramfs_open,
+	.close  = ramfs_close,
+
+	.read   = ramfs_read,
+	.write  = ramfs_write,
 
 	.mkdir    = ramfs_mkdir,
 

@@ -102,10 +102,10 @@ FILE *get_file(void)
 	int i;
 
 	for (i = 3; i < MAX_FILES; i++) {
-		if (!files[i].used) {
-			files[i].used = 1;
-			files[i].no = i;
+		if (!files[i].in_use) {
 			memset(&files[i], 0, sizeof(FILE));
+			files[i].in_use = 1;
+			files[i].no = i;
 			return &files[i];
 		}
 	}
@@ -114,7 +114,47 @@ FILE *get_file(void)
 
 void put_file(FILE *f)
 {
-	files[f->no].used = 0;
+	files[f->no].in_use = 0;
+}
+
+static FILE* get_file_by_pathname(const char *pathname)
+{
+	FILE *f;
+
+	f = get_file();
+	if (!f) {
+		errno = -EMFILE;
+		return NULL;
+	}
+
+	if (!strncmp(pathname, "/dev/", 5)) {
+		f->dev = get_device_by_id(pathname + 5);
+	}
+
+	return f;
+}
+
+int creat(const char *pathname, mode_t mode)
+{
+	struct mtab_entry *e;
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+
+	e = get_mtab_entry_by_path(pathname);
+	if (!e) {
+		errno = -ENOENT;
+		return errno;
+	}
+
+	if (e != mtab)
+		pathname += strlen(e->path);
+
+	dev = e->dev;
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	errno = fsdrv->create(dev, pathname, mode);
+
+	return errno;
 }
 
 int open(const char *pathname, int flags)
@@ -125,16 +165,9 @@ int open(const char *pathname, int flags)
 	FILE *f;
 	int ret;
 
-	f = get_file();
-	if (!f) {
-		errno = -EMFILE;
-		return errno;
-	}
+	f = get_file_by_pathname(pathname);
 
-	if (!strncmp(pathname, "/dev/", 5)) {
-		dev = get_device_by_id(pathname + 5);
-		f->dev = dev;
-	} else {
+	if (!f->dev) {
 		e = get_mtab_entry_by_path(pathname);
 		if (!e) {
 			errno = -ENOENT;
@@ -155,7 +188,7 @@ int open(const char *pathname, int flags)
 			goto out;
 		}
 	}
-
+printf("open: %d\n",f->no);
 	return f->no;
 
 out:
@@ -170,21 +203,35 @@ int read(int fd, void *buf, size_t count)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
+	printf("READ: dev: %p\n",dev);
 	if (dev->type == DEVICE_TYPE_FS) {
 		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 		errno = fsdrv->read(dev, f, buf, count);
-		return errno;
 	} else {
 		errno = dev->driver->read(dev, buf, count, f->pos, 0); /* FIXME: flags */
-		if (errno > 0)
-			f->pos += errno;
-		return errno;
 	}
+	if (errno > 0)
+		f->pos += errno;
+	return errno;
 }
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	return -EROFS;
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+	printf("WRITE: dev: %p\n",dev);
+	if (dev->type == DEVICE_TYPE_FS) {
+		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		errno = fsdrv->write(dev, f, buf, count);
+	} else {
+		errno = dev->driver->write(dev, buf, count, f->pos, 0); /* FIXME: flags */
+	}
+	if (errno > 0)
+		f->pos += errno;
+	return errno;
 }
 
 int close(int fd)
@@ -194,10 +241,14 @@ int close(int fd)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (dev->type == DEVICE_TYPE_FS) {
+		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+		errno = fsdrv->close(dev, f);
+	}
 
 	put_file(f);
-	return fsdrv->close(dev, f);
+	return errno;
 }
 
 int mount (struct device_d *dev, char *fsname, char *path)
@@ -368,7 +419,8 @@ int stat(const char *filename, struct stat *s)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	struct mtab_entry *e;
-	char *f = strdup(filename);
+	char *buf = strdup(filename);
+	char *f = buf;
 
 	memset(s, 0, sizeof(struct stat));
 
@@ -386,9 +438,12 @@ int stat(const char *filename, struct stat *s)
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
+	if (*f == 0)
+		f = "/";
+
 	errno = fsdrv->stat(dev, f, s);
 out:
-	free(f);
+	free(buf);
 	return errno;
 }
 

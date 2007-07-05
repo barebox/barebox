@@ -10,7 +10,7 @@
 #define DEVICE_TYPE_ETHER       1
 #define DEVICE_TYPE_STDIO       2
 #define DEVICE_TYPE_DRAM	3
-#define DEVICE_TYPE_FS		3
+#define DEVICE_TYPE_FS		4
 #define MAX_DEVICE_TYPE         4
 
 #include <param.h>
@@ -50,7 +50,7 @@ struct driver_d {
         int     (*probe) (struct device_d *);
 	int     (*remove)(struct device_d *);
         ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
-        ssize_t (*write) (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
+        ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
         ssize_t (*erase) (struct device_d*, size_t count, unsigned long offset);
 
         void    (*info) (struct device_d *);

@@ -64,7 +64,7 @@ device_initcall(scb9328_devices_init);
 
 static int scb9328_init_env(void)
 {
-        add_env_spec(env_spec);
+	add_env_spec(env_spec);
         return 0;
 }
 

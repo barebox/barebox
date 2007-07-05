@@ -294,7 +294,7 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 		return -ENOENT;
 
 	file->pos = 0;
-	file->inode = (struct cramfs_inode *)(dev->map_base + offset);
+	file->inode = dev->map_base + offset;
 
 	return 0;
 }

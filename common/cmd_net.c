@@ -29,6 +29,9 @@
 #include <asm-generic/errno.h>
 #include <driver.h>
 #include <net.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <errno.h>
 
 extern int do_bootm (cmd_tbl_t *, int, int, char *[]);
 
@@ -152,7 +155,7 @@ U_BOOT_CMD(
 );
 #endif	/* CONFIG_NET_NFS */
 
-struct memarea_info net_store_mem;
+int net_store_fd;
 
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -165,9 +168,10 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	if (spec_str_to_info(argv[1], &net_store_mem)) {
-		printf("-ENOPARSE\n");
-		return -ENODEV;
+	net_store_fd = open(argv[1], O_WRONLY | O_CREAT);
+	if (net_store_fd < 0) {
+		perror("open");
+		return 1;
 	}
 
 	copy_filename (BootFile, argv[2], sizeof(BootFile));

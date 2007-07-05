@@ -28,11 +28,7 @@
 #include <zlib.h>
 #include <asm/byteorder.h>
 #include <environment.h>
-
-DECLARE_GLOBAL_DATA_PTR;
-
-/*cmd_boot.c*/
-extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
+#include <boot.h>
 
 #if defined (CONFIG_SETUP_MEMORY_TAGS) || \
     defined (CONFIG_CMDLINE_TAG) || \
@@ -69,140 +65,20 @@ static struct tag *params;
 # define SHOW_BOOT_PROGRESS(arg)
 #endif
 
-extern image_header_t header;	/* from cmd_bootm.c */
 
-
-void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
-		     ulong addr, ulong *len_ptr, int verify)
+int do_bootm_linux(image_header_t *os_header, image_header_t *initrd)
 {
-	ulong len = 0, checksum;
 	ulong initrd_start, initrd_end;
-	ulong data;
 	void (*theKernel)(int zero, int arch, uint params);
-	image_header_t *hdr = &header;
-
 #ifdef CONFIG_CMDLINE_TAG
 	const char *commandline = getenv ("bootargs");
 #endif
-
-	theKernel = (void (*)(int, int, uint))ntohl(hdr->ih_ep);
-
-	/*
-	 * Check if there is an initrd image
-	 */
-	if (argc >= 3) {
-		SHOW_BOOT_PROGRESS (9);
-
-		addr = simple_strtoul (argv[2], NULL, 16);
-
-		printf ("## Loading Ramdisk Image at %08lx ...\n", addr);
-
-		/* Copy header so we can blank CRC field for re-calculation */
-		memcpy (&header, (char *) addr,
-			sizeof (image_header_t));
-
-		if (ntohl (hdr->ih_magic) != IH_MAGIC) {
-			printf ("Bad Magic Number\n");
-			SHOW_BOOT_PROGRESS (-10);
-			do_reset (cmdtp, flag, argc, argv);
-		}
-
-		data = (ulong) & header;
-		len = sizeof (image_header_t);
-
-		checksum = ntohl (hdr->ih_hcrc);
-		hdr->ih_hcrc = 0;
-
-		if (crc32 (0, (unsigned char *) data, len) != checksum) {
-			printf ("Bad Header Checksum\n");
-			SHOW_BOOT_PROGRESS (-11);
-			do_reset (cmdtp, flag, argc, argv);
-		}
-
-		SHOW_BOOT_PROGRESS (10);
-
-		print_image_hdr (hdr);
-
-		data = addr + sizeof (image_header_t);
-		len = ntohl (hdr->ih_size);
-
-		if (verify) {
-			ulong csum = 0;
-
-			printf ("   Verifying Checksum ... ");
-			csum = crc32 (0, (unsigned char *) data, len);
-			if (csum != ntohl (hdr->ih_dcrc)) {
-				printf ("Bad Data CRC\n");
-				SHOW_BOOT_PROGRESS (-12);
-				do_reset (cmdtp, flag, argc, argv);
-			}
-			printf ("OK\n");
-		}
-
-		SHOW_BOOT_PROGRESS (11);
-
-		if ((hdr->ih_os != IH_OS_LINUX) ||
-		    (hdr->ih_arch != IH_CPU_ARM) ||
-		    (hdr->ih_type != IH_TYPE_RAMDISK)) {
-			printf ("No Linux ARM Ramdisk Image\n");
-			SHOW_BOOT_PROGRESS (-13);
-			do_reset (cmdtp, flag, argc, argv);
-		}
-
-#if defined(CONFIG_B2) || defined(CONFIG_EVB4510) || defined(CONFIG_ARMADILLO)
-		/*
-		 *we need to copy the ramdisk to SRAM to let Linux boot
-		 */
-		memmove ((void *) ntohl(hdr->ih_load), (uchar *)data, len);
-		data = ntohl(hdr->ih_load);
-#endif /* CONFIG_B2 || CONFIG_EVB4510 */
-
-		/*
-		 * Now check if we have a multifile image
-		 */
-	} else if ((hdr->ih_type == IH_TYPE_MULTI) && (len_ptr[1])) {
-		ulong tail = ntohl (len_ptr[0]) % 4;
-		int i;
-
-		SHOW_BOOT_PROGRESS (13);
-
-		/* skip kernel length and terminator */
-		data = (ulong) (&len_ptr[2]);
-		/* skip any additional image length fields */
-		for (i = 1; len_ptr[i]; ++i)
-			data += 4;
-		/* add kernel length, and align */
-		data += ntohl (len_ptr[0]);
-		if (tail) {
-			data += 4 - tail;
-		}
-
-		len = ntohl (len_ptr[1]);
-
-	} else {
-		/*
-		 * no initrd image
-		 */
-		SHOW_BOOT_PROGRESS (14);
-
-		len = data = 0;
+	if (os_header->ih_type == IH_TYPE_MULTI) {
+		printf("Multifile images not handled at the moment\n");
+		return -1;
 	}
-
-#ifdef	DEBUG
-	if (!data) {
-		printf ("No initrd\n");
-	}
-#endif
-
-	if (data) {
-		initrd_start = data;
-		initrd_end = initrd_start + len;
-	} else {
-		initrd_start = 0;
-		initrd_end = 0;
-	}
-
-	SHOW_BOOT_PROGRESS (15);
+printf("os header: 0x%p ep: %\n", os_header, os_header + 1);
+	theKernel = (void (*)(int, int, uint))ntohl((unsigned long)(os_header->ih_ep));
 
 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
 	       (ulong) theKernel);
@@ -228,14 +104,16 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	setup_commandline_tag (commandline);
 #endif
 #ifdef CONFIG_INITRD_TAG
-	if (initrd_start && initrd_end)
-		setup_initrd_tag (initrd_start, initrd_end);
+//	if (initrd_start && initrd_end)
+//		setup_initrd_tag (initrd_start, initrd_end);
 #endif
 #if defined (CONFIG_VFD) || defined (CONFIG_LCD)
 	setup_videolfb_tag ((gd_t *) gd);
 #endif
 	setup_end_tag ();
 #endif
+	if (relocate_image(os_header, (void *)ntohl(os_header->ih_load)))
+		return -1;
 
 	/* we assume that the kernel is in place */
 	printf ("\nStarting kernel ...\n\n");
@@ -250,6 +128,7 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	cleanup_before_linux ();
 
 	theKernel (0, CONFIG_ARCH_NUMBER, CONFIG_BOOT_PARAMS);
+	return -1;
 }
 
 

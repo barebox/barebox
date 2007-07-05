@@ -30,9 +30,31 @@
 #include <malloc.h>
 #include <asm-generic/errno.h>
 
+static int enetaddr_set(struct device_d *dev, struct param_d *param, value_t val)
+{
+	struct eth_device *edev;
+	char buf[6];
+
+	if (dev->type != DEVICE_TYPE_ETHER)
+		return -EINVAL;
+
+	edev = dev->priv;
+
+	string_to_enet_addr(val.val_str, buf);
+	edev->set_mac_address(edev, buf);
+	memcpy(edev->enetaddr, buf, 6);
+
+	if (param->value.val_str)
+		free(param->value.val_str);
+	param->value.val_str = strdup(val.val_str);
+
+
+	return 0;
+}
+
 static struct param_d eth_params[] = {
         { .name = "ip", .type = PARAM_TYPE_IPADDR,},
-        { .name = "mac", .type = PARAM_TYPE_STRING,},
+        { .name = "mac", .type = PARAM_TYPE_STRING, .set = enetaddr_set,},
         { .name = "gateway", .type = PARAM_TYPE_IPADDR,},
         { .name = "netmask", .type = PARAM_TYPE_IPADDR,},
         { .name = "serverip", .type = PARAM_TYPE_IPADDR,},

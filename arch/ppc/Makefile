@@ -1,11 +1,11 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
-	-isystem $(gccincdir) -ffixed-r14 -meabi -Wstrict-prototypes -fPIC -D __PPC__ -D CONFIG_PPC \
+	-isystem $(gccincdir) -meabi -Wstrict-prototypes -fPIC -D __PPC__ -D CONFIG_PPC \
 
 
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200
 board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= phycore_mpc5200b_tiny
-cpu-$(CONFIG_MPC5200)				:= mpc5xxx
+cpu-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 

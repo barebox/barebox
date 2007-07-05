@@ -29,17 +29,6 @@ int cmd_get_data_size(char* arg, int default_size)
 	return default_size;
 }
 
-static ulong device_handler[MAX_DEVICE_TYPE];
-
-int register_device_type_handler(int(*handler)(struct device_d *), ulong device_type)
-{
-        device_handler[device_type] = (ulong)handler;
-
-        /* FIXME: cycle through devices */
-
-        return 0;
-}
-
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
@@ -60,8 +49,6 @@ struct device_d *get_device_by_id(char *id)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
-        int(*handler)(struct device_d *);
-
         if (strcmp(dev->name, drv->name))
                 return -1;
         if (dev->type != drv->type)
@@ -71,10 +58,6 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
         dev->driver = drv;
 
-        handler = device_handler[dev->type];
-
-        if(handler)
-                (*handler)(dev);
         return 0;
 }
 
@@ -545,11 +528,4 @@ U_BOOT_CMD(
 	"devinfo     - display info about devices and drivers\n",
 	""
 );
-
-int dev_init(void) {
-	memset(device_handler, 0, sizeof(ulong) * MAX_DEVICE_TYPE);
-	return 0;
-}
-
-core_initcall(dev_init);
 

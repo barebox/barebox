@@ -29,106 +29,10 @@
 #include <mem_malloc.h>
 #include <init.h>
 #include <devices.h>
-#ifdef CONFIG_8xx
-#include <mpc8xx.h>
-#endif
-#ifdef CONFIG_5xx
-#include <mpc5xx.h>
-#endif
-#ifdef CONFIG_MPC5xxx
-#include <mpc5xxx.h>
-#endif
-#if (CONFIG_COMMANDS & CFG_CMD_IDE)
-#include <ide.h>
-#endif
-#if (CONFIG_COMMANDS & CFG_CMD_SCSI)
-#include <scsi.h>
-#endif
-#if (CONFIG_COMMANDS & CFG_CMD_KGDB)
-#include <kgdb.h>
-#endif
-#ifdef CONFIG_STATUS_LED
-#include <status_led.h>
-#endif
 #include <net.h>
 #include <serial.h>
-#ifdef CFG_ALLOC_DPRAM
-#if !defined(CONFIG_CPM2)
-#include <commproc.h>
-#endif
-#endif
-#include <version.h>
-#if defined(CONFIG_BAB7xx)
-#include <w83c553f.h>
-#endif
-#include <dtt.h>
-#if defined(CONFIG_POST)
-#include <post.h>
-#endif
-#if defined(CONFIG_LOGBUFFER)
-#include <logbuff.h>
-#endif
-#if defined(CFG_INIT_RAM_LOCK) && defined(CONFIG_E500)
-#include <asm/cache.h>
-#endif
-#ifdef CONFIG_PS2KBD
-#include <keyboard.h>
-#endif
 
-#ifdef CFG_UPDATE_FLASH_SIZE
-extern int update_flash_size (int flash_size);
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_DOC)
-void doc_init (void);
-#endif
-#if defined(CONFIG_HARD_I2C) || \
-    defined(CONFIG_SOFT_I2C)
-#include <i2c.h>
-#endif
-#if (CONFIG_COMMANDS & CFG_CMD_NAND)
-void nand_init (void);
-#endif
-
-static char *failed = "*** failed ***\n";
-
-#if defined(CONFIG_OXC) || defined(CONFIG_PCU_E) || defined(CONFIG_RMU)
-extern flash_info_t flash_info[];
-#endif
-
-#include <environment.h>
-
-DECLARE_GLOBAL_DATA_PTR;
-
-#if defined(CFG_ENV_IS_EMBEDDED)
-#define TOTAL_MALLOC_LEN	CFG_MALLOC_LEN
-#elif ( ((CFG_ENV_ADDR+CFG_ENV_SIZE) < CFG_MONITOR_BASE) || \
-	(CFG_ENV_ADDR >= (CFG_MONITOR_BASE + CFG_MONITOR_LEN)) ) || \
-      defined(CFG_ENV_IS_IN_NVRAM)
-#define	TOTAL_MALLOC_LEN	(CFG_MALLOC_LEN + CFG_ENV_SIZE)
-#else
-#define	TOTAL_MALLOC_LEN	CFG_MALLOC_LEN
-#endif
-
-extern ulong __init_end;
-extern ulong _end;
-ulong monitor_flash_len;
-
-#if (CONFIG_COMMANDS & CFG_CMD_BEDBUG)
-#include <bedbug/type.h>
-#endif
-
-int ppc_mem_alloc_init(void)
-{
-	ulong dest_addr = CFG_MONITOR_BASE + gd->reloc_off;
-
-        mem_malloc_init(dest_addr - TOTAL_MALLOC_LEN,
-			dest_addr);
-
-	return 0;
-}
-
-core_initcall(ppc_mem_alloc_init);
+gd_t *gd;
 
 char *strmhz (char *buf, long hz)
 {
@@ -143,36 +47,18 @@ char *strmhz (char *buf, long hz)
 	return (buf);
 }
 
-/*
- * All attempts to come up with a "common" initialization sequence
- * that works for all boards and architectures failed: some of the
- * requirements are just _too_ different. To get rid of the resulting
- * mess of board dependend #ifdef'ed code we now make the whole
- * initialization sequence configurable to the user.
- *
- * The requirements for any new initalization function is simple: it
- * receives a pointer to the "global data" structure as it's only
- * argument, and returns an integer return code, where 0 means
- * "continue" and != 0 means "fatal error, hang the system".
- */
-typedef int (init_fnc_t) (void);
-
 /***********************************************************************/
 
-#ifdef CONFIG_ADD_RAM_INFO
-void board_add_ram_info(int);
-#endif
-
 static void init_bd(bd_t *bd, ulong bootflag) {
-	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
-	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */
+//	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
+//	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */
 
 #ifdef CONFIG_IP860
-	bd->bi_sramstart = SRAM_BASE;	/* start of  SRAM memory	*/
-	bd->bi_sramsize  = SRAM_SIZE;	/* size  of  SRAM memory	*/
+//	bd->bi_sramstart = SRAM_BASE;	/* start of  SRAM memory	*/
+//	bd->bi_sramsize  = SRAM_SIZE;	/* size  of  SRAM memory	*/
 #else
-	bd->bi_sramstart = 0;		/* FIXME */ /* start of  SRAM memory	*/
-	bd->bi_sramsize  = 0;		/* FIXME */ /* size  of  SRAM memory	*/
+//	bd->bi_sramstart = 0;		/* FIXME */ /* start of  SRAM memory	*/
+//	bd->bi_sramsize  = 0;		/* FIXME */ /* size  of  SRAM memory	*/
 #endif
 
 #if defined(CONFIG_8xx) || defined(CONFIG_8260) || defined(CONFIG_5xx) || \
@@ -210,132 +96,6 @@ static void init_bd(bd_t *bd, ulong bootflag) {
 
 /************************************************************************
  *
- * This is the first part of the initialization sequence that is
- * implemented in C, but still running from ROM.
- *
- * The main purpose is to provide a (serial) console interface as
- * soon as possible (so we can see any error messages), and to
- * initialize the RAM so that we can relocate the monitor code to
- * RAM.
- *
- * Be aware of the restrictions: global data is read-only, BSS is not
- * initialized, and stack space is limited to a few kB.
- *
- ************************************************************************
- */
-
-void board_init_f (ulong bootflag)
-{
-	bd_t *bd;
-	ulong len, addr, addr_sp;
-	ulong *s;
-	gd_t *id;
-	init_fnc_t **init_fnc_ptr;
-
-	/* Pointer is writable since we allocated a register for it */
-	gd = (gd_t *) (CFG_INIT_RAM_ADDR + CFG_GBL_DATA_OFFSET);
-	/* compiler optimization barrier needed for GCC >= 3.4 */
-	__asm__ __volatile__("": : :"memory");
-
-	/* Clear initial global data */
-	memset ((void *) gd, 0, sizeof (gd_t));
-
-        /*
-	 * Now that we have DRAM mapped and working, we can
-	 * relocate the code and continue running from DRAM.
-	 *
-	 * Reserve memory at end of RAM for (top down in that order):
-	 *  - kernel log buffer
-	 *  - protected RAM
-	 *  - LCD framebuffer
-	 *  - monitor code
-	 *  - board info struct
-	 */
-	len = (ulong)&_end - CFG_MONITOR_BASE;
-
-	addr = CFG_SDRAM_BASE + initdram (0);
-
-        /*
-	 * reserve memory for U-Boot code, data & bss
-	 * round down to next 4 kB limit
-	 */
-	addr -= len;
-	addr &= ~(4096 - 1);
-#ifdef CONFIG_E500
-	/* round down to next 64 kB limit so that IVPR stays aligned */
-	addr &= ~(65536 - 1);
-#endif
-
-PUTHEX_LL(addr);
-PUTC(':');
-	debug ("Reserving %ldk for U-Boot at: %08lx\n", len >> 10, addr);
-
-	/*
-	 * reserve memory for malloc() arena
-	 */
-	addr_sp = addr - TOTAL_MALLOC_LEN;
-	debug ("Reserving %dk for malloc() at: %08lx\n",
-			TOTAL_MALLOC_LEN >> 10, addr_sp);
-
-	/*
-	 * (permanently) allocate a Board Info struct
-	 * and a permanent copy of the "global" data
-	 */
-	addr_sp -= sizeof (bd_t);
-	bd = (bd_t *) addr_sp;
-	gd->bd = bd;
-	debug ("Reserving %d Bytes for Board Info at: %08lx\n",
-			sizeof (bd_t), addr_sp);
-	addr_sp -= sizeof (gd_t);
-	id = (gd_t *) addr_sp;
-	debug ("Reserving %d Bytes for Global Data at: %08lx\n",
-			sizeof (gd_t), addr_sp);
-
-	/*
-	 * Finally, we set up a new (bigger) stack.
-	 *
-	 * Leave some safety gap for SP, force alignment on 16 byte boundary
-	 * Clear initial stack frame
-	 */
-	addr_sp -= 16;
-	addr_sp &= ~0xF;
-	s = (ulong *)addr_sp;
-	*s-- = 0;
-	*s-- = 0;
-	addr_sp = (ulong)s;
-	debug ("Stack Pointer at: %08lx\n", addr_sp);
-
-	/*
-	 * Save local variables to board info struct
-	 */
-	init_bd(bd, bootflag);
-
-	debug ("New Stack Pointer is: %08lx\n", addr_sp);
-
-	WATCHDOG_RESET ();
-
-#ifdef CONFIG_POST
-	post_bootmode_init();
-	post_run (NULL, POST_ROM | post_bootmode_get(0));
-#endif
-
-	WATCHDOG_RESET();
-
-//	memcpy (id, (void *)gd, sizeof (gd_t));
-PUTHEX_LL(addr_sp);
-PUTC(':');
-PUTHEX_LL(id);
-PUTC(':');
-PUTHEX_LL(addr);
-PUTC(':');
-
-	relocate_code (addr_sp, id, addr);
-
-	/* NOTREACHED - relocate_code() does not return */
-}
-
-/************************************************************************
- *
  * This is the next part if the initialization sequence: we are now
  * running from RAM and have a "normal" C environment, i. e. global
  * data can be written, BSS has been cleared, the stack size in not
@@ -343,73 +103,39 @@ PUTC(':');
  *
  ************************************************************************
  */
-void board_init_r (gd_t *id, ulong dest_addr)
+void board_init_r (ulong end_of_ram)
 {
-	cmd_tbl_t *cmdtp;
 	bd_t *bd;
-	initcall_t *initcall;
-	extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
-	int i;
+        char *x;
 	extern void malloc_bin_reloc (void);
-PUTC('B');
 
-	gd = id;		/* initialize RAM version of global data */
-	bd = gd->bd;
+        asm ("sync ; isync");
 
-	gd->flags |= GD_FLG_RELOC;	/* tell others: relocation done */
-	gd->reloc_off = dest_addr;
-PUTC('\n');
-PUTHEX_LL(dest_addr);
+        mem_malloc_init(end_of_ram - 4096 - CFG_MALLOC_LEN, end_of_ram - 4096);
 
-	for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++)
-		*initcall += gd->reloc_off;
+        /* get gd and bd */
+        gd = malloc(sizeof(gd_t));
+        memset(gd, 0x0, sizeof(gd_t));
+        bd = malloc(sizeof(bd_t));
+        memset(bd, 0x0, sizeof(bd_t));
 
-	/*
-	 * We have to relocate the command table manually
-	 */
-	for (cmdtp = &__u_boot_cmd_start; cmdtp !=  &__u_boot_cmd_end; cmdtp++) {
-		ulong addr;
-		addr = (ulong) (cmdtp->cmd) + gd->reloc_off;
-		cmdtp->cmd =
-			(int (*)(struct cmd_tbl_s *, int, int, char *[]))addr;
-
-		addr = (ulong)(cmdtp->name) + gd->reloc_off;
-		cmdtp->name = (char *)addr;
-
-		if (cmdtp->usage) {
-			addr = (ulong)(cmdtp->usage) + gd->reloc_off;
-			cmdtp->usage = (char *)addr;
-		}
-#ifdef	CFG_LONGHELP
-		if (cmdtp->help) {
-			addr = (ulong)(cmdtp->help) + gd->reloc_off;
-			cmdtp->help = (char *)addr;
-		}
-#endif
-	}
-
-	asm ("sync ; isync");
+        gd->bd = bd;
 
 	/*
 	 * Setup trap handlers
 	 */
-	trap_init (dest_addr);
+	trap_init (0);
 
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r ();
-
-	malloc_bin_reloc ();
 
 	/*
 	 * Enable Interrupts
 	 */
 	interrupt_init ();
 
-#ifdef CONFIG_STATUS_LED
-	status_led_set (STATUS_LED_BOOT, STATUS_LED_BLINKING);
-#endif
-
 	/* Initialization complete - start the monitor */
 
 	start_uboot();
 }
+

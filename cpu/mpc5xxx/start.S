@@ -174,8 +174,10 @@ lowboot_reentry:
 
 	mr	r3, r21
 	/* r3: BOOTFLAG */
-	bl	board_init_f	/* run 1st part of board init code (in Flash)*/
+	bl	initdram	/* initialize sdram */
+        /* r3: End of RAM */
 
+        b _continue_init
 /*
  * Vector Table
  */
@@ -305,6 +307,164 @@ ProgramCheck:
 _end_of_vectors:
 
 	. = 0x3000
+
+_continue_init:
+
+	mr	r1,  r3		/* Set new stack pointer at end of RAM  */
+        subi    r1,  r1, 0x10
+	mr	r9,  r3		/* Save copy of end of RAM      	*/
+
+        lis	r3, CFG_MONITOR_BASE@h		/* Destination Address	*/
+	ori	r3, r3, CFG_MONITOR_BASE@l
+	mr	r10, r3 	/* Save copy of Destination Address	*/
+
+        bl	calc_source     /* Calculate Source Address             */
+calc_source:
+	mfspr	r4,  LR
+	subi	r4, r4, (calc_source - _start)
+	subi	r4, r4, 0x100
+
+	lis	r5, __init_size@h		/* Size         	*/
+	ori	r5, r5, __init_size@l
+
+	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
+
+	/*
+	 * Fix GOT pointer:
+	 *
+	 * New GOT-PTR = (old GOT-PTR - CFG_MONITOR_BASE) + Destination Address
+	 *
+	 * Offset:
+	 */
+	sub	r15, r10, r4
+
+	/* First our own GOT */
+	add	r14, r14, r15
+	/* then the one used by the C code */
+	add	r30, r30, r15
+
+	/*
+	 * Now relocate code
+	 */
+
+	cmplw	cr1,r3,r4
+	addi	r0,r5,3
+	srwi.	r0,r0,2
+	beq	cr1,4f		/* In place copy is not necessary	*/
+	beq	7f		/* Protect against 0 count		*/
+	mtctr	r0
+	bge	cr1,2f
+
+	la	r8,-4(r4)
+	la	r7,-4(r3)
+1:	lwzu	r0,4(r8)
+	stwu	r0,4(r7)
+	bdnz	1b
+	b	4f
+
+2:	slwi	r0,r0,2
+	add	r8,r4,r0
+	add	r7,r3,r0
+3:	lwzu	r0,-4(r8)
+	stwu	r0,-4(r7)
+	bdnz	3b
+
+/*
+ * Now flush the cache: note that we must start from a cache aligned
+ * address. Otherwise we might miss one cache line.
+ */
+4:	cmpwi	r6,0
+	add	r5,r3,r5
+	beq	7f		/* Always flush prefetch queue in any case */
+	subi	r0,r6,1
+	andc	r3,r3,r0
+	mfspr	r7,HID0		/* don't do dcbst if dcache is disabled */
+	rlwinm	r7,r7,HID0_DCE_BITPOS+1,31,31
+	cmpwi	r7,0
+	beq	9f
+	mr	r4,r3
+5:	dcbst	0,r4
+	add	r4,r4,r6
+	cmplw	r4,r5
+	blt	5b
+	sync			/* Wait for all dcbst to complete on bus */
+9:	mfspr	r7,HID0		/* don't do icbi if icache is disabled */
+	rlwinm	r7,r7,HID0_ICE_BITPOS+1,31,31
+	cmpwi	r7,0
+	beq	7f
+	mr	r4,r3
+6:	icbi	0,r4
+	add	r4,r4,r6
+	cmplw	r4,r5
+	blt	6b
+7:	sync			/* Wait for all icbi to complete on bus	*/
+	isync
+
+/*
+ * We are done. Do not return, instead branch to second part of board
+ * initialization, now running from RAM.
+ */
+
+	addi	r0, r10, in_ram - _start + EXC_OFF_SYS_RESET
+	mtlr	r0
+	blr
+
+in_ram:
+
+	/*
+	 * Relocation Function, r14 point to got2+0x8000
+	 *
+	 * Adjust got2 pointers, no need to check for 0, this code
+	 * already puts a few entries in the table.
+	 */
+	li	r0,__got2_entries@sectoff@l
+	la	r3,GOT(_GOT2_TABLE_)
+	lwz	r11,GOT(_GOT2_TABLE_)
+	mtctr	r0
+	sub	r11,r3,r11
+	addi	r3,r3,-4
+1:	lwzu	r0,4(r3)
+	add	r0,r0,r11
+	stw	r0,0(r3)
+	bdnz	1b
+
+	/*
+	 * Now adjust the fixups and the pointers to the fixups
+	 * in case we need to move ourselves again.
+	 */
+2:	li	r0,__fixup_entries@sectoff@l
+	lwz	r3,GOT(_FIXUP_TABLE_)
+	cmpwi	r0,0
+	mtctr	r0
+	addi	r3,r3,-4
+	beq	4f
+3:	lwzu	r4,4(r3)
+	lwzux	r0,r4,r11
+	add	r0,r0,r11
+	stw	r10,0(r3)
+	stw	r0,0(r4)
+	bdnz	3b
+4:
+clear_bss:
+	/*
+	 * Now clear BSS segment
+	 */
+	lwz	r3,GOT(__bss_start)
+	lwz	r4,GOT(_end)
+
+	cmplw	0, r3, r4
+	beq	6f
+
+	li	r0, 0
+5:
+	stw	r0, 0(r3)
+	addi	r3, r3, 4
+	cmplw	0, r3, r4
+	bne	5b
+6:
+
+	mr	r3, r9		/* end of RAM   		*/
+	bl	board_init_r
 
 /*
  * This code finishes saving the registers to the exception frame
@@ -551,179 +711,6 @@ get_svr:
 get_pvr:
 	mfspr	r3, PVR
 	blr
-
-/*------------------------------------------------------------------------------*/
-
-/*
- * void relocate_code (addr_sp, gd, addr_moni)
- *
- * This "function" does not return, instead it continues in RAM
- * after relocating the monitor code.
- *
- * r3 = dest
- * r4 = src
- * r5 = length in bytes
- * r6 = cachelinesize
- */
-	.globl	relocate_code
-relocate_code:
-	mr	r1,  r3		/* Set new stack pointer		*/
-	mr	r9,  r4		/* Save copy of Global Data pointer	*/
-	mr	r10, r5		/* Save copy of Destination Address	*/
-
-	mr	r3,  r5				/* Destination Address	*/
-#if 0
-	lis	r4, CFG_MONITOR_BASE@h		/* Source      Address	*/
-	ori	r4, r4, CFG_MONITOR_BASE@l
-#else
-	bl	gaga
-gaga:
-	mfspr	r4,  LR
-	subi	r4, r4, (gaga - _start)
-	subi	r4, r4, 0x100
-#endif
-	lis	r5, __init_size@h		/* Source      Address	*/
-	ori	r5, r5, __init_size@l
-
-	li	r6, CFG_CACHELINE_SIZE		/* Cache Line Size	*/
-
-	/*
-	 * Fix GOT pointer:
-	 *
-	 * New GOT-PTR = (old GOT-PTR - CFG_MONITOR_BASE) + Destination Address
-	 *
-	 * Offset:
-	 */
-	sub	r15, r10, r4
-
-	/* First our own GOT */
-	add	r14, r14, r15
-	/* then the one used by the C code */
-	add	r30, r30, r15
-
-	/*
-	 * Now relocate code
-	 */
-
-	cmplw	cr1,r3,r4
-	addi	r0,r5,3
-	srwi.	r0,r0,2
-	beq	cr1,4f		/* In place copy is not necessary	*/
-	beq	7f		/* Protect against 0 count		*/
-	mtctr	r0
-	bge	cr1,2f
-
-	la	r8,-4(r4)
-	la	r7,-4(r3)
-1:	lwzu	r0,4(r8)
-	stwu	r0,4(r7)
-	bdnz	1b
-	b	4f
-
-2:	slwi	r0,r0,2
-	add	r8,r4,r0
-	add	r7,r3,r0
-3:	lwzu	r0,-4(r8)
-	stwu	r0,-4(r7)
-	bdnz	3b
-
-/*
- * Now flush the cache: note that we must start from a cache aligned
- * address. Otherwise we might miss one cache line.
- */
-4:	cmpwi	r6,0
-	add	r5,r3,r5
-	beq	7f		/* Always flush prefetch queue in any case */
-	subi	r0,r6,1
-	andc	r3,r3,r0
-	mfspr	r7,HID0		/* don't do dcbst if dcache is disabled */
-	rlwinm	r7,r7,HID0_DCE_BITPOS+1,31,31
-	cmpwi	r7,0
-	beq	9f
-	mr	r4,r3
-5:	dcbst	0,r4
-	add	r4,r4,r6
-	cmplw	r4,r5
-	blt	5b
-	sync			/* Wait for all dcbst to complete on bus */
-9:	mfspr	r7,HID0		/* don't do icbi if icache is disabled */
-	rlwinm	r7,r7,HID0_ICE_BITPOS+1,31,31
-	cmpwi	r7,0
-	beq	7f
-	mr	r4,r3
-6:	icbi	0,r4
-	add	r4,r4,r6
-	cmplw	r4,r5
-	blt	6b
-7:	sync			/* Wait for all icbi to complete on bus	*/
-	isync
-
-/*
- * We are done. Do not return, instead branch to second part of board
- * initialization, now running from RAM.
- */
-
-	addi	r0, r10, in_ram - _start + EXC_OFF_SYS_RESET
-	mtlr	r0
-	blr
-
-in_ram:
-
-	/*
-	 * Relocation Function, r14 point to got2+0x8000
-	 *
-	 * Adjust got2 pointers, no need to check for 0, this code
-	 * already puts a few entries in the table.
-	 */
-	li	r0,__got2_entries@sectoff@l
-	la	r3,GOT(_GOT2_TABLE_)
-	lwz	r11,GOT(_GOT2_TABLE_)
-	mtctr	r0
-	sub	r11,r3,r11
-	addi	r3,r3,-4
-1:	lwzu	r0,4(r3)
-	add	r0,r0,r11
-	stw	r0,0(r3)
-	bdnz	1b
-
-	/*
-	 * Now adjust the fixups and the pointers to the fixups
-	 * in case we need to move ourselves again.
-	 */
-2:	li	r0,__fixup_entries@sectoff@l
-	lwz	r3,GOT(_FIXUP_TABLE_)
-	cmpwi	r0,0
-	mtctr	r0
-	addi	r3,r3,-4
-	beq	4f
-3:	lwzu	r4,4(r3)
-	lwzux	r0,r4,r11
-	add	r0,r0,r11
-	stw	r10,0(r3)
-	stw	r0,0(r4)
-	bdnz	3b
-4:
-clear_bss:
-	/*
-	 * Now clear BSS segment
-	 */
-	lwz	r3,GOT(__bss_start)
-	lwz	r4,GOT(_end)
-
-	cmplw	0, r3, r4
-	beq	6f
-
-	li	r0, 0
-5:
-	stw	r0, 0(r3)
-	addi	r3, r3, 4
-	cmplw	0, r3, r4
-	bne	5b
-6:
-
-	mr	r3, r9		/* Global Data pointer		*/
-	mr	r4, r10		/* Destination Address		*/
-	bl	board_init_r
 
 	/*
 	 * Copy exception vector code to low memory

@@ -32,7 +32,9 @@ void *sbrk (ptrdiff_t increment)
 	return ((void *) old);
 }
 
-void perror(char *s, int errno)
+int errno;
+
+void perror(char *s)
 {
 	char *str;
 	switch(-errno) {

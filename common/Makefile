@@ -12,27 +12,30 @@ obj-$(CONFIG_CMD_SPLASH)	+= cmd_splash.o
 obj-$(CONFIG_CMD_MTEST)		+= cmd_memtest.o
 obj-$(CONFIG_CMD_SLEEP)		+= cmd_misc.o
 obj-$(CONFIG_CMD_EDIT)		+= cmd_edit.o
+obj-$(CONFIG_CMD_EXEC)		+= cmd_exec.o
 obj-$(CONFIG_HUSH_PARSER)	+= hush.o
 obj-$(CONFIG_SIMPLE_PARSER)	+= parser.o
 obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
+obj-$(CONFIG_FS)		+= cmd_fs.o
 
 obj-y += exports.o
 obj-y += main.o
 obj-y += cmd_boot.o
 obj-y += dlmalloc.o
 obj-y += clock.o
-obj-y += flash.o
+# obj-y += flash.o
 obj-y += command.o
 obj-y += console.o
 obj-y += mtdpart.o
-obj-y += env.o
+obj-$(CONFIG_CMD_ENV) += env.o
 obj-y += startup.o
 obj-y += misc.o
-obj-y += cmd_fs.o
 obj-y += getopt.o
 obj-y += xfuncs.o
-obj-y += cmd_exec.o
+obj-$(CONFIG_CMD_ENVIRONMENT) += environment.o
+
+obj-y += readkey.o
 
 #obj-y += cmd_elf.o
 #obj-y += cmd_itest.o

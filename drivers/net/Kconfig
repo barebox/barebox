@@ -20,6 +20,7 @@ config DRIVER_NET_CS8900
 config DRIVER_NET_DM9000
 	bool "Davicom dm9000 ethernet driver"
 	depends on HAS_DM9000
+	select MIIPHY
 
 config DRIVER_NET_AT91_ETHER
 	bool "at91 ethernet driver"

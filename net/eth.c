@@ -56,8 +56,6 @@ extern int tsec_initialize(bd_t*, int, char *);
 extern int npe_initialize(bd_t *);
 extern int uec_initialize(int);
 
-static struct eth_device *eth_devices, *eth_current;
-
 struct eth_device *eth_get_dev(void)
 {
 	return eth_current;
@@ -358,56 +356,6 @@ void eth_set_enetaddr(int num, char *addr) {
 	memcpy(dev->enetaddr, enetaddr, 6);
 }
 
-int eth_init(bd_t *bis)
-{
-	struct eth_device* old_current;
-
-	if (!eth_current)
-		return 0;
-
-	old_current = eth_current;
-	do {
-		debug ("Trying %s\n", eth_current->name);
-
-		if (eth_current->init(eth_current, bis)) {
-			eth_current->state = ETH_STATE_ACTIVE;
-
-			return 1;
-		}
-		debug  ("FAIL\n");
-
-		eth_try_another(0);
-	} while (old_current != eth_current);
-
-	return 0;
-}
-
-void eth_halt(void)
-{
-	if (!eth_current)
-		return;
-
-	eth_current->halt(eth_current);
-
-	eth_current->state = ETH_STATE_PASSIVE;
-}
-
-int eth_send(volatile void *packet, int length)
-{
-	if (!eth_current)
-		return -1;
-
-	return eth_current->send(eth_current, packet, length);
-}
-
-int eth_rx(void)
-{
-	if (!eth_current)
-		return -1;
-
-	return eth_current->recv(eth_current);
-}
-
 void eth_try_another(int first_restart)
 {
 	static struct eth_device *first_failed = NULL;
@@ -464,6 +412,55 @@ char *eth_get_name (void)
 }
 #elif (CONFIG_COMMANDS & CFG_CMD_NET) && !defined(CONFIG_NET_MULTI)
 
+static struct eth_device *eth_current;
+
+void eth_set_current(struct eth_device *eth)
+{
+	eth_current = eth;
+}
+
+struct eth_device * eth_get_current(void)
+{
+	return eth_current;
+}
+
+int eth_init(bd_t *bis)
+{
+
+	if (!eth_current)
+		return 0;
+
+	eth_current->open(eth_current, bis);
+
+	return 1;
+}
+
+void eth_halt(void)
+{
+	if (!eth_current)
+		return;
+
+	eth_current->halt(eth_current);
+
+	eth_current->state = ETH_STATE_PASSIVE;
+}
+
+int eth_send(volatile void *packet, int length)
+{
+	if (!eth_current)
+		return -1;
+
+	return eth_current->send(eth_current, packet, length);
+}
+
+int eth_rx(void)
+{
+	if (!eth_current)
+		return -1;
+
+	return eth_current->recv(eth_current);
+}
+
 extern int at91rm9200_miiphy_initialize(bd_t *bis);
 extern int emac4xx_miiphy_initialize(bd_t *bis);
 extern int mcf52x2_miiphy_initialize(bd_t *bis);
@@ -471,6 +468,51 @@ extern int ns7520_miiphy_initialize(bd_t *bis);
 
 int eth_initialize(bd_t *bis)
 {
+	unsigned char ethaddr_tmp[20];
+	unsigned char *ethaddr, *e = NULL;
+	int i;
+
+	if (!eth_current) {
+		printf("%s: no eth device set\n", __FUNCTION__);
+		return -1;
+	}
+
+	if (eth_current->init(eth_current, bis)) {
+		printf("failed to initialize network device\n");
+		return -1;
+	}
+
+	if (!eth_current->get_mac_address) {
+		printf("no get_mac_address found for current eth device\n");
+		return -1;
+	}
+
+	ethaddr = eth_current->enetaddr;
+
+	/* Try to get a MAC address from the eeprom set 'ethaddr' to it.
+	 * If this fails we rely on 'ethaddr' being set by the user.
+	 */
+	if (eth_current->get_mac_address(eth_current, ethaddr) == 0) {
+		sprintf (ethaddr_tmp, "%02X:%02X:%02X:%02X:%02X:%02X",
+			ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
+		printf("got MAC address from EEPROM: %s\n",ethaddr_tmp);
+		setenv ("ethaddr", ethaddr_tmp);
+	} else {
+		ethaddr = getenv ("ethaddr");
+		if (!ethaddr){
+			printf("could not get MAC address from device and ethaddr not set\n");
+			return -1;
+		}
+
+		for(i = 0; i < 6; i++) {
+			eth_current->enetaddr[i] = ethaddr ? simple_strtoul (ethaddr, &e, 16) : 0;
+			if (ethaddr) {
+				ethaddr = (*e) ? e + 1 : e;
+			}
+			eth_current->set_mac_address(eth_current, eth_current->enetaddr);
+		}
+	}
+
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
 	miiphy_init();
 #endif

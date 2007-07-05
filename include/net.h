@@ -99,9 +99,12 @@ struct eth_device {
 	int state;
 
 	int  (*init) (struct eth_device*, bd_t*);
+	int  (*open) (struct eth_device*, bd_t*);
 	int  (*send) (struct eth_device*, volatile void* pachet, int length);
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
+	int  (*get_mac_address) (struct eth_device*, unsigned char *adr);
+	int  (*set_mac_address) (struct eth_device*, unsigned char *adr);
 
 	struct eth_device *next;
 	void *priv;
@@ -451,5 +454,13 @@ extern ushort getenv_VLAN(char *);
 extern void	copy_filename (char *dst, char *src, int size);
 
 /**********************************************************************/
+/* Network devices                                                    */
+/**********************************************************************/
+
+extern void eth_set_current(struct eth_device *eth);
+extern struct eth_device *eth_get_current(void);
+
+extern struct eth_device at91rm9200_eth;
+extern struct eth_device smc91111_eth;
 
 #endif /* __NET_H__ */

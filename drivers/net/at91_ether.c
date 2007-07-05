@@ -151,7 +151,7 @@ UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
 	return TRUE;
 }
 
-int eth_init (bd_t * bd)
+static int at91rm9200_eth_init (struct eth_device *ndev, bd_t * bd)
 {
 	int ret;
 	int i;
@@ -190,10 +190,6 @@ int eth_init (bd_t * bd)
 	rbfdt[RBF_FRAMEMAX - 1].addr |= RBF_WRAP;
 	rbfp = &rbfdt[0];
 
-	p_mac->EMAC_SA2L = (bd->bi_enetaddr[3] << 24) | (bd->bi_enetaddr[2] << 16)
-			 | (bd->bi_enetaddr[1] <<  8) | (bd->bi_enetaddr[0]);
-	p_mac->EMAC_SA2H = (bd->bi_enetaddr[5] <<  8) | (bd->bi_enetaddr[4]);
-
 	p_mac->EMAC_RBQP = (long) (&rbfdt[0]);
 	p_mac->EMAC_RSR &= ~(AT91C_EMAC_RSR_OVR | AT91C_EMAC_REC | AT91C_EMAC_BNA);
 
@@ -211,6 +207,13 @@ int eth_init (bd_t * bd)
 
 	p_mac->EMAC_CTL |= AT91C_EMAC_TE | AT91C_EMAC_RE;
 
+	return 0;
+}
+
+static int at91rm9200_eth_open (struct eth_device *ndev, bd_t * bd)
+{
+	int ret;
+
 	at91rm9200_GetPhyInterface (& PhyOps);
 
 	if (!PhyOps.IsPhyConnected (p_mac))
@@ -226,11 +229,9 @@ int eth_init (bd_t * bd)
 		printf ("No link\n\r");
 		return 0;
 	}
-
-	return 0;
 }
 
-int eth_send (volatile void *packet, int length)
+static int at91rm9200_eth_send (struct eth_device *ndev, volatile void *packet, int length)
 {
 	while (!(p_mac->EMAC_TSR & AT91C_EMAC_BNQ));
 	p_mac->EMAC_TAR = (long) packet;
@@ -240,7 +241,7 @@ int eth_send (volatile void *packet, int length)
 	return 0;
 }
 
-int eth_rx (void)
+static int at91rm9200_eth_rx (struct eth_device *ndev)
 {
 	int size;
 
@@ -261,7 +262,7 @@ int eth_rx (void)
 	return size;
 }
 
-void eth_halt (void)
+static void at91rm9200_eth_halt (struct eth_device *ndev)
 {
 };
 
@@ -293,6 +294,31 @@ int at91rm9200_miiphy_initialize(bd_t *bis)
 #endif
 	return 0;
 }
+
+static int at91rm9200_get_mac_address(struct eth_device *eth, unsigned char *adr)
+{
+	/* We have no eeprom */
+	return -1;
+}
+
+static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr)
+{
+	p_mac->EMAC_SA2L = (adr[3] << 24) | (adr[2] << 16)
+			 | (adr[1] <<  8) | (adr[0]);
+	p_mac->EMAC_SA2H = (adr[5] <<  8) | (adr[4]);
+
+	return -0;
+}
+
+struct eth_device at91rm9200_eth = {
+	.init = at91rm9200_eth_init,
+	.open = at91rm9200_eth_open,
+	.send = at91rm9200_eth_send,
+	.recv = at91rm9200_eth_rx,
+	.halt = at91rm9200_eth_halt,
+	.get_mac_address = at91rm9200_get_mac_address,
+	.set_mac_address = at91rm9200_set_mac_address,
+};
 
 #endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
 

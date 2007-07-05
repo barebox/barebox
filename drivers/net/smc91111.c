@@ -79,11 +79,6 @@ static const char version[] =
 	"smc91111.c:v1.0 04/25/01 by Daris A Nevil (dnevil@snmc.com)\n";
 #endif
 
-/* Autonegotiation timeout in seconds */
-#ifndef CONFIG_SMC_AUTONEG_TIMEOUT
-#define CONFIG_SMC_AUTONEG_TIMEOUT 10
-#endif
-
 /*------------------------------------------------------------------------
  .
  . Configuration options, for the experienced user to change.
@@ -149,51 +144,6 @@ static const char version[] =
 #else
 #undef USE_32_BIT
 #endif
-/*-----------------------------------------------------------------
- .
- .  The driver can be entered at any of the following entry points.
- .
- .------------------------------------------------------------------  */
-
-extern int eth_init(bd_t *bd);
-extern void eth_halt(void);
-extern int eth_rx(void);
-extern int eth_send(volatile void *packet, int length);
-
-#ifdef SHARED_RESOURCES
-	extern void swap_to(int device_id);
-#endif
-
-/*
- . This is called by  register_netdev().  It is responsible for
- . checking the portlist for the SMC9000 series chipset.  If it finds
- . one, then it will initialize the device, find the hardware information,
- . and sets up the appropriate device parameters.
- . NOTE: Interrupts are *OFF* when this procedure is called.
- .
- . NB:This shouldn't be static since it is referred to externally.
-*/
-int smc_init(void);
-
-/*
- . This is called by  unregister_netdev().  It is responsible for
- . cleaning up before the driver is finally unregistered and discarded.
-*/
-void smc_destructor(void);
-
-/*
- . The kernel calls this function when someone wants to use the device,
- . typically 'ifconfig ethX up'.
-*/
-static int smc_open(bd_t *bd);
-
-
-/*
- . This is called by the kernel in response to 'ifconfig ethX down'.  It
- . is responsible for cleaning up everything that the open routine
- . does, and maybe putting the card into a powerdown state.
-*/
-static int smc_close(void);
 
 /*
  . Configures the PHY through the MII Management interface
@@ -201,19 +151,6 @@ static int smc_close(void);
 #ifndef CONFIG_SMC91111_EXT_PHY
 static void smc_phy_configure(void);
 #endif /* !CONFIG_SMC91111_EXT_PHY */
-
-/*
- . This is a separate procedure to handle the receipt of a packet, to
- . leave the interrupt code looking slightly cleaner
-*/
-static int smc_rcv(void);
-
-/* See if a MAC address is defined in the current environment. If so use it. If not
- . print a warning and set the environment and other globals with the default.
- . If an EEPROM is present it really should be consulted.
-*/
-int smc_get_ethaddr(bd_t *bd);
-int get_rom_mac(uchar *v_rom_mac);
 
 /*
  ------------------------------------------------------------
@@ -300,27 +237,6 @@ static inline void SMC_outsw(dword offset, uchar* buf, dword len)
 }
 #endif  /* CONFIG_SMC_USE_IOFUNCS */
 
-static char unsigned smc_mac_addr[6] = {0x02, 0x80, 0xad, 0x20, 0x31, 0xb8};
-
-/*
- * This function must be called before smc_open() if you want to override
- * the default mac address.
- */
-
-void smc_set_mac_addr(const unsigned char *addr) {
-	int i;
-
-	for (i=0; i < sizeof(smc_mac_addr); i++){
-		smc_mac_addr[i] = addr[i];
-	}
-}
-
-/*
- * smc_get_macaddr is no longer used. If you want to override the default
- * mac address, call smc_get_mac_addr as a part of the board initialization.
- */
-
-
 /***********************************************
  * Show available memory		       *
  ***********************************************/
@@ -345,16 +261,6 @@ static void print_packet( byte *, int );
 #endif
 
 #define tx_done(dev) 1
-
-
-/* this does a soft reset on the device */
-static void smc_reset( void );
-
-/* Enable Interrupts, Receive, and Transmit */
-static void smc_enable( void );
-
-/* this puts the device in an inactive state */
-static void smc_shutdown( void );
 
 /* Routines to Read and Write the PHY Registers across the
    MII Management Interface
@@ -474,520 +380,27 @@ static void smc_reset (void)
 }
 
 /*
- . Function: smc_enable
- . Purpose: let the chip talk to the outside work
- . Method:
- .	1.  Enable the transmitter
- .	2.  Enable the receiver
- .	3.  Enable interrupts
-*/
-static void smc_enable()
-{
-	PRINTK2("%s: smc_enable\n", SMC_DEV_NAME);
-	SMC_SELECT_BANK( 0 );
-	/* see the header file for options in TCR/RCR DEFAULT*/
-	SMC_outw( TCR_DEFAULT, TCR_REG );
-	SMC_outw( RCR_DEFAULT, RCR_REG );
-
-	/* clear MII_DIS */
-/*	smc_write_phy_register(PHY_CNTL_REG, 0x0000); */
-}
-
-/*
- . Function: smc_shutdown
- . Purpose:  closes down the SMC91xxx chip.
- . Method:
- .	1. zero the interrupt mask
- .	2. clear the enable receive flag
- .	3. clear the enable xmit flags
- .
- . TODO:
- .   (1) maybe utilize power down mode.
- .	Why not yet?  Because while the chip will go into power down mode,
- .	the manual says that it will wake up in response to any I/O requests
- .	in the register space.	 Empirical results do not show this working.
-*/
-static void smc_shutdown()
-{
-	PRINTK2(CARDNAME ": smc_shutdown\n");
-
-	/* no more interrupts for me */
-	SMC_SELECT_BANK( 2 );
-	SMC_outb( 0, IM_REG );
-
-	/* and tell the card to stay away from that nasty outside world */
-	SMC_SELECT_BANK( 0 );
-	SMC_outb( RCR_CLEAR, RCR_REG );
-	SMC_outb( TCR_CLEAR, TCR_REG );
-#ifdef SHARED_RESOURCES
-	swap_to(FLASH);
-#endif
-}
-
-
-/*
- . Function:  smc_hardware_send_packet(struct net_device * )
- . Purpose:
- .	This sends the actual packet to the SMC9xxx chip.
- .
- . Algorithm:
- .	First, see if a saved_skb is available.
- .		( this should NOT be called if there is no 'saved_skb'
- .	Now, find the packet number that the chip allocated
- .	Point the data pointers at it in memory
- .	Set the length word in the chip's memory
- .	Dump the packet to chip memory
- .	Check if a last byte is needed ( odd length packet )
- .		if so, set the control flag right
- .	Tell the card to send it
- .	Enable the transmit interrupt, so I know if it failed
- .	Free the kernel data if I actually sent it.
-*/
-static int smc_send_packet (volatile void *packet, int packet_length)
-{
-	byte packet_no;
-	unsigned long ioaddr;
-	byte *buf;
-	int length;
-	int numPages;
-	int try = 0;
-	int time_out;
-	byte status;
-	byte saved_pnr;
-	word saved_ptr;
-
-	/* save PTR and PNR registers before manipulation */
-	SMC_SELECT_BANK (2);
-	saved_pnr = SMC_inb( PN_REG );
-	saved_ptr = SMC_inw( PTR_REG );
-
-	PRINTK3 ("%s: smc_hardware_send_packet\n", SMC_DEV_NAME);
-
-	length = ETH_ZLEN < packet_length ? packet_length : ETH_ZLEN;
-
-	/* allocate memory
-	 ** The MMU wants the number of pages to be the number of 256 bytes
-	 ** 'pages', minus 1 ( since a packet can't ever have 0 pages :) )
-	 **
-	 ** The 91C111 ignores the size bits, but the code is left intact
-	 ** for backwards and future compatibility.
-	 **
-	 ** Pkt size for allocating is data length +6 (for additional status
-	 ** words, length and ctl!)
-	 **
-	 ** If odd size then last byte is included in this header.
-	 */
-	numPages = ((length & 0xfffe) + 6);
-	numPages >>= 8;		/* Divide by 256 */
-
-	if (numPages > 7) {
-		printf ("%s: Far too big packet error. \n", SMC_DEV_NAME);
-		return 0;
-	}
-
-	/* now, try to allocate the memory */
-	SMC_SELECT_BANK (2);
-	SMC_outw (MC_ALLOC | numPages, MMU_CMD_REG);
-
-	/* FIXME: the ALLOC_INT bit never gets set *
-	 * so the following will always give a	   *
-	 * memory allocation error.		   *
-	 * same code works in armboot though	   *
-	 * -ro
-	 */
-
-again:
-	try++;
-	time_out = MEMORY_WAIT_TIME;
-	do {
-		status = SMC_inb (SMC91111_INT_REG);
-		if (status & IM_ALLOC_INT) {
-			/* acknowledge the interrupt */
-			SMC_outb (IM_ALLOC_INT, SMC91111_INT_REG);
-			break;
-		}
-	} while (--time_out);
-
-	if (!time_out) {
-		PRINTK2 ("%s: memory allocation, try %d failed ...\n",
-			 SMC_DEV_NAME, try);
-		if (try < SMC_ALLOC_MAX_TRY)
-			goto again;
-		else
-			return 0;
-	}
-
-	PRINTK2 ("%s: memory allocation, try %d succeeded ...\n",
-		 SMC_DEV_NAME, try);
-
-	/* I can send the packet now.. */
-
-	ioaddr = SMC_BASE_ADDRESS;
-
-	buf = (byte *) packet;
-
-	/* If I get here, I _know_ there is a packet slot waiting for me */
-	packet_no = SMC_inb (AR_REG);
-	if (packet_no & AR_FAILED) {
-		/* or isn't there?  BAD CHIP! */
-		printf ("%s: Memory allocation failed. \n", SMC_DEV_NAME);
-		return 0;
-	}
-
-	/* we have a packet address, so tell the card to use it */
-#ifndef CONFIG_XAENIAX
-	SMC_outb (packet_no, PN_REG);
-#else
-	/* On Xaeniax board, we can't use SMC_outb here because that way
-	 * the Allocate MMU command will end up written to the command register
-	 * as well, which will lead to a problem.
-	 */
-	SMC_outl (packet_no << 16, 0);
-#endif
-	/* do not write new ptr value if Write data fifo not empty */
-	while ( saved_ptr & PTR_NOTEMPTY )
-		printf ("Write data fifo not empty!\n");
-
-	/* point to the beginning of the packet */
-	SMC_outw (PTR_AUTOINC, PTR_REG);
-
-	PRINTK3 ("%s: Trying to xmit packet of length %x\n",
-		 SMC_DEV_NAME, length);
-
-#if SMC_DEBUG > 2
-	printf ("Transmitting Packet\n");
-	print_packet (buf, length);
-#endif
-
-	/* send the packet length ( +6 for status, length and ctl byte )
-	   and the status word ( set to zeros ) */
-#ifdef USE_32_BIT
-	SMC_outl ((length + 6) << 16, SMC91111_DATA_REG);
-#else
-	SMC_outw (0, SMC91111_DATA_REG);
-	/* send the packet length ( +6 for status words, length, and ctl */
-	SMC_outw ((length + 6), SMC91111_DATA_REG);
-#endif
-
-	/* send the actual data
-	   . I _think_ it's faster to send the longs first, and then
-	   . mop up by sending the last word.  It depends heavily
-	   . on alignment, at least on the 486.	 Maybe it would be
-	   . a good idea to check which is optimal?  But that could take
-	   . almost as much time as is saved?
-	 */
-#ifdef USE_32_BIT
-	SMC_outsl (SMC91111_DATA_REG, buf, length >> 2);
-#ifndef CONFIG_XAENIAX
-	if (length & 0x2)
-		SMC_outw (*((word *) (buf + (length & 0xFFFFFFFC))),
-			  SMC91111_DATA_REG);
-#else
-	/* On XANEIAX, we can only use 32-bit writes, so we need to handle
-	 * unaligned tail part specially. The standard code doesn't work.
-	 */
-	if ((length & 3) == 3) {
-		u16 * ptr = (u16*) &buf[length-3];
-		SMC_outl((*ptr) | ((0x2000 | buf[length-1]) << 16),
-				SMC91111_DATA_REG);
-	} else if ((length & 2) == 2) {
-		u16 * ptr = (u16*) &buf[length-2];
-		SMC_outl(*ptr, SMC91111_DATA_REG);
-	} else if (length & 1) {
-		SMC_outl((0x2000 | buf[length-1]), SMC91111_DATA_REG);
-	} else {
-		SMC_outl(0, SMC91111_DATA_REG);
-	}
-#endif
-#else
-	SMC_outsw (SMC91111_DATA_REG, buf, (length) >> 1);
-#endif /* USE_32_BIT */
-
-#ifndef CONFIG_XAENIAX
-	/* Send the last byte, if there is one.	  */
-	if ((length & 1) == 0) {
-		SMC_outw (0, SMC91111_DATA_REG);
-	} else {
-		SMC_outw (buf[length - 1] | 0x2000, SMC91111_DATA_REG);
-	}
-#endif
-
-	/* and let the chipset deal with it */
-	SMC_outw (MC_ENQUEUE, MMU_CMD_REG);
-
-	/* poll for TX INT */
-	/* if (poll4int (IM_TX_INT, SMC_TX_TIMEOUT)) { */
-	/* poll for TX_EMPTY INT - autorelease enabled */
-	if (poll4int(IM_TX_EMPTY_INT, SMC_TX_TIMEOUT)) {
-		/* sending failed */
-		PRINTK2 ("%s: TX timeout, sending failed...\n", SMC_DEV_NAME);
-
-		/* release packet */
-		/* no need to release, MMU does that now */
-#ifdef CONFIG_XAENIAX
-		 SMC_outw (MC_FREEPKT, MMU_CMD_REG);
-#endif
-
-		/* wait for MMU getting ready (low) */
-		while (SMC_inw (MMU_CMD_REG) & MC_BUSY) {
-			udelay (10);
-		}
-
-		PRINTK2 ("MMU ready\n");
-
-
-		return 0;
-	} else {
-		/* ack. int */
-		SMC_outb (IM_TX_EMPTY_INT, SMC91111_INT_REG);
-		/* SMC_outb (IM_TX_INT, SMC91111_INT_REG); */
-		PRINTK2 ("%s: Sent packet of length %d \n", SMC_DEV_NAME,
-			 length);
-
-		/* release packet */
-		/* no need to release, MMU does that now */
-#ifdef CONFIG_XAENIAX
-		SMC_outw (MC_FREEPKT, MMU_CMD_REG);
-#endif
-
-		/* wait for MMU getting ready (low) */
-		while (SMC_inw (MMU_CMD_REG) & MC_BUSY) {
-			udelay (10);
-		}
-
-		PRINTK2 ("MMU ready\n");
-
-
-	}
-
-	/* restore previously saved registers */
-#ifndef CONFIG_XAENIAX
-	SMC_outb( saved_pnr, PN_REG );
-#else
-	/* On Xaeniax board, we can't use SMC_outb here because that way
-	 * the Allocate MMU command will end up written to the command register
-	 * as well, which will lead to a problem.
-	 */
-	SMC_outl(saved_pnr << 16, 0);
-#endif
-	SMC_outw( saved_ptr, PTR_REG );
-
-	return length;
-}
-
-/*-------------------------------------------------------------------------
- |
- | smc_destructor( struct net_device * dev )
- |   Input parameters:
- |	dev, pointer to the device structure
- |
- |   Output:
- |	None.
- |
- ---------------------------------------------------------------------------
-*/
-void smc_destructor()
-{
-	PRINTK2(CARDNAME ": smc_destructor\n");
-}
-
-
-/*
  * Open and Initialize the board
  *
  * Set up everything, reset the card, etc ..
  *
  */
-static int smc_open (bd_t * bd)
+static int smc91111_eth_open (struct eth_device *eth, bd_t * bd)
 {
-	int i, err;
+	PRINTK2 ("%s: smc91111_open\n", SMC_DEV_NAME);
 
-	PRINTK2 ("%s: smc_open\n", SMC_DEV_NAME);
-
-	/* reset the hardware */
-	smc_reset ();
-	smc_enable ();
+	SMC_SELECT_BANK( 0 );
+	/* see the header file for options in TCR/RCR DEFAULT*/
+	SMC_outw( TCR_DEFAULT, TCR_REG );
+	SMC_outw( RCR_DEFAULT, RCR_REG );
 
 	/* Configure the PHY */
 #ifndef CONFIG_SMC91111_EXT_PHY
 	smc_phy_configure ();
 #endif
 
-	/* conservative setting (10Mbps, HalfDuplex, no AutoNeg.) */
-/*	SMC_SELECT_BANK(0); */
-/*	SMC_outw(0, RPC_REG); */
-	SMC_SELECT_BANK (1);
-
-	err = smc_get_ethaddr (bd);	/* set smc_mac_addr, and sync it with u-boot globals */
-	if (err < 0) {
-		memset (bd->bi_enetaddr, 0, 6); /* hack to make error stick! upper code will abort if not set */
-		return (-1);	/* upper code ignores this, but NOT bi_enetaddr */
-	}
-#ifdef USE_32_BIT
-	for (i = 0; i < 6; i += 2) {
-		word address;
-
-		address = smc_mac_addr[i + 1] << 8;
-		address |= smc_mac_addr[i];
-		SMC_outw (address, (ADDR0_REG + i));
-	}
-#else
-	for (i = 0; i < 6; i++)
-		SMC_outb (smc_mac_addr[i], (ADDR0_REG + i));
-#endif
-
 	return 0;
 }
-
-/*-------------------------------------------------------------
- .
- . smc_rcv -  receive a packet from the card
- .
- . There is ( at least ) a packet waiting to be read from
- . chip-memory.
- .
- . o Read the status
- . o If an error, record it
- . o otherwise, read in the packet
- --------------------------------------------------------------
-*/
-static int smc_rcv()
-{
-	int	packet_number;
-	word	status;
-	word	packet_length;
-	int	is_error = 0;
-#ifdef USE_32_BIT
-	dword stat_len;
-#endif
-	byte saved_pnr;
-	word saved_ptr;
-
-	SMC_SELECT_BANK(2);
-	/* save PTR and PTR registers */
-	saved_pnr = SMC_inb( PN_REG );
-	saved_ptr = SMC_inw( PTR_REG );
-
-	packet_number = SMC_inw( RXFIFO_REG );
-
-	if ( packet_number & RXFIFO_REMPTY ) {
-
-		return 0;
-	}
-
-	PRINTK3("%s: smc_rcv\n", SMC_DEV_NAME);
-	/*  start reading from the start of the packet */
-	SMC_outw( PTR_READ | PTR_RCV | PTR_AUTOINC, PTR_REG );
-
-	/* First two words are status and packet_length */
-#ifdef USE_32_BIT
-	stat_len = SMC_inl(SMC91111_DATA_REG);
-	status = stat_len & 0xffff;
-	packet_length = stat_len >> 16;
-#else
-	status		= SMC_inw( SMC91111_DATA_REG );
-	packet_length	= SMC_inw( SMC91111_DATA_REG );
-#endif
-
-	packet_length &= 0x07ff;  /* mask off top bits */
-
-	PRINTK2("RCV: STATUS %4x LENGTH %4x\n", status, packet_length );
-
-	if ( !(status & RS_ERRORS ) ){
-		/* Adjust for having already read the first two words */
-		packet_length -= 4; /*4; */
-
-
-		/* set odd length for bug in LAN91C111, */
-		/* which never sets RS_ODDFRAME */
-		/* TODO ? */
-
-
-#ifdef USE_32_BIT
-		PRINTK3(" Reading %d dwords (and %d bytes) \n",
-			packet_length >> 2, packet_length & 3 );
-		/* QUESTION:  Like in the TX routine, do I want
-		   to send the DWORDs or the bytes first, or some
-		   mixture.  A mixture might improve already slow PIO
-		   performance	*/
-		SMC_insl( SMC91111_DATA_REG , NetRxPackets[0], packet_length >> 2 );
-		/* read the left over bytes */
-		if (packet_length & 3) {
-			int i;
-
-			byte *tail = (byte *)(NetRxPackets[0] + (packet_length & ~3));
-			dword leftover = SMC_inl(SMC91111_DATA_REG);
-			for (i=0; i<(packet_length & 3); i++)
-				*tail++ = (byte) (leftover >> (8*i)) & 0xff;
-		}
-#else
-		PRINTK3(" Reading %d words and %d byte(s) \n",
-			(packet_length >> 1 ), packet_length & 1 );
-		SMC_insw(SMC91111_DATA_REG , NetRxPackets[0], packet_length >> 1);
-
-#endif /* USE_32_BIT */
-
-#if	SMC_DEBUG > 2
-		printf("Receiving Packet\n");
-		print_packet( NetRxPackets[0], packet_length );
-#endif
-	} else {
-		/* error ... */
-		/* TODO ? */
-		is_error = 1;
-	}
-
-	while ( SMC_inw( MMU_CMD_REG ) & MC_BUSY )
-		udelay(1); /* Wait until not busy */
-
-	/*  error or good, tell the card to get rid of this packet */
-	SMC_outw( MC_RELEASE, MMU_CMD_REG );
-
-	while ( SMC_inw( MMU_CMD_REG ) & MC_BUSY )
-		udelay(1); /* Wait until not busy */
-
-	/* restore saved registers */
-#ifndef CONFIG_XAENIAX
-	SMC_outb( saved_pnr, PN_REG );
-#else
-	/* On Xaeniax board, we can't use SMC_outb here because that way
-	 * the Allocate MMU command will end up written to the command register
-	 * as well, which will lead to a problem.
-	 */
-	SMC_outl( saved_pnr << 16, 0);
-#endif
-	SMC_outw( saved_ptr, PTR_REG );
-
-	if (!is_error) {
-		/* Pass the packet up to the protocol layers. */
-		NetReceive(NetRxPackets[0], packet_length);
-		return packet_length;
-	} else {
-		return 0;
-	}
-
-}
-
-
-/*----------------------------------------------------
- . smc_close
- .
- . this makes the board clean up everything that it can
- . and not talk to the outside world.	Caused by
- . an 'ifconfig ethX down'
- .
- -----------------------------------------------------*/
-static int smc_close()
-{
-	PRINTK2("%s: smc_close\n", SMC_DEV_NAME);
-
-	/* clear everything */
-	smc_shutdown();
-
-	return 0;
-}
-
-
 
 /*---PHY CONTROL AND CONFIGURATION----------------------------------------- */
 
@@ -1260,18 +673,6 @@ static void smc_write_phy_register (byte phyreg, word phydata)
 }
 #endif /* !CONFIG_SMC91111_EXT_PHY */
 
-
-/*------------------------------------------------------------
- . Waits the specified number of milliseconds - kernel friendly
- .-------------------------------------------------------------*/
-#ifndef CONFIG_SMC91111_EXT_PHY
-static void smc_wait_ms(unsigned int ms)
-{
-	udelay(ms*1000);
-}
-#endif /* !CONFIG_SMC91111_EXT_PHY */
-
-
 /*------------------------------------------------------------
  . Configures the specified PHY using Autonegotiation. Calls
  . smc_phy_fixed() if the user has requested a certain config.
@@ -1296,7 +697,7 @@ static void smc_phy_configure ()
 	smc_write_phy_register (PHY_CNTL_REG, PHY_CNTL_RST);
 
 	/* Wait for the reset to complete, or time out */
-	timeout = 6;		/* Wait up to 3 seconds */
+	timeout = 3000000;	/* Wait up to 3 seconds */
 	while (timeout--) {
 		if (!(smc_read_phy_register (PHY_CNTL_REG)
 		      & PHY_CNTL_RST)) {
@@ -1304,7 +705,7 @@ static void smc_phy_configure ()
 			break;
 		}
 
-		smc_wait_ms (500);	/* wait 500 millisecs */
+		udelay(1);	/* wait 500 millisecs */
 	}
 
 	if (timeout < 1) {
@@ -1360,7 +761,7 @@ static void smc_phy_configure ()
 	/* Wait for the auto-negotiation to complete.  This may take from */
 	/* 2 to 3 seconds. */
 	/* Wait for the reset to complete, or time out */
-	timeout = CONFIG_SMC_AUTONEG_TIMEOUT * 2;
+	timeout = 10000000;
 	while (timeout--) {
 
 		status = smc_read_phy_register (PHY_STAT_REG);
@@ -1369,7 +770,7 @@ static void smc_phy_configure ()
 			break;
 		}
 
-		smc_wait_ms (500);	/* wait 500 millisecs */
+		udelay(1);
 
 		/* Restart auto-negotiation if remote fault */
 		if (status & PHY_STAT_REM_FLT) {
@@ -1444,108 +845,253 @@ static void print_packet( byte * buf, int length )
 }
 #endif
 
-int eth_init(bd_t *bd) {
-#ifdef SHARED_RESOURCES
-	swap_to(ETHERNET);
+static int smc91111_eth_init(struct eth_device *eth, bd_t *bd) {
+	smc_reset ();
+	return 0;
+}
+
+static void smc91111_eth_halt(struct eth_device *eth) {
+	/* no more interrupts for me */
+	SMC_SELECT_BANK( 2 );
+	SMC_outb( 0, IM_REG );
+
+	/* and tell the card to stay away from that nasty outside world */
+	SMC_SELECT_BANK( 0 );
+	SMC_outb( RCR_CLEAR, RCR_REG );
+	SMC_outb( TCR_CLEAR, TCR_REG );
+}
+
+static int smc91111_eth_rx(struct eth_device *eth) {
+	int	packet_number;
+	word	status;
+	word	packet_length;
+	int	is_error = 0;
+#ifdef USE_32_BIT
+	dword stat_len;
 #endif
-	return (smc_open(bd));
-}
 
-void eth_halt() {
-	smc_close();
-}
+	SMC_SELECT_BANK(2);
 
-int eth_rx() {
-	return smc_rcv();
-}
+	packet_number = SMC_inw( RXFIFO_REG );
 
-int eth_send(volatile void *packet, int length) {
-	return smc_send_packet(packet, length);
-}
+	if ( packet_number & RXFIFO_REMPTY )
+		return 0;
 
-int smc_get_ethaddr (bd_t * bd)
-{
-	int env_size, rom_valid, env_present = 0, reg;
-	char *s = NULL, *e, *v_mac, es[] = "11:22:33:44:55:66";
-	char s_env_mac[64];
-	uchar v_env_mac[6], v_rom_mac[6];
+	PRINTK3("%s: smc_rcv\n", SMC_DEV_NAME);
+	/*  start reading from the start of the packet */
+	SMC_outw( PTR_READ | PTR_RCV | PTR_AUTOINC, PTR_REG );
 
-	env_size = getenv_r ("ethaddr", s_env_mac, sizeof (s_env_mac));
-	if ((env_size > 0) && (env_size < sizeof (es))) {	/* exit if env is bad */
-		printf ("\n*** ERROR: ethaddr is not set properly!!\n");
-		return (-1);
-	}
-
-	if (env_size > 0) {
-		env_present = 1;
-		s = s_env_mac;
-	}
-
-	for (reg = 0; reg < 6; ++reg) { /* turn string into mac value */
-		v_env_mac[reg] = s ? simple_strtoul (s, &e, 16) : 0;
-		if (s)
-			s = (*e) ? e + 1 : e;
-	}
-
-	rom_valid = get_rom_mac (v_rom_mac);	/* get ROM mac value if any */
-
-	if (!env_present) {	/* if NO env */
-		if (rom_valid) {	/* but ROM is valid */
-			v_mac = (char *)v_rom_mac;
-			sprintf (s_env_mac, "%02X:%02X:%02X:%02X:%02X:%02X",
-				 v_mac[0], v_mac[1], v_mac[2], v_mac[3],
-				 v_mac[4], v_mac[5]);
-			setenv ("ethaddr", s_env_mac);
-		} else {	/* no env, bad ROM */
-			printf ("\n*** ERROR: ethaddr is NOT set !!\n");
-			return (-1);
-		}
-	} else {		/* good env, don't care ROM */
-		v_mac = (char *)v_env_mac;	/* always use a good env over a ROM */
-	}
-
-	if (env_present && rom_valid) { /* if both env and ROM are good */
-		if (memcmp (v_env_mac, v_rom_mac, 6) != 0) {
-			printf ("\nWarning: MAC addresses don't match:\n");
-			printf ("\tHW MAC address:  "
-				"%02X:%02X:%02X:%02X:%02X:%02X\n",
-				v_rom_mac[0], v_rom_mac[1],
-				v_rom_mac[2], v_rom_mac[3],
-				v_rom_mac[4], v_rom_mac[5] );
-			printf ("\t\"ethaddr\" value: "
-				"%02X:%02X:%02X:%02X:%02X:%02X\n",
-				v_env_mac[0], v_env_mac[1],
-				v_env_mac[2], v_env_mac[3],
-				v_env_mac[4], v_env_mac[5]) ;
-			debug ("### Set MAC addr from environment\n");
-		}
-	}
-	memcpy (bd->bi_enetaddr, v_mac, 6);	/* update global address to match env (allows env changing) */
-	smc_set_mac_addr ((uchar *)v_mac);	/* use old function to update smc default */
-	PRINTK("Using MAC Address %02X:%02X:%02X:%02X:%02X:%02X\n", v_mac[0], v_mac[1],
-		v_mac[2], v_mac[3], v_mac[4], v_mac[5]);
-	return (0);
-}
-
-int get_rom_mac (uchar *v_rom_mac)
-{
-#ifdef HARDCODE_MAC	/* used for testing or to supress run time warnings */
-	char hw_mac_addr[] = { 0x02, 0x80, 0xad, 0x20, 0x31, 0xb8 };
-
-	memcpy (v_rom_mac, hw_mac_addr, 6);
-	return (1);
+	/* First two words are status and packet_length */
+#ifdef USE_32_BIT
+	stat_len = SMC_inl(SMC91111_DATA_REG);
+	status = stat_len & 0xffff;
+	packet_length = stat_len >> 16;
 #else
+	status		= SMC_inw( SMC91111_DATA_REG );
+	packet_length	= SMC_inw( SMC91111_DATA_REG );
+#endif
+
+	packet_length &= 0x07ff;  /* mask off top bits */
+
+	PRINTK2("RCV: STATUS %4x LENGTH %4x\n", status, packet_length );
+
+	if ( !(status & RS_ERRORS ) ){
+		/* Adjust for having already read the first two words */
+		packet_length -= 4; /*4; */
+
+#ifdef USE_32_BIT
+		PRINTK3(" Reading %d dwords (and %d bytes) \n",
+			packet_length >> 2, packet_length & 3 );
+		/* QUESTION:  Like in the TX routine, do I want
+		   to send the DWORDs or the bytes first, or some
+		   mixture.  A mixture might improve already slow PIO
+		   performance	*/
+		SMC_insl( SMC91111_DATA_REG , NetRxPackets[0], packet_length >> 2 );
+		/* read the left over bytes */
+		if (packet_length & 3) {
+			int i;
+
+			byte *tail = (byte *)(NetRxPackets[0] + (packet_length & ~3));
+			dword leftover = SMC_inl(SMC91111_DATA_REG);
+			for (i=0; i<(packet_length & 3); i++)
+				*tail++ = (byte) (leftover >> (8*i)) & 0xff;
+		}
+#else
+		PRINTK3(" Reading %d words and %d byte(s) \n",
+			(packet_length >> 1 ), packet_length & 1 );
+		SMC_insw(SMC91111_DATA_REG , NetRxPackets[0], packet_length >> 1);
+
+#endif /* USE_32_BIT */
+		NetReceive(NetRxPackets[0], packet_length);
+
+	} else {
+		/* error ... */
+		/* TODO ? */
+		is_error = 1;
+	}
+
+	/*  error or good, tell the card to get rid of this packet */
+	SMC_outw( MC_RELEASE, MMU_CMD_REG );
+
+	return 0;
+}
+
+static int smc91111_eth_send(struct eth_device *eth, volatile void *packet, int packet_length) {
+	byte packet_no;
+	unsigned long ioaddr;
+	byte *buf;
+	int length;
+	int numPages;
+	int try = 0;
+	int time_out;
+	byte status;
+
+	SMC_SELECT_BANK (2);
+
+	PRINTK3 ("%s: smc_hardware_send_packet\n", SMC_DEV_NAME);
+
+	length = ETH_ZLEN < packet_length ? packet_length : ETH_ZLEN;
+
+	/* allocate memory
+	 ** The MMU wants the number of pages to be the number of 256 bytes
+	 ** 'pages', minus 1 ( since a packet can't ever have 0 pages :) )
+	 **
+	 ** The 91C111 ignores the size bits, but the code is left intact
+	 ** for backwards and future compatibility.
+	 **
+	 ** Pkt size for allocating is data length +6 (for additional status
+	 ** words, length and ctl!)
+	 **
+	 ** If odd size then last byte is included in this header.
+	 */
+	numPages = ((length & 0xfffe) + 6);
+	numPages >>= 8;		/* Divide by 256 */
+
+	if (numPages > 7) {
+		printf ("%s: Far too big packet error. \n", SMC_DEV_NAME);
+		return 0;
+	}
+
+	/* now, try to allocate the memory */
+	SMC_SELECT_BANK (2);
+	SMC_outw (MC_ALLOC | numPages, MMU_CMD_REG);
+
+	try++;
+	time_out = MEMORY_WAIT_TIME;
+	do {
+		status = SMC_inb (SMC91111_INT_REG);
+		if (status & IM_ALLOC_INT) {
+			/* acknowledge the interrupt */
+			SMC_outb (IM_ALLOC_INT, SMC91111_INT_REG);
+			break;
+		}
+	} while (--time_out);
+
+	if (!time_out) {
+		PRINTK2 ("%s: memory allocation, try %d failed ...\n");
+		return -1;
+	}
+
+	/* I can send the packet now.. */
+
+	ioaddr = SMC_BASE_ADDRESS;
+
+	buf = (byte *) packet;
+
+	/* If I get here, I _know_ there is a packet slot waiting for me */
+	packet_no = SMC_inb (AR_REG);
+	if (packet_no & AR_FAILED) {
+		/* or isn't there?  BAD CHIP! */
+		printf ("%s: Memory allocation failed. \n", SMC_DEV_NAME);
+		return 0;
+	}
+
+	/* we have a packet address, so tell the card to use it */
+	SMC_outb (packet_no, PN_REG);
+
+	/* point to the beginning of the packet */
+	SMC_outw (PTR_AUTOINC, PTR_REG);
+
+	PRINTK3 ("%s: Trying to xmit packet of length %x\n",
+		 SMC_DEV_NAME, length);
+
+	/* send the packet length ( +6 for status, length and ctl byte )
+	   and the status word ( set to zeros ) */
+#ifdef USE_32_BIT
+	SMC_outl ((length + 6) << 16, SMC91111_DATA_REG);
+#else
+	SMC_outw (0, SMC91111_DATA_REG);
+	/* send the packet length ( +6 for status words, length, and ctl */
+	SMC_outw ((length + 6), SMC91111_DATA_REG);
+#endif
+
+	/* send the actual data
+	   . I _think_ it's faster to send the longs first, and then
+	   . mop up by sending the last word.  It depends heavily
+	   . on alignment, at least on the 486.	 Maybe it would be
+	   . a good idea to check which is optimal?  But that could take
+	   . almost as much time as is saved?
+	 */
+#ifdef USE_32_BIT
+	SMC_outsl (SMC91111_DATA_REG, buf, length >> 2);
+
+	if (length & 0x2)
+		SMC_outw (*((word *) (buf + (length & 0xFFFFFFFC))),
+			  SMC91111_DATA_REG);
+#else
+	SMC_outsw (SMC91111_DATA_REG, buf, (length) >> 1);
+#endif /* USE_32_BIT */
+
+	/* Send the last byte, if there is one.	  */
+	if ((length & 1) == 0) {
+		SMC_outw (0, SMC91111_DATA_REG);
+	} else {
+		SMC_outw (buf[length - 1] | 0x2000, SMC91111_DATA_REG);
+	}
+
+	/* and let the chipset deal with it */
+	SMC_outw (MC_ENQUEUE, MMU_CMD_REG);
+
+	return length;
+}
+
+static int smc91111_get_mac_address (struct eth_device *eth, uchar *mac)
+{
 	int i;
 	int valid_mac = 0;
 
 	SMC_SELECT_BANK (1);
-	for (i=0; i<6; i++)
-	{
-		v_rom_mac[i] = SMC_inb ((ADDR0_REG + i));
-		valid_mac |= v_rom_mac[i];
+	for (i=0; i<6; i++) {
+		mac[i] = SMC_inb ((ADDR0_REG + i));
+		valid_mac |= mac[i];
 	}
 
-	return (valid_mac ? 1 : 0);
-#endif
+	printf ("MAC from EEPROM: %02X:%02X:%02X:%02X:%02X:%02X",
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	return (valid_mac ? 0 : 1);
 }
+
+static int smc91111_set_mac_address (struct eth_device *eth, uchar *mac)
+{
+	int i;
+
+	SMC_SELECT_BANK (1);
+
+	for (i = 0; i < 6; i++)
+		SMC_outb (mac[i], (ADDR0_REG + i));
+
+	return 0;
+}
+
+struct eth_device smc91111_eth = {
+	.init = smc91111_eth_init,
+	.open = smc91111_eth_open,
+	.send = smc91111_eth_send,
+	.recv = smc91111_eth_rx,
+	.halt = smc91111_eth_halt,
+	.get_mac_address = smc91111_get_mac_address,
+	.set_mac_address = smc91111_set_mac_address,
+};
+
 #endif /* CONFIG_DRIVER_SMC91111 */

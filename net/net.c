@@ -308,7 +308,7 @@ restart:
 #ifdef CONFIG_NET_MULTI
 	memcpy (NetOurEther, eth_get_dev()->enetaddr, 6);
 #else
-	memcpy (NetOurEther, bd->bi_enetaddr, 6);
+	memcpy (NetOurEther, &(eth_get_current()->enetaddr), 6);
 #endif
 
 	NetState = NETLOOP_CONTINUE;

@@ -3,7 +3,9 @@
 #include <command.h>
 #include <driver.h>
 #include <init.h>
+#include <malloc.h>
 #include <linux/ctype.h>
+#include <asm-generic/errno.h>
 
 int cmd_get_data_size(char* arg, int default_size)
 {
@@ -285,8 +287,13 @@ int spec_str_to_info(const char *str, struct memarea_info *info)
         info->device = device_from_spec_str(str, &endp);
         if (!info->device) {
                 printf("unknown device: %s\n", deviceid_from_spec_str(str, NULL));
-                return 1;
+                return -ENODEV;
         }
+
+	if (!info->device->driver) {
+		printf("no driver associated to device %s\n",deviceid_from_spec_str(str, NULL));
+		return -ENODEV;
+	}
 
         str = endp;
 

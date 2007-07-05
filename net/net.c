@@ -79,7 +79,6 @@
 #include <watchdog.h>
 #include <command.h>
 #include <net.h>
-#include <param.h>
 #include "bootp.h"
 #include "tftp.h"
 #include "rarp.h"
@@ -1374,6 +1373,7 @@ static int net_check_prereq (proto_t protocol)
 			puts ("*** ERROR: `serverip' not set\n");
 			return (1);
 		}
+    common:
 
 		if (NetOurIP == 0) {
 			puts ("*** ERROR: `ipaddr' not set\n");

@@ -3,6 +3,7 @@ obj-$(CONFIG_NET)		+= cmd_net.o
 obj-$(CONFIG_CMD_LOADB)		+= cmd_loadb.o xyzModem.o crc16.o
 obj-$(CONFIG_CMD_LOADS)		+= cmd_loads.o
 obj-$(CONFIG_CMD_AUTOSCRIPT)	+= cmd_autoscript.o
+obj-$(CONFIG_CMD_ECHO)		+= cmd_echo.o
 obj-$(CONFIG_CMD_FLASH)		+= cmd_flash.o
 obj-$(CONFIG_CMD_MEMORY)	+= cmd_mem.o
 obj-$(CONFIG_CMD_MII)		+= cmd_mii.o

@@ -3,8 +3,6 @@
 
 #include <common.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
 /*
   Emulation of sbrk for WIN32
   All code within the ifdef WIN32 is untested by me.
@@ -547,18 +545,15 @@ static mbinptr av_[NAV * 2 + 2] = {
  IAV(120), IAV(121), IAV(122), IAV(123), IAV(124), IAV(125), IAV(126), IAV(127)
 };
 
-void malloc_bin_reloc (void)
+void malloc_bin_reloc (ulong reloc_off)
 {
-#ifdef CONFIG_ARM
-	return;
-#else
 	unsigned long *p = (unsigned long *)(&av_[2]);
 	int i;
 	for (i=2; i<(sizeof(av_)/sizeof(mbinptr)); ++i) {
-		*p++ += gd->reloc_off;
+		*p++ += reloc_off;
 	}
-#endif
 }
+
 
 /* field-extraction macros */
 

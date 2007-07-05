@@ -109,16 +109,15 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	int	r, now;
 	int	ret = 0;
 	int fd;
-	char *filename;
+	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
 	int opt;
-	char *spec;
 
 	errno = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "bwl")) > 0) {
+	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
 		switch(opt) {
 		case 'b':
 			mode = O_RWSIZE_1;
@@ -128,33 +127,25 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			break;
 		case 'l':
 			mode = O_RWSIZE_4;
+			break;
+		case 'f':
+			filename = optarg;
+			break;
+		default:
+			return 1;
 		}
 	}
 
-	if (optind + 1 != argc) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	if ((spec = strchr(argv[optind], ':'))) {
-		*spec = 0;
-		filename = argv[optind];
-		spec++;
-	} else {
-		spec = argv[optind];
-		filename = "/dev/mem";
+	if (optind  < argc) {
+		parse_area_spec(argv[optind], &start, &size);
+		if (size == ~0)
+			size = 0x100;
 	}
 
 	fd = open(filename, mode | O_RDONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
-	}
-
-	if (*spec) {
-		parse_area_spec(spec, &start, &size);
-		if (size == ~0)
-			size = 0x100;
 	}
 
 	if (lseek(fd, start, SEEK_SET)) {
@@ -195,17 +186,16 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
-	char *filename;
+	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
 	int opt;
-	char *spec;
 	ulong adr;
 
 	errno = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "bwl")) > 0) {
+	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
 		switch(opt) {
 		case 'b':
 			mode = O_RWSIZE_1;
@@ -215,31 +205,27 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			break;
 		case 'l':
 			mode = O_RWSIZE_4;
+			break;
+		case 'f':
+			filename = optarg;
+			break;
+		default:
+			return 1;
 		}
 	}
 
-	if (optind + 2 >= argc) {
+	if (optind + 1 >= argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
-
-	if ((spec = strchr(argv[optind], ':'))) {
-		*spec = 0;
-		filename = argv[optind];
-		spec++;
-		adr = strtoul_suffix(spec, NULL, 0);
-	} else {
-		adr = strtoul_suffix(argv[optind], NULL, 0);
-		filename = "/dev/mem";
-	}
-
-	optind++;
 
 	fd = open(filename, mode | O_WRONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
 	}
+
+	adr = strtoul_suffix(argv[optind++], NULL, 0);
 
 	if (lseek(fd, adr, SEEK_SET)) {
 		perror("lseek");

@@ -93,7 +93,7 @@ static void refresh_line(struct line *line, int ypos)
 	char *str = screenline(line->data, NULL) + scrcol;
 	pos(0, ypos);
 	str[screenwidth] = 0;
-	printf("%-*s", screenwidth, str);
+	printf("%s%c[K", str, 27);
 	pos(cursx, cursy);
 }
 
@@ -133,7 +133,7 @@ static void refresh(int full)
 	i++;
 	while (i < screenheight) {
 		pos(0, i++);
-		printf("%-*s", screenwidth, "~");
+		printf("~");
 	}
 }
 

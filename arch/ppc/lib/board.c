@@ -111,7 +111,7 @@ void board_init_r (ulong end_of_ram)
 
         asm ("sync ; isync");
 
-        mem_malloc_init(end_of_ram - 4096 - CFG_MALLOC_LEN, end_of_ram - 4096);
+        mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));
 
         /* get gd and bd */
         gd = malloc(sizeof(gd_t));

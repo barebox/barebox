@@ -122,8 +122,10 @@ int ppc_mem_alloc_init(void)
 {
 	ulong dest_addr = CFG_MONITOR_BASE + gd->reloc_off;
 
-        mem_alloc_init(dest_addr - TOTAL_MALLOC_LEN,
+        mem_malloc_init(dest_addr - TOTAL_MALLOC_LEN,
 			dest_addr);
+
+	return 0;
 }
 
 core_initcall(ppc_mem_alloc_init);
@@ -344,28 +346,23 @@ PUTC(':');
 void board_init_r (gd_t *id, ulong dest_addr)
 {
 	cmd_tbl_t *cmdtp;
-	char *s, *e;
 	bd_t *bd;
+	initcall_t *initcall;
+	extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
 	int i;
 	extern void malloc_bin_reloc (void);
 PUTC('B');
-while(1);
 
 	gd = id;		/* initialize RAM version of global data */
 	bd = gd->bd;
 
 	gd->flags |= GD_FLG_RELOC;	/* tell others: relocation done */
-	gd->reloc_off = dest_addr - CFG_MONITOR_BASE;
+	gd->reloc_off = dest_addr;
+PUTC('\n');
+PUTHEX_LL(dest_addr);
 
-	debug ("Now running in RAM - U-Boot at: %08lx\n", dest_addr);
-
-	WATCHDOG_RESET ();
-
-#if defined(CONFIG_BOARD_EARLY_INIT_R)
-	board_early_init_r ();
-#endif
-
-	monitor_flash_len = (ulong)&__init_end - dest_addr;
+	for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++)
+		*initcall += gd->reloc_off;
 
 	/*
 	 * We have to relocate the command table manually
@@ -391,8 +388,6 @@ while(1);
 #endif
 	}
 
-	WATCHDOG_RESET ();
-
 	asm ("sync ; isync");
 
 	/*
@@ -400,16 +395,10 @@ while(1);
 	 */
 	trap_init (dest_addr);
 
-	WATCHDOG_RESET ();
-
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r ();
 
-	WATCHDOG_RESET ();
-
 	malloc_bin_reloc ();
-
-	WATCHDOG_RESET ();
 
 	/*
 	 * Enable Interrupts
@@ -422,20 +411,5 @@ while(1);
 
 	/* Initialization complete - start the monitor */
 
-	/* main_loop() can return to retry autoboot, if so just run it again. */
-	for (;;) {
-		WATCHDOG_RESET ();
-		main_loop ();
-	}
-
-	/* NOTREACHED - no way out of command loop except booting */
-}
-
-void hang (void)
-{
-	puts ("### ERROR ### Please RESET the board ###\n");
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-	show_boot_progress(-30);
-#endif
-	for (;;);
+	start_uboot();
 }

@@ -2,6 +2,7 @@
 #include <common.h>
 #include <command.h>
 #include <driver.h>
+#include <init.h>
 #include <linux/ctype.h>
 
 int cmd_get_data_size(char* arg, int default_size)
@@ -58,7 +59,9 @@ struct device_d *get_device_by_id(char *id)
 static int match(struct driver_d *drv, struct device_d *dev)
 {
         int(*handler)(struct device_d *);
-
+printf("match: 0x%p 0x%p\n", drv, dev);
+printf("match: %s %s\n",dev->name, drv->name);
+printf("match: probe: 0x%08x\n",drv->probe);
         if (strcmp(dev->name, drv->name))
                 return -1;
         if (dev->type != drv->type)
@@ -485,4 +488,11 @@ U_BOOT_CMD(
 	"devinfo     - display info about devices and drivers\n",
 	""
 );
+
+int dev_init(void) {
+	memset(device_handler, 0, sizeof(ulong) * MAX_DEVICE_TYPE);
+	return 0;
+}
+
+core_initcall(dev_init);
 

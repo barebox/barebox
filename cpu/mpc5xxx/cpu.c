@@ -138,6 +138,7 @@ static int mpc5xxx_bd_init(void)
 	bd->bi_mbar_base = CFG_MBAR;	/* base of internal registers */
 	bd->bi_ipbfreq = gd->ipb_clk;
 	bd->bi_pcifreq = gd->pci_clk;
+	return 0;
 }
 
 bd_initcall(mpc5xxx_bd_init);

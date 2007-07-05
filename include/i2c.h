@@ -50,7 +50,6 @@
  * Initialization, must be called once on start up, may be called
  * repeatedly to change the speed and slave addresses.
  */
-void i2c_init(int speed, int slaveaddr);
 #ifdef CFG_I2C_INIT_BOARD
 void i2c_init_board(void);
 #endif

@@ -211,7 +211,8 @@ int i2c_init(void)
 	struct mpc5xxx_i2c *regs = (struct mpc5xxx_i2c *)I2C_BASE;
 
 	mpc_reg_out(&regs->mcr, 0, 0);
-	mpc_reg_out(&regs->madr, saddr << 1, 0);
+#warning mpc5xxx i2c is broken
+//	mpc_reg_out(&regs->madr, saddr << 1, 0);
 
 	/* Set clock
 	 */

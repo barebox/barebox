@@ -368,7 +368,7 @@ void	icache_disable(void);
 int	dcache_status (void);
 void	dcache_enable (void);
 void	dcache_disable(void);
-//void	relocate_code (ulong, gd_t *, ulong);
+void	relocate_code (ulong, gd_t *, ulong);
 ulong	get_endaddr   (void);
 void	trap_init     (ulong);
 #if defined (CONFIG_4xx)	|| \
@@ -549,7 +549,6 @@ void	wait_ticks    (unsigned long);
 int	udelay	      (unsigned long);
 ulong	usec2ticks    (unsigned long usec);
 ulong	ticks2usec    (unsigned long ticks);
-int	init_timebase (void);
 
 /* lib_generic/vsprintf.c */
 ulong	simple_strtoul(const char *cp,char **endp,unsigned int base);
@@ -641,5 +640,7 @@ int spec_str_to_info(const char *str, struct memarea_info *info);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
+
+extern void start_uboot(void);
 
 #endif	/* __COMMON_H_ */

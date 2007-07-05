@@ -72,16 +72,6 @@
 	END_GOT
 
 /*
- * Version string
- */
-	.data
-	.globl	version_string
-version_string:
-	.ascii U_BOOT_VERSION
-	.ascii " (", __DATE__, " - ", __TIME__, ")"
-	.ascii CONFIG_IDENT_STRING, "\0"
-
-/*
  * Exception vectors
  */
 	.text

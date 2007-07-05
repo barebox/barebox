@@ -25,9 +25,9 @@ static void rawmode(void)
 {
 	tcgetattr(0, &term_orig);
 	term_vi = term_orig;
-	term_vi.c_lflag &= (~ICANON & ~ECHO & ~ISIG);	// leave ISIG ON- allow intr's
+	term_vi.c_lflag &= (~ICANON & ~ECHO & ~ISIG);
 	term_vi.c_iflag &= (~IXON & ~ICRNL);
-	term_vi.c_oflag &= (~ONLCR);
+	term_vi.c_oflag |= (ONLCR);
 	term_vi.c_cc[VMIN] = 1;
 	term_vi.c_cc[VTIME] = 0;
 	erase_char = term_vi.c_cc[VERASE];
@@ -51,19 +51,19 @@ void linux_putc (const char c)
 	fflush(stdout);
 }
 
-int linux_tstc (void)
+int linux_tstc (int fd)
 {
 	fd_set rfds;
 	struct timeval tv;
 	int ret;
 
 	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
+	FD_SET(fd, &rfds);
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 100;
 
-	ret = select(1, &rfds, NULL, NULL, &tv);
+	ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 
 	if (ret)
 		return 1;
@@ -148,9 +148,9 @@ ssize_t linux_write(int fd, const void *buf, size_t count)
 	return write(fd, buf, count);
 }
 
-off_t linux_lseek(int fildes, off_t offset)
+off_t linux_lseek(int fd, off_t offset)
 {
-	return lseek(fildes, offset, SEEK_SET);
+	return lseek(fd, offset, SEEK_SET);
 }
 
 void  flush_cache (unsigned long dummy1, unsigned long dummy2)
@@ -232,7 +232,11 @@ static void print_usage(const char *prgname)
 "  -e <file>   Map a file to U-Boot. With this option files are mapped as\n"
 "              /dev/env0 ... /dev/envx and thus are used as default\n"
 "              environment. An empty file generated with dd will do to get\n"
-"              started wth an empty environment\n",
+"              started wth an empty environment\n"
+"  -O <file>   Register file as a console capable of doing stdout. File can\n"
+"              be a regular file or a fifo.\n"
+"  -I <file>   Register file as a console capable of doing stdin. File can\n"
+"              be a regular file or a fifo.\n",
 	prgname
 	);
 }
@@ -240,9 +244,8 @@ static void print_usage(const char *prgname)
 int main(int argc, char *argv[])
 {
 	void *ram;
-	int opt;
+	int opt, ret, fd;
 	int malloc_size = 1024 * 1024;
-	int ret;
 
 	ram = malloc(malloc_size);
 	if (!ram) {
@@ -251,7 +254,7 @@ int main(int argc, char *argv[])
 	}
 	mem_malloc_init(ram, ram + malloc_size);
 
-	while ((opt = getopt(argc, argv, "hi:e:")) != -1) {
+	while ((opt = getopt(argc, argv, "hi:e:I:O:")) != -1) {
 		switch (opt) {
 		case 'h':
 			print_usage(basename(argv[0]));
@@ -273,8 +276,30 @@ int main(int argc, char *argv[])
 			if (ret)
 				exit(1);
 			break;
+		case 'O':
+			fd = open(optarg, O_WRONLY);
+			if (fd < 0) {
+				perror("open");
+				exit(1);
+			}
+
+			u_boot_register_console("cout", -1, fd);
+			break;
+		case 'I':
+			fd = open(optarg, O_RDWR);
+			if (fd < 0) {
+				perror("open");
+				exit(1);
+			}
+
+			u_boot_register_console("cin", fd, -1);
+			break;
+		default:
+			exit(1);
 		}
 	}
+
+	u_boot_register_console("console", 1, 0);
 
 	rawmode();
 	start_uboot();

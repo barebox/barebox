@@ -30,12 +30,6 @@
 #undef	_LINUX_CONFIG_H
 #define _LINUX_CONFIG_H 1	/* avoid reading Linux autoconf.h file	*/
 
-typedef unsigned char		uchar;
-typedef volatile unsigned long	vu_long;
-typedef volatile unsigned short vu_short;
-typedef volatile unsigned char	vu_char;
-typedef unsigned long          IPaddr_t;
-
 #include <config.h>
 #include <linux/bitops.h>
 #include <linux/types.h>

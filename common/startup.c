@@ -140,12 +140,6 @@ void start_uboot (void)
 		run_command("exec /env/init", 0);
 	}
 
-//	run_command("eth0.ip=172.0.0.2", 0);
-//	run_command("eth0.mac=80:81:82:83:84:85", 0);
-//	run_command("eth0.serverip=172.0.0.1", 0);
-//	run_command("eth0.gateway=172.0.0.1", 0);
-//	run_command("eth0.netmask=255.255.255.0", 0);
-
         /* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {
 		main_loop ();

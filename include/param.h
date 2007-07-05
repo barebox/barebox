@@ -1,14 +1,17 @@
 #ifndef PARAM_H
 #define PARAM_H
 
+#include <linux/types.h>
+
 #define PARAM_FLAG_RO	(1 << 0)
 
 struct device_d;
+typedef unsigned long          IPaddr_t;
 
 struct param_d {
 	char* (*get)(struct device_d *, struct param_d *param);
 	int (*set)(struct device_d *, struct param_d *param, const char *val);
-	ulong flags;
+	unsigned int flags;
 	char *name;
 	struct param_d *next;
 	char *value;

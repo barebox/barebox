@@ -25,6 +25,7 @@
 #include <common.h>
 #include <stdarg.h>
 #include <malloc.h>
+#include <param.h>
 #include <console.h>
 #include <exports.h>
 #include <serial.h>
@@ -33,16 +34,49 @@
 
 static struct console_device *first_console;
 
+static int console_std_set(struct device_d *dev, struct param_d *param, const char *val)
+{
+	struct console_device *cdev = dev->type_data;
+	unsigned int flag = 0, i = 0;
+
+	if (strchr(val, 'i') && cdev->f_caps & CONSOLE_STDIN) {
+		cdev->active[i++] = 'i';
+		flag |= CONSOLE_STDIN;
+	}
+
+	if (strchr(val, 'o') && cdev->f_caps & CONSOLE_STDOUT) {
+		cdev->active[i++] = 'o';
+		flag |= CONSOLE_STDOUT;
+	}
+
+	if (strchr(val, 'e') && cdev->f_caps & CONSOLE_STDERR) {
+		cdev->active[i++] = 'e';
+		flag |= CONSOLE_STDERR;
+	}
+
+	cdev->active[i] = 0;
+	cdev->f_active = flag;
+
+	return 0;
+}
+
 int console_register(struct console_device *newcdev)
 {
         struct console_device *cdev = first_console;
+	struct device_d *dev = newcdev->dev;
 
-        if (!first_console) {
+	newcdev->active_param.set = console_std_set;
+	newcdev->active_param.name  = "active";
+	newcdev->active_param.value = newcdev->active;
+	dev_add_param(dev, &newcdev->active_param);
+	console_std_set(dev, &newcdev->active_param, "ioe");
+
+	if (!first_console) {
 		first_console = newcdev;
-                return 0;
-        }
+		return 0;
+	}
 
-        while (1) {
+	while (1) {
                 if (!cdev->next) {
                         cdev->next = newcdev;
                         return 0;
@@ -57,7 +91,7 @@ int getc (void)
 	while (1) {
 		if (!cdev)
 			cdev = first_console;
-		if (cdev->flags & CONSOLE_STDIN && cdev->tstc(cdev))
+		if (cdev->f_active & CONSOLE_STDIN && cdev->tstc(cdev))
 			return cdev->getc(cdev);
 		cdev = cdev->next;
 	}
@@ -77,7 +111,7 @@ int tstc(void)
 	struct console_device *cdev = first_console;
 
 	while (cdev) {
-		if (cdev->flags & CONSOLE_STDIN && cdev->tstc(cdev))
+		if (cdev->f_active & CONSOLE_STDIN && cdev->tstc(cdev))
 			return 1;
 		cdev = cdev->next;
 	}
@@ -90,7 +124,7 @@ void console_putc(unsigned int ch, char c)
 	struct console_device *cdev = first_console;
 
 	while (cdev) {
-		if (cdev->flags & ch)
+		if (cdev->f_active & ch)
 			cdev->putc(cdev, c);
 		cdev = cdev->next;
 	}
@@ -112,12 +146,14 @@ void console_puts(unsigned int ch, const char *str)
 	struct console_device *cdev = first_console;
 
 	while (cdev) {
-		if (cdev->flags & ch) {
+		if (cdev->f_active & ch) {
 			const char *s = str;
 			while (*s) {
 				cdev->putc(cdev, *s);
-				if (*s++ == '\n')
+				if (*s == '\n') {
 					cdev->putc(cdev, '\r');
+				}
+				s++;
 			}
 		}
 		cdev = cdev->next;

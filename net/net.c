@@ -1587,7 +1587,7 @@ int string_to_enet_addr(const char *str, char *enetaddr)
 	ulong reg;
 	char *e;
 
-        if (strlen(str) != 17)
+        if (!str || strlen(str) != 17)
                 return -1;
 
         if (str[2] != ':' || str[5] != ':' || str[8] != ':' ||

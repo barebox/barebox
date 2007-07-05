@@ -12,7 +12,7 @@
 #ifndef __NET_H__
 #define __NET_H__
 
-#include <common.h>
+#include <linux/types.h>
 #include <param.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 

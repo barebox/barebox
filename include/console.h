@@ -24,17 +24,25 @@
 #ifndef _CONSOLE_H_
 #define _CONSOLE_H_
 
+#include <param.h>
+
 #define CONSOLE_STDIN           (1 << 0)
 #define CONSOLE_STDOUT          (1 << 1)
 #define CONSOLE_STDERR          (1 << 2)
 
 struct console_device {
 	struct device_d *dev;
-	unsigned long flags;
+
 	int (*tstc)(struct console_device *cdev);
 	void (*putc)(struct console_device *cdev, char c);
 	int  (*getc)(struct console_device *cdev);
 	struct console_device *next;
+
+	unsigned char f_caps;
+	unsigned char f_active;
+
+	struct param_d active_param;
+	char active[4];
 };
 
 int console_register(struct console_device *cdev);

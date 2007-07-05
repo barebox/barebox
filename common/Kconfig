@@ -105,11 +105,6 @@ config CMD_CONSOLE
 	bool
 	prompt "coninfo"
 
-config CMD_ENV
-	bool
-	default y
-	prompt "getenv/setenv"
-
 config CMD_HELP
 	bool
 	default y

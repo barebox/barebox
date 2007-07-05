@@ -10,6 +10,14 @@ ssize_t linux_write(int fd, const void *buf, size_t count);
 off_t linux_lseek(int fildes, off_t offset);
 int linux_getc (void);
 void linux_putc (const char c);
-int linux_tstc(void);
+int linux_tstc(int fd);
+
+int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd);
+
+struct linux_console_data {
+	int stdinfd;
+	int stdoutfd;
+	unsigned int flags;
+};
 
 #endif /* __ASM_ARCH_LINUX_H */

@@ -10,13 +10,16 @@
 #define DEVICE_TYPE_ETHER       1
 #define DEVICE_TYPE_STDIO       2
 #define DEVICE_TYPE_DRAM	3
-#define DEVICE_TYPE_FS		4
-#define MAX_DEVICE_TYPE         4
+#define DEVICE_TYPE_BLOCK	4
+#define DEVICE_TYPE_FS		5
+#define MAX_DEVICE_TYPE         5
 
 #include <param.h>
 
 struct device_d {
-	char name[MAX_DRIVER_NAME];
+	char name[MAX_DRIVER_NAME]; /* The name of this device. Used to match
+	                             * to the corresponding driver.
+				     */
         char id[MAX_DRIVER_NAME];
 
 	unsigned long size;
@@ -32,8 +35,7 @@ struct device_d {
 			      * points to the type specific device, i.e. eth_device
 			      */
 
-        /* The driver for this device */
-        struct driver_d *driver;
+        struct driver_d *driver; /* The driver for this device */
 
 	struct device_d *next;
 
@@ -43,8 +45,9 @@ struct device_d {
 };
 
 struct driver_d {
-	char name[MAX_DRIVER_NAME];
-
+	char name[MAX_DRIVER_NAME]; /* The name of this driver. Used to match to
+	                             * the corresponding device.
+				     */
 	struct driver_d *next;
 
         int     (*probe) (struct device_d *);
@@ -55,9 +58,6 @@ struct driver_d {
 
         void    (*info) (struct device_d *);
         void    (*shortinfo) (struct device_d *);
-
-	int	(*get) (struct device_d*, struct param_d *);
-	int	(*set) (struct device_d*, struct param_d *, value_t val);
 
         unsigned long type;
         void *type_data; /* In case this driver is of a specific type, i.e. a filesystem
@@ -77,6 +77,7 @@ struct device_d *get_device_by_name(char *name);
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
 struct device_d *get_first_device(void);
+int get_free_deviceid(char *id, char *id_template);
 
 struct driver_d *get_driver_by_name(char *name);
 

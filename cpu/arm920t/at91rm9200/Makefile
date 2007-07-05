@@ -6,3 +6,4 @@ obj-y			+= lowlevel_init.o
 obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= lxt972.o
 obj-y	+= serial.o
 # obj-y	+= usb_ohci.o
+

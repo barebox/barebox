@@ -32,6 +32,7 @@
 
 #include <common.h>
 #include <clock.h>
+#include <init.h>
 #include <asm/arch/hardware.h>
 
 AT91PS_TC tmr;
@@ -47,7 +48,7 @@ static struct clocksource cs = {
 	.shift	= 10,
 };
 
-int interrupt_init (void)
+static int clocksource_init (void)
 {
 	tmr = AT91C_BASE_TC0;
 
@@ -69,6 +70,8 @@ int interrupt_init (void)
 	init_clock(&cs);
 	return 0;
 }
+
+core_initcall(clocksource_init);
 
 /*
  * Reset the cpu by setting up the watchdog timer and let him time out

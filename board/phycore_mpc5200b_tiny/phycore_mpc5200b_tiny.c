@@ -35,6 +35,8 @@
 #include <pci.h>
 #include <asm/arch/fec.h>
 #include <types.h>
+#include <partition.h>
+#include <mem_malloc.h>
 
 #ifdef CONFIG_VIDEO_OPENIP
 #include <openip.h>
@@ -59,6 +61,14 @@ struct device_d sdram_dev = {
 
         .map_base = 0x0,
         .size     = 64 * 1024 * 1024,
+
+	.type     = DEVICE_TYPE_DRAM,
+};
+
+struct device_d scratch_dev = {
+        .name     = "ram",
+        .id       = "scratch0",
+	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct mpc5xxx_fec_platform_data fec_info = {
@@ -74,11 +84,20 @@ struct device_d eth_dev = {
         .type     = DEVICE_TYPE_ETHER,
 };
 
+#define SCRATCHMEM_SIZE (1024 * 1024 * 4)
+
 static int devices_init (void)
 {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&eth_dev);
+
+	scratch_dev.map_base = (unsigned long)sbrk_no_zero(SCRATCHMEM_SIZE);
+	scratch_dev.size = SCRATCHMEM_SIZE;
+	register_device(&scratch_dev);
+
+	dev_add_partition(&cfi_dev, 0x00f00000, 0x40000, "self");
+	dev_add_partition(&cfi_dev, 0x00f60000, 0x20000, "env");
 
 	return 0;
 }

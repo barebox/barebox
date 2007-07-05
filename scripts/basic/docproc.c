@@ -1,6 +1,6 @@
 /*
  *	docproc is a simple preprocessor for the template files
- *      used as placeholders for the kernel internal documentation.
+ *      used as placeholders for the uboot internal documentation.
  *	docproc is used for documentation-frontend and
  *      dependency-generator.
  *	The two usages have in common that they require

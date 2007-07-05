@@ -26,6 +26,8 @@
  */
 #include <common.h>
 #include <command.h>
+#include <asm-generic/errno.h>
+#include <driver.h>
 #include <net.h>
 
 extern int do_bootm (cmd_tbl_t *, int, int, char *[]);
@@ -148,6 +150,8 @@ static void netboot_update_env (void)
 #endif
 }
 
+struct memarea_info net_store_mem;
+
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -155,34 +159,22 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int   rcode = 0;
 	int   size;
 
+	if (argc < 3) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
 	/* pre-set load_addr */
 	if ((s = getenv("loadaddr")) != NULL) {
 		load_addr = simple_strtoul(s, NULL, 16);
 	}
 
-	switch (argc) {
-	case 1:
-		break;
-
-	case 2:	/* only one arg - accept two forms:
-		 * just load address, or just boot file name.
-		 * The latter form must be written "filename" here.
-		 */
-		if (argv[1][0] == '"') {	/* just boot filename */
-			copy_filename (BootFile, argv[1], sizeof(BootFile));
-		} else {			/* load address	*/
-			load_addr = simple_strtoul(argv[1], NULL, 16);
-		}
-		break;
-
-	case 3:	load_addr = simple_strtoul(argv[1], NULL, 16);
-		copy_filename (BootFile, argv[2], sizeof(BootFile));
-
-		break;
-
-	default: printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
+	if (spec_str_to_info(argv[1], &net_store_mem)) {
+		printf("-ENOPARSE\n");
+		return -ENODEV;
 	}
+
+	copy_filename (BootFile, argv[2], sizeof(BootFile));
 
 	if ((size = NetLoop(proto)) < 0)
 		return 1;

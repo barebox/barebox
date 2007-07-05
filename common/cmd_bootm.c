@@ -150,7 +150,8 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif
 	char buf[32];
 	int	i, verify;
-	char	*name, *s;
+	char	*name;
+	const char *s;
 	image_header_t *hdr = &header;
 
 	s = getenv ("verify");
@@ -546,7 +547,7 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 			strcpy (&cmdline[len], argv[i]);
 			len += strlen (argv[i]);
 		}
-	} else if ((cmdline = getenv("bootargs")) == NULL) {
+	} else if ((cmdline = (char *)getenv("bootargs")) == NULL) {
 		cmdline = "";
 	}
 #if 0
@@ -813,13 +814,13 @@ U_BOOT_CMD(
 void
 print_image_hdr (image_header_t *hdr)
 {
-#ifdef CONFIG_CMD_DATE || defined(CONFIG_TIMESTAMP)
+#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
 	time_t timestamp = (time_t)ntohl(hdr->ih_time);
 	struct rtc_time tm;
 #endif
 
 	printf ("   Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
-#ifdef CONFIG_CMD_DATE || defined(CONFIG_TIMESTAMP)
+#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
 	to_tm (timestamp, &tm);
 	printf ("   Created:      %4d-%02d-%02d  %2d:%02d:%02d UTC\n",
 		tm.tm_year, tm.tm_mon, tm.tm_mday,
@@ -1007,8 +1008,8 @@ static void
 do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 		ulong addr, ulong *len_ptr, int verify)
 {
-	image_header_t *hdr = &header;
 #if 0
+	image_header_t *hdr = &header;
 	void	(*entry_point)(bd_t *);
 
 	entry_point = (void (*)(bd_t *)) ntohl(hdr->ih_ep);

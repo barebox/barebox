@@ -6,6 +6,34 @@
 #include <malloc.h>
 #include <errno.h>
 #include <partition.h>
+#include <xfuncs.h>
+
+struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset, size_t size, char *name)
+{
+        struct partition *part;
+
+	if (offset + size > dev->size)
+		return NULL;
+
+	part = xzalloc(sizeof(struct partition));
+
+	strcpy(part->device.name, "partition");
+	part->device.map_base = dev->map_base + offset;
+	part->device.size = size;
+	part->device.type_data = part;
+	get_free_deviceid(part->device.id, name);
+
+	part->offset = offset;
+	part->physdev = dev;
+
+	register_device(&part->device);
+
+	if (part->device.driver)
+		return &part->device;
+
+	free(part);
+	return 0;
+}
 
 static void dev_del_partitions(struct device_d *dev)
 {
@@ -35,13 +63,13 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
 	memset(buf, 0, MAX_DRIVER_NAME);
 
         if (*str == '-') {
-                size = part->parent->size - part->offset;
+                size = part->physdev->size - part->offset;
 		end = (char *)str + 1;
         } else {
 		size = strtoul_suffix(str, &end, 0);
 	}
 
-	if (size + part->offset > part->parent->size) {
+	if (size + part->offset > part->physdev->size) {
 		printf("partition end is beyond device\n");
 		return -EINVAL;
 	}
@@ -111,7 +139,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 }
 
                 part->offset = offset;
-                part->parent = dev;
+                part->physdev = dev;
                 part->num = num;
                 part->device.map_base = dev->map_base + offset;
 
@@ -123,7 +151,7 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
                 offset += part->device.size;
 
-                part->device.platform_data = part;
+                part->device.type_data = part;
 
                 sprintf(part->device.id, "%s.%d", dev->id, num);
                 register_device(&part->device);
@@ -173,37 +201,37 @@ U_BOOT_CMD_START(delpart)
 	.usage		= "delpart     - delete a partition table from a device\n",
 U_BOOT_CMD_END
 
-int part_probe (struct device_d *dev)
+static int part_probe(struct device_d *dev)
 {
-        struct partition *part = dev->platform_data;
+        struct partition *part = dev->type_data;
 
         printf("registering partition %s on device %s (size=0x%08x, name=%s)\n",
-                        dev->id, part->parent->id, dev->size, part->name);
+                        dev->id, part->physdev->id, dev->size, part->name);
         return 0;
 }
 
-int part_erase(struct device_d *dev, size_t count, unsigned long offset)
+static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
-        struct partition *part = dev->platform_data;
+        struct partition *part = dev->type_data;
 
-        if (part->parent->driver->erase)
-                return part->parent->driver->erase(part->parent, count, offset + part->offset);
+        if (part->physdev->driver->erase)
+                return part->physdev->driver->erase(part->physdev, count, offset + part->offset);
 
         return -1;
 }
 
-ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+static ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        struct partition *part = dev->platform_data;
+        struct partition *part = dev->type_data;
 
-        return dev_read(part->parent, buf, count, offset + part->offset, flags);
+        return dev_read(part->physdev, buf, count, offset + part->offset, flags);
 }
 
-ssize_t part_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
+static ssize_t part_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        struct partition *part = dev->platform_data;
+        struct partition *part = dev->type_data;
 
-        return dev_write(part->parent, buf, count, offset + part->offset, flags);
+        return dev_write(part->physdev, buf, count, offset + part->offset, flags);
 }
 
 struct driver_d part_driver = {

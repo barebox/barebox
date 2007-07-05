@@ -355,7 +355,7 @@ TftpStart (void)
 	TftpTimeoutCount = 0;
 	TftpState = STATE_RRQ;
 	/* Use a pseudo-random port unless a specific port is set */
-	TftpOurPort = 1024 + ((int)get_time_ns() % 3072);
+	TftpOurPort = 1024 + ((unsigned int)get_time_ns() % 3072);
 #ifdef CONFIG_TFTP_PORT
 	if ((ep = getenv("tftpdstp")) != NULL) {
 		TftpServerPort = simple_strtol(ep, NULL, 10);

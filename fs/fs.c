@@ -128,10 +128,6 @@ static FILE* get_file_by_pathname(const char *pathname)
 		return NULL;
 	}
 
-	if (!strncmp(pathname, "/dev/", 5)) {
-		f->dev = get_device_by_id(pathname + 5);
-	}
-
 	return f;
 }
 
@@ -174,9 +170,6 @@ int open(const char *pathname, int flags)
 
 	f = get_file_by_pathname(pathname);
 
-	if (f->dev)
-		return f->no;
-
 	e = get_mtab_entry_by_path(pathname);
 	if (!e) {
 		/* This can only happen when nothing is mounted */
@@ -192,6 +185,7 @@ int open(const char *pathname, int flags)
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 	f->dev = dev;
+	f->flags = flags;
 
 	if ((flags & O_ACCMODE) && !fsdrv->write) {
 		errno = -EROFS;
@@ -231,17 +225,13 @@ int read(int fd, void *buf, size_t count)
 
 	dev = f->dev;
 	printf("READ: dev: %p\n",dev);
-	if (dev->type == DEVICE_TYPE_FS) {
-		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-		printf("\nreading %d bytes at %d\n",count, f->pos);
-		if (f->pos + count > f->size)
-			count = f->size - f->pos;
-		errno = fsdrv->read(dev, f, buf, count);
-	} else {
-		if (f->pos + count > dev->size)
-			count = dev->size - f->pos;
-		errno = dev->driver->read(dev, buf, count, f->pos, 0); /* FIXME: flags */
-	}
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	printf("\nreading %d bytes at %d\n",count, f->pos);
+	if (f->pos + count > f->size)
+		count = f->size - f->pos;
+	errno = fsdrv->read(dev, f, buf, count);
+
 	if (errno > 0)
 		f->pos += errno;
 	return errno;
@@ -255,22 +245,48 @@ ssize_t write(int fd, const void *buf, size_t count)
 
 	dev = f->dev;
 	printf("WRITE: dev: %p\n",dev);
-	if (dev->type == DEVICE_TYPE_FS) {
-		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-		if (f->pos + count > f->size) {
-			errno = fsdrv->truncate(dev, f, f->pos + count);
-			if (errno)
-				return errno;
-			f->size = f->pos + count;
-		}
-		errno = fsdrv->write(dev, f, buf, count);
-	} else {
-		if (f->pos + count > dev->size)
-			count = dev->size - f->pos;
-		errno = dev->driver->write(dev, buf, count, f->pos, 0); /* FIXME: flags */
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	if (f->pos + count > f->size) {
+		errno = fsdrv->truncate(dev, f, f->pos + count);
+		if (errno)
+			return errno;
+		f->size = f->pos + count;
 	}
+	errno = fsdrv->write(dev, f, buf, count);
+
 	if (errno > 0)
 		f->pos += errno;
+	return errno;
+}
+
+off_t lseek(int fildes, off_t offset, int whence)
+{
+	FILE *f = &files[fildes];
+	errno = 0;
+
+	switch(whence) {
+	case SEEK_SET:
+		if (offset > f->size)
+			goto out;
+		f->pos = offset;
+		break;
+	case SEEK_CUR:
+		if (offset + f->pos > f->size)
+			goto out;
+		f->pos += offset;
+		break;
+	case SEEK_END:
+		if (offset)
+			goto out;
+		f->pos = f->size;
+		break;
+	default:
+		goto out;
+	}
+
+	return 0;
+out:
+	errno = -EINVAL;
 	return errno;
 }
 
@@ -282,16 +298,14 @@ int close(int fd)
 
 	dev = f->dev;
 
-	if (dev->type == DEVICE_TYPE_FS) {
-		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-		errno = fsdrv->close(dev, f);
-	}
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	errno = fsdrv->close(dev, f);
 
 	put_file(f);
 	return errno;
 }
 
-int mount (struct device_d *dev, char *fsname, char *path)
+int mount(struct device_d *dev, char *fsname, char *path)
 {
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
@@ -420,14 +434,18 @@ struct dir *opendir(const char *pathname)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	struct dir *dir;
+	struct dir *dir = NULL;
 	struct mtab_entry *e;
+	char *p = strdup(pathname);
+	char *freep = p;
 
-	e = get_mtab_entry_by_path(pathname);
+	normalise_path(p);
+
+	e = get_mtab_entry_by_path(p);
 	if (!e)
-		return NULL;
+		goto out;
 	if (e != mtab)
-		pathname += strlen(e->path);
+		p += strlen(e->path);
 
 	dev = e->dev;
 //	printf("opendir: dev: %p\n",dev);
@@ -435,12 +453,14 @@ struct dir *opendir(const char *pathname)
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 //	printf("opendir: fsdrv: %p\n",fsdrv);
 
-	dir = fsdrv->opendir(dev, pathname);
+	dir = fsdrv->opendir(dev, p);
 	if (dir) {
 		dir->dev = dev;
 		dir->fsdrv = fsdrv;
 	}
 
+out:
+	free(freep);
 	return dir;
 }
 
@@ -471,10 +491,12 @@ int stat(const char *filename, struct stat *s)
 		errno = -ENOENT;
 		goto out;
 	}
-	if (e != mtab)
-		f += strlen(e->path);
 
-	dev = e->dev;
+	if (e != mtab && strcmp(f, e->path)) {
+		f += strlen(e->path);
+		dev = e->dev;
+	} else
+		dev = mtab->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
@@ -485,37 +507,6 @@ int stat(const char *filename, struct stat *s)
 out:
 	free(buf);
 	return errno;
-}
-
-int ls(const char *path)
-{
-	struct dir *dir;
-	struct dirent *d;
-	char modestr[11];
-	char tmp[PATH_MAX];
-	struct stat s;
-
-	dir = opendir(path);
-	if (!dir) {
-		errno = -ENOENT;
-		return -ENOENT;
-	}
-
-	while ((d = readdir(dir))) {
-		unsigned long namelen = strlen(d->name);
-		sprintf(tmp, "%s/%s", path, d->name);
-		if (stat(tmp, &s)) {
-			perror("stat");
-			return errno;
-		}
-
-		mkmodestr(s.st_mode, modestr);
-		printf("%s %8d %*.*s\n",modestr, s.st_size, namelen, namelen, d->name);
-	}
-
-	closedir(dir);
-
-	return 0;
 }
 
 int mkdir (const char *pathname)
@@ -537,8 +528,10 @@ int mkdir (const char *pathname)
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
-	if (fsdrv->mkdir)
-		return fsdrv->mkdir(dev, pathname);
+	if (fsdrv->mkdir) {
+		errno = fsdrv->mkdir(dev, pathname);
+		return errno;
+	}
 
 	errno = -EROFS;
 	return -EROFS;

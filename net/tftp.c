@@ -7,6 +7,7 @@
 #include <common.h>
 #include <command.h>
 #include <net.h>
+#include <driver.h>
 #include <clock.h>
 #include "tftp.h"
 #include "bootp.h"

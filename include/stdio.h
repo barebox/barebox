@@ -2,6 +2,7 @@
 #define __STDIO_H
 
 #include <stdarg.h>
+#include <console.h>
 
 /*
  * STDIO based functions (can always be used)
@@ -11,24 +12,33 @@
 void	serial_printf (const char *fmt, ...);
 
 /* stdin */
-int	getc(void);
 int	tstc(void);
 
 /* stdout */
-void	putc(const char c);
-void	puts(const char *s);
+void	console_putc(unsigned int ch, const char c);
+int	getc(void);
+void	console_puts(unsigned int ch, const char *s);
+
+static inline void puts(const char *s) {
+	return console_puts(CONSOLE_STDOUT, s);
+}
+
+static inline void putc(char c) {
+	console_putc(CONSOLE_STDOUT, c);
+}
+
 void	printf(const char *fmt, ...);
 void	vprintf(const char *fmt, va_list args);
 int	sprintf(char * buf, const char *fmt, ...);
 int	vsprintf(char *buf, const char *fmt, va_list args);
 
 /* stderr */
-#define eputc(c)		fputc(stderr, c)
-#define eputs(s)		fputs(stderr, s)
+#define eputc(c)		console_putc(CONSOLE_STDERR, c)
+#define eputs(s)		console_puts(CONSOLE_STDERR, s)
 #define eprintf(fmt,args...)	fprintf(stderr,fmt ,##args)
 
 /*
- * FILE based functions (can only be used AFTER relocation!)
+ * FILE based functions
  */
 
 #define stdin		0
@@ -37,8 +47,8 @@ int	vsprintf(char *buf, const char *fmt, va_list args);
 #define MAX_FILES	16
 
 void	fprintf(int file, const char *fmt, ...);
-void	fputs(int file, const char *s);
-void	fputc(int file, const char c);
+int	fputs(int file, const char *s);
+int	fputc(int file, const char c);
 int	ftstc(int file);
 int	fgetc(int file);
 

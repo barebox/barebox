@@ -45,9 +45,11 @@ struct fs_driver_d {
 	char *name;
 	int (*probe) (struct device_d *dev);
 	int (*mkdir)(struct device_d *dev, const char *pathname);
+	int (*rmdir)(struct device_d *dev, const char *pathname);
 
 	/* create a file. The file is guaranteed to not exist */
 	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
+	int (*unlink)(struct device_d *dev, const char *pathname);
 
 	/* Truncate a file to given size */
 	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
@@ -76,6 +78,7 @@ struct fs_device_d {
 
 int open(const char *pathname, int flags);
 int creat(const char *pathname, mode_t mode);
+int unlink(const char *pathname);
 int close(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
@@ -88,6 +91,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 off_t lseek(int fildes, off_t offset, int whence);
 int ls(const char *path, ulong flags);
 int mkdir (const char *pathname);
+int rmdir (const char *pathname);
 int mount (struct device_d *dev, char *fsname, char *path);
 int umount(const char *pathname);
 
@@ -98,11 +102,13 @@ int closedir(struct dir *dir);
 char *mkmodestr(unsigned long mode, char *str);
 
 struct mtab_entry *get_mtab_entry_by_path(const char *path);
+struct mtab_entry *mtab_next_entry(struct mtab_entry *entry);
 
 struct mtab_entry {
 	char path[PATH_MAX];
 	struct mtab_entry *next;
 	struct device_d *dev;
+	struct device_d *parent_device;
 };
 
 void normalise_path(char *path);

@@ -1,7 +1,11 @@
-menuconfig COMMANDS
-	bool "Commands"
 
-if COMMANDS
+config ZLIB
+	bool
+
+config BZLIB
+	bool
+
+menu "Commands"
 
 config COMMON_ENV_FLASH
 	bool
@@ -44,4 +48,28 @@ config CMD_SAVES
 	depends on CMD_LOADS
 	prompt "saves"
 
-endif
+config CMD_SPLASH
+	bool
+	prompt "splash"
+
+config CMD_SLEEP
+	bool
+	prompt "sleep"
+
+config CMD_BOOTM
+	bool
+	prompt "bootm"
+
+config CMD_BOOTM_ZLIB
+	bool
+	depends on CMD_BOOTM
+	select ZLIB
+	prompt "bootm with zlib support"
+
+config CMD_BOOTM_BZLIB
+	bool
+	depends on CMD_BOOTM
+	select BZLIB
+	prompt "bootm with bzlib support"
+
+endmenu

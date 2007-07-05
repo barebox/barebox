@@ -635,4 +635,19 @@ void	show_boot_progress (int status);
  */
 int cmd_get_data_size(char* arg, int default_size);
 
+#define MEMAREA_SIZE_SPECIFIED 1
+
+struct memarea_info {
+        struct device_d *device;
+	unsigned long start;
+	unsigned long end;
+	unsigned long size;
+        unsigned long flags;
+};
+
+int spec_str_to_info(const char *str, struct memarea_info *info);
+
+/* Just like simple_strtoul(), but this one honors a K/M/G suffix */
+unsigned long strtoul_suffix(const char *str, char **endp, int base);
+
 #endif	/* __COMMON_H_ */

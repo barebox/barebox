@@ -44,6 +44,9 @@
 #include <devices.h>
 #include <version.h>
 #include <net.h>
+#include <cfi_flash.h>
+
+ulong load_addr = CFG_LOAD_ADDR;               /* Default Load Address */
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -185,6 +188,8 @@ static void display_flash_config (ulong size)
  */
 typedef int (init_fnc_t) (void);
 
+extern int mem_init(void);
+
 int print_cpuinfo (void); /* test-only */
 
 init_fnc_t *init_sequence[] = {
@@ -195,6 +200,12 @@ init_fnc_t *init_sequence[] = {
 	init_baudrate,		/* initialze baudrate settings */
 	serial_init,		/* serial communications setup */
 	console_init_f,		/* stage 1 init of console */
+#ifdef CONFIG_DRIVER_CFI
+        flash_init,
+#endif
+#ifdef CONFIG_CMD_MEMORY
+        mem_init,
+#endif
 	display_banner,		/* say that we are here */
 #if defined(CONFIG_DISPLAY_CPUINFO)
 	print_cpuinfo,		/* display cpu info (and speed) */
@@ -237,8 +248,7 @@ void start_armboot (void)
 
 #ifndef CFG_NO_FLASH
 	/* configure available FLASH banks */
-	size = flash_init ();
-	display_flash_config (size);
+//	display_flash_config (size);
 #endif /* CFG_NO_FLASH */
 
 #ifdef CONFIG_VFD
@@ -283,11 +293,7 @@ void start_armboot (void)
 	drv_vfd_init();
 #endif /* CONFIG_VFD */
 
-	devices_init ();	/* get the devices list going. */
-
 	jumptable_init ();
-
-	console_init_r ();	/* fully init console as a device */
 
 #if defined(CONFIG_MISC_INIT_R)
 	/* miscellaneous platform dependent initialisations */

@@ -24,12 +24,15 @@
 #ifndef _FLASH_H_
 #define _FLASH_H_
 
+#include <driver.h>
+
 #ifndef CFG_NO_FLASH
 /*-----------------------------------------------------------------------
  * FLASH Info: contains chip specific data, per FLASH bank
  */
 
 typedef struct {
+	struct driver_d driver;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/
@@ -82,9 +85,7 @@ typedef struct {
 #define CFI_FLASH_SHIFT_WIDTH	3
 /* Prototypes */
 
-extern unsigned long flash_init (void);
 extern void flash_print_info (flash_info_t *);
-extern int flash_erase	(flash_info_t *, int, int);
 extern int flash_sect_erase (ulong addr_first, ulong addr_last);
 extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
 

@@ -29,27 +29,13 @@
 
 #include <common.h>
 #include <command.h>
-#if (CONFIG_COMMANDS & CFG_CMD_MMC)
-#include <mmc.h>
-#endif
-#ifdef CONFIG_HAS_DATAFLASH
-#include <dataflash.h>
-#endif
+#include <driver.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
 #else
 #define PRINTF(fmt,args...)
 #endif
-
-static int mod_mem(cmd_tbl_t *, int, int, int, char *[]);
-
-/* Display values from last command.
- * Memory modify remembered values are different from display memory.
- */
-uint	dp_last_addr, dp_last_size;
-uint	dp_last_length = 0x40;
-uint	mm_last_addr, mm_last_size;
 
 /* Memory Display
  *
@@ -59,79 +45,53 @@ uint	mm_last_addr, mm_last_size;
 #define DISP_LINE_LEN	16
 int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	addr, length;
-	ulong	i, nbytes, linebytes;
+	ulong	addr, offs;
+	ulong	i, nbytes = 0x100, linebytes;
+        struct memarea_info mem;
 	u_char	*cp;
 	int	size;
 	int rc = 0;
-
-	/* We use the last specified parameters, unless new ones are
-	 * entered.
-	 */
-	addr = dp_last_addr;
-	size = dp_last_size;
-	length = dp_last_length;
 
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	if ((flag & CMD_FLAG_REPEAT) == 0) {
-		/* New command specified.  Check for a size specification.
-		 * Defaults to long if no or incorrect specification.
-		 */
-		if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-			return 1;
+        if (spec_str_to_info(argv[1], &mem)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
 
-		/* Address is specified since argc > 1
-		*/
-		addr = simple_strtoul(argv[1], NULL, 16);
+        offs = mem.start;
+        if (mem.device->map_flags & MAP_READ)
+                addr = mem.device->map_base + offs;
+        else {
+                printf("cannot yet show unmapped devices\n");
+                return -1;
+        }
 
-		/* If another parameter, it is the length to display.
-		 * Length is the number of objects, not number of bytes.
-		 */
-		if (argc > 2)
-			length = simple_strtoul(argv[2], NULL, 16);
-	}
+        if (mem.flags & MEMAREA_SIZE_SPECIFIED)
+                nbytes = mem.size;
+        else
+                nbytes = min(0x100, mem.size);
 
-	/* Print the lines.
+	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
+		return 1;
+
+        /* Print the lines.
 	 *
 	 * We buffer all read data, so we can make sure data is read only
 	 * once, and all accesses are with the specified bus width.
 	 */
-	nbytes = length * size;
 	do {
 		char	linebuf[DISP_LINE_LEN];
 		uint	*uip = (uint   *)linebuf;
 		ushort	*usp = (ushort *)linebuf;
 		u_char	*ucp = (u_char *)linebuf;
-#ifdef CONFIG_HAS_DATAFLASH
-		int rc;
-#endif
-		printf("%08lx:", addr);
+
+                printf("%08lx:", offs);
 		linebytes = (nbytes>DISP_LINE_LEN)?DISP_LINE_LEN:nbytes;
 
-#ifdef CONFIG_HAS_DATAFLASH
-		if ((rc = read_dataflash(addr, (linebytes/size)*size, linebuf)) == DATAFLASH_OK){
-			/* if outside dataflash */
-			/*if (rc != 1) {
-				dataflash_perror (rc);
-				return (1);
-			}*/
-			for (i=0; i<linebytes; i+= size) {
-				if (size == 4) {
-					printf(" %08x", *uip++);
-				} else if (size == 2) {
-					printf(" %04x", *usp++);
-				} else {
-					printf(" %02x", *ucp++);
-				}
-				addr += size;
-			}
-
-		} else {	/* addr does not correspond to DataFlash */
-#endif
 		for (i=0; i<linebytes; i+= size) {
 			if (size == 4) {
 				printf(" %08x", (*uip++ = *((uint *)addr)));
@@ -141,11 +101,10 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 				printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
 			addr += size;
+                        offs += size;
 		}
-#ifdef CONFIG_HAS_DATAFLASH
-		}
-#endif
-		puts ("    ");
+
+                puts ("    ");
 		cp = (u_char *)linebuf;
 		for (i=0; i<linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))
@@ -162,24 +121,13 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 	} while (nbytes > 0);
 
-	dp_last_addr = addr;
-	dp_last_length = length;
-	dp_last_size = size;
 	return (rc);
-}
-
-int do_mem_mm ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return mod_mem (cmdtp, 1, flag, argc, argv);
-}
-int do_mem_nm ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	return mod_mem (cmdtp, 0, flag, argc, argv);
 }
 
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	addr, writeval, count;
+        struct memarea_info mem;
 	int	size;
 
 	if ((argc < 3) || (argc > 4)) {
@@ -192,9 +140,18 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if ((size = cmd_get_data_size(argv[0], 4)) < 1)
 		return 1;
 
-	/* Address is specified since argc > 1
-	*/
-	addr = simple_strtoul(argv[1], NULL, 16);
+        if (spec_str_to_info(argv[1], &mem)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
+        addr = mem.start;
+
+        if (mem.device->map_flags & MAP_WRITE)
+                addr += mem.device->map_base;
+        else {
+                printf("cannot yet modify unmapped devices\n");
+                return -1;
+        }
 
 	/* Get the value to write.
 	*/
@@ -301,13 +258,6 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	count = simple_strtoul(argv[3], NULL, 16);
 
-#ifdef CONFIG_HAS_DATAFLASH
-	if (addr_dataflash(addr1) | addr_dataflash(addr2)){
-		puts ("Comparison with DataFlash space not supported.\n\r");
-		return 0;
-	}
-#endif
-
 	ngood = 0;
 
 	while (count-- > 0) {
@@ -358,9 +308,11 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	addr, dest, count;
+        struct memarea_info dst, src;
+
 	int	size;
 
-	if (argc != 4) {
+	if (argc != 3) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
@@ -370,122 +322,49 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
 		return 1;
 
-	addr = simple_strtoul(argv[1], NULL, 16);
+        if (spec_str_to_info(argv[1], &src)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
 
-	dest = simple_strtoul(argv[2], NULL, 16);
+        if (spec_str_to_info(argv[2], &dst)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
 
-	count = simple_strtoul(argv[3], NULL, 16);
+        if (!src.size && !dst.size) {
+                printf("no size given. We should copy the whole device\n");
+                return 1;
+        }
 
-	if (count == 0) {
-		puts ("Zero length ???\n");
-		return 1;
-	}
+        if (!src.size || !dst.size)
+                count = dst.size | src.size;
+        else
+                count = min(src.size, dst.size);
 
-#ifndef CFG_NO_FLASH
-	/* check if we are copying to Flash */
-	if ( (addr2info(dest) != NULL)
-#ifdef CONFIG_HAS_DATAFLASH
-	   && (!addr_dataflash(addr))
-#endif
-	   ) {
-		int rc;
+        count /= size;
 
-		puts ("Copy to Flash... ");
+        if ((dst.device->map_flags & MAP_WRITE) &&
+            (src.device->map_flags & MAP_READ)) {
+                addr = src.device->map_base + src.start;
+                dest  = dst.device->map_base + dst.start;
+                printf("copy from 0x%08x to 0x%08x count %d\n",addr, dest, count);
 
-		rc = flash_write ((char *)addr, dest, count*size);
-		if (rc != 0) {
-			flash_perror (rc);
-			return (1);
-		}
-		puts ("done\n");
-		return 0;
-	}
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_MMC)
-	if (mmc2info(dest)) {
-		int rc;
-
-		puts ("Copy to MMC... ");
-		switch (rc = mmc_write ((uchar *)addr, dest, count*size)) {
-		case 0:
-			putc ('\n');
-			return 1;
-		case -1:
-			puts ("failed\n");
-			return 1;
-		default:
-			printf ("%s[%d] FIXME: rc=%d\n",__FILE__,__LINE__,rc);
-			return 1;
-		}
-		puts ("done\n");
-		return 0;
-	}
-
-	if (mmc2info(addr)) {
-		int rc;
-
-		puts ("Copy from MMC... ");
-		switch (rc = mmc_read (addr, (uchar *)dest, count*size)) {
-		case 0:
-			putc ('\n');
-			return 1;
-		case -1:
-			puts ("failed\n");
-			return 1;
-		default:
-			printf ("%s[%d] FIXME: rc=%d\n",__FILE__,__LINE__,rc);
-			return 1;
-		}
-		puts ("done\n");
-		return 0;
-	}
-#endif
-
-#ifdef CONFIG_HAS_DATAFLASH
-	/* Check if we are copying from RAM or Flash to DataFlash */
-	if (addr_dataflash(dest) && !addr_dataflash(addr)){
-		int rc;
-
-		puts ("Copy to DataFlash... ");
-
-		rc = write_dataflash (dest, addr, count*size);
-
-		if (rc != 1) {
-			dataflash_perror (rc);
-			return (1);
-		}
-		puts ("done\n");
-		return 0;
-	}
-
-	/* Check if we are copying from DataFlash to RAM */
-	if (addr_dataflash(addr) && !addr_dataflash(dest) && (addr2info(dest)==NULL) ){
-		int rc;
-		rc = read_dataflash(addr, count * size, (char *) dest);
-		if (rc != 1) {
-			dataflash_perror (rc);
-			return (1);
-		}
-		return 0;
-	}
-
-	if (addr_dataflash(addr) && addr_dataflash(dest)){
-		puts ("Unsupported combination of source/destination.\n\r");
-		return 1;
-	}
-#endif
-
-	while (count-- > 0) {
-		if (size == 4)
-			*((ulong  *)dest) = *((ulong  *)addr);
-		else if (size == 2)
-			*((ushort *)dest) = *((ushort *)addr);
-		else
-			*((u_char *)dest) = *((u_char *)addr);
-		addr += size;
-		dest += size;
-	}
+	        while (count-- > 0) {
+		        if (size == 4)
+			        *((ulong  *)dest) = *((ulong  *)addr);
+		        else if (size == 2)
+			        *((ushort *)dest) = *((ushort *)addr);
+		        else
+			        *((u_char *)dest) = *((u_char *)addr);
+		        addr += size;
+		        dest += size;
+        	}
+                return 0;
+        } else {
+                printf("can not yet copy to unmapped devices\n");
+                return -1;
+        }
 	return 0;
 }
 
@@ -873,109 +752,6 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif
 }
 
-
-/* Modify memory.
- *
- * Syntax:
- *	mm{.b, .w, .l} {addr}
- *	nm{.b, .w, .l} {addr}
- */
-static int
-mod_mem(cmd_tbl_t *cmdtp, int incrflag, int flag, int argc, char *argv[])
-{
-	ulong	addr, i;
-	int	nbytes, size;
-	extern char console_buffer[];
-
-	if (argc != 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-#ifdef CONFIG_BOOT_RETRY_TIME
-	reset_cmd_timeout();	/* got a good command to get here */
-#endif
-	/* We use the last specified parameters, unless new ones are
-	 * entered.
-	 */
-	addr = mm_last_addr;
-	size = mm_last_size;
-
-	if ((flag & CMD_FLAG_REPEAT) == 0) {
-		/* New command specified.  Check for a size specification.
-		 * Defaults to long if no or incorrect specification.
-		 */
-		if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-			return 1;
-
-		/* Address is specified since argc > 1
-		*/
-		addr = simple_strtoul(argv[1], NULL, 16);
-	}
-
-#ifdef CONFIG_HAS_DATAFLASH
-	if (addr_dataflash(addr)){
-		puts ("Can't modify DataFlash in place. Use cp instead.\n\r");
-		return 0;
-	}
-#endif
-
-	/* Print the address, followed by value.  Then accept input for
-	 * the next value.  A non-converted value exits.
-	 */
-	do {
-		printf("%08lx:", addr);
-		if (size == 4)
-			printf(" %08x", *((uint   *)addr));
-		else if (size == 2)
-			printf(" %04x", *((ushort *)addr));
-		else
-			printf(" %02x", *((u_char *)addr));
-
-		nbytes = readline (" ? ");
-		if (nbytes == 0 || (nbytes == 1 && console_buffer[0] == '-')) {
-			/* <CR> pressed as only input, don't modify current
-			 * location and move to next. "-" pressed will go back.
-			 */
-			if (incrflag)
-				addr += nbytes ? -size : size;
-			nbytes = 1;
-#ifdef CONFIG_BOOT_RETRY_TIME
-			reset_cmd_timeout(); /* good enough to not time out */
-#endif
-		}
-#ifdef CONFIG_BOOT_RETRY_TIME
-		else if (nbytes == -2) {
-			break;	/* timed out, exit the command	*/
-		}
-#endif
-		else {
-			char *endp;
-			i = simple_strtoul(console_buffer, &endp, 16);
-			nbytes = endp - console_buffer;
-			if (nbytes) {
-#ifdef CONFIG_BOOT_RETRY_TIME
-				/* good enough to not time out
-				 */
-				reset_cmd_timeout();
-#endif
-				if (size == 4)
-					*((uint   *)addr) = i;
-				else if (size == 2)
-					*((ushort *)addr) = i;
-				else
-					*((u_char *)addr) = i;
-				if (incrflag)
-					addr += size;
-			}
-		}
-	} while (nbytes);
-
-	mm_last_addr = addr;
-	mm_last_size = size;
-	return 0;
-}
-
 #ifndef CONFIG_CRC32_VERIFY
 
 int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -1061,24 +837,44 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 #endif	/* CONFIG_CRC32_VERIFY */
 
+int mem_probe(struct device_d *dev)
+{
+        printf("mem_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+
+        dev->map_flags = MAP_READ | MAP_WRITE;
+
+        return 0;
+}
+
+struct device_d mem_dev = {
+        .name  = "mem",
+        .map_base = 0,
+        .size   = ~0, /* FIXME: should be 0x100000000, ahem... */
+        .map_flags = MAP_READ | MAP_WRITE,
+};
+
+struct driver_d mem_drv = {
+        .name  = "mem",
+        .probe = mem_probe,
+};
+
+struct driver_d ram_drv = {
+        .name  = "ram",
+        .probe = mem_probe,
+};
+
+int mem_init(void)
+{
+        register_device(&mem_dev);
+        register_driver(&mem_drv);
+        register_driver(&ram_drv);
+        return 0;
+}
+
 U_BOOT_CMD(
 	md,     3,     1,      do_mem_md,
 	"md      - memory display\n",
 	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
-);
-
-
-U_BOOT_CMD(
-	mm,     2,      1,       do_mem_mm,
-	"mm      - memory modify (auto-incrementing)\n",
-	"[.b, .w, .l] address\n" "    - memory modify, auto increment address\n"
-);
-
-
-U_BOOT_CMD(
-	nm,     2,	    1,     	do_mem_nm,
-	"nm      - memory modify (constant address)\n",
-	"[.b, .w, .l] address\n    - memory modify, read and keep address\n"
 );
 
 U_BOOT_CMD(

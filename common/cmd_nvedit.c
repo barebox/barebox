@@ -55,10 +55,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #if !defined(CFG_ENV_IS_IN_NVRAM)	&& \
     !defined(CFG_ENV_IS_IN_EEPROM)	&& \
     !defined(CFG_ENV_IS_IN_FLASH)	&& \
-    !defined(CFG_ENV_IS_IN_DATAFLASH)	&& \
     !defined(CFG_ENV_IS_IN_NAND)	&& \
     !defined(CFG_ENV_IS_NOWHERE)
-# error Define one of CFG_ENV_IS_IN_{NVRAM|EEPROM|FLASH|DATAFLASH|NOWHERE}
+# error Define one of CFG_ENV_IS_IN_{NVRAM|EEPROM|FLASH|NOWHERE}
 #endif
 
 #define XMK_STR(x)	#x
@@ -155,10 +154,8 @@ int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 int _do_setenv (int flag, int argc, char *argv[])
 {
 	int   i, len, oldval;
-	int   console = -1;
 	uchar *env, *nxt = NULL;
 	char *name;
-	bd_t *bd = gd->bd;
 
 	uchar *env_data = env_get_addr(0);
 
@@ -203,31 +200,6 @@ int _do_setenv (int flag, int argc, char *argv[])
 			return 1;
 		}
 #endif
-
-		/* Check for console redirection */
-		if (strcmp(name,"stdin") == 0) {
-			console = stdin;
-		} else if (strcmp(name,"stdout") == 0) {
-			console = stdout;
-		} else if (strcmp(name,"stderr") == 0) {
-			console = stderr;
-		}
-
-		if (console != -1) {
-			if (argc < 3) {		/* Cannot delete it! */
-				printf("Can't delete \"%s\"\n", name);
-				return 1;
-			}
-
-			/* Try assigning specified device */
-			if (console_assign (console, argv[2]) < 0)
-				return 1;
-
-#ifdef CONFIG_SERIAL_MULTI
-			if (serial_assign (argv[2]) < 0)
-				return 1;
-#endif
-		}
 
 		/*
 		 * Switch to new baudrate if new baudrate is supported
@@ -336,33 +308,6 @@ int _do_setenv (int flag, int argc, char *argv[])
 	 * entry in the enviornment is changed
 	 */
 
-	if (strcmp(argv[1],"ethaddr") == 0) {
-		char *s = argv[2];	/* always use only one arg */
-		char *e;
-		for (i=0; i<6; ++i) {
-			bd->bi_enetaddr[i] = s ? simple_strtoul(s, &e, 16) : 0;
-			if (s) s = (*e) ? e+1 : e;
-		}
-#ifdef CONFIG_NET_MULTI
-		eth_set_enetaddr(0, argv[2]);
-#endif
-		return 0;
-	}
-
-	if (strcmp(argv[1],"ipaddr") == 0) {
-		char *s = argv[2];	/* always use only one arg */
-		char *e;
-		unsigned long addr;
-		bd->bi_ip_addr = 0;
-		for (addr=0, i=0; i<4; ++i) {
-			ulong val = s ? simple_strtoul(s, &e, 10) : 0;
-			addr <<= 8;
-			addr  |= (val & 0xFF);
-			if (s) s = (*e) ? e+1 : e;
-		}
-		bd->bi_ip_addr = htonl(addr);
-		return 0;
-	}
 	if (strcmp(argv[1],"loadaddr") == 0) {
 		load_addr = simple_strtoul(argv[2], NULL, 16);
 		return 0;
@@ -373,17 +318,6 @@ int _do_setenv (int flag, int argc, char *argv[])
 		return 0;
 	}
 #endif	/* CFG_CMD_NET */
-
-#ifdef CONFIG_AMIGAONEG3SE
-	if (strcmp(argv[1], "vga_fg_color") == 0 ||
-	    strcmp(argv[1], "vga_bg_color") == 0 ) {
-		extern void video_set_color(unsigned char attr);
-		extern unsigned char video_get_attr(void);
-
-		video_set_color(video_get_attr());
-		return 0;
-	}
-#endif	/* CONFIG_AMIGAONEG3SE */
 
 	return 0;
 }

@@ -5,6 +5,7 @@ config HAS_AT91_ETHER
 	bool
 
 menu "Network drivers"
+	depends on NET
 
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"

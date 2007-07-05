@@ -176,10 +176,10 @@ int saveenv(void)
 	puts ("Erasing Flash...");
 	debug (" %08lX ... %08lX ...",
 		(ulong)flash_addr_new, end_addr_new);
-
-	if (flash_sect_erase ((ulong)flash_addr_new, end_addr_new)) {
-		goto Done;
-	}
+#warning saveenv is broken
+//	if (flash_sect_erase ((ulong)flash_addr_new, end_addr_new)) {
+//		goto Done;
+//	}
 
 	puts ("Writing to Flash... ");
 	debug (" %08lX ... %08lX ...",
@@ -232,8 +232,8 @@ Done:
 	if (saved_data)
 		free (saved_data);
 	/* try to re-protect */
-	(void) flash_sect_protect (1, (ulong)flash_addr, end_addr);
-	(void) flash_sect_protect (1, (ulong)flash_addr_new, end_addr_new);
+//	(void) flash_sect_protect (1, (ulong)flash_addr, end_addr);
+//	(void) flash_sect_protect (1, (ulong)flash_addr_new, end_addr_new);
 
 	return rc;
 }
@@ -302,12 +302,12 @@ int saveenv(void)
 	debug ("Protect off %08lX ... %08lX\n",
 		(ulong)flash_sect_addr, end_addr);
 
-	if (flash_sect_protect (0, flash_sect_addr, end_addr))
-		return 1;
+//	if (flash_sect_protect (0, flash_sect_addr, end_addr))
+//		return 1;
 
 	puts ("Erasing Flash...");
-	if (flash_sect_erase (flash_sect_addr, end_addr))
-		return 1;
+//	if (flash_sect_erase (flash_sect_addr, end_addr))
+//		return 1;
 
 	puts ("Writing to Flash... ");
 	rc = flash_write((char *)env_buffer, flash_sect_addr, len);
@@ -319,7 +319,7 @@ int saveenv(void)
 	}
 
 	/* try to re-protect */
-	(void) flash_sect_protect (1, flash_sect_addr, end_addr);
+//	(void) flash_sect_protect (1, flash_sect_addr, end_addr);
 	return rcode;
 }
 

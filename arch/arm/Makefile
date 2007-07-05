@@ -13,7 +13,7 @@ cpu-$(CONFIG_ARM920T)              := arm920t
 TEXT_BASE = 0x21e00000
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE)
-CFLAGS := -fno-common -msoft-float -O2
+CFLAGS := -fno-common -msoft-float -Os
 LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
 
 ifeq ($(incdir-y),)

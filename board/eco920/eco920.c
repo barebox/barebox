@@ -26,9 +26,10 @@
 #include <at91rm9200_net.h>
 #include <dm9161.h>
 #include <miiphy.h>
-//#include <splash.h>
-//#include <s1d13706fb.h>
+#include <splash.h>
+#include <s1d13706fb.h>
 #include <net.h>
+#include <cfi_flash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -37,10 +38,30 @@ DECLARE_GLOBAL_DATA_PTR;
  * Miscelaneous platform dependent initialisations
  */
 
+struct cfi_platform_data cfi_info = {
+};
+
+struct device_d cfi_dev = {
+        .name     = "nor",
+
+        .map_base = 0x11000000,
+        .size     = 16 * 1024 * 1024,
+
+        .platform_data = &cfi_info,
+};
+
+struct device_d sdram_dev = {
+        .name     = "ram",
+
+        .map_base = 0x20000000,
+        .size     = 32 * 1024 * 1024,
+};
+
 int board_init (void)
 {
 	/* Enable Ctrlc */
 	console_init_f ();
+
 
 	gd->bd->bi_arch_number = MACH_TYPE_ECO920;
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
@@ -50,17 +71,20 @@ int board_init (void)
 
 int dram_init (void)
 {
+	register_device(&cfi_dev);
+	register_device(&sdram_dev);
+
 	gd->bd->bi_dram[0].start = PHYS_SDRAM;
 	gd->bd->bi_dram[0].size = PHYS_SDRAM_SIZE;
 	return 0;
 }
 
+#ifdef CONFIG_DRIVER_NET_AT91_ETHER
 static unsigned int phy_is_connected (AT91PS_EMAC p_mac)
 {
 	return 1;
 }
 
-#if 0
 static unsigned char phy_init_bogus (AT91PS_EMAC p_mac)
 {
 	unsigned short val;
@@ -139,9 +163,10 @@ void at91rm9200_GetPhyInterface(AT91PS_PhyOps p_phyops)
 	/* ditto */
 	p_phyops->AutoNegotiate = NULL;
 }
+#endif
 
-
-static int *efb_init(struct efb_info *efb)
+#ifdef CONFIG_DRIVER_VIDEO_S1D13706
+static int efb_init(struct efb_info *efb)
 {
 	writeb(GPIO_CONTROL0_GPO, efb->regs + EFB_GPIO_CONTROL1);
 	writeb(PCLK_SOURCE_CLKI2, efb->regs + EFB_PCLK_CONF);
@@ -174,18 +199,21 @@ static struct efb_info efb = {
 				  PANEL_TYPE_COLOR | PANEL_TYPE_FORMAT_2,
 };
 #endif
-
 #define SMC_CSR3	0xFFFFFF7C
 
 int misc_init_r(void)
 {
 	/* Initialization of the Static Memory Controller for Chip Select 3 */
 	*(volatile unsigned long*)SMC_CSR3 = 0x00002185;
-
-//	s1d13706fb_init(&efb);
-//	splash_set_fb_data(&efb.fbd);
-
-//	eth_set_current(&at91rm9200_eth);
+#ifdef CONFIG_DRIVER_VIDEO_S1D13706
+	s1d13706fb_init(&efb);
+#endif
+#ifdef CONFIG_CMD_SPLASH
+	splash_set_fb_data(&efb.fbd);
+#endif
+#ifdef CONFIG_DRIVER_NET_AT91_ETHER
+	eth_set_current(&at91rm9200_eth);
+#endif
 	return 0;
 }
 

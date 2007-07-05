@@ -91,14 +91,6 @@
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 /* #define CONFIG_ENV_OVERWRITE	1 */
 
-#if 0
-#define CONFIG_COMMANDS \
-			(CFG_CMD_CONSOLE | CFG_CMD_LOADB | \
-			CFG_CMD_LOADS | CFG_CMD_MEMORY | CFG_CMD_ENV | \
-			CFG_CMD_RUN | CFG_CMD_FLASH | CFG_CMD_MISC | \
- 			CFG_CMD_NET | \
-			CFG_CMD_BOOTD | CFG_CMD_DHCP)
-#endif
 #define CONFIG_CMDLINE_EDITING  1
 
 #define	CONFIG_EXTRA_ENV_SETTINGS											\
@@ -151,7 +143,6 @@
 #define CFG_MAXARGS		32		/* max number of command args */
 #define CFG_PBSIZE		(CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
 
-#define CFG_HZ			1000
 #define CLOCK_TICK_RATE		AT91C_MASTER_CLOCK/2	/* AT91C_TC0_CMR is implicitly set to */
 							/* AT91C_TC_TIMER_DIV1_CLOCK */
 

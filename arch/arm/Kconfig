@@ -23,6 +23,7 @@ config MACH_MX1ADS
 config MACH_ECO920
 	bool "eco920"
 	select HAS_AT91_ETHER
+	select HAS_AT91_I2C
 	select HAS_CFI
 	select ARCH_AT91RM9200
 	help
@@ -34,4 +35,5 @@ config ARM920T
 	bool
 
 source common/Kconfig
+source net/Kconfig
 source drivers/Kconfig

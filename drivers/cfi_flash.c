@@ -39,7 +39,7 @@
 #include <asm/byteorder.h>
 #include <environment.h>
 #include <clock.h>
-#ifdef	CFG_FLASH_CFI_DRIVER
+#include <cfi_flash.h>
 
 /*
  * This file implements a Common Flash Interface (CFI) driver for U-Boot.
@@ -158,15 +158,6 @@ typedef union {
 
 static uint flash_offset_cfi[2]={FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT};
 
-/* use CFG_MAX_FLASH_BANKS_DETECT if defined */
-#ifdef CFG_MAX_FLASH_BANKS_DETECT
-static ulong bank_base[CFG_MAX_FLASH_BANKS_DETECT] = CFG_FLASH_BANKS_LIST;
-flash_info_t flash_info[CFG_MAX_FLASH_BANKS_DETECT];	/* FLASH chips info */
-#else
-static ulong bank_base[CFG_MAX_FLASH_BANKS] = CFG_FLASH_BANKS_LIST;
-flash_info_t flash_info[CFG_MAX_FLASH_BANKS];		/* FLASH chips info */
-#endif
-
 /*
  * Check if chip width is defined. If not, start detecting with 8bit.
  */
@@ -193,7 +184,7 @@ static int flash_detect_cfi (flash_info_t * info);
 static int flash_write_cfiword (flash_info_t * info, ulong dest, cfiword_t cword);
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
 				    uint64_t tout, char *prompt);
-ulong flash_get_size (ulong base, int banknum);
+ulong flash_get_size (flash_info_t *info, ulong base);
 #if defined(CFG_ENV_IS_IN_FLASH) || defined(CFG_ENV_ADDR_REDUND) || (CFG_MONITOR_BASE >= CFG_FLASH_BASE)
 static flash_info_t *flash_get_info(ulong base);
 #endif
@@ -331,176 +322,111 @@ ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
 
 /*-----------------------------------------------------------------------
  */
-unsigned long flash_init (void)
+int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
-	int i;
+        struct cfi_platform_data *pdev = (struct cfi_platform_data *)dev->platform_data;
+        flash_info_t *info = &pdev->finfo;
 
-#ifdef CFG_FLASH_PROTECTION
-	char *s = getenv("unlock");
-#endif
+        dev->map_flags = MAP_READ;
+
+        printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
 
 	/* Init: no FLASHes known */
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; ++i) {
-		flash_info[i].flash_id = FLASH_UNKNOWN;
-		size += flash_info[i].size = flash_get_size (bank_base[i], i);
-		if (flash_info[i].flash_id == FLASH_UNKNOWN) {
+	info->flash_id = FLASH_UNKNOWN;
+	size += info->size = flash_get_size(info, dev->map_base);
+	if (info->flash_id == FLASH_UNKNOWN) {
 #ifndef CFG_FLASH_QUIET_TEST
-			printf ("## Unknown FLASH on Bank %d - Size = 0x%08lx = %ld MB\n",
-				i+1, flash_info[i].size, flash_info[i].size << 20);
+		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
+			dev->map_base, info->size, info->size << 20);
 #endif /* CFG_FLASH_QUIET_TEST */
-		}
-#ifdef CFG_FLASH_PROTECTION
-		else if ((s != NULL) && (strcmp(s, "yes") == 0)) {
-			/*
-			 * Only the U-Boot image and it's environment is protected,
-			 * all other sectors are unprotected (unlocked) if flash
-			 * hardware protection is used (CFG_FLASH_PROTECTION) and
-			 * the environment variable "unlock" is set to "yes".
-			 */
-			if (flash_info[i].legacy_unlock) {
-				int k;
-
-				/*
-				 * Disable legacy_unlock temporarily, since
-				 * flash_real_protect would relock all other sectors
-				 * again otherwise.
-				 */
-				flash_info[i].legacy_unlock = 0;
-
-				/*
-				 * Legacy unlocking (e.g. Intel J3) -> unlock only one
-				 * sector. This will unlock all sectors.
-				 */
-				flash_real_protect (&flash_info[i], 0, 0);
-
-				flash_info[i].legacy_unlock = 1;
-
-				/*
-				 * Manually mark other sectors as unlocked (unprotected)
-				 */
-				for (k = 1; k < flash_info[i].sector_count; k++)
-					flash_info[i].protect[k] = 0;
-			} else {
-				/*
-				 * No legancy unlocking -> unlock all sectors
-				 */
-				flash_protect (FLAG_PROTECT_CLEAR,
-					       flash_info[i].start[0],
-					       flash_info[i].start[0] + flash_info[i].size - 1,
-					       &flash_info[i]);
-			}
-		}
-#endif /* CFG_FLASH_PROTECTION */
 	}
 
-	/* Monitor protection ON by default */
-#if (CFG_MONITOR_BASE >= CFG_FLASH_BASE)
-	flash_protect (FLAG_PROTECT_SET,
-		       CFG_MONITOR_BASE,
-		       CFG_MONITOR_BASE + monitor_flash_len  - 1,
-		       flash_get_info(CFG_MONITOR_BASE));
-#endif
-
-	/* Environment protection ON by default */
-#ifdef CFG_ENV_IS_IN_FLASH
-	flash_protect (FLAG_PROTECT_SET,
-		       CFG_ENV_ADDR,
-		       CFG_ENV_ADDR + CFG_ENV_SECT_SIZE - 1,
-		       flash_get_info(CFG_ENV_ADDR));
-#endif
-
-	/* Redundant environment protection ON by default */
-#ifdef CFG_ENV_ADDR_REDUND
-	flash_protect (FLAG_PROTECT_SET,
-		       CFG_ENV_ADDR_REDUND,
-		       CFG_ENV_ADDR_REDUND + CFG_ENV_SIZE_REDUND - 1,
-		       flash_get_info(CFG_ENV_ADDR_REDUND));
-#endif
-	return (size);
+	return 0;
 }
 
-/*-----------------------------------------------------------------------
- */
-#if defined(CFG_ENV_IS_IN_FLASH) || defined(CFG_ENV_ADDR_REDUND) || (CFG_MONITOR_BASE >= CFG_FLASH_BASE)
-static flash_info_t *flash_get_info(ulong base)
+static int flash_find_sector(flash_info_t * info, unsigned long adr)
 {
-	int i;
-	flash_info_t * info = 0;
+        int i;
+        unsigned long end;
 
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; i ++) {
-		info = & flash_info[i];
-		if (info->size && info->start[0] <= base &&
-		    base <= info->start[0] + info->size - 1)
-			break;
-	}
-
-	return i == CFG_MAX_FLASH_BANKS ? 0 : info;
+        for (i = 0; i < info->sector_count; i++) {
+                if (i == info->sector_count)
+                        end = info->start[0] + info->size - 1;
+                else
+                        end = info->start[i + 1] - 1;
+                if (adr >= info->start[i] && adr <= end)
+                        return i;
+        }
+        return -1;
 }
-#endif
 
 /*-----------------------------------------------------------------------
  */
-int flash_erase (flash_info_t * info, int s_first, int s_last)
+int flash_erase_one (flash_info_t * info, long sect)
 {
 	int rcode = 0;
-	int prot;
-	flash_sect_t sect;
 
-	if (info->flash_id != FLASH_MAN_CFI) {
-		puts ("Can't erase unknown flash type - aborted\n");
-		return 1;
+	switch (info->vendor) {
+	case CFI_CMDSET_INTEL_STANDARD:
+	case CFI_CMDSET_INTEL_EXTENDED:
+		flash_write_cmd (info, sect, 0, FLASH_CMD_CLEAR_STATUS);
+		flash_write_cmd (info, sect, 0, FLASH_CMD_BLOCK_ERASE);
+		flash_write_cmd (info, sect, 0, FLASH_CMD_ERASE_CONFIRM);
+		break;
+	case CFI_CMDSET_AMD_STANDARD:
+	case CFI_CMDSET_AMD_EXTENDED:
+		flash_unlock_seq (info, sect);
+		flash_write_cmd (info, sect, AMD_ADDR_ERASE_START,
+					AMD_CMD_ERASE_START);
+		flash_unlock_seq (info, sect);
+		flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
+		break;
+	default:
+		debug ("Unkown flash vendor %d\n",
+		       info->vendor);
+		break;
 	}
-	if ((s_first < 0) || (s_first > s_last)) {
-		puts ("- no sectors to erase\n");
-		return 1;
-	}
+	if (flash_full_status_check
+	    (info, sect, info->erase_blk_tout, "erase")) {
+		rcode = 1;
+	} else
+		putc ('.');
 
-	prot = 0;
-	for (sect = s_first; sect <= s_last; ++sect) {
-		if (info->protect[sect]) {
-			prot++;
-		}
-	}
-	if (prot) {
-		printf ("- Warning: %d protected sectors will not be erased!\n", prot);
-	} else {
-		putc ('\n');
-	}
+        return rcode;
+}
 
+int cfi_erase(struct device_d *dev, struct memarea_info *mem)
+{
+        struct cfi_platform_data *pdata = dev->platform_data;
+        flash_info_t *finfo = &pdata->finfo;
+        unsigned long start, end;
 
-	for (sect = s_first; sect <= s_last; sect++) {
-		if (info->protect[sect] == 0) { /* not protected */
-			switch (info->vendor) {
-			case CFI_CMDSET_INTEL_STANDARD:
-			case CFI_CMDSET_INTEL_EXTENDED:
-				flash_write_cmd (info, sect, 0, FLASH_CMD_CLEAR_STATUS);
-				flash_write_cmd (info, sect, 0, FLASH_CMD_BLOCK_ERASE);
-				flash_write_cmd (info, sect, 0, FLASH_CMD_ERASE_CONFIRM);
-				break;
-			case CFI_CMDSET_AMD_STANDARD:
-			case CFI_CMDSET_AMD_EXTENDED:
-				flash_unlock_seq (info, sect);
-				flash_write_cmd (info, sect, AMD_ADDR_ERASE_START,
-							AMD_CMD_ERASE_START);
-				flash_unlock_seq (info, sect);
-				flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
-				break;
-			default:
-				debug ("Unkown flash vendor %d\n",
-				       info->vendor);
-				break;
-			}
+        printf("start: 0x%08x\n",mem->start);
+        printf("end: 0x%08x\n",mem->end);
+        printf("base: 0x%08x\n",mem->device->map_base);
+        start = flash_find_sector(finfo, mem->start + mem->device->map_base);
+        end   = flash_find_sector(finfo, mem->end + mem->device->map_base);
 
-			if (flash_full_status_check
-			    (info, sect, info->erase_blk_tout, "erase")) {
-				rcode = 1;
-			} else
-				putc ('.');
-		}
-	}
-	puts (" done\n");
-	return rcode;
+        printf("would erase sectors %d to %d\n",start, end);
+        return 0;
+}
+
+static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned long offset) {
+        printf("cfi_write: buf=0x%08x count=0x%08x offset=0x%08x\n",buf, count, offset);
+        return count;
+}
+
+static struct driver_d cfi_driver = {
+        .name  = "nor",
+        .probe = cfi_probe,
+        .write = cfi_write,
+        .erase = cfi_erase,
+};
+
+int flash_init(void)
+{
+        return register_driver(&cfi_driver);
 }
 
 /*-----------------------------------------------------------------------
@@ -792,10 +718,6 @@ static int flash_status_check (flash_info_t * info, flash_sect_t sector,
 			       uint64_t tout, char *prompt)
 {
 	uint64_t start;
-
-#if CFG_HZ != 1000
-	tout *= CFG_HZ/1000;
-#endif
 
 	/* Wait for command completion */
 	start = get_time_ns();
@@ -1176,9 +1098,8 @@ static int flash_detect_cfi (flash_info_t * info)
  * The following code cannot be run from FLASH!
  *
  */
-ulong flash_get_size (ulong base, int banknum)
+ulong flash_get_size (flash_info_t *info, ulong base)
 {
-	flash_info_t *info = &flash_info[banknum];
 	int i, j;
 	flash_sect_t sect_cnt;
 	unsigned long sector;
@@ -1532,4 +1453,4 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 	}
 }
 #endif /* CFG_FLASH_USE_BUFFER_WRITE */
-#endif /* CFG_FLASH_CFI */
+

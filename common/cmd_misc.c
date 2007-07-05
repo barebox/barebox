@@ -40,10 +40,10 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	delay = simple_strtoul(argv[1], NULL, 10) * CFG_HZ;
+	delay = simple_strtoul(argv[1], NULL, 10);
 
 	start = get_time_ns();
-	while (!is_timeout(start, delay * 1000000));
+	while (!is_timeout(start, delay * SECOND));
 
 	return 0;
 }

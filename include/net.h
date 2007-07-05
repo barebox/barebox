@@ -113,9 +113,6 @@ struct eth_device {
 extern int eth_initialize(bd_t *bis);		/* Initialize network subsystem */
 extern int eth_register(struct eth_device* dev);/* Register network device	*/
 extern void eth_try_another(int first_restart);	/* Change the device		*/
-#ifdef CONFIG_NET_MULTI
-extern void eth_set_current(void);		/* set nterface to ethcur var.  */
-#endif
 extern struct eth_device *eth_get_dev(void);	/* get the current device MAC	*/
 extern struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
 extern int eth_get_dev_index (void);		/* get the device index         */
@@ -324,6 +321,17 @@ extern ushort		CDPNativeVLAN;		/* CDP returned native VLAN	*/
 extern ushort		CDPApplianceVLAN;	/* CDP returned appliance VLAN	*/
 
 extern int		NetState;		/* Network loop state		*/
+
+/* ---------- Added by sha ------------ */
+extern IPaddr_t  NetArpWaitPacketIP;
+extern uchar            *NetArpWaitPacketMAC;
+extern uchar          *NetArpWaitTxPacket;     /* THE transmit packet                  */
+extern int             NetArpWaitTxPacketSize;
+extern int             NetArpWaitTry;
+extern uint64_t        NetArpWaitTimerStart;
+extern void ArpRequest (void);
+/* ------------------------------------ */
+
 #define NETLOOP_CONTINUE	1
 #define NETLOOP_RESTART		2
 #define NETLOOP_SUCCESS		3
@@ -338,20 +346,14 @@ typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP 
 /* from net/net.c */
 extern char	BootFile[128];			/* Boot File name		*/
 
-#if (CONFIG_COMMANDS & CFG_CMD_PING)
 extern IPaddr_t	NetPingIP;			/* the ip address to ping 		*/
-#endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
 /* when CDP completes these hold the return values */
 extern ushort CDPNativeVLAN;
 extern ushort CDPApplianceVLAN;
-#endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP)
 extern IPaddr_t	NetNtpServerIP;			/* the ip address to NTP 	*/
 extern int NetTimeOffset;			/* offset time from UTC		*/
-#endif
 
 /* Initialize the network adapter */
 extern int	NetLoop(proto_t);

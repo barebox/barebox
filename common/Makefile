@@ -52,7 +52,6 @@ obj-y += readkey.o
 #obj-y += memsize.o
 #obj-y += usb_kbd.o
 #obj-y += bedbug.o
-#obj-$(CONFIG_CMD_CONSOLE) += cmd_console.o
 #obj-y += cmd_fat.o
 #obj-y += cmd_pci.o
 #obj-y += cmd_ximg.o

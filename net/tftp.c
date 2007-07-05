@@ -10,6 +10,7 @@
 #include <driver.h>
 #include <clock.h>
 #include <fs.h>
+#include <errno.h>
 #include "tftp.h"
 #include "bootp.h"
 
@@ -60,16 +61,20 @@ static char *tftp_filename;
 
 extern int net_store_fd;
 
-static __inline__ void
+static int
 store_block (unsigned block, uchar * src, unsigned len)
 {
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
+	int ret;
 
-	write(net_store_fd, src, len);
+	ret = write(net_store_fd, src, len);
+	if (ret < 0)
+		return ret;
 
 	if (NetBootFileXferSize < newsize)
 		NetBootFileXferSize = newsize;
+	return 0;
 }
 
 static void TftpSend (void);
@@ -245,7 +250,11 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 		TftpLastBlock = TftpBlock;
 		NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 
-		store_block (TftpBlock - 1, pkt + 2, len);
+		if (store_block (TftpBlock - 1, pkt + 2, len) < 0) {
+			perror("write");
+			NetState = NETLOOP_FAIL;
+			return;
+		}
 
 		/*
 		 *	Acknoledge the block just received, which will prompt

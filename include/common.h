@@ -33,8 +33,7 @@ typedef unsigned char		uchar;
 typedef volatile unsigned long	vu_long;
 typedef volatile unsigned short vu_short;
 typedef volatile unsigned char	vu_char;
-
-typedef unsigned long		IPaddr_t;
+typedef unsigned long          IPaddr_t;
 
 #include <config.h>
 #include <linux/bitops.h>
@@ -47,7 +46,7 @@ typedef unsigned long		IPaddr_t;
 #endif
 
 #include <part.h>
-#include <image.h>
+//#include <image.h>
 
 #ifdef	DEBUG
 #define debug(fmt,args...)	printf (fmt ,##args)
@@ -119,17 +118,8 @@ extern ulong monitor_flash_len;
 /* common/cmd_autoscript.c */
 int	autoscript (ulong addr);
 
-/* common/cmd_bootm.c */
-void	print_image_hdr (image_header_t *hdr);
 
 extern ulong load_addr;		/* Default Load Address */
-
-/* common/cmd_nvedit.c */
-int	env_init     (void);
-void	env_relocate (void);
-char    *getenv	     (const char *);
-int	saveenv	     (void);
-void	setenv	     (const char *, const char *);
 
 #ifdef CONFIG_ARM
 # include <asm/mach-types.h>
@@ -333,8 +323,8 @@ int	prt_8260_rsr  (void);
 #endif
 
 /* $(CPU)/interrupts.c */
-void	timer_interrupt	   (struct pt_regs *);
-void	external_interrupt (struct pt_regs *);
+//void	timer_interrupt	   (struct pt_regs *);
+//void	external_interrupt (struct pt_regs *);
 void	irq_install_handler(int, interrupt_handler_t *, void *);
 void	irq_free_handler   (int);
 void	enable_interrupts  (void);
@@ -384,8 +374,6 @@ unsigned long long	simple_strtoull(const char *cp,char **endp,unsigned int base)
 #endif
 long	simple_strtol(const char *cp,char **endp,unsigned int base);
 void	panic(const char *fmt, ...);
-int	sprintf(char * buf, const char *fmt, ...);
-int	vsprintf(char *buf, const char *fmt, va_list args);
 
 /* lib_generic/crc32.c */
 ulong crc32 (ulong, const unsigned char *, uint);
@@ -402,11 +390,6 @@ int	disable_ctrlc (int);	/* 1 to disable, 0 to enable Control-C detect */
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 void	show_boot_progress (int status);
-#endif
-
-#ifdef CONFIG_INIT_CRITICAL
-#error CONFIG_INIT_CRITICAL is deprecated!
-#error Read section CONFIG_SKIP_LOWLEVEL_INIT in README.
 #endif
 
 /* Reservoir for several functions in the code where

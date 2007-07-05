@@ -19,6 +19,8 @@ void	putc(const char c);
 void	puts(const char *s);
 void	printf(const char *fmt, ...);
 void	vprintf(const char *fmt, va_list args);
+int	sprintf(char * buf, const char *fmt, ...);
+int	vsprintf(char *buf, const char *fmt, va_list args);
 
 /* stderr */
 #define eputc(c)		fputc(stderr, c)

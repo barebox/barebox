@@ -99,7 +99,7 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	ret = dev_set_param(dev, argv[2], val);
 
         if (ret)
-                perror("set parameter failed", ret);
+                perror("set parameter");
         return ret;
 }
 

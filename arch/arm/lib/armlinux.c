@@ -27,6 +27,7 @@
 #include <image.h>
 #include <zlib.h>
 #include <asm/byteorder.h>
+#include <asm/setup.h>
 #include <environment.h>
 #include <boot.h>
 

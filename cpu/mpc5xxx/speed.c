@@ -79,6 +79,8 @@ int get_clocks (void)
 	return (0);
 }
 
+core_initcall(get_clocks);
+
 int prt_mpc5xxx_clks (void)
 {
 	printf("       Bus %ld MHz, IPB %ld MHz, PCI %ld MHz\n",

@@ -30,6 +30,7 @@
 #include <command.h>
 #include <mpc5xxx.h>
 #include <asm/processor.h>
+#include <init.h>
 
 #if defined(CONFIG_OF_FLAT_TREE)
 #include <ft_build.h>
@@ -129,3 +130,14 @@ ft_cpu_setup(void *blob, bd_t *bd)
 		memcpy(p, bd->bi_enetaddr, 6);
 }
 #endif
+
+static int mpc5xxx_bd_init(void)
+{
+	bd_t *bd = gd->bd;
+
+	bd->bi_mbar_base = CFG_MBAR;	/* base of internal registers */
+	bd->bi_ipbfreq = gd->ipb_clk;
+	bd->bi_pcifreq = gd->pci_clk;
+}
+
+bd_initcall(mpc5xxx_bd_init);

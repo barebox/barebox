@@ -22,10 +22,9 @@
  */
 
 #include <common.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
-
-#ifdef CONFIG_HARD_I2C
 
 #include <mpc5xxx.h>
 #include <i2c.h>
@@ -207,7 +206,7 @@ static int receive_bytes(uchar chip, char *buf, int len)
 
 /**************** I2C API ****************/
 
-void i2c_init(int speed, int saddr)
+int i2c_init(void)
 {
 	struct mpc5xxx_i2c *regs = (struct mpc5xxx_i2c *)I2C_BASE;
 
@@ -216,7 +215,7 @@ void i2c_init(int speed, int saddr)
 
 	/* Set clock
 	 */
-	mpc_reg_out(&regs->mfdr, mpc_get_fdr(speed), 0);
+	mpc_reg_out(&regs->mfdr, mpc_get_fdr(CFG_I2C_SPEED), 0);
 
 	/* Enable module
 	 */
@@ -225,6 +224,8 @@ void i2c_init(int speed, int saddr)
 
 	return;
 }
+
+device_initcall(i2c_init);
 
 static int mpc_get_fdr(int speed)
 {
@@ -393,4 +394,3 @@ void i2c_reg_write(uchar chip, uchar reg, uchar val)
 	return;
 }
 
-#endif	/* CONFIG_HARD_I2C */

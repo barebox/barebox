@@ -65,7 +65,7 @@ unsigned long ticks2usec(unsigned long ticks)
 
 /* ------------------------------------------------------------------------- */
 
-int init_timebase (void)
+static int init_timebase (void)
 {
 #if defined(CONFIG_5xx) || defined(CONFIG_8xx)
 	volatile immap_t *immap = (immap_t *) CFG_IMMR;
@@ -98,6 +98,7 @@ static struct clocksource cs = {
 
 static int clocksource_init (void)
 {
+	init_timebase();
 
         cs.mult = clocksource_hz2mult(get_tbclk(), cs.shift);
 

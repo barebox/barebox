@@ -32,6 +32,7 @@
 #include <mpc83xx.h>
 #include <ft_build.h>
 #include <asm/processor.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -387,3 +388,12 @@ int dma_xfer(void *dest, u32 count, void *src)
 	return ((int)dma_check());
 }
 #endif /*CONFIG_DDR_ECC*/
+
+static int mpc5xxx_bd_init(void)
+{
+	bd_t *bd = gd->bd;
+
+	bd->bi_immrbar = CFG_IMMR;
+}
+
+bd_initcall(mpc5xxx_bd_init);

@@ -87,4 +87,5 @@ obj-$(CONFIG_CMD_SLEEP)	+= cmd_misc.o
 obj-y	+= mtdpart.o
 
 obj-y += env.o
-
+obj-y += startup.o
+obj-y += misc.o

@@ -89,3 +89,32 @@ unsigned long get_tbclk (void)
 }
 
 /* ------------------------------------------------------------------------- */
+
+static int mpc8220_bd_init(void)
+{
+	bd_t *bd = gd->bd;
+
+	bd->bi_sramstart = CFG_SRAM_BASE;	/* start of  SRAM memory	*/
+	bd->bi_sramsize  = CFG_SRAM_SIZE;	/* size  of  SRAM memory	*/
+
+	bd->bi_mbar_base = CFG_MBAR;	/* base of internal registers */
+	bd->bi_inpfreq   = gd->inp_clk;
+	bd->bi_pcifreq   = gd->pci_clk;
+	bd->bi_vcofreq   = gd->vco_clk;
+	bd->bi_pevfreq   = gd->pev_clk;
+	bd->bi_flbfreq   = gd->flb_clk;
+
+	/* store bootparam to sram (backward compatible), here? */
+	{
+		u32 *sram = (u32 *)CFG_SRAM_BASE;
+		*sram++ = gd->ram_size;
+		*sram++ = gd->bus_clk;
+		*sram++ = gd->inp_clk;
+		*sram++ = gd->cpu_clk;
+		*sram++ = gd->vco_clk;
+		*sram++ = gd->flb_clk;
+		*sram++ = 0xb8c3ba11;  /* boot signature */
+	}
+}
+
+bd_initcall(mpc8220_bd_init);

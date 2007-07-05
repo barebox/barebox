@@ -39,8 +39,7 @@
 #include <fcntl.h>
 #include <fs.h>
 #include <errno.h>
-
-DECLARE_GLOBAL_DATA_PTR;
+#include <boot.h>
 
  /*cmd_boot.c*/
 
@@ -116,23 +115,14 @@ typedef void boot_os_Fcn (cmd_tbl_t *cmdtp, int flag,
 extern int do_bdinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 #endif
 
-extern boot_os_Fcn do_bootm_linux;
 #ifdef CONFIG_SILENT_CONSOLE
 static void fixup_silent_linux (void);
 #endif
-static boot_os_Fcn do_bootm_netbsd;
-static boot_os_Fcn do_bootm_rtems;
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)
-static boot_os_Fcn do_bootm_vxworks;
-static boot_os_Fcn do_bootm_qnxelf;
 int do_bootvx ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[] );
 int do_bootelf (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[] );
 #endif /* CFG_CMD_ELF */
-#if defined(CONFIG_ARTOS) && defined(CONFIG_PPC)
-static boot_os_Fcn do_bootm_artos;
-#endif
 #ifdef CONFIG_LYNXKDI
-static boot_os_Fcn do_bootm_lynxkdi;
 extern void lynxkdi_boot( image_header_t * );
 #endif
 
@@ -146,7 +136,52 @@ extern void lynxkdi_boot( image_header_t * );
 #define OPT_OFTREE
 #endif
 
-image_header_t header;
+int relocate_image(image_header_t *hdr, void *load_address)
+{
+	unsigned long data = (unsigned long)(hdr + 1);
+	unsigned long len  = ntohl(hdr->ih_size);
+#if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
+	uint	unc_len = CFG_BOOTM_LEN;
+#endif
+
+	switch (hdr->ih_comp) {
+	case IH_COMP_NONE:
+		if(ntohl(hdr->ih_load) == data) {
+			printf ("   XIP ... ");
+		} else {
+			memmove ((void *) ntohl(hdr->ih_load), (uchar *)data, len);
+		}
+		break;
+#ifdef CONFIG_CMD_BOOTM_ZLIB
+	case IH_COMP_GZIP:
+		printf ("   Uncompressing ... ");
+		if (gunzip (load_address, unc_len,
+			    (uchar *)data, &len) != 0)
+			return -1;
+		break;
+#endif
+#ifdef CONFIG_CMD_BOOTM_BZLIB
+	case IH_COMP_BZIP2:
+		printf ("   Uncompressing ... ");
+		/*
+		 * If we've got less than 4 MB of malloc() space,
+		 * use slower decompression algorithm which requires
+		 * at most 2300 KB of memory.
+		 */
+		i = BZ2_bzBuffToBuffDecompress (load_address,
+						&unc_len, (char *)data, len,
+						CFG_MALLOC_LEN < (4096 * 1024), 0);
+		if (i != BZ_OK)
+			return -1;
+		break;
+#endif
+	default:
+		printf ("Unimplemented compression type %d\n", hdr->ih_comp);
+		return -1;
+	}
+
+	return 0;
+}
 
 image_header_t *map_image(const char *filename, int verify)
 {
@@ -187,7 +222,7 @@ image_header_t *map_image(const char *filename, int verify)
 		goto err_out;
 	header = tmp_header;
 
-	data = (void *)(header + sizeof(image_header_t));
+	data = (void *)(header + 1);
 
 	if (read(fd, data, len) < 0) {
 		printf("could not read: %s\n", errno_str());
@@ -217,32 +252,28 @@ err_out:
 int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong	iflag;
-	ulong	addr;
-	ulong	data, len, checksum;
-	ulong  *len_ptr;
-        struct memarea_info mem;
-#if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
-	uint	unc_len = CFG_BOOTM_LEN;
-#endif
-	char buf[32];
-	int	i, verify = 1;
-	char	*name;
-	const char *s;
+	int	verify = 1;
 	int	opt;
 	char	*initrd = NULL;
+	image_header_t *os_header;
+	image_header_t *initrd_header = NULL;
+#ifdef CONFIG_OF_FLAT_TREE
 	char	*oftree = NULL;
-	char	*kernel = NULL;
-	image_header_t *hdr;
+#endif
+	int ignore_load_address = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "i:n" OPT_OFTREE)) > 0) {
+	while((opt = getopt(argc, argv, "r:ni" OPT_OFTREE)) > 0) {
 		switch(opt) {
-		case 'i':
+		case 'r':
 			initrd = optarg;
 			break;
 		case 'n':
 			verify = 0;
+			break;
+		case 'i':
+			ignore_load_address = 1;
 			break;
 #ifdef CONFIG_OF_FLAT_TREE
 		case 'o':
@@ -259,24 +290,27 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	hdr = map_image(argv[optind], verify);
-	if (!hdr)
+	os_header = map_image(argv[optind], verify);
+	if (!os_header)
 		return 1;
 
-	if (hdr->ih_arch != IH_CPU)	{
-		printf ("Unsupported Architecture 0x%x\n", hdr->ih_arch);
-		return 1;
+	if (os_header->ih_arch != IH_CPU)	{
+		printf ("Unsupported Architecture 0x%x\n", os_header->ih_arch);
+		goto err_out;
 	}
 
-	printf("This is work in progress. Implement to continue\n");
-	return 1;
-
-	switch (hdr->ih_type) {
+	if (initrd) {
+		initrd_header = map_image(initrd, verify);
+		if (!initrd_header)
+			goto err_out;
+	}
+#if 0
+	switch (os_header->ih_type) {
 	case IH_TYPE_STANDALONE:
 		name = "Standalone Application";
 		/* A second argument overwrites the load address */
 		if (argc > 2) {
-			hdr->ih_load = htonl(simple_strtoul(argv[2], NULL, 16));
+			os_header->ih_load = htonl(simple_strtoul(argv[2], NULL, 16));
 		}
 		break;
 	case IH_TYPE_KERNEL:
@@ -291,11 +325,9 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			data += 4;
 		break;
 	default: printf ("Wrong Image Type for %s command\n", cmdtp->name);
-		SHOW_BOOT_PROGRESS (-5);
 		return 1;
 	}
-	SHOW_BOOT_PROGRESS (6);
-
+#endif
 	/*
 	 * We have reached the point of no return: we are going to
 	 * overwrite all exception vector code, so we cannot easily
@@ -304,105 +336,26 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	iflag = disable_interrupts();
 
-	switch (hdr->ih_comp) {
-	case IH_COMP_NONE:
-		if(ntohl(hdr->ih_load) == addr) {
-			printf ("   XIP %s ... ", name);
-		} else {
-#if defined(CONFIG_HW_WATCHDOG) || defined(CONFIG_WATCHDOG)
-			size_t l = len;
-			void *to = (void *)ntohl(hdr->ih_load);
-			void *from = (void *)data;
-
-			printf ("   Loading %s ... ", name);
-
-			while (l > 0) {
-				size_t tail = (l > CHUNKSZ) ? CHUNKSZ : l;
-				WATCHDOG_RESET();
-				memmove (to, from, tail);
-				to += tail;
-				from += tail;
-				l -= tail;
-			}
-#else	/* !(CONFIG_HW_WATCHDOG || CONFIG_WATCHDOG) */
-			memmove ((void *) ntohl(hdr->ih_load), (uchar *)data, len);
-#endif	/* CONFIG_HW_WATCHDOG || CONFIG_WATCHDOG */
-		}
-		break;
-#ifdef CONFIG_CMD_BOOTM_ZLIB
-	case IH_COMP_GZIP:
-		printf ("   Uncompressing %s ... ", name);
-		if (gunzip ((void *)ntohl(hdr->ih_load), unc_len,
-			    (uchar *)data, &len) != 0) {
-			puts ("GUNZIP ERROR - must RESET board to recover\n");
-			SHOW_BOOT_PROGRESS (-6);
-			do_reset();
-		}
-		break;
-#endif
-#ifdef CONFIG_CMD_BOOTM_BZLIB
-	case IH_COMP_BZIP2:
-		printf ("   Uncompressing %s ... ", name);
-		/*
-		 * If we've got less than 4 MB of malloc() space,
-		 * use slower decompression algorithm which requires
-		 * at most 2300 KB of memory.
-		 */
-		i = BZ2_bzBuffToBuffDecompress ((char*)ntohl(hdr->ih_load),
-						&unc_len, (char *)data, len,
-						CFG_MALLOC_LEN < (4096 * 1024), 0);
-		if (i != BZ_OK) {
-			printf ("BUNZIP2 ERROR %d - must RESET board to recover\n", i);
-			SHOW_BOOT_PROGRESS (-6);
-			udelay(100000);
-			do_reset (cmdtp, flag, argc, argv);
-		}
-		break;
-#endif
-	default:
-		if (iflag)
-			enable_interrupts();
-		printf ("Unimplemented compression type %d\n", hdr->ih_comp);
-		SHOW_BOOT_PROGRESS (-7);
-		return 1;
-	}
 	puts ("OK\n");
-	SHOW_BOOT_PROGRESS (7);
 
-	switch (hdr->ih_type) {
-	case IH_TYPE_STANDALONE:
-		if (iflag)
-			enable_interrupts();
-
-		sprintf(buf, "%lX", len);
-		setenv("filesize", buf);
-		return 0;
-	case IH_TYPE_KERNEL:
-	case IH_TYPE_MULTI:
-		/* handled below */
-		break;
-	default:
-		if (iflag)
-			enable_interrupts();
-		printf ("Can't boot image type %d\n", hdr->ih_type);
-		SHOW_BOOT_PROGRESS (-8);
-		return 1;
-	}
-	SHOW_BOOT_PROGRESS (8);
-
-	switch (hdr->ih_os) {
+	switch (os_header->ih_os) {
 	default:			/* handled by (original) Linux case */
 	case IH_OS_LINUX:
 #ifdef CONFIG_SILENT_CONSOLE
-	    fixup_silent_linux();
+		fixup_silent_linux();
 #endif
-	    do_bootm_linux  (cmdtp, flag, argc, argv,
-			     addr, len_ptr, verify);
+#ifdef CONFIG_OF_FLAT_TREE
+		do_bootm_linux(os_header, initrd_header, oftree);
+#else
+		do_bootm_linux(os_header, initrd_header);
+#endif
 	    break;
+#ifdef CONFIG_NETBSD
 	case IH_OS_NETBSD:
 	    do_bootm_netbsd (cmdtp, flag, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
+#endif
 
 #ifdef CONFIG_LYNXKDI
 	case IH_OS_LYNXOS:
@@ -411,10 +364,12 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	    break;
 #endif
 
+#ifdef CONFIG_RTEMS
 	case IH_OS_RTEMS:
 	    do_bootm_rtems (cmdtp, flag, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
+#endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)
 	case IH_OS_VXWORKS:
@@ -439,6 +394,12 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	puts ("\n## Control returned to monitor - resetting...\n");
 	do_reset (cmdtp, flag, argc, argv);
 #endif
+
+err_out:
+	if (os_header)
+		free(os_header);
+	if (initrd_header)
+		free(initrd_header);
 	return 1;
 }
 
@@ -493,6 +454,7 @@ fixup_silent_linux ()
 }
 #endif /* CONFIG_SILENT_CONSOLE */
 
+#ifdef CONFIG_NETBSD
 static void
 do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 		int	argc, char *argv[],
@@ -575,8 +537,9 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 #warning NetBSD Support is broken
 #endif
 }
+#endif
 
-#if defined(CONFIG_ARTOS) && defined(CONFIG_PPC)
+#ifdef CONFIG_ARTOS
 
 /* Function that returns a character from the environment */
 extern uchar (*env_get_char)(int);
@@ -685,7 +648,7 @@ U_BOOT_CMD_START(boot)
 	.usage		= "boot default, i.e., run 'bootcmd'",
 U_BOOT_CMD_END
 
-#if (CONFIG_COMMANDS & CFG_CMD_IMI)
+#if 0
 int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int	arg;
@@ -1008,6 +971,7 @@ void bz_internal_error(int errcode)
 }
 #endif /* CONFIG_BZLIB */
 
+#ifdef CONFIG_RTEMS
 static void
 do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 		ulong addr, ulong *len_ptr, int verify)
@@ -1033,6 +997,7 @@ do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 #warning RTEMS support is broken
 #endif
 }
+#endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)
 static void

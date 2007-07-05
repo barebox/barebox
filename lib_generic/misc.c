@@ -225,6 +225,29 @@ struct device_d *device_from_spec_str(const char *str, char **endp)
         return get_device_by_id(name);
 }
 
+/* Get devices from their type.
+ * If last is NULL the first device of this type is given.
+ * If last is not NULL, the next device of this type starting
+ * from last is given.
+ */
+struct device_d *get_device_by_type(ulong type, struct device_d *last)
+{
+	struct device_d *dev;
+
+	if (!last)
+		dev = first_device;
+	else
+		dev = last->next;
+
+	while (dev) {
+		if (dev->type == type)
+			return dev;
+		dev = dev->next;
+	}
+
+	return NULL;
+}
+
 unsigned long strtoul_suffix(const char *str, char **endp, int base)
 {
         unsigned long val;

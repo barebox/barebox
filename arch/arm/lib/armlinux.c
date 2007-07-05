@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <driver.h>
 #include <image.h>
 #include <zlib.h>
 #include <asm/byteorder.h>
@@ -277,14 +278,19 @@ static void setup_start_tag (bd_t *bd)
 #ifdef CONFIG_SETUP_MEMORY_TAGS
 static void setup_memory_tags (bd_t *bd)
 {
-	int i;
+	struct device_d *dev = NULL;
 
-	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
+	while (1) {
+		dev = get_device_by_type(DEVICE_TYPE_DRAM, dev);
+
+		if (!dev)
+			return;
+
 		params->hdr.tag = ATAG_MEM;
 		params->hdr.size = tag_size (tag_mem32);
 
-		params->u.mem.start = bd->bi_dram[i].start;
-		params->u.mem.size = bd->bi_dram[i].size;
+		params->u.mem.start = dev->map_base;
+		params->u.mem.size = dev->size;
 
 		params = tag_next (params);
 	}

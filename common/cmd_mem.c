@@ -767,6 +767,7 @@ struct driver_d ram_drv = {
         .probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
+	.type  = DEVICE_TYPE_DRAM,
 };
 
 static int mem_init(void)

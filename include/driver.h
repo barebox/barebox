@@ -17,7 +17,8 @@ struct param_d {
 #define DEVICE_TYPE_UNKNOWN     0
 #define DEVICE_TYPE_ETHER       1
 #define DEVICE_TYPE_STDIO       2
-#define MAX_DEVICE_TYPE         2
+#define DEVICE_TYPE_DRAM	3
+#define MAX_DEVICE_TYPE         3
 
 struct device_d {
 	char name[MAX_DRIVER_NAME];
@@ -72,6 +73,7 @@ void unregister_device(struct device_d *);
 
 struct device_d *device_from_spec_str(const char *str, char **endp);
 struct device_d *get_device_by_name(char *name);
+struct device_d *get_device_by_type(ulong type, struct device_d *last);
 
 ssize_t read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);

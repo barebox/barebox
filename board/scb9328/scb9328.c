@@ -23,8 +23,6 @@
 #include <cfi_flash.h>
 #include <init.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
 static struct cfi_platform_data cfi_info = {
 };
 
@@ -44,6 +42,8 @@ static struct device_d sdram_dev = {
 
         .map_base = 0x08000000,
         .size     = 16 * 1024 * 1024,
+
+	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct device_d dm9000_dev = {
@@ -73,15 +73,4 @@ static int scb9328_init_env(void)
 }
 
 late_initcall(scb9328_init_env);
-
-static int late_init (void)
-{
-#if ( CONFIG_NR_DRAM_BANKS > 0 )
-	gd->bd->bi_dram[0].start = SCB9328_SDRAM_1;
-	gd->bd->bi_dram[0].size = SCB9328_SDRAM_1_SIZE;
-#endif
-	return 0;
-}
-
-late_initcall(late_init);
 

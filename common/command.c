@@ -269,8 +269,10 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
 		}
 		putc ('\n');
 #else	/* no long help available */
-		if (cmdtp->usage)
+		if (cmdtp->usage) {
 			puts (cmdtp->usage);
+			puts("\n");
+		}
 #endif	/* CONFIG_LONGHELP */
 }
 

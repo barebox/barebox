@@ -38,7 +38,7 @@ static int enetaddr_set(struct device_d *dev, struct param_d *param, value_t val
 	if (dev->type != DEVICE_TYPE_ETHER)
 		return -EINVAL;
 
-	edev = dev->priv;
+	edev = dev->type_data;
 
 	string_to_enet_addr(val.val_str, buf);
 	edev->set_mac_address(edev, buf);
@@ -93,7 +93,7 @@ void eth_halt(void)
 	eth_current->state = ETH_STATE_PASSIVE;
 }
 
-int eth_send(volatile void *packet, int length)
+int eth_send(void *packet, int length)
 {
 	if (!eth_current)
 		return -1;

@@ -78,6 +78,7 @@
 #include <clock.h>
 #include <watchdog.h>
 #include <command.h>
+#include <param.h>
 #include <net.h>
 #include "bootp.h"
 #include "tftp.h"

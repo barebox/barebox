@@ -91,8 +91,6 @@
 #include "sntp.h"
 #endif
 
-DECLARE_GLOBAL_DATA_PTR;
-
 #define ARP_TIMEOUT		(5 * SECOND)	/* Seconds before trying ARP again */
 #ifndef	CONFIG_NET_RETRY_COUNT
 # define ARP_TIMEOUT_COUNT	5		/* # of timeouts before giving up  */
@@ -256,7 +254,6 @@ int
 NetLoop(proto_t protocol)
 {
 	IPaddr_t ip;
-	bd_t *bd = gd->bd;
 
 	ip = getenv_IPaddr ("ipaddr");
 	NetCopyIP(&NetOurIP, &ip);

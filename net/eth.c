@@ -42,7 +42,7 @@ struct eth_device * eth_get_current(void)
 	return eth_current;
 }
 
-int eth_init(void)
+int eth_open(void)
 {
 	char mac[6];
 
@@ -55,7 +55,7 @@ int eth_init(void)
 
 	eth_current->open(eth_current);
 
-	return 1;
+	return 0;
 }
 
 void eth_halt(void)
@@ -114,6 +114,8 @@ int eth_register(struct eth_device *edev)
 		dev_set_param(dev, "mac", ethaddr_str);
 //		memcpy(edev->enetaddr, ethaddr, 6);
 	}
+
+	edev->init(edev);
 
 	eth_current = edev;
 

@@ -172,7 +172,7 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev = malloc(sizeof(struct console_device));
 	dev->type_data = cdev;
 	cdev->dev = dev;
-	cdev->flags = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
+	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = imx_serial_tstc;
 	cdev->putc = imx_serial_putc;
 	cdev->getc = imx_serial_getc;

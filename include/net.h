@@ -60,6 +60,7 @@ struct eth_device {
 	int state;
 
 	int  (*init) (struct eth_device*);
+
 	int  (*open) (struct eth_device*);
 	int  (*send) (struct eth_device*, void *packet, int length);
 	int  (*recv) (struct eth_device*);
@@ -89,8 +90,8 @@ struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
 int eth_get_dev_index (void);		/* get the device index         */
 void eth_set_enetaddr(int num, char* a);	/* Set new MAC address		*/
 
-int eth_init(void);			/* Initialize the device	*/
-int eth_send(void *packet, int length);	   /* Send a packet	*/
+int eth_open(void);			/* open the device		*/
+int eth_send(void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
 void eth_halt(void);			/* stop SCC			*/
 char *eth_get_name(void);		/* get name of current device	*/

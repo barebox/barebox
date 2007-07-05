@@ -233,8 +233,11 @@ ProgramCheck:
 	/* I guess we could implement decrementer, and may have
 	 * to someday for timekeeping.
 	 */
+#ifdef CONFIG_INTERRUPTS
 	STD_EXCEPTION(0x900, Decrementer, timer_interrupt)
-
+#else
+	STD_EXCEPTION(0x900, Decrementer, UnknownException)
+#endif
 	STD_EXCEPTION(0xa00, Trap_0a, UnknownException)
 	STD_EXCEPTION(0xb00, Trap_0b, UnknownException)
 	STD_EXCEPTION(0xc00, SystemCall, UnknownException)

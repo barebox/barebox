@@ -18,7 +18,7 @@
 
 #include <linux/types.h>
 
-#include <asm/div64.h>
+#include <asm-generic/div64.h>
 
 uint32_t __div64_32(uint64_t *n, uint32_t base)
 {

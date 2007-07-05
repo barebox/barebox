@@ -110,6 +110,8 @@ SECTIONS
   . = ALIGN(4096);
   __init_end = .;
 
+  __init_size = __init_end - _start;
+
   __bss_start = .;
   .bss       :
   {

@@ -12,23 +12,6 @@
 #ifndef __NET_H__
 #define __NET_H__
 
-#if defined(CONFIG_8xx)
-#include <commproc.h>
-# if !defined(CONFIG_NET_MULTI)
-#  if defined(FEC_ENET) || defined(SCC_ENET)
-#   define CONFIG_NET_MULTI
-#  endif
-# endif
-#endif	/* CONFIG_8xx */
-
-#if defined(CONFIG_MPC5xxx)
-# if !defined(CONFIG_NET_MULTI)
-#  if defined(CONFIG_MPC5xxx_FEC)
-#   define CONFIG_NET_MULTI
-#  endif
-# endif
-#endif	/* CONFIG_MPC5xxx */
-
 #if !defined(CONFIG_NET_MULTI) && defined(CONFIG_CPM2)
 #include <config.h>
 #if defined(CONFIG_ETHER_ON_FCC)
@@ -92,6 +75,8 @@ enum eth_state_t {
 	ETH_STATE_ACTIVE
 };
 
+struct device_d;
+
 struct eth_device {
 	char name[NAMESIZE];
 	unsigned char enetaddr[6];
@@ -100,7 +85,7 @@ struct eth_device {
 
 	int  (*init) (struct eth_device*);
 	int  (*open) (struct eth_device*);
-	int  (*send) (struct eth_device*, volatile void* pachet, int length);
+	int  (*send) (struct eth_device*, volatile void *packet, int length);
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
 	int  (*get_mac_address) (struct eth_device*, unsigned char *adr);
@@ -109,7 +94,7 @@ struct eth_device {
 	struct eth_device *next;
 	void *priv;
 
-	char *param[4];
+	struct device_d *dev;
 };
 
 struct param_d *eth_param_get(struct device_d* dev, int no);
@@ -341,10 +326,6 @@ extern void ArpRequest (void);
 #define NETLOOP_SUCCESS		3
 #define NETLOOP_FAIL		4
 
-#ifdef CONFIG_NET_MULTI
-extern int		NetRestartWrap;		/* Tried all network devices	*/
-#endif
-
 typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP } proto_t;
 
 /* from net/net.c */
@@ -458,6 +439,9 @@ extern ushort getenv_VLAN(char *);
 
 /* copy a filename (allow for "..." notation, limit length) */
 extern void	copy_filename (char *dst, char *src, int size);
+
+int string_to_enet_addr(char *str, char *enetaddr);
+void enet_addr_to_string(char *enetaddr, char *str);
 
 /**********************************************************************/
 /* Network devices                                                    */

@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <fcntl.h>
+#include <xfuncs.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -96,6 +97,13 @@ struct mtab_entry *get_mtab_entry_by_path(const char *_path)
 	return match ? match : mtab;
 }
 
+struct mtab_entry *mtab_next_entry(struct mtab_entry *e)
+{
+	if (!e)
+		return mtab;
+	return e->next;
+}
+
 FILE files[MAX_FILES];
 
 FILE *get_file(void)
@@ -118,39 +126,105 @@ void put_file(FILE *f)
 	files[f->no].in_use = 0;
 }
 
-static FILE* get_file_by_pathname(const char *pathname)
+static struct device_d *get_device_by_path(char **path)
 {
-	FILE *f;
+	struct device_d *dev;
+	struct mtab_entry *e;
 
-	f = get_file();
-	if (!f) {
-		errno = -EMFILE;
+	normalise_path(*path);
+
+	e = get_mtab_entry_by_path(*path);
+	if (!e)
 		return NULL;
-	}
+	if (e != mtab)
+		*path += strlen(e->path);
 
-	return f;
+	dev = e->dev;
+
+	return dev;
 }
 
-int creat(const char *pathname, mode_t mode)
+int dir_is_empty(const char *pathname)
 {
-	struct mtab_entry *e;
-	struct device_d *dev;
-	struct fs_driver_d *fsdrv;
+	struct dir *dir;
+	struct dirent *d;
+	int ret = 1;
 
-	e = get_mtab_entry_by_path(pathname);
-	if (!e) {
+	dir = opendir(pathname);
+	if (!dir) {
+		errno = -ENOENT;
+		return -ENOENT;
+	}
+
+	while ((d = readdir(dir))) {
+		if (!strcmp(d->name, ".") || !strcmp(d->name, ".."))
+				continue;
+		ret = 0;
+		break;
+	}
+
+	closedir(dir);
+	return ret;
+}
+
+// S_IFREG
+// S_IFDIR
+#define S_UB_IS_EMPTY		(1<<31)
+#define S_UB_EXISTS		(1<<30)
+#define S_UB_DOES_NOT_EXIST	(1<<29)
+//
+static int path_check_prereq(const char *path, unsigned int flags)
+{
+	struct stat s;
+	unsigned int m;
+
+	if (stat(path, &s)) {
+		if (flags & S_UB_DOES_NOT_EXIST)
+			return 0;
 		errno = -ENOENT;
 		return errno;
 	}
 
-	if (e != mtab)
-		pathname += strlen(e->path);
+	if (flags == S_UB_EXISTS)
+		return 0;
 
-	dev = e->dev;
+	m = s.st_mode;
+
+	if (S_ISDIR(m)) {
+		if (flags & S_IFREG) {
+			errno = -EISDIR;
+			return errno;
+		}
+		if ((flags & S_UB_IS_EMPTY) && !dir_is_empty(path)) {
+			errno = -ENOTEMPTY;
+			return errno;
+		}
+	}
+	if ((flags & S_IFDIR) && S_ISREG(m)) {
+		errno = -ENOTDIR;
+		return errno;
+	}
+	return 0;
+}
+
+int unlink(const char *pathname)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	char *p = strdup(pathname);
+	char *freep = p;
+
+	if (path_check_prereq(pathname, S_IFREG))
+		return errno;
+
+	dev = get_device_by_path(&p);
+	if (!dev)
+		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
-	errno = fsdrv->create(dev, pathname, S_IFREG);
-
+	errno = fsdrv->unlink(dev, p);
+out:
+	free(freep);
 	return errno;
 }
 
@@ -158,32 +232,36 @@ int open(const char *pathname, int flags)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	struct mtab_entry *e;
 	FILE *f;
 	int exist;
 	struct stat s;
+	char *path;
 
-	exist = stat(pathname, &s) == 0 ? 1 : 0;
+	exist = (stat(pathname, &s) == 0) ? 1 : 0;
 
-	if (!exist && !(flags & O_CREAT))
-		return -EEXIST;
-
-	f = get_file_by_pathname(pathname);
-
-	e = get_mtab_entry_by_path(pathname);
-	if (!e) {
-		/* This can only happen when nothing is mounted */
-		errno = -ENOENT;
-		goto out;
+	if (exist && (s.st_mode & S_IFDIR)) {
+		errno = -EISDIR;
+		return errno;
 	}
 
-	/* Adjust the pathname to the root of the device */
-	if (e != mtab)
-		pathname += strlen(e->path);
+	if (!exist && !(flags & O_CREAT)) {
+		errno = -ENOENT;
+		return errno;
+	}
 
-	dev = e->dev;
+	f = get_file();
+	if (!f) {
+		errno = -EMFILE;
+		return errno;
+	}
+
+	path = strdup(pathname);
+	dev = get_device_by_path(&path);
+	if (!dev)
+		goto out;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
 	f->dev = dev;
 	f->flags = flags;
 
@@ -201,20 +279,26 @@ int open(const char *pathname, int flags)
 	if (errno)
 		goto out;
 
-	if (flags & O_APPEND)
-		f->pos = f->size;
-
 	if (flags & O_TRUNC) {
 		errno = fsdrv->truncate(dev, f, 0);
 		if (errno)
 			goto out;
 	}
 
+	if (flags & O_APPEND)
+		f->pos = f->size;
+
 	return f->no;
 
 out:
 	put_file(f);
+	free(path);
 	return errno;
+}
+
+int creat(const char *pathname, mode_t mode)
+{
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
 }
 
 int read(int fd, void *buf, size_t count)
@@ -244,7 +328,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
-	printf("WRITE: dev: %p\n",dev);
+//	printf("WRITE: dev: %p\n",dev);
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 	if (f->pos + count > f->size) {
 		errno = fsdrv->truncate(dev, f, f->pos + count);
@@ -305,13 +389,13 @@ int close(int fd)
 	return errno;
 }
 
-int mount(struct device_d *dev, char *fsname, char *path)
+int mount(struct device_d *parent_device, char *fsname, char *path)
 {
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
-	struct dir *dir;
+	struct device_d *dev;
 	int ret;
 
 	errno = 0;
@@ -328,12 +412,8 @@ int mount(struct device_d *dev, char *fsname, char *path)
 	}
 
 	if (mtab) {
-		/* check if path exists and is a directory */
-		if (!(dir = opendir(path))) {
-			errno = -ENOTDIR;
+		if (path_check_prereq(path, S_IFDIR))
 			goto out;
-		}
-		closedir(dir);
 	} else {
 		/* no mtab, so we only allow to mount on '/' */
 		if (*path != '/' || *(path + 1)) {
@@ -345,8 +425,7 @@ int mount(struct device_d *dev, char *fsname, char *path)
 	fs_drv = drv->type_data;
 
 	if (fs_drv->flags & FS_DRIVER_NO_DEV) {
-		dev = malloc(sizeof(struct device_d));
-		memset(dev, 0, sizeof(struct device_d));
+		dev = xzalloc(sizeof(struct device_d));
 		sprintf(dev->name, "%s", fsname);
 		dev->type = DEVICE_TYPE_FS;
 		if ((ret = register_device(dev))) {
@@ -361,9 +440,13 @@ int mount(struct device_d *dev, char *fsname, char *path)
 			goto out;
 		}
 	} else {
-		fsdev = malloc(sizeof(struct fs_device_d));
-		memset(fsdev, 0, sizeof(struct fs_device_d));
-		fsdev->parent = dev;
+		if (!parent_device) {
+			printf("need device for driver %s\n", fsname);
+			errno = -ENODEV;
+			goto out;
+		}
+		fsdev = xzalloc(sizeof(struct fs_device_d));
+		fsdev->parent = parent_device;
 		sprintf(fsdev->dev.name, "%s", fsname);
 		fsdev->dev.type = DEVICE_TYPE_FS;
 		fsdev->dev.type_data = fsdev;
@@ -385,6 +468,7 @@ int mount(struct device_d *dev, char *fsname, char *path)
 	entry = malloc(sizeof(struct mtab_entry));
 	sprintf(entry->path, "%s", path);
 	entry->dev = dev;
+	entry->parent_device = parent_device;
 	entry->next = NULL;
 
 	if (!mtab)
@@ -432,25 +516,20 @@ int umount(const char *pathname)
 
 struct dir *opendir(const char *pathname)
 {
+	struct dir *dir = NULL;
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	struct dir *dir = NULL;
-	struct mtab_entry *e;
 	char *p = strdup(pathname);
 	char *freep = p;
 
-	normalise_path(p);
+	if (path_check_prereq(pathname, S_IFDIR))
+		return NULL;
 
-	e = get_mtab_entry_by_path(p);
-	if (!e)
+	dev = get_device_by_path(&p);
+	if (!dev)
 		goto out;
-	if (e != mtab)
-		p += strlen(e->path);
-
-	dev = e->dev;
-//	printf("opendir: dev: %p\n",dev);
-
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
 //	printf("opendir: fsdrv: %p\n",fsdrv);
 
 	dir = fsdrv->opendir(dev, p);
@@ -513,27 +592,51 @@ int mkdir (const char *pathname)
 {
 	struct fs_driver_d *fsdrv;
 	struct device_d *dev;
-	struct mtab_entry *e;
+	char *p = strdup(pathname);
+	char *freep = p;
 
-	e = get_mtab_entry_by_path(pathname);
-	if (!e) {
-		errno = -ENOENT;
-		return -ENOENT;
-	}
+	if (path_check_prereq(pathname, S_UB_DOES_NOT_EXIST))
+		return errno;
 
-	if (e != mtab)
-		pathname += strlen(e->path);
-
-	dev = e->dev;
-
+	dev = get_device_by_path(&p);
+	if (!dev)
+		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
 	if (fsdrv->mkdir) {
-		errno = fsdrv->mkdir(dev, pathname);
-		return errno;
+		errno = fsdrv->mkdir(dev, p);
+		goto out;
 	}
 
 	errno = -EROFS;
-	return -EROFS;
+out:
+	free(freep);
+	return errno;
+}
+
+int rmdir (const char *pathname)
+{
+	struct fs_driver_d *fsdrv;
+	struct device_d *dev;
+	char *p = strdup(pathname);
+	char *freep = p;
+
+	if (path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY))
+		return errno;
+
+	dev = get_device_by_path(&p);
+	if (!dev)
+		goto out;
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (fsdrv->rmdir) {
+		errno = fsdrv->rmdir(dev, p);
+		goto out;
+	}
+
+	errno = -EROFS;
+out:
+	free(freep);
+	return errno;
 }
 

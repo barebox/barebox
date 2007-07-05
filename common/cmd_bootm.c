@@ -26,6 +26,7 @@
  */
 #include <common.h>
 #include <watchdog.h>
+#include <driver.h>
 #include <command.h>
 #include <image.h>
 #include <malloc.h>
@@ -151,6 +152,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	ulong	addr;
 	ulong	data, len, checksum;
 	ulong  *len_ptr;
+        struct memarea_info mem;
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
@@ -163,10 +165,16 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	verify = (s && (*s == 'n')) ? 0 : 1;
 
 	if (argc < 2) {
-		addr = load_addr;
-	} else {
-		addr = simple_strtoul(argv[1], NULL, 16);
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
 	}
+
+        if (spec_str_to_info(argv[1], &mem)) {
+                printf("-ENOPARSE\n");
+                return -1;
+        }
+
+	addr = mem.start + mem.device->map_base;
 
 	SHOW_BOOT_PROGRESS (1);
 	printf ("## Booting image at %08lx ...\n", addr);

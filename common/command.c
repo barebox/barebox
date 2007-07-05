@@ -220,6 +220,7 @@ U_BOOT_CMD(
 
 #endif
 
+#ifdef CONFIG_CMD_HELP
 /*
  * Use puts() instead of printf() to avoid printf buffer overflow
  * for long help messages
@@ -328,6 +329,8 @@ cmd_tbl_t __u_boot_cmd_question_mark Struct_Section = {
  	"?       - alias for 'help'\n"
 };
 #endif /* CONFIG_LONGHELP */
+
+#endif /* CONFIG_CMD_HELP */
 
 /***************************************************************************
  * find command table entry for a command
@@ -568,7 +571,7 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *colp)
 	int cnt;
 	char last_char;
 
-	if (strcmp(prompt, CFG_PROMPT) != 0)
+	if (strcmp(prompt, CONFIG_PROMPT) != 0)
 		return 0;	/* not in normal console */
 
 	cnt = strlen(buf);

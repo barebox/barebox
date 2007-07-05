@@ -46,7 +46,7 @@ static void setup_start_tag (void);
 # ifdef CONFIG_SETUP_MEMORY_TAGS
 static void setup_memory_tags (void);
 # endif
-static void setup_commandline_tag (char *commandline);
+static void setup_commandline_tag (const char *commandline);
 
 # ifdef CONFIG_INITRD_TAG
 static void setup_initrd_tag (ulong initrd_start,
@@ -82,7 +82,7 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	image_header_t *hdr = &header;
 
 #ifdef CONFIG_CMDLINE_TAG
-	char *commandline = getenv ("bootargs");
+	const char *commandline = getenv ("bootargs");
 #endif
 
 	theKernel = (void (*)(int, int, uint))ntohl(hdr->ih_ep);
@@ -298,9 +298,9 @@ static void setup_memory_tags (void)
 #endif /* CONFIG_SETUP_MEMORY_TAGS */
 
 
-static void setup_commandline_tag (char *commandline)
+static void setup_commandline_tag (const char *commandline)
 {
-	char *p;
+	const char *p;
 
 	if (!commandline)
 		return;

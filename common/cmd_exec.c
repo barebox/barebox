@@ -44,7 +44,7 @@ out:
 	return NULL;
 }
 
-int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+static int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
 	int i;
 	char *script;
@@ -70,10 +70,8 @@ out:
 	return 1;
 }
 
-int do_exec (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-U_BOOT_CMD(
-	exec,	CONFIG_MAXARGS,	1,	do_exec,
-	"exec     - execute a script\n",
-	"<filename> - execute <filename>\n"
-);
-
+U_BOOT_CMD_START(exec)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_exec,
+	.usage		= "exec <files>     - execute a script\n",
+U_BOOT_CMD_END

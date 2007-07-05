@@ -521,10 +521,8 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-U_BOOT_CMD(
-	devinfo,     2,     0,      do_devinfo,
-	"devinfo     - display info about devices and drivers\n",
-	""
-);
-
-
+U_BOOT_CMD_START(devinfo)
+	.maxargs	= 2,
+	.cmd		= do_devinfo,
+	.usage		= "devinfo     - display info about devices and drivers\n",
+U_BOOT_CMD_END

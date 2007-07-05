@@ -14,16 +14,16 @@ struct node_d;
 struct stat;
 
 struct dirent {
-	char name[256];
+	char d_name[256];
 };
 
-struct dir {
+typedef struct dir {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	struct node_d *node;
 	struct dirent d;
 	void *priv; /* private data for the fs driver */
-};
+} DIR;
 
 typedef struct filep {
 	struct device_d *dev; /* The device this FILE belongs to              */
@@ -61,7 +61,7 @@ struct fs_driver_d {
 
 	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
 	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
-	int (*closedir)(struct device_d *dev, struct dir *dir);
+	int (*closedir)(struct device_d *dev, DIR *dir);
 	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
 	struct driver_d drv;
@@ -98,9 +98,9 @@ int umount(const char *pathname);
 const char *getcwd(void);
 int chdir(const char *pathname);
 
-struct dir *opendir(const char *pathname);
-struct dirent *readdir(struct dir *dir);
-int closedir(struct dir *dir);
+DIR *opendir(const char *pathname);
+struct dirent *readdir(DIR *dir);
+int closedir(DIR *dir);
 
 char *mkmodestr(unsigned long mode, char *str);
 

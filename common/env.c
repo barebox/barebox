@@ -126,13 +126,15 @@ int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-U_BOOT_CMD(
-	printenv, CONFIG_MAXARGS, 1,	do_printenv,
-	"printenv- print environment variables\n",
+U_BOOT_CMD_START(printenv)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_printenv,
+	.usage		= "printenv- print environment variables\n",
+	U_BOOT_CMD_HELP(
 	"\n    - print values of all environment variables\n"
 	"printenv name ...\n"
-	"    - print value of environment variable 'name'\n"
-);
+	"    - print value of environment variable 'name'\n")
+U_BOOT_CMD_END
 
 #ifdef CONFIG_SIMPLE_PARSER
 int do_setenv ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -147,13 +149,16 @@ int do_setenv ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-U_BOOT_CMD(
-	setenv, CONFIG_MAXARGS, 0,	do_setenv,
-	"setenv  - set environment variables\n",
+U_BOOT_CMD_START(setenv)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_setenv,
+	.usage		= "setenv  - set environment variables\n",
+	U_BOOT_CMD_HELP(
 	"name value ...\n"
 	"    - set environment variable 'name' to 'value ...'\n"
 	"setenv name\n"
 	"    - delete environment variable 'name'\n"
-);
+U_BOOT_CMD_END
+
 #endif
 

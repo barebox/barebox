@@ -51,38 +51,53 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	sleep ,    2,    2,     do_sleep,
-	"sleep   - delay execution for some time\n",
-	"N\n"
-	"    - delay execution for N seconds (N is _decimal_ !!!)\n"
-);
+U_BOOT_CMD_START(sleep)
+	.maxargs	= 2,
+	.cmd		= do_sleep,
+	.usage		= "sleep   - delay execution for n secondsnn",
+U_BOOT_CMD_END
+
 #endif
 
-#ifdef CONFIG_CMD_MALLOCINFO
-int do_mallocinfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+#ifdef CONFIG_CMD_CLEAR
+int do_clear (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+
+	printf("%c[2J%c[;H", 27, 27);
+
+	return 0;
+}
+
+U_BOOT_CMD_START(clear)
+	.maxargs	= 1,
+	.cmd		= do_clear,
+	.usage		= "clear   - clear screen\n",
+U_BOOT_CMD_END
+#endif
+
+#ifdef CONFIG_CMD_MEMINFO
+int do_meminfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	malloc_stats();
 
 	return 0;
 }
 
-U_BOOT_CMD(
-	mallocinfo ,    1,    2,     do_mallocinfo,
-	"mallocinfo - print info about malloc usage\n",
-	"N\n"
-	"    - print info about malloc usage\n"
-);
+U_BOOT_CMD_START(meminfo)
+	.maxargs	= 1,
+	.cmd		= do_meminfo,
+	.usage		= "meminfo - print info about memory usage\n",
+U_BOOT_CMD_END
 #endif
 
 /* Implemented in $(CPU)/interrupts.c */
 #if (CONFIG_COMMANDS & CFG_CMD_IRQ)
 int do_irqinfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
-U_BOOT_CMD(
-	irqinfo,    1,    1,     do_irqinfo,
-	"irqinfo - print information about IRQs\n",
-	NULL
-);
+U_BOOT_CMD_START(irqinfo)
+	.maxargs	= 1,
+	.cmd		= do_irqinfo,
+	.usage		= "irqinfo - print information about IRQs\n",
+U_BOOT_CMD_END
 #endif  /* CONFIG_COMMANDS & CFG_CMD_IRQ */
 

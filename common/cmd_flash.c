@@ -60,6 +60,13 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
+U_BOOT_CMD_START(erase)
+	.maxargs	= 2,
+	.cmd		= do_flerase,
+	.usage		= "erase   - erase FLASH memory\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
+
 int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int p;
@@ -89,33 +96,9 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return rcode;
 }
 
-/**************************************************/
-
-U_BOOT_CMD(
-	erase,   2,   0,  do_flerase,
-	"erase   - erase FLASH memory\n",
-	"write me\n"
-);
-
-U_BOOT_CMD(
-	protect,  4,  1,   do_protect,
-	"protect - enable or disable FLASH write protection\n",
-	"on  start end\n"
-	"    - protect FLASH from addr 'start' to addr 'end'\n"
-	"protect on start +len\n"
-	"    - protect FLASH from addr 'start' to end of sect "
-	"w/addr 'start'+'len'-1\n"
-	"protect on  N:SF[-SL]\n"
-	"    - protect sectors SF-SL in FLASH bank # N\n"
-	"protect on  bank N\n    - protect FLASH bank # N\n"
-	"protect on  all\n    - protect all FLASH banks\n"
-	"protect off start end\n"
-	"    - make FLASH from addr 'start' to addr 'end' writable\n"
-	"protect off start +len\n"
-	"    - make FLASH from addr 'start' to end of sect "
-	"w/addr 'start'+'len'-1 wrtable\n"
-	"protect off N:SF[-SL]\n"
-	"    - make sectors SF-SL writable in FLASH bank # N\n"
-	"protect off bank N\n    - make FLASH bank # N writable\n"
-	"protect off all\n    - make all FLASH banks writable\n"
-);
+U_BOOT_CMD_START(protect)
+	.maxargs	= 4,
+	.cmd		= do_protect,
+	.usage		= "protect - enable or disable FLASH write protection\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END

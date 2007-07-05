@@ -109,8 +109,8 @@ int do_ping (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	ping,	2,	1,	do_ping,
-	"ping\t- send ICMP ECHO_REQUEST to network host\n",
-	"pingAddress\n"
-);
+U_BOOT_CMD_START(ping)
+	.maxargs	= 2,
+	.cmd		= do_ping,
+	.usage		= "ping\t- send ICMP ECHO_REQUEST to network host\n",
+U_BOOT_CMD_END

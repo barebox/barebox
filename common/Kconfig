@@ -98,6 +98,10 @@ config CMD_ENVIRONMENT
 	depends on FS
 	prompt "envsave / envload"
 
+config CMD_CLEAR
+	bool
+	prompt "clear"
+
 config CMD_CONSOLE
 	bool
 	prompt "coninfo"
@@ -159,9 +163,9 @@ config CMD_LOADS
 	bool
 	prompt "loads"
 
-config CMD_MALLOCINFO
+config CMD_MEMINFO
 	bool
-	prompt "mallocinfo"
+	prompt "meminfo"
 
 config CMD_SAVES
 	bool

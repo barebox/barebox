@@ -45,6 +45,8 @@
 #include <version.h>
 #include <mem_malloc.h>
 #include <debug_ll.h>
+#include <fs.h>
+#include <linux/stat.h>
 
 ulong load_addr = 0;               /* Default Load Address */
 
@@ -108,6 +110,7 @@ void start_uboot (void)
 {
         initcall_t *initcall;
         int result;
+	struct stat s;
 
 	/* compiler optimization barrier needed for GCC >= 3.4 */
 //	__asm__ __volatile__("": : :"memory");
@@ -130,12 +133,18 @@ void start_uboot (void)
 	run_command("mkdir /dev", 0);
 	run_command("mkdir /env", 0);
 	run_command("mount none devfs /dev", 0);
+	run_command("loadenv", 0);
 
-	run_command("eth0.ip=172.0.0.2", 0);
-	run_command("eth0.mac=80:81:82:83:84:85", 0);
-	run_command("eth0.serverip=172.0.0.1", 0);
-	run_command("eth0.gateway=172.0.0.1", 0);
-	run_command("eth0.netmask=255.255.255.0", 0);
+	if (!stat("/env/init", &s)) {
+		printf("running /env/init\n");
+		run_command("exec /env/init", 0);
+	}
+
+//	run_command("eth0.ip=172.0.0.2", 0);
+//	run_command("eth0.mac=80:81:82:83:84:85", 0);
+//	run_command("eth0.serverip=172.0.0.1", 0);
+//	run_command("eth0.gateway=172.0.0.1", 0);
+//	run_command("eth0.netmask=255.255.255.0", 0);
 
         /* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {

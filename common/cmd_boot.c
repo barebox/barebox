@@ -73,17 +73,19 @@ int do_go (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 /* -------------------------------------------------------------------- */
 
-U_BOOT_CMD(
-	go, CONFIG_MAXARGS, 1,	do_go,
-	"go      - start application at address 'addr'\n",
+U_BOOT_CMD_START(go)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_go,
+	.usage		= "go      - start application at address 'addr'\n",
+	U_BOOT_CMD_HELP(
 	"addr [arg ...]\n    - start application at address 'addr'\n"
-	"      passing 'arg' as arguments\n"
-);
+	"      passing 'arg' as arguments\n")
+U_BOOT_CMD_END
 
 extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
-U_BOOT_CMD(
-	reset, CONFIG_MAXARGS, 1,	do_reset,
-	"reset   - Perform RESET of the CPU\n",
-	NULL
-);
+U_BOOT_CMD_START(reset)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_reset,
+	.usage		= "reset   - Perform RESET of the CPU\n",
+U_BOOT_CMD_END

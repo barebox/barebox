@@ -39,11 +39,11 @@ do_version (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	version,	1,		1,	do_version,
- 	"version - print monitor version\n",
-	NULL
-);
+U_BOOT_CMD_START(version)
+	.maxargs	= 1,
+	.cmd		= do_version,
+	.usage		= "version - print monitor version\n",
+U_BOOT_CMD_END
 
 int
 do_true (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -51,11 +51,11 @@ do_true (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	true,	1,		1,	do_true,
- 	"true  - return 0\n",
-	NULL
-);
+U_BOOT_CMD_START(true)
+	.maxargs	= 1,
+	.cmd		= do_true,
+	.usage		= "true - return 0\n",
+U_BOOT_CMD_END
 
 int
 do_false (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -63,11 +63,11 @@ do_false (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 1;
 }
 
-U_BOOT_CMD(
-	false,	1,		1,	do_false,
- 	"false  - return 1\n",
-	NULL
-);
+U_BOOT_CMD_START(false)
+	.maxargs	= 1,
+	.cmd		= do_false,
+	.usage		= "false  - return 1\n",
+U_BOOT_CMD_END
 
 #ifdef CONFIG_HUSH_PARSER
 
@@ -92,17 +92,25 @@ do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	readline,	3,		1,	do_readline,
- 	"readline  - \n",
-	NULL
-);
+U_BOOT_CMD_START(readline)
+	.maxargs	= 3,
+	.cmd		= do_readline,
+	.usage		= "readline  - \n",
+U_BOOT_CMD_END
 
 int
 do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	char **ap;
 	int left, adv, expr, last_expr, neg, last_cmp;
+
+	if (*argv[0] == '[') {
+		if (*argv[argc - 1] != ']') {
+			printf("[: missing `]'\n");
+			return 1;
+		}
+		argc--;
+	}
 
 	/* args? */
 	if (argc < 3)
@@ -211,12 +219,17 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return expr;
 }
 
-U_BOOT_CMD(
-	test,	CONFIG_MAXARGS,	1,	do_test,
- 	"test    - minimal test like /bin/sh\n",
+char *test_aliases[] = { "[", NULL};
+
+U_BOOT_CMD_START(test)
+	.aliases	= test_aliases,
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_test,
+	.usage		= "test    - minimal test like /bin/sh\n",
+	U_BOOT_CMD_HELP(
  	"[args..]\n"
-	"    - test functionality\n"
-);
+	"    - test functionality\n")
+U_BOOT_CMD_END
 
 int
 do_exit (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -230,12 +243,11 @@ do_exit (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return -r - 2;
 }
 
-U_BOOT_CMD(
-	exit,	2,	1,	do_exit,
- 	"exit    - exit script\n",
-	"    - exit functionality\n"
-);
-
+U_BOOT_CMD_START(exit)
+	.maxargs	= 1,
+	.cmd		= do_exit,
+	.usage		= "exit    - exit script\n",
+U_BOOT_CMD_END
 
 #endif
 
@@ -323,31 +335,20 @@ int do_help (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	return rcode;
 }
 
+char *help_aliases[] = { "?", NULL};
 
-U_BOOT_CMD(
-	help,	CONFIG_MAXARGS,	1,	do_help,
- 	"help    - print online help\n",
- 	"[command ...]\n"
+U_BOOT_CMD_START(help)
+	.maxargs	= 2,
+	.cmd		= do_help,
+	.aliases	= help_aliases,
+	.usage		= "help    - print online help\n",
+	U_BOOT_CMD_HELP(
  	"    - show help information (for 'command')\n"
  	"'help' prints online help for the monitor commands.\n\n"
  	"Without arguments, it prints a short usage message for all commands.\n\n"
  	"To get detailed help information for specific commands you can type\n"
-  "'help' with one or more command names as arguments.\n"
-);
-
-/* This do not ust the U_BOOT_CMD macro as ? can't be used in symbol names */
-#ifdef  CONFIG_LONGHELP
-cmd_tbl_t __u_boot_cmd_question_mark Struct_Section = {
-	"?",	CONFIG_MAXARGS,	1,	do_help,
- 	"?       - alias for 'help'\n",
-	NULL
-};
-#else
-cmd_tbl_t __u_boot_cmd_question_mark Struct_Section = {
-	"?",	CONFIG_MAXARGS,	1,	do_help,
- 	"?       - alias for 'help'\n"
-};
-#endif /* CONFIG_LONGHELP */
+	"'help' with one or more command names as arguments.\n")
+U_BOOT_CMD_END
 
 #endif /* CONFIG_CMD_HELP */
 
@@ -358,15 +359,10 @@ cmd_tbl_t *find_cmd (const char *cmd)
 {
 	cmd_tbl_t *cmdtp;
 	cmd_tbl_t *cmdtp_temp = &__u_boot_cmd_start;	/*Init value */
-	const char *p;
 	int len;
 	int n_found = 0;
 
-	/*
-	 * Some commands allow length modifiers (like "cp.b");
-	 * compare command name only until first dot.
-	 */
-	len = ((p = strchr(cmd, '.')) == NULL) ? strlen (cmd) : (p - cmd);
+	len = strlen (cmd);
 
 	for (cmdtp = &__u_boot_cmd_start;
 	     cmdtp != &__u_boot_cmd_end;
@@ -377,6 +373,19 @@ cmd_tbl_t *find_cmd (const char *cmd)
 
 			cmdtp_temp = cmdtp;	/* abbreviated command ? */
 			n_found++;
+		}
+		if (cmdtp->aliases) {
+			char **aliases = cmdtp->aliases;
+			while(*aliases) {
+				if (strncmp (cmd, *aliases, len) == 0) {
+					if (len == strlen (cmdtp->name))
+						return cmdtp;	/* full match */
+
+					cmdtp_temp = cmdtp;	/* abbreviated command ? */
+					n_found++;
+				}
+				aliases++;
+			}
 		}
 	}
 	if (n_found == 1) {			/* exactly one match */

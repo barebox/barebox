@@ -176,11 +176,12 @@ out:
 	return errno;
 }
 
-U_BOOT_CMD(
-	md,    CONFIG_MAXARGS,     0,      do_mem_md,
-	"md      - memory display\n",
-	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
-);
+U_BOOT_CMD_START(md)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_mem_md,
+	.usage		= "md      - memory display\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
 
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -264,11 +265,12 @@ out:
 	return errno;
 }
 
-U_BOOT_CMD(
-	mw,    CONFIG_MAXARGS,    0,     do_mem_mw,
-	"mw      - memory write (fill)\n",
-	"[.b, .w, .l] address value [count]\n    - write memory\n"
-);
+U_BOOT_CMD_START(mw)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_mem_mw,
+	.usage		= "mw      - memory write (fill)\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
 
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -440,11 +442,12 @@ out:
 	return ret;
 }
 
-U_BOOT_CMD(
-	cp,    4,    0,    do_cp,
-	"cp      - memory copy\n",
-	"[.b, .w, .l] source target count\n    - copy memory\n"
-);
+U_BOOT_CMD_START(cp)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_cp,
+	.usage		= "cp      - copy files\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
 
 #ifndef CONFIG_CRC32_VERIFY
 
@@ -618,19 +621,21 @@ static int mem_init(void)
 
 device_initcall(mem_init);
 
-U_BOOT_CMD(
-	cmp,    4,     0,     do_mem_cmp,
-	"cmp     - memory compare\n",
-	"[.b, .w, .l] addr1 addr2 count\n    - compare memory\n"
-);
+U_BOOT_CMD_START(cmp)
+	.maxargs	= 4,
+	.cmd		= do_mem_cmp,
+	.usage		= "cmp     - memory compare\n",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
 
 #ifndef CONFIG_CRC32_VERIFY
 
-U_BOOT_CMD(
-	crc32,    4,    0,     do_mem_crc,
-	"crc32   - checksum calculation\n",
-	"address count [addr]\n    - compute CRC32 checksum [save at addr]\n"
-);
+U_BOOT_CMD_START(crc32)
+	.maxargs	= 4,
+	.cmd		= do_mem_crc,
+	.usage		= "crc32   - checksum calculation\n",
+	U_BOOT_CMD_HELP("address count [addr]\n    - compute CRC32 checksum [save at addr]\n")
+U_BOOT_CMD_END
 
 #else	/* CONFIG_CRC32_VERIFY */
 

@@ -22,7 +22,7 @@ static void ls_one(const char *path, struct stat *s)
 
 int ls(const char *path, ulong flags)
 {
-	struct dir *dir;
+	DIR *dir;
 	struct dirent *d;
 	char tmp[PATH_MAX];
 	struct stat s;
@@ -45,10 +45,10 @@ int ls(const char *path, ulong flags)
 		return errno;
 
 	while ((d = readdir(dir))) {
-		sprintf(tmp, "%s/%s", path, d->name);
+		sprintf(tmp, "%s/%s", path, d->d_name);
 		if (stat(tmp, &s))
 			goto out;
-		ls_one(d->name, &s);
+		ls_one(d->d_name, &s);
 	}
 
 	closedir(dir);
@@ -63,13 +63,13 @@ int ls(const char *path, ulong flags)
 	}
 
 	while ((d = readdir(dir))) {
-		sprintf(tmp, "%s/%s", path, d->name);
+		sprintf(tmp, "%s/%s", path, d->d_name);
 		normalise_path(tmp);
 		if (stat(tmp, &s))
 			goto out;
-		if (!strcmp(d->name, "."))
+		if (!strcmp(d->d_name, "."))
 			continue;
-		if (!strcmp(d->name, ".."))
+		if (!strcmp(d->d_name, ".."))
 			continue;
 		if (s.st_mode & S_IFDIR)
 			ls(tmp, flags);
@@ -115,11 +115,11 @@ static int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	ls,     CONFIG_MAXARGS,     0,      do_ls,
-	"ls      - list a file or directory\n",
-	"<path> list files on path"
-);
+U_BOOT_CMD_START(ls)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_ls,
+	.usage		= "ls      - list a file or directory\n",
+U_BOOT_CMD_END
 
 static int do_cd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -138,11 +138,11 @@ static int do_cd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	cd,     2,     0,      do_cd,
-	"cd      - change current directory\n",
-	"<path> cd to path"
-);
+U_BOOT_CMD_START(cd)
+	.maxargs	= 2,
+	.cmd		= do_cd,
+	.usage		= "cd      - change current directory\n",
+U_BOOT_CMD_END
 
 static int do_pwd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -150,11 +150,11 @@ static int do_pwd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	pwd,     1,     0,      do_pwd,
-	"pwd      - display current directory\n",
-	NULL;
-);
+U_BOOT_CMD_START(pwd)
+	.maxargs	= 2,
+	.cmd		= do_pwd,
+	.usage		= "pwd      - display current directory\n",
+U_BOOT_CMD_END
 
 static int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -169,11 +169,11 @@ static int do_mkdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	mkdir,     2,     0,      do_mkdir,
-	"mkdir    - create a new directory\n",
-	""
-);
+U_BOOT_CMD_START(mkdir)
+	.maxargs	= 2,
+	.cmd		= do_mkdir,
+	.usage		= "mkdir    - create a new directory\n",
+U_BOOT_CMD_END
 
 static int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -188,11 +188,11 @@ static int do_rm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	rm,     2,     0,      do_rm,
-	"rm    - remove files\n",
-	""
-);
+U_BOOT_CMD_START(rm)
+	.maxargs	= 2,
+	.cmd		= do_rm,
+	.usage		= "rm    - remove files\n",
+U_BOOT_CMD_END
 
 static int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -207,11 +207,11 @@ static int do_rmdir (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	rmdir,     2,     0,      do_rmdir,
-	"rm    - remove files\n",
-	""
-);
+U_BOOT_CMD_START(rmdir)
+	.maxargs	= 2,
+	.cmd		= do_rmdir,
+	.usage		= "rmdir <dir>   - remove directories\n",
+U_BOOT_CMD_END
 
 static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -243,11 +243,12 @@ static int do_mount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	mount,     4,     0,      do_mount,
-	"mount   - mount a filesystem to a device\n",
-	" <device> <type> <path> add a filesystem of type 'type' on the given device"
-);
+U_BOOT_CMD_START(mount)
+	.maxargs	= 4,
+	.cmd		= do_mount,
+	.usage		= "mount   - mount a filesystem to a device\n",
+	U_BOOT_CMD_HELP(" <device> <type> <path> add a filesystem of type 'type' on the given device")
+U_BOOT_CMD_END
 
 static int do_umount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -266,13 +267,11 @@ static int do_umount (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 }
 
-U_BOOT_CMD(
-	umount,     2,     0,      do_umount,
-	"umount   - umount a filesystem\n",
-	" <device> <type> <path> add a filesystem of type 'type' on the given device"
-);
-
-/* --------- Testing --------- */
+U_BOOT_CMD_START(umount)
+	.maxargs	= 2,
+	.cmd		= do_umount,
+	.usage		= "umount <path>   - umount a filesystem mounted on <path>\n",
+U_BOOT_CMD_END
 
 static int do_cat ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -308,10 +307,8 @@ out:
 	return err;
 }
 
-U_BOOT_CMD(
-	cat,     2,     0,      do_cat,
-	"cat      - bla bla\n",
-	"<dev:path> list files on device"
-);
-/* --------- /Testing --------- */
-
+U_BOOT_CMD_START(cat)
+	.maxargs	= 2,
+	.cmd		= do_cat,
+	.usage		= "cat      - bla bla\n",
+U_BOOT_CMD_END

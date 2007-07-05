@@ -188,7 +188,7 @@ static struct device_d *get_device_by_path(char **path)
 
 int dir_is_empty(const char *pathname)
 {
-	struct dir *dir;
+	DIR *dir;
 	struct dirent *d;
 	int ret = 1;
 
@@ -199,7 +199,7 @@ int dir_is_empty(const char *pathname)
 	}
 
 	while ((d = readdir(dir))) {
-		if (!strcmp(d->name, ".") || !strcmp(d->name, ".."))
+		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 				continue;
 		ret = 0;
 		break;
@@ -575,9 +575,9 @@ int umount(const char *pathname)
 	return 0;
 }
 
-struct dir *opendir(const char *pathname)
+DIR *opendir(const char *pathname)
 {
-	struct dir *dir = NULL;
+	DIR *dir = NULL;
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	char *p = normalise_path(pathname);
@@ -604,12 +604,12 @@ out:
 	return dir;
 }
 
-struct dirent *readdir(struct dir *dir)
+struct dirent *readdir(DIR *dir)
 {
 	return dir->fsdrv->readdir(dir->dev, dir);
 }
 
-int closedir(struct dir *dir)
+int closedir(DIR *dir)
 {
 	return dir->fsdrv->closedir(dir->dev, dir);
 }

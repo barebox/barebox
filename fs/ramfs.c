@@ -426,9 +426,9 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
+DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
 {
-	struct dir *dir;
+	DIR *dir;
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node;
 // printf("opendir: %s\n", pathname);
@@ -441,26 +441,26 @@ struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
 	if (node->mode != S_IFDIR)
 		return NULL;
 
-	dir = xmalloc(sizeof(struct dir));
+	dir = xmalloc(sizeof(DIR));
 
 	dir->priv = node->child;
 
 	return dir;
 }
 
-struct dirent* ramfs_readdir(struct device_d *dev, struct dir *dir)
+struct dirent* ramfs_readdir(struct device_d *dev, DIR *dir)
 {
 	struct ramfs_inode *node = dir->priv;
 
 	if (node) {
-		strcpy(dir->d.name, node->name);
+		strcpy(dir->d.d_name, node->name);
 		dir->priv = node->next;
 		return &dir->d;
 	}
 	return NULL;
 }
 
-int ramfs_closedir(struct device_d *dev, struct dir *dir)
+int ramfs_closedir(struct device_d *dev, DIR *dir)
 {
 	free(dir);
 	return 0;

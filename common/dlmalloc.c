@@ -1933,7 +1933,7 @@ size_t malloc_usable_size(mem) Void_t* mem;
 
 /* Utility to update current_mallinfo for malloc_stats and mallinfo() */
 
-#ifdef CONFIG_CMD_MALLOCINFO
+#ifdef CONFIG_CMD_MEMINFO
 static void malloc_update_mallinfo()
 {
   int i;
@@ -2011,7 +2011,7 @@ void malloc_stats()
 #endif
 }
 
-#endif /* CONFIG_CMD_MALLOCINFO */
+#endif /* CONFIG_CMD_MEMINFO */
 
 
 

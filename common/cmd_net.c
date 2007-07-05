@@ -93,33 +93,36 @@ int do_bootp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return netboot_common (BOOTP, cmdtp, argc, argv);
 }
 
-U_BOOT_CMD(
-	bootp,	3,	1,	do_bootp,
-	"bootp\t- boot image via network using BootP/TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
+U_BOOT_CMD_START(bootp)
+	.maxargs	= 3,
+	.cmd		= do_bootp,
+	.usage		= "bootp\t- boot image via network using BootP/TFTP protocol\n",
+	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
+U_BOOT_CMD_END
 
 int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
-U_BOOT_CMD(
-	tftpboot,	3,	1,	do_tftpb,
-	"tftpboot- boot image via network using TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
+U_BOOT_CMD_START(tftpboot)
+	.maxargs	= 3,
+	.cmd		= do_tftpb,
+	.usage		= "tftpboot- boot image via network using TFTP protocol\n",
+	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
+U_BOOT_CMD_END
 
 int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	return netboot_common (RARP, cmdtp, argc, argv);
 }
 
-U_BOOT_CMD(
-	rarpboot,	3,	1,	do_rarpb,
-	"rarpboot- boot image via network using RARP/TFTP protocol\n",
-	"[loadAddress] [bootfilename]\n"
-);
+U_BOOT_CMD_START(rarpboot)
+	.maxargs	= 3,
+	.cmd		= do_rarpb,
+	.usage		= "rarpboot- boot image via network using RARP/TFTP protocol\n",
+	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
+U_BOOT_CMD_END
 
 #ifdef CONFIG_NET_DHCP
 int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -135,11 +138,12 @@ int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	dhcp,	3,	1,	do_dhcp,
-	"dhcp\t- invoke DHCP client to obtain IP/boot params\n",
-	"\n"
-);
+U_BOOT_CMD_START(dhcp)
+	.maxargs	= 3,
+	.cmd		= do_dhcp,
+	.usage		= "dhcp\t- invoke DHCP client to obtain IP/boot params\n",
+U_BOOT_CMD_END
+
 #endif	/* CONFIG_NET_DHCP */
 
 #ifdef CONFIG_NET_NFS
@@ -148,11 +152,13 @@ int do_nfs (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return netboot_common(NFS, cmdtp, argc, argv);
 }
 
-U_BOOT_CMD(
-	nfs,	3,	1,	do_nfs,
-	"nfs\t- boot image via network using NFS protocol\n",
-	"[loadAddress] [host ip addr:bootfilename]\n"
-);
+U_BOOT_CMD_START(nfs)
+	.maxargs	= 3,
+	.cmd		= do_nfs,
+	.usage		= "nfs\t- boot image via network using NFS protocol\n",
+	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
+U_BOOT_CMD_END
+
 #endif	/* CONFIG_NET_NFS */
 
 int net_store_fd;
@@ -229,8 +235,11 @@ int do_cdp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD(
-	cdp,	1,	1,	do_cdp,
-	"cdp\t- Perform CDP network configuration\n",
-);
+U_BOOT_CMD_START(cdp)
+	.maxargs	= 1,
+	.cmd		= do_cdp,
+	.usage		= "cdp\t- Perform CDP network configuration\n",
+	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
+U_BOOT_CMD_END
+
 #endif	/* CFG_CMD_CDP */

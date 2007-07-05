@@ -469,9 +469,8 @@ out:
 	return 0;
 }
 
-int do_edit (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-U_BOOT_CMD(
-	edit,	2,	0,	do_edit,
-	"edit     - edit a file\n",
-	"<filename> - edit <filename>\n"
-);
+U_BOOT_CMD_START(edit)
+	.maxargs	= 2,
+	.cmd		= do_edit,
+	.usage		= "edit <file>    - edit a file\n",
+U_BOOT_CMD_END

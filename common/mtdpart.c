@@ -161,17 +161,17 @@ int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-U_BOOT_CMD(
-	addpart,     2,     0,      do_addpart,
-	"addpart     - add a partition table to a device\n",
-	""
-);
+U_BOOT_CMD_START(addpart)
+	.maxargs	= 2,
+	.cmd		= do_addpart,
+	.usage		= "addpart     - add a partition table to a device\n",
+U_BOOT_CMD_END
 
-U_BOOT_CMD(
-	delpart,     2,     0,      do_delpart,
-	"delpart     - delete a partition table from a device\n",
-	""
-);
+U_BOOT_CMD_START(delpart)
+	.maxargs	= 2,
+	.cmd		= do_delpart,
+	.usage		= "delpart     - delete a partition table from a device\n",
+U_BOOT_CMD_END
 
 int part_probe (struct device_d *dev)
 {

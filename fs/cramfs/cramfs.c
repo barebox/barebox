@@ -183,7 +183,7 @@ static int cramfs_fill_dirent (struct device_d *dev, unsigned long offset, struc
 	if (!inode)
 		return -EINVAL;
 
-	memset(d->name, 0, 256);
+	memset(d->d_name, 0, 256);
 
 	/*
 	 * Namelengths on disk are shifted by two
@@ -192,7 +192,7 @@ static int cramfs_fill_dirent (struct device_d *dev, unsigned long offset, struc
 	 */
 
 	namelen = CRAMFS_GET_NAMELEN (inode) << 2;
-	dev_read(dev, d->name, namelen, offset + sizeof(struct cramfs_inode), 0);
+	dev_read(dev, d->d_name, namelen, offset + sizeof(struct cramfs_inode), 0);
 	free(inode);
 	return namelen;
 }
@@ -200,10 +200,10 @@ static int cramfs_fill_dirent (struct device_d *dev, unsigned long offset, struc
 struct cramfs_dir {
 	unsigned long offset, size;
 	unsigned long inodeoffset;
-	struct dir dir;
+	DIR dir;
 };
 
-struct dir* cramfs_opendir(struct device_d *_dev, const char *filename)
+DIR* cramfs_opendir(struct device_d *_dev, const char *filename)
 {
 	char *f;
 	struct cramfs_priv *priv = _dev->priv;
@@ -249,7 +249,7 @@ err_free:
 	return NULL;
 }
 
-static struct dirent* cramfs_readdir(struct device_d *_dev, struct dir *_dir)
+static struct dirent* cramfs_readdir(struct device_d *_dev, DIR *_dir)
 {
 	struct fs_device_d *fsdev = _dev->type_data;
 	struct device_d *dev = fsdev->parent;
@@ -266,7 +266,7 @@ static struct dirent* cramfs_readdir(struct device_d *_dev, struct dir *_dir)
 	return NULL;
 }
 
-static int cramfs_closedir(struct device_d *dev, struct dir *_dir)
+static int cramfs_closedir(struct device_d *dev, DIR *_dir)
 {
 	struct cramfs_dir *dir = _dir->priv;
 	free(dir);

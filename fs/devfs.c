@@ -36,11 +36,11 @@ static int devfs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
-struct dir* devfs_opendir(struct device_d *dev, const char *pathname)
+DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 {
-	struct dir *dir;
+	DIR *dir;
 
-	dir = malloc(sizeof(struct dir));
+	dir = malloc(sizeof(DIR));
 	if (!dir)
 		return NULL;
 
@@ -49,7 +49,7 @@ struct dir* devfs_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-struct dirent* devfs_readdir(struct device_d *_dev, struct dir *dir)
+struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
 {
 	struct device_d *dev = dir->priv;
 
@@ -57,14 +57,14 @@ struct dirent* devfs_readdir(struct device_d *_dev, struct dir *dir)
 		dev = dev->next;
 
 	if (dev) {
-		strcpy(dir->d.name, dev->id);
+		strcpy(dir->d.d_name, dev->id);
 		dir->priv = dev->next;
 		return &dir->d;
 	}
 	return NULL;
 }
 
-int devfs_closedir(struct device_d *dev, struct dir *dir)
+int devfs_closedir(struct device_d *dev, DIR *dir)
 {
 	free(dir);
 	return 0;

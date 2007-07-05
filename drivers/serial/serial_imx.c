@@ -62,13 +62,6 @@ static int imx_serial_init_port(struct console_device *cdev)
 {
 #if 0
 	volatile struct imx_serial* base = (struct imx_serial *)UART_BASE;
-#ifdef CONFIG_IMX_SERIAL1
-	imx_gpio_mode(PC11_PF_UART1_TXD);
-	imx_gpio_mode(PC12_PF_UART1_RXD);
-#else
-	imx_gpio_mode(PB30_PF_UART2_TXD);
-	imx_gpio_mode(PB31_PF_UART2_RXD);
-#endif
 
 	/* Disable UART */
 	base->ucr1 &= ~UCR1_UARTEN;

@@ -74,6 +74,10 @@ static struct device_d scb9328_serial_device = {
 
 static int scb9328_console_init(void)
 {
+	/* init gpios for serial port */
+	imx_gpio_mode(PC11_PF_UART1_TXD);
+	imx_gpio_mode(PC12_PF_UART1_RXD);
+
 	register_device(&scb9328_serial_device);
 	return 0;
 }

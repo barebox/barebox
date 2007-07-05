@@ -45,12 +45,4 @@ int	dram_init (void);
 void	setup_serial_tag (struct tag **params);
 void	setup_revision_tag (struct tag **params);
 
-/* ------------------------------------------------------------ */
-/* Here is a list of some prototypes which are incompatible to	*/
-/* the U-Boot implementation					*/
-/* To be fixed!							*/
-/* ------------------------------------------------------------ */
-/* common/cmd_nvedit.c */
-void	setenv		(char *, char *);
-
 #endif	/* _U_BOOT_ARM_H_ */

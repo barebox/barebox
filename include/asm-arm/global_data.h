@@ -24,8 +24,6 @@
 #ifndef	__ASM_GBL_DATA_H
 #define __ASM_GBL_DATA_H
 
-typedef        struct  global_data {} gd_t;
-
 #define DECLARE_GLOBAL_DATA_PTR
 
 #endif /* __ASM_GBL_DATA_H */

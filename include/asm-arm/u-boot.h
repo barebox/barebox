@@ -36,13 +36,6 @@
 #ifndef _U_BOOT_H_
 #define _U_BOOT_H_	1
 
-typedef struct bd_info {
-    int			bi_baudrate;	/* serial console baudrate */
-    ulong	        bi_arch_number;	/* unique id for this board */
-    ulong	        bi_boot_params;	/* where this board expects params */
-} bd_t;
-
-#define bi_env_data bi_env->data
-#define bi_env_crc  bi_env->crc
+//typedef struct bd_info {} bd_t;
 
 #endif	/* _U_BOOT_H_ */

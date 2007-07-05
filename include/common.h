@@ -196,7 +196,7 @@ void	reset_cmd_timeout(void);
 
 /* lib_$(ARCH)/board.c */
 void	board_init_f  (ulong);
-void	board_init_r  (gd_t *, ulong);
+//void	board_init_r  (gd_t *, ulong);
 int	checkboard    (void);
 int	checkflash    (void);
 int	checkdram     (void);
@@ -368,7 +368,7 @@ void	icache_disable(void);
 int	dcache_status (void);
 void	dcache_enable (void);
 void	dcache_disable(void);
-void	relocate_code (ulong, gd_t *, ulong);
+//void	relocate_code (ulong, gd_t *, ulong);
 ulong	get_endaddr   (void);
 void	trap_init     (ulong);
 #if defined (CONFIG_4xx)	|| \

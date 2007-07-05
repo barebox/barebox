@@ -957,8 +957,9 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 		int	verify)
 {
 	image_header_t *hdr = &header;
-
+#if 0
 	void	(*loader)(bd_t *, image_header_t *, char *, char *);
+#endif
 	image_header_t *img_addr;
 	char     *consdev;
 	char     *cmdline;
@@ -1009,12 +1010,12 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 	} else if ((cmdline = getenv("bootargs")) == NULL) {
 		cmdline = "";
 	}
-
+#if 0
 	loader = (void (*)(bd_t *, image_header_t *, char *, char *)) ntohl(hdr->ih_ep);
 
 	printf ("## Transferring control to NetBSD stage-2 loader (at address %08lx) ...\n",
 		(ulong)loader);
-
+#endif
 	SHOW_BOOT_PROGRESS (15);
 
 	/*
@@ -1475,13 +1476,14 @@ do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 		ulong addr, ulong *len_ptr, int verify)
 {
 	image_header_t *hdr = &header;
+#if 0
 	void	(*entry_point)(bd_t *);
 
 	entry_point = (void (*)(bd_t *)) ntohl(hdr->ih_ep);
 
 	printf ("## Transferring control to RTEMS (at address %08lx) ...\n",
 		(ulong)entry_point);
-
+#endif
 	SHOW_BOOT_PROGRESS (15);
 
 	/*

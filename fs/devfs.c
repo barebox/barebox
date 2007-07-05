@@ -21,6 +21,13 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 	return dev_write(dev, buf, size, f->pos, f->flags);
 }
 
+static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
+{
+	struct device_d *dev = f->inode;
+
+	return dev_erase(dev, count, offset);
+}
+
 static int devfs_open(struct device_d *_dev, FILE *file, const char *filename)
 {
 	struct device_d *dev = get_device_by_id(filename + 1);
@@ -108,6 +115,7 @@ static struct fs_driver_d devfs_driver = {
 	.readdir   = devfs_readdir,
 	.closedir  = devfs_closedir,
 	.stat      = devfs_stat,
+	.erase     = devfs_erase,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.type   = DEVICE_TYPE_FS,

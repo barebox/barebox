@@ -104,24 +104,22 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
-int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	start, size;
+	ulong	start = 0, size = 0x100;
 	int	r, now;
 	int	ret = 0;
 	int fd;
-	char *filename = "/dev/mem";
+	char *filename;
 	int mode = O_RWSIZE_4;
 	int opt;
+	char *spec;
 
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	errno = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
+	while((opt = getopt(argc, argv, "bwl")) > 0) {
 		switch(opt) {
 		case 'b':
 			mode = O_RWSIZE_1;
@@ -131,9 +129,21 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			break;
 		case 'l':
 			mode = O_RWSIZE_4;
-		case 'f':
-			filename = optarg;
 		}
+	}
+
+	if (optind + 1 != argc) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	if ((spec = strchr(argv[optind], ':'))) {
+		*spec = 0;
+		filename = argv[optind];
+		spec++;
+	} else {
+		spec = argv[optind];
+		filename = "/dev/mem";
 	}
 
 	fd = open(filename, mode | O_RDONLY);
@@ -142,13 +152,15 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	parse_area_spec(argv[optind], &start, &size);
-	if (size == ~0)
-		size = 0x100;
+	if (*spec) {
+		parse_area_spec(spec, &start, &size);
+		if (size == ~0)
+			size = 0x100;
+	}
 
 	if (lseek(fd, start, SEEK_SET)) {
 		perror("lseek");
-		return 1;
+		goto out;
 	}
 
 	do {
@@ -156,7 +168,7 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		r = read(fd, rw_buf, now);
 		if (r < 0) {
                         perror("read");
-			return r;
+			goto out;
                 }
 		if (!r)
 			goto out;
@@ -171,58 +183,107 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 out:
 	close(fd);
 
-	return 0;
+	return errno;
 }
-#if 0
+
+U_BOOT_CMD(
+	md,    CONFIG_MAXARGS,     0,      do_mem_md,
+	"md      - memory display\n",
+	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
+);
+
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	addr, writeval, count;
+	int ret = 0;
+	int fd;
+	char *filename;
+	int mode = O_RWSIZE_4;
+	int opt;
+	char *spec;
+	ulong adr;
 
-        struct memarea_info mem;
-	ulong	size;
+	errno = 0;
 
-	if ((argc < 3) || (argc > 4)) {
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "bwl")) > 0) {
+		switch(opt) {
+		case 'b':
+			mode = O_RWSIZE_1;
+			break;
+		case 'w':
+			mode = O_RWSIZE_2;
+			break;
+		case 'l':
+			mode = O_RWSIZE_4;
+		}
+	}
+
+	if (optind + 2 >= argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	/* Check for size specification.
-	*/
-	if ((size = cmd_get_data_size(argv[0], 4)) < 1)
-		return 1;
-
-        if (spec_str_to_info(argv[1], &mem)) {
-                printf("-ENOPARSE\n");
-                return -1;
-        }
-        addr = mem.start;
-
-	/* Get the value to write.
-	*/
-	writeval = simple_strtoul(argv[2], NULL, 16);
-
-	/* Count ? */
-	if (argc == 4)
-		count = simple_strtoul(argv[3], NULL, 16);
-	else
-		count = size;
-
-	if (count == size) {
-		return dev_write(mem.device, (uchar *)&writeval, count, mem.start, RW_SIZE(size));
+	if ((spec = strchr(argv[optind], ':'))) {
+		*spec = 0;
+		filename = argv[optind];
+		spec++;
+		adr = strtoul_suffix(spec, NULL, 0);
 	} else {
-		printf("write multiple not yet implemented\n");
+		adr = strtoul_suffix(argv[optind], NULL, 0);
+		filename = "/dev/mem";
 	}
 
-	return 0;
+	optind++;
+
+	fd = open(filename, mode | O_WRONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+
+	if (lseek(fd, adr, SEEK_SET)) {
+		perror("lseek");
+		goto out;
+	}
+
+	while (optind < argc) {
+		u8 val8;
+		u16 val16;
+		u32 val32;
+		switch (mode) {
+		case O_RWSIZE_1:
+			val8 = simple_strtoul(argv[optind], NULL, 0);
+			ret = write(fd, &val8, 1);
+			printf("write %d\n", val8);
+			break;
+		case O_RWSIZE_2:
+			val16 = simple_strtoul(argv[optind], NULL, 0);
+			ret = write(fd, &val16, 2);
+			break;
+		case O_RWSIZE_4:
+			val32 = simple_strtoul(argv[optind], NULL, 0);
+			ret = write(fd, &val32, 4);
+			break;
+		}
+		if (ret < 0) {
+			perror("write");
+			break;
+		}
+		optind++;
+	}
+
+out:
+	close(fd);
+
+	return errno;
 }
 
 U_BOOT_CMD(
-	mw,    4,    0,     do_mem_mw,
+	mw,    CONFIG_MAXARGS,    0,     do_mem_mw,
 	"mw      - memory write (fill)\n",
 	"[.b, .w, .l] address value [count]\n    - write memory\n"
 );
-
-#endif
 
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -571,12 +632,6 @@ static int mem_init(void)
 }
 
 device_initcall(mem_init);
-
-U_BOOT_CMD(
-	md,     10000,     0,      do_mem_md,
-	"md      - memory display\n",
-	"[.b, .w, .l] address [# of objects]\n    - memory display\n"
-);
 
 U_BOOT_CMD(
 	cmp,    4,     0,     do_mem_cmp,

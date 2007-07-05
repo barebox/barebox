@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <types.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -340,9 +341,12 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif
 }
 
-U_BOOT_CMD(
-	mtest,    4,    0,     do_mem_mtest,
-	"mtest   - simple RAM test\n",
-	"[start [end [pattern]]]\n"
-	"    - simple RAM read/write test\n"
-);
+static __maybe_unused char cmd_ls_help[] =
+"Usage: [start [end [pattern]]]\n"
+"simple RAM read/write test\n";
+
+U_BOOT_CMD_START(mtest)
+	.maxargs	= 4,
+	.cmd		= do_mem_mtest,
+	.usage		= "simple RAM test",
+U_BOOT_CMD_END

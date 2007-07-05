@@ -27,6 +27,7 @@
 #include <image.h>
 #include <zlib.h>
 #include <asm/byteorder.h>
+#include <environment.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

@@ -79,7 +79,7 @@ struct device_d *get_device_by_id(const char *id);
 struct device_d *get_first_device(void);
 int get_free_deviceid(char *id, char *id_template);
 
-struct driver_d *get_driver_by_name(char *name);
+struct driver_d *get_driver_by_name(const char *name);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);

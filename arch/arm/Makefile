@@ -29,11 +29,9 @@ INCDIR   := arch-$(incdir-y)
 include/asm-arm/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
 	@echo '  SYMLINK include/asm-arm/arch -> include/asm-arm/$(INCDIR)'
 ifneq ($(KBUILD_SRC),)
-	echo incdir1: $(INCDIR)
 	$(Q)mkdir -p include/asm-arm
 	$(Q)ln -fsn $(srctree)/include/asm-arm/$(INCDIR) include/asm-arm/arch
 else
-	echo incdir: $(INCDIR)
 	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
 endif
 	@touch $@

@@ -101,7 +101,7 @@ void	print_size (ulong, const char *);
 /* common/main.c */
 void	main_loop	(void);
 int	run_command	(const char *cmd, int flag);
-int	readline	(const char *const prompt);
+int	readline	(const char *prompt, char *buf, int len);
 void	init_cmd_timeout(void);
 void	reset_cmd_timeout(void);
 

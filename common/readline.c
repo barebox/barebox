@@ -1,5 +1,7 @@
 #include <common.h>
 #include <readkey.h>
+#include <init.h>
+#include <xfuncs.h>
 
 extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
 
@@ -36,7 +38,7 @@ char hist_lines[HIST_MAX][HIST_SIZE];
 
 #define add_idx_minus_one() ((hist_add_idx == 0) ? hist_max : hist_add_idx-1)
 
-static void hist_init(void)
+static int hist_init(void)
 {
 	int i;
 
@@ -49,7 +51,10 @@ static void hist_init(void)
 		hist_list[i] = hist_lines[i];
 		hist_list[i][0] = '\0';
 	}
+	return 0;
 }
+
+core_initcall(hist_init);
 
 static void cread_add_to_hist(char *line)
 {
@@ -167,7 +172,7 @@ static void cread_add_char(char ichar, int insert, unsigned long *num,
 	}
 }
 
-static int cread_line(char *buf, unsigned int *len)
+int readline(const char *prompt, char *buf, int len)
 {
 	unsigned long num = 0;
 	unsigned long eol_num = 0;
@@ -176,6 +181,8 @@ static int cread_line(char *buf, unsigned int *len)
 	char ichar;
 	int insert = 1;
 	int rc = 0;
+
+	puts (prompt);
 
 	while (1) {
 		rlen = 1;
@@ -279,42 +286,17 @@ static int cread_line(char *buf, unsigned int *len)
 			continue;
 		}
 		default:
-			cread_add_char(ichar, insert, &num, &eol_num, buf, *len);
+			cread_add_char(ichar, insert, &num, &eol_num, buf, len);
 			break;
 		}
 	}
-	*len = eol_num;
+	len = eol_num;
 	buf[eol_num] = '\0';	/* lose the newline */
 
 	if (buf[0] && buf[0] != CREAD_HIST_CHAR)
 		cread_add_to_hist(buf);
 	hist_cur = hist_add_idx;
 
-	return (rc);
-}
-
-/*
- * Prompt for input and read a line.
- * If  CONFIG_BOOT_RETRY_TIME is defined and retry_time >= 0,
- * time out when time goes past endtime (timebase time in ticks).
- * Return:	number of read characters
- *		-1 if break
- *		-2 if timed out
- */
-int readline (const char *const prompt)
-{
-	char *p = console_buffer;
-	unsigned int len=MAX_CMDBUF_SIZE;
-	int rc;
-	static int initted = 0;
-
-	if (!initted) {
-		hist_init();
-		initted = 1;
-	}
-
-	puts (prompt);
-
-	rc = cread_line(p, &len);
 	return rc < 0 ? rc : len;
 }
+

@@ -1,8 +1,6 @@
 #include <common.h>
 #include <watchdog.h>
 
-extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
-
 static char erase_seq[] = "\b \b";		/* erase sequence	*/
 static char   tab_seq[] = "        ";		/* used to expand TABs	*/
 
@@ -44,9 +42,9 @@ static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen)
  *		-1 if break
  *		-2 if timed out
  */
-int readline (const char *const prompt)
+int readline (const char *prompt, char *line, int len)
 {
-	char   *p = console_buffer;
+	char   *p = line;
 	int	n = 0;				/* buffer index		*/
 	int	plen = 0;			/* prompt length	*/
 	int	col;				/* output column cnt	*/
@@ -84,13 +82,13 @@ int readline (const char *const prompt)
 		case '\n':
 			*p = '\0';
 			puts ("\r\n");
-			return (p - console_buffer);
+			return (p - line);
 
 		case '\0':				/* nul			*/
 			continue;
 
 		case 0x03:				/* ^C - break		*/
-			console_buffer[0] = '\0';	/* discard input */
+			line[0] = '\0';	/* discard input */
 			return (-1);
 
 		case 0x15:				/* ^U - erase line	*/
@@ -98,20 +96,20 @@ int readline (const char *const prompt)
 				puts (erase_seq);
 				--col;
 			}
-			p = console_buffer;
+			p = line;
 			n = 0;
 			continue;
 
 		case 0x17:				/* ^W - erase word 	*/
-			p=delete_char(console_buffer, p, &col, &n, plen);
+			p=delete_char(line, p, &col, &n, plen);
 			while ((n > 0) && (*p != ' ')) {
-				p=delete_char(console_buffer, p, &col, &n, plen);
+				p=delete_char(line, p, &col, &n, plen);
 			}
 			continue;
 
 		case 0x08:				/* ^H  - backspace	*/
 		case 0x7F:				/* DEL - backspace	*/
-			p=delete_char(console_buffer, p, &col, &n, plen);
+			p=delete_char(line, p, &col, &n, plen);
 			continue;
 
 		default:
@@ -123,8 +121,8 @@ int readline (const char *const prompt)
 #ifdef CONFIG_AUTO_COMPLETE
 					/* if auto completion triggered just continue */
 					*p = '\0';
-					if (cmd_auto_complete(prompt, console_buffer, &n, &col)) {
-						p = console_buffer + n;	/* reset */
+					if (cmd_auto_complete(prompt, line, &n, &col)) {
+						p = line + n;	/* reset */
 						continue;
 					}
 #endif

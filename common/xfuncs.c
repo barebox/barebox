@@ -21,3 +21,10 @@ void *xrealloc(void *ptr, size_t size)
 
 	return p;
 }
+
+void *xzalloc(size_t size)
+{
+	void *ptr = xmalloc(size);
+	memset(ptr, 0, size);
+	return ptr;
+}

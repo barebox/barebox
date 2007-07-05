@@ -365,20 +365,14 @@ static int cramfs_stat(struct device_d *_dev, const char *filename, struct stat 
 	char *f;
 	unsigned long offset;
 
-	if (strlen (filename) == 0 || !strcmp (filename, "/")) {
-		/* Root directory. Use root inode in super block */
-		offset = CRAMFS_GET_OFFSET (&(priv->super.root)) << 2;
-	} else {
-		f = strdup(filename);
-		offset = cramfs_resolve (dev->map_base,
-				 CRAMFS_GET_OFFSET (&(priv->super.root)) << 2,
-				 CRAMFS_24 (priv->super.root.size), 1,
-				 strtok (f, "/"));
+	f = strdup(filename);
+	offset = cramfs_resolve (dev->map_base,
+			 CRAMFS_GET_OFFSET (&(priv->super.root)) << 2,
+			 CRAMFS_24 (priv->super.root.size), 1,
+			 strtok (f, "/"));
+	free(f);
 
-		free(f);
-	}
-
-	if (offset < 0)
+	if (offset <= 0)
 		return -ENOENT;
 
 	inode = (struct cramfs_inode *)	(dev->map_base + offset);

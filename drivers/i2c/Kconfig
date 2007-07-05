@@ -1,7 +1,7 @@
 config HAS_AT91_I2C
 	bool
 
-menu "I2C drivers"
+menu "I2C drivers                   "
 
 config DRIVER_NET_AT91_I2C
 	bool "at91 I2C driver"

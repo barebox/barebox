@@ -7,7 +7,7 @@ config USB_HOST
 config HAS_USB_DEVICE
 	bool
 
-menu "USB host support"
+menu "USB host support              "
 
 config DRIVER_USB_HOST_OHCI
 	bool

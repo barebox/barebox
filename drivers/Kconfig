@@ -1,10 +1,12 @@
-menu "drivers"
+menu "Drivers                       "
 
 source "drivers/serial/Kconfig"
 source "drivers/net/Kconfig"
 source "drivers/video/Kconfig"
 source "drivers/i2c/Kconfig"
 source "drivers/usb/Kconfig"
+
+menu "flash drivers                 "
 
 config HAS_CFI
 	bool
@@ -22,5 +24,7 @@ config DRIVER_CFI_AMD
 config CFI_BUFFER_WRITE
 	bool "use cfi driver with buffer write"
 	depends on DRIVER_CFI || DRIVER_CFI_NEW
+
+endmenu
 
 endmenu

@@ -170,8 +170,6 @@ struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const char *fil
 		n->parent = new_node;
 		n->child = parent_node->child;
 		new_node->child->next = n;
-	} else {
-		new_node->data = ramfs_get_chunk();
 	}
 
 	while (node->next)
@@ -385,9 +383,11 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	oldchunks = (node->size + CHUNK_SIZE - 1) / CHUNK_SIZE;
 
 	if (newchunks < oldchunks) {
+		if (!newchunks)
+			node->data = 0;
 		while (newchunks--)
 			data = data->next;
-		while (data->next) {
+		while (data) {
 			struct ramfs_chunk *tmp;
 			tmp = data->next;
 			ramfs_put_chunk(data);
@@ -396,6 +396,12 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	}
 
 	if (newchunks > oldchunks) {
+		if (!data) {
+			node->data = ramfs_get_chunk();
+			data = node->data;
+		}
+
+		newchunks--;
 		while (data->next) {
 			newchunks--;
 			data = data->next;

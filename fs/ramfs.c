@@ -186,9 +186,57 @@ static int ramfs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
-static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	return 0;
+	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	int chunk;
+	struct ramfs_chunk *data;
+	int ofs;
+	int now;
+	int pos = f->pos;
+	int size = insize;
+
+	chunk = f->pos / CHUNK_SIZE;
+	printf("%s: reading from chunk %d\n", __FUNCTION__, chunk);
+
+	/* Position ourself in stream */
+	data = node->data;
+	while (chunk) {
+		data = data->next;
+		chunk--;
+	}
+	ofs = f->pos % CHUNK_SIZE;
+
+	/* Read till end of current chunk */
+	if (ofs) {
+		now = min(size, CHUNK_SIZE - ofs);
+		printf("Reading till end of node. size: %d\n", size);
+		memcpy(buf, data->data + ofs, now);
+		size -= now;
+		pos += now;
+		buf += now;
+		if (pos > node->size)
+			node->size = now;
+	}
+
+	/* Do full chunks */
+	while (size >= CHUNK_SIZE) {
+		printf("do full chunk. size: %d\n", size);
+		data = data->next;
+		memcpy(buf, data->data, CHUNK_SIZE);
+		size -= CHUNK_SIZE;
+		pos += CHUNK_SIZE;
+		buf += CHUNK_SIZE;
+	}
+
+	/* And the rest */
+	if (size) {
+		printf("do rest. size: %d\n", size);
+		data = data->next;
+		memcpy(buf, data->data, size);
+	}
+
+	return insize;
 }
 
 static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)

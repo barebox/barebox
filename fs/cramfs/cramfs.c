@@ -277,6 +277,7 @@ static int cramfs_closedir(struct device_d *dev, struct dir *_dir)
 static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 {
 	struct cramfs_priv *priv = _dev->priv;
+	struct cramfs_inode *inode;
 	struct fs_device_d *fsdev = _dev->type_data;
 	struct device_d *dev = fsdev->parent;
 	char *f;
@@ -293,7 +294,9 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 	if (offset <= 0)
 		return -ENOENT;
 
-	file->inode = (void*)dev->map_base + offset;
+	inode = (void*)dev->map_base + offset;
+	file->inode = inode;
+	file->size = inode->size;
 
 	return 0;
 }

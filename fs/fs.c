@@ -234,8 +234,12 @@ int read(int fd, void *buf, size_t count)
 	if (dev->type == DEVICE_TYPE_FS) {
 		fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 		printf("\nreading %d bytes at %d\n",count, f->pos);
+		if (f->pos + count > f->size)
+			count = f->size - f->pos;
 		errno = fsdrv->read(dev, f, buf, count);
 	} else {
+		if (f->pos + count > dev->size)
+			count = dev->size - f->pos;
 		errno = dev->driver->read(dev, buf, count, f->pos, 0); /* FIXME: flags */
 	}
 	if (errno > 0)
@@ -261,6 +265,8 @@ ssize_t write(int fd, const void *buf, size_t count)
 		}
 		errno = fsdrv->write(dev, f, buf, count);
 	} else {
+		if (f->pos + count > dev->size)
+			count = dev->size - f->pos;
 		errno = dev->driver->write(dev, buf, count, f->pos, 0); /* FIXME: flags */
 	}
 	if (errno > 0)

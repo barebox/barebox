@@ -21,6 +21,7 @@
 #include <common.h>
 #include <net.h>
 #include <cfi_flash.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -45,19 +46,24 @@ static struct device_d sdram_dev = {
         .size     = 16 * 1024 * 1024,
 };
 
-int board_init (void)
-{
-	gd->bd->bi_arch_number = MACH_TYPE_SCB9328;
-	gd->bd->bi_boot_params = 0x08000100;
+static struct device_d dm9000_dev = {
+        .name     = "dm9000",
+        .id       = "eth0",
 
+        .type     = DEVICE_TYPE_ETHER,
+};
+
+static int scb9328_devices_init(void) {
+	register_device(&cfi_dev);
+	register_device(&sdram_dev);
+	register_device(&dm9000_dev);
 	return 0;
 }
 
-int dram_init (void)
-{
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+device_initcall(scb9328_devices_init);
 
+static int late_init (void)
+{
 #if ( CONFIG_NR_DRAM_BANKS > 0 )
 	gd->bd->bi_dram[0].start = SCB9328_SDRAM_1;
 	gd->bd->bi_dram[0].size = SCB9328_SDRAM_1_SIZE;
@@ -75,10 +81,8 @@ int dram_init (void)
 	gd->bd->bi_dram[3].size = SCB9328_SDRAM_4_SIZE;
 #endif
 
-#ifdef CONFIG_DRIVER_NET_DM9000
-	eth_set_current(&dm9000_eth);
-#endif
-
 	return 0;
 }
+
+late_initcall(late_init);
 

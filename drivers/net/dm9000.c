@@ -44,9 +44,11 @@ TODO: Homerun NIC and longrun NIC are not functional, only internal at the
 
 #include <common.h>
 #include <command.h>
+#include <driver.h>
 #include <clock.h>
 #include <miiphy.h>
 #include <net.h>
+#include <init.h>
 #include <asm/io.h>
 
 #include "dm9000.h"
@@ -133,7 +135,7 @@ static void phy_write(int reg, u16 value)
 	DM9000_DBG("phy_write(reg:%d, value:%d)\n", reg, value);
 }
 
-int dm9000_probe(void)
+int dm9000_check_id(void)
 {
 	u32 id_val;
 	id_val = DM9000_ior(DM9000_VIDL);
@@ -158,13 +160,15 @@ static void dm9000_reset(void)
 	udelay(1000);		/* delay 1ms */
 }
 
-int dm9000_eth_init(struct eth_device *ndev, bd_t * bd)
+int dm9000_probe(struct device_d *dev)
 {
+//        struct eth_device *ndev = dev->type_data;
+
 	printf("dm9000_eth_init()\n");
 
 	/* RESET device */
 	dm9000_reset();
-	dm9000_probe();
+	dm9000_check_id();
 
 	/* Program operating register */
 	DM9000_iow(DM9000_NCR, 0x0);	/* only intern phy supported by now */
@@ -180,7 +184,7 @@ int dm9000_eth_init(struct eth_device *ndev, bd_t * bd)
 }
 
 
-int dm9000_eth_open(struct eth_device *ndev, bd_t * bd)
+int dm9000_eth_open(struct eth_device *ndev)
 {
         int lnk, i = 0, ctl;
 
@@ -426,7 +430,6 @@ printf("dm9000_set_mac_address\n");
 }
 
 struct eth_device dm9000_eth = {
-	.init = dm9000_eth_init,
 	.open = dm9000_eth_open,
 	.send = dm9000_eth_send,
 	.recv = dm9000_eth_rx,
@@ -434,4 +437,19 @@ struct eth_device dm9000_eth = {
 	.get_mac_address = dm9000_get_mac_address,
 	.set_mac_address = dm9000_set_mac_address,
 };
+
+static struct driver_d dm9000_driver = {
+        .name  = "dm9000",
+        .probe = dm9000_probe,
+        .type  = DEVICE_TYPE_ETHER,
+        .type_data = &dm9000_eth,
+};
+
+static int dm9000_init(void)
+{
+        register_driver(&dm9000_driver);
+        return 0;
+}
+
+device_initcall(dm9000_init);
 

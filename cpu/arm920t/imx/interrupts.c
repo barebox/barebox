@@ -30,6 +30,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <clock.h>
 #include <arm920t.h>
 #include <asm/arch/imx-regs.h>
@@ -45,7 +46,7 @@ static struct clocksource cs = {
 	.shift	= 10,
 };
 
-int interrupt_init (void)
+static int clocksource_init (void)
 {
 	int i;
 	/* setup GP Timer 1 */
@@ -63,6 +64,8 @@ int interrupt_init (void)
 
 	return 0;
 }
+
+core_initcall(clocksource_init);
 
 /*
  * Reset the cpu by setting up the watchdog timer and let him time out

@@ -1,6 +1,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <init.h>
 #include <driver.h>
 #include <malloc.h>
 
@@ -11,6 +12,8 @@ struct partition {
 
         struct device_d *parent;
         struct device_d device;
+
+        char name[16];
 };
 
 #if 0
@@ -60,7 +63,7 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
                         return -1;
                 }
 
-                memcpy(buf, str, end - str);
+                memcpy(part->name, str, end - str);
                 end++;
         }
 
@@ -77,7 +80,6 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
         strcpy(part->device.name, "partition");
         part->device.size = size;
 
-//        printf("part: name=%10s size=0x%08x %s\n", part->device.name, size, ro ? "ro":"");
         return 0;
 }
 
@@ -187,7 +189,10 @@ U_BOOT_CMD(
 
 int part_probe (struct device_d *dev)
 {
-//        printf("%s: devname: %s devid: %s drvname: %s\n",__FUNCTION__, dev->name, dev->id, dev->driver->name);
+        struct partition *part = dev->platform_data;
+
+        printf("registering partition %s on device %s (size=0x%08x, name=%s)\n",
+                        dev->id, part->parent->id, dev->size, part->name);
         return 0;
 }
 
@@ -223,8 +228,9 @@ static struct driver_d part_driver = {
         .erase = part_erase,
 };
 
-int partition_init(void)
+static int partition_init(void)
 {
         return register_driver(&part_driver);
 }
 
+device_initcall(partition_init);

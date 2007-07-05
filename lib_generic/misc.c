@@ -26,6 +26,17 @@ int cmd_get_data_size(char* arg, int default_size)
 	return default_size;
 }
 
+static ulong device_handler[MAX_DEVICE_TYPE];
+
+int register_device_type_handler(int(*handler)(struct device_d *), ulong device_type)
+{
+        device_handler[device_type] = (ulong)handler;
+
+        /* FIXME: cycle through devices */
+
+        return 0;
+}
+
 static struct device_d *first_device = NULL;
 static struct driver_d *first_driver = NULL;
 
@@ -83,8 +94,21 @@ U_BOOT_CMD(
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
+        int(*handler)(struct device_d *);
+
         if (strcmp(dev->name, drv->name))
                 return -1;
+        if (dev->type != drv->type)
+                return -1;
+        if(drv->probe(dev))
+                return -1;
+
+        dev->driver = drv;
+
+        handler = device_handler[dev->type];
+
+        if(handler)
+                (*handler)(dev);
         return 0;
 }
 
@@ -110,10 +134,8 @@ int register_device(struct device_d *new_device)
         drv = first_driver;
 
         while(drv) {
-                if (!match(drv, new_device) && !drv->probe(new_device)) {
-                        new_device->driver = drv;
+                if (!match(drv, new_device))
                         break;
-                }
                 drv = drv->next;
         }
 
@@ -186,8 +208,7 @@ int register_driver(struct driver_d *new_driver)
 
         dev = first_device;
         while (dev) {
-                if (!match(new_driver, dev) && !new_driver->probe(dev))
-                        dev->driver = new_driver;
+                match(new_driver, dev);
                 dev = dev->next;
         }
 
@@ -357,12 +378,16 @@ out:
 
 ssize_t read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        return dev->driver->read(dev, buf, count, offset, flags);
+        if (dev->driver->read)
+                return dev->driver->read(dev, buf, count, offset, flags);
+        return -1;
 }
 
 ssize_t write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        return dev->driver->write(dev, buf, count, offset, flags);
+        if (dev->driver->write)
+                return dev->driver->write(dev, buf, count, offset, flags);
+        return -1;
 }
 
 ssize_t erase(struct device_d *dev, size_t count, unsigned long offset)

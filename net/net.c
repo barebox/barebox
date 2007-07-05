@@ -287,7 +287,7 @@ NetLoop(proto_t protocol)
 		NetArpWaitTxPacketSize = 0;
 	}
 
-	if (eth_init(bd) < 0)
+	if (eth_init() < 0)
 		return -1;
 
 restart:

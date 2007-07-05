@@ -29,6 +29,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <init.h>
 #include <driver.h>
 #include <malloc.h>
 
@@ -770,7 +771,7 @@ struct driver_d ram_drv = {
 	.write = mem_write,
 };
 
-int mem_init(void)
+static int mem_init(void)
 {
 	rw_buf = malloc(RW_BUF_SIZE);
 	if(!rw_buf) {
@@ -783,6 +784,8 @@ int mem_init(void)
         register_driver(&ram_drv);
         return 0;
 }
+
+device_initcall(mem_init);
 
 U_BOOT_CMD(
 	md,     3,     0,      do_mem_md,

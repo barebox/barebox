@@ -39,6 +39,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <command.h>
 #include <malloc.h>
 #include <devices.h>
@@ -70,11 +71,10 @@ static ulong mem_malloc_start = 0;
 static ulong mem_malloc_end = 0;
 static ulong mem_malloc_brk = 0;
 
-static
-void mem_malloc_init (ulong dest_addr)
+static void mem_malloc_init (void)
 {
-	mem_malloc_start = dest_addr;
-	mem_malloc_end = dest_addr + CFG_MALLOC_LEN;
+	mem_malloc_start = _armboot_start - CFG_MALLOC_LEN;
+	mem_malloc_end = _armboot_start;
 	mem_malloc_brk = mem_malloc_start;
 
 	memset ((void *) mem_malloc_start, 0,
@@ -101,17 +101,6 @@ void *sbrk (ptrdiff_t increment)
  * or dropped completely,
  * but let's get it working (again) first...
  */
-
-static int init_baudrate (void)
-{
-	char tmp[64];	/* long enough for environment variables */
-	int i = getenv_r ("baudrate", tmp, sizeof (tmp));
-	gd->bd->bi_baudrate = gd->baudrate = (i > 0)
-			? (int) simple_strtoul (tmp, NULL, 10)
-			: CONFIG_BAUDRATE;
-
-	return (0);
-}
 
 static int display_banner (void)
 {
@@ -172,41 +161,19 @@ static int display_dram_config (void)
  */
 typedef int (init_fnc_t) (void);
 
-extern int mem_init(void);
-extern int partition_init(void);
-
-int print_cpuinfo (void); /* test-only */
-
 init_fnc_t *init_sequence[] = {
-	cpu_init,		/* basic cpu dependent setup */
-	board_init,		/* basic board dependent setup */
-	interrupt_init,		/* set up exceptions */
-	env_init,		/* initialize environment */
-	init_baudrate,		/* initialze baudrate settings */
-	serial_init,		/* serial communications setup */
-	console_init_f,		/* stage 1 init of console */
-#ifdef CONFIG_DRIVER_CFI
-        flash_init,
-#endif
-        partition_init,
-#ifdef CONFIG_CMD_MEMORY
-        mem_init,
-#endif
 	display_banner,		/* say that we are here */
-#if defined(CONFIG_DISPLAY_CPUINFO)
-	print_cpuinfo,		/* display cpu info (and speed) */
-#endif
-#if defined(CONFIG_DISPLAY_BOARDINFO)
-	checkboard,		/* display board info */
-#endif
-	dram_init,		/* configure available RAM banks */
 	display_dram_config,
 	NULL,
 };
 
+extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
+
 void start_armboot (void)
 {
-	init_fnc_t **init_fnc_ptr;
+        initcall_t *initcall;
+        int result;
+
 #if defined(CONFIG_VFD) || defined(CONFIG_LCD)
 	unsigned long addr;
 #endif
@@ -223,39 +190,28 @@ void start_armboot (void)
 	monitor_flash_len = _bss_start - _armboot_start;
 
         /* armboot_start is defined in the board-specific linker script */
-	mem_malloc_init (_armboot_start - CFG_MALLOC_LEN);
+	mem_malloc_init();
 
-	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
-//                serial_putc(i++ + 'a');
-                if ((*init_fnc_ptr)() != 0) {
-			hang ();
-		}
-	}
+	env_init();		/* initialize environment */
+	serial_init();		/* serial communications setup */
+	console_init_f();	/* stage 1 init of console */
 
-#if (CONFIG_COMMANDS & CFG_CMD_NAND)
-	puts ("NAND:  ");
-	nand_init();		/* go init the NAND */
-#endif
+        for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
+                result = (*initcall)();
+                if (result)
+                        hang();
+        }
+
+        display_banner();
 
 	/* initialize environment */
 	env_relocate ();
 
 	jumptable_init ();
 
-#if defined(CONFIG_MISC_INIT_R)
-	/* miscellaneous platform dependent initialisations */
-	misc_init_r ();
-#endif
-
 	/* enable exceptions */
 	enable_interrupts ();
 
-#ifdef BOARD_LATE_INIT
-	board_late_init ();
-#endif
-#ifdef CONFIG_NET
-	eth_initialize(gd->bd);
-#endif
         /* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {
 		main_loop ();

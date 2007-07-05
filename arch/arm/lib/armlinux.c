@@ -248,7 +248,7 @@ void do_bootm_linux (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 
 	cleanup_before_linux ();
 
-	theKernel (0, bd->bi_arch_number, bd->bi_boot_params);
+	theKernel (0, CONFIG_ARCH_NUMBER, CONFIG_BOOT_PARAMS);
 }
 
 

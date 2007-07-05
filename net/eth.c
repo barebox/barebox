@@ -23,6 +23,8 @@
 
 #include <common.h>
 #include <command.h>
+#include <driver.h>
+#include <init.h>
 #include <net.h>
 #include <miiphy.h>
 
@@ -38,13 +40,13 @@ struct eth_device * eth_get_current(void)
 	return eth_current;
 }
 
-int eth_init(bd_t *bis)
+int eth_init(void)
 {
 
 	if (!eth_current)
 		return 0;
 
-	eth_current->open(eth_current, bis);
+	eth_current->open(eth_current);
 
 	return 1;
 }
@@ -75,39 +77,26 @@ int eth_rx(void)
 	return eth_current->recv(eth_current);
 }
 
-extern int at91rm9200_miiphy_initialize(bd_t *bis);
-extern int emac4xx_miiphy_initialize(bd_t *bis);
-extern int mcf52x2_miiphy_initialize(bd_t *bis);
-extern int ns7520_miiphy_initialize(bd_t *bis);
-
-int eth_initialize(bd_t *bis)
+static int eth_handle(struct device_d *dev)
 {
 	unsigned char ethaddr_tmp[20];
 	unsigned char *ethaddr;
+	struct eth_device *ndev = dev->driver->type_data;
 	char *e = NULL;
 	int i;
 
-	if (!eth_current) {
-		printf("%s: no eth device set\n", __FUNCTION__);
-		return -1;
-	}
-
-	if (eth_current->init(eth_current, bis)) {
-		printf("failed to initialize network device\n");
-		return -1;
-	}
-
-	if (!eth_current->get_mac_address) {
+	printf("%s: %s\n",__FUNCTION__, dev->id);
+	if (!ndev->get_mac_address) {
 		printf("no get_mac_address found for current eth device\n");
 		return -1;
 	}
 
-	ethaddr = eth_current->enetaddr;
+	ethaddr = ndev->enetaddr;
 
 	/* Try to get a MAC address from the eeprom set 'ethaddr' to it.
 	 * If this fails we rely on 'ethaddr' being set by the user.
 	 */
-	if (eth_current->get_mac_address(eth_current, ethaddr) == 0) {
+	if (ndev->get_mac_address(ndev, ethaddr) == 0) {
 		sprintf (ethaddr_tmp, "%02X:%02X:%02X:%02X:%02X:%02X",
 			ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
 		printf("got MAC address from EEPROM: %s\n",ethaddr_tmp);
@@ -121,30 +110,23 @@ int eth_initialize(bd_t *bis)
 
 		printf("got MAC address from Environment: %s\n",ethaddr);
 		for(i = 0; i < 6; i++) {
-			eth_current->enetaddr[i] = ethaddr ? simple_strtoul (ethaddr, &e, 16) : 0;
+			ndev->enetaddr[i] = ethaddr ? simple_strtoul (ethaddr, &e, 16) : 0;
 			if (ethaddr) {
 				ethaddr = (*e) ? e + 1 : e;
 			}
-			eth_current->set_mac_address(eth_current, eth_current->enetaddr);
+			ndev->set_mac_address(eth_current, ndev->enetaddr);
 		}
 	}
 
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-	miiphy_init();
-#endif
-
-#if defined(CONFIG_DRIVER_NET_AT91_ETHER)
-	at91rm9200_miiphy_initialize(bis);
-#endif
-#if defined(CONFIG_4xx) && !defined(CONFIG_IOP480) \
-	&& !defined(CONFIG_AP1000) && !defined(CONFIG_405)
-	emac4xx_miiphy_initialize(bis);
-#endif
-#if defined(CONFIG_MCF52x2)
-	mcf52x2_miiphy_initialize(bis);
-#endif
-#if defined(CONFIG_NETARM)
-	ns7520_miiphy_initialize(bis);
-#endif
+	eth_current = ndev;
 	return 0;
 }
+
+int eth_initialize(void)
+{
+	register_device_type_handler(&eth_handle, DEVICE_TYPE_ETHER);
+
+	return 0;
+}
+
+core_initcall(eth_initialize);

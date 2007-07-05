@@ -39,6 +39,7 @@
 #include <asm/byteorder.h>
 #include <environment.h>
 #include <clock.h>
+#include <init.h>
 #include <cfi_flash.h>
 
 /*
@@ -521,10 +522,12 @@ static struct driver_d cfi_driver = {
         .info  = cfi_info,
 };
 
-int flash_init(void)
+static int cfi_init(void)
 {
         return register_driver(&cfi_driver);
 }
+
+device_initcall(cfi_init);
 
 /*-----------------------------------------------------------------------
  * Copy memory to flash, returns:

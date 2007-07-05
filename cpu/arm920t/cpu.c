@@ -31,6 +31,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <init.h>
 #include <arm920t.h>
 
 #ifdef CONFIG_USE_IRQ
@@ -89,7 +90,7 @@ static void cp_delay (void)
 #define C1_HIGH_VECTORS	(1<<13)		/* location of vectors: low/high addresses */
 
 
-int cpu_init (void)
+static int cpu_init (void)
 {
 	/*
 	 * setup up stacks if necessary
@@ -100,6 +101,8 @@ int cpu_init (void)
 #endif
 	return 0;
 }
+
+core_initcall(cpu_init);
 
 int cleanup_before_linux (void)
 {

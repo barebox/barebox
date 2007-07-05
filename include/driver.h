@@ -8,6 +8,11 @@
 
 struct memarea_info;
 
+#define DEVICE_TYPE_UNKNOWN     0
+#define DEVICE_TYPE_ETHER       1
+#define DEVICE_TYPE_STDIO       2
+#define MAX_DEVICE_TYPE         2
+
 struct device_d {
 	char name[MAX_DRIVER_NAME];
         char id[MAX_DRIVER_NAME];
@@ -26,6 +31,8 @@ struct device_d {
         struct driver_d *driver;
 
 	struct device_d *next;
+
+        unsigned long type;
 };
 
 struct driver_d {
@@ -40,6 +47,9 @@ struct driver_d {
 
         void    (*info) (struct device_d *);
         void    (*shortinfo) (struct device_d *);
+
+        unsigned long type;
+        void *type_data;
 };
 
 #define RW_SIZE(x)      (x)
@@ -58,6 +68,9 @@ ssize_t erase(struct device_d *dev, size_t count, unsigned long offset);
 
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
+
+int register_device_type_handler(int(*handle)(struct device_d *), ulong device_type);
+//void unregister_device_type_handler(struct device_d *);
 
 #endif /* DRIVER_H */
 

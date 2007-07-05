@@ -37,7 +37,6 @@ extern ulong IRQ_STACK_START;	/* top of IRQ stack */
 extern ulong FIQ_STACK_START;	/* top of FIQ stack */
 
 /* cpu/.../cpu.c */
-int	cpu_init(void);
 int	cleanup_before_linux(void);
 
 /* board/.../... */

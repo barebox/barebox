@@ -57,8 +57,8 @@ uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant)
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
-	if (ctrlc ())
-		return -1;
+//	if (ctrlc ())
+//		return -1;
 
 	if (start_ns + time_offset_ns < get_time_ns())
 		return 1;
@@ -70,9 +70,9 @@ int udelay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout(start, usecs * 1000))
-		if (ctrlc ())
-			return -1;
+	while(!is_timeout(start, usecs * 1000));
+//		if (ctrlc ())
+//			return -1;
 	return 0;
 }
 

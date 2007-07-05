@@ -24,8 +24,6 @@
 #include <common.h>
 #include <mpc5xxx.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
 /*
  * Breath some life into the CPU...
  *
@@ -38,11 +36,6 @@ void cpu_init_f (void)
 #if defined(CFG_RAMBOOT) && defined(CONFIG_MGT5100)
 	addecr |= (1 << 22); /* SDRAM enable */
 #endif
-	/* Pointer is writable since we allocated a register for it */
-	gd = (gd_t *) (CFG_INIT_RAM_ADDR + CFG_GBL_DATA_OFFSET);
-
-	/* Clear initial global data */
-	memset ((void *) gd, 0, sizeof (gd_t));
 
 	/*
 	 * Memory Controller: configure chip selects and enable them
@@ -198,7 +191,7 @@ int cpu_init_r (void)
 	/* route critical ints to normal ints */
 	*(vu_long *)MPC5XXX_ICTL_EXT |= 0x00000001;
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET) && defined(CONFIG_MPC5xxx_FEC)
+#ifdef CONFIG_DRIVER_NET_MPC5200
 	/* load FEC microcode */
 	loadtask(0, 2);
 #endif

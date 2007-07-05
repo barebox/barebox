@@ -56,11 +56,6 @@
 #define  UTS_TXFULL 	 (1<<4)	/* TxFIFO full */
 #define  UTS_TXEMPTY	 (1<<6)	/* TxFIFO empty */
 
-void serial_setbrg (void)
-{
-	serial_init();
-}
-
 extern void imx_gpio_mode(int gpio_mode);
 
 /*
@@ -140,6 +135,11 @@ int serial_init (void)
 	          USR1_AWAKE;
 #endif
 	return 0;
+}
+
+void serial_setbrg (void)
+{
+	serial_init();
 }
 
 /*

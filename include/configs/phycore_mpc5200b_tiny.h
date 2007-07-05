@@ -125,7 +125,7 @@ RTC configuration
 #endif
 
 #define CFG_MONITOR_LEN		(192 << 10)	/* Reserve 192 kB for Monitor	*/
-#define CFG_MALLOC_LEN		(2 << 20)	/* Reserve 2 MB for malloc()	*/
+#define CFG_MALLOC_LEN		(8 << 20)	/* Reserve 8 MB for malloc()	*/
 #define CFG_BOOTMAPSZ		(8 << 20)	/* Initial Memory map for Linux */
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------

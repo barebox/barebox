@@ -62,7 +62,6 @@ obj-y += readkey.o
 #obj-y += cmd_fdc.o
 #obj-y += cmd_log.o
 #obj-y += cmd_pcmcia.o
-#obj-y += miiphyutil.o
 #obj-y += virtex2.o
 #obj-y += cmd_ace.o
 #obj-y += cmd_dcr.o

@@ -1,0 +1,106 @@
+
+When porting from old U-Boot the follwing steps must be taken (please complain
+if there's something missing here ;)
+
+
+- Most of the macros in include/configs/yourboard.h can be removed, espacially
+  the CONFIG_COMMANDS section. The goal is to remove this file entirely, but
+  for now some values are still needed here. If you think some things are better
+  configured with the Kconfig system feel free to add them there.
+
+- The linker script needs a new section for the initcalls. The handling of the
+  U-Boot command table has changed also (The commands are now sorted by the
+  linker instead in runtime). To change it you need an entry like the following
+  in your linker script:
+
+#include <asm-generic/u-boot.lds.h>
+
+	__u_boot_cmd_start = .;
+	.u_boot_cmd : { U_BOOT_CMDS }
+	__u_boot_cmd_end = .;
+
+	__u_boot_initcalls_start = .;
+	.u_boot_initcalls : { INITCALLS }
+	__u_boot_initcalls_end = .;
+
+- Rename your linker script to u-boot.lds.S and add the following entry to the
+  Makefile to make sure the linker script is generated:
+
+extra-y += u-boot.lds
+
+- Register the devices present in your system in the board specific .c file.
+  To see anything you at least have to register a console. In scb9328.c this
+  looks like this:
+
+static struct device_d scb9328_serial_device = {
+        .name     = "imx_serial",
+        .id       = "cs0",
+	.map_base = IMX_UART1_BASE,
+	.size     = 4096,
+        .type     = DEVICE_TYPE_CONSOLE,
+};
+
+static int scb9328_console_init(void)
+{
+	register_device(&scb9328_serial_device);
+	return 0;
+}
+
+- For most boards you will have to register a cfi_flash device. NAND flash
+  is not ported yet.
+
+- Call dev_add_partition() to add an environment partition for your device:
+  dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
+  This will add an area starting at 0x40000 of size 0x20000 of the device
+  cfi_dev as env0.
+
+console_initcall(scb9328_console_init);
+
+- Port missing drivers. Depending on the driver this can a be rather simple
+  process:
+
+  Serial drivers
+  - Declare all functions static.
+  - register a device of type DEVICE_TYPE_CONSOLE
+  - in your probe function fill in a struct console_device and register it
+    with console_register()
+
+  Ethernet drivers
+  - Basically do the same as with serial drivers.
+  - Identify the parts of the driver which handle the MAC address. There are
+    now two fields in struct eth_device. get_mac_address() shall retrieve the
+    MAC address from the EEPROM if one is connected. If you don't have an
+    EEPROM just return -1. set_mac_address() shall set the MAC address in
+    the device. All magic previously done with getenv/setenv(ethaddr) must be
+    removed.
+
+- Add a clocksource for your system. PowerPCs have a generic decrementer
+  counter, so if you have a PowerPC aou have nothing to do here. on ARM
+  this is SoC dependend. See Documentation/timekeeping.txt for further
+  information.
+
+- Adjust start.S. These files share a lot of common code, so they should be
+  reworked in general. On Arm you have to fix CFG_MALLOC_LEN. Most start.S
+  under cpu/arm* do a "sub	r0, r0, #CFG_MALLOC_LEN". If you increase
+  the malloc space the value CFG_MALLOC_LEN does not fit into the instruction.
+  See cpu/arm920t/start.S how it is done.
+  On PowerpC there is at least the Problem that the relocation offset is
+  defined at compile time. It is easily possible to determine the address
+  U-Boot is currently starting from at runtime and thus allowing it U-Boot
+  to be started at any address. Look at the relocation code and replace
+  TEXT_BASE with the following calculation of the runtime address:
+
+	bl     calc_source     /* Calculate Source Address             */
+calc_source:
+	mfspr   r4,  LR
+	subi    r4, r4, (calc_source - _start)
+	subi    r4, r4, 0x100
+
+  (I'm almost sure that PowerPC has a dedicated instruction for this, un-
+  fortunately I know next to nothing of PowerPC assembler)
+
+  U-Boot runs now from the address it was linked to, so on PowerPC you have
+  to adjust TEXT_BASE to be in RAM. This makes the various fixup functions
+  unnecessary. It also simplifies debugging because you will see the
+  correct addresses in the objdump.
+

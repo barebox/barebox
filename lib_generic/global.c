@@ -65,7 +65,7 @@ U_BOOT_CMD(
 static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
         struct device_d *dev;
-        char *endp, *val;
+        char *endp;
         int ret;
 
 	if (argc < 4) {

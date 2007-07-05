@@ -13,7 +13,7 @@
 
 #include <common.h>
 #include <mpc5xxx.h>
-#include "sdma.h"
+#include <asm/arch/sdma.h>
 
 typedef unsigned long uint32;
 typedef unsigned short uint16;
@@ -216,11 +216,6 @@ typedef struct {
 } FEC_TBD;
 
 /* private structure */
-typedef enum {
-	SEVENWIRE,			/* 7-wire       */
-	MII10,				/* MII 10Mbps   */
-	MII100				/* MII 100Mbps  */
-} xceiver_type;
 
 typedef struct {
 	ethernet_regs *eth;

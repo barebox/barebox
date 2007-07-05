@@ -10,20 +10,17 @@
 #include <mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
+#include <init.h>
 #include <miiphy.h>
-#include "sdma.h"
-#include "fec.h"
+#include <driver.h>
+#include <asm/arch/sdma.h>
+#include <asm/arch/fec.h>
+#include "fec_mpc5200.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define CONFIG_PHY_ADDR 1 /* FIXME */
 /* #define DEBUG	0x28 */
-
-#if (CONFIG_COMMANDS & CFG_CMD_NET) && defined(CONFIG_NET_MULTI) && \
-	defined(CONFIG_MPC5xxx_FEC)
-
-#if !(defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII))
-#error "CONFIG_MII has to be defined!"
-#endif
 
 #if (DEBUG & 0x60)
 static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec);
@@ -43,33 +40,6 @@ typedef struct {
 
 int fec5xxx_miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal);
 int fec5xxx_miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data);
-
-/********************************************************************/
-#if (DEBUG & 0x2)
-static void mpc5xxx_fec_phydump (char *devname)
-{
-	uint16 phyStatus, i;
-	uint8 phyAddr = CONFIG_PHY_ADDR;
-	uint8 reg_mask[] = {
-#if CONFIG_PHY_TYPE == 0x79c874	/* AMD Am79C874 */
-		/* regs to print: 0...7, 16...19, 21, 23, 24 */
-		1, 1, 1, 1,  1, 1, 1, 1,     0, 0, 0, 0,  0, 0, 0, 0,
-		1, 1, 1, 1,  0, 1, 0, 1,     1, 0, 0, 0,  0, 0, 0, 0,
-#else
-		/* regs to print: 0...8, 16...20 */
-		1, 1, 1, 1,  1, 1, 1, 1,     1, 0, 0, 0,  0, 0, 0, 0,
-		1, 1, 1, 1,  1, 0, 0, 0,     0, 0, 0, 0,  0, 0, 0, 0,
-#endif
-	};
-
-	for (i = 0; i < 32; i++) {
-		if (reg_mask[i]) {
-			miiphy_read(devname, phyAddr, i, &phyStatus);
-			printf("Mii reg %d: 0x%04x\n", i, phyStatus);
-		}
-	}
-}
-#endif
 
 /********************************************************************/
 static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
@@ -106,7 +76,7 @@ static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 {
 	int ix;
 
-	for (ix = 0; ix < FEC_TBD_NUM; ix++) {
+        for (ix = 0; ix < FEC_TBD_NUM; ix++) {
 		fec->tbdBase[ix].status = 0;
 	}
 
@@ -186,13 +156,22 @@ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 }
 
 /********************************************************************/
-static void mpc5xxx_fec_set_hwaddr(mpc5xxx_fec_priv *fec, char *mac)
+static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
+        printf("%s\n",__FUNCTION__);
+        /* no eeprom */
+        return -1;
+}
+
+static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
+{
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	uint8 currByte;			/* byte for which to compute the CRC */
 	int byte;			/* loop - counter */
 	int bit;			/* loop - counter */
 	uint32 crc = 0xffffffff;	/* initial value */
 
+        printf("%s: %s\n",__FUNCTION__, mac);
 	/*
 	 * The algorithm used is the following:
 	 * we loop on each of the six bytes of the provided address,
@@ -239,10 +218,12 @@ static void mpc5xxx_fec_set_hwaddr(mpc5xxx_fec_priv *fec, char *mac)
 	 */
 	fec->eth->paddr1 = (mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3];
 	fec->eth->paddr2 = (mac[4] << 24) + (mac[5] << 16) + 0x8808;
+
+        return 0;
 }
 
 /********************************************************************/
-static int mpc5xxx_fec_init(struct eth_device *dev, bd_t * bis)
+static int mpc5xxx_fec_init(struct eth_device *dev)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA;
@@ -251,13 +232,13 @@ static int mpc5xxx_fec_init(struct eth_device *dev, bd_t * bis)
 	printf ("mpc5xxx_fec_init... Begin\n");
 #endif
 
-	/*
+        /*
 	 * Initialize RxBD/TxBD rings
 	 */
 	mpc5xxx_fec_rbd_init(fec);
 	mpc5xxx_fec_tbd_init(fec);
 
-	/*
+        /*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
 	fec->eth->ievent = 0xffffffff;
@@ -325,12 +306,6 @@ static int mpc5xxx_fec_init(struct eth_device *dev, bd_t * bis)
 	fec->eth->x_wmrk = 0x2;
 
 	/*
-	 * Set individual address filter for unicast address
-	 * and set physical address registers.
-	 */
-	mpc5xxx_fec_set_hwaddr(fec, (char *)dev->enetaddr);
-
-	/*
 	 * Set multicast address filter
 	 */
 	fec->eth->gaddr1 = 0x00000000;
@@ -388,11 +363,11 @@ static int mpc5xxx_fec_init(struct eth_device *dev, bd_t * bis)
 	printf("mpc5xxx_fec_init... Done \n");
 #endif
 
-	return 1;
+	return 0;
 }
 
 /********************************************************************/
-static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
+static int mpc5xxx_fec_init_phy(struct eth_device *dev)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	const uint8 phyAddr = CONFIG_PHY_ADDR;	/* Only one PHY */
@@ -471,9 +446,7 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
 			/*
 			 * Force 10Base-T, FDX operation
 			 */
-#if (DEBUG & 0x2)
 			printf("Forcing 10 Mbps ethernet link... ");
-#endif
 			miiphy_read(dev->name, phyAddr, 0x1, &phyStatus);
 			/*
 			miiphy_write(dev->name, fec, phyAddr, 0x0, 0x0100);
@@ -508,9 +481,7 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
 #endif
 			} while (!(phyStatus & 0x0004));	/* !link up */
 
-#if (DEBUG & 0x2)
 			printf ("done.\n");
-#endif
 		} else {	/* MII100 */
 			/*
 			 * Set the auto-negotiation advertisement register bits
@@ -530,23 +501,17 @@ static int mpc5xxx_fec_init_phy(struct eth_device *dev, bd_t * bis)
 				udelay(1000);
 
 				if ((timeout--) == 0) {
-#if (DEBUG & 0x2)
 					printf("PHY auto neg 0 failed...\n");
-#endif
 					return -1;
 				}
 
 				if (miiphy_read(dev->name, phyAddr, 0x1, &phyStatus) != 0) {
-#if (DEBUG & 0x2)
 					printf("PHY auto neg 1 failed 0x%04x...\n", phyStatus);
-#endif
 					return -1;
 				}
 			} while (!(phyStatus & 0x0004));
 
-#if (DEBUG & 0x2)
 			printf("PHY auto neg complete! \n");
-#endif
 		}
 
 	}
@@ -698,7 +663,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, volatile void *eth_data,
 	 */
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	volatile FEC_TBD *pTbd;
-
+printf("%s\n",__FUNCTION__);
 #if (DEBUG & 0x20)
 	printf("tbd status: 0x%04x\n", fec->tbdBase[0].status);
 	tfifo_print(dev->name, fec);
@@ -809,7 +774,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	if (ievent & 0x20060000) {
 		/* BABT, Rx/Tx FIFO errors */
 		mpc5xxx_fec_halt(dev);
-		mpc5xxx_fec_init(dev, NULL);
+		mpc5xxx_fec_init(dev);
 		return 0;
 	}
 	if (ievent & 0x80000000) {
@@ -821,11 +786,12 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 		if (fec->eth->x_cntrl & 0x00000001) {
 			mpc5xxx_fec_halt(dev);
 			fec->eth->x_cntrl &= ~0x00000001;
-			mpc5xxx_fec_init(dev, NULL);
+			mpc5xxx_fec_init(dev);
 		}
 	}
 
 	if (!(pRbd->status & FEC_RBD_EMPTY)) {
+		printf("huhu\n");
 		if ((pRbd->status & FEC_RBD_LAST) && !(pRbd->status & FEC_RBD_ERR) &&
 			((pRbd->dataLength - 4) > 14)) {
 
@@ -835,7 +801,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			frame = (NBUF *)pRbd->dataPointer;
 			frame_length = pRbd->dataLength - 4;
 
-#if (DEBUG & 0x20)
+//#if (DEBUG & 0x20)
 			{
 				int i;
 				printf("recv data hdr:");
@@ -843,7 +809,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 					printf("%x ", *(frame->head + i));
 				printf("\n");
 			}
-#endif
+//#endif
 			/*
 			 *  Fill the buffer and pass it to upper layers
 			 */
@@ -863,79 +829,49 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 
 
 /********************************************************************/
-int mpc5xxx_fec_initialize(bd_t * bis)
+int mpc5xxx_fec_probe(struct device_d *dev)
 {
+        struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
+        struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
-	struct eth_device *dev;
 	char *tmp, *end;
-	char env_enetaddr[6];
 	int i;
 
+        edev = (struct eth_device *)malloc(sizeof(struct eth_device));
+        dev->priv = edev;
 	fec = (mpc5xxx_fec_priv *)malloc(sizeof(*fec));
-	dev = (struct eth_device *)malloc(sizeof(*dev));
-   	memset(dev, 0, sizeof *dev);
+        edev->priv = fec;
+        edev->dev  = dev;
+	edev->open = mpc5xxx_fec_init,
+	edev->send = mpc5xxx_fec_send,
+	edev->recv = mpc5xxx_fec_recv,
+	edev->halt = mpc5xxx_fec_halt,
+	edev->get_mac_address = mpc5xxx_fec_get_hwaddr,
+	edev->set_mac_address = mpc5xxx_fec_set_hwaddr,
 
 	fec->eth = (ethernet_regs *)MPC5XXX_FEC;
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 
-#if 0
-#if defined(CONFIG_CANMB)   || defined(CONFIG_HMI1001)	|| \
-    defined(CONFIG_ICECUBE) || defined(CONFIG_INKA4X0)	|| \
-    defined(CONFIG_MCC200)  || defined(CONFIG_O2DNT)	|| \
-    defined(CONFIG_PM520)   || defined(CONFIG_TOP5200)	|| \
-    defined(CONFIG_TQM5200) || defined(CONFIG_V38B)
-# ifndef CONFIG_FEC_10MBIT
-	fec->xcv_type = MII100;
-# else
-	fec->xcv_type = MII10;
-# endif
-#elif defined(CONFIG_TOTAL5200)
-	fec->xcv_type = SEVENWIRE;
-#else
-#error fec->xcv_type not initialized.
-#endif
-#else
-#warning FEC code is brocken
-#endif
-	dev->priv = (void *)fec;
-	dev->iobase = MPC5XXX_FEC;
-	dev->init = mpc5xxx_fec_init;
-	dev->halt = mpc5xxx_fec_halt;
-	dev->send = mpc5xxx_fec_send;
-	dev->recv = mpc5xxx_fec_recv;
+	fec->xcv_type = pdata->xcv_type;
 
 	sprintf(dev->name, "FEC ETHERNET");
-	eth_register(dev);
 
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
 	miiphy_register (dev->name,
 			fec5xxx_miiphy_read, fec5xxx_miiphy_write);
 #endif
 
-	/*
-	 * Try to set the mac address now. The fec mac address is
-	 * a garbage after reset. When not using fec for booting
-	 * the Linux fec driver will try to work with this garbage.
-	 */
-	tmp = getenv("ethaddr");
-	if (tmp) {
-		for (i=0; i<6; i++) {
-			env_enetaddr[i] = tmp ? simple_strtoul(tmp, &end, 16) : 0;
-			if (tmp)
-				tmp = (*end) ? end+1 : end;
-		}
-		mpc5xxx_fec_set_hwaddr(fec, env_enetaddr);
-	}
+        eth_register(edev);
 
-	mpc5xxx_fec_init_phy(dev, bis);
+	mpc5xxx_fec_init_phy(edev);
 
-	return 1;
+	return 0;
 }
 
 /* MII-interface related functions */
 /********************************************************************/
-int fec5xxx_miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal)
+int miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * retVal)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
@@ -977,7 +913,7 @@ int fec5xxx_miiphy_read(char *devname, uint8 phyAddr, uint8 regAddr, uint16 * re
 }
 
 /********************************************************************/
-int fec5xxx_miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data)
+int miiphy_write(char *devname, uint8 phyAddr, uint8 regAddr, uint16 data)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
@@ -1045,4 +981,18 @@ static uint32 local_crc32(char *string, unsigned int crc_value, int len)
 }
 #endif	/* DEBUG */
 
-#endif /* CONFIG_MPC5xxx_FEC */
+static struct driver_d mpc5xxx_driver = {
+        .name  = "fec_mpc5xxx",
+        .probe = mpc5xxx_fec_probe,
+        .type  = DEVICE_TYPE_ETHER,
+};
+
+static int mpc5xxx_fec_register(void)
+{
+        register_driver(&mpc5xxx_driver);
+        return 0;
+}
+
+device_initcall(mpc5xxx_fec_register);
+
+

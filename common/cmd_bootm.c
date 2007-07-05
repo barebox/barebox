@@ -384,17 +384,9 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		if (iflag)
 			enable_interrupts();
 
-		/* load (and uncompress), but don't start if "autostart"
-		 * is set to "no"
-		 */
-		if (((s = getenv("autostart")) != NULL) && (strcmp(s,"no") == 0)) {
-			char buf[32];
-			sprintf(buf, "%lX", len);
-			setenv("filesize", buf);
-			return 0;
-		}
-		appl = (int (*)(int, char *[]))ntohl(hdr->ih_ep);
-		(*appl)(argc-1, &argv[1]);
+		char buf[32];
+		sprintf(buf, "%lX", len);
+		setenv("filesize", buf);
 		return 0;
 	case IH_TYPE_KERNEL:
 	case IH_TYPE_MULTI:

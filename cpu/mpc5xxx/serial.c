@@ -124,7 +124,12 @@ int serial_init (void)
 	psc->mode = PSC_MODE_ONE_STOP;
 
 	/* set up UART divisor */
+#if 0
 	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
+#else
+#warning mpc5200 serial: temporary baudrate hack
+	div = (baseclk + (115200/2)) / 115200;
+#endif
 	psc->ctur = (div >> 8) & 0xff;
 	psc->ctlr = div & 0xff;
 

@@ -30,36 +30,6 @@
 #include <malloc.h>
 #include <errno.h>
 
-static int enetaddr_set(struct device_d *dev, struct param_d *param, value_t val)
-{
-	struct eth_device *edev;
-	char buf[6];
-
-	if (dev->type != DEVICE_TYPE_ETHER)
-		return -EINVAL;
-
-	edev = dev->type_data;
-
-	string_to_enet_addr(val.val_str, buf);
-	edev->set_mac_address(edev, buf);
-	memcpy(edev->enetaddr, buf, 6);
-
-	if (param->value.val_str)
-		free(param->value.val_str);
-	param->value.val_str = strdup(val.val_str);
-
-
-	return 0;
-}
-
-static struct param_d eth_params[] = {
-        { .name = "ip", .type = PARAM_TYPE_IPADDR,},
-        { .name = "mac", .type = PARAM_TYPE_STRING, .set = enetaddr_set,},
-        { .name = "gateway", .type = PARAM_TYPE_IPADDR,},
-        { .name = "netmask", .type = PARAM_TYPE_IPADDR,},
-        { .name = "serverip", .type = PARAM_TYPE_IPADDR,},
-};
-
 static struct eth_device *eth_current;
 
 void eth_set_current(struct eth_device *eth)
@@ -114,9 +84,6 @@ int eth_register(struct eth_device *edev)
         struct device_d *dev = edev->dev;
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
-	value_t val;
-	int i;
-
 
         printf("%s\n",__FUNCTION__);
 
@@ -125,16 +92,22 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
-        for (i = 0; i < 5; i++)
-                dev_add_parameter(dev, &eth_params[i]);
+	edev->param_ip.name = "ip";
+	edev->param_mac.name = "mac";
+	edev->param_gateway.name = "gateway";
+	edev->param_netmask.name = "netmask";
+	edev->param_serverip.name = "serverip";
+	dev_add_parameter(dev, &edev->param_ip);
+	dev_add_parameter(dev, &edev->param_mac);
+	dev_add_parameter(dev, &edev->param_gateway);
+	dev_add_parameter(dev, &edev->param_netmask);
+	dev_add_parameter(dev, &edev->param_serverip);
 
 	if (edev->get_mac_address(edev, ethaddr) == 0) {
-		sprintf (ethaddr_str, "%02X:%02X:%02X:%02X:%02X:%02X",
-			ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
+		enet_addr_to_string(ethaddr, ethaddr_str);
 		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
-		val.val_str = ethaddr_str;
-		dev_set_param(dev, "mac", val);
-		memcpy(edev->enetaddr, ethaddr, 6);
+		dev_set_param(dev, "mac", ethaddr_str);
+//		memcpy(edev->enetaddr, ethaddr, 6);
 	}
 
 	eth_current = edev;

@@ -1,6 +1,6 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
-	-isystem $(gccincdir) -meabi -Wstrict-prototypes -fPIC -D __PPC__ -D CONFIG_PPC \
+	-isystem $(gccincdir) -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
 
 
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200
@@ -10,7 +10,7 @@ cpu-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
-CFLAGS := -fno-common -Os -mrelocatable
+CFLAGS := -fno-common -Os
 LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc -Ttext $(TEXT_BASE)
 
 ifeq ($(incdir-y),)

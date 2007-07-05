@@ -698,7 +698,8 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 
 /* MII-interface related functions */
 /********************************************************************/
-static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr, uint8_t regAddr, uint16_t * retVal)
+static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
+	uint8_t regAddr, uint16_t * retVal)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */
@@ -740,7 +741,8 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr, uint
 }
 
 /********************************************************************/
-static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr, uint8_t regAddr, uint16_t data)
+static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
+	uint8_t regAddr, uint16_t data)
 {
 	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
 	uint32 reg;		/* convenient holder for the PHY register */

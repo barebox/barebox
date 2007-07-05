@@ -1,7 +1,7 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall 	\
 	-isystem $(gccincdir) -pipe -D __ARM__ \
-	-ffixed-r8
+	-fno-strict-aliasing
 
 
 machine-$(CONFIG_ARCH_IMX)	   := imx

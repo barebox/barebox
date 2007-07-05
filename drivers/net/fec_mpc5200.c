@@ -15,10 +15,9 @@
 #include <driver.h>
 #include <asm/arch/sdma.h>
 #include <asm/arch/fec.h>
+#include <asm/arch/clocks.h>
 #include <miiphy.h>
 #include "fec_mpc5200.h"
-
-DECLARE_GLOBAL_DATA_PTR;
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 /* #define DEBUG	0x28 */
@@ -263,7 +262,9 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		fec->eth->mii_speed = (((gd->ipb_clk >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+		printf("%s: miispeed\n", __FUNCTION__);
+		fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+		printf("done: %d\n", get_ipb_clock());
 	}
 
 	/*

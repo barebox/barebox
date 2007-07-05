@@ -39,8 +39,7 @@
 #include <init.h>
 #include <console.h>
 #include <xfuncs.h>
-
-DECLARE_GLOBAL_DATA_PTR;
+#include <asm/arch/clocks.h>
 
 static void mpc5xxx_serial_setbrg(struct console_device *cdev)
 {
@@ -48,13 +47,14 @@ static void mpc5xxx_serial_setbrg(struct console_device *cdev)
 	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 	unsigned long baseclk;
 	int div;
-
+return;
+	printf("%s: ipb\n", __FUNCTION__);
 #if defined(CONFIG_MGT5100)
 	baseclk = (CFG_MPC5XXX_CLKIN + 16) / 32;
 #elif defined(CONFIG_MPC5200)
-	baseclk = (gd->ipb_clk + 16) / 32;
+	baseclk = (get_ipb_clock() + 16) / 32;
 #endif
-
+	printf("done: %d\n", get_ipb_clock());
 	/* set up UART divisor */
 #if 0
 	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
@@ -70,18 +70,15 @@ static int mpc5xxx_serial_init(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
-	unsigned long baseclk;
-
+return 0;
 	/* reset PSC */
 	psc->command = PSC_SEL_MODE_REG_1;
 
 	/* select clock sources */
 #if defined(CONFIG_MGT5100)
 	psc->psc_clock_select = 0xdd00;
-	baseclk = (CFG_MPC5XXX_CLKIN + 16) / 32;
 #elif defined(CONFIG_MPC5200)
 	psc->psc_clock_select = 0;
-	baseclk = (gd->ipb_clk + 16) / 32;
 #endif
 
 	/* switch to UART mode */

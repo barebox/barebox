@@ -27,10 +27,6 @@
 #include <asm/processor.h>
 #include <types.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
-/* ------------------------------------------------------------------------- */
-
 /* Bus-to-Core Multipliers */
 
 static int bus2core[] = {
@@ -39,57 +35,73 @@ static int bus2core[] = {
 	6, 5, 13, 2, 14, 4, 15, 9,
 	0, 11, 8, 10, 16, 12, 7, 0
 };
-/* ------------------------------------------------------------------------- */
 
-/*
- *
- */
-
-int get_clocks (void)
+unsigned long get_bus_clock(void)
 {
-	ulong val, vco;
+	unsigned long val, vco;
 
 #if !defined(CFG_MPC5XXX_CLKIN)
 #error clock measuring not implemented yet - define CFG_MPC5XXX_CLKIN
 #endif
 
 	val = *(vu_long *)MPC5XXX_CDM_PORCFG;
-	if (val & (1 << 6)) {
+	if (val & (1 << 6))
 		vco = CFG_MPC5XXX_CLKIN * 12;
-	} else {
+	else
 		vco = CFG_MPC5XXX_CLKIN * 16;
-	}
-	if (val & (1 << 5)) {
-		gd->bus_clk = vco / 8;
-	} else {
-		gd->bus_clk = vco / 4;
-	}
-	gd->cpu_clk = gd->bus_clk * bus2core[val & 0x1f] / 2;
 
-	val = *(vu_long *)MPC5XXX_CDM_CFG;
-	if (val & (1 << 8)) {
-		gd->ipb_clk = gd->bus_clk / 2;
-	} else {
-		gd->ipb_clk = gd->bus_clk;
-	}
-	switch (val & 3) {
-		case 0: gd->pci_clk = gd->ipb_clk; break;
-		case 1: gd->pci_clk = gd->ipb_clk / 2; break;
-		default: gd->pci_clk = gd->bus_clk / 4; break;
-	}
-
-	return 0;
+	if (val & (1 << 5))
+		return vco / 8;
+	else
+		return vco / 4;
 }
 
-core_initcall(get_clocks);
+unsigned long get_cpu_clock(void)
+{
+	unsigned long val;
+	val = *(vu_long *)MPC5XXX_CDM_PORCFG;
+	return get_bus_clock() * bus2core[val & 0x1f] / 2;
+}
+
+unsigned long get_ipb_clock(void)
+{
+	unsigned long val;
+
+	val = *(vu_long *)MPC5XXX_CDM_CFG;
+	if (val & (1 << 8))
+		return get_bus_clock() / 2;
+	else
+		return get_bus_clock();
+}
+
+unsigned long get_pci_clock(void)
+{
+	unsigned long val;
+
+	val = *(vu_long *)MPC5XXX_CDM_CFG;
+	switch (val & 3) {
+		case 0:
+			return get_ipb_clock();
+		case 1:
+			return get_ipb_clock() / 2;
+		default:
+			return get_bus_clock() / 4;
+	}
+}
+
+unsigned long get_timebase_clock(void)
+{
+	return (get_bus_clock() + 3L) / 4L;
+}
 
 int prt_mpc5xxx_clks (void)
 {
 	printf("       Bus %ld MHz, IPB %ld MHz, PCI %ld MHz\n",
-			gd->bus_clk / 1000000, gd->ipb_clk / 1000000,
-			gd->pci_clk / 1000000);
+			get_bus_clock() / 1000000, get_ipb_clock() / 1000000,
+			get_pci_clock() / 1000000);
 
 	return 0;
 }
 
 late_initcall(prt_mpc5xxx_clks);
+

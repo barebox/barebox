@@ -36,34 +36,6 @@
 #include <dataflash.h>
 #endif
 
-#if (CONFIG_COMMANDS & (CFG_CMD_MEMORY	| \
-			CFG_CMD_I2C	| \
-			CFG_CMD_ITEST	| \
-			CFG_CMD_PCI	| \
-			CMD_CMD_PORTIO	) )
-int cmd_get_data_size(char* arg, int default_size)
-{
-	/* Check for a size specification .b, .w or .l.
-	 */
-	int len = strlen(arg);
-	if (len > 2 && arg[len-2] == '.') {
-		switch(arg[len-1]) {
-		case 'b':
-			return 1;
-		case 'w':
-			return 2;
-		case 'l':
-			return 4;
-		case 's':
-			return -2;
-		default:
-			return -1;
-		}
-	}
-	return default_size;
-}
-#endif
-
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
 #else
@@ -1183,8 +1155,6 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 #endif	/* CONFIG_CRC32_VERIFY */
 
-/**************************************************/
-#if (CONFIG_COMMANDS & CFG_CMD_MEMORY)
 U_BOOT_CMD(
 	md,     3,     1,      do_mem_md,
 	"md      - memory display\n",
@@ -1286,4 +1256,3 @@ U_BOOT_CMD(
 );
 #endif /* CONFIG_MX_CYCLIC */
 
-#endif

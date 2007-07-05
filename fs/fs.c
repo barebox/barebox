@@ -8,6 +8,34 @@
 #include <xfuncs.h>
 #include <init.h>
 
+void *read_file(const char *filename)
+{
+	int fd;
+	struct stat s;
+	void *buf = NULL;
+
+	if (stat(filename, &s))
+		return NULL;
+
+	buf = xzalloc(s.st_size + 1);
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		goto err_out;
+
+	if (read(fd, buf, s.st_size) < s.st_size)
+		goto err_out1;
+
+	close(fd);
+	return buf;
+
+err_out1:
+	close(fd);
+err_out:
+	free(buf);
+	return NULL;
+}
+
 char *mkmodestr(unsigned long mode, char *str)
 {
 	static const char *l = "xwr";
@@ -490,7 +518,7 @@ int mount(const char *device, const char *fsname, const char *path)
 	int ret;
 
 	errno = 0;
-
+printf("mount: %s on %s type %s\n", device, path, fsname);
 	drv = get_driver_by_name(fsname);
 	if (!drv) {
 		errno = -ENODEV;

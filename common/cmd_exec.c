@@ -11,39 +11,6 @@
 #include <hush.h>
 #endif
 
-static void *read_file(const char *file)
-{
-	struct stat s;
-	void *buf = NULL;
-	int fd = 0;
-
-	if (stat(file, &s)) {
-		perror("stat");
-		return NULL;
-	}
-
-	fd = open(file, O_RDONLY);
-	if (fd < 0) {
-		perror("open");
-		return NULL;
-	}
-
-	buf = xzalloc(s.st_size + 1);
-
-	if (read(fd, buf, s.st_size) < s.st_size) {
-		perror("read");
-		goto out;
-	}
-
-	close(fd);
-	return buf;
-
-out:
-	free(buf);
-	close(fd);
-	return NULL;
-}
-
 static int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
 	int i;

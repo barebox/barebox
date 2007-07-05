@@ -118,6 +118,7 @@ struct mtab_entry {
 	struct device_d *parent_device;
 };
 
+void *read_file(const char *filename);
 char *normalise_path(const char *path);
 
 #endif /* __FS_H */

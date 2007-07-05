@@ -216,14 +216,15 @@ int i2c_init(void)
 
 	/* Set clock
 	 */
-	mpc_reg_out(&regs->mfdr, mpc_get_fdr(CFG_I2C_SPEED), 0);
+#warning: uses gd_t
+//	mpc_reg_out(&regs->mfdr, mpc_get_fdr(CFG_I2C_SPEED), 0);
 
 	/* Enable module
 	 */
 	mpc_reg_out(&regs->mcr, I2C_EN, I2C_INIT_MASK);
 	mpc_reg_out(&regs->msr, 0, I2C_IF);
 
-	return;
+	return 0;
 }
 
 device_initcall(i2c_init);

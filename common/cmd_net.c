@@ -26,6 +26,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <environment.h>
 #include <asm-generic/errno.h>
 #include <driver.h>
 #include <net.h>

@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <asm-generic/errno.h>
 #include <fs.h>
+#include <xfuncs.h>
 
 #include <asm/byteorder.h>
 #include <linux/stat.h>
@@ -209,8 +210,7 @@ struct dir* cramfs_opendir(struct device_d *_dev, const char *filename)
 	struct fs_device_d *fsdev = _dev->type_data;
 	struct device_d *dev = fsdev->parent;
 
-	struct cramfs_dir *dir = malloc(sizeof(struct cramfs_dir));
-	memset(dir, 0, sizeof(struct cramfs_dir));
+	struct cramfs_dir *dir = xzalloc(sizeof(struct cramfs_dir));
 	dir->dir.priv = dir;
 
 	if (strlen (filename) == 0 || !strcmp (filename, "/")) {
@@ -235,7 +235,6 @@ struct dir* cramfs_opendir(struct device_d *_dev, const char *filename)
 			goto err_free;
 		}
 
-		/* It's a directory. List files within */
 		dir->offset = CRAMFS_GET_OFFSET (dir->inode) << 2;
 		dir->size = CRAMFS_24 (dir->inode->size);
 	}
@@ -466,3 +465,4 @@ int cramfs_init(void)
 }
 
 device_initcall(cramfs_init);
+

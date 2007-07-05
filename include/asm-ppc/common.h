@@ -19,5 +19,6 @@ uint	get_svr	      (void);
 void	trap_init     (ulong);
 
 int cpu_init_board_data(bd_t *bd);
+int init_board_data(bd_t *bd);
 
 #endif /* __ASM_COMMON_H */

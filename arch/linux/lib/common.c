@@ -19,7 +19,7 @@
 #include <sys/select.h>
 
 static struct termios term_orig, term_vi;
-static char erase_char;         // the users erase character
+static char erase_char;	/* the users erase character */
 
 static void rawmode(void)
 {
@@ -40,7 +40,7 @@ static void cookmode(void)
 	tcsetattr(0, TCSANOW, &term_orig);
 }
 
-void linux_putc (const char c)
+void linux_putc(const char c)
 {
 	fputc(c, stdout);
 
@@ -51,7 +51,7 @@ void linux_putc (const char c)
 	fflush(stdout);
 }
 
-int linux_tstc (int fd)
+int linux_tstc(int fd)
 {
 	fd_set rfds;
 	struct timeval tv;
@@ -71,7 +71,7 @@ int linux_tstc (int fd)
 	return 0;
 }
 
-int linux_getc (void)
+int linux_getc(void)
 {
 	char ret;
 
@@ -92,17 +92,17 @@ uint64_t linux_get_time(void)
 	return now;
 }
 
-int do_reset (void *unused, int flag, int argc, char *argv[])
+int do_reset(void *unused, int flag, int argc, char *argv[])
 {
 	cookmode();
 	exit(0);
 }
 
-void enable_interrupts (void)
+void enable_interrupts(void)
 {
 }
 
-void disable_interrupt (void)
+void disable_interrupt(void)
 {
 }
 
@@ -153,13 +153,13 @@ off_t linux_lseek(int fd, off_t offset)
 	return lseek(fd, offset, SEEK_SET);
 }
 
-void  flush_cache (unsigned long dummy1, unsigned long dummy2)
+void  flush_cache(unsigned long dummy1, unsigned long dummy2)
 {
 	/* why should we? */
 }
 
 extern void start_uboot(void);
-extern void mem_malloc_init (void *start, void *end);
+extern void mem_malloc_init(void *start, void *end);
 
 int add_image(char *str, char *name_template)
 {

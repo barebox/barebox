@@ -43,6 +43,7 @@ config MACH_ECO920
 	select HAS_AT91_ETHER
 	select HAS_AT91_I2C
 	select HAS_CFI
+	select HAS_OHCI
 	select ARCH_AT91RM9200
 	help
 	  Say Y here if you are using the Motorola MX1ADS board

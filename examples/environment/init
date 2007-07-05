@@ -1,0 +1,51 @@
+
+exec /env/env
+
+echo "Starting autoboot in 3 seconds. Press ctrl-c to break"
+sleep 3
+if [ $? != 0 ]; then
+	exit
+fi
+
+while true; do
+	clear
+	echo
+	echo " Welcome to U-Boot"
+	echo
+	echo "-- Main menu --"
+	echo
+
+	echo "1 - network settings"
+	echo "2 - save current settings"
+	echo "3 - return to console"
+
+	echo
+	readline "your choice: " CHOICE
+
+	if [ $CHOICE = 1 ]; then
+		exec /env/network
+	fi
+
+	if [ $CHOICE = 2 ]; then
+		if [ $DHCP = 1 ]; then
+			echo -o env/env DHCP=$DHCP
+		else
+			echo -o /env/env eth0.ip=$eth0.ip
+			echo -a /env/env eth0.netmask=$eth0.netmask
+			echo -a /env/env eth0.gateway=$eth0.gateway
+			echo -a /env/env eth0.serverip=$eth0.serverip
+		fi
+		echo -a /env/env eth0.mac=$eth0.mac
+		saveenv
+		if [ $? == 0 ]; then
+			echo "ok"
+		fi
+		sleep 2
+	fi
+
+	if [ $CHOICE = 3 ]; then
+		exit
+	fi
+
+done
+

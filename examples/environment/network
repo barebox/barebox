@@ -1,0 +1,57 @@
+
+while true; do
+	clear
+
+	echo
+	echo "-- Network settings --"
+	echo
+	echo "1 - ip address ($eth0.ip)"
+	echo "2 - network mask ($eth0.netmask)"
+	echo "3 - gateway ip ($eth0.ip)"
+	echo "4 - server ip ($eth0.serverip)"
+	echo "5 - set MAC address ($eth0.mac)"
+	echo "6 - obtain network parameters via dhcp"
+	echo "u - up"
+
+	echo
+	readline "your choice: " NETWORK_CHOICE
+
+	if [ -z $NETWORK_CHOICE ]; then
+		NETWORK_CHOICE=0;
+	fi
+
+	if [ $NETWORK_CHOICE = 1 ]; then
+		readline "ip address: " eth0.ip
+	fi
+
+	if [ $NETWORK_CHOICE = 2 ]; then
+		readline "network mask: " eth0.netmask
+	fi
+
+	if [ $NETWORK_CHOICE = 3 ]; then
+		readline "gateway ip: " eth0.gateway
+	fi
+
+	if [ $NETWORK_CHOICE = 4 ]; then
+		readline "server ip: " eth0.serverip
+	fi
+
+	if [ $NETWORK_CHOICE = 5 ]; then
+		readline "mac addres: " eth0.mac
+	fi
+
+	if [ $NETWORK_CHOICE = 6 ]; then
+		dhcp
+		if [ $? != 0 ]; then
+			echo "dhcp failed"
+			sleep 2
+		fi
+		DHCP=1
+	fi
+
+	if [ $NETWORK_CHOICE = u ]; then
+		exit
+	fi
+
+done
+

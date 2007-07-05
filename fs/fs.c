@@ -236,6 +236,7 @@ int open(const char *pathname, int flags)
 	int exist;
 	struct stat s;
 	char *path;
+	char *freep;
 
 	exist = (stat(pathname, &s) == 0) ? 1 : 0;
 
@@ -256,6 +257,8 @@ int open(const char *pathname, int flags)
 	}
 
 	path = strdup(pathname);
+	freep = path;
+
 	dev = get_device_by_path(&path);
 	if (!dev)
 		goto out;
@@ -275,9 +278,10 @@ int open(const char *pathname, int flags)
 		if (errno)
 			goto out;
 	}
-	errno = fsdrv->open(dev, f, pathname);
+	errno = fsdrv->open(dev, f, path);
 	if (errno)
 		goto out;
+
 
 	if (flags & O_TRUNC) {
 		errno = fsdrv->truncate(dev, f, 0);
@@ -288,11 +292,12 @@ int open(const char *pathname, int flags)
 	if (flags & O_APPEND)
 		f->pos = f->size;
 
+	free(freep);
 	return f->no;
 
 out:
 	put_file(f);
-	free(path);
+	free(freep);
 	return errno;
 }
 
@@ -389,13 +394,13 @@ int close(int fd)
 	return errno;
 }
 
-int mount(struct device_d *parent_device, char *fsname, char *path)
+int mount(const char *device, const char *fsname, const char *path)
 {
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
-	struct device_d *dev;
+	struct device_d *dev, *parent_device = 0;
 	int ret;
 
 	errno = 0;
@@ -424,45 +429,34 @@ int mount(struct device_d *parent_device, char *fsname, char *path)
 
 	fs_drv = drv->type_data;
 
-	if (fs_drv->flags & FS_DRIVER_NO_DEV) {
-		dev = xzalloc(sizeof(struct device_d));
-		sprintf(dev->name, "%s", fsname);
-		dev->type = DEVICE_TYPE_FS;
-		if ((ret = register_device(dev))) {
-			free(dev);
-			errno = ret;
-			goto out;
-		}
-		if (!dev->driver) {
-			/* driver didn't accept the device. Bail out */
-			free(dev);
-			errno = -EINVAL;
-			goto out;
-		}
-	} else {
+	if (!fs_drv->flags & FS_DRIVER_NO_DEV) {
+		parent_device = get_device_by_id(device + 5);
 		if (!parent_device) {
-			printf("need device for driver %s\n", fsname);
+			printf("need a device for driver %s\n", fsname);
 			errno = -ENODEV;
 			goto out;
 		}
-		fsdev = xzalloc(sizeof(struct fs_device_d));
-		fsdev->parent = parent_device;
-		sprintf(fsdev->dev.name, "%s", fsname);
-		fsdev->dev.type = DEVICE_TYPE_FS;
-		fsdev->dev.type_data = fsdev;
-		if ((ret = register_device(&fsdev->dev))) {
-			free(fsdev);
-			errno = ret;
-			goto out;
-		}
-		if (!fsdev->dev.driver) {
-			/* driver didn't accept the device. Bail out */
-			free(fsdev);
-			errno = -EINVAL;
-			goto out;
-		}
-		dev = &fsdev->dev;
 	}
+	fsdev = xzalloc(sizeof(struct fs_device_d));
+	fsdev->parent = parent_device;
+	sprintf(fsdev->dev.name, "%s", fsname);
+	fsdev->dev.type = DEVICE_TYPE_FS;
+	fsdev->dev.type_data = fsdev;
+
+	if ((ret = register_device(&fsdev->dev))) {
+		free(fsdev);
+		errno = ret;
+		goto out;
+	}
+
+	if (!fsdev->dev.driver) {
+		/* driver didn't accept the device. Bail out */
+		free(fsdev);
+		errno = -EINVAL;
+		goto out;
+	}
+
+	dev = &fsdev->dev;
 
 	/* add mtab entry */
 	entry = malloc(sizeof(struct mtab_entry));
@@ -509,6 +503,7 @@ int umount(const char *pathname)
 		last->next = entry->next;
 
 	unregister_device(entry->dev);
+	free(entry->dev->type_data);
 	free(entry);
 
 	return 0;

@@ -131,8 +131,10 @@ int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	do {
 		now = min(RW_BUF_SIZE, nbytes);
 		r = read(mem.device, rw_buf, now, offs, RW_SIZE(size));
-		if (r <= 0)
+		if (r <= 0) {
+                        perror("read", r);
 			return r;
+                }
 
 		if ((ret = memory_display(rw_buf, offs, r, size)))
 			return ret;
@@ -748,21 +750,21 @@ ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, u
 	return count;
 }
 
-struct device_d mem_dev = {
+static struct device_d mem_dev = {
         .name  = "mem",
 	.id    = "mem",
         .map_base = 0,
         .size   = ~0, /* FIXME: should be 0x100000000, ahem... */
 };
 
-struct driver_d mem_drv = {
+static struct driver_d mem_drv = {
         .name  = "mem",
         .probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
 };
 
-struct driver_d ram_drv = {
+static struct driver_d ram_drv = {
         .name  = "ram",
         .probe = dummy_probe,
 	.read  = mem_read,
@@ -774,7 +776,7 @@ static int mem_init(void)
 {
 	rw_buf = malloc(RW_BUF_SIZE);
 	if(!rw_buf) {
-		printf("Out of memory\n");
+		printf("%s: Out of memory\n", __FUNCTION__);
 		return -1;
 	}
 

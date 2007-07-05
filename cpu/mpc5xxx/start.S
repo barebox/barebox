@@ -27,7 +27,6 @@
  */
 #include <config.h>
 #include <asm/arch/mpc5xxx.h>
-#include <version.h>
 
 #include <ppc_asm.tmpl>
 #include <ppc_defs.h>

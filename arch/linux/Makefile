@@ -35,8 +35,14 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
 				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ )
 
+ifeq ($(SUBARCH),x86_64)
+ELF_ARCH   := i386:x86-64
+ELF_FORMAT := elf64-x86-64
+endif
+ifeq ($(SUBARCH),i386)
 ELF_ARCH   := $(SUBARCH)
 ELF_FORMAT := elf32-$(SUBARCH)
+endif
 
 export ELF_FORMAT ELF_ARCH SUBARCH
 #	Update machine arch and proc symlinks if something which affects

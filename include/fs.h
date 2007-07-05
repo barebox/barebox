@@ -79,13 +79,15 @@ struct fs_device_d {
 	struct fs_driver_d *driver;
 };
 
+/*
+ * standard posix file functions
+ */
 int open(const char *pathname, int flags);
 int creat(const char *pathname, mode_t mode);
 int unlink(const char *pathname);
 int close(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
-int erase(int fd, size_t count, unsigned long offset);
 ssize_t write(int fd, const void *buf, size_t count);
 
 #define SEEK_SET	1
@@ -93,11 +95,8 @@ ssize_t write(int fd, const void *buf, size_t count);
 #define SEEK_END	3
 
 off_t lseek(int fildes, off_t offset, int whence);
-int ls(const char *path, ulong flags);
 int mkdir (const char *pathname);
 int rmdir (const char *pathname);
-int mount (const char *device, const char *fsname, const char *path);
-int umount(const char *pathname);
 
 const char *getcwd(void);
 int chdir(const char *pathname);
@@ -106,8 +105,23 @@ DIR *opendir(const char *pathname);
 struct dirent *readdir(DIR *dir);
 int closedir(DIR *dir);
 
+int mount (const char *device, const char *fsname, const char *path);
+int umount(const char *pathname);
+
+/* not-so-standard erase */
+int erase(int fd, size_t count, unsigned long offset);
+
+#define LS_RECURSIVE	1
+#define LS_SHOWARG	2
+int ls(const char *path, ulong flags);
+
 char *mkmodestr(unsigned long mode, char *str);
 
+/*
+ * Information about mounted devices.
+ * Note that we only support mounting on directories lying
+ * directly in / and of course the root directory itself
+ */
 struct mtab_entry *get_mtab_entry_by_path(const char *path);
 struct mtab_entry *mtab_next_entry(struct mtab_entry *entry);
 
@@ -118,7 +132,18 @@ struct mtab_entry {
 	struct device_d *parent_device;
 };
 
+/*
+ * Read a file into memory. Memory is allocated with malloc and must
+ * be freed with free() afterwards. This function allocates one
+ * byte more than actually needed and sets this to zero, so that
+ * it cn be used for text files.
+ */
 void *read_file(const char *filename);
+
+/*
+ * This function turn 'path' into an absolute path and removes all occurrences
+ * of "..", "." and double slashes. The returned string must be freed wit free().
+ */
 char *normalise_path(const char *path);
 
 #endif /* __FS_H */

@@ -78,6 +78,30 @@
 #define IH_CPU_BLACKFIN		16	/* Blackfin	*/
 #define IH_CPU_AVR32		17	/* AVR32	*/
 
+#if defined(__PPC__)
+#define IH_CPU IH_CPU_PPC
+#elif defined(__ARM__)
+#define IH_CPU IH_CPU_ARM
+#elif defined(__I386__)
+#define IH_CPU IH_CPU_I386
+#elif defined(__mips__)
+#define IH_CPU IH_CPU_MIPS
+#elif defined(__nios__)
+#define IH_CPU IH_CPU_NIOS
+#elif defined(__M68K__)
+#define IH_CPU IH_CPU_M68K
+#elif defined(__microblaze__)
+#define IH_CPU IH_CPU_MICROBLAZE
+#elif defined(__nios2__)
+#define IH_CPU IH_CPU_NIOS2
+#elif defined(__blackfin__)
+#define IH_CPU IH_CPU_BLACKFIN
+#elif defined(__avr32__)
+#define IH_CPU IH_CPU_AVR32
+#else
+# error Unknown CPU type
+#endif
+
 /*
  * Image Types
  *

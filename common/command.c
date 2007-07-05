@@ -74,7 +74,7 @@ U_BOOT_CMD_END
 int
 do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	char *buf = xmalloc(CONFIG_CBSIZE);
+	char *buf = xzalloc(CONFIG_CBSIZE);
 
 	if (argc < 3) {
 		printf ("Usage:\n%s\n", cmdtp->usage);

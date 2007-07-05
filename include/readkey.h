@@ -13,11 +13,14 @@
 #define KEY_REFRESH_TO_EOL	CTL_CH('e')
 #define KEY_ERASE_LINE		CTL_CH('x')
 #define KEY_INSERT		CTL_CH('o')
+#define KEY_CLEAR_SCREEN	CTL_CH('l')
 #define KEY_DEL7		(char)127
 #define KEY_END			(char)133	// Cursor Key End
 #define KEY_PAGEUP		(char)135	// Cursor Key Page Up
 #define KEY_PAGEDOWN		(char)136	// Cursor Key Page Down
 #define KEY_DEL			(char)137	// Cursor Key Del
+
+#define ANSI_CLEAR_SCREEN "\e[2J\e[;H"
 
 char read_key(void);
 

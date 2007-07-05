@@ -42,7 +42,7 @@ do_version (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(version)
 	.maxargs	= 1,
 	.cmd		= do_version,
-	.usage		= "version - print monitor version\n",
+	.usage		= "print monitor version",
 U_BOOT_CMD_END
 
 int
@@ -54,7 +54,7 @@ do_true (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(true)
 	.maxargs	= 1,
 	.cmd		= do_true,
-	.usage		= "true - return 0\n",
+	.usage		= "do nothing, successfully",
 U_BOOT_CMD_END
 
 int
@@ -66,7 +66,7 @@ do_false (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(false)
 	.maxargs	= 1,
 	.cmd		= do_false,
-	.usage		= "false  - return 1\n",
+	.usage		= "do nothing, unsuccessfully",
 U_BOOT_CMD_END
 
 #ifdef CONFIG_HUSH_PARSER
@@ -77,7 +77,7 @@ do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	char *buf = xzalloc(CONFIG_CBSIZE);
 
 	if (argc < 3) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
@@ -92,10 +92,15 @@ do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
+static char cmd_readline_help[] =
+"Usage: readline <prompt> VAR\n"
+"readline reads a line of user input into variable VAR.\n";
+
 U_BOOT_CMD_START(readline)
 	.maxargs	= 3,
 	.cmd		= do_readline,
-	.usage		= "readline  - \n",
+	.usage		= "prompt for user input",
+	U_BOOT_CMD_HELP(cmd_readline_help)
 U_BOOT_CMD_END
 
 int
@@ -225,9 +230,9 @@ U_BOOT_CMD_START(test)
 	.aliases	= test_aliases,
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_test,
-	.usage		= "test    - minimal test like /bin/sh\n",
+	.usage		= "minimal test like /bin/sh",
 	U_BOOT_CMD_HELP(
- 	"[args..]\n"
+	"[args..]\n"
 	"    - test functionality\n")
 U_BOOT_CMD_END
 
@@ -238,119 +243,97 @@ do_exit (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	r = 0;
 	if (argc > 1)
-		r = simple_strtoul(argv[1], NULL, 10);
+		r = simple_strtoul(argv[1], NULL, 0);
 
 	return -r - 2;
 }
 
 U_BOOT_CMD_START(exit)
-	.maxargs	= 1,
+	.maxargs	= 2,
 	.cmd		= do_exit,
-	.usage		= "exit    - exit script\n",
+	.usage		= "exit script",
 U_BOOT_CMD_END
 
 #endif
 
-#ifdef CONFIG_CMD_HELP
+void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
+{
+#ifdef	CONFIG_LONGHELP
+		/* found - print (long) help info */
+		if (cmdtp->help) {
+			puts (cmdtp->help);
+		} else {
+			puts (cmdtp->name);
+			putc (' ');
+			puts ("- No help available.\n");
+		}
+		putc ('\n');
+#else	/* no long help available */
+		if (cmdtp->usage)
+			puts (cmdtp->usage);
+#endif	/* CONFIG_LONGHELP */
+}
+
 /*
  * Use puts() instead of printf() to avoid printf buffer overflow
  * for long help messages
  */
 int do_help (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
-	int i;
-	int rcode = 0;
-
 	if (argc == 1) {	/*show list of commands */
-
 		int cmd_items = &__u_boot_cmd_end -
 				&__u_boot_cmd_start;	/* pointer arith! */
-		cmd_tbl_t *cmd_array[cmd_items];
-		int i, j, swaps;
+		int i;
 
-		/* Make array of commands from .uboot_cmd section */
+		/* No need to sort the command list. The linker already did
+		 * this for us.
+		 */
 		cmdtp = &__u_boot_cmd_start;
 		for (i = 0; i < cmd_items; i++) {
-			cmd_array[i] = cmdtp++;
-		}
-
-		/* Sort command list (trivial bubble sort) */
-		for (i = cmd_items - 1; i > 0; --i) {
-			swaps = 0;
-			for (j = 0; j < i; ++j) {
-				if (strcmp (cmd_array[j]->name,
-					    cmd_array[j + 1]->name) > 0) {
-					cmd_tbl_t *tmp;
-					tmp = cmd_array[j];
-					cmd_array[j] = cmd_array[j + 1];
-					cmd_array[j + 1] = tmp;
-					++swaps;
-				}
-			}
-			if (!swaps)
-				break;
-		}
-
-		/* print short help (usage) */
-		for (i = 0; i < cmd_items; i++) {
-			const char *usage = cmd_array[i]->usage;
+			/* print short help (usage) */
 
 			/* allow user abort */
 			if (ctrlc ())
 				return 1;
-			if (usage == NULL)
+			if (!cmdtp->usage)
 				continue;
-			puts (usage);
+			printf("%10s - %s\n", cmdtp->name, cmdtp->usage);
+			cmdtp++;
 		}
 		return 0;
 	}
 	/*
 	 * command help (long version)
 	 */
-	for (i = 1; i < argc; ++i) {
-		if ((cmdtp = find_cmd (argv[i])) != NULL) {
-#ifdef	CONFIG_LONGHELP
-			/* found - print (long) help info */
-			puts (cmdtp->name);
-			putc (' ');
-			if (cmdtp->help) {
-				puts (cmdtp->help);
-			} else {
-				puts ("- No help available.\n");
-				rcode = 1;
-			}
-			putc ('\n');
-#else	/* no long help available */
-			if (cmdtp->usage)
-				puts (cmdtp->usage);
-#endif	/* CONFIG_LONGHELP */
-		} else {
-			printf ("Unknown command '%s' - try 'help'"
-				" without arguments for list of all"
-				" known commands\n\n", argv[i]
-					);
-			rcode = 1;
-		}
+	if ((cmdtp = find_cmd (argv[1])) != NULL) {
+		u_boot_cmd_usage(cmdtp);
+		return 0;
+	} else {
+		printf ("Unknown command '%s' - try 'help'"
+			" without arguments for list of all"
+			" known commands\n\n", argv[1]
+				);
+		return 1;
 	}
-	return rcode;
 }
 
-char *help_aliases[] = { "?", NULL};
+static char cmd_help_help[] =
+"Show help information (for 'command')\n"
+"'help' prints online help for the monitor commands.\n\n"
+"Without arguments, it prints a short usage message for all commands.\n\n"
+"To get detailed help information for specific commands you can type\n"
+"'help' with one or more command names as arguments.\n";
+
+static char *help_aliases[] = { "?", NULL};
 
 U_BOOT_CMD_START(help)
 	.maxargs	= 2,
 	.cmd		= do_help,
 	.aliases	= help_aliases,
-	.usage		= "help    - print online help\n",
-	U_BOOT_CMD_HELP(
- 	"    - show help information (for 'command')\n"
- 	"'help' prints online help for the monitor commands.\n\n"
- 	"Without arguments, it prints a short usage message for all commands.\n\n"
- 	"To get detailed help information for specific commands you can type\n"
-	"'help' with one or more command names as arguments.\n")
+	.usage		= "print online help",
+	U_BOOT_CMD_HELP(cmd_help_help)
 U_BOOT_CMD_END
 
-#endif /* CONFIG_CMD_HELP */
 
 /***************************************************************************
  * find command table entry for a command

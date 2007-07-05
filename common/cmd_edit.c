@@ -70,7 +70,7 @@ static char *screenline(char *line, int *pos)
 	return lbuf;
 }
 
-int setpos(char *line, int position)
+static int setpos(char *line, int position)
 {
 	int i = 0;
 	int linepos = 0;
@@ -475,5 +475,5 @@ out:
 U_BOOT_CMD_START(edit)
 	.maxargs	= 2,
 	.cmd		= do_edit,
-	.usage		= "edit <file>    - edit a file\n",
+	.usage		= "edit a file",
 U_BOOT_CMD_END

@@ -127,12 +127,12 @@ int register_device(struct device_d *new_device)
 void unregister_device(struct device_d *old_dev)
 {
         struct device_d *dev;
-//        printf("unregister_device: %s\n",old_dev->name);
+	printf("unregister_device: %s\n",old_dev->name);
 
 	dev = first_device;
 
         while (dev) {
-                if (!strcmp(dev->next->name, old_dev->name)) {
+                if (!strcmp(dev->next->id, old_dev->id)) {
 			if (old_dev->driver)
 				old_dev->driver->remove(old_dev);
                         dev->next = old_dev->next;
@@ -521,8 +521,15 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
+static char cmd_devinfo_help[] =
+"Usage: devinfo [DEVICE]\n"
+"If called without arguments devinfo shows a summary about known devices and\n"
+"drivers. If called with a device id as argument devinfo shows more detailed\n"
+"informations about this device and its parameters.\n";
+
 U_BOOT_CMD_START(devinfo)
 	.maxargs	= 2,
 	.cmd		= do_devinfo,
-	.usage		= "devinfo     - display info about devices and drivers\n",
+	.usage		= "display info about devices and drivers",
+	U_BOOT_CMD_HELP(cmd_devinfo_help)
 U_BOOT_CMD_END

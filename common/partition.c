@@ -35,18 +35,21 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset, s
 	return 0;
 }
 
-static void dev_del_partitions(struct device_d *dev)
+static void dev_del_partitions(struct device_d *physdev)
 {
-        struct device_d *p;
+        struct device_d *dev;
         char buf[MAX_DRIVER_NAME];
         int i = 0;
 
         /* This is lame. Devices should to able to have children */
-        while(1) {
-                sprintf(buf, "%s.%d", dev->id, i);
-                p = device_from_spec_str(buf, NULL);
-                if (p)
-                        unregister_device(p);
+        while (1) {
+                sprintf(buf, "%s.%d", physdev->id, i);
+                dev = device_from_spec_str(buf, NULL);
+                if (dev) {
+			struct partition *part = dev->type_data;
+                        unregister_device(dev);
+			free(part);
+		}
                 else
                         break;
                 i++;
@@ -58,7 +61,6 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
         ulong size;
         char *end;
         char buf[MAX_DRIVER_NAME];
-        int ro = 0;
 
 	memset(buf, 0, MAX_DRIVER_NAME);
 
@@ -95,7 +97,7 @@ int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
         str = end;
 
         if (*str == 'r' && *(str + 1) == 'o') {
-                ro = 1;
+                part->readonly = 1;
                 end = (char *)(str + 2);
         }
 
@@ -165,6 +167,25 @@ int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
+static char cmd_addpart_help[] =
+"Usage: addpart <partition description>\n"
+"addpart adds a partition description to a device. The partition description\n"
+"has the form\n"
+"dev:size1(name1)[ro],size2(name2)[ro],...\n"
+"<dev> is the device name under /dev. Size can be given in decimal or if\n"
+"prefixed with 0x in hex. Sizes can have an optional suffix K,M,G. The size\n"
+"of the last partition can be specified as '-' for the remaining space of the\n"
+"device.\n"
+"This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
+"Note That this command has to be reworked and will probably change it's API.";
+
+U_BOOT_CMD_START(addpart)
+	.maxargs	= 2,
+	.cmd		= do_addpart,
+	.usage		= "add a partition table to a device",
+	U_BOOT_CMD_HELP(cmd_addpart_help)
+U_BOOT_CMD_END
+
 int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
         struct device_d *dev;
@@ -185,26 +206,18 @@ int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
         return 0;
 }
 
-U_BOOT_CMD_START(addpart)
-	.maxargs	= 2,
-	.cmd		= do_addpart,
-	.usage		= "addpart     - add a partition table to a device\n",
-U_BOOT_CMD_END
+static char cmd_delpart_help[] =
+"Usage: delpart <dev>\n"
+"Delete partitions previously added to a device with addpart.\n"
+"Note: You have to specify the device as 'devid', _not_ as '/dev/devid'. This\n"
+"will likely change soon.\n";
 
 U_BOOT_CMD_START(delpart)
 	.maxargs	= 2,
 	.cmd		= do_delpart,
-	.usage		= "delpart     - delete a partition table from a device\n",
+	.usage		= "delete a partition table from a device",
+	U_BOOT_CMD_HELP(cmd_delpart_help)
 U_BOOT_CMD_END
-
-static int part_probe(struct device_d *dev)
-{
-        struct partition *part = dev->type_data;
-
-        printf("registering partition %s on device %s (size=0x%08x, name=%s)\n",
-                        dev->id, part->physdev->id, dev->size, part->name);
-        return 0;
-}
 
 static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
@@ -227,15 +240,33 @@ static ssize_t part_write(struct device_d *dev, const void *buf, size_t count, u
 {
         struct partition *part = dev->type_data;
 
-        return dev_write(part->physdev, buf, count, offset + part->offset, flags);
+	if (part->readonly)
+		return -EROFS;
+	else
+		return dev_write(part->physdev, buf, count, offset + part->offset, flags);
+}
+
+static int part_probe(struct device_d *dev)
+{
+        struct partition *part = dev->type_data;
+
+        printf("registering partition %s on device %s (size=0x%08x, name=%s)\n",
+                        dev->id, part->physdev->id, dev->size, part->name);
+        return 0;
+}
+
+static int part_remove(struct device_d *dev)
+{
+	return 0;
 }
 
 struct driver_d part_driver = {
-        .name  = "partition",
-        .probe = part_probe,
-        .read  = part_read,
-        .write = part_write,
-        .erase = part_erase,
+        .name  	= "partition",
+        .probe 	= part_probe,
+	.remove = part_remove,
+        .read  	= part_read,
+        .write 	= part_write,
+        .erase 	= part_erase,
 };
 
 static int partition_init(void)

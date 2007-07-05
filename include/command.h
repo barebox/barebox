@@ -60,6 +60,7 @@ extern cmd_tbl_t  __u_boot_cmd_end;
 
 /* common/command.c */
 cmd_tbl_t *find_cmd(const char *cmd);
+void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
 
 #ifdef CONFIG_AUTO_COMPLETE
 extern void install_auto_complete(void);
@@ -89,12 +90,15 @@ typedef	void 	command_t (cmd_tbl_t *, int, int, char *[]);
  * to include/cmd_confdefs.h
  */
 
+#define __stringify_1(x)	#x
+#define __stringify(x)		__stringify_1(x)
+
 
 #define Struct_Section  __attribute__ ((unused,section (".u_boot_cmd")))
 
 #define U_BOOT_CMD_START(_name)				\
 const cmd_tbl_t __u_boot_cmd_##_name	\
-	Struct_Section = {				\
+	__attribute__ ((unused,section (".u_boot_cmd_" __stringify(_name)))) = {				\
 	.name		= #_name,
 
 #define U_BOOT_CMD_END					\

@@ -55,7 +55,7 @@ int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(sleep)
 	.maxargs	= 2,
 	.cmd		= do_sleep,
-	.usage		= "sleep   - delay execution for n secondsnn",
+	.usage		= "delay execution for n seconds",
 U_BOOT_CMD_END
 
 #endif
@@ -71,7 +71,7 @@ int do_clear (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(clear)
 	.maxargs	= 1,
 	.cmd		= do_clear,
-	.usage		= "clear   - clear screen\n",
+	.usage		= "clear screen",
 U_BOOT_CMD_END
 #endif
 
@@ -86,7 +86,7 @@ int do_meminfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(meminfo)
 	.maxargs	= 1,
 	.cmd		= do_meminfo,
-	.usage		= "meminfo - print info about memory usage\n",
+	.usage		= "print info about memory usage",
 U_BOOT_CMD_END
 #endif
 
@@ -97,7 +97,7 @@ int do_irqinfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 U_BOOT_CMD_START(irqinfo)
 	.maxargs	= 1,
 	.cmd		= do_irqinfo,
-	.usage		= "irqinfo - print information about IRQs\n",
+	.usage		= "print information about IRQs",
 U_BOOT_CMD_END
 #endif  /* CONFIG_COMMANDS & CFG_CMD_IRQ */
 

@@ -6,6 +6,8 @@ struct device_d;
 struct partition {
         int num;
 
+	int readonly;
+
         unsigned long offset;
 
         struct device_d *physdev;

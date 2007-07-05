@@ -440,7 +440,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(bootm)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_bootm,
-	.usage		= "bootm   - boot application image from memory\n",
+	.usage		= "boot application image from memory",
 	U_BOOT_CMD_HELP(
  	"[addr [arg ...]]\n    - boot application image stored in memory\n"
  	"\tpassing arguments 'arg ...'; when booting a Linux kernel,\n"
@@ -677,7 +677,7 @@ int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(boot)
 	.maxargs	= 1,
 	.cmd		= do_bootd,
-	.usage		= "boot    - boot default, i.e., run 'bootcmd'\n",
+	.usage		= "boot default, i.e., run 'bootcmd'",
 U_BOOT_CMD_END
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMI)

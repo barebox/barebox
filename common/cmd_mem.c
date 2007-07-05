@@ -176,11 +176,30 @@ out:
 	return errno;
 }
 
+static char cmd_md_help[] =
+"Usage md [OPTIONS] <region>\n"
+"display (hexdump) a memory region.\n"
+"options:\n"
+"  -f <file>   display file (default /dev/mem)\n"
+"  -b          output in bytes\n"
+"  -w          output in halfwords (16bit)\n"
+"  -l          output in words (32bit)\n"
+"\n"
+"Memory regions:\n"
+"Memory regions can be specified in two different forms: start+size\n"
+"or start-end, If <start> is ommitted it defaults to 0. If end is ommited it\n"
+"defaults to the end of the device, except for interactive commands like md\n"
+"and mw for which it defaults to 0x100.\n"
+"Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.\n"
+"an optional suffix of k, M or G is for kibibytes, Megabytes or Gigabytes,\n"
+"respectively\n";
+
+
 U_BOOT_CMD_START(md)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_md,
-	.usage		= "md      - memory display\n",
-	U_BOOT_CMD_HELP("write me\n")
+	.usage		= "memory display",
+	U_BOOT_CMD_HELP(cmd_md_help)
 U_BOOT_CMD_END
 
 int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -265,11 +284,16 @@ out:
 	return errno;
 }
 
+static char cmd_mw_help[] =
+"Usage mw [OPTIONS] <region> <value(s)>\n"
+"Write value(s) to the specifies region.\n"
+"see 'help md' for supported options.\n";
+
 U_BOOT_CMD_START(mw)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_mw,
-	.usage		= "mw      - memory write (fill)\n",
-	U_BOOT_CMD_HELP("write me\n")
+	.usage		= "memory write (fill)",
+	U_BOOT_CMD_HELP(cmd_mw_help)
 U_BOOT_CMD_END
 
 int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -442,11 +466,19 @@ out:
 	return ret;
 }
 
+static char cmd_cp_help[] =
+"Usage: cp <source> <destination>\n"
+"cp copies file <source> to <destination>.\n"
+"Currently only this form is supported and you have to specify the exact target\n"
+"filename (not a target directory).\n"
+"Note: This command was previously used as memory copy. Currently there is no\n"
+"equivalent command for this. This must be fixed of course.\n";
+
 U_BOOT_CMD_START(cp)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_cp,
-	.usage		= "cp      - copy files\n",
-	U_BOOT_CMD_HELP("write me\n")
+	.usage		= "copy files",
+	U_BOOT_CMD_HELP(cmd_cp_help)
 U_BOOT_CMD_END
 
 #ifndef CONFIG_CRC32_VERIFY
@@ -624,7 +656,7 @@ device_initcall(mem_init);
 U_BOOT_CMD_START(cmp)
 	.maxargs	= 4,
 	.cmd		= do_mem_cmp,
-	.usage		= "cmp     - memory compare\n",
+	.usage		= "memory compare",
 	U_BOOT_CMD_HELP("write me\n")
 U_BOOT_CMD_END
 
@@ -633,7 +665,7 @@ U_BOOT_CMD_END
 U_BOOT_CMD_START(crc32)
 	.maxargs	= 4,
 	.cmd		= do_mem_crc,
-	.usage		= "crc32   - checksum calculation\n",
+	.usage		= "checksum calculation",
 	U_BOOT_CMD_HELP("address count [addr]\n    - compute CRC32 checksum [save at addr]\n")
 U_BOOT_CMD_END
 

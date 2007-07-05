@@ -9,3 +9,4 @@
   	*(.initcall.6)			\
   	*(.initcall.7)
 
+#define U_BOOT_CMDS	*(SORT_BY_NAME(.u_boot_cmd*))

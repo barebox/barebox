@@ -97,6 +97,7 @@ out:
 #ifdef __U_BOOT__
 int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
+	int ret;
 	char *filename, *dirname;
 
 	printf("saving environment\n");
@@ -109,13 +110,24 @@ int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	else
 		filename = argv[1];
 
-	return envfs_save(filename, dirname);
+	ret = envfs_save(filename, dirname);
+	if (ret)
+		printf("saveenv failed\n");
+	return ret;
 }
+
+static char cmd_saveenv_help[] =
+"Usage: saveenv [DIRECTORY] [ENVFS]\n"
+"Save the files in <directory> to the persistent storage device <envfs>.\n"
+"<envfs> is normally a block in flash, but could be any other file.\n"
+"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
+"Note that envfs can only handle files. Directories are skipped silently.\n";
 
 U_BOOT_CMD_START(saveenv)
 	.maxargs	= 3,
 	.cmd		= do_saveenv,
-	.usage		= "saveenv - save environment to persistent storage\n",
+	.usage		= "save environment to persistent storage",
+	U_BOOT_CMD_HELP(cmd_saveenv_help)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */
 
@@ -208,9 +220,17 @@ int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return envfs_load(filename, dirname);
 }
 
+static char cmd_loadenv_help[] =
+"Usage: loadenv [DIRECTORY] [ENVFS]\n"
+"Load the persistent storage contained in <envfs> to the directory\n"
+"<directory>.\n"
+"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
+"Note that envfs can only handle files. Directories are skipped silently.\n";
+
 U_BOOT_CMD_START(loadenv)
 	.maxargs	= 3,
 	.cmd		= do_loadenv,
-	.usage		= "loadenv - load environment from persistent storage\n",
+	.usage		= "load environment from persistent storage",
+	U_BOOT_CMD_HELP(cmd_loadenv_help)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */

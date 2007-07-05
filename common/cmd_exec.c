@@ -72,5 +72,5 @@ out:
 U_BOOT_CMD_START(exec)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_exec,
-	.usage		= "exec <files>     - execute a script\n",
+	.usage		= "execute a script",
 U_BOOT_CMD_END

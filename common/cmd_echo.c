@@ -77,6 +77,6 @@ no_optarg_out:
 U_BOOT_CMD_START(echo)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_echo,
-	.usage		= "echo    - echo args to console\n",
+	.usage		= "echo args to console",
 U_BOOT_CMD_END
 

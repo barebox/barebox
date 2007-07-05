@@ -83,7 +83,7 @@ SECTIONS
   __u_boot_initcalls : { INITCALLS }
   __u_boot_initcalls_end = .;
   __u_boot_cmd_start = .;
-  __u_boot_cmd : { *(.u_boot_cmd) }
+  __u_boot_cmd : { U_BOOT_CMDS }
   __u_boot_cmd_end = .;
 
   __preinit_array_start = .;

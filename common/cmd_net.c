@@ -96,7 +96,7 @@ int do_bootp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(bootp)
 	.maxargs	= 3,
 	.cmd		= do_bootp,
-	.usage		= "bootp\t- boot image via network using BootP/TFTP protocol\n",
+	.usage		= "boot image via network using BootP/TFTP protocol",
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
 U_BOOT_CMD_END
 
@@ -105,11 +105,15 @@ int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
+static char cmd_tftpboot_help[] =
+"Usage: tftpboot <localfile> <remotefile>\n"
+"Load a file via network using BootP/TFTP protocol\n";
+
 U_BOOT_CMD_START(tftpboot)
 	.maxargs	= 3,
 	.cmd		= do_tftpb,
-	.usage		= "tftpboot- boot image via network using TFTP protocol\n",
-	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
+	.usage		= "boot image via network using TFTP protocol",
+	U_BOOT_CMD_HELP(cmd_tftpboot_help)
 U_BOOT_CMD_END
 
 int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -120,7 +124,7 @@ int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(rarpboot)
 	.maxargs	= 3,
 	.cmd		= do_rarpb,
-	.usage		= "rarpboot- boot image via network using RARP/TFTP protocol\n",
+	.usage		= "boot image via network using RARP/TFTP protocol",
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
 U_BOOT_CMD_END
 
@@ -141,7 +145,7 @@ int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(dhcp)
 	.maxargs	= 3,
 	.cmd		= do_dhcp,
-	.usage		= "dhcp\t- invoke DHCP client to obtain IP/boot params\n",
+	.usage		= "invoke DHCP client to obtain IP/boot params",
 U_BOOT_CMD_END
 
 #endif	/* CONFIG_NET_DHCP */
@@ -155,7 +159,7 @@ int do_nfs (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(nfs)
 	.maxargs	= 3,
 	.cmd		= do_nfs,
-	.usage		= "nfs\t- boot image via network using NFS protocol\n",
+	.usage		= "boot image via network using NFS protocol",
 	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
 U_BOOT_CMD_END
 
@@ -238,7 +242,7 @@ int do_cdp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(cdp)
 	.maxargs	= 1,
 	.cmd		= do_cdp,
-	.usage		= "cdp\t- Perform CDP network configuration\n",
+	.usage		= "Perform CDP network configuration",
 	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
 U_BOOT_CMD_END
 

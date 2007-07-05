@@ -84,7 +84,7 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(erase)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_flerase,
-	.usage		= "erase   - erase FLASH memory\n",
+	.usage		= "erase FLASH memory",
 	U_BOOT_CMD_HELP("write me\n")
 U_BOOT_CMD_END
 
@@ -120,6 +120,6 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD_START(protect)
 	.maxargs	= 4,
 	.cmd		= do_protect,
-	.usage		= "protect - enable or disable FLASH write protection\n",
+	.usage		= "enable or disable FLASH write protection",
 	U_BOOT_CMD_HELP("write me\n")
 U_BOOT_CMD_END

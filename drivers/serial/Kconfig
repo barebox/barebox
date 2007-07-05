@@ -1,0 +1,6 @@
+menu "serial drivers"
+
+config DRIVER_SERIAL_DUMMY
+	bool "dummy entry"
+
+endmenu

@@ -1,0 +1,17 @@
+config HAS_CS8900
+	bool
+
+config HAS_AT91_ETHER
+	bool
+
+menu "Network drivers"
+
+config DRIVER_NET_CS8900
+	bool "cs8900 ethernet driver"
+	depends on HAS_CS8900
+
+config DRIVER_NET_AT91_ETHER
+	bool "at91 ethernet driver"
+	depends on HAS_AT91_ETHER
+
+endmenu

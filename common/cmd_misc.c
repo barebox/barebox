@@ -28,6 +28,7 @@
 #include <command.h>
 #include <clock.h>
 #include <malloc.h>
+#include <readkey.h>
 
 #ifdef CONFIG_CMD_SLEEP
 int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -62,8 +63,7 @@ U_BOOT_CMD_END
 #ifdef CONFIG_CMD_CLEAR
 int do_clear (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-
-	printf("%c[2J%c[;H", 27, 27);
+	printf(ANSI_CLEAR_SCREEN);
 
 	return 0;
 }

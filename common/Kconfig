@@ -7,9 +7,9 @@ config BZLIB
 
 menu "Commands"
 
-config COMMON_ENV_FLASH
+config CMD_ECHO
 	bool
-	prompt "Environment in flash"
+	prompt "echo"
 
 config CMD_CONSOLE
 	bool

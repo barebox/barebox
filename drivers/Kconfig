@@ -4,6 +4,7 @@ source "drivers/serial/Kconfig"
 source "drivers/net/Kconfig"
 source "drivers/video/Kconfig"
 source "drivers/i2c/Kconfig"
+source "drivers/usb/Kconfig"
 
 config HAS_CFI
 	bool

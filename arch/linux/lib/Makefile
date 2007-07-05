@@ -1,11 +1,7 @@
-CPPFLAGS_u-boot.lds = -DSTART=$(START) -U$(SUBARCH) -DELF_ARCH=$(ELF_ARCH) \
-	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=8192
+CPPFLAGS_u-boot.lds = -U$(SUBARCH) -DELF_ARCH=$(ELF_ARCH) \
+	-DELF_FORMAT="$(ELF_FORMAT)"
 
 extra-y += u-boot.lds
-
-START := 0x8048000
-
-export START
 
 CPPFLAGS := -I/usr/include -Iinclude -P
 CFLAGS := -Wall

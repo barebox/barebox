@@ -18,7 +18,7 @@ static struct variable_d *env_list;
 
 static char *var_val(struct variable_d *var)
 {
-        return &var->data[strlen(var->data) + 2];
+        return &var->data[strlen(var->data) + 1];
 }
 
 static char *var_name(struct variable_d *var)
@@ -61,9 +61,8 @@ void setenv (const char *name, const char *value)
                         printf("cannot setenv: out of mem\n");
                         return;
                 }
-
                 strcpy(&newvar->data[0], name);
-                strcpy(&newvar->data[strlen(name) + 2], value);
+                strcpy(&newvar->data[strlen(name) + 1], value);
                 newvar->next = NULL;
         }
 

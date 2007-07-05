@@ -8,5 +8,7 @@ obj-y			+= string.o
 obj-y			+= vsprintf.o
 obj-y			+= div64.o
 obj-y			+= misc.o
+obj-y			+= driver.o
+obj-y			+= parameter.o
 obj-y			+= global.o
 

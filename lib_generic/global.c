@@ -96,7 +96,7 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		val.val_ulong = simple_strtoul(argv[3], NULL, 0);
 		break;
 	case PARAM_TYPE_IPADDR:
-//		val.val_ip = string_to_ip(argv[3]);
+		val.val_ip = string_to_ip(argv[3]);
 		break;
 	}
 

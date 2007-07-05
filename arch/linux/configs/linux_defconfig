@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.20-rc5
-# Fri Jun 15 22:07:49 2007
+# U-Boot version: 2.6.20-rc5
+# Tue Jun 26 21:07:21 2007
 #
 CONFIG_LINUX=y
 CONFIG_ZLIB=y
@@ -29,6 +29,7 @@ CONFIG_CMD_ECHO=y
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_EXEC=y
 CONFIG_CMD_ENVIRONMENT=y
+# CONFIG_CMD_CLEAR is not set
 # CONFIG_CMD_CONSOLE is not set
 CONFIG_CMD_ENV=y
 CONFIG_CMD_HELP=y
@@ -40,6 +41,7 @@ CONFIG_CMD_MEMORY=y
 CONFIG_CMD_FLASH=y
 # CONFIG_CMD_LOADB is not set
 # CONFIG_CMD_LOADS is not set
+# CONFIG_CMD_MEMINFO is not set
 # CONFIG_CMD_SPLASH is not set
 CONFIG_CMD_SLEEP=y
 # CONFIG_CMD_BOOTM is not set
@@ -82,8 +84,7 @@ CONFIG_DRIVER_NET_TAP=y
 #
 # USB host support
 #
-CONFIG_DRIVER_CFI=y
+# CONFIG_DRIVER_CFI is not set
 # CONFIG_DRIVER_CFI_NEW is not set
-CONFIG_CFI_BUFFER_WRITE=y
 CONFIG_FS=y
 CONFIG_FS_CRAMFS=y

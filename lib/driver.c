@@ -97,7 +97,7 @@ int register_device(struct device_d *new_device)
 		printf("device %s already exists\n", new_device->id);
 		return -EINVAL;
 	}
-//        printf("register_device: %s\n",new_device->name);
+	debug ("register_device: %s\n",new_device->name);
 
 	if(!dev) {
 		first_device = new_device;
@@ -124,7 +124,8 @@ int register_device(struct device_d *new_device)
 void unregister_device(struct device_d *old_dev)
 {
         struct device_d *dev;
-//        printf("unregister_device: %s\n",old_dev->name);
+
+	debug("unregister_device: %s\n",old_dev->name);
 
 	dev = first_device;
 
@@ -170,7 +171,7 @@ int register_driver(struct driver_d *new_driver)
 
 	drv = first_driver;
 
-//        printf("register_driver: %s\n",new_driver->name);
+	debug("register_driver: %s\n",new_driver->name);
 
 	if(!drv) {
 		first_driver = new_driver;
@@ -307,7 +308,9 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
                 while(dev) {
                         printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",
-                                        dev->id, dev->map_base, dev->size, dev->driver ? dev->driver->name : "none");
+                                        dev->id, dev->map_base, dev->size,
+					dev->driver ? 
+						dev->driver->name : "none");
                         dev = dev->next;
                 }
 
@@ -329,7 +332,8 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
                 param = dev->param;
 
-                printf("%s\n", param ? "Parameters:" : "no parameters available");
+                printf("%s\n", param ?
+				"Parameters:" : "no parameters available");
 
                 while (param) {
 			printf("%16s = %s\n", param->name, param->value);

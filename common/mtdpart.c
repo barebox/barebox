@@ -199,7 +199,7 @@ ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long o
         return dev_read(part->parent, buf, count, offset + part->offset, flags);
 }
 
-ssize_t part_write(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+ssize_t part_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
         struct partition *part = dev->platform_data;
 

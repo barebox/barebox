@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <console.h>
 #include <exports.h>
+#include <serial.h>
 
 void serial_printf (const char *fmt, ...)
 {

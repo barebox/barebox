@@ -105,8 +105,8 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 
 int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong	start;
-	int	size, r, now;
+	ulong	start, size;
+	int	r, now;
 	int	ret = 0;
 	int fd;
 
@@ -459,7 +459,7 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 #endif	/* CONFIG_CRC32_VERIFY */
 
-static void memcpy_sz(void *_dst, void *_src, ulong count, ulong rwsize)
+static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 {
 	ulong dst = (ulong)_dst;
 	ulong src = (ulong)_src;
@@ -497,7 +497,7 @@ ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ul
 	return size;
 }
 
-ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong rwflags)
+ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong rwflags)
 {
 	ulong size;
 	size = min(count, dev->size - offset);

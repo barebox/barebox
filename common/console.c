@@ -34,7 +34,8 @@
 
 static struct console_device *first_console;
 
-static int console_std_set(struct device_d *dev, struct param_d *param, const char *val)
+static int console_std_set(struct device_d *dev, struct param_d *param,
+		const char *val)
 {
 	struct console_device *cdev = dev->type_data;
 	unsigned int flag = 0, i = 0;
@@ -60,15 +61,50 @@ static int console_std_set(struct device_d *dev, struct param_d *param, const ch
 	return 0;
 }
 
+static int console_baudrate_set(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct console_device *cdev = dev->type_data;
+	int baudrate;
+
+	baudrate = simple_strtoul(val, NULL, 10);
+
+	if (cdev->f_active) {
+		printf("## Switch baudrate to %d bps and press ENTER ...\n",
+			baudrate);
+		mdelay(50);
+		cdev->setbrg(cdev, baudrate);
+		mdelay(50);
+		while (getc() != '\r');
+	} else
+		cdev->setbrg(cdev, baudrate);
+
+	sprintf(cdev->baudrate_string, "%d", baudrate);
+
+	return 0;
+}
+
 int console_register(struct console_device *newcdev)
 {
         struct console_device *cdev = first_console;
 	struct device_d *dev = newcdev->dev;
 
+	if (cdev->setbrg) {
+		newcdev->baudrate_param.set = console_baudrate_set;
+		newcdev->baudrate_param.name = "baudrate";
+		sprintf(newcdev->baudrate_string, "%d",
+			CONFIG_BAUDRATE);
+		console_baudrate_set(dev, &newcdev->baudrate_param,
+			newcdev->baudrate_string);
+		cdev->baudrate_param.value = newcdev->baudrate_string;
+		dev_add_param(dev, &newcdev->baudrate_param);
+	}
+
 	newcdev->active_param.set = console_std_set;
 	newcdev->active_param.name  = "active";
 	newcdev->active_param.value = newcdev->active;
 	dev_add_param(dev, &newcdev->active_param);
+
 #ifdef CONFIG_CONSOLE_ACTIVATE_ALL
 	console_std_set(dev, &newcdev->active_param, "ioe");
 #endif
@@ -128,8 +164,11 @@ void console_putc(unsigned int ch, char c)
 	struct console_device *cdev = first_console;
 
 	while (cdev) {
-		if (cdev->f_active & ch)
+		if (cdev->f_active & ch) {
 			cdev->putc(cdev, c);
+			if (c == '\n')
+				cdev->putc(cdev, '\r');
+		}
 		cdev = cdev->next;
 	}
 }
@@ -154,9 +193,8 @@ void console_puts(unsigned int ch, const char *str)
 			const char *s = str;
 			while (*s) {
 				cdev->putc(cdev, *s);
-				if (*s == '\n') {
+				if (*s == '\n')
 					cdev->putc(cdev, '\r');
-				}
 				s++;
 			}
 		}

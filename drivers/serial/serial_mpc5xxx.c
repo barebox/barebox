@@ -41,36 +41,32 @@
 #include <xfuncs.h>
 #include <asm/arch/clocks.h>
 
-static void mpc5xxx_serial_setbrg(struct console_device *cdev)
+static int mpc5xxx_serial_setbrg(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
 	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 	unsigned long baseclk;
 	int div;
-return;
-	printf("%s: ipb\n", __FUNCTION__);
+
 #if defined(CONFIG_MGT5100)
 	baseclk = (CFG_MPC5XXX_CLKIN + 16) / 32;
 #elif defined(CONFIG_MPC5200)
 	baseclk = (get_ipb_clock() + 16) / 32;
 #endif
-	printf("done: %d\n", get_ipb_clock());
+
 	/* set up UART divisor */
-#if 0
-	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
-#else
-#warning mpc5200 serial: temporary baudrate hack
-	div = (baseclk + (115200 / 2)) / 115200;
-#endif
+	div = (baseclk + (baudrate/2)) / baudrate;
 	psc->ctur = (div >> 8) & 0xFF;
 	psc->ctlr =  div & 0xff;
+
+	return 0;
 }
 
 static int mpc5xxx_serial_init(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
-return 0;
+
 	/* reset PSC */
 	psc->command = PSC_SEL_MODE_REG_1;
 
@@ -91,8 +87,6 @@ return 0;
 	psc->mode = PSC_MODE_8_BITS | PSC_MODE_PARNONE;
 #endif
 	psc->mode = PSC_MODE_ONE_STOP;
-
-	mpc5xxx_serial_setbrg(cdev);
 
 	/* disable all interrupts */
 	psc->psc_imr = 0;
@@ -148,6 +142,7 @@ static int mpc5xxx_serial_probe(struct device_d *dev)
 	cdev->tstc = mpc5xxx_serial_tstc;
 	cdev->putc = mpc5xxx_serial_putc;
 	cdev->getc = mpc5xxx_serial_getc;
+	cdev->setbrg = mpc5xxx_serial_setbrg;
 
 	mpc5xxx_serial_init(cdev);
 

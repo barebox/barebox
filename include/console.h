@@ -36,10 +36,15 @@ struct console_device {
 	int (*tstc)(struct console_device *cdev);
 	void (*putc)(struct console_device *cdev, char c);
 	int  (*getc)(struct console_device *cdev);
+	int (*setbrg)(struct console_device *cdev, int baudrate);
+
 	struct console_device *next;
 
 	unsigned char f_caps;
 	unsigned char f_active;
+
+	struct param_d baudrate_param;
+	char baudrate_string[8];
 
 	struct param_d active_param;
 	char active[4];

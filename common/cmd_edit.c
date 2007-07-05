@@ -24,10 +24,10 @@ static struct line *lastscrline;
 static int screenwidth  = 80;
 static int screenheight = 25;
 
-static int cursx  = 0;	/* position on screen */
+static int cursx  = 0;		/* position on screen */
 static int cursy  = 0;
 
-static int textx  = 0; /* position in text */
+static int textx  = 0;		/* position in text */
 
 static struct line *curline;	/* line where the cursor is */
 
@@ -289,7 +289,7 @@ static void merge_line(struct line *line)
 	refresh(1);
 }
 
-/* not a good idead on slow serial lines */
+/* not a good idea on slow serial lines */
 /* #define GETWINSIZE */
 
 #ifdef GETWINSIZE

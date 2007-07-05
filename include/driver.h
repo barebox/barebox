@@ -7,11 +7,12 @@
 #define MAP_WRITE       2
 
 struct param_d {
-        char *(*get)(struct device_d *, ulong cookie);
-        int  (*set)(struct device_d *, ulong cookie, char *val);
+        char *(*get)(struct device_d *, struct param_d *param);
+        int  (*set)(struct device_d *, struct param_d *param, char *val);
         char *name;
         ulong cookie;
         struct param_d *next;
+	void *val;
 };
 
 #define DEVICE_TYPE_UNKNOWN     0

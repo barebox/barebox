@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <mpc5xxx.h>
+#include <types.h>
 
 /*
  * Breath some life into the CPU...

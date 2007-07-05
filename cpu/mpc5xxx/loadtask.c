@@ -8,6 +8,7 @@
 
 #include <common.h>
 #include <mpc5xxx.h>
+#include <types.h>
 
 /* BestComm/SmartComm microcode */
 extern int taskTable;

@@ -23,7 +23,7 @@
 
 #include <asm-generic/u-boot.lds.h>
 
-OUTPUT_ARCH(powerpc)
+OUTPUT_ARCH("powerpc")
 /* Do we need any of these for elf?
    __DYNAMIC = 0;    */
 SECTIONS

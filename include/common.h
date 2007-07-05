@@ -510,13 +510,10 @@ int	prt_8260_rsr  (void);
 #endif
 
 /* $(CPU)/interrupts.c */
-int	interrupt_init	   (void);
 void	timer_interrupt	   (struct pt_regs *);
 void	external_interrupt (struct pt_regs *);
 void	irq_install_handler(int, interrupt_handler_t *, void *);
 void	irq_free_handler   (int);
-void	reset_timer	   (void);
-void	set_timer	   (ulong t);
 void	enable_interrupts  (void);
 int	disable_interrupts (void);
 

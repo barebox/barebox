@@ -11,7 +11,17 @@
 #include <string.h>
 #include <getopt.h>
 
-#define xmalloc malloc
+void *xmalloc(size_t size)
+{
+	void *p = NULL;
+
+	if (!(p = malloc(size))) {
+		printf("ERROR: out of memory\n");
+		exit(1);
+	}
+
+	return p;
+}
 
 #include "../include/envfs.h"
 #include "../common/environment.c"

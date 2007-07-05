@@ -128,13 +128,12 @@ UCHAR dm9161_InitPhy (AT91PS_EMAC p_mac)
 {
 	UCHAR ret = TRUE;
 	unsigned short IntValue;
+	unsigned int timeout = 4000;
 
 	at91rm9200_EmacEnableMDIO (p_mac);
 
-	if (!dm9161_GetLinkSpeed (p_mac)) {
-		/* Try another time */
-		ret = dm9161_GetLinkSpeed (p_mac);
-	}
+	while (!dm9161_GetLinkSpeed (p_mac) && timeout--)
+		udelay(1000);
 
 	/* Disable PHY Interrupts */
 	at91rm9200_EmacReadPhy (p_mac, DM9161_MDINTR, &IntValue);

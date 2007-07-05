@@ -37,19 +37,19 @@
 #ifndef __ASSEMBLY__
 
 typedef struct bd_info {
-//	unsigned long	bi_memstart;	/* start of DRAM memory */
-//	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
-//	unsigned long	bi_flashstart;	/* start of FLASH memory */
-//	unsigned long	bi_flashsize;	/* size	 of FLASH memory */
-//	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
-//	unsigned long	bi_sramstart;	/* start of SRAM memory */
-//	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
+	unsigned long	bi_memstart;	/* start of DRAM memory */
+	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
+	unsigned long	bi_flashstart;	/* start of FLASH memory */
+	unsigned long	bi_flashsize;	/* size	 of FLASH memory */
+	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
+	unsigned long	bi_sramstart;	/* start of SRAM memory */
+	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
 #if defined(CONFIG_5xx) || defined(CONFIG_8xx) || defined(CONFIG_8260) \
 	|| defined(CONFIG_E500) || defined(CONFIG_MPC86xx)
 	unsigned long	bi_immr_base;	/* base of IMMR register */
 #endif
 #if defined(CONFIG_MPC5xxx)
-//	unsigned long	bi_mbar_base;	/* base of internal registers */
+	unsigned long	bi_mbar_base;	/* base of internal registers */
 #endif
 #if defined(CONFIG_MPC83XX)
 	unsigned long	bi_immrbar;

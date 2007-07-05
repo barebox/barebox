@@ -30,6 +30,7 @@
 #include <command.h>
 #include <mpc5xxx.h>
 #include <asm/processor.h>
+#include <asm/byteorder.h>
 #include <init.h>
 #include <types.h>
 
@@ -73,8 +74,7 @@ int checkcpu (void)
 
 /* ------------------------------------------------------------------------- */
 
-int
-do_reset (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+void do_reset (void)
 {
 	ulong msr;
 	/* Interrupts and MMU off */
@@ -87,9 +87,6 @@ do_reset (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	*(vu_long *)(MPC5XXX_GPT0_COUNTER) = 0x0001000f;
 	*(vu_long *)(MPC5XXX_GPT0_ENABLE) = 0x9004; /* wden|ce|timer_ms */
 	while(1);
-
-	return 1;
-
 }
 
 /* ------------------------------------------------------------------------- */

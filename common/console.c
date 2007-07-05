@@ -175,6 +175,24 @@ int fputs(int fd, const char *s)
 	return 0;
 }
 
+void fprintf (int file, const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+	char printbuffer[CFG_PBSIZE];
+
+	va_start (args, fmt);
+
+	/* For this to work, printbuffer must be larger than
+	 * anything we ever want to print.
+	 */
+	i = vsprintf (printbuffer, fmt, args);
+	va_end (args);
+
+	/* Print the string */
+	fputs (file, printbuffer);
+}
+
 void printf (const char *fmt, ...)
 {
 	va_list args;
@@ -192,6 +210,7 @@ void printf (const char *fmt, ...)
 	/* Print the string */
 	puts (printbuffer);
 }
+
 
 void vprintf (const char *fmt, va_list args)
 {

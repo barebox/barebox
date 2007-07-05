@@ -50,15 +50,15 @@ char *strmhz (char *buf, long hz)
 /***********************************************************************/
 
 static void init_bd(bd_t *bd, ulong bootflag) {
-//	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
-//	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */
+	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
+//	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */ /* FIXME */
 
 #ifdef CONFIG_IP860
-//	bd->bi_sramstart = SRAM_BASE;	/* start of  SRAM memory	*/
-//	bd->bi_sramsize  = SRAM_SIZE;	/* size  of  SRAM memory	*/
+	bd->bi_sramstart = SRAM_BASE;	/* start of  SRAM memory	*/
+	bd->bi_sramsize  = SRAM_SIZE;	/* size  of  SRAM memory	*/
 #else
-//	bd->bi_sramstart = 0;		/* FIXME */ /* start of  SRAM memory	*/
-//	bd->bi_sramsize  = 0;		/* FIXME */ /* size  of  SRAM memory	*/
+	bd->bi_sramstart = 0;		/* FIXME */ /* start of  SRAM memory	*/
+	bd->bi_sramsize  = 0;		/* FIXME */ /* size  of  SRAM memory	*/
 #endif
 
 #if defined(CONFIG_8xx) || defined(CONFIG_8260) || defined(CONFIG_5xx) || \
@@ -103,23 +103,22 @@ static void init_bd(bd_t *bd, ulong bootflag) {
  *
  ************************************************************************
  */
+
+bd_t *bd;
+
 void board_init_r (ulong end_of_ram)
 {
-	bd_t *bd;
-        char *x;
 	extern void malloc_bin_reloc (void);
 
-        asm ("sync ; isync");
+	asm ("sync ; isync");
 
-        mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));
+	mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));
 
-        /* get gd and bd */
-        gd = malloc(sizeof(gd_t));
-        memset(gd, 0x0, sizeof(gd_t));
-        bd = malloc(sizeof(bd_t));
-        memset(bd, 0x0, sizeof(bd_t));
+	/* get gd and bd */
+	bd = malloc(sizeof(bd_t));
+	memset(bd, 0x0, sizeof(bd_t));
 
-        gd->bd = bd;
+	init_bd(bd, 0);
 
 	/*
 	 * Setup trap handlers

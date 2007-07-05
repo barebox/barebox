@@ -15,11 +15,6 @@
 #include <linux/ctype.h>
 
 #include <common.h>
-#if !defined (CONFIG_PANIC_HANG)
-#include <command.h>
-/*cmd_boot.c*/
-extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
-#endif
 
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
 {
@@ -379,7 +374,7 @@ void panic(const char *fmt, ...)
 #if defined (CONFIG_PANIC_HANG)
 	hang();
 #else
-	udelay (100000);	/* allow messages to go out */
-	do_reset (NULL, 0, 0, NULL);
+	udelay(100000);	/* allow messages to go out */
+	do_reset();
 #endif
 }

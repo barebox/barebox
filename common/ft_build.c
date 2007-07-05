@@ -22,10 +22,10 @@
 #include <common.h>
 #include <malloc.h>
 #include <environment.h>
+#include <asm/byteorder.h>
+#include <stdio.h>
 
-#ifdef CONFIG_OF_FLAT_TREE
-
-#include <asm/errno.h>
+#include <errno.h>
 #include <stddef.h>
 
 #include <ft_build.h>
@@ -588,4 +588,4 @@ void ft_setup(void *blob, bd_t * bd, ulong initrd_start, ulong initrd_end)
 	ft_dump_blob(blob);
 #endif
 }
-#endif
+

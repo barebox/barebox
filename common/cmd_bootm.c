@@ -38,7 +38,6 @@
 DECLARE_GLOBAL_DATA_PTR;
 
  /*cmd_boot.c*/
- extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
 #if (CONFIG_COMMANDS & CFG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
 #include <rtc.h>
@@ -332,7 +331,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			    (uchar *)data, &len) != 0) {
 			puts ("GUNZIP ERROR - must RESET board to recover\n");
 			SHOW_BOOT_PROGRESS (-6);
-			do_reset (cmdtp, flag, argc, argv);
+			do_reset();
 		}
 		break;
 #endif

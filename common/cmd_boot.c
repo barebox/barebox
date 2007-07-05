@@ -82,7 +82,11 @@ U_BOOT_CMD_START(go)
 	"      passing 'arg' as arguments\n")
 U_BOOT_CMD_END
 
-extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
+static int cmd_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	do_reset();
+	return 1;
+}
 
 U_BOOT_CMD_START(reset)
 	.maxargs	= CONFIG_MAXARGS,

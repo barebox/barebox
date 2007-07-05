@@ -10,6 +10,8 @@
 #ifdef CONFIG_OF_FLAT_TREE
 #include <ft_build.h>
 #endif
+extern bd_t *bd;
+#define SHOW_BOOT_PROGRESS(x)
 
 void  __attribute__((noinline))
 do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
@@ -18,7 +20,6 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		ulong	*len_ptr,
 		int	verify)
 {
-#if 0
 	ulong	sp;
 	ulong	len, checksum;
 	ulong	initrd_start, initrd_end;
@@ -76,7 +77,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 
 	debug ("=> set upper limit to 0x%08lX\n", sp);
 
-	cmdline = (char *)((sp - CFG_BARGSIZE) & ~0xF);
+	cmdline = (char *)((sp - CONFIG_CBSIZE) & ~0xF);
 	kbd = (bd_t *)(((ulong)cmdline - sizeof(bd_t)) & ~0xF);
 
 	if ((s = getenv("bootargs")) == NULL)
@@ -87,7 +88,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 	cmd_start    = (ulong)&cmdline[0];
 	cmd_end      = cmd_start + strlen(cmdline);
 
-	*kbd = *(gd->bd);
+	*kbd = *(bd);
 
 #ifdef	DEBUG
 	printf ("## cmdline at 0x%08lX ... 0x%08lX\n", cmd_start, cmd_end);
@@ -146,7 +147,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		if (ntohl(hdr->ih_magic)  != IH_MAGIC) {
 			puts ("Bad Magic Number\n");
 			SHOW_BOOT_PROGRESS (-10);
-			do_reset (cmdtp, flag, argc, argv);
+			do_reset ();
 		}
 
 		data = (ulong)&header;
@@ -158,7 +159,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		if (crc32 (0, (uchar *)data, len) != checksum) {
 			puts ("Bad Header Checksum\n");
 			SHOW_BOOT_PROGRESS (-11);
-			do_reset (cmdtp, flag, argc, argv);
+			do_reset();
 		}
 
 		SHOW_BOOT_PROGRESS (10);
@@ -195,7 +196,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 			if (csum != ntohl(hdr->ih_dcrc)) {
 				puts ("Bad Data CRC\n");
 				SHOW_BOOT_PROGRESS (-12);
-				do_reset (cmdtp, flag, argc, argv);
+				do_reset ();
 			}
 			puts ("OK\n");
 		}
@@ -207,7 +208,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		    (hdr->ih_type != IH_TYPE_RAMDISK)	) {
 			puts ("No Linux PPC Ramdisk Image\n");
 			SHOW_BOOT_PROGRESS (-13);
-			do_reset (cmdtp, flag, argc, argv);
+			do_reset ();
 		}
 
 		/*
@@ -247,7 +248,7 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 		hdr = (image_header_t *)of_flat_tree;
 
 		if  (*(ulong *)of_flat_tree == OF_DT_HEADER) {
-#ifndef CFG_NO_FLASH
+#ifdef CONFIG_OF_FLAT_TREE_FLASH /* FIXME */
 			if (addr2info((ulong)of_flat_tree) != NULL)
 				of_data = (ulong)of_flat_tree;
 #endif
@@ -463,7 +464,6 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
 	/* ft_dump_blob(of_flat_tree); */
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
-#endif
 #endif
 }
 

@@ -20,6 +20,7 @@ obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
 obj-y				+= cmd_fs.o
+obj-$(CONFIG_OF_FLAT_TREE)	+= ft_build.o
 
 obj-y += exports.o
 obj-y += main.o
@@ -55,7 +56,6 @@ obj-y += readkey.o
 #obj-y += cmd_fat.o
 #obj-y += cmd_pci.o
 #obj-y += cmd_ximg.o
-#obj-y += ft_build.o
 #obj-y += miiphybb.o
 #obj-y += usb_storage.o
 #obj-y += circbuf.o

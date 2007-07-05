@@ -27,6 +27,7 @@
 #include <common.h>
 #include <command.h>
 #include <clock.h>
+#include <malloc.h>
 
 #ifdef CONFIG_CMD_SLEEP
 int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

@@ -161,7 +161,7 @@ static void dm9000_reset(void)
 	udelay(1000);		/* delay 1ms */
 }
 
-int dm9000_eth_open(struct eth_device *ndev)
+int dm9000_eth_open(struct eth_device *edev)
 {
         int lnk, i = 0, ctl;
 
@@ -218,7 +218,7 @@ int dm9000_eth_open(struct eth_device *ndev)
 	return 0;
 }
 
-int dm9000_eth_send (struct eth_device *ndev, volatile void *packet, int length)
+int dm9000_eth_send (struct eth_device *edev, volatile void *packet, int length)
 {
 	char *data_ptr;
 	u32 tmplen, i;
@@ -272,7 +272,7 @@ int dm9000_eth_send (struct eth_device *ndev, volatile void *packet, int length)
 	return 0;
 }
 
-void dm9000_eth_halt (struct eth_device *ndev)
+void dm9000_eth_halt (struct eth_device *edev)
 {
 	printf("eth_halt\n");
 
@@ -282,7 +282,7 @@ void dm9000_eth_halt (struct eth_device *ndev)
 	DM9000_iow(DM9000_RCR, 0x00);	/* Disable RX */
 }
 
-int dm9000_eth_rx (struct eth_device *ndev)
+int dm9000_eth_rx (struct eth_device *edev)
 {
 	u8 rxbyte, *rdptr = (u8 *) NetRxPackets[0];
 	u16 RxStatus, RxLen = 0;
@@ -413,7 +413,7 @@ int dm9000_probe(struct device_d *dev)
 	printf("dm9000_eth_init()\n");
 
 	edev = malloc(sizeof(struct eth_device));
-	dev->priv = edev;
+	dev->type_ddata = edev;
 	edev->dev = dev;
 
 	edev->open = dm9000_eth_open;

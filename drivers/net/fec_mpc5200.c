@@ -821,7 +821,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	int i;
 
         edev = (struct eth_device *)malloc(sizeof(struct eth_device));
-        dev->priv = edev;
+        dev->type_data = edev;
 	fec = (mpc5xxx_fec_priv *)malloc(sizeof(*fec));
         edev->priv = fec;
         edev->dev  = dev;

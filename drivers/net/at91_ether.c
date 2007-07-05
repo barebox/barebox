@@ -150,7 +150,7 @@ UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
 	return TRUE;
 }
 
-static int at91rm9200_eth_open (struct eth_device *ndev)
+static int at91rm9200_eth_open (struct eth_device *edev)
 {
 	int ret;
 
@@ -172,7 +172,7 @@ static int at91rm9200_eth_open (struct eth_device *ndev)
 	return 0;
 }
 
-static int at91rm9200_eth_send (struct eth_device *ndev, volatile void *packet, int length)
+static int at91rm9200_eth_send (struct eth_device *edev, volatile void *packet, int length)
 {
 	while (!(p_mac->EMAC_TSR & AT91C_EMAC_BNQ));
 	p_mac->EMAC_TAR = (long) packet;
@@ -182,7 +182,7 @@ static int at91rm9200_eth_send (struct eth_device *ndev, volatile void *packet, 
 	return 0;
 }
 
-static int at91rm9200_eth_rx (struct eth_device *ndev)
+static int at91rm9200_eth_rx (struct eth_device *edev)
 {
 	int size;
 
@@ -203,7 +203,7 @@ static int at91rm9200_eth_rx (struct eth_device *ndev)
 	return size;
 }
 
-static void at91rm9200_eth_halt (struct eth_device *ndev)
+static void at91rm9200_eth_halt (struct eth_device *edev)
 {
 };
 

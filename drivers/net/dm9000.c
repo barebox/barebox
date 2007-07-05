@@ -47,6 +47,7 @@ TODO: Homerun NIC and longrun NIC are not functional, only internal at the
 #include <driver.h>
 #include <clock.h>
 #include <miiphy.h>
+#include <malloc.h>
 #include <net.h>
 #include <init.h>
 #include <asm/io.h>
@@ -159,30 +160,6 @@ static void dm9000_reset(void)
 	DM9000_iow(DM9000_NCR, NCR_RST);
 	udelay(1000);		/* delay 1ms */
 }
-
-int dm9000_probe(struct device_d *dev)
-{
-//        struct eth_device *ndev = dev->type_data;
-
-	printf("dm9000_eth_init()\n");
-
-	/* RESET device */
-	dm9000_reset();
-	dm9000_check_id();
-
-	/* Program operating register */
-	DM9000_iow(DM9000_NCR, 0x0);	/* only intern phy supported by now */
-	DM9000_iow(DM9000_TCR, 0);	/* TX Polling clear */
-	DM9000_iow(DM9000_BPTR, 0x3f);	/* Less 3Kb, 200us */
-	DM9000_iow(DM9000_FCTR, FCTR_HWOT(3) | FCTR_LWOT(8));	/* Flow Control : High/Low Water */
-	DM9000_iow(DM9000_FCR, 0x0);	/* SH FIXME: This looks strange! Flow Control */
-	DM9000_iow(DM9000_SMCR, 0);	/* Special Mode */
-	DM9000_iow(DM9000_NSR, NSR_WAKEST | NSR_TX2END | NSR_TX1END);	/* clear TX status */
-	DM9000_iow(DM9000_ISR, 0x0f);	/* Clear interrupt status */
-
-        return 0;
-}
-
 
 int dm9000_eth_open(struct eth_device *ndev)
 {
@@ -429,20 +406,46 @@ printf("dm9000_set_mac_address\n");
 	return -0;
 }
 
-struct eth_device dm9000_eth = {
-	.open = dm9000_eth_open,
-	.send = dm9000_eth_send,
-	.recv = dm9000_eth_rx,
-	.halt = dm9000_eth_halt,
-	.get_mac_address = dm9000_get_mac_address,
-	.set_mac_address = dm9000_set_mac_address,
-};
+int dm9000_probe(struct device_d *dev)
+{
+	struct eth_device *edev;
+
+	printf("dm9000_eth_init()\n");
+
+	edev = malloc(sizeof(struct eth_device));
+	dev->priv = edev;
+	edev->dev = dev;
+
+	edev->open = dm9000_eth_open;
+	edev->send = dm9000_eth_send;
+	edev->recv = dm9000_eth_rx;
+	edev->halt = dm9000_eth_halt;
+	edev->get_mac_address = dm9000_get_mac_address;
+	edev->set_mac_address = dm9000_set_mac_address;
+
+	/* RESET device */
+	dm9000_reset();
+	dm9000_check_id();
+
+	/* Program operating register */
+	DM9000_iow(DM9000_NCR, 0x0);	/* only intern phy supported by now */
+	DM9000_iow(DM9000_TCR, 0);	/* TX Polling clear */
+	DM9000_iow(DM9000_BPTR, 0x3f);	/* Less 3Kb, 200us */
+	DM9000_iow(DM9000_FCTR, FCTR_HWOT(3) | FCTR_LWOT(8));	/* Flow Control : High/Low Water */
+	DM9000_iow(DM9000_FCR, 0x0);	/* SH FIXME: This looks strange! Flow Control */
+	DM9000_iow(DM9000_SMCR, 0);	/* Special Mode */
+	DM9000_iow(DM9000_NSR, NSR_WAKEST | NSR_TX2END | NSR_TX1END);	/* clear TX status */
+	DM9000_iow(DM9000_ISR, 0x0f);	/* Clear interrupt status */
+
+	eth_register(edev);
+
+        return 0;
+}
 
 static struct driver_d dm9000_driver = {
         .name  = "dm9000",
         .probe = dm9000_probe,
         .type  = DEVICE_TYPE_ETHER,
-        .type_data = &dm9000_eth,
 };
 
 static int dm9000_init(void)

@@ -221,14 +221,10 @@ extern ulong load_addr;		/* Default Load Address */
 /* common/cmd_nvedit.c */
 int	env_init     (void);
 void	env_relocate (void);
-char	*getenv	     (char *);
-int	getenv_r     (char *name, char *buf, unsigned len);
+char    *getenv	     (const char *);
 int	saveenv	     (void);
-#ifdef CONFIG_PPC		/* ARM version to be fixed! */
-void inline setenv   (char *, char *);
-#else
-void	setenv	     (char *, char *);
-#endif /* CONFIG_PPC */
+void	setenv	     (const char *, const char *);
+
 #ifdef CONFIG_ARM
 # include <asm/mach-types.h>
 # include <asm/setup.h>

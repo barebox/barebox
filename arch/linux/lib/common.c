@@ -60,6 +60,13 @@ int linux_tstc(int fd)
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
 
+	/*
+	 * We set the timeout here to 100us, because otherwise
+	 * U-Boot would eat all cpu resources while waiting
+	 * for input. On the other hand this makes some
+	 * things like networking slow, because U-Boot will
+	 * poll this function very often.
+	 */
 	tv.tv_sec = 0;
 	tv.tv_usec = 100;
 
@@ -127,14 +134,8 @@ int linux_read_nonblock(int fd, void *buf, size_t count)
 	if (fcntl(fd, F_SETFL, oldflags) == -1)
 		goto err_out;
 
-	if (ret == -1) {
-//		printf("errno\n");
-		usleep(1000);
-	}
-
-//	if (ret == -1 && errno == EAGAIN) {
-//		printf("delay\n");
-//	}
+	if (ret == -1)
+		usleep(100);
 
 	return ret;
 
@@ -245,7 +246,7 @@ int main(int argc, char *argv[])
 {
 	void *ram;
 	int opt, ret, fd;
-	int malloc_size = 1024 * 1024;
+	int malloc_size = 8 * 1024 * 1024;
 
 	ram = malloc(malloc_size);
 	if (!ram) {

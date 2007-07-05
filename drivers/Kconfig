@@ -11,5 +11,8 @@ config HAS_CFI
 config DRIVER_CFI
 	bool "cfi flash driver"
 	depends on HAS_CFI
+config CFI_BUFFER_WRITE
+	bool "use cfi driver with buffer write"
+	depends on DRIVER_CFI
 
 endmenu

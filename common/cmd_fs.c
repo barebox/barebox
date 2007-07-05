@@ -5,22 +5,115 @@
 #include <asm-generic/errno.h>
 #include <malloc.h>
 #include <linux/ctype.h>
+#include <getopt.h>
+#include <linux/stat.h>
+
+#define LS_RECURSIVE	1
+#define LS_SHOWARG	2
+
+static void ls_one(const char *path, struct stat *s)
+{
+	char modestr[11];
+	unsigned long namelen = strlen(path);
+
+	mkmodestr(s->st_mode, modestr);
+	printf("%s %8d %*.*s\n",modestr, s->st_size, namelen, namelen, path);
+}
+
+int ls(const char *path, ulong flags)
+{
+	struct dir *dir;
+	struct dirent *d;
+	char tmp[PATH_MAX];
+	struct stat s;
+
+	if (flags & LS_SHOWARG)
+		printf("%s:\n", path);
+
+	if (stat(path, &s)) {
+		perror("stat");
+		return errno;
+	}
+
+	if (!(s.st_mode & S_IFDIR)) {
+		ls_one(path, &s);
+		return 0;
+	}
+
+	dir = opendir(path);
+	if (!dir) {
+		errno = -ENOENT;
+		return -ENOENT;
+	}
+
+	while ((d = readdir(dir))) {
+		sprintf(tmp, "%s/%s", path, d->name);
+		if (stat(tmp, &s)) {
+			perror("stat");
+			return errno;
+		}
+		ls_one(d->name, &s);
+	}
+
+	closedir(dir);
+
+	if (!(flags & LS_RECURSIVE))
+		return 0;
+
+	dir = opendir(path);
+	if (!dir) {
+		errno = -ENOENT;
+		return -ENOENT;
+	}
+
+	while ((d = readdir(dir))) {
+		sprintf(tmp, "%s/%s", path, d->name);
+		normalise_path(tmp);
+		if (stat(tmp, &s)) {
+			perror("stat");
+			return errno;
+		}
+		if (s.st_mode & S_IFDIR)
+			ls(tmp, flags);
+	}
+
+	closedir(dir);
+
+	return 0;
+}
 
 int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int ret;
+	int ret, opt;
+	ulong flags = 0;
 
-	ret = ls(argv[1]);
-	if (ret) {
-		perror("ls");
-		return 1;
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "R")) > 0) {
+		switch(opt) {
+		case 'R':
+			flags |= LS_RECURSIVE | LS_SHOWARG;
+			break;
+		}
+	}
+
+	if (argc - optind > 1)
+		flags |= LS_SHOWARG;
+
+	while(optind < argc) {
+		ret = ls(argv[optind], flags);
+		if (ret) {
+			perror("ls");
+			return 1;
+		}
+		optind++;
 	}
 
 	return 0;
 }
 
 U_BOOT_CMD(
-	ls,     2,     0,      do_ls,
+	ls,     10000,     0,      do_ls,
 	"ls      - list a file or directory\n",
 	"<path> list files on path"
 );

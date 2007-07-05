@@ -35,70 +35,42 @@
 
 #include <common.h>
 #include <mpc5xxx.h>
-
-#if defined (CONFIG_SERIAL_MULTI)
-#include <serial.h>
-#endif
+#include <driver.h>
+#include <init.h>
+#include <console.h>
+#include <xfuncs.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#if defined(CONFIG_PSC_CONSOLE)
-
-#if CONFIG_PSC_CONSOLE == 1
-#define PSC_BASE MPC5XXX_PSC1
-#elif CONFIG_PSC_CONSOLE == 2
-#define PSC_BASE MPC5XXX_PSC2
-#elif CONFIG_PSC_CONSOLE == 3
-#define PSC_BASE MPC5XXX_PSC3
-#elif defined(CONFIG_MGT5100)
-#error CONFIG_PSC_CONSOLE must be in 1, 2 or 3
-#elif CONFIG_PSC_CONSOLE == 4
-#define PSC_BASE MPC5XXX_PSC4
-#elif CONFIG_PSC_CONSOLE == 5
-#define PSC_BASE MPC5XXX_PSC5
-#elif CONFIG_PSC_CONSOLE == 6
-#define PSC_BASE MPC5XXX_PSC6
-#else
-#error CONFIG_PSC_CONSOLE must be in 1 ... 6
-#endif
-
-#if defined(CONFIG_SERIAL_MULTI) && !defined(CONFIG_PSC_CONSOLE2)
-#error you must define CONFIG_PSC_CONSOLE2 if CONFIG_SERIAL_MULTI is set
-#endif
-
-#if defined(CONFIG_SERIAL_MULTI)
-#if CONFIG_PSC_CONSOLE2 == 1
-#define PSC_BASE2 MPC5XXX_PSC1
-#elif CONFIG_PSC_CONSOLE2 == 2
-#define PSC_BASE2 MPC5XXX_PSC2
-#elif CONFIG_PSC_CONSOLE2 == 3
-#define PSC_BASE2 MPC5XXX_PSC3
-#elif defined(CONFIG_MGT5100)
-#error CONFIG_PSC_CONSOLE2 must be in 1, 2 or 3
-#elif CONFIG_PSC_CONSOLE2 == 4
-#define PSC_BASE2 MPC5XXX_PSC4
-#elif CONFIG_PSC_CONSOLE2 == 5
-#define PSC_BASE2 MPC5XXX_PSC5
-#elif CONFIG_PSC_CONSOLE2 == 6
-#define PSC_BASE2 MPC5XXX_PSC6
-#else
-#error CONFIG_PSC_CONSOLE2 must be in 1 ... 6
-#endif
-#endif /* CONFIG_SERIAL_MULTI */
-
-#if defined(CONFIG_SERIAL_MULTI)
-int serial_init_dev (unsigned long dev_base)
-#else
-int serial_init (void)
-#endif
+static void mpc5xxx_serial_setbrg(struct console_device *cdev)
 {
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
+	struct device_d *dev = cdev->dev;
+	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 	unsigned long baseclk;
 	int div;
+
+#if defined(CONFIG_MGT5100)
+	baseclk = (CFG_MPC5XXX_CLKIN + 16) / 32;
+#elif defined(CONFIG_MPC5200)
+	baseclk = (gd->ipb_clk + 16) / 32;
+#endif
+
+	/* set up UART divisor */
+#if 0
+	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
+#else
+#warning mpc5200 serial: temporary baudrate hack
+	div = (baseclk + (115200 / 2)) / 115200;
+#endif
+	psc->ctur = (div >> 8) & 0xFF;
+	psc->ctlr =  div & 0xff;
+}
+
+static int mpc5xxx_serial_init(struct console_device *cdev)
+{
+	struct device_d *dev = cdev->dev;
+	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	unsigned long baseclk;
 
 	/* reset PSC */
 	psc->command = PSC_SEL_MODE_REG_1;
@@ -123,15 +95,7 @@ int serial_init (void)
 #endif
 	psc->mode = PSC_MODE_ONE_STOP;
 
-	/* set up UART divisor */
-#if 0
-	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
-#else
-#warning mpc5200 serial: temporary baudrate hack
-	div = (baseclk + (115200/2)) / 115200;
-#endif
-	psc->ctur = (div >> 8) & 0xff;
-	psc->ctlr = div & 0xff;
+	mpc5xxx_serial_setbrg(cdev);
 
 	/* disable all interrupts */
 	psc->psc_imr = 0;
@@ -144,24 +108,10 @@ int serial_init (void)
 	return (0);
 }
 
-#if defined(CONFIG_SERIAL_MULTI)
-void serial_putc_dev (unsigned long dev_base, const char c)
-#else
-void serial_putc(const char c)
-#endif
+static void mpc5xxx_serial_putc (struct console_device *cdev, const char c)
 {
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
-
-	if (c == '\n')
-#if defined(CONFIG_SERIAL_MULTI)
-		serial_putc_dev (dev_base, '\r');
-#else
-		serial_putc('\r');
-#endif
+	struct device_d *dev = cdev->dev;
+	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	/* Wait for last character to go. */
 	while (!(psc->psc_status & PSC_SR_TXEMP))
@@ -170,51 +120,10 @@ void serial_putc(const char c)
 	psc->psc_buffer_8 = c;
 }
 
-#if defined(CONFIG_SERIAL_MULTI)
-void serial_putc_raw_dev(unsigned long dev_base, const char c)
-#else
-void serial_putc_raw(const char c)
-#endif
+static int mpc5xxx_serial_getc (struct console_device *cdev)
 {
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
-	/* Wait for last character to go. */
-	while (!(psc->psc_status & PSC_SR_TXEMP))
-		;
-
-	psc->psc_buffer_8 = c;
-}
-
-
-#if defined(CONFIG_SERIAL_MULTI)
-void serial_puts_dev (unsigned long dev_base, const char *s)
-#else
-void serial_puts (const char *s)
-#endif
-{
-	while (*s) {
-#if defined(CONFIG_SERIAL_MULTI)
-		serial_putc_dev (dev_base, *s++);
-#else
-		serial_putc (*s++);
-#endif
-	}
-}
-
-#if defined(CONFIG_SERIAL_MULTI)
-int serial_getc_dev (unsigned long dev_base)
-#else
-int serial_getc(void)
-#endif
-{
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
+	struct device_d *dev = cdev->dev;
+	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	/* Wait for a character to arrive. */
 	while (!(psc->psc_status & PSC_SR_RXRDY))
@@ -223,163 +132,44 @@ int serial_getc(void)
 	return psc->psc_buffer_8;
 }
 
-#if defined(CONFIG_SERIAL_MULTI)
-int serial_tstc_dev (unsigned long dev_base)
-#else
-int serial_tstc(void)
-#endif
+static int mpc5xxx_serial_tstc (struct console_device *cdev)
 {
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
+	struct device_d *dev = cdev->dev;
+	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	return (psc->psc_status & PSC_SR_RXRDY);
 }
 
-#if defined(CONFIG_SERIAL_MULTI)
-void serial_setbrg_dev (unsigned long dev_base)
-#else
-void serial_setbrg(void)
-#endif
+static int mpc5xxx_serial_probe(struct device_d *dev)
 {
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
-	unsigned long baseclk, div;
+	struct console_device *cdev;
 
-#if defined(CONFIG_MGT5100)
-	baseclk = (CFG_MPC5XXX_CLKIN + 16) / 32;
-#elif defined(CONFIG_MPC5200)
-	baseclk = (gd->ipb_clk + 16) / 32;
-#endif
+	cdev = xzalloc(sizeof(struct console_device));
+	dev->type_data = cdev;
+	cdev->dev = dev;
+	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
+	cdev->tstc = mpc5xxx_serial_tstc;
+	cdev->putc = mpc5xxx_serial_putc;
+	cdev->getc = mpc5xxx_serial_getc;
 
-	/* set up UART divisor */
-	div = (baseclk + (gd->baudrate/2)) / gd->baudrate;
-	psc->ctur = (div >> 8) & 0xFF;
-	psc->ctlr =  div & 0xff;
+	mpc5xxx_serial_init(cdev);
+
+	console_register(cdev);
+
+	return 0;
 }
 
-#if defined(CONFIG_SERIAL_MULTI)
-void serial_setrts_dev (unsigned long dev_base, int s)
-#else
-void serial_setrts(int s)
-#endif
-{
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
-
-	if (s) {
-		/* Assert RTS (become LOW) */
-		psc->op1 = 0x1;
-	}
-	else {
-		/* Negate RTS (become HIGH) */
-		psc->op0 = 0x1;
-	}
-}
-
-#if defined(CONFIG_SERIAL_MULTI)
-int serial_getcts_dev (unsigned long dev_base)
-#else
-int serial_getcts(void)
-#endif
-{
-#if defined(CONFIG_SERIAL_MULTI)
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev_base;
-#else
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)PSC_BASE;
-#endif
-
-	return (psc->ip & 0x1) ? 0 : 1;
-}
-
-#if defined(CONFIG_SERIAL_MULTI)
-int serial0_init(void)
-{
-	return (serial_init_dev(PSC_BASE));
-}
-
-int serial1_init(void)
-{
-	return (serial_init_dev(PSC_BASE2));
-}
-void serial0_setbrg (void)
-{
-	serial_setbrg_dev(PSC_BASE);
-}
-void serial1_setbrg (void)
-{
-	serial_setbrg_dev(PSC_BASE2);
-}
-
-void serial0_putc(const char c)
-{
-	serial_putc_dev(PSC_BASE,c);
-}
-
-void serial1_putc(const char c)
-{
-	serial_putc_dev(PSC_BASE2, c);
-}
-void serial0_puts(const char *s)
-{
-	serial_puts_dev(PSC_BASE, s);
-}
-
-void serial1_puts(const char *s)
-{
-	serial_puts_dev(PSC_BASE2, s);
-}
-
-int serial0_getc(void)
-{
-	return(serial_getc_dev(PSC_BASE));
-}
-
-int serial1_getc(void)
-{
-	return(serial_getc_dev(PSC_BASE2));
-}
-int serial0_tstc(void)
-{
-	return (serial_tstc_dev(PSC_BASE));
-}
-
-int serial1_tstc(void)
-{
-	return (serial_tstc_dev(PSC_BASE2));
-}
-
-struct serial_device serial0_device =
-{
-	"serial0",
-	"UART0",
-	serial0_init,
-	serial0_setbrg,
-	serial0_getc,
-	serial0_tstc,
-	serial0_putc,
-	serial0_puts,
+static struct driver_d mpc5xxx_serial_driver = {
+        .name  = "mpc5xxx_serial",
+        .probe = mpc5xxx_serial_probe,
+        .type  = DEVICE_TYPE_CONSOLE,
 };
 
-struct serial_device serial1_device =
+static int mpc5xxx_serial_register(void)
 {
-	"serial1",
-	"UART1",
-	serial1_init,
-	serial1_setbrg,
-	serial1_getc,
-	serial1_tstc,
-	serial1_putc,
-	serial1_puts,
-};
-#endif /* CONFIG_SERIAL_MULTI */
+	register_driver(&mpc5xxx_serial_driver);
+	return 0;
+}
 
-#endif /* CONFIG_PSC_CONSOLE */
+console_initcall(mpc5xxx_serial_register);
+

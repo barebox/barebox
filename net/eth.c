@@ -44,9 +44,14 @@ struct eth_device * eth_get_current(void)
 
 int eth_init(void)
 {
+	char mac[6];
 
 	if (!eth_current)
 		return 0;
+
+	string_to_enet_addr(dev_get_param(eth_current->dev, "mac"), mac);
+
+	eth_current->set_mac_address(eth_current, mac);
 
 	eth_current->open(eth_current);
 

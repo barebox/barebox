@@ -12,28 +12,7 @@
 #ifndef __NET_H__
 #define __NET_H__
 
-#if !defined(CONFIG_NET_MULTI) && defined(CONFIG_CPM2)
-#include <config.h>
-#if defined(CONFIG_ETHER_ON_FCC)
-#if defined(CONFIG_ETHER_ON_SCC)
-#error "Ethernet not correctly defined"
-#endif /* CONFIG_ETHER_ON_SCC */
-#define CONFIG_NET_MULTI
-#if (CONFIG_ETHER_INDEX == 1)
-#define	CONFIG_ETHER_ON_FCC1
-# define CFG_CMXFCR_MASK1	CFG_CMXFCR_MASK
-# define CFG_CMXFCR_VALUE1	CFG_CMXFCR_VALUE
-#elif (CONFIG_ETHER_INDEX == 2)
-#define	CONFIG_ETHER_ON_FCC2
-# define CFG_CMXFCR_MASK2	CFG_CMXFCR_MASK
-# define CFG_CMXFCR_VALUE2	CFG_CMXFCR_VALUE
-#elif (CONFIG_ETHER_INDEX == 3)
-#define	CONFIG_ETHER_ON_FCC3
-# define CFG_CMXFCR_MASK3	CFG_CMXFCR_MASK
-# define CFG_CMXFCR_VALUE3	CFG_CMXFCR_VALUE
-#endif /* CONFIG_ETHER_INDEX */
-#endif /* CONFIG_ETHER_ON_FCC */
-#endif /* !CONFIG_NET_MULTI && CONFIG_8260 */
+#include <common.h>
 
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
@@ -51,9 +30,6 @@
 #endif
 
 #define PKTALIGN	32
-
-typedef ulong		IPaddr_t;
-
 
 /*
  * The current receive packet handler.  Called with a pointer to the

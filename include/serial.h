@@ -1,44 +1,22 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#define NAMESIZE 16
-#define CTLRSIZE 8
+/* $(CPU)/serial.c */
+int	serial_init   (void);
+void	serial_addr   (unsigned int);
+void	serial_setbrg (void);
+void	serial_putc   (const char);
+void	serial_putc_raw(const char);
+void	serial_puts   (const char *);
+int	serial_getc   (void);
+int	serial_tstc   (void);
 
-struct serial_device {
-	char name[NAMESIZE];
-	char ctlr[CTLRSIZE];
+void	_serial_setbrg (const int);
+void	_serial_putc   (const char, const int);
+void	_serial_putc_raw(const char, const int);
+void	_serial_puts   (const char *, const int);
+int	_serial_getc   (const int);
+int	_serial_tstc   (const int);
 
-	int  (*init) (void);
-	void (*setbrg) (void);
-	int (*getc) (void);
-	int (*tstc) (void);
-	void (*putc) (const char c);
-	void (*puts) (const char *s);
-
-	struct serial_device *next;
-};
-
-extern struct serial_device serial_smc_device;
-extern struct serial_device serial_scc_device;
-extern struct serial_device * default_serial_console (void);
-
-#if defined(CONFIG_405GP) || defined(CONFIG_405CR) || defined(CONFIG_440) \
-   || defined(CONFIG_405EP) || defined(CONFIG_MPC5xxx)
-extern struct serial_device serial0_device;
-extern struct serial_device serial1_device;
-#if defined(CFG_NS16550_SERIAL)
-extern struct serial_device eserial1_device;
-extern struct serial_device eserial2_device;
-extern struct serial_device eserial3_device;
-extern struct serial_device eserial4_device;
-#endif /* CFG_NS16550_SERIAL */
-
-#endif
-
-
-extern void serial_initialize(void);
-extern void serial_devices_init(void);
-extern int serial_assign(char * name);
-extern void serial_reinit_all(void);
 
 #endif

@@ -24,6 +24,8 @@
 #ifndef __COMMON_H_
 #define __COMMON_H_	1
 
+#include <stdio.h>
+
 #undef	_LINUX_CONFIG_H
 #define _LINUX_CONFIG_H 1	/* avoid reading Linux autoconf.h file	*/
 
@@ -32,71 +34,14 @@ typedef volatile unsigned long	vu_long;
 typedef volatile unsigned short vu_short;
 typedef volatile unsigned char	vu_char;
 
+typedef unsigned long		IPaddr_t;
+
 #include <config.h>
 #include <linux/bitops.h>
 #include <linux/types.h>
 #include <linux/string.h>
 #include <asm/ptrace.h>
-#include <stdarg.h>
-#if defined(CONFIG_PCI) && defined(CONFIG_440)
-#include <pci.h>
-#endif
-#if defined(CONFIG_8xx)
-#include <asm/8xx_immap.h>
-#if defined(CONFIG_MPC852)	|| defined(CONFIG_MPC852T)	|| \
-    defined(CONFIG_MPC859)	|| defined(CONFIG_MPC859T)	|| \
-    defined(CONFIG_MPC859DSL)	|| \
-    defined(CONFIG_MPC866)	|| defined(CONFIG_MPC866T)	|| \
-    defined(CONFIG_MPC866P)
-# define CONFIG_MPC866_FAMILY 1
-#elif defined(CONFIG_MPC870) \
-   || defined(CONFIG_MPC875) \
-   || defined(CONFIG_MPC880) \
-   || defined(CONFIG_MPC885)
-# define CONFIG_MPC885_FAMILY   1
-#endif
-#if   defined(CONFIG_MPC860)	   \
-   || defined(CONFIG_MPC860T)	   \
-   || defined(CONFIG_MPC866_FAMILY) \
-   || defined(CONFIG_MPC885_FAMILY)
-# define CONFIG_MPC86x 1
-#endif
-#elif defined(CONFIG_5xx)
-#include <asm/5xx_immap.h>
-#elif defined(CONFIG_MPC5xxx)
-#include <mpc5xxx.h>
-#elif defined(CONFIG_MPC8220)
-#include <asm/immap_8220.h>
-#elif defined(CONFIG_8260)
-#if   defined(CONFIG_MPC8247) \
-   || defined(CONFIG_MPC8248) \
-   || defined(CONFIG_MPC8271) \
-   || defined(CONFIG_MPC8272)
-#define CONFIG_MPC8272_FAMILY	1
-#endif
-#if defined(CONFIG_MPC8272_FAMILY)
-#define CONFIG_MPC8260	1
-#endif
-#include <asm/immap_8260.h>
-#endif
-#ifdef CONFIG_MPC86xx
-#include <mpc86xx.h>
-#include <asm/immap_86xx.h>
-#endif
-#ifdef CONFIG_MPC85xx
-#include <mpc85xx.h>
-#include <asm/immap_85xx.h>
-#endif
-#ifdef CONFIG_MPC83XX
-#include <mpc83xx.h>
-#include <asm/immap_83xx.h>
-#endif
-#ifdef	CONFIG_4xx
-#include <ppc4xx.h>
-#endif
-#ifdef CONFIG_HYMOD
-#include <board/hymod/hymod.h>
-#endif
+
 #ifdef CONFIG_ARM
 #define asmlinkage	/* nothing */
 #endif
@@ -122,39 +67,6 @@ typedef void (interrupt_handler_t)(void *);
 
 #include <asm/u-boot.h> /* boot information for Linux kernel */
 #include <asm/global_data.h>	/* global data used for startup functions */
-
-/*
- * enable common handling for all TQM8xxL/M boards:
- * - CONFIG_TQM8xxM will be defined for all TQM8xxM and TQM885D boards
- * - CONFIG_TQM8xxL will be defined for all TQM8xxL _and_ TQM8xxM boards
- */
-#if defined(CONFIG_TQM823M) || defined(CONFIG_TQM850M) || \
-    defined(CONFIG_TQM855M) || defined(CONFIG_TQM860M) || \
-    defined(CONFIG_TQM862M) || defined(CONFIG_TQM866M) || \
-    defined(CONFIG_TQM885D)
-# ifndef CONFIG_TQM8xxM
-#  define CONFIG_TQM8xxM
-# endif
-#endif
-#if defined(CONFIG_TQM823L) || defined(CONFIG_TQM850L) || \
-    defined(CONFIG_TQM855L) || defined(CONFIG_TQM860L) || \
-    defined(CONFIG_TQM862L) || defined(CONFIG_TQM8xxM)
-# ifndef CONFIG_TQM8xxL
-#  define CONFIG_TQM8xxL
-# endif
-#endif
-
-#ifndef CONFIG_SERIAL_MULTI
-
-#if defined(CONFIG_8xx_CONS_SMC1) || defined(CONFIG_8xx_CONS_SMC2) \
- || defined(CONFIG_8xx_CONS_SCC1) || defined(CONFIG_8xx_CONS_SCC2) \
- || defined(CONFIG_8xx_CONS_SCC3) || defined(CONFIG_8xx_CONS_SCC4)
-
-#define CONFIG_SERIAL_MULTI	1
-
-#endif
-
-#endif /* CONFIG_SERIAL_MULTI */
 
 /*
  * General Purpose Utilities
@@ -203,12 +115,6 @@ int	checkdram     (void);
 char *	strmhz(char *buf, long hz);
 int	last_stage_init(void);
 extern ulong monitor_flash_len;
-#ifdef CFG_ID_EEPROM
-int mac_read_from_eeprom(void);
-#endif
-
-/* common/flash.c */
-void flash_perror (int);
 
 /* common/cmd_autoscript.c */
 int	autoscript (ulong addr);
@@ -236,26 +142,6 @@ void	setenv	     (const char *, const char *);
 
 #ifdef CONFIG_AUTO_COMPLETE
 int env_complete(char *var, int maxv, char *cmdv[], int maxsz, char *buf);
-#endif
-
-void	pci_init      (void);
-void	pci_init_board(void);
-void	pciinfo	      (int, int);
-
-#if defined(CONFIG_PCI) && defined(CONFIG_440)
-#   if defined(CFG_PCI_PRE_INIT)
-    int	   pci_pre_init	       (struct pci_controller * );
-#   endif
-#   if defined(CFG_PCI_TARGET_INIT)
-	void	pci_target_init	     (struct pci_controller *);
-#   endif
-#   if defined(CFG_PCI_MASTER_INIT)
-	void	pci_master_init	     (struct pci_controller *);
-#   endif
-    int	    is_pci_host		(struct pci_controller *);
-#if defined(CONFIG_440SPE)
-   void pcie_setup_hoses(void);
-#endif
 #endif
 
 int	misc_init_f   (void);
@@ -313,34 +199,6 @@ void	board_serial_init (void);
 void	board_ether_init (void);
 #endif
 
-#if defined(CONFIG_RPXCLASSIC)	|| defined(CONFIG_MBX) || \
-    defined(CONFIG_IAD210)	|| defined(CONFIG_XPEDITE1K) || \
-    defined(CONFIG_METROBOX)    || defined(CONFIG_KAREF) || \
-    defined(CONFIG_V38B)
-void	board_get_enetaddr (uchar *addr);
-#endif
-
-#ifdef CONFIG_HERMES
-/* $(BOARD)/hermes.c */
-void hermes_start_lxt980 (int speed);
-#endif
-
-#ifdef CONFIG_EVB64260
-void  evb64260_init(void);
-void  debug_led(int, int);
-void  display_mem_map(void);
-void  perform_soft_reset(void);
-#endif
-
-void	load_sernum_ethaddr (void);
-
-/* $(BOARD)/$(BOARD).c */
-int board_early_init_f (void);
-int board_late_init (void);
-int board_postclk_init (void); /* after clocks/timebase, before env/serial */
-int board_early_init_r (void);
-void board_poweroff (void);
-
 #if defined(CFG_DRAM_TEST)
 int testdram(void);
 #endif /* CFG_DRAM_TEST */
@@ -397,11 +255,6 @@ void		ppcSync(void);
 void		ppcDcbz(unsigned long value);
 #endif
 
-#if defined (CONFIG_MPC83XX)
-void		ppcDWload(unsigned int *addr, unsigned int *ret);
-void		ppcDWstore(unsigned int *addr, unsigned int *value);
-#endif
-
 /* $(CPU)/cpu.c */
 int	checkcpu      (void);
 int	checkicache   (void);
@@ -409,23 +262,6 @@ int	checkdcache   (void);
 void	upmconfig     (unsigned int, unsigned int *, unsigned int);
 ulong	get_tbclk     (void);
 void	reset_cpu     (ulong addr);
-
-/* $(CPU)/serial.c */
-int	serial_init   (void);
-void	serial_addr   (unsigned int);
-void	serial_setbrg (void);
-void	serial_putc   (const char);
-void	serial_putc_raw(const char);
-void	serial_puts   (const char *);
-int	serial_getc   (void);
-int	serial_tstc   (void);
-
-void	_serial_setbrg (const int);
-void	_serial_putc   (const char, const int);
-void	_serial_putc_raw(const char, const int);
-void	_serial_puts   (const char *, const int);
-int	_serial_getc   (const int);
-int	_serial_tstc   (const int);
 
 /* $(CPU)/speed.c */
 int	get_clocks (void);
@@ -564,45 +400,6 @@ int	had_ctrlc (void);	/* have we had a Control-C since last clear? */
 void	clear_ctrlc (void);	/* clear the Control-C condition */
 int	disable_ctrlc (int);	/* 1 to disable, 0 to enable Control-C detect */
 
-/*
- * STDIO based functions (can always be used)
- */
-
-/* serial stuff */
-void	serial_printf (const char *fmt, ...);
-
-/* stdin */
-int	getc(void);
-int	tstc(void);
-
-/* stdout */
-void	putc(const char c);
-void	puts(const char *s);
-void	printf(const char *fmt, ...);
-void	vprintf(const char *fmt, va_list args);
-
-/* stderr */
-#define eputc(c)		fputc(stderr, c)
-#define eputs(s)		fputs(stderr, s)
-#define eprintf(fmt,args...)	fprintf(stderr,fmt ,##args)
-
-/*
- * FILE based functions (can only be used AFTER relocation!)
- */
-
-#define stdin		0
-#define stdout		1
-#define stderr		2
-#define MAX_FILES	16
-
-void	fprintf(int file, const char *fmt, ...);
-void	fputs(int file, const char *s);
-void	fputc(int file, const char c);
-int	ftstc(int file);
-int	fgetc(int file);
-
-int	pcmcia_init (void);
-
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 void	show_boot_progress (int status);
 #endif
@@ -628,6 +425,7 @@ struct memarea_info {
 };
 
 int spec_str_to_info(const char *str, struct memarea_info *info);
+int parse_area_spec(const char *str, ulong *start, ulong *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);

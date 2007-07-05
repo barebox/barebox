@@ -91,7 +91,7 @@ extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
 extern void flash_protect (int flag, ulong from, ulong to, flash_info_t *info);
 extern int flash_write (char *, ulong, ulong);
 extern flash_info_t *addr2info (ulong);
-extern int write_buff (flash_info_t *info, uchar *src, ulong addr, ulong cnt);
+extern int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
 
 /* board/?/flash.c */
 #if defined(CFG_FLASH_PROTECTION)

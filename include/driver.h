@@ -80,11 +80,11 @@ struct device_d *get_device_by_id(const char *id);
 struct driver_d *get_driver_by_name(char *name);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t dev_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
+ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset);
 
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t mem_write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
+ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
 
 int dummy_probe(struct device_d *);
 

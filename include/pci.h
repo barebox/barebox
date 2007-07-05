@@ -504,4 +504,25 @@ extern void pci_mpc824x_init (struct pci_controller *hose);
 #ifdef CONFIG_MPC85xx
 extern void pci_mpc85xx_init (struct pci_controller *hose);
 #endif
+
+void	pci_init      (void);
+void	pci_init_board(void);
+void	pciinfo	      (int, int);
+
+#if defined(CONFIG_PCI) && defined(CONFIG_440)
+#   if defined(CFG_PCI_PRE_INIT)
+    int	   pci_pre_init	       (struct pci_controller * );
+#   endif
+#   if defined(CFG_PCI_TARGET_INIT)
+	void	pci_target_init	     (struct pci_controller *);
+#   endif
+#   if defined(CFG_PCI_MASTER_INIT)
+	void	pci_master_init	     (struct pci_controller *);
+#   endif
+    int	    is_pci_host		(struct pci_controller *);
+#if defined(CONFIG_440SPE)
+   void pcie_setup_hoses(void);
+#endif
+#endif
+
 #endif	/* _PCI_H */

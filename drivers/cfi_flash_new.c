@@ -41,7 +41,7 @@
 #include <clock.h>
 #include <init.h>
 #include <malloc.h>
-#include <cfi_flash.h>
+#include <cfi_flash_new.h>
 
 /*
  * This file implements a Common Flash Interface (CFI) driver for U-Boot.

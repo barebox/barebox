@@ -124,19 +124,6 @@ int hwflow_onoff(int on)
 }
 #endif
 
-#ifdef CONFIG_MODEM_SUPPORT
-static int be_quiet = 0;
-void disable_putc(void)
-{
-	be_quiet = 1;
-}
-
-void enable_putc(void)
-{
-	be_quiet = 0;
-}
-#endif
-
 
 /*
  * Output a single byte to the serial port.
@@ -144,11 +131,6 @@ void enable_putc(void)
 void serial_putc (const char c)
 {
 	lh7a40x_uart_t* uart = LH7A40X_UART_PTR(UART_CONSOLE);
-
-#ifdef CONFIG_MODEM_SUPPORT
-	if (be_quiet)
-		return;
-#endif
 
 	/* wait for room in the tx FIFO */
 	while (!(uart->status & UART_TXFE));

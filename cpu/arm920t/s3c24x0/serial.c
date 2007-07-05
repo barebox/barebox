@@ -121,19 +121,6 @@ int hwflow_onoff(int on)
 }
 #endif
 
-#ifdef CONFIG_MODEM_SUPPORT
-static int be_quiet = 0;
-void disable_putc(void)
-{
-	be_quiet = 1;
-}
-
-void enable_putc(void)
-{
-	be_quiet = 0;
-}
-#endif
-
 
 /*
  * Output a single byte to the serial port.
@@ -141,10 +128,6 @@ void enable_putc(void)
 void serial_putc (const char c)
 {
 	S3C24X0_UART * const uart = S3C24X0_GetBase_UART(UART_NR);
-#ifdef CONFIG_MODEM_SUPPORT
-	if (be_quiet)
-		return;
-#endif
 
 	/* wait for room in the tx FIFO */
 	while (!(uart->UTRSTAT & 0x2));

@@ -44,14 +44,6 @@ finished (you can simulate this by using the standard demo config file
 with 'make linux_defconfig'), there is a .config file in the toplevel
 directory of the sourcode.
 
-U-Boot usually needs an environment, storing the configuation data, plus
-a filesystem space for scripts etc. You can create one locally with
-
-  # dd if=/dev/zero of=env.bin bs=1024 count=128
-  # FIXME - what to do to get a solid environemt
-  # mkcramfs somedir/ cramfs.bin
-  # FIXME - create filesystem
-
 Once U-Boot is configured, we can start the compilation
 
   # make
@@ -61,8 +53,17 @@ If everything goes well, the result is a file called uboot:
   # ls -l uboot
     -rwxr-xr-x 1 rsc ptx 114073 Jun 26 22:34 uboot
 
-This U-Boot image is a normal Linux executable, so it can be started
-just like evary other program:
+U-Boot usually needs an environment for storing the configuation data.
+You can generate an environment using the example environment contained
+in examples/environment:
+
+  # ./scripts/ubootenv -s examples/environment/ env.bin
+
+To get some files to play with you can generate a cramfs image:
+  # mkcramfs somedir/ cramfs.bin
+
+The U-Boot image is a normal Linux executable, so it can be started
+just like every other program:
 
   # ./uboot -e env.bin -i cramfs.bin
 
@@ -70,6 +71,16 @@ just like evary other program:
 
   loading environment from /dev/env0
   uboot> /
+
+Specifying -[ie] <file> tells U-Boot to map the file as a device
+under /dev. Files given with '-e' will appear as /dev/env[n]. Files
+given with '-i' will appear as /dev/fd[n].
+If U-Boot finds a valid configuration sector on /dev/env0 it will
+load it to /env. It then executes /env/init if it exists. If you have
+loaded the example environment U-Boot will show you a menu asking for
+your settings.
+
+
 
 FIXME: cfi currently doesn't work with um-uboot
 
@@ -91,7 +102,7 @@ edit -> ctrl-c ctrl-d
 md -f /dev/nor0.1
 exec /env/init FIXME: doesn't work yet
 saveenv (makes /env persistent) -> /dev/env0
-printenv (FIXME: obsolete)
+printenv
 mount
 
 Shell

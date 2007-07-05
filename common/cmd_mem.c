@@ -32,6 +32,7 @@
 #include <init.h>
 #include <driver.h>
 #include <malloc.h>
+#include <errno.h>
 #include <asm-generic/errno.h>
 
 #ifdef	CMD_MEM_DEBUG

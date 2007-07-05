@@ -45,7 +45,7 @@ BOARD  :=
 endif
 
 ifneq ($(cpu-y),)
-CPU  := cpu/$(cpu-y)/
+CPU  := arch/ppc/mach-$(cpu-y)/
 else
 CPU  :=
 endif

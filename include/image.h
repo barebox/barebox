@@ -156,5 +156,7 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
+/* common/cmd_bootm.c */
+void	print_image_hdr (image_header_t *hdr);
 
 #endif	/* __IMAGE_H__ */

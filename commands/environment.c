@@ -25,7 +25,7 @@ int envfs_save(char *filename, char *dirname)
 	struct envfs_inode *inode = NULL;
 	int fd;
 
-	envfd = open(filename, O_WRONLY);
+	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
 		perror("open");
 		return -1;

@@ -224,10 +224,10 @@ int read(int fd, void *buf, size_t count)
 	FILE *f = &files[fd];
 
 	dev = f->dev;
-	printf("READ: dev: %p\n",dev);
+//	printf("READ: dev: %p\n",dev);
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-	printf("\nreading %d bytes at %d\n",count, f->pos);
+//	printf("\nreading %d bytes at %d\n",count, f->pos);
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
 	errno = fsdrv->read(dev, f, buf, count);

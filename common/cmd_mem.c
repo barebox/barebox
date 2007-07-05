@@ -64,8 +64,6 @@ int cmd_get_data_size(char* arg, int default_size)
 }
 #endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_MEMORY)
-
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
 #else
@@ -1289,4 +1287,3 @@ U_BOOT_CMD(
 #endif /* CONFIG_MX_CYCLIC */
 
 #endif
-#endif	/* CFG_CMD_MEMORY */

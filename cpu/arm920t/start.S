@@ -202,7 +202,7 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 
 	ldr	pc, _start_armboot
 
-_start_armboot:	.word start_armboot
+_start_armboot:	.word start_uboot
 
 
 /*

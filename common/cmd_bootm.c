@@ -34,6 +34,11 @@
 #include <bzlib.h>
 #include <environment.h>
 #include <asm/byteorder.h>
+#include <xfuncs.h>
+#include <getopt.h>
+#include <fcntl.h>
+#include <fs.h>
+#include <errno.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -135,7 +140,79 @@ extern void lynxkdi_boot( image_header_t * );
 #define CFG_BOOTM_LEN	0x800000	/* use 8MByte as default max gunzip size */
 #endif
 
+#ifdef CONFIG_OF_FLAT_TREE
+#define OPT_OFTREE "o:"
+#else
+#define OPT_OFTREE
+#endif
+
 image_header_t header;
+
+image_header_t *map_image(const char *filename, int verify)
+{
+	int fd;
+	uint32_t checksum, len;
+	void *data;
+	image_header_t *header, *tmp_header;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		printf("could not open: %s\n", errno_str());
+		return NULL;
+	}
+
+	header = xmalloc(sizeof(image_header_t));
+
+	if (read(fd, header, sizeof(image_header_t)) < 0) {
+		printf("could not read: %s\n", errno_str());
+		goto err_out;
+	}
+
+	if (ntohl(header->ih_magic) != IH_MAGIC) {
+		puts ("Bad Magic Number\n");
+		goto err_out;
+	}
+
+	checksum = ntohl(header->ih_hcrc);
+	header->ih_hcrc = 0;
+
+	if (crc32 (0, (uchar *)header, sizeof(image_header_t)) != checksum) {
+		puts ("Bad Header Checksum\n");
+		goto err_out;
+	}
+	len  = ntohl(header->ih_size);
+
+	tmp_header = realloc(header, sizeof(image_header_t) + len);
+	if (!tmp_header)
+		goto err_out;
+	header = tmp_header;
+
+	data = (void *)(header + sizeof(image_header_t));
+
+	if (read(fd, data, len) < 0) {
+		printf("could not read: %s\n", errno_str());
+		goto err_out;
+	}
+
+	if (verify) {
+		puts ("   Verifying Checksum ... ");
+		if (crc32 (0, data, len) != ntohl(header->ih_dcrc)) {
+			printf ("Bad Data CRC\n");
+			goto err_out;
+		}
+		puts ("OK\n");
+	}
+
+	print_image_hdr (header);
+
+	close(fd);
+
+	return header;
+err_out:
+	close(fd);
+	free(header);
+	return NULL;
+}
 
 int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
@@ -148,112 +225,51 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
 	char buf[32];
-	int	i, verify;
+	int	i, verify = 1;
 	char	*name;
 	const char *s;
-	image_header_t *hdr = &header;
+	int	opt;
+	char	*initrd = NULL;
+	char	*oftree = NULL;
+	char	*kernel = NULL;
+	image_header_t *hdr;
 
-	s = getenv ("verify");
-	verify = (s && (*s == 'n')) ? 0 : 1;
+	getopt_reset();
 
-	if (argc < 2) {
+	while((opt = getopt(argc, argv, "i:n" OPT_OFTREE)) > 0) {
+		switch(opt) {
+		case 'i':
+			initrd = optarg;
+			break;
+		case 'n':
+			verify = 0;
+			break;
+#ifdef CONFIG_OF_FLAT_TREE
+		case 'o':
+			oftree = optarg;
+			break;
+#endif
+		default:
+			return 1;
+		}
+	}
+
+	if (optind == argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	if (spec_str_to_info(argv[1], &mem)) {
-		printf("-ENOPARSE\n");
-		return -1;
-	}
-
-	addr = mem.start + mem.device->map_base;
-
-	SHOW_BOOT_PROGRESS (1);
-	printf ("## Booting image at %08lx ...\n", addr);
-
-	/* Copy header so we can blank CRC field for re-calculation */
-	memmove (&header, (char *)addr, sizeof(image_header_t));
-
-	if (ntohl(hdr->ih_magic) != IH_MAGIC) {
-#ifdef __I386__	/* correct image format not implemented yet - fake it */
-		if (fake_header(hdr, (void*)addr, -1) != NULL) {
-			/* to compensate for the addition below */
-			addr -= sizeof(image_header_t);
-			/* turnof verify,
-			 * fake_header() does not fake the data crc
-			 */
-			verify = 0;
-		} else
-#endif	/* __I386__ */
-	    {
-		puts ("Bad Magic Number\n");
-		SHOW_BOOT_PROGRESS (-1);
+	hdr = map_image(argv[optind], verify);
+	if (!hdr)
 		return 1;
-	    }
-	}
-	SHOW_BOOT_PROGRESS (2);
 
-	data = (ulong)&header;
-	len  = sizeof(image_header_t);
-
-	checksum = ntohl(hdr->ih_hcrc);
-	hdr->ih_hcrc = 0;
-
-	if (crc32 (0, (uchar *)data, len) != checksum) {
-		puts ("Bad Header Checksum\n");
-		SHOW_BOOT_PROGRESS (-2);
-		return 1;
-	}
-	SHOW_BOOT_PROGRESS (3);
-
-	/* for multi-file images we need the data part, too */
-	print_image_hdr ((image_header_t *)addr);
-
-	data = addr + sizeof(image_header_t);
-	len  = ntohl(hdr->ih_size);
-
-	if (verify) {
-		puts ("   Verifying Checksum ... ");
-		if (crc32 (0, (uchar *)data, len) != ntohl(hdr->ih_dcrc)) {
-			printf ("Bad Data CRC\n");
-			SHOW_BOOT_PROGRESS (-3);
-			return 1;
-		}
-		puts ("OK\n");
-	}
-	SHOW_BOOT_PROGRESS (4);
-
-	len_ptr = (ulong *)data;
-
-#if defined(__PPC__)
-	if (hdr->ih_arch != IH_CPU_PPC)
-#elif defined(__ARM__)
-	if (hdr->ih_arch != IH_CPU_ARM)
-#elif defined(__I386__)
-	if (hdr->ih_arch != IH_CPU_I386)
-#elif defined(__mips__)
-	if (hdr->ih_arch != IH_CPU_MIPS)
-#elif defined(__nios__)
-	if (hdr->ih_arch != IH_CPU_NIOS)
-#elif defined(__M68K__)
-	if (hdr->ih_arch != IH_CPU_M68K)
-#elif defined(__microblaze__)
-	if (hdr->ih_arch != IH_CPU_MICROBLAZE)
-#elif defined(__nios2__)
-	if (hdr->ih_arch != IH_CPU_NIOS2)
-#elif defined(__blackfin__)
-	if (hdr->ih_arch != IH_CPU_BLACKFIN)
-#elif defined(__avr32__)
-	if (hdr->ih_arch != IH_CPU_AVR32)
-#else
-# error Unknown CPU type
-#endif
-	{
+	if (hdr->ih_arch != IH_CPU)	{
 		printf ("Unsupported Architecture 0x%x\n", hdr->ih_arch);
-		SHOW_BOOT_PROGRESS (-4);
 		return 1;
 	}
-	SHOW_BOOT_PROGRESS (5);
+
+	printf("This is work in progress. Implement to continue\n");
+	return 1;
 
 	switch (hdr->ih_type) {
 	case IH_TYPE_STANDALONE:
@@ -287,17 +303,6 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	 */
 
 	iflag = disable_interrupts();
-
-#ifdef CONFIG_AMIGAONEG3SE
-	/*
-	 * We've possible left the caches enabled during
-	 * bios emulation, so turn them off again
-	 */
-	icache_disable();
-	invalidate_l1_instruction_cache();
-	flush_data_cache();
-	dcache_disable();
-#endif
 
 	switch (hdr->ih_comp) {
 	case IH_COMP_NONE:

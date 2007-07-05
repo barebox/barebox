@@ -27,6 +27,9 @@
 
 #include <common.h>
 #include <command.h>
+#include <xfuncs.h>
+#include <malloc.h>
+#include <environment.h>
 
 int
 do_version (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -42,43 +45,58 @@ U_BOOT_CMD(
 	NULL
 );
 
-#ifdef CONFIG_CMD_ECHO
-
 int
-do_echo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+do_true (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int i, putnl = 1;
-
-	for (i = 1; i < argc; i++) {
-		char *p = argv[i], c;
-
-		if (i > 1)
-			putc(' ');
-		while ((c = *p++) != '\0') {
-			if (c == '\\' && *p == 'c') {
-				putnl = 0;
-				p++;
-			} else {
-				putc(c);
-			}
-		}
-	}
-
-	if (putnl)
-		putc('\n');
 	return 0;
 }
 
 U_BOOT_CMD(
-	echo,	CONFIG_MAXARGS,	1,	do_echo,
- 	"echo    - echo args to console\n",
- 	"[args..]\n"
-	"    - echo args to console; \\c suppresses newline\n"
+	true,	1,		1,	do_true,
+ 	"true  - return 0\n",
+	NULL
 );
 
-#endif	/*  CONFIG_CMD_ECHO */
+int
+do_false (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	return 1;
+}
+
+U_BOOT_CMD(
+	false,	1,		1,	do_false,
+ 	"false  - return 1\n",
+	NULL
+);
 
 #ifdef CONFIG_HUSH_PARSER
+
+int
+do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	char *buf = xmalloc(CONFIG_CBSIZE);
+
+	if (argc < 3) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	if (readline(argv[1], buf, CONFIG_CBSIZE) < 0) {
+		free(buf);
+		return 1;
+	}
+
+	setenv(argv[2], buf);
+	free(buf);
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	readline,	3,		1,	do_readline,
+ 	"readline  - \n",
+	NULL
+);
 
 int
 do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -89,7 +107,6 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	/* args? */
 	if (argc < 3)
 		return 1;
-
 
 	last_expr = 0;
 	left = argc - 1; ap = argv + 1;
@@ -148,6 +165,8 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		}
 
 		if (adv == 3) {
+			ulong a = simple_strtol(ap[0], NULL, 0);
+			ulong b = simple_strtol(ap[2], NULL, 0);
 			if (strcmp(ap[1], "=") == 0)
 				expr = strcmp(ap[0], ap[2]) == 0;
 			else if (strcmp(ap[1], "!=") == 0)
@@ -157,17 +176,17 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			else if (strcmp(ap[1], "<") == 0)
 				expr = strcmp(ap[0], ap[2]) < 0;
 			else if (strcmp(ap[1], "-eq") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) == simple_strtol(ap[2], NULL, 10);
+				expr = a == b;
 			else if (strcmp(ap[1], "-ne") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) != simple_strtol(ap[2], NULL, 10);
+				expr = a != b;
 			else if (strcmp(ap[1], "-lt") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) < simple_strtol(ap[2], NULL, 10);
+				expr = a < b;
 			else if (strcmp(ap[1], "-le") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) <= simple_strtol(ap[2], NULL, 10);
+				expr = a <= b;
 			else if (strcmp(ap[1], "-gt") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) > simple_strtol(ap[2], NULL, 10);
+				expr = a > b;
 			else if (strcmp(ap[1], "-ge") == 0)
-				expr = simple_strtol(ap[0], NULL, 10) >= simple_strtol(ap[2], NULL, 10);
+				expr = a >= b;
 			else {
 				expr = 1;
 				break;

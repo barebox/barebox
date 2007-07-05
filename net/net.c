@@ -78,6 +78,7 @@
 #include <clock.h>
 #include <watchdog.h>
 #include <command.h>
+#include <environment.h>
 #include <param.h>
 #include <net.h>
 #include "bootp.h"
@@ -121,7 +122,7 @@ uchar		NetServerEther[6] =	/* Boot server enet address		*/
 			{ 0, 0, 0, 0, 0, 0 };
 IPaddr_t	NetOurIP;		/* Our IP addr (0 = unknown)		*/
 IPaddr_t	NetServerIP;		/* Our IP addr (0 = unknown)		*/
-volatile uchar *NetRxPkt;		/* Current receive packet		*/
+uchar *NetRxPkt;			/* Current receive packet		*/
 int		NetRxPktLen;		/* Current rx packet length		*/
 unsigned	NetIPID;		/* IP packet ID				*/
 uchar		NetBcastAddr[6] =	/* Ethernet bcast address		*/
@@ -160,15 +161,15 @@ void NcStart(void);
 int nc_input_packet(uchar *pkt, unsigned dest, unsigned src, unsigned len);
 #endif
 
-volatile uchar	PktBuf[(PKTBUFSRX+1) * PKTSIZE_ALIGN + PKTALIGN];
+uchar	PktBuf[(PKTBUFSRX+1) * PKTSIZE_ALIGN + PKTALIGN];
 
-volatile uchar *NetRxPackets[PKTBUFSRX]; /* Receive packets			*/
+uchar *NetRxPackets[PKTBUFSRX]; /* Receive packets			*/
 
 static rxhand_f *packetHandler;		/* Current RX packet handler		*/
 static thand_f *timeHandler;		/* Current timeout handler		*/
 static uint64_t	timeStart;		/* Time base value			*/
 static uint64_t	timeDelta;		/* Current timeout value		*/
-volatile uchar *NetTxPacket = 0;	/* THE transmit packet			*/
+uchar *NetTxPacket = 0;			/* THE transmit packet			*/
 
 static int net_check_prereq (proto_t protocol);
 
@@ -186,7 +187,7 @@ int		NetArpWaitTry;
 void ArpRequest (void)
 {
 	int i;
-	volatile uchar *pkt;
+	uchar *pkt;
 	ARP_t *arp;
 
 #ifdef ET_DEBUG
@@ -380,11 +381,12 @@ restart:
 			DhcpRequest();		/* Basically same as BOOTP */
 			break;
 #endif
-
+#ifdef CONFIG_NET_BOOTP
 		case BOOTP:
 			BootpTry = 0;
 			BootpRequest ();
 			break;
+#endif
 #ifdef CONFIG_NET_RARP
 		case RARP:
 			RarpTry = 0;
@@ -577,7 +579,7 @@ NetSetTimeout(uint64_t iv, thand_f * f)
 
 
 void
-NetSendPacket(volatile uchar * pkt, int len)
+NetSendPacket(uchar * pkt, int len)
 {
 	(void) eth_send(pkt, len);
 }
@@ -716,9 +718,9 @@ static ushort CDP_compute_csum(const uchar *buff, ushort len)
 
 int CDPSendTrigger(void)
 {
-	volatile uchar *pkt;
-	volatile ushort *s;
-	volatile ushort *cp;
+	uchar *pkt;
+	ushort *s;
+	ushort *cp;
 	Ethernet_t *et;
 	int len;
 	ushort chksum;
@@ -745,7 +747,7 @@ int CDPSendTrigger(void)
 	/* CDP header */
 	*pkt++ = 0x02;				/* CDP version 2 */
 	*pkt++ = 180;				/* TTL */
-	s = (volatile ushort *)pkt;
+	s = (ushort *)pkt;
 	cp = s;
 	*s++ = htons(0);			/* checksum (0 for later calculation) */
 
@@ -985,7 +987,7 @@ static void CDPStart(void)
 
 
 void
-NetReceive(volatile uchar * inpkt, int len)
+NetReceive(uchar * inpkt, int len)
 {
 	Ethernet_t *et;
 	IP_t	*ip;
@@ -1432,7 +1434,7 @@ NetEthHdrSize(void)
 }
 
 int
-NetSetEther(volatile uchar * xet, uchar * addr, uint prot)
+NetSetEther(uchar * xet, uchar * addr, uint prot)
 {
 	Ethernet_t *et = (Ethernet_t *)xet;
 	ushort myvlanid;
@@ -1457,9 +1459,9 @@ NetSetEther(volatile uchar * xet, uchar * addr, uint prot)
 }
 
 void
-NetSetIP(volatile uchar * xip, IPaddr_t dest, int dport, int sport, int len)
+NetSetIP(uchar * xip, IPaddr_t dest, int dport, int sport, int len)
 {
-	volatile IP_t *ip = (IP_t *)xip;
+	IP_t *ip = (IP_t *)xip;
 
 	/*
 	 *	If the data is an odd number of bytes, zero the

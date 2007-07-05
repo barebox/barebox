@@ -61,7 +61,7 @@ struct eth_device {
 
 	int  (*init) (struct eth_device*);
 	int  (*open) (struct eth_device*);
-	int  (*send) (struct eth_device*, volatile void *packet, int length);
+	int  (*send) (struct eth_device*, void *packet, int length);
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
 	int  (*get_mac_address) (struct eth_device*, unsigned char *adr);
@@ -84,7 +84,7 @@ extern int eth_get_dev_index (void);		/* get the device index         */
 extern void eth_set_enetaddr(int num, char* a);	/* Set new MAC address		*/
 
 extern int eth_init(void);			/* Initialize the device	*/
-extern int eth_send(volatile void *packet, int length);	   /* Send a packet	*/
+extern int eth_send(void *packet, int length);	   /* Send a packet	*/
 extern int eth_rx(void);			/* Check for received packets	*/
 extern void eth_halt(void);			/* stop SCC			*/
 extern char *eth_get_name(void);		/* get name of current device	*/
@@ -268,9 +268,9 @@ extern uchar		NetOurEther[6];		/* Our ethernet address		*/
 extern uchar		NetServerEther[6];	/* Boot server enet address	*/
 extern IPaddr_t		NetOurIP;		/* Our    IP addr (0 = unknown)	*/
 extern IPaddr_t		NetServerIP;		/* Server IP addr (0 = unknown)	*/
-extern volatile uchar * NetTxPacket;		/* THE transmit packet		*/
-extern volatile uchar * NetRxPackets[PKTBUFSRX];/* Receive packets		*/
-extern volatile uchar * NetRxPkt;		/* Current receive packet	*/
+extern uchar * 		NetTxPacket;		/* THE transmit packet		*/
+extern uchar *		NetRxPackets[PKTBUFSRX];/* Receive packets		*/
+extern uchar *		NetRxPkt;		/* Current receive packet	*/
 extern int		NetRxPktLen;		/* Current rx packet length	*/
 extern unsigned		NetIPID;		/* IP ID (counting)		*/
 extern uchar		NetBcastAddr[6];	/* Ethernet boardcast address	*/
@@ -329,10 +329,10 @@ extern void	NetStartAgain(void);
 extern int 	NetEthHdrSize(void);
 
 /* Set ethernet header; returns the size of the header */
-extern int	NetSetEther(volatile uchar *, uchar *, uint);
+extern int	NetSetEther(uchar *, uchar *, uint);
 
 /* Set IP header */
-extern void	NetSetIP(volatile uchar *, IPaddr_t, int, int, int);
+extern void	NetSetIP(uchar *, IPaddr_t, int, int, int);
 
 /* Checksum */
 extern int	NetCksumOk(uchar *, int);	/* Return true if cksum OK	*/
@@ -343,13 +343,13 @@ extern void	NetSetHandler(rxhand_f *);	/* Set RX packet handler	*/
 extern void	NetSetTimeout(uint64_t, thand_f *);/* Set timeout handler		*/
 
 /* Transmit "NetTxPacket" */
-extern void	NetSendPacket(volatile uchar *, int);
+extern void	NetSendPacket(uchar *, int);
 
 /* Transmit UDP packet, performing ARP request if needed */
 extern int	NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len);
 
 /* Processes a received packet */
-extern void	NetReceive(volatile uchar *, int);
+extern void	NetReceive(uchar *, int);
 
 /* Print an IP address on the console */
 #ifdef CONFIG_NET

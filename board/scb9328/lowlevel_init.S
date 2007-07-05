@@ -22,6 +22,32 @@
 #include <version.h>
 #include <asm/arch/imx-regs.h>
 
+#define CFG_GPR_A_VAL		0x00800000
+#define CFG_GIUS_A_VAL		0x0043fffe
+
+#define CFG_CS0U_VAL 0x000F2000
+#define CFG_CS0L_VAL 0x11110d01
+#define CFG_CS1U_VAL 0x000F0a00
+#define CFG_CS1L_VAL 0x11110601
+#define CFG_CS2U_VAL 0x0
+#define CFG_CS2L_VAL 0x0
+#define CFG_CS3U_VAL 0x000FFFFF
+#define CFG_CS3L_VAL 0x00000303
+#define CFG_CS4U_VAL 0x000F0a00
+#define CFG_CS4L_VAL 0x11110301
+#define CFG_CS5U_VAL 0x00008400
+#define CFG_CS5L_VAL 0x00000D03
+
+/* SDRAM Setup Values
+ * 0x910a8300 Precharge Command CAS 3
+ * 0x910a8200 Precharge Command CAS 2
+ *
+ * 0xa10a8300 AutoRefresh Command CAS 3
+ * 0xa10a8200 Set AutoRefresh Command CAS 2
+ */
+#define PRECHARGE_CMD 0x910a8200
+#define AUTOREFRESH_CMD 0xa10a8200
+
 .globl lowlevel_init
 lowlevel_init:
 

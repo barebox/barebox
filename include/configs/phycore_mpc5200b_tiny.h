@@ -157,7 +157,7 @@ RTC configuration
 #define CFG_BOOTCS_START	CFG_FLASH_BASE
 #define CFG_BOOTCS_SIZE		CFG_FLASH_SIZE
 
-#define PHYCORE_MPC5200B_TINY_REV 1
+#define PHYCORE_MPC5200B_TINY_REV 0
 
 #if PHYCORE_MPC5200B_TINY_REV == 0
 #define CFG_BOOTCS_CFG		0x00083800
@@ -196,16 +196,8 @@ RTC configuration
 #endif
 
 #define CFG_MONITOR_LEN		(192 << 10)	/* Reserve 192 kB for Monitor	*/
-#define CFG_MALLOC_LEN		(128 << 10)	/* Reserve 128 kB for malloc()	*/
+#define CFG_MALLOC_LEN		(2 << 20)	/* Reserve 2 MB for malloc()	*/
 #define CFG_BOOTMAPSZ		(8 << 20)	/* Initial Memory map for Linux */
-
-/*------------------------------------------------------------------------------------------------------------------------------------------------------
- Ethernet configuration
- ------------------------------------------------------------------------------------------------------------------------------------------------------*/
-#define CONFIG_MPC5xxx_FEC	1
-/* Define CONFIG_FEC_10MBIT to force FEC at 10Mb */
-/* #define CONFIG_FEC_10MBIT 	1 */
-#define CONFIG_PHY_ADDR		0x01
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------
  GPIO configuration
@@ -217,9 +209,8 @@ RTC configuration
  Miscellaneous configurable options
  ------------------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CFG_LONGHELP			/* undef to save memory	    */
-#define CFG_PROMPT		"uboot> "	/* Monitor Command Prompt   */
 #define CFG_CBSIZE		1024	/* Console I/O Buffer Size  */
-#define CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)	/* Print Buffer Size */
+#define CFG_PBSIZE (CFG_CBSIZE+sizeof(CONFIG_PROMPT)+16)	/* Print Buffer Size */
 #define CFG_MAXARGS		16		/* max number of command args	*/
 #define CFG_BARGSIZE		CFG_CBSIZE	/* Boot Argument Buffer Size	*/
 

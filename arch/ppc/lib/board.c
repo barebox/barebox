@@ -21,6 +21,7 @@
  * MA 02111-1307 USA
  */
 
+#include <debug_ll.h>
 #include <common.h>
 #include <watchdog.h>
 #include <command.h>
@@ -243,197 +244,7 @@ static int init_func_watchdog_reset (void)
 # define INIT_FUNC_WATCHDOG_RESET	/* undef */
 #endif /* CONFIG_WATCHDOG */
 
-/************************************************************************
- * Initialization sequence						*
- ************************************************************************
- */
-
-init_fnc_t *init_sequence[] = {
-
-#if !defined(CONFIG_8xx_CPUCLK_DEFAULT)
-	get_clocks,		/* get CPU and bus clocks (etc.) */
-#if defined(CONFIG_TQM8xxL) && !defined(CONFIG_TQM866M) \
-    && !defined(CONFIG_TQM885D)
-	adjust_sdram_tbs_8xx,
-#endif
-	init_timebase,
-#endif
-#if defined(CONFIG_BOARD_POSTCLK_INIT)
-	board_postclk_init,
-#endif
-#if defined(CONFIG_8xx_CPUCLK_DEFAULT)
-	get_clocks_866,		/* get CPU and bus clocks according to the environment variable */
-	sdram_adjust_866,	/* adjust sdram refresh rate according to the new clock */
-	init_timebase,
-#endif
-	serial_init,
-	checkcpu,
-#if defined(CONFIG_MPC5xxx)
-	prt_mpc5xxx_clks,
-#endif /* CONFIG_MPC5xxx */
-	checkboard,
-	INIT_FUNC_WATCHDOG_INIT
-	INIT_FUNC_WATCHDOG_RESET
-	INIT_FUNC_WATCHDOG_RESET
-	INIT_FUNC_WATCHDOG_RESET
-
-	NULL,			/* Terminate this list */
-};
-
-/************************************************************************
- *
- * This is the first part of the initialization sequence that is
- * implemented in C, but still running from ROM.
- *
- * The main purpose is to provide a (serial) console interface as
- * soon as possible (so we can see any error messages), and to
- * initialize the RAM so that we can relocate the monitor code to
- * RAM.
- *
- * Be aware of the restrictions: global data is read-only, BSS is not
- * initialized, and stack space is limited to a few kB.
- *
- ************************************************************************
- */
-
-void board_init_f (ulong bootflag)
-{
-	bd_t *bd;
-	ulong len, addr, addr_sp;
-	ulong *s;
-	gd_t *id;
-	init_fnc_t **init_fnc_ptr;
-#ifdef CONFIG_PRAM
-	int i;
-	ulong reg;
-	uchar tmp[64];		/* long enough for environment variables */
-#endif
-
-	/* Pointer is writable since we allocated a register for it */
-	gd = (gd_t *) (CFG_INIT_RAM_ADDR + CFG_GBL_DATA_OFFSET);
-	/* compiler optimization barrier needed for GCC >= 3.4 */
-	__asm__ __volatile__("": : :"memory");
-
-#if !defined(CONFIG_CPM2)
-	/* Clear initial global data */
-	memset ((void *) gd, 0, sizeof (gd_t));
-#endif
-
-	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
-		if ((*init_fnc_ptr) () != 0) {
-			hang ();
-		}
-	}
-
-	/*
-	 * Now that we have DRAM mapped and working, we can
-	 * relocate the code and continue running from DRAM.
-	 *
-	 * Reserve memory at end of RAM for (top down in that order):
-	 *  - kernel log buffer
-	 *  - protected RAM
-	 *  - LCD framebuffer
-	 *  - monitor code
-	 *  - board info struct
-	 */
-	len = (ulong)&_end - CFG_MONITOR_BASE;
-
-#ifndef	CONFIG_VERY_BIG_RAM
-	addr = CFG_SDRAM_BASE + gd->ram_size;
-#else
-	/* only allow stack below 256M */
-	addr = CFG_SDRAM_BASE +
-	       (gd->ram_size > 256 << 20) ? 256 << 20 : gd->ram_size;
-#endif
-
-#ifdef CONFIG_LOGBUFFER
-	/* reserve kernel log buffer */
-	addr -= (LOGBUFF_RESERVE);
-	debug ("Reserving %dk for kernel logbuffer at %08lx\n", LOGBUFF_LEN, addr);
-#endif
-
-#ifdef CONFIG_PRAM
-	/*
-	 * reserve protected RAM
-	 */
-	i = getenv_r ("pram", (char *)tmp, sizeof (tmp));
-	reg = (i > 0) ? simple_strtoul ((const char *)tmp, NULL, 10) : CONFIG_PRAM;
-	addr -= (reg << 10);		/* size is in kB */
-	debug ("Reserving %ldk for protected RAM at %08lx\n", reg, addr);
-#endif /* CONFIG_PRAM */
-
-	/* round down to next 4 kB limit */
-	addr &= ~(4096 - 1);
-	debug ("Top of RAM usable for U-Boot at: %08lx\n", addr);
-
-#ifdef CONFIG_LCD
-	/* reserve memory for LCD display (always full pages) */
-	addr = lcd_setmem (addr);
-	gd->fb_base = addr;
-#endif /* CONFIG_LCD */
-
-#if defined(CONFIG_VIDEO) && defined(CONFIG_8xx)
-	/* reserve memory for video display (always full pages) */
-	addr = video_setmem (addr);
-	gd->fb_base = addr;
-#endif /* CONFIG_VIDEO  */
-
-	/*
-	 * reserve memory for U-Boot code, data & bss
-	 * round down to next 4 kB limit
-	 */
-	addr -= len;
-	addr &= ~(4096 - 1);
-#ifdef CONFIG_E500
-	/* round down to next 64 kB limit so that IVPR stays aligned */
-	addr &= ~(65536 - 1);
-#endif
-
-	debug ("Reserving %ldk for U-Boot at: %08lx\n", len >> 10, addr);
-
-#ifdef CONFIG_AMIGAONEG3SE
-	gd->relocaddr = addr;
-#endif
-
-	/*
-	 * reserve memory for malloc() arena
-	 */
-	addr_sp = addr - TOTAL_MALLOC_LEN;
-	debug ("Reserving %dk for malloc() at: %08lx\n",
-			TOTAL_MALLOC_LEN >> 10, addr_sp);
-
-	/*
-	 * (permanently) allocate a Board Info struct
-	 * and a permanent copy of the "global" data
-	 */
-	addr_sp -= sizeof (bd_t);
-	bd = (bd_t *) addr_sp;
-	gd->bd = bd;
-	debug ("Reserving %d Bytes for Board Info at: %08lx\n",
-			sizeof (bd_t), addr_sp);
-	addr_sp -= sizeof (gd_t);
-	id = (gd_t *) addr_sp;
-	debug ("Reserving %d Bytes for Global Data at: %08lx\n",
-			sizeof (gd_t), addr_sp);
-
-	/*
-	 * Finally, we set up a new (bigger) stack.
-	 *
-	 * Leave some safety gap for SP, force alignment on 16 byte boundary
-	 * Clear initial stack frame
-	 */
-	addr_sp -= 16;
-	addr_sp &= ~0xF;
-	s = (ulong *)addr_sp;
-	*s-- = 0;
-	*s-- = 0;
-	addr_sp = (ulong)s;
-	debug ("Stack Pointer at: %08lx\n", addr_sp);
-
-	/*
-	 * Save local variables to board info struct
-	 */
-
+static void init_bd(bd_t *bd, ulong bootflag) {
 	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
 	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */
 
@@ -509,6 +320,132 @@ void board_init_f (ulong bootflag)
 	bd->bi_pci_busfreq = get_PCI_freq ();
 #endif
 #endif
+}
+
+/************************************************************************
+ * Initialization sequence						*
+ ************************************************************************
+ */
+
+init_fnc_t *init_sequence[] = {
+
+	get_clocks,		/* get CPU and bus clocks (etc.) */
+	init_timebase,
+	serial_init,
+	checkcpu,
+	checkboard,
+
+	NULL,			/* Terminate this list */
+};
+
+/************************************************************************
+ *
+ * This is the first part of the initialization sequence that is
+ * implemented in C, but still running from ROM.
+ *
+ * The main purpose is to provide a (serial) console interface as
+ * soon as possible (so we can see any error messages), and to
+ * initialize the RAM so that we can relocate the monitor code to
+ * RAM.
+ *
+ * Be aware of the restrictions: global data is read-only, BSS is not
+ * initialized, and stack space is limited to a few kB.
+ *
+ ************************************************************************
+ */
+
+void board_init_f (ulong bootflag)
+{
+	bd_t *bd;
+	ulong len, addr, addr_sp;
+	ulong *s;
+	gd_t *id;
+	init_fnc_t **init_fnc_ptr;
+
+	/* Pointer is writable since we allocated a register for it */
+	gd = (gd_t *) (CFG_INIT_RAM_ADDR + CFG_GBL_DATA_OFFSET);
+	/* compiler optimization barrier needed for GCC >= 3.4 */
+	__asm__ __volatile__("": : :"memory");
+
+	/* Clear initial global data */
+	memset ((void *) gd, 0, sizeof (gd_t));
+#if 0
+	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
+		if ((*init_fnc_ptr) () != 0) {
+			hang ();
+		}
+	}
+#endif
+	/*
+	 * Now that we have DRAM mapped and working, we can
+	 * relocate the code and continue running from DRAM.
+	 *
+	 * Reserve memory at end of RAM for (top down in that order):
+	 *  - kernel log buffer
+	 *  - protected RAM
+	 *  - LCD framebuffer
+	 *  - monitor code
+	 *  - board info struct
+	 */
+	len = (ulong)&_end - CFG_MONITOR_BASE;
+
+	addr = CFG_SDRAM_BASE + initdram (0);
+PUTHEX_LL(addr);
+PUTC(':');
+	/*
+	 * reserve memory for U-Boot code, data & bss
+	 * round down to next 4 kB limit
+	 */
+	addr -= len;
+	addr &= ~(4096 - 1);
+#ifdef CONFIG_E500
+	/* round down to next 64 kB limit so that IVPR stays aligned */
+	addr &= ~(65536 - 1);
+#endif
+
+PUTHEX_LL(addr);
+PUTC(':');
+	debug ("Reserving %ldk for U-Boot at: %08lx\n", len >> 10, addr);
+
+	/*
+	 * reserve memory for malloc() arena
+	 */
+	addr_sp = addr - TOTAL_MALLOC_LEN;
+	debug ("Reserving %dk for malloc() at: %08lx\n",
+			TOTAL_MALLOC_LEN >> 10, addr_sp);
+
+	/*
+	 * (permanently) allocate a Board Info struct
+	 * and a permanent copy of the "global" data
+	 */
+	addr_sp -= sizeof (bd_t);
+	bd = (bd_t *) addr_sp;
+	gd->bd = bd;
+	debug ("Reserving %d Bytes for Board Info at: %08lx\n",
+			sizeof (bd_t), addr_sp);
+	addr_sp -= sizeof (gd_t);
+	id = (gd_t *) addr_sp;
+	debug ("Reserving %d Bytes for Global Data at: %08lx\n",
+			sizeof (gd_t), addr_sp);
+
+	/*
+	 * Finally, we set up a new (bigger) stack.
+	 *
+	 * Leave some safety gap for SP, force alignment on 16 byte boundary
+	 * Clear initial stack frame
+	 */
+	addr_sp -= 16;
+	addr_sp &= ~0xF;
+	s = (ulong *)addr_sp;
+	*s-- = 0;
+	*s-- = 0;
+	addr_sp = (ulong)s;
+	debug ("Stack Pointer at: %08lx\n", addr_sp);
+
+	/*
+	 * Save local variables to board info struct
+	 */
+	init_bd(bd, bootflag);
 
 	debug ("New Stack Pointer is: %08lx\n", addr_sp);
 
@@ -521,7 +458,13 @@ void board_init_f (ulong bootflag)
 
 	WATCHDOG_RESET();
 
-	memcpy (id, (void *)gd, sizeof (gd_t));
+//	memcpy (id, (void *)gd, sizeof (gd_t));
+PUTHEX_LL(addr_sp);
+PUTC(':');
+PUTHEX_LL(id);
+PUTC(':');
+PUTHEX_LL(addr);
+PUTC(':');
 
 	relocate_code (addr_sp, id, addr);
 
@@ -544,7 +487,8 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	bd_t *bd;
 	int i;
 	extern void malloc_bin_reloc (void);
-
+PUTC('B');
+while(1);
 #ifndef CFG_NO_FLASH
 	ulong flash_size;
 #endif

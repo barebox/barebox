@@ -99,12 +99,12 @@ ft_cpu_setup(void *blob, bd_t *bd)
 	/* Core XLB bus frequency */
 	p = ft_get_prop(blob, "/cpus/" OF_CPU "/bus-frequency", &len);
 	if (p != NULL)
-		*p = cpu_to_be32(bd->bi_busfreq);
+		*p = cpu_to_be32(get_bus_clock());
 
 	/* SOC peripherals use the IPB bus frequency */
 	p = ft_get_prop(blob, "/" OF_SOC "/bus-frequency", &len);
 	if (p != NULL)
-		*p = cpu_to_be32(bd->bi_ipbfreq);
+		*p = cpu_to_be32(get_ipb_clock());
 
 	p = ft_get_prop(blob, "/" OF_SOC "/ethernet@3000/mac-address", &len);
 	if (p != NULL)

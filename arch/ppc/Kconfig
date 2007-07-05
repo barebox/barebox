@@ -13,6 +13,10 @@ config CACHELINE_SIZE
 	int
 	default 32 if MPC5200
 
+config HAS_REGINFO
+	bool
+	default y if MPC5200
+
 choice
 	prompt "Select your board"
 

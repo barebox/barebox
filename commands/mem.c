@@ -427,60 +427,6 @@ U_BOOT_CMD(
 );
 #endif
 
-int do_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int r, w, ret = 1;
-	int src, dst;
-
-	src = open(argv[1], O_RDONLY);
-	if (src < 0) {
-		perror("open");
-		return 1;
-	}
-
-	dst = open(argv[2], O_WRONLY | O_CREAT);
-	if ( dst < 0) {
-		perror("open");
-		close(src);
-		return 1;
-	}
-
-	while(1) {
-		r = read(src, rw_buf, RW_BUF_SIZE);
-		if (read < 0) {
-			perror("read");
-			goto out;
-		}
-		if (!r)
-			break;
-		w = write(dst, rw_buf, r);
-		if (w < 0) {
-			perror("write");
-			goto out;
-		}
-	}
-	ret = 0;
-out:
-	close(src);
-	close(dst);
-	return ret;
-}
-
-static __maybe_unused char cmd_cp_help[] =
-"Usage: cp <source> <destination>\n"
-"cp copies file <source> to <destination>.\n"
-"Currently only this form is supported and you have to specify the exact target\n"
-"filename (not a target directory).\n"
-"Note: This command was previously used as memory copy. Currently there is no\n"
-"equivalent command for this. This must be fixed of course.\n";
-
-U_BOOT_CMD_START(cp)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_cp,
-	.usage		= "copy files",
-	U_BOOT_CMD_HELP(cmd_cp_help)
-U_BOOT_CMD_END
-
 #ifndef CONFIG_CRC32_VERIFY
 
 int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -565,55 +511,6 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 }
 #endif	/* CONFIG_CRC32_VERIFY */
-
-static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
-{
-	ulong dst = (ulong)_dst;
-	ulong src = (ulong)_src;
-
-	/* no rwsize specification given. Do whatever memcpy likes best */
-	if (!rwsize) {
-		memcpy(_dst, _src, count);
-		return;
-	}
-
-	rwsize = rwsize >> O_RWSIZE_SHIFT;
-
-	count /= rwsize;
-
-	while (count-- > 0) {
-		switch (rwsize) {
-		case 1:
-			*((u_char *)dst) = *((u_char *)src);
-			break;
-		case 2:
-			*((ushort *)dst) = *((ushort *)src);
-			break;
-		case 4:
-			*((ulong  *)dst) = *((ulong  *)src);
-			break;
-		}
-		dst += rwsize;
-		src += rwsize;
-	}
-}
-
-ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
-{
-	ulong size;
-	size = min(count, dev->size - offset);
-	printf("mem_read: dev->map_base: %p size: %d offset: %d\n",dev->map_base, size, offset);
-	memcpy_sz(buf, (void *)(dev->map_base + offset), size, flags & O_RWSIZE_MASK);
-	return size;
-}
-
-ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
-{
-	ulong size;
-	size = min(count, dev->size - offset);
-	memcpy_sz((void *)(dev->map_base + offset), buf, size, flags & O_RWSIZE_MASK);
-	return size;
-}
 
 static struct device_d mem_dev = {
         .name  = "mem",

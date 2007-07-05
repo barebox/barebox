@@ -632,24 +632,6 @@ do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
 }
 #endif
 
-int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	int rcode = 0;
-#ifndef CONFIG_HUSH_PARSER
-	if (run_command (getenv ("bootcmd"), flag) < 0) rcode = 1;
-#else
-	if (parse_string_outer(getenv("bootcmd"),
-		FLAG_PARSE_SEMICOLON | FLAG_EXIT_FROM_LOOP) != 0 ) rcode = 1;
-#endif
-	return rcode;
-}
-
-U_BOOT_CMD_START(boot)
-	.maxargs	= 1,
-	.cmd		= do_bootd,
-	.usage		= "boot default, i.e., run 'bootcmd'",
-U_BOOT_CMD_END
-
 #if 0
 int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {

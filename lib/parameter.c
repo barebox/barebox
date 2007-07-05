@@ -33,6 +33,7 @@ const char *dev_get_param(struct device_d *dev, const char *name)
         return param->value;
 }
 
+#ifdef CONFIG_NET
 IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
 {
 	return string_to_ip(dev_get_param(dev, name));
@@ -45,6 +46,7 @@ int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 
 	return dev_set_param(dev, name, ipstr);
 }
+#endif
 
 int dev_set_param(struct device_d *dev, const char *name, const char *val)
 {

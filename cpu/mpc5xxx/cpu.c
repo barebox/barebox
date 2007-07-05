@@ -27,7 +27,7 @@
 
 #include <common.h>
 #include <command.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 #include <asm/processor.h>
 #include <asm/byteorder.h>
 #include <init.h>

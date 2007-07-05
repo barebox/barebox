@@ -123,10 +123,10 @@ void start_uboot (void)
 
         display_banner();
 
-	run_command("mount none ramfs /", 0);
-	run_command("mkdir /dev", 0);
-	run_command("mkdir /env", 0);
-	run_command("mount none devfs /dev", 0);
+	mount("none", "ramfs", "/");
+	mkdir("/dev");
+	mkdir("/env");
+	mount("none", "devfs", "/dev");
 	run_command("loadenv", 0);
 
 	if (!stat("/env/init", &s)) {

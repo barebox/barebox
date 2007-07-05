@@ -6,7 +6,6 @@ obj-$(CONFIG_OF_FLAT_TREE)	+= ft_build.o
 obj-y += main.o
 obj-y += dlmalloc.o
 obj-y += clock.o
-# obj-y += flash.o
 obj-y += command.o
 obj-y += console.o
 obj-y += partition.o

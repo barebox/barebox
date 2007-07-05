@@ -7,13 +7,5 @@ config BZLIB
 config CRC32
 	bool
 
-config DYNAMIC_CRC_TABLE
-	bool
-	prompt "Generate the crc32 table dynamically"
-	default y
-	help
-	  Saying yes to this option saves around 800 bytes of binary size.
-	  If unsure say yes.
-
 config CRC16
 	bool

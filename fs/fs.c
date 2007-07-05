@@ -485,7 +485,11 @@ int erase(int fd, size_t count, unsigned long offset)
 
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
-	errno = fsdrv->erase(dev, f, count, offset);
+
+	if (fsdrv->erase)
+		errno = fsdrv->erase(dev, f, count, offset);
+	else
+		errno = -EINVAL;
 
 	return errno;
 }
@@ -749,3 +753,51 @@ out:
 	return errno;
 }
 
+static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
+{
+	ulong dst = (ulong)_dst;
+	ulong src = (ulong)_src;
+
+	/* no rwsize specification given. Do whatever memcpy likes best */
+	if (!rwsize) {
+		memcpy(_dst, _src, count);
+		return;
+	}
+
+	rwsize = rwsize >> O_RWSIZE_SHIFT;
+
+	count /= rwsize;
+
+	while (count-- > 0) {
+		switch (rwsize) {
+		case 1:
+			*((u_char *)dst) = *((u_char *)src);
+			break;
+		case 2:
+			*((ushort *)dst) = *((ushort *)src);
+			break;
+		case 4:
+			*((ulong  *)dst) = *((ulong  *)src);
+			break;
+		}
+		dst += rwsize;
+		src += rwsize;
+	}
+}
+
+ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
+{
+	ulong size;
+	size = min(count, dev->size - offset);
+	debug("mem_read: dev->map_base: %p size: %d offset: %d\n",dev->map_base, size, offset);
+	memcpy_sz(buf, (void *)(dev->map_base + offset), size, flags & O_RWSIZE_MASK);
+	return size;
+}
+
+ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
+{
+	ulong size;
+	size = min(count, dev->size - offset);
+	memcpy_sz((void *)(dev->map_base + offset), buf, size, flags & O_RWSIZE_MASK);
+	return size;
+}

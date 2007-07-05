@@ -1,36 +1,8 @@
 
 #include <common.h>
-#include <command.h>
-#include <driver.h>
-#include <init.h>
 #include <malloc.h>
-#include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
-#include <net.h>
-
-int cmd_get_data_size(char* arg, int default_size)
-{
-	/* Check for a size specification .b, .w or .l.
-	 */
-	int len = strlen(arg);
-	if (len > 2 && arg[len-2] == '.') {
-		switch(arg[len-1]) {
-		case 'b':
-			return 1;
-		case 'w':
-			return 2;
-		case 'l':
-			return 4;
-		case 's':
-			return -2;
-		default:
-			return -1;
-		}
-	}
-	return default_size;
-}
-
 
 unsigned long strtoul_suffix(const char *str, char **endp, int base)
 {

@@ -31,7 +31,7 @@
 #include <driver.h>
 #include <cfi_flash.h>
 #include <init.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 #include <pci.h>
 #include <asm/arch/fec.h>
 #include <types.h>

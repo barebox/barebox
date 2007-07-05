@@ -2019,7 +2019,7 @@ void malloc_stats()
     See descriptions of tunable parameters above.
 
 */
-
+#ifndef __U_BOOT__
 #if __STD_C
 int mALLOPt(int param_number, int value)
 #else
@@ -2041,7 +2041,7 @@ int mALLOPt(param_number, value) int param_number; int value;
       return 0;
   }
 }
-
+#endif
 /*
 
 History:

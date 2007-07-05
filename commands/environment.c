@@ -97,7 +97,7 @@ out:
 #ifdef __U_BOOT__
 int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int ret;
+	int ret, fd;
 	char *filename, *dirname;
 
 	printf("saving environment\n");
@@ -110,9 +110,24 @@ int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	else
 		filename = argv[1];
 
+	fd = open(filename, O_WRONLY);
+	if (fd < 0) {
+		printf("could not open %s: %s", filename, errno_str());
+		return 1;
+	}
+
+	ret = erase(fd, ~0, 0);
+	if (ret && errno != -EINVAL) {
+		printf("could not erase %s: %s\n", filename, errno_str());
+		close(fd);
+		return 1;
+	}
+
 	ret = envfs_save(filename, dirname);
 	if (ret)
 		printf("saveenv failed\n");
+
+	close(fd);
 	return ret;
 }
 

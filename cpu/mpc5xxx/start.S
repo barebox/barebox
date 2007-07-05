@@ -26,7 +26,7 @@
  *  U-Boot - Startup Code for MPC5xxx CPUs
  */
 #include <config.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 #include <version.h>
 
 #include <ppc_asm.tmpl>

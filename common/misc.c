@@ -41,7 +41,7 @@ void *sbrk (ptrdiff_t increment)
 int errno;
 
 #ifndef CONFIG_ERRNO_MESSAGES
-static char errno_str[5];
+static char errno_string[5];
 #endif
 
 const char *errno_str(void)
@@ -116,8 +116,8 @@ const char *errno_str(void)
 
         return str;
 #else
-	sprintf(errno_str, "%d", errno);
-	return errno_str;
+	sprintf(errno_string, "%d", errno);
+	return errno_string;
 #endif
 }
 

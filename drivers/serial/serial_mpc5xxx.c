@@ -34,7 +34,7 @@
  */
 
 #include <common.h>
-#include <mpc5xxx.h>
+#include <asm/arch/mpc5xxx.h>
 #include <driver.h>
 #include <init.h>
 #include <console.h>

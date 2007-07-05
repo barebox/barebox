@@ -1,3 +1,6 @@
+config REGINFO
+	bool
+
 menu "Commands                      "
 
 menu "scripting                     "
@@ -25,6 +28,49 @@ config CMD_HELP
 
 endmenu
 
+menu "file commands                 "
+
+config CMD_LS
+	bool
+	prompt "ls"
+
+config CMD_RM
+	bool
+	prompt "rm"
+
+config CMD_CAT
+	bool
+	prompt "cat"
+
+config CMD_MKDIR
+	bool
+	prompt "mkdir"
+
+config CMD_RMDIR
+	bool
+	prompt "rmdir"
+
+config CMD_CP
+	bool
+	prompt "cp"
+
+config CMD_PWD
+	bool
+	prompt "pwd"
+
+config CMD_CD
+	bool
+	prompt "cd"
+
+config CMD_MOUNT
+	bool
+	prompt "mount"
+
+config CMD_UMOUNT
+	bool
+	prompt "umount"
+
+endmenu
 
 menu "console                       "
 
@@ -150,5 +196,15 @@ config CMD_GO
 	prompt "go"
 
 endmenu
+
+config CMD_PARTITION
+	bool
+	prompt "addpart/delpart"
+
+config CMD_REGINFO
+	depends on HAS_REGINFO
+	select REGINFO
+	bool
+	prompt "reginfo"
 
 endmenu

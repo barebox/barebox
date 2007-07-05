@@ -7,7 +7,6 @@ obj-y			+= div64.o
 obj-y			+= misc.o
 obj-y			+= driver.o
 obj-y			+= parameter.o
-obj-y			+= global.o
 obj-y			+= xfuncs.o
 obj-y			+= getopt.o
 obj-y 			+= readkey.o

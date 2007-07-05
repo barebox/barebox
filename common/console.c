@@ -89,7 +89,7 @@ int console_register(struct console_device *newcdev)
         struct console_device *cdev = first_console;
 	struct device_d *dev = newcdev->dev;
 
-	if (cdev->setbrg) {
+	if (newcdev->setbrg) {
 		newcdev->baudrate_param.set = console_baudrate_set;
 		newcdev->baudrate_param.name = "baudrate";
 		sprintf(newcdev->baudrate_string, "%d",

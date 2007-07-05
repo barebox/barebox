@@ -182,7 +182,7 @@ RTC configuration
  ------------------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CFG_MBAR		0xF0000000 /* MBAR hast to be switched by other bootloader or debugger config  */
 #define CFG_SDRAM_BASE		0x00000000
-#define CFG_DEFAULT_MBAR	0x80000000
+//#define CFG_DEFAULT_MBAR	0xF0000000
 /* Use SRAM until RAM will be available */
 #define CFG_INIT_RAM_ADDR	MPC5XXX_SRAM
 #define CFG_INIT_RAM_END	MPC5XXX_SRAM_SIZE	/* End of used area in DPRAM */

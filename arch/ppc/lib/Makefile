@@ -8,3 +8,4 @@ obj-y += ppcstring.o
 obj-y += ticks.o
 obj-y += time.o
 obj-y += misc.o
+obj-y += ppclinux.o

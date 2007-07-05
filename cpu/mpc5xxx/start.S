@@ -192,7 +192,9 @@ _start_of_vectors:
 	STD_EXCEPTION(0x400, InstStorage, UnknownException)
 
 /* External Interrupt exception. */
+#ifdef CONFIG_INTERRUPTS
 	STD_EXCEPTION(0x500, ExtInterrupt, external_interrupt)
+#endif
 
 /* Alignment exception. */
 	. = 0x600

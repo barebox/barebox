@@ -1,5 +1,5 @@
 /*
- *  arch/arm/mach-imx/generic.c
+ *  arch/arm/mach-imx/gpio.c
  *
  *  author: Sascha Hauer
  *  Created: april 20th, 2004

@@ -10,13 +10,15 @@
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 {
 	struct device_d *dev = f->inode;
-	return dev->driver->read(dev, buf, size, f->pos, f->flags);
+
+	return dev_read(dev, buf, size, f->pos, f->flags);
 }
 
 static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
 {
 	struct device_d *dev = f->inode;
-	return dev->driver->write(dev, buf, size, f->pos, f->flags);
+
+	return dev_write(dev, buf, size, f->pos, f->flags);
 }
 
 static int devfs_open(struct device_d *_dev, FILE *file, const char *filename)

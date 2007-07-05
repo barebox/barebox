@@ -1,0 +1,3 @@
+config COMMON_ENV_FLASH
+	bool
+	prompt "Environment in flash"

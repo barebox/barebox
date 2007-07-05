@@ -555,12 +555,12 @@ export mod_strip_cmd
 ifeq ($(KBUILD_EXTMOD),)
 #core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
 
-vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y) $(common-m) \
 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
 		     $(net-y) $(net-m) $(libs-y) $(libs-m)))
 
 vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
-		     $(init-n) $(init-) \
+		     $(common-n) $(common-) \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
@@ -599,18 +599,18 @@ vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
 #
 # System.map is generated to document addresses of all kernel symbols
 
-vmlinux-init := $(head-y) $(init-y)
+vmlinux-common := $(head-y) $(common-y)
 vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
-vmlinux-all  := $(vmlinux-init) $(vmlinux-main)
+vmlinux-all  := $(vmlinux-common) $(vmlinux-main)
 vmlinux-lds  := arch/$(ARCH)/kernel/vmlinux.lds
 
 # Rule to link vmlinux - also used during CONFIG_KALLSYMS
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_vmlinux__ ?= LD      $@
       cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-      -T $(vmlinux-lds) $(vmlinux-init)                          \
+      -T $(vmlinux-lds) $(vmlinux-common)                          \
       --start-group $(vmlinux-main) --end-group                  \
-      $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) FORCE ,$^)
+      $(filter-out $(vmlinux-lds) $(vmlinux-common) $(vmlinux-main) FORCE ,$^)
 
 # Generate new vmlinux version
 quiet_cmd_vmlinux_version = GEN     .version
@@ -622,7 +622,7 @@ quiet_cmd_vmlinux_version = GEN     .version
 	  mv .version .old_version;			\
 	  expr 0$$(cat .old_version) + 1 >.version;	\
 	fi;						\
-	$(MAKE) $(build)=init
+	$(MAKE) $(build)=common
 
 # Generate System.map
 quiet_cmd_sysmap = SYSMAP
@@ -735,7 +735,7 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 endif # ifdef CONFIG_KALLSYMS
 
 # vmlinux image - including updated kernel symbols
-vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) $(kallsyms.o) FORCE
+vmlinux: $(vmlinux-lds) $(vmlinux-common) $(vmlinux-main) $(kallsyms.o) FORCE
 ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
@@ -745,7 +745,7 @@ endif
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+$(sort $(vmlinux-common) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
 
 # Handle descending into subdirectories listed in $(vmlinux-dirs)
 # Preset locale variables to speed up the build process. Limit locale

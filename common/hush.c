@@ -94,11 +94,11 @@
 #include <linux/ctype.h>    /* isalpha, isdigit */
 #include <common.h>        /* readline */
 #include <hush.h>
+#include <environment.h>
 #include <command.h>        /* find_cmd */
 /*cmd_boot.c*/
 extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
 #endif
-#ifdef CONFIG_HUSH_PARSER
 #ifndef __U_BOOT__
 #include <ctype.h>     /* isalpha, isdigit */
 #include <unistd.h>    /* getpid */
@@ -131,7 +131,6 @@ extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /
 #endif
 
 #ifdef __U_BOOT__
-DECLARE_GLOBAL_DATA_PTR;
 
 #define EXIT_SUCCESS 0
 #define EOF -1
@@ -474,8 +473,9 @@ static int parse_string(o_string *dest, struct p_context *ctx, const char *src);
 static int parse_stream(o_string *dest, struct p_context *ctx, struct in_str *input0, int end_trigger);
 /*   setup: */
 static int parse_stream_outer(struct in_str *inp, int flag);
+
+int parse_string_outer(const char *s, int flag);
 #ifndef __U_BOOT__
-static int parse_string_outer(const char *s, int flag);
 static int parse_file_outer(FILE *f);
 #endif
 #ifndef __U_BOOT__
@@ -2160,7 +2160,16 @@ static char *get_local_var(const char *s)
 	if (*s == '$')
 		return get_dollar_var(s[1]);
 #endif
-
+#if 0
+	if (strchr(s, '.')) {
+		char *dev = strdup(s);
+		char *par = strchr(str, '.');
+		*par = 0;
+		par++;
+		do_get_param(dev, par);
+		free(dev);
+	}
+#endif
 	for (cur = top_vars; cur; cur=cur->next)
 		if(strcmp(cur->name, s)==0)
 			return cur->value;
@@ -3177,11 +3186,7 @@ int parse_stream_outer(struct in_str *inp, int flag)
 #endif /* __U_BOOT__ */
 }
 
-#ifndef __U_BOOT__
-static int parse_string_outer(const char *s, int flag)
-#else
-int parse_string_outer(char *s, int flag)
-#endif	/* __U_BOOT__ */
+int parse_string_outer(const char *s, int flag)
 {
 	struct in_str input;
 #ifdef __U_BOOT__
@@ -3524,5 +3529,8 @@ static char * make_string(char ** inp)
 	return str;
 }
 
-#endif /* CONFIG_HUSH_PARSER */
-/****************************************************************************/
+int run_command (const char *cmd, int flag)
+{
+	return parse_string_outer(cmd, FLAG_PARSE_SEMICOLON);
+}
+

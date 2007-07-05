@@ -32,8 +32,6 @@
 #include <net.h>
 #include <serial.h>
 
-gd_t *gd;
-
 char *strmhz (char *buf, long hz)
 {
 	long l, n;
@@ -47,53 +45,6 @@ char *strmhz (char *buf, long hz)
 	return (buf);
 }
 
-/***********************************************************************/
-
-static void init_bd(bd_t *bd, ulong bootflag) {
-	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
-//	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */ /* FIXME */
-
-#ifdef CONFIG_IP860
-	bd->bi_sramstart = SRAM_BASE;	/* start of  SRAM memory	*/
-	bd->bi_sramsize  = SRAM_SIZE;	/* size  of  SRAM memory	*/
-#else
-	bd->bi_sramstart = 0;		/* FIXME */ /* start of  SRAM memory	*/
-	bd->bi_sramsize  = 0;		/* FIXME */ /* size  of  SRAM memory	*/
-#endif
-
-#if defined(CONFIG_8xx) || defined(CONFIG_8260) || defined(CONFIG_5xx) || \
-    defined(CONFIG_E500) || defined(CONFIG_MPC86xx)
-	bd->bi_immr_base = CFG_IMMR;	/* base  of IMMR register     */
-#endif
-
-	bd->bi_bootflags = bootflag;	/* boot / reboot flag (for LynxOS)    */
-
-	WATCHDOG_RESET ();
-	bd->bi_intfreq = gd->cpu_clk;	/* Internal Freq, in Hz */
-	bd->bi_busfreq = gd->bus_clk;	/* Bus Freq,      in Hz */
-#if defined(CONFIG_CPM2)
-	bd->bi_cpmfreq = gd->cpm_clk;
-	bd->bi_brgfreq = gd->brg_clk;
-	bd->bi_sccfreq = gd->scc_clk;
-	bd->bi_vco     = gd->vco_out;
-#endif /* CONFIG_CPM2 */
-	bd->bi_baudrate = gd->baudrate;	/* Console Baudrate     */
-
-#ifdef CFG_EXTBDINFO
-	strncpy ((char *)bd->bi_s_version, "1.2", sizeof (bd->bi_s_version));
-	strncpy ((char *)bd->bi_r_version, U_BOOT_VERSION, sizeof (bd->bi_r_version));
-
-	bd->bi_procfreq = gd->cpu_clk;	/* Processor Speed, In Hz */
-	bd->bi_plb_busfreq = gd->bus_clk;
-#if defined(CONFIG_405GP) || defined(CONFIG_405EP) || defined(CONFIG_440EP) || defined(CONFIG_440GR)
-	bd->bi_pci_busfreq = get_PCI_freq ();
-	bd->bi_opbfreq = get_OPB_freq ();
-#elif defined(CONFIG_XILINX_ML300)
-	bd->bi_pci_busfreq = get_PCI_freq ();
-#endif
-#endif
-}
-
 /************************************************************************
  *
  * This is the next part if the initialization sequence: we are now
@@ -104,8 +55,6 @@ static void init_bd(bd_t *bd, ulong bootflag) {
  ************************************************************************
  */
 
-bd_t *bd;
-
 void board_init_r (ulong end_of_ram)
 {
 	extern void malloc_bin_reloc (void);
@@ -113,12 +62,6 @@ void board_init_r (ulong end_of_ram)
 	asm ("sync ; isync");
 
 	mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));
-
-	/* get gd and bd */
-	bd = malloc(sizeof(bd_t));
-	memset(bd, 0x0, sizeof(bd_t));
-
-	init_bd(bd, 0);
 
 	/*
 	 * Setup trap handlers

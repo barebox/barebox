@@ -1,2 +1,4 @@
-obj-$(CONFIG_DRIVER_NET_CS8900)	+=cs8900
+obj-$(CONFIG_DRIVER_NET_CS8900)	        += cs8900.o
+obj-$(CONFIG_DRIVER_NET_DM9000)	        += dm9000.o
 obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= at91_ether.o
+

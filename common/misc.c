@@ -34,7 +34,7 @@ void *sbrk (ptrdiff_t increment)
 
 int errno;
 
-void perror(char *s)
+void perror(const char *s)
 {
 #ifdef CONFIG_ERRNO_MESSAGES
 	char *str;

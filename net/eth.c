@@ -28,6 +28,7 @@
 #include <net.h>
 #include <miiphy.h>
 #include <malloc.h>
+#include <errno.h>
 
 static int enetaddr_set(struct device_d *dev, struct param_d *param, value_t val)
 {

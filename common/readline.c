@@ -1,4 +1,5 @@
 #include <common.h>
+#include <readkey.h>
 
 extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
 
@@ -10,8 +11,6 @@ extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
 #define putnstr(str,n)	do {			\
 		printf ("%.*s", n, str);	\
 	} while (0)
-
-#define CTL_CH(c)		((c) - 'a' + 1)
 
 #define MAX_CMDBUF_SIZE		256
 
@@ -168,15 +167,6 @@ static void cread_add_char(char ichar, int insert, unsigned long *num,
 	}
 }
 
-static void cread_add_str(char *str, int strsize, int insert, unsigned long *num,
-	      unsigned long *eol_num, char *buf, unsigned long len)
-{
-	while (strsize--) {
-		cread_add_char(*str, insert, num, eol_num, buf, len);
-		str++;
-	}
-}
-
 static int cread_line(char *buf, unsigned int *len)
 {
 	unsigned long num = 0;
@@ -185,90 +175,31 @@ static int cread_line(char *buf, unsigned int *len)
 	unsigned long wlen;
 	char ichar;
 	int insert = 1;
-	int esc_len = 0;
 	int rc = 0;
-	char esc_save[8];
 
 	while (1) {
 		rlen = 1;
-		ichar = getcmd_getch();
+		ichar = read_key();
 
 		if ((ichar == '\n') || (ichar == '\r')) {
 			putc('\n');
 			break;
 		}
 
-		/*
-		 * handle standard linux xterm esc sequences for arrow key, etc.
-		 */
-		if (esc_len != 0) {
-			if (esc_len == 1) {
-				if (ichar == '[') {
-					esc_save[esc_len] = ichar;
-					esc_len = 2;
-				} else {
-					cread_add_str(esc_save, esc_len, insert,
-						      &num, &eol_num, buf, *len);
-					esc_len = 0;
-				}
-				continue;
-			}
-
-			switch (ichar) {
-
-			case 'D':	/* <- key */
-				ichar = CTL_CH('b');
-				esc_len = 0;
-				break;
-			case 'C':	/* -> key */
-				ichar = CTL_CH('f');
-				esc_len = 0;
-				break;	/* pass off to ^F handler */
-			case 'H':	/* Home key */
-				ichar = CTL_CH('a');
-				esc_len = 0;
-				break;	/* pass off to ^A handler */
-			case 'A':	/* up arrow */
-				ichar = CTL_CH('p');
-				esc_len = 0;
-				break;	/* pass off to ^P handler */
-			case 'B':	/* down arrow */
-				ichar = CTL_CH('n');
-				esc_len = 0;
-				break;	/* pass off to ^N handler */
-			default:
-				esc_save[esc_len++] = ichar;
-				cread_add_str(esc_save, esc_len, insert,
-					      &num, &eol_num, buf, *len);
-				esc_len = 0;
-				continue;
-			}
-		}
-
 		switch (ichar) {
-		case 0x1b:
-			if (esc_len == 0) {
-				esc_save[esc_len] = ichar;
-				esc_len = 1;
-			} else {
-				puts("impossible condition #876\n");
-				esc_len = 0;
-			}
-			break;
-
-		case CTL_CH('a'):
+		case KEY_HOME:
 			BEGINNING_OF_LINE();
 			break;
 		case CTL_CH('c'):	/* ^C - break */
 			*buf = '\0';	/* discard input */
 			return (-1);
-		case CTL_CH('f'):
+		case KEY_RIGHT:
 			if (num < eol_num) {
 				getcmd_putch(buf[num]);
 				num++;
 			}
 			break;
-		case CTL_CH('b'):
+		case KEY_LEFT:
 			if (num) {
 				getcmd_putch(CTL_BACKSPACE);
 				num--;
@@ -289,21 +220,22 @@ static int cread_line(char *buf, unsigned int *len)
 				eol_num--;
 			}
 			break;
-		case CTL_CH('k'):
+		case KEY_ERASE_TO_EOL:
 			ERASE_TO_EOL();
 			break;
-		case CTL_CH('e'):
+		case KEY_REFRESH_TO_EOL:
+		case KEY_END:
 			REFRESH_TO_EOL();
 			break;
-		case CTL_CH('o'):
+		case KEY_INSERT:
 			insert = !insert;
 			break;
-		case CTL_CH('x'):
+		case KEY_ERASE_LINE:
 			BEGINNING_OF_LINE();
 			ERASE_TO_EOL();
 			break;
 		case DEL:
-		case DEL7:
+		case KEY_DEL7:
 		case 8:
 			if (num) {
 				wlen = eol_num - num;
@@ -318,14 +250,12 @@ static int cread_line(char *buf, unsigned int *len)
 				eol_num--;
 			}
 			break;
-		case CTL_CH('p'):
-		case CTL_CH('n'):
+		case KEY_UP:
+		case KEY_DOWN:
 		{
 			char * hline;
 
-			esc_len = 0;
-
-			if (ichar == CTL_CH('p'))
+			if (ichar == KEY_UP)
 				hline = hist_prev();
 			else
 				hline = hist_next();

@@ -4,7 +4,10 @@
 #include <fs.h>
 #include <linux/ctype.h>
 #include <fcntl.h>
+#include <readkey.h>
 #include <errno.h>
+#include <asm-generic/errno.h>
+#include <xfuncs.h>
 
 #define TABSPACE 8
 
@@ -32,70 +35,7 @@ static struct line *curline;	/* line where the cursor is */
 static struct line *scrline;	/* the first line on screen */
 int scrcol = 0;			/* the first column on screen */
 
-// Misc. non-Ascii keys that report an escape sequence
-#define VI_K_UP			(char)128	// cursor key Up
-#define VI_K_DOWN		(char)129	// cursor key Down
-#define VI_K_RIGHT		(char)130	// Cursor Key Right
-#define VI_K_LEFT		(char)131	// cursor key Left
-#define VI_K_HOME		(char)132	// Cursor Key Home
-#define VI_K_END		(char)133	// Cursor Key End
-#define VI_K_INSERT		(char)134	// Cursor Key Insert
-#define VI_K_PAGEUP		(char)135	// Cursor Key Page Up
-#define VI_K_PAGEDOWN		(char)136	// Cursor Key Page Down
-#define VI_K_DEL		(char)137	// Cursor Key Del
-
-struct esc_cmds {
-	const char *seq;
-	char val;
-};
-
-static const struct esc_cmds esccmds[] = {
-	{"OA", VI_K_UP},       // cursor key Up
-	{"OB", VI_K_DOWN},     // cursor key Down
-	{"OC", VI_K_RIGHT},    // Cursor Key Right
-	{"OD", VI_K_LEFT},     // cursor key Left
-	{"OH", VI_K_HOME},     // Cursor Key Home
-	{"OF", VI_K_END},      // Cursor Key End
-	{"[A", VI_K_UP},       // cursor key Up
-	{"[B", VI_K_DOWN},     // cursor key Down
-	{"[C", VI_K_RIGHT},    // Cursor Key Right
-	{"[D", VI_K_LEFT},     // cursor key Left
-	{"[H", VI_K_HOME},     // Cursor Key Home
-	{"[F", VI_K_END},      // Cursor Key End
-	{"[1~", VI_K_HOME},    // Cursor Key Home
-	{"[2~", VI_K_INSERT},  // Cursor Key Insert
-	{"[3~", VI_K_DEL},     // Cursor Key Delete
-	{"[4~", VI_K_END},     // Cursor Key End
-	{"[5~", VI_K_PAGEUP},  // Cursor Key Page Up
-	{"[6~", VI_K_PAGEDOWN},// Cursor Key Page Down
-};
-
-static char readit(void)
-{
-	char c;
-	char esc[5];
-	c = getc();
-
-	if (c == 27) {
-		int i = 0;
-		esc[i++] = getc();
-		esc[i++] = getc();
-		if (isdigit(esc[1])) {
-			while(1) {
-				esc[i] = getc();
-				if (esc[i++] == '~')
-					break;
-			}
-		}
-		esc[i] = 0;
-		for (i = 0; i < 18; i++){
-			if (!strcmp(esc, esccmds[i].seq))
-				return esccmds[i].val;
-		}
-		return -1;
-	}
-	return c;
-}
+int edit_fd;
 
 static void pos(int x, int y)
 {
@@ -162,7 +102,6 @@ static void refresh(int full)
 {
 	int i;
 	struct line *l = scrline;
-	char *str;
 
 	if (!full) {
 		if (scrline->next == lastscrline) {
@@ -192,6 +131,7 @@ static void refresh(int full)
 			break;
 	}
 
+	i++;
 	while (i < screenheight) {
 		pos(0, i++);
 		printf("%-*s", screenwidth, "~");
@@ -209,8 +149,7 @@ static struct line *line_realloc(int len, struct line *line)
 	int size = 32;
 
 	if (!line) {
-		line = malloc(sizeof(struct line));
-		memset(line, 0, sizeof(struct line));
+		line = xzalloc(sizeof(struct line));
 		line->data = malloc(32);
 	}
 
@@ -223,25 +162,26 @@ static struct line *line_realloc(int len, struct line *line)
 
 static int read_file(const char *path)
 {
-	int fd;
 	static char rbuf[1024];
 	struct line *line;
 	struct line *lastline = NULL;
 	int r = 1;
 
-	fd = open(path, O_RDONLY);
-	if (fd < 0) {
+	edit_fd = open(path, O_RDWR | O_CREAT);
+	if (edit_fd < 0) {
 		perror("open");
 		return -1;
 	}
 
 	while (r) {
 		char *tmp = rbuf;
-		while((r = read(fd, tmp, 1)) == 1) {
+		while((r = read(edit_fd, tmp, 1)) == 1) {
 			if (*tmp == '\n')
 				break;
 			tmp++;
 		}
+		if (tmp == rbuf)
+			break;
 		*tmp = 0;
 		line = line_realloc(strlen(rbuf + 1), NULL);
 		if (!buffer)
@@ -254,7 +194,29 @@ static int read_file(const char *path)
 		lastline = line;
 	}
 
-	close(fd);
+	if (!buffer) {
+		buffer = line_realloc(0, NULL);
+		buffer->data[0] = 0;
+	}
+
+	return 0;
+}
+
+static int save_file(const char *path)
+{
+	struct line *line, *tmp;
+
+	lseek(edit_fd, 0, SEEK_SET);
+
+	line = buffer;
+
+	while(line) {
+		tmp = line->next;
+		write(edit_fd, line->data, strlen(line->data));
+		write(edit_fd, "\n", 1);
+		line_free(line);
+		line = tmp;
+	}
 	return 0;
 }
 
@@ -328,7 +290,9 @@ static void merge_line(struct line *line)
 	refresh(1);
 }
 
-#if 0
+#define GETWINSIZE
+
+#ifdef GETWINSIZE
 static void getwinsize(void) {
 	int y, yy = 25, xx = 80, i, n, r;
 	char buf[100];
@@ -350,7 +314,8 @@ static void getwinsize(void) {
 			xx = y + 1;
 	}
 	pos(0,0);
-	printf("x: %d y: %d\n", xx, yy);
+	screenheight = yy;
+	screenwidth = xx;
 }
 #endif
 
@@ -359,11 +324,16 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	int lastscrcol;
 	int i;
 	int linepos;
-	unsigned char c;
-	struct line *line, *tmp;
+	char c;
 
 	buffer = NULL;
-	read_file(argv[1]);
+	if(read_file(argv[1]))
+		return 1;
+
+#ifdef GETWINSIZE
+	getwinsize();
+#endif
+
 	cursx  = 0;
 	cursy  = 0;
 	textx  = 0;
@@ -374,7 +344,6 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	lastscrcol = 0;
 
 	printf("%c[2J", 27);
-	printf("%c[=3h", 27);
 	refresh(1);
 
 	while (1) {
@@ -412,9 +381,9 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		lastscrline = scrline;
 		pos(cursx, cursy);
 
-		c = readit();
+		c = read_key();
 		switch (c) {
-		case VI_K_UP:
+		case KEY_UP:
 			if (!curline->prev)
 				continue;
 
@@ -422,7 +391,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			cursy--;
 			textx = setpos(curline->data, linepos);
 			break;
-		case VI_K_DOWN:
+		case KEY_DOWN:
 			if (!curline->next)
 				continue;
 
@@ -430,19 +399,19 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			cursy++;
 			textx = setpos(curline->data, linepos);
 			break;
-		case VI_K_RIGHT:
+		case KEY_RIGHT:
 			textx++;
 			break;
-		case VI_K_LEFT:
+		case KEY_LEFT:
 			textx--;
 			break;
-		case VI_K_HOME:
+		case KEY_HOME:
 			textx = 0;
 			break;
-		case VI_K_END:
+		case KEY_END:
 			textx = curlen;
 			break;
-		case VI_K_PAGEUP:
+		case KEY_PAGEUP:
 			for (i = 0; i < screenheight - 1; i++) {
 				if (!curline->prev)
 					break;
@@ -451,7 +420,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			}
 			textx = setpos(curline->data, linepos);
 			break;
-		case VI_K_PAGEDOWN:
+		case KEY_PAGEDOWN:
 			for (i = 0; i < screenheight - 1; i++) {
 				if (!curline->next)
 					break;
@@ -460,7 +429,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			}
 			textx = setpos(curline->data, linepos);
 			break;
-		case VI_K_DEL:
+		case KEY_DEL:
 			if (textx == curlen) {
 				if (curline->next)
 					merge_line(curline);
@@ -468,7 +437,6 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 				delete_char(textx);
 			break;
 		case 13:
-			break;
 		case 10:
 			split_line();
 			break;
@@ -487,6 +455,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 			break;
 		case 4:
 			printf("<ctrl-d>\n");
+			save_file(argv[1]);
 			goto out;
 		case 3:
 			printf("<???????\n");
@@ -497,14 +466,7 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		}
 	}
 out:
-	line = buffer;
-
-	while(line) {
-		tmp = line->next;
-		line_free(line);
-		line = tmp;
-	}
-
+	printf("%c[2J", 27);
 	return 0;
 }
 

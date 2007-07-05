@@ -1,7 +1,7 @@
 VERSION = 2
-PATCHLEVEL = 6
-SUBLEVEL = 20
-EXTRAVERSION =-rc5
+PATCHLEVEL = 0
+SUBLEVEL = 0
+EXTRAVERSION =-trunk
 NAME = Homicidal Dwarf Hamster
 
 # *DOCUMENTATION*
@@ -23,7 +23,7 @@ MAKEFLAGS += -rR --no-print-directory
 # their own directory. If in some directory we have a dependency on
 # a file in another dir (which doesn't happen often, but it's often
 # unavoidable when linking the built-in.o targets which finally
-# turn into vmlinux), we will call a sub make in that other dir, and
+# turn into uboot), we will call a sub make in that other dir, and
 # after that we are sure that everything which is in that other dir
 # is now up to date.
 #
@@ -400,7 +400,7 @@ config %config: scripts_basic outputmakefile FORCE
 
 else
 # ===========================================================================
-# Build targets only - this includes vmlinux, arch specific targets, clean
+# Build targets only - this includes uboot, arch specific targets, clean
 # targets and others. In general all targets except *config targets.
 
 # Additional helpers built in scripts/
@@ -410,7 +410,7 @@ PHONY += scripts
 scripts: scripts_basic include/config/auto.conf
 	$(Q)$(MAKE) $(build)=$(@)
 
-# Objects we will link into vmlinux / subdirs we need to visit
+# Objects we will link into uboot / subdirs we need to visit
 common-y		:= common/ drivers/ lib_generic/ net/ fs/
 
 ifeq ($(dot-config),1)
@@ -439,8 +439,8 @@ endif # $(dot-config)
 # The all: target is the default when no target is given on the
 # command line.
 # This allow a user to issue only 'make' to build a kernel including modules
-# Defaults vmlinux but it is usually overridden in the arch makefile
-all: vmlinux
+# Defaults uboot but it is usually overridden in the arch makefile
+all: uboot
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 CFLAGS		+= -Os
@@ -478,7 +478,7 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # set in the environment
 # Also any assignments in arch/$(ARCH)/Makefile take precedence over
 # this default value
-export KBUILD_IMAGE ?= vmlinux
+export KBUILD_IMAGE ?= uboot
 
 #
 # INSTALL_PATH specifies where to place the updated kernel and system map
@@ -511,58 +511,58 @@ mod_strip_cmd = true
 endif # INSTALL_MOD_STRIP
 export mod_strip_cmd
 
-vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
+uboot-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
-vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
+uboot-alldirs	:= $(sort $(uboot-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(common-n) $(common-) \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 
-# Build vmlinux
+# Build uboot
 # ---------------------------------------------------------------------------
-# vmlinux is built from the objects selected by $(vmlinux-init) and
-# $(vmlinux-main). Most are built-in.o files from top-level directories
+# uboot is built from the objects selected by $(uboot-init) and
+# $(uboot-main). Most are built-in.o files from top-level directories
 # in the kernel tree, others are specified in arch/$(ARCH)Makefile.
-# Ordering when linking is important, and $(vmlinux-init) must be first.
+# Ordering when linking is important, and $(uboot-init) must be first.
 #
-# vmlinux
+# uboot
 #   ^
 #   |
-#   +-< $(vmlinux-init)
+#   +-< $(uboot-init)
 #   |   +--< init/version.o + more
 #   |
-#   +--< $(vmlinux-main)
+#   +--< $(uboot-main)
 #   |    +--< driver/built-in.o mm/built-in.o + more
 #   |
 #   +-< kallsyms.o (see description in CONFIG_KALLSYMS section)
 #
-# vmlinux version (uname -v) cannot be updated during normal
+# uboot version (uname -v) cannot be updated during normal
 # descending-into-subdirs phase since we do not yet know if we need to
-# update vmlinux.
-# Therefore this step is delayed until just before final link of vmlinux -
+# update uboot.
+# Therefore this step is delayed until just before final link of uboot -
 # except in the kallsyms case where it is done just before adding the
 # symbols to the kernel.
 #
 # System.map is generated to document addresses of all kernel symbols
 
-vmlinux-common := $(common-y)
-vmlinux-all  := $(vmlinux-common)
-vmlinux-lds  := $(BOARD)/u-boot.lds
-export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
+uboot-common := $(common-y)
+uboot-all  := $(uboot-common)
+uboot-lds  := $(BOARD)/u-boot.lds
+export KBUILD_VMLINUX_OBJS := $(uboot-all)
 
-# Rule to link vmlinux - also used during CONFIG_KALLSYMS
+# Rule to link uboot - also used during CONFIG_KALLSYMS
 # May be overridden by arch/$(ARCH)/Makefile
-quiet_cmd_vmlinux__ ?= LD      $@
-      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-      -T $(vmlinux-lds) $(vmlinux-head)                         \
-      --start-group $(vmlinux-common) --end-group                  \
-      $(filter-out $(vmlinux-lds) $(vmlinux-common) FORCE ,$^)
+quiet_cmd_uboot__ ?= LD      $@
+      cmd_uboot__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_uboot) -o $@ \
+      -T $(uboot-lds) $(uboot-head)                         \
+      --start-group $(uboot-common) --end-group                  \
+      $(filter-out $(uboot-lds) $(uboot-common) FORCE ,$^)
 
-# Generate new vmlinux version
-quiet_cmd_vmlinux_version = GEN     .version
-      cmd_vmlinux_version = set -e;                     \
+# Generate new uboot version
+quiet_cmd_uboot_version = GEN     .version
+      cmd_uboot_version = set -e;                     \
 	if [ ! -r .version ]; then			\
 	  rm -f .version;				\
 	  echo 1 >.version;				\
@@ -576,21 +576,21 @@ quiet_cmd_vmlinux_version = GEN     .version
 quiet_cmd_sysmap = SYSMAP
       cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
 
-# Link of vmlinux
+# Link of uboot
 # If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
-# Use + in front of the vmlinux_version rule to silent warning with make -j2
+# Use + in front of the uboot_version rule to silent warning with make -j2
 # First command is ':' to allow us to use + in front of the rule
-define rule_vmlinux__
+define rule_uboot__
 	:
-	$(if $(CONFIG_KALLSYMS),,+$(call cmd,vmlinux_version))
+	$(if $(CONFIG_KALLSYMS),,+$(call cmd,uboot_version))
 
-	$(call cmd,vmlinux__)
+	$(call cmd,uboot__)
 
-	$(Q)echo 'cmd_$@ := $(cmd_vmlinux__)' > $(@D)/.$(@F).cmd
+	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
 
-	$(OBJCOPY) -O binary vmlinux vmlinux.bin
-	$(OBJDUMP) -d vmlinux > vmlinux.S
+	$(OBJCOPY) -O binary uboot uboot.bin
+	$(OBJDUMP) -d uboot > uboot.S
 
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
@@ -604,20 +604,20 @@ endef
 
 
 ifdef CONFIG_KALLSYMS
-# Generate section listing all symbols and add it into vmlinux $(kallsyms.o)
+# Generate section listing all symbols and add it into uboot $(kallsyms.o)
 # It's a three stage process:
-# o .tmp_vmlinux1 has all symbols and sections, but __kallsyms is
+# o .tmp_uboot1 has all symbols and sections, but __kallsyms is
 #   empty
 #   Running kallsyms on that gives us .tmp_kallsyms1.o with
-#   the right size - vmlinux version (uname -v) is updated during this step
-# o .tmp_vmlinux2 now has a __kallsyms section of the right size,
+#   the right size - uboot version (uname -v) is updated during this step
+# o .tmp_uboot2 now has a __kallsyms section of the right size,
 #   but due to the added section, some addresses have shifted.
 #   From here, we generate a correct .tmp_kallsyms2.o
-# o The correct .tmp_kallsyms2.o is linked into the final vmlinux.
-# o Verify that the System.map from vmlinux matches the map from
-#   .tmp_vmlinux2, just in case we did not generate kallsyms correctly.
+# o The correct .tmp_kallsyms2.o is linked into the final uboot.
+# o Verify that the System.map from uboot matches the map from
+#   .tmp_uboot2, just in case we did not generate kallsyms correctly.
 # o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
-#   .tmp_vmlinux3 and .tmp_kallsyms3.o.  This is only meant as a
+#   .tmp_uboot3 and .tmp_kallsyms3.o.  This is only meant as a
 #   temporary bypass to allow the kernel to be built while the
 #   maintainers work out what went wrong with kallsyms.
 
@@ -632,22 +632,22 @@ kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 define verify_kallsyms
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-	  $(cmd_sysmap) .tmp_vmlinux$(last_kallsyms) .tmp_System.map
+	  $(cmd_sysmap) .tmp_uboot$(last_kallsyms) .tmp_System.map
 	$(Q)cmp -s System.map .tmp_System.map ||                             \
 		(echo Inconsistent kallsyms data;                            \
 		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
 		 rm .tmp_kallsyms* ; /bin/false )
 endef
 
-# Update vmlinux version before link
+# Update uboot version before link
 # Use + in front of this rule to silent warning about make -j1
 # First command is ':' to allow us to use + in front of this rule
-cmd_ksym_ld = $(cmd_vmlinux__)
+cmd_ksym_ld = $(cmd_uboot__)
 define rule_ksym_ld
 	:
-	+$(call cmd,vmlinux_version)
-	$(call cmd,vmlinux__)
-	$(Q)echo 'cmd_$@ := $(cmd_vmlinux__)' > $(@D)/.$(@F).cmd
+	+$(call cmd,uboot_version)
+	$(call cmd,uboot__)
+	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
 endef
 
 # Generate .S file with all kernel symbols
@@ -658,18 +658,18 @@ quiet_cmd_kallsyms = KSYM    $@
 .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
 	$(call if_changed_dep,as_o_S)
 
-.tmp_kallsyms%.S: .tmp_vmlinux% $(KALLSYMS)
+.tmp_kallsyms%.S: .tmp_uboot% $(KALLSYMS)
 	$(call cmd,kallsyms)
 
-# .tmp_vmlinux1 must be complete except kallsyms, so update vmlinux version
-.tmp_vmlinux1: $(vmlinux-lds) $(vmlinux-all) FORCE
+# .tmp_uboot1 must be complete except kallsyms, so update uboot version
+.tmp_uboot1: $(uboot-lds) $(uboot-all) FORCE
 	$(call if_changed_rule,ksym_ld)
 
-.tmp_vmlinux2: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms1.o FORCE
-	$(call if_changed,vmlinux__)
+.tmp_uboot2: $(uboot-lds) $(uboot-all) .tmp_kallsyms1.o FORCE
+	$(call if_changed,uboot__)
 
-.tmp_vmlinux3: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms2.o FORCE
-	$(call if_changed,vmlinux__)
+.tmp_uboot3: $(uboot-lds) $(uboot-all) .tmp_kallsyms2.o FORCE
+	$(call if_changed,uboot__)
 
 # Needs to visit scripts/ before $(KALLSYMS) can be used.
 $(KALLSYMS): scripts ;
@@ -677,7 +677,7 @@ $(KALLSYMS): scripts ;
 # Generate some data for debugging strange kallsyms problems
 debug_kallsyms: .tmp_map$(last_kallsyms)
 
-.tmp_map%: .tmp_vmlinux% FORCE
+.tmp_map%: .tmp_uboot% FORCE
 	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
 
 .tmp_map3: .tmp_map2
@@ -686,26 +686,26 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 
 endif # ifdef CONFIG_KALLSYMS
 
-# vmlinux image - including updated kernel symbols
-vmlinux: $(vmlinux-lds) $(vmlinux-head) $(vmlinux-common) $(kallsyms.o) FORCE
+# uboot image - including updated kernel symbols
+uboot: $(uboot-lds) $(uboot-head) $(uboot-common) $(kallsyms.o) FORCE
 ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
-	$(call if_changed_rule,vmlinux__)
+	$(call if_changed_rule,uboot__)
 	$(Q)rm -f .old_version
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(vmlinux-head) $(vmlinux-common) ) $(vmlinux-lds): $(vmlinux-dirs) ;
+$(sort $(uboot-head) $(uboot-common) ) $(uboot-lds): $(uboot-dirs) ;
 
-# Handle descending into subdirectories listed in $(vmlinux-dirs)
+# Handle descending into subdirectories listed in $(uboot-dirs)
 # Preset locale variables to speed up the build process. Limit locale
 # tweaks to this spot to avoid wrong language settings when running
 # make menuconfig etc.
 # Error messages still appears in the original language
 
-PHONY += $(vmlinux-dirs)
-$(vmlinux-dirs): prepare scripts
+PHONY += $(uboot-dirs)
+$(uboot-dirs): prepare scripts
 	$(Q)$(MAKE) $(build)=$@
 
 # Build the kernel release string
@@ -818,10 +818,10 @@ prepare0: archprepare FORCE
 # All the preparing..
 prepare prepare-all: prepare0
 
-# Leave this as default for preprocessing vmlinux.lds.S, which is now
+# Leave this as default for preprocessing uboot.lds.S, which is now
 # done in arch/$(ARCH)/kernel/Makefile
 
-export CPPFLAGS_vmlinux.lds += -P -C -U$(ARCH)
+export CPPFLAGS_uboot.lds += -P -C -U$(ARCH)
 
 # FIXME: The asm symlink changes when $(ARCH) changes. That's
 # hard to detect, but I suppose "make mrproper" is a good idea
@@ -878,9 +878,9 @@ depend dep:
 
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
-CLEAN_FILES +=	vmlinux System.map \
-                .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map \
-		vmlinux.bin vmlinux.S
+CLEAN_FILES +=	uboot System.map \
+                .tmp_kallsyms* .tmp_version .tmp_uboot* .tmp_System.map \
+		uboot.bin uboot.S
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
@@ -893,7 +893,7 @@ MRPROPER_FILES += .config .config.old include/asm .version .old_version \
 #
 clean: rm-dirs  := $(CLEAN_DIRS)
 clean: rm-files := $(CLEAN_FILES)
-clean-dirs      := $(addprefix _clean_,$(srctree) $(vmlinux-alldirs))
+clean-dirs      := $(addprefix _clean_,$(srctree) $(uboot-alldirs))
 
 PHONY += $(clean-dirs) clean archclean
 $(clean-dirs):
@@ -964,7 +964,7 @@ help:
 	@echo  ''
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
-	@echo  '* vmlinux	  - Build the bare kernel'
+	@echo  '* uboot           - Build the bare kernel'
 	@echo  '* modules	  - Build all modules'
 	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
 	@echo  '  dir/            - Build all files in dir and below'

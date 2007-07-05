@@ -10,7 +10,8 @@
 #define DEVICE_TYPE_ETHER       1
 #define DEVICE_TYPE_STDIO       2
 #define DEVICE_TYPE_DRAM	3
-#define MAX_DEVICE_TYPE         3
+#define DEVICE_TYPE_FS		3
+#define MAX_DEVICE_TYPE         4
 
 #include <param.h>
 
@@ -54,6 +55,7 @@ struct driver_d {
 	int	(*get) (struct device_d*, struct param_d *);
 	int	(*set) (struct device_d*, struct param_d *, value_t val);
 
+	void *driver_data;
         unsigned long type;
         void *type_data;
 };
@@ -68,6 +70,9 @@ void unregister_device(struct device_d *);
 struct device_d *device_from_spec_str(const char *str, char **endp);
 struct device_d *get_device_by_name(char *name);
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
+struct device_d *get_device_by_id(char *id);
+
+struct driver_d *get_driver_by_name(char *name);
 
 ssize_t read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t write(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);

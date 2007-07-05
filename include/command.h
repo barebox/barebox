@@ -50,7 +50,13 @@ struct cmd_tbl_s {
 	/* do auto completion on the arguments */
 	int		(*complete)(int argc, char *argv[], char last_char, int maxv, char *cmdv[]);
 #endif
-};
+}
+#ifdef __x86_64__
+/* This is required because the linker will put symbols on a 64 bit alignment */
+__attribute__((aligned(64)))
+#endif
+;
+
 
 typedef struct cmd_tbl_s	cmd_tbl_t;
 

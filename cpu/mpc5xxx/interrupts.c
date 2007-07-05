@@ -231,7 +231,7 @@ int mpc5xxx_get_irq(struct pt_regs *regs)
 
 int interrupt_init_cpu(ulong * decrementer_count)
 {
-	*decrementer_count = get_tbclk() / CFG_HZ;
+	*decrementer_count = get_tbclk() / 1000;
 
 	mpc5xxx_init_irq();
 

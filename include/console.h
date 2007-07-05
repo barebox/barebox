@@ -47,5 +47,7 @@ struct console_device {
 
 int console_register(struct console_device *cdev);
 
+#define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
+
 #endif
 

@@ -27,9 +27,6 @@
 #include <stdio.h>
 #include <compiler.h>
 
-#undef	_LINUX_CONFIG_H
-#define _LINUX_CONFIG_H 1	/* avoid reading Linux autoconf.h file	*/
-
 #include <config.h>
 #include <linux/bitops.h>
 #include <linux/types.h>

@@ -12,11 +12,6 @@ int global_add_parameter(struct param_d *param)
         return dev_add_parameter(&global_dev, param);
 }
 
-static int my_probe(struct device_d *dev)
-{
-	return 0;
-}
-
 static struct device_d global_dev = {
         .name  = "global",
 	.id    = "env",
@@ -26,12 +21,11 @@ static struct device_d global_dev = {
 
 static struct driver_d global_driver = {
         .name  = "global",
-        .probe = my_probe,
+        .probe = dummy_probe,
 };
 
 static int global_init(void)
 {
-        global_driver.probe = my_probe;
 	register_device(&global_dev);
         register_driver(&global_driver);
         return 0;
@@ -57,6 +51,8 @@ static int do_get( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
         str = dev_get_param(dev, argv[2]);
         printf("%s\n",str);
+	free(str);
+
         return 0;
 }
 
@@ -83,12 +79,7 @@ static int do_set( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 return 1;
         }
 
-        val = malloc(strlen(argv[3] + 1));
-        if (!val)
-                return -ENOMEM;
-
-        strcpy(val, argv[3]);
-        ret = dev_set_param(dev, argv[2], val);
+        ret = dev_set_param(dev, argv[2], argv[3]);
         if (ret)
                 printf("failed\n");
         return ret;

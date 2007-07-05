@@ -173,10 +173,7 @@ void start_armboot (void)
 {
         initcall_t *initcall;
         int result;
-
-#if defined(CONFIG_VFD) || defined(CONFIG_LCD)
-	unsigned long addr;
-#endif
+	int i = 'a';
 
         /* Pointer is writable since we allocated a register for it */
 	gd = (gd_t*)(_armboot_start - CFG_MALLOC_LEN - sizeof(gd_t));
@@ -192,9 +189,7 @@ void start_armboot (void)
         /* armboot_start is defined in the board-specific linker script */
 	mem_malloc_init();
 
-	env_init();		/* initialize environment */
 	serial_init();		/* serial communications setup */
-
         for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
                 result = (*initcall)();
                 if (result)
@@ -202,9 +197,6 @@ void start_armboot (void)
         }
 
         display_banner();
-
-	/* initialize environment */
-	env_relocate ();
 
 	jumptable_init ();
 

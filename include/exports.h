@@ -9,8 +9,6 @@
 unsigned long get_version(void);
 int  getc(void);
 int  tstc(void);
-void putc(const char);
-void puts(const char*);
 void printf(const char* fmt, ...);
 void install_hdlr(int, interrupt_handler_t*, void*);
 void free_hdlr(int);
@@ -21,7 +19,7 @@ void vprintf(const char *, va_list);
 void do_reset (void);
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base);
 char *getenv (const char *name);
-void setenv (const char *varname, const char *varvalue);
+int setenv (const char *varname, const char *varvalue);
 #if (CONFIG_COMMANDS & CFG_CMD_I2C)
 int i2c_write (uchar, uint, int , uchar* , int);
 int i2c_read (uchar, uint, int , uchar* , int);

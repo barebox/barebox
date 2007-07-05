@@ -163,27 +163,7 @@ static void dm9000_reset(void)
 
 static int dm9000_eth_open(struct eth_device *edev)
 {
-        int lnk, i = 0, ctl;
-
-	/* Activate DM9000 */
-	DM9000_iow(DM9000_GPCR, 0x01);	/* Let GPIO0 output */
-	DM9000_iow(DM9000_GPR, 0x00);	/* Enable PHY */
-	DM9000_iow(DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN);	/* RX enable */
-	DM9000_iow(DM9000_IMR, IMR_PAR);	/* Enable TX/RX interrupt mask */
-
-        phy_write(0, 0x8000);	/* PHY RESET */
-
-	ctl = phy_read(PHY_BMCR);
-
-	if (ctl < 0)
-		return ctl;
-
-	ctl |= (PHY_BMCR_AUTON | PHY_BMCR_RST_NEG);
-
-	/* Don't isolate the PHY if we're negotiating */
-	ctl &= ~(PHY_BMCR_ISO);
-
-	phy_write(PHY_BMCR, ctl);
+        int lnk, i = 0;
 
         while (!(phy_read(1) & 0x20)) {	/* autonegation complete bit */
 		udelay(1000);
@@ -276,11 +256,12 @@ static int dm9000_eth_send (struct eth_device *edev,
 static void dm9000_eth_halt (struct eth_device *edev)
 {
 	printf("eth_halt\n");
-
+#if 0
 	phy_write(0, 0x8000);	/* PHY RESET */
 	DM9000_iow(DM9000_GPR, 0x01);	/* Power-Down PHY */
 	DM9000_iow(DM9000_IMR, 0x80);	/* Disable all interrupt */
 	DM9000_iow(DM9000_RCR, 0x00);	/* Disable RX */
+#endif
 }
 
 static int dm9000_eth_rx (struct eth_device *edev)
@@ -410,6 +391,7 @@ printf("dm9000_set_mac_address\n");
 static int dm9000_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
+	int ctl;
 
 	printf("dm9000_eth_init()\n");
 
@@ -437,6 +419,26 @@ static int dm9000_probe(struct device_d *dev)
 	DM9000_iow(DM9000_SMCR, 0);	/* Special Mode */
 	DM9000_iow(DM9000_NSR, NSR_WAKEST | NSR_TX2END | NSR_TX1END);	/* clear TX status */
 	DM9000_iow(DM9000_ISR, 0x0f);	/* Clear interrupt status */
+
+	/* Activate DM9000 */
+	DM9000_iow(DM9000_GPCR, 0x01);	/* Let GPIO0 output */
+	DM9000_iow(DM9000_GPR, 0x00);	/* Enable PHY */
+	DM9000_iow(DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN);	/* RX enable */
+	DM9000_iow(DM9000_IMR, IMR_PAR);	/* Enable TX/RX interrupt mask */
+
+        phy_write(0, 0x8000);	/* PHY RESET */
+
+	ctl = phy_read(PHY_BMCR);
+
+	if (ctl < 0)
+		return ctl;
+
+	ctl |= (PHY_BMCR_AUTON | PHY_BMCR_RST_NEG);
+
+	/* Don't isolate the PHY if we're negotiating */
+	ctl &= ~(PHY_BMCR_ISO);
+
+	phy_write(PHY_BMCR, ctl);
 
 	eth_register(edev);
 

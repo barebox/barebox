@@ -94,3 +94,4 @@ obj-y += misc.o
 obj-y += cmd_fs.o
 obj-y += getopt.o
 obj-y += xfuncs.o
+obj-y += cmd_exec.o

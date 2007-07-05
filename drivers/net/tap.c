@@ -70,6 +70,7 @@ int tap_probe(struct device_d *dev)
 	edev->dev = dev;
 	edev->priv = priv;
 
+	edev->init = tap_eth_open;
 	edev->open = tap_eth_open;
 	edev->send = tap_eth_send;
 	edev->recv = tap_eth_rx;

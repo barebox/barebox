@@ -55,10 +55,6 @@ Serial console configuration
 #endif
 /* RAMBOOT will be defined automatically in memory section */
 
-#define CONFIG_PREBOOT	"echo;"	\
-	"echo Type \"run net_nfs\" to load Kernel over TFTP and to mount root filesystem over NFS;" \
-	"echo"
-
 /*------------------------------------------------------------------------------------------------------------------------------------------------------
 IPB Bus clocking configuration.
  ------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -104,14 +100,10 @@ RTC configuration
 #define CFG_BOOTCS_START	0xFF000000
 #define CFG_BOOTCS_SIZE		0x01000000
 
-#define PHYCORE_MPC5200B_TINY_REV 0
-
-#if PHYCORE_MPC5200B_TINY_REV == 0
-#define CFG_BOOTCS_CFG		0x00083800
-#elif PHYCORE_MPC5200B_TINY_REV == 1
+#ifdef CONFIG_MACH_PHYCORE_MPC5200B_TINY_REV_1
 #define CFG_BOOTCS_CFG		0x0008FD00
 #else
-#error "PHYCORE_MPC5200B_TINY_REV not specified"
+#define CFG_BOOTCS_CFG		0x00083800
 #endif
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------

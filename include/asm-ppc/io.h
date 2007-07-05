@@ -7,7 +7,6 @@
 #ifndef _PPC_IO_H
 #define _PPC_IO_H
 
-#include <linux/config.h>
 #include <asm/byteorder.h>
 
 #define SIO_CONFIG_RA   0x398

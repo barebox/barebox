@@ -1,71 +1,76 @@
-#
-# (C) Copyright 2000-2006
-# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
-#
-# See file CREDITS for list of people who contributed to this
-# project.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of
-# the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307 USA
-#
-
-include $(TOPDIR)/config.mk
-
-# CFLAGS += -DET_DEBUG -DDEBUG
-
-LIB	= $(obj)libdrivers.a
-
-COBJS	= 3c589.o 5701rls.o ali512x.o atmel_usart.o \
-	  bcm570x.o bcm570x_autoneg.o cfb_console.o cfi_flash.o \
-	  cs8900.o ct69000.o dataflash.o dc2114x.o dm9000x.o \
-	  e1000.o eepro100.o \
-	  i8042.o inca-ip_sw.o keyboard.o \
-	  lan91c96.o \
-	  natsemi.o ne2000.o netarm_eth.o netconsole.o \
-	  ns16550.o ns8382x.o ns87308.o ns7520_eth.o omap1510_i2c.o \
-	  omap24xx_i2c.o pci.o pci_auto.o pci_indirect.o \
-	  pcnet.o plb2800_eth.o \
-	  ps2ser.o ps2mult.o pc_keyb.o \
-	  rtl8019.o rtl8139.o rtl8169.o \
-	  s3c4510b_eth.o s3c4510b_uart.o \
-	  sed13806.o sed156x.o \
-	  serial.o serial_max3100.o \
-	  serial_pl010.o serial_pl011.o serial_xuartlite.o \
-	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
-	  status_led.o sym53c8xx.o ahci.o \
-	  ti_pci1410a.o tigon3.o tsec.o \
-	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbtty.o \
-	  videomodes.o w83c553f.o \
-	  ks8695eth.o \
-	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
-	  rpx_pcmcia.o \
-	  fsl_i2c.o
-
-SRCS	:= $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(COBJS))
-
-all:	$(LIB)
-
-$(LIB): $(obj).depend $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(OBJS)
-
-#########################################################################
-
-# defines $(obj).depend target
-include $(SRCTREE)/rules.mk
-
-sinclude $(obj).depend
-
-#########################################################################
+obj-y += 3c589.o
+obj-y += 5701rls.o
+obj-y += ahci.o
+obj-y += ali512x.o
+obj-y += atmel_usart.o
+obj-y += bcm570x_autoneg.o
+obj-y += bcm570x.o
+obj-y += cfb_console.o
+obj-y += cfi_flash.o
+obj-y += cs8900.o
+obj-y += ct69000.o
+obj-y += dc2114x.o
+obj-y += dm9000x.o
+# obj-y += ds1722.o
+obj-y += e1000.o
+obj-y += eepro100.o
+obj-y += fsl_i2c.o
+obj-y += i8042.o
+obj-y += i82365.o
+obj-y += inca-ip_sw.o
+obj-y += keyboard.o
+obj-y += ks8695eth.o
+obj-y += lan91c96.o
+obj-y += mpc8xx_pcmcia.o
+# obj-y += mw_eeprom.o
+obj-y += natsemi.o
+obj-y += ne2000.o
+obj-y += netarm_eth.o
+obj-y += netconsole.o
+obj-y += ns16550.o
+obj-y += ns7520_eth.o
+obj-y += ns8382x.o
+obj-y += ns87308.o
+obj-y += ns9750_eth.o
+obj-y += ns9750_serial.o
+obj-y += omap1510_i2c.o
+obj-y += omap24xx_i2c.o
+obj-y += pci_auto.o
+obj-y += pci.o
+obj-y += pci_indirect.o
+obj-y += pc_keyb.o
+obj-y += pcnet.o
+obj-y += plb2800_eth.o
+obj-y += ps2mult.o
+obj-y += ps2ser.o
+obj-y += pxa_pcmcia.o
+obj-y += rpx_pcmcia.o
+obj-y += rtl8019.o
+obj-y += rtl8139.o
+obj-y += rtl8169.o
+obj-y += s3c4510b_eth.o
+obj-y += s3c4510b_uart.o
+obj-y += sed13806.o
+obj-y += sed156x.o
+obj-y += serial.o
+obj-y += serial_max3100.o
+obj-y += serial_pl010.o
+obj-y += serial_pl011.o
+obj-y += serial_xuartlite.o
+obj-y += sl811_usb.o
+obj-y += sm501.o
+obj-y += smc91111.o
+obj-y += smiLynxEM.o
+obj-y += status_led.o
+obj-y += sym53c8xx.o
+obj-y += tigon3.o
+obj-y += ti_pci1410a.o
+obj-y += tqm8xx_pcmcia.o
+obj-y += tsec.o
+obj-y += usbdcore.o
+obj-y += usbdcore_ep0.o
+obj-y += usbdcore_omap1510.o
+obj-y += usbtty.o
+obj-y += videomodes.o
+obj-y += w83c553f.o
+obj-y +=

@@ -1578,3 +1578,31 @@ ushort getenv_VLAN(char *var)
 {
 	return (string_to_VLAN(getenv(var)));
 }
+
+int string_to_enet_addr(char *str, char *enetaddr)
+{
+	ulong reg;
+	char *e;
+
+        if (strlen(str) != 17)
+                return -1;
+
+        if (str[2] != ':' || str[5] != ':' || str[8] != ':' ||
+                        str[11] != ':' || str[14] != ':')
+                return -1;
+
+	for (reg = 0; reg < 6; ++reg) {
+		enetaddr[reg] = simple_strtoul (str, &e, 16);
+			str = e + 1;
+	}
+
+	return 0;
+}
+
+void enet_addr_to_string(char *enetaddr, char *str)
+{
+	sprintf (str, "%02X:%02X:%02X:%02X:%02X:%02X",
+		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],
+		 enetaddr[4], enetaddr[5]);
+}
+

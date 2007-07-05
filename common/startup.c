@@ -42,7 +42,7 @@
 #include <init.h>
 #include <command.h>
 #include <malloc.h>
-#include <version.h>
+#include <linux/utsrelease.h>
 #include <mem_malloc.h>
 #include <debug_ll.h>
 #include <fs.h>
@@ -55,7 +55,7 @@ ulong load_addr = 0;               /* Default Load Address */
 #endif
 
 const char version_string[] =
-	U_BOOT_VERSION" (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
+	"U-Boot" UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
 
 /************************************************************************
  * Init Utilities							*

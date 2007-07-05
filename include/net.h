@@ -13,7 +13,7 @@
 #define __NET_H__
 
 #include <common.h>
-
+#include <param.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
 
@@ -55,7 +55,7 @@ struct device_d;
 
 struct eth_device {
 	char name[NAMESIZE];
-	unsigned char enetaddr[6];
+//	unsigned char enetaddr[6];
 	int iobase;
 	int state;
 
@@ -70,24 +70,30 @@ struct eth_device {
 	struct eth_device *next;
 	void *priv;
 
+	struct param_d param_ip;
+	struct param_d param_netmask;
+	struct param_d param_gateway;
+	struct param_d param_serverip;
+	struct param_d param_mac;
+
 	struct device_d *dev;
 };
 
 struct param_d *eth_param_get(struct device_d* dev, int no);
 int eth_param_set(struct device_d* dev, struct param_d *param, char *val);
 
-extern int eth_register(struct eth_device* dev);/* Register network device	*/
-extern void eth_try_another(int first_restart);	/* Change the device		*/
-extern struct eth_device *eth_get_dev(void);	/* get the current device MAC	*/
-extern struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
-extern int eth_get_dev_index (void);		/* get the device index         */
-extern void eth_set_enetaddr(int num, char* a);	/* Set new MAC address		*/
+int eth_register(struct eth_device* dev);/* Register network device	*/
+void eth_try_another(int first_restart);	/* Change the device		*/
+struct eth_device *eth_get_dev(void);	/* get the current device MAC	*/
+struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
+int eth_get_dev_index (void);		/* get the device index         */
+void eth_set_enetaddr(int num, char* a);	/* Set new MAC address		*/
 
-extern int eth_init(void);			/* Initialize the device	*/
-extern int eth_send(void *packet, int length);	   /* Send a packet	*/
-extern int eth_rx(void);			/* Check for received packets	*/
-extern void eth_halt(void);			/* stop SCC			*/
-extern char *eth_get_name(void);		/* get name of current device	*/
+int eth_init(void);			/* Initialize the device	*/
+int eth_send(void *packet, int length);	   /* Send a packet	*/
+int eth_rx(void);			/* Check for received packets	*/
+void eth_halt(void);			/* stop SCC			*/
+char *eth_get_name(void);		/* get name of current device	*/
 
 
 /**********************************************************************/
@@ -317,43 +323,43 @@ extern IPaddr_t	NetNtpServerIP;			/* the ip address to NTP 	*/
 extern int NetTimeOffset;			/* offset time from UTC		*/
 
 /* Initialize the network adapter */
-extern int	NetLoop(proto_t);
+int	NetLoop(proto_t);
 
 /* Shutdown adapters and cleanup */
-extern void	NetStop(void);
+void	NetStop(void);
 
 /* Load failed.	 Start again. */
-extern void	NetStartAgain(void);
+void	NetStartAgain(void);
 
 /* Get size of the ethernet header when we send */
-extern int 	NetEthHdrSize(void);
+int 	NetEthHdrSize(void);
 
 /* Set ethernet header; returns the size of the header */
-extern int	NetSetEther(uchar *, uchar *, uint);
+int	NetSetEther(uchar *, uchar *, uint);
 
 /* Set IP header */
-extern void	NetSetIP(uchar *, IPaddr_t, int, int, int);
+void	NetSetIP(uchar *, IPaddr_t, int, int, int);
 
 /* Checksum */
-extern int	NetCksumOk(uchar *, int);	/* Return true if cksum OK	*/
-extern uint	NetCksum(uchar *, int);		/* Calculate the checksum	*/
+int	NetCksumOk(uchar *, int);	/* Return true if cksum OK	*/
+uint	NetCksum(uchar *, int);		/* Calculate the checksum	*/
 
 /* Set callbacks */
-extern void	NetSetHandler(rxhand_f *);	/* Set RX packet handler	*/
-extern void	NetSetTimeout(uint64_t, thand_f *);/* Set timeout handler		*/
+void	NetSetHandler(rxhand_f *);	/* Set RX packet handler	*/
+void	NetSetTimeout(uint64_t, thand_f *);/* Set timeout handler		*/
 
 /* Transmit "NetTxPacket" */
-extern void	NetSendPacket(uchar *, int);
+void	NetSendPacket(uchar *, int);
 
 /* Transmit UDP packet, performing ARP request if needed */
-extern int	NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len);
+int	NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len);
 
 /* Processes a received packet */
-extern void	NetReceive(uchar *, int);
+void	NetReceive(uchar *, int);
 
 /* Print an IP address on the console */
 #ifdef CONFIG_NET
-extern void	print_IPaddr (IPaddr_t);
+void	print_IPaddr (IPaddr_t);
 #else
 #define print_IPaddr(IPaddr_t);
 #endif
@@ -400,25 +406,25 @@ static inline void NetCopyLong(ulong *to, ulong *from)
 }
 
 /* Convert an IP address to a string */
-extern void	ip_to_string (IPaddr_t x, char *s);
+char *	ip_to_string (IPaddr_t x, char *s);
 
 /* Convert a string to ip address */
-extern IPaddr_t string_to_ip(char *s);
+IPaddr_t string_to_ip(char *s);
 
 /* Convert a VLAN id to a string */
-extern void	VLAN_to_string (ushort x, char *s);
+void	VLAN_to_string (ushort x, char *s);
 
 /* Convert a string to a vlan id */
-extern ushort string_to_VLAN(char *s);
+ushort string_to_VLAN(char *s);
 
 /* read an IP address from a environment variable */
-extern IPaddr_t getenv_IPaddr (char *);
+IPaddr_t getenv_IPaddr (char *);
 
 /* read a VLAN id from an environment variable */
-extern ushort getenv_VLAN(char *);
+ushort getenv_VLAN(char *);
 
 /* copy a filename (allow for "..." notation, limit length) */
-extern void	copy_filename (char *dst, char *src, int size);
+void	copy_filename (char *dst, char *src, int size);
 
 int string_to_enet_addr(char *str, char *enetaddr);
 void enet_addr_to_string(char *enetaddr, char *str);
@@ -427,11 +433,7 @@ void enet_addr_to_string(char *enetaddr, char *str);
 /* Network devices                                                    */
 /**********************************************************************/
 
-extern void eth_set_current(struct eth_device *eth);
-extern struct eth_device *eth_get_current(void);
-
-extern struct eth_device dm9000_eth;
-extern struct eth_device at91rm9200_eth;
-extern struct eth_device smc91111_eth;
+void eth_set_current(struct eth_device *eth);
+struct eth_device *eth_get_current(void);
 
 #endif /* __NET_H__ */

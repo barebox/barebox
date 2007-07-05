@@ -153,7 +153,6 @@ static unsigned long cramfs_resolve (unsigned long begin, unsigned long offset,
 		inodeoffset = nextoffset;
 	}
 
-	printf ("can't find corresponding entry\n");
 	return 0;
 }
 

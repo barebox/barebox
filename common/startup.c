@@ -42,20 +42,13 @@
 #include <init.h>
 #include <command.h>
 #include <malloc.h>
-#include <devices.h>
 #include <version.h>
-#include <net.h>
-#include <cfi_flash.h>
+#include <mem_malloc.h>
+#include <debug_ll.h>
 
 ulong load_addr = 0;               /* Default Load Address */
 
 DECLARE_GLOBAL_DATA_PTR;
-
-#if (CONFIG_COMMANDS & CFG_CMD_NAND)
-void nand_init (void);
-#endif
-
-ulong monitor_flash_len;
 
 #ifndef CONFIG_IDENT_STRING
 #define CONFIG_IDENT_STRING ""
@@ -75,8 +68,8 @@ const char version_string[] =
 static int display_banner (void)
 {
 	printf ("\n\n%s\n\n", version_string);
-	debug ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
-	       _armboot_start, _bss_start, _bss_end);
+//	debug ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
+//	       _armboot_start, _bss_start, _bss_end);
 #ifdef CONFIG_USE_IRQ
 	debug ("IRQ Stack: %08lx\n", IRQ_STACK_START);
 	debug ("FIQ Stack: %08lx\n", FIQ_STACK_START);
@@ -111,22 +104,19 @@ static int display_banner (void)
 
 extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
 
-void start_armboot (void)
+void start_uboot (void)
 {
         initcall_t *initcall;
         int result;
-	int i = 'a';
-
+PUTC('S');
+PUTC('\n');
 	/* compiler optimization barrier needed for GCC >= 3.4 */
-	__asm__ __volatile__("": : :"memory");
+//	__asm__ __volatile__("": : :"memory");
 
-	monitor_flash_len = _bss_start - _armboot_start;
-
-        /* armboot_start is defined in the board-specific linker script */
-	mem_malloc_init();
-
-	serial_init();		/* serial communications setup */
+//	serial_init();		/* serial communications setup */
         for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
+		PUTHEX_LL(*initcall);
+		PUTC('\n');
                 result = (*initcall)();
                 if (result)
                         hang();

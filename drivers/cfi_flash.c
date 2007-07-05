@@ -184,7 +184,7 @@ static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
 				    uint64_t tout, char *prompt);
 ulong flash_get_size (flash_info_t *info, ulong base);
 #ifdef CONFIG_CFI_BUFFER_WRITE
-static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp, int len);
+static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar * cp, int len);
 #endif
 
 /*-----------------------------------------------------------------------
@@ -409,7 +409,7 @@ out:
         return ret;
 }
 
-static ssize_t cfi_write(struct device_d* dev, void* buf, size_t count, unsigned long offset, ulong flags)
+static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, unsigned long offset, ulong flags)
 {
         flash_info_t *finfo = (flash_info_t *)dev->priv;
         int ret;
@@ -532,7 +532,7 @@ device_initcall(cfi_init);
  * 1 - write timeout
  * 2 - Flash not erased
  */
-int write_buff (flash_info_t * info, uchar * src, ulong addr, ulong cnt)
+int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
 {
 	ulong wp;
 	ulong cp;
@@ -1363,7 +1363,7 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
 
-static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
+static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar * cp,
 				  int len)
 {
 	flash_sect_t sector;
@@ -1375,7 +1375,7 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 	switch (info->vendor) {
 	case CFI_CMDSET_INTEL_STANDARD:
 	case CFI_CMDSET_INTEL_EXTENDED:
-		src.cp = cp;
+		src.cp = (uchar *)cp;
 		dst.cp = (uchar *) dest;
 		sector = find_sector (info, dest);
 		flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
@@ -1430,7 +1430,7 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 
 	case CFI_CMDSET_AMD_STANDARD:
 	case CFI_CMDSET_AMD_EXTENDED:
-		src.cp = cp;
+		src.cp = (uchar *)cp;
 		dst.cp = (uchar *) dest;
 		sector = find_sector (info, dest);
 

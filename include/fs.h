@@ -92,7 +92,7 @@ off_t lseek(int fildes, off_t offset, int whence);
 int ls(const char *path, ulong flags);
 int mkdir (const char *pathname);
 int rmdir (const char *pathname);
-int mount (struct device_d *dev, char *fsname, char *path);
+int mount (const char *device, const char *fsname, const char *path);
 int umount(const char *pathname);
 
 struct dir *opendir(const char *pathname);

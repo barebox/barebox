@@ -411,7 +411,7 @@ scripts: scripts_basic include/config/auto.conf
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Objects we will link into vmlinux / subdirs we need to visit
-common-y		:= common/ drivers/ lib_generic/ net/
+common-y		:= common/ drivers/ lib_generic/ net/ fs/
 
 ifeq ($(dot-config),1)
 # Read in config

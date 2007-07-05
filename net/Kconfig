@@ -4,8 +4,13 @@ menuconfig NET
 
 if NET
 
+config NET_BOOTP
+	bool
+	prompt "bootp support"
+
 config NET_DHCP
 	bool
+	depends on NET_BOOTP
 	prompt "dhcp support"
 
 config NET_RARP

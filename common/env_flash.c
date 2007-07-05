@@ -55,22 +55,16 @@ DECLARE_GLOBAL_DATA_PTR;
 
 char * env_name_spec = "Flash";
 
+static env_t *flash_addr = (env_t *)CFG_ENV_ADDR;
+
 #ifdef ENV_IS_EMBEDDED
 
 extern uchar environment[];
 env_t *env_ptr = (env_t *)(&environment[0]);
 
-#ifdef CMD_SAVEENV
-/* static env_t *flash_addr = (env_t *)(&environment[0]);-broken on ARM-wd-*/
-static env_t *flash_addr = (env_t *)CFG_ENV_ADDR;
-#endif
-
 #else /* ! ENV_IS_EMBEDDED */
 
 env_t *env_ptr = (env_t *)CFG_ENV_ADDR;
-#ifdef CMD_SAVEENV
-static env_t *flash_addr = (env_t *)CFG_ENV_ADDR;
-#endif
 
 #endif /* ENV_IS_EMBEDDED */
 

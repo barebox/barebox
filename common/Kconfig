@@ -117,16 +117,7 @@ endmenu
 
 menu "Commands                      "
 
-config CMD_HELP
-	bool
-	default y
-	prompt "help"
-
 menu "scripting                     "
-
-config CMD_AUTOSCRIPT
-	bool
-	prompt "autoscript"
 
 config CMD_EDIT
 	bool
@@ -144,10 +135,10 @@ config CMD_ENVIRONMENT
 	bool
 	prompt "saveenv / loadenv"
 
-config CMD_ENV
+config CMD_HELP
 	bool
 	default y
-	prompt "getenv/setenv"
+	prompt "help"
 
 endmenu
 

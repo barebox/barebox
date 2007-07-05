@@ -79,6 +79,12 @@ _TEXT_BASE:
 _armboot_start:
 	.word _start
 
+_MALLOC_START:
+	.word _start - CFG_MALLOC_LEN
+
+_STACK_START:
+	.word _start - CFG_MALLOC_LEN - CONFIG_STACKSIZE
+
 /*
  * These are defined in the board-specific linker script.
  */
@@ -181,8 +187,7 @@ copy_loop:
 
 	/* Set up the stack						    */
 stack_setup:
-	ldr	r0, _TEXT_BASE		/* upper 128 KiB: relocated uboot   */
-	sub	r0, r0, #CFG_MALLOC_LEN	/* malloc area                      */
+	ldr	r0, _MALLOC_START	/* upper 128 KiB: relocated uboot   */
 #ifdef CONFIG_USE_IRQ
 	sub	r0, r0, #(CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ)
 #endif
@@ -290,8 +295,7 @@ cpu_init_crit:
 	.macro	bad_save_user_regs
 	sub	sp, sp, #S_FRAME_SIZE
 	stmia	sp, {r0 - r12}			@ Calling r0-r12
-	ldr	r2, _armboot_start
-	sub	r2, r2, #(CONFIG_STACKSIZE+CFG_MALLOC_LEN)
+	ldr	r2, _STACK_START
 	sub	r2, r2, #(8)  @ set base 2 words into abort stack
 	ldmia	r2, {r2 - r3}			@ get pc, cpsr
 	add	r0, sp, #S_FRAME_SIZE		@ restore sp_SVC
@@ -323,8 +327,7 @@ cpu_init_crit:
 	.endm
 
 	.macro get_bad_stack
-	ldr	r13, _armboot_start		@ setup our mode stack
-	sub	r13, r13, #(CONFIG_STACKSIZE+CFG_MALLOC_LEN)
+	ldr	r2, _STACK_START
 	sub	r13, r13, #(8) @ reserved a couple spots in abort stack
 
 	str	lr, [r13]			@ save caller lr / spsr

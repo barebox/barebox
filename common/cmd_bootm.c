@@ -437,9 +437,11 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 1;
 }
 
-U_BOOT_CMD(
- 	bootm,	CONFIG_MAXARGS,	1,	do_bootm,
- 	"bootm   - boot application image from memory\n",
+U_BOOT_CMD_START(bootm)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_bootm,
+	.usage		= "bootm   - boot application image from memory\n",
+	U_BOOT_CMD_HELP(
  	"[addr [arg ...]]\n    - boot application image stored in memory\n"
  	"\tpassing arguments 'arg ...'; when booting a Linux kernel,\n"
  	"\t'arg' can be the address of an initrd image\n"
@@ -450,7 +452,8 @@ U_BOOT_CMD(
 	"\tuse a '-' for the second argument. If you do not pass a third\n"
 	"\ta bd_info struct will be passed instead\n"
 #endif
-);
+	)
+U_BOOT_CMD_END
 
 #ifdef CONFIG_SILENT_CONSOLE
 static void
@@ -671,18 +674,11 @@ int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return rcode;
 }
 
-U_BOOT_CMD(
- 	boot,	1,	1,	do_bootd,
- 	"boot    - boot default, i.e., run 'bootcmd'\n",
-	NULL
-);
-
-/* keep old command name "bootd" for backward compatibility */
-U_BOOT_CMD(
- 	bootd, 1,	1,	do_bootd,
- 	"bootd   - boot default, i.e., run 'bootcmd'\n",
-	NULL
-);
+U_BOOT_CMD_START(boot)
+	.maxargs	= 1,
+	.cmd		= do_bootd,
+	.usage		= "boot    - boot default, i.e., run 'bootcmd'\n",
+U_BOOT_CMD_END
 
 #if (CONFIG_COMMANDS & CFG_CMD_IMI)
 int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

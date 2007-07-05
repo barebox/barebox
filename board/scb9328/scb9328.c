@@ -49,9 +49,6 @@ static struct device_d dm9000_dev = {
         .type     = DEVICE_TYPE_ETHER,
 };
 
-/* Do not collide with the env from our first stage loader for now */
-static char *env_spec = "nor0:256k+128k";
-
 static int scb9328_devices_init(void) {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
@@ -61,12 +58,3 @@ static int scb9328_devices_init(void) {
 }
 
 device_initcall(scb9328_devices_init);
-
-static int scb9328_init_env(void)
-{
-	add_env_spec(env_spec);
-        return 0;
-}
-
-late_initcall(scb9328_init_env);
-

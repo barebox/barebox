@@ -26,8 +26,6 @@
 
 #define CONFIG_IMX_SERIAL1
 
-#include <cmd_confdefs.h>
-
 #define CONFIG_ARCH_NUMBER MACH_TYPE_SCB9328
 #define CONFIG_BOOT_PARAMS 0x08000100
 

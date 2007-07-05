@@ -97,7 +97,7 @@ ulong get_PERCLK3(void)
 }
 
 static int arch_number = CONFIG_ARCH_NUMBER;
-
+#if 0
 typedef enum imx_cookies {
         PARAM_CPUCLK,
         PARAM_SYSCLOCK,
@@ -112,15 +112,15 @@ typedef enum imx_cookies {
 } imx_cookies_t;
 
 static struct param_d imx_params[] = {
-        [PARAM_CPUCLK]      = { .name = "imx_cpuclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_SYSCLOCK]    = { .name = "imx_system_clk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK1]     = { .name = "imx_perclk1", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK2]     = { .name = "imx_perclk2", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK3]     = { .name = "imx_perclk3", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_BCLK]        = { .name = "imx_bclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_HCLK]        = { .name = "imx_hclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_FCLK]        = { .name = "imx_fclk", .type = PARAM_TYPE_ULONG, .flags = PARAM_FLAG_RO},
-        [PARAM_ARCH_NUMBER] = { .name = "arch_number", .type = PARAM_TYPE_ULONG},
+        [PARAM_CPUCLK]      = { .name = "imx_cpuclk", .flags = PARAM_FLAG_RO},
+        [PARAM_SYSCLOCK]    = { .name = "imx_system_clk", .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK1]     = { .name = "imx_perclk1", .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK2]     = { .name = "imx_perclk2", .flags = PARAM_FLAG_RO},
+        [PARAM_PERCLK3]     = { .name = "imx_perclk3", .flags = PARAM_FLAG_RO},
+        [PARAM_BCLK]        = { .name = "imx_bclk", .flags = PARAM_FLAG_RO},
+        [PARAM_HCLK]        = { .name = "imx_hclk", .flags = PARAM_FLAG_RO},
+        [PARAM_FCLK]        = { .name = "imx_fclk", .flags = PARAM_FLAG_RO},
+        [PARAM_ARCH_NUMBER] = { .name = "arch_number",},
 };
 
 static int imx_clk_init(void)
@@ -144,4 +144,4 @@ static int imx_clk_init(void)
 }
 
 device_initcall(imx_clk_init);
-
+#endif

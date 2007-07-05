@@ -20,14 +20,12 @@ int
 do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const char *oftree)
 {
 	ulong	sp;
-	ulong	len, checksum;
-	ulong	initrd_start, initrd_end = 0;
+	ulong	initrd_end = 0;
 	ulong	cmd_start, cmd_end;
 	ulong	initrd_high;
-	ulong	data;
 	int	initrd_copy_to_ram = 1;
 	char    *cmdline;
-	char	*s;
+	const char *c;
 	bd_t	*kbd;
 	void	(*kernel)(bd_t *, ulong, ulong, ulong, ulong);
 #ifdef CONFIG_OF_FLAT_TREE
@@ -38,7 +36,6 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 	void    *initrd_data = NULL;
 	void    *of_data = NULL;
 	unsigned long os_len, initrd_len;
-	unsigned long *lenp;
 
 	printf("entering %s: os_header: %p initrd_header: %p oftree: %p\n",
 			__FUNCTION__, os_header, initrd_header, oftree);
@@ -114,11 +111,11 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 #endif
 	printf("loading kernel.\n");
 
-	if ((s = getenv ("initrd_high")) != NULL) {
+	if ((c = getenv ("initrd_high")) != NULL) {
 		/* a value of "no" or a similar string will act like 0,
 		 * turning the "load high" feature off. This is intentional.
 		 */
-		initrd_high = simple_strtoul(s, NULL, 16);
+		initrd_high = simple_strtoul(c, NULL, 16);
 		if (initrd_high == ~0)
 			initrd_copy_to_ram = 0;
 	} else {	/* not set, no restrictions to load high */
@@ -159,10 +156,10 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 
 	printf("cmdline: %p kbd: %p\n", cmdline, kbd);
 
-	if ((s = getenv("bootargs")) == NULL)
-		s = "";
+	if ((c = getenv("bootargs")) == NULL)
+		c = "";
 
-	strcpy (cmdline, s);
+	strcpy (cmdline, c);
 
 	cmd_start    = (ulong)cmdline;
 	cmd_end      = cmd_start + strlen(cmdline);
@@ -175,7 +172,7 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 //	do_bdinfo (NULL, 0, 0, NULL);
 #endif
 
-	if ((s = getenv ("clocks_in_mhz")) != NULL) {
+	if ((c = getenv ("clocks_in_mhz")) != NULL) {
 		/* convert all clock information to MHz */
 		kbd->bi_intfreq /= 1000000L;
 		kbd->bi_busfreq /= 1000000L;
@@ -239,7 +236,7 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 #ifdef CONFIG_OF_FLAT_TREE
 	if (!of_flat_tree)	/* no device tree; boot old style */
 #endif
-		(*kernel) (kbd, initrd_data, initrd_end, cmd_start, cmd_end);
+		(*kernel) (kbd, (ulong)initrd_data, initrd_end, cmd_start, cmd_end);
 		/* does not return */
 
 #ifdef CONFIG_OF_FLAT_TREE
@@ -251,11 +248,15 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 	 *   r6: NULL
 	 *   r7: NULL
 	 */
-	ft_setup(of_flat_tree, kbd, initrd_data, initrd_end);
+	ft_setup(of_flat_tree, kbd, (long)initrd_data, initrd_end);
 	ft_cpu_setup(of_flat_tree, kbd);
 	ft_dump_blob(of_flat_tree);
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
 #endif
+	do_reset();
+
+	/* not reached */
+	return -1;
 }
 

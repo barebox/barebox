@@ -32,15 +32,12 @@ config CMD_CLEAR
 	bool
 	prompt "clear"
 
-config CMD_CONSOLE
-	bool
-	prompt "coninfo"
-
 config CMD_ECHO
 	bool
 	prompt "echo"
 
 config CMD_SPLASH
+	depends on BROKEN
 	bool
 	prompt "splash"
 
@@ -50,6 +47,7 @@ endmenu
 menu "i2c                           "
 
 config CMD_I2C
+	depends on BROKEN
 	bool
 	prompt "i2c"
 
@@ -59,15 +57,18 @@ endmenu
 menu "memory                        "
 
 config CMD_LOADB
+	depends on BROKEN
 	select CRC16
 	bool
 	prompt "loadb"
 
 config CMD_LOADS
+	depends on BROKEN
 	bool
 	prompt "loads"
 
 config CMD_SAVES
+	depends on BROKEN
 	bool
 	depends on CMD_LOADS
 	prompt "saves"
@@ -106,6 +107,7 @@ menu "network                       "
 
 config CMD_MII
 	bool
+	depends on BROKEN
 	prompt "mii"
 
 endmenu

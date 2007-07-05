@@ -1,7 +1,9 @@
 #ifndef __MEM_MALLOC_H
 #define __MEM_MALLOC_H
 
-void mem_malloc_init (ulong start, ulong end);
+#include <linux/types.h>
+
+void mem_malloc_init (void *start, void *end);
 void *sbrk (ptrdiff_t increment);
 
 #endif

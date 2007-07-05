@@ -765,7 +765,6 @@ NfsStart (void)
 	NfsTimeoutCount = 0;
 	NfsState = STATE_PRCLOOKUP_PROG_MOUNT_REQ;
 
-	/*NfsOurPort = 4096 + (get_ticks() % 3072);*/
 	/*FIX ME !!!*/
 	NfsOurPort = 1000;
 

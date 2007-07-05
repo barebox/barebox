@@ -81,15 +81,6 @@ void udelay (unsigned long usec)
 }
 
 /*
- * This function is derived from PowerPC code (read timebase as long long).
- * On MIPS it just returns the timer value.
- */
-unsigned long long get_ticks(void)
-{
-	return mips_count_get();
-}
-
-/*
  * This function is derived from PowerPC code (timebase clock frequency).
  * On MIPS it returns the number of timer ticks per second.
  */

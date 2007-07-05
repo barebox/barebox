@@ -96,28 +96,6 @@ void udelay (unsigned long usec)
 }
 
 /*
- * This function is derived from PowerPC code (read timebase as long long).
- * On ARM it just returns the timer value.
- */
-unsigned long long get_ticks(void)
-{
-	return get_timer(0);
-}
-
-/*
- * This function is derived from PowerPC code (timebase clock frequency).
- * On ARM it returns the number of timer ticks per second.
- */
-ulong get_tbclk (void)
-{
-	ulong tbclk;
-
-	tbclk = CFG_HZ;
-
-	return tbclk;
-}
-
-/*
  * Reset the cpu by setting up the watchdog timer and let him time out
  */
 void reset_cpu (ulong ignored)

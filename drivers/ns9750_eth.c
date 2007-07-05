@@ -507,8 +507,8 @@ static void ns9750_link_auto_negotiate (void)
 
 	/* wait for completion */
 
-	ulStartJiffies = get_ticks ();
-	while (get_ticks () < ulStartJiffies + NS9750_MII_NEG_DELAY) {
+	ulStartJiffies = get_timer (0);
+	while (get_timer (ulStartJiffies) <  NS9750_MII_NEG_DELAY) {
 		uiStatus = ns9750_mii_read (PHY_COMMON_STAT);
 		if ((uiStatus &
 		     (PHY_COMMON_STAT_AN_COMP | PHY_COMMON_STAT_LNK_STAT)) ==

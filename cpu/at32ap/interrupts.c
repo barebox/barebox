@@ -46,24 +46,6 @@ static unsigned long tb_factor;
 
 static const struct device *intc_dev;
 
-unsigned long get_tbclk(void)
-{
-	return gd->cpu_hz;
-}
-
-unsigned long long get_ticks(void)
-{
-	unsigned long lo, hi_now, hi_prev;
-
-	do {
-		hi_prev = timer_overflow;
-		lo = sysreg_read(COUNT);
-		hi_now = timer_overflow;
-	} while (hi_prev != hi_now);
-
-	return ((unsigned long long)hi_now << 32) | lo;
-}
-
 void reset_timer(void)
 {
 	sysreg_write(COUNT, 0);

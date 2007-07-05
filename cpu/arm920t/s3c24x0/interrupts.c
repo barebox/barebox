@@ -158,36 +158,6 @@ void udelay_masked (unsigned long usec)
 }
 
 /*
- * This function is derived from PowerPC code (read timebase as long long).
- * On ARM it just returns the timer value.
- */
-unsigned long long get_ticks(void)
-{
-	return get_timer(0);
-}
-
-/*
- * This function is derived from PowerPC code (timebase clock frequency).
- * On ARM it returns the number of timer ticks per second.
- */
-ulong get_tbclk (void)
-{
-	ulong tbclk;
-
-#if defined(CONFIG_SMDK2400) || defined(CONFIG_TRAB)
-	tbclk = timer_load_val * 100;
-#elif defined(CONFIG_SBC2410X) || \
-      defined(CONFIG_SMDK2410) || \
-      defined(CONFIG_VCMA9)
-	tbclk = CFG_HZ;
-#else
-#	error "tbclk not configured"
-#endif
-
-	return tbclk;
-}
-
-/*
  * reset the cpu by setting up the watchdog timer and let him time out
  */
 void reset_cpu (ulong ignored)

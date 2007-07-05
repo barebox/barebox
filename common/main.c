@@ -73,8 +73,6 @@ static uint64_t endtime = 0;  /* must be set, default is instant timeout */
 static int      retry_time = -1; /* -1 so can call readline before main_loop */
 #endif
 
-#define	endtick(seconds) (get_ticks() + (uint64_t)(seconds) * get_tbclk())
-
 #ifndef CONFIG_BOOT_RETRY_MIN
 #define CONFIG_BOOT_RETRY_MIN CONFIG_BOOT_RETRY_TIME
 #endif
@@ -94,7 +92,8 @@ extern void mdm_init(void); /* defined in board.c */
 static __inline__ int abortboot(int bootdelay)
 {
 	int abort = 0;
-	uint64_t etime = endtick(bootdelay);
+	ulong etime;
+
 	struct {
 		char* str;
 		u_int len;
@@ -160,7 +159,8 @@ static __inline__ int abortboot(int bootdelay)
 	/* In order to keep up with incoming data, check timeout only
 	 * when catch up.
 	 */
-	while (!abort && get_ticks() <= etime) {
+	etime = get_timer(0);
+	while (!abort && get_timer(etime) <= bootdelay * CFG_HZ) {
 		for (i = 0; i < sizeof(delaykey) / sizeof(delaykey[0]); i ++) {
 			if (delaykey[i].len > 0 &&
 			    presskey_len >= delaykey[i].len &&

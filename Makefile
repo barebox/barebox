@@ -424,10 +424,7 @@ scripts: scripts_basic include/config/auto.conf
 
 # Objects we will link into vmlinux / subdirs we need to visit
 common-y		:= common/ drivers/ lib_generic/ net/
-#drivers-y	:= drivers/ sound/
-#net-y		:= net/
-#libs-y		:= lib/
-#core-y		:= usr/
+head-y			:= cpu/arm920t/start.o
 
 ifeq ($(dot-config),1)
 # Read in config
@@ -527,12 +524,7 @@ mod_strip_cmd = true
 endif # INSTALL_MOD_STRIP
 export mod_strip_cmd
 
-
-#core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-
-vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y) $(common-m) \
-		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
-		     $(net-y) $(net-m) $(libs-y) $(libs-m)))
+vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
 vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(common-n) $(common-) \
@@ -540,12 +532,6 @@ vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
-#core-y		:= $(patsubst %/, %/built-in.o, $(core-y))
-#drivers-y	:= $(patsubst %/, %/built-in.o, $(drivers-y))
-#net-y		:= $(patsubst %/, %/built-in.o, $(net-y))
-libs-y1		:= $(patsubst %/, %/lib.a, $(libs-y))
-libs-y2		:= $(patsubst %/, %/built-in.o, $(libs-y))
-libs-y		:= $(libs-y1) $(libs-y2)
 
 # Build vmlinux
 # ---------------------------------------------------------------------------
@@ -576,9 +562,9 @@ libs-y		:= $(libs-y1) $(libs-y2)
 
 vmlinux-init := $(head-y)
 vmlinux-common := $(common-y)
-vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
-vmlinux-all  := $(vmlinux-common) $(vmlinux-main)
+vmlinux-all  := $(vmlinux-init) $(vmlinux-common)
 vmlinux-lds  := $(BOARD)/u-boot.lds
+export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
 
 # Rule to link vmlinux - also used during CONFIG_KALLSYMS
 # May be overridden by arch/$(ARCH)/Makefile
@@ -711,7 +697,7 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 endif # ifdef CONFIG_KALLSYMS
 
 # vmlinux image - including updated kernel symbols
-vmlinux: $(vmlinux-lds) $(vmlinux-common) $(vmlinux-main) $(kallsyms.o) FORCE
+vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-common) $(kallsyms.o) FORCE
 ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
@@ -720,7 +706,7 @@ endif
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(vmlinux-common) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+$(sort $(vmlinux-init) $(vmlinux-common) ) $(vmlinux-lds): $(vmlinux-dirs) ;
 
 # Handle descending into subdirectories listed in $(vmlinux-dirs)
 # Preset locale variables to speed up the build process. Limit locale

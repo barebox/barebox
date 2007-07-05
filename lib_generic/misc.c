@@ -133,6 +133,8 @@ void unregister_device(struct device_d *old_dev)
 
         while (dev) {
                 if (!strcmp(dev->next->name, old_dev->name)) {
+			if (old_dev->driver)
+				old_dev->driver->remove(old_dev);
                         dev->next = old_dev->next;
                         return;
                 }
@@ -140,7 +142,7 @@ void unregister_device(struct device_d *old_dev)
         }
 }
 
-struct driver_d *get_driver_by_name(char *name)
+struct driver_d *get_driver_by_name(const char *name)
 {
 	struct driver_d *d;
 

@@ -116,7 +116,7 @@ int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return ret;
 }
 
-static char cmd_saveenv_help[] =
+static __maybe_unused char cmd_saveenv_help[] =
 "Usage: saveenv [DIRECTORY] [ENVFS]\n"
 "Save the files in <directory> to the persistent storage device <envfs>.\n"
 "<envfs> is normally a block in flash, but could be any other file.\n"
@@ -220,7 +220,7 @@ int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return envfs_load(filename, dirname);
 }
 
-static char cmd_loadenv_help[] =
+static __maybe_unused char cmd_loadenv_help[] =
 "Usage: loadenv [DIRECTORY] [ENVFS]\n"
 "Load the persistent storage contained in <envfs> to the directory\n"
 "<directory>.\n"

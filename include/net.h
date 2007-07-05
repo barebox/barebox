@@ -409,7 +409,7 @@ static inline void NetCopyLong(ulong *to, ulong *from)
 char *	ip_to_string (IPaddr_t x, char *s);
 
 /* Convert a string to ip address */
-IPaddr_t string_to_ip(char *s);
+IPaddr_t string_to_ip(const char *s);
 
 /* Convert a VLAN id to a string */
 void	VLAN_to_string (ushort x, char *s);
@@ -426,8 +426,8 @@ ushort getenv_VLAN(char *);
 /* copy a filename (allow for "..." notation, limit length) */
 void	copy_filename (char *dst, char *src, int size);
 
-int string_to_enet_addr(char *str, char *enetaddr);
-void enet_addr_to_string(char *enetaddr, char *str);
+int string_to_enet_addr(const char *str, char *enetaddr);
+void enet_addr_to_string(const char *enetaddr, char *str);
 
 /**********************************************************************/
 /* Network devices                                                    */

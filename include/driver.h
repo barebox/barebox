@@ -3,17 +3,13 @@
 
 #define MAX_DRIVER_NAME 16
 
-#define MAP_READ        1
-#define MAP_WRITE       2
-
 #define DEVICE_TYPE_UNKNOWN     0
 #define DEVICE_TYPE_ETHER       1
-#define DEVICE_TYPE_STDIO       2
+#define DEVICE_TYPE_CONSOLE     2
 #define DEVICE_TYPE_DRAM	3
 #define DEVICE_TYPE_BLOCK	4
 #define DEVICE_TYPE_FS		5
-#define DEVICE_TYPE_CONSOLE	6
-#define MAX_DEVICE_TYPE         6
+#define MAX_DEVICE_TYPE         5
 
 #include <param.h>
 
@@ -69,26 +65,45 @@ struct driver_d {
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
 
+/* Register/unregister devices and drivers. Since we don't have modules
+ * we do not need a driver_unregister function.
+ */
 int register_driver(struct driver_d *);
 int register_device(struct device_d *);
 void unregister_device(struct device_d *);
 
-struct device_d *device_from_spec_str(const char *str, char **endp);
-struct device_d *get_device_by_name(char *name);
+/* Iterate through the devices of a given type. if last is NULL, the
+ * first device of this type is returned. Put this pointer in as
+ * 'last' to get the next device. This functions returns NULL if no
+ * more devices are found.
+ */
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
 struct device_d *get_first_device(void);
+
+/* Find a free device id from the given template. This is archieved by
+ * appending a number to the template. Dynamically created devices should
+ * use this function rather than filling the id field themselves.
+ */
 int get_free_deviceid(char *id, char *id_template);
 
+struct device_d *device_from_spec_str(const char *str, char **endp);
+
+/* Find a driver with the given name. Currently the filesystem implementation
+ * uses this to get the driver from the name the user specifies with the
+ * mount command
+ */
 struct driver_d *get_driver_by_name(const char *name);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset);
 
+/* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
 
+/* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);
 
 #endif /* DRIVER_H */

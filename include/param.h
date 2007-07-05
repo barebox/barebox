@@ -14,13 +14,14 @@ struct param_d {
 	char *value;
 };
 
-char *dev_get_param(struct device_d *dev, const char *name);
+const char *dev_get_param(struct device_d *dev, const char *name);
 int dev_set_param(struct device_d *dev, const char *name, const char *val);
 struct param_d *get_param_by_name(struct device_d *dev, const char *name);
+int dev_add_param(struct device_d *dev, struct param_d *par);
+
+/* Convenience functions to handle a parameter as an ip address */
 int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip);
 IPaddr_t dev_get_param_ip(struct device_d *dev, char *name);
-
-int dev_add_parameter(struct device_d *dev, struct param_d *par);
 
 int global_add_parameter(struct param_d *param);
 

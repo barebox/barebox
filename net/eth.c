@@ -97,11 +97,11 @@ int eth_register(struct eth_device *edev)
 	edev->param_gateway.name = "gateway";
 	edev->param_netmask.name = "netmask";
 	edev->param_serverip.name = "serverip";
-	dev_add_parameter(dev, &edev->param_ip);
-	dev_add_parameter(dev, &edev->param_mac);
-	dev_add_parameter(dev, &edev->param_gateway);
-	dev_add_parameter(dev, &edev->param_netmask);
-	dev_add_parameter(dev, &edev->param_serverip);
+	dev_add_param(dev, &edev->param_ip);
+	dev_add_param(dev, &edev->param_mac);
+	dev_add_param(dev, &edev->param_gateway);
+	dev_add_param(dev, &edev->param_netmask);
+	dev_add_param(dev, &edev->param_serverip);
 
 	if (edev->get_mac_address(edev, ethaddr) == 0) {
 		enet_addr_to_string(ethaddr, ethaddr_str);

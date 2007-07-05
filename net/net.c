@@ -291,7 +291,8 @@ NetLoop(proto_t protocol)
 		return -1;
 
 restart:
-	string_to_enet_addr(dev_get_param(eth_get_current()->dev, "mac"), NetOurEther);
+	string_to_enet_addr(dev_get_param(eth_get_current()->dev, "mac"),
+			NetOurEther);
 
 	NetState = NETLOOP_CONTINUE;
 
@@ -1513,7 +1514,7 @@ char *ip_to_string (IPaddr_t x, char *s)
 	return s;
 }
 
-IPaddr_t string_to_ip(char *s)
+IPaddr_t string_to_ip(const char *s)
 {
 	IPaddr_t addr;
 	char *e;
@@ -1581,7 +1582,7 @@ ushort getenv_VLAN(char *var)
 	return (string_to_VLAN(getenv(var)));
 }
 
-int string_to_enet_addr(char *str, char *enetaddr)
+int string_to_enet_addr(const char *str, char *enetaddr)
 {
 	ulong reg;
 	char *e;
@@ -1601,7 +1602,7 @@ int string_to_enet_addr(char *str, char *enetaddr)
 	return 0;
 }
 
-void enet_addr_to_string(char *enetaddr, char *str)
+void enet_addr_to_string(const char *enetaddr, char *str)
 {
 	sprintf (str, "%02X:%02X:%02X:%02X:%02X:%02X",
 		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],

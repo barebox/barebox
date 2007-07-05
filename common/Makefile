@@ -1,4 +1,3 @@
-obj-$(CONFIG_NET)		+= cmd_net.o
 obj-$(CONFIG_HUSH_PARSER)	+= hush.o
 obj-$(CONFIG_SIMPLE_PARSER)	+= parser.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o

@@ -16,3 +16,4 @@ obj-$(CONFIG_CMD_RESET)		+= reset.o
 obj-$(CONFIG_CMD_GO)		+= go.o
 obj-$(CONFIG_CMD_ENVIRONMENT)	+= environment.o
 obj-y				+= fs.o
+obj-$(CONFIG_NET)		+= net.o

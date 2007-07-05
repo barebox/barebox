@@ -108,15 +108,14 @@ void start_uboot (void)
 {
         initcall_t *initcall;
         int result;
-PUTC('S');
-PUTC('\n');
+
 	/* compiler optimization barrier needed for GCC >= 3.4 */
 //	__asm__ __volatile__("": : :"memory");
 
 //	serial_init();		/* serial communications setup */
         for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
-		PUTHEX_LL(*initcall);
-		PUTC('\n');
+//		PUTHEX_LL(*initcall);
+//		PUTC('\n');
                 result = (*initcall)();
                 if (result)
                         hang();

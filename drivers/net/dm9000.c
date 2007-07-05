@@ -51,6 +51,7 @@ TODO: Homerun NIC and longrun NIC are not functional, only internal at the
 #include <net.h>
 #include <init.h>
 #include <asm/io.h>
+#include <xfuncs.h>
 
 #include "dm9000.h"
 
@@ -75,6 +76,10 @@ TODO: Homerun NIC and longrun NIC are not functional, only internal at the
 #define DM9000_inb(r) (*(volatile u8 *)r)
 #define DM9000_inw(r) (*(volatile u16 *)r)
 #define DM9000_inl(r) (*(volatile u32 *)r)
+
+struct dm9000_priv {
+	struct miiphy_device miiphy;
+};
 
 #ifdef CONFIG_DM9000_DEBUG
 static void
@@ -105,35 +110,35 @@ static void DM9000_iow(int reg, u8 value)
 	DM9000_outb(value, DM9000_DATA);
 }
 
-static u16 phy_read(int reg)
+static int dm9000_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
+		uint8_t reg, uint16_t * val)
 {
-	u16 val;
-
 	/* Fill the phyxcer register into REG_0C */
 	DM9000_iow(DM9000_EPAR, DM9000_PHY | reg);
 	DM9000_iow(DM9000_EPCR, 0xc);	/* Issue phyxcer read command */
 	udelay(100);		/* Wait read complete */
 	DM9000_iow(DM9000_EPCR, 0x0);	/* Clear phyxcer read command */
-	val = (DM9000_ior(DM9000_EPDRH) << 8) | DM9000_ior(DM9000_EPDRL);
+	*val = (DM9000_ior(DM9000_EPDRH) << 8) | DM9000_ior(DM9000_EPDRL);
 
 	/* The read data keeps on REG_0D & REG_0E */
 	DM9000_DBG("phy_read(%d): %d\n", reg, val);
-	return val;
+	return 0;
 }
 
-static void phy_write(int reg, u16 value)
+static int dm9000_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
+	uint8_t reg, uint16_t val)
 {
-
 	/* Fill the phyxcer register into REG_0C */
 	DM9000_iow(DM9000_EPAR, DM9000_PHY | reg);
 
 	/* Fill the written data into REG_0D & REG_0E */
-	DM9000_iow(DM9000_EPDRL, (value & 0xff));
-	DM9000_iow(DM9000_EPDRH, ((value >> 8) & 0xff));
+	DM9000_iow(DM9000_EPDRL, (val & 0xff));
+	DM9000_iow(DM9000_EPDRH, ((val >> 8) & 0xff));
 	DM9000_iow(DM9000_EPCR, 0xa);	/* Issue phyxcer write command */
 	udelay(500);		/* Wait write complete */
 	DM9000_iow(DM9000_EPCR, 0x0);	/* Clear phyxcer write command */
 	DM9000_DBG("phy_write(reg:%d, value:%d)\n", reg, value);
+	return 0;
 }
 
 static int dm9000_check_id(void)
@@ -163,38 +168,10 @@ static void dm9000_reset(void)
 
 static int dm9000_eth_open(struct eth_device *edev)
 {
-        int lnk, i = 0;
+	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
 
-        while (!(phy_read(1) & 0x20)) {	/* autonegation complete bit */
-		udelay(1000);
-		i++;
-		if (i == 5000) {
-			printf("could not establish link\n");
-                        break;
-		}
-	}
-
-	/* see what we've got */
-	lnk = phy_read(17) >> 12;
-	printf("operating at ");
-	switch (lnk) {
-	case 1:
-		printf("10M half duplex ");
-		break;
-	case 2:
-		printf("10M full duplex ");
-		break;
-	case 4:
-		printf("100M half duplex ");
-		break;
-	case 8:
-		printf("100M full duplex ");
-		break;
-	default:
-		printf("unknown: %d ", lnk);
-		break;
-	}
-	printf("mode\n");
+	miiphy_wait_aneg(&priv->miiphy);
+	miiphy_print_status(&priv->miiphy);
 	return 0;
 }
 
@@ -388,17 +365,29 @@ printf("dm9000_set_mac_address\n");
 	return -0;
 }
 
+static int dm9000_init_dev(struct eth_device *edev)
+{
+	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
+
+	miiphy_restart_aneg(&priv->miiphy);
+	return 0;
+}
+
 static int dm9000_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
-	int ctl;
+	struct dm9000_priv *priv;
 
 	printf("dm9000_eth_init()\n");
 
-	edev = malloc(sizeof(struct eth_device));
+	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct dm9000_priv));
 	dev->type_data = edev;
 	edev->dev = dev;
+	edev->priv = (struct dm9000_priv *)(edev + 1);
 
+	priv = edev->priv;
+
+	edev->init = dm9000_init_dev;
 	edev->open = dm9000_eth_open;
 	edev->send = dm9000_eth_send;
 	edev->recv = dm9000_eth_rx;
@@ -408,7 +397,8 @@ static int dm9000_probe(struct device_d *dev)
 
 	/* RESET device */
 	dm9000_reset();
-	dm9000_check_id();
+	if(dm9000_check_id())
+		return -1;
 
 	/* Program operating register */
 	DM9000_iow(DM9000_NCR, 0x0);	/* only intern phy supported by now */
@@ -426,20 +416,12 @@ static int dm9000_probe(struct device_d *dev)
 	DM9000_iow(DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN);	/* RX enable */
 	DM9000_iow(DM9000_IMR, IMR_PAR);	/* Enable TX/RX interrupt mask */
 
-        phy_write(0, 0x8000);	/* PHY RESET */
+	priv->miiphy.read = dm9000_phy_read;
+	priv->miiphy.write = dm9000_phy_write;
+	priv->miiphy.address = 0;
+	priv->miiphy.flags = 0;
 
-	ctl = phy_read(PHY_BMCR);
-
-	if (ctl < 0)
-		return ctl;
-
-	ctl |= (PHY_BMCR_AUTON | PHY_BMCR_RST_NEG);
-
-	/* Don't isolate the PHY if we're negotiating */
-	ctl &= ~(PHY_BMCR_ISO);
-
-	phy_write(PHY_BMCR, ctl);
-
+	miiphy_register(&priv->miiphy);
 	eth_register(edev);
 
         return 0;

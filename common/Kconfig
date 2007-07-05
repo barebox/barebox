@@ -8,7 +8,7 @@ config BZLIB
 config GREGORIAN_CALENDER
 	bool
 
-menu "general settings"
+menu "General Settings              "
 
 config PROMPT
 	string
@@ -114,11 +114,19 @@ config OF_FLAT_TREE
 
 endmenu
 
-menu "Commands"
 
-config CMD_ECHO
+menu "Commands                      "
+
+config CMD_HELP
 	bool
-	prompt "echo"
+	default y
+	prompt "help"
+
+menu "scripting                     "
+
+config CMD_AUTOSCRIPT
+	bool
+	prompt "autoscript"
 
 config CMD_EDIT
 	bool
@@ -128,9 +136,23 @@ config CMD_EXEC
 	bool
 	prompt "exec"
 
+config CMD_SLEEP
+	bool
+	prompt "sleep"
+
 config CMD_ENVIRONMENT
 	bool
 	prompt "envsave / envload"
+
+config CMD_ENV
+	bool
+	default y
+	prompt "getenv/setenv"
+
+endmenu
+
+
+menu "console                       "
 
 config CMD_CLEAR
 	bool
@@ -140,14 +162,44 @@ config CMD_CONSOLE
 	bool
 	prompt "coninfo"
 
-config CMD_HELP
+config CMD_ECHO
 	bool
-	default y
-	prompt "help"
+	prompt "echo"
 
-config CMD_MII
+config CMD_SPLASH
 	bool
-	prompt "mii"
+	prompt "splash"
+
+endmenu
+
+
+menu "i2c                           "
+
+config CMD_I2C
+	bool
+	prompt "i2c"
+
+endmenu
+
+
+menu "memory                        "
+
+config CMD_LOADB
+	bool
+	prompt "loadb"
+
+config CMD_LOADS
+	bool
+	prompt "loads"
+
+config CMD_SAVES
+	bool
+	depends on CMD_LOADS
+	prompt "saves"
+
+config CMD_MEMINFO
+	bool
+	prompt "meminfo"
 
 config CMD_MEMORY
 	bool
@@ -160,7 +212,7 @@ config CMD_MTEST
 config CMD_MTEST_ALTERNATIVE
 	bool
 	depends on CMD_MTEST
-	prompt "use alternative mtest implementation"
+	prompt "alternative mtest implementation"
 
 config CMD_MTEST_START
 	hex
@@ -172,42 +224,28 @@ config CMD_MTEST_END
 	depends on CMD_MTEST
 	prompt "mtest end address"
 
-config CMD_I2C
-	bool
-	prompt "i2c"
+endmenu
 
-config CMD_AUTOSCRIPT
+
+menu "network                       "
+
+config CMD_MII
 	bool
-	prompt "autoscript"
+	prompt "mii"
+
+endmenu
+
+
+menu "flash                         "
 
 config CMD_FLASH
 	bool
 	prompt "protect/erase/flinfo"
 
-config CMD_LOADB
-	bool
-	prompt "loadb"
+endmenu
 
-config CMD_LOADS
-	bool
-	prompt "loads"
 
-config CMD_MEMINFO
-	bool
-	prompt "meminfo"
-
-config CMD_SAVES
-	bool
-	depends on CMD_LOADS
-	prompt "saves"
-
-config CMD_SPLASH
-	bool
-	prompt "splash"
-
-config CMD_SLEEP
-	bool
-	prompt "sleep"
+menu "booting                       "
 
 config CMD_BOOTM
 	bool
@@ -227,7 +265,9 @@ config CMD_BOOTM_BZLIB
 
 endmenu
 
-menu "Debugging"
+endmenu
+
+menu "Debugging                     "
 
 config SKIP_LOWLEVEL_INIT
 	bool

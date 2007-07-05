@@ -1340,8 +1340,10 @@ void fREe(mem) Void_t* mem;
 
     set_head(p, sz | PREV_INUSE);
     top = p;
+#ifdef USE_MALLOC_TRIM
     if ((unsigned long)(sz) >= (unsigned long)trim_threshold)
       malloc_trim(top_pad);
+#endif
     return;
   }
 
@@ -1836,7 +1838,7 @@ void cfree(mem) Void_t *mem;
     Malloc_trim returns 1 if it actually released any memory, else 0.
 
 */
-
+#ifdef USE_MALLOC_TRIM
 #if __STD_C
 int malloc_trim(size_t pad)
 #else
@@ -1892,7 +1894,7 @@ int malloc_trim(pad) size_t pad;
     }
   }
 }
-
+#endif
 
 
 /*

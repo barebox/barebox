@@ -21,7 +21,7 @@ CFLAGS := -fno-common -Os -Dmalloc=u_boot_malloc \
 		-Dputc=u_boot_putc -Dfgetc=u_boot_fgetc \
 		-Dfputc=u_boot_fputc -Dfgets=u_boot_fgets \
 		-Dfputs=u_boot_fputs -Dsetenv=u_boot_setenv \
-		-Dgetenv=u_boot_getenv
+		-Dgetenv=u_boot_getenv -Dprintf=u_boot_printf
 
 LDFLAGS_vmlinux  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 

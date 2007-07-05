@@ -21,6 +21,10 @@ config CMDLINE_EDITING
 	bool
 	prompt "Enable command line editing"
 
+config AUTO_COMPLETE
+	bool
+	prompt "Enable auto completion"
+
 config SIMPLE_READLINE
 	bool
 	default y
@@ -67,6 +71,12 @@ config DYNAMIC_CRC_TABLE
 	help
 	  Saying yes to this option saves around 800 bytes of binary size.
 	  If unsure say yes.
+
+config ERRNO_MESSAGES
+	bool
+	prompt "print error values as text"
+	default y
+
 endmenu
 
 menu "Commands"
@@ -79,9 +89,28 @@ config CMD_EDIT
 	bool
 	prompt "edit"
 
+config CMD_EXEC
+	bool
+	prompt "exec"
+
+config CMD_ENVIRONMENT
+	bool
+	depends on FS
+	prompt "envsave / envload"
+
 config CMD_CONSOLE
 	bool
 	prompt "coninfo"
+
+config CMD_ENV
+	bool
+	default y
+	prompt "getenv/setenv"
+
+config CMD_HELP
+	bool
+	default y
+	prompt "help"
 
 config CMD_MII
 	bool

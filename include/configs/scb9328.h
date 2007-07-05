@@ -24,40 +24,23 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SKIP_LOWLEVEL_INIT
-
-#define CONFIG_ARM920T		1     /* this is an ARM920T CPU	    */
-#define CONFIG_IMX		1     /* in a Motorola MC9328MXL Chip */
-#define CONFIG_SCB9328		1     /* on a scb9328tronix board */
-#undef	CONFIG_USE_IRQ		      /* don't need use IRQ/FIQ	   */
-
 #define CONFIG_IMX_SERIAL1
 
 #include <cmd_confdefs.h>
 
-#define CFG_HUSH_PARSER 1
-#define CFG_PROMPT_HUSH_PS2 "> "
+#define CONFIG_ARCH_NUMBER MACH_TYPE_SCB9328
+#define CONFIG_BOOT_PARAMS 0x08000100
+
 /*
  * General options for u-boot. Modify to save memory foot print
  */
-#define CFG_LONGHELP				      /* undef saves memory  */
-#define CFG_PROMPT		"uboot> "	      /* prompt string	     */
-#define CFG_CBSIZE		1024		      /* console I/O buffer  */
-#define CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* print buffer size   */
-#define CFG_MAXARGS		16		      /* max command args    */
+#define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16) /* print buffer size   */
 #define CFG_BARGSIZE		CFG_CBSIZE	      /* boot args buf size  */
 
-#define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_CMDLINE_EDITING  1
 #define CONFIG_BOOTDELAY 3
-
-#define CFG_MEMTEST_START	0x08100000	      /* memtest test area   */
-#define CFG_MEMTEST_END		0x08F00000
 
 #define CFG_CPUSPEED		0x141	     /* core clock - register value  */
 
-#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
-#define CONFIG_BAUDRATE 115200
 /*
  * Definitions related to passing arguments to kernel.
  */
@@ -67,102 +50,8 @@
 
 #define CFG_MALLOC_LEN		(512 << 10)
 
-#define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
-
 #define CONFIG_STACKSIZE	(120<<10)      /* stack size		     */
 
-#ifdef CONFIG_USE_IRQ
-#define CONFIG_STACKSIZE_IRQ	(4<<10)	       /* IRQ stack		     */
-#define CONFIG_STACKSIZE_FIQ	(4<<10)	       /* FIQ stack		     */
-#endif
-
-/* SDRAM Setup Values
-0x910a8300 Precharge Command CAS 3
-0x910a8200 Precharge Command CAS 2
-
-0xa10a8300 AutoRefresh Command CAS 3
-0xa10a8200 Set AutoRefresh Command CAS 2 */
-
-#define PRECHARGE_CMD 0x910a8200
-#define AUTOREFRESH_CMD 0xa10a8200
-
-#define CONFIG_ARCH_NUMBER MACH_TYPE_SCB9328
-#define CONFIG_BOOT_PARAMS 0x08000100
-
-/*
- * SDRAM Memory Map
- */
-/* SH FIXME */
-#define CONFIG_NR_DRAM_BANKS	1		/* we have 1 bank of SDRAM */
-#define SCB9328_SDRAM_1		0x08000000	/* SDRAM bank #1	   */
-#define SCB9328_SDRAM_1_SIZE	0x01000000	/* 16 MB		   */
-
-/*
- * Flash Controller settings
- */
-
-/*
- * Hardware drivers
- */
-
-
-/*
- * Configuration for FLASH memory for the Synertronixx board
- */
-
-/* #define SCB9328_FLASH_32M */
-
-#define CFG_MAX_FLASH_BANKS		1	/* FLASH banks count (not chip count)*/
-#define CFG_MAX_FLASH_SECT		256	/* number of sector in FLASH bank    */
-
-/*
- * Environment setup. Definitions of monitor location and size with
- * definition of environment setup ends up in 2 possibilities.
- * 1. Embeded environment - in u-boot code is space for environment
- * 2. Environment is read from predefined sector of flash
- * Right now we support 2. possiblity, but expecting no env placed
- * on mentioned address right now. This also needs to provide whole
- * sector for it - for us 256Kb is really waste of memory. U-boot uses
- * default env. and until kernel parameters could be sent to kernel
- * env. has no sense to us.
- */
-
-/* Setup for PA23 which is Reset Default PA23 but has to become
-   CS5 */
-
-#define CFG_GPR_A_VAL		0x00800000
-#define CFG_GIUS_A_VAL		0x0043fffe
-
-#define CFG_MONITOR_BASE	0x10000000
-#define CFG_MONITOR_LEN		0x20000		/* 128b ( 1 flash sector )  */
-#define CFG_ENV_IS_IN_FLASH	1
-#define CFG_ENV_ADDR		0x10020000	/* absolute address for now  */
-#define CFG_ENV_SIZE		0x20000
-
-#define	 CONFIG_ENV_OVERWRITE  1		/* env is not writable now   */
-
-/*
- * CSxU_VAL:
- * 63| x	x x x | x x x x | x x  x    x | x x x x | x x x x | x x x x | x x x x | x x x x|32
- *   |DTACK_SEL|0|BCD |	  BCS	| PSZ|PME|SYNC|	 DOL	| CNC|	  WSC	    | 0| WWS  |	  EDC  |
- *
- * CSxL_VAL:
- * 31| x x x x | x x x x | x x x x | x x x x | x x x x |  x x x x | x x	 x x | x x  x	 x| 0
- *   |	 OEA   |   OEN	 |   WEA   |   WEN   |	 CSA   |EBC| DSZ  | 0|SP|0|WP| 0 0|PA|CSEN|
- */
-
-#define CFG_CS0U_VAL 0x000F2000
-#define CFG_CS0L_VAL 0x11110d01
-#define CFG_CS1U_VAL 0x000F0a00
-#define CFG_CS1L_VAL 0x11110601
-#define CFG_CS2U_VAL 0x0
-#define CFG_CS2L_VAL 0x0
-
-#define CFG_CS3U_VAL 0x000FFFFF
-#define CFG_CS3L_VAL 0x00000303
-
-#define CFG_CS4U_VAL 0x000F0a00
-#define CFG_CS4L_VAL 0x11110301
 
 /* CNC == 3 too long
    #define CFG_CS5U_VAL 0x0000C210 */
@@ -172,9 +61,6 @@
    kaum langsamer ist */
 /* #define CFG_CS5U_VAL 0x00009400
    #define CFG_CS5L_VAL 0x11010D03 */
-
-#define CFG_CS5U_VAL 0x00008400
-#define CFG_CS5L_VAL 0x00000D03
 
 #define CONFIG_DM9000_BASE		0x16000000
 #define DM9000_IO			CONFIG_DM9000_BASE

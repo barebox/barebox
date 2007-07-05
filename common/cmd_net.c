@@ -215,17 +215,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	/* flush cache */
 	flush_cache(load_addr, size);
 
-	/* Loading ok, check if we should attempt an auto-start */
-	if (((s = getenv("autostart")) != NULL) && (strcmp(s,"yes") == 0)) {
-		char *local_args[2];
-		local_args[0] = argv[0];
-		local_args[1] = NULL;
-
-		printf ("Automatic boot of image at addr 0x%08lX ...\n",
-			load_addr);
-		rcode = do_bootm (cmdtp, 0, 1, local_args);
-	}
-
 	return rcode;
 }
 

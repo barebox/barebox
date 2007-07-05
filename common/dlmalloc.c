@@ -546,16 +546,6 @@ static mbinptr av_[NAV * 2 + 2] = {
  IAV(120), IAV(121), IAV(122), IAV(123), IAV(124), IAV(125), IAV(126), IAV(127)
 };
 
-void malloc_bin_reloc (ulong reloc_off)
-{
-	unsigned long *p = (unsigned long *)(&av_[2]);
-	int i;
-	for (i=2; i<(sizeof(av_)/sizeof(mbinptr)); ++i) {
-		*p++ += reloc_off;
-	}
-}
-
-
 /* field-extraction macros */
 
 #define first(b) ((b)->fd)

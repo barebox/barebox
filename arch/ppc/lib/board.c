@@ -131,7 +131,9 @@ void board_init_r (ulong end_of_ram)
 	/*
 	 * Enable Interrupts
 	 */
+#ifdef CONFIG_INTERRUPTS
 	interrupt_init ();
+#endif
 
 	/* Initialization complete - start the monitor */
 

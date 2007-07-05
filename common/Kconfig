@@ -91,6 +91,22 @@ config TIMESTAMP
 	  commands like bootm or iminfo. This option is
 	  automatically enabled when you select CFG_CMD_DATE .
 
+config CONSOLE_ACTIVATE_FIRST
+	bool
+	default y
+	prompt "activate first console on startup"
+	help
+	  Normally on startup all consoles are disabled, so you won't
+	  see anything from U-Boot starting. Enabling this option
+	  enables the first console.
+
+config CONSOLE_ACTIVATE_ALL
+	bool
+	depends on !CONSOLE_ACTIVATE_FIRST
+	prompt "activate all consoles on startup"
+	help
+	  Enabling this options activates all consoles on startup, so
+	  you will get output and a prompt on all consoles simultaneously.
 endmenu
 
 menu "Commands"

@@ -69,9 +69,13 @@ int console_register(struct console_device *newcdev)
 	newcdev->active_param.name  = "active";
 	newcdev->active_param.value = newcdev->active;
 	dev_add_param(dev, &newcdev->active_param);
+#ifdef CONFIG_CONSOLE_ACTIVATE_ALL
 	console_std_set(dev, &newcdev->active_param, "ioe");
-
+#endif
 	if (!first_console) {
+#ifdef CONFIG_CONSOLE_ACTIVATE_FIRST
+		console_std_set(dev, &newcdev->active_param, "ioe");
+#endif
 		first_console = newcdev;
 		return 0;
 	}

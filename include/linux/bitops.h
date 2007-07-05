@@ -66,7 +66,7 @@ static inline unsigned int generic_hweight8(unsigned int w)
 	return (res & 0x0F) + ((res >> 4) & 0x0F);
 }
 
-#include <asm/bitops.h>
+//#include <asm/bitops.h>
 
 
 #endif

@@ -26,5 +26,9 @@ config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"
 	depends on ARCH_MPC5200
 
+config DRIVER_NET_TAP
+	bool "tap Ethernet driver"
+	depends on LINUX
+
 endmenu
 

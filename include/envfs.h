@@ -7,9 +7,9 @@
 #define ENVFS_SIGNATURE	"U-Boot envfs"
 
 struct envfs_inode {
-	u32 magic;	/* 0x67a8c78d */
-	u32 crc;	/* crc for this inode and corresponding data */
-	u32 size;	/* data size in bytes  */
+	uint32_t magic;	/* 0x67a8c78d */
+	uint32_t crc;	/* crc for this inode and corresponding data */
+	uint32_t size;	/* data size in bytes  */
 	char name[32];
 	char data[0];
 };
@@ -18,10 +18,10 @@ struct envfs_inode {
  * Superblock information at the beginning of the FS.
  */
 struct envfs_super {
-	u32 magic;			/* 0x798fba79 - random number */
-	u32 priority;
-	u32 flags;			/* feature flags */
-	u32 future;			/* reserved for future use */
+	uint32_t magic;			/* 0x798fba79 - random number */
+	uint32_t priority;
+	uint32_t flags;			/* feature flags */
+	uint32_t future;			/* reserved for future use */
 };
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN

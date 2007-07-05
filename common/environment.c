@@ -1,20 +1,4 @@
-#ifdef HOST
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <limits.h>
-#include <errno.h>
-#include <dirent.h>
-#include <stdlib.h>
-#include <string.h>
-#include <getopt.h>
-#include "../include/envfs.h"
-#define xmalloc malloc
-
-#else
+#ifdef __U_BOOT__
 #include <common.h>
 #include <command.h>
 #include <driver.h>
@@ -110,7 +94,7 @@ out:
 	return 0;
 }
 
-#ifndef HOST
+#ifdef __U_BOOT__
 int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	char *filename, *dirname;
@@ -133,7 +117,7 @@ U_BOOT_CMD_START(saveenv)
 	.cmd		= do_saveenv,
 	.usage		= "saveenv - save environment to persistent storage\n",
 U_BOOT_CMD_END
-#endif
+#endif /* __U_BOOT__ */
 
 int envfs_load(char *filename, char *dirname)
 {
@@ -207,7 +191,7 @@ out:
 	return errno;
 }
 
-#ifndef HOST
+#ifdef __U_BOOT__
 int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	char *filename, *dirname;
@@ -229,41 +213,4 @@ U_BOOT_CMD_START(loadenv)
 	.cmd		= do_loadenv,
 	.usage		= "loadenv - load environment from persistent storage\n",
 U_BOOT_CMD_END
-#endif
-
-#ifdef HOST
-int main(int argc, char *argv[])
-{
-	int opt;
-	int save = 0, load = 0;
-	char *filename = NULL, *dirname = NULL;
-
-	while((opt = getopt(argc, argv, "sld:f:")) != -1) {
-		switch (opt) {
-		case 's':
-			save = 1;
-			break;
-		case 'l':
-			load = 1;
-			break;
-		case 'f':
-			filename = optarg;
-			break;
-		case 'd':
-			dirname = optarg;
-			break;
-		}
-	}
-
-	if (load) {
-		printf("loading env\n");
-		envfs_load(filename, dirname);
-	}
-	if (save) {
-		printf("saving env\n");
-		envfs_save(filename, dirname);
-	}
-	exit(0);
-}
-
-#endif
+#endif /* __U_BOOT__ */

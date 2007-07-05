@@ -1,6 +1,5 @@
 obj-y += cpu.o
 obj-y += cpu_init.o
-obj-$(CONFIG_NET) += fec.o
 obj-y += firmware_sc_task_bestcomm.impl.o
 obj-y += firmware_sc_task.impl.o
 obj-y += i2c.o

@@ -77,7 +77,7 @@ int get_clocks (void)
 		default: gd->pci_clk = gd->bus_clk / 4; break;
 	}
 
-	return (0);
+	return 0;
 }
 
 core_initcall(get_clocks);
@@ -88,7 +88,7 @@ int prt_mpc5xxx_clks (void)
 			gd->bus_clk / 1000000, gd->ipb_clk / 1000000,
 			gd->pci_clk / 1000000);
 
-	return (0);
+	return 0;
 }
 
-/* ------------------------------------------------------------------------- */
+late_initcall(prt_mpc5xxx_clks);

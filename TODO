@@ -47,6 +47,7 @@ TODO
 	[ ] driver model
 	[ ] device parameter
 	[ ] big picture
+[ ] realloc seems to crash without further notice when out of memory.
 
 DONE
 ----

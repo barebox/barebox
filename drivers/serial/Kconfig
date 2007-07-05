@@ -5,4 +5,9 @@ config DRIVER_SERIAL_IMX
 	default y
 	bool "i.MX serial driver"
 
+config DRIVER_SERIAL_LINUX_COMSOLE
+	depends on LINUX
+	default y
+	bool "linux console driver"
+
 endmenu

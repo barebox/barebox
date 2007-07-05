@@ -5,4 +5,5 @@
 # serial_pl010.o
 # serial_pl011.o
 # serial_xuartlite.o
-obj-$(CONFIG_DRIVER_SERIAL_IMX) += serial_imx.o
+obj-$(CONFIG_DRIVER_SERIAL_IMX)			+= serial_imx.o
+obj-$(CONFIG_DRIVER_SERIAL_LINUX_COMSOLE)	+= linux_console.o

@@ -1,1 +1,24 @@
 # placeholder
+
+choice
+	prompt "Select target board"
+
+config ARCH_IMX
+	select ARM920T
+	bool "Motorola i.MX"
+
+endchoice
+
+choice
+	prompt "Select i.MX implementation"
+
+config MACH_MX1ADS
+	bool "mx1ads"
+	depends on ARCH_IMX
+	help
+	  Say Y here if you are using the Motorola MX1ADS board
+
+endchoice
+
+config ARM920T
+	bool

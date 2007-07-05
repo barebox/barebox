@@ -134,11 +134,7 @@ ifeq ($(skip-makefile),)
 # If building an external module we do not care about the all: rule
 # but instead _all depend on modules
 PHONY += all
-ifeq ($(KBUILD_EXTMOD),)
 _all: all
-else
-_all: modules
-endif
 
 srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
 TOPDIR		:= $(srctree)
@@ -228,7 +224,7 @@ ifeq ($(MAKECMDGOALS),)
 endif
 
 export KBUILD_MODULES KBUILD_BUILTIN
-export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD
+export KBUILD_CHECKSRC KBUILD_SRC
 
 # Beautify output
 # ---------------------------------------------------------------------------
@@ -383,13 +379,11 @@ ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
 	endif
 endif
 
-ifeq ($(KBUILD_EXTMOD),)
-        ifneq ($(filter config %config,$(MAKECMDGOALS)),)
-                config-targets := 1
-                ifneq ($(filter-out config %config,$(MAKECMDGOALS)),)
-                        mixed-targets := 1
-                endif
-        endif
+ifneq ($(filter config %config,$(MAKECMDGOALS)),)
+        config-targets := 1
+	ifneq ($(filter-out config %config,$(MAKECMDGOALS)),)
+		mixed-targets := 1
+	endif
 endif
 
 ifeq ($(mixed-targets),1)
@@ -421,7 +415,6 @@ else
 # Build targets only - this includes vmlinux, arch specific targets, clean
 # targets and others. In general all targets except *config targets.
 
-ifeq ($(KBUILD_EXTMOD),)
 # Additional helpers built in scripts/
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
@@ -430,18 +423,16 @@ scripts: scripts_basic include/config/auto.conf
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Objects we will link into vmlinux / subdirs we need to visit
-#init-y		:= init/
+common-y		:= common/ drivers/ lib_generic/ net/
 #drivers-y	:= drivers/ sound/
 #net-y		:= net/
 #libs-y		:= lib/
 #core-y		:= usr/
-endif # KBUILD_EXTMOD
 
 ifeq ($(dot-config),1)
 # Read in config
 -include include/config/auto.conf
 
-ifeq ($(KBUILD_EXTMOD),)
 # Read in dependencies to all Kconfig* files, make sure to run
 # oldconfig if changes are detected.
 -include include/config/auto.conf.cmd
@@ -455,21 +446,6 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
 # we execute the config step to be sure to catch updated Kconfig files
 include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
-else
-# external modules needs include/linux/autoconf.h and include/config/auto.conf
-# but do not care if they are up-to-date. Use auto.conf to trigger the test
-PHONY += include/config/auto.conf
-
-include/config/auto.conf:
-	$(Q)test -e include/linux/autoconf.h -a -e $@ || (		\
-	echo;								\
-	echo "  ERROR: Kernel configuration is invalid.";		\
-	echo "         include/linux/autoconf.h or $@ are missing.";	\
-	echo "         Run 'make oldconfig && make prepare' on kernel src to fix it.";	\
-	echo;								\
-	/bin/false)
-
-endif # KBUILD_EXTMOD
 
 else
 # Dummy target needed, because used as prerequisite
@@ -552,7 +528,6 @@ endif # INSTALL_MOD_STRIP
 export mod_strip_cmd
 
 
-ifeq ($(KBUILD_EXTMOD),)
 #core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
 
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y) $(common-m) \
@@ -564,13 +539,13 @@ vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
-#init-y		:= $(patsubst %/, %/built-in.o, $(init-y))
+common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 #core-y		:= $(patsubst %/, %/built-in.o, $(core-y))
 #drivers-y	:= $(patsubst %/, %/built-in.o, $(drivers-y))
 #net-y		:= $(patsubst %/, %/built-in.o, $(net-y))
-#libs-y1		:= $(patsubst %/, %/lib.a, $(libs-y))
-#libs-y2		:= $(patsubst %/, %/built-in.o, $(libs-y))
-#libs-y		:= $(libs-y1) $(libs-y2)
+libs-y1		:= $(patsubst %/, %/lib.a, $(libs-y))
+libs-y2		:= $(patsubst %/, %/built-in.o, $(libs-y))
+libs-y		:= $(libs-y1) $(libs-y2)
 
 # Build vmlinux
 # ---------------------------------------------------------------------------
@@ -599,18 +574,19 @@ vmlinux-alldirs	:= $(sort $(vmlinux-dirs) $(patsubst %/,%,$(filter %/, \
 #
 # System.map is generated to document addresses of all kernel symbols
 
-vmlinux-common := $(head-y) $(common-y)
+vmlinux-init := $(head-y)
+vmlinux-common := $(common-y)
 vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
 vmlinux-all  := $(vmlinux-common) $(vmlinux-main)
-vmlinux-lds  := arch/$(ARCH)/kernel/vmlinux.lds
+vmlinux-lds  := $(BOARD)/u-boot.lds
 
 # Rule to link vmlinux - also used during CONFIG_KALLSYMS
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_vmlinux__ ?= LD      $@
       cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-      -T $(vmlinux-lds) $(vmlinux-common)                          \
-      --start-group $(vmlinux-main) --end-group                  \
-      $(filter-out $(vmlinux-lds) $(vmlinux-common) $(vmlinux-main) FORCE ,$^)
+      -T $(vmlinux-lds) $(vmlinux-init)                         \
+      --start-group $(vmlinux-common) --end-group                  \
+      $(filter-out $(vmlinux-lds) $(vmlinux-common) FORCE ,$^)
 
 # Generate new vmlinux version
 quiet_cmd_vmlinux_version = GEN     .version
@@ -740,7 +716,6 @@ ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
 	$(call if_changed_rule,vmlinux__)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
 	$(Q)rm -f .old_version
 
 # The actual objects are generated when descending,
@@ -914,103 +889,6 @@ PHONY += depend dep
 depend dep:
 	@echo '*** Warning: make $@ is unnecessary now.'
 
-# ---------------------------------------------------------------------------
-# Kernel headers
-INSTALL_HDR_PATH=$(objtree)/usr
-export INSTALL_HDR_PATH
-
-HDRARCHES=$(filter-out generic,$(patsubst $(srctree)/include/asm-%/Kbuild,%,$(wildcard $(srctree)/include/asm-*/Kbuild)))
-
-PHONY += headers_install_all
-headers_install_all: include/linux/version.h scripts_basic FORCE
-	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
-	$(Q)for arch in $(HDRARCHES); do \
-	 $(MAKE) ARCH=$$arch -f $(srctree)/scripts/Makefile.headersinst obj=include BIASMDIR=-bi-$$arch ;\
-	 done
-
-PHONY += headers_install
-headers_install: include/linux/version.h scripts_basic FORCE
-	@if [ ! -r $(srctree)/include/asm-$(ARCH)/Kbuild ]; then \
-	  echo '*** Error: Headers not exportable for this architecture ($(ARCH))'; \
-	  exit 1 ; fi
-	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.headersinst obj=include
-
-PHONY += headers_check
-headers_check: headers_install
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.headersinst obj=include HDRCHECK=1
-
-# ---------------------------------------------------------------------------
-# Modules
-
-ifdef CONFIG_MODULES
-
-# By default, build modules as well
-
-all: modules
-
-#	Build modules
-
-PHONY += modules
-modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
-	@echo '  Building modules, stage 2.';
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-
-
-# Target to prepare building external modules
-PHONY += modules_prepare
-modules_prepare: prepare scripts
-
-# Target to install modules
-PHONY += modules_install
-modules_install: _modinst_ _modinst_post
-
-PHONY += _modinst_
-_modinst_:
-	@if [ -z "`$(DEPMOD) -V 2>/dev/null | grep module-init-tools`" ]; then \
-		echo "Warning: you may need to install module-init-tools"; \
-		echo "See http://www.codemonkey.org.uk/docs/post-halloween-2.6.txt";\
-		sleep 1; \
-	fi
-	@rm -rf $(MODLIB)/kernel
-	@rm -f $(MODLIB)/source
-	@mkdir -p $(MODLIB)/kernel
-	@ln -s $(srctree) $(MODLIB)/source
-	@if [ ! $(objtree) -ef  $(MODLIB)/build ]; then \
-		rm -f $(MODLIB)/build ; \
-		ln -s $(objtree) $(MODLIB)/build ; \
-	fi
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
-
-# If System.map exists, run depmod.  This deliberately does not have a
-# dependency on System.map since that would run the dependency tree on
-# vmlinux.  This depmod is only for convenience to give the initial
-# boot a modules.dep even before / is mounted read-write.  However the
-# boot script depmod is the master version.
-ifeq "$(strip $(INSTALL_MOD_PATH))" ""
-depmod_opts	:=
-else
-depmod_opts	:= -b $(INSTALL_MOD_PATH) -r
-endif
-PHONY += _modinst_post
-_modinst_post: _modinst_
-	if [ -r System.map -a -x $(DEPMOD) ]; then $(DEPMOD) -ae -F System.map $(depmod_opts) $(KERNELRELEASE); fi
-
-else # CONFIG_MODULES
-
-# Modules not configured
-# ---------------------------------------------------------------------------
-
-modules modules_install: FORCE
-	@echo
-	@echo "The present kernel configuration has modules disabled."
-	@echo "Type 'make config' and enable loadable module support."
-	@echo "Then build a kernel with module support enabled."
-	@echo
-	@exit 1
-
-endif # CONFIG_MODULES
-
 ###
 # Cleaning is done on three levels.
 # make clean     Delete most generated files
@@ -1152,100 +1030,6 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
-else # KBUILD_EXTMOD
-
-###
-# External module support.
-# When building external modules the kernel used as basis is considered
-# read-only, and no consistency checks are made and the make
-# system is not used on the basis kernel. If updates are required
-# in the basis kernel ordinary make commands (without M=...) must
-# be used.
-#
-# The following are the only valid targets when building external
-# modules.
-# make M=dir clean     Delete all automatically generated files
-# make M=dir modules   Make all modules in specified dir
-# make M=dir	       Same as 'make M=dir modules'
-# make M=dir modules_install
-#                      Install the modules built in the module directory
-#                      Assumes install directory is already created
-
-# We are always building modules
-KBUILD_MODULES := 1
-PHONY += crmodverdir
-crmodverdir:
-	$(Q)mkdir -p $(MODVERDIR)
-	$(Q)rm -f $(MODVERDIR)/*
-
-PHONY += $(objtree)/Module.symvers
-$(objtree)/Module.symvers:
-	@test -e $(objtree)/Module.symvers || ( \
-	echo; \
-	echo "  WARNING: Symbol version dump $(objtree)/Module.symvers"; \
-	echo "           is missing; modules will have no dependencies and modversions."; \
-	echo )
-
-module-dirs := $(addprefix _module_,$(KBUILD_EXTMOD))
-PHONY += $(module-dirs) modules
-$(module-dirs): crmodverdir $(objtree)/Module.symvers
-	$(Q)$(MAKE) $(build)=$(patsubst _module_%,%,$@)
-
-modules: $(module-dirs)
-	@echo '  Building modules, stage 2.';
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-
-PHONY += modules_install
-modules_install: _emodinst_ _emodinst_post
-
-install-dir := $(if $(INSTALL_MOD_DIR),$(INSTALL_MOD_DIR),extra)
-PHONY += _emodinst_
-_emodinst_:
-	$(Q)mkdir -p $(MODLIB)/$(install-dir)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
-
-# Run depmod only is we have System.map and depmod is executable
-quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
-      cmd_depmod = if [ -r System.map -a -x $(DEPMOD) ]; then \
-                      $(DEPMOD) -ae -F System.map             \
-                      $(if $(strip $(INSTALL_MOD_PATH)),      \
-		      -b $(INSTALL_MOD_PATH) -r)              \
-		      $(KERNELRELEASE);                       \
-                   fi
-
-PHONY += _emodinst_post
-_emodinst_post: _emodinst_
-	$(call cmd,depmod)
-
-clean-dirs := $(addprefix _clean_,$(KBUILD_EXTMOD))
-
-PHONY += $(clean-dirs) clean
-$(clean-dirs):
-	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
-
-clean:	rm-dirs := $(MODVERDIR)
-clean: $(clean-dirs)
-	$(call cmd,rmdirs)
-	@find $(KBUILD_EXTMOD) $(RCS_FIND_IGNORE) \
-		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
-		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \) \
-		-type f -print | xargs rm -f
-
-help:
-	@echo  '  Building external modules.'
-	@echo  '  Syntax: make -C path/to/kernel/src M=$$PWD target'
-	@echo  ''
-	@echo  '  modules         - default target, build the module(s)'
-	@echo  '  modules_install - install the module'
-	@echo  '  clean           - remove generated files in module directory only'
-	@echo  ''
-
-# Dummies...
-PHONY += prepare scripts
-prepare: ;
-scripts: ;
-endif # KBUILD_EXTMOD
-
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 
@@ -1358,45 +1142,8 @@ tags: FORCE
 	$(call cmd,tags)
 
 
-# Scripts to check various things for consistency
-# ---------------------------------------------------------------------------
-
-includecheck:
-	find * $(RCS_FIND_IGNORE) \
-		-name '*.[hcS]' -type f -print | sort \
-		| xargs $(PERL) -w scripts/checkincludes.pl
-
-versioncheck:
-	find * $(RCS_FIND_IGNORE) \
-		-name '*.[hcS]' -type f -print | sort \
-		| xargs $(PERL) -w scripts/checkversion.pl
-
-namespacecheck:
-	$(PERL) $(srctree)/scripts/namespace.pl
-
 endif #ifeq ($(config-targets),1)
 endif #ifeq ($(mixed-targets),1)
-
-PHONY += checkstack kernelrelease kernelversion
-
-# UML needs a little special treatment here.  It wants to use the host
-# toolchain, so needs $(SUBARCH) passed to checkstack.pl.  Everyone
-# else wants $(ARCH), including people doing cross-builds, which means
-# that $(SUBARCH) doesn't work here.
-ifeq ($(ARCH), um)
-CHECKSTACK_ARCH := $(SUBARCH)
-else
-CHECKSTACK_ARCH := $(ARCH)
-endif
-checkstack:
-	$(OBJDUMP) -d vmlinux $$(find . -name '*.ko') | \
-	$(PERL) $(src)/scripts/checkstack.pl $(CHECKSTACK_ARCH)
-
-kernelrelease:
-	$(if $(wildcard include/config/kernel.release), $(Q)echo $(KERNELRELEASE), \
-	$(error kernelrelease not valid - run 'make prepare' to update it))
-kernelversion:
-	@echo $(KERNELVERSION)
 
 # Single targets
 # ---------------------------------------------------------------------------
@@ -1408,14 +1155,8 @@ kernelversion:
 #  target-dir => where to store outputfile
 #  build-dir  => directory in kernel source tree to use
 
-ifeq ($(KBUILD_EXTMOD),)
-        build-dir  = $(patsubst %/,%,$(dir $@))
-        target-dir = $(dir $@)
-else
-        zap-slash=$(filter-out .,$(patsubst %/,%,$(dir $@)))
-        build-dir  = $(KBUILD_EXTMOD)$(if $(zap-slash),/$(zap-slash))
-        target-dir = $(if $(KBUILD_EXTMOD),$(dir $<),$(dir $@))
-endif
+build-dir  = $(patsubst %/,%,$(dir $@))
+target-dir = $(dir $@)
 
 %.s: %.c prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
@@ -1434,12 +1175,7 @@ endif
 
 # Modules
 / %/: prepare scripts FORCE
-	$(Q)$(MAKE) KBUILD_MODULES=$(if $(CONFIG_MODULES),1) \
-	$(build)=$(build-dir)
-%.ko: prepare scripts FORCE
-	$(Q)$(MAKE) KBUILD_MODULES=$(if $(CONFIG_MODULES),1)   \
-	$(build)=$(build-dir) $(@:.ko=.o)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+	$(Q)$(MAKE) $(build)=$(build-dir)
 
 # FIXME Should go into a make.lib or something
 # ===========================================================================

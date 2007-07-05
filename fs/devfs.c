@@ -54,7 +54,7 @@ struct dirent* devfs_readdir(struct device_d *_dev, struct dir *dir)
 {
 	struct device_d *dev = dir->priv;
 
-	while (dev && !strlen(dev->id))
+	while (dev && (!strlen(dev->id) || !dev->driver))
 		dev = dev->next;
 
 	if (dev) {
@@ -78,6 +78,9 @@ int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
 	dev = get_device_by_id(filename + 1);
 	if (!dev)
 		return -ENOENT;
+
+	if (!dev->driver)
+		return -ENXIO;
 
 	s->st_mode = S_IFCHR;
 	s->st_size = dev->size;

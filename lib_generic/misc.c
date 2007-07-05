@@ -59,9 +59,7 @@ struct device_d *get_device_by_id(char *id)
 static int match(struct driver_d *drv, struct device_d *dev)
 {
         int(*handler)(struct device_d *);
-printf("match: 0x%p 0x%p\n", drv, dev);
-printf("match: %s %s\n",dev->name, drv->name);
-printf("match: probe: 0x%08x\n",drv->probe);
+
         if (strcmp(dev->name, drv->name))
                 return -1;
         if (dev->type != drv->type)
@@ -404,12 +402,17 @@ static struct param_d *get_param_by_name(struct device_d *dev, char *name)
         return NULL;
 }
 
+/*
+ * Get a parameter from a device.
+ * The string is malloced with malloc and must be freed
+ * with free after usage
+ */
 char *dev_get_param(struct device_d *dev, char *name)
 {
         struct param_d *param = get_param_by_name(dev, name);
 
         if (param && param->get)
-                return param->get(dev, param->cookie);
+                return param->get(dev, param);
 
         return NULL;
 }
@@ -419,7 +422,7 @@ int dev_set_param(struct device_d *dev, char *name, char *val)
         struct param_d *param = get_param_by_name(dev, name);
 
         if (param && param->set)
-                return param->set(dev, param->cookie, val);
+                return param->set(dev, param, val);
 
         return -1;
 }
@@ -451,7 +454,8 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                 printf("devices:\n");
 
                 while(dev) {
-                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",dev->id, dev->map_base, dev->size, dev->name);
+                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",
+                                        dev->id, dev->map_base, dev->size, dev->driver ? dev->driver->name : "none");
                         dev = dev->next;
                 }
 
@@ -467,14 +471,18 @@ int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
                         printf("no such device: %s\n",argv[1]);
                         return -1;
                 }
-                dev->driver->info(dev);
+
+                if (dev->driver)
+                        dev->driver->info(dev);
 
                 param = dev->param;
 
                 printf("%s\n", param ? "Parameters:" : "no parameters available");
 
                 while (param) {
-                        printf("%16s = %s\n", param->name, param->get(dev, param->cookie));
+			char *val = param->get(dev, param);
+                        printf("%16s = %s\n", param->name, val);
+			free(param);
                         param = param->next;
                 }
 

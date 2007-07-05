@@ -152,22 +152,6 @@ int ramfs_mkdir(struct device_d *dev, const char *pathname)
 	return ramfs_create(dev, pathname, S_IFDIR);
 }
 
-int ramfs_probe(struct device_d *dev)
-{
-	struct ramfs_priv *priv = malloc(sizeof(struct ramfs_priv));
-
-	printf("ramfs_probe\n");
-	memset(priv, 0, sizeof(struct ramfs_priv));
-
-	dev->priv = priv;
-
-	priv->root.name = "/";
-	priv->root.mode = S_IFDIR;
-
-	printf("root node: %p\n",&priv->root);
-	return 0;
-}
-
 static int ramfs_open(struct device_d *dev, FILE *file, const char *filename)
 {
 	struct ramfs_priv *priv = dev->priv;
@@ -332,7 +316,7 @@ struct dir* ramfs_opendir(struct device_d *dev, const char *pathname)
 	struct dir *dir;
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node = rlookup(&priv->root, pathname);
-printf("opendir: %s\n",pathname);
+
 	if (!node)
 		return NULL;
 
@@ -371,14 +355,28 @@ int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node = rlookup(&priv->root, filename);
 
-	if (!node) {
-		errno = -ENOENT;
+	if (!node)
 		return -ENOENT;
-	}
 
 	s->st_size = node->size;
 	s->st_mode = node->mode;
 
+	return 0;
+}
+
+int ramfs_probe(struct device_d *dev)
+{
+	struct ramfs_priv *priv = malloc(sizeof(struct ramfs_priv));
+
+	printf("ramfs_probe\n");
+	memset(priv, 0, sizeof(struct ramfs_priv));
+
+	dev->priv = priv;
+
+	priv->root.name = "/";
+	priv->root.mode = S_IFDIR;
+
+	printf("root node: %p\n",&priv->root);
 	return 0;
 }
 

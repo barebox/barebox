@@ -200,10 +200,10 @@ int relocate_image(image_header_t *hdr, void *load_address)
 		 * use slower decompression algorithm which requires
 		 * at most 2300 KB of memory.
 		 */
-		ret = BZ2_bzBuffToBuffDecompress (load_address,
+		if (BZ2_bzBuffToBuffDecompress (load_address,
 						&unc_len, (char *)data, len,
-						CFG_MALLOC_LEN < (4096 * 1024), 0);
-		if (ret != BZ_OK)
+						CFG_MALLOC_LEN < (4096 * 1024), 0)
+						!= BZ_OK)
 			return -1;
 		break;
 #endif

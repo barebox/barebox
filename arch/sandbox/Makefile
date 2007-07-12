@@ -4,10 +4,10 @@ CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall \
 	-fno-strict-aliasing
 
 
-machine-y	   := linux
+machine-y	   := sandbox
 
-BOARD:= arch/linux/lib
-board-y := linux
+BOARD:= arch/sandbox/lib
+board-y := sandbox
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -49,25 +49,25 @@ export ELF_FORMAT ELF_ARCH SUBARCH
 #	them changed.  We use .arch to indicate when they were updated
 #	last, otherwise make uses the target directory mtime.
 
-include/asm-linux/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-linux/arch -> include/asm-linux/$(INCDIR)'
+include/asm-sandbox/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
+	@echo '  SYMLINK include/asm-sandbox/arch -> include/asm-sandbox/$(INCDIR)'
 ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-linux
-	$(Q)ln -fsn $(srctree)/include/asm-linux/$(INCDIR) include/asm-linux/arch
+	$(Q)mkdir -p include/asm-sandbox
+	$(Q)ln -fsn $(srctree)/include/asm-sandbox/$(INCDIR) include/asm-sandbox/arch
 else
-	$(Q)ln -fsn $(INCDIR) include/asm-linux/arch
+	$(Q)ln -fsn $(INCDIR) include/asm-sandbox/arch
 endif
 	@touch $@
 
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-linux/.arch
+maketools: include/asm-sandbox/.arch
 
 cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 	-Wl,--start-group $(uboot-common) -Wl,--end-group \
 	-lrt -Wl,-rpath,/lib -lrt -lpthread
 
-common-y += arch/linux/lib/ arch/linux/board/
+common-y += arch/sandbox/lib/ arch/sandbox/board/
 
-MRPROPER_FILES += include/asm-linux/arch
+MRPROPER_FILES += include/asm-sandbox/arch

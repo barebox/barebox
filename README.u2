@@ -83,17 +83,17 @@ kernel.
 For the examples below, we use the User Mode U-Boot implementation, which
 is a port of U-Boot to the Linux userspace. This makes it possible to
 test drive the code without having real hardware. So for this test
-scenario, ARCH=linux is the valid architecture selection. This currently
+scenario, ARCH=sandbox is the valid architecture selection. This currently
 only works on ia32 hosts and partly on x86-64.
 
 Selection of the architecture and the cross compiler can be done in two
 ways. You can either specify it using the environment variables ARCH
 and CROSS_COMPILE, or you can create the soft links cross_arch and
-cross_compile pointing to your architecture and compiler. For ARCH=linux
+cross_compile pointing to your architecture and compiler. For ARCH=sandbox
 we do not need a cross compiler so it is sufficient to specify the
 architecture:
 
-  # ln -s linux cross_arch
+  # ln -s sandbox cross_arch
 
 In order to configure the various aspects of U-Boot, start the U-Boot
 configuration system:
@@ -103,7 +103,7 @@ configuration system:
 This command starts a menu box and lets you select all the different
 options available for your architecture. Once the configuration was
 finished (you can simulate this by using the standard demo config file
-with 'make linux_defconfig'), there is a .config file in the toplevel
+with 'make sandbox_defconfig'), there is a .config file in the toplevel
 directory of the sourcode.
 
 Once U-Boot is configured, we can start the compilation

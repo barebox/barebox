@@ -50,7 +50,7 @@ static int display_banner (void)
 	const char *vers = RELOC_VAR(version_string);
 
 	printf (RELOC("\n\n%s\n\n"), RELOC(vers));
-	printf (RELOC("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n"),
+	debug (RELOC("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n"),
 	       _u_boot_start, _bss_start, _bss_end);
 	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
 

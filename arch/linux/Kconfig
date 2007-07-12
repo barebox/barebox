@@ -3,6 +3,9 @@ config TEXT_BASE
 	string
 	default "0x08f00000" if MACH_MX1ADS
 
+config BOARDINFO
+	default "sandbox"
+
 config LINUX
 	bool
 	default y

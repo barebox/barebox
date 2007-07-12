@@ -47,6 +47,7 @@
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>
+#include <reloc.h>
 
 ulong load_addr = 0;               /* Default Load Address */
 
@@ -54,53 +55,36 @@ ulong load_addr = 0;               /* Default Load Address */
 #define CONFIG_IDENT_STRING ""
 #endif
 
+#include <asm/arch/mpc5xxx.h>
+
+#ifdef CONFIG_ARCH_HAS_RELOC
+
+#define EARLY_INITDATA (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE \
+		- CONFIG_EARLY_INITDATA_SIZE)
+
+void *init_data_ptr = (void *)EARLY_INITDATA;
+
+void early_init (void)
+{
+	/* copy the early initdata segment to early init RAM */
+	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
+				(ulong)&__early_init_data_size);
+	early_console_start(RELOC("psc3"), 115200);
+}
+
+#endif /* CONFIG_ARCH_HAS_RELOC */
+
 const char version_string[] =
 	"U-Boot" UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
-
-/************************************************************************
- * Init Utilities							*
- ************************************************************************
- * Some of this code should be moved into the core functions,
- * or dropped completely,
- * but let's get it working (again) first...
- */
 
 static int display_banner (void)
 {
 	printf ("\n\n%s\n\n", version_string);
-//	debug ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
-//	       _armboot_start, _bss_start, _bss_end);
-#ifdef CONFIG_USE_IRQ
-	debug ("IRQ Stack: %08lx\n", IRQ_STACK_START);
-	debug ("FIQ Stack: %08lx\n", FIQ_STACK_START);
-#endif
+	printf ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
+	       _u_boot_start, _bss_start, _bss_end);
 
-	return (0);
+	return 0;
 }
-
-/*
- * Breathe some life into the board...
- *
- * Initialize a serial port as console, and carry out some hardware
- * tests.
- *
- * The first part of initialization is running from Flash memory;
- * its main purpose is to initialize the RAM so that we
- * can relocate the monitor code to RAM.
- */
-
-/*
- * All attempts to come up with a "common" initialization sequence
- * that works for all boards and architectures failed: some of the
- * requirements are just _too_ different. To get rid of the resulting
- * mess of board dependent #ifdef'ed code we now make the whole
- * initialization sequence configurable to the user.
- *
- * The requirements for any new initalization function is simple: it
- * receives a pointer to the "global data" structure as it's only
- * argument, and returns an integer return code, where 0 means
- * "continue" and != 0 means "fatal error, hang the system".
- */
 
 extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
 
@@ -110,12 +94,19 @@ void start_uboot (void)
         int result;
 	struct stat s;
 
-	/* compiler optimization barrier needed for GCC >= 3.4 */
-//	__asm__ __volatile__("": : :"memory");
+#ifdef CONFIG_ARCH_HAS_RELOC
+	/* We are running from RAM now, copy early initdata from
+	 * early RAM to RAM
+	 */
+	memcpy(&__early_init_data_begin, init_data_ptr,
+			(ulong)&__early_init_data_size);
+	init_data_ptr = &__early_init_data_begin;
+#endif /* CONFIG_ARCH_HAS_RELOC */
 
-        for (initcall = __u_boot_initcalls_start; initcall < __u_boot_initcalls_end; initcall++) {
-//		PUTHEX_LL(*initcall);
-//		PUTC('\n');
+	for (initcall = __u_boot_initcalls_start;
+			initcall < __u_boot_initcalls_end; initcall++) {
+		PUTHEX_LL(*initcall);
+		PUTC_LL('\n');
                 result = (*initcall)();
                 if (result)
                         hang();

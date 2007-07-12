@@ -1,6 +1,9 @@
 #ifndef _LINUX_CTYPE_H
 #define _LINUX_CTYPE_H
 
+#include <common.h>
+#include <reloc.h>
+
 /*
  * NOTE! This ctype does not handle EOF like the standard C
  * library is required to.
@@ -17,7 +20,7 @@
 
 extern unsigned char _ctype[];
 
-#define __ismask(x) (_ctype[(int)(unsigned char)(x)])
+#define __ismask(x) (RELOC_VAR(_ctype[(int)(unsigned char)(x)]))
 
 #define isalnum(c)	((__ismask(c)&(_U|_L|_D)) != 0)
 #define isalpha(c)	((__ismask(c)&(_U|_L)) != 0)

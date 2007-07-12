@@ -15,6 +15,7 @@
 #include <linux/ctype.h>
 
 #include <common.h>
+#include <reloc.h>
 
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
 {
@@ -114,11 +115,11 @@ static char * number(char * str, long num, int base, int size, int precision ,in
 #endif
 {
 	char c,sign,tmp[66];
-	const char *digits="0123456789abcdefghijklmnopqrstuvwxyz";
+	const char *digits = RELOC("0123456789abcdefghijklmnopqrstuvwxyz");
 	int i;
 
 	if (type & LARGE)
-		digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		digits = RELOC("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 	if (type & LEFT)
 		type &= ~ZEROPAD;
 	if (base < 2 || base > 36)
@@ -269,7 +270,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 		case 's':
 			s = va_arg(args, char *);
 			if (!s)
-				s = "<NULL>";
+				s = RELOC("<NULL>");
 
 			len = strnlen(s, precision);
 

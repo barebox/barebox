@@ -1,7 +1,7 @@
 #ifndef __RELOC_H
 #define __RELOC_H
 
-#ifdef CONFIG_ARCH_HAS_RELOC
+#ifdef CONFIG_HAS_EARLY_INIT
 
 extern unsigned long _u_boot_start, _bss_start, _bss_end;
 
@@ -58,6 +58,6 @@ static inline void early_init(void)
 
 #define INITDATA(var)	var
 
-#endif /* CONFIG_ARCH_HAS_RELOC */
+#endif /* CONFIG_HAS_EARLY_INIT */
 
 #endif /* __RELOC_H */

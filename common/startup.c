@@ -25,19 +25,6 @@
  * MA 02111-1307 USA
  */
 
-/*
- * To match the U-Boot user interface on ARM platforms to the U-Boot
- * standard (as on PPC platforms), some messages with debug character
- * are removed from the default U-Boot build.
- *
- * Define DEBUG here if you want additional info as shown below
- * printed upon startup:
- *
- * U-Boot code: 00F00000 -> 00F3C774  BSS: -> 00FC3274
- * IRQ Stack: 00ebff7c
- * FIQ Stack: 00ebef7c
- */
-
 #include <common.h>
 #include <init.h>
 #include <command.h>
@@ -49,15 +36,28 @@
 #include <linux/stat.h>
 #include <reloc.h>
 
-ulong load_addr = 0;               /* Default Load Address */
-
 #ifndef CONFIG_IDENT_STRING
 #define CONFIG_IDENT_STRING ""
 #endif
 
-#include <asm/arch/mpc5xxx.h>
+extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[], __u_boot_initcalls_end[];
 
-#ifdef CONFIG_ARCH_HAS_RELOC
+const char *version_string =
+	"U-Boot" UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
+
+static int display_banner (void)
+{
+	const char *vers = RELOC_VAR(version_string);
+
+	printf (RELOC("\n\n%s\n\n"), RELOC(vers));
+	printf (RELOC("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n"),
+	       _u_boot_start, _bss_start, _bss_end);
+	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
+
+	return 0;
+}
+
+#ifdef CONFIG_HAS_EARLY_INIT
 
 #define EARLY_INITDATA (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE \
 		- CONFIG_EARLY_INITDATA_SIZE)
@@ -70,23 +70,11 @@ void early_init (void)
 	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
 				(ulong)&__early_init_data_size);
 	early_console_start(RELOC("psc3"), 115200);
+
+	display_banner();
 }
 
-#endif /* CONFIG_ARCH_HAS_RELOC */
-
-const char version_string[] =
-	"U-Boot" UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
-
-static int display_banner (void)
-{
-	printf ("\n\n%s\n\n", version_string);
-	printf ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
-	       _u_boot_start, _bss_start, _bss_end);
-
-	return 0;
-}
-
-extern initcall_t __u_boot_initcalls_start[], __u_boot_initcalls_end[];
+#endif /* CONFIG_HAS_EARLY_INIT */
 
 void start_uboot (void)
 {
@@ -94,14 +82,14 @@ void start_uboot (void)
         int result;
 	struct stat s;
 
-#ifdef CONFIG_ARCH_HAS_RELOC
+#ifdef CONFIG_HAS_EARLY_INIT
 	/* We are running from RAM now, copy early initdata from
 	 * early RAM to RAM
 	 */
 	memcpy(&__early_init_data_begin, init_data_ptr,
 			(ulong)&__early_init_data_size);
 	init_data_ptr = &__early_init_data_begin;
-#endif /* CONFIG_ARCH_HAS_RELOC */
+#endif /* CONFIG_HAS_EARLY_INIT */
 
 	for (initcall = __u_boot_initcalls_start;
 			initcall < __u_boot_initcalls_end; initcall++) {
@@ -112,7 +100,9 @@ void start_uboot (void)
                         hang();
         }
 
-        display_banner();
+#ifndef CONFIG_HAS_EARLY_INIT
+	display_banner();
+#endif
 
 	mount("none", "ramfs", "/");
 	mkdir("/dev");

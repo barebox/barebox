@@ -1,4 +1,7 @@
 
+config BOARDINFO
+	default "Phytec Phycore mpc5200b tiny" if MACH_PHYCORE_MPC5200B_TINY
+
 config TEXT_BASE
 	default 0 if RELOCATABLE
 	default 0x1000000 if MACH_PHYCORE_MPC5200B_TINY
@@ -7,7 +10,7 @@ config MPC5XXX_EARLY_CONSOLE
 	bool
 	default y
 
-config ARCH_HAS_RELOC
+config HAS_EARLY_INIT
 	bool
 	default y
 

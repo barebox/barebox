@@ -56,23 +56,27 @@ void usage(char *prgname)
 		"\n"
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"
-		"  -l        load (environment sector -> directory)\n",
+		"  -l        load (environment sector -> directory)\n"
+		"  -p <size> pad output file to given size\n",
 		prgname);
 }
 
 int main(int argc, char *argv[])
 {
 	int opt;
-	int save = 0, load = 0;
+	int save = 0, load = 0, pad = 0, fd;
 	char *filename = NULL, *dirname = NULL;
 
-	while((opt = getopt(argc, argv, "sl")) != -1) {
+	while((opt = getopt(argc, argv, "slp:")) != -1) {
 		switch (opt) {
 		case 's':
 			save = 1;
 			break;
 		case 'l':
 			load = 1;
+			break;
+		case 'p':
+			pad = strtoul(optarg, NULL, 0);
 			break;
 		}
 	}
@@ -88,6 +92,22 @@ int main(int argc, char *argv[])
 	if ((!load && !save) || (load && save) || !filename || !dirname) {
 		usage(argv[0]);
 		exit(1);
+	}
+
+	if (save) {
+		fd = open(filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+		if (fd < 0) {
+			perror("open");
+			exit(1);
+		}
+		close(fd);
+	}
+
+	if (save && pad) {
+		if (truncate(filename, pad)) {
+			perror("truncate");
+			exit(1);
+		}
 	}
 
 	if (load) {

@@ -39,12 +39,11 @@
 #include <init.h>
 #include <console.h>
 #include <xfuncs.h>
+#include <reloc.h>
 #include <asm/arch/clocks.h>
 
-static int mpc5xxx_serial_setbrg(struct console_device *cdev, int baudrate)
+static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)
 {
-	struct device_d *dev = cdev->dev;
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 	unsigned long baseclk;
 	int div;
 
@@ -62,11 +61,18 @@ static int mpc5xxx_serial_setbrg(struct console_device *cdev, int baudrate)
 	return 0;
 }
 
-static int mpc5xxx_serial_init(struct console_device *cdev)
+static int mpc5xxx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
+	__mpc5xxx_serial_setbaudrate(psc, baudrate);
+
+	return 0;
+}
+
+static int __mpc5xxx_serial_init(struct mpc5xxx_psc *psc)
+{
 	/* reset PSC */
 	psc->command = PSC_SEL_MODE_REG_1;
 
@@ -92,17 +98,27 @@ static int mpc5xxx_serial_init(struct console_device *cdev)
 	psc->psc_imr = 0;
 
 	/* reset and enable Rx/Tx */
-	psc->command = PSC_RST_RX;
-	psc->command = PSC_RST_TX;
+//	psc->command = PSC_RST_RX;
+//	psc->command = PSC_RST_TX;
 	psc->command = PSC_RX_ENABLE | PSC_TX_ENABLE;
 
-	return (0);
+	return 0;
+}
+
+static int mpc5xxx_serial_init(struct console_device *cdev)
+{
+	struct device_d *dev = cdev->dev;
+	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+
+	__mpc5xxx_serial_init(psc);
+
+	return 0;
 }
 
 static void mpc5xxx_serial_putc (struct console_device *cdev, const char c)
 {
 	struct device_d *dev = cdev->dev;
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	/* Wait for last character to go. */
 	while (!(psc->psc_status & PSC_SR_TXEMP))
@@ -114,7 +130,7 @@ static void mpc5xxx_serial_putc (struct console_device *cdev, const char c)
 static int mpc5xxx_serial_getc (struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	/* Wait for a character to arrive. */
 	while (!(psc->psc_status & PSC_SR_RXRDY))
@@ -126,7 +142,7 @@ static int mpc5xxx_serial_getc (struct console_device *cdev)
 static int mpc5xxx_serial_tstc (struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	volatile struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
 
 	return (psc->psc_status & PSC_SR_RXRDY);
 }
@@ -134,7 +150,7 @@ static int mpc5xxx_serial_tstc (struct console_device *cdev)
 static int mpc5xxx_serial_probe(struct device_d *dev)
 {
 	struct console_device *cdev;
-
+	
 	cdev = xzalloc(sizeof(struct console_device));
 	dev->type_data = cdev;
 	cdev->dev = dev;
@@ -142,7 +158,7 @@ static int mpc5xxx_serial_probe(struct device_d *dev)
 	cdev->tstc = mpc5xxx_serial_tstc;
 	cdev->putc = mpc5xxx_serial_putc;
 	cdev->getc = mpc5xxx_serial_getc;
-	cdev->setbrg = mpc5xxx_serial_setbrg;
+	cdev->setbrg = mpc5xxx_serial_setbaudrate;
 
 	mpc5xxx_serial_init(cdev);
 
@@ -165,3 +181,26 @@ static int mpc5xxx_serial_register(void)
 
 console_initcall(mpc5xxx_serial_register);
 
+#ifdef CONFIG_MPC5XXX_EARLY_CONSOLE
+
+void early_console_putc(void *base, char c)
+{
+	struct mpc5xxx_psc *psc =
+		(struct mpc5xxx_psc *)base;
+
+	/* Wait for last character to go. */
+	while (!(psc->psc_status & PSC_SR_TXEMP))
+		;
+
+	psc->psc_buffer_8 = c;
+}
+
+void early_console_init(void *base, int baudrate)
+{
+	struct mpc5xxx_psc *psc =
+		(struct mpc5xxx_psc *)base;
+	__mpc5xxx_serial_init(psc);
+	__mpc5xxx_serial_setbaudrate(psc, baudrate);
+}
+
+#endif

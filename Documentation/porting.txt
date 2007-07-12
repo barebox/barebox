@@ -46,6 +46,8 @@ static int scb9328_console_init(void)
 	return 0;
 }
 
+console_initcall(scb9328_console_init);
+
 - For most boards you will have to register a cfi_flash device. NAND flash
   is not ported yet.
 
@@ -53,8 +55,6 @@ static int scb9328_console_init(void)
   dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
   This will add an area starting at 0x40000 of size 0x20000 of the device
   cfi_dev as env0.
-
-console_initcall(scb9328_console_init);
 
 - Port missing drivers. Depending on the driver this can a be rather simple
   process:
@@ -68,11 +68,13 @@ console_initcall(scb9328_console_init);
   Ethernet drivers
   - Basically do the same as with serial drivers.
   - Identify the parts of the driver which handle the MAC address. There are
-    now two fields in struct eth_device. get_mac_address() shall retrieve the
-    MAC address from the EEPROM if one is connected. If you don't have an
-    EEPROM just return -1. set_mac_address() shall set the MAC address in
-    the device. All magic previously done with getenv/setenv(ethaddr) must be
-    removed.
+    now two functions handling them in struct eth_device. 
+    
+    get_mac_address() retrieve the MAC address from the EEPROM if one is
+		      connected. If you don't have an EEPROM just return -1.
+    set_mac_address() set the MAC address in the device. All magic previously
+		      done with getenv/setenv(ethaddr) must be removed.
+
     During startup U-Boot calls get_mac_address() to see if an EEPROM is
     connected. If so, it calls set_mac_address() with this address. This
     is done even if networking is not used during startup. This makes sure
@@ -118,4 +120,4 @@ calc_source:
   addresses in the objdump without doing offset calculation.
 
 - On arm most of the duplicate code under cpu/arm* is already merged into
-  arch/arm/cpu. the start.S files are missing though.
+  arch/arm/cpu. The start.S files are missing though.

@@ -1,46 +1,46 @@
 /*
-  dm9000.c: Version 1.2 12/15/2003
-
-	A Davicom DM9000 ISA NIC fast Ethernet driver for Linux.
-	Copyright (C) 1997  Sten Wang
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-  (C)Copyright 1997-1998 DAVICOM Semiconductor,Inc. All Rights Reserved.
-
-V0.11	06/20/2001	REG_0A bit3=1, default enable BP with DA match
-	06/22/2001 	Support DM9801 progrmming
-	 	 	E3: R25 = ((R24 + NF) & 0x00ff) | 0xf000
-		 	E4: R25 = ((R24 + NF) & 0x00ff) | 0xc200
-     		R17 = (R17 & 0xfff0) | NF + 3
-		 	E5: R25 = ((R24 + NF - 3) & 0x00ff) | 0xc200
-     		R17 = (R17 & 0xfff0) | NF
-
-v1.00               	modify by simon 2001.9.5
-	                change for kernel 2.4.x
-
-v1.1   11/09/2001      	fix force mode bug
-
-v1.2   03/18/2003       Weilun Huang <weilun_huang@davicom.com.tw>:
-			Fixed phy reset.
-			Added tx/rx 32 bit mode.
-			Cleaned up for kernel merge.
-
---------------------------------------
-
-       12/15/2003       Initial port to u-boot by Sascha Hauer <saschahauer@web.de>
-
-TODO: Homerun NIC and longrun NIC are not functional, only internal at the
-      moment.
-*/
+ *	dm9000.c
+ *
+ *	A Davicom DM9000 ISA NIC fast Ethernet driver for Linux.
+ *	Copyright (C) 1997  Sten Wang
+ *
+ *	This program is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License
+ *	as published by the Free Software Foundation; either version 2
+ *	of the License, or (at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ * (C)Copyright 1997-1998 DAVICOM Semiconductor,Inc. All Rights Reserved.
+ *
+ * V0.11	06/20/2001	REG_0A bit3=1, default enable BP with DA match
+ *		06/22/2001 	Support DM9801 progrmming
+ *	 	 		E3: R25 = ((R24 + NF) & 0x00ff) | 0xf000
+ *		 		E4: R25 = ((R24 + NF) & 0x00ff) | 0xc200
+ *				R17 = (R17 & 0xfff0) | NF + 3
+ *		 		E5: R25 = ((R24 + NF - 3) & 0x00ff) | 0xc200
+ *     				R17 = (R17 & 0xfff0) | NF
+ *
+ * v1.00			modify by simon 2001.9.5
+ *				change for kernel 2.4.x
+ *
+ *  v1.1	11/09/2001      fix force mode bug
+ *
+ *  v1.2	03/18/2003	Weilun Huang <weilun_huang@davicom.com.tw>:
+ *				Fixed phy reset.
+ *				Added tx/rx 32 bit mode.
+ *				Cleaned up for kernel merge.
+ *
+ *
+ *
+ *		12/15/2003      Initial port to u-boot by Sascha Hauer
+ *				<saschahauer@web.de>
+ *
+ * ... see commit logs
+ */
 
 #include <common.h>
 #include <command.h>
@@ -60,14 +60,6 @@ TODO: Homerun NIC and longrun NIC are not functional, only internal at the
 #define DM9801_NOISE_FLOOR	0x08
 #define DM9802_NOISE_FLOOR	0x05
 
-/* #define CONFIG_DM9000_DEBUG */
-
-#ifdef CONFIG_DM9000_DEBUG
-#define DM9000_DBG(fmt,args...) printf(fmt ,##args)
-#else				/*  */
-#define DM9000_DBG(fmt,args...)
-#endif				/*  */
-
 /* DM9000 network board routine ---------------------------- */
 
 #define DM9000_outb(d,r) ( *(volatile u8 *)r = d )
@@ -85,16 +77,16 @@ struct dm9000_priv {
 static void
 dump_regs(void)
 {
-	DM9000_DBG("\n");
-	DM9000_DBG("NCR   (0x00): %02x\n", DM9000_ior(0));
-	DM9000_DBG("NSR   (0x01): %02x\n", DM9000_ior(1));
-	DM9000_DBG("TCR   (0x02): %02x\n", DM9000_ior(2));
-	DM9000_DBG("TSRI  (0x03): %02x\n", DM9000_ior(3));
-	DM9000_DBG("TSRII (0x04): %02x\n", DM9000_ior(4));
-	DM9000_DBG("RCR   (0x05): %02x\n", DM9000_ior(5));
-	DM9000_DBG("RSR   (0x06): %02x\n", DM9000_ior(6));
-	DM9000_DBG("ISR   (0xFE): %02x\n", DM9000_ior(ISR));
-	DM9000_DBG("\n");
+	debug("\n");
+	debug("NCR   (0x00): %02x\n", DM9000_ior(0));
+	debug("NSR   (0x01): %02x\n", DM9000_ior(1));
+	debug("TCR   (0x02): %02x\n", DM9000_ior(2));
+	debug("TSRI  (0x03): %02x\n", DM9000_ior(3));
+	debug("TSRII (0x04): %02x\n", DM9000_ior(4));
+	debug("RCR   (0x05): %02x\n", DM9000_ior(5));
+	debug("RSR   (0x06): %02x\n", DM9000_ior(6));
+	debug("ISR   (0xFE): %02x\n", DM9000_ior(ISR));
+	debug("\n");
 }
 #endif				/*  */
 
@@ -116,12 +108,12 @@ static int dm9000_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 	/* Fill the phyxcer register into REG_0C */
 	DM9000_iow(DM9000_EPAR, DM9000_PHY | reg);
 	DM9000_iow(DM9000_EPCR, 0xc);	/* Issue phyxcer read command */
-	udelay(100);		/* Wait read complete */
+	udelay(100);			/* Wait read complete */
 	DM9000_iow(DM9000_EPCR, 0x0);	/* Clear phyxcer read command */
 	*val = (DM9000_ior(DM9000_EPDRH) << 8) | DM9000_ior(DM9000_EPDRL);
 
 	/* The read data keeps on REG_0D & REG_0E */
-	DM9000_DBG("phy_read(%d): %d\n", reg, val);
+	debug("phy_read(%d): %d\n", reg, val);
 	return 0;
 }
 
@@ -135,9 +127,11 @@ static int dm9000_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
 	DM9000_iow(DM9000_EPDRL, (val & 0xff));
 	DM9000_iow(DM9000_EPDRH, ((val >> 8) & 0xff));
 	DM9000_iow(DM9000_EPCR, 0xa);	/* Issue phyxcer write command */
-	udelay(500);		/* Wait write complete */
+	udelay(500);			/* Wait write complete */
 	DM9000_iow(DM9000_EPCR, 0x0);	/* Clear phyxcer write command */
-	DM9000_DBG("phy_write(reg:%d, value:%d)\n", reg, value);
+
+	debug("phy_write(reg:%d, value:%d)\n", reg, value);
+
 	return 0;
 }
 
@@ -161,7 +155,7 @@ static int dm9000_check_id(void)
 
 static void dm9000_reset(void)
 {
-	DM9000_DBG("resetting\n");
+	debug("resetting\n");
 	DM9000_iow(DM9000_NCR, NCR_RST);
 	udelay(1000);		/* delay 1ms */
 }
@@ -181,12 +175,12 @@ static int dm9000_eth_send (struct eth_device *edev,
 	char *data_ptr;
 	u32 tmplen, i;
 	uint64_t tmo;
-	DM9000_DBG("eth_send: length: %d\n", length);
+	debug("eth_send: length: %d\n", length);
 	for (i = 0; i < length; i++) {
 		if (i % 8 == 0)
-			DM9000_DBG("\nSend: 02x: ", i);
-		DM9000_DBG("%02x ", ((unsigned char *) packet)[i]);
-	} DM9000_DBG("\n");
+			debug("\nSend: 02x: ", i);
+		debug("%02x ", ((unsigned char *) packet)[i]);
+	} debug("\n");
 
 	/* Move data to DM9000 TX RAM */
 	data_ptr = (char *) packet;
@@ -226,13 +220,13 @@ static int dm9000_eth_send (struct eth_device *edev,
 			break;
 		}
 	}
-	DM9000_DBG("transmit done\n\n");
+	debug("transmit done\n\n");
 	return 0;
 }
 
 static void dm9000_eth_halt (struct eth_device *edev)
 {
-	printf("eth_halt\n");
+	debug("eth_halt\n");
 #if 0
 	phy_write(0, 0x8000);	/* PHY RESET */
 	DM9000_iow(DM9000_GPR, 0x01);	/* Power-Down PHY */
@@ -260,9 +254,9 @@ static int dm9000_eth_rx (struct eth_device *edev)
 	if (rxbyte > 1) {
 		DM9000_iow(DM9000_RCR, 0x00);	/* Stop Device */
 		DM9000_iow(DM9000_ISR, 0x80);	/* Stop INT request */
-		DM9000_DBG("rx status check: %d\n", rxbyte);
+		debug("rx status check: %d\n", rxbyte);
 	}
-	DM9000_DBG("receiving packet\n");
+	debug("receiving packet\n");
 
 	/* A packet ready now  & Get status/length */
 	DM9000_outb(DM9000_MRCMD, DM9000_IO);
@@ -283,7 +277,7 @@ static int dm9000_eth_rx (struct eth_device *edev)
 	RxLen = tmpdata >> 16;
 
 #endif				/*  */
-	DM9000_DBG("rx status: 0x%04x rx len: %d\n", RxStatus, RxLen);
+	debug("rx status: 0x%04x rx len: %d\n", RxStatus, RxLen);
 
 	/* Move data from DM9000 */
 	/* Read received packet from RX SRAM */
@@ -322,7 +316,7 @@ static int dm9000_eth_rx (struct eth_device *edev)
 	} else {
 
 		/* Pass to upper layer */
-		DM9000_DBG("passing packet to upper layer\n");
+		debug("passing packet to upper layer\n");
 		NetReceive(NetRxPackets[0], RxLen);
 		return RxLen;
 	}
@@ -351,7 +345,9 @@ static int dm9000_get_mac_address(struct eth_device *eth, unsigned char *adr)
 static int dm9000_set_mac_address(struct eth_device *eth, unsigned char *adr)
 {
 	int i, oft;
-printf("dm9000_set_mac_address\n");
+
+	debug("dm9000_set_mac_address\n");
+
 	for (i = 0, oft = 0x10; i < 6; i++, oft++)
 		DM9000_iow(oft, adr[i]);
 	for (i = 0, oft = 0x16; i < 8; i++, oft++)
@@ -373,12 +369,13 @@ static int dm9000_init_dev(struct eth_device *edev)
 	return 0;
 }
 
+/* FIXME: Use base address specified in device */
 static int dm9000_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
 	struct dm9000_priv *priv;
 
-	printf("dm9000_eth_init()\n");
+	debug("dm9000_eth_init()\n");
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct dm9000_priv));
 	dev->type_data = edev;

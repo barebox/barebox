@@ -90,8 +90,6 @@ int eth_register(struct eth_device *edev)
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
 
-        printf("%s\n",__FUNCTION__);
-
 	if (!edev->get_mac_address) {
 		printf("no get_mac_address found for current eth device\n");
 		return -1;

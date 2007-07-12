@@ -254,7 +254,7 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
 #endif
-	do_reset();
+	reset_cpu(0);
 
 	/* not reached */
 	return -1;

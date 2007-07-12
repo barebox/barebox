@@ -29,7 +29,6 @@
 #include <mem_malloc.h>
 #include <init.h>
 #include <net.h>
-#include <serial.h>
 
 char *strmhz (char *buf, long hz)
 {
@@ -56,8 +55,6 @@ char *strmhz (char *buf, long hz)
 
 void board_init_r (ulong end_of_ram)
 {
-	extern void malloc_bin_reloc (void);
-
 	asm ("sync ; isync");
 
 	mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));

@@ -56,7 +56,6 @@ SECTIONS
   {
     arch/ppc/mach-mpc5xxx/start.o	(.text)
     *(.text)
-    *(.fixup)
     *(.got1)
     . = ALIGN(16);
     *(.rodata)
@@ -104,6 +103,11 @@ SECTIONS
   .u_boot_initcalls : { INITCALLS }
   __u_boot_initcalls_end = .;
   __initcall_entries = (__u_boot_initcalls_end - __u_boot_initcalls_start) >> 2;
+
+  __early_init_data_begin = .;
+  .early_init_data : { *(.early_init_data) }
+  __early_init_data_end = .;
+  __early_init_data_size = __early_init_data_end - __early_init_data_begin;
 
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }

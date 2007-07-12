@@ -28,11 +28,18 @@
 #include <param.h>
 #include <console.h>
 #include <exports.h>
-#include <serial.h>
 #include <driver.h>
 #include <fs.h>
+#include <reloc.h>
+#include <init.h>
 
-static struct console_device *first_console;
+static struct console_device *first_console = NULL;
+
+#define CONSOLE_UNINITIALIZED	0
+#define CONSOLE_INIT_EARLY	1
+#define CONSOLE_INIT_FULL	2
+
+static int __initdata initialized = 0;
 
 static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
@@ -105,6 +112,7 @@ int console_register(struct console_device *newcdev)
 	newcdev->active_param.value = newcdev->active;
 	dev_add_param(dev, &newcdev->active_param);
 
+	initialized = CONSOLE_INIT_FULL;
 #ifdef CONFIG_CONSOLE_ACTIVATE_ALL
 	console_std_set(dev, &newcdev->active_param, "ioe");
 #endif
@@ -159,22 +167,50 @@ int tstc(void)
 	return 0;
 }
 
+void __initdata *early_console_base;
+
 void console_putc(unsigned int ch, char c)
 {
 	struct console_device *cdev = first_console;
+	int init = INITDATA(initialized);
 
-	while (cdev) {
-		if (cdev->f_active & ch) {
-			cdev->putc(cdev, c);
-			if (c == '\n')
-				cdev->putc(cdev, '\r');
+	early_console_putc(INITDATA(early_console_base), c);
+	return;
+
+	switch (init) {
+	case CONSOLE_UNINITIALIZED:
+		return;
+
+	case CONSOLE_INIT_EARLY:
+		early_console_putc(INITDATA(early_console_base), c);
+		return;
+
+	case CONSOLE_INIT_FULL:
+		while (cdev) {
+			if (cdev->f_active & ch) {
+				cdev->putc(cdev, c);
+				if (c == '\n')
+					cdev->putc(cdev, '\r');
+			}
+			cdev = cdev->next;
 		}
-		cdev = cdev->next;
+		return;
+	default:
+		/* If we have problems inititalizing our data
+		 * get them early
+		 */
+		hang();
 	}
 }
 
 int fputc(int fd, char c)
 {
+	if(!first_console) {
+		if(!fd)
+			console_putc(0, c);
+		return 0;
+	}
+
 	if (fd == 1)
 		putc(c);
 	else if (fd == 2)
@@ -186,19 +222,12 @@ int fputc(int fd, char c)
 
 void console_puts(unsigned int ch, const char *str)
 {
-	struct console_device *cdev = first_console;
-
-	while (cdev) {
-		if (cdev->f_active & ch) {
-			const char *s = str;
-			while (*s) {
-				cdev->putc(cdev, *s);
-				if (*s == '\n')
-					cdev->putc(cdev, '\r');
-				s++;
-			}
-		}
-		cdev = cdev->next;
+	const char *s = str;
+	while (*s) {
+		console_putc(ch, *s);
+		if (*s == '\n')
+			console_putc(ch, '\r');
+		s++;
 	}
 }
 
@@ -270,5 +299,16 @@ int ctrlc (void)
 	if (tstc() && getc() == 3)
 		return 1;
 	return 0;
+}
+
+void early_console_start(const char *name, int baudrate)
+{
+	void *base = get_early_console_base(name);
+
+	if (base) {
+		early_console_init(base, baudrate);
+		INITDATA(initialized) = CONSOLE_INIT_EARLY;
+		INITDATA(early_console_base) = base;
+	}
 }
 

@@ -12,6 +12,7 @@ obj-y += partition.o
 obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
+obj-y += memsize.o
 
 #obj-y += cmd_elf.o
 #obj-y += cmd_itest.o
@@ -22,7 +23,6 @@ obj-y += misc.o
 #obj-y += cmd_ext2.o
 #obj-y += cmd_jffs2.o
 #obj-y += cmd_vfd.o
-#obj-y += memsize.o
 #obj-y += usb_kbd.o
 #obj-y += bedbug.o
 #obj-y += cmd_fat.o

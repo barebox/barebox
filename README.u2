@@ -7,8 +7,69 @@ today's embedded systems, seen from a user's point of view.
 Nevertheless, there are quite some design flaws which turned out over
 the last years and we think that they cannot be solved in a production
 tree. So this tree tries to do several things right - without caring
-about losing support for old boards. So if you aim at stability at this
-time, stay with the official U-Boot releases.
+about losing support for old boards.
+
+General features include:
+
+- A posix based file API
+  inside U-Boot the usual open/close/read/write/lseek functions are used.
+  This makes it familiar to everyone who has programmed under unix systems.
+
+- usual shell commands like ls/cd/mkdir/echo/cat,...
+
+- The environment is not a variable store anymore, but a file store. It has
+  currently some limitations, of course. The environment is not a real
+  read/write filesystem, it is more like a tar archive, or even more like
+  an ar archive, because it cannot handle directories. The saveenv command
+  saves the files under a certain directory (by default /env) in persistent
+  storage (by default /dev/env0). There is a counterpart called loadenv, too.
+
+- Real filesystem support
+  The loader starts up with mounting a ramdisk on /. Then a devfs is mounted
+  on /dev allowing the user (or shell commands) to access devices. Apart from
+  these two filesystems there is currently one filesystem ported: cramfs. One
+  can mount it with the usual mount command.
+
+- device/driver model
+  Devices are no longer described by defines in the config file. Instead
+  there are devices which can be registered in the board .c file or
+  dynamically allocated. Drivers will match upon the devices automatically.
+
+- clocksource support
+  Timekeeping has been simplified by the use of the Linux clocksource API.
+  Only one function is needed for a new board, no [gs]et_timer[masked]() or
+  reset_timer[masked]() functions.
+
+- Kconfig and Kernel build system
+  Only targets which are really needed get recompiled. Parallel builds are
+  no problem anymore. This also removes the need for many many ifdefs in
+  the code.
+
+- simulation target
+  U-Boot can be compiled to run under Linux. While this is rather useless
+  in real world this is a great debugging and development aid. New features
+  can be easily developped and tested on long train journeys and started
+  under gdb. There is a console driver for linux which emulates a serial
+  device and a tap based ethernet driver. Linux files can be mapped to
+  devices under U-Boot to emulate storage devices.
+
+- device parameter support
+  Each device can have a unlimited number of parameters. They can be accessed
+  on the command line with <devid>.<param>="...", for example
+  'eth0.ip=192.168.0.7' or 'echo $eth0.ip'
+
+- initcalls
+  hooks in the startup process can be archieved with *_initcall() directives
+  in each file.
+
+- getopt
+  There is a small getopt implementation. Some commands got really
+  complicated (both in code and in usage) due to the fact that U-Boot only
+  allowed positional parameters.
+
+- editor
+  Scripts can be edited with a small editor. This editor has no features
+  except the ones really needed: moving the cursor and typing characters.
 
 
 Building U-Boot
@@ -22,7 +83,8 @@ kernel.
 For the examples below, we use the User Mode U-Boot implementation, which
 is a port of U-Boot to the Linux userspace. This makes it possible to
 test drive the code without having real hardware. So for this test
-scenario, ARCH=linux is the valid architecture selection.
+scenario, ARCH=linux is the valid architecture selection. This currently
+only works on ia32 hosts and partly on x86-64.
 
 Selection of the architecture and the cross compiler can be done in two
 ways. You can either specify it using the environment variables ARCH
@@ -57,7 +119,7 @@ U-Boot usually needs an environment for storing the configuation data.
 You can generate an environment using the example environment contained
 in examples/environment:
 
-  # ./scripts/ubootenv -s examples/environment/ env.bin
+  # ./scripts/ubootenv -s -p 0x10000 examples/environment/ env.bin
 
 To get some files to play with you can generate a cramfs image:
   # mkcramfs somedir/ cramfs.bin
@@ -80,61 +142,60 @@ load it to /env. It then executes /env/init if it exists. If you have
 loaded the example environment U-Boot will show you a menu asking for
 your settings.
 
+If you have started U-Boot as root you will find a new tap device on your
+host which you can configure using ifconfig. Once you configured U-Boots
+network settings accordingly you can do a ping or tftpboot.
 
+If you have mapped a cramfs image try mounting it with
 
-FIXME: cfi currently doesn't work with um-uboot
+  # mkdir /cram
+  # mount /dev/fd0 cramfs /cram
 
+Memory can be examined as usual using md/mw commands. They both understand
+the -f <file> option to tell the commands that they should work on the
+specified files instead of /dev/mem which holds the complete address space.
+Note that if you call 'md /dev/fd0' (without -f) U-Boot will segfault on
+the host, because it will interpret /dev/fd0 as a number. 
 
-Commands
---------
+Directory layout
+----------------
 
-devinfo
-addpart
-pwd
-cd
-ls
-cat
-tftpboot <dest> <source> FIXME: order?
-tftpboot /dev/nor0.1 <source>
-erase -f /dev/nor0.1
-help
-edit -> ctrl-c ctrl-d
-md -f /dev/nor0.1
-exec /env/init FIXME: doesn't work yet
-saveenv (makes /env persistent) -> /dev/env0
-printenv
-mount
+Most of the directory layout is based upon the Linux Kernel:
 
-Shell
------
+arch/*/               -> contains architecture specific parts
+arch/*/mach-*/        -> SoC specific code
 
-- doesn't have switch/case yet
-- only one variable space
-[ ] add variable space
+drivers/serial        -> drivers
+drivers/net
+drivers/...
 
-Drivers
--------
+include/asm-*         -> architecture specific includes
+include/asm-*/arch-*  -> SoC specific includes
 
-/dev
-serial
-partition
-environment -> /env; /env/init
+fs/                   -> filesystem support and filesystem drivers
 
-Design
-------
+lib/                  -> generic library functions (getopt, readline and the
+                         like)
 
-include/driver.h
-board/scb9328.c
-include/param.h: each device can have parameters; can be changed on
-runtime; get/set can be overwritten by implementation.
+common/               -> common stuff
 
-- xfunctions: do panic if error
-- proposed design:
-  arch/
-  arch/arm/cpu-arm920t/
-  arch/arm/board-.../
-  board/ is obsolete
+commands/             -> many things previously in common/cmd_*, one command
+			 per file
 
-- arch/*/Makefile is central makefile
+net/                  -> Networking stuff
 
+scripts/              -> Kconfig system
+
+Documentation/        -> 
+
+There is still the old directory layout in the tree which of course should be
+merged in one way or the other:
+
+lib_*/                -> currently unused
+cpu/*                 -> currently unsused
+post/                 -> untouched
+nand_spl/             -> untouched
+dtt/                  -> untouched
+disk/                 -> untouched
+documentation/        -> untouched
 

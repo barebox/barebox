@@ -37,13 +37,11 @@
 #include <types.h>
 #include <partition.h>
 #include <mem_malloc.h>
+#include <reloc.h>
 
 #ifdef CONFIG_VIDEO_OPENIP
 #include <openip.h>
 #endif
-
-static struct cfi_platform_data cfi_info = {
-};
 
 struct device_d cfi_dev = {
         .name     = "cfi_flash",
@@ -51,8 +49,6 @@ struct device_d cfi_dev = {
 
         .map_base = 0xff000000,
         .size     = 16 * 1024 * 1024,
-
-        .platform_data = &cfi_info,
 };
 
 struct device_d sdram_dev = {
@@ -106,7 +102,7 @@ device_initcall(devices_init);
 
 static struct device_d psc3 = {
         .name     = "mpc5xxx_serial",
-        .id       = "cs0",
+        .id       = "psc3",
 	.map_base = MPC5XXX_PSC3,
 	.size     = 4096,
         .type     = DEVICE_TYPE_CONSOLE,
@@ -114,7 +110,7 @@ static struct device_d psc3 = {
 
 static struct device_d psc6 = {
         .name     = "mpc5xxx_serial",
-        .id       = "cs1",
+        .id       = "psc6",
 	.map_base = MPC5XXX_PSC6,
 	.size     = 4096,
         .type     = DEVICE_TYPE_CONSOLE,
@@ -129,11 +125,17 @@ static int console_init(void)
 
 console_initcall(console_init);
 
-#define CFG_RAMBOOT
+void *get_early_console_base(const char *name)
+{
+	if (!strcmp(name, RELOC("psc3")))
+		return (void *)MPC5XXX_PSC3;
+	if (!strcmp(name, RELOC("psc6")))
+		return (void *)MPC5XXX_PSC6;
+	return NULL;
+}
 
 #include "mt46v32m16-75.h"
 
-#ifndef CFG_RAMBOOT
 static void sdram_start (int hi_addr)
 {
 	long hi_addr_bit = hi_addr ? 0x01000000 : 0;
@@ -172,7 +174,6 @@ static void sdram_start (int hi_addr)
 	*(vu_long *)MPC5XXX_SDRAM_CTRL = SDRAM_CONTROL | hi_addr_bit;
 	__asm__ volatile ("sync");
 }
-#endif
 
 /*
  * ATTENTION: Although partially referenced initdram does NOT make real use
@@ -184,50 +185,51 @@ long int initdram (int board_type)
 {
 	ulong dramsize = 0;
 	ulong dramsize2 = 0;
-#ifndef CFG_RAMBOOT
+
 	ulong test1, test2;
 
-	/* setup SDRAM chip selects */
-	*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0x0000001b;/* 256MB at 0x0 */
-	*(vu_long *)MPC5XXX_SDRAM_CS1CFG = 0x10000000;/* disabled */
-	__asm__ volatile ("sync");
+	if ((ulong)RELOC(initdram) > (2 << 30)) {
+		/* setup SDRAM chip selects */
+		*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0x0000001b;/* 256MB at 0x0 */
+		*(vu_long *)MPC5XXX_SDRAM_CS1CFG = 0x10000000;/* disabled */
+		__asm__ volatile ("sync");
 
-	/* setup config registers */
-	*(vu_long *)MPC5XXX_SDRAM_CONFIG1 = SDRAM_CONFIG1;
-	*(vu_long *)MPC5XXX_SDRAM_CONFIG2 = SDRAM_CONFIG2;
-	__asm__ volatile ("sync");
+		/* setup config registers */
+		*(vu_long *)MPC5XXX_SDRAM_CONFIG1 = SDRAM_CONFIG1;
+		*(vu_long *)MPC5XXX_SDRAM_CONFIG2 = SDRAM_CONFIG2;
+		__asm__ volatile ("sync");
 
 #if SDRAM_DDR && SDRAM_TAPDELAY
-	/* set tap delay */
-	*(vu_long *)MPC5XXX_CDM_PORCFG = SDRAM_TAPDELAY;
-	__asm__ volatile ("sync");
+		/* set tap delay */
+		*(vu_long *)MPC5XXX_CDM_PORCFG = SDRAM_TAPDELAY;
+		__asm__ volatile ("sync");
 #endif
 
-	/* find RAM size using SDRAM CS0 only */
-	sdram_start(0);
-	test1 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
-	sdram_start(1);
-	test2 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
-	if (test1 > test2) {
+		/* find RAM size using SDRAM CS0 only */
 		sdram_start(0);
-		dramsize = test1;
-	} else {
-		dramsize = test2;
-	}
+		test1 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
+		sdram_start(1);
+		test2 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
+		if (test1 > test2) {
+			sdram_start(0);
+			dramsize = test1;
+		} else {
+			dramsize = test2;
+		}
 
-	/* memory smaller than 1MB is impossible */
-	if (dramsize < (1 << 20)) {
-		dramsize = 0;
-	}
+		/* memory smaller than 1MB is impossible */
+		if (dramsize < (1 << 20)) {
+			dramsize = 0;
+		}
 
-	/* set SDRAM CS0 size according to the amount of RAM found */
-	if (dramsize > 0) {
-		*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0x13 + __builtin_ffs(dramsize >> 20) - 1;
-	} else {
-		*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0; /* disabled */
-	}
-
-#else /* CFG_RAMBOOT */
+		/* set SDRAM CS0 size according to the amount of RAM found */
+		if (dramsize > 0) {
+			*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0x13 + __builtin_ffs(dramsize >> 20) - 1;
+		} else {
+			*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0; /* disabled */
+		}
+	} else
+		printf(RELOC("not initializing sdram\n"), RELOC(initdram));
 
 	/* retrieve size of memory connected to SDRAM CS0 */
 	dramsize = *(vu_long *)MPC5XXX_SDRAM_CS0CFG & 0xFF;
@@ -245,8 +247,7 @@ long int initdram (int board_type)
 		dramsize2 = 0;
 	}
 
-#endif /* CFG_RAMBOOT */
-
+	printf(RELOC("DRAM: 0x%08x\n"), dramsize + dramsize2);
 	return dramsize + dramsize2;
 }
 

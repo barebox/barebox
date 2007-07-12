@@ -24,6 +24,7 @@
 #include <common.h>
 #include <asm/arch/mpc5xxx.h>
 #include <types.h>
+#include <reloc.h>
 
 /*
  * Breath some life into the CPU...
@@ -31,9 +32,11 @@
  * Set up the memory map,
  * initialize a bunch of registers.
  */
-void cpu_init_f (void)
+int cpu_init(void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
+
+	early_init();
 
 #if defined(CFG_RAMBOOT) && defined(CONFIG_MGT5100)
 	addecr |= (1 << 22); /* SDRAM enable */
@@ -175,13 +178,7 @@ void cpu_init_f (void)
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) &= ~(1 << 31);
 # endif
 #endif	/* CONFIG_MPC5200 */
-}
 
-/*
- * initialize higher level parts of CPU like time base and timers
- */
-int cpu_init_r (void)
-{
 	/* mask all interrupts */
 #if defined(CONFIG_MGT5100)
 	*(vu_long *)MPC5XXX_ICTL_PER_MASK = 0xfffffc00;
@@ -195,3 +192,4 @@ int cpu_init_r (void)
 
 	return 0;
 }
+

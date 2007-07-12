@@ -11,7 +11,7 @@ unsigned long long get_ticks(void);
 int	get_clocks (void);
 ulong	get_bus_freq  (ulong);
 
-int	cpu_init_r    (void);
+int	cpu_init      (void);
 
 uint	get_pvr	      (void);
 uint	get_svr	      (void);

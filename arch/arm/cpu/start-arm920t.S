@@ -74,8 +74,8 @@ _fiq:			.word fiq
 _TEXT_BASE:
 	.word	TEXT_BASE
 
-.globl _armboot_start
-_armboot_start:
+.globl _u_boot_start
+_u_boot_start:
 	.word _start
 
 _MALLOC_START:
@@ -172,7 +172,7 @@ relocate:				/* relocate U-Boot to RAM	    */
 	cmp     r0, r1                  /* don't reloc during debug         */
 	beq     stack_setup
 
-	ldr	r2, _armboot_start
+	ldr	r2, _u_boot_start
 	ldr	r3, _bss_start
 	sub	r2, r3, r2		/* r2 <- size of armboot            */
 	add	r2, r0, r2		/* r2 <- source end address         */

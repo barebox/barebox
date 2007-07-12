@@ -99,7 +99,7 @@ static int cpu_init (void)
 	/*
 	 * setup up stacks if necessary
 	 */
-	IRQ_STACK_START = _armboot_start - CFG_MALLOC_LEN - CFG_GBL_DATA_SIZE - 4;
+	IRQ_STACK_START = _u_boot_start - CFG_MALLOC_LEN - CFG_GBL_DATA_SIZE - 4;
 	FIQ_STACK_START = IRQ_STACK_START - CONFIG_STACKSIZE_IRQ;
 	return 0;
 }

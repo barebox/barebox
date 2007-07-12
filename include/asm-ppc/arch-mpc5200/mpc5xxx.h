@@ -422,6 +422,9 @@
 							   IORDY protocol */
 
 #ifndef __ASSEMBLY__
+
+#include <linux/types.h>
+
 struct mpc5xxx_psc {
 	volatile u8	mode;		/* PSC + 0x00 */
 	volatile u8	reserved0[3];

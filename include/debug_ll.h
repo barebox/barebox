@@ -25,21 +25,20 @@
 #ifndef __INCLUDE_DEBUG_LL_H__
 #define   __INCLUDE_DEBUG_LL_H__
 
-#define PUTC(x) serial_putc(x)
+#if defined (CONFIG_DEBUG_LL)
+# include <asm/arch/debug_ll.h>
 
-//#if defined (CONFIG_DEBUG_LL)
-//# include <asm/arch/debug_ll.h>
-
+#define PUTC_LL(x) putc(x)
 # define PUTHEX_LL(value)  ({ unsigned long v = (unsigned long) (value); \
 			     int i; unsigned char ch; \
 			     for (i = 8; i--; ) {\
 			     ch = ((v >> (i*4)) & 0xf);\
 			     ch += (ch >= 10) ? 'a' - 10 : '0';\
-			     PUTC (ch); }})
-//#else
-//# define PUTC_LL(c) do {} while (0)
-//# define PUTHEX_LL(v) do {} while (0)
+			     PUTC_LL (ch); }})
+#else
+# define PUTC_LL(c) do {} while (0)
+# define PUTHEX_LL(v) do {} while (0)
 
-//#endif
+#endif
 
 #endif  /* __INCLUDE_DEBUG_LL_H__ */

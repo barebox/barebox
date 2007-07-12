@@ -229,7 +229,7 @@ long int initdram (int board_type)
 			*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0; /* disabled */
 		}
 	} else
-		printf(RELOC("not initializing sdram\n"), RELOC(initdram));
+		puts(RELOC("skipping sdram initialization\n"));
 
 	/* retrieve size of memory connected to SDRAM CS0 */
 	dramsize = *(vu_long *)MPC5XXX_SDRAM_CS0CFG & 0xFF;
@@ -247,14 +247,7 @@ long int initdram (int board_type)
 		dramsize2 = 0;
 	}
 
-	printf(RELOC("DRAM: 0x%08x\n"), dramsize + dramsize2);
 	return dramsize + dramsize2;
-}
-
-int checkboard (void)
-{
-	puts ("Board: phyCORE-MPC5200B-tiny\n");
-	return 0;
 }
 
 #ifdef	CONFIG_PCI

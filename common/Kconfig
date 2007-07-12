@@ -4,6 +4,8 @@ config GREGORIAN_CALENDER
 
 menu "General Settings              "
 
+config BOARDINFO
+	string
 
 config TEXT_BASE
 	prompt "TEXT_BASE"

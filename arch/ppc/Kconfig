@@ -1,21 +1,37 @@
 
 config TEXT_BASE
-	string
-	default "0x1000000" if MACH_PHYCORE_MPC5200B_TINY
+	default 0 if RELOCATABLE
+	default 0x1000000 if MACH_PHYCORE_MPC5200B_TINY
 
+config MPC5XXX_EARLY_CONSOLE
+	bool
+	default y
+
+config ARCH_HAS_RELOC
+	bool
+	default y
+
+config PPC
+	bool
+	default y
+
+# Uh, we should decide which one we want to use
 config ARCH_MPC5200
 	bool
 
 config MPC5200
 	bool
 
+config MPC5xxx
+	bool
+
 config CACHELINE_SIZE
 	int
-	default 32 if MPC5200
+	default 32 if ARCH_MPC5200
 
 config HAS_REGINFO
 	bool
-	default y if MPC5200
+	default y if ARCH_MPC5200
 
 choice
 	prompt "Select your board"
@@ -24,6 +40,7 @@ config MACH_PHYCORE_MPC5200B_TINY
 	bool "Phycore mpc5200b tiny"
 	select ARCH_MPC5200
 	select MPC5200
+	select MPC5xxx
 	select HAS_CFI
 	help
 	  Say Y here if you are using the Phytec Phycore MPC5200B Tiny

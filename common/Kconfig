@@ -4,6 +4,24 @@ config GREGORIAN_CALENDER
 
 menu "General Settings              "
 
+
+config TEXT_BASE
+	prompt "TEXT_BASE"
+	hex
+	help
+	  The Address U-Boot gets linked at.
+
+config RELOCATABLE
+	depends on PPC
+	bool "generate relocatable U-Boot binary"
+	help
+	  A non relocatable U-Boot binary will run at it's compiled in
+	  link address in RAM. This leads to smaller image sizes but may
+	  put U-Boot just in the middle of RAM. With this option enabled
+	  instead U-Boot can determine this address at runtime and thus
+	  allowing it to relocate to the end of the available RAM. This
+	  way you have the whole memory in a single piece.
+
 config BROKEN
 	bool
 	prompt "Prompt for broken or incomplete code"

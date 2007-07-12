@@ -26,7 +26,6 @@
  *  U-Boot - Startup Code for MPC5xxx CPUs
  */
 #include <config.h>
-#include <asm/arch/mpc5xxx.h>
 
 #include <ppc_asm.tmpl>
 #include <ppc_defs.h>
@@ -166,7 +165,7 @@ lowboot_reentry:
 	GET_GOT			/* initialize GOT access		*/
 
 	/* r3: IMMR */
-	bl	cpu_init_f	/* run low-level CPU init code (in Flash)*/
+	bl	cpu_init	/* run low-level CPU init code (in Flash)*/
 
 	mr	r3, r21
 	/* r3: BOOTFLAG */

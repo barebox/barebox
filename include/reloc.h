@@ -1,9 +1,9 @@
 #ifndef __RELOC_H
 #define __RELOC_H
 
-#ifdef CONFIG_HAS_EARLY_INIT
-
 extern unsigned long _u_boot_start, _bss_start, _bss_end;
+
+#ifdef CONFIG_HAS_EARLY_INIT
 
 extern ulong __early_init_data_begin, __early_init_data_end;
 extern ulong __early_init_data_size;

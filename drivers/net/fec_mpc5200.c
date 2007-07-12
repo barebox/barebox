@@ -262,9 +262,7 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		printf("%s: miispeed\n", __FUNCTION__);
 		fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
-		printf("done: %d\n", get_ipb_clock());
 	}
 
 	/*
@@ -682,6 +680,8 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	fec->xcv_type = pdata->xcv_type;
 
 	sprintf(dev->name, "FEC ETHERNET");
+
+	loadtask(0, 2);
 
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec5xxx_miiphy_read;

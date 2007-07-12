@@ -34,6 +34,7 @@
 void cpu_init_f (void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
+
 #if defined(CFG_RAMBOOT) && defined(CONFIG_MGT5100)
 	addecr |= (1 << 22); /* SDRAM enable */
 #endif
@@ -192,10 +193,5 @@ int cpu_init_r (void)
 	/* route critical ints to normal ints */
 	*(vu_long *)MPC5XXX_ICTL_EXT |= 0x00000001;
 
-#ifdef CONFIG_DRIVER_NET_MPC5200
-	/* load FEC microcode */
-	loadtask(0, 2);
-#endif
-
-	return (0);
+	return 0;
 }

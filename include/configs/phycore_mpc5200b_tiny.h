@@ -27,9 +27,9 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* #define DEBUG */
+#include <asm/arch/mpc5xxx.h>
 
-#define CONFIG_BOARDINFO "Phytec Phycore mpc5200b tiny"
+/* #define DEBUG */
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------
 High Level Configuration Options

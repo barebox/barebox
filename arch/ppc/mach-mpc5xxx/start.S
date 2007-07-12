@@ -151,9 +151,9 @@ lowboot_reentry:
 	/*--------------------------------------------------------------*/
 
 	/* set up stack in on-chip SRAM */
-	lis	r3, CFG_INIT_RAM_ADDR@h
-	ori	r3, r3, CFG_INIT_RAM_ADDR@l
-	ori	r1, r3, CFG_INIT_SP_OFFSET
+	lis	r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@h
+	ori	r3, r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@l
+	subi	r1, r3, CONFIG_EARLY_INITDATA_SIZE
 	li	r0, 0			/* Make room for stack frame header and	*/
 	stwu	r0, -4(r1)		/* clear final stack frame so that	*/
 	stwu	r0, -4(r1)		/* stack backtraces terminate cleanly	*/
@@ -310,16 +310,25 @@ _end_of_vectors:
 	. = 0x3000
 
 _continue_init:
-
 	mr	r1,  r3		/* Set new stack pointer at end of RAM  */
-        subi    r1,  r1, 0x10
+	subi    r1,  r1, 0x10
 	mr	r9,  r3		/* Save copy of end of RAM      	*/
+#ifdef CONFIG_RELOCATABLE
+	subi	r3,  r3, 0x8000 /* reserve for stack FIXME */
 
-        lis	r3, CFG_MONITOR_BASE@h		/* Destination Address	*/
-	ori	r3, r3, CFG_MONITOR_BASE@l
+	lis	r10, __init_size@h		/* Size         	*/
+	ori	r10, r10, __init_size@l
+
+	sub	r3,  r3, r10
+
+	mr	r9,  r3
+#else
+	lis	r3, (TEXT_BASE)@h		/* Destination Address	*/
+	ori	r3, r3, (TEXT_BASE)@l
+#endif
 	mr	r10, r3 	/* Save copy of Destination Address	*/
 
-        bl	calc_source     /* Calculate Source Address             */
+	bl	calc_source     /* Calculate Source Address             */
 calc_source:
 	mfspr	r4,  LR
 	subi	r4, r4, (calc_source - _start)
@@ -795,3 +804,33 @@ trap_reloc:
 	stw	r0, 4(r7)
 
 	blr
+
+	.globl reloc_offset
+reloc_offset:
+	mfspr	r4,  LR
+	bl	pc
+pc:
+	mfspr	r3,  LR
+	subi	r3, r3, (pc - _start)
+	mtspr   LR, r4
+	lis	r4,     TEXT_BASE@h
+	ori	r4, r4, TEXT_BASE@l
+	sub	r3, r3, r4
+	subi	r3, r3, 0x100
+	blr
+
+.globl _text_base
+_text_base:
+	.long TEXT_BASE
+
+.globl _u_boot_start
+_u_boot_start:
+	.long _start
+
+.globl _bss_start
+_bss_start:
+	.long __bss_start
+
+.globl _bss_end
+_bss_end:
+	.long _end

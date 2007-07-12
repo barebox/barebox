@@ -34,6 +34,8 @@ ifneq ($(KBUILD_SRC),)
 else
 	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
 endif
+	@echo '  SYMLINK include/asm-arm/proc -> include/asm-arm/proc-armv'
+	$(Q)ln -fsn proc-armv include/asm-arm/proc
 	@touch $@
 
 archprepare: maketools
@@ -57,4 +59,4 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-MRPROPER_FILES += include/asm-arm/arch
+MRPROPER_FILES += include/asm-arm/arch include/asm-arm/proc

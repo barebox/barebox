@@ -174,16 +174,15 @@ void console_putc(unsigned int ch, char c)
 	struct console_device *cdev = first_console;
 	int init = INITDATA(initialized);
 
-	early_console_putc(INITDATA(early_console_base), c);
-	return;
-
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
 		return;
 
+#ifdef CONFIG_HAS_EARLY_INIT
 	case CONSOLE_INIT_EARLY:
 		early_console_putc(INITDATA(early_console_base), c);
 		return;
+#endif
 
 	case CONSOLE_INIT_FULL:
 		while (cdev) {
@@ -301,6 +300,8 @@ int ctrlc (void)
 	return 0;
 }
 
+#ifdef CONFIG_HAS_EARLY_INIT
+
 void early_console_start(const char *name, int baudrate)
 {
 	void *base = get_early_console_base(name);
@@ -312,3 +313,4 @@ void early_console_start(const char *name, int baudrate)
 	}
 }
 
+#endif

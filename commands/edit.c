@@ -185,7 +185,7 @@ static int edit_read_file(const char *path)
 	struct line *line;
 	struct line *lastline = NULL;
 	char *filebuffer;
-	char *linestr;
+	char *linestr, *lineend;
 	struct stat s;
 
 	if (!stat(path, &s)) {
@@ -195,8 +195,17 @@ static int edit_read_file(const char *path)
 			return -1;
 		}
 
-		linestr = strtok(filebuffer, "\r\n");
-		while (linestr) {
+		linestr = filebuffer;
+		while (1) {
+			if (!*linestr)
+				break;
+
+			lineend = strchr(linestr, '\n');
+
+			if (!lineend && !*linestr)
+				break;
+
+			*lineend = 0;
 			line = line_realloc(strlen(linestr) + 1, NULL);
 			if (!buffer)
 				buffer = line;
@@ -206,8 +215,13 @@ static int edit_read_file(const char *path)
 				lastline->next = line;
 			line->next = 0;
 			lastline = line;
-			linestr = strtok(NULL, "\r\n");
+
+			if (!lineend)
+				break;
+
+			linestr = lineend + 1; 
 		}
+		free(filebuffer);
 	}
 
 	if (!buffer) {
@@ -216,6 +230,19 @@ static int edit_read_file(const char *path)
 	}
 
 	return 0;
+}
+
+static void free_buffer(void)
+{
+	struct line *line, *tmp;
+
+	line = buffer;
+
+	while(line) {
+		tmp = line->next;
+		line_free(line);
+		line = tmp;
+	}
 }
 
 static int save_file(const char *path)
@@ -235,7 +262,6 @@ static int save_file(const char *path)
 		tmp = line->next;
 		write(fd, line->data, strlen(line->data));
 		write(fd, "\n", 1);
-		line_free(line);
 		line = tmp;
 	}
 	close(fd);
@@ -489,7 +515,9 @@ int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		}
 	}
 out:
+	free_buffer();
 	printf("%c[2J", 27);
+	printf("\n");
 	return 0;
 }
 

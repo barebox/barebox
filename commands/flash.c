@@ -51,7 +51,7 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	}
 
 	if (stat(filename, &s)) {
-		printf("stat %s:", filename, errno_str());
+		printf("stat %s: %s\n", filename, errno_str());
 		return 1;
 	}
 

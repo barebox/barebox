@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
+#include <linux/ctype.h>
 
 unsigned long strtoul_suffix(const char *str, char **endp, int base)
 {
@@ -66,6 +67,9 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 		*size = strtoul_suffix(str + 1, &endp, 0) + 1;
 		return 0;
 	}
+
+	if (!isdigit(*str))
+		return -1;
 
 	*start = strtoul_suffix(str, &endp, 0);
 

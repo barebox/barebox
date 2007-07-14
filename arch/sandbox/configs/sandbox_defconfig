@@ -1,0 +1,143 @@
+#
+# Automatically generated make config: don't edit
+# U-Boot version: 2.0.0-trunk
+# Fri Jul 13 21:25:53 2007
+#
+CONFIG_TEXT_BASE=""
+CONFIG_BOARDINFO="sandbox"
+CONFIG_LINUX=y
+CONFIG_GREGORIAN_CALENDER=y
+
+#
+# General Settings              
+#
+# CONFIG_BROKEN is not set
+CONFIG_PROMPT="uboot:"
+CONFIG_BAUDRATE=115200
+CONFIG_CMDLINE_EDITING=y
+# CONFIG_AUTO_COMPLETE is not set
+# CONFIG_LONGHELP is not set
+CONFIG_CBSIZE=1024
+CONFIG_MAXARGS=16
+CONFIG_HUSH_PARSER=y
+CONFIG_PROMPT_HUSH_PS2="> "
+CONFIG_DYNAMIC_CRC_TABLE=y
+CONFIG_ERRNO_MESSAGES=y
+CONFIG_TIMESTAMP=y
+CONFIG_CONSOLE_ACTIVATE_FIRST=y
+# CONFIG_OF_FLAT_TREE is not set
+
+#
+# Debugging                     
+#
+
+#
+# Commands                      
+#
+
+#
+# scripting                     
+#
+CONFIG_CMD_EDIT=y
+CONFIG_CMD_EXEC=y
+CONFIG_CMD_SLEEP=y
+CONFIG_CMD_ENVIRONMENT=y
+CONFIG_CMD_HELP=y
+
+#
+# file commands                 
+#
+CONFIG_CMD_LS=y
+CONFIG_CMD_RM=y
+CONFIG_CMD_CAT=y
+CONFIG_CMD_MKDIR=y
+CONFIG_CMD_RMDIR=y
+CONFIG_CMD_CP=y
+CONFIG_CMD_PWD=y
+CONFIG_CMD_CD=y
+CONFIG_CMD_MOUNT=y
+CONFIG_CMD_UMOUNT=y
+
+#
+# console                       
+#
+CONFIG_CMD_CLEAR=y
+CONFIG_CMD_ECHO=y
+
+#
+# i2c                           
+#
+
+#
+# memory                        
+#
+CONFIG_CMD_MEMINFO=y
+CONFIG_CMD_MEMORY=y
+CONFIG_CMD_CRC=y
+# CONFIG_CMD_MTEST is not set
+
+#
+# network                       
+#
+
+#
+# flash                         
+#
+# CONFIG_CMD_FLASH is not set
+
+#
+# booting                       
+#
+# CONFIG_CMD_BOOTM is not set
+CONFIG_CMD_RESET=y
+CONFIG_CMD_GO=y
+CONFIG_CMD_PARTITION=y
+CONFIG_CMD_TEST=y
+CONFIG_NET=y
+CONFIG_NET_BOOTP=y
+CONFIG_NET_DHCP=y
+# CONFIG_NET_RARP is not set
+# CONFIG_NET_SNTP is not set
+# CONFIG_NET_NFS is not set
+CONFIG_NET_PING=y
+CONFIG_NET_TFTP=y
+
+#
+# Drivers                       
+#
+
+#
+# serial drivers                
+#
+CONFIG_DRIVER_SERIAL_LINUX_COMSOLE=y
+
+#
+# Network drivers               
+#
+# CONFIG_DRIVER_NET_TAP is not set
+
+#
+# video drivers                 
+#
+# CONFIG_DRIVER_VIDEO_S1D13706 is not set
+
+#
+# I2C drivers                   
+#
+
+#
+# USB host support              
+#
+
+#
+# flash drivers                 
+#
+# CONFIG_DRIVER_CFI is not set
+# CONFIG_DRIVER_CFI_NEW is not set
+
+#
+# Filesystem support            
+#
+CONFIG_FS_CRAMFS=y
+CONFIG_ZLIB=y
+CONFIG_CRC32=y

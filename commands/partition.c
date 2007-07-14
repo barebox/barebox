@@ -31,37 +31,37 @@
 
 static void dev_del_partitions(struct device_d *physdev)
 {
-        struct device_d *dev;
-        char buf[MAX_DRIVER_NAME];
-        int i = 0;
+	struct device_d *dev;
+	char buf[MAX_DRIVER_NAME];
+	int i = 0;
 
-        /* This is lame. Devices should to able to have children */
-        while (1) {
-                sprintf(buf, "%s.%d", physdev->id, i);
-                dev = device_from_spec_str(buf, NULL);
-                if (dev) {
+	/* This is lame. Devices should to able to have children */
+	while (1) {
+		sprintf(buf, "%s.%d", physdev->id, i);
+		dev = device_from_spec_str(buf, NULL);
+		if (dev) {
 			struct partition *part = dev->type_data;
-                        unregister_device(dev);
+			unregister_device(dev);
 			free(part);
-		}
-                else
-                        break;
-                i++;
-        }
+		} else
+			break;
+		i++;
+	}
 }
 
-static int mtd_part_do_parse_one (struct partition *part, const char *str, char **endp)
+static int mtd_part_do_parse_one(struct partition *part, const char *str,
+				 char **endp)
 {
-        ulong size;
-        char *end;
-        char buf[MAX_DRIVER_NAME];
+	ulong size;
+	char *end;
+	char buf[MAX_DRIVER_NAME];
 
 	memset(buf, 0, MAX_DRIVER_NAME);
 
-        if (*str == '-') {
-                size = part->physdev->size - part->offset;
+	if (*str == '-') {
+		size = part->physdev->size - part->offset;
 		end = (char *)str + 1;
-        } else {
+	} else {
 		size = strtoul_suffix(str, &end, 0);
 	}
 
@@ -70,95 +70,95 @@ static int mtd_part_do_parse_one (struct partition *part, const char *str, char 
 		return -EINVAL;
 	}
 
-        str = end;
+	str = end;
 
-        if (*str == '(') {
+	if (*str == '(') {
 		str++;
-                end = strchr(str, ')');
-                if (!end) {
-                        printf("could not find matching ')'\n");
-                        return -EINVAL;
-                }
-                if (end - str >= MAX_DRIVER_NAME) {
-                        printf("device name too long\n");
-                        return -EINVAL;
-                }
+		end = strchr(str, ')');
+		if (!end) {
+			printf("could not find matching ')'\n");
+			return -EINVAL;
+		}
+		if (end - str >= MAX_DRIVER_NAME) {
+			printf("device name too long\n");
+			return -EINVAL;
+		}
 
-                memcpy(part->name, str, end - str);
-                end++;
-        }
+		memcpy(part->name, str, end - str);
+		end++;
+	}
 
-        str = end;
+	str = end;
 
-        if (*str == 'r' && *(str + 1) == 'o') {
-                part->readonly = 1;
-                end = (char *)(str + 2);
-        }
+	if (*str == 'r' && *(str + 1) == 'o') {
+		part->readonly = 1;
+		end = (char *)(str + 2);
+	}
 
-        if (endp)
-                *endp = end;
+	if (endp)
+		*endp = end;
 
-        strcpy(part->device.name, "partition");
-        part->device.size = size;
+	strcpy(part->device.name, "partition");
+	part->device.size = size;
 
-        return 0;
+	return 0;
 }
 
-int do_addpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_addpart(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
-        struct partition *part;
-        struct device_d *dev;
-        char *endp;
-        int num = 0;
-        unsigned long offset;
+	struct partition *part;
+	struct device_d *dev;
+	char *endp;
+	int num = 0;
+	unsigned long offset;
 
-        if (argc != 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	if (argc != 2) {
+		printf("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-        dev = device_from_spec_str(argv[1], &endp);
-        if (!dev) {
-                printf("no such device: %s\n",argv[1]);
-                return 1;
-        }
+	dev = device_from_spec_str(argv[1], &endp);
+	if (!dev) {
+		printf("no such device: %s\n", argv[1]);
+		return 1;
+	}
 
 	dev_del_partitions(dev);
 
-        offset = 0;
+	offset = 0;
 
-        while (1) {
-                part = xzalloc(sizeof(struct partition));
+	while (1) {
+		part = xzalloc(sizeof(struct partition));
 
-                part->offset = offset;
-                part->physdev = dev;
-                part->num = num;
-                part->device.map_base = dev->map_base + offset;
+		part->offset = offset;
+		part->physdev = dev;
+		part->num = num;
+		part->device.map_base = dev->map_base + offset;
 
-                if(mtd_part_do_parse_one(part, endp, &endp)) {
+		if (mtd_part_do_parse_one(part, endp, &endp)) {
 			dev_del_partitions(dev);
-                        free(part);
-                        return 1;
-                }
+			free(part);
+			return 1;
+		}
 
-                offset += part->device.size;
+		offset += part->device.size;
 
-                part->device.type_data = part;
+		part->device.type_data = part;
 
-                sprintf(part->device.id, "%s.%d", dev->id, num);
-                register_device(&part->device);
-                num++;
+		sprintf(part->device.id, "%s.%d", dev->id, num);
+		register_device(&part->device);
+		num++;
 
-                if(!*endp)
-                        break;
-                if(*endp != ',') {
-                        printf("parse error\n");
-                        return 1;
-                }
-                endp++;
-        }
+		if (!*endp)
+			break;
+		if (*endp != ',') {
+			printf("parse error\n");
+			return 1;
+		}
+		endp++;
+	}
 
-        return 0;
+	return 0;
 }
 
 static __maybe_unused char cmd_addpart_help[] =
@@ -174,30 +174,30 @@ static __maybe_unused char cmd_addpart_help[] =
 "Note That this command has to be reworked and will probably change it's API.";
 
 U_BOOT_CMD_START(addpart)
-	.maxargs	= 2,
-	.cmd		= do_addpart,
-	.usage		= "add a partition table to a device",
+	.maxargs = 2,
+	.cmd = do_addpart,
+	.usage = "add a partition table to a device",
 	U_BOOT_CMD_HELP(cmd_addpart_help)
 U_BOOT_CMD_END
 
-int do_delpart ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_delpart(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
-        struct device_d *dev;
+	struct device_d *dev;
 
-        if (argc != 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	if (argc != 2) {
+		printf("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-        dev = device_from_spec_str(argv[1], NULL);
-        if (!dev) {
-                printf("no such device: %s\n",argv[1]);
-                return 1;
-        }
+	dev = device_from_spec_str(argv[1], NULL);
+	if (!dev) {
+		printf("no such device: %s\n", argv[1]);
+		return 1;
+	}
 
 	dev_del_partitions(dev);
 
-        return 0;
+	return 0;
 }
 
 static __maybe_unused char cmd_delpart_help[] =
@@ -207,8 +207,9 @@ static __maybe_unused char cmd_delpart_help[] =
 "will likely change soon.\n";
 
 U_BOOT_CMD_START(delpart)
-	.maxargs	= 2,
-	.cmd		= do_delpart,
-	.usage		= "delete a partition table from a device",
+	.maxargs = 2,
+	.cmd = do_delpart,
+	.usage = "delete a partition table from a device",
 	U_BOOT_CMD_HELP(cmd_delpart_help)
 U_BOOT_CMD_END
+

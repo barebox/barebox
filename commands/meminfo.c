@@ -21,6 +21,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <malloc.h>
 
 int do_meminfo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {

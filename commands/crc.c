@@ -1,107 +1,100 @@
 #include <common.h>
 #include <command.h>
+#include <fs.h>
+#include <getopt.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <xfuncs.h>
+#include <malloc.h>
+#include <linux/ctype.h>
 
-#ifndef CONFIG_CRC32_VERIFY
-
-int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	ulong addr, length;
-	ulong crc;
-	ulong *ptr;
+	ulong start = 0, size = ~0, total = 0, now;
+	ulong crc = 0, vcrc = 0;
+	char *filename = "/dev/mem";
+	char *buf;
+	int fd, opt, err = 0, filegiven = 0, verify = 0;
 
-	if (argc < 3) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	getopt_reset();
 
-	addr = simple_strtoul (argv[1], NULL, 16);
-
-	length = simple_strtoul (argv[2], NULL, 16);
-
-	crc = crc32 (0, (const uchar *) addr, length);
-
-	printf ("CRC32 for %08lx ... %08lx ==> %08lx\n",
-			addr, addr + length - 1, crc);
-
-	if (argc > 3) {
-		ptr = (ulong *) simple_strtoul (argv[3], NULL, 16);
-		*ptr = crc;
-	}
-
-	return 0;
-}
-
-#else	/* CONFIG_CRC32_VERIFY */
-
-int do_mem_crc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-{
-	ulong addr, length;
-	ulong crc;
-	ulong *ptr;
-	ulong vcrc;
-	int verify;
-	int ac;
-	char **av;
-
-	if (argc < 3) {
-  usage:
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	av = argv + 1;
-	ac = argc - 1;
-	if (strcmp(*av, "-v") == 0) {
-		verify = 1;
-		av++;
-		ac--;
-		if (ac < 3)
-			goto usage;
-	} else
-		verify = 0;
-
-	addr = simple_strtoul(*av++, NULL, 16);
-	length = simple_strtoul(*av++, NULL, 16);
-
-	crc = crc32(0, (const uchar *) addr, length);
-
-	if (!verify) {
-		printf ("CRC32 for %08lx ... %08lx ==> %08lx\n",
-				addr, addr + length - 1, crc);
-		if (ac > 2) {
-			ptr = (ulong *) simple_strtoul (*av++, NULL, 16);
-			*ptr = crc;
+	while((opt = getopt(argc, argv, "f:v:")) > 0) {
+		switch(opt) {
+		case 'f':
+			filename = optarg;
+			filegiven = 1;
+			break;
+		case 'v':
+			verify = 1;
+			vcrc = simple_strtoul(optarg, NULL, 0);
+			break;
 		}
-	} else {
-		vcrc = simple_strtoul(*av++, NULL, 16);
-		if (vcrc != crc) {
-			printf ("CRC32 for %08lx ... %08lx ==> %08lx != %08lx ** ERROR **\n",
-					addr, addr + length - 1, crc, vcrc);
+	}
+
+	if (!filegiven && optind == argc) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	if (optind < argc) {
+		if (parse_area_spec(argv[optind], &start, &size)) {
+			printf("could not parse area description: %s\n", argv[optind]);
 			return 1;
 		}
 	}
 
-	return 0;
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		printf("open %s: %s\n", filename, errno_str());
+		return 1;
+	}
 
+	if (lseek(fd, start, SEEK_SET) < 0) {
+		printf("file is smaller than start address\n");
+		err = 1;
+		goto out;
+	}
+
+	buf = xmalloc(4096);
+
+	while (size) {
+		now = min((ulong)4096, size);
+		now = read(fd, buf, now);
+		if (!now)
+			break;
+		crc = crc32(crc, buf, now);
+		size -= now;
+		total += now;
+	}
+
+	printf ("CRC32 for %s 0x%08lx ... 0x%08lx ==> 0x%08lx",
+			filename, start, start + total - 1, crc);
+
+	if (verify && crc != vcrc) {
+		printf(" != 0x%08x ** ERROR **", vcrc);
+		err = 1;
+	}
+
+	printf("\n");
+
+	free(buf);
+out:
+	close(fd);
+
+	return err;
 }
-#endif	/* CONFIG_CRC32_VERIFY */
 
-#ifndef CONFIG_CRC32_VERIFY
+static __maybe_unused char cmd_crc_help[] =
+"Usage: crc32 [OPTION] [AREA]\n"
+"Calculate a crc32 checksum of a memory area\n"
+"Options:\n"
+"  -f <file>   Use file instead of memory\n"
+"  -v <crc>    Verfify\n";
 
 U_BOOT_CMD_START(crc32)
-	.maxargs	= 4,
-	.cmd		= do_mem_crc,
-	.usage		= "checksum calculation",
-	U_BOOT_CMD_HELP("address count [addr]\n    - compute CRC32 checksum [save at addr]\n")
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_crc,
+	.usage		= "crc32 checksum calculation",
+	U_BOOT_CMD_HELP(cmd_crc_help)
 U_BOOT_CMD_END
 
-#else	/* CONFIG_CRC32_VERIFY */
-
-U_BOOT_CMD(
-	crc32,    5,    0,     do_mem_crc,
-	"crc32   - checksum calculation\n",
-	"address count [addr]\n    - compute CRC32 checksum [save at addr]\n"
-	"-v address count crc\n    - verify crc of memory area\n"
-);
-
-#endif	/* CONFIG_CRC32_VERIFY */

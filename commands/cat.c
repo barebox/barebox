@@ -23,6 +23,7 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <fcntl.h>
 #include <linux/ctype.h>
 #include <errno.h>
 #include <xfuncs.h>
@@ -44,7 +45,7 @@ static int do_cat(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	buf = xmalloc(1024);
 
 	while (args < argc) {
-		fd = open(argv[args], 0);
+		fd = open(argv[args], O_RDONLY);
 		if (fd < 0) {
 			printf("could not open %s: %s\n", argv[args], errno_str());
 			goto out;

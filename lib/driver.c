@@ -125,12 +125,12 @@ void unregister_device(struct device_d *old_dev)
 {
         struct device_d *dev;
 
-	debug("unregister_device: %s\n",old_dev->name);
+	debug("unregister_device: %s:%s\n",old_dev->name, old_dev->id);
 
 	dev = first_device;
 
         while (dev) {
-                if (!strcmp(dev->next->name, old_dev->name)) {
+                if (dev->next == old_dev) {
 			if (old_dev->driver)
 				old_dev->driver->remove(old_dev);
                         dev->next = old_dev->next;

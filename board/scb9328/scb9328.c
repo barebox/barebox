@@ -24,6 +24,7 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/gpio.h>
 #include <partition.h>
 
 static struct device_d cfi_dev = {

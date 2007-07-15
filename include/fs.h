@@ -67,6 +67,8 @@ struct fs_driver_d {
 	int (*erase)(struct device_d *dev, FILE *f, size_t count,
 			unsigned long offset);
 
+	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
+
 	struct driver_d drv;
 
 	unsigned long flags;
@@ -110,6 +112,10 @@ int umount(const char *pathname);
 
 /* not-so-standard erase */
 int erase(int fd, size_t count, unsigned long offset);
+void *memmap(int fd, int flags);
+
+#define PROT_READ	1
+#define PROT_WRITE	2
 
 #define LS_RECURSIVE	1
 #define LS_SHOWARG	2

@@ -292,6 +292,28 @@ ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset)
         return -ENOSYS;
 }
 
+ssize_t dev_memmap(struct device_d *dev, void **map, int flags)
+{
+        if (dev->driver->memmap)
+                return dev->driver->memmap(dev, map, flags);
+	errno = -ENOSYS;
+        return -ENOSYS;
+}
+
+int generic_memmap_ro(struct device_d *dev, void **map, int flags)
+{
+	if (flags & PROT_WRITE)
+		return -EACCES;
+	*map = (void *)dev->map_base;
+	return 0;
+}
+
+int generic_memmap_rw(struct device_d *dev, void **map, int flags)
+{
+	*map = (void *)dev->map_base;
+	return 0;
+}
+
 int dummy_probe(struct device_d *dev)
 {
         return 0;

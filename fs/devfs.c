@@ -50,6 +50,13 @@ static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned lo
 	return dev_erase(dev, count, offset);
 }
 
+static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
+{
+	struct device_d *dev = f->inode;
+
+	return dev_memmap(dev, map, flags);
+}
+
 static int devfs_open(struct device_d *_dev, FILE *file, const char *filename)
 {
 	struct device_d *dev = get_device_by_id(filename + 1);
@@ -146,6 +153,7 @@ static struct fs_driver_d devfs_driver = {
 	.closedir  = devfs_closedir,
 	.stat      = devfs_stat,
 	.erase     = devfs_erase,
+	.memmap    = devfs_memmap,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.type   = DEVICE_TYPE_FS,

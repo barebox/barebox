@@ -41,6 +41,7 @@ static void dev_del_partitions(struct device_d *physdev)
 		dev = device_from_spec_str(buf, NULL);
 		if (dev) {
 			struct partition *part = dev->type_data;
+			printf("unregister %s %s\n", dev->name, dev->id);
 			unregister_device(dev);
 			free(part);
 		} else

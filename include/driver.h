@@ -53,6 +53,7 @@ struct driver_d {
 	ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
 	ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
 	ssize_t (*erase) (struct device_d*, size_t count, unsigned long offset);
+	int     (*memmap)(struct device_d*, void **map, int flags);
 
 	void    (*info) (struct device_d *);
 	void    (*shortinfo) (struct device_d *);
@@ -100,6 +101,7 @@ struct driver_d *get_driver_by_name(const char *name);
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset);
+int     dev_memmap(struct device_d *dev, void **map, int flags);
 
 /* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
@@ -107,6 +109,9 @@ ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong off
 
 /* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);
+
+int generic_memmap_ro(struct device_d *dev, void **map, int flags);
+int generic_memmap_rw(struct device_d *dev, void **map, int flags);
 
 #endif /* DRIVER_H */
 

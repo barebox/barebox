@@ -516,6 +516,25 @@ int erase(int fd, size_t count, unsigned long offset)
 	return errno;
 }
 
+void *memmap(int fd, int flags)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+	void *ret = NULL;
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (fsdrv->memmap)
+		errno = fsdrv->memmap(dev, f, &ret, flags);
+	else
+		errno = -EINVAL;
+
+	return ret;
+}
+
 int close(int fd)
 {
 	struct device_d *dev;

@@ -44,6 +44,22 @@ static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 	return -1;
 }
 
+static int part_memmap(struct device_d *dev, void **map, int flags)
+{
+	struct partition *part = dev->type_data;
+	int ret;
+
+	if (part->physdev->driver->memmap) {
+		ret = part->physdev->driver->memmap(part->physdev, map, flags);
+		if (ret)
+			return ret;
+		*map = (void *)((unsigned long)*map + part->offset);
+		return 0;
+	}
+
+	return -1;
+}
+
 static ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
 	struct partition *part = dev->type_data;
@@ -82,6 +98,7 @@ struct driver_d part_driver = {
 	.read  	= part_read,
 	.write 	= part_write,
 	.erase 	= part_erase,
+	.memmap = part_memmap,
 };
 
 static int partition_init(void)

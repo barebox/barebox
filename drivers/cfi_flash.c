@@ -518,6 +518,7 @@ static struct driver_d cfi_driver = {
 	.read   = mem_read,
 	.write  = cfi_write,
 	.erase  = cfi_erase,
+	.memmap = generic_memmap_ro,
 	.info   = cfi_info,
 };
 

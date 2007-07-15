@@ -320,7 +320,7 @@ ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
 int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
-        flash_info_t *info = malloc(sizeof(flash_info_t));
+	flash_info_t *info = malloc(sizeof(flash_info_t));
 
 	dev->priv = (void *)info;
 
@@ -341,18 +341,18 @@ int cfi_probe (struct device_d *dev)
 
 static int flash_find_sector(flash_info_t * info, unsigned long adr)
 {
-        int i;
-        unsigned long end;
+	int i;
+	unsigned long end;
 
-        for (i = 0; i < info->sector_count; i++) {
-                if (i == info->sector_count)
-                        end = info->start[0] + info->size - 1;
-                else
-                        end = info->start[i + 1] - 1;
-                if (adr >= info->start[i] && adr <= end)
-                        return i;
-        }
-        return -1;
+	for (i = 0; i < info->sector_count; i++) {
+		if (i == info->sector_count)
+			end = info->start[0] + info->size - 1;
+		else
+			end = info->start[i + 1] - 1;
+		if (adr >= info->start[i] && adr <= end)
+			return i;
+	}
+	return -1;
 }
 
 /*-----------------------------------------------------------------------
@@ -387,44 +387,44 @@ int flash_erase_one (flash_info_t * info, long sect)
 	} else
 		putc ('.');
 
-        return rcode;
+	return rcode;
 }
 
 int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
-        flash_info_t *finfo = (flash_info_t *)dev->priv;
-        unsigned long start, end;
-        int i, ret = 0;
+	flash_info_t *finfo = (flash_info_t *)dev->priv;
+	unsigned long start, end;
+	int i, ret = 0;
 
 	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
 
-        start = flash_find_sector(finfo, dev->map_base + offset);
-        end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
+	start = flash_find_sector(finfo, dev->map_base + offset);
+	end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
 
-        for (i = start; i <= end; i++) {
-                ret = flash_erase_one (finfo, i);
-                if (ret)
-                        goto out;
-        }
+	for (i = start; i <= end; i++) {
+		ret = flash_erase_one (finfo, i);
+		if (ret)
+			goto out;
+	}
 out:
-        putc('\n');
-        return ret;
+	putc('\n');
+	return ret;
 }
 
 static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, unsigned long offset, ulong flags)
 {
-        flash_info_t *finfo = (flash_info_t *)dev->priv;
-        int ret;
+	flash_info_t *finfo = (flash_info_t *)dev->priv;
+	int ret;
 
 	debug("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
 
-        ret = write_buff (finfo, buf, dev->map_base + offset, count);
-        return ret == 0 ? count : -1;
+	ret = write_buff (finfo, buf, dev->map_base + offset, count);
+	return ret == 0 ? count : -1;
 }
 
 void cfi_info (struct device_d* dev)
 {
-        flash_info_t *info = (flash_info_t *)dev->priv;
+	flash_info_t *info = (flash_info_t *)dev->priv;
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
@@ -513,17 +513,17 @@ void cfi_info (struct device_d* dev)
 }
 
 static struct driver_d cfi_driver = {
-        .name  = "cfi_flash",
-        .probe = cfi_probe,
-        .read  = mem_read,
-        .write = cfi_write,
-        .erase = cfi_erase,
-        .info  = cfi_info,
+	.name   = "cfi_flash",
+	.probe  = cfi_probe,
+	.read   = mem_read,
+	.write  = cfi_write,
+	.erase  = cfi_erase,
+	.info   = cfi_info,
 };
 
 static int cfi_init(void)
 {
-        return register_driver(&cfi_driver);
+	return register_driver(&cfi_driver);
 }
 
 device_initcall(cfi_init);
@@ -729,7 +729,7 @@ static int flash_status_check (flash_info_t * info, flash_sect_t sector,
 {
 	uint64_t start;
 
-        tout *= 1000000;
+	tout *= 1000000;
 
 	/* Wait for command completion */
 	start = get_time_ns();

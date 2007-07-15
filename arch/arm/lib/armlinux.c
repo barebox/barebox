@@ -67,10 +67,10 @@ static struct tag *params;
 #endif
 
 
-int do_bootm_linux(image_header_t *os_header, image_header_t *initrd)
+int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 {
-	ulong initrd_start, initrd_end;
 	void (*theKernel)(int zero, int arch, uint params);
+	image_header_t *os_header = &os_handle->header;
 #ifdef CONFIG_CMDLINE_TAG
 	const char *commandline = getenv ("bootargs");
 #endif
@@ -78,7 +78,9 @@ int do_bootm_linux(image_header_t *os_header, image_header_t *initrd)
 		printf("Multifile images not handled at the moment\n");
 		return -1;
 	}
-printf("os header: 0x%p ep: %\n", os_header, os_header + 1);
+
+	printf("commandline: %s\n", commandline);
+
 	theKernel = (void (*)(int, int, uint))ntohl((unsigned long)(os_header->ih_ep));
 
 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
@@ -113,7 +115,7 @@ printf("os header: 0x%p ep: %\n", os_header, os_header + 1);
 #endif
 	setup_end_tag ();
 #endif
-	if (relocate_image(os_header, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
 	/* we assume that the kernel is in place */

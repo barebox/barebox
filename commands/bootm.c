@@ -167,10 +167,11 @@ print_type (image_header_t *hdr)
 }
 #endif
 
-int relocate_image(image_header_t *hdr, void *load_address)
+int relocate_image(struct image_handle *handle, void *load_address)
 {
-	unsigned long data = (unsigned long)(hdr + 1);
+	image_header_t *hdr = &handle->header;
 	unsigned long len  = ntohl(hdr->ih_size);
+	unsigned long data = (unsigned long)(handle->data);
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
@@ -215,12 +216,12 @@ int relocate_image(image_header_t *hdr, void *load_address)
 	return 0;
 }
 
-image_header_t *map_image(const char *filename, int verify)
+struct image_handle *map_image(const char *filename, int verify)
 {
 	int fd;
 	uint32_t checksum, len;
-	void *data;
-	image_header_t *header, *tmp_header;
+	struct image_handle *handle;
+	image_header_t *header;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
@@ -228,7 +229,8 @@ image_header_t *map_image(const char *filename, int verify)
 		return NULL;
 	}
 
-	header = xmalloc(sizeof(image_header_t));
+	handle = xzalloc(sizeof(struct image_handle));
+	header = &handle->header;
 
 	if (read(fd, header, sizeof(image_header_t)) < 0) {
 		printf("could not read: %s\n", errno_str());
@@ -249,36 +251,45 @@ image_header_t *map_image(const char *filename, int verify)
 	}
 	len  = ntohl(header->ih_size);
 
-	tmp_header = realloc(header, sizeof(image_header_t) + len);
-	if (!tmp_header)
-		goto err_out;
-	header = tmp_header;
-
-	data = (void *)(header + 1);
-
-	if (read(fd, data, len) < 0) {
-		printf("could not read: %s\n", errno_str());
-		goto err_out;
+	handle->data = memmap(fd, PROT_READ);
+	if (!handle) {
+		handle->data = xmalloc(len);
+		handle->flags = IH_MALLOC;
+		if (read(fd, &handle->data, len) < 0) {
+			printf("could not read: %s\n", errno_str());
+			goto err_out;
+		}
+	} else {
+		handle->data = (void *)((unsigned long)handle->data + sizeof(image_header_t));
 	}
 
 	if (verify) {
 		puts ("   Verifying Checksum ... ");
-		if (crc32 (0, data, len) != ntohl(header->ih_dcrc)) {
+		if (crc32 (0, handle->data, len) != ntohl(header->ih_dcrc)) {
 			printf ("Bad Data CRC\n");
 			goto err_out;
 		}
 		puts ("OK\n");
 	}
 
-	print_image_hdr (header);
+	print_image_hdr(header);
 
 	close(fd);
 
-	return header;
+	return handle;
 err_out:
 	close(fd);
-	free(header);
+	if (handle->flags & IH_MALLOC)
+		free(handle->data);
+	free(handle);
 	return NULL;
+}
+
+void unmap_image(struct image_handle *handle)
+{
+	if (handle->flags & IH_MALLOC)
+		free(handle->data);
+	free(handle);
 }
 
 #ifdef CONFIG_OF_FLAT_TREE
@@ -295,10 +306,10 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	char	*initrd = NULL;
 	image_header_t *os_header;
 	image_header_t *initrd_header = NULL;
+	struct image_handle *os_handle, *initrd_handle = NULL;
 #ifdef CONFIG_OF_FLAT_TREE
 	char	*oftree = NULL;
 #endif
-	int ignore_load_address = 0;
 
 	getopt_reset();
 
@@ -309,9 +320,6 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			break;
 		case 'n':
 			verify = 0;
-			break;
-		case 'i':
-			ignore_load_address = 1;
 			break;
 #ifdef CONFIG_OF_FLAT_TREE
 		case 'o':
@@ -328,9 +336,11 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	os_header = map_image(argv[optind], verify);
-	if (!os_header)
+	os_handle = map_image(argv[optind], verify);
+	if (!os_handle)
 		return 1;
+
+	os_header = &os_handle->header;
 
 	if (os_header->ih_arch != IH_CPU)	{
 		printf ("Unsupported Architecture 0x%x\n", os_header->ih_arch);
@@ -338,9 +348,10 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	}
 
 	if (initrd) {
-		initrd_header = map_image(initrd, verify);
-		if (!initrd_header)
+		initrd_handle = map_image(initrd, verify);
+		if (!initrd_handle)
 			goto err_out;
+		initrd_header = &initrd_handle->header;
 	}
 #if 0
 	switch (os_header->ih_type) {
@@ -383,9 +394,9 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		fixup_silent_linux();
 #endif
 #ifdef CONFIG_OF_FLAT_TREE
-		do_bootm_linux(os_header, initrd_header, oftree);
+		do_bootm_linux(os_handle, initrd_handle, oftree);
 #else
-		do_bootm_linux(os_header, initrd_header);
+		do_bootm_linux(os_handle, initrd_handle);
 #endif
 	    break;
 #ifdef CONFIG_NETBSD
@@ -434,10 +445,10 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif
 
 err_out:
-	if (os_header)
-		free(os_header);
-	if (initrd_header)
-		free(initrd_header);
+	if (os_handle)
+		unmap_image(os_handle);
+	if (initrd_handle)
+		unmap_image(initrd_handle);
 	return 1;
 }
 

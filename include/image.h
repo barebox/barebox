@@ -180,6 +180,13 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
+struct image_handle {
+	image_header_t	header;
+	void *data;
+#define IH_MALLOC	1
+	int flags;
+};
+
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);
 
@@ -187,12 +194,12 @@ void	print_image_hdr (image_header_t *hdr);
  * Load an image into memory. Returns a pointer to the loaded
  * image.
  */
-image_header_t *map_image(const char *filename, int verify);
+struct image_handle *map_image(const char *filename, int verify);
 
 /*
  * Relocate an image to load_address by uncompressing
  * or just copying.
  */
-int relocate_image(image_header_t *hdr, void *load_address);
+int relocate_image(struct image_handle *handle, void *load_address);
 
 #endif	/* __IMAGE_H__ */

@@ -17,7 +17,7 @@ extern bd_t *bd;
 #define SHOW_BOOT_PROGRESS(x)
 
 int
-do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const char *oftree)
+do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handle, const char *oftree)
 {
 	ulong	sp;
 	ulong	initrd_end = 0;
@@ -30,18 +30,23 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 	void	(*kernel)(bd_t *, ulong, ulong, ulong, ulong);
 #ifdef CONFIG_OF_FLAT_TREE
 	char	*of_flat_tree = NULL;
-//	ulong	of_data = 0;
 #endif
+	image_header_t *os_header = &os_handle->header;
+	image_header_t *initrd_header = NULL;
 	void    *os_data = NULL;
 	void    *initrd_data = NULL;
 	void    *of_data = NULL;
+	struct image_handle *oftree_handle;
 	unsigned long os_len, initrd_len;
+
+	if (initrd_handle)
+		initrd_header = &initrd_handle->header;
 
 	printf("entering %s: os_header: %p initrd_header: %p oftree: %p\n",
 			__FUNCTION__, os_header, initrd_header, oftree);
 
 	if (os_header->ih_type == IH_TYPE_MULTI) {
-		unsigned long *data = (unsigned long *)(os_header + 1);
+		unsigned long *data = (unsigned long *)(os_handle->data);
 		unsigned long len1 = 0, len2 = 0;
 
 		if (!*data) {
@@ -83,22 +88,21 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 			initrd_len  = len1;
 		}
 	} else {
-		os_data = (void *)(os_header + 1);
+		os_data = os_handle->data;
 		printf("set os_data to %p\n", os_data);
 	}
 
-	if (initrd_header)
-		initrd_data = (void *)(initrd_header + 1);
+	if (initrd_handle)
+		initrd_data = initrd_handle->data;
 
 #ifdef CONFIG_OF_FLAT_TREE
 	if (oftree) {
-		image_header_t *oftree_header;
 		/* The oftree can be given either as an uboot image or as a
 		 * binary blob. First try to read it as an image.
 		 */
-		oftree_header = map_image(oftree, 1);
-		if (oftree_header) {
-			of_data = (void *)(oftree_header + 1);
+		oftree_handle = map_image(oftree, 1);
+		if (oftree_handle) {
+			of_data = oftree_handle->data;
 		} else {
 			of_data = read_file(oftree);
 			if (!of_data) {
@@ -197,7 +201,7 @@ do_bootm_linux(image_header_t *os_header, image_header_t *initrd_header, const c
 
 	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))ntohl(os_header->ih_ep); /* FIXME */
 
-	if (relocate_image(os_header, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
 #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)

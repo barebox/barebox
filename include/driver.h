@@ -16,49 +16,49 @@
 
 struct device_d {
 	char name[MAX_DRIVER_NAME]; /* The name of this device. Used to match
-	                             * to the corresponding driver.
+				     * to the corresponding driver.
 				     */
-        char id[MAX_DRIVER_NAME];
+	char id[MAX_DRIVER_NAME];
 
 	unsigned long size;
 
-        /* For devices which are directly mapped into memory, i.e. NOR Flash or
-         * SDRAM.
-         */
-        unsigned long map_base;
+	/* For devices which are directly mapped into memory, i.e. NOR Flash or
+	 * SDRAM.
+	 */
+	unsigned long map_base;
 
-        void *platform_data; /* board specific information about this device */
-        void *priv;          /* data private to the driver */
+	void *platform_data; /* board specific information about this device */
+	void *priv;          /* data private to the driver */
 	void *type_data;     /* In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
 			      */
 
-        struct driver_d *driver; /* The driver for this device */
+	struct driver_d *driver; /* The driver for this device */
 
 	struct device_d *next;
 
-        unsigned long type;
+	unsigned long type;
 
-        struct param_d *param;
+	struct param_d *param;
 };
 
 struct driver_d {
 	char name[MAX_DRIVER_NAME]; /* The name of this driver. Used to match to
-	                             * the corresponding device.
+				     * the corresponding device.
 				     */
 	struct driver_d *next;
 
-        int     (*probe) (struct device_d *);
+	int     (*probe) (struct device_d *);
 	int     (*remove)(struct device_d *);
-        ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
-        ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
-        ssize_t (*erase) (struct device_d*, size_t count, unsigned long offset);
+	ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*erase) (struct device_d*, size_t count, unsigned long offset);
 
-        void    (*info) (struct device_d *);
-        void    (*shortinfo) (struct device_d *);
+	void    (*info) (struct device_d *);
+	void    (*shortinfo) (struct device_d *);
 
-        unsigned long type;
-        void *type_data; /* In case this driver is of a specific type, i.e. a filesystem
+	unsigned long type;
+	void *type_data; /* In case this driver is of a specific type, i.e. a filesystem
 			  * driver, this pointer points to the corresponding data struct
 			  */
 };

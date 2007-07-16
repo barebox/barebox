@@ -66,6 +66,8 @@ struct fs_driver_d {
 
 	int (*erase)(struct device_d *dev, FILE *f, size_t count,
 			unsigned long offset);
+	int (*protect)(struct device_d *dev, FILE *f, size_t count,
+			unsigned long offset, int prot);
 
 	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
 
@@ -110,8 +112,9 @@ int closedir(DIR *dir);
 int mount (const char *device, const char *fsname, const char *path);
 int umount(const char *pathname);
 
-/* not-so-standard erase */
+/* not-so-standard functions */
 int erase(int fd, size_t count, unsigned long offset);
+int protect(int fd, size_t count, unsigned long offset, int prot);
 void *memmap(int fd, int flags);
 
 #define PROT_READ	1

@@ -292,6 +292,14 @@ ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset)
         return -ENOSYS;
 }
 
+int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+{
+        if (dev->driver->protect)
+                return dev->driver->protect(dev, count, offset, prot);
+	errno = -ENOSYS;
+        return -ENOSYS;
+}
+
 ssize_t dev_memmap(struct device_d *dev, void **map, int flags)
 {
         if (dev->driver->memmap)

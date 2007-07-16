@@ -90,36 +90,67 @@ U_BOOT_CMD_END
 
 int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int p;
-	int rcode = 0;
-	struct memarea_info mem_info;
+	int opt, fd;
+	char *filename = NULL;
+	struct stat s;
+	int prot = 1;
+	unsigned long start = 0, size = ~0;
 
-	if (argc < 3) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "f:")) > 0) {
+		switch(opt) {
+		case 'f':
+			filename = optarg;
+			break;
+		}
+	}
+
+	if (*argv[0] == 'u')
+		prot = 0;
+
+	if (stat(filename, &s)) {
+		printf("stat %s: %s\n", filename, errno_str());
 		return 1;
 	}
 
-	if (strcmp(argv[1], "off") == 0) {
-		p = 0;
-	} else if (strcmp(argv[1], "on") == 0) {
-		p = 1;
-	} else {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	size = s.st_size;
+
+	if (!filename) {
+		printf("missing filename\n");
 		return 1;
 	}
 
-	if (spec_str_to_info(argv[2], &mem_info)) {
-		printf ("-EPARSE\n");
+	fd = open(filename, O_WRONLY);
+	if (fd < 0) {
+		printf("open %s:", filename, errno_str());
 		return 1;
 	}
 
-//	rcode = flash_sect_protect (p, addr_first, addr_last);
-	return rcode;
+	if (optind  < argc)
+		parse_area_spec(argv[optind], &start, &size);
+
+        if(protect(fd, size, start, prot)) {
+		perror("protect");
+		return 1;
+	}
+
+	close(fd);
+
+	return 0;
 }
 
 U_BOOT_CMD_START(protect)
 	.maxargs	= 4,
 	.cmd		= do_protect,
-	.usage		= "enable or disable FLASH write protection",
+	.usage		= "enable FLASH write protection",
 	U_BOOT_CMD_HELP("write me\n")
 U_BOOT_CMD_END
+
+U_BOOT_CMD_START(unprotect)
+	.maxargs	= 4,
+	.cmd		= do_protect,
+	.usage		= "disable FLASH write protection",
+	U_BOOT_CMD_HELP("write me\n")
+U_BOOT_CMD_END
+

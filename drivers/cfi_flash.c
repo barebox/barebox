@@ -411,6 +411,27 @@ out:
 	return ret;
 }
 
+int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+{
+	flash_info_t *finfo = (flash_info_t *)dev->priv;
+	unsigned long start, end;
+	int i, ret = 0;
+
+	printf("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+
+	start = flash_find_sector(finfo, dev->map_base + offset);
+	end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
+
+	for (i = start; i <= end; i++) {
+		ret = flash_real_protect (finfo, i, prot);
+		if (ret)
+			goto out;
+	}
+out:
+	putc('\n');
+	return ret;
+}
+
 static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, unsigned long offset, ulong flags)
 {
 	flash_info_t *finfo = (flash_info_t *)dev->priv;
@@ -518,6 +539,7 @@ static struct driver_d cfi_driver = {
 	.read   = mem_read,
 	.write  = cfi_write,
 	.erase  = cfi_erase,
+	.protect= cfi_protect,
 	.memmap = generic_memmap_ro,
 	.info   = cfi_info,
 };
@@ -628,10 +650,6 @@ int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
 	return flash_write_cfiword (info, wp, cword);
 }
 
-/*-----------------------------------------------------------------------
- */
-#ifdef CFG_FLASH_PROTECTION
-
 int flash_real_protect (flash_info_t * info, long sector, int prot)
 {
 	int retcode = 0;
@@ -695,7 +713,7 @@ void flash_read_factory_serial (flash_info_t * info, void *buffer, int offset,
 	flash_write_cmd (info, 0, 0, info->cmd_reset);
 }
 
-#endif /* CFG_FLASH_PROTECTION */
+
 
 /*
  * flash_is_busy - check to see if the flash is busy
@@ -1125,9 +1143,7 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 
 	info->ext_addr = 0;
 	info->cfi_version = 0;
-#ifdef CFG_FLASH_PROTECTION
 	info->legacy_unlock = 0;
-#endif
 
 	/* first only malloc space for the first sector */
 	info->start = malloc(sizeof(ulong));
@@ -1158,13 +1174,11 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 		case CFI_CMDSET_INTEL_EXTENDED:
 		default:
 			info->cmd_reset = FLASH_CMD_RESET;
-#ifdef CFG_FLASH_PROTECTION
 			/* read legacy lock/unlock bit from intel flash */
 			if (info->ext_addr) {
 				info->legacy_unlock = flash_read_uchar (info,
 						info->ext_addr + 5) & 0x08;
 			}
-#endif
 			break;
 		case CFI_CMDSET_AMD_STANDARD:
 		case CFI_CMDSET_AMD_EXTENDED:

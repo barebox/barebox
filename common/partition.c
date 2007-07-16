@@ -44,6 +44,16 @@ static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 	return -1;
 }
 
+static int part_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+{
+	struct partition *part = dev->type_data;
+
+	if (part->physdev->driver->protect)
+		return part->physdev->driver->protect(part->physdev, count, offset + part->offset, prot);
+
+	return -1;
+}
+
 static int part_memmap(struct device_d *dev, void **map, int flags)
 {
 	struct partition *part = dev->type_data;
@@ -98,6 +108,7 @@ struct driver_d part_driver = {
 	.read  	= part_read,
 	.write 	= part_write,
 	.erase 	= part_erase,
+	.protect= part_protect,
 	.memmap = part_memmap,
 };
 

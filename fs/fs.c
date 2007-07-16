@@ -516,6 +516,27 @@ int erase(int fd, size_t count, unsigned long offset)
 	return errno;
 }
 
+int protect(int fd, size_t count, unsigned long offset, int prot)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (f->pos + count > f->size)
+		count = f->size - f->pos;
+
+	if (fsdrv->protect)
+		errno = fsdrv->protect(dev, f, count, offset, prot);
+	else
+		errno = -EINVAL;
+
+	return errno;
+}
+
 void *memmap(int fd, int flags)
 {
 	struct device_d *dev;

@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION =-trunk
+EXTRAVERSION =-git
 NAME = Homicidal Dwarf Hamster
 
 # *DOCUMENTATION*

@@ -30,6 +30,7 @@
 #include <asm/setup.h>
 #include <environment.h>
 #include <boot.h>
+#include <asm/u-boot-arm.h>
 
 #if defined (CONFIG_SETUP_MEMORY_TAGS) || \
     defined (CONFIG_CMDLINE_TAG) || \

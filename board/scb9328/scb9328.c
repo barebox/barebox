@@ -26,6 +26,8 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/gpio.h>
 #include <partition.h>
+#include <fs.h>
+#include <fcntl.h>
 
 static struct device_d cfi_dev = {
         .name     = "cfi_flash",
@@ -59,6 +61,7 @@ static int scb9328_devices_init(void) {
 
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");
 	dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
+	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	return 0;
 }

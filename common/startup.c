@@ -43,7 +43,7 @@
 extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[], __u_boot_initcalls_end[];
 
 const char *version_string =
-	"U-Boot" UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
+	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
 
 static int display_banner (void)
 {

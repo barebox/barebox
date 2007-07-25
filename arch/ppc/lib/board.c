@@ -29,6 +29,7 @@
 #include <mem_malloc.h>
 #include <init.h>
 #include <net.h>
+#include <reloc.h>
 
 char *strmhz (char *buf, long hz)
 {
@@ -55,9 +56,22 @@ char *strmhz (char *buf, long hz)
 
 void board_init_r (ulong end_of_ram)
 {
+	unsigned long malloc_end;
+
 	asm ("sync ; isync");
 
-	mem_malloc_init((void *)(end_of_ram - 4096 - CFG_MALLOC_LEN), (void *)(end_of_ram - 4096));
+	_text_base += reloc_offset();
+
+	/*
+	 * FIXME: 128k stack size. Is this enough? should
+	 *        it be configurable?
+	 */
+	malloc_end = (_text_base - (128 << 10)) & ~(4095);
+
+	debug("malloc_end: 0x%08x\n", malloc_end);
+	debug("TEXT_BASE after relocation: 0x%08x\n", _text_base);
+
+	mem_malloc_init((void *)(malloc_end - CFG_MALLOC_LEN), (void *)malloc_end);
 
 	/*
 	 * Setup trap handlers

@@ -42,16 +42,14 @@
 
 extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[], __u_boot_initcalls_end[];
 
-const char *version_string =
+const char version_string[] =
 	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
 
 static int display_banner (void)
 {
-	const char *vers = RELOC_VAR(version_string);
-
-	printf (RELOC("\n\n%s\n\n"), RELOC(vers));
+	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
 	debug (RELOC("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n"),
-	       _u_boot_start, _bss_start, _bss_end);
+	       RELOC_VAR(_u_boot_start), RELOC_VAR(_bss_start), RELOC_VAR(_bss_end));
 	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
 
 	return 0;
@@ -68,7 +66,7 @@ void early_init (void)
 {
 	/* copy the early initdata segment to early init RAM */
 	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
-				(ulong)&__early_init_data_size);
+				(ulong)&__early_init_data_end - (ulong)&__early_init_data_begin);
 	early_console_start(RELOC("psc3"), 115200);
 
 	display_banner();
@@ -87,7 +85,7 @@ void start_uboot (void)
 	 * early RAM to RAM
 	 */
 	memcpy(&__early_init_data_begin, init_data_ptr,
-			(ulong)&__early_init_data_size);
+			(ulong)&__early_init_data_end - (ulong)&__early_init_data_begin);
 	init_data_ptr = &__early_init_data_begin;
 #endif /* CONFIG_HAS_EARLY_INIT */
 

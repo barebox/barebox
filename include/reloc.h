@@ -1,12 +1,11 @@
 #ifndef __RELOC_H
 #define __RELOC_H
 
-extern unsigned long _u_boot_start, _bss_start, _bss_end;
+extern unsigned long _u_boot_start, _bss_start, _bss_end, _text_base;
 
 #ifdef CONFIG_HAS_EARLY_INIT
 
 extern ulong __early_init_data_begin, __early_init_data_end;
-extern ulong __early_init_data_size;
 
 /*
  * The difference between our link address and the address we're

@@ -107,7 +107,6 @@ SECTIONS
   __early_init_data_begin = .;
   .early_init_data : { *(.early_init_data) }
   __early_init_data_end = .;
-  __early_init_data_size = __early_init_data_end - __early_init_data_begin;
 
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }

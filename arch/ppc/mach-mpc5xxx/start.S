@@ -309,22 +309,21 @@ _end_of_vectors:
 	. = 0x3000
 
 _continue_init:
-	mr	r1,  r3		/* Set new stack pointer at end of RAM  */
-	subi    r1,  r1, 0x10
 	mr	r9,  r3		/* Save copy of end of RAM      	*/
+
 #ifdef CONFIG_RELOCATABLE
-	subi	r3,  r3, 0x8000 /* reserve for stack FIXME */
-
-	lis	r10, __init_size@h		/* Size         	*/
-	ori	r10, r10, __init_size@l
-
+	lis	r10, (_end - _start)@h		/* Size         	*/
+	ori	r10, r10, (_end - _start)@l
 	sub	r3,  r3, r10
-
-	mr	r9,  r3
+	subi	r3,  r3, 0x100
 #else
 	lis	r3, (TEXT_BASE)@h		/* Destination Address	*/
 	ori	r3, r3, (TEXT_BASE)@l
 #endif
+
+	mr	r1,  r3		/* Set new stack just below U-Boot code */
+	subi    r1,  r1, 0x10
+
 	mr	r10, r3 	/* Save copy of Destination Address	*/
 
 	bl	calc_source     /* Calculate Source Address             */
@@ -335,6 +334,16 @@ calc_source:
 
 	lis	r5, __init_size@h		/* Size         	*/
 	ori	r5, r5, __init_size@l
+
+before_relocate:
+	/*
+	 * We are now ready to copy U-Boot to RAM.
+	 *
+	 * destination = r3
+	 * source      = r4
+	 * size        = r5
+	 *
+	 */
 
 	li	r6, CONFIG_CACHELINE_SIZE		/* Cache Line Size	*/
 
@@ -810,10 +819,11 @@ reloc_offset:
 	bl	pc
 pc:
 	mfspr	r3,  LR
-	subi	r3, r3, (pc - _start)
 	mtspr   LR, r4
-	lis	r4,     TEXT_BASE@h
-	ori	r4, r4, TEXT_BASE@l
+	addi	r4, r3, (_text_base - pc)
+	subi	r3, r3, (pc - _start)
+	lwz	r4, 0(r4)
+
 	sub	r3, r3, r4
 	subi	r3, r3, 0x100
 	blr

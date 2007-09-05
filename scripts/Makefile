@@ -13,6 +13,7 @@ hostprogs-$(CONFIG_VT)           += conmakehash
 hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
 hostprogs-y                      += bin2c
 hostprogs-y                      += ubootenv
+hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
 
 always		:= $(hostprogs-y) $(hostprogs-m)
 

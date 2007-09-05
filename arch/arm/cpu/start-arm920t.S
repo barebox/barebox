@@ -27,7 +27,6 @@
 
 #include <config.h>
 
-
 /*
  *************************************************************************
  *
@@ -36,10 +35,9 @@
  *************************************************************************
  */
 
-	.section ".text_entry","ax"
-
 .globl _start
-_start:	b       reset
+_start:
+	b       reset
 	ldr	pc, _undefined_instruction
 	ldr	pc, _software_interrupt
 	ldr	pc, _prefetch_abort
@@ -58,16 +56,15 @@ _fiq:			.word fiq
 
 	.balignl 16,0xdeadbeef
 
-
 /*
  *************************************************************************
  *
  * Startup Code (reset vector)
  *
  * do important init only if we don't start from memory!
+ * setup Memory and board specific bits prior to relocation.
  * relocate armboot to ram
  * setup stack
- * jump to second stage
  *
  *************************************************************************
  */
@@ -203,7 +200,6 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 	cmp	r0, r1
 	ble	clbss_l
 
-
 	ldr	pc, _start_armboot
 
 _start_armboot:	.word start_uboot
@@ -220,7 +216,6 @@ _start_armboot:	.word start_uboot
  *************************************************************************
  */
 
-
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 cpu_init_crit:
 	/*
@@ -234,10 +229,10 @@ cpu_init_crit:
 	 * disable MMU stuff and caches
 	 */
 	mrc	p15, 0, r0, c1, c0, 0
-	bic	r0, r0, #0x00002300	@ clear bits 13, 9:8 (--V- --RS)
-	bic	r0, r0, #0x00000087	@ clear bits 7, 2:0 (B--- -CAM)
-	orr	r0, r0, #0x00000002	@ set bit 2 (A) Align
-	orr	r0, r0, #0x00001000	@ set bit 12 (I) I-Cache
+	bic	r0, r0, #0x00002300	/* clear bits 13, 9:8 (--V- --RS) */
+	bic	r0, r0, #0x00000087	/* clear bits 7, 2:0 (B--- -CAM) */
+	orr	r0, r0, #0x00000002	/* set bit 2 (A) Align */
+	orr	r0, r0, #0x00001000	/* set bit 12 (I) I-Cache */
 	mcr	p15, 0, r0, c1, c0, 0
 
 	/*

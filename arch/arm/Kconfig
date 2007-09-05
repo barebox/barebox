@@ -3,16 +3,23 @@ config TEXT_BASE
 	string
 	default "0x08f00000" if MACH_MX1ADS
 	default "0x08f80000" if MACH_SCB9328
+	default "0x81f00000" if MACH_NXDB500
 	default "0x21e00000" if MACH_ECO920
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
+
+config BOARDINFO
+	default "Hilscher Netx nxdb500" if MACH_NXDB500
 
 config ARM
 	bool
 	default y
 
 config ARM920T
+	bool
+
+config ARM926EJS
 	bool
 
 config ARCH_IMX
@@ -22,6 +29,10 @@ config ARCH_IMX
 config ARCH_AT91RM9200
 	bool
 	select ARM920T
+
+config ARCH_NETX
+	bool
+	select ARM926EJS
 
 choice
 	prompt "Select your board"
@@ -51,10 +62,17 @@ config MACH_ECO920
 	help
 	  Say Y here if you are using the Motorola MX1ADS board
 
+config MACH_NXDB500
+	bool "Hilscher Netx nxdb500"
+	select HAS_NETX_ETHER
+	select HAS_CFI
+	select ARCH_NETX
+	help
+	  Say Y here if you are using the Hilscher Netx nxdb500 board
+	  
 endchoice
 
-config ARM920T
-	bool
+source arch/arm/mach-netx/Kconfig
 
 menu "Arm specific settings"
 

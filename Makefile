@@ -592,6 +592,15 @@ define rule_uboot__
 	$(OBJCOPY) -O binary uboot uboot.bin
 	$(OBJDUMP) -d uboot > uboot.S
 
+	$(Q)if [ -n $(CONFIG_ARCH_NETX) ]; then					\
+		scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
+			--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
+			--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
+			--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
+			--entrypoint=$(CONFIG_TEXT_BASE)			\
+			--cookie=$(CONFIG_NETX_COOKIE);				\
+	fi
+
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
 	$(cmd_sysmap) $@ System.map;                                         \

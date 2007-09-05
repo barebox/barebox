@@ -5,6 +5,11 @@ config DRIVER_SERIAL_IMX
 	default y
 	bool "i.MX serial driver"
 
+config DRIVER_SERIAL_NETX
+	depends on ARCH_NETX
+	default y
+	bool "Netx serial driver"
+
 config DRIVER_SERIAL_LINUX_COMSOLE
 	depends on LINUX
 	default y

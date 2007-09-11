@@ -358,7 +358,7 @@ static int dm9000_set_mac_address(struct eth_device *eth, unsigned char *adr)
 		printf ("%02x:", adr[i]);
 	printf ("%02x\n", adr[5]);
 #endif
-	return -0;
+	return 0;
 }
 
 static int dm9000_init_dev(struct eth_device *edev)

@@ -35,20 +35,17 @@
 
 int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int opt, fd;
+	int fd;
 	char *filename = NULL;
 	struct stat s;
 	unsigned long start = 0, size = ~0;
 
-	getopt_reset();
-
-	while((opt = getopt(argc, argv, "f:")) > 0) {
-		switch(opt) {
-		case 'f':
-			filename = optarg;
-			break;
-		}
+	if (argc == 1) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
 	}
+
+	filename = argv[1];
 
 	if (stat(filename, &s)) {
 		printf("stat %s: %s\n", filename, errno_str());
@@ -68,7 +65,7 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	if (optind  < argc)
+	if (argc == 2)
 		parse_area_spec(argv[optind], &start, &size);
 
         if(erase(fd, size, start)) {
@@ -81,30 +78,32 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
+static __maybe_unused char cmd_erase_help[] =
+"Usage: Erase <device> [area]\n"
+"Erase a flash device or parts of a device if an area specification\n"
+"is given\n";
+
 U_BOOT_CMD_START(erase)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_flerase,
 	.usage		= "erase FLASH memory",
-	U_BOOT_CMD_HELP("write me\n")
+	U_BOOT_CMD_HELP(cmd_erase_help)
 U_BOOT_CMD_END
 
 int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	int opt, fd;
+	int fd;
 	char *filename = NULL;
 	struct stat s;
 	int prot = 1;
 	unsigned long start = 0, size = ~0;
 
-	getopt_reset();
-
-	while((opt = getopt(argc, argv, "f:")) > 0) {
-		switch(opt) {
-		case 'f':
-			filename = optarg;
-			break;
-		}
+	if (argc == 1) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
 	}
+
+	filename = argv[1];
 
 	if (*argv[0] == 'u')
 		prot = 0;
@@ -127,7 +126,7 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
-	if (optind  < argc)
+	if (argc == 3)
 		parse_area_spec(argv[optind], &start, &size);
 
         if(protect(fd, size, start, prot)) {
@@ -140,17 +139,22 @@ int do_protect (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
+static __maybe_unused char cmd_protect_help[] =
+"Usage: (un)protect <device> [area]\n"
+"(un)protect a flash device or parts of a device if an area specification\n"
+"is given\n";
+
 U_BOOT_CMD_START(protect)
 	.maxargs	= 4,
 	.cmd		= do_protect,
 	.usage		= "enable FLASH write protection",
-	U_BOOT_CMD_HELP("write me\n")
+	U_BOOT_CMD_HELP(cmd_protect_help)
 U_BOOT_CMD_END
 
 U_BOOT_CMD_START(unprotect)
 	.maxargs	= 4,
 	.cmd		= do_protect,
 	.usage		= "disable FLASH write protection",
-	U_BOOT_CMD_HELP("write me\n")
+	U_BOOT_CMD_HELP(cmd_protect_help)
 U_BOOT_CMD_END
 

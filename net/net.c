@@ -1602,7 +1602,7 @@ int string_to_enet_addr(const char *str, char *enetaddr)
 	return 0;
 }
 
-void enet_addr_to_string(const char *enetaddr, char *str)
+void enet_addr_to_string(const unsigned char *enetaddr, char *str)
 {
 	sprintf (str, "%02X:%02X:%02X:%02X:%02X:%02X",
 		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],

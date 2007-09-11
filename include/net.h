@@ -428,7 +428,7 @@ ushort getenv_VLAN(char *);
 void	copy_filename (char *dst, char *src, int size);
 
 int string_to_enet_addr(const char *str, char *enetaddr);
-void enet_addr_to_string(const char *enetaddr, char *str);
+void enet_addr_to_string(const unsigned char *enetaddr, char *str);
 
 /**********************************************************************/
 /* Network devices                                                    */

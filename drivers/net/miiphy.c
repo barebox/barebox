@@ -24,6 +24,7 @@
 #include <driver.h>
 #include <init.h>
 #include <miiphy.h>
+#include <clock.h>
 
 int miiphy_restart_aneg(struct miiphy_device *mdev)
 {
@@ -67,17 +68,15 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 
 int miiphy_wait_aneg(struct miiphy_device *mdev)
 {
-	int timeout = 1;
+	uint64_t start;
 	uint16_t status;
 
 	/*
 	 * Wait for AN completion
 	 */
-	timeout = 5000;
+	start = get_time_ns();
 	do {
-		udelay(1000);
-
-		if (!timeout--) {
+		if (is_timeout(start, 5 * SECOND)) {
 			printf("%s: Autonegotiation timeout\n", mdev->dev.id);
 			return -1;
 		}

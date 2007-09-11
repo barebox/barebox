@@ -1,0 +1,78 @@
+/*
+ * U-boot - u-boot.lds.S
+ *
+ * Copyright (c) 2005-2007 Analog Device Inc.
+ *
+ * (C) Copyright 2000-2004
+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+#include <config.h>
+#include <asm-generic/u-boot.lds.h>
+
+OUTPUT_ARCH("bfin")
+SEARCH_DIR(/lib); SEARCH_DIR(/usr/lib); SEARCH_DIR(/usr/local/lib);
+/* Do we need any of these for elf?
+   __DYNAMIC = 0;    */
+/*
+MEMORY
+{
+	ram : 	   ORIGIN = (0x2000000), LENGTH = (256 * 1024)
+	l1_code : ORIGIN = 0xFFA00000, LENGTH = 0xC000
+	l1_data : ORIGIN = 0xFF900000, LENGTH = 0x4000
+}
+*/
+
+SECTIONS
+{
+	. = 0x00000000;
+
+	. = ALIGN(4);
+	.text      :
+	{
+		*(.text_entry)
+		*(.text)
+	}
+
+	. = ALIGN(4);
+	.rodata : { *(.rodata) }
+
+	. = ALIGN(4);
+	.data : { *(.data) }
+
+	. = ALIGN(4);
+	.got : { *(.got) }
+
+	. = .;
+	___u_boot_cmd_start = .;
+	.u_boot_cmd : { U_BOOT_CMDS }
+	___u_boot_cmd_end = .;
+
+	___u_boot_initcalls_start = .;
+	.u_boot_initcalls : { INITCALLS }
+	___u_boot_initcalls_end = .;
+
+	. = ALIGN(4);
+	__bss_start = .;
+	.bss : { *(.bss) }
+	_end = .;
+}
+

@@ -20,6 +20,19 @@ config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
 	depends on HAS_CS8900
 
+config DRIVER_NET_SMC911X
+	bool "smc911x ethernet driver"
+	select MIIPHY
+	help
+	  This option enables support for the SMSC LAN9[12]1[567]
+	  ethernet chip.
+
+config DRIVER_NET_SMC911X_ADDRESS_SHIFT
+	int
+	depends on DRIVER_NET_SMC911X
+	default 1 if MACH_IPE337
+	default 0
+
 config DRIVER_NET_DM9000
 	bool "Davicom dm9000 ethernet driver"
 	depends on HAS_DM9000

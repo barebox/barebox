@@ -52,7 +52,6 @@
 static char *make_command_line(void);
 
 extern image_header_t header;
-extern int do_reset(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
 void do_bootm_linux(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[],
 		    ulong addr, ulong * len_ptr, int verify)
 {

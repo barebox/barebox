@@ -25,8 +25,6 @@
 #ifndef _BLACKFIN_PAGE_H
 #define _BLACKFIN_PAGE_H
 
-#include <linux/config.h>
-
 /* PAGE_SHIFT determines the page size */
 
 #define PAGE_SHIFT			(12)
@@ -111,11 +109,6 @@ extern __inline__ int get_order(unsigned long size)
 #define MAP_NR(addr)			(((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
 #define virt_to_page(addr)		(mem_map + (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT))
 #define VALID_PAGE(page)		((page - mem_map) < max_mapnr)
-
-#define BUG() do	{ \
-	 \
-	while (1);	/* dead-loop */ \
-} while (0)
 
 #define PAGE_BUG(page) do	{ \
 	BUG(); \

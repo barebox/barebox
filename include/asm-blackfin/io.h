@@ -25,10 +25,6 @@
 #ifndef _BLACKFIN_IO_H
 #define _BLACKFIN_IO_H
 
-#ifdef __KERNEL__
-
-#include <linux/config.h>
-
 /* function prototypes for CF support */
 extern void cf_outsw(unsigned short *addr, unsigned short *sect_buf, int words);
 extern void cf_insw(unsigned short *sect_buf, unsigned short *addr, int words);
@@ -118,5 +114,4 @@ extern void blkfin_inv_cache_all(void);
 #define dma_cache_wback(_start,_size)		do { } while (0)
 #define dma_cache_wback_inv(_start,_size)	do { blkfin_inv_cache_all();} while (0)
 
-#endif
 #endif

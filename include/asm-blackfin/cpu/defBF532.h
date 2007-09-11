@@ -30,17 +30,6 @@
 /* include all Core registers and bit definitions */
 #include <asm/cpu/def_LPBlackfin.h>
 
-/* Helper macros
- * usage:
- *  P0.H = HI(UART_THR);
- *  P0.L = LO(UART_THR);
- */
-
-#define LO(con32)		((con32) & 0xFFFF)
-#define lo(con32)		((con32) & 0xFFFF)
-#define HI(con32)		(((con32) >> 16) & 0xFFFF)
-#define hi(con32)		(((con32) >> 16) & 0xFFFF)
-
 /*
  * System MMR Register Map
  */

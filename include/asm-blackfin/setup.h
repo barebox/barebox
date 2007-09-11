@@ -29,8 +29,6 @@
 #ifndef _BLACKFIN_SETUP_H
 #define _BLACKFIN_SETUP_H
 
-#include <linux/config.h>
-
 /*
  * Linux/Blackfin Architectures
  */
@@ -75,12 +73,14 @@ extern unsigned long vme_brdtype;
 
 extern int blackfin_num_memory;	/* # of memory blocks found (and used) */
 extern int blackfin_realnum_memory;	/* real # of memory blocks found */
-extern struct mem_info blackfin_memory[NUM_MEMINFO];	/* memory description */
 
 struct mem_info {
 	unsigned long addr;	/* physical address of memory chunk */
 	unsigned long size;	/* length of memory chunk (in bytes) */
 };
+
+extern struct mem_info blackfin_memory[NUM_MEMINFO];	/* memory description */
+
 #endif
 
 #endif

@@ -1,7 +1,10 @@
 /*
- * U-boot - page_offset.h
+ * U-boot - board.c First C file to be called contains init routines
  *
  * Copyright (c) 2005 blackfin.uclinux.org
+ *
+ * (C) Copyright 2000-2004
+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -22,8 +25,26 @@
  * MA 02111-1307 USA
  */
 
-/* This handles the memory map.. */
+#include <common.h>
+#include <command.h>
+#include <malloc.h>
+#include <net.h>
+#include <init.h>
+#include <environment.h>
+#include <mem_malloc.h>
+#include "blackfin_board.h"
 
-#ifdef CONFIG_BLACKFIN
-#define PAGE_OFFSET_RAW		0x00000000
-#endif
+int blackfin_mem_malloc_init(void)
+{
+	mem_malloc_init((void *)(CONFIG_MALLOC_BASE - CONFIG_MALLOC_LEN),
+			(void *)CONFIG_MALLOC_BASE);
+	return 0;
+}
+
+core_initcall(blackfin_mem_malloc_init);
+
+void reset_cpu(ulong ignored)
+{
+	printf("do not ave a reset function\n");
+	while (1);
+}

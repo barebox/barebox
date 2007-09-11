@@ -9,3 +9,4 @@ obj-$(CONFIG_DRIVER_SERIAL_IMX)			+= serial_imx.o
 obj-$(CONFIG_DRIVER_SERIAL_NETX)		+= serial_netx.o
 obj-$(CONFIG_DRIVER_SERIAL_LINUX_COMSOLE)	+= linux_console.o
 obj-$(CONFIG_DRIVER_SERIAL_MPC5XXX)		+= serial_mpc5xxx.o
+obj-$(CONFIG_DRIVER_SERIAL_BLACKFIN)		+= serial_blackfin.o

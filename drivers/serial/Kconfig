@@ -20,4 +20,8 @@ config DRIVER_SERIAL_MPC5XXX
 	default y
 	bool "MPC5200 serial driver"
 
+config DRIVER_SERIAL_BLACKFIN
+	depends on BLACKFIN
+	default y
+	bool "Blackfin serial driver"
 endmenu

@@ -382,12 +382,6 @@ static const struct chip_id chip_ids[] =  {
 
 #define DRIVERNAME "smc911x"
 
-#undef readl
-#undef writel
-
-#define readl(addr)		({ unsigned int __v = (*(volatile unsigned int *) (addr));asm("ssync;"); printf("r 0x%08x 0x%08x\n", addr, __v); __v;})
-#define writel(b,addr)		{printf("w 0x%08x 0x%08x\n", addr, b); ((*(volatile unsigned int *) (addr)) = (b)); asm("ssync;");}
-
 static int smc911x_mac_wait_busy(struct smc911x_priv *priv)
 {
 	uint64_t start = get_time_ns();
@@ -408,12 +402,12 @@ static u32 smc911x_get_mac_csr(struct eth_device *edev, u8 reg)
 
 	smc911x_mac_wait_busy(priv);
 
-	writel(MAC_CSR_CMD_CSR_BUSY | MAC_CSR_CMD_R_NOT_W | reg, priv->base + MAC_CSR_CMD);
+	writel(MAC_CSR_CMD_CSR_BUSY | MAC_CSR_CMD_R_NOT_W | reg,
+			priv->base + MAC_CSR_CMD);
 
 	smc911x_mac_wait_busy(priv);
 
 	val = readl(priv->base + MAC_CSR_DATA);
-	printf("get: 0x%02x 0x%08x\n", reg, val);
 
 	return val;
 }
@@ -421,8 +415,6 @@ static u32 smc911x_get_mac_csr(struct eth_device *edev, u8 reg)
 static void smc911x_set_mac_csr(struct eth_device *edev, u8 reg, u32 data)
 {
 	struct smc911x_priv *priv = edev->priv;
-
-	printf("set: 0x%02x 0x%08x\n", reg, data);
 
 	smc911x_mac_wait_busy(priv);
 
@@ -447,9 +439,9 @@ static int smc911x_get_mac_address(struct eth_device *edev, unsigned char *m)
 	m[5] = (addrh >>  8 ) & 0xff;
 
 	/* we get 0xff when there is no eeprom connected */
-	if ((m[0] & m[1] & m[2] & m[3] & m[4] & m[5]) == 0xff) {
+	if ((m[0] & m[1] & m[2] & m[3] & m[4] & m[5]) == 0xff)
 		return -1;
-	}
+
 	return 0;
 }
 
@@ -472,12 +464,13 @@ static int smc911x_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
-	smc911x_set_mac_csr(edev, MII_ACC, phy_addr << 11 | reg << 6 | MII_ACC_MII_BUSY);
+	smc911x_set_mac_csr(edev, MII_ACC, phy_addr << 11 | reg << 6 |
+			MII_ACC_MII_BUSY);
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
 	*val = smc911x_get_mac_csr(edev, MII_DATA);
-printf("phy read: 0x%02x 0x%02x 0x%04x\n", phy_addr, reg, *val);
+
 	return 0;
 }
 
@@ -486,12 +479,12 @@ static int smc911x_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
 {
 	struct eth_device *edev = mdev->edev;
 
-printf("phy write: 0x%02x 0x%02x 0x%04x\n", phy_addr, reg, val);
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
 	smc911x_set_mac_csr(edev, MII_DATA, val);
 	smc911x_set_mac_csr(edev, MII_ACC,
-		phy_addr << 11 | reg << 6 | MII_ACC_MII_BUSY | MII_ACC_MII_WRITE);
+		phy_addr << 11 | reg << 6 | MII_ACC_MII_BUSY |
+		MII_ACC_MII_WRITE);
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
@@ -504,7 +497,7 @@ static int smc911x_phy_reset(struct eth_device *edev)
 	u32 reg;
 
 	reg = readl(priv->base + PMT_CTRL);
-	reg &= ~0xfffff030;
+	reg &= 0xfcf;
 	reg |= PMT_CTRL_PHY_RST;
 	writel(reg, priv->base + PMT_CTRL);
 
@@ -528,7 +521,8 @@ static void smc911x_reset(struct eth_device *edev)
 			if ((readl(priv->base + PMT_CTRL) & PMT_CTRL_READY))
 				break;
 			if (is_timeout(start, 100 * USECOND)) {
-				printf(DRIVERNAME ": timeout waiting for PM restore\n");
+				printf(DRIVERNAME
+					": timeout waiting for PM restore\n");
 				return;
 			}
 		}
@@ -570,7 +564,7 @@ static void smc911x_enable(struct eth_device *edev)
 	writel(TX_CFG_TX_ON, priv->base + TX_CFG);
 
 	/* no padding to start of packets */
-	writel(0, priv->base + RX_CFG);
+	writel(RX_CFG_RX_DUMP, priv->base + RX_CFG);
 }
 
 static int smc911x_eth_open(struct eth_device *edev)
@@ -591,8 +585,10 @@ static int smc911x_eth_send(struct eth_device *edev, void *packet, int length)
 	u32 *data = (u32*)packet;
 	u32 tmplen;
 	u32 status;
+	uint64_t start;
 
-	writel(TX_CMD_A_INT_FIRST_SEG | TX_CMD_A_INT_LAST_SEG | length, priv->base + TX_DATA_FIFO);
+	writel(TX_CMD_A_INT_FIRST_SEG | TX_CMD_A_INT_LAST_SEG | length,
+			priv->base + TX_DATA_FIFO);
 	writel(length, priv->base + TX_DATA_FIFO);
 
 	tmplen = (length + 3) / 4;
@@ -601,13 +597,23 @@ static int smc911x_eth_send(struct eth_device *edev, void *packet, int length)
 		writel(*data++, priv->base + TX_DATA_FIFO);
 
 	/* wait for transmission */
-	while (!((readl(priv->base + TX_FIFO_INF) & TX_FIFO_INF_TSUSED) >> 16));
+	start = get_time_ns();
+	while (1) {
+		if ((readl(priv->base + TX_FIFO_INF) &
+					TX_FIFO_INF_TSUSED) >> 16)
+			break;
+		if (is_timeout(start, 100 * MSECOND)) {
+			printf("TX timeout\n");
+			return -1;
+		}
+	}
 
 	/* get status. Ignore 'no carrier' error, it has no meaning for
 	 * full duplex operation
 	 */
-	status = readl(priv->base + TX_STATUS_FIFO) & (TX_STS_LOC | TX_STS_LATE_COLL |
-		TX_STS_MANY_COLL | TX_STS_MANY_DEFER | TX_STS_UNDERRUN);
+	status = readl(priv->base + TX_STATUS_FIFO) & (TX_STS_LOC |
+		TX_STS_LATE_COLL | TX_STS_MANY_COLL | TX_STS_MANY_DEFER |
+		TX_STS_UNDERRUN);
 
 	if(!status)
 		return 0;
@@ -624,7 +630,12 @@ static int smc911x_eth_send(struct eth_device *edev, void *packet, int length)
 
 static void smc911x_eth_halt(struct eth_device *edev)
 {
-	smc911x_reset(edev);
+	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
+
+	/* Disable TX */
+	writel(TX_CFG_STOP_TX, priv->base + TX_CFG);
+
+//	smc911x_reset(edev);
 }
 
 static int smc911x_eth_rx(struct eth_device *edev)
@@ -640,7 +651,7 @@ static int smc911x_eth_rx(struct eth_device *edev)
 
 		writel(0, priv->base + RX_CFG);
 
-		tmplen = (pktlen + 2+ 3) / 4;
+		tmplen = (pktlen + 2 + 3) / 4;
 		while(tmplen--)
 			*data++ = readl(priv->base + RX_DATA_FIFO);
 
@@ -659,7 +670,9 @@ static int smc911x_init_dev(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
 
-	smc911x_set_mac_csr(edev, MAC_CR, MAC_CR_TXEN | MAC_CR_RXEN | MAC_CR_HBDIS);
+	smc911x_set_mac_csr(edev, MAC_CR, MAC_CR_TXEN | MAC_CR_RXEN |
+			MAC_CR_HBDIS);
+
 	miiphy_restart_aneg(&priv->miiphy);
 
 	return 0;
@@ -676,7 +689,9 @@ static int smc911x_probe(struct device_d *dev)
 
 	val = readl(dev->map_base + BYTE_TEST);
 	if(val != 0x87654321) {
-		printf(DRIVERNAME ": no smc911x found on 0x%08x (byte_test=0x08%x)\n", dev->map_base, val);
+		printf(DRIVERNAME
+			": no smc911x found on 0x%08x (byte_test=0x08%x)\n",
+			dev->map_base, val);
 		return -ENODEV;
 	}
 
@@ -691,7 +706,8 @@ static int smc911x_probe(struct device_d *dev)
 
 	printf(DRIVERNAME ": detected %s controller\n", chip_ids[i].name);
 
-	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct smc911x_priv));
+	edev = xzalloc(sizeof(struct eth_device) +
+			sizeof(struct smc911x_priv));
 	dev->type_data = edev;
 	edev->dev = dev;
 	edev->priv = (struct smc911x_priv *)(edev + 1);
@@ -708,7 +724,7 @@ static int smc911x_probe(struct device_d *dev)
 
 	priv->miiphy.read = smc911x_phy_read;
 	priv->miiphy.write = smc911x_phy_write;
-	priv->miiphy.address = 0;
+	priv->miiphy.address = 1;
 	priv->miiphy.flags = 0;
 	priv->miiphy.edev = edev;
 	priv->base = dev->map_base;

@@ -138,6 +138,14 @@ int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return 1;
 	}
 
+	ret = protect(fd, ~0, 0, 0);
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != -ENOSYS) {
+		printf("could not unprotect %s: %s\n", filename, errno_str());
+		close(fd);
+		return 1;
+	}
+
 	ret = erase(fd, ~0, 0);
 
 	/* ENOSYS is no error here, many devices do not need it */
@@ -150,6 +158,14 @@ int do_saveenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	ret = envfs_save(filename, dirname);
 	if (ret)
 		printf("saveenv failed\n");
+
+	ret = protect(fd, ~0, 0, 1);
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != -ENOSYS) {
+		printf("could not protect %s: %s\n", filename, errno_str());
+		close(fd);
+		return 1;
+	}
 
 	close(fd);
 	return ret;

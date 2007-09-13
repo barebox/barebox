@@ -205,7 +205,9 @@ static int edit_read_file(const char *path)
 			if (!lineend && !*linestr)
 				break;
 
-			*lineend = 0;
+			if (lineend)
+				*lineend = 0;
+
 			line = line_realloc(strlen(linestr) + 1, NULL);
 			if (!buffer)
 				buffer = line;

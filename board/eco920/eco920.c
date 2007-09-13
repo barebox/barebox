@@ -210,15 +210,3 @@ int misc_init_r(void)
 #endif
 	return 0;
 }
-
-/* Do not collide with the env from our first stage loader for now */
-static char *env_spec = "nor0:256k+128k";
-
-static int eco920_init_env(void)
-{
-        add_env_spec(env_spec);
-        return 0;
-}
-
-late_initcall(eco920_init_env);
-

@@ -83,22 +83,18 @@ typedef struct {
 #define CFI_FLASH_SHIFT_WIDTH	3
 /* Prototypes */
 
-extern void flash_print_info (flash_info_t *);
-extern int flash_sect_erase (ulong addr_first, ulong addr_last);
-extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
+void flash_print_info (flash_info_t *);
+int flash_sect_erase (ulong addr_first, ulong addr_last);
+int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
 
-/* common/flash.c */
-extern void flash_protect (int flag, ulong from, ulong to, flash_info_t *info);
-extern int flash_write (char *, ulong, ulong);
-extern flash_info_t *addr2info (ulong);
-extern int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
+void flash_protect (int flag, ulong from, ulong to, flash_info_t *info);
+int flash_write (char *, ulong, ulong);
+flash_info_t *addr2info (ulong);
+int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
 
-/* board/?/flash.c */
-#if defined(CFG_FLASH_PROTECTION)
-extern int flash_real_protect(flash_info_t *info, long sector, int prot);
-extern void flash_read_user_serial(flash_info_t * info, void * buffer, int offset, int len);
-extern void flash_read_factory_serial(flash_info_t * info, void * buffer, int offset, int len);
-#endif	/* CFG_FLASH_PROTECTION */
+int flash_real_protect(flash_info_t *info, long sector, int prot);
+void flash_read_user_serial(flash_info_t * info, void * buffer, int offset, int len);
+void flash_read_factory_serial(flash_info_t * info, void * buffer, int offset, int len);
 
 /*-----------------------------------------------------------------------
  * return codes from flash_write():

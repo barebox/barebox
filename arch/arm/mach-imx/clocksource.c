@@ -58,9 +58,9 @@ static int clocksource_init (void)
 	TCTL1 &= ~TCTL_TEN;
 	TCTL1 |= TCTL_TEN; /* Enable timer */
 
-        cs.mult = clocksource_hz2mult(get_PERCLK1(), cs.shift);
+	cs.mult = clocksource_hz2mult(get_PERCLK1(), cs.shift);
 
-        init_clock(&cs);
+	init_clock(&cs);
 
 	return 0;
 }

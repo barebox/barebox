@@ -30,28 +30,28 @@
 #include <fcntl.h>
 
 static struct device_d cfi_dev = {
-        .name     = "cfi_flash",
-        .id       = "nor0",
+	.name     = "cfi_flash",
+	.id       = "nor0",
 
-        .map_base = 0x10000000,
-        .size     = 16 * 1024 * 1024,
+	.map_base = 0x10000000,
+	.size     = 16 * 1024 * 1024,
 };
 
 static struct device_d sdram_dev = {
-        .name     = "ram",
-        .id       = "ram0",
+	.name     = "ram",
+	.id       = "ram0",
 
-        .map_base = 0x08000000,
-        .size     = 16 * 1024 * 1024,
+	.map_base = 0x08000000,
+	.size     = 16 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct device_d dm9000_dev = {
-        .name     = "dm9000",
-        .id       = "eth0",
+	.name     = "dm9000",
+	.id       = "eth0",
 
-        .type     = DEVICE_TYPE_ETHER,
+	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int scb9328_devices_init(void) {
@@ -69,11 +69,11 @@ static int scb9328_devices_init(void) {
 device_initcall(scb9328_devices_init);
 
 static struct device_d scb9328_serial_device = {
-        .name     = "imx_serial",
-        .id       = "cs0",
+	.name     = "imx_serial",
+	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-        .type     = DEVICE_TYPE_CONSOLE,
+	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int scb9328_console_init(void)

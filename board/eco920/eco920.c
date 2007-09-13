@@ -43,28 +43,28 @@ static struct cfi_platform_data cfi_info = {
 };
 
 struct device_d cfi_dev = {
-        .name     = "cfi_flash",
-        .id       = "nor0",
+	.name     = "cfi_flash",
+	.id       = "nor0",
 
-        .map_base = 0x11000000,
-        .size     = 16 * 1024 * 1024,
+	.map_base = 0x11000000,
+	.size     = 16 * 1024 * 1024,
 
-        .platform_data = &cfi_info,
+	.platform_data = &cfi_info,
 };
 
 struct device_d sdram_dev = {
-        .name     = "ram",
-        .id       = "ram0",
+	.name     = "ram",
+	.id       = "ram0",
 
-        .map_base = 0x20000000,
-        .size     = 32 * 1024 * 1024,
+	.map_base = 0x20000000,
+	.size     = 32 * 1024 * 1024,
 };
 
 static struct device_d at91_ath_dev = {
-        .name     = "at91_eth",
-        .id       = "eth0",
+	.name     = "at91_eth",
+	.id       = "eth0",
 
-        .type     = DEVICE_TYPE_ETHER,
+	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int devices_init (void)

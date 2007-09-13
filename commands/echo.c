@@ -29,8 +29,8 @@
 static int do_echo (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int i, optind = 1;
-        int fd = stdout, opt, newline = 1;
-        char *file = NULL;
+	int fd = stdout, opt, newline = 1;
+	char *file = NULL;
 	int oflags = O_WRONLY | O_CREAT;
 
 	/* We can't use getopt() here because we want to

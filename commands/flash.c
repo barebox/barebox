@@ -68,7 +68,7 @@ int do_flerase (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if (argc == 2)
 		parse_area_spec(argv[optind], &start, &size);
 
-        if(erase(fd, size, start)) {
+	if(erase(fd, size, start)) {
 		perror("erase");
 		return 1;
 	}

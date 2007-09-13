@@ -24,11 +24,11 @@
 #include "eth_firmware.h"
 
 struct fw_header {
-        unsigned int magic;
-        unsigned int type;
-        unsigned int version;
+	unsigned int magic;
+	unsigned int type;
+	unsigned int version;
 	unsigned int table_size;
-        unsigned int reserved[4];
+	unsigned int reserved[4];
 } __attribute__((packed));
 
 static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
@@ -47,17 +47,17 @@ static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
 
 static int xc_patch(int xcno, void *patch, int count)
 {
-        unsigned int adr, val, *p = patch;
+	unsigned int adr, val, *p = patch;
 
 /*	printf("%s: patch: %p size: %d\n",__FUNCTION__,patch,count); */
-        int i;
-        for(i=0; i<count; i++) {
-                adr = *p++;
-                val = *p++;
+	int i;
+	for(i=0; i<count; i++) {
+		adr = *p++;
+		val = *p++;
 		if( xc_check_ptr(xcno, adr, 1) < 0)
 			return -1;
-                *(volatile unsigned int *)adr = val;
-        }
+		*(volatile unsigned int *)adr = val;
+	}
 	return 0;
 }
 

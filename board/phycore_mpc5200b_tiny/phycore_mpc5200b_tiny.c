@@ -44,40 +44,40 @@
 #endif
 
 struct device_d cfi_dev = {
-        .name     = "cfi_flash",
-        .id       = "nor0",
+	.name     = "cfi_flash",
+	.id       = "nor0",
 
-        .map_base = 0xff000000,
-        .size     = 16 * 1024 * 1024,
+	.map_base = 0xff000000,
+	.size     = 16 * 1024 * 1024,
 };
 
 struct device_d sdram_dev = {
-        .name     = "ram",
-        .id       = "ram0",
+	.name     = "ram",
+	.id       = "ram0",
 
-        .map_base = 0x0,
-        .size     = 64 * 1024 * 1024,
+	.map_base = 0x0,
+	.size     = 64 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
 };
 
 struct device_d scratch_dev = {
-        .name     = "ram",
-        .id       = "scratch0",
+	.name     = "ram",
+	.id       = "scratch0",
 	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct mpc5xxx_fec_platform_data fec_info = {
-        .xcv_type = MII100,
+	.xcv_type = MII100,
 };
 
 struct device_d eth_dev = {
-        .name     = "fec_mpc5xxx",
-        .id       = "eth0",
+	.name     = "fec_mpc5xxx",
+	.id       = "eth0",
 
-        .platform_data = &fec_info,
+	.platform_data = &fec_info,
 
-        .type     = DEVICE_TYPE_ETHER,
+	.type     = DEVICE_TYPE_ETHER,
 };
 
 #define SCRATCHMEM_SIZE (1024 * 1024 * 4)
@@ -101,19 +101,19 @@ static int devices_init (void)
 device_initcall(devices_init);
 
 static struct device_d psc3 = {
-        .name     = "mpc5xxx_serial",
-        .id       = "psc3",
+	.name     = "mpc5xxx_serial",
+	.id       = "psc3",
 	.map_base = MPC5XXX_PSC3,
 	.size     = 4096,
-        .type     = DEVICE_TYPE_CONSOLE,
+	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static struct device_d psc6 = {
-        .name     = "mpc5xxx_serial",
-        .id       = "psc6",
+	.name     = "mpc5xxx_serial",
+	.id       = "psc6",
 	.map_base = MPC5XXX_PSC6,
 	.size     = 4096,
-        .type     = DEVICE_TYPE_CONSOLE,
+	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int console_init(void)

@@ -93,7 +93,7 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 
 int console_register(struct console_device *newcdev)
 {
-        struct console_device *cdev = first_console;
+	struct console_device *cdev = first_console;
 	struct device_d *dev = newcdev->dev;
 
 	if (newcdev->setbrg) {
@@ -125,12 +125,12 @@ int console_register(struct console_device *newcdev)
 	}
 
 	while (1) {
-                if (!cdev->next) {
-                        cdev->next = newcdev;
-                        return 0;
-                }
-                cdev = cdev->next;
-        }
+		if (!cdev->next) {
+			cdev->next = newcdev;
+			return 0;
+		}
+		cdev = cdev->next;
+	}
 }
 
 int getc (void)

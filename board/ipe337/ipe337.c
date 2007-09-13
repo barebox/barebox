@@ -52,11 +52,11 @@ static int ipe337_devices_init(void) {
 device_initcall(ipe337_devices_init);
 
 static struct device_d blackfin_serial_device = {
-        .name     = "blackfin_serial",
-        .id       = "cs0",
+	.name     = "blackfin_serial",
+	.id       = "cs0",
 	.map_base = 0,
 	.size     = 4096,
-        .type     = DEVICE_TYPE_CONSOLE,
+	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int blackfin_console_init(void)

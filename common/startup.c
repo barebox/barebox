@@ -97,8 +97,8 @@ static void register_default_env(void)
 
 void start_uboot (void)
 {
-        initcall_t *initcall;
-        int result;
+	initcall_t *initcall;
+	int result;
 	struct stat s;
 
 #ifdef CONFIG_HAS_EARLY_INIT
@@ -114,10 +114,10 @@ void start_uboot (void)
 			initcall < __u_boot_initcalls_end; initcall++) {
 		PUTHEX_LL(*initcall);
 		PUTC_LL('\n');
-                result = (*initcall)();
-                if (result)
-                        hang();
-        }
+		result = (*initcall)();
+		if (result)
+			hang();
+	}
 
 #ifndef CONFIG_HAS_EARLY_INIT
 	display_banner();
@@ -142,7 +142,7 @@ void start_uboot (void)
 		run_command("exec /env/init", 0);
 	}
 
-        /* main_loop() can return to retry autoboot, if so just run it again. */
+	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;)
 		main_loop ();
 

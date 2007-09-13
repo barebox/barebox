@@ -170,9 +170,9 @@ lowboot_reentry:
 	mr	r3, r21
 	/* r3: BOOTFLAG */
 	bl	initdram	/* initialize sdram */
-        /* r3: End of RAM */
+	/* r3: End of RAM */
 
-        b _continue_init
+	b _continue_init
 /*
  * Vector Table
  */

@@ -87,11 +87,11 @@ static int netx_devices_init(void) {
 device_initcall(netx_devices_init);
 
 static struct device_d netx_serial_device = {
-        .name     = "netx_serial",
-        .id       = "cs0",
+	.name     = "netx_serial",
+	.id       = "cs0",
 	.map_base = NETX_PA_UART0,
 	.size     = 0x40,
-        .type     = DEVICE_TYPE_CONSOLE,
+	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int netx_console_init(void)

@@ -58,7 +58,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	ulong linebytes, i;
 	u_char	*cp;
 
-        /* Print the lines.
+	/* Print the lines.
 	 *
 	 * We buffer all read data, so we can make sure data is read only
 	 * once, and all accesses are with the specified bus width.
@@ -69,7 +69,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 		ushort	*usp = (ushort *)linebuf;
 		u_char	*ucp = (u_char *)linebuf;
 
-                printf("%08lx:", offs);
+		printf("%08lx:", offs);
 		linebytes = (nbytes>DISP_LINE_LEN)?DISP_LINE_LEN:nbytes;
 
 		for (i=0; i<linebytes; i+= size) {
@@ -81,10 +81,10 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 				printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
 			addr += size;
-                        offs += size;
+			offs += size;
 		}
 
-                puts ("    ");
+		puts ("    ");
 		cp = (u_char *)linebuf;
 		for (i=0; i<linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))
@@ -157,9 +157,9 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		now = min(size, RW_BUF_SIZE);
 		r = read(fd, rw_buf, now);
 		if (r < 0) {
-                        perror("read");
+			perror("read");
 			goto out;
-                }
+		}
 		if (!r)
 			goto out;
 
@@ -380,7 +380,7 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong count, offset, now;
 	int ret;
-        struct memarea_info dst, src;
+	struct memarea_info dst, src;
 
 	int	size;
 
@@ -394,20 +394,20 @@ int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
 		return 1;
 
-        if (spec_str_to_info(argv[1], &src)) {
-                printf("-ENOPARSE\n");
-                return -1;
-        }
+	if (spec_str_to_info(argv[1], &src)) {
+		printf("-ENOPARSE\n");
+		return -1;
+	}
 
-        if (spec_str_to_info(argv[2], &dst)) {
-                printf("-ENOPARSE\n");
-                return -1;
-        }
+	if (spec_str_to_info(argv[2], &dst)) {
+		printf("-ENOPARSE\n");
+		return -1;
+	}
 
-        if (!src.size || !dst.size)
-                count = dst.size | src.size;
-        else
-                count = min(src.size, dst.size);
+	if (!src.size || !dst.size)
+		count = dst.size | src.size;
+	else
+		count = min(src.size, dst.size);
 
 	printf("copy from 0x%08x to 0x%08x count %d\n",src.start, dst.start, count);
 
@@ -439,30 +439,30 @@ U_BOOT_CMD(
 #endif
 
 static struct device_d mem_dev = {
-        .name  = "mem",
+	.name  = "mem",
 	.id    = "mem",
-        .map_base = 0,
-        .size   = ~0, /* FIXME: should be 0x100000000, ahem... */
+	.map_base = 0,
+	.size   = ~0, /* FIXME: should be 0x100000000, ahem... */
 };
 
 static struct driver_d mem_drv = {
-        .name  = "mem",
-        .probe = dummy_probe,
+	.name  = "mem",
+	.probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
 };
 
 static struct driver_d ram_drv = {
-        .name  = "ram",
-        .probe = dummy_probe,
+	.name  = "ram",
+	.probe = dummy_probe,
 	.read  = mem_read,
 	.write = mem_write,
 	.type  = DEVICE_TYPE_DRAM,
 };
 
 static struct driver_d rom_drv = {
-        .name  = "rom",
-        .probe = dummy_probe,
+	.name  = "rom",
+	.probe = dummy_probe,
 	.read  = mem_read,
 };
 
@@ -474,11 +474,11 @@ static int mem_init(void)
 		return -1;
 	}
 
-        register_device(&mem_dev);
-        register_driver(&mem_drv);
-        register_driver(&ram_drv);
-        register_driver(&rom_drv);
-        return 0;
+	register_device(&mem_dev);
+	register_driver(&mem_drv);
+	register_driver(&ram_drv);
+	register_driver(&rom_drv);
+	return 0;
 }
 
 device_initcall(mem_init);

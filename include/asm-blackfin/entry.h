@@ -25,7 +25,6 @@
 #ifndef __BLACKFIN_ENTRY_H
 #define __BLACKFIN_ENTRY_H
 
-#include <linux/config.h>
 #include <asm/setup.h>
 #include <asm/page.h>
 

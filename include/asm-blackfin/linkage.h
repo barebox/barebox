@@ -25,8 +25,6 @@
 #ifndef _LINUX_LINKAGE_H
 #define _LINUX_LINKAGE_H
 
-#include <linux/config.h>
-
 #ifdef __cplusplus
 #define CPP_ASMLINKAGE		extern "C"
 #else

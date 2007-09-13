@@ -101,10 +101,9 @@ fixup_silent_linux ()
 #endif /* CONFIG_SILENT_CONSOLE */
 
 #ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-static void
-print_type (image_header_t *hdr)
+static const char *image_os(image_header_t *hdr)
 {
-	char *os, *arch, *type, *comp;
+	char *os;
 
 	switch (hdr->ih_os) {
 	case IH_OS_INVALID:	os = "Invalid OS";		break;
@@ -122,6 +121,13 @@ print_type (image_header_t *hdr)
 #endif
 	default:		os = "Unknown OS";		break;
 	}
+
+	return os;
+}
+
+static const char *image_arch(image_header_t *hdr)
+{
+	char *arch;
 
 	switch (hdr->ih_arch) {
 	case IH_CPU_INVALID:	arch = "Invalid CPU";		break;
@@ -144,6 +150,13 @@ print_type (image_header_t *hdr)
 	default:		arch = "Unknown Architecture";	break;
 	}
 
+	return arch;
+}
+
+static const char *image_type(image_header_t *hdr)
+{
+	char *type;
+
 	switch (hdr->ih_type) {
 	case IH_TYPE_INVALID:	type = "Invalid Image";		break;
 	case IH_TYPE_STANDALONE:type = "Standalone Program";	break;
@@ -155,6 +168,12 @@ print_type (image_header_t *hdr)
 	case IH_TYPE_FLATDT:	type = "Flat Device Tree";	break;
 	default:		type = "Unknown Image";		break;
 	}
+	return type;
+}
+
+static const char *image_compression(image_header_t *hdr)
+{
+	char *comp;
 
 	switch (hdr->ih_comp) {
 	case IH_COMP_NONE:	comp = "uncompressed";		break;
@@ -163,7 +182,7 @@ print_type (image_header_t *hdr)
 	default:		comp = "unknown compression";	break;
 	}
 
-	printf ("%s %s %s (%s)", arch, os, type, comp);
+	return comp;
 }
 #endif
 
@@ -252,10 +271,10 @@ struct image_handle *map_image(const char *filename, int verify)
 	len  = ntohl(header->ih_size);
 
 	handle->data = memmap(fd, PROT_READ);
-	if (!handle) {
+	if (!handle->data) {
 		handle->data = xmalloc(len);
 		handle->flags = IH_MALLOC;
-		if (read(fd, &handle->data, len) < 0) {
+		if (read(fd, handle->data, len) < 0) {
 			printf("could not read: %s\n", errno_str());
 			goto err_out;
 		}
@@ -732,9 +751,10 @@ print_image_hdr (image_header_t *hdr)
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
 #ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-	puts ("   Image Type:   "); print_type(hdr);
+	printf ("   Image Type:   %s %s %s (%s)\n", image_arch(hdr), image_os(hdr),
+			image_type(hdr), image_compression(hdr));
 #endif
-	printf ("\n   Data Size:    %d Bytes = ", ntohl(hdr->ih_size));
+	printf ("   Data Size:    %d Bytes = ", ntohl(hdr->ih_size));
 	print_size (ntohl(hdr->ih_size), "\n");
 	printf ("   Load Address: %08x\n"
 		"   Entry Point:  %08x\n",

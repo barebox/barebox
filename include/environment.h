@@ -22,27 +22,13 @@
  */
 
 #ifndef _ENVIRONMENT_H_
-#define _ENVIRONMENT_H_	1
+#define _ENVIRONMENT_H_
 
-/**************************************************************************
- *
- * The "environment" is stored as a list of '\0' terminated
- * "name=value" strings. The end of the list is marked by a double
- * '\0'. New entries are always added at the end. Deleting an entry
- * shifts the remaining entries to the front. Replacing an entry is a
- * combination of deleting the old value and adding the new one.
- *
- * The environment is preceeded by a 32 bit CRC over the data part.
- *
- **************************************************************************
- */
+const char *getenv(const char *);
+int setenv(const char *, const char *);
 
-int add_env_spec(char *spec);
-
-/* common/cmd_nvedit.c */
-const char    *getenv	     (const char *);
-int	saveenv	     (void);
-int	setenv	     (const char *, const char *);
+int envfs_load(char *filename, char *dirname);
+int envfs_save(char *filename, char *dirname);
 
 #endif	/* _ENVIRONMENT_H_ */
 

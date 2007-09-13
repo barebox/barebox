@@ -2,6 +2,7 @@
 #include <init.h>
 #include <driver.h>
 #include <asm/cpu/cdefBF561.h>
+#include <partition.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",

@@ -137,15 +137,13 @@ PHONY += all
 _all: all
 
 srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
-TOPDIR		:= $(srctree)
-# FIXME - TOPDIR is obsolete, use srctree/objtree
 objtree		:= $(CURDIR)
 src		:= $(srctree)
 obj		:= $(objtree)
 
 VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
-export srctree objtree VPATH TOPDIR
+export srctree objtree VPATH 
 
 # Cross compiling and selecting different set of gcc/bin-utils
 # ---------------------------------------------------------------------------
@@ -187,31 +185,9 @@ HOSTCXXFLAGS = -O2
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
 
-KBUILD_MODULES :=
 KBUILD_BUILTIN := 1
 
-#	If we have only "make modules", don't compile built-in objects.
-#	When we're building modules with modversions, we need to consider
-#	the built-in objects during the descend as well, in order to
-#	make sure the checksums are up to date before we record them.
-
-ifeq ($(MAKECMDGOALS),modules)
-  KBUILD_BUILTIN := $(if $(CONFIG_MODVERSIONS),1)
-endif
-
-#	If we have "make <whatever> modules", compile modules
-#	in addition to whatever we do anyway.
-#	Just "make" or "make all" shall build modules as well
-
-ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
-  KBUILD_MODULES := 1
-endif
-
-ifeq ($(MAKECMDGOALS),)
-  KBUILD_MODULES := 1
-endif
-
-export KBUILD_MODULES KBUILD_BUILTIN
+export KBUILD_BUILTIN
 export KBUILD_CHECKSRC KBUILD_SRC
 
 # Beautify output
@@ -275,15 +251,10 @@ OBJDUMP		= $(CROSS_COMPILE)objdump
 AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
 DEPMOD		= /sbin/depmod
-KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
-MODFLAGS	= -DMODULE
-CFLAGS_MODULE   = $(MODFLAGS)
-AFLAGS_MODULE   = $(MODFLAGS)
-LDFLAGS_MODULE  = -r
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 
@@ -442,19 +413,7 @@ endif # $(dot-config)
 # Defaults uboot but it is usually overridden in the arch makefile
 all: uboot
 
-ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-CFLAGS		+= -Os
-else
-CFLAGS		+= -O2
-endif
-
 include $(srctree)/arch/$(ARCH)/Makefile
-
-ifdef CONFIG_FRAME_POINTER
-CFLAGS		+= -fno-omit-frame-pointer $(call cc-option,-fno-optimize-sibling-calls,)
-else
-CFLAGS		+= -fomit-frame-pointer
-endif
 
 ifdef CONFIG_DEBUG_INFO
 CFLAGS		+= -g
@@ -480,37 +439,6 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # this default value
 export KBUILD_IMAGE ?= uboot
 
-#
-# INSTALL_PATH specifies where to place the updated kernel and system map
-# images. Default is /boot, but you can set it to other values
-export	INSTALL_PATH ?= /boot
-
-#
-# INSTALL_MOD_PATH specifies a prefix to MODLIB for module directory
-# relocations required by build roots.  This is not defined in the
-# makefile but the argument can be passed to make if needed.
-#
-
-MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
-export MODLIB
-
-#
-#  INSTALL_MOD_STRIP, if defined, will cause modules to be
-#  stripped after they are installed.  If INSTALL_MOD_STRIP is '1', then
-#  the default option --strip-debug will be used.  Otherwise,
-#  INSTALL_MOD_STRIP will used as the options to the strip command.
-
-ifdef INSTALL_MOD_STRIP
-ifeq ($(INSTALL_MOD_STRIP),1)
-mod_strip_cmd = $(STRIP) --strip-debug
-else
-mod_strip_cmd = $(STRIP) $(INSTALL_MOD_STRIP)
-endif # INSTALL_MOD_STRIP=1
-else
-mod_strip_cmd = true
-endif # INSTALL_MOD_STRIP
-export mod_strip_cmd
-
 uboot-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
 uboot-alldirs	:= $(sort $(uboot-dirs) $(patsubst %/,%,$(filter %/, \
@@ -534,25 +462,19 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 #   |   +--< init/version.o + more
 #   |
 #   +--< $(uboot-main)
-#   |    +--< driver/built-in.o mm/built-in.o + more
-#   |
-#   +-< kallsyms.o (see description in CONFIG_KALLSYMS section)
+#        +--< driver/built-in.o mm/built-in.o + more
 #
 # uboot version (uname -v) cannot be updated during normal
 # descending-into-subdirs phase since we do not yet know if we need to
 # update uboot.
-# Therefore this step is delayed until just before final link of uboot -
-# except in the kallsyms case where it is done just before adding the
-# symbols to the kernel.
 #
 # System.map is generated to document addresses of all kernel symbols
 
 uboot-common := $(common-y)
 uboot-all  := $(uboot-common)
 uboot-lds  := $(BOARD)/u-boot.lds
-export KBUILD_VMLINUX_OBJS := $(uboot-all)
 
-# Rule to link uboot - also used during CONFIG_KALLSYMS
+# Rule to link uboot
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_uboot__ ?= LD      $@
       cmd_uboot__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_uboot) -o $@ \
@@ -577,13 +499,11 @@ quiet_cmd_sysmap = SYSMAP
       cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
 
 # Link of uboot
-# If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
 # Use + in front of the uboot_version rule to silent warning with make -j2
 # First command is ':' to allow us to use + in front of the rule
 define rule_uboot__
 	:
-	$(if $(CONFIG_KALLSYMS),,+$(call cmd,uboot_version))
 
 	$(call cmd,uboot__)
 
@@ -592,7 +512,7 @@ define rule_uboot__
 	$(OBJCOPY) -O binary uboot uboot.bin
 	$(OBJDUMP) -d uboot > uboot.S
 
-	$(Q)if [ -n $(CONFIG_ARCH_NETX) ]; then					\
+	$(Q)if [ -n "$(CONFIG_ARCH_NETX)" ]; then					\
 		scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
 			--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
 			--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
@@ -608,95 +528,10 @@ define rule_uboot__
 		rm -f $@;                                                    \
 		/bin/false;                                                  \
 	fi;
-	$(verify_kallsyms)
 endef
-
-
-ifdef CONFIG_KALLSYMS
-# Generate section listing all symbols and add it into uboot $(kallsyms.o)
-# It's a three stage process:
-# o .tmp_uboot1 has all symbols and sections, but __kallsyms is
-#   empty
-#   Running kallsyms on that gives us .tmp_kallsyms1.o with
-#   the right size - uboot version (uname -v) is updated during this step
-# o .tmp_uboot2 now has a __kallsyms section of the right size,
-#   but due to the added section, some addresses have shifted.
-#   From here, we generate a correct .tmp_kallsyms2.o
-# o The correct .tmp_kallsyms2.o is linked into the final uboot.
-# o Verify that the System.map from uboot matches the map from
-#   .tmp_uboot2, just in case we did not generate kallsyms correctly.
-# o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
-#   .tmp_uboot3 and .tmp_kallsyms3.o.  This is only meant as a
-#   temporary bypass to allow the kernel to be built while the
-#   maintainers work out what went wrong with kallsyms.
-
-ifdef CONFIG_KALLSYMS_EXTRA_PASS
-last_kallsyms := 3
-else
-last_kallsyms := 2
-endif
-
-kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
-
-define verify_kallsyms
-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-	  $(cmd_sysmap) .tmp_uboot$(last_kallsyms) .tmp_System.map
-	$(Q)cmp -s System.map .tmp_System.map ||                             \
-		(echo Inconsistent kallsyms data;                            \
-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
-		 rm .tmp_kallsyms* ; /bin/false )
-endef
-
-# Update uboot version before link
-# Use + in front of this rule to silent warning about make -j1
-# First command is ':' to allow us to use + in front of this rule
-cmd_ksym_ld = $(cmd_uboot__)
-define rule_ksym_ld
-	:
-	+$(call cmd,uboot_version)
-	$(call cmd,uboot__)
-	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
-endef
-
-# Generate .S file with all kernel symbols
-quiet_cmd_kallsyms = KSYM    $@
-      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
-                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
-
-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
-	$(call if_changed_dep,as_o_S)
-
-.tmp_kallsyms%.S: .tmp_uboot% $(KALLSYMS)
-	$(call cmd,kallsyms)
-
-# .tmp_uboot1 must be complete except kallsyms, so update uboot version
-.tmp_uboot1: $(uboot-lds) $(uboot-all) FORCE
-	$(call if_changed_rule,ksym_ld)
-
-.tmp_uboot2: $(uboot-lds) $(uboot-all) .tmp_kallsyms1.o FORCE
-	$(call if_changed,uboot__)
-
-.tmp_uboot3: $(uboot-lds) $(uboot-all) .tmp_kallsyms2.o FORCE
-	$(call if_changed,uboot__)
-
-# Needs to visit scripts/ before $(KALLSYMS) can be used.
-$(KALLSYMS): scripts ;
-
-# Generate some data for debugging strange kallsyms problems
-debug_kallsyms: .tmp_map$(last_kallsyms)
-
-.tmp_map%: .tmp_uboot% FORCE
-	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
-
-.tmp_map3: .tmp_map2
-
-.tmp_map2: .tmp_map1
-
-endif # ifdef CONFIG_KALLSYMS
 
 # uboot image - including updated kernel symbols
-uboot: $(uboot-lds) $(uboot-head) $(uboot-common) $(kallsyms.o) FORCE
+uboot: $(uboot-lds) $(uboot-head) $(uboot-common) FORCE
 ifdef CONFIG_HEADERS_CHECK
 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
 endif
@@ -888,8 +723,7 @@ depend dep:
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	uboot System.map \
-                .tmp_kallsyms* .tmp_version .tmp_uboot* .tmp_System.map \
-		uboot.bin uboot.S $(uboot-lds)
+                .tmp_version .tmp_uboot* uboot.bin uboot.S $(uboot-lds)
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
@@ -974,19 +808,11 @@ help:
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
 	@echo  '* uboot           - Build the bare kernel'
-	@echo  '* modules	  - Build all modules'
-	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
 	@echo  '  dir/file.ko     - Build module including final link'
-	@echo  '  rpm		  - Build a kernel as an RPM package'
 	@echo  '  tags/TAGS	  - Generate tags file for editors'
 	@echo  '  cscope	  - Generate cscope index'
-	@echo  '  kernelrelease	  - Output the release version string'
-	@echo  '  kernelversion	  - Output the version stored in Makefile'
-	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
-	 echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
-	 fi
 	@echo  '                    (default: $(INSTALL_HDR_PATH))'
 	@echo  ''
 	@echo  'Static analysers'
@@ -995,12 +821,6 @@ help:
 	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
 	 echo  '  headers_check   - Sanity check on exported headers'; \
 	 fi
-	@echo  ''
-	@echo  'Kernel packaging:'
-	@$(MAKE) $(build)=$(package-dir) help
-	@echo  ''
-	@echo  'Documentation targets:'
-	@$(MAKE) -f $(srctree)/Documentation/DocBook/Makefile dochelp
 	@echo  ''
 	@echo  'Architecture specific targets ($(ARCH)):'
 	@$(if $(archhelp),$(archhelp),\

@@ -281,13 +281,8 @@ export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
 export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
 
 export CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
-export CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
-export AFLAGS AFLAGS_KERNEL AFLAGS_MODULE
-
-# When compiling out-of-tree modules, put MODVERDIR in the module
-# tree rather than in the kernel tree. The kernel tree might
-# even be read-only.
-export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_versions
+export CFLAGS CFLAGS_KERNEL
+export AFLAGS AFLAGS_KERNEL
 
 # Files to ignore in find ... statements
 
@@ -409,9 +404,9 @@ endif # $(dot-config)
 
 # The all: target is the default when no target is given on the
 # command line.
-# This allow a user to issue only 'make' to build a kernel including modules
+# This allow a user to issue only 'make' to build a kernel
 # Defaults uboot but it is usually overridden in the arch makefile
-all: uboot
+all: uboot.bin
 
 include $(srctree)/arch/$(ARCH)/Makefile
 
@@ -509,18 +504,6 @@ define rule_uboot__
 
 	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
 
-	$(OBJCOPY) -O binary uboot uboot.bin
-	$(OBJDUMP) -d uboot > uboot.S
-
-	$(Q)if [ -n "$(CONFIG_ARCH_NETX)" ]; then					\
-		scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
-			--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
-			--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
-			--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
-			--entrypoint=$(CONFIG_TEXT_BASE)			\
-			--cookie=$(CONFIG_NETX_COOKIE);				\
-	fi
-
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
 	$(cmd_sysmap) $@ System.map;                                         \
@@ -530,11 +513,12 @@ define rule_uboot__
 	fi;
 endef
 
-# uboot image - including updated kernel symbols
+uboot.bin: uboot
+	$(Q)$(OBJCOPY) -O binary uboot uboot.bin
+	$(Q)$(OBJDUMP) -d uboot > uboot.S
+
+# uboot image
 uboot: $(uboot-lds) $(uboot-head) $(uboot-common) FORCE
-ifdef CONFIG_HEADERS_CHECK
-	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
-endif
 	$(call if_changed_rule,uboot__)
 	$(Q)rm -f .old_version
 
@@ -649,10 +633,6 @@ prepare2: prepare3 outputmakefile
 
 prepare1: prepare2 include/linux/version.h include/linux/utsrelease.h \
                    include/asm include/config.h include/config/auto.conf
-ifneq ($(KBUILD_MODULES),)
-	$(Q)mkdir -p $(MODVERDIR)
-	$(Q)rm -f $(MODVERDIR)/*
-endif
 
 archprepare: prepare1 scripts_basic
 
@@ -722,7 +702,7 @@ depend dep:
 
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
-CLEAN_FILES +=	uboot System.map \
+CLEAN_FILES +=	uboot System.map include/uboot_default_env.h \
                 .tmp_version .tmp_uboot* uboot.bin uboot.S $(uboot-lds)
 
 # Directories & files removed with 'make mrproper'

@@ -41,6 +41,20 @@ endif
 	$(Q)ln -fsn proc-armv include/asm-arm/proc
 	@touch $@
 
+uboot.netx: uboot.bin
+	$(Q)scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
+		--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
+		--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
+		--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
+		--entrypoint=$(CONFIG_TEXT_BASE)			\
+		--cookie=$(CONFIG_NETX_COOKIE);
+
+ifeq ($(machine-y),netx)
+KBUILD_IMAGE := u-boot.netx 
+endif
+
+all: $(KBUILD_IMAGE)
+
 archprepare: maketools
 
 PHONY += maketools

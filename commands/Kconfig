@@ -206,6 +206,11 @@ config CMD_BOOTM_BZLIB
 	select BZLIB
 	prompt "bootm with bzlib support"
 
+config CMD_BOOTM_SHOW_TYPE
+	bool
+	depends on CMD_BOOTM
+	prompt "show image information"
+
 config CMD_RESET
 	bool
 	prompt "reset"

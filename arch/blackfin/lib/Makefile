@@ -1,4 +1,4 @@
-
+obj-y += blackfin_linux.o
 obj-y += board.o
 obj-y += clock.o
 obj-y += muldi3.o
@@ -10,3 +10,5 @@ obj-y += lshrdi3.o
 obj-y += ashldi3.o
 obj-y += divsi3.o
 obj-y += modsi3.o
+obj-y += cpu.o
+obj-y += flush.o

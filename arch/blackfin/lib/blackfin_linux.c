@@ -1,5 +1,5 @@
 /*
- * U-boot - bf533_linux.c
+ * U-boot - blackfin_linux.c
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *
@@ -30,61 +30,37 @@
 #include <common.h>
 #include <command.h>
 #include <image.h>
-#include <zlib.h>
+#include <environment.h>
 #include <asm/byteorder.h>
-
-#define	LINUX_MAX_ENVS		256
-#define	LINUX_MAX_ARGS		256
-
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-#include <status_led.h>
-#define SHOW_BOOT_PROGRESS(arg)	show_boot_progress(arg)
-#else
-#define SHOW_BOOT_PROGRESS(arg)
-#endif
+#include <asm/cpu.h>
 
 #define CMD_LINE_ADDR 0xFF900000  /* L1 scratchpad */
 
-#ifdef SHARED_RESOURCES
-	extern void swap_to(int device_id);
-#endif
-
-static char *make_command_line(void);
-
-extern image_header_t header;
-void do_bootm_linux(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[],
-		    ulong addr, ulong * len_ptr, int verify)
+int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 {
 	int (*appl)(char *cmdline);
-	char *cmdline;
+	const char *cmdline = getenv("bootargs");
+	char *cmdlinedest = (char *) CMD_LINE_ADDR;
+	image_header_t *os_header = &os_handle->header;
 
-#ifdef SHARED_RESOURCES
-	swap_to(FLASH);
-#endif
-
-	appl = (int (*)(char *))ntohl(header.ih_ep);
+	appl = (int (*)(char *))ntohl(os_header->ih_ep);
 	printf("Starting Kernel at = %x\n", appl);
-	cmdline = make_command_line();
+
+	strncpy(cmdlinedest, cmdline, 0x1000);
+	cmdlinedest[0xfff] = 0;
+
 	if(icache_status()){
 		flush_instruction_cache();
 		icache_disable();
-		}
+	}
+
 	if(dcache_status()){
 		flush_data_cache();
 		dcache_disable();
-		}
-	(*appl)(cmdline);
+	}
+
+	(*appl)(cmdlinedest);
+
+	return -1;
 }
 
-char *make_command_line(void)
-{
-    char *dest = (char *) CMD_LINE_ADDR;
-    char *bootargs;
-
-    if ( (bootargs = getenv("bootargs")) == NULL )
-	return NULL;
-
-    strncpy(dest, bootargs, 0x1000);
-    dest[0xfff] = 0;
-    return dest;
-}

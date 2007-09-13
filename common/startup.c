@@ -34,6 +34,7 @@
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>
+#include <environment.h>
 #include <reloc.h>
 
 #ifndef CONFIG_IDENT_STRING
@@ -74,6 +75,26 @@ void early_init (void)
 
 #endif /* CONFIG_HAS_EARLY_INIT */
 
+#ifdef CONFIG_DEFAULT_ENVIRONMENT
+#include <uboot_default_env.h>
+
+static struct device_d default_env_dev = {
+	.name     = "rom",
+	.id       = "defaultenv",
+};
+
+static void register_default_env(void)
+{
+	default_env_dev.map_base = (unsigned long)default_environment;
+	default_env_dev.size = sizeof(default_environment);
+	register_device(&default_env_dev);
+}
+#else
+static void register_default_env(void)
+{
+}
+#endif
+
 void start_uboot (void)
 {
         initcall_t *initcall;
@@ -102,11 +123,19 @@ void start_uboot (void)
 	display_banner();
 #endif
 
+	register_default_env();
+
 	mount("none", "ramfs", "/");
 	mkdir("/dev");
 	mkdir("/env");
 	mount("none", "devfs", "/dev");
-	run_command("loadenv", 0);
+
+	if (envfs_load("/dev/env0", "/env")) {
+#ifdef CONFIG_DEFAULT_ENVIRONMENT
+		printf("using default environment\n");
+		envfs_load("/dev/defaultenv", "/env");
+#endif
+	}
 
 	if (!stat("/env/init", &s)) {
 		printf("running /env/init\n");
@@ -114,9 +143,8 @@ void start_uboot (void)
 	}
 
         /* main_loop() can return to retry autoboot, if so just run it again. */
-	for (;;) {
+	for (;;)
 		main_loop ();
-	}
 
 	/* NOTREACHED - no way out of command loop except booting */
 }

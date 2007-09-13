@@ -13,3 +13,12 @@ obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
+
+ifdef CONFIG_DEFAULT_ENVIRONMENT_PATH
+include/uboot_default_env.h: $(shell ls $(CONFIG_DEFAULT_ENVIRONMENT_PATH)/*)
+	$(Q)scripts/ubootenv -s $(CONFIG_DEFAULT_ENVIRONMENT_PATH) uboot_default_env
+	$(Q)cat uboot_default_env | scripts/bin2c default_environment > $@
+
+$(obj)/env.o: include/uboot_default_env.h
+endif
+

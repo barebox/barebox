@@ -29,6 +29,7 @@
 #include <asm/blackfin.h>
 #include <command.h>
 #include <asm/entry.h>
+#include <asm/cpu/defBF561_extn.h> /* FIXME */
 
 #define SSYNC() asm("ssync;")
 #define CACHE_ON 1
@@ -122,20 +123,16 @@ void icache_enable(void)
 		*I0++ = icplb_table[i][0];
 		*I1++ = icplb_table[i][1];
 		}
-	cli();
 	SSYNC();
 	*(unsigned int *)IMEM_CONTROL = IMC | ENICPLB;
 	SSYNC();
-	sti();
 }
 
 void icache_disable(void)
 {
-	cli();
 	SSYNC();
 	*(unsigned int *)IMEM_CONTROL &= ~(IMC | ENICPLB);
 	SSYNC();
-	sti();
 }
 
 int icache_status(void)
@@ -161,21 +158,18 @@ void dcache_enable(void)
 		*I0++ = dcplb_table[i][0];
 		*I1++ = dcplb_table[i][1];
 		}
-	cli();
+
 	temp = *(unsigned int *)DMEM_CONTROL;
 	SSYNC();
 	*(unsigned int *)DMEM_CONTROL = ACACHE_BCACHE |ENDCPLB |PORT_PREF0|temp;
 	SSYNC();
-	sti();
 }
 
 void dcache_disable(void)
 {
-	cli();
 	SSYNC();
 	*(unsigned int *)DMEM_CONTROL &= ~(ACACHE_BCACHE |ENDCPLB |PORT_PREF0);
 	SSYNC();
-	sti();
 }
 
 int dcache_status(void)

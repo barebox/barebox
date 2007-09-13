@@ -460,6 +460,12 @@ static struct driver_d ram_drv = {
 	.type  = DEVICE_TYPE_DRAM,
 };
 
+static struct driver_d rom_drv = {
+        .name  = "rom",
+        .probe = dummy_probe,
+	.read  = mem_read,
+};
+
 static int mem_init(void)
 {
 	rw_buf = malloc(RW_BUF_SIZE);
@@ -471,6 +477,7 @@ static int mem_init(void)
         register_device(&mem_dev);
         register_driver(&mem_drv);
         register_driver(&ram_drv);
+        register_driver(&rom_drv);
         return 0;
 }
 

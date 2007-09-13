@@ -194,7 +194,7 @@ int envfs_load(char *filename, char *dirname)
 	char tmp[PATH_MAX];
 	int envfd;
 	struct envfs_inode inode;
-	int fd;
+	int fd, ret = 0;
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
@@ -202,13 +202,21 @@ int envfs_load(char *filename, char *dirname)
 		return -1;
 	}
 
-	if (read(envfd, &super, sizeof(struct envfs_super)) < sizeof(struct envfs_super)) {
+	ret = read(envfd, &super, sizeof(struct envfs_super));
+	if ( ret < sizeof(struct envfs_super)) {
 		perror("read");
 		goto out;
 	}
 
+	if (super.magic != ENVFS_MAGIC) {
+		printf("envfs: wrong magic on %s\n", filename);
+		ret = -EIO;
+		goto out;
+	}
+
 	while (1) {
-		if (read(envfd, &inode, sizeof(struct envfs_inode)) < sizeof(struct envfs_inode)) {
+		ret = read(envfd, &inode, sizeof(struct envfs_inode));
+		if (ret < sizeof(struct envfs_inode)) {
 			perror("read");
 			goto out;
 		}
@@ -216,6 +224,7 @@ int envfs_load(char *filename, char *dirname)
 			break;
 		if (inode.magic != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
+			ret = -EIO;
 			goto out;
 		}
 		if (inode.size > malloc_size) {
@@ -224,7 +233,9 @@ int envfs_load(char *filename, char *dirname)
 			buf = xmalloc(inode.size);
 			malloc_size = inode.size;
 		}
-		if (read(envfd, buf, inode.size) < inode.size) {
+
+		ret = read(envfd, buf, inode.size);
+		if (ret < inode.size) {
 			perror("read");
 			goto out;
 		}
@@ -233,10 +244,12 @@ int envfs_load(char *filename, char *dirname)
 		fd = open(tmp, O_WRONLY | O_CREAT);
 		if (fd < 0) {
 			perror("open");
+			ret = fd;
 			goto out;
 		}
 
-		if (write(fd, buf, inode.size) < inode.size) {
+		ret = write(fd, buf, inode.size);
+		if (ret < inode.size) {
 			perror("write");
 			close(fd);
 			goto out;
@@ -244,7 +257,8 @@ int envfs_load(char *filename, char *dirname)
 		close(fd);
 
 		if (inode.size & 0x3) {
-			if (read(envfd, buf, 4 - (inode.size & 0x3)) < 4 - (inode.size & 0x3)) {
+			ret = read(envfd, buf, 4 - (inode.size & 0x3));
+			if (ret < 4 - (inode.size & 0x3)) {
 				perror("read");
 				goto out;
 			}
@@ -255,7 +269,7 @@ out:
 	close(envfd);
 	if (buf)
 		free(buf);
-	return errno;
+	return ret;
 }
 
 #ifdef __U_BOOT__
@@ -276,7 +290,7 @@ int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 static __maybe_unused char cmd_loadenv_help[] =
-"Usage: loadenv [DIRECTORY] [ENVFS]\n"
+"Usage: loadenv [ENVFS] [DIRECTORY]\n"
 "Load the persistent storage contained in <envfs> to the directory\n"
 "<directory>.\n"
 "If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"

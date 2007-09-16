@@ -29,66 +29,13 @@
 #include <asm/blackfin.h>
 #include <command.h>
 #include <asm/entry.h>
-#include <asm/cpu/defBF561_extn.h> /* FIXME */
+#include <asm/cpu.h>
+#include <init.h>
 
-#define SSYNC() asm("ssync;")
-#define CACHE_ON 1
-#define CACHE_OFF 0
-
-/* Data Attibutes*/
-
-#define SDRAM_IGENERIC		(PAGE_SIZE_4MB | CPLB_L1_CHBL | CPLB_USER_RD | CPLB_VALID)
-#define SDRAM_IKERNEL		(PAGE_SIZE_4MB | CPLB_L1_CHBL | CPLB_USER_RD | CPLB_VALID | CPLB_LOCK)
-#define L1_IMEMORY            	(PAGE_SIZE_1MB | CPLB_L1_CHBL | CPLB_USER_RD | CPLB_VALID | CPLB_LOCK)
-#define SDRAM_INON_CHBL		(PAGE_SIZE_4MB | CPLB_USER_RD | CPLB_VALID)
-
-#define ANOMALY_05000158		0x200
-#define SDRAM_DGENERIC          (PAGE_SIZE_4MB | CPLB_L1_CHBL | CPLB_WT | CPLB_L1_AOW | CPLB_SUPV_WR | CPLB_USER_RD | CPLB_USER_WR | CPLB_VALID | ANOMALY_05000158)
-#define SDRAM_DNON_CHBL         (PAGE_SIZE_4MB | CPLB_WT | CPLB_L1_AOW | CPLB_SUPV_WR | CPLB_USER_WR | CPLB_USER_RD | CPLB_VALID | ANOMALY_05000158)
-#define SDRAM_DKERNEL           (PAGE_SIZE_4MB | CPLB_L1_CHBL | CPLB_WT | CPLB_L1_AOW | CPLB_USER_RD | CPLB_SUPV_WR | CPLB_USER_WR | CPLB_VALID | CPLB_LOCK | ANOMALY_05000158)
-#define L1_DMEMORY              (PAGE_SIZE_4KB | CPLB_L1_CHBL | CPLB_L1_AOW | CPLB_WT | CPLB_SUPV_WR | CPLB_USER_WR | CPLB_VALID | ANOMALY_05000158)
-#define SDRAM_EBIU              (PAGE_SIZE_4MB | CPLB_WT | CPLB_L1_AOW | CPLB_USER_RD | CPLB_USER_WR | CPLB_SUPV_WR | CPLB_VALID | ANOMALY_05000158)
-
-static unsigned int icplb_table[16][2]={
-			{0xFFA00000, L1_IMEMORY},
-			{0x00000000, SDRAM_IKERNEL},	/*SDRAM_Page1*/
-			{0x00400000, SDRAM_IKERNEL},	/*SDRAM_Page1*/
-			{0x07C00000, SDRAM_IKERNEL},    /*SDRAM_Page14*/
-			{0x00800000, SDRAM_IGENERIC},	/*SDRAM_Page2*/
-			{0x00C00000, SDRAM_IGENERIC},	/*SDRAM_Page2*/
-			{0x01000000, SDRAM_IGENERIC},	/*SDRAM_Page4*/
-			{0x01400000, SDRAM_IGENERIC},	/*SDRAM_Page5*/
-			{0x01800000, SDRAM_IGENERIC},	/*SDRAM_Page6*/
-			{0x01C00000, SDRAM_IGENERIC},	/*SDRAM_Page7*/
-			{0x02000000, SDRAM_IGENERIC},	/*SDRAM_Page8*/
-			{0x02400000, SDRAM_IGENERIC},	/*SDRAM_Page9*/
-			{0x02800000, SDRAM_IGENERIC},	/*SDRAM_Page10*/
-			{0x02C00000, SDRAM_IGENERIC},	/*SDRAM_Page11*/
-			{0x03000000, SDRAM_IGENERIC},	/*SDRAM_Page12*/
-			{0x03400000, SDRAM_IGENERIC},	/*SDRAM_Page13*/
-};
-
-static unsigned int dcplb_table[16][2]={
-			{0xFFA00000,L1_DMEMORY},
-			{0x00000000,SDRAM_DKERNEL},	/*SDRAM_Page1*/
-			{0x00400000,SDRAM_DKERNEL},	/*SDRAM_Page1*/
-			{0x07C00000,SDRAM_DKERNEL},	/*SDRAM_Page15*/
-			{0x00800000,SDRAM_DGENERIC},	/*SDRAM_Page2*/
-			{0x00C00000,SDRAM_DGENERIC},	/*SDRAM_Page3*/
-			{0x01000000,SDRAM_DGENERIC},	/*SDRAM_Page4*/
-			{0x01400000,SDRAM_DGENERIC},	/*SDRAM_Page5*/
-			{0x01800000,SDRAM_DGENERIC},	/*SDRAM_Page6*/
-			{0x01C00000,SDRAM_DGENERIC},	/*SDRAM_Page7*/
-			{0x02000000,SDRAM_DGENERIC},	/*SDRAM_Page8*/
-			{0x02400000,SDRAM_DGENERIC},	/*SDRAM_Page9*/
-			{0x02800000,SDRAM_DGENERIC},	/*SDRAM_Page10*/
-			{0x02C00000,SDRAM_DGENERIC},	/*SDRAM_Page11*/
-			{0x03000000,SDRAM_DGENERIC},	/*SDRAM_Page12*/
-			{0x20000000,SDRAM_EBIU},	/*For Network */
-};
-
-int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+void reset_cpu(ulong ignored)
 {
+	icache_disable();
+
 	__asm__ __volatile__
 	("cli r3;"
 	"P0 = %0;"
@@ -96,43 +43,52 @@ int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	:
 	: "r" (L1_ISRAM)
 	);
-
-	return 0;
-}
-
-/* These functions are just used to satisfy the linker */
-int cpu_init(void)
-{
-	return 0;
-}
-
-int cleanup_before_linux(void)
-{
-	return 0;
-}
-
-void icache_enable(void)
-{
-	unsigned int *I0,*I1;
-	int i;
-
-	I0 = (unsigned int *)ICPLB_ADDR0;
-	I1 = (unsigned int *)ICPLB_DATA0;
-
-	for(i=0;i<16;i++){
-		*I0++ = icplb_table[i][0];
-		*I1++ = icplb_table[i][1];
-		}
-	SSYNC();
-	*(unsigned int *)IMEM_CONTROL = IMC | ENICPLB;
-	SSYNC();
 }
 
 void icache_disable(void)
 {
-	SSYNC();
+#ifdef __ADSPBF537__
+	if ((*pCHIPID >> 28) < 2)
+		return;
+#endif
+	__builtin_bfin_ssync();
+	asm(" .align 8; ");
 	*(unsigned int *)IMEM_CONTROL &= ~(IMC | ENICPLB);
-	SSYNC();
+	__builtin_bfin_ssync();
+}
+
+void icache_enable(void)
+{
+	unsigned int *I0, *I1;
+	int j = 0;
+#ifdef __ADSPBF537__
+	if ((*pCHIPID >> 28) < 2)
+		return;
+#endif
+	/* Before enable icache, disable it first */
+	icache_disable();
+
+	I0 = (unsigned int *)ICPLB_ADDR0;
+	I1 = (unsigned int *)ICPLB_DATA0;
+
+	/* We only setup instruction caching for U-Boot itself.
+	 * This has the nice side effect that we trigger an
+	 * exception when U-Boot goes crazy.
+	 */
+	*I0++ = TEXT_BASE & ~((1 << 20) - 1);
+	*I1++ = PAGE_SIZE_1MB | CPLB_L1_CHBL | CPLB_USER_RD | CPLB_VALID | CPLB_LOCK;
+	j++;
+
+	/* Fill the rest with invalid entry */
+	for ( ; j < 16 ; j++) {
+		debug("filling %i with 0\n",j);
+		*I1++ = 0x0;
+	}
+
+	__builtin_bfin_ssync();
+	asm(" .align 8; ");
+	*(unsigned int *)IMEM_CONTROL = IMC | ENICPLB;
+	__builtin_bfin_ssync();
 }
 
 int icache_status(void)
@@ -140,44 +96,37 @@ int icache_status(void)
 	unsigned int value;
 	value = *(unsigned int *)IMEM_CONTROL;
 
-	if( value & (IMC|ENICPLB) )
-		return CACHE_ON;
+	if (value & (IMC | ENICPLB))
+		return 1;
 	else
-		return CACHE_OFF;
+		return 0;
 }
 
-void dcache_enable(void)
+static void blackfin_init_exceptions(void)
 {
-	unsigned int *I0,*I1;
-	unsigned int temp;
-	int i;
-	I0 = (unsigned int *)DCPLB_ADDR0;
-	I1 = (unsigned int *)DCPLB_DATA0;
-
-	for(i=0;i<16;i++){
-		*I0++ = dcplb_table[i][0];
-		*I1++ = dcplb_table[i][1];
-		}
-
-	temp = *(unsigned int *)DMEM_CONTROL;
-	SSYNC();
-	*(unsigned int *)DMEM_CONTROL = ACACHE_BCACHE |ENDCPLB |PORT_PREF0|temp;
-	SSYNC();
+	*(unsigned volatile long *) (SIC_IMASK) = SIC_UNMASK_ALL;
+#ifndef CONFIG_KGDB
+	*(unsigned volatile long *) (EVT_EMULATION_ADDR) = 0x0;
+#endif
+	*(unsigned volatile long *) (EVT_NMI_ADDR) =
+		(unsigned volatile long) evt_nmi;
+	*(unsigned volatile long *) (EVT_EXCEPTION_ADDR) =
+		(unsigned volatile long) trap;
+	*(unsigned volatile long *) (EVT_HARDWARE_ERROR_ADDR) =
+		(unsigned volatile long) evt_ivhw;
+	*(volatile unsigned long *) ILAT = 0;
+	asm("csync;");
+	*(volatile unsigned long *) IMASK = 0x3f;
+	asm("csync;");
 }
 
-void dcache_disable(void)
+static int blackfin_init_core(void)
 {
-	SSYNC();
-	*(unsigned int *)DMEM_CONTROL &= ~(ACACHE_BCACHE |ENDCPLB |PORT_PREF0);
-	SSYNC();
+	blackfin_init_exceptions();
+	icache_enable();
+
+	return 0;
 }
 
-int dcache_status(void)
-{
-	unsigned int value;
-	value = *(unsigned int *)DMEM_CONTROL;
-	if( value & (ENDCPLB))
-		return CACHE_ON;
-	else
-		return CACHE_OFF;
-}
+core_initcall(blackfin_init_core);
+

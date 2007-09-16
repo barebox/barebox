@@ -12,3 +12,5 @@ obj-y += divsi3.o
 obj-y += modsi3.o
 obj-y += cpu.o
 obj-y += flush.o
+obj-y += interrupt.o
+obj-y += traps.o

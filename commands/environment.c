@@ -205,6 +205,7 @@ int envfs_load(char *filename, char *dirname)
 	ret = read(envfd, &super, sizeof(struct envfs_super));
 	if ( ret < sizeof(struct envfs_super)) {
 		perror("read");
+		ret = errno;
 		goto out;
 	}
 
@@ -220,8 +221,10 @@ int envfs_load(char *filename, char *dirname)
 			perror("read");
 			goto out;
 		}
-		if (inode.magic == ENVFS_END_MAGIC)
+		if (inode.magic == ENVFS_END_MAGIC) {
+			ret = 0;
 			break;
+		}
 		if (inode.magic != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
 			ret = -EIO;
@@ -260,6 +263,7 @@ int envfs_load(char *filename, char *dirname)
 			ret = read(envfd, buf, 4 - (inode.size & 0x3));
 			if (ret < 4 - (inode.size & 0x3)) {
 				perror("read");
+				ret = errno;
 				goto out;
 			}
 		}

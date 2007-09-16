@@ -164,6 +164,8 @@ int parse_area_spec(const char *str, ulong *start, ulong *size);
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
 
-extern void start_uboot(void);
+void start_uboot(void);
+
+int arch_execute(unsigned long address, int argc, char *argv[]);
 
 #endif	/* __COMMON_H_ */

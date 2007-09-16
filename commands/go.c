@@ -34,7 +34,7 @@ int do_go (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	int     rcode = 0;
 
 	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
@@ -42,26 +42,11 @@ int do_go (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	printf ("## Starting application at 0x%08lX ...\n", addr);
 
-	/*
-	 * pass address parameter as argv[0] (aka command name),
-	 * and all remaining args
-	 */
-#if defined(CONFIG_I386)
-	/*
-	 * x86 does not use a dedicated register to pass the pointer
-	 * to the global_data
-	 */
-	argv[0] = (char *)gd;
-#endif
-#if !defined(CONFIG_NIOS)
-	rc = ((ulong (*)(int, char *[]))addr) (--argc, &argv[1]);
+#ifdef ARCH_HAS_EXECUTE
+	rc = arch_execute(addr, argc, &argv[1]);
 #else
-	/*
-	 * Nios function pointers are address >> 1
-	 */
-	rc = ((ulong (*)(int, char *[]))(addr>>1)) (--argc, &argv[1]);
+	rc = ((ulong (*)(int, char *[]))addr) (--argc, &argv[1]);
 #endif
-	if (rc != 0) rcode = 1;
 
 	printf ("## Application terminated, rc = 0x%lX\n", rc);
 	return rcode;

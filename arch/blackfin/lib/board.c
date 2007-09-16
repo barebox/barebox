@@ -32,7 +32,7 @@
 #include <init.h>
 #include <environment.h>
 #include <mem_malloc.h>
-#include "blackfin_board.h"
+#include <asm/cpu.h>
 
 int blackfin_mem_malloc_init(void)
 {
@@ -43,8 +43,13 @@ int blackfin_mem_malloc_init(void)
 
 core_initcall(blackfin_mem_malloc_init);
 
-void reset_cpu(ulong ignored)
+int arch_execute(unsigned long address, int argc, char *argv[])
 {
-	printf("do not ave a reset function\n");
-	while (1);
+	int ret;
+
+	icache_disable();
+	ret = ((ulong (*)(int, char *[]))address) (argc, &argv[0]);
+	icache_enable();
+
+	return ret;
 }

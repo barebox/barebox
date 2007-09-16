@@ -28,7 +28,6 @@
  * MA 02111-1307 USA
  */
 
-#include <linux/config.h>
 #ifdef CONFIG_EZKIT533
 #include <asm/board/bf533_irq.h>
 #endif

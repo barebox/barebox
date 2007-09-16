@@ -25,7 +25,6 @@
 #ifndef _BLACKFIN_SYSTEM_H
 #define _BLACKFIN_SYSTEM_H
 
-#include <linux/config.h>	/* get configuration macros */
 #include <asm/linkage.h>
 #include <asm/blackfin.h>
 #include <asm/segment.h>

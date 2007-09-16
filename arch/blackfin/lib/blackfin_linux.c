@@ -44,7 +44,10 @@ int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 	image_header_t *os_header = &os_handle->header;
 
 	appl = (int (*)(char *))ntohl(os_header->ih_ep);
-	printf("Starting Kernel at = %x\n", appl);
+	printf("Starting Kernel at 0x%08x\n", appl);
+
+	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
+		return -1;
 
 	strncpy(cmdlinedest, cmdline, 0x1000);
 	cmdlinedest[0xfff] = 0;
@@ -52,11 +55,6 @@ int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 	if(icache_status()){
 		flush_instruction_cache();
 		icache_disable();
-	}
-
-	if(dcache_status()){
-		flush_data_cache();
-		dcache_disable();
 	}
 
 	(*appl)(cmdlinedest);

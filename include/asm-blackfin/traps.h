@@ -27,16 +27,8 @@
  * MA 02111-1307 USA
  */
 
-/*
-  */
-
 #ifndef _BLACKFIN_TRAPS_H
 #define _BLACKFIN_TRAPS_H
-
-#ifndef __ASSEMBLY__
-typedef void (*e_vector) (void);
-extern e_vector vectors[];
-#endif
 
 #define VEC_SYS		(0)
 #define VEC_EXCPT01	(1)

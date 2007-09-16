@@ -16,8 +16,8 @@ static struct device_d sdram_dev = {
 	.name     = "ram",
 	.id       = "ram0",
 
-	.map_base = 0x08000000,
-	.size     = 16 * 1024 * 1024,
+	.map_base = 0x0,
+	.size     = 128 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
 };
@@ -62,6 +62,7 @@ static struct device_d blackfin_serial_device = {
 static int blackfin_console_init(void)
 {
 	register_device(&blackfin_serial_device);
+
 	return 0;
 }
 

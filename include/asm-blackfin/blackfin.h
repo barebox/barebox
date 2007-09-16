@@ -31,7 +31,9 @@
 #ifdef CONFIG_BF561
 
 #include <asm/cpu/defBF561.h>
+#include <asm/cpu/defBF561_extn.h>
 #ifndef __ASSEMBLY__
+#include <asm/cpu/cdef_LPBlackfin.h>
 #include <asm/cpu/cdefBF561.h>
 #endif
 

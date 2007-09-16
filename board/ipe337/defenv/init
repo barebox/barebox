@@ -1,0 +1,9 @@
+
+echo -n "Hit any key to stop autoboot: "
+timeout -a 3
+if [ $? != 0 ]; then
+        exit
+fi
+
+exec /env/boot
+

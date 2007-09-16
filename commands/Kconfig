@@ -221,6 +221,10 @@ config CMD_GO
 
 endmenu
 
+config CMD_TIMEOUT
+	bool
+	prompt "timeout"
+
 config CMD_PARTITION
 	bool
 	prompt "addpart/delpart"

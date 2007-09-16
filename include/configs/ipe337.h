@@ -23,7 +23,7 @@
 #define CONFIG_VCO_MULT			22
 /* CONFIG_CCLK_DIV controls what the core clock divider is       */
 /* Values can be 1, 2, 4, or 8 ONLY                              */
-#define CONFIG_CCLK_DIV			4
+#define CONFIG_CCLK_DIV			1
 /* CONFIG_SCLK_DIV controls what the peripheral clock divider is */
 /* Values can range from 1-15                                    */
 #define CONFIG_SCLK_DIV			7

@@ -1,6 +1,0 @@
-menu "video drivers                 "
-
-config DRIVER_VIDEO_S1D13706
-	bool "epson s1d13706 video driver"
-
-endmenu

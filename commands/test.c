@@ -144,24 +144,20 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			adv = 2;
 			if (ap[1] && *ap[1] != ']' && strlen(ap[1])) {
 				expr = stat(ap[1], &statbuf);
-				printf("expr: %d\n", expr);
 				if (expr < 0) {
 					expr = 0;
 					break;
 				}
 				expr = 0;
 				if (opt == OPT_EXISTS) {
-					printf("exists\n");
 					expr = 1;
 					break;
 				}
 				if (opt == OPT_FILE && S_ISREG(statbuf.st_mode)) {
-					printf("reg\n");
 					expr = 1;
 					break;
 				}
 				if (opt == OPT_DIRECTORY && S_ISDIR(statbuf.st_mode)) {
-					printf("dir\n");
 					expr = 1;
 					break;
 				}
@@ -186,7 +182,6 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 				expr = strcmp(ap[0], ap[2]) != 0;
 				break;
 			case OPT_ARITH_EQUAL:
-				printf("equal: %d %d\n", a, b);
 				expr = a == b;
 				break;
 			case OPT_ARITH_NOT_EQUAL:

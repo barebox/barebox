@@ -36,8 +36,6 @@
 #include <hush.h>
 #endif
 
-#include <post.h>
-
 extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
 

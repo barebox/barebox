@@ -253,13 +253,13 @@ static void BootpVendorProcess (u8 * ext, int size)
 	if (NetOurSubnetMask) {
 		puts ("NetOurSubnetMask : ");
 		print_IPaddr (NetOurSubnetMask);
-		putc ('\n');
+		putchar('\n');
 	}
 
 	if (NetOurGatewayIP) {
 		puts ("NetOurGatewayIP	: ");
 		print_IPaddr (NetOurGatewayIP);
-		putc ('\n');
+		putchar('\n');
 	}
 
 	if (NetBootFileSize) {
@@ -827,7 +827,7 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			dhcp_state = BOUND;
 			puts ("DHCP client bound to address ");
 			print_IPaddr(NetOurIP);
-			putc ('\n');
+			putchar('\n');
 
 			NetState = NETLOOP_SUCCESS;
 			return;

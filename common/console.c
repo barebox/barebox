@@ -27,7 +27,6 @@
 #include <malloc.h>
 #include <param.h>
 #include <console.h>
-#include <exports.h>
 #include <driver.h>
 #include <fs.h>
 #include <reloc.h>
@@ -211,7 +210,7 @@ int fputc(int fd, char c)
 	}
 
 	if (fd == 1)
-		putc(c);
+		putchar(c);
 	else if (fd == 2)
 		eputc(c);
 	else
@@ -259,7 +258,7 @@ void fprintf (int file, const char *fmt, ...)
 	fputs (file, printbuffer);
 }
 
-void printf (const char *fmt, ...)
+int printf (const char *fmt, ...)
 {
 	va_list args;
 	uint i;
@@ -275,10 +274,12 @@ void printf (const char *fmt, ...)
 
 	/* Print the string */
 	puts (printbuffer);
+
+	return i;
 }
 
 
-void vprintf (const char *fmt, va_list args)
+int vprintf (const char *fmt, va_list args)
 {
 	uint i;
 	char printbuffer[CFG_PBSIZE];
@@ -290,6 +291,8 @@ void vprintf (const char *fmt, va_list args)
 
 	/* Print the string */
 	puts (printbuffer);
+
+	return i;
 }
 
 /* test if ctrl-c was pressed */

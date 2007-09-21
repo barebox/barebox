@@ -23,12 +23,12 @@ static inline void puts(const char *s) {
 	return console_puts(CONSOLE_STDOUT, s);
 }
 
-static inline void putc(char c) {
+static inline void putchar(char c) {
 	console_putc(CONSOLE_STDOUT, c);
 }
 
-void	printf(const char *fmt, ...);
-void	vprintf(const char *fmt, va_list args);
+int	printf(const char *fmt, ...);
+int	vprintf(const char *fmt, va_list args);
 int	sprintf(char * buf, const char *fmt, ...);
 int	vsprintf(char *buf, const char *fmt, va_list args);
 

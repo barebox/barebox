@@ -385,7 +385,7 @@ int flash_erase_one (flash_info_t * info, long sect)
 	    (info, sect, info->erase_blk_tout, "erase")) {
 		rcode = 1;
 	} else
-		putc ('.');
+		putchar('.');
 
 	return rcode;
 }
@@ -407,7 +407,7 @@ int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 			goto out;
 	}
 out:
-	putc('\n');
+	putchar('\n');
 	return ret;
 }
 
@@ -428,7 +428,7 @@ int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int pr
 			goto out;
 	}
 out:
-	putc('\n');
+	putchar('\n');
 	return ret;
 }
 
@@ -529,7 +529,7 @@ void cfi_info (struct device_d* dev)
 			info->protect[i] ? "RO" : "  ");
 #endif
 	}
-	putc ('\n');
+	putchar('\n');
 	return;
 }
 

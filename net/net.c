@@ -1267,7 +1267,7 @@ NetReceive(uchar * inpkt, int len)
 					return;
 				puts (" ICMP Host Redirect to ");
 				print_IPaddr(icmph->un.gateway);
-				putc(' ');
+				putchar(' ');
 				return;
 #ifdef CONFIG_NET_PING
 			case ICMP_ECHO_REPLY:

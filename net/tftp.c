@@ -210,7 +210,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			printf ("\n\t %lu MB received\n\t ", TftpBlockWrapOffset>>20);
 		} else {
 			if (((TftpBlock - 1) % 10) == 0) {
-				putc ('#');
+				putchar('#');
 			} else if ((TftpBlock % (10 * HASHES_PER_LINE)) == 0) {
 				puts ("\n\t ");
 			}
@@ -330,7 +330,7 @@ TftpStart (void)
 		print_IPaddr (NetOurGatewayIP) ;
 	    }
 	}
-	putc ('\n');
+	putchar('\n');
 
 	printf ("Filename '%s'.", tftp_filename);
 
@@ -339,7 +339,7 @@ TftpStart (void)
 		print_size (NetBootFileSize<<9, "");
 	}
 
-	putc ('\n');
+	putchar('\n');
 
 	puts ("Loading: *\b");
 

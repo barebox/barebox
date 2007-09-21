@@ -21,7 +21,7 @@ extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
 #define DEL7			((char)127)
 #define CREAD_HIST_CHAR		('!')
 
-#define getcmd_putch(ch)	putc(ch)
+#define getcmd_putch(ch)	putchar(ch)
 #define getcmd_getch()		getc()
 #define getcmd_cbeep()		getcmd_putch('\a')
 
@@ -189,7 +189,7 @@ int readline(const char *prompt, char *buf, int len)
 		ichar = read_key();
 
 		if ((ichar == '\n') || (ichar == '\r')) {
-			putc('\n');
+			putchar('\n');
 			break;
 		}
 

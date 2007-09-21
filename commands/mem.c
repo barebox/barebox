@@ -88,12 +88,12 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 		cp = (u_char *)linebuf;
 		for (i=0; i<linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))
-				putc ('.');
+				putchar('.');
 			else
 				printf("%c", *cp);
 			cp++;
 		}
-		putc ('\n');
+		putchar('\n');
 		nbytes -= linebytes;
 		if (ctrlc()) {
 			return -EINTR;

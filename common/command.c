@@ -131,10 +131,10 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
 			puts (cmdtp->help);
 		} else {
 			puts (cmdtp->name);
-			putc (' ');
+			putchar (' ');
 			puts ("- No help available.\n");
 		}
-		putc ('\n');
+		putchar ('\n');
 #else	/* no long help available */
 		if (cmdtp->usage) {
 			puts (cmdtp->usage);
@@ -473,7 +473,7 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *colp)
 	if (i == 0) {
 		if (argc > 1)	/* allow tab for non command */
 			return 0;
-		putc('\a');
+		putchar('\a');
 		return 1;
 	}
 
@@ -500,7 +500,7 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *colp)
 		k = len + seplen;
 		/* make sure it fits */
 		if (n + k >= CONFIG_CBSIZE - 2) {
-			putc('\a');
+			putchar('\a');
 			return 1;
 		}
 
@@ -515,7 +515,7 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *colp)
 		col += k;
 		puts(t - k);
 		if (sep == NULL)
-			putc('\a');
+			putchar('\a');
 		*np = n;
 		*colp = col;
 	} else {

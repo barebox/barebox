@@ -54,9 +54,9 @@ static int do_cat(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		while((ret = read(fd, buf, 1024)) > 0) {
 			for(i = 0; i < ret; i++) {
 				if (isprint(buf[i]) || buf[i] == '\n' || buf[i] == '\t')
-					putc(buf[i]);
+					putchar(buf[i]);
 				else
-					putc('.');
+					putchar('.');
 			}
 			if(ctrlc()) {
 				err = 1;

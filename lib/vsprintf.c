@@ -370,7 +370,7 @@ void panic(const char *fmt, ...)
 	va_list	args;
 	va_start(args, fmt);
 	vprintf(fmt, args);
-	putc('\n');
+	putchar('\n');
 	va_end(args);
 #if defined (CONFIG_PANIC_HANG)
 	hang();

@@ -29,7 +29,7 @@
 #define CONFIG_SCLK_DIV			7
 
 #define AMGCTLVAL               0x1F
-#define AMBCTL0VAL              0xFFC2FFC2
+#define AMBCTL0VAL              0x14407BB0
 #define AMBCTL1VAL              0xFFC2FFC2
 
 #define CONFIG_MEM_MT48LC64M4A2FB_7E    1

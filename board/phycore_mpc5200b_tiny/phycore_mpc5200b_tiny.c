@@ -32,7 +32,6 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <asm/arch/mpc5xxx.h>
-#include <pci.h>
 #include <asm/arch/fec.h>
 #include <types.h>
 #include <partition.h>

@@ -35,7 +35,6 @@
 /* #define DEBUG	*/
 
 #include <common.h>
-#include <asm/processor.h>
 #include <asm/byteorder.h>
 #include <environment.h>
 #include <clock.h>
@@ -345,7 +344,7 @@ static int flash_find_sector(flash_info_t * info, unsigned long adr)
 	unsigned long end;
 
 	for (i = 0; i < info->sector_count; i++) {
-		if (i == info->sector_count)
+		if (i + 1 == info->sector_count)
 			end = info->start[0] + info->size - 1;
 		else
 			end = info->start[i + 1] - 1;
@@ -396,7 +395,7 @@ int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 	unsigned long start, end;
 	int i, ret = 0;
 
-	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	debug("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
 
 	start = flash_find_sector(finfo, dev->map_base + offset);
 	end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
@@ -417,7 +416,7 @@ int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int pr
 	unsigned long start, end;
 	int i, ret = 0;
 
-	printf("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	debug("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
 
 	start = flash_find_sector(finfo, dev->map_base + offset);
 	end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
@@ -880,7 +879,7 @@ static void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset
 	flash_make_cmd (info, cmd, &cword);
 	switch (info->portwidth) {
 	case FLASH_CFI_8BIT:
-		debug ("fwc addr %p cmd %x %x 8bit x %d bit\n", addr.cp, cmd,
+		debug("fwc addr %p cmd %x %x 8bit x %d bit\n", addr.cp, cmd,
 		       cword.c, info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
 		*addr.cp = cword.c;
 #ifdef CONFIG_BLACKFIN
@@ -888,7 +887,7 @@ static void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset
 #endif
 		break;
 	case FLASH_CFI_16BIT:
-		debug ("fwc addr %p cmd %x %4.4x 16bit x %d bit\n", addr.wp,
+		debug("fwc addr %p cmd %x %4.4x 16bit x %d bit\n", addr.wp,
 		       cmd, cword.w,
 		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
 		*addr.wp = cword.w;
@@ -897,7 +896,7 @@ static void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset
 #endif
 		break;
 	case FLASH_CFI_32BIT:
-		debug ("fwc addr %p cmd %x %8.8lx 32bit x %d bit\n", addr.lp,
+		debug("fwc addr %p cmd %x %8.8lx 32bit x %d bit\n", addr.lp,
 		       cmd, cword.l,
 		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
 		*addr.lp = cword.l;

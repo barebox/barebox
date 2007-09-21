@@ -31,6 +31,8 @@
 #include <fs.h>
 #include <reloc.h>
 #include <init.h>
+#include <clock.h>
+#include <kfifo.h>
 
 static struct console_device *first_console = NULL;
 
@@ -132,7 +134,7 @@ int console_register(struct console_device *newcdev)
 	}
 }
 
-int getc (void)
+int getc_raw(void)
 {
 	struct console_device *cdev = NULL;
 	while (1) {
@@ -142,6 +144,36 @@ int getc (void)
 			return cdev->getc(cdev);
 		cdev = cdev->next;
 	}
+}
+
+static struct kfifo *console_buffer;
+
+int getc_buffer_flush(void)
+{
+	console_buffer = kfifo_alloc(1024);
+	return 0;
+}
+
+postcore_initcall(getc_buffer_flush);
+
+int getc(void)
+{
+	unsigned char ch;
+	uint64_t start;
+
+	start = get_time_ns();
+	while (1) {
+		if (tstc()) {
+			kfifo_putc(console_buffer, getc_raw());
+
+			start = get_time_ns();
+		}
+		if (is_timeout(start, 100 * USECOND) && kfifo_len(console_buffer))
+			break;
+	}
+
+	kfifo_getc(console_buffer, &ch);
+	return ch;
 }
 
 int fgetc(int fd)

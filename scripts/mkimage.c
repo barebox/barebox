@@ -58,9 +58,7 @@ typedef		unsigned int	uint32_t;
 #define O_BINARY	0
 #endif
 
-#include <image.h>
-
-extern int errno;
+#include "../include/image.h"
 
 #ifndef MAP_FAILED
 #define MAP_FAILED (-1)
@@ -68,7 +66,10 @@ extern int errno;
 
 char *cmdname;
 
-extern unsigned long crc32 (unsigned long crc, const char *buf, unsigned int len);
+#include "../include/zlib.h"
+#include "../lib/crc32.c"
+
+//extern unsigned long crc32 (unsigned long crc, const char *buf, unsigned int len);
 
 typedef struct table_entry {
 	int	val;		/* as defined in image.h	*/
@@ -182,7 +183,7 @@ main (int argc, char **argv)
 	uint32_t addr;
 	uint32_t ep;
 	struct stat sbuf;
-	unsigned char *ptr;
+	char *ptr;
 	char *name = "";
 
 	cmdname = *argv;
@@ -320,7 +321,7 @@ NXTARG:		;
 			exit (EXIT_FAILURE);
 		}
 
-		ptr = (unsigned char *)mmap(0, sbuf.st_size,
+		ptr = mmap(0, sbuf.st_size,
 					    PROT_READ, MAP_SHARED, ifd, 0);
 		if ((caddr_t)ptr == (caddr_t)-1) {
 			fprintf (stderr, "%s: Can't read %s: %s\n",
@@ -348,7 +349,7 @@ NXTARG:		;
 		checksum = ntohl(hdr->ih_hcrc);
 		hdr->ih_hcrc = htonl(0);	/* clear for re-calculation */
 
-		if (crc32 (0, data, len) != checksum) {
+		if (crc32 (0, (unsigned char *)data, len) != checksum) {
 			fprintf (stderr,
 				"%s: ERROR: \"%s\" has bad header checksum!\n",
 				cmdname, imagefile);
@@ -358,7 +359,7 @@ NXTARG:		;
 		data = (char *)(ptr + sizeof(image_header_t));
 		len  = sbuf.st_size - sizeof(image_header_t) ;
 
-		if (crc32 (0, data, len) != ntohl(hdr->ih_dcrc)) {
+		if (crc32 (0, (unsigned char *)data, len) != ntohl(hdr->ih_dcrc)) {
 			fprintf (stderr,
 				"%s: ERROR: \"%s\" has corrupted data!\n",
 				cmdname, imagefile);
@@ -458,9 +459,9 @@ NXTARG:		;
 		exit (EXIT_FAILURE);
 	}
 
-	ptr = (unsigned char *)mmap(0, sbuf.st_size,
+	ptr = mmap(0, sbuf.st_size,
 				    PROT_READ|PROT_WRITE, MAP_SHARED, ifd, 0);
-	if (ptr == (unsigned char *)MAP_FAILED) {
+	if (ptr == MAP_FAILED) {
 		fprintf (stderr, "%s: Can't map %s: %s\n",
 			cmdname, imagefile, strerror(errno));
 		exit (EXIT_FAILURE);
@@ -469,7 +470,7 @@ NXTARG:		;
 	hdr = (image_header_t *)ptr;
 
 	checksum = crc32 (0,
-			  (const char *)(ptr + sizeof(image_header_t)),
+			  (unsigned char *)(ptr + sizeof(image_header_t)),
 			  sbuf.st_size - sizeof(image_header_t)
 			 );
 
@@ -487,7 +488,7 @@ NXTARG:		;
 
 	strncpy((char *)hdr->ih_name, name, IH_NMLEN);
 
-	checksum = crc32(0,(const char *)hdr,sizeof(image_header_t));
+	checksum = crc32(0,(unsigned char *)hdr,sizeof(image_header_t));
 
 	hdr->ih_hcrc = htonl(checksum);
 

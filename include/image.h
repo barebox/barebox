@@ -98,8 +98,6 @@
 #define IH_CPU IH_CPU_BLACKFIN
 #elif defined(__avr32__)
 #define IH_CPU IH_CPU_AVR32
-#else
-# error Unknown CPU type
 #endif
 
 /*

@@ -162,10 +162,6 @@ export srctree objtree VPATH
 # make CROSS_COMPILE=ia64-linux-
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
-# Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-
-ARCH		?= $(shell readlink cross_arch)
-CROSS_COMPILE	?= $(shell readlink cross_compile)
 
 # Architecture as present in compile.h
 UTS_MACHINE := $(ARCH)

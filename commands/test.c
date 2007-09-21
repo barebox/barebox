@@ -24,6 +24,8 @@
  */
 #include <common.h>
 #include <command.h>
+#include <fs.h>
+#include <linux/stat.h>
 
 typedef enum {
 	OPT_EQUAL,
@@ -38,6 +40,9 @@ typedef enum {
 	OPT_AND,
 	OPT_ZERO,
 	OPT_NONZERO,
+	OPT_DIRECTORY,
+	OPT_FILE,
+	OPT_EXISTS,
 	OPT_MAX,
 } test_opts;
 
@@ -54,6 +59,9 @@ static char *test_options[] = {
 	[OPT_AND]			= "-a",
 	[OPT_ZERO]			= "-z",
 	[OPT_NONZERO]			= "-n",
+	[OPT_FILE]			= "-f",
+	[OPT_DIRECTORY]			= "-d",
+	[OPT_EXISTS]			= "-e",
 };
 
 static int parse_opt(const char *opt)
@@ -74,6 +82,7 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	char **ap;
 	int left, adv, expr, last_expr, neg, last_cmp, opt, zero;
 	ulong a, b;
+	struct stat statbuf;
 
 	if (*argv[0] == '[') {
 		if (*argv[argc - 1] != ']') {
@@ -127,6 +136,36 @@ do_test (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 				zero = 0;
 
 			expr = (opt == OPT_ZERO) ? zero : !zero;
+			break;
+
+		case OPT_FILE:
+		case OPT_DIRECTORY:
+		case OPT_EXISTS:
+			adv = 2;
+			if (ap[1] && *ap[1] != ']' && strlen(ap[1])) {
+				expr = stat(ap[1], &statbuf);
+				printf("expr: %d\n", expr);
+				if (expr < 0) {
+					expr = 0;
+					break;
+				}
+				expr = 0;
+				if (opt == OPT_EXISTS) {
+					printf("exists\n");
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_FILE && S_ISREG(statbuf.st_mode)) {
+					printf("reg\n");
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_DIRECTORY && S_ISDIR(statbuf.st_mode)) {
+					printf("dir\n");
+					expr = 1;
+					break;
+				}
+			}
 			break;
 
 		/* three argument options */
@@ -191,7 +230,7 @@ char *test_aliases[] = { "[", NULL};
 
 static __maybe_unused char cmd_test_help[] =
 "Usage: test [OPTIONS]\n"
-"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n\n"
+"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e, -f\n"
 "see 'man test' on your PC for more information.\n";
 
 U_BOOT_CMD_START(test)

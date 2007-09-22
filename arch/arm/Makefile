@@ -50,7 +50,7 @@ uboot.netx: uboot.bin
 		--cookie=$(CONFIG_NETX_COOKIE);
 
 ifeq ($(machine-y),netx)
-KBUILD_IMAGE := u-boot.netx 
+KBUILD_IMAGE := uboot.netx 
 endif
 
 all: $(KBUILD_IMAGE)

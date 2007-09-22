@@ -13,7 +13,7 @@ else
 	bootargs="$bootargs ip=$eth0.ip:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
 fi
 
-bootargs="$bootargs mtdparts=physmap_flash.0:$mtdparts"
+bootargs="$bootargs mtdparts=physmap-flash.0:$mtdparts"
 
 if [ "$kernel" = net ]; then
 	if [ $ip = dhcp ]; then
@@ -22,5 +22,5 @@ if [ "$kernel" = net ]; then
 	tftpboot uImage $uimage
 	bootm uImage
 else
-	bootm /dev/mtdblock2
+	bootm /dev/$jffs2dev
 fi

@@ -3,10 +3,12 @@ eth0.serverip=192.168.23.2
 eth0.mac=80:87:78:74:73:63
 
 mtdparts="128k(uboot)ro,128k(ubootenv),1536k(kernel),-(jffs2)"
+kerneldev="/dev/nor0.2"
+jffs2dev="/dev/nor0.3"
 
 ip=dhcp
 
-nfsroot="/home/sha/octopus/blackfin/root"
+nfsroot="/home/sha/octopus/blackfin/OSELAS.BSP-Pipetronix-ipe337-trunk/root"
 uimage=uImage-bfin
 jffs2=root-bfin.jffs2
 
@@ -15,3 +17,7 @@ bootargs="console=ttyBF0,115200"
 # can be either 'net' or 'flash'
 kernel=net
 root=net
+
+if [ ! -e dev/nor0.0 ]; then
+	addpart nor0:$mtdparts
+fi

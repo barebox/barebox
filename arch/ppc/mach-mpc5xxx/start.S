@@ -27,8 +27,8 @@
  */
 #include <config.h>
 
-#include <ppc_asm.tmpl>
-#include <ppc_defs.h>
+#include <asm/ppc_asm.tmpl>
+#include <asm/ppc_defs.h>
 
 #include <asm/cache.h>
 #include <asm/mmu.h>

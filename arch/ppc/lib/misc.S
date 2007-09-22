@@ -1,5 +1,5 @@
 
-#include <ppc_asm.tmpl>
+#include <asm/ppc_asm.tmpl>
 #include <asm-generic/errno.h>
 
 	.globl	__ashldi3

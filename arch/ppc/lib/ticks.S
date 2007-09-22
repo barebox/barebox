@@ -23,8 +23,8 @@
  * MA 02111-1307 USA
  */
 
-#include <ppc_asm.tmpl>
-#include <ppc_defs.h>
+#include <asm/ppc_asm.tmpl>
+#include <asm/ppc_defs.h>
 #include <config.h>
 #include <watchdog.h>
 

@@ -1,0 +1,162 @@
+#
+# Automatically generated make config: don't edit
+# U-Boot version: 2.0.0-git
+# Sat Sep 22 15:53:21 2007
+#
+CONFIG_TEXT_BASE="0x08f80000"
+CONFIG_BOARDINFO="Hilscher Netx nxdb500"
+CONFIG_ARM=y
+CONFIG_ARM926EJS=y
+CONFIG_ARCH_NETX=y
+# CONFIG_MACH_MX1ADS is not set
+# CONFIG_MACH_SCB9328 is not set
+# CONFIG_MACH_ECO920 is not set
+CONFIG_MACH_NXDB500=y
+CONFIG_NETX_SDRAM_CTRL=0x010D0121
+CONFIG_NETX_SDRAM_TIMING_CTRL=0x03C13261
+CONFIG_NETX_MEM_CTRL=0x0203030F
+CONFIG_NETX_COOKIE=32
+
+#
+# Arm specific settings
+#
+CONFIG_CMDLINE_TAG=y
+CONFIG_SETUP_MEMORY_TAGS=y
+CONFIG_INITRD_TAG=y
+CONFIG_GREGORIAN_CALENDER=y
+
+#
+# General Settings              
+#
+CONFIG_BROKEN=y
+CONFIG_PROMPT="uboot:"
+CONFIG_BAUDRATE=115200
+CONFIG_CMDLINE_EDITING=y
+# CONFIG_AUTO_COMPLETE is not set
+CONFIG_LONGHELP=y
+CONFIG_CBSIZE=1024
+CONFIG_MAXARGS=16
+CONFIG_HUSH_PARSER=y
+CONFIG_PROMPT_HUSH_PS2="> "
+CONFIG_DYNAMIC_CRC_TABLE=y
+CONFIG_ERRNO_MESSAGES=y
+CONFIG_TIMESTAMP=y
+CONFIG_CONSOLE_ACTIVATE_FIRST=y
+# CONFIG_OF_FLAT_TREE is not set
+# CONFIG_DEFAULT_ENVIRONMENT is not set
+
+#
+# Debugging                     
+#
+CONFIG_SKIP_LOWLEVEL_INIT=y
+
+#
+# Commands                      
+#
+
+#
+# scripting                     
+#
+CONFIG_CMD_EDIT=y
+CONFIG_CMD_EXEC=y
+CONFIG_CMD_SLEEP=y
+CONFIG_CMD_ENVIRONMENT=y
+CONFIG_CMD_HELP=y
+
+#
+# file commands                 
+#
+CONFIG_CMD_LS=y
+CONFIG_CMD_RM=y
+CONFIG_CMD_CAT=y
+CONFIG_CMD_MKDIR=y
+CONFIG_CMD_RMDIR=y
+CONFIG_CMD_CP=y
+CONFIG_CMD_PWD=y
+CONFIG_CMD_CD=y
+CONFIG_CMD_MOUNT=y
+CONFIG_CMD_UMOUNT=y
+
+#
+# console                       
+#
+CONFIG_CMD_CLEAR=y
+CONFIG_CMD_ECHO=y
+# CONFIG_CMD_SPLASH is not set
+
+#
+# i2c                           
+#
+# CONFIG_CMD_I2C is not set
+
+#
+# memory                        
+#
+# CONFIG_CMD_LOADB is not set
+# CONFIG_CMD_LOADS is not set
+CONFIG_CMD_MEMINFO=y
+CONFIG_CMD_MEMORY=y
+CONFIG_CMD_CRC=y
+# CONFIG_CMD_MTEST is not set
+
+#
+# network                       
+#
+# CONFIG_CMD_MII is not set
+
+#
+# flash                         
+#
+CONFIG_CMD_FLASH=y
+
+#
+# booting                       
+#
+CONFIG_CMD_BOOTM=y
+# CONFIG_CMD_BOOTM_ZLIB is not set
+# CONFIG_CMD_BOOTM_BZLIB is not set
+# CONFIG_CMD_BOOTM_SHOW_TYPE is not set
+CONFIG_CMD_RESET=y
+CONFIG_CMD_GO=y
+CONFIG_CMD_TIMEOUT=y
+CONFIG_CMD_PARTITION=y
+CONFIG_CMD_TEST=y
+CONFIG_NET=y
+CONFIG_NET_BOOTP=y
+CONFIG_NET_DHCP=y
+# CONFIG_NET_RARP is not set
+# CONFIG_NET_SNTP is not set
+# CONFIG_NET_NFS is not set
+CONFIG_NET_PING=y
+CONFIG_NET_TFTP=y
+
+#
+# Drivers                       
+#
+
+#
+# serial drivers                
+#
+CONFIG_DRIVER_SERIAL_NETX=y
+CONFIG_HAS_NETX_ETHER=y
+CONFIG_MIIPHY=y
+
+#
+# Network drivers               
+#
+# CONFIG_DRIVER_NET_SMC911X is not set
+CONFIG_DRIVER_NET_NETX=y
+
+#
+# flash drivers                 
+#
+CONFIG_HAS_CFI=y
+CONFIG_DRIVER_CFI=y
+# CONFIG_DRIVER_CFI_NEW is not set
+CONFIG_CFI_BUFFER_WRITE=y
+
+#
+# Filesystem support            
+#
+# CONFIG_FS_CRAMFS is not set
+CONFIG_CRC32=y

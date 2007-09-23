@@ -65,18 +65,21 @@ config MAXARGS
 	prompt "max. Number of arguments accepted for monitor commands"
 	default 16
 
-config HUSH_PARSER
-	bool
-	prompt "Use hush parser"
+choice
+	prompt "Select your shell"
 
-config SIMPLE_PARSER
-	bool
+config SHELL_HUSH
+	bool "hush parser"
 	default y
-	depends on !HUSH_PARSER
+
+config SHELL_SIMPLE
+	bool "Simple parser"
+
+endchoice
 
 config PROMPT_HUSH_PS2
 	string
-	depends on HUSH_PARSER
+	depends on SHELL_HUSH
 	prompt "hush PS2"
 	default "> "
 

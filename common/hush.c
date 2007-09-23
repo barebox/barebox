@@ -97,6 +97,7 @@
 #include <driver.h>
 #include <errno.h>
 #include <fs.h>
+#include <libbb.h>
 
 /*cmd_boot.c*/
 extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
@@ -180,6 +181,7 @@ struct pipe {
 };
 
 
+static char console_buffer[CONFIG_CBSIZE];		/* console I/O buffer	*/
 
 /* globals, connect us to the outside world
  * the first three support $?, $#, and $1 */
@@ -269,6 +271,7 @@ static char **make_list_in(char **inp, char *name);
 static char *insert_var_value(char *inp);
 static const char *get_local_var(const char *var);
 static int set_local_var(const char *s, int flg_export);
+static int execute_script(const char *path, int argc, char *argv[]);
 
 
 static int b_check_space(o_string *o, int len)
@@ -468,6 +471,8 @@ static int run_pipe_real(struct pipe *pi)
 	struct child_prog *child;
 	cmd_tbl_t *cmdtp;
 	char *p;
+	char *path;
+	int ret;
 # if __GNUC__
 	/* Avoid longjmp clobbering */
 	(void) &i;
@@ -529,11 +534,17 @@ static int run_pipe_real(struct pipe *pi)
 			free(str);
 			return last_return_code;
 		}
+		if (strchr(child->argv[i], '/')) {
+			return execute_script(child->argv[i], child->argc-i,&child->argv[i]);
+		}
+		if ((path = find_execable(child->argv[i]))) {
+			printf("path: %s\n", path);
+			ret = execute_script(path, child->argc-i,&child->argv[i]);
+			free(path);
+			return ret;
+		}
 		/* Look up command in command table */
-		if ((cmdtp = find_cmd(child->argv[i])) == NULL) {
-			printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
-			return -1;	/* give up after bad command */
-		} else {
+		if ((cmdtp = find_cmd(child->argv[i]))) {
 			int rcode;
 #if (CONFIG_COMMANDS & CFG_CMD_BOOTD)
     extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
@@ -562,6 +573,9 @@ static int run_pipe_real(struct pipe *pi)
 			child->argv-=i;  /* XXX restore hack so free() can work right */
 
 			return rcode;
+		} else {
+			printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
+			return -1;	/* give up after bad command */
 		}
 	}
 	return -1;
@@ -1320,18 +1334,6 @@ static int parse_string_outer(struct p_context *ctx, const char *s, int flag)
 	}
 }
 
-int parse_file_outer(void)
-{
-	int rcode;
-	struct in_str input;
-	struct p_context ctx;
-
-	setup_file_in_str(&input);
-	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
-	return rcode;
-}
-
-
 static char *insert_var_value(char *inp)
 {
 	int res_str_len = 0;
@@ -1442,21 +1444,16 @@ int run_command (const char *cmd, int flag)
 	return parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
 }
 
-static int do_sh (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int execute_script(const char *path, int argc, char *argv[])
 {
-	int ret;
-	char *script;
 	struct p_context ctx;
+	char *script;
+	int ret;
 
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	ctx.global_argc = argc;
+	ctx.global_argv = argv;
 
-	ctx.global_argc = argc - 1;
-	ctx.global_argv = argv + 1;
-
-	script = read_file(argv[1]);
+	script = read_file(path);
 	if (!script)
 		return 1;
 
@@ -1465,7 +1462,29 @@ static int do_sh (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	env_pop_context();
 
 	free(script);
+
 	return ret;
+}
+
+int run_shell(void)
+{
+	int rcode;
+	struct in_str input;
+	struct p_context ctx;
+
+	setup_file_in_str(&input);
+	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
+	return rcode;
+}
+
+static int do_sh(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	if (argc < 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	return execute_script(argv[1], argc - 1, argv + 1);
 }
 
 static __maybe_unused char cmd_sh_help[] =

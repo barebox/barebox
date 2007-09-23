@@ -10,6 +10,7 @@ config CMD_EDIT
 	prompt "edit"
 
 config CMD_EXEC
+	depends on !SHELL_HUSH
 	bool
 	prompt "exec"
 
@@ -231,7 +232,7 @@ config CMD_PARTITION
 
 config CMD_TEST
 	bool
-	depends on HUSH_PARSER
+	depends on SHELL_HUSH
 	default y
 	prompt "test"
 	help

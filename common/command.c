@@ -69,7 +69,7 @@ U_BOOT_CMD_START(false)
 	.usage		= "do nothing, unsuccessfully",
 U_BOOT_CMD_END
 
-#ifdef CONFIG_HUSH_PARSER
+#ifdef CONFIG_SHELL_HUSH
 
 int
 do_readline (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

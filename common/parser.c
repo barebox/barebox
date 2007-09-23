@@ -289,4 +289,33 @@ int run_command (const char *cmd, int flag)
 	return rc;
 }
 
-/****************************************************************************/
+static char console_buffer[CONFIG_CBSIZE];		/* console I/O buffer	*/
+
+int run_shell(void)
+{
+	static char lastcommand[CONFIG_CBSIZE] = { 0, };
+	int len;
+	int rc = 1;
+	int flag;
+	for (;;) {
+		len = readline (CONFIG_PROMPT, console_buffer, CONFIG_CBSIZE);
+
+		flag = 0;	/* assume no special flags for now */
+		if (len > 0)
+			strcpy (lastcommand, console_buffer);
+		else if (len == 0)
+			flag |= CMD_FLAG_REPEAT;
+
+		if (len == -1)
+			puts ("<INTERRUPT>\n");
+		else
+			rc = run_command (lastcommand, flag);
+
+		if (rc <= 0) {
+			/* invalid command or not repeatable, forget it */
+			lastcommand[0] = 0;
+		}
+	}
+	return 0;
+}
+

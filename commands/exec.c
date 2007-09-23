@@ -29,10 +29,6 @@
 #include <malloc.h>
 #include <xfuncs.h>
 
-#ifdef CONFIG_HUSH_PARSER
-#include <hush.h>
-#endif
-
 static int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
 	int i;

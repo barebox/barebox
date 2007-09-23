@@ -28,7 +28,4 @@
 #define FLAG_PARSE_SEMICOLON (1 << 1)	  /* symbol ';' is special for parser */
 #define FLAG_REPARSING       (1 << 2)	  /* >=2nd pass */
 
-extern int parse_string_outer(const char *, int);
-extern int parse_file_outer(void);
-
 #endif

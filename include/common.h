@@ -168,4 +168,6 @@ void start_uboot(void);
 
 int arch_execute(unsigned long address, int argc, char *argv[]);
 
+int run_shell(void);
+
 #endif	/* __COMMON_H_ */

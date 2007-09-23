@@ -11,6 +11,7 @@ obj-y			+= xfuncs.o
 obj-y			+= getopt.o
 obj-y 			+= readkey.o
 obj-y			+= kfifo.o
+obj-y			+= libbb.o
 obj-$(CONFIG_BZLIB)	+= bzlib.o bzlib_crctable.o bzlib_decompress.o bzlib_huffman.o bzlib_randtable.o
 obj-$(CONFIG_ZLIB)	+= zlib.o gunzip.o
 obj-$(CONFIG_CRC32)	+= crc32.o

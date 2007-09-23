@@ -529,41 +529,41 @@ static int run_pipe_real(struct pipe *pi)
 			free(str);
 			return last_return_code;
 		}
-			/* Look up command in command table */
-			if ((cmdtp = find_cmd(child->argv[i])) == NULL) {
-				printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
-				return -1;	/* give up after bad command */
-			} else {
-				int rcode;
+		/* Look up command in command table */
+		if ((cmdtp = find_cmd(child->argv[i])) == NULL) {
+			printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
+			return -1;	/* give up after bad command */
+		} else {
+			int rcode;
 #if (CONFIG_COMMANDS & CFG_CMD_BOOTD)
-	    extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
+    extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
-				/* avoid "bootd" recursion */
-				if (cmdtp->cmd == do_bootd) {
-					if (flag & CMD_FLAG_BOOTD) {
-						printf ("'bootd' recursion detected\n");
-						return -1;
-					}
-				else
-					flag |= CMD_FLAG_BOOTD;
-				}
-#endif	/* CFG_CMD_BOOTD */
-				/* found - check max args */
-				if ((child->argc - i) > cmdtp->maxargs) {
-					printf ("Usage:\n%s\n", cmdtp->usage);
+			/* avoid "bootd" recursion */
+			if (cmdtp->cmd == do_bootd) {
+				if (flag & CMD_FLAG_BOOTD) {
+					printf ("'bootd' recursion detected\n");
 					return -1;
 				}
-				child->argv+=i;  /* XXX horrible hack */
-				/* OK - call function to do the command */
-
-				rcode = cmdtp->cmd(cmdtp, flag,child->argc-i,&child->argv[i]);
-
-
-				child->argv-=i;  /* XXX restore hack so free() can work right */
-
-				return rcode;
+			else
+				flag |= CMD_FLAG_BOOTD;
 			}
+#endif	/* CFG_CMD_BOOTD */
+			/* found - check max args */
+			if ((child->argc - i) > cmdtp->maxargs) {
+				printf ("Usage:\n%s\n", cmdtp->usage);
+				return -1;
+			}
+			child->argv+=i;  /* XXX horrible hack */
+			/* OK - call function to do the command */
+
+			rcode = cmdtp->cmd(cmdtp, flag,child->argc-i,&child->argv[i]);
+
+
+			child->argv-=i;  /* XXX restore hack so free() can work right */
+
+			return rcode;
 		}
+	}
 	return -1;
 }
 

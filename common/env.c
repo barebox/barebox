@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <errno.h>
+#include <init.h>
 
 struct variable_d {
 	struct variable_d *next;
@@ -34,8 +35,59 @@ struct variable_d {
 
 #define VARIABLE_D_SIZE(name, value) (sizeof(struct variable_d) + strlen(name) + strlen(value) + 2)
 
-static struct variable_d _env_list;
-static struct variable_d *env_list = &_env_list;
+struct env_context {
+	struct env_context *parent;
+	struct variable_d *local;
+	struct variable_d *global;
+};
+
+static struct env_context *context;
+
+static void free_variables(struct variable_d *v)
+{
+	struct variable_d *next;
+
+	while (v) {
+		next = v->next;
+		free(v);
+		v = next;
+	}
+}
+
+int env_push_context(void)
+{
+	struct env_context *c = xzalloc(sizeof(struct env_context));
+
+	c->local = xzalloc(VARIABLE_D_SIZE("", ""));
+	c->global = xzalloc(VARIABLE_D_SIZE("", ""));
+
+	if (!context) {
+		context = c;
+		return 0;
+	}
+
+	c->parent = context;
+	context = c;
+
+	return 0;
+}
+
+late_initcall(env_push_context);
+
+int env_pop_context(void)
+{
+	struct env_context *c = context;
+
+	if (context->parent) {
+		c = context->parent;
+		free_variables(context->local);
+		free_variables(context->global);
+		free(context);
+		context = c;
+		return 0;
+	}
+	return -EINVAL;
+}
 
 static char *var_val(struct variable_d *var)
 {
@@ -47,9 +99,20 @@ static char *var_name(struct variable_d *var)
 	return var->data;
 }
 
+static const char *getenv_raw(struct variable_d *var, const char *name)
+{
+	while (var) {
+		if (!strcmp(var_name(var), name))
+			return var_val(var);
+		var = var->next;
+	}
+	return NULL;
+}
+
 const char *getenv (const char *name)
 {
-	struct variable_d *var;
+	struct env_context *c;
+	const char *val;
 
 	if (strchr(name, '.')) {
 		const char *ret = 0;
@@ -66,37 +129,24 @@ const char *getenv (const char *name)
 		return ret;
 	}
 
-	var = env_list->next;
+	c = context;
 
-	while (var) {
-		if (!strcmp(var_name(var), name))
-			return var_val(var);
-		var = var->next;
+	val = getenv_raw(c->local, name);
+	if (val)
+		return val;
+
+	while (c) {
+		val = getenv_raw(c->global, name);
+		if (val)
+			return val;
+		c = c->parent;
 	}
-	return 0;
+	return NULL;
 }
 
-int setenv (const char *name, const char *value)
+static int setenv_raw(struct variable_d *var, const char *name, const char *value)
 {
-	struct variable_d *var = env_list;
 	struct variable_d *newvar = NULL;
-	char *par;
-
-	if ((par = strchr(name, '.'))) {
-		struct device_d *dev;
-		*par++ = 0;
-		dev = get_device_by_id(name);
-		if (dev) {
-			int ret = dev_set_param(dev, par, value);
-			if (ret < 0)
-				perror("set parameter");
-			errno = 0;
-		} else {
-			errno = -ENODEV;
-			perror("set parameter");
-		}
-		return errno;
-	}
 
 	if (value) {
 		newvar = xzalloc(VARIABLE_D_SIZE(name, value));
@@ -115,20 +165,63 @@ int setenv (const char *name, const char *value)
 				struct variable_d *tmp;
 				tmp = var->next;
 				var->next = var->next->next;
-				free(var->next);
+				free(tmp);
 				return 0;
 			}
 		}
 		var = var->next;
 	}
 	var->next = newvar;
+	return 0;
+}
+
+int setenv(const char *name, const char *value)
+{
+	char *par;
+
+	if (!*value)
+		value = NULL;
+
+	if ((par = strchr(name, '.'))) {
+		struct device_d *dev;
+		*par++ = 0;
+		dev = get_device_by_id(name);
+		if (dev) {
+			int ret = dev_set_param(dev, par, value);
+			if (ret < 0)
+				perror("set parameter");
+			errno = 0;
+		} else {
+			errno = -ENODEV;
+			perror("set parameter");
+		}
+		return errno;
+	}
+
+	if (getenv_raw(context->global, name))
+		setenv_raw(context->global, name, value);
+	else
+		setenv_raw(context->local, name, value);
 
 	return 0;
 }
 
+int export(const char *varname)
+{
+	const char *val = getenv_raw(context->local, varname);
+
+	if (val) {
+		setenv_raw(context->global, varname, val);
+		setenv_raw(context->local, varname, NULL);
+		return 0;
+	}
+	return -1;
+}
+
 int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	struct variable_d *var = env_list->next;
+	struct variable_d *var;
+	struct env_context *c;
 
 	if (argc == 2) {
 		const char *val = getenv(argv[1]);
@@ -140,9 +233,22 @@ int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	var = context->local->next;
+	printf("locals:\n");
 	while (var) {
 		printf("%s=%s\n", var_name(var), var_val(var));
 		var = var->next;
+	}
+
+	printf("globals:\n");
+	c = context;
+	while(c) {
+		var = c->global->next;
+		while (var) {
+			printf("%s=%s\n", var_name(var), var_val(var));
+			var = var->next;
+		}
+		c = c->parent;
 	}
 
 	return 0;
@@ -183,4 +289,30 @@ U_BOOT_CMD_START(setenv)
 U_BOOT_CMD_END
 
 #endif
+
+int do_export ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int i = 1;
+
+	if (argc < 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	while (i < argc)
+		export(argv[i++]);
+
+	return 0;
+}
+
+static __maybe_unused char cmd_export_help[] =
+"Usage: export [var]...\n"
+"export an environment variable to subsequently executed scripts\n";
+
+U_BOOT_CMD_START(export)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_export,
+	.usage		= "export environment variables",
+	U_BOOT_CMD_HELP(cmd_export_help)
+U_BOOT_CMD_END
 

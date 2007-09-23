@@ -27,6 +27,9 @@
 const char *getenv(const char *);
 int setenv(const char *, const char *);
 
+int env_pop_context(void);
+int env_push_context(void);
+
 int envfs_load(char *filename, char *dirname);
 int envfs_save(char *filename, char *dirname);
 

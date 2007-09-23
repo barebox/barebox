@@ -1,4 +1,4 @@
-/* vi: set sw=4 ts=4: */
+/* vi: set sw=8 ts=8: */
 /*
  * sh.c -- a prototype Bourne shell grammar parser
  *      Intended to follow the original Thompson and Ritchie
@@ -157,6 +157,9 @@ struct p_context {
 	struct p_context *stack;
 	int type;			/* define type of parser : ";$" common or special symbol */
 	/* How about quoting status? */
+
+	char **global_argv;
+	unsigned int global_argc;
 };
 
 
@@ -180,8 +183,7 @@ struct pipe {
 
 /* globals, connect us to the outside world
  * the first three support $?, $#, and $1 */
-unsigned int last_return_code;
-int nesting_level;
+static unsigned int last_return_code;
 
 /* "globals" within this file */
 static uchar *ifs;
@@ -259,9 +261,9 @@ static char *make_string(char **inp);
 static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *input);
 static int parse_stream(o_string *dest, struct p_context *ctx, struct in_str *input0, int end_trigger);
 /*   setup: */
-static int parse_stream_outer(struct in_str *inp, int flag);
+static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int flag);
 
-int parse_string_outer(const char *s, int flag);
+static int parse_string_outer(struct p_context *ctx, const char *s, int flag);
 /*     local variable support */
 static char **make_list_in(char **inp, char *name);
 static char *insert_var_value(char *inp);
@@ -322,21 +324,6 @@ static int b_addqchr(o_string *o, int ch, int quote)
 	}
 	return b_addchr(o, ch);
 }
-
-/* belongs in utility.c */
-char *simple_itoa(unsigned int i)
-{
-	/* 21 digits plus null terminator, good for 64-bit or smaller ints */
-	static char local[22];
-	char *p = &local[21];
-	*p-- = '\0';
-	do {
-		*p-- = '0' + i % 10;
-		i /= 10;
-	} while (i > 0);
-	return p + 1;
-}
-
 
 static int static_get(struct in_str *i)
 {
@@ -536,9 +523,9 @@ static int run_pipe_real(struct pipe *pi)
 		}
 		if (child->sp) {
 			char * str = NULL;
-
+			struct p_context ctx;
 			str = make_string((child->argv + i));
-			parse_string_outer(str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+			parse_string_outer(&ctx, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
 			free(str);
 			return last_return_code;
 		}
@@ -749,8 +736,10 @@ static int free_pipe_list(struct pipe *head, int indent)
 /* Select which version we will use */
 static int run_list(struct pipe *pi)
 {
-	int rcode=0;
-		rcode = run_list_real(pi);
+	int rcode = 0;
+
+	rcode = run_list_real(pi);
+
 	/* free_pipe_list has the side effect of clearing memory
 	 * In the long run that function can be merged with run_list_real,
 	 * but doing that now would hobble the debugging effort. */
@@ -786,6 +775,7 @@ static const char *get_local_var(const char *s)
 static int set_local_var(const char *s, int flg_export)
 {
 	char *name, *value;
+	int ret;
 
 	/* might be possible! */
 	if (!isalpha(*s))
@@ -803,7 +793,10 @@ static int set_local_var(const char *s, int flg_export)
 	}
 	*value++ = 0;
 
-	return setenv(name, value);
+	ret = setenv(name, value);
+	free(name);
+
+	return ret;
 }
 
 
@@ -820,7 +813,7 @@ static int is_assignment(const char *s)
 }
 
 
-struct pipe *new_pipe(void) {
+static struct pipe *new_pipe(void) {
 	struct pipe *pi;
 	pi = xmalloc(sizeof(struct pipe));
 	pi->num_progs = 0;
@@ -873,7 +866,7 @@ static struct reserved_combo reserved_list[] = {
 };
 #define NRES (sizeof(reserved_list)/sizeof(struct reserved_combo))
 
-int reserved_word(o_string *dest, struct p_context *ctx)
+static int reserved_word(o_string *dest, struct p_context *ctx)
 {
 	struct reserved_combo *r;
 	for (r=reserved_list;
@@ -1033,6 +1026,13 @@ static const char *lookup_param(char *src)
 	return p;
 }
 
+static int parse_string(o_string *dest, struct p_context *ctx, const char *src)
+{
+	struct in_str foo;
+	setup_string_in_str(&foo, src);
+	return parse_stream(dest, ctx, &foo, '\0');
+}
+
 static char *get_dollar_var(char ch)
 {
 	static char buf[40];
@@ -1051,7 +1051,7 @@ static char *get_dollar_var(char ch)
 /* return code: 0 for OK, 1 for syntax error */
 static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *input)
 {
-	int advance=0;
+	int advance = 0, i;
 	int ch = input->peek(input);  /* first character after the $ */
 	debug_printf("handle_dollar: ch=%c\n",ch);
 	if (isalpha(ch)) {
@@ -1062,6 +1062,13 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 			b_addchr(dest,ch);
 		}
 		b_addchr(dest, SPECIAL_VAR_SYMBOL);
+	} else if (isdigit(ch)) {
+
+		i = ch - '0';	/* XXX is $0 special? */
+		if (i < ctx->global_argc) {
+			parse_string(dest, ctx, ctx->global_argv[i]);        /* recursion */
+		}
+		advance = 1;
 	} else switch (ch) {
 		case '?':
 			ctx->child->sp++;
@@ -1099,7 +1106,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 
 
 /* return code is 0 for normal exit, 1 for syntax error */
-int parse_stream(o_string *dest, struct p_context *ctx,
+static int parse_stream(o_string *dest, struct p_context *ctx,
 	struct in_str *input, int end_trigger)
 {
 	unsigned int ch, m;
@@ -1215,13 +1222,13 @@ int parse_stream(o_string *dest, struct p_context *ctx,
 	return 0;
 }
 
-void mapset(const unsigned char *set, int code)
+static void mapset(const unsigned char *set, int code)
 {
 	const unsigned char *s;
 	for (s=set; *s; s++) map[*s] = code;
 }
 
-void update_ifs_map(void)
+static void update_ifs_map(void)
 {
 	/* char *ifs and char map[256] are both globals. */
 	ifs = (uchar *)getenv("IFS");
@@ -1241,40 +1248,39 @@ void update_ifs_map(void)
 
 /* most recursion does not come through here, the exeception is
  * from builtin_source() */
-int parse_stream_outer(struct in_str *inp, int flag)
+static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int flag)
 {
-
-	struct p_context ctx;
 	o_string temp=NULL_O_STRING;
 	int rcode;
 	int code = 0;
 	do {
-		ctx.type = flag;
-		initialize_context(&ctx);
+		ctx->type = flag;
+		initialize_context(ctx);
 		update_ifs_map();
 		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING)) mapset((uchar *)";$&|", 0);
 		inp->promptmode=1;
-		rcode = parse_stream(&temp, &ctx, inp, '\n');
-		if (rcode != 1 && ctx.old_flag != 0) {
+		rcode = parse_stream(&temp, ctx, inp, '\n');
+		if (rcode != 1 && ctx->old_flag != 0) {
 			syntax();
 		}
-		if (rcode != 1 && ctx.old_flag == 0) {
-			done_word(&temp, &ctx);
-			done_pipe(&ctx,PIPE_SEQ);
-			code = run_list(ctx.list_head);
+		if (rcode != 1 && ctx->old_flag == 0) {
+			done_word(&temp, ctx);
+			done_pipe(ctx,PIPE_SEQ);
+			code = run_list(ctx->list_head);
 			if (code == -2) {	/* exit */
 				b_free(&temp);
-				code = 0;
+
 				/* XXX hackish way to not allow exit from main loop */
 				if (inp->peek == file_peek) {
 					printf("exit not allowed from main input shell.\n");
+					code = 0;
 					continue;
 				}
 				break;
 			}
 		} else {
-			if (ctx.old_flag != 0) {
-				free(ctx.stack);
+			if (ctx->old_flag != 0) {
+				free(ctx->stack);
 				b_reset(&temp);
 			}
 			if (inp->__promptme == 0) printf("<INTERRUPT>\n");
@@ -1282,14 +1288,18 @@ int parse_stream_outer(struct in_str *inp, int flag)
 			temp.nonnull = 0;
 			temp.quote = 0;
 			inp->p = NULL;
-			free_pipe_list(ctx.list_head,0);
+			free_pipe_list(ctx->list_head,0);
 		}
 		b_free(&temp);
 	} while (rcode != -1 && !(flag & FLAG_EXIT_FROM_LOOP));   /* loop on syntax errors, return on EOF */
+
+	if (ctx->pipe->progs)
+		free(ctx->pipe->progs);
+
 	return (code != 0) ? 1 : 0;
 }
 
-int parse_string_outer(const char *s, int flag)
+static int parse_string_outer(struct p_context *ctx, const char *s, int flag)
 {
 	struct in_str input;
 	char *p = NULL;
@@ -1301,12 +1311,12 @@ int parse_string_outer(const char *s, int flag)
 		strcpy(p, s);
 		strcat(p, "\n");
 		setup_string_in_str(&input, p);
-		rcode = parse_stream_outer(&input, flag);
+		rcode = parse_stream_outer(ctx, &input, flag);
 		free(p);
 		return rcode;
 	} else {
-	setup_string_in_str(&input, s);
-	return parse_stream_outer(&input, flag);
+		setup_string_in_str(&input, s);
+		return parse_stream_outer(ctx, &input, flag);
 	}
 }
 
@@ -1314,8 +1324,10 @@ int parse_file_outer(void)
 {
 	int rcode;
 	struct in_str input;
+	struct p_context ctx;
+
 	setup_file_in_str(&input);
-	rcode = parse_stream_outer(&input, FLAG_PARSE_SEMICOLON);
+	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
 	return rcode;
 }
 
@@ -1426,6 +1438,42 @@ static char * make_string(char ** inp)
 
 int run_command (const char *cmd, int flag)
 {
-	return parse_string_outer(cmd, FLAG_PARSE_SEMICOLON);
+	struct p_context ctx;
+	return parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
 }
 
+static int do_sh (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int ret;
+	char *script;
+	struct p_context ctx;
+
+	if (argc < 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	ctx.global_argc = argc - 1;
+	ctx.global_argv = argv + 1;
+
+	script = read_file(argv[1]);
+	if (!script)
+		return 1;
+
+	env_push_context();
+	ret = parse_string_outer(&ctx, script, FLAG_PARSE_SEMICOLON);
+	env_pop_context();
+
+	free(script);
+	return ret;
+}
+
+static __maybe_unused char cmd_sh_help[] =
+"write me\n";
+
+U_BOOT_CMD_START(sh)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_sh,
+	.usage		= "run shell script",
+	U_BOOT_CMD_HELP(cmd_sh_help)
+U_BOOT_CMD_END

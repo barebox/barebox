@@ -103,7 +103,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
-static int do_mem_md ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	start = 0, size = 0x100;
 	int	r, now;
@@ -202,7 +202,7 @@ U_BOOT_CMD_START(md)
 	U_BOOT_CMD_HELP(cmd_md_help)
 U_BOOT_CMD_END
 
-int do_mem_mw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
@@ -297,7 +297,7 @@ U_BOOT_CMD_START(mw)
 U_BOOT_CMD_END
 
 #if 0
-int do_mem_cmp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	addr1, addr2, count, ngood;
 	int	size;
@@ -376,7 +376,7 @@ U_BOOT_CMD_END
 #endif
 
 #if 0
-int do_mem_cp ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_mem_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong count, offset, now;
 	int ret;

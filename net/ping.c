@@ -88,7 +88,7 @@ void PingStart(void)
 	PingSend();
 }
 
-int do_ping (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2)
 		return -1;

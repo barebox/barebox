@@ -105,7 +105,7 @@ static int mtd_part_do_parse_one(struct partition *part, const char *str,
 	return 0;
 }
 
-int do_addpart(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	struct partition *part;
 	struct device_d *dev;
@@ -181,7 +181,7 @@ U_BOOT_CMD_START(addpart)
 	U_BOOT_CMD_HELP(cmd_addpart_help)
 U_BOOT_CMD_END
 
-int do_delpart(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
 

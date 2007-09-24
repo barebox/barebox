@@ -327,7 +327,7 @@ int dummy_probe(struct device_d *dev)
         return 0;
 }
 
-int do_devinfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
         struct device_d *dev = first_device;
         struct driver_d *drv = first_driver;

@@ -29,7 +29,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 
-static int do_cat(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret;
 	int fd, i;

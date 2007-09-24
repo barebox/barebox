@@ -42,7 +42,7 @@ static int save_serial (ulong offset, ulong size);
 static int write_record (char *buf);
 # endif /* CFG_CMD_SAVES */
 
-int do_load_serial (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_load_serial (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong addr;

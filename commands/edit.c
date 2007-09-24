@@ -372,7 +372,7 @@ static void getwinsize(void) {
 }
 #endif
 
-int do_edit(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	int lastscrcol;
 	int i;

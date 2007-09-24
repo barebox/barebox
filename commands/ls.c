@@ -95,7 +95,7 @@ out:
 	return 0;
 }
 
-static int do_ls (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret, opt;
 	ulong flags = 0;

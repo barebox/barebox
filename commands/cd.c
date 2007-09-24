@@ -25,7 +25,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_cd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_cd (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret;
 

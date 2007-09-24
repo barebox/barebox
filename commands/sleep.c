@@ -24,7 +24,7 @@
 #include <command.h>
 #include <clock.h>
 
-int do_sleep (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_sleep (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	uint64_t start;
 	ulong delay;

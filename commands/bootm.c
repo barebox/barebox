@@ -317,7 +317,7 @@ void unmap_image(struct image_handle *handle)
 #define OPT_OFTREE
 #endif
 
-int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	iflag;
 	int	verify = 1;
@@ -420,38 +420,38 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	    break;
 #ifdef CONFIG_NETBSD
 	case IH_OS_NETBSD:
-	    do_bootm_netbsd (cmdtp, flag, argc, argv,
+	    do_bootm_netbsd (cmdtp, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
 #endif
 
 #ifdef CONFIG_LYNXKDI
 	case IH_OS_LYNXOS:
-	    do_bootm_lynxkdi (cmdtp, flag, argc, argv,
+	    do_bootm_lynxkdi (cmdtp, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
 #endif
 
 #ifdef CONFIG_RTEMS
 	case IH_OS_RTEMS:
-	    do_bootm_rtems (cmdtp, flag, argc, argv,
+	    do_bootm_rtems (cmdtp, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
 #endif
 
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)
 	case IH_OS_VXWORKS:
-	    do_bootm_vxworks (cmdtp, flag, argc, argv,
+	    do_bootm_vxworks (cmdtp, argc, argv,
 			      addr, len_ptr, verify);
 	    break;
 	case IH_OS_QNX:
-	    do_bootm_qnxelf (cmdtp, flag, argc, argv,
+	    do_bootm_qnxelf (cmdtp, argc, argv,
 			      addr, len_ptr, verify);
 	    break;
 #endif /* CFG_CMD_ELF */
 #ifdef CONFIG_ARTOS
 	case IH_OS_ARTOS:
-	    do_bootm_artos  (cmdtp, flag, argc, argv,
+	    do_bootm_artos  (cmdtp, argc, argv,
 			     addr, len_ptr, verify);
 	    break;
 #endif
@@ -460,7 +460,7 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	SHOW_BOOT_PROGRESS (-9);
 #ifdef DEBUG
 	puts ("\n## Control returned to monitor - resetting...\n");
-	do_reset (cmdtp, flag, argc, argv);
+	do_reset (cmdtp, argc, argv);
 #endif
 
 err_out:
@@ -491,7 +491,7 @@ U_BOOT_CMD_END
 
 #ifdef CONFIG_NETBSD
 static void
-do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
+do_bootm_netbsd (cmd_tbl_t *cmdtp,
 		int	argc, char *argv[],
 		ulong	addr,
 		ulong	*len_ptr,
@@ -580,7 +580,7 @@ do_bootm_netbsd (cmd_tbl_t *cmdtp, int flag,
 extern uchar (*env_get_char)(int);
 
 static void
-do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
+do_bootm_artos (cmd_tbl_t *cmdtp,
 		int	argc, char *argv[],
 		ulong	addr,
 		ulong	*len_ptr,
@@ -666,7 +666,7 @@ do_bootm_artos (cmd_tbl_t *cmdtp, int flag,
 #endif
 
 #ifdef CONFIG_CMD_IMI
-int do_iminfo ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int	arg;
 	ulong	addr;
@@ -782,7 +782,7 @@ void bz_internal_error(int errcode)
 
 #ifdef CONFIG_RTEMS
 static void
-do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
+do_bootm_rtems (cmd_tbl_t *cmdtp, int argc, char *argv[],
 		ulong addr, ulong *len_ptr, int verify)
 {
 #if 0
@@ -810,7 +810,7 @@ do_bootm_rtems (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 
 #if (CONFIG_COMMANDS & CFG_CMD_ELF)
 static void
-do_bootm_vxworks (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
+do_bootm_vxworks (cmd_tbl_t *cmdtp, int argc, char *argv[],
 		  ulong addr, ulong *len_ptr, int verify)
 {
 	image_header_t *hdr = &header;
@@ -818,11 +818,11 @@ do_bootm_vxworks (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 
 	sprintf(str, "%x", ntohl(hdr->ih_ep)); /* write entry-point into string */
 	setenv("loadaddr", str);
-	do_bootvx(cmdtp, 0, 0, NULL);
+	do_bootvx(cmdtp, 0, NULL);
 }
 
 static void
-do_bootm_qnxelf (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
+do_bootm_qnxelf (cmd_tbl_t *cmdtp, int argc, char *argv[],
 		 ulong addr, ulong *len_ptr, int verify)
 {
 	image_header_t *hdr = &header;
@@ -832,13 +832,13 @@ do_bootm_qnxelf (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[],
 	sprintf(str, "%x", ntohl(hdr->ih_ep)); /* write entry-point into string */
 	local_args[0] = argv[0];
 	local_args[1] = str;	/* and provide it via the arguments */
-	do_bootelf(cmdtp, 0, 2, local_args);
+	do_bootelf(cmdtp, 2, local_args);
 }
 #endif /* CFG_CMD_ELF */
 
 #ifdef CONFIG_LYNXKDI
 static void
-do_bootm_lynxkdi (cmd_tbl_t *cmdtp, int flag,
+do_bootm_lynxkdi (cmd_tbl_t *cmdtp,
 		 int	argc, char *argv[],
 		 ulong	addr,
 		 ulong	*len_ptr,

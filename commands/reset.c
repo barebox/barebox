@@ -23,7 +23,7 @@
 #include <common.h>
 #include <command.h>
 
-static int cmd_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int cmd_reset (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	reset_cpu(0);
 

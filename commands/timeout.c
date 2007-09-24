@@ -31,7 +31,7 @@
 #define TIMEOUT_ANYKEY	(1 << 2)
 #define TIMEOUT_SILENT	(1 << 3)
 
-static int do_timeout(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_timeout(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int timeout = 3, ret = 1;
 	int flags = 0, opt, countdown;

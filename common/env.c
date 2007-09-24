@@ -218,7 +218,7 @@ int export(const char *varname)
 	return -1;
 }
 
-int do_printenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct variable_d *var;
 	struct env_context *c;
@@ -265,7 +265,7 @@ U_BOOT_CMD_START(printenv)
 U_BOOT_CMD_END
 
 #ifdef CONFIG_SIMPLE_PARSER
-int do_setenv ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -290,7 +290,7 @@ U_BOOT_CMD_END
 
 #endif
 
-int do_export ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int i = 1;
 

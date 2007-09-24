@@ -41,7 +41,7 @@ struct cmd_tbl_s {
 	char		**aliases;
 	int		maxargs;	/* maximum number of arguments	*/
 					/* Implementation function	*/
-	int		(*cmd)(struct cmd_tbl_s *, int, int, char *[]);
+	int		(*cmd)(struct cmd_tbl_s *, int, char *[]);
 	char		*usage;		/* Usage message	(short)	*/
 #ifdef	CONFIG_LONGHELP
 	char		*help;		/* Help  message	(long)	*/
@@ -78,18 +78,12 @@ extern int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *
  *
  * All commands use a common argument format:
  *
- * void function (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
+ * void function (cmd_tbl_t *cmdtp, int argc, char *argv[]);
  */
 
-typedef	void 	command_t (cmd_tbl_t *, int, int, char *[]);
+typedef	void 	command_t (cmd_tbl_t *, int, char *[]);
 
 #endif	/* __ASSEMBLY__ */
-
-/*
- * Command Flags:
- */
-#define CMD_FLAG_REPEAT		0x0001	/* repeat last command		*/
-#define CMD_FLAG_BOOTD		0x0002	/* command is from bootd	*/
 
 /*
  * Configurable monitor commands definitions have been moved

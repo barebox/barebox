@@ -39,7 +39,7 @@ int splash_set_fb_data(struct fb_data *d)
 	return 0;
 }
 
-int do_splash(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_splash(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong addr;
 	bmp_image_t *bmp;

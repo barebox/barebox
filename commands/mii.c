@@ -47,7 +47,7 @@ uint last_reg;
  *  mii read   {addr} {reg}
  *  mii write  {addr} {reg} {data}
  */
-int do_mii (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+int do_mii (cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	char		op;
 	unsigned char	addr, reg;
@@ -427,7 +427,7 @@ static void extract_range(
 }
 
 /* ---------------------------------------------------------------- */
-int do_mii (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+int do_mii (cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	char		op[2];
 	unsigned char	addrlo, addrhi, reglo, reghi;

@@ -37,7 +37,7 @@
  * interrupted by ctrl-c or by a failure of one of the sub-tests.
  */
 
-int do_mem_mtest (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	vu_long	*addr, *start, *end;
 	ulong	val;

@@ -29,7 +29,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 
-static int do_exec(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+static int do_exec(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	int i;
 	char *script;

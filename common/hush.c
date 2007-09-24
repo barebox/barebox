@@ -467,7 +467,6 @@ static int run_pipe_real(struct pipe *pi)
 {
 	int i;
 	int nextin;
-	int flag = 0;
 	struct child_prog *child;
 	cmd_tbl_t *cmdtp;
 	char *p;
@@ -535,30 +534,18 @@ static int run_pipe_real(struct pipe *pi)
 			return last_return_code;
 		}
 		if (strchr(child->argv[i], '/')) {
-			return execute_script(child->argv[i], child->argc-i,&child->argv[i]);
+			return execute_script(child->argv[i], child->argc-i, &child->argv[i]);
 		}
 		if ((path = find_execable(child->argv[i]))) {
 			printf("path: %s\n", path);
-			ret = execute_script(path, child->argc-i,&child->argv[i]);
+			ret = execute_script(path, child->argc-i, &child->argv[i]);
 			free(path);
 			return ret;
 		}
 		/* Look up command in command table */
 		if ((cmdtp = find_cmd(child->argv[i]))) {
 			int rcode;
-#if (CONFIG_COMMANDS & CFG_CMD_BOOTD)
-    extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 
-			/* avoid "bootd" recursion */
-			if (cmdtp->cmd == do_bootd) {
-				if (flag & CMD_FLAG_BOOTD) {
-					printf ("'bootd' recursion detected\n");
-					return -1;
-				}
-			else
-				flag |= CMD_FLAG_BOOTD;
-			}
-#endif	/* CFG_CMD_BOOTD */
 			/* found - check max args */
 			if ((child->argc - i) > cmdtp->maxargs) {
 				printf ("Usage:\n%s\n", cmdtp->usage);
@@ -567,7 +554,7 @@ static int run_pipe_real(struct pipe *pi)
 			child->argv+=i;  /* XXX horrible hack */
 			/* OK - call function to do the command */
 
-			rcode = cmdtp->cmd(cmdtp, flag,child->argc-i,&child->argv[i]);
+			rcode = cmdtp->cmd(cmdtp, child->argc-i, &child->argv[i]);
 
 
 			child->argv-=i;  /* XXX restore hack so free() can work right */
@@ -1486,7 +1473,7 @@ int run_shell(void)
 	return rcode;
 }
 
-static int do_sh(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_sh(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -1508,7 +1495,7 @@ U_BOOT_CMD_START(sh)
 	U_BOOT_CMD_HELP(cmd_sh_help)
 U_BOOT_CMD_END
 
-static int do_source(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+static int do_source(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);

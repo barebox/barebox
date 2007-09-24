@@ -63,7 +63,7 @@ int  his_pad_count;  /* number of pad chars he needs */
 char his_pad_char;   /* pad chars he needs */
 char his_quote;      /* quote chars he'll use */
 
-int do_load_serial_bin (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_load_serial_bin (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong addr;

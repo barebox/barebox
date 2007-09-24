@@ -537,7 +537,6 @@ static int run_pipe_real(struct pipe *pi)
 			return execute_script(child->argv[i], child->argc-i, &child->argv[i]);
 		}
 		if ((path = find_execable(child->argv[i]))) {
-			printf("path: %s\n", path);
 			ret = execute_script(path, child->argc-i, &child->argv[i]);
 			free(path);
 			return ret;

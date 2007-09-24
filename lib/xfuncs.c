@@ -32,6 +32,8 @@ void *xmalloc(size_t size)
 	if (!(p = malloc(size)))
 		panic("ERROR: out of memory\n");
 
+	debug("xmalloc %p (size %d)\n", p, size);
+
 	return p;
 }
 
@@ -41,6 +43,8 @@ void *xrealloc(void *ptr, size_t size)
 
 	if (!(p = realloc(ptr, size)))
 		panic("ERROR: out of memory\n");
+
+	debug("xrealloc %p -> %p (size %d)\n", ptr, p, size);
 
 	return p;
 }

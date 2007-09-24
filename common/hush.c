@@ -272,7 +272,7 @@ static char *insert_var_value(char *inp);
 static const char *get_local_var(const char *var);
 static int set_local_var(const char *s, int flg_export);
 static int execute_script(const char *path, int argc, char *argv[]);
-
+static int source_script(const char *path, int argc, char *argv[]);
 
 static int b_check_space(o_string *o, int len)
 {
@@ -1446,6 +1446,17 @@ int run_command (const char *cmd, int flag)
 
 static int execute_script(const char *path, int argc, char *argv[])
 {
+	int ret;
+
+	env_push_context();
+	ret = source_script(path, argc, argv);
+	env_pop_context();
+
+	return ret;
+}
+
+static int source_script(const char *path, int argc, char *argv[])
+{
 	struct p_context ctx;
 	char *script;
 	int ret;
@@ -1457,9 +1468,7 @@ static int execute_script(const char *path, int argc, char *argv[])
 	if (!script)
 		return 1;
 
-	env_push_context();
 	ret = parse_string_outer(&ctx, script, FLAG_PARSE_SEMICOLON);
-	env_pop_context();
 
 	free(script);
 
@@ -1488,7 +1497,9 @@ static int do_sh(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 }
 
 static __maybe_unused char cmd_sh_help[] =
-"write me\n";
+"Usage: sh filename [arguments]\n"
+"\n"
+"Execute a shell script\n";
 
 U_BOOT_CMD_START(sh)
 	.maxargs	= CONFIG_MAXARGS,
@@ -1496,3 +1507,32 @@ U_BOOT_CMD_START(sh)
 	.usage		= "run shell script",
 	U_BOOT_CMD_HELP(cmd_sh_help)
 U_BOOT_CMD_END
+
+static int do_source(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	if (argc < 2) {
+		printf ("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	return source_script(argv[1], argc - 1, argv + 1);
+}
+
+static char *source_aliases[] = { ".", NULL};
+
+static __maybe_unused char cmd_source_help[] =
+"Usage: .  filename [arguments]\n"
+"or     source filename [arguments]\n"
+"\n"
+"Read  and  execute  commands  from filename in the current shell\n"
+"environment and return the exit status of the last command  exe-\n"
+"cuted from filename\n";
+
+U_BOOT_CMD_START(source)
+	.maxargs	= CONFIG_MAXARGS,
+	.aliases	= source_aliases,
+	.cmd		= do_source,
+	.usage		= "execute shell script in current shell environment",
+	U_BOOT_CMD_HELP(cmd_source_help)
+U_BOOT_CMD_END
+

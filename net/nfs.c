@@ -27,6 +27,7 @@
 #include <clock.h>
 #include <net.h>
 #include <malloc.h>
+#include <libgen.h>
 #include "nfs.h"
 #include "bootp.h"
 
@@ -73,33 +74,6 @@ store_block (uchar * src, unsigned offset, unsigned len)
 	if (NetBootFileXferSize < (offset+len))
 		NetBootFileXferSize = newsize;
 	return 0;
-}
-
-static char*
-basename (char *path)
-{
-	char *fname;
-
-	fname = path + strlen(path) - 1;
-	while (fname >= path) {
-		if (*fname == '/') {
-			fname++;
-			break;
-		}
-		fname--;
-	}
-	return fname;
-}
-
-static char*
-dirname (char *path)
-{
-	char *fname;
-
-	fname = basename (path);
-	--fname;
-	*fname = '\0';
-	return path;
 }
 
 /**************************************************************************

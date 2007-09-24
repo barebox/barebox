@@ -35,7 +35,7 @@ static int do_mkdir (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	}
 
 	while (i < argc) {
-		if (mkdir(argv[i])) {
+		if (mkdir(argv[i], 0)) {
 			printf("could not create %s: %s\n", argv[i], errno_str());
 			return 1;
 		}

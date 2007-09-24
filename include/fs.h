@@ -86,7 +86,7 @@ struct fs_device_d {
 /*
  * standard posix file functions
  */
-int open(const char *pathname, int flags);
+int open(const char *pathname, int flags, ...);
 int creat(const char *pathname, mode_t mode);
 int unlink(const char *pathname);
 int close(int fd);
@@ -99,7 +99,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 #define SEEK_END	3
 
 off_t lseek(int fildes, off_t offset, int whence);
-int mkdir (const char *pathname);
+int mkdir (const char *pathname, mode_t mode);
 int rmdir (const char *pathname);
 
 const char *getcwd(void);

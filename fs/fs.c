@@ -346,7 +346,7 @@ out:
 	return errno;
 }
 
-int open(const char *pathname, int flags)
+int open(const char *pathname, int flags, ...)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
@@ -511,7 +511,7 @@ int erase(int fd, size_t count, unsigned long offset)
 	if (fsdrv->erase)
 		errno = fsdrv->erase(dev, f, count, offset);
 	else
-		errno = -EINVAL;
+		errno = -ENOSYS;
 
 	return errno;
 }
@@ -532,7 +532,7 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 	if (fsdrv->protect)
 		errno = fsdrv->protect(dev, f, count, offset, prot);
 	else
-		errno = -EINVAL;
+		errno = -ENOSYS;
 
 	return errno;
 }
@@ -763,7 +763,7 @@ out:
 	return errno;
 }
 
-int mkdir (const char *pathname)
+int mkdir (const char *pathname, mode_t mode)
 {
 	struct fs_driver_d *fsdrv;
 	struct device_d *dev;

@@ -35,6 +35,19 @@ char *concat_path_file(const char *path, const char *filename)
 	return str;
 }
 
+/*
+ * This function make special for recursive actions with usage
+ * concat_path_file(path, filename)
+ * and skipping "." and ".." directory entries
+ */
+
+char *concat_subpath_file(const char *path, const char *f)
+{
+	if (f && DOT_OR_DOTDOT(f))
+		return NULL;
+	return concat_path_file(path, f);
+}
+
 /* check if path points to an executable file;
  * return 1 if found;
  * return 0 otherwise;
@@ -85,3 +98,4 @@ char* last_char_is(const char *s, int c)
 	}
 	return NULL;
 }
+

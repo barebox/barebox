@@ -9,6 +9,10 @@ config BF561
 config BOARDINFO
 	default "PII IPE337" if MACH_IPE337
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x00000000
+
 choice
 	prompt "Select your board"
 

@@ -10,6 +10,7 @@ config BOARDINFO
 config TEXT_BASE
 	prompt "TEXT_BASE"
 	hex
+	default ARCH_TEXT_BASE
 	help
 	  The Address U-Boot gets linked at.
 

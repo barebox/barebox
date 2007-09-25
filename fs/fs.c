@@ -722,11 +722,19 @@ out:
 
 struct dirent *readdir(DIR *dir)
 {
+	if (!dir)
+		return NULL;
+
 	return dir->fsdrv->readdir(dir->dev, dir);
 }
 
 int closedir(DIR *dir)
 {
+	if (!dir) {
+		errno = -EBADF;
+		return -1;
+	}
+
 	return dir->fsdrv->closedir(dir->dev, dir);
 }
 

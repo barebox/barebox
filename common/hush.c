@@ -328,12 +328,36 @@ static int b_addqchr(o_string *o, int ch, int quote)
 	return b_addchr(o, ch);
 }
 
+/* belongs in utility.c */
+char *simple_itoa(unsigned int i)
+{
+	/* 21 digits plus null terminator, good for 64-bit or smaller ints */
+	static char local[22];
+	char *p = &local[21];
+	*p-- = '\0';
+	do {
+		*p-- = '0' + i % 10;
+		i /= 10;
+	} while (i > 0);
+	return p + 1;
+}
+
+static int b_adduint(o_string *o, unsigned int i)
+{
+	int r;
+	char *p = simple_itoa(i);
+	/* no escape checking necessary */
+	do r=b_addchr(o, *p++); while (r==0 && *p);
+	return r;
+}
+
 static int static_get(struct in_str *i)
 {
 	int ch=*i->p++;
 	if (ch=='\0') return EOF;
 	return ch;
 }
+
 
 static int static_peek(struct in_str *i)
 {
@@ -1076,6 +1100,10 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 			b_addchr(dest, '$');
 			b_addchr(dest, '?');
 			b_addchr(dest, SPECIAL_VAR_SYMBOL);
+			advance = 1;
+			break;
+		case '#':
+			b_adduint(dest,ctx->global_argc ? ctx->global_argc-1 : 0);
 			advance = 1;
 			break;
 		case '{':

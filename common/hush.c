@@ -574,13 +574,8 @@ static int run_pipe_real(struct pipe *pi)
 				printf ("Usage:\n%s\n", cmdtp->usage);
 				return -1;
 			}
-			child->argv+=i;  /* XXX horrible hack */
 			/* OK - call function to do the command */
-
 			rcode = cmdtp->cmd(cmdtp, child->argc-i, &child->argv[i]);
-
-
-			child->argv-=i;  /* XXX restore hack so free() can work right */
 
 			return rcode;
 		} else {

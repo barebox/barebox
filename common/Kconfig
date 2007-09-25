@@ -69,12 +69,11 @@ config MAXARGS
 choice
 	prompt "Select your shell"
 
-config SHELL_HUSH
-	bool "hush parser"
-	default y
+	config SHELL_HUSH
+		bool "hush parser"
 
-config SHELL_SIMPLE
-	bool "Simple parser"
+	config SHELL_SIMPLE
+		bool "Simple parser"
 
 endchoice
 

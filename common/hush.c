@@ -509,8 +509,9 @@ static int run_pipe_real(struct pipe *pi)
 	 * Builtins within pipes have to fork anyway, and are handled in
 	 * pseudo_exec.  "echo foo | read bar" doesn't work on bash, either.
 	 */
-	if (pi->num_progs == 1) child = & (pi->progs[0]);
-		if (pi->num_progs == 1 && child->group) {
+	if (pi->num_progs == 1)
+		child = & (pi->progs[0]);
+	if (pi->num_progs == 1 && child->group) {
 		int rcode;
 		debug_printf("non-subshell grouping\n");
 		rcode = run_list_real(child->group);

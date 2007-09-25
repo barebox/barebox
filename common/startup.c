@@ -126,8 +126,7 @@ void start_uboot (void)
 	register_default_env();
 
 	mount("none", "ramfs", "/");
-	mkdir("/dev");
-	mkdir("/env");
+	mkdir("/dev",0);
 	mount("none", "devfs", "/dev");
 
 #ifdef CONFIG_CMD_ENVIRONMENT
@@ -138,9 +137,9 @@ void start_uboot (void)
 #endif
 	}
 #endif
-	if (!stat("/env/init", &s)) {
-		printf("running /env/init\n");
-		run_command("sh /env/init", 0);
+	if (!stat("/env/bin/init", &s)) {
+		printf("running /env/bin/init\n");
+		run_command("source /env/bin/init", 0);
 	}
 
 	/* main_loop() can return to retry autoboot, if so just run it again. */

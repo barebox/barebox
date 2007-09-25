@@ -10,8 +10,12 @@ struct envfs_inode {
 	uint32_t magic;	/* 0x67a8c78d */
 	uint32_t crc;	/* crc for this inode and corresponding data */
 	uint32_t size;	/* data size in bytes  */
-	char name[32];
-	char data[0];
+	uint32_t namelen; /* The length of the filename _including_ the trailing 0 */
+	char data[0];	/* The filename (zero terminated) + padding to 4 byte boundary
+			 * followed by the data for this inode.
+			 * The next inode follows after the data + padding to 4 byte
+			 * boundary.
+			 */
 };
 
 /*
@@ -21,7 +25,7 @@ struct envfs_super {
 	uint32_t magic;			/* 0x798fba79 - random number */
 	uint32_t priority;
 	uint32_t flags;			/* feature flags */
-	uint32_t future;			/* reserved for future use */
+	uint32_t future;		/* reserved for future use */
 };
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN

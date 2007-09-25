@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <libgen.h>
 
 void *xmalloc(size_t size)
 {
@@ -45,6 +46,74 @@ void *xmalloc(size_t size)
 	return p;
 }
 
+void *xzalloc(size_t size)
+{
+	void *p = xmalloc(size);
+	memset(p, 0, size);
+	return p;
+}
+
+/* Find out if the last character of a string matches the one given.
+ * Don't underrun the buffer if the string length is 0.
+ */
+char* last_char_is(const char *s, int c)
+{
+	if (s && *s) {
+		size_t sz = strlen(s) - 1;
+		s += sz;
+		if ( (unsigned char)*s == c)
+			return (char*)s;
+	}
+	return NULL;
+}
+
+enum {
+	ACTION_RECURSE     = (1 << 0),
+	/* ACTION_FOLLOWLINKS = (1 << 1), - unused */
+	ACTION_DEPTHFIRST  = (1 << 2),
+	/*ACTION_REVERSE   = (1 << 3), - unused */
+};
+
+int recursive_action(const char *fileName, unsigned flags,
+	int (*fileAction) (const char *fileName, struct stat* statbuf, void* userData, int depth),
+	int (*dirAction) (const char *fileName, struct stat* statbuf, void* userData, int depth),
+	void* userData, const unsigned depth);
+
+#define DOT_OR_DOTDOT(s) ((s)[0] == '.' && (!(s)[1] || ((s)[1] == '.' && !(s)[2])))
+
+/* concatenate path and file name to new allocation buffer,
+ * not adding '/' if path name already has '/'
+ */
+char *concat_path_file(const char *path, const char *filename)
+{
+	char *lc, *str;
+
+	if (!path)
+		path = "";
+	lc = last_char_is(path, '/');
+	while (*filename == '/')
+		filename++;
+
+	str = xmalloc(strlen(path) + (lc==0 ? 1 : 0) + strlen(filename) + 1);
+	sprintf(str, "%s%s%s", path, (lc==NULL ? "/" : ""), filename);
+
+	return str;
+}
+
+/*
+ * This function make special for recursive actions with usage
+ * concat_path_file(path, filename)
+ * and skipping "." and ".." directory entries
+ */
+
+char *concat_subpath_file(const char *path, const char *f)
+{
+	if (f && DOT_OR_DOTDOT(f))
+		return NULL;
+	return concat_path_file(path, f);
+}
+
+#include "../lib/recursive_action.c"
 #include "../include/envfs.h"
 #include "../commands/environment.c"
 

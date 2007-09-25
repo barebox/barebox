@@ -31,21 +31,63 @@
 #include <linux/stat.h>
 #include <envfs.h>
 #include <xfuncs.h>
+#include <libbb.h>
+#include <libgen.h>
 #endif
+
+struct action_data {
+	int fd;
+	const char *base;
+};
+
+static int file_save_action(const char *filename, struct stat *statbuf,
+				void *userdata, int depth)
+{
+	int isize;
+	struct action_data *data = userdata;
+	struct envfs_inode *inode = NULL;
+	int fd;
+	int namelen = strlen(filename) + 1 - strlen(data->base);
+	int namelen_full = (namelen + 3) & ~3;
+
+	isize = namelen_full + ((statbuf->st_size + 3) & ~3) + sizeof(struct envfs_inode);
+	inode = xzalloc(isize);
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		goto out;
+	}
+
+	if (read(fd, inode->data + namelen_full, statbuf->st_size) < statbuf->st_size) {
+		perror("read");
+		goto out;
+	}
+
+	close(fd);
+	inode->magic = ENVFS_INODE_MAGIC;
+	inode->namelen = namelen;
+	inode->size  = namelen_full + statbuf->st_size;
+
+	strcpy(inode->data, filename + strlen(data->base));
+
+	/* FIXME: calc crc */
+
+	if (write(data->fd, inode, isize) < isize) {
+		perror("write");
+		goto out;
+	}
+out:
+	free(inode);
+	return 1;
+}
 
 int envfs_save(char *filename, char *dirname)
 {
-	DIR *dir;
-	struct dirent *d;
-	int malloc_size = 0;
-	struct stat s;
 	struct envfs_super super;
-	void *buf = NULL;
-	char tmp[PATH_MAX];
-	int isize;
 	int envfd;
-	struct envfs_inode *inode = NULL;
-	int fd;
+	struct envfs_inode inode;
+	struct action_data data;
 
 	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
@@ -57,62 +99,20 @@ int envfs_save(char *filename, char *dirname)
 
 	write(envfd, &super, sizeof(struct envfs_super));
 
-	dir = opendir(dirname);
-	if (!dir) {
-		perror("opendir");
-		close(envfd);
-		return errno;
-	}
+	data.fd = envfd;
+	data.base = dirname;
 
-	while ((d = readdir(dir))) {
-		sprintf(tmp, "%s/%s", dirname, d->d_name);
-		if (stat(tmp, &s)) {
-			perror("stat");
-			goto out;
-		}
-		if (s.st_mode & S_IFDIR)
-			continue;
+	recursive_action(dirname, ACTION_RECURSE, file_save_action,
+			NULL, &data, 0);
 
-		isize = ((s.st_size + 3) & ~3) + sizeof(struct envfs_inode);
-		if (isize > malloc_size) {
-			if (buf)
-				free(buf);
-			inode = xmalloc(isize);
-			buf = inode;
-			malloc_size = isize;
-		}
-		fd = open(tmp, O_RDONLY);
-		if (fd < 0) {
-			perror("open");
-			goto out;
-		}
-		if (read(fd, inode->data, s.st_size) < s.st_size) {
-			perror("read");
-			goto out;
-		}
-
-		close(fd);
-		inode->magic = ENVFS_INODE_MAGIC;
-		inode->size  = s.st_size;
-		strcpy(inode->name, d->d_name); /* FIXME: strncpy */
-		/* FIXME: calc crc */
-		if (write(envfd, inode, isize) < isize) {
-			perror("write");
-			goto out;
-		}
-	}
-
-	memset(inode, 0, sizeof(struct envfs_inode));
-	inode->magic = ENVFS_END_MAGIC;
-	if (write(envfd, inode, sizeof(struct envfs_inode)) < sizeof(struct envfs_inode)) {
+	memset(&inode, 0, sizeof(struct envfs_inode));
+	inode.magic = ENVFS_END_MAGIC;
+	if (write(envfd, &inode, sizeof(struct envfs_inode)) < sizeof(struct envfs_inode)) {
 		perror("write");
 		goto out;
 	}
 out:
-	if (buf)
-		free(buf);
 	close(envfd);
-	closedir(dir);
 	return 0;
 }
 
@@ -132,13 +132,14 @@ int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	else
 		filename = argv[1];
 
-	fd = open(filename, O_WRONLY);
+	fd = open(filename, O_WRONLY | O_CREAT);
 	if (fd < 0) {
 		printf("could not open %s: %s", filename, errno_str());
 		return 1;
 	}
 
 	ret = protect(fd, ~0, 0, 0);
+
 	/* ENOSYS is no error here, many devices do not need it */
 	if (ret && errno != -ENOSYS) {
 		printf("could not unprotect %s: %s\n", filename, errno_str());
@@ -156,10 +157,13 @@ int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	}
 
 	ret = envfs_save(filename, dirname);
-	if (ret)
+	if (ret) {
 		printf("saveenv failed\n");
+		goto out;
+	}
 
 	ret = protect(fd, ~0, 0, 1);
+
 	/* ENOSYS is no error here, many devices do not need it */
 	if (ret && errno != -ENOSYS) {
 		printf("could not protect %s: %s\n", filename, errno_str());
@@ -167,6 +171,8 @@ int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
+	ret = 0;
+out:
 	close(fd);
 	return ret;
 }
@@ -186,15 +192,62 @@ U_BOOT_CMD_START(saveenv)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */
 
-int envfs_load(char *filename, char *dirname)
+int mkdirp(const char *dir)
+{
+	char *s = strdup(dir);
+	char *path = s;
+	char c;
+
+	do {
+		c = 0;
+
+		/* Bypass leading non-'/'s and then subsequent '/'s. */
+		while (*s) {
+			if (*s == '/') {
+				do {
+					++s;
+				} while (*s == '/');
+				c = *s;		/* Save the current char */
+				*s = 0;		/* and replace it with nul. */
+				break;
+			}
+			++s;
+		}
+
+		if (mkdir(path, 0777) < 0) {
+
+			/* If we failed for any other reason than the directory
+			 * already exists, output a diagnostic and return -1.*/
+#ifdef __U_BOOT__
+			if (errno != -EEXIST)
+#else
+			if (errno != EEXIST)
+#endif
+				break;
+		}
+		if (!c)
+			goto out;
+
+		/* Remove any inserted nul from the path (recursive mode). */
+		*s = c;
+
+	} while (1);
+
+out:
+	free(path);
+	return errno;
+}
+
+int envfs_load(char *filename, char *dir)
 {
 	int malloc_size = 0;
 	struct envfs_super super;
 	void *buf = NULL;
-	char tmp[PATH_MAX];
 	int envfd;
 	struct envfs_inode inode;
 	int fd, ret = 0;
+	char *str, *tmp;
+	int namelen_full;
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
@@ -242,17 +295,23 @@ int envfs_load(char *filename, char *dirname)
 			perror("read");
 			goto out;
 		}
-		sprintf(tmp, "%s/%s", dirname, inode.name);
 
-		fd = open(tmp, O_WRONLY | O_CREAT);
+		str = concat_path_file(dir, buf);
+		tmp = strdup(str);
+		mkdirp(dirname(tmp));
+		free(tmp);
+
+		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		free(str);
 		if (fd < 0) {
 			perror("open");
 			ret = fd;
 			goto out;
 		}
 
-		ret = write(fd, buf, inode.size);
-		if (ret < inode.size) {
+		namelen_full = ((inode.namelen + 3) & ~3);
+		ret = write(fd, buf + namelen_full, inode.size - namelen_full);
+		if (ret < inode.size - namelen_full) {
 			perror("write");
 			close(fd);
 			goto out;

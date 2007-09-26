@@ -705,10 +705,11 @@ NfsStart (void)
 	}
 	printf ("\nFilename '%s/%s'.", nfs_path, nfs_filename);
 
-	if (NetBootFileSize) {
-		printf (" Size is 0x%x Bytes = ", NetBootFileSize<<9);
-		print_size (NetBootFileSize<<9, "");
-	}
+	if (NetBootFileSize)
+		printf (" Size is 0x%x Bytes = %s",
+			NetBootFileSize<<9);
+			size_human_readable (NetBootFileSize<<9));
+
 	printf ("\nLoad address: 0x%lx\n"
 		"Loading: *\b", load_addr);
 

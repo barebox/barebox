@@ -73,8 +73,7 @@ void	panic(const char *fmt, ...);
 
 /* */
 long int initdram (int);
-int	display_options (void);
-void	print_size (ulong, const char *);
+char *size_human_readable(ulong size);
 
 /* common/main.c */
 void	main_loop	(void);

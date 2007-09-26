@@ -334,14 +334,12 @@ TftpStart (void)
 
 	printf ("Filename '%s'.", tftp_filename);
 
-	if (NetBootFileSize) {
-		printf (" Size is 0x%x Bytes = ", NetBootFileSize<<9);
-		print_size (NetBootFileSize<<9, "");
-	}
+	if (NetBootFileSize)
+		printf (" Size is 0x%x Bytes = %s",
+			NetBootFileSize<<9,
+			size_human_readable(NetBootFileSize<<9));
 
-	putchar('\n');
-
-	puts ("Loading: *\b");
+	puts ("\nLoading: *\b");
 
 	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 	NetSetHandler (TftpHandler);

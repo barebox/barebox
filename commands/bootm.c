@@ -754,11 +754,13 @@ print_image_hdr (image_header_t *hdr)
 	printf ("   Image Type:   %s %s %s (%s)\n", image_arch(hdr), image_os(hdr),
 			image_type(hdr), image_compression(hdr));
 #endif
-	printf ("   Data Size:    %d Bytes = ", ntohl(hdr->ih_size));
-	print_size (ntohl(hdr->ih_size), "\n");
-	printf ("   Load Address: %08x\n"
+	printf ("   Data Size:    %d Bytes = %s\n"
+		"   Load Address: %08x\n"
 		"   Entry Point:  %08x\n",
-		 ntohl(hdr->ih_load), ntohl(hdr->ih_ep));
+			ntohl(hdr->ih_size),
+			size_human_readable(ntohl(hdr->ih_size)),
+			ntohl(hdr->ih_load),
+			ntohl(hdr->ih_ep));
 
 	if (hdr->ih_type == IH_TYPE_MULTI) {
 		int i;
@@ -767,8 +769,8 @@ print_image_hdr (image_header_t *hdr)
 
 		puts ("   Contents:\n");
 		for (i=0; (len = ntohl(*len_ptr)); ++i, ++len_ptr) {
-			printf ("   Image %d: %8ld Bytes = ", i, len);
-			print_size (len, "\n");
+			printf ("   Image %d: %8ld Bytes = %s", i, len,
+				size_human_readable (len));
 		}
 	}
 }

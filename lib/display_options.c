@@ -24,14 +24,16 @@
 #include <common.h>
 
 /*
- * print sizes as "xxx kB", "xxx.y kB", "xxx MB" or "xxx.y MB" as needed;
- * allow for optional trailing string (like "\n")
+ * return a pointer to a string containing the size
+ * as "xxx kB", "xxx.y kB", "xxx MB" or "xxx.y MB" as needed;
  */
-void print_size (ulong size, const char *s)
+char *size_human_readable(ulong size)
 {
+	static char buf[20];
 	ulong m, n;
 	ulong d = 1 << 20;		/* 1 MB */
 	char  c = 'M';
+	char *ptr = buf;
 
 	if (size < d) {			/* print in kB */
 		c = 'k';
@@ -47,9 +49,12 @@ void print_size (ulong size, const char *s)
 		n += 1;
 	}
 
-	printf ("%2ld", n);
+	ptr += sprintf(buf, "%2ld", n);
 	if (m) {
-		printf (".%ld", m);
+		ptr += sprintf (ptr,".%ld", m);
 	}
-	printf (" %cB%s", c, s);
+	sprintf(ptr, " %cB", c);
+
+	return buf;
 }
+

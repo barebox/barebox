@@ -833,14 +833,7 @@ static int is_assignment(const char *s)
 
 
 static struct pipe *new_pipe(void) {
-	struct pipe *pi;
-	pi = xmalloc(sizeof(struct pipe));
-	pi->num_progs = 0;
-	pi->progs = NULL;
-	pi->next = NULL;
-	pi->followup = 0;  /* invalid */
-	pi->r_mode = RES_NONE;
-	return pi;
+	return (struct pipe *)xzalloc(sizeof(struct pipe));
 }
 
 static void initialize_context(struct p_context *ctx)

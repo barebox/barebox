@@ -952,8 +952,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 			child->argc=0;
 		}
 		argc = ++child->argc;
-		child->argv = realloc(child->argv, (argc+1)*sizeof(*child->argv));
-		if (child->argv == NULL) return 1;
+		child->argv = xrealloc(child->argv, (argc+1)*sizeof(*child->argv));
 		child->argv[argc-1]=str;
 		child->argv[argc]=NULL;
 		for (s = dest->data; s && *s; s++,str++) {

@@ -26,26 +26,36 @@
 /*
  * Begin and End of memory area for malloc(), and current "brk"
  */
-static ulong mem_malloc_start = 0;
-static ulong mem_malloc_end = 0;
-static ulong mem_malloc_brk = 0;
+static ulong malloc_start = 0;
+static ulong malloc_end = 0;
+static ulong malloc_brk = 0;
+
+ulong mem_malloc_start(void)
+{
+	return malloc_start;
+}
+
+ulong mem_malloc_end(void)
+{
+	return malloc_end;
+}
 
 void mem_malloc_init (void *start, void *end)
 {
-	mem_malloc_start = (ulong)start;
-	mem_malloc_end = (ulong)end;
-	mem_malloc_brk = mem_malloc_start;
+	malloc_start = (ulong)start;
+	malloc_end = (ulong)end;
+	malloc_brk = malloc_start;
 }
 
 void *sbrk_no_zero(ptrdiff_t increment)
 {
-	ulong old = mem_malloc_brk;
+	ulong old = malloc_brk;
 	ulong new = old + increment;
 
-        if ((new < mem_malloc_start) || (new > mem_malloc_end))
+        if ((new < malloc_start) || (new > malloc_end))
  		return NULL;
 
-	mem_malloc_brk = new;
+	malloc_brk = new;
 
 	return (void *)old;
 }

@@ -46,14 +46,22 @@ extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[], __
 const char version_string[] =
 	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
 
-static int display_banner (void)
+static void display_banner (void)
 {
 	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
-	debug (RELOC("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n"),
-	       RELOC_VAR(_u_boot_start), RELOC_VAR(_bss_start), RELOC_VAR(_bss_end));
 	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
+}
 
-	return 0;
+static void display_meminfo(void)
+{
+	ulong mstart = mem_malloc_start();
+	ulong mend   = mem_malloc_end();
+	ulong msize  = mend - mstart + 1;
+
+	debug ("U-Boot code: 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
+	       _u_boot_start, _bss_start, _bss_end);
+	printf("Malloc Space: 0x%08lx -> 0x%08lx (size %s)\n",
+		mstart, mend, size_human_readable(msize));
 }
 
 #ifdef CONFIG_HAS_EARLY_INIT
@@ -122,11 +130,12 @@ void start_uboot (void)
 #ifndef CONFIG_HAS_EARLY_INIT
 	display_banner();
 #endif
+	display_meminfo();
 
 	register_default_env();
 
 	mount("none", "ramfs", "/");
-	mkdir("/dev",0);
+	mkdir("/dev", 0);
 	mount("none", "devfs", "/dev");
 
 #ifdef CONFIG_CMD_ENVIRONMENT

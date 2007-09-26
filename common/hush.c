@@ -1316,9 +1316,6 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 		b_free(&temp);
 	} while (rcode != -1 && !(flag & FLAG_EXIT_FROM_LOOP));   /* loop on syntax errors, return on EOF */
 
-	if (ctx->pipe->progs)
-		free(ctx->pipe->progs);
-
 	return (code != 0) ? 1 : 0;
 }
 

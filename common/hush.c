@@ -378,7 +378,6 @@ static char *getprompt(void)
 
 static void get_user_input(struct in_str *i)
 {
-	extern char console_buffer[CONFIG_CBSIZE];
 	int n;
 	static char the_command[CONFIG_CBSIZE];
 

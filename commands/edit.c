@@ -176,7 +176,7 @@ static struct line *line_realloc(int len, struct line *line)
 	while (size < len)
 		size <<= 1;
 
-	line->data = realloc(line->data, size);
+	line->data = xrealloc(line->data, size);
 	return line;
 }
 

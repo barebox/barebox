@@ -49,13 +49,10 @@ int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
+	icache_disable();
+
 	strncpy(cmdlinedest, cmdline, 0x1000);
 	cmdlinedest[0xfff] = 0;
-
-	if(icache_status()){
-		flush_instruction_cache();
-		icache_disable();
-	}
 
 	(*appl)(cmdlinedest);
 

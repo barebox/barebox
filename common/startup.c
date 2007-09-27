@@ -41,7 +41,8 @@
 #define CONFIG_IDENT_STRING ""
 #endif
 
-extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[], __u_boot_initcalls_end[];
+extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[],
+		  __u_boot_initcalls_end[];
 
 const char version_string[] =
 	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
@@ -75,7 +76,8 @@ void early_init (void)
 {
 	/* copy the early initdata segment to early init RAM */
 	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
-				(ulong)&__early_init_data_end - (ulong)&__early_init_data_begin);
+				(ulong)&__early_init_data_end -
+				(ulong)&__early_init_data_begin);
 	early_console_start(RELOC("psc3"), 115200);
 
 	display_banner();
@@ -114,7 +116,8 @@ void start_uboot (void)
 	 * early RAM to RAM
 	 */
 	memcpy(&__early_init_data_begin, init_data_ptr,
-			(ulong)&__early_init_data_end - (ulong)&__early_init_data_begin);
+			(ulong)&__early_init_data_end -
+			(ulong)&__early_init_data_begin);
 	init_data_ptr = &__early_init_data_begin;
 #endif /* CONFIG_HAS_EARLY_INIT */
 
@@ -141,7 +144,8 @@ void start_uboot (void)
 #ifdef CONFIG_CMD_ENVIRONMENT
 	if (envfs_load("/dev/env0", "/env")) {
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-		printf("using default environment\n");
+		printf("no valid environment found on /dev/env0."
+			"using default environment\n");
 		envfs_load("/dev/defaultenv", "/env");
 #endif
 	}

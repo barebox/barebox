@@ -34,6 +34,8 @@
 #include <getopt.h>
 #include <libgen.h>
 
+#define debug(...)
+
 void *xmalloc(size_t size)
 {
 	void *p = NULL;
@@ -115,6 +117,8 @@ char *concat_subpath_file(const char *path, const char *f)
 
 #include "../lib/recursive_action.c"
 #include "../include/envfs.h"
+#include "../lib/crc32.c"
+#include "../lib/make_directory.c"
 #include "../commands/environment.c"
 
 void usage(char *prgname)

@@ -38,20 +38,40 @@
 struct action_data {
 	int fd;
 	const char *base;
+	void *writep;
 };
+
+#define PAD4(x) ((x + 3) & ~3) 
+
+static int file_size_action(const char *filename, struct stat *statbuf,
+				void *userdata, int depth)
+{
+	struct action_data *data = userdata;
+
+	data->writep += sizeof(struct envfs_inode);
+	data->writep += PAD4(strlen(filename) + 1 - strlen(data->base));
+	data->writep += PAD4(statbuf->st_size);
+	return 1;
+}
 
 static int file_save_action(const char *filename, struct stat *statbuf,
 				void *userdata, int depth)
 {
-	int isize;
 	struct action_data *data = userdata;
-	struct envfs_inode *inode = NULL;
+	struct envfs_inode *inode;
 	int fd;
 	int namelen = strlen(filename) + 1 - strlen(data->base);
-	int namelen_full = (namelen + 3) & ~3;
 
-	isize = namelen_full + ((statbuf->st_size + 3) & ~3) + sizeof(struct envfs_inode);
-	inode = xzalloc(isize);
+	debug("handling file %s size %ld namelen %d\n", filename + strlen(data->base), statbuf->st_size, namelen);
+
+	inode = (struct envfs_inode*)data->writep;
+	inode->magic = ENVFS_INODE_MAGIC;
+	inode->namelen = namelen;
+	inode->size = statbuf->st_size;
+	data->writep += sizeof(struct envfs_inode);
+
+	strcpy(data->writep, filename + strlen(data->base));
+	data->writep += PAD4(namelen);
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
@@ -59,61 +79,66 @@ static int file_save_action(const char *filename, struct stat *statbuf,
 		goto out;
 	}
 
-	if (read(fd, inode->data + namelen_full, statbuf->st_size) < statbuf->st_size) {
+	if (read(fd, data->writep, statbuf->st_size) < statbuf->st_size) {
 		perror("read");
 		goto out;
 	}
-
 	close(fd);
-	inode->magic = ENVFS_INODE_MAGIC;
-	inode->namelen = namelen;
-	inode->size  = namelen_full + statbuf->st_size;
 
-	strcpy(inode->data, filename + strlen(data->base));
+	data->writep += PAD4(statbuf->st_size);
 
-	/* FIXME: calc crc */
-
-	if (write(data->fd, inode, isize) < isize) {
-		perror("write");
-		goto out;
-	}
 out:
-	free(inode);
 	return 1;
 }
 
 int envfs_save(char *filename, char *dirname)
 {
-	struct envfs_super super;
-	int envfd;
-	struct envfs_inode inode;
+	struct envfs_super *super;
+	int envfd, size, ret;
 	struct action_data data;
+	void *buf = NULL;
+
+	data.writep = 0;
+	data.base = dirname;
+
+	/* first pass: calculate size */
+	recursive_action(dirname, ACTION_RECURSE, file_size_action,
+			NULL, &data, 0);
+
+	size = (unsigned long)data.writep;
+
+	buf = xzalloc(size + sizeof(struct envfs_super));
+	data.writep = buf + sizeof(struct envfs_super);
+
+	super = (struct envfs_super *)buf;
+	super->magic = ENVFS_MAGIC;
+	super->size = size;
+
+	/* second pass: copy files to buffer */
+	recursive_action(dirname, ACTION_RECURSE, file_save_action,
+			NULL, &data, 0);
+
+	super->crc = crc32(0, buf + sizeof(struct envfs_super), size);
+	super->sb_crc = crc32(0, buf, sizeof(struct envfs_super) - 4);
 
 	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
 		perror("open");
-		return -1;
+		goto out1;
 	}
 
-	super.magic = ENVFS_MAGIC;
-
-	write(envfd, &super, sizeof(struct envfs_super));
-
-	data.fd = envfd;
-	data.base = dirname;
-
-	recursive_action(dirname, ACTION_RECURSE, file_save_action,
-			NULL, &data, 0);
-
-	memset(&inode, 0, sizeof(struct envfs_inode));
-	inode.magic = ENVFS_END_MAGIC;
-	if (write(envfd, &inode, sizeof(struct envfs_inode)) < sizeof(struct envfs_inode)) {
+	if (write(envfd, buf, size  + sizeof(struct envfs_super)) < sizeof(struct envfs_super)) {
 		perror("write");
 		goto out;
 	}
+
+	ret = 0;
+
 out:
 	close(envfd);
-	return 0;
+out1:
+	free(buf);
+	return ret;
 }
 
 #ifdef __U_BOOT__
@@ -192,62 +217,15 @@ U_BOOT_CMD_START(saveenv)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */
 
-int mkdirp(const char *dir)
-{
-	char *s = strdup(dir);
-	char *path = s;
-	char c;
-
-	do {
-		c = 0;
-
-		/* Bypass leading non-'/'s and then subsequent '/'s. */
-		while (*s) {
-			if (*s == '/') {
-				do {
-					++s;
-				} while (*s == '/');
-				c = *s;		/* Save the current char */
-				*s = 0;		/* and replace it with nul. */
-				break;
-			}
-			++s;
-		}
-
-		if (mkdir(path, 0777) < 0) {
-
-			/* If we failed for any other reason than the directory
-			 * already exists, output a diagnostic and return -1.*/
-#ifdef __U_BOOT__
-			if (errno != -EEXIST)
-#else
-			if (errno != EEXIST)
-#endif
-				break;
-		}
-		if (!c)
-			goto out;
-
-		/* Remove any inserted nul from the path (recursive mode). */
-		*s = c;
-
-	} while (1);
-
-out:
-	free(path);
-	return errno;
-}
-
 int envfs_load(char *filename, char *dir)
 {
-	int malloc_size = 0;
 	struct envfs_super super;
-	void *buf = NULL;
+	void *buf = NULL, *buf_free = NULL;
 	int envfd;
-	struct envfs_inode inode;
 	int fd, ret = 0;
 	char *str, *tmp;
 	int namelen_full;
+	unsigned long size;
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
@@ -255,6 +233,7 @@ int envfs_load(char *filename, char *dir)
 		return -1;
 	}
 
+	/* read superblock */
 	ret = read(envfd, &super, sizeof(struct envfs_super));
 	if ( ret < sizeof(struct envfs_super)) {
 		perror("read");
@@ -268,37 +247,44 @@ int envfs_load(char *filename, char *dir)
 		goto out;
 	}
 
-	while (1) {
-		ret = read(envfd, &inode, sizeof(struct envfs_inode));
-		if (ret < sizeof(struct envfs_inode)) {
-			perror("read");
-			goto out;
-		}
-		if (inode.magic == ENVFS_END_MAGIC) {
-			ret = 0;
-			break;
-		}
-		if (inode.magic != ENVFS_INODE_MAGIC) {
+	if (crc32(0, (unsigned char *)&super, sizeof(struct envfs_super) - 4)
+			!= super.sb_crc) {
+		printf("wrong crc on env superblock\n");
+		goto out;
+	}
+
+	buf = xmalloc(super.size);
+	buf_free = buf;
+	ret = read(envfd, buf, super.size);
+	if (ret < super.size) {
+		perror("read");
+		goto out;
+	}
+
+	if (crc32(0, (unsigned char *)buf, super.size)
+			!= super.crc) {
+		printf("wrong crc on env\n");
+		goto out;
+	}
+
+	size = super.size;
+
+	while (size) {
+		struct envfs_inode *inode;
+
+		inode = (struct envfs_inode *)buf;
+	
+		if (inode->magic != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
 			ret = -EIO;
 			goto out;
 		}
-		if (inode.size > malloc_size) {
-			if (buf)
-				free(buf);
-			buf = xmalloc(inode.size);
-			malloc_size = inode.size;
-		}
 
-		ret = read(envfd, buf, inode.size);
-		if (ret < inode.size) {
-			perror("read");
-			goto out;
-		}
+		debug("loading %s size %d namelen %d\n", inode->data, inode->size, inode->namelen);
 
-		str = concat_path_file(dir, buf);
+		str = concat_path_file(dir, inode->data);
 		tmp = strdup(str);
-		mkdirp(dirname(tmp));
+		make_directory(dirname(tmp));
 		free(tmp);
 
 		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -309,29 +295,24 @@ int envfs_load(char *filename, char *dir)
 			goto out;
 		}
 
-		namelen_full = ((inode.namelen + 3) & ~3);
-		ret = write(fd, buf + namelen_full, inode.size - namelen_full);
-		if (ret < inode.size - namelen_full) {
+		namelen_full = PAD4(inode->namelen);
+		ret = write(fd, buf + namelen_full + sizeof(struct envfs_inode), inode->size);
+		if (ret < inode->size) {
 			perror("write");
 			close(fd);
 			goto out;
 		}
 		close(fd);
 
-		if (inode.size & 0x3) {
-			ret = read(envfd, buf, 4 - (inode.size & 0x3));
-			if (ret < 4 - (inode.size & 0x3)) {
-				perror("read");
-				ret = errno;
-				goto out;
-			}
-		}
+		buf += PAD4(inode->namelen) + PAD4(inode->size) + sizeof(struct envfs_inode);
+		size -= PAD4(inode->namelen) + PAD4(inode->size) + sizeof(struct envfs_inode);
 	}
 
+	ret = 0;
 out:
 	close(envfd);
-	if (buf)
-		free(buf);
+	if (buf_free)
+		free(buf_free);
 	return ret;
 }
 

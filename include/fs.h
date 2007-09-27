@@ -100,6 +100,9 @@ ssize_t write(int fd, const void *buf, size_t count);
 
 off_t lseek(int fildes, off_t offset, int whence);
 int mkdir (const char *pathname, mode_t mode);
+
+/* Create a directory and its parents */
+int make_directory(const char *pathname);
 int rmdir (const char *pathname);
 
 const char *getcwd(void);

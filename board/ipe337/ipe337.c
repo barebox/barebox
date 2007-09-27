@@ -43,7 +43,7 @@ static int ipe337_devices_init(void) {
 	register_device(&smc911x_dev);
 
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");
-	dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
+	dev_add_partition(&cfi_dev, 0x20000, 0x20000, "env");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	return 0;

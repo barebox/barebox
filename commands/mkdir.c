@@ -24,22 +24,40 @@
 #include <command.h>
 #include <fs.h>
 #include <errno.h>
+#include <getopt.h>
 
 static int do_mkdir (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	int i = 1;
+	int opt, parent = 0, ret;
 
-	if (argc < 2) {
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, "p")) > 0) {
+		switch(opt) {
+		case 'p':
+			parent = 1;
+			break;
+		default:
+			return 1;
+
+		}
+	}
+
+	if (optind == argc) {
 		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	while (i < argc) {
-		if (mkdir(argv[i], 0)) {
-			printf("could not create %s: %s\n", argv[i], errno_str());
+	while (optind < argc) {
+		if (parent)
+			ret = make_directory(argv[optind]);
+		else
+			ret = mkdir(argv[optind], 0);
+		if (ret) {
+			printf("could not create %s: %s\n", argv[optind], errno_str());
 			return 1;
 		}
-		i++;
+		optind++;
 	}
 
 	return 0;

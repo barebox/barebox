@@ -10,6 +10,7 @@ config BOARDINFO
 config TEXT_BASE
 	prompt "TEXT_BASE"
 	hex
+	default ARCH_TEXT_BASE
 	help
 	  The Address U-Boot gets linked at.
 
@@ -68,12 +69,11 @@ config MAXARGS
 choice
 	prompt "Select your shell"
 
-config SHELL_HUSH
-	bool "hush parser"
-	default y
+	config SHELL_HUSH
+		bool "hush parser"
 
-config SHELL_SIMPLE
-	bool "Simple parser"
+	config SHELL_SIMPLE
+		bool "Simple parser"
 
 endchoice
 

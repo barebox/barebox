@@ -1,10 +1,10 @@
 
-config TEXT_BASE
-	string
-	default "0x08f00000" if MACH_MX1ADS
-	default "0x08f80000" if MACH_SCB9328
-	default "0x81f00000" if MACH_NXDB500
-	default "0x21e00000" if MACH_ECO920
+config ARCH_TEXT_BASE
+	hex
+	default 0x08f00000 if MACH_MX1ADS
+	default 0x08f80000 if MACH_SCB9328
+	default 0x81f00000 if MACH_NXDB500
+	default 0x21e00000 if MACH_ECO920
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328

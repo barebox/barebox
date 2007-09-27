@@ -1,9 +1,9 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-trunk
-# Fri Jul 13 21:25:53 2007
+# U-Boot version: 2.0.0-git
+# Tue Sep 25 22:07:54 2007
 #
-CONFIG_TEXT_BASE=""
+CONFIG_ARCH_TEXT_BASE=0x00000000
 CONFIG_BOARDINFO="sandbox"
 CONFIG_LINUX=y
 CONFIG_GREGORIAN_CALENDER=y
@@ -11,6 +11,7 @@ CONFIG_GREGORIAN_CALENDER=y
 #
 # General Settings              
 #
+CONFIG_TEXT_BASE=0x00000000
 # CONFIG_BROKEN is not set
 CONFIG_PROMPT="uboot:"
 CONFIG_BAUDRATE=115200
@@ -19,13 +20,16 @@ CONFIG_CMDLINE_EDITING=y
 # CONFIG_LONGHELP is not set
 CONFIG_CBSIZE=1024
 CONFIG_MAXARGS=16
-CONFIG_HUSH_PARSER=y
+CONFIG_SHELL_HUSH=y
+# CONFIG_SHELL_SIMPLE is not set
 CONFIG_PROMPT_HUSH_PS2="> "
 CONFIG_DYNAMIC_CRC_TABLE=y
 CONFIG_ERRNO_MESSAGES=y
 CONFIG_TIMESTAMP=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # CONFIG_OF_FLAT_TREE is not set
+CONFIG_DEFAULT_ENVIRONMENT=y
+CONFIG_DEFAULT_ENVIRONMENT_PATH=""
 
 #
 # Debugging                     
@@ -39,7 +43,6 @@ CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # scripting                     
 #
 CONFIG_CMD_EDIT=y
-CONFIG_CMD_EXEC=y
 CONFIG_CMD_SLEEP=y
 CONFIG_CMD_ENVIRONMENT=y
 CONFIG_CMD_HELP=y
@@ -91,6 +94,7 @@ CONFIG_CMD_CRC=y
 # CONFIG_CMD_BOOTM is not set
 CONFIG_CMD_RESET=y
 CONFIG_CMD_GO=y
+# CONFIG_CMD_TIMEOUT is not set
 CONFIG_CMD_PARTITION=y
 CONFIG_CMD_TEST=y
 CONFIG_NET=y
@@ -114,20 +118,8 @@ CONFIG_DRIVER_SERIAL_LINUX_COMSOLE=y
 #
 # Network drivers               
 #
+# CONFIG_DRIVER_NET_SMC911X is not set
 # CONFIG_DRIVER_NET_TAP is not set
-
-#
-# video drivers                 
-#
-# CONFIG_DRIVER_VIDEO_S1D13706 is not set
-
-#
-# I2C drivers                   
-#
-
-#
-# USB host support              
-#
 
 #
 # flash drivers                 

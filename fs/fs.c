@@ -30,7 +30,7 @@
 #include <xfuncs.h>
 #include <init.h>
 
-void *read_file(const char *filename)
+void *read_file(const char *filename, size_t *size)
 {
 	int fd;
 	struct stat s;
@@ -49,6 +49,10 @@ void *read_file(const char *filename)
 		goto err_out1;
 
 	close(fd);
+
+	if (size)
+		*size = s.st_size;
+
 	return buf;
 
 err_out1:

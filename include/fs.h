@@ -148,9 +148,10 @@ struct mtab_entry {
  * Read a file into memory. Memory is allocated with malloc and must
  * be freed with free() afterwards. This function allocates one
  * byte more than actually needed and sets this to zero, so that
- * it cn be used for text files.
+ * it can be used for text files.
+ * If size is nonzero it s set to the file size.
  */
-void *read_file(const char *filename);
+void *read_file(const char *filename, size_t *size);
 
 /*
  * This function turn 'path' into an absolute path and removes all occurrences

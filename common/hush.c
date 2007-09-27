@@ -1462,7 +1462,7 @@ static int source_script(const char *path, int argc, char *argv[])
 	ctx.global_argc = argc;
 	ctx.global_argv = argv;
 
-	script = read_file(path);
+	script = read_file(path, NULL);
 	if (!script)
 		return 1;
 

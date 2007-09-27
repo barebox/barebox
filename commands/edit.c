@@ -189,7 +189,7 @@ static int edit_read_file(const char *path)
 	struct stat s;
 
 	if (!stat(path, &s)) {
-		filebuffer = read_file(path);
+		filebuffer = read_file(path, NULL);
 		if (!filebuffer) {
 			printf("could not read %s: %s\n", path, errno_str());
 			return -1;

@@ -103,6 +103,34 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
+static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode, char **filename)
+{
+	int opt;
+
+	getopt_reset();
+
+	while((opt = getopt(argc, argv, optstr)) > 0) {
+		switch(opt) {
+		case 'b':
+			*mode = O_RWSIZE_1;
+			break;
+		case 'w':
+			*mode = O_RWSIZE_2;
+			break;
+		case 'l':
+			*mode = O_RWSIZE_4;
+			break;
+		case 'f':
+			*filename = optarg;
+			break;
+		default:
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	start = 0, size = 0x100;
@@ -111,30 +139,10 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int fd;
 	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
-	int opt;
 
 	errno = 0;
-
-	getopt_reset();
-
-	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
-		switch(opt) {
-		case 'b':
-			mode = O_RWSIZE_1;
-			break;
-		case 'w':
-			mode = O_RWSIZE_2;
-			break;
-		case 'l':
-			mode = O_RWSIZE_4;
-			break;
-		case 'f':
-			filename = optarg;
-			break;
-		default:
-			return 1;
-		}
-	}
+	if (mem_parse_options(argc, argv, "bwlf:", &mode, &filename) < 0)
+		return 1;
 
 	if (optind  < argc) {
 		parse_area_spec(argv[optind], &start, &size);
@@ -208,31 +216,12 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int fd;
 	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
-	int opt;
 	ulong adr;
 
 	errno = 0;
 
-	getopt_reset();
-
-	while((opt = getopt(argc, argv, "bwlf:")) > 0) {
-		switch(opt) {
-		case 'b':
-			mode = O_RWSIZE_1;
-			break;
-		case 'w':
-			mode = O_RWSIZE_2;
-			break;
-		case 'l':
-			mode = O_RWSIZE_4;
-			break;
-		case 'f':
-			filename = optarg;
-			break;
-		default:
-			return 1;
-		}
-	}
+	if (mem_parse_options(argc, argv, "bwlf:", &mode, &filename) < 0)
+		return 1;
 
 	if (optind + 1 >= argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -260,7 +249,6 @@ int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 		case O_RWSIZE_1:
 			val8 = simple_strtoul(argv[optind], NULL, 0);
 			ret = write(fd, &val8, 1);
-			printf("write %d\n", val8);
 			break;
 		case O_RWSIZE_2:
 			val16 = simple_strtoul(argv[optind], NULL, 0);
@@ -285,7 +273,7 @@ out:
 }
 
 static __maybe_unused char cmd_mw_help[] =
-"Usage mw [OPTIONS] <region> <value(s)>\n"
+"Usage: mw [OPTIONS] <region> <value(s)>\n"
 "Write value(s) to the specifies region.\n"
 "see 'help md' for supported options.\n";
 
@@ -296,30 +284,24 @@ U_BOOT_CMD_START(mw)
 	U_BOOT_CMD_HELP(cmd_mw_help)
 U_BOOT_CMD_END
 
-#if 0
 int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	addr1, addr2, count, ngood;
 	int	size;
-	int     rcode = 0;
+	int	mode  = O_RWSIZE_4;
 
-	if (argc != 4) {
+	if (mem_parse_options(argc, argv, "bwl", &mode, NULL) < 0)
+		return 1;
+
+	if (optind + 3 != argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	/* Check for size specification.
-	*/
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
-
-	addr1 = simple_strtoul(argv[1], NULL, 16);
-
-	addr2 = simple_strtoul(argv[2], NULL, 16);
-
-	count = simple_strtoul(argv[3], NULL, 16);
-
-	ngood = 0;
+	addr1 = simple_strtoul(argv[optind++], NULL, 0);
+	addr2 = simple_strtoul(argv[optind++], NULL, 0);
+	size  = (mode & O_RWSIZE_MASK) >> O_RWSIZE_SHIFT;
+	count = simple_strtoul(argv[optind], NULL, 0) / size;
 
 	while (count-- > 0) {
 		if (size == 4) {
@@ -329,8 +311,7 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 				printf("word at 0x%08lx (0x%08lx) "
 					"!= word at 0x%08lx (0x%08lx)\n",
 					addr1, word1, addr2, word2);
-				rcode = 1;
-				break;
+				return 1;
 			}
 		}
 		else if (size == 2) {
@@ -340,8 +321,7 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 				printf("halfword at 0x%08lx (0x%04x) "
 					"!= halfword at 0x%08lx (0x%04x)\n",
 					addr1, hword1, addr2, hword2);
-				rcode = 1;
-				break;
+				return 1;
 			}
 		}
 		else {
@@ -351,8 +331,7 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 				printf("byte at 0x%08lx (0x%02x) "
 					"!= byte at 0x%08lx (0x%02x)\n",
 					addr1, byte1, addr2, byte2);
-				rcode = 1;
-				break;
+				return 1;
 			}
 		}
 		ngood++;
@@ -360,83 +339,74 @@ int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		addr2 += size;
 	}
 
-	printf("Total of %ld %s%s were the same\n",
-		ngood, size == 4 ? "word" : size == 2 ? "halfword" : "byte",
-		ngood == 1 ? "" : "s");
-	return rcode;
+	printf("OK\n");
+	return 0;
 }
 
-U_BOOT_CMD_START(cmp)
-	.maxargs	= 4,
+static __maybe_unused char cmd_memcmp_help[] =
+"Usage: memcmp [OPTIONS] <addr1> <addr2> <count>\n"
+"\n"
+"options:\n"
+"  -b, -w, -l	use byte, halfword, or word accesses\n"
+"\n"
+"Compare memory regions specified with addr1 and addr2\n"
+"of size <count> bytes.\n";
+
+U_BOOT_CMD_START(memcmp)
+	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_cmp,
 	.usage		= "memory compare",
-	U_BOOT_CMD_HELP("write me\n")
+	U_BOOT_CMD_HELP(cmd_memcmp_help)
 U_BOOT_CMD_END
 
-#endif
-
-#if 0
-int do_mem_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+int do_mem_cp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	ulong count, offset, now;
-	int ret;
-	struct memarea_info dst, src;
-
+	ulong count;
+	ulong	dest, src;
+	int mode = O_RWSIZE_4;
 	int	size;
 
-	if (argc != 3) {
+	if (mem_parse_options(argc, argv, "bwl", &mode, NULL) < 0)
+		return 1;
+
+	if (optind + 3 != argc) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	/* Check for size specification.
-	*/
-	if ((size = cmd_get_data_size(argv[0], 4)) < 0)
-		return 1;
+	src = simple_strtoul(argv[optind++], NULL, 0);
+	dest = simple_strtoul(argv[optind++], NULL, 0);
+	size  = (mode & O_RWSIZE_MASK) >> O_RWSIZE_SHIFT;
+	count = simple_strtoul(argv[optind], NULL, 0) / size;
 
-	if (spec_str_to_info(argv[1], &src)) {
-		printf("-ENOPARSE\n");
-		return -1;
-	}
-
-	if (spec_str_to_info(argv[2], &dst)) {
-		printf("-ENOPARSE\n");
-		return -1;
-	}
-
-	if (!src.size || !dst.size)
-		count = dst.size | src.size;
-	else
-		count = min(src.size, dst.size);
-
-	printf("copy from 0x%08x to 0x%08x count %d\n",src.start, dst.start, count);
-
-	offset = 0;
-	while (count > 0) {
-		now = min(RW_BUF_SIZE, count);
-
-		ret = dev_read(src.device, rw_buf, now, src.start + offset, RW_SIZE(size));
-		if (ret <= 0)
-			return ret;
-
-		ret = dev_write(dst.device, rw_buf, ret, dst.start + offset, RW_SIZE(size));
-		if (ret <= 0)
-			return ret;
-		if (ret < now)
-			return 0;
-		offset += now;
-		count -= now;
+	while (count-- > 0) {
+		if (size == 4)
+			*((ulong  *)dest) = *((ulong  *)src);
+		else if (size == 2)
+			*((ushort *)dest) = *((ushort *)src);
+		else
+			*((u_char *)dest) = *((u_char *)src);
+		src += size;
+		dest += size;
 	}
 
 	return 0;
 }
 
-U_BOOT_CMD(
-	cp,    4,    0,    do_mem_cp,
-	"cp      - memory copy\n",
-	"[.b, .w, .l] source target count\n    - copy memory\n"
-);
-#endif
+static __maybe_unused char cmd_memcpy_help[] =
+"Usage: memcpy [OPTIONS] <src> <dst> <count>\n"
+"\n"
+"options:\n"
+"  -b, -w, -l	use byte, halfword, or word accesses\n"
+"\n"
+"Copy memory at <src> of <count> bytes to <dst>\n";
+
+U_BOOT_CMD_START(memcpy)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_mem_cp,
+	.usage		= "memory copy",
+	U_BOOT_CMD_HELP(cmd_memcpy_help)
+U_BOOT_CMD_END
 
 static struct device_d mem_dev = {
 	.name  = "mem",
@@ -482,27 +452,4 @@ static int mem_init(void)
 }
 
 device_initcall(mem_init);
-
-#ifdef CONFIG_LOOPW
-U_BOOT_CMD(
-	loopw,    4,    0,    do_mem_loopw,
-	"loopw   - infinite write loop on address range\n",
-	"[.b, .w, .l] address number_of_objects data_to_write\n"
-	"    - loop on a set of addresses\n"
-);
-#endif /* CONFIG_LOOPW */
-
-#ifdef CONFIG_MX_CYCLIC
-U_BOOT_CMD(
-	mdc,     4,     0,      do_mem_mdc,
-	"mdc     - memory display cyclic\n",
-	"[.b, .w, .l] address count delay(ms)\n    - memory display cyclic\n"
-);
-
-U_BOOT_CMD(
-	mwc,     4,     0,      do_mem_mwc,
-	"mwc     - memory write cyclic\n",
-	"[.b, .w, .l] address value delay(ms)\n    - memory write cyclic\n"
-);
-#endif /* CONFIG_MX_CYCLIC */
 

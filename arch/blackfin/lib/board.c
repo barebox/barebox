@@ -36,8 +36,8 @@
 
 int blackfin_mem_malloc_init(void)
 {
-	mem_malloc_init((void *)(CONFIG_MALLOC_BASE - CONFIG_MALLOC_LEN),
-			(void *)CONFIG_MALLOC_BASE);
+	mem_malloc_init((void *)(CONFIG_MALLOC_BASE),
+			(void *)(CONFIG_MALLOC_BASE + CONFIG_MALLOC_LEN));
 	return 0;
 }
 

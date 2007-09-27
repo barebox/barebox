@@ -150,8 +150,7 @@ ulong crc32(ulong crc, const unsigned char *buf, uint len)
     return crc ^ 0xffffffffL;
 }
 
-#if (CONFIG_COMMANDS & CFG_CMD_JFFS2) || \
-	((CONFIG_COMMANDS & CFG_CMD_NAND) && !defined(CFG_NAND_LEGACY))
+#if 0
 
 /* No ones complement version. JFFS2 (and other things ?)
  * don't use ones compliment in their CRC calculations.
@@ -174,4 +173,4 @@ uLong crc32_no_comp(uLong crc, const Bytef *buf, uint len)
     return crc;
 }
 
-#endif	/* CFG_CMD_JFFS2 */
+#endif

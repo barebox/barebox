@@ -20,19 +20,19 @@
 #define CONFIG_PLL_BYPASS               0
 /* CONFIG_VCO_MULT controls what the multiplier of the PLL is.   */
 /* Values can range from 1-64                                    */
-#define CONFIG_VCO_MULT			22
+#define CONFIG_VCO_MULT			24
 /* CONFIG_CCLK_DIV controls what the core clock divider is       */
 /* Values can be 1, 2, 4, or 8 ONLY                              */
 #define CONFIG_CCLK_DIV			1
 /* CONFIG_SCLK_DIV controls what the peripheral clock divider is */
 /* Values can range from 1-15                                    */
-#define CONFIG_SCLK_DIV			7
+#define CONFIG_SCLK_DIV			9
 
 #define AMGCTLVAL               0x1F
 #define AMBCTL0VAL              0x14407BB0
 #define AMBCTL1VAL              0xFFC2FFC2
 
-#define CONFIG_MEM_MT48LC64M4A2FB_7E    1
+#define CONFIG_MEM_MT48LC16M16A2TG_75    1
 #define CONFIG_MEM_ADD_WDTH             9             /* 8, 9, 10, 11    */
-#define CONFIG_MEM_SIZE                 128           /* 128, 64, 32, 16 */
+#define CONFIG_MEM_SIZE                 64           /* 128, 64, 32, 16 */
 

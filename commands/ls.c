@@ -24,6 +24,7 @@
 #include <fs.h>
 #include <linux/stat.h>
 #include <errno.h>
+#include <malloc.h>
 #include <getopt.h>
 
 static void ls_one(const char *path, struct stat *s)
@@ -45,10 +46,8 @@ int ls(const char *path, ulong flags)
 	if (flags & LS_SHOWARG)
 		printf("%s:\n", path);
 
-	if (stat(path, &s)) {
-		perror("stat");
+	if (stat(path, &s))
 		return errno;
-	}
 
 	if (!(s.st_mode & S_IFDIR)) {
 		ls_one(path, &s);
@@ -78,16 +77,20 @@ int ls(const char *path, ulong flags)
 	}
 
 	while ((d = readdir(dir))) {
-		sprintf(tmp, "%s/%s", path, d->d_name);
-		normalise_path(tmp);
-		if (stat(tmp, &s))
-			goto out;
+
 		if (!strcmp(d->d_name, "."))
 			continue;
 		if (!strcmp(d->d_name, ".."))
 			continue;
-		if (s.st_mode & S_IFDIR)
-			ls(tmp, flags);
+		sprintf(tmp, "%s/%s", path, d->d_name);
+
+		if (stat(tmp, &s))
+			goto out;
+		if (s.st_mode & S_IFDIR) {
+			char *norm = normalise_path(tmp);
+			ls(norm, flags);
+			free(norm);
+		}
 	}
 out:
 	closedir(dir);

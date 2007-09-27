@@ -216,8 +216,11 @@ int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
 	char *file;
 
 	node = rlookup_parent(priv, pathname, &file);
-	node_insert(node, file, mode);
-	return 0;
+	if (node) {
+		node_insert(node, file, mode);
+		return 0;
+	}
+	return -ENOENT;
 }
 
 int ramfs_unlink(struct device_d *dev, const char *pathname)

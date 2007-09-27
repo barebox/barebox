@@ -273,10 +273,11 @@ static int save_file(const char *path)
 static void insert_char(char c)
 {
 	int pos = textx;
-	char *line = curline->data;
-	int end = strlen(line);
+	char *line;
+	int end = strlen(curline->data);
 
 	line_realloc(strlen(curline->data) + 2, curline);
+	line = curline->data;
 
 	while (end >= pos) {
 		line[end + 1] = line[end];

@@ -682,7 +682,7 @@ static int run_list_real(struct pipe *pi)
 			last_return_code = -rcode - 2;
 			return -2;	/* exit */
 		}
-		last_return_code=(rcode == 0) ? 0 : 1;
+		last_return_code=rcode;
 		if ( rmode == RES_IF || rmode == RES_ELIF )
 			next_if_code=rcode;  /* can be overwritten a number of times */
 		if (rmode == RES_WHILE)

@@ -155,16 +155,6 @@ config CMD_MTEST_ALTERNATIVE
 	depends on CMD_MTEST
 	prompt "alternative mtest implementation"
 
-config CMD_MTEST_START
-	hex
-	depends on CMD_MTEST
-	prompt "mtest start address"
-
-config CMD_MTEST_END
-	hex
-	depends on CMD_MTEST
-	prompt "mtest end address"
-
 endmenu
 
 

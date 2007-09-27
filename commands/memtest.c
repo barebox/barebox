@@ -25,25 +25,20 @@
 #include <command.h>
 #include <types.h>
 
-#ifdef	CMD_MEM_DEBUG
-#define	PRINTF(fmt,args...)	printf (fmt ,##args)
-#else
-#define PRINTF(fmt,args...)
-#endif
-
 /*
  * Perform a memory test. A more complete alternative test can be
- * configured using CFG_ALT_MEMTEST. The complete test loops until
- * interrupted by ctrl-c or by a failure of one of the sub-tests.
+ * configured using CONFIG_CMD_MTEST_ALTERNATIVE. The complete test
+ * loops until interrupted by ctrl-c or by a failure of one of the
+ * sub-tests.
  */
-
-int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
+#ifdef CONFIG_CMD_MTEST_ALTERNATIVE
+static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 {
-	vu_long	*addr, *start, *end;
+	vu_long *start = (vu_long *)_start;
+	vu_long *end   = (vu_long *)_end;
+	vu_long *addr;
 	ulong	val;
 	ulong	readback;
-
-#ifdef CONFIG_CMD_MTEST_ALTERNATIVE
 	vu_long	addr_mask;
 	vu_long	offset;
 	vu_long	test_offset;
@@ -69,43 +64,14 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		0x00000055,	/* four non-adjacent bits */
 		0xaaaaaaaa,	/* alternating 1/0 */
 	};
-#else
-	ulong	incr;
-	ulong	pattern;
-	int     rcode = 0;
-#endif
-
-	if (argc > 1) {
-		start = (ulong *)simple_strtoul(argv[1], NULL, 16);
-	} else {
-		start = (ulong *)CONFIG_CMD_MTEST_START;
-	}
-
-	if (argc > 2) {
-		end = (ulong *)simple_strtoul(argv[2], NULL, 16);
-	} else {
-		end = (ulong *)(CONFIG_CMD_MTEST_END);
-	}
-
-	if (argc > 3) {
-		pattern = (ulong)simple_strtoul(argv[3], NULL, 16);
-	} else {
-		pattern = 0;
-	}
-
-#if defined(CONFIG_CMD_MTEST_ALTERNATIVE)
-	printf ("Testing %08x ... %08x:\n", (uint)start, (uint)end);
-	PRINTF("%s:%d: start 0x%p end 0x%p\n",
-		__FUNCTION__, __LINE__, start, end);
 
 	for (;;) {
 		if (ctrlc()) {
-			putc ('\n');
+			putchar ('\n');
 			return 1;
 		}
 
 		printf("Iteration: %6d\r", iterations);
-		PRINTF("Iteration: %6d\n", iterations);
 		iterations++;
 
 		/*
@@ -134,16 +100,16 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 			readback = *addr;
 			if(readback != val) {
 			     printf ("FAILURE (data line): "
-				"expected %08lx, actual %08lx\n",
-					  val, readback);
+				"expected 0x%08lx, actual 0x%08lx at address 0x%p\n",
+					  val, readback, addr);
 			}
 			*addr  = ~val;
 			*dummy  = val;
 			readback = *addr;
 			if(readback != ~val) {
 			    printf ("FAILURE (data line): "
-				"Is %08lx, should be %08lx\n",
-					readback, ~val);
+				"Is 0x%08lx, should be 0x%08lx at address 0x%p\n",
+					readback, ~val, addr);
 			}
 		    }
 		}
@@ -193,16 +159,15 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		pattern = (vu_long) 0xaaaaaaaa;
 		anti_pattern = (vu_long) 0x55555555;
 
-		PRINTF("%s:%d: addr mask = 0x%.8lx\n",
+		debug("%s:%d: addr mask = 0x%.8lx\n",
 			__FUNCTION__, __LINE__,
 			addr_mask);
 		/*
 		 * Write the default pattern at each of the
 		 * power-of-two offsets.
 		 */
-		for (offset = 1; (offset & addr_mask) != 0; offset <<= 1) {
+		for (offset = 1; (offset & addr_mask) != 0; offset <<= 1)
 			start[offset] = pattern;
-		}
 
 		/*
 		 * Check for address bits stuck high.
@@ -292,15 +257,26 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-#else /* The original, quickie test */
+}
+#else
+int mem_test(ulong _start, ulong _end, ulong pattern)
+{
+	vu_long	*addr;
+	vu_long *start = (vu_long *)_start;
+	vu_long *end   = (vu_long *)_end;
+	ulong	val;
+	ulong	readback;
+	ulong	incr;
+	int rcode;
+
 	incr = 1;
 	for (;;) {
 		if (ctrlc()) {
-			putc ('\n');
+			putchar('\n');
 			return 1;
 		}
 
-		printf ("\rPattern %08lX  Writing..."
+		printf ("\rPattern 0x%08lX  Writing..."
 			"%12s"
 			"\b\b\b\b\b\b\b\b\b\b",
 			pattern, "");
@@ -316,7 +292,7 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 			readback = *addr;
 			if (readback != val) {
 				printf ("\nMem error @ 0x%08X: "
-					"found %08lX, expected %08lX\n",
+					"found 0x%08lX, expected 0x%08lX\n",
 					(uint)addr, readback, val);
 				rcode = 1;
 			}
@@ -338,15 +314,39 @@ int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		incr = -incr;
 	}
 	return rcode;
+}
 #endif
+
+int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	ulong start, end, pattern = 0;
+
+	if (argc < 3) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	start = simple_strtoul(argv[1], NULL, 0);
+	end = simple_strtoul(argv[2], NULL, 0);
+
+	if (argc > 3)
+		pattern = simple_strtoul(argv[3], NULL, 0);
+
+	printf ("Testing 0x%08x ... 0x%08x:\n", (uint)start, (uint)end);
+	
+	return mem_test(start, end, pattern);
 }
 
-static __maybe_unused char cmd_ls_help[] =
-"Usage: [start [end [pattern]]]\n"
-"simple RAM read/write test\n";
+static __maybe_unused char cmd_mtest_help[] =
+"Usage: <start> <end> "
+#ifdef CONFIG_CMD_MTEST_ALTERNATIVE
+"[pattern]"
+#endif
+"\nsimple RAM read/write test\n";
 
 U_BOOT_CMD_START(mtest)
 	.maxargs	= 4,
 	.cmd		= do_mem_mtest,
 	.usage		= "simple RAM test",
 U_BOOT_CMD_END
+

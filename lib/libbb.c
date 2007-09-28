@@ -99,3 +99,11 @@ char* last_char_is(const char *s, int c)
 	return NULL;
 }
 
+/* Like strncpy but make sure the resulting string is always 0 terminated. */
+char * safe_strncpy(char *dst, const char *src, size_t size)
+{
+	if (!size) return dst;
+	dst[--size] = '\0';
+	return strncpy(dst, src, size);
+}
+

@@ -24,4 +24,6 @@ int recursive_action(const char *fileName, unsigned flags,
 	int (*dirAction) (const char *fileName, struct stat* statbuf, void* userData, int depth),
 	void* userData, const unsigned depth);
 
+char * safe_strncpy(char *dst, const char *src, size_t size);
+
 #endif /* __LIBBB_H */

@@ -102,17 +102,6 @@ config CMD_SPLASH
 
 endmenu
 
-
-menu "i2c                           "
-
-config CMD_I2C
-	depends on BROKEN
-	bool
-	prompt "i2c"
-
-endmenu
-
-
 menu "memory                        "
 
 config CMD_LOADB

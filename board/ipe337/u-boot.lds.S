@@ -43,17 +43,22 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x00000000;
+	. = TEXT_BASE;
 
 	. = ALIGN(4);
 	.text      :
 	{
+		__stext = .;
+		__text = .;
+		_text = .;
 		*(.text_entry)
 		*(.text)
 	}
 
 	. = ALIGN(4);
 	.rodata : { *(.rodata) }
+
+	__etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(4);
 	.data : { *(.data) }

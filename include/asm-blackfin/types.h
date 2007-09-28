@@ -32,6 +32,7 @@
  * not a major issue.  However, for interoperability, libraries still
  * need to be careful to avoid a name clashes.
  */
+#ifndef __ASSEMBLY__
 
 typedef unsigned short umode_t;
 
@@ -72,12 +73,14 @@ typedef unsigned int u32;
 typedef signed long long s64;
 typedef unsigned long long u64;
 
-#define BITS_PER_LONG 32
-
 /* Dma addresses are 32-bits wide. */
 
 typedef u32 dma_addr_t;
 
 #endif
+
+#endif /* __ASSEMBLY__ */
+
+#define BITS_PER_LONG 32
 
 #endif

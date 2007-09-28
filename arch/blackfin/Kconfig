@@ -1,6 +1,8 @@
 
 config BLACKFIN
 	bool
+	select HAS_KALLSYMS
+	select HAS_MODULE
 	default y
 
 config BF561

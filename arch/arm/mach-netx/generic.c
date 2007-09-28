@@ -79,8 +79,6 @@ static void memcpy32(void *trg, void *src, int size)
 		*t++ = *s++;
 }
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 int loadxc(int xcno) {
 	/* stop xmac / xpec */
 	XMAC_REG(xcno, XMAC_RPU_HOLD_PC) = RPU_HOLD_PC;

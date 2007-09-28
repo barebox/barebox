@@ -169,4 +169,6 @@ int arch_execute(unsigned long address, int argc, char *argv[]);
 
 int run_shell(void);
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 #endif	/* __COMMON_H_ */

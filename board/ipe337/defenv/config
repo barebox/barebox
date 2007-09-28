@@ -1,4 +1,6 @@
 
+echo /env/config
+
 eth0.serverip=192.168.23.2
 eth0.mac=80:87:78:74:73:63
 
@@ -21,3 +23,4 @@ root=net
 if [ ! -e dev/nor0.0 ]; then
 	addpart nor0:$mtdparts
 fi
+

@@ -163,8 +163,8 @@ export srctree objtree VPATH
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
 
-ARCH := sandbox
-CROSS_COMPILE :=
+ARCH            ?= sandbox
+CROSS_COMPILE   ?=
 
 # Architecture as present in compile.h
 UTS_MACHINE := $(ARCH)
@@ -250,6 +250,7 @@ OBJDUMP		= $(CROSS_COMPILE)objdump
 AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
 DEPMOD		= /sbin/depmod
+KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
@@ -449,6 +450,8 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 # in the kernel tree, others are specified in arch/$(ARCH)Makefile.
 # Ordering when linking is important, and $(uboot-init) must be first.
 #
+# FIXME: This picture is wrong for U-Boot. We have no init, driver, mm
+#
 # uboot
 #   ^
 #   |
@@ -456,9 +459,11 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 #   |   +--< init/version.o + more
 #   |
 #   +--< $(uboot-main)
-#        +--< driver/built-in.o mm/built-in.o + more
+#   |    +--< driver/built-in.o mm/built-in.o + more
+#   |
+#   +-< kallsyms.o (see description in CONFIG_KALLSYMS section)
 #
-# uboot version (uname -v) cannot be updated during normal
+# uboot version cannot be updated during normal
 # descending-into-subdirs phase since we do not yet know if we need to
 # update uboot.
 #
@@ -512,12 +517,94 @@ define rule_uboot__
 	fi;
 endef
 
+ifdef CONFIG_KALLSYMS
+# Generate section listing all symbols and add it into uboot $(kallsyms.o)
+# It's a three stage process:
+# o .tmp_uboot1 has all symbols and sections, but __kallsyms is
+#   empty
+#   Running kallsyms on that gives us .tmp_kallsyms1.o with
+#   the right size - uboot version is updated during this step
+# o .tmp_uboot2 now has a __kallsyms section of the right size,
+#   but due to the added section, some addresses have shifted.
+#   From here, we generate a correct .tmp_kallsyms2.o
+# o The correct .tmp_kallsyms2.o is linked into the final uboot.
+# o Verify that the System.map from uboot matches the map from
+#   .tmp_uboot2, just in case we did not generate kallsyms correctly.
+# o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
+#   .tmp_uboot3 and .tmp_kallsyms3.o.  This is only meant as a
+#   temporary bypass to allow the kernel to be built while the
+#   maintainers work out what went wrong with kallsyms.
+
+ifdef CONFIG_KALLSYMS_EXTRA_PASS
+last_kallsyms := 3
+else
+last_kallsyms := 2
+endif
+
+kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
+
+define verify_kallsyms
+	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
+	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
+	  $(cmd_sysmap) .tmp_uboot$(last_kallsyms) .tmp_System.map
+	$(Q)cmp -s System.map .tmp_System.map ||                             \
+		(echo Inconsistent kallsyms data;                            \
+		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
+		 rm .tmp_kallsyms* ; /bin/false )
+endef
+
+# Update uboot version before link
+# Use + in front of this rule to silent warning about make -j1
+# First command is ':' to allow us to use + in front of this rule
+cmd_ksym_ld = $(cmd_uboot__)
+define rule_ksym_ld
+	: 
+	+$(call cmd,uboot_version)
+	$(call cmd,uboot__)
+	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
+endef
+
+# Generate .S file with all kernel symbols
+quiet_cmd_kallsyms = KSYM    $@
+      cmd_kallsyms = $(NM) -g -n $< | $(KALLSYMS) > $@
+
+.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
+	$(call if_changed_dep,as_o_S)
+
+.tmp_kallsyms%.S: .tmp_uboot% $(KALLSYMS)
+	$(call cmd,kallsyms)
+
+# .tmp_uboot1 must be complete except kallsyms, so update uboot version
+.tmp_uboot1: $(uboot-lds) $(uboot-all) FORCE
+	$(call if_changed_rule,ksym_ld)
+
+.tmp_uboot2: $(uboot-lds) $(uboot-all) .tmp_kallsyms1.o FORCE
+	$(call if_changed,uboot__)
+
+.tmp_uboot3: $(uboot-lds) $(uboot-all) .tmp_kallsyms2.o FORCE
+	$(call if_changed,uboot__)
+
+# Needs to visit scripts/ before $(KALLSYMS) can be used.
+$(KALLSYMS): scripts ;
+
+# Generate some data for debugging strange kallsyms problems
+debug_kallsyms: .tmp_map$(last_kallsyms)
+
+.tmp_map%: .tmp_uboot% FORCE
+	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
+
+.tmp_map3: .tmp_map2
+
+.tmp_map2: .tmp_map1
+
+endif # ifdef CONFIG_KALLSYMS
+
 uboot.bin: uboot
 	$(Q)$(OBJCOPY) -O binary uboot uboot.bin
 	$(Q)$(OBJDUMP) -d uboot > uboot.S
 
 # uboot image
-uboot: $(uboot-lds) $(uboot-head) $(uboot-common) FORCE
+uboot: $(uboot-lds) $(uboot-head) $(uboot-common) $(kallsyms.o) FORCE
 	$(call if_changed_rule,uboot__)
 	$(Q)rm -f .old_version
 

@@ -23,6 +23,7 @@ tags
 TAGS
 cross_arch
 cross_compile
+uboot
 uboot.S
 uboot.bin
 uboot.netx

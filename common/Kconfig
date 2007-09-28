@@ -2,6 +2,12 @@
 config GREGORIAN_CALENDER
 	bool
 
+config HAS_KALLSYMS
+	bool
+
+config HAS_MODULE
+	bool
+
 menu "General Settings              "
 
 config BOARDINFO
@@ -14,6 +20,25 @@ config TEXT_BASE
 	help
 	  The Address U-Boot gets linked at.
 
+config BROKEN
+	bool
+	prompt "Prompt for broken or incomplete code"
+
+config EXPERIMENTAL
+	bool
+	prompt "Prompt for experimental code"
+
+config MODULE
+	depends on HAS_MODULE
+	depends on EXPERIMENTAL
+	select KALLSYMS
+	bool "module support"
+
+config KALLSYMS
+	depends on HAS_KALLSYMS
+	depends on EXPERIMENTAL
+	bool "kallsyms"
+
 config RELOCATABLE
 	depends on PPC
 	bool "generate relocatable U-Boot binary"
@@ -24,10 +49,6 @@ config RELOCATABLE
 	  instead U-Boot can determine this address at runtime and thus
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
-
-config BROKEN
-	bool
-	prompt "Prompt for broken or incomplete code"
 
 config PROMPT
 	string

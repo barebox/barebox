@@ -35,7 +35,7 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	printf("bitcount : %d\n", bitcount);
 
 	free(buf);
-	return bitcount & 1 ? 2 : 3;
+	return (bitcount & 1) ? 2 : 3;
 }
 
 static __maybe_unused char cmd_alternate_help[] =

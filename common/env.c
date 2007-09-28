@@ -218,7 +218,7 @@ int export(const char *varname)
 	return -1;
 }
 
-int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct variable_d *var;
 	struct env_context *c;
@@ -265,7 +265,7 @@ U_BOOT_CMD_START(printenv)
 U_BOOT_CMD_END
 
 #ifdef CONFIG_SIMPLE_PARSER
-int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
@@ -290,23 +290,33 @@ U_BOOT_CMD_END
 
 #endif
 
-int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int i = 1;
+	char *ptr;
 
 	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	while (i < argc)
-		export(argv[i++]);
+	while (i < argc) {
+		if ((ptr = strchr(argv[i], '='))) {
+			*ptr++ = 0;
+			setenv(argv[i], ptr);
+		}
+		if (export(argv[i])) {
+			printf("could not export: %s\n", argv[i]);
+			return 1;
+		}
+		i++;
+	}
 
 	return 0;
 }
 
 static __maybe_unused char cmd_export_help[] =
-"Usage: export [var]...\n"
+"Usage: export <var>[=value]...\n"
 "export an environment variable to subsequently executed scripts\n";
 
 U_BOOT_CMD_START(export)

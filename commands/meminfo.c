@@ -23,7 +23,7 @@
 #include <command.h>
 #include <malloc.h>
 
-int do_meminfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_meminfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	malloc_stats();
 

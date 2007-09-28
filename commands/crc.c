@@ -8,7 +8,7 @@
 #include <malloc.h>
 #include <linux/ctype.h>
 
-int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong start = 0, size = ~0, total = 0, now;
 	ulong crc = 0, vcrc = 0;

@@ -181,15 +181,18 @@ static int flash_detect_cfi (flash_info_t * info);
 static int flash_write_cfiword (flash_info_t * info, ulong dest, cfiword_t cword);
 static int flash_full_status_check (flash_info_t * info, flash_sect_t sector,
 				    uint64_t tout, char *prompt);
-ulong flash_get_size (flash_info_t *info, ulong base);
+static ulong flash_get_size (flash_info_t *info, ulong base);
 #ifdef CONFIG_CFI_BUFFER_WRITE
 static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar * cp, int len);
 #endif
+static int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
+
+static int flash_real_protect(flash_info_t *info, long sector, int prot);
 
 /*-----------------------------------------------------------------------
  * create an address based on the offset and the port width
  */
-inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offset)
+static inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offset)
 {
 	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
 }
@@ -198,7 +201,7 @@ inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offs
 /*-----------------------------------------------------------------------
  * Debug support
  */
-void print_longlong (char *str, unsigned long long data)
+static void print_longlong (char *str, unsigned long long data)
 {
 	int i;
 	char *cp;
@@ -237,7 +240,7 @@ static void flash_printqry (flash_info_t * info, flash_sect_t sect)
 /*-----------------------------------------------------------------------
  * read a character at a port width address
  */
-inline uchar flash_read_uchar (flash_info_t * info, uint offset)
+static inline uchar flash_read_uchar (flash_info_t * info, uint offset)
 {
 	uchar *cp;
 
@@ -252,7 +255,7 @@ inline uchar flash_read_uchar (flash_info_t * info, uint offset)
 /*-----------------------------------------------------------------------
  * read a short word by swapping for ppc format.
  */
-ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint offset)
+static ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint offset)
 {
 	uchar *addr;
 	ushort retval;
@@ -284,7 +287,7 @@ ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint offset)
  * read a long word by picking the least significant byte of each maximum
  * port size word. Swap for ppc format.
  */
-ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
+static ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
 {
 	uchar *addr;
 	ulong retval;
@@ -316,7 +319,7 @@ ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
 
 /*-----------------------------------------------------------------------
  */
-int cfi_probe (struct device_d *dev)
+static int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
 	flash_info_t *info = malloc(sizeof(flash_info_t));
@@ -356,7 +359,7 @@ static int flash_find_sector(flash_info_t * info, unsigned long adr)
 
 /*-----------------------------------------------------------------------
  */
-int flash_erase_one (flash_info_t * info, long sect)
+static int flash_erase_one (flash_info_t * info, long sect)
 {
 	int rcode = 0;
 
@@ -389,7 +392,7 @@ int flash_erase_one (flash_info_t * info, long sect)
 	return rcode;
 }
 
-int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
+static int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	flash_info_t *finfo = (flash_info_t *)dev->priv;
 	unsigned long start, end;
@@ -410,7 +413,7 @@ out:
 	return ret;
 }
 
-int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+static int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
 	flash_info_t *finfo = (flash_info_t *)dev->priv;
 	unsigned long start, end;
@@ -442,7 +445,7 @@ static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, un
 	return ret == 0 ? count : -1;
 }
 
-void cfi_info (struct device_d* dev)
+static void cfi_info (struct device_d* dev)
 {
 	flash_info_t *info = (flash_info_t *)dev->priv;
 	int i;
@@ -556,7 +559,7 @@ device_initcall(cfi_init);
  * 1 - write timeout
  * 2 - Flash not erased
  */
-int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
+static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
 {
 	ulong wp;
 	ulong cp;
@@ -649,7 +652,7 @@ int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
 	return flash_write_cfiword (info, wp, cword);
 }
 
-int flash_real_protect (flash_info_t * info, long sector, int prot)
+static int flash_real_protect (flash_info_t * info, long sector, int prot)
 {
 	int retcode = 0;
 
@@ -682,10 +685,11 @@ int flash_real_protect (flash_info_t * info, long sector, int prot)
 	return retcode;
 }
 
+#if 0
 /*-----------------------------------------------------------------------
  * flash_read_user_serial - read the OneTimeProgramming cells
  */
-void flash_read_user_serial (flash_info_t * info, void *buffer, int offset,
+static void flash_read_user_serial (flash_info_t * info, void *buffer, int offset,
 			     int len)
 {
 	uchar *src;
@@ -701,7 +705,7 @@ void flash_read_user_serial (flash_info_t * info, void *buffer, int offset,
 /*
  * flash_read_factory_serial - read the device Id from the protection area
  */
-void flash_read_factory_serial (flash_info_t * info, void *buffer, int offset,
+static void flash_read_factory_serial (flash_info_t * info, void *buffer, int offset,
 				int len)
 {
 	uchar *src;
@@ -711,7 +715,7 @@ void flash_read_factory_serial (flash_info_t * info, void *buffer, int offset,
 	memcpy (buffer, src + offset, len);
 	flash_write_cmd (info, 0, 0, info->cmd_reset);
 }
-
+#endif
 
 
 /*
@@ -1128,7 +1132,7 @@ static int flash_detect_cfi (flash_info_t * info)
  * The following code cannot be run from FLASH!
  *
  */
-ulong flash_get_size (flash_info_t *info, ulong base)
+static ulong flash_get_size (flash_info_t *info, ulong base)
 {
 	int i, j;
 	flash_sect_t sect_cnt;

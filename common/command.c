@@ -31,8 +31,7 @@
 #include <malloc.h>
 #include <environment.h>
 
-int
-do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	extern char version_string[];
 	printf ("\n%s\n", version_string);
@@ -45,8 +44,7 @@ U_BOOT_CMD_START(version)
 	.usage		= "print monitor version",
 U_BOOT_CMD_END
 
-int
-do_true (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_true (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return 0;
 }
@@ -57,8 +55,7 @@ U_BOOT_CMD_START(true)
 	.usage		= "do nothing, successfully",
 U_BOOT_CMD_END
 
-int
-do_false (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_false (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return 1;
 }
@@ -71,8 +68,7 @@ U_BOOT_CMD_END
 
 #ifdef CONFIG_SHELL_HUSH
 
-int
-do_readline (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_readline (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char *buf = xzalloc(CONFIG_CBSIZE);
 
@@ -103,8 +99,7 @@ U_BOOT_CMD_START(readline)
 	U_BOOT_CMD_HELP(cmd_readline_help)
 U_BOOT_CMD_END
 
-int
-do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int r;
 
@@ -147,7 +142,7 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
  * Use puts() instead of printf() to avoid printf buffer overflow
  * for long help messages
  */
-int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
+static int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	if (argc == 1) {	/*show list of commands */
 		int cmd_items = &__u_boot_cmd_end -

@@ -317,7 +317,7 @@ void unmap_image(struct image_handle *handle)
 #define OPT_OFTREE
 #endif
 
-int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	iflag;
 	int	verify = 1;
@@ -666,7 +666,7 @@ do_bootm_artos (cmd_tbl_t *cmdtp,
 #endif
 
 #ifdef CONFIG_CMD_IMI
-int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int	arg;
 	ulong	addr;
@@ -776,7 +776,7 @@ print_image_hdr (image_header_t *hdr)
 }
 
 #ifdef CONFIG_BZLIB
-void bz_internal_error(int errcode)
+static void bz_internal_error(int errcode)
 {
 	printf ("BZIP2 internal error %d\n", errcode);
 }

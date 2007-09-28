@@ -76,8 +76,7 @@ static int parse_opt(const char *opt)
 	return -1;
 }
 
-int
-do_test (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_test (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char **ap;
 	int left, adv, expr, last_expr, neg, last_cmp, opt, zero;

@@ -88,7 +88,7 @@ static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-DIR* devfs_opendir(struct device_d *dev, const char *pathname)
+static DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 {
 	DIR *dir;
 
@@ -101,7 +101,7 @@ DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
+static struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
 {
 	struct device_d *dev = dir->priv;
 
@@ -116,13 +116,13 @@ struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
 	return NULL;
 }
 
-int devfs_closedir(struct device_d *dev, DIR *dir)
+static int devfs_closedir(struct device_d *dev, DIR *dir)
 {
 	free(dir);
 	return 0;
 }
 
-int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
+static int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
 {
 	struct device_d *dev;
 
@@ -143,7 +143,7 @@ int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
 	return 0;
 }
 
-int devfs_probe(struct device_d *dev)
+static int devfs_probe(struct device_d *dev)
 {
 	return 0;
 }
@@ -171,7 +171,7 @@ static struct fs_driver_d devfs_driver = {
 	}
 };
 
-int devfs_init(void)
+static int devfs_init(void)
 {
 	return register_driver(&devfs_driver.drv);
 }

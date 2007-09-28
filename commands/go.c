@@ -28,7 +28,7 @@
 #include <common.h>
 #include <command.h>
 
-int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	addr, rc;
 	int     rcode = 0;

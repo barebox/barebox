@@ -24,7 +24,7 @@
 #include <command.h>
 #include <readkey.h>
 
-int do_clear (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_clear (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	printf(ANSI_CLEAR_SCREEN);
 

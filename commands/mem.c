@@ -210,7 +210,7 @@ U_BOOT_CMD_START(md)
 	U_BOOT_CMD_HELP(cmd_md_help)
 U_BOOT_CMD_END
 
-int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
@@ -284,7 +284,7 @@ U_BOOT_CMD_START(mw)
 	U_BOOT_CMD_HELP(cmd_mw_help)
 U_BOOT_CMD_END
 
-int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	addr1, addr2, count, ngood;
 	int	size;
@@ -359,7 +359,7 @@ U_BOOT_CMD_START(memcmp)
 	U_BOOT_CMD_HELP(cmd_memcmp_help)
 U_BOOT_CMD_END
 
-int do_mem_cp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_cp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong count;
 	ulong	dest, src;

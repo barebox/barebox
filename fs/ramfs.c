@@ -55,7 +55,7 @@ struct ramfs_priv {
 };
 
 /* ---------------------------------------------------------------*/
-struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
+static struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
 {
 //	printf("lookup: %s in %p\n",name, node);
 	if(node->mode != S_IFDIR)
@@ -76,7 +76,7 @@ struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
         return NULL;
 }
 
-struct ramfs_inode* rlookup(struct ramfs_priv *priv, const char *path)
+static struct ramfs_inode* rlookup(struct ramfs_priv *priv, const char *path)
 {
 	struct ramfs_inode *node = &priv->root;
         static char *buf;
@@ -100,7 +100,7 @@ out:
         return node;
 }
 
-struct ramfs_inode* rlookup_parent(struct ramfs_priv *priv, const char *pathname, char **file)
+static struct ramfs_inode* rlookup_parent(struct ramfs_priv *priv, const char *pathname, char **file)
 {
 	char *path;
 	struct ramfs_inode *node;
@@ -131,7 +131,7 @@ out:
 
 static int chunks = 0;
 
-struct ramfs_chunk *ramfs_get_chunk(void)
+static struct ramfs_chunk *ramfs_get_chunk(void)
 {
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
 	if (!data)
@@ -148,7 +148,7 @@ struct ramfs_chunk *ramfs_get_chunk(void)
 	return data;
 }
 
-void ramfs_put_chunk(struct ramfs_chunk *data)
+static void ramfs_put_chunk(struct ramfs_chunk *data)
 {
 //	printf("put chunk\n");
 	free(data->data);
@@ -177,7 +177,7 @@ static void ramfs_put_inode(struct ramfs_inode *node)
 	free(node);
 }
 
-struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const char *filename, ulong mode)
+static struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const char *filename, ulong mode)
 {
 	struct ramfs_inode *node, *new_node = ramfs_get_inode();
 	new_node->name = strdup(filename);
@@ -209,7 +209,7 @@ struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const char *fil
 
 /* ---------------------------------------------------------------*/
 
-int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
+static int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node;
@@ -223,7 +223,7 @@ int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
 	return -ENOENT;
 }
 
-int ramfs_unlink(struct device_d *dev, const char *pathname)
+static int ramfs_unlink(struct device_d *dev, const char *pathname)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node, *lastnode;
@@ -248,12 +248,12 @@ int ramfs_unlink(struct device_d *dev, const char *pathname)
 	return -ENOENT;
 }
 
-int ramfs_mkdir(struct device_d *dev, const char *pathname)
+static int ramfs_mkdir(struct device_d *dev, const char *pathname)
 {
 	return ramfs_create(dev, pathname, S_IFDIR);
 }
 
-int ramfs_rmdir(struct device_d *dev, const char *pathname)
+static int ramfs_rmdir(struct device_d *dev, const char *pathname)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node, *lastnode;
@@ -404,7 +404,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return insize;
 }
 
-int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
 	int oldchunks, newchunks;
@@ -451,7 +451,7 @@ int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
+static DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
 {
 	DIR *dir;
 	struct ramfs_priv *priv = dev->priv;
@@ -473,7 +473,7 @@ DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-struct dirent* ramfs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent* ramfs_readdir(struct device_d *dev, DIR *dir)
 {
 	struct ramfs_inode *node = dir->priv;
 
@@ -485,13 +485,13 @@ struct dirent* ramfs_readdir(struct device_d *dev, DIR *dir)
 	return NULL;
 }
 
-int ramfs_closedir(struct device_d *dev, DIR *dir)
+static int ramfs_closedir(struct device_d *dev, DIR *dir)
 {
 	free(dir);
 	return 0;
 }
 
-int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node = rlookup(priv, filename);
@@ -506,7 +506,7 @@ int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 	return 0;
 }
 
-int ramfs_probe(struct device_d *dev)
+static int ramfs_probe(struct device_d *dev)
 {
 	struct ramfs_inode *n;
 	struct ramfs_priv *priv = xzalloc(sizeof(struct ramfs_priv));
@@ -559,7 +559,7 @@ static struct fs_driver_d ramfs_driver = {
 	}
 };
 
-int ramfs_init(void)
+static int ramfs_init(void)
 {
 	return register_driver(&ramfs_driver.drv);
 }

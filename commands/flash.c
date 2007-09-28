@@ -33,7 +33,7 @@
 #include <fcntl.h>
 #include <linux/stat.h>
 
-int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;
@@ -90,7 +90,7 @@ U_BOOT_CMD_START(erase)
 	U_BOOT_CMD_HELP(cmd_erase_help)
 U_BOOT_CMD_END
 
-int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;

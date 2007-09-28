@@ -142,7 +142,7 @@ out1:
 }
 
 #ifdef __U_BOOT__
-int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret, fd;
 	char *filename, *dirname;
@@ -317,7 +317,7 @@ out:
 }
 
 #ifdef __U_BOOT__
-int do_loadenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_loadenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char *filename, *dirname;
 

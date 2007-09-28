@@ -201,7 +201,7 @@ struct cramfs_dir {
 	DIR dir;
 };
 
-DIR* cramfs_opendir(struct device_d *_dev, const char *filename)
+static DIR* cramfs_opendir(struct device_d *_dev, const char *filename)
 {
 	char *f;
 	struct cramfs_priv *priv = _dev->priv;
@@ -406,7 +406,7 @@ static int cramfs_info (struct device_d *dev)
 }
 #endif
 
-int cramfs_probe(struct device_d *dev)
+static int cramfs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev;
 	struct cramfs_priv *priv;
@@ -428,7 +428,7 @@ int cramfs_probe(struct device_d *dev)
 	return 0;
 }
 
-int cramfs_remove(struct device_d *dev)
+static int cramfs_remove(struct device_d *dev)
 {
 	struct cramfs_priv *priv = dev->priv;
 
@@ -456,7 +456,7 @@ static struct fs_driver_d cramfs_driver = {
 	}
 };
 
-int cramfs_init(void)
+static int cramfs_init(void)
 {
 	return register_driver(&cramfs_driver.drv);
 }

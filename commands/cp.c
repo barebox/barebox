@@ -30,7 +30,7 @@
 
 #define RW_BUF_SIZE	(ulong)4096
 
-int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int r, w, ret = 1;
 	int src = 0, dst = 0;

@@ -3,8 +3,6 @@
 #include <init.h>
 #include <xfuncs.h>
 
-extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
-
 /*
  * cmdline-editing related codes from vivi.
  * Author: Janghoon Lyu <nandy@mizi.com>
@@ -31,10 +29,10 @@ extern char console_buffer[CONFIG_CBSIZE];	/* console I/O buffer	*/
 static int hist_max = 0;
 static int hist_add_idx = 0;
 static int hist_cur = -1;
-unsigned hist_num = 0;
+static unsigned hist_num = 0;
 
-char* hist_list[HIST_MAX];
-char hist_lines[HIST_MAX][HIST_SIZE];
+static char* hist_list[HIST_MAX];
+static char hist_lines[HIST_MAX][HIST_SIZE];
 
 #define add_idx_minus_one() ((hist_add_idx == 0) ? hist_max : hist_add_idx-1)
 

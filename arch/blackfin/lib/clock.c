@@ -48,7 +48,7 @@ ulong get_sclk(void)
 	return get_vco() / ssel;
 }
 
-uint64_t blackfin_clocksource_read(void)
+static uint64_t blackfin_clocksource_read(void)
 {
 	return ~(*pTCOUNT);
 }

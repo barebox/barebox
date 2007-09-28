@@ -33,8 +33,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-extern int do_bootm (cmd_tbl_t *, int, int, char *[]);
-
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
 static void netboot_update_env (void)
@@ -88,7 +86,7 @@ static void netboot_update_env (void)
 #endif
 }
 
-int do_bootp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bootp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common (BOOTP, cmdtp, argc, argv);
 }
@@ -100,7 +98,7 @@ U_BOOT_CMD_START(bootp)
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
 U_BOOT_CMD_END
 
-int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
@@ -116,7 +114,7 @@ U_BOOT_CMD_START(tftpboot)
 	U_BOOT_CMD_HELP(cmd_tftpboot_help)
 U_BOOT_CMD_END
 
-int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common (RARP, cmdtp, argc, argv);
 }
@@ -129,7 +127,7 @@ U_BOOT_CMD_START(rarpboot)
 U_BOOT_CMD_END
 
 #ifdef CONFIG_NET_DHCP
-int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int size;
 
@@ -151,7 +149,7 @@ U_BOOT_CMD_END
 #endif	/* CONFIG_NET_DHCP */
 
 #ifdef CONFIG_NET_NFS
-int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common(NFS, cmdtp, argc, argv);
 }
@@ -221,7 +219,7 @@ static void cdp_update_env(void)
 
 }
 
-int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int r;
 

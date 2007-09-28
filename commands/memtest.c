@@ -259,7 +259,7 @@ static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 
 }
 #else
-int mem_test(ulong _start, ulong _end, ulong pattern)
+static int mem_test(ulong _start, ulong _end, ulong pattern)
 {
 	vu_long	*addr;
 	vu_long *start = (vu_long *)_start;
@@ -317,7 +317,7 @@ int mem_test(ulong _start, ulong _end, ulong pattern)
 }
 #endif
 
-int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong start, end, pattern = 0;
 

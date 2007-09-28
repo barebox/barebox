@@ -23,9 +23,13 @@ tags
 TAGS
 cross_arch
 cross_compile
-uboot*
+uboot.S
+uboot.bin
+uboot.netx
 System.map
 Module.symvers
+ARCH
+CROSS_COMPILE
 
 #
 # Generated include files

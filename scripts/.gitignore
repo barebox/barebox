@@ -1,3 +1,5 @@
 ubootenv
 bin2c
 mkimage
+kallsyms
+

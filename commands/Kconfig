@@ -157,17 +157,6 @@ config CMD_MTEST_ALTERNATIVE
 
 endmenu
 
-
-menu "network                       "
-
-config CMD_MII
-	bool
-	depends on BROKEN
-	prompt "mii"
-
-endmenu
-
-
 menu "flash                         "
 
 config CMD_FLASH

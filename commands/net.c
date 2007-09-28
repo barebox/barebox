@@ -32,6 +32,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <libbb.h>
 
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
@@ -182,7 +183,7 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	copy_filename (BootFile, argv[2], sizeof(BootFile));
+	safe_strncpy (BootFile, argv[2], sizeof(BootFile));
 
 	if ((size = NetLoop(proto)) < 0)
 		return 1;

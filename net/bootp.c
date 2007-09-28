@@ -20,6 +20,7 @@
 #include <environment.h>
 #include <clock.h>
 #include <net.h>
+#include <libbb.h>
 #include "bootp.h"
 #include "tftp.h"
 #include "nfs.h"
@@ -106,7 +107,7 @@ static void BootpCopyNetParams(Bootp_t *bp)
 		NetCopyIP(&NetServerIP, &bp->bp_siaddr);
 	memcpy (NetServerEther, ((Ethernet_t *)NetRxPkt)->et_src, 6);
 	if (strlen(bp->bp_file) > 0)
-		copy_filename (BootFile, bp->bp_file, sizeof(BootFile));
+		safe_strncpy (BootFile, bp->bp_file, sizeof(BootFile));
 
 	debug ("Bootfile: %s\n", BootFile);
 
@@ -564,7 +565,7 @@ BootpRequest (void)
 	NetWriteIP(&bp->bp_siaddr, 0);
 	NetWriteIP(&bp->bp_giaddr, 0);
 	memcpy (bp->bp_chaddr, NetOurEther, 6);
-	copy_filename (bp->bp_file, BootFile, sizeof(bp->bp_file));
+	safe_strncpy (bp->bp_file, BootFile, sizeof(bp->bp_file));
 
 	/* Request additional information from the BOOTP/DHCP server */
 #ifdef CONFIG_NET_DHCP

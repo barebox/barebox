@@ -424,9 +424,6 @@ IPaddr_t getenv_IPaddr (char *);
 /* read a VLAN id from an environment variable */
 ushort getenv_VLAN(char *);
 
-/* copy a filename (allow for "..." notation, limit length) */
-void	copy_filename (char *dst, char *src, int size);
-
 int string_to_enet_addr(const char *str, char *enetaddr);
 void enet_addr_to_string(const unsigned char *enetaddr, char *str);
 

@@ -1490,19 +1490,6 @@ NetSetIP(uchar * xip, IPaddr_t dest, int dport, int sport, int len)
 	ip->ip_sum   = ~NetCksum((uchar *)ip, IP_HDR_SIZE_NO_UDP / 2);
 }
 
-void copy_filename (char *dst, char *src, int size)
-{
-	if (*src && (*src == '"')) {
-		++src;
-		--size;
-	}
-
-	while ((--size > 0) && *src && (*src != '"')) {
-		*dst++ = *src++;
-	}
-	*dst = '\0';
-}
-
 char *ip_to_string (IPaddr_t x, char *s)
 {
 	x = ntohl (x);

@@ -4,6 +4,34 @@
 #include <elf.h>
 #include <asm/module.h>
 
+#ifndef MODULE_SYMBOL_PREFIX
+#define MODULE_SYMBOL_PREFIX
+#endif
+
+#ifdef CONFIG_MODULE
+struct kernel_symbol
+{
+	unsigned long value;
+	const char *name;
+};
+
+/* For every exported symbol, place a struct in the __ksymtab section */
+#define __EXPORT_SYMBOL(sym, sec)				\
+	extern typeof(sym) sym;					\
+	static const char __u_boot_strtab_##sym[]			\
+	__attribute__((section("__u_boot_symtab_strings")))		\
+	= MODULE_SYMBOL_PREFIX #sym;                    	\
+	static const struct kernel_symbol __u_boot_symtab_##sym	\
+	__used \
+	__attribute__((section("__u_boot_symtab" sec), unused))	\
+	= { (unsigned long)&sym, __u_boot_strtab_##sym }
+
+#define EXPORT_SYMBOL(sym)					\
+	__EXPORT_SYMBOL(sym, "")
+#else
+#define EXPORT_SYMBOL(sym)
+#endif
+
 struct module {
 	char *name;
 

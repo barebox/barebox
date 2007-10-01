@@ -16,6 +16,7 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#define DEBUG
 
 #include <common.h>
 #include <errno.h>
@@ -27,15 +28,54 @@
 #include <fs.h>
 #include <kallsyms.h>
 
+static unsigned int find_sec(Elf_Ehdr *hdr,
+			     Elf_Shdr *sechdrs,
+			     const char *secstrings,
+			     const char *name, int nlen)
+{
+	unsigned int i;
+
+	for (i = 1; i < hdr->e_shnum; i++)
+		/* Alloc bit cleared means "ignore it." */
+		if ((sechdrs[i].sh_flags & SHF_ALLOC)) {
+			if (nlen && !strncmp(secstrings+sechdrs[i].sh_name, name, nlen))
+				return i;
+			if (!nlen && !strcmp(secstrings+sechdrs[i].sh_name, name))
+				return i;
+		}
+	return 0;
+}
+
+/* Provided by the linker */
+extern const struct kernel_symbol __u_boot_symtab_start[];
+extern const struct kernel_symbol __u_boot_symtab_end[];
+
+/* lookup symbol in given range of kernel_symbols */
+static const struct kernel_symbol *lookup_symbol(const char *name,
+	const struct kernel_symbol *start,
+	const struct kernel_symbol *stop)
+{
+	const struct kernel_symbol *ks = start;
+	for (; ks < stop; ks++) {
+		printf("name: %s\n", ks->name);
+		if (strcmp(ks->name, name) == 0)
+			return ks;
+	}
+	return NULL;
+}
+
 static unsigned long resolve_symbol(Elf32_Shdr *sechdrs, 
 				    const char *name)
 {
-	unsigned long ret;
+	const struct kernel_symbol *ks;
 
 	debug("%s: %s\n", __FUNCTION__, name);
-	ret = kallsyms_lookup_name(name);
+	ks = lookup_symbol(name, __u_boot_symtab_start,
+		__u_boot_symtab_end);
 
-	return ret;
+	if (ks)
+		return ks->value;
+	return 0;
 }
 
 /* Change all symbols so that sh_value encodes the pointer directly. */
@@ -157,6 +197,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 	char *secstrings;
 	void *ptr = NULL;
 	int err;
+	int cmdindex;
 
 	if (len < sizeof(*ehdr))
 		return NULL;
@@ -243,6 +284,22 @@ struct module * load_module(void *mod_image, unsigned long len)
 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
 	sym = (void *)sechdrs[symindex].sh_addr;
 
+	/*
+	 * FIXME: in .o files we have the command structs in the
+	 * .u_boot_cmd_<name> section to be able to let the linker
+	 * sort the commands alphabetically. When using the .o files
+	 * as modules this is bad because we have the commands in different
+	 * sections. So we probably need a linking stage for modules to 
+	 * put the different sections back into a single one.
+	 *
+	 * For now we only find the _first_ command in a module.
+	 */
+	cmdindex = find_sec(ehdr, sechdrs, secstrings,
+		MODULE_SYMBOL_PREFIX ".u_boot_cmd_", 12);
+	if (cmdindex) {
+		register_command((void *)sechdrs[cmdindex].sh_addr);
+	}
+
 	for (i = 0; i < numsyms; i++) {
 		if (!strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "init_module")) {
 			printf("found init_module() at 0x%08x\n", sym[i].st_value);
@@ -274,7 +331,7 @@ static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	buf = read_file(argv[1], &len);
 	if (!buf) {
-		printf("error\n");
+		perror("insmod");
 		return 1;
 	}
 

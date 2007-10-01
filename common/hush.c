@@ -269,7 +269,6 @@ static int parse_string_outer(struct p_context *ctx, const char *s, int flag);
 /*     local variable support */
 static char **make_list_in(char **inp, char *name);
 static char *insert_var_value(char *inp);
-static const char *get_local_var(const char *var);
 static int set_local_var(const char *s, int flg_export);
 static int execute_script(const char *path, int argc, char *argv[]);
 static int source_script(const char *path, int argc, char *argv[]);
@@ -768,17 +767,6 @@ static int run_list(struct pipe *pi)
 
 static char *get_dollar_var(char ch);
 
-/* This is used to get/check local shell variables */
-static const char *get_local_var(const char *s)
-{
-	if (!s)
-		return NULL;
-
-	if (*s == '$')
-		return get_dollar_var(s[1]);
-	return getenv(s);
-}
-
 /* This is used to set local shell variables
    flg_export==0 if only local (not exporting) variable
    flg_export==1 if "new" exporting environ
@@ -1017,16 +1005,13 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
  * see the bash man page under "Parameter Expansion" */
 static const char *lookup_param(char *src)
 {
-	const char *p;
-
 	if (!src)
 		return NULL;
 
-	p = getenv(src);
-	if (!p)
-		p = get_local_var(src);
+	if (*src == '$')
+		return get_dollar_var(src[1]);
 
-	return p;
+	return getenv(src);
 }
 
 static int parse_string(o_string *dest, struct p_context *ctx, const char *src)

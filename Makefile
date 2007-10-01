@@ -789,7 +789,8 @@ depend dep:
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	uboot System.map include/uboot_default_env.h \
-                .tmp_version .tmp_uboot* uboot.bin uboot.S $(uboot-lds)
+                .tmp_version .tmp_uboot* uboot.bin uboot.S $(uboot-lds) \
+		.tmp_kallsyms*
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

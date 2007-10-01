@@ -935,31 +935,31 @@ static int done_word(o_string *dest, struct p_context *ctx)
 		debug_printf("  true null, ignored\n");
 		return 0;
 	}
-		if (child->group) {
-			syntax();
-			return 1;  /* syntax error, groups and arglists don't mix */
-		}
-		if (!child->argv && (ctx->type & FLAG_PARSE_SEMICOLON)) {
-			debug_printf("checking %s for reserved-ness\n",dest->data);
-			if (reserved_word(dest,ctx)) return ctx->w==RES_SNTX;
-		}
-		for (cnt = 1, s = dest->data; s && *s; s++) {
-			if (*s == '\\') s++;
-			cnt++;
-		}
-		str = xmalloc(cnt);
-		if ( child->argv == NULL) {
-			child->argc=0;
-		}
-		argc = ++child->argc;
-		child->argv = xrealloc(child->argv, (argc+1)*sizeof(*child->argv));
-		child->argv[argc-1]=str;
-		child->argv[argc]=NULL;
-		for (s = dest->data; s && *s; s++,str++) {
-			if (*s == '\\') s++;
-			*str = *s;
-		}
-		*str = '\0';
+	if (child->group) {
+		syntax();
+		return 1;  /* syntax error, groups and arglists don't mix */
+	}
+	if (!child->argv && (ctx->type & FLAG_PARSE_SEMICOLON)) {
+		debug_printf("checking %s for reserved-ness\n",dest->data);
+		if (reserved_word(dest,ctx)) return ctx->w==RES_SNTX;
+	}
+	for (cnt = 1, s = dest->data; s && *s; s++) {
+		if (*s == '\\') s++;
+		cnt++;
+	}
+	str = xmalloc(cnt);
+	if ( child->argv == NULL) {
+		child->argc=0;
+	}
+	argc = ++child->argc;
+	child->argv = xrealloc(child->argv, (argc+1)*sizeof(*child->argv));
+	child->argv[argc-1]=str;
+	child->argv[argc]=NULL;
+	for (s = dest->data; s && *s; s++,str++) {
+		if (*s == '\\') s++;
+		*str = *s;
+	}
+	*str = '\0';
 
 	b_reset(dest);
 	if (ctx->w == RES_FOR) {

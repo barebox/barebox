@@ -1080,7 +1080,8 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 			parse_string(dest, ctx, ctx->global_argv[i]);        /* recursion */
 		}
 		advance = 1;
-	} else switch (ch) {
+	} else {
+		switch (ch) {
 		case '?':
 			ctx->child->sp++;
 			b_addchr(dest, SPECIAL_VAR_SYMBOL);
@@ -1109,6 +1110,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 			break;
 		default:
 			b_addqchr(dest,'$',dest->quote);
+		}
 	}
 	/* Eat the character if the flag was set.  If the compiler
 	 * is smart enough, we could substitute "b_getch(input);"

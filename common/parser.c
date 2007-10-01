@@ -282,7 +282,7 @@ int run_command (const char *cmd, int flag)
 #endif	/* CFG_CMD_BOOTD */
 
 		/* OK - call function to do the command */
-		if ((cmdtp->cmd) (cmdtp, flag, argc, argv) != 0)
+		if ((cmdtp->cmd) (cmdtp, argc, argv) != 0)
 			rc = -1;
 	}
 
@@ -303,8 +303,6 @@ int run_shell(void)
 		flag = 0;	/* assume no special flags for now */
 		if (len > 0)
 			strcpy (lastcommand, console_buffer);
-		else if (len == 0)
-			flag |= CMD_FLAG_REPEAT;
 
 		if (len == -1)
 			puts ("<INTERRUPT>\n");

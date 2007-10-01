@@ -110,4 +110,6 @@ const cmd_tbl_t __u_boot_cmd_##_name	\
 #define U_BOOT_CMD_HELP(text)
 #endif
 
+int register_command(cmd_tbl_t *);
+
 #endif	/* __COMMAND_H */

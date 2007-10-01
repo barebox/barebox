@@ -198,6 +198,35 @@ U_BOOT_CMD_START(help)
 	U_BOOT_CMD_HELP(cmd_help_help)
 U_BOOT_CMD_END
 
+#ifdef CONFIG_MODULE
+struct cmd_list {
+	cmd_tbl_t *cmd;
+	struct cmd_list *next;
+};
+
+static struct cmd_list *cmd_list;
+
+int register_command(cmd_tbl_t *cmd)
+{
+	struct cmd_list *c = cmd_list;
+
+	debug("register command %s\n", cmd->name);
+
+	if (!c) {
+		cmd_list = (struct cmd_list *)xzalloc(sizeof(struct cmd_list));
+		cmd_list->cmd = cmd;
+		return 0;
+	}
+
+	while (c->next)
+		c = c->next;
+
+	c->next = (struct cmd_list *)xzalloc(sizeof(struct cmd_list));
+	c->next->cmd = cmd;
+
+	return 0;
+}
+#endif
 
 /***************************************************************************
  * find command table entry for a command
@@ -208,8 +237,24 @@ cmd_tbl_t *find_cmd (const char *cmd)
 	cmd_tbl_t *cmdtp_temp = &__u_boot_cmd_start;	/*Init value */
 	int len;
 	int n_found = 0;
-
+#ifdef CONFIG_MODULE
+	struct cmd_list *list = cmd_list;
+#endif
 	len = strlen (cmd);
+
+#ifdef CONFIG_MODULE
+	while(list) {
+		cmdtp = list->cmd;
+		if (strncmp (cmd, cmdtp->name, len) == 0) {
+			if (len == strlen (cmdtp->name))
+				return cmdtp;	/* full match */
+
+			cmdtp_temp = cmdtp;	/* abbreviated command ? */
+			n_found++;
+		}
+		list = list->next;
+	}
+#endif
 
 	for (cmdtp = &__u_boot_cmd_start;
 	     cmdtp != &__u_boot_cmd_end;

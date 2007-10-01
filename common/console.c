@@ -33,6 +33,7 @@
 #include <init.h>
 #include <clock.h>
 #include <kfifo.h>
+#include <module.h>
 
 static struct console_device *first_console = NULL;
 
@@ -309,7 +310,7 @@ int printf (const char *fmt, ...)
 
 	return i;
 }
-
+EXPORT_SYMBOL(printf);
 
 int vprintf (const char *fmt, va_list args)
 {

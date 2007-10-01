@@ -18,12 +18,18 @@
  */
 
 #include <common.h>
+#include <module.h>
 #include <getopt.h>
 
 int opterr = 1;
 int optind = 1;
 int optopt;
 char *optarg;
+
+EXPORT_SYMBOL(optind);
+EXPORT_SYMBOL(opterr);
+EXPORT_SYMBOL(optopt);
+EXPORT_SYMBOL(optarg);
 
 static int optindex = 1; /* option index in the current argv[] element */
 static int nonopts = 0;  /* number of nonopts found */
@@ -33,6 +39,7 @@ void getopt_reset(void)
 	optind = opterr = optindex = 1;
 	nonopts = 0;
 }
+EXPORT_SYMBOL(getopt_reset);
 
 int getopt(int argc, char *argv[], char *optstring)
 {
@@ -141,3 +148,4 @@ int getopt(int argc, char *argv[], char *optstring)
 	optind++;
 	return curopt;
 }
+EXPORT_SYMBOL(getopt);

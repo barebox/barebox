@@ -28,8 +28,11 @@ OUTPUT_ARCH("powerpc")
    __DYNAMIC = 0;    */
 SECTIONS
 {
+  . = TEXT_BASE;
+  _text = .;
+  _stext = .;
   /* Read-only sections, merged into text segment: */
-  . = + SIZEOF_HEADERS;
+  . = . + SIZEOF_HEADERS;
   .interp : { *(.interp) }
   .hash          : { *(.hash)		}
   .dynsym        : { *(.dynsym)		}
@@ -68,7 +71,7 @@ SECTIONS
 
   /* Read-write section, merged into data segment: */
   . = (. + 0x0FFF) & 0xFFFFF000;
-  _erotext = .;
+  _etext = .;
   PROVIDE (erotext = .);
   .reloc   :
   {
@@ -103,6 +106,10 @@ SECTIONS
   .u_boot_initcalls : { INITCALLS }
   __u_boot_initcalls_end = .;
   __initcall_entries = (__u_boot_initcalls_end - __u_boot_initcalls_start) >> 2;
+
+  __u_boot_symtab_start = .;
+  .u_boot_symtab : { U_BOOT_SYMS }
+  __u_boot_symtab_end = .;
 
   __early_init_data_begin = .;
   .early_init_data : { *(.early_init_data) }

@@ -75,6 +75,10 @@ SECTIONS
 	.u_boot_initcalls : { INITCALLS }
 	___u_boot_initcalls_end = .;
 
+	__u_boot_symtab_start = .;
+	.u_boot_symtab : { U_BOOT_SYMS }
+	__u_boot_symtab_end = .;
+
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss) }

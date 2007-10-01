@@ -29,17 +29,21 @@ OUTPUT_ARCH(arm)
 ENTRY(_start)
 SECTIONS
 {
-	. = 0x00000000;
+	. = TEXT_BASE;
 
 	. = ALIGN(4);
 	.text      :
 	{
+		_stext = .;
+		_text = .;
 		arch/arm/cpu/start-arm920t.o	(.text)
 		*(.text)
 	}
 
 	. = ALIGN(4);
 	.rodata : { *(.rodata) }
+
+	_etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(4);
 	.data : { *(.data) }
@@ -55,6 +59,10 @@ SECTIONS
 	__u_boot_initcalls_start = .;
 	.u_boot_initcalls : { INITCALLS }
 	__u_boot_initcalls_end = .;
+
+	__u_boot_symtab_start = .;
+	.u_boot_symtab : { U_BOOT_SYMS }
+	__u_boot_symtab_end = .;
 
 	. = ALIGN(4);
 	__bss_start = .;

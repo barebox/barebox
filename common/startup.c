@@ -144,8 +144,8 @@ void start_uboot (void)
 #ifdef CONFIG_CMD_ENVIRONMENT
 	if (envfs_load("/dev/env0", "/env")) {
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-		printf("no valid environment found on /dev/env0."
-			"using default environment\n");
+		printf("no valid environment found on /dev/env0. "
+			"Using default environment\n");
 		envfs_load("/dev/defaultenv", "/env");
 #endif
 	}

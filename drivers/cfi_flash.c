@@ -455,11 +455,12 @@ static void cfi_info (struct device_d* dev)
 		return;
 	}
 
-	printf ("CFI conformant FLASH (%d x %d)",
-		(info->portwidth << 3), (info->chipwidth << 3));
-	printf ("  Size: %ld MB in %d Sectors\n",
+	printf ("CFI conformant FLASH (%d x %d)"
+		"  Size: %ld MB in %d Sectors\n"
+		"  ",
+		info->portwidth << 3,info->chipwidth << 3,
 		info->size >> 20, info->sector_count);
-	printf ("  ");
+
 	switch (info->vendor) {
 		case CFI_CMDSET_INTEL_STANDARD:
 			printf ("Intel Standard");

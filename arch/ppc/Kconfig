@@ -3,6 +3,7 @@ config BOARDINFO
 	default "Phytec Phycore mpc5200b tiny" if MACH_PHYCORE_MPC5200B_TINY
 
 config ARCH_TEXT_BASE
+	hex
 	default 0x00000000 if RELOCATABLE
 	default 0x01000000 if MACH_PHYCORE_MPC5200B_TINY
 
@@ -16,6 +17,8 @@ config HAS_EARLY_INIT
 
 config PPC
 	bool
+	select HAS_KALLSYMS
+	select HAS_MODULE
 	default y
 
 # Uh, we should decide which one we want to use

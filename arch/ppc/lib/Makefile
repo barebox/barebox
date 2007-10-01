@@ -10,4 +10,5 @@ obj-y += time.o
 obj-y += misc.o
 obj-$(CONFIG_CMD_BOOTM) += ppclinux.o
 obj-y += board_data.o
+obj-$(CONFIG_MODULE) += module.o
 

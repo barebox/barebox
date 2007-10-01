@@ -31,13 +31,22 @@ config EXPERIMENTAL
 config MODULE
 	depends on HAS_MODULE
 	depends on EXPERIMENTAL
-	select KALLSYMS
 	bool "module support"
+	help
+	  This option enables support for loadable modules via insmod. Module
+	  support is quite experimental at the moment. There is no convenient
+	  way to compile modules and the list of exported symbols to actually
+	  make use of modules is short to nonexistent
 
 config KALLSYMS
 	depends on HAS_KALLSYMS
-	depends on EXPERIMENTAL
+	depends on BROKEN
 	bool "kallsyms"
+	help
+	  With Kallsyms enabled all symbols are compiled into the U-Boot image.
+	  This is useful to print a nice backtrace when an exception occurs.
+	  No architecture supports backtraces at the moment, so this option
+	  is quite useless at the moment
 
 config RELOCATABLE
 	depends on PPC

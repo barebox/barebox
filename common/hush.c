@@ -766,14 +766,6 @@ static int run_list(struct pipe *pi)
 	return rcode;
 }
 
-/* The API for glob is arguably broken.  This routine pushes a non-matching
- * string into the output structure, removing non-backslashed backslashes.
- * If someone can prove me wrong, by performing this function within the
- * original glob(3) api, feel free to rewrite this routine into oblivion.
- * Return code (0 vs. GLOB_NOSPACE) matches glob(3).
- * XXX broken if the last character is '\\', check that before calling.
- */
-
 static char *get_dollar_var(char ch);
 
 /* This is used to get/check local shell variables */

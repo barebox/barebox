@@ -104,7 +104,7 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 		if (oftree_handle) {
 			of_data = oftree_handle->data;
 		} else {
-			of_data = read_file(oftree);
+			of_data = read_file(oftree, 0);
 			if (!of_data) {
 				printf("could not read %s: %s\n", oftree, errno_str());
 				return -1;

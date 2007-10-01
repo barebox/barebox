@@ -292,7 +292,8 @@ static int b_check_space(o_string *o, int len)
 static int b_addchr(o_string *o, int ch)
 {
 	debug_printf("b_addchr: %c %d %p\n", ch, o->length, o);
-	if (b_check_space(o, 1)) return B_NOSPAC;
+	if (b_check_space(o, 1))
+		return B_NOSPAC;
 	o->data[o->length] = ch;
 	o->length++;
 	o->data[o->length] = '\0';
@@ -322,7 +323,8 @@ static int b_addqchr(o_string *o, int ch, int quote)
 	if (quote && strchr("*?[\\",ch)) {
 		int rc;
 		rc = b_addchr(o, '\\');
-		if (rc) return rc;
+		if (rc)
+			return rc;
 	}
 	return b_addchr(o, ch);
 }
@@ -346,14 +348,18 @@ static int b_adduint(o_string *o, unsigned int i)
 	int r;
 	char *p = simple_itoa(i);
 	/* no escape checking necessary */
-	do r=b_addchr(o, *p++); while (r==0 && *p);
+	do {
+		r=b_addchr(o, *p++);
+	} while (r==0 && *p);
+
 	return r;
 }
 
 static int static_get(struct in_str *i)
 {
 	int ch=*i->p++;
-	if (ch=='\0') return EOF;
+	if (ch=='\0')
+		return EOF;
 	return ch;
 }
 
@@ -536,7 +542,8 @@ static int run_pipe_real(struct pipe *pi)
 				free(name);
 				p = insert_var_value(child->argv[i]);
 				set_local_var(p, export_me);
-				if (p != child->argv[i]) free(p);
+				if (p != child->argv[i])
+					free(p);
 			}
 			return EXIT_SUCCESS;   /* don't worry about errors in set_local_var() yet */
 		}
@@ -633,14 +640,19 @@ static int run_list_real(struct pipe *pi)
 		}
 		flag_skip = 1;
 		skip_more_in_this_rmode = RES_XXXX;
-		if (rmode == RES_THEN || rmode == RES_ELSE) if_code = next_if_code;
-		if (rmode == RES_THEN &&  if_code) continue;
-		if (rmode == RES_ELSE && !if_code) continue;
-		if (rmode == RES_ELIF && !if_code) break;
+		if (rmode == RES_THEN || rmode == RES_ELSE)
+			if_code = next_if_code;
+		if (rmode == RES_THEN &&  if_code)
+			continue;
+		if (rmode == RES_ELSE && !if_code)
+			continue;
+		if (rmode == RES_ELIF && !if_code)
+			break;
 		if (rmode == RES_FOR && pi->num_progs) {
 			if (!list) {
 				/* if no variable values after "in" we skip "for" */
-				if (!pi->next->progs->argv) continue;
+				if (!pi->next->progs->argv)
+					continue;
 				/* create list of variable values */
 				list = make_list_in(pi->next->progs->argv,
 					pi->progs->argv[0]);
@@ -663,9 +675,11 @@ static int run_list_real(struct pipe *pi)
 				pi->progs->argv[0] = *list++;
 			}
 		}
-		if (rmode == RES_IN) continue;
+		if (rmode == RES_IN)
+			continue;
 		if (rmode == RES_DO) {
-			if (!flag_rep) continue;
+			if (!flag_rep)
+				continue;
 		}
 		if ((rmode == RES_DONE)) {
 			if (flag_rep) {
@@ -674,7 +688,8 @@ static int run_list_real(struct pipe *pi)
 				rpipe = NULL;
 			}
 		}
-		if (pi->num_progs == 0) continue;
+		if (pi->num_progs == 0)
+			continue;
 		rcode = run_pipe_real(pi);
 		debug_printf("run_pipe_real returned %d\n",rcode);
 		if (rcode < -1) {
@@ -805,9 +820,11 @@ static int is_assignment(const char *s)
 	if (s == NULL)
 		return 0;
 
-	if (!isalpha(*s)) return 0;
+	if (!isalpha(*s))
+		return 0;
 	++s;
-	while(isalnum(*s) || *s=='_' || *s=='.') ++s;
+	while(isalnum(*s) || *s=='_' || *s=='.')
+		++s;
 	return *s=='=';
 }
 
@@ -921,10 +938,12 @@ static int done_word(o_string *dest, struct p_context *ctx)
 	}
 	if (!child->argv && (ctx->type & FLAG_PARSE_SEMICOLON)) {
 		debug_printf("checking %s for reserved-ness\n",dest->data);
-		if (reserved_word(dest,ctx)) return ctx->w==RES_SNTX;
+		if (reserved_word(dest,ctx))
+			return ctx->w==RES_SNTX;
 	}
 	for (cnt = 1, s = dest->data; s && *s; s++) {
-		if (*s == '\\') s++;
+		if (*s == '\\')
+			s++;
 		cnt++;
 	}
 	str = xmalloc(cnt);
@@ -936,7 +955,8 @@ static int done_word(o_string *dest, struct p_context *ctx)
 	child->argv[argc-1]=str;
 	child->argv[argc]=NULL;
 	for (s = dest->data; s && *s; s++,str++) {
-		if (*s == '\\') s++;
+		if (*s == '\\')
+			s++;
 		*str = *s;
 	}
 	*str = '\0';
@@ -1094,7 +1114,8 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 	 * for all the "advance = 1;" above, and also end up with
 	 * a nice size-optimized program.  Hah!  That'll be the day.
 	 */
-	if (advance) b_getch(input);
+	if (advance)
+		b_getch(input);
 	return 0;
 }
 
@@ -1113,7 +1134,8 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	debug_printf("parse_stream, end_trigger=%d\n",end_trigger);
 	while ((ch=b_getch(input))!=EOF) {
 		m = map[ch];
-		if (input->__promptme == 0) return 1;
+		if (input->__promptme == 0)
+			return 1;
 		next = (ch == '\n') ? 0 : b_peek(input);
 
 		debug_printf("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
@@ -1140,7 +1162,9 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				switch (ch) {
 				case '#':
 					if (dest->length == 0 && !dest->quote) {
-						while(ch=b_peek(input),ch!=EOF && ch!='\n') { b_getch(input); }
+						while(ch=b_peek(input),ch!=EOF && ch!='\n') {
+							b_getch(input);
+						}
 					} else {
 						b_addqchr(dest, ch, dest->quote);
 					}
@@ -1154,12 +1178,14 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 					b_addqchr(dest, b_getch(input), dest->quote);
 					break;
 				case '$':
-					if (handle_dollar(dest, ctx, input)!=0) return 1;
+					if (handle_dollar(dest, ctx, input)!=0)
+						return 1;
 					break;
 				case '\'':
 					dest->nonnull = 1;
 					while(ch=b_getch(input),ch!=EOF && ch!='\'') {
-						if(input->__promptme == 0) return 1;
+						if(input->__promptme == 0)
+							return 1;
 						b_addchr(dest,ch);
 					}
 					if (ch==EOF) {
@@ -1253,7 +1279,8 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 		ctx->type = flag;
 		initialize_context(ctx);
 		update_ifs_map();
-		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING)) mapset((uchar *)";$&|", 0);
+		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING))
+			mapset((uchar *)";$&|", 0);
 		inp->promptmode=1;
 		rcode = parse_stream(&temp, ctx, inp, '\n');
 		if (rcode != 1 && ctx->old_flag != 0) {
@@ -1279,7 +1306,8 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 				free(ctx->stack);
 				b_reset(&temp);
 			}
-			if (inp->__promptme == 0) printf("<INTERRUPT>\n");
+			if (inp->__promptme == 0)
+				printf("<INTERRUPT>\n");
 			inp->__promptme = 1;
 			temp.nonnull = 0;
 			temp.quote = 0;
@@ -1385,7 +1413,8 @@ static char **make_list_in(char **inp, char *name)
 			list[n++][name_len + len + 1] = '\0';
 			p1 = p2;
 		}
-		if (p3 != inp[i]) free(p3);
+		if (p3 != inp[i])
+			free(p3);
 	}
 	list[n] = NULL;
 	return list;
@@ -1409,7 +1438,8 @@ static char * make_string(char ** inp)
 		}
 		strcat(str, p);
 		len = strlen(str) + 3;
-		if (p != inp[n]) free(p);
+		if (p != inp[n])
+			free(p);
 	}
 	len = strlen(str);
 	*(str + len) = '\n';

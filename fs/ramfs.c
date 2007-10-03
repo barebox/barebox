@@ -57,7 +57,7 @@ struct ramfs_priv {
 /* ---------------------------------------------------------------*/
 static struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
 {
-//	printf("lookup: %s in %p\n",name, node);
+	debug("lookup: %s in %p\n",name, node);
 	if(node->mode != S_IFDIR)
 		return NULL;
 
@@ -66,9 +66,9 @@ static struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
 		return NULL;
 
 	while (node) {
-//		printf("lookup: %s\n", node->name);
+		debug("lookup: %s\n", node->name);
 		if (!strcmp(node->name, name)) {
-//			printf("lookup: found: 0x%p\n",node);
+			debug("lookup: found: 0x%p\n",node);
 			return node;
 		}
 		node = node->next;
@@ -81,7 +81,8 @@ static struct ramfs_inode* rlookup(struct ramfs_priv *priv, const char *path)
 	struct ramfs_inode *node = &priv->root;
         static char *buf;
         char *part;
-//printf("rlookup %s in %p\n",path, node);
+
+	debug("rlookup %s in %p\n",path, node);
         buf = strdup(path);
 
         part = strtok(buf, "/");
@@ -136,7 +137,7 @@ static struct ramfs_chunk *ramfs_get_chunk(void)
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
 	if (!data)
 		return NULL;
-//	printf("get chunk\n");
+
 	data->data = malloc(CHUNK_SIZE);
 	if (!data->data) {
 		free(data);
@@ -144,17 +145,15 @@ static struct ramfs_chunk *ramfs_get_chunk(void)
 	}
 	data->next = NULL;
 	chunks++;
-//	printf("chunks: %d\n", chunks);
+
 	return data;
 }
 
 static void ramfs_put_chunk(struct ramfs_chunk *data)
 {
-//	printf("put chunk\n");
 	free(data->data);
 	free(data);
 	chunks--;
-//	printf("chunks: %d\n", chunks);
 }
 
 static struct ramfs_inode* ramfs_get_inode(void)
@@ -309,7 +308,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	int size = insize;
 
 	chunk = f->pos / CHUNK_SIZE;
-//	printf("%s: reading from chunk %d\n", __FUNCTION__, chunk);
+	debug("%s: reading from chunk %d\n", __FUNCTION__, chunk);
 
 	/* Position ourself in stream */
 	data = node->data;
@@ -322,7 +321,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	/* Read till end of current chunk */
 	if (ofs) {
 		now = min(size, CHUNK_SIZE - ofs);
-//		printf("Reading till end of node. size: %d\n", size);
+		debug("Reading till end of node. size: %d\n", size);
 		memcpy(buf, data->data + ofs, now);
 		size -= now;
 		pos += now;
@@ -334,7 +333,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 	/* Do full chunks */
 	while (size >= CHUNK_SIZE) {
-//		printf("do full chunk. size: %d\n", size);
+		debug("do full chunk. size: %d\n", size);
 		memcpy(buf, data->data, CHUNK_SIZE);
 		data = data->next;
 		size -= CHUNK_SIZE;
@@ -344,7 +343,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 	/* And the rest */
 	if (size) {
-//		printf("do rest. size: %d\n", size);
+		debug("do rest. size: %d\n", size);
 		memcpy(buf, data->data, size);
 	}
 
@@ -362,7 +361,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	int size = insize;
 
 	chunk = f->pos / CHUNK_SIZE;
-//	printf("%s: writing to chunk %d\n", __FUNCTION__, chunk);
+	debug("%s: writing to chunk %d\n", __FUNCTION__, chunk);
 
 	/* Position ourself in stream */
 	data = node->data;
@@ -375,7 +374,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	/* Write till end of current chunk */
 	if (ofs) {
 		now = min(size, CHUNK_SIZE - ofs);
-//		printf("writing till end of node. size: %d\n", size);
+		debug("writing till end of node. size: %d\n", size);
 		memcpy(data->data + ofs, buf, now);
 		size -= now;
 		pos += now;
@@ -387,7 +386,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 
 	/* Do full chunks */
 	while (size >= CHUNK_SIZE) {
-//		printf("do full chunk. size: %d\n", size);
+		debug("do full chunk. size: %d\n", size);
 		memcpy(data->data, buf, CHUNK_SIZE);
 		data = data->next;
 		size -= CHUNK_SIZE;
@@ -397,7 +396,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 
 	/* And the rest */
 	if (size) {
-//		printf("do rest. size: %d\n", size);
+		debug("do rest. size: %d\n", size);
 		memcpy(data->data, buf, size);
 	}
 
@@ -456,10 +455,11 @@ static DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
 	DIR *dir;
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node;
-// printf("opendir: %s\n", pathname);
+
+	debug("opendir: %s\n", pathname);
 
 	node = rlookup(priv, pathname);
-//printf("opendir name: %s\n", node->name);
+
 	if (!node)
 		return NULL;
 
@@ -496,10 +496,9 @@ static int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node = rlookup(priv, filename);
 
-//	printf("ramfs_stat: %s\n", filename);
 	if (!node)
 		return -ENOENT;
-//	printf("stat: %s\n", node->name);
+
 	s->st_size = node->size;
 	s->st_mode = node->mode;
 
@@ -510,8 +509,6 @@ static int ramfs_probe(struct device_d *dev)
 {
 	struct ramfs_inode *n;
 	struct ramfs_priv *priv = xzalloc(sizeof(struct ramfs_priv));
-
-//	printf("ramfs_probe\n");
 
 	dev->priv = priv;
 
@@ -530,7 +527,6 @@ static int ramfs_probe(struct device_d *dev)
 	n->parent = &priv->root;
 	n->child = priv->root.child;
 	priv->root.child->next = n;
-//	printf("priv->root: 0x%p\n", priv->root);
 
 	return 0;
 }

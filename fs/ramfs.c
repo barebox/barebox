@@ -58,7 +58,7 @@ struct ramfs_priv {
 static struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
 {
 	debug("lookup: %s in %p\n",name, node);
-	if(node->mode != S_IFDIR)
+	if(!S_ISDIR(node->mode))
 		return NULL;
 
 	node = node->child;
@@ -184,16 +184,16 @@ static struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const ch
 
 	node = parent_node->child;
 
-	if (mode & S_IFDIR) {
+	if (S_ISDIR(mode)) {
 		struct ramfs_inode *n = ramfs_get_inode();
 		n->name = strdup(".");
-		n->mode = S_IFDIR;
+		n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
 		n->child = n;
 		n->parent = new_node;
 		new_node->child = n;
 		n = ramfs_get_inode();
 		n->name = strdup("..");
-		n->mode = S_IFDIR;
+		n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
 		n->parent = new_node;
 		n->child = parent_node->child;
 		new_node->child->next = n;
@@ -463,7 +463,7 @@ static DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
 	if (!node)
 		return NULL;
 
-	if (node->mode != S_IFDIR)
+	if (!S_ISDIR(node->mode))
 		return NULL;
 
 	dir = xmalloc(sizeof(DIR));
@@ -513,7 +513,7 @@ static int ramfs_probe(struct device_d *dev)
 	dev->priv = priv;
 
 	priv->root.name = "/";
-	priv->root.mode = S_IFDIR;
+	priv->root.mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
 	priv->root.parent = &priv->root;
 	n = ramfs_get_inode();
 	n->name = strdup(".");
@@ -523,7 +523,7 @@ static int ramfs_probe(struct device_d *dev)
 	priv->root.child = n;
 	n = ramfs_get_inode();
 	n->name = strdup("..");
-	n->mode = S_IFDIR;
+	n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
 	n->parent = &priv->root;
 	n->child = priv->root.child;
 	priv->root.child->next = n;

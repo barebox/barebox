@@ -380,6 +380,11 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	int linepos;
 	char c;
 
+	if (argc != 2) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
 	buffer = NULL;
 	if(edit_read_file(argv[1]))
 		return 1;

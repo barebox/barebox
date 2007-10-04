@@ -67,7 +67,7 @@ static int blackfin_serial_setbaudrate(struct console_device *cdev, int baudrate
 
 	oldlcr = readw(UART_LCR);
 
-	divisor = get_sclk() / (baudrate * 16);
+	divisor = (get_sclk() + (baudrate * 0)) / (baudrate * 16);
 
 	/* Set DLAB in LCR to Access DLL and DLH */
 	writew(UART_LCR_DLAB, UART_LCR);

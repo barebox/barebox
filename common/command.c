@@ -137,6 +137,7 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
 		}
 #endif	/* CONFIG_LONGHELP */
 }
+EXPORT_SYMBOL(u_boot_cmd_usage);
 
 /*
  * Use puts() instead of printf() to avoid printf buffer overflow
@@ -198,7 +199,7 @@ U_BOOT_CMD_START(help)
 	U_BOOT_CMD_HELP(cmd_help_help)
 U_BOOT_CMD_END
 
-#ifdef CONFIG_MODULE
+#ifdef CONFIG_MODULES
 struct cmd_list {
 	cmd_tbl_t *cmd;
 	struct cmd_list *next;
@@ -237,12 +238,12 @@ cmd_tbl_t *find_cmd (const char *cmd)
 	cmd_tbl_t *cmdtp_temp = &__u_boot_cmd_start;	/*Init value */
 	int len;
 	int n_found = 0;
-#ifdef CONFIG_MODULE
+#ifdef CONFIG_MODULES
 	struct cmd_list *list = cmd_list;
 #endif
 	len = strlen (cmd);
 
-#ifdef CONFIG_MODULE
+#ifdef CONFIG_MODULES
 	while(list) {
 		cmdtp = list->cmd;
 		if (strncmp (cmd, cmdtp->name, len) == 0) {

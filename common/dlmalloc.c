@@ -2149,3 +2149,8 @@ History:
 	 structure of old version,  but most details differ.)
 
 */
+
+EXPORT_SYMBOL(malloc);
+EXPORT_SYMBOL(free);
+EXPORT_SYMBOL(realloc);
+

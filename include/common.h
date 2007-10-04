@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <compiler.h>
-
+#include <module.h>
 #include <config.h>
 #include <linux/bitops.h>
 #include <linux/types.h>

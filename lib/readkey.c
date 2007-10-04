@@ -78,4 +78,4 @@ char read_key(void)
 	}
 	return c;
 }
-
+EXPORT_SYMBOL(read_key);

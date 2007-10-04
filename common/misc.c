@@ -70,6 +70,7 @@ void *sbrk (ptrdiff_t increment)
 }
 
 int errno;
+EXPORT_SYMBOL(errno);
 
 #ifndef CONFIG_ERRNO_MESSAGES
 static char errno_string[5];
@@ -151,6 +152,7 @@ const char *errno_str(void)
 	return errno_string;
 #endif
 }
+EXPORT_SYMBOL(errno_str);
 
 void perror(const char *s)
 {

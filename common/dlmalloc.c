@@ -3,6 +3,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <module.h>
 
 /*
   Emulation of sbrk for WIN32

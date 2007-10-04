@@ -399,7 +399,8 @@ int open(const char *pathname, int flags, ...)
 	}
 
 	if (!exist) {
-		errno = fsdrv->create(dev, path, S_IFREG);
+		errno = fsdrv->create(dev, path,
+				S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);
 		if (errno)
 			goto out;
 	}

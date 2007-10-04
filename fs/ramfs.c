@@ -249,7 +249,7 @@ static int ramfs_unlink(struct device_d *dev, const char *pathname)
 
 static int ramfs_mkdir(struct device_d *dev, const char *pathname)
 {
-	return ramfs_create(dev, pathname, S_IFDIR);
+	return ramfs_create(dev, pathname, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 static int ramfs_rmdir(struct device_d *dev, const char *pathname)

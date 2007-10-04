@@ -3,12 +3,13 @@
 
 #include <elf.h>
 #include <asm/module.h>
+#include <compiler.h>
 
 #ifndef MODULE_SYMBOL_PREFIX
 #define MODULE_SYMBOL_PREFIX
 #endif
 
-#ifdef CONFIG_MODULE
+#ifdef CONFIG_MODULES
 struct kernel_symbol
 {
 	unsigned long value;

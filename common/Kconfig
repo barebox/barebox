@@ -5,7 +5,7 @@ config GREGORIAN_CALENDER
 config HAS_KALLSYMS
 	bool
 
-config HAS_MODULE
+config HAS_MODULES
 	bool
 
 menu "General Settings              "
@@ -28,8 +28,8 @@ config EXPERIMENTAL
 	bool
 	prompt "Prompt for experimental code"
 
-config MODULE
-	depends on HAS_MODULE
+config MODULES
+	depends on HAS_MODULES
 	depends on EXPERIMENTAL
 	bool "module support"
 	help

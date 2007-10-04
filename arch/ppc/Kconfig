@@ -18,7 +18,7 @@ config HAS_EARLY_INIT
 config PPC
 	bool
 	select HAS_KALLSYMS
-	select HAS_MODULE
+	select HAS_MODULES
 	default y
 
 # Uh, we should decide which one we want to use

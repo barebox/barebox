@@ -14,4 +14,4 @@ obj-y += cpu.o
 obj-y += flush.o
 obj-y += interrupt.o
 obj-y += traps.o
-obj-$(CONFIG_MODULE) += module.o
+obj-$(CONFIG_MODULES) += module.o

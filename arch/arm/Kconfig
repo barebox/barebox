@@ -15,7 +15,7 @@ config BOARDINFO
 config ARM
 	bool
 	select HAS_KALLSYMS
-	select HAS_MODULE
+	select HAS_MODULES
 	default y
 
 config ARM920T

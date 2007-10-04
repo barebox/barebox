@@ -500,6 +500,7 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 			split_line();
 			break;
 		case 127:
+		case 8:
 			if (textx > 0) {
 				textx--;
 				delete_char(textx);

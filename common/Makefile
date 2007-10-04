@@ -16,6 +16,9 @@ obj-y += misc.o
 obj-y += memsize.o
 
 ifdef CONFIG_DEFAULT_ENVIRONMENT_PATH
+
+startup.o: include/uboot_default_env.h
+
 include/uboot_default_env.h: $(shell find $(CONFIG_DEFAULT_ENVIRONMENT_PATH) -type f)
 	$(Q)scripts/ubootenv -s $(CONFIG_DEFAULT_ENVIRONMENT_PATH) uboot_default_env
 	$(Q)cat uboot_default_env | scripts/bin2c default_environment > $@

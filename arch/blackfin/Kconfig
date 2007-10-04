@@ -14,6 +14,7 @@ config BOARDINFO
 config ARCH_TEXT_BASE
 	hex
 	default 0x00000000
+	default 0x03f00000 if MACH_IPE337
 
 choice
 	prompt "Select your board"

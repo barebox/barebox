@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <xfuncs.h>
 #include <init.h>
+#include <module.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -61,6 +62,8 @@ err_out:
 	free(buf);
 	return NULL;
 }
+
+EXPORT_SYMBOL(read_file);
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -313,6 +316,7 @@ const char *getcwd(void)
 {
 	return cwd;
 }
+EXPORT_SYMBOL(getcwd);
 
 int chdir(const char *pathname)
 {
@@ -328,6 +332,7 @@ int chdir(const char *pathname)
 out:
 	return errno;
 }
+EXPORT_SYMBOL(chdir);
 
 int unlink(const char *pathname)
 {
@@ -349,6 +354,7 @@ out:
 	free(freep);
 	return errno;
 }
+EXPORT_SYMBOL(unlink);
 
 int open(const char *pathname, int flags, ...)
 {
@@ -421,11 +427,13 @@ out1:
 	free(freep);
 	return errno;
 }
+EXPORT_SYMBOL(open);
 
 int creat(const char *pathname, mode_t mode)
 {
 	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
 }
+EXPORT_SYMBOL(creat);
 
 int read(int fd, void *buf, size_t count)
 {
@@ -445,6 +453,7 @@ int read(int fd, void *buf, size_t count)
 		f->pos += errno;
 	return errno;
 }
+EXPORT_SYMBOL(read);
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
@@ -467,6 +476,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 		f->pos += errno;
 	return errno;
 }
+EXPORT_SYMBOL(write);
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
@@ -498,6 +508,7 @@ out:
 	errno = -EINVAL;
 	return errno;
 }
+EXPORT_SYMBOL(lseek);
 
 int erase(int fd, size_t count, unsigned long offset)
 {
@@ -519,6 +530,7 @@ int erase(int fd, size_t count, unsigned long offset)
 
 	return errno;
 }
+EXPORT_SYMBOL(erase);
 
 int protect(int fd, size_t count, unsigned long offset, int prot)
 {
@@ -540,6 +552,7 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 
 	return errno;
 }
+EXPORT_SYMBOL(protect);
 
 void *memmap(int fd, int flags)
 {
@@ -559,6 +572,7 @@ void *memmap(int fd, int flags)
 
 	return ret;
 }
+EXPORT_SYMBOL(memmap);
 
 int close(int fd)
 {
@@ -574,6 +588,7 @@ int close(int fd)
 	put_file(f);
 	return errno;
 }
+EXPORT_SYMBOL(close);
 
 /*
  * Mount a device to a directory.
@@ -665,6 +680,7 @@ int mount(const char *device, const char *fsname, const char *path)
 out:
 	return errno;
 }
+EXPORT_SYMBOL(mount);
 
 int umount(const char *pathname)
 {
@@ -694,6 +710,7 @@ int umount(const char *pathname)
 	free(entry);
 	return 0;
 }
+EXPORT_SYMBOL(umount);
 
 DIR *opendir(const char *pathname)
 {
@@ -723,6 +740,7 @@ out:
 	free(freep);
 	return dir;
 }
+EXPORT_SYMBOL(opendir);
 
 struct dirent *readdir(DIR *dir)
 {
@@ -731,6 +749,7 @@ struct dirent *readdir(DIR *dir)
 
 	return dir->fsdrv->readdir(dir->dev, dir);
 }
+EXPORT_SYMBOL(readdir);
 
 int closedir(DIR *dir)
 {
@@ -741,6 +760,7 @@ int closedir(DIR *dir)
 
 	return dir->fsdrv->closedir(dir->dev, dir);
 }
+EXPORT_SYMBOL(closedir);
 
 int stat(const char *filename, struct stat *s)
 {
@@ -774,6 +794,7 @@ out:
 	free(freep);
 	return errno;
 }
+EXPORT_SYMBOL(stat);
 
 int mkdir (const char *pathname, mode_t mode)
 {
@@ -800,6 +821,7 @@ out:
 	free(freep);
 	return errno;
 }
+EXPORT_SYMBOL(mkdir);
 
 int rmdir (const char *pathname)
 {
@@ -826,6 +848,7 @@ out:
 	free(freep);
 	return errno;
 }
+EXPORT_SYMBOL(rmdir);
 
 static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 {
@@ -867,6 +890,7 @@ ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ul
 	memcpy_sz(buf, (void *)(dev->map_base + offset), size, flags & O_RWSIZE_MASK);
 	return size;
 }
+EXPORT_SYMBOL(mem_read);
 
 ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
 {
@@ -875,3 +899,5 @@ ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong off
 	memcpy_sz((void *)(dev->map_base + offset), buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }
+EXPORT_SYMBOL(mem_write);
+

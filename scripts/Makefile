@@ -22,7 +22,7 @@ always		:= $(hostprogs-y) $(hostprogs-m)
 hostprogs-y += unifdef
 
 #subdir-$(CONFIG_MODVERSIONS) += genksyms
-#subdir-y                     += mod
+subdir-y                     += mod
 
 # Let clean descend into subdirs
 subdir-	+= basic kconfig

@@ -24,6 +24,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <module.h>
 
 void *xmalloc(size_t size)
 {
@@ -36,6 +37,7 @@ void *xmalloc(size_t size)
 
 	return p;
 }
+EXPORT_SYMBOL(xmalloc);
 
 void *xrealloc(void *ptr, size_t size)
 {
@@ -48,6 +50,7 @@ void *xrealloc(void *ptr, size_t size)
 
 	return p;
 }
+EXPORT_SYMBOL(xrealloc);
 
 void *xzalloc(size_t size)
 {
@@ -55,3 +58,5 @@ void *xzalloc(size_t size)
 	memset(ptr, 0, size);
 	return ptr;
 }
+EXPORT_SYMBOL(xzalloc);
+

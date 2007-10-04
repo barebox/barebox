@@ -87,34 +87,23 @@ static void netboot_update_env (void)
 #endif
 }
 
-static int do_bootp (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	return netboot_common (BOOTP, cmdtp, argc, argv);
-}
-
-U_BOOT_CMD_START(bootp)
-	.maxargs	= 3,
-	.cmd		= do_bootp,
-	.usage		= "boot image via network using bootp/tftp protocol",
-	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
-U_BOOT_CMD_END
-
 static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
-static __maybe_unused char cmd_tftpboot_help[] =
-"Usage: tftpboot <localfile> <remotefile>\n"
-"Load a file via network using BootP/TFTP protocol\n";
+static __maybe_unused char cmd_tftp_help[] =
+"Usage: tftp <file> [localfile]\n"
+"Load a file via network using BootP/TFTP protocol.\n";
 
-U_BOOT_CMD_START(tftpboot)
+U_BOOT_CMD_START(tftp)
 	.maxargs	= 3,
 	.cmd		= do_tftpb,
-	.usage		= "boot image via network using tftp protocol",
-	U_BOOT_CMD_HELP(cmd_tftpboot_help)
+	.usage		= "Load file using tftp protocol",
+	U_BOOT_CMD_HELP(cmd_tftp_help)
 U_BOOT_CMD_END
 
+#ifdef CONFIG_NET_RARP
 static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	return netboot_common (RARP, cmdtp, argc, argv);
@@ -126,6 +115,7 @@ U_BOOT_CMD_START(rarpboot)
 	.usage		= "boot image via network using rarp/tftp protocol",
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
 U_BOOT_CMD_END
+#endif /* CONFIG_NET_RARP */
 
 #ifdef CONFIG_NET_DHCP
 static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -155,11 +145,15 @@ static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return netboot_common(NFS, cmdtp, argc, argv);
 }
 
+static __maybe_unused char cmd_nfs_help[] =
+"Usage: nfs <file> [localfile]\n"
+"Load a file via network using nfs protocol.\n";
+
 U_BOOT_CMD_START(nfs)
 	.maxargs	= 3,
 	.cmd		= do_nfs,
 	.usage		= "boot image via network using nfs protocol",
-	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
+	U_BOOT_CMD_HELP(cmd_nfs_help)
 U_BOOT_CMD_END
 
 #endif	/* CONFIG_NET_NFS */
@@ -171,19 +165,28 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int   rcode = 0;
 	int   size;
+	char  *localfile;
+	char  *remotefile;
 
-	if (argc < 3) {
+	if (argc < 2) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	net_store_fd = open(argv[1], O_WRONLY | O_CREAT);
+	remotefile = argv[1];
+
+	if (argc == 2)
+		localfile = remotefile;
+	else
+		localfile = argv[2];
+
+	net_store_fd = open(localfile, O_WRONLY | O_CREAT);
 	if (net_store_fd < 0) {
 		perror("open");
 		return 1;
 	}
 
-	safe_strncpy (BootFile, argv[2], sizeof(BootFile));
+	safe_strncpy (BootFile, remotefile, sizeof(BootFile));
 
 	if ((size = NetLoop(proto)) < 0)
 		return 1;

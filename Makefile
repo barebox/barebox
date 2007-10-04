@@ -184,9 +184,27 @@ HOSTCXXFLAGS = -O2
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
 
+KBUILD_MODULES :=
 KBUILD_BUILTIN := 1
 
-export KBUILD_BUILTIN
+#	If we have only "make modules", don't compile built-in objects.
+#	When we're building modules with modversions, we need to consider
+#	the built-in objects during the descend as well, in order to
+#	make sure the checksums are up to date before we record them.
+
+ifeq ($(MAKECMDGOALS),modules)
+  KBUILD_BUILTIN := $(if $(CONFIG_MODVERSIONS),1)
+endif
+
+#	If we have "make <whatever> modules", compile modules
+#	in addition to whatever we do anyway.
+#	Just "make" or "make all" shall build modules as well
+
+ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
+  KBUILD_MODULES := 1
+endif
+
+export KBUILD_MODULES KBUILD_BUILTIN
 export KBUILD_CHECKSRC KBUILD_SRC
 
 # Beautify output
@@ -258,6 +276,12 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(C
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 
+LDFLAGS_MODULE  = -T common/module.lds
+
+# When compiling out-of-tree modules, put MODVERDIR in the module
+# tree rather than in the kernel tree. The kernel tree might
+# even be read-only.
+export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_versions
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
@@ -599,12 +623,26 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 
 endif # ifdef CONFIG_KALLSYMS
 
+# Do modpost on a prelinked vmlinux. The finally linked vmlinux has
+# relevant sections renamed as per the linker script.
+quiet_cmd_uboot-modpost = LD      $@
+      cmd_uboot-modpost = $(LD) $(LDFLAGS) -r -o $@                          \
+	 $(vmlinux-init) --start-group $(uboot-main) --end-group             \
+	 $(filter-out $(uboot-init) $(uboot-main) $(uboot-lds) FORCE ,$^)
+define rule_uboot-modpost
+	:
+	+$(call cmd,uboot-modpost)
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
+	$(Q)echo 'cmd_$@ := $(cmd_uboot-modpost)' > $(dot-target).cmd
+endef
+
 uboot.bin: uboot
 	$(Q)$(OBJCOPY) -O binary uboot uboot.bin
 	$(Q)$(OBJDUMP) -d uboot > uboot.S
 
 # uboot image
 uboot: $(uboot-lds) $(uboot-head) $(uboot-common) $(kallsyms.o) FORCE
+	$(call uboot-modpost)
 	$(call if_changed_rule,uboot__)
 	$(Q)rm -f .old_version
 
@@ -720,6 +758,11 @@ prepare2: prepare3 outputmakefile
 prepare1: prepare2 include/linux/version.h include/linux/utsrelease.h \
                    include/asm include/config.h include/config/auto.conf
 
+ifneq ($(KBUILD_MODULES),)
+	$(Q)mkdir -p $(MODVERDIR)
+	$(Q)rm -f $(MODVERDIR)/*
+endif
+
 archprepare: prepare1 scripts_basic
 
 prepare0: archprepare FORCE
@@ -778,6 +821,77 @@ include/linux/utsrelease.h: include/config/kernel.release FORCE
 PHONY += depend dep
 depend dep:
 	@echo '*** Warning: make $@ is unnecessary now.'
+
+# ---------------------------------------------------------------------------
+# Modules
+
+ifdef CONFIG_MODULES
+
+# By default, build modules as well
+
+all: modules
+
+#	Build modules
+
+PHONY += modules
+modules: $(uboot-dirs) $(if $(KBUILD_BUILTIN),uboot)
+	@echo '  Building modules, stage 2.';
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+
+
+# Target to prepare building external modules
+PHONY += modules_prepare
+modules_prepare: prepare scripts
+
+# Target to install modules
+PHONY += modules_install
+modules_install: _modinst_ _modinst_post
+
+PHONY += _modinst_
+_modinst_:
+	@if [ -z "`$(DEPMOD) -V 2>/dev/null | grep module-init-tools`" ]; then \
+		echo "Warning: you may need to install module-init-tools"; \
+		echo "See http://www.codemonkey.org.uk/docs/post-halloween-2.6.txt";\
+		sleep 1; \
+	fi
+	@rm -rf $(MODLIB)/kernel
+	@rm -f $(MODLIB)/source
+	@mkdir -p $(MODLIB)/kernel
+	@ln -s $(srctree) $(MODLIB)/source
+	@if [ ! $(objtree) -ef  $(MODLIB)/build ]; then \
+		rm -f $(MODLIB)/build ; \
+		ln -s $(objtree) $(MODLIB)/build ; \
+	fi
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
+
+# If System.map exists, run depmod.  This deliberately does not have a
+# dependency on System.map since that would run the dependency tree on
+# vmlinux.  This depmod is only for convenience to give the initial
+# boot a modules.dep even before / is mounted read-write.  However the
+# boot script depmod is the master version.
+ifeq "$(strip $(INSTALL_MOD_PATH))" ""
+depmod_opts	:=
+else
+depmod_opts	:= -b $(INSTALL_MOD_PATH) -r
+endif
+PHONY += _modinst_post
+_modinst_post: _modinst_
+	if [ -r System.map -a -x $(DEPMOD) ]; then $(DEPMOD) -ae -F System.map $(depmod_opts) $(KERNELRELEASE); fi
+
+else # CONFIG_MODULES
+
+# Modules not configured
+# ---------------------------------------------------------------------------
+
+modules modules_install: FORCE
+	@echo
+	@echo "The present kernel configuration has modules disabled."
+	@echo "Type 'make config' and enable loadable module support."
+	@echo "Then build a kernel with module support enabled."
+	@echo
+	@exit 1
+
+endif # CONFIG_MODULES
 
 ###
 # Cleaning is done on three levels.
@@ -1053,6 +1167,10 @@ target-dir = $(dir $@)
 # Modules
 / %/: prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir)
+%.ko: prepare scripts FORCE
+	$(Q)$(MAKE) KBUILD_MODULES=$(if $(CONFIG_MODULES),1)   \
+	$(build)=$(build-dir) $(@:.ko=.o)
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
 
 # FIXME Should go into a make.lib or something
 # ===========================================================================

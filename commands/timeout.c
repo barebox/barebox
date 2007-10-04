@@ -73,7 +73,7 @@ static int do_timeout(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (!(flags & TIMEOUT_SILENT))
 		printf("%2d", countdown--);
 
-	while (!is_timeout(start, timeout * SECOND)) {
+	do {
 		if (tstc()) {
 			int key = getc();
 			if (flags & TIMEOUT_CTRLC && key == 3)
@@ -87,7 +87,7 @@ static int do_timeout(cmd_tbl_t *cmdtp, int argc, char *argv[])
 			printf("\b\b%2d", countdown--);
 			second += SECOND;
 		}
-	}
+	} while (!is_timeout(start, timeout * SECOND));
 
 	ret = 0;
 out:

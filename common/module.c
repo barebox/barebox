@@ -16,7 +16,6 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#define DEBUG
 
 #include <common.h>
 #include <errno.h>
@@ -31,18 +30,17 @@
 static unsigned int find_sec(Elf_Ehdr *hdr,
 			     Elf_Shdr *sechdrs,
 			     const char *secstrings,
-			     const char *name, int nlen)
+			     const char *name)
 {
 	unsigned int i;
 
-	for (i = 1; i < hdr->e_shnum; i++)
+	for (i = 1; i < hdr->e_shnum; i++) {
 		/* Alloc bit cleared means "ignore it." */
-		if ((sechdrs[i].sh_flags & SHF_ALLOC)) {
-			if (nlen && !strncmp(secstrings+sechdrs[i].sh_name, name, nlen))
-				return i;
-			if (!nlen && !strcmp(secstrings+sechdrs[i].sh_name, name))
-				return i;
-		}
+		if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
+				!strcmp(secstrings+sechdrs[i].sh_name, name))
+			return i;
+	}
+
 	return 0;
 }
 
@@ -57,7 +55,6 @@ static const struct kernel_symbol *lookup_symbol(const char *name,
 {
 	const struct kernel_symbol *ks = start;
 	for (; ks < stop; ks++) {
-		printf("name: %s\n", ks->name);
 		if (strcmp(ks->name, name) == 0)
 			return ks;
 	}
@@ -284,20 +281,14 @@ struct module * load_module(void *mod_image, unsigned long len)
 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
 	sym = (void *)sechdrs[symindex].sh_addr;
 
-	/*
-	 * FIXME: in .o files we have the command structs in the
-	 * .u_boot_cmd_<name> section to be able to let the linker
-	 * sort the commands alphabetically. When using the .o files
-	 * as modules this is bad because we have the commands in different
-	 * sections. So we probably need a linking stage for modules to 
-	 * put the different sections back into a single one.
-	 *
-	 * For now we only find the _first_ command in a module.
-	 */
 	cmdindex = find_sec(ehdr, sechdrs, secstrings,
-		MODULE_SYMBOL_PREFIX ".u_boot_cmd_", 12);
+		MODULE_SYMBOL_PREFIX ".u_boot_cmd");
 	if (cmdindex) {
-		register_command((void *)sechdrs[cmdindex].sh_addr);
+		cmd_tbl_t *cmd = (cmd_tbl_t *)sechdrs[cmdindex].sh_addr;
+		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(cmd_tbl_t); i++) {
+			register_command(cmd);
+			cmd++;
+		}
 	}
 
 	for (i = 0; i < numsyms; i++) {

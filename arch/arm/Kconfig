@@ -5,12 +5,16 @@ config ARCH_TEXT_BASE
 	default 0x08f80000 if MACH_SCB9328
 	default 0x81f00000 if MACH_NXDB500
 	default 0x21e00000 if MACH_ECO920
+	default 0xa0000000 if MACH_PCM038
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
 
 config BOARDINFO
 	default "Hilscher Netx nxdb500" if MACH_NXDB500
+
+config BOARDINFO
+	default "Phytec Phycore MX27" if MACH_PCM038
 
 config ARM
 	bool
@@ -64,6 +68,14 @@ config MACH_SCB9328
 	select ARCH_IMX1
 	help
 	  Say Y here if you are using the Synertronixx scb9328 board
+
+config MACH_PCM038
+	bool "Phytec pcm038"
+	select HAS_CFI
+	select ARCH_IMX27
+	help
+	  Say Y here if you are using the Phytec Phycore pcm038 equipped
+	  with a Freescale i.MX27 Processor
 
 config MACH_ECO920
 	bool "eco920"

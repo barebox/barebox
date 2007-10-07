@@ -75,9 +75,9 @@ SECTIONS
 	.u_boot_initcalls : { INITCALLS }
 	___u_boot_initcalls_end = .;
 
-	___u_boot_symtab_start = .;
-	.u_boot_symtab : { U_BOOT_SYMS }
-	___u_boot_symtab_end = .;
+	___usymtab_start = .;
+	__usymtab : { U_BOOT_SYMS }
+	___usymtab_end = .;
 
 	. = ALIGN(4);
 	__bss_start = .;

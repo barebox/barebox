@@ -107,9 +107,9 @@ SECTIONS
   __u_boot_initcalls_end = .;
   __initcall_entries = (__u_boot_initcalls_end - __u_boot_initcalls_start) >> 2;
 
-  __u_boot_symtab_start = .;
-  .u_boot_symtab : { U_BOOT_SYMS }
-  __u_boot_symtab_end = .;
+  __usymtab_start = .;
+  __usymtab : { U_BOOT_SYMS }
+  __usymtab_end = .;
 
   __early_init_data_begin = .;
   .early_init_data : { *(.early_init_data) }

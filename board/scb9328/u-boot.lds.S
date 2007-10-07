@@ -60,9 +60,9 @@ SECTIONS
 	.u_boot_initcalls : { INITCALLS }
 	__u_boot_initcalls_end = .;
 
-	__u_boot_symtab_start = .;
-	.u_boot_symtab : { U_BOOT_SYMS }
-	__u_boot_symtab_end = .;
+	__usymtab_start = .;
+	__usymtab : { U_BOOT_SYMS }
+	__usymtab_end = .;
 
 	. = ALIGN(4);
 	__bss_start = .;

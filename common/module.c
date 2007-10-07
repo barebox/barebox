@@ -45,8 +45,8 @@ static unsigned int find_sec(Elf_Ehdr *hdr,
 }
 
 /* Provided by the linker */
-extern const struct kernel_symbol __u_boot_symtab_start[];
-extern const struct kernel_symbol __u_boot_symtab_end[];
+extern const struct kernel_symbol __usymtab_start[];
+extern const struct kernel_symbol __usymtab_end[];
 
 /* lookup symbol in given range of kernel_symbols */
 static const struct kernel_symbol *lookup_symbol(const char *name,
@@ -67,8 +67,8 @@ static unsigned long resolve_symbol(Elf32_Shdr *sechdrs,
 	const struct kernel_symbol *ks;
 
 	debug("%s: %s\n", __FUNCTION__, name);
-	ks = lookup_symbol(name, __u_boot_symtab_start,
-		__u_boot_symtab_end);
+	ks = lookup_symbol(name, __usymtab_start,
+		__usymtab_end);
 
 	if (ks)
 		return ks->value;

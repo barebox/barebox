@@ -13,7 +13,23 @@
 
 #include <ctype.h>
 #include "modpost.h"
-//#include "../../include/license.h"
+
+#if 0
+/* Once we decide to actually make use of the license it should
+ * go back to the include file.
+ */
+#include "../../include/license.h"
+#else
+static inline int license_is_gpl_compatible(const char *license)
+{
+	return (strcmp(license, "GPL") == 0
+		|| strcmp(license, "GPL v2") == 0
+		|| strcmp(license, "GPL and additional rights") == 0
+		|| strcmp(license, "Dual BSD/GPL") == 0
+		|| strcmp(license, "Dual MIT/GPL") == 0
+		|| strcmp(license, "Dual MPL/GPL") == 0);
+}
+#endif
 
 /* Are we using CONFIG_MODVERSIONS? */
 int modversions = 0;
@@ -75,8 +91,8 @@ static int is_vmlinux(const char *modname)
 	else
 		myname = modname;
 
-	return (strcmp(myname, "vmlinux") == 0) ||
-	       (strcmp(myname, "vmlinux.o") == 0);
+	return (strcmp(myname, "uboot") == 0) ||
+	       (strcmp(myname, "uboot.o") == 0);
 }
 
 void *do_nofail(void *ptr, const char *expr)
@@ -232,7 +248,7 @@ static enum export export_no(const char * s)
 	}
 	return export_unknown;
 }
-#if 0
+
 static enum export export_from_sec(struct elf_info *elf, Elf_Section sec)
 {
 	if (sec == elf->export_sec)
@@ -248,7 +264,7 @@ static enum export export_from_sec(struct elf_info *elf, Elf_Section sec)
 	else
 		return export_unknown;
 }
-#endif
+
 /**
  * Add an exported symbol - it may have already been added without a
  * CRC, in this case just update the CRC
@@ -403,15 +419,15 @@ static int parse_elf(struct elf_info *info, const char *filename)
 		if (strcmp(secname, ".modinfo") == 0) {
 			info->modinfo = (void *)hdr + sechdrs[i].sh_offset;
 			info->modinfo_len = sechdrs[i].sh_size;
-		} else if (strcmp(secname, "__ksymtab") == 0)
+		} else if (strcmp(secname, "__usymtab") == 0)
 			info->export_sec = i;
-		else if (strcmp(secname, "__ksymtab_unused") == 0)
+		else if (strcmp(secname, "__usymtab_unused") == 0)
 			info->export_unused_sec = i;
-		else if (strcmp(secname, "__ksymtab_gpl") == 0)
+		else if (strcmp(secname, "__usymtab_gpl") == 0)
 			info->export_gpl_sec = i;
-		else if (strcmp(secname, "__ksymtab_unused_gpl") == 0)
+		else if (strcmp(secname, "__usymtab_unused_gpl") == 0)
 			info->export_unused_gpl_sec = i;
-		else if (strcmp(secname, "__ksymtab_gpl_future") == 0)
+		else if (strcmp(secname, "__usymtab_gpl_future") == 0)
 			info->export_gpl_future_sec = i;
 
 		if (sechdrs[i].sh_type != SHT_SYMTAB)
@@ -442,8 +458,8 @@ static void parse_elf_finish(struct elf_info *info)
 }
 
 #define CRC_PFX     MODULE_SYMBOL_PREFIX "__crc_"
-#define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__ksymtab_"
-#if 0
+#define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__usymtab_"
+
 static void handle_modversions(struct module *mod, struct elf_info *info,
 			       Elf_Sym *sym, const char *symname)
 {
@@ -513,7 +529,6 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
 		break;
 	}
 }
-#endif
 
 /**
  * Parse tag=value strings from .modinfo section
@@ -1221,12 +1236,12 @@ static int exit_section_ref_ok(const char *name)
 
 static void read_symbols(char *modname)
 {
-//	const char *symname;
+	const char *symname;
 	char *version;
-//	char *license;
+	char *license;
 	struct module *mod;
 	struct elf_info info = { };
-//	Elf_Sym *sym;
+	Elf_Sym *sym;
 
 	if (!parse_elf(&info, modname))
 		return;
@@ -1239,7 +1254,7 @@ static void read_symbols(char *modname)
 		have_vmlinux = 1;
 		mod->skip = 1;
 	}
-#if 0
+
 	license = get_modinfo(info.modinfo, info.modinfo_len, "license");
 	while (license) {
 		if (license_is_gpl_compatible(license))
@@ -1251,15 +1266,13 @@ static void read_symbols(char *modname)
 		license = get_next_modinfo(info.modinfo, info.modinfo_len,
 					   "license", license);
 	}
-#endif
-#if 0
 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
 		symname = info.strtab + sym->st_name;
 
 		handle_modversions(mod, &info, sym, symname);
-		handle_moddevtable(mod, &info, sym, symname);
+//		handle_moddevtable(mod, &info, sym, symname);
 	}
-#endif
+
 	check_sec_ref(mod, modname, &info, init_section, init_section_ref_ok);
 	check_sec_ref(mod, modname, &info, exit_section, exit_section_ref_ok);
 

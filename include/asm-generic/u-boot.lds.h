@@ -11,4 +11,4 @@
 
 #define U_BOOT_CMDS	*(SORT_BY_NAME(.u_boot_cmd*))
 
-#define U_BOOT_SYMS	*(__u_boot_symtab)
+#define U_BOOT_SYMS	*(__usymtab)

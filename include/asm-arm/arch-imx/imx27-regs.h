@@ -21,6 +21,7 @@
 #define IMX_UART5_BASE             (0x1b000 + IMX_IO_BASE)
 #define IMX_UART6_BASE             (0x1c000 + IMX_IO_BASE)
 #define IMX_TIM6_BASE              (0x1f000 + IMX_IO_BASE)
+#define IMX_PLL_BASE               (0x27000 + IMX_IO_BASE)
 
 #define IMX_ESD_BASE               (0xd8001000)
 #define IMX_WEIM_BASE              (0xd8002000)

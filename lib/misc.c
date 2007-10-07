@@ -49,6 +49,7 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base)
 
         return val;
 }
+EXPORT_SYMBOL(strtoul_suffix);
 
 int parse_area_spec(const char *str, ulong *start, ulong *size)
 {
@@ -95,25 +96,4 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 
 	return -1;
 }
-
-int spec_str_to_info(const char *str, struct memarea_info *info)
-{
-	char *endp;
-	int ret;
-
-	info->device = device_from_spec_str(str, &endp);
-	if (!info->device) {
-		printf("unknown device: %s\n", deviceid_from_spec_str(str, NULL));
-		return -ENODEV;
-	}
-
-	ret = parse_area_spec(endp, &info->start, &info->size);
-	if (ret)
-		return ret;
-
-	if (info->size == ~0)
-		info->size = info->device->size;
-
-	return 0;
-}
-
+EXPORT_SYMBOL(parse_area_spec);

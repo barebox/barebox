@@ -57,4 +57,4 @@ char *size_human_readable(ulong size)
 
 	return buf;
 }
-
+EXPORT_SYMBOL(size_human_readable);

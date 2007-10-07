@@ -234,6 +234,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 
 	return 0;
 }
+EXPORT_SYMBOL(relocate_image);
 
 struct image_handle *map_image(const char *filename, int verify)
 {
@@ -303,6 +304,7 @@ err_out:
 	free(handle);
 	return NULL;
 }
+EXPORT_SYMBOL(map_image);
 
 void unmap_image(struct image_handle *handle)
 {
@@ -310,6 +312,7 @@ void unmap_image(struct image_handle *handle)
 		free(handle->data);
 	free(handle);
 }
+EXPORT_SYMBOL(unmap_image);
 
 #ifdef CONFIG_OF_FLAT_TREE
 #define OPT_OFTREE "o:"

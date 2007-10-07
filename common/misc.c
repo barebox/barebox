@@ -162,3 +162,4 @@ void perror(const char *s)
 	printf("%s returned with %d\n", s, errno);
 #endif
 }
+EXPORT_SYMBOL(perror);

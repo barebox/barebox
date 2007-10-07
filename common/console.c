@@ -134,6 +134,7 @@ int console_register(struct console_device *newcdev)
 		cdev = cdev->next;
 	}
 }
+EXPORT_SYMBOL(console_register);
 
 int getc_raw(void)
 {
@@ -176,6 +177,7 @@ int getc(void)
 	kfifo_getc(console_buffer, &ch);
 	return ch;
 }
+EXPORT_SYMBOL(getc);
 
 int fgetc(int fd)
 {
@@ -185,6 +187,7 @@ int fgetc(int fd)
 		return getc();
 	return read(fd, &c, 1);
 }
+EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
@@ -198,6 +201,7 @@ int tstc(void)
 
 	return 0;
 }
+EXPORT_SYMBOL(tstc);
 
 void __initdata *early_console_base;
 
@@ -233,6 +237,7 @@ void console_putc(unsigned int ch, char c)
 		hang();
 	}
 }
+EXPORT_SYMBOL(console_putc);
 
 int fputc(int fd, char c)
 {
@@ -250,6 +255,7 @@ int fputc(int fd, char c)
 		return write(fd, &c, 1);
 	return 0;
 }
+EXPORT_SYMBOL(fputc);
 
 void console_puts(unsigned int ch, const char *str)
 {
@@ -261,6 +267,7 @@ void console_puts(unsigned int ch, const char *str)
 		s++;
 	}
 }
+EXPORT_SYMBOL(console_puts);
 
 int fputs(int fd, const char *s)
 {
@@ -272,6 +279,7 @@ int fputs(int fd, const char *s)
 		return write(fd, s, strlen(s));
 	return 0;
 }
+EXPORT_SYMBOL(fputs);
 
 void fprintf (int file, const char *fmt, ...)
 {
@@ -290,6 +298,7 @@ void fprintf (int file, const char *fmt, ...)
 	/* Print the string */
 	fputs (file, printbuffer);
 }
+EXPORT_SYMBOL(fprintf);
 
 int printf (const char *fmt, ...)
 {
@@ -327,6 +336,7 @@ int vprintf (const char *fmt, va_list args)
 
 	return i;
 }
+EXPORT_SYMBOL(vprintf);
 
 /* test if ctrl-c was pressed */
 int ctrlc (void)
@@ -335,6 +345,7 @@ int ctrlc (void)
 		return 1;
 	return 0;
 }
+EXPORT_SYMBOL(ctrlc);
 
 #ifdef CONFIG_HAS_EARLY_INIT
 

@@ -120,6 +120,7 @@ int register_device(struct device_d *new_device)
 
 	return 0;
 }
+EXPORT_SYMBOL(register_device);
 
 void unregister_device(struct device_d *old_dev)
 {
@@ -139,6 +140,7 @@ void unregister_device(struct device_d *old_dev)
                 dev = dev->next;
         }
 }
+EXPORT_SYMBOL(unregister_device);
 
 struct driver_d *get_driver_by_name(const char *name)
 {
@@ -197,6 +199,7 @@ int register_driver(struct driver_d *new_driver)
 
 	return 0;
 }
+EXPORT_SYMBOL(register_driver);
 
 static char devicename_from_spec_str_buf[PATH_MAX];
 
@@ -267,6 +270,7 @@ struct device_d *get_device_by_type(ulong type, struct device_d *last)
 
 	return NULL;
 }
+EXPORT_SYMBOL(get_device_by_type);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {

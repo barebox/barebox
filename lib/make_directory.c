@@ -4,6 +4,7 @@
 #ifdef __U_BOOT__
 #include <fs.h>
 #include <malloc.h>
+#include <common.h>
 #endif
 
 int make_directory(const char *dir)
@@ -51,4 +52,6 @@ out:
 	free(path);
 	return errno;
 }
-
+#ifdef __U_BOOT__
+EXPORT_SYMBOL(make_directory);
+#endif

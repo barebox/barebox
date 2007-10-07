@@ -85,3 +85,4 @@ void reset_cpu (ulong ignored)
 	while (1);
 	/*NOTREACHED*/
 }
+EXPORT_SYMBOL(reset_cpu);

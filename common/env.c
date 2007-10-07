@@ -143,6 +143,7 @@ const char *getenv (const char *name)
 	}
 	return NULL;
 }
+EXPORT_SYMBOL(getenv);
 
 static int setenv_raw(struct variable_d *var, const char *name, const char *value)
 {
@@ -205,6 +206,7 @@ int setenv(const char *name, const char *value)
 
 	return 0;
 }
+EXPORT_SYMBOL(setenv);
 
 int export(const char *varname)
 {
@@ -217,6 +219,7 @@ int export(const char *varname)
 	}
 	return -1;
 }
+EXPORT_SYMBOL(export);
 
 static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {

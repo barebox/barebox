@@ -35,6 +35,7 @@ char *basename (char *path)
 	}
 	return fname;
 }
+EXPORT_SYMBOL(basename);
 
 char *dirname (char *path)
 {
@@ -45,4 +46,4 @@ char *dirname (char *path)
 	*fname = '\0';
 	return path;
 }
-
+EXPORT_SYMBOL(dirname);

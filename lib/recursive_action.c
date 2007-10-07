@@ -128,3 +128,7 @@ done_nak_warn:
 	printf("%s", fileName);
 	return 0;
 }
+
+#ifdef __U_BOOT__
+EXPORT_SYMBOL(recursive_action);
+#endif

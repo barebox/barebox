@@ -149,6 +149,9 @@ ulong crc32(ulong crc, const unsigned char *buf, uint len)
     } while (--len);
     return crc ^ 0xffffffffL;
 }
+#ifdef __U_BOOT__
+EXPORT_SYMBOL(crc32);
+#endif
 
 #if 0
 

@@ -54,6 +54,7 @@ uint64_t get_time_ns(void)
 	time_ns += ns_offset;
         return time_ns;
 }
+EXPORT_SYMBOL(get_time_ns);
 
 /**
  * clocksource_hz2mult - calculates mult from hz and shift
@@ -89,6 +90,7 @@ int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 	else
 		return 0;
 }
+EXPORT_SYMBOL(is_timeout);
 
 void udelay(unsigned long usecs)
 {
@@ -96,6 +98,7 @@ void udelay(unsigned long usecs)
 
 	while(!is_timeout(start, usecs * 1000));
 }
+EXPORT_SYMBOL(udelay);
 
 void mdelay(unsigned long msecs)
 {
@@ -103,6 +106,7 @@ void mdelay(unsigned long msecs)
 
 	while(!is_timeout(start, msecs * 1000000));
 }
+EXPORT_SYMBOL(mdelay);
 
 int init_clock(struct clocksource *cs)
 {

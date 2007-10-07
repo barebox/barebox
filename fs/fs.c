@@ -94,6 +94,7 @@ char *mkmodestr(unsigned long mode, char *str)
 	str[10] = '\0';
 	return str;
 }
+EXPORT_SYMBOL(mkmodestr);
 
 static char *cwd;
 
@@ -163,6 +164,7 @@ char *normalise_path(const char *pathname)
 
 	return path;
 }
+EXPORT_SYMBOL(normalise_path);
 
 static struct mtab_entry *mtab;
 

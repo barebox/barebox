@@ -43,6 +43,7 @@ unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
 		*endp = (char *)cp;
 	return result;
 }
+EXPORT_SYMBOL(simple_strtoul);
 
 long simple_strtol(const char *cp,char **endp,unsigned int base)
 {
@@ -50,6 +51,7 @@ long simple_strtol(const char *cp,char **endp,unsigned int base)
 		return -simple_strtoul(cp+1,endp,base);
 	return simple_strtoul(cp,endp,base);
 }
+EXPORT_SYMBOL(simple_strtol);
 
 #ifdef CFG_64BIT_STRTOUL
 unsigned long long simple_strtoull (const char *cp, char **endp, unsigned int base)
@@ -353,6 +355,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 	*str = '\0';
 	return str-buf;
 }
+EXPORT_SYMBOL(vsprintf);
 
 int sprintf(char * buf, const char *fmt, ...)
 {
@@ -364,6 +367,7 @@ int sprintf(char * buf, const char *fmt, ...)
 	va_end(args);
 	return i;
 }
+EXPORT_SYMBOL(sprintf);
 
 void panic(const char *fmt, ...)
 {
@@ -379,3 +383,4 @@ void panic(const char *fmt, ...)
 	reset_cpu(0);
 #endif
 }
+EXPORT_SYMBOL(panic);

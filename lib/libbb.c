@@ -34,6 +34,7 @@ char *concat_path_file(const char *path, const char *filename)
 
 	return str;
 }
+EXPORT_SYMBOL(concat_path_file);
 
 /*
  * This function make special for recursive actions with usage
@@ -47,6 +48,7 @@ char *concat_subpath_file(const char *path, const char *f)
 		return NULL;
 	return concat_path_file(path, f);
 }
+EXPORT_SYMBOL(concat_subpath_file);
 
 /* check if path points to an executable file;
  * return 1 if found;
@@ -57,6 +59,8 @@ int execable_file(const char *name)
 	struct stat s;
 	return (!stat(name, &s) && S_ISREG(s.st_mode));
 }
+EXPORT_SYMBOL(execable_file);
+
 
 /* search $PATH for an executable file;
  * return allocated string containing full path if found;
@@ -84,6 +88,7 @@ char *find_execable(const char *filename)
 	free(path);
 	return NULL;
 }
+EXPORT_SYMBOL(find_execable);
 
 /* Find out if the last character of a string matches the one given.
  * Don't underrun the buffer if the string length is 0.
@@ -98,6 +103,7 @@ char* last_char_is(const char *s, int c)
 	}
 	return NULL;
 }
+EXPORT_SYMBOL(last_char_is);
 
 /* Like strncpy but make sure the resulting string is always 0 terminated. */
 char * safe_strncpy(char *dst, const char *src, size_t size)
@@ -106,4 +112,5 @@ char * safe_strncpy(char *dst, const char *src, size_t size)
 	dst[--size] = '\0';
 	return strncpy(dst, src, size);
 }
+EXPORT_SYMBOL(safe_strncpy);
 

@@ -35,52 +35,54 @@ void imx_gpio_mode(int gpio_mode)
 
 	/* Pullup enable */
 	if(gpio_mode & GPIO_PUEN)
-		PUEN(port) |= (1<<pin);
+		PUEN(port) |= (1 << pin);
 	else
-		PUEN(port) &= ~(1<<pin);
+		PUEN(port) &= ~(1 << pin);
 
 	/* Data direction */
 	if(gpio_mode & GPIO_OUT)
-		DDIR(port) |= 1<<pin;
+		DDIR(port) |= 1 << pin;
 	else
-		DDIR(port) &= ~(1<<pin);
+		DDIR(port) &= ~(1 << pin);
 
 	/* Primary / alternate function */
 	if(gpio_mode & GPIO_AF)
-		GPR(port) |= (1<<pin);
+		GPR(port) |= (1 << pin);
 	else
-		GPR(port) &= ~(1<<pin);
+		GPR(port) &= ~(1 << pin);
 
 	/* use as gpio? */
 	if( ocr == 3 )
-		GIUS(port) |= (1<<pin);
+		GIUS(port) |= (1 << pin);
 	else
-		GIUS(port) &= ~(1<<pin);
+		GIUS(port) &= ~(1 << pin);
 
 	/* Output / input configuration */
 	/* FIXME: I'm not very sure about OCR and ICONF, someone
 	 * should have a look over it
 	 */
-	if(pin<16) {
+	if (pin < 16) {
 		tmp = OCR1(port);
-		tmp &= ~( 3<<(pin*2));
-		tmp |= (ocr << (pin*2));
+		tmp &= ~(3 << (pin * 2));
+		tmp |= (ocr << (pin * 2));
 		OCR1(port) = tmp;
 
 		if( gpio_mode &	GPIO_AOUT )
-			ICONFA1(port) &= ~( 3<<(pin*2));
+			ICONFA1(port) &= ~(3 << (pin * 2));
 		if( gpio_mode &	GPIO_BOUT )
-			ICONFB1(port) &= ~( 3<<(pin*2));
+			ICONFB1(port) &= ~(3 << (pin * 2));
 	} else {
+		pin -= 16;
+
 		tmp = OCR2(port);
-		tmp &= ~( 3<<((pin-16)*2));
-		tmp |= (ocr << ((pin-16)*2));
+		tmp &= ~(3 << (pin * 2));
+		tmp |= (ocr << (pin * 2));
 		OCR2(port) = tmp;
 
 		if( gpio_mode &	GPIO_AOUT )
-			ICONFA2(port) &= ~( 3<<((pin-16)*2));
+			ICONFA2(port) &= ~(3 << (pin * 2));
 		if( gpio_mode &	GPIO_BOUT )
-			ICONFB2(port) &= ~( 3<<((pin-16)*2));
+			ICONFB2(port) &= ~(3 << (pin * 2));
 	}
 
 }

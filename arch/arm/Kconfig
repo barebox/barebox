@@ -24,9 +24,20 @@ config ARM920T
 config ARM926EJS
 	bool
 
+# i.MX1 i.MXL and i.MX27 are quite similar and thus
+# handled in one arch
 config ARCH_IMX
 	bool
+
+config ARCH_IMX1
+	bool
+	select ARCH_IMX
 	select ARM920T
+
+config ARCH_IMX27
+	bool
+	select ARCH_IMX
+	select ARM926EJS
 
 config ARCH_AT91RM9200
 	bool
@@ -42,7 +53,7 @@ choice
 config MACH_MX1ADS
 	bool "mx1ads"
 	select HAS_CS8900
-	select ARCH_IMX
+	select ARCH_IMX1
 	help
 	  Say Y here if you are using the Motorola MX1ADS board
 
@@ -50,7 +61,7 @@ config MACH_SCB9328
 	bool "Synertronixx scb9328"
 	select HAS_DM9000
 	select HAS_CFI
-	select ARCH_IMX
+	select ARCH_IMX1
 	help
 	  Say Y here if you are using the Synertronixx scb9328 board
 

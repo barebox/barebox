@@ -63,7 +63,7 @@ static int clocksource_init (void)
 	GPT(GPT_TCTL) &= ~TCTL_TEN;
 	GPT(GPT_TCTL) |= TCTL_TEN; /* Enable timer */
 
-	cs.mult = clocksource_hz2mult(get_PERCLK1(), cs.shift);
+	cs.mult = clocksource_hz2mult(imx_get_perclk1(), cs.shift);
 
 	init_clock(&cs);
 
@@ -73,7 +73,7 @@ static int clocksource_init (void)
 core_initcall(clocksource_init);
 
 /*
- * Reset the cpu by setting up the watchdog timer and let him time out
+ * Reset the cpu by setting up the watchdog timer and let it time out
  */
 void reset_cpu (ulong ignored)
 {
@@ -85,7 +85,13 @@ void reset_cpu (ulong ignored)
 	WSR = 0x0000AAAA;
 
 	/* Enable watchdog */
+#ifdef CONFIG_ARCH_IMX1
 	WCR = 0x00000001;
+#elif defined CONFIG_ARCH_IMX27
+	WCR = 1 << 2;
+#else
+#error unknown i.MX soc
+#endif
 
 	while (1);
 	/*NOTREACHED*/

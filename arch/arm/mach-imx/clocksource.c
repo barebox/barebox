@@ -35,9 +35,11 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 
+#define GPT(x) __REG(IMX_TIM1_BASE + (x))
+
 uint64_t imx_clocksource_read(void)
 {
-	return TCN1;
+	return GPT(GPT_TCN);
 }
 
 static struct clocksource cs = {
@@ -50,13 +52,16 @@ static int clocksource_init (void)
 {
 	int i;
 	/* setup GP Timer 1 */
-	TCTL1 = TCTL_SWR;
-	for ( i=0; i<100; i++) TCTL1 = 0; /* We have no udelay by now */
-	TPRER1 = 0;
-	TCTL1 |= TCTL_FRR | (1<<1); /* Freerun Mode, PERCLK1 input */
+	GPT(GPT_TCTL) = TCTL_SWR;
 
-	TCTL1 &= ~TCTL_TEN;
-	TCTL1 |= TCTL_TEN; /* Enable timer */
+	for (i = 0; i < 100; i++)
+		GPT(GPT_TCTL) = 0; /* We have no udelay by now */
+
+	GPT(GPT_TPRER) = 0;
+	GPT(GPT_TCTL) |= TCTL_FRR | (1<<1); /* Freerun Mode, PERCLK1 input */
+
+	GPT(GPT_TCTL) &= ~TCTL_TEN;
+	GPT(GPT_TCTL) |= TCTL_TEN; /* Enable timer */
 
 	cs.mult = clocksource_hz2mult(get_PERCLK1(), cs.shift);
 

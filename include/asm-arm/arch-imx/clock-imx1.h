@@ -1,0 +1,5 @@
+#ifndef ASM_ARCH_CLOCK_IMX1_H
+#define ASM_ARCH_CLOCK_IMX1_H
+
+#endif /* ASM_ARCH_CLOCK_IMX1_H */
+

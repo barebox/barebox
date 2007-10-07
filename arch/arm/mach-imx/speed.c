@@ -21,126 +21,31 @@
  * MA 02111-1307 USA
  */
 
+#include <asm-generic/div64.h>
 
-#include <common.h>
-#include <asm/arch/imx-regs.h>
-#include <init.h>
-#include <driver.h>
-
-/* ------------------------------------------------------------------------- */
-/* NOTE: This describes the proper use of this file.
+/*
+ *  get the system pll clock in Hz
  *
- * CONFIG_SYS_CLK_FREQ should be defined as the input frequency of the PLL.
- * SH FIXME: 16780000 in our case
- * get_FCLK(), get_HCLK(), get_PCLK() and get_UCLK() return the clock of
- * the specified bus in HZ.
+ *                  mfi + mfn / (mfd +1)
+ *  f = 2 * f_ref * --------------------
+ *                        pd + 1
  */
-/* ------------------------------------------------------------------------- */
-
-ulong get_systemPLLCLK(void)
+unsigned int imx_decode_pll(unsigned int pll, unsigned int f_ref)
 {
-	/* FIXME: We assume System_SEL = 0 here */
-	u32 spctl0 = SPCTL0;
-	u32 mfi = (spctl0 >> 10) & 0xf;
-	u32 mfn = spctl0 & 0x3f;
-	u32 mfd = (spctl0 >> 16) & 0x3f;
-	u32 pd =  (spctl0 >> 26) & 0xf;
+	unsigned long long ll;
+	unsigned int quot;
 
-	mfi = mfi<=5 ? 5 : mfi;
+	unsigned int mfi = (pll >> 10) & 0xf;
+	unsigned int mfn = pll & 0x3ff;
+	unsigned int mfd = (pll >> 16) & 0x3ff;
+	unsigned int pd =  (pll >> 26) & 0xf;
 
-	return (2*(CONFIG_SYSPLL_CLK_FREQ>>10)*( (mfi<<10) + (mfn<<10)/(mfd+1)))/(pd+1);
+	mfi = mfi <= 5 ? 5 : mfi;
+
+	ll = 2 * (unsigned long long)f_ref * ( (mfi << 16) + (mfn << 16) / (mfd + 1));
+	quot = (pd + 1) * (1 << 16);
+	ll += quot / 2;
+	do_div(ll, quot);
+	return (unsigned int) ll;
 }
 
-ulong get_mcuPLLCLK(void)
-{
-	/* FIXME: We assume System_SEL = 0 here */
-	u32 mpctl0 = MPCTL0;
-	u32 mfi = (mpctl0 >> 10) & 0xf;
-	u32 mfn = mpctl0 & 0x3f;
-	u32 mfd = (mpctl0 >> 16) & 0x3f;
-	u32 pd =  (mpctl0 >> 26) & 0xf;
-
-	mfi = mfi<=5 ? 5 : mfi;
-
-	return (2*(CONFIG_SYS_CLK_FREQ>>10)*( (mfi<<10) + (mfn<<10)/(mfd+1)))/(pd+1);
-}
-
-ulong get_FCLK(void)
-{
-	return (( CSCR>>15)&1) ? get_mcuPLLCLK()>>1 : get_mcuPLLCLK();
-}
-
-ulong get_HCLK(void)
-{
-	u32 bclkdiv = (( CSCR >> 10 ) & 0xf) + 1;
-	return get_systemPLLCLK() / bclkdiv;
-}
-
-ulong get_BCLK(void)
-{
-	return get_HCLK();
-}
-
-ulong get_PERCLK1(void)
-{
-	return get_systemPLLCLK() / (((PCDR) & 0xf)+1);
-}
-
-ulong get_PERCLK2(void)
-{
-	return get_systemPLLCLK() / (((PCDR>>4) & 0xf)+1);
-}
-
-ulong get_PERCLK3(void)
-{
-	return get_systemPLLCLK() / (((PCDR>>16) & 0x7f)+1);
-}
-
-#if 0
-typedef enum imx_cookies {
-        PARAM_CPUCLK,
-        PARAM_SYSCLOCK,
-        PARAM_PERCLK1,
-        PARAM_PERCLK2,
-        PARAM_PERCLK3,
-        PARAM_BCLK,
-        PARAM_HCLK,
-        PARAM_FCLK,
-        PARAM_ARCH_NUMBER,
-        PARAM_LAST,
-} imx_cookies_t;
-
-static struct param_d imx_params[] = {
-        [PARAM_CPUCLK]      = { .name = "imx_cpuclk", .flags = PARAM_FLAG_RO},
-        [PARAM_SYSCLOCK]    = { .name = "imx_system_clk", .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK1]     = { .name = "imx_perclk1", .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK2]     = { .name = "imx_perclk2", .flags = PARAM_FLAG_RO},
-        [PARAM_PERCLK3]     = { .name = "imx_perclk3", .flags = PARAM_FLAG_RO},
-        [PARAM_BCLK]        = { .name = "imx_bclk", .flags = PARAM_FLAG_RO},
-        [PARAM_HCLK]        = { .name = "imx_hclk", .flags = PARAM_FLAG_RO},
-        [PARAM_FCLK]        = { .name = "imx_fclk", .flags = PARAM_FLAG_RO},
-        [PARAM_ARCH_NUMBER] = { .name = "arch_number",},
-};
-
-static int imx_clk_init(void)
-{
-        int i;
-
-	imx_params[PARAM_CPUCLK].value.val_ulong = get_mcuPLLCLK();
-	imx_params[PARAM_SYSCLOCK].value.val_ulong = get_systemPLLCLK();
-	imx_params[PARAM_PERCLK1].value.val_ulong = get_PERCLK1();
-	imx_params[PARAM_PERCLK2].value.val_ulong = get_PERCLK2();
-	imx_params[PARAM_PERCLK3].value.val_ulong = get_PERCLK3();
-	imx_params[PARAM_BCLK].value.val_ulong = get_BCLK();
-	imx_params[PARAM_HCLK].value.val_ulong = get_HCLK();
-	imx_params[PARAM_FCLK].value.val_ulong = get_FCLK();
-	imx_params[PARAM_ARCH_NUMBER].value.val_ulong = arch_number;
-
-        for (i = 0; i < PARAM_LAST; i++)
-                global_add_parameter(&imx_params[i]);
-
-        return 0;
-}
-
-device_initcall(imx_clk_init);
-#endif

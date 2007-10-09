@@ -38,6 +38,11 @@
 #define UBIR(base)  __REG( 0xa4 +(base)) /* BRM Incremental Register */
 #define UBMR(base)  __REG( 0xa8 +(base)) /* BRM Modulator Register */
 #define UBRC(base)  __REG( 0xac +(base)) /* Baud Rate Count Register */
+#ifdef CONFIG_ARCH_IMX27
+#define ONEMS(base) __REG( 0xb0 +(base)) /* One Millisecond register (i.MX27) */
+#define UTS(base)   __REG( 0xb4 +(base)) /* UART Test Register */
+#endif
+#ifdef CONFIG_ARCH_IMX1
 #define BIPR1(base) __REG( 0xb0 +(base)) /* Incremental Preset Register 1 */
 #define BIPR2(base) __REG( 0xb4 +(base)) /* Incremental Preset Register 2 */
 #define BIPR3(base) __REG( 0xb8 +(base)) /* Incremental Preset Register 3 */
@@ -47,6 +52,7 @@
 #define BMPR3(base) __REG( 0xc8 +(base)) /* BRM Modulator Register 3 */
 #define BMPR4(base) __REG( 0xcc +(base)) /* BRM Modulator Register 4 */
 #define UTS(base)   __REG( 0xd0 +(base)) /* UART Test Register */
+#endif
 
 /* UART Control Register Bit Fields.*/
 #define  URXD_CHARRDY    (1<<15)
@@ -92,8 +98,9 @@
 #define  UCR3_RXDSEN	 (1<<6)  /* Receive status interrupt enable */
 #define  UCR3_AIRINTEN   (1<<5)  /* Async IR wake interrupt enable */
 #define  UCR3_AWAKEN	 (1<<4)  /* Async wake interrupt enable */
-#define  UCR3_REF25 	 (1<<3)  /* Ref freq 25 MHz */
-#define  UCR3_REF30 	 (1<<2)  /* Ref Freq 30 MHz */
+#define  UCR3_REF25 	 (1<<3)  /* Ref freq 25 MHz (i.MXL / i.MX1) */
+#define  UCR3_REF30 	 (1<<2)  /* Ref Freq 30 MHz (i.MXL / i.MX1) */
+#define  UCR3_RXDMUXSEL  (1<<2)  /* RXD Muxed input select (i.MX27) */
 #define  UCR3_INVT  	 (1<<1)  /* Inverted Infrared transmission */
 #define  UCR3_BPEN  	 (1<<0)  /* Preset registers enable */
 #define  UCR4_CTSTL_32   (32<<10) /* CTS trigger level (32 chars) */
@@ -139,7 +146,24 @@
 #define  UTS_RXFULL 	 (1<<3)	 /* RxFIFO full */
 #define  UTS_SOFTRST	 (1<<0)	 /* Software reset */
 
-extern void imx_gpio_mode(int gpio_mode);
+#ifdef CONFIG_ARCH_IMX1
+#define	UCR3_VAL 0
+#define	UCR4_VAL (UCR4_CTSTL_32 | UCR4_REF16)
+#endif
+#ifdef CONFIG_ARCH_IMX27
+#define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
+#define	UCR4_VAL UCR4_CTSTL_32
+#endif
+
+static int imx_serial_reffreq(ulong base)
+{
+	ulong rfdiv;
+
+	rfdiv = (UFCR(base) >> 7) & 7;
+	rfdiv = rfdiv < 6 ? 6 - rfdiv : 7;
+
+	return imx_get_perclk1() / rfdiv;
+}
 
 /*
  * Initialise the serial port with the given baudrate. The settings
@@ -153,8 +177,8 @@ static int imx_serial_init_port(struct console_device *cdev)
 
 	UCR1(base) = UCR1_UARTCLKEN;
 	UCR2(base) = UCR2_WS | UCR2_IRTS;
-	UCR3(base) = 0;
-	UCR4(base) = UCR4_CTSTL_32 | UCR4_REF16;
+	UCR3(base) = UCR3_VAL;
+	UCR4(base) = UCR4_VAL;
 	UESC(base) = 0x0000002B;
 	UTIM(base) = 0;
 	UBIR(base) = 0;
@@ -163,6 +187,10 @@ static int imx_serial_init_port(struct console_device *cdev)
 
 	/* Configure FIFOs */
 	UFCR(base) = 0xa81;
+
+#ifdef CONFIG_ARCH_IMX27
+	ONEMS(base) = imx_serial_reffreq(base) / 1000;
+#endif
 
 	/* Enable FIFOs */
 	UCR2(base) |= UCR2_SRST | UCR2_RXEN | UCR2_TXEN;
@@ -230,8 +258,10 @@ static int imx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	/* disable UART */
 	UCR1(base) &= ~UCR1_UARTEN;
 
-	UBIR(base) = 15;
-	UBMR(base) = imx_get_perclk1() / baudrate;
+	/* Set the numerator value minus one of the BRM ratio */
+	UBIR(base) = (baudrate / 100) - 1;
+	/* Set the denominator value minus one of the BRM ratio    */
+	UBMR(base) = ((imx_serial_reffreq(base) / 1600) - 1);
 
 	UCR1(base) = ucr1;
 

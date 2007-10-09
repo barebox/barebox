@@ -20,7 +20,6 @@
 #include "fec_mpc5200.h"
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
-/* #define DEBUG	0x28 */
 
 typedef struct {
 	uint8 data[1500];           /* actual data */
@@ -55,9 +54,7 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
 
 	if (timeout == 0) {
-#if (DEBUG & 0x2)
-		printf ("Read MDIO failed...\n");
-#endif
+		debug ("Read MDIO failed...\n");
 		return -1;
 	}
 
@@ -94,9 +91,7 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
 
 	if (timeout == 0) {
-#if (DEBUG & 0x2)
-		printf ("Write MDIO failed...\n");
-#endif
+		debug("Write MDIO failed...\n");
 		return -1;
 	}
 
@@ -185,20 +180,13 @@ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 {
 	volatile FEC_TBD *pUsedTbd;
 
-#if (DEBUG & 0x1)
-	printf ("tbd_scrub: fec->cleanTbdNum = %d, fec->usedTbdIndex = %d\n",
-		fec->cleanTbdNum, fec->usedTbdIndex);
-#endif
-
 	/*
 	 * process all the consumed TBDs
 	 */
 	while (fec->cleanTbdNum < FEC_TBD_NUM) {
 		pUsedTbd = &fec->tbdBase[fec->usedTbdIndex];
 		if (pUsedTbd->status & FEC_TBD_READY) {
-#if (DEBUG & 0x20)
-			printf("Cannot clean TBD %d, in use\n", fec->cleanTbdNum);
-#endif
+			debug("Cannot clean TBD %d, in use\n", fec->cleanTbdNum);
 			return;
 		}
 
@@ -287,9 +275,7 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA;
 
-#if (DEBUG & 0x1)
-	printf ("mpc5xxx_fec_init... Begin\n");
-#endif
+	debug("mpc5xxx_fec_init... Begin\n");
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -341,21 +327,19 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	fec->eth->rfifo_cntrl = 0x0c000000
 				| (fec->eth->rfifo_cntrl & ~0x0f000000);
 	fec->eth->rfifo_alarm = 0x0000030c;
-#if (DEBUG & 0x22)
+
 	if (fec->eth->rfifo_status & 0x00700000 ) {
-		printf("mpc5xxx_fec_init() RFIFO error\n");
+		debug("mpc5xxx_fec_init() RFIFO error\n");
 	}
-#endif
 
 	/*
 	 * Set Tx FIFO granularity value
 	 */
 	fec->eth->tfifo_cntrl = 0x0c000000
 				| (fec->eth->tfifo_cntrl & ~0x0f000000);
-#if (DEBUG & 0x2)
-	printf("tfifo_status: 0x%08x\n", fec->eth->tfifo_status);
-	printf("tfifo_alarm: 0x%08x\n", fec->eth->tfifo_alarm);
-#endif
+
+	debug("tfifo_status: 0x%08x\n", fec->eth->tfifo_status);
+	debug("tfifo_alarm: 0x%08x\n", fec->eth->tfifo_alarm);
 
 	/*
 	 * Set transmit fifo watermark register(X_WMRK), default = 64
@@ -394,9 +378,8 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	*(volatile int *)FEC_TBD_NEXT = (int)fec->tbdBase;
 	*(volatile int *)FEC_RBD_NEXT = (int)fec->rbdBase;
 
-#if (DEBUG & 0x1)
-	printf("mpc5xxx_fec_init... Done \n");
-#endif
+	debug("mpc5xxx_fec_init... Done \n");
+
 	if (fec->xcv_type != SEVENWIRE)
 		miiphy_restart_aneg(&fec->miiphy);
 
@@ -444,11 +427,6 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	int counter = 0xffff;
 
-#if (DEBUG & 0x2)
-	if (fec->xcv_type != SEVENWIRE)
-		mpc5xxx_fec_phydump ();
-#endif
-
 	/*
 	 * issue graceful stop command to the FEC transmitter if necessary
 	 */
@@ -486,13 +464,11 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 
 //	fec->eth->reset_cntrl = 0x01000000;
 
-#if (DEBUG & 0x3)
-	printf("Ethernet task stopped\n");
-#endif
+	debug("Ethernet task stopped\n");
+
 }
 
-#if (DEBUG & 0x60)
-
+#ifdef DEBUG_FIFO
 static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
 	if ((fec->eth->tfifo_lrf_ptr != fec->eth->tfifo_lwf_ptr)
@@ -530,7 +506,15 @@ static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 		printf("       writptr 0x%08x\n", fec->eth->rfifo_wrptr);
 	}
 }
-#endif /* DEBUG */
+#else
+static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
+{
+}
+
+static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
+{
+}
+#endif /* DEBUG_FIFO */
 
 static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 		int data_length)
@@ -542,11 +526,10 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	volatile FEC_TBD *pTbd;
 
-#if (DEBUG & 0x20)
-	printf("tbd status: 0x%04x\n", fec->tbdBase[0].status);
+#ifdef DEBUG_FIFO
+	debug_fifo("tbd status: 0x%04x\n", fec->tbdBase[0].status);
 	tfifo_print(dev->name, fec);
 #endif
-
 	/*
 	 * Clear Tx BD ring at first
 	 */
@@ -563,9 +546,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 * Check the number of vacant TxBDs.
 	 */
 	if (fec->cleanTbdNum < 1) {
-#if (DEBUG & 0x20)
 		printf("No available TxBDs ...\n");
-#endif
 		return -1;
 	}
 
@@ -577,10 +558,6 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	pTbd->dataPointer = (uint32)eth_data;
 	pTbd->status |= FEC_TBD_LAST | FEC_TBD_TC | FEC_TBD_READY;
 	fec->tbdIndex = (fec->tbdIndex + 1) % FEC_TBD_NUM;
-
-#if (DEBUG & 0x100)
-	printf("SDMA_TASK_ENABLE, fec->tbdIndex = %d \n", fec->tbdIndex);
-#endif
 
 	/*
 	 * Kick the MII i/f
@@ -594,30 +571,19 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 * Enable SmartDMA transmit task
 	 */
 
-#if (DEBUG & 0x20)
 	tfifo_print(dev->name, fec);
-#endif
+
 	SDMA_TASK_ENABLE (FEC_XMIT_TASK_NO);
-#if (DEBUG & 0x20)
+
 	tfifo_print(dev->name, fec);
-#endif
-#if (DEBUG & 0x8)
-	printf( "+" );
-#endif
 
 	fec->cleanTbdNum -= 1;
 
-#if (DEBUG & 0x129) && (DEBUG & 0x80000000)
-	printf ("smartDMA ethernet Tx task enabled\n");
-#endif
 	/*
 	 * wait until frame is sent .
 	 */
 	while (pTbd->status & FEC_TBD_READY) {
-		udelay(10);
-#if (DEBUG & 0x8)
-		printf ("TDB status = %04x\n", pTbd->status);
-#endif
+		/* FIXME: Timeout */
 	}
 
 	return 0;
@@ -634,13 +600,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	int frame_length, len = 0;
 	NBUF *frame;
 	uchar buff[FEC_MAX_PKT_SIZE];
-
-#if (DEBUG & 0x1)
-	printf ("mpc5xxx_fec_recv %d Start...\n", fec->rbdIndex);
-#endif
-#if (DEBUG & 0x8)
-	printf( "-" );
-#endif
 
 	/*
 	 * Check if any critical events have happened
@@ -677,7 +636,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			frame = (NBUF *)pRbd->dataPointer;
 			frame_length = pRbd->dataLength - 4;
 
-#if (DEBUG & 0x20)
+#ifdef DEBUG_RX_HEADER
 			{
 				int i;
 				printf("recv data hdr:");

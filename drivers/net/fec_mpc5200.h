@@ -202,6 +202,46 @@ typedef struct ethernet_register_set {
 	volatile uint32 RES11[64];		/* MBAR_ETH + 0x300-3FF */
 } ethernet_regs;
 
+#define FEC_IEVENT_HBERR                0x80000000
+#define FEC_IEVENT_BABR                 0x40000000
+#define FEC_IEVENT_BABT                 0x20000000
+#define FEC_IEVENT_GRA                  0x10000000
+#define FEC_IEVENT_TFINT                0x08000000
+#define FEC_IEVENT_MII                  0x00800000
+#define FEC_IEVENT_LATE_COL             0x00200000
+#define FEC_IEVENT_COL_RETRY_LIM        0x00100000
+#define FEC_IEVENT_XFIFO_UN             0x00080000
+#define FEC_IEVENT_XFIFO_ERROR          0x00040000
+#define FEC_IEVENT_RFIFO_ERROR          0x00020000
+
+#define FEC_IMASK_HBERR                 0x80000000
+#define FEC_IMASK_BABR                  0x40000000
+#define FEC_IMASK_BABT                  0x20000000
+#define FEC_IMASK_GRA                   0x10000000
+#define FEC_IMASK_MII                   0x00800000
+#define FEC_IMASK_LATE_COL              0x00200000
+#define FEC_IMASK_COL_RETRY_LIM         0x00100000
+#define FEC_IMASK_XFIFO_UN              0x00080000
+#define FEC_IMASK_XFIFO_ERROR           0x00040000
+#define FEC_IMASK_RFIFO_ERROR           0x00020000
+
+#define FEC_RCNTRL_MAX_FL_SHIFT         16
+#define FEC_RCNTRL_LOOP                 0x01
+#define FEC_RCNTRL_DRT                  0x02
+#define FEC_RCNTRL_MII_MODE             0x04
+#define FEC_RCNTRL_PROM                 0x08
+#define FEC_RCNTRL_BC_REJ               0x10
+#define FEC_RCNTRL_FCE                  0x20
+
+#define FEC_TCNTRL_GTS                  0x00000001
+#define FEC_TCNTRL_HBC                  0x00000002
+#define FEC_TCNTRL_FDEN                 0x00000004
+#define FEC_TCNTRL_TFC_PAUSE            0x00000008
+#define FEC_TCNTRL_RFC_PAUSE            0x00000010
+
+#define FEC_ECNTRL_RESET                0x00000001
+#define FEC_ECNTRL_ETHER_EN             0x00000002
+
 /* Receive & Transmit Buffer Descriptor definitions */
 typedef struct BufferDescriptor {
 	uint16 status;

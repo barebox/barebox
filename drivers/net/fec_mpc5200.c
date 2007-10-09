@@ -597,17 +597,18 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	 */
 	ievent = fec->eth->ievent;
 	fec->eth->ievent = ievent;
-	if (ievent & 0x20060000) {
+	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
+				FEC_IEVENT_RFIFO_ERROR)) {
 		/* BABT, Rx/Tx FIFO errors */
 		mpc5xxx_fec_halt(dev);
 		mpc5xxx_fec_init(dev);
 		return 0;
 	}
-	if (ievent & 0x80000000) {
+	if (ievent & FEC_IEVENT_HBERR) {
 		/* Heartbeat error */
 		fec->eth->x_cntrl |= 0x00000001;
 	}
-	if (ievent & 0x10000000) {
+	if (ievent & FEC_IEVENT_GRA) {
 		/* Graceful stop complete */
 		if (fec->eth->x_cntrl & 0x00000001) {
 			mpc5xxx_fec_halt(dev);

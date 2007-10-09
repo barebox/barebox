@@ -22,20 +22,16 @@
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 /* #define DEBUG	0x28 */
 
-#if (DEBUG & 0x60)
-static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec);
-static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec);
-#endif /* DEBUG */
-
 typedef struct {
-    uint8 data[1500];           /* actual data */
-    int length;                 /* actual length */
-    int used;                   /* buffer in use or not */
-    uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
+	uint8 data[1500];           /* actual data */
+	int length;                 /* actual length */
+	int used;                   /* buffer in use or not */
+	uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
-/* MII-interface related functions */
-/********************************************************************/
+/*
+ * MII-interface related functions
+ */
 static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t * retVal)
 {
@@ -78,7 +74,6 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	return 0;
 }
 
-/********************************************************************/
 static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t data)
 {
@@ -113,7 +108,6 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	return 0;
 }
 
-/********************************************************************/
 static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
 {
 	int ix;
@@ -143,7 +137,6 @@ static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
 	return 0;
 }
 
-/********************************************************************/
 static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 {
 	int ix;
@@ -165,7 +158,6 @@ static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 	fec->cleanTbdNum = FEC_TBD_NUM;
 }
 
-/********************************************************************/
 static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd)
 {
 	/*
@@ -189,7 +181,6 @@ static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd
 	fec->rbdIndex = (fec->rbdIndex + 1) % FEC_RBD_NUM;
 }
 
-/********************************************************************/
 static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 {
 	volatile FEC_TBD *pUsedTbd;
@@ -227,7 +218,6 @@ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 	}
 }
 
-/********************************************************************/
 static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
 	/* no eeprom */
@@ -292,7 +282,6 @@ static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
         return 0;
 }
 
-/********************************************************************/
 static int mpc5xxx_fec_init(struct eth_device *dev)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
@@ -503,18 +492,12 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 }
 
 #if (DEBUG & 0x60)
-/********************************************************************/
 
 static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
-	uint16 phyAddr = CONFIG_PHY_ADDR;
-	uint16 phyStatus;
-
 	if ((fec->eth->tfifo_lrf_ptr != fec->eth->tfifo_lwf_ptr)
 		|| (fec->eth->tfifo_rdptr != fec->eth->tfifo_wrptr)) {
 
-		fec5xxx_miiphy_read(devname, phyAddr, 0x1, &phyStatus);
-		printf("\nphyStatus: 0x%04x\n", phyStatus);
 		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
 		printf("ievent:   0x%08x\n", fec->eth->ievent);
 		printf("x_status: 0x%08x\n", fec->eth->x_status);
@@ -531,14 +514,9 @@ static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 
 static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
-	uint16 phyAddr = CONFIG_PHY_ADDR;
-	uint16 phyStatus;
-
 	if ((fec->eth->rfifo_lrf_ptr != fec->eth->rfifo_lwf_ptr)
 		|| (fec->eth->rfifo_rdptr != fec->eth->rfifo_wrptr)) {
 
-		fec5xxx_miiphy_read(devname, phyAddr, 0x1, &phyStatus);
-		printf("\nphyStatus: 0x%04x\n", phyStatus);
 		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
 		printf("ievent:   0x%08x\n", fec->eth->ievent);
 		printf("x_status: 0x%08x\n", fec->eth->x_status);
@@ -553,8 +531,6 @@ static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 	}
 }
 #endif /* DEBUG */
-
-/********************************************************************/
 
 static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 		int data_length)
@@ -647,8 +623,6 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	return 0;
 }
 
-
-/********************************************************************/
 static int mpc5xxx_fec_recv(struct eth_device *dev)
 {
 	/*
@@ -730,7 +704,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	return len;
 }
 
-/********************************************************************/
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
         struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
@@ -786,5 +759,4 @@ static int mpc5xxx_fec_register(void)
 }
 
 device_initcall(mpc5xxx_fec_register);
-
 

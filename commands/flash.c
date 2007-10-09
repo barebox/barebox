@@ -65,8 +65,11 @@ static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	if (argc == 2)
-		parse_area_spec(argv[optind], &start, &size);
+	if (argc == 3)
+		if (parse_area_spec(argv[2], &start, &size)) {
+			printf("could not parse: %s\n", argv[optind]);
+			return 1;
+		}
 
 	if(erase(fd, size, start)) {
 		perror("erase");
@@ -127,7 +130,10 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	}
 
 	if (argc == 3)
-		parse_area_spec(argv[optind], &start, &size);
+		if (parse_area_spec(argv[2], &start, &size)) {
+			printf("could not parse: %s\n", argv[optind]);
+			return 1;
+		}
 
         if(protect(fd, size, start, prot)) {
 		perror("protect");

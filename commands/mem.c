@@ -145,7 +145,10 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 
 	if (optind  < argc) {
-		parse_area_spec(argv[optind], &start, &size);
+		if (parse_area_spec(argv[optind], &start, &size)) {
+			printf("could not parse: %s\n", argv[optind]);
+			return 1;
+		}
 		if (size == ~0)
 			size = 0x100;
 	}

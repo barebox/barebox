@@ -11,9 +11,6 @@
 #ifndef __MPC5XXX_FEC_H
 #define __MPC5XXX_FEC_H
 
-#include <common.h>
-#include <asm/arch/sdma.h>
-
 typedef unsigned long uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
@@ -248,6 +245,7 @@ typedef struct BufferDescriptor {
 	uint16 dataLength;
 	uint32 dataPointer;
 } FEC_RBD;
+
 typedef struct {
 	uint16 status;
 	uint16 dataLength;

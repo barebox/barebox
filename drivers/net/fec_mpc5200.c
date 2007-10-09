@@ -34,7 +34,9 @@ typedef struct {
 static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t * retVal)
 {
-	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
+	struct eth_device *edev = mdev->edev;
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
+
 	uint32 reg;		/* convenient holder for the PHY register */
 	uint32 phy;		/* convenient holder for the PHY */
 	int timeout = 0xffff;
@@ -46,27 +48,27 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
-	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg);
+	fec->eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg);
 
 	/*
 	 * wait for the related interrupt
 	 */
-	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
+	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
 
 	if (timeout == 0) {
-		debug ("Read MDIO failed...\n");
+		debug("Read MDIO failed...\n");
 		return -1;
 	}
 
 	/*
 	 * clear mii interrupt bit
 	 */
-	eth->ievent = FEC_IEVENT_MII;
+	fec->eth->ievent = FEC_IEVENT_MII;
 
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = (uint16) eth->mii_data;
+	*retVal = (uint16) fec->eth->mii_data;
 
 	return 0;
 }
@@ -74,7 +76,9 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t data)
 {
-	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
+	struct eth_device *edev = mdev->edev;
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
+
 	uint32 reg;		/* convenient holder for the PHY register */
 	uint32 phy;		/* convenient holder for the PHY */
 	int timeout = 0xffff;
@@ -82,13 +86,13 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
-	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
+	fec->eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
 			FEC_MII_DATA_TA | phy | reg | data);
 
 	/*
 	 * wait for the MII interrupt
 	 */
-	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
+	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
 
 	if (timeout == 0) {
 		debug("Write MDIO failed...\n");
@@ -98,7 +102,7 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * clear MII interrupt bit
 	 */
-	eth->ievent = FEC_IEVENT_MII;
+	fec->eth->ievent = FEC_IEVENT_MII;
 
 	return 0;
 }
@@ -435,7 +439,7 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * wait for graceful stop to register
 	 */
-	while ((counter--) && (!(fec->eth->ievent & 0x10000000))) ;
+	while ((counter--) && (!(fec->eth->ievent & FEC_IEVENT_GRA))) ;
 
 	/*
 	 * Disable SmartDMA tasks
@@ -465,7 +469,6 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 //	fec->eth->reset_cntrl = 0x01000000;
 
 	debug("Ethernet task stopped\n");
-
 }
 
 #ifdef DEBUG_FIFO
@@ -682,7 +685,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->get_mac_address = mpc5xxx_fec_get_hwaddr,
 	edev->set_mac_address = mpc5xxx_fec_set_hwaddr,
 
-	fec->eth = (ethernet_regs *)MPC5XXX_FEC;
+	fec->eth = (ethernet_regs *)dev->map_base;
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 

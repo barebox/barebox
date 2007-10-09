@@ -41,7 +41,14 @@ lowlevel_init:
 
 	writel(0x00070f08, GPCR)
 
-	mov	pc,r10
+	writel(0x130410c3, PCDR0)
+	writel(0x09030913, PCDR1)
+
+	/* Skip SDRAM initialization if we run from RAM */
+	cmp	pc, #0xa0000000
+	bls	1f
+	cmp	pc, #0xc0000000
+	bhi	1f
 
 	/*
 	 * DDR on CSD0
@@ -74,5 +81,5 @@ lowlevel_init:
 	mov		r1, #0x0
 	strb		r1, [r0]
 	writel(0x82126080, 0xD8001000)
-
+1:
 	mov	pc,r10

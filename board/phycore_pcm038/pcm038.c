@@ -34,7 +34,7 @@ static struct device_d cfi_dev = {
 	.id       = "nor0",
 
 	.map_base = 0xC0000000,
-	.size     = 16 * 1024 * 1024, /* FIXME */
+	.size     = 32 * 1024 * 1024,
 };
 
 static struct device_d sdram_dev = {
@@ -42,7 +42,7 @@ static struct device_d sdram_dev = {
 	.id       = "ram0",
 
 	.map_base = 0xa0000000,
-	.size     = 16 * 1024 * 1024, /* FIXME */
+	.size     = 32 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
 };

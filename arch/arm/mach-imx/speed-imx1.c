@@ -37,12 +37,12 @@
  */
 /* ------------------------------------------------------------------------- */
 
-ulong imx_get_systemclk(void)
+ulong imx_get_spllclk(void)
 {
 	return imx_decode_pll(SPCTL0, CONFIG_SYSPLL_CLK_FREQ);
 }
 
-ulong imx_get_mcuclk(void)
+ulong imx_get_mpllclk(void)
 {
 	return imx_decode_pll(MPCTL0, CONFIG_SYS_CLK_FREQ);
 }
@@ -55,7 +55,7 @@ ulong imx_get_fclk(void)
 ulong imx_get_hclk(void)
 {
 	u32 bclkdiv = (( CSCR >> 10 ) & 0xf) + 1;
-	return get_systemPLLCLK() / bclkdiv;
+	return imx_get_spllclk() / bclkdiv;
 }
 
 ulong imx_get_bclk(void)
@@ -65,17 +65,17 @@ ulong imx_get_bclk(void)
 
 ulong imx_get_perclk1(void)
 {
-	return get_systemPLLCLK() / (((PCDR) & 0xf)+1);
+	return imx_get_spllclk() / (((PCDR) & 0xf)+1);
 }
 
 ulong imx_get_perclk2(void)
 {
-	return get_systemPLLCLK() / (((PCDR>>4) & 0xf)+1);
+	return imx_get_spllclk() / (((PCDR>>4) & 0xf)+1);
 }
 
 ulong imx_get_perclk3(void)
 {
-	return get_systemPLLCLK() / (((PCDR>>16) & 0x7f)+1);
+	return imx_get_spllclk() / (((PCDR>>16) & 0x7f)+1);
 }
 
 #if 0

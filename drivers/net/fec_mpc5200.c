@@ -34,8 +34,84 @@ typedef struct {
     uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
-static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8 phyAddr, uint8 regAddr, uint16 * retVal);
-static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8 phyAddr, uint8 regAddr, uint16 data);
+/* MII-interface related functions */
+/********************************************************************/
+static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
+	uint8_t regAddr, uint16_t * retVal)
+{
+	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
+	uint32 reg;		/* convenient holder for the PHY register */
+	uint32 phy;		/* convenient holder for the PHY */
+	int timeout = 0xffff;
+
+	/*
+	 * reading from any PHY's register is done by properly
+	 * programming the FEC's MII data register.
+	 */
+	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
+	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
+
+	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg);
+
+	/*
+	 * wait for the related interrupt
+	 */
+	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
+
+	if (timeout == 0) {
+#if (DEBUG & 0x2)
+		printf ("Read MDIO failed...\n");
+#endif
+		return -1;
+	}
+
+	/*
+	 * clear mii interrupt bit
+	 */
+	eth->ievent = FEC_IEVENT_MII;
+
+	/*
+	 * it's now safe to read the PHY's register
+	 */
+	*retVal = (uint16) eth->mii_data;
+
+	return 0;
+}
+
+/********************************************************************/
+static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
+	uint8_t regAddr, uint16_t data)
+{
+	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
+	uint32 reg;		/* convenient holder for the PHY register */
+	uint32 phy;		/* convenient holder for the PHY */
+	int timeout = 0xffff;
+
+	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
+	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
+
+	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
+			FEC_MII_DATA_TA | phy | reg | data);
+
+	/*
+	 * wait for the MII interrupt
+	 */
+	while ((timeout--) && (!(eth->ievent & FEC_IEVENT_MII))) ;
+
+	if (timeout == 0) {
+#if (DEBUG & 0x2)
+		printf ("Write MDIO failed...\n");
+#endif
+		return -1;
+	}
+
+	/*
+	 * clear MII interrupt bit
+	 */
+	eth->ievent = FEC_IEVENT_MII;
+
+	return 0;
+}
 
 /********************************************************************/
 static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
@@ -694,85 +770,6 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	}
 
 	eth_register(edev);
-	return 0;
-}
-
-/* MII-interface related functions */
-/********************************************************************/
-static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t * retVal)
-{
-	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
-	uint32 reg;		/* convenient holder for the PHY register */
-	uint32 phy;		/* convenient holder for the PHY */
-	int timeout = 0xffff;
-
-	/*
-	 * reading from any PHY's register is done by properly
-	 * programming the FEC's MII data register.
-	 */
-	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
-	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
-
-	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg);
-
-	/*
-	 * wait for the related interrupt
-	 */
-	while ((timeout--) && (!(eth->ievent & 0x00800000))) ;
-
-	if (timeout == 0) {
-#if (DEBUG & 0x2)
-		printf ("Read MDIO failed...\n");
-#endif
-		return -1;
-	}
-
-	/*
-	 * clear mii interrupt bit
-	 */
-	eth->ievent = 0x00800000;
-
-	/*
-	 * it's now safe to read the PHY's register
-	 */
-	*retVal = (uint16) eth->mii_data;
-
-	return 0;
-}
-
-/********************************************************************/
-static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t data)
-{
-	ethernet_regs *eth = (ethernet_regs *)MPC5XXX_FEC;
-	uint32 reg;		/* convenient holder for the PHY register */
-	uint32 phy;		/* convenient holder for the PHY */
-	int timeout = 0xffff;
-
-	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
-	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
-
-	eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
-			FEC_MII_DATA_TA | phy | reg | data);
-
-	/*
-	 * wait for the MII interrupt
-	 */
-	while ((timeout--) && (!(eth->ievent & 0x00800000))) ;
-
-	if (timeout == 0) {
-#if (DEBUG & 0x2)
-		printf ("Write MDIO failed...\n");
-#endif
-		return -1;
-	}
-
-	/*
-	 * clear MII interrupt bit
-	 */
-	eth->ievent = 0x00800000;
-
 	return 0;
 }
 

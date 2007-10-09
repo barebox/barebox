@@ -7,6 +7,7 @@
 
 #define IMX_IO_BASE		0x10000000
 
+#define IMX_AIPI1_BASE             (0x00000 + IMX_IO_BASE)
 #define IMX_WDT_BASE               (0x02000 + IMX_IO_BASE)
 #define IMX_TIM1_BASE              (0x03000 + IMX_IO_BASE)
 #define IMX_TIM2_BASE              (0x04000 + IMX_IO_BASE)
@@ -21,10 +22,21 @@
 #define IMX_UART5_BASE             (0x1b000 + IMX_IO_BASE)
 #define IMX_UART6_BASE             (0x1c000 + IMX_IO_BASE)
 #define IMX_TIM6_BASE              (0x1f000 + IMX_IO_BASE)
+#define IMX_AIPI2_BASE             (0x20000 + IMX_IO_BASE)
 #define IMX_PLL_BASE               (0x27000 + IMX_IO_BASE)
+#define IMX_SYSTEM_CTL_BASE        (0x27800 + IMX_IO_BASE)
 
 #define IMX_ESD_BASE               (0xd8001000)
 #define IMX_WEIM_BASE              (0xd8002000)
+
+/* AIPI */
+#define AIPI1_PSR0	__REG(IMX_AIPI1_BASE + 0x00)
+#define AIPI1_PSR1	__REG(IMX_AIPI1_BASE + 0x04)
+#define AIPI2_PSR0	__REG(IMX_AIPI2_BASE + 0x00)
+#define AIPI2_PSR1	__REG(IMX_AIPI2_BASE + 0x04)
+
+/* System Control */
+#define GPCR	__REG(IMX_SYSTEM_CTL_BASE + 0x18)
 
 /* Chip Select Registers */
 #define CS0U __REG(IMX_WEIM_BASE + 0x00) /* Chip Select 0 Upper Register    */

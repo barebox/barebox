@@ -54,6 +54,11 @@ static int clocksource_init (void)
 	/* setup GP Timer 1 */
 	GPT(GPT_TCTL) = TCTL_SWR;
 
+#ifdef CONFIG_ARCH_IMX27
+	PCCR0 |= PCCR0_GPT1_EN;
+	PCCR1 |= PCCR1_PERCLK1_EN;
+#endif
+
 	for (i = 0; i < 100; i++)
 		GPT(GPT_TCTL) = 0; /* We have no udelay by now */
 

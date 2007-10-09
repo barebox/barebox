@@ -105,7 +105,7 @@ int console_register(struct console_device *newcdev)
 			CONFIG_BAUDRATE);
 		console_baudrate_set(dev, &newcdev->baudrate_param,
 			newcdev->baudrate_string);
-		cdev->baudrate_param.value = newcdev->baudrate_string;
+		newcdev->baudrate_param.value = newcdev->baudrate_string;
 		dev_add_param(dev, &newcdev->baudrate_param);
 	}
 

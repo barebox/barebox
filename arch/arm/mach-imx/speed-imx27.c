@@ -50,6 +50,18 @@ ulong imx_get_armclk(void)
 	return fref / div;
 }
 
+ulong imx_get_ahbclk(void)
+{
+	ulong cscr = CSCR;
+	ulong fref = imx_get_mpllclk();
+	ulong div;
+
+	div = ((cscr >> 8) & 0x3) + 1;
+
+	return fref / div;
+
+}
+
 ulong imx_get_spllclk(void)
 {
 	ulong cscr = CSCR;

@@ -2,14 +2,18 @@
 #define __MODULE_H
 
 #include <elf.h>
-#include <asm/module.h>
 #include <compiler.h>
+#include <list.h>
 
 #ifndef MODULE_SYMBOL_PREFIX
 #define MODULE_SYMBOL_PREFIX
 #endif
 
+#define MODULE_NAME_LEN (64 - sizeof(unsigned long))
+
 #ifdef CONFIG_MODULES
+#include <asm/module.h>
+
 struct kernel_symbol
 {
 	unsigned long value;
@@ -29,12 +33,10 @@ struct kernel_symbol
 
 #define EXPORT_SYMBOL(sym)					\
 	__EXPORT_SYMBOL(sym, "")
-#else
-#define EXPORT_SYMBOL(sym)
-#endif
 
 struct module {
-	char *name;
+	/* Unique handle for this module */
+	char name[MODULE_NAME_LEN];
 
 	/* Startup function. */
 	int (*init)(void);
@@ -46,6 +48,8 @@ struct module {
 	struct mod_arch_specific arch;
 
 	unsigned long core_size;
+
+	struct list_head list;
 };
 
 /* Apply the given relocation to the (simplified) ELF.  Return -error
@@ -63,6 +67,9 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 		       unsigned int symindex,
 		       unsigned int relsec,
 		       struct module *mod);
+#else
+#define EXPORT_SYMBOL(sym)
+#endif /* CONFIG_MODULE */
 
 #endif /* __MODULE_H */
 

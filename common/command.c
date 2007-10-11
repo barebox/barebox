@@ -30,6 +30,11 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <environment.h>
+#include <list.h>
+#include <init.h>
+
+LIST_HEAD(command_list);
+EXPORT_SYMBOL(command_list);
 
 static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -200,36 +205,28 @@ U_BOOT_CMD_START(help)
 U_BOOT_CMD_END
 
 #ifdef CONFIG_MODULES
-struct cmd_list {
-	cmd_tbl_t *cmd;
-	struct cmd_list *next;
-};
-
-static struct cmd_list *cmd_list;
 
 int register_command(cmd_tbl_t *cmd)
 {
-	struct cmd_list *c = cmd_list;
+	/*
+	 * We do not check if the command already exists.
+	 * This allows us to overwrite a builtin command
+	 * with a module.
+	 */
 
-	debug("register command %s\n", cmd->name);
+	printf("register command %s\n", cmd->name);
 
-	if (!c) {
-		cmd_list = (struct cmd_list *)xzalloc(sizeof(struct cmd_list));
-		cmd_list->cmd = cmd;
-		return 0;
-	}
-
-	while (c->next)
-		c = c->next;
-
-	c->next = (struct cmd_list *)xzalloc(sizeof(struct cmd_list));
-	c->next->cmd = cmd;
+	/*
+	 * Would be nice to have some kind of list_add_sort
+	 * to keep the command list in order
+	 */
+	list_add_tail(&cmd->list, &command_list);
 
 	return 0;
 }
 #endif
 
-/***************************************************************************
+/*
  * find command table entry for a command
  */
 cmd_tbl_t *find_cmd (const char *cmd)
@@ -238,35 +235,19 @@ cmd_tbl_t *find_cmd (const char *cmd)
 	cmd_tbl_t *cmdtp_temp = &__u_boot_cmd_start;	/*Init value */
 	int len;
 	int n_found = 0;
-#ifdef CONFIG_MODULES
-	struct cmd_list *list = cmd_list;
-#endif
 	len = strlen (cmd);
 
-#ifdef CONFIG_MODULES
-	while(list) {
-		cmdtp = list->cmd;
+	cmdtp = list_entry(&command_list, cmd_tbl_t, list);
+
+	for_each_command(cmdtp) {
 		if (strncmp (cmd, cmdtp->name, len) == 0) {
 			if (len == strlen (cmdtp->name))
-				return cmdtp;	/* full match */
+				return cmdtp;		/* full match */
 
-			cmdtp_temp = cmdtp;	/* abbreviated command ? */
+			cmdtp_temp = cmdtp;		/* abbreviated command ? */
 			n_found++;
 		}
-		list = list->next;
-	}
-#endif
 
-	for (cmdtp = &__u_boot_cmd_start;
-	     cmdtp != &__u_boot_cmd_end;
-	     cmdtp++) {
-		if (strncmp (cmd, cmdtp->name, len) == 0) {
-			if (len == strlen (cmdtp->name))
-				return cmdtp;	/* full match */
-
-			cmdtp_temp = cmdtp;	/* abbreviated command ? */
-			n_found++;
-		}
 		if (cmdtp->aliases) {
 			char **aliases = cmdtp->aliases;
 			while(*aliases) {
@@ -281,12 +262,33 @@ cmd_tbl_t *find_cmd (const char *cmd)
 			}
 		}
 	}
+
 	if (n_found == 1) {			/* exactly one match */
 		return cmdtp_temp;
 	}
 
 	return NULL;	/* not found or ambiguous command */
 }
+
+/*
+ * Put all commands into a linked list. Without module support we could use
+ * the raw command array, but with module support a list is easier to handle.
+ * It does not create significant overhead so do it also without module
+ * support.
+ */
+static int init_command_list(void)
+{
+	cmd_tbl_t *cmdtp;
+
+	for (cmdtp = &__u_boot_cmd_start;
+			cmdtp != &__u_boot_cmd_end;
+			cmdtp++)
+		list_add_tail(&cmdtp->list, &command_list);
+
+	return 0;
+}
+
+late_initcall(init_command_list);
 
 #ifdef CONFIG_AUTO_COMPLETE
 

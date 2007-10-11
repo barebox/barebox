@@ -27,11 +27,18 @@
 #ifndef __COMMAND_H
 #define __COMMAND_H
 
+#include <list.h>
+
 #ifndef NULL
 #define NULL	0
 #endif
 
 #ifndef	__ASSEMBLY__
+
+extern struct list_head command_list;
+
+#define for_each_command(cmd)	list_for_each_entry(cmd, &command_list, list)
+
 /*
  * Monitor Command Table
  */
@@ -43,6 +50,8 @@ struct cmd_tbl_s {
 					/* Implementation function	*/
 	int		(*cmd)(struct cmd_tbl_s *, int, char *[]);
 	char		*usage;		/* Usage message	(short)	*/
+
+	struct list_head list;		/* List of commands		*/
 #ifdef	CONFIG_LONGHELP
 	char		*help;		/* Help  message	(long)	*/
 #endif

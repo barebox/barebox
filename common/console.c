@@ -34,8 +34,10 @@
 #include <clock.h>
 #include <kfifo.h>
 #include <module.h>
+#include <list.h>
 
-static struct console_device *first_console = NULL;
+LIST_HEAD(console_list);
+EXPORT_SYMBOL(console_list);
 
 #define CONSOLE_UNINITIALIZED	0
 #define CONSOLE_INIT_EARLY	1
@@ -95,7 +97,6 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 
 int console_register(struct console_device *newcdev)
 {
-	struct console_device *cdev = first_console;
 	struct device_d *dev = newcdev->dev;
 
 	if (newcdev->setbrg) {
@@ -118,33 +119,33 @@ int console_register(struct console_device *newcdev)
 #ifdef CONFIG_CONSOLE_ACTIVATE_ALL
 	console_std_set(dev, &newcdev->active_param, "ioe");
 #endif
-	if (!first_console) {
 #ifdef CONFIG_CONSOLE_ACTIVATE_FIRST
+	if (list_empty(&console_list))
 		console_std_set(dev, &newcdev->active_param, "ioe");
 #endif
-		first_console = newcdev;
-		return 0;
-	}
 
-	while (1) {
-		if (!cdev->next) {
-			cdev->next = newcdev;
-			return 0;
-		}
-		cdev = cdev->next;
-	}
+	list_add_tail(&newcdev->list, &console_list);
+
+	return 0;
 }
 EXPORT_SYMBOL(console_register);
 
 int getc_raw(void)
 {
-	struct console_device *cdev = NULL;
+	struct console_device *cdev;
+	int active = 0;
+
 	while (1) {
-		if (!cdev)
-			cdev = first_console;
-		if (cdev->f_active & CONSOLE_STDIN && cdev->tstc(cdev))
-			return cdev->getc(cdev);
-		cdev = cdev->next;
+		for_each_console(cdev) {
+			if (!(cdev->f_active & CONSOLE_STDIN))
+				continue;
+			active = 1;
+			if (cdev->tstc(cdev))
+				return cdev->getc(cdev);
+		}
+		if (!active)
+			/* no active console found. bail out */
+			return -1;
 	}
 }
 
@@ -191,12 +192,13 @@ EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
-	struct console_device *cdev = first_console;
+	struct console_device *cdev;
 
-	while (cdev) {
-		if (cdev->f_active & CONSOLE_STDIN && cdev->tstc(cdev))
+	for_each_console(cdev) {
+		if (!(cdev->f_active & CONSOLE_STDIN))
+			continue;
+		if (cdev->tstc(cdev))
 			return 1;
-		cdev = cdev->next;
 	}
 
 	return 0;
@@ -207,7 +209,7 @@ void __initdata *early_console_base;
 
 void console_putc(unsigned int ch, char c)
 {
-	struct console_device *cdev = first_console;
+	struct console_device *cdev;
 	int init = INITDATA(initialized);
 
 	switch (init) {
@@ -221,13 +223,12 @@ void console_putc(unsigned int ch, char c)
 #endif
 
 	case CONSOLE_INIT_FULL:
-		while (cdev) {
+		for_each_console(cdev) {
 			if (cdev->f_active & ch) {
 				cdev->putc(cdev, c);
 				if (c == '\n')
 					cdev->putc(cdev, '\r');
 			}
-			cdev = cdev->next;
 		}
 		return;
 	default:
@@ -241,7 +242,7 @@ EXPORT_SYMBOL(console_putc);
 
 int fputc(int fd, char c)
 {
-	if(!first_console) {
+	if(list_empty(&console_list)) {
 		if(!fd)
 			console_putc(0, c);
 		return 0;

@@ -25,6 +25,7 @@
 #define _CONSOLE_H_
 
 #include <param.h>
+#include <list.h>
 
 #define CONSOLE_STDIN           (1 << 0)
 #define CONSOLE_STDOUT          (1 << 1)
@@ -38,7 +39,7 @@ struct console_device {
 	int  (*getc)(struct console_device *cdev);
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 
-	struct console_device *next;
+	struct list_head list;
 
 	unsigned char f_caps;
 	unsigned char f_active;
@@ -51,6 +52,9 @@ struct console_device {
 };
 
 int console_register(struct console_device *cdev);
+
+extern struct list_head console_list;
+#define for_each_console(console) list_for_each_entry(console, &console_list, list)
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 

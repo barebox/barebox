@@ -1,12 +1,6 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
-#include <linux/stddef.h>
-
-#define LIST_POISON1  ((void *) 0x00100100)
-#define LIST_POISON2  ((void *) 0x00200200)
-static inline void prefetch(const void *x) {;}
-
 /*
  * Simple doubly linked list implementation.
  *
@@ -16,6 +10,10 @@ static inline void prefetch(const void *x) {;}
  * generate better code by using them directly rather than
  * using the generic single-entry routines.
  */
+
+#define LIST_POISON1  ((void *) 0x00100100)
+#define LIST_POISON2  ((void *) 0x00200200)
+static inline void prefetch(const void *x) {;}
 
 struct list_head {
 	struct list_head *next, *prev;

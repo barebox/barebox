@@ -71,7 +71,7 @@ static void
 PingHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
 	IPaddr_t tmp;
-	volatile IP_t *ip = (volatile IP_t *)pkt;
+	IP_t *ip = (IP_t *)pkt;
 
 	tmp = NetReadIP((void *)&ip->ip_src);
 	if (tmp != NetPingIP)

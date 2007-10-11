@@ -26,6 +26,7 @@
 #include <command.h>
 #include <fs.h>
 #include <kallsyms.h>
+#include <list.h>
 
 static unsigned int find_sec(Elf_Ehdr *hdr,
 			     Elf_Shdr *sechdrs,
@@ -35,6 +36,7 @@ static unsigned int find_sec(Elf_Ehdr *hdr,
 	unsigned int i;
 
 	for (i = 1; i < hdr->e_shnum; i++) {
+		debug("find_sec: %s %s\n", name, secstrings+sechdrs[i].sh_name);
 		/* Alloc bit cleared means "ignore it." */
 		if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
 				!strcmp(secstrings+sechdrs[i].sh_name, name))
@@ -180,6 +182,8 @@ static void layout_sections( struct module *mod,
 	debug("core_size: %ld\n", mod->core_size);
 }
 
+LIST_HEAD(module_list);
+
 struct module * load_module(void *mod_image, unsigned long len)
 {
 	struct module *module = NULL;
@@ -191,6 +195,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 	int i;				/* Loop counter                     */
 	unsigned int strindex = 0;
 	unsigned int symindex = 0;
+	unsigned int modindex;
 	char *secstrings;
 	void *ptr = NULL;
 	int err;
@@ -203,8 +208,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 
 	if (len < ehdr->e_shoff + ehdr->e_shnum * sizeof(Elf_Shdr))
 		return NULL;
-
-	module = xzalloc(sizeof(struct module));
 
 	/* Find the section header string table for output info */
 	sechdrs = (Elf32_Shdr *) (mod_image + ehdr->e_shoff +
@@ -233,6 +236,16 @@ struct module * load_module(void *mod_image, unsigned long len)
 			strtab = mod_image + sechdrs[strindex].sh_offset;
 		}
 	}
+
+	modindex = find_sec(ehdr, sechdrs, secstrings,
+			    ".gnu.linkonce.this_module");
+	if (!modindex) {
+		printf("No module found in object\n");
+		err = -ENOEXEC;
+		goto cleanup;
+	}
+	module = (void *)sechdrs[modindex].sh_addr;
+
 	if (symindex == 0) {
 		printf("module has no symbols (stripped?)\n");
 		err = -ENOEXEC;
@@ -281,8 +294,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
 	sym = (void *)sechdrs[symindex].sh_addr;
 
-	cmdindex = find_sec(ehdr, sechdrs, secstrings,
-		MODULE_SYMBOL_PREFIX ".u_boot_cmd");
+	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".u_boot_cmd");
 	if (cmdindex) {
 		cmd_tbl_t *cmd = (cmd_tbl_t *)sechdrs[cmdindex].sh_addr;
 		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(cmd_tbl_t); i++) {
@@ -298,6 +310,8 @@ struct module * load_module(void *mod_image, unsigned long len)
 		}
 	}
 
+	list_add_tail(&module->list, &module_list);
+
 	return module;
 
 cleanup:
@@ -308,6 +322,22 @@ cleanup:
 
 	return NULL;
 }
+
+static int do_lsmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	struct module *mod;
+
+	list_for_each_entry(mod, &module_list, list)
+		printf("%s\n", mod->name);
+
+	return 0;
+}
+
+U_BOOT_CMD_START(lsmod)
+	.maxargs	= 1,
+	.cmd		= do_lsmod,
+	.usage		= "list modules",
+U_BOOT_CMD_END
 
 static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -330,23 +360,10 @@ static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	free(buf);
 
-#ifdef CONFIG_BLACKFIN
-	/*
-	 * FIXME: We need this for blackfin to disable the protection unit.
-	 *        This is ok for first simple testing, but what we really
-	 *        need is a mprotect call.
-	 */
-	icache_disable();
-#endif
-
 	if (module) {
 		if (module->init)
 			module->init();
 	}
-
-#ifdef  CONFIG_BLACKFIN
-	icache_enable();
-#endif
 
 	return 0;
 }

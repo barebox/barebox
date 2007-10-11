@@ -71,12 +71,11 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 };
 
 struct device_d eth_dev = {
-	.name     = "fec_mpc5xxx",
-	.id       = "eth0",
-
-	.platform_data = &fec_info,
-
-	.type     = DEVICE_TYPE_ETHER,
+	.name		= "fec_mpc5xxx",
+	.id		= "eth0",
+	.map_base	= MPC5XXX_FEC,
+	.platform_data	= &fec_info,
+	.type		= DEVICE_TYPE_ETHER,
 };
 
 #define SCRATCHMEM_SIZE (1024 * 1024 * 4)

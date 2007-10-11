@@ -211,7 +211,7 @@ ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, unsigned 
 	return -ENOSYS;
 }
 
-ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset)
+int dev_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	if (dev->driver->erase)
 		return dev->driver->erase(dev, count, offset);
@@ -227,7 +227,7 @@ int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int pr
 	return -ENOSYS;
 }
 
-ssize_t dev_memmap(struct device_d *dev, void **map, int flags)
+int dev_memmap(struct device_d *dev, void **map, int flags)
 {
 	if (dev->driver->memmap)
 		return dev->driver->memmap(dev, map, flags);

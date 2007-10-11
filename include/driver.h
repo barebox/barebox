@@ -54,7 +54,7 @@ struct driver_d {
 	int     (*remove)(struct device_d *);
 	ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
 	ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
-	ssize_t (*erase) (struct device_d*, size_t count, unsigned long offset);
+	int     (*erase) (struct device_d*, size_t count, unsigned long offset);
 	int     (*protect)(struct device_d*, size_t count, unsigned long offset, int prot);
 	int     (*memmap)(struct device_d*, void **map, int flags);
 
@@ -109,8 +109,8 @@ struct driver_d *get_driver_by_name(const char *name);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
-ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset);
-ssize_t dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
+int     dev_erase(struct device_d *dev, size_t count, unsigned long offset);
+int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
 int     dev_memmap(struct device_d *dev, void **map, int flags);
 
 /* These are used by drivers which work with direct memory accesses */

@@ -2,7 +2,6 @@
 #define _LINUX_LIST_H
 
 #include <linux/stddef.h>
-#include <asm/system.h>
 
 #define LIST_POISON1  ((void *) 0x00100100)
 #define LIST_POISON2  ((void *) 0x00200200)

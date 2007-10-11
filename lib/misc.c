@@ -32,28 +32,28 @@
  */
 unsigned long strtoul_suffix(const char *str, char **endp, int base)
 {
-        unsigned long val;
-        char *end;
+	unsigned long val;
+	char *end;
 
-        val = simple_strtoul(str, &end, base);
+	val = simple_strtoul(str, &end, base);
 
-        switch (*end) {
-        case 'G':
-                val *= 1024;
-        case 'M':
+	switch (*end) {
+	case 'G':
 		val *= 1024;
-        case 'k':
-        case 'K':
-                val *= 1024;
-                end++;
+	case 'M':
+		val *= 1024;
+	case 'k':
+	case 'K':
+		val *= 1024;
+		end++;
 	default:
 		break;
-        }
+	}
 
-        if (endp)
-                *endp = (char *)end;
+	if (endp)
+		*endp = (char *)end;
 
-        return val;
+	return val;
 }
 EXPORT_SYMBOL(strtoul_suffix);
 
@@ -88,7 +88,7 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 	}
 
 	if (*str == '-') {
-                /* beginning and end given */
+		/* beginning and end given */
 		end = strtoul_suffix(str + 1, NULL, 0);
 		if (end < *start) {
 			printf("end < start\n");
@@ -99,7 +99,7 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 	}
 
 	if (*str == '+') {
-                /* beginning and size given */
+		/* beginning and size given */
 		*size = strtoul_suffix(str + 1, NULL, 0);
 		return 0;
 	}

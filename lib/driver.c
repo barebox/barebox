@@ -63,16 +63,16 @@ int get_free_deviceid(char *id, char *id_template)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
-        if (strcmp(dev->name, drv->name))
-                return -1;
-        if (dev->type != drv->type)
-                return -1;
-        if(drv->probe(dev))
-                return -1;
+	if (strcmp(dev->name, drv->name))
+		return -1;
+	if (dev->type != drv->type)
+		return -1;
+	if(drv->probe(dev))
+		return -1;
 
-        dev->driver = drv;
+	dev->driver = drv;
 
-        return 0;
+	return 0;
 }
 
 int register_device(struct device_d *new_device)
@@ -88,9 +88,9 @@ int register_device(struct device_d *new_device)
 	list_add_tail(&new_device->list, &device_list);
 
 	for_each_driver(drv) {
-                if (!match(drv, new_device))
-                        break;
-        }
+		if (!match(drv, new_device))
+			break;
+	}
 
 	return 0;
 }
@@ -121,7 +121,7 @@ struct driver_d *get_driver_by_name(const char *name)
 
 static void noinfo(struct device_d *dev)
 {
-        printf("no info available for %s\n", dev->id);
+	printf("no info available for %s\n", dev->id);
 }
 
 static void noshortinfo(struct device_d *dev)
@@ -130,19 +130,19 @@ static void noshortinfo(struct device_d *dev)
 
 int register_driver(struct driver_d *drv)
 {
-        struct device_d *dev = NULL;
+	struct device_d *dev = NULL;
 
 	debug("register_driver: %s\n",new_driver->name);
 
 	list_add_tail(&drv->list, &driver_list);
 
-        if (!drv->info)
-                drv->info = noinfo;
-        if (!drv->shortinfo)
-                drv->shortinfo = noshortinfo;
+	if (!drv->info)
+		drv->info = noinfo;
+	if (!drv->shortinfo)
+		drv->shortinfo = noshortinfo;
 
 	for_each_device(dev)
-                match(drv, dev);
+		match(drv, dev);
 
 	return 0;
 }
@@ -152,35 +152,35 @@ static char devicename_from_spec_str_buf[PATH_MAX];
 
 char *deviceid_from_spec_str(const char *str, char **endp)
 {
-        char *buf = devicename_from_spec_str_buf;
-        const char *end;
+	char *buf = devicename_from_spec_str_buf;
+	const char *end;
 	int i = 0;
 
-        if (isdigit(*str)) {
-                /* No device name given, use default driver mem */
-                sprintf(buf, "mem");
-                end = str;
-        } else {
-                /* OK, we have a device name, parse it */
-	        while (*str) {
-		        if (*str == ':') {
-                                str++;
-			        buf[i] = 0;
-			        break;
-        		}
+	if (isdigit(*str)) {
+		/* No device name given, use default driver mem */
+		sprintf(buf, "mem");
+		end = str;
+	} else {
+		/* OK, we have a device name, parse it */
+		while (*str) {
+			if (*str == ':') {
+				str++;
+				buf[i] = 0;
+				break;
+			}
 
-	        	buf[i++] = *str++;
-		        buf[i] = 0;
-		        if (i == MAX_DRIVER_NAME)
-			        return NULL;
-        	}
-                end = str;
-        }
+			buf[i++] = *str++;
+			buf[i] = 0;
+			if (i == MAX_DRIVER_NAME)
+				return NULL;
+		}
+		end = str;
+	}
 
-        if (endp)
-                *endp = (char *)end;
+	if (endp)
+		*endp = (char *)end;
 
-        return buf;
+	return buf;
 }
 
 /* Get a device struct from the beginning of the string. Default to mem if no
@@ -190,49 +190,49 @@ char *deviceid_from_spec_str(const char *str, char **endp)
  */
 struct device_d *device_from_spec_str(const char *str, char **endp)
 {
-        char *name;
-        name = deviceid_from_spec_str(str, endp);
-        return get_device_by_id(name);
+	char *name;
+	name = deviceid_from_spec_str(str, endp);
+	return get_device_by_id(name);
 }
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        if (dev->driver->read)
-                return dev->driver->read(dev, buf, count, offset, flags);
+	if (dev->driver->read)
+		return dev->driver->read(dev, buf, count, offset, flags);
 	errno = -ENOSYS;
-        return -ENOSYS;
+	return -ENOSYS;
 }
 
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        if (dev->driver->write)
-                return dev->driver->write(dev, buf, count, offset, flags);
+	if (dev->driver->write)
+		return dev->driver->write(dev, buf, count, offset, flags);
 	errno = -ENOSYS;
-        return -ENOSYS;
+	return -ENOSYS;
 }
 
 ssize_t dev_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
-        if (dev->driver->erase)
-                return dev->driver->erase(dev, count, offset);
+	if (dev->driver->erase)
+		return dev->driver->erase(dev, count, offset);
 	errno = -ENOSYS;
-        return -ENOSYS;
+	return -ENOSYS;
 }
 
 int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
-        if (dev->driver->protect)
-                return dev->driver->protect(dev, count, offset, prot);
+	if (dev->driver->protect)
+		return dev->driver->protect(dev, count, offset, prot);
 	errno = -ENOSYS;
-        return -ENOSYS;
+	return -ENOSYS;
 }
 
 ssize_t dev_memmap(struct device_d *dev, void **map, int flags)
 {
-        if (dev->driver->memmap)
-                return dev->driver->memmap(dev, map, flags);
+	if (dev->driver->memmap)
+		return dev->driver->memmap(dev, map, flags);
 	errno = -ENOSYS;
-        return -ENOSYS;
+	return -ENOSYS;
 }
 
 int generic_memmap_ro(struct device_d *dev, void **map, int flags)
@@ -251,7 +251,7 @@ int generic_memmap_rw(struct device_d *dev, void **map, int flags)
 
 int dummy_probe(struct device_d *dev)
 {
-        return 0;
+	return 0;
 }
 
 static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])

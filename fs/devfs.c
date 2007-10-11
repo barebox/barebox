@@ -27,6 +27,7 @@
 #include <fs.h>
 #include <command.h>
 #include <errno.h>
+#include <xfuncs.h>
 #include <linux/stat.h>
 
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
@@ -92,11 +93,10 @@ static DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 {
 	DIR *dir;
 
-	dir = malloc(sizeof(DIR));
-	if (!dir)
-		return NULL;
+	dir = xzalloc(sizeof(DIR));
 
-	dir->priv = get_first_device();
+	if (!list_empty(&device_list))
+		dir->priv = list_first_entry(&device_list, struct device_d, list);
 
 	return dir;
 }
@@ -105,12 +105,16 @@ static struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
 {
 	struct device_d *dev = dir->priv;
 
-	while (dev && (!strlen(dev->id) || !dev->driver))
-		dev = dev->next;
+	if (!dev)
+		return NULL;
 
-	if (dev) {
+	list_for_each_entry_from(dev, &device_list, list) {
+		if (!*dev->id)
+			continue;
+		if (!dev->driver)
+			continue;
 		strcpy(dir->d.d_name, dev->id);
-		dir->priv = dev->next;
+		dir->priv = list_entry(dev->list.next, struct device_d, list);
 		return &dir->d;
 	}
 	return NULL;

@@ -1,6 +1,8 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include <list.h>
+
 #define MAX_DRIVER_NAME 16
 
 #define DEVICE_TYPE_UNKNOWN     0
@@ -35,7 +37,7 @@ struct device_d {
 
 	struct driver_d *driver; /* The driver for this device */
 
-	struct device_d *next;
+	struct list_head list;
 
 	unsigned long type;
 
@@ -46,7 +48,7 @@ struct driver_d {
 	char name[MAX_DRIVER_NAME]; /* The name of this driver. Used to match to
 				     * the corresponding device.
 				     */
-	struct driver_d *next;
+	struct list_head list;
 
 	int     (*probe) (struct device_d *);
 	int     (*remove)(struct device_d *);
@@ -92,6 +94,12 @@ int get_free_deviceid(char *id, char *id_template);
 
 struct device_d *device_from_spec_str(const char *str, char **endp);
 char *deviceid_from_spec_str(const char *str, char **endp);
+
+extern struct list_head device_list;
+#define for_each_device(dev) list_for_each_entry(dev, &device_list, list)
+
+extern struct list_head driver_list;
+#define for_each_driver(drv) list_for_each_entry(drv, &driver_list, list)
 
 /* Find a driver with the given name. Currently the filesystem implementation
  * uses this to get the driver from the name the user specifies with the

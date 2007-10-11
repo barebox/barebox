@@ -163,19 +163,16 @@ static void setup_memory_tags (void)
 {
 	struct device_d *dev = NULL;
 
-	while (1) {
-		dev = get_device_by_type(DEVICE_TYPE_DRAM, dev);
+	list_for_each_entry(dev, &device_list, list) {
+		if (dev->type == DEVICE_TYPE_DRAM) {
+			params->hdr.tag = ATAG_MEM;
+			params->hdr.size = tag_size (tag_mem32);
 
-		if (!dev)
-			return;
+			params->u.mem.start = dev->map_base;
+			params->u.mem.size = dev->size;
 
-		params->hdr.tag = ATAG_MEM;
-		params->hdr.size = tag_size (tag_mem32);
-
-		params->u.mem.start = dev->map_base;
-		params->u.mem.size = dev->size;
-
-		params = tag_next (params);
+			params = tag_next (params);
+		}
 	}
 }
 #endif /* CONFIG_SETUP_MEMORY_TAGS */

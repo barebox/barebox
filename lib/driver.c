@@ -27,35 +27,24 @@
 #include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
+#include <list.h>
 
-static struct device_d *first_device = NULL;
-static struct driver_d *first_driver = NULL;
+LIST_HEAD(device_list);
+EXPORT_SYMBOL(device_list);
 
-struct device_d *get_first_device(void)
+LIST_HEAD(driver_list);
+EXPORT_SYMBOL(driver_list);
+
+struct device_d *get_device_by_id(const char *id)
 {
-	return first_device;
-}
+	struct device_d *dev;
 
-struct device_d *get_device_by_id(const char *_id)
-{
-	struct device_d *d;
-	char *id, *colon;
-
-	/* FIXME: is this still needed? */
-	id = strdup(_id);
-	if ((colon = strchr(id, ':')))
-		*colon = 0;
-
-	d = first_device;
-
-	while(d) {
-		if(!strcmp(id, d->id))
-			break;
-		d = d->next;
+	for_each_device(dev) {
+		if(!strcmp(id, dev->id))
+			return dev;
 	}
 
-	free(id);
-	return d;
+	return NULL;
 }
 
 int get_free_deviceid(char *id, char *id_template)
@@ -89,9 +78,6 @@ static int match(struct driver_d *drv, struct device_d *dev)
 int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
-        struct device_d *dev;
-
-	dev = first_device;
 
 	if(*new_device->id && get_device_by_id(new_device->id)) {
 		printf("device %s already exists\n", new_device->id);
@@ -99,23 +85,11 @@ int register_device(struct device_d *new_device)
 	}
 	debug ("register_device: %s\n",new_device->name);
 
-	if(!dev) {
-		first_device = new_device;
-		dev = first_device;
-	} else {
-		while(dev->next)
-			dev = dev->next;
-	}
+	list_add_tail(&new_device->list, &device_list);
 
-	dev->next = new_device;
-	new_device->next = 0;
-
-        drv = first_driver;
-
-        while(drv) {
+	for_each_driver(drv) {
                 if (!match(drv, new_device))
                         break;
-                drv = drv->next;
         }
 
 	return 0;
@@ -124,37 +98,25 @@ EXPORT_SYMBOL(register_device);
 
 void unregister_device(struct device_d *old_dev)
 {
-        struct device_d *dev;
-
 	debug("unregister_device: %s:%s\n",old_dev->name, old_dev->id);
 
-	dev = first_device;
+	if (old_dev->driver)
+		old_dev->driver->remove(old_dev);
 
-        while (dev) {
-                if (dev->next == old_dev) {
-			if (old_dev->driver)
-				old_dev->driver->remove(old_dev);
-                        dev->next = old_dev->next;
-                        return;
-                }
-                dev = dev->next;
-        }
+	list_del(&old_dev->list);
 }
 EXPORT_SYMBOL(unregister_device);
 
 struct driver_d *get_driver_by_name(const char *name)
 {
-	struct driver_d *d;
+	struct driver_d *drv;
 
-	d = first_driver;
-
-	while(d) {
-		if(!strcmp(name, d->name))
-			break;
-		d = d->next;
+	for_each_driver(drv) {
+		if(!strcmp(name, drv->name))
+			return drv;
 	}
 
-	return d;
+	return NULL;
 }
 
 static void noinfo(struct device_d *dev)
@@ -166,36 +128,21 @@ static void noshortinfo(struct device_d *dev)
 {
 }
 
-int register_driver(struct driver_d *new_driver)
+int register_driver(struct driver_d *drv)
 {
-	struct driver_d *drv;
         struct device_d *dev = NULL;
-
-	drv = first_driver;
 
 	debug("register_driver: %s\n",new_driver->name);
 
-	if(!drv) {
-		first_driver = new_driver;
-		drv = first_driver;
-	} else {
-		while(drv->next)
-			drv = drv->next;
-	}
+	list_add_tail(&drv->list, &driver_list);
 
-	drv->next = new_driver;
-	new_driver->next = 0;
+        if (!drv->info)
+                drv->info = noinfo;
+        if (!drv->shortinfo)
+                drv->shortinfo = noshortinfo;
 
-        if (!new_driver->info)
-                new_driver->info = noinfo;
-        if (!new_driver->shortinfo)
-                new_driver->shortinfo = noshortinfo;
-
-        dev = first_device;
-        while (dev) {
-                match(new_driver, dev);
-                dev = dev->next;
-        }
+	for_each_device(dev)
+                match(drv, dev);
 
 	return 0;
 }
@@ -247,30 +194,6 @@ struct device_d *device_from_spec_str(const char *str, char **endp)
         name = deviceid_from_spec_str(str, endp);
         return get_device_by_id(name);
 }
-
-/* Get devices from their type.
- * If last is NULL the first device of this type is given.
- * If last is not NULL, the next device of this type starting
- * from last is given.
- */
-struct device_d *get_device_by_type(ulong type, struct device_d *last)
-{
-	struct device_d *dev;
-
-	if (!last)
-		dev = first_device;
-	else
-		dev = last->next;
-
-	while (dev) {
-		if (dev->type == type)
-			return dev;
-		dev = dev->next;
-	}
-
-	return NULL;
-}
-EXPORT_SYMBOL(get_device_by_type);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {
@@ -333,50 +256,47 @@ int dummy_probe(struct device_d *dev)
 
 static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-        struct device_d *dev = first_device;
-        struct driver_d *drv = first_driver;
-        struct param_d *param;
+	struct device_d *dev;
+	struct driver_d *drv;
+	struct param_d *param;
 
-        if (argc == 1) {
-                printf("devices:\n");
+	if (argc == 1) {
+		printf("devices:\n");
 
-                while(dev) {
-                        printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",
-                                        dev->id, dev->map_base, dev->size,
+		for_each_device(dev) {
+			printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",
+					dev->id, dev->map_base, dev->size,
 					dev->driver ? 
 						dev->driver->name : "none");
-                        dev = dev->next;
-                }
+		}
 
-                printf("drivers:\n");
-                while(drv) {
-                        printf("%10s\n",drv->name);
-                        drv = drv->next;
-                }
-        } else {
-                struct device_d *dev = get_device_by_id(argv[1]);
+		printf("\ndrivers:\n");
+		for_each_driver(drv)
+			printf("%10s\n",drv->name);
+	} else {
+		struct device_d *dev = get_device_by_id(argv[1]);
 
-                if (!dev) {
-                        printf("no such device: %s\n",argv[1]);
-                        return -1;
-                }
+		if (!dev) {
+			printf("no such device: %s\n",argv[1]);
+			return -1;
+		}
 
-                if (dev->driver)
-                        dev->driver->info(dev);
+		if (dev->driver)
+			dev->driver->info(dev);
 
-                param = dev->param;
+		param = dev->param;
 
-                printf("%s\n", param ?
+		printf("%s\n", param ?
 				"Parameters:" : "no parameters available");
 
-                while (param) {
+		while (param) {
 			printf("%16s = %s\n", param->name, param->value);
-                        param = param->next;
-                }
+			param = param->next;
+		}
 
-        }
+	}
 
-        return 0;
+	return 0;
 }
 
 static __maybe_unused char cmd_devinfo_help[] =

@@ -30,14 +30,20 @@ lowlevel_init:
 	writel(0x04082008, SPCTL0)
 
 	writel(0x33f00304, CSCR)
-	writel(0x33f00304 | CSCR_MPEN | CSCR_SPEN | CSCR_MCU_SEL |
-			CSCR_SP_SEL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART,
+	writel(0x33f00300 | CSCR_FPM_EN | CSCR_MPEN | CSCR_SPEN | CSCR_MCU_SEL |
+			CSCR_SP_SEL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART |
+			0 ,
 			CSCR)
 
 	/* add some delay here */
 	mov r1, #0x1000
 1:	subs r1, r1, #0x1
 	bne 1b
+
+	writel(0x33f00300 | CSCR_FPM_EN | CSCR_MPEN | CSCR_SPEN | CSCR_MCU_SEL |
+			CSCR_SP_SEL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART |
+			CSCR_ARM_SRC_MPLL,
+			CSCR)
 
 	writel(0x00070f08, GPCR)
 
@@ -50,6 +56,9 @@ lowlevel_init:
 	cmp	pc, #0xc0000000
 	bhi	1f
 
+	mov	pc,r10
+
+1:
 	/*
 	 * DDR on CSD0
 	 */
@@ -81,5 +90,6 @@ lowlevel_init:
 	mov		r1, #0x0
 	strb		r1, [r0]
 	writel(0x82126080, 0xD8001000)
-1:
+
 	mov	pc,r10
+

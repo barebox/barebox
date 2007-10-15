@@ -393,10 +393,10 @@ extern struct nand_manufacturers nand_manuf_ids[];
  */
 struct nand_bbt_descr {
 	int	options;
-	int	pages[NAND_MAX_CHIPS];
+	int	*pages;
 	int	offs;
 	int	veroffs;
-	uint8_t version[NAND_MAX_CHIPS];
+	uint8_t *version;
 	int	len;
 	int	maxblocks;
 	int	reserved_block_code;

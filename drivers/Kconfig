@@ -22,6 +22,9 @@ config CFI_BUFFER_WRITE
 	bool "use cfi driver with buffer write"
 	depends on DRIVER_CFI || DRIVER_CFI_NEW
 
+config NAND
+	bool "NAND Flash support"
+
 endmenu
 
 endmenu

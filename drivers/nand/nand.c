@@ -23,20 +23,16 @@
 
 #include <common.h>
 #include <nand.h>
+#include <init.h>
+#include <xfuncs.h>
+#include <driver.h>
 
-#ifndef CFG_NAND_BASE_LIST
-#define CFG_NAND_BASE_LIST { CFG_NAND_BASE }
-#endif
+char *default_nand_name = "huhu";
 
-int nand_curr_device = -1;
-nand_info_t nand_info[CFG_MAX_NAND_DEVICE];
-
-static struct nand_chip nand_chip[CFG_MAX_NAND_DEVICE];
-static ulong base_address[CFG_MAX_NAND_DEVICE] = CFG_NAND_BASE_LIST;
-
-static const char default_nand_name[] = "nand";
-
-extern int board_nand_init(struct nand_chip *nand);
+static inline int board_nand_init(struct nand_chip *nand)
+{
+	return 0;
+}
 
 static void nand_init_chip(struct mtd_info *mtd, struct nand_chip *nand,
 			   ulong base_addr)
@@ -57,23 +53,38 @@ static void nand_init_chip(struct mtd_info *mtd, struct nand_chip *nand,
 
 }
 
-void nand_init(void)
-{
-	int i;
-	unsigned int size = 0;
-	for (i = 0; i < CFG_MAX_NAND_DEVICE; i++) {
-		nand_init_chip(&nand_info[i], &nand_chip[i], base_address[i]);
-		size += nand_info[i].size;
-		if (nand_curr_device == -1)
-			nand_curr_device = i;
-	}
-	printf("%lu MiB\n", size / (1024 * 1024));
+struct nand_host {
+	struct mtd_info info;
+	struct nand_chip chip;
+	struct device_d *dev;
+};
 
-#ifdef CFG_NAND_SELECT_DEVICE
-	/*
-	 * Select the chip in the board/cpu specific driver
-	 */
-	board_nand_select_device(nand_info[nand_curr_device].priv, nand_curr_device);
-#endif
+static int nand_probe (struct device_d *dev)
+{
+	struct nand_host *host;
+
+	host = xzalloc(sizeof(*host));
+
+	nand_init_chip(&host->info, &host->chip, dev->map_base);
+
+	return 0;
 }
+
+static struct driver_d nand_driver = {
+	.name   = "nand_flash",
+	.probe  = nand_probe,
+//	.read   = nand_read,
+//	.write  = nand_write,
+//	.erase  = nand_erase,
+//	.protect= nand_protect,
+//	.memmap = generic_memmap_ro,
+//	.info   = nand_info,
+};
+
+static int nand_init(void)
+{
+	return register_driver(&nand_driver);
+}
+
+device_initcall(nand_init);
 

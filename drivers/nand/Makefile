@@ -4,4 +4,4 @@ obj-$(CONFIG_NAND)	+= nand_bbt.o
 obj-$(CONFIG_NAND)	+= nand.o
 obj-$(CONFIG_NAND)	+= nand_ecc.o
 obj-$(CONFIG_NAND)	+= nand_ids.o
-obj-$(CONFIG_NAND)	+= nand_util.o
+#obj-$(CONFIG_NAND)	+= nand_util.o

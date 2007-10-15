@@ -78,9 +78,10 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/nand_ecc.h>
+#include <clock.h>
 
 #include <asm/io.h>
-#include <asm/errno.h>
+#include <errno.h>
 
 #ifdef CONFIG_JFFS2_NAND
 #include <jffs2/jffs2.h>
@@ -833,22 +834,22 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
 #else
 static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
 {
-	unsigned long	timeo;
+	uint64_t timeo, start;
 
 	if (state == FL_ERASING)
- 		timeo = (CFG_HZ * 400) / 1000;
+ 		timeo = 400 * MSECOND;
 	else
-		timeo = (CFG_HZ * 20) / 1000;
+		timeo = 20 * MSECOND;
 
 	if ((state == FL_ERASING) && (this->options & NAND_IS_AND))
 		this->cmdfunc(mtd, NAND_CMD_STATUS_MULTI, -1, -1);
 	else
 		this->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
 
-	reset_timer();
+	start = get_time_ns();
 
 	while (1) {
-		if (get_timer(0) > timeo) {
+		if (is_timeout(start, timeo)) {
 			printf("Timeout!");
 			return 0x01;
 		}

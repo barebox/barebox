@@ -58,7 +58,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
-#include <asm/errno.h>
+#include <errno.h>
 
 /**
  * check_pattern - [GENERIC] check if a pattern is in the buffer

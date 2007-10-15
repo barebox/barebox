@@ -36,7 +36,7 @@
 #include <malloc.h>
 
 #include <nand.h>
-#include <jffs2/jffs2.h>
+//#include <jffs2/jffs2.h>
 
 typedef struct erase_info erase_info_t;
 typedef struct mtd_info	  mtd_info_t;

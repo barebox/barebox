@@ -30,7 +30,7 @@ static int do_pwd (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(pwd)
-	.maxargs	= 2,
+	.maxargs	= 1,
 	.cmd		= do_pwd,
 	.usage		= "print working directory",
 U_BOOT_CMD_END

@@ -1,4 +1,6 @@
 /*
+ * erase, protect, unprotect - FLASH support
+ *
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
@@ -21,9 +23,6 @@
  * MA 02111-1307 USA
  */
 
-/*
- * FLASH support
- */
 #include <common.h>
 #include <command.h>
 #include <cfi_flash.h>

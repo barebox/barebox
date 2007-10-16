@@ -1,5 +1,5 @@
 /*
- * ls.c - list files and directories
+ * timeout - wait for timeout
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

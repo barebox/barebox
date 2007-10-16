@@ -36,17 +36,22 @@ static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int src = 0, dst = 0;
 	char *rw_buf = NULL;
 
+	if (argc != 3) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
 	rw_buf = xmalloc(RW_BUF_SIZE);
 
 	src = open(argv[1], O_RDONLY);
 	if (src < 0) {
-		printf("could not open %s: %s\n", src, errno_str());
+		printf("could not open %s: %s\n", argv[1], errno_str());
 		goto out;
 	}
 
 	dst = open(argv[2], O_WRONLY | O_CREAT);
 	if ( dst < 0) {
-		printf("could not open %s: %s\n", dst, errno_str());
+		printf("could not open %s: %s\n", argv[2], errno_str());
 		goto out;
 	}
 
@@ -67,9 +72,9 @@ static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	ret = 0;
 out:
 	free(rw_buf);
-	if (src)
+	if (src > 0)
 		close(src);
-	if (dst)
+	if (dst > 0)
 		close(dst);
 	return ret;
 }

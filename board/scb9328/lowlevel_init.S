@@ -18,8 +18,63 @@
  *
  */
 
-#include <config.h>
 #include <asm/arch/imx-regs.h>
+
+#define CPU200
+
+#ifdef CPU200
+#define CFG_MPCTL0_VAL 0x00321431
+#else
+#define CFG_MPCTL0_VAL 0x040e200e
+#endif
+
+#define BUS72
+
+#ifdef BUS72
+#define CFG_SPCTL0_VAL 0x04002400
+#endif
+
+#ifdef BUS96
+#define CFG_SPCTL0_VAL 0x04001800
+#endif
+
+#ifdef BUS64
+#define CFG_SPCTL0_VAL 0x08001800
+#endif
+
+/* Das ist der BCLK Divider, der aus der System PLL
+   BCLK und HCLK erzeugt:
+   31 | xxxx xxxx xxxx xxxx xx10 11xx xxxx xxxx | 0
+   0x2f008403 : 192MHz/2=96MHz, 144MHz/2=72MHz PRESC=1->BCLKDIV=2
+   0x2f008803 : 192MHz/3=64MHz, 240MHz/3=80MHz PRESC=1->BCLKDIV=2
+   0x2f001003 : 192MHz/5=38,4MHz
+   0x2f000003 : 64MHz/1
+   Bit 22: SPLL Restart
+   Bit 21: MPLL Restart */
+
+#ifdef BUS64
+#define CFG_CSCR_VAL 0x2f030003
+#endif
+
+#ifdef BUS72
+#define CFG_CSCR_VAL 0x2f030403
+#endif
+/* Bit[0:3] contain PERCLK1DIV for UART 1
+   0x000b00b ->b<- -> 192MHz/12=16MHz
+   0x000b00b ->8<- -> 144MHz/09=16MHz
+   0x000b00b ->3<- -> 64MHz/4=16MHz */
+
+#ifdef BUS96
+#define CFG_PCDR_VAL 0x000b00b5
+#endif
+
+#ifdef BUS64
+#define CFG_PCDR_VAL 0x000b00b3
+#endif
+
+#ifdef BUS72
+#define CFG_PCDR_VAL 0x000b00b8
+#endif
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -31,13 +86,13 @@ board_init_lowlevel:
 
 	mov	r10, lr
 
-/* Change PERCLK1DIV to 14 ie 14+1 */
+	/* Change PERCLK1DIV to 14 ie 14+1 */
 	writel(CFG_PCDR_VAL, PCDR)
 
-/* set MCU PLL Control Register 0 */
+	/* set MCU PLL Control Register 0 */
 	writel(CFG_MPCTL0_VAL, MPCTL0)
 
-/* set mpll restart bit */
+	/* set mpll restart bit */
 	ldr		r0, =CSCR
 	ldr		r1, [r0]
 	orr		r1,r1,#(1<<21)
@@ -53,10 +108,10 @@ board_init_lowlevel:
 	subs	r2,r2,#1
 	bne		1b
 
-/* set System PLL Control Register 0 */
+	/* set System PLL Control Register 0 */
 	writel(CFG_SPCTL0_VAL, SPCTL0)
 
-/* set spll restart bit */
+	/* set spll restart bit */
 	ldr		r0, =CSCR
 	ldr		r1, [r0]
 	orr		r1,r1,#(1<<22)

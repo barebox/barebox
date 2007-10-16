@@ -28,16 +28,6 @@
 #include <init.h>
 #include <driver.h>
 
-/* ------------------------------------------------------------------------- */
-/* NOTE: This describes the proper use of this file.
- *
- * CONFIG_SYS_CLK_FREQ should be defined as the input frequency of the PLL.
- * SH FIXME: 16780000 in our case
- * get_FCLK(), get_HCLK(), get_PCLK() and get_UCLK() return the clock of
- * the specified bus in HZ.
- */
-/* ------------------------------------------------------------------------- */
-
 ulong imx_get_spllclk(void)
 {
 	return imx_decode_pll(SPCTL0, CONFIG_SYSPLL_CLK_FREQ);
@@ -45,7 +35,7 @@ ulong imx_get_spllclk(void)
 
 ulong imx_get_mpllclk(void)
 {
-	return imx_decode_pll(MPCTL0, CONFIG_SYS_CLK_FREQ);
+	return imx_decode_pll(MPCTL0, CONFIG_SYSPLL_CLK_FREQ);
 }
 
 ulong imx_get_fclk(void)

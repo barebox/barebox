@@ -118,28 +118,41 @@ static void refresh_line(struct line *line, int ypos)
 	pos(cursx, cursy);
 }
 
+/*
+ * Most sane terminal programs can do ansi screen scrolling.
+ * Unfortunately one of the most popular programs cannot:
+ * minicom.
+ * Grmpf!
+ */
+static int smartscroll = 0;
+
 static void refresh(int full)
 {
 	int i;
 	struct line *l = scrline;
 
 	if (!full) {
-		if (scrline->next == lastscrline) {
-			printf("%c[1T", 27);
-			refresh_line(scrline, 0);
-			pos(0, screenheight);
-			printf("%*s", screenwidth, "");
-			return;
-		}
-
-		if (scrline->prev == lastscrline) {
-			printf("%c[1S", 27);
-			for (i = 0; i < screenheight - 1; i++) {
-				l = l->next;
-				if (!l)
-					return;
+		if (smartscroll) {
+			if (scrline->next == lastscrline) {
+				printf("%c[1T", 27);
+				refresh_line(scrline, 0);
+				pos(0, screenheight);
+				printf("%*s", screenwidth, "");
+				return;
 			}
-			refresh_line(l, screenheight - 1);
+
+			if (scrline->prev == lastscrline) {
+				printf("%c[1S", 27);
+				for (i = 0; i < screenheight - 1; i++) {
+					l = l->next;
+					if (!l)
+						return;
+				}
+				refresh_line(l, screenheight - 1);
+				return;
+			}
+		} else {
+			refresh(1);
 			return;
 		}
 	}
@@ -385,6 +398,9 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
+	if (*argv[0] == 's')
+		smartscroll = 1;
+
 	buffer = NULL;
 	if(edit_read_file(argv[1]))
 		return 1;
@@ -530,16 +546,21 @@ out:
 	return 0;
 }
 
+static char *edit_aliases[] = { "sedit", NULL};
+
 static __maybe_unused char cmd_edit_help[] =
-"Usage: edit <file>\n"
+"Usage: (s)edit <file>\n"
 "This is a very small editor. Its only features are moving the cursor with\n"
 "the usual keys and typing characters.\n"
 "<ctrl-c> quits the editor without saving,\n"
-"<ctrl-d> quits the editor with saving the current file.\n";
+"<ctrl-d> quits the editor with saving the current file.\n"
+"\n"
+"If called as sedit the editor uses ansi codes to scroll the screen.\n";
 
 U_BOOT_CMD_START(edit)
 	.maxargs	= 2,
 	.cmd		= do_edit,
+	.aliases	= edit_aliases,
 	.usage		= "edit a file",
 	U_BOOT_CMD_HELP(cmd_edit_help)
 U_BOOT_CMD_END

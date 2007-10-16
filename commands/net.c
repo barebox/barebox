@@ -1,4 +1,6 @@
 /*
+ * tftp, rarpboot, dhcp, nfs, cdp - Boot support
+ *
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
@@ -21,9 +23,6 @@
  * MA 02111-1307 USA
  */
 
-/*
- * Boot support
- */
 #include <common.h>
 #include <command.h>
 #include <environment.h>
@@ -132,7 +131,7 @@ static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(dhcp)
-	.maxargs	= 3,
+	.maxargs	= 1,
 	.cmd		= do_dhcp,
 	.usage		= "invoke dhcp client to obtain ip/boot params",
 U_BOOT_CMD_END
@@ -201,7 +200,7 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return rcode;
 }
 
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
+#ifdef CONFIG_NET_CDP
 
 static void cdp_update_env(void)
 {
@@ -245,4 +244,4 @@ U_BOOT_CMD_START(cdp)
 	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
 U_BOOT_CMD_END
 
-#endif	/* CFG_CMD_CDP */
+#endif	/* CONFIG_NET_CDP */

@@ -1,4 +1,6 @@
 /*
+ * mtest - Perform a memory test
+ *
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *

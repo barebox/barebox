@@ -29,6 +29,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <dm9000.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -48,10 +49,18 @@ static struct device_d sdram_dev = {
 	.type     = DEVICE_TYPE_DRAM,
 };
 
+static struct dm9000_platform_data dm9000_data = {
+	.iobase   = 0x16000000,
+	.iodata   = 0x16000004,
+	.buswidth = DM9000_WIDTH_16,
+};
+
 static struct device_d dm9000_dev = {
 	.name     = "dm9000",
 	.id       = "eth0",
-
+	.map_base = 0x16000000,
+	.size     = 8,
+	.platform_data = &dm9000_data,
 	.type     = DEVICE_TYPE_ETHER,
 };
 

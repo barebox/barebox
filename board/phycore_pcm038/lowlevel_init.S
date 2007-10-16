@@ -8,8 +8,8 @@
 
 #define CRM_PLL_PCTL_PARAM(pd, fd, fi, fn)  (((pd-1)<<26) + ((fd-1)<<16) + (fi<<10) + (fn<<0))
 
-.globl lowlevel_init
-lowlevel_init:
+.globl board_init_lowlevel
+board_init_lowlevel:
 
 	mov	r10, lr
 

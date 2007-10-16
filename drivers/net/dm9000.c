@@ -309,7 +309,7 @@ static int dm9000_eth_send (struct eth_device *edev,
 			writel(((u32 *) data_ptr)[i], priv->iodata);
 		break;
 	default:
-		/* This cannot happen, dm9000_probe() makes this sure */
+		/* dm9000_probe makes sure this cannot happen */
 		return -EINVAL;
 	}
 
@@ -392,6 +392,9 @@ static int dm9000_eth_rx (struct eth_device *edev)
 		for (i = 0; i < tmplen; i++)
 			((u32 *) rdptr)[i] = readl(priv->iodata);
 		break;
+	default:
+		/* dm9000_probe makes sure this cannot happen */
+		return -EINVAL;
 	}
 
 	if ((RxStatus & 0xbf00) || (RxLen < 0x40)

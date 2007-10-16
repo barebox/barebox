@@ -24,6 +24,7 @@
 
 #include <common.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/clock.h>
 #include <init.h>
 #include <driver.h>
 
@@ -49,7 +50,7 @@ ulong imx_get_mpllclk(void)
 
 ulong imx_get_fclk(void)
 {
-	return (( CSCR>>15)&1) ? get_mcuPLLCLK()>>1 : get_mcuPLLCLK();
+	return (( CSCR>>15)&1) ? imx_get_mpllclk()>>1 : imx_get_mpllclk();
 }
 
 ulong imx_get_hclk(void)
@@ -60,7 +61,7 @@ ulong imx_get_hclk(void)
 
 ulong imx_get_bclk(void)
 {
-	return get_HCLK();
+	return imx_get_hclk();
 }
 
 ulong imx_get_perclk1(void)

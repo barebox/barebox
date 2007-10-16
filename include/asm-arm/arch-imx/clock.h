@@ -3,6 +3,8 @@
 #define __ASM_ARCH_CLOCK_H
 unsigned int imx_decode_pll(unsigned int pll, unsigned int f_ref);
 
+ulong imx_get_mpllclk(void);
+
 #ifdef CONFIG_ARCH_IMX27
 ulong imx_get_armclk(void);
 #endif
@@ -12,7 +14,7 @@ static inline ulong imx_get_armclk(void)
 	return imx_get_mpllclk();
 }
 #endif
-ulong imx_get_mpllclk(void);
+
 ulong imx_get_spllclk(void);
 ulong imx_get_fclk(void);
 ulong imx_get_hclk(void);

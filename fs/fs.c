@@ -370,7 +370,7 @@ int open(const char *pathname, int flags, ...)
 
 	exist = (stat(path, &s) == 0) ? 1 : 0;
 
-	if (exist && (s.st_mode & S_IFDIR)) {
+	if (exist && S_ISDIR(s.st_mode)) {
 		errno = -EISDIR;
 		goto out1;
 	}

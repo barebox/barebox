@@ -25,6 +25,7 @@
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/gpio.h>
+#include <asm/io.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -55,6 +56,28 @@ static struct device_d dm9000_dev = {
 };
 
 static int scb9328_devices_init(void) {
+
+	/* adjust chipselects */
+	GPR(0) = 0x00800000;
+	GIUS(0) = 0x0043fffe;
+
+/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
+	FMCR = 0x1;
+
+	CS0U = 0x000F2000;
+	CS0L = 0x11110d01;
+
+	CS1U = 0x000F0a00;
+	CS1L = 0x11110601;
+	CS2U = 0x0;
+	CS2L = 0x0;
+	CS3U = 0x000FFFFF;
+	CS3L = 0x00000303;
+	CS4U = 0x000F0a00;
+	CS4L = 0x11110301;
+	CS5U = 0x00008400;
+	CS5L = 0x00000D03;
+
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&dm9000_dev);

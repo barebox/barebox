@@ -21,47 +21,21 @@
 #include <config.h>
 #include <asm/arch/imx-regs.h>
 
-#define CFG_GPR_A_VAL		0x00800000
-#define CFG_GIUS_A_VAL		0x0043fffe
+#define writel(val, reg) \
+	ldr		r0,	=reg;	\
+	ldr		r1,	=val;	\
+	str		r1,   [r0];
 
-#define CFG_CS0U_VAL 0x000F2000
-#define CFG_CS0L_VAL 0x11110d01
-#define CFG_CS1U_VAL 0x000F0a00
-#define CFG_CS1L_VAL 0x11110601
-#define CFG_CS2U_VAL 0x0
-#define CFG_CS2L_VAL 0x0
-#define CFG_CS3U_VAL 0x000FFFFF
-#define CFG_CS3L_VAL 0x00000303
-#define CFG_CS4U_VAL 0x000F0a00
-#define CFG_CS4L_VAL 0x11110301
-#define CFG_CS5U_VAL 0x00008400
-#define CFG_CS5L_VAL 0x00000D03
-
-/* SDRAM Setup Values
- * 0x910a8300 Precharge Command CAS 3
- * 0x910a8200 Precharge Command CAS 2
- *
- * 0xa10a8300 AutoRefresh Command CAS 3
- * 0xa10a8200 Set AutoRefresh Command CAS 2
- */
-#define PRECHARGE_CMD 0x910a8200
-#define AUTOREFRESH_CMD 0xa10a8200
-
-.globl lowlevel_init
-lowlevel_init:
+.globl board_init_lowlevel
+board_init_lowlevel:
 
 	mov	r10, lr
 
 /* Change PERCLK1DIV to 14 ie 14+1 */
-	ldr		r0,	=PCDR
-	ldr		r1,	=CFG_PCDR_VAL
-	str		r1,   [r0]
+	writel(CFG_PCDR_VAL, PCDR)
 
 /* set MCU PLL Control Register 0 */
-
-	ldr		r0,	=MPCTL0
-	ldr		r1,	=CFG_MPCTL0_VAL
-	str		r1,   [r0]
+	writel(CFG_MPCTL0_VAL, MPCTL0)
 
 /* set mpll restart bit */
 	ldr		r0, =CSCR
@@ -80,10 +54,7 @@ lowlevel_init:
 	bne		1b
 
 /* set System PLL Control Register 0 */
-
-	ldr		r0,	=SPCTL0
-	ldr		r1,	=CFG_SPCTL0_VAL
-	str		r1,   [r0]
+	writel(CFG_SPCTL0_VAL, SPCTL0)
 
 /* set spll restart bit */
 	ldr		r0, =CSCR
@@ -101,9 +72,7 @@ lowlevel_init:
 	subs	r2,r2,#1
 	bne		1b
 
-	ldr		r0,   =CSCR
-	ldr		r1,   =CFG_CSCR_VAL
-	str		r1,   [r0]
+	writel(CFG_CSCR_VAL, CSCR)
 
 /* I have now read the ARM920 DataSheet back-to-Back, and have stumbled upon
  *this.....
@@ -126,81 +95,21 @@ lowlevel_init:
 	ORR r0,r0,#0xC0000000
 	MCR p15,0,r0,c1,c0,0
 
-	ldr		r0,	=GPR(0)
-	ldr		r1,	=CFG_GPR_A_VAL
-	str		r1,   [r0]
+	/* Skip SDRAM initialization if we run from RAM */
+	cmp	pc, #0x08000000
+	bls	1f
+	cmp	pc, #0x09000000
+	bhi	1f
 
-	ldr		r0,	=GIUS(0)
-	ldr		r1,	=CFG_GIUS_A_VAL
-	str		r1,   [r0]
+	mov	pc,r10
 
-/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
-
-	ldr		r0,	=FMCR
-	ldr		r1,	=CFG_FMCR_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS0U
-	ldr		r1,	=CFG_CS0U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS0L
-	ldr		r1,	=CFG_CS0L_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS1U
-	ldr		r1,	=CFG_CS1U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS1L
-	ldr		r1,	=CFG_CS1L_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS2U
-	ldr		r1,	=CFG_CS2U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS2L
-	ldr		r1,	=CFG_CS2L_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS3U
-	ldr		r1,	=CFG_CS3U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS3L
-	ldr		r1,	=CFG_CS3L_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS4U
-	ldr		r1,	=CFG_CS4U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS4L
-	ldr		r1,	=CFG_CS4L_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS5U
-	ldr		r1,	=CFG_CS5U_VAL
-	str		r1,   [r0]
-
-	ldr		r0,	=CS5L
-	ldr		r1,	=CFG_CS5L_VAL
-	str		r1,   [r0]
+1:
 
 /* SDRAM Setup */
 
-	ldr		r0, =SDCTL0
-	ldr		r1, =PRECHARGE_CMD
-	str		r1,   [r0]
-
-	ldr		r0, =0x08200000
-	ldr		r1, =0x0 /* Issue Precharge all Command */
-	str		r1,   [r0]
-
-	ldr		r0, =SDCTL0
-	ldr		r1, =AUTOREFRESH_CMD
-	str		r1,   [r0]
+	writel(0x910a8200, SDCTL0) /* Precharge cmd, CAS = 2 */
+	writel(0x0, 0x08200000) /* Issue Precharge all Command */
+	writel(0xa10a8200, SDCTL0) /* Autorefresh cmd, CAS = 2 */
 
 	ldr		r0, =0x08000000
 	ldr		r1, =0x0 /* Issue AutoRefresh Command */
@@ -213,16 +122,8 @@ lowlevel_init:
 	str		r1,   [r0]
 	str		r1,   [r0]
 
-	ldr		r0, =SDCTL0
-	ldr		r1, =0xb10a8300
-	str		r1,   [r0]
-
-	ldr		r0, =0x08223000 /* CAS Latency 2 */
-	ldr		r1, =0x0   /* Issue Mode Register Command, Burst Length = 8 */
-	str		r1,   [r0]
-
-	ldr		r0, =SDCTL0
-	ldr		r1, =0x810a8200 /* Set to Normal Mode CAS 2 */
-	str		r1,   [r0]
+	writel(0xb10a8300, SDCTL0)
+	writel(0x0, 0x08223000) /* CAS Latency 2, issue Mode Register Command, Burst Length = 8 */
+	writel(0x810a8200, SDCTL0) /* Set to Normal Mode CAS 2 */
 
 	mov	pc,r10

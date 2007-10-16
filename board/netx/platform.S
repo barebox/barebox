@@ -24,10 +24,6 @@
 #include <config.h>
 #include <version.h>
 
-.globl platformsetup
-platformsetup:
-	mov	pc, lr
-
-.globl lowlevel_init
-lowlevel_init:
+.globl board_init_lowlevel
+board_init_lowlevel:
 	mov	pc, lr

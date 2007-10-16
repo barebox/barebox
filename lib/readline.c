@@ -255,6 +255,18 @@ int readline(const char *prompt, char *buf, int len)
 				eol_num--;
 			}
 			break;
+		case KEY_DEL:
+			if (num < eol_num) {
+				wlen = eol_num - num;
+				memmove(&buf[num], &buf[num+1], wlen);
+				putnstr(buf + num, wlen);
+				getcmd_putch(' ');
+				do {
+					getcmd_putch(CTL_BACKSPACE);
+				} while (--wlen);
+				eol_num--;
+			}
+			break;
 		case KEY_UP:
 		case KEY_DOWN:
 		{

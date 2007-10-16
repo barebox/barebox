@@ -36,6 +36,8 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <linux/stat.h>
+#include <xfuncs.h>
 
 #ifdef	CMD_MEM_DEBUG
 #define	PRINTF(fmt,args...)	printf (fmt ,##args)
@@ -45,6 +47,8 @@
 
 #define RW_BUF_SIZE	(ulong)4096
 static char *rw_buf;
+
+static char *DEVMEM = "/dev/mem";
 
 /* Memory Display
  *
@@ -103,7 +107,28 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
-static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode, char **filename)
+int open_and_lseek(const char *filename, int mode, ulong pos)
+{
+	int fd, ret;
+
+	fd = open(filename, mode | O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return fd;
+	}
+
+	ret = lseek(fd, pos, SEEK_SET);
+	if (ret < 0) {
+		perror("lseek");
+		close(fd);
+		return ret;
+	}
+
+	return fd;
+}
+
+static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
+		char **sourcefile, char **destfile)
 {
 	int opt;
 
@@ -120,8 +145,11 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode, ch
 		case 'l':
 			*mode = O_RWSIZE_4;
 			break;
-		case 'f':
-			*filename = optarg;
+		case 's':
+			*sourcefile = optarg;
+			break;
+		case 'd':
+			*destfile = optarg;
 			break;
 		default:
 			return -1;
@@ -131,20 +159,20 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode, ch
 	return 0;
 }
 
-static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_md(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	start = 0, size = 0x100;
 	int	r, now;
 	int	ret = 0;
 	int fd;
-	char *filename = "/dev/mem";
+	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 
 	errno = 0;
-	if (mem_parse_options(argc, argv, "bwlf:", &mode, &filename) < 0)
+	if (mem_parse_options(argc, argv, "bwls:", &mode, &filename, NULL) < 0)
 		return 1;
 
-	if (optind  < argc) {
+	if (optind < argc) {
 		if (parse_area_spec(argv[optind], &start, &size)) {
 			printf("could not parse: %s\n", argv[optind]);
 			return 1;
@@ -153,16 +181,9 @@ static int do_mem_md ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 			size = 0x100;
 	}
 
-	fd = open(filename, mode | O_RDONLY);
-	if (fd < 0) {
-		perror("open");
+	fd = open_and_lseek(filename, mode | O_RDONLY, start);
+	if (fd < 0)
 		return 1;
-	}
-
-	if (lseek(fd, start, SEEK_SET)) {
-		perror("lseek");
-		goto out;
-	}
 
 	do {
 		now = min(size, RW_BUF_SIZE);
@@ -191,7 +212,8 @@ static __maybe_unused char cmd_md_help[] =
 "Usage md [OPTIONS] <region>\n"
 "display (hexdump) a memory region.\n"
 "options:\n"
-"  -f <file>   display file (default /dev/mem)\n"
+"  -s <file>   display file (default /dev/mem)\n"
+"  -d <file>   write file (default /dev/mem)\n"
 "  -b          output in bytes\n"
 "  -w          output in halfwords (16bit)\n"
 "  -l          output in words (32bit)\n"
@@ -217,32 +239,25 @@ static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
-	char *filename = "/dev/mem";
+	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 	ulong adr;
 
 	errno = 0;
 
-	if (mem_parse_options(argc, argv, "bwlf:", &mode, &filename) < 0)
+	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename) < 0)
 		return 1;
 
 	if (optind + 1 >= argc) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	fd = open(filename, mode | O_WRONLY);
-	if (fd < 0) {
-		perror("open");
+		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
 	adr = strtoul_suffix(argv[optind++], NULL, 0);
 
-	if (lseek(fd, adr, SEEK_SET)) {
-		perror("lseek");
-		goto out;
-	}
+	fd = open_and_lseek(filename, mode | O_WRONLY, adr);
+	if (fd < 0)
+		return 1;
 
 	while (optind < argc) {
 		u8 val8;
@@ -269,9 +284,6 @@ static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 		optind++;
 	}
 
-out:
-	close(fd);
-
 	return errno;
 }
 
@@ -287,63 +299,96 @@ U_BOOT_CMD_START(mw)
 	U_BOOT_CMD_HELP(cmd_mw_help)
 U_BOOT_CMD_END
 
-static int do_mem_cmp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_cmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	ulong	addr1, addr2, count, ngood;
-	int	size;
-	int	mode  = O_RWSIZE_4;
+	ulong	addr1, addr2, count = ~0;
+	int	mode  = O_RWSIZE_1;
+	char   *sourcefile = DEVMEM;
+	char   *destfile = DEVMEM;
+	int     sourcefd, destfd;
+	char   *rw_buf1;
+	int     ret = 1;
+	int     offset = 0;
+	struct  stat statbuf;
 
-	if (mem_parse_options(argc, argv, "bwl", &mode, NULL) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
 		return 1;
 
-	if (optind + 3 != argc) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	if (optind + 2 > argc) {
+		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	addr1 = simple_strtoul(argv[optind++], NULL, 0);
-	addr2 = simple_strtoul(argv[optind++], NULL, 0);
-	size  = (mode & O_RWSIZE_MASK) >> O_RWSIZE_SHIFT;
-	count = simple_strtoul(argv[optind], NULL, 0) / size;
+	addr1 = simple_strtoul(argv[optind], NULL, 0);
+	addr2 = simple_strtoul(argv[optind + 1], NULL, 0);
 
-	while (count-- > 0) {
-		if (size == 4) {
-			ulong word1 = *(ulong *)addr1;
-			ulong word2 = *(ulong *)addr2;
-			if (word1 != word2) {
-				printf("word at 0x%08lx (0x%08lx) "
-					"!= word at 0x%08lx (0x%08lx)\n",
-					addr1, word1, addr2, word2);
-				return 1;
-			}
+	if (optind + 2 == argc) {
+		if (sourcefile == DEVMEM) {
+			printf("source and count not given\n");
+			return 1;
 		}
-		else if (size == 2) {
-			ushort hword1 = *(ushort *)addr1;
-			ushort hword2 = *(ushort *)addr2;
-			if (hword1 != hword2) {
-				printf("halfword at 0x%08lx (0x%04x) "
-					"!= halfword at 0x%08lx (0x%04x)\n",
-					addr1, hword1, addr2, hword2);
-				return 1;
-			}
+		if (stat(sourcefile, &statbuf)) {
+			perror("stat");
+			return 1;
 		}
-		else {
-			u_char byte1 = *(u_char *)addr1;
-			u_char byte2 = *(u_char *)addr2;
-			if (byte1 != byte2) {
-				printf("byte at 0x%08lx (0x%02x) "
-					"!= byte at 0x%08lx (0x%02x)\n",
-					addr1, byte1, addr2, byte2);
-				return 1;
-			}
+		count = statbuf.st_size - addr1;
+	} else {
+		count = simple_strtoul(argv[optind + 2], NULL, 0);
+	}
+
+	sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, addr1);
+	if (sourcefd < 0)
+		return 1;
+
+	destfd = open_and_lseek(destfile, mode | O_RDONLY, addr2);
+	if (destfd < 0) {
+		close(sourcefd);
+		return 1;
+	}
+
+	rw_buf1 = xmalloc(RW_BUF_SIZE);
+
+	while (count > 0) {
+		int now, r1, r2, i;
+
+		now = min(RW_BUF_SIZE, count);
+
+		r1 = read(sourcefd, rw_buf,  now);
+		if (r1 < 0) {
+			perror("read");
+			goto out;
 		}
-		ngood++;
-		addr1 += size;
-		addr2 += size;
+
+		r2 = read(destfd, rw_buf1, now);
+		if (r2 < 0) {
+			perror("read");
+			goto out;
+		}
+
+		if (r1 != now || r2 != now) {
+			printf("regions differ in size\n");
+			goto out;
+		}
+
+		for (i = 0; i < now; i++) {
+			if (rw_buf[i] != rw_buf1[i]) {
+				printf("files differ at offset %d\n", offset);
+				goto out;
+			}
+			offset++;
+		}
+
+		count -= now;
 	}
 
 	printf("OK\n");
-	return 0;
+	ret = 0;
+out:
+	close(sourcefd);
+	close(destfd);
+	free(rw_buf1);
+
+	return ret;
 }
 
 static __maybe_unused char cmd_memcmp_help[] =
@@ -351,9 +396,13 @@ static __maybe_unused char cmd_memcmp_help[] =
 "\n"
 "options:\n"
 "  -b, -w, -l	use byte, halfword, or word accesses\n"
+"  -s <file>    source file (default /dev/mem)\n"
+"  -d <file>    destination file (default /dev/mem)\n"
 "\n"
 "Compare memory regions specified with addr1 and addr2\n"
-"of size <count> bytes.\n";
+"of size <count> bytes. If source is a file count can\n"
+"be left unspecified in which case the whole file is\n"
+"compared\n";
 
 U_BOOT_CMD_START(memcmp)
 	.maxargs	= CONFIG_MAXARGS,
@@ -362,45 +411,95 @@ U_BOOT_CMD_START(memcmp)
 	U_BOOT_CMD_HELP(cmd_memcmp_help)
 U_BOOT_CMD_END
 
-static int do_mem_cp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mem_cp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong count;
 	ulong	dest, src;
-	int mode = O_RWSIZE_4;
-	int	size;
+	char *sourcefile = DEVMEM;
+	char *destfile = DEVMEM;
+	int sourcefd, destfd;
+	int mode = O_RWSIZE_1;
+	struct stat statbuf;
+	int ret = 0;
 
-	if (mem_parse_options(argc, argv, "bwl", &mode, NULL) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
 		return 1;
 
-	if (optind + 3 != argc) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
+	if (optind + 2 > argc) {
+		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	src = simple_strtoul(argv[optind++], NULL, 0);
-	dest = simple_strtoul(argv[optind++], NULL, 0);
-	size  = (mode & O_RWSIZE_MASK) >> O_RWSIZE_SHIFT;
-	count = simple_strtoul(argv[optind], NULL, 0) / size;
+	src = simple_strtoul(argv[optind], NULL, 0);
+	dest = simple_strtoul(argv[optind + 1], NULL, 0);
 
-	while (count-- > 0) {
-		if (size == 4)
-			*((ulong  *)dest) = *((ulong  *)src);
-		else if (size == 2)
-			*((ushort *)dest) = *((ushort *)src);
-		else
-			*((u_char *)dest) = *((u_char *)src);
-		src += size;
-		dest += size;
+	if (optind + 2 == argc) {
+		if (sourcefile == DEVMEM) {
+			printf("source and count not given\n");
+			return 1;
+		}
+		if (stat(sourcefile, &statbuf)) {
+			perror("stat");
+			return 1;
+		}
+		count = statbuf.st_size - src;
+	} else {
+		count = simple_strtoul(argv[optind + 2], NULL, 0);
 	}
 
-	return 0;
+	sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, src);
+	if (sourcefd < 0)
+		return 1;
+
+	destfd = open_and_lseek(destfile, O_WRONLY | O_CREAT | mode, dest);
+	if (destfd < 0) {
+		close(sourcefd);
+		return 1;
+	}
+
+	while (count > 0) {
+		int now, r, w;
+
+		now = min(RW_BUF_SIZE, count);
+
+		if ((r = read(sourcefd, rw_buf, now)) < 0) {
+			perror("read");
+			goto out;
+		}
+
+		if ((w = write(destfd, rw_buf, r)) < 0) {
+			perror("write");
+			goto out;
+		}
+
+		if (r < now)
+			break;
+
+		if (w < r)
+			break;
+
+		count -= now;
+	}
+
+	if (count) {
+		printf("ran out of data\n");
+		ret = 1;
+	}
+
+out:
+	close(sourcefd);
+	close(destfd);
+
+	return ret;
 }
 
 static __maybe_unused char cmd_memcpy_help[] =
 "Usage: memcpy [OPTIONS] <src> <dst> <count>\n"
 "\n"
 "options:\n"
-"  -b, -w, -l	use byte, halfword, or word accesses\n"
+"  -b, -w, -l   use byte, halfword, or word accesses\n"
+"  -s <file>    source file (default /dev/mem)\n"
+"  -d <file>    destination file (default /dev/mem)\n"
 "\n"
 "Copy memory at <src> of <count> bytes to <dst>\n";
 

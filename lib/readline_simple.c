@@ -23,7 +23,7 @@ static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen)
 				*colp += 8 - ((*colp) & 07);
 			} else {
 				++(*colp);
-				putc (*s);
+				putchar (*s);
 			}
 		}
 	} else {
@@ -130,12 +130,12 @@ int readline (const char *prompt, char *line, int len)
 					col += 8 - (col&07);
 				} else {
 					++col;		/* echo input		*/
-					putc (c);
+					putchar (c);
 				}
 				*p++ = c;
 				++n;
 			} else {			/* Buffer full		*/
-				putc ('\a');
+				putchar ('\a');
 			}
 		}
 	}

@@ -1,4 +1,6 @@
-
+#
+#
+#
 config ARCH_TEXT_BASE
 	hex
 	default 0x08f00000 if MACH_MX1ADS
@@ -7,7 +9,9 @@ config ARCH_TEXT_BASE
 	default 0x21e00000 if MACH_ECO920
 	default 0xa0000000 if MACH_PCM038
 	default 0x87f00000 if MACH_IMX31
-
+#
+#
+#
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
 
@@ -19,6 +23,15 @@ config BOARDINFO
 
 config BOARDINFO
 	default "Phytec Phycore i.MX31" if MACH_IMX31
+
+config BOARD_LINKER_SCRIPT
+	bool
+	default n
+
+config GENERIC_LINKER_SCRIPT
+	bool
+	default y
+	depends on !BOARD_LINKER_SCRIPT
 
 config ARM
 	bool

@@ -29,15 +29,14 @@
 #include <asm/io.h>
 
 /*
- * ?MiB NOR type flash, connected to CS line 0,
+ * 32MiB NOR type flash, connected to CS line 0,
  * data width is <friesel>
  */
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
 	.id       = "nor0",
-
-	.map_base = 0x10000000,	/* FIXME */
-	.size     = 16 * 1024 * 1024,	/* FIXME */
+	.map_base = IMX_CS0_BASE,
+	.size     = 32 * 1024 * 1024,
 };
 
 /*
@@ -47,9 +46,8 @@ static struct device_d cfi_dev = {
 static struct device_d sram_dev = {
 	.name     = "sram",
 	.id       = "sram0",
-
-	.map_base = 0x10000000,	/* FIXME */
-	.size     = 16 * 1024 * 1024,	/* FIXME */
+	.map_base = IMX_CS4_BASE,
+	.size     = 16 * 1024 * 1024,
 };
 
 /*
@@ -58,7 +56,6 @@ static struct device_d sram_dev = {
 static struct device_d nand_dev = {
 	.name     = "cfi_flash_nand",
 	.id       = "nand0",
-
 	.map_base = 0x10000000,	/* FIXME */
 	.size     = 16 * 1024 * 1024,	/* FIXME */
 };
@@ -71,18 +68,17 @@ static struct device_d nand_dev = {
 static struct device_d network_dev = {
 	.name     = "smsc9xxx",
 	.id       = "eth0",
-#if 0
-	.map_base = 0x10000000,	/* FIXME */
+	.map_base = IMX_CS1_BASE,
 	.size     = 16 * 1024 * 1024,	/* FIXME */
-#endif
 };
 
+/* 128MiB */
 static struct device_d sdram_dev = {
 	.name     = "ram",
 	.id       = "ram0",
 
-	.map_base = 0x08000000,		/* FIXME */
-	.size     = 16 * 1024 * 1024,	/* FIXME */
+	.map_base = IMX_SDRAM_CS0,
+	.size     = 128 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
 };
@@ -105,12 +101,11 @@ static int imx31_devices_init(void)
 	imx_gpio_mode(MUX_CSPI2_MOSI_I2C2_SCL);
 	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);
 
-#if 0
 	register_device(&cfi_dev);
 	register_device(&sram_dev);
-	register_device(&cfi_dev);
+	register_device(&nand_dev);
 	register_device(&network_dev);
-#endif
+
 	register_device(&sdram_dev);
 
 	return 0;

@@ -28,6 +28,55 @@
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 
+/*
+ * ?MiB NOR type flash, connected to CS line 0,
+ * data width is <friesel>
+ */
+static struct device_d cfi_dev = {
+	.name     = "cfi_flash",
+	.id       = "nor0",
+
+	.map_base = 0x10000000,	/* FIXME */
+	.size     = 16 * 1024 * 1024,	/* FIXME */
+};
+
+/*
+ * ?kiB static RAM type memory, connected to CS4,
+ * data width is <friesel>
+ */
+static struct device_d sram_dev = {
+	.name     = "sram",
+	.id       = "sram0",
+
+	.map_base = 0x10000000,	/* FIXME */
+	.size     = 16 * 1024 * 1024,	/* FIXME */
+};
+
+/*
+ * ?MiB NAND type flash
+ */
+static struct device_d nand_dev = {
+	.name     = "cfi_flash_nand",
+	.id       = "nand0",
+
+	.map_base = 0x10000000,	/* FIXME */
+	.size     = 16 * 1024 * 1024,	/* FIXME */
+};
+
+/*
+ * SMSC 91xx network controller
+ * connected to CS line 1 and interrupt line <blub>,
+ * data width is <friesel>
+ */
+static struct device_d network_dev = {
+	.name     = "smsc9xxx",
+	.id       = "eth0",
+#if 0
+	.map_base = 0x10000000,	/* FIXME */
+	.size     = 16 * 1024 * 1024,	/* FIXME */
+#endif
+};
+
 static struct device_d sdram_dev = {
 	.name     = "ram",
 	.id       = "ram0",
@@ -52,15 +101,17 @@ static int imx31_devices_init(void)
 	__REG(CSCR_L(4)) = 0x22252521;
 	__REG(CSCR_A(4)) = 0x22220a00;
 
-	/* setup pins for UART1 */
-	imx_gpio_mode(MUX_RXD1_UART1_RXD_MUX);
-	imx_gpio_mode(MUX_TXD1_UART1_TXD_MUX);
-	imx_gpio_mode(MUX_RTS1_UART1_RTS_B);
-	imx_gpio_mode(MUX_RTS1_UART1_CTS_B);
-
 	/* setup pins for I2C2 (for EEPROM, RTC) */
 	imx_gpio_mode(MUX_CSPI2_MOSI_I2C2_SCL);
 	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);
+
+#if 0
+	register_device(&cfi_dev);
+	register_device(&sram_dev);
+	register_device(&cfi_dev);
+	register_device(&network_dev);
+#endif
+	register_device(&sdram_dev);
 
 	return 0;
 }
@@ -71,15 +122,17 @@ static struct device_d imx31_serial_device = {
 	.name     = "imx_serial",
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
+	.size     = 16 * 1024,
 	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int imx31_console_init(void)
 {
 	/* init gpios for serial port */
-	imx_gpio_mode(PC11_PF_UART1_TXD);
-	imx_gpio_mode(PC12_PF_UART1_RXD);
+	imx_gpio_mode(MUX_RXD1_UART1_RXD_MUX);
+	imx_gpio_mode(MUX_TXD1_UART1_TXD_MUX);
+	imx_gpio_mode(MUX_RTS1_UART1_RTS_B);
+	imx_gpio_mode(MUX_RTS1_UART1_CTS_B);
 
 	register_device(&imx31_serial_device);
 	return 0;

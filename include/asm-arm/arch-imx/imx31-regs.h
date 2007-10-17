@@ -30,19 +30,24 @@
 # error "Please do not include directly. Use imx-regs.h instead."
 #endif
 
+#define IMX_UART1_BASE	0x43F90000
+#define IMX_UART2_BASE	0x43F94000
+#define IMX_WDT_BASE	0x53FDC000
+#define IMX_RTC_BASE	0x53FD8000
+#define IMX_TIM1_BASE	0x53F90000
+
+#if 0
 #define IMX_IO_BASE		0x00200000
 
 /*
  *  Register BASEs, based on OFFSETs
  */
 #define IMX_AIPI1_BASE             (0x00000 + IMX_IO_BASE)
-#define IMX_WDT_BASE               (0x01000 + IMX_IO_BASE)
-#define IMX_TIM1_BASE              (0x02000 + IMX_IO_BASE)
+#define                (0x01000 + IMX_IO_BASE)
+              (0x02000 + IMX_IO_BASE)
 #define IMX_TIM2_BASE              (0x03000 + IMX_IO_BASE)
-#define IMX_RTC_BASE               (0x04000 + IMX_IO_BASE)
+               (0x04000 + IMX_IO_BASE)
 #define IMX_LCDC_BASE              (0x05000 + IMX_IO_BASE)
-#define IMX_UART1_BASE             (0x06000 + IMX_IO_BASE)
-#define IMX_UART2_BASE             (0x07000 + IMX_IO_BASE)
 #define IMX_PWM_BASE               (0x08000 + IMX_IO_BASE)
 #define IMX_DMAC_BASE              (0x09000 + IMX_IO_BASE)
 #define IMX_AIPI2_BASE             (0x10000 + IMX_IO_BASE)
@@ -64,6 +69,7 @@
 #define IMX_MMA_BASE               (0x22000 + IMX_IO_BASE)
 #define IMX_AITC_BASE              (0x23000 + IMX_IO_BASE)
 #define IMX_CSI_BASE               (0x24000 + IMX_IO_BASE)
+#endif
 
 /*
  * Watchdog Registers
@@ -75,6 +81,7 @@
 /* important definition of some bits of WCR */
 #define WCR_WDE 0x04
 
+#if 0
 /*
  * SYSCTRL Registers
  */
@@ -443,6 +450,7 @@
 #define TPRER_PRES     (0xff)  /* Prescale */
 #define TSTAT_CAPT     (1<<1)  /* Capture event */
 #define TSTAT_COMP     (1)     /* Compare event */
+#endif
 
 /*
  * ????????????

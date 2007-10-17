@@ -6,6 +6,7 @@ config ARCH_TEXT_BASE
 	default 0x81f00000 if MACH_NXDB500
 	default 0x21e00000 if MACH_ECO920
 	default 0xa0000000 if MACH_PCM038
+	default 0x87f00000 if MACH_IMX31
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
@@ -15,6 +16,9 @@ config BOARDINFO
 
 config BOARDINFO
 	default "Phytec Phycore MX27" if MACH_PCM038
+
+config BOARDINFO
+	default "Phytec Phycore i.MX31" if MACH_IMX31
 
 config ARM
 	bool
@@ -28,7 +32,7 @@ config ARM920T
 config ARM926EJS
 	bool
 
-# i.MX1 i.MXL and i.MX27 are quite similar and thus
+# i.MX1, i.MXL, i.MX27 and i.MX31 are quite similar and thus
 # handled in one arch
 config ARCH_IMX
 	bool
@@ -42,6 +46,10 @@ config ARCH_IMX27
 	bool
 	select ARCH_IMX
 	select ARM926EJS
+
+config ARCH_IMX31
+	bool
+	select ARCH_IMX
 
 config ARCH_AT91RM9200
 	bool
@@ -92,7 +100,14 @@ config MACH_NXDB500
 	select ARCH_NETX
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board
-	  
+
+config MACH_IMX31
+	bool "Phytec i.MX31"
+	select ARCH_IMX31
+	help
+	  Say Y here if your are using Phytec's pcm-mx31 equipped
+	  with a Freescale i.MX31 Processor
+
 endchoice
 
 source arch/arm/mach-netx/Kconfig

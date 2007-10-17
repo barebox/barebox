@@ -53,6 +53,10 @@
 #define BMPR4(base) __REG( 0xcc +(base)) /* BRM Modulator Register 4 */
 #define UTS(base)   __REG( 0xd0 +(base)) /* UART Test Register */
 #endif
+#ifdef CONFIG_ARCH_IMX31
+# define ONEMS(base)	__REG( 0xb0 +(base)) /* One Millisecond register (i.MX27) */
+# define UTS(base)	__REG( 0xb4 +(base)) /* UART Test Register */
+#endif
 
 /* UART Control Register Bit Fields.*/
 #define  URXD_CHARRDY    (1<<15)
@@ -146,13 +150,20 @@
 #define  UTS_RXFULL 	 (1<<3)	 /* RxFIFO full */
 #define  UTS_SOFTRST	 (1<<0)	 /* Software reset */
 
+/*
+ * create default values for different platforms
+ */
 #ifdef CONFIG_ARCH_IMX1
-#define	UCR3_VAL 0
-#define	UCR4_VAL (UCR4_CTSTL_32 | UCR4_REF16)
+# define	UCR3_VAL 0
+# define	UCR4_VAL (UCR4_CTSTL_32 | UCR4_REF16)
 #endif
 #ifdef CONFIG_ARCH_IMX27
-#define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
-#define	UCR4_VAL UCR4_CTSTL_32
+# define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
+# define	UCR4_VAL UCR4_CTSTL_32
+#endif
+#ifdef CONFIG_ARCH_IMX31
+# define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
+# define	UCR4_VAL UCR4_CTSTL_32
 #endif
 
 static int imx_serial_reffreq(ulong base)

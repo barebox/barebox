@@ -12,6 +12,8 @@ board-$(CONFIG_MACH_ECO920)	   := eco920
 board-$(CONFIG_MACH_SCB9328)	   := scb9328
 board-$(CONFIG_MACH_PCM038)	   := phycore_pcm038
 board-$(CONFIG_MACH_NXDB500)       := netx
+board-$(CONFIG_MACH_IMX31)	   := phycore_imx31
+# FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t
 cpu-$(CONFIG_ARM926EJS)            := arm926ejs
 
@@ -68,7 +70,7 @@ else
 BOARD  :=
 endif
 
-ifneq ($(cpu-y),)
+ifneq ($(machine-y),)
 MACH  := arch/arm/mach-$(machine-y)/
 else
 MACH  :=

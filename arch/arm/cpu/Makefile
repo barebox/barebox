@@ -8,3 +8,4 @@ obj-y += interrupts.o
 #
 obj-$(CONFIG_ARM920T) += start-arm920t.o
 obj-$(CONFIG_ARM926EJS) += start-arm920t.o
+obj-$(CONFIG_ARCH_IMX31) += start-arm920t.o

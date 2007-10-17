@@ -1,8 +1,8 @@
 /*
  *  armboot - Startup Code for ARM920 CPU-core
  *
- *  Copyright (c) 2001	Marius Gröger <mag@sysgo.de>
- *  Copyright (c) 2002	Alex Züpke <azu@sysgo.de>
+ *  Copyright (c) 2001	Marius Grï¿½ger <mag@sysgo.de>
+ *  Copyright (c) 2002	Alex Zï¿½pke <azu@sysgo.de>
  *  Copyright (c) 2002	Gary Jennejohn <gj@denx.de>
  *
  * See file CREDITS for list of people who contributed to this
@@ -24,17 +24,21 @@
  * MA 02111-1307 USA
  */
 
+/*
+ * Note:
+ * This file can be used for at least:
+ * - ARM920T
+ * - i.MX1
+ * - i.MX27
+ * - i.MX31
+ */
 	.section ".text_entry","ax"
 
 #include <config.h>
 
-/*
- *************************************************************************
- *
+/*************************************************************************
  * Jump vector table as in table 3.1 in [1]
- *
- *************************************************************************
- */
+ *************************************************************************/
 
 .globl _start
 _start:
@@ -77,6 +81,10 @@ _TEXT_BASE:
 _u_boot_start:
 	.word _start
 
+/*************************************************************************
+ * FIXME
+ *************************************************************************/
+
 _MALLOC_START:
 	.word _start - CFG_MALLOC_LEN
 
@@ -106,11 +114,9 @@ FIQ_STACK_START:
 	.word 0x0badc0de
 #endif
 
-
-/*
+/*************************************************************************
  * the actual reset code
- */
-
+ *************************************************************************/
 reset:
 	/*
 	 * set the cpu to SVC32 mode
@@ -121,10 +127,8 @@ reset:
 	msr	cpsr,r0
 
 #ifdef ARCH_HAS_INIT_LOWLEVEL
-	/* Samsung S3C24x0 needs some stuff here */
 	bl arch_init_lowlevel
 #endif
-
 	/*
 	 * flush v4 I/D caches
 	 */

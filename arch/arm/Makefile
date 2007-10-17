@@ -41,7 +41,12 @@ else
 	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
 endif
 	@echo '  SYMLINK include/asm-arm/proc -> include/asm-arm/proc-armv'
+ifneq ($(KBUILD_SRC),)
+	$(Q)mkdir -p include/asm-arm
+	$(Q)ln -fsn $(srctree)/include/asm-arm/proc-armv include/asm-arm/proc
+else
 	$(Q)ln -fsn proc-armv include/asm-arm/proc
+endif
 	@touch $@
 
 uboot.netx: uboot.bin

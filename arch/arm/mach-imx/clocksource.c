@@ -90,13 +90,7 @@ void reset_cpu (ulong ignored)
 	WSR = 0x0000AAAA;
 
 	/* Enable watchdog */
-#ifdef CONFIG_ARCH_IMX1
-	WCR = 0x00000001;
-#elif defined CONFIG_ARCH_IMX27
-	WCR = 1 << 2;
-#else
-#error unknown i.MX soc
-#endif
+	WCR = WCR_WDE;
 
 	while (1);
 	/*NOTREACHED*/

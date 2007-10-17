@@ -45,6 +45,9 @@
 #define WSR  __REG(IMX_WDT_BASE + 0x04) /* Watchdog Service Register */
 #define WSTR __REG(IMX_WDT_BASE + 0x08) /* Watchdog Status Register  */
 
+/* important definition of some bits of WCR */
+#define WCR_WDE 0x01
+
 /* SYSCTRL Registers */
 #define SIDR   __REG(IMX_SYSCTRL_BASE + 0x4) /* Silicon ID Register		    */
 #define FMCR   __REG(IMX_SYSCTRL_BASE + 0x8) /* Function Multiplex Control Register */

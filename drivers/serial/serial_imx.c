@@ -154,14 +154,17 @@
  * create default values for different platforms
  */
 #ifdef CONFIG_ARCH_IMX1
+# define	UCR1_VAL (UCR1_UARTCLKEN)
 # define	UCR3_VAL 0
 # define	UCR4_VAL (UCR4_CTSTL_32 | UCR4_REF16)
 #endif
 #ifdef CONFIG_ARCH_IMX27
+# define	UCR1_VAL (UCR1_UARTCLKEN)
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
 #ifdef CONFIG_ARCH_IMX31
+# define	UCR1_VAL (0)
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
@@ -186,7 +189,7 @@ static int imx_serial_init_port(struct console_device *cdev)
 	struct device_d *dev = cdev->dev;
 	ulong base = dev->map_base;
 
-	UCR1(base) = UCR1_UARTCLKEN;
+	UCR1(base) = UCR1_VAL;
 	UCR2(base) = UCR2_WS | UCR2_IRTS;
 	UCR3(base) = UCR3_VAL;
 	UCR4(base) = UCR4_VAL;
@@ -199,7 +202,7 @@ static int imx_serial_init_port(struct console_device *cdev)
 	/* Configure FIFOs */
 	UFCR(base) = 0xa81;
 
-#ifdef CONFIG_ARCH_IMX27
+#if defined(CONFIG_ARCH_IMX27) || defined(CONFIG_ARCH_IMX31)
 	ONEMS(base) = imx_serial_reffreq(base) / 1000;
 #endif
 

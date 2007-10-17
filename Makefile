@@ -787,7 +787,11 @@ include/asm:
 
 include/config.h:
 	@echo '  SYMLINK $@ -> include/configs/$(board-y).h'
+ifneq ($(KBUILD_SRC),)
+	$(Q)ln -fsn $(srctree)/include/configs/$(board-y).h $@
+else
 	@ln -fsn configs/$(board-y).h $@
+endif
 
 # Generate some files
 # ---------------------------------------------------------------------------

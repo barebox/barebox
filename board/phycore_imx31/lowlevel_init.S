@@ -21,7 +21,7 @@
  * MA 02111-1307 USA
  */
 
-#include <asm/arch/mx31-regs.h>
+#include <asm/arch/imx-regs.h>
 
 .macro REG reg, val
 	ldr r2, =\reg
@@ -43,8 +43,8 @@
 	bcs 1b
 .endm
 
-.globl lowlevel_init
-lowlevel_init:
+.globl board_init_lowlevel
+board_init_lowlevel:
 
 	REG	IPU_CONF, IPU_CONF_DI_EN
 	REG	CCM_CCMR, 0x074B0BF5

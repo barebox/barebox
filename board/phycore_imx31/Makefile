@@ -22,5 +22,3 @@
 
 obj-y += lowlevel_init.o
 obj-y += phycore_imx31.o
-
-extra-y += u-boot.lds

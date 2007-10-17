@@ -77,4 +77,8 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
+lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/arm/lib/u-boot.lds
+lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
+
+CLEAN_FILES    += arch/arm/lib/u-boot.lds
 MRPROPER_FILES += include/asm-arm/arch include/asm-arm/proc

@@ -53,6 +53,8 @@ CPU  :=
 endif
 
 common-y += $(BOARD)
-common-y += arch/blackfin/lib/ $(CPU) 
+common-y += arch/blackfin/lib/ $(CPU)
+
+lds-y += $(BOARD)/u-boot.lds
 
 MRPROPER_FILES += include/asm-arm/arch include/asm-arm/proc

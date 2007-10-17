@@ -58,4 +58,6 @@ endif
 common-y += $(BOARD) $(CPU)
 common-y += arch/ppc/lib/
 
+lds-y += $(BOARD)/u-boot.lds
+
 MRPROPER_FILES += include/asm-ppc/arch

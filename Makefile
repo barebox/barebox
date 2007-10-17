@@ -494,8 +494,8 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 # System.map is generated to document addresses of all kernel symbols
 
 uboot-common := $(common-y)
-uboot-all  := $(uboot-common)
-uboot-lds  := $(BOARD)/u-boot.lds
+uboot-all    := $(uboot-common)
+uboot-lds    := $(lds-y)
 
 # Rule to link uboot
 # May be overridden by arch/$(ARCH)/Makefile
@@ -903,7 +903,7 @@ endif # CONFIG_MODULES
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	uboot System.map include/uboot_default_env.h \
-                .tmp_version .tmp_uboot* uboot.bin uboot.S $(uboot-lds) \
+                .tmp_version .tmp_uboot* uboot.bin uboot.S \
 		.tmp_kallsyms*
 
 # Directories & files removed with 'make mrproper'

@@ -31,9 +31,11 @@
 
 # ifndef __ASSEMBLY__
 # define __REG(x)	(*((volatile u32 *)(x)))
-# define __REG2(x,y)        (*(volatile u32 *)((u32)&__REG(x) + (y)))
+# define __REG16(x)     (*(volatile u16 *)(x))
+# define __REG2(x,y)    (*(volatile u32 *)((u32)&__REG(x) + (y)))
 # else
 #  define __REG(x) (x)
+#  define __REG16(x) (x)
 #  define __REG2(x,y) ((x)+(y))
 #endif
 
@@ -97,25 +99,5 @@
 
 #define GPIO_AOUT  (1 << 13)
 #define GPIO_BOUT  (1 << 14)
-
-/* General purpose timers registers */
-#define GPT_TCTL   0x00
-#define GPT_TPRER  0x04
-#define GPT_TCMP   0x08
-#define GPT_TCR    0x0c
-#define GPT_TCN    0x10
-#define GPT_TSTAT  0x14
-
-/* General purpose timers bitfields */
-#define TCTL_SWR       (1<<15) /* Software reset */
-#define TCTL_FRR       (1<<8)  /* Freerun / restart */
-#define TCTL_CAP       (3<<6)  /* Capture Edge */
-#define TCTL_OM        (1<<5)  /* output mode */
-#define TCTL_IRQEN     (1<<4)  /* interrupt enable */
-#define TCTL_CLKSOURCE (7<<1)  /* Clock source */
-#define TCTL_TEN       (1)     /* Timer enable */
-#define TPRER_PRES     (0xff)  /* Prescale */
-#define TSTAT_CAPT     (1<<1)  /* Capture event */
-#define TSTAT_COMP     (1)     /* Compare event */
 
 #endif				/* _IMX_REGS_H */

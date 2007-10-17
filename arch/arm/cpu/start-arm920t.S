@@ -24,6 +24,7 @@
  * MA 02111-1307 USA
  */
 
+	.section ".text_entry","ax"
 
 #include <config.h>
 

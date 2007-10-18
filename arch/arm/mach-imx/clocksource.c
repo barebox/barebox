@@ -63,8 +63,7 @@ static int clocksource_init (void)
 		GPT(GPT_TCTL) = 0; /* We have no udelay by now */
 
 	GPT(GPT_TPRER) = 0;
-	GPT(GPT_TCTL) |= TCTL_FRR | (1<<1); /* Freerun Mode, PERCLK1 input */
-
+	GPT(GPT_TCTL) |= TCTL_FRR | (1<<TCTL_CLKSOURCE); /* Freerun Mode, PERCLK1 input */
 	GPT(GPT_TCTL) &= ~TCTL_TEN;
 	GPT(GPT_TCTL) |= TCTL_TEN; /* Enable timer */
 

@@ -183,6 +183,26 @@ config SKIP_LOWLEVEL_INIT
 	bool
 	depends on ARM
 	prompt "Skip lowlevel init"
+	help
+	  This entry skips the SDRAM initialising on many ARM based boards.
+	  It enables using UBoot2 as a second stage bootloader.
 
+config ENABLE_FLASH_NOISE
+	bool
+	prompt "verbose flash handling"
+	help
+	  Enable this to get noisy flash handling routines
+
+config ENABLE_PARTITION_NOISE
+	bool
+	prompt "verbose partition handling"
+	help
+	  Enable this to get noisy partition handling routines
+
+config ENABLE_DEVICE_NOISE
+	bool
+	prompt "verbose device handling"
+	help
+	  Enable this to get noisy device handling routines
 
 endmenu

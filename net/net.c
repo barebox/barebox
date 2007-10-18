@@ -81,6 +81,7 @@
 #include <environment.h>
 #include <param.h>
 #include <net.h>
+#include <driver.h>
 #include "bootp.h"
 #include "tftp.h"
 #include "rarp.h"
@@ -1352,6 +1353,8 @@ NetReceive(uchar * inpkt, int len)
 
 static int net_check_prereq (proto_t protocol)
 {
+	char *ethid = eth_get_current()->dev->id;
+
 	switch (protocol) {
 		/* Fall through */
 #ifdef CONFIG_NET_PING
@@ -1376,13 +1379,13 @@ static int net_check_prereq (proto_t protocol)
 	case NETCONS:
 	case TFTP:
 		if (NetServerIP == 0) {
-			puts ("*** ERROR: `serverip' not set\n");
+			printf("*** ERROR: `%s.serverip' not set\n", ethid);
 			return (1);
 		}
     common:
 
 		if (NetOurIP == 0) {
-			puts ("*** ERROR: `ipaddr' not set\n");
+			printf("*** ERROR: `%s.ipaddr' not set\n", ethid);
 			return (1);
 		}
 		/* Fall through */
@@ -1392,7 +1395,7 @@ static int net_check_prereq (proto_t protocol)
 	case BOOTP:
 	case CDP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
-			puts ("*** ERROR: `ethaddr' not set\n");
+			printf("*** ERROR: `%s.ethaddr' not set\n", ethid);
 			return (1);
 		}
 		/* Fall through */

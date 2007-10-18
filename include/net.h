@@ -54,8 +54,6 @@ enum eth_state_t {
 struct device_d;
 
 struct eth_device {
-	char name[NAMESIZE];
-//	unsigned char enetaddr[6];
 	int iobase;
 	int state;
 

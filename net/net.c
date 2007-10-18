@@ -291,7 +291,7 @@ NetLoop(proto_t protocol)
 		return -1;
 
 restart:
-	string_to_ethaddr(dev_get_param(eth_get_current()->dev, "mac"),
+	string_to_ethaddr(dev_get_param(eth_get_current()->dev, "ethaddr"),
 			NetOurEther);
 
 	NetState = NETLOOP_CONTINUE;

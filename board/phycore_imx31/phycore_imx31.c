@@ -64,7 +64,7 @@ static struct device_d nand_dev = {
 };
 
 /*
- * SMSC 91xx network controller
+ * SMSC 9217 network controller
  * connected to CS line 1 and interrupt line
  * GPIO3, data width is 16 bit
  */
@@ -108,7 +108,13 @@ static int imx31_devices_init(void)
 	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);
 
 	register_device(&cfi_dev);
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");
+
+	/*
+	 * Create partitions that should be
+	 * not touched by any regular user
+	 */
+	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");	/* ourself */
+	dev_add_partition(&cfi_dev, 0x20000, 0x20000, "env");	/* environment */
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	register_device(&sram_dev);

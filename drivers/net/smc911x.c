@@ -22,6 +22,10 @@
  * MA 02111-1307 USA
  */
 
+#ifdef CONFIG_ENABLE_DEVICE_NOISE
+# define DEBUG
+#endif
+
 #include <common.h>
 
 #include <command.h>
@@ -704,7 +708,7 @@ static int smc911x_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	printf(DRIVERNAME ": detected %s controller\n", chip_ids[i].name);
+	debug(DRIVERNAME ": detected %s controller\n", chip_ids[i].name);
 
 	edev = xzalloc(sizeof(struct eth_device) +
 			sizeof(struct smc911x_priv));

@@ -39,12 +39,21 @@
 #define IMX_SDRAM_CS0	0x80000000
 #define IMX_SDRAM_CS1	0x90000000
 
+/*
+ * Adresses and ranges of the external chip select lines
+ */
 #define IMX_CS0_BASE	0xA0000000
+#define IMX_CS0_RANGE	(128 * 1024 * 1024)
 #define IMX_CS1_BASE	0xA8000000
+#define IMX_CS1_RANGE	(128 * 1024 * 1024)
 #define IMX_CS2_BASE	0xB0000000
+#define IMX_CS2_RANGE	(32 * 1024 * 1024)
 #define IMX_CS3_BASE	0xB2000000
+#define IMX_CS3_RANGE	(32 * 1024 * 1024)
 #define IMX_CS4_BASE	0xB4000000
+#define IMX_CS4_RANGE	(32 * 1024 * 1024)
 #define IMX_CS5_BASE	0xB6000000
+#define IMX_CS5_RANGE	(32 * 1024 * 1024)
 
 /*
  * Definitions for the clocksource driver

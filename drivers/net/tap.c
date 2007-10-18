@@ -63,12 +63,12 @@ void tap_eth_halt (struct eth_device *edev)
 	/* nothing to do here */
 }
 
-static int tap_get_mac_address(struct eth_device *edev, unsigned char *adr)
+static int tap_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	return -1;
 }
 
-static int tap_set_mac_address(struct eth_device *edev, unsigned char *adr)
+static int tap_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	return 0;
 }
@@ -97,8 +97,8 @@ int tap_probe(struct device_d *dev)
 	edev->send = tap_eth_send;
 	edev->recv = tap_eth_rx;
 	edev->halt = tap_eth_halt;
-	edev->get_mac_address = tap_get_mac_address;
-	edev->set_mac_address = tap_set_mac_address;
+	edev->get_ethaddr = tap_get_ethaddr;
+	edev->set_ethaddr = tap_set_ethaddr;
 
 	eth_register(edev);
 

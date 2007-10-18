@@ -236,13 +236,13 @@ int at91rm9200_miiphy_initialize(void)
 	return 0;
 }
 
-static int at91rm9200_get_mac_address(struct eth_device *eth, unsigned char *adr)
+static int at91rm9200_get_ethaddr(struct eth_device *eth, unsigned char *adr)
 {
 	/* We have no eeprom */
 	return -1;
 }
 
-static int at91rm9200_set_mac_address(struct eth_device *eth, unsigned char *adr)
+static int at91rm9200_set_ethaddr(struct eth_device *eth, unsigned char *adr)
 {
 	int i;
 
@@ -271,8 +271,8 @@ static int at91rm9200_eth_init (struct device_d *dev)
 	edev->send = at91rm9200_eth_send;
 	edev->recv = at91rm9200_eth_rx;
 	edev->halt = at91rm9200_eth_halt;
-	edev->get_mac_address = at91rm9200_get_mac_address;
-	edev->set_mac_address = at91rm9200_set_mac_address;
+	edev->get_ethaddr = at91rm9200_get_ethaddr;
+	edev->set_ethaddr = at91rm9200_set_ethaddr;
 
 	p_mac = AT91C_BASE_EMAC;
 

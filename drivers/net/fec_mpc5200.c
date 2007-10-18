@@ -210,13 +210,13 @@ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
 	}
 }
 
-static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
+static int mpc5xxx_fec_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 {
 	/* no eeprom */
 	return -1;
 }
 
-static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
+static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	uint8 currByte;			/* byte for which to compute the CRC */
@@ -682,8 +682,8 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->send = mpc5xxx_fec_send,
 	edev->recv = mpc5xxx_fec_recv,
 	edev->halt = mpc5xxx_fec_halt,
-	edev->get_mac_address = mpc5xxx_fec_get_hwaddr,
-	edev->set_mac_address = mpc5xxx_fec_set_hwaddr,
+	edev->get_ethaddr = mpc5xxx_fec_ethaddr,
+	edev->set_ethaddr = mpc5xxx_fec_ethaddr,
 
 	fec->eth = (ethernet_regs *)dev->map_base;
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;

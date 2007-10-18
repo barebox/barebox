@@ -202,18 +202,18 @@ static void netx_eth_halt (struct eth_device *edev)
 {
 }
 
-static int netx_eth_get_mac_address(struct eth_device *edev, unsigned char *adr)
+static int netx_eth_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	/* FIXME: get from crypto flash */
         return -1;
 }
 
-static int netx_eth_set_mac_address(struct eth_device *edev, unsigned char *adr)
+static int netx_eth_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct netx_eth_priv *priv = (struct netx_eth_priv *)edev->priv;
 	int xcno = priv->xcno;
 
-	debug("netx_eth_set_mac_address\n");
+	debug("%s\n", __FUNCTION__);
 
 	/* set MAC address */
 	XMAC_REG(xcno, XMAC_RPU_HOLD_PC) = RPU_HOLD_PC;
@@ -257,8 +257,8 @@ static int netx_eth_probe(struct device_d *dev)
 	edev->send = netx_eth_send;
 	edev->recv = netx_eth_rx;
 	edev->halt = netx_eth_halt;
-	edev->get_mac_address = netx_eth_get_mac_address;
-	edev->set_mac_address = netx_eth_set_mac_address;
+	edev->get_ethaddr = netx_eth_get_ethaddr;
+	edev->set_ethaddr = netx_eth_set_ethaddr;
 
 	priv->miiphy.read = netx_miiphy_read;
 	priv->miiphy.write = netx_miiphy_write;

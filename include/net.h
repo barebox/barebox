@@ -65,8 +65,8 @@ struct eth_device {
 	int  (*send) (struct eth_device*, void *packet, int length);
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
-	int  (*get_mac_address) (struct eth_device*, unsigned char *adr);
-	int  (*set_mac_address) (struct eth_device*, unsigned char *adr);
+	int  (*get_ethaddr) (struct eth_device*, unsigned char *adr);
+	int  (*set_ethaddr) (struct eth_device*, unsigned char *adr);
 
 	struct eth_device *next;
 	void *priv;
@@ -75,7 +75,7 @@ struct eth_device {
 	struct param_d param_netmask;
 	struct param_d param_gateway;
 	struct param_d param_serverip;
-	struct param_d param_mac;
+	struct param_d param_ethaddr;
 
 	struct device_d *dev;
 };
@@ -88,7 +88,7 @@ void eth_try_another(int first_restart);	/* Change the device		*/
 struct eth_device *eth_get_dev(void);	/* get the current device MAC	*/
 struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
 int eth_get_dev_index (void);		/* get the device index         */
-void eth_set_enetaddr(int num, char* a);	/* Set new MAC address		*/
+void eth_set_ethaddr(int num, char* a);	/* Set new MAC address		*/
 
 int eth_open(void);			/* open the device		*/
 int eth_send(void *packet, int length);	   /* Send a packet		*/
@@ -424,8 +424,8 @@ IPaddr_t getenv_IPaddr (char *);
 /* read a VLAN id from an environment variable */
 ushort getenv_VLAN(char *);
 
-int string_to_enet_addr(const char *str, char *enetaddr);
-void enet_addr_to_string(const unsigned char *enetaddr, char *str);
+int string_to_ethaddr(const char *str, char *enetaddr);
+void ethaddr_to_string(const unsigned char *enetaddr, char *str);
 
 /**********************************************************************/
 /* Network devices                                                    */

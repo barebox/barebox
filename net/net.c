@@ -258,6 +258,11 @@ NetLoop(proto_t protocol)
 	struct eth_device *eth_current = eth_get_current();
 	IPaddr_t ip;
 
+	if (!eth_current) {
+		printf("Current ethernet device not set!\n");
+		return -1;
+	}
+
 	ip = dev_get_param_ip(eth_current->dev, "ip");
 	NetCopyIP(&NetOurIP, &ip);
 

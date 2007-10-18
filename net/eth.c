@@ -49,9 +49,9 @@ int eth_open(void)
 	if (!eth_current)
 		return 0;
 
-	string_to_enet_addr(dev_get_param(eth_current->dev, "mac"), mac);
+	string_to_ethaddr(dev_get_param(eth_current->dev, "ethaddr"), mac);
 
-	eth_current->set_mac_address(eth_current, mac);
+	eth_current->set_ethaddr(eth_current, mac);
 
 	eth_current->open(eth_current);
 
@@ -90,26 +90,26 @@ int eth_register(struct eth_device *edev)
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
 
-	if (!edev->get_mac_address) {
+	if (!edev->get_ethaddr) {
 		printf("no get_mac_address found for current eth device\n");
 		return -1;
 	}
 
 	edev->param_ip.name = "ip";
-	edev->param_mac.name = "mac";
+	edev->param_ethaddr.name = "ethaddr";
 	edev->param_gateway.name = "gateway";
 	edev->param_netmask.name = "netmask";
 	edev->param_serverip.name = "serverip";
 	dev_add_param(dev, &edev->param_ip);
-	dev_add_param(dev, &edev->param_mac);
+	dev_add_param(dev, &edev->param_ethaddr);
 	dev_add_param(dev, &edev->param_gateway);
 	dev_add_param(dev, &edev->param_netmask);
 	dev_add_param(dev, &edev->param_serverip);
 
-	if (edev->get_mac_address(edev, ethaddr) == 0) {
-		enet_addr_to_string(ethaddr, ethaddr_str);
+	if (edev->get_ethaddr(edev, ethaddr) == 0) {
+		ethaddr_to_string(ethaddr, ethaddr_str);
 		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
-		dev_set_param(dev, "mac", ethaddr_str);
+		dev_set_param(dev, "ethaddr", ethaddr_str);
 //		memcpy(edev->enetaddr, ethaddr, 6);
 	}
 

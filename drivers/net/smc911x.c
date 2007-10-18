@@ -424,7 +424,7 @@ static void smc911x_set_mac_csr(struct eth_device *edev, u8 reg, u32 data)
 	smc911x_mac_wait_busy(priv);
 }
 
-static int smc911x_get_mac_address(struct eth_device *edev, unsigned char *m)
+static int smc911x_get_ethaddr(struct eth_device *edev, unsigned char *m)
 {
 	unsigned long addrh, addrl;
 
@@ -445,7 +445,7 @@ static int smc911x_get_mac_address(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int smc911x_set_mac_address(struct eth_device *edev, unsigned char *m)
+static int smc911x_set_ethaddr(struct eth_device *edev, unsigned char *m)
 {
 	unsigned long addrh, addrl;
 
@@ -719,8 +719,8 @@ static int smc911x_probe(struct device_d *dev)
 	edev->send = smc911x_eth_send;
 	edev->recv = smc911x_eth_rx;
 	edev->halt = smc911x_eth_halt;
-	edev->get_mac_address = smc911x_get_mac_address;
-	edev->set_mac_address = smc911x_set_mac_address;
+	edev->get_ethaddr = smc911x_get_ethaddr;
+	edev->set_ethaddr = smc911x_set_ethaddr;
 
 	priv->miiphy.read = smc911x_phy_read;
 	priv->miiphy.write = smc911x_phy_write;

@@ -431,7 +431,7 @@ static u16 read_srom_word(struct dm9000_priv *priv, int offset)
 	return (DM9000_ior(priv, DM9000_EPDRL) + (DM9000_ior(priv, DM9000_EPDRH) << 8));
 }
 
-static int dm9000_get_mac_address(struct eth_device *edev, unsigned char *adr)
+static int dm9000_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
 	int i;
@@ -442,12 +442,12 @@ static int dm9000_get_mac_address(struct eth_device *edev, unsigned char *adr)
         return 0;
 }
 
-static int dm9000_set_mac_address(struct eth_device *edev, unsigned char *adr)
+static int dm9000_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
 	int i, oft;
 
-	debug("dm9000_set_mac_address\n");
+	debug("%s\n", __FUNCTION__);
 
 	for (i = 0, oft = 0x10; i < 6; i++, oft++)
 		DM9000_iow(priv, oft, adr[i]);
@@ -499,8 +499,8 @@ static int dm9000_probe(struct device_d *dev)
 	edev->send = dm9000_eth_send;
 	edev->recv = dm9000_eth_rx;
 	edev->halt = dm9000_eth_halt;
-	edev->get_mac_address = dm9000_get_mac_address;
-	edev->set_mac_address = dm9000_set_mac_address;
+	edev->get_ethaddr = dm9000_get_ethaddr;
+	edev->set_ethaddr = dm9000_set_ethaddr;
 
 	/* RESET device */
 	dm9000_reset(priv);

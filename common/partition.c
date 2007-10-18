@@ -91,7 +91,7 @@ static int part_probe(struct device_d *dev)
 {
 	struct partition *part = dev->type_data;
 
-	printf("registering partition %s on device %s (size=0x%08x, name=%s)\n",
+	debug("registering partition %s on device %s (size=0x%08x, name=%s)\n",
 			dev->id, part->physdev->id, dev->size, part->name);
 	return 0;
 }

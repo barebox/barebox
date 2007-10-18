@@ -18,6 +18,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ *
+ * Board support for Phytec's, i.MX31 based CPU card, called: PCM037
  */
 
 #include <common.h>
@@ -27,31 +29,32 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
+#include <partition.h>
 
 /*
- * 32MiB NOR type flash, connected to CS line 0,
- * data width is <friesel>
+ * Up to 64MiB NOR type flash, connected to
+ * CS line 0, data width is 16 bit
  */
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
 	.id       = "nor0",
 	.map_base = IMX_CS0_BASE,
-	.size     = 32 * 1024 * 1024,
+	.size     = IMX_CS0_RANGE,	/* area size */
 };
 
 /*
- * ?kiB static RAM type memory, connected to CS4,
- * data width is <friesel>
+ * up to 2MiB static RAM type memory, connected
+ * to CS4, data width is 16 bit
  */
 static struct device_d sram_dev = {
 	.name     = "sram",
 	.id       = "sram0",
 	.map_base = IMX_CS4_BASE,
-	.size     = 16 * 1024 * 1024,
+	.size     = IMX_CS4_RANGE,	/* area size */
 };
 
 /*
- * ?MiB NAND type flash
+ * ?MiB NAND type flash, data width 8 bit
  */
 static struct device_d nand_dev = {
 	.name     = "cfi_flash_nand",
@@ -62,23 +65,26 @@ static struct device_d nand_dev = {
 
 /*
  * SMSC 91xx network controller
- * connected to CS line 1 and interrupt line <blub>,
- * data width is <friesel>
+ * connected to CS line 1 and interrupt line
+ * GPIO3, data width is 16 bit
  */
 static struct device_d network_dev = {
-	.name     = "smsc9xxx",
+	.name     = "smc911x",
 	.id       = "eth0",
 	.map_base = IMX_CS1_BASE,
-	.size     = 16 * 1024 * 1024,	/* FIXME */
+	.size     = IMX_CS1_RANGE,	/* area size */
+	.type     = DEVICE_TYPE_ETHER,
 };
 
-/* 128MiB */
+/*
+ * 128MiB of SDRAM, data width is 32 bit
+ */
 static struct device_d sdram_dev = {
 	.name     = "ram",
 	.id       = "ram0",
 
 	.map_base = IMX_SDRAM_CS0,
-	.size     = 128 * 1024 * 1024,
+	.size     = 128 * 1024 * 1024,	/* fix size */
 
 	.type     = DEVICE_TYPE_DRAM,
 };
@@ -102,6 +108,9 @@ static int imx31_devices_init(void)
 	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);
 
 	register_device(&cfi_dev);
+	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");
+	dev_protect(&cfi_dev, 0x20000, 0, 1);
+
 	register_device(&sram_dev);
 	register_device(&nand_dev);
 	register_device(&network_dev);

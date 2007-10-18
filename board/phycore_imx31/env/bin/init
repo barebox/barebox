@@ -1,0 +1,7 @@
+#
+# setup the partitions in the main flash
+#
+nor_parts="nor0:256k(uboot),128k(env),256k(bla),1024k(blubb),2048k(friesel)"
+addpart nor0:$nor_parts
+
+echo "System is up and running"

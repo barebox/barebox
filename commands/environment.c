@@ -33,6 +33,8 @@
 #include <xfuncs.h>
 #include <libbb.h>
 #include <libgen.h>
+#else
+# define errno_str(x) ("void")
 #endif
 
 struct action_data {
@@ -75,7 +77,7 @@ static int file_save_action(const char *filename, struct stat *statbuf,
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		perror("open");
+		printf("Open %s %s\n", filename, errno_str());
 		goto out;
 	}
 
@@ -123,7 +125,7 @@ int envfs_save(char *filename, char *dirname)
 
 	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
-		perror("open");
+		printf("Open %s %s\n", filename, errno_str());
 		goto out1;
 	}
 
@@ -229,7 +231,7 @@ int envfs_load(char *filename, char *dir)
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
-		perror("open");
+		printf("Open %s %s\n", filename, errno_str());
 		return -1;
 	}
 
@@ -290,7 +292,7 @@ int envfs_load(char *filename, char *dir)
 		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		free(str);
 		if (fd < 0) {
-			perror("open");
+			printf("Open %s\n", errno_str());
 			ret = fd;
 			goto out;
 		}

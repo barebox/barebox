@@ -429,6 +429,30 @@ static inline void list_splice_init(struct list_head *list,
 	     &pos->member != (head); 					\
 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
 
+/**
+ * list_add_sort - add a new entry to a sorted list
+ * @new: new entry to be added
+ * @head: list head to add it in
+ * @compare: Compare function to compare two list entries
+ *
+ * Insert a new entry before the specified head.
+ * This is useful for implementing queues.
+ */
+static inline void list_add_sort(struct list_head *new, struct list_head *head, 
+		int (*compare)(struct list_head *a, struct list_head *b))
+{
+	struct list_head *pos, *insert = head;
+
+	list_for_each(pos, head) {
+		if (compare(pos, new) < 0)
+			continue;
+		insert = pos;
+		break;
+	}
+
+	list_add_tail(new, insert);
+}
+
 /*
  * Double linked lists with a single pointer list head.
  * Mostly useful for hash tables where the two pointer list head is

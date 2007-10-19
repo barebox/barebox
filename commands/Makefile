@@ -32,4 +32,4 @@ obj-$(CONFIG_CMD_TEST)		+= test.o
 obj-$(CONFIG_CMD_FLASH)		+= flash.o
 obj-$(CONFIG_CMD_MEMINFO)	+= meminfo.o
 obj-$(CONFIG_CMD_TIMEOUT)	+= timeout.o
-
+obj-$(CONFIG_CMD_READLINE)	+= readline.o

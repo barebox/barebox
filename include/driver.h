@@ -112,7 +112,7 @@ struct device_d *get_device_by_path(const char *path);
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(char *id, char *id_template);
+int get_free_deviceid(char *id, const char *id_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 

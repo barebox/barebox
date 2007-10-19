@@ -119,32 +119,17 @@ EXPORT_SYMBOL(u_boot_cmd_usage);
  */
 static int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
-	if (argc == 1) {	/*show list of commands */
-		int cmd_items = &__u_boot_cmd_end -
-				&__u_boot_cmd_start;	/* pointer arith! */
-		int i;
-
-		/* No need to sort the command list. The linker already did
-		 * this for us.
-		 */
-		cmdtp = &__u_boot_cmd_start;
-		for (i = 0; i < cmd_items; i++) {
-			/* print short help (usage) */
-
-			/* allow user abort */
-			if (ctrlc ())
-				return 1;
+	if (argc == 1) {	/* show list of commands */
+		for_each_command(cmdtp) {
 			if (!cmdtp->usage)
 				continue;
 			printf("%10s - %s\n", cmdtp->name, cmdtp->usage);
-			cmdtp++;
 		}
 		return 0;
 	}
-	/*
-	 * command help (long version)
-	 */
-	if ((cmdtp = find_cmd (argv[1])) != NULL) {
+
+	/* command help (long version) */
+	if ((cmdtp = find_cmd(argv[1])) != NULL) {
 		u_boot_cmd_usage(cmdtp);
 		return 0;
 	} else {
@@ -173,7 +158,13 @@ U_BOOT_CMD_START(help)
 	U_BOOT_CMD_HELP(cmd_help_help)
 U_BOOT_CMD_END
 
-#ifdef CONFIG_MODULES
+static int compare(struct list_head *a, struct list_head *b)
+{
+	char *na = list_entry(a, cmd_tbl_t, list)->name;
+	char *nb = list_entry(b, cmd_tbl_t, list)->name;
+
+	return strcmp(na, nb);
+}
 
 int register_command(cmd_tbl_t *cmd)
 {
@@ -183,17 +174,37 @@ int register_command(cmd_tbl_t *cmd)
 	 * with a module.
 	 */
 
-	printf("register command %s\n", cmd->name);
+	debug("register command %s\n", cmd->name);
 
 	/*
 	 * Would be nice to have some kind of list_add_sort
 	 * to keep the command list in order
 	 */
-	list_add_tail(&cmd->list, &command_list);
+	list_add_sort(&cmd->list, &command_list, compare);
+
+	if (cmd->aliases) {
+		char **aliases = cmd->aliases;
+		while(*aliases) {
+			char *usage = "alias for ";
+			cmd_tbl_t *c = xzalloc(sizeof(cmd_tbl_t));
+
+			memcpy(c, cmd, sizeof(cmd_tbl_t));
+
+			c->name = *aliases;
+			c->usage = xmalloc(strlen(usage) + strlen(cmd->name) + 1);
+			sprintf(c->usage, "%s%s", usage, cmd->name);
+
+			c->aliases = NULL;
+
+			register_command(c);
+
+			aliases++;
+		}
+	}
 
 	return 0;
 }
-#endif
+EXPORT_SYMBOL(register_command);
 
 /*
  * find command table entry for a command
@@ -215,20 +226,6 @@ cmd_tbl_t *find_cmd (const char *cmd)
 
 			cmdtp_temp = cmdtp;		/* abbreviated command ? */
 			n_found++;
-		}
-
-		if (cmdtp->aliases) {
-			char **aliases = cmdtp->aliases;
-			while(*aliases) {
-				if (strncmp (cmd, *aliases, len) == 0) {
-					if (len == strlen (cmdtp->name))
-						return cmdtp;	/* full match */
-
-					cmdtp_temp = cmdtp;	/* abbreviated command ? */
-					n_found++;
-				}
-				aliases++;
-			}
 		}
 	}
 
@@ -252,7 +249,7 @@ static int init_command_list(void)
 	for (cmdtp = &__u_boot_cmd_start;
 			cmdtp != &__u_boot_cmd_end;
 			cmdtp++)
-		list_add_tail(&cmdtp->list, &command_list);
+		register_command(cmdtp);
 
 	return 0;
 }

@@ -178,14 +178,13 @@ err_out:
 }
 
 static __maybe_unused char cmd_addpart_help[] =
-"Usage: addpart <partition description>\n"
+"Usage: addpart <device> <partition description>\n"
 "addpart adds a partition description to a device. The partition description\n"
 "has the form\n"
-"dev:size1(name1)[ro],size2(name2)[ro],...\n"
-"<dev> is the device name under /dev. Size can be given in decimal or if\n"
-"prefixed with 0x in hex. Sizes can have an optional suffix K,M,G. The size\n"
-"of the last partition can be specified as '-' for the remaining space of the\n"
-"device.\n"
+"size1(name1)[ro],size2(name2)[ro],...\n"
+"<device> is the device name under. Size can be given in decimal or if prefixed\n"
+"with 0x in hex. Sizes can have an optional suffix K,M,G. The size of the last\n"
+"partition can be specified as '-' for the remaining space of the device.\n"
 "This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
 "Note That this command has to be reworked and will probably change it's API.";
 
@@ -217,10 +216,8 @@ static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 }
 
 static __maybe_unused char cmd_delpart_help[] =
-"Usage: delpart <dev>\n"
-"Delete partitions previously added to a device with addpart.\n"
-"Note: You have to specify the device as 'devid', _not_ as '/dev/devid'. This\n"
-"will likely change soon.\n";
+"Usage: delpart <device>\n"
+"Delete partitions previously added to a device with addpart.\n";
 
 U_BOOT_CMD_START(delpart)
 	.maxargs = 2,

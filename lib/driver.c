@@ -318,7 +318,7 @@ static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 static __maybe_unused char cmd_devinfo_help[] =
 "Usage: devinfo [DEVICE]\n"
 "If called without arguments devinfo shows a summary about known devices and\n"
-"drivers. If called with a device id as argument devinfo shows more detailed\n"
+"drivers. If called with a device path as argument devinfo shows more detailed\n"
 "informations about this device and its parameters.\n";
 
 U_BOOT_CMD_START(devinfo)

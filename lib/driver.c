@@ -47,7 +47,7 @@ struct device_d *get_device_by_id(const char *id)
 	return NULL;
 }
 
-int get_free_deviceid(char *id, char *id_template)
+int get_free_deviceid(char *id, const char *id_template)
 {
 	int i = 0;
 
@@ -252,11 +252,13 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 	if (*dev->id)
 		printf("%c----%s\n", edge, dev->id);
 	else if (dev->type == DEVICE_TYPE_FS)
-		printf("%c----filesystem: %s\n", edge, fsdev_get_mountpoint((struct fs_device_d *)dev->type_data));
+		printf("%c----filesystem: %s\n", edge,
+				fsdev_get_mountpoint((struct fs_device_d *)
+					dev->type_data));
 
 	if (!list_empty(&dev->children)) {
 		device_for_each_child(dev, child) {
-			do_dev_subtree(child, depth + 1,
+			do_devinfo_subtree(child, depth + 1,
 					list_is_last(&child->sibling,
 						&dev->children) ? '`' : '|');
 		}

@@ -7,4 +7,5 @@ FIXME: Hints and tips for simply adapting UBootv2
  - @subpage dev_architecture
  - @subpage dev_params
 
+@subpage how_mount_works
 */

@@ -6,7 +6,10 @@ Friesel
 
 /** @page dev_cpu Intergrate a new CPU (MACH)
 
-Frasel
+Features required for every CPU:
+
+ - clocksource
+ - CPU reset function
 
  - @subpage dev_arm_mach
  - @subpage dev_bf_mach

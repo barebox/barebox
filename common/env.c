@@ -337,21 +337,23 @@ U_BOOT_CMD_START(setenv)
 	"setenv name\n"
 	"    - delete environment variable 'name'\n")
 U_BOOT_CMD_END
+#endif
 
 /**
  * @page setenv_command setenv
  *
- * Usage: setenv <name> [<value>]
+ * Usage: setenv <name> [<val>]
  *
- * Set environment variable <name> to <value ...>
- * If no <value> was given, the variable <name> will be removed.
+ * Set environment variable <name> to <val ...>
+ * If no <val> was given, the variable <name> will be removed.
  *
- * This command can be replaced by using the simpler form:
+ * This command can be replaced by using the simpler form in the hush:
  *
- * <name> = <value>
+ * <name> = <val>
+ *
+ * @note This command is only required if the simple
+ * parser (not the hush) is in use.
  */
-
-#endif
 
 static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -396,4 +398,3 @@ U_BOOT_CMD_END
  *
  * Export an environment variable to subsequently executed scripts
  */
-

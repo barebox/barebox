@@ -20,6 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Filesystem mounting support
+ */
+
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -73,3 +78,32 @@ U_BOOT_CMD_START(mount)
 	.usage		= "mount a filesystem to a device",
 	U_BOOT_CMD_HELP(cmd_mount_help)
 U_BOOT_CMD_END
+
+/** @page mount_command mount
+ * Usage: mount [<device> <fstype> <mountpoint>]
+ *
+ * Mounts a filesystem of a given <fstype> on a <device> to a <mountpoint>.
+ * <device> can be one of /dev/* or some arbitrary string if no
+ * device is needed for this driver (for example ramfs).
+ *
+ * <fstype> is the filesystem driver to use. Try the 'devinfo' command
+ * for a list of available drivers.
+ *
+ * <mountpoint> must be an empty directory descending directly from the
+ * root directory.
+ */
+
+/** @page how_mount_works How mount works in UBoot
+ *
+ * Mounting a filesystem ontop of a device is working like devices and drivers
+ * are finding together.
+ *
+ * The mount command creates a new device with the filesystem name as the
+ * driver for this "device". So the framework is able to merge both parts
+ * together.
+ *
+ * By the way: With this feature its impossible to accidentely remove
+ * partitions in use. A partition is internally also a device. If its mounted
+ * it will be marked as busy, so an delpart command fails, until the filesystem
+ * has been unmounted.
+ */

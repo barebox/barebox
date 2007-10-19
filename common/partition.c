@@ -154,7 +154,7 @@ device_initcall(partition_init);
 @page partitions Partition Handling
 
 Partitions are runtime informartion only, not permanent. So they must be set
-everytime the system started. The required command can be embedded into the
+everytime the system starts. The required command can be embedded into the
 default environment.
 
 @note Partitions defined in this way are intended to be used with the kernel
@@ -226,7 +226,7 @@ $ devinfo
         `---nor0.friesel.boerks
 @endcode
 
-@par Partitions forwarding to the kernel:
+@par Forwarding partitions to the kernel:
 
 @code
 $ device="nor0"
@@ -242,7 +242,7 @@ same device. Only all partitions on the given device can be removed with this
 command.
 
 As sub partitions occure as devices you also can remove sub partitions from
-their parent in this way. If the parent itself will be removed all its sub
-partitions will also removed.
+their parent in this way. Partitions cannot be removed as long as they are
+mounted or have subpartitions.
 
 */

@@ -1,11 +1,20 @@
 /** @page developers_manual Developer's Manual
 
-FIXME: Hints and tips for simply adapting UBootv2
+This part of the documentation is intended for developers.
+
+Some background knowledge for some frameworks in UBootv2
+
+ - @subpage driver_model
+
+Hints and tips for simply adapting UBootv2
 
  - @subpage dev_board
  - @subpage dev_cpu
  - @subpage dev_architecture
  - @subpage dev_params
 
-@subpage how_mount_works
+Various themes:
+
+ - @subpage how_mount_works
+
 */

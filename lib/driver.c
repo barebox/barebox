@@ -127,6 +127,7 @@ int dev_add_child(struct device_d *dev, struct device_d *child)
 
 	return 0;
 }
+EXPORT_SYMBOL(dev_add_child);
 
 struct driver_d *get_driver_by_name(const char *name)
 {
@@ -181,6 +182,7 @@ struct device_d *get_device_by_path(const char *path)
 
 	return get_device_by_id(path + 5);
 }
+EXPORT_SYMBOL(get_device_by_path);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
 {

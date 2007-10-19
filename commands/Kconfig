@@ -27,6 +27,10 @@ config CMD_HELP
 	default y
 	prompt "help"
 
+config CMD_READLINE
+	tristate
+	prompt "readline"
+
 endmenu
 
 menu "file commands                 "

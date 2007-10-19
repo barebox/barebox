@@ -54,15 +54,16 @@
 
 #include <linux/mtd/compat.h>
 #include <linux/mtd/mtd.h>
+#include <driver.h>
 
-struct mtd_info;
+struct nand_chip;
 /* Scan and identify a NAND device */
-extern int nand_scan (struct mtd_info *mtd, int max_chips);
+extern int nand_scan (struct nand_chip *, int max_chips);
 /* Free resources held by the NAND device */
-extern void nand_release (struct mtd_info *mtd);
+extern void nand_release (struct nand_chip *);
 
 /* Read raw data from the device without ECC */
-extern int nand_read_raw (struct mtd_info *mtd, uint8_t *buf, loff_t from, size_t len, size_t ooblen);
+extern int nand_read_raw (struct nand_chip *, uint8_t *buf, loff_t from, size_t len, size_t ooblen);
 
 
 /* This constant declares the max. oobsize / page, which
@@ -165,6 +166,16 @@ extern int nand_read_raw (struct mtd_info *mtd, uint8_t *buf, loff_t from, size_
 /* Chip has a array of 4 pages which can be read without
  * additional ready /busy waits */
 #define NAND_4PAGE_ARRAY	0x00000040
+/* Chip requires that BBT is periodically rewritten to prevent
+ * bits from adjacent blocks from 'leaking' in altering data.
+ * This happens with the Renesas AG-AND chips, possibly others.  */
+#define BBT_AUTO_REFRESH        0x00000080
+/* Chip does not require ready check on read. True
+ * for all large page devices, as they do not support
+ * autoincrement.*/
+#define NAND_NO_READRDY         0x00000100
+/* Chip does not allow subpage writes */
+#define NAND_NO_SUBPAGE_WRITE   0x00000200
 
 /* Options valid for Samsung large page devices */
 #define NAND_SAMSUNG_LP_OPTIONS \
@@ -275,26 +286,26 @@ struct nand_chip {
 	void  __iomem	*IO_ADDR_R;
 	void  __iomem	*IO_ADDR_W;
 
-	u_char		(*read_byte)(struct mtd_info *mtd);
-	void		(*write_byte)(struct mtd_info *mtd, u_char byte);
-	u16		(*read_word)(struct mtd_info *mtd);
-	void		(*write_word)(struct mtd_info *mtd, u16 word);
+	u_char		(*read_byte)(struct nand_chip *);
+	void		(*write_byte)(struct nand_chip *, u_char byte);
+	u16		(*read_word)(struct nand_chip *);
+	void		(*write_word)(struct nand_chip *, u16 word);
 
-	void		(*write_buf)(struct mtd_info *mtd, const u_char *buf, int len);
-	void		(*read_buf)(struct mtd_info *mtd, u_char *buf, int len);
-	int		(*verify_buf)(struct mtd_info *mtd, const u_char *buf, int len);
-	void		(*select_chip)(struct mtd_info *mtd, int chip);
-	int		(*block_bad)(struct mtd_info *mtd, loff_t ofs, int getchip);
-	int		(*block_markbad)(struct mtd_info *mtd, loff_t ofs);
-	void		(*hwcontrol)(struct mtd_info *mtd, int cmd);
-	int		(*dev_ready)(struct mtd_info *mtd);
-	void		(*cmdfunc)(struct mtd_info *mtd, unsigned command, int column, int page_addr);
-	int		(*waitfunc)(struct mtd_info *mtd, struct nand_chip *this, int state);
-	int		(*calculate_ecc)(struct mtd_info *mtd, const u_char *dat, u_char *ecc_code);
-	int		(*correct_data)(struct mtd_info *mtd, u_char *dat, u_char *read_ecc, u_char *calc_ecc);
-	void		(*enable_hwecc)(struct mtd_info *mtd, int mode);
-	void		(*erase_cmd)(struct mtd_info *mtd, int page);
-	int		(*scan_bbt)(struct mtd_info *mtd);
+	void		(*write_buf)(struct nand_chip *, const u_char *buf, int len);
+	void		(*read_buf)(struct nand_chip *, u_char *buf, int len);
+	int		(*verify_buf)(struct nand_chip *, const u_char *buf, int len);
+	void		(*select_chip)(struct nand_chip *, int chip);
+	int		(*block_bad)(struct nand_chip *, loff_t ofs, int getchip);
+	int		(*block_markbad)(struct nand_chip *, loff_t ofs);
+	void		(*hwcontrol)(struct nand_chip *, int cmd);
+	int		(*dev_ready)(struct nand_chip *);
+	void		(*cmdfunc)(struct nand_chip *, unsigned command, int column, int page_addr);
+	int		(*waitfunc)(struct nand_chip *, int state);
+	int		(*calculate_ecc)(struct nand_chip *, const u_char *dat, u_char *ecc_code);
+	int		(*correct_data)(struct nand_chip *, u_char *dat, u_char *read_ecc, u_char *calc_ecc);
+	void		(*enable_hwecc)(struct nand_chip *, int mode);
+	void		(*erase_cmd)(struct nand_chip *, int page);
+	int		(*scan_bbt)(struct nand_chip *);
 	int		eccmode;
 	int		eccsize;
 	int		eccbytes;
@@ -321,6 +332,55 @@ struct nand_chip {
 	struct nand_bbt_descr	*badblock_pattern;
 	struct nand_hw_control	*controller;
 	void		*priv;
+
+
+	/* Members formerly from mtd_info */
+	u_int32_t oobblock;  /* Size of OOB blocks (e.g. 512) */
+	u_int32_t oobsize;   /* Amount of OOB data per block (e.g. 16) */
+	u_int32_t oobavail;  /* Number of bytes in OOB area available for fs  */
+	u_int32_t ecctype;
+
+	/* "Major" erase size for the device. Naïve users may take this
+	 * to be the only erase size available, or may use the more detailed
+	 * information below if they desire
+	 */
+	u_int32_t erasesize;
+
+	/* Kernel-only stuff starts here. */
+	char *name;
+	u_int32_t size;	 /* Total size of the MTD */
+
+	int (*read_ecc) (struct nand_chip *, loff_t from, size_t len, size_t *retlen, u_char *buf, u_char *eccbuf, struct nand_oobinfo *oobsel);
+	int (*write_ecc) (struct nand_chip *, loff_t to, size_t len, size_t *retlen, const u_char *buf, u_char *eccbuf, struct nand_oobinfo *oobsel);
+
+	int (*read_oob) (struct nand_chip *, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*write_oob) (struct nand_chip *, loff_t to, size_t len, size_t *retlen, const u_char *buf);
+
+	/* Sync */
+	void (*sync) (struct nand_chip *);
+	/* Bad block management functions */
+	int (*block_isbad) (struct nand_chip *, loff_t ofs);
+
+	int (*read) (struct nand_chip *, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*write) (struct nand_chip *, loff_t to, size_t len, size_t *retlen, const u_char *buf);
+
+	/* oobinfo is a nand_oobinfo structure, which can be set by iotcl (MEMSETOOBINFO) */
+	struct nand_oobinfo oobinfo;
+
+	u_char type;
+	u_int32_t flags;
+	int (*erase) (struct nand_chip *, struct erase_info *instr);
+
+	/* Minimal writable flash unit size. In case of NOR flash it is 1 (even
+         * though individual bits can be cleared), in case of NAND flash it is
+         * one NAND page (or half, or one-fourths of it), in case of ECC-ed NOR
+         * it is of ECC block size, etc. It is illegal to have writesize = 0.
+         * Any driver registering a struct mtd_info must ensure a writesize of
+         * 1 or larger.
+         */
+	u_int32_t writesize;
+
+	struct device_d dev;
 };
 
 /*
@@ -332,6 +392,8 @@ struct nand_chip {
 #define NAND_MFR_NATIONAL	0x8f
 #define NAND_MFR_RENESAS	0x07
 #define NAND_MFR_STMICRO	0x20
+#define NAND_MFR_HYNIX          0xad
+#define NAND_MFR_MICRON         0x2c
 
 /**
  * struct nand_flash_dev - NAND Flash Device ID Structure
@@ -437,11 +499,11 @@ struct nand_bbt_descr {
 /* The maximum number of blocks to scan for a bbt */
 #define NAND_BBT_SCAN_MAXBLOCKS 4
 
-extern int nand_scan_bbt (struct mtd_info *mtd, struct nand_bbt_descr *bd);
-extern int nand_update_bbt (struct mtd_info *mtd, loff_t offs);
-extern int nand_default_bbt (struct mtd_info *mtd);
-extern int nand_isbad_bbt (struct mtd_info *mtd, loff_t offs, int allowbbt);
-extern int nand_erase_nand (struct mtd_info *mtd, struct erase_info *instr, int allowbbt);
+extern int nand_scan_bbt (struct nand_chip *, struct nand_bbt_descr *bd);
+extern int nand_update_bbt (struct nand_chip *, loff_t offs);
+extern int nand_default_bbt (struct nand_chip *);
+extern int nand_isbad_bbt (struct nand_chip *, loff_t offs, int allowbbt);
+extern int nand_erase_nand (struct nand_chip *, struct erase_info *instr, int allowbbt);
 
 /*
 * Constants for oob configuration

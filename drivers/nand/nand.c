@@ -22,59 +22,50 @@
  */
 
 #include <common.h>
-#include <nand.h>
+#include <linux/mtd/nand.h>
 #include <init.h>
 #include <xfuncs.h>
 #include <driver.h>
 
-char *default_nand_name = "huhu";
-
-static inline int board_nand_init(struct nand_chip *nand)
+static 	ssize_t nand_read(struct device_d *dev, void* buf, size_t count, ulong offset, ulong flags)
 {
-	return 0;
+	struct nand_chip *nand = dev->priv;
+	size_t retlen;
+	int ret;
+	char oobuf[NAND_MAX_OOBSIZE];
+
+	printf("%s\n", __FUNCTION__);
+
+	ret = nand->read_ecc(nand, offset, count, &retlen, buf, oobuf, &nand->oobinfo);
+
+	if(ret)
+		return ret;
+	return retlen;
 }
 
-static void nand_init_chip(struct mtd_info *mtd, struct nand_chip *nand,
-			   ulong base_addr)
+static ssize_t nand_write(struct device_d* dev, const void* buf, size_t count, ulong offset, ulong flags)
 {
-	mtd->priv = nand;
+	struct nand_chip *nand = dev->priv;
+	size_t retlen;
+	int ret;
 
-	nand->IO_ADDR_R = nand->IO_ADDR_W = (void  __iomem *)base_addr;
-	if (board_nand_init(nand) == 0) {
-		if (nand_scan(mtd, 1) == 0) {
-			if (!mtd->name)
-				mtd->name = (char *)default_nand_name;
-		} else
-			mtd->name = NULL;
-	} else {
-		mtd->name = NULL;
-		mtd->size = 0;
-	}
-
+	ret = nand->write_ecc(nand, offset, count, &retlen, buf, NULL, &nand->oobinfo);
+	if (ret)
+		return ret;
+	return retlen;
 }
-
-struct nand_host {
-	struct mtd_info info;
-	struct nand_chip chip;
-	struct device_d *dev;
-};
 
 static int nand_probe (struct device_d *dev)
 {
-	struct nand_host *host;
-
-	host = xzalloc(sizeof(*host));
-
-	nand_init_chip(&host->info, &host->chip, dev->map_base);
-
+	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 static struct driver_d nand_driver = {
 	.name   = "nand_flash",
 	.probe  = nand_probe,
-//	.read   = nand_read,
-//	.write  = nand_write,
+	.read   = nand_read,
+	.write  = nand_write,
 //	.erase  = nand_erase,
 //	.protect= nand_protect,
 //	.memmap = generic_memmap_ro,

@@ -35,6 +35,7 @@
 #include <kfifo.h>
 #include <module.h>
 #include <list.h>
+#include <linux/utsrelease.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -42,6 +43,15 @@ EXPORT_SYMBOL(console_list);
 #define CONSOLE_UNINITIALIZED	0
 #define CONSOLE_INIT_EARLY	1
 #define CONSOLE_INIT_FULL	2
+
+const char version_string[] =
+	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
+
+static void display_banner (void)
+{
+	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
+	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
+}
 
 static int __initdata initialized = 0;
 
@@ -98,6 +108,7 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = newcdev->dev;
+	int first = 0;
 
 	if (newcdev->setbrg) {
 		newcdev->baudrate_param.set = console_baudrate_set;
@@ -120,11 +131,18 @@ int console_register(struct console_device *newcdev)
 	console_std_set(dev, &newcdev->active_param, "ioe");
 #endif
 #ifdef CONFIG_CONSOLE_ACTIVATE_FIRST
-	if (list_empty(&console_list))
+	if (list_empty(&console_list)) {
+		first = 1;
 		console_std_set(dev, &newcdev->active_param, "ioe");
+	}
 #endif
 
 	list_add_tail(&newcdev->list, &console_list);
+
+#ifndef CONFIG_HAS_EARLY_INIT
+	if (first)
+		display_banner();
+#endif
 
 	return 0;
 }
@@ -358,6 +376,7 @@ void early_console_start(const char *name, int baudrate)
 		early_console_init(base, baudrate);
 		INITDATA(initialized) = CONSOLE_INIT_EARLY;
 		INITDATA(early_console_base) = base;
+		display_banner();
 	}
 }
 

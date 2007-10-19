@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef CONFIG_ENABLE_PARTITION_NOISE
+# define DEBUG
+#endif
+
 #include <common.h>
 #include <command.h>
 #include <driver.h>

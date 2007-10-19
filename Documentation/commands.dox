@@ -1,6 +1,7 @@
 /**
  * @page command_reference Supported Shell Commands
 
+ - @subpage sh_command
  - @subpage cat_command
  - @subpage cd_command
  - @subpage cp_command

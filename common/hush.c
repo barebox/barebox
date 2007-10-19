@@ -1,6 +1,6 @@
 /* vi: set sw=8 ts=8: */
 /*
- * sh.c -- a prototype Bourne shell grammar parser
+ * hush.c -- a prototype Bourne shell grammar parser
  *      Intended to follow the original Thompson and Ritchie
  *      "small and simple is beautiful" philosophy, which
  *      incidentally is a good match to today's BusyBox.
@@ -23,6 +23,35 @@
  *      setup_redirect(), redirect_opt_num(), and big chunks of main()
  *        and many builtins derived from contributions by Erik Andersen
  *      miscellaneous bugfixes from Matt Kraai
+ */
+
+/**
+ * @file
+ * @brief A prototype Bourne shell grammar parser
+ */
+
+/** @page sh_command Starting shell
+ *
+ * Usage: sh <filename> [<arguments>]
+ *
+ * Execute a shell script named <filename> and forward (if given)
+ * <arguments> to it.
+ *
+ * Usage: .  <filename> [<arguments>]
+ * or     source <filename> [<arguments>]
+ *
+ * Read and execute commands from <filename> in the current shell environment,
+ * forward (if given) <arguments> to it and return the exit status of the last
+ * command  executed from filename.
+ */
+
+/** @page shell_notes Simple Shell Environment: Hush
+ *
+ * @par Notes from the source:
+ *
+ * Intended to follow the original Thompson and Ritchie "small and simple
+ * is beautiful" philosophy, which incidentally is a good match to
+ * today's BusyBox.
  *
  * There are two big (and related) architecture differences between
  * this parser and the lash parser.  One is that this version is
@@ -36,43 +65,52 @@
  * across continuation lines.
  *
  * Bash grammar not implemented: (how many of these were in original sh?)
- *      $@ (those sure look like weird quoting rules)
- *      $_
- *      ! negation operator for pipes
- *      &> and >& redirection of stdout+stderr
- *      Brace Expansion
- *      Tilde Expansion
- *      fancy forms of Parameter Expansion
- *      aliases
- *      Arithmetic Expansion
- *      <(list) and >(list) Process Substitution
- *      reserved words: case, esac, select, function
- *      Here Documents ( << word )
- *      Functions
- * Major bugs:
- *      job handling woefully incomplete and buggy
- *      reserved word execution woefully incomplete and buggy
- * to-do:
- *      port selected bugfixes from post-0.49 busybox lash - done?
- *      finish implementing reserved words: for, while, until, do, done
- *      change { and } from special chars to reserved words
- *      builtins: break, continue, eval, return, set, trap, ulimit
- *      test magic exec
- *      handle children going into background
- *      clean up recognition of null pipes
- *      check setting of global_argc and global_argv
- *      control-C handling, probably with longjmp
- *      follow IFS rules more precisely, including update semantics
- *      figure out what to do with backslash-newline
- *      explain why we use signal instead of sigaction
- *      propagate syntax errors, die on resource errors?
- *      continuation lines, both explicit and implicit - done?
- *      memory leak finding and plugging - done?
- *      more testing, especially quoting rules and redirection
- *      document how quoting rules not precisely followed for variable assignments
- *      maybe change map[] to use 2-bit entries
- *      (eventually) remove all the printf's
+ * -     $@ (those sure look like weird quoting rules)
+ * -     $_
+ * -     ! negation operator for pipes
+ * -     &> and >& redirection of stdout+stderr
+ * -     Brace Expansion
+ * -     Tilde Expansion
+ * -     fancy forms of Parameter Expansion
+ * -     aliases
+ * -     Arithmetic Expansion
+ * -     <(list) and >(list) Process Substitution
+ * -     reserved words: case, esac, select, function
+ * -     Here Documents ( << word )
+ * -     Functions
  *
+ * Major bugs:
+ * -     job handling woefully incomplete and buggy
+ * -     reserved word execution woefully incomplete and buggy
+ *
+ * to-do:
+ * -     port selected bugfixes from post-0.49 busybox lash - done?
+ * -     finish implementing reserved words: for, while, until, do, done
+ * -     change { and } from special chars to reserved words
+ * -     builtins: break, continue, eval, return, set, trap, ulimit
+ * -     test magic exec
+ * -     handle children going into background
+ * -     clean up recognition of null pipes
+ * -     check setting of global_argc and global_argv
+ * -     control-C handling, probably with longjmp
+ * -     follow IFS rules more precisely, including update semantics
+ * -     figure out what to do with backslash-newline
+ * -     explain why we use signal instead of sigaction
+ * -     propagate syntax errors, die on resource errors?
+ * -     continuation lines, both explicit and implicit - done?
+ * -     memory leak finding and plugging - done?
+ * -     more testing, especially quoting rules and redirection
+ * -     document how quoting rules not precisely followed for variable assignments
+ * -     maybe change map[] to use 2-bit entries
+ * -     (eventually) remove all the printf's
+ *
+ * Things that do _not_ work in this environment:
+ *
+ * - redirecting (stdout to a file for example)
+ * - recursion
+ */
+
+/*
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -1544,4 +1582,3 @@ U_BOOT_CMD_START(source)
 	.usage		= "execute shell script in current shell environment",
 	U_BOOT_CMD_HELP(cmd_source_help)
 U_BOOT_CMD_END
-

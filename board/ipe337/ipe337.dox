@@ -1,0 +1,10 @@
+/** @page ipe337 ipe337
+
+This CPU card is based on an Analog Device Blackfin CPU. The card is shipped
+with:
+
+- 32MiB NOR type Flash Memory
+- 128MiB synchronous dynamic RAM
+- SMSC9xxx network controller
+
+*/

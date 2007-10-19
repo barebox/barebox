@@ -1,7 +1,22 @@
-/** @page supported_boards
+/** @page supported_boards Supported Boards
 
-This is a list of boards that are currently supported by UBootv2.
+This is a list of boards that are currently supported by U-Bootv2.
 
+PowerPC type:
+
+- @subpage phycore_pcm030
+
+ARM type:
+
+- @subpage phycore_imx31
+- @subpage phycore_pcm038
+- @subpage scb9328
+
+Blackfin type:
+
+- @subpage ipe337
+
+x86 type:
 
 */
 

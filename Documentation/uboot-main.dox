@@ -1,4 +1,4 @@
-/** @mainpage Unified Bootloader
+/** @mainpage Universal Bootloader
 
 @section uboot_v2_intro Introduction
 
@@ -195,7 +195,7 @@ scripts /                 -> Kconfig system
 Documentation /           ->
 @endverbatim
 
-@section license UBoot's License
+@section license U-Boot's License
 
 @verbatim
 This program is free software; you can redistribute it and/or

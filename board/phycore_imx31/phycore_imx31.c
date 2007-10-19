@@ -113,8 +113,8 @@ static int imx31_devices_init(void)
 	 * Create partitions that should be
 	 * not touched by any regular user
 	 */
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, "self");	/* ourself */
-	dev_add_partition(&cfi_dev, 0x20000, 0x20000, "env");	/* environment */
+	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");	/* ourself */
+	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");	/* environment */
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	register_device(&sram_dev);

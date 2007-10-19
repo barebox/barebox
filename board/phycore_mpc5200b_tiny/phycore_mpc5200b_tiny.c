@@ -90,8 +90,8 @@ static int devices_init (void)
 	scratch_dev.size = SCRATCHMEM_SIZE;
 	register_device(&scratch_dev);
 
-	dev_add_partition(&cfi_dev, 0x00f00000, 0x40000, "self");
-	dev_add_partition(&cfi_dev, 0x00f60000, 0x20000, "env");
+	dev_add_partition(&cfi_dev, 0x00f00000, 0x40000, PARTITION_FIXED, "self");
+	dev_add_partition(&cfi_dev, 0x00f60000, 0x20000, PARTITION_FIXED, "env");
 
 	return 0;
 }

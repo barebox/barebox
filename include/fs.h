@@ -76,11 +76,20 @@ struct fs_driver_d {
 	unsigned long flags;
 };
 
+struct mtab_entry {
+	char path[PATH_MAX];
+	struct mtab_entry *next;
+	struct device_d *dev;
+	struct device_d *parent_device;
+};
+
 struct fs_device_d {
 	struct device_d *parent; /* the device we are associated with */
 	struct device_d dev; /* our own device */
 
 	struct fs_driver_d *driver;
+
+	struct mtab_entry mtab;
 };
 
 /*
@@ -136,13 +145,7 @@ char *mkmodestr(unsigned long mode, char *str);
  */
 struct mtab_entry *get_mtab_entry_by_path(const char *path);
 struct mtab_entry *mtab_next_entry(struct mtab_entry *entry);
-
-struct mtab_entry {
-	char path[PATH_MAX];
-	struct mtab_entry *next;
-	struct device_d *dev;
-	struct device_d *parent_device;
-};
+const char *fsdev_get_mountpoint(struct fs_device_d *fsdev);
 
 /*
  * Read a file into memory. Memory is allocated with malloc and must

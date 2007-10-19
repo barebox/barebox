@@ -1,0 +1,9 @@
+/** @page netx Hilscher's NetX card family
+
+This CPU card is based on a Hilscher's NetX ARM CPU. The card is shipped
+in various incarnations:
+
+Specific to this CPU is, it does not require any setup code to bring the
+SDRAM up and working. This is done in a pre bootloader.
+
+*/

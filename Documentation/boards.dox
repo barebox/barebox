@@ -11,6 +11,7 @@ ARM type:
 - @subpage phycore_imx31
 - @subpage phycore_pcm038
 - @subpage scb9328
+- @subpage netx
 
 Blackfin type:
 

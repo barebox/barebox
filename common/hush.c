@@ -25,26 +25,6 @@
  *      miscellaneous bugfixes from Matt Kraai
  */
 
-/**
- * @file
- * @brief A prototype Bourne shell grammar parser
- */
-
-/** @page sh_command Starting shell
- *
- * Usage: sh <filename> [<arguments>]
- *
- * Execute a shell script named <filename> and forward (if given)
- * <arguments> to it.
- *
- * Usage: .  <filename> [<arguments>]
- * or     source <filename> [<arguments>]
- *
- * Read and execute commands from <filename> in the current shell environment,
- * forward (if given) <arguments> to it and return the exit status of the last
- * command  executed from filename.
- */
-
 /** @page shell_notes Simple Shell Environment: Hush
  *
  * @par Notes from the source:
@@ -108,6 +88,10 @@
  *
  * - redirecting (stdout to a file for example)
  * - recursion
+ *
+ * Enable the "Hush parser" in "General Settings", "Select your shell" to
+ * get the new console feeling.
+ *
  */
 
 /*
@@ -1582,3 +1566,23 @@ U_BOOT_CMD_START(source)
 	.usage		= "execute shell script in current shell environment",
 	U_BOOT_CMD_HELP(cmd_source_help)
 U_BOOT_CMD_END
+
+/**
+ * @file
+ * @brief A prototype Bourne shell grammar parser
+ */
+
+/** @page sh_command Starting shell
+ *
+ * Usage: sh <filename> [<arguments>]
+ *
+ * Execute a shell script named <filename> and forward (if given)
+ * <arguments> to it.
+ *
+ * Usage: .  <filename> [<arguments>]
+ * or     source <filename> [<arguments>]
+ *
+ * Read and execute commands from <filename> in the current shell environment,
+ * forward (if given) <arguments> to it and return the exit status of the last
+ * command  executed from filename.
+ */

@@ -140,3 +140,19 @@ int readline (const char *prompt, char *line, int len)
 		}
 	}
 }
+
+/**
+ * @file
+ * @brief Primitiv Line Parser
+ */
+
+/** @page readline_parser Primitive Line Parser
+ *
+ * There is still a primtive line parser as a alternative to the hush shell
+ * environment available. This is for persons who like the old fashion way of
+ * edititing and command entering.
+ *
+ * Enable the "Simple parser" in "General Settings", "Select your shell" to
+ * get back the old console feeling.
+ *
+ */

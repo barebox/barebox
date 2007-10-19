@@ -2,7 +2,9 @@
 
 FIXME: Hints and tips for simply using UBootv2
 
+
  - @subpage shell_notes
+ - @subpage readline_parser
  - @subpage command_reference
  - @subpage partitions
 

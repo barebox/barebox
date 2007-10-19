@@ -33,10 +33,6 @@
 #include <asm/cache.h>
 #include <asm/mmu.h>
 
-#ifndef  CONFIG_IDENT_STRING
-#define  CONFIG_IDENT_STRING ""
-#endif
-
 /* We don't want the  MMU yet.
 */
 #undef	MSR_KERNEL

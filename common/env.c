@@ -20,6 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Environment support
+ */
+
 #include <common.h>
 #include <command.h>
 #include <driver.h>
@@ -28,21 +33,36 @@
 #include <errno.h>
 #include <init.h>
 
+/**
+ * Managment of a environment variable
+ */
 struct variable_d {
+	/*! List management */
 	struct variable_d *next;
+	/*! variable length data */
 	char data[0];
 };
 
 #define VARIABLE_D_SIZE(name, value) (sizeof(struct variable_d) + strlen(name) + strlen(value) + 2)
 
+/**
+ * FIXME
+ */
 struct env_context {
+	/*! FIXME */
 	struct env_context *parent;
+	/*! FIXME */
 	struct variable_d *local;
+	/*! FIXME */
 	struct variable_d *global;
 };
 
 static struct env_context *context;
 
+/**
+ * Remove a list of environment variables
+ * @param[inout] v Variable anchor to remove
+ */
 static void free_variables(struct variable_d *v)
 {
 	struct variable_d *next;
@@ -54,6 +74,9 @@ static void free_variables(struct variable_d *v)
 	}
 }
 
+/**
+ * FIXME
+ */
 int env_push_context(void)
 {
 	struct env_context *c = xzalloc(sizeof(struct env_context));
@@ -74,6 +97,9 @@ int env_push_context(void)
 
 late_initcall(env_push_context);
 
+/**
+ * FIXME
+ */
 int env_pop_context(void)
 {
 	struct env_context *c = context;
@@ -89,11 +115,21 @@ int env_pop_context(void)
 	return -EINVAL;
 }
 
+/**
+ * Return variable's value
+ * @param[in] var Variable of interest
+ * @return Value as text
+ */
 static char *var_val(struct variable_d *var)
 {
 	return &var->data[strlen(var->data) + 1];
 }
 
+/**
+ * Return variable's name
+ * @param[in] var Variable of interest
+ * @return Name as text
+ */
 static char *var_name(struct variable_d *var)
 {
 	return var->data;
@@ -267,6 +303,17 @@ U_BOOT_CMD_START(printenv)
 	"    - print value of environment variable 'name'\n")
 U_BOOT_CMD_END
 
+/**
+ * @page printenv_command printenv
+ *
+ * Usage: printenv [<name>]
+ *
+ * Print environment variables.
+ * If <name> was given, it prints out its content if the environment variable
+ * <name> exists.
+ * Without the <name> argument all current environment variables are printed.
+ */
+
 #ifdef CONFIG_SIMPLE_PARSER
 static int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -290,8 +337,23 @@ U_BOOT_CMD_START(setenv)
 	"setenv name\n"
 	"    - delete environment variable 'name'\n")
 U_BOOT_CMD_END
-
 #endif
+
+/**
+ * @page setenv_command setenv
+ *
+ * Usage: setenv <name> [<val>]
+ *
+ * Set environment variable <name> to <val ...>
+ * If no <val> was given, the variable <name> will be removed.
+ *
+ * This command can be replaced by using the simpler form in the hush:
+ *
+ * <name> = <val>
+ *
+ * @note This command is only required if the simple
+ * parser (not the hush) is in use.
+ */
 
 static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -329,3 +391,10 @@ U_BOOT_CMD_START(export)
 	U_BOOT_CMD_HELP(cmd_export_help)
 U_BOOT_CMD_END
 
+/**
+ * @page export_command export
+ *
+ * Usage: export <var>[=value]...
+ *
+ * Export an environment variable to subsequently executed scripts
+ */

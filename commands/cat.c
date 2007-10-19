@@ -1,6 +1,4 @@
 /*
- * cat.c - conacatenate files
- *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
@@ -20,6 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Concatenate files to stdout command
+ */
+
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -29,6 +32,11 @@
 #include <xfuncs.h>
 #include <malloc.h>
 
+/**
+ * @param[in] cmdtp FIXME
+ * @param[in] argc Argument count from command line
+ * @param[in] argv List of input arguments
+ */
 static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret;
@@ -85,3 +93,12 @@ U_BOOT_CMD_START(cat)
 	.usage		= "concatenate file(s)",
 	U_BOOT_CMD_HELP(cmd_cat_help)
 U_BOOT_CMD_END
+
+/**
+ * @page cat_command cat (concatenate)
+ *
+ * Usage is: cat <file> [<file> ...]
+ *
+ * Concatenate files to stdout. Currently only printable characters
+ * and \\n and \\t are printed, but this should be optional
+ */

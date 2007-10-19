@@ -20,6 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief "cp" command implementation
+ */
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -32,6 +36,10 @@
 
 #define RW_BUF_SIZE	(ulong)4096
 
+/**
+ * @param[in] src FIXME
+ * @param[out] dst FIXME
+ */
 static int copy_file(const char *src, const char *dst)
 {
 	char *rw_buf = NULL;
@@ -79,6 +87,11 @@ out:
 	return ret;
 }
 
+/**
+ * @param[in] cmdtp FIXME
+ * @param[in] argc Argument count from command line
+ * @param[in] argv List of input arguments
+ */
 static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret = 1;
@@ -134,3 +147,11 @@ U_BOOT_CMD_START(cp)
 	.usage		= "copy files",
 	U_BOOT_CMD_HELP(cmd_cp_help)
 U_BOOT_CMD_END
+
+/**
+ * @page cp_command cp (copy)
+ *
+ * Usage: cp <source> [<source>] <destination>
+ *
+ * FIXME
+ */

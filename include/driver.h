@@ -42,11 +42,14 @@
  * @file
  * @brief Main description of the device/driver model
  */
-/** @defgroup driver_model Main description of the device/driver model
+
+/** @page driver_model Main description of the device/driver model
  *
  * We follow a rather simplistic driver model here. There is a
  * @code struct device_d @endcode
- * which describes a particular device present in the system. A
+ * which describes a particular device present in the system.
+ *
+ * On the other side a
  * @code struct driver_d @endcode
  * represents a driver present in the system.
  *

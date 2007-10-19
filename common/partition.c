@@ -33,6 +33,15 @@
 #include <partition.h>
 #include <xfuncs.h>
 
+/**
+ * Add one partition on top of a device, as a device.
+ * @param[in] dev The device to add a partition on
+ * @param[in] offset Start offset of the partition inside the whole device
+ * @param[in] size Size of the new partition
+ * @param[in] flags FIXME
+ * @param[in] name Partition name (can be obtained with devinfo command)
+ * @return The device representing the new partition.
+ */
 struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
 		size_t size, int flags, const char *name)
 {
@@ -63,6 +72,14 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
 	return 0;
 }
 
+/**
+ * Erase partition content.
+ * @param[in] dev The partition info as a device
+ * @param[in] count Length in bytes to erase
+ * @param[in] offset Start offset within the partition
+ * @return -1 if no erase feature for this device is available, anything else
+ * the erase function returns.
+ */
 static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	struct partition *part = dev->type_data;
@@ -73,6 +90,14 @@ static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 	return -1;
 }
 
+/**
+ * Protecting a partition.
+ * @param[in] dev The partition info as a device
+ * @param[in] count Length in bytes to protect
+ * @param[in] offset Start offset within the partition
+ * @param[in] prot FIXME
+ * @return -1 if FIXME.
+ */
 static int part_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
 	struct partition *part = dev->type_data;
@@ -83,6 +108,13 @@ static int part_protect(struct device_d *dev, size_t count, unsigned long offset
 	return -1;
 }
 
+/**
+ * FIXME.
+ * @param[in] dev The partition info as a device
+ * @param[in] map FXIME
+ * @param[in] flags FIXME
+ * @return -1 if FIXME.
+ */
 static int part_memmap(struct device_d *dev, void **map, int flags)
 {
 	struct partition *part = dev->type_data;
@@ -99,14 +131,34 @@ static int part_memmap(struct device_d *dev, void **map, int flags)
 	return -1;
 }
 
-static ssize_t part_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
+/**
+ * FIXME.
+ * @param[in] dev The partition info as a device
+ * @param[in] buf FXIME
+ * @param[in] count FXIME
+ * @param[in] offset FXIME
+ * @param[in] flags FIXME
+ * @return FIXME.
+ */
+static ssize_t part_read(struct device_d *dev, void *buf, size_t count,
+	unsigned long offset, ulong flags)
 {
 	struct partition *part = dev->type_data;
 
 	return dev_read(part->physdev, buf, count, offset + part->offset, flags);
 }
 
-static ssize_t part_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
+/**
+ * FIXME.
+ * @param[in] dev The partition info as a device
+ * @param[in] buf FXIME
+ * @param[in] count FXIME
+ * @param[in] offset FXIME
+ * @param[in] flags FIXME
+ * @return FIXME.
+ */
+static ssize_t part_write(struct device_d *dev, const void *buf, size_t count,
+	unsigned long offset, ulong flags)
 {
 	struct partition *part = dev->type_data;
 
@@ -116,6 +168,11 @@ static ssize_t part_write(struct device_d *dev, const void *buf, size_t count, u
 		return dev_write(part->physdev, buf, count, offset + part->offset, flags);
 }
 
+/**
+ * FIXME.
+ * @param[in] dev The partition info as a device
+ * @return FIXME.
+ */
 static int part_probe(struct device_d *dev)
 {
 #ifdef DEBUG
@@ -127,11 +184,19 @@ static int part_probe(struct device_d *dev)
 	return 0;
 }
 
+/**
+ * FIXME.
+ * @param[in] dev The partition info as a device
+ * @return 0
+ */
 static int part_remove(struct device_d *dev)
 {
 	return 0;
 }
 
+/**
+ * Partition driver description
+ */
 struct driver_d part_driver = {
 	.name  	= "partition",
 	.probe 	= part_probe,

@@ -21,8 +21,9 @@
  * MA 02111-1307 USA
  */
 
-/*
- * Date & Time support for Philips PCF8563 RTC
+/**
+ * @file
+ * @brief Date & Time support
  */
 
 #include <common.h>

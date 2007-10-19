@@ -8,8 +8,8 @@ Friesel
 
 Frasel
 
-@subpage dev_arm_mach
-@subpage dev_bf_mach
-@subpage dev_ppc_mach
+ - @subpage dev_arm_mach
+ - @subpage dev_bf_mach
+ - @subpage dev_ppc_mach
 
 */

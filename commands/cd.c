@@ -20,6 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Change working directory
+ */
+
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -52,3 +57,11 @@ U_BOOT_CMD_START(cd)
 	.usage		= "change working directory",
 	U_BOOT_CMD_HELP(cmd_cd_help)
 U_BOOT_CMD_END
+
+/**
+ * @page cd_command cd (change working directory)
+ *
+ * Usage is: cd [<directory name>]
+ *
+ * Change to <directory name>. If called without argument, change to / (root)
+ */

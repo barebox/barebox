@@ -2,7 +2,7 @@
 
 FIXME: Hints and tips for simply using UBootv2
 
-@subpage command_reference
-@subpage partitions
+ - @subpage command_reference
+ - @subpage partitions
 
 */

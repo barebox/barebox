@@ -20,6 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Managing environment and environment variables
+ */
+
 #ifdef __U_BOOT__
 #include <common.h>
 #include <command.h>
@@ -205,7 +210,7 @@ out:
 }
 
 static __maybe_unused char cmd_saveenv_help[] =
-"Usage: saveenv [DIRECTORY] [ENVFS]\n"
+"Usage: saveenv [<envfs>] [<directory>]\n"
 "Save the files in <directory> to the persistent storage device <envfs>.\n"
 "<envfs> is normally a block in flash, but could be any other file.\n"
 "If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
@@ -218,6 +223,20 @@ U_BOOT_CMD_START(saveenv)
 	U_BOOT_CMD_HELP(cmd_saveenv_help)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */
+
+/**
+ * @page saveenv_command saveenv
+ *
+ * Usage: saveenv [<envfs>] [<directory>]
+ *
+ * Save the files in <directory> to the persistent storage device <envfs>.
+ * <envfs> is normally a block in flash, but could be any other file.
+ *
+ * If ommitted <directory> defaults to /env and <envfs> defaults to
+ * /dev/env0.
+ *
+ * @note envfs can only handle files. Directories are skipped silently.
+ */
 
 int envfs_load(char *filename, char *dir)
 {
@@ -349,3 +368,16 @@ U_BOOT_CMD_START(loadenv)
 	U_BOOT_CMD_HELP(cmd_loadenv_help)
 U_BOOT_CMD_END
 #endif /* __U_BOOT__ */
+
+/**
+ * @page loadenv_command loadenv
+ *
+ * Usage: loadenv [<directory>] [<envfs>]
+ *
+ * Load the persistent storage contained in <envfs> to the directory <directory>.
+ *
+ * If ommitted <directory> defaults to /env and <envfs> defaults to
+ * /dev/env0.
+ *
+ * @note envfs can only handle files. Directories are skipped silently.
+ */

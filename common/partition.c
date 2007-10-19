@@ -1,3 +1,29 @@
+/*
+ * (C) 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+/**
+ * @file
+ * @brief Partition handling on top of devices
+ */
 
 #include <common.h>
 #include <init.h>
@@ -118,3 +144,100 @@ static int partition_init(void)
 }
 
 device_initcall(partition_init);
+
+/**
+@page partitions Partition Handling
+
+Partitions are runtime informartion only, not permanent. So they must be set
+everytime the system started. The required command can be embedded into the
+default environment.
+
+@note Partitions defined in this way are intended to be used with the kernel
+command line partition parsing feature. In Uboot2 these types of partitions are
+handled in the same way as every other device.
+
+@par The addpart command
+
+What we want:
+
+@code
+ device nor0
+    |--- partition 0
+    |--- partition 1
+    |--- partition 2
+    |--- partition 3
+    `--- partition 4
+@endcode
+
+How to get:
+
+@code
+$ addpart /dev/nor0 256k(uboot),128k(env),256k(bla),1024k(blubb),2048k(friesel)
+$ devinfo
+ |---nor0.uboot
+ |---nor0.env
+ |---nor0.bla
+ |---nor0.blubb
+ |---nor0.friesel
+@endcode
+
+@par Partitions with sub partitions:
+
+Partitions are based on devices. And partitions will result into devices. So
+there is a way to create sub partitions on partitions.
+
+What we want:
+
+@code
+ device nor0
+    |--- partition 0
+    |--- partition 1
+    |--- partition 2
+    |--- partition 3
+    `--- partition 4
+           |--- partition 0
+           `--- partition 1
+@endcode
+
+How to get:
+
+@code
+$ addpart /dev/nor0 256k(uboot),128k(env),256k(bla),1M(blubb),2048k(friesel)
+$ devinfo
+ |---nor0.uboot
+ |---nor0.env
+ |---nor0.bla
+ |---nor0.blubb
+ |---nor0.friesel
+
+$ addpart /dev/nor0.friesel 1024(fussel),1024k(boerks)
+$ devinfo
+ |---nor0.uboot
+ |---nor0.env
+ |---nor0.bla
+ |---nor0.blubb
+ |---nor0.friesel
+        |---nor0.friesel.fussel
+        `---nor0.friesel.boerks
+@endcode
+
+@par Partitions forwarding to the kernel:
+
+@code
+$ device="nor0"
+$ partitions="256k(uboot),128k(env),256k(bla),1024k(blubb),2048k(friesel)"
+$ addpart /dev/$device:$partitions
+@endcode
+
+@par Removing partitions:
+
+As partitions are a logically information only, they can be removed from a
+device at runtime. You can't remove a single partition within others on the
+same device. Only all partitions on the given device can be removed with this
+command.
+
+As sub partitions occure as devices you also can remove sub partitions from
+their parent in this way. If the parent itself will be removed all its sub
+partitions will also removed.
+
+*/

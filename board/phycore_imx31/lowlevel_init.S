@@ -60,6 +60,15 @@ board_init_lowlevel:
 
 	REG	CCM_SPCTL, PLL_PD(1) | PLL_MFD(0x43) | PLL_MFI(12) | PLL_MFN(1)
 
+	/* Skip SDRAM initialization if we run from RAM */
+	cmp	pc, #0x80000000
+	bls	1f
+	cmp	pc, #0x90000000
+	bhi	1f
+
+	mov	pc, lr
+
+1:
 	REG	0x43FAC26C, 0 /* SDCLK */
 	REG	0x43FAC270, 0 /* CAS */
 	REG	0x43FAC274, 0 /* RAS */

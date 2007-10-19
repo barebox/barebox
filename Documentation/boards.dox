@@ -1,0 +1,15 @@
+/** @page supported_boards
+
+This is a list of boards that are currently supported by UBootv2.
+
+
+*/
+
+/* TODO
+ *
+ * Add documentation to your boardfile, forward it with doxygen's page
+ * feature (@page <reference>) and include it here with:
+ *
+ * @subpage <reference>
+ *
+ */

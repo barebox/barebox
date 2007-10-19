@@ -1,0 +1,13 @@
+/** @page developers_manual Developer's Manual
+
+FIXME: Hints and tips for simply adapting UBootv2
+
+@subpage dev_board
+
+@subpage dev_cpu
+
+@subpage dev_architecture
+
+@subpage dev_params
+
+*/

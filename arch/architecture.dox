@@ -1,0 +1,15 @@
+/** @page dev_architecture Integrate a new architecture (ARCH)
+
+Friesel
+
+*/
+
+/** @page dev_cpu Intergrate a new CPU (MACH)
+
+Frasel
+
+@subpage dev_arm_mach
+@subpage dev_bf_mach
+@subpage dev_ppc_mach
+
+*/

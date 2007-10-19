@@ -33,7 +33,8 @@
 #include <partition.h>
 #include <xfuncs.h>
 
-struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset, size_t size, char *name)
+struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
+		size_t size, int flags, const char *name)
 {
 	struct partition *part;
 
@@ -50,8 +51,10 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset, s
 
 	part->offset = offset;
 	part->physdev = dev;
+	part->flags = flags;
 
 	register_device(&part->device);
+	dev_add_child(dev, &part->device);
 
 	if (part->device.driver)
 		return &part->device;
@@ -107,15 +110,17 @@ static ssize_t part_write(struct device_d *dev, const void *buf, size_t count, u
 {
 	struct partition *part = dev->type_data;
 
-	if (part->readonly)
-		return -EROFS;
+	if (part->flags & PARTITION_READONLY)
+ 		return -EROFS;
 	else
 		return dev_write(part->physdev, buf, count, offset + part->offset, flags);
 }
 
 static int part_probe(struct device_d *dev)
 {
+#ifdef DEBUG
 	struct partition *part = dev->type_data;
+#endif
 
 	debug("registering partition %s on device %s (size=0x%08x, name=%s)\n",
 			dev->id, part->physdev->id, dev->size, part->name);

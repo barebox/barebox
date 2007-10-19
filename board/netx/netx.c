@@ -75,11 +75,11 @@ static int netx_devices_init(void) {
 	register_device(&netx_eth_dev0);
 //	register_device(&netx_eth_dev1);
 
-	dev_add_partition(&cfi_dev, 0x00000, 0x40000, "self");
+	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
 	dev_protect(&cfi_dev, 0x40000, 0, 1);
 
 	/* Do not overwrite primary env for now */
-	dev_add_partition(&cfi_dev, 0xc0000, 0x80000, "env"); 
+	dev_add_partition(&cfi_dev, 0xc0000, 0x80000, PARTITION_FIXED, "env"); 
 
 	return 0;
 }

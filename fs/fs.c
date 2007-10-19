@@ -202,6 +202,11 @@ struct mtab_entry *mtab_next_entry(struct mtab_entry *e)
 	return e->next;
 }
 
+const char *fsdev_get_mountpoint(struct fs_device_d *fsdev)
+{
+	return fsdev->mtab.path;
+}
+
 FILE files[MAX_FILES];
 
 FILE *get_file(void)
@@ -224,7 +229,7 @@ void put_file(FILE *f)
 	files[f->no].in_use = 0;
 }
 
-static struct device_d *get_device_by_path(char **path)
+static struct device_d *get_fs_device_by_path(char **path)
 {
 	struct device_d *dev;
 	struct mtab_entry *e;
@@ -346,7 +351,7 @@ int unlink(const char *pathname)
 	if (path_check_prereq(pathname, S_IFREG))
 		goto out;
 
-	dev = get_device_by_path(&p);
+	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -386,7 +391,7 @@ int open(const char *pathname, int flags, ...)
 		goto out1;
 	}
 
-	dev = get_device_by_path(&path);
+	dev = get_fs_device_by_path(&path);
 	if (!dev)
 		goto out;
 
@@ -599,7 +604,7 @@ EXPORT_SYMBOL(close);
  * driver will match. The filesystem driver then grabs the infomation
  * it needs from the new devices type_data.
  */
-int mount(const char *device, const char *fsname, const char *path)
+int mount(const char *device, const char *fsname, const char *_path)
 {
 	struct driver_d *drv;
 	struct fs_driver_d *fs_drv;
@@ -607,10 +612,22 @@ int mount(const char *device, const char *fsname, const char *path)
 	struct fs_device_d *fsdev;
 	struct device_d *dev, *parent_device = 0;
 	int ret;
+	char *path = normalise_path(_path);
 
 	errno = 0;
 
 	debug("mount: %s on %s type %s\n", device, path, fsname);
+
+	if (get_mtab_entry_by_path(path) != mtab) {
+		errno = -EBUSY;
+		goto out;
+	}
+
+	if (strchr(path + 1, '/')) {
+		printf("mounting allowed on first directory level only\n");
+		errno = -EBUSY;
+		goto out;
+	}
 
 	drv = get_driver_by_name(fsname);
 	if (!drv) {
@@ -663,10 +680,13 @@ int mount(const char *device, const char *fsname, const char *path)
 		goto out;
 	}
 
+	if (parent_device)
+		dev_add_child(parent_device, &fsdev->dev);
+
 	dev = &fsdev->dev;
 
 	/* add mtab entry */
-	entry = malloc(sizeof(struct mtab_entry));
+	entry = &fsdev->mtab; 
 	sprintf(entry->path, "%s", path);
 	entry->dev = dev;
 	entry->parent_device = parent_device;
@@ -681,6 +701,7 @@ int mount(const char *device, const char *fsname, const char *path)
 		e->next = entry;
 	}
 out:
+	free(path);
 	return errno;
 }
 EXPORT_SYMBOL(mount);
@@ -710,7 +731,7 @@ int umount(const char *pathname)
 
 	unregister_device(entry->dev);
 	free(entry->dev->type_data);
-	free(entry);
+
 	return 0;
 }
 EXPORT_SYMBOL(umount);
@@ -726,7 +747,7 @@ DIR *opendir(const char *pathname)
 	if (path_check_prereq(pathname, S_IFDIR))
 		goto out;
 
-	dev = get_device_by_path(&p);
+	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -809,7 +830,7 @@ int mkdir (const char *pathname, mode_t mode)
 	if (path_check_prereq(pathname, S_UB_DOES_NOT_EXIST))
 		goto out;
 
-	dev = get_device_by_path(&p);
+	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -836,7 +857,7 @@ int rmdir (const char *pathname)
 	if (path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY))
 		goto out;
 
-	dev = get_device_by_path(&p);
+	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;

@@ -1,62 +1,122 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.20-rc5
-# Tue Jun 26 00:41:32 2007
+# U-Boot version: 2.0.0-git
+# Fri Oct 19 11:00:09 2007
 #
-CONFIG_TEXT_BASE=0x08f80000
+CONFIG_ARCH_TEXT_BASE=0x08f80000
+CONFIG_BOARDINFO="Synertronixx scb9328"
+# CONFIG_BOARD_LINKER_SCRIPT is not set
+CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
 CONFIG_ARM920T=y
 CONFIG_ARCH_IMX=y
+CONFIG_ARCH_IMX1=y
 # CONFIG_MACH_MX1ADS is not set
 CONFIG_MACH_SCB9328=y
+# CONFIG_MACH_PCM038 is not set
 # CONFIG_MACH_ECO920 is not set
+# CONFIG_MACH_NXDB500 is not set
+# CONFIG_MACH_IMX31 is not set
 
 #
-# general settings
+# Arm specific settings
 #
+CONFIG_CMDLINE_TAG=y
+CONFIG_SETUP_MEMORY_TAGS=y
+# CONFIG_INITRD_TAG is not set
+CONFIG_GREGORIAN_CALENDER=y
+CONFIG_HAS_KALLSYMS=y
+CONFIG_HAS_MODULES=y
+
+#
+# General Settings              
+#
+CONFIG_TEXT_BASE=0x08f80000
+# CONFIG_BROKEN is not set
+# CONFIG_EXPERIMENTAL is not set
 CONFIG_PROMPT="uboot:"
 CONFIG_BAUDRATE=115200
 CONFIG_CMDLINE_EDITING=y
 # CONFIG_AUTO_COMPLETE is not set
-# CONFIG_LONGHELP is not set
+CONFIG_LONGHELP=y
 CONFIG_CBSIZE=1024
 CONFIG_MAXARGS=16
-CONFIG_HUSH_PARSER=y
+CONFIG_SHELL_HUSH=y
+# CONFIG_SHELL_SIMPLE is not set
 CONFIG_PROMPT_HUSH_PS2="> "
-CONFIG_ZERO_BOOTDELAY_CHECK=y
 CONFIG_DYNAMIC_CRC_TABLE=y
 CONFIG_ERRNO_MESSAGES=y
+CONFIG_TIMESTAMP=y
+CONFIG_CONSOLE_ACTIVATE_FIRST=y
+# CONFIG_OF_FLAT_TREE is not set
+CONFIG_DEFAULT_ENVIRONMENT=y
+CONFIG_DEFAULT_ENVIRONMENT_PATH="board/scb9328/env"
 
 #
-# Commands
+# Debugging                     
 #
-CONFIG_CMD_ECHO=y
+CONFIG_SKIP_LOWLEVEL_INIT=y
+# CONFIG_ENABLE_FLASH_NOISE is not set
+# CONFIG_ENABLE_PARTITION_NOISE is not set
+# CONFIG_ENABLE_DEVICE_NOISE is not set
+
+#
+# Commands                      
+#
+
+#
+# scripting                     
+#
 CONFIG_CMD_EDIT=y
-CONFIG_CMD_EXEC=y
-CONFIG_CMD_ENVIRONMENT=y
-CONFIG_CMD_CLEAR=y
-# CONFIG_CMD_CONSOLE is not set
-CONFIG_CMD_ENV=y
-CONFIG_CMD_HELP=y
-# CONFIG_CMD_MII is not set
-CONFIG_CMD_MEMORY=y
-# CONFIG_CMD_MTEST is not set
-# CONFIG_CMD_I2C is not set
-# CONFIG_CMD_AUTOSCRIPT is not set
-CONFIG_CMD_FLASH=y
-# CONFIG_CMD_LOADB is not set
-# CONFIG_CMD_LOADS is not set
-CONFIG_CMD_MEMINFO=y
-# CONFIG_CMD_SPLASH is not set
 CONFIG_CMD_SLEEP=y
+CONFIG_CMD_ENVIRONMENT=y
+CONFIG_CMD_HELP=y
+
+#
+# file commands                 
+#
+CONFIG_CMD_LS=y
+CONFIG_CMD_RM=y
+CONFIG_CMD_CAT=y
+CONFIG_CMD_MKDIR=y
+CONFIG_CMD_RMDIR=y
+CONFIG_CMD_CP=y
+CONFIG_CMD_PWD=y
+CONFIG_CMD_CD=y
+CONFIG_CMD_MOUNT=y
+CONFIG_CMD_UMOUNT=y
+
+#
+# console                       
+#
+CONFIG_CMD_CLEAR=y
+CONFIG_CMD_ECHO=y
+
+#
+# memory                        
+#
+CONFIG_CMD_MEMINFO=y
+CONFIG_CMD_MEMORY=y
+# CONFIG_CMD_CRC is not set
+# CONFIG_CMD_MTEST is not set
+
+#
+# flash                         
+#
+CONFIG_CMD_FLASH=y
+
+#
+# booting                       
+#
 CONFIG_CMD_BOOTM=y
 # CONFIG_CMD_BOOTM_ZLIB is not set
 # CONFIG_CMD_BOOTM_BZLIB is not set
-
-#
-# Debugging
-#
-CONFIG_SKIP_LOWLEVEL_INIT=y
+# CONFIG_CMD_BOOTM_SHOW_TYPE is not set
+CONFIG_CMD_RESET=y
+CONFIG_CMD_GO=y
+CONFIG_CMD_TIMEOUT=y
+CONFIG_CMD_PARTITION=y
+CONFIG_CMD_TEST=y
 CONFIG_NET=y
 CONFIG_NET_BOOTP=y
 CONFIG_NET_DHCP=y
@@ -67,35 +127,33 @@ CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
 
 #
-# drivers
+# Drivers                       
 #
 
 #
-# serial drivers
+# serial drivers                
 #
-# CONFIG_DRIVER_SERIAL_DUMMY is not set
+CONFIG_DRIVER_SERIAL_IMX=y
 CONFIG_HAS_DM9000=y
+CONFIG_MIIPHY=y
 
 #
-# Network drivers
+# Network drivers               
 #
+# CONFIG_DRIVER_NET_SMC911X is not set
 CONFIG_DRIVER_NET_DM9000=y
 
 #
-# video drivers
-#
-# CONFIG_DRIVER_VIDEO_S1D13706 is not set
-
-#
-# I2C drivers
-#
-
-#
-# USB host support
+# flash drivers                 
 #
 CONFIG_HAS_CFI=y
 CONFIG_DRIVER_CFI=y
 # CONFIG_DRIVER_CFI_NEW is not set
 CONFIG_CFI_BUFFER_WRITE=y
-CONFIG_FS=y
+# CONFIG_NAND is not set
+
+#
+# Filesystem support            
+#
 # CONFIG_FS_CRAMFS is not set
+CONFIG_CRC32=y

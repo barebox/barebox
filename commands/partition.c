@@ -33,25 +33,29 @@
 #include <errno.h>
 #include <xfuncs.h>
 
-static void dev_del_partitions(struct device_d *physdev)
+static int dev_del_partitions(struct device_d *physdev)
 {
-	struct device_d *dev;
-	char buf[MAX_DRIVER_NAME];
-	int i = 0;
+	struct device_d *child, *tmp;
+	int ret;
 
-	/* This is lame. Devices should to able to have children */
-	while (1) {
-		sprintf(buf, "%s.%d", physdev->id, i);
-		dev = device_from_spec_str(buf, NULL);
-		if (dev) {
-			struct partition *part = dev->type_data;
-			printf("unregister %s %s\n", dev->name, dev->id);
-			unregister_device(dev);
-			free(part);
-		} else
-			break;
-		i++;
+	device_for_each_child_safe(physdev, tmp, child) {
+		struct partition *part = child->type_data;
+	
+		debug("delete partition: %s\n", child->id);
+
+		if (part->flags & PARTITION_FIXED)
+			continue;
+
+		ret = unregister_device(child);
+		if (ret) {
+			printf("delete partition `%s' failed: %s\n", child->id, errno_str());
+			return errno;
+		}
+
+		free(part);
 	}
+
+	return 0;
 }
 
 static int mtd_part_do_parse_one(struct partition *part, const char *str,
@@ -96,7 +100,7 @@ static int mtd_part_do_parse_one(struct partition *part, const char *str,
 	str = end;
 
 	if (*str == 'r' && *(str + 1) == 'o') {
-		part->readonly = 1;
+		part->flags |= PARTITION_READONLY;
 		end = (char *)(str + 2);
 	}
 
@@ -117,12 +121,12 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	int num = 0;
 	unsigned long offset;
 
-	if (argc != 2) {
+	if (argc != 3) {
 		printf("Usage:\n%s\n", cmdtp->usage);
 		return 1;
 	}
 
-	dev = device_from_spec_str(argv[1], &endp);
+	dev = get_device_by_path(argv[1]);
 	if (!dev) {
 		printf("no such device: %s\n", argv[1]);
 		return 1;
@@ -131,6 +135,8 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	dev_del_partitions(dev);
 
 	offset = 0;
+
+	endp = argv[2];
 
 	while (1) {
 		part = xzalloc(sizeof(struct partition));
@@ -142,44 +148,52 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 
 		if (mtd_part_do_parse_one(part, endp, &endp)) {
 			dev_del_partitions(dev);
-			free(part);
-			return 1;
+			goto free_out;
 		}
 
 		offset += part->device.size;
 
 		part->device.type_data = part;
 
-		sprintf(part->device.id, "%s.%d", dev->id, num);
-		register_device(&part->device);
+		sprintf(part->device.id, "%s.%s", dev->id, part->name);
+		if (register_device(&part->device))
+			goto free_out;
+
+		dev_add_child(dev, &part->device);
+
 		num++;
 
 		if (!*endp)
 			break;
+
 		if (*endp != ',') {
 			printf("parse error\n");
-			return 1;
+			goto err_out;
 		}
 		endp++;
 	}
 
 	return 0;
+
+free_out:
+	free(part);
+err_out:
+	return 1;
 }
 
 static __maybe_unused char cmd_addpart_help[] =
-"Usage: addpart <partition description>\n"
+"Usage: addpart <device> <partition description>\n"
 "addpart adds a partition description to a device. The partition description\n"
 "has the form\n"
-"dev:size1(name1)[ro],size2(name2)[ro],...\n"
-"<dev> is the device name under /dev. Size can be given in decimal or if\n"
-"prefixed with 0x in hex. Sizes can have an optional suffix K,M,G. The size\n"
-"of the last partition can be specified as '-' for the remaining space of the\n"
-"device.\n"
+"size1(name1)[ro],size2(name2)[ro],...\n"
+"<device> is the device name under. Size can be given in decimal or if prefixed\n"
+"with 0x in hex. Sizes can have an optional suffix K,M,G. The size of the last\n"
+"partition can be specified as '-' for the remaining space of the device.\n"
 "This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
 "Note That this command has to be reworked and will probably change it's API.";
 
 U_BOOT_CMD_START(addpart)
-	.maxargs = 2,
+	.maxargs = 3,
 	.cmd = do_addpart,
 	.usage = "add a partition table to a device",
 	U_BOOT_CMD_HELP(cmd_addpart_help)
@@ -194,7 +208,7 @@ static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	dev = device_from_spec_str(argv[1], NULL);
+	dev = get_device_by_path(argv[1]);
 	if (!dev) {
 		printf("no such device: %s\n", argv[1]);
 		return 1;
@@ -206,10 +220,8 @@ static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 }
 
 static __maybe_unused char cmd_delpart_help[] =
-"Usage: delpart <dev>\n"
-"Delete partitions previously added to a device with addpart.\n"
-"Note: You have to specify the device as 'devid', _not_ as '/dev/devid'. This\n"
-"will likely change soon.\n";
+"Usage: delpart <device>\n"
+"Delete partitions previously added to a device with addpart.\n";
 
 U_BOOT_CMD_START(delpart)
 	.maxargs = 2,

@@ -47,7 +47,7 @@ struct device_d *get_device_by_id(const char *id)
 	return NULL;
 }
 
-int get_free_deviceid(char *id, char *id_template)
+int get_free_deviceid(char *id, const char *id_template)
 {
 	int i = 0;
 
@@ -86,6 +86,7 @@ int register_device(struct device_d *new_device)
 	debug ("register_device: %s\n",new_device->name);
 
 	list_add_tail(&new_device->list, &device_list);
+	INIT_LIST_HEAD(&new_device->children);
 
 	for_each_driver(drv) {
 		if (!match(drv, new_device))
@@ -96,16 +97,36 @@ int register_device(struct device_d *new_device)
 }
 EXPORT_SYMBOL(register_device);
 
-void unregister_device(struct device_d *old_dev)
+int unregister_device(struct device_d *old_dev)
 {
 	debug("unregister_device: %s:%s\n",old_dev->name, old_dev->id);
+
+	if (!list_empty(&old_dev->children)) {
+		errno = -EBUSY;
+		return errno;
+	}
 
 	if (old_dev->driver)
 		old_dev->driver->remove(old_dev);
 
 	list_del(&old_dev->list);
+
+	/* remove device from parents child list */
+	if (old_dev->parent)
+		list_del(&old_dev->sibling);
+
+	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
+
+int dev_add_child(struct device_d *dev, struct device_d *child)
+{
+	child->parent = dev;
+
+	list_add_tail(&child->sibling, &dev->children);
+
+	return 0;
+}
 
 struct driver_d *get_driver_by_name(const char *name)
 {
@@ -132,7 +153,7 @@ int register_driver(struct driver_d *drv)
 {
 	struct device_d *dev = NULL;
 
-	debug("register_driver: %s\n",new_driver->name);
+	debug("register_driver: %s\n", drv->name);
 
 	list_add_tail(&drv->list, &driver_list);
 
@@ -148,51 +169,17 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
-static char devicename_from_spec_str_buf[PATH_MAX];
-
-char *deviceid_from_spec_str(const char *str, char **endp)
-{
-	char *buf = devicename_from_spec_str_buf;
-	const char *end;
-	int i = 0;
-
-	if (isdigit(*str)) {
-		/* No device name given, use default driver mem */
-		sprintf(buf, "mem");
-		end = str;
-	} else {
-		/* OK, we have a device name, parse it */
-		while (*str) {
-			if (*str == ':') {
-				str++;
-				buf[i] = 0;
-				break;
-			}
-
-			buf[i++] = *str++;
-			buf[i] = 0;
-			if (i == MAX_DRIVER_NAME)
-				return NULL;
-		}
-		end = str;
-	}
-
-	if (endp)
-		*endp = (char *)end;
-
-	return buf;
-}
-
 /* Get a device struct from the beginning of the string. Default to mem if no
  * device is given, return NULL if a unknown device is given.
  * If endp is not NULL, this function stores a pointer to the first character
  * after the device name in *endp.
  */
-struct device_d *device_from_spec_str(const char *str, char **endp)
+struct device_d *get_device_by_path(const char *path)
 {
-	char *name;
-	name = deviceid_from_spec_str(str, endp);
-	return get_device_by_id(name);
+	if (strncmp(path, "/dev/", 5))
+		return NULL;
+
+	return get_device_by_id(path + 5);
 }
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
@@ -254,6 +241,32 @@ int dummy_probe(struct device_d *dev)
 	return 0;
 }
 
+static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
+{
+	struct device_d *child;
+	int i;
+
+	for (i = 0; i < depth; i++)
+		printf("|    ");
+
+	if (*dev->id)
+		printf("%c----%s\n", edge, dev->id);
+	else if (dev->type == DEVICE_TYPE_FS)
+		printf("%c----filesystem: %s\n", edge,
+				fsdev_get_mountpoint((struct fs_device_d *)
+					dev->type_data));
+
+	if (!list_empty(&dev->children)) {
+		device_for_each_child(dev, child) {
+			do_devinfo_subtree(child, depth + 1,
+					list_is_last(&child->sibling,
+						&dev->children) ? '`' : '|');
+		}
+	}
+
+	return 0;
+}
+
 static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
@@ -264,22 +277,25 @@ static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 		printf("devices:\n");
 
 		for_each_device(dev) {
-			printf("%10s: base=0x%08x size=0x%08x (driver %s)\n",
-					dev->id, dev->map_base, dev->size,
-					dev->driver ? 
-						dev->driver->name : "none");
+			if (!dev->parent)
+				do_devinfo_subtree(dev, 0, '|');
 		}
 
 		printf("\ndrivers:\n");
 		for_each_driver(drv)
 			printf("%10s\n",drv->name);
 	} else {
-		struct device_d *dev = get_device_by_id(argv[1]);
+		struct device_d *dev = get_device_by_path(argv[1]);
 
 		if (!dev) {
 			printf("no such device: %s\n",argv[1]);
 			return -1;
 		}
+
+		printf("base  : 0x%08x\nsize  : 0x%08x\ndriver: %s\n\n",
+			dev->map_base, dev->size,
+			dev->driver ? 
+				dev->driver->name : "none");
 
 		if (dev->driver)
 			dev->driver->info(dev);
@@ -302,7 +318,7 @@ static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 static __maybe_unused char cmd_devinfo_help[] =
 "Usage: devinfo [DEVICE]\n"
 "If called without arguments devinfo shows a summary about known devices and\n"
-"drivers. If called with a device id as argument devinfo shows more detailed\n"
+"drivers. If called with a device path as argument devinfo shows more detailed\n"
 "informations about this device and its parameters.\n";
 
 U_BOOT_CMD_START(devinfo)

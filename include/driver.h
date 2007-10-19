@@ -92,7 +92,11 @@ struct device_d {
 
 	struct driver_d *driver; /*! The driver for this device */
 
-	struct list_head list;
+	struct list_head list;     /* The list of all devices */
+	struct list_head children; /* our children            */
+	struct list_head sibling;
+
+	struct device_d *parent;   /* our parent, NULL if not present */
 
 	/*! This describes the type (or class) of this device. Have a look at
 	 * include/driver.h to see a list of known device types. Currently this
@@ -146,12 +150,30 @@ struct driver_d {
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
 
-/* Register/unregister devices and drivers. Since we don't have modules
- * we do not need a driver_unregister function.
+/* Register devices and drivers.
  */
 int register_driver(struct driver_d *);
 int register_device(struct device_d *);
-void unregister_device(struct device_d *);
+
+/* Unregister a device. This function can fail, e.g. when the device
+ * has children.
+ */
+int unregister_device(struct device_d *);
+
+/* Organize devices in a tree. These functions do _not_ register or
+ * unregister a device. Only registered devices are allowed here.
+ */
+int dev_add_child(struct device_d *dev, struct device_d *child);
+
+/* Iterate over a devices children
+ */
+#define device_for_each_child(dev, child) \
+	list_for_each_entry(child, &dev->children, sibling)
+
+/* Iterate over a devices children - Safe against removal version
+ */
+#define device_for_each_child_safe(dev, tmpdev, child) \
+	list_for_each_entry_safe(child, tmpdev, &dev->children, sibling)
 
 /* Iterate through the devices of a given type. if last is NULL, the
  * first device of this type is returned. Put this pointer in as
@@ -160,21 +182,30 @@ void unregister_device(struct device_d *);
  */
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
-struct device_d *get_first_device(void);
+struct device_d *get_device_by_path(const char *path);
 
 /* Find a free device id from the given template. This is archieved by
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(char *id, char *id_template);
+int get_free_deviceid(char *id, const char *id_template);
 
-struct device_d *device_from_spec_str(const char *str, char **endp);
 char *deviceid_from_spec_str(const char *str, char **endp);
 
+/* linear list over all available devices
+ */
 extern struct list_head device_list;
+
+/* linear list over all available drivers
+ */
+extern struct list_head driver_list;
+
+/* Iterate over all devices
+ */
 #define for_each_device(dev) list_for_each_entry(dev, &device_list, list)
 
-extern struct list_head driver_list;
+/* Iterate over all drivers
+ */
 #define for_each_driver(drv) list_for_each_entry(drv, &driver_list, list)
 
 /* Find a driver with the given name. Currently the filesystem implementation

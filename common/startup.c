@@ -29,7 +29,6 @@
 #include <init.h>
 #include <command.h>
 #include <malloc.h>
-#include <linux/utsrelease.h>
 #include <mem_malloc.h>
 #include <debug_ll.h>
 #include <fs.h>
@@ -37,21 +36,8 @@
 #include <environment.h>
 #include <reloc.h>
 
-#ifndef CONFIG_IDENT_STRING
-#define CONFIG_IDENT_STRING ""
-#endif
-
 extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[],
 		  __u_boot_initcalls_end[];
-
-const char version_string[] =
-	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")"CONFIG_IDENT_STRING;
-
-static void display_banner (void)
-{
-	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
-	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
-}
 
 static void display_meminfo(void)
 {
@@ -79,8 +65,6 @@ void early_init (void)
 				(ulong)&__early_init_data_end -
 				(ulong)&__early_init_data_begin);
 	early_console_start(RELOC("psc3"), 115200);
-
-	display_banner();
 }
 
 #endif /* CONFIG_HAS_EARLY_INIT */
@@ -130,9 +114,6 @@ void start_uboot (void)
 			hang();
 	}
 
-#ifndef CONFIG_HAS_EARLY_INIT
-	display_banner();
-#endif
 	display_meminfo();
 
 	register_default_env();
@@ -150,9 +131,12 @@ void start_uboot (void)
 #endif
 	}
 #endif
+	printf("running /env/bin/init...\n");
+
 	if (!stat("/env/bin/init", &s)) {
-		printf("running /env/bin/init\n");
 		run_command("source /env/bin/init", 0);
+	} else {
+		printf("not found\n");
 	}
 
 	/* main_loop() can return to retry autoboot, if so just run it again. */

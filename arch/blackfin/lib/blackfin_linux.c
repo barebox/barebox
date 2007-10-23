@@ -33,6 +33,7 @@
 #include <environment.h>
 #include <asm/byteorder.h>
 #include <asm/cpu.h>
+#include <asm/blackfin.h>
 
 #define CMD_LINE_ADDR 0xFF900000  /* L1 scratchpad */
 
@@ -53,6 +54,8 @@ int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 
 	strncpy(cmdlinedest, cmdline, 0x1000);
 	cmdlinedest[0xfff] = 0;
+
+	*(volatile unsigned long *) IMASK = 0x1f;
 
 	(*appl)(cmdlinedest);
 

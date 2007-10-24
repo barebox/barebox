@@ -34,11 +34,11 @@ static int ipe337_devices_init(void) {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 
+	/* Reset smc911x */
 	*pFIO0_DIR = (1<<12);
 	*pFIO0_FLAG_C = (1<<12);
-	udelay(1000);
+	mdelay(100);
 	*pFIO0_FLAG_S = (1<<12);
-	udelay(1000);
 
 	register_device(&smc911x_dev);
 

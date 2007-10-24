@@ -908,7 +908,7 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	uboot System.map include/uboot_default_env.h \
                 .tmp_version .tmp_uboot* uboot.bin uboot.S \
-		.tmp_kallsyms*
+		.tmp_kallsyms* uboot_default_env
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

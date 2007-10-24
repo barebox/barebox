@@ -1,0 +1,14 @@
+PATH=/env/bin
+export PATH
+
+. /env/config
+
+echo -n "Hit any key to stop autoboot: "
+timeout -a 1
+if [ $? != 0 ]; then
+        echo "type update_kernel <imagename> to update kernel into flash"
+        echo "type udate_root <imagename> to update rootfs into flash"
+        exit
+fi
+
+boot

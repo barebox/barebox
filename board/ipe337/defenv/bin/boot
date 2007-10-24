@@ -1,0 +1,35 @@
+
+. /env/config
+
+if [ x$1 = "xflash" ]; then 
+	root=flash
+	kernel=flash
+fi
+
+if [ x$1 = "xnet" ]; then
+	root=net
+	kernel=net
+fi
+
+if [ "$root" = flash ]; then
+	bootargs="$bootargs root=/dev/mtdblock4 rootfstype=jffs2"
+else
+	if [ "$ip" = dhcp ]; then
+		bootargs="$bootargs ip=dhcp"
+	else
+		bootargs="$bootargs ip=$eth0.ip:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+	fi
+	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp"
+fi
+
+bootargs="$bootargs mtdparts=physmap-flash.0:$mtdparts"
+
+if [ "$kernel" = net ]; then
+	if [ $ip = dhcp ]; then
+		dhcp
+	fi
+	tftp $uimage uImage
+	bootm uImage
+else
+	bootm /dev/nor0.kernel
+fi

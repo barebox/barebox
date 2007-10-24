@@ -1,5 +1,5 @@
 /* This document is intended to provide the developer with information
- * how to integrate a new CPU (MACH) into this part of the UBoot tree
+ * how to integrate a new CPU (MACH) into this part of the U-Boot tree
  */
 
 /** @page dev_arm_mach ARM based CPU (MACH) into the tree
@@ -25,9 +25,9 @@ As its board specific, your can do whatever you need to bring your board up.
 When <board_init_lowlevel> returns it will be assumed there is now a working
 RAM that can be used for all further steps.
 
-Next step is relocation of UBoot itself. It gets copied to RAM and the last
+Next step is relocation of U-Boot itself. It gets copied to RAM and the last
 assembler instruction is a jump into <start_uboot>. This target address is
-the first C instruction in UBoot. At this point of time:
+the first C instruction in U-Boot. At this point of time:
 "runtime address == link address".
 
 */

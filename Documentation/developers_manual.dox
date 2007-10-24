@@ -2,11 +2,11 @@
 
 This part of the documentation is intended for developers.
 
-Some background knowledge for some frameworks in UBootv2
+Some background knowledge for some frameworks in U-Boot v2
 
  - @subpage driver_model
 
-Hints and tips for simply adapting UBootv2
+Hints and tips for simply adapting U-Boot v2
 
  - @subpage dev_board
  - @subpage dev_cpu

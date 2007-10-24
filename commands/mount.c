@@ -93,7 +93,7 @@ U_BOOT_CMD_END
  * root directory.
  */
 
-/** @page how_mount_works How mount works in UBoot
+/** @page how_mount_works How mount works in U-Boot
  *
  * Mounting a filesystem ontop of a device is working like devices and drivers
  * are finding together.

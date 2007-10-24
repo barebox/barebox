@@ -185,7 +185,7 @@ config SKIP_LOWLEVEL_INIT
 	prompt "Skip lowlevel init"
 	help
 	  This entry skips the SDRAM initialising on many ARM based boards.
-	  It enables using UBoot2 as a second stage bootloader.
+	  It enables using U-boot as a second stage bootloader.
 
 config ENABLE_FLASH_NOISE
 	bool

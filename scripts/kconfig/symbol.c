@@ -30,7 +30,6 @@ struct symbol symbol_yes = {
 	.flags = SYMBOL_VALID,
 };
 
-int sym_change_count;
 struct symbol *sym_defconfig_list;
 struct symbol *modules_sym;
 tristate modules_val;
@@ -379,7 +378,7 @@ void sym_clear_all_valid(void)
 
 	for_all_symbols(i, sym)
 		sym->flags &= ~SYMBOL_VALID;
-	sym_change_count++;
+	sym_add_change_count(1);
 	if (modules_sym)
 		sym_calc_value(modules_sym);
 }
@@ -787,13 +786,15 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
 	return NULL;
 }
 
+/* return NULL when dependencies are OK */
 struct symbol *sym_check_deps(struct symbol *sym)
 {
 	struct symbol *sym2;
 	struct property *prop;
 
 	if (sym->flags & SYMBOL_CHECK) {
-		printf("Warning! Found recursive dependency: %s", sym->name);
+		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
+		        sym->prop->file->name, sym->prop->lineno, sym->name);
 		return sym;
 	}
 	if (sym->flags & SYMBOL_CHECKED)
@@ -817,13 +818,8 @@ struct symbol *sym_check_deps(struct symbol *sym)
 			goto out;
 	}
 out:
-	if (sym2) {
-		printf(" %s", sym->name);
-		if (sym2 == sym) {
-			printf("\n");
-			sym2 = NULL;
-		}
-	}
+	if (sym2)
+		fprintf(stderr, " -> %s%s", sym->name, sym2 == sym? "\n": "");
 	sym->flags &= ~SYMBOL_CHECK;
 	return sym2;
 }

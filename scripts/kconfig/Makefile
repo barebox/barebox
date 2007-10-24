@@ -11,7 +11,6 @@ gconfig: $(obj)/gconf
 	$< arch/$(ARCH)/Kconfig
 
 menuconfig: $(obj)/mconf
-	$(Q)$(MAKE) $(build)=scripts/kconfig/lxdialog
 	$< arch/$(ARCH)/Kconfig
 
 config: $(obj)/conf
@@ -23,24 +22,25 @@ oldconfig: $(obj)/conf
 silentoldconfig: $(obj)/conf
 	$< -s arch/$(ARCH)/Kconfig
 
+# Create new linux.po file
+# Adjust charset to UTF-8 in .po file to accept UTF-8 in Kconfig files
+# The symlink is used to repair a deficiency in arch/um
 update-po-config: $(obj)/kxgettext
-	xgettext --default-domain=linux \
-          --add-comments --keyword=_ --keyword=N_ \
-          --files-from=scripts/kconfig/POTFILES.in \
-          --output scripts/kconfig/config.pot
-	$(Q)ln -fs Kconfig_i386 arch/um/Kconfig_arch
-	$(Q)for i in `ls arch/`; \
-	do \
-	  scripts/kconfig/kxgettext arch/$$i/Kconfig \
-	    | msguniq -o scripts/kconfig/linux_$${i}.pot; \
-	done
-	$(Q)msgcat scripts/kconfig/config.pot \
-	  `find scripts/kconfig/ -type f -name linux_*.pot` \
-	  --output scripts/kconfig/linux_raw.pot
-	$(Q)msguniq --sort-by-file scripts/kconfig/linux_raw.pot \
-	    --output scripts/kconfig/linux.pot
-	$(Q)rm -f arch/um/Kconfig_arch
-	$(Q)rm -f scripts/kconfig/linux_*.pot scripts/kconfig/config.pot
+	xgettext --default-domain=linux                  \
+	    --add-comments --keyword=_ --keyword=N_      \
+	    --from-code=UTF-8                            \
+	    --files-from=scripts/kconfig/POTFILES.in     \
+	    --output $(obj)/config.pot
+	$(Q)sed -i s/CHARSET/UTF-8/ $(obj)/config.pot
+	$(Q)ln -fs Kconfig.i386 arch/um/Kconfig.arch
+	(for i in `ls arch/`;                            \
+	do                                               \
+	    $(obj)/kxgettext arch/$$i/Kconfig;           \
+	done ) >> $(obj)/config.pot
+	msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
+	    --output $(obj)/linux.pot
+	$(Q)rm -f arch/um/Kconfig.arch
+	$(Q)rm -f $(obj)/config.pot
 
 PHONY += randconfig allyesconfig allnoconfig allmodconfig defconfig
 
@@ -74,11 +74,29 @@ help:
 	@echo  '  xconfig	  - Update current config utilising a QT based front-end'
 	@echo  '  gconfig	  - Update current config utilising a GTK based front-end'
 	@echo  '  oldconfig	  - Update current config utilising a provided .config as base'
+	@echo  '  silentoldconfig - Same as oldconfig, but quietly'
 	@echo  '  randconfig	  - New config with random answer to all options'
 	@echo  '  defconfig	  - New config with default answer to all options'
 	@echo  '  allmodconfig	  - New config selecting modules when possible'
 	@echo  '  allyesconfig	  - New config where all options are accepted with yes'
 	@echo  '  allnoconfig	  - New config where all options are answered with no'
+
+# lxdialog stuff
+check-lxdialog  := $(srctree)/$(src)/lxdialog/check-lxdialog.sh
+
+# Use reursively expanded variables so we do not call gcc unless
+# we really need to do so. (Do not call gcc as part of make mrproper)
+HOST_EXTRACFLAGS = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ccflags)
+HOST_LOADLIBES   = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ldflags $(HOSTCC))
+
+HOST_EXTRACFLAGS += -DLOCALE
+
+PHONY += $(obj)/dochecklxdialog
+$(obj)/dochecklxdialog:
+	$(Q)$(CONFIG_SHELL) $(check-lxdialog) -check $(HOSTCC) $(HOST_LOADLIBES)
+
+always := dochecklxdialog
+
 
 # ===========================================================================
 # Shared Makefile for the various kconfig executables:
@@ -91,10 +109,18 @@ help:
 #         Based on GTK which needs to be installed to compile it
 # object files used by all kconfig flavours
 
-hostprogs-y	:= conf mconf qconf gconf kxgettext
+lxdialog := lxdialog/checklist.o lxdialog/util.o lxdialog/inputbox.o
+lxdialog += lxdialog/textbox.o lxdialog/yesno.o lxdialog/menubox.o
+
 conf-objs	:= conf.o  zconf.tab.o
-mconf-objs	:= mconf.o zconf.tab.o
+mconf-objs	:= mconf.o zconf.tab.o $(lxdialog)
 kxgettext-objs	:= kxgettext.o zconf.tab.o
+
+hostprogs-y := conf qconf gconf kxgettext
+
+ifeq ($(MAKECMDGOALS),menuconfig)
+	hostprogs-y += mconf
+endif
 
 ifeq ($(MAKECMDGOALS),xconfig)
 	qconf-target := 1
@@ -115,7 +141,7 @@ endif
 
 clean-files	:= lkc_defs.h qconf.moc .tmp_qtcheck \
 		   .tmp_gtkcheck zconf.tab.c lex.zconf.c zconf.hash.c
-subdir- += lxdialog
+clean-files     += mconf qconf gconf
 
 # Needed for systems without gettext
 KBUILD_HAVE_NLS := $(shell \
@@ -159,8 +185,8 @@ $(obj)/.tmp_qtcheck:
 	  done; \
 	  if [ -z "$$dir" ]; then \
 	    echo "*"; \
-	    echo "* Unable to find the QT installation. Please make sure that"; \
-	    echo "* the QT development package is correctly installed and"; \
+	    echo "* Unable to find the QT3 installation. Please make sure that"; \
+	    echo "* the QT3 development package is correctly installed and"; \
 	    echo "* either install pkg-config or set the QTDIR environment"; \
 	    echo "* variable to the correct location."; \
 	    echo "*"; \

@@ -203,7 +203,7 @@ void sym_check_prop(struct symbol *sym)
 			else if (sym2->type == S_UNKNOWN)
 				prop_warn(prop,
 				    "'select' used by config symbol '%s' "
-				    "refer to undefined symbol '%s'",
+				    "refers to undefined symbol '%s'",
 				    sym->name, sym2->name);
 			else if (sym2->type != S_BOOLEAN && sym2->type != S_TRISTATE)
 				prop_warn(prop,
@@ -417,3 +417,15 @@ struct menu *menu_get_parent_menu(struct menu *menu)
 	return menu;
 }
 
+bool menu_has_help(struct menu *menu)
+{
+	return menu->help != NULL;
+}
+
+const char *menu_get_help(struct menu *menu)
+{
+	if (menu->help)
+		return menu->help;
+	else
+		return "";
+}

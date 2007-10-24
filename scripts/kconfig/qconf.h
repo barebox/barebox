@@ -279,7 +279,7 @@ class ConfigSearchWindow : public QDialog {
 	Q_OBJECT
 	typedef class QDialog Parent;
 public:
-	ConfigSearchWindow(QWidget* parent, const char *name = 0);
+	ConfigSearchWindow(ConfigMainWindow* parent, const char *name = 0);
 
 public slots:
 	void saveSettings(void);
@@ -297,6 +297,9 @@ protected:
 
 class ConfigMainWindow : public QMainWindow {
 	Q_OBJECT
+
+	static QAction *saveAction;
+	static void conf_changed(void);
 public:
 	ConfigMainWindow(void);
 public slots:

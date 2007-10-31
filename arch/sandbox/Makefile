@@ -8,6 +8,7 @@ machine-y	   := sandbox
 
 BOARD:= arch/sandbox/lib
 board-y := sandbox
+lds-y   := arch/sandbox/lib/u-boot.lds
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 

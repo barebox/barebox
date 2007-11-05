@@ -29,9 +29,13 @@
 void imx_gpio_mode(int gpio_mode)
 {
 	unsigned int pin = gpio_mode & GPIO_PIN_MASK;
-	unsigned int port = (gpio_mode & GPIO_PORT_MASK) >> 5;
-	unsigned int ocr = (gpio_mode & GPIO_OCR_MASK) >> 10;
+	unsigned int port = (gpio_mode & GPIO_PORT_MASK) >> GPIO_PORT_SHIFT;
+	unsigned int ocr = (gpio_mode & GPIO_OCR_MASK) >> GPIO_OCR_SHIFT;
+	unsigned int aout = (gpio_mode & GPIO_AOUT_MASK) >> GPIO_AOUT_SHIFT;
+	unsigned int bout = (gpio_mode & GPIO_BOUT_MASK) >> GPIO_BOUT_SHIFT;
 	unsigned int tmp;
+
+	printf("gpio_mode: 0x%08x ocr: 0x%08x port: %d pin: %2d aout: %d bout: %d\n", gpio_mode, ocr, port, pin, aout, bout);
 
 	/* Pullup enable */
 	if(gpio_mode & GPIO_PUEN)
@@ -52,25 +56,22 @@ void imx_gpio_mode(int gpio_mode)
 		GPR(port) &= ~(1 << pin);
 
 	/* use as gpio? */
-	if( ocr == 3 )
+	if(!(gpio_mode & (GPIO_PF | GPIO_AF)))
 		GIUS(port) |= (1 << pin);
 	else
 		GIUS(port) &= ~(1 << pin);
 
 	/* Output / input configuration */
-	/* FIXME: I'm not very sure about OCR and ICONF, someone
-	 * should have a look over it
-	 */
 	if (pin < 16) {
 		tmp = OCR1(port);
 		tmp &= ~(3 << (pin * 2));
 		tmp |= (ocr << (pin * 2));
 		OCR1(port) = tmp;
 
-		if( gpio_mode &	GPIO_AOUT )
-			ICONFA1(port) &= ~(3 << (pin * 2));
-		if( gpio_mode &	GPIO_BOUT )
-			ICONFB1(port) &= ~(3 << (pin * 2));
+		ICONFA1(port) &= ~(3 << (pin * 2));
+		ICONFA1(port) |= aout << (pin * 2);
+		ICONFB1(port) &= ~(3 << (pin * 2));
+		ICONFB1(port) |= bout << (pin * 2);
 	} else {
 		pin -= 16;
 
@@ -79,10 +80,10 @@ void imx_gpio_mode(int gpio_mode)
 		tmp |= (ocr << (pin * 2));
 		OCR2(port) = tmp;
 
-		if( gpio_mode &	GPIO_AOUT )
-			ICONFA2(port) &= ~(3 << (pin * 2));
-		if( gpio_mode &	GPIO_BOUT )
-			ICONFB2(port) &= ~(3 << (pin * 2));
+		ICONFA2(port) &= ~(3 << (pin * 2));
+		ICONFA2(port) |= aout << (pin * 2);
+		ICONFB2(port) &= ~(3 << (pin * 2));
+		ICONFB2(port) |= bout << (pin * 2);
 	}
 
 }

@@ -83,7 +83,7 @@ U_BOOT_CMD_END
  * Usage: mount [<device> <fstype> <mountpoint>]
  *
  * Mounts a filesystem of a given <fstype> on a <device> to a <mountpoint>.
- * <device> can be one of /dev/* or some arbitrary string if no
+ * <device> can be one of /dev/ * or some arbitrary string if no
  * device is needed for this driver (for example ramfs).
  *
  * <fstype> is the filesystem driver to use. Try the 'devinfo' command

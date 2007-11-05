@@ -100,8 +100,11 @@ typedef struct ethernet_register_set {
 
 	volatile uint32 RES7[2];		/* MBAR_ETH + 0x178-17C */
 	volatile uint32 fm_cntrl;		/* MBAR_ETH + 0x180 */
+#define erdsr fm_cntrl
 	volatile uint32 rfifo_data;		/* MBAR_ETH + 0x184 */
+#define etdsr rfifo_data
 	volatile uint32 rfifo_status;		/* MBAR_ETH + 0x188 */
+#define emrbr rfifo_status
 	volatile uint32 rfifo_cntrl;		/* MBAR_ETH + 0x18C */
 	volatile uint32 rfifo_lrf_ptr;		/* MBAR_ETH + 0x190 */
 	volatile uint32 rfifo_lwf_ptr;		/* MBAR_ETH + 0x194 */
@@ -241,14 +244,24 @@ typedef struct ethernet_register_set {
 
 /* Receive & Transmit Buffer Descriptor definitions */
 typedef struct BufferDescriptor {
+#ifdef CONFIG_MPC5200
 	uint16 status;
+#endif
 	uint16 dataLength;
+#ifdef CONFIG_ARCH_IMX27
+	uint16 status;
+#endif
 	uint32 dataPointer;
 } FEC_RBD;
 
 typedef struct {
+#ifdef CONFIG_MPC5200
 	uint16 status;
+#endif
 	uint16 dataLength;
+#ifdef CONFIG_ARCH_IMX27
+	uint16 status;
+#endif
 	uint32 dataPointer;
 } FEC_TBD;
 
@@ -260,9 +273,6 @@ typedef struct {
 	FEC_RBD *rbdBase;		/* RBD ring */
 	FEC_TBD *tbdBase;		/* TBD ring */
 	uint16 rbdIndex;		/* next receive BD to read */
-	uint16 tbdIndex;		/* next transmit BD to send */
-	uint16 usedTbdIndex;		/* next transmit BD to clean */
-	uint16 cleanTbdNum;		/* the number of available transmit BDs */
 
 	struct miiphy_device miiphy;
 } mpc5xxx_fec_priv;
@@ -274,8 +284,7 @@ typedef struct {
 #define FEC_RBD_NEXT		(FEC_PARAM_BASE + 0x0c)
 
 /* BD Numer definitions */
-#define FEC_TBD_NUM		48	/* The user can adjust this value */
-#define FEC_RBD_NUM		32	/* The user can adjust this value */
+#define FEC_RBD_NUM		64	/* The user can adjust this value */
 
 /* packet size limit */
 #define FEC_MAX_PKT_SIZE	1536

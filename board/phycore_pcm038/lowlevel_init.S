@@ -50,6 +50,9 @@ board_init_lowlevel:
 	writel(0x130410c3, PCDR0)
 	writel(0x09030913, PCDR1)
 
+	/* skip sdram setup for debugging */
+	mov	pc,r10
+
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0xa0000000
 	bls	1f
@@ -69,9 +72,9 @@ board_init_lowlevel:
 	writel(0x00005005, 0x10027838)
 	writel(0x15555555, 0x1002783C)
 	writel(0x00000004, 0xD8001010)
-	writel(0x00795729, 0xD8001004)
+	writel(0x006ac73a, 0xD8001004)
 	writel(0x92100000, 0xD8001000)
-	writel(0x00000000, 0xA0000F00) 
+	writel(0x00000000, 0xA0000F00)
 	writel(0xA2100000, 0xD8001000)
 	writel(0x00000000, 0xA0000F00)
 	writel(0x00000000, 0xA0000F00)
@@ -82,14 +85,14 @@ board_init_lowlevel:
 	writel(0x00000000, 0xA0000F00)
 	writel(0x00000000, 0xA0000F00)
 	writel(0x00000000, 0xA0000F00)
-	writel(0xB2126080, 0xD8001000)
+	writel(0xb2100000, 0xD8001000)
 	ldr		r0, =0xA0000033
-	mov		r1, #0x0
+	mov		r1, #0xda
 	strb		r1, [r0]
 	ldr		r0, =0xA1000000
-	mov		r1, #0x0
+	mov		r1, #0xff
 	strb		r1, [r0]
-	writel(0x82126080, 0xD8001000)
+	writel(0x82226080, 0xD8001000)
 
 	mov	pc,r10
 

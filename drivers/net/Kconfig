@@ -49,7 +49,7 @@ config DRIVER_NET_AT91_ETHER
 
 config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"
-	depends on ARCH_MPC5200
+	depends on ARCH_MPC5200 || ARCH_IMX27
 	select MIIPHY
 
 config DRIVER_NET_TAP

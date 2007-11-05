@@ -61,7 +61,7 @@ static struct env_context *context;
 
 /**
  * Remove a list of environment variables
- * @param[inout] v Variable anchor to remove
+ * @param[in] v Variable anchor to remove
  */
 static void free_variables(struct variable_d *v)
 {

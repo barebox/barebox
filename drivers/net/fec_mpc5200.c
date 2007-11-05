@@ -4,6 +4,24 @@
  *
  * This file is based on mpc4200fec.c,
  * (C) Copyright Motorola, Inc., 2000
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
  */
 
 #define DEBUG
@@ -21,12 +39,17 @@
 //#include <asm/arch/clocks.h>
 #include <miiphy.h>
 #include "fec_mpc5200.h"
+
+#include <asm/io.h>
+
 #ifdef CONFIG_ARCH_IMX27
 #include <asm/arch/imx-regs.h>
 #include <clock.h>
 #include <asm/arch/clock.h>
 #include <xfuncs.h>
 #endif
+
+extern int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 
@@ -54,17 +77,17 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	 * reading from any PHY's register is done by properly
 	 * programming the FEC's MII data register.
 	 */
-	fec->eth->ievent = FEC_IEVENT_MII;
+	writel(FEC_IEVENT_MII, &fec->eth->ievent);
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
-	fec->eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg);
+	writel(FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg, &fec->eth->mii_data);
 
 	/*
 	 * wait for the related interrupt
 	 */
 	start = get_time_ns();
-	while (!(fec->eth->ievent & FEC_IEVENT_MII)) {
+	while (!(readl(&fec->eth->ievent) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
 			printf("Read MDIO failed...\n");
 			return -1;
@@ -74,12 +97,12 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * clear mii interrupt bit
 	 */
-	fec->eth->ievent = FEC_IEVENT_MII;
+	writel(FEC_IEVENT_MII, &fec->eth->ievent);
 
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = (uint16) fec->eth->mii_data;
+	*retVal = readl(&fec->eth->mii_data);
 
 	return 0;
 }
@@ -97,14 +120,14 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
-	fec->eth->mii_data = (FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
-			FEC_MII_DATA_TA | phy | reg | data);
+	writel(FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
+		FEC_MII_DATA_TA | phy | reg | data, &fec->eth->mii_data);
 
 	/*
 	 * wait for the MII interrupt
 	 */
 	start = get_time_ns();
-	while (!(fec->eth->ievent & FEC_IEVENT_MII)) {
+	while (!(readl(&fec->eth->ievent) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
 			printf("Write MDIO failed...\n");
 			return -1;
@@ -114,7 +137,7 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * clear MII interrupt bit
 	 */
-	fec->eth->ievent = FEC_IEVENT_MII;
+	writel(FEC_IEVENT_MII, &fec->eth->ievent);
 
 	return 0;
 }
@@ -148,7 +171,7 @@ static int mpc5xxx_fec_tx_task_disable(mpc5xxx_fec_priv *fec)
 #ifdef CONFIG_ARCH_IMX27
 static int mpc5xxx_fec_rx_task_enable(mpc5xxx_fec_priv *fec)
 {
-	fec->eth->r_des_active = 1 << 24;
+	writel(1 << 24, &fec->eth->r_des_active);
 	return 0;
 }
 
@@ -159,7 +182,7 @@ static int mpc5xxx_fec_rx_task_disable(mpc5xxx_fec_priv *fec)
 
 static int mpc5xxx_fec_tx_task_enable(mpc5xxx_fec_priv *fec)
 {
-	fec->eth->x_des_active = 1 << 24;
+	writel(1 << 24, &fec->eth->x_des_active);
 	return 0;
 }
 
@@ -169,64 +192,77 @@ static int mpc5xxx_fec_tx_task_disable(mpc5xxx_fec_priv *fec)
 }
 #endif
 
-static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
+/**
+ * allocate and link buffers for the receive task
+ * @param[in] fec all we know about the device yet
+ * @param[in] count receive buffer count to be allocated
+ * @param[in] size size of each receive buffer
+ * @return 0 on success
+ *
+ * We need some alignment for the buffers. Thy must be
+ * aligned to a specific boundary each. See RDB_ALIGNMENT
+ */
+static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec, int count, int size)
 {
 	int ix;
-	char *data;
 	static int once = 0;
+	uint32 p;
 
 	printf("%s\n", __FUNCTION__);
 
-	for (ix = 0; ix < FEC_RBD_NUM; ix++) {
+	size += RDB_ALIGNMENT;	/* enlarge the size for alignment */
+
+	for (ix = 0; ix < count; ix++) {
 		if (!once) {
-#if 0
-			/* sha: Should work like this: */
-			data = (char *)xzalloc(FEC_MAX_PKT_SIZE);
-#endif
-			/* sha: But for some reason we need alignement: */
-			data = (char *)((unsigned long)(xzalloc(FEC_MAX_PKT_SIZE + 0x10) + 0x10) & ~0xf);
-			fec->rbdBase[ix].dataPointer = (uint32)data;
+			p = (uint32)xzalloc(size);
+			p += RDB_ALIGNMENT - 1;
+			p &= ~(RDB_ALIGNMENT - 1);
+			writel(p, &fec->rbdBase[ix].dataPointer);
 		}
-		fec->rbdBase[ix].status = FEC_RBD_EMPTY;
-		fec->rbdBase[ix].dataLength = 0;
+		writew(FEC_RBD_EMPTY, &fec->rbdBase[ix].status);
+		writew(0, &fec->rbdBase[ix].dataLength);
 	}
 	once ++;
 
 	/*
 	 * have the last RBD to close the ring
 	 */
-	fec->rbdBase[ix - 1].status |= FEC_RBD_WRAP;
+	writew(FEC_RBD_WRAP | readl(&fec->rbdBase[ix - 1].status), &fec->rbdBase[ix - 1].status);
 	fec->rbdIndex = 0;
 
 	return 0;
 }
 
+/**
+ * initialize buffers for the transmit task
+ * @param[in] fec all we know about the device yet
+ *
+ * Nothing special here to do. We ony using one bufffer
+ * for all transmit operations.
+ */
 static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 {
-	fec->tbdBase[0].status = FEC_TBD_WRAP;
+	writew(FEC_TBD_WRAP, &fec->tbdBase[0].status);
 }
 
-static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd)
+/**
+ * Mark the given read buffer descriptor as free
+ * @param[in] last 1 if this is the last buffer descriptor in the chain, else 0
+ * @param[in] pRbd buffer descriptor to mark free again
+ */
+static void mpc5xxx_fec_rbd_clean(int last, FEC_RBD *pRbd)
 {
-	pRbd->dataLength = 0;
-
 	/*
 	 * Reset buffer descriptor as empty
 	 */
-	if ((fec->rbdIndex) == (FEC_RBD_NUM - 1))
-		pRbd->status = (FEC_RBD_WRAP | FEC_RBD_EMPTY);
+	if (last)
+		writew(FEC_RBD_WRAP | FEC_RBD_EMPTY, &pRbd->status);
 	else
-		pRbd->status = FEC_RBD_EMPTY;
-
+		writew(FEC_RBD_EMPTY, &pRbd->status);
 	/*
-	 * Now, we have an empty RxBD, restart the SmartDMA receive task
+	 * no data in it
 	 */
-	mpc5xxx_fec_rx_task_enable(fec);
-
-	/*
-	 * Increment BD count
-	 */
-	fec->rbdIndex = (fec->rbdIndex + 1) % FEC_RBD_NUM;
+	writew(0, &pRbd->dataLength);
 }
 
 static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
@@ -238,12 +274,13 @@ static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
+//#define WTF_IS_THIS
+#ifdef WTF_IS_THIS
+	uint32 crc = 0xffffffff;	/* initial value */
 	uint8 currByte;			/* byte for which to compute the CRC */
 	int byte;			/* loop - counter */
 	int bit;			/* loop - counter */
-	uint32 crc = 0xffffffff;	/* initial value */
-//#define WTF_IS_THIS
-#ifdef WTF_IS_THIS
+
 	/*
 	 * The algorithm used is the following:
 	 * we loop on each of the six bytes of the provided address,
@@ -285,16 +322,16 @@ static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 		fec->eth->iaddr2 = (1 << crc);
 	}
 #else
-		fec->eth->iaddr1 = 0;
-		fec->eth->iaddr2 = 0;
-		fec->eth->gaddr1 = 0;
-		fec->eth->gaddr2 = 0;
+	writel(0, &fec->eth->iaddr1);
+	writel(0, &fec->eth->iaddr2);
+	writel(0, &fec->eth->gaddr1);
+	writel(0, &fec->eth->gaddr2);
 #endif
 	/*
 	 * Set physical address
 	 */
-	fec->eth->paddr1 = (mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3];
-	fec->eth->paddr2 = (mac[4] << 24) + (mac[5] << 16) + 0x8808;
+	writel((mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3], &fec->eth->paddr1);
+	writel((mac[4] << 24) + (mac[5] << 16) + 0x8808, &fec->eth->paddr2);
 
         return 0;
 }
@@ -310,18 +347,18 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	/*
 	 * Initialize RxBD/TxBD rings
 	 */
-	mpc5xxx_fec_rbd_init(fec);
+	mpc5xxx_fec_rbd_init(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 	mpc5xxx_fec_tbd_init(fec);
 
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
-	fec->eth->ievent = 0xffffffff;
+	writel(0xffffffff, &fec->eth->ievent);
 
 	/*
 	 * Set interrupt mask register
 	 */
-	fec->eth->imask = 0x00000000;
+	writel(0x00000000, &fec->eth->imask);
 
 	/*
 	 * Set FEC-Lite receive control register(R_CNTRL):
@@ -330,69 +367,67 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 		/*
 		 * Frame length=1518; 7-wire mode
 		 */
-		fec->eth->r_cntrl = 0x05ee0020;	/* FIXME 0x05ee0000 */
+		writel(0x05ee0020, &fec->eth->r_cntrl);	/* FIXME 0x05ee0000 */
 	} else {
 		/*
 		 * Frame length=1518; MII mode;
 		 */
-		fec->eth->r_cntrl = 0x05ee0024;	/* FIXME 0x05ee0004 */
+		writel(0x05ee0024, &fec->eth->r_cntrl);	/* FIXME 0x05ee0004 */
 
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
 #ifdef CONFIG_MPC5200
-		fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+		writel(((get_ipb_clock() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
 #endif
 #ifdef CONFIG_ARCH_IMX27
-		fec->eth->mii_speed = (((imx_get_ahbclk() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+		writel(((imx_get_ahbclk() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
 #endif
 	}
 
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
-	fec->eth->op_pause = 0x00010020;	/* FIXME 0xffff0020; */
+	writel(0x00010020, &fec->eth->op_pause);	/* FIXME 0xffff0020; */
 
 #ifdef CONFIG_MPC5200
 	/*
 	 * Set Rx FIFO alarm and granularity value
 	 */
-	fec->eth->rfifo_cntrl = 0x0c000000
-				| (fec->eth->rfifo_cntrl & ~0x0f000000);
-	fec->eth->rfifo_alarm = 0x0000030c;
+	writel(0x0c000000 | (readl(&fec->eth->rfifo_cntrl) & ~0x0f000000)), &fec->eth->rfifo_cntrl);
+	writel(0x0000030c, &fec->eth->rfifo_alarm);
 
-	if (fec->eth->rfifo_status & 0x00700000 ) {
+	if (readl(&fec->eth->rfifo_status) & 0x00700000 ) {
 		debug("mpc5xxx_fec_init() RFIFO error\n");
 	}
 
 	/*
 	 * Set Tx FIFO granularity value
 	 */
-	fec->eth->tfifo_cntrl = 0x0c000000
-				| (fec->eth->tfifo_cntrl & ~0x0f000000);
+	writel(0x0c000000 | (readl(&fec->eth->tfifo_cntrl)& ~0x0f000000), &fec->eth->tfifo_cntrl);
 
-	debug("tfifo_status: 0x%08x\n", fec->eth->tfifo_status);
-	debug("tfifo_alarm: 0x%08x\n", fec->eth->tfifo_alarm);
+	debug("tfifo_status: 0x%08x\n", readl(&fec->eth->tfifo_status));
+	debug("tfifo_alarm: 0x%08x\n", readl(&fec->eth->tfifo_alarm));
 
 	/*
 	 * Set transmit fifo watermark register(X_WMRK), default = 64
 	 */
-	fec->eth->tfifo_alarm = 0x00000080;
+	writel(0x00000080, &fec->eth->tfifo_alarm);
 
 	/*
 	 * Turn ON cheater FSM: ????
 	 */
-	fec->eth->xmit_fsm = 0x03000000;
+	writel(0x03000000, &fec->eth->xmit_fsm);
 #endif
 
-	fec->eth->x_wmrk = 0x2;
+	writel(0x2, &fec->eth->x_wmrk);
 
 	/*
 	 * Set multicast address filter
 	 */
-	fec->eth->gaddr1 = 0x00000000;
-	fec->eth->gaddr2 = 0x00000000;
+	writel(0x00000000, &fec->eth->gaddr1);
+	writel(0x00000000, &fec->eth->gaddr2);
 
 #ifdef CONFIG_MPC5200
 	/*
@@ -404,7 +439,7 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 #endif
 
 #ifdef CONFIG_ARCH_IMX27
-	fec->eth->emrbr = 2048-16;
+	writel(2048-16, &fec->eth->emrbr);
 #endif
 	/*
 	 * Clear SmartDMA task interrupt pending bits
@@ -444,9 +479,9 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 #endif
 
 #if 0
-	fec->eth->x_cntrl = 0x00000000;	/* half-duplex, heartbeat disabled */
+	writel(0x00000000, &fec->eth->x_cntrl);	/* half-duplex, heartbeat disabled */
 #else
-	fec->eth->x_cntrl = 1 << 2;	/* full-duplex, heartbeat disabled */
+	writel(1 << 2, &fec->eth->x_cntrl);	/* full-duplex, heartbeat disabled */
 #endif
 
 	fec->rbdIndex = 0;
@@ -455,10 +490,10 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 	 * Enable FEC-Lite controller
 	 */
 #if defined(CONFIG_MPC5200)
-	fec->eth->ecntrl |= 0x00000006;
+	writel(0x00000006 | readl(&fec->eth->ecntrl), &fec->eth->ecntrl);
 #endif
 #if defined(CONFIG_ARCH_IMX27)
-	fec->eth->ecntrl |= 0x00000002;
+	writel(0x00000002 | readl(&fec->eth->ecntrl), &fec->eth->ecntrl);
 #endif
 	/*
 	 * Enable SmartDMA receive task
@@ -484,12 +519,13 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * issue graceful stop command to the FEC transmitter if necessary
 	 */
-	fec->eth->x_cntrl |= 0x00000001;
+	writel(0x00000001 | readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
 
 	/*
 	 * wait for graceful stop to register
 	 */
-	while ((counter--) && (!(fec->eth->ievent & FEC_IEVENT_GRA))) ;
+	while ((counter--) && (!(readl(&fec->eth->ievent) & FEC_IEVENT_GRA)))
+		;
 
 	/*
 	 * Disable SmartDMA tasks
@@ -508,17 +544,17 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * Disable the Ethernet Controller
 	 */
-	fec->eth->ecntrl = 0;
+	writel(0, &fec->eth->ecntrl);
 
 #ifdef CONFIG_MPC5200
 	/*
 	 * Clear FIFO status registers
 	 */
-	fec->eth->rfifo_status &= 0x00700000;
-	fec->eth->tfifo_status &= 0x00700000;
+	writel(0x00700000 & readl(&fec->eth->rfifo_status), &fec->eth->rfifo_status);
+	writel(0x00700000 & readl(&fec->eth->tfifo_status), &fec->eth->tfifo_status);
 #endif
 
-//	fec->eth->reset_cntrl = 0x01000000;
+//	writel(0x01000000, &fec->eth->reset_cntrl);
 
 	debug("Ethernet task stopped\n");
 }
@@ -526,39 +562,39 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 #ifdef DEBUG_FIFO
 static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
-	if ((fec->eth->tfifo_lrf_ptr != fec->eth->tfifo_lwf_ptr)
-		|| (fec->eth->tfifo_rdptr != fec->eth->tfifo_wrptr)) {
+	if ((readl(&fec->eth->tfifo_lrf_ptr) != readl(&fec->eth->tfifo_lwf_ptr))
+		|| (readl(&fec->eth->tfifo_rdptr) != readl(&fec->eth->tfifo_wrptr))) {
 
-		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
-		printf("ievent:   0x%08x\n", fec->eth->ievent);
-		printf("x_status: 0x%08x\n", fec->eth->x_status);
-		printf("tfifo: status  0x%08x\n", fec->eth->tfifo_status);
+		printf("ecntrl:   0x%08x\n", readl(&fec->eth->ecntrl));
+		printf("ievent:   0x%08x\n", readl(&fec->eth->ievent));
+		printf("x_status: 0x%08x\n", readl(&fec->eth->x_status));
+		printf("tfifo: status  0x%08x\n", readl(&fec->eth->tfifo_status));
 
-		printf("       control 0x%08x\n", fec->eth->tfifo_cntrl);
-		printf("       lrfp    0x%08x\n", fec->eth->tfifo_lrf_ptr);
-		printf("       lwfp    0x%08x\n", fec->eth->tfifo_lwf_ptr);
-		printf("       alarm   0x%08x\n", fec->eth->tfifo_alarm);
-		printf("       readptr 0x%08x\n", fec->eth->tfifo_rdptr);
-		printf("       writptr 0x%08x\n", fec->eth->tfifo_wrptr);
+		printf("       control 0x%08x\n", readl(&fec->eth->tfifo_cntrl));
+		printf("       lrfp    0x%08x\n", readl(&fec->eth->tfifo_lrf_ptr));
+		printf("       lwfp    0x%08x\n", readl(&fec->eth->tfifo_lwf_ptr));
+		printf("       alarm   0x%08x\n", readl(&fec->eth->tfifo_alarm));
+		printf("       readptr 0x%08x\n", readl(&fec->eth->tfifo_rdptr));
+		printf("       writptr 0x%08x\n", readl(&fec->eth->tfifo_wrptr));
 	}
 }
 
 static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
-	if ((fec->eth->rfifo_lrf_ptr != fec->eth->rfifo_lwf_ptr)
-		|| (fec->eth->rfifo_rdptr != fec->eth->rfifo_wrptr)) {
+	if ((readl(&fec->eth->rfifo_lrf_ptr) != readl(&fec->eth->rfifo_lwf_ptr))
+		|| (readl(&fec->eth->rfifo_rdptr) != readl(&fec->eth->rfifo_wrptr))) {
 
-		printf("ecntrl:   0x%08x\n", fec->eth->ecntrl);
-		printf("ievent:   0x%08x\n", fec->eth->ievent);
-		printf("x_status: 0x%08x\n", fec->eth->x_status);
-		printf("rfifo: status  0x%08x\n", fec->eth->rfifo_status);
+		printf("ecntrl:   0x%08x\n", readl(&fec->eth->ecntrl));
+		printf("ievent:   0x%08x\n", readl(&fec->eth->ievent));
+		printf("x_status: 0x%08x\n", readl(&fec->eth->x_status));
+		printf("rfifo: status  0x%08x\n", readl(&fec->eth->rfifo_status));
 
-		printf("       control 0x%08x\n", fec->eth->rfifo_cntrl);
-		printf("       lrfp    0x%08x\n", fec->eth->rfifo_lrf_ptr);
-		printf("       lwfp    0x%08x\n", fec->eth->rfifo_lwf_ptr);
-		printf("       alarm   0x%08x\n", fec->eth->rfifo_alarm);
-		printf("       readptr 0x%08x\n", fec->eth->rfifo_rdptr);
-		printf("       writptr 0x%08x\n", fec->eth->rfifo_wrptr);
+		printf("       control 0x%08x\n", readl(&fec->eth->rfifo_cntrl));
+		printf("       lrfp    0x%08x\n", readl(&fec->eth->rfifo_lrf_ptr));
+		printf("       lwfp    0x%08x\n", readl(&fec->eth->rfifo_lwf_ptr));
+		printf("       alarm   0x%08x\n", readl(&fec->eth->rfifo_alarm));
+		printf("       readptr 0x%08x\n", readl(&fec->eth->rfifo_rdptr));
+		printf("       writptr 0x%08x\n", readl(&fec->eth->rfifo_wrptr));
 	}
 }
 #else
@@ -623,7 +659,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	 * This command pulls one frame from the card
 	 */
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
-	volatile FEC_RBD *pRbd = &fec->rbdBase[fec->rbdIndex];
+	FEC_RBD *pRbd = &fec->rbdBase[fec->rbdIndex];
 	unsigned long ievent;
 	int frame_length, len = 0;
 	NBUF *frame;
@@ -633,8 +669,8 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	/*
 	 * Check if any critical events have happened
 	 */
-	ievent = fec->eth->ievent;
-	fec->eth->ievent = ievent;
+	ievent = readl(&fec->eth->ievent);
+	writel(ievent, &fec->eth->ievent);
 	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
 				FEC_IEVENT_RFIFO_ERROR)) {
 		/* BABT, Rx/Tx FIFO errors */
@@ -645,13 +681,13 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	}
 	if (ievent & FEC_IEVENT_HBERR) {
 		/* Heartbeat error */
-		fec->eth->x_cntrl |= 0x00000001;
+		writel(0x00000001 | readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
 	}
 	if (ievent & FEC_IEVENT_GRA) {
 		/* Graceful stop complete */
-		if (fec->eth->x_cntrl & 0x00000001) {
+		if (readl(&fec->eth->x_cntrl) & 0x00000001) {
 			mpc5xxx_fec_halt(dev);
-			fec->eth->x_cntrl &= ~0x00000001;
+			writel(~0x00000001 & readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
 			mpc5xxx_fec_init(dev);
 		}
 	}
@@ -670,7 +706,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 #define DEBUG_RX_HEADER
 #ifdef DEBUG_RX_HEADER
 			{
-				int i;
 				printf("recv data hdr:\n");
 				memory_display(frame->data, 0, frame_length, 1);
 			}
@@ -693,9 +728,13 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			}
 		}
 		/*
-		 * Reset buffer descriptor as empty
+		 * free the current buffer, restart the engine and move
+		 * forward to the next buffer
 		 */
-		mpc5xxx_fec_rbd_clean(fec, pRbd);
+		mpc5xxx_fec_rbd_clean(fec->rbdIndex == (FEC_RBD_NUM - 1) ? 1 : 0, pRbd);
+		mpc5xxx_fec_rx_task_enable(fec);
+		fec->rbdIndex = (fec->rbdIndex + 1) % FEC_RBD_NUM;
+
 	}
 
 //	SDMA_CLEAR_IEVENT (FEC_RECV_TASK_NO);
@@ -734,20 +773,20 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 #endif
 #ifdef CONFIG_ARCH_IMX27
 	/* Reset chip. FIXME: shouldn't it be done for mpc5200 aswell? */
-	fec->eth->ecntrl = 1;
-	while(fec->eth->ecntrl & 1) {
+	writel(1, &fec->eth->ecntrl);
+	while(readl(&fec->eth->ecntrl) & 1) {
 		udelay(10);
 	}
 
 	{
 		unsigned long base;
 	
-		base = ((unsigned long)xzalloc(sizeof(FEC_TBD) + 32) + 32) & ~0x1f;
+		base = ((unsigned long)xzalloc(sizeof(FEC_TBD) + 32) + 31) & ~0x1f;
 		fec->tbdBase = (FEC_TBD *)base;
-		fec->eth->etdsr = fec->tbdBase;
-		base = ((unsigned long)xzalloc(FEC_RBD_NUM * sizeof(FEC_RBD) + 32) + 32) & ~0x1f;
+		writel(fec->tbdBase, &fec->eth->etdsr);
+		base = ((unsigned long)xzalloc(FEC_RBD_NUM * sizeof(FEC_RBD) + 32) + 31) & ~0x1f;
 		fec->rbdBase = (FEC_RBD *)base;
-		fec->eth->erdsr = fec->rbdBase;
+		writel(fec->rbdBase, &fec->eth->erdsr);
 	}
 #endif
 
@@ -785,3 +824,8 @@ static int mpc5xxx_fec_register(void)
 
 device_initcall(mpc5xxx_fec_register);
 
+/**
+ * @file
+ * @brief Network driver for FreeScale's FEC implementation.
+ * This type of hardware can be found on MPC52xx and i.MX27 CPUs
+ */

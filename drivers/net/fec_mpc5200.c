@@ -6,18 +6,27 @@
  * (C) Copyright Motorola, Inc., 2000
  */
 
+#define DEBUG
+
 #include <common.h>
-#include <asm/arch/mpc5xxx.h>
+//#include <asm/arch/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
 #include <miiphy.h>
 #include <driver.h>
-#include <asm/arch/sdma.h>
-#include <asm/arch/fec.h>
-#include <asm/arch/clocks.h>
+//#include <asm/arch/sdma.h>
+//#include <asm/arch/fec.h>
+#include <asm-ppc/arch-mpc5200/fec.h>
+//#include <asm/arch/clocks.h>
 #include <miiphy.h>
 #include "fec_mpc5200.h"
+#ifdef CONFIG_ARCH_IMX27
+#include <asm/arch/imx-regs.h>
+#include <clock.h>
+#include <asm/arch/clock.h>
+#include <xfuncs.h>
+#endif
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 
@@ -39,12 +48,13 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 
 	uint32 reg;		/* convenient holder for the PHY register */
 	uint32 phy;		/* convenient holder for the PHY */
-	int timeout = 0xffff;
+	uint64_t start;
 
 	/*
 	 * reading from any PHY's register is done by properly
 	 * programming the FEC's MII data register.
 	 */
+	fec->eth->ievent = FEC_IEVENT_MII;
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
@@ -53,11 +63,12 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * wait for the related interrupt
 	 */
-	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
-
-	if (timeout == 0) {
-		debug("Read MDIO failed...\n");
-		return -1;
+	start = get_time_ns();
+	while (!(fec->eth->ievent & FEC_IEVENT_MII)) {
+		if (is_timeout(start, MSECOND)) {
+			printf("Read MDIO failed...\n");
+			return -1;
+		}
 	}
 
 	/*
@@ -81,7 +92,7 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 
 	uint32 reg;		/* convenient holder for the PHY register */
 	uint32 phy;		/* convenient holder for the PHY */
-	int timeout = 0xffff;
+	uint64_t start;
 
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
@@ -92,11 +103,12 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * wait for the MII interrupt
 	 */
-	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
-
-	if (timeout == 0) {
-		debug("Write MDIO failed...\n");
-		return -1;
+	start = get_time_ns();
+	while (!(fec->eth->ievent & FEC_IEVENT_MII)) {
+		if (is_timeout(start, MSECOND)) {
+			printf("Write MDIO failed...\n");
+			return -1;
+		}
 	}
 
 	/*
@@ -107,19 +119,72 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	return 0;
 }
 
+#ifdef CONFIG_MPC5200
+static int mpc5xxx_fec_rx_task_enable(mpc5xxx_fec_priv *fec)
+{
+	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
+	return 0;
+}
+
+static int mpc5xxx_fec_rx_task_disable(mpc5xxx_fec_priv *fec)
+{
+	SDMA_TASK_DISABLE(FEC_RECV_TASK_NO);
+	return 0;
+}
+
+static int mpc5xxx_fec_tx_task_enable(mpc5xxx_fec_priv *fec)
+{
+	SDMA_TASK_ENABLE(FEC_XMIT_TASK_NO);
+	return 0;
+}
+
+static int mpc5xxx_fec_tx_task_disable(mpc5xxx_fec_priv *fec)
+{
+	SDMA_TASK_DISABLE(FEC_XMIT_TASK_NO);
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_ARCH_IMX27
+static int mpc5xxx_fec_rx_task_enable(mpc5xxx_fec_priv *fec)
+{
+	fec->eth->r_des_active = 1 << 24;
+	return 0;
+}
+
+static int mpc5xxx_fec_rx_task_disable(mpc5xxx_fec_priv *fec)
+{
+	return 0;
+}
+
+static int mpc5xxx_fec_tx_task_enable(mpc5xxx_fec_priv *fec)
+{
+	fec->eth->x_des_active = 1 << 24;
+	return 0;
+}
+
+static int mpc5xxx_fec_tx_task_disable(mpc5xxx_fec_priv *fec)
+{
+	return 0;
+}
+#endif
+
 static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
 {
 	int ix;
 	char *data;
 	static int once = 0;
 
+	printf("%s\n", __FUNCTION__);
+
 	for (ix = 0; ix < FEC_RBD_NUM; ix++) {
 		if (!once) {
-			data = (char *)malloc(FEC_MAX_PKT_SIZE);
-			if (data == NULL) {
-				printf ("RBD INIT FAILED\n");
-				return -1;
-			}
+#if 0
+			/* sha: Should work like this: */
+			data = (char *)xzalloc(FEC_MAX_PKT_SIZE);
+#endif
+			/* sha: But for some reason we need alignement: */
+			data = (char *)((unsigned long)(xzalloc(FEC_MAX_PKT_SIZE + 0x10) + 0x10) & ~0xf);
 			fec->rbdBase[ix].dataPointer = (uint32)data;
 		}
 		fec->rbdBase[ix].status = FEC_RBD_EMPTY;
@@ -138,27 +203,13 @@ static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
 
 static void mpc5xxx_fec_tbd_init(mpc5xxx_fec_priv *fec)
 {
-	int ix;
-
-	for (ix = 0; ix < FEC_TBD_NUM; ix++) {
-		fec->tbdBase[ix].status = 0;
-	}
-
-	/*
-	 * Have the last TBD to close the ring
-	 */
-	fec->tbdBase[ix - 1].status |= FEC_TBD_WRAP;
-
-	/*
-	 * Initialize some indices
-	 */
-	fec->tbdIndex = 0;
-	fec->usedTbdIndex = 0;
-	fec->cleanTbdNum = FEC_TBD_NUM;
+	fec->tbdBase[0].status = FEC_TBD_WRAP;
 }
 
 static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd)
 {
+	pRbd->dataLength = 0;
+
 	/*
 	 * Reset buffer descriptor as empty
 	 */
@@ -167,12 +218,10 @@ static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd
 	else
 		pRbd->status = FEC_RBD_EMPTY;
 
-	pRbd->dataLength = 0;
-
 	/*
 	 * Now, we have an empty RxBD, restart the SmartDMA receive task
 	 */
-	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
+	mpc5xxx_fec_rx_task_enable(fec);
 
 	/*
 	 * Increment BD count
@@ -180,50 +229,21 @@ static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile FEC_RBD * pRbd
 	fec->rbdIndex = (fec->rbdIndex + 1) % FEC_RBD_NUM;
 }
 
-static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
-{
-	volatile FEC_TBD *pUsedTbd;
-
-	/*
-	 * process all the consumed TBDs
-	 */
-	while (fec->cleanTbdNum < FEC_TBD_NUM) {
-		pUsedTbd = &fec->tbdBase[fec->usedTbdIndex];
-		if (pUsedTbd->status & FEC_TBD_READY) {
-			debug("Cannot clean TBD %d, in use\n", fec->cleanTbdNum);
-			return;
-		}
-
-		/*
-		 * clean this buffer descriptor
-		 */
-		if (fec->usedTbdIndex == (FEC_TBD_NUM - 1))
-			pUsedTbd->status = FEC_TBD_WRAP;
-		else
-			pUsedTbd->status = 0;
-
-		/*
-		 * update some indeces for a correct handling of the TBD ring
-		 */
-		fec->cleanTbdNum++;
-		fec->usedTbdIndex = (fec->usedTbdIndex + 1) % FEC_TBD_NUM;
-	}
-}
-
-static int mpc5xxx_fec_get_ethaddr(struct eth_device *dev, unsigned char *mac)
+static int mpc5xxx_fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
 	/* no eeprom */
 	return -1;
 }
 
-static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
+static int mpc5xxx_fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	uint8 currByte;			/* byte for which to compute the CRC */
 	int byte;			/* loop - counter */
 	int bit;			/* loop - counter */
 	uint32 crc = 0xffffffff;	/* initial value */
-
+//#define WTF_IS_THIS
+#ifdef WTF_IS_THIS
 	/*
 	 * The algorithm used is the following:
 	 * we loop on each of the six bytes of the provided address,
@@ -264,7 +284,12 @@ static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 		fec->eth->iaddr1 = 0;
 		fec->eth->iaddr2 = (1 << crc);
 	}
-
+#else
+		fec->eth->iaddr1 = 0;
+		fec->eth->iaddr2 = 0;
+		fec->eth->gaddr1 = 0;
+		fec->eth->gaddr2 = 0;
+#endif
 	/*
 	 * Set physical address
 	 */
@@ -277,8 +302,9 @@ static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 static int mpc5xxx_fec_init(struct eth_device *dev)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
+#ifdef CONFIG_MPC5200
 	struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA;
-
+#endif
 	debug("mpc5xxx_fec_init... Begin\n");
 
 	/*
@@ -304,27 +330,31 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 		/*
 		 * Frame length=1518; 7-wire mode
 		 */
-		fec->eth->r_cntrl = 0x05ee0020;	/*0x05ee0000;FIXME */
+		fec->eth->r_cntrl = 0x05ee0020;	/* FIXME 0x05ee0000 */
 	} else {
 		/*
 		 * Frame length=1518; MII mode;
 		 */
-		fec->eth->r_cntrl = 0x05ee0024;	/*0x05ee0004;FIXME */
-	}
+		fec->eth->r_cntrl = 0x05ee0024;	/* FIXME 0x05ee0004 */
 
-	if (fec->xcv_type != SEVENWIRE) {
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
+#ifdef CONFIG_MPC5200
 		fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+#endif
+#ifdef CONFIG_ARCH_IMX27
+		fec->eth->mii_speed = (((imx_get_ahbclk() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
+#endif
 	}
 
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
-	fec->eth->op_pause = 0x00010020;	/*FIXME 0xffff0020; */
+	fec->eth->op_pause = 0x00010020;	/* FIXME 0xffff0020; */
 
+#ifdef CONFIG_MPC5200
 	/*
 	 * Set Rx FIFO alarm and granularity value
 	 */
@@ -349,6 +379,13 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	 * Set transmit fifo watermark register(X_WMRK), default = 64
 	 */
 	fec->eth->tfifo_alarm = 0x00000080;
+
+	/*
+	 * Turn ON cheater FSM: ????
+	 */
+	fec->eth->xmit_fsm = 0x03000000;
+#endif
+
 	fec->eth->x_wmrk = 0x2;
 
 	/*
@@ -357,31 +394,32 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	fec->eth->gaddr1 = 0x00000000;
 	fec->eth->gaddr2 = 0x00000000;
 
-	/*
-	 * Turn ON cheater FSM: ????
-	 */
-	fec->eth->xmit_fsm = 0x03000000;
-
+#ifdef CONFIG_MPC5200
 	/*
 	 * Set priority of different initiators
 	 */
 	sdma->IPR0 = 7;		/* always */
 	sdma->IPR3 = 6;		/* Eth RX */
 	sdma->IPR4 = 5;		/* Eth Tx */
+#endif
 
+#ifdef CONFIG_ARCH_IMX27
+	fec->eth->emrbr = 2048-16;
+#endif
 	/*
 	 * Clear SmartDMA task interrupt pending bits
 	 */
-	SDMA_CLEAR_IEVENT(FEC_RECV_TASK_NO);
+//	SDMA_CLEAR_IEVENT(FEC_RECV_TASK_NO);
 
 	/*
 	 * Initialize SmartDMA parameters stored in SRAM
 	 */
+#ifdef CONFIG_MPC5200
 	*(volatile int *)FEC_TBD_BASE = (int)fec->tbdBase;
 	*(volatile int *)FEC_RBD_BASE = (int)fec->rbdBase;
 	*(volatile int *)FEC_TBD_NEXT = (int)fec->tbdBase;
 	*(volatile int *)FEC_RBD_NEXT = (int)fec->rbdBase;
-
+#endif
 	debug("mpc5xxx_fec_init... Done \n");
 
 	if (fec->xcv_type != SEVENWIRE)
@@ -394,6 +432,8 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
 
+	printf("%s\n", __FUNCTION__);
+
 #if defined(CONFIG_MPC5200)
 	struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA;
 	/*
@@ -403,17 +443,27 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 	 sdma->PtdCntrl |= 0x00000001;
 #endif
 
+#if 0
 	fec->eth->x_cntrl = 0x00000000;	/* half-duplex, heartbeat disabled */
+#else
+	fec->eth->x_cntrl = 1 << 2;	/* full-duplex, heartbeat disabled */
+#endif
+
+	fec->rbdIndex = 0;
 
 	/*
 	 * Enable FEC-Lite controller
 	 */
+#if defined(CONFIG_MPC5200)
 	fec->eth->ecntrl |= 0x00000006;
-
+#endif
+#if defined(CONFIG_ARCH_IMX27)
+	fec->eth->ecntrl |= 0x00000002;
+#endif
 	/*
 	 * Enable SmartDMA receive task
 	 */
-	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
+	mpc5xxx_fec_rx_task_enable(fec);
 
 	if (fec->xcv_type != SEVENWIRE) {
 		miiphy_wait_aneg(&fec->miiphy);
@@ -444,10 +494,10 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * Disable SmartDMA tasks
 	 */
-	SDMA_TASK_DISABLE (FEC_XMIT_TASK_NO);
-	SDMA_TASK_DISABLE (FEC_RECV_TASK_NO);
+	mpc5xxx_fec_tx_task_disable(fec);
+	mpc5xxx_fec_rx_task_disable(fec);
 
-#if defined(CONFIG_MPC5200)
+#ifdef CONFIG_MPC5200
 	/*
 	 * Turn on COMM bus prefetch in the MGT5200 BestComm after we're
 	 * done. It doesn't work w/ the current receive task.
@@ -458,13 +508,15 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * Disable the Ethernet Controller
 	 */
-	fec->eth->ecntrl &= 0xfffffffd;
+	fec->eth->ecntrl = 0;
 
+#ifdef CONFIG_MPC5200
 	/*
 	 * Clear FIFO status registers
 	 */
 	fec->eth->rfifo_status &= 0x00700000;
 	fec->eth->tfifo_status &= 0x00700000;
+#endif
 
 //	fec->eth->reset_cntrl = 0x01000000;
 
@@ -514,7 +566,7 @@ static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
 }
 
-static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
+static void __maybe_unused rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 {
 }
 #endif /* DEBUG_FIFO */
@@ -529,15 +581,12 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	volatile FEC_TBD *pTbd;
 
+//	printf("%s length=%d data=0x%08x\n", __FUNCTION__, data_length, eth_data);
+
 #ifdef DEBUG_FIFO
 	debug_fifo("tbd status: 0x%04x\n", fec->tbdBase[0].status);
 	tfifo_print(dev->name, fec);
 #endif
-	/*
-	 * Clear Tx BD ring at first
-	 */
-	mpc5xxx_fec_tbd_scrub(fec);
-
 	/*
 	 * Check for valid length of data.
 	 */
@@ -546,41 +595,17 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	}
 
 	/*
-	 * Check the number of vacant TxBDs.
-	 */
-	if (fec->cleanTbdNum < 1) {
-		printf("No available TxBDs ...\n");
-		return -1;
-	}
-
-	/*
 	 * Get the first TxBD to send the mac header
 	 */
-	pTbd = &fec->tbdBase[fec->tbdIndex];
+	pTbd = &fec->tbdBase[0];
 	pTbd->dataLength = data_length;
 	pTbd->dataPointer = (uint32)eth_data;
-	pTbd->status |= FEC_TBD_LAST | FEC_TBD_TC | FEC_TBD_READY;
-	fec->tbdIndex = (fec->tbdIndex + 1) % FEC_TBD_NUM;
-
-	/*
-	 * Kick the MII i/f
-	 */
-	if (fec->xcv_type != SEVENWIRE) {
-		uint16 phyStatus;
-		fec5xxx_miiphy_read(&fec->miiphy, 0, 0x1, &phyStatus);
-	}
+	pTbd->status = FEC_TBD_LAST | FEC_TBD_TC | FEC_TBD_READY | FEC_TBD_WRAP;
 
 	/*
 	 * Enable SmartDMA transmit task
 	 */
-
-	tfifo_print(dev->name, fec);
-
-	SDMA_TASK_ENABLE (FEC_XMIT_TASK_NO);
-
-	tfifo_print(dev->name, fec);
-
-	fec->cleanTbdNum -= 1;
+	mpc5xxx_fec_tx_task_enable(fec);
 
 	/*
 	 * wait until frame is sent .
@@ -604,6 +629,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	NBUF *frame;
 	uchar buff[FEC_MAX_PKT_SIZE];
 
+//	printf("%s\n", __FUNCTION__);
 	/*
 	 * Check if any critical events have happened
 	 */
@@ -614,6 +640,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 		/* BABT, Rx/Tx FIFO errors */
 		mpc5xxx_fec_halt(dev);
 		mpc5xxx_fec_init(dev);
+		printf("some error: 0x%08x\n", ievent);
 		return 0;
 	}
 	if (ievent & FEC_IEVENT_HBERR) {
@@ -632,29 +659,38 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	if (!(pRbd->status & FEC_RBD_EMPTY)) {
 		if ((pRbd->status & FEC_RBD_LAST) && !(pRbd->status & FEC_RBD_ERR) &&
 			((pRbd->dataLength - 4) > 14)) {
+			printf("read from %d (0x%08x) rbd=0x%08x", fec->rbdIndex, pRbd->dataPointer, pRbd);
 
 			/*
 			 * Get buffer address and size
 			 */
 			frame = (NBUF *)pRbd->dataPointer;
 			frame_length = pRbd->dataLength - 4;
-
+			printf(" len=%d\n", frame_length);
+#define DEBUG_RX_HEADER
 #ifdef DEBUG_RX_HEADER
 			{
 				int i;
-				printf("recv data hdr:");
-				for (i = 0; i < 14; i++)
-					printf("%02x ", *(frame->head + i));
-				printf("\n");
+				printf("recv data hdr:\n");
+				memory_display(frame->data, 0, frame_length, 1);
 			}
 #endif
 			/*
 			 *  Fill the buffer and pass it to upper layers
 			 */
+#ifdef CONFIG_MPC5200
 			memcpy(buff, frame->head, 14);
 			memcpy(buff + 14, frame->data, frame_length);
+#endif
+#ifdef CONFIG_ARCH_IMX27
+			memcpy(buff, frame->data, frame_length);
+#endif
 			NetReceive(buff, frame_length);
 			len = frame_length;
+		} else {
+			if (pRbd->status & FEC_RBD_ERR) {
+				printf("error frame: 0x%08x 0x%08x\n", pRbd, pRbd->status);
+			}
 		}
 		/*
 		 * Reset buffer descriptor as empty
@@ -662,7 +698,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 		mpc5xxx_fec_rbd_clean(fec, pRbd);
 	}
 
-	SDMA_CLEAR_IEVENT (FEC_RECV_TASK_NO);
+//	SDMA_CLEAR_IEVENT (FEC_RECV_TASK_NO);
 	return len;
 }
 
@@ -672,6 +708,11 @@ int mpc5xxx_fec_probe(struct device_d *dev)
         struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
 
+	printf("%s\n", __FUNCTION__);
+
+#ifdef CONFIG_ARCH_IMX27
+	PCCR0 |= PCCR0_FEC_EN;
+#endif
         edev = (struct eth_device *)malloc(sizeof(struct eth_device));
         dev->type_data = edev;
 	fec = (mpc5xxx_fec_priv *)malloc(sizeof(*fec));
@@ -682,24 +723,46 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->send = mpc5xxx_fec_send,
 	edev->recv = mpc5xxx_fec_recv,
 	edev->halt = mpc5xxx_fec_halt,
-	edev->get_ethaddr = mpc5xxx_fec_ethaddr,
-	edev->set_ethaddr = mpc5xxx_fec_ethaddr,
+	edev->get_ethaddr = mpc5xxx_fec_get_hwaddr,
+	edev->set_ethaddr = mpc5xxx_fec_set_hwaddr,
 
 	fec->eth = (ethernet_regs *)dev->map_base;
+
+#ifdef CONFIG_MPC5200
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
+#endif
+#ifdef CONFIG_ARCH_IMX27
+	/* Reset chip. FIXME: shouldn't it be done for mpc5200 aswell? */
+	fec->eth->ecntrl = 1;
+	while(fec->eth->ecntrl & 1) {
+		udelay(10);
+	}
+
+	{
+		unsigned long base;
+	
+		base = ((unsigned long)xzalloc(sizeof(FEC_TBD) + 32) + 32) & ~0x1f;
+		fec->tbdBase = (FEC_TBD *)base;
+		fec->eth->etdsr = fec->tbdBase;
+		base = ((unsigned long)xzalloc(FEC_RBD_NUM * sizeof(FEC_RBD) + 32) + 32) & ~0x1f;
+		fec->rbdBase = (FEC_RBD *)base;
+		fec->eth->erdsr = fec->rbdBase;
+	}
+#endif
 
 	fec->xcv_type = pdata->xcv_type;
 
 	sprintf(dev->name, "FEC ETHERNET");
-
+#ifdef CONFIG_MPC5200
 	loadtask(0, 2);
-
+#endif
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec5xxx_miiphy_read;
 		fec->miiphy.write = fec5xxx_miiphy_write;
 		fec->miiphy.address = CONFIG_PHY_ADDR;
 		fec->miiphy.flags = pdata->xcv_type == MII10 ? MIIPHY_FORCE_10 : 0;
+		fec->miiphy.edev = edev;
 
 		miiphy_register(&fec->miiphy);
 	}

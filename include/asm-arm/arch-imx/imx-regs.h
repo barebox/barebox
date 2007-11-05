@@ -56,48 +56,62 @@
  *  i.MX1 and i.MXL: 0 <= x <= 3
  *  i.MX27         : 0 <= x <= 5
  */
-#define DDIR(x)    __REG2(IMX_GPIO_BASE + 0x00, ((x) & 3) << 8)
-#define OCR1(x)    __REG2(IMX_GPIO_BASE + 0x04, ((x) & 3) << 8)
-#define OCR2(x)    __REG2(IMX_GPIO_BASE + 0x08, ((x) & 3) << 8)
-#define ICONFA1(x) __REG2(IMX_GPIO_BASE + 0x0c, ((x) & 3) << 8)
-#define ICONFA2(x) __REG2(IMX_GPIO_BASE + 0x10, ((x) & 3) << 8)
-#define ICONFB1(x) __REG2(IMX_GPIO_BASE + 0x14, ((x) & 3) << 8)
-#define ICONFB2(x) __REG2(IMX_GPIO_BASE + 0x18, ((x) & 3) << 8)
-#define DR(x)      __REG2(IMX_GPIO_BASE + 0x1c, ((x) & 3) << 8)
-#define GIUS(x)    __REG2(IMX_GPIO_BASE + 0x20, ((x) & 3) << 8)
-#define SSR(x)     __REG2(IMX_GPIO_BASE + 0x24, ((x) & 3) << 8)
-#define ICR1(x)    __REG2(IMX_GPIO_BASE + 0x28, ((x) & 3) << 8)
-#define ICR2(x)    __REG2(IMX_GPIO_BASE + 0x2c, ((x) & 3) << 8)
-#define IMR(x)     __REG2(IMX_GPIO_BASE + 0x30, ((x) & 3) << 8)
-#define ISR(x)     __REG2(IMX_GPIO_BASE + 0x34, ((x) & 3) << 8)
-#define GPR(x)     __REG2(IMX_GPIO_BASE + 0x38, ((x) & 3) << 8)
-#define SWR(x)     __REG2(IMX_GPIO_BASE + 0x3c, ((x) & 3) << 8)
-#define PUEN(x)    __REG2(IMX_GPIO_BASE + 0x40, ((x) & 3) << 8)
+#define DDIR(x)    __REG2(IMX_GPIO_BASE + 0x00, ((x) & 7) << 8)
+#define OCR1(x)    __REG2(IMX_GPIO_BASE + 0x04, ((x) & 7) << 8)
+#define OCR2(x)    __REG2(IMX_GPIO_BASE + 0x08, ((x) & 7) << 8)
+#define ICONFA1(x) __REG2(IMX_GPIO_BASE + 0x0c, ((x) & 7) << 8)
+#define ICONFA2(x) __REG2(IMX_GPIO_BASE + 0x10, ((x) & 7) << 8)
+#define ICONFB1(x) __REG2(IMX_GPIO_BASE + 0x14, ((x) & 7) << 8)
+#define ICONFB2(x) __REG2(IMX_GPIO_BASE + 0x18, ((x) & 7) << 8)
+#define DR(x)      __REG2(IMX_GPIO_BASE + 0x1c, ((x) & 7) << 8)
+#define GIUS(x)    __REG2(IMX_GPIO_BASE + 0x20, ((x) & 7) << 8)
+#define SSR(x)     __REG2(IMX_GPIO_BASE + 0x24, ((x) & 7) << 8)
+#define ICR1(x)    __REG2(IMX_GPIO_BASE + 0x28, ((x) & 7) << 8)
+#define ICR2(x)    __REG2(IMX_GPIO_BASE + 0x2c, ((x) & 7) << 8)
+#define IMR(x)     __REG2(IMX_GPIO_BASE + 0x30, ((x) & 7) << 8)
+#define ISR(x)     __REG2(IMX_GPIO_BASE + 0x34, ((x) & 7) << 8)
+#define GPR(x)     __REG2(IMX_GPIO_BASE + 0x38, ((x) & 7) << 8)
+#define SWR(x)     __REG2(IMX_GPIO_BASE + 0x3c, ((x) & 7) << 8)
+#define PUEN(x)    __REG2(IMX_GPIO_BASE + 0x40, ((x) & 7) << 8)
 
 #define GPIO_PIN_MASK 0x1f
-#define GPIO_PORT_MASK (0x7 << 5)
 
-#define GPIO_PORTA (0 << 5)
-#define GPIO_PORTB (1 << 5)
-#define GPIO_PORTC (2 << 5)
-#define GPIO_PORTD (3 << 5)
-#define GPIO_PORTE (4 << 5)
-#define GPIO_PORTF (5 << 5)
+#define GPIO_PORT_SHIFT 5
+#define GPIO_PORT_MASK (0x7 << GPIO_PORT_SHIFT)
+
+#define GPIO_PORTA (0 << GPIO_PORT_SHIFT)
+#define GPIO_PORTB (1 << GPIO_PORT_SHIFT)
+#define GPIO_PORTC (2 << GPIO_PORT_SHIFT)
+#define GPIO_PORTD (3 << GPIO_PORT_SHIFT)
+#define GPIO_PORTE (4 << GPIO_PORT_SHIFT)
+#define GPIO_PORTF (5 << GPIO_PORT_SHIFT)
 
 #define GPIO_OUT   (1 << 8)
 #define GPIO_IN    (0 << 8)
 #define GPIO_PUEN  (1 << 9)
 
-#define GPIO_PF    (0 << 10)
-#define GPIO_AF    (1 << 10)
+#define GPIO_PF    (1 << 10)
+#define GPIO_AF    (1 << 11)
 
-#define GPIO_OCR_MASK (3 << 11)
-#define GPIO_AIN   (0 << 11)
-#define GPIO_BIN   (1 << 11)
-#define GPIO_CIN   (2 << 11)
-#define GPIO_GPIO  (3 << 11)
+#define GPIO_OCR_SHIFT 12
+#define GPIO_OCR_MASK (3 << GPIO_OCR_SHIFT)
+#define GPIO_AIN   (0 << GPIO_OCR_SHIFT)
+#define GPIO_BIN   (1 << GPIO_OCR_SHIFT)
+#define GPIO_CIN   (2 << GPIO_OCR_SHIFT)
+#define GPIO_GPIO  (3 << GPIO_OCR_SHIFT)
 
-#define GPIO_AOUT  (1 << 13)
-#define GPIO_BOUT  (1 << 14)
+#define GPIO_AOUT_SHIFT 14
+#define GPIO_AOUT_MASK (3 << GPIO_AOUT_SHIFT)
+#define GPIO_AOUT     (0 << GPIO_AOUT_SHIFT)
+#define GPIO_AOUT_ISR (1 << GPIO_AOUT_SHIFT)
+#define GPIO_AOUT_0   (2 << GPIO_AOUT_SHIFT)
+#define GPIO_AOUT_1   (3 << GPIO_AOUT_SHIFT)
+
+#define GPIO_BOUT_SHIFT 16
+#define GPIO_BOUT_MASK (3 << GPIO_BOUT_SHIFT)
+#define GPIO_BOUT      (0 << GPIO_BOUT_SHIFT)
+#define GPIO_BOUT_ISR  (1 << GPIO_BOUT_SHIFT)
+#define GPIO_BOUT_0    (2 << GPIO_BOUT_SHIFT)
+#define GPIO_BOUT_1    (3 << GPIO_BOUT_SHIFT)
 
 #endif				/* _IMX_REGS_H */

@@ -1,7 +1,37 @@
+/*
+ * cpu.c - A few helper functions for ARM
+ *
+ * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * @file
+ * @brief A few helper functions for ARM
+ */
+
 #include <common.h>
 #include <command.h>
 
-/* read co-processor 15, register #1 (control register) */
+/**
+ * Read special processor register
+ * @return co-processor 15, register #1 (control register)
+ */
 static unsigned long read_p15_c1 (void)
 {
 	unsigned long value;
@@ -18,7 +48,12 @@ static unsigned long read_p15_c1 (void)
 	return value;
 }
 
-/* write to co-processor 15, register #1 (control register) */
+/**
+ *
+ * Write special processor register
+ * @param[in] value to write
+ * @return to co-processor 15, register #1 (control register)
+ */
 static void write_p15_c1 (unsigned long value)
 {
 #ifdef MMU_DEBUG
@@ -33,23 +68,38 @@ static void write_p15_c1 (unsigned long value)
 	read_p15_c1 ();
 }
 
+/**
+ * Wait for co prozessor (waste time)
+ * Co processor seems to need some delay between accesses
+ */
 static void cp_delay (void)
 {
 	volatile int i;
 
-	/* copro seems to need some delay between reading and writing */
-	for (i = 0; i < 100; i++);
+	for (i = 0; i < 100; i++)	/* FIXME does it work as expected?? */
+		;
 }
 
-#define C1_MMU		(1<<0)		/* mmu off/on */
-#define C1_ALIGN	(1<<1)		/* alignment faults off/on */
-#define C1_DC		(1<<2)		/* dcache off/on */
-#define C1_BIG_ENDIAN	(1<<7)		/* big endian off/on */
-#define C1_SYS_PROT	(1<<8)		/* system protection */
-#define C1_ROM_PROT	(1<<9)		/* ROM protection */
-#define C1_IC		(1<<12)		/* icache off/on */
-#define C1_HIGH_VECTORS (1<<13)		/* location of vectors: low/high addresses */
+/** mmu off/on */
+#define C1_MMU		(1<<0)
+/** alignment faults off/on */
+#define C1_ALIGN	(1<<1)
+/** dcache off/on */
+#define C1_DC		(1<<2)
+/** big endian off/on */
+#define C1_BIG_ENDIAN	(1<<7)
+/** system protection */
+#define C1_SYS_PROT	(1<<8)
+/** ROM protection */
+#define C1_ROM_PROT	(1<<9)
+/** icache off/on */
+#define C1_IC		(1<<12)
+/** location of vectors: low/high addresses */
+#define C1_HIGH_VECTORS (1<<13)
 
+/**
+ * Enable processor's instruction cache
+ */
 void icache_enable (void)
 {
 	ulong reg;
@@ -59,6 +109,9 @@ void icache_enable (void)
 	write_p15_c1 (reg | C1_IC);
 }
 
+/**
+ * Disable processor's instruction cache
+ */
 void icache_disable (void)
 {
 	ulong reg;
@@ -68,30 +121,39 @@ void icache_disable (void)
 	write_p15_c1 (reg & ~C1_IC);
 }
 
+/**
+ * Detect processor's current instruction cache status
+ * @return 0=disabled, 1=enabled
+ */
 int icache_status (void)
 {
 	return (read_p15_c1 () & C1_IC) != 0;
 }
 
-/*
- * this function is called just before we call linux
- * it prepares the processor for linux
+/**
+ * Prepare a "clean" CPU for Linux to run
+ * @return 0 (always)
+ *
+ * This function is called by the generic U-Boot part just before we call
+ * Linux. It prepares the processor for Linux.
  */
 int cleanup_before_linux (void)
 {
 	int i;
-
-	/*
-	 * we never enable dcache so we do not need to disable
-	 * it. Linux can be called with icache enabled, so just
-	 * do nothing here
-	 */
 
 	/* flush I/D-cache */
 	i = 0;
 	asm ("mcr p15, 0, %0, c7, c7, 0": :"r" (i));
 	return (0);
 }
+/**
+ * @page arm_boot_preparation Linux Preparation on ARM
+ *
+ * For ARM we never enable data cache so we do not need to disable it again.
+ * Linux can be called with instruction cache enabled. As this is the
+ * default setting we are running in U-Boot, there's no special preparation
+ * required.
+ */
 
 #ifdef CONFIG_USE_IRQ
 static int cpu_init (void)
@@ -106,3 +168,9 @@ static int cpu_init (void)
 
 core_initcall(cpu_init);
 #endif
+
+/**
+ * @page arm_for_linux Preparing for Linux to run
+ *
+ * What's to do on ARM to run Linux after U-Boot did its job?
+ */

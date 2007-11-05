@@ -504,10 +504,10 @@ static int nand_check_wp (struct mtd_info *mtd)
 
 /**
  * nand_block_checkbad - [GENERIC] Check if a block is marked bad
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
- * @getchip:	0, if the chip is already selected
- * @allowbbt:	1, if its allowed to access the bbt area
+ * @param[in] mtd:	MTD device structure
+ * @param[in] ofs:	offset from device start
+ * @param[in] getchip:	0, if the chip is already selected
+ * @param[in] allowbbt:	1, if its allowed to access the bbt area
  *
  * Check, if the block is bad. Either by reading the bad block table or
  * calling of the scan function.
@@ -525,10 +525,10 @@ static int nand_block_checkbad (struct mtd_info *mtd, loff_t ofs, int getchip, i
 
 /**
  * nand_command - [DEFAULT] Send command to NAND device
- * @mtd:	MTD device structure
- * @command:	the command to be sent
- * @column:	the column address for this command, -1 if none
- * @page_addr:	the page address for this command, -1 if none
+ * @param[in] mtd:	MTD device structure
+ * @param[in] command:	the command to be sent
+ * @param[in] column:	the column address for this command, -1 if none
+ * @param[in] page_addr:	the page address for this command, -1 if none
  *
  * Send command to NAND device. This function is used for small page
  * devices (256/512 Bytes per page)
@@ -628,10 +628,10 @@ static void nand_command (struct mtd_info *mtd, unsigned command, int column, in
 
 /**
  * nand_command_lp - [DEFAULT] Send command to NAND large page device
- * @mtd:	MTD device structure
- * @command:	the command to be sent
- * @column:	the column address for this command, -1 if none
- * @page_addr:	the page address for this command, -1 if none
+ * @param[in] mtd:	MTD device structure
+ * @param[in] command:	the command to be sent
+ * @param[in] column:	the column address for this command, -1 if none
+ * @param[in] page_addr:	the page address for this command, -1 if none
  *
  * Send command to NAND device. This is the version for the new large page devices
  * We dont have the seperate regions as we have in the small page devices.
@@ -733,9 +733,9 @@ static void nand_command_lp (struct mtd_info *mtd, unsigned command, int column,
 
 /**
  * nand_get_device - [GENERIC] Get chip for selected access
- * @this:	the nand chip descriptor
- * @mtd:	MTD device structure
- * @new_state:	the state which is requested
+ * @param[in] this:	the nand chip descriptor
+ * @param[in] mtd:	MTD device structure
+ * @param[in] new_state:	the state which is requested
  *
  * Get the device and lock it for exclusive access
  */
@@ -782,9 +782,9 @@ static void nand_get_device (struct nand_chip *this, struct mtd_info *mtd, int n
 
 /**
  * nand_wait - [DEFAULT]  wait until the command is done
- * @mtd:	MTD device structure
- * @this:	NAND chip structure
- * @state:	state to select the max. timeout value
+ * @param[in] mtd:	MTD device structure
+ * @param[in] this:	NAND chip structure
+ * @param[in] state:	state to select the max. timeout value
  *
  * Wait for command done. This applies to erase and program only
  * Erase can take up to 400ms and program up to 20ms according to
@@ -873,12 +873,12 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *this, int state)
 
 /**
  * nand_write_page - [GENERIC] write one page
- * @mtd:	MTD device structure
- * @this:	NAND chip structure
- * @page: 	startpage inside the chip, must be called with (page & this->pagemask)
- * @oob_buf:	out of band data buffer
- * @oobsel:	out of band selecttion structre
- * @cached:	1 = enable cached programming if supported by chip
+ * @param[in] mtd:	MTD device structure
+ * @param[in] this:	NAND chip structure
+ * @param[in] page: 	startpage inside the chip, must be called with (page & this->pagemask)
+ * @param[in] oob_buf:	out of band data buffer
+ * @param[in] oobsel:	out of band selecttion structre
+ * @param[in] cached:	1 = enable cached programming if supported by chip
  *
  * Nand_page_program function is used for write and writev !
  * This function will always program a full page of data
@@ -967,14 +967,14 @@ static int nand_write_page (struct mtd_info *mtd, struct nand_chip *this, int pa
 #ifdef CONFIG_MTD_NAND_VERIFY_WRITE
 /**
  * nand_verify_pages - [GENERIC] verify the chip contents after a write
- * @mtd:	MTD device structure
- * @this:	NAND chip structure
- * @page: 	startpage inside the chip, must be called with (page & this->pagemask)
- * @numpages:	number of pages to verify
- * @oob_buf:	out of band data buffer
- * @oobsel:	out of band selecttion structre
- * @chipnr:	number of the current chip
- * @oobmode:	1 = full buffer verify, 0 = ecc only
+ * @param[in] mtd:	MTD device structure
+ * @param[in] this:	NAND chip structure
+ * @param[in] page: 	startpage inside the chip, must be called with (page & this->pagemask)
+ * @param[in] numpages:	number of pages to verify
+ * @param[in] oob_buf:	out of band data buffer
+ * @param[in] oobsel:	out of band selecttion structre
+ * @param[in] chipnr:	number of the current chip
+ * @param[in] oobmode:	1 = full buffer verify, 0 = ecc only
  *
  * The NAND device assumes that it is always writing to a cleanly erased page.
  * Hence, it performs its internal write verification only on bits that
@@ -1078,11 +1078,11 @@ out:
 
 /**
  * nand_read - [MTD Interface] MTD compability function for nand_read_ecc
- * @mtd:	MTD device structure
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @retlen:	pointer to variable to store the number of read bytes
- * @buf:	the databuffer to put data
+ * @param[in] mtd:	MTD device structure
+ * @param[in] from:	offset to read from
+ * @param[in] len:	number of bytes to read
+ * @param[in] retlen:	pointer to variable to store the number of read bytes
+ * @param[in] buf:	the databuffer to put data
  *
  * This function simply calls nand_read_ecc with oob buffer and oobsel = NULL
 */
@@ -1094,11 +1094,11 @@ static int nand_read (struct mtd_info *mtd, loff_t from, size_t len, size_t * re
 
 /**
  * nand_read_ecc - [MTD Interface] Read data with ECC
- * @mtd:	MTD device structure
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @retlen:	pointer to variable to store the number of read bytes
- * @buf:	the databuffer to put data
+ * @param[in] mtd:	MTD device structure
+ * @param[in] from:	offset to read from
+ * @param[in] len:	number of bytes to read
+ * @param[in] retlen:	pointer to variable to store the number of read bytes
+ * @param[in] buf:	the databuffer to put data
  * @oob_buf:	filesystem supplied oob data buffer
  * @oobsel:	oob selection structure
  *
@@ -2041,7 +2041,7 @@ out:
 /**
  * single_erease_cmd - [GENERIC] NAND standard block erase command function
  * @mtd:	MTD device structure
- * @page:	the page address of the block which will be erased
+ * @param[in] page:	the page address of the block which will be erased
  *
  * Standard erase command for NAND chips
  */
@@ -2056,7 +2056,7 @@ static void single_erase_cmd (struct mtd_info *mtd, int page)
 /**
  * multi_erease_cmd - [GENERIC] AND specific block erase command function
  * @mtd:	MTD device structure
- * @page:	the page address of the block which will be erased
+ * @param[in] page:	the page address of the block which will be erased
  *
  * AND multi block erase command function
  * Erase 4 consecutive blocks

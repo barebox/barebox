@@ -108,7 +108,7 @@ static int check_pattern (uint8_t *buf, int len, int paglen, struct nand_bbt_des
  * read_bbt - [GENERIC] Read the bad block table starting from page
  * @mtd:	MTD device structure
  * @buf:	temporary buffer
- * @page:	the starting page
+ * @param[in] page:	the starting page
  * @num:	the number of bbt descriptors to read
  * @bits:	number of bits per block
  * @offs:	offset in the memory table

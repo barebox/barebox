@@ -1,7 +1,20 @@
 /** @page users_manual User's Manual
 
-FIXME: Hints and tips for simply using UBootv2
+<!--
+This manual should help the user to manage his target with the new U-Boot
+look and fell. Many things are new in v2, but some old fashion feelings
+are still present.
 
+First of all, you will recognise the U-Boot v2 is much faster than its
+precedessor. Booting up your target needs less time, as U-Boot's v2 core is
+shrinked down.
+-->
+
+Who should read this part?
+
+Mostly everyone. The user needs it to find help for his daily work to manage
+his targets. The developer to find out all the new features that make his
+work easier.
 
  - @subpage shell_notes
  - @subpage readline_parser

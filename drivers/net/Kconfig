@@ -52,6 +52,11 @@ config DRIVER_NET_MPC5200
 	depends on ARCH_MPC5200
 	select MIIPHY
 
+config DRIVER_NET_IMX27
+	bool "i.MX27 Ethernet driver"
+	depends on ARCH_IMX27
+	select MIIPHY
+
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
 	depends on LINUX

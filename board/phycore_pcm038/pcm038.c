@@ -24,6 +24,7 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
+#include <fec.h>
 #include <asm/arch/gpio.h>
 #include <partition.h>
 #include <fs.h>
@@ -42,45 +43,51 @@ static struct device_d sdram_dev = {
 	.id       = "ram0",
 
 	.map_base = 0xa0000000,
-	.size     = 32 * 1024 * 1024,
+	.size     = 128 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
+};
+
+static struct fec_platform_data fec_info = {
+	.xcv_type = MII100,
 };
 
 static struct device_d fec_dev = {
 	.name     = "fec_imx27",
 	.id       = "eth0",
-
+	.map_base = 0x1002b000,
+	.platform_data	= &fec_info,
 	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int pcm038_devices_init(void)
 {
 	int i;
-	unsigned short mode[] = {
-		PD12_AOUT_FEC_RXD0,
-		PD5_AOUT_FEC_RXD1,
-		PD6_AOUT_FEC_RXD2,
-		PD7_AOUT_FEC_RXD3,
-		PD4_AOUT_FEC_RX_ER,
-		PD13_AOUT_FEC_RX_DV,
+	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
 		PD2_AIN_FEC_TXD2,
 		PD3_AIN_FEC_TXD3,
-		PD11_AOUT_FEC_TX_CLK,
-		PF23_AIN_FEC_TX_EN,
+		PD4_AOUT_FEC_RX_ER,
+		PD5_AOUT_FEC_RXD1,
+		PD6_AOUT_FEC_RXD2,
+		PD7_AOUT_FEC_RXD3,
 		PD8_AF_FEC_MDIO,
-		PD9_AIN_FEC_MDC,
+		PD9_AIN_FEC_MDC | GPIO_PUEN,
+		PD10_AOUT_FEC_CRS,
+		PD11_AOUT_FEC_TX_CLK,
+		PD12_AOUT_FEC_RXD0,
+		PD13_AOUT_FEC_RX_DV,
 		PD14_AOUT_FEC_CLR,
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
+		PF23_AIN_FEC_TX_EN,
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS };
 
-	for (i = 0; i < sizeof(mode) / sizeof(short); i ++)
+	for (i = 0; i < sizeof(mode) / sizeof(int); i++)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);

@@ -95,7 +95,7 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
-	edev->param_ip.name = "ip";
+	edev->param_ip.name = "ipaddr";
 	edev->param_ethaddr.name = "ethaddr";
 	edev->param_gateway.name = "gateway";
 	edev->param_netmask.name = "netmask";

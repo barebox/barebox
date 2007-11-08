@@ -264,7 +264,7 @@ NetLoop(proto_t protocol)
 		return -1;
 	}
 
-	ip = dev_get_param_ip(eth_current->dev, "ip");
+	ip = dev_get_param_ip(eth_current->dev, "ipaddr");
 	NetCopyIP(&NetOurIP, &ip);
 
 	/* XXX problem with bss workaround */

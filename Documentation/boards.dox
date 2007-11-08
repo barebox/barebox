@@ -1,15 +1,15 @@
 /** @page supported_boards Supported Boards
 
-This is a list of boards that are currently supported by U-Bootv2.
+This is a list of boards that are currently supported by U-Boot-v2.
 
 PowerPC type:
 
-- @subpage phycore_pcm030
+- @subpage pcm030
 
 ARM type:
 
-- @subpage phycore_imx31
-- @subpage phycore_pcm038
+- @subpage pcm037
+- @subpage pcm038
 - @subpage scb9328
 - @subpage netx
 

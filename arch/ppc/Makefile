@@ -9,7 +9,7 @@ endif
 
 
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200
-board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= phycore_mpc5200b_tiny
+board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= pcm030
 cpu-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)

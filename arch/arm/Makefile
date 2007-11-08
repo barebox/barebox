@@ -10,9 +10,9 @@ machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
 board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
 board-$(CONFIG_MACH_ECO920)	   := eco920
 board-$(CONFIG_MACH_SCB9328)	   := scb9328
-board-$(CONFIG_MACH_PCM038)	   := phycore_pcm038
+board-$(CONFIG_MACH_PCM038)	   := pcm038
 board-$(CONFIG_MACH_NXDB500)       := netx
-board-$(CONFIG_MACH_IMX31)	   := phycore_imx31
+board-$(CONFIG_MACH_PCM037)	   := pcm037
 # FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t
 cpu-$(CONFIG_ARM926EJS)            := arm926ejs

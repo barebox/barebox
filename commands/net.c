@@ -54,7 +54,7 @@ static void netboot_update_env (void)
 		setenv ("rootpath", NetOurRootPath);
 
 	if (NetOurIP)
-		dev_set_param_ip(eth_current->dev, "ip", NetOurIP);
+		dev_set_param_ip(eth_current->dev, "ipaddr", NetOurIP);
 
 	if (NetServerIP)
 		dev_set_param_ip(eth_current->dev, "serverip", NetServerIP);

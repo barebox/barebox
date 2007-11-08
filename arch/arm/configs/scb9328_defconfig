@@ -16,7 +16,7 @@ CONFIG_MACH_SCB9328=y
 # CONFIG_MACH_PCM038 is not set
 # CONFIG_MACH_ECO920 is not set
 # CONFIG_MACH_NXDB500 is not set
-# CONFIG_MACH_IMX31 is not set
+# CONFIG_MACH_PCM037 is not set
 
 #
 # Arm specific settings

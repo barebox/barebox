@@ -8,7 +8,7 @@ config ARCH_TEXT_BASE
 	default 0x81f00000 if MACH_NXDB500
 	default 0x21e00000 if MACH_ECO920
 	default 0xa0000000 if MACH_PCM038
-	default 0x87f00000 if MACH_IMX31
+	default 0x87f00000 if MACH_PCM037
 #
 #
 #
@@ -19,10 +19,10 @@ config BOARDINFO
 	default "Hilscher Netx nxdb500" if MACH_NXDB500
 
 config BOARDINFO
-	default "Phytec Phycore MX27" if MACH_PCM038
+	default "Phytec phyCORE-i.MX27" if MACH_PCM038
 
 config BOARDINFO
-	default "Phytec Phycore i.MX31" if MACH_IMX31
+	default "Phytec phyCORE-i.MX31" if MACH_PCM037
 
 config BOARD_LINKER_SCRIPT
 	bool
@@ -91,11 +91,11 @@ config MACH_SCB9328
 	  Say Y here if you are using the Synertronixx scb9328 board
 
 config MACH_PCM038
-	bool "Phytec pcm038"
+	bool "phyCORE-i.MX27"
 	select HAS_CFI
 	select ARCH_IMX27
 	help
-	  Say Y here if you are using the Phytec Phycore pcm038 equipped
+	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor
 
 config MACH_ECO920
@@ -114,11 +114,11 @@ config MACH_NXDB500
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board
 
-config MACH_IMX31
-	bool "Phytec i.MX31"
+config MACH_PCM037
+	bool "phyCORE-i.MX31"
 	select ARCH_IMX31
 	help
-	  Say Y here if your are using Phytec's pcm-mx31 equipped
+	  Say Y here if your are using Phytec's phyCORE-i.MX31 (pcm037) equipped
 	  with a Freescale i.MX31 Processor
 
 endchoice

@@ -21,4 +21,4 @@
 #
 
 obj-y += lowlevel_init.o
-obj-y += phycore_imx31.o
+obj-y += pcm037.o

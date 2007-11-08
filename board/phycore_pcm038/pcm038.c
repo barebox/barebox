@@ -24,7 +24,7 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
-#include <asm-ppc/arch-mpc5200/fec.h>
+#include <fec.h>
 #include <asm/arch/gpio.h>
 #include <partition.h>
 #include <fs.h>
@@ -48,12 +48,12 @@ static struct device_d sdram_dev = {
 	.type     = DEVICE_TYPE_DRAM,
 };
 
-static struct mpc5xxx_fec_platform_data fec_info = {
+static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
 
 static struct device_d fec_dev = {
-	.name     = "fec_mpc5xxx",
+	.name     = "fec_imx27",
 	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,

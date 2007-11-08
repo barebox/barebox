@@ -151,7 +151,7 @@ U_BOOT_CMD_END
 /**
  * @page cp_command cp (copy)
  *
- * Usage: cp <source> [<source>] <destination>
+ * Usage: cp \<source> [\<source>] \<destination>
  *
  * FIXME
  */

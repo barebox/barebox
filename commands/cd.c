@@ -61,7 +61,8 @@ U_BOOT_CMD_END
 /**
  * @page cd_command cd (change working directory)
  *
- * Usage is: cd [<directory name>]
+ * Usage is: cd [\<directory name>]
  *
- * Change to <directory name>. If called without argument, change to / (root)
+ * Change to \<directory name>. If called without argument, change to \b /
+ * (root)
  */

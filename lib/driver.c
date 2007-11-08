@@ -20,6 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief U-Boot's driver model, and devinfo command
+ */
+
 #include <common.h>
 #include <command.h>
 #include <driver.h>
@@ -321,7 +326,7 @@ static __maybe_unused char cmd_devinfo_help[] =
 "Usage: devinfo [DEVICE]\n"
 "If called without arguments devinfo shows a summary about known devices and\n"
 "drivers. If called with a device path as argument devinfo shows more detailed\n"
-"informations about this device and its parameters.\n";
+"information about this device and its parameters.\n";
 
 U_BOOT_CMD_START(devinfo)
 	.maxargs	= 2,
@@ -329,3 +334,30 @@ U_BOOT_CMD_START(devinfo)
 	.usage		= "display info about devices and drivers",
 	U_BOOT_CMD_HELP(cmd_devinfo_help)
 U_BOOT_CMD_END
+
+/**
+ * @page devinfo_command devinfo
+ *
+ * Usage is: devinfo /dev/\<device>
+ *
+ * If called without arguments devinfo shows a summary about known devices and
+ * drivers. If called with a device path as argument devinfo shows more
+ * detailed information about this device and its parameters.
+ *
+ * Example from an MPC5200 based system:
+@verbatim
+  uboot:/ devinfo /dev/eth0
+  base  : 0x1002b000
+  size  : 0x00000000
+  driver: fec_mpc5xxx
+
+  no info available for eth0
+  Parameters:
+          ip = 192.168.23.197
+     ethaddr = 80:81:82:83:84:86
+     gateway = 192.168.23.1
+     netmask = 255.255.255.0
+    serverip = 192.168.23.2
+@endverbatim
+ *
+ */

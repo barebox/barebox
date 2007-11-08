@@ -1,6 +1,4 @@
 /*
- * edit.c - A tiny editor implementation
- *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
@@ -18,6 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * @file
+ * @brief A tiny editor implementation
  */
 
 #include <common.h>
@@ -398,6 +401,7 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
+	/* check if we are called as "sedit" insted of "edit" */
 	if (*argv[0] == 's')
 		smartscroll = 1;
 
@@ -564,3 +568,18 @@ U_BOOT_CMD_START(edit)
 	.usage		= "edit a file",
 	U_BOOT_CMD_HELP(cmd_edit_help)
 U_BOOT_CMD_END
+
+
+/**
+ * @page edit_command edit (editor)
+ *
+ * Usage is: [s]edit \<file\>
+ *
+ * This is a very small editor. It's only features are moving the cursor with
+ * the usual keys and typing characters.
+ *
+ * \b \<ctrl-c\> quits the editor without saving,\n
+ * \b \<ctrl-d\> quits the editor with saving the current file.
+ *
+ * If called as \c sedit the editor uses ansi codes to scroll the screen.
+ */

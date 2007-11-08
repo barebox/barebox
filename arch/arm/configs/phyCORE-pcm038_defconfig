@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.0.0-git
-# Wed Oct 24 17:49:48 2007
+# Thu Nov  8 16:52:09 2007
 #
 CONFIG_ARCH_TEXT_BASE=0xa0000000
 CONFIG_BOARDINFO="Phytec Phycore MX27"
@@ -142,7 +142,7 @@ CONFIG_MIIPHY=y
 # Network drivers               
 #
 # CONFIG_DRIVER_NET_SMC911X is not set
-CONFIG_DRIVER_NET_MPC5200=y
+CONFIG_DRIVER_NET_IMX27=y
 
 #
 # flash drivers                 

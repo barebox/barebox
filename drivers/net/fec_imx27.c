@@ -18,8 +18,6 @@
  * MA 02111-1307 USA
  */
 
-#define DEBUG
-
 #include <common.h>
 #include <malloc.h>
 #include <net.h>
@@ -39,10 +37,10 @@
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 
 typedef struct {
-	uint8_t data[1500];           /* actual data */
-	int length;                 /* actual length */
-	int used;                   /* buffer in use or not */
-	uint8_t head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
+	uint8_t data[1500];	/**< actual data */
+	int length;		/**< actual length */
+	int used;		/**< buffer in use or not */
+	uint8_t head[16];	/**< MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
 /*
@@ -158,7 +156,7 @@ static int fec_tx_task_disable(fec_priv *fec)
  *
  * For this task we need additional memory for the data buffers. And each
  * data buffer requires some alignment. Thy must be aligned to a specific
- * boundary each (4 byte).
+ * boundary each (DB_DATA_ALIGNMENT).
  */
 static int fec_rbd_init(fec_priv *fec, int count, int size)
 {
@@ -168,8 +166,9 @@ static int fec_rbd_init(fec_priv *fec, int count, int size)
 
 	if (!once) {
 		/* reserve data memory and consider alignment */
-		p = (uint32_t)xzalloc(size * count + 0x04) + 0x03;
-		p &= ~0x03;
+		p = (uint32_t)xzalloc(size * count + DB_DATA_ALIGNMENT) +
+				(DB_DATA_ALIGNMENT-1);
+		p &= ~(DB_DATA_ALIGNMENT-1);
 	}
 
 	for (ix = 0; ix < count; ix++) {
@@ -194,7 +193,7 @@ static int fec_rbd_init(fec_priv *fec, int count, int size)
  * Initialize transmit task's buffer descriptors
  * @param[in] fec all we know about the device yet
  *
- * Transmit buffers are created externally. We only have to init the BDs here.
+ * Transmit buffers are created externally. We only have to init the BDs here.\n
  * Note: There is a race condition in the hardware. When only one BD is in
  * use it must be marked with the WRAP bit to use it for every transmitt.
  * This bit in combination with the READY bit results into double transmit
@@ -447,7 +446,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & 0x0F)
+	if ((uint32_t)eth_data & ~(DB_DATA_ALIGNMENT-1))
 		printf("%s: Warning: Transmitt data not aligned!\n", __FUNCTION__);
 
 	/*
@@ -599,12 +598,12 @@ int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = (uint32_t)xzalloc( (2 + FEC_RBD_NUM) * sizeof(FEC_BD) + 0x20 );
-	base += 0x0f;
-	base &= ~0x0f;
+	base = (uint32_t)xzalloc( (2 + FEC_RBD_NUM) * sizeof(FEC_BD) + 2 * DB_ALIGNMENT );
+	base += (DB_ALIGNMENT-1);
+	base &= ~(DB_ALIGNMENT-1);
 	fec->rbd_base = (FEC_BD*)base;
-	base += FEC_RBD_NUM * sizeof(FEC_BD) + 0x0f;
-	base &= ~0x0f;
+	base += FEC_RBD_NUM * sizeof(FEC_BD) + (DB_ALIGNMENT-1);
+	base &= ~(DB_ALIGNMENT-1);
 	fec->tbd_base = (FEC_BD*)base;
 
 	writel((uint32_t)fec->tbd_base, &fec->eth->etdsr);
@@ -628,6 +627,9 @@ int fec_probe(struct device_d *dev)
 	return 0;
 }
 
+/**
+ * Driver description for registering
+ */
 static struct driver_d imx27_driver = {
         .name  = "fec_imx27",
         .probe = fec_probe,

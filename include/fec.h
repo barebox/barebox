@@ -26,10 +26,11 @@
 #define __INCLUDE_NETWORK_FEC_H
 
 /**
- * Define the phy connected externally
+ * Define the phy connected externally for FEC drivers
+ * (like MPC52xx and i.MX27)
  */
 struct fec_platform_data {
-        ulong  xcv_type;
+        ulong  xcv_type;	/**< phy's type. See enum xceiver_type */
 };
 
 /**

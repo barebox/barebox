@@ -110,9 +110,15 @@ U_BOOT_CMD_END
  *
  * Usage is: tftp \<filename\> [\<localfilename\>]
  *
- * Load a file via network using BootP/TFTP protocol. FIXME: Where to find it
- * after loading?
- * @note This command is available only, if enabled in the menuconfig.
+ * Load a file via network using BootP/TFTP protocol. The loaded file you
+ * can find after download in you current ramdisk. Refer \b ls command.
+ *
+ * \<localfile> can be the local filename only, or also a device name. In the
+ * case of a device name, the will gets stored there. This works also for
+ * partitions of flash memory. Refer \b erase, \b unprotect for flash
+ * preparation.
+ *
+ * Note: This command is available only, if enabled in the menuconfig.
  */
 
 #ifdef CONFIG_NET_RARP

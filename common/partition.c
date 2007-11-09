@@ -230,18 +230,18 @@ handled in the same way as every other device.
 
 What we want:
 
-@code
+@verbatim
  device nor0
     |--- partition 0
     |--- partition 1
     |--- partition 2
     |--- partition 3
     `--- partition 4
-@endcode
+@endverbatim
 
 How to get:
 
-@code
+@verbatim
 $ addpart /dev/nor0 256k(uboot),128k(env),256k(bla),1024k(blubb),2048k(friesel)
 $ devinfo
  |---nor0.uboot
@@ -249,7 +249,7 @@ $ devinfo
  |---nor0.bla
  |---nor0.blubb
  |---nor0.friesel
-@endcode
+@endverbatim
 
 @par Partitions with sub partitions:
 
@@ -258,7 +258,7 @@ there is a way to create sub partitions on partitions.
 
 What we want:
 
-@code
+@verbatim
  device nor0
     |--- partition 0
     |--- partition 1
@@ -267,11 +267,11 @@ What we want:
     `--- partition 4
            |--- partition 0
            `--- partition 1
-@endcode
+@endverbatim
 
 How to get:
 
-@code
+@verbatim
 $ addpart /dev/nor0 256k(uboot),128k(env),256k(bla),1M(blubb),2048k(friesel)
 $ devinfo
  |---nor0.uboot
@@ -289,15 +289,15 @@ $ devinfo
  |---nor0.friesel
         |---nor0.friesel.fussel
         `---nor0.friesel.boerks
-@endcode
+@endverbatim
 
 @par Forwarding partitions to the kernel:
 
-@code
+@verbatim
 $ device="nor0"
 $ partitions="256k(uboot),128k(env),256k(bla),1024k(blubb),2048k(friesel)"
 $ addpart /dev/$device:$partitions
-@endcode
+@endverbatim
 
 @par Removing partitions:
 

@@ -21,6 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief partition handling and addpart and delpart command
+ */
+
 #ifdef CONFIG_ENABLE_PARTITION_NOISE
 # define DEBUG
 #endif
@@ -199,6 +204,26 @@ U_BOOT_CMD_START(addpart)
 	U_BOOT_CMD_HELP(cmd_addpart_help)
 U_BOOT_CMD_END
 
+/** @page addpart_command addpart Add a partition to a device
+ *
+ * Usage is: addpart \<device> \<partition description>
+ *
+ * Adds a partition description to a device. The partition description has the
+ * form
+ *
+ * size1(name1)[ro],size2(name2)[ro],...
+ *
+ * \<device> is the device name under. Sizes can be given in decimal or - if
+ * prefixed with 0x - in hex. Sizes can have an optional suffix K,M,G. The
+ * size of the last partition can be specified as '-' for the remaining space
+ * of the device.
+ *
+ * @note The format is the same as used in the Linux kernel for cmdline mtd
+ * partitions.
+ *
+ * @note This command has to be reworked and will probably change it's API.
+ */
+
 static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
@@ -230,3 +255,9 @@ U_BOOT_CMD_START(delpart)
 	U_BOOT_CMD_HELP(cmd_delpart_help)
 U_BOOT_CMD_END
 
+/** @page delpart_command delpart Delete a partition
+ *
+ * Usage is: delpart \<device>
+ *
+ * Delete a partition previously added to a device with addpart.
+ */

@@ -4,6 +4,7 @@ obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
 obj-$(CONFIG_OF_FLAT_TREE)	+= ft_build.o
 obj-$(CONFIG_MODULE)		+= module.o
 obj-$(CONFIG_KALLSYMS)		+= kallsyms.o
+obj-$(CONFIG_CMD_MEMORY)	+= mem.o
 
 obj-y += dlmalloc.o
 obj-y += clock.o

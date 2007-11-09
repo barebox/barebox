@@ -129,10 +129,29 @@ config CMD_MEMINFO
 	tristate
 	prompt "meminfo"
 
-config CMD_MEMORY
+config CMD_MC
 	bool
+	select CMD_MEMORY
 	default y
-	prompt "md and mw"
+	prompt "memcmp"
+
+config CMD_MD
+	bool
+	select CMD_MEMORY
+	default y
+	prompt "md"
+
+config CMD_MEMCPY
+	bool
+	select CMD_MEMORY
+	default y
+	prompt "memcpy"
+
+config CMD_MW
+	bool
+	select CMD_MEMORY
+	default y
+	prompt "mw"
 
 config CMD_CRC
 	tristate

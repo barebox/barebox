@@ -8,6 +8,9 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
+config CMD_MEMORY
+	bool
+
 menu "General Settings              "
 
 config BOARDINFO

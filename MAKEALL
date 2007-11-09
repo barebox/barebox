@@ -1,0 +1,97 @@
+#!/bin/bash
+
+check_pipe_status() {
+        for i in  "${PIPESTATUS[@]}"; do
+		[ $i -gt 0 ] && return 1
+        done
+	return 0
+}
+
+
+HERE=$(pwd)
+AUTOBUILD_DIR=${HERE}/autobuild
+REPORT=${AUTOBUILD_DIR}/REPORT
+
+if [ -d "${AUTOBUILD_DIR}" ]; then
+	echo "warning: ${AUTOBUILD_DIR} exists, press <ctrl-c> to exit or wait for 3 seconds"
+	sleep 3
+	rm -fr ${AUTOBUILD_DIR}
+fi
+
+mkdir -p ${AUTOBUILD_DIR}
+
+BOARDS="${BOARDS} sandbox"
+sandbox_ARCH=sandbox
+sandbox_CROSS_COMPILE=
+
+BOARDS="${BOARDS} eco920"
+eco920_ARCH=arm
+eco920_CROSS_COMPILE=arm-v4t-linux-gnueabi-
+
+BOARDS="${BOARDS} ipe337"
+ipe337_ARCH=blackfin
+ipe337_CROSS_COMPILE=
+
+BOARDS="${BOARDS} netx_nxdb500"
+netx_nxdb500_ARCH=arm
+netx_nxdb500_CROSS_COMPILE=arm-v4t-linux-gnueabi-
+
+BOARDS="${BOARDS} pcm030"
+pcm030_ARCH=ppc
+pcm030_CROSS_COMPILE=powerpc-603e-linux-gnu-
+
+BOARDS="${BOARDS} pcm037"
+pcm037_ARCH=arm
+pcm037_CROSS_COMPILE=arm-1136jfs-linux-gnueabi-
+
+BOARDS="${BOARDS} pcm038"
+pcm038_ARCH=arm
+pcm038_CROSS_COMPILE=arm-v4t-linux-gnueabi-
+
+BOARDS="${BOARDS} scb9328"
+scb9328_ARCH=arm
+scb9328_CROSS_COMPILE=arm-v4t-linux-gnueabi-
+
+for board in ${BOARDS}; do
+
+	time_start=$(date +%s)
+	arch=${board}_ARCH
+	cross_compile=${board}_CROSS_COMPILE
+	mkdir -p ${AUTOBUILD_DIR}/${board}
+	printf "%-20s defconfig: " ${board} | tee -a ${REPORT}
+
+	make -C ${HERE} \
+		O=${AUTOBUILD_DIR}/${board} \
+		ARCH=${!arch} \
+		${board}_defconfig \
+		> ${AUTOBUILD_DIR}/${board}.log 2>&1
+
+	check_pipe_status
+	if [ "$?" = "0" ]; then
+
+		printf "OK     " | tee -a ${REPORT}
+		printf "compile: " ${board} | tee -a ${REPORT}
+
+		make -C ${HERE} \
+			O=${AUTOBUILD_DIR}/${board} \
+			ARCH=${!arch} \
+			CROSS_COMPILE=${!cross_compile} \
+			> ${AUTOBUILD_DIR}/${board}.log 2>&1
+
+		check_pipe_status
+		if [ "$?" = "0" ]; then
+			printf "OK     " | tee -a ${REPORT}
+		else
+			printf "FAILED " | tee -a ${REPORT}
+		fi
+
+	else
+		printf "FAILED " | tee -a ${REPORT}
+		printf "compile: ------ " | tee -a ${REPORT}
+	fi
+
+	time_stop=$(date +%s)
+	time_diff=$(($time_stop - $time_start))
+	printf "%4is\n" $time_diff | tee -a ${REPORT}
+done
+

@@ -6,7 +6,6 @@ CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall \
 
 machine-y	   := sandbox
 
-lds-y := arch/sandbox/lib/u-boot.lds
 BOARD:= arch/sandbox/lib
 board-y := sandbox
 lds-y   := arch/sandbox/lib/u-boot.lds

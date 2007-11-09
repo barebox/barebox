@@ -26,36 +26,14 @@
  */
 
 #include <common.h>
-#include <command.h>
 #include <driver.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <init.h>
-
-/**
- * Managment of a environment variable
- */
-struct variable_d {
-	/*! List management */
-	struct variable_d *next;
-	/*! variable length data */
-	char data[0];
-};
+#include <environment.h>
 
 #define VARIABLE_D_SIZE(name, value) (sizeof(struct variable_d) + strlen(name) + strlen(value) + 2)
-
-/**
- * FIXME
- */
-struct env_context {
-	/*! FIXME */
-	struct env_context *parent;
-	/*! FIXME */
-	struct variable_d *local;
-	/*! FIXME */
-	struct variable_d *global;
-};
 
 static struct env_context *context;
 
@@ -73,6 +51,14 @@ static void free_variables(struct variable_d *v)
 		v = next;
 	}
 }
+
+/** Read back current context */
+struct env_context *get_current_context(void)
+{
+	return context;
+}
+EXPORT_SYMBOL(get_current_context);
+
 
 /**
  * FIXME
@@ -120,7 +106,7 @@ int env_pop_context(void)
  * @param[in] var Variable of interest
  * @return Value as text
  */
-static char *var_val(struct variable_d *var)
+char *var_val(struct variable_d *var)
 {
 	return &var->data[strlen(var->data) + 1];
 }
@@ -130,7 +116,7 @@ static char *var_val(struct variable_d *var)
  * @param[in] var Variable of interest
  * @return Name as text
  */
-static char *var_name(struct variable_d *var)
+char *var_name(struct variable_d *var)
 {
 	return var->data;
 }
@@ -256,145 +242,3 @@ int export(const char *varname)
 	return -1;
 }
 EXPORT_SYMBOL(export);
-
-static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	struct variable_d *var;
-	struct env_context *c;
-
-	if (argc == 2) {
-		const char *val = getenv(argv[1]);
-		if (val) {
-			printf("%s=%s\n", argv[1], val);
-			return 0;
-		}
-		printf("## Error: \"%s\" not defined\n", argv[1]);
-		return -EINVAL;
-	}
-
-	var = context->local->next;
-	printf("locals:\n");
-	while (var) {
-		printf("%s=%s\n", var_name(var), var_val(var));
-		var = var->next;
-	}
-
-	printf("globals:\n");
-	c = context;
-	while(c) {
-		var = c->global->next;
-		while (var) {
-			printf("%s=%s\n", var_name(var), var_val(var));
-			var = var->next;
-		}
-		c = c->parent;
-	}
-
-	return 0;
-}
-
-U_BOOT_CMD_START(printenv)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_printenv,
-	.usage		= "print environment variables",
-	U_BOOT_CMD_HELP(
-	"\n    - print values of all environment variables\n"
-	"printenv name ...\n"
-	"    - print value of environment variable 'name'\n")
-U_BOOT_CMD_END
-
-/**
- * @page printenv_command printenv
- *
- * Usage: printenv [\<name>]
- *
- * Print environment variables.
- * If \<name> was given, it prints out its content if the environment variable
- * \<name> exists.
- * Without the \<name> argument all current environment variables are printed.
- */
-
-#ifdef CONFIG_SIMPLE_PARSER
-static int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	setenv(argv[1], argv[2]);
-
-	return 0;
-}
-
-U_BOOT_CMD_START(setenv)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_setenv,
-	.usage		= "set environment variables",
-	U_BOOT_CMD_HELP(
-	"name value ...\n"
-	"    - set environment variable 'name' to 'value ...'\n"
-	"setenv name\n"
-	"    - delete environment variable 'name'\n")
-U_BOOT_CMD_END
-#endif
-
-/**
- * @page setenv_command setenv
- *
- * Usage: setenv \<name> [\<val>]
- *
- * Set environment variable \<name> to \<val ...>
- * If no \<val> was given, the variable \<name> will be removed.
- *
- * This command can be replaced by using the simpler form in the hush:
- *
- * \<name> = \<val>
- *
- * @note This command is only required if the simple
- * parser (not the hush) is in use.
- */
-
-static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	int i = 1;
-	char *ptr;
-
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
-
-	while (i < argc) {
-		if ((ptr = strchr(argv[i], '='))) {
-			*ptr++ = 0;
-			setenv(argv[i], ptr);
-		}
-		if (export(argv[i])) {
-			printf("could not export: %s\n", argv[i]);
-			return 1;
-		}
-		i++;
-	}
-
-	return 0;
-}
-
-static __maybe_unused char cmd_export_help[] =
-"Usage: export <var>[=value]...\n"
-"export an environment variable to subsequently executed scripts\n";
-
-U_BOOT_CMD_START(export)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_export,
-	.usage		= "export environment variables",
-	U_BOOT_CMD_HELP(cmd_export_help)
-U_BOOT_CMD_END
-
-/**
- * @page export_command export
- *
- * Usage: export \<var>[=value]...
- *
- * Export an environment variable to subsequently executed scripts
- */

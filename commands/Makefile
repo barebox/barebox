@@ -36,3 +36,6 @@ obj-$(CONFIG_CMD_MC)		+= mc.o
 obj-$(CONFIG_CMD_MD)		+= md.o
 obj-$(CONFIG_CMD_MEMCPY)	+= memcpy.o
 obj-$(CONFIG_CMD_MV)		+= mv.o
+obj-$(CONFIG_SIMPLE_PARSER)	+= setenv.o
+obj-$(CONFIG_CMD_EXPORT)	+= export.o
+obj-$(CONFIG_CMD_PRINTENV)	+= printenv.o

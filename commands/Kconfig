@@ -22,6 +22,14 @@ config CMD_ENVIRONMENT
 	tristate
 	prompt "saveenv / loadenv"
 
+config CMD_EXPORT
+	tristate
+	prompt "export"
+
+config CMD_PRINTENV
+	tristate
+	prompt "printenv"
+
 config CMD_HELP
 	tristate
 	default y

@@ -24,6 +24,24 @@
 #ifndef _ENVIRONMENT_H_
 #define _ENVIRONMENT_H_
 
+/**
+ * Managment of a environment variable
+ */
+struct variable_d {
+	struct variable_d *next;	/**< List management */
+	char data[0];			/**< variable length data */
+};
+
+struct env_context {
+	struct env_context *parent;	/**< FIXME */
+	struct variable_d *local;	/**< FIXME */
+	struct variable_d *global;	/**< FIXME */
+};
+
+struct env_context *get_current_context(void);
+char *var_val(struct variable_d *);
+char *var_name(struct variable_d *);
+
 const char *getenv(const char *);
 int setenv(const char *, const char *);
 
@@ -33,5 +51,10 @@ int env_push_context(void);
 int envfs_load(char *filename, char *dirname);
 int envfs_save(char *filename, char *dirname);
 
+int export(const char *);
+
 #endif	/* _ENVIRONMENT_H_ */
 
+/** @file
+ * @brief Environment handling
+ */

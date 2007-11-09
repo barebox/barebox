@@ -119,7 +119,8 @@ char *concat_subpath_file(const char *path, const char *f)
 #include "../include/envfs.h"
 #include "../lib/crc32.c"
 #include "../lib/make_directory.c"
-#include "../commands/environment.c"
+#include "../include/environment.h"
+#include "../common/environment.c"
 
 void usage(char *prgname)
 {

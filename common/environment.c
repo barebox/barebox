@@ -1,6 +1,4 @@
 /*
- * environment.c - simple archive implementation
- *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
@@ -22,36 +20,32 @@
 
 /**
  * @file
- * @brief Managing environment and environment variables
+ * @brief Environment handling support (host and target)
+ *
+ * Important: This file will also be used on the host to create
+ * the default environment when building the U-Boot binary. So
+ * do not add any new U-Boot related functions here!
  */
 
 #ifdef __U_BOOT__
 #include <common.h>
 #include <command.h>
-#include <driver.h>
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <linux/stat.h>
 #include <envfs.h>
 #include <xfuncs.h>
 #include <libbb.h>
 #include <libgen.h>
+#include <environment.h>
 #else
 # define errno_str(x) ("void")
+#define EXPORT_SYMBOL(x)
 #endif
 
-struct action_data {
-	int fd;
-	const char *base;
-	void *writep;
-};
-
-#define PAD4(x) ((x + 3) & ~3) 
-
-static int file_size_action(const char *filename, struct stat *statbuf,
-				void *userdata, int depth)
+int file_size_action(const char *filename, struct stat *statbuf,
+			    void *userdata, int depth)
 {
 	struct action_data *data = userdata;
 
@@ -61,15 +55,16 @@ static int file_size_action(const char *filename, struct stat *statbuf,
 	return 1;
 }
 
-static int file_save_action(const char *filename, struct stat *statbuf,
-				void *userdata, int depth)
+int file_save_action(const char *filename, struct stat *statbuf,
+			    void *userdata, int depth)
 {
 	struct action_data *data = userdata;
 	struct envfs_inode *inode;
 	int fd;
 	int namelen = strlen(filename) + 1 - strlen(data->base);
 
-	debug("handling file %s size %ld namelen %d\n", filename + strlen(data->base), statbuf->st_size, namelen);
+	debug("handling file %s size %ld namelen %d\n", filename + strlen(data->base),
+		statbuf->st_size, namelen);
 
 	inode = (struct envfs_inode*)data->writep;
 	inode->magic = ENVFS_INODE_MAGIC;
@@ -98,6 +93,15 @@ out:
 	return 1;
 }
 
+/**
+ * Make the current environment persistent
+ * @param[in] filename where to store
+ * @param[in] dirname what to store (all files in this dir)
+ * @return 0 on success, anything else in case of failure
+ *
+ * Note: This function will also be used on the host! See note in the header
+ * of this file.
+ */
 int envfs_save(char *filename, char *dirname)
 {
 	struct envfs_super *super;
@@ -110,7 +114,7 @@ int envfs_save(char *filename, char *dirname)
 
 	/* first pass: calculate size */
 	recursive_action(dirname, ACTION_RECURSE, file_size_action,
-			NULL, &data, 0);
+			 NULL, &data, 0);
 
 	size = (unsigned long)data.writep;
 
@@ -123,7 +127,7 @@ int envfs_save(char *filename, char *dirname)
 
 	/* second pass: copy files to buffer */
 	recursive_action(dirname, ACTION_RECURSE, file_save_action,
-			NULL, &data, 0);
+			 NULL, &data, 0);
 
 	super->crc = crc32(0, buf + sizeof(struct envfs_super), size);
 	super->sb_crc = crc32(0, buf, sizeof(struct envfs_super) - 4);
@@ -131,11 +135,14 @@ int envfs_save(char *filename, char *dirname)
 	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
 		printf("Open %s %s\n", filename, errno_str());
+		ret = envfd;
 		goto out1;
 	}
 
-	if (write(envfd, buf, size  + sizeof(struct envfs_super)) < sizeof(struct envfs_super)) {
+	if (write(envfd, buf, size  + sizeof(struct envfs_super)) <
+			sizeof(struct envfs_super)) {
 		perror("write");
+		ret = -1;	/* FIXME */
 		goto out;
 	}
 
@@ -147,97 +154,17 @@ out1:
 	free(buf);
 	return ret;
 }
-
-#ifdef __U_BOOT__
-static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	int ret, fd;
-	char *filename, *dirname;
-
-	printf("saving environment\n");
-	if (argc < 3)
-		dirname = "/env";
-	else
-		dirname = argv[2];
-	if (argc < 2)
-		filename = "/dev/env0";
-	else
-		filename = argv[1];
-
-	fd = open(filename, O_WRONLY | O_CREAT);
-	if (fd < 0) {
-		printf("could not open %s: %s", filename, errno_str());
-		return 1;
-	}
-
-	ret = protect(fd, ~0, 0, 0);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != -ENOSYS) {
-		printf("could not unprotect %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	ret = erase(fd, ~0, 0);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != -ENOSYS) {
-		printf("could not erase %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	ret = envfs_save(filename, dirname);
-	if (ret) {
-		printf("saveenv failed\n");
-		goto out;
-	}
-
-	ret = protect(fd, ~0, 0, 1);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != -ENOSYS) {
-		printf("could not protect %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	ret = 0;
-out:
-	close(fd);
-	return ret;
-}
-
-static __maybe_unused char cmd_saveenv_help[] =
-"Usage: saveenv [<envfs>] [<directory>]\n"
-"Save the files in <directory> to the persistent storage device <envfs>.\n"
-"<envfs> is normally a block in flash, but could be any other file.\n"
-"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
-"Note that envfs can only handle files. Directories are skipped silently.\n";
-
-U_BOOT_CMD_START(saveenv)
-	.maxargs	= 3,
-	.cmd		= do_saveenv,
-	.usage		= "save environment to persistent storage",
-	U_BOOT_CMD_HELP(cmd_saveenv_help)
-U_BOOT_CMD_END
-#endif /* __U_BOOT__ */
+EXPORT_SYMBOL(envfs_save);
 
 /**
- * @page saveenv_command saveenv
+ * Restore the last environment into the current one
+ * @param[in] filename from where to restore
+ * @param[in] dirname where to store the last content
+ * @return 0 on success, anything else in case of failure
  *
- * Usage: saveenv [\<envfs>] [\<directory>]
- *
- * Save the files in \<directory> to the persistent storage device \<envfs>.
- * \<envfs> is normally a block in flash, but could be any other file.
- *
- * If ommitted \<directory> defaults to \b /env and \<envfs> defaults to
- * \b /dev/env0.
- *
- * @note envfs can only handle files. Directories are skipped silently.
+ * Note: This function will also be used on the host! See note in the header
+ * of this file.
  */
-
 int envfs_load(char *filename, char *dir)
 {
 	struct envfs_super super;
@@ -269,7 +196,7 @@ int envfs_load(char *filename, char *dir)
 	}
 
 	if (crc32(0, (unsigned char *)&super, sizeof(struct envfs_super) - 4)
-			!= super.sb_crc) {
+		   != super.sb_crc) {
 		printf("wrong crc on env superblock\n");
 		goto out;
 	}
@@ -283,31 +210,32 @@ int envfs_load(char *filename, char *dir)
 	}
 
 	if (crc32(0, (unsigned char *)buf, super.size)
-			!= super.crc) {
+		     != super.crc) {
 		printf("wrong crc on env\n");
 		goto out;
 	}
-
+	
 	size = super.size;
-
+	
 	while (size) {
 		struct envfs_inode *inode;
-
+		
 		inode = (struct envfs_inode *)buf;
-	
+		
 		if (inode->magic != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
 			ret = -EIO;
 			goto out;
 		}
-
-		debug("loading %s size %d namelen %d\n", inode->data, inode->size, inode->namelen);
-
+		
+		debug("loading %s size %d namelen %d\n", inode->data,
+			inode->size, inode->namelen);
+		
 		str = concat_path_file(dir, inode->data);
 		tmp = strdup(str);
 		make_directory(dirname(tmp));
 		free(tmp);
-
+		
 		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		free(str);
 		if (fd < 0) {
@@ -317,16 +245,19 @@ int envfs_load(char *filename, char *dir)
 		}
 
 		namelen_full = PAD4(inode->namelen);
-		ret = write(fd, buf + namelen_full + sizeof(struct envfs_inode), inode->size);
+		ret = write(fd, buf + namelen_full + sizeof(struct envfs_inode),
+				inode->size);
 		if (ret < inode->size) {
 			perror("write");
 			close(fd);
 			goto out;
 		}
 		close(fd);
-
-		buf += PAD4(inode->namelen) + PAD4(inode->size) + sizeof(struct envfs_inode);
-		size -= PAD4(inode->namelen) + PAD4(inode->size) + sizeof(struct envfs_inode);
+	
+		buf += PAD4(inode->namelen) + PAD4(inode->size) +
+				sizeof(struct envfs_inode);
+		size -= PAD4(inode->namelen) + PAD4(inode->size) +
+				sizeof(struct envfs_inode);
 	}
 
 	ret = 0;
@@ -336,48 +267,3 @@ out:
 		free(buf_free);
 	return ret;
 }
-
-#ifdef __U_BOOT__
-static int do_loadenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	char *filename, *dirname;
-
-	if (argc < 3)
-		dirname = "/env";
-	else
-		dirname = argv[2];
-	if (argc < 2)
-		filename = "/dev/env0";
-	else
-		filename = argv[1];
-	printf("loading environment from %s\n", filename);
-	return envfs_load(filename, dirname);
-}
-
-static __maybe_unused char cmd_loadenv_help[] =
-"Usage: loadenv [ENVFS] [DIRECTORY]\n"
-"Load the persistent storage contained in <envfs> to the directory\n"
-"<directory>.\n"
-"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
-"Note that envfs can only handle files. Directories are skipped silently.\n";
-
-U_BOOT_CMD_START(loadenv)
-	.maxargs	= 3,
-	.cmd		= do_loadenv,
-	.usage		= "load environment from persistent storage",
-	U_BOOT_CMD_HELP(cmd_loadenv_help)
-U_BOOT_CMD_END
-#endif /* __U_BOOT__ */
-
-/**
- * @page loadenv_command loadenv
- *
- * Usage: loadenv [\<directory>] [\<envfs>]
- *
- * Load the persistent storage contained in \<envfs> to the directory \<directory>.
- *
- * If ommitted \<directory> defaults to /env and \<envfs> defaults to
- * \b /dev/env0.
- *
- * @note envfs can only handle files. Directories are skipped silently.
- */

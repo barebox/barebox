@@ -11,6 +11,9 @@ config HAS_MODULES
 config CMD_MEMORY
 	bool
 
+config ENV_HANDLING
+	bool
+
 menu "General Settings              "
 
 config BOARDINFO

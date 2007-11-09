@@ -24,6 +24,8 @@
 #ifndef _ENVIRONMENT_H_
 #define _ENVIRONMENT_H_
 
+
+#ifdef __U_BOOT__
 /**
  * Managment of a environment variable
  */
@@ -53,8 +55,26 @@ int envfs_save(char *filename, char *dirname);
 
 int export(const char *);
 
+struct stat;
+int file_size_action(const char *, struct stat *, void *, int);
+int file_save_action(const char *, struct stat *, void *, int);
+
+#endif /* __U_BOOT__ */
+
+/* This part is used for the host and the target */
+struct action_data {
+	int fd;
+	const char *base;
+	void *writep;
+};
+#define PAD4(x) ((x + 3) & ~3)
+
 #endif	/* _ENVIRONMENT_H_ */
 
-/** @file
+/**
+ * @file
  * @brief Environment handling
+ *
+ * Important: This file will also be used on the host to create
+ * the default environment when building the U-Boot binary.
  */

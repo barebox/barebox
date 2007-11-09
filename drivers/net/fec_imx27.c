@@ -333,21 +333,17 @@ static int fec_init(struct eth_device *dev)
 		 * Frame length=1518; MII mode;
 		 */
 		writel(0x05ee0024, &fec->eth->r_cntrl);	/* FIXME 0x05ee0004 */
-
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
 		writel(((imx_get_ahbclk() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
 	}
-
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
 	writel(0x00010020, &fec->eth->op_pause);	/* FIXME 0xffff0020; */
-
 	writel(0x2, &fec->eth->x_wmrk);
-
 	/*
 	 * Set multicast address filter
 	 */
@@ -355,7 +351,7 @@ static int fec_init(struct eth_device *dev)
 	writel(0x00000000, &fec->eth->gaddr2);
 
 	/* size of each buffer */
-	writel(2048-16, &fec->eth->emrbr); /* ???????????????????? */
+	writel(FEC_MAX_PKT_SIZE, &fec->eth->emrbr);
 
 	if (fec->xcv_type != SEVENWIRE)
 		miiphy_restart_aneg(&fec->miiphy);
@@ -372,7 +368,6 @@ static int fec_open(struct eth_device *edev)
 	fec_priv *fec = (fec_priv *)edev->priv;
 
 	writel(1 << 2, &fec->eth->x_cntrl);	/* full-duplex, heartbeat disabled */
-
 	fec->rbd_index = 0;
 
 	/*
@@ -452,9 +447,9 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & 0x0F) {
+	if ((uint32_t)eth_data & 0x0F)
 		printf("%s: Warning: Transmitt data not aligned!\n", __FUNCTION__);
-	}
+
 	/*
 	 * Setup the transmitt buffer
 	 * Note: We are always using the first buffer for transmission,

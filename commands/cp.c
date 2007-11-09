@@ -22,7 +22,7 @@
 
 /**
  * @file
- * @brief "cp" command implementation
+ * @brief cp: copy file command
  */
 #include <common.h>
 #include <command.h>
@@ -149,9 +149,13 @@ U_BOOT_CMD_START(cp)
 U_BOOT_CMD_END
 
 /**
- * @page cp_command cp (copy)
+ * @page cp_command cp: Copy file
  *
  * Usage: cp \<source> [\<source>] \<destination>
  *
- * FIXME
+ * \c cp copies file \<source> to \<destination>
+ *
+ * Currently only this form is supported and you have to specify the exact
+ * target filename (not a target directory).\n
+ * This command is file based only. See memcpy for generic memory copy
  */

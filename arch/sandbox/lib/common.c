@@ -20,6 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ * @file
+ * @brief Common wrapper functions between U-Boot and the host
+ */
 /*
  * These are host includes. Never include any U-Boot header
  * files here...
@@ -249,26 +253,7 @@ err_out:
 	return -1;
 }
 
-static void print_usage(const char *prgname)
-{
-	printf(
-"Usage: %s [OPTIONS]\n"
-"Start U-Boot.\n"
-"Options:\n"
-"  -i <file>   Map a file to U-Boot. This option can be given multiple\n"
-"              times. The files will show up as /dev/fd0 ... /dev/fdx\n"
-"              under U-Boot.\n"
-"  -e <file>   Map a file to U-Boot. With this option files are mapped as\n"
-"              /dev/env0 ... /dev/envx and thus are used as default\n"
-"              environment. An empty file generated with dd will do to get\n"
-"              started wth an empty environment\n"
-"  -O <file>   Register file as a console capable of doing stdout. File can\n"
-"              be a regular file or a fifo.\n"
-"  -I <file>   Register file as a console capable of doing stdin. File can\n"
-"              be a regular file or a fifo.\n",
-	prgname
-	);
-}
+static void print_usage(const char*);
 
 int main(int argc, char *argv[])
 {
@@ -337,3 +322,62 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+static void print_usage(const char *prgname)
+{
+	printf(
+"Usage: %s [OPTIONS]\n"
+"Start U-Boot.\n"
+"Options:\n"
+"  -i <file>   Map a file to U-Boot. This option can be given multiple\n"
+"              times. The files will show up as /dev/fd0 ... /dev/fdx\n"
+"              under U-Boot.\n"
+"  -e <file>   Map a file to U-Boot. With this option files are mapped as\n"
+"              /dev/env0 ... /dev/envx and thus are used as default\n"
+"              environment. An empty file generated with dd will do to get\n"
+"              started wth an empty environment\n"
+"  -O <file>   Register file as a console capable of doing stdout. File can\n"
+"              be a regular file or a fifo.\n"
+"  -I <file>   Register file as a console capable of doing stdin. File can\n"
+"              be a regular file or a fifo.\n",
+	prgname
+	);
+}
+
+/**
+ * @page uboot_simul U-Boot Simulator
+ *
+ * U-Boot can be run as a simulator on your host to check and debug new non
+ * hardware related features.
+ *
+ * @section simu_build How to build U-Boot for simulation
+ *
+ * @section simu_run How to run U-Boot simulator
+ *
+ * $ uboot [<OPTIONS>]
+ *
+ * Options can be:
+ *
+ * -i <file>
+ *
+ * Map a <file> to U-Boot. This option can be given multiple times. The <file>s
+ * will show up as /dev/fd0 ... /dev/fdx in the U-Boot simulator.
+ *
+ * -e <file>
+ *
+ * Map <file> to U-Boot. With this option <file>s are mapped as /dev/env0 ...
+ * /dev/envx and thus are used as default environment. A clean file generated
+ * with dd will do to get started with an empty environment
+ *
+ * -O <file>
+ *
+ * Register <file> as a console capable of doing stdout. <file> can be a
+ * regular file or a fifo.
+ *
+ * -I <file>
+ *
+ * Register <file> as a console capable of doing stdin. <file> can be a regular
+ * file or a fifo.
+ *
+ * @section simu_dbg How to debug U-Boot simulator
+ *
+ */

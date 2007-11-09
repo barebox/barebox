@@ -853,3 +853,20 @@ do_bootm_lynxkdi (cmd_tbl_t *cmdtp,
 }
 
 #endif /* CONFIG_LYNXKDI */
+
+/**
+ * @file
+ * @brief Boot support for Linux
+ */
+
+/**
+ * @page boot_preparation Preparing for Boot
+ *
+ * This chapter describes what's to be done to forward the control from
+ * U-Boot to Linux. This part describes the generic part, below you can find
+ * the architecture specific part.
+ *
+ * - @subpage arm_boot_preparation
+ * - @subpage ppc_boot_preparation
+ * - @subpage x86_boot_preparation
+ */

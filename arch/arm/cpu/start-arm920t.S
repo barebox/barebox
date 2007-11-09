@@ -24,13 +24,18 @@
  * MA 02111-1307 USA
  */
 
-/*
- * Note:
- * This file can be used for at least:
- * - ARM920T
- * - i.MX1
- * - i.MX27
- * - i.MX31
+/**
+ * @file
+ * @brief The very basic beginning of each CPU after reset
+ *
+ * @note
+ * This reset code can be used at least for:
+ *  - ARM920T
+ *  - i.MX1
+ *  - i.MX27
+ *  - i.MX31
+ *
+ * FIXME: Stop doxygen from parsing the text below
  */
 	.section ".text_entry","ax"
 

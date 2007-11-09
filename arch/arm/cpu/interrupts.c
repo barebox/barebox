@@ -1,3 +1,30 @@
+/*
+ * interrupts.c - Interrupt Support Routines
+ *
+ * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * @file
+ * @brief Interrupt Support Routines
+ */
+
 #include <common.h>
 #include <asm/ptrace.h>
 
@@ -32,12 +59,19 @@ int disable_interrupts (void)
 }
 #endif
 
+/**
+ * FIXME
+ */
 void bad_mode (void)
 {
 	panic ("Resetting CPU ...\n");
 	reset_cpu (0);
 }
 
+/**
+ * Display current register set content
+ * @param[in] regs Guess what
+ */
 void show_regs (struct pt_regs *regs)
 {
 	unsigned long flags;
@@ -75,6 +109,10 @@ void show_regs (struct pt_regs *regs)
 		thumb_mode (regs) ? " (T)" : "");
 }
 
+/**
+ * The CPU runs into an undefined instruction. That really should not happen!
+ * @param[in] pt_regs Register set content when the accident happens
+ */
 void do_undefined_instruction (struct pt_regs *pt_regs)
 {
 	printf ("undefined instruction\n");
@@ -82,6 +120,13 @@ void do_undefined_instruction (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a software interrupt
+ * @param[in] pt_regs Register set content when the interrupt happens
+ *
+ * There is not functione behind this feature. So what to do else than
+ * a reset? 
+ */
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
 	printf ("software interrupt\n");
@@ -89,6 +134,12 @@ void do_software_interrupt (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a prefetch abort. That really should not happen!
+ * @param[in] pt_regs Register set content when the accident happens
+ *
+ * FIXME: What does it mean, why is reset the only solution?
+ */
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
 	printf ("prefetch abort\n");
@@ -96,6 +147,12 @@ void do_prefetch_abort (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a data abort. That really should not happen!
+ * @param[in] pt_regs Register set content when the accident happens
+ *
+ * FIXME: What does it mean, why is reset the only solution?
+ */
 void do_data_abort (struct pt_regs *pt_regs)
 {
 	printf ("data abort\n");
@@ -103,6 +160,12 @@ void do_data_abort (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a not-used(?) abort.
+ * @param[in] pt_regs Register set content when the accident happens
+ *
+ * FIXME: What does it mean, why is reset the only solution?
+ */
 void do_not_used (struct pt_regs *pt_regs)
 {
 	printf ("not used\n");
@@ -110,6 +173,12 @@ void do_not_used (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a fast interrupt request.
+ * @param[in] pt_regs Register set content when the interrupt happens
+ *
+ * FIXME: What does it mean, why is reset the only solution?
+ */
 void do_fiq (struct pt_regs *pt_regs)
 {
 	printf ("fast interrupt request\n");
@@ -117,9 +186,21 @@ void do_fiq (struct pt_regs *pt_regs)
 	bad_mode ();
 }
 
+/**
+ * The CPU catches a regular interrupt.
+ * @param[in] pt_regs Register set content when the interrupt happens
+ *
+ * FIXME: What does it mean, why is reset the only solution?
+ */
 void do_irq (struct pt_regs *pt_regs)
 {
 	printf ("interrupt request\n");
 	show_regs (pt_regs);
 	bad_mode ();
 }
+
+/**
+ * @page arm_interrupts Interrupt handling on ARM
+ *
+ * Why U-boot doesn't use interrupts?
+ */

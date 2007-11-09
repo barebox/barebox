@@ -23,6 +23,11 @@
  * MA 02111-1307 USA
  */
 
+/**
+ * @file
+ * @brief Flash memory support: erase, protect, unprotect
+ */
+
 #include <common.h>
 #include <command.h>
 #include <cfi_flash.h>
@@ -91,6 +96,18 @@ U_BOOT_CMD_START(erase)
 	.usage		= "erase FLASH memory",
 	U_BOOT_CMD_HELP(cmd_erase_help)
 U_BOOT_CMD_END
+
+/** @page erase_command erase Erase flash memory
+ *
+ * Usage is: erase \<devicee>
+ *
+ * Erase the flash memory behind the device. It depends on the device given,
+ * what area will be erased. If the device represents the whole flash memory
+ * the whole memory will be erased. If the device represents a partition on
+ * a main flash memory, only this partition part will be erased.
+ *
+ * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+ */
 
 static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -163,3 +180,26 @@ U_BOOT_CMD_START(unprotect)
 	U_BOOT_CMD_HELP(cmd_protect_help)
 U_BOOT_CMD_END
 
+/** @page protect_command protect Protect a flash memory
+ *
+ * Usage is: protect \<devicee>
+ *
+ * Protect the flash memory behind the device. It depends on the device given,
+ * what area will be protected. If the device represents the whole flash memory
+ * the whole memory will be protected. If the device represents a partition on
+ * a main flash memory, only this partition part will be protected.
+ *
+ * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+ */
+
+/** @page unprotect_command unprotect Unprotect a flash memory
+ *
+ * Usage is: unprotect \<devicee>
+ *
+ * Unprotect the flash memory behind the device. It depends on the device given,
+ * what area will be unprotected. If the device represents the whole flash memory
+ * the whole memory will be unprotected. If the device represents a partition
+ * on a main flash memory, only this partition part will be unprotected.
+ *
+ * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+ */

@@ -31,8 +31,9 @@
  *
  */
 
-/* The DEBUG define must be before common to enable debugging */
-/* #define DEBUG	*/
+#ifdef CONFIG_ENABLE_FLASH_NOISE
+# define DEBUG
+#endif
 
 #include <common.h>
 #include <asm/byteorder.h>
@@ -41,22 +42,6 @@
 #include <init.h>
 #include <malloc.h>
 #include <cfi_flash.h>
-
-/*
- * This file implements a Common Flash Interface (CFI) driver for U-Boot.
- * The width of the port and the width of the chips are determined at initialization.
- * These widths are used to calculate the address for access CFI data structures.
- *
- * References
- * JEDEC Standard JESD68 - Common Flash Interface (CFI)
- * JEDEC Standard JEP137-A Common Flash Interface (CFI) ID Codes
- * Intel Application Note 646 Common Flash Interface (CFI) and Command Sets
- * Intel 290667-008 3 Volt Intel StrataFlash Memory datasheet
- * AMD CFI Specification, Release 2.0 December 1, 2001
- * AMD/Spansion Application Note: Migration from Single-byte to Three-byte
- *   Device IDs, Publication Number 25538 Revision A, November 8, 2001
- *
- */
 
 #define FLASH_CMD_CFI			0x98
 #define FLASH_CMD_READ_ID		0x90
@@ -326,16 +311,14 @@ static int cfi_probe (struct device_d *dev)
 
 	dev->priv = (void *)info;
 
-	printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+	debug ("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
 
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
 	size += info->size = flash_get_size(info, dev->map_base);
 	if (info->flash_id == FLASH_UNKNOWN) {
-#ifndef CFG_FLASH_QUIET_TEST
-		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
+		debug ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
 			dev->map_base, info->size, info->size << 20);
-#endif /* CFG_FLASH_QUIET_TEST */
 	}
 
 	return 0;
@@ -1495,3 +1478,22 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 }
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
+/**
+ * @file
+ * @brief This file implements a Common Flash Interface (CFI) driver for U-Boot.
+ *
+ * This file implements a Common Flash Interface (CFI) driver for U-Boot.
+ * The width of the port and the width of the chips are determined at initialization.
+ * These widths are used to calculate the address for access CFI data structures.
+ *
+ * References
+ *
+ * - JEDEC Standard JESD68 - Common Flash Interface (CFI)
+ * - JEDEC Standard JEP137-A Common Flash Interface (CFI) ID Codes
+ * - Intel Application Note 646 Common Flash Interface (CFI) and Command Sets
+ * - Intel 290667-008 3 Volt Intel StrataFlash Memory datasheet
+ * - AMD CFI Specification, Release 2.0 December 1, 2001
+ * - AMD/Spansion Application Note: Migration from Single-byte to Three-byte
+ *    Device IDs, Publication Number 25538 Revision A, November 8, 2001
+ *
+ */

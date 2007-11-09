@@ -80,16 +80,16 @@ U_BOOT_CMD_START(mount)
 U_BOOT_CMD_END
 
 /** @page mount_command mount
- * Usage: mount [<device> <fstype> <mountpoint>]
+ * Usage: mount [\<device> \<fstype> \<mountpoint>]
  *
- * Mounts a filesystem of a given <fstype> on a <device> to a <mountpoint>.
- * <device> can be one of /dev/ * or some arbitrary string if no
+ * Mounts a filesystem of a given \<fstype> on a \<device> to a \<mountpoint>.
+ * \<device> can be one of /dev/ * or some arbitrary string if no
  * device is needed for this driver (for example ramfs).
  *
- * <fstype> is the filesystem driver to use. Try the 'devinfo' command
+ * \<fstype> is the filesystem driver to use. Try the 'devinfo' command
  * for a list of available drivers.
  *
- * <mountpoint> must be an empty directory descending directly from the
+ * \<mountpoint> must be an empty directory descending directly from the
  * root directory.
  */
 

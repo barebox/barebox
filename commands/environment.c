@@ -227,13 +227,13 @@ U_BOOT_CMD_END
 /**
  * @page saveenv_command saveenv
  *
- * Usage: saveenv [<envfs>] [<directory>]
+ * Usage: saveenv [\<envfs>] [\<directory>]
  *
- * Save the files in <directory> to the persistent storage device <envfs>.
- * <envfs> is normally a block in flash, but could be any other file.
+ * Save the files in \<directory> to the persistent storage device \<envfs>.
+ * \<envfs> is normally a block in flash, but could be any other file.
  *
- * If ommitted <directory> defaults to /env and <envfs> defaults to
- * /dev/env0.
+ * If ommitted \<directory> defaults to \b /env and \<envfs> defaults to
+ * \b /dev/env0.
  *
  * @note envfs can only handle files. Directories are skipped silently.
  */
@@ -372,12 +372,12 @@ U_BOOT_CMD_END
 /**
  * @page loadenv_command loadenv
  *
- * Usage: loadenv [<directory>] [<envfs>]
+ * Usage: loadenv [\<directory>] [\<envfs>]
  *
- * Load the persistent storage contained in <envfs> to the directory <directory>.
+ * Load the persistent storage contained in \<envfs> to the directory \<directory>.
  *
- * If ommitted <directory> defaults to /env and <envfs> defaults to
- * /dev/env0.
+ * If ommitted \<directory> defaults to /env and \<envfs> defaults to
+ * \b /dev/env0.
  *
  * @note envfs can only handle files. Directories are skipped silently.
  */

@@ -1,6 +1,4 @@
 /*
- * tftp, rarpboot, dhcp, nfs, cdp - Boot support
- *
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
@@ -21,6 +19,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ */
+
+/**
+ * @file
+ * @brief tftp, rarpboot, dhcp, nfs, cdp - Boot support
  */
 
 #include <common.h>
@@ -102,6 +105,22 @@ U_BOOT_CMD_START(tftp)
 	U_BOOT_CMD_HELP(cmd_tftp_help)
 U_BOOT_CMD_END
 
+/**
+ * @page tftp_command tftp
+ *
+ * Usage is: tftp \<filename\> [\<localfilename\>]
+ *
+ * Load a file via network using BootP/TFTP protocol. The loaded file you
+ * can find after download in you current ramdisk. Refer \b ls command.
+ *
+ * \<localfile> can be the local filename only, or also a device name. In the
+ * case of a device name, the will gets stored there. This works also for
+ * partitions of flash memory. Refer \b erase, \b unprotect for flash
+ * preparation.
+ *
+ * Note: This command is available only, if enabled in the menuconfig.
+ */
+
 #ifdef CONFIG_NET_RARP
 static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -115,6 +134,16 @@ U_BOOT_CMD_START(rarpboot)
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
 U_BOOT_CMD_END
 #endif /* CONFIG_NET_RARP */
+
+/**
+ * @page rarp_command rarp
+ *
+ * Usage is: FIXME
+ *
+ * Load a file via network using rarp/tftp protocol. FIXME: Where to find it
+ * after loading?
+ * @note This command is available only, if enabled in the menuconfig.
+ */
 
 #ifdef CONFIG_NET_DHCP
 static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])

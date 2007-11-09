@@ -1,7 +1,10 @@
 /** @page users_manual User's Manual
 
-FIXME: Hints and tips for simply using U-Boot v2
+Who should read this part?
 
+Mostly everyone. The user needs it to find help for his daily work to manage
+his targets. The developer to find out all the new features that make his
+work easier.
 
  - @subpage shell_notes
  - @subpage readline_parser

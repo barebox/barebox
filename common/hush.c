@@ -1574,15 +1574,15 @@ U_BOOT_CMD_END
 
 /** @page sh_command Starting shell
  *
- * Usage: sh <filename> [<arguments>]
+ * Usage: sh \<filename\> [\<arguments\>]
  *
- * Execute a shell script named <filename> and forward (if given)
- * <arguments> to it.
+ * Execute a shell script named \<filename\> and forward (if given)
+ * \<arguments\> to it.
  *
- * Usage: .  <filename> [<arguments>]
- * or     source <filename> [<arguments>]
+ * Usage: .  \<filename\> [\<arguments\>]
+ * or     source \<filename\> [\<arguments\>]
  *
- * Read and execute commands from <filename> in the current shell environment,
- * forward (if given) <arguments> to it and return the exit status of the last
+ * Read and execute commands from \<filename\> in the current shell environment,
+ * forward (if given) \<arguments\> to it and return the exit status of the last
  * command  executed from filename.
  */

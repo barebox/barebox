@@ -1,5 +1,91 @@
-/** @page dev_board Integrating a new Board
+/** @page dev_board Adapting a new Board
 
-Blablubb
+To add a new board to U-Boot a few steps must be done, to extend and modify
+the U-Boot source tree.
+
+@section board_add_files Files/Directories to be added
+
+ - board/\<boardname\>
+ - board/\<boardname\>/Makefile
+ - board/\<boardname\>/\<boardname\>.c
+ - board/\<boardname\>/\<boardname\>.dox
+ - include/configs/\<boardname\>.h
+ - arch/\<architecture\>/configs/\<boardname\>_defconfig
+
+@subsection board_makefile board/\<boardname\>Makefile
+
+@verbatim
+	obj-y += all files that builds the BSP (Assembler and/or C files)
+@endverbatim
+
+@subsection board_basefile board/\<boardname\>\<boardname\>.c
+
+TBD
+
+@subsection board_doxygen board/\<boardname\>/\<boardname\>.dox
+
+This file should describe in short words your new board, what CPU
+it uses, what resources are provided and features it supports.
+
+Use the doxygen style for this kind of documentation. Below you find a
+template for this kind of file:
+
+@verbatim
+/** @page <boardname> <Manufacturer> <Board's Name>
+
+This board uses an <architecture> based CPU. The board is shipped with:
+
+- many MiB NOR type Flash Memory
+- many MiB SDRAM
+- a very special network controller
+
+and so on.
+
+*/
+@endverbatim
+
+To make your new shiny file visible in the automatically generated
+documentation you must sort in the used page lable ("<boardname>" in the
+template above) into Documentation/boards.dox as:
+
+@verbatim
+ ...
+ @subpage <boardname>
+ ...
+@endverbatim
+
+at the right architecture.
+
+@note Consider to use an unique page lable.
+
+@subsection board_lscript board/\<boardname\>/u-boot.ld.S
+
+If your board needs a special binary U-Boot layout, you can provide a local
+board linker script file. This will replace the generic one provided by your
+architecture or CPU support.
+
+Add this file with
+
+@verbatim
+	extra-y += <board_linker_script>
+@endverbatim
+
+in your local \b Makefile to the list of files, forwarded to the last linking step.
+
+@section board_defconfig arch/\<architecture\>/configs/\<boardname\>_defconfig
+
+TBD
+
+@section board_mod_files These files needs to be modified:
+
+ - modify board/board.doc
+ - modify arch/\<architecture\>/Kconfig
+  - add your board (MACH_*) to the list
+  - add your default text base address for this architecture (ARCH_TEXT_BASE)
+  - add BOARDINFO with valueable info for your board
+ - modify arch/\<architecture\>/Makefile:
+  - add board-$(MACH_*) = \<your board_dir\>
+
+First, the new board should be visible in the menu.
 
 */

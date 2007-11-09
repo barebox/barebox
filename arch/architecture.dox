@@ -1,6 +1,33 @@
 /** @page dev_architecture Integrate a new architecture (ARCH)
 
-Friesel
+@section linker_scripts Rules for the generic Linker Script File
+
+Never include an object file by name directly! Linker Script Files defines the
+layout, not the content. Content is defined in objecfiles instead.
+
+Don't rely on the given object file order to create your binary U-Boot v2! This
+may work, but is not relyable in all cases (and its a very bad style)!
+
+For the special case some layout contraints exists, use specific section
+naming instead. Refer @ref reset_code how to define this specific section.
+
+@section reset_code Bring it up: The Reset Code
+
+The way a CPU wakes up after reset is very specific to its architecture.
+
+For example the ARM architecture starts its reset code at address 0x0000000,
+the x86 architecture at 0x000FFFF0, PowerPC at 0x00000100 or 0xFFFFF100.
+
+So for the special reset code on all architectures it must be located at
+architecture specific locations within the binary U-Boot image.
+
+All reset code uses section ".text_entry" for its localisation within the
+binary U-Boot image. Its up to the linker script file to use this section name
+to find the right place in whatever environment and U-Boot sizes.
+
+@code
+	.section ".text_entry","ax"
+@endcode
 
 */
 

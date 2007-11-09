@@ -16,5 +16,7 @@ Hints and tips for simply adapting U-Boot v2
 Various themes:
 
  - @subpage how_mount_works
+ - @subpage boot_preparation
+ - @subpage uboot_simul
 
 */

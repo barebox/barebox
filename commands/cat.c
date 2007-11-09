@@ -97,7 +97,7 @@ U_BOOT_CMD_END
 /**
  * @page cat_command cat (concatenate)
  *
- * Usage is: cat <file> [<file> ...]
+ * Usage is: cat \<file\> [\<file\> ...]
  *
  * Concatenate files to stdout. Currently only printable characters
  * and \\n and \\t are printed, but this should be optional

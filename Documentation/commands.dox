@@ -1,15 +1,24 @@
 /**
  * @page command_reference Supported Shell Commands
 
- - @subpage sh_command
+ - @subpage addpart_command
  - @subpage cat_command
  - @subpage cd_command
  - @subpage cp_command
- - @subpage printenv_command
- - @subpage saveenv_command
- - @subpage loadenv_command
- - @subpage setenv_command
+ - @subpage delpart_command
+ - @subpage devinfo_command
+ - @subpage edit_command
+ - @subpage erase_command
  - @subpage export_command
+ - @subpage tftp_command
+ - @subpage loadenv_command
  - @subpage mount_command
+ - @subpage printenv_command
+ - @subpage protect_command
+ - @subpage rarp_command
+ - @subpage saveenv_command
+ - @subpage setenv_command
+ - @subpage sh_command
+ - @subpage unprotect_command
 
 */

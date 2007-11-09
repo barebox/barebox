@@ -61,3 +61,8 @@ int tap_alloc(char *dev)
 	strcpy(dev, ifr.ifr_name);
 	return fd;
 }
+
+/**
+ * @file
+ * @brief Host side functions for tap driver
+ */

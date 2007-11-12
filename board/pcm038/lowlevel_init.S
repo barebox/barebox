@@ -50,9 +50,6 @@ board_init_lowlevel:
 	writel(0x130410c3, PCDR0)
 	writel(0x09030913, PCDR1)
 
-	/* skip sdram setup for debugging */
-	mov	pc,r10
-
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0xa0000000
 	bls	1f

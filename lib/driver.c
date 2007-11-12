@@ -353,7 +353,7 @@ U_BOOT_CMD_END
 
   no info available for eth0
   Parameters:
-          ip = 192.168.23.197
+      ipaddr = 192.168.23.197
      ethaddr = 80:81:82:83:84:86
      gateway = 192.168.23.1
      netmask = 255.255.255.0

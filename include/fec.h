@@ -37,9 +37,9 @@ struct fec_platform_data {
  * Supported phy types on this platform
  */
 typedef enum {
-	SEVENWIRE,	/** 7-wire       */
-	MII10,		/** MII 10Mbps   */
-	MII100		/** MII 100Mbps  */
+	SEVENWIRE,	/**< 7-wire       */
+	MII10,		/**< MII 10Mbps   */
+	MII100		/**< MII 100Mbps  */
 } xceiver_type;
 
 #endif /* __INCLUDE_NETWORK_FEC_H */

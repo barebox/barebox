@@ -261,7 +261,7 @@ typedef struct ethernet_register_set {
 /**
  * @brief Descriptor buffer alignment
  *
- * i.MX27 requires a 16 byte alignment
+ * i.MX27 requires a 16 byte alignment (but for the first element only)
  */
 #define DB_ALIGNMENT 16
 
@@ -269,7 +269,8 @@ typedef struct ethernet_register_set {
  * @brief Data buffer alignment
  *
  * i.MX27 requires a four byte alignment
- * Note: Valid for data_pointer in struct buffer_descriptor
+ *
+ * Note: Valid for member data_pointer in struct buffer_descriptor
  */
 #define DB_DATA_ALIGNMENT 4
 
@@ -300,16 +301,16 @@ typedef struct {
 /**
  * @brief Numbers of buffer descriptors for receiving
  *
- * The number defines the stocked memory buffers for the receiving taskt.
+ * The number defines the stocked memory buffers for the receiving task.
  * Larger values makes no sense in this limited environment.
  */
 #define FEC_RBD_NUM		64
 
 /**
- * @brief define the ethernet packet size limit in memory
+ * @brief Define the ethernet packet size limit in memory
  *
  * Note: Do not shrink this number. This will force the FEC to spread larger
- * frames in more than one BD. There is nothing to worry about, but the current
+ * frames in more than one BD. This is nothing to worry about, but the current
  * driver can't handle it.
  */
 #define FEC_MAX_PKT_SIZE	1536

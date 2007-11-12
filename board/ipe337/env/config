@@ -1,21 +1,22 @@
 echo /env/config
 
-eth0.serverip=192.168.23.2
-eth0.ethaddr=80:87:78:74:73:63
-
-mtdparts="128k(uboot)ro,128k(ubootenv),128k(alternate),1536k(kernel),-(root)"
-
 ip=dhcp
-eth0.ip=192.168.25.2
-eth0.netmask=255.255.255.0
-eth0.gateway=192.168.25.1
 
-nfsroot="/home/sha/octopus/blackfin/OSELAS.BSP-Pipetronix-ipe337-trunk/root"
+eth0.ipaddr=192.168.23.164
+eth0.ethaddr=80:87:78:74:73:63
+eth0.serverip=192.168.23.1
+eth0.netmask=255.255.255.0
+eth0.gateway=192.168.23.1
+
 uimage=uImage-bfin
 jffs2=root-bfin.jffs2
 
+nfsroot="/home/kleineb/pengutronix/pii-bf/OSELAS.BSP-Pipetronix-ipe337-trunk/root"
 bootargs="console=ttyBF0,115200"
 
 # can be either 'net' or 'flash'
-kernel=flash
-root=flash
+kernel=net
+root=net
+
+mtdparts="128k(uboot)ro,128k(ubootenv),128k(alternate),1536k(kernel),-(root)"
+addpart /dev/nor0 $mtdparts

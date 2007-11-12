@@ -1,20 +1,6 @@
 . /env/config
 
-if [ -z $rootdev ]; then
-        echo "$rootdev not set. Please set to your device containing the root image"
-        exit 1
-fi
+image=$jffs2
+part=/dev/nor0.root
 
-image=root-ipe337.jffs2
-
-if [ $# = 1 ]; then
-        image=$1
-fi
-
-if [ x$ip = xdhcp ]; then
-        dhcp
-fi
-
-unprotect "$rootdev"
-erase "$rootdev"
-tftp $image "$rootdev"
+. /env/bin/_update $1

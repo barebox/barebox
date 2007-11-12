@@ -19,7 +19,3 @@ bootargs="console=ttyBF0,115200"
 # can be either 'net' or 'flash'
 kernel=flash
 root=flash
-
-if [ ! -e dev/nor0.0 ]; then
-        addpart /dev/nor0 $mtdparts
-fi

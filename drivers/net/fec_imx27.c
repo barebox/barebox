@@ -446,7 +446,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & ~(DB_DATA_ALIGNMENT-1))
+	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1))
 		printf("%s: Warning: Transmitt data not aligned!\n", __FUNCTION__);
 
 	/*

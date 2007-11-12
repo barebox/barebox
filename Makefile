@@ -1059,8 +1059,6 @@ define find-sources
 	       find $(__srctree)arch/$${ARCH} $(RCS_FIND_IGNORE) \
 	            -name $1 -print; \
 	  done ; \
-	  find $(__srctree)security/selinux/include $(RCS_FIND_IGNORE) \
-	       -name $1 -print; \
 	  find $(__srctree)include $(RCS_FIND_IGNORE) \
 	       \( -name config -o -name 'asm-*' \) -prune \
 	       -o -name $1 -print; \

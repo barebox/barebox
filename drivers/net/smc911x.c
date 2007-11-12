@@ -331,6 +331,10 @@
 
 #define MII_DATA		0x07	  /* R/W mask 0x0000FFFFUL */
 
+#ifdef FLOW
+#undef FLOW	/* clashed with include/asm/cpu/defBF561.h:1654 */
+#endif
+
 #define FLOW			0x08	  /* R/W */
 #define FLOW_FCPT			0xFFFF0000
 #define FLOW_FCPASS			0x00000004

@@ -1,4 +1,3 @@
-
 . /env/config
 
 if [ x$1 = "xflash" ]; then 
@@ -17,7 +16,7 @@ else
 	if [ "$ip" = dhcp ]; then
 		bootargs="$bootargs ip=dhcp"
 	else
-		bootargs="$bootargs ip=$eth0.ip:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+		bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
 	fi
 	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp"
 fi

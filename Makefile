@@ -4,6 +4,22 @@ SUBLEVEL = 0
 EXTRAVERSION =-git
 NAME = Homicidal Dwarf Hamster
 
+#
+# sanity checks for check default environemnt
+#
+ifdef CONFIG_DEFAULT_ENVIRONMENT
+
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_PATH),"")
+$(error default environment path empty))
+endif
+
+saved-env_path := $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
+CONFIG_DEFAULT_ENVIRONMENT_PATH := $(shell cd $(CONFIG_DEFAULT_ENVIRONMENT_PATH) && /bin/pwd)
+$(if $(CONFIG_DEFAULT_ENVIRONMENT_PATH),, \
+	$(error default environment path $(saved-env_path) does not exist))
+
+endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
+
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
 # More info can be located in ./README

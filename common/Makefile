@@ -19,14 +19,13 @@ obj-y += memsize.o
 obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_MODULES) += module.lds
 
-ifdef CONFIG_DEFAULT_ENVIRONMENT_PATH
-
-startup.o: include/uboot_default_env.h
-
-include/uboot_default_env.h: $(shell find $(CONFIG_DEFAULT_ENVIRONMENT_PATH) -type f)
-	$(Q)scripts/ubootenv -s $(CONFIG_DEFAULT_ENVIRONMENT_PATH) uboot_default_env
-	$(Q)cat uboot_default_env | scripts/bin2c default_environment > $@
-
+ifdef CONFIG_DEFAULT_ENVIRONMENT
+$(obj)/startup.o: include/uboot_default_env.h
 $(obj)/env.o: include/uboot_default_env.h
-endif
 
+ENV_FILES := $(shell find $(CONFIG_DEFAULT_ENVIRONMENT_PATH))
+endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
+
+include/uboot_default_env.h: $(ENV_FILES)
+	$(Q)scripts/ubootenv -s $(CONFIG_DEFAULT_ENVIRONMENT_PATH) | \
+		scripts/bin2c default_environment > $@

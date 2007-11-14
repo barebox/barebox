@@ -22,7 +22,7 @@
  */
 
 #include <config.h>
-#ifdef __PPC__
+#if defined (__PPC__) && !defined (__SANDBOX__)
 /*
  * At least on G2 PowerPC cores, sequential accesses to non-existent
  * memory must be synchronized.

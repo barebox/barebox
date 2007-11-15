@@ -20,7 +20,7 @@ int	getc(void);
 void	console_puts(unsigned int ch, const char *s);
 
 static inline void puts(const char *s) {
-	return console_puts(CONSOLE_STDOUT, s);
+	console_puts(CONSOLE_STDOUT, s);
 }
 
 static inline void putchar(char c) {

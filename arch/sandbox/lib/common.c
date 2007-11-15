@@ -193,7 +193,7 @@ void  flush_cache(unsigned long dummy1, unsigned long dummy2)
 extern void start_uboot(void);
 extern void mem_malloc_init(void *start, void *end);
 
-int add_image(char *str, char *name_template)
+static int add_image(char *str, char *name_template)
 {
 	char *file;
 	int readonly = 0, map = 1;
@@ -232,7 +232,7 @@ int add_image(char *str, char *name_template)
 	hf->size = s.st_size;
 
 	if (map) {
-		hf->map_base = (unsigned long)mmap(0, hf->size,
+		hf->map_base = (unsigned long)mmap(NULL, hf->size,
 				PROT_READ | (readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
 		if ((void *)hf->map_base == MAP_FAILED)

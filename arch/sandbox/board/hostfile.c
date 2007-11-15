@@ -29,7 +29,7 @@
 #include <asm/arch/hostfile.h>
 #include <xfuncs.h>
 
-ssize_t hf_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t hf_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
 {
 	struct hf_platform_data *hf = dev->platform_data;
 	int fd = hf->fd;
@@ -40,7 +40,7 @@ ssize_t hf_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulo
 	return linux_read(fd, buf, count);
 }
 
-ssize_t hf_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t hf_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
 {
 	struct hf_platform_data *hf = dev->platform_data;
 	int fd = hf->fd;

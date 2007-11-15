@@ -105,7 +105,7 @@ int dev_add_param(struct device_d *dev, struct param_d *newparam)
 {
 	struct param_d *param = dev->param;
 
-	newparam->next = 0;
+	newparam->next = NULL;
 
 	if (param) {
 		while (param->next)

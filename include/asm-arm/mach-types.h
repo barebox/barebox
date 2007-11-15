@@ -1153,6 +1153,11 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_HME_PXA              1145
 #define MACH_TYPE_DEISTERDCA           1146
 
+/**
+ * Phytec PCM-038 phyCORE-i.MX27
+ */
+#define MACH_TYPE_PCM038               1551
+
 #ifdef CONFIG_ARCH_EBSA110
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -14841,6 +14846,18 @@ extern unsigned int __machine_arch_type;
 
 #ifndef machine_arch_type
 #define machine_arch_type	__machine_arch_type
+#endif
+
+#ifdef CONFIG_MACH_PCM038
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type	__machine_arch_type
+# else
+#  define machine_arch_type	MACH_TYPE_PCM038
+# endif
+# define machine_is_pcm038()	(machine_arch_type == MACH_TYPE_SCB9328)
+#else
+# define machine_is_pcm038()	(0)
 #endif
 
 #endif

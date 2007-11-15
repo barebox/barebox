@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	u_boot_register_console("console", 1, 0);
+	u_boot_register_console("console", fileno(stdin), fileno(stdout));
 
 	rawmode();
 	start_uboot();

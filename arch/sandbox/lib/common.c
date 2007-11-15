@@ -321,6 +321,11 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+#ifdef __PPC__
+/* HACK: we need this symbol on PPC, better ask a PPC export about this :) */
+char _SDA_BASE_[4096];
+#endif
+
 static void print_usage(const char *prgname)
 {
 	printf(

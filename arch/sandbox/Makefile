@@ -42,6 +42,10 @@ ifeq ($(SUBARCH),i386)
 ELF_ARCH   := $(SUBARCH)
 ELF_FORMAT := elf32-$(SUBARCH)
 endif
+ifeq ($(SUBARCH),powerpc)
+ELF_ARCH   := powerpc
+ELF_FORMAT := elf32-powerpc
+endif
 
 export ELF_FORMAT ELF_ARCH SUBARCH
 #	Update machine arch and proc symlinks if something which affects

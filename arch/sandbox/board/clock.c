@@ -25,7 +25,7 @@
 #include <clock.h>
 #include <asm/arch/linux.h>
 
-uint64_t linux_clocksource_read(void)
+static uint64_t linux_clocksource_read(void)
 {
 	return linux_get_time();
 }

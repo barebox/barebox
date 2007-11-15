@@ -207,9 +207,9 @@ const char *fsdev_get_mountpoint(struct fs_device_d *fsdev)
 	return fsdev->mtab.path;
 }
 
-FILE files[MAX_FILES];
+static FILE files[MAX_FILES];
 
-FILE *get_file(void)
+static FILE *get_file(void)
 {
 	int i;
 
@@ -224,7 +224,7 @@ FILE *get_file(void)
 	return NULL;
 }
 
-void put_file(FILE *f)
+static void put_file(FILE *f)
 {
 	files[f->no].in_use = 0;
 }
@@ -245,7 +245,7 @@ static struct device_d *get_fs_device_by_path(char **path)
 	return dev;
 }
 
-int dir_is_empty(const char *pathname)
+static int dir_is_empty(const char *pathname)
 {
 	DIR *dir;
 	struct dirent *d;
@@ -610,7 +610,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	struct fs_driver_d *fs_drv;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
-	struct device_d *dev, *parent_device = 0;
+	struct device_d *dev, *parent_device = NULL;
 	int ret;
 	char *path = normalise_path(_path);
 

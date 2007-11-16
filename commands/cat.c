@@ -32,6 +32,8 @@
 #include <xfuncs.h>
 #include <malloc.h>
 
+#define BUFSIZE 1024
+
 /**
  * @param[in] cmdtp FIXME
  * @param[in] argc Argument count from command line
@@ -50,7 +52,7 @@ static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	buf = xmalloc(1024);
+	buf = xmalloc(BUFSIZE);
 
 	while (args < argc) {
 		fd = open(argv[args], O_RDONLY);
@@ -59,7 +61,7 @@ static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
 			goto out;
 		}
 
-		while((ret = read(fd, buf, 1024)) > 0) {
+		while((ret = read(fd, buf, BUFSIZE)) > 0) {
 			for(i = 0; i < ret; i++) {
 				if (isprint(buf[i]) || buf[i] == '\n' || buf[i] == '\t')
 					putchar(buf[i]);

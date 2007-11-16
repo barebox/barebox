@@ -182,10 +182,17 @@ EXPORT_SYMBOL(register_driver);
  */
 struct device_d *get_device_by_path(const char *path)
 {
-	if (strncmp(path, "/dev/", 5))
-		return NULL;
+	struct device_d *dev = NULL;
+	char *npath = normalise_path(path);
 
-	return get_device_by_id(path + 5);
+	if (strncmp(npath, "/dev/", 5))
+		goto out;
+
+	dev = get_device_by_id(npath + 5);
+
+ out:
+	free(npath);
+	return dev;
 }
 EXPORT_SYMBOL(get_device_by_path);
 

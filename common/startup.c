@@ -122,7 +122,7 @@ void start_uboot (void)
 	mkdir("/dev", 0);
 	mount("none", "devfs", "/dev");
 
-#ifdef CONFIG_CMD_ENVIRONMENT
+#ifdef CONFIG_ENV_HANDLING
 	if (envfs_load("/dev/env0", "/env")) {
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 		printf("no valid environment found on /dev/env0. "

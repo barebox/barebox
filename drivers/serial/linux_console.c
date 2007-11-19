@@ -48,10 +48,15 @@ static int linux_console_getc(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	struct linux_console_data *d = dev->platform_data;
+	static char old_c;
 	char c;
 
 	linux_read(d->stdinfd, &c, 1);
 
+	if (old_c == 0x1c && c == 'q')
+		panic("^\\q pressed - exiting");
+
+	old_c = c;
 	return c;
 }
 

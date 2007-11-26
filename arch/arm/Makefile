@@ -21,7 +21,6 @@ TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE) -P
 CFLAGS := -fno-common -msoft-float -Os
-LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)

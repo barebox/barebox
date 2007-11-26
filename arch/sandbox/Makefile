@@ -24,8 +24,6 @@ CFLAGS := -fno-common -Os -Dmalloc=u_boot_malloc \
 		-Dfputs=u_boot_fputs -Dsetenv=u_boot_setenv \
 		-Dgetenv=u_boot_getenv -Dprintf=u_boot_printf
 
-LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
-
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)
 endif
@@ -67,7 +65,7 @@ maketools: include/asm-sandbox/.arch
 
 cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 	-Wl,--start-group $(uboot-common) -Wl,--end-group \
-	-lrt -Wl,-rpath,/lib -lrt -lpthread
+	-lrt -lpthread
 
 common-y += arch/sandbox/lib/ arch/sandbox/board/
 

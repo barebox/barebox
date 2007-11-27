@@ -185,6 +185,12 @@ endmenu
 
 menu "Debugging                     "
 
+config DEBUG_INFO
+	bool
+	prompt "enable debug symbols"
+	help
+	  Enable build of u-boot with -g.
+
 config SKIP_LOWLEVEL_INIT
 	bool
 	depends on ARM

@@ -125,7 +125,7 @@ endchoice
 
 source arch/arm/mach-netx/Kconfig
 
-menu "Arm specific settings"
+menu "Arm specific settings         "
 
 config CMDLINE_TAG
 	bool "Send commandline to kernel"

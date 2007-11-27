@@ -63,6 +63,36 @@ static int dev_del_partitions(struct device_d *physdev)
 	return 0;
 }
 
+static int dev_check_fixed(struct device_d *physdev, struct partition *new_part)
+{
+	struct device_d *child;
+
+	device_for_each_child(physdev, child) {
+		struct partition *part = child->type_data;
+
+		debug("check aginst partition: %s\n", child->id);
+
+		if (!(part->flags & PARTITION_FIXED))
+			continue;
+
+		if (new_part->offset == part->offset &&		/* new_part is exactly part */
+		    new_part->device.size == part->device.size)
+			continue;
+
+		if ((new_part->offset >= part->offset &&
+		     new_part->offset < part->offset + part->device.size) ||
+		    (new_part->offset + new_part->device.size > part->offset &&
+		     new_part->offset + new_part->device.size <= part->offset + part->device.size)) {
+			printf("partition violates fixed partition\n");
+			errno = -EINVAL;
+			return errno;
+		}
+	}
+
+	return 0;
+
+}
+
 static int mtd_part_do_parse_one(struct partition *part, const char *str,
 				 char **endp)
 {
@@ -150,15 +180,13 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 		part->physdev = dev;
 		part->num = num;
 		part->device.map_base = dev->map_base + offset;
-
-		if (mtd_part_do_parse_one(part, endp, &endp)) {
-			dev_del_partitions(dev);
-			goto free_out;
-		}
-
-		offset += part->device.size;
-
 		part->device.type_data = part;
+
+		if (mtd_part_do_parse_one(part, endp, &endp))
+			goto free_out;
+
+		if (dev_check_fixed(dev, part))
+			goto free_out;
 
 		sprintf(part->device.id, "%s.%s", dev->id, part->name);
 		if (register_device(&part->device))
@@ -166,6 +194,7 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 
 		dev_add_child(dev, &part->device);
 
+		offset += part->device.size;
 		num++;
 
 		if (!*endp)
@@ -183,6 +212,7 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 free_out:
 	free(part);
 err_out:
+	dev_del_partitions(dev);
 	return 1;
 }
 

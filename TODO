@@ -1,8 +1,11 @@
 TODO
 ----
+
 [ ] ask jbe about:
     ./commands/Makefile:40:obj-$(CONFIG_SIMPLE_PARSER)      += setenv.o
 [ ] bark on partition not ending on flash sector boundaries
+[ ] rsc: switching on CONFIG_AUTO_COMPLETE fails, because env_complete()
+    isn't there
 [ ] distclean doesn't work without a config
 [ ] Every driver should have a remove function
 [ ] Clean up make system. Currently I think there are many things from the

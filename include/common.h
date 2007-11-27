@@ -182,13 +182,4 @@ int run_shell(void);
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-/*
- * Some definitions from the mem.c
- */
-int mem_parse_options(int, char**, char*, int*, char**, char**);
-int open_and_lseek(const char*, int, ulong);
-extern char memory_device[];
-#define RW_BUF_SIZE	(ulong)4096
-extern char rw_buf[RW_BUF_SIZE];
-
 #endif	/* __COMMON_H_ */

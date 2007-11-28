@@ -85,9 +85,11 @@ static int pcm038_devices_init(void)
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
-		PE15_PF_UART1_RTS };
+		PE15_PF_UART1_RTS,
+	};
 
-	for (i = 0; i < sizeof(mode) / sizeof(int); i++)
+	/* initizalize gpios */
+	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);

@@ -35,8 +35,6 @@ void imx_gpio_mode(int gpio_mode)
 	unsigned int bout = (gpio_mode & GPIO_BOUT_MASK) >> GPIO_BOUT_SHIFT;
 	unsigned int tmp;
 
-	printf("gpio_mode: 0x%08x ocr: 0x%08x port: %d pin: %2d aout: %d bout: %d\n", gpio_mode, ocr, port, pin, aout, bout);
-
 	/* Pullup enable */
 	if(gpio_mode & GPIO_PUEN)
 		PUEN(port) |= (1 << pin);

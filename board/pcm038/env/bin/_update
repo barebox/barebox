@@ -18,10 +18,19 @@ if [ x$ip = xdhcp ]; then
 	dhcp
 fi
 
+ping $eth0.serverip
+if [ $? -ne 0 ] ; then
+	echo "update aborted"
+	exit 1
+fi
+
 unprotect $part
 
+echo
 echo "erasing partition $part"
 erase $part
 
+echo
 echo "flashing $image to $part"
+echo
 tftp $image $part

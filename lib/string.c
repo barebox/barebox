@@ -139,7 +139,7 @@ EXPORT_SYMBOL(strcmp);
  * @ct: Another string
  * @count: The maximum number of bytes to compare
  */
-int strncmp(const char * cs,const char * ct,size_t count)
+int strncmp(const char * cs, const char * ct, size_t count)
 {
 	register signed char __res = 0;
 
@@ -273,7 +273,7 @@ EXPORT_SYMBOL(strspn);
  */
 char * strpbrk(const char * cs,const char * ct)
 {
-	const char *sc1,*sc2;
+	const char *sc1, *sc2;
 
 	for( sc1 = cs; *sc1 != '\0'; ++sc1) {
 		for( sc2 = ct; *sc2 != '\0'; ++sc2) {
@@ -294,7 +294,7 @@ EXPORT_SYMBOL(strpbrk);
  *
  * WARNING: strtok is deprecated, use strsep instead.
  */
-char * strtok(char * s,const char * ct)
+char * strtok(char * s, const char * ct)
 {
 	char *sbegin, *send;
 

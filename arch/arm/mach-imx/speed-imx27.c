@@ -119,14 +119,14 @@ ulong imx_get_perclk4(void)
 
 int imx_dump_clocks(void)
 {
-	printf("mpll:    %10d\n", imx_get_mpllclk());
-	printf("arm:     %10d\n", imx_get_armclk());
-	printf("system:  %10d\n", imx_get_spllclk());
-	printf("perclk1: %10d\n", imx_get_perclk1());
-	printf("perclk2: %10d\n", imx_get_perclk2());
-	printf("perclk3: %10d\n", imx_get_perclk3());
-	printf("perclk4: %10d\n", imx_get_perclk4());
-	printf("clkin26: %10d\n", clk_in_26m());
+	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
+	printf("spll:    %10d Hz\n", imx_get_spllclk());
+	printf("arm:     %10d Hz\n", imx_get_armclk());
+	printf("perclk1: %10d Hz\n", imx_get_perclk1());
+	printf("perclk2: %10d Hz\n", imx_get_perclk2());
+	printf("perclk3: %10d Hz\n", imx_get_perclk3());
+	printf("perclk4: %10d Hz\n", imx_get_perclk4());
+	printf("clkin26: %10d Hz\n", clk_in_26m());
 	return 0;
 }
 

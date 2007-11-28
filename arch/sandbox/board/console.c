@@ -36,7 +36,7 @@ int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd)
 
 	dev->platform_data = data;
 
-	strcpy(dev->name,"console");
+	strcpy(dev->name, "console");
 
 
 	if (stdinfd >= 0)

@@ -25,9 +25,9 @@
 
 #include <asm/mach-types.h>
 
-#define CONFIG_ARCH_NUMBER MACH_TYPE_PCM038
-#define CONFIG_BOOT_PARAMS 0xdeadbeef
+#define CONFIG_ARCH_NUMBER	MACH_TYPE_PCM038
+#define CONFIG_BOOT_PARAMS	0xa0000100
 #define CFG_MALLOC_LEN		(4096 << 10)
-#define CONFIG_STACKSIZE	(120<<10)      /* stack size */
+#define CONFIG_STACKSIZE	( 120 << 10)	/* stack size */
 
 #endif	/* __CONFIG_H */

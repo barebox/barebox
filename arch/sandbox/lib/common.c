@@ -85,8 +85,10 @@ void linux_putc(const char c)
 
 int linux_tstc(int fd)
 {
+	struct timeval tv = {
+		.tv_usec = 100,
+	};
 	fd_set rfds;
-	struct timeval tv;
 	int ret;
 
 	FD_ZERO(&rfds);
@@ -99,9 +101,6 @@ int linux_tstc(int fd)
 	 * things like networking slow, because U-Boot will
 	 * poll this function very often.
 	 */
-	tv.tv_sec = 0;
-	tv.tv_usec = 100;
-
 	ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 
 	if (ret)

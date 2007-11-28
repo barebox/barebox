@@ -146,7 +146,27 @@ void disable_interrupt(void)
 
 int linux_read(int fd, void *buf, size_t count)
 {
-	return read(fd, buf, count);
+	ssize_t ret;
+
+	do {
+		ret = read(fd, buf, count);
+
+		if (ret == 0) {
+			printf("read on fd %d returned 0, device gone? - exiting\n", fd);
+			reset_cpu(0);
+		} else if (ret == -1) {
+			if (errno == EAGAIN)
+				usleep(100);
+			else if (errno == EINTR)
+				continue;
+			else {
+				printf("read on fd %d returned -1, errno %d - exiting\n", fd, errno);
+				reset_cpu(0);
+			}
+		}
+	} while (ret <= 0);
+
+	return (int)ret;
 }
 
 int linux_read_nonblock(int fd, void *buf, size_t count)
@@ -160,13 +180,10 @@ int linux_read_nonblock(int fd, void *buf, size_t count)
 	if (fcntl(fd, F_SETFL, oldflags | O_NONBLOCK) == -1)
 		goto err_out;
 
-	ret = read(fd, buf, count);
+	ret = linux_read(fd, buf, count);
 
 	if (fcntl(fd, F_SETFL, oldflags) == -1)
 		goto err_out;
-
-	if (ret == -1)
-		usleep(100);
 
 	return ret;
 

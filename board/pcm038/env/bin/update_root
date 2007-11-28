@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. /env/config
+
+image=$jffs2
+part=/dev/nor0.root
+
+. /env/bin/_update $1

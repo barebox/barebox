@@ -4,6 +4,7 @@ PATH=/env/bin
 export PATH
 
 . /env/config
+addpart /dev/nor0 $mtdparts
 
 echo
 echo -n "Hit any key to stop autoboot: "

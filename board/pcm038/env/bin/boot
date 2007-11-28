@@ -12,8 +12,6 @@ if [ x$1 = xnet ]; then
 	kernel=net
 fi
 
-addpart /dev/nor0 $mtdparts
-
 if [ $root = flash ]; then
 	bootargs="$bootargs root=$rootpart rootfstype=jffs2"
 else

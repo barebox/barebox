@@ -1,18 +1,21 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-git
-# Tue Sep 25 22:07:54 2007
+# Linux kernel version: 2.0.0-git
+# Thu Nov 29 10:27:43 2007
 #
 CONFIG_ARCH_TEXT_BASE=0x00000000
 CONFIG_BOARDINFO="sandbox"
 CONFIG_LINUX=y
 CONFIG_GREGORIAN_CALENDER=y
+CONFIG_CMD_MEMORY=y
+CONFIG_ENV_HANDLING=y
 
 #
 # General Settings              
 #
 CONFIG_TEXT_BASE=0x00000000
 # CONFIG_BROKEN is not set
+# CONFIG_EXPERIMENTAL is not set
 CONFIG_PROMPT="uboot:"
 CONFIG_BAUDRATE=115200
 CONFIG_CMDLINE_EDITING=y
@@ -28,12 +31,15 @@ CONFIG_ERRNO_MESSAGES=y
 CONFIG_TIMESTAMP=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # CONFIG_OF_FLAT_TREE is not set
-CONFIG_DEFAULT_ENVIRONMENT=y
-CONFIG_DEFAULT_ENVIRONMENT_PATH=""
+# CONFIG_DEFAULT_ENVIRONMENT is not set
 
 #
 # Debugging                     
 #
+CONFIG_DEBUG_INFO=y
+# CONFIG_ENABLE_FLASH_NOISE is not set
+# CONFIG_ENABLE_PARTITION_NOISE is not set
+# CONFIG_ENABLE_DEVICE_NOISE is not set
 
 #
 # Commands                      
@@ -44,8 +50,12 @@ CONFIG_DEFAULT_ENVIRONMENT_PATH=""
 #
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_SLEEP=y
-CONFIG_CMD_ENVIRONMENT=y
+CONFIG_CMD_SAVEENV=y
+CONFIG_CMD_LOADENV=y
+CONFIG_CMD_EXPORT=y
+CONFIG_CMD_PRINTENV=y
 CONFIG_CMD_HELP=y
+CONFIG_CMD_READLINE=y
 
 #
 # file commands                 
@@ -68,20 +78,11 @@ CONFIG_CMD_CLEAR=y
 CONFIG_CMD_ECHO=y
 
 #
-# i2c                           
-#
-
-#
 # memory                        
 #
 CONFIG_CMD_MEMINFO=y
-CONFIG_CMD_MEMORY=y
 CONFIG_CMD_CRC=y
 # CONFIG_CMD_MTEST is not set
-
-#
-# network                       
-#
 
 #
 # flash                         
@@ -94,7 +95,7 @@ CONFIG_CMD_CRC=y
 # CONFIG_CMD_BOOTM is not set
 CONFIG_CMD_RESET=y
 CONFIG_CMD_GO=y
-# CONFIG_CMD_TIMEOUT is not set
+CONFIG_CMD_TIMEOUT=y
 CONFIG_CMD_PARTITION=y
 CONFIG_CMD_TEST=y
 CONFIG_NET=y
@@ -126,6 +127,7 @@ CONFIG_DRIVER_SERIAL_LINUX_COMSOLE=y
 #
 # CONFIG_DRIVER_CFI is not set
 # CONFIG_DRIVER_CFI_NEW is not set
+# CONFIG_NAND is not set
 
 #
 # Filesystem support            

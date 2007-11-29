@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION =-git
+EXTRAVERSION =-rc3
 NAME = Homicidal Dwarf Hamster
 
 #

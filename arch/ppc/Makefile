@@ -1,6 +1,6 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall -ffixed-r14 	\
-	-isystem $(gccincdir) -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
+	-pipe -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
 	-fno-strict-aliasing
 
 ifdef CONFIG_RELOCATABLE

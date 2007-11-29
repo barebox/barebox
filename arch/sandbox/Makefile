@@ -1,8 +1,6 @@
 
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall \
-	-isystem $(gccincdir) -pipe \
-	-fno-strict-aliasing
-
+	-pipe -fno-strict-aliasing
 
 machine-y	   := sandbox
 

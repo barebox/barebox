@@ -1,8 +1,8 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION =-rc3
-NAME = Homicidal Dwarf Hamster
+EXTRAVERSION =-rc4-git
+NAME = Amissive Actinocutious Kiwi
 
 #
 # sanity checks for check default environemnt

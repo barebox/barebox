@@ -158,6 +158,11 @@ board_init_lowlevel:
 	writel(0x09030908, PCDR1)	/* PERDIV1=08 @133 MHz              */
 					/* PERDIV1=04 @266 MHz              */
 
+	/* configure 16 bit nor flash on cs0 */
+	writel(0x0000CC03, 0xD8002000)
+	writel(0xa0330D01, 0xD8002004)
+	writel(0x00220800, 0xD8002008)
+
 	/* skip sdram initialization if we run from ram */
 	cmp	pc, #0xa0000000
 	bls	1f

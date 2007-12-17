@@ -23,3 +23,4 @@ bootargs="console=ttymxc0,115200"
 
 mtdparts="128k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
 rootpart="/dev/mtdblock3"
+

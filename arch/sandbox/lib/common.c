@@ -148,6 +148,9 @@ int linux_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret;
 
+	if (count == 0)
+		return 0;
+
 	do {
 		ret = read(fd, buf, count);
 

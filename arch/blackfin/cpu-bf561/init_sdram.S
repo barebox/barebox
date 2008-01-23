@@ -27,7 +27,7 @@ init_sdram:
          */
 	p0.h = hi(PLL_LOCKCNT);
 	p0.l = lo(PLL_LOCKCNT);
-	r0 = 0x300(Z);
+	r0 = 0x640(Z);
 	w[p0] = r0.l;
 	ssync;
 
@@ -40,6 +40,44 @@ init_sdram:
         BITSET (R0, 24);
         [P2] = R0;
         SSYNC;
+
+	/* Make sure PLL wakeup is enabled as BOOT ROM seems to disable
+	 * it. (R7 and R6 used to store original value!)
+	 */
+	p0.h = hi(SIC_IWR);
+	p0.l = lo(SIC_IWR);
+	r7 = [p0];
+	r0 = 1;
+	[p0] = r0;
+#ifdef SICA_IWR1
+	p0.h = hi(SICA_IWR1);
+	p0.l = lo(SICA_IWR1);
+	r6 = [p0];
+	r0 = 0;
+	[p0] = r0;
+#endif
+	ssync;
+
+#ifdef CONFIG_VSEL
+	/*
+	 *
+	 * Set Voltage Regulator.
+	 */
+
+	p2.h = hi(VR_CTL);
+	p2.l = lo(VR_CTL);
+	r0 = w[p2];
+	r1 = ~0xf0;
+	r0 = r0 & r1;
+	r1 = CONFIG_VSEL & 0x0f;
+	r1 = r1 << 4;
+	r0 = r0 | r1;
+	cli r2;
+	ssync;
+	w[p2] = r0.l;
+	idle;
+	sti r2;
+#endif
 
         /*
          *  Set PLL_CTL with the value that we calculate in R0
@@ -158,6 +196,19 @@ skip:
 	[P2] = R0;
         SSYNC;
 	nop;
+
+	/*
+	 * Restore wakeup
+	 */
+	p0.h = hi(SIC_IWR);
+	p0.l = lo(SIC_IWR);
+	[p0] = r7;
+#ifdef SICA_IWR1
+	p0.h = hi(SICA_IWR1);
+	p0.l = lo(SICA_IWR1);
+	[p0] = r6;
+#endif
+	ssync;
 
 	(P5:0) = [SP++];
 	(R7:0) = [SP++];

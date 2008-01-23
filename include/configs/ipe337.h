@@ -1,4 +1,7 @@
 
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
 /*
  * Board Layout
  */
@@ -11,7 +14,12 @@
  */
 
 /* CONFIG_CLKIN_HZ is any value in Hz                            */
+#ifdef CONFIG_MACH_IPE337_V2
 #define CONFIG_CLKIN_HZ          40000000
+#else
+#define CONFIG_CLKIN_HZ          25000000
+#endif
+
 /* CONFIG_CLKIN_HALF controls what is passed to PLL 0=CLKIN      */
 /*                                                  1=CLKIN/2    */
 #define CONFIG_CLKIN_HALF               0
@@ -40,3 +48,4 @@
 #define CONFIG_MEM_ADD_WDTH              9           /* 8, 9, 10, 11    */
 #define CONFIG_MEM_SIZE                 64           /* 128, 64, 32, 16 */
 
+#endif	/* __CONFIG_H */

@@ -27,6 +27,16 @@ config MACH_IPE337
 
 endchoice
 
+menu "Select your board options"
+
+config MACH_IPE337_V2
+	bool "PII ipe337 revision 2 (40MHz)" if MACH_IPE337
+	default y
+	help
+	  Say Y here if you are using the second revision of the PII IPE337 board (running at 40Mhz)
+
+endmenu
+
 choice
 	prompt "Boot Mode"
 	default BFIN_BOOT_BYPASS

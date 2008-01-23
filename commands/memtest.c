@@ -48,7 +48,7 @@ static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 	vu_long	temp;
 	vu_long	anti_pattern;
 	vu_long	num_words;
-#ifdef GFG_MEMTEST_SCRATCH
+#ifdef CFG_MEMTEST_SCRATCH
 	vu_long *dummy = (vu_long*)CFG_MEMTEST_SCRATCH;
 #else
 	vu_long *dummy = 0;	/* yes, this is address 0x0, not NULL */
@@ -67,6 +67,7 @@ static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 		0xaaaaaaaa,	/* alternating 1/0 */
 	};
 
+	/* XXX: enforce alignment of start and end? */
 	for (;;) {
 		if (ctrlc()) {
 			putchar ('\n');
@@ -94,6 +95,8 @@ static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 		 * pattern and ~pattern).
 		 */
 		addr = start;
+		/* XXX */
+		if (addr == dummy) ++addr;
 		for (j = 0; j < sizeof(bitpattern)/sizeof(bitpattern[0]); j++) {
 		    val = bitpattern[j];
 		    for(; val != 0; val <<= 1) {

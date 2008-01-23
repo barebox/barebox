@@ -58,7 +58,9 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 		/*
 		 * Set the auto-negotiation advertisement register bits
 		 */
-		mdev->write(mdev, mdev->address, MII_ADVERTISE, ADVERTISE_ALL);
+		mdev->read(mdev, mdev->address, MII_ADVERTISE, &status);
+		status |= ADVERTISE_ALL;
+		mdev->write(mdev, mdev->address, MII_ADVERTISE, status);
 
 		mdev->write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
 	}

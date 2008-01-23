@@ -27,6 +27,27 @@ config MACH_IPE337
 
 endchoice
 
+choice
+	prompt "Boot Mode"
+	default BFIN_BOOT_BYPASS
+
+config BFIN_BOOT_BYPASS
+	bool "bypass"
+	help
+	  blackfin is strapped to boot from parallel flash on CS0
+
+config BFIN_BOOT_FLASH8
+	bool "flash 8 bit"
+	help
+	  blackfin is strapped to boot from 8bit wide flash via boot ROM
+
+config BFIN_BOOT_FLASH16
+	bool "flash 16 bit"
+	help
+	  blackfin is strapped to boot from 16bit wide flash via boot ROM
+
+endchoice
+
 source common/Kconfig
 source commands/Kconfig
 source net/Kconfig

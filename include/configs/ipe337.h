@@ -14,10 +14,12 @@
  */
 
 /* CONFIG_CLKIN_HZ is any value in Hz                            */
-#ifdef CONFIG_MACH_IPE337_V2
+#if   defined(CONFIG_MACH_IPE337_V1)
+#define CONFIG_CLKIN_HZ          25000000
+#elif defined(CONFIG_MACH_IPE337_V2)
 #define CONFIG_CLKIN_HZ          40000000
 #else
-#define CONFIG_CLKIN_HZ          25000000
+#error "Unknown IPE337 revision"
 #endif
 
 /* CONFIG_CLKIN_HALF controls what is passed to PLL 0=CLKIN      */

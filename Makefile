@@ -1002,6 +1002,8 @@ help:
 	@echo  '                    enough build support to build external modules'
 	@echo  '  mrproper	  - Remove all generated files + config + various backup files'
 	@echo  '  distclean	  - mrproper + remove editor backup and patch files'
+	@echo  '  docs            - start doxygen for all output types (only HTML - FIXME)'
+	@echo  '    htmldocs      - create documentation in HTML format'
 	@echo  ''
 	@echo  'Configuration targets:'
 	@$(MAKE) -f $(srctree)/scripts/kconfig/Makefile help
@@ -1041,6 +1043,16 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
+# Generate doxygen docs
+# ---------------------------------------------------------------------------
+.PHONY += docs htmldocs
+
+docs : htmldocs
+
+htmldocs:
+	@echo  'Running doxygen with local Doxyfile'
+	$(Q)doxygen Doxyfile
+	
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 

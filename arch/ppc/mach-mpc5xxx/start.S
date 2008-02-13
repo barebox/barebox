@@ -186,7 +186,7 @@ _start_of_vectors:
 	STD_EXCEPTION(0x400, InstStorage, UnknownException)
 
 /* External Interrupt exception. */
-#ifdef CONFIG_INTERRUPTS
+#ifdef CONFIG_USE_IRQ
 	STD_EXCEPTION(0x500, ExtInterrupt, external_interrupt)
 #endif
 
@@ -229,7 +229,7 @@ ProgramCheck:
 	/* I guess we could implement decrementer, and may have
 	 * to someday for timekeeping.
 	 */
-#ifdef CONFIG_INTERRUPTS
+#ifdef CONFIG_USE_IRQ
 	STD_EXCEPTION(0x900, Decrementer, timer_interrupt)
 #else
 	STD_EXCEPTION(0x900, Decrementer, UnknownException)

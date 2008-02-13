@@ -81,7 +81,7 @@ void board_init_r (ulong end_of_ram)
 	/*
 	 * Enable Interrupts
 	 */
-#ifdef CONFIG_INTERRUPTS
+#ifdef CONFIG_USE_IRQ
 	interrupt_init ();
 #endif
 

@@ -5,7 +5,7 @@ obj-y				+= speed.o
 obj-y				+= traps.o
 extra-y				+= start.o
 obj-$(CONFIG_MPC5200)		+= firmware_sc_task_bestcomm.impl.o
-obj-$(CONFIG_INTERRUPTS)	+= interrupts.o
+obj-$(CONFIG_USE_IRQ)	+= interrupts.o
 obj-$(CONFIG_REGINFO)		+= reginfo.o
 
 #obj-y				+= firmware_sc_task.impl.o

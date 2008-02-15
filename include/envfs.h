@@ -54,14 +54,10 @@ struct envfs_super {
 #define ENVFS_24(x)	((bswap_32(x)) >> 8)
 #define ENVFS_32(x)	bswap_32(x)
 #endif /* not __KERNEL__ */
-#define CRAMFS_GET_NAMELEN(x)	(((u8*)(x))[8] & 0x3f)
-#define CRAMFS_GET_OFFSET(x)	((CRAMFS_24(((u32*)(x))[2] & 0xffffff) << 2) |\
-				 ((((u32*)(x))[2] & 0xc0000000) >> 30))
-#define CRAMFS_SET_NAMELEN(x,y)	(((u8*)(x))[8] = (((0x3f & (y))) | \
-						  (0xc0 & ((u8*)(x))[8])))
-#define CRAMFS_SET_OFFSET(x,y)	(((u32*)(x))[2] = (((y) & 3) << 30) | \
-				 CRAMFS_24((((y) & 0x03ffffff) >> 2)) | \
-				 (((u32)(((u8*)(x))[8] & 0x3f)) << 24))
+#define ENVFS_GET_NAMELEN(x) ENVFS_32(((x)->namelen))
+#define ENVFS_GET_OFFSET(x)	ENVFS_32(((x)->offset))
+#define ENVFS_SET_NAMELEN(x,y)((x)->offset = ENVFS_32((y)))
+#define ENVFS_SET_OFFSET(x,y) ((x)->namelen = ENVFS_32((y)))
 #else
 #error "__BYTE_ORDER must be __LITTLE_ENDIAN or __BIG_ENDIAN"
 #endif

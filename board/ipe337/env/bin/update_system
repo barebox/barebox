@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. /env/config
+
+image=$jffs2
+
+alternate $ageing
+if [ $? = 2 ]; then
+	part=/dev/nor0.system0
+else
+	part=/dev/nor0.system1
+fi
+
+. /env/bin/_update $1

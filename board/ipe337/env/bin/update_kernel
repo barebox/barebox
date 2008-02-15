@@ -1,6 +1,14 @@
+#!/bin/sh
+
 . /env/config
 
 image=$uimage
-part=/dev/nor0.kernel
+
+. /env/bin/_alternate
+if [ $? = 2 ]; then
+	part=/dev/nor0.kernel0
+else
+	part=/dev/nor0.kernel1
+fi
 
 . /env/bin/_update $1

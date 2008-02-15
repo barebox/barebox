@@ -4,7 +4,7 @@
 
 image=$jffs2
 
-alternate $ageing
+. /env/bin/_alternate
 if [ $? = 2 ]; then
 	part=/dev/nor0.system0
 else

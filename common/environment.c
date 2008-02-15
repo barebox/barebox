@@ -67,9 +67,9 @@ int file_save_action(const char *filename, struct stat *statbuf,
 		statbuf->st_size, namelen);
 
 	inode = (struct envfs_inode*)data->writep;
-	inode->magic = ENVFS_INODE_MAGIC;
-	inode->namelen = namelen;
-	inode->size = statbuf->st_size;
+	inode->magic = ENVFS_32(ENVFS_INODE_MAGIC);
+	inode->namelen = ENVFS_32(namelen);
+	inode->size = ENVFS_32(statbuf->st_size);
 	data->writep += sizeof(struct envfs_inode);
 
 	strcpy(data->writep, filename + strlen(data->base));
@@ -122,15 +122,15 @@ int envfs_save(char *filename, char *dirname)
 	data.writep = buf + sizeof(struct envfs_super);
 
 	super = (struct envfs_super *)buf;
-	super->magic = ENVFS_MAGIC;
-	super->size = size;
+	super->magic = ENVFS_32(ENVFS_MAGIC);
+	super->size = ENVFS_32(size);
 
 	/* second pass: copy files to buffer */
 	recursive_action(dirname, ACTION_RECURSE, file_save_action,
 			 NULL, &data, 0);
 
-	super->crc = crc32(0, buf + sizeof(struct envfs_super), size);
-	super->sb_crc = crc32(0, buf, sizeof(struct envfs_super) - 4);
+	super->crc = ENVFS_32(crc32(0, buf + sizeof(struct envfs_super), size));
+	super->sb_crc = ENVFS_32(crc32(0, buf, sizeof(struct envfs_super) - 4));
 
 	envfd = open(filename, O_WRONLY | O_CREAT);
 	if (envfd < 0) {
@@ -189,53 +189,55 @@ int envfs_load(char *filename, char *dir)
 		goto out;
 	}
 
-	if (super.magic != ENVFS_MAGIC) {
+	if ( ENVFS_32(super.magic) != ENVFS_MAGIC) {
 		printf("envfs: wrong magic on %s\n", filename);
 		ret = -EIO;
 		goto out;
 	}
 
 	if (crc32(0, (unsigned char *)&super, sizeof(struct envfs_super) - 4)
-		   != super.sb_crc) {
+		   != ENVFS_32(super.sb_crc)) {
 		printf("wrong crc on env superblock\n");
 		goto out;
 	}
 
-	buf = xmalloc(super.size);
+	size = ENVFS_32(super.size);
+	buf = xmalloc(size);
 	buf_free = buf;
-	ret = read(envfd, buf, super.size);
-	if (ret < super.size) {
+	ret = read(envfd, buf, size);
+	if (ret < size) {
 		perror("read");
 		goto out;
 	}
 
-	if (crc32(0, (unsigned char *)buf, super.size)
-		     != super.crc) {
+	if (crc32(0, (unsigned char *)buf, size)
+		     != ENVFS_32(super.crc)) {
 		printf("wrong crc on env\n");
 		goto out;
 	}
-	
-	size = super.size;
-	
+
 	while (size) {
 		struct envfs_inode *inode;
-		
+        uint32_t inode_size,inode_namelen;
+
 		inode = (struct envfs_inode *)buf;
-		
-		if (inode->magic != ENVFS_INODE_MAGIC) {
+
+		if (ENVFS_32(inode->magic) != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
 			ret = -EIO;
 			goto out;
 		}
-		
+		inode_size = ENVFS_32(inode->size);
+		inode_namelen = ENVFS_32(inode->namelen);
+
 		debug("loading %s size %d namelen %d\n", inode->data,
-			inode->size, inode->namelen);
-		
+			inode_size, inode_namelen);
+
 		str = concat_path_file(dir, inode->data);
 		tmp = strdup(str);
 		make_directory(dirname(tmp));
 		free(tmp);
-		
+
 		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		free(str);
 		if (fd < 0) {
@@ -244,19 +246,19 @@ int envfs_load(char *filename, char *dir)
 			goto out;
 		}
 
-		namelen_full = PAD4(inode->namelen);
+		namelen_full = PAD4(inode_namelen);
 		ret = write(fd, buf + namelen_full + sizeof(struct envfs_inode),
-				inode->size);
-		if (ret < inode->size) {
+				inode_size);
+		if (ret < inode_size) {
 			perror("write");
 			close(fd);
 			goto out;
 		}
 		close(fd);
-	
-		buf += PAD4(inode->namelen) + PAD4(inode->size) +
+
+		buf += PAD4(inode_namelen) + PAD4(inode_size) +
 				sizeof(struct envfs_inode);
-		size -= PAD4(inode->namelen) + PAD4(inode->size) +
+		size -= PAD4(inode_namelen) + PAD4(inode_size) +
 				sizeof(struct envfs_inode);
 	}
 

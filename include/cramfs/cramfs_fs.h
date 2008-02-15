@@ -84,6 +84,10 @@ struct cramfs_super {
 				| CRAMFS_FLAG_WRONG_SIGNATURE \
 				| CRAMFS_FLAG_SHIFTED_ROOT_OFFSET )
 
+#ifndef __BYTE_ORDER
+#error "No byte order defined in __BYTE_ORDER"
+#endif
+
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #define CRAMFS_16(x)	(x)
 #define CRAMFS_24(x)	(x)

@@ -45,17 +45,19 @@ static int dev_del_partitions(struct device_d *physdev)
 
 	device_for_each_child_safe(physdev, tmp, child) {
 		struct partition *part = child->type_data;
-	
-		debug("delete partition: %s\n", child->id);
 
-		if (part->flags & PARTITION_FIXED)
+		if (part->flags & PARTITION_FIXED) {
+			debug("Skip fixed partition: %s\n", child->id);
 			continue;
+		}
 
 		ret = unregister_device(child);
 		if (ret) {
 			printf("delete partition `%s' failed: %s\n", child->id, errno_str());
 			return errno;
 		}
+
+		debug("deleted partition: %s\n", child->id);
 
 		free(part);
 	}
@@ -70,27 +72,35 @@ static int dev_check_fixed(struct device_d *physdev, struct partition *new_part)
 	device_for_each_child(physdev, child) {
 		struct partition *part = child->type_data;
 
-		debug("check aginst partition: %s\n", child->id);
+		debug("check aginst partition: %s -", child->id);
 
-		if (!(part->flags & PARTITION_FIXED))
+		if (!(part->flags & PARTITION_FIXED)) {
+			debug("  not fixed, ok\n");
 			continue;
+		}
 
-		if (new_part->offset == part->offset &&		/* new_part is exactly part */
-		    new_part->device.size == part->device.size)
+		if  (new_part->offset == part->offset &&		/* new_part is exactly part */
+		    ((new_part->device.size==0) || (new_part->device.size == part->device.size)) ) {
+			debug("  fixed, but same size, ok\n");
 			continue;
+		}
 
 		if ((new_part->offset >= part->offset &&
 		     new_part->offset < part->offset + part->device.size) ||
 		    (new_part->offset + new_part->device.size > part->offset &&
 		     new_part->offset + new_part->device.size <= part->offset + part->device.size)) {
-			printf("partition violates fixed partition\n");
+			printf(
+				" failed\n"
+				" partition spec %s \n"
+				"   violates fixed partition %s\n", new_part->name, child->id);
 			errno = -EINVAL;
 			return errno;
 		}
+		else
+			debug("  fixed and within limit?, ok\n");
 	}
 
 	return 0;
-
 }
 
 static int mtd_part_do_parse_one(struct partition *part, const char *str,
@@ -110,7 +120,7 @@ static int mtd_part_do_parse_one(struct partition *part, const char *str,
 	}
 
 	if (size + part->offset > part->physdev->size) {
-		printf("partition end is beyond device\n");
+		printf("partition %s end is beyond device\n", part->name);
 		return -EINVAL;
 	}
 
@@ -157,7 +167,7 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	unsigned long offset;
 
 	if (argc != 3) {
-		printf("Usage:\n%s\n", cmdtp->usage);
+		printf("Usage:\n  %s\n", cmdtp->usage);
 		return 1;
 	}
 
@@ -218,6 +228,7 @@ err_out:
 
 static __maybe_unused char cmd_addpart_help[] =
 "Usage: addpart <device> <partition description>\n"
+"\n"
 "addpart adds a partition description to a device. The partition description\n"
 "has the form\n"
 "size1(name1)[ro],size2(name2)[ro],...\n"
@@ -225,12 +236,13 @@ static __maybe_unused char cmd_addpart_help[] =
 "with 0x in hex. Sizes can have an optional suffix K,M,G. The size of the last\n"
 "partition can be specified as '-' for the remaining space of the device.\n"
 "This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
-"Note That this command has to be reworked and will probably change it's API.";
+"\n"
+"Note: That this command has to be reworked and will probably change it's API.";
 
 U_BOOT_CMD_START(addpart)
 	.maxargs = 3,
 	.cmd = do_addpart,
-	.usage = "add a partition table to a device",
+	.usage = "adds a partition table to a device",
 	U_BOOT_CMD_HELP(cmd_addpart_help)
 U_BOOT_CMD_END
 

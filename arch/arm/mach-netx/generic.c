@@ -116,7 +116,7 @@ int loadxc(int xcno) {
 	return 0;
 }
 
-int do_loadxc (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_loadxc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int xcno;
 

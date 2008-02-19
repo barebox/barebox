@@ -36,6 +36,7 @@
 #define AIPI2_PSR1	__REG(IMX_AIPI2_BASE + 0x04)
 
 /* System Control */
+#define CID     __REG(IMX_SYSTEM_CTL_BASE + 0x0)
 #define GPCR	__REG(IMX_SYSTEM_CTL_BASE + 0x18)
 
 /* Chip Select Registers */
@@ -273,5 +274,12 @@
 #define TPRER_PRES     (0xff)  /* Prescale */
 #define TSTAT_CAPT     (1<<1)  /* Capture event */
 #define TSTAT_COMP     (1)     /* Compare event */
+
+#define IMX_CS0_BASE	0xC0000000
+#define IMX_CS1_BASE	0xC8000000
+#define IMX_CS2_BASE	0xD0000000
+#define IMX_CS3_BASE	0xD2000000
+#define IMX_CS4_BASE	0xD4000000
+#define IMX_CS5_BASE	0xD6000000
 
 #endif /* _IMX27_REGS_H */

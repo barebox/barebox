@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/generic.h>
 #include <asm/arch/clock.h>
 #include <init.h>
 
@@ -33,7 +34,7 @@ static ulong clk_in_26m(void)
 {
 	if (CSCR & CSCR_OSC26M_DIV1P5) {
 		/* divide by 1.5 */
-		return 26000000 / 1.5;
+		return 173333333;
 	} else {
 		/* divide by 1 */
 		return 26000000;
@@ -59,7 +60,8 @@ ulong imx_get_armclk(void)
 	ulong fref = imx_get_mpllclk();
 	ulong div;
 
-	if (!(cscr & CSCR_ARM_SRC_MPLL))
+	if (!(cscr & CSCR_ARM_SRC_MPLL) &&
+		(imx_silicon_revision() != IMX27_CHIP_REVISION_1_0))
 		fref = (fref * 2) / 3;
 
 	div = ((cscr >> 12) & 0x3) + 1;
@@ -73,10 +75,22 @@ ulong imx_get_ahbclk(void)
 	ulong fref = imx_get_mpllclk();
 	ulong div;
 
-	div = ((cscr >> 8) & 0x3) + 1;
+	if (imx_silicon_revision() == IMX27_CHIP_REVISION_1_0)
+		div = ((cscr >> 9) & 0xf) + 1;
+	else
+		div = ((cscr >> 8) & 0x3) + 1;
 
 	return fref / div;
+}
 
+ulong imx_get_ipgclk(void)
+{
+	ulong clk = imx_get_ahbclk();
+
+	if (imx_silicon_revision() == IMX27_CHIP_REVISION_1_0)
+		return clk >> 1;
+        else
+		return clk; 
 }
 
 ulong imx_get_spllclk(void)
@@ -94,7 +108,10 @@ ulong imx_get_spllclk(void)
 
 static ulong imx_decode_perclk(ulong div)
 {
-        return (imx_get_mpllclk() * 2) / (div * 3);
+	if (imx_silicon_revision() == IMX27_CHIP_REVISION_1_0)
+		return imx_get_mpllclk() / div;
+	else
+	return (imx_get_mpllclk() * 2) / (div * 3);
 }
 
 ulong imx_get_perclk1(void)
@@ -127,6 +144,8 @@ int imx_dump_clocks(void)
 	printf("perclk3: %10d Hz\n", imx_get_perclk3());
 	printf("perclk4: %10d Hz\n", imx_get_perclk4());
 	printf("clkin26: %10d Hz\n", clk_in_26m());
+	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
+	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
 	return 0;
 }
 

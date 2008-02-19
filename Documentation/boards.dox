@@ -10,6 +10,7 @@ ARM type:
 
 - @subpage pcm037
 - @subpage pcm038
+- @subpage imx27ads
 - @subpage scb9328
 - @subpage netx
 

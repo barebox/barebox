@@ -10,6 +10,7 @@ board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
 board-$(CONFIG_MACH_ECO920)	   := eco920
 board-$(CONFIG_MACH_SCB9328)	   := scb9328
 board-$(CONFIG_MACH_PCM038)	   := pcm038
+board-$(CONFIG_MACH_IMX27ADS)	   := imx27ads
 board-$(CONFIG_MACH_NXDB500)       := netx
 board-$(CONFIG_MACH_PCM037)	   := pcm037
 # FIXME "cpu-y" never used on ARM!

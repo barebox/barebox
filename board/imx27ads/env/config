@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# can be either 'net' or 'flash'
+kernel=net
+root=net
+
+# use 'dhcp' todo dhcp in uboot and in kernel
+ip=dhcp
+
+eth0.ipaddr=192.168.23.164
+eth0.netmask=255.255.255.0
+eth0.gateway=192.168.23.2
+eth0.serverip=192.168.23.2
+eth0.ethaddr=00:50:c2:72:a7:4a
+
+uimage=uImage-pcm038
+jffs2=root-pcm038.jffs2
+
+autoboot_timeout=3
+
+nfsroot="/tmp/imx27ads"
+bootargs="console=ttymxc0,115200"
+
+mtdparts="128k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart="/dev/mtdblock3"
+

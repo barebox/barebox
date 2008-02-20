@@ -1,4 +1,8 @@
-echo "updating $image to $part"
+#!/bin/sh
+
+if [ $# = 1 ]; then
+	image=$1
+fi
 
 if [ -z "$part" -o -z "$image" ]; then
 	echo "define \$part and \$image"
@@ -6,18 +10,28 @@ if [ -z "$part" -o -z "$image" ]; then
 fi
 
 if [ \! -e "$part" ]; then
-        echo "Partition $part does not exist"
-        exit 1
-fi
-
-if [ $# = 1 ]; then
-        image=$1
+	echo "Partition $part does not exist"
+	exit 1
 fi
 
 if [ x$ip = xdhcp ]; then
-        dhcp
+	dhcp
+fi
+
+ping $eth0.serverip
+if [ $? -ne 0 ] ; then
+	echo "update aborted"
+	exit 1
 fi
 
 unprotect $part
+
+echo
+echo "Erasing partition $part"
 erase $part
+
+echo
+echo "Flashing $image to $part"
 tftp $image $part
+
+protect $part

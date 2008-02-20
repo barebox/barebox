@@ -4,6 +4,8 @@
 #include <malloc.h>
 #include <fs.h>
 
+#define MAGIC		0x19691228
+
 static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	void *buf;
@@ -12,7 +14,7 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	if (argc != 2) {
 		u_boot_cmd_usage(cmdtp);
-		return 1;
+		return 0;
 	}
 
 	buf = read_file(argv[1], &size);
@@ -20,6 +22,12 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 
 	ptr = buf;
+	if ((*ptr) != MAGIC) {
+		printf("Wrong magic! Expected 0x%08x, got 0x%08x.\n", MAGIC, *ptr);
+		return 1;
+	}
+
+	ptr++;
 
 	while ((ulong)ptr <= (ulong)buf + size && !(val = *ptr++))
 		bitcount += 32;
@@ -32,14 +40,14 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		} while (val >>= 1);
 	}
 
-	printf("bitcount : %d\n", bitcount);
+	printf("Bitcount : %d\n", bitcount);
 
 	free(buf);
-	return (bitcount & 1) ? 2 : 3;
+	return (bitcount & 1) ? 3 : 2;
 }
 
 static __maybe_unused char cmd_alternate_help[] =
-"Usage: alternate <file>\n"
+"Usage: alternate <file>"
 "\n";
 
 U_BOOT_CMD_START(alternate)

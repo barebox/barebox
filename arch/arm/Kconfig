@@ -13,6 +13,16 @@ config ARCH_TEXT_BASE
 #
 #
 #
+config ARCH_NUMBER
+	int
+	default 160 if MACH_MX1ADS
+	default 508 if MACH_SCB9328
+	default 905 if MACH_NXDB500
+	default 702 if MACH_ECO920
+	default 1551 if MACH_PCM038
+	default 846 if MACH_IMX27ADS
+	default 1147 if MACH_PCM037
+
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
 

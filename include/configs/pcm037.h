@@ -22,7 +22,6 @@
 
 #include <asm/mach-types.h>
 
-#define CONFIG_ARCH_NUMBER 1147 /* FIXME */
 #define CONFIG_BOOT_PARAMS 0x08000100
 
 /*

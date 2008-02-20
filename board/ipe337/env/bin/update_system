@@ -2,13 +2,13 @@
 
 . /env/config
 
-image=$uimage
+image=$jffs2
 
 . /env/bin/_alternate
 if [ $? = 2 ]; then
-	part=/dev/nor0.kernel0
+	part=/dev/nor0.system0
 else
-	part=/dev/nor0.kernel1
+	part=/dev/nor0.system1
 fi
 
 . /env/bin/_update $1

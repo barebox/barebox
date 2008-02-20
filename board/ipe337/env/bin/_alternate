@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. /env/config
+
+alternate $ageing
+if [ $? -lt 2 ]; then
+	echo "Error when accesing ageing-partition!"
+	exit 1
+fi

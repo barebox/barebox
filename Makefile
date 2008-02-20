@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION =-rc4-git
+EXTRAVERSION =-rc4
 NAME = Amissive Actinocutious Kiwi
 
 #

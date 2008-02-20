@@ -20,6 +20,8 @@
  */
 
 #include <common.h>
+#include <boot.h>
+#include <init.h>
 #include <malloc.h>
 #include <environment.h>
 #include <asm/byteorder.h>
@@ -588,4 +590,30 @@ void ft_setup(void *blob, bd_t * bd, ulong initrd_start, ulong initrd_end)
 	ft_dump_blob(blob);
 #endif
 }
+
+static int oftree_handler_cmdline_parse(struct image_data *data, int opt,
+		char *optarg)
+{
+	switch(opt) {
+	case 'o':
+		printf("using oftree %s\n", optarg);
+		data->oftree = optarg;
+		return 0;
+	default:
+		return 1;
+	}
+}
+
+static struct image_handler of_handler = {
+	.cmdline_options = "o:",
+	.cmdline_parse = oftree_handler_cmdline_parse,
+	.help_string = " -o <oftree>    use oftree",
+};
+
+static int oftree_register_image_handler(void)
+{
+	return register_image_handler(&of_handler);
+}
+
+late_initcall(oftree_register_image_handler);
 

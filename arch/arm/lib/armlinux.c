@@ -28,6 +28,7 @@
 #include <environment.h>
 #include <image.h>
 #include <zlib.h>
+#include <init.h>
 
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
@@ -107,12 +108,13 @@ void __setup_serial_tag(struct tag **tmp);
 # define SHOW_BOOT_PROGRESS(arg)
 #endif
 
+static int arm_architecture = CONFIG_ARCH_NUMBER;
 
 int
-do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
+do_bootm_linux(struct image_data *data)
 {
 	void (*theKernel)(int zero, int arch, uint params);
-	image_header_t *os_header = &os_handle->header;
+	image_header_t *os_header = &data->os->header;
 	const char *commandline = getenv ("bootargs");
 
 	if (os_header->ih_type == IH_TYPE_MULTI) {
@@ -120,11 +122,11 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 		return -1;
 	}
 
-	printf("commandline: %s\n", commandline);
+	printf("commandline: %s\n"
+	       "arch_number: %d\n", commandline, arm_architecture);
 
 	theKernel = (void (*)(int, int, uint))ntohl((unsigned long)(os_header->ih_ep));
 
-	/* FIXME: replace by pr_debug */
 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
 	       (ulong) theKernel);
 
@@ -140,25 +142,45 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 	setup_videolfb_tag((gd_t *) gd);
 	setup_end_tag();
 
-	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(data->os, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
 	/* we assume that the kernel is in place */
 	printf ("\nStarting kernel ...\n\n");
 
-#ifdef CONFIG_USB_DEVICE
-	{
-		extern void udc_disconnect(void);
-		udc_disconnect();
-	}
-#endif
-
 	cleanup_before_linux();
-	theKernel (0, CONFIG_ARCH_NUMBER, CONFIG_BOOT_PARAMS);
+	theKernel (0, arm_architecture, CONFIG_BOOT_PARAMS);
 
 	return -1;
 }
 
+static int image_handle_cmdline_parse(struct image_data *data, int opt,
+		char *optarg)
+{
+	switch (opt) {
+	case 'a':
+		arm_architecture = simple_strtoul(optarg, NULL, 0);
+		return 0;
+	default:
+		return 1;
+	}
+}
+
+static struct image_handler handler = {
+	.cmdline_options = "a:",
+	.cmdline_parse = image_handle_cmdline_parse,
+	.help_string = " -a <arch>      use architecture number <arch>",
+
+	.bootm = do_bootm_linux,
+	.image_type = IH_OS_LINUX,
+};
+
+static int armlinux_register_image_handler(void)
+{
+	return register_image_handler(&handler);
+}
+
+late_initcall(armlinux_register_image_handler);
 
 void
 __setup_start_tag(void)

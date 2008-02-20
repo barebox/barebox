@@ -41,6 +41,7 @@
 #include <errno.h>
 #include <boot.h>
 #include <rtc.h>
+#include <init.h>
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 # include <status_led.h>
@@ -314,41 +315,101 @@ void unmap_image(struct image_handle *handle)
 }
 EXPORT_SYMBOL(unmap_image);
 
-#ifdef CONFIG_OF_FLAT_TREE
-#define OPT_OFTREE "o:"
-#else
-#define OPT_OFTREE
-#endif
+LIST_HEAD(handler_list);
+
+int register_image_handler(struct image_handler *handler)
+{
+	list_add_tail(&handler->list, &handler_list);
+	return 0;
+}
+
+static int initrd_handler_parse_options(struct image_data *data, int opt,
+		char *optarg)
+{
+	switch(opt) {
+	case 'r':
+		printf("use initrd %s\n", optarg);
+		data->initrd = map_image(optarg, data->verify);
+		if (!data->initrd)
+			return -1;
+		return 0;
+	default:
+		return 1;
+	}
+}
+
+static struct image_handler initrd_handler = {
+	.cmdline_options = "r:",
+	.cmdline_parse = initrd_handler_parse_options,
+	.help_string = " -r <initrd>    specify an initrd image",
+};
+
+static int initrd_register_image_handler(void)
+{
+	return register_image_handler(&initrd_handler);
+}
+
+late_initcall(initrd_register_image_handler);
+
+static int handler_parse_options(struct image_data *data, int opt, char *optarg)
+{
+	struct image_handler *handler;
+	int ret;
+
+	list_for_each_entry(handler, &handler_list, list) {
+		if (!handler->cmdline_parse)
+			continue;
+
+		ret = handler->cmdline_parse(data, opt, optarg);
+		if (ret > 0)
+			continue;
+
+		return ret;
+	}
+
+	return -1;
+}
 
 static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	iflag;
 	int	verify = 1;
 	int	opt;
-	char	*initrd = NULL;
 	image_header_t *os_header;
-	image_header_t *initrd_header = NULL;
 	struct image_handle *os_handle, *initrd_handle = NULL;
-#ifdef CONFIG_OF_FLAT_TREE
-	char	*oftree = NULL;
-#endif
+	struct image_handler *handler;
+	struct image_data data;
+	char options[53]; /* worst case: whole alphabet with colons */
+
+	memset(&data, 0, sizeof(struct image_data));
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "r:ni" OPT_OFTREE)) > 0) {
+	/* Collect options from registered handlers */
+	strcpy(options, "nh");
+	list_for_each_entry(handler, &handler_list, list) {
+		if (handler->cmdline_options)
+			strcat(options, handler->cmdline_options);
+	}
+
+	while((opt = getopt(argc, argv, options)) > 0) {
 		switch(opt) {
-		case 'r':
-			initrd = optarg;
-			break;
 		case 'n':
-			verify = 0;
+			data.verify = 0;
 			break;
-#ifdef CONFIG_OF_FLAT_TREE
-		case 'o':
-			oftree = optarg;
-			break;
-#endif
+		case 'h':
+			printf("bootm advanced options:\n");
+
+			list_for_each_entry(handler, &handler_list, list) {
+				if (handler->help_string)
+					printf("%s\n", handler->help_string);
+			}
+
+			return 0;
 		default:
+			if (!handler_parse_options(&data, opt, optarg))
+				continue;
+
 			return 1;
 		}
 	}
@@ -361,6 +422,7 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	os_handle = map_image(argv[optind], verify);
 	if (!os_handle)
 		return 1;
+	data.os = os_handle;
 
 	os_header = &os_handle->header;
 
@@ -369,36 +431,6 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		goto err_out;
 	}
 
-	if (initrd) {
-		initrd_handle = map_image(initrd, verify);
-		if (!initrd_handle)
-			goto err_out;
-		initrd_header = &initrd_handle->header;
-	}
-#if 0
-	switch (os_header->ih_type) {
-	case IH_TYPE_STANDALONE:
-		name = "Standalone Application";
-		/* A second argument overwrites the load address */
-		if (argc > 2) {
-			os_header->ih_load = htonl(simple_strtoul(argv[2], NULL, 16));
-		}
-		break;
-	case IH_TYPE_KERNEL:
-		name = "Kernel Image";
-		break;
-	case IH_TYPE_MULTI:
-		name = "Multi-File Image";
-		len  = ntohl(len_ptr[0]);
-		/* OS kernel is always the first image */
-		data += 8; /* kernel_len + terminator */
-		for (i=1; len_ptr[i]; ++i)
-			data += 4;
-		break;
-	default: printf ("Wrong Image Type for %s command\n", cmdtp->name);
-		return 1;
-	}
-#endif
 	/*
 	 * We have reached the point of no return: we are going to
 	 * overwrite all exception vector code, so we cannot easily
@@ -409,62 +441,16 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	puts ("OK\n");
 
-	switch (os_header->ih_os) {
-	default:			/* handled by (original) Linux case */
-	case IH_OS_LINUX:
-#ifdef CONFIG_SILENT_CONSOLE
-		fixup_silent_linux();
-#endif
-#ifdef CONFIG_OF_FLAT_TREE
-		do_bootm_linux(os_handle, initrd_handle, oftree);
-#else
-		do_bootm_linux(os_handle, initrd_handle);
-#endif
-	    break;
-#ifdef CONFIG_NETBSD
-	case IH_OS_NETBSD:
-	    do_bootm_netbsd (cmdtp, argc, argv,
-			     addr, len_ptr, verify);
-	    break;
-#endif
-
-#ifdef CONFIG_LYNXKDI
-	case IH_OS_LYNXOS:
-	    do_bootm_lynxkdi (cmdtp, argc, argv,
-			     addr, len_ptr, verify);
-	    break;
-#endif
-
-#ifdef CONFIG_RTEMS
-	case IH_OS_RTEMS:
-	    do_bootm_rtems (cmdtp, argc, argv,
-			     addr, len_ptr, verify);
-	    break;
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_ELF)
-	case IH_OS_VXWORKS:
-	    do_bootm_vxworks (cmdtp, argc, argv,
-			      addr, len_ptr, verify);
-	    break;
-	case IH_OS_QNX:
-	    do_bootm_qnxelf (cmdtp, argc, argv,
-			      addr, len_ptr, verify);
-	    break;
-#endif /* CFG_CMD_ELF */
-#ifdef CONFIG_ARTOS
-	case IH_OS_ARTOS:
-	    do_bootm_artos  (cmdtp, argc, argv,
-			     addr, len_ptr, verify);
-	    break;
-#endif
+	/* loop through the registered handlers */
+	list_for_each_entry(handler, &handler_list, list) {
+		if (handler->image_type == os_header->ih_os) {
+			handler->bootm(&data);
+			printf("handler returned!\n");
+			goto err_out;
+		}
 	}
 
-	SHOW_BOOT_PROGRESS (-9);
-#ifdef DEBUG
-	puts ("\n## Control returned to monitor - resetting...\n");
-	do_reset (cmdtp, argc, argv);
-#endif
+	printf("no image handler found for image type %d\n", os_header->ih_os);
 
 err_out:
 	if (os_handle)
@@ -477,196 +463,14 @@ err_out:
 U_BOOT_CMD_START(bootm)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_bootm,
-	.usage		= "boot application image from memory",
+	.usage		= "boot application image",
 	U_BOOT_CMD_HELP(
- 	"[addr [arg ...]]\n    - boot application image stored in memory\n"
- 	"\tpassing arguments 'arg ...'; when booting a Linux kernel,\n"
- 	"\t'arg' can be the address of an initrd image\n"
-#ifdef CONFIG_OF_FLAT_TREE
-	"\tWhen booting a Linux kernel which requires a flat device-tree\n"
-	"\ta third argument is required which is the address of the of the\n"
-	"\tdevice-tree blob. To boot that kernel without an initrd image,\n"
-	"\tuse a '-' for the second argument. If you do not pass a third\n"
-	"\ta bd_info struct will be passed instead\n"
-#endif
+		"Usage: bootm [OPTION] image\n"
+		"Boot application image\n"
+		" -n             do not verify the images (speeds up boot process)\n"
+		" -h             show advanced options\n"
 	)
 U_BOOT_CMD_END
-
-#ifdef CONFIG_NETBSD
-static void
-do_bootm_netbsd (cmd_tbl_t *cmdtp,
-		int	argc, char *argv[],
-		ulong	addr,
-		ulong	*len_ptr,
-		int	verify)
-{
-	image_header_t *hdr = &header;
-#if 0
-	void	(*loader)(bd_t *, image_header_t *, char *, char *);
-#endif
-	image_header_t *img_addr;
-	char     *consdev;
-	char     *cmdline;
-
-
-	/*
-	 * Booting a (NetBSD) kernel image
-	 *
-	 * This process is pretty similar to a standalone application:
-	 * The (first part of an multi-) image must be a stage-2 loader,
-	 * which in turn is responsible for loading & invoking the actual
-	 * kernel.  The only differences are the parameters being passed:
-	 * besides the board info strucure, the loader expects a command
-	 * line, the name of the console device, and (optionally) the
-	 * address of the original image header.
-	 */
-
-	img_addr = 0;
-	if ((hdr->ih_type==IH_TYPE_MULTI) && (len_ptr[1]))
-		img_addr = (image_header_t *) addr;
-
-
-	consdev = "";
-#if   defined (CONFIG_8xx_CONS_SMC1)
-	consdev = "smc1";
-#elif defined (CONFIG_8xx_CONS_SMC2)
-	consdev = "smc2";
-#elif defined (CONFIG_8xx_CONS_SCC2)
-	consdev = "scc2";
-#elif defined (CONFIG_8xx_CONS_SCC3)
-	consdev = "scc3";
-#endif
-
-	if (argc > 2) {
-		ulong len;
-		int   i;
-
-		for (i=2, len=0 ; i<argc ; i+=1)
-			len += strlen (argv[i]) + 1;
-		cmdline = malloc (len);
-
-		for (i=2, len=0 ; i<argc ; i+=1) {
-			if (i > 2)
-				cmdline[len++] = ' ';
-			strcpy (&cmdline[len], argv[i]);
-			len += strlen (argv[i]);
-		}
-	} else if ((cmdline = (char *)getenv("bootargs")) == NULL) {
-		cmdline = "";
-	}
-#if 0
-	loader = (void (*)(bd_t *, image_header_t *, char *, char *)) ntohl(hdr->ih_ep);
-
-	printf ("## Transferring control to NetBSD stage-2 loader (at address %08lx) ...\n",
-		(ulong)loader);
-#endif
-	SHOW_BOOT_PROGRESS (15);
-
-	/*
-	 * NetBSD Stage-2 Loader Parameters:
-	 *   r3: ptr to board info data
-	 *   r4: image address
-	 *   r5: console device
-	 *   r6: boot args string
-	 */
-#if 0
-	(*loader) (gd->bd, img_addr, consdev, cmdline);
-#else
-#warning NetBSD Support is broken
-#endif
-}
-#endif
-
-#ifdef CONFIG_ARTOS
-
-/* Function that returns a character from the environment */
-extern uchar (*env_get_char)(int);
-
-static void
-do_bootm_artos (cmd_tbl_t *cmdtp,
-		int	argc, char *argv[],
-		ulong	addr,
-		ulong	*len_ptr,
-		int	verify)
-{
-	ulong top;
-	char *s, *cmdline;
-	char **fwenv, **ss;
-	int i, j, nxt, len, envno, envsz;
-	bd_t *kbd;
-	void (*entry)(bd_t *bd, char *cmdline, char **fwenv, ulong top);
-	image_header_t *hdr = &header;
-
-	/*
-	 * Booting an ARTOS kernel image + application
-	 */
-
-	/* this used to be the top of memory, but was wrong... */
-
-	/* get stack pointer */
-	asm volatile ("mr %0,1" : "=r"(top) );
-
-	debug ("## Current stack ends at 0x%08lX ", top);
-
-	top -= 2048;		/* just to be sure */
-	if (top > CFG_BOOTMAPSZ)
-		top = CFG_BOOTMAPSZ;
-	top &= ~0xF;
-
-	debug ("=> set upper limit to 0x%08lX\n", top);
-
-	/* first check the artos specific boot args, then the linux args*/
-	if ((s = getenv("abootargs")) == NULL && (s = getenv("bootargs")) == NULL)
-		s = "";
-
-	/* get length of cmdline, and place it */
-	len = strlen(s);
-	top = (top - (len + 1)) & ~0xF;
-	cmdline = (char *)top;
-	debug ("## cmdline at 0x%08lX ", top);
-	strcpy(cmdline, s);
-
-	/* copy bdinfo */
-	top = (top - sizeof(bd_t)) & ~0xF;
-	debug ("## bd at 0x%08lX ", top);
-	kbd = (bd_t *)top;
-	memcpy(kbd, gd->bd, sizeof(bd_t));
-
-	/* first find number of env entries, and their size */
-	envno = 0;
-	envsz = 0;
-	for (i = 0; env_get_char(i) != '\0'; i = nxt + 1) {
-		for (nxt = i; env_get_char(nxt) != '\0'; ++nxt)
-			;
-		envno++;
-		envsz += (nxt - i) + 1;	/* plus trailing zero */
-	}
-	envno++;	/* plus the terminating zero */
-	debug ("## %u envvars total size %u ", envno, envsz);
-
-	top = (top - sizeof(char **)*envno) & ~0xF;
-	fwenv = (char **)top;
-	debug ("## fwenv at 0x%08lX ", top);
-
-	top = (top - envsz) & ~0xF;
-	s = (char *)top;
-	ss = fwenv;
-
-	/* now copy them */
-	for (i = 0; env_get_char(i) != '\0'; i = nxt + 1) {
-		for (nxt = i; env_get_char(nxt) != '\0'; ++nxt)
-			;
-		*ss++ = s;
-		for (j = i; j < nxt; ++j)
-			*s++ = env_get_char(j);
-		*s++ = '\0';
-	}
-	*ss++ = NULL;	/* terminate */
-
-	entry = (void (*)(bd_t *, char *, char **, ulong))ntohl(hdr->ih_ep);
-	(*entry)(kbd, cmdline, fwenv, top);
-}
-#endif
 
 #ifdef CONFIG_CMD_IMI
 static int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -779,80 +583,11 @@ print_image_hdr (image_header_t *hdr)
 }
 
 #ifdef CONFIG_BZLIB
-static void bz_internal_error(int errcode)
+void bz_internal_error(int errcode)
 {
 	printf ("BZIP2 internal error %d\n", errcode);
 }
 #endif /* CONFIG_BZLIB */
-
-#ifdef CONFIG_RTEMS
-static void
-do_bootm_rtems (cmd_tbl_t *cmdtp, int argc, char *argv[],
-		ulong addr, ulong *len_ptr, int verify)
-{
-#if 0
-	image_header_t *hdr = &header;
-	void	(*entry_point)(bd_t *);
-
-	entry_point = (void (*)(bd_t *)) ntohl(hdr->ih_ep);
-
-	printf ("## Transferring control to RTEMS (at address %08lx) ...\n",
-		(ulong)entry_point);
-#endif
-	SHOW_BOOT_PROGRESS (15);
-
-	/*
-	 * RTEMS Parameters:
-	 *   r3: ptr to board info data
-	 */
-#if 0
-	(*entry_point ) ( gd->bd );
-#else
-#warning RTEMS support is broken
-#endif
-}
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_ELF)
-static void
-do_bootm_vxworks (cmd_tbl_t *cmdtp, int argc, char *argv[],
-		  ulong addr, ulong *len_ptr, int verify)
-{
-	image_header_t *hdr = &header;
-	char str[80];
-
-	sprintf(str, "%x", ntohl(hdr->ih_ep)); /* write entry-point into string */
-	setenv("loadaddr", str);
-	do_bootvx(cmdtp, 0, NULL);
-}
-
-static void
-do_bootm_qnxelf (cmd_tbl_t *cmdtp, int argc, char *argv[],
-		 ulong addr, ulong *len_ptr, int verify)
-{
-	image_header_t *hdr = &header;
-	char *local_args[2];
-	char str[16];
-
-	sprintf(str, "%x", ntohl(hdr->ih_ep)); /* write entry-point into string */
-	local_args[0] = argv[0];
-	local_args[1] = str;	/* and provide it via the arguments */
-	do_bootelf(cmdtp, 2, local_args);
-}
-#endif /* CFG_CMD_ELF */
-
-#ifdef CONFIG_LYNXKDI
-static void
-do_bootm_lynxkdi (cmd_tbl_t *cmdtp,
-		 int	argc, char *argv[],
-		 ulong	addr,
-		 ulong	*len_ptr,
-		 int	verify)
-{
-	lynxkdi_boot( &header );
-}
-
-#endif /* CONFIG_LYNXKDI */
 
 /**
  * @file

@@ -4,9 +4,11 @@
 #include <command.h>
 #include <watchdog.h>
 #include <image.h>
+#include <init.h>
 #include <environment.h>
 #include <asm/global_data.h>
 #include <asm/bitops.h>
+#include <boot.h>
 #include <errno.h>
 #include <fs.h>
 
@@ -16,8 +18,7 @@
 extern bd_t *bd;
 #define SHOW_BOOT_PROGRESS(x)
 
-int
-do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handle, const char *oftree)
+static int do_bootm_linux(struct image_data *idata)
 {
 	ulong	sp;
 	ulong	initrd_end = 0;
@@ -31,7 +32,7 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 #ifdef CONFIG_OF_FLAT_TREE
 	char	*of_flat_tree = NULL;
 #endif
-	image_header_t *os_header = &os_handle->header;
+	image_header_t *os_header = &idata->os->header;
 	image_header_t *initrd_header = NULL;
 	void    *os_data = NULL;
 	void    *initrd_data = NULL;
@@ -39,14 +40,14 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 	struct image_handle *oftree_handle;
 	unsigned long os_len, initrd_len;
 
-	if (initrd_handle)
-		initrd_header = &initrd_handle->header;
+	if (idata->initrd)
+		initrd_header = &idata->initrd->header;
 
-	printf("entering %s: os_header: %p initrd_header: %p oftree: %p\n",
-			__FUNCTION__, os_header, initrd_header, oftree);
+	printf("entering %s: os_header: %p initrd_header: %p oftree: %s\n",
+			__FUNCTION__, os_header, initrd_header, idata->oftree);
 
 	if (os_header->ih_type == IH_TYPE_MULTI) {
-		unsigned long *data = (unsigned long *)(os_handle->data);
+		unsigned long *data = (unsigned long *)(idata->os->data);
 		unsigned long len1 = 0, len2 = 0;
 
 		if (!*data) {
@@ -88,25 +89,25 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 			initrd_len  = len1;
 		}
 	} else {
-		os_data = os_handle->data;
+		os_data = idata->os->data;
 		printf("set os_data to %p\n", os_data);
 	}
 
-	if (initrd_handle)
-		initrd_data = initrd_handle->data;
+	if (idata->initrd)
+		initrd_data = idata->initrd->data;
 
 #ifdef CONFIG_OF_FLAT_TREE
-	if (oftree) {
+	if (idata->oftree) {
 		/* The oftree can be given either as an uboot image or as a
 		 * binary blob. First try to read it as an image.
 		 */
-		oftree_handle = map_image(oftree, 1);
+		oftree_handle = map_image(idata->oftree, 1);
 		if (oftree_handle) {
 			of_data = oftree_handle->data;
 		} else {
-			of_data = read_file(oftree, 0);
+			of_data = read_file(idata->oftree, 0);
 			if (!of_data) {
-				printf("could not read %s: %s\n", oftree, errno_str());
+				printf("could not read %s: %s\n", idata->oftree, errno_str());
 				return -1;
 			}
 		}
@@ -201,7 +202,7 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 
 	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))ntohl(os_header->ih_ep); /* FIXME */
 
-	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(idata->os, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
 #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
@@ -254,7 +255,6 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 	 */
 	ft_setup(of_flat_tree, kbd, (long)initrd_data, initrd_end);
 	ft_cpu_setup(of_flat_tree, kbd);
-	ft_dump_blob(of_flat_tree);
 
 	(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
 #endif
@@ -263,4 +263,16 @@ do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd_handl
 	/* not reached */
 	return -1;
 }
+
+static struct image_handler handler = {
+	.bootm = do_bootm_linux,
+	.image_type = IH_OS_LINUX,
+};
+
+static int ppclinux_register_image_handler(void)
+{
+	return register_image_handler(&handler);
+}
+
+late_initcall(ppclinux_register_image_handler);
 

@@ -64,7 +64,9 @@ void *sbrk (ptrdiff_t increment)
 {
 	void *old = sbrk_no_zero(increment);
 
-	memset (old, 0, increment);
+	/* Only clear increment, if valid address was returned */
+	if (old != NULL)
+		memset (old, 0, increment);
 
 	return old;
 }

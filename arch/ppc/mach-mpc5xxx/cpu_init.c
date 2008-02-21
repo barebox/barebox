@@ -36,8 +36,6 @@ int cpu_init(void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
 
-	early_init();
-
 #if defined(CFG_RAMBOOT) && defined(CONFIG_MGT5100)
 	addecr |= (1 << 22); /* SDRAM enable */
 #endif
@@ -189,6 +187,8 @@ int cpu_init(void)
 	*(vu_long *)MPC5XXX_ICTL_EXT &= ~0x00000f00;
 	/* route critical ints to normal ints */
 	*(vu_long *)MPC5XXX_ICTL_EXT |= 0x00000001;
+
+	early_init();
 
 	return 0;
 }

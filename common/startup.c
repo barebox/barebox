@@ -64,7 +64,9 @@ void early_init (void)
 	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
 				(ulong)&__early_init_data_end -
 				(ulong)&__early_init_data_begin);
-	early_console_start(RELOC("psc3"), 115200);
+
+	early_console_start(RELOC(CONFIG_EARLY_CONSOLE_PORT),
+			CONFIG_EARLY_CONSOLE_BAUDRATE);
 }
 
 #endif /* CONFIG_HAS_EARLY_INIT */

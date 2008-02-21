@@ -9,6 +9,7 @@ config ARCH_TEXT_BASE
 
 config MPC5XXX_EARLY_CONSOLE
 	bool
+	depends on ARCH_MPC5200
 	default y
 
 config HAS_EARLY_INIT

@@ -29,10 +29,8 @@ OUTPUT_ARCH("powerpc")
 SECTIONS
 {
   . = TEXT_BASE;
-  _text = .;
-  _stext = .;
-  /* Read-only sections, merged into text segment: */
-  . = . + SIZEOF_HEADERS;
+
+  /* Read-only sections, merged into text segment: */ 
   .interp : { *(.interp) }
   .hash          : { *(.hash)		}
   .dynsym        : { *(.dynsym)		}

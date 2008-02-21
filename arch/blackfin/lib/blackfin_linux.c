@@ -34,14 +34,17 @@
 #include <asm/byteorder.h>
 #include <asm/cpu.h>
 #include <asm/blackfin.h>
+#include <init.h>
+#include <boot.h>
 
 #define CMD_LINE_ADDR 0xFF900000  /* L1 scratchpad */
 
-int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
+static int do_bootm_linux(struct image_data *idata)
 {
 	int (*appl)(char *cmdline);
 	const char *cmdline = getenv("bootargs");
 	char *cmdlinedest = (char *) CMD_LINE_ADDR;
+	struct image_handle *os_handle = idata->os;
 	image_header_t *os_header = &os_handle->header;
 
 	appl = (int (*)(char *))ntohl(os_header->ih_ep);
@@ -61,4 +64,16 @@ int do_bootm_linux(struct image_handle *os_handle, struct image_handle *initrd)
 
 	return -1;
 }
+
+static struct image_handler handler = {
+	.bootm = do_bootm_linux,
+	.image_type = IH_OS_LINUX,
+};
+
+static int bfinlinux_register_image_handler(void)
+{
+	return register_image_handler(&handler);
+}
+
+late_initcall(bfinlinux_register_image_handler);
 

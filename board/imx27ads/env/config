@@ -13,8 +13,8 @@ eth0.gateway=192.168.23.2
 eth0.serverip=192.168.23.2
 eth0.ethaddr=00:50:c2:72:a7:4a
 
-uimage=uImage-pcm038
-jffs2=root-pcm038.jffs2
+uimage=uImage-mx27ads
+jffs2=root-mx27ads.jffs2
 
 autoboot_timeout=3
 

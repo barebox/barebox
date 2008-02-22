@@ -61,14 +61,40 @@ static struct device_d fec_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
-static void fec_cpld_init(void)
+static int imx27ads_timing_init(void)
 {
+	/* configure cpld on cs4 */
+	CS4U = 0x0000DCF6;
+	CS4L = 0x444A4541;
+	CS4A = 0x44443302;
+
+	/* configure synchronous mode for
+	 * 16 bit nor flash on cs0 */
+	CS0U = 0x0000CC03;
+	CS0L = 0xa0330D01;
+	CS0A = 0x00220800;
+
+	writew(0x00f0, 0xc0000000);
+	writew(0x00aa, 0xc0000aaa);
+	writew(0x0055, 0xc0000554);
+	writew(0x00d0, 0xc0000aaa);
+	writew(0x66ca, 0xc0000aaa);
+	writew(0x00f0, 0xc0000000);
+
+	CS0U = 0x23524E80;
+	CS0L = 0x10000D03;
+	CS0A = 0x00720900;
+
 	/* Select FEC data through data path */
 	writew(0x0020, IMX_CS4_BASE + 0x10);
 
 	/* Enable CPLD FEC data path */
 	writew(0x0010, IMX_CS4_BASE + 0x14);
+
+	return 0;
 }
+
+core_initcall(imx27ads_timing_init);
 
 static int pcm038_devices_init(void)
 {
@@ -101,8 +127,6 @@ static int pcm038_devices_init(void)
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
-
-	fec_cpld_init();
 
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);

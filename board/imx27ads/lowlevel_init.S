@@ -156,18 +156,8 @@ board_init_lowlevel:
 	/* peripheral clock divider */
 	writel(0x23C8F403, PCDR0)	/* FIXME                            */
 	writel(0x09030913, PCDR1)	/* PERDIV1=08 @133 MHz              */
-					/* PERDIV1=04 @266 MHz              */
-
-	/* configure 16 bit nor flash on cs0 */
-	writel(0x0000CC03, CS0U)
-	writel(0xa0330D01, CS0L)
-	writel(0x00220800, CS0A)
-
-	/* configure cpld on cs4 */
-	writel(0x0000DCF6, CS4U)
-	writel(0x444A4541, CS4L)
-	writel(0x44443302, CS4A)
-
+					/* PERDIV1=04 @266 MHz              *
+					 * /
 	/* skip sdram initialization if we run from ram */
 	cmp	pc, #0xa0000000
 	bls	1f

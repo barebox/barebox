@@ -1,4 +1,6 @@
-#include <cfi_flash.h>
+#include <common.h>
+#include <stdio.h>
+#include <cfi_flash_new.h>
 
 static void flash_unlock_seq (flash_info_t * info, flash_sect_t sect)
 {
@@ -89,7 +91,7 @@ static int amd_flash_erase_one (flash_info_t * info, long sect)
 	    (info, sect, info->erase_blk_tout, "erase")) {
 		rcode = 1;
 	} else
-		putc ('.');
+		putchar('.');
 	return rcode;
 }
 

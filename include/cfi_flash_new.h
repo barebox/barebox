@@ -185,12 +185,27 @@ int flash_status_check (flash_info_t * info, flash_sect_t sector,
 int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
 void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf);
 
-/*-----------------------------------------------------------------------
+/*
  * create an address based on the offset and the port width
  */
 static inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offset)
 {
 	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
+}
+
+/*
+ * read a character at a port width address
+ */
+static inline uchar flash_read_uchar (flash_info_t * info, uint offset)
+{
+	uchar *cp;
+
+	cp = flash_make_addr (info, 0, offset);
+#if defined(__LITTLE_ENDIAN)
+	return (cp[0]);
+#else
+	return (cp[info->portwidth - 1]);
+#endif
 }
 
 typedef union {

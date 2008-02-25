@@ -1,4 +1,5 @@
-#include <cfi_flash.h>
+#include <common.h>
+#include <cfi_flash_new.h>
 
 /*-----------------------------------------------------------------------
  * read jedec ids from device and set corresponding fields in info struct
@@ -79,7 +80,7 @@ static int intel_flash_erase_one (flash_info_t * info, long sect)
 	    (info, sect, info->erase_blk_tout, "erase")) {
 		rcode = 1;
 	} else
-		putc ('.');
+		putchar('.');
 	return rcode;
 }
 

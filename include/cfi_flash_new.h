@@ -209,6 +209,30 @@ static inline uchar flash_read_uchar (flash_info_t * info, uint offset)
 #endif
 }
 
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
+#define bankwidth_is_1(info) (info->portwidth == 1)
+#else
+#define bankwidth_is_1(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_2
+#define bankwidth_is_2(info) (info->portwidth == 2)
+#else
+#define bankwidth_is_2(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_4
+#define bankwidth_is_4(info) (info->portwidth == 4)
+#else
+#define bankwidth_is_4(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_8
+#define bankwidth_is_8(info) (info->portwidth == 8)
+#else
+#define bankwidth_is_8(info) 0
+#endif
+
 typedef union {
 	unsigned char c;
 	unsigned short w;
@@ -225,22 +249,17 @@ typedef union {
 
 static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *addr)
 {
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		debug("fw addr %p val %02x\n", addr, datum.c); 
 		writeb(datum.c, addr);
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		debug("fw addr %p val %04x\n", addr, datum.w); 
 		writew(datum.w, addr);
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		debug("fw addr %p val %08x\n", addr, datum.l); 
 		writel(datum.l, addr);
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		memcpy((void *)addr, &datum.ll, 8);
-		break;
 	}
 }
 

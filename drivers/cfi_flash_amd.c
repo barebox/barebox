@@ -47,24 +47,18 @@ static int flash_toggle (flash_info_t * info, flash_sect_t sect, uint offset, uc
 
 	cptr.cp = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		retval = ((cptr.cp[0] & cword.c) != (cptr.cp[0] & cword.c));
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		retval = ((cptr.wp[0] & cword.w) != (cptr.wp[0] & cword.w));
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		retval = ((cptr.lp[0] & cword.l) != (cptr.lp[0] & cword.l));
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		retval = ((cptr.llp[0] & cword.ll) !=
 			  (cptr.llp[0] & cword.ll));
-		break;
-	default:
+	} else
 		retval = 0;
-		break;
-	}
+
 	return retval;
 }
 
@@ -120,29 +114,22 @@ static int amd_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uch
 	flash_make_cmd (info, AMD_CMD_WRITE_TO_BUFFER, &cword);
 	flash_write_word(info, cword, (void *)dest);
 
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		cnt = len;
 		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
 		while (cnt-- > 0) *dst.cp++ = *src.cp++;
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		cnt = len >> 1;
 		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
 		while (cnt-- > 0) *dst.wp++ = *src.wp++;
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		cnt = len >> 2;
 		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
 		while (cnt-- > 0) *dst.lp++ = *src.lp++;
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		cnt = len >> 3;
 		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
 		while (cnt-- > 0) *dst.llp++ = *src.llp++;
-		break;
-	default:
-		return ERR_INVAL;
 	}
 
 	flash_write_cmd (info, sector, 0, AMD_CMD_WRITE_BUFFER_CONFIRM);

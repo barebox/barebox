@@ -83,11 +83,9 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 	unsigned long long ll;
 #endif
 
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		cword->c = c;
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 #if defined(__LITTLE_ENDIAN)
 		w = c;
 		w <<= 8;
@@ -95,8 +93,7 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 #else
 		cword->w = (cword->w << 8) | c;
 #endif
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 #if defined(__LITTLE_ENDIAN)
 		l = c;
 		l <<= 24;
@@ -104,8 +101,7 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 #else
 		cword->l = (cword->l << 8) | c;
 #endif
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 #if defined(__LITTLE_ENDIAN)
 		ll = c;
 		ll <<= 56;
@@ -113,7 +109,6 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 #else
 		cword->ll = (cword->ll << 8) | c;
 #endif
-		break;
 	}
 }
 
@@ -129,22 +124,17 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 
 
 	/* Check if Flash is (sufficiently) erased */
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		flag = ((cptr.cp[0] & cword.c) == cword.c);
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		flag = ((cptr.wp[0] & cword.w) == cword.w);
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		flag = ((cptr.lp[0] & cword.l) == cword.l);
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		flag = ((cptr.llp[0] & cword.ll) == cword.ll);
-		break;
-	default:
+	} else
 		return 2;
-	}
+
 	if (!flag)
 		return 2;
 
@@ -153,19 +143,14 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 
 	info->cfi_cmd_set->flash_prepare_write(info);
 
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		cptr.cp[0] = cword.c;
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		cptr.wp[0] = cword.w;
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		cptr.lp[0] = cword.l;
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		cptr.llp[0] = cword.ll;
-		break;
 	}
 
 	/* re-enable interrupts if necessary */
@@ -322,7 +307,7 @@ static int flash_detect_cfi (flash_info_t * info)
 /*
  * The following code cannot be run from FLASH!
  */
-ulong flash_get_size (flash_info_t *info, ulong base)
+static ulong flash_get_size (flash_info_t *info, ulong base)
 {
 	int i, j;
 	flash_sect_t sect_cnt;
@@ -531,7 +516,7 @@ static int cfi_probe (struct device_d *dev)
  * when the passed address is greater or equal to the sector address
  * we have a match
  */
-flash_sect_t find_sector (flash_info_t * info, ulong addr)
+static inline flash_sect_t find_sector (flash_info_t * info, ulong addr)
 {
 	flash_sect_t sector;
 
@@ -878,7 +863,6 @@ int flash_status_check (flash_info_t * info, flash_sect_t sector,
 void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
 {
 	int i;
-	cfiword_t val;
 	uchar *cp = (uchar *) cmdbuf;
 
 #if defined(__LITTLE_ENDIAN)
@@ -913,20 +897,16 @@ int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cm
 	flash_make_cmd (info, cmd, &cword);
 
 	debug ("is= cmd %x(%c) addr %p ", cmd, cmd, cptr.cp);
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		debug ("is= %x %x\n", cptr.cp[0], cword.c);
 		retval = (cptr.cp[0] == cword.c);
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		debug ("is= %4.4x %4.4x\n", cptr.wp[0], cword.w);
 		retval = (cptr.wp[0] == cword.w);
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		debug ("is= %8.8lx %8.8lx\n", cptr.lp[0], cword.l);
 		retval = (cptr.lp[0] == cword.l);
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 #ifdef DEBUG
 		{
 			char str1[20];
@@ -938,11 +918,9 @@ int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cm
 		}
 #endif
 		retval = (cptr.llp[0] == cword.ll);
-		break;
-	default:
+	} else
 		retval = 0;
-		break;
-	}
+
 	return retval;
 }
 
@@ -954,23 +932,17 @@ int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 
 	cptr.cp = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
+	if (bankwidth_is_1(info)) {
 		retval = ((cptr.cp[0] & cword.c) == cword.c);
-		break;
-	case FLASH_CFI_16BIT:
+	} else if (bankwidth_is_2(info)) {
 		retval = ((cptr.wp[0] & cword.w) == cword.w);
-		break;
-	case FLASH_CFI_32BIT:
+	} else if (bankwidth_is_4(info)) {
 		retval = ((cptr.lp[0] & cword.l) == cword.l);
-		break;
-	case FLASH_CFI_64BIT:
+	} else if (bankwidth_is_8(info)) {
 		retval = ((cptr.llp[0] & cword.ll) == cword.ll);
-		break;
-	default:
+	} else
 		retval = 0;
-		break;
-	}
+
 	return retval;
 }
 

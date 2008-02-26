@@ -108,41 +108,18 @@ static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const u
 	if ((retcode = flash_status_check (info, sector, info->buffer_write_tout,
 					   "write to buffer")) == ERR_OK) {
 		/* reduce the number of loops by the width of the port	*/
-		switch (info->portwidth) {
-		case FLASH_CFI_8BIT:
-			cnt = len;
-			break;
-		case FLASH_CFI_16BIT:
-			cnt = len >> 1;
-			break;
-		case FLASH_CFI_32BIT:
-			cnt = len >> 2;
-			break;
-		case FLASH_CFI_64BIT:
-			cnt = len >> 3;
-			break;
-		default:
-			return ERR_INVAL;
-			break;
-		}
+		cnt = len >> (info->portwidth - 1);
+
 		flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
 		while (cnt-- > 0) {
-			switch (info->portwidth) {
-			case FLASH_CFI_8BIT:
+			if (bankwidth_is_1(info)) {
 				*dst.cp++ = *src.cp++;
-				break;
-			case FLASH_CFI_16BIT:
+			} else if (bankwidth_is_2(info)) {
 				*dst.wp++ = *src.wp++;
-				break;
-			case FLASH_CFI_32BIT:
+			} else if (bankwidth_is_4(info)) {
 				*dst.lp++ = *src.lp++;
-				break;
-			case FLASH_CFI_64BIT:
+			} else if (bankwidth_is_8(info)) {
 				*dst.llp++ = *src.llp++;
-				break;
-			default:
-				return ERR_INVAL;
-				break;
 			}
 		}
 		flash_write_cmd (info, sector, 0,

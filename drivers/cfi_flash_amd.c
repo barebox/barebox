@@ -110,13 +110,15 @@ static int amd_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uch
 	int retcode;
 	volatile cfiptr_t src;
 	volatile cfiptr_t dst;
+	cfiword_t cword;
 
 	src.cp = (uchar *)cp;
 	dst.cp = (uchar *) dest;
 	sector = find_sector (info, dest);
 
 	flash_unlock_seq(info,0);
-	flash_write_cmd (info, sector, 0, AMD_CMD_WRITE_TO_BUFFER);
+	flash_make_cmd (info, AMD_CMD_WRITE_TO_BUFFER, &cword);
+	flash_write_word(info, cword, (void *)dest);
 
 	switch (info->portwidth) {
 	case FLASH_CFI_8BIT:

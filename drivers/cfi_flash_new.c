@@ -41,6 +41,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <cfi_flash_new.h>
+#include <asm/io.h>
 
 /*
  * This file implements a Common Flash Interface (CFI) driver for U-Boot.
@@ -877,6 +878,7 @@ int flash_status_check (flash_info_t * info, flash_sect_t sector,
 void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
 {
 	int i;
+	cfiword_t val;
 	uchar *cp = (uchar *) cmdbuf;
 
 #if defined(__LITTLE_ENDIAN)
@@ -886,63 +888,19 @@ void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
 #endif
 		*cp++ = (i & (info->chipwidth - 1)) ? '\0' : cmd;
 }
-
+		
 /*
  * Write a proper sized command to the correct address
  */
 void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 {
 
-	volatile cfiptr_t addr;
+	uchar *addr;
 	cfiword_t cword;
 
-	addr.cp = flash_make_addr (info, sect, offset);
+	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
-	switch (info->portwidth) {
-	case FLASH_CFI_8BIT:
-		debug ("fwc addr %p cmd %x %x 8bit x %d bit\n", addr.cp, cmd,
-		       cword.c, info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-		*addr.cp = cword.c;
-#ifdef CONFIG_BLACKFIN
-		asm("ssync;");
-#endif
-		break;
-	case FLASH_CFI_16BIT:
-		debug ("fwc addr %p cmd %x %4.4x 16bit x %d bit\n", addr.wp,
-		       cmd, cword.w,
-		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-		*addr.wp = cword.w;
-#ifdef CONFIG_BLACKFIN
-		asm("ssync;");
-#endif
-		break;
-	case FLASH_CFI_32BIT:
-		debug ("fwc addr %p cmd %x %8.8lx 32bit x %d bit\n", addr.lp,
-		       cmd, cword.l,
-		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-		*addr.lp = cword.l;
-#ifdef CONFIG_BLACKFIN
-		asm("ssync;");
-#endif
-		break;
-	case FLASH_CFI_64BIT:
-#ifdef DEBUG
-		{
-			char str[20];
-
-			print_longlong (str, cword.ll);
-
-			debug ("fwrite addr %p cmd %x %s 64 bit x %d bit\n",
-			       addr.llp, cmd, str,
-			       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-		}
-#endif
-		*addr.llp = cword.ll;
-#ifdef CONFIG_BLACKFIN
-		asm("ssync;");
-#endif
-		break;
-	}
+	flash_write_word(info, cword, addr);
 }
 
 int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)

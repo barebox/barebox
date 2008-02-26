@@ -25,6 +25,7 @@
  */
 
 #include <driver.h>
+#include <asm/io.h>
 
 typedef unsigned long flash_sect_t;
 struct cfi_cmd_set;
@@ -221,6 +222,27 @@ typedef union {
 	volatile unsigned long *lp;
 	volatile unsigned long long *llp;
 } cfiptr_t;
+
+static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *addr)
+{
+	switch (info->portwidth) {
+	case FLASH_CFI_8BIT:
+		debug("fw addr %p val %02x\n", addr, datum.c); 
+		writeb(datum.c, addr);
+		break;
+	case FLASH_CFI_16BIT:
+		debug("fw addr %p val %04x\n", addr, datum.w); 
+		writew(datum.w, addr);
+		break;
+	case FLASH_CFI_32BIT:
+		debug("fw addr %p val %08x\n", addr, datum.l); 
+		writel(datum.l, addr);
+		break;
+	case FLASH_CFI_64BIT:
+		memcpy((void *)addr, &datum.ll, 8);
+		break;
+	}
+}
 
 extern void flash_print_info (flash_info_t *);
 extern int flash_sect_erase (ulong addr_first, ulong addr_last);

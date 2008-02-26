@@ -20,10 +20,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include <asm/mach-types.h>
-
-#define CONFIG_BOOT_PARAMS 0x08000100
-
 /*
  * Definitions related to passing arguments to kernel.
  */

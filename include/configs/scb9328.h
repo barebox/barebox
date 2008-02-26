@@ -24,14 +24,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include <asm/mach-types.h>
-
-#define CONFIG_BOOT_PARAMS 0x08000100
-
-/*
- * Definitions related to passing arguments to kernel.
- */
-
 #define CFG_MALLOC_LEN		(4096 << 10)
 
 #define CONFIG_STACKSIZE	(120<<10)      /* stack size		     */

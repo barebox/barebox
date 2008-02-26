@@ -25,6 +25,7 @@
 #include <environment.h>
 #include <asm/arch/netx-regs.h>
 #include <partition.h>
+#include <asm/armlinux.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <asm/arch/netx-eth.h>
@@ -80,6 +81,9 @@ static int netx_devices_init(void) {
 
 	/* Do not overwrite primary env for now */
 	dev_add_partition(&cfi_dev, 0xc0000, 0x80000, PARTITION_FIXED, "env"); 
+
+	armlinux_set_bootparams((void *)0x80000100);
+	armlinux_set_architecture(MACH_TYPE_NXDB500);
 
 	return 0;
 }

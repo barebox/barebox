@@ -26,6 +26,7 @@
 #include <asm/arch/imx-regs.h>
 #include <fec.h>
 #include <asm/arch/gpio.h>
+#include <asm/armlinux.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -99,6 +100,9 @@ static int pcm038_devices_init(void)
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
+
+	armlinux_set_bootparams((void *)0xa0000100);
+	armlinux_set_architecture(MACH_TYPE_PCM038);
 
 	return 0;
 }

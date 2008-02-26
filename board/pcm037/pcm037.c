@@ -27,6 +27,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/armlinux.h>
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
@@ -122,6 +123,9 @@ static int imx31_devices_init(void)
 	register_device(&network_dev);
 
 	register_device(&sdram_dev);
+
+	armlinux_set_bootparams((void *)0x08000100);
+	armlinux_set_architecture(1147);
 
 	return 0;
 }

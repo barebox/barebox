@@ -27,14 +27,12 @@
 #include <dm9161.h>
 #include <miiphy.h>
 #include <splash.h>
+#include <asm/armlinux.h>
 #include <s1d13706fb.h>
 #include <net.h>
 #include <cfi_flash.h>
 #include <init.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
-/* ------------------------------------------------------------------------- */
 /*
  * Miscelaneous platform dependent initialisations
  */
@@ -72,6 +70,9 @@ static int devices_init (void)
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&at91_ath_dev);
+
+	armlinux_set_bootparams((void *)(PHYS_SDRAM + 0x100));
+	armlinux_set_architecture(MACH_TYPE_ECO920);
 
 	return 0;
 }

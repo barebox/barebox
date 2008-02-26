@@ -24,6 +24,7 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/armlinux.h>
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
@@ -94,6 +95,9 @@ static int scb9328_devices_init(void) {
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
+
+	armlinux_set_bootparams((void *)0x08000100);
+	armlinux_set_architecture(MACH_TYPE_SCB9328);
 
 	return 0;
 }

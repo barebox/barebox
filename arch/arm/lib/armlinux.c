@@ -108,12 +108,22 @@ void __setup_serial_tag(struct tag **tmp);
 # define SHOW_BOOT_PROGRESS(arg)
 #endif
 
-static int arm_architecture = CONFIG_ARCH_NUMBER;
+static int armlinux_architecture = 0;
+static void *armlinux_bootparams = NULL;
 
-int
-do_bootm_linux(struct image_data *data)
+void armlinux_set_bootparams(void *params)
 {
-	void (*theKernel)(int zero, int arch, uint params);
+	armlinux_bootparams = params;
+}
+
+void armlinux_set_architecture(int architecture)
+{
+	armlinux_architecture = architecture;
+}
+
+int do_bootm_linux(struct image_data *data)
+{
+	void (*theKernel)(int zero, int arch, void *params);
 	image_header_t *os_header = &data->os->header;
 	const char *commandline = getenv ("bootargs");
 
@@ -122,10 +132,20 @@ do_bootm_linux(struct image_data *data)
 		return -1;
 	}
 
-	printf("commandline: %s\n"
-	       "arch_number: %d\n", commandline, arm_architecture);
+	if (armlinux_architecture == 0) {
+		printf("arm architecture not set. Please specify with -a option\n");
+		return -1;
+	}
 
-	theKernel = (void (*)(int, int, uint))ntohl((unsigned long)(os_header->ih_ep));
+	if (!armlinux_bootparams) {
+		printf("Bootparams not set. Please fix your board code\n");
+		return -1;
+	}
+
+	printf("commandline: %s\n"
+	       "arch_number: %d\n", commandline, armlinux_architecture);
+
+	theKernel = (void (*)(int, int, void *))ntohl((unsigned long)(os_header->ih_ep));
 
 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
 	       (ulong) theKernel);
@@ -149,7 +169,7 @@ do_bootm_linux(struct image_data *data)
 	printf ("\nStarting kernel ...\n\n");
 
 	cleanup_before_linux();
-	theKernel (0, arm_architecture, CONFIG_BOOT_PARAMS);
+	theKernel (0, armlinux_architecture, armlinux_bootparams);
 
 	return -1;
 }
@@ -159,7 +179,7 @@ static int image_handle_cmdline_parse(struct image_data *data, int opt,
 {
 	switch (opt) {
 	case 'a':
-		arm_architecture = simple_strtoul(optarg, NULL, 0);
+		armlinux_architecture = simple_strtoul(optarg, NULL, 0);
 		return 0;
 	default:
 		return 1;
@@ -185,7 +205,7 @@ late_initcall(armlinux_register_image_handler);
 void
 __setup_start_tag(void)
 {
-	params = (struct tag *)CONFIG_BOOT_PARAMS;
+	params = (struct tag *)armlinux_bootparams;
 
 	params->hdr.tag = ATAG_CORE;
 	params->hdr.size = tag_size(tag_core);

@@ -458,7 +458,7 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 
 			/* increase the space malloced for the sector start addresses */
 			info->start = realloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
-			info->protect = realloc(info->protect, sizeof(ulong) * (erase_region_count + sect_cnt));
+			info->protect = realloc(info->protect, sizeof(uchar) * (erase_region_count + sect_cnt));
 
 			for (j = 0; j < erase_region_count; j++) {
 				info->start[sect_cnt] = sector;
@@ -529,20 +529,19 @@ static int cfi_probe (struct device_d *dev)
 	return 0;
 }
 
-static int flash_find_sector(flash_info_t * info, unsigned long adr)
+/* loop through the sectors from the highest address
+ * when the passed address is greater or equal to the sector address
+ * we have a match
+ */
+flash_sect_t find_sector (flash_info_t * info, ulong addr)
 {
-        int i;
-        unsigned long end;
+	flash_sect_t sector;
 
-        for (i = 0; i < info->sector_count; i++) {
-                if (i == info->sector_count)
-                        end = info->start[0] + info->size - 1;
-                else
-                        end = info->start[i + 1] - 1;
-                if (adr >= info->start[i] && adr <= end)
-                        return i;
-        }
-        return -1;
+	for (sector = info->sector_count - 1; sector >= 0; sector--) {
+		if (addr >= info->start[sector])
+			break;
+	}
+	return sector;
 }
 
 /*-----------------------------------------------------------------------
@@ -556,8 +555,8 @@ static int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 
 	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
 
-        start = flash_find_sector(finfo, dev->map_base + offset);
-        end   = flash_find_sector(finfo, dev->map_base + offset + count - 1);
+        start = find_sector(finfo, dev->map_base + offset);
+        end   = find_sector(finfo, dev->map_base + offset + count - 1);
 
         for (i = start; i <= end; i++) {
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
@@ -1027,20 +1026,5 @@ int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 		break;
 	}
 	return retval;
-}
-
-/* loop through the sectors from the highest address
- * when the passed address is greater or equal to the sector address
- * we have a match
- */
-flash_sect_t find_sector (flash_info_t * info, ulong addr)
-{
-	flash_sect_t sector;
-
-	for (sector = info->sector_count - 1; sector >= 0; sector--) {
-		if (addr >= info->start[sector])
-			break;
-	}
-	return sector;
 }
 

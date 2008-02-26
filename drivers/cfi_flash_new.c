@@ -647,6 +647,60 @@ static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong
 	return flash_write_cfiword (info, wp, cword);
 }
 
+static int flash_real_protect (flash_info_t * info, long sector, int prot)
+{
+	int retcode = 0;
+
+	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
+	flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT);
+	if (prot)
+		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_SET);
+	else
+		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
+
+	if ((retcode =
+	     flash_status_check (info, sector, info->erase_blk_tout,
+				      prot ? "protect" : "unprotect")) == 0) {
+
+		info->protect[sector] = prot;
+
+		/*
+		 * On some of Intel's flash chips (marked via legacy_unlock)
+		 * unprotect unprotects all locking.
+		 */
+		if ((prot == 0) && (info->legacy_unlock)) {
+			flash_sect_t i;
+
+			for (i = 0; i < info->sector_count; i++) {
+				if (info->protect[i])
+					flash_real_protect (info, i, 1);
+			}
+		}
+	}
+	return retcode;
+}
+
+static int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+{
+	flash_info_t *finfo = (flash_info_t *)dev->priv;
+	unsigned long start, end;
+	int i, ret = 0;
+
+	debug("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+
+	start = find_sector(finfo, dev->map_base + offset);
+	end   = find_sector(finfo, dev->map_base + offset + count - 1);
+
+	for (i = start; i <= end; i++) {
+		ret = flash_real_protect (finfo, i, prot);
+		if (ret)
+			goto out;
+	}
+out:
+	putchar('\n');
+	return ret;
+}
+
 static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, unsigned long offset, ulong flags)
 {
         flash_info_t *finfo = (flash_info_t *)dev->priv;
@@ -749,12 +803,14 @@ static void cfi_info (struct device_d* dev)
 }
 
 static struct driver_d cfi_driver = {
-        .name  = "cfi_flash",
-        .probe = cfi_probe,
-        .read  = mem_read,
-        .write = cfi_write,
-        .erase = cfi_erase,
-        .info  = cfi_info,
+        .name    = "cfi_flash",
+        .probe   = cfi_probe,
+        .read    = mem_read,
+        .write   = cfi_write,
+        .erase   = cfi_erase,
+        .info    = cfi_info,
+	.protect = cfi_protect,
+	.memmap  = generic_memmap_ro,
 };
 
 static int cfi_init(void)
@@ -764,41 +820,7 @@ static int cfi_init(void)
 
 device_initcall(cfi_init);
 
-#ifdef CFG_FLASH_PROTECTION
-
-int flash_real_protect (flash_info_t * info, long sector, int prot)
-{
-	int retcode = 0;
-
-	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
-	flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT);
-	if (prot)
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_SET);
-	else
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
-
-	if ((retcode =
-	     flash_full_status_check (info, sector, info->erase_blk_tout,
-				      prot ? "protect" : "unprotect")) == 0) {
-
-		info->protect[sector] = prot;
-
-		/*
-		 * On some of Intel's flash chips (marked via legacy_unlock)
-		 * unprotect unprotects all locking.
-		 */
-		if ((prot == 0) && (info->legacy_unlock)) {
-			flash_sect_t i;
-
-			for (i = 0; i < info->sector_count; i++) {
-				if (info->protect[i])
-					flash_real_protect (info, i, 1);
-			}
-		}
-	}
-	return retcode;
-}
-
+#if 0
 /*
  * flash_read_user_serial - read the OneTimeProgramming cells
  */
@@ -829,13 +851,19 @@ static void flash_read_factory_serial (flash_info_t * info, void *buffer, int of
 	flash_write_cmd (info, 0, 0, info->cmd_reset);
 }
 
-#endif /* CFG_FLASH_PROTECTION */
+#endif 
+
+int flash_status_check (flash_info_t * info, flash_sect_t sector,
+			       uint64_t tout, char *prompt)
+{
+	return info->cfi_cmd_set->flash_status_check(info, sector, tout, prompt);
+}
 
 /*
  *  wait for XSR.7 to be set. Time out with an error if it does not.
  *  This routine does not set the flash to read-array mode.
  */
-int flash_status_check (flash_info_t * info, flash_sect_t sector,
+int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
 			       uint64_t tout, char *prompt)
 {
 	uint64_t start;

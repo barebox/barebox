@@ -145,5 +145,6 @@ struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_is_busy = amd_flash_is_busy,
 	.flash_read_jedec_ids = amd_read_jedec_ids,
 	.flash_prepare_write = amd_flash_prepare_write,
+	.flash_status_check = flash_generic_status_check,
 };
 

@@ -67,6 +67,7 @@ struct cfi_cmd_set {
 	int (*flash_is_busy) (flash_info_t * info, flash_sect_t sect);
 	void (*flash_read_jedec_ids) (flash_info_t * info);
 	void (*flash_prepare_write) (flash_info_t * info);
+	int (*flash_status_check) (flash_info_t * info, flash_sect_t sector, uint64_t tout, char *prompt);
 };
 
 extern struct cfi_cmd_set cfi_cmd_set_intel;
@@ -183,6 +184,9 @@ void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar
 flash_sect_t find_sector (flash_info_t * info, ulong addr);
 int flash_status_check (flash_info_t * info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
+int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
+			       uint64_t tout, char *prompt);
+
 int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
 void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf);
 

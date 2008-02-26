@@ -132,11 +132,44 @@ static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const u
 }
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
+static int intel_flash_status_check (flash_info_t * info, flash_sect_t sector,
+				    uint64_t tout, char *prompt)
+{
+	int retcode;
+
+	retcode = flash_generic_status_check (info, sector, tout, prompt);
+
+	if ((retcode == ERR_OK)
+	    && !flash_isequal (info, sector, 0, FLASH_STATUS_DONE)) {
+		retcode = ERR_INVAL;
+		printf ("Flash %s error at address %lx\n", prompt,
+			info->start[sector]);
+		if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS | FLASH_STATUS_PSLBS)) {
+			puts ("Command Sequence Error.\n");
+		} else if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS)) {
+			puts ("Block Erase Error.\n");
+			retcode = ERR_NOT_ERASED;
+		} else if (flash_isset (info, sector, 0, FLASH_STATUS_PSLBS)) {
+			puts ("Locking Error\n");
+		}
+		if (flash_isset (info, sector, 0, FLASH_STATUS_DPS)) {
+			puts ("Block locked.\n");
+			retcode = ERR_PROTECTED;
+		}
+		if (flash_isset (info, sector, 0, FLASH_STATUS_VPENS))
+			puts ("Vpp Low Error.\n");
+	}
+	flash_write_cmd (info, sector, 0, info->cmd_reset);
+
+	return retcode;
+}
+
 struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_write_cfibuffer = intel_flash_write_cfibuffer,
 	.flash_erase_one = intel_flash_erase_one,
 	.flash_is_busy = intel_flash_is_busy,
 	.flash_read_jedec_ids = intel_read_jedec_ids,
 	.flash_prepare_write = intel_flash_prepare_write,
+	.flash_status_check = intel_flash_status_check,
 };
 

@@ -176,7 +176,7 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 }
 
 #ifdef DEBUG
-/*-----------------------------------------------------------------------
+/*
  * Debug support
  */
 void print_longlong (char *str, unsigned long long data)
@@ -215,7 +215,7 @@ static void flash_printqry (flash_info_t * info, flash_sect_t sect)
 }
 #endif
 
-/*-----------------------------------------------------------------------
+/*
  * read a short word by swapping for ppc format.
  */
 static ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint offset)
@@ -246,7 +246,7 @@ static ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint of
 	return retval;
 }
 
-/*-----------------------------------------------------------------------
+/*
  * read a long word by picking the least significant byte of each maximum
  * port size word. Swap for ppc format.
  */
@@ -279,7 +279,7 @@ static ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offse
 	return retval;
 }
 
-/*-----------------------------------------------------------------------
+/*
  * detect if flash is compatible with the Common Flash Interface (CFI)
  * http://www.jedec.org/download/search/jesd68.pdf
  *
@@ -320,7 +320,6 @@ static int flash_detect_cfi (flash_info_t * info)
 
 /*
  * The following code cannot be run from FLASH!
- *
  */
 ulong flash_get_size (flash_info_t *info, ulong base)
 {
@@ -505,8 +504,6 @@ ulong flash_get_size (flash_info_t *info, ulong base)
 	return (info->size);
 }
 
-/*-----------------------------------------------------------------------
- */
 static int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
@@ -544,9 +541,6 @@ flash_sect_t find_sector (flash_info_t * info, ulong addr)
 	return sector;
 }
 
-/*-----------------------------------------------------------------------
- */
-
 static int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
         flash_info_t *finfo = (flash_info_t *)dev->priv;
@@ -568,7 +562,7 @@ out:
         return ret;
 }
 
-/*-----------------------------------------------------------------------
+/*
  * Copy memory to flash, returns:
  * 0 - OK
  * 1 - write timeout
@@ -784,8 +778,6 @@ static int cfi_init(void)
 
 device_initcall(cfi_init);
 
-/*-----------------------------------------------------------------------
- */
 #ifdef CFG_FLASH_PROTECTION
 
 int flash_real_protect (flash_info_t * info, long sector, int prot)
@@ -821,7 +813,7 @@ int flash_real_protect (flash_info_t * info, long sector, int prot)
 	return retcode;
 }
 
-/*-----------------------------------------------------------------------
+/*
  * flash_read_user_serial - read the OneTimeProgramming cells
  */
 static void flash_read_user_serial (flash_info_t * info, void *buffer, int offset,
@@ -853,7 +845,7 @@ static void flash_read_factory_serial (flash_info_t * info, void *buffer, int of
 
 #endif /* CFG_FLASH_PROTECTION */
 
-/*-----------------------------------------------------------------------
+/*
  *  wait for XSR.7 to be set. Time out with an error if it does not.
  *  This routine does not set the flash to read-array mode.
  */
@@ -879,7 +871,7 @@ int flash_status_check (flash_info_t * info, flash_sect_t sector,
 	return ERR_OK;
 }
 
-/*-----------------------------------------------------------------------
+/*
  * make a proper sized command based on the port and chip widths
  */
 void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
@@ -953,8 +945,6 @@ void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar
 	}
 }
 
-/*-----------------------------------------------------------------------
- */
 int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 {
 	cfiptr_t cptr;
@@ -998,8 +988,6 @@ int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cm
 	return retval;
 }
 
-/*-----------------------------------------------------------------------
- */
 int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 {
 	cfiptr_t cptr;

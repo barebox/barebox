@@ -8,7 +8,7 @@ static void flash_unlock_seq (flash_info_t * info, flash_sect_t sect)
 	flash_write_cmd (info, sect, AMD_ADDR_ACK, AMD_CMD_UNLOCK_ACK);
 }
 
-/*-----------------------------------------------------------------------
+/*
  * read jedec ids from device and set corresponding fields in info struct
  *
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct

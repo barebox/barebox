@@ -1,7 +1,7 @@
 #include <common.h>
 #include <cfi_flash_new.h>
 
-/*-----------------------------------------------------------------------
+/*
  * read jedec ids from device and set corresponding fields in info struct
  *
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct
@@ -23,7 +23,7 @@ static void intel_read_jedec_ids (flash_info_t * info)
 	flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
 }
 
-/*-----------------------------------------------------------------------
+/*
  * Wait for XSR.7 to be set, if it times out print an error, otherwise do a full status check.
  * This routine sets the flash to read-array mode.
  */

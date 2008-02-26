@@ -516,7 +516,7 @@ static int cfi_probe (struct device_d *dev)
  * when the passed address is greater or equal to the sector address
  * we have a match
  */
-static inline flash_sect_t find_sector (flash_info_t * info, ulong addr)
+flash_sect_t find_sector (flash_info_t * info, ulong addr)
 {
 	flash_sect_t sector;
 

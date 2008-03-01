@@ -72,23 +72,26 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 		uint	*uip = (uint   *)linebuf;
 		ushort	*usp = (ushort *)linebuf;
 		u_char	*ucp = (u_char *)linebuf;
+		uint	count = 52;
 
 		printf("%08lx:", offs);
-		linebytes = (nbytes>DISP_LINE_LEN)?DISP_LINE_LEN:nbytes;
+		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
-		for (i=0; i<linebytes; i+= size) {
+		for (i = 0; i < linebytes; i += size) {
 			if (size == 4) {
-				printf(" %08x", (*uip++ = *((uint *)addr)));
+				count -= printf(" %08x", (*uip++ = *((uint *)addr)));
 			} else if (size == 2) {
-				printf(" %04x", (*usp++ = *((ushort *)addr)));
+				count -= printf(" %04x", (*usp++ = *((ushort *)addr)));
 			} else {
-				printf(" %02x", (*ucp++ = *((u_char *)addr)));
+				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
 			addr += size;
 			offs += size;
 		}
 
-		puts ("    ");
+		while(count--)
+			putchar(' ');
+
 		cp = (u_char *)linebuf;
 		for (i=0; i<linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))

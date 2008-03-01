@@ -157,7 +157,7 @@ const char *fsdev_get_mountpoint(struct fs_device_d *fsdev);
 void *read_file(const char *filename, size_t *size);
 
 /*
- * This function turn 'path' into an absolute path and removes all occurrences
+ * This function turns 'path' into an absolute path and removes all occurrences
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */
 char *normalise_path(const char *path);

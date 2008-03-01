@@ -2,6 +2,7 @@
 #include <readkey.h>
 #include <init.h>
 #include <xfuncs.h>
+#include <complete.h>
 
 /*
  * cmdline-editing related codes from vivi.
@@ -179,7 +180,13 @@ int readline(const char *prompt, char *buf, int len)
 	char ichar;
 	int insert = 1;
 	int rc = 0;
+#ifdef CONFIG_AUTO_COMPLETE
+	char tmp;
+	int reprint, i;
+	char *completestr;
 
+	complete_reset();
+#endif
 	puts (prompt);
 
 	while (1) {
@@ -192,6 +199,22 @@ int readline(const char *prompt, char *buf, int len)
 		}
 
 		switch (ichar) {
+		case '\t':
+#ifdef CONFIG_AUTO_COMPLETE
+			tmp = buf[num];
+			buf[num] = 0;
+			reprint = complete(buf, &completestr);
+			if (reprint)
+				printf("%s%s", prompt, buf);
+
+			i = 0;
+			while (completestr[i])
+				cread_add_char(completestr[i++], insert, &num, &eol_num, buf, len);
+
+			buf[num] = tmp;
+#endif
+			break;
+
 		case KEY_HOME:
 			BEGINNING_OF_LINE();
 			break;

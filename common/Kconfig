@@ -81,6 +81,7 @@ config CMDLINE_EDITING
 
 config AUTO_COMPLETE
 	bool
+	depends on CMDLINE_EDITING
 	prompt "Enable auto completion"
 
 config SIMPLE_READLINE

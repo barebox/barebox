@@ -118,14 +118,6 @@ int readline (const char *prompt, char *line, int len)
 			 */
 			if (n < CONFIG_CBSIZE-2) {
 				if (c == '\t') {	/* expand TABs		*/
-#ifdef CONFIG_AUTO_COMPLETE
-					/* if auto completion triggered just continue */
-					*p = '\0';
-					if (cmd_auto_complete(prompt, line, &n, &col)) {
-						p = line + n;	/* reset */
-						continue;
-					}
-#endif
 					puts (tab_seq+(col&07));
 					col += 8 - (col&07);
 				} else {

@@ -25,6 +25,9 @@ char *basename (char *path)
 {
 	char *fname;
 
+	if(!strchr(path, '/'))
+		return path;
+
 	fname = path + strlen(path) - 1;
 	while (fname >= path) {
 		if (*fname == '/') {
@@ -40,6 +43,13 @@ EXPORT_SYMBOL(basename);
 char *dirname (char *path)
 {
 	char *fname;
+	static char str[2];
+
+	if(!strchr(path, '/')) {
+		str[0] = '.';
+		str[1] = 0;
+		return str;
+	}
 
 	fname = basename (path);
 	--fname;

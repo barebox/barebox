@@ -23,6 +23,7 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
+#include <asm/mach-types.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/armlinux.h>
 #include <asm/arch/gpio.h>

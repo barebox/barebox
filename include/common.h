@@ -88,10 +88,6 @@ int	checkdram     (void);
 int	checkcpu      (void);
 char *	strmhz(char *buf, long hz);
 
-#ifdef CONFIG_AUTO_COMPLETE
-int env_complete(char *var, int maxv, char *cmdv[], int maxsz, char *buf);
-#endif
-
 /* common/exports.c */
 void	jumptable_init(void);
 

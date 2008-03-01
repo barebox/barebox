@@ -55,10 +55,6 @@ struct cmd_tbl_s {
 #ifdef	CONFIG_LONGHELP
 	char		*help;		/* Help  message	(long)	*/
 #endif
-#ifdef CONFIG_AUTO_COMPLETE
-	/* do auto completion on the arguments */
-	int		(*complete)(int argc, char *argv[], char last_char, int maxv, char *cmdv[]);
-#endif
 }
 #ifdef __x86_64__
 /* This is required because the linker will put symbols on a 64 bit alignment */
@@ -76,11 +72,6 @@ extern cmd_tbl_t  __u_boot_cmd_end;
 /* common/command.c */
 cmd_tbl_t *find_cmd(const char *cmd);
 void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
-
-#ifdef CONFIG_AUTO_COMPLETE
-extern void install_auto_complete(void);
-extern int cmd_auto_complete(const char *const prompt, char *buf, int *np, int *colp);
-#endif
 
 /*
  * Monitor Command

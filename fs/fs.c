@@ -356,6 +356,11 @@ int unlink(const char *pathname)
 		goto out;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
+	if (!fsdrv->unlink) {
+		errno = -ENOSYS;
+		goto out;
+	}
+
 	errno = fsdrv->unlink(dev, p);
 out:
 	free(freep);

@@ -201,17 +201,25 @@ int readline(const char *prompt, char *buf, int len)
 		switch (ichar) {
 		case '\t':
 #ifdef CONFIG_AUTO_COMPLETE
+			buf[eol_num] = 0;
 			tmp = buf[num];
+
 			buf[num] = 0;
 			reprint = complete(buf, &completestr);
-			if (reprint)
+			buf[num] = tmp;
+
+			if (reprint) {
 				printf("%s%s", prompt, buf);
+
+				if (tmp)
+					for (i = 0; i < eol_num - num; i++)
+						getcmd_putch(CTL_BACKSPACE);
+			}
 
 			i = 0;
 			while (completestr[i])
-				cread_add_char(completestr[i++], insert, &num, &eol_num, buf, len);
-
-			buf[num] = tmp;
+				cread_add_char(completestr[i++], insert, &num,
+						&eol_num, buf, len);
 #endif
 			break;
 

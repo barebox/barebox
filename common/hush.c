@@ -120,6 +120,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <libbb.h>
+#include <glob.h>
 
 /*cmd_boot.c*/
 extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
@@ -192,6 +193,7 @@ struct child_prog {
 	struct pipe *group;			/* if non-NULL, first in group or subshell */
 	int sp;				/* number of SPECIAL_VAR_SYMBOL */
 	int type;
+	glob_t glob_result;			/* result of parameter globbing */
 };
 
 struct pipe {
@@ -585,6 +587,7 @@ static int run_pipe_real(struct pipe *pi)
 			free(str);
 			return last_return_code;
 		}
+
 		if (strchr(child->argv[i], '/')) {
 			return execute_script(child->argv[i], child->argc-i, &child->argv[i]);
 		}
@@ -754,11 +757,7 @@ static int free_pipe(struct pipe *pi, int indent)
 			for (a=0,p=child->argv; *p; a++,p++) {
 				final_printf("%s   argv[%d] = %s\n",ind,a,*p);
 			}
-			for (a = child->argc;a >= 0;a--) {
-				free(child->argv[a]);
-			}
-					free(child->argv);
-			child->argc = 0;
+			globfree(&child->glob_result);
 			child->argv=NULL;
 		} else if (child->group) {
 			ret_code = free_pipe_list(child->group,indent+3);
@@ -786,6 +785,86 @@ static int free_pipe_list(struct pipe *head, int indent)
 		free(pi);
 	}
 	return rcode;
+}
+
+/* The API for glob is arguably broken.  This routine pushes a non-matching
+ * string into the output structure, removing non-backslashed backslashes.
+ * If someone can prove me wrong, by performing this function within the
+ * original glob(3) api, feel free to rewrite this routine into oblivion.
+ * Return code (0 vs. GLOB_NOSPACE) matches glob(3).
+ * XXX broken if the last character is '\\', check that before calling.
+ */
+static int globhack(const char *src, int flags, glob_t *pglob)
+{
+	int cnt=0, pathc;
+	const char *s;
+	char *dest;
+	for (cnt=1, s=src; s && *s; s++) {
+		if (*s == '\\') s++;
+		cnt++;
+	}
+	dest = xmalloc(cnt);
+	if (!(flags & GLOB_APPEND)) {
+		pglob->gl_pathv = NULL;
+		pglob->gl_pathc = 0;
+		pglob->gl_offs = 0;
+	}
+	pathc = ++pglob->gl_pathc;
+	pglob->gl_pathv = xrealloc(pglob->gl_pathv, (pathc+1)*sizeof(*pglob->gl_pathv));
+	pglob->gl_pathv[pathc-1] = dest;
+	pglob->gl_pathv[pathc] = NULL;
+	for (s=src; s && *s; s++, dest++) {
+		if (*s == '\\') s++;
+		*dest = *s;
+	}
+	*dest='\0';
+	return 0;
+}
+
+/* XXX broken if the last character is '\\', check that before calling */
+static int glob_needed(const char *s)
+{
+#ifdef CONFIG_GLOB
+	for (; *s; s++) {
+		if (*s == '\\') s++;
+		if (strchr("*[?",*s))
+			return 1;
+	}
+#endif
+	return 0;
+}
+
+static int xglob(o_string *dest, int flags, glob_t *pglob)
+{
+	int gr;
+
+	/* short-circuit for null word */
+	/* we can code this better when the debug_printf's are gone */
+	if (dest->length == 0) {
+		if (dest->nonnull) {
+			/* bash man page calls this an "explicit" null */
+			gr = globhack(dest->data, flags, pglob);
+			debug_printf("globhack returned %d\n",gr);
+		} else {
+			return 0;
+		}
+	} else if (glob_needed(dest->data)) {
+		gr = glob(dest->data, flags, NULL, pglob);
+		debug_printf("glob returned %d\n",gr);
+		if (gr == GLOB_NOMATCH) {
+			/* quote removal, or more accurately, backslash removal */
+			gr = globhack(dest->data, flags, pglob);
+			debug_printf("globhack returned %d\n",gr);
+		}
+	} else {
+		gr = globhack(dest->data, flags, pglob);
+		debug_printf("globhack returned %d\n",gr);
+	}
+	if (gr != 0) { /* GLOB_ABORTED ? */
+		error_msg("glob(3) error %d",gr);
+	}
+	/* globprint(glob_target); */
+	return gr;
 }
 
 /* Select which version we will use */
@@ -946,8 +1025,8 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 static int done_word(o_string *dest, struct p_context *ctx)
 {
 	struct child_prog *child=ctx->child;
-	char *str, *s;
-	int argc, cnt;
+	glob_t *glob_target;
+	int gr, flags = 0;
 
 	debug_printf("done_word: %s %p\n", dest->data, child);
 	if (dest->length == 0 && !dest->nonnull) {
@@ -963,27 +1042,20 @@ static int done_word(o_string *dest, struct p_context *ctx)
 		if (reserved_word(dest,ctx))
 			return ctx->w==RES_SNTX;
 	}
-	for (cnt = 1, s = dest->data; s && *s; s++) {
-		if (*s == '\\')
-			s++;
-		cnt++;
-	}
-	str = xmalloc(cnt);
-	if ( child->argv == NULL) {
-		child->argc=0;
-	}
-	argc = ++child->argc;
-	child->argv = xrealloc(child->argv, (argc+1)*sizeof(*child->argv));
-	child->argv[argc-1]=str;
-	child->argv[argc]=NULL;
-	for (s = dest->data; s && *s; s++,str++) {
-		if (*s == '\\')
-			s++;
-		*str = *s;
-	}
-	*str = '\0';
+
+	glob_target = &child->glob_result;
+	if (child->argv)
+		flags |= GLOB_APPEND;
+
+	gr = xglob(dest, flags, glob_target);
+	if (gr)
+		return 1;
 
 	b_reset(dest);
+
+	child->argv = glob_target->gl_pathv;
+	child->argc = glob_target->gl_pathc;
+
 	if (ctx->w == RES_FOR) {
 		done_word(dest,ctx);
 		done_pipe(ctx,PIPE_SEQ);
@@ -1017,6 +1089,8 @@ static int done_command(struct p_context *ctx)
 	pi->progs = xrealloc(pi->progs, sizeof(*pi->progs) * (pi->num_progs+1));
 
 	prog = pi->progs + pi->num_progs;
+	prog->glob_result.gl_pathv = NULL;
+
 	prog->argv = NULL;
 	prog->group = NULL;
 	prog->sp = 0;
@@ -1496,8 +1570,10 @@ static int source_script(const char *path, int argc, char *argv[])
 	ctx.global_argv = argv;
 
 	script = read_file(path, NULL);
-	if (!script)
+	if (!script) {
+		perror("sh");
 		return 1;
+	}
 
 	ret = parse_string_outer(&ctx, script, FLAG_PARSE_SEMICOLON);
 

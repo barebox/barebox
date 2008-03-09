@@ -20,3 +20,5 @@ obj-$(CONFIG_ZLIB)	+= zlib.o gunzip.o
 obj-$(CONFIG_CRC32)	+= crc32.o
 obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
+obj-$(CONFIG_GLOB)		+= fnmatch.o
+obj-y			+= glob.o

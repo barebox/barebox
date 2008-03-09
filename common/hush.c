@@ -242,13 +242,7 @@ struct in_str {
 #define b_peek(input) ((input)->peek(input))
 
 
-/* This should be in utility.c */
-#ifdef DEBUG_SHELL
-#define debug_printf printf             /* U-Boot debug flag */
-#else
-static inline void debug_printf(const char *format, ...) { }
-#endif
-#define final_printf debug_printf
+#define final_printf debug
 
 static void syntax_err(void) {
 	 printf("syntax error\n");
@@ -267,7 +261,6 @@ static int file_peek(struct in_str *i);
 static void setup_file_in_str(struct in_str *i);
 static void setup_string_in_str(struct in_str *i, const char *s);
 /*  "run" the final data structures: */
-static char *indenter(int i);
 static int free_pipe_list(struct pipe *head, int indent);
 static int free_pipe(struct pipe *pi, int indent);
 /*  really run the final data structures: */
@@ -315,7 +308,7 @@ static int b_check_space(o_string *o, int len)
 
 static int b_addchr(o_string *o, int ch)
 {
-	debug_printf("b_addchr: %c %d %p\n", ch, o->length, o);
+	debug("b_addchr: %c %d %p\n", ch, o->length, o);
 	if (b_check_space(o, 1))
 		return B_NOSPAC;
 	o->data[o->length] = ch;
@@ -467,7 +460,7 @@ static int file_get(struct in_str *i)
 			if (i->p && *i->p) {
 				ch=*i->p++;
 			}
-		debug_printf("b_getch: got a %d\n", ch);
+		debug("b_getch: got a %d\n", ch);
 	}
 	return ch;
 }
@@ -541,7 +534,7 @@ static int run_pipe_real(struct pipe *pi)
 		child = & (pi->progs[0]);
 	if (pi->num_progs == 1 && child->group) {
 		int rcode;
-		debug_printf("non-subshell grouping\n");
+		debug("non-subshell grouping\n");
 		rcode = run_list_real(child->group);
 		return rcode;
 	} else if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
@@ -559,7 +552,7 @@ static int run_pipe_real(struct pipe *pi)
 				int export_me=0;
 				char *name, *value;
 				name = xstrdup(child->argv[i]);
-				debug_printf("Local environment set: %s\n", name);
+				debug("Local environment set: %s\n", name);
 				value = strchr(name, '=');
 				if (value)
 					*value=0;
@@ -658,7 +651,7 @@ static int run_list_real(struct pipe *pi)
 				}
 		}
 		rmode = pi->r_mode;
-		debug_printf("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n", rmode, if_code, next_if_code, skip_more_in_this_rmode);
+		debug("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n", rmode, if_code, next_if_code, skip_more_in_this_rmode);
 		if (rmode == skip_more_in_this_rmode && flag_skip) {
 			if (pi->followup == PIPE_SEQ) flag_skip=0;
 			continue;
@@ -716,7 +709,7 @@ static int run_list_real(struct pipe *pi)
 		if (pi->num_progs == 0)
 			continue;
 		rcode = run_pipe_real(pi);
-		debug_printf("run_pipe_real returned %d\n",rcode);
+		debug("run_pipe_real returned %d\n",rcode);
 		if (rcode < -1) {
 			last_return_code = -rcode - 2;
 			return -2;	/* exit */
@@ -735,12 +728,14 @@ static int run_list_real(struct pipe *pi)
 	return rcode;
 }
 
+#ifdef DEBUG
 /* broken, of course, but OK for testing */
 static char *indenter(int i)
 {
 	static char blanks[]="                                    ";
 	return &blanks[sizeof(blanks)-i-1];
 }
+#endif
 
 /* return code is the exit status of the pipe */
 static int free_pipe(struct pipe *pi, int indent)
@@ -748,22 +743,21 @@ static int free_pipe(struct pipe *pi, int indent)
 	char **p;
 	struct child_prog *child;
 	int a, i, ret_code=0;
-	char *ind = indenter(indent);
 
 	for (i=0; i<pi->num_progs; i++) {
 		child = &pi->progs[i];
-		final_printf("%s  command %d:\n",ind,i);
+		final_printf("%s  command %d:\n",indenter(indent),i);
 		if (child->argv) {
 			for (a=0,p=child->argv; *p; a++,p++) {
-				final_printf("%s   argv[%d] = %s\n",ind,a,*p);
+				final_printf("%s   argv[%d] = %s\n",indenter(indent),a,*p);
 			}
 			globfree(&child->glob_result);
 			child->argv=NULL;
 		} else if (child->group) {
 			ret_code = free_pipe_list(child->group,indent+3);
-			final_printf("%s   end group\n",ind);
+			final_printf("%s   end group\n",indenter(indent));
 		} else {
-			final_printf("%s   (nil)\n",ind);
+			final_printf("%s   (nil)\n",indenter(indent));
 		}
 	}
 	free(pi->progs);   /* children are an array, they get freed all at once */
@@ -775,11 +769,10 @@ static int free_pipe_list(struct pipe *head, int indent)
 {
 	int rcode=0;   /* if list has no members */
 	struct pipe *pi, *next;
-	char *ind = indenter(indent);
 	for (pi=head; pi; pi=next) {
-		final_printf("%s pipe reserved mode %d\n", ind, pi->r_mode);
+		final_printf("%s pipe reserved mode %d\n", indenter(indent), pi->r_mode);
 		rcode = free_pipe(pi, indent);
-		final_printf("%s pipe followup code %d\n", ind, pi->followup);
+		final_printf("%s pipe followup code %d\n", indenter(indent), pi->followup);
 		next=pi->next;
 		pi->next=NULL;
 		free(pi);
@@ -839,26 +832,26 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 	int gr;
 
 	/* short-circuit for null word */
-	/* we can code this better when the debug_printf's are gone */
+	/* we can code this better when the debug's are gone */
 	if (dest->length == 0) {
 		if (dest->nonnull) {
 			/* bash man page calls this an "explicit" null */
 			gr = globhack(dest->data, flags, pglob);
-			debug_printf("globhack returned %d\n",gr);
+			debug("globhack returned %d\n",gr);
 		} else {
 			return 0;
 		}
 	} else if (glob_needed(dest->data)) {
 		gr = glob(dest->data, flags, NULL, pglob);
-		debug_printf("glob returned %d\n",gr);
+		debug("glob returned %d\n",gr);
 		if (gr == GLOB_NOMATCH) {
 			/* quote removal, or more accurately, backslash removal */
 			gr = globhack(dest->data, flags, pglob);
-			debug_printf("globhack returned %d\n",gr);
+			debug("globhack returned %d\n",gr);
 		}
 	} else {
 		gr = globhack(dest->data, flags, pglob);
-		debug_printf("globhack returned %d\n",gr);
+		debug("globhack returned %d\n",gr);
 	}
 	if (gr != 0) { /* GLOB_ABORTED ? */
 		error_msg("glob(3) error %d",gr);
@@ -982,10 +975,10 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 	for (r=reserved_list;
 		r<reserved_list+NRES; r++) {
 		if (strcmp(dest->data, r->literal) == 0) {
-			debug_printf("found reserved word %s, code %d\n",r->literal,r->code);
+			debug("found reserved word %s, code %d\n",r->literal,r->code);
 			if (r->flag & FLAG_START) {
 				struct p_context *new = xmalloc(sizeof(struct p_context));
-				debug_printf("push stack\n");
+				debug("push stack\n");
 				if (ctx->w == RES_IN || ctx->w == RES_FOR) {
 					syntax();
 					free(new);
@@ -1006,7 +999,7 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 			ctx->old_flag = r->flag;
 			if (ctx->old_flag & FLAG_END) {
 				struct p_context *old;
-				debug_printf("pop stack\n");
+				debug("pop stack\n");
 				done_pipe(ctx,PIPE_SEQ);
 				old = ctx->stack;
 				old->child->group = ctx->list_head;
@@ -1028,9 +1021,9 @@ static int done_word(o_string *dest, struct p_context *ctx)
 	glob_t *glob_target;
 	int gr, flags = 0;
 
-	debug_printf("done_word: %s %p\n", dest->data, child);
+	debug("done_word: %s %p\n", dest->data, child);
 	if (dest->length == 0 && !dest->nonnull) {
-		debug_printf("  true null, ignored\n");
+		debug("  true null, ignored\n");
 		return 0;
 	}
 	if (child->group) {
@@ -1038,7 +1031,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 		return 1;  /* syntax error, groups and arglists don't mix */
 	}
 	if (!child->argv && (ctx->type & FLAG_PARSE_SEMICOLON)) {
-		debug_printf("checking %s for reserved-ness\n",dest->data);
+		debug("checking %s for reserved-ness\n",dest->data);
 		if (reserved_word(dest,ctx))
 			return ctx->w==RES_SNTX;
 	}
@@ -1078,13 +1071,13 @@ static int done_command(struct p_context *ctx)
 	if (prog && prog->group == NULL
 		 && prog->argv == NULL
 										) {
-		debug_printf("done_command: skipping null command\n");
+		debug("done_command: skipping null command\n");
 		return 0;
 	} else if (prog) {
 		pi->num_progs++;
-		debug_printf("done_command: num_progs incremented to %d\n",pi->num_progs);
+		debug("done_command: num_progs incremented to %d\n",pi->num_progs);
 	} else {
-		debug_printf("done_command: initializing\n");
+		debug("done_command: initializing\n");
 	}
 	pi->progs = xrealloc(pi->progs, sizeof(*pi->progs) * (pi->num_progs+1));
 
@@ -1105,7 +1098,7 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
 {
 	struct pipe *new_p;
 	done_command(ctx);  /* implicit closure of previous command */
-	debug_printf("done_pipe, type %d\n", type);
+	debug("done_pipe, type %d\n", type);
 	ctx->pipe->followup = type;
 	ctx->pipe->r_mode = ctx->w;
 	new_p=new_pipe();
@@ -1157,7 +1150,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 {
 	int advance = 0, i;
 	int ch = input->peek(input);  /* first character after the $ */
-	debug_printf("handle_dollar: ch=%c\n",ch);
+	debug("handle_dollar: ch=%c\n",ch);
 	if (isalpha(ch)) {
 		b_addchr(dest, SPECIAL_VAR_SYMBOL);
 		ctx->child->sp++;
@@ -1227,14 +1220,14 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	 * A single-quote triggers a bypass of the main loop until its mate is
 	 * found.  When recursing, quote state is passed in via dest->quote. */
 
-	debug_printf("parse_stream, end_trigger=%d\n",end_trigger);
+	debug("parse_stream, end_trigger=%d\n",end_trigger);
 	while ((ch=b_getch(input))!=EOF) {
 		m = map[ch];
 		if (input->__promptme == 0)
 			return 1;
 		next = (ch == '\n') ? 0 : b_peek(input);
 
-		debug_printf("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
+		debug("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
 			ch >= ' ' ? ch : '.', ch, m,
 			dest->quote, ctx->stack == NULL ? '*' : '.');
 
@@ -1251,7 +1244,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 					done_pipe(ctx,PIPE_SEQ);
 			}
 			if (ch == end_trigger && !dest->quote && ctx->w==RES_NONE) {
-				debug_printf("leaving parse_stream (triggered)\n");
+				debug("leaving parse_stream (triggered)\n");
 				return 0;
 			}
 			if (m!=2) {
@@ -1335,7 +1328,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	 * that is, we were really supposed to get end_trigger, and never got
 	 * one before the EOF.  Can't use the standard "syntax error" return code,
 	 * so that parse_stream_outer can distinguish the EOF and exit smoothly. */
-	debug_printf("leaving parse_stream (EOF)\n");
+	debug("leaving parse_stream (EOF)\n");
 	if (end_trigger != '\0') return -1;
 	return 0;
 }

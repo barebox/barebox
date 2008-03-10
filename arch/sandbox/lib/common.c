@@ -97,15 +97,22 @@ int linux_tstc(int fd)
 	/*
 	 * We set the timeout here to 100us, because otherwise
 	 * U-Boot would eat all cpu resources while waiting
-	 * for input. On the other hand this makes some
-	 * things like networking slow, because U-Boot will
-	 * poll this function very often.
+	 * for input. 
 	 */
 	ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 
 	if (ret)
 		return 1;
 
+	return 0;
+}
+
+int ctrlc(void)
+{
+	char chr;
+
+	if (linux_read_nonblock(0, &chr, 1) == 1 && chr == 3)
+		return 1;
 	return 0;
 }
 

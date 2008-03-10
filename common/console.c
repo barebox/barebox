@@ -357,6 +357,7 @@ int vprintf (const char *fmt, va_list args)
 }
 EXPORT_SYMBOL(vprintf);
 
+#ifndef ARCH_HAS_CTRLC
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
@@ -365,6 +366,7 @@ int ctrlc (void)
 	return 0;
 }
 EXPORT_SYMBOL(ctrlc);
+#endif /* ARCH_HAS_CTRC */
 
 #ifdef CONFIG_HAS_EARLY_INIT
 

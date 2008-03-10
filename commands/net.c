@@ -216,16 +216,16 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	safe_strncpy (BootFile, remotefile, sizeof(BootFile));
 
-	if ((size = NetLoop(proto)) < 0)
-		return 1;
+	if ((size = NetLoop(proto)) < 0) {
+		rcode = size;
+		goto out;
+	}
 
 	/* NetLoop ok, update environment */
 	netboot_update_env();
 
-	/* done if no file was loaded (no errors though) */
-	if (size == 0)
-		return 0;
-
+out:
+	close(net_store_fd);
 	return rcode;
 }
 

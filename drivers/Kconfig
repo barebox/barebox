@@ -2,6 +2,7 @@ menu "Drivers                       "
 
 source "drivers/serial/Kconfig"
 source "drivers/net/Kconfig"
+source "drivers/spi/Kconfig"
 
 menu "flash drivers                 "
 

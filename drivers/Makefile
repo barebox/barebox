@@ -1,6 +1,7 @@
 obj-y	+= net/
 obj-y	+= serial/
 obj-y	+= nand/
+obj-$(CONFIG_SPI) += spi/
 obj-$(CONFIG_DRIVER_CFI_OLD) += cfi_flash.o
 obj-$(CONFIG_DRIVER_CFI_NEW) += cfi_flash_new.o
 obj-$(CONFIG_DRIVER_CFI_INTEL) += cfi_flash_intel.o

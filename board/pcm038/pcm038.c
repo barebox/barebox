@@ -27,9 +27,11 @@
 #include <fec.h>
 #include <asm/arch/gpio.h>
 #include <asm/armlinux.h>
+#include <asm/mach-types.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <spi/spi.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -59,6 +61,21 @@ static struct device_d fec_dev = {
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
 	.type     = DEVICE_TYPE_ETHER,
+};
+
+static struct device_d spi_dev = {
+	.name     = "imx_spi",
+	.id       = "spi0",
+	.map_base = 0x1000e000,
+};
+
+static struct spi_board_info pcm038_spi_board_info[] = {
+	{
+		.name = "mc13783",
+		.max_speed_hz = 3000000,
+		.bus_num = 0,
+		.chip_select = 0,
+	}
 };
 
 static int pcm038_devices_init(void)
@@ -96,6 +113,9 @@ static int pcm038_devices_init(void)
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&fec_dev);
+	register_device(&spi_dev);
+
+	spi_register_boardinfo(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");

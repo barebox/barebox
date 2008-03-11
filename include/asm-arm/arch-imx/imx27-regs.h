@@ -36,8 +36,12 @@
 #define AIPI2_PSR1	__REG(IMX_AIPI2_BASE + 0x04)
 
 /* System Control */
-#define CID     __REG(IMX_SYSTEM_CTL_BASE + 0x0)
-#define GPCR	__REG(IMX_SYSTEM_CTL_BASE + 0x18)
+#define CID     __REG(IMX_SYSTEM_CTL_BASE + 0x0)		/* Chip ID Register */
+#define FMCR    __REG(IMX_SYSTEM_CTL_BASE + 0x14)		/* Function Multeplexing Control Register */
+#define GPCR	__REG(IMX_SYSTEM_CTL_BASE + 0x18)		/* Global Peripheral Control Register */
+#define WBCR	__REG(IMX_SYSTEM_CTL_BASE + 0x1C)		/* Well Bias Control Register */
+#define DSCR(x)	__REG(IMX_SYSTEM_CTL_BASE + 0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
+
 
 /* Chip Select Registers */
 #define CS0U __REG(IMX_WEIM_BASE + 0x00) /* Chip Select 0 Upper Register    */
@@ -64,8 +68,34 @@
 #define ESDCTL0 __REG(IMX_ESD_BASE + 0x00) /* Enhanced SDRAM Control Register 0       */
 #define ESDCFG0 __REG(IMX_ESD_BASE + 0x04) /* Enhanced SDRAM Configuration Register 0 */
 #define ESDCTL1 __REG(IMX_ESD_BASE + 0x08) /* Enhanced SDRAM Control Register 1       */
-#define ESDCFG1 __REG(IMX_ESD_BASE + 0x10) /* Enhanced SDRAM Configuration Register 1 */
-#define ESDMISC __REG(IMX_ESD_BASE + 0x14) /* Enhanced SDRAM Miscellanious Register   */
+#define ESDCFG1 __REG(IMX_ESD_BASE + 0x0C) /* Enhanced SDRAM Configuration Register 1 */
+#define ESDMISC __REG(IMX_ESD_BASE + 0x10) /* Enhanced SDRAM Miscellanious Register   */
+
+#define ESDCTL0_SDE				(1 << 31)
+#define ESDCTL0_SMODE_NORMAL			(0 << 28)
+#define ESDCTL0_SMODE_PRECHARGE			(1 << 28)
+#define ESDCTL0_SMODE_AUTO_REFRESH		(2 << 28)
+#define ESDCTL0_SMODE_LOAD_MODE			(3 << 28)
+#define ESDCTL0_SMODE_MANUAL_SELF_REFRESH	(4 << 28)
+#define ESDCTL0_SP				(1 << 27)
+#define ESDCTL0_ROW11				(0 << 24)
+#define ESDCTL0_ROW12				(1 << 24)
+#define ESDCTL0_ROW13				(2 << 24)
+#define ESDCTL0_ROW14				(3 << 24)
+#define ESDCTL0_ROW15				(4 << 24)
+#define ESDCTL0_COL8				(0 << 20)
+#define ESDCTL0_COL9				(1 << 20)
+#define ESDCTL0_COL10				(2 << 20)
+#define ESDCTL0_DSIZ_31_16			(0 << 16)
+#define ESDCTL0_DSIZ_15_0			(1 << 16)
+#define ESDCTL0_DSIZ_31_0			(2 << 16)
+#define ESDCTL0_REF1				(1 << 13)
+#define ESDCTL0_REF2				(2 << 13)
+#define ESDCTL0_REF4				(3 << 13)
+#define ESDCTL0_REF8				(4 << 13)
+#define ESDCTL0_REF16				(5 << 13)
+#define ESDCTL0_FP				(1 << 8)
+#define ESDCTL0_BL				(1 << 7)
 
 /* Watchdog Registers*/
 #define WCR  __REG(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
@@ -88,13 +118,25 @@
 #define PCCR1		__REG(IMX_PLL_BASE + 0x24) /* Peripheral Clock Control Register 1 */
 #define CCSR		__REG(IMX_PLL_BASE + 0x28) /* Clock Control Status Register       */
 
+/*
+ * This can be used for MPCTL0 and SPCTL0.
+ *
+ *                   mfi + mfn / (mfd + 1)
+ * fpll = 2 * fref * ---------------------
+ *                          pd + 1
+ */
+#define PLL_PCTL_PD(pd)		((pd) << 26)
+#define PLL_PCTL_MFD(mfd)	((mfd) << 16)
+#define PLL_PCTL_MFI(mfi)	((mfi) << 10)
+#define PLL_PCTL_MFN(mfn)	((mfn) << 0)
+
 #define CSCR_MPEN		(1 << 0)
 #define CSCR_SPEN		(1 << 1)
 #define CSCR_FPM_EN		(1 << 2)
 #define CSCR_OSC26M_DIS		(1 << 3)
 #define CSCR_OSC26M_DIV1P5	(1 << 4)
-#define CSCR_AHB_DIV
-#define CSCR_ARM_DIV
+#define CSCR_AHB_DIV(d)		(((d) & 0x3) << 8)
+#define CSCR_ARM_DIV(d)		(((d) & 0x3) << 12)
 #define CSCR_ARM_SRC_MPLL	(1 << 15)
 #define CSCR_MCU_SEL		(1 << 16)
 #define CSCR_SP_SEL		(1 << 17)
@@ -104,8 +146,8 @@
 #define CSCR_H264_SEL		(1 << 21)
 #define CSCR_SSI1_SEL		(1 << 22)
 #define CSCR_SSI2_SEL		(1 << 23)
-#define CSCR_SD_CNT
-#define CSCR_USB_DIV
+#define CSCR_SD_CNT(d)		(((d) & 0x3) << 24)
+#define CSCR_USB_DIV(d)		(((d) & 0x7) << 28)
 #define CSCR_UPDATE_DIS		(1 << 31)
 
 #define MPCTL1_BRMO		(1 << 6)

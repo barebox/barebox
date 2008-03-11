@@ -97,7 +97,7 @@ int linux_tstc(int fd)
 	/*
 	 * We set the timeout here to 100us, because otherwise
 	 * U-Boot would eat all cpu resources while waiting
-	 * for input. 
+	 * for input.
 	 */
 	ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 
@@ -166,7 +166,7 @@ int linux_read(int fd, void *buf, size_t count)
 			reset_cpu(0);
 		} else if (ret == -1) {
 			if (errno == EAGAIN)
-				usleep(100);
+				return -errno;
 			else if (errno == EINTR)
 				continue;
 			else {

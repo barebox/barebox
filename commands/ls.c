@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <getopt.h>
+#include <stringlist.h>
 
 static void ls_one(const char *path, struct stat *s)
 {
@@ -43,6 +44,9 @@ int ls(const char *path, ulong flags)
 	struct dirent *d;
 	char tmp[PATH_MAX];
 	struct stat s;
+	struct string_list sl;
+
+	string_list_init(&sl);
 
 	if (flags & LS_SHOWARG)
 		printf("%s:\n", path);
@@ -63,10 +67,18 @@ int ls(const char *path, ulong flags)
 		sprintf(tmp, "%s/%s", path, d->d_name);
 		if (stat(tmp, &s))
 			goto out;
-		ls_one(d->d_name, &s);
+		if (flags & LS_COLUMN)
+			string_list_add(&sl, d->d_name);
+		else
+			ls_one(d->d_name, &s);
 	}
 
 	closedir(dir);
+
+	if (flags & LS_COLUMN) {
+		string_list_print_by_column(&sl);
+		string_list_free(&sl);
+	}
 
 	if (!(flags & LS_RECURSIVE))
 		return 0;
@@ -102,14 +114,20 @@ out:
 static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret, opt;
-	ulong flags = 0;
+	ulong flags = LS_COLUMN;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "R")) > 0) {
+	while((opt = getopt(argc, argv, "RCl")) > 0) {
 		switch(opt) {
 		case 'R':
 			flags |= LS_RECURSIVE | LS_SHOWARG;
+			break;
+		case 'C':
+			flags |= LS_COLUMN;
+			break;
+		case 'l':
+			flags &= ~LS_COLUMN;
 			break;
 		}
 	}

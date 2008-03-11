@@ -134,6 +134,7 @@ void *memmap(int fd, int flags);
 
 #define LS_RECURSIVE	1
 #define LS_SHOWARG	2
+#define LS_COLUMN	4
 int ls(const char *path, ulong flags);
 
 char *mkmodestr(unsigned long mode, char *str);

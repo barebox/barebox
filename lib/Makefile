@@ -13,6 +13,7 @@ obj-y 			+= readkey.o
 obj-y			+= kfifo.o
 obj-y			+= libbb.o
 obj-y			+= libgen.o
+obj-y			+= stringlist.o
 obj-y			+= recursive_action.o
 obj-y			+= make_directory.o
 obj-$(CONFIG_BZLIB)	+= bzlib.o bzlib_crctable.o bzlib_decompress.o bzlib_huffman.o bzlib_randtable.o

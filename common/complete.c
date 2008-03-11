@@ -26,21 +26,9 @@
 #include <linux/stat.h>
 #include <libgen.h>
 #include <command.h>
+#include <stringlist.h>
 
-static int complete_push(struct complete_handle *handle, char *str)
-{
-	struct complete_handle *new;
-
-	new = xmalloc(sizeof(struct complete_handle) + strlen(str) + 1);
-
-	strcpy(new->str, str);
-
-	list_add_tail(&new->list, &handle->list);
-
-	return 0;
-}
-
-static int file_complete(struct complete_handle *handle, char *instr)
+static int file_complete(struct string_list *sl, char *instr)
 {
 	char *path = strdup(instr);
 	struct stat s;
@@ -67,7 +55,7 @@ static int file_complete(struct complete_handle *handle, char *instr)
 				strcat(tmp, "/");
 			else
 				strcat(tmp, " ");
-			complete_push(handle, tmp);
+			string_list_add(sl, tmp);
 		}
 	}
 
@@ -79,7 +67,7 @@ out:
 	return 0;
 }
 
-static int command_complete(struct complete_handle *handle, char *instr)
+static int command_complete(struct string_list *sl, char *instr)
 {
 	cmd_tbl_t *cmdtp;
 	char cmd[128];
@@ -89,7 +77,7 @@ static int command_complete(struct complete_handle *handle, char *instr)
 			strcpy(cmd, cmdtp->name);
 			cmd[strlen(cmdtp->name)] = ' ';
 			cmd[strlen(cmdtp->name) + 1] = 0;
-			complete_push(handle, cmd);
+			string_list_add(sl, cmd);
 		}
 	}
 
@@ -105,7 +93,7 @@ void complete_reset(void)
 
 int complete(char *instr, char **outstr)
 {
-	struct complete_handle c, *entry, *first_entry, *safe;
+	struct string_list sl, *entry, *first_entry;
 	int pos;
 	char ch;
 	int changed;
@@ -114,7 +102,7 @@ int complete(char *instr, char **outstr)
 	int reprint = 0;
 	char *t;
 
-	INIT_LIST_HEAD(&c.list);
+	string_list_init(&sl);
 
 	/* advance to the last command */
 	t = strrchr(instr, ';');
@@ -131,20 +119,20 @@ int complete(char *instr, char **outstr)
 	/* get the completion possibilities */
 	if ((t = strrchr(t, ' '))) {
 		t++;
-		file_complete(&c, t);
+		file_complete(&sl, t);
 		instr = t;
 	} else
-		command_complete(&c, instr);
+		command_complete(&sl, instr);
 
 	pos = strlen(instr);
 
 	*outstr = "";
-	if (list_empty(&c.list))
+	if (list_empty(&sl.list))
 		return reprint;
 
 	out[0] = 0;
 
-	first_entry = list_first_entry(&c.list, struct complete_handle, list);
+	first_entry = list_first_entry(&sl.list, struct string_list, list);
 
 	while (1) {
 		entry = first_entry;
@@ -153,7 +141,7 @@ int complete(char *instr, char **outstr)
 			break;
 
 		changed = 0;
-		list_for_each_entry(entry, &c.list, list) {
+		list_for_each_entry(entry, &sl.list, list) {
 			if (!entry->str[pos])
 				break;
 			if (ch != entry->str[pos]) {
@@ -168,29 +156,9 @@ int complete(char *instr, char **outstr)
 		pos++;
 	}
 
-	if (!list_is_last(&first_entry->list, &c.list) && !outpos && tab_pressed) {
-		int len = 0, num, i;
-
+	if (!list_is_last(&first_entry->list, &sl.list) && !outpos && tab_pressed) {
 		printf("\n");
-
-		list_for_each_entry(entry, &c.list, list) {
-			int l = strlen(entry->str) + 4;
-			if (l > len)
-				len = l;
-		}
-
-		num = 80 / len;
-		if (len == 0)
-			len = 1;
-
-		i = 0;
-		list_for_each_entry(entry, &c.list, list) {
-			printf("%-*s    ", len, entry->str);
-			if (!(++i % num))
-				printf("\n");
-		}
-		if (i % num)
-			printf("\n");
+		string_list_print_by_column(&sl);
 		reprint = 1;
 	}
 
@@ -202,8 +170,7 @@ int complete(char *instr, char **outstr)
 	else
 		tab_pressed = 0;
 
-	list_for_each_entry_safe(entry, safe, &c.list, list)
-		free(entry);
+	string_list_free(&sl);
 
 	return reprint;
 }

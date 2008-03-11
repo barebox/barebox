@@ -53,6 +53,8 @@ char *dirname (char *path)
 
 	fname = basename (path);
 	--fname;
+	if (path == fname)
+		*fname++ = '/';
 	*fname = '\0';
 	return path;
 }

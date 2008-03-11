@@ -80,17 +80,14 @@ ulong imx_get_ahbclk(void)
 	else
 		div = ((cscr >> 8) & 0x3) + 1;
 
-	return fref / div;
+	return ((fref * 2) / 3) / div;
 }
 
 ulong imx_get_ipgclk(void)
 {
 	ulong clk = imx_get_ahbclk();
 
-	if (imx_silicon_revision() == IMX27_CHIP_REVISION_1_0)
-		return clk >> 1;
-        else
-		return clk; 
+	return clk >> 1;
 }
 
 ulong imx_get_spllclk(void)

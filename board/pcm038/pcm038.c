@@ -189,7 +189,7 @@ static int pcm038_power_init(void)
 		 CSCR_SP_SEL |		\
 		 CSCR_ARM_SRC_MPLL |	\
 		 CSCR_ARM_DIV(0) | 	\
-		 CSCR_AHB_DIV(3) |	\
+		 CSCR_AHB_DIV(1) |	\
 		 CSCR_FPM_EN |		\
 		 CSCR_MPEN;
 

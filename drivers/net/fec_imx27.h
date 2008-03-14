@@ -268,11 +268,11 @@ typedef struct ethernet_register_set {
 /**
  * @brief Data buffer alignment
  *
- * i.MX27 requires a four byte alignment
+ * i.MX27 requires a 16 byte alignment
  *
  * Note: Valid for member data_pointer in struct buffer_descriptor
  */
-#define DB_DATA_ALIGNMENT 4
+#define DB_DATA_ALIGNMENT 16
 
 /**
  * @brief Receive & Transmit Buffer Descriptor definitions

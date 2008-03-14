@@ -287,6 +287,8 @@ static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 		optind++;
 	}
 
+	close(fd);
+
 	return errno;
 }
 

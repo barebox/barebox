@@ -108,7 +108,7 @@ static ulong imx_decode_perclk(ulong div)
 	if (imx_silicon_revision() == IMX27_CHIP_REVISION_1_0)
 		return imx_get_mpllclk() / div;
 	else
-	return (imx_get_mpllclk() * 2) / (div * 3);
+		return (imx_get_mpllclk() * 2) / (div * 3);
 }
 
 ulong imx_get_perclk1(void)

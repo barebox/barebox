@@ -28,10 +28,12 @@
 #include <asm/arch/gpio.h>
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
+#include <asm/arch/pmic.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <spi/spi.h>
+#include <asm/io.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -104,6 +106,13 @@ static int pcm038_devices_init(void)
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
+		PD25_PF_CSPI1_RDY,
+		PD26_PF_CSPI1_SS2,
+		PD27_PF_CSPI1_SS1,
+		PD28_PF_CSPI1_SS0,
+		PD29_PF_CSPI1_SCLK,
+		PD30_PF_CSPI1_MISO,
+		PD31_PF_CSPI1_MOSI,
 	};
 
 	/* initizalize gpios */
@@ -112,10 +121,12 @@ static int pcm038_devices_init(void)
 
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
-	register_device(&fec_dev);
-	register_device(&spi_dev);
 
-	spi_register_boardinfo(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
+	PCCR0 |= PCCR0_CSPI1_EN;
+	PCCR1 |= PCCR1_PERCLK2_EN;
+
+	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
+	register_device(&spi_dev);
 
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
@@ -144,4 +155,53 @@ static int pcm038_console_init(void)
 }
 
 console_initcall(pcm038_console_init);
+
+static int pcm038_power_init(void)
+{
+	volatile int i = 0;
+	int ret;
+
+	ret = pmic_power();
+	if (ret)
+		goto out;
+
+	MPCTL0 = PLL_PCTL_PD(0) |
+		PLL_PCTL_MFD(51) |
+		PLL_PCTL_MFI(7) |
+		PLL_PCTL_MFN(35);
+
+	CSCR |= CSCR_MPLL_RESTART;
+
+	/* We need a delay here. We can't use udelay because
+	 * the PLL is not running. Do not remove the volatile
+	 * above because otherwise the compiler will optimize the loop
+	 * away.
+	 */
+	while(i++ < 10000);
+
+	CSCR = CSCR_USB_DIV(3) |	\
+		 CSCR_SD_CNT(3) |	\
+		 CSCR_MSHC_SEL |	\
+		 CSCR_H264_SEL |	\
+		 CSCR_SSI1_SEL |	\
+		 CSCR_SSI2_SEL |	\
+		 CSCR_MCU_SEL |		\
+		 CSCR_SP_SEL |		\
+		 CSCR_ARM_SRC_MPLL |	\
+		 CSCR_ARM_DIV(0) | 	\
+		 CSCR_AHB_DIV(3) |	\
+		 CSCR_FPM_EN |		\
+		 CSCR_MPEN;
+
+	PCDR1 = 0x09030911;
+out:
+	/* Register the fec device after the PLL re-initialisation
+	 * as the fec depends on the (now higher) ipg clock
+	 */
+	register_device(&fec_dev);
+
+	return 0;
+}
+
+late_initcall(pcm038_power_init);
 

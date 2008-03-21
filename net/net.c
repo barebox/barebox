@@ -462,7 +462,7 @@ restart:
 		 *	Check the ethernet for a new packet.  The ethernet
 		 *	receive routine will process it.
 		 */
-			eth_rx();
+		eth_rx();
 
 		/*
 		 *	Abort if ctrl-c was pressed.
@@ -1099,7 +1099,7 @@ NetReceive(uchar * inpkt, int len)
 		 * We have to deal with two types of ARP packets:
 		 * - REQUEST packets will be answered by sending  our
 		 *   IP address - if we know it.
-		 * - REPLY packates are expected only after we asked
+		 * - REPLY packets are expected only after we asked
 		 *   for the TFTP server's or the gateway's ethernet
 		 *   address; so if we receive such a packet, we set
 		 *   the server ethernet address

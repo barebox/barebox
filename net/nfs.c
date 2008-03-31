@@ -28,6 +28,7 @@
 #include <net.h>
 #include <malloc.h>
 #include <libgen.h>
+#include <fs.h>
 #include "nfs.h"
 #include "bootp.h"
 
@@ -64,15 +65,21 @@ static char *nfs_filename;
 static char *nfs_path;
 static char nfs_path_buff[2048];
 
+extern int net_store_fd;
+
 static __inline__ int
 store_block (uchar * src, unsigned offset, unsigned len)
 {
 	ulong newsize = offset + len;
+	int ret;
 
-	memcpy ((void *)(load_addr + offset), src, len);
+	ret = write(net_store_fd, src, len);
+	if (ret < 0)
+		return ret;
 
 	if (NetBootFileXferSize < (offset+len))
 		NetBootFileXferSize = newsize;
+
 	return 0;
 }
 
@@ -523,7 +530,7 @@ nfs_read_reply (uchar *pkt, unsigned len)
 		puts ("\n\t ");
 	}
 	if (!(nfs_offset % ((NFS_READ_SIZE/2)*10))) {
-		putc ('#');
+		putchar ('#');
 	}
 
 	rlen = ntohl(rpc_pkt.u.reply.data[18]);
@@ -707,11 +714,8 @@ NfsStart (void)
 
 	if (NetBootFileSize)
 		printf (" Size is 0x%x Bytes = %s",
-			NetBootFileSize<<9);
+			NetBootFileSize<<9,
 			size_human_readable (NetBootFileSize<<9));
-
-	printf ("\nLoad address: 0x%lx\n"
-		"Loading: *\b", load_addr);
 
 	NetSetTimeout (NFS_TIMEOUT * SECOND, NfsTimeout);
 	NetSetHandler (NfsHandler);

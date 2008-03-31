@@ -5,11 +5,11 @@
 
 static ushort PingSeqNo;
 
-int PingSend(void)
+static int PingSend(void)
 {
 	static uchar mac[6];
-	volatile IP_t *ip;
-	volatile ushort *s;
+	IP_t *ip;
+	ushort *s;
 	uchar *pkt;
 
 	/* XXX always send arp request */
@@ -26,7 +26,7 @@ int PingSend(void)
 	pkt = NetArpWaitTxPacket;
 	pkt += NetSetEther(pkt, mac, PROT_IP);
 
-	ip = (volatile IP_t *)pkt;
+	ip = (IP_t *)pkt;
 
 	/*
 	 *	Construct an IP and ICMP header.  (need to set no fragment bit - XXX)

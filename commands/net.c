@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <libbb.h>
+#include <libgen.h>
 
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
@@ -204,7 +205,7 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	remotefile = argv[1];
 
 	if (argc == 2)
-		localfile = remotefile;
+		localfile = basename(remotefile);
 	else
 		localfile = argv[2];
 

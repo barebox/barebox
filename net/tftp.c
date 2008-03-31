@@ -103,17 +103,8 @@ TftpSend (void)
 		s = (ushort *)pkt;
 		*s++ = htons(TFTP_RRQ);
 		pkt = (uchar *)s;
-		strcpy ((char *)pkt, tftp_filename);
-		pkt += strlen(tftp_filename) + 1;
-		strcpy ((char *)pkt, "octet");
-		pkt += 5 /*strlen("octet")*/ + 1;
-		strcpy ((char *)pkt, "timeout");
-		pkt += 7 /*strlen("timeout")*/ + 1;
-		sprintf((char *)pkt, "%d", TIMEOUT);
-#ifdef ET_DEBUG
-		printf("send option \"timeout %s\"\n", (char *)pkt);
-#endif
-		pkt += strlen((char *)pkt) + 1;
+		pkt += sprintf((uchar *)pkt, "%s%coctet%ctimeout%c%d",
+				tftp_filename, 0, 0, 0, TIMEOUT) + 1;
 		len = pkt - xp;
 		break;
 

@@ -53,7 +53,7 @@ static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_export_help[] =
+static const __maybe_unused char cmd_export_help[] =
 "Usage: export <var>[=value]...\n"
 "export an environment variable to subsequently executed scripts\n";
 

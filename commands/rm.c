@@ -44,7 +44,7 @@ static int do_rm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_rm_help[] =
+static const __maybe_unused char cmd_rm_help[] =
 "Usage: rm [FILES]\n"
 "Remove files\n";
 

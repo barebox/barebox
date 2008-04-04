@@ -1596,7 +1596,7 @@ static int do_sh(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return execute_script(argv[1], argc - 1, argv + 1);
 }
 
-static __maybe_unused char cmd_sh_help[] =
+static const __maybe_unused char cmd_sh_help[] =
 "Usage: sh filename [arguments]\n"
 "\n"
 "Execute a shell script\n";
@@ -1618,9 +1618,9 @@ static int do_source(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return source_script(argv[1], argc - 1, argv + 1);
 }
 
-static char *source_aliases[] = { ".", NULL};
+static const char *source_aliases[] = { ".", NULL};
 
-static __maybe_unused char cmd_source_help[] =
+static const __maybe_unused char cmd_source_help[] =
 "Usage: .  filename [arguments]\n"
 "or     source filename [arguments]\n"
 "\n"
@@ -1628,11 +1628,14 @@ static __maybe_unused char cmd_source_help[] =
 "environment and return the exit status of the last command  exe-\n"
 "cuted from filename\n";
 
+static const __maybe_unused char cmd_source_usage[] =
+"execute shell script in current shell environment";
+
 U_BOOT_CMD_START(source)
 	.maxargs	= CONFIG_MAXARGS,
 	.aliases	= source_aliases,
 	.cmd		= do_source,
-	.usage		= "execute shell script in current shell environment",
+	.usage		= cmd_source_usage,
 	U_BOOT_CMD_HELP(cmd_source_help)
 U_BOOT_CMD_END
 

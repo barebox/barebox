@@ -106,7 +106,7 @@ out:
 	return err;
 }
 
-static __maybe_unused char cmd_crc_help[] =
+static const __maybe_unused char cmd_crc_help[] =
 "Usage: crc32 [OPTION] [AREA]\n"
 "Calculate a crc32 checksum of a memory area\n"
 "Options:\n"

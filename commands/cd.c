@@ -47,7 +47,7 @@ static int do_cd (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_cd_help[] =
+static const __maybe_unused char cmd_cd_help[] =
 "Usage: cd [directory]\n"
 "change to directory. If called without argument, change to /\n";
 

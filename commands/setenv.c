@@ -40,15 +40,18 @@ static int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
+static const __maybe_unused char cmd_setenv_help[] =
+"name value ...\n"
+"    - set environment variable 'name' to 'value ...'\n"
+"setenv name\n"
+"    - delete environment variable 'name'\n";
+
+
 U_BOOT_CMD_START(setenv)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_setenv,
 	.usage		= "set environment variables",
-	U_BOOT_CMD_HELP(
-	"name value ...\n"
-	"    - set environment variable 'name' to 'value ...'\n"
-	"setenv name\n"
-	"    - delete environment variable 'name'\n")
+	U_BOOT_CMD_HELP(cmd_setenv_help)
 U_BOOT_CMD_END
 
 /**

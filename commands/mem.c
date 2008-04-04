@@ -211,7 +211,7 @@ out:
 	return errno;
 }
 
-static __maybe_unused char cmd_md_help[] =
+static const __maybe_unused char cmd_md_help[] =
 "Usage md [OPTIONS] <region>\n"
 "display (hexdump) a memory region.\n"
 "options:\n"
@@ -292,7 +292,7 @@ static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return errno;
 }
 
-static __maybe_unused char cmd_mw_help[] =
+static const __maybe_unused char cmd_mw_help[] =
 "Usage: mw [OPTIONS] <region> <value(s)>\n"
 "Write value(s) to the specifies region.\n"
 "see 'help md' for supported options.\n";
@@ -396,7 +396,7 @@ out:
 	return ret;
 }
 
-static __maybe_unused char cmd_memcmp_help[] =
+static const __maybe_unused char cmd_memcmp_help[] =
 "Usage: memcmp [OPTIONS] <addr1> <addr2> <count>\n"
 "\n"
 "options:\n"
@@ -498,7 +498,7 @@ out:
 	return ret;
 }
 
-static __maybe_unused char cmd_memcpy_help[] =
+static const __maybe_unused char cmd_memcpy_help[] =
 "Usage: memcpy [OPTIONS] <src> <dst> <count>\n"
 "\n"
 "options:\n"

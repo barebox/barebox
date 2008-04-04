@@ -94,7 +94,7 @@ static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
-static __maybe_unused char cmd_tftp_help[] =
+static const __maybe_unused char cmd_tftp_help[] =
 "Usage: tftp <file> [localfile]\n"
 "Load a file via network using BootP/TFTP protocol.\n";
 
@@ -173,7 +173,7 @@ static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return netboot_common(NFS, cmdtp, argc, argv);
 }
 
-static __maybe_unused char cmd_nfs_help[] =
+static const __maybe_unused char cmd_nfs_help[] =
 "Usage: nfs <file> [localfile]\n"
 "Load a file via network using nfs protocol.\n";
 

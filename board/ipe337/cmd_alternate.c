@@ -46,7 +46,7 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return (bitcount & 1) ? 3 : 2;
 }
 
-static __maybe_unused char cmd_alternate_help[] =
+static const __maybe_unused char cmd_alternate_help[] =
 "Usage: alternate <file>"
 "\n";
 

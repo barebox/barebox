@@ -226,7 +226,7 @@ err_out:
 	return 1;
 }
 
-static __maybe_unused char cmd_addpart_help[] =
+static const __maybe_unused char cmd_addpart_help[] =
 "Usage: addpart <device> <partition description>\n"
 "\n"
 "addpart adds a partition description to a device. The partition description\n"
@@ -286,7 +286,7 @@ static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_delpart_help[] =
+static const __maybe_unused char cmd_delpart_help[] =
 "Usage: delpart <device>\n"
 "Delete partitions previously added to a device with addpart.\n";
 

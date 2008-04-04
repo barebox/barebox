@@ -237,7 +237,7 @@ static int edit_read_file(const char *path)
 			if (!lineend)
 				break;
 
-			linestr = lineend + 1; 
+			linestr = lineend + 1;
 		}
 		free(filebuffer);
 	}
@@ -550,9 +550,9 @@ out:
 	return 0;
 }
 
-static char *edit_aliases[] = { "sedit", NULL};
+static const char *edit_aliases[] = { "sedit", NULL};
 
-static __maybe_unused char cmd_edit_help[] =
+static const __maybe_unused char cmd_edit_help[] =
 "Usage: (s)edit <file>\n"
 "This is a very small editor. Its only features are moving the cursor with\n"
 "the usual keys and typing characters.\n"
@@ -561,11 +561,13 @@ static __maybe_unused char cmd_edit_help[] =
 "\n"
 "If called as sedit the editor uses ansi codes to scroll the screen.\n";
 
+static const __maybe_unused char cmd_edit_usage[] = "edit a file";
+
 U_BOOT_CMD_START(edit)
 	.maxargs	= 2,
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
-	.usage		= "edit a file",
+	.usage		= cmd_edit_usage,
 	U_BOOT_CMD_HELP(cmd_edit_help)
 U_BOOT_CMD_END
 

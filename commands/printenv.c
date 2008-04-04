@@ -65,14 +65,17 @@ static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
+static const __maybe_unused char cmd_printenv_help[] =
+"\n    - print values of all environment variables\n"
+"printenv name ...\n"
+"    - print value of environment variable 'name'\n";
+
+
 U_BOOT_CMD_START(printenv)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_printenv,
 	.usage		= "print environment variables",
-	U_BOOT_CMD_HELP(
-	"\n    - print values of all environment variables\n"
-	"printenv name ...\n"
-	"    - print value of environment variable 'name'\n")
+	U_BOOT_CMD_HELP(cmd_printenv_help)
 U_BOOT_CMD_END
 
 /**

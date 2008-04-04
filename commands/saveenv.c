@@ -90,7 +90,7 @@ out:
 	return ret;
 }
 
-static __maybe_unused char cmd_saveenv_help[] =
+static const __maybe_unused char cmd_saveenv_help[] =
 "Usage: saveenv [<envfs>] [<directory>]\n"
 "Save the files in <directory> to the persistent storage device <envfs>.\n"
 "<envfs> is normally a block in flash, but could be any other file.\n"

@@ -43,7 +43,7 @@ static int do_loadenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return envfs_load(filename, dirname);
 }
 
-static __maybe_unused char cmd_loadenv_help[] =
+static const __maybe_unused char cmd_loadenv_help[] =
 "Usage: loadenv [ENVFS] [DIRECTORY]\n"
 "Load the persistent storage contained in <envfs> to the directory\n"
 "<directory>.\n"

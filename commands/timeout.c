@@ -97,7 +97,7 @@ out:
 	return ret;
 }
 
-static __maybe_unused char cmd_timeout_help[] =
+static const __maybe_unused char cmd_timeout_help[] =
 "Usage: timeout [OPTION]... <timeout>\n"
 "Wait <timeout> seconds for a timeout. Return 1 if the user intervented\n"
 "or 0 if a timeout occured\n"

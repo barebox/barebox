@@ -92,6 +92,18 @@ init_sdram:
          *   all other bits set to zero
          */
 
+	/* first, explicitly enable DF, due to anomaly 05000242 */
+	p0.h = hi(PLL_CTL);
+	p0.l = lo(PLL_CTL);             /* Load the address                */
+	r0.l = w[p0];
+	r1 = 1;
+	r0 = r0 | r1;
+	cli r2;
+	ssync;
+	w[p0] = r0.l;
+	idle;
+	sti r2;
+
         r0 = CONFIG_VCO_MULT & 63;      /* Load the VCO multiplier         */
         r0 = r0 << 9;                   /* Shift it over,                  */
         r1 = CONFIG_CLKIN_HALF;        /* Do we need to divide CLKIN by 2?*/

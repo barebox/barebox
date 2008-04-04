@@ -360,7 +360,7 @@ static int fec_init(struct eth_device *dev)
 
 /**
  * Start the FEC engine
- * @param[in] dev Our device to handle
+ * @param[in] edev Our device to handle
  */
 static int fec_open(struct eth_device *edev)
 {

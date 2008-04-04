@@ -111,7 +111,7 @@ void	reset_cpu     (ulong addr);
 //void	external_interrupt (struct pt_regs *);
 void	irq_install_handler(int, interrupt_handler_t *, void *);
 void	irq_free_handler   (int);
-#ifdef CONFIG_INTERRUPTS
+#ifdef CONFIG_USE_IRQ
 void	enable_interrupts  (void);
 int	disable_interrupts (void);
 #else

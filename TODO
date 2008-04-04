@@ -48,10 +48,6 @@ TODO
 [ ] implement a mmap() function. Of course we cannot really mmap without mmu,
     but for memory mapped devices like nor flash we could provide a pointer to
     it. With this we would not have to copy uimages to memory.
-[ ] setting a variable:
-     bla=500   -> OK
-     bla = 500 -> Unknown command 'bla' - try 'help'
-     bla= 500 -> Unknown command '500' - try 'help'
 [ ] command line editing is somewhat broken
 [ ] how to select a ethernet channel for tftp when more than one interface
     of this type exists in the system?

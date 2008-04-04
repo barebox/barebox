@@ -159,7 +159,7 @@ EXPORT_SYMBOL(envfs_save);
 /**
  * Restore the last environment into the current one
  * @param[in] filename from where to restore
- * @param[in] dirname where to store the last content
+ * @param[in] dir where to store the last content
  * @return 0 on success, anything else in case of failure
  *
  * Note: This function will also be used on the host! See note in the header

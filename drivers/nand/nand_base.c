@@ -159,7 +159,7 @@ static void nand_release_device (struct nand_chip *this)
 
 /**
  * nand_read_byte - [DEFAULT] read one byte from the chip
- * @mtd:	MTD device structure
+ * @param mtd	MTD device structure
  *
  * Default read function for 8bit buswith
  */
@@ -170,8 +170,8 @@ static u_char nand_read_byte(struct nand_chip *this)
 
 /**
  * nand_write_byte - [DEFAULT] write one byte to the chip
- * @mtd:	MTD device structure
- * @byte:	pointer to data byte to write
+ * @param mtd	MTD device structure
+ * @param byte	pointer to data byte to write
  *
  * Default write function for 8it buswith
  */
@@ -182,7 +182,7 @@ static void nand_write_byte(struct nand_chip *this, u_char byte)
 
 /**
  * nand_read_byte16 - [DEFAULT] read one byte endianess aware from the chip
- * @mtd:	MTD device structure
+ * @param mtd	MTD device structure
  *
  * Default read function for 16bit buswith with
  * endianess conversion
@@ -194,8 +194,8 @@ static u_char nand_read_byte16(struct nand_chip *this)
 
 /**
  * nand_write_byte16 - [DEFAULT] write one byte endianess aware to the chip
- * @mtd:	MTD device structure
- * @byte:	pointer to data byte to write
+ * @param mtd	MTD device structure
+ * @param byte	pointer to data byte to write
  *
  * Default write function for 16bit buswith with
  * endianess conversion
@@ -207,7 +207,7 @@ static void nand_write_byte16(struct nand_chip *this, u_char byte)
 
 /**
  * nand_read_word - [DEFAULT] read one word from the chip
- * @mtd:	MTD device structure
+ * @param mtd	MTD device structure
  *
  * Default read function for 16bit buswith without
  * endianess conversion
@@ -219,8 +219,8 @@ static u16 nand_read_word(struct nand_chip *this)
 
 /**
  * nand_write_word - [DEFAULT] write one word to the chip
- * @mtd:	MTD device structure
- * @word:	data word to write
+ * @param mtd	MTD device structure
+ * @param word	data word to write
  *
  * Default write function for 16bit buswith without
  * endianess conversion
@@ -232,8 +232,8 @@ static void nand_write_word(struct nand_chip *this, u16 word)
 
 /**
  * nand_select_chip - [DEFAULT] control CE line
- * @mtd:	MTD device structure
- * @chip:	chipnumber to select, -1 for deselect
+ * @param mtd	MTD device structure
+ * @param chip	chipnumber to select, -1 for deselect
  *
  * Default select function for 1 chip devices.
  */
@@ -254,9 +254,9 @@ static void nand_select_chip(struct nand_chip *this, int chip)
 
 /**
  * nand_write_buf - [DEFAULT] write buffer to chip
- * @mtd:	MTD device structure
- * @buf:	data buffer
- * @len:	number of bytes to write
+ * @param mtd	MTD device structure
+ * @param buf	data buffer
+ * @param len	number of bytes to write
  *
  * Default write function for 8bit buswith
  */
@@ -270,9 +270,9 @@ static void nand_write_buf(struct nand_chip *this, const u_char *buf, int len)
 
 /**
  * nand_read_buf - [DEFAULT] read chip data into buffer
- * @mtd:	MTD device structure
- * @buf:	buffer to store date
- * @len:	number of bytes to read
+ * @param mtd	MTD device structure
+ * @param buf	buffer to store date
+ * @param len	number of bytes to read
  *
  * Default read function for 8bit buswith
  */
@@ -286,9 +286,9 @@ static void nand_read_buf(struct nand_chip *this, u_char *buf, int len)
 
 /**
  * nand_verify_buf - [DEFAULT] Verify chip data against buffer
- * @mtd:	MTD device structure
- * @buf:	buffer containing the data to compare
- * @len:	number of bytes to compare
+ * @param mtd	MTD device structure
+ * @param buf	buffer containing the data to compare
+ * @param len	number of bytes to compare
  *
  * Default verify function for 8bit buswith
  */
@@ -305,9 +305,9 @@ static int nand_verify_buf(struct nand_chip *this, const u_char *buf, int len)
 
 /**
  * nand_write_buf16 - [DEFAULT] write buffer to chip
- * @mtd:	MTD device structure
- * @buf:	data buffer
- * @len:	number of bytes to write
+ * @param mtd	MTD device structure
+ * @param buf	data buffer
+ * @param len	number of bytes to write
  *
  * Default write function for 16bit buswith
  */
@@ -324,9 +324,9 @@ static void nand_write_buf16(struct nand_chip *this, const u_char *buf, int len)
 
 /**
  * nand_read_buf16 - [DEFAULT] read chip data into buffer
- * @mtd:	MTD device structure
- * @buf:	buffer to store date
- * @len:	number of bytes to read
+ * @param mtd	MTD device structure
+ * @param buf	buffer to store date
+ * @param len	number of bytes to read
  *
  * Default read function for 16bit buswith
  */
@@ -342,9 +342,9 @@ static void nand_read_buf16(struct nand_chip *this, u_char *buf, int len)
 
 /**
  * nand_verify_buf16 - [DEFAULT] Verify chip data against buffer
- * @mtd:	MTD device structure
- * @buf:	buffer containing the data to compare
- * @len:	number of bytes to compare
+ * @param mtd	MTD device structure
+ * @param buf	buffer containing the data to compare
+ * @param len	number of bytes to compare
  *
  * Default verify function for 16bit buswith
  */
@@ -363,9 +363,9 @@ static int nand_verify_buf16(struct nand_chip *this, const u_char *buf, int len)
 
 /**
  * nand_block_bad - [DEFAULT] Read bad block marker from the chip
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
- * @getchip:	0, if the chip is already selected
+ * @param mtd	MTD device structure
+ * @param ofs	offset from device start
+ * @param getchip	0, if the chip is already selected
  *
  * Check, if the block is bad.
  */
@@ -406,8 +406,8 @@ static int nand_block_bad(struct nand_chip *this, loff_t ofs, int getchip)
 
 /**
  * nand_default_block_markbad - [DEFAULT] mark a block bad
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
+ * @param mtd	MTD device structure
+ * @param ofs	offset from device start
  *
  * This is the default implementation, which can be overridden by
  * a hardware specific driver.
@@ -433,7 +433,7 @@ static int nand_default_block_markbad(struct nand_chip *this, loff_t ofs)
 
 /**
  * nand_check_wp - [GENERIC] check if the chip is write protected
- * @mtd:	MTD device structure
+ * @param mtd	MTD device structure
  * Check, if the device is write protected
  *
  * The function expects, that the device is already selected
@@ -447,10 +447,10 @@ static int nand_check_wp (struct nand_chip *this)
 
 /**
  * nand_block_checkbad - [GENERIC] Check if a block is marked bad
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
- * @getchip:	0, if the chip is already selected
- * @allowbbt:	1, if its allowed to access the bbt area
+ * @param mtd	MTD device structure
+ * @param ofs	offset from device start
+ * @param getchip	0, if the chip is already selected
+ * @param allowbbt	1, if its allowed to access the bbt area
  *
  * Check, if the block is bad. Either by reading the bad block table or
  * calling of the scan function.
@@ -466,10 +466,10 @@ static int nand_block_checkbad (struct nand_chip *this, loff_t ofs, int getchip,
 
 /**
  * nand_command - [DEFAULT] Send command to NAND device
- * @mtd:	MTD device structure
- * @command:	the command to be sent
- * @column:	the column address for this command, -1 if none
- * @page_addr:	the page address for this command, -1 if none
+ * @param mtd	MTD device structure
+ * @param command	the command to be sent
+ * @param column	the column address for this command, -1 if none
+ * @param page_addr	the page address for this command, -1 if none
  *
  * Send command to NAND device. This function is used for small page
  * devices (256/512 Bytes per page)
@@ -567,10 +567,10 @@ static void nand_command (struct nand_chip *this, unsigned command, int column, 
 
 /**
  * nand_command_lp - [DEFAULT] Send command to NAND large page device
- * @mtd:	MTD device structure
- * @command:	the command to be sent
- * @column:	the column address for this command, -1 if none
- * @page_addr:	the page address for this command, -1 if none
+ * @param mtd	MTD device structure
+ * @param command	the command to be sent
+ * @param column	the column address for this command, -1 if none
+ * @param page_addr	the page address for this command, -1 if none
  *
  * Send command to NAND device. This is the version for the new large page devices
  * We dont have the seperate regions as we have in the small page devices.
@@ -709,12 +709,12 @@ static int nand_wait(struct nand_chip *this, int state)
 
 /**
  * nand_write_page - [GENERIC] write one page
- * @mtd:	MTD device structure
- * @this:	NAND chip structure
- * @page: 	startpage inside the chip, must be called with (page & this->pagemask)
- * @oob_buf:	out of band data buffer
- * @oobsel:	out of band selecttion structre
- * @cached:	1 = enable cached programming if supported by chip
+ * @param param mtd		MTD device structure
+ * @param param this		NAND chip structure
+ * @param param page	 	startpage inside the chip, must be called with (page & this->pagemask)
+ * @param param oob_buf	out of band data buffer
+ * @param param oobsel	out of band selecttion structre
+ * @param param cached	1 = enable cached programming if supported by chip
  *
  * Nand_page_program function is used for write and writev !
  * This function will always program a full page of data
@@ -803,14 +803,14 @@ static int nand_write_page (struct nand_chip *this, int page,
 #ifdef CONFIG_MTD_NAND_VERIFY_WRITE
 /**
  * nand_verify_pages - [GENERIC] verify the chip contents after a write
- * @mtd:	MTD device structure
- * @this:	NAND chip structure
- * @page: 	startpage inside the chip, must be called with (page & this->pagemask)
- * @numpages:	number of pages to verify
- * @oob_buf:	out of band data buffer
- * @oobsel:	out of band selecttion structre
- * @chipnr:	number of the current chip
- * @oobmode:	1 = full buffer verify, 0 = ecc only
+ * @param mtd	MTD device structure
+ * @param this	NAND chip structure
+ * @param page: 	startpage inside the chip, must be called with (page & this->pagemask)
+ * @param numpages	number of pages to verify
+ * @param oob_buf	out of band data buffer
+ * @param oobsel	out of band selecttion structre
+ * @param chipnr	number of the current chip
+ * @param oobmode	1 = full buffer verify, 0 = ecc only
  *
  * The NAND device assumes that it is always writing to a cleanly erased page.
  * Hence, it performs its internal write verification only on bits that
@@ -914,11 +914,11 @@ out:
 
 /**
  * nand_read - [MTD Interface] MTD compability function for nand_read_ecc
- * @mtd:	MTD device structure
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @retlen:	pointer to variable to store the number of read bytes
- * @buf:	the databuffer to put data
+ * @param mtd	MTD device structure
+ * @param from	offset to read from
+ * @param len	number of bytes to read
+ * @param retlen	pointer to variable to store the number of read bytes
+ * @param buf	the databuffer to put data
  *
  * This function simply calls nand_read_ecc with oob buffer and oobsel = NULL
 */
@@ -930,13 +930,13 @@ static int nand_read (struct nand_chip *this, loff_t from, size_t len, size_t * 
 
 /**
  * nand_read_ecc - [MTD Interface] Read data with ECC
- * @mtd:	MTD device structure
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @retlen:	pointer to variable to store the number of read bytes
- * @buf:	the databuffer to put data
- * @oob_buf:	filesystem supplied oob data buffer
- * @oobsel:	oob selection structure
+ * @param mtd	MTD device structure
+ * @param from	offset to read from
+ * @param len	number of bytes to read
+ * @param retlen	pointer to variable to store the number of read bytes
+ * @param buf	the databuffer to put data
+ * @param oob_buf	filesystem supplied oob data buffer
+ * @param oobsel	oob selection structure
  *
  * NAND read with ECC
  */
@@ -1053,7 +1053,7 @@ static int nand_read_ecc (struct nand_chip *this, loff_t from, size_t len,
 			break;
 		}
 
-		case NAND_ECC_SOFT:	/* Software ECC 3/256: Read in a page + oob data */
+		case NAND_ECC_SOFT: /* Software ECC 3/256: Read in a page + oob data */
 			this->read_buf(this, data_poi, end);
 			for (i = 0, datidx = 0; eccsteps; eccsteps--, i+=3, datidx += ecc)
 				this->calculate_ecc(this, &data_poi[datidx], &ecc_calc[i]);
@@ -1197,11 +1197,11 @@ static int nand_read_ecc (struct nand_chip *this, loff_t from, size_t len,
 
 /**
  * nand_read_oob - [MTD Interface] NAND read out-of-band
- * @mtd:	MTD device structure
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @retlen:	pointer to variable to store the number of read bytes
- * @buf:	the databuffer to put data
+ * @param mtd	MTD device structure
+ * @param from	offset to read from
+ * @param len	number of bytes to read
+ * @param retlen	pointer to variable to store the number of read bytes
+ * @param buf	the databuffer to put data
  *
  * NAND read out-of-band data from the spare area
  */
@@ -1287,11 +1287,11 @@ static int nand_read_oob (struct nand_chip *this, loff_t from, size_t len, size_
 
 /**
  * nand_read_raw - [GENERIC] Read raw data including oob into buffer
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @from:	offset to read from
- * @len:	number of bytes to read
- * @ooblen:	number of oob data bytes to read
+ * @param mtd	MTD device structure
+ * @param buf	temporary buffer
+ * @param from	offset to read from
+ * @param len	number of bytes to read
+ * @param ooblen	number of oob data bytes to read
  *
  * Read raw data including oob into buffer
  */
@@ -1344,11 +1344,11 @@ int nand_read_raw (struct nand_chip *this, uint8_t *buf, loff_t from, size_t len
 
 /**
  * nand_prepare_oobbuf - [GENERIC] Prepare the out of band buffer
- * @mtd:	MTD device structure
- * @fsbuf:	buffer given by fs driver
- * @oobsel:	out of band selection structre
- * @autoplace:	1 = place given buffer into the oob bytes
- * @numpages:	number of pages to prepare
+ * @param mtd	MTD device structure
+ * @param fsbuf	buffer given by fs driver
+ * @param oobsel	out of band selection structre
+ * @param autoplace	1 = place given buffer into the oob bytes
+ * @param numpages	number of pages to prepare
  *
  * Return:
  * 1. Filesystem buffer available and autoplacement is off,
@@ -1405,11 +1405,11 @@ static u_char * nand_prepare_oobbuf (struct nand_chip *this, u_char *fsbuf, stru
 
 /**
  * nand_write - [MTD Interface] compability function for nand_write_ecc
- * @mtd:	MTD device structure
- * @to:		offset to write to
- * @len:	number of bytes to write
- * @retlen:	pointer to variable to store the number of written bytes
- * @buf:	the data to write
+ * @param mtd	MTD device structure
+ * @param to		offset to write to
+ * @param len	number of bytes to write
+ * @param retlen	pointer to variable to store the number of written bytes
+ * @param buf	the data to write
  *
  * This function simply calls nand_write_ecc with oob buffer and oobsel = NULL
  *
@@ -1421,13 +1421,13 @@ static int nand_write (struct nand_chip *this, loff_t to, size_t len, size_t * r
 
 /**
  * nand_write_ecc - [MTD Interface] NAND write with ECC
- * @mtd:	MTD device structure
- * @to:		offset to write to
- * @len:	number of bytes to write
- * @retlen:	pointer to variable to store the number of written bytes
- * @buf:	the data to write
- * @eccbuf:	filesystem supplied oob data buffer
- * @oobsel:	oob selection structure
+ * @param mtd	MTD device structure
+ * @param to		offset to write to
+ * @param len	number of bytes to write
+ * @param retlen	pointer to variable to store the number of written bytes
+ * @param buf	the data to write
+ * @param eccbuf	filesystem supplied oob data buffer
+ * @param oobsel	oob selection structure
  *
  * NAND write with ECC
  */
@@ -1572,11 +1572,11 @@ out:
 
 /**
  * nand_write_oob - [MTD Interface] NAND write out-of-band
- * @mtd:	MTD device structure
- * @to:		offset to write to
- * @len:	number of bytes to write
- * @retlen:	pointer to variable to store the number of written bytes
- * @buf:	the data to write
+ * @param param mtd	MTD device structure
+ * @param param to		offset to write to
+ * @param param len	number of bytes to write
+ * @param param retlen	pointer to variable to store the number of written bytes
+ * @param buf	the data to write
  *
  * NAND write out-of-band
  */
@@ -1669,8 +1669,8 @@ out:
 
 /**
  * single_erease_cmd - [GENERIC] NAND standard block erase command function
- * @mtd:	MTD device structure
- * @page:	the page address of the block which will be erased
+ * @param param this	MTD device structure
+ * @param param page	the page address of the block which will be erased
  *
  * Standard erase command for NAND chips
  */
@@ -1683,8 +1683,8 @@ static void single_erase_cmd (struct nand_chip *this, int page)
 
 /**
  * multi_erease_cmd - [GENERIC] AND specific block erase command function
- * @mtd:	MTD device structure
- * @page:	the page address of the block which will be erased
+ * @param mtd	MTD device structure
+ * @param page	the page address of the block which will be erased
  *
  * AND multi block erase command function
  * Erase 4 consecutive blocks
@@ -1701,8 +1701,8 @@ static void multi_erase_cmd (struct nand_chip *this, int page)
 
 /**
  * nand_erase - [MTD Interface] erase block(s)
- * @mtd:	MTD device structure
- * @instr:	erase instruction
+ * @param param mtd	MTD device structure
+ * @param param instr	erase instruction
  *
  * Erase one ore more blocks
  */
@@ -1713,9 +1713,9 @@ static int nand_erase (struct nand_chip *this, struct erase_info *instr)
 
 /**
  * nand_erase_intern - [NAND Interface] erase block(s)
- * @mtd:	MTD device structure
- * @instr:	erase instruction
- * @allowbbt:	allow erasing the bbt area
+ * @param param mtd	MTD device structure
+ * @param param instr	erase instruction
+ * @param param allowbbt	allow erasing the bbt area
  *
  * Erase one ore more blocks
  */
@@ -1824,7 +1824,7 @@ erase_exit:
 
 /**
  * nand_sync - [MTD Interface] sync
- * @this:	MTD device structure
+ * @param param this	MTD device structure
  *
  * Sync is actually a wait for chip ready function
  */
@@ -1839,8 +1839,8 @@ static void nand_sync (struct nand_chip *this)
 
 /**
  * nand_block_isbad - [MTD Interface] Check whether the block at the given offset is bad
- * @mtd:	MTD device structure
- * @ofs:	offset relative to mtd start
+ * @param param mtd	MTD device structure
+ * @param param ofs	offset relative to mtd start
  */
 static int nand_block_isbad (struct nand_chip *this, loff_t ofs)
 {
@@ -1853,8 +1853,8 @@ static int nand_block_isbad (struct nand_chip *this, loff_t ofs)
 
 /**
  * nand_block_markbad - [MTD Interface] Mark the block at the given offset as bad
- * @mtd:	MTD device structure
- * @ofs:	offset relative to mtd start
+ * @param param mtd	MTD device structure
+ * @param param ofs	offset relative to mtd start
  */
 static int nand_block_markbad (struct nand_chip *this, loff_t ofs)
 {
@@ -1872,8 +1872,8 @@ static int nand_block_markbad (struct nand_chip *this, loff_t ofs)
 
 /**
  * nand_scan - [NAND Interface] Scan for the NAND device
- * @mtd:	MTD device structure
- * @maxchips:	Number of chips to scan for
+ * @param param mtd	MTD device structure
+ * @param param maxchips	Number of chips to scan for
  *
  * This fills out all the not initialized function pointers
  * with the defaults.
@@ -2253,7 +2253,7 @@ int nand_scan (struct nand_chip *this, int maxchips)
 
 /**
  * nand_release - [NAND Interface] Free resources held by the NAND device
- * @mtd:	MTD device structure
+ * @param param mtd	MTD device structure
  */
 void nand_release (struct nand_chip *this)
 {

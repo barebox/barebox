@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. /env/config
+
+image=$uimage
+part=/dev/nor0.kernel
+
+. /env/bin/_update $1

@@ -66,7 +66,7 @@ static void netboot_update_env (void)
 		ip_to_string (NetOurDNSIP, tmp);
 		setenv ("dnsip", tmp);
 	}
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS2)
+#ifdef CONFIG_BOOTP_DNS2
 	if (NetOurDNS2IP) {
 		ip_to_string (NetOurDNS2IP, tmp);
 		setenv ("dnsip2", tmp);
@@ -75,13 +75,13 @@ static void netboot_update_env (void)
 	if (NetOurNISDomain[0])
 		setenv ("domain", NetOurNISDomain);
 
-#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_TIMEOFFSET
 	if (NetTimeOffset) {
 		sprintf (tmp, "%d", NetTimeOffset);
 		setenv ("timeoffset", tmp);
 	}
 #endif
-#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_NTPSERVER
 	if (NetNtpServerIP) {
 		ip_to_string (NetNtpServerIP, tmp);
 		setenv ("ntpserverip", tmp);

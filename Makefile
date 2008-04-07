@@ -159,7 +159,7 @@ obj		:= $(objtree)
 
 VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
-export srctree objtree VPATH 
+export srctree objtree VPATH
 
 # Cross compiling and selecting different set of gcc/bin-utils
 # ---------------------------------------------------------------------------
@@ -598,7 +598,7 @@ endef
 # First command is ':' to allow us to use + in front of this rule
 cmd_ksym_ld = $(cmd_uboot__)
 define rule_ksym_ld
-	: 
+	:
 	+$(call cmd,uboot_version)
 	$(call cmd,uboot__)
 	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
@@ -1052,7 +1052,7 @@ docs : htmldocs
 htmldocs:
 	@echo  'Running doxygen with local Doxyfile'
 	$(Q)doxygen Doxyfile
-	
+
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 

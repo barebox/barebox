@@ -1,5 +1,5 @@
 /*
- *  armboot - Startup Code for ARM920 CPU-core
+ *  armboot - Startup Code for ARM CPU-cores
  *
  *  Copyright (c) 2001	Marius Gr�ger <mag@sysgo.de>
  *  Copyright (c) 2002	Alex Z�pke <azu@sysgo.de>

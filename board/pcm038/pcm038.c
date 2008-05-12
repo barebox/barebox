@@ -65,6 +65,7 @@ static struct device_d fec_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
+#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
 static struct device_d spi_dev = {
 	.name     = "imx_spi",
 	.id       = "spi0",
@@ -79,6 +80,7 @@ static struct spi_board_info pcm038_spi_board_info[] = {
 		.chip_select = 0,
 	}
 };
+#endif
 
 static int pcm038_devices_init(void)
 {
@@ -125,8 +127,10 @@ static int pcm038_devices_init(void)
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
+#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	register_device(&spi_dev);
+#endif
 
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
@@ -158,6 +162,7 @@ console_initcall(pcm038_console_init);
 
 static int pcm038_power_init(void)
 {
+#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
 	volatile int i = 0;
 	int ret;
 
@@ -194,7 +199,12 @@ static int pcm038_power_init(void)
 		 CSCR_MPEN;
 
 	PCDR1 = 0x09030911;
+
 out:
+#else
+#warning no pmic support enabled. your pcm038 will run on low speed
+#endif
+
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock
 	 */

@@ -84,6 +84,7 @@ config MACH_KPUKDR1_NUM
 	bool "konzeptpark UKD R1 + phyCore MCF5475 NUM"
 	select HAS_CFI
 	select ARCH_MCF54xx
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the konzeptpark UKD R1 with a
 	  Phytec Phycore PCM-024-NUM equipped with a Freescale MC5475 Processor
@@ -108,6 +109,7 @@ config MACH_PCM982_5485
 	bool "Phytec pcm982 + phyCore MCF5485"
 	select HAS_CFI
 	select ARCH_MCF54xx
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Phytec Phycore PCM-024 equipped
 	  with a Freescale MC5485 Processor
@@ -116,6 +118,7 @@ config MACH_PCM982_5475
 	bool "Phytec pcm982 + phyCore MCF5475"
 	select HAS_CFI
 	select ARCH_MCF54xx
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Phytec Phycore PCM-024 equipped
 	  with a Freescale MC5475 Processor
@@ -124,6 +127,7 @@ config MACH_PCM982_5475_NUM
 	bool "Phytec pcm982 + phyCore MCF5475 NUM"
 	select HAS_CFI
 	select ARCH_MCF54xx
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Phytec Phycore PCM-024 equipped
 	  with a Freescale MC5475 Processor (NUM Variant)

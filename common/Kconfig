@@ -65,6 +65,18 @@ config RELOCATABLE
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
 
+config MACH_HAS_LOWLEVEL_INIT
+	bool
+
+config MACH_DO_LOWLEVEL_INIT
+	bool "run machine low-level init"
+	depends on MACH_HAS_LOWLEVEL_INIT
+	default y
+	help
+	  This entry enables SDRAM and other board low level initialization
+	  on many platforms. Disabling this option allows configurations to use
+	  U-boot as a second stage boot loader.
+
 config PROMPT
 	string
 	prompt "U-Boot command prompt"
@@ -215,14 +227,6 @@ config DEBUG_INFO
 	prompt "enable debug symbols"
 	help
 	  Enable build of u-boot with -g.
-
-config SKIP_LOWLEVEL_INIT
-	bool
-	depends on ARM
-	prompt "Skip lowlevel init"
-	help
-	  This entry skips the SDRAM initialising on many ARM based boards.
-	  It enables using U-boot as a second stage bootloader.
 
 config ENABLE_FLASH_NOISE
 	bool

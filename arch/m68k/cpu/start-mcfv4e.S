@@ -448,7 +448,7 @@ saveland:
 	 *
 	 * Do not jump/call other u-boot code here!
 	 */
-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
+#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
 	bsr.l	board_init_lowlevel
 	nop
 #endif
@@ -512,7 +512,7 @@ skip_copy_vectors:
 	nop
 #endif
 
-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
+#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
 	/*
 	 * Call other half of initcode in relocated code
 	 *

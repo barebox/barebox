@@ -2,7 +2,7 @@
 #include <command.h>
 #include <environment.h>
 
-int parse_line (char *line, char *argv[])
+static int parse_line (char *line, char *argv[])
 {
 	int nargs = 0;
 
@@ -264,22 +264,6 @@ int run_command (const char *cmd, int flag)
 			rc = -1;
 			continue;
 		}
-
-#if (CONFIG_COMMANDS & CFG_CMD_BOOTD)
-		/* avoid "bootd" recursion */
-		if (cmdtp->cmd == do_bootd) {
-#ifdef DEBUG_PARSER
-			printf ("[%s]\n", finaltoken);
-#endif
-			if (flag & CMD_FLAG_BOOTD) {
-				puts ("'bootd' recursion detected\n");
-				rc = -1;
-				continue;
-			} else {
-				flag |= CMD_FLAG_BOOTD;
-			}
-		}
-#endif	/* CFG_CMD_BOOTD */
 
 		/* OK - call function to do the command */
 		if ((cmdtp->cmd) (cmdtp, argc, argv) != 0)

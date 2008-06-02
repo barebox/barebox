@@ -44,16 +44,16 @@ extern struct list_head command_list;
  */
 
 struct cmd_tbl_s {
-	char		*name;		/* Command Name			*/
-	char		**aliases;
+	const char	*name;		/* Command Name			*/
+	const char	**aliases;
 	int		maxargs;	/* maximum number of arguments	*/
 					/* Implementation function	*/
 	int		(*cmd)(struct cmd_tbl_s *, int, char *[]);
-	char		*usage;		/* Usage message	(short)	*/
+	const char	*usage;		/* Usage message	(short)	*/
 
 	struct list_head list;		/* List of commands		*/
 #ifdef	CONFIG_LONGHELP
-	char		*help;		/* Help  message	(long)	*/
+	const char	*help;		/* Help  message	(long)	*/
 #endif
 }
 #ifdef __x86_64__

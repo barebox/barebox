@@ -6,4 +6,14 @@ config FS_CRAMFS
 	select ZLIB
 	prompt "cramfs support"
 
+config FS_RAMFS
+	bool
+	default y
+	prompt "ramfs support"
+
+config FS_DEVFS
+	bool
+	default y
+	prompt "devfs support"
+
 endmenu

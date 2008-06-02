@@ -22,10 +22,10 @@
 #define CONFIG_PHY_ADDR 1 /* FIXME */
 
 typedef struct {
-	uint8 data[1500];           /* actual data */
+	uint8_t data[1500];           /* actual data */
 	int length;                 /* actual length */
 	int used;                   /* buffer in use or not */
-	uint8 head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
+	uint8_t head[16];             /* MAC header(6 + 6 + 2) + 2(aligned) */
 } NBUF;
 
 /*
@@ -37,8 +37,8 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	struct eth_device *edev = mdev->edev;
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
 
-	uint32 reg;		/* convenient holder for the PHY register */
-	uint32 phy;		/* convenient holder for the PHY */
+	uint32_t reg;		/* convenient holder for the PHY register */
+	uint32_t phy;		/* convenient holder for the PHY */
 	int timeout = 0xffff;
 
 	/*
@@ -68,7 +68,7 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = (uint16) fec->eth->mii_data;
+	*retVal = (uint16_t) fec->eth->mii_data;
 
 	return 0;
 }
@@ -79,8 +79,8 @@ static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	struct eth_device *edev = mdev->edev;
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
 
-	uint32 reg;		/* convenient holder for the PHY register */
-	uint32 phy;		/* convenient holder for the PHY */
+	uint32_t reg;		/* convenient holder for the PHY register */
+	uint32_t phy;		/* convenient holder for the PHY */
 	int timeout = 0xffff;
 
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
@@ -120,7 +120,7 @@ static int mpc5xxx_fec_rbd_init(mpc5xxx_fec_priv *fec)
 				printf ("RBD INIT FAILED\n");
 				return -1;
 			}
-			fec->rbdBase[ix].dataPointer = (uint32)data;
+			fec->rbdBase[ix].dataPointer = (uint32_t)data;
 		}
 		fec->rbdBase[ix].status = FEC_RBD_EMPTY;
 		fec->rbdBase[ix].dataLength = 0;
@@ -219,10 +219,10 @@ static int mpc5xxx_fec_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
-	uint8 currByte;			/* byte for which to compute the CRC */
+	uint8_t currByte;			/* byte for which to compute the CRC */
 	int byte;			/* loop - counter */
 	int bit;			/* loop - counter */
-	uint32 crc = 0xffffffff;	/* initial value */
+	uint32_t crc = 0xffffffff;	/* initial value */
 
 	/*
 	 * The algorithm used is the following:
@@ -558,7 +558,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	pTbd = &fec->tbdBase[fec->tbdIndex];
 	pTbd->dataLength = data_length;
-	pTbd->dataPointer = (uint32)eth_data;
+	pTbd->dataPointer = (uint32_t)eth_data;
 	pTbd->status |= FEC_TBD_LAST | FEC_TBD_TC | FEC_TBD_READY;
 	fec->tbdIndex = (fec->tbdIndex + 1) % FEC_TBD_NUM;
 
@@ -566,7 +566,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 * Kick the MII i/f
 	 */
 	if (fec->xcv_type != SEVENWIRE) {
-		uint16 phyStatus;
+		uint16_t phyStatus;
 		fec5xxx_miiphy_read(&fec->miiphy, 0, 0x1, &phyStatus);
 	}
 

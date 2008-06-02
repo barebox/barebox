@@ -60,7 +60,7 @@ static int do_mount (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_mount_help[] =
+static const __maybe_unused char cmd_mount_help[] =
 "Usage: mount:         list mounted filesystems\n"
 "or:    mount <device> <fstype> <mountpoint>\n"
 "\n"

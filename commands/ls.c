@@ -152,7 +152,7 @@ static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_ls_help[] =
+static const __maybe_unused char cmd_ls_help[] =
 "Usage: ls [OPTION]... [FILE]...\n"
 "List information about the FILEs (the current directory by default).\n"
 "  -R  list subdirectories recursively\n";

@@ -50,13 +50,13 @@ static int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return rcode;
 }
 
-/* -------------------------------------------------------------------- */
+static const __maybe_unused char cmd_go_help[] =
+"addr [arg ...]\n    - start application at address 'addr'\n"
+"      passing 'arg' as arguments\n";
 
 U_BOOT_CMD_START(go)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_go,
 	.usage		= "start application at address 'addr'",
-	U_BOOT_CMD_HELP(
-	"addr [arg ...]\n    - start application at address 'addr'\n"
-	"      passing 'arg' as arguments\n")
+	U_BOOT_CMD_HELP(cmd_go_help)
 U_BOOT_CMD_END

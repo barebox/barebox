@@ -368,7 +368,7 @@ static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_insmod_help[] =
+static const __maybe_unused char cmd_insmod_help[] =
 "Usage: insmod <module>\n"; 
 
 U_BOOT_CMD_START(insmod)

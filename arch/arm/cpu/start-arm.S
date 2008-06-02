@@ -1,5 +1,5 @@
 /*
- *  armboot - Startup Code for ARM920 CPU-core
+ *  armboot - Startup Code for ARM CPU-cores
  *
  *  Copyright (c) 2001	Marius Gr�ger <mag@sysgo.de>
  *  Copyright (c) 2002	Alex Z�pke <azu@sysgo.de>
@@ -156,7 +156,7 @@ reset:
 	 * because memory timing is board-dependend, you will
 	 * find a lowlevel_init.S in your board directory.
 	 */
-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
+#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
 	bl	board_init_lowlevel
 #endif
 

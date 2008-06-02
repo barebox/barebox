@@ -106,13 +106,12 @@ static int check_pattern (uint8_t *buf, int len, int paglen, struct nand_bbt_des
 
 /**
  * read_bbt - [GENERIC] Read the bad block table starting from page
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @page:	the starting page
- * @num:	the number of bbt descriptors to read
- * @bits:	number of bits per block
- * @offs:	offset in the memory table
- * @reserved_block_code:	Pattern to identify reserved blocks
+ * @param buf	temporary buffer
+ * @param page	the starting page
+ * @param num	the number of bbt descriptors to read
+ * @param bits	number of bits per block
+ * @param offs	offset in the memory table
+ * @param reserved_block_code	Pattern to identify reserved blocks
  *
  * Read the bad block table starting from page.
  *
@@ -172,10 +171,9 @@ static int read_bbt (struct nand_chip *this, uint8_t *buf, int page, int num,
 
 /**
  * read_abs_bbt - [GENERIC] Read the bad block table starting at a given page
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @td:		descriptor for the bad block table
- * @chip:	read the table for a specific chip, -1 read all chips.
+ * @param buf	temporary buffer
+ * @param td		descriptor for the bad block table
+ * @param chip	read the table for a specific chip, -1 read all chips.
  *		Applies only if NAND_BBT_PERCHIP option is set
  *
  * Read the bad block table for all chips starting at a given page
@@ -206,10 +204,10 @@ static int read_abs_bbt (struct nand_chip *this, uint8_t *buf, struct nand_bbt_d
 
 /**
  * read_abs_bbts - [GENERIC] Read the bad block table(s) for all chips starting at a given page
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @td:		descriptor for the bad block table
- * @md:		descriptor for the bad block table mirror
+ * @param mtd	MTD device structure
+ * @param buf	temporary buffer
+ * @param td	descriptor for the bad block table
+ * @param md	descriptor for the bad block table mirror
  *
  * Read the bad block table(s) for all chips starting at a given page
  * We assume that the bbt bits are in consecutive order.
@@ -238,10 +236,10 @@ static int read_abs_bbts (struct nand_chip *this, uint8_t *buf, struct nand_bbt_
 
 /**
  * create_bbt - [GENERIC] Create a bad block table by scanning the device
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @bd:		descriptor for the good/bad block search pattern
- * @chip:	create the table for a specific chip, -1 read all chips.
+ * @param mtd	MTD device structure
+ * @param buf	temporary buffer
+ * @param bd	descriptor for the good/bad block search pattern
+ * @param md	create the table for a specific chip, -1 read all chips.
  *		Applies only if NAND_BBT_PERCHIP option is set
  *
  * Create a bad block table by scanning the device
@@ -299,9 +297,9 @@ static void create_bbt (struct nand_chip *this, uint8_t *buf, struct nand_bbt_de
 
 /**
  * search_bbt - [GENERIC] scan the device for a specific bad block table
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @td:		descriptor for the bad block table
+ * @param mtd	MTD device structure
+ * @param buf	temporary buffer
+ * @param td	descriptor for the bad block table
  *
  * Read the bad block table by searching for a given ident pattern.
  * Search is preformed either from the beginning up or from the end of
@@ -374,10 +372,10 @@ static int search_bbt (struct nand_chip *this, uint8_t *buf, struct nand_bbt_des
 
 /**
  * search_read_bbts - [GENERIC] scan the device for bad block table(s)
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @td:		descriptor for the bad block table
- * @md:		descriptor for the bad block table mirror
+ * @param mtd	MTD device structure
+ * @param buf	temporary buffer
+ * @param td	descriptor for the bad block table
+ * @param md	descriptor for the bad block table mirror
  *
  * Search and read the bad block table(s)
 */
@@ -399,11 +397,11 @@ static int search_read_bbts (struct nand_chip *this, uint8_t *buf,
 /**
  * write_bbt - [GENERIC] (Re)write the bad block table
  *
- * @mtd:	MTD device structure
- * @buf:	temporary buffer
- * @td:		descriptor for the bad block table
- * @md:		descriptor for the bad block table mirror
- * @chipsel:	selector for a specific chip, -1 for all
+ * @param mtd		MTD device structure
+ * @param buf		temporary buffer
+ * @param td		descriptor for the bad block table
+ * @param md		descriptor for the bad block table mirror
+ * @param chipsel	selector for a specific chip, -1 for all
  *
  * (Re)write the bad block table
  *
@@ -571,8 +569,8 @@ write:
 
 /**
  * nand_memory_bbt - [GENERIC] create a memory based bad block table
- * @mtd:	MTD device structure
- * @bd:		descriptor for the good/bad block search pattern
+ * @param mtd	MTD device structure
+ * @param bd		descriptor for the good/bad block search pattern
  *
  * The function creates a memory based bbt by scanning the device
  * for manufacturer / software marked good / bad blocks

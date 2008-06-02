@@ -460,16 +460,18 @@ err_out:
 	return 1;
 }
 
+static const __maybe_unused char cmd_bootm_help[] =
+"Usage: bootm [OPTION] image\n"
+"Boot application image\n"
+" -n             do not verify the images (speeds up boot process)\n"
+" -h             show advanced options\n";
+
+
 U_BOOT_CMD_START(bootm)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_bootm,
 	.usage		= "boot application image",
-	U_BOOT_CMD_HELP(
-		"Usage: bootm [OPTION] image\n"
-		"Boot application image\n"
-		" -n             do not verify the images (speeds up boot process)\n"
-		" -h             show advanced options\n"
-	)
+	U_BOOT_CMD_HELP(cmd_bootm_help)
 U_BOOT_CMD_END
 
 #ifdef CONFIG_CMD_IMI

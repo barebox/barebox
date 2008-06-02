@@ -89,6 +89,7 @@ config MACH_SCB9328
 	select HAS_DM9000
 	select HAS_CFI
 	select ARCH_IMX1
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Synertronixx scb9328 board
 
@@ -96,6 +97,7 @@ config MACH_PCM038
 	bool "phyCORE-i.MX27"
 	select HAS_CFI
 	select ARCH_IMX27
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor
@@ -104,6 +106,7 @@ config MACH_IMX27ADS
 	bool "Freescale i.MX27ADS"
 	select HAS_CFI
 	select ARCH_IMX27
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Freescale i.MX27ads board equipped
 	  with a Freescale i.MX27 Processor
@@ -121,6 +124,7 @@ config MACH_NXDB500
 	select HAS_NETX_ETHER
 	select HAS_CFI
 	select ARCH_NETX
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board
 
@@ -133,6 +137,14 @@ config MACH_PCM037
 
 endchoice
 
+config IMX_CLKO
+	bool "clko command"
+	depends on ARCH_IMX27
+	help
+	  The i.MX SoCs have a Pin which can output different reference frequencies.
+	  Say y here if you want to have the clko command which lets you select the
+	  frequency to output on this pin.
+	  
 source arch/arm/mach-netx/Kconfig
 
 menu "Arm specific settings         "

@@ -23,7 +23,7 @@ static int do_rmdir (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_rmdir_help[] =
+static const __maybe_unused char cmd_rmdir_help[] =
 "Usage: rmdir [directories]\n"
 "Remove directories. The directories have to be empty.\n";
 

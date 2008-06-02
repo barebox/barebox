@@ -142,14 +142,14 @@ static int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
 	}
 }
 
-static __maybe_unused char cmd_help_help[] =
+static const __maybe_unused char cmd_help_help[] =
 "Show help information (for 'command')\n"
 "'help' prints online help for the monitor commands.\n\n"
 "Without arguments, it prints a short usage message for all commands.\n\n"
 "To get detailed help information for specific commands you can type\n"
 "'help' with one or more command names as arguments.\n";
 
-static char *help_aliases[] = { "?", NULL};
+static const char *help_aliases[] = { "?", NULL};
 
 U_BOOT_CMD_START(help)
 	.maxargs	= 2,
@@ -161,8 +161,8 @@ U_BOOT_CMD_END
 
 static int compare(struct list_head *a, struct list_head *b)
 {
-	char *na = list_entry(a, cmd_tbl_t, list)->name;
-	char *nb = list_entry(b, cmd_tbl_t, list)->name;
+	char *na = (char*)list_entry(a, cmd_tbl_t, list)->name;
+	char *nb = (char*)list_entry(b, cmd_tbl_t, list)->name;
 
 	return strcmp(na, nb);
 }
@@ -180,7 +180,7 @@ int register_command(cmd_tbl_t *cmd)
 	list_add_sort(&cmd->list, &command_list, compare);
 
 	if (cmd->aliases) {
-		char **aliases = cmd->aliases;
+		char **aliases = (char**)cmd->aliases;
 		while(*aliases) {
 			char *usage = "alias for ";
 			cmd_tbl_t *c = xzalloc(sizeof(cmd_tbl_t));
@@ -189,7 +189,7 @@ int register_command(cmd_tbl_t *cmd)
 
 			c->name = *aliases;
 			c->usage = xmalloc(strlen(usage) + strlen(cmd->name) + 1);
-			sprintf(c->usage, "%s%s", usage, cmd->name);
+			sprintf((char*)c->usage, "%s%s", usage, cmd->name);
 
 			c->aliases = NULL;
 

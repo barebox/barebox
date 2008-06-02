@@ -134,7 +134,7 @@ out:
 	return ret;
 }
 
-static __maybe_unused char cmd_cp_help[] =
+static const __maybe_unused char cmd_cp_help[] =
 "Usage: cp <source> <destination>\n"
 "cp copies file <source> to <destination>.\n"
 "Currently only this form is supported and you have to specify the exact target\n"

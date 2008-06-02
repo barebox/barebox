@@ -107,7 +107,7 @@
 IPaddr_t	NetOurSubnetMask=0;		/* Our subnet mask (0=unknown)	*/
 IPaddr_t	NetOurGatewayIP=0;		/* Our gateways IP address	*/
 IPaddr_t	NetOurDNSIP=0;			/* Our DNS IP address		*/
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS2)
+#ifdef CONFIG_BOOTP_DNS2
 IPaddr_t	NetOurDNS2IP=0;			/* Our 2nd DNS IP address	*/
 #endif
 char		NetOurNISDomain[32]={0,};	/* Our NIS domain		*/
@@ -130,10 +130,6 @@ uchar		NetBcastAddr[6] =	/* Ethernet bcast address		*/
 			{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 uchar		NetEtherNullAddr[6] =
 			{ 0, 0, 0, 0, 0, 0 };
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-uchar		NetCDPAddr[6] =		/* Ethernet bcast address		*/
-			{ 0x01, 0x00, 0x0c, 0xcc, 0xcc, 0xcc };
-#endif
 int		NetState;		/* Network loop state			*/
 
 /* XXX in both little & big endian machines 0xFFFF == ntohs(-1) */
@@ -146,10 +142,6 @@ char		BootFile[128];		/* Boot File name			*/
 IPaddr_t	NetPingIP;		/* the ip address to ping 		*/
 
 extern void PingStart(void);
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-static void CDPStart(void);
 #endif
 
 #ifdef CONFIG_NET_SNTP
@@ -358,10 +350,6 @@ restart:
 		NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 		NetOurVLAN = getenv_VLAN("vlan");	/* VLANs must be read */
 		NetOurNativeVLAN = getenv_VLAN("nvlan");
-	case CDP:
-		NetOurVLAN = getenv_VLAN("vlan");	/* VLANs must be read */
-		NetOurNativeVLAN = getenv_VLAN("nvlan");
-		break;
 	default:
 		break;
 	}
@@ -410,11 +398,6 @@ restart:
 			NfsStart();
 			break;
 #endif
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-		case CDP:
-			CDPStart();
-			break;
-#endif
 #ifdef CONFIG_NETCONSOLE
 		case NETCONS:
 			NcStart();
@@ -432,19 +415,6 @@ restart:
 		NetBootFileXferSize = 0;
 		break;
 	}
-
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-#if defined(CFG_FAULT_ECHO_LINK_DOWN) && defined(CONFIG_STATUS_LED) && defined(STATUS_LED_RED)
-	/*
-	 * Echo the inverted link state to the fault LED.
-	 */
-	if(miiphy_link(eth_get_dev()->name, CFG_FAULT_MII_ADDR)) {
-		status_led_set (STATUS_LED_RED, STATUS_LED_OFF);
-	} else {
-		status_led_set (STATUS_LED_RED, STATUS_LED_ON);
-	}
-#endif /* CFG_FAULT_ECHO_LINK_DOWN, ... */
-#endif /* CONFIG_MII, ... */
 
 	/*
 	 *	Main packet reception loop.  Loop receiving packets until
@@ -481,21 +451,6 @@ restart:
 		 */
 		if (timeHandler && is_timeout(timeStart, timeDelta)) {
 			thand_f *x;
-
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-#  if defined(CFG_FAULT_ECHO_LINK_DOWN) && \
-      defined(CONFIG_STATUS_LED) &&	   \
-      defined(STATUS_LED_RED)
-			/*
-			 * Echo the inverted link state to the fault LED.
-			 */
-			if(miiphy_link(eth_get_dev()->name, CFG_FAULT_MII_ADDR)) {
-				status_led_set (STATUS_LED_RED, STATUS_LED_OFF);
-			} else {
-				status_led_set (STATUS_LED_RED, STATUS_LED_ON);
-			}
-#  endif /* CFG_FAULT_ECHO_LINK_DOWN, ... */
-#endif /* CONFIG_MII, ... */
 			x = timeHandler;
 			timeHandler = (thand_f *)0;
 			(*x)();
@@ -648,9 +603,6 @@ NetReceive(uchar * inpkt, int len)
 	IPaddr_t tmp;
 	int	x;
 	uchar *pkt;
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-	int iscdp;
-#endif
 	ushort cti = 0, vlanid = VLAN_NONE, myvlanid, mynvlanid;
 
 #ifdef ET_DEBUG
@@ -664,11 +616,6 @@ NetReceive(uchar * inpkt, int len)
 	/* too small packet? */
 	if (len < ETHER_HDR_SIZE)
 		return;
-
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-	/* keep track if packet is CDP */
-	iscdp = memcmp(et->et_dest, NetCDPAddr, 6) == 0;
-#endif
 
 	myvlanid = ntohs(NetOurVLAN);
 	if (myvlanid == (ushort)-1)
@@ -708,9 +655,6 @@ NetReceive(uchar * inpkt, int len)
 
 		/* if no VLAN active */
 		if ((ntohs(NetOurVLAN) & VLAN_IDMASK) == VLAN_NONE
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-				&& iscdp == 0
-#endif
 				)
 			return;
 
@@ -724,13 +668,6 @@ NetReceive(uchar * inpkt, int len)
 
 #ifdef ET_DEBUG
 	printf("Receive from protocol 0x%x\n", x);
-#endif
-
-#if (CONFIG_COMMANDS & CFG_CMD_CDP)
-	if (iscdp) {
-		CDPHandler((uchar *)ip, len);
-		return;
-	}
 #endif
 
 	if ((myvlanid & VLAN_IDMASK) != VLAN_NONE) {
@@ -1042,7 +979,6 @@ static int net_check_prereq (proto_t protocol)
 	case DHCP:
 	case RARP:
 	case BOOTP:
-	case CDP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
 			printf("*** ERROR: `%s.ethaddr' not set\n", ethid);
 			return (1);

@@ -1,0 +1,16 @@
+menu "SPI drivers                   "
+
+config SPI
+	bool "Enable SPI driver support"
+	default y
+
+config DRIVER_SPI_IMX
+	bool "i.MX SPI Master driver"
+	depends on ARCH_IMX
+	depends on SPI
+
+config DRIVER_SPI_MC13783
+	bool "MC13783 a.k.a. PMIC driver"
+	depends on SPI
+
+endmenu

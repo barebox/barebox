@@ -67,7 +67,7 @@ static void netboot_update_env (void)
 		ip_to_string (NetOurDNSIP, tmp);
 		setenv ("dnsip", tmp);
 	}
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS2)
+#ifdef CONFIG_BOOTP_DNS2
 	if (NetOurDNS2IP) {
 		ip_to_string (NetOurDNS2IP, tmp);
 		setenv ("dnsip2", tmp);
@@ -76,13 +76,13 @@ static void netboot_update_env (void)
 	if (NetOurNISDomain[0])
 		setenv ("domain", NetOurNISDomain);
 
-#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_TIMEOFFSET
 	if (NetTimeOffset) {
 		sprintf (tmp, "%d", NetTimeOffset);
 		setenv ("timeoffset", tmp);
 	}
 #endif
-#if defined CONFIG_NET_SNTP && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_NTPSERVER
 	if (NetNtpServerIP) {
 		ip_to_string (NetNtpServerIP, tmp);
 		setenv ("ntpserverip", tmp);
@@ -95,7 +95,7 @@ static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return netboot_common (TFTP, cmdtp, argc, argv);
 }
 
-static __maybe_unused char cmd_tftp_help[] =
+static const __maybe_unused char cmd_tftp_help[] =
 "Usage: tftp <file> [localfile]\n"
 "Load a file via network using BootP/TFTP protocol.\n";
 
@@ -174,7 +174,7 @@ static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return netboot_common(NFS, cmdtp, argc, argv);
 }
 
-static __maybe_unused char cmd_nfs_help[] =
+static const __maybe_unused char cmd_nfs_help[] =
 "Usage: nfs <file> [localfile]\n"
 "Load a file via network using nfs protocol.\n";
 

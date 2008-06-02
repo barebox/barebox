@@ -85,7 +85,7 @@ static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_erase_help[] =
+static const __maybe_unused char cmd_erase_help[] =
 "Usage: Erase <device> [area]\n"
 "Erase a flash device or parts of a device if an area specification\n"
 "is given\n";
@@ -161,7 +161,7 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_protect_help[] =
+static const __maybe_unused char cmd_protect_help[] =
 "Usage: (un)protect <device> [area]\n"
 "(un)protect a flash device or parts of a device if an area specification\n"
 "is given\n";

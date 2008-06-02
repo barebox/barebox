@@ -1,0 +1,13 @@
+pci stat
+pci stat -c
+while true; do 
+        pci readm 32 0xA1000000 32 -s
+        pci readm 32 0xA2000000 256 -s
+        pci writem 32 0xa2000100 0x12345678 4 -s
+        pci readm 32 0xA3000000 256 -s
+        pci writem 32 0xa3000100 0x12345678 4 -s
+        pci readm 32 0xA4000000 16 -s
+        pci writem 32 0xa4000080 0x12345678 4 -s
+
+#       pci dmatx 2000 a3000040 128 -s
+done

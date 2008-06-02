@@ -27,7 +27,6 @@
 #include <init.h>
 #include <net.h>
 #include <miiphy.h>
-#include <malloc.h>
 #include <errno.h>
 
 static struct eth_device *eth_current;

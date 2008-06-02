@@ -220,17 +220,19 @@ out:
 	return expr;
 }
 
-char *test_aliases[] = { "[", NULL};
+static const char *test_aliases[] = { "[", NULL};
 
-static __maybe_unused char cmd_test_help[] =
+static const __maybe_unused char cmd_test_help[] =
 "Usage: test [OPTIONS]\n"
 "options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e, -f\n"
 "see 'man test' on your PC for more information.\n";
+
+static const __maybe_unused char cmd_test_usage[] = "minimal test like /bin/sh";
 
 U_BOOT_CMD_START(test)
 	.aliases	= test_aliases,
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_test,
-	.usage		= "minimal test like /bin/sh",
+	.usage		= cmd_test_usage,
 	U_BOOT_CMD_HELP(cmd_test_help)
 U_BOOT_CMD_END

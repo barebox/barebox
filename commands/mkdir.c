@@ -63,7 +63,7 @@ static int do_mkdir (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_mkdir_help[] =
+static const __maybe_unused char cmd_mkdir_help[] =
 "Usage: mkdir [directories]\n"
 "Create new directories\n";
 

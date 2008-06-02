@@ -2,6 +2,7 @@ menu "Drivers                       "
 
 source "drivers/serial/Kconfig"
 source "drivers/net/Kconfig"
+source "drivers/spi/Kconfig"
 
 menu "flash drivers                 "
 
@@ -28,7 +29,7 @@ config DRIVER_CFI_NEW
 	  breaks something.
 
 config DRIVER_CFI_OLD
-	bool
+	bool "old cfi flash driver"
 	default y
 	depends on !DRIVER_CFI_NEW
 

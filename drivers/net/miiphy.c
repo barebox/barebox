@@ -46,9 +46,7 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 		do {	/* wait for link status to go down */
 			udelay(10000);
 			if ((timeout--) == 0) {
-#if (DEBUG & 0x2)
-				printf("hmmm, should not have waited...");
-#endif
+				debug("hmmm, should not have waited...");
 				break;
 			}
 			mdev->read(mdev, mdev->address, MII_BMSR, &status);

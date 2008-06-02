@@ -40,7 +40,7 @@ static int do_umount (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_umount_help[] =
+static const __maybe_unused char cmd_umount_help[] =
 "Usage: umount <mountpoint>\n"
 "umount a filesystem mounted on a specific mountpoint\n";
 

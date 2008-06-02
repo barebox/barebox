@@ -159,7 +159,7 @@ obj		:= $(objtree)
 
 VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
-export srctree objtree VPATH 
+export srctree objtree VPATH
 
 # Cross compiling and selecting different set of gcc/bin-utils
 # ---------------------------------------------------------------------------
@@ -598,7 +598,7 @@ endef
 # First command is ':' to allow us to use + in front of this rule
 cmd_ksym_ld = $(cmd_uboot__)
 define rule_ksym_ld
-	: 
+	:
 	+$(call cmd,uboot_version)
 	$(call cmd,uboot__)
 	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
@@ -804,9 +804,9 @@ include/asm:
 include/config.h:
 	@echo '  SYMLINK $@ -> include/configs/$(board-y).h'
 ifneq ($(KBUILD_SRC),)
-	$(Q)ln -fsn $(srctree)/include/configs/$(board-y).h $@
+	$(Q)ln -fsn $(srctree)/board/$(board-y)/config.h $@
 else
-	@ln -fsn configs/$(board-y).h $@
+	@ln -fsn ../board/$(board-y)/config.h $@
 endif
 
 # Generate some files
@@ -1052,7 +1052,7 @@ docs : htmldocs
 htmldocs:
 	@echo  'Running doxygen with local Doxyfile'
 	$(Q)doxygen Doxyfile
-	
+
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 

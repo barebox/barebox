@@ -342,7 +342,7 @@ static int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return mem_test(start, end, pattern);
 }
 
-static __maybe_unused char cmd_mtest_help[] =
+static const __maybe_unused char cmd_mtest_help[] =
 "Usage: <start> <end> "
 #ifdef CONFIG_CMD_MTEST_ALTERNATIVE
 "[pattern]"
@@ -353,5 +353,6 @@ U_BOOT_CMD_START(mtest)
 	.maxargs	= 4,
 	.cmd		= do_mem_mtest,
 	.usage		= "simple RAM test",
+	U_BOOT_CMD_HELP(cmd_mtest_help)
 U_BOOT_CMD_END
 

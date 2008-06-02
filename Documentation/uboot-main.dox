@@ -56,7 +56,7 @@ about losing support for old boards.
 
 - device parameter support
   - Each device can have a unlimited number of parameters. They can be accessed
-    on the command line with <devid>.<param>="...", for example
+    on the command line with \<devid\>.\<param\>="...", for example
     'eth0.ip=192.168.0.7' or 'echo $eth0.ip'
 
 - initcalls
@@ -135,10 +135,10 @@ just like every other program:
   U-Boot 2.0.0-trunk (Jun 26 2007 - 22:34:38)
 
   loading environment from /dev/env0
-  uboot> /
+  uboot\> /
 @endcode
 
-Specifying -[ie] <file> tells U-Boot to map the file as a device
+Specifying -[ie] \<file\> tells U-Boot to map the file as a device
 under /dev. Files given with '-e' will appear as /dev/env[n]. Files
 given with '-i' will appear as /dev/fd[n].
 If U-Boot finds a valid configuration sector on /dev/env0 it will
@@ -158,10 +158,10 @@ If you have mapped a cramfs image try mounting it with
 @endcode
 
 Memory can be examined as usual using md/mw commands. They both understand
-the -f <file> option to tell the commands that they should work on the
+the -f \<file\> option to tell the commands that they should work on the
 specified files instead of /dev/mem which holds the complete address space.
 Note that if you call 'md /dev/fd0' (without -f) U-Boot will segfault on
-the host, because it will interpret /dev/fd0 as a number. 
+the host, because it will interpret /dev/fd0 as a number.
 
 @par Directory layout
 
@@ -186,7 +186,7 @@ lib /                     -> generic library functions (getopt, readline and the
 common /                  -> common stuff
 
 commands /                -> many things previously in common/cmd_*, one command
-			      per file
+                             per file
 
 net /                     -> Networking stuff
 

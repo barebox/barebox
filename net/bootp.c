@@ -58,7 +58,7 @@ static void DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len);
 
 /* For Debug */
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_VENDOREX)
+#ifdef CONFIG_BOOTP_VENDOREX
 extern u8 *dhcp_vendorex_prep (u8 *e); /*rtn new e after add own opts. */
 extern u8 *dhcp_vendorex_proc (u8 *e); /*rtn next e if mine,else NULL  */
 #endif
@@ -163,7 +163,7 @@ static void BootpVendorFieldProcess (u8 * ext)
 		if (NetOurDNSIP == 0) {
 			NetCopyIP (&NetOurDNSIP, (IPaddr_t *) (ext + 2));
 		}
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS2)
+#ifdef CONFIG_BOOTP_DNS2
 		if ((NetOurDNS2IP == 0) && (size > 4)) {
 			NetCopyIP (&NetOurDNS2IP, (IPaddr_t *) (ext + 2 + 4));
 		}
@@ -347,10 +347,10 @@ static int DhcpExtended (u8 * e, int message_type, IPaddr_t ServerID, IPaddr_t R
 	u8 *start = e;
 	u8 *cnt;
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_VENDOREX)
+#ifdef CONFIG_BOOTP_VENDOREX
 	u8 *x;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_SEND_HOSTNAME)
+#ifdef CONFIG_BOOTP_SEND_HOSTNAME
 	char *hostname;
 #endif
 
@@ -389,7 +389,7 @@ static int DhcpExtended (u8 * e, int message_type, IPaddr_t ServerID, IPaddr_t R
 		*e++ = tmp >> 8;
 		*e++ = tmp & 0xff;
 	}
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_SEND_HOSTNAME)
+#ifdef CONFIG_BOOTP_SEND_HOSTNAME
 	if ((hostname = getenv ("hostname"))) {
 		int hostnamelen = strlen (hostname);
 
@@ -400,7 +400,7 @@ static int DhcpExtended (u8 * e, int message_type, IPaddr_t ServerID, IPaddr_t R
 	}
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_VENDOREX)
+#ifdef CONFIG_BOOTP_VENDOREX
 	if ((x = dhcp_vendorex_prep (e)))
 		return x - start;
 #endif
@@ -408,39 +408,39 @@ static int DhcpExtended (u8 * e, int message_type, IPaddr_t ServerID, IPaddr_t R
 	*e++ = 55;		/* Parameter Request List */
 	 cnt = e++;		/* Pointer to count of requested items */
 	*cnt = 0;
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_SUBNETMASK)
+#ifdef CONFIG_BOOTP_SUBNETMASK
 	*e++  = 1;		/* Subnet Mask */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
+#ifdef CONFIG_BOOTP_TIMEOFFSET
 	*e++  = 2;
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_GATEWAY)
+#ifdef CONFIG_BOOTP_GATEWAY
 	*e++  = 3;		/* Router Option */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS)
+#ifdef CONFIG_BOOTP_DNS
 	*e++  = 6;		/* DNS Server(s) */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_HOSTNAME)
+#ifdef CONFIG_BOOTP_HOSTNAME
 	*e++  = 12;		/* Hostname */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_BOOTFILESIZE)
+#ifdef CONFIG_BOOTP_BOOTFILESIZE
 	*e++  = 13;		/* Boot File Size */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_BOOTPATH)
+#ifdef CONFIG_BOOTP_BOOTPATH
 	*e++  = 17;		/* Boot path */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NISDOMAIN)
+#ifdef CONFIG_BOOTP_NISDOMAIN
 	*e++  = 40;		/* NIS Domain name request */
 	*cnt += 1;
 #endif
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
+#ifdef CONFIG_BOOTP_NTPSERVER
 	*e++  = 42;
 	*cnt += 1;
 #endif
@@ -479,43 +479,43 @@ static int BootpExtended (u8 * e)
 	*e++ = (576 - 312 + OPT_SIZE) & 0xff;
 #endif /* CFG_CMD_DHCP */
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_SUBNETMASK)
+#ifdef CONFIG_BOOTP_SUBNETMASK
 	*e++ = 1;		/* Subnet mask request */
 	*e++ = 4;
 	e   += 4;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_GATEWAY)
+#ifdef CONFIG_BOOTP_GATEWAY
 	*e++ = 3;		/* Default gateway request */
 	*e++ = 4;
 	e   += 4;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS)
+#ifdef CONFIG_BOOTP_DNS
 	*e++ = 6;		/* Domain Name Server */
 	*e++ = 4;
 	e   += 4;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_HOSTNAME)
+#ifdef CONFIG_BOOTP_HOSTNAME
 	*e++ = 12;		/* Host name request */
 	*e++ = 32;
 	e   += 32;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_BOOTFILESIZE)
+#ifdef CONFIG_BOOTP_BOOTFILESIZE
 	*e++ = 13;		/* Boot file size */
 	*e++ = 2;
 	e   += 2;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_BOOTPATH)
+#ifdef CONFIG_BOOTP_BOOTPATH
 	*e++ = 17;		/* Boot path */
 	*e++ = 32;
 	e   += 32;
 #endif
 
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NISDOMAIN)
+#ifdef CONFIG_BOOTP_NISDOMAIN
 	*e++ = 40;		/* NIS Domain name request */
 	*e++ = 32;
 	e   += 32;
@@ -616,7 +616,7 @@ static void DhcpOptionsProcess (uchar * popt, Bootp_t *bp)
 		case 1:
 			NetCopyIP (&NetOurSubnetMask, (popt + 2));
 			break;
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP) && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_TIMEOFFSET)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_TIMEOFFSET
 		case 2:		/* Time offset	*/
 			NetCopyLong (&NetTimeOffset, (ulong *) (popt + 2));
 			NetTimeOffset = ntohl (NetTimeOffset);
@@ -627,7 +627,7 @@ static void DhcpOptionsProcess (uchar * popt, Bootp_t *bp)
 			break;
 		case 6:
 			NetCopyIP (&NetOurDNSIP, (popt + 2));
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_DNS2)
+#ifdef CONFIG_BOOTP_DNS2
 			if (*(popt + 1) > 4) {
 				NetCopyIP (&NetOurDNS2IP, (popt + 2 + 4));
 			}
@@ -645,7 +645,7 @@ static void DhcpOptionsProcess (uchar * popt, Bootp_t *bp)
 			memcpy (&NetOurRootPath, popt + 2, size);
 			NetOurRootPath[size] = 0;
 			break;
-#if (CONFIG_COMMANDS & CFG_CMD_SNTP) && (CONFIG_BOOTP_MASK & CONFIG_BOOTP_NTPSERVER)
+#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_NTPSERVER
 		case 42:	/* NTP server IP */
 			NetCopyIP (&NetNtpServerIP, (popt + 2));
 			break;
@@ -691,7 +691,7 @@ static void DhcpOptionsProcess (uchar * popt, Bootp_t *bp)
 			}
 			break;
 		default:
-#if (CONFIG_BOOTP_MASK & CONFIG_BOOTP_VENDOREX)
+#ifdef CONFIG_BOOTP_VENDOREX
 			if (dhcp_vendorex_proc (popt))
 				break;
 #endif

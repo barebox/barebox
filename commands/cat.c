@@ -84,7 +84,7 @@ out:
 	return err;
 }
 
-static __maybe_unused char cmd_cat_help[] =
+static const __maybe_unused char cmd_cat_help[] =
 "Usage: cat [FILES]\n"
 "Concatenate files on stdout. Currently only printable characters\n"
 "and \\n and \\t are printed, but this should be optional\n";

@@ -47,7 +47,7 @@ static int do_readline (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static __maybe_unused char cmd_readline_help[] =
+static const __maybe_unused char cmd_readline_help[] =
 "Usage: readline <prompt> VAR\n"
 "readline reads a line of user input into variable VAR.\n";
 

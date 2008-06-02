@@ -384,29 +384,29 @@ static void print_usage(const char *prgname)
  *
  * @section simu_run How to run U-Boot simulator
  *
- * $ uboot [<OPTIONS>]
+ * $ uboot [\<OPTIONS\>]
  *
  * Options can be:
  *
- * -i <file>
+ * -i \<file\>
  *
- * Map a <file> to U-Boot. This option can be given multiple times. The <file>s
+ * Map a \<file\> to U-Boot. This option can be given multiple times. The \<file\>s
  * will show up as /dev/fd0 ... /dev/fdx in the U-Boot simulator.
  *
- * -e <file>
+ * -e \<file\>
  *
- * Map <file> to U-Boot. With this option <file>s are mapped as /dev/env0 ...
+ * Map \<file\> to U-Boot. With this option \<file\>s are mapped as /dev/env0 ...
  * /dev/envx and thus are used as default environment. A clean file generated
  * with dd will do to get started with an empty environment
  *
- * -O <file>
+ * -O \<file\>
  *
- * Register <file> as a console capable of doing stdout. <file> can be a
+ * Register \<file\> as a console capable of doing stdout. \<file\> can be a
  * regular file or a fifo.
  *
- * -I <file>
+ * -I \<file\>
  *
- * Register <file> as a console capable of doing stdin. <file> can be a regular
+ * Register \<file\> as a console capable of doing stdin. \<file\> can be a regular
  * file or a fifo.
  *
  * @section simu_dbg How to debug U-Boot simulator

@@ -42,7 +42,7 @@ CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
 AFLAGS += -gdwarf-2 -save-temps
 # FIXME - remove overide
 CFLAGS += -msoft-float -mcfv4e -gdwarf-2 -feliminate-unused-debug-types \
-	-fmerge-all-constants -Os
+	-fmerge-all-constants
 # Incompatible code in U-Boot for -std=c99
 LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 #  --verbose --stats

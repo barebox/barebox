@@ -11,7 +11,7 @@ lds-y   := arch/sandbox/lib/u-boot.lds
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -P
-CFLAGS += -Os -Dmalloc=u_boot_malloc \
+CFLAGS += -Dmalloc=u_boot_malloc \
 		-Dfree=u_boot_free -Drealloc=u_boot_realloc \
 		-Dread=u_boot_read -Dwrite=u_boot_write \
 		-Dopen=u_boot_open -Dclose=u_boot_close \

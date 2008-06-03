@@ -1,5 +1,5 @@
 
-CPPFLAGS += -pipe -fno-strict-aliasing
+CPPFLAGS += -fno-strict-aliasing
 
 machine-y	   := sandbox
 

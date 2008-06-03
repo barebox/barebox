@@ -309,7 +309,7 @@ CPPFLAGS        := -D__KERNEL__ -D__U_BOOT__ $(LINUXINCLUDE) -fno-builtin -ffree
 		   -nostdinc
 
 CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-                   -fno-strict-aliasing -fno-common -Os
+                   -fno-strict-aliasing -fno-common -Os -pipe
 AFLAGS          := -D__ASSEMBLY__
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)

@@ -1,6 +1,6 @@
 
 CPPFLAGS += -ffixed-r14 	\
-	-pipe -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
+	-meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
 	-fno-strict-aliasing
 
 ifdef CONFIG_RELOCATABLE

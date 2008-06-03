@@ -1,6 +1,5 @@
 
-CPPFLAGS += -nostdinc -Wall 	\
-	-pipe -fno-strict-aliasing
+CPPFLAGS += -Wall -pipe -fno-strict-aliasing
 
 
 board-$(CONFIG_MACH_IPE337)	:= ipe337

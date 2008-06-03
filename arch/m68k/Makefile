@@ -18,8 +18,7 @@
 # along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CPPFLAGS += -nostdinc -Wall 	\
-	-isystem $(gccincdir) -pipe -D __M68K__ \
+CPPFLAGS += -Wall -isystem $(gccincdir) -pipe -D __M68K__ \
 	-fno-strict-aliasing
 
 

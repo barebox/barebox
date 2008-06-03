@@ -1,5 +1,5 @@
 
-CPPFLAGS += -fno-builtin -ffreestanding -nostdinc -Wall \
+CPPFLAGS += -ffreestanding -nostdinc -Wall \
 	-pipe -fno-strict-aliasing
 
 machine-y	   := sandbox

@@ -1,5 +1,5 @@
 
-CPPFLAGS += -ffreestanding -nostdinc -Wall -ffixed-r14 	\
+CPPFLAGS += -nostdinc -Wall -ffixed-r14 	\
 	-pipe -meabi -Wstrict-prototypes -D __PPC__ -D CONFIG_PPC \
 	-fno-strict-aliasing
 

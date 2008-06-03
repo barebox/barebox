@@ -305,7 +305,7 @@ LINUXINCLUDE    := -Iinclude \
                    $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
 		   -include include/linux/autoconf.h
 
-CPPFLAGS        := -D__KERNEL__ -D__U_BOOT__ $(LINUXINCLUDE) -fno-builtin
+CPPFLAGS        := -D__KERNEL__ -D__U_BOOT__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
 CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -fno-strict-aliasing -fno-common -Os

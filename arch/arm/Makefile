@@ -1,5 +1,5 @@
 
-CPPFLAGS += -ffreestanding -nostdinc -Wall 	\
+CPPFLAGS += -nostdinc -Wall 	\
 	-pipe -D __ARM__ -fno-strict-aliasing
 
 

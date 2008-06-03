@@ -472,7 +472,7 @@ do {                                                                          \
 #define HAVE_MMAP 1
 #endif
 ***/
-#undef	HAVE_MMAP	/* Not available for U-Boot */
+#define	HAVE_MMAP 0	/* Not available for U-Boot */
 
 /*
   Define HAVE_MREMAP to make realloc() use mremap() to re-allocate

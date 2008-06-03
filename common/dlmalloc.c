@@ -1933,7 +1933,7 @@ static void malloc_update_mallinfo(void)
   int i;
   mbinptr b;
   mchunkptr p;
-#if DEBUG
+#ifdef DEBUG
   mchunkptr q;
 #endif
 
@@ -1945,7 +1945,7 @@ static void malloc_update_mallinfo(void)
     b = bin_at(i);
     for (p = last(b); p != b; p = p->bk)
     {
-#if DEBUG
+#ifdef DEBUG
       check_free_chunk(p);
       for (q = next_chunk(p);
 	   q < top && inuse(q) && (long)(chunksize(q)) >= (long)MINSIZE;

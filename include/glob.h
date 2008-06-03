@@ -19,6 +19,8 @@
 #ifndef	_GLOB_H
 #define	_GLOB_H	1
 
+#define _FILE_OFFSET_BITS 32
+
 #ifdef	__cplusplus
 extern "C" {
 #endif

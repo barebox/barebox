@@ -20,7 +20,7 @@ cpu-$(CONFIG_ARM926EJS)            := arm926ejs
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE) -P
-CFLAGS := -fno-common -msoft-float -Os
+CFLAGS += -msoft-float -Os
 
 # Add cleanup flags
 CPPFLAGS += -fdata-sections -ffunction-sections

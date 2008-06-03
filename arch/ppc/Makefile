@@ -15,7 +15,7 @@ cpu-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
-CFLAGS := -fno-common -Os
+CFLAGS += -Os
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)

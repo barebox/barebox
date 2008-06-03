@@ -35,17 +35,21 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 ifeq ($(SUBARCH),x86_64)
 ELF_ARCH   := i386:x86-64
 ELF_FORMAT := elf64-x86-64
+ELF_CLASDD := ELFCLASS64
 endif
 ifeq ($(SUBARCH),i386)
 ELF_ARCH   := $(SUBARCH)
 ELF_FORMAT := elf32-$(SUBARCH)
+ELF_CLASS  := ELFCLASS32
 endif
 ifeq ($(SUBARCH),powerpc)
 ELF_ARCH   := powerpc
 ELF_FORMAT := elf32-powerpc
+ELF_CLASS  := ELFCLASS32
 endif
 
-export ELF_FORMAT ELF_ARCH SUBARCH
+CPPFLAGS += -DELF_CLASS="$(ELF_CLASS)"
+export ELF_FORMAT ELF_ARCH SUBARCH ELF_CLASS
 #	Update machine arch and proc symlinks if something which affects
 #	them changed.  We use .arch to indicate when they were updated
 #	last, otherwise make uses the target directory mtime.

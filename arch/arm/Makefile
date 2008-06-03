@@ -1,5 +1,5 @@
 
-CPPFLAGS += -Wall -pipe -D __ARM__ -fno-strict-aliasing
+CPPFLAGS += -pipe -D __ARM__ -fno-strict-aliasing
 
 
 machine-$(CONFIG_ARCH_IMX)	   := imx

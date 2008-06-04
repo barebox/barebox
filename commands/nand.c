@@ -51,14 +51,16 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 
 	printf("%s %d %d\n", __func__, offset, count);
 
-	ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
-	if (ret < 0)
-		return ret;
+	do {
+		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
+		if (ret < 0)
+			return ret;
 
-	if (ret) {
-		printf("block is bad\n");
-		bb->offset += bb->info.erasesize;
-	}
+		if (ret) {
+			printf("block is bad\n");
+			bb->offset += bb->info.erasesize;
+		}
+	} while (ret);
 
 	ret = dev_read(bb->physdev, buf, count, bb->offset, flags);
 	if (ret > 0)
@@ -75,14 +77,16 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 
 	printf("%s %d %d\n", __func__, offset, count);
 
-	ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
-	if (ret < 0)
-		return ret;
+	do {
+		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
+		if (ret < 0)
+			return ret;
 
-	if (ret) {
-		printf("block is bad\n");
-		bb->offset += bb->info.erasesize;
-	}
+		if (ret) {
+			printf("block is bad\n");
+			bb->offset += bb->info.erasesize;
+		}
+	} while (ret);
 
 	ret = dev_write(bb->physdev, buf, count, bb->offset, flags);
 	if (ret > 0)

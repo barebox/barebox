@@ -175,6 +175,9 @@ config CMD_FLASH
 	tristate
 	prompt "protect/erase"
 
+config CMD_NAND
+	tristate
+	prompt "nand"
 endmenu
 
 

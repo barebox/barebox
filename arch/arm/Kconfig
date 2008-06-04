@@ -10,21 +10,15 @@ config ARCH_TEXT_BASE
 	default 0xa0000000 if MACH_PCM038
 	default 0xa0000000 if MACH_IMX27ADS
 	default 0x87f00000 if MACH_PCM037
+	default 0x23f00000 if MACH_AT91SAM9260_EK
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
-
-config BOARDINFO
 	default "Hilscher Netx nxdb500" if MACH_NXDB500
-
-config BOARDINFO
 	default "Phytec phyCORE-i.MX27" if MACH_PCM038
-
-config BOARDINFO
 	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
-
-config BOARDINFO
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
+	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
 
 config BOARD_LINKER_SCRIPT
 	bool
@@ -81,7 +75,14 @@ config ARCH_NETX
 
 config ARCH_OMAP
 	bool
-# ARM versions used varies on based on OMAP versions
+
+config ARCH_AT91SAM9
+	bool
+	select ARM926EJS
+
+config ARCH_AT91SAM9260
+	bool
+	select ARCH_AT91SAM9
 
 choice
 	prompt "Select your board"
@@ -141,7 +142,7 @@ config MACH_PCM037
 	bool "phyCORE-i.MX31"
 	select ARCH_IMX31
 	help
-	  Say Y here if your are using Phytec's phyCORE-i.MX31 (pcm037) equipped
+	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
 	  with a Freescale i.MX31 Processor
 
 config MACH_OMAP
@@ -149,6 +150,12 @@ config MACH_OMAP
 	select ARCH_OMAP
 	help
 	  Say Y if you are using Texas Instrument's OMAP based platforms
+
+config MACH_AT91SAM9260_EK
+	bool "Atmel AT91SAM9260-EK"
+	select ARCH_AT91SAM9260
+	help
+	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
 
 endchoice
 

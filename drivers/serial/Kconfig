@@ -31,6 +31,11 @@ config DRIVER_SERIAL_NS16550
 	help
 	  Enable this to get support for NS16550 based serial devices
 
+config DRIVER_SERIAL_ATMEL
+	depends on ARCH_AT91SAM9
+	default y
+	bool "Atmel serial driver"
+
 config DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	bool "OMAP Extensions for NS16550"
 	depends on DRIVER_SERIAL_NS16550

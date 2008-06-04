@@ -6,6 +6,7 @@ machine-$(CONFIG_ARCH_IMX)	   := imx
 machine-$(CONFIG_ARCH_NETX)	   := netx
 machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
 machine-$(CONFIG_ARCH_OMAP)        := omap
+machine-$(CONFIG_ARCH_AT91SAM9)    := at91sam9
 board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
 board-$(CONFIG_MACH_ECO920)	   := eco920
 board-$(CONFIG_MACH_SCB9328)	   := scb9328
@@ -14,6 +15,8 @@ board-$(CONFIG_MACH_IMX27ADS)	   := imx27ads
 board-$(CONFIG_MACH_NXDB500)       := netx
 board-$(CONFIG_MACH_PCM037)	   := pcm037
 board-$(CONFIG_MACH_OMAP)	   := omap
+board-$(CONFIG_MACH_AT91SAM9260_EK):= at91sam9260ek
+
 # FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t
 cpu-$(CONFIG_ARM926EJS)            := arm926ejs

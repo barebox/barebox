@@ -1,0 +1,38 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = xflash ]; then
+	root=flash
+	kernel=flash
+fi
+
+if [ x$1 = xnet ]; then
+	root=net
+	kernel=net
+fi
+
+if [ x$ip = xdhcp ]; then
+	bootargs="$bootargs ip=dhcp"
+else
+	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+fi
+
+if [ x$root = xflash ]; then
+	bootargs="$bootargs root=$rootpart rootfstype=jffs2"
+else
+	bootargs="$bootargs root=/dev/nfs nfsroot=192.168.23.111:$nfsroot"
+fi
+
+bootargs="$bootargs mtdparts=physmap-flash.0:$mtdparts"
+
+if [ $kernel = net ]; then
+	if [ x$ip = xdhcp ]; then
+		dhcp
+	fi
+	tftp $uimage uImage
+	bootm uImage
+else
+	bootm /dev/nor0.kernel
+fi
+

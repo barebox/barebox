@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# can be either 'net' or 'flash'
+kernel=net
+root=net
+
+# use 'dhcp' todo dhcp in uboot and in kernel
+ip=dhcp
+
+#
+# setup default ethernet address
+#
+eth0.serverip=192.168.23.108
+eth0.ethaddr=80:97:78:38:27:73
+
+uimage=uImage-at91sam9260ek
+
+autoboot_timeout=3
+
+nfsroot="/home/jbe/pengutronix/bsp/OSELAS.BSP-Phytec-phyCORE-i.MX27-trunk/root,v3"
+bootargs="console=ttyS0,115200 rw init=/bin/sh"

@@ -19,12 +19,68 @@ menu "General Settings              "
 config BOARDINFO
 	string
 
+menu "memory layout                 "
+
+config HAVE_CONFIGURABLE_TEXT_BASE
+	bool
+
 config TEXT_BASE
+	depends on HAVE_CONFIGURABLE_TEXT_BASE
 	prompt "TEXT_BASE"
 	hex
 	default ARCH_TEXT_BASE
 	help
 	  The Address U-Boot gets linked at.
+
+config HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	bool
+
+choice
+	prompt "select memory layout"
+	depends on HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	default MEMORY_LAYOUT_DEFAULT
+
+config MEMORY_LAYOUT_DEFAULT
+	bool "use default memory layout"
+	help
+	  select this option to use U-Boots standard memory layout:
+	  
+	  stack
+	  -----
+	  malloc heap
+	  -----
+	  TEXT_BASE
+
+config MEMORY_LAYOUT_FIXED
+	bool "manually assign a memory layout"
+	help
+	  select this option to manually assign stack base and malloc
+	  heap base
+
+endchoice
+
+config STACK_BASE
+	depends on MEMORY_LAYOUT_FIXED
+	hex
+	prompt "STACK_BASE"
+
+config STACK_SIZE
+	hex
+	depends on HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	default 0x8000
+	prompt "Stack size"
+
+config MALLOC_BASE
+	depends on MEMORY_LAYOUT_FIXED
+	hex
+	prompt "MALLOC_BASE"
+
+config MALLOC_SIZE
+	hex
+	depends on HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	default 0x400000
+	prompt "malloc area size"
+endmenu
 
 config BROKEN
 	bool

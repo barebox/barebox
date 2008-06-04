@@ -68,12 +68,6 @@
 #define SDRC_MR_VAL3	0x00000000 /* Normal Mode */
 #define SDRC_TR_VAL	0x000002E0 /* Write refresh rate */
 
-/*
- * Size of malloc() pool
- */
-#define CFG_MALLOC_LEN	(512*1024)
-#define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
-
 #define CONFIG_BAUDRATE 115200
 
 /*
@@ -126,8 +120,6 @@
 
 #define CLOCK_TICK_RATE		AT91C_MASTER_CLOCK/2	/* AT91C_TC0_CMR is implicitly set to */
 							/* AT91C_TC_TIMER_DIV1_CLOCK */
-
-#define CONFIG_STACKSIZE	(32 * 1024)	/* regular stack */
 
 #define CONFIG_MISC_INIT_R      1       /* call misc_init_r() on init   */
 #define CFG_SPLASH		1

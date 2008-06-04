@@ -92,15 +92,10 @@ console_initcall(scb9328_console_init);
   this is SoC dependend. See Documentation/timekeeping.txt for further
   information.
 
-- Adjust start.S. These files share a lot of common code, so they should be
-  reworked in general. On Arm you have to fix CFG_MALLOC_LEN. Most start.S
-  under cpu/arm* do a "sub	r0, r0, #CFG_MALLOC_LEN". If you increase
-  the malloc space the value CFG_MALLOC_LEN does not fit into the instruction.
-  See cpu/arm920t/start.S how it is done.
-  On PowerpC there is at least the Problem that the relocation offset is
-  defined at compile time. It is easily possible to determine the address
-  U-Boot is currently starting from at runtime and thus allowing it U-Boot
-  to be started at any address. Look at the relocation code and replace
+- Adjust start.S. On PowerpC there is at least the Problem that the relocation
+  offset is defined at compile time. It is easily possible to determine the
+  address U-Boot is currently starting from at runtime and thus allowing it
+  U-Boot to be started at any address. Look at the relocation code and replace
   TEXT_BASE with the following calculation of the runtime address:
 
 	bl     calc_source     /* Calculate Source Address             */

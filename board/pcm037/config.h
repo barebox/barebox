@@ -24,10 +24,6 @@
  * Definitions related to passing arguments to kernel.
  */
 
-#define CFG_MALLOC_LEN		(4096 << 10)
-
-#define CONFIG_STACKSIZE	(120<<10)      /* stack size		     */
-
 /* #define CONFIG_SYSPLL_CLK_FREQ	26000000 */
 
 /* FIXME */

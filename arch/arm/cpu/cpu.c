@@ -155,20 +155,6 @@ int cleanup_before_linux (void)
  * required.
  */
 
-#ifdef CONFIG_USE_IRQ
-static int cpu_init (void)
-{
-	/*
-	 * setup up stacks if necessary
-	 */
-	IRQ_STACK_START = _u_boot_start - CFG_MALLOC_LEN - CFG_GBL_DATA_SIZE - 4;
-	FIQ_STACK_START = IRQ_STACK_START - CONFIG_STACKSIZE_IRQ;
-	return 0;
-}
-
-core_initcall(cpu_init);
-#endif
-
 /**
  * @page arm_for_linux Preparing for Linux to run
  *

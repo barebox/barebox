@@ -26,6 +26,7 @@
 #include <mem_malloc.h>
 #include <asm/u-boot-m68k.h>
 #include <reloc.h>
+#include <asm-generic/memory_layout.h>
 
 /** Initialize mem allocator on M68k/Coldfire
  */
@@ -33,8 +34,8 @@ int m68k_mem_malloc_init(void)
 {
 	/* Pass start and end address of managed memory */
 
-	mem_malloc_init((void *)(&_u_boot_start - CFG_MALLOC_LEN),
-			(void *)&_u_boot_start);
+	mem_malloc_init((void *)MALLOC_BASE,
+			(void *)(MALLOC_BASE + MALLOC_SIZE));
 
 	return 0;
 }

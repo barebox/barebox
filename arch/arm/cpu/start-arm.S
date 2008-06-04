@@ -40,6 +40,7 @@
 	.section ".text_entry","ax"
 
 #include <config.h>
+#include <asm-generic/memory_layout.h>
 
 /*************************************************************************
  * Jump vector table as in table 3.1 in [1]
@@ -86,15 +87,28 @@ _TEXT_BASE:
 _u_boot_start:
 	.word _start
 
-/*************************************************************************
- * FIXME
- *************************************************************************/
+#ifndef CONFIG_STACKSIZE_IRQ
+#define CONFIG_STACKSIZE_IRQ 0
+#endif
+#ifndef CONFIG_STACKSIZE_FIQ
+#define CONFIG_STACKSIZE_FIQ 0
+#endif
 
-_MALLOC_START:
-	.word _start - CFG_MALLOC_LEN
+_MALLOC_BASE:
+	.word MALLOC_BASE
 
 _STACK_START:
-	.word _start - CFG_MALLOC_LEN - CONFIG_STACKSIZE
+	.word STACK_BASE + STACK_SIZE - 4
+
+#ifdef CONFIG_USE_IRQ
+/* IRQ stack memory */
+IRQ_STACK_START:
+	.word	STACK_BASE + CONFIG_STACKSIZE_IRQ - 4
+
+/* IRQ stack memory */
+FIQ_STACK_START:
+	.word STACK_BASE + CONFIG_STACKSIZE_IRQ + CONFIG_STACKSIZE_FIQ - 4
+#endif
 
 /*
  * These are defined in the board-specific linker script.
@@ -106,18 +120,6 @@ _bss_start:
 .globl _bss_end
 _bss_end:
 	.word _end
-
-#ifdef CONFIG_USE_IRQ
-/* IRQ stack memory (calculated at run-time) */
-.globl IRQ_STACK_START
-IRQ_STACK_START:
-	.word	0x0badc0de
-
-/* IRQ stack memory (calculated at run-time) */
-.globl FIQ_STACK_START
-FIQ_STACK_START:
-	.word 0x0badc0de
-#endif
 
 /*************************************************************************
  * the actual reset code
@@ -179,10 +181,7 @@ copy_loop:
 
 	/* Set up the stack						    */
 stack_setup:
-	ldr	r0, _MALLOC_START	/* upper 128 KiB: relocated uboot   */
-#ifdef CONFIG_USE_IRQ
-	sub	r0, r0, #(CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ)
-#endif
+	ldr	r0, _STACK_START
 	sub	sp, r0, #12		/* leave 3 words for abort-stack    */
 
 clear_bss:

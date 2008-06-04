@@ -3,13 +3,6 @@
 #define __CONFIG_H
 
 /*
- * Board Layout
- */
-#define CONFIG_MALLOC_LEN	(16384 << 10)
-#define CONFIG_MALLOC_BASE	(TEXT_BASE - CONFIG_MALLOC_LEN)
-#define CONFIG_STACKBASE	(CONFIG_MALLOC_BASE - 4)
-
-/*
  * Clock settings
  */
 

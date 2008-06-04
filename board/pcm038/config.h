@@ -21,9 +21,4 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* FIXME: ugly....should be simply part of the BSP file */
-
-#define CFG_MALLOC_LEN		(4096 << 10)
-#define CONFIG_STACKSIZE	( 120 << 10)	/* stack size */
-
 #endif	/* __CONFIG_H */

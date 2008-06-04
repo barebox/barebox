@@ -87,7 +87,6 @@ IPB Bus clocking configuration.
 #define CFG_INIT_RAM_SIZE	MPC5XXX_SRAM_SIZE	/* End of used area in DPRAM */
 #define CONFIG_EARLY_INITDATA_SIZE 0x100
 
-#define CFG_MALLOC_LEN		(8 << 20)	/* Reserve 8 MB for malloc()	*/
 #define CFG_BOOTMAPSZ		(8 << 20)	/* Initial Memory map for Linux */
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------

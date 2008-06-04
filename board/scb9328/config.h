@@ -24,10 +24,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CFG_MALLOC_LEN		(4096 << 10)
-
-#define CONFIG_STACKSIZE	(120<<10)      /* stack size		     */
-
 #define CONFIG_SYSPLL_CLK_FREQ 16000000
 
 #endif	/* __CONFIG_H */

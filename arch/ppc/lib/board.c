@@ -30,6 +30,7 @@
 #include <init.h>
 #include <net.h>
 #include <reloc.h>
+#include <asm-generic/memory_layout.h>
 
 char *strmhz (char *buf, long hz)
 {
@@ -71,7 +72,7 @@ void board_init_r (ulong end_of_ram)
 	debug("malloc_end: 0x%08x\n", malloc_end);
 	debug("TEXT_BASE after relocation: 0x%08x\n", _text_base);
 
-	mem_malloc_init((void *)(malloc_end - CFG_MALLOC_LEN), (void *)malloc_end);
+	mem_malloc_init((void *)(malloc_end - MALLOC_SIZE), (void *)malloc_end);
 
 	/*
 	 * Setup trap handlers

@@ -42,6 +42,7 @@
 #include <boot.h>
 #include <rtc.h>
 #include <init.h>
+#include <asm-generic/memory_layout.h>
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 # include <status_led.h>
@@ -223,7 +224,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 		 */
 		if (BZ2_bzBuffToBuffDecompress (load_address,
 						&unc_len, (char *)data, len,
-						CFG_MALLOC_LEN < (4096 * 1024), 0)
+						MALLOC_SIZE < (4096 * 1024), 0)
 						!= BZ_OK)
 			return -1;
 		break;

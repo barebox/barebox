@@ -41,7 +41,7 @@ uint64_t get_time_ns(void)
         uint64_t ns_offset;
 
         /* read clocksource: */
-        cycle_now = cs->read();
+	cycle_now = cs->read() & cs->mask;
 
         /* calculate the delta since the last call: */
         cycle_delta = (cycle_now - cs->cycle_last) & cs->mask;

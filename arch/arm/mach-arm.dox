@@ -30,4 +30,8 @@ assembler instruction is a jump into \<start_uboot\>. This target address is
 the first C instruction in U-Boot. At this point of time:\n
 "runtime address == link address".
 
+@par Architectures using ARM processors
+For details on specific architectures:
+ - @subpage dev_omap_arch
+
 */

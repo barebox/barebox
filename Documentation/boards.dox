@@ -13,6 +13,7 @@ ARM type:
 - @subpage imx27ads
 - @subpage scb9328
 - @subpage netx
+- @subpage dev_omap_arch
 
 Blackfin type:
 

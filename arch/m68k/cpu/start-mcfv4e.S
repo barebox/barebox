@@ -406,7 +406,7 @@ reset:
 	 * standard reset vector file, but also do some special things
 	 * required only on their specific CPU.
 	 */
-#ifdef ARCH_HAS_INIT_LOWLEVEL
+#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 	bsr.l	arch_init_lowlevel
 	nop
 #endif

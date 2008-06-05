@@ -133,6 +133,9 @@ config MACH_DO_LOWLEVEL_INIT
 	  on many platforms. Disabling this option allows configurations to use
 	  U-boot as a second stage boot loader.
 
+config ARCH_HAS_LOWLEVEL_INIT
+	bool
+
 config PROMPT
 	string
 	prompt "U-Boot command prompt"

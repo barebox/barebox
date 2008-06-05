@@ -133,7 +133,7 @@ reset:
 	orr	r0,r0,#0xd3
 	msr	cpsr,r0
 
-#ifdef ARCH_HAS_INIT_LOWLEVEL
+#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 	bl arch_init_lowlevel
 #endif
 	/*

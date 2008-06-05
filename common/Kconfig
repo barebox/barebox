@@ -261,6 +261,10 @@ config OF_FLAT_TREE
 	bool
 	prompt "Open Firmware flat device tree support"
 
+config PARTITION
+	bool
+	prompt "Enable Partitions"
+
 config DEFAULT_ENVIRONMENT
 	bool
 	default y

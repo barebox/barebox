@@ -57,6 +57,11 @@ config DRIVER_NET_IMX27
 	depends on ARCH_IMX27
 	select MIIPHY
 
+config DRIVER_NET_MACB
+	bool "macb Ethernet driver"
+	depends on ARCH_AT91SAM9
+	select MIIPHY
+
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
 	depends on LINUX

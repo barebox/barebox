@@ -36,20 +36,20 @@ SECTIONS
 	{
 		_stext = .;
 		_text = .;
-		*(.text_entry)
-		*(.text)
+		*(.text_entry*)
+		*(.text*)
 	}
 
 	. = ALIGN(4);
-	.rodata : { *(.rodata) }
+	.rodata : { *(.rodata*) }
 
 	_etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(4);
-	.data : { *(.data) }
+	.data : { *(.data*) }
 
 	. = ALIGN(4);
-	.got : { *(.got) }
+	.got : { *(.got*) }
 
 	. = .;
 	__u_boot_cmd_start = .;
@@ -66,6 +66,6 @@ SECTIONS
 
 	. = ALIGN(4);
 	__bss_start = .;
-	.bss : { *(.bss) }
+	.bss : { *(.bss*) }
 	_end = .;
 }

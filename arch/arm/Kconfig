@@ -49,6 +49,9 @@ config ARM920T
 config ARM926EJS
 	bool
 
+config ARMCORTEXA8
+	bool
+
 # i.MX1, i.MXL, i.MX27 and i.MX31 are quite similar and thus
 # handled in one arch
 config ARCH_IMX
@@ -75,6 +78,10 @@ config ARCH_AT91RM9200
 config ARCH_NETX
 	bool
 	select ARM926EJS
+
+config ARCH_OMAP
+	bool
+# ARM versions used varies on based on OMAP versions
 
 choice
 	prompt "Select your board"
@@ -137,6 +144,12 @@ config MACH_PCM037
 	  Say Y here if your are using Phytec's phyCORE-i.MX31 (pcm037) equipped
 	  with a Freescale i.MX31 Processor
 
+config MACH_OMAP
+	bool "Texas Instruments' OMAP based platforms"
+	select ARCH_OMAP
+	help
+	  Say Y if you are using Texas Instrument's OMAP based platforms
+
 endchoice
 
 config IMX_CLKO
@@ -146,8 +159,9 @@ config IMX_CLKO
 	  The i.MX SoCs have a Pin which can output different reference frequencies.
 	  Say y here if you want to have the clko command which lets you select the
 	  frequency to output on this pin.
-	  
+
 source arch/arm/mach-netx/Kconfig
+source arch/arm/mach-omap/Kconfig
 
 menu "Arm specific settings         "
 
@@ -170,6 +184,13 @@ config INITRD_TAG
 	  If you want to start a 2.6 kernel and use an
 	  initrd image say y here.
 
+config ARMCORTEXA8_DCACHE_SKIP
+	bool "Skip DCache Invlidate"
+	depends on ARMCORTEXA8
+	default n
+	help
+	  If your architecture configuration uses some other method of disabling caches, enable this
+	  So that the D-Cache invalidation logic is skipped
 endmenu
 
 source common/Kconfig

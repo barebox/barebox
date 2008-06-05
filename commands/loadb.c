@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @brief LoadB and LoadY support.
+ *
+ * Provides loadb (over Kermit) and LoadY(over Y modem) support to download
+ * images.
+ *
+ * FileName: commands/loadb.c
+ */
 /*
  * (C) Copyright 2000-2004
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
@@ -26,291 +35,187 @@
  */
 #include <common.h>
 #include <command.h>
-#include <s_record.h>
-#include <net.h>
-#include <exports.h>
 #include <xyzModem.h>
+#include <console.h>
+#include <errno.h>
+#include <environment.h>
+#include <cache.h>
+#include <getopt.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <malloc.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
-static ulong load_serial_ymodem (ulong offset);
-
-#define XON_CHAR        17
-#define XOFF_CHAR       19
-#define START_CHAR      0x01
+#define XON_CHAR	17
+#define XOFF_CHAR	19
+#define START_CHAR	0x01
 #define ETX_CHAR	0x03
-#define END_CHAR        0x0D
-#define SPACE           0x20
-#define K_ESCAPE        0x23
-#define SEND_TYPE       'S'
-#define DATA_TYPE       'D'
-#define ACK_TYPE        'Y'
-#define NACK_TYPE       'N'
-#define BREAK_TYPE      'B'
-#define tochar(x) ((char) (((x) + SPACE) & 0xff))
-#define untochar(x) ((int) (((x) - SPACE) & 0xff))
+#define END_CHAR	0x0D
+#define SPACE		0x20
+#define K_ESCAPE	0x23
+#define SEND_TYPE	'S'
+#define DATA_TYPE	'D'
+#define ACK_TYPE	'Y'
+#define NACK_TYPE	'N'
+#define BREAK_TYPE	'B'
+#define tochar(x)	((char) (((x) + SPACE) & 0xff))
+#define untochar(x)	((int) (((x) - SPACE) & 0xff))
+#define DEF_FILE	"/dev/mem"
 
-extern int os_data_count;
-extern int os_data_header[8];
+static int ofd;			/* output file descriptor */
 
-static void set_kerm_bin_mode(unsigned long *);
-static int k_recv(void);
-static ulong load_serial_bin (ulong offset);
+#ifdef CONFIG_CMD_LOADB
+static char his_eol;		/* character he needs at end of packet */
+static int his_pad_count;	/* number of pad chars he needs */
+static char his_pad_char;	/* pad chars he needs */
+static char his_quote;		/* quote chars he'll use */
 
-
-char his_eol;        /* character he needs at end of packet */
-int  his_pad_count;  /* number of pad chars he needs */
-char his_pad_char;   /* pad chars he needs */
-char his_quote;      /* quote chars he'll use */
-
-int do_load_serial_bin (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	ulong offset = 0;
-	ulong addr;
-	int load_baudrate, current_baudrate;
-	int rcode = 0;
-	char *s;
-
-	/* pre-set offset from CFG_LOAD_ADDR */
-	offset = CFG_LOAD_ADDR;
-
-	/* pre-set offset from $loadaddr */
-	if ((s = getenv("loadaddr")) != NULL) {
-		offset = simple_strtoul(s, NULL, 16);
-	}
-
-	load_baudrate = current_baudrate = gd->baudrate;
-
-	if (argc >= 2) {
-		offset = simple_strtoul(argv[1], NULL, 16);
-	}
-	if (argc == 3) {
-		load_baudrate = (int)simple_strtoul(argv[2], NULL, 10);
-
-		/* default to current baudrate */
-		if (load_baudrate == 0)
-			load_baudrate = current_baudrate;
-	}
-
-	if (load_baudrate != current_baudrate) {
-		printf ("## Switch baudrate to %d bps and press ENTER ...\n",
-			load_baudrate);
-		udelay(50000);
-		gd->baudrate = load_baudrate;
-		serial_setbrg ();
-		udelay(50000);
-		for (;;) {
-			if (getc() == '\r')
-				break;
-		}
-	}
-
-	if (strcmp(argv[0],"loady")==0) {
-		printf ("## Ready for binary (ymodem) download "
-			"to 0x%08lX at %d bps...\n",
-			offset,
-			load_baudrate);
-
-		addr = load_serial_ymodem (offset);
-
-	} else {
-
-		printf ("## Ready for binary (kermit) download "
-			"to 0x%08lX at %d bps...\n",
-			offset,
-			load_baudrate);
-		addr = load_serial_bin (offset);
-
-		if (addr == ~0) {
-			load_addr = 0;
-			printf ("## Binary (kermit) download aborted\n");
-			rcode = 1;
-		} else {
-			printf ("## Start Addr      = 0x%08lX\n", addr);
-			load_addr = addr;
-		}
-	}
-	if (load_baudrate != current_baudrate) {
-		printf ("## Switch baudrate to %d bps and press ESC ...\n",
-			current_baudrate);
-		udelay (50000);
-		gd->baudrate = current_baudrate;
-		serial_setbrg ();
-		udelay (50000);
-		for (;;) {
-			if (getc() == 0x1B) /* ESC */
-				break;
-		}
-	}
-
-	return rcode;
-}
-
-
-static ulong load_serial_bin (ulong offset)
-{
-	int size, i;
-	char buf[32];
-
-	set_kerm_bin_mode ((ulong *) offset);
-	size = k_recv ();
-
-	/*
-	 * Gather any trailing characters (for instance, the ^D which
-	 * is sent by 'cu' after sending a file), and give the
-	 * box some time (100 * 1 ms)
-	 */
-	for (i=0; i<100; ++i) {
-		if (tstc()) {
-			(void) getc();
-		}
-		udelay(1000);
-	}
-
-	flush_cache (offset, size);
-
-	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	sprintf(buf, "%X", size);
-	setenv("filesize", buf);
-
-	return offset;
-}
-
-void send_pad (void)
+static void send_pad(void)
 {
 	int count = his_pad_count;
 
 	while (count-- > 0)
-		putc (his_pad_char);
+		console_putc(CONSOLE_STDOUT, his_pad_char);
 }
 
 /* converts escaped kermit char to binary char */
-char ktrans (char in)
+static char ktrans(char in)
 {
 	if ((in & 0x60) == 0x40) {
-		return (char) (in & ~0x40);
+		return (char)(in & ~0x40);
 	} else if ((in & 0x7f) == 0x3f) {
-		return (char) (in | 0x40);
+		return (char)(in | 0x40);
 	} else
 		return in;
 }
 
-int chk1 (char *buffer)
+static int chk1(char *buffer)
 {
 	int total = 0;
 
 	while (*buffer) {
 		total += *buffer++;
 	}
-	return (int) ((total + ((total >> 6) & 0x03)) & 0x3f);
+	return (int)((total + ((total >> 6) & 0x03)) & 0x3f);
 }
 
-void s1_sendpacket (char *packet)
+static void s1_sendpacket(char *packet)
 {
-	send_pad ();
+	send_pad();
 	while (*packet) {
-		putc (*packet++);
+		console_putc(CONSOLE_STDOUT, *packet++);
 	}
 }
 
 static char a_b[24];
-void send_ack (int n)
+static void send_ack(int n)
 {
 	a_b[0] = START_CHAR;
-	a_b[1] = tochar (3);
-	a_b[2] = tochar (n);
+	a_b[1] = tochar(3);
+	a_b[2] = tochar(n);
 	a_b[3] = ACK_TYPE;
 	a_b[4] = '\0';
-	a_b[4] = tochar (chk1 (&a_b[1]));
+	a_b[4] = tochar(chk1(&a_b[1]));
 	a_b[5] = his_eol;
 	a_b[6] = '\0';
-	s1_sendpacket (a_b);
+	s1_sendpacket(a_b);
 }
 
-void send_nack (int n)
+static void send_nack(int n)
 {
 	a_b[0] = START_CHAR;
-	a_b[1] = tochar (3);
-	a_b[2] = tochar (n);
+	a_b[1] = tochar(3);
+	a_b[2] = tochar(n);
 	a_b[3] = NACK_TYPE;
 	a_b[4] = '\0';
-	a_b[4] = tochar (chk1 (&a_b[1]));
+	a_b[4] = tochar(chk1(&a_b[1]));
 	a_b[5] = his_eol;
 	a_b[6] = '\0';
-	s1_sendpacket (a_b);
+	s1_sendpacket(a_b);
 }
 
+/* os_data_* data buffer handling before flushing the data to the o/p device
+ * we will only dump valid packets to the device.
+ */
+static int os_data_count, os_old_count, os_data_total;
+static char *os_data_addr, *os_old_buffer;
 
-/* os_data_* takes an OS Open image and puts it into memory, and
-   puts the boot header in an array named os_data_header
-
-   if image is binary, no header is stored in os_data_header.
-*/
-void (*os_data_init) (void);
-void (*os_data_char) (char new_char);
-static int os_data_state, os_data_state_saved;
-int os_data_count;
-static int os_data_count_saved;
-static char *os_data_addr, *os_data_addr_saved;
-static char *bin_start_address;
-int os_data_header[8];
-static void bin_data_init (void)
+static void os_data_init(void)
 {
-	os_data_state = 0;
 	os_data_count = 0;
-	os_data_addr = bin_start_address;
-}
-static void os_data_save (void)
-{
-	os_data_state_saved = os_data_state;
-	os_data_count_saved = os_data_count;
-	os_data_addr_saved = os_data_addr;
-}
-static void os_data_restore (void)
-{
-	os_data_state = os_data_state_saved;
-	os_data_count = os_data_count_saved;
-	os_data_addr = os_data_addr_saved;
-}
-static void bin_data_char (char new_char)
-{
-	switch (os_data_state) {
-	case 0:					/* data */
-		*os_data_addr++ = new_char;
-		--os_data_count;
-		break;
-	}
-}
-static void set_kerm_bin_mode (unsigned long *addr)
-{
-	bin_start_address = (char *) addr;
-	os_data_init = bin_data_init;
-	os_data_char = bin_data_char;
+	os_old_count = 0;
+	os_data_addr = NULL;
+	os_old_buffer = NULL;
 }
 
+static int os_data_alloc(int length)
+{
+	/* If already allocated, free the memory
+	 */
+	if (os_data_addr != NULL) {
+		os_data_addr -= os_data_count;
+		free(os_data_addr);
+	}
+	os_data_count = 0;
+	os_data_addr = (char *)malloc(length);
+	if (os_data_addr == NULL)
+		return -1;
+	return 0;
+}
+
+static int os_data_save(void)
+{
+	int ret = 0;
+	/* if there was an old data, flush it */
+	if (os_old_buffer) {
+		flush_cache((ulong) os_old_buffer, os_old_count);
+		ret = write(ofd, os_old_buffer, os_old_count);
+		if (ret < 0)
+			return ret;
+		os_data_total += os_old_count;
+		free(os_old_buffer);
+	}
+	os_old_count = os_data_count;
+	os_old_buffer = os_data_addr - os_data_count;
+	os_data_count = 0;
+	os_data_addr = NULL;
+	return 0;
+}
+
+static void os_data_dump(void)
+{
+	if (os_old_buffer)
+		free(os_old_buffer);
+	if (os_data_addr) {
+		os_data_addr -= os_data_count;
+		free(os_data_addr);
+	}
+	os_data_init();
+}
+static void os_data_char(char new_char)
+{
+	*os_data_addr++ = new_char;
+	os_data_count++;
+}
 
 /* k_data_* simply handles the kermit escape translations */
 static int k_data_escape, k_data_escape_saved;
-void k_data_init (void)
+static void k_data_init(void)
 {
 	k_data_escape = 0;
-	os_data_init ();
 }
-void k_data_save (void)
+static void k_data_save(void)
 {
 	k_data_escape_saved = k_data_escape;
-	os_data_save ();
 }
-void k_data_restore (void)
+static void k_data_restore(void)
 {
 	k_data_escape = k_data_escape_saved;
-	os_data_restore ();
 }
-void k_data_char (char new_char)
+static void k_data_char(char new_char)
 {
 	if (k_data_escape) {
 		/* last char was escape - translate this character */
-		os_data_char (ktrans (new_char));
+		os_data_char(ktrans(new_char));
 		k_data_escape = 0;
 	} else {
 		if (new_char == his_quote) {
@@ -318,24 +223,30 @@ void k_data_char (char new_char)
 			k_data_escape = 1;
 		} else {
 			/* otherwise send this char as-is */
-			os_data_char (new_char);
+			os_data_char(new_char);
 		}
 	}
 }
 
 #define SEND_DATA_SIZE  20
-char send_parms[SEND_DATA_SIZE];
-char *send_ptr;
+static char send_parms[SEND_DATA_SIZE];
+static char *send_ptr;
 
-/* handle_send_packet interprits the protocol info and builds and
-   sends an appropriate ack for what we can do */
-void handle_send_packet (int n)
+/**
+ * @brief interprets the protocol info and builds and
+ * sends an appropriate ack for what we can do
+ *
+ * @param n sequence
+ *
+ * @return void
+ */
+static void handle_send_packet(int n)
 {
 	int length = 3;
 	int bytes;
 
 	/* initialize some protocol parameters */
-	his_eol = END_CHAR;		/* default end of line character */
+	his_eol = END_CHAR;	/* default end of line character */
 	his_pad_count = 0;
 	his_pad_char = '\0';
 	his_quote = K_ESCAPE;
@@ -349,30 +260,30 @@ void handle_send_packet (int n)
 			break;
 		/* handle MAXL - max length */
 		/* ignore what he says - most I'll take (here) is 94 */
-		a_b[++length] = tochar (94);
+		a_b[++length] = tochar(94);
 		if (bytes-- <= 0)
 			break;
 		/* handle TIME - time you should wait for my packets */
 		/* ignore what he says - don't wait for my ack longer than 1 second */
-		a_b[++length] = tochar (1);
+		a_b[++length] = tochar(1);
 		if (bytes-- <= 0)
 			break;
 		/* handle NPAD - number of pad chars I need */
 		/* remember what he says - I need none */
-		his_pad_count = untochar (send_parms[2]);
-		a_b[++length] = tochar (0);
+		his_pad_count = untochar(send_parms[2]);
+		a_b[++length] = tochar(0);
 		if (bytes-- <= 0)
 			break;
 		/* handle PADC - pad chars I need */
 		/* remember what he says - I need none */
-		his_pad_char = ktrans (send_parms[3]);
+		his_pad_char = ktrans(send_parms[3]);
 		a_b[++length] = 0x40;	/* He should ignore this */
 		if (bytes-- <= 0)
 			break;
 		/* handle EOL - end of line he needs */
 		/* remember what he says - I need CR */
-		his_eol = untochar (send_parms[4]);
-		a_b[++length] = tochar (END_CHAR);
+		his_eol = untochar(send_parms[4]);
+		a_b[++length] = tochar(END_CHAR);
 		if (bytes-- <= 0)
 			break;
 		/* handle QCTL - quote control char he'll use */
@@ -398,25 +309,29 @@ void handle_send_packet (int n)
 			break;
 		/* handle CAPAS - the capabilities mask */
 		/* ignore what he says - I only do long packets - I don't do windows */
-		a_b[++length] = tochar (2);	/* only long packets */
-		a_b[++length] = tochar (0);	/* no windows */
-		a_b[++length] = tochar (94);	/* large packet msb */
-		a_b[++length] = tochar (94);	/* large packet lsb */
+		a_b[++length] = tochar(2);	/* only long packets */
+		a_b[++length] = tochar(0);	/* no windows */
+		a_b[++length] = tochar(94);	/* large packet msb */
+		a_b[++length] = tochar(94);	/* large packet lsb */
 	} while (0);
 
 	a_b[0] = START_CHAR;
-	a_b[1] = tochar (length);
-	a_b[2] = tochar (n);
+	a_b[1] = tochar(length);
+	a_b[2] = tochar(n);
 	a_b[3] = ACK_TYPE;
 	a_b[++length] = '\0';
-	a_b[length] = tochar (chk1 (&a_b[1]));
+	a_b[length] = tochar(chk1(&a_b[1]));
 	a_b[++length] = his_eol;
 	a_b[++length] = '\0';
-	s1_sendpacket (a_b);
+	s1_sendpacket(a_b);
 }
 
-/* k_recv receives a OS Open image file over kermit line */
-static int k_recv (void)
+/**
+ * @brief receives a OS Open image file over kermit line
+ *
+ * @return bytes read
+ */
+static int k_recv(void)
 {
 	char new_char;
 	char k_state, k_state_saved;
@@ -428,7 +343,7 @@ static int k_recv (void)
 	int len_lo, len_hi;
 
 	/* initialize some protocol parameters */
-	his_eol = END_CHAR;		/* default end of line character */
+	his_eol = END_CHAR;	/* default end of line character */
 	his_pad_count = 0;
 	his_pad_char = '\0';
 	his_quote = K_ESCAPE;
@@ -436,10 +351,12 @@ static int k_recv (void)
 	/* initialize the k_recv and k_data state machine */
 	done = 0;
 	k_state = 0;
-	k_data_init ();
+	k_data_init();
 	k_state_saved = k_state;
-	k_data_save ();
-	n = 0;				/* just to get rid of a warning */
+	k_data_save();
+	os_data_init();
+	os_data_total = 0;
+	n = 0;			/* just to get rid of a warning */
 	last_n = -1;
 
 	/* expect this "type" sequence (but don't check):
@@ -461,14 +378,15 @@ static int k_recv (void)
 		   If a character less than SPACE (0x20) is received - error.
 		 */
 
-
 		/* get a packet */
 		/* wait for the starting character or ^C */
 		for (;;) {
-			switch (getc ()) {
+			switch (getc()) {
 			case START_CHAR:	/* start packet */
 				goto START;
-			case ETX_CHAR:		/* ^C waiting for packet */
+			case ETX_CHAR:	/* ^C waiting for packet */
+				/* Save last success buffer and quit */
+				(void)os_data_save();
 				return (0);
 			default:
 				;
@@ -477,17 +395,17 @@ static int k_recv (void)
 START:
 		/* get length of packet */
 		sum = 0;
-		new_char = getc ();
+		new_char = getc();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
-		length = untochar (new_char);
+		length = untochar(new_char);
 		/* get sequence number */
-		new_char = getc ();
+		new_char = getc();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
-		n = untochar (new_char);
+		n = untochar(new_char);
 		--length;
 
 		/* NEW CODE - check sequence numbers for retried packets */
@@ -500,17 +418,20 @@ START:
 		if (n == last_n) {
 			/* same sequence number, restore the previous state */
 			k_state = k_state_saved;
-			k_data_restore ();
+			k_data_restore();
+			/* Dump any previously allocated data including previous
+			 *  buffer host wishes to retry.. */
+			os_data_dump();
 		} else {
 			/* new sequence number, checkpoint the download */
 			last_n = n;
 			k_state_saved = k_state;
-			k_data_save ();
+			k_data_save();
 		}
 		/* END NEW CODE */
 
 		/* get packet type */
-		new_char = getc ();
+		new_char = getc();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
@@ -520,36 +441,45 @@ START:
 		if (length == -2) {
 			/* (length byte was 0, decremented twice) */
 			/* get the two length bytes */
-			new_char = getc ();
+			new_char = getc();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
-			len_hi = untochar (new_char);
-			new_char = getc ();
+			len_hi = untochar(new_char);
+			new_char = getc();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
-			len_lo = untochar (new_char);
+			len_lo = untochar(new_char);
 			length = len_hi * 95 + len_lo;
 			/* check header checksum */
-			new_char = getc ();
+			new_char = getc();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
-			if (new_char != tochar ((sum + ((sum >> 6) & 0x03)) & 0x3f))
+			if (new_char !=
+			    tochar((sum + ((sum >> 6) & 0x03)) & 0x3f))
 				goto packet_error;
 			sum += new_char & 0xff;
-/* --length; */ /* new length includes only data and block check to come */
+			/* --length;
+			 * new length includes only data and block check to come
+			 */
 		}
-		/* bring in rest of packet */
+		/* Try to allocate data chunk */
+		if (length > 1) {
+			if (os_data_alloc(length) < 0) {
+				/* too large.. NACK the data back */
+				goto packet_error;
+			}
+		}
 		while (length > 1) {
-			new_char = getc ();
+			new_char = getc();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
 			--length;
 			if (k_state == DATA_TYPE) {
 				/* pass on the data if this is a data packet */
-				k_data_char (new_char);
+				k_data_char(new_char);
 			} else if (k_state == SEND_TYPE) {
 				/* save send pack in buffer as is */
 				*send_ptr++ = new_char;
@@ -559,46 +489,96 @@ START:
 			}
 		}
 		/* get and validate checksum character */
-		new_char = getc ();
+		new_char = getc();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
-		if (new_char != tochar ((sum + ((sum >> 6) & 0x03)) & 0x3f))
+		if (new_char != tochar((sum + ((sum >> 6) & 0x03)) & 0x3f))
 			goto packet_error;
 		/* get END_CHAR */
-		new_char = getc ();
+		new_char = getc();
 		if (new_char != END_CHAR) {
-		  packet_error:
+packet_error:
 			/* restore state machines */
 			k_state = k_state_saved;
-			k_data_restore ();
+			k_data_restore();
 			/* send a negative acknowledge packet in */
-			send_nack (n);
+			send_nack(n);
 		} else if (k_state == SEND_TYPE) {
 			/* crack the protocol parms, build an appropriate ack packet */
-			handle_send_packet (n);
+			handle_send_packet(n);
 		} else {
 			/* send simple acknowledge packet in */
-			send_ack (n);
+			send_ack(n);
+			/* Flush old buffer,
+			 * Store current buffer as old buffer */
+			os_data_save();
 			/* quit if end of transmission */
-			if (k_state == BREAK_TYPE)
+			if (k_state == BREAK_TYPE) {
+				/* Flush remaining buffer */
+				os_data_save();
 				done = 1;
+			}
 		}
 		++z;
 	}
-	return ((ulong) os_data_addr - (ulong) bin_start_address);
+	return ((ulong) os_data_total);
 }
 
-static int getcxmodem(void) {
+/**
+ * @brief loadb Support over kermit protocol
+ *
+ * @return download size
+ */
+static ulong load_serial_bin(void)
+{
+	int size, i;
+	char buf[32];
+
+	size = k_recv();
+
+	/*
+	 * Gather any trailing characters (for instance, the ^D which
+	 * is sent by 'cu' after sending a file), and give the
+	 * box some time (100 * 1 ms)
+	 */
+	for (i = 0; i < 100; ++i) {
+		if (tstc())
+			(void)getc();
+		udelay(1000);
+	}
+	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
+	sprintf(buf, "%X", size);
+	setenv("filesize", buf);
+
+	return size;
+}
+
+#endif				/* CONFIG_CMD_LOADB */
+
+#ifdef CONFIG_CMD_LOADY
+/**
+ * @brief getcxmodem
+ *
+ * @return if character avaiable, return the same, else return -1
+ */
+static int getcxmodem(void)
+{
 	if (tstc())
 		return (getc());
 	return -1;
 }
-static ulong load_serial_ymodem (ulong offset)
+
+/**
+ * @brief  LoadY over ymodem protocol
+ *
+ * @return download size
+ */
+static ulong load_serial_ymodem(void)
 {
 	int size;
 	char buf[32];
 	int err;
-	int res;
+	int res, wr;
 	connection_info_t info;
 	char ymodemBuf[1024];
 	ulong store_addr = ~0;
@@ -606,46 +586,191 @@ static ulong load_serial_ymodem (ulong offset)
 
 	size = 0;
 	info.mode = xyzModem_ymodem;
-	res = xyzModem_stream_open (&info, &err);
+	res = xyzModem_stream_open(&info, &err);
 	if (!res) {
-
-		while ((res =
-			xyzModem_stream_read (ymodemBuf, 1024, &err)) > 0) {
-			store_addr = addr + offset;
+		while ((res = xyzModem_stream_read(ymodemBuf, 1024, &err)) >
+				0) {
 			size += res;
 			addr += res;
-			memcpy ((char *) (store_addr), ymodemBuf, res);
+			flush_cache((ulong) yModemBuf, res);
+			wr = write(ofd, ymodemBuf, res);
+			if (res != wr) {
+				perror("ymodem");
+				break;
+			}
 
 		}
 	} else {
-		printf ("%s\n", xyzModem_error (err));
+		printf("%s\n", xyzModem_error(err));
 	}
 
-	xyzModem_stream_close (&err);
-	xyzModem_stream_terminate (false, &getcxmodem);
+	xyzModem_stream_close(&err);
+	xyzModem_stream_terminate(false, &getcxmodem);
 
+	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
+	sprintf(buf, "%X", size);
+	setenv("filesize", buf);
 
-	flush_cache (offset, size);
+	return res;
+}
+#endif
 
-	printf ("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	sprintf (buf, "%X", size);
-	setenv ("filesize", buf);
-
-	return offset;
+/**
+ * @brief returns current used console device
+ *
+ * @return console device which is registered with CONSOLE_STDIN and
+ * CONSOLE_STDOUT
+ */
+static struct console_device *get_current_console(void)
+{
+	struct console_device *cdev;
+	/*
+	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
+	 * same output console
+	 */
+	for_each_console(cdev) {
+		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
+			return cdev;
+	}
+	return NULL;
 }
 
-U_BOOT_CMD(
-	loadb, 3, 0,	do_load_serial_bin,
-	"loadb   - load binary file over serial line (kermit mode)\n",
-	"[ off ] [ baud ]\n"
-	"    - load binary file over serial line"
-	" with offset 'off' and baudrate 'baud'\n"
-);
+/**
+ * @brief provide the loadb(Kermit) or loadY mode support
+ *
+ * @param cmdtp
+ * @param argc
+ * @param argv
+ *
+ * @return success or failure
+ */
+static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	ulong offset = 0;
+	ulong addr;
+	int load_baudrate = 0, current_baudrate;
+	int rcode = 0;
+	int opt;
+	char *output_file = NULL;
+	struct console_device *cdev = NULL;
 
-U_BOOT_CMD(
-	loady, 3, 0,	do_load_serial_bin,
-	"loady   - load binary file over serial line (ymodem mode)\n",
-	"[ off ] [ baud ]\n"
-	"    - load binary file over serial line"
-	" with offset 'off' and baudrate 'baud'\n"
-);
+	getopt_reset();
+
+	while ((opt = getopt(argc, argv, "d:b:o:")) > 0) {
+		switch (opt) {
+		case 'd':
+			output_file = optarg;
+			break;
+		case 'b':
+			load_baudrate = (int)simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'o':
+			offset = (int)simple_strtoul(optarg, NULL, 10);
+			break;
+		default:
+			perror(argv[0]);
+			return 1;
+		}
+	}
+
+	cdev = get_current_console();
+	if (NULL == cdev) {
+		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
+		return -ENODEV;
+	}
+	current_baudrate = simple_strtoul(cdev->baudrate_string, NULL, 10);
+
+	/* Load Defaults */
+	if (load_baudrate == 0)
+		load_baudrate = current_baudrate;
+	if (NULL == output_file)
+		output_file = DEF_FILE;
+
+	/* File should exist */
+	ofd = open(output_file, O_WRONLY);
+	if (ofd < 0) {
+		perror(argv[0]);
+		return 3;
+	}
+	/* Seek to the right offset */
+	if (offset) {
+		int seek = lseek(ofd, offset, SEEK_SET);
+		if (seek != offset) {
+			close(ofd);
+			ofd = 0;
+			perror(argv[0]);
+			return 4;
+		}
+	}
+
+	if (load_baudrate != current_baudrate) {
+		printf("## Switch baudrate to %d bps and press ENTER ...\n",
+		       load_baudrate);
+		udelay(50000);
+		cdev->setbrg(cdev, load_baudrate);
+		udelay(50000);
+		for (;;) {
+			if (getc() == '\r')
+				break;
+		}
+	}
+#ifdef CONFIG_CMD_LOADY
+	if (strcmp(argv[0], "loady") == 0) {
+		printf("## Ready for binary (ymodem) download "
+		       "to 0x%08lX offset on %s device at %d bps...\n", offset,
+		       output_file, load_baudrate);
+		addr = load_serial_ymodem();
+	}
+#endif
+#ifdef CONFIG_CMD_LOADB
+	if (strcmp(argv[0], "loadb") == 0) {
+
+		printf("## Ready for binary (kermit) download "
+		       "to 0x%08lX offset on %s device at %d bps...\n", offset,
+		       output_file, load_baudrate);
+		addr = load_serial_bin();
+		if (addr == 0) {
+			printf("## Binary (kermit) download aborted\n");
+			rcode = 1;
+		}
+	}
+#endif
+	if (load_baudrate != current_baudrate) {
+		printf("## Switch baudrate to %d bps and press ESC ...\n",
+		       current_baudrate);
+		udelay(50000);
+		cdev->setbrg(cdev, current_baudrate);
+		udelay(50000);
+		for (;;) {
+			if (getc() == 0x1B)	/* ESC */
+				break;
+		}
+	}
+
+	close(ofd);
+	ofd = 0;
+	return rcode;
+}
+
+static const __maybe_unused char cmd_loadb_help[] =
+    "[OPTIONS]\n"
+    "  -d device - which device to download - defaults to " DEF_FILE "\n"
+    "  -o offset - what offset to download - defaults to 0\n"
+    "  -b baud   - baudrate at which to download - defaults to "
+    "console baudrate\n";
+#ifdef CONFIG_CMD_LOADB
+U_BOOT_CMD_START(loadb)
+	.maxargs = 7,
+	.cmd = do_load_serial_bin,
+	.usage = "Load binary file over serial line (kermit mode)",
+	U_BOOT_CMD_HELP(cmd_loadb_help)
+U_BOOT_CMD_END
+#endif
+#ifdef CONFIG_CMD_LOADY
+U_BOOT_CMD_START(loady)
+	.maxargs = 7,
+	.cmd = do_load_serial_bin,
+	.usage = "Load binary file over serial line (ymodem mode)",
+	U_BOOT_CMD_HELP(cmd_loadb_help)
+U_BOOT_CMD_END
+#endif

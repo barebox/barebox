@@ -123,10 +123,15 @@ endmenu
 menu "memory                        "
 
 config CMD_LOADB
-	depends on BROKEN
 	select CRC16
 	tristate
 	prompt "loadb"
+
+config CMD_LOADY
+	select CRC16
+	depends on EXPERIMENTAL
+	bool
+	prompt "loady"
 
 config CMD_LOADS
 	depends on BROKEN

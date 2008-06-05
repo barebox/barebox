@@ -89,4 +89,7 @@ config OMAP3_CLOCK_CONFIG
  	help
  	  Say Y here if you like to have initial OMAP3 Clock configuration done from SRAM.
 
+# Get the board specific configurations
+source board/omap/Kconfig
+
 endmenu

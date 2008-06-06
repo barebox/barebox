@@ -8,7 +8,7 @@ void armlinux_set_architecture(int architecture);
 static inline void armlinux_set_bootparams(void *params)
 {
 }
-ficken
+
 static inline void armlinux_set_architecture(int architecture)
 {
 }

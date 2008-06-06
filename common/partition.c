@@ -32,6 +32,9 @@
 #include <errno.h>
 #include <partition.h>
 #include <xfuncs.h>
+#include <ioctl.h>
+#include <nand.h>
+#include <linux/mtd/mtd-abi.h>
 
 /**
  * Add one partition on top of a device, as a device.
@@ -168,6 +171,43 @@ static ssize_t part_write(struct device_d *dev, const void *buf, size_t count,
 		return dev_write(part->physdev, buf, count, offset + part->offset, flags);
 }
 
+static off_t part_lseek(struct device_d *dev, off_t ofs)
+{
+	struct partition *part = dev->type_data;
+
+	return dev_lseek(part->physdev, ofs);
+}
+
+static int part_open(struct device_d *dev, struct filep *f)
+{
+	struct partition *part = dev->type_data;
+
+	return dev_open(part->physdev, f);
+}
+
+static int part_close(struct device_d *dev, struct filep *f)
+{
+	struct partition *part = dev->type_data;
+
+	return dev_close(part->physdev, f);
+}
+
+static int part_ioctl(struct device_d *dev, int request,
+	void *buf)
+{
+	struct partition *part = dev->type_data;
+	off_t offset;
+
+	switch (request) {
+	case MEMGETBADBLOCK:
+		offset = (off_t)buf;
+		offset += part->offset;
+		return dev_ioctl(part->physdev, request, (void *)offset);
+	}
+
+	return -ENOSYS;
+}
+
 /**
  * FIXME.
  * @param[in] dev The partition info as a device
@@ -201,8 +241,12 @@ struct driver_d part_driver = {
 	.name  	= "partition",
 	.probe 	= part_probe,
 	.remove = part_remove,
+	.open   = part_open,
+	.close  = part_close,
+	.ioctl  = part_ioctl,
 	.read  	= part_read,
 	.write 	= part_write,
+	.lseek  = part_lseek,
 	.erase 	= part_erase,
 	.protect= part_protect,
 	.memmap = part_memmap,

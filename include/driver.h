@@ -64,6 +64,8 @@
 
 /*@{*/	/* do not delete, doxygen relevant */
 
+struct filep;
+
 /** @brief Describes a particular device present in the system */
 struct device_d {
 	/*! This member (and 'type' described below) is used to match with a
@@ -131,6 +133,11 @@ struct driver_d {
 	/*! Called in response of write to this device. Required */
 	ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
 
+	int (*ioctl) (struct device_d*, int, void *);
+
+	off_t (*lseek) (struct device_d*, off_t);
+	int (*open) (struct device_d*, struct filep*);
+	int (*close) (struct device_d*, struct filep*);
 
 	int     (*erase) (struct device_d*, size_t count, unsigned long offset);
 	int     (*protect)(struct device_d*, size_t count, unsigned long offset, int prot);
@@ -219,6 +226,10 @@ struct driver_d *get_driver_by_name(const char *name);
 
 ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
+int     dev_open(struct device_d *dev, struct filep *);
+int     dev_close(struct device_d *dev, struct filep *);
+int     dev_ioctl(struct device_d *dev, int, void *);
+off_t   dev_lseek(struct device_d *dev, off_t offset);
 int     dev_erase(struct device_d *dev, size_t count, unsigned long offset);
 int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
 int     dev_memmap(struct device_d *dev, void **map, int flags);
@@ -232,6 +243,21 @@ int dummy_probe(struct device_d *);
 
 int generic_memmap_ro(struct device_d *dev, void **map, int flags);
 int generic_memmap_rw(struct device_d *dev, void **map, int flags);
+
+static inline off_t dev_lseek_default(struct device_d *dev, off_t ofs)
+{
+	return ofs;
+}
+
+static inline int dev_open_default(struct device_d *dev, struct filep *f)
+{
+	return 0;
+}
+
+static inline int dev_close_default(struct device_d *dev, struct filep *f)
+{
+	return 0;
+}
 
 #endif /* DRIVER_H */
 

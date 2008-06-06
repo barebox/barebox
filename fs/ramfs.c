@@ -403,6 +403,12 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return insize;
 }
 
+static off_t ramfs_lseek(struct device_d *dev, FILE *f, off_t pos)
+{
+	f->pos = pos;
+	return f->pos;
+}
+
 static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
@@ -540,6 +546,7 @@ static struct fs_driver_d ramfs_driver = {
 	.truncate  = ramfs_truncate,
 	.read      = ramfs_read,
 	.write     = ramfs_write,
+	.lseek     = ramfs_lseek,
 	.mkdir     = ramfs_mkdir,
 	.rmdir     = ramfs_rmdir,
 	.opendir   = ramfs_opendir,

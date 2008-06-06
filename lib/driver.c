@@ -212,6 +212,38 @@ ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, unsigned 
 	return -ENOSYS;
 }
 
+off_t dev_lseek(struct device_d *dev, off_t offset)
+{
+	if (dev->driver->lseek)
+		return dev->driver->lseek(dev, offset);
+	errno = -ENOSYS;
+	return -ENOSYS;
+}
+
+int dev_open(struct device_d *dev, struct filep *f)
+{
+	if (dev->driver->open)
+		return dev->driver->open(dev, f);
+	errno = -ENOSYS;
+	return -ENOSYS;
+}
+
+int dev_close(struct device_d *dev, struct filep *f)
+{
+	if (dev->driver->close)
+		return dev->driver->close(dev, f);
+	errno = -ENOSYS;
+	return -ENOSYS;
+}
+
+int dev_ioctl(struct device_d *dev, int request, void *buf)
+{
+	if (dev->driver->ioctl)
+		return dev->driver->ioctl(dev, request, buf);
+	errno = -ENOSYS;
+	return -ENOSYS;
+}
+
 int dev_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	if (dev->driver->erase)

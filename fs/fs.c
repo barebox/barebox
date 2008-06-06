@@ -451,6 +451,22 @@ int creat(const char *pathname, mode_t mode)
 }
 EXPORT_SYMBOL(creat);
 
+int ioctl(int fd, int request, void *buf)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+
+	if (fsdrv->ioctl)
+		return fsdrv->ioctl(dev, f, request, buf);
+
+	return -ENOSYS;
+}
+
 int read(int fd, void *buf, size_t count)
 {
 	struct device_d *dev;
@@ -496,30 +512,40 @@ EXPORT_SYMBOL(write);
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fildes];
+	ulong pos;
+
 	errno = 0;
+
+	dev = f->dev;
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	if (!fsdrv->lseek)
+		return -ENOSYS;
 
 	switch(whence) {
 	case SEEK_SET:
 		if (offset > f->size)
 			goto out;
-		f->pos = offset;
+		pos = offset;
 		break;
 	case SEEK_CUR:
 		if (offset + f->pos > f->size)
 			goto out;
-		f->pos += offset;
+		pos = f->pos + offset;
 		break;
 	case SEEK_END:
 		if (offset)
 			goto out;
-		f->pos = f->size;
+		pos = f->size;
 		break;
 	default:
 		goto out;
 	}
 
-	return 0;
+	return fsdrv->lseek(dev, f, pos);
+
 out:
 	errno = -EINVAL;
 	return errno;

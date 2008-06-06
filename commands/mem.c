@@ -120,6 +120,9 @@ int open_and_lseek(const char *filename, int mode, ulong pos)
 		return fd;
 	}
 
+	if (!pos)
+		return fd;
+
 	ret = lseek(fd, pos, SEEK_SET);
 	if (ret < 0) {
 		perror("lseek");
@@ -525,22 +528,31 @@ static struct device_d mem_dev = {
 static struct driver_d mem_drv = {
 	.name  = "mem",
 	.probe = dummy_probe,
+	.open  = dev_open_default,
+	.close = dev_close_default,
 	.read  = mem_read,
 	.write = mem_write,
+	.lseek  = dev_lseek_default,
 };
 
 static struct driver_d ram_drv = {
 	.name  = "ram",
 	.probe = dummy_probe,
+	.open  = dev_open_default,
+	.close = dev_close_default,
 	.read  = mem_read,
 	.write = mem_write,
+	.lseek  = dev_lseek_default,
 	.type  = DEVICE_TYPE_DRAM,
 };
 
 static struct driver_d rom_drv = {
 	.name  = "rom",
 	.probe = dummy_probe,
+	.open  = dev_open_default,
+	.close = dev_close_default,
 	.read  = mem_read,
+	.lseek = dev_lseek_default,
 };
 
 static int mem_init(void)

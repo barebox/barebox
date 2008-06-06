@@ -352,6 +352,12 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 	return outsize;
 }
 
+static off_t cramfs_lseek(struct device_d *dev, FILE *f, off_t pos)
+{
+	f->pos = pos;
+	return f->pos;
+}
+
 static int cramfs_stat(struct device_d *_dev, const char *filename, struct stat *stat)
 {
 	struct cramfs_priv *priv = _dev->priv;
@@ -443,6 +449,7 @@ static struct fs_driver_d cramfs_driver = {
 	.open		= cramfs_open,
 	.close		= cramfs_close,
 	.read		= cramfs_read,
+	.lseek		= cramfs_lseek,
 	.opendir	= cramfs_opendir,
 	.readdir	= cramfs_readdir,
 	.closedir	= cramfs_closedir,

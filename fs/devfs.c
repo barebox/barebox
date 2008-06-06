@@ -44,6 +44,19 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 	return dev_write(dev, buf, size, f->pos, f->flags);
 }
 
+static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
+{
+	struct device_d *dev = f->inode;
+	int ret;
+
+	ret = dev_lseek(dev, pos);
+
+	if (ret >= 0)
+		f->pos = pos;
+
+	return ret;
+}
+
 static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
 {
 	struct device_d *dev = f->inode;
@@ -65,21 +78,30 @@ static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 	return dev_memmap(dev, map, flags);
 }
 
-static int devfs_open(struct device_d *_dev, FILE *file, const char *filename)
+static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 {
 	struct device_d *dev = get_device_by_id(filename + 1);
 
 	if (!dev)
 		return -ENOENT;
 
-	file->size = dev->size;
-	file->inode = dev;
-	return 0;
+	f->size = dev->size;
+	f->inode = dev;
+	return dev_open(dev, f);
 }
 
-static int devfs_close(struct device_d *dev, FILE *f)
+static int devfs_close(struct device_d *_dev, FILE *f)
 {
-	return 0;
+	struct device_d *dev = f->inode;
+
+	return dev_close(dev, f);
+}
+
+static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
+{
+	struct device_d *dev = f->inode;
+
+	return dev_ioctl(dev, request, buf);	
 }
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
@@ -156,8 +178,10 @@ static struct fs_driver_d devfs_driver = {
 	.type      = FS_TYPE_DEVFS,
 	.read      = devfs_read,
 	.write     = devfs_write,
+	.lseek     = devfs_lseek,
 	.open      = devfs_open,
 	.close     = devfs_close,
+	.ioctl     = devfs_ioctl,
 	.opendir   = devfs_opendir,
 	.readdir   = devfs_readdir,
 	.truncate  = devfs_truncate,

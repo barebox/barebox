@@ -58,12 +58,14 @@ struct fs_driver_d {
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
 	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
+	off_t (*lseek)(struct device_d *dev, FILE *f, off_t pos);
 
 	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
 	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
 	int (*closedir)(struct device_d *dev, DIR *dir);
 	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
+	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
 	int (*erase)(struct device_d *dev, FILE *f, size_t count,
 			unsigned long offset);
 	int (*protect)(struct device_d *dev, FILE *f, size_t count,
@@ -101,6 +103,7 @@ int unlink(const char *pathname);
 int close(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
+int ioctl(int fd, int request, void *buf);
 ssize_t write(int fd, const void *buf, size_t count);
 
 #define SEEK_SET	1

@@ -656,8 +656,11 @@ struct device_d sdram_dev = {
 static struct driver_d ram_drv = {
 	.name = "ram",
 	.probe = dummy_probe,
+	.open  = dev_open_default,
+	.close = dev_close_default,
 	.read = mem_read,
 	.write = mem_write,
+	.lseek  = dev_lseek_default,
 	.type = DEVICE_TYPE_DRAM,
 };
 #endif

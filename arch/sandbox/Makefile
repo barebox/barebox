@@ -35,7 +35,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 ifeq ($(SUBARCH),x86_64)
 ELF_ARCH   := i386:x86-64
 ELF_FORMAT := elf64-x86-64
-ELF_CLASDD := ELFCLASS64
+ELF_CLASS := ELFCLASS64
 endif
 ifeq ($(SUBARCH),i386)
 ELF_ARCH   := $(SUBARCH)

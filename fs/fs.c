@@ -462,9 +462,10 @@ int ioctl(int fd, int request, void *buf)
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 
 	if (fsdrv->ioctl)
-		return fsdrv->ioctl(dev, f, request, buf);
-
-	return -ENOSYS;
+		errno = fsdrv->ioctl(dev, f, request, buf);
+	else
+		errno = -ENOSYS;
+	return errno;
 }
 
 int read(int fd, void *buf, size_t count)

@@ -1,91 +1,138 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-trunk
-# Sun Jul  1 14:40:26 2007
+# U-Boot version: 2.0.0-rc5-git
+# Thu Jul  3 09:49:23 2008
 #
-CONFIG_TEXT_BASE=0x1000000
+CONFIG_BOARDINFO="Phytec Phycore mpc5200b tiny"
+CONFIG_ARCH_TEXT_BASE=0x01000000
+CONFIG_MPC5XXX_EARLY_CONSOLE=y
+CONFIG_HAS_EARLY_INIT=y
+CONFIG_PPC=y
 CONFIG_ARCH_MPC5200=y
 CONFIG_MPC5200=y
+CONFIG_MPC5xxx=y
 CONFIG_CACHELINE_SIZE=32
+CONFIG_HAS_REGINFO=y
 CONFIG_MACH_PHYCORE_MPC5200B_TINY=y
-CONFIG_MACH_PHYCORE_MPC5200B_TINY_REV_1=y
-CONFIG_GREGORIAN_CALENDER=y
 
 #
-# General Settings
+# Board specific settings       
 #
+CONFIG_MACH_PHYCORE_MPC5200B_TINY_REV=1
+CONFIG_EARLY_CONSOLE_PORT="psc3"
+CONFIG_GREGORIAN_CALENDER=y
+CONFIG_HAS_KALLSYMS=y
+CONFIG_HAS_MODULES=y
+CONFIG_CMD_MEMORY=y
+
+#
+# General Settings              
+#
+
+#
+# memory layout                 
+#
+CONFIG_HAVE_CONFIGURABLE_TEXT_BASE=y
+CONFIG_TEXT_BASE=0x01000000
+CONFIG_HAVE_CONFIGURABLE_MEMORY_LAYOUT=y
+CONFIG_MEMORY_LAYOUT_DEFAULT=y
+# CONFIG_MEMORY_LAYOUT_FIXED is not set
+CONFIG_STACK_SIZE=0x8000
+CONFIG_MALLOC_SIZE=0x400000
+# CONFIG_BROKEN is not set
+# CONFIG_EXPERIMENTAL is not set
+# CONFIG_RELOCATABLE is not set
 CONFIG_PROMPT="uboot:"
 CONFIG_BAUDRATE=115200
 CONFIG_CMDLINE_EDITING=y
-# CONFIG_AUTO_COMPLETE is not set
+CONFIG_AUTO_COMPLETE=y
 CONFIG_LONGHELP=y
 CONFIG_CBSIZE=1024
 CONFIG_MAXARGS=16
-CONFIG_HUSH_PARSER=y
+CONFIG_SHELL_HUSH=y
+# CONFIG_SHELL_SIMPLE is not set
+CONFIG_GLOB=y
 CONFIG_PROMPT_HUSH_PS2="> "
-CONFIG_ZERO_BOOTDELAY_CHECK=y
+CONFIG_DYNAMIC_CRC_TABLE=y
 CONFIG_ERRNO_MESSAGES=y
 CONFIG_TIMESTAMP=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
+CONFIG_EARLY_CONSOLE_BAUDRATE=115200
 CONFIG_OF_FLAT_TREE=y
+CONFIG_PARTITION=y
+# CONFIG_DEFAULT_ENVIRONMENT is not set
 
 #
-# Debugging
+# Debugging                     
+#
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_ENABLE_FLASH_NOISE is not set
+# CONFIG_ENABLE_PARTITION_NOISE is not set
+# CONFIG_ENABLE_DEVICE_NOISE is not set
+
+#
+# Commands                      
 #
 
 #
-# Commands
-#
-
-#
-# scripting
+# scripting                     
 #
 CONFIG_CMD_EDIT=y
-CONFIG_CMD_EXEC=y
 CONFIG_CMD_SLEEP=y
-CONFIG_CMD_ENVIRONMENT=y
+# CONFIG_CMD_SAVEENV is not set
+# CONFIG_CMD_LOADENV is not set
+# CONFIG_CMD_EXPORT is not set
+# CONFIG_CMD_PRINTENV is not set
 CONFIG_CMD_HELP=y
+# CONFIG_CMD_READLINE is not set
 
 #
-# console
+# file commands                 
+#
+CONFIG_CMD_LS=y
+CONFIG_CMD_RM=y
+CONFIG_CMD_CAT=y
+CONFIG_CMD_MKDIR=y
+CONFIG_CMD_RMDIR=y
+CONFIG_CMD_CP=y
+CONFIG_CMD_PWD=y
+CONFIG_CMD_CD=y
+CONFIG_CMD_MOUNT=y
+CONFIG_CMD_UMOUNT=y
+
+#
+# console                       
 #
 CONFIG_CMD_CLEAR=y
-# CONFIG_CMD_CONSOLE is not set
 CONFIG_CMD_ECHO=y
-# CONFIG_CMD_SPLASH is not set
 
 #
-# i2c
-#
-# CONFIG_CMD_I2C is not set
-
-#
-# memory
+# memory                        
 #
 # CONFIG_CMD_LOADB is not set
-# CONFIG_CMD_LOADS is not set
 CONFIG_CMD_MEMINFO=y
-CONFIG_CMD_MEMORY=y
+# CONFIG_CMD_CRC is not set
 # CONFIG_CMD_MTEST is not set
 
 #
-# network
-#
-# CONFIG_CMD_MII is not set
-
-#
-# flash
+# flash                         
 #
 CONFIG_CMD_FLASH=y
+# CONFIG_CMD_NAND is not set
 
 #
-# booting
+# booting                       
 #
 CONFIG_CMD_BOOTM=y
 CONFIG_CMD_BOOTM_ZLIB=y
 CONFIG_CMD_BOOTM_BZLIB=y
+# CONFIG_CMD_BOOTM_SHOW_TYPE is not set
 CONFIG_CMD_RESET=y
 CONFIG_CMD_GO=y
+# CONFIG_CMD_TIMEOUT is not set
+# CONFIG_CMD_PARTITION is not set
+CONFIG_CMD_TEST=y
+# CONFIG_CMD_REGINFO is not set
 CONFIG_NET=y
 CONFIG_NET_BOOTP=y
 CONFIG_NET_DHCP=y
@@ -96,46 +143,42 @@ CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
 
 #
-# Drivers
+# Drivers                       
 #
 
 #
-# serial drivers
+# serial drivers                
 #
 CONFIG_DRIVER_SERIAL_MPC5XXX=y
+# CONFIG_DRIVER_SERIAL_NS16550 is not set
 CONFIG_MIIPHY=y
 
 #
-# Network drivers
+# Network drivers               
 #
+# CONFIG_DRIVER_NET_SMC911X is not set
 CONFIG_DRIVER_NET_MPC5200=y
 
 #
-# video drivers
+# SPI drivers                   
 #
-# CONFIG_DRIVER_VIDEO_S1D13706 is not set
+CONFIG_SPI=y
+# CONFIG_DRIVER_SPI_MC13783 is not set
 
 #
-# I2C drivers
-#
-
-#
-# USB host support
-#
-
-#
-# flash drivers
+# flash drivers                 
 #
 CONFIG_HAS_CFI=y
 CONFIG_DRIVER_CFI=y
 # CONFIG_DRIVER_CFI_NEW is not set
+CONFIG_DRIVER_CFI_OLD=y
 # CONFIG_CFI_BUFFER_WRITE is not set
+# CONFIG_NAND is not set
 
 #
-# Filesystem support
+# Filesystem support            
 #
 CONFIG_FS_CRAMFS=y
 CONFIG_ZLIB=y
 CONFIG_BZLIB=y
 CONFIG_CRC32=y
-CONFIG_DYNAMIC_CRC_TABLE=y

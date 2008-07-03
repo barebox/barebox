@@ -20,6 +20,8 @@ config PPC
 	bool
 	select HAS_KALLSYMS
 	select HAS_MODULES
+	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	select HAVE_CONFIGURABLE_TEXT_BASE
 	default y
 
 # Uh, we should decide which one we want to use

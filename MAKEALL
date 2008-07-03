@@ -24,13 +24,9 @@ BOARDS="${BOARDS} sandbox"
 sandbox_ARCH=sandbox
 sandbox_CROSS_COMPILE=
 
-BOARDS="${BOARDS} eco920"
-eco920_ARCH=arm
-eco920_CROSS_COMPILE=arm-v4t-linux-gnueabi-
-
 BOARDS="${BOARDS} ipe337"
 ipe337_ARCH=blackfin
-ipe337_CROSS_COMPILE=
+ipe337_CROSS_COMPILE=bfin-elf-
 
 BOARDS="${BOARDS} netx_nxdb500"
 netx_nxdb500_ARCH=arm
@@ -47,10 +43,6 @@ pcm037_CROSS_COMPILE=arm-1136jfs-linux-gnueabi-
 BOARDS="${BOARDS} pcm038"
 pcm038_ARCH=arm
 pcm038_CROSS_COMPILE=arm-v4t-linux-gnueabi-
-
-BOARDS="${BOARDS} scb9328"
-scb9328_ARCH=arm
-scb9328_CROSS_COMPILE=arm-v4t-linux-gnueabi-
 
 for board in ${BOARDS}; do
 

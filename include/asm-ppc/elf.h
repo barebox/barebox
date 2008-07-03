@@ -3,6 +3,7 @@
 
 #include <asm/types.h>
 #include <asm/ptrace.h>
+#include <asm/string.h>
 
 /* PowerPC relocations defined by the ABIs */
 #define R_PPC_NONE		0

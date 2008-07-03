@@ -28,6 +28,7 @@
 #include <asm/armlinux.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <asm/mach-types.h>
 #include <asm/arch/netx-eth.h>
 
 static struct device_d cfi_dev = {
@@ -76,11 +77,14 @@ static int netx_devices_init(void) {
 	register_device(&netx_eth_dev0);
 //	register_device(&netx_eth_dev1);
 
+#ifdef CONFIG_PARTITION
 	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
-	dev_protect(&cfi_dev, 0x40000, 0, 1);
 
 	/* Do not overwrite primary env for now */
 	dev_add_partition(&cfi_dev, 0xc0000, 0x80000, PARTITION_FIXED, "env"); 
+#endif
+
+	dev_protect(&cfi_dev, 0x40000, 0, 1);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_NXDB500);

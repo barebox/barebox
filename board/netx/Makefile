@@ -1,1 +1,2 @@
-obj-y += netx.o
+obj-y += netx.o platform.o
+

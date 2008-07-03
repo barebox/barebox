@@ -21,9 +21,6 @@
  * MA 02111-1307 USA
  */
 
-#include <config.h>
-#include <version.h>
-
 .globl board_init_lowlevel
 board_init_lowlevel:
 	mov	pc, lr

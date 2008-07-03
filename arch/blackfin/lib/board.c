@@ -33,11 +33,12 @@
 #include <environment.h>
 #include <mem_malloc.h>
 #include <asm/cpu.h>
+#include <asm-generic/memory_layout.h>
 
 int blackfin_mem_malloc_init(void)
 {
-	mem_malloc_init((void *)(CONFIG_MALLOC_BASE),
-			(void *)(CONFIG_MALLOC_BASE + CONFIG_MALLOC_LEN));
+	mem_malloc_init((void *)(MALLOC_BASE),
+			(void *)(MALLOC_BASE + MALLOC_SIZE));
 	return 0;
 }
 

@@ -34,6 +34,7 @@
 #include <asm/blackfin.h>
 #include <asm/cpu/defBF561_extn.h>
 #include <asm/cpu/defBF561.h>
+#include <asm-generic/memory_layout.h>
 
 .section ".text_entry","ax"
 
@@ -173,8 +174,9 @@ loop1:
 	/*
 	 * configure STACK
 	 */
-	r0.h = hi(CONFIG_STACKBASE);
-	r0.l = lo(CONFIG_STACKBASE);
+
+	r0.h = hi(STACK_BASE);
+	r0.l = lo(STACK_BASE);
 	sp = r0;
 	fp = sp;
 

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.0.0-rc4-git
-# Thu Jan 24 10:58:37 2008
+# U-Boot version: 2.0.0-rc5-git
+# Thu Jul  3 10:25:25 2008
 #
 CONFIG_BLACKFIN=y
 CONFIG_BF561=y
@@ -22,7 +22,17 @@ CONFIG_ENV_HANDLING=y
 #
 # General Settings              
 #
+
+#
+# memory layout                 
+#
+CONFIG_HAVE_CONFIGURABLE_TEXT_BASE=y
 CONFIG_TEXT_BASE=0x03f00000
+CONFIG_HAVE_CONFIGURABLE_MEMORY_LAYOUT=y
+CONFIG_MEMORY_LAYOUT_DEFAULT=y
+# CONFIG_MEMORY_LAYOUT_FIXED is not set
+CONFIG_STACK_SIZE=0x8000
+CONFIG_MALLOC_SIZE=0x400000
 # CONFIG_BROKEN is not set
 # CONFIG_EXPERIMENTAL is not set
 CONFIG_PROMPT="uboot:"
@@ -34,12 +44,14 @@ CONFIG_CBSIZE=1024
 CONFIG_MAXARGS=16
 CONFIG_SHELL_HUSH=y
 # CONFIG_SHELL_SIMPLE is not set
+# CONFIG_GLOB is not set
 CONFIG_PROMPT_HUSH_PS2="> "
 CONFIG_DYNAMIC_CRC_TABLE=y
 CONFIG_ERRNO_MESSAGES=y
 CONFIG_TIMESTAMP=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # CONFIG_OF_FLAT_TREE is not set
+CONFIG_PARTITION=y
 CONFIG_DEFAULT_ENVIRONMENT=y
 CONFIG_DEFAULT_ENVIRONMENT_PATH="board/ipe337/env"
 
@@ -90,6 +102,7 @@ CONFIG_CMD_ECHO=y
 #
 # memory                        
 #
+# CONFIG_CMD_LOADB is not set
 CONFIG_CMD_MEMINFO=y
 CONFIG_CMD_CRC=y
 # CONFIG_CMD_MTEST is not set
@@ -98,6 +111,7 @@ CONFIG_CMD_CRC=y
 # flash                         
 #
 CONFIG_CMD_FLASH=y
+# CONFIG_CMD_NAND is not set
 
 #
 # booting                       
@@ -128,6 +142,7 @@ CONFIG_NET_TFTP=y
 # serial drivers                
 #
 CONFIG_DRIVER_SERIAL_BLACKFIN=y
+# CONFIG_DRIVER_SERIAL_NS16550 is not set
 CONFIG_MIIPHY=y
 
 #
@@ -137,10 +152,17 @@ CONFIG_DRIVER_NET_SMC911X=y
 CONFIG_DRIVER_NET_SMC911X_ADDRESS_SHIFT=1
 
 #
+# SPI drivers                   
+#
+CONFIG_SPI=y
+# CONFIG_DRIVER_SPI_MC13783 is not set
+
+#
 # flash drivers                 
 #
 CONFIG_DRIVER_CFI=y
 # CONFIG_DRIVER_CFI_NEW is not set
+CONFIG_DRIVER_CFI_OLD=y
 CONFIG_CFI_BUFFER_WRITE=y
 # CONFIG_NAND is not set
 

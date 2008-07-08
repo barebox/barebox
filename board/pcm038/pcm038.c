@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright (C) 2007 Sascha Hauer, Pengutronix 
  *
  * This program is free software; you can redistribute it and/or
@@ -132,7 +132,7 @@ static int pcm038_devices_init(void)
 	register_device(&spi_dev);
 #endif
 
-#ifdef CONDFIG_PARTITION
+#ifdef CONFIG_PARTITION
 	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
 #endif

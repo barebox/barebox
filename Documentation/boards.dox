@@ -21,6 +21,11 @@ Blackfin type:
 
 x86 type:
 
+coldfire/m68k type:
+
+- @subpage phycore_mcf54xx
+- @subpage kp_ukd_r1
+
 */
 
 /* TODO

@@ -786,7 +786,7 @@ include/asm:
 	@ln -fsn asm-$(ARCH) $@
 
 include/config.h:
-	@echo '  SYMLINK $@ -> include/configs/$(board-y).h'
+	@echo '  SYMLINK $@ -> board/$(board-y)/config.h'
 ifneq ($(KBUILD_SRC),)
 	$(Q)ln -fsn $(srctree)/board/$(board-y)/config.h $@
 else

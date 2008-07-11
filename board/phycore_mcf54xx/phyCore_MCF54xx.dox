@@ -1,5 +1,5 @@
 
-/** @page phycore_mcf54xx Phytec's phyCORE Baseboard
+/** @page phycore_mcf54xx Phytec's phyCORE-MCF54x5
 
 This target is based on a PhyTec PhyCore MCF54x5 CPU module. The card is shipped with:
 

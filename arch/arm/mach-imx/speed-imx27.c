@@ -136,6 +136,12 @@ ulong imx_get_perclk4(void)
 
 int imx_dump_clocks(void)
 {
+	uint32_t	cid = CID;
+
+	printf("chip id: [%d,%03x,%d,%03x]\n",
+	       (cid >> 28) & 0xf, (cid >> 16) & 0xfff,
+	       (cid >> 12) & 0xf, (cid >>  0) & 0xfff);
+
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
 	printf("spll:    %10d Hz\n", imx_get_spllclk());
 	printf("arm:     %10d Hz\n", imx_get_armclk());

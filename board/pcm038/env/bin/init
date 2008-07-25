@@ -29,7 +29,7 @@ timeout -a $autoboot_timeout
 if [ $? != 0 ]; then
 	echo
 	echo "type update_kernel [<imagename>] to update kernel into flash"
-	echo "type udate_root [<imagename>] to update rootfs into flash"
+	echo "type update_root [<imagename>] to update rootfs into flash"
 	echo
 	exit
 fi

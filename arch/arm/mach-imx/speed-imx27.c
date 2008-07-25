@@ -93,6 +93,7 @@ ulong imx_get_ipgclk(void)
 ulong imx_get_spllclk(void)
 {
 	ulong cscr = CSCR;
+	ulong spctl0;
 	ulong fref;
 
 	if (cscr & CSCR_SP_SEL)
@@ -100,7 +101,9 @@ ulong imx_get_spllclk(void)
 	else
 		fref = clk_in_32k();
 
-	return imx_decode_pll(SPCTL0, fref);
+	spctl0 = SPCTL0;
+	SPCTL0 = spctl0;
+	return imx_decode_pll(spctl0, fref);
 }
 
 static ulong imx_decode_perclk(ulong div)

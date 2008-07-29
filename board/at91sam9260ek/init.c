@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Sascha Hauer, Pengutronix 
+ * Copyright (C) 2007 Sascha Hauer, Pengutronix
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -98,7 +98,7 @@ static struct device_d macb_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
-static int pcm038_devices_init(void)
+static int at91sam9260ek_devices_init(void)
 {
 	register_device(&sdram_dev);
 	register_device(&nand_dev);
@@ -110,9 +110,9 @@ static int pcm038_devices_init(void)
 	return 0;
 }
 
-device_initcall(pcm038_devices_init);
+device_initcall(at91sam9260ek_devices_init);
 
-static struct device_d pcm038_serial_device = {
+static struct device_d at91sam9260ek_serial_device = {
 	.name     = "atmel_serial",
 	.id       = "cs0",
 	.map_base = USART3_BASE,
@@ -120,10 +120,10 @@ static struct device_d pcm038_serial_device = {
 	.type     = DEVICE_TYPE_CONSOLE,
 };
 
-static int pcm038_console_init(void)
+static int at91sam9260ek_console_init(void)
 {
-	register_device(&pcm038_serial_device);
+	register_device(&at91sam9260ek_serial_device);
 	return 0;
 }
 
-console_initcall(pcm038_console_init);
+console_initcall(at91sam9260ek_console_init);

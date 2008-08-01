@@ -40,12 +40,15 @@
  */
 
 #include <net.h>
+#include <clock.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>
 #include <miiphy.h>
+#include <errno.h>
 #include <asm/io.h>
 #include <asm/arch/clk.h>
+#include <asm/arch/ether.h>
 
 #include "macb.h"
 
@@ -98,7 +101,9 @@ struct macb_device {
 	struct eth_device	netdev;
 	unsigned short		phy_addr;
 
-	struct miiphy_device miiphy;
+	struct miiphy_device	miiphy;
+
+	unsigned int		flags;
 };
 
 static int macb_send(struct eth_device *edev, void *packet,
@@ -229,7 +234,7 @@ static int macb_open(struct eth_device *edev)
 static int macb_init(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
-	unsigned long paddr;
+	unsigned long paddr, val = 0;
 	int i;
 
 	debug("%s\n", __func__);
@@ -257,23 +262,13 @@ static int macb_init(struct eth_device *edev)
 	writel((ulong)macb->rx_ring, macb->regs + MACB_RBQP);
 	writel((ulong)macb->tx_ring, macb->regs + MACB_TBQP);
 
-	/* choose RMII or MII mode. This depends on the board */
-#define CONFIG_RMII
-#define CONFIG_AT91SAM9260
+	if (macb->flags & AT91SAM_ETHER_RMII)
+		val |= MACB_BIT(RMII);
 
-#ifdef CONFIG_RMII
-#if defined(CONFIG_AT91CAP9) || defined(CONFIG_AT91SAM9260)
-	writel(MACB_BIT(RMII) | MACB_BIT(CLKEN), macb->regs + MACB_USRIO);
-#else
-	writel(0, macb->regs + MACB_USRIO);
+#if defined(CONFIG_ARCH_AT91SAM9)
+	val |= MACB_BIT(CLKEN);
 #endif
-#else
-#if defined(CONFIG_AT91CAP9) || defined(CONFIG_AT91SAM9260)
-	writel(MACB_BIT(CLKEN), macb->regs + MACB_USRIO);
-#else
-	writel(MACB_BIT(MII), macb->regs + MACB_USRIO);
-#endif
-#endif /* CONFIG_RMII */
+	writel(val, macb->regs + MACB_USRIO);
 
 	/* Enable TX and RX */
 	writel(MACB_BIT(TE) | MACB_BIT(RE), macb->regs + MACB_NCR);
@@ -309,6 +304,7 @@ static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
 	unsigned long netstat;
 	unsigned long frame;
 	int iflag;
+	uint64_t start;
 
 	debug("%s\n", __func__);
 
@@ -326,8 +322,13 @@ static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
 		 | MACB_BF(CODE, 2));
 	writel(frame, macb->regs + MACB_MAN);
 
+	start = get_time_ns();
 	do {
 		netstat = readl(macb->regs + MACB_NSR);
+		if (is_timeout(start, SECOND)) {
+			printf("phy read timed out\n");
+			return -1;
+		}
 	} while (!(netstat & MACB_BIT(IDLE)));
 
 	frame = readl(macb->regs + MACB_MAN);
@@ -411,6 +412,13 @@ static int macb_probe(struct device_d *dev)
 	struct macb_device *macb;
 	unsigned long macb_hz;
 	u32 ncfgr;
+	struct at91sam_ether_platform_data *pdata;
+
+	if (!dev->platform_data) {
+		printf("macb: no platform_data\n");
+		return -ENODEV;
+	}
+	pdata = dev->platform_data;
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct macb_device));
 	dev->type_data = edev;
@@ -431,13 +439,14 @@ static int macb_probe(struct device_d *dev)
 	macb->miiphy.address = 0;
 	macb->miiphy.flags = 0;
 	macb->miiphy.edev = edev;
+	macb->flags = pdata->flags;
 
 	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE); 
 	macb->rx_ring = xmalloc(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
 	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
 
 	macb->regs = (void *)dev->map_base;
-	macb->phy_addr = 0; /* FIXME */
+	macb->phy_addr = pdata->phy_addr;
 
 	/*
 	 * Do some basic initialization so that we at least can talk
@@ -469,6 +478,7 @@ static struct driver_d macb_driver = {
 
 static int macb_driver_init(void)
 {
+	debug("%s\n", __func__);
         register_driver(&macb_driver);
         return 0;
 }

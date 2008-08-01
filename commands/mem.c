@@ -110,7 +110,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
-int open_and_lseek(const char *filename, int mode, ulong pos)
+int open_and_lseek(const char *filename, int mode, off_t pos)
 {
 	int fd, ret;
 
@@ -122,9 +122,9 @@ int open_and_lseek(const char *filename, int mode, ulong pos)
 
 	if (!pos)
 		return fd;
-
+printf("lseek to 0x%08x\n", pos);
 	ret = lseek(fd, pos, SEEK_SET);
-	if (ret < 0) {
+	if (ret == -1) {
 		perror("lseek");
 		close(fd);
 		return ret;
@@ -532,7 +532,7 @@ static struct driver_d mem_drv = {
 	.close = dev_close_default,
 	.read  = mem_read,
 	.write = mem_write,
-	.lseek  = dev_lseek_default,
+	.lseek = dev_lseek_default,
 };
 
 static struct driver_d ram_drv = {
@@ -542,7 +542,7 @@ static struct driver_d ram_drv = {
 	.close = dev_close_default,
 	.read  = mem_read,
 	.write = mem_write,
-	.lseek  = dev_lseek_default,
+	.lseek = dev_lseek_default,
 	.type  = DEVICE_TYPE_DRAM,
 };
 

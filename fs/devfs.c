@@ -47,11 +47,11 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 {
 	struct device_d *dev = f->inode;
-	int ret;
+	off_t ret;
 
 	ret = dev_lseek(dev, pos);
 
-	if (ret >= 0)
+	if (ret != -1)
 		f->pos = pos;
 
 	return ret;

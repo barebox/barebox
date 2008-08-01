@@ -217,7 +217,7 @@ off_t dev_lseek(struct device_d *dev, off_t offset)
 	if (dev->driver->lseek)
 		return dev->driver->lseek(dev, offset);
 	errno = -ENOSYS;
-	return -ENOSYS;
+	return -1;
 }
 
 int dev_open(struct device_d *dev, struct filep *f)

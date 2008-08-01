@@ -516,14 +516,16 @@ off_t lseek(int fildes, off_t offset, int whence)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fildes];
-	ulong pos;
+	off_t pos;
 
 	errno = 0;
 
 	dev = f->dev;
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
-	if (!fsdrv->lseek)
-		return -ENOSYS;
+	if (!fsdrv->lseek) {
+		errno = -ENOSYS;
+		return -1;
+	}
 
 	switch(whence) {
 	case SEEK_SET:
@@ -549,7 +551,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 
 out:
 	errno = -EINVAL;
-	return errno;
+	return -1;
 }
 EXPORT_SYMBOL(lseek);
 

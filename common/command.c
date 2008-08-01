@@ -33,13 +33,16 @@
 #include <list.h>
 #include <init.h>
 #include <complete.h>
+#include <linux/utsrelease.h>
+
+const char version_string[] =
+	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
 
 LIST_HEAD(command_list);
 EXPORT_SYMBOL(command_list);
 
 static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	extern char version_string[];
 	printf ("\n%s\n", version_string);
 	return 0;
 }

@@ -223,6 +223,20 @@ config TIMESTAMP
 	  commands like bootm or iminfo. This option is
 	  automatically enabled when you select CFG_CMD_DATE .
 
+config CONSOLE_FULL
+	bool
+	default y
+	prompt "Enable full console support"
+	help
+	  This option enables full console support capable of
+	  handling multiple consoles.
+
+config CONSOLE_SIMPLE
+	bool
+	default y
+	depends on !CONSOLE_FULL
+
+
 config CONSOLE_ACTIVATE_FIRST
 	bool
 	default y

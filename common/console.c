@@ -35,7 +35,6 @@
 #include <kfifo.h>
 #include <module.h>
 #include <list.h>
-#include <linux/utsrelease.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -44,8 +43,7 @@ EXPORT_SYMBOL(console_list);
 #define CONSOLE_INIT_EARLY	1
 #define CONSOLE_INIT_FULL	2
 
-const char version_string[] =
-	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
+extern char version_string[];
 
 static void display_banner (void)
 {

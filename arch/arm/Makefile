@@ -16,6 +16,7 @@ board-$(CONFIG_MACH_NXDB500)       := netx
 board-$(CONFIG_MACH_PCM037)	   := pcm037
 board-$(CONFIG_MACH_OMAP)	   := omap
 board-$(CONFIG_MACH_AT91SAM9260_EK):= at91sam9260ek
+board-$(CONFIG_MACH_PM9263)        := pm9263
 
 # FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t

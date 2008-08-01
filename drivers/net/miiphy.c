@@ -173,6 +173,8 @@ int miiphy_register(struct miiphy_device *mdev)
 static struct driver_d miiphy_drv = {
         .name  = "miiphy",
         .probe = miiphy_probe,
+	.open  = dev_open_default,
+	.close = dev_close_default,
 	.read  = miiphy_read,
 	.write = miiphy_write,
 	.type  = DEVICE_TYPE_MIIPHY,

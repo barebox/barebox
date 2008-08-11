@@ -27,6 +27,7 @@ int is_timeout(uint64_t start_ns, uint64_t time_offset_ns);
 
 // void udelay(unsigned long usecs);
 
+void ndelay(unsigned long nsecs);
 void mdelay(unsigned long msecs);
 
 #define SECOND ((uint64_t)(1000 * 1000 * 1000))

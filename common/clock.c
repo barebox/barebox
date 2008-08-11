@@ -92,6 +92,14 @@ int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 }
 EXPORT_SYMBOL(is_timeout);
 
+void ndelay(unsigned long nsecs)
+{
+	uint64_t start = get_time_ns();
+
+	while(!is_timeout(start, nsecs));
+}
+EXPORT_SYMBOL(ndelay);
+
 void udelay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();

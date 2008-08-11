@@ -34,7 +34,9 @@
 #define DEVICE_TYPE_BLOCK	4
 #define DEVICE_TYPE_FS		5
 #define DEVICE_TYPE_MIIPHY	6
-#define MAX_DEVICE_TYPE         6
+#define DEVICE_TYPE_NAND	7
+#define DEVICE_TYPE_NAND_BB	8
+#define MAX_DEVICE_TYPE         8
 
 #include <param.h>
 

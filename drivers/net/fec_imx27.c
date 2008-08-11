@@ -195,7 +195,7 @@ static int fec_rbd_init(fec_priv *fec, int count, int size)
  *
  * Transmit buffers are created externally. We only have to init the BDs here.\n
  * Note: There is a race condition in the hardware. When only one BD is in
- * use it must be marked with the WRAP bit to use it for every transmitt.
+ * use it must be marked with the WRAP bit to use it for every transmit.
  * This bit in combination with the READY bit results into double transmit
  * of each data buffer. It seems the state machine checks READY earlier then
  * resetting it after the first transfer.
@@ -446,8 +446,9 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1))
-		printf("%s: Warning: Transmitt data not aligned!\n", __FUNCTION__);
+	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1)) {
+		printf("%s: Warning: Transmit data not aligned: %p!\n", __FUNCTION__, eth_data);
+	}
 
 	/*
 	 * Setup the transmitt buffer
@@ -501,7 +502,6 @@ static int fec_recv(struct eth_device *dev)
 	int frame_length, len = 0;
 	NBUF *frame;
 	uint16_t bd_status;
-	uchar buff[FEC_MAX_PKT_SIZE];
 
 	/*
 	 * Check if any critical events have happened
@@ -542,11 +542,8 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			frame = (NBUF *)readl(&rbd->data_pointer);
 			frame_length = readw(&rbd->data_length) - 4;
-			/*
-			 *  Fill the buffer and pass it to upper layers
-			 */
-			memcpy(buff, frame->data, frame_length);
-			NetReceive(buff, frame_length);
+
+			NetReceive(frame->data, frame_length);
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {

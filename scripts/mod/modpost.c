@@ -1391,7 +1391,7 @@ static void add_header(struct buffer *b, struct module *mod)
 {
 	buf_printf(b, "#include <module.h>\n");
 //	buf_printf(b, "#include <linux/vermagic.h>\n");
-	buf_printf(b, "#include <compiler.h>\n");
+	buf_printf(b, "#include <linux/compiler.h>\n");
 	buf_printf(b, "\n");
 //	buf_printf(b, "MODULE_INFO(vermagic, VERMAGIC_STRING);\n");
 	buf_printf(b, "\n");

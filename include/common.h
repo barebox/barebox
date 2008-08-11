@@ -25,7 +25,7 @@
 #define __COMMON_H_	1
 
 #include <stdio.h>
-#include <compiler.h>
+#include <linux/compiler.h>
 #include <module.h>
 #include <config.h>
 #include <linux/bitops.h>

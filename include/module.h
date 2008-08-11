@@ -2,7 +2,7 @@
 #define __MODULE_H
 
 #include <elf.h>
-#include <compiler.h>
+#include <linux/compiler.h>
 #include <list.h>
 
 #ifndef MODULE_SYMBOL_PREFIX

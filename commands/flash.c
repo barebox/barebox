@@ -43,6 +43,7 @@ static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char *filename = NULL;
 	struct stat s;
 	unsigned long start = 0, size = ~0;
+	int ret = 0;
 
 	if (argc == 1) {
 		u_boot_cmd_usage(cmdtp);
@@ -69,20 +70,20 @@ static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	if (argc == 3)
-		if (parse_area_spec(argv[2], &start, &size)) {
-			printf("could not parse: %s\n", argv[optind]);
-			return 1;
-		}
-
-	if(erase(fd, size, start)) {
-		perror("erase");
-		return 1;
+	if (argc == 3 && parse_area_spec(argv[2], &start, &size)) {
+		printf("could not parse: %s\n", argv[optind]);
+		ret = 1;
+		goto out;
 	}
 
+	if (erase(fd, size, start)) {
+		perror("erase");
+		ret = 1;
+	}
+out:
 	close(fd);
 
-	return 0;
+	return ret;
 }
 
 static const __maybe_unused char cmd_erase_help[] =

@@ -25,12 +25,12 @@
 #define __COMMON_H_	1
 
 #include <stdio.h>
-#include <linux/compiler.h>
 #include <module.h>
 #include <config.h>
 #include <linux/bitops.h>
 #include <linux/types.h>
 #include <linux/string.h>
+#include <linux/kernel.h>
 #include <asm/common.h>
 
 #ifdef	DEBUG
@@ -50,18 +50,6 @@
 typedef void (interrupt_handler_t)(void *);
 
 #include <asm/u-boot.h> /* boot information for Linux kernel */
-
-/*
- * General Purpose Utilities
- */
-#define min(X, Y)				\
-	({ typeof (X) __x = (X), __y = (Y);	\
-		(__x < __y) ? __x : __y; })
-
-#define max(X, Y)				\
-	({ typeof (X) __x = (X), __y = (Y);	\
-		(__x > __y) ? __x : __y; })
-
 
 /*
  * Function Prototypes

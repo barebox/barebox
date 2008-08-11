@@ -33,45 +33,43 @@
 
 static 	ssize_t nand_read(struct device_d *dev, void* buf, size_t count, ulong offset, ulong flags)
 {
-	struct nand_chip *nand = dev->priv;
+	struct mtd_info *info = dev->priv;
 	size_t retlen;
 	int ret;
 
-	printf("nand_read: 0x%08x 0x%08x\n", offset, count);
+	debug("nand_read: 0x%08x 0x%08x\n", offset, count);
 
-	ret = nand->read(nand, offset, count, &retlen, buf);
+	ret = info->read(info, offset, count, &retlen, buf);
 
 	if(ret)
 		return ret;
 	return retlen;
 }
 
-#define NOTALIGNED(x) (x & (nand->oobblock-1)) != 0
+#define NOTALIGNED(x) (x & (info->writesize - 1)) != 0
 
 static ssize_t nand_write(struct device_d* dev, const void* buf, size_t _count, ulong offset, ulong flags)
 {
-	struct nand_chip *nand = dev->priv;
+	struct mtd_info *info = dev->priv;
 	size_t retlen, now;
 	int ret;
 	void *wrbuf = NULL;
 	size_t count = _count;
 
-	printf("write: 0x%08x 0x%08x\n", offset, count);
+	debug("write: 0x%08x 0x%08x\n", offset, count);
 
 	while (count) {
-		now = count > nand->oobblock ? nand->oobblock : count;
-		
+		now = count > info->writesize ? info->writesize : count;
+
 		if (NOTALIGNED(now) || NOTALIGNED(offset)) {
-			printf("not aligned: %d %d\n", nand->oobblock, (offset % nand->oobblock));
-			wrbuf = xmalloc(nand->oobblock);
-			memset(wrbuf, 0xff, nand->oobblock);
-			memcpy(wrbuf + (offset % nand->oobblock), buf, now);
-			ret = nand->write_ecc(nand, offset & ~(nand->oobblock - 1), nand->oobblock, &retlen, wrbuf,
-				NULL, &nand->oobinfo);
+			debug("not aligned: %d %d\n", info->writesize, (offset % info->writesize));
+			wrbuf = xmalloc(info->writesize);
+			memset(wrbuf, 0xff, info->writesize);
+			memcpy(wrbuf + (offset % info->writesize), buf, now);
+			ret = info->write(info, offset & ~(info->writesize - 1), info->writesize, &retlen, wrbuf);
 		} else {
-			ret = nand->write_ecc(nand, offset, now, &retlen, buf,
-				NULL, &nand->oobinfo);
-			printf("huhu offset: 0x%08x now: 0x%08x retlen: 0x%08x\n", offset, now, retlen);
+			ret = info->write(info, offset, now, &retlen, buf);
+			debug("offset: 0x%08x now: 0x%08x retlen: 0x%08x\n", offset, now, retlen);
 		}
 		if (ret)
 			goto out;
@@ -90,22 +88,22 @@ out:
 
 static int nand_ioctl(struct device_d *dev, int request, void *buf)
 {
-	struct nand_chip *nand = dev->priv;
-	struct mtd_info_user *info = buf;
+	struct mtd_info *info = dev->priv;
+	struct mtd_info_user *user = buf;
 
 	switch (request) {
 	case MEMGETBADBLOCK:
-		printf("MEMGETBADBLOCK: 0x%08x\n", (off_t)buf);
-		return nand->block_isbad(nand, (off_t)buf);
+		debug("MEMGETBADBLOCK: 0x%08x\n", (off_t)buf);
+		return info->block_isbad(info, (off_t)buf);
 	case MEMGETINFO:
-		info->type	= nand->type;
-		info->flags	= nand->flags;
-		info->size	= nand->size;
-		info->erasesize	= nand->erasesize;
-		info->oobsize	= nand->oobsize;
+		user->type	= info->type;
+		user->flags	= info->flags;
+		user->size	= info->size;
+		user->erasesize	= info->erasesize;
+		user->oobsize	= info->oobsize;
 		/* The below fields are obsolete */
-		info->ecctype	= -1;
-		info->eccsize	= 0;
+		user->ecctype	= -1;
+		user->eccsize	= 0;
 		return 0;
 	}
 
@@ -114,73 +112,33 @@ static int nand_ioctl(struct device_d *dev, int request, void *buf)
 
 static ssize_t nand_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
-	struct nand_chip *nand = dev->priv;
+	struct mtd_info *info = dev->priv;
 	struct erase_info erase;
 	int ret;
 
 	memset(&erase, 0, sizeof(erase));
-	erase.nand = nand;
+	erase.mtd = info;
 	erase.addr = offset;
-	erase.len = nand->erasesize;
+	erase.len = info->erasesize;
 
 	while (count > 0) {
 		debug("erase %d %d\n", erase.addr, erase.len);
 
-		ret = nand->block_isbad(nand, erase.addr);
+		ret = info->block_isbad(info, erase.addr);
 		if (ret > 0) {
 			printf("Skipping bad block at 0x%08x\n", erase.addr);
 		} else {
-			ret = nand->erase(nand, &erase);
+			ret = info->erase(info, &erase);
 			if (ret)
 				return ret;
 		}
 
-		erase.addr += nand->erasesize;
-		count -= count > nand->erasesize ? nand->erasesize : count;
+		erase.addr += info->erasesize;
+		count -= count > info->erasesize ? info->erasesize : count;
 	}
 
 	return 0;
 }
-
-static int nand_controller_probe(struct device_d *dev)
-{
-	struct nand_chip *nand;
-	struct nand_platform_data *pdata = dev->platform_data;
-	int ret;
-
-	nand = xzalloc(sizeof(*nand));
-	dev->priv = nand;
-
-	nand->IO_ADDR_R = nand->IO_ADDR_W = (void *)dev->map_base;
-	nand->hwcontrol = pdata->hwcontrol;
-	nand->eccmode = pdata->eccmode;
-	nand->dev_ready = pdata->dev_ready;
-	nand->chip_delay = pdata->chip_delay;
-
-	ret = nand_scan(nand, 1);
-	if (ret)
-		goto out;
-
-	strcpy(nand->dev.name, "nand_device");
-	get_free_deviceid(nand->dev.id, "nand");
-	nand->dev.size = nand->chipsize;
-	nand->dev.priv = nand;
-
-	ret = register_device(&nand->dev);
-	if (ret)
-		goto out;
-
-	return 0;
-
-out:
-	free(nand);
-	return ret;
-}
-
-static struct driver_d nand_controller_driver = {
-	.name   = "nand_controller",
-	.probe  = nand_controller_probe,
-};
 
 static int nand_device_probe(struct device_d *dev)
 {
@@ -197,16 +155,48 @@ static struct driver_d nand_device_driver = {
 	.close  = dev_close_default,
 	.lseek  = dev_lseek_default,
 	.erase  = nand_erase,
-//	.info   = nand_info,
+	.type	= DEVICE_TYPE_NAND,
 };
 
 static int nand_init(void)
 {
 	register_driver(&nand_device_driver);
-	register_driver(&nand_controller_driver);
 
 	return 0;
 }
 
 device_initcall(nand_init);
+
+int add_mtd_device(struct mtd_info *mtd) {
+	struct device_d *dev;
+	int ret;
+
+	dev = xzalloc(sizeof(*dev));
+
+	strcpy(dev->name, "nand_device");
+	get_free_deviceid(dev->id, "nand");
+
+	dev->size = mtd->size;
+	dev->type = DEVICE_TYPE_NAND;
+	dev->priv = mtd;
+	mtd->dev = dev;
+
+	ret = register_device(dev);
+	if (ret)
+		goto out;
+
+	return 0;
+
+out:
+	free(dev);
+	return ret;
+}
+
+int del_mtd_device (struct mtd_info *mtd)
+{
+	unregister_device(mtd->dev);
+	free(mtd->dev);
+
+	return 0;
+}
 

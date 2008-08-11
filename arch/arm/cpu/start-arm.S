@@ -80,19 +80,24 @@ _fiq:			.word fiq
  *************************************************************************
  */
 
-_TEXT_BASE:
-	.word	TEXT_BASE
-
+/*
+ * These are defined in the board-specific linker script.
+ */
 .globl _u_boot_start
 _u_boot_start:
 	.word _start
 
-#ifndef CONFIG_STACKSIZE_IRQ
-#define CONFIG_STACKSIZE_IRQ 0
-#endif
-#ifndef CONFIG_STACKSIZE_FIQ
-#define CONFIG_STACKSIZE_FIQ 0
-#endif
+.globl _bss_start
+_bss_start:
+	.word __bss_start
+
+.globl _bss_end
+_bss_end:
+	.word _end
+
+
+_TEXT_BASE:
+	.word TEXT_BASE
 
 _MALLOC_BASE:
 	.word MALLOC_BASE
@@ -109,17 +114,6 @@ IRQ_STACK_START:
 FIQ_STACK_START:
 	.word STACK_BASE + CONFIG_STACKSIZE_IRQ + CONFIG_STACKSIZE_FIQ - 4
 #endif
-
-/*
- * These are defined in the board-specific linker script.
- */
-.globl _bss_start
-_bss_start:
-	.word __bss_start
-
-.globl _bss_end
-_bss_end:
-	.word _end
 
 /*************************************************************************
  * the actual reset code
@@ -150,28 +144,28 @@ reset:
 	mrc	p15, 1, r0, c0, c0, 1	/* read clidr */
 	ands	r3, r0, #0x7000000	/* extract loc from clidr */
 	mov	r3, r3, lsr #23		/* left align loc bit field */
-	beq	finished_inval	/* if loc is 0, then no need to clean */
+	beq	finished_inval		/* if loc is 0, then no need to clean */
 	mov	r10, #0			/* start clean at cache level 0 */
 inval_loop1:
 	add	r2, r10, r10, lsr #1	/* work out 3x current cache level */
-	mov	r1, r0, lsr r2	/* extract cache type bits from clidr */
-	and	r1, r1, #7	/* mask of the bits for current cache only */
-	cmp	r1, #2		/* see what cache we have at this level */
+	mov	r1, r0, lsr r2		/* extract cache type bits from clidr */
+	and	r1, r1, #	7	/* mask of the bits for current cache only */
+	cmp	r1, #2			/* see what cache we have at this level */
 	blt	skip_inval		/* skip if no cache, or just i-cache */
 	mcr	p15, 2, r10, c0, c0, 0	/* select current cache level in cssr */
 	isb				/* isb to sych the new cssr&csidr */
 	mrc	p15, 1, r1, c0, c0, 0	/* read the new csidr */
-	and	r2, r1, #7	  /* extract the length of the cache lines */
+	and	r2, r1, #7		/* extract the length of the cache lines */
 	add	r2, r2, #4		/* add 4 (line length offset) */
 	ldr	r4, =0x3ff
 	ands	r4, r4, r1, lsr #3	/* find maximum number on the way size*/
-	clz	r5, r4		/* find bit position of way size increment */
+	clz	r5, r4			/* find bit position of way size increment */
 	ldr	r7, =0x7fff
-	ands	r7, r7, r1, lsr #13 /* extract max number of the index size */
+	ands	r7, r7, r1, lsr #13	/* extract max number of the index size */
 inval_loop2:
-	mov	r9, r4		/* create working copy of max way size */
+	mov	r9, r4			/* create working copy of max way size */
 inval_loop3:
-	orr	r11, r10, r9, lsl r5  /* factor way and cache number into r11*/
+	orr	r11, r10, r9, lsl r5	/* factor way and cache number into r11*/
 	orr	r11, r11, r7, lsl r2	/* factor index number into r11 */
 	mcr	p15, 0, r11, c7, c6, 2	/* invalidate by set/way */
 	subs	r9, r9, #1		/* decrement the way */
@@ -243,11 +237,13 @@ clear_bss:
 	ldr	r1, _bss_end		/* stop here                        */
 	mov 	r2, #0x00000000		/* clear                            */
 
-clbss_l:str	r2, [r0]		/* clear loop...                    */
+clbss_l:
+	str	r2, [r0]		/* clear loop...                    */
 	add	r0, r0, #4
 	cmp	r0, r1
 	ble	clbss_l
 
 	ldr	pc, _start_armboot
 
-_start_armboot:	.word start_uboot
+_start_armboot:
+	.word start_uboot

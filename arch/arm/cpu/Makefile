@@ -1,4 +1,4 @@
-obj-y += cpu.o
+obj-y += cpu.o exceptions.o
 obj-y += interrupts.o
 
 #

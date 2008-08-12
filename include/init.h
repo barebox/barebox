@@ -15,5 +15,14 @@ typedef int (*initcall_t)(void);
 #define device_initcall(fn)		__define_initcall("5",fn,5)
 #define late_initcall(fn)		__define_initcall("6",fn,6)
 
+/* section for code used very early when
+ * - we're not running from where we linked at
+ * - bss not cleared
+ * - static variables not initialized
+ *
+ * Mainly useful for booting from NAND Controllers
+ */
+#define __bare_init          __section(.text_bare_init.text)
+
 #endif /* _INIT_H */
 

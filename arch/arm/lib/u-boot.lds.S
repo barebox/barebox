@@ -37,6 +37,7 @@ SECTIONS
 		_stext = .;
 		_text = .;
 		*(.text_entry*)
+		*(.text_bare_init*)
 		*(.text*)
 	}
 

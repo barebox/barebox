@@ -33,14 +33,15 @@
 	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0) /* precharge CSD0 all banks */
 	writel(0x00000000, 0xA0000F00)	/* CSD0 precharge address (A10 = 1) */
 	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH, ESDCTL0)
-	writel(0x00000000, 0xA0000F00)	/* run auto-refresh cycle to array 0 */
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
-	writel(0x00000000, 0xA0000F00)
+
+	ldr	r0, =0xa0000f00
+	mov	r1, #0
+	mov	r2, #8
+1:
+	str	r1, [r0]
+	subs	r2, #1
+	bne	1b
+
 	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE, ESDCTL0)
 	ldr		r0, =0xA0000033
 	mov		r1, #0xda
@@ -50,6 +51,8 @@
 	strb		r1, [r0]
 	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 | ESDCTL0_BL | ESDCTL0_SMODE_NORMAL, ESDCTL0)
 .endm
+
+	.section ".text_bare_init","ax"
 
 .globl board_init_lowlevel
 board_init_lowlevel:
@@ -62,67 +65,6 @@ board_init_lowlevel:
 	writel(0x00000000, AIPI2_PSR0)
 	writel(0xFFFFFFFF, AIPI2_PSR1)
 
-	/* disable mpll/spll */
-	ldr r0, =CSCR
-	ldr r1, [r0]
-	bic r1, r1, #0x03
-	str r1, [r0]
-
-	/*
-	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
-	 */
-	writel(PLL_PCTL_PD(1) |		\
-		PLL_PCTL_MFD(51) |	\
-		PLL_PCTL_MFI(7) |	\
-		PLL_PCTL_MFN(35),	\
-		MPCTL0)	              /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
-
-	writel(PLL_PCTL_PD(1) |		\
-		PLL_PCTL_MFD(12) |	\
-		PLL_PCTL_MFI(9) |	\
-		PLL_PCTL_MFN(3),	\
-		SPCTL0)	              /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
-
-	/*
-	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
-	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
-	 * System clock (HCLK) = 133 MHz
-	 */
-#define CSCR_VAL CSCR_USB_DIV(3) |	\
-		 CSCR_SD_CNT(3) |	\
-		 CSCR_MSHC_SEL |	\
-		 CSCR_H264_SEL |	\
-		 CSCR_SSI1_SEL |	\
-		 CSCR_SSI2_SEL |	\
-		 CSCR_MCU_SEL |		\
-		 CSCR_SP_SEL |		\
-		 CSCR_ARM_SRC_MPLL |	\
-		 CSCR_AHB_DIV(1) |	\
-		 CSCR_ARM_DIV(0) |	\
-		 CSCR_FPM_EN |		\
-		 CSCR_SPEN |		\
-		 CSCR_MPEN
-
-	writel(CSCR_VAL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART, CSCR)
-
-	/* add some delay here */
-	mov r1, #0x8000
-1:	subs r1, r1, #0x1
-	bne 1b
-
-	/* clock gating enable */
-	writel(0x00050f08, GPCR)
-
-	/* peripheral clock divider */
-	writel(0x130410c3, PCDR0)	/* FIXME                            */
-	writel(0x09030908, PCDR1)	/* PERDIV1=08 @133 MHz              */
-					/* PERDIV1=04 @266 MHz              */
-
-	/* configure 16 bit nor flash on cs0 */
-	writel(0x0000CC03, 0xD8002000)
-	writel(0xa0330D01, 0xD8002004)
-	writel(0x00220800, 0xD8002008)
-
 	/* skip sdram initialization if we run from ram */
 	cmp	pc, #0xa0000000
 	bls	1f
@@ -133,5 +75,37 @@ board_init_lowlevel:
 1:
 	sdram_init
 
+#ifdef CONFIG_NAND_IMX_BOOT
+	ldr	sp, =0xa0f00000		/* Setup a temporary stack in SDRAM */
+
+	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
+	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
+
+	/* skip NAND boot if not running from NFC space */
+	cmp	pc, r0
+	bls	ret
+	cmp	pc, r2
+	bhi	ret
+
+	/* Move ourselves out of NFC SRAM */
+	ldr	r1, =TEXT_BASE
+
+copy_loop:
+	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
+	stmia	r1!, {r3-r9}		/* copy to   target address [r1]    */
+	cmp	r0, r2			/* until source end addreee [r2]    */
+	ble	copy_loop
+
+	ldr	pc, =1f			/* Jump to SDRAM                    */
+1:
+	bl	nand_boot		/* Load U-Boot from NAND Flash      */
+
+	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
+	sub	r10, r10, r1		/* adjust return address from NFC SRAM */
+					/* to SDRAM                            */
+
+#endif /* CONFIG_NAND_IMX_BOOT */
+
+ret:
 	mov	pc,r10
 

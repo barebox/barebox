@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <spi/spi.h>
 #include <asm/io.h>
+#include <asm/arch/imx-nand.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -65,7 +66,7 @@ static struct device_d fec_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
-#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
+#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
 static struct device_d spi_dev = {
 	.name     = "imx_spi",
 	.id       = "spi0",
@@ -81,6 +82,17 @@ static struct spi_board_info pcm038_spi_board_info[] = {
 	}
 };
 #endif
+
+struct imx_nand_platform_data nand_info = {
+	.width = 1,
+	.hw_ecc = 1,
+};
+
+static struct device_d nand_dev = {
+	.name     = "imx_nand",
+	.map_base = 0xd8000000,
+	.platform_data	= &nand_info,
+};
 
 static int pcm038_devices_init(void)
 {
@@ -117,17 +129,23 @@ static int pcm038_devices_init(void)
 		PD31_PF_CSPI1_MOSI,
 	};
 
+	/* configure 16 bit nor flash on cs0 */
+	writel(0x0000CC03, 0xD8002000);
+	writel(0xa0330D01, 0xD8002004);
+	writel(0x00220800, 0xD8002008);
+
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);
+	register_device(&nand_dev);
 	register_device(&sdram_dev);
 
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
-#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
+#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	register_device(&spi_dev);
 #endif
@@ -164,7 +182,7 @@ console_initcall(pcm038_console_init);
 
 static int pcm038_power_init(void)
 {
-#if defined CONFIG_DRIVER_SPI_IMX && defined DRIVER_SPI_MC13783
+#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
 	volatile int i = 0;
 	int ret;
 
@@ -216,4 +234,67 @@ out:
 }
 
 late_initcall(pcm038_power_init);
+
+#ifdef CONFIG_NAND_IMX_BOOT
+void __bare_init nand_boot(void)
+{
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, 512, 16384);
+}
+#endif
+
+static int pll_init(void)
+{
+	volatile int i = 0;
+
+	CSCR &= ~0x3;
+
+	/*
+	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
+	 */
+	MPCTL0 = PLL_PCTL_PD(1) |
+		 PLL_PCTL_MFD(51) |
+		 PLL_PCTL_MFI(7) |
+		 PLL_PCTL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
+
+	SPCTL0 = PLL_PCTL_PD(1) |
+		 PLL_PCTL_MFD(12) |
+		 PLL_PCTL_MFI(9) |
+		 PLL_PCTL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
+
+	/*
+	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
+	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
+	 * System clock (HCLK) = 133 MHz
+	 */
+#define CSCR_VAL CSCR_USB_DIV(3) |	\
+		 CSCR_SD_CNT(3) |	\
+		 CSCR_MSHC_SEL |	\
+		 CSCR_H264_SEL |	\
+		 CSCR_SSI1_SEL |	\
+		 CSCR_SSI2_SEL |	\
+		 CSCR_MCU_SEL |		\
+		 CSCR_SP_SEL |		\
+		 CSCR_ARM_SRC_MPLL |	\
+		 CSCR_AHB_DIV(1) |	\
+		 CSCR_ARM_DIV(0) |	\
+		 CSCR_FPM_EN |		\
+		 CSCR_SPEN |		\
+		 CSCR_MPEN
+
+	CSCR = CSCR_VAL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
+
+	/* add some delay here */
+	while(i++ < 0x8000);
+
+	/* clock gating enable */
+	GPCR = 0x00050f08;
+
+	/* peripheral clock divider */
+	PCDR0 = 0x130410c3;	/* FIXME                            */
+	PCDR1 = 0x09030908;	/* PERDIV1=08 @133 MHz              */
+
+	return 0;
+}
+
+core_initcall(pll_init);
 

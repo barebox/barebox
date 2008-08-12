@@ -26,6 +26,7 @@
 #define IMX_PLL_BASE               (0x27000 + IMX_IO_BASE)
 #define IMX_SYSTEM_CTL_BASE        (0x27800 + IMX_IO_BASE)
 
+#define IMX_NFC_BASE               (0xd8000000)
 #define IMX_ESD_BASE               (0xd8001000)
 #define IMX_WEIM_BASE              (0xd8002000)
 

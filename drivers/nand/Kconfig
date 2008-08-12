@@ -1,0 +1,16 @@
+menuconfig NAND
+	bool "NAND support                  "
+
+if NAND
+
+config NAND_IMX
+	bool
+	prompt "i.MX NAND driver"
+	depends on ARCH_IMX27
+
+config NAND_IMX_BOOT
+	bool
+	prompt "Support Starting U-Boot from NAND"
+	depends on NAND_IMX
+
+endif

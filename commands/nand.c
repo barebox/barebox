@@ -49,7 +49,7 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 	struct nand_bb *bb = dev->priv;
 	int ret;
 
-	printf("%s %d %d\n", __func__, offset, count);
+	debug("%s %d %d\n", __func__, offset, count);
 
 	do {
 		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
@@ -57,7 +57,7 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 			return ret;
 
 		if (ret) {
-			printf("block is bad\n");
+			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
 	} while (ret);
@@ -75,7 +75,7 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 	struct nand_bb *bb = dev->priv;
 	int ret;
 
-	printf("%s %d %d\n", __func__, offset, count);
+	debug("%s %d %d\n", __func__, offset, count);
 
 	do {
 		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
@@ -83,7 +83,7 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 			return ret;
 
 		if (ret) {
-			printf("block is bad\n");
+			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
 	} while (ret);
@@ -98,7 +98,6 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 static int nand_bb_open(struct device_d *dev, struct filep *f)
 {
 	struct nand_bb *bb = dev->priv;
-	int ret;
 
 	if (bb->open)
 		return -EBUSY;
@@ -127,8 +126,6 @@ static int nand_bb_probe(struct device_d *dev)
 	if (ret < 0)
 		goto out;
 
-	printf("new info: %d\n", bb->info.erasesize);
-
 	return 0;
 out:
 	free(bb);
@@ -148,6 +145,7 @@ struct driver_d nand_bb_driver = {
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,
 	.write 	= nand_bb_write,
+	.type	= DEVICE_TYPE_NAND_BB,
 };
 
 static int nand_bb_init(void)
@@ -159,25 +157,33 @@ device_initcall(nand_bb_init);
 
 static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	int ret, opt;
-	char *device = NULL;
+	int opt;
+	char *add_device = NULL, *del_device = NULL;
 	struct device_d *dev;
 	struct nand_bb *bb;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "m:")) > 0) {
+	while((opt = getopt(argc, argv, "a:d:")) > 0) {
 		switch(opt) {
-		case 'm':
-			device = optarg;
+		case 'a':
+			add_device = optarg;
+			break;
+		case 'd':
+			del_device = optarg;
 			break;
 		}
 	}
 
-	if (device) {
-		dev = get_device_by_path(device);
+	if (add_device) {
+		dev = get_device_by_path(add_device);
 		if (!dev) {
-			printf("no such device: %s\n", argv[1]);
+			printf("no such device: %s\n", add_device);
+			return 1;
+		}
+
+		if (dev->type != DEVICE_TYPE_NAND) {
+			printf("not a nand device: %s\n", add_device);
 			return 1;
 		}
 
@@ -186,20 +192,41 @@ static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		strcpy(bb->device.name, "nand_bb");
 		bb->device.priv = bb;
 		bb->device.size = dev->size; /* FIXME: Bad blocks? */
+		bb->device.type	= DEVICE_TYPE_NAND_BB;
 		bb->physdev = dev;
 
 		if (register_device(&bb->device))
 			goto free_out;
 
 		dev_add_child(dev, &bb->device);
-
 	}
+
+	if (del_device) {
+		dev = get_device_by_path(del_device);
+		if (!dev) {
+			printf("no such device: %s\n", del_device);
+			return 1;
+		}
+
+		if (dev->type != DEVICE_TYPE_NAND_BB) {
+			printf("not a nand bb device: %s\n", dev);
+			return 1;
+		}
+
+		bb = dev->priv;
+		unregister_device(dev);
+		free(bb);
+	}
+
 free_out:
 	return 0;
 }
 
 static const __maybe_unused char cmd_nand_help[] =
-"Usage: nand bla\n";
+"Usage: nand [OPTION]...\n"
+"nand related commands\n"
+"  -a  <dev>  register a bad block aware device ontop of a normal nand device\n"
+"  -d  <dev>  deregister a bad block aware device\n";
 
 U_BOOT_CMD_START(nand)
 	.maxargs	= CONFIG_MAXARGS,

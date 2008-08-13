@@ -47,7 +47,7 @@ static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	fd = open(filename, O_WRONLY | O_CREAT);
 	if (fd < 0) {
-		printf("could not open %s: %s", filename, errno_str());
+		printf("could not open %s: %s\n", filename, errno_str());
 		return 1;
 	}
 
@@ -62,10 +62,11 @@ static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	ret = erase(fd, ~0, 0);
 
+	close(fd);
+
 	/* ENOSYS is no error here, many devices do not need it */
 	if (ret && errno != -ENOSYS) {
 		printf("could not erase %s: %s\n", filename, errno_str());
-		close(fd);
 		return 1;
 	}
 
@@ -74,6 +75,8 @@ static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		printf("saveenv failed\n");
 		goto out;
 	}
+
+	fd = open(filename, O_WRONLY | O_CREAT);
 
 	ret = protect(fd, ~0, 0, 1);
 

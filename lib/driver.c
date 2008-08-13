@@ -313,6 +313,8 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 	return 0;
 }
 
+#ifdef CONFIG_CMD_DEVINFO
+
 static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
@@ -373,6 +375,8 @@ U_BOOT_CMD_START(devinfo)
 	.usage		= "display info about devices and drivers",
 	U_BOOT_CMD_HELP(cmd_devinfo_help)
 U_BOOT_CMD_END
+
+#endif
 
 /**
  * @page devinfo_command devinfo

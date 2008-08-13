@@ -117,6 +117,7 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	struct stat s;
 	int prot = 1;
 	unsigned long start = 0, size = ~0;
+	int ret = 0;
 
 	if (argc == 1) {
 		u_boot_cmd_usage(cmdtp);
@@ -149,17 +150,19 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (argc == 3)
 		if (parse_area_spec(argv[2], &start, &size)) {
 			printf("could not parse: %s\n", argv[optind]);
-			return 1;
+			ret = 1;
+			goto out;
 		}
 
         if(protect(fd, size, start, prot)) {
 		perror("protect");
-		return 1;
+		ret = 1;
+		goto out;
 	}
-
+out:
 	close(fd);
 
-	return 0;
+	return ret;
 }
 
 static const __maybe_unused char cmd_protect_help[] =

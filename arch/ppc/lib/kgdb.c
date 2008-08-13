@@ -1,7 +1,7 @@
 #include <common.h>
 #include <command.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_KGDB)
+#ifdef CONFIG_KGDB
 
 #include <kgdb.h>
 #include <asm/signal.h>

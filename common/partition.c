@@ -87,10 +87,7 @@ static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	struct partition *part = dev->type_data;
 
-	if (part->physdev->driver->erase)
-		return part->physdev->driver->erase(part->physdev, count, offset + part->offset);
-
-	return -1;
+	return dev_erase(part->physdev, count, offset + part->offset);
 }
 
 /**
@@ -105,10 +102,7 @@ static int part_protect(struct device_d *dev, size_t count, unsigned long offset
 {
 	struct partition *part = dev->type_data;
 
-	if (part->physdev->driver->protect)
-		return part->physdev->driver->protect(part->physdev, count, offset + part->offset, prot);
-
-	return -1;
+	return dev_protect(part->physdev, count, offset + part->offset, prot);
 }
 
 /**
@@ -131,7 +125,7 @@ static int part_memmap(struct device_d *dev, void **map, int flags)
 		return 0;
 	}
 
-	return -1;
+	return -ENOSYS;
 }
 
 /**
@@ -203,6 +197,8 @@ static int part_ioctl(struct device_d *dev, int request,
 		offset = (off_t)buf;
 		offset += part->offset;
 		return dev_ioctl(part->physdev, request, (void *)offset);
+	case MEMGETINFO:
+		return dev_ioctl(part->physdev, request, buf);
 	}
 
 	return -ENOSYS;

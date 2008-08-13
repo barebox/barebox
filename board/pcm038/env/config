@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# can be either 'net' or 'flash'
+# can be either 'net', 'nor' or 'nand''
 kernel=net
 root=net
 
@@ -21,6 +21,9 @@ autoboot_timeout=3
 nfsroot="/ptx/work/octopus/rsc/svn/oselas/bsp/phytec/phyCORE-i.MX27/OSELAS.BSP-Phytec-phyCORE-i.MX27-trunk/root"
 bootargs="console=ttymxc0,115200"
 
-mtdparts="128k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
-rootpart="/dev/mtdblock3"
+nor_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart_nor="/dev/mtdblock3"
+
+nand_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart_nand="/dev/mtdblock7"
 

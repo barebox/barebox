@@ -47,11 +47,11 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 	unsigned long offset, ulong flags)
 {
 	struct nand_bb *bb = dev->priv;
-	int ret;
+	int ret, bytes = 0, now;
 
 	debug("%s %d %d\n", __func__, offset, count);
 
-	do {
+	while(count) {
 		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
 		if (ret < 0)
 			return ret;
@@ -60,24 +60,29 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
-	} while (ret);
 
-	ret = dev_read(bb->physdev, buf, count, bb->offset, flags);
-	if (ret > 0)
-		bb->offset += ret;
+		now = min(count, bb->info.erasesize);
+		ret = dev_read(bb->physdev, buf, now, bb->offset, flags);
+		if (ret < 0)
+			return ret;
+		buf += now;
+		count -= now;
+		bb->offset += now;
+		bytes += now;
+	};
 
-	return ret;
+	return bytes;
 }
 
 static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count,
 	unsigned long offset, ulong flags)
 {
 	struct nand_bb *bb = dev->priv;
-	int ret;
+	int ret, bytes = 0, now;
 
 	debug("%s %d %d\n", __func__, offset, count);
 
-	do {
+	while(count) {
 		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
 		if (ret < 0)
 			return ret;
@@ -86,13 +91,30 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
-	} while (ret);
 
-	ret = dev_write(bb->physdev, buf, count, bb->offset, flags);
-	if (ret > 0)
-		bb->offset += ret;
+		now = min(count, bb->info.erasesize);
+		ret = dev_write(bb->physdev, buf, now, bb->offset, flags);
+		if (ret < 0)
+			return ret;
+		buf += now;
+		count -= now;
+		bb->offset += now;
+		bytes += now;
+	};
 
-	return ret;
+	return bytes;
+}
+
+static int nand_bb_erase(struct device_d *dev, size_t count, unsigned long offset)
+{
+	struct nand_bb *bb = dev->priv;
+
+	if (offset != 0 || count != dev->size) {
+		printf("can only erase whole device\n");
+		return -EINVAL;
+	}
+
+	return dev_erase(bb->physdev, dev->size, 0);
 }
 
 static int nand_bb_open(struct device_d *dev, struct filep *f)
@@ -120,16 +142,8 @@ static int nand_bb_close(struct device_d *dev, struct filep *f)
 static int nand_bb_probe(struct device_d *dev)
 {
 	struct nand_bb *bb = dev->priv;
-	int ret = 0;
 
-	ret = dev_ioctl(bb->physdev, MEMGETINFO, &bb->info);
-	if (ret < 0)
-		goto out;
-
-	return 0;
-out:
-	free(bb);
-	return ret;
+	return dev_ioctl(bb->physdev, MEMGETINFO, &bb->info);
 }
 
 static int nand_bb_remove(struct device_d *dev)
@@ -145,6 +159,7 @@ struct driver_d nand_bb_driver = {
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,
 	.write 	= nand_bb_write,
+	.erase	= nand_bb_erase,
 	.type	= DEVICE_TYPE_NAND_BB,
 };
 
@@ -155,70 +170,99 @@ static int nand_bb_init(void)
 
 device_initcall(nand_bb_init);
 
+/**
+ * Add a bad block aware device ontop of another (NAND) device 
+ * @param[in] dev The device to add a partition on
+ * @param[in] name Partition name (can be obtained with devinfo command)
+ * @return The device representing the new partition.
+ */
+struct device_d *dev_add_bb_dev(struct device_d *dev, const char *name)
+{
+	struct nand_bb *bb;
+
+	bb = xzalloc(sizeof(*bb));
+
+	if (name)
+		strcpy(bb->device.id, name);
+	else
+		sprintf(bb->device.id, "%s.bb", dev->id);
+	strcpy(bb->device.name, "nand_bb");
+	bb->device.priv = bb;
+	bb->device.size = dev->size; /* FIXME: Bad blocks? */
+	bb->device.type	= DEVICE_TYPE_NAND_BB;
+	bb->physdev = dev;
+
+	if (register_device(&bb->device))
+		goto free_out;
+
+	dev_add_child(dev, &bb->device);
+
+	return &bb->device;
+
+free_out:
+	free(bb);
+	return 0;
+}
+
 static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt;
-	char *add_device = NULL, *del_device = NULL;
 	struct device_d *dev;
 	struct nand_bb *bb;
+	int add = 0, del = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "a:d:")) > 0) {
+	while((opt = getopt(argc, argv, "ad")) > 0) {
 		switch(opt) {
 		case 'a':
-			add_device = optarg;
+			add = 1;
 			break;
 		case 'd':
-			del_device = optarg;
+			del = 1;
 			break;
 		}
 	}
 
-	if (add_device) {
-		dev = get_device_by_path(add_device);
-		if (!dev) {
-			printf("no such device: %s\n", add_device);
-			return 1;
-		}
-
-		if (dev->type != DEVICE_TYPE_NAND) {
-			printf("not a nand device: %s\n", add_device);
-			return 1;
-		}
-
-		bb = xzalloc(sizeof(*bb));
-		sprintf(bb->device.id, "%s.bb", dev->id);
-		strcpy(bb->device.name, "nand_bb");
-		bb->device.priv = bb;
-		bb->device.size = dev->size; /* FIXME: Bad blocks? */
-		bb->device.type	= DEVICE_TYPE_NAND_BB;
-		bb->physdev = dev;
-
-		if (register_device(&bb->device))
-			goto free_out;
-
-		dev_add_child(dev, &bb->device);
+	if ((add && del) || (!add && !del)) {
+		printf("either -a or -d must be given\n");
+		return 1;
 	}
 
-	if (del_device) {
-		dev = get_device_by_path(del_device);
-		if (!dev) {
-			printf("no such device: %s\n", del_device);
-			return 1;
-		}
+	if (add) {
+		while (optind < argc) {
+			dev = get_device_by_path(argv[optind]);
+			if (!dev) {
+				printf("no such device: %s\n", argv[optind]);
+				return 1;
+			}
 
-		if (dev->type != DEVICE_TYPE_NAND_BB) {
-			printf("not a nand bb device: %s\n", dev);
-			return 1;
-		}
+			if (!dev_add_bb_dev(dev, NULL))
+				return 1;
 
-		bb = dev->priv;
-		unregister_device(dev);
-		free(bb);
+			optind++;
+		}
 	}
 
-free_out:
+	if (del) {
+		while (optind < argc) {
+			dev = get_device_by_path(argv[optind]);
+			if (!dev) {
+				printf("no such device: %s\n", argv[optind]);
+				return 1;
+			}
+
+			if (dev->type != DEVICE_TYPE_NAND_BB) {
+				printf("not a nand bb device: %s\n", dev);
+				return 1;
+			}
+			bb = dev->priv;
+			unregister_device(dev);
+			free(bb);
+			optind++;
+		}
+	}
+
 	return 0;
 }
 

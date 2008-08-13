@@ -2,7 +2,6 @@ config REGINFO
 	bool
 
 menu "Commands                      "
-	depends on COMMAND
 
 menu "scripting                     "
 

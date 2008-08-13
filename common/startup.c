@@ -35,6 +35,7 @@
 #include <linux/stat.h>
 #include <environment.h>
 #include <reloc.h>
+#include <asm-generic/memory_layout.h>
 
 extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[],
 		  __u_boot_initcalls_end[];
@@ -45,10 +46,15 @@ static void display_meminfo(void)
 	ulong mend   = mem_malloc_end();
 	ulong msize  = mend - mstart + 1;
 
-	debug ("U-Boot code: 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
+	debug("U-Boot code : 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
 	       _u_boot_start, _bss_start, _bss_end);
-	printf("Malloc Space: 0x%08lx -> 0x%08lx (size %s)\n",
+	printf("Malloc space: 0x%08lx -> 0x%08lx (size %s)\n",
 		mstart, mend, size_human_readable(msize));
+#ifdef CONFIG_ARM
+	printf("Stack space : 0x%08lx -> 0x%08lx (size %s)\n",
+		STACK_BASE, STACK_BASE + STACK_SIZE,
+		size_human_readable(STACK_SIZE));
+#endif
 }
 
 #ifdef CONFIG_HAS_EARLY_INIT
@@ -64,9 +70,6 @@ void early_init (void)
 	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
 				(ulong)&__early_init_data_end -
 				(ulong)&__early_init_data_begin);
-
-	early_console_start(RELOC(CONFIG_EARLY_CONSOLE_PORT),
-			CONFIG_EARLY_CONSOLE_BAUDRATE);
 }
 
 #endif /* CONFIG_HAS_EARLY_INIT */

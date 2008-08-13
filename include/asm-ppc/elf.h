@@ -170,6 +170,8 @@ typedef elf_vrreg_t elf_vrregset_t32[ELF_NVRREG32];
 
 #define ELF_ET_DYN_BASE         (0x20000000)
 
+extern void * memset(void *, int, __kernel_size_t);
+
 /* Common routine for both 32-bit and 64-bit processes */
 static inline void ppc_elf_core_copy_regs(elf_gregset_t elf_regs,
 					    struct pt_regs *regs)

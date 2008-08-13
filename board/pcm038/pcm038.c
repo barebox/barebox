@@ -66,7 +66,6 @@ static struct device_d fec_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
-#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
 static struct device_d spi_dev = {
 	.name     = "imx_spi",
 	.id       = "spi0",
@@ -81,7 +80,6 @@ static struct spi_board_info pcm038_spi_board_info[] = {
 		.chip_select = 0,
 	}
 };
-#endif
 
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
@@ -97,6 +95,9 @@ static struct device_d nand_dev = {
 static int pcm038_devices_init(void)
 {
 	int i;
+	struct device_d *nand, *dev;
+	char *envdev;
+
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
@@ -145,16 +146,30 @@ static int pcm038_devices_init(void)
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
-#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	register_device(&spi_dev);
-#endif
 
-#ifdef CONFIG_PARTITION
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
-#endif
-	dev_protect(&cfi_dev, 0x20000, 0, 1);
+	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
+	case GPCR_BOOT_8BIT_NAND_2k:
+	case GPCR_BOOT_16BIT_NAND_2k:
+	case GPCR_BOOT_16BIT_NAND_512:
+	case GPCR_BOOT_8BIT_NAND_512:
+		nand = get_device_by_path("/dev/nand0");
+		dev = dev_add_partition(nand, 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev(dev, "self0");
+
+		dev = dev_add_partition(nand, 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev(dev, "env0");
+		envdev = "NAND";
+		break;
+	default:
+		dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
+		dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");
+		dev_protect(&cfi_dev, 0x40000, 0, 1);
+		envdev = "NOR";
+	}
+
+	printf("Using environment in %s Flash\n", envdev);
 
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
@@ -182,7 +197,7 @@ console_initcall(pcm038_console_init);
 
 static int pcm038_power_init(void)
 {
-#if defined CONFIG_DRIVER_SPI_IMX && defined CONFIG_DRIVER_SPI_MC13783
+#ifdef CONFIG_DRIVER_SPI_MC13783
 	volatile int i = 0;
 	int ret;
 

@@ -56,11 +56,11 @@ SECTIONS
   .text      :
   {
     arch/ppc/mach-mpc5xxx/start.o	(.text)
-    *(.text)
-    *(.got1)
+    *(.text*)
+    *(.got1*)
     . = ALIGN(16);
-    *(.rodata)
-    *(.rodata1)
+    *(.rodata*)
+    *(.rodata1*)
     *(.rodata.str1.4)
   }
   .fini      : { *(.fini)    } =0
@@ -85,11 +85,11 @@ SECTIONS
 
   .data    :
   {
-    *(.data)
-    *(.data1)
-    *(.sdata)
-    *(.sdata2)
-    *(.dynamic)
+    *(.data*)
+    *(.data1*)
+    *(.sdata*)
+    *(.sdata2*)
+    *(.dynamic*)
     CONSTRUCTORS
   }
   _edata  =  .;
@@ -129,9 +129,9 @@ SECTIONS
   __bss_start = .;
   .bss       :
   {
-   *(.sbss) *(.scommon)
-   *(.dynbss)
-   *(.bss)
+   *(.sbss*) *(.scommon*)
+   *(.dynbss*)
+   *(.bss*)
    *(COMMON)
   }
   _end = . ;

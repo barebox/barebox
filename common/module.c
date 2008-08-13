@@ -294,6 +294,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
 	sym = (void *)sechdrs[symindex].sh_addr;
 
+#ifdef CONFIG_COMMAND
 	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".u_boot_cmd");
 	if (cmdindex) {
 		cmd_tbl_t *cmd = (cmd_tbl_t *)sechdrs[cmdindex].sh_addr;
@@ -302,6 +303,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 			cmd++;
 		}
 	}
+#endif
 
 	for (i = 0; i < numsyms; i++) {
 		if (!strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "init_module")) {
@@ -322,59 +324,3 @@ cleanup:
 
 	return NULL;
 }
-
-static int do_lsmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	struct module *mod;
-
-	list_for_each_entry(mod, &module_list, list)
-		printf("%s\n", mod->name);
-
-	return 0;
-}
-
-U_BOOT_CMD_START(lsmod)
-	.maxargs	= 1,
-	.cmd		= do_lsmod,
-	.usage		= "list modules",
-U_BOOT_CMD_END
-
-static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	struct module *module;
-	void *buf;
-	int len;
-
-	if (argc < 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
-
-	buf = read_file(argv[1], &len);
-	if (!buf) {
-		perror("insmod");
-		return 1;
-	}
-
-	module = load_module(buf, len);
-
-	free(buf);
-
-	if (module) {
-		if (module->init)
-			module->init();
-	}
-
-	return 0;
-}
-
-static const __maybe_unused char cmd_insmod_help[] =
-"Usage: insmod <module>\n"; 
-
-U_BOOT_CMD_START(insmod)
-	.maxargs	= 2,
-	.cmd		= do_insmod,
-	.usage		= "insert a module",
-	U_BOOT_CMD_HELP(cmd_insmod_help)
-U_BOOT_CMD_END
-

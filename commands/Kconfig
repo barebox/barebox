@@ -2,6 +2,7 @@ config REGINFO
 	bool
 
 menu "Commands                      "
+	depends on COMMAND
 
 menu "scripting                     "
 
@@ -36,14 +37,19 @@ config CMD_PRINTENV
 	tristate
 	prompt "printenv"
 
-config CMD_HELP
-	tristate
-	default y
-	prompt "help"
-
 config CMD_READLINE
 	tristate
 	prompt "readline"
+
+config CMD_TRUE
+	tristate
+	default y
+	prompt "true"
+
+config CMD_FALSE
+	tristate
+	default y
+	prompt "false"
 
 endmenu
 
@@ -237,5 +243,31 @@ config CMD_REGINFO
 	select REGINFO
 	tristate
 	prompt "reginfo"
+
+config CMD_VERSION
+	tristate
+	default y
+	prompt "version"
+
+config CMD_HELP
+	tristate
+	default y
+	prompt "help"
+
+config CMD_DEVINFO
+	tristate
+	default y
+	prompt "devinfo"
+
+config CMD_INSMOD
+	bool
+	depends on MODULES
+	default y
+	prompt "insmod"
+
+config CMD_LSMOD
+	bool
+	depends on MODULES
+	prompt "lsmod"
 
 endmenu

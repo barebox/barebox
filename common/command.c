@@ -41,40 +41,6 @@ const char version_string[] =
 LIST_HEAD(command_list);
 EXPORT_SYMBOL(command_list);
 
-static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	printf ("\n%s\n", version_string);
-	return 0;
-}
-
-U_BOOT_CMD_START(version)
-	.maxargs	= 1,
-	.cmd		= do_version,
-	.usage		= "print monitor version",
-U_BOOT_CMD_END
-
-static int do_true (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	return 0;
-}
-
-U_BOOT_CMD_START(true)
-	.maxargs	= 1,
-	.cmd		= do_true,
-	.usage		= "do nothing, successfully",
-U_BOOT_CMD_END
-
-static int do_false (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	return 1;
-}
-
-U_BOOT_CMD_START(false)
-	.maxargs	= 1,
-	.cmd		= do_false,
-	.usage		= "do nothing, unsuccessfully",
-U_BOOT_CMD_END
-
 #ifdef CONFIG_SHELL_HUSH
 
 static int do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -116,51 +82,6 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
 #endif	/* CONFIG_LONGHELP */
 }
 EXPORT_SYMBOL(u_boot_cmd_usage);
-
-/*
- * Use puts() instead of printf() to avoid printf buffer overflow
- * for long help messages
- */
-static int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
-{
-	if (argc == 1) {	/* show list of commands */
-		for_each_command(cmdtp) {
-			if (!cmdtp->usage)
-				continue;
-			printf("%10s - %s\n", cmdtp->name, cmdtp->usage);
-		}
-		return 0;
-	}
-
-	/* command help (long version) */
-	if ((cmdtp = find_cmd(argv[1])) != NULL) {
-		u_boot_cmd_usage(cmdtp);
-		return 0;
-	} else {
-		printf ("Unknown command '%s' - try 'help'"
-			" without arguments for list of all"
-			" known commands\n\n", argv[1]
-				);
-		return 1;
-	}
-}
-
-static const __maybe_unused char cmd_help_help[] =
-"Show help information (for 'command')\n"
-"'help' prints online help for the monitor commands.\n\n"
-"Without arguments, it prints a short usage message for all commands.\n\n"
-"To get detailed help information for specific commands you can type\n"
-"'help' with one or more command names as arguments.\n";
-
-static const char *help_aliases[] = { "?", NULL};
-
-U_BOOT_CMD_START(help)
-	.maxargs	= 2,
-	.cmd		= do_help,
-	.aliases	= help_aliases,
-	.usage		= "print online help",
-	U_BOOT_CMD_HELP(cmd_help_help)
-U_BOOT_CMD_END
 
 static int compare(struct list_head *a, struct list_head *b)
 {

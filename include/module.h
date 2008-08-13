@@ -20,6 +20,8 @@ struct kernel_symbol
 	const char *name;
 };
 
+struct module * load_module(void *mod_image, unsigned long len);
+
 /* For every exported symbol, place a struct in the __ksymtab section */
 #define __EXPORT_SYMBOL(sym, sec)				\
 	extern typeof(sym) sym;					\
@@ -70,6 +72,11 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 #else
 #define EXPORT_SYMBOL(sym)
 #endif /* CONFIG_MODULE */
+
+extern struct list_head module_list;
+
+#define for_each_module(m) \
+	list_for_each_entry(m, &module_list, list)
 
 #endif /* __MODULE_H */
 

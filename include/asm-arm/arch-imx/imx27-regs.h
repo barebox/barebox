@@ -43,6 +43,15 @@
 #define WBCR	__REG(IMX_SYSTEM_CTL_BASE + 0x1C)		/* Well Bias Control Register */
 #define DSCR(x)	__REG(IMX_SYSTEM_CTL_BASE + 0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
 
+#define GPCR_BOOT_SHIFT			16
+#define GPCR_BOOT_MASK			(0xf << GPCR_BOOT_SHIFT)
+#define GPCR_BOOT_UART_USB		0
+#define GPCR_BOOT_8BIT_NAND_2k		2
+#define GPCR_BOOT_16BIT_NAND_2k		3
+#define GPCR_BOOT_16BIT_NAND_512	4
+#define GPCR_BOOT_16BIT_CS0		5
+#define GPCR_BOOT_32BIT_CS0		6
+#define GPCR_BOOT_8BIT_NAND_512		7
 
 /* Chip Select Registers */
 #define CS0U __REG(IMX_WEIM_BASE + 0x00) /* Chip Select 0 Upper Register    */

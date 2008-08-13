@@ -32,6 +32,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <nand.h>
 #include <spi/spi.h>
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>

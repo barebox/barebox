@@ -25,38 +25,62 @@
 
 #include <common.h>
 #include <command.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <linux/ctype.h>
+#include <errno.h>
 
 static int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	ulong	addr, rc;
-	int     rcode = 0;
+	void	*addr;
+	int     rcode = 1;
+	int	fd = -1;
 
 	if (argc < 2) {
 		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	addr = simple_strtoul(argv[1], NULL, 16);
+	if (!isdigit(*argv[1])) {
+		fd = open(argv[1], O_RDONLY);
+		if (fd < 0) {
+			perror("open");
+			goto out;
+		}
+
+		addr = memmap(fd, PROT_READ);
+		if (addr == (void *)-1) {
+			perror("memmap");
+			goto out;
+		}
+	} else
+		addr = (void *)simple_strtoul(argv[1], NULL, 16);
 
 	printf ("## Starting application at 0x%08lX ...\n", addr);
 
 #ifdef ARCH_HAS_EXECUTE
-	rc = arch_execute(addr, argc, &argv[1]);
+	rcode = arch_execute(addr, argc, &argv[1]);
 #else
-	rc = ((ulong (*)(int, char *[]))addr) (--argc, &argv[1]);
+	rcode = ((ulong (*)(int, char *[]))addr) (--argc, &argv[1]);
 #endif
 
-	printf ("## Application terminated, rc = 0x%lX\n", rc);
+	printf ("## Application terminated, rcode = 0x%lX\n", rcode);
+out:
+	if (fd > 0)
+		close(fd);
+
 	return rcode;
 }
 
 static const __maybe_unused char cmd_go_help[] =
-"addr [arg ...]\n    - start application at address 'addr'\n"
-"      passing 'arg' as arguments\n";
+"Usage: go addr [arg ...]\n"
+"Start application at address 'addr' passing 'arg' as arguments.\n"
+"If addr does not start with a digit it is interpreted as a filename\n"
+"in which case the file is memmapped and executed\n";
 
 U_BOOT_CMD_START(go)
 	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_go,
-	.usage		= "start application at address 'addr'",
+	.usage		= "start application at address or file",
 	U_BOOT_CMD_HELP(cmd_go_help)
 U_BOOT_CMD_END

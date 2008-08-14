@@ -604,7 +604,7 @@ void *memmap(int fd, int flags)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
-	void *ret = NULL;
+	void *ret = (void *)-1;
 
 	dev = f->dev;
 
@@ -961,4 +961,11 @@ ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong off
 	return size;
 }
 EXPORT_SYMBOL(mem_write);
+
+int mem_memmap(struct device_d *dev, void **map, int flags)
+{
+	*map = dev->map_base;
+	return 0;
+}
+EXPORT_SYMBOL(mem_memmap);
 

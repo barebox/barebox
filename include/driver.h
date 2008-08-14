@@ -240,6 +240,7 @@ int     dev_memmap(struct device_d *dev, void **map, int flags);
 /* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
+int mem_memmap(struct device_d *dev, void **map, int flags);
 
 /* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);

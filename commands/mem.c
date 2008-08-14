@@ -532,6 +532,7 @@ static struct driver_d mem_drv = {
 	.close = dev_close_default,
 	.read  = mem_read,
 	.write = mem_write,
+	.memmap = mem_memmap,
 	.lseek = dev_lseek_default,
 };
 
@@ -543,6 +544,7 @@ static struct driver_d ram_drv = {
 	.read  = mem_read,
 	.write = mem_write,
 	.lseek = dev_lseek_default,
+	.memmap = mem_memmap,
 	.type  = DEVICE_TYPE_DRAM,
 };
 
@@ -552,6 +554,7 @@ static struct driver_d rom_drv = {
 	.open  = dev_open_default,
 	.close = dev_close_default,
 	.read  = mem_read,
+	.memmap = mem_memmap,
 	.lseek = dev_lseek_default,
 };
 

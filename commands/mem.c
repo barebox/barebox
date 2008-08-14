@@ -122,7 +122,7 @@ int open_and_lseek(const char *filename, int mode, off_t pos)
 
 	if (!pos)
 		return fd;
-printf("lseek to 0x%08x\n", pos);
+
 	ret = lseek(fd, pos, SEEK_SET);
 	if (ret == -1) {
 		perror("lseek");

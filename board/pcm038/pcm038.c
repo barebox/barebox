@@ -55,6 +55,16 @@ static struct device_d sdram_dev = {
 	.type     = DEVICE_TYPE_DRAM,
 };
 
+static struct device_d sram_dev = {
+	.name     = "ram",
+	.id       = "sram0",
+
+	.map_base = 0xc8000000,
+	.size     = 512 * 1024, /* Can be up to 2MiB */
+
+	.type     = DEVICE_TYPE_DRAM,
+};
+
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -153,6 +163,7 @@ static int pcm038_devices_init(void)
 	register_device(&cfi_dev);
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
+	register_device(&sram_dev);
 
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;

@@ -41,10 +41,16 @@
 static int dev_del_partitions(struct device_d *physdev)
 {
 	struct device_d *child, *tmp;
+	struct partition *part;
 	int ret;
 
 	device_for_each_child_safe(physdev, tmp, child) {
-		struct partition *part = child->type_data;
+		if (child->type != DEVICE_TYPE_PARTITION) {
+			printf("not a partition: %s\n", child->id);
+			continue;
+		}
+
+		part = child->type_data;
 
 		if (part->flags & PARTITION_FIXED) {
 			debug("Skip fixed partition: %s\n", child->id);
@@ -191,6 +197,7 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 		part->num = num;
 		part->device.map_base = dev->map_base + offset;
 		part->device.type_data = part;
+		part->device.type = DEVICE_TYPE_PARTITION; 
 
 		if (mtd_part_do_parse_one(part, endp, &endp))
 			goto free_out;

@@ -36,7 +36,8 @@
 #define DEVICE_TYPE_MIIPHY	6
 #define DEVICE_TYPE_NAND	7
 #define DEVICE_TYPE_NAND_BB	8
-#define MAX_DEVICE_TYPE         8
+#define DEVICE_TYPE_PARTITION	9
+#define MAX_DEVICE_TYPE         9
 
 #include <param.h>
 

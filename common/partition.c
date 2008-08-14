@@ -59,6 +59,7 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
 	part->device.map_base = dev->map_base + offset;
 	part->device.size = size;
 	part->device.type_data = part;
+	part->device.type = DEVICE_TYPE_PARTITION;
 	get_free_deviceid(part->device.id, name);
 
 	part->offset = offset;
@@ -71,6 +72,7 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
 	if (part->device.driver)
 		return &part->device;
 
+	unregister_device(&part->device);
 	free(part);
 	return 0;
 }
@@ -86,6 +88,9 @@ struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
 static int part_erase(struct device_d *dev, size_t count, unsigned long offset)
 {
 	struct partition *part = dev->type_data;
+
+	if (part->flags & PARTITION_READONLY)
+ 		return -EROFS;
 
 	return dev_erase(part->physdev, count, offset + part->offset);
 }
@@ -246,6 +251,7 @@ struct driver_d part_driver = {
 	.erase 	= part_erase,
 	.protect= part_protect,
 	.memmap = part_memmap,
+	.type	= DEVICE_TYPE_PARTITION,
 };
 
 static int partition_init(void)

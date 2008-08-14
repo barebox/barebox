@@ -132,9 +132,19 @@ static int pcm038_devices_init(void)
 	};
 
 	/* configure 16 bit nor flash on cs0 */
-	writel(0x0000CC03, 0xD8002000);
-	writel(0xa0330D01, 0xD8002004);
-	writel(0x00220800, 0xD8002008);
+	CS0U = 0x0000CC03;
+	CS0L = 0xa0330D01;
+	CS0A = 0x00220800;
+
+	/* configure SRAM on cs1 */
+	CS1U = 0x0000d843;
+	CS1L = 0x22252521;
+	CS1A = 0x22220a00;
+
+	/* configure SJA1000 on cs4 */
+	CS4U = 0x0000DCF6;
+	CS4L = 0x444A0301;
+	CS4A = 0x44443302;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)

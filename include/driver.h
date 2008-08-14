@@ -25,7 +25,7 @@
 
 #include <list.h>
 
-#define MAX_DRIVER_NAME 16
+#define MAX_DRIVER_NAME 32
 
 #define DEVICE_TYPE_UNKNOWN     0
 #define DEVICE_TYPE_ETHER       1

@@ -475,6 +475,7 @@ restart:
 			return NetBootFileXferSize;
 
 		case NETLOOP_FAIL:
+			eth_halt();
 			return (-1);
 		}
 	}

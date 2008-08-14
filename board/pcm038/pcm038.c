@@ -97,7 +97,7 @@ static int pcm038_devices_init(void)
 {
 	int i;
 	struct device_d *nand, *dev;
-	char *envdev;
+	char *envdev = "no";
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -156,10 +156,16 @@ static int pcm038_devices_init(void)
 	case GPCR_BOOT_16BIT_NAND_512:
 	case GPCR_BOOT_8BIT_NAND_512:
 		nand = get_device_by_path("/dev/nand0");
+		if (!nand)
+			break;
 		dev = dev_add_partition(nand, 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		if (!dev)
+			break;
 		dev_add_bb_dev(dev, "self0");
 
 		dev = dev_add_partition(nand, 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+		if (!dev)
+			break;
 		dev_add_bb_dev(dev, "env0");
 		envdev = "NAND";
 		break;

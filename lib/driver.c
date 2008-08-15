@@ -286,6 +286,7 @@ int dummy_probe(struct device_d *dev)
 {
 	return 0;
 }
+EXPORT_SYMBOL(dummy_probe);
 
 static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 {

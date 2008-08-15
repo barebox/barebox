@@ -2152,6 +2152,7 @@ History:
 */
 
 EXPORT_SYMBOL(malloc);
+EXPORT_SYMBOL(calloc);
 EXPORT_SYMBOL(free);
 EXPORT_SYMBOL(realloc);
 

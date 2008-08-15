@@ -178,14 +178,7 @@ extern __inline__ int ffs(int x)
 	return __ilog2(x & -x) + 1;
 }
 
-/*
- * hweightN: returns the hamming weight (i.e. the number
- * of bits set) of a N-bit word
- */
-
-#define hweight32(x) generic_hweight32(x)
-#define hweight16(x) generic_hweight16(x)
-#define hweight8(x) generic_hweight8(x)
+#include <asm-generic/bitops/hweight.h>
 
 #endif /* __KERNEL__ */
 

@@ -9,6 +9,7 @@ config BOARDINFO
 config LINUX
 	bool
 	default y
+	select GENERIC_FIND_NEXT_BIT
 
 config ARCH_LINUX
 	bool

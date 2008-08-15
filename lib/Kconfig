@@ -9,3 +9,7 @@ config CRC32
 
 config CRC16
 	bool
+
+config GENERIC_FIND_NEXT_BIT
+	def_bool n
+

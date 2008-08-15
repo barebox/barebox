@@ -8,6 +8,7 @@ obj-y	+= _modsi3.o
 obj-y	+= _udivsi3.o
 obj-y	+= _umodsi3.o
 obj-y	+= _lshrdi3.o
+obj-y	+= findbit.o
 obj-y	+= arm.o
 obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_GENERIC_LINKER_SCRIPT) += u-boot.lds

@@ -657,9 +657,9 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	getopt_reset();
 
-	while ((opt = getopt(argc, argv, "d:b:o:c")) > 0) {
+	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
 		switch (opt) {
-		case 'd':
+		case 'f':
 			output_file = optarg;
 			break;
 		case 'b':
@@ -758,7 +758,7 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 static const __maybe_unused char cmd_loadb_help[] =
     "[OPTIONS]\n"
-    "  -d device - which device to download - defaults to " DEF_FILE "\n"
+    "  -f file   - where to download to - defaults to " DEF_FILE "\n"
     "  -o offset - what offset to download - defaults to 0\n"
     "  -b baud   - baudrate at which to download - defaults to "
     "console baudrate"

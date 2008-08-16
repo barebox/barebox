@@ -651,12 +651,13 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int load_baudrate = 0, current_baudrate;
 	int rcode = 0;
 	int opt;
+	int open_mode = O_WRONLY;
 	char *output_file = NULL;
 	struct console_device *cdev = NULL;
 
 	getopt_reset();
 
-	while ((opt = getopt(argc, argv, "d:b:o:")) > 0) {
+	while ((opt = getopt(argc, argv, "d:b:o:c")) > 0) {
 		switch (opt) {
 		case 'd':
 			output_file = optarg;
@@ -666,6 +667,9 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 			break;
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'c':
+			open_mode |= O_CREAT;
 			break;
 		default:
 			perror(argv[0]);
@@ -687,7 +691,7 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		output_file = DEF_FILE;
 
 	/* File should exist */
-	ofd = open(output_file, O_WRONLY);
+	ofd = open(output_file, open_mode);
 	if (ofd < 0) {
 		perror(argv[0]);
 		return 3;
@@ -757,10 +761,11 @@ static const __maybe_unused char cmd_loadb_help[] =
     "  -d device - which device to download - defaults to " DEF_FILE "\n"
     "  -o offset - what offset to download - defaults to 0\n"
     "  -b baud   - baudrate at which to download - defaults to "
-    "console baudrate\n";
+    "console baudrate"
+    "  -c        - Create file if it is not present - default disabled";
 #ifdef CONFIG_CMD_LOADB
 U_BOOT_CMD_START(loadb)
-	.maxargs = 7,
+	.maxargs = 8,
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (kermit mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)
@@ -768,7 +773,7 @@ U_BOOT_CMD_END
 #endif
 #ifdef CONFIG_CMD_LOADY
 U_BOOT_CMD_START(loady)
-	.maxargs = 7,
+	.maxargs = 8,
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (ymodem mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)

@@ -59,7 +59,7 @@
 #define BREAK_TYPE	'B'
 #define tochar(x)	((char) (((x) + SPACE) & 0xff))
 #define untochar(x)	((int) (((x) - SPACE) & 0xff))
-#define DEF_FILE	"/dev/mem"
+#define DEF_FILE	"image.bin"
 
 static int ofd;			/* output file descriptor */
 

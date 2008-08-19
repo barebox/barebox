@@ -63,7 +63,6 @@
 
 static int ofd;			/* output file descriptor */
 
-#ifdef CONFIG_CMD_LOADB
 static char his_eol;		/* character he needs at end of packet */
 static int his_pad_count;	/* number of pad chars he needs */
 static char his_pad_char;	/* pad chars he needs */
@@ -778,4 +777,4 @@ U_BOOT_CMD_START(loady)
 	.usage = "Load binary file over serial line (ymodem mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)
 U_BOOT_CMD_END
-#endif
+

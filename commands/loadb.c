@@ -63,6 +63,11 @@
 
 static int ofd;			/* output file descriptor */
 
+/* Size of my buffer to write to o/p file */
+#define MAX_WRITE_BUFFER 4096	/* Write size to o/p file */
+static char *write_buffer;	/* buffer for finalized data to write */
+static int write_idx;		/* index to the current location in buffer */
+
 static char his_eol;		/* character he needs at end of packet */
 static int his_pad_count;	/* number of pad chars he needs */
 static char his_pad_char;	/* pad chars he needs */
@@ -164,14 +169,31 @@ static int os_data_alloc(int length)
 static int os_data_save(void)
 {
 	int ret = 0;
+	int copy_size;
 	/* if there was an old data, flush it */
 	if (os_old_buffer) {
-		flush_cache((ulong) os_old_buffer, os_old_count);
-		ret = write(ofd, os_old_buffer, os_old_count);
-		if (ret < 0)
-			return ret;
-		os_data_total += os_old_count;
-		free(os_old_buffer);
+		char *ori_buf = os_old_buffer;
+		do {
+			if (write_idx == MAX_WRITE_BUFFER) {
+				ret = write(ofd, write_buffer,
+						MAX_WRITE_BUFFER);
+				if (ret < 0) {
+					fprintf(stderr,
+						"write to device failed\n");
+					return ret;
+				}
+				write_idx = 0;
+			}
+			copy_size = min(os_old_count, (MAX_WRITE_BUFFER -
+						write_idx));
+			memcpy(write_buffer + write_idx, os_old_buffer,
+					copy_size);
+			write_idx += copy_size;
+			os_data_total += copy_size;
+			os_old_count -= copy_size;
+			os_old_buffer += copy_size;
+		} while (os_old_count);	/* if remaining bytes */
+		free(ori_buf);
 	}
 	os_old_count = os_data_count;
 	os_old_buffer = os_data_addr - os_data_count;
@@ -533,6 +555,14 @@ static ulong load_serial_bin(void)
 	int size, i;
 	char buf[32];
 
+	/* Try to allocate the buffer we shall write to files */
+	write_buffer = malloc(MAX_WRITE_BUFFER);
+	if (write_buffer == NULL) {
+		fprintf(stderr, "could not allocate file i/o buffer\n");
+		return -ENOMEM;
+	}
+
+	/* Lets get the image from host */
 	size = k_recv();
 
 	/*
@@ -545,10 +575,23 @@ static ulong load_serial_bin(void)
 			(void)getc();
 		udelay(1000);
 	}
+
+	/* Flush out the remaining data if any */
+	if (write_idx > 0) {
+		i = write(ofd, write_buffer, write_idx);
+		if (i < 0) {
+			fprintf(stderr, "write to device failed\n");
+			size = i;
+			goto err_quit;
+		}
+		write_idx = 0;
+	}
 	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
 	sprintf(buf, "%X", size);
 	setenv("filesize", buf);
 
+err_quit:
+	free(write_buffer);
 	return size;
 }
 

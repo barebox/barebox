@@ -15,6 +15,18 @@ extern char * strsep(char **,const char *);
 extern __kernel_size_t strspn(const char *,const char *);
 
 
+#define strchr(s, c) ({ \
+	(typeof(&(s)[0]))(_strchr((s), c)); \
+	})
+
+#define strrchr(s, c) ({ \
+	(typeof(&(s)[0]))(_strrchr((s), c)); \
+	})
+
+#define strstr(s1, s2) ({ \
+	(typeof(&(s1)[0]))(_strstr((s1), (s2))); \
+	})
+
 /*
  * Include machine specific inline routines
  */
@@ -39,13 +51,13 @@ extern int strcmp(const char *,const char *);
 extern int strncmp(const char *,const char *,__kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_STRCHR
-extern char * strchr(const char *,int);
+extern char * _strchr(const char *,int);
 #endif
 #ifndef __HAVE_ARCH_STRRCHR
-extern char * strrchr(const char *,int);
+extern char * _strrchr(const char *,int);
 #endif
 #ifndef __HAVE_ARCH_STRSTR
-extern char * strstr(const char *,const char *);
+extern char * _strstr(const char *,const char *);
 #endif
 #ifndef __HAVE_ARCH_STRLEN
 extern __kernel_size_t strlen(const char *);

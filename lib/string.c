@@ -160,7 +160,7 @@ EXPORT_SYMBOL(strncmp);
  * @s: The string to be searched
  * @c: The character to search for
  */
-char * strchr(const char * s, int c)
+char * _strchr(const char * s, int c)
 {
 	for(; *s != (char) c; ++s)
 		if (*s == '\0')
@@ -168,7 +168,7 @@ char * strchr(const char * s, int c)
 	return (char *) s;
 }
 #endif
-EXPORT_SYMBOL(strchr);
+EXPORT_SYMBOL(_strchr);
 
 #ifndef __HAVE_ARCH_STRRCHR
 /**
@@ -176,7 +176,7 @@ EXPORT_SYMBOL(strchr);
  * @s: The string to be searched
  * @c: The character to search for
  */
-char * strrchr(const char * s, int c)
+char * _strrchr(const char * s, int c)
 {
        const char *p = s + strlen(s);
        do {
@@ -522,7 +522,7 @@ EXPORT_SYMBOL(memscan);
  * @s1: The string to be searched
  * @s2: The string to search for
  */
-char * strstr(const char * s1,const char * s2)
+char * _strstr(const char * s1,const char * s2)
 {
 	int l1, l2;
 

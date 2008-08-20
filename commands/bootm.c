@@ -274,7 +274,7 @@ struct image_handle *map_image(const char *filename, int verify)
 	len  = ntohl(header->ih_size);
 
 	handle->data = memmap(fd, PROT_READ);
-	if (!handle->data) {
+	if (handle->data == (void *)-1) {
 		handle->data = xmalloc(len);
 		handle->flags = IH_MALLOC;
 		if (read(fd, handle->data, len) < 0) {

@@ -4,14 +4,6 @@
 kernel=net
 root=net
 
-# use 'dhcp' todo dhcp in uboot and in kernel
-ip=dhcp
-
-eth0.ipaddr=192.168.23.164
-eth0.netmask=255.255.255.0
-eth0.gateway=192.168.23.2
-eth0.serverip=192.168.23.2
-
 uimage=uImage-pcm038
 jffs2=root-pcm038.jffs2
 
@@ -26,3 +18,11 @@ rootpart_nor="/dev/mtdblock3"
 nand_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
 rootpart_nand="/dev/mtdblock7"
 
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d

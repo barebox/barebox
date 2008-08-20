@@ -296,65 +296,24 @@ restart:
 
 	NetState = NETLOOP_CONTINUE;
 
-	/*
-	 *	Start the ball rolling with the given start function.  From
-	 *	here on, this code is a state machine driven by received
-	 *	packets and timer events.
-	 */
+	NetOurGatewayIP = dev_get_param_ip(eth_current->dev, "gateway");
+	NetOurSubnetMask = dev_get_param_ip(eth_current->dev, "netmask");
+	NetOurVLAN = getenv_VLAN("vlan");
+	NetOurNativeVLAN = getenv_VLAN("nvlan");
+	NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 
-	switch (protocol) {
-#ifdef CONFIG_NET_NFS
-	case NFS:
-#endif
-#ifdef CONFIG_NET_PING
-	case PING:
-#endif
-#ifdef CONFIG_NET_SNTP
-	case SNTP:
-#endif
-	case NETCONS:
-	case TFTP:
-		NetOurGatewayIP = dev_get_param_ip(eth_current->dev, "gateway");
-		NetOurSubnetMask = dev_get_param_ip(eth_current->dev, "netmask");
-		NetOurVLAN = getenv_VLAN("vlan");
-		NetOurNativeVLAN = getenv_VLAN("nvlan");
-
-		switch (protocol) {
-#ifdef CONFIG_NET_NFS
-		case NFS:
-#endif
-		case NETCONS:
-		case TFTP:
-			NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
-			break;
-#ifdef CONFIG_NET_PING
-		case PING:
-			/* nothing */
-			break;
-#endif
-#ifdef CONFIG_NET_SNTP
-		case SNTP:
-			/* nothing */
-			break;
-#endif
-		default:
-			break;
-		}
-
-		break;
-	case BOOTP:
-	case RARP:
+	if (protocol == RARP)
 		/*
 		 * initialize our IP addr to 0 in order to accept ANY
 		 * IP addr assigned to us by the BOOTP / RARP server
 		 */
 		NetOurIP = 0;
-		NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
-		NetOurVLAN = getenv_VLAN("vlan");	/* VLANs must be read */
-		NetOurNativeVLAN = getenv_VLAN("nvlan");
-	default:
-		break;
-	}
+
+	/*
+	 *	Start the ball rolling with the given start function.  From
+	 *	here on, this code is a state machine driven by received
+	 *	packets and timer events.
+	 */
 
 	switch (net_check_prereq (protocol)) {
 	case 1:

@@ -374,7 +374,6 @@ static int handler_parse_options(struct image_data *data, int opt, char *optarg)
 static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong	iflag;
-	int	verify = 1;
 	int	opt;
 	image_header_t *os_header;
 	struct image_handle *os_handle, *initrd_handle = NULL;
@@ -420,7 +419,7 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	os_handle = map_image(argv[optind], verify);
+	os_handle = map_image(argv[optind], data.verify);
 	if (!os_handle)
 		return 1;
 	data.os = os_handle;

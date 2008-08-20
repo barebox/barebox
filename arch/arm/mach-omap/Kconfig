@@ -50,12 +50,6 @@ config OMAP_MALLOC_LEN
 	help
 	  Select the Malloc Length when defaults are used
 
-config OMAP3_CLOCK_CONFIG
-	depends on ARCH_OMAP
-	bool "Clock Configuration"
-	help
-	  Say Y here if you like to have OMAP3 Clock configuration done.
-
  ### Generic Clock configurations to be enabled by Mach - invisible to enable.
  config OMAP_CLOCK_UART
  	bool

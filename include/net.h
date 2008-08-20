@@ -78,15 +78,7 @@ struct eth_device {
 	struct device_d *dev;
 };
 
-struct param_d *eth_param_get(struct device_d* dev, int no);
-int eth_param_set(struct device_d* dev, struct param_d *param, char *val);
-
 int eth_register(struct eth_device* dev);/* Register network device	*/
-void eth_try_another(int first_restart);	/* Change the device		*/
-struct eth_device *eth_get_dev(void);	/* get the current device MAC	*/
-struct eth_device *eth_get_dev_by_name(char *devname); /* get device	*/
-int eth_get_dev_index (void);		/* get the device index         */
-void eth_set_ethaddr(int num, char* a);	/* Set new MAC address		*/
 
 int eth_open(void);			/* open the device		*/
 int eth_send(void *packet, int length);	   /* Send a packet		*/

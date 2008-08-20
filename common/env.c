@@ -198,35 +198,45 @@ static int setenv_raw(struct variable_d *var, const char *name, const char *valu
 	return 0;
 }
 
-int setenv(const char *name, const char *value)
+int setenv(const char *_name, const char *value)
 {
+	char *name = strdup(_name);
 	char *par;
+	struct variable_d *var;
+	int ret = 0;
 
 	if (!*value)
 		value = NULL;
 
+
 	if ((par = strchr(name, '.'))) {
 		struct device_d *dev;
+
 		*par++ = 0;
 		dev = get_device_by_id(name);
-		if (dev) {
-			int ret = dev_set_param(dev, par, value);
-			if (ret < 0)
-				perror("set parameter");
-			errno = 0;
-		} else {
-			errno = -ENODEV;
+		if (dev)
+			ret = dev_set_param(dev, par, value);
+		else
+			ret = -ENODEV;
+
+		errno = ret;
+
+		if (ret < 0)
 			perror("set parameter");
-		}
-		return errno;
+
+		goto out;
 	}
 
 	if (getenv_raw(context->global, name))
-		setenv_raw(context->global, name, value);
+		var = context->global;
 	else
-		setenv_raw(context->local, name, value);
+		var = context->local;
 
-	return 0;
+	ret = setenv_raw(var, name, value);
+out:
+	free(name);
+
+	return ret;
 }
 EXPORT_SYMBOL(setenv);
 

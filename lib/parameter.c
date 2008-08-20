@@ -92,8 +92,10 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
 		return -EACCES;
 	}
 
-	if (param->set)
-		return param->set(dev, param, val);
+	if (param->set) {
+		errno = param->set(dev, param, val);
+		return errno;
+	}
 
 	if (param->value)
 		free(param->value);

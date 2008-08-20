@@ -28,6 +28,7 @@
 #include <net.h>
 #include <miiphy.h>
 #include <errno.h>
+#include <malloc.h>
 
 static struct eth_device *eth_current;
 
@@ -83,6 +84,32 @@ int eth_rx(void)
 	return eth_current->recv(eth_current);
 }
 
+static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
+{
+	char ethaddr[sizeof("xx:xx:xx:xx:xx:xx")];
+
+	if (string_to_ethaddr(val, ethaddr) < 0)
+		return -EINVAL;
+
+	free(param->value);
+	param->value = strdup(val);
+
+	return 0;
+}
+
+static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const char *val)
+{
+	IPaddr_t ip;
+
+	if (string_to_ip(val, &ip))
+		return -EINVAL;
+
+	free(param->value);
+	param->value = strdup(val);
+
+	return 0;
+}
+
 int eth_register(struct eth_device *edev)
 {
         struct device_d *dev = edev->dev;
@@ -95,10 +122,15 @@ int eth_register(struct eth_device *edev)
 	}
 
 	edev->param_ip.name = "ipaddr";
+	edev->param_ip.set = &eth_set_ipaddr;
 	edev->param_ethaddr.name = "ethaddr";
+	edev->param_ethaddr.set = &eth_set_ethaddr;
 	edev->param_gateway.name = "gateway";
+	edev->param_gateway.set = &eth_set_ipaddr;
 	edev->param_netmask.name = "netmask";
+	edev->param_netmask.set = &eth_set_ipaddr;
 	edev->param_serverip.name = "serverip";
+	edev->param_serverip.set = &eth_set_ipaddr;
 	dev_add_param(dev, &edev->param_ip);
 	dev_add_param(dev, &edev->param_ethaddr);
 	dev_add_param(dev, &edev->param_gateway);

@@ -63,7 +63,8 @@ IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
 
 int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 {
-	char ipstr[16];
+	char ipstr[sizeof("xxx.xxx.xxx.xxx")];
+
 	ip_to_string(ip, ipstr);
 
 	return dev_set_param(dev, name, ipstr);

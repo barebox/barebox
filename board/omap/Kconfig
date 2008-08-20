@@ -23,12 +23,14 @@
 config ARCH_TEXT_BASE
 	hex
 	default 0x80e80000 if MACH_OMAP343xSDP
+	default 0x80e80000 if MACH_BEAGLE
 
 menu "OMAP Platform Features"
 	depends on MACH_OMAP
 
 config BOARDINFO
 	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
+	default "Texas Instrument's Beagle" if MACH_BEAGLE
 
 choice
 	prompt "Select OMAP platform"
@@ -39,6 +41,14 @@ config MACH_OMAP343xSDP
 	select OMAP_CLOCK_ALL
 	help
 	  Say Y here if you are using SDP343x platform
+
+config MACH_BEAGLE
+	bool "Texas Instrument's Beagle Board"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	  help
+	  Say Y here if you are using Beagle Board
+
 endchoice
 
 config MACH_OMAP_ADVANCED_MUX

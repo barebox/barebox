@@ -22,4 +22,5 @@
 
 obj-$(CONFIG_MACH_DO_LOWLEVEL_INIT) += platform.o
 obj-$(CONFIG_MACH_OMAP343xSDP) += board-sdp343x.o
+obj-$(CONFIG_MACH_BEAGLE) += board-beagle.o
 

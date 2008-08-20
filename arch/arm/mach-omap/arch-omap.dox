@@ -18,6 +18,7 @@ This document highlights some of the factors for supporting Texas Instrument's O
 @section omap_boards Boards using OMAP processors
 
 @li @subpage board/omap/board-sdp343x.c
+@li @subpage board/omap/board-beagle.c
 
 @section omap_arch Documentation for OMAP Architectures files
 

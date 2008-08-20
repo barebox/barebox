@@ -54,7 +54,7 @@
 #include <asm/arch/syslib.h>
 #include <asm/arch/control.h>
 #include <asm/arch/omap3-mux.h>
-#include "board-sdp343x.h"
+#include "board.h"
 
 /******************** Board Boot Time *******************/
 static void sdrc_init(void);

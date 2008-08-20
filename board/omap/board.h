@@ -1,15 +1,15 @@
 /**
  * @file
- * @brief exported APIs for board header.
+ * @brief exported generic APIs which various board files implement
  *
- * FileName: board/omap/board-sdp343x.h
+ * FileName: board/omap/board.h
  *
- * We may choose to add board specific defines here at a later point of time
+ * This file will not contain any board specific implementations.
  */
 /*
- * (C) Copyright 2006-2008
+ * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
- * Nishanth Menon <x0nishan@ti.com>
+ * Raghavendra KH <r-khandenahally@ti.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,8 +26,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#ifndef __BOARD_SDP343X_H_
-#define __BOARD_SDP343X_H_
+#ifndef __BOARD_OMAP_H_
+#define __BOARD_OMAP_H_
 
+/** Generic Board initialization called from platform.S */
 void board_init(void);
-#endif /* __BOARD_SDP343X_H_ */
+
+#endif         /* __BOARD_OMAP_H_ */

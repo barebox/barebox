@@ -398,7 +398,7 @@ static inline void NetCopyLong(ulong *to, ulong *from)
 char *	ip_to_string (IPaddr_t x, char *s);
 
 /* Convert a string to ip address */
-IPaddr_t string_to_ip(const char *s);
+int string_to_ip(const char *s, IPaddr_t *ip);
 
 /* Convert a VLAN id to a string */
 void	VLAN_to_string (ushort x, char *s);

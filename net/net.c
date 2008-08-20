@@ -82,6 +82,8 @@
 #include <param.h>
 #include <net.h>
 #include <driver.h>
+#include <errno.h>
+#include <linux/ctype.h>
 #include "bootp.h"
 #include "tftp.h"
 #include "rarp.h"
@@ -1095,24 +1097,33 @@ char *ip_to_string (IPaddr_t x, char *s)
 	return s;
 }
 
-IPaddr_t string_to_ip(const char *s)
+int string_to_ip(const char *s, IPaddr_t *ip)
 {
-	IPaddr_t addr;
+	IPaddr_t addr = 0;
 	char *e;
 	int i;
 
 	if (!s)
-		return 0;
+		return -EINVAL;
 
-	for (addr = 0, i = 0; i < 4; ++i) {
-		ulong val = s ? simple_strtoul(s, &e, 10) : 0;
+	for (i = 0; i < 4; i++) {
+		ulong val;
+
+		if (!isdigit(*s))
+			return -EINVAL;
+
+		val = simple_strtoul(s, &e, 10);
 		addr <<= 8;
 		addr |= (val & 0xFF);
-		if (s)
-			s = *e ? e + 1 : e;
+
+		if (*e != '.' && i != 3)
+			return -EINVAL;
+
+		s = e + 1;
 	}
 
-	return htonl(addr);
+	*ip = htonl(addr);
+	return 0;
 }
 
 void VLAN_to_string(ushort x, char *s)
@@ -1150,11 +1161,6 @@ void print_IPaddr (IPaddr_t x)
 	ip_to_string (x, tmp);
 
 	puts (tmp);
-}
-
-IPaddr_t getenv_IPaddr (char *var)
-{
-	return (string_to_ip(getenv(var)));
 }
 
 ushort getenv_VLAN(char *var)

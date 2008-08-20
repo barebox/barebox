@@ -93,8 +93,7 @@ int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (argc < 2)
 		return -1;
 
-	NetPingIP = string_to_ip(argv[1]);
-	if (NetPingIP == 0) {
+	if (string_to_ip(argv[1], &NetPingIP)) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
 		return -1;
 	}

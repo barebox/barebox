@@ -14,7 +14,6 @@ eth0.ipaddr=192.168.0.99
 eth0.netmask=255.255.255.0
 eth0.gateway=192.168.0.110
 eth0.serverip=192.168.0.110
-eth0.ethaddr=00:50:c2:72:a7:4a
 
 uimage=uImage-mcf5485
 jffs2=root-mcf5485-ptx.jffs2
@@ -23,7 +22,7 @@ autoboot_timeout=3
 
 #nfsroot="/home/cschlote/src/bitshrine/ltib/rootfs"
 nfsroot="/home/cschlote/src/pengutronics/ptxdist-project-KP-UKD/root-debug,v3"
-bootargs="console=ttyS0 mac0=00:50:c2:72:a7:4a rw initcall_debug debug"
+bootargs="console=ttyS0 rw initcall_debug debug"
 
 #
 # setup the partitions in the main flash

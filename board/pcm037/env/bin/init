@@ -4,9 +4,4 @@
 nor_parts="nor0:128k(uboot),128k(env),2M(kernel),-(jffs2)"
 addpart $nor_parts
 
-#
-# setup default ethernet address
-#
-eth0.ethaddr=80:81:82:83:84:85
-
 echo "System is up and running"

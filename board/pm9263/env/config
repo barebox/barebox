@@ -11,7 +11,6 @@ ip=dhcp
 # setup default ethernet address
 #
 eth0.serverip=192.168.23.108
-eth0.ethaddr=80:97:78:38:27:73
 
 uimage=uImage-at91sam9260ek
 

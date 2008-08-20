@@ -332,8 +332,6 @@ restart:
 		case DHCP:
 			/* Start with a clean slate... */
 			BootpTry = 0;
-			NetOurIP = 0;
-			NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 			DhcpRequest();		/* Basically same as BOOTP */
 			break;
 #endif

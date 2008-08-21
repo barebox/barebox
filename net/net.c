@@ -302,13 +302,6 @@ restart:
 	NetOurNativeVLAN = getenv_VLAN("nvlan");
 	NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
 
-	if (protocol == RARP)
-		/*
-		 * initialize our IP addr to 0 in order to accept ANY
-		 * IP addr assigned to us by the BOOTP / RARP server
-		 */
-		NetOurIP = 0;
-
 	/*
 	 *	Start the ball rolling with the given start function.  From
 	 *	here on, this code is a state machine driven by received
@@ -332,6 +325,7 @@ restart:
 		case DHCP:
 			/* Start with a clean slate... */
 			BootpTry = 0;
+			NetOurIP = 0;
 			DhcpRequest();		/* Basically same as BOOTP */
 			break;
 #endif
@@ -343,6 +337,7 @@ restart:
 #endif
 #ifdef CONFIG_NET_RARP
 		case RARP:
+			NetOurIP = 0;
 			RarpTry = 0;
 			RarpRequest ();
 			break;

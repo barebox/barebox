@@ -31,6 +31,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <asm/mach-types.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",

@@ -98,7 +98,7 @@ static int imx27ads_timing_init(void)
 
 core_initcall(imx27ads_timing_init);
 
-static int pcm038_devices_init(void)
+static int mx27ads_devices_init(void)
 {
 	int i;
 	unsigned int mode[] = {
@@ -144,9 +144,9 @@ static int pcm038_devices_init(void)
 	return 0;
 }
 
-device_initcall(pcm038_devices_init);
+device_initcall(mx27ads_devices_init);
 
-static struct device_d pcm038_serial_device = {
+static struct device_d mx27ads_serial_device = {
 	.name     = "imx_serial",
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
@@ -154,11 +154,11 @@ static struct device_d pcm038_serial_device = {
 	.type     = DEVICE_TYPE_CONSOLE,
 };
 
-static int pcm038_console_init(void)
+static int mx27ads_console_init(void)
 {
-	register_device(&pcm038_serial_device);
+	register_device(&mx27ads_serial_device);
 	return 0;
 }
 
-console_initcall(pcm038_console_init);
+console_initcall(mx27ads_console_init);
 

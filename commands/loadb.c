@@ -61,6 +61,8 @@
 #define untochar(x)	((int) (((x) - SPACE) & 0xff))
 #define DEF_FILE	"image.bin"
 
+#ifdef CONFIG_CMD_LOADB
+
 static int ofd;			/* output file descriptor */
 
 /* Size of my buffer to write to o/p file */
@@ -820,4 +822,5 @@ U_BOOT_CMD_START(loady)
 	.usage = "Load binary file over serial line (ymodem mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)
 U_BOOT_CMD_END
+#endif
 

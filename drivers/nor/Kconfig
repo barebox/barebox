@@ -1,0 +1,74 @@
+menu "flash drivers                 "
+
+config HAS_CFI
+	bool
+
+config DRIVER_CFI
+	bool "cfi flash driver"
+	help
+	  If you have NOR Flash devices connected to your system and wish
+	  to use them say yes here.
+
+config DRIVER_CFI_NEW
+	depends on DRIVER_CFI
+	default y
+	bool "new cfi flash driver"
+	help
+	  The old cfi flash driver is mainly an adopted version from U-Boot v1
+	  whereas the new driver contains some more experimental features such
+	  as selecting the supported chiptypes and bus widths making the driver
+	  smaller.
+	  Normally you should stick with the new driver, but if you experience
+	  troubles you could try the old driver. Please report if the new driver
+	  breaks something.
+
+config DRIVER_CFI_OLD
+	bool "old cfi flash driver"
+	default y
+	depends on !DRIVER_CFI_NEW
+
+config DRIVER_CFI_INTEL
+	depends on DRIVER_CFI_NEW
+	bool "Support Intel flash chips"
+
+config DRIVER_CFI_AMD
+	depends on DRIVER_CFI_NEW
+	bool "support AMD flash chips"
+
+config DRIVER_CFI_BANK_WIDTH_1
+	bool "Support  8-bit buswidth"
+	depends on DRIVER_CFI_NEW
+	default y
+	help
+	  If you wish to support CFI devices on a physical bus which is
+	  8 bits wide, say 'Y'.
+
+config DRIVER_CFI_BANK_WIDTH_2
+	bool "Support 16-bit buswidth"
+	depends on DRIVER_CFI_NEW
+	default y
+	help
+	  If you wish to support CFI devices on a physical bus which is
+	  16 bits wide, say 'Y'.
+
+config DRIVER_CFI_BANK_WIDTH_4
+	bool "Support 32-bit buswidth"
+	depends on DRIVER_CFI_NEW
+	default y
+	help
+	  If you wish to support CFI devices on a physical bus which is
+	  32 bits wide, say 'Y'.
+
+config DRIVER_CFI_BANK_WIDTH_8
+	bool "Support 64-bit buswidth"
+	depends on DRIVER_CFI_NEW
+	default n
+	help
+	  If you wish to support CFI devices on a physical bus which is
+	  64 bits wide, say 'Y'.
+
+config CFI_BUFFER_WRITE
+	bool "use cfi driver with buffer write"
+	depends on DRIVER_CFI || DRIVER_CFI_NEW
+
+endmenu

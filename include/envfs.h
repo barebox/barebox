@@ -37,7 +37,6 @@ struct envfs_super {
 #endif
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-#warning "envfs compiled on little endian host"
 #define ENVFS_16(x)	(x)
 #define ENVFS_24(x)	(x)
 #define ENVFS_32(x)	(x)
@@ -46,7 +45,6 @@ struct envfs_super {
 #define ENVFS_SET_OFFSET(x,y)	((x)->offset = (y))
 #define ENVFS_SET_NAMELEN(x,y) ((x)->namelen = (y))
 #elif __BYTE_ORDER == __BIG_ENDIAN
-#warning "envfs compiled on big endian host"
 #ifdef __KERNEL__
 #define ENVFS_16(x)	swab16(x)
 #define ENVFS_24(x)	((swab32(x)) >> 8)

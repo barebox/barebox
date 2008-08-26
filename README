@@ -86,14 +86,8 @@ test drive the code without having real hardware. So for this test
 scenario, ARCH=sandbox is the valid architecture selection. This currently
 only works on ia32 hosts and partly on x86-64.
 
-Selection of the architecture and the cross compiler can be done in two
-ways. You can either specify it using the environment variables ARCH
-and CROSS_COMPILE, or you can create the soft links cross_arch and
-cross_compile pointing to your architecture and compiler. For ARCH=sandbox
-we do not need a cross compiler so it is sufficient to specify the
-architecture:
-
-  # ln -s sandbox cross_arch
+Selection of the architecture and the cross compiler can be done by using
+the environment variables ARCH and CROSS_COMPILE.
 
 In order to configure the various aspects of U-Boot, start the U-Boot
 configuration system:

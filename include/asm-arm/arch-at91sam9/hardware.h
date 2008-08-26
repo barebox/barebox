@@ -14,28 +14,16 @@
 #ifndef __ASM_ARCH_HARDWARE_H
 #define __ASM_ARCH_HARDWARE_H
 
-#if defined(CONFIG_AT91RM9200)
-#include <asm/arch/at91rm9200.h>
-#elif defined(CONFIG_ARCH_AT91SAM9260)
-#include <asm/arch/at91sam9260.h>
-#define AT91_BASE_EMAC	AT91SAM9260_BASE_EMAC
-#define AT91_BASE_SPI	AT91SAM9260_BASE_SPI0
-#define AT91_ID_UHP	AT91SAM9260_ID_UHP
-#define AT91_PMC_UHP	AT91SAM926x_PMC_UHP
+#if defined(CONFIG_ARCH_AT91SAM9260)
+#include <asm/arch/AT91SAM9260_inc.h>
 #elif defined(CONFIG_ARCH_AT91SAM9261)
-#include <asm/arch/at91sam9261.h>
+#include <asm/arch/AT91SAM9261_inc.h>
 #elif defined(CONFIG_ARCH_AT91SAM9263)
-#include <asm/arch/at91sam9263.h>
+#include <asm/arch/AT91SAM9263_inc.h>
 #elif defined(CONFIG_ARCH_AT91SAM9RL)
-#include <asm/arch/at91sam9rl.h>
+#include <asm/arch/AT91SAM9RL_inc.h>
 #elif defined(CONFIG_ARCH_AT91CAP9)
-#include <asm/arch/at91cap9.h>
-#define AT91_BASE_EMAC	AT91CAP9_BASE_EMAC
-#define AT91_BASE_SPI	AT91CAP9_BASE_SPI0
-#define AT91_ID_UHP	AT91CAP9_ID_UHP
-#define AT91_PMC_UHP	AT91CAP9_PMC_UHP
-#elif defined(CONFIG_ARCH_AT91X40)
-#include <asm/arch/at91x40.h>
+#include <asm/arch/AT91CAP9_inc.h>
 #else
 #error "Unsupported AT91 processor"
 #endif

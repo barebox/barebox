@@ -964,7 +964,7 @@ EXPORT_SYMBOL(mem_write);
 
 int mem_memmap(struct device_d *dev, void **map, int flags)
 {
-	*map = dev->map_base;
+	*map = (void *)dev->map_base;
 	return 0;
 }
 EXPORT_SYMBOL(mem_memmap);

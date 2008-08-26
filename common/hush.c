@@ -1412,11 +1412,15 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 static int parse_string_outer(struct p_context *ctx, const char *s, int flag)
 {
 	struct in_str input;
-	char *p = NULL;
+	char *p;
+	const char *cp;
 	int rcode;
+
 	if ( !s || !*s)
 		return 1;
-	if (!(p = strchr(s, '\n')) || *++p) {
+
+	cp = strchr(s, '\n');
+	if (!cp || *++cp) {
 		p = xmalloc(strlen(s) + 2);
 		strcpy(p, s);
 		strcat(p, "\n");

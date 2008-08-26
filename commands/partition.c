@@ -109,7 +109,7 @@ static int dev_check_fixed(struct device_d *physdev, struct partition *new_part)
 	return 0;
 }
 
-static int mtd_part_do_parse_one(struct partition *part, const char *str,
+static int mtd_part_do_parse_one(struct partition *part, const char *partstr,
 				 char **endp)
 {
 	ulong size;
@@ -118,11 +118,11 @@ static int mtd_part_do_parse_one(struct partition *part, const char *str,
 
 	memset(buf, 0, MAX_DRIVER_NAME);
 
-	if (*str == '-') {
+	if (*partstr == '-') {
 		size = part->physdev->size - part->offset;
-		end = (char *)str + 1;
+		end = (char *)partstr + 1;
 	} else {
-		size = strtoul_suffix(str, &end, 0);
+		size = strtoul_suffix(partstr, &end, 0);
 	}
 
 	if (size + part->offset > part->physdev->size) {
@@ -130,29 +130,29 @@ static int mtd_part_do_parse_one(struct partition *part, const char *str,
 		return -EINVAL;
 	}
 
-	str = end;
+	partstr = end;
 
-	if (*str == '(') {
-		str++;
-		end = strchr(str, ')');
+	if (*partstr == '(') {
+		partstr++;
+		end = strchr(partstr, ')');
 		if (!end) {
 			printf("could not find matching ')'\n");
 			return -EINVAL;
 		}
-		if (end - str >= MAX_DRIVER_NAME) {
+		if (end - partstr >= MAX_DRIVER_NAME) {
 			printf("device name too long\n");
 			return -EINVAL;
 		}
 
-		memcpy(part->name, str, end - str);
+		memcpy(part->name, partstr, end - partstr);
 		end++;
 	}
 
-	str = end;
+	partstr = end;
 
-	if (*str == 'r' && *(str + 1) == 'o') {
+	if (*partstr == 'r' && *(partstr + 1) == 'o') {
 		part->flags |= PARTITION_READONLY;
-		end = (char *)(str + 2);
+		end = (char *)(partstr + 2);
 	}
 
 	if (endp)

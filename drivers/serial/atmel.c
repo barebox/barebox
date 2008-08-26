@@ -22,6 +22,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <asm/io.h>
+#include <asm/arch/clk.h>
 
 /* USART3 register offsets */
 #define USART3_CR				0x0000
@@ -308,19 +309,6 @@
 		    << USART3_##name##_OFFSET))		\
 	 | USART3_BF(name,value))
 
-/*
- * Initialise the serial port with the given baudrate. The settings
- * are always 8 data bits, no parity, 1 stop bit, no start bits.
- *
- */
-static int atmel_serial_init_port(struct console_device *cdev)
-{
-//	struct device_d *dev = cdev->dev;
-//	ulong base = dev->map_base;
-
-	return 0;
-}
-
 static void atmel_serial_putc(struct console_device *cdev, char c)
 {
 	struct device_d *dev = cdev->dev;
@@ -347,8 +335,41 @@ static int atmel_serial_getc(struct console_device *cdev)
 
 static int atmel_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
-//	struct device_d *dev = cdev->dev;
-//	ulong base = dev->map_base;
+	struct device_d *dev = cdev->dev;
+	unsigned long divisor;
+	unsigned long usart_hz;
+
+	/*
+	 *              Master Clock
+	 * Baud Rate = --------------
+	 *                16 * CD
+	 */
+	usart_hz = get_usart_clk_rate(0);
+	divisor = (usart_hz / 16 + baudrate / 2) / baudrate;
+	writel(USART3_BF(CD, divisor), dev->map_base + USART3_BRGR);
+
+	return 0;
+}
+
+/*
+ * Initialise the serial port with the given baudrate. The settings
+ * are always 8 data bits, no parity, 1 stop bit, no start bits.
+ *
+ */
+static int atmel_serial_init_port(struct console_device *cdev)
+{
+	struct device_d *dev = cdev->dev;
+
+	writel(USART3_BIT(RSTRX) | USART3_BIT(RSTTX), dev->map_base + USART3_CR);
+
+	atmel_serial_setbaudrate(cdev, 115200);
+
+	writel(USART3_BIT(RXEN) | USART3_BIT(TXEN), dev->map_base + USART3_CR);
+	writel((USART3_BF(USART_MODE, USART3_USART_MODE_NORMAL)
+			   | USART3_BF(USCLKS, USART3_USCLKS_MCK)
+			   | USART3_BF(CHRL, USART3_CHRL_8)
+			   | USART3_BF(PAR, USART3_PAR_NONE)
+			   | USART3_BF(NBSTOP, USART3_NBSTOP_1)), dev->map_base + USART3_MR);
 
 	return 0;
 }
@@ -367,7 +388,6 @@ static int atmel_serial_probe(struct device_d *dev)
 	cdev->setbrg = atmel_serial_setbaudrate;
 
 	atmel_serial_init_port(cdev);
-	atmel_serial_setbaudrate(cdev, 115200);
 
 	/* Enable UART */
 

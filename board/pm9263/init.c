@@ -31,11 +31,9 @@
 #include <fcntl.h>
 #include <asm/io.h>
 #include <asm/hardware.h>
-#include <asm/arch/memory-map.h>
-#include <asm/arch/ether.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/gpio.h>
+#include <asm/arch/ether.h>
 
 static struct device_d sdram_dev = {
 	.name     = "ram",
@@ -63,7 +61,7 @@ static struct at91sam_ether_platform_data macb_pdata = {
 static struct device_d macb_dev = {
 	.name     = "macb",
 	.id       = "eth0",
-	.map_base = AT91SAM9263_BASE_EMAC,
+	.map_base = AT91C_BASE_MACB,
 	.size     = 0x1000,
 	.type     = DEVICE_TYPE_ETHER,
 	.platform_data = &macb_pdata,
@@ -71,6 +69,31 @@ static struct device_d macb_dev = {
 
 static int pm9263_devices_init(void)
 {
+	u32 pe = AT91C_PC25_ERXDV;
+
+	writel(pe, AT91C_BASE_PIOC + PIO_BSR(0));
+	writel(pe, AT91C_BASE_PIOC + PIO_PDR(0));
+
+	pe =	AT91C_PE21_ETXCK |
+		AT91C_PE23_ETX0 |
+		AT91C_PE24_ETX1 |
+		AT91C_PE25_ERX0 |
+		AT91C_PE26_ERX1 |
+		AT91C_PE27_ERXER |
+		AT91C_PE28_ETXEN |
+		AT91C_PE29_EMDC |
+		AT91C_PE30_EMDIO;
+
+	writel(pe, AT91C_BASE_PIOE + PIO_ASR(0));
+	writel(pe, AT91C_BASE_PIOE + PIO_PDR(0));
+
+	/* set PB27 to '1',  enable 50MHz oscillator */
+	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_PER(0));
+	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_OER(0));
+	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_SODR(0));
+
+	writel(1 << AT91C_ID_EMAC, AT91C_PMC_PCER);
+
 	register_device(&sdram_dev);
 	register_device(&macb_dev);
 	register_device(&cfi_dev);
@@ -91,13 +114,15 @@ device_initcall(pm9263_devices_init);
 static struct device_d pm9263_serial_device = {
 	.name     = "atmel_serial",
 	.id       = "cs0",
-	.map_base = AT91_DBGU + AT91_BASE_SYS,
+	.map_base = AT91C_BASE_DBGU,
 	.size     = 4096,
 	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int pm9263_console_init(void)
 {
+	writel(AT91C_PC31_DTXD | AT91C_PC30_DRXD, AT91C_PIOC_PDR);
+
 	register_device(&pm9263_serial_device);
 	return 0;
 }

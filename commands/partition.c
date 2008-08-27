@@ -133,22 +133,22 @@ static int mtd_part_do_parse_one(struct partition *part, const char *partstr,
 	partstr = end;
 
 	if (*partstr == '(') {
-		const char *bclose;
-
 		partstr++;
-		bclose = strchr(partstr, ')');
-		if (!bclose) {
+		end = strchr(partstr, ')');
+		if (!end) {
 			printf("could not find matching ')'\n");
 			return -EINVAL;
 		}
-		if (bclose - partstr >= MAX_DRIVER_NAME) {
+		if (end - partstr >= MAX_DRIVER_NAME) {
 			printf("device name too long\n");
 			return -EINVAL;
 		}
 
-		memcpy(part->name, partstr, bclose - partstr);
-		partstr = bclose + 1;
+		memcpy(part->name, partstr, end - partstr);
+		end++;
 	}
+
+	partstr = end;
 
 	if (*partstr == 'r' && *(partstr + 1) == 'o') {
 		part->flags |= PARTITION_READONLY;

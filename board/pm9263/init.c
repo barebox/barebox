@@ -104,7 +104,7 @@ static int pm9263_devices_init(void)
 #endif
 
 	armlinux_set_bootparams((void *)0x20000100);
-	armlinux_set_architecture(0x4b2);
+	armlinux_set_architecture(0x5c3);
 
 	return 0;
 }

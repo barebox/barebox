@@ -63,7 +63,7 @@ static int copy_file(const char *src, const char *dst)
 
 	while(1) {
 		r = read(srcfd, rw_buf, RW_BUF_SIZE);
-		if (read < 0) {
+		if (r < 0) {
 			perror("read");
 			goto out;
 		}

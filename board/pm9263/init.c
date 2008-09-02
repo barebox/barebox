@@ -98,10 +98,8 @@ static int pm9263_devices_init(void)
 	register_device(&macb_dev);
 	register_device(&cfi_dev);
 
-#ifdef CONFIG_PARTITION
 	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
 	dev_add_partition(&cfi_dev, 0x40000, 0x10000, PARTITION_FIXED, "env");
-#endif
 
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(0x5c3);

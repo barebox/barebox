@@ -198,6 +198,7 @@ static int part_ioctl(struct device_d *dev, int request,
 	off_t offset;
 
 	switch (request) {
+	case MEMSETBADBLOCK:
 	case MEMGETBADBLOCK:
 		offset = (off_t)buf;
 		offset += part->offset;

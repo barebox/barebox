@@ -2,7 +2,15 @@
 
 . /env/config
 
-image=$jffs2
-part=/dev/nor0.root
+image=$uimage
+if [ x$1 = xnand ]; then
+	part=/dev/nand0.root.bb
+elif [ x$1 = xnor ]; then
+	part=/dev/nor0.root
+else
+	echo "usage: $0 nor|nand [imagename]"
+	exit 1
+fi
 
-. /env/bin/_update $1
+. /env/bin/_update $2
+

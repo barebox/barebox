@@ -30,6 +30,7 @@
 #include <ioctl.h>
 #include <nand.h>
 #include <linux/mtd/mtd-abi.h>
+#include <fcntl.h>
 
 struct nand_bb {
 	struct device_d device;
@@ -204,32 +205,39 @@ free_out:
 	return 0;
 }
 
+#define NAND_ADD (1 << 0)
+#define NAND_DEL (1 << 1)
+#define NAND_MARKBAD (1 << 2)
+
 static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt;
 	struct device_d *dev;
 	struct nand_bb *bb;
-	int add = 0, del = 0;
+	int command = 0, badblock = 0;
 
 	getopt_reset();
 
-	while((opt = getopt(argc, argv, "ad")) > 0) {
-		switch(opt) {
+	while((opt = getopt(argc, argv, "adb:")) > 0) {
+		if (command) {
+			printf("only one command may be given\n");
+			return 1;
+		}
+
+		switch (opt) {
 		case 'a':
-			add = 1;
+			command = NAND_ADD;
 			break;
 		case 'd':
-			del = 1;
+			command = NAND_DEL;
 			break;
+		case 'b':
+			command = NAND_MARKBAD;
+			badblock = simple_strtoul(optarg, NULL, 0);
 		}
 	}
 
-	if ((add && del) || (!add && !del)) {
-		printf("either -a or -d must be given\n");
-		return 1;
-	}
-
-	if (add) {
+	if (command & NAND_ADD) {
 		while (optind < argc) {
 			dev = get_device_by_path(argv[optind]);
 			if (!dev) {
@@ -244,7 +252,7 @@ static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (del) {
+	if (command & NAND_DEL) {
 		while (optind < argc) {
 			dev = get_device_by_path(argv[optind]);
 			if (!dev) {
@@ -263,6 +271,27 @@ static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
+	if (command & NAND_MARKBAD) {
+		if (optind < argc) {
+			int ret = 0, fd;
+
+			printf("marking block at 0x%08x on %s as bad\n", badblock, argv[optind]);
+
+			fd = open(argv[optind], O_RDWR);
+			if (fd < 0) {
+				perror("open");
+				return 1;
+			}
+
+			ret = ioctl(fd, MEMSETBADBLOCK, (void *)badblock);
+			if (ret)
+				perror("ioctl");
+
+			close(fd);
+			return ret;
+		}
+	}
+
 	return 0;
 }
 
@@ -270,7 +299,8 @@ static const __maybe_unused char cmd_nand_help[] =
 "Usage: nand [OPTION]...\n"
 "nand related commands\n"
 "  -a  <dev>  register a bad block aware device ontop of a normal nand device\n"
-"  -d  <dev>  deregister a bad block aware device\n";
+"  -d  <dev>  deregister a bad block aware device\n"
+"  -b  <ofs> <dev> mark block at offset ofs as bad\n";
 
 U_BOOT_CMD_START(nand)
 	.maxargs	= CONFIG_MAXARGS,

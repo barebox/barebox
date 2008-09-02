@@ -31,6 +31,7 @@
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
+#include <asm/mach-types.h>
 
 /*
  * Up to 64MiB NOR type flash, connected to
@@ -115,8 +116,8 @@ static int imx31_devices_init(void)
 	 * not touched by any regular user
 	 */
 #ifdef CONFIG_PARTITION
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");	/* ourself */
-	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");	/* environment */
+	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");	/* ourself */
+	dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");	/* environment */
 #endif
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
@@ -126,8 +127,8 @@ static int imx31_devices_init(void)
 
 	register_device(&sdram_dev);
 
-	armlinux_set_bootparams((void *)0x08000100);
-	armlinux_set_architecture(1147);
+	armlinux_set_bootparams((void *)0x80000100);
+	armlinux_set_architecture(MACH_TYPE_PCM037);
 
 	return 0;
 }

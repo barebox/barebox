@@ -1,20 +1,28 @@
 #!/bin/sh
 
-# can be either 'net' or 'flash'
+# can be either 'net', 'nor' or 'nand''
 kernel=net
 root=net
 
-# use 'dhcp' todo dhcp in uboot and in kernel
-ip=dhcp
-
-#
-# setup default ethernet address
-#
-eth0.serverip=192.168.23.108
-
-uimage=uImage-at91sam9260ek
+uimage=uImage-PM9263
+jffs2=root-PM9263.jffs2
 
 autoboot_timeout=3
 
-nfsroot="/home/jbe/pengutronix/bsp/OSELAS.BSP-Phytec-phyCORE-i.MX27-trunk/root,v3"
-bootargs="console=ttyS0,115200 rw init=/bin/sh"
+nfsroot="/ptx/work/octopus/mkl/bucyrus/OSELAS.BSP-Bucyrus-Grabowski-trunk/platform-Ronetix-PM9263/root"
+bootargs="console=ttyS0,115200"
+
+nor_parts="256k(uboot)ro,64k(ubootenv),1536k(kernel),-(root)"
+rootpart_nor="/dev/mtdblock3"
+
+#nand_parts="256k(uboot)ro,64k(ubootenv),1536k(kernel),-(root)"
+#rootpart_nand="/dev/mtdblock7"
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+eth0.serverip=192.168.23.1

@@ -209,6 +209,8 @@ static int pmic_probe(struct device_d *dev)
 static struct driver_d pmic_driver = {
 	.name  = "mc13783",
 	.probe = pmic_probe,
+	.open = dev_open_default,
+	.close = dev_close_default,
 	.read = pmic_read,
 	.write = pmic_write,
 };

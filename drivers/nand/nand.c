@@ -95,6 +95,9 @@ static int nand_ioctl(struct device_d *dev, int request, void *buf)
 	case MEMGETBADBLOCK:
 		debug("MEMGETBADBLOCK: 0x%08x\n", (off_t)buf);
 		return info->block_isbad(info, (off_t)buf);
+	case MEMSETBADBLOCK:
+		debug("MEMSETBADBLOCK: 0x%08x\n", (off_t)buf);
+		return info->block_markbad(info, (off_t)buf);
 	case MEMGETINFO:
 		user->type	= info->type;
 		user->flags	= info->flags;

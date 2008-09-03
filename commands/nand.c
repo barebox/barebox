@@ -142,11 +142,33 @@ static int nand_bb_close(struct device_d *dev, struct filep *f)
 	return 0;
 }
 
+static int nand_bb_calc_size(struct nand_bb *bb)
+{
+	ulong pos = 0;
+	int ret;
+
+	while (pos < bb->physdev->size) {
+		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)pos);
+		if (ret < 0)
+			return ret;
+		if (!ret)
+			bb->device.size += bb->info.erasesize;
+
+		pos += bb->info.erasesize;
+	}
+
+	return 0;
+}
+
 static int nand_bb_probe(struct device_d *dev)
 {
 	struct nand_bb *bb = dev->priv;
+	int ret;
 
-	return dev_ioctl(bb->physdev, MEMGETINFO, &bb->info);
+	ret = dev_ioctl(bb->physdev, MEMGETINFO, &bb->info);
+	if (ret)
+		return ret;
+	return nand_bb_calc_size(bb);
 }
 
 static int nand_bb_remove(struct device_d *dev)
@@ -191,7 +213,7 @@ struct device_d *dev_add_bb_dev(struct device_d *dev, const char *name)
 		sprintf(bb->device.id, "%s.bb", dev->id);
 	strcpy(bb->device.name, "nand_bb");
 	bb->device.priv = bb;
-	bb->device.size = dev->size; /* FIXME: Bad blocks? */
+	bb->device.size = 0;
 	bb->device.type	= DEVICE_TYPE_NAND_BB;
 	bb->physdev = dev;
 

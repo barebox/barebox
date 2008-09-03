@@ -62,7 +62,8 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 			bb->offset += bb->info.erasesize;
 		}
 
-		now = min(count, bb->info.erasesize);
+		now = min(count, (size_t)(bb->info.erasesize -
+				(bb->offset % bb->info.erasesize)));
 		ret = dev_read(bb->physdev, buf, now, bb->offset, flags);
 		if (ret < 0)
 			return ret;
@@ -93,7 +94,8 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 			bb->offset += bb->info.erasesize;
 		}
 
-		now = min(count, bb->info.erasesize);
+		now = min(count, (size_t)(bb->info.erasesize -
+				(bb->offset % bb->info.erasesize)));
 		ret = dev_write(bb->physdev, buf, now, bb->offset, flags);
 		if (ret < 0)
 			return ret;

@@ -276,24 +276,6 @@ static int pll_init(void)
 {
 	int i = 0;
 
-	/*
-	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
-	 */
-	MPCTL0 = PLL_PCTL_PD(1) |
-		 PLL_PCTL_MFD(51) |
-		 PLL_PCTL_MFI(7) |
-		 PLL_PCTL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
-
-	SPCTL0 = PLL_PCTL_PD(1) |
-		 PLL_PCTL_MFD(12) |
-		 PLL_PCTL_MFI(9) |
-		 PLL_PCTL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
-
-	/*
-	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
-	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
-	 * System clock (HCLK) = 133 MHz
-	 */
 #define CSCR_VAL CSCR_USB_DIV(3) |	\
 		 CSCR_SD_CNT(3) |	\
 		 CSCR_MSHC_SEL |	\
@@ -303,13 +285,33 @@ static int pll_init(void)
 		 CSCR_MCU_SEL |		\
 		 CSCR_SP_SEL |		\
 		 CSCR_ARM_SRC_MPLL |	\
-		 CSCR_AHB_DIV(1) |	\
 		 CSCR_ARM_DIV(0) |	\
 		 CSCR_FPM_EN |		\
 		 CSCR_SPEN |		\
 		 CSCR_MPEN
 
-	CSCR = CSCR_VAL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
+	CSCR = CSCR_VAL | CSCR_AHB_DIV(3);
+
+	/*
+	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
+	 */
+	MPCTL0 = PLL_PCTL_PD(1) |
+		 PLL_PCTL_MFD(51) |
+		 PLL_PCTL_MFI(7) |
+		 PLL_PCTL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
+
+	SPCTL0 = PLL_PCTL_PD(2) |
+		 PLL_PCTL_MFD(12) |
+		 PLL_PCTL_MFI(9) |
+		 PLL_PCTL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
+
+	/*
+	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
+	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
+	 * System clock (HCLK) = 133 MHz
+	 */
+
+	CSCR = CSCR_VAL | CSCR_AHB_DIV(1) | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
 
 	while (i++ < 1000) {
 		while (CCSR & CCSR_32K_SR);

@@ -229,7 +229,7 @@ console_initcall(pcm038_console_init);
 static int pcm038_power_init(void)
 {
 #ifdef CONFIG_DRIVER_SPI_MC13783
-	volatile int i = 0;
+	int i = 0;
 	int ret;
 
 	ret = pmic_power();
@@ -243,26 +243,10 @@ static int pcm038_power_init(void)
 
 	CSCR |= CSCR_MPLL_RESTART;
 
-	/* We need a delay here. We can't use udelay because
-	 * the PLL is not running. Do not remove the volatile
-	 * above because otherwise the compiler will optimize the loop
-	 * away.
-	 */
-	while(i++ < 10000);
-
-	CSCR = CSCR_USB_DIV(3) |	\
-		 CSCR_SD_CNT(3) |	\
-		 CSCR_MSHC_SEL |	\
-		 CSCR_H264_SEL |	\
-		 CSCR_SSI1_SEL |	\
-		 CSCR_SSI2_SEL |	\
-		 CSCR_MCU_SEL |		\
-		 CSCR_SP_SEL |		\
-		 CSCR_ARM_SRC_MPLL |	\
-		 CSCR_ARM_DIV(0) | 	\
-		 CSCR_AHB_DIV(1) |	\
-		 CSCR_FPM_EN |		\
-		 CSCR_MPEN;
+	while (i++ < 1000) {
+		while (CCSR & CCSR_32K_SR);
+		while (!(CCSR & CCSR_32K_SR));
+	}
 
 	PCDR1 = 0x09030911;
 
@@ -290,9 +274,7 @@ void __bare_init nand_boot(void)
 
 static int pll_init(void)
 {
-	volatile int i = 0;
-
-	CSCR &= ~0x3;
+	int i = 0;
 
 	/*
 	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
@@ -329,8 +311,10 @@ static int pll_init(void)
 
 	CSCR = CSCR_VAL | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
 
-	/* add some delay here */
-	while(i++ < 0x8000);
+	while (i++ < 1000) {
+		while (CCSR & CCSR_32K_SR);
+		while (!(CCSR & CCSR_32K_SR));
+	}
 
 	/* clock gating enable */
 	GPCR = 0x00050f08;

@@ -226,6 +226,8 @@
 #define PCCR1_UART2_EN		(1 << 30)
 #define PCCR1_UART1_EN		(1 << 31)
 
+#define CCSR_32K_SR		(1 << 15)
+
 /* SDRAM Controller registers bitfields */
 #define ESDCTL_PRCT(x)		(((x) & 3f) << 0)
 #define ESDCTL_BL		(1 << 7)

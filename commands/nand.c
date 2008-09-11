@@ -58,7 +58,7 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 			return ret;
 
 		if (ret) {
-			printf("skipping bad block at 0x%08x\n", bb->offset);
+			debug("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
 
@@ -90,7 +90,7 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 			return ret;
 
 		if (ret) {
-			printf("skipping bad block at 0x%08x\n", bb->offset);
+			debug("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
 

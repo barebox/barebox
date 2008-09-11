@@ -59,6 +59,7 @@
 #include <asm/arch/syslib.h>
 #include <asm/arch/control.h>
 #include <asm/arch/omap3-mux.h>
+#include <asm/arch/gpmc.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -269,6 +270,10 @@ static int beagle_devices_init(void)
        ret = register_driver(&ram_drv);
        if (ret)
                goto failed;
+#endif
+#ifdef CONFIG_GPMC
+	/* WP is made high and WAIT1 active Low */
+	gpmc_generic_init(0x10);
 #endif
 failed:
        return ret;

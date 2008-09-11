@@ -54,6 +54,7 @@
 #include <asm/arch/syslib.h>
 #include <asm/arch/control.h>
 #include <asm/arch/omap3-mux.h>
+#include <asm/arch/gpmc.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -610,6 +611,8 @@ static void mux_config(void)
 
 /******************** Board Run Time *******************/
 
+/*-----------------------CONSOLE  Devices -----------------------------------*/
+
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
 static struct NS16550_plat serial_plat = {
@@ -642,6 +645,15 @@ static int sdp3430_console_init(void)
 console_initcall(sdp3430_console_init);
 #endif				/* CONFIG_DRIVER_SERIAL_NS16550 */
 
+/*------------------------- FLASH Devices -----------------------------------*/
+static int sdp3430_flash_init(void)
+{
+#ifdef CONFIG_GPMC
+	/* WP is made high and WAIT1 active Low */
+	gpmc_generic_init(0x10);
+#endif
+	return 0;
+}
 struct device_d sdram_dev = {
 	.name = "ram",
 	.id = "ram0",
@@ -652,7 +664,9 @@ struct device_d sdram_dev = {
 	.type = DEVICE_TYPE_DRAM,
 };
 
+/*------------------------- RAM Devices -------------------------------------*/
 #ifndef CONFIG_CMD_MEMORY
+
 static struct driver_d ram_drv = {
 	.name = "ram",
 	.probe = dummy_probe,
@@ -665,6 +679,8 @@ static struct driver_d ram_drv = {
 };
 #endif
 
+/*-----------------------Generic Devices Initialization ---------------------*/
+
 static int sdp3430_devices_init(void)
 {
 	int ret;
@@ -676,6 +692,10 @@ static int sdp3430_devices_init(void)
 	if (ret)
 		goto failed;
 #endif
+	ret = sdp3430_flash_init();
+	if (ret)
+		goto failed;
+
 failed:
 	return ret;
 }

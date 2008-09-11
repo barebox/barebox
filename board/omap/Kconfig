@@ -39,6 +39,7 @@ config MACH_OMAP343xSDP
 	bool "Texas Instrument's SDP343x"
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
 	help
 	  Say Y here if you are using SDP343x platform
 
@@ -46,6 +47,7 @@ config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
 	  help
 	  Say Y here if you are using Beagle Board
 
@@ -58,5 +60,77 @@ config MACH_OMAP_ADVANCED_MUX
 	help
 	  Say Y here if you would like to have complete pin muxing to be
 	  done at boot time
+
+config HAS_OMAP_NAND
+	bool
+
+
+menuconfig MACH_OMAP_GPMC_NAND
+	tristate "Enable NAND device support for GPMC"
+	depends on HAS_OMAP_NAND
+	default n
+	help
+	  Say Y here if you would like to have NAND device support
+
+if MACH_OMAP_GPMC_NAND
+# Single definition used to club all generic definitions together
+config MACH_OMAP_GPMC_GENERICNAND
+	bool
+
+choice
+	prompt "Select NAND Device"
+
+config MACH_OMAP_GPMC_GENERICNAND_LP_X8
+	tristate "Enable 8 bit Large page nand"
+	depends on MACH_OMAP_GPMC_NAND
+	select MACH_OMAP_GPMC_GENERICNAND
+	help
+	  Say Y here if you would support for 8 bit NAND
+	  with large page
+	  NOTE: The timing parameter are the most relaxed
+	  If you need optimized timing, selec appropriate
+	  supported NAND flash
+
+config MACH_OMAP_GPMC_GENERICNAND_LP_X16
+	tristate "Enable 16 bit Large page nand"
+	depends on MACH_OMAP_GPMC_NAND
+	select MACH_OMAP_GPMC_GENERICNAND
+	help
+	  Say Y here if you would support for 16 bit NAND
+	  with large page
+	  NOTE: The timing parameter are the most relaxed
+	  If you need optimized timing, selec appropriate
+	  supported NAND flash
+
+config MACH_OMAP_GPMC_GENERICNAND_SP_X8
+	tristate "Enable 8 bit Small page nand"
+	depends on MACH_OMAP_GPMC_NAND
+	select MACH_OMAP_GPMC_GENERICNAND
+	help
+	  Say Y here if you would support for 8 bit NAND
+	  with small page
+	  NOTE: The timing parameter are the most relaxed
+	  If you need optimized timing, selec appropriate
+	  supported NAND flash
+
+config MACH_OMAP_GPMC_GENERICNAND_SP_X16
+	tristate "Enable 16 bit Small page nand"
+	depends on MACH_OMAP_GPMC_NAND
+	select MACH_OMAP_GPMC_GENERICNAND
+	help
+	  Say Y here if you would support for 16 bit NAND
+	  with small page
+	  NOTE: The timing parameter are the most relaxed
+	  If you need optimized timing, selec appropriate
+	  supported NAND flash
+endchoice
+
+config MACH_OMAP_CS
+	hex "NAND CS"
+	depends on MACH_OMAP_GPMC_NAND
+	default 0x0
+	help
+	  Provide the Chip select of the NAND flash
+endif
 
 endmenu

@@ -1,17 +1,23 @@
 /**
  * @file
- * @brief This file contains the GPMC specific register definitions
+ * @brief This file contains the GPMC's generic definitions
  *
  * FileName: include/asm-arm/arch-omap/gpmc.h
  *
- * Originally from Linux kernel:
- * http://linux.omap.com/pub/kernel/3430zoom/linux-ldp-v1.0b.tar.gz
- * include/asm-arm/arch-omap/omap34xx.h
+ * OMAP's General Purpose Memory Controller(GPMC) provides features
+ * allowing us to communicate with memory devices such as NOR, NAND,
+ * OneNAND, SRAM etc.. This file defines certain generic parameters
+ * allowing us to configure the same painlessly.
+ *
  */
 /*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
+ *
+ * Originally from Linux kernel:
+ * http://linux.omap.com/pub/kernel/3430zoom/linux-ldp-v1.0b.tar.gz
+ * include/asm-arm/arch-omap/omap34xx.h
  *
  * Copyright (C) 2007 Texas Instruments, <www.ti.com>
  * Copyright (C) 2007 Nokia Corporation.
@@ -39,12 +45,28 @@
 #define GPMC_REG(REGNAME)	(OMAP_GPMC_BASE + GPMC_##REGNAME)
 
 #define GPMC_SYS_CONFIG		(0x10)
+#define GPMC_SYS_STATUS		(0x14)
+#define GPMC_IRQSTATUS		(0x18)
 #define GPMC_IRQ_ENABLE		(0x1C)
 #define GPMC_TIMEOUT_CONTROL	(0x40)
 #define GPMC_CFG		(0x50)
+#define GPMC_STATUS		(0x54)
 #define GPMC_PREFETCH_CONFIG_1	(0x1E0)
 #define GPMC_PREFETCH_CONFIG_2	(0x1E4)
 #define GPMC_PREFETCH_CTRL	(0x1EC)
+#define GPMC_ECC_CONFIG		(0x1F4)
+#define GPMC_ECC_CONTROL	(0x1F8)
+#define GPMC_ECC_SIZE_CONFIG	(0x1FC)
+#define GPMC_ECC1_RESULT	(0x200)
+#define GPMC_ECC2_RESULT	(0x204)
+#define GPMC_ECC3_RESULT	(0x208)
+#define GPMC_ECC4_RESULT	(0x20C)
+#define GPMC_ECC5_RESULT	(0x210)
+#define GPMC_ECC6_RESULT	(0x214)
+#define GPMC_ECC7_RESULT	(0x218)
+#define GPMC_ECC8_RESULT	(0x21C)
+#define GPMC_ECC9_RESULT	(0x220)
+
 #define GPMC_CONFIG1_0		(0x60)
 #define GPMC_CONFIG1_1		(0x90)
 #define GPMC_CONFIG1_2		(0xC0)
@@ -101,5 +123,39 @@
 #define GPMC_CONFIG7_5		(0x168)
 #define GPMC_CONFIG7_6		(0x198)
 #define GPMC_CONFIG7_7		(0x1C8)
+
+#define GPMC_NUM_CS		8
+#define GPMC_CONFIG_CS_SIZE	(GPMC_CONFIG1_1 - GPMC_CONFIG1_0)
+#define GPMC_CONFIG_REG_OFF	(GPMC_CONFIG2_0 - GPMC_CONFIG1_0)
+
+#define GPMC_CS_NAND_COMMAND	(0x1C)
+#define GPMC_CS_NAND_ADDRESS	(0x20)
+#define GPMC_CS_NAND_DATA	(0x24)
+
+#define GPMC_SIZE_128M		0x08
+#define GPMC_SIZE_64M		0x0C
+#define GPMC_SIZE_32M		0x0E
+#define GPMC_SIZE_16M		0x0F
+
+#define NAND_WP_BIT		0x00000010
+
+#ifndef __ASSEMBLY__
+
+/** Generic GPMC configuration structure to be used to configure a
+ *  chip select
+ */
+struct gpmc_config {
+	unsigned int cfg[6];
+	unsigned int base;
+	unsigned char size;
+};
+
+/** Generic configuration - will reset all the cs configs. */
+void gpmc_generic_init(unsigned int cfg);
+
+/** Configuration for a specific chip select */
+void gpmc_cs_config(char cs, struct gpmc_config *config);
+
+#endif
 
 #endif /* __ASM_ARCH_OMAP_GPMC_H */

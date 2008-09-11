@@ -182,6 +182,7 @@ config CMD_FLASH
 
 config CMD_NAND
 	tristate
+	depends on NAND
 	prompt "nand"
 endmenu
 

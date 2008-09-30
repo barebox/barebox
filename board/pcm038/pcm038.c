@@ -300,7 +300,7 @@ static int pll_init(void)
 		 PLL_PCTL_MFI(7) |
 		 PLL_PCTL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
 
-	SPCTL0 = PLL_PCTL_PD(2) |
+	SPCTL0 = PLL_PCTL_PD(1) |
 		 PLL_PCTL_MFD(12) |
 		 PLL_PCTL_MFI(9) |
 		 PLL_PCTL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */

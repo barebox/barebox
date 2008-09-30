@@ -682,7 +682,7 @@ NfsStart (void)
 		p = strchr (p, ':');
 
 		if (p != NULL) {
-			NfsServerIP = string_to_ip (BootFile);
+			string_to_ip (BootFile, &NfsServerIP);
 			++p;
 			strcpy (nfs_path, p);
 		} else {

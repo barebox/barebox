@@ -73,6 +73,6 @@ cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 	-Wl,--start-group $(uboot-common) -Wl,--end-group \
 	-lrt -lpthread
 
-common-y += arch/sandbox/lib/ board/sandbox/
+common-y += board/sandbox/ arch/sandbox/os/
 
 MRPROPER_FILES += include/asm-sandbox/arch

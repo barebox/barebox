@@ -47,8 +47,8 @@
 /*
  * ...except the ones needed to connect with U-Boot
  */
-#include <asm/arch/linux.h>
-#include <asm/arch/hostfile.h>
+#include <linux.h>
+#include <hostfile.h>
 
 static struct termios term_orig, term_vi;
 static char erase_char;	/* the users erase character */

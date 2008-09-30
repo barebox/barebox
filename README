@@ -181,15 +181,3 @@ net/                  -> Networking stuff
 scripts/              -> Kconfig system
 
 Documentation/        -> 
-
-There is still the old directory layout in the tree which of course should be
-merged in one way or the other:
-
-lib_*/                -> currently unused
-cpu/*                 -> currently unsused
-post/                 -> untouched
-nand_spl/             -> untouched
-dtt/                  -> untouched
-disk/                 -> untouched
-documentation/        -> untouched
-

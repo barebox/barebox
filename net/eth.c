@@ -49,10 +49,6 @@ int eth_open(void)
 	if (!eth_current)
 		return 0;
 
-	string_to_ethaddr(dev_get_param(eth_current->dev, "ethaddr"), mac);
-
-	eth_current->set_ethaddr(eth_current, mac);
-
 	eth_current->open(eth_current);
 
 	return 0;
@@ -86,6 +82,7 @@ int eth_rx(void)
 
 static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
+	struct eth_device *edev = dev->type_data;
 	char ethaddr[sizeof("xx:xx:xx:xx:xx:xx")];
 
 	if (string_to_ethaddr(val, ethaddr) < 0)
@@ -93,6 +90,8 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 
 	free(param->value);
 	param->value = strdup(val);
+
+	edev->set_ethaddr(edev, ethaddr);
 
 	return 0;
 }
@@ -137,14 +136,13 @@ int eth_register(struct eth_device *edev)
 	dev_add_param(dev, &edev->param_netmask);
 	dev_add_param(dev, &edev->param_serverip);
 
+	edev->init(edev);
+
 	if (edev->get_ethaddr(edev, ethaddr) == 0) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
 		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
 		dev_set_param(dev, "ethaddr", ethaddr_str);
-//		memcpy(edev->enetaddr, ethaddr, 6);
 	}
-
-	edev->init(edev);
 
 	eth_current = edev;
 

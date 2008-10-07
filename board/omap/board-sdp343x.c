@@ -85,13 +85,12 @@ void board_init(void)
  */
 static void sdrc_init(void)
 {
-	/* issues software reset of SDRAM interface */
-	/* No idle ack and RESET enable */
-	__raw_writel(0x0A, SDRC_REG(SYSCONFIG));
-	sdelay(100);
-	/* No idle ack and RESET disable */
-	__raw_writel(0x08, SDRC_REG(SYSCONFIG));
-
+	/* Issue SDRC Soft reset  */
+	__raw_writel(0x12, SDRC_REG(SYSCONFIG));
+    /* Wait until Reset complete */
+    while ((__raw_readl(SDRC_REG(STATUS)) & 0x1) == 0);
+    /* SDRC to normal mode */
+	__raw_writel(0x10, SDRC_REG(SYSCONFIG));
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
@@ -99,7 +98,7 @@ static void sdrc_init(void)
 
 	/* ----- SDRC_REG(CS0 Configuration --------- */
 	/* SDRC_REG(MCFG0 register */
-	__raw_writel(0x02D04011, SDRC_REG(MCFG_0));
+	__raw_writel(0x02584019, SDRC_REG(MCFG_0));
 
 	/* SDRC_REG(RFR_CTRL0 register */
 	__raw_writel(0x0003DE01, SDRC_REG(RFR_CTRL_0));
@@ -124,35 +123,17 @@ static void sdrc_init(void)
 	__raw_writel(0x00000002, SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register */
-	__raw_writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
-
 	/* CAS latency = 3 */
 	/* Write Burst = Read Burst */
 	/* Serial Mode */
+	__raw_writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
 
-	/* SDRC DLLA control register */
-	/* Enable DLL, Load counter with 115 (middle of range) */
-	/* Delay is 90 degrees */
-	__raw_writel(0x0000730E, SDRC_REG(DLLA_CTRL));
+    /* SDRC DLLA control register */
+	/* Enable DLL A */
+	__raw_writel(0x0000000A, SDRC_REG(DLLA_CTRL));
 
-	/*
-	 * Clear the enable DLL bit to use DLLA in unlock mode
-	 * (counter value is continuously asserted)
-	 */
-	__raw_writel(0x0000730A, SDRC_REG(DLLA_CTRL));
-
-	/* SDRC DLLB control register
-	 * Enable DLL, Load counter with 128 (middle of range)
-	 * Delay is 90 degrees
-	 */
-	__raw_writel(0x0000730E, SDRC_REG(DLLB_CTRL));
-
-	/*
-	 * Clear the enable DLL bit to use DLLB in unlock mode
-	 * (counter value is continuously asserted)
-	 */
-	__raw_writel(0x0000730A, SDRC_REG(DLLB_CTRL));
-
+    /* wait until DLL is locked  */
+    while ((__raw_readl(SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
 	return;
 }
 

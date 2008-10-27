@@ -122,7 +122,7 @@ err_out:
 	return -1;
 }
 
-ssize_t miiphy_read(struct device_d *dev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miiphy_read(struct device_d *dev, void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	uint16_t *buf = _buf;
@@ -138,7 +138,7 @@ ssize_t miiphy_read(struct device_d *dev, void *_buf, size_t count, ulong offset
 	return count;
 }
 
-ssize_t miiphy_write(struct device_d *dev, const void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miiphy_write(struct device_d *dev, const void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	const uint16_t *buf = _buf;

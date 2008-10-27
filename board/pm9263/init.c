@@ -102,7 +102,7 @@ static int pm9263_devices_init(void)
 	dev_add_partition(&cfi_dev, 0x40000, 0x10000, PARTITION_FIXED, "env");
 
 	armlinux_set_bootparams((void *)0x20000100);
-	armlinux_set_architecture(0x5c3);
+	armlinux_set_architecture(MACH_TYPE_PM9263);
 
 	return 0;
 }

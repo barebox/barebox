@@ -1006,7 +1006,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	clk_enable(host->clk);
 #endif
 
-	host->regs = (void *)dev->map_base;
+	host->regs = (void __iomem *)dev->map_base;
 
 	tmp = readw(host->regs + NFC_CONFIG1);
 	tmp |= NFC_INT_MSK;
@@ -1119,7 +1119,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 		host.pagesize_2k = 1;
 	}
 
-	host.regs = (void *)IMX_NFC_BASE;
+	host.regs = (void __iomem *)IMX_NFC_BASE;
 
 	send_cmd(&host, NAND_CMD_RESET);
 

@@ -18,11 +18,10 @@
 #define KERN_INFO       ""   /* informational                        */
 #define KERN_DEBUG      ""   /* debug-level messages                 */
 
-#define printk		printf
+#define printk			printf
+#define dev_dbg(x...)
 
-#define __iomem
 #define __init
-#define __exit
 
 #define MODULE_AUTHOR(x)
 #define MODULE_DESCRIPTION(x)

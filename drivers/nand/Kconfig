@@ -33,6 +33,11 @@ config NAND_OMAP_GPMC_HWECC
 	 The ECC compuatation for the data to be written/read can be either by
 	 software or omap has Hw ecc engine which calculates it.
 
+config NAND_ATMEL
+	bool
+	prompt "Atmel (AT91SAM9xxx) NAND driver"
+	depends on ARCH_AT91SAM9
+
 config MTD_NAND_VERIFY_WRITE
 	bool "Verify NAND page writes"
 	help

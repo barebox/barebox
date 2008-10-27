@@ -31,50 +31,30 @@
 #include <fcntl.h>
 #include <asm/io.h>
 #include <asm/hardware.h>
-#include <asm/arch/memory-map.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/gpio.h>
+#include <asm/arch/ether.h>
+#include <asm/arch/atmel_nand.h>
+#include <gpio.h>
 
-#define   MASK_ALE        (1 << 21)       /* our ALE is AD21 */
-#define   MASK_CLE        (1 << 22)
+#define NAND_READY_GPIO (32 * 2 + 13) /* Port C pin 13 */
+#define NAND_ENABLE_GPIO (32 * 2 + 14) /* Port C pin 14 */
 
-static void at91sam9260ek_nand_hwcontrol(struct nand_chip *this, int cmd)
-{
-	ulong IO_ADDR_W = (ulong) this->IO_ADDR_W;
-
-	IO_ADDR_W &= ~(MASK_ALE|MASK_CLE);
-	switch (cmd) {
-	case NAND_CTL_SETCLE:
-		IO_ADDR_W |= MASK_CLE;
-		break;
-	case NAND_CTL_SETALE:
-		IO_ADDR_W |= MASK_ALE;
-		break;
-	case NAND_CTL_CLRNCE:
-		at91_set_gpio_value(AT91_PIN_PC14, 1);
-		break;
-	case NAND_CTL_SETNCE:
-		at91_set_gpio_value(AT91_PIN_PC14, 0);
-		break;
-	}
-	this->IO_ADDR_W = (void *) IO_ADDR_W;
-}
-
-static int at91sam9260ek_nand_ready(struct nand_chip *this)
-{
-	return at91_get_gpio_value(AT91_PIN_PC13);
-}
-
-static struct nand_platform_data nand_pdata = {
-	.hwcontrol = at91sam9260ek_nand_hwcontrol,
-	.eccmode = NAND_ECC_SOFT,
-	.dev_ready = at91sam9260ek_nand_ready,
-	.chip_delay = 20,
+static struct atmel_nand_data nand_pdata = {
+	.ale		= 21,
+	.cle		= 22,
+/*	.det_pin	= ... not connected */
+	.rdy_pin	= NAND_READY_GPIO,
+	.enable_pin	= NAND_ENABLE_GPIO,
+#if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
+	.bus_width_16	= 1,
+#else
+	.bus_width_16	= 0,
+#endif
 };
 
 static struct device_d nand_dev = {
-	.name     = "nand_controller",
+	.name     = "atmel_nand",
 	.map_base = 0x40000000,
 	.size     = 0x10,
 	.platform_data = &nand_pdata,
@@ -90,12 +70,18 @@ static struct device_d sdram_dev = {
 	.type     = DEVICE_TYPE_DRAM,
 };
 
+static struct at91sam_ether_platform_data macb_pdata = {
+	.flags    = AT91SAM_ETHER_RMII,
+	.phy_addr = 0,
+};
+
 static struct device_d macb_dev = {
 	.name     = "macb",
 	.id       = "eth0",
-	.map_base = AT91_BASE_EMAC,
+	.map_base = AT91C_BASE_EMACB,
 	.size     = 0x1000,
 	.type     = DEVICE_TYPE_ETHER,
+	.platform_data = &macb_pdata,
 };
 
 static int at91sam9260ek_devices_init(void)
@@ -107,6 +93,9 @@ static int at91sam9260ek_devices_init(void)
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 
+	gpio_direction_input(NAND_READY_GPIO);
+	gpio_direction_output(NAND_ENABLE_GPIO, 1);
+
 	return 0;
 }
 
@@ -115,7 +104,7 @@ device_initcall(at91sam9260ek_devices_init);
 static struct device_d at91sam9260ek_serial_device = {
 	.name     = "atmel_serial",
 	.id       = "cs0",
-	.map_base = USART3_BASE,
+	.map_base = AT91C_BASE_DBGU,
 	.size     = 4096,
 	.type     = DEVICE_TYPE_CONSOLE,
 };

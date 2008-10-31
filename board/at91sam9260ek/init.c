@@ -44,6 +44,8 @@ static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
 /*	.det_pin	= ... not connected */
+	.ecc_base	= (void __iomem *)AT91C_BASE_HECC,
+	.ecc_mode	= NAND_ECC_HW,
 	.rdy_pin	= NAND_READY_GPIO,
 	.enable_pin	= NAND_ENABLE_GPIO,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
@@ -86,15 +88,26 @@ static struct device_d macb_dev = {
 
 static int at91sam9260ek_devices_init(void)
 {
+	struct device_d *nand, *dev;
+
 	register_device(&sdram_dev);
+
+	gpio_direction_input(NAND_READY_GPIO);
+	gpio_direction_output(NAND_ENABLE_GPIO, 1);
+
 	register_device(&nand_dev);
 	register_device(&macb_dev);
 
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 
-	gpio_direction_input(NAND_READY_GPIO);
-	gpio_direction_output(NAND_ENABLE_GPIO, 1);
+	nand = get_device_by_path("/dev/nand0");
+	dev = dev_add_partition(nand, 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
+	dev_add_bb_dev(dev, "self0");
+	dev = dev_add_partition(nand, 0x40000, 0x40000, PARTITION_FIXED, "env_raw");
+	dev_add_bb_dev(dev, "env0");
+	dev_add_partition(nand, 0x00000, 0x80000, PARTITION_FIXED, "self");
+	dev_add_partition(nand, 0x40000, 0x40000, PARTITION_FIXED, "env");
 
 	return 0;
 }

@@ -14,6 +14,7 @@ struct atmel_nand_data {
 	u8		ale;		/* address line number connected to ALE */
 	u8		cle;		/* address line number connected to CLE */
 	u8		bus_width_16;	/* buswidth is 16 bit */
+	u8		ecc_mode;	/* NAND_ECC_* */
 };
 
 #endif /* __ASM_ARCH_NAND_H */

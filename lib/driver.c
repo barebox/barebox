@@ -314,6 +314,18 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 	return 0;
 }
 
+const char *dev_id(const struct device_d *dev)
+{
+	static char buf[sizeof(unsigned long) * 2];
+
+	if (strlen(dev->id))
+		return dev->id;
+
+	sprintf(buf, "0x%08x", dev->map_base);
+
+	return buf;
+}
+
 #ifdef CONFIG_CMD_DEVINFO
 
 static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])

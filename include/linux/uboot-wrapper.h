@@ -19,14 +19,11 @@
 #define KERN_DEBUG      ""   /* debug-level messages                 */
 
 #define printk			printf
-#define dev_dbg(x...)
 
 #define __init
 
 #define MODULE_AUTHOR(x)
 #define MODULE_DESCRIPTION(x)
 #define MODULE_LICENSE(x)
-
-#define pr_info printf
 
 #endif /* __INCLUDE_LINUX_U_BOOT_WRAPPER_H */

@@ -33,13 +33,21 @@
 #include <linux/kernel.h>
 #include <asm/common.h>
 
-#ifdef	DEBUG
-#define debug(fmt,args...)	printf (fmt ,##args)
-#define debugX(level,fmt,args...) if (DEBUG>=level) printf(fmt,##args);
+#define pr_info(fmt, arg...)	printf(fmt, ##arg)
+#define pr_notice(fmt, arg...)	printf(fmt, ##arg)
+#define pr_err(fmt, arg...)	printf(fmt, ##arg)
+#define pr_warning(fmt, arg...)	printf(fmt, ##arg)
+#define pr_crit(fmt, arg...)	printf(fmt, ##arg)
+#define pr_alert(fmt, arg...)	printf(fmt, ##arg)
+#define pr_emerg(fmt, arg...)	printf(fmt, ##arg)
+
+#ifdef DEBUG
+#define pr_debug(fmt, arg...)	printf(UBOOT_DEBUG, fmt, ##arg)
 #else
-#define debug(fmt,args...)
-#define debugX(level,fmt,args...)
-#endif	/* DEBUG */
+#define pr_debug(fmt, arg...) do {} while(0)
+#endif
+
+#define debug(fmt, arg...)	pr_debug(fmt, ##arg)
 
 #define BUG() do { \
 	printf("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \

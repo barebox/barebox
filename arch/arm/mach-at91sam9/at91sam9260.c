@@ -16,7 +16,7 @@ static struct at91_gpio_bank at91sam9260_gpio[] = {
 	}
 };
 
-static int at91sam9260_initialize(unsigned long main_clock)
+static int at91sam9260_initialize(void)
 {
 	/* Register GPIO subsystem */
 	at91_gpio_init(at91sam9260_gpio, 3);

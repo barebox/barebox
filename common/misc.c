@@ -74,12 +74,11 @@ void *sbrk (ptrdiff_t increment)
 int errno;
 EXPORT_SYMBOL(errno);
 
-#ifndef CONFIG_ERRNO_MESSAGES
-static char errno_string[5];
-#endif
 
 const char *errno_str(void)
 {
+	static char errno_string[10];
+
 #ifdef CONFIG_ERRNO_MESSAGES
 	char *str;
 	switch(-errno) {
@@ -145,13 +144,13 @@ const char *errno_str(void)
 	case	EISNAM		: str = "Is a named type file"; break;
 	case	EREMOTEIO	: str = "Remote I/O error"; break;
 #endif
-	default			: str = "unknown error"; break;
+	default:
+		sprintf(errno_string, "error %d", errno);
+		return errno_string;
 	};
 
         return str;
 #else
-	sprintf(errno_string, "%d", errno);
-	return errno_string;
 #endif
 }
 EXPORT_SYMBOL(errno_str);

@@ -337,7 +337,7 @@ static void b_free(o_string *o)
  */
 static int b_addqchr(o_string *o, int ch, int quote)
 {
-	if (quote && strchr("*?[\\",ch)) {
+	if (quote && strchr("*?[",ch)) {
 		int rc;
 		rc = b_addchr(o, '\\');
 		if (rc)

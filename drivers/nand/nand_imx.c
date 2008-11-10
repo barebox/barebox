@@ -972,9 +972,9 @@ static int __init imxnd_probe(struct device_d *dev)
 	struct imx_nand_host *host;
 	u16 tmp;
 	int err = 0;
-
+#ifdef CONFIG_ARCH_MX27
 	PCCR1 |= PCCR1_NFC_BAUDEN;
-
+#endif
 	/* Allocate memory for MTD device structure and private data */
 	host = kzalloc(sizeof(struct imx_nand_host), GFP_KERNEL);
 	if (!host)

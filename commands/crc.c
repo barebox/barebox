@@ -32,11 +32,11 @@
 
 static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	ulong start = 0, size = ~0, total = 0, now;
+	ulong start = 0, size = ~0, total = 0;
 	ulong crc = 0, vcrc = 0;
 	char *filename = "/dev/mem";
 	char *buf;
-	int fd, opt, err = 0, filegiven = 0, verify = 0;
+	int fd, opt, err = 0, filegiven = 0, verify = 0, now;
 
 	getopt_reset();
 
@@ -71,8 +71,8 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	if (lseek(fd, start, SEEK_SET) < 0) {
-		printf("file is smaller than start address\n");
+	if (lseek(fd, start, SEEK_SET) == -1) {
+		perror("lseek");
 		err = 1;
 		goto out;
 	}
@@ -82,6 +82,10 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	while (size) {
 		now = min((ulong)4096, size);
 		now = read(fd, buf, now);
+		if (now < 0) {
+			perror("read");
+			goto out_free;
+		}
 		if (!now)
 			break;
 		crc = crc32(crc, buf, now);
@@ -99,6 +103,7 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	printf("\n");
 
+out_free:
 	free(buf);
 out:
 	close(fd);

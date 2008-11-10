@@ -32,6 +32,7 @@
 #include <asm/io.h>
 #include <partition.h>
 #include <asm/mach-types.h>
+#include <asm/arch/imx-nand.h>
 
 /*
  * Up to 64MiB NOR type flash, connected to
@@ -53,16 +54,6 @@ static struct device_d sram_dev = {
 	.id       = "sram0",
 	.map_base = IMX_CS4_BASE,
 	.size     = IMX_CS4_RANGE,	/* area size */
-};
-
-/*
- * ?MiB NAND type flash, data width 8 bit
- */
-static struct device_d nand_dev = {
-	.name     = "cfi_flash_nand",
-	.id       = "nand0",
-	.map_base = 0x10000000,	/* FIXME */
-	.size     = 16 * 1024 * 1024,	/* FIXME */
 };
 
 /*
@@ -89,6 +80,17 @@ static struct device_d sdram_dev = {
 	.size     = 128 * 1024 * 1024,	/* fix size */
 
 	.type     = DEVICE_TYPE_DRAM,
+};
+
+struct imx_nand_platform_data nand_info = {
+	.width = 1,
+	.hw_ecc = 1,
+};
+
+static struct device_d nand_dev = {
+	.name     = "imx_nand",
+	.map_base = 0xB8000000,
+	.platform_data	= &nand_info,
 };
 
 static int imx31_devices_init(void)

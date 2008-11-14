@@ -37,7 +37,7 @@ if [ $kernel = net ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
-	tftp $uimage uImage
+	tftp $uimage uImage || exit 1
 	bootm uImage
 elif [ $kernel = nor ]; then
 	bootm /dev/nor0.kernel

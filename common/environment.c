@@ -132,7 +132,7 @@ int envfs_save(char *filename, char *dirname)
 	super->crc = ENVFS_32(crc32(0, buf + sizeof(struct envfs_super), size));
 	super->sb_crc = ENVFS_32(crc32(0, buf, sizeof(struct envfs_super) - 4));
 
-	envfd = open(filename, O_WRONLY | O_CREAT);
+	envfd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	if (envfd < 0) {
 		printf("Open %s %s\n", filename, errno_str());
 		ret = envfd;

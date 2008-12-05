@@ -23,6 +23,7 @@
 #ifdef __KERNEL__
 
 #include <linux/types.h>
+#include <linux/compiler.h>
 #include <asm/byteorder.h>
 #include <asm/memory.h>
 

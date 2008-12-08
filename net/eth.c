@@ -44,8 +44,6 @@ struct eth_device * eth_get_current(void)
 
 int eth_open(void)
 {
-	char mac[6];
-
 	if (!eth_current)
 		return 0;
 

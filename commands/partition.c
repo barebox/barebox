@@ -134,7 +134,7 @@ static int mtd_part_do_parse_one(struct partition *part, const char *partstr,
 
 	if (*partstr == '(') {
 		partstr++;
-		end = strchr(partstr, ')');
+		end = strchr((char *) partstr, ')');
 		if (!end) {
 			printf("could not find matching ')'\n");
 			return -EINVAL;

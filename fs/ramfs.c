@@ -109,7 +109,7 @@ static struct ramfs_inode* rlookup_parent(struct ramfs_priv *priv, const char *p
 	pathname++;
 	path = strdup(pathname);
 
-	if ((*file = strrchr(pathname, '/'))) {
+	if ((*file = strrchr((char *) pathname, '/'))) {
 		char *tmp;
 		(*file)++;
 

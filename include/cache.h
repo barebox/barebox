@@ -12,3 +12,4 @@ int	checkicache   (void);
 int	checkdcache   (void);
 
 #endif /* __CACHE_H */
+

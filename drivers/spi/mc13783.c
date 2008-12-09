@@ -210,6 +210,7 @@ static struct driver_d pmic_driver = {
 	.name  = "mc13783",
 	.probe = pmic_probe,
 	.open = dev_open_default,
+	.lseek = dev_lseek_default,
 	.close = dev_close_default,
 	.read = pmic_read,
 	.write = pmic_write,

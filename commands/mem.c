@@ -327,8 +327,8 @@ static int do_mem_cmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	addr1 = simple_strtoul(argv[optind], NULL, 0);
-	addr2 = simple_strtoul(argv[optind + 1], NULL, 0);
+	addr1 = strtoul_suffix(argv[optind], NULL, 0);
+	addr2 = strtoul_suffix(argv[optind + 1], NULL, 0);
 
 	if (optind + 2 == argc) {
 		if (sourcefile == DEVMEM) {
@@ -341,7 +341,7 @@ static int do_mem_cmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 		count = statbuf.st_size - addr1;
 	} else {
-		count = simple_strtoul(argv[optind + 2], NULL, 0);
+		count = strtoul_suffix(argv[optind + 2], NULL, 0);
 	}
 
 	sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, addr1);
@@ -438,8 +438,8 @@ static int do_mem_cp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	src = simple_strtoul(argv[optind], NULL, 0);
-	dest = simple_strtoul(argv[optind + 1], NULL, 0);
+	src = strtoul_suffix(argv[optind], NULL, 0);
+	dest = strtoul_suffix(argv[optind + 1], NULL, 0);
 
 	if (optind + 2 == argc) {
 		if (sourcefile == DEVMEM) {
@@ -452,7 +452,7 @@ static int do_mem_cp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 		count = statbuf.st_size - src;
 	} else {
-		count = simple_strtoul(argv[optind + 2], NULL, 0);
+		count = strtoul_suffix(argv[optind + 2], NULL, 0);
 	}
 
 	sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, src);

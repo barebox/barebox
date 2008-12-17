@@ -316,6 +316,12 @@ static int cfi_probe (struct device_d *dev)
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
 	size += info->size = flash_get_size(info, dev->map_base);
+
+	if (dev->size > size) {
+		dev_dbg(dev, "limiting size from 0x%08x to 0x%08x\n", dev->size, size);
+		dev->size = size;
+	}
+
 	if (info->flash_id == FLASH_UNKNOWN) {
 		debug ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
 			dev->map_base, info->size, info->size << 20);

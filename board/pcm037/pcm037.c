@@ -35,14 +35,14 @@
 #include <asm/arch/imx-nand.h>
 
 /*
- * Up to 64MiB NOR type flash, connected to
+ * Up to 32MiB NOR type flash, connected to
  * CS line 0, data width is 16 bit
  */
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
 	.id       = "nor0",
 	.map_base = IMX_CS0_BASE,
-	.size     = IMX_CS0_RANGE,	/* area size */
+	.size     = 32 * 1024 * 1024,	/* area size */
 };
 
 /*

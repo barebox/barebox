@@ -129,6 +129,10 @@ static int imx31_devices_init(void)
 	__REG(CSCR_L(4)) = 0x22252521;
 	__REG(CSCR_A(4)) = 0x22220a00;
 
+	__REG(CSCR_U(5)) = 0x0000DCF6; /* CS5: SJA1000 */
+	__REG(CSCR_L(5)) = 0x444A0301;
+	__REG(CSCR_A(5)) = 0x44443302;
+
 	/* setup pins for I2C2 (for EEPROM, RTC) */
 	imx_gpio_mode(MUX_CSPI2_MOSI_I2C2_SCL);
 	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);

@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION =-rc6
+EXTRAVERSION =-rc7
 NAME = Amissive Actinocutious Kiwi
 
 # *DOCUMENTATION*

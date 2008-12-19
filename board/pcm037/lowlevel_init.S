@@ -23,17 +23,15 @@
 
 #include <asm/arch/imx-regs.h>
 
-.macro REG reg, val
-	ldr r2, =\reg
-	ldr r3, =\val
-	str r3, [r2]
-.endm
+#define writel(val, reg) \
+	ldr		r0,	=reg;	\
+	ldr		r1,	=val;	\
+	str		r1,   [r0];
 
-.macro REG8 reg, val
-	ldr r2, =\reg
-	ldr r3, =\val
-	strb r3, [r2]
-.endm
+#define writeb(val, reg) \
+	ldr		r0,	=reg;	\
+	ldr		r1,	=val;	\
+	strb		r1,   [r0];
 
 .macro DELAY loops
 	ldr r2, =\loops
@@ -46,19 +44,25 @@
 .globl board_init_lowlevel
 board_init_lowlevel:
 
-	REG	IPU_CONF, IPU_CONF_DI_EN
-	REG	CCM_CCMR, 0x074B0BF5
+	writel(IPU_CONF_DI_EN, IPU_CONF)
+	writel(0x074B0BF5, CCM_CCMR)
 
 	DELAY 0x40000
 
-	REG	CCM_CCMR, 0x074B0BF5 | CCMR_MPE
-	REG	CCM_CCMR, (0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS
+	writel(0x074B0BF5 | CCMR_MPE, CCM_CCMR)
+	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, CCM_CCMR)
 
-	REG	CCM_PDR0, PDR0_CSI_PODF(0xff1) | PDR0_PER_PODF(7) | PDR0_HSP_PODF(3) | PDR0_NFC_PODF(5) | PDR0_IPG_PODF(1) | PDR0_MAX_PODF(3) |	PDR0_MCU_PODF(0)
+	writel(PDR0_CSI_PODF(0xff1) | \
+		PDR0_PER_PODF(7) | \
+		PDR0_HSP_PODF(3) | \
+		PDR0_NFC_PODF(5) | \
+		PDR0_IPG_PODF(1) | \
+		PDR0_MAX_PODF(3) | \
+		PDR0_MCU_PODF(0), \
+		CCM_PDR0)
 
-	REG	CCM_MPCTL, PLL_PD(0) | PLL_MFD(0xe) | PLL_MFI(9) | PLL_MFN(0xd)
-
-	REG	CCM_SPCTL, PLL_PD(1) | PLL_MFD(0x43) | PLL_MFI(12) | PLL_MFN(1)
+	writel(PLL_PD(0) | PLL_MFD(0xe) | PLL_MFI(9) | PLL_MFN(0xd), CCM_MPCTL)
+	writel(PLL_PD(1) | PLL_MFD(0x43) | PLL_MFI(12) | PLL_MFN(1), CCM_SPCTL)
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000
@@ -69,45 +73,72 @@ board_init_lowlevel:
 	mov	pc, lr
 
 1:
-	REG	0x43FAC26C, 0 /* SDCLK */
-	REG	0x43FAC270, 0 /* CAS */
-	REG	0x43FAC274, 0 /* RAS */
-	REG	0x43FAC27C, 0x1000 /* CS2 	CSD0) */
-	REG	0x43FAC284, 0 /* DQM3 */
-	REG	0x43FAC288, 0 /* DQM2, DQM1, DQM0, SD31-SD0, A25-A0, MA10 	0x288..0x2DC) */
-	REG	0x43FAC28C, 0
-	REG	0x43FAC290, 0
-	REG	0x43FAC294, 0
-	REG	0x43FAC298, 0
-	REG	0x43FAC29C, 0
-	REG	0x43FAC2A0, 0
-	REG	0x43FAC2A4, 0
-	REG	0x43FAC2A8, 0
-	REG	0x43FAC2AC, 0
-	REG	0x43FAC2B0, 0
-	REG	0x43FAC2B4, 0
-	REG	0x43FAC2B8, 0
-	REG	0x43FAC2BC, 0
-	REG	0x43FAC2C0, 0
-	REG	0x43FAC2C4, 0
-	REG	0x43FAC2C8, 0
-	REG	0x43FAC2CC, 0
-	REG	0x43FAC2D0, 0
-	REG	0x43FAC2D4, 0
-	REG	0x43FAC2D8, 0
-	REG	0x43FAC2DC, 0
-	REG	0xB8001010, 0x00000004
-	REG	0xB8001004, 0x006ac73a
-	REG	0xB8001000, 0x92100000
-	REG	0x80000f00, 0x12344321
-	REG	0xB8001000, 0xa2100000
-	REG	0x80000000, 0x12344321
-	REG	0x80000000, 0x12344321
-	REG	0xB8001000, 0xb2100000
-	REG8	0x80000033, 0xda
-	REG8	0x81000000, 0xff
-	REG	0xB8001000, 0x82226080
-	REG	0x80000000, 0xDEADBEEF
-	REG	0xB8001010, 0x0000000c
+	/* Configure IOMUXC */
+	writel(0, 0x43FAC26C)/* SDCLK */
+	writel(0, 0x43FAC270) /* CAS */
+	writel(0, 0x43FAC274) /* RAS */
+	writel(0x1000, 0x43FAC27C )/* CS2 	CSD0) */
+	writel(0, 0x43FAC284) /* DQM3 */
+	writel(0, 0x43FAC288) /* DQM2, DQM1, DQM0, SD31-SD0, A25-A0, MA10 	0x288..0x2DC) */
+	writel(0, 0x43FAC28C)
+	writel(0, 0x43FAC290)
+	writel(0, 0x43FAC294)
+	writel(0, 0x43FAC298)
+	writel(0, 0x43FAC29C)
+	writel(0, 0x43FAC2A0)
+	writel(0, 0x43FAC2A4)
+	writel(0, 0x43FAC2A8)
+	writel(0, 0x43FAC2AC)
+	writel(0, 0x43FAC2B0)
+	writel(0, 0x43FAC2B4)
+	writel(0, 0x43FAC2B8)
+	writel(0, 0x43FAC2BC)
+	writel(0, 0x43FAC2C0)
+	writel(0, 0x43FAC2C4)
+	writel(0, 0x43FAC2C8)
+	writel(0, 0x43FAC2CC)
+	writel(0, 0x43FAC2D0)
+	writel(0, 0x43FAC2D4)
+	writel(0, 0x43FAC2D8)
+	writel(0, 0x43FAC2DC)
 
+#if defined CONFIG_PCM037_SDRAM_BANK0_128MB
+#define ROWS0	ESDCTL0_ROW13
+#elif defined CONFIG_PCM037_SDRAM_BANK0_256MB
+#define ROWS0	ESDCTL0_ROW14
+#endif
+	writel(0x00000004, ESDMISC)
+	writel(0x006ac73a, ESDCFG0)
+	writel(0x90100000 | ROWS0, ESDCTL0)
+	writel(0x12344321, IMX_SDRAM_CS0 + 0xf00)
+	writel(0xa0100000 | ROWS0, ESDCTL0)
+	writel(0x12344321, IMX_SDRAM_CS0)
+	writel(0x12344321, IMX_SDRAM_CS0)
+	writel(0xb0100000 | ROWS0, ESDCTL0)
+	writeb(0xda, IMX_SDRAM_CS0 + 0x33) 
+	writeb(0xff, IMX_SDRAM_CS0 + 0x01000000)
+	writel(0x80226080 | ROWS0, ESDCTL0)
+	writel(0xDEADBEEF, IMX_SDRAM_CS0)
+	writel(0x0000000c, ESDMISC)
+
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+#if defined CONFIG_PCM037_SDRAM_BANK1_128MB
+#define ROWS1	ESDCTL0_ROW13
+#elif defined CONFIG_PCM037_SDRAM_BANK1_256MB
+#define ROWS1	ESDCTL0_ROW14
+#endif
+	writel(0x006ac73a, ESDCFG1)
+	writel(0x90100000 | ROWS1, ESDCTL1)
+	writel(0x12344321, IMX_SDRAM_CS1 + 0xf00)
+	writel(0xa0100000 | ROWS1, ESDCTL1)
+	writel(0x12344321, IMX_SDRAM_CS1)
+	writel(0x12344321, IMX_SDRAM_CS1)
+	writel(0xb0100000 | ROWS1, ESDCTL1)
+	writeb(0xda, IMX_SDRAM_CS1 + 0x33) 
+	writeb(0xff, IMX_SDRAM_CS1 + 0x01000000)
+	writel(0x80226080 | ROWS1, ESDCTL1)
+	writel(0xDEADBEEF, IMX_SDRAM_CS1)
+	writel(0x0000000c, ESDMISC)
+#endif
 	mov	pc, lr
+

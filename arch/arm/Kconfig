@@ -181,6 +181,7 @@ config IMX_CLKO
 	  Say y here if you want to have the clko command which lets you select the
 	  frequency to output on this pin.
 
+source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-omap/Kconfig
 

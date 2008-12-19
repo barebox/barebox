@@ -69,18 +69,40 @@ static struct device_d network_dev = {
 	.type     = DEVICE_TYPE_ETHER,
 };
 
-/*
- * 128MiB of SDRAM, data width is 32 bit
- */
-static struct device_d sdram_dev = {
+#if defined CONFIG_PCM037_SDRAM_BANK0_128MB
+#define SDRAM0	128
+#elif defined CONFIG_PCM037_SDRAM_BANK0_256MB
+#define SDRAM0	256
+#endif
+
+static struct device_d sdram0_dev = {
 	.name     = "ram",
 	.id       = "ram0",
 
 	.map_base = IMX_SDRAM_CS0,
-	.size     = 128 * 1024 * 1024,	/* fix size */
+	.size     = SDRAM0 * 1024 * 1024,	/* fix size */
 
 	.type     = DEVICE_TYPE_DRAM,
 };
+
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+
+#if defined CONFIG_PCM037_SDRAM_BANK1_128MB
+#define SDRAM1	128
+#elif defined CONFIG_PCM037_SDRAM_BANK1_256MB
+#define SDRAM1	256
+#endif
+
+static struct device_d sdram1_dev = {
+	.name     = "ram",
+	.id       = "ram1",
+
+	.map_base = IMX_SDRAM_CS1,
+	.size     = SDRAM1 * 1024 * 1024,	/* fix size */
+
+	.type     = DEVICE_TYPE_DRAM,
+};
+#endif
 
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
@@ -127,8 +149,10 @@ static int imx31_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&network_dev);
 
-	register_device(&sdram_dev);
-
+	register_device(&sdram0_dev);
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+	register_device(&sdram1_dev);
+#endif
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM037);
 

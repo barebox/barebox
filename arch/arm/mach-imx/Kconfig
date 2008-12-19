@@ -1,0 +1,25 @@
+
+menu "Board specific settings       "
+
+if MACH_PCM037
+choice
+	prompt "SDRAM Bank0"
+config PCM037_SDRAM_BANK0_128MB
+	bool "128MB"
+config PCM037_SDRAM_BANK0_256MB
+	bool "256MB"
+endchoice
+
+choice
+	prompt "SDRAM Bank1"
+config PCM037_SDRAM_BANK1_NONE
+	bool "none"
+config PCM037_SDRAM_BANK1_128MB
+	bool "128MB"
+config PCM037_SDRAM_BANK1_256MB
+	bool "256MB"
+endchoice
+endif
+
+endmenu
+

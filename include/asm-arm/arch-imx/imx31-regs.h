@@ -166,6 +166,9 @@
 #define PLL_MFI(x)		(((x) & 0xf) << 10)
 #define PLL_MFN(x)		(((x) & 0x3ff) << 0)
 
+#define IMX_ESD_BASE	0xb8001000
+#include "esdctl.h"
+
 /*
  * Chip Select Registers
  */

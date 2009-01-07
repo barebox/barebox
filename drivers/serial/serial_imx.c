@@ -176,7 +176,7 @@ static int imx_serial_reffreq(ulong base)
 	rfdiv = (UFCR(base) >> 7) & 7;
 	rfdiv = rfdiv < 6 ? 6 - rfdiv : 7;
 
-	return imx_get_perclk1() / rfdiv;
+	return imx_get_uartclk() / rfdiv;
 }
 
 /*

@@ -69,6 +69,11 @@ ulong imx_get_perclk3(void)
 	return imx_get_spllclk() / (((PCDR>>16) & 0x7f)+1);
 }
 
+ulong imx_get_uartclk(void)
+{
+	return imx_get_perclk1(void);
+}
+
 #if 0
 typedef enum imx_cookies {
         PARAM_CPUCLK,

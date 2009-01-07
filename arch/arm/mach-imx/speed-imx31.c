@@ -60,4 +60,9 @@ int imx_dump_clocks(void)
 	return 0;
 }
 
+ulong imx_get_uartclk(void)
+{
+	return imx_get_perclk1();
+}
+
 late_initcall(imx_dump_clocks);

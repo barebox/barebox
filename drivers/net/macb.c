@@ -97,7 +97,6 @@ struct macb_device {
 
 	const struct device	*dev;
 	struct eth_device	netdev;
-	unsigned short		phy_addr;
 
 	struct miiphy_device	miiphy;
 
@@ -434,7 +433,7 @@ static int macb_probe(struct device_d *dev)
 
 	macb->miiphy.read = macb_phy_read;
 	macb->miiphy.write = macb_phy_write;
-	macb->miiphy.address = 0;
+	macb->miiphy.address = pdata->phy_addr;
 	macb->miiphy.flags = 0;
 	macb->miiphy.edev = edev;
 	macb->flags = pdata->flags;
@@ -444,7 +443,6 @@ static int macb_probe(struct device_d *dev)
 	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
 
 	macb->regs = (void *)dev->map_base;
-	macb->phy_addr = pdata->phy_addr;
 
 	/*
 	 * Do some basic initialization so that we at least can talk

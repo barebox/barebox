@@ -51,7 +51,7 @@ static int mem_test(ulong _start, ulong _end, ulong pattern_unused)
 #ifdef CFG_MEMTEST_SCRATCH
 	vu_long *dummy = (vu_long*)CFG_MEMTEST_SCRATCH;
 #else
-	vu_long *dummy = 0;	/* yes, this is address 0x0, not NULL */
+	vu_long *dummy = start;
 #endif
 	int	j;
 	int iterations = 1;

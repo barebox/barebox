@@ -261,6 +261,8 @@ static int macb_init(struct eth_device *edev)
 
 	if (macb->flags & AT91SAM_ETHER_RMII)
 		val |= MACB_BIT(RMII);
+	else
+		val &= ~MACB_BIT(RMII);
 
 #if defined(CONFIG_ARCH_AT91SAM9)
 	val |= MACB_BIT(CLKEN);

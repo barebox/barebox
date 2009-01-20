@@ -2,7 +2,7 @@
 
 . /env/config
 
-image=$uimage
+image=$jffs2
 if [ x$1 = xnand ]; then
 	part=/dev/nand0.root.bb
 elif [ x$1 = xnor ]; then

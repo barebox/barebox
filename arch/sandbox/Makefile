@@ -3,9 +3,8 @@ CPPFLAGS += -fno-strict-aliasing
 
 machine-y	   := sandbox
 
-BOARD:= arch/sandbox/lib
 board-y := sandbox
-lds-y   := arch/sandbox/lib/u-boot.lds
+lds-y   := board/sandbox/u-boot.lds
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -75,4 +74,5 @@ cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 
 common-y += board/sandbox/ arch/sandbox/os/
 
+CLEAN_FILES += board/sandbox/u-boot.lds
 MRPROPER_FILES += include/asm-sandbox/arch

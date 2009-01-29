@@ -1,0 +1,13 @@
+/** @page pcm043 Phytec's phyCORE-i.MX35
+
+This CPU card is based on a Freescale i.MX35 CPU. The card is shipped with:
+
+
+FIXME:
+- up to 64MiB NOR type Flash Memory
+- up to 2MiB static RAM
+- 64MiB NAND type Flash Memory
+- 128MiB synchronous dynamic RAM
+
+
+*/

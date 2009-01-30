@@ -36,6 +36,7 @@
 #include <spi/spi.h>
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>
+#include <asm/arch/imx-pll.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -236,10 +237,10 @@ static int pcm038_power_init(void)
 	if (ret)
 		goto out;
 
-	MPCTL0 = PLL_PCTL_PD(0) |
-		PLL_PCTL_MFD(51) |
-		PLL_PCTL_MFI(7) |
-		PLL_PCTL_MFN(35);
+	MPCTL0 = IMX_PLL_PD(0) |
+		 IMX_PLL_MFD(51) |
+		 IMX_PLL_MFI(7) |
+		 IMX_PLL_MFN(35);
 
 	CSCR |= CSCR_MPLL_RESTART;
 
@@ -295,15 +296,15 @@ static int pll_init(void)
 	/*
 	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
 	 */
-	MPCTL0 = PLL_PCTL_PD(1) |
-		 PLL_PCTL_MFD(51) |
-		 PLL_PCTL_MFI(7) |
-		 PLL_PCTL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
+	MPCTL0 = IMX_PLL_PD(1) |
+		 IMX_PLL_MFD(51) |
+		 IMX_PLL_MFI(7) |
+		 IMX_PLL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
 
-	SPCTL0 = PLL_PCTL_PD(1) |
-		 PLL_PCTL_MFD(12) |
-		 PLL_PCTL_MFI(9) |
-		 PLL_PCTL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
+	SPCTL0 = IMX_PLL_PD(1) |
+		 IMX_PLL_MFD(12) |
+		 IMX_PLL_MFI(9) |
+		 IMX_PLL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
 
 	/*
 	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz

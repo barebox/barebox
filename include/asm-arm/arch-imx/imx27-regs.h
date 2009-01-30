@@ -97,18 +97,6 @@
 #define PCCR1		__REG(IMX_PLL_BASE + 0x24) /* Peripheral Clock Control Register 1 */
 #define CCSR		__REG(IMX_PLL_BASE + 0x28) /* Clock Control Status Register       */
 
-/*
- * This can be used for MPCTL0 and SPCTL0.
- *
- *                   mfi + mfn / (mfd + 1)
- * fpll = 2 * fref * ---------------------
- *                          pd + 1
- */
-#define PLL_PCTL_PD(pd)		((pd) << 26)
-#define PLL_PCTL_MFD(mfd)	((mfd) << 16)
-#define PLL_PCTL_MFI(mfi)	((mfi) << 10)
-#define PLL_PCTL_MFN(mfn)	((mfn) << 0)
-
 #define CSCR_MPEN		(1 << 0)
 #define CSCR_SPEN		(1 << 1)
 #define CSCR_FPM_EN		(1 << 2)

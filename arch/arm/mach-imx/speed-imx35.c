@@ -1,0 +1,162 @@
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+#include <common.h>
+#include <asm/arch/imx-regs.h>
+#include <asm/io.h>
+#include <asm/arch/clock.h>
+#include <init.h>
+
+unsigned long imx_get_mpllclk(void)
+{
+	ulong mpctl = readl(IMX_CCM_BASE + CCM_MPCTL);
+	return imx_decode_pll(mpctl, CONFIG_MX35_HCLK_FREQ);
+}
+
+unsigned long imx_get_ppllclk(void)
+{
+	ulong ppctl = readl(IMX_CCM_BASE + CCM_PPCTL);
+	return imx_decode_pll(ppctl, CONFIG_MX35_HCLK_FREQ);
+}
+
+struct arm_ahb_div {
+	unsigned char arm, ahb, sel;
+};
+
+static struct arm_ahb_div clk_consumer[] = {
+	{ .arm = 1, .ahb = 4, .sel = 0},
+	{ .arm = 1, .ahb = 3, .sel = 1},
+	{ .arm = 2, .ahb = 2, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 4, .ahb = 1, .sel = 0},
+	{ .arm = 1, .ahb = 5, .sel = 0},
+	{ .arm = 1, .ahb = 8, .sel = 0},
+	{ .arm = 1, .ahb = 6, .sel = 1},
+	{ .arm = 2, .ahb = 4, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 4, .ahb = 2, .sel = 0},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+};
+
+static struct arm_ahb_div clk_automotive[] = {
+	{ .arm = 1, .ahb = 3, .sel = 0},
+	{ .arm = 1, .ahb = 2, .sel = 1},
+	{ .arm = 2, .ahb = 1, .sel = 1},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+	{ .arm = 1, .ahb = 6, .sel = 0},
+	{ .arm = 1, .ahb = 4, .sel = 1},
+	{ .arm = 2, .ahb = 2, .sel = 1},
+	{ .arm = 0, .ahb = 0, .sel = 0},
+};
+
+unsigned long imx_get_armclk(void)
+{
+	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	struct arm_ahb_div *aad;
+	unsigned long fref = imx_get_mpllclk();
+
+	if (pdr0 & PDR0_AUTO_CON) {
+		/* consumer path is selected */
+		aad = &clk_consumer[(pdr0 >> 16) & 0xf];
+		if (aad->sel)
+			fref = fref * 2 / 3;
+	} else {
+		/* auto path is selected */
+		aad = &clk_automotive[(pdr0 >> 9) & 0x7];
+		if (aad->sel)
+			fref = fref * 3 / 4;
+	}
+	return fref / aad->arm;
+}
+
+unsigned long imx_get_ahbclk(void)
+{
+	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	struct arm_ahb_div *aad;
+	unsigned long fref = imx_get_mpllclk();
+
+	if (pdr0 & PDR0_AUTO_CON)
+		/* consumer path is selected */
+		aad = &clk_consumer[(pdr0 >> 16) & 0xf];
+	else
+		/* auto path is selected */
+		aad = &clk_automotive[(pdr0 >> 9) & 0x7];
+
+	return fref / aad->ahb;
+}
+
+unsigned long imx_get_ipgclk(void)
+{
+	ulong clk = imx_get_ahbclk();
+
+	return clk >> 1;
+}
+
+static unsigned long get_3_3_div(unsigned long in)
+{
+	return (((in >> 3) & 0x7) + 1) * ((in & 0x7) + 1);
+}
+
+unsigned long imx_get_perclk1(void)
+{
+	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	ulong pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
+	ulong div;
+	ulong fref;
+
+	if (pdr0 & PDR0_PER_SEL) {
+		/* perclk from arm high frequency clock and synched with AHB clki */
+		fref = imx_get_armclk();
+		div = get_3_3_div((pdr4 >> 16));
+	} else {
+		/* perclk from AHB divided clock */
+		fref = imx_get_ahbclk();
+		div = ((pdr0 >> 12) & 0x7) + 1;	//FIXME check datasheet 111 -> 7 ?
+	}
+
+	return fref / div;
+}
+
+unsigned long imx_get_uartclk(void)
+{
+	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
+	unsigned long pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
+	unsigned long div = get_3_3_div(pdr4 >> 10);
+
+	if (pdr3 & (1 << 14))
+		return imx_get_armclk() / div;
+	else
+		return imx_get_ppllclk() / div;
+}
+
+static int imx_dump_clocks(void)
+{
+	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
+	printf("ppll:    %10d Hz\n", imx_get_ppllclk());
+	printf("arm:     %10d Hz\n", imx_get_armclk());
+	printf("perclk1: %10d Hz\n", imx_get_perclk1());
+	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
+	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
+	printf("uart:	 %10d Hz\n", imx_get_uartclk());
+	return 0;
+}
+
+late_initcall(imx_dump_clocks);

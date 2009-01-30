@@ -67,6 +67,10 @@ config ARCH_IMX31
 	bool
 	select ARCH_IMX
 
+config ARCH_IMX35
+	bool
+	select ARCH_IMX
+
 config ARCH_AT91RM9200
 	bool
 	select ARM920T

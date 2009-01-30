@@ -45,6 +45,8 @@
 # include <asm/arch/imx27-regs.h>
 #elif defined CONFIG_ARCH_IMX31
 # include <asm/arch/imx31-regs.h>
+#elif defined CONFIG_ARCH_IMX35
+# include <asm/arch/imx35-regs.h>
 #else
 # error "unknown i.MX soc type"
 #endif

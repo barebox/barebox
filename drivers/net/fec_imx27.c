@@ -568,8 +568,9 @@ int fec_probe(struct device_d *dev)
         struct eth_device *edev;
 	fec_priv *fec;
 	uint32_t base;
-
+#ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
+#endif
         edev = (struct eth_device *)malloc(sizeof(struct eth_device));
         dev->type_data = edev;
 	fec = (fec_priv*)malloc(sizeof(*fec));

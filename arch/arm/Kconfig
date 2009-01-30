@@ -12,6 +12,7 @@ config ARCH_TEXT_BASE
 	default 0x87f00000 if MACH_PCM037
 	default 0x23f00000 if MACH_AT91SAM9260_EK
 	default 0x23f00000 if MACH_PM9263
+	default 0x80000000 if MACH_FREESCALE_MX35_3STACK
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
@@ -21,6 +22,7 @@ config BOARDINFO
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
 	default "Ronetix PM9263" if MACH_PM9263
+	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
 
 config BOARD_LINKER_SCRIPT
 	bool
@@ -131,6 +133,15 @@ config MACH_IMX27ADS
 	help
 	  Say Y here if you are using the Freescale i.MX27ads board equipped
 	  with a Freescale i.MX27 Processor
+
+config MACH_FREESCALE_MX35_3STACK
+	bool "Freescale MX35 3stack"
+	select HAS_CFI
+	select ARCH_IMX35
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using the Freescale MX35 3stack board equipped
+	  with a Freescale i.MX35 Processor
 
 config MACH_ECO920
 	bool "eco920"

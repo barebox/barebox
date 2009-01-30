@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# can be either 'net', 'nor' or 'nand''
+kernel=net
+root=net
+
+uimage=uImage-pcm038
+jffs2=root-pcm038.jffs2
+
+autoboot_timeout=3
+
+nfsroot="/ptx/work/octopus/rsc/svn/oselas/bsp/phytec/phyCORE-i.MX27/OSELAS.BSP-Phytec-phyCORE-i.MX27-trunk/root"
+bootargs="console=ttymxc0,115200"
+
+nor_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart_nor="/dev/mtdblock3"
+
+nand_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart_nand="/dev/mtdblock7"
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d

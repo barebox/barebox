@@ -161,11 +161,6 @@
 #define PDR0_MAX_PODF(x)	(((x) & 0x7) << 3)
 #define PDR0_MCU_PODF(x)	((x) & 0x7)
 
-#define PLL_PD(x)		(((x) & 0xf) << 26)
-#define PLL_MFD(x)		(((x) & 0x3ff) << 16)
-#define PLL_MFI(x)		(((x) & 0xf) << 10)
-#define PLL_MFN(x)		(((x) & 0x3ff) << 0)
-
 #define IMX_ESD_BASE	0xb8001000
 #include "esdctl.h"
 

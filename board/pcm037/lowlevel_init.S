@@ -22,6 +22,7 @@
  */
 
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/imx-pll.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -61,8 +62,8 @@ board_init_lowlevel:
 		PDR0_MCU_PODF(0), \
 		CCM_PDR0)
 
-	writel(PLL_PD(0) | PLL_MFD(0xe) | PLL_MFI(9) | PLL_MFN(0xd), CCM_MPCTL)
-	writel(PLL_PD(1) | PLL_MFD(0x43) | PLL_MFI(12) | PLL_MFN(1), CCM_SPCTL)
+	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), CCM_MPCTL)
+	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), CCM_SPCTL)
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000

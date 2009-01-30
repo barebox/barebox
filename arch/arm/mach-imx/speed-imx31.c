@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 #include <init.h>
@@ -24,12 +25,12 @@ ulong imx_get_mpl_dpdgck_clk(void)
 {
 	ulong infreq;
 
-	if ((__REG(CCM_CCMR) & CCMR_PRCS_MASK) == CCMR_FPM)
+	if ((readl(IMX_CCM_BASE + CCM_CCMR) & CCMR_PRCS_MASK) == CCMR_FPM)
 		infreq = CONFIG_MX31_CLK32 * 1024;
 	else
 		infreq = CONFIG_MX31_HCLK_FREQ;
 
-	return imx_decode_pll(__REG(CCM_MPCTL), infreq);
+	return imx_decode_pll(readl(IMX_CCM_BASE + CCM_MPCTL), infreq);
 }
 
 ulong imx_get_mcu_main_clk(void)
@@ -43,7 +44,7 @@ ulong imx_get_mcu_main_clk(void)
 ulong imx_get_perclk1(void)
 {
 	u32 freq = imx_get_mcu_main_clk();
-	u32 pdr0 = __REG(CCM_PDR0);
+	u32 pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 
 	freq /= ((pdr0 >> 3) & 0x7) + 1;
 	freq /= ((pdr0 >> 6) & 0x3) + 1;

@@ -35,6 +35,7 @@
 #define IMX_WDT_BASE	0x53FDC000
 #define IMX_RTC_BASE	0x53FD8000
 #define IMX_TIM1_BASE	0x53F90000
+#define IMX_IIM_BASE	0x5001C000
 
 #define IMX_SDRAM_CS0	0x80000000
 #define IMX_SDRAM_CS1	0x90000000
@@ -128,17 +129,17 @@
 #define WCR_WDE 0x04
 
 /*
- * ????????????
+ * Clock Controller Module (CCM)
  */
-#define CCM_BASE	0x53f80000
-#define CCM_CCMR	(CCM_BASE + 0x00)
-#define CCM_PDR0	(CCM_BASE + 0x04)
-#define CCM_PDR1	(CCM_BASE + 0x08)
-#define CCM_RCSR	(CCM_BASE + 0x0c)
-#define CCM_MPCTL	(CCM_BASE + 0x10)
-#define CCM_UPCTL	(CCM_BASE + 0x10)
-#define CCM_SPCTL	(CCM_BASE + 0x18)
-#define CCM_COSR	(CCM_BASE + 0x1C)
+#define IMX_CCM_BASE	0x53f80000
+#define CCM_CCMR	0x00
+#define CCM_PDR0	0x04
+#define CCM_PDR1	0x08
+#define CCM_RCSR	0x0c
+#define CCM_MPCTL	0x10
+#define CCM_UPCTL	0x10
+#define CCM_SPCTL	0x18
+#define CCM_COSR	0x1C
 
 /*
  * ?????????????

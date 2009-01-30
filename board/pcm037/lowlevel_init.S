@@ -46,12 +46,12 @@
 board_init_lowlevel:
 
 	writel(IPU_CONF_DI_EN, IPU_CONF)
-	writel(0x074B0BF5, CCM_CCMR)
+	writel(0x074B0BF5, IMX_CCM_BASE + CCM_CCMR)
 
 	DELAY 0x40000
 
-	writel(0x074B0BF5 | CCMR_MPE, CCM_CCMR)
-	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, CCM_CCMR)
+	writel(0x074B0BF5 | CCMR_MPE, IMX_CCM_BASE + CCM_CCMR)
+	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, IMX_CCM_BASE + CCM_CCMR)
 
 	writel(PDR0_CSI_PODF(0xff1) | \
 		PDR0_PER_PODF(7) | \
@@ -60,10 +60,10 @@ board_init_lowlevel:
 		PDR0_IPG_PODF(1) | \
 		PDR0_MAX_PODF(3) | \
 		PDR0_MCU_PODF(0), \
-		CCM_PDR0)
+		IMX_CCM_BASE + CCM_PDR0)
 
-	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), CCM_MPCTL)
-	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), CCM_SPCTL)
+	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), IMX_CCM_BASE + CCM_MPCTL)
+	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), IMX_CCM_BASE + CCM_SPCTL)
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000

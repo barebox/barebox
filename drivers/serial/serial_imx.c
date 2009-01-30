@@ -38,7 +38,7 @@
 #define UBIR(base)  __REG( 0xa4 +(base)) /* BRM Incremental Register */
 #define UBMR(base)  __REG( 0xa8 +(base)) /* BRM Modulator Register */
 #define UBRC(base)  __REG( 0xac +(base)) /* Baud Rate Count Register */
-#ifdef CONFIG_ARCH_IMX27
+#if defined CONFIG_ARCH_IMX27 || defined CONFIG_ARCH_IMX35
 #define ONEMS(base) __REG( 0xb0 +(base)) /* One Millisecond register (i.MX27) */
 #define UTS(base)   __REG( 0xb4 +(base)) /* UART Test Register */
 #endif
@@ -163,7 +163,7 @@
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
-#ifdef CONFIG_ARCH_IMX31
+#if defined CONFIG_ARCH_IMX31 || defined CONFIG_ARCH_IMX35
 # define	UCR1_VAL (0)
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32
@@ -202,7 +202,7 @@ static int imx_serial_init_port(struct console_device *cdev)
 	/* Configure FIFOs */
 	UFCR(base) = 0xa81;
 
-#if defined(CONFIG_ARCH_IMX27) || defined(CONFIG_ARCH_IMX31)
+#ifdef ONEMS
 	ONEMS(base) = imx_serial_reffreq(base) / 1000;
 #endif
 

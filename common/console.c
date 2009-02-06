@@ -85,6 +85,7 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 {
 	struct console_device *cdev = dev->type_data;
 	int baudrate;
+	unsigned char c;
 
 	baudrate = simple_strtoul(val, NULL, 10);
 
@@ -94,7 +95,9 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 		mdelay(50);
 		cdev->setbrg(cdev, baudrate);
 		mdelay(50);
-		while (getc() != '\r');
+		do {
+			c = getc();
+		} while (c != '\r' && c != '\n');
 	} else
 		cdev->setbrg(cdev, baudrate);
 

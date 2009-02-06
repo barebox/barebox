@@ -382,6 +382,7 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char options[53]; /* worst case: whole alphabet with colons */
 
 	memset(&data, 0, sizeof(struct image_data));
+	data.verify = 1;
 
 	getopt_reset();
 

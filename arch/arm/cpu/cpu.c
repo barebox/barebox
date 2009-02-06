@@ -161,3 +161,27 @@ int cleanup_before_linux (void)
  * What's to do on ARM to run Linux after U-Boot did its job?
  */
 
+static int do_icache(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	if (argc == 1) {
+		printf("icache is %sabled\n", icache_status() ? "en" : "dis");
+		return 0;
+	}
+
+	if (simple_strtoul(argv[1], NULL, 0) > 0)
+		icache_enable();
+	else
+		icache_disable();
+
+	return 0;
+}
+
+static const __maybe_unused char cmd_icache_help[] =
+"Usage: icache [0|1]\n";
+
+U_BOOT_CMD_START(icache)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_icache,
+	.usage		= "show/change icache status",
+	U_BOOT_CMD_HELP(cmd_icache_help)
+U_BOOT_CMD_END

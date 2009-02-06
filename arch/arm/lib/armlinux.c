@@ -29,6 +29,7 @@
 #include <image.h>
 #include <zlib.h>
 #include <init.h>
+#include <fs.h>
 
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
@@ -339,4 +340,52 @@ __setup_end_tag (void)
 	params->hdr.tag = ATAG_NONE;
 	params->hdr.size = 0;
 }
+
+static int do_bootz(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	void (*theKernel)(int zero, int arch, void *params);
+	const char *commandline = getenv("bootargs");
+	size_t size;
+
+	if (argc != 2) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	theKernel = read_file(argv[1], &size);
+	if (!theKernel) {
+		printf("could not read %s\n", argv[1]);
+		return 1;
+	}
+
+	printf("loaded zImage from %s with size %d\n", argv[1], size);
+
+	setup_start_tag();
+	setup_serial_tag(&params);
+	setup_revision_tag(&params);
+	setup_memory_tags();
+	setup_commandline_tag(commandline);
+#if 0
+	if (initrd_start && initrd_end)
+		setup_initrd_tag (initrd_start, initrd_end);
+#endif
+	setup_videolfb_tag((gd_t *) gd);
+	setup_end_tag();
+
+	cleanup_before_linux();
+	theKernel (0, armlinux_architecture, armlinux_bootparams);
+
+	return 0;
+}
+
+static const __maybe_unused char cmd_ls_help[] =
+"Usage: bootz [FILE]\n"
+"Boot a Linux zImage\n";
+
+U_BOOT_CMD_START(bootz)
+	.maxargs        = 2,
+	.cmd            = do_bootz,
+	.usage          = "bootz - start a zImage",
+U_BOOT_CMD_END
+
 

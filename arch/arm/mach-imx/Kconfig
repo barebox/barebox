@@ -10,6 +10,12 @@ config ARCH_IMX1
 	select ARCH_IMX
 	select ARM920T
 
+config ARCH_IMX25
+	bool
+	select ARCH_IMX
+	select ARM926EJS
+	select ARCH_HAS_FEC_IMX
+
 config ARCH_IMX21
 	bool
 	select ARCH_IMX

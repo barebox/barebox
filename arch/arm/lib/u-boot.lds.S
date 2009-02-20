@@ -31,6 +31,8 @@ SECTIONS
 {
 	. = TEXT_BASE;
 
+	PRE_IMAGE
+
 	. = ALIGN(4);
 	.text      :
 	{

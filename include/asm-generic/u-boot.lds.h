@@ -1,4 +1,12 @@
 
+#ifdef CONFIG_ARCH_IMX25
+#include <asm/arch/u-boot.lds.h>
+#endif
+
+#ifndef PRE_IMAGE
+#define PRE_IMAGE
+#endif
+
 #define INITCALLS			\
   	KEEP(*(.initcall.0))			\
   	KEEP(*(.initcall.1))			\

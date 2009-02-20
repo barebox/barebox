@@ -80,7 +80,7 @@ _STACK_START:
 	.endm
 
 	.macro get_bad_stack
-	ldr	r2, _STACK_START
+	ldr	r13, _STACK_START
 	sub	r13, r13, #(8) @ reserved a couple spots in abort stack
 
 	str	lr, [r13]			@ save caller lr / spsr

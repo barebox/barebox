@@ -5,7 +5,7 @@
 #include <asm-generic/memory_layout.h>
 #include <reloc.h>
 
-int arm_mem_malloc_init(void)
+static int arm_mem_malloc_init(void)
 {
 	mem_malloc_init((void *)MALLOC_BASE,
 			(void *)(MALLOC_BASE + MALLOC_SIZE));

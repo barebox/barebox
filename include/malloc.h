@@ -215,7 +215,8 @@
 
 */
 
-
+#ifndef __MALLOC_H
+#define __MALLOC_H
 
 
 /* Preliminaries */
@@ -918,3 +919,6 @@ struct mallinfo mALLINFo();
 #ifdef __cplusplus
 };  /* end of extern "C" */
 #endif
+
+#endif
+

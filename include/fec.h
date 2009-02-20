@@ -32,6 +32,7 @@ typedef enum {
 	SEVENWIRE,
 	MII10,
 	MII100,
+	RMII,
 } xceiver_type;
 
 /*

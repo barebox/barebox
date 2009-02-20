@@ -615,6 +615,19 @@ int fec_probe(struct device_d *dev)
 
 	sprintf(dev->name, "FEC ETHERNET");
 
+	if (fec->xcv_type == RMII) {
+		/* disable the gasket and wait */
+		writel(0, dev->map_base + FEC_MIIGSK_ENR);
+		while (readl(dev->map_base + FEC_MIIGSK_ENR) & FEC_MIIGSK_ENR_READY)
+			udelay(1);
+
+		/* configure the gasket for RMII, 50 MHz, no loopback, no echo */
+		writel(FEC_MIIGSK_CFGR_IF_MODE_RMII, dev->map_base + FEC_MIIGSK_CFGR);
+
+		/* re-enable the gasket */
+		writel(FEC_MIIGSK_ENR_EN, dev->map_base + FEC_MIIGSK_ENR);
+	}
+
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec_miiphy_read;
 		fec->miiphy.write = fec_miiphy_write;

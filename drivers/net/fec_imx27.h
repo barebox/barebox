@@ -218,6 +218,22 @@ typedef struct ethernet_register_set {
 	uint32_t RES11[64];			/* MBAR_ETH + 0x300-3FF */
 } ethernet_regs;
 
+#define FEC_MIIGSK_CFGR			0x300
+#define FEC_MIIGSK_ENR			0x308
+/*
+ * Some i.MXs allows RMII mode to be configured via a gasket
+ */
+#define FEC_MIIGSK_CFGR_FRCONT		(1 << 6)
+#define FEC_MIIGSK_CFGR_LBMODE		(1 << 4)
+#define FEC_MIIGSK_CFGR_EMODE		(1 << 3)
+#define FEC_MIIGSK_CFGR_IF_MODE_MASK	(3 << 0)
+#define FEC_MIIGSK_CFGR_IF_MODE_MII	(0 << 0)
+#define FEC_MIIGSK_CFGR_IF_MODE_RMII	(1 << 0)
+
+#define FEC_MIIGSK_ENR_READY		(1 << 2)
+#define FEC_MIIGSK_ENR_EN		(1 << 1)
+
+
 #define FEC_IEVENT_HBERR                0x80000000
 #define FEC_IEVENT_BABR                 0x40000000
 #define FEC_IEVENT_BABT                 0x20000000

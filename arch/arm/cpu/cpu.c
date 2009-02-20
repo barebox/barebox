@@ -27,6 +27,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <asm/mmu.h>
 
 /**
  * Read special processor register
@@ -142,6 +143,10 @@ int cleanup_before_linux (void)
 	int i;
 
 	shutdown_uboot();
+
+#ifdef CONFIG_MMU
+	mmu_disable();
+#endif
 
 	/* flush I/D-cache */
 	i = 0;

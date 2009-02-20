@@ -431,6 +431,7 @@ static void fec_halt(struct eth_device *dev)
 static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 {
 	unsigned int status;
+	uint64_t tmo;
 
 	/*
 	 * This routine transmits one frame.  This routine only accepts
@@ -476,8 +477,12 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	/*
 	 * wait until frame is sent .
 	 */
+	tmo = get_time_ns();
 	while (readw(&fec->tbd_base[fec->tbd_index].status) & FEC_TBD_READY) {
-		/* FIXME: Timeout */
+		if (is_timeout(tmo, 1 * SECOND)) {
+			printf("transmission timeout\n");
+			break;
+		}
 	}
 
 	/* for next transmission use the other buffer */
@@ -508,6 +513,7 @@ static int fec_recv(struct eth_device *dev)
 	 */
 	ievent = readl(&fec->eth->ievent);
 	writel(ievent, &fec->eth->ievent);
+
 	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
 				FEC_IEVENT_RFIFO_ERROR)) {
 		/* BABT, Rx/Tx FIFO errors */

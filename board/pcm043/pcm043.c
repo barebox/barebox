@@ -34,7 +34,6 @@
 #include <asm/mach-types.h>
 #include <asm/arch/imx-nand.h>
 #include <fec.h>
-#include "redboot.h"
 
 #define CYG_MACRO_START
 #define CYG_MACRO_END

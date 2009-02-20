@@ -235,59 +235,7 @@ static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
 	fec_priv *fec = (fec_priv *)dev->priv;
-//#define WTF_IS_THIS
-#ifdef WTF_IS_THIS
-	uint32_t crc = 0xffffffff;	/* initial value */
-	uint8_t currByte;			/* byte for which to compute the CRC */
-	int byte;			/* loop - counter */
-	int bit;			/* loop - counter */
 
-	/*
-	 * The algorithm used is the following:
-	 * we loop on each of the six bytes of the provided address,
-	 * and we compute the CRC by left-shifting the previous
-	 * value by one position, so that each bit in the current
-	 * byte of the address may contribute the calculation. If
-	 * the latter and the MSB in the CRC are different, then
-	 * the CRC value so computed is also ex-ored with the
-	 * "polynomium generator". The current byte of the address
-	 * is also shifted right by one bit at each iteration.
-	 * This is because the CRC generatore in hardware is implemented
-	 * as a shift-register with as many ex-ores as the radixes
-	 * in the polynomium. This suggests that we represent the
-	 * polynomiumm itself as a 32-bit constant.
-	 */
-	for (byte = 0; byte < 6; byte++) {
-		currByte = mac[byte];
-		for (bit = 0; bit < 8; bit++) {
-			if ((currByte & 0x01) ^ (crc & 0x01)) {
-				crc >>= 1;
-				crc = crc ^ 0xedb88320;
-			} else {
-				crc >>= 1;
-			}
-			currByte >>= 1;
-		}
-	}
-
-	crc = crc >> 26;
-
-	/*
-	 * Set individual hash table register
-	 */
-	if (crc >= 32) {
-		fec->eth->iaddr1 = (1 << (crc - 32));
-		fec->eth->iaddr2 = 0;
-	} else {
-		fec->eth->iaddr1 = 0;
-		fec->eth->iaddr2 = (1 << crc);
-	}
-#else
-	writel(0, &fec->eth->iaddr1);
-	writel(0, &fec->eth->iaddr2);
-	writel(0, &fec->eth->gaddr1);
-	writel(0, &fec->eth->gaddr2);
-#endif
 	/*
 	 * Set physical address
 	 */
@@ -324,12 +272,12 @@ static int fec_init(struct eth_device *dev)
 		/*
 		 * Frame length=1518; 7-wire mode
 		 */
-		writel(0x05ee0020, &fec->eth->r_cntrl);	/* FIXME 0x05ee0000 */
+		writel((1518 << 16), &fec->eth->r_cntrl);
 	} else {
 		/*
 		 * Frame length=1518; MII mode;
 		 */
-		writel(0x05ee0024, &fec->eth->r_cntrl);	/* FIXME 0x05ee0004 */
+		writel((1518 << 16) | (1 << 2), &fec->eth->r_cntrl);
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
@@ -339,13 +287,15 @@ static int fec_init(struct eth_device *dev)
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
-	writel(0x00010020, &fec->eth->op_pause);	/* FIXME 0xffff0020; */
+	writel(0x00010020, &fec->eth->op_pause);
 	writel(0x2, &fec->eth->x_wmrk);
 	/*
 	 * Set multicast address filter
 	 */
-	writel(0x00000000, &fec->eth->gaddr1);
-	writel(0x00000000, &fec->eth->gaddr2);
+	writel(0, &fec->eth->iaddr1);
+	writel(0, &fec->eth->iaddr2);
+	writel(0, &fec->eth->gaddr1);
+	writel(0, &fec->eth->gaddr2);
 
 	/* size of each buffer */
 	writel(FEC_MAX_PKT_SIZE, &fec->eth->emrbr);

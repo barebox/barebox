@@ -25,21 +25,23 @@
 #ifndef __INCLUDE_NETWORK_FEC_H
 #define __INCLUDE_NETWORK_FEC_H
 
-/**
+/*
+ * Supported phy types on this platform
+ */
+typedef enum {
+	SEVENWIRE,
+	MII10,
+	MII100,
+} xceiver_type;
+
+/*
  * Define the phy connected externally for FEC drivers
  * (like MPC52xx and i.MX27)
  */
 struct fec_platform_data {
-        ulong  xcv_type;	/**< phy's type. See enum xceiver_type */
+        xceiver_type	xcv_type;
+	int		phy_addr;
 };
 
-/**
- * Supported phy types on this platform
- */
-typedef enum {
-	SEVENWIRE,	/**< 7-wire       */
-	MII10,		/**< MII 10Mbps   */
-	MII100		/**< MII 100Mbps  */
-} xceiver_type;
-
 #endif /* __INCLUDE_NETWORK_FEC_H */
+

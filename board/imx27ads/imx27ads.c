@@ -53,6 +53,7 @@ static struct device_d sdram_dev = {
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
+	.phy_addr = 1,
 };
 
 static struct device_d fec_dev = {

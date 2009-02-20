@@ -34,8 +34,6 @@
 #include <asm/arch/clock.h>
 #include <xfuncs.h>
 
-#define CONFIG_PHY_ADDR 1 /* FIXME */
-
 typedef struct {
 	uint8_t data[1500];	/**< actual data */
 	int length;		/**< actual length */
@@ -620,7 +618,7 @@ int fec_probe(struct device_d *dev)
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec_miiphy_read;
 		fec->miiphy.write = fec_miiphy_write;
-		fec->miiphy.address = CONFIG_PHY_ADDR;
+		fec->miiphy.address = pdata->phy_addr;
 		fec->miiphy.flags = pdata->xcv_type == MII10 ? MIIPHY_FORCE_10 : 0;
 		fec->miiphy.edev = edev;
 

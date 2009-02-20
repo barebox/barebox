@@ -451,7 +451,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	}
 
 	/*
-	 * Setup the transmitt buffer
+	 * Setup the transmit buffer
 	 * Note: We are always using the first buffer for transmission,
 	 * the second will be empty and only used to stop the DMA engine
 	 */

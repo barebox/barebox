@@ -63,6 +63,7 @@ board_init_lowlevel:
 
 	mrc 15, 0, r0, c1, c0, 1
 	orr r0, r0, #7
+//	orr r0, r0, #(1 << 31)		/* disable hit under miss (Errata 364296) */
 	mcr 15, 0, r0, c1, c0, 1
 
 	orr r1, r1, #(1<<11) /* Flow prediction (Z) */
@@ -73,6 +74,14 @@ board_init_lowlevel:
 
 	mov r0, #0
 	mcr 15, 0, r0, c15, c2, 4
+
+	/*
+	 * Branch predicition is now enabled.  Flush the BTAC to ensure a valid 
+	 * starting point.  Don't flush BTAC while it is disabled to avoid
+	 * ARM1136 erratum 408023.
+	 */
+	mov     r0, #0
+	mcr     p15, 0, r0, c7, c5, 6	/* flush entire BTAC */
 
 	mov r0, #0
 	mcr 15, 0, r0, c7, c7, 0        /* invalidate I cache and D cache */

@@ -698,7 +698,7 @@ static int smc911x_probe(struct device_d *dev)
 	val = readl(dev->map_base + BYTE_TEST);
 	if(val != 0x87654321) {
 		printf(DRIVERNAME
-			": no smc911x found on 0x%08x (byte_test=0x08%x)\n",
+			": no smc911x found on 0x%08x (byte_test=0x%08x)\n",
 			dev->map_base, val);
 		return -ENODEV;
 	}

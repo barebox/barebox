@@ -83,9 +83,6 @@ board_init_lowlevel:
 	ldr r0, ARM_PPMRR        /* start from AIPS 2GB region */
 	mcr p15, 0, r0, c15, c2, 4
 
-	/* L2 Cache setup / invalidation / disable
-	 */
-#ifdef L2_INVAL
 	/* Disable L2 cache first */
 	mov r0, #IMX_L2CC_BASE
 	ldr r2, [r0, #L2X0_CTRL]
@@ -104,20 +101,23 @@ board_init_lowlevel:
 	orr r1, r1, r2
 	str r1, [r0, #L2X0_AUX_CTRL]
 
-	/* Workaround for DDR issue:WT*/
+	/* Freescale Redboot says:  Workaround for DDR issue:WT
+	 * I would say: workaroung for buggy L2 Cache
+	 */
 	ldr r1, [r0, #L2X0_DEBUG_CTRL]
 	orr r1, r1, #2
 	str r1, [r0, #L2X0_DEBUG_CTRL]
 
 	/* Invalidate L2 */
 	mov r1, #0x000000FF
-	str r1, [r0, #L2X0_CLEAN_INV_WAY]
+	str r1, [r0, #L2X0_INV_WAY]
 L2_loop:
 	/* Poll Invalidate By Way register */
-	ldr r2, [r0, #L2X0_CLEAN_INV_WAY]
+	ldr r2, [r0, #L2X0_INV_WAY]
 	cmp r2, #0
 	bne L2_loop
-#endif
+
+
 /*
  * End of ARM1136 init
  */

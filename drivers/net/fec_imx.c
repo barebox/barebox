@@ -26,13 +26,15 @@
 #include <driver.h>
 #include <miiphy.h>
 #include <fec.h>
-#include "fec_imx.h"
 
+#include <asm/mmu.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <clock.h>
 #include <asm/arch/clock.h>
 #include <xfuncs.h>
+
+#include "fec_imx.h"
 
 typedef struct {
 	uint8_t data[1500];	/**< actual data */
@@ -165,18 +167,18 @@ static int fec_rbd_init(struct fec_priv *fec, int count, int size)
 {
 	int ix;
 	static int once = 0;
-	uint32_t p=0;
+	unsigned long p = 0;
 
 	if (!once) {
 		/* reserve data memory and consider alignment */
-		p = (uint32_t)xzalloc(size * count + DB_DATA_ALIGNMENT) +
-				(DB_DATA_ALIGNMENT-1);
-		p &= ~(DB_DATA_ALIGNMENT-1);
+		p = (unsigned long)dma_alloc_coherent(size * count + DB_DATA_ALIGNMENT);
+		p += DB_DATA_ALIGNMENT - 1;
+		p &= ~(DB_DATA_ALIGNMENT - 1);
 	}
 
 	for (ix = 0; ix < count; ix++) {
 		if (!once) {
-			writel(p, &fec->rbd_base[ix].data_pointer);
+			writel(dma_to_phys((void *)p), &fec->rbd_base[ix].data_pointer);
 			p += size;
 		}
 		writew(FEC_RBD_EMPTY, &fec->rbd_base[ix].status);
@@ -421,7 +423,9 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	 * the second will be empty and only used to stop the DMA engine
 	 */
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
-	writel((uint32_t)eth_data, &fec->tbd_base[fec->tbd_index].data_pointer);
+
+	writel((uint32_t)(eth_data), &fec->tbd_base[fec->tbd_index].data_pointer);
+	dma_flush_range(eth_data, eth_data + data_length);
 	/*
 	 * update BD's status now
 	 * This block:
@@ -508,9 +512,8 @@ static int fec_recv(struct eth_device *dev)
 			/*
 			 * Get buffer address and size
 			 */
-			frame = (NBUF *)readl(&rbd->data_pointer);
+			frame = phys_to_dma(readl(&rbd->data_pointer));
 			frame_length = readw(&rbd->data_length) - 4;
-
 			NetReceive(frame->data, frame_length);
 			len = frame_length;
 		} else {
@@ -563,8 +566,8 @@ static int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = (uint32_t)xzalloc((2 + FEC_RBD_NUM) *
-			sizeof (struct buffer_descriptor) + 2 * DB_ALIGNMENT );
+	base = (uint32_t)dma_alloc_coherent((2 + FEC_RBD_NUM) *
+			sizeof(struct buffer_descriptor) + 2 * DB_ALIGNMENT);
 	base += (DB_ALIGNMENT - 1);
 	base &= ~(DB_ALIGNMENT - 1);
 	fec->rbd_base = (struct buffer_descriptor *)base;
@@ -573,8 +576,8 @@ static int fec_probe(struct device_d *dev)
 	base &= ~(DB_ALIGNMENT - 1);
 	fec->tbd_base = (struct buffer_descriptor *)base;
 
-	writel((uint32_t)fec->tbd_base, fec->regs + FEC_ETDSR);
-	writel((uint32_t)fec->rbd_base, fec->regs + FEC_ERDSR);
+	writel((uint32_t)dma_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
+	writel((uint32_t)dma_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
 
 	fec->xcv_type = pdata->xcv_type;
 

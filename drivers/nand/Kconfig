@@ -13,10 +13,15 @@ config NAND_IMX
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31
 
+config NAND_IMX_V2
+	bool
+	prompt "i.MX NAND driver"
+	depends on ARCH_IMX25
+
 config NAND_IMX_BOOT
 	bool
 	prompt "Support Starting U-Boot from NAND"
-	depends on NAND_IMX
+	depends on NAND_IMX || NAND_IMX_V2
 
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"

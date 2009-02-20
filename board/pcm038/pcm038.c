@@ -40,6 +40,7 @@
 #include <asm/arch/imx-nand.h>
 #include <asm/arch/imx-pll.h>
 #include <asm/arch/imxfb.h>
+#include <asm/mmu.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -148,6 +149,29 @@ static struct device_d imxfb_dev = {
 	.platform_data	= &pcm038_fb_data,
 };
 
+#ifdef CONFIG_MMU
+static void pcm038_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+}
+#else
+static void pcm038_mmu_init(void)
+{
+}
+#endif
+
 static int pcm038_devices_init(void)
 {
 	int i;
@@ -212,6 +236,8 @@ static int pcm038_devices_init(void)
 		PA30_PF_CONTRAST,
 		PA31_PF_OE_ACD,
 	};
+
+	pcm038_mmu_init();
 
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x0000CC03;

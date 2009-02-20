@@ -90,6 +90,11 @@ ulong imx_get_ipgclk(void)
 	return clk >> 1;
 }
 
+ulong imx_get_fecclk(void)
+{
+	return imx_get_ipgclk();
+}
+
 ulong imx_get_spllclk(void)
 {
 	ulong cscr = CSCR;
@@ -137,6 +142,11 @@ ulong imx_get_perclk4(void)
 ulong imx_get_uartclk(void)
 {
 	return imx_get_perclk1();
+}
+
+ulong imx_get_gptclk(void)
+{
+	return imx_decode_perclk((PCDR1 & 0x3f) + 1);
 }
 
 int imx_dump_clocks(void)

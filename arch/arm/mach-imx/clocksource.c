@@ -67,7 +67,7 @@ static int clocksource_init (void)
 	GPT(GPT_TCTL) &= ~TCTL_TEN;
 	GPT(GPT_TCTL) |= TCTL_TEN; /* Enable timer */
 
-	cs.mult = clocksource_hz2mult(imx_get_perclk1(), cs.shift);
+	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
 
 	init_clock(&cs);
 

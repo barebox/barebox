@@ -115,7 +115,7 @@ static unsigned long get_3_3_div(unsigned long in)
 	return (((in >> 3) & 0x7) + 1) * ((in & 0x7) + 1);
 }
 
-unsigned long imx_get_perclk1(void)
+unsigned long imx_get_gptclk(void)
 {
 	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	ulong pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
@@ -146,13 +146,17 @@ unsigned long imx_get_uartclk(void)
 	else
 		return imx_get_ppllclk() / div;
 }
+ulong imx_get_fecclk(void)
+{
+	return imx_get_ipgclk();
+}
 
 static int imx_dump_clocks(void)
 {
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
 	printf("ppll:    %10d Hz\n", imx_get_ppllclk());
 	printf("arm:     %10d Hz\n", imx_get_armclk());
-	printf("perclk1: %10d Hz\n", imx_get_perclk1());
+	printf("gpt:     %10d Hz\n", imx_get_gptclk());
 	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
 	printf("uart:	 %10d Hz\n", imx_get_uartclk());

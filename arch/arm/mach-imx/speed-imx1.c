@@ -71,7 +71,12 @@ ulong imx_get_perclk3(void)
 
 ulong imx_get_uartclk(void)
 {
-	return imx_get_perclk1(void);
+	return imx_get_perclk1();
+}
+
+ulong imx_get_gptclk(void)
+{
+	return imx_get_perclk1() / (((PCDR) & 0xf)+1);
 }
 
 #if 0

@@ -282,7 +282,7 @@ static int fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		writel(((imx_get_ipgclk() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
+		writel(((imx_get_fecclk() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
 	}
 	/*
 	 * Set Opcode/Pause Duration Register

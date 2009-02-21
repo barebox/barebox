@@ -103,6 +103,7 @@ struct device_d {
 	struct list_head list;     /* The list of all devices */
 	struct list_head children; /* our children            */
 	struct list_head sibling;
+	struct list_head active;   /* The list of all devices which have a driver */
 
 	struct device_d *parent;   /* our parent, NULL if not present */
 
@@ -128,7 +129,7 @@ struct driver_d {
 	int     (*probe) (struct device_d *);
 
 	/*! Called if an instance of a device is gone. */
-	int     (*remove)(struct device_d *);
+	void     (*remove)(struct device_d *);
 
 	/*! Called in response of reading from this device. Required */
 	ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
@@ -244,6 +245,11 @@ int mem_memmap(struct device_d *dev, void **map, int flags);
 
 /* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);
+
+/* Iterate over all activated devices (i.e. the ones with drivers and shut
+ * them down.
+ */
+void devices_shutdown(void);
 
 int generic_memmap_ro(struct device_d *dev, void **map, int flags);
 int generic_memmap_rw(struct device_d *dev, void **map, int flags);

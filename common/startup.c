@@ -156,3 +156,13 @@ void hang (void)
 	puts ("### ERROR ### Please RESET the board ###\n");
 	for (;;);
 }
+
+/* Everything needed to cleanly shutdown U-Boot.
+ * Should be called before starting an OS to get
+ * the devices into a clean state
+ */
+void shutdown_uboot(void)
+{
+	devices_shutdown();
+}
+

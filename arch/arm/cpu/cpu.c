@@ -141,6 +141,8 @@ int cleanup_before_linux (void)
 {
 	int i;
 
+	shutdown_uboot();
+
 	/* flush I/D-cache */
 	i = 0;
 	asm ("mcr p15, 0, %0, c7, c7, 0": :"r" (i));

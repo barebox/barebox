@@ -40,6 +40,8 @@ EXPORT_SYMBOL(device_list);
 LIST_HEAD(driver_list);
 EXPORT_SYMBOL(driver_list);
 
+static LIST_HEAD(active);
+
 struct device_d *get_device_by_id(const char *id)
 {
 	struct device_d *dev;
@@ -76,6 +78,8 @@ static int match(struct driver_d *drv, struct device_d *dev)
 		return -1;
 
 	dev->driver = drv;
+
+	list_add(&dev->active, &active);
 
 	return 0;
 }
@@ -324,6 +328,16 @@ const char *dev_id(const struct device_d *dev)
 	sprintf(buf, "0x%08x", dev->map_base);
 
 	return buf;
+}
+
+void devices_shutdown(void)
+{
+	struct device_d *dev;
+
+	list_for_each_entry(dev, &active, active) {
+		if (dev->driver->remove)
+			dev->driver->remove(dev);
+	}
 }
 
 #ifdef CONFIG_CMD_DEVINFO

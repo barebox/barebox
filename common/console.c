@@ -301,6 +301,17 @@ int fputs(int fd, const char *s)
 }
 EXPORT_SYMBOL(fputs);
 
+void console_flush(void)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (cdev->flush)
+			cdev->flush(cdev);
+	}
+}
+EXPORT_SYMBOL(console_flush);
+
 void fprintf (int file, const char *fmt, ...)
 {
 	va_list args;

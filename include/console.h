@@ -38,6 +38,7 @@ struct console_device {
 	void (*putc)(struct console_device *cdev, char c);
 	int  (*getc)(struct console_device *cdev);
 	int (*setbrg)(struct console_device *cdev, int baudrate);
+	void (*flush)(struct console_device *cdev);
 
 	struct list_head list;
 

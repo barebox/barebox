@@ -58,6 +58,8 @@ static int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	printf ("## Starting application at 0x%08lX ...\n", addr);
 
+	console_flush();
+
 #ifdef ARCH_HAS_EXECUTE
 	rcode = arch_execute(addr, argc, &argv[1]);
 #else

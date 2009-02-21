@@ -18,6 +18,7 @@ int	tstc(void);
 void	console_putc(unsigned int ch, const char c);
 int	getc(void);
 void	console_puts(unsigned int ch, const char *s);
+void	console_flush(void);
 
 static inline void puts(const char *s) {
 	console_puts(CONSOLE_STDOUT, s);

@@ -516,7 +516,7 @@ static int fec_recv(struct eth_device *dev)
 	return len;
 }
 
-int fec_probe(struct device_d *dev)
+static int fec_probe(struct device_d *dev)
 {
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
         struct eth_device *edev;
@@ -592,13 +592,21 @@ int fec_probe(struct device_d *dev)
 	return 0;
 }
 
+static void fec_remove(struct device_d *dev)
+{
+	struct eth_device *edev = dev->type_data;
+
+	fec_halt(edev);
+}
+
 /**
  * Driver description for registering
  */
 static struct driver_d imx27_driver = {
-        .name  = "fec_imx27",
-        .probe = fec_probe,
-        .type  = DEVICE_TYPE_ETHER,
+        .name   = "fec_imx27",
+        .probe  = fec_probe,
+	.remove = fec_remove,
+        .type   = DEVICE_TYPE_ETHER,
 };
 
 static int fec_register(void)

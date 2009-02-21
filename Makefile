@@ -785,7 +785,7 @@ include/asm:
 	$(Q)if [ ! -d include ]; then mkdir -p include; fi;
 	@ln -fsn asm-$(ARCH) $@
 
-include/config.h:
+include/config.h: include/config/auto.conf
 	@echo '  SYMLINK $@ -> board/$(board-y)/config.h'
 ifneq ($(KBUILD_SRC),)
 	$(Q)ln -fsn $(srctree)/board/$(board-y)/config.h $@

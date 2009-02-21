@@ -44,13 +44,6 @@
 #include <init.h>
 #include <asm-generic/memory_layout.h>
 
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-# include <status_led.h>
-# define SHOW_BOOT_PROGRESS(arg)	show_boot_progress(arg)
-#else
-# define SHOW_BOOT_PROGRESS(arg)
-#endif
-
 /*
  *  Continue booting an OS image; caller already has:
  *  - copied image header to global variable `header'

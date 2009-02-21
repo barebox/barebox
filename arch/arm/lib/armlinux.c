@@ -99,16 +99,6 @@ void __setup_serial_tag(struct tag **tmp);
 #define setup_serial_tag(a) do {} while(0)
 #endif
 
-
-
-
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-# include <status_led.h>
-# define SHOW_BOOT_PROGRESS(arg)	show_boot_progress(arg)
-#else
-# define SHOW_BOOT_PROGRESS(arg)
-#endif
-
 static int armlinux_architecture = 0;
 static void *armlinux_bootparams = NULL;
 

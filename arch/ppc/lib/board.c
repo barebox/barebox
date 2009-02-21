@@ -32,19 +32,6 @@
 #include <reloc.h>
 #include <asm-generic/memory_layout.h>
 
-char *strmhz (char *buf, long hz)
-{
-	long l, n;
-	long m;
-
-	n = hz / 1000000L;
-	l = sprintf (buf, "%ld", n);
-	m = (hz % 1000000L) / 1000L;
-	if (m != 0)
-		sprintf (buf + l, ".%03ld", m);
-	return (buf);
-}
-
 /************************************************************************
  *
  * This is the next part if the initialization sequence: we are now

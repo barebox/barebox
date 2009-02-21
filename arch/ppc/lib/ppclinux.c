@@ -16,7 +16,6 @@
 #include <ft_build.h>
 #endif
 extern bd_t *bd;
-#define SHOW_BOOT_PROGRESS(x)
 
 static int do_bootm_linux(struct image_data *idata)
 {

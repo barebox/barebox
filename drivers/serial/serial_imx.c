@@ -263,6 +263,13 @@ static int imx_serial_getc(struct console_device *cdev)
 	return ch;
 }
 
+static void imx_serial_flush(struct console_device *cdev)
+{
+	struct device_d *dev = cdev->dev;
+
+	while (!(USR2(dev->map_base) & USR2_TXDC));
+}
+
 static int imx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
@@ -293,6 +300,7 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev->tstc = imx_serial_tstc;
 	cdev->putc = imx_serial_putc;
 	cdev->getc = imx_serial_getc;
+	cdev->flush = imx_serial_flush;
 	cdev->setbrg = imx_serial_setbaudrate;
 
 	imx_serial_init_port(cdev);
@@ -306,10 +314,18 @@ static int imx_serial_probe(struct device_d *dev)
 	return 0;
 }
 
+static void imx_serial_remove(struct device_d *dev)
+{
+	struct console_device *cdev = dev->type_data;
+
+	imx_serial_flush(cdev);
+}
+
 static struct driver_d imx_serial_driver = {
-        .name  = "imx_serial",
-        .probe = imx_serial_probe,
-        .type  = DEVICE_TYPE_CONSOLE,
+        .name   = "imx_serial",
+        .probe  = imx_serial_probe,
+	.remove = imx_serial_remove,
+        .type   = DEVICE_TYPE_CONSOLE,
 };
 
 static int imx_serial_init(void)

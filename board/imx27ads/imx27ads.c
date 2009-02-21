@@ -57,7 +57,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
-	.name     = "fec_imx27",
+	.name     = "fec_imx",
 	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,

@@ -26,7 +26,7 @@
 #include <driver.h>
 #include <miiphy.h>
 #include <fec.h>
-#include "fec_imx27.h"
+#include "fec_imx.h"
 
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
@@ -603,7 +603,7 @@ static void fec_remove(struct device_d *dev)
  * Driver description for registering
  */
 static struct driver_d imx27_driver = {
-        .name   = "fec_imx27",
+        .name   = "fec_imx",
         .probe  = fec_probe,
 	.remove = fec_remove,
         .type   = DEVICE_TYPE_ETHER,

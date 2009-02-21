@@ -72,32 +72,11 @@ long int initdram (int);
 char *size_human_readable(ulong size);
 
 /* common/main.c */
-void	main_loop	(void);
 int	run_command	(const char *cmd, int flag);
 int	readline	(const char *prompt, char *buf, int len);
-void	reset_cmd_timeout(void);
-
-/* lib_$(ARCH)/board.c */
-int	checkboard    (void);
-int	checkflash    (void);
-int	checkdram     (void);
-int	checkcpu      (void);
-char *	strmhz(char *buf, long hz);
-
-/* common/exports.c */
-void	jumptable_init(void);
 
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
-
-#ifdef CONFIG_LWMON
-extern uchar pic_read  (uchar reg);
-extern void  pic_write (uchar reg, uchar val);
-#endif
-
-#if defined(CFG_DRAM_TEST)
-int testdram(void);
-#endif /* CFG_DRAM_TEST */
 
 /* $(CPU)/cpu.c */
 void	reset_cpu     (ulong addr);
@@ -134,10 +113,6 @@ ulong crc32_no_comp (ulong, const unsigned char *, uint);
 
 /* common/console.c */
 int	ctrlc (void);
-
-#ifdef CONFIG_SHOW_BOOT_PROGRESS
-void	show_boot_progress (int status);
-#endif
 
 #define MEMAREA_SIZE_SPECIFIED 1
 

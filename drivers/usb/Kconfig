@@ -1,0 +1,9 @@
+menuconfig USB
+	bool "USB support                   "
+
+if USB
+
+config USB_EHCI
+	bool "EHCI driver"
+
+endif

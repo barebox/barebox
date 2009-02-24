@@ -30,6 +30,7 @@
 # error "Please do not include directly. Use imx-regs.h instead."
 #endif
 
+#define IMX_OTG_BASE	0x43F88000
 #define IMX_UART1_BASE	0x43F90000
 #define IMX_UART2_BASE	0x43F94000
 #define IMX_WDT_BASE	0x53FDC000

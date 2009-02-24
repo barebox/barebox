@@ -42,7 +42,7 @@
 #define pr_emerg(fmt, arg...)	printf(fmt, ##arg)
 
 #ifdef DEBUG
-#define pr_debug(fmt, arg...)	printf(UBOOT_DEBUG, fmt, ##arg)
+#define pr_debug(fmt, arg...)	printf(fmt, ##arg)
 #else
 #define pr_debug(fmt, arg...) do {} while(0)
 #endif

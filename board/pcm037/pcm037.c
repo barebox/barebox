@@ -27,6 +27,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/iomux-mx31.h>
 #include <asm/armlinux.h>
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
@@ -133,10 +134,6 @@ static int imx31_devices_init(void)
 	__REG(CSCR_L(5)) = 0x444A0301;
 	__REG(CSCR_A(5)) = 0x44443302;
 
-	/* setup pins for I2C2 (for EEPROM, RTC) */
-	imx_gpio_mode(MUX_CSPI2_MOSI_I2C2_SCL);
-	imx_gpio_mode(MUX_CSPI2_MISO_I2C2_SCL);
-
 	register_device(&cfi_dev);
 
 	/*
@@ -176,10 +173,10 @@ static struct device_d imx31_serial_device = {
 static int imx31_console_init(void)
 {
 	/* init gpios for serial port */
-	imx_gpio_mode(MUX_RXD1_UART1_RXD_MUX);
-	imx_gpio_mode(MUX_TXD1_UART1_TXD_MUX);
-	imx_gpio_mode(MUX_RTS1_UART1_RTS_B);
-	imx_gpio_mode(MUX_RTS1_UART1_CTS_B);
+	imx_iomux_mode(MX31_PIN_RXD1__RXD1);
+	imx_iomux_mode(MX31_PIN_TXD1__TXD1);
+	imx_iomux_mode(MX31_PIN_CTS1__CTS1);
+	imx_iomux_mode(MX31_PIN_RTS1__RTS1);
 
 	register_device(&imx31_serial_device);
 	return 0;

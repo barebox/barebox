@@ -68,6 +68,7 @@
 /*@{*/	/* do not delete, doxygen relevant */
 
 struct filep;
+struct bus_type;
 
 /** @brief Describes a particular device present in the system */
 struct device_d {
@@ -110,6 +111,7 @@ struct device_d {
 	/*! This describes the type (or class) of this device. Have a look at
 	 * include/driver.h to see a list of known device types. Currently this
 	 * includes DEVICE_TYPE_ETHER, DEVICE_TYPE_CONSOLE and others. */
+	struct bus_type *bus;
 	unsigned long type;
 
 	/*! The parameters for this device. This is used to carry information
@@ -151,6 +153,7 @@ struct driver_d {
 	void    (*shortinfo) (struct device_d *);
 
 	unsigned long type;
+	struct bus_type *bus;
 
 	/*! This is somewhat redundant with the type data in struct device.
 	 * Currently the filesystem implementation uses this field while
@@ -273,7 +276,7 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 extern const char *dev_id(const struct device_d *dev);
 
 #define dev_printf(dev, format, arg...)	\
-	printf("%s@%s: " format , dev->name , \
+	printf("%s@%s: " format , (dev)->name , \
 	       dev_id(dev) , ## arg)
 
 #define dev_emerg(dev, format, arg...)		\
@@ -299,5 +302,15 @@ extern const char *dev_id(const struct device_d *dev);
 	({ if (0) dev_printf((dev), format, ##arg); 0; })
 #endif
 
+struct bus_type {
+	char *name;
+	int (*match)(struct device_d *dev, struct driver_d *drv);
+	int (*probe)(struct device_d *dev);
+	void (*remove)(struct device_d *dev);
+
+	struct list_head list;
+};
+
+extern struct bus_type platform_bus;
 #endif /* DRIVER_H */
 

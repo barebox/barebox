@@ -70,18 +70,21 @@ int get_free_deviceid(char *id, const char *id_template)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
-	if (strcmp(dev->name, drv->name))
-		return -1;
-	if (dev->type != drv->type)
-		return -1;
-	if(drv->probe(dev))
-		return -1;
-
 	dev->driver = drv;
+
+	if (dev->bus != drv->bus)
+		goto err_out;
+	if (dev->bus->match(dev, drv))
+		goto err_out;
+	if (dev->bus->probe(dev))
+		goto err_out;
 
 	list_add(&dev->active, &active);
 
 	return 0;
+err_out:
+	dev->driver = NULL;
+	return -1;
 }
 
 int register_device(struct device_d *new_device)
@@ -93,6 +96,11 @@ int register_device(struct device_d *new_device)
 		return -EINVAL;
 	}
 	debug ("register_device: %s\n",new_device->name);
+
+	if (!new_device->bus) {
+//		dev_err(new_device, "no bus type associated. Needs fixup\n");
+		new_device->bus = &platform_bus;
+	}
 
 	list_add_tail(&new_device->list, &device_list);
 	INIT_LIST_HEAD(&new_device->children);
@@ -164,6 +172,11 @@ int register_driver(struct driver_d *drv)
 	struct device_d *dev = NULL;
 
 	debug("register_driver: %s\n", drv->name);
+
+	if (!drv->bus) {
+//		pr_err("driver %s has no bus type associated. Needs fixup\n", drv->name);
+		drv->bus = &platform_bus;
+	}
 
 	list_add_tail(&drv->list, &driver_list);
 

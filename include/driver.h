@@ -277,26 +277,26 @@ extern const char *dev_id(const struct device_d *dev);
 	       dev_id(dev) , ## arg)
 
 #define dev_emerg(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #define dev_alert(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #define dev_crit(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #define dev_err(dev, format, arg...)		\
 	dev_printf(dev , format , ## arg)
 #define dev_warn(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #define dev_notice(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #define dev_info(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 
 #if defined(DEBUG)
 #define dev_dbg(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
+	dev_printf((dev) , format , ## arg)
 #else
 #define dev_dbg(dev, format, arg...)		\
-	({ if (0) dev_printf(dev, format, ##arg); 0; })
+	({ if (0) dev_printf((dev), format, ##arg); 0; })
 #endif
 
 #endif /* DRIVER_H */

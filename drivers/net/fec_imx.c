@@ -328,6 +328,7 @@ static int fec_init(struct eth_device *dev)
 static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
+	int ret;
 
 	/* full-duplex, heartbeat disabled */
 	writel(1 << 2, fec->regs + FEC_X_CNTRL);
@@ -343,7 +344,9 @@ static int fec_open(struct eth_device *edev)
 	fec_rx_task_enable(fec);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		miiphy_wait_aneg(&fec->miiphy);
+		ret = miiphy_wait_aneg(&fec->miiphy);
+		if (ret)
+			return ret;
 		miiphy_print_status(&fec->miiphy);
 	}
 

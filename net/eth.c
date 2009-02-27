@@ -118,6 +118,8 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
+	dev->type_data = edev;
+	dev->type = DEVICE_TYPE_ETHER;
 	edev->param_ip.name = "ipaddr";
 	edev->param_ip.set = &eth_set_ipaddr;
 	edev->param_ethaddr.name = "ethaddr";
@@ -142,7 +144,8 @@ int eth_register(struct eth_device *edev)
 		dev_set_param(dev, "ethaddr", ethaddr_str);
 	}
 
-	eth_current = edev;
+	if (!eth_current)
+		eth_current = edev;
 
 	return 0;
 }

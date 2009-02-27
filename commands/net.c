@@ -275,3 +275,41 @@ U_BOOT_CMD_START(cdp)
 U_BOOT_CMD_END
 
 #endif	/* CONFIG_NET_CDP */
+
+static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	struct device_d *dev;
+	struct eth_device *edev;
+
+	if (argc != 2) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	dev = get_device_by_path(argv[1]);
+	if (!dev) {
+		perror("open");
+		return 1;
+	}
+
+	if (dev->type != DEVICE_TYPE_ETHER) {
+		printf("nat a net device: %s\n", argv[1]);
+		return 1;
+	}
+
+	edev = dev->type_data;
+	eth_set_current(edev);
+
+	return 0;
+}
+
+static const __maybe_unused char cmd_ethact_help[] =
+"Usage: ethact /dev/ethx\n";
+
+U_BOOT_CMD_START(ethact)
+	.maxargs	= 3,
+	.cmd		= do_ethact,
+	.usage		= "set current ethernet device",
+	U_BOOT_CMD_HELP(cmd_ethact_help)
+U_BOOT_CMD_END
+

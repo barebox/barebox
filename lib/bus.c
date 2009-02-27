@@ -32,9 +32,9 @@ static int platform_probe(struct device_d *dev)
 	return dev->driver->probe(dev);
 }
 
-static int platform_remove(struct device_d *dev)
+static void platform_remove(struct device_d *dev)
 {
-	return dev->driver->remove(dev);
+	dev->driver->remove(dev);
 }
 
 struct bus_type platform_bus = {

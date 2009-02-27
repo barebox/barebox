@@ -196,6 +196,7 @@ struct device_d *get_device_by_path(const char *path)
 
  out:
 	free(npath);
+	errno = -ENODEV;
 	return dev;
 }
 EXPORT_SYMBOL(get_device_by_path);

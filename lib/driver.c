@@ -70,6 +70,9 @@ int get_free_deviceid(char *id, const char *id_template)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
+	if (dev->driver)
+		return -1;
+
 	dev->driver = drv;
 
 	if (dev->bus != drv->bus)

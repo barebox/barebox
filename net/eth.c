@@ -45,11 +45,9 @@ struct eth_device * eth_get_current(void)
 int eth_open(void)
 {
 	if (!eth_current)
-		return 0;
+		return -ENODEV;
 
-	eth_current->open(eth_current);
-
-	return 0;
+	return eth_current->open(eth_current);
 }
 
 void eth_halt(void)
@@ -65,7 +63,7 @@ void eth_halt(void)
 int eth_send(void *packet, int length)
 {
 	if (!eth_current)
-		return -1;
+		return -ENODEV;
 
 	return eth_current->send(eth_current, packet, length);
 }
@@ -73,7 +71,7 @@ int eth_send(void *packet, int length)
 int eth_rx(void)
 {
 	if (!eth_current)
-		return -1;
+		return -ENODEV;
 
 	return eth_current->recv(eth_current);
 }

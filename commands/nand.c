@@ -171,9 +171,8 @@ static int nand_bb_probe(struct device_d *dev)
 	return nand_bb_calc_size(bb);
 }
 
-static int nand_bb_remove(struct device_d *dev)
+static void nand_bb_remove(struct device_d *dev)
 {
-	return 0;
 }
 
 struct driver_d nand_bb_driver = {

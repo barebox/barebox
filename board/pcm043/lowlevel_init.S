@@ -38,13 +38,13 @@
 
 /* Assuming 24MHz input clock */
 #define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532     (IMX_PLL_PD(1) | IMX_PLL_MFD(0) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
+#define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 #define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
 
 ARM_PPMRR:              .word   0x40000015
 L2CACHE_PARAM:          .word   0x00030024
 CCM_CCMR_W:             .word   0x003F4208
-CCM_PDR0_W:             .word   0x00801000
+CCM_PDR0_W:             .word   0x00001000
 MPCTL_PARAM_399_W:      .word   MPCTL_PARAM_399
 MPCTL_PARAM_532_W:      .word   MPCTL_PARAM_532
 PPCTL_PARAM_W:    	.word   PPCTL_PARAM_300
@@ -55,20 +55,14 @@ board_init_lowlevel:
 	mov     r10, lr
 
 	mrc 15, 0, r1, c1, c0, 0
-//	bic r1, r1, #(0x3<<21)
-	bic r1, r1, #(0x3<<11)
-//	bic r1, r1, #0x5
-
-//	bic r1, r1, #(1<<3)
 
 	mrc 15, 0, r0, c1, c0, 1
 	orr r0, r0, #7
-//	orr r0, r0, #(1 << 31)		/* disable hit under miss (Errata 364296) */
 	mcr 15, 0, r0, c1, c0, 1
 
 	orr r1, r1, #(1<<11) /* Flow prediction (Z) */
 	orr r1, r1, #(1<<22) /* unaligned accesses  */
-	orr r1, r1, #(1<<21)
+	orr r1, r1, #(1<<21) /* Low Int Latency     */
 
 	mcr 15, 0, r1, c1, c0, 0
 
@@ -92,73 +86,21 @@ board_init_lowlevel:
 	ldr r0, ARM_PPMRR        /* start from AIPS 2GB region */
 	mcr p15, 0, r0, c15, c2, 4
 
-	/* Disable L2 cache first */
-	mov r0, #IMX_L2CC_BASE
-	ldr r2, [r0, #L2X0_CTRL]
-	bic r2, r2, #0x1
-	str r2, [r0, #L2X0_CTRL]
-	/*
-	 * Configure L2 Cache:
-	 * - 128k size(16k way)
-	 * - 8-way associativity
-	 * - 0 ws TAG/VALID/DIRTY
-	 * - 4 ws DATA R/W
-	 */
-	ldr r1, [r0, #L2X0_AUX_CTRL]
-	and r1, r1, #0xFE000000
-	ldr r2, L2CACHE_PARAM
-	orr r1, r1, r2
-	str r1, [r0, #L2X0_AUX_CTRL]
-
-	/* Freescale Redboot says:  Workaround for DDR issue:WT
-	 * I would say: workaroung for buggy L2 Cache
-	 */
-	ldr r1, [r0, #L2X0_DEBUG_CTRL]
-	orr r1, r1, #2
-	str r1, [r0, #L2X0_DEBUG_CTRL]
-
-	/* Invalidate L2 */
-	mov r1, #0x000000FF
-	str r1, [r0, #L2X0_INV_WAY]
-L2_loop:
-	/* Poll Invalidate By Way register */
-	ldr r2, [r0, #L2X0_INV_WAY]
-	cmp r2, #0
-	bne L2_loop
-
-
 /*
  * End of ARM1136 init
  */
 	ldr r0, CCM_BASE_ADDR_W
 
-	/* default CLKO to 1/32 of the ARM core*/
-	ldr r1, [r0, #CCM_COSR]
-	bic r1, r1, #0x00000FF00
-	bic r1, r1, #0x0000000FF
-	mov r2, #0x00006C00
-	add r2, r2, #0x67
-	orr r1, r1, r2
-	str r1, [r0, #CCM_COSR]
-
 	ldr r2, CCM_CCMR_W
 	str r2, [r0, #CCM_CCMR]
 
-	/* check clock path */
-	ldr r2, [r0, #CCM_PDR0]
-	tst r2, #0x1
-	ldrne r3, MPCTL_PARAM_532_W  /* consumer path*/
-	ldreq r3, MPCTL_PARAM_399_W  /* auto path*/
+	ldr r3, MPCTL_PARAM_399_W  /* consumer path*/
 
 	/*Set MPLL , arm clock and ahb clock*/
 	str r3, [r0, #CCM_MPCTL]
 
 	ldr r1, PPCTL_PARAM_W
 	str r1, [r0, #CCM_PPCTL]
-
-	ldr r1, [r0, #CCM_PDR0]
-	orr r1, r1, #0x800000
-	str r1, [r0, #CCM_PDR0]
 
 	ldr r1, CCM_PDR0_W
 	str r1, [r0, #CCM_PDR0]
@@ -178,7 +120,7 @@ L2_loop:
 	cmp	pc, #0x90000000
 	bhi	1f
 
-	mov	pc, lr
+	mov	pc, r10
 
 1:
 	/* MDDR init, enable mDDR*/

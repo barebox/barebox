@@ -172,3 +172,40 @@ int imx_dump_clocks(void)
 
 late_initcall(imx_dump_clocks);
 
+/*
+ * Set the divider of the CLKO pin. Returns
+ * the new divider (which may be smaller
+ * than the desired one)
+ */
+int imx_clko_set_div(int div)
+{
+	ulong pcdr;
+	div--;
+	div &= 0x7;
+
+	pcdr = PCDR0 & ~(7 << 22);
+	pcdr |= div << 22;
+	PCDR0 = pcdr;
+
+	return div + 1;
+}
+
+/*
+ * Set the clock source for the CLKO pin
+ */
+void imx_clko_set_src(int src)
+{
+	unsigned long ccsr;
+
+	if (src < 0) {
+		PCDR0 &= ~(1 << 25);
+		return;
+	}
+
+	ccsr = CCSR & ~0x1f;
+	ccsr |= src & 0x1f;
+	CCSR = ccsr;
+
+	PCDR0 |= (1 << 25);
+}
+

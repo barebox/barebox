@@ -56,34 +56,17 @@ static struct arm_ahb_div clk_consumer[] = {
 	{ .arm = 0, .ahb = 0, .sel = 0},
 };
 
-static struct arm_ahb_div clk_automotive[] = {
-	{ .arm = 1, .ahb = 3, .sel = 0},
-	{ .arm = 1, .ahb = 2, .sel = 1},
-	{ .arm = 2, .ahb = 1, .sel = 1},
-	{ .arm = 0, .ahb = 0, .sel = 0},
-	{ .arm = 1, .ahb = 6, .sel = 0},
-	{ .arm = 1, .ahb = 4, .sel = 1},
-	{ .arm = 2, .ahb = 2, .sel = 1},
-	{ .arm = 0, .ahb = 0, .sel = 0},
-};
-
 unsigned long imx_get_armclk(void)
 {
 	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	struct arm_ahb_div *aad;
 	unsigned long fref = imx_get_mpllclk();
 
-	if (pdr0 & PDR0_AUTO_CON) {
-		/* consumer path is selected */
-		aad = &clk_consumer[(pdr0 >> 16) & 0xf];
-		if (aad->sel)
-			fref = fref * 2 / 3;
-	} else {
-		/* auto path is selected */
-		aad = &clk_automotive[(pdr0 >> 9) & 0x7];
-		if (aad->sel)
-			fref = fref * 3 / 4;
-	}
+	/* consumer path is selected */
+	aad = &clk_consumer[(pdr0 >> 16) & 0xf];
+	if (aad->sel)
+		fref = fref * 2 / 3;
+
 	return fref / aad->arm;
 }
 
@@ -93,12 +76,7 @@ unsigned long imx_get_ahbclk(void)
 	struct arm_ahb_div *aad;
 	unsigned long fref = imx_get_mpllclk();
 
-	if (pdr0 & PDR0_AUTO_CON)
-		/* consumer path is selected */
-		aad = &clk_consumer[(pdr0 >> 16) & 0xf];
-	else
-		/* auto path is selected */
-		aad = &clk_automotive[(pdr0 >> 9) & 0x7];
+	aad = &clk_consumer[(pdr0 >> 16) & 0xf];
 
 	return fref / aad->ahb;
 }
@@ -164,3 +142,43 @@ static int imx_dump_clocks(void)
 }
 
 late_initcall(imx_dump_clocks);
+
+/*
+ * Set the divider of the CLKO pin. Returns
+ * the new divider (which may be smaller
+ * than the desired one)
+ */
+int imx_clko_set_div(int div)
+{
+	unsigned long cosr = readl(IMX_CCM_BASE + CCM_COSR);
+
+	div -= 1;
+	div &= 0x3f;
+
+	cosr &= ~(0x3f << 10);
+	cosr |= div << 10;
+
+	return div + 1;
+}
+
+/*
+ * Set the clock source for the CLKO pin
+ */
+void imx_clko_set_src(int src)
+{
+	unsigned long cosr = readl(IMX_CCM_BASE + CCM_COSR);
+
+	if (src < 0) {
+		cosr &= ~(1 << 5);
+		writel(cosr, IMX_CCM_BASE + CCM_COSR);
+		return;
+	}
+
+	cosr |= 1 << 5;
+	cosr &= ~0x1f;
+	cosr &= ~(1 << 6);
+	cosr |= src & 0x1f;
+
+	writel(cosr, IMX_CCM_BASE + CCM_COSR);
+}
+

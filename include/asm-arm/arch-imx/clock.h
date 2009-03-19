@@ -27,4 +27,7 @@ ulong imx_get_fecclk(void);
 ulong imx_get_gptclk(void);
 ulong imx_get_uartclk(void);
 
+int imx_clko_set_div(int div);
+void imx_clko_set_src(int src);
+
 #endif /* __ASM_ARCH_CLOCK_H */

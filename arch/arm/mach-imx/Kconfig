@@ -26,7 +26,7 @@ endmenu
 menu "i.MX specific settings        "
 config IMX_CLKO
 	bool "clko command"
-	depends on ARCH_IMX27
+	depends on ARCH_IMX27 || ARCH_IMX35
 	help
 	  The i.MX SoCs have a Pin which can output different reference frequencies.
 	  Say y here if you want to have the clko command which lets you select the

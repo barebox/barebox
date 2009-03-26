@@ -57,38 +57,3 @@ U_BOOT_CMD_START(clko)
 	U_BOOT_CMD_HELP(cmd_clko_help)
 U_BOOT_CMD_END
 
-
-static int do_mcpy_test (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	unsigned long src, dest, count, end;
-
-	if (argc < 4)
-		return 1;
-
-	dest = simple_strtoul(argv[1], NULL, 0);
-	src = simple_strtoul(argv[2], NULL, 0);
-	count = simple_strtoul(argv[3], NULL, 0);
-
-	printf("copying from 0x%08x to 0x%08x (size %d)\n", src, dest, count);
-
-	end = src + count;
-
-	__asm__ __volatile__(
-		"copy_loop:\n"
-		"ldmia	%1!, {r3-r10}\n"
-		"stmia	%0!, {r3-r10}\n"
-		"cmp	%1, %2\n"
-		"ble	copy_loop\n"
-		:
-		: "r" (dest), "r" (src), "r" (end)
-		: "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10");
-
-	return 0;
-}
-
-U_BOOT_CMD_START(mcpy_test)
-	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_mcpy_test,
-	.usage		= "Adjust CLKO setting",
-U_BOOT_CMD_END
-

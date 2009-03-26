@@ -20,6 +20,7 @@ board-$(CONFIG_MACH_AT91SAM9260_EK):= at91sam9260ek
 board-$(CONFIG_MACH_PM9263)        := pm9263
 board-$(CONFIG_MACH_FREESCALE_MX35_3STACK) := freescale-mx35-3-stack
 board-$(CONFIG_MACH_PCM043)        := pcm043
+board-$(CONFIG_MACH_PCA100)        := phycard-i.MX27
 
 # FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t

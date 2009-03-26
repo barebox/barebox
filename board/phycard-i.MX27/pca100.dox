@@ -1,0 +1,8 @@
+/** @page pcm038 Phytec's phyCORE-i.MX27
+
+This CPU card is based on a Freescale i.MX27 CPU. The card is shipped with:
+
+- up to 32MiB NOR type Flash Memory
+- 32MiB synchronous dynamic RAM
+
+*/

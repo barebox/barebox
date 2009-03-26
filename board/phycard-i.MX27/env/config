@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# can be either 'net', 'nor' or 'nand''
+kernel=net
+root=net
+
+uimage=uImage-pca100
+jffs2=root-pca100.jffs2
+
+autoboot_timeout=3
+
+nfsroot="/tmp/root"
+bootargs="console=ttymxc0,115200"
+
+nand_parts="256k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+rootpart_nand="/dev/mtdblock3"
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d

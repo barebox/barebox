@@ -1,6 +1,27 @@
 
 menu "Board specific settings       "
 
+config ARCH_IMX
+	bool
+
+config ARCH_IMX1
+	bool
+	select ARCH_IMX
+	select ARM920T
+
+config ARCH_IMX27
+	bool
+	select ARCH_IMX
+	select ARM926EJS
+
+config ARCH_IMX31
+	bool
+	select ARCH_IMX
+
+config ARCH_IMX35
+	bool
+	select ARCH_IMX
+
 if MACH_PCM037
 choice
 	prompt "SDRAM Bank0"

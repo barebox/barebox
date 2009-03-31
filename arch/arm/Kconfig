@@ -52,29 +52,6 @@ config ARM926EJS
 config ARMCORTEXA8
 	bool
 
-# i.MX1, i.MXL, i.MX27, i.MX31  and i.MX35 are quite similar and thus
-# handled in one arch
-config ARCH_IMX
-	bool
-
-config ARCH_IMX1
-	bool
-	select ARCH_IMX
-	select ARM920T
-
-config ARCH_IMX27
-	bool
-	select ARCH_IMX
-	select ARM926EJS
-
-config ARCH_IMX31
-	bool
-	select ARCH_IMX
-
-config ARCH_IMX35
-	bool
-	select ARCH_IMX
-
 config ARCH_AT91RM9200
 	bool
 	select ARM920T

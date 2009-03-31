@@ -52,9 +52,9 @@ config DRIVER_NET_MPC5200
 	depends on ARCH_MPC5200
 	select MIIPHY
 
-config DRIVER_NET_IMX27
-	bool "i.MX27 Ethernet driver"
-	depends on ARCH_IMX27 || ARCH_IMX35
+config DRIVER_NET_FEC_IMX
+	bool "i.MX FEC Ethernet driver"
+	depends on ARCH_HAS_FEC_IMX
 	select MIIPHY
 
 config DRIVER_NET_MACB

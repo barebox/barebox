@@ -38,10 +38,6 @@
 #define UBIR(base)  __REG( 0xa4 +(base)) /* BRM Incremental Register */
 #define UBMR(base)  __REG( 0xa8 +(base)) /* BRM Modulator Register */
 #define UBRC(base)  __REG( 0xac +(base)) /* Baud Rate Count Register */
-#if defined CONFIG_ARCH_IMX27 || defined CONFIG_ARCH_IMX35
-#define ONEMS(base) __REG( 0xb0 +(base)) /* One Millisecond register (i.MX27) */
-#define UTS(base)   __REG( 0xb4 +(base)) /* UART Test Register */
-#endif
 #ifdef CONFIG_ARCH_IMX1
 #define BIPR1(base) __REG( 0xb0 +(base)) /* Incremental Preset Register 1 */
 #define BIPR2(base) __REG( 0xb4 +(base)) /* Incremental Preset Register 2 */
@@ -52,10 +48,9 @@
 #define BMPR3(base) __REG( 0xc8 +(base)) /* BRM Modulator Register 3 */
 #define BMPR4(base) __REG( 0xcc +(base)) /* BRM Modulator Register 4 */
 #define UTS(base)   __REG( 0xd0 +(base)) /* UART Test Register */
-#endif
-#ifdef CONFIG_ARCH_IMX31
-# define ONEMS(base)	__REG( 0xb0 +(base)) /* One Millisecond register (i.MX27) */
-# define UTS(base)	__REG( 0xb4 +(base)) /* UART Test Register */
+#else
+#define ONEMS(base) __REG( 0xb0 +(base)) /* One Millisecond register */
+#define UTS(base)   __REG( 0xb4 +(base)) /* UART Test Register */
 #endif
 
 /* UART Control Register Bit Fields.*/

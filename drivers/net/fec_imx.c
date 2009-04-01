@@ -282,7 +282,8 @@ static int fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		writel(((imx_get_fecclk() >> 20) / 5) << 1, fec->regs + FEC_MII_SPEED);	/* No MII for 7-wire mode */
+		writel(((imx_get_fecclk() >> 20) / 5) << 1,
+				fec->regs + FEC_MII_SPEED);	
 	}
 
 	if (fec->xcv_type == RMII) {
@@ -328,7 +329,8 @@ static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 
-	writel(1 << 2, fec->regs + FEC_X_CNTRL);	/* full-duplex, heartbeat disabled */
+	/* full-duplex, heartbeat disabled */
+	writel(1 << 2, fec->regs + FEC_X_CNTRL);
 	fec->rbd_index = 0;
 
 	/*
@@ -357,21 +359,15 @@ static void fec_halt(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	int counter = 0xffff;
 
-	/*
-	 * issue graceful stop command to the FEC transmitter if necessary
-	 */
+	/* issue graceful stop command to the FEC transmitter if necessary */
 	writel(readl(fec->regs + FEC_X_CNTRL) | FEC_ECNTRL_RESET,
 			fec->regs + FEC_X_CNTRL);
 
-	/*
-	 * wait for graceful stop to register
-	 */
+	/* wait for graceful stop to register */
 	while ((counter--) && (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_GRA)))
 		;	/* FIXME ensure time */
 
-	/*
-	 * Disable SmartDMA tasks
-	 */
+	/* Disable SmartDMA tasks */
 	fec_tx_task_disable(fec);
 	fec_rx_task_disable(fec);
 
@@ -402,17 +398,14 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	 */
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 
-	/*
-	 * Check for valid length of data.
-	 */
+	/* Check for valid length of data. */
 	if ((data_length > 1500) || (data_length <= 0)) {
 		printf("Payload (%d) to large!\n");
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1)) {
+	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1))
 		printf("%s: Warning: Transmit data not aligned: %p!\n", __FUNCTION__, eth_data);
-	}
 
 	/*
 	 * Setup the transmit buffer
@@ -432,14 +425,10 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	status = readw(&fec->tbd_base[fec->tbd_index].status) & FEC_TBD_WRAP;
 	status |= FEC_TBD_LAST | FEC_TBD_TC | FEC_TBD_READY;
 	writew(status, &fec->tbd_base[fec->tbd_index].status);
-	/*
-	 * Enable SmartDMA transmit task
-	 */
+	/* Enable SmartDMA transmit task */
 	fec_tx_task_enable(fec);
 
-	/*
-	 * wait until frame is sent .
-	 */
+	/* wait until frame is sent */
 	tmo = get_time_ns();
 	while (readw(&fec->tbd_base[fec->tbd_index].status) & FEC_TBD_READY) {
 		if (is_timeout(tmo, 1 * SECOND)) {
@@ -569,12 +558,12 @@ static int fec_probe(struct device_d *dev)
 	 */
 	base = (uint32_t)xzalloc((2 + FEC_RBD_NUM) *
 			sizeof (struct buffer_descriptor) + 2 * DB_ALIGNMENT );
-	base += (DB_ALIGNMENT-1);
-	base &= ~(DB_ALIGNMENT-1);
+	base += (DB_ALIGNMENT - 1);
+	base &= ~(DB_ALIGNMENT - 1);
 	fec->rbd_base = (struct buffer_descriptor *)base;
 	base += FEC_RBD_NUM * sizeof (struct buffer_descriptor) +
 		(DB_ALIGNMENT - 1);
-	base &= ~(DB_ALIGNMENT-1);
+	base &= ~(DB_ALIGNMENT - 1);
 	fec->tbd_base = (struct buffer_descriptor *)base;
 
 	writel((uint32_t)fec->tbd_base, fec->regs + FEC_ETDSR);

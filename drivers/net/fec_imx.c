@@ -211,7 +211,7 @@ static void fec_tbd_init(struct fec_priv *fec)
  * @param[in] last 1 if this is the last buffer descriptor in the chain, else 0
  * @param[in] pRbd buffer descriptor to mark free again
  */
-static void fec_rbd_clean(int last, FEC_BD *pRbd)
+static void fec_rbd_clean(int last, struct buffer_descriptor *pRbd)
 {
 	/*
 	 * Reset buffer descriptor as empty
@@ -282,8 +282,7 @@ static int fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-//		writel(((imx_get_fecclk() >> 20) / 5) << 1, fec->regs + FEC_MII_SPEED);	/* No MII for 7-wire mode */
-		writel(	((((imx_get_fecclk() / 2 + 4999999) / 2500000) / 2) & 0x3F) << 1, fec->regs + FEC_MII_SPEED);
+		writel(((imx_get_fecclk() >> 20) / 5) << 1, fec->regs + FEC_MII_SPEED);	/* No MII for 7-wire mode */
 	}
 
 	if (fec->xcv_type == RMII) {
@@ -466,7 +465,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 static int fec_recv(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
-	FEC_BD *rbd = &fec->rbd_base[fec->rbd_index];
+	struct buffer_descriptor *rbd = &fec->rbd_base[fec->rbd_index];
 	unsigned long ievent;
 	int frame_length, len = 0;
 	NBUF *frame;
@@ -568,13 +567,15 @@ static int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = (uint32_t)xzalloc( (2 + FEC_RBD_NUM) * sizeof(FEC_BD) + 2 * DB_ALIGNMENT );
+	base = (uint32_t)xzalloc((2 + FEC_RBD_NUM) *
+			sizeof (struct buffer_descriptor) + 2 * DB_ALIGNMENT );
 	base += (DB_ALIGNMENT-1);
 	base &= ~(DB_ALIGNMENT-1);
-	fec->rbd_base = (FEC_BD*)base;
-	base += FEC_RBD_NUM * sizeof(FEC_BD) + (DB_ALIGNMENT-1);
+	fec->rbd_base = (struct buffer_descriptor *)base;
+	base += FEC_RBD_NUM * sizeof (struct buffer_descriptor) +
+		(DB_ALIGNMENT - 1);
 	base &= ~(DB_ALIGNMENT-1);
-	fec->tbd_base = (FEC_BD*)base;
+	fec->tbd_base = (struct buffer_descriptor *)base;
 
 	writel((uint32_t)fec->tbd_base, fec->regs + FEC_ETDSR);
 	writel((uint32_t)fec->rbd_base, fec->regs + FEC_ERDSR);

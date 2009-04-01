@@ -125,22 +125,22 @@
  *
  * Note: The first BD must be aligned (see DB_ALIGNMENT)
  */
-typedef struct buffer_descriptor {
+struct buffer_descriptor {
 	uint16_t data_length;		/**< payload's length in bytes */
 	uint16_t status;		/**< BD's staus (see datasheet) */
 	uint32_t data_pointer;		/**< payload's buffer address */
-} FEC_BD;
+};
 
 /**
  * @brief i.MX27-FEC private structure
  */
 struct fec_priv {
 	void *regs;
-	xceiver_type xcv_type;		/**< transceiver type */
-	FEC_BD *rbd_base;		/**< RBD ring */
-	int rbd_index;			/**< next receive BD to read */
-	FEC_BD *tbd_base;		/**< TBD ring */
-	int tbd_index;			/**< next transmit BD to write */
+	xceiver_type xcv_type;			/* transceiver type          */
+	struct buffer_descriptor *rbd_base;	/* RBD ring                  */
+	int rbd_index;				/* next receive BD to read   */
+	struct buffer_descriptor *tbd_base;	/* TBD ring                  */
+	int tbd_index;				/* next transmit BD to write */
 	struct miiphy_device miiphy;
 };
 

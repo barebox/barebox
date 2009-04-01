@@ -28,196 +28,26 @@
 #ifndef __IMX27_FEC_H
 #define __IMX27_FEC_H
 
-/**
- * Layout description of the FEC
- */
-typedef struct ethernet_register_set {
-
-/* [10:2]addr = 00 */
-
-/*  Control and status Registers (offset 000-1FF) */
-
-	uint32_t fec_id;			/* MBAR_ETH + 0x000 */
-	uint32_t ievent;			/* MBAR_ETH + 0x004 */
-	uint32_t imask;				/* MBAR_ETH + 0x008 */
-
-	uint32_t RES0[1];			/* MBAR_ETH + 0x00C */
-	uint32_t r_des_active;			/* MBAR_ETH + 0x010 */
-	uint32_t x_des_active;			/* MBAR_ETH + 0x014 */
-	uint32_t r_des_active_cl;		/* MBAR_ETH + 0x018 */
-	uint32_t x_des_active_cl;		/* MBAR_ETH + 0x01C */
-	uint32_t ivent_set;			/* MBAR_ETH + 0x020 */
-	uint32_t ecntrl;			/* MBAR_ETH + 0x024 */
-
-	uint32_t RES1[6];			/* MBAR_ETH + 0x028-03C */
-	uint32_t mii_data;			/* MBAR_ETH + 0x040 */
-	uint32_t mii_speed;			/* MBAR_ETH + 0x044 */
-	uint32_t mii_status;			/* MBAR_ETH + 0x048 */
-
-	uint32_t RES2[5];			/* MBAR_ETH + 0x04C-05C */
-	uint32_t mib_data;			/* MBAR_ETH + 0x060 */
-	uint32_t mib_control;			/* MBAR_ETH + 0x064 */
-
-	uint32_t RES3[6];			/* MBAR_ETH + 0x068-7C */
-	uint32_t r_activate;			/* MBAR_ETH + 0x080 */
-	uint32_t r_cntrl;			/* MBAR_ETH + 0x084 */
-	uint32_t r_hash;			/* MBAR_ETH + 0x088 */
-	uint32_t r_data;			/* MBAR_ETH + 0x08C */
-	uint32_t ar_done;			/* MBAR_ETH + 0x090 */
-	uint32_t r_test;			/* MBAR_ETH + 0x094 */
-	uint32_t r_mib;				/* MBAR_ETH + 0x098 */
-	uint32_t r_da_low;			/* MBAR_ETH + 0x09C */
-	uint32_t r_da_high;			/* MBAR_ETH + 0x0A0 */
-
-	uint32_t RES4[7];			/* MBAR_ETH + 0x0A4-0BC */
-	uint32_t x_activate;			/* MBAR_ETH + 0x0C0 */
-	uint32_t x_cntrl;			/* MBAR_ETH + 0x0C4 */
-	uint32_t backoff;			/* MBAR_ETH + 0x0C8 */
-	uint32_t x_data;			/* MBAR_ETH + 0x0CC */
-	uint32_t x_status;			/* MBAR_ETH + 0x0D0 */
-	uint32_t x_mib;				/* MBAR_ETH + 0x0D4 */
-	uint32_t x_test;			/* MBAR_ETH + 0x0D8 */
-	uint32_t fdxfc_da1;			/* MBAR_ETH + 0x0DC */
-	uint32_t fdxfc_da2;			/* MBAR_ETH + 0x0E0 */
-	uint32_t paddr1;			/* MBAR_ETH + 0x0E4 */
-	uint32_t paddr2;			/* MBAR_ETH + 0x0E8 */
-	uint32_t op_pause;			/* MBAR_ETH + 0x0EC */
-
-	uint32_t RES5[4];			/* MBAR_ETH + 0x0F0-0FC */
-	uint32_t instr_reg;			/* MBAR_ETH + 0x100 */
-	uint32_t context_reg;			/* MBAR_ETH + 0x104 */
-	uint32_t test_cntrl;			/* MBAR_ETH + 0x108 */
-	uint32_t acc_reg;			/* MBAR_ETH + 0x10C */
-	uint32_t ones;				/* MBAR_ETH + 0x110 */
-	uint32_t zeros;				/* MBAR_ETH + 0x114 */
-	uint32_t iaddr1;			/* MBAR_ETH + 0x118 */
-	uint32_t iaddr2;			/* MBAR_ETH + 0x11C */
-	uint32_t gaddr1;			/* MBAR_ETH + 0x120 */
-	uint32_t gaddr2;			/* MBAR_ETH + 0x124 */
-	uint32_t random;			/* MBAR_ETH + 0x128 */
-	uint32_t rand1;				/* MBAR_ETH + 0x12C */
-	uint32_t tmp;				/* MBAR_ETH + 0x130 */
-
-	uint32_t RES6[3];			/* MBAR_ETH + 0x134-13C */
-	uint32_t fifo_id;			/* MBAR_ETH + 0x140 */
-	uint32_t x_wmrk;			/* MBAR_ETH + 0x144 */
-	uint32_t fcntrl;			/* MBAR_ETH + 0x148 */
-	uint32_t r_bound;			/* MBAR_ETH + 0x14C */
-	uint32_t r_fstart;			/* MBAR_ETH + 0x150 */
-	uint32_t r_count;			/* MBAR_ETH + 0x154 */
-	uint32_t r_lag;				/* MBAR_ETH + 0x158 */
-	uint32_t r_read;			/* MBAR_ETH + 0x15C */
-	uint32_t r_write;			/* MBAR_ETH + 0x160 */
-	uint32_t x_count;			/* MBAR_ETH + 0x164 */
-	uint32_t x_lag;				/* MBAR_ETH + 0x168 */
-	uint32_t x_retry;			/* MBAR_ETH + 0x16C */
-	uint32_t x_write;			/* MBAR_ETH + 0x170 */
-	uint32_t x_read;			/* MBAR_ETH + 0x174 */
-
-	uint32_t RES7[2];			/* MBAR_ETH + 0x178-17C */
-	uint32_t fm_cntrl;			/* MBAR_ETH + 0x180 */
-#define erdsr fm_cntrl
-	uint32_t rfifo_data;			/* MBAR_ETH + 0x184 */
-#define etdsr rfifo_data
-	uint32_t rfifo_status;			/* MBAR_ETH + 0x188 */
-#define emrbr rfifo_status
-	uint32_t rfifo_cntrl;			/* MBAR_ETH + 0x18C */
-	uint32_t rfifo_lrf_ptr;			/* MBAR_ETH + 0x190 */
-	uint32_t rfifo_lwf_ptr;			/* MBAR_ETH + 0x194 */
-	uint32_t rfifo_alarm;			/* MBAR_ETH + 0x198 */
-	uint32_t rfifo_rdptr;			/* MBAR_ETH + 0x19C */
-	uint32_t rfifo_wrptr;			/* MBAR_ETH + 0x1A0 */
-	uint32_t tfifo_data;			/* MBAR_ETH + 0x1A4 */
-	uint32_t tfifo_status;			/* MBAR_ETH + 0x1A8 */
-	uint32_t tfifo_cntrl;			/* MBAR_ETH + 0x1AC */
-	uint32_t tfifo_lrf_ptr;			/* MBAR_ETH + 0x1B0 */
-	uint32_t tfifo_lwf_ptr;			/* MBAR_ETH + 0x1B4 */
-	uint32_t tfifo_alarm;			/* MBAR_ETH + 0x1B8 */
-	uint32_t tfifo_rdptr;			/* MBAR_ETH + 0x1BC */
-	uint32_t tfifo_wrptr;			/* MBAR_ETH + 0x1C0 */
-
-	uint32_t reset_cntrl;			/* MBAR_ETH + 0x1C4 */
-	uint32_t xmit_fsm;			/* MBAR_ETH + 0x1C8 */
-
-	uint32_t RES8[3];			/* MBAR_ETH + 0x1CC-1D4 */
-	uint32_t rdes_data0;			/* MBAR_ETH + 0x1D8 */
-	uint32_t rdes_data1;			/* MBAR_ETH + 0x1DC */
-	uint32_t r_length;			/* MBAR_ETH + 0x1E0 */
-	uint32_t x_length;			/* MBAR_ETH + 0x1E4 */
-	uint32_t x_addr;			/* MBAR_ETH + 0x1E8 */
-	uint32_t cdes_data;			/* MBAR_ETH + 0x1EC */
-	uint32_t status;			/* MBAR_ETH + 0x1F0 */
-	uint32_t dma_control;			/* MBAR_ETH + 0x1F4 */
-	uint32_t des_cmnd;			/* MBAR_ETH + 0x1F8 */
-	uint32_t data;				/* MBAR_ETH + 0x1FC */
-
-/*  MIB COUNTERS (Offset 200-2FF) */
-
-	uint32_t rmon_t_drop;			/* MBAR_ETH + 0x200 */
-	uint32_t rmon_t_packets;		/* MBAR_ETH + 0x204 */
-	uint32_t rmon_t_bc_pkt;			/* MBAR_ETH + 0x208 */
-	uint32_t rmon_t_mc_pkt;			/* MBAR_ETH + 0x20C */
-	uint32_t rmon_t_crc_align;		/* MBAR_ETH + 0x210 */
-	uint32_t rmon_t_undersize;		/* MBAR_ETH + 0x214 */
-	uint32_t rmon_t_oversize;		/* MBAR_ETH + 0x218 */
-	uint32_t rmon_t_frag;			/* MBAR_ETH + 0x21C */
-	uint32_t rmon_t_jab;			/* MBAR_ETH + 0x220 */
-	uint32_t rmon_t_col;			/* MBAR_ETH + 0x224 */
-	uint32_t rmon_t_p64;			/* MBAR_ETH + 0x228 */
-	uint32_t rmon_t_p65to127;		/* MBAR_ETH + 0x22C */
-	uint32_t rmon_t_p128to255;		/* MBAR_ETH + 0x230 */
-	uint32_t rmon_t_p256to511;		/* MBAR_ETH + 0x234 */
-	uint32_t rmon_t_p512to1023;		/* MBAR_ETH + 0x238 */
-	uint32_t rmon_t_p1024to2047;		/* MBAR_ETH + 0x23C */
-	uint32_t rmon_t_p_gte2048;		/* MBAR_ETH + 0x240 */
-	uint32_t rmon_t_octets;			/* MBAR_ETH + 0x244 */
-	uint32_t ieee_t_drop;			/* MBAR_ETH + 0x248 */
-	uint32_t ieee_t_frame_ok;		/* MBAR_ETH + 0x24C */
-	uint32_t ieee_t_1col;			/* MBAR_ETH + 0x250 */
-	uint32_t ieee_t_mcol;			/* MBAR_ETH + 0x254 */
-	uint32_t ieee_t_def;			/* MBAR_ETH + 0x258 */
-	uint32_t ieee_t_lcol;			/* MBAR_ETH + 0x25C */
-	uint32_t ieee_t_excol;			/* MBAR_ETH + 0x260 */
-	uint32_t ieee_t_macerr;			/* MBAR_ETH + 0x264 */
-	uint32_t ieee_t_cserr;			/* MBAR_ETH + 0x268 */
-	uint32_t ieee_t_sqe;			/* MBAR_ETH + 0x26C */
-	uint32_t t_fdxfc;			/* MBAR_ETH + 0x270 */
-	uint32_t ieee_t_octets_ok;		/* MBAR_ETH + 0x274 */
-
-	uint32_t RES9[2];			/* MBAR_ETH + 0x278-27C */
-	uint32_t rmon_r_drop;			/* MBAR_ETH + 0x280 */
-	uint32_t rmon_r_packets;		/* MBAR_ETH + 0x284 */
-	uint32_t rmon_r_bc_pkt;			/* MBAR_ETH + 0x288 */
-	uint32_t rmon_r_mc_pkt;			/* MBAR_ETH + 0x28C */
-	uint32_t rmon_r_crc_align;		/* MBAR_ETH + 0x290 */
-	uint32_t rmon_r_undersize;		/* MBAR_ETH + 0x294 */
-	uint32_t rmon_r_oversize;		/* MBAR_ETH + 0x298 */
-	uint32_t rmon_r_frag;			/* MBAR_ETH + 0x29C */
-	uint32_t rmon_r_jab;			/* MBAR_ETH + 0x2A0 */
-
-	uint32_t rmon_r_resvd_0;		/* MBAR_ETH + 0x2A4 */
-
-	uint32_t rmon_r_p64;			/* MBAR_ETH + 0x2A8 */
-	uint32_t rmon_r_p65to127;		/* MBAR_ETH + 0x2AC */
-	uint32_t rmon_r_p128to255;		/* MBAR_ETH + 0x2B0 */
-	uint32_t rmon_r_p256to511;		/* MBAR_ETH + 0x2B4 */
-	uint32_t rmon_r_p512to1023;		/* MBAR_ETH + 0x2B8 */
-	uint32_t rmon_r_p1024to2047;		/* MBAR_ETH + 0x2BC */
-	uint32_t rmon_r_p_gte2048;		/* MBAR_ETH + 0x2C0 */
-	uint32_t rmon_r_octets;			/* MBAR_ETH + 0x2C4 */
-	uint32_t ieee_r_drop;			/* MBAR_ETH + 0x2C8 */
-	uint32_t ieee_r_frame_ok;		/* MBAR_ETH + 0x2CC */
-	uint32_t ieee_r_crc;			/* MBAR_ETH + 0x2D0 */
-	uint32_t ieee_r_align;			/* MBAR_ETH + 0x2D4 */
-	uint32_t r_macerr;			/* MBAR_ETH + 0x2D8 */
-	uint32_t r_fdxfc;			/* MBAR_ETH + 0x2DC */
-	uint32_t ieee_r_octets_ok;		/* MBAR_ETH + 0x2E0 */
-
-	uint32_t RES10[6];			/* MBAR_ETH + 0x2E4-2FC */
-
-	uint32_t RES11[64];			/* MBAR_ETH + 0x300-3FF */
-} ethernet_regs;
-
+#define FEC_IEVENT			0x004
+#define FEC_IMASK			0x008
+#define FEC_R_DES_ACTIVE		0x010
+#define FEC_X_DES_ACTIVE		0x014
+#define FEC_ECNTRL			0x024
+#define FEC_MII_DATA			0x040
+#define FEC_MII_SPEED			0x044
+#define FEC_R_CNTRL			0x084
+#define FEC_X_CNTRL			0x0c4
+#define FEC_PADDR1			0x0e4
+#define FEC_OP_PAUSE			0x0ec
+#define FEC_PADDR2			0x0e8
+#define FEC_IADDR1			0x118
+#define FEC_IADDR2			0x11c
+#define FEC_GADDR1			0x120
+#define FEC_GADDR2			0x124
+#define FEC_X_WMRK			0x144
+#define FEC_ERDSR			0x180
+#define FEC_ETDSR			0x184
+#define	FEC_EMRBR			0x188
 #define FEC_MIIGSK_CFGR			0x300
 #define FEC_MIIGSK_ENR			0x308
 /*
@@ -305,7 +135,7 @@ typedef struct buffer_descriptor {
  * @brief i.MX27-FEC private structure
  */
 typedef struct {
-	ethernet_regs *eth;		/**< pointer to register'S base */
+	void *regs;
 	xceiver_type xcv_type;		/**< transceiver type */
 	FEC_BD *rbd_base;		/**< RBD ring */
 	int rbd_index;			/**< next receive BD to read */

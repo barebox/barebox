@@ -58,17 +58,17 @@ static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	 * reading from any PHY's register is done by properly
 	 * programming the FEC's MII data register.
 	 */
-	writel(FEC_IEVENT_MII, &fec->eth->ievent);
+	writel(FEC_IEVENT_MII, fec->regs + FEC_IEVENT);
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
-	writel(FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg, &fec->eth->mii_data);
+	writel(FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA | phy | reg, fec->regs + FEC_MII_DATA);
 
 	/*
 	 * wait for the related interrupt
 	 */
 	start = get_time_ns();
-	while (!(readl(&fec->eth->ievent) & FEC_IEVENT_MII)) {
+	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
 			printf("Read MDIO failed...\n");
 			return -1;
@@ -78,12 +78,12 @@ static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * clear mii interrupt bit
 	 */
-	writel(FEC_IEVENT_MII, &fec->eth->ievent);
+	writel(FEC_IEVENT_MII, fec->regs + FEC_IEVENT);
 
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = readl(&fec->eth->mii_data);
+	*retVal = readl(fec->regs + FEC_MII_DATA);
 
 	return 0;
 }
@@ -102,13 +102,13 @@ static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;
 
 	writel(FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
-		FEC_MII_DATA_TA | phy | reg | data, &fec->eth->mii_data);
+		FEC_MII_DATA_TA | phy | reg | data, fec->regs + FEC_MII_DATA);
 
 	/*
 	 * wait for the MII interrupt
 	 */
 	start = get_time_ns();
-	while (!(readl(&fec->eth->ievent) & FEC_IEVENT_MII)) {
+	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
 			printf("Write MDIO failed...\n");
 			return -1;
@@ -118,14 +118,14 @@ static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * clear MII interrupt bit
 	 */
-	writel(FEC_IEVENT_MII, &fec->eth->ievent);
+	writel(FEC_IEVENT_MII, fec->regs + FEC_IEVENT);
 
 	return 0;
 }
 
 static int fec_rx_task_enable(fec_priv *fec)
 {
-	writel(1 << 24, &fec->eth->r_des_active);
+	writel(1 << 24, fec->regs + FEC_R_DES_ACTIVE);
 	return 0;
 }
 
@@ -136,7 +136,7 @@ static int fec_rx_task_disable(fec_priv *fec)
 
 static int fec_tx_task_enable(fec_priv *fec)
 {
-	writel(1 << 24, &fec->eth->x_des_active);
+	writel(1 << 24, fec->regs + FEC_X_DES_ACTIVE);
 	return 0;
 }
 
@@ -239,8 +239,8 @@ static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 	/*
 	 * Set physical address
 	 */
-	writel((mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3], &fec->eth->paddr1);
-	writel((mac[4] << 24) + (mac[5] << 16) + 0x8808, &fec->eth->paddr2);
+	writel((mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3], fec->regs + FEC_PADDR1);
+	writel((mac[4] << 24) + (mac[5] << 16) + 0x8808, fec->regs + FEC_PADDR2);
 
         return 0;
 }
@@ -258,12 +258,12 @@ static int fec_init(struct eth_device *dev)
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
-	writel(0xffffffff, &fec->eth->ievent);
+	writel(0xffffffff, fec->regs + FEC_IEVENT);
 
 	/*
 	 * Set interrupt mask register
 	 */
-	writel(0x00000000, &fec->eth->imask);
+	writel(0x00000000, fec->regs + FEC_IMASK);
 
 	/*
 	 * Set FEC-Lite receive control register(R_CNTRL):
@@ -272,33 +272,48 @@ static int fec_init(struct eth_device *dev)
 		/*
 		 * Frame length=1518; 7-wire mode
 		 */
-		writel((1518 << 16), &fec->eth->r_cntrl);
+		writel((1518 << 16), fec->regs + FEC_R_CNTRL);
 	} else {
 		/*
 		 * Frame length=1518; MII mode;
 		 */
-		writel((1518 << 16) | (1 << 2), &fec->eth->r_cntrl);
+		writel((1518 << 16) | (1 << 2), fec->regs + FEC_R_CNTRL);
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		writel(((imx_get_fecclk() >> 20) / 5) << 1, &fec->eth->mii_speed);	/* No MII for 7-wire mode */
+//		writel(((imx_get_fecclk() >> 20) / 5) << 1, fec->regs + FEC_MII_SPEED);	/* No MII for 7-wire mode */
+		writel(	((((imx_get_fecclk() / 2 + 4999999) / 2500000) / 2) & 0x3F) << 1, fec->regs + FEC_MII_SPEED);
 	}
+
+	if (fec->xcv_type == RMII) {
+		/* disable the gasket and wait */
+		writel(0, fec->regs + FEC_MIIGSK_ENR);
+		while (readl(fec->regs + FEC_MIIGSK_ENR) & FEC_MIIGSK_ENR_READY)
+			udelay(1);
+
+		/* configure the gasket for RMII, 50 MHz, no loopback, no echo */
+		writel(FEC_MIIGSK_CFGR_IF_MODE_RMII, fec->regs + FEC_MIIGSK_CFGR);
+
+		/* re-enable the gasket */
+		writel(FEC_MIIGSK_ENR_EN, fec->regs + FEC_MIIGSK_ENR);
+	}
+
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
-	writel(0x00010020, &fec->eth->op_pause);
-	writel(0x2, &fec->eth->x_wmrk);
+	writel(0x00010020, fec->regs + FEC_OP_PAUSE);
+	writel(0x2, fec->regs + FEC_X_WMRK);
 	/*
 	 * Set multicast address filter
 	 */
-	writel(0, &fec->eth->iaddr1);
-	writel(0, &fec->eth->iaddr2);
-	writel(0, &fec->eth->gaddr1);
-	writel(0, &fec->eth->gaddr2);
+	writel(0, fec->regs + FEC_IADDR1);
+	writel(0, fec->regs + FEC_IADDR2);
+	writel(0, fec->regs + FEC_GADDR1);
+	writel(0, fec->regs + FEC_GADDR2);
 
 	/* size of each buffer */
-	writel(FEC_MAX_PKT_SIZE, &fec->eth->emrbr);
+	writel(FEC_MAX_PKT_SIZE, fec->regs + FEC_EMRBR);
 
 	if (fec->xcv_type != SEVENWIRE)
 		miiphy_restart_aneg(&fec->miiphy);
@@ -314,13 +329,13 @@ static int fec_open(struct eth_device *edev)
 {
 	fec_priv *fec = (fec_priv *)edev->priv;
 
-	writel(1 << 2, &fec->eth->x_cntrl);	/* full-duplex, heartbeat disabled */
+	writel(1 << 2, fec->regs + FEC_X_CNTRL);	/* full-duplex, heartbeat disabled */
 	fec->rbd_index = 0;
 
 	/*
 	 * Enable FEC-Lite controller
 	 */
-	writel(FEC_ECNTRL_ETHER_EN, &fec->eth->ecntrl);
+	writel(FEC_ECNTRL_ETHER_EN, fec->regs + FEC_ECNTRL);
 	/*
 	 * Enable SmartDMA receive task
 	 */
@@ -346,12 +361,13 @@ static void fec_halt(struct eth_device *dev)
 	/*
 	 * issue graceful stop command to the FEC transmitter if necessary
 	 */
-	writel(FEC_ECNTRL_RESET | readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
+	writel(readl(fec->regs + FEC_X_CNTRL) | FEC_ECNTRL_RESET,
+			fec->regs + FEC_X_CNTRL);
 
 	/*
 	 * wait for graceful stop to register
 	 */
-	while ((counter--) && (!(readl(&fec->eth->ievent) & FEC_IEVENT_GRA)))
+	while ((counter--) && (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_GRA)))
 		;	/* FIXME ensure time */
 
 	/*
@@ -364,7 +380,7 @@ static void fec_halt(struct eth_device *dev)
 	 * Disable the Ethernet Controller
 	 * Note: this will also reset the BD index counter!
 	 */
-	writel(0, &fec->eth->ecntrl);
+	writel(0, fec->regs + FEC_ECNTRL);
 	fec->rbd_index = 0;
 	fec->tbd_index = 0;
 }
@@ -459,8 +475,8 @@ static int fec_recv(struct eth_device *dev)
 	/*
 	 * Check if any critical events have happened
 	 */
-	ievent = readl(&fec->eth->ievent);
-	writel(ievent, &fec->eth->ievent);
+	ievent = readl(fec->regs + FEC_IEVENT);
+	writel(ievent, fec->regs + FEC_IEVENT);
 
 	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
 				FEC_IEVENT_RFIFO_ERROR)) {
@@ -472,13 +488,15 @@ static int fec_recv(struct eth_device *dev)
 	}
 	if (ievent & FEC_IEVENT_HBERR) {
 		/* Heartbeat error */
-		writel(0x00000001 | readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
+		writel(readl(fec->regs + FEC_X_CNTRL) | 0x1,
+				fec->regs + FEC_X_CNTRL);
 	}
 	if (ievent & FEC_IEVENT_GRA) {
 		/* Graceful stop complete */
-		if (readl(&fec->eth->x_cntrl) & 0x00000001) {
+		if (readl(fec->regs + FEC_X_CNTRL) & 0x00000001) {
 			fec_halt(dev);
-			writel(~0x00000001 & readl(&fec->eth->x_cntrl), &fec->eth->x_cntrl);
+			writel(readl(fec->regs + FEC_X_CNTRL) & ~0x00000001, 
+					fec->regs + FEC_X_CNTRL);
 			fec_init(dev);
 		}
 	}
@@ -538,11 +556,11 @@ static int fec_probe(struct device_d *dev)
 	edev->get_ethaddr = fec_get_hwaddr,
 	edev->set_ethaddr = fec_set_hwaddr,
 
-	fec->eth = (ethernet_regs *)dev->map_base;
+	fec->regs = (void *)dev->map_base;
 
 	/* Reset chip. */
-	writel(FEC_ECNTRL_RESET, &fec->eth->ecntrl);
-	while(readl(&fec->eth->ecntrl) & 1) {
+	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
+	while(readl(fec->regs + FEC_ECNTRL) & 1) {
 		udelay(10);
 	}
 
@@ -558,25 +576,12 @@ static int fec_probe(struct device_d *dev)
 	base &= ~(DB_ALIGNMENT-1);
 	fec->tbd_base = (FEC_BD*)base;
 
-	writel((uint32_t)fec->tbd_base, &fec->eth->etdsr);
-	writel((uint32_t)fec->rbd_base, &fec->eth->erdsr);
+	writel((uint32_t)fec->tbd_base, fec->regs + FEC_ETDSR);
+	writel((uint32_t)fec->rbd_base, fec->regs + FEC_ERDSR);
 
 	fec->xcv_type = pdata->xcv_type;
 
 	sprintf(dev->name, "FEC ETHERNET");
-
-	if (fec->xcv_type == RMII) {
-		/* disable the gasket and wait */
-		writel(0, dev->map_base + FEC_MIIGSK_ENR);
-		while (readl(dev->map_base + FEC_MIIGSK_ENR) & FEC_MIIGSK_ENR_READY)
-			udelay(1);
-
-		/* configure the gasket for RMII, 50 MHz, no loopback, no echo */
-		writel(FEC_MIIGSK_CFGR_IF_MODE_RMII, dev->map_base + FEC_MIIGSK_CFGR);
-
-		/* re-enable the gasket */
-		writel(FEC_MIIGSK_ENR_EN, dev->map_base + FEC_MIIGSK_ENR);
-	}
 
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec_miiphy_read;

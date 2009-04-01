@@ -48,7 +48,7 @@ static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t * retVal)
 {
 	struct eth_device *edev = mdev->edev;
-	fec_priv *fec = (fec_priv *)edev->priv;
+	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
@@ -92,7 +92,7 @@ static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint8_t regAddr, uint16_t data)
 {
 	struct eth_device *edev = mdev->edev;
-	fec_priv *fec = (fec_priv *)edev->priv;
+	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
@@ -123,24 +123,24 @@ static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	return 0;
 }
 
-static int fec_rx_task_enable(fec_priv *fec)
+static int fec_rx_task_enable(struct fec_priv *fec)
 {
 	writel(1 << 24, fec->regs + FEC_R_DES_ACTIVE);
 	return 0;
 }
 
-static int fec_rx_task_disable(fec_priv *fec)
+static int fec_rx_task_disable(struct fec_priv *fec)
 {
 	return 0;
 }
 
-static int fec_tx_task_enable(fec_priv *fec)
+static int fec_tx_task_enable(struct fec_priv *fec)
 {
 	writel(1 << 24, fec->regs + FEC_X_DES_ACTIVE);
 	return 0;
 }
 
-static int fec_tx_task_disable(fec_priv *fec)
+static int fec_tx_task_disable(struct fec_priv *fec)
 {
 	return 0;
 }
@@ -156,7 +156,7 @@ static int fec_tx_task_disable(fec_priv *fec)
  * data buffer requires some alignment. Thy must be aligned to a specific
  * boundary each (DB_DATA_ALIGNMENT).
  */
-static int fec_rbd_init(fec_priv *fec, int count, int size)
+static int fec_rbd_init(struct fec_priv *fec, int count, int size)
 {
 	int ix;
 	static int once = 0;
@@ -199,7 +199,7 @@ static int fec_rbd_init(fec_priv *fec, int count, int size)
  * resetting it after the first transfer.
  * Using two BDs solves this issue.
  */
-static void fec_tbd_init(fec_priv *fec)
+static void fec_tbd_init(struct fec_priv *fec)
 {
 	writew(0x0000, &fec->tbd_base[0].status);
 	writew(FEC_TBD_WRAP, &fec->tbd_base[1].status);
@@ -234,7 +234,7 @@ static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-	fec_priv *fec = (fec_priv *)dev->priv;
+	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 
 	/*
 	 * Set physical address
@@ -247,7 +247,7 @@ static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 
 static int fec_init(struct eth_device *dev)
 {
-	fec_priv *fec = (fec_priv *)dev->priv;
+	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -327,7 +327,7 @@ static int fec_init(struct eth_device *dev)
  */
 static int fec_open(struct eth_device *edev)
 {
-	fec_priv *fec = (fec_priv *)edev->priv;
+	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 
 	writel(1 << 2, fec->regs + FEC_X_CNTRL);	/* full-duplex, heartbeat disabled */
 	fec->rbd_index = 0;
@@ -355,7 +355,7 @@ static int fec_open(struct eth_device *edev)
  */
 static void fec_halt(struct eth_device *dev)
 {
-	fec_priv *fec = (fec_priv *)dev->priv;
+	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	int counter = 0xffff;
 
 	/*
@@ -401,7 +401,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	 * This routine transmits one frame.  This routine only accepts
 	 * 6-byte Ethernet addresses.
 	 */
-	fec_priv *fec = (fec_priv *)dev->priv;
+	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 
 	/*
 	 * Check for valid length of data.
@@ -465,7 +465,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
  */
 static int fec_recv(struct eth_device *dev)
 {
-	fec_priv *fec = (fec_priv *)dev->priv;
+	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	FEC_BD *rbd = &fec->rbd_base[fec->rbd_index];
 	unsigned long ievent;
 	int frame_length, len = 0;
@@ -538,14 +538,14 @@ static int fec_probe(struct device_d *dev)
 {
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
         struct eth_device *edev;
-	fec_priv *fec;
+	struct fec_priv *fec;
 	uint32_t base;
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
         edev = (struct eth_device *)malloc(sizeof(struct eth_device));
         dev->type_data = edev;
-	fec = (fec_priv*)malloc(sizeof(*fec));
+	fec = (struct fec_priv *)malloc(sizeof(*fec));
         edev->priv = fec;
         edev->dev  = dev;
 	edev->open = fec_open,

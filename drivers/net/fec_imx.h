@@ -134,7 +134,7 @@ typedef struct buffer_descriptor {
 /**
  * @brief i.MX27-FEC private structure
  */
-typedef struct {
+struct fec_priv {
 	void *regs;
 	xceiver_type xcv_type;		/**< transceiver type */
 	FEC_BD *rbd_base;		/**< RBD ring */
@@ -142,7 +142,7 @@ typedef struct {
 	FEC_BD *tbd_base;		/**< TBD ring */
 	int tbd_index;			/**< next transmit BD to write */
 	struct miiphy_device miiphy;
-} fec_priv;
+};
 
 /**
  * @brief Numbers of buffer descriptors for receiving

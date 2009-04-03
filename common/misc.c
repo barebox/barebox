@@ -151,6 +151,8 @@ const char *errno_str(void)
 
         return str;
 #else
+	sprintf(errno_string, "error %d", errno);
+	return errno_string;
 #endif
 }
 EXPORT_SYMBOL(errno_str);

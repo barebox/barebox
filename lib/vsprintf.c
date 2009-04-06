@@ -13,6 +13,8 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
+#include <asm-generic/div64.h>
+#include <malloc.h>
 
 #include <common.h>
 #include <reloc.h>
@@ -100,38 +102,30 @@ static int skip_atoi(const char **s)
 #define PLUS	4		/* show plus */
 #define SPACE	8		/* space if plus */
 #define LEFT	16		/* left justified */
-#define SPECIAL	32		/* 0x */
-#define LARGE	64		/* use 'ABCDEF' instead of 'abcdef' */
+#define SMALL	32		/* Must be 32 == 0x20 */
+#define SPECIAL	64		/* 0x */
 
-#define do_div(n,base) ({ \
-	int __res; \
-	__res = ((unsigned long) n) % (unsigned) base; \
-	n = ((unsigned long) n) / (unsigned) base; \
-	__res; \
-})
-
-#ifdef CFG_64BIT_VSPRINTF
-static char * number(char * str, long long num, int base, int size, int precision ,int type)
-#else
-static char * number(char * str, long num, int base, int size, int precision ,int type)
-#endif
+static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
 {
-	char c,sign,tmp[66];
-	const char *digits = RELOC("0123456789abcdefghijklmnopqrstuvwxyz");
+	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
+	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
+
+	char tmp[66];
+	char sign;
+	char locase;
+	int need_pfx = ((type & SPECIAL) && base != 10);
 	int i;
 
-	if (type & LARGE)
-		digits = RELOC("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	/* locase = 0 or 0x20. ORing digits or letters with 'locase'
+	 * produces same digits or (maybe lowercased) letters */
+	locase = (type & SMALL);
 	if (type & LEFT)
 		type &= ~ZEROPAD;
-	if (base < 2 || base > 36)
-		return 0;
-	c = (type & ZEROPAD) ? '0' : ' ';
 	sign = 0;
 	if (type & SIGN) {
-		if (num < 0) {
+		if ((signed long long) num < 0) {
 			sign = '-';
-			num = -num;
+			num = - (signed long long) num;
 			size--;
 		} else if (type & PLUS) {
 			sign = '+';
@@ -141,70 +135,207 @@ static char * number(char * str, long num, int base, int size, int precision ,in
 			size--;
 		}
 	}
-	if (type & SPECIAL) {
+	if (need_pfx) {
+		size--;
 		if (base == 16)
-			size -= 2;
-		else if (base == 8)
 			size--;
 	}
+	/* generate full string in tmp[], in reverse order */
 	i = 0;
 	if (num == 0)
-		tmp[i++]='0';
-	else while (num != 0)
-		tmp[i++] = digits[do_div(num,base)];
+		tmp[i++] = '0';
+	else do {
+		tmp[i++] = (digits[do_div(num,base)] | locase);
+	} while (num != 0);
+
+	/* printing 100 using %2d gives "100", not "00" */
 	if (i > precision)
 		precision = i;
 	size -= precision;
-	if (!(type&(ZEROPAD+LEFT)))
-		while(size-->0)
-			*str++ = ' ';
-	if (sign)
-		*str++ = sign;
-	if (type & SPECIAL) {
-		if (base==8)
-			*str++ = '0';
-		else if (base==16) {
-			*str++ = '0';
-			*str++ = digits[33];
+	if (!(type & (ZEROPAD+LEFT))) {
+		while(--size >= 0) {
+			if (buf < end)
+				*buf = ' ';
+			++buf;
 		}
 	}
-	if (!(type & LEFT))
-		while (size-- > 0)
-			*str++ = c;
-	while (i < precision--)
-		*str++ = '0';
-	while (i-- > 0)
-		*str++ = tmp[i];
-	while (size-- > 0)
-		*str++ = ' ';
-	return str;
+	/* sign */
+	if (sign) {
+		if (buf < end)
+			*buf = sign;
+		++buf;
+	}
+	/* "0x" / "0" prefix */
+	if (need_pfx) {
+		if (buf < end)
+			*buf = '0';
+		++buf;
+		if (base == 16) {
+			if (buf < end)
+				*buf = ('X' | locase);
+			++buf;
+		}
+	}
+	/* zero or space padding */
+	if (!(type & LEFT)) {
+		char c = (type & ZEROPAD) ? '0' : ' ';
+		while (--size >= 0) {
+			if (buf < end)
+				*buf = c;
+			++buf;
+		}
+	}
+	/* hmm even more zero padding? */
+	while (i <= --precision) {
+		if (buf < end)
+			*buf = '0';
+		++buf;
+	}
+	/* actual digits of result */
+	while (--i >= 0) {
+		if (buf < end)
+			*buf = tmp[i];
+		++buf;
+	}
+	/* trailing space padding */
+	while (--size >= 0) {
+		if (buf < end)
+			*buf = ' ';
+		++buf;
+	}
+	return buf;
 }
 
-/* Forward decl. needed for IP address printing stuff... */
-int sprintf(char * buf, const char *fmt, ...);
+#define PAGE_SIZE 4096
 
-int vsprintf(char *buf, const char *fmt, va_list args)
+static char *string(char *buf, char *end, char *s, int field_width, int precision, int flags)
 {
-	int len;
-#ifdef CFG_64BIT_VSPRINTF
-	unsigned long long num;
+	int len, i;
+
+	if ((unsigned long)s < PAGE_SIZE)
+		s = "<NULL>";
+
+	len = strnlen(s, precision);
+
+	if (!(flags & LEFT)) {
+		while (len < field_width--) {
+			if (buf < end)
+				*buf = ' ';
+			++buf;
+		}
+	}
+	for (i = 0; i < len; ++i) {
+		if (buf < end)
+			*buf = *s;
+		++buf; ++s;
+	}
+	while (len < field_width--) {
+		if (buf < end)
+			*buf = ' ';
+		++buf;
+	}
+	return buf;
+}
+
+static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+{
+	unsigned long value = (unsigned long) ptr;
+#ifdef CONFIG_KALLSYMS
+	char sym[KSYM_SYMBOL_LEN];
+	sprint_symbol(sym, value);
+	return string(buf, end, sym, field_width, precision, flags);
 #else
-	unsigned long num;
+	field_width = 2*sizeof(void *);
+	flags |= SPECIAL | SMALL | ZEROPAD;
+	return number(buf, end, value, 16, field_width, precision, flags);
 #endif
-	int i, base;
-	char * str;
-	const char *s;
+}
+
+/*
+ * Show a '%p' thing.  A kernel extension is that the '%p' is followed
+ * by an extra set of alphanumeric characters that are extended format
+ * specifiers.
+ *
+ * Right now we handle:
+ *
+ * - 'S' For symbolic direct pointers
+ *
+ * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+ * function pointers are really function descriptors, which contain a
+ * pointer to the real address.
+ */
+static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+{
+	switch (*fmt) {
+	case 'S':
+		return symbol_string(buf, end, ptr, field_width, precision, flags);
+	}
+	flags |= SMALL;
+	if (field_width == -1) {
+		field_width = 2*sizeof(void *);
+		flags |= ZEROPAD;
+	}
+	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+}
+
+/**
+ * vsnprintf - Format a string and place it in a buffer
+ * @buf: The buffer to place the result into
+ * @size: The size of the buffer, including the trailing null space
+ * @fmt: The format string to use
+ * @args: Arguments for the format string
+ *
+ * This function follows C99 vsnprintf, but has some extensions:
+ * %pS output the name of a text symbol
+ * %pF output the name of a function pointer
+ * %pR output the address range in a struct resource
+ *
+ * The return value is the number of characters which would
+ * be generated for the given input, excluding the trailing
+ * '\0', as per ISO C99. If you want to have the exact
+ * number of characters written into @buf as return value
+ * (not including the trailing '\0'), use vscnprintf(). If the
+ * return is greater than or equal to @size, the resulting
+ * string is truncated.
+ *
+ * Call this function if you are already dealing with a va_list.
+ * You probably want snprintf() instead.
+ */
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+{
+	unsigned long long num;
+	int base;
+	char *str, *end, c;
 
 	int flags;		/* flags to number() */
 
 	int field_width;	/* width of output field */
 	int precision;		/* min. # of digits for integers; max
 				   number of chars for from string */
-	int qualifier;		/* 'h', 'l', or 'q' for integer fields */
+	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
+				/* 'z' support added 23/7/1999 S.H.    */
+				/* 'z' changed to 'Z' --davidm 1/25/99 */
+				/* 't' added for ptrdiff_t */
 
-	for (str=buf ; *fmt ; ++fmt) {
+	/* Reject out-of-range values early.  Large positive sizes are
+	   used for unknown buffer sizes. */
+	if (unlikely((int) size < 0))
+		return 0;
+
+	str = buf;
+	end = buf + size;
+
+	/* Make sure end is always >= buf */
+	if (end < buf) {
+		end = ((void *)-1);
+		size = end - buf;
+	}
+
+	for (; *fmt ; ++fmt) {
 		if (*fmt != '%') {
-			*str++ = *fmt;
+			if (str < end)
+				*str = *fmt;
+			++str;
 			continue;
 		}
 
@@ -218,11 +349,11 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				case ' ': flags |= SPACE; goto repeat;
 				case '#': flags |= SPECIAL; goto repeat;
 				case '0': flags |= ZEROPAD; goto repeat;
-				}
+			}
 
 		/* get field width */
 		field_width = -1;
-		if (is_digit(*fmt))
+		if (isdigit(*fmt))
 			field_width = skip_atoi(&fmt);
 		else if (*fmt == '*') {
 			++fmt;
@@ -237,8 +368,8 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 		/* get the precision */
 		precision = -1;
 		if (*fmt == '.') {
-			++fmt;
-			if (is_digit(*fmt))
+			++fmt;	
+			if (isdigit(*fmt))
 				precision = skip_atoi(&fmt);
 			else if (*fmt == '*') {
 				++fmt;
@@ -251,109 +382,154 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
 		/* get the conversion qualifier */
 		qualifier = -1;
-		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'q') {
+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
+		    *fmt =='Z' || *fmt == 'z' || *fmt == 't') {
 			qualifier = *fmt;
 			++fmt;
+			if (qualifier == 'l' && *fmt == 'l') {
+				qualifier = 'L';
+				++fmt;
+			}
 		}
 
 		/* default base */
 		base = 10;
 
 		switch (*fmt) {
-		case 'c':
-			if (!(flags & LEFT))
-				while (--field_width > 0)
-					*str++ = ' ';
-			*str++ = (unsigned char) va_arg(args, int);
-			while (--field_width > 0)
-				*str++ = ' ';
-			continue;
+			case 'c':
+				if (!(flags & LEFT)) {
+					while (--field_width > 0) {
+						if (str < end)
+							*str = ' ';
+						++str;
+					}
+				}
+				c = (unsigned char) va_arg(args, int);
+				if (str < end)
+					*str = c;
+				++str;
+				while (--field_width > 0) {
+					if (str < end)
+						*str = ' ';
+					++str;
+				}
+				continue;
 
-		case 's':
-			s = va_arg(args, char *);
-			if (!s)
-				s = RELOC("<NULL>");
+			case 's':
+				str = string(str, end, va_arg(args, char *), field_width, precision, flags);
+				continue;
 
-			len = strnlen(s, precision);
+			case 'p':
+				str = pointer(fmt+1, str, end,
+						va_arg(args, void *),
+						field_width, precision, flags);
+				/* Skip all alphanumeric pointer suffixes */
+				while (isalnum(fmt[1]))
+					fmt++;
+				continue;
 
-			if (!(flags & LEFT))
-				while (len < field_width--)
-					*str++ = ' ';
-			for (i = 0; i < len; ++i)
-				*str++ = *s++;
-			while (len < field_width--)
-				*str++ = ' ';
-			continue;
+			case 'n':
+				/* FIXME:
+				* What does C99 say about the overflow case here? */
+				if (qualifier == 'l') {
+					long * ip = va_arg(args, long *);
+					*ip = (str - buf);
+				} else if (qualifier == 'Z' || qualifier == 'z') {
+					size_t * ip = va_arg(args, size_t *);
+					*ip = (str - buf);
+				} else {
+					int * ip = va_arg(args, int *);
+					*ip = (str - buf);
+				}
+				continue;
 
-		case 'p':
-			if (field_width == -1) {
-				field_width = 2*sizeof(void *);
-				flags |= ZEROPAD;
-			}
-			str = number(str,
-				(unsigned long) va_arg(args, void *), 16,
-				field_width, precision, flags);
-			continue;
+			case '%':
+				if (str < end)
+					*str = '%';
+				++str;
+				continue;
 
+				/* integer number formats - set up the flags and "break" */
+			case 'o':
+				base = 8;
+				break;
 
-		case 'n':
-			if (qualifier == 'l') {
-				long * ip = va_arg(args, long *);
-				*ip = (str - buf);
-			} else {
-				int * ip = va_arg(args, int *);
-				*ip = (str - buf);
-			}
-			continue;
+			case 'x':
+				flags |= SMALL;
+			case 'X':
+				base = 16;
+				break;
 
-		case '%':
-			*str++ = '%';
-			continue;
+			case 'd':
+			case 'i':
+				flags |= SIGN;
+			case 'u':
+				break;
 
-		/* integer number formats - set up the flags and "break" */
-		case 'o':
-			base = 8;
-			break;
-
-		case 'X':
-			flags |= LARGE;
-		case 'x':
-			base = 16;
-			break;
-
-		case 'd':
-		case 'i':
-			flags |= SIGN;
-		case 'u':
-			break;
-
-		default:
-			*str++ = '%';
-			if (*fmt)
-				*str++ = *fmt;
-			else
-				--fmt;
-			continue;
+			default:
+				if (str < end)
+					*str = '%';
+				++str;
+				if (*fmt) {
+					if (str < end)
+						*str = *fmt;
+					++str;
+				} else {
+					--fmt;
+				}
+				continue;
 		}
-#ifdef CFG_64BIT_VSPRINTF
-		if (qualifier == 'q')  /* "quad" for 64 bit variables */
-			num = va_arg(args, unsigned long long);
-		else
-#endif
-		if (qualifier == 'l')
+		if (qualifier == 'L')
+			num = va_arg(args, long long);
+		else if (qualifier == 'l') {
 			num = va_arg(args, unsigned long);
-		else if (qualifier == 'h') {
+			if (flags & SIGN)
+				num = (signed long) num;
+		} else if (qualifier == 'Z' || qualifier == 'z') {
+			num = va_arg(args, size_t);
+		} else if (qualifier == 't') {
+			num = va_arg(args, ptrdiff_t);
+		} else if (qualifier == 'h') {
 			num = (unsigned short) va_arg(args, int);
 			if (flags & SIGN)
-				num = (short) num;
-		} else if (flags & SIGN)
-			num = va_arg(args, int);
-		else
+				num = (signed short) num;
+		} else {
 			num = va_arg(args, unsigned int);
-		str = number(str, num, base, field_width, precision, flags);
+			if (flags & SIGN)
+				num = (signed int) num;
+		}
+		str = number(str, end, num, base,
+				field_width, precision, flags);
 	}
-	*str = '\0';
+	if (size > 0) {
+		if (str < end)
+			*str = '\0';
+		else
+			end[-1] = '\0';
+	}
+	/* the trailing null byte doesn't count towards the total */
 	return str-buf;
+}
+EXPORT_SYMBOL(vsnprintf);
+
+/**
+ * vsprintf - Format a string and place it in a buffer
+ * @buf: The buffer to place the result into
+ * @fmt: The format string to use
+ * @args: Arguments for the format string
+ *
+ * The function returns the number of characters written
+ * into @buf. Use vsnprintf() or vscnprintf() in order to avoid
+ * buffer overflows.
+ *
+ * Call this function if you are already dealing with a va_list.
+ * You probably want sprintf() instead.
+ *
+ * See the vsnprintf() documentation for format string extensions over C99.
+ */
+int vsprintf(char *buf, const char *fmt, va_list args)
+{
+	return vsnprintf(buf, INT_MAX, fmt, args);
 }
 EXPORT_SYMBOL(vsprintf);
 
@@ -368,6 +544,40 @@ int sprintf(char * buf, const char *fmt, ...)
 	return i;
 }
 EXPORT_SYMBOL(sprintf);
+
+/* Simplified asprintf. */
+char *vasprintf(const char *fmt, va_list ap)
+{
+	unsigned int len;
+	char *p;
+	va_list aq;
+
+	va_copy(aq, ap);
+	len = vsnprintf(NULL, 0, fmt, aq);
+	va_end(aq);
+
+	p = malloc(len + 1);
+	if (!p)
+		return NULL;
+
+	vsnprintf(p, len + 1, fmt, ap);
+
+	return p;
+}
+EXPORT_SYMBOL(vasprintf);
+
+char *asprintf(const char *fmt, ...)
+{
+	va_list ap;
+	char *p;
+
+	va_start(ap, fmt);
+	p = vasprintf(fmt, ap);
+	va_end(ap);
+
+	return p;
+}
+EXPORT_SYMBOL(asprintf);
 
 void panic(const char *fmt, ...)
 {

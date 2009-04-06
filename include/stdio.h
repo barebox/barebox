@@ -32,6 +32,9 @@ int	printf(const char *fmt, ...);
 int	vprintf(const char *fmt, va_list args);
 int	sprintf(char * buf, const char *fmt, ...);
 int	vsprintf(char *buf, const char *fmt, va_list args);
+char	*asprintf(const char *fmt, ...);
+char	*vasprintf(const char *fmt, va_list ap);
+int	vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 
 /* stderr */
 #define eputc(c)		console_putc(CONSOLE_STDERR, c)

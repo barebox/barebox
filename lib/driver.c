@@ -127,7 +127,7 @@ int unregister_device(struct device_d *old_dev)
 	}
 
 	if (old_dev->driver)
-		old_dev->driver->remove(old_dev);
+		old_dev->bus->remove(old_dev);
 
 	list_del(&old_dev->list);
 

@@ -66,5 +66,7 @@ config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
 	depends on LINUX
 
+source "drivers/net/usb/Kconfig"
+
 endmenu
 

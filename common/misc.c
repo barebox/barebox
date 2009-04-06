@@ -75,13 +75,13 @@ int errno;
 EXPORT_SYMBOL(errno);
 
 
-const char *errno_str(void)
+const char *strerror(int errnum)
 {
 	static char errno_string[10];
 
 #ifdef CONFIG_ERRNO_MESSAGES
 	char *str;
-	switch(-errno) {
+	switch(errnum) {
 	case	0		: str = "No error"; break;
 	case	EPERM		: str = "Operation not permitted"; break;
 	case	ENOENT		: str = "No such file or directory"; break;
@@ -145,15 +145,22 @@ const char *errno_str(void)
 	case	EREMOTEIO	: str = "Remote I/O error"; break;
 #endif
 	default:
-		sprintf(errno_string, "error %d", errno);
+		sprintf(errno_string, "error %d", errnum);
 		return errno_string;
 	};
 
         return str;
 #else
-	sprintf(errno_string, "error %d", errno);
+	sprintf(errno_string, "error %d", errnum);
+
 	return errno_string;
 #endif
+}
+EXPORT_SYMBOL(strerror);
+
+const char *errno_str(void)
+{
+	return strerror(-errno);
 }
 EXPORT_SYMBOL(errno_str);
 

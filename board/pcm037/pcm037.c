@@ -26,6 +26,7 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
+#include <usb/isp1504.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/iomux-mx31.h>
 #include <asm/armlinux.h>
@@ -34,6 +35,7 @@
 #include <partition.h>
 #include <asm/mach-types.h>
 #include <asm/arch/imx-nand.h>
+
 
 /*
  * Up to 32MiB NOR type flash, connected to
@@ -116,6 +118,109 @@ static struct device_d nand_dev = {
 	.platform_data	= &nand_info,
 };
 
+#ifdef CONFIG_USB
+static struct device_d usbotg_dev = {
+	.name     = "ehci",
+	.id       = "ehci0",
+	.map_base = IMX_OTG_BASE,
+	.size     = 0x200,
+};
+
+static struct device_d usbh2_dev = {
+	.name     = "ehci",
+	.id       = "ehci1",
+	.map_base = IMX_OTG_BASE + 0x400,
+	.size     = 0x200,
+};
+
+static void pcm037_usb_init(void)
+{
+	u32 tmp;
+
+	/* enable clock */
+	tmp = __raw_readl(0x53f80000);
+	tmp |= (1 << 9);
+	__raw_writel(tmp, 0x53f80000);
+
+	/* Host 1 */
+	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp &= ~((3 << 21) | 1);
+	tmp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
+	writel(tmp, IMX_OTG_BASE + 0x600);
+
+	tmp = readl(IMX_OTG_BASE + 0x184);
+	tmp &= ~(3 << 30);
+	tmp |= 2 << 30;
+	writel(tmp, IMX_OTG_BASE + 0x184);
+
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA0__USBOTG_DATA0);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA1__USBOTG_DATA1);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA2__USBOTG_DATA2);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA3__USBOTG_DATA3);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA4__USBOTG_DATA4);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA5__USBOTG_DATA5);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA6__USBOTG_DATA6);
+	imx_iomux_mode(MX31_PIN_USBOTG_DATA7__USBOTG_DATA7);
+	imx_iomux_mode(MX31_PIN_USBOTG_CLK__USBOTG_CLK);
+	imx_iomux_mode(MX31_PIN_USBOTG_DIR__USBOTG_DIR);
+	imx_iomux_mode(MX31_PIN_USBOTG_NXT__USBOTG_NXT);
+	imx_iomux_mode(MX31_PIN_USBOTG_STP__USBOTG_STP);
+
+	mdelay(50);
+	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
+
+	/* Host 2 */
+	tmp = readl(IOMUXC_BASE + 0x8);
+	tmp |= 1 << 11;
+	writel(tmp, IOMUXC_BASE + 0x8);
+
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_CLK, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_DIR, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_NXT, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_STP, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_DATA0, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_DATA1, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_STXD3, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_SRXD3, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_SCK3, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_SFS3, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_STXD6, IOMUX_CONFIG_FUNC));
+	imx_iomux_mode(IOMUX_MODE(MX31_PIN_SRXD6, IOMUX_CONFIG_FUNC));
+
+#define H2_PAD_CFG (PAD_CTL_DRV_MAX | PAD_CTL_SRE_FAST | PAD_CTL_HYS_CMOS | PAD_CTL_ODE_CMOS | PAD_CTL_100K_PU)
+	imx_iomux_set_pad(MX31_PIN_USBH2_CLK, H2_PAD_CFG);
+	imx_iomux_set_pad(MX31_PIN_USBH2_DIR, H2_PAD_CFG);
+	imx_iomux_set_pad(MX31_PIN_USBH2_NXT, H2_PAD_CFG);
+	imx_iomux_set_pad(MX31_PIN_USBH2_STP, H2_PAD_CFG);
+	imx_iomux_set_pad(MX31_PIN_USBH2_DATA0, H2_PAD_CFG); /* USBH2_DATA0 */
+	imx_iomux_set_pad(MX31_PIN_USBH2_DATA1, H2_PAD_CFG); /* USBH2_DATA1 */
+	imx_iomux_set_pad(MX31_PIN_SRXD6, H2_PAD_CFG);	/* USBH2_DATA2 */
+	imx_iomux_set_pad(MX31_PIN_STXD6, H2_PAD_CFG);	/* USBH2_DATA3 */
+	imx_iomux_set_pad(MX31_PIN_SFS3, H2_PAD_CFG);	/* USBH2_DATA4 */
+	imx_iomux_set_pad(MX31_PIN_SCK3, H2_PAD_CFG);	/* USBH2_DATA5 */
+	imx_iomux_set_pad(MX31_PIN_SRXD3, H2_PAD_CFG);	/* USBH2_DATA6 */
+	imx_iomux_set_pad(MX31_PIN_STXD3, H2_PAD_CFG);	/* USBH2_DATA7 */
+
+	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp &= ~((3 << 21) | 1);
+	tmp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
+	writel(tmp, IMX_OTG_BASE + 0x600);
+
+	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp &= ~(3 << 30);
+	tmp |= 2 << 30;
+	writel(tmp, IMX_OTG_BASE + 0x584);
+
+	mdelay(50);
+	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+
+	/* Set to Host mode */
+	tmp = readl(IMX_OTG_BASE + 0x1a8);
+	writel(tmp | 0x3, IMX_OTG_BASE + 0x1a8);
+
+}
+#endif
+
 static int imx31_devices_init(void)
 {
 	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
@@ -153,6 +258,11 @@ static int imx31_devices_init(void)
 	register_device(&sdram0_dev);
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
 	register_device(&sdram1_dev);
+#endif
+#ifdef CONFIG_USB
+	pcm037_usb_init();
+	register_device(&usbotg_dev);
+	register_device(&usbh2_dev);
 #endif
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM037);

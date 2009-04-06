@@ -21,4 +21,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define CONFIG_MX35_HCLK_FREQ        24000000
+
 #endif	/* __CONFIG_H */

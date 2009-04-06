@@ -148,6 +148,7 @@ struct miiphy_device {
 };
 
 int miiphy_register(struct miiphy_device *mdev);
+void miiphy_unregister(struct miiphy_device *mdev);
 int miiphy_restart_aneg(struct miiphy_device *mdev);
 int miiphy_wait_aneg(struct miiphy_device *mdev);
 int miiphy_print_status(struct miiphy_device *mdev);

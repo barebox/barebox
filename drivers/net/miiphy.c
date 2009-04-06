@@ -159,6 +159,10 @@ static int miiphy_probe(struct device_d *dev)
 	return 0;
 }
 
+static void miiphy_remove(struct device_d *dev)
+{
+}
+
 int miiphy_register(struct miiphy_device *mdev)
 {
 	strcpy(mdev->dev.name, "miiphy");
@@ -170,9 +174,15 @@ int miiphy_register(struct miiphy_device *mdev)
 	return register_device(&mdev->dev);
 }
 
+void miiphy_unregister(struct miiphy_device *mdev)
+{
+	unregister_device(&mdev->dev);
+}
+
 static struct driver_d miiphy_drv = {
         .name  = "miiphy",
         .probe = miiphy_probe,
+	.remove = miiphy_remove,
 	.open  = dev_open_default,
 	.close = dev_close_default,
 	.read  = miiphy_read,

@@ -78,7 +78,8 @@ struct eth_device {
 	struct device_d *dev;
 };
 
-int eth_register(struct eth_device* dev);/* Register network device	*/
+int eth_register(struct eth_device* dev);    /* Register network device		*/
+void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 
 int eth_open(void);			/* open the device		*/
 int eth_send(void *packet, int length);	   /* Send a packet		*/

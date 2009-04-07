@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc7
-# Thu Apr  2 15:40:41 2009
+# U-Boot version: 2.0.0-rc8
+# Tue Apr  7 09:14:23 2009
 #
 CONFIG_ARCH_TEXT_BASE=0xc0000000
 CONFIG_BOARDINFO="Freescale i.MX21 ADS"
@@ -9,8 +9,6 @@ CONFIG_BOARDINFO="Freescale i.MX21 ADS"
 CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
 CONFIG_ARM926EJS=y
-CONFIG_ARCH_IMX=y
-CONFIG_ARCH_IMX21=y
 # CONFIG_MACH_MX1ADS is not set
 # CONFIG_MACH_SCB9328 is not set
 # CONFIG_MACH_PCM038 is not set
@@ -28,6 +26,8 @@ CONFIG_MACH_IMX21ADS=y
 #
 # Board specific settings       
 #
+CONFIG_ARCH_IMX=y
+CONFIG_ARCH_IMX21=y
 
 #
 # i.MX specific settings        
@@ -98,6 +98,8 @@ CONFIG_DEFAULT_ENVIRONMENT_PATH="board/imx21ads/env"
 #
 # Commands                      
 #
+CONFIG_ARCH_IMX=y
+CONFIG_ARCH_IMX21=y
 
 #
 # scripting                     
@@ -145,6 +147,7 @@ CONFIG_CMD_MTEST_ALTERNATIVE=y
 # flash                         
 #
 CONFIG_CMD_FLASH=y
+CONFIG_CMD_NAND=y
 
 #
 # booting                       
@@ -191,7 +194,12 @@ CONFIG_DRIVER_CFI_BANK_WIDTH_2=y
 CONFIG_DRIVER_CFI_BANK_WIDTH_4=y
 # CONFIG_DRIVER_CFI_BANK_WIDTH_8 is not set
 CONFIG_CFI_BUFFER_WRITE=y
-# CONFIG_NAND is not set
+CONFIG_NAND=y
+CONFIG_NAND_IMX=y
+# CONFIG_NAND_IMX_BOOT is not set
+# CONFIG_MTD_NAND_VERIFY_WRITE is not set
+# CONFIG_MTD_NAND_ECC_SMC is not set
+CONFIG_MTD_NAND_IDS=y
 
 #
 # Filesystem support            

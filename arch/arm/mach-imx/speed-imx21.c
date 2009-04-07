@@ -54,13 +54,25 @@ ulong imx_get_mpllclk(void)
 	return imx_decode_pll(MPCTL0, fref);
 }
 
+ulong imx_get_fclk(void)
+{
+	ulong cscr = CSCR;
+	ulong fref = imx_get_mpllclk();
+	ulong div;
+
+	div = ((cscr >> 29) & 0x7) + 1;
+
+	return fref / div;
+}
+
+/* HCLK */
 ulong imx_get_armclk(void)
 {
 	ulong cscr = CSCR;
 	ulong fref = imx_get_mpllclk();
 	ulong div;
 
-	div = ((cscr >> 10) & 0x7) + 1;
+	div = ((cscr >> 10) & 0xF) + 1;
 
 	return fref / div;
 }
@@ -84,6 +96,13 @@ ulong imx_get_spllclk(void)
 static ulong imx_decode_perclk(ulong div)
 {
 	return imx_get_mpllclk() / div;
+}
+
+static ulong imx_get_nfcclk(void)
+{
+	ulong fref = imx_get_fclk();
+	ulong div = ((PCDR0 >> 12) & 0xF) + 1;
+	return fref / div;
 }
 
 ulong imx_get_perclk1(void)
@@ -124,6 +143,8 @@ int imx_dump_clocks(void)
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
 	printf("spll:    %10d Hz\n", imx_get_spllclk());
 	printf("arm:     %10d Hz\n", imx_get_armclk());
+	printf("fclk:    %10d Hz\n", imx_get_fclk());
+	printf("nfcclk:  %10d Hz\n", imx_get_nfcclk());
 	printf("perclk1: %10d Hz\n", imx_get_perclk1());
 	printf("perclk2: %10d Hz\n", imx_get_perclk2());
 	printf("perclk3: %10d Hz\n", imx_get_perclk3());

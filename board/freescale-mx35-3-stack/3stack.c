@@ -36,6 +36,7 @@
 #include <spi/spi.h>
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>
+#include <asm/arch/iomux-mx35.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -80,25 +81,6 @@ static struct device_d smc911x_dev = {
 
 static int f3s_devices_init(void)
 {
-	imx_gpio_mode(MUX_FEC_TX_CLK_FEC_TX_CLK);
-	imx_gpio_mode(MUX_FEC_RX_CLK_FEC_RX_CLK);
-	imx_gpio_mode(MUX_FEC_RX_DV_FEC_RX_DV);
-	imx_gpio_mode(MUX_FEC_COL_FEC_COL);
-	imx_gpio_mode(MUX_FEC_TX_EN_FEC_TX_EN);
-	imx_gpio_mode(MUX_FEC_MDC_FEC_MDC);
-	imx_gpio_mode(MUX_FEC_MDIO_FEC_MDIO);
-	imx_gpio_mode(MUX_FEC_TX_ERR_FEC_TX_ERR);
-	imx_gpio_mode(MUX_FEC_RX_ERR_FEC_RX_ERR);
-	imx_gpio_mode(MUX_FEC_CRS_FEC_CRS);
-	imx_gpio_mode(MUX_FEC_RDATA0_FEC_RDATA0);
-	imx_gpio_mode(MUX_FEC_TDATA0_FEC_TDATA0);
-	imx_gpio_mode(MUX_FEC_RDATA1_FEC_RDATA1);
-	imx_gpio_mode(MUX_FEC_TDATA1_FEC_TDATA1);
-	imx_gpio_mode(MUX_FEC_RDATA2_FEC_RDATA2);
-	imx_gpio_mode(MUX_FEC_TDATA2_FEC_TDATA2);
-	imx_gpio_mode(MUX_FEC_RDATA3_FEC_RDATA3);
-	imx_gpio_mode(MUX_FEC_TDATA3_FEC_TDATA3);
-
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&smc911x_dev);
@@ -133,8 +115,37 @@ static struct device_d f3s_serial_device = {
 	.type     = DEVICE_TYPE_CONSOLE,
 };
 
+static struct pad_desc f3s_pads[] = {
+	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
+	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
+	MX35_PAD_FEC_RX_DV__FEC_RX_DV,
+	MX35_PAD_FEC_COL__FEC_COL,
+	MX35_PAD_FEC_RDATA0__FEC_RDATA_0,
+	MX35_PAD_FEC_TDATA0__FEC_TDATA_0,
+	MX35_PAD_FEC_TX_EN__FEC_TX_EN,
+	MX35_PAD_FEC_MDC__FEC_MDC,
+	MX35_PAD_FEC_MDIO__FEC_MDIO,
+	MX35_PAD_FEC_TX_ERR__FEC_TX_ERR,
+	MX35_PAD_FEC_RX_ERR__FEC_RX_ERR,
+	MX35_PAD_FEC_CRS__FEC_CRS,
+	MX35_PAD_FEC_RDATA0__FEC_RDATA_0,
+	MX35_PAD_FEC_TDATA0__FEC_TDATA_0,
+	MX35_PAD_FEC_RDATA1__FEC_RDATA_1,
+	MX35_PAD_FEC_TDATA1__FEC_TDATA_1,
+	MX35_PAD_FEC_RDATA2__FEC_RDATA_2,
+	MX35_PAD_FEC_TDATA2__FEC_TDATA_2,
+	MX35_PAD_FEC_RDATA3__FEC_RDATA_3,
+	MX35_PAD_FEC_TDATA3__FEC_TDATA_3,
+	MX35_PAD_RXD1__UART1_RXD_MUX,
+	MX35_PAD_TXD1__UART1_TXD_MUX,
+	MX35_PAD_RTS1__UART1_RTS,
+	MX35_PAD_CTS1__UART1_CTS,
+};
+
 static int f3s_console_init(void)
 {
+	mxc_iomux_v3_setup_multiple_pads(f3s_pads, ARRAY_SIZE(f3s_pads));
+
 	register_device(&f3s_serial_device);
 	return 0;
 }

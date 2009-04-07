@@ -11,7 +11,7 @@ if NAND
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"
-	depends on ARCH_IMX27 || ARCH_IMX31
+	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31
 
 config NAND_IMX_BOOT
 	bool

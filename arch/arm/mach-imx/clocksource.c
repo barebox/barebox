@@ -54,6 +54,9 @@ static int clocksource_init (void)
 	/* setup GP Timer 1 */
 	GPT(GPT_TCTL) = TCTL_SWR;
 
+#ifdef CONFIG_ARCH_IMX21
+	PCCR1 |= PCCR1_GPT1_EN;
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_GPT1_EN;
 	PCCR1 |= PCCR1_PERCLK1_EN;
@@ -82,11 +85,11 @@ core_initcall(clocksource_init);
 void reset_cpu (ulong ignored)
 {
 	/* Disable watchdog and set Time-Out field to 0 */
-	WCR = 0x00000000;
+	WCR = 0x0000;
 
 	/* Write Service Sequence */
-	WSR = 0x00005555;
-	WSR = 0x0000AAAA;
+	WSR = 0x5555;
+	WSR = 0xAAAA;
 
 	/* Enable watchdog */
 	WCR = WCR_WDE;

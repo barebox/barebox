@@ -8,6 +8,7 @@ config ARCH_TEXT_BASE
 	default 0x81f00000 if MACH_NXDB500
 	default 0x21e00000 if MACH_ECO920
 	default 0xa0000000 if MACH_PCM038
+	default 0xc0000000 if MACH_IMX21ADS
 	default 0xa0000000 if MACH_IMX27ADS
 	default 0x87f00000 if MACH_PCM037
 	default 0x23f00000 if MACH_AT91SAM9260_EK
@@ -19,6 +20,7 @@ config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
 	default "Hilscher Netx nxdb500" if MACH_NXDB500
 	default "Phytec phyCORE-i.MX27" if MACH_PCM038
+	default "Freescale i.MX21 ADS" if MACH_IMX21ADS
 	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
@@ -103,6 +105,15 @@ config MACH_PCM038
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor
+
+config MACH_IMX21ADS
+	bool "Freescale i.MX21ADS"
+	select HAS_CFI
+	select ARCH_IMX21
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using the Freescale i.MX21ads board equipped
+	  with a Freescale i.MX21 Processor
 
 config MACH_IMX27ADS
 	bool "Freescale i.MX27ADS"

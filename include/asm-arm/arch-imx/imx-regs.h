@@ -41,6 +41,8 @@
 
 #ifdef CONFIG_ARCH_IMX1
 # include <asm/arch/imx1-regs.h>
+#elif defined CONFIG_ARCH_IMX21
+# include <asm/arch/imx21-regs.h>
 #elif defined CONFIG_ARCH_IMX27
 # include <asm/arch/imx27-regs.h>
 #elif defined CONFIG_ARCH_IMX31

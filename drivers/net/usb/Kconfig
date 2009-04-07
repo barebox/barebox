@@ -1,0 +1,10 @@
+menuconfig NET_USB
+	depends on USB
+	bool "USB network support"
+
+if NET_USB
+
+config NET_USB_ASIX
+	bool "Asix compatible"
+
+endif

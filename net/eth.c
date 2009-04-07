@@ -148,3 +148,20 @@ int eth_register(struct eth_device *edev)
 	return 0;
 }
 
+void eth_unregister(struct eth_device *edev)
+{
+	if (edev->param_ip.value)
+		free(edev->param_ip.value);
+	if (edev->param_ethaddr.value)
+		free(edev->param_ethaddr.value);
+	if (edev->param_gateway.value)
+		free(edev->param_gateway.value);
+	if (edev->param_netmask.value)
+		free(edev->param_netmask.value);
+	if (edev->param_serverip.value)
+		free(edev->param_serverip.value);
+
+	if (eth_current == edev)
+		eth_current = NULL;
+}
+

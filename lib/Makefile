@@ -6,6 +6,7 @@ obj-y			+= vsprintf.o
 obj-y			+= div64.o
 obj-y			+= misc.o
 obj-y			+= driver.o
+obj-y			+= bus.o
 obj-y			+= parameter.o
 obj-y			+= xfuncs.o
 obj-y			+= getopt.o

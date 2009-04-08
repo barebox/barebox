@@ -123,6 +123,14 @@ board_init_lowlevel:
 	mov	pc, r10
 
 1:
+	/* Set DDR Type to MDDR, drive strength workaround */
+
+	writel(0x00001800, IMX_IOMUXC_BASE + 0x794)
+	writel(0x00001800, IMX_IOMUXC_BASE + 0x798)
+	writel(0x00001800, IMX_IOMUXC_BASE + 0x79c)
+	writel(0x00001800, IMX_IOMUXC_BASE + 0x7a0)
+	writel(0x00001800, IMX_IOMUXC_BASE + 0x7a4)
+
 	/* MDDR init, enable mDDR*/
 	writel(0x00000304, ESDMISC) /* was 0x00000004 */
 

@@ -1102,7 +1102,7 @@ static int __nand_boot_init block_is_bad(struct imx_nand_host *host, u32 offs)
 	nfc_addr(host, offs);
 	send_read_page(host, 0, 1);
 
-	return (readw(host->regs + SPARE_AREA0) & 0xff) == 0xff ? 0 : 1;
+	return (readw(host->regs + SPARE_AREA0 + 4) & 0xff) == 0xff ? 0 : 1;
 }
 
 void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,

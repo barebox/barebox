@@ -1161,10 +1161,46 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 				if (size <= 0)
 					return;
 			}
-		}
+		} else
+			debug("skip bad block at 0x%08x\n", block * blocksize);
 		block++;
 	}
 }
+#define CONFIG_NAND_IMX_BOOT_DEBUG
+#ifdef CONFIG_NAND_IMX_BOOT_DEBUG
+#include <command.h>
+
+static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	void *dest;
+	int size, pagesize, blocksize;
+
+	if (argc < 4) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
+	size = strtoul_suffix(argv[2], NULL, 0);
+	pagesize = strtoul_suffix(argv[3], NULL, 0);
+	blocksize = strtoul_suffix(argv[4], NULL, 0);
+
+	imx_nand_load_image(dest, size, pagesize, blocksize);
+
+	return 0;
+}
+
+static const __maybe_unused char cmd_nand_boot_test_help[] =
+"Usage: nand_boot_test <dest> <size> <pagesize> <blocksize>\n";
+
+U_BOOT_CMD_START(nand_boot_test)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_nand_boot_test,
+	.usage		= "list a file or directory",
+	U_BOOT_CMD_HELP(cmd_nand_boot_test_help)
+U_BOOT_CMD_END
+#endif
+
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 /*

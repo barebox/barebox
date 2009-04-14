@@ -1,4 +1,4 @@
-	/*
+/*
  * Copyright (C) 2007 Sascha Hauer, Pengutronix 
  *
  * This program is free software; you can redistribute it and/or
@@ -238,17 +238,23 @@ static int pcm038_power_init(void)
 	if (ret)
 		goto out;
 
+	CSCR |= CSCR_UPDATE_DIS;
+
 	MPCTL0 = IMX_PLL_PD(0) |
 		 IMX_PLL_MFD(51) |
 		 IMX_PLL_MFI(7) |
 		 IMX_PLL_MFN(35);
 
-	CSCR |= CSCR_MPLL_RESTART;
-
-	while (i++ < 1000) {
+	/* wait for good power level */
+	while (i++ < 128) {
 		while (CCSR & CCSR_32K_SR);
 		while (!(CCSR & CCSR_32K_SR));
 	}
+	i = 0;
+
+	CSCR |= CSCR_MPLL_RESTART;
+
+	while (!(MPCTL1 & MPCTL1_LF));
 
 	PCDR1 = 0x09030911;
 

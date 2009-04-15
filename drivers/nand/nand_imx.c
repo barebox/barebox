@@ -917,6 +917,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 
 	case NAND_CMD_READID:
+		host->col_addr = 0;
 		send_read_id(host);
 		break;
 

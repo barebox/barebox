@@ -1,18 +1,17 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc7
-# Fri Jan 30 11:17:36 2009
+# U-Boot version: 2.0.0-rc8
+# Fri Apr 17 13:27:24 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x87f00000
 CONFIG_BOARDINFO="Phytec phyCORE-i.MX35"
 # CONFIG_BOARD_LINKER_SCRIPT is not set
 CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
-CONFIG_ARCH_IMX=y
-CONFIG_ARCH_IMX35=y
 # CONFIG_MACH_MX1ADS is not set
 # CONFIG_MACH_SCB9328 is not set
 # CONFIG_MACH_PCM038 is not set
+# CONFIG_MACH_IMX21ADS is not set
 # CONFIG_MACH_IMX27ADS is not set
 CONFIG_MACH_PCM043=y
 # CONFIG_MACH_FREESCALE_MX35_3STACK is not set
@@ -22,15 +21,19 @@ CONFIG_MACH_PCM043=y
 # CONFIG_MACH_OMAP is not set
 # CONFIG_MACH_AT91SAM9260_EK is not set
 # CONFIG_MACH_PM9263 is not set
+# CONFIG_MACH_PCA100 is not set
 
 #
 # Board specific settings       
 #
+CONFIG_ARCH_IMX=y
+CONFIG_ARCH_HAS_FEC_IMX=y
+CONFIG_ARCH_IMX35=y
 
 #
 # i.MX specific settings        
 #
-# CONFIG_CMD_IMX_FUSE is not set
+# CONFIG_IMX_CLKO is not set
 
 #
 # Arm specific settings         
@@ -181,16 +184,13 @@ CONFIG_MIIPHY=y
 #
 # Network drivers               
 #
-CONFIG_DRIVER_NET_SMC911X=y
-CONFIG_DRIVER_NET_SMC911X_ADDRESS_SHIFT=0
-CONFIG_DRIVER_NET_IMX27=y
+# CONFIG_DRIVER_NET_SMC911X is not set
+CONFIG_DRIVER_NET_FEC_IMX=y
 
 #
 # SPI drivers                   
 #
-CONFIG_SPI=y
-# CONFIG_DRIVER_SPI_IMX is not set
-# CONFIG_DRIVER_SPI_MC13783 is not set
+# CONFIG_SPI is not set
 
 #
 # flash drivers                 
@@ -201,6 +201,7 @@ CONFIG_DRIVER_CFI=y
 CONFIG_DRIVER_CFI_OLD=y
 CONFIG_CFI_BUFFER_WRITE=y
 # CONFIG_NAND is not set
+# CONFIG_USB is not set
 
 #
 # Filesystem support            

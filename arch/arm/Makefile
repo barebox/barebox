@@ -29,7 +29,6 @@ cpu-$(CONFIG_ARM926EJS)            := arm926ejs
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE) -P
-CFLAGS += -msoft-float
 
 ifndef CONFIG_MODULES
 # Add cleanup flags

@@ -146,6 +146,7 @@ struct miiphy_device {
 	int flags;
 
 	struct eth_device *edev;
+	struct cdev cdev;
 };
 
 int miiphy_register(struct miiphy_device *mdev);

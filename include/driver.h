@@ -98,7 +98,6 @@ struct device_d {
 	void *type_data;     /*! In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
 			      */
-
 	struct driver_d *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
@@ -132,22 +131,6 @@ struct driver_d {
 
 	/*! Called if an instance of a device is gone. */
 	void     (*remove)(struct device_d *);
-
-	/*! Called in response of reading from this device. Required */
-	ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
-
-	/*! Called in response of write to this device. Required */
-	ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
-
-	int (*ioctl) (struct device_d*, int, void *);
-
-	off_t (*lseek) (struct device_d*, off_t);
-	int (*open) (struct device_d*, struct filep*);
-	int (*close) (struct device_d*, struct filep*);
-
-	int     (*erase) (struct device_d*, size_t count, unsigned long offset);
-	int     (*protect)(struct device_d*, size_t count, unsigned long offset, int prot);
-	int     (*memmap)(struct device_d*, void **map, int flags);
 
 	void    (*info) (struct device_d *);
 	void    (*shortinfo) (struct device_d *);
@@ -231,20 +214,14 @@ extern struct list_head driver_list;
  */
 struct driver_d *get_driver_by_name(const char *name);
 
-ssize_t dev_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
-int     dev_open(struct device_d *dev, struct filep *);
-int     dev_close(struct device_d *dev, struct filep *);
-int     dev_ioctl(struct device_d *dev, int, void *);
-off_t   dev_lseek(struct device_d *dev, off_t offset);
-int     dev_erase(struct device_d *dev, size_t count, unsigned long offset);
+struct cdev;
+
 int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
-int     dev_memmap(struct device_d *dev, void **map, int flags);
 
 /* These are used by drivers which work with direct memory accesses */
-ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags);
-int mem_memmap(struct device_d *dev, void **map, int flags);
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+int mem_memmap(struct cdev *cdev, void **map, int flags);
 
 /* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);
@@ -254,10 +231,10 @@ int dummy_probe(struct device_d *);
  */
 void devices_shutdown(void);
 
-int generic_memmap_ro(struct device_d *dev, void **map, int flags);
-int generic_memmap_rw(struct device_d *dev, void **map, int flags);
+int generic_memmap_ro(struct cdev *dev, void **map, int flags);
+int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline off_t dev_lseek_default(struct device_d *dev, off_t ofs)
+static inline off_t dev_lseek_default(struct cdev *cdev, off_t ofs)
 {
 	return ofs;
 }
@@ -312,5 +289,51 @@ struct bus_type {
 };
 
 extern struct bus_type platform_bus;
+
+struct file_operations {
+	/*! Called in response of reading from this device. Required */
+	ssize_t (*read)(struct cdev*, void* buf, size_t count, ulong offset, ulong flags);
+
+	/*! Called in response of write to this device. Required */
+	ssize_t (*write)(struct cdev*, const void* buf, size_t count, ulong offset, ulong flags);
+
+	int (*ioctl)(struct cdev*, int, void *);
+	off_t (*lseek)(struct cdev*, off_t);
+	int (*open)(struct cdev*, struct filep*);
+	int (*close)(struct cdev*, struct filep*);
+	int (*erase)(struct cdev*, size_t count, unsigned long offset);
+	int (*protect)(struct cdev*, size_t count, unsigned long offset, int prot);
+	int (*memmap)(struct cdev*, void **map, int flags);
+};
+
+struct cdev {
+	struct file_operations *ops;
+	void *priv;
+	struct device_d *dev;
+	struct list_head list;
+	char *name;
+	unsigned long offset;
+	size_t size;
+	unsigned int flags;
+};
+
+int devfs_create(struct cdev *);
+void devfs_remove(struct cdev *);
+struct cdev *cdev_by_name(const char *filename);
+
+#define DEVFS_PARTITION_FIXED		(1 << 0)
+#define DEVFS_PARTITION_READONLY	(1 << 1)
+#define DEVFS_IS_PARTITION		(1 << 2)
+#define DEVFS_RDWR			(1 << 3)
+
+int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
+		int flags, const char *name);
+int devfs_del_partition(const char *name);
+
+struct memory_platform_data {
+	char *name;
+	unsigned int flags;
+};
+
 #endif /* DRIVER_H */
 

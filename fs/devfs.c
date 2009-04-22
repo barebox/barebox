@@ -29,27 +29,53 @@
 #include <errno.h>
 #include <xfuncs.h>
 #include <linux/stat.h>
+#include <ioctl.h>
+#include <nand.h>
+#include <linux/mtd/mtd-abi.h>
+#include <partition.h>
 
-static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+static LIST_HEAD(cdev_list);
+
+struct cdev *cdev_by_name(const char *filename)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev;
 
-	return dev_read(dev, buf, size, f->pos, f->flags);
+	list_for_each_entry(cdev, &cdev_list, list) {
+		if (!strcmp(cdev->name, filename))
+			return cdev;
+	}
+	return NULL;
 }
 
-static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
+int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
 
-	return dev_write(dev, buf, size, f->pos, f->flags);
+	if (!cdev->ops->read)
+		return -ENOSYS;
+
+	return cdev->ops->read(cdev, buf, size,
+			f->pos + cdev->offset, f->flags);
 }
 
-static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
+int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
 {
-	struct device_d *dev = f->inode;
-	off_t ret;
+	struct cdev *cdev = f->inode;
 
-	ret = dev_lseek(dev, pos);
+	if (!cdev->ops->write)
+		return -ENOSYS;
+
+	return cdev->ops->write(cdev, buf, size,
+			f->pos + cdev->offset, f->flags);
+}
+
+off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
+{
+	struct cdev *cdev = f->inode;
+	off_t ret = -1;
+
+	if (cdev->ops->lseek)
+		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
 
 	if (ret != -1)
 		f->pos = pos;
@@ -57,51 +83,100 @@ static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 	return ret;
 }
 
-static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
+int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
 
-	return dev_erase(dev, count, offset);
+	if (!cdev->ops->erase)
+		return -ENOSYS;
+
+	return cdev->ops->erase(cdev, count, offset + cdev->offset);
 }
 
-static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, unsigned long offset, int prot)
+int devfs_protect(struct device_d *_dev, FILE *f, size_t count, unsigned long offset, int prot)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
 
-	return dev_protect(dev, count, offset, prot);
+	if (!cdev->ops->protect)
+		return -ENOSYS;
+
+	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
 }
 
 static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
+	int ret = -ENOSYS;
 
-	return dev_memmap(dev, map, flags);
+	if (!cdev->ops->memmap)
+		return -EINVAL;
+
+	ret = cdev->ops->memmap(cdev, map, flags);
+
+	if (!ret)
+		*map = (void *)((unsigned long)*map + cdev->offset);
+
+	return ret;
 }
 
 static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 {
-	struct device_d *dev = get_device_by_id(filename + 1);
+	struct cdev *cdev;
 
-	if (!dev)
+	cdev = cdev_by_name(filename + 1);
+
+	if (!cdev)
 		return -ENOENT;
 
-	f->size = dev->size;
-	f->inode = dev;
-	return dev_open(dev, f);
+	f->size = cdev->size;
+	f->inode = cdev;
+
+	if (cdev->ops->open)
+		return cdev->ops->open(cdev, f);
+
+	return 0;
 }
 
 static int devfs_close(struct device_d *_dev, FILE *f)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
 
-	return dev_close(dev, f);
+	if (cdev->ops->close)
+		return cdev->ops->close(cdev, f);
+	return 0;
+}
+
+static int partition_ioctl(struct cdev *cdev, int request, void *buf)
+{
+	size_t offset;
+
+	switch (request) {
+	case MEMSETBADBLOCK:
+	case MEMGETBADBLOCK:
+		offset = (off_t)buf;
+		offset += cdev->offset;
+		return cdev->ops->ioctl(cdev, request, (void *)offset);
+	case MEMGETINFO:
+		return cdev->ops->ioctl(cdev, request, buf);
+	default:
+		return -EINVAL;
+	}
 }
 
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 {
-	struct device_d *dev = f->inode;
+	struct cdev *cdev = f->inode;
+	int ret = -EINVAL;
 
-	return dev_ioctl(dev, request, buf);	
+	if (!cdev->ops->ioctl)
+		goto out;
+
+	if (cdev->flags & DEVFS_IS_PARTITION)
+		ret = partition_ioctl(cdev, request, buf);
+	else
+		ret = cdev->ops->ioctl(cdev, request, buf);
+out:
+	return ret;
 }
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
@@ -117,26 +192,22 @@ static DIR* devfs_opendir(struct device_d *dev, const char *pathname)
 
 	dir = xzalloc(sizeof(DIR));
 
-	if (!list_empty(&device_list))
-		dir->priv = list_first_entry(&device_list, struct device_d, list);
+	if (!list_empty(&cdev_list))
+		dir->priv = list_first_entry(&cdev_list, struct cdev, list);
 
 	return dir;
 }
 
 static struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
 {
-	struct device_d *dev = dir->priv;
+	struct cdev *cdev = dir->priv;
 
-	if (!dev)
+	if (!cdev)
 		return NULL;
 
-	list_for_each_entry_from(dev, &device_list, list) {
-		if (!*dev->id)
-			continue;
-		if (!dev->driver)
-			continue;
-		strcpy(dir->d.d_name, dev->id);
-		dir->priv = list_entry(dev->list.next, struct device_d, list);
+	list_for_each_entry_from(cdev, &cdev_list, list) {
+		strcpy(dir->d.d_name, cdev->name);
+		dir->priv = list_entry(cdev->list.next, struct cdev, list);
 		return &dir->d;
 	}
 	return NULL;
@@ -150,20 +221,17 @@ static int devfs_closedir(struct device_d *dev, DIR *dir)
 
 static int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
 {
-	struct device_d *dev;
+	struct cdev *cdev;
 
-	dev = get_device_by_id(filename + 1);
-	if (!dev)
+	cdev = cdev_by_name(filename + 1);
+	if (!cdev)
 		return -ENOENT;
 
-	if (!dev->driver)
-		return -ENXIO;
-
 	s->st_mode = S_IFCHR;
-	s->st_size = dev->size;
-	if (dev->driver->write)
+	s->st_size = cdev->size;
+	if (cdev->ops->write)
 		s->st_mode |= S_IWUSR;
-	if (dev->driver->read)
+	if (cdev->ops->read)
 		s->st_mode |= S_IRUSR;
 
 	return 0;
@@ -205,4 +273,72 @@ static int devfs_init(void)
 }
 
 device_initcall(devfs_init);
+
+int devfs_create(struct cdev *new)
+{
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(new->name);
+	if (cdev)
+		return -EEXIST;
+
+	list_add_tail(&new->list, &cdev_list);
+
+	return 0;
+}
+
+void devfs_remove(struct cdev *cdev)
+{
+	list_del(&cdev->list);
+}
+
+int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
+		int flags, const char *name)
+{
+	struct cdev *cdev, *new;
+
+	cdev = cdev_by_name(name);
+	if (cdev)
+		return -EEXIST;
+
+	cdev = cdev_by_name(devname);
+	if (!cdev)
+		return -ENOENT;
+
+	if (offset + size > cdev->size)
+		return -EINVAL;
+
+	new = xzalloc(sizeof (*new));
+	new->name = strdup(name);
+	new->ops = cdev->ops;
+	new->priv = cdev->priv;
+	new->size = size;
+	new->offset = offset + cdev->offset;
+	new->dev = cdev->dev;
+	new->flags = flags | DEVFS_IS_PARTITION;
+
+	list_add_tail(&new->list, &cdev_list);
+
+	return 0;
+}
+
+int devfs_del_partition(const char *name)
+{
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(name);
+	if (!cdev)
+		return -ENOENT;
+
+	if (!(cdev->flags & DEVFS_IS_PARTITION))
+		return -EINVAL;
+	if (cdev->flags & DEVFS_PARTITION_FIXED)
+		return -EPERM;
+
+	devfs_remove(cdev);
+	free(cdev->name);
+	free(cdev);
+
+	return 0;
+}
 

@@ -32,6 +32,7 @@
 
 typedef struct {
 	struct driver_d driver;
+	struct cdev cdev;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/

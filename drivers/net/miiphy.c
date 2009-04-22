@@ -25,6 +25,7 @@
 #include <init.h>
 #include <miiphy.h>
 #include <clock.h>
+#include <net.h>
 
 int miiphy_restart_aneg(struct miiphy_device *mdev)
 {
@@ -84,12 +85,12 @@ int miiphy_wait_aneg(struct miiphy_device *mdev)
 	start = get_time_ns();
 	do {
 		if (is_timeout(start, 5 * SECOND)) {
-			printf("%s: Autonegotiation timeout\n", mdev->dev.id);
+			printf("%s: Autonegotiation timeout\n", mdev->cdev.name);
 			return -1;
 		}
 
 		if (mdev->read(mdev, mdev->address, MII_BMSR, &status)) {
-			printf("%s: Autonegotiation failed. status: 0x%04x\n", mdev->dev.id, status);
+			printf("%s: Autonegotiation failed. status: 0x%04x\n", mdev->cdev.name, status);
 			return -1;
 		}
 	} while (!(status & BMSR_LSTATUS));
@@ -115,7 +116,7 @@ int miiphy_print_status(struct miiphy_device *mdev)
 	if (mdev->read(mdev, mdev->address, MII_LPA, &lpa) != 0)
 		goto err_out;
 
-	printf("%s: Link is %s", mdev->dev.id,
+	printf("%s: Link is %s", mdev->cdev.name,
 			bmsr & BMSR_LSTATUS ? "up" : "down");
 
 	if (bmcr & BMCR_ANENABLE) {
@@ -130,15 +131,15 @@ int miiphy_print_status(struct miiphy_device *mdev)
 
 	return 0;
 err_out:
-	printf("%s: failed to read\n", mdev->dev.id);
+	printf("%s: failed to read\n", mdev->cdev.name);
 	return -1;
 }
 
-static ssize_t miiphy_read(struct device_d *dev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miiphy_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	uint16_t *buf = _buf;
-	struct miiphy_device *mdev = dev->priv;
+	struct miiphy_device *mdev = cdev->priv;
 
 	while (i > 1) {
 		mdev->read(mdev, mdev->address, offset, buf);
@@ -150,11 +151,11 @@ static ssize_t miiphy_read(struct device_d *dev, void *_buf, size_t count, ulong
 	return count;
 }
 
-static ssize_t miiphy_write(struct device_d *dev, const void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miiphy_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	const uint16_t *buf = _buf;
-	struct miiphy_device *mdev = dev->priv;
+	struct miiphy_device *mdev = cdev->priv;
 
 	while (i > 1) {
 		mdev->write(mdev, mdev->address, offset, *buf);
@@ -166,41 +167,36 @@ static ssize_t miiphy_write(struct device_d *dev, const void *_buf, size_t count
 	return count;
 }
 
+static struct file_operations miiphy_ops = {
+	.read  = miiphy_read,
+	.write = miiphy_write,
+};
+
 static int miiphy_probe(struct device_d *dev)
 {
-	return 0;
-}
+	struct miiphy_device *mdev = dev->priv;
+	char name[MAX_DRIVER_NAME];
 
-static void miiphy_remove(struct device_d *dev)
-{
+	get_free_deviceid(name, "phy");
+	mdev->cdev.name = strdup(name);
+	mdev->cdev.size = 32;
+	mdev->cdev.ops = &miiphy_ops;
+	mdev->cdev.priv = mdev;
+	devfs_create(&mdev->cdev);
+	return 0;
 }
 
 int miiphy_register(struct miiphy_device *mdev)
 {
-	strcpy(mdev->dev.name, "miiphy");
-	get_free_deviceid(mdev->dev.id, "phy");
-	mdev->dev.type = DEVICE_TYPE_MIIPHY;
 	mdev->dev.priv = mdev;
-	mdev->dev.size = 32;
+	strcpy(mdev->dev.name, "miiphy");
 
 	return register_device(&mdev->dev);
-}
-
-void miiphy_unregister(struct miiphy_device *mdev)
-{
-	unregister_device(&mdev->dev);
 }
 
 static struct driver_d miiphy_drv = {
         .name  = "miiphy",
         .probe = miiphy_probe,
-	.remove = miiphy_remove,
-	.open  = dev_open_default,
-	.close = dev_close_default,
-	.read  = miiphy_read,
-	.write = miiphy_write,
-	.lseek = dev_lseek_default,
-	.type  = DEVICE_TYPE_MIIPHY,
 };
 
 static int miiphy_init(void)

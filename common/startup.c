@@ -77,9 +77,13 @@ void early_init (void)
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include <uboot_default_env.h>
 
+static struct memory_platform_data default_env_platform_data = {
+	.name = "defaultenv",
+};
+
 static struct device_d default_env_dev = {
-	.name     = "rom",
-	.id       = "defaultenv",
+	.name		= "mem",
+	.platform_data	= &default_env_platform_data,
 };
 
 static void register_default_env(void)

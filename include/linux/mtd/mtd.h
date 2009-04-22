@@ -9,6 +9,7 @@
 #ifndef __MTD_MTD_H__
 #define __MTD_MTD_H__
 
+#include <driver.h>
 #include <linux/types.h>
 #include <list.h>
 #include <linux/mtd/mtd-abi.h>
@@ -199,7 +200,9 @@ struct mtd_info {
 	int (*get_device) (struct mtd_info *mtd);
 	void (*put_device) (struct mtd_info *mtd);
 
+	struct device_d class_dev;
 	struct device_d *dev;
+	struct cdev cdev;
 };
 
 

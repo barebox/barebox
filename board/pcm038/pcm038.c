@@ -111,9 +111,9 @@ static struct device_d nand_dev = {
 
 static int pcm038_devices_init(void)
 {
-	struct device_d *nand, *dev;
-	char *envdev = "no";
 	int i;
+	struct device_d *nand;
+	char *envdev = "no";
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -192,20 +192,16 @@ static int pcm038_devices_init(void)
 		nand = get_device_by_path("/dev/nand0");
 		if (!nand)
 			break;
-		dev = dev_add_partition(nand, 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
-		if (!dev)
-			break;
-		dev_add_bb_dev(dev, "self0");
+		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
 
-		dev = dev_add_partition(nand, 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
-		if (!dev)
-			break;
-		dev_add_bb_dev(dev, "env0");
+		devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
 		envdev = "NAND";
 		break;
 	default:
-		dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
-		dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");
+		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
+		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 		dev_protect(&cfi_dev, 0x40000, 0, 1);
 		envdev = "NOR";
 	}

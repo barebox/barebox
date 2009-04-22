@@ -42,6 +42,7 @@
 #include <malloc.h>
 #include <cfi_flash_new.h>
 #include <asm/io.h>
+#include <errno.h>
 
 /*
  * This file implements a Common Flash Interface (CFI) driver for U-Boot.
@@ -348,8 +349,8 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 			break;
 #endif
 		default:
-			printf("unsopported vendor\n");
-			break;
+			printf("unsupported vendor\n");
+			return 0;
 		}
 		info->cfi_cmd_set->flash_read_jedec_ids (info);
 		flash_write_cmd (info, 0, info->cfi_offset, FLASH_CMD_CFI);
@@ -505,16 +506,16 @@ flash_sect_t find_sector (flash_info_t * info, ulong addr)
 	return sector;
 }
 
-static int cfi_erase(struct device_d *dev, size_t count, unsigned long offset)
+static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
 {
-        flash_info_t *finfo = (flash_info_t *)dev->priv;
+        flash_info_t *finfo = (flash_info_t *)cdev->priv;
         unsigned long start, end;
         int i, ret = 0;
 
 	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
 
-        start = find_sector(finfo, dev->map_base + offset);
-        end   = find_sector(finfo, dev->map_base + offset + count - 1);
+        start = find_sector(finfo, cdev->dev->map_base + offset);
+        end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
 
         for (i = start; i <= end; i++) {
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
@@ -658,16 +659,16 @@ static int flash_real_protect (flash_info_t * info, long sector, int prot)
 	return retcode;
 }
 
-static int cfi_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
+static int cfi_protect(struct cdev *cdev, size_t count, unsigned long offset, int prot)
 {
-	flash_info_t *finfo = (flash_info_t *)dev->priv;
+	flash_info_t *finfo = (flash_info_t *)cdev->priv;
 	unsigned long start, end;
 	int i, ret = 0;
 
-	debug("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	printf("%s: protect 0x%08x (size %d)\n", __FUNCTION__, cdev->dev->map_base + offset, count);
 
-	start = find_sector(finfo, dev->map_base + offset);
-	end   = find_sector(finfo, dev->map_base + offset + count - 1);
+	start = find_sector(finfo, cdev->dev->map_base + offset);
+	end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
 
 	for (i = start; i <= end; i++) {
 		ret = flash_real_protect (finfo, i, prot);
@@ -679,14 +680,14 @@ out:
 	return ret;
 }
 
-static ssize_t cfi_write(struct device_d* dev, const void* buf, size_t count, unsigned long offset, ulong flags)
+static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        flash_info_t *finfo = (flash_info_t *)dev->priv;
+        flash_info_t *finfo = (flash_info_t *)cdev->priv;
         int ret;
 
-	debug("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, dev->map_base + offset, count);
+	debug("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, cdev->dev->map_base + offset, count);
 
-        ret = write_buff (finfo, buf, dev->map_base + offset, count);
+        ret = write_buff (finfo, buf, cdev->dev->map_base + offset, count);
         return ret == 0 ? count : -1;
 }
 
@@ -934,10 +935,20 @@ int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 	return retval;
 }
 
+struct file_operations cfi_ops = {
+	.read    = mem_read,
+	.write   = cfi_write,
+	.lseek  = dev_lseek_default,
+	.erase   = cfi_erase,
+	.protect = cfi_protect,
+	.memmap  = generic_memmap_ro,
+};
+
 static int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
-        flash_info_t *info = malloc(sizeof(flash_info_t));
+	flash_info_t *info = xzalloc(sizeof(flash_info_t));
+	char name[MAX_DRIVER_NAME];
 
 	dev->priv = (void *)info;
 
@@ -953,11 +964,18 @@ static int cfi_probe (struct device_d *dev)
 	}
 
 	if (info->flash_id == FLASH_UNKNOWN) {
-#ifndef CFG_FLASH_QUIET_TEST
 		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
 			dev->map_base, info->size, info->size << 20);
-#endif /* CFG_FLASH_QUIET_TEST */
+		return -ENODEV;
 	}
+
+	get_free_deviceid(name, "nor");
+	info->cdev.name = strdup(name);
+	info->cdev.size = info->size;
+	info->cdev.dev = dev;
+	info->cdev.ops = &cfi_ops;
+	info->cdev.priv = info;
+	devfs_create(&info->cdev);
 
 	return 0;
 }
@@ -965,15 +983,7 @@ static int cfi_probe (struct device_d *dev)
 static struct driver_d cfi_driver = {
         .name    = "cfi_flash",
         .probe   = cfi_probe,
-        .read    = mem_read,
-        .write   = cfi_write,
-	.lseek  = dev_lseek_default,
-	.open   = dev_open_default,
-	.close  = dev_close_default,
-        .erase   = cfi_erase,
         .info    = cfi_info,
-	.protect = cfi_protect,
-	.memmap  = generic_memmap_ro,
 };
 
 static int cfi_init(void)

@@ -943,29 +943,34 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 	}
 }
 
-ssize_t mem_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
 {
 	ulong size;
-	size = min(count, dev->size - offset);
+	struct device_d *dev;
+
+	if (!cdev->dev)
+		return -1;
+	dev = cdev->dev;
+
+	size = min((ulong)count, dev->size - offset);
 	debug("mem_read: dev->map_base: %p size: %d offset: %d\n",dev->map_base, size, offset);
 	memcpy_sz(buf, (void *)(dev->map_base + offset), size, flags & O_RWSIZE_MASK);
 	return size;
 }
 EXPORT_SYMBOL(mem_read);
 
-ssize_t mem_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
 {
 	ulong size;
-	size = min(count, dev->size - offset);
+	struct device_d *dev;
+
+	if (!cdev->dev)
+		return -1;
+	dev = cdev->dev;
+
+	size = min((ulong)count, dev->size - offset);
 	memcpy_sz((void *)(dev->map_base + offset), buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }
 EXPORT_SYMBOL(mem_write);
-
-int mem_memmap(struct device_d *dev, void **map, int flags)
-{
-	*map = (void *)dev->map_base;
-	return 0;
-}
-EXPORT_SYMBOL(mem_memmap);
 

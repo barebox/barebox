@@ -17,20 +17,8 @@ struct partition {
         struct device_d device;
 
         char name[16];
+	struct cdev cdev;
 };
-
-#ifdef CONFIG_PARTITION
-struct device_d *dev_add_partition(struct device_d *dev, unsigned long offset,
-		size_t size, int flags, const char *name);
-#else
-static inline struct device_d *dev_add_partition(struct device_d *dev,
-		unsigned long offset, size_t size, int flags,
-		const char *name)
-{
-	return 0;
-}
-#endif
-/* FIXME: counterpart missing */
 
 #endif /* __PARTITION_H */
 

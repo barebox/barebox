@@ -518,44 +518,46 @@ U_BOOT_CMD_START(memcpy)
 	U_BOOT_CMD_HELP(cmd_memcpy_help)
 U_BOOT_CMD_END
 
-static struct device_d mem_dev = {
-	.name  = "mem",
-	.id    = "mem",
-	.map_base = 0,
-	.size   = ~0, /* FIXME: should be 0x100000000, ahem... */
+static struct file_operations memops = {
+	.read  = mem_read,
+	.write = mem_write,
+	.memmap = generic_memmap_rw,
+	.lseek = dev_lseek_default,
 };
+
+static int mem_probe(struct device_d *dev)
+{
+	struct memory_platform_data *pdata = dev->platform_data;
+	struct cdev *cdev;
+
+	cdev = xzalloc(sizeof (*cdev));
+	dev->priv = cdev;
+
+	cdev->name = pdata->name;
+	cdev->size = dev->size;
+	cdev->ops = &memops;
+	cdev->dev = dev;
+
+	devfs_create(cdev);
+
+	return 0;
+}
 
 static struct driver_d mem_drv = {
 	.name  = "mem",
-	.probe = dummy_probe,
-	.open  = dev_open_default,
-	.close = dev_close_default,
-	.read  = mem_read,
-	.write = mem_write,
-	.memmap = mem_memmap,
-	.lseek = dev_lseek_default,
+	.probe = mem_probe,
 };
 
-static struct driver_d ram_drv = {
-	.name  = "ram",
-	.probe = dummy_probe,
-	.open  = dev_open_default,
-	.close = dev_close_default,
-	.read  = mem_read,
-	.write = mem_write,
-	.lseek = dev_lseek_default,
-	.memmap = mem_memmap,
-	.type  = DEVICE_TYPE_DRAM,
+static struct memory_platform_data mem_dev_pdata = {
+	.name = "mem",
+	.flags = DEVFS_RDWR,
 };
 
-static struct driver_d rom_drv = {
-	.name  = "rom",
-	.probe = dummy_probe,
-	.open  = dev_open_default,
-	.close = dev_close_default,
-	.read  = mem_read,
-	.memmap = mem_memmap,
-	.lseek = dev_lseek_default,
+static struct device_d mem_dev = {
+	.name  = "mem",
+	.map_base = 0,
+	.size   = ~0, /* FIXME: should be 0x100000000, ahem... */
+	.platform_data = &mem_dev_pdata,
 };
 
 static int mem_init(void)
@@ -566,10 +568,9 @@ static int mem_init(void)
 		return -1;
 	}
 
-	register_device(&mem_dev);
 	register_driver(&mem_drv);
-	register_driver(&ram_drv);
-	register_driver(&rom_drv);
+	register_device(&mem_dev);
+
 	return 0;
 }
 

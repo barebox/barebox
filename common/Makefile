@@ -12,7 +12,6 @@ obj-y += clock.o
 obj-y += command.o
 obj-$(CONFIG_CONSOLE_FULL) += console.o
 obj-$(CONFIG_CONSOLE_SIMPLE) += console_simple.o
-obj-$(CONFIG_PARTITION) += partition.o
 obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o

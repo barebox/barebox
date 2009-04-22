@@ -42,6 +42,18 @@ EXPORT_SYMBOL(driver_list);
 
 static LIST_HEAD(active);
 
+struct device_d *device_by_name(const char *name)
+{
+	struct device_d *dev;
+
+	for_each_device(dev) {
+		if(!strcmp(name, dev->name))
+			return dev;
+	}
+
+	return NULL;
+}
+
 struct device_d *get_device_by_id(const char *id)
 {
 	struct device_d *dev;
@@ -217,89 +229,29 @@ struct device_d *get_device_by_path(const char *path)
 }
 EXPORT_SYMBOL(get_device_by_path);
 
-ssize_t dev_read(struct device_d *dev, void *buf, size_t count, unsigned long offset, ulong flags)
-{
-	if (dev->driver->read)
-		return dev->driver->read(dev, buf, count, offset, flags);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
-ssize_t dev_write(struct device_d *dev, const void *buf, size_t count, unsigned long offset, ulong flags)
-{
-	if (dev->driver->write)
-		return dev->driver->write(dev, buf, count, offset, flags);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
-off_t dev_lseek(struct device_d *dev, off_t offset)
-{
-	if (dev->driver->lseek)
-		return dev->driver->lseek(dev, offset);
-	errno = -ENOSYS;
-	return -1;
-}
-
-int dev_open(struct device_d *dev, struct filep *f)
-{
-	if (dev->driver->open)
-		return dev->driver->open(dev, f);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
-int dev_close(struct device_d *dev, struct filep *f)
-{
-	if (dev->driver->close)
-		return dev->driver->close(dev, f);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
-int dev_ioctl(struct device_d *dev, int request, void *buf)
-{
-	if (dev->driver->ioctl)
-		return dev->driver->ioctl(dev, request, buf);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
-int dev_erase(struct device_d *dev, size_t count, unsigned long offset)
-{
-	if (dev->driver->erase)
-		return dev->driver->erase(dev, count, offset);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
-
 int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
-	if (dev->driver->protect)
-		return dev->driver->protect(dev, count, offset, prot);
-	errno = -ENOSYS;
-	return -ENOSYS;
+	printf("%s: currently broken\n", __func__);
+	return -EINVAL;
 }
 
-int dev_memmap(struct device_d *dev, void **map, int flags)
+int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 {
-	if (dev->driver->memmap)
-		return dev->driver->memmap(dev, map, flags);
-	errno = -ENOSYS;
-	return -ENOSYS;
-}
+	if (!cdev->dev)
+		return -EINVAL;
 
-int generic_memmap_ro(struct device_d *dev, void **map, int flags)
-{
 	if (flags & PROT_WRITE)
 		return -EACCES;
-	*map = (void *)dev->map_base;
+	*map = (void *)cdev->dev->map_base;
 	return 0;
 }
 
-int generic_memmap_rw(struct device_d *dev, void **map, int flags)
+int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 {
-	*map = (void *)dev->map_base;
+	if (!cdev->dev)
+		return -EINVAL;
+
+	*map = (void *)cdev->dev->map_base;
 	return 0;
 }
 

@@ -20,7 +20,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-
 #include <common.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/mtd.h>
@@ -31,9 +30,9 @@
 #include <ioctl.h>
 #include <nand.h>
 
-static 	ssize_t nand_read(struct device_d *dev, void* buf, size_t count, ulong offset, ulong flags)
+static 	ssize_t nand_read(struct cdev *cdev, void* buf, size_t count, ulong offset, ulong flags)
 {
-	struct mtd_info *info = dev->priv;
+	struct mtd_info *info = cdev->priv;
 	size_t retlen;
 	int ret;
 
@@ -41,16 +40,18 @@ static 	ssize_t nand_read(struct device_d *dev, void* buf, size_t count, ulong o
 
 	ret = info->read(info, offset, count, &retlen, buf);
 
-	if(ret)
+	if(ret) {
+		printf("err %d\n", ret);
 		return ret;
+	}
 	return retlen;
 }
 
 #define NOTALIGNED(x) (x & (info->writesize - 1)) != 0
 
-static ssize_t nand_write(struct device_d* dev, const void* buf, size_t _count, ulong offset, ulong flags)
+static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulong offset, ulong flags)
 {
-	struct mtd_info *info = dev->priv;
+	struct mtd_info *info = cdev->priv;
 	size_t retlen, now;
 	int ret;
 	void *wrbuf = NULL;
@@ -86,9 +87,9 @@ out:
 	return ret ? ret : _count;
 }
 
-static int nand_ioctl(struct device_d *dev, int request, void *buf)
+static int nand_ioctl(struct cdev *cdev, int request, void *buf)
 {
-	struct mtd_info *info = dev->priv;
+	struct mtd_info *info = cdev->priv;
 	struct mtd_info_user *user = buf;
 
 	switch (request) {
@@ -113,9 +114,9 @@ static int nand_ioctl(struct device_d *dev, int request, void *buf)
 	return 0;
 }
 
-static ssize_t nand_erase(struct device_d *dev, size_t count, unsigned long offset)
+static ssize_t nand_erase(struct cdev *cdev, size_t count, unsigned long offset)
 {
-	struct mtd_info *info = dev->priv;
+	struct mtd_info *info = cdev->priv;
 	struct erase_info erase;
 	int ret;
 
@@ -143,6 +144,14 @@ static ssize_t nand_erase(struct device_d *dev, size_t count, unsigned long offs
 	return 0;
 }
 
+static struct file_operations nand_ops = {
+	.read   = nand_read,
+	.write  = nand_write,
+	.ioctl  = nand_ioctl,
+	.lseek  = dev_lseek_default,
+	.erase  = nand_erase,
+};
+
 static int nand_device_probe(struct device_d *dev)
 {
 	return 0;
@@ -151,13 +160,6 @@ static int nand_device_probe(struct device_d *dev)
 static struct driver_d nand_device_driver = {
 	.name   = "nand_device",
 	.probe  = nand_device_probe,
-	.read   = nand_read,
-	.write  = nand_write,
-	.ioctl  = nand_ioctl,
-	.open   = dev_open_default,
-	.close  = dev_close_default,
-	.lseek  = dev_lseek_default,
-	.erase  = nand_erase,
 	.type	= DEVICE_TYPE_NAND,
 };
 
@@ -170,36 +172,27 @@ static int nand_init(void)
 
 device_initcall(nand_init);
 
-int add_mtd_device(struct mtd_info *mtd) {
-	struct device_d *dev;
-	int ret;
+int add_mtd_device(struct mtd_info *mtd)
+{
+	struct device_d *dev = &mtd->class_dev;
+	char name[MAX_DRIVER_NAME];
 
-	dev = xzalloc(sizeof(*dev));
+	get_free_deviceid(name, "nand");
 
-	strcpy(dev->name, "nand_device");
-	get_free_deviceid(dev->id, "nand");
+	mtd->cdev.ops = &nand_ops;
+	mtd->cdev.size = mtd->size;
+	mtd->cdev.name = strdup(name);
+	mtd->cdev.dev = dev;
+	mtd->cdev.priv = mtd;
 
-	dev->size = mtd->size;
-	dev->type = DEVICE_TYPE_NAND;
-	dev->priv = mtd;
-	mtd->dev = dev;
-
-	ret = register_device(dev);
-	if (ret)
-		goto out;
+	devfs_create(&mtd->cdev);
 
 	return 0;
-
-out:
-	free(dev);
-	return ret;
 }
 
 int del_mtd_device (struct mtd_info *mtd)
 {
-	unregister_device(mtd->dev);
-	free(mtd->dev);
-
+	unregister_device(&mtd->class_dev);
 	return 0;
 }
 

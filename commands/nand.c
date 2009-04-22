@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -31,40 +30,45 @@
 #include <nand.h>
 #include <linux/mtd/mtd-abi.h>
 #include <fcntl.h>
+#include <libgen.h>
 
 struct nand_bb {
-	struct device_d device;
-
-	struct device_d *physdev;
-
+	char *devname;
+	char *name;
 	int open;
 
 	struct mtd_info_user info;
 
+	size_t raw_size;
+	size_t size;
+	int fd;
 	off_t offset;
+
+	struct cdev cdev;
 };
 
-static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
+static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	unsigned long offset, ulong flags)
 {
-	struct nand_bb *bb = dev->priv;
+	struct nand_bb *bb = cdev->priv;
 	int ret, bytes = 0, now;
 
 	debug("%s %d %d\n", __func__, offset, count);
 
 	while(count) {
-		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
+		ret = ioctl(bb->fd, MEMGETBADBLOCK, (void *)bb->offset);
 		if (ret < 0)
 			return ret;
 
 		if (ret) {
-			debug("skipping bad block at 0x%08x\n", bb->offset);
+			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 		}
 
 		now = min(count, (size_t)(bb->info.erasesize -
 				(bb->offset % bb->info.erasesize)));
-		ret = dev_read(bb->physdev, buf, now, bb->offset, flags);
+		lseek(bb->fd, bb->offset, SEEK_SET);
+		ret = read(bb->fd, buf, now);
 		if (ret < 0)
 			return ret;
 		buf += now;
@@ -76,16 +80,16 @@ static ssize_t nand_bb_read(struct device_d *dev, void *buf, size_t count,
 	return bytes;
 }
 
-static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count,
+static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
 	unsigned long offset, ulong flags)
 {
-	struct nand_bb *bb = dev->priv;
+	struct nand_bb *bb = cdev->priv;
 	int ret, bytes = 0, now;
 
-	debug("%s %d %d\n", __func__, offset, count);
+	debug("%s offset: 0x%08x count: 0x%08x\n", __func__, offset, count);
 
 	while(count) {
-		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)bb->offset);
+		ret = ioctl(bb->fd, MEMGETBADBLOCK, (void *)bb->offset);
 		if (ret < 0)
 			return ret;
 
@@ -96,7 +100,8 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 
 		now = min(count, (size_t)(bb->info.erasesize -
 				(bb->offset % bb->info.erasesize)));
-		ret = dev_write(bb->physdev, buf, now, bb->offset, flags);
+		lseek(bb->fd, offset, SEEK_SET);
+		ret = write(bb->fd, buf, now);
 		if (ret < 0)
 			return ret;
 		buf += now;
@@ -108,21 +113,21 @@ static ssize_t nand_bb_write(struct device_d *dev, const void *buf, size_t count
 	return bytes;
 }
 
-static int nand_bb_erase(struct device_d *dev, size_t count, unsigned long offset)
+static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 {
-	struct nand_bb *bb = dev->priv;
+	struct nand_bb *bb = cdev->priv;
 
-	if (offset != 0 || count != dev->size) {
+	if (offset != 0 || count != bb->raw_size) {
 		printf("can only erase whole device\n");
 		return -EINVAL;
 	}
 
-	return dev_erase(bb->physdev, dev->size, 0);
+	return erase(bb->fd, bb->raw_size, 0);
 }
 
-static int nand_bb_open(struct device_d *dev, struct filep *f)
+static int nand_bb_open(struct cdev *cdev, struct filep *f)
 {
-	struct nand_bb *bb = dev->priv;
+	struct nand_bb *bb = cdev->priv;
 
 	if (bb->open)
 		return -EBUSY;
@@ -133,9 +138,9 @@ static int nand_bb_open(struct device_d *dev, struct filep *f)
 	return 0;
 }
 
-static int nand_bb_close(struct device_d *dev, struct filep *f)
+static int nand_bb_close(struct cdev *cdev, struct filep *f)
 {
-	struct nand_bb *bb = dev->priv;
+	struct nand_bb *bb = cdev->priv;
 
 	bb->open = 0;
 
@@ -147,12 +152,12 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 	ulong pos = 0;
 	int ret;
 
-	while (pos < bb->physdev->size) {
-		ret = dev_ioctl(bb->physdev, MEMGETBADBLOCK, (void *)pos);
+	while (pos < bb->raw_size) {
+		ret = ioctl(bb->fd, MEMGETBADBLOCK, (void *)pos);
 		if (ret < 0)
 			return ret;
 		if (!ret)
-			bb->device.size += bb->info.erasesize;
+			bb->cdev.size += bb->info.erasesize;
 
 		pos += bb->info.erasesize;
 	}
@@ -160,39 +165,13 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 	return 0;
 }
 
-static int nand_bb_probe(struct device_d *dev)
-{
-	struct nand_bb *bb = dev->priv;
-	int ret;
-
-	ret = dev_ioctl(bb->physdev, MEMGETINFO, &bb->info);
-	if (ret)
-		return ret;
-	return nand_bb_calc_size(bb);
-}
-
-static void nand_bb_remove(struct device_d *dev)
-{
-}
-
-struct driver_d nand_bb_driver = {
-	.name  	= "nand_bb",
-	.probe 	= nand_bb_probe,
-	.remove = nand_bb_remove,
+static struct file_operations nand_bb_ops = {
 	.open   = nand_bb_open,
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,
 	.write 	= nand_bb_write,
 	.erase	= nand_bb_erase,
-	.type	= DEVICE_TYPE_NAND_BB,
 };
-
-static int nand_bb_init(void)
-{
-	return register_driver(&nand_bb_driver);
-}
-
-device_initcall(nand_bb_init);
 
 /**
  * Add a bad block aware device ontop of another (NAND) device 
@@ -200,39 +179,53 @@ device_initcall(nand_bb_init);
  * @param[in] name Partition name (can be obtained with devinfo command)
  * @return The device representing the new partition.
  */
-struct device_d *dev_add_bb_dev(struct device_d *dev, const char *name)
+int dev_add_bb_dev(char *path, const char *name)
 {
 	struct nand_bb *bb;
+	int ret;
+	struct stat s;
 
 	bb = xzalloc(sizeof(*bb));
-
+	bb->devname = asprintf("/dev/%s", basename(path));
 	if (name)
-		strcpy(bb->device.id, name);
+		bb->cdev.name = strdup(name);
 	else
-		sprintf(bb->device.id, "%s.bb", dev->id);
-	strcpy(bb->device.name, "nand_bb");
-	bb->device.priv = bb;
-	bb->device.size = 0;
-	bb->device.type	= DEVICE_TYPE_NAND_BB;
-	bb->physdev = dev;
+		bb->cdev.name = asprintf("%s.bb", basename(path));
 
-	if (register_device(&bb->device))
+	ret = stat(bb->devname, &s);
+	if (ret)
 		goto free_out;
 
-	dev_add_child(dev, &bb->device);
+	bb->raw_size = s.st_size;
 
-	return &bb->device;
+	bb->fd = open(bb->devname, O_RDWR);
+	if (bb->fd < 0) {
+		ret = -ENODEV;
+		goto free_out;
+	}
+
+	ret = ioctl(bb->fd, MEMGETINFO, &bb->info);
+	if (ret)
+		goto free_out;
+
+	nand_bb_calc_size(bb);
+	bb->cdev.ops = &nand_bb_ops;
+	bb->cdev.priv = bb;
+
+	devfs_create(&bb->cdev);
+
+	return 0;
 
 free_out:
 	free(bb);
-	return 0;
+	return ret;
 }
 
 #define NAND_ADD (1 << 0)
 #define NAND_DEL (1 << 1)
 #define NAND_MARKBAD (1 << 2)
 
-static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt;
 	struct device_d *dev;
@@ -262,13 +255,7 @@ static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	if (command & NAND_ADD) {
 		while (optind < argc) {
-			dev = get_device_by_path(argv[optind]);
-			if (!dev) {
-				printf("no such device: %s\n", argv[optind]);
-				return 1;
-			}
-
-			if (!dev_add_bb_dev(dev, NULL))
+			if (dev_add_bb_dev(argv[optind], NULL))
 				return 1;
 
 			optind++;
@@ -277,17 +264,20 @@ static int do_nand (cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	if (command & NAND_DEL) {
 		while (optind < argc) {
-			dev = get_device_by_path(argv[optind]);
-			if (!dev) {
+			struct cdev *cdev;
+			cdev = cdev_by_name(basename(argv[optind]));
+			if (!cdev) {
 				printf("no such device: %s\n", argv[optind]);
 				return 1;
 			}
+			dev = cdev->dev;
 
 			if (dev->type != DEVICE_TYPE_NAND_BB) {
 				printf("not a nand bb device: %s\n", dev);
 				return 1;
 			}
 			bb = dev->priv;
+			close(bb->fd);
 			unregister_device(dev);
 			free(bb);
 			optind++;

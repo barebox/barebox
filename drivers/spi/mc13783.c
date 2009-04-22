@@ -206,14 +206,17 @@ static int pmic_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct file_operations pmic_fops = {
+	.open	= dev_open_default,
+	.lseek	= dev_lseek_default,
+	.close	= dev_close_default,
+	.read	= pmic_read,
+	.write	= pmic_write,
+};
+
 static struct driver_d pmic_driver = {
 	.name  = "mc13783",
 	.probe = pmic_probe,
-	.open = dev_open_default,
-	.lseek = dev_lseek_default,
-	.close = dev_close_default,
-	.read = pmic_read,
-	.write = pmic_write,
 };
 
 static int pmic_init(void)

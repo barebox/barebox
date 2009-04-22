@@ -35,20 +35,24 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
 
 	.map_base = 0x10000000,
 	.size     = 16 * 1024 * 1024,
 };
 
+static struct memory_platform_data sdram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
+
 static struct device_d sdram_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+	.name     = "mem",
 
 	.map_base = 0x08000000,
 	.size     = 16 * 1024 * 1024,
 
 	.type     = DEVICE_TYPE_DRAM,
+	.platform_data = &sdram_pdata,
 };
 
 static struct dm9000_platform_data dm9000_data = {
@@ -93,8 +97,8 @@ static int scb9328_devices_init(void) {
 	register_device(&sdram_dev);
 	register_device(&dm9000_dev);
 
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	armlinux_set_bootparams((void *)0x08000100);

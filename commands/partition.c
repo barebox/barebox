@@ -37,97 +37,27 @@
 #include <partition.h>
 #include <errno.h>
 #include <xfuncs.h>
+#include <fs.h>
+#include <linux/stat.h>
+#include <libgen.h>
 
-static int dev_del_partitions(struct device_d *physdev)
-{
-	struct device_d *child, *tmp;
-	struct partition *part;
-	int ret;
-
-	device_for_each_child_safe(physdev, tmp, child) {
-		if (child->type != DEVICE_TYPE_PARTITION) {
-			printf("not a partition: %s\n", child->id);
-			continue;
-		}
-
-		part = child->type_data;
-
-		if (part->flags & PARTITION_FIXED) {
-			debug("Skip fixed partition: %s\n", child->id);
-			continue;
-		}
-
-		ret = unregister_device(child);
-		if (ret) {
-			printf("delete partition `%s' failed: %s\n", child->id, errno_str());
-			return errno;
-		}
-
-		debug("deleted partition: %s\n", child->id);
-
-		free(part);
-	}
-
-	return 0;
-}
-
-static int dev_check_fixed(struct device_d *physdev, struct partition *new_part)
-{
-	struct device_d *child;
-
-	device_for_each_child(physdev, child) {
-		struct partition *part = child->type_data;
-
-		debug("check aginst partition: %s -", child->id);
-
-		if (!(part->flags & PARTITION_FIXED)) {
-			debug("  not fixed, ok\n");
-			continue;
-		}
-
-		if  (new_part->offset == part->offset &&		/* new_part is exactly part */
-		    ((new_part->device.size==0) || (new_part->device.size == part->device.size)) ) {
-			debug("  fixed, but same size, ok\n");
-			continue;
-		}
-
-		if ((new_part->offset >= part->offset &&
-		     new_part->offset < part->offset + part->device.size) ||
-		    (new_part->offset + new_part->device.size > part->offset &&
-		     new_part->offset + new_part->device.size <= part->offset + part->device.size)) {
-			printf(
-				" failed\n"
-				" partition spec %s \n"
-				"   violates fixed partition %s\n", new_part->name, child->id);
-			errno = -EINVAL;
-			return errno;
-		}
-		else
-			debug("  fixed and within limit?, ok\n");
-	}
-
-	return 0;
-}
-
-static int mtd_part_do_parse_one(struct partition *part, const char *partstr,
-				 char **endp)
+static int mtd_part_do_parse_one(char *devname, const char *partstr,
+				 char **endp, unsigned long offset,
+				 off_t devsize, size_t *retsize)
 {
 	ulong size;
 	char *end;
-	char buf[MAX_DRIVER_NAME];
+	char buf[PATH_MAX];
+	unsigned long flags = 0;
+	int ret;
 
-	memset(buf, 0, MAX_DRIVER_NAME);
+	memset(buf, 0, PATH_MAX);
 
 	if (*partstr == '-') {
-		size = part->physdev->size - part->offset;
+		size = devsize - offset;
 		end = (char *)partstr + 1;
 	} else {
 		size = strtoul_suffix(partstr, &end, 0);
-	}
-
-	if (size + part->offset > part->physdev->size) {
-		printf("partition %s end is beyond device\n", part->name);
-		return -EINVAL;
 	}
 
 	partstr = end;
@@ -139,98 +69,78 @@ static int mtd_part_do_parse_one(struct partition *part, const char *partstr,
 			printf("could not find matching ')'\n");
 			return -EINVAL;
 		}
-		if (end - partstr >= MAX_DRIVER_NAME) {
-			printf("device name too long\n");
-			return -EINVAL;
-		}
 
-		memcpy(part->name, partstr, end - partstr);
+		sprintf(buf, "%s.", devname);
+		memcpy(buf + strlen(buf), partstr, end - partstr);
+
 		end++;
+	}
+
+	if (size + offset > devsize) {
+		printf("%s: partition end is beyond device\n", buf);
+		return -EINVAL;
 	}
 
 	partstr = end;
 
 	if (*partstr == 'r' && *(partstr + 1) == 'o') {
-		part->flags |= PARTITION_READONLY;
+		flags |= PARTITION_READONLY;
 		end = (char *)(partstr + 2);
 	}
 
 	if (endp)
 		*endp = end;
 
-	strcpy(part->device.name, "partition");
-	part->device.size = size;
+	*retsize = size;
 
-	return 0;
+	ret = devfs_add_partition(devname, offset, size, flags, buf);
+	if (ret)
+		printf("cannot create %s: %s\n", buf, strerror(-ret));
+	return ret;
 }
 
 static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
-	struct partition *part;
-	struct device_d *dev;
+	char *devname;
 	char *endp;
-	int num = 0;
-	unsigned long offset;
+	unsigned long offset = 0;
+	off_t devsize;
+	struct stat s;
 
 	if (argc != 3) {
 		printf("Usage:\n  %s\n", cmdtp->usage);
 		return 1;
 	}
 
-	dev = get_device_by_path(argv[1]);
-	if (!dev) {
-		printf("no such device: %s\n", argv[1]);
+	if (stat(argv[1], &s)) {
+		perror("addpart");
 		return 1;
 	}
+	devsize = s.st_size;
 
-	dev_del_partitions(dev);
-
-	offset = 0;
+	devname = basename(argv[1]);
 
 	endp = argv[2];
 
 	while (1) {
-		part = xzalloc(sizeof(struct partition));
+		size_t size = 0;
 
-		part->offset = offset;
-		part->physdev = dev;
-		part->num = num;
-		part->device.map_base = dev->map_base + offset;
-		part->device.type_data = part;
-		part->device.type = DEVICE_TYPE_PARTITION; 
+		if (mtd_part_do_parse_one(devname, endp, &endp, offset, devsize, &size))
+			return 1;
 
-		if (mtd_part_do_parse_one(part, endp, &endp))
-			goto free_out;
-
-		if (dev_check_fixed(dev, part))
-			goto free_out;
-
-		sprintf(part->device.id, "%s.%s", dev->id, part->name);
-		if (register_device(&part->device))
-			goto free_out;
-
-		dev_add_child(dev, &part->device);
-
-		offset += part->device.size;
-		num++;
+		offset += size;
 
 		if (!*endp)
 			break;
 
 		if (*endp != ',') {
 			printf("parse error\n");
-			goto err_out;
+			return 1;
 		}
 		endp++;
 	}
 
 	return 0;
-
-free_out:
-	free(part);
-err_out:
-	dev_del_partitions(dev);
-	return 1;
 }
 
 static const __maybe_unused char cmd_addpart_help[] =
@@ -275,38 +185,33 @@ U_BOOT_CMD_END
 
 static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 {
-	struct device_d *dev;
+	int i, err;
 
-	if (argc != 2) {
-		printf("Usage:\n%s\n", cmdtp->usage);
-		return 1;
+	for (i = 1; i < argc; i++) {
+		err = devfs_del_partition(basename(argv[i]));
+		if (err) {
+			printf("cannot delete %s: %s\n", argv[i], strerror(-err));
+			break;
+		}
 	}
 
-	dev = get_device_by_path(argv[1]);
-	if (!dev) {
-		printf("no such device: %s\n", argv[1]);
-		return 1;
-	}
-
-	dev_del_partitions(dev);
-
-	return 0;
+	return 1;
 }
 
 static const __maybe_unused char cmd_delpart_help[] =
-"Usage: delpart <device>\n"
+"Usage: delpart FILE...\n"
 "Delete partitions previously added to a device with addpart.\n";
 
 U_BOOT_CMD_START(delpart)
-	.maxargs = 2,
+	.maxargs = CONFIG_MAXARGS,
 	.cmd = do_delpart,
-	.usage = "delete a partition table from a device",
+	.usage = "delete partition(s)",
 	U_BOOT_CMD_HELP(cmd_delpart_help)
 U_BOOT_CMD_END
 
 /** @page delpart_command delpart Delete a partition
  *
- * Usage is: delpart \<device>
+ * Usage is: delpart \<partions>
  *
  * Delete a partition previously added to a device with addpart.
  */

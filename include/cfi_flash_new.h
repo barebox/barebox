@@ -59,6 +59,7 @@ typedef struct {
 	ushort	cfi_version;		/* cfi version				*/
 	ushort	cfi_offset;		/* offset for cfi query 		*/
 	struct cfi_cmd_set *cfi_cmd_set;
+	struct cdev cdev;
 } flash_info_t;
 
 struct cfi_cmd_set {

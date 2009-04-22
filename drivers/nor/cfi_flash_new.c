@@ -490,34 +490,6 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 	return (info->size);
 }
 
-static int cfi_probe (struct device_d *dev)
-{
-	unsigned long size = 0;
-        flash_info_t *info = malloc(sizeof(flash_info_t));
-
-	dev->priv = (void *)info;
-
-	printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
-
-	/* Init: no FLASHes known */
-	info->flash_id = FLASH_UNKNOWN;
-	size += info->size = flash_get_size(info, dev->map_base);
-
-	if (dev->size == 0) {
-		printf("cfi_probe: size : 0x%08x\n", info->size);
-		dev->size = info->size;
-	}
-
-	if (info->flash_id == FLASH_UNKNOWN) {
-#ifndef CFG_FLASH_QUIET_TEST
-		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
-			dev->map_base, info->size, info->size << 20);
-#endif /* CFG_FLASH_QUIET_TEST */
-	}
-
-	return 0;
-}
-
 /* loop through the sectors from the highest address
  * when the passed address is greater or equal to the sector address
  * we have a match
@@ -808,27 +780,6 @@ static void cfi_info (struct device_d* dev)
 	return;
 }
 
-static struct driver_d cfi_driver = {
-        .name    = "cfi_flash",
-        .probe   = cfi_probe,
-        .read    = mem_read,
-        .write   = cfi_write,
-	.lseek  = dev_lseek_default,
-	.open   = dev_open_default,
-	.close  = dev_close_default,
-        .erase   = cfi_erase,
-        .info    = cfi_info,
-	.protect = cfi_protect,
-	.memmap  = generic_memmap_ro,
-};
-
-static int cfi_init(void)
-{
-        return register_driver(&cfi_driver);
-}
-
-device_initcall(cfi_init);
-
 #if 0
 /*
  * flash_read_user_serial - read the OneTimeProgramming cells
@@ -982,4 +933,53 @@ int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
 
 	return retval;
 }
+
+static int cfi_probe (struct device_d *dev)
+{
+	unsigned long size = 0;
+        flash_info_t *info = malloc(sizeof(flash_info_t));
+
+	dev->priv = (void *)info;
+
+	printf("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+
+	/* Init: no FLASHes known */
+	info->flash_id = FLASH_UNKNOWN;
+	size += info->size = flash_get_size(info, dev->map_base);
+
+	if (dev->size == 0) {
+		printf("cfi_probe: size : 0x%08x\n", info->size);
+		dev->size = info->size;
+	}
+
+	if (info->flash_id == FLASH_UNKNOWN) {
+#ifndef CFG_FLASH_QUIET_TEST
+		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
+			dev->map_base, info->size, info->size << 20);
+#endif /* CFG_FLASH_QUIET_TEST */
+	}
+
+	return 0;
+}
+
+static struct driver_d cfi_driver = {
+        .name    = "cfi_flash",
+        .probe   = cfi_probe,
+        .read    = mem_read,
+        .write   = cfi_write,
+	.lseek  = dev_lseek_default,
+	.open   = dev_open_default,
+	.close  = dev_close_default,
+        .erase   = cfi_erase,
+        .info    = cfi_info,
+	.protect = cfi_protect,
+	.memmap  = generic_memmap_ro,
+};
+
+static int cfi_init(void)
+{
+        return register_driver(&cfi_driver);
+}
+
+device_initcall(cfi_init);
 

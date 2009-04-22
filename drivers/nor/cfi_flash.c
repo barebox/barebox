@@ -301,35 +301,6 @@ static ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offse
 	return retval;
 }
 
-
-/*-----------------------------------------------------------------------
- */
-static int cfi_probe (struct device_d *dev)
-{
-	unsigned long size = 0;
-	flash_info_t *info = malloc(sizeof(flash_info_t));
-
-	dev->priv = (void *)info;
-
-	debug ("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
-
-	/* Init: no FLASHes known */
-	info->flash_id = FLASH_UNKNOWN;
-	size += info->size = flash_get_size(info, dev->map_base);
-
-	if (dev->size > size) {
-		dev_dbg(dev, "limiting size from 0x%08x to 0x%08x\n", dev->size, size);
-		dev->size = size;
-	}
-
-	if (info->flash_id == FLASH_UNKNOWN) {
-		debug ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
-			dev->map_base, info->size, info->size << 20);
-	}
-
-	return 0;
-}
-
 static int flash_find_sector(flash_info_t * info, unsigned long adr)
 {
 	int i;
@@ -524,27 +495,6 @@ static void cfi_info (struct device_d* dev)
 	putchar('\n');
 	return;
 }
-
-static struct driver_d cfi_driver = {
-	.name   = "cfi_flash",
-	.probe  = cfi_probe,
-	.read   = mem_read,
-	.write  = cfi_write,
-	.lseek  = dev_lseek_default,
-	.open   = dev_open_default,
-	.close  = dev_close_default,
-	.erase  = cfi_erase,
-	.protect= cfi_protect,
-	.memmap = generic_memmap_ro,
-	.info   = cfi_info,
-};
-
-static int cfi_init(void)
-{
-	return register_driver(&cfi_driver);
-}
-
-device_initcall(cfi_init);
 
 /*-----------------------------------------------------------------------
  * Copy memory to flash, returns:
@@ -1486,6 +1436,53 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 	}
 }
 #endif /* CONFIG_CFI_BUFFER_WRITE */
+
+static int cfi_probe (struct device_d *dev)
+{
+	unsigned long size = 0;
+	flash_info_t *info = malloc(sizeof(flash_info_t));
+
+	dev->priv = (void *)info;
+
+	debug ("cfi_probe: %s base: 0x%08x size: 0x%08x\n", dev->name, dev->map_base, dev->size);
+
+	/* Init: no FLASHes known */
+	info->flash_id = FLASH_UNKNOWN;
+	size += info->size = flash_get_size(info, dev->map_base);
+
+	if (dev->size > size) {
+		dev_dbg(dev, "limiting size from 0x%08x to 0x%08x\n", dev->size, size);
+		dev->size = size;
+	}
+
+	if (info->flash_id == FLASH_UNKNOWN) {
+		debug ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
+			dev->map_base, info->size, info->size << 20);
+	}
+
+	return 0;
+}
+
+static struct driver_d cfi_driver = {
+	.name   = "cfi_flash",
+	.probe  = cfi_probe,
+	.read   = mem_read,
+	.write  = cfi_write,
+	.lseek  = dev_lseek_default,
+	.open   = dev_open_default,
+	.close  = dev_close_default,
+	.erase  = cfi_erase,
+	.protect= cfi_protect,
+	.memmap = generic_memmap_ro,
+	.info   = cfi_info,
+};
+
+static int cfi_init(void)
+{
+	return register_driver(&cfi_driver);
+}
+
+device_initcall(cfi_init);
 
 /**
  * @file

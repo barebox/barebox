@@ -198,7 +198,7 @@ static void __nand_boot_init wait_op_done(struct imx_nand_host *host, u16 param)
  */
 static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
 {
-	DEBUG(MTD_DEBUG_LEVEL3, "send_cmd(host, 0x%x)\n", cmd);
+	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_cmd(host, 0x%x)\n", cmd);
 
 	writew(cmd, host->regs + NFC_FLASH_CMD);
 	writew(NFC_CMD, host->regs + NFC_CONFIG2);
@@ -217,7 +217,7 @@ static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
  */
 static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
 {
-	DEBUG(MTD_DEBUG_LEVEL3, "send_addr(host, 0x%x %d)\n", addr, islast);
+	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_addr(host, 0x%x %d)\n", addr, islast);
 
 	writew(addr, host->regs + NFC_FLASH_ADDR);
 	writew(NFC_ADDR, host->regs + NFC_CONFIG2);
@@ -236,7 +236,7 @@ static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
 static void send_prog_page(struct imx_nand_host *host, u8 buf_id,
 		int spare_only)
 {
-	DEBUG(MTD_DEBUG_LEVEL3, "send_prog_page (%d)\n", spare_only);
+	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_prog_page (%d)\n", spare_only);
 
 	/* NANDFC buffer 0 is used for page read/write */
 
@@ -268,7 +268,7 @@ static void send_prog_page(struct imx_nand_host *host, u8 buf_id,
 static void __nand_boot_init send_read_page(struct imx_nand_host *host,
 		u8 buf_id, int spare_only)
 {
-	DEBUG(MTD_DEBUG_LEVEL3, "send_read_page (%d)\n", spare_only);
+	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_read_page (%d)\n", spare_only);
 
 	/* NANDFC buffer 0 is used for page read/write */
 	writew(buf_id, host->regs + NFC_BUF_ADDR);
@@ -403,7 +403,7 @@ static int imx_nand_correct_data(struct mtd_info *mtd, u_char * dat,
 	u16 ecc_status = readw(host->regs + NFC_ECC_STATUS_RESULT);
 
 	if (((ecc_status & 0x3) == 2) || ((ecc_status >> 2) == 2)) {
-		DEBUG(MTD_DEBUG_LEVEL0,
+		MTD_DEBUG(MTD_DEBUG_LEVEL0,
 		      "MXC_NAND: HWECC uncorrectable 2-bit ECC error\n");
 		return -1;
 	}
@@ -475,7 +475,7 @@ static u16 imx_nand_read_word(struct mtd_info *mtd)
 	u16 rdword, ret;
 	volatile u16 *p;
 
-	DEBUG(MTD_DEBUG_LEVEL3,
+	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "imx_nand_read_word(col = %d)\n", host->col_addr);
 
 	col = host->col_addr;
@@ -531,7 +531,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 	int col;
 	int i = 0;
 
-	DEBUG(MTD_DEBUG_LEVEL3,
+	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "imx_nand_write_buf(col = %d, len = %d)\n", host->col_addr,
 	      len);
 
@@ -544,7 +544,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 	n = mtd->writesize + mtd->oobsize - col;
 	n = min(len, n);
 
-	DEBUG(MTD_DEBUG_LEVEL3,
+	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "%s:%d: col = %d, n = %d\n", __FUNCTION__, __LINE__, col, n);
 
 	while (n) {
@@ -556,7 +556,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 			p = (volatile u32 *)((ulong) (host->regs + SPARE_AREA0)
 					- mtd->writesize + (col & ~3));
 
-		DEBUG(MTD_DEBUG_LEVEL3, "%s:%d: p = %p\n", __FUNCTION__,
+		MTD_DEBUG(MTD_DEBUG_LEVEL3, "%s:%d: p = %p\n", __FUNCTION__,
 		      __LINE__, p);
 
 		if (((col | (int)&buf[i]) & 3) || n < 16) {
@@ -605,7 +605,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 
 			m = min(n, m) & ~3;
 
-			DEBUG(MTD_DEBUG_LEVEL3,
+			MTD_DEBUG(MTD_DEBUG_LEVEL3,
 			      "%s:%d: n = %d, m = %d, i = %d, col = %d\n",
 			      __FUNCTION__, __LINE__, n, m, i, col);
 
@@ -638,7 +638,7 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 	int col;
 	int i = 0;
 
-	DEBUG(MTD_DEBUG_LEVEL3,
+	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "imx_nand_read_buf(col = %d, len = %d)\n", host->col_addr,
 	      len);
 
@@ -735,7 +735,7 @@ static void imx_nand_select_chip(struct mtd_info *mtd, int chip)
 	u16 tmp;
 
 	if (chip > 0) {
-		DEBUG(MTD_DEBUG_LEVEL0,
+		MTD_DEBUG(MTD_DEBUG_LEVEL0,
 		      "ERROR:  Illegal chip select (chip = %d)\n", chip);
 		return;
 	}
@@ -768,7 +768,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
-	DEBUG(MTD_DEBUG_LEVEL3,
+	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "imx_nand_command (cmd = 0x%x, col = 0x%x, page = 0x%x)\n",
 	      command, column, page_addr);
 
@@ -936,7 +936,7 @@ static void imx_low_erase(struct mtd_info *mtd)
 	unsigned int page_addr, addr;
 	u_char status;
 
-	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : imx_low_erase:Erasing NAND\n");
+	MTD_DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : imx_low_erase:Erasing NAND\n");
 	for (addr = 0; addr < this->chipsize; addr += mtd->erasesize) {
 		page_addr = addr / mtd->writesize;
 		imx_nand_command(mtd, NAND_CMD_ERASE1, -1, page_addr);
@@ -1054,7 +1054,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	/* Scan to find existence of the device */
 	if (nand_scan(mtd, 1)) {
-		DEBUG(MTD_DEBUG_LEVEL0,
+		MTD_DEBUG(MTD_DEBUG_LEVEL0,
 		      "MXC_ND: Unable to find any NAND device.\n");
 		err = -ENXIO;
 		goto escan;

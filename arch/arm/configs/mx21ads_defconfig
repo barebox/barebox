@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # U-Boot version: 2.0.0-rc8
-# Tue Apr  7 09:14:23 2009
+# Tue Apr 28 08:40:15 2009
 #
 CONFIG_ARCH_TEXT_BASE=0xc0000000
 CONFIG_BOARDINFO="Freescale i.MX21 ADS"
@@ -22,6 +22,7 @@ CONFIG_MACH_IMX21ADS=y
 # CONFIG_MACH_OMAP is not set
 # CONFIG_MACH_AT91SAM9260_EK is not set
 # CONFIG_MACH_PM9263 is not set
+# CONFIG_MACH_PCA100 is not set
 
 #
 # Board specific settings       
@@ -98,8 +99,6 @@ CONFIG_DEFAULT_ENVIRONMENT_PATH="board/imx21ads/env"
 #
 # Commands                      
 #
-CONFIG_ARCH_IMX=y
-CONFIG_ARCH_IMX21=y
 
 #
 # scripting                     
@@ -164,7 +163,14 @@ CONFIG_CMD_TEST=y
 CONFIG_CMD_VERSION=y
 CONFIG_CMD_HELP=y
 CONFIG_CMD_DEVINFO=y
-# CONFIG_NET is not set
+CONFIG_NET=y
+CONFIG_NET_BOOTP=y
+CONFIG_NET_DHCP=y
+# CONFIG_NET_RARP is not set
+# CONFIG_NET_SNTP is not set
+CONFIG_NET_NFS=y
+CONFIG_NET_PING=y
+CONFIG_NET_TFTP=y
 
 #
 # Drivers                       
@@ -175,6 +181,13 @@ CONFIG_CMD_DEVINFO=y
 #
 CONFIG_DRIVER_SERIAL_IMX=y
 # CONFIG_DRIVER_SERIAL_NS16550 is not set
+CONFIG_HAS_CS8900=y
+
+#
+# Network drivers               
+#
+CONFIG_DRIVER_NET_CS8900=y
+# CONFIG_DRIVER_NET_SMC911X is not set
 
 #
 # SPI drivers                   
@@ -200,6 +213,7 @@ CONFIG_NAND_IMX=y
 # CONFIG_MTD_NAND_VERIFY_WRITE is not set
 # CONFIG_MTD_NAND_ECC_SMC is not set
 CONFIG_MTD_NAND_IDS=y
+# CONFIG_USB is not set
 
 #
 # Filesystem support            

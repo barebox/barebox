@@ -238,7 +238,7 @@ static void cs8900_reset(struct cs8900_priv *priv)
 	tmo = get_time_ns();
 	while ((cs8900_ior(priv, PP_REG_SELFST) & SELFST_INITD) == 0) {
 		if (is_timeout(tmo, 1 * SECOND)) {
-			printf("%s: timeout\n", __FUNCTION__);
+			printf("%s: timeout\n", __func__);
 			break;
 		}
 	}
@@ -252,7 +252,7 @@ static int cs8900_dev_init(struct eth_device *dev)
 
 static int cs8900_open(struct eth_device *dev)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	cs8900_reset(priv);
 	cs8900_reginit(priv);
 	return 0;
@@ -261,10 +261,9 @@ static int cs8900_open(struct eth_device *dev)
 static int cs8900_send(struct eth_device *dev, void *eth_data,
 		       int data_length)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	u16 *addr;
 	u16 v;
-
 
 	writew(TXCMD_TXSTART_FULL, priv->regs + CS8900_TXCMD);
 	writew(data_length, priv->regs + CS8900_TXLEN);
@@ -272,11 +271,11 @@ static int cs8900_send(struct eth_device *dev, void *eth_data,
 	v = cs8900_ior(priv, PP_REG_BUSST);
 
 	if (v & BUSST_TXBIDERR) {
-		printf("%s: frame error\n", __FUNCTION__);
+		printf("%s: frame error\n", __func__);
 		return -1;
 	}
 	if ((v & BUSST_RDY4TXNOW) == 0) {
-		printf("%s: busy\n", __FUNCTION__);
+		printf("%s: busy\n", __func__);
 		return -1;
 	}
 
@@ -289,7 +288,7 @@ static int cs8900_send(struct eth_device *dev, void *eth_data,
 
 static int cs8900_recv(struct eth_device *dev)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	int len = 0;
 	u16 status;
 	u16 *addr;
@@ -317,7 +316,7 @@ static int cs8900_recv(struct eth_device *dev)
 
 static void cs8900_halt(struct eth_device *dev)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	cs8900_iow(priv, PP_REG_BUSCTL, 0);
 	cs8900_iow(priv, PP_REG_TESTCTL, 0);
 	cs8900_iow(priv, PP_REG_SELFCTL, 0);
@@ -330,7 +329,7 @@ static void cs8900_halt(struct eth_device *dev)
 
 static int cs8900_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	int i;
 	for (i = 0; i < 6 / 2; i++) {
 		u16 v;
@@ -344,7 +343,7 @@ static int cs8900_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 
 static int cs8900_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 {
-	struct cs8900_priv *priv = (struct cs8900_priv *) dev->priv;
+	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	int i;
 	for (i = 0; i < 6 / 2; i++) {
 		u16 v;
@@ -356,13 +355,13 @@ static int cs8900_set_ethaddr(struct eth_device *dev, unsigned char *mac)
 
 static const char *yesno_str(int v)
 {
-	return (v) ? "yes" : "no";
+	return v ? "yes" : "no";
 }
 
 static void cs8900_info(struct device_d *dev)
 {
-	struct eth_device *edev = (struct eth_device *) dev->type_data;
-	struct cs8900_priv *priv = (struct cs8900_priv *) edev->priv;
+	struct eth_device *edev = (struct eth_device *)dev->type_data;
+	struct cs8900_priv *priv = (struct cs8900_priv *)edev->priv;
 	u16 v;
 
 	printf("%s Rev. %s (PID: 0x%04x) at 0x%08x\n", priv->chip->name,
@@ -441,14 +440,14 @@ static int cs8900_probe(struct device_d *dev)
 
 	debug("cs8900_init()\n");
 
-	priv = (struct cs8900_priv *) malloc(sizeof(*priv));
-	priv->regs = (u16 *) dev->map_base;
+	priv = (struct cs8900_priv *)malloc(sizeof(*priv));
+	priv->regs = (u16 *)dev->map_base;
 	if (cs8900_check_id(priv)) {
 		free(priv);
 		return -1;
 	}
 
-	edev = (struct eth_device *) malloc(sizeof(struct eth_device));
+	edev = (struct eth_device *)malloc(sizeof(struct eth_device));
 	dev->type_data = edev;
 	edev->priv = priv;
 	edev->dev = dev;

@@ -65,6 +65,13 @@ static struct device_d nand_dev = {
 	.platform_data  = &nand_info,
 };
 
+static struct device_d cs8900_dev = {
+	.name     = "cs8900",
+	.id       = "eth0",
+	.map_base = IMX_CS1_BASE,
+	.type     = DEVICE_TYPE_ETHER,
+	// IRQ is connected to UART3_RTS
+};
 
 static int imx21ads_timing_init(void)
 {
@@ -120,6 +127,7 @@ static int mx21ads_devices_init(void)
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&nand_dev);
+	register_device(&cs8900_dev);
 
 	armlinux_set_bootparams((void *)0xc0000100);
 	armlinux_set_architecture(MACH_TYPE_MX21ADS);

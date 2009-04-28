@@ -113,6 +113,7 @@ config MACH_IMX21ADS
 	select HAS_CFI
 	select ARCH_IMX21
 	select MACH_HAS_LOWLEVEL_INIT
+	select HAS_CS8900
 	help
 	  Say Y here if you are using the Freescale i.MX21ads board equipped
 	  with a Freescale i.MX21 Processor

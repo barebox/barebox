@@ -106,10 +106,23 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
+static struct kfifo *console_input_buffer;
+static struct kfifo *console_output_buffer;
+
+int getc_buffer_flush(void)
+{
+	console_input_buffer = kfifo_alloc(1024);
+	console_output_buffer = kfifo_alloc(1024);
+	return 0;
+}
+
+postcore_initcall(getc_buffer_flush);
+
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = newcdev->dev;
 	int first = 0;
+	char ch;
 
 	if (newcdev->setbrg) {
 		newcdev->baudrate_param.set = console_baudrate_set;
@@ -140,6 +153,13 @@ int console_register(struct console_device *newcdev)
 
 	list_add_tail(&newcdev->list, &console_list);
 
+	if (console_output_buffer) {
+		while (kfifo_getc(console_output_buffer, &ch) == 0)
+			console_putc(CONSOLE_STDOUT, ch);
+		kfifo_free(console_output_buffer);
+		console_output_buffer = NULL;
+	}
+
 #ifndef CONFIG_HAS_EARLY_INIT
 	if (first)
 		display_banner();
@@ -167,16 +187,6 @@ int getc_raw(void)
 			return -1;
 	}
 }
-
-static struct kfifo *console_input_buffer;
-
-int getc_buffer_flush(void)
-{
-	console_input_buffer = kfifo_alloc(1024);
-	return 0;
-}
-
-postcore_initcall(getc_buffer_flush);
 
 int getc(void)
 {
@@ -239,6 +249,7 @@ void console_putc(unsigned int ch, char c)
 
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
+		kfifo_putc(console_output_buffer, c);
 		return;
 
 #ifdef CONFIG_HAS_EARLY_INIT

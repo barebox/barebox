@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # U-Boot version: 2.0.0-rc8
-# Tue Apr 14 14:49:48 2009
+# Wed May 13 16:25:18 2009
 #
 CONFIG_ARCH_TEXT_BASE=0xa7f00000
 CONFIG_BOARDINFO="Phytec phyCard-i.MX27"
@@ -9,11 +9,10 @@ CONFIG_BOARDINFO="Phytec phyCard-i.MX27"
 CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
 CONFIG_ARM926EJS=y
-CONFIG_ARCH_IMX=y
-CONFIG_ARCH_IMX27=y
 # CONFIG_MACH_MX1ADS is not set
 # CONFIG_MACH_SCB9328 is not set
 # CONFIG_MACH_PCM038 is not set
+# CONFIG_MACH_IMX21ADS is not set
 # CONFIG_MACH_IMX27ADS is not set
 # CONFIG_MACH_PCM043 is not set
 # CONFIG_MACH_FREESCALE_MX35_3STACK is not set
@@ -28,6 +27,9 @@ CONFIG_MACH_PCA100=y
 #
 # Board specific settings       
 #
+CONFIG_ARCH_IMX=y
+CONFIG_ARCH_HAS_FEC_IMX=y
+CONFIG_ARCH_IMX27=y
 
 #
 # i.MX specific settings        
@@ -186,7 +188,7 @@ CONFIG_MIIPHY=y
 # Network drivers               
 #
 # CONFIG_DRIVER_NET_SMC911X is not set
-CONFIG_DRIVER_NET_IMX27=y
+CONFIG_DRIVER_NET_FEC_IMX=y
 
 #
 # SPI drivers                   
@@ -204,6 +206,7 @@ CONFIG_NAND_IMX_BOOT=y
 # CONFIG_MTD_NAND_VERIFY_WRITE is not set
 # CONFIG_MTD_NAND_ECC_SMC is not set
 CONFIG_MTD_NAND_IDS=y
+# CONFIG_USB is not set
 
 #
 # Filesystem support            

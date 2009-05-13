@@ -168,11 +168,11 @@ int getc_raw(void)
 	}
 }
 
-static struct kfifo *console_buffer;
+static struct kfifo *console_input_buffer;
 
 int getc_buffer_flush(void)
 {
-	console_buffer = kfifo_alloc(1024);
+	console_input_buffer = kfifo_alloc(1024);
 	return 0;
 }
 
@@ -183,18 +183,24 @@ int getc(void)
 	unsigned char ch;
 	uint64_t start;
 
+	/*
+	 * For 100us we read the characters from the serial driver
+	 * into a kfifo. This helps us not to lose characters
+	 * in small hardware fifos.
+	 */
 	start = get_time_ns();
 	while (1) {
 		if (tstc()) {
-			kfifo_putc(console_buffer, getc_raw());
+			kfifo_putc(console_input_buffer, getc_raw());
 
 			start = get_time_ns();
 		}
-		if (is_timeout(start, 100 * USECOND) && kfifo_len(console_buffer))
+		if (is_timeout(start, 100 * USECOND) &&
+				kfifo_len(console_input_buffer))
 			break;
 	}
 
-	kfifo_getc(console_buffer, &ch);
+	kfifo_getc(console_input_buffer, &ch);
 	return ch;
 }
 EXPORT_SYMBOL(getc);

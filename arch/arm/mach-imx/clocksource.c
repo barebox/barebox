@@ -32,6 +32,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
+#include <notifier.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 
@@ -46,6 +47,16 @@ static struct clocksource cs = {
 	.read	= imx_clocksource_read,
 	.mask	= 0xffffffff,
 	.shift	= 10,
+};
+
+static int imx_clocksource_clock_change(struct notifier_block *nb, unsigned long event, void *data)
+{
+	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
+	return 0;
+}
+
+static struct notifier_block imx_clock_notifier = {
+	.notifier_call = imx_clocksource_clock_change,
 };
 
 static int clocksource_init (void)
@@ -73,6 +84,8 @@ static int clocksource_init (void)
 	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
 
 	init_clock(&cs);
+
+	clock_register_client(&imx_clock_notifier);
 
 	return 0;
 }

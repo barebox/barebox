@@ -78,7 +78,7 @@ static int imx_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
-unsigned int spi_xchg_single(ulong base, unsigned int data)
+static unsigned int spi_xchg_single(ulong base, unsigned int data)
 {
 
 	unsigned int cfg_reg = readl(base + MXC_CSPICTRL);

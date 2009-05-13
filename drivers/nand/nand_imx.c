@@ -140,10 +140,6 @@ struct imx_nand_host {
 };
 
 /*
- * Define delays in microsec for NAND device operations
- */
-#define TROP_US_DELAY   2000
-/*
  * Macros to get byte and bit positions of ECC
  */
 #define COLPOS(x)  ((x) >> 3)
@@ -175,23 +171,23 @@ static struct nand_ecclayout nand_hw_eccoob_16 = {
  * @param       max_retries     number of retry attempts (separated by 1 us)
  * @param       param           parameter for debug
  */
-static void __nand_boot_init wait_op_done(struct imx_nand_host *host,
-		int max_retries, u16 param)
+static void __nand_boot_init wait_op_done(struct imx_nand_host *host, u16 param)
 {
 	u32 tmp;
+	int i;
 
-	while (max_retries-- > 0) {
+	/* This is a timeout of roughly 15ms on my system. We
+	 * need about 2us, but be generous. Don't use udelay
+	 * here as we might be here from nand booting.
+	 */
+	for (i = 0; i < 100000; i++) {
 		if (readw(host->regs + NFC_CONFIG2) & NFC_INT) {
 			tmp = readw(host->regs + NFC_CONFIG2);
 			tmp  &= ~NFC_INT;
 			writew(tmp, host->regs + NFC_CONFIG2);
-			break;
+			return;
 		}
-//		udelay(1);
 	}
-	if (max_retries <= 0)
-		DEBUG(MTD_DEBUG_LEVEL0, "%s(%d): INT not set\n",
-		      __FUNCTION__, param);
 }
 
 /*
@@ -208,7 +204,7 @@ static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
 	writew(NFC_CMD, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, cmd);
+	wait_op_done(host, cmd);
 }
 
 /*
@@ -227,7 +223,7 @@ static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
 	writew(NFC_ADDR, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, addr);
+	wait_op_done(host, addr);
 }
 
 /*
@@ -259,7 +255,7 @@ static void send_prog_page(struct imx_nand_host *host, u8 buf_id,
 	writew(NFC_INPUT, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, spare_only);
+	wait_op_done(host, spare_only);
 }
 
 /*
@@ -290,7 +286,7 @@ static void __nand_boot_init send_read_page(struct imx_nand_host *host,
 	writew(NFC_OUTPUT, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, spare_only);
+	wait_op_done(host, spare_only);
 }
 
 /*
@@ -313,7 +309,7 @@ static void send_read_id(struct imx_nand_host *host)
 	writew(NFC_ID, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, 0);
+	wait_op_done(host, 0);
 
 	if (this->options & NAND_BUSWIDTH_16) {
 		volatile u16 *mainbuf = host->regs + MAIN_AREA0;
@@ -359,7 +355,7 @@ static u16 get_dev_status(struct imx_nand_host *host)
 	writew(NFC_STATUS, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, TROP_US_DELAY, 0);
+	wait_op_done(host, 0);
 
 	/* Status is placed in first word of main buffer */
 	/* get status, then recovery area 1 data */

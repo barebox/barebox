@@ -502,6 +502,12 @@ static int cfi_probe (struct device_d *dev)
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
 	size += info->size = flash_get_size(info, dev->map_base);
+
+	if (dev->size == 0) {
+		printf("cfi_probe: size : 0x%08x\n", info->size);
+		dev->size = info->size;
+	}
+
 	if (info->flash_id == FLASH_UNKNOWN) {
 #ifndef CFG_FLASH_QUIET_TEST
 		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",

@@ -23,6 +23,7 @@
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>
+#include <notifier.h>
 
 #define URXD0(base) __REG( 0x0 +(base))  /* Receiver Register */
 #define URTX0(base) __REG( 0x40 +(base)) /* Transmitter Register */
@@ -164,6 +165,12 @@
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
 
+struct imx_serial_priv {
+	struct console_device cdev;
+	int baudrate;
+	struct notifier_block notify;
+};
+
 static int imx_serial_reffreq(ulong base)
 {
 	ulong rfdiv;
@@ -268,6 +275,8 @@ static void imx_serial_flush(struct console_device *cdev)
 static int imx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
+	struct imx_serial_priv *priv = container_of(cdev,
+					struct imx_serial_priv, cdev);
 	ulong base = dev->map_base;
 	ulong ucr1 = UCR1(base);
 
@@ -281,14 +290,30 @@ static int imx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 
 	UCR1(base) = ucr1;
 
+	priv->baudrate = baudrate;
+
 	return 0;
+}
+
+static int imx_clocksource_clock_change(struct notifier_block *nb,
+			unsigned long event, void *data)
+{
+	struct imx_serial_priv *priv = container_of(nb,
+				struct imx_serial_priv, notify);
+
+	imx_serial_setbaudrate(&priv->cdev, priv->baudrate);
+
+        return 0;
 }
 
 static int imx_serial_probe(struct device_d *dev)
 {
 	struct console_device *cdev;
+	struct imx_serial_priv *priv;
 
-	cdev = malloc(sizeof(struct console_device));
+	priv = malloc(sizeof(*priv));
+	cdev = &priv->cdev;
+
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
@@ -305,6 +330,8 @@ static int imx_serial_probe(struct device_d *dev)
 	UCR1(cdev->dev->map_base) |= UCR1_UARTEN;
 
 	console_register(cdev);
+	priv->notify.notifier_call = imx_clocksource_clock_change;
+	clock_register_client(&priv->notify);
 
 	return 0;
 }

@@ -148,6 +148,22 @@ config EXPERIMENTAL
 	bool
 	prompt "Prompt for experimental code"
 
+choice
+	prompt "malloc implementation"
+
+config MALLOC_DLMALLOC
+	bool "dlmalloc"
+
+config MALLOC_DUMMY
+	bool "dummy malloc"
+	depends on SHELL_NONE
+	help
+	  select this option to use a dummy malloc implementation. With this
+	  memory is never freed. This is suitable for well tested noninteractive
+	  environments only.
+
+endchoice
+
 config MODULES
 	depends on HAS_MODULES
 	depends on EXPERIMENTAL

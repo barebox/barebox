@@ -436,7 +436,8 @@ static int macb_probe(struct device_d *dev)
 	macb->miiphy.read = macb_phy_read;
 	macb->miiphy.write = macb_phy_write;
 	macb->miiphy.address = pdata->phy_addr;
-	macb->miiphy.flags = 0;
+	macb->miiphy.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
+		MIIPHY_FORCE_LINK : 0;
 	macb->miiphy.edev = edev;
 	macb->flags = pdata->flags;
 

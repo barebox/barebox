@@ -10,7 +10,8 @@
 
 #include <driver.h>
 
-#define MIIPHY_FORCE_10	1
+#define MIIPHY_FORCE_10		(1 << 0)
+#define MIIPHY_FORCE_LINK	(1 << 1)
 
 #define MII_BMCR            0x00        /* Basic mode control register */
 #define MII_BMSR            0x01        /* Basic mode status register  */

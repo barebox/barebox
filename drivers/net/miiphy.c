@@ -35,6 +35,10 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 	 * Reset PHY, then delay 300ns
 	 */
 	mdev->write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
+
+	if (mdev->flags & MIIPHY_FORCE_LINK)
+		return 0;
+
 	udelay(1000);
 
 	if (mdev->flags & MIIPHY_FORCE_10) {
@@ -71,6 +75,9 @@ int miiphy_wait_aneg(struct miiphy_device *mdev)
 	uint64_t start;
 	uint16_t status;
 
+	if (mdev->flags & MIIPHY_FORCE_LINK)
+		return 0;
+
 	/*
 	 * Wait for AN completion
 	 */
@@ -95,6 +102,11 @@ int miiphy_print_status(struct miiphy_device *mdev)
 	uint16_t bmsr, bmcr, lpa;
 	char *duplex;
 	int speed;
+
+	if (mdev->flags & MIIPHY_FORCE_LINK) {
+		printf("Forcing link present...\n");
+		return 0;
+	}
 
 	if (mdev->read(mdev, mdev->address, MII_BMSR, &bmsr) != 0)
 		goto err_out;

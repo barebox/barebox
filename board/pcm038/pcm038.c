@@ -34,6 +34,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>
+#include <command.h>
 #include <spi/spi.h>
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>
@@ -110,7 +111,10 @@ static struct device_d nand_dev = {
 
 static int pcm038_devices_init(void)
 {
+	struct device_d *nand, *dev;
+	char *envdev = "no";
 	int i;
+
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
@@ -168,83 +172,6 @@ static int pcm038_devices_init(void)
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	register_device(&spi_dev);
 
-	return 0;
-}
-
-device_initcall(pcm038_devices_init);
-
-static struct device_d pcm038_serial_device = {
-	.name     = "imx_serial",
-	.id       = "cs0",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
-};
-
-static int pcm038_power_init(void)
-{
-	struct device_d *nand, *dev;
-	char *envdev = "no";
-	int i = 0;
-	int ret;
-
-	ret = pmic_power();
-	if (ret)
-		goto out;
-
-	/* wait for good power level */
-	udelay(1000);
-
-#define CSCR_VAL CSCR_USB_DIV(3) |	\
-		 CSCR_SD_CNT(3) |	\
-		 CSCR_MSHC_SEL |	\
-		 CSCR_H264_SEL |	\
-		 CSCR_SSI1_SEL |	\
-		 CSCR_SSI2_SEL |	\
-		 CSCR_MCU_SEL |		\
-		 CSCR_ARM_SRC_MPLL |	\
-		 CSCR_SP_SEL |		\
-		 CSCR_ARM_DIV(0) |	\
-		 CSCR_FPM_EN |		\
-		 CSCR_SPEN |		\
-		 CSCR_MPEN
-
-	CSCR &= ~CSCR_MCU_SEL;
-
-	/*
-	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
-	 */
-	MPCTL0 = IMX_PLL_PD(0) |
-		 IMX_PLL_MFD(51) |
-		 IMX_PLL_MFI(7) |
-		 IMX_PLL_MFN(35); /* MPLL = 2 * 26 * 3.83654 MHz = 199.5 MHz */
-
-	SPCTL0 = IMX_PLL_PD(1) |
-		 IMX_PLL_MFD(12) |
-		 IMX_PLL_MFI(9) |
-		 IMX_PLL_MFN(3); /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
-
-	/*
-	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
-	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
-	 * System clock (HCLK) = 133 MHz
-	 */
-
-	CSCR = CSCR_VAL | CSCR_AHB_DIV(1) | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
-
-	udelay(1000);
-
-	/* clock gating enable */
-	GPCR = 0x00050f08;
-
-	PCDR0 = 0x130410c3;
-	PCDR1 = 0x09030911;
-
-	/* Clocks have changed. Notify clients */
-	clock_notifier_call_chain();
-
-out:
-	register_device(&pcm038_serial_device);
 	register_device(&cfi_dev);
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
@@ -287,6 +214,103 @@ out:
 
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
+
+	return 0;
+}
+
+device_initcall(pcm038_devices_init);
+
+static struct device_d pcm038_serial_device = {
+	.name     = "imx_serial",
+	.id       = "cs0",
+	.map_base = IMX_UART1_BASE,
+	.size     = 4096,
+	.type     = DEVICE_TYPE_CONSOLE,
+};
+
+static int pcm038_console_init(void)
+{
+	/* bring PLLs to reset default */
+	MPCTL0 = 0x00211803;
+	SPCTL0 = 0x1002700c;
+	CSCR = 0x33fc1307;
+
+	register_device(&pcm038_serial_device);
+
+	return 0;
+}
+
+console_initcall(pcm038_console_init);
+
+static noinline void pll_wait(void)
+{
+	volatile int i;
+
+	for (i = 0; i < 100000; i++);
+}
+
+static int pcm038_power_init(void)
+{
+	int ret;
+
+	printf("initialising PLLs\n");
+
+	console_flush();
+
+	ret = pmic_power();
+	if (ret) {
+		printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
+		return 0;
+	}
+
+	/* wait for good power level */
+	udelay(100000);
+
+#define CSCR_VAL CSCR_USB_DIV(3) |	\
+		 CSCR_SD_CNT(3) |	\
+		 CSCR_MSHC_SEL |	\
+		 CSCR_H264_SEL |	\
+		 CSCR_SSI1_SEL |	\
+		 CSCR_SSI2_SEL |	\
+		 CSCR_MCU_SEL |		\
+		 CSCR_ARM_SRC_MPLL |	\
+		 CSCR_SP_SEL |		\
+		 CSCR_ARM_DIV(0) |	\
+		 CSCR_FPM_EN |		\
+		 CSCR_SPEN |		\
+		 CSCR_MPEN
+
+	/*
+	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
+	 */
+	MPCTL0 = IMX_PLL_PD(0) |
+		 IMX_PLL_MFD(51) |
+		 IMX_PLL_MFI(7) |
+		 IMX_PLL_MFN(35); /* MPLL = 399 MHz */
+
+	SPCTL0 = IMX_PLL_PD(1) |
+		 IMX_PLL_MFD(12) |
+		 IMX_PLL_MFI(9) |
+		 IMX_PLL_MFN(3); /* SPLL = 240 MHz */
+
+	/*
+	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
+	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
+	 * System clock (HCLK) = 133 MHz
+	 */
+
+	pll_wait();
+	CSCR = CSCR_VAL | CSCR_AHB_DIV(1) | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
+	pll_wait();
+
+	/* clock gating enable */
+	GPCR = 0x00050f08;
+
+	PCDR0 = 0x130410c3;
+	PCDR1 = 0x09030911;
+
+	/* Clocks have changed. Notify clients */
+	clock_notifier_call_chain();
 
 	return 0;
 }

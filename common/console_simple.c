@@ -1,6 +1,7 @@
 #include <config.h>
 #include <common.h>
 #include <fs.h>
+#include <errno.h>
 
 static struct console_device *console;
 
@@ -56,6 +57,9 @@ EXPORT_SYMBOL(console_puts);
 
 void console_putc(unsigned int ch, char c)
 {
+	if (!console)
+		return;
+
 	console->putc(console, c);
 	if (c == '\n')
 		console->putc(console, '\r');
@@ -88,15 +92,27 @@ EXPORT_SYMBOL(fputs);
 
 int tstc(void)
 {
+	if (!console)
+		return 0;
+
 	return console->tstc(console);
 }
 EXPORT_SYMBOL(tstc);
 
 int getc(void)
 {
+	if (!console)
+		return -EINVAL;
 	return console->getc(console);
 }
 EXPORT_SYMBOL(getc);
+
+void console_flush(void)
+{
+	if (console && console->flush)
+		console->flush(console);
+}
+EXPORT_SYMBOL(console_flush);
 
 #ifndef ARCH_HAS_CTRLC
 /* test if ctrl-c was pressed */

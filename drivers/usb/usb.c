@@ -451,10 +451,11 @@ static struct usb_device *usb_alloc_new_device(void)
 
 static int __usb_init(void)
 {
-	struct usb_device *dev;
+	struct usb_device *dev, *tmp;
 	struct usb_host *host;
 
-	list_for_each_entry(dev, &usb_device_list, list) {
+	list_for_each_entry_safe(dev, tmp, &usb_device_list, list) {
+		list_del(&dev->list);
 		unregister_device(&dev->dev);
 		if (dev->hub)
 			free(dev->hub);

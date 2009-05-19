@@ -23,6 +23,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
@@ -34,6 +35,7 @@
 #include <asm/mach-types.h>
 #include <asm/arch/imx-nand.h>
 #include <fec.h>
+#include <asm/arch/imx-pll.h>
 
 #define CYG_MACRO_START
 #define CYG_MACRO_END
@@ -246,4 +248,47 @@ static int pcm043_core_setup(void)
 }
 
 core_initcall(pcm043_core_setup);
+
+#define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
+#define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
+
+static int do_cpufreq(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	unsigned long freq;
+
+	if (argc != 2) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	freq = simple_strtoul(argv[1], NULL, 0);
+
+	switch (freq) {
+	case 399:
+		writel(MPCTL_PARAM_399, IMX_CCM_BASE + CCM_MPCTL);
+		break;
+	case 532:
+		writel(MPCTL_PARAM_532, IMX_CCM_BASE + CCM_MPCTL);
+		break;
+	default:
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	printf("Switched CPU frequency to %dMHz\n", freq);
+
+	return 0;
+}
+
+static const __maybe_unused char cmd_cpufreq_help[] =
+"Usage: cpufreq 399|532\n"
+"\n"
+"Set CPU frequency to <freq> MHz\n";
+
+U_BOOT_CMD_START(cpufreq)
+	.maxargs        = CONFIG_MAXARGS,
+	.cmd            = do_cpufreq,
+	.usage          = "adjust CPU frequency",
+	U_BOOT_CMD_HELP(cmd_cpufreq_help)
+U_BOOT_CMD_END
 

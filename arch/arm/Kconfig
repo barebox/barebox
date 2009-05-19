@@ -16,6 +16,7 @@ config ARCH_TEXT_BASE
 	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
 	default 0x87f00000 if MACH_PCM043
 	default 0xa7f00000 if MACH_PCA100
+	default 0x23f00000 if MACH_MMCCPU
 
 config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
@@ -29,6 +30,7 @@ config BOARDINFO
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
 	default "Phytec phyCard-i.MX27" if MACH_PCA100
+	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 
 config BOARD_LINKER_SCRIPT
 	bool
@@ -199,6 +201,12 @@ config MACH_PCA100
 	help
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor
+
+config MACH_MMCCPU
+	bool "Bucyrus MMC-CPU"
+	select ARCH_AT91SAM9263
+	help
+	  Say y here if you are using the Bucyrus MMC-CPU
 
 endchoice
 

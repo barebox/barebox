@@ -199,6 +199,7 @@ static struct driver_d miiphy_drv = {
 	.close = dev_close_default,
 	.read  = miiphy_read,
 	.write = miiphy_write,
+	.lseek = dev_lseek_default,
 	.type  = DEVICE_TYPE_MIIPHY,
 };
 

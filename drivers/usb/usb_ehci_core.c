@@ -30,6 +30,7 @@
 #include <init.h>
 #include <xfuncs.h>
 #include <clock.h>
+#include <errno.h>
 
 #include "usb_ehci.h"
 
@@ -467,9 +468,15 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		/* Invalidate dcache */
 		ehci_invalidate_dcache(ehci->qh_list);
 		token = hc32_to_cpu(vtd->qt_token);
-		if (is_timeout(start, SECOND)) {
-			printf("TD timeout\n");
-			break;
+		if (is_timeout(start, SECOND >> 2)) {
+			/* Disable async schedule. */
+			cmd = ehci_readl(&ehci->hcor->or_usbcmd);
+			cmd &= ~CMD_ASE;
+			ehci_writel(&ehci->hcor->or_usbcmd, cmd);
+
+			ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, 0, 100 * 1000);
+			ehci_writel(&qh->qh_overlay.qt_token, 0);
+			return -ETIMEDOUT;
 		}
 	} while (token & 0x80);
 

@@ -114,7 +114,7 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	ret = usb_bulk_msg(dev->udev, dev->out, tx_buffer, len, &alen, 1000);
 	dev_dbg(edev->dev, "%s: ret: %d len: %d alen: %d\n", __func__, ret, len, alen);
 
-	return 0;
+	return ret;
 }
 
 static char rx_buf[4096];
@@ -123,16 +123,17 @@ static int usbnet_recv(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*) edev->priv;
 	struct driver_info	*info = dev->driver_info;
-	int len, alen = 0;
+	int len, ret, alen = 0;
 
 	dev_dbg(edev->dev, "%s\n",__func__);
 
 	len = dev->rx_urb_size;
 
-	usb_bulk_msg(dev->udev, dev->in, rx_buf, len, &alen,
-				1000);
+	ret = usb_bulk_msg(dev->udev, dev->in, rx_buf, len, &alen, 1000);
+	if (ret)
+		return ret;
 
-	if(alen) {
+	if (alen) {
 		if (info->rx_fixup)
 			return info->rx_fixup(dev, rx_buf, alen);
 		else

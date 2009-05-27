@@ -10,7 +10,10 @@ ARM type:
 
 - @subpage pcm037
 - @subpage pcm038
+- @subpage pcm043
+- @subpage imx21ads
 - @subpage imx27ads
+- @subpage the3stack
 - @subpage scb9328
 - @subpage netx
 - @subpage dev_omap_arch

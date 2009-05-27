@@ -78,7 +78,7 @@ TBD
 
 @section board_mod_files These files needs to be modified:
 
- - modify board/board.doc
+ - modify board/board.dox
  - modify arch/\<architecture\>/Kconfig
   - add your board (MACH_*) to the list
   - add your default text base address for this architecture (ARCH_TEXT_BASE)

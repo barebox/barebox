@@ -8,9 +8,9 @@ Some background knowledge for some frameworks in U-Boot v2
 
 Hints and tips for simply adapting U-Boot v2
 
- - @subpage dev_board
- - @subpage dev_cpu
  - @subpage dev_architecture
+ - @subpage dev_cpu
+ - @subpage dev_board
  - @subpage dev_params
 
 Various themes:

@@ -34,4 +34,17 @@ the first C instruction in U-Boot. At this point of time:\n
 For details on specific architectures:
  - @subpage dev_omap_arch
 
+@section mach_arm_files List of changes
+
+Lets call the new MACH new_cpu.
+
+ - create a new subdirectory in /arch/arm/new_cpu
+ - add /arch/arm/new_cpu/Kconfig
+ - add /arch/arm/new_cpu/Makfile
+ - add other CPU specific code into /arch/arm/new_cpu/
+ - modify /arch/arm/Kconfig
+ - modify /arch/arm/Makfile
+
+TODO add more details
+
 */

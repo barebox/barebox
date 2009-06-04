@@ -1108,15 +1108,8 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 	struct imx_nand_host host;
 	u32 tmp, page, block;
 
-	PCCR1 |= PCCR1_NFC_BAUDEN;
-
-	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
-	case GPCR_BOOT_8BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_2k:
-		host.pagesize_2k = 1;
-	}
-
 	host.regs = (void __iomem *)IMX_NFC_BASE;
+	host.pagesize_2k = (pagesize == 2048);
 
 	send_cmd(&host, NAND_CMD_RESET);
 

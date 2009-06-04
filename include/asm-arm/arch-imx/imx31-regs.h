@@ -152,6 +152,8 @@
 #define CCMR_FPM	(1 << 1)
 #define CCMR_CKIH	(2 << 1)
 
+#define RCSR_NFMS	(1 << 30)
+
 /*
  * ?????????????
  */
@@ -165,6 +167,11 @@
 
 #define IMX_ESD_BASE	0xb8001000
 #include "esdctl.h"
+
+/*
+ * NFC Registers
+ */
+#define IMX_NFC_BASE               (0xb8000000)
 
 /*
  * Chip Select Registers

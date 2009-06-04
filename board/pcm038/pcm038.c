@@ -320,7 +320,16 @@ late_initcall(pcm038_power_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, 512, 16384);
+	int pagesize = 512;
+	PCCR1 |= PCCR1_NFC_BAUDEN;  /* FIXME: Really needed? Probably not */
+
+	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
+	case GPCR_BOOT_8BIT_NAND_2k:
+	case GPCR_BOOT_16BIT_NAND_2k:
+		pagesize = 2048;
+	}
+
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, pagesize, 16384);
 }
 #endif
 

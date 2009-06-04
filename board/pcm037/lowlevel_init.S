@@ -42,9 +42,12 @@
 	bcs 1b
 .endm
 
+	.section ".text_bare_init","ax"
+
 .globl board_init_lowlevel
 board_init_lowlevel:
 
+	mov r10, lr
 	writel(IPU_CONF_DI_EN, IPU_CONF)
 	writel(0x074B0BF5, IMX_CCM_BASE + CCM_CCMR)
 
@@ -65,43 +68,31 @@ board_init_lowlevel:
 	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), IMX_CCM_BASE + CCM_MPCTL)
 	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), IMX_CCM_BASE + CCM_SPCTL)
 
+	/* Configure IOMUXC
+	 * Clears 0x43fa_c26c - 0x43fa_c2dc with 0, except 0x43fa_c278 (untouched), 0x43fa_c27c (set to 0x1000) and 0x43fa_c280 (untouched)
+	 * (behaviour copied by sha, source unknown)
+	 */
+	mov		r1, #0;
+	ldr		r0, =0x43FAC26C
+	str		r1, [r0], #4
+	str		r1, [r0], #4
+	str		r1, [r0], #0x10
+
+	ldr		r2, 	=0x43FAC2DC
+clear_iomux:
+	str		r1, [r0], #4
+	cmp		r0, r2
+	bls		clear_iomux
+	writel(0x1000, 0x43FAC27C )/* CS2 	CSD0) */
+
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000
-	bls	1f
+	blo	1f
 	cmp	pc, #0x90000000
-	bhi	1f
+	bhs	1f
 
-	mov	pc, lr
-
+	mov	pc, r10
 1:
-	/* Configure IOMUXC */
-	writel(0, 0x43FAC26C)/* SDCLK */
-	writel(0, 0x43FAC270) /* CAS */
-	writel(0, 0x43FAC274) /* RAS */
-	writel(0x1000, 0x43FAC27C )/* CS2 	CSD0) */
-	writel(0, 0x43FAC284) /* DQM3 */
-	writel(0, 0x43FAC288) /* DQM2, DQM1, DQM0, SD31-SD0, A25-A0, MA10 	0x288..0x2DC) */
-	writel(0, 0x43FAC28C)
-	writel(0, 0x43FAC290)
-	writel(0, 0x43FAC294)
-	writel(0, 0x43FAC298)
-	writel(0, 0x43FAC29C)
-	writel(0, 0x43FAC2A0)
-	writel(0, 0x43FAC2A4)
-	writel(0, 0x43FAC2A8)
-	writel(0, 0x43FAC2AC)
-	writel(0, 0x43FAC2B0)
-	writel(0, 0x43FAC2B4)
-	writel(0, 0x43FAC2B8)
-	writel(0, 0x43FAC2BC)
-	writel(0, 0x43FAC2C0)
-	writel(0, 0x43FAC2C4)
-	writel(0, 0x43FAC2C8)
-	writel(0, 0x43FAC2CC)
-	writel(0, 0x43FAC2D0)
-	writel(0, 0x43FAC2D4)
-	writel(0, 0x43FAC2D8)
-	writel(0, 0x43FAC2DC)
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define ROWS0	ESDCTL0_ROW13
@@ -141,5 +132,36 @@ board_init_lowlevel:
 	writel(0xDEADBEEF, IMX_SDRAM_CS1)
 	writel(0x0000000c, ESDMISC)
 #endif
-	mov	pc, lr
+
+#ifdef CONFIG_NAND_IMX_BOOT
+	ldr	sp, =0x80f00000		/* Setup a temporary stack in SDRAM */
+
+	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
+	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
+
+	/* skip NAND boot if not running from NFC space */
+	cmp	pc, r0
+	blo	ret
+	cmp	pc, r2
+	bhs	ret
+
+	/* Move ourselves out of NFC SRAM */
+	ldr	r1, =TEXT_BASE
+
+copy_loop:
+	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
+	stmia	r1!, {r3-r9}		/* copy to   target address [r1]    */
+	cmp	r0, r2			/* until source end addreee [r2]    */
+	ble	copy_loop
+
+	ldr	pc, =1f			/* Jump to SDRAM                    */
+1:
+	bl	nand_boot		/* Load U-Boot from NAND Flash      */
+
+	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
+	sub	r10, r10, r1		/* adjust return address from NFC SRAM */
+ret:
+#endif /* CONFIG_NAND_IMX_BOOT */
+
+	mov	pc, r10
 

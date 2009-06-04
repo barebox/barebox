@@ -65,15 +65,6 @@ board_init_lowlevel:
 	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), IMX_CCM_BASE + CCM_MPCTL)
 	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), IMX_CCM_BASE + CCM_SPCTL)
 
-	/* Skip SDRAM initialization if we run from RAM */
-	cmp	pc, #0x80000000
-	bls	1f
-	cmp	pc, #0x90000000
-	bhi	1f
-
-	mov	pc, lr
-
-1:
 	/* Configure IOMUXC */
 	writel(0, 0x43FAC26C)/* SDCLK */
 	writel(0, 0x43FAC270) /* CAS */
@@ -102,6 +93,16 @@ board_init_lowlevel:
 	writel(0, 0x43FAC2D4)
 	writel(0, 0x43FAC2D8)
 	writel(0, 0x43FAC2DC)
+
+	/* Skip SDRAM initialization if we run from RAM */
+	cmp	pc, #0x80000000
+	bls	1f
+	cmp	pc, #0x90000000
+	bhi	1f
+
+	mov	pc, lr
+
+1:
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define ROWS0	ESDCTL0_ROW13

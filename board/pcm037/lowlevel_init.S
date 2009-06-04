@@ -96,12 +96,11 @@ board_init_lowlevel:
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000
-	bls	1f
+	blo	1f
 	cmp	pc, #0x90000000
-	bhi	1f
+	bhs	1f
 
 	mov	pc, lr
-
 1:
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB

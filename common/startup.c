@@ -86,17 +86,25 @@ static struct device_d default_env_dev = {
 	.platform_data	= &default_env_platform_data,
 };
 
-static void register_default_env(void)
+static int register_default_env(void)
 {
 	default_env_dev.map_base = (unsigned long)default_environment;
 	default_env_dev.size = sizeof(default_environment);
 	register_device(&default_env_dev);
+	return 0;
 }
-#else
-static void register_default_env(void)
-{
-}
+
+device_initcall(register_default_env);
 #endif
+
+static int mount_root(void)
+{
+	mount("none", "ramfs", "/");
+	mkdir("/dev", 0);
+	mount("none", "devfs", "/dev");
+	return 0;
+}
+fs_initcall(mount_root);
 
 void start_uboot (void)
 {
@@ -124,12 +132,6 @@ void start_uboot (void)
 	}
 
 	display_meminfo();
-
-	register_default_env();
-
-	mount("none", "ramfs", "/");
-	mkdir("/dev", 0);
-	mount("none", "devfs", "/dev");
 
 #ifdef CONFIG_ENV_HANDLING
 	if (envfs_load("/dev/env0", "/env")) {

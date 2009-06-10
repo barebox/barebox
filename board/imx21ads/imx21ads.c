@@ -50,8 +50,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0xc0000000,
 	.size     = 64 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -128,6 +126,7 @@ static int mx21ads_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&cs8900_dev);
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xc0000100);
 	armlinux_set_architecture(MACH_TYPE_MX21ADS);
 

@@ -50,18 +50,14 @@ static struct device_d sdram_dev = {
 	.name     = "ram",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
-	.type     = DEVICE_TYPE_DRAM,
 };
 
-#if 0
 static struct device_d sram_dev = {
 	.name     = "ram",
 	.id       = "sram0",
 	.map_base = 0xc8000000,
 	.size     = 512 * 1024, /* Can be up to 2MiB */
-	.type     = DEVICE_TYPE_DRAM,
 };
-#endif
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -195,6 +191,7 @@ static int pcm038_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
 

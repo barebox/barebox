@@ -47,8 +47,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct fec_platform_data fec_info = {
@@ -138,6 +136,7 @@ static int mx27ads_devices_init(void)
 	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_MX27ADS);
 

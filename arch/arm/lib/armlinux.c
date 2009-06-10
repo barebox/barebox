@@ -30,6 +30,8 @@
 #include <zlib.h>
 #include <init.h>
 #include <fs.h>
+#include <list.h>
+#include <xfuncs.h>
 
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
@@ -110,6 +112,22 @@ void armlinux_set_bootparams(void *params)
 void armlinux_set_architecture(int architecture)
 {
 	armlinux_architecture = architecture;
+}
+
+struct arm_memory {
+	struct list_head list;
+	struct device_d *dev;
+};
+
+static LIST_HEAD(memory_list);
+
+void armlinux_add_dram(struct device_d *dev)
+{
+	struct arm_memory *mem = xzalloc(sizeof(*mem));
+
+	mem->dev = dev;
+
+	list_add_tail(&mem->list, &memory_list);
 }
 
 int do_bootm_linux(struct image_data *data)
@@ -212,18 +230,16 @@ __setup_start_tag(void)
 void
 __setup_memory_tags(void)
 {
-	struct device_d *dev = NULL;
+	struct arm_memory *mem;
 
-	list_for_each_entry(dev, &device_list, list) {
-		if (dev->type == DEVICE_TYPE_DRAM) {
-			params->hdr.tag = ATAG_MEM;
-			params->hdr.size = tag_size(tag_mem32);
+	list_for_each_entry(mem, &memory_list, list) {
+		params->hdr.tag = ATAG_MEM;
+		params->hdr.size = tag_size(tag_mem32);
 
-			params->u.mem.start = dev->map_base;
-			params->u.mem.size = dev->size;
+		params->u.mem.start = mem->dev->map_base;
+		params->u.mem.size = mem->dev->size;
 
-			params = tag_next(params);
-		}
+		params = tag_next(params);
 	}
 }
 

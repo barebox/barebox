@@ -72,8 +72,6 @@ static struct device_d sdram0_dev = {
 
 	.map_base = IMX_SDRAM_CS0,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -111,6 +109,7 @@ static int imx35_devices_init(void)
 
 	register_device(&sdram0_dev);
 
+	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM043);
 

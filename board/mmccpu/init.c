@@ -41,8 +41,6 @@ static struct device_d sdram_dev = {
 
 	.map_base	= 0x20000000,
 	.size		= 128 * 1024 * 1024,
-
-	.type		= DEVICE_TYPE_DRAM,
 };
 
 static struct device_d cfi_dev = {
@@ -109,6 +107,7 @@ static int mmccpu_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 128 * 1024, PARTITION_FIXED, "env");
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_MMCCPU);
 

@@ -52,8 +52,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0x80000000,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct fec_platform_data fec_info = {
@@ -95,6 +93,7 @@ static int f3s_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");	/* ourself */
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env");	/* environment */
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM037); /* FIXME */
 

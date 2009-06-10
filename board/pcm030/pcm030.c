@@ -56,14 +56,11 @@ struct device_d sdram_dev = {
 
 	.map_base = 0x0,
 	.size     = 64 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 struct device_d scratch_dev = {
 	.name     = "ram",
 	.id       = "scratch0",
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct mpc5xxx_fec_platform_data fec_info = {

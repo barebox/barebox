@@ -641,8 +641,6 @@ struct device_d sdram_dev = {
 
 	.map_base = 0x80000000,
 	.size = 128 * 1024 * 1024,
-
-	.type = DEVICE_TYPE_DRAM,
 };
 
 /*------------------------- RAM Devices -------------------------------------*/
@@ -656,7 +654,6 @@ static struct driver_d ram_drv = {
 	.read = mem_read,
 	.write = mem_write,
 	.lseek  = dev_lseek_default,
-	.type = DEVICE_TYPE_DRAM,
 };
 #endif
 
@@ -677,6 +674,7 @@ static int sdp3430_devices_init(void)
 	if (ret)
 		goto failed;
 
+	armlinux_add_dram(&sdram_dev);
 failed:
 	return ret;
 }

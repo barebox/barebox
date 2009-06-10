@@ -18,8 +18,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0x0,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct device_d smc911x_dev = {

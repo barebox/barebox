@@ -68,8 +68,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0x20000000,
 	.size     = 64 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct at91sam_ether_platform_data macb_pdata = {
@@ -97,6 +95,7 @@ static int at91sam9260ek_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&macb_dev);
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 

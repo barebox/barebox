@@ -44,8 +44,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct fec_platform_data fec_info = {
@@ -131,6 +129,7 @@ static int pca100_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(2149);
 

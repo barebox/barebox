@@ -243,8 +243,6 @@ static struct device_d sdram_dev = {
 
        .map_base = 0x80000000,
        .size = 128 * 1024 * 1024,
-
-       .type = DEVICE_TYPE_DRAM,
 };
 
 #ifndef CONFIG_CMD_MEMORY
@@ -256,7 +254,6 @@ static struct driver_d ram_drv = {
        .read = mem_read,
        .write = mem_write,
        .lseek = dev_lseek_default,
-       .type = DEVICE_TYPE_DRAM,
 };
 #endif
 
@@ -275,6 +272,7 @@ static int beagle_devices_init(void)
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
+       armlinux_add_dram(&sdram_dev);
 failed:
        return ret;
 }

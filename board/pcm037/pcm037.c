@@ -88,10 +88,8 @@ static struct memory_platform_data ram_dev_pdata0 = {
 
 static struct device_d sdram0_dev = {
 	.name     = "mem",
-
 	.map_base = IMX_SDRAM_CS0,
 	.size     = SDRAM0 * 1024 * 1024,	/* fix size */
-
 	.platform_data = &ram_dev_pdata0,
 };
 
@@ -110,11 +108,8 @@ static struct memory_platform_data ram_dev_pdata1 = {
 
 static struct device_d sdram1_dev = {
 	.name     = "mem",
-
 	.map_base = IMX_SDRAM_CS1,
 	.size     = SDRAM1 * 1024 * 1024,	/* fix size */
-
-	.type     = DEVICE_TYPE_DRAM,
 	.platform_data = &ram_dev_pdata1,
 };
 #endif
@@ -274,6 +269,11 @@ static int imx31_devices_init(void)
 	pcm037_usb_init();
 	register_device(&usbotg_dev);
 	register_device(&usbh2_dev);
+#endif
+
+	armlinux_add_dram(&sdram0_dev);
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+	armlinux_add_dram(&sdram1_dev);
 #endif
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM037);

@@ -101,8 +101,6 @@ static struct device_d sdram_dev = {
 
 	.map_base = CFG_SDRAM_ADDRESS,
 	.size     = CFG_SDRAM_SIZE,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static int mcfv4e_devices_init(void)

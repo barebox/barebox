@@ -76,6 +76,8 @@ struct fs_driver_d {
 	struct driver_d drv;
 
 	unsigned long flags;
+
+	struct list_head list;
 };
 
 struct mtab_entry {
@@ -165,5 +167,8 @@ void *read_file(const char *filename, size_t *size);
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */
 char *normalise_path(const char *path);
+
+/* Register a new filesystem driver */
+int register_fs_driver(struct fs_driver_d *fsdrv);
 
 #endif /* __FS_H */

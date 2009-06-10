@@ -635,6 +635,16 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
+static LIST_HEAD(fs_driver_list);
+
+int register_fs_driver(struct fs_driver_d *fsdrv)
+{
+	list_add_tail(&fsdrv->list, &fs_driver_list);
+	register_driver(&fsdrv->drv);
+	return 0;
+}
+EXPORT_SYMBOL(register_fs_driver);
+
 /*
  * Mount a device to a directory.
  * We do this by registering a new device on which the filesystem
@@ -643,8 +653,7 @@ EXPORT_SYMBOL(close);
  */
 int mount(const char *device, const char *fsname, const char *_path)
 {
-	struct driver_d *drv;
-	struct fs_driver_d *fs_drv;
+	struct fs_driver_d *fs_drv = NULL, *f;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
 	struct device_d *dev, *parent_device = NULL;
@@ -666,13 +675,14 @@ int mount(const char *device, const char *fsname, const char *_path)
 		goto out;
 	}
 
-	drv = get_driver_by_name(fsname);
-	if (!drv) {
-		errno = -ENODEV;
-		goto out;
+	list_for_each_entry(f, &fs_driver_list, list) {
+		if (!strcmp(f->drv.name, fsname)) {
+			fs_drv = f;
+			break;
+		}
 	}
 
-	if (drv->type != DEVICE_TYPE_FS) {
+	if (!fs_drv) {
 		errno = -EINVAL;
 		goto out;
 	}
@@ -688,8 +698,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 		}
 	}
 
-	fs_drv = drv->type_data;
-
 	if (!fs_drv->flags & FS_DRIVER_NO_DEV) {
 		parent_device = get_device_by_id(device + 5);
 		if (!parent_device) {
@@ -701,7 +709,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 	fsdev = xzalloc(sizeof(struct fs_device_d));
 	fsdev->parent = parent_device;
 	sprintf(fsdev->dev.name, "%s", fsname);
-	fsdev->dev.type = DEVICE_TYPE_FS;
 	fsdev->dev.type_data = fsdev;
 
 	if ((ret = register_device(&fsdev->dev))) {

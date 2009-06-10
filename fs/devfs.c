@@ -264,7 +264,6 @@ static struct fs_driver_d devfs_driver = {
 	.memmap    = devfs_memmap,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
-		.type   = DEVICE_TYPE_FS,
 		.probe  = devfs_probe,
 		.remove = devfs_delete,
 		.name = "devfs",
@@ -274,7 +273,7 @@ static struct fs_driver_d devfs_driver = {
 
 static int devfs_init(void)
 {
-	return register_driver(&devfs_driver.drv);
+	return register_fs_driver(&devfs_driver);
 }
 
 device_initcall(devfs_init);

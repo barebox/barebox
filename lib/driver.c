@@ -271,10 +271,6 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 
 	if (*dev->id)
 		printf("%c----%s\n", edge, dev->id);
-	else if (dev->type == DEVICE_TYPE_FS)
-		printf("%c----filesystem: %s\n", edge,
-				fsdev_get_mountpoint((struct fs_device_d *)
-					dev->type_data));
 
 	if (!list_empty(&dev->children)) {
 		device_for_each_child(dev, child) {

@@ -560,7 +560,6 @@ static struct fs_driver_d ramfs_driver = {
 	.stat      = ramfs_stat,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
-		.type   = DEVICE_TYPE_FS,
 		.probe  = ramfs_probe,
 		.remove = ramfs_remove,
 		.name = "ramfs",
@@ -570,7 +569,7 @@ static struct fs_driver_d ramfs_driver = {
 
 static int ramfs_init(void)
 {
-	return register_driver(&ramfs_driver.drv);
+	return register_fs_driver(&ramfs_driver);
 }
 
 device_initcall(ramfs_init);

@@ -455,7 +455,6 @@ static struct fs_driver_d cramfs_driver = {
 	.closedir	= cramfs_closedir,
 	.stat		= cramfs_stat,
 	.drv = {
-		.type = DEVICE_TYPE_FS,
 		.probe = cramfs_probe,
 		.remove = cramfs_remove,
 		.name = "cramfs",
@@ -465,7 +464,7 @@ static struct fs_driver_d cramfs_driver = {
 
 static int cramfs_init(void)
 {
-	return register_driver(&cramfs_driver.drv);
+	return register_fs_driver(&cramfs_driver);
 }
 
 device_initcall(cramfs_init);

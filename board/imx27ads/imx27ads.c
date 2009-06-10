@@ -150,7 +150,6 @@ static struct device_d mx27ads_serial_device = {
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int mx27ads_console_init(void)

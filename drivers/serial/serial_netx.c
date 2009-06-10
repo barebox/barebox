@@ -162,7 +162,6 @@ static int netx_serial_probe(struct device_d *dev)
 static struct driver_d netx_serial_driver = {
         .name  = "netx_serial",
         .probe = netx_serial_probe,
-        .type  = DEVICE_TYPE_CONSOLE,
 };
 
 static int netx_serial_init(void)

@@ -205,7 +205,6 @@ static struct device_d pcm038_serial_device = {
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int pcm038_console_init(void)

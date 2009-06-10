@@ -288,7 +288,6 @@ static struct device_d imx31_serial_device = {
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 16 * 1024,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int imx31_console_init(void)

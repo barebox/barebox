@@ -54,7 +54,6 @@ static struct device_d blackfin_serial_device = {
 	.id       = "cs0",
 	.map_base = 0,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int blackfin_console_init(void)

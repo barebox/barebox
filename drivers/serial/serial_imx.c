@@ -347,7 +347,6 @@ static struct driver_d imx_serial_driver = {
         .name   = "imx_serial",
         .probe  = imx_serial_probe,
 	.remove = imx_serial_remove,
-        .type   = DEVICE_TYPE_CONSOLE,
 };
 
 static int imx_serial_init(void)

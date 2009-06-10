@@ -143,7 +143,6 @@ static struct device_d pca100_serial_device = {
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int pca100_console_init(void)

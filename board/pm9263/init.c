@@ -112,7 +112,6 @@ static struct device_d pm9263_serial_device = {
 	.id       = "cs0",
 	.map_base = AT91C_BASE_DBGU,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int pm9263_console_init(void)

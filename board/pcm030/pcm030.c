@@ -99,7 +99,6 @@ static struct device_d psc3 = {
 	.id       = "psc3",
 	.map_base = MPC5XXX_PSC3,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static struct device_d psc6 = {
@@ -107,7 +106,6 @@ static struct device_d psc6 = {
 	.id       = "psc6",
 	.map_base = MPC5XXX_PSC6,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int console_init(void)

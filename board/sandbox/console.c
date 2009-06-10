@@ -48,7 +48,6 @@ int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd)
 	data->stdinfd  = stdinfd;
 
 	get_free_deviceid(dev->id, name_template);
-	dev->type = DEVICE_TYPE_CONSOLE;
 
 	return register_device(dev);
 }

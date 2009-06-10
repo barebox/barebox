@@ -94,7 +94,6 @@ static struct device_d netx_serial_device = {
 	.id       = "cs0",
 	.map_base = NETX_PA_UART0,
 	.size     = 0x40,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int netx_console_init(void)

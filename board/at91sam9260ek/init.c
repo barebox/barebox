@@ -114,7 +114,6 @@ static struct device_d at91sam9260ek_serial_device = {
 	.id       = "cs0",
 	.map_base = AT91C_BASE_DBGU,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int at91sam9260ek_console_init(void)

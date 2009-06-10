@@ -81,7 +81,6 @@ static int linux_console_probe(struct device_d *dev)
 static struct driver_d linux_console_driver = {
         .name  = "console",
         .probe = linux_console_probe,
-        .type  = DEVICE_TYPE_CONSOLE,
 };
 
 static int console_init(void)

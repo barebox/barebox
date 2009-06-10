@@ -134,7 +134,6 @@ static int blackfin_serial_probe(struct device_d *dev)
 static struct driver_d blackfin_serial_driver = {
         .name  = "blackfin_serial",
         .probe = blackfin_serial_probe,
-        .type  = DEVICE_TYPE_CONSOLE,
 };
 
 static int blackfin_serial_init(void)

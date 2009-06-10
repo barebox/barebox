@@ -121,7 +121,6 @@ static struct device_d mmccpu_serial_device = {
 	.id		= "cs0",
 	.map_base	= AT91C_BASE_DBGU,
 	.size		= 4096,
-	.type		= DEVICE_TYPE_CONSOLE,
 };
 
 static int mmccpu_console_init(void)

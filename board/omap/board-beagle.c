@@ -220,7 +220,6 @@ static struct device_d beagle_serial_device = {
        .map_base = OMAP_UART3_BASE,
        .size = 1024,
        .platform_data = (void *)&serial_plat,
-       .type = DEVICE_TYPE_CONSOLE,
 };
 
 /**

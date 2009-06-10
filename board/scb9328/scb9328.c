@@ -112,7 +112,6 @@ static struct device_d scb9328_serial_device = {
 	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int scb9328_console_init(void)

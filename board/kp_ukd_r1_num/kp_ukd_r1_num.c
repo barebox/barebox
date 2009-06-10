@@ -139,7 +139,6 @@ static struct device_d mcfv4e_serial_device = {
 	.id       = "cs0",
 	.map_base = 1+CFG_EARLY_UART_PORT,
 	.size     = 16 * 1024,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int mcfv4e_console_init(void)

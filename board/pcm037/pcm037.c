@@ -51,11 +51,16 @@ static struct device_d cfi_dev = {
  * up to 2MiB static RAM type memory, connected
  * to CS4, data width is 16 bit
  */
+static struct memory_platform_data sram_dev_pdata0 = {
+	.name = "sram0",
+	.flags = DEVFS_RDWR,
+};
+
 static struct device_d sram_dev = {
-	.name     = "sram",
-	.id       = "sram0",
+	.name     = "mem",
 	.map_base = IMX_CS4_BASE,
 	.size     = IMX_CS4_RANGE,	/* area size */
+	.platform_data = &sram_dev_pdata0,
 };
 
 /*
@@ -77,14 +82,18 @@ static struct device_d network_dev = {
 #define SDRAM0	256
 #endif
 
+static struct memory_platform_data ram_dev_pdata0 = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
+
 static struct device_d sdram0_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+	.name     = "mem",
 
 	.map_base = IMX_SDRAM_CS0,
 	.size     = SDRAM0 * 1024 * 1024,	/* fix size */
 
-	.type     = DEVICE_TYPE_DRAM,
+	.platform_data = &ram_dev_pdata0,
 };
 
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
@@ -95,14 +104,19 @@ static struct device_d sdram0_dev = {
 #define SDRAM1	256
 #endif
 
+static struct memory_platform_data ram_dev_pdata1 = {
+	.name = "ram1",
+	.flags = DEVFS_RDWR,
+};
+
 static struct device_d sdram1_dev = {
-	.name     = "ram",
-	.id       = "ram1",
+	.name     = "mem",
 
 	.map_base = IMX_SDRAM_CS1,
 	.size     = SDRAM1 * 1024 * 1024,	/* fix size */
 
 	.type     = DEVICE_TYPE_DRAM,
+	.platform_data = &ram_dev_pdata1,
 };
 #endif
 

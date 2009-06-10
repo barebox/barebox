@@ -75,7 +75,7 @@ static struct device_d nand_dev = {
 static int pca100_devices_init(void)
 {
 	int i;
-	struct device_d *nand, *dev;
+	struct device_d *nand;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -126,11 +126,11 @@ static int pca100_devices_init(void)
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
 	nand = get_device_by_path("/dev/nand0");
-	dev = dev_add_partition(nand, 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev(dev, "self0");
+	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+	dev_add_bb_dev("self_raw", "self0");
 
-	dev = dev_add_partition(nand, 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev(dev, "env0");
+	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(2149);

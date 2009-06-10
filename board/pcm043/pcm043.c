@@ -101,10 +101,9 @@ static int imx35_devices_init(void)
 	 * Create partitions that should be
 	 * not touched by any regular user
 	 */
-#ifdef CONFIG_PARTITION
-	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");	/* ourself */
-	dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");	/* environment */
-#endif
+	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");	/* ourself */
+	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env");	/* environment */
+
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	register_device(&nand_dev);

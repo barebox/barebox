@@ -135,8 +135,8 @@ static int mx27ads_devices_init(void)
 	register_device(&sdram_dev);
 	register_device(&fec_dev);
 
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env");
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	armlinux_set_bootparams((void *)0xa0000100);

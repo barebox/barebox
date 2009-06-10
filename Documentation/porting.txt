@@ -51,8 +51,8 @@ console_initcall(scb9328_console_init);
 - For most boards you will have to register a cfi_flash device. NAND flash
   is not ported yet.
 
-- Call dev_add_partition() to add an environment partition for your device:
-  dev_add_partition(&cfi_dev, 0x40000, 0x20000, "env");
+- Call devfs_add_partition() to add an environment partition for your device:
+  devfs_add_partition("nor0", 0x40000, 0x20000, "env");
   This will add an area starting at 0x40000 of size 0x20000 of the device
   cfi_dev as env0.
 

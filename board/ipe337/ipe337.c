@@ -41,10 +41,10 @@ static int ipe337_devices_init(void) {
 	*pFIO0_FLAG_S = (1<<12);
 
 	register_device(&smc911x_dev);
-#ifdef CONFIG_PARTITION
-	dev_add_partition(&cfi_dev, 0x00000, 0x20000, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x20000, 0x20000, PARTITION_FIXED, "env");
-#endif
+
+	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env");
+
 	dev_protect(&cfi_dev, 0x20000, 0, 1);
 
 	return 0;

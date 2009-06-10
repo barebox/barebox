@@ -107,8 +107,8 @@ static int mmccpu_devices_init(void)
 	register_device(&macb_dev);
 	register_device(&cfi_dev);
 
-	dev_add_partition(&cfi_dev, 0x00000, 256 * 1024, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x40000, 128 * 1024, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", 0x40000, 128 * 1024, PARTITION_FIXED, "env");
 
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_MMCCPU);

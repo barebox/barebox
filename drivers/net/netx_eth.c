@@ -275,7 +275,6 @@ static int netx_eth_probe(struct device_d *dev)
 static struct driver_d netx_eth_driver = {
         .name  = "netx-eth",
         .probe = netx_eth_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int netx_eth_init(void)

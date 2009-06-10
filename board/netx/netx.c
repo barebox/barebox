@@ -57,7 +57,6 @@ static struct device_d netx_eth_dev0 = {
 	.name		= "netx-eth",
 	.id		= "eth0",
 	.platform_data	= &eth0_data,
-	.type		= DEVICE_TYPE_ETHER,
 };
 
 struct netx_eth_platform_data eth1_data = {
@@ -68,7 +67,6 @@ static struct device_d netx_eth_dev1 = {
 	.name		= "netx-eth",
 	.id		= "eth1",
 	.platform_data	= &eth1_data,
-	.type		= DEVICE_TYPE_ETHER,
 };
 
 static int netx_devices_init(void) {

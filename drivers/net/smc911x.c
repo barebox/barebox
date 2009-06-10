@@ -749,7 +749,6 @@ static int smc911x_probe(struct device_d *dev)
 static struct driver_d smc911x_driver = {
         .name  = "smc911x",
         .probe = smc911x_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int smc911x_init(void)

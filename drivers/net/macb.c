@@ -472,7 +472,6 @@ static int macb_probe(struct device_d *dev)
 static struct driver_d macb_driver = {
         .name  = "macb",
         .probe = macb_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int macb_driver_init(void)

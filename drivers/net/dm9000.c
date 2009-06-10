@@ -538,7 +538,6 @@ static int dm9000_probe(struct device_d *dev)
 static struct driver_d dm9000_driver = {
         .name  = "dm9000",
         .probe = dm9000_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int dm9000_init(void)

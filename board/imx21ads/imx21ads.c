@@ -69,7 +69,6 @@ static struct device_d cs8900_dev = {
 	.name     = "cs8900",
 	.id       = "eth0",
 	.map_base = IMX_CS1_BASE,
-	.type     = DEVICE_TYPE_ETHER,
 	// IRQ is connected to UART3_RTS
 };
 

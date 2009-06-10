@@ -333,7 +333,6 @@ static int at91rm9200_eth_init (struct device_d *dev)
 static struct driver_d at91_eth_driver = {
         .name  = "at91_eth",
         .probe = at91rm9200_eth_init,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int at91_eth_init(void)

@@ -604,7 +604,6 @@ static struct driver_d imx27_driver = {
         .name   = "fec_imx",
         .probe  = fec_probe,
 	.remove = fec_remove,
-        .type   = DEVICE_TYPE_ETHER,
 };
 
 static int fec_register(void)

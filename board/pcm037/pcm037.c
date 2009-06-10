@@ -73,7 +73,6 @@ static struct device_d network_dev = {
 	.id       = "eth0",
 	.map_base = IMX_CS1_BASE,
 	.size     = IMX_CS1_RANGE,	/* area size */
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB

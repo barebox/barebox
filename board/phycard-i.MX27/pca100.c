@@ -58,7 +58,6 @@ static struct device_d fec_dev = {
 	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 struct imx_nand_platform_data nand_info = {

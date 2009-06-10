@@ -468,7 +468,6 @@ static struct driver_d cs8900_driver = {
 	.name = "cs8900",
 	.probe = cs8900_probe,
 	.info = cs8900_info,
-	.type = DEVICE_TYPE_ETHER,
 };
 
 static int cs8900_init(void)

@@ -67,7 +67,6 @@ static struct device_d dm9000_dev = {
 	.map_base = 0x16000000,
 	.size     = 8,
 	.platform_data = &dm9000_data,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int scb9328_devices_init(void) {

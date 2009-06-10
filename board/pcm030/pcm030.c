@@ -75,7 +75,6 @@ struct device_d eth_dev = {
 	.id		= "eth0",
 	.map_base	= MPC5XXX_FEC,
 	.platform_data	= &fec_info,
-	.type		= DEVICE_TYPE_ETHER,
 };
 
 #define SCRATCHMEM_SIZE (1024 * 1024 * 4)

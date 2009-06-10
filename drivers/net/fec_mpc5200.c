@@ -712,7 +712,6 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 static struct driver_d mpc5xxx_driver = {
         .name  = "fec_mpc5xxx",
         .probe = mpc5xxx_fec_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int mpc5xxx_fec_register(void)

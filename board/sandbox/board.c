@@ -30,8 +30,6 @@
 static struct device_d tap_device = {
         .name     = "tap",
         .id       = "eth0",
-
-        .type     = DEVICE_TYPE_ETHER,
 };
 
 static int devices_init(void)

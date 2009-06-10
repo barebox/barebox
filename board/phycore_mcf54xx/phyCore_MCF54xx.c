@@ -65,7 +65,6 @@ static struct device_d network_dev0 =
 	.id       = "eth0",
 	.map_base = MCF_FEC_ADDR(0),
 	.size     = MCF_FEC_SIZE(0),	   /* area size */
-	.type     = DEVICE_TYPE_ETHER,
 	.platform_data	= &fec_info,
 };
 static struct device_d network_dev1 =
@@ -74,7 +73,6 @@ static struct device_d network_dev1 =
 	.id       = "eth1",
 	.map_base = MCF_FEC_ADDR(1),
 	.size     = MCF_FEC_SIZE(1),	   /* area size */
-	.type     = DEVICE_TYPE_ETHER,
 	.platform_data	= &fec_info,
 };
 

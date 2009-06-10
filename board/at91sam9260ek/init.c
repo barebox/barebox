@@ -82,7 +82,6 @@ static struct device_d macb_dev = {
 	.id       = "eth0",
 	.map_base = AT91C_BASE_EMACB,
 	.size     = 0x1000,
-	.type     = DEVICE_TYPE_ETHER,
 	.platform_data = &macb_pdata,
 };
 

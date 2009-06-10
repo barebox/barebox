@@ -65,7 +65,6 @@ static struct device_d fec_dev = {
 	.id       = "eth0",
 	.map_base = 0x50038000,
 	.platform_data	= &fec_info,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 /*
@@ -76,7 +75,6 @@ static struct device_d smc911x_dev = {
 	.id       = "eth0",
 	.map_base = IMX_CS5_BASE,
 	.size     = IMX_CS5_RANGE,	/* area size */
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int f3s_devices_init(void)

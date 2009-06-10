@@ -111,7 +111,6 @@ out:
 static struct driver_d tap_driver = {
         .name  = "tap",
         .probe = tap_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int tap_init(void)

@@ -61,8 +61,6 @@ struct device_d sdram_dev = {
 static struct device_d at91_ath_dev = {
 	.name     = "at91_eth",
 	.id       = "eth0",
-
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int devices_init (void)

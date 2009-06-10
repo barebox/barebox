@@ -64,7 +64,6 @@ static struct device_d fec_dev = {
 	.id       = "eth0",
 	.map_base = 0x50038000,
 	.platform_data	= &fec_info,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 static struct device_d sdram0_dev = {

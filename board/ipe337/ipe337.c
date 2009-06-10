@@ -27,7 +27,6 @@ static struct device_d smc911x_dev = {
 	.id       = "eth0",
 	.map_base = 0x24000000,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 static int ipe337_devices_init(void) {

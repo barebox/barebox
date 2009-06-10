@@ -50,17 +50,16 @@ struct device_d cfi_dev = {
 	.size     = 16 * 1024 * 1024,
 };
 
-struct device_d sdram_dev = {
-	.name     = "ram",
-	.id       = "ram0",
-
-	.map_base = 0x0,
-	.size     = 64 * 1024 * 1024,
+static struct memory_platform_data ram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
 };
 
-struct device_d scratch_dev = {
-	.name     = "ram",
-	.id       = "scratch0",
+struct device_d sdram_dev = {
+	.name     = "mem",
+	.map_base = 0x0,
+	.size     = 64 * 1024 * 1024,
+	.platform_data = &ram_pdata,
 };
 
 static struct mpc5xxx_fec_platform_data fec_info = {
@@ -74,17 +73,11 @@ struct device_d eth_dev = {
 	.platform_data	= &fec_info,
 };
 
-#define SCRATCHMEM_SIZE (1024 * 1024 * 4)
-
 static int devices_init (void)
 {
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
 	register_device(&eth_dev);
-
-	scratch_dev.map_base = (unsigned long)sbrk_no_zero(SCRATCHMEM_SIZE);
-	scratch_dev.size = SCRATCHMEM_SIZE;
-	register_device(&scratch_dev);
 
 	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x00f60000, 0x20000, PARTITION_FIXED, "env");

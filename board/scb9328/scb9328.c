@@ -47,7 +47,6 @@ static struct memory_platform_data sdram_pdata = {
 
 static struct device_d sdram_dev = {
 	.name     = "mem",
-
 	.map_base = 0x08000000,
 	.size     = 16 * 1024 * 1024,
 	.platform_data = &sdram_pdata,

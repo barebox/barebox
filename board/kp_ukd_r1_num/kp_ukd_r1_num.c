@@ -95,12 +95,16 @@ static struct device_d network_dev1 = {
 /*
  * 128MiB of SDRAM, data width is 32 bit
  */
-static struct device_d sdram_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+static struct memory_platform_data ram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
 
+static struct device_d sdram_dev = {
+	.name     = "mem",
 	.map_base = CFG_SDRAM_ADDRESS,
 	.size     = CFG_SDRAM_SIZE,
+	.platform_data = &ram_pdata,
 };
 
 static int mcfv4e_devices_init(void)

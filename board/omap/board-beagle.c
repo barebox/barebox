@@ -236,12 +236,16 @@ static int beagle_console_init(void)
 console_initcall(beagle_console_init);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
-static struct device_d sdram_dev = {
-       .name = "ram",
-       .id = "ram0",
+static struct memory_platform_data sram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
 
-       .map_base = 0x80000000,
-       .size = 128 * 1024 * 1024,
+static struct device_d sdram_dev = {
+	.name = "mem",
+	.map_base = 0x80000000,
+	.size = 128 * 1024 * 1024,
+	.platform_data = &ram_pdata,
 };
 
 #ifndef CONFIG_CMD_MEMORY

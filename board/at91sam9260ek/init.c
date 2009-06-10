@@ -62,12 +62,16 @@ static struct device_d nand_dev = {
 	.platform_data = &nand_pdata,
 };
 
-static struct device_d sdram_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+static struct memory_platform_data sram_pdata = {
+	.name = "sram0",
+	.flags = DEVFS_RDWR,
+};
 
+static struct device_d sdram_dev = {
+	.name     = "mem",
 	.map_base = 0x20000000,
 	.size     = 64 * 1024 * 1024,
+	.platform_data = &sram_pdata,
 };
 
 static struct at91sam_ether_platform_data macb_pdata = {

@@ -38,12 +38,16 @@
 #include <asm/arch/imx-pll.h>
 #include <gpio.h>
 
-static struct device_d sdram_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+static struct memory_platform_data ram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
 
+static struct device_d sdram_dev = {
+	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
+	.platform_data = &ram_pdata,
 };
 
 static struct fec_platform_data fec_info = {

@@ -66,12 +66,16 @@ static struct device_d fec_dev = {
 	.platform_data	= &fec_info,
 };
 
-static struct device_d sdram0_dev = {
-	.name     = "ram",
-	.id       = "ram0",
+static struct memory_platform_data ram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
 
+static struct device_d sdram0_dev = {
+	.name     = "mem",
 	.map_base = IMX_SDRAM_CS0,
 	.size     = 128 * 1024 * 1024,
+	.platform_data = &ram_pdata,
 };
 
 struct imx_nand_platform_data nand_info = {

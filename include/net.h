@@ -76,6 +76,8 @@ struct eth_device {
 	struct param_d param_ethaddr;
 
 	struct device_d *dev;
+
+	struct list_head list;
 };
 
 int eth_register(struct eth_device* dev);    /* Register network device		*/
@@ -422,5 +424,6 @@ void ethaddr_to_string(const unsigned char *enetaddr, char *str);
 
 void eth_set_current(struct eth_device *eth);
 struct eth_device *eth_get_current(void);
+struct eth_device *eth_get_byname(char *name);
 
 #endif /* __NET_H__ */

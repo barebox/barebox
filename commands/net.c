@@ -278,7 +278,6 @@ U_BOOT_CMD_END
 
 static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	struct device_d *dev;
 	struct eth_device *edev;
 
 	if (argc != 2) {
@@ -286,19 +285,13 @@ static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	dev = get_device_by_path(argv[1]);
-	if (!dev) {
-		perror("open");
+	edev = eth_get_byname(argv[1]);
+	if (edev)
+		eth_set_current(edev);
+	else {
+		printf("no such net device: %s\n", argv[1]);
 		return 1;
 	}
-
-	if (dev->type != DEVICE_TYPE_ETHER) {
-		printf("nat a net device: %s\n", argv[1]);
-		return 1;
-	}
-
-	edev = dev->type_data;
-	eth_set_current(edev);
 
 	return 0;
 }

@@ -32,6 +32,8 @@
 
 static struct eth_device *eth_current;
 
+static LIST_HEAD(netdev_list);
+
 void eth_set_current(struct eth_device *eth)
 {
 	eth_current = eth;
@@ -40,6 +42,17 @@ void eth_set_current(struct eth_device *eth)
 struct eth_device * eth_get_current(void)
 {
 	return eth_current;
+}
+
+struct eth_device *eth_get_byname(char *name)
+{
+	struct eth_device *edev;
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (!strcmp(edev->dev->id, name))
+			return edev;
+	}
+	return NULL;
 }
 
 int eth_open(void)
@@ -117,7 +130,6 @@ int eth_register(struct eth_device *edev)
 	}
 
 	dev->type_data = edev;
-	dev->type = DEVICE_TYPE_ETHER;
 	edev->param_ip.name = "ipaddr";
 	edev->param_ip.set = &eth_set_ipaddr;
 	edev->param_ethaddr.name = "ethaddr";
@@ -135,6 +147,8 @@ int eth_register(struct eth_device *edev)
 	dev_add_param(dev, &edev->param_serverip);
 
 	edev->init(edev);
+
+	list_add_tail(&edev->list, &netdev_list);
 
 	if (edev->get_ethaddr(edev, ethaddr) == 0) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
@@ -163,5 +177,7 @@ void eth_unregister(struct eth_device *edev)
 
 	if (eth_current == edev)
 		eth_current = NULL;
+
+	list_del(&edev->list);
 }
 

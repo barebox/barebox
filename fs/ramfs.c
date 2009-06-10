@@ -537,6 +537,11 @@ static int ramfs_probe(struct device_d *dev)
 	return 0;
 }
 
+static void ramfs_remove(struct device_d *dev)
+{
+	free(dev->priv);
+}
+
 static struct fs_driver_d ramfs_driver = {
 	.type      = FS_TYPE_RAMFS,
 	.create    = ramfs_create,
@@ -557,6 +562,7 @@ static struct fs_driver_d ramfs_driver = {
 	.drv = {
 		.type   = DEVICE_TYPE_FS,
 		.probe  = ramfs_probe,
+		.remove = ramfs_remove,
 		.name = "ramfs",
 		.type_data = &ramfs_driver,
 	}

@@ -572,5 +572,5 @@ static int ramfs_init(void)
 	return register_fs_driver(&ramfs_driver);
 }
 
-device_initcall(ramfs_init);
+coredevice_initcall(ramfs_init);
 

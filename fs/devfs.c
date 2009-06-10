@@ -276,7 +276,7 @@ static int devfs_init(void)
 	return register_fs_driver(&devfs_driver);
 }
 
-device_initcall(devfs_init);
+coredevice_initcall(devfs_init);
 
 int devfs_create(struct cdev *new)
 {

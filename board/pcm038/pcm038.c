@@ -42,19 +42,14 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
 };
 
 static struct device_d sdram_dev = {
 	.name     = "ram",
-	.id       = "ram0",
-
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
-
 	.type     = DEVICE_TYPE_DRAM,
 };
 
@@ -62,10 +57,8 @@ static struct device_d sdram_dev = {
 static struct device_d sram_dev = {
 	.name     = "ram",
 	.id       = "sram0",
-
 	.map_base = 0xc8000000,
 	.size     = 512 * 1024, /* Can be up to 2MiB */
-
 	.type     = DEVICE_TYPE_DRAM,
 };
 #endif
@@ -85,7 +78,6 @@ static struct device_d fec_dev = {
 
 static struct device_d spi_dev = {
 	.name     = "imx_spi",
-	.id       = "spi0",
 	.map_base = 0x1000e000,
 };
 
@@ -112,8 +104,7 @@ static struct device_d nand_dev = {
 static int pcm038_devices_init(void)
 {
 	int i;
-	struct device_d *nand;
-	char *envdev = "no";
+	char *envdev;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -189,9 +180,6 @@ static int pcm038_devices_init(void)
 	case GPCR_BOOT_16BIT_NAND_2k:
 	case GPCR_BOOT_16BIT_NAND_512:
 	case GPCR_BOOT_8BIT_NAND_512:
-		nand = get_device_by_path("/dev/nand0");
-		if (!nand)
-			break;
 		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
 

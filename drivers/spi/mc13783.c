@@ -68,8 +68,6 @@
 #define	REG_TRIM(x)				(0x3a + (x)) /* 0 .. 1 */
 #define	REG_TEST(x)				(0x3c + (x)) /* 0 .. 3 */
 
-struct spi_device *pmic_spi;
-
 #define MXC_PMIC_REG_NUM(reg)	(((reg) & 0x3f) << 25)
 #define MXC_PMIC_WRITE		(1 << 31)
 
@@ -91,6 +89,11 @@ struct spi_device *pmic_spi;
 #define SW1B_SOFTSTART		(1 << 17)
 #define SW_PLL_FACTOR(x)	(((x) - 28) << 19)
 
+struct pmic_priv {
+	struct cdev cdev;
+	struct spi_device *spi;
+};
+
 static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 {
 	int ret;
@@ -111,7 +114,7 @@ static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 	return 0;
 }
 
-static uint32_t pmic_read_reg(struct spi_device *spi, int reg)
+static uint32_t pmic_read_reg(struct pmic_priv *pmic, int reg)
 {
 	uint32_t buf;
 
@@ -121,32 +124,34 @@ static uint32_t pmic_read_reg(struct spi_device *spi, int reg)
 	 * FIXME: Is this a pmic bug or a bug in the spi
 	 * controller?
 	 */
-	spi_rw(pmic_spi, &buf, 4);
-	spi_rw(pmic_spi, &buf, 4);
+	spi_rw(pmic->spi, &buf, 4);
+	spi_rw(pmic->spi, &buf, 4);
 
 	return buf;
 }
 
-static void pmic_write_reg(struct spi_device *spi, int reg, uint32_t val)
+static void pmic_write_reg(struct pmic_priv *pmic, int reg, uint32_t val)
 {
 	uint32_t buf = MXC_PMIC_REG_NUM(reg) | MXC_PMIC_WRITE | (val & 0xffffff);
 
-	spi_rw(pmic_spi, &buf, 4);
+	spi_rw(pmic->spi, &buf, 4);
 }
+
+static struct pmic_priv *pmic_device;
 
 int pmic_power(void)
 {
-	if(!pmic_spi) {
+	if(!pmic_device) {
 		printf("%s: no pmic device available\n", __FUNCTION__);
 		return -ENODEV;
 	}
 
-	pmic_write_reg(pmic_spi, REG_SWITCHERS(0),
+	pmic_write_reg(pmic_device, REG_SWITCHERS(0),
 			SWX_VOLTAGE(SWX_VOLTAGE_1_450) |
 			SWX_VOLTAGE_DVS(SWX_VOLTAGE_1_450) |
 			SWX_VOLTAGE_STANDBY(SWX_VOLTAGE_1_450));
 
-	pmic_write_reg(pmic_spi, REG_SWITCHERS(4),
+	pmic_write_reg(pmic_device, REG_SWITCHERS(4),
 		SW1A_MODE(SWX_MODE_NO_PULSE_SKIP) |
 		SW1A_MODE_STANDBY(SWX_MODE_NO_PULSE_SKIP)|
 		SW1A_SOFTSTART |
@@ -159,7 +164,7 @@ int pmic_power(void)
 	return 0;
 }
 
-ssize_t pmic_read(struct device_d *dev, void *_buf, size_t count, ulong offset, ulong flags)
+ssize_t pmic_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count >> 2;
 	uint32_t *buf = _buf;
@@ -167,7 +172,7 @@ ssize_t pmic_read(struct device_d *dev, void *_buf, size_t count, ulong offset, 
 	offset >>= 2;
 
 	while (i) {
-		*buf = pmic_read_reg(pmic_spi, offset);
+		*buf = pmic_read_reg(pmic_device, offset);
 		buf++;
 		i--;
 		offset++;
@@ -176,7 +181,7 @@ ssize_t pmic_read(struct device_d *dev, void *_buf, size_t count, ulong offset, 
 	return count;
 }
 
-ssize_t pmic_write(struct device_d *dev, const void *_buf, size_t count, ulong offset, ulong flags)
+ssize_t pmic_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count >> 2;
 	const uint32_t *buf = _buf;
@@ -184,7 +189,7 @@ ssize_t pmic_write(struct device_d *dev, const void *_buf, size_t count, ulong o
 	offset >>= 2;
 
 	while (i) {
-		pmic_write_reg(pmic_spi, offset, *buf);
+		pmic_write_reg(pmic_device, offset, *buf);
 		buf++;
 		i--;
 		offset++;
@@ -193,26 +198,34 @@ ssize_t pmic_write(struct device_d *dev, const void *_buf, size_t count, ulong o
 	return count;
 }
 
+static struct file_operations pmic_fops = {
+	.lseek	= dev_lseek_default,
+	.read	= pmic_read,
+	.write	= pmic_write,
+};
+
 static int pmic_probe(struct device_d *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 
-	dev->size = 256;
+	if (pmic_device)
+		return -EBUSY;
+
+	pmic_device = xzalloc(sizeof(*pmic_device));
+
+	pmic_device->cdev.name = "pmic";
+	pmic_device->cdev.size = 256;
+	pmic_device->cdev.dev = dev;
+	pmic_device->cdev.ops = &pmic_fops;
 
 	spi->mode = SPI_MODE_2 | SPI_CS_HIGH;
 	spi->bits_per_word = 32;
-	pmic_spi = spi;
+	pmic_device->spi = spi;
+
+	devfs_create(&pmic_device->cdev);
 
 	return 0;
 }
-
-static struct file_operations pmic_fops = {
-	.open	= dev_open_default,
-	.lseek	= dev_lseek_default,
-	.close	= dev_close_default,
-	.read	= pmic_read,
-	.write	= pmic_write,
-};
 
 static struct driver_d pmic_driver = {
 	.name  = "mc13783",

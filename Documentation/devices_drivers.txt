@@ -26,17 +26,10 @@ char id[MAX_DRIVER_NAME];
 The id is used to uniquely identify a device in the system. The id will show up
 under /dev/ as the device's name. Usually this is something like eth0 or nor0.
 
-unsigned long type;
-
-This describes the type (or class) of this device. Have a look at include/driver.h
-to see a list of known device types. Currently this includes DEVICE_TYPE_ETHER,
-DEVICE_TYPE_CONSOLE and others.
-
 void *type_data;
 
 Devices of a particular class normaly need to store more information than struct
-device holds. This entry holds a pointer to the type specific struct, so a
-a device of type DEVICE_TYPE_ETHER sets this to a struct eth_device.
+device holds. This entry holds a pointer to the type specific struct.
 
 void *priv;
 

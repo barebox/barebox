@@ -64,7 +64,6 @@ static struct driver_d hf_drv = {
 	.read  = hf_read,
 	.write = hf_write,
 	.info  = hf_info,
-	.type  = DEVICE_TYPE_BLOCK,
 };
 
 static int hf_init(void)
@@ -88,7 +87,6 @@ int u_boot_register_filedev(struct hf_platform_data *hf, char *name_template)
 	get_free_deviceid(dev->id, name_template);
 	dev->size = hf->size;
 	dev->map_base = hf->map_base;
-	dev->type = DEVICE_TYPE_BLOCK;
 
 	return register_device(dev);
 }

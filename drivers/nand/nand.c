@@ -160,7 +160,6 @@ static int nand_device_probe(struct device_d *dev)
 static struct driver_d nand_device_driver = {
 	.name   = "nand_device",
 	.probe  = nand_device_probe,
-	.type	= DEVICE_TYPE_NAND,
 };
 
 static int nand_init(void)

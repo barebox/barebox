@@ -27,18 +27,6 @@
 
 #define MAX_DRIVER_NAME 32
 
-#define DEVICE_TYPE_UNKNOWN     0
-#define DEVICE_TYPE_ETHER       1
-#define DEVICE_TYPE_CONSOLE     2
-#define DEVICE_TYPE_DRAM	3
-#define DEVICE_TYPE_BLOCK	4
-#define DEVICE_TYPE_FS		5
-#define DEVICE_TYPE_MIIPHY	6
-#define DEVICE_TYPE_NAND	7
-#define DEVICE_TYPE_NAND_BB	8
-#define DEVICE_TYPE_PARTITION	9
-#define MAX_DEVICE_TYPE         9
-
 #include <param.h>
 
 /**
@@ -91,9 +79,8 @@ struct device_d {
 	void *platform_data; /*! board specific information about this device */
 
 	/*! Devices of a particular class normaly need to store more
-	 * information than struct device holds. This entry holds a pointer to
-	 * the type specific struct, so a a device of type DEVICE_TYPE_ETHER
-	 * sets this to a struct eth_device. */
+	 * information than struct device holds.
+	 */
 	void *priv;
 	void *type_data;     /*! In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
@@ -107,11 +94,7 @@ struct device_d {
 
 	struct device_d *parent;   /* our parent, NULL if not present */
 
-	/*! This describes the type (or class) of this device. Have a look at
-	 * include/driver.h to see a list of known device types. Currently this
-	 * includes DEVICE_TYPE_ETHER, DEVICE_TYPE_CONSOLE and others. */
 	struct bus_type *bus;
-	unsigned long type;
 
 	/*! The parameters for this device. This is used to carry information
 	 * of board specific data from the board code to the device driver. */

@@ -272,10 +272,6 @@ static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
 			}
 			dev = cdev->dev;
 
-			if (dev->type != DEVICE_TYPE_NAND_BB) {
-				printf("not a nand bb device: %s\n", dev);
-				return 1;
-			}
 			bb = dev->priv;
 			close(bb->fd);
 			unregister_device(dev);

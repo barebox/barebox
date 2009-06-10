@@ -242,6 +242,10 @@ static int devfs_probe(struct device_d *dev)
 	return 0;
 }
 
+static void devfs_delete(struct device_d *dev)
+{
+}
+
 static struct fs_driver_d devfs_driver = {
 	.type      = FS_TYPE_DEVFS,
 	.read      = devfs_read,
@@ -262,6 +266,7 @@ static struct fs_driver_d devfs_driver = {
 	.drv = {
 		.type   = DEVICE_TYPE_FS,
 		.probe  = devfs_probe,
+		.remove = devfs_delete,
 		.name = "devfs",
 		.type_data = &devfs_driver,
 	}

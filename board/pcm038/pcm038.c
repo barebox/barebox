@@ -161,9 +161,7 @@ static int pcm038_devices_init(void)
 	register_device(&cfi_dev);
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
-#if 0
 	register_device(&sram_dev);
-#endif
 
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock

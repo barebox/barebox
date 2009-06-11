@@ -76,15 +76,14 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->max_speed_hz = chip->max_speed_hz;
 	proxy->mode = chip->mode;
 	strcpy(proxy->dev.name, chip->name);
-	strcpy(proxy->dev.id, "pmic");
 	proxy->dev.type_data = proxy;
 	status = register_device(&proxy->dev);
 
 	/* drivers may modify this initial i/o setup */
 	status = master->setup(proxy);
 	if (status < 0) {
-		printf("can't %s %s, status %d\n",
-				"setup", proxy->dev.id, status);
+		printf("can't setup %s, status %d\n",
+				proxy->dev.name, status);
 		goto fail;
 	}
 

@@ -154,7 +154,7 @@ static int asix_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 	void *buf;
 	int err = -ENOMEM;
 
-	dev_dbg(dev->edev.dev, "asix_read_cmd() cmd=0x%02x value=0x%04x index=0x%04x size=%d",
+	dev_dbg(&dev->edev.dev, "asix_read_cmd() cmd=0x%02x value=0x%04x index=0x%04x size=%d",
 		cmd, value, index, size);
 
 	buf = malloc(size);
@@ -187,7 +187,7 @@ static int asix_write_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 	void *buf = NULL;
 	int err = -ENOMEM;
 
-	dev_dbg(dev->edev.dev, "asix_write_cmd() cmd=0x%02x value=0x%04x index=0x%04x size=%d",
+	dev_dbg(&dev->edev.dev, "asix_write_cmd() cmd=0x%02x value=0x%04x index=0x%04x size=%d",
 		cmd, value, index, size);
 
 	if (data) {
@@ -218,7 +218,7 @@ static inline int asix_set_sw_mii(struct usbnet *dev)
 	int ret;
 	ret = asix_write_cmd(dev, AX_CMD_SET_SW_MII, 0x0000, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to enable software MII access");
+		dev_err(&dev->edev.dev, "Failed to enable software MII access");
 	return ret;
 }
 
@@ -227,7 +227,7 @@ static inline int asix_set_hw_mii(struct usbnet *dev)
 	int ret;
 	ret = asix_write_cmd(dev, AX_CMD_SET_HW_MII, 0x0000, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to enable hardware MII access");
+		dev_err(&dev->edev.dev, "Failed to enable hardware MII access");
 	return ret;
 }
 
@@ -243,7 +243,7 @@ static int asix_mdio_read(struct miiphy_device *mdev, uint8_t phy_id,
 				(__u16)loc, 2, &res);
 	asix_set_hw_mii(dev);
 
-	dev_dbg(dev->edev.dev, "asix_mdio_read() phy_id=0x%02x, loc=0x%02x, returns=0x%04x",
+	dev_dbg(&dev->edev.dev, "asix_mdio_read() phy_id=0x%02x, loc=0x%02x, returns=0x%04x",
 			phy_id, loc, le16_to_cpu(res));
 
 	*val = le16_to_cpu(res);
@@ -258,7 +258,7 @@ static int asix_mdio_write(struct miiphy_device *mdev, uint8_t phy_id,
 	struct usbnet *dev = eth->priv;
 	__le16 res = cpu_to_le16(val);
 
-	dev_dbg(dev->edev.dev, "asix_mdio_write() phy_id=0x%02x, loc=0x%02x, val=0x%04x",
+	dev_dbg(&dev->edev.dev, "asix_mdio_write() phy_id=0x%02x, loc=0x%02x, val=0x%04x",
 			phy_id, loc, val);
 
 	asix_set_sw_mii(dev);
@@ -273,13 +273,13 @@ static inline int asix_get_phy_addr(struct usbnet *dev)
 	u8 buf[2];
 	int ret = asix_read_cmd(dev, AX_CMD_READ_PHY_ID, 0, 0, 2, buf);
 
-	dev_dbg(dev->edev.dev, "asix_get_phy_addr()");
+	dev_dbg(&dev->edev.dev, "asix_get_phy_addr()");
 
 	if (ret < 0) {
-		dev_err(dev->edev.dev, "Error reading PHYID register: %02x", ret);
+		dev_err(&dev->edev.dev, "Error reading PHYID register: %02x", ret);
 		goto out;
 	}
-	dev_dbg(dev->edev.dev, "asix_get_phy_addr() returning 0x%04x", *((__le16 *)buf));
+	dev_dbg(&dev->edev.dev, "asix_get_phy_addr() returning 0x%04x", *((__le16 *)buf));
 	ret = buf[1];
 
 out:
@@ -292,7 +292,7 @@ static int asix_sw_reset(struct usbnet *dev, u8 flags)
 
         ret = asix_write_cmd(dev, AX_CMD_SW_RESET, flags, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to send software reset: %02x", ret);
+		dev_err(&dev->edev.dev, "Failed to send software reset: %02x", ret);
 
 	return ret;
 }
@@ -303,7 +303,7 @@ static u16 asix_read_rx_ctl(struct usbnet *dev)
 	int ret = asix_read_cmd(dev, AX_CMD_READ_RX_CTL, 0, 0, 2, &v);
 
 	if (ret < 0) {
-		dev_err(dev->edev.dev, "Error reading RX_CTL register: %02x", ret);
+		dev_err(&dev->edev.dev, "Error reading RX_CTL register: %02x", ret);
 		goto out;
 	}
 	ret = le16_to_cpu(v);
@@ -315,10 +315,10 @@ static int asix_write_rx_ctl(struct usbnet *dev, u16 mode)
 {
 	int ret;
 
-	dev_dbg(dev->edev.dev, "asix_write_rx_ctl() - mode = 0x%04x", mode);
+	dev_dbg(&dev->edev.dev, "asix_write_rx_ctl() - mode = 0x%04x", mode);
 	ret = asix_write_cmd(dev, AX_CMD_WRITE_RX_CTL, mode, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to write RX_CTL mode to 0x%04x: %02x",
+		dev_err(&dev->edev.dev, "Failed to write RX_CTL mode to 0x%04x: %02x",
 		       mode, ret);
 
 	return ret;
@@ -330,7 +330,7 @@ static u16 asix_read_medium_status(struct usbnet *dev)
 	int ret = asix_read_cmd(dev, AX_CMD_READ_MEDIUM_STATUS, 0, 0, 2, &v);
 
 	if (ret < 0) {
-		dev_err(dev->edev.dev, "Error reading Medium Status register: %02x", ret);
+		dev_err(&dev->edev.dev, "Error reading Medium Status register: %02x", ret);
 		goto out;
 	}
 	ret = le16_to_cpu(v);
@@ -342,10 +342,10 @@ static int asix_write_medium_mode(struct usbnet *dev, u16 mode)
 {
 	int ret;
 
-	dev_dbg(dev->edev.dev, "asix_write_medium_mode() - mode = 0x%04x", mode);
+	dev_dbg(&dev->edev.dev, "asix_write_medium_mode() - mode = 0x%04x", mode);
 	ret = asix_write_cmd(dev, AX_CMD_WRITE_MEDIUM_MODE, mode, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to write Medium Mode mode to 0x%04x: %02x",
+		dev_err(&dev->edev.dev, "Failed to write Medium Mode mode to 0x%04x: %02x",
 			mode, ret);
 
 	return ret;
@@ -355,10 +355,10 @@ static int asix_write_gpio(struct usbnet *dev, u16 value, int sleep)
 {
 	int ret;
 
-	dev_dbg(dev->edev.dev,"asix_write_gpio() - value = 0x%04x", value);
+	dev_dbg(&dev->edev.dev,"asix_write_gpio() - value = 0x%04x", value);
 	ret = asix_write_cmd(dev, AX_CMD_WRITE_GPIOS, value, 0, 0, NULL);
 	if (ret < 0)
-		dev_err(dev->edev.dev, "Failed to write GPIO value 0x%04x: %02x",
+		dev_err(&dev->edev.dev, "Failed to write GPIO value 0x%04x: %02x",
 			value, ret);
 
 	if (sleep)

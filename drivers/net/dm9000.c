@@ -480,7 +480,6 @@ static int dm9000_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct dm9000_priv));
 	dev->type_data = edev;
-	edev->dev = dev;
 	edev->priv = (struct dm9000_priv *)(edev + 1);
 
 	if (!dev->platform_data) {

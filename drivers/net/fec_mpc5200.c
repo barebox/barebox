@@ -676,7 +676,6 @@ int mpc5xxx_fec_probe(struct device_d *dev)
         dev->type_data = edev;
 	fec = (mpc5xxx_fec_priv *)malloc(sizeof(*fec));
         edev->priv = fec;
-        edev->dev  = dev;
 	edev->open = mpc5xxx_fec_open,
 	edev->init = mpc5xxx_fec_init,
 	edev->send = mpc5xxx_fec_send,

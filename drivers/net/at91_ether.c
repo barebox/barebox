@@ -265,7 +265,6 @@ static int at91rm9200_eth_init (struct device_d *dev)
 
 	edev = malloc(sizeof(struct eth_device));
 	dev->priv = edev;
-	edev->dev = dev;
 
 	edev->open = at91rm9200_eth_open;
 	edev->send = at91rm9200_eth_send;

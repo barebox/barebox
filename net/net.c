@@ -258,7 +258,7 @@ NetLoop(proto_t protocol)
 		return -1;
 	}
 
-	ip = dev_get_param_ip(eth_current->dev, "ipaddr");
+	ip = dev_get_param_ip(&eth_current->dev, "ipaddr");
 	NetCopyIP(&NetOurIP, &ip);
 
 	/* XXX problem with bss workaround */
@@ -291,16 +291,16 @@ NetLoop(proto_t protocol)
 		return -1;
 
 restart:
-	string_to_ethaddr(dev_get_param(eth_get_current()->dev, "ethaddr"),
+	string_to_ethaddr(dev_get_param(&eth_get_current()->dev, "ethaddr"),
 			NetOurEther);
 
 	NetState = NETLOOP_CONTINUE;
 
-	NetOurGatewayIP = dev_get_param_ip(eth_current->dev, "gateway");
-	NetOurSubnetMask = dev_get_param_ip(eth_current->dev, "netmask");
+	NetOurGatewayIP = dev_get_param_ip(&eth_current->dev, "gateway");
+	NetOurSubnetMask = dev_get_param_ip(&eth_current->dev, "netmask");
 	NetOurVLAN = getenv_VLAN("vlan");
 	NetOurNativeVLAN = getenv_VLAN("nvlan");
-	NetServerIP = dev_get_param_ip(eth_current->dev, "serverip");
+	NetServerIP = dev_get_param_ip(&eth_current->dev, "serverip");
 
 	/*
 	 *	Start the ball rolling with the given start function.  From
@@ -894,7 +894,7 @@ NetReceive(uchar * inpkt, int len)
 
 static int net_check_prereq (proto_t protocol)
 {
-	char *ethid = eth_get_current()->dev->id;
+	struct eth_device *edev = eth_get_current();
 
 	switch (protocol) {
 		/* Fall through */
@@ -920,13 +920,13 @@ static int net_check_prereq (proto_t protocol)
 	case NETCONS:
 	case TFTP:
 		if (NetServerIP == 0) {
-			printf("*** ERROR: `%s.serverip' not set\n", ethid);
+			printf("*** ERROR: `%s.serverip' not set\n", dev_id(&edev->dev));
 			return (1);
 		}
     common:
 
 		if (NetOurIP == 0) {
-			printf("*** ERROR: `%s.ipaddr' not set\n", ethid);
+			printf("*** ERROR: `%s.ipaddr' not set\n", dev_id(&edev->dev));
 			return (1);
 		}
 		/* Fall through */
@@ -935,7 +935,7 @@ static int net_check_prereq (proto_t protocol)
 	case RARP:
 	case BOOTP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
-			printf("*** ERROR: `%s.ethaddr' not set\n", ethid);
+			printf("*** ERROR: `%s.ethaddr' not set\n", dev_id(&edev->dev));
 			return (1);
 		}
 		/* Fall through */

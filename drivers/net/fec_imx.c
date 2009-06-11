@@ -538,7 +538,6 @@ static int fec_probe(struct device_d *dev)
         dev->type_data = edev;
 	fec = (struct fec_priv *)malloc(sizeof(*fec));
         edev->priv = fec;
-        edev->dev  = dev;
 	edev->open = fec_open,
 	edev->init = fec_init,
 	edev->send = fec_send,

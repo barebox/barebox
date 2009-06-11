@@ -450,7 +450,6 @@ static int cs8900_probe(struct device_d *dev)
 	edev = (struct eth_device *)malloc(sizeof(struct eth_device));
 	dev->type_data = edev;
 	edev->priv = priv;
-	edev->dev = dev;
 
 	edev->init = cs8900_dev_init;
 	edev->open = cs8900_open;

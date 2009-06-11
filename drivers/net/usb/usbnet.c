@@ -112,7 +112,7 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 		tx_buffer[len++] = 0;
 
 	ret = usb_bulk_msg(dev->udev, dev->out, tx_buffer, len, &alen, 1000);
-	dev_dbg(edev->dev, "%s: ret: %d len: %d alen: %d\n", __func__, ret, len, alen);
+	dev_dbg(&edev->dev, "%s: ret: %d len: %d alen: %d\n", __func__, ret, len, alen);
 
 	return ret;
 }
@@ -125,7 +125,7 @@ static int usbnet_recv(struct eth_device *edev)
 	struct driver_info	*info = dev->driver_info;
 	int len, ret, alen = 0;
 
-	dev_dbg(edev->dev, "%s\n",__func__);
+	dev_dbg(&edev->dev, "%s\n",__func__);
 
 	len = dev->rx_urb_size;
 
@@ -149,14 +149,14 @@ static int usbnet_init(struct eth_device *edev)
 	struct driver_info      *info = dev->driver_info;
 	int ret = 0;
 
-	dev_dbg(edev->dev, "%s\n",__func__);
+	dev_dbg(&edev->dev, "%s\n",__func__);
 
 	/* put into "known safe" state */
 	if (info->reset)
 		ret = info->reset(dev);
 
 	if (ret) {
-                dev_info (edev->dev, "open reset fail (%d)", ret);
+                dev_info(&edev->dev, "open reset fail (%d)", ret);
                 return ret;
         }
 
@@ -169,7 +169,7 @@ static int usbnet_open(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*)edev->priv;
 
-	dev_dbg(edev->dev, "%s\n",__func__);
+	dev_dbg(&edev->dev, "%s\n",__func__);
 
 	if (miiphy_wait_aneg(&dev->miiphy))
 		return -1;
@@ -181,7 +181,7 @@ static int usbnet_open(struct eth_device *edev)
 
 static void usbnet_halt(struct eth_device *edev)
 {
-	dev_dbg(edev->dev, "%s\n",__func__);
+	dev_dbg(&edev->dev, "%s\n",__func__);
 }
 
 int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
@@ -191,7 +191,7 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	struct driver_info *info;
 	int status;
 
-	dev_dbg(edev->dev, "%s\n", __func__);
+	dev_dbg(&edev->dev, "%s\n", __func__);
 
 	undev = xzalloc(sizeof (*undev));
 
@@ -206,10 +206,6 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev->recv = usbnet_recv,
 	edev->halt = usbnet_halt,
 	edev->priv = undev;
-	edev->dev  = &undev->dev;
-
-	get_free_deviceid(edev->dev->id, "eth");
-	sprintf(edev->dev->name, "%s", "usbnet");
 
 	info = (struct driver_info *)prod->driver_info;
 	undev->driver_info = info;
@@ -224,14 +220,11 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 		undev->rx_urb_size = 1514; /* FIXME: What to put here? */
 	undev->maxpacket = usb_maxpacket(undev->udev, undev->out);
 
-	/* FIXME: eth layer should have the device and register it */
-	register_device(edev->dev);
-
 	eth_register(edev);
 
 	return 0;
 out1:
-	dev_dbg(edev->dev, "err: %d\n", status);
+	dev_dbg(&edev->dev, "err: %d\n", status);
 	return status;
 }
 
@@ -242,7 +235,7 @@ void usbnet_disconnect(struct usb_device *usbdev)
 	struct driver_info *info;
 
 	eth_unregister(edev);
-	unregister_device(edev->dev);
+	unregister_device(&edev->dev);
 
 	info = undev->driver_info;
 	if (info->unbind)

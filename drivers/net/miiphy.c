@@ -26,6 +26,7 @@
 #include <miiphy.h>
 #include <clock.h>
 #include <net.h>
+#include <malloc.h>
 
 int miiphy_restart_aneg(struct miiphy_device *mdev)
 {
@@ -175,16 +176,28 @@ static struct file_operations miiphy_ops = {
 static int miiphy_probe(struct device_d *dev)
 {
 	struct miiphy_device *mdev = dev->priv;
-	char name[MAX_DRIVER_NAME];
 
-	get_free_deviceid(name, "phy");
-	mdev->cdev.name = strdup(name);
+	mdev->cdev.name = asprintf("phy%d", dev->id);
 	mdev->cdev.size = 32;
 	mdev->cdev.ops = &miiphy_ops;
 	mdev->cdev.priv = mdev;
 	devfs_create(&mdev->cdev);
 	return 0;
 }
+
+static void miiphy_remove(struct device_d *dev)
+{
+	struct miiphy_device *mdev = dev->priv;
+
+	free(mdev->cdev.name);
+	devfs_remove(&mdev->cdev);
+}
+
+static struct driver_d miiphy_drv = {
+        .name  = "miiphy",
+        .probe = miiphy_probe,
+	.remove = miiphy_remove,
+};
 
 int miiphy_register(struct miiphy_device *mdev)
 {
@@ -194,10 +207,10 @@ int miiphy_register(struct miiphy_device *mdev)
 	return register_device(&mdev->dev);
 }
 
-static struct driver_d miiphy_drv = {
-        .name  = "miiphy",
-        .probe = miiphy_probe,
-};
+void miiphy_unregister(struct miiphy_device *mdev)
+{
+	unregister_device(&mdev->dev);
+}
 
 static int miiphy_init(void)
 {

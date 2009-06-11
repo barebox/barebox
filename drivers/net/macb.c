@@ -421,7 +421,6 @@ static int macb_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct macb_device));
 	dev->type_data = edev;
-	edev->dev = dev;
 	edev->priv = (struct macb_device *)(edev + 1);
 	macb = edev->priv;
 

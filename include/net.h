@@ -12,6 +12,7 @@
 #ifndef __NET_H__
 #define __NET_H__
 
+#include <driver.h>
 #include <linux/types.h>
 #include <param.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
@@ -75,7 +76,7 @@ struct eth_device {
 	struct param_d param_serverip;
 	struct param_d param_ethaddr;
 
-	struct device_d *dev;
+	struct device_d dev;
 
 	struct list_head list;
 };

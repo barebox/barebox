@@ -246,7 +246,6 @@ static int netx_eth_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct netx_eth_priv));
 	dev->type_data = edev;
-	edev->dev = dev;
 	edev->priv = (struct netx_priv *)(edev + 1);
 
 	priv = edev->priv;

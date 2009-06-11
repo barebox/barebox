@@ -44,12 +44,14 @@ struct eth_device * eth_get_current(void)
 	return eth_current;
 }
 
-struct eth_device *eth_get_byname(char *name)
+struct eth_device *eth_get_byname(char *ethname)
 {
 	struct eth_device *edev;
+	char name[MAX_DRIVER_NAME];
 
 	list_for_each_entry(edev, &netdev_list, list) {
-		if (!strcmp(edev->dev->id, name))
+		sprintf(name, "%s%d", edev->dev.name, edev->dev.id);
+		if (!strcmp(ethname, name))
 			return edev;
 	}
 	return NULL;
@@ -120,7 +122,7 @@ static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const cha
 
 int eth_register(struct eth_device *edev)
 {
-        struct device_d *dev = edev->dev;
+        struct device_d *dev = &edev->dev;
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
 
@@ -128,6 +130,9 @@ int eth_register(struct eth_device *edev)
 		printf("no get_mac_address found for current eth device\n");
 		return -1;
 	}
+
+	strcpy(edev->dev.name, "eth");
+	register_device(&edev->dev);
 
 	dev->type_data = edev;
 	edev->param_ip.name = "ipaddr";

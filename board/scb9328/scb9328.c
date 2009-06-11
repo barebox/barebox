@@ -60,7 +60,6 @@ static struct dm9000_platform_data dm9000_data = {
 
 static struct device_d dm9000_dev = {
 	.name     = "dm9000",
-	.id       = "eth0",
 	.map_base = 0x16000000,
 	.size     = 8,
 	.platform_data = &dm9000_data,
@@ -108,7 +107,6 @@ device_initcall(scb9328_devices_init);
 
 static struct device_d scb9328_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };

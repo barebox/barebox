@@ -49,8 +49,6 @@ static struct device_d sdram_dev = {
 
 static struct device_d cfi_dev = {
 	.name		= "cfi_flash",
-	.id		= "nor0",
-
 	.map_base	= 0x10000000,
 	.size		= 0,	/* zero means autodetect size */
 };
@@ -62,7 +60,6 @@ static struct at91sam_ether_platform_data macb_pdata = {
 
 static struct device_d macb_dev = {
 	.name		= "macb",
-	.id		= "eth0",
 	.map_base	= AT91C_BASE_MACB,
 	.size		= 0x1000,
 	.platform_data	= &macb_pdata,
@@ -122,7 +119,6 @@ device_initcall(mmccpu_devices_init);
 
 static struct device_d mmccpu_serial_device = {
 	.name		= "atmel_serial",
-	.id		= "cs0",
 	.map_base	= AT91C_BASE_DBGU,
 	.size		= 4096,
 };

@@ -25,7 +25,7 @@
 #include <asm/arch/linux.h>
 #include <xfuncs.h>
 
-int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd)
+int u_boot_register_console(char *name, int stdinfd, int stdoutfd)
 {
 	struct device_d *dev;
 	struct linux_console_data *data;
@@ -35,9 +35,9 @@ int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd)
 	data = (struct linux_console_data *)(dev + 1);
 
 	dev->platform_data = data;
+	strcpy(dev->name, name);
 
 	strcpy(dev->name, "console");
-
 
 	if (stdinfd >= 0)
 		data->flags = CONSOLE_STDIN;
@@ -46,8 +46,6 @@ int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd)
 
 	data->stdoutfd = stdoutfd;
 	data->stdinfd  = stdinfd;
-
-	get_free_deviceid(dev->id, name_template);
 
 	return register_device(dev);
 }

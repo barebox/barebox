@@ -605,7 +605,6 @@ static struct NS16550_plat serial_plat = {
 
 static struct device_d sdp3430_serial_device = {
 	.name = "serial_ns16550",
-	.id = "uart3",
 	.map_base = OMAP_UART3_BASE,
 	.size = 1024,
 	.platform_data = (void *)&serial_plat,

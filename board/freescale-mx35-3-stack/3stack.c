@@ -40,8 +40,6 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xa0000000,
 	.size     = 64 * 1024 * 1024,
 };
@@ -64,7 +62,6 @@ static struct fec_platform_data fec_info = {
 
 static struct device_d fec_dev = {
 	.name     = "fec_imx",
-	.id       = "eth0",
 	.map_base = 0x50038000,
 	.platform_data	= &fec_info,
 };
@@ -74,7 +71,6 @@ static struct device_d fec_dev = {
  */
 static struct device_d smc911x_dev = {
 	.name     = "smc911x",
-	.id       = "eth0",
 	.map_base = IMX_CS5_BASE,
 	.size     = IMX_CS5_RANGE,	/* area size */
 };
@@ -108,7 +104,6 @@ device_initcall(f3s_devices_init);
 
 static struct device_d f3s_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };

@@ -70,7 +70,6 @@ static struct device_d sram_dev = {
  */
 static struct device_d network_dev = {
 	.name     = "smc911x",
-	.id       = "eth0",
 	.map_base = IMX_CS1_BASE,
 	.size     = IMX_CS1_RANGE,	/* area size */
 };
@@ -128,14 +127,12 @@ static struct device_d nand_dev = {
 #ifdef CONFIG_USB
 static struct device_d usbotg_dev = {
 	.name     = "ehci",
-	.id       = "ehci0",
 	.map_base = IMX_OTG_BASE,
 	.size     = 0x200,
 };
 
 static struct device_d usbh2_dev = {
 	.name     = "ehci",
-	.id       = "ehci1",
 	.map_base = IMX_OTG_BASE + 0x400,
 	.size     = 0x200,
 };
@@ -285,7 +282,6 @@ device_initcall(imx31_devices_init);
 
 static struct device_d imx31_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 16 * 1024,
 };

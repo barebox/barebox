@@ -29,7 +29,6 @@
 
 static struct device_d tap_device = {
         .name     = "tap",
-        .id       = "eth0",
 };
 
 static int devices_init(void)

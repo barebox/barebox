@@ -33,8 +33,6 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
 };
@@ -57,7 +55,6 @@ struct netx_eth_platform_data eth0_data = {
 
 static struct device_d netx_eth_dev0 = {
 	.name		= "netx-eth",
-	.id		= "eth0",
 	.platform_data	= &eth0_data,
 };
 
@@ -67,7 +64,6 @@ struct netx_eth_platform_data eth1_data = {
 
 static struct device_d netx_eth_dev1 = {
 	.name		= "netx-eth",
-	.id		= "eth1",
 	.platform_data	= &eth1_data,
 };
 
@@ -95,7 +91,6 @@ device_initcall(netx_devices_init);
 
 static struct device_d netx_serial_device = {
 	.name     = "netx_serial",
-	.id       = "cs0",
 	.map_base = NETX_PA_UART0,
 	.size     = 0x40,
 };

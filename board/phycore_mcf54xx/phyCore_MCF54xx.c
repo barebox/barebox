@@ -46,7 +46,6 @@ ulong mcfv4e_get_bus_clk(void)
 static struct device_d cfi_dev =
 {
 	.name     = "cfi_flash",
-	.id       = "nor0",
 	.map_base = CFG_FLASH_ADDRESS,
 	.size     = CFG_FLASH_SIZE,
 };
@@ -62,7 +61,6 @@ static struct fec_platform_data fec_info =
 static struct device_d network_dev0 =
 {
 	.name     = "fec_mcf54xx",
-	.id       = "eth0",
 	.map_base = MCF_FEC_ADDR(0),
 	.size     = MCF_FEC_SIZE(0),	   /* area size */
 	.platform_data	= &fec_info,
@@ -70,7 +68,6 @@ static struct device_d network_dev0 =
 static struct device_d network_dev1 =
 {
 	.name     = "fec_mcf54xx",
-	.id       = "eth1",
 	.map_base = MCF_FEC_ADDR(1),
 	.size     = MCF_FEC_SIZE(1),	   /* area size */
 	.platform_data	= &fec_info,
@@ -119,7 +116,6 @@ device_initcall(mcfv4e_devices_init);
 static struct device_d mcfv4e_serial_device =
 {
 	.name     = "mcfv4e_serial",
-	.id       = "cs0",
 	.map_base = 1 + CFG_EARLY_UART_PORT,
 	.size     = 16 * 1024,
 };

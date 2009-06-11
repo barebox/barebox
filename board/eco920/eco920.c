@@ -42,8 +42,6 @@ static struct cfi_platform_data cfi_info = {
 
 struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0x11000000,
 	.size     = 16 * 1024 * 1024,
 
@@ -64,7 +62,6 @@ struct device_d sdram_dev = {
 
 static struct device_d at91_ath_dev = {
 	.name     = "at91_eth",
-	.id       = "eth0",
 };
 
 static int devices_init (void)

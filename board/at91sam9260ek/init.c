@@ -81,7 +81,6 @@ static struct at91sam_ether_platform_data macb_pdata = {
 
 static struct device_d macb_dev = {
 	.name     = "macb",
-	.id       = "eth0",
 	.map_base = AT91C_BASE_EMACB,
 	.size     = 0x1000,
 	.platform_data = &macb_pdata,
@@ -115,7 +114,6 @@ device_initcall(at91sam9260ek_devices_init);
 
 static struct device_d at91sam9260ek_serial_device = {
 	.name     = "atmel_serial",
-	.id       = "cs0",
 	.map_base = AT91C_BASE_DBGU,
 	.size     = 4096,
 };

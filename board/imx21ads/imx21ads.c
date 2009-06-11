@@ -38,8 +38,6 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xC8000000,
 	.size     = 32 * 1024 * 1024,
 };
@@ -69,7 +67,6 @@ static struct device_d nand_dev = {
 
 static struct device_d cs8900_dev = {
 	.name     = "cs8900",
-	.id       = "eth0",
 	.map_base = IMX_CS1_BASE,
 	// IRQ is connected to UART3_RTS
 };
@@ -141,7 +138,6 @@ device_initcall(mx21ads_devices_init);
 
 static struct device_d mx21ads_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };

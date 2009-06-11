@@ -6,8 +6,6 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0x20000000,
 	.size     = 32 * 1024 * 1024,
 };
@@ -26,7 +24,6 @@ static struct device_d sdram_dev = {
 
 static struct device_d smc911x_dev = {
 	.name     = "smc911x",
-	.id       = "eth0",
 	.map_base = 0x24000000,
 	.size     = 4096,
 };
@@ -55,7 +52,6 @@ device_initcall(ipe337_devices_init);
 
 static struct device_d blackfin_serial_device = {
 	.name     = "blackfin_serial",
-	.id       = "cs0",
 	.map_base = 0,
 	.size     = 4096,
 };

@@ -57,7 +57,6 @@ static struct fec_platform_data fec_info = {
 
 static struct device_d fec_dev = {
 	.name     = "fec_imx",
-	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
 };
@@ -126,7 +125,7 @@ static int pca100_devices_init(void)
 
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
-	nand = get_device_by_path("/dev/nand0");
+	nand = get_device_by_name("nand0");
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 
@@ -144,7 +143,6 @@ device_initcall(pca100_devices_init);
 
 static struct device_d pca100_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };

@@ -77,7 +77,6 @@ static struct fec_platform_data fec_info = {
 
 static struct device_d fec_dev = {
 	.name     = "fec_imx",
-	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
 };
@@ -211,7 +210,6 @@ device_initcall(pcm038_devices_init);
 
 static struct device_d pcm038_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };

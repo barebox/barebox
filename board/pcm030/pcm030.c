@@ -44,8 +44,6 @@
 
 struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xff000000,
 	.size     = 16 * 1024 * 1024,
 };
@@ -68,7 +66,6 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 
 struct device_d eth_dev = {
 	.name		= "fec_mpc5xxx",
-	.id		= "eth0",
 	.map_base	= MPC5XXX_FEC,
 	.platform_data	= &fec_info,
 };
@@ -89,14 +86,12 @@ device_initcall(devices_init);
 
 static struct device_d psc3 = {
 	.name     = "mpc5xxx_serial",
-	.id       = "psc3",
 	.map_base = MPC5XXX_PSC3,
 	.size     = 4096,
 };
 
 static struct device_d psc6 = {
 	.name     = "mpc5xxx_serial",
-	.id       = "psc6",
 	.map_base = MPC5XXX_PSC6,
 	.size     = 4096,
 };

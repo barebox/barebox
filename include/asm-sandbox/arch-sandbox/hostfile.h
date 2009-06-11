@@ -6,9 +6,10 @@ struct hf_platform_data {
 	size_t size;
 	unsigned long map_base;
 	char *filename;
+	char *name;
 };
 
-int u_boot_register_filedev(struct hf_platform_data *hf, char *name_template);
+int u_boot_register_filedev(struct hf_platform_data *hf);
 
 #endif /* __ASM_ARCH_HOSTFILE_H */
 

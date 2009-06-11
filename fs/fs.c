@@ -698,16 +698,16 @@ int mount(const char *device, const char *fsname, const char *_path)
 		}
 	}
 
+	fsdev = xzalloc(sizeof(struct fs_device_d));
 	if (!fs_drv->flags & FS_DRIVER_NO_DEV) {
-		parent_device = get_device_by_id(device + 5);
-		if (!parent_device) {
+		fsdev->backingstore = strdup(device);
+		if (!device) {
 			printf("need a device for driver %s\n", fsname);
 			errno = -ENODEV;
+			free(fsdev);
 			goto out;
 		}
 	}
-	fsdev = xzalloc(sizeof(struct fs_device_d));
-	fsdev->parent = parent_device;
 	sprintf(fsdev->dev.name, "%s", fsname);
 	fsdev->dev.type_data = fsdev;
 
@@ -755,6 +755,7 @@ int umount(const char *pathname)
 	struct mtab_entry *entry = mtab;
 	struct mtab_entry *last = mtab;
 	char *p = normalise_path(pathname);
+	struct fs_device_d *fsdev;
 
 	while(entry && strcmp(p, entry->path)) {
 		last = entry;
@@ -774,7 +775,9 @@ int umount(const char *pathname)
 		last->next = entry->next;
 
 	unregister_device(entry->dev);
-	free(entry->dev->type_data);
+	fsdev = entry->dev->type_data;
+	free(fsdev->backingstore);
+	free(fsdev);
 
 	return 0;
 }

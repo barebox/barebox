@@ -120,9 +120,13 @@ postcore_initcall(getc_buffer_flush);
 
 int console_register(struct console_device *newcdev)
 {
-	struct device_d *dev = newcdev->dev;
+	struct device_d *dev = &newcdev->class_dev;
 	int first = 0;
 	char ch;
+
+	strcpy(dev->name, "cs");
+	dev->type_data = newcdev->dev->type_data;
+	register_device(dev);
 
 	if (newcdev->setbrg) {
 		newcdev->baudrate_param.set = console_baudrate_set;

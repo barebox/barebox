@@ -88,7 +88,7 @@ struct mtab_entry {
 };
 
 struct fs_device_d {
-	struct device_d *parent; /* the device we are associated with */
+	char *backingstore; /* the device we are associated with */
 	struct device_d dev; /* our own device */
 
 	struct fs_driver_d *driver;

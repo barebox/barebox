@@ -1451,7 +1451,6 @@ static int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
 	flash_info_t *info = xzalloc(sizeof(flash_info_t));
-	char name[MAX_DRIVER_NAME];
 
 	dev->priv = (void *)info;
 
@@ -1466,8 +1465,7 @@ static int cfi_probe (struct device_d *dev)
 		return -ENODEV;
 	}
 
-	get_free_deviceid(name, "nor");
-	info->cdev.name = strdup(name);
+	info->cdev.name = asprintf("nor%d", dev->id);
 	info->cdev.size = info->size;
 	info->cdev.dev = dev;
 	info->cdev.ops = &cfi_ops;

@@ -220,7 +220,7 @@ void  flush_cache(unsigned long dummy1, unsigned long dummy2)
 extern void start_uboot(void);
 extern void mem_malloc_init(void *start, void *end);
 
-static int add_image(char *str, char *name_template)
+static int add_image(char *str, char *name)
 {
 	char *file;
 	int readonly = 0, map = 1;
@@ -257,6 +257,7 @@ static int add_image(char *str, char *name_template)
 	}
 
 	hf->size = s.st_size;
+	hf->name = strdup(name);
 
 	if (map) {
 		hf->map_base = (unsigned long)mmap(NULL, hf->size,
@@ -266,8 +267,7 @@ static int add_image(char *str, char *name_template)
 			printf("warning: mmapping %s failed\n", file);
 	}
 
-
-	ret = u_boot_register_filedev(hf, name_template);
+	ret = u_boot_register_filedev(hf);
 	if (ret)
 		goto err_out;
 	return 0;
@@ -286,6 +286,8 @@ int main(int argc, char *argv[])
 	void *ram;
 	int opt, ret, fd;
 	int malloc_size = 8 * 1024 * 1024;
+	char str[6];
+	int fdno = 0, envno = 0;
 
 	ram = malloc(malloc_size);
 	if (!ram) {
@@ -300,9 +302,11 @@ int main(int argc, char *argv[])
 			print_usage(basename(argv[0]));
 			exit(0);
 		case 'i':
-			ret = add_image(optarg, "fd");
+			sprintf(str, "fd%d", fdno);
+			ret = add_image(optarg, str);
 			if (ret)
 				exit(1);
+			fdno++;
 			break;
 		case 'm':
 			/* This option is broken. add_image needs malloc, so
@@ -312,9 +316,11 @@ int main(int argc, char *argv[])
 			malloc_size = strtoul(optarg, NULL, 0);
 			break;
 		case 'e':
+			sprintf(str, "env%d", envno);
 			ret = add_image(optarg, "env");
 			if (ret)
 				exit(1);
+			envno++;
 			break;
 		case 'O':
 			fd = open(optarg, O_WRONLY);

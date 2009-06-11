@@ -424,7 +424,6 @@ static int usb_new_device(struct usb_device *dev)
 	usb_hub_probe(dev, 0);
 
 	sprintf(dev->dev.name, "usb%d-%d", dev->host->busnum, dev->devnum);
-	sprintf(dev->dev.id, "usb%d-%d", dev->host->busnum, dev->devnum);
 
 	print_usb_device(dev);
 

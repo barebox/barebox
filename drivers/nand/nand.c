@@ -152,37 +152,16 @@ static struct file_operations nand_ops = {
 	.erase  = nand_erase,
 };
 
-static int nand_device_probe(struct device_d *dev)
-{
-	return 0;
-}
-
-static struct driver_d nand_device_driver = {
-	.name   = "nand_device",
-	.probe  = nand_device_probe,
-};
-
-static int nand_init(void)
-{
-	register_driver(&nand_device_driver);
-
-	return 0;
-}
-
-device_initcall(nand_init);
-
 int add_mtd_device(struct mtd_info *mtd)
 {
-	struct device_d *dev = &mtd->class_dev;
-	char name[MAX_DRIVER_NAME];
-
-	get_free_deviceid(name, "nand");
+	strcpy(mtd->class_dev.name, "nand");
+	register_device(&mtd->class_dev);
 
 	mtd->cdev.ops = &nand_ops;
 	mtd->cdev.size = mtd->size;
-	mtd->cdev.name = strdup(name);
-	mtd->cdev.dev = dev;
+	mtd->cdev.name = asprintf("nand%d", mtd->class_dev.id);
 	mtd->cdev.priv = mtd;
+	mtd->cdev.dev = &mtd->class_dev;
 
 	devfs_create(&mtd->cdev);
 

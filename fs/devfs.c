@@ -47,29 +47,37 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
-int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
 {
-	struct cdev *cdev = f->inode;
-
 	if (!cdev->ops->read)
 		return -ENOSYS;
 
-	return cdev->ops->read(cdev, buf, size,
-			f->pos + cdev->offset, f->flags);
+	return cdev->ops->read(cdev, buf, count, cdev->offset +offset, flags);
 }
 
-int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
 {
-	struct cdev *cdev = f->inode;
-
 	if (!cdev->ops->write)
 		return -ENOSYS;
 
-	return cdev->ops->write(cdev, buf, size,
-			f->pos + cdev->offset, f->flags);
+	return cdev->ops->write(cdev, buf, count, cdev->offset + offset, flags);
 }
 
-off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
+static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+{
+	struct cdev *cdev = f->inode;
+
+	return cdev_read(cdev, buf, size, f->pos, f->flags);
+}
+
+static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t size)
+{
+	struct cdev *cdev = f->inode;
+
+	return cdev_write(cdev, buf, size, f->pos, f->flags);
+}
+
+static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 {
 	struct cdev *cdev = f->inode;
 	off_t ret = -1;
@@ -83,7 +91,7 @@ off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 	return ret;
 }
 
-int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
+static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
 {
 	struct cdev *cdev = f->inode;
 
@@ -93,7 +101,7 @@ int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offs
 	return cdev->ops->erase(cdev, count, offset + cdev->offset);
 }
 
-int devfs_protect(struct device_d *_dev, FILE *f, size_t count, unsigned long offset, int prot)
+static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, unsigned long offset, int prot)
 {
 	struct cdev *cdev = f->inode;
 
@@ -287,6 +295,8 @@ int devfs_create(struct cdev *new)
 		return -EEXIST;
 
 	list_add_tail(&new->list, &cdev_list);
+	if (new->dev)
+		list_add_tail(&new->devices_list, &new->dev->cdevs);
 
 	return 0;
 }
@@ -294,6 +304,8 @@ int devfs_create(struct cdev *new)
 void devfs_remove(struct cdev *cdev)
 {
 	list_del(&cdev->list);
+	if (cdev->dev)
+		list_del(&cdev->devices_list);
 }
 
 int devfs_add_partition(const char *devname, unsigned long offset, size_t size,

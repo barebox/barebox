@@ -45,10 +45,10 @@ static void netboot_update_env (void)
 	char tmp[22];
 
 	if (NetOurGatewayIP)
-		dev_set_param_ip(eth_current->dev, "gateway", NetOurGatewayIP);
+		dev_set_param_ip(&eth_current->dev, "gateway", NetOurGatewayIP);
 
 	if (NetOurSubnetMask)
-		dev_set_param_ip(eth_current->dev, "netmask", NetOurSubnetMask);
+		dev_set_param_ip(&eth_current->dev, "netmask", NetOurSubnetMask);
 
 
 	if (NetOurHostName[0])
@@ -58,10 +58,10 @@ static void netboot_update_env (void)
 		setenv ("rootpath", NetOurRootPath);
 
 	if (NetOurIP)
-		dev_set_param_ip(eth_current->dev, "ipaddr", NetOurIP);
+		dev_set_param_ip(&eth_current->dev, "ipaddr", NetOurIP);
 
 	if (NetServerIP)
-		dev_set_param_ip(eth_current->dev, "serverip", NetServerIP);
+		dev_set_param_ip(&eth_current->dev, "serverip", NetServerIP);
 
 	if (NetOurDNSIP) {
 		ip_to_string (NetOurDNSIP, tmp);

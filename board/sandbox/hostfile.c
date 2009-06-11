@@ -29,9 +29,14 @@
 #include <asm/arch/hostfile.h>
 #include <xfuncs.h>
 
-static ssize_t hf_read(struct device_d *dev, void *buf, size_t count, ulong offset, ulong flags)
+struct hf_priv {
+	struct cdev cdev;
+	struct hf_platform_data *pdata;
+};
+
+static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
 {
-	struct hf_platform_data *hf = dev->platform_data;
+	struct hf_platform_data *hf = cdev->priv;
 	int fd = hf->fd;
 
 	if (linux_lseek(fd, offset) != offset)
@@ -40,9 +45,9 @@ static ssize_t hf_read(struct device_d *dev, void *buf, size_t count, ulong offs
 	return linux_read(fd, buf, count);
 }
 
-static ssize_t hf_write(struct device_d *dev, const void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t hf_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
 {
-	struct hf_platform_data *hf = dev->platform_data;
+	struct hf_platform_data *hf = cdev->priv;
 	int fd = hf->fd;
 
 	if (linux_lseek(fd, offset) != offset)
@@ -58,11 +63,30 @@ static void hf_info(struct device_d *dev)
 	printf("file: %s\n", hf->filename);
 }
 
-static struct driver_d hf_drv = {
-	.name  = "hostfile",
-	.probe = dummy_probe,
+static struct file_operations hf_fops = {
 	.read  = hf_read,
 	.write = hf_write,
+};
+
+static int hf_probe(struct device_d *dev)
+{
+	struct hf_platform_data *hf = dev->platform_data;
+	struct hf_priv *priv = xzalloc(sizeof(*priv));
+
+	priv->pdata = hf;
+
+	priv->cdev.name = hf->name;
+	priv->cdev.size = hf->size;
+	priv->cdev.ops = &hf_fops;
+	priv->cdev.priv = hf;
+	devfs_create(&priv->cdev);
+
+	return 0;
+}
+
+static struct driver_d hf_drv = {
+	.name  = "hostfile",
+	.probe = hf_probe,
 	.info  = hf_info,
 };
 
@@ -73,7 +97,7 @@ static int hf_init(void)
 
 device_initcall(hf_init);
 
-int u_boot_register_filedev(struct hf_platform_data *hf, char *name_template)
+int u_boot_register_filedev(struct hf_platform_data *hf)
 {
 	struct device_d *dev;
 
@@ -81,10 +105,7 @@ int u_boot_register_filedev(struct hf_platform_data *hf, char *name_template)
 
 	dev->platform_data = hf;
 
-	hf = dev->platform_data;
-
-	strcpy(dev->name,"hostfile");
-	get_free_deviceid(dev->id, name_template);
+	strcpy(dev->name, "hostfile");
 	dev->size = hf->size;
 	dev->map_base = hf->map_base;
 

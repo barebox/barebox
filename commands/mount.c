@@ -40,7 +40,7 @@ static int do_mount (cmd_tbl_t *cmdtp, int argc, char *argv[])
 			entry = mtab_next_entry(entry);
 			if (entry) {
 				printf("%s on %s type %s\n",
-					entry->parent_device ? entry->parent_device->id : "none",
+					entry->parent_device ? entry->parent_device->name : "none",
 					entry->path,
 					entry->dev->name);
 			}

@@ -142,7 +142,7 @@ const char *getenv (const char *name)
 		char *par = strchr(devstr, '.');
 		struct device_d *dev;
 		*par = 0;
-		dev = get_device_by_id(devstr);
+		dev = get_device_by_name(devstr);
 		if (dev) {
 				par++;
 				ret = dev_get_param(dev, par);
@@ -213,7 +213,7 @@ int setenv(const char *_name, const char *value)
 		struct device_d *dev;
 
 		*par++ = 0;
-		dev = get_device_by_id(name);
+		dev = get_device_by_name(name);
 		if (dev)
 			ret = dev_set_param(dev, par, value);
 		else

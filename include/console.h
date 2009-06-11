@@ -26,6 +26,7 @@
 
 #include <param.h>
 #include <list.h>
+#include <driver.h>
 
 #define CONSOLE_STDIN           (1 << 0)
 #define CONSOLE_STDOUT          (1 << 1)
@@ -33,6 +34,7 @@
 
 struct console_device {
 	struct device_d *dev;
+	struct device_d class_dev;
 
 	int (*tstc)(struct console_device *cdev);
 	void (*putc)(struct console_device *cdev, char c);

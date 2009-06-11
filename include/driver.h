@@ -67,7 +67,7 @@ struct device_d {
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
 	 * something like eth0 or nor0. */
-	char id[MAX_DRIVER_NAME];
+	int id;
 
 	/*! FIXME */
 	unsigned long size;
@@ -99,6 +99,8 @@ struct device_d {
 	/*! The parameters for this device. This is used to carry information
 	 * of board specific data from the board code to the device driver. */
 	struct param_d *param;
+
+	struct list_head cdevs;
 };
 
 /** @brief Describes a driver present in the system */
@@ -165,13 +167,13 @@ int dev_add_child(struct device_d *dev, struct device_d *child);
  */
 struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
-struct device_d *get_device_by_path(const char *path);
+struct device_d *get_device_by_name(const char *name);
 
 /* Find a free device id from the given template. This is archieved by
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(char *id, const char *id_template);
+int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
@@ -294,6 +296,7 @@ struct cdev {
 	void *priv;
 	struct device_d *dev;
 	struct list_head list;
+	struct list_head devices_list;
 	char *name;
 	unsigned long offset;
 	size_t size;
@@ -303,6 +306,8 @@ struct cdev {
 int devfs_create(struct cdev *);
 void devfs_remove(struct cdev *);
 struct cdev *cdev_by_name(const char *filename);
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
 
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)

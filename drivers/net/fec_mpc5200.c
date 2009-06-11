@@ -509,14 +509,6 @@ static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
 		printf("       writptr 0x%08x\n", fec->eth->rfifo_wrptr);
 	}
 }
-#else
-static void tfifo_print(char *devname, mpc5xxx_fec_priv *fec)
-{
-}
-
-static void rfifo_print(char *devname, mpc5xxx_fec_priv *fec)
-{
-}
 #endif /* DEBUG_FIFO */
 
 static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,

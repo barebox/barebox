@@ -88,8 +88,6 @@ static struct device_d macb_dev = {
 
 static int at91sam9260ek_devices_init(void)
 {
-	struct device_d *nand, *dev;
-
 	register_device(&sdram_dev);
 
 	gpio_direction_input(NAND_READY_GPIO);

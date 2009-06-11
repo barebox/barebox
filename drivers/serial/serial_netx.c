@@ -103,9 +103,6 @@ static int netx_serial_init_port(struct console_device *cdev)
 
 static int netx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct device_d *dev = cdev->dev;
-
-
 	return 0;
 }
 

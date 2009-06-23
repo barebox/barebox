@@ -10,7 +10,8 @@ curbit		.req	r3
 /* sp		.req	r13	*/
 /* lr		.req	r14	*/
 /* pc		.req	r15	*/
-	.text
+	.section .text.__umodsi3
+
 	.globl	 __umodsi3
 	.type  __umodsi3       ,function
 	.align 0

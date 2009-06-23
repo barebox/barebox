@@ -94,6 +94,8 @@
 
 .endm
 
+	.section .text.__divsi3
+
 	.align	5
 .globl __divsi3
 __divsi3:

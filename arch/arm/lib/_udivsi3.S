@@ -9,7 +9,8 @@ curbit		.req	r3
 /* sp		.req	r13	*/
 /* lr		.req	r14	*/
 /* pc		.req	r15	*/
-	.text
+	.section .text.__udivsi3
+
 	.globl	 __udivsi3
 	.type  __udivsi3       ,function
 	.align	0

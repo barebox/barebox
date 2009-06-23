@@ -23,6 +23,8 @@
 		subs	r2, r2, ip
 		bne	.Linsb_aligned
 
+.section .text.readsb
+
 ENTRY(__raw_readsb)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr

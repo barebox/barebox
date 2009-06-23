@@ -18,7 +18,7 @@
  *   also call with zero size.
  * Reworked by rmk.
  */
-                .text
+	.section .text.basic_bit_functions
 
 /*
  * Purpose  : Find a 'zero' bit

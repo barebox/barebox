@@ -30,6 +30,8 @@
 #endif
 		.endm
 
+.section .text.writesb
+
 .Loutsb_align:	rsb	ip, ip, #4
 		cmp	ip, r2
 		movgt	ip, r2

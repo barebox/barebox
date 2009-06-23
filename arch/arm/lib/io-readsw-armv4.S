@@ -18,6 +18,8 @@
 #endif
 		.endm
 
+.section .text.readsw
+
 .Linsw_align:	movs	ip, r1, lsl #31
 		bne	.Linsw_noalign
 		ldrh	ip, [r0]

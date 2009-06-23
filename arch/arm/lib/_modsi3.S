@@ -1,4 +1,6 @@
 
+	.section .text.__modsi3
+
 .macro ARM_MOD_BODY dividend, divisor, order, spare
 
 #if __LINUX_ARM_ARCH__ >= 5

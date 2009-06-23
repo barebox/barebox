@@ -1,0 +1,11 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = x ]; then
+	image=$jffs2
+else
+	image=$1
+fi
+
+. /env/bin/_update $image

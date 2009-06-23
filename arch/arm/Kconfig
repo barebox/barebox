@@ -14,6 +14,7 @@ config ARCH_TEXT_BASE
 	default 0x23f00000 if MACH_AT91SAM9260_EK
 	default 0x23f00000 if MACH_PM9263
 	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
+	default 0x31fc0000 if MACH_A9M2410
 	default 0x87f00000 if MACH_PCM043
 	default 0xa7f00000 if MACH_PCA100
 	default 0x23f00000 if MACH_MMCCPU
@@ -29,6 +30,7 @@ config BOARDINFO
 	default "Ronetix PM9263" if MACH_PM9263
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
+	default "Digi A9M2410" if MACH_A9M2410
 	default "Phytec phyCard-i.MX27" if MACH_PCA100
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 
@@ -193,6 +195,16 @@ config MACH_PM9263
 	select ARCH_AT91SAM9263
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
+
+config MACH_A9M2410
+	bool "Digi A9M2410"
+	select CPU_S3C2410
+	select MACH_HAS_LOWLEVEL_INIT
+	select S3C24XX_PLL_INIT
+	select S3C24XX_SDRAM_INIT
+	help
+	  Say Y here if you are using Digi's Connect Core 9M equipped
+	  with a Samsung S3C2410 Processor
 
 config MACH_PCA100
 	bool "phyCard-i.MX27"

@@ -54,20 +54,20 @@ void gpmc_generic_init(unsigned int cfg)
 	debug("gpmccfg=%x\n", cfg);
 	/* Generic Configurations */
 	/* No idle, L3 clock free running */
-	__raw_writel(0x10, GPMC_REG(SYS_CONFIG));
+	writel(0x10, GPMC_REG(SYS_CONFIG));
 	/* No Timeout */
-	__raw_writel(0x00, GPMC_REG(TIMEOUT_CONTROL));
+	writel(0x00, GPMC_REG(TIMEOUT_CONTROL));
 	/* No IRQs */
-	__raw_writel(0x00, GPMC_REG(IRQ_ENABLE));
+	writel(0x00, GPMC_REG(IRQ_ENABLE));
 	/* Write the gpmc_config value */
-	__raw_writel(cfg, GPMC_REG(CFG));
+	writel(cfg, GPMC_REG(CFG));
 
 	/* Disable all CS - prevents remaps
 	 * But NEVER run me in XIP mode! I will Die!
 	 */
 	while (x < GPMC_NUM_CS) {
 		debug("gpmccs=%d Reg:%x <-0x0\n", x, reg);
-		__raw_writel(0x0, reg);
+		writel(0x0, reg);
 		reg += GPMC_CONFIG_CS_SIZE;
 		x++;
 	}
@@ -91,14 +91,14 @@ void gpmc_cs_config(char cs, struct gpmc_config *config)
 	debug("gpmccs=%x cfg=%x\n", cs, (unsigned int)config);
 
 	/* Disable the CS before reconfiguring */
-	__raw_writel(0x0, GPMC_REG(CONFIG7_0) + (cs * GPMC_CONFIG_CS_SIZE));
+	writel(0x0, GPMC_REG(CONFIG7_0) + (cs * GPMC_CONFIG_CS_SIZE));
 	mdelay(1);		/* Settling time */
 
 	/* Write the CFG1-6 regs */
 	while (x < 6) {
 		debug("gpmccfg=%d Reg:%x <-0x%x\n",
 				x, reg, config->cfg[x]);
-		__raw_writel(config->cfg[x], reg);
+		writel(config->cfg[x], reg);
 		reg += GPMC_CONFIG_REG_OFF;
 		x++;
 	}
@@ -108,7 +108,7 @@ void gpmc_cs_config(char cs, struct gpmc_config *config)
 		     ((config->size & 0xF) << 8) |	/* Size */
 		     ((config->base >> 24) & 0x3F));
 
-	__raw_writel((0x1 << 6) |			/* CS enable */
+	writel((0x1 << 6) |			/* CS enable */
 		     ((config->size & 0xF) << 8) |	/* Size */
 		     ((config->base >> 24) & 0x3F),	/* Address */
 		     reg);

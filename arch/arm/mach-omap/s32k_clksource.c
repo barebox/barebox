@@ -50,7 +50,7 @@
  */
 static uint64_t s32k_clocksource_read(void)
 {
-	return __raw_readl(S32K_CR);
+	return readl(S32K_CR);
 }
 
 /* A bit obvious isn't it? */

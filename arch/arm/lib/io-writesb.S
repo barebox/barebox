@@ -45,7 +45,7 @@
 		subs	r2, r2, ip
 		bne	.Loutsb_aligned
 
-ENTRY(__raw_writesb)
+ENTRY(writesb)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -93,4 +93,4 @@ ENTRY(__raw_writesb)
 		strgtb	r3, [r0]
 
 		ldmfd	sp!, {r4, r5, pc}
-ENDPROC(__raw_writesb)
+ENDPROC(writesb)

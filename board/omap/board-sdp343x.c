@@ -86,54 +86,54 @@ void board_init(void)
 static void sdrc_init(void)
 {
 	/* Issue SDRC Soft reset  */
-	__raw_writel(0x12, SDRC_REG(SYSCONFIG));
+	writel(0x12, SDRC_REG(SYSCONFIG));
     /* Wait until Reset complete */
-    while ((__raw_readl(SDRC_REG(STATUS)) & 0x1) == 0);
+    while ((readl(SDRC_REG(STATUS)) & 0x1) == 0);
     /* SDRC to normal mode */
-	__raw_writel(0x10, SDRC_REG(SYSCONFIG));
+	writel(0x10, SDRC_REG(SYSCONFIG));
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	__raw_writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, SDRC_REG(SHARING));
 
 	/* ----- SDRC_REG(CS0 Configuration --------- */
 	/* SDRC_REG(MCFG0 register */
-	__raw_writel(0x02584019, SDRC_REG(MCFG_0));
+	writel(0x02584019, SDRC_REG(MCFG_0));
 
 	/* SDRC_REG(RFR_CTRL0 register */
-	__raw_writel(0x0003DE01, SDRC_REG(RFR_CTRL_0));
+	writel(0x0003DE01, SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_REG(ACTIM_CTRLA0 register */
-	__raw_writel(0X5A9A4486, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0X5A9A4486, SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_REG(ACTIM_CTRLB0 register */
-	__raw_writel(0x00000010, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x00000010, SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE cuz of 1 CKE on combo part */
-	__raw_writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, SDRC_REG(POWER));
 
 	/* SDRC_REG(Manual command register */
 	/* NOP command */
-	__raw_writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	__raw_writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	__raw_writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	__raw_writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register */
 	/* CAS latency = 3 */
 	/* Write Burst = Read Burst */
 	/* Serial Mode */
-	__raw_writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
+	writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
 
     /* SDRC DLLA control register */
 	/* Enable DLL A */
-	__raw_writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
 
     /* wait until DLL is locked  */
-    while ((__raw_readl(SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
+    while ((readl(SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
 	return;
 }
 

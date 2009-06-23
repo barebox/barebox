@@ -134,7 +134,7 @@ static int omap_dev_ready(struct mtd_info *mtd)
 		}
 		/* if the wait is released, we are good to go */
 		if (comp ==
-		    (__raw_readl(oinfo->gpmc_base + GPMC_STATUS) &&
+		    (readl(oinfo->gpmc_base + GPMC_STATUS) &&
 		     oinfo->wait_mon_mask))
 			break;
 	}
@@ -152,7 +152,7 @@ static int omap_dev_ready(struct mtd_info *mtd)
  */
 static void gpmc_nand_wp(struct gpmc_nand_info *oinfo, int mode)
 {
-	unsigned long config = __raw_readl(oinfo->gpmc_base + GPMC_CFG);
+	unsigned long config = readl(oinfo->gpmc_base + GPMC_CFG);
 
 	gpmcnand_dbg("mode=%x", mode);
 	if (mode)
@@ -160,7 +160,7 @@ static void gpmc_nand_wp(struct gpmc_nand_info *oinfo, int mode)
 	else
 		config |= (NAND_WP_BIT);	/* WP is OFF */
 
-	__raw_writel(config, oinfo->gpmc_base + GPMC_CFG);
+	writel(config, oinfo->gpmc_base + GPMC_CFG);
 }
 
 /**
@@ -199,7 +199,7 @@ static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 	}
 
 	if (cmd != NAND_CMD_NONE)
-		__raw_writeb(cmd, nand->IO_ADDR_W);
+		writeb(cmd, nand->IO_ADDR_W);
 	return;
 }
 
@@ -303,14 +303,14 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 
 	/* Since we smartly tell mtd driver to use eccsize of 512, only
 	 * ECC Reg1 will be used.. we just read that */
-	val = __raw_readl(oinfo->gpmc_base + GPMC_ECC1_RESULT);
+	val = readl(oinfo->gpmc_base + GPMC_ECC1_RESULT);
 	ecc_code[0] = val & 0xFF;
 	ecc_code[1] = (val >> 16) & 0xFF;
 	ecc_code[2] = ((val >> 8) & 0x0f) | ((val >> 20) & 0xf0);
 
 	/* Stop reading anymore ECC vals and clear old results
 	 * enable will be called if more reads are required */
-	__raw_writel(0x000, oinfo->gpmc_base + GPMC_ECC_CONFIG);
+	writel(0x000, oinfo->gpmc_base + GPMC_ECC_CONFIG);
 	return 0;
 }
 
@@ -330,14 +330,14 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 		/* Clear the ecc result registers
 		 * select ecc reg as 1
 		 */
-		__raw_writel(0x101, oinfo->gpmc_base + GPMC_ECC_CONTROL);
+		writel(0x101, oinfo->gpmc_base + GPMC_ECC_CONTROL);
 		/* Size 0 = 0xFF, Size1 is 0xFF - both are 512 bytes
 		 * tell all regs to generate size0 sized regs
 		 * we just have a single ECC engine for all CS
 		 */
-		__raw_writel(0x3FCFF000, oinfo->gpmc_base +
+		writel(0x3FCFF000, oinfo->gpmc_base +
 				GPMC_ECC_SIZE_CONFIG);
-		__raw_writel(oinfo->ecc_config, oinfo->gpmc_base +
+		writel(oinfo->ecc_config, oinfo->gpmc_base +
 				GPMC_ECC_CONFIG);
 		break;
 	default:
@@ -411,7 +411,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		oinfo->gpmc_address, oinfo->gpmc_data, cs_base);
 
 	/* If we are 16 bit dev, our gpmc config tells us that */
-	if ((__raw_readl(cs_base) & 0x3000) == 0x1000) {
+	if ((readl(cs_base) & 0x3000) == 0x1000) {
 		debug("16 bit dev\n");
 		nand->options |= NAND_BUSWIDTH_16;
 	}
@@ -492,7 +492,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	 * Send a reset to the device
 	 * 8 bit write will work on 16 and 8 bit devices
 	 */
-	__raw_writeb(NAND_CMD_RESET, oinfo->gpmc_command);
+	writeb(NAND_CMD_RESET, oinfo->gpmc_command);
 	mdelay(1);
 
 	/* In normal mode, we scan to get just the device

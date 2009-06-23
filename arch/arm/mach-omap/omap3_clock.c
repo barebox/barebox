@@ -67,34 +67,34 @@ static u32 get_osc_clk_speed(void)
 {
 	u32 start, cstart, cend, cdiff, val;
 
-	val = __raw_readl(PRM_REG(CLKSRC_CTRL));
+	val = readl(PRM_REG(CLKSRC_CTRL));
 	/* If SYS_CLK is being divided by 2, remove for now */
 	val = (val & (~(0x1 << 7))) | (0x1 << 6);
-	__raw_writel(val, PRM_REG(CLKSRC_CTRL));
+	writel(val, PRM_REG(CLKSRC_CTRL));
 
 	/* enable timer2 */
-	val = __raw_readl(CM_REG(CLKSEL_WKUP)) | (0x1 << 0);
-	__raw_writel(val, CM_REG(CLKSEL_WKUP));	/* select sys_clk for GPT1 */
+	val = readl(CM_REG(CLKSEL_WKUP)) | (0x1 << 0);
+	writel(val, CM_REG(CLKSEL_WKUP));	/* select sys_clk for GPT1 */
 
 	/* Enable I and F Clocks for GPT1 */
-	val = __raw_readl(CM_REG(ICLKEN_WKUP)) | (0x1 << 0) | (0x1 << 2);
-	__raw_writel(val, CM_REG(ICLKEN_WKUP));
-	val = __raw_readl(CM_REG(FCLKEN_WKUP)) | (0x1 << 0);
-	__raw_writel(val, CM_REG(FCLKEN_WKUP));
+	val = readl(CM_REG(ICLKEN_WKUP)) | (0x1 << 0) | (0x1 << 2);
+	writel(val, CM_REG(ICLKEN_WKUP));
+	val = readl(CM_REG(FCLKEN_WKUP)) | (0x1 << 0);
+	writel(val, CM_REG(FCLKEN_WKUP));
 	/* start counting at 0 */
-	__raw_writel(0, OMAP_GPTIMER1_BASE + TLDR);
+	writel(0, OMAP_GPTIMER1_BASE + TLDR);
 	/* enable clock */
-	__raw_writel(GPT_EN, OMAP_GPTIMER1_BASE + TCLR);
+	writel(GPT_EN, OMAP_GPTIMER1_BASE + TCLR);
 	/* enable 32kHz source - enabled out of reset */
 	/* determine sys_clk via gauging */
 
-	start = 20 + __raw_readl(S32K_CR);	/* start time in 20 cycles */
-	while (__raw_readl(S32K_CR) < start) ;	/* dead loop till start time */
+	start = 20 + readl(S32K_CR);	/* start time in 20 cycles */
+	while (readl(S32K_CR) < start) ;	/* dead loop till start time */
 	/* get start sys_clk count */
-	cstart = __raw_readl(OMAP_GPTIMER1_BASE + TCRR);
-	while (__raw_readl(S32K_CR) < (start + 20)) ;	/* wait for 40 cycles */
+	cstart = readl(OMAP_GPTIMER1_BASE + TCRR);
+	while (readl(S32K_CR) < (start + 20)) ;	/* wait for 40 cycles */
 	/* get end sys_clk count */
-	cend = __raw_readl(OMAP_GPTIMER1_BASE + TCRR);
+	cend = readl(OMAP_GPTIMER1_BASE + TCRR);
 	cdiff = cend - cstart;	/* get elapsed ticks */
 
 	/* based on number of ticks assign speed */
@@ -219,16 +219,16 @@ void prcm_init(void)
 		/* if running from flash,
 		 * jump to small relocated code area in SRAM.
 		 */
-		p0 = __raw_readl(CM_REG(CLKEN_PLL));
+		p0 = readl(CM_REG(CLKEN_PLL));
 		sr32((u32) &p0, 0, 3, PLL_FAST_RELOCK_BYPASS);
 		sr32((u32) &p0, 4, 4, dpll_param_p->fsel);
 
-		p1 = __raw_readl(CM_REG(CLKSEL1_PLL));
+		p1 = readl(CM_REG(CLKSEL1_PLL));
 		sr32((u32) &p1, 27, 2, dpll_param_p->m2);
 		sr32((u32) &p1, 16, 11, dpll_param_p->m);
 		sr32((u32) &p1, 8, 7, dpll_param_p->n);
 		sr32((u32) &p1, 6, 1, 0);	/* set source for 96M */
-		p2 = __raw_readl(CM_REG(CLKSEL_CORE));
+		p2 = readl(CM_REG(CLKSEL_CORE));
 		sr32((u32) &p2, 8, 4, CORE_SSI_DIV);
 		sr32((u32) &p2, 4, 2, CORE_FUSB_DIV);
 		sr32((u32) &p2, 2, 2, CORE_L4_DIV);

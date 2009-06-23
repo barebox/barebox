@@ -138,9 +138,9 @@ static void pcm037_usb_init(void)
 	u32 tmp;
 
 	/* enable clock */
-	tmp = __raw_readl(0x53f80000);
+	tmp = readl(0x53f80000);
 	tmp |= (1 << 9);
-	__raw_writel(tmp, 0x53f80000);
+	writel(tmp, 0x53f80000);
 
 	/* Host 1 */
 	tmp = readl(IMX_OTG_BASE + 0x600);

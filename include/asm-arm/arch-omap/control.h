@@ -87,7 +87,7 @@
 
 /** Provide the Regoffset, Value */
 #define	MUX_VAL(OFFSET,VALUE)\
-	__raw_writew((VALUE), OMAP_CTRL_BASE + (OFFSET))
+	writew((VALUE), OMAP_CTRL_BASE + (OFFSET))
 
 /**
  * macro for Padconfig Registers @see

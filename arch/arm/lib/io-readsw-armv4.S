@@ -26,7 +26,7 @@
 		sub	r2, r2, #1
 		strh	ip, [r1], #2
 
-ENTRY(__raw_readsw)
+ENTRY(readsw)
 		teq	r2, #0
 		moveq	pc, lr
 		tst	r1, #3
@@ -130,4 +130,4 @@ ENTRY(__raw_readsw)
    _BE_ONLY_(	movne	ip, ip, lsr #24		)
 		strneb	ip, [r1]
 		ldmfd	sp!, {r4, pc}
-ENDPROC(__raw_readsw)
+ENDPROC(readsw)

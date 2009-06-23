@@ -82,7 +82,7 @@ u32 get_cpu_type(void)
 u32 get_cpu_rev(void)
 {
 	u32 idcode_val;
-	idcode_val = __raw_readl(IDCODE_REG);
+	idcode_val = readl(IDCODE_REG);
 	if ((idcode_val & (HAWKEYE_MASK | VERSION_MASK)) == HAWKEYE_ES2_1)
 		return CPU_ES2P1;
 	if ((idcode_val & HAWKEYE_MASK) == HAWKEYE_ES2)
@@ -102,7 +102,7 @@ u32 get_sdr_cs_size(u32 offset)
 {
 	u32 size;
 	/* get ram size field */
-	size = __raw_readl(SDRC_REG(MCFG_0) + offset) >> 8;
+	size = readl(SDRC_REG(MCFG_0) + offset) >> 8;
 	size &= 0x3FF;		/* remove unwanted bits */
 	size *= 2 * (1024 * 1024);	/* find size in MB */
 	return size;
@@ -117,7 +117,7 @@ u32 get_sdr_cs_size(u32 offset)
  */
 inline u32 get_sysboot_value(void)
 {
-	return (0x0000003F & __raw_readl(CONTROL_REG(STATUS)));
+	return (0x0000003F & readl(CONTROL_REG(STATUS)));
 }
 
 /**
@@ -133,7 +133,7 @@ inline u32 get_sysboot_value(void)
 u32 get_gpmc0_base(void)
 {
 	u32 b;
-	b = __raw_readl(GPMC_REG(CONFIG7_0));
+	b = readl(GPMC_REG(CONFIG7_0));
 	b &= 0x1F;		/* keep base [5:0] */
 	b = b << 24;		/* ret 0x0b000000 */
 	return b;
@@ -225,7 +225,7 @@ u32 get_boot_type(void)
 u32 get_device_type(void)
 {
 	int mode;
-	mode = __raw_readl(CONTROL_REG(STATUS)) & (DEVICE_MASK);
+	mode = readl(CONTROL_REG(STATUS)) & (DEVICE_MASK);
 	return (mode >>= 8);
 }
 
@@ -243,26 +243,26 @@ static void secure_unlock_mem(void)
 #define UNLOCK_2 0x00000000
 #define UNLOCK_3 0x0000FFFF
 	/* Protection Module Register Target APE (PM_RT) */
-	__raw_writel(UNLOCK_1, RT_REQ_INFO_PERMISSION_1);
-	__raw_writel(UNLOCK_1, RT_READ_PERMISSION_0);
-	__raw_writel(UNLOCK_1, RT_WRITE_PERMISSION_0);
-	__raw_writel(UNLOCK_2, RT_ADDR_MATCH_1);
+	writel(UNLOCK_1, RT_REQ_INFO_PERMISSION_1);
+	writel(UNLOCK_1, RT_READ_PERMISSION_0);
+	writel(UNLOCK_1, RT_WRITE_PERMISSION_0);
+	writel(UNLOCK_2, RT_ADDR_MATCH_1);
 
-	__raw_writel(UNLOCK_3, GPMC_REQ_INFO_PERMISSION_0);
-	__raw_writel(UNLOCK_3, GPMC_READ_PERMISSION_0);
-	__raw_writel(UNLOCK_3, GPMC_WRITE_PERMISSION_0);
+	writel(UNLOCK_3, GPMC_REQ_INFO_PERMISSION_0);
+	writel(UNLOCK_3, GPMC_READ_PERMISSION_0);
+	writel(UNLOCK_3, GPMC_WRITE_PERMISSION_0);
 
-	__raw_writel(UNLOCK_3, OCM_REQ_INFO_PERMISSION_0);
-	__raw_writel(UNLOCK_3, OCM_READ_PERMISSION_0);
-	__raw_writel(UNLOCK_3, OCM_WRITE_PERMISSION_0);
-	__raw_writel(UNLOCK_2, OCM_ADDR_MATCH_2);
+	writel(UNLOCK_3, OCM_REQ_INFO_PERMISSION_0);
+	writel(UNLOCK_3, OCM_READ_PERMISSION_0);
+	writel(UNLOCK_3, OCM_WRITE_PERMISSION_0);
+	writel(UNLOCK_2, OCM_ADDR_MATCH_2);
 
 	/* IVA Changes */
-	__raw_writel(UNLOCK_3, IVA2_REQ_INFO_PERMISSION_0);
-	__raw_writel(UNLOCK_3, IVA2_READ_PERMISSION_0);
-	__raw_writel(UNLOCK_3, IVA2_WRITE_PERMISSION_0);
+	writel(UNLOCK_3, IVA2_REQ_INFO_PERMISSION_0);
+	writel(UNLOCK_3, IVA2_READ_PERMISSION_0);
+	writel(UNLOCK_3, IVA2_WRITE_PERMISSION_0);
 
-	__raw_writel(UNLOCK_1, SMS_RG_ATT0);	/* SDRC region 0 public */
+	writel(UNLOCK_1, SMS_RG_ATT0);	/* SDRC region 0 public */
 }
 
 /**
@@ -314,13 +314,13 @@ static void watchdog_init(void)
 	sr32(CM_REG(ICLKEN_WKUP), 5, 1, 1);
 	wait_on_value((0x1 << 5), 0x20, CM_REG(IDLEST_WKUP), 5);
 
-	__raw_writel(WDT_DISABLE_CODE1, WDT_REG(WSPR));
+	writel(WDT_DISABLE_CODE1, WDT_REG(WSPR));
 
 	do {
-		pending = __raw_readl(WDT_REG(WWPS));
+		pending = readl(WDT_REG(WWPS));
 	} while (pending);
 
-	__raw_writel(WDT_DISABLE_CODE2, WDT_REG(WSPR));
+	writel(WDT_DISABLE_CODE2, WDT_REG(WSPR));
 }
 
 /**
@@ -427,7 +427,7 @@ unsigned int omap_uart_read(unsigned long base, unsigned char reg_idx)
 {
 	unsigned int *reg_addr = (unsigned int *)base;
 	reg_addr += reg_idx;
-	return __raw_readb(reg_addr);
+	return readb(reg_addr);
 }
 EXPORT_SYMBOL(omap_uart_read);
 
@@ -445,6 +445,6 @@ void omap_uart_write(unsigned int val, unsigned long base,
 {
 	unsigned int *reg_addr = (unsigned int *)base;
 	reg_addr += reg_idx;
-	__raw_writeb(val, reg_addr);
+	writeb(val, reg_addr);
 }
 EXPORT_SYMBOL(omap_uart_write);

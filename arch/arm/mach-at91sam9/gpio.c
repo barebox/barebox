@@ -85,10 +85,10 @@ int at91_set_gpio_input(unsigned pin, int use_pullup)
 	if (!pio)
 		return -EINVAL;
 
-	__raw_writel(mask, pio + OFS_PIO_IDR);
-	__raw_writel(mask, pio + (use_pullup ? OFS_PIO_PUER : OFS_PIO_PUDR));
-	__raw_writel(mask, pio + OFS_PIO_ODR);
-	__raw_writel(mask, pio + OFS_PIO_PER);
+	writel(mask, pio + OFS_PIO_IDR);
+	writel(mask, pio + (use_pullup ? OFS_PIO_PUER : OFS_PIO_PUDR));
+	writel(mask, pio + OFS_PIO_ODR);
+	writel(mask, pio + OFS_PIO_PER);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_gpio_input);
@@ -105,11 +105,11 @@ int at91_set_gpio_output(unsigned pin, int value)
 	if (!pio)
 		return -EINVAL;
 
-	__raw_writel(mask, pio + OFS_PIO_IDR);
-	__raw_writel(mask, pio + OFS_PIO_PUDR);
-	__raw_writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
-	__raw_writel(mask, pio + OFS_PIO_OER);
-	__raw_writel(mask, pio + OFS_PIO_PER);
+	writel(mask, pio + OFS_PIO_IDR);
+	writel(mask, pio + OFS_PIO_PUDR);
+	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
+	writel(mask, pio + OFS_PIO_OER);
+	writel(mask, pio + OFS_PIO_PER);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_gpio_output);
@@ -119,9 +119,9 @@ int gpio_direction_input(unsigned pin)
 	void __iomem	*pio = pin_to_controller(pin);
 	unsigned	mask = pin_to_mask(pin);
 
-	if (!pio || !(__raw_readl(pio + OFS_PIO_PSR) & mask))
+	if (!pio || !(readl(pio + OFS_PIO_PSR) & mask))
 		return -EINVAL;
-	__raw_writel(mask, pio + OFS_PIO_ODR);
+	writel(mask, pio + OFS_PIO_ODR);
 	return 0;
 }
 EXPORT_SYMBOL(gpio_direction_input);
@@ -131,10 +131,10 @@ int gpio_direction_output(unsigned pin, int value)
 	void __iomem	*pio = pin_to_controller(pin);
 	unsigned	mask = pin_to_mask(pin);
 
-	if (!pio || !(__raw_readl(pio + OFS_PIO_PSR) & mask))
+	if (!pio || !(readl(pio + OFS_PIO_PSR) & mask))
 		return -EINVAL;
-	__raw_writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
-	__raw_writel(mask, pio + OFS_PIO_OER);
+	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
+	writel(mask, pio + OFS_PIO_OER);
 	return 0;
 }
 EXPORT_SYMBOL(gpio_direction_output);
@@ -151,7 +151,7 @@ void gpio_set_value(unsigned pin, int value)
 
 	if (!pio)
 		return;
-	__raw_writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
+	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
 }
 EXPORT_SYMBOL(gpio_set_value);
 
@@ -167,7 +167,7 @@ int gpio_get_value(unsigned pin)
 
 	if (!pio)
 		return -EINVAL;
-	pdsr = __raw_readl(pio + OFS_PIO_PDSR);
+	pdsr = readl(pio + OFS_PIO_PDSR);
 	return (pdsr & mask) != 0;
 }
 EXPORT_SYMBOL(gpio_get_value);

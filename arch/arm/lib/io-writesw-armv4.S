@@ -31,7 +31,7 @@
 		sub	r2, r2, #1
 		strh	r3, [r0]
 
-ENTRY(__raw_writesw)
+ENTRY(writesw)
 		teq	r2, #0
 		moveq	pc, lr
 		ands	r3, r1, #3
@@ -96,4 +96,4 @@ ENTRY(__raw_writesw)
 3:		movne	ip, r3, lsr #8
 		strneh	ip, [r0]
 		mov	pc, lr
-ENDPROC(__raw_writesw)
+ENDPROC(writesw)

@@ -50,9 +50,9 @@
 
 /* Register access macros */
 #define ecc_readl(add, reg)				\
-	__raw_readl(add + ATMEL_ECC_##reg)
+	readl(add + ATMEL_ECC_##reg)
 #define ecc_writel(add, reg, value)			\
-	__raw_writel((value), add + ATMEL_ECC_##reg)
+	writel((value), add + ATMEL_ECC_##reg)
 
 #include "atmel_nand_ecc.h"	/* Hardware ECC registers */
 
@@ -150,28 +150,28 @@ static void atmel_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
 	struct nand_chip	*nand_chip = mtd->priv;
 
-	__raw_readsb(nand_chip->IO_ADDR_R, buf, len);
+	readsb(nand_chip->IO_ADDR_R, buf, len);
 }
 
 static void atmel_read_buf16(struct mtd_info *mtd, u8 *buf, int len)
 {
 	struct nand_chip	*nand_chip = mtd->priv;
 
-	__raw_readsw(nand_chip->IO_ADDR_R, buf, len / 2);
+	readsw(nand_chip->IO_ADDR_R, buf, len / 2);
 }
 
 static void atmel_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
 	struct nand_chip	*nand_chip = mtd->priv;
 
-	__raw_writesb(nand_chip->IO_ADDR_W, buf, len);
+	writesb(nand_chip->IO_ADDR_W, buf, len);
 }
 
 static void atmel_write_buf16(struct mtd_info *mtd, const u8 *buf, int len)
 {
 	struct nand_chip	*nand_chip = mtd->priv;
 
-	__raw_writesw(nand_chip->IO_ADDR_W, buf, len / 2);
+	writesw(nand_chip->IO_ADDR_W, buf, len / 2);
 }
 
 /*

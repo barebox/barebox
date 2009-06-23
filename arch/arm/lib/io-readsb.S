@@ -25,7 +25,7 @@
 
 .section .text.readsb
 
-ENTRY(__raw_readsb)
+ENTRY(readsb)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -122,4 +122,4 @@ ENTRY(__raw_readsb)
 		strgtb	r3, [r1]
 
 		ldmfd	sp!, {r4 - r6, pc}
-ENDPROC(__raw_readsb)
+ENDPROC(readsb)

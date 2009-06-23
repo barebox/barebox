@@ -213,6 +213,7 @@ endchoice
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-omap/Kconfig
+source arch/arm/mach-s3c24xx/Kconfig
 
 menu "Arm specific settings         "
 

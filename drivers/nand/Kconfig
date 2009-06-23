@@ -38,6 +38,13 @@ config NAND_ATMEL
 	prompt "Atmel (AT91SAM9xxx) NAND driver"
 	depends on ARCH_AT91SAM9
 
+config NAND_S3C24X0
+	bool
+	prompt "Samsung S3C24X0 NAND driver"
+	depends on ARCH_S3C24xx
+	help
+	  Add support for processor's NAND device controller.
+
 config MTD_NAND_VERIFY_WRITE
 	bool "Verify NAND page writes"
 	help

@@ -7,6 +7,7 @@ machine-$(CONFIG_ARCH_NETX)	   := netx
 machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
 machine-$(CONFIG_ARCH_OMAP)        := omap
 machine-$(CONFIG_ARCH_AT91SAM9)    := at91sam9
+machine-$(CONFIG_ARCH_S3C24xx)     := s3c24xx
 board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
 board-$(CONFIG_MACH_ECO920)	   := eco920
 board-$(CONFIG_MACH_SCB9328)	   := scb9328

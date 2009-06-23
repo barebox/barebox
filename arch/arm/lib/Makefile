@@ -13,8 +13,10 @@ obj-y	+= findbit.o
 obj-y	+= arm.o
 obj-y	+= io-readsb.o
 obj-y	+= io-readsw-armv4.o
+obj-y	+= io-readsl.o
 obj-y	+= io-writesb.o
 obj-y	+= io-writesw-armv4.o
+obj-y	+= io-writesl.o
 
 obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_GENERIC_LINKER_SCRIPT) += u-boot.lds

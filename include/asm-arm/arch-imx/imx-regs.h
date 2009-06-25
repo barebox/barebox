@@ -118,4 +118,6 @@
 #define GPIO_BOUT_0    (2 << GPIO_BOUT_SHIFT)
 #define GPIO_BOUT_1    (3 << GPIO_BOUT_SHIFT)
 
+#define GPIO_GIUS      (1<<16)
+
 #endif				/* _IMX_REGS_H */

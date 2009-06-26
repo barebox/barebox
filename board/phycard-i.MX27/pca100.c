@@ -36,6 +36,7 @@
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>
 #include <asm/arch/imx-pll.h>
+#include <gpio.h>
 
 static struct device_d sdram_dev = {
 	.name     = "ram",
@@ -111,6 +112,12 @@ static int pca100_devices_init(void)
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
+
+	/* disable the usb phys */
+	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
+	imx_gpio_direction_output(GPIO_PORTB + 23, 1);
+	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
+	imx_gpio_direction_output(GPIO_PORTB + 24, 1);
 
 	register_device(&nand_dev);
 	register_device(&sdram_dev);

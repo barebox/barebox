@@ -86,3 +86,26 @@ void imx_gpio_mode(int gpio_mode)
 
 }
 
+void imx_gpio_set_value(unsigned gpio, int value)
+{
+	if(value)
+		DR(gpio >> GPIO_PORT_SHIFT) |= (1 << (gpio & GPIO_PIN_MASK));
+	else
+		DR(gpio >> GPIO_PORT_SHIFT) &= ~(1 << (gpio & GPIO_PIN_MASK));
+}
+
+int imx_gpio_direction_input(unsigned gpio)
+{
+	imx_gpio_mode(gpio | GPIO_IN | GPIO_GIUS | GPIO_DR);
+	return 0;
+}
+
+
+int imx_gpio_direction_output(unsigned gpio, int value)
+{
+	imx_gpio_set_value(gpio, value);
+	imx_gpio_mode(gpio | GPIO_OUT | GPIO_GIUS | GPIO_DR);
+	return 0;
+}
+
+

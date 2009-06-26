@@ -229,11 +229,9 @@ static int part_probe(struct device_d *dev)
 /**
  * FIXME.
  * @param[in] dev The partition info as a device
- * @return 0
  */
-static int part_remove(struct device_d *dev)
+static void part_remove(struct device_d *dev)
 {
-	return 0;
 }
 
 /**

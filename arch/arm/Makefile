@@ -24,6 +24,7 @@ board-$(CONFIG_MACH_PCM043)        := pcm043
 board-$(CONFIG_MACH_A9M2410)       := a9m2410
 board-$(CONFIG_MACH_PCA100)        := phycard-i.MX27
 board-$(CONFIG_MACH_MMCCPU)        := mmccpu
+board-$(CONFIG_MACH_A9M2440)       := a9m2440
 
 # FIXME "cpu-y" never used on ARM!
 cpu-$(CONFIG_ARM920T)              := arm920t

@@ -38,6 +38,7 @@
 #include <linux/mtd/nand.h>
 #include <linux/err.h>
 #include <linux/mtd/nand_ecc.h>
+#include <asm/byteorder.h>
 #include <asm/io.h>
 #include <malloc.h>
 #include <module.h>

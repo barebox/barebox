@@ -1,6 +1,4 @@
 
-menu "Board specific settings       "
-
 config ARCH_IMX
 	bool
 
@@ -32,6 +30,10 @@ config ARCH_IMX35
 	select ARCH_IMX
 	select ARCH_HAS_FEC_IMX
 
+if ARCH_IMX
+
+menu "Board specific settings       "
+
 if MACH_PCM037
 choice
 	prompt "SDRAM Bank0"
@@ -55,6 +57,7 @@ endif
 endmenu
 
 menu "i.MX specific settings        "
+
 config IMX_CLKO
 	bool "clko command"
 	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX35
@@ -63,3 +66,5 @@ config IMX_CLKO
 	  Say y here if you want to have the clko command which lets you select the
 	  frequency to output on this pin.
 endmenu
+
+endif

@@ -299,6 +299,4 @@
 #define IMX_CS4_BASE	0xD4000000
 #define IMX_CS5_BASE	0xD6000000
 
-#define GPIO_DR                      0x1C
-
 #endif /* _IMX27_REGS_H */

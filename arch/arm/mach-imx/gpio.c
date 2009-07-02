@@ -96,7 +96,7 @@ void imx_gpio_set_value(unsigned gpio, int value)
 
 int imx_gpio_direction_input(unsigned gpio)
 {
-	imx_gpio_mode(gpio | GPIO_IN | GPIO_GIUS | GPIO_DR);
+	imx_gpio_mode(gpio | GPIO_IN | GPIO_GIUS | GPIO_GPIO);
 	return 0;
 }
 
@@ -104,7 +104,7 @@ int imx_gpio_direction_input(unsigned gpio)
 int imx_gpio_direction_output(unsigned gpio, int value)
 {
 	imx_gpio_set_value(gpio, value);
-	imx_gpio_mode(gpio | GPIO_OUT | GPIO_GIUS | GPIO_DR);
+	imx_gpio_mode(gpio | GPIO_OUT | GPIO_GIUS | GPIO_GPIO);
 	return 0;
 }
 

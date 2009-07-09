@@ -479,7 +479,7 @@ struct smc91c111_priv {
 #define SMC_ALLOC_MAX_TRY 5
 #define SMC_TX_TIMEOUT 30
 
-#define SMC_PHY_CLOCK_DELAY 1000
+#define SMC_PHY_CLOCK_DELAY 100
 
 #define ETH_ZLEN 60
 
@@ -831,119 +831,6 @@ static int smc91c111_phy_read(struct miiphy_device *mdev, uint8_t phyaddr,
 	return 0;
 }
 
-static int smc91c111_phy_configure(struct eth_device *edev)
-{
-	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
-	int timeout;
-	uint16_t my_phy_caps;	/* My PHY capabilities */
-	uint16_t my_ad_caps;	/* My Advertised capabilities */
-	uint16_t status;
-
-	/* Reset the PHY, setting all other bits to zero */
-	smc91c111_phy_write(&priv->miiphy, priv->miiphy.address, PHY_CNTL_REG,
-		PHY_CNTL_RST);
-
-	/* Wait up to 6 seconds for the reset to complete, or time out */
-	timeout = 6;
-	while (timeout--) {
-		smc91c111_phy_read(&priv->miiphy, priv->miiphy.address,
-				PHY_CNTL_REG, &status);
-		if (!(status & PHY_CNTL_RST))
-			break;	/* reset complete */
-		mdelay(500);
-	}
-
-	if (timeout < 1) {
-		printf ("%s:PHY reset timed out\n", SMC_DEV_NAME);
-		return -1;
-	}
-
-	/* Read PHY Register 18, Status Output */
-	/* lp->lastPhy18 = smc_read_phy_register(PHY_INT_REG); */
-
-	/* Enable PHY Interrupts (for register 18) */
-	/* Interrupts listed here are disabled */
-	smc91c111_phy_write(&priv->miiphy, priv->miiphy.address, PHY_MASK_REG,
-		0xffff);
-
-	/* Configure the Receive/Phy Control register */
-	SMC_SELECT_BANK(priv, 0);
-	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
-
-	/* Copy our capabilities from PHY_STAT_REG to PHY_AD_REG */
-	smc91c111_phy_read(&priv->miiphy, priv->miiphy.address, PHY_STAT_REG,
-		&my_phy_caps);
-	my_ad_caps = PHY_AD_CSMA;	/* I am CSMA capable */
-
-	if (my_phy_caps & PHY_STAT_CAP_T4)
-		my_ad_caps |= PHY_AD_T4;
-
-	if (my_phy_caps & PHY_STAT_CAP_TXF)
-		my_ad_caps |= PHY_AD_TX_FDX;
-
-	if (my_phy_caps & PHY_STAT_CAP_TXH)
-		my_ad_caps |= PHY_AD_TX_HDX;
-
-	if (my_phy_caps & PHY_STAT_CAP_TF)
-		my_ad_caps |= PHY_AD_10_FDX;
-
-	if (my_phy_caps & PHY_STAT_CAP_TH)
-		my_ad_caps |= PHY_AD_10_HDX;
-
-	/* Update our Auto-Neg Advertisement Register */
-	smc91c111_phy_write(&priv->miiphy, priv->miiphy.address, PHY_AD_REG,
-		my_ad_caps);
-
-	/* Read the register back.  Without this, it appears that when */
-	/* auto-negotiation is restarted, sometimes it isn't ready and */
-	/* the link does not come up. */
-	smc91c111_phy_read(&priv->miiphy, priv->miiphy.address, PHY_AD_REG,
-		&status);
-
-	/* Restart auto-negotiation process in order to advertise my caps */
-	smc91c111_phy_write(&priv->miiphy, priv->miiphy.address, PHY_CNTL_REG,
-				PHY_CNTL_ANEG_EN | PHY_CNTL_ANEG_RST);
-
-	/* Wait for the auto-negotiation to complete.  This may take from */
-	/* 2 to 3 seconds. */
-	/* Wait for the reset to complete, or time out */
-	timeout = CONFIG_SMC_AUTONEG_TIMEOUT * 2;
-	while (timeout--) {
-		smc91c111_phy_read(&priv->miiphy, priv->miiphy.address,
-			PHY_STAT_REG, &status);
-		if (status & PHY_STAT_ANEG_ACK)/* auto-negotiate complete */
-			break;
-
-		mdelay(500);
-
-		/* Restart auto-negotiation if remote fault */
-		if (status & PHY_STAT_REM_FLT) {
-			printf ("%s: PHY remote fault detected\n",
-				SMC_DEV_NAME);
-
-			/* Restart auto-negotiation */
-			printf ("%s: PHY restarting auto-negotiation\n",
-				SMC_DEV_NAME);
-			smc91c111_phy_write(&priv->miiphy,
-				priv->miiphy.address, PHY_CNTL_REG,
-				PHY_CNTL_ANEG_EN | PHY_CNTL_ANEG_RST |
-				PHY_CNTL_SPEED | PHY_CNTL_DPLX);
-		}
-	}
-
-	if (timeout < 1)
-		printf("%s: PHY auto-negotiate timed out\n", SMC_DEV_NAME);
-
-	/* Fail if we detected an auto-negotiate remote fault */
-	if (status & PHY_STAT_REM_FLT)
-		printf("%s: PHY remote fault detected\n", SMC_DEV_NAME);
-
-	/* Re-Configure the Receive/Phy Control register */
-	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
-
-	return 0;
-}
-
 static void smc91c111_reset(struct eth_device *edev)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
@@ -1006,9 +893,13 @@ static void smc91c111_enable(struct eth_device *edev)
 
 static int smc91c111_eth_open(struct eth_device *edev)
 {
+	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
 	smc91c111_enable(edev);
-	/* Configure the PHY */
-	return smc91c111_phy_configure(edev);
+
+	miiphy_wait_aneg(&priv->miiphy);
+	miiphy_print_status(&priv->miiphy);
+
+	return 0;
 }
 
 static int smc91c111_eth_send(struct eth_device *edev, void *packet,
@@ -1395,6 +1286,14 @@ static void print_packet( unsigned char * buf, int length )
 
 static int smc91c111_init_dev(struct eth_device *edev)
 {
+	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+
+	/* Configure the Receive/Phy Control register */
+	SMC_SELECT_BANK(priv, 0);
+	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
+
+	miiphy_restart_aneg(&priv->miiphy);
+
 	return 0;
 }
 

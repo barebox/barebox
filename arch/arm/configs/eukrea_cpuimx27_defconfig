@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # U-Boot version: 2.0.0-rc9
-# Wed Jul 15 16:05:10 2009
+# Wed Jul 15 16:06:14 2009
 #
 CONFIG_ARCH_TEXT_BASE=0xa0000000
 CONFIG_BOARDINFO="Eukrea CPUIMX27"
@@ -151,6 +151,7 @@ CONFIG_CMD_MTEST=y
 # flash                         
 #
 CONFIG_CMD_FLASH=y
+CONFIG_CMD_NAND=y
 
 #
 # booting                       
@@ -209,7 +210,12 @@ CONFIG_DRIVER_CFI=y
 # CONFIG_DRIVER_CFI_NEW is not set
 CONFIG_DRIVER_CFI_OLD=y
 CONFIG_CFI_BUFFER_WRITE=y
-# CONFIG_NAND is not set
+CONFIG_NAND=y
+CONFIG_NAND_IMX=y
+# CONFIG_NAND_IMX_BOOT is not set
+# CONFIG_MTD_NAND_VERIFY_WRITE is not set
+# CONFIG_MTD_NAND_ECC_SMC is not set
+CONFIG_MTD_NAND_IDS=y
 # CONFIG_USB is not set
 
 #

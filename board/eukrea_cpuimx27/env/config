@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# can be either 'net', 'nor' or 'nand''
+kernel=nor
+root=nor
+
+uimage=cpuimx27/uImage
+jffs2=cpuimx27/rootfs.jffs2
+
+autoboot_timeout=3
+
+# TFP410-SVGA TFP410-VGA CMO-QVGA Optrex-WVGA Sharp-QVGA-EK
+video="CMO-QVGA"
+bootargs="console=ttymxc0,115200 fec_mac=$eth0.ethaddr rtc-pcf8563.probe=0,0x51 video=mxcfb:$video"
+
+nor_parts="256k(uboot)ro,128k(ubootenv),1792k(kernel),-(root)"
+rootpart_nor="/dev/mtdblock3"
+
+nand_parts="-(nand)"
+rootpart_nand=""
+
+nfsroot=""
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+eth0.serverip=192.168.1.15

@@ -874,7 +874,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 
 		if (host->pagesize_2k) {
 			send_addr(host, (page_addr >> 8) & 0xFF);
-			if (mtd->size >= 0x40000000) {
+			if (mtd->size >= 0x10000000) {
 				send_addr(host, (page_addr >> 16) & 0xff);
 			}
 		} else {
@@ -961,6 +961,15 @@ static void imx_low_erase(struct mtd_info *mtd)
  *
  * @return  The function always returns 0.
  */
+static uint8_t scan_ff_pattern[] = { 0xff, 0xff };
+
+static struct nand_bbt_descr smallpage_memorybased = {
+	.options = NAND_BBT_SCAN2NDPAGE,
+	.offs = 5,
+	.len = 1,
+	.pattern = scan_ff_pattern
+};
+
 static int __init imxnd_probe(struct device_d *dev)
 {
 	struct nand_chip *this;
@@ -969,7 +978,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	struct imx_nand_host *host;
 	u16 tmp;
 	int err = 0;
-#ifdef CONFIG_ARCH_MX27
+#ifdef CONFIG_ARCH_IMX27
 	PCCR1 |= PCCR1_NFC_BAUDEN;
 #endif
 	/* Allocate memory for MTD device structure and private data */
@@ -1050,7 +1059,12 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.layout = &nand_hw_eccoob_16;
 	}
 
-	host->pagesize_2k = 0;
+	if (pdata->is2k) {
+		host->pagesize_2k = 1;
+		NFMS |= (1 << NFMS_BIT);
+		this->badblock_pattern = &smallpage_memorybased;
+	} else 
+		host->pagesize_2k = 0;
 
 	/* Scan to find existence of the device */
 	if (nand_scan(mtd, 1)) {

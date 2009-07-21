@@ -682,8 +682,6 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 
 	fec->xcv_type = pdata->xcv_type;
 
-	sprintf(dev->name, "FEC ETHERNET");
-
 	loadtask(0, 2);
 
 	if (fec->xcv_type != SEVENWIRE) {

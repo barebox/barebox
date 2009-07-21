@@ -573,8 +573,6 @@ static int fec_probe(struct device_d *dev)
 
 	fec->xcv_type = pdata->xcv_type;
 
-	sprintf(dev->name, "FEC ETHERNET");
-
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->miiphy.read = fec_miiphy_read;
 		fec->miiphy.write = fec_miiphy_write;

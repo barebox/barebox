@@ -143,6 +143,12 @@ static ssize_t nand_erase(struct cdev *cdev, size_t count, unsigned long offset)
 
 	return 0;
 }
+#if 0
+static char* mtd_get_size(struct device_d *, struct param_d *param)
+{
+	static char 
+}
+#endif
 
 static struct file_operations nand_ops = {
 	.read   = nand_read,
@@ -163,6 +169,11 @@ int add_mtd_device(struct mtd_info *mtd)
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
 
+	mtd->param_size.flags = PARAM_FLAG_RO;
+	mtd->param_size.name = "size";
+	mtd->param_size.value = asprintf("%d", mtd->size);
+	dev_add_param(&mtd->class_dev, &mtd->param_size);
+
 	devfs_create(&mtd->cdev);
 
 	return 0;
@@ -171,6 +182,7 @@ int add_mtd_device(struct mtd_info *mtd)
 int del_mtd_device (struct mtd_info *mtd)
 {
 	unregister_device(&mtd->class_dev);
+	free(mtd->param_size.value);
 	return 0;
 }
 

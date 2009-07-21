@@ -181,6 +181,7 @@ static int miiphy_probe(struct device_d *dev)
 	mdev->cdev.size = 32;
 	mdev->cdev.ops = &miiphy_ops;
 	mdev->cdev.priv = mdev;
+	mdev->cdev.dev = dev;
 	devfs_create(&mdev->cdev);
 	return 0;
 }

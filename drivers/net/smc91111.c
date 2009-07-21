@@ -1305,7 +1305,6 @@ static int smc91c111_probe(struct device_d *dev)
 	edev = xzalloc(sizeof(struct eth_device) +
 			sizeof(struct smc91c111_priv));
 	dev->type_data = edev;
-	edev->dev = dev;
 	edev->priv = (struct smc91c111_priv *)(edev + 1);
 
 	priv = edev->priv;
@@ -1338,7 +1337,6 @@ static int smc91c111_probe(struct device_d *dev)
 static struct driver_d smc91c111_driver = {
         .name  = "smc91c111",
         .probe = smc91c111_probe,
-        .type  = DEVICE_TYPE_ETHER,
 };
 
 static int smc91c111_init(void)

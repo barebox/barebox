@@ -37,10 +37,7 @@
 
 static struct device_d sdram_dev = {
 	.name     = "ram",
-	.id       = "ram0",
-
 	.map_base = CS6_BASE,
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct s3c24x0_nand_platform_data nand_info = {
@@ -60,16 +57,13 @@ static struct device_d nand_dev = {
  */
 static struct device_d network_dev = {
         .name     = "smc91c111",
-        .id       = "eth0",
         .map_base = CS1_BASE + 0x300,
         .size     = 16,
-        .type     = DEVICE_TYPE_ETHER,
 };
 
 static int a9m2440_devices_init(void)
 {
 	uint32_t reg;
-	struct device_d *nand, *dev;
 
 	/*
 	 * detect the current memory size
@@ -165,18 +159,10 @@ static int a9m2440_devices_init(void)
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
-	nand = get_device_by_path("/dev/nand0");
-	if (nand) {
-		dev = dev_add_partition(nand, 0x00000, 0x40000,
-				PARTITION_FIXED, "self_raw");
-		if (dev) {
-			dev_add_bb_dev(dev, "self0");
-			dev = dev_add_partition(nand, 0x40000, 0x20000,
-					PARTITION_FIXED, "env_raw");
-			if (dev)
-				dev_add_bb_dev(dev, "env0");
-		}
-	}
+	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+        dev_add_bb_dev("self_raw", "self0");
+
+        devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 #endif
 	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
 
@@ -196,10 +182,8 @@ void __bare_init nand_boot(void)
 
 static struct device_d a9m2440_serial_device = {
 	.name     = "s3c24x0_serial",
-	.id       = "cs0",
 	.map_base = UART1_BASE,
 	.size     = UART1_SIZE,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int a9m2440_console_init(void)

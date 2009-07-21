@@ -43,20 +43,14 @@
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
-	.id       = "nor0",
-
 	.map_base = 0xC0000000,
 	.size     = 64 * 1024 * 1024,
 };
 
 static struct device_d sdram_dev = {
 	.name     = "ram",
-	.id       = "ram0",
-
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
-
-	.type     = DEVICE_TYPE_DRAM,
 };
 
 static struct fec_platform_data fec_info = {
@@ -66,10 +60,8 @@ static struct fec_platform_data fec_info = {
 
 static struct device_d fec_dev = {
 	.name     = "fec_imx",
-	.id       = "eth0",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
-	.type     = DEVICE_TYPE_ETHER,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -133,8 +125,8 @@ static int eukrea_cpuimx27_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
 
-	dev_add_partition(&cfi_dev, 0x00000, 0x40000, PARTITION_FIXED, "self");
-	dev_add_partition(&cfi_dev, 0x40000, 0x20000, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 	dev_protect(&cfi_dev, 0x40000, 0, 1);
 	envdev = "NOR";
 
@@ -150,10 +142,8 @@ device_initcall(eukrea_cpuimx27_devices_init);
 
 static struct device_d eukrea_cpuimx27_serial_device = {
 	.name     = "imx_serial",
-	.id       = "cs0",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
-	.type     = DEVICE_TYPE_CONSOLE,
 };
 
 static int eukrea_cpuimx27_console_init(void)

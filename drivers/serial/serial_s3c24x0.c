@@ -153,7 +153,6 @@ static struct driver_d s3c24x0_serial_driver = {
 	.name   = "s3c24x0_serial",
 	.probe  = s3c24x0_serial_probe,
 	.remove = s3c24x0_serial_remove,
-	.type   = DEVICE_TYPE_CONSOLE,
 };
 
 static int s3c24x0_serial_init(void)

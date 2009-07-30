@@ -499,9 +499,15 @@ ssize_t write(int fd, const void *buf, size_t count)
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 	if (f->pos + count > f->size) {
 		errno = fsdrv->truncate(dev, f, f->pos + count);
-		if (errno)
-			return errno;
-		f->size = f->pos + count;
+		if (errno) {
+			if (errno != -ENOSPC)
+				return errno;
+			count = f->size - f->pos;
+			if (!count)
+				return errno;
+		} else {
+			f->size = f->pos + count;
+		}
 	}
 	errno = fsdrv->write(dev, f, buf, count);
 

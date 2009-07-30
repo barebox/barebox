@@ -54,6 +54,8 @@ static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
 
+	writel(((imx_get_fecclk() >> 20) / 5) << 1,
+			fec->regs + FEC_MII_SPEED);
 	/*
 	 * reading from any PHY's register is done by properly
 	 * programming the FEC's MII data register.
@@ -97,6 +99,9 @@ static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
+
+	writel(((imx_get_fecclk() >> 20) / 5) << 1,
+			fec->regs + FEC_MII_SPEED);
 
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
 	phy = phyAddr << FEC_MII_DATA_PA_SHIFT;

@@ -26,6 +26,7 @@ ulong imx_get_ahbclk(void);
 ulong imx_get_fecclk(void);
 ulong imx_get_gptclk(void);
 ulong imx_get_uartclk(void);
+ulong imx_get_lcdclk(void);
 
 int imx_clko_set_div(int div);
 void imx_clko_set_src(int src);

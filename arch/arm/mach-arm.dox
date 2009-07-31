@@ -6,7 +6,7 @@
 
 FIXME
 
-@par What's happens when the reset signal is gone
+@section mach_arm_reset What's happens when the reset signal is gone
 
 @note Code running immediately after reset runs at an address it is not linked
       to: "runtime address != link address". You should only use branches and
@@ -22,28 +22,43 @@ After handling some MMU related things \<board_init_lowlevel\> can be called (if
 not disabled). This is a board specific function for SDRAM setup for example.
 As its board specific, your can do whatever you need to bring your board up.
 
+In the case the boot happens from NAND flash memory, further steps are required.
+Most of the known processor devices are reading the first few blocks from the
+NAND flash memory into some kind of internal SRAM. This small part must be able
+to initialize the SDRAM controller and to read the remaining rest of the
+U-Boot-v2 binary from the NAND flash memory prior returning from \<board_init_lowlevel\>.
+
 When \<board_init_lowlevel\> returns it will be assumed there is now a working
 RAM that can be used for all further steps.
 
-Next step is relocation of U-Boot itself. It gets copied to RAM and the last
-assembler instruction is a jump into \<start_uboot\>. This target address is
-the first C instruction in U-Boot. At this point of time:\n
+Next step is relocation of U-Boot itself (if not already done). It gets copied
+to RAM and the last assembler instruction is a jump into start_uboot(). This
+target address is the first C instruction in U-Boot. At this point of time:\n
 "runtime address == link address".
-
-@par Architectures using ARM processors
-For details on specific architectures:
- - @subpage dev_omap_arch
 
 @section mach_arm_files List of changes
 
 Lets call the new MACH new_cpu.
 
  - create a new subdirectory in /arch/arm/new_cpu
+ - create a new subdirectory in /include/asm-arm/new_cpu
+ - add CPU specific definitions into /include/asm-arm/new_cpu/
  - add /arch/arm/new_cpu/Kconfig
  - add /arch/arm/new_cpu/Makfile
  - add other CPU specific code into /arch/arm/new_cpu/
  - modify /arch/arm/Kconfig
  - modify /arch/arm/Makfile
+
+@section mach_arm_architecures Architectures using ARM processors
+For details on specific architectures:
+
+@subsection mach_arm_omap_info OMAP CPUs
+
+@li @subpage dev_omap_arch
+
+@subsection mach_arm_s3c24xx_info S3C24XX CPUs
+
+@li @subpage dev_s3c24xx_arch
 
 TODO add more details
 

@@ -166,7 +166,7 @@ static int a9m2440_devices_init(void)
 #endif
 	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
 
-	armlinux_set_architecture(698);		/* A9M2440 */
+	armlinux_set_architecture(MACH_TYPE_A9M2440);
 
 	return 0;
 }

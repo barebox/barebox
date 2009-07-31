@@ -180,12 +180,7 @@ static int a9m2410_devices_init(void)
 #endif
 	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
 
-/*
- * Kernel uses:
- * 2.6.29: SMDK2410 = 193
- * 2.6.11: A9M2410 = 697
- */
-	armlinux_set_architecture(193/*697*/);		/* A9M2410 */
+	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;
 }

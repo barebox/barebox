@@ -166,7 +166,7 @@ static int a9m2440_devices_init(void)
 #endif
 	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
 
-	armlinux_set_architecture(698);		/* A9M2440 */
+	armlinux_set_architecture(MACH_TYPE_A9M2440);
 
 	return 0;
 }
@@ -220,7 +220,7 @@ This CPU card is based on a Samsung S3C2440 CPU. The card is shipped with:
 - I2C interface, 100KHz and 400KHz
   - Real Time Clock
     - Dallas DS1337
-    - address 0xD0
+    - address 0x68
 - LCD interface
 - Touch Screen interface
 - Camera interface

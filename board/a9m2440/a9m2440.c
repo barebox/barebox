@@ -220,7 +220,7 @@ This CPU card is based on a Samsung S3C2440 CPU. The card is shipped with:
 - I2C interface, 100KHz and 400KHz
   - Real Time Clock
     - Dallas DS1337
-    - address 0xD0
+    - address 0x68
 - LCD interface
 - Touch Screen interface
 - Camera interface

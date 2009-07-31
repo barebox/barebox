@@ -1,0 +1,11 @@
+menu "Video drivers                 "
+
+config VIDEO
+	bool "Enable  Framebuffersupport"
+
+config DRIVER_VIDEO_IMX
+	bool "i.MX framebuffer driver"
+	depends on ARCH_IMX
+	depends on VIDEO
+
+endmenu

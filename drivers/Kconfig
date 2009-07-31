@@ -6,5 +6,6 @@ source "drivers/spi/Kconfig"
 source "drivers/nor/Kconfig"
 source "drivers/nand/Kconfig"
 source "drivers/usb/Kconfig"
+source "drivers/video/Kconfig"
 
 endmenu

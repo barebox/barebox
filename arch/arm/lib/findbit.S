@@ -1,7 +1,3 @@
-/**
- * @file
- * @brief common bitops
- */
 /*
  * Originally from Linux kernel
  *  arch/arm/lib/findbit.S

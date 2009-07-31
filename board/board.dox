@@ -88,4 +88,8 @@ TBD
 
 First, the new board should be visible in the menu.
 
+@section board_specific_cpu Porting hints for specific CPUs
+
+@li @subpage dev_s3c24xx_mach
+
 */

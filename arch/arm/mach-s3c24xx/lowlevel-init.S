@@ -162,8 +162,7 @@ Define in the machine specific config.h the following symbols:
 
 @note Valid values for the PLL settings can be found in the CPU manual.
 
-@par Background: PLL frequency calculation for the S3C2410 CPU (both PLLs)
-and S3C2440 (UPLL only)
+@par Background: PLL frequency calculation for the S3C2410 CPU (both PLLs) and S3C2440 (UPLL only)
 
 @f[
 	f_{PLL} = \frac{m * f_{Ref}}{p * 2^s}

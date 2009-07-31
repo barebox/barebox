@@ -84,10 +84,90 @@ Note: U-Boot-v2 expects an upward counting counter!
 
 TODO
 
- - @subpage dev_arm_mach
- - @subpage dev_bf_mach
- - @subpage dev_ppc_mach
+@li @subpage dev_arm_mach
+@li @subpage dev_bf_mach
+@li @subpage dev_ppc_mach
 
 */
 
+/** @page io_access_functions I/O access functions
 
+List of functions to be used for hardware register access (I/O).
+
+@section native_access Native IN/OUT access
+
+@note Native means: It uses the same endianess than the CPU.
+
+@subsection single_native_access Single access of various width
+
+The following functions are intended to be used for a single I/O access.
+
+To read a byte (8 bit) from a specific I/O address:
+@code
+uint8_t readb(unsigned long)
+@endcode
+
+To read a word (16 bit) from a specific I/O address:
+@code
+uint16_t readw(unsigned long)
+@endcode
+
+To read a long word (32 bit) from a specific I/O address:
+@code
+uint32_t readl(unsigned long)
+@endcode
+
+To write a byte (8 bit) into a specific I/O address:
+@code
+void writeb(uint8_t val, unsigned long)
+@endcode
+
+To write a word (16 bit) into a specific I/O address:
+@code
+void writew(uint16_t val, unsigned long)
+@endcode
+
+To write a long word (32 bit) into a specific I/O address:
+@code
+void writel(uint32_t val, unsigned long)
+@endcode
+
+@subsection string_native_access String native access of various width
+
+The following functions are intended to be used for string based I/O access.
+
+To read a string of bytes (8 bit) from one specific I/O address:
+@code
+void readsb(const void __iomem *addr, void *mem_buffer, int byte_count);
+@endcode
+
+To read a string of words (16 bit) from one specific I/O address:
+@code
+void readsw(const void __iomem *addr, void *mem_buffer, int word_count);
+@endcode
+
+To read a string of long words (32 bit) from one specific I/O address:
+@code
+void readsl(const void __iomem *addr, void *mem_buffer, int long_count);
+@endcode
+
+To write a string of bytes (8 bit) to one specific I/O address:
+@code
+void writesb(void __iomem *addr, const void *mem_buffer, int byte_count);
+@endcode
+
+To write a string of words (16 bit) to one specific I/O address:
+@code
+void writesw(void __iomem *addr, const void *mem_buffer, int word_count);
+@endcode
+
+To write a string of long words (32 bit) to one specific I/O address:
+@code
+void writesl(void __iomem *addr, const void *mem_buffer, int long_count);
+@endcode
+
+@section special_access Special IN/OUT access
+
+TBD
+
+*/

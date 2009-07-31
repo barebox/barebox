@@ -1,22 +1,23 @@
 /** @page developers_manual Developer's Manual
 
-This part of the documentation is intended for developers.
+This part of the documentation is intended for developers of U-Boot-v2.
 
-Some background knowledge for some frameworks in U-Boot v2
+@section devel_backgrounds Some background knowledge for some frameworks U-Boot-v2
 
- - @subpage driver_model
+@li @subpage driver_model
+@li @subpage dev_params
 
-Hints and tips for simply adapting U-Boot v2
+@section devel_hints Hints and tips for simply adapting U-Boot-v2
 
- - @subpage dev_architecture
- - @subpage dev_cpu
- - @subpage dev_board
- - @subpage dev_params
+@li @subpage dev_architecture
+@li @subpage dev_cpu
+@li @subpage dev_board
 
-Various themes:
+@section devel_themes Various themes about U-Boot-v2
 
- - @subpage how_mount_works
- - @subpage boot_preparation
- - @subpage uboot_simul
+@li @subpage how_mount_works
+@li @subpage boot_preparation
+@li @subpage uboot_simul
+@li @subpage io_access_functions
 
 */

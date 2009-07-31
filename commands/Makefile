@@ -45,3 +45,4 @@ obj-$(CONFIG_CMD_VERSION)	+= version.o
 obj-$(CONFIG_CMD_HELP)		+= help.o
 obj-$(CONFIG_CMD_LSMOD)		+= lsmod.o
 obj-$(CONFIG_CMD_INSMOD)	+= insmod.o
+obj-$(CONFIG_CMD_BMP)		+= bmp.o

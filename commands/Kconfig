@@ -265,4 +265,11 @@ config CMD_LSMOD
 	depends on MODULES
 	prompt "lsmod"
 
+config CMD_BMP
+	bool
+	depends on VIDEO
+	prompt "bmp"
+	help
+	  show bmp files on framebuffer devices
+
 endmenu

@@ -25,6 +25,10 @@
  * MA 02111-1307 USA
  */
 
+/**
+ * @file
+ * @brief Main entry into the C part of U-Boot-v2
+ */
 #include <common.h>
 #include <init.h>
 #include <command.h>

@@ -51,8 +51,8 @@
 /**
  * @brief ns16550_calc_divisor - compute the divisor for a baud rate
  *
- * @param[in] cdev - pointer to console device
- * @param[in] baudrate - baud rate
+ * @param[in] cdev pointer to console device
+ * @param[in] baudrate baud rate
  *
  * @return divisor to be set
  */
@@ -89,7 +89,7 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 /**
  * @brief ns16550_serial_init_port - initialize the device
  *
- * @param cdev[in] - pointer to console device
+ * @param[in] cdev pointer to console device
  */
 static void ns16550_serial_init_port(struct console_device *cdev)
 {
@@ -122,8 +122,8 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 /**
  * @brief ns16550_putc- put a character to the serial port
  *
- * @param cdev[in] - pointer to console device
- * @param c[in] - character to put
+ * @param[in] cdev pointer to console device
+ * @param[in] c character to put
  */
 static void ns16550_putc(struct console_device *cdev, char c)
 {
@@ -138,7 +138,7 @@ static void ns16550_putc(struct console_device *cdev, char c)
 /**
  * @brief ns16550_getc - retrieve a character from serial port
  *
- * @param cdev[in] - pointer to console device
+ * @param[in] cdev pointer to console device
  *
  * @return return the character read
  */
@@ -155,7 +155,7 @@ static int ns16550_getc(struct console_device *cdev)
 /**
  * @brief ns16550_tstc - test if character is available
  *
- * @param cdev[in] -pointer to console device
+ * @param[in] cdev pointer to console device
  *
  * @return  - status based on data availability
  */
@@ -170,8 +170,8 @@ static int ns16550_tstc(struct console_device *cdev)
 /**
  * @brief ns16550_setbaudrate - set the baudrate for the uart port
  *
- * @param cdev[in] - console device
- * @param baud_rate[in] - baud rate to set
+ * @param[in] cdev  console device
+ * @param[in] baud_rate baud rate to set
  *
  * @return  0-implied to support the baudrate
  */
@@ -192,10 +192,9 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 }
 
 /**
- * @brief ns16550_probe - Probe entry point -called on the first
- *			  match for device
+ * @brief ns16550_probe - Probe entry point -called on the first match for device
  *
- * @param dev[in]  - matched device
+ * @param[in] dev matched device
  *
  * @return EINVAL if platform_data is not populated,
  *	   ENOMEM if calloc failed

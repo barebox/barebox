@@ -6,9 +6,9 @@ Mostly everyone. The user needs it to find help for his daily work to manage
 his targets. The developer to find out all the new features that make his
 work easier.
 
- - @subpage shell_notes
- - @subpage readline_parser
- - @subpage command_reference
- - @subpage partitions
+@li @subpage shell_notes
+@li @subpage readline_parser
+@li @subpage command_reference
+@li @subpage partitions
 
 */

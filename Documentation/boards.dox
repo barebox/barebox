@@ -4,30 +4,34 @@ This is a list of boards that are currently supported by U-Boot-v2.
 
 PowerPC type:
 
-- @subpage pcm030
+@li @subpage pcm030
 
 ARM type:
 
-- @subpage pcm037
-- @subpage pcm038
-- @subpage pcm043
-- @subpage imx21ads
-- @subpage imx27ads
-- @subpage the3stack
-- @subpage scb9328
-- @subpage netx
-- @subpage dev_omap_arch
+@li @subpage pcm037
+@li @subpage pcm038
+@li @subpage pcm043
+@li @subpage imx21ads
+@li @subpage imx27ads
+@li @subpage the3stack
+@li @subpage scb9328
+@li @subpage netx
+@li @subpage dev_omap_arch
+@li @subpage a9m2440
+@li @subpage a9m2410
 
 Blackfin type:
 
-- @subpage ipe337
+@li @subpage ipe337
 
 x86 type:
 
+@li nothing yet
+
 coldfire/m68k type:
 
-- @subpage phycore_mcf54xx
-- @subpage kp_ukd_r1
+@li @subpage phycore_mcf54xx
+@li @subpage kp_ukd_r1
 
 */
 

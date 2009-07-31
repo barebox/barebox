@@ -39,6 +39,7 @@
 #include <asm/io.h>
 #include <asm/arch/imx-nand.h>
 #include <asm/arch/imx-pll.h>
+#include <asm/arch/imxfb.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -95,7 +96,7 @@ static struct spi_board_info pcm038_spi_board_info[] = {
 	}
 };
 
-struct imx_nand_platform_data nand_info = {
+static struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
 };
@@ -104,6 +105,47 @@ static struct device_d nand_dev = {
 	.name     = "imx_nand",
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
+};
+
+static struct imx_fb_videomode imxfb_mode = {
+	.mode = {
+		.name		= "Sharp-LQ035Q7",
+		.refresh	= 60,
+		.xres		= 240,
+		.yres		= 320,
+		.pixclock	= 188679, /* in ps (5.3MHz) */
+		.hsync_len	= 7,
+		.left_margin	= 5,
+		.right_margin	= 16,
+		.vsync_len	= 1,
+		.upper_margin	= 7,
+		.lower_margin	= 9,
+	},
+	/*
+	 * - HSYNC active high
+	 * - VSYNC active high
+	 * - clk notenabled while idle
+	 * - clock not inverted
+	 * - data not inverted
+	 * - data enable low active
+	 * - enable sharp mode
+	 */
+	.pcr		= 0xF00080C0,
+	.bpp		= 16,
+};
+
+static struct imx_fb_platform_data pcm038_fb_data = {
+	.mode	= &imxfb_mode,
+	.pwmr	= 0x00A903FF,
+	.lscr1	= 0x00120300,
+	.dmacr	= 0x00020010,
+};
+
+static struct device_d imxfb_dev = {
+	.name		= "imxfb",
+	.map_base	= 0x10021000,
+	.size		= 0x1000,
+	.platform_data	= &pcm038_fb_data,
 };
 
 static int pcm038_devices_init(void)
@@ -141,6 +183,34 @@ static int pcm038_devices_init(void)
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
+		/* display */
+		PA5_PF_LSCLK,
+		PA6_PF_LD0,
+		PA7_PF_LD1,
+		PA8_PF_LD2,
+		PA9_PF_LD3,
+		PA10_PF_LD4,
+		PA11_PF_LD5,
+		PA12_PF_LD6,
+		PA13_PF_LD7,
+		PA14_PF_LD8,
+		PA15_PF_LD9,
+		PA16_PF_LD10,
+		PA17_PF_LD11,
+		PA18_PF_LD12,
+		PA19_PF_LD13,
+		PA20_PF_LD14,
+		PA21_PF_LD15,
+		PA22_PF_LD16,
+		PA23_PF_LD17,
+		PA24_PF_REV,
+		PA25_PF_CLS,
+		PA26_PF_PS,
+		PA27_PF_SPL_SPR,
+		PA28_PF_HSYNC,
+		PA29_PF_VSYNC,
+		PA30_PF_CONTRAST,
+		PA31_PF_OE_ACD,
 	};
 
 	/* configure 16 bit nor flash on cs0 */
@@ -172,6 +242,7 @@ static int pcm038_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
 	register_device(&sram_dev);
+	register_device(&imxfb_dev);
 
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock

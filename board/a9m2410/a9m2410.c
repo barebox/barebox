@@ -258,4 +258,19 @@ This CPU card is based on a Samsung S3C2410 CPU. The card is shipped with:
 - SPI interface
 - JTAG interface
 
+How to get the binary image:
+
+Using the default configuration:
+
+@code
+make ARCH=arm a9m2410_defconfig
+@endcode
+
+Build the binary image:
+
+@code
+make ARCH=arm CROSS_COMPILE=armv4compiler
+@endcode
+
+@note replace the armv4compiler with your ARM v4 cross compiler.
 */

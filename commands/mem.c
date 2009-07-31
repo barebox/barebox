@@ -518,6 +518,74 @@ U_BOOT_CMD_START(memcpy)
 	U_BOOT_CMD_HELP(cmd_memcpy_help)
 U_BOOT_CMD_END
 
+static int do_memset(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	ulong	s, c, n;
+	int     fd;
+	char   *buf;
+	int	mode  = O_RWSIZE_1;
+	int     ret = 1;
+	char	*file = DEVMEM;
+
+	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file) < 0)
+		return 1;
+
+	if (optind + 3 > argc) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	s = strtoul_suffix(argv[optind], NULL, 0);
+	c = strtoul_suffix(argv[optind + 1], NULL, 0);
+	n = strtoul_suffix(argv[optind + 2], NULL, 0);
+
+	fd = open_and_lseek(file, mode | O_WRONLY, s);
+	if (fd < 0)
+		return 1;
+
+	buf = xmalloc(RW_BUF_SIZE);
+	memset(buf, c, RW_BUF_SIZE);
+
+	while (n > 0) {
+		int now;
+
+		now = min(RW_BUF_SIZE, n);
+
+		ret = write(fd, buf, now);
+		if (ret < 0) {
+			perror("write");
+			ret = 1;
+			goto out;
+		}
+
+		n -= now;
+	}
+
+	ret = 0;
+out:
+	close(fd);
+	free(buf);
+
+	return ret;
+}
+
+static const __maybe_unused char cmd_memset_help[] =
+"Usage: memset [OPTIONS] <src> <c> <n>\n"
+"\n"
+"options:\n"
+"  -b, -w, -l   use byte, halfword, or word accesses\n"
+"  -s <file>    source file (default /dev/mem)\n"
+"  -d <file>    destination file (default /dev/mem)\n"
+"\n"
+"Fill the first n bytes of area with byte c\n";
+
+U_BOOT_CMD_START(memset)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_memset,
+	.usage		= "memory fill",
+	U_BOOT_CMD_HELP(cmd_memset_help)
+U_BOOT_CMD_END
+
 static struct file_operations memops = {
 	.read  = mem_read,
 	.write = mem_write,

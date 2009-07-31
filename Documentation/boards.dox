@@ -19,6 +19,7 @@ ARM type:
 @li @subpage dev_omap_arch
 @li @subpage a9m2440
 @li @subpage a9m2410
+@li @subpage eukrea_cpuimx27
 
 Blackfin type:
 

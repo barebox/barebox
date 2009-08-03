@@ -65,7 +65,7 @@ unsigned long imx_get_armclk(void)
 	/* consumer path is selected */
 	aad = &clk_consumer[(pdr0 >> 16) & 0xf];
 	if (aad->sel)
-		fref = fref * 2 / 3;
+		fref = fref * 3 / 4;
 
 	return fref / aad->arm;
 }
@@ -74,7 +74,7 @@ unsigned long imx_get_ahbclk(void)
 {
 	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	struct arm_ahb_div *aad;
-	unsigned long fref = imx_get_mpllclk();
+	unsigned long fref = imx_get_armclk();
 
 	aad = &clk_consumer[(pdr0 >> 16) & 0xf];
 
@@ -157,6 +157,8 @@ int imx_clko_set_div(int div)
 
 	cosr &= ~(0x3f << 10);
 	cosr |= div << 10;
+
+	writel(cosr, IMX_CCM_BASE + CCM_COSR);
 
 	return div + 1;
 }

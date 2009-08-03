@@ -36,6 +36,7 @@ struct nand_bb {
 	char *devname;
 	char *name;
 	int open;
+	int needs_write;
 
 	struct mtd_info_user info;
 
@@ -43,6 +44,7 @@ struct nand_bb {
 	size_t size;
 	int fd;
 	off_t offset;
+	void *writebuf;
 
 	struct cdev cdev;
 };
@@ -80,35 +82,66 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	return bytes;
 }
 
-static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
-	unsigned long offset, ulong flags)
+/* Must be a multiple of the largest NAND page size */
+#define BB_WRITEBUF_SIZE	4096
+
+static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 {
-	struct nand_bb *bb = cdev->priv;
-	int ret, bytes = 0, now;
+	int ret, now;
+	void *buf = bb->writebuf;
+	int cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
-	debug("%s offset: 0x%08x count: 0x%08x\n", __func__, offset, count);
-
-	while(count) {
-		ret = ioctl(bb->fd, MEMGETBADBLOCK, (void *)bb->offset);
+	while (count) {
+		ret = ioctl(bb->fd, MEMGETBADBLOCK, (void *)cur_ofs);
 		if (ret < 0)
 			return ret;
 
 		if (ret) {
-			debug("skipping bad block at 0x%08x\n", bb->offset);
+			debug("skipping bad block at 0x%08x\n", cur_ofs);
 			bb->offset += bb->info.erasesize;
+			cur_ofs += bb->info.erasesize;
+			continue;
 		}
 
-		now = min(count, (size_t)(bb->info.erasesize -
-				(bb->offset % bb->info.erasesize)));
-		lseek(bb->fd, offset, SEEK_SET);
+		now = min(count, (size_t)(bb->info.erasesize));
+		lseek(bb->fd, cur_ofs, SEEK_SET);
 		ret = write(bb->fd, buf, now);
 		if (ret < 0)
 			return ret;
 		buf += now;
 		count -= now;
-		bb->offset += now;
-		bytes += now;
+		cur_ofs += now;
 	};
+
+	return 0;
+}
+
+static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
+	unsigned long offset, ulong flags)
+{
+	struct nand_bb *bb = cdev->priv;
+	int bytes = count, now, wroffs, ret;
+
+	debug("%s offset: 0x%08x count: 0x%08x\n", __func__, offset, count);
+
+	while (count) {
+		wroffs = bb->offset % BB_WRITEBUF_SIZE;
+		now = min((int)count, BB_WRITEBUF_SIZE - wroffs);
+		memcpy(bb->writebuf + wroffs, buf, now);
+
+		if (wroffs + now == BB_WRITEBUF_SIZE) {
+			bb->needs_write = 0;
+			ret = nand_bb_write_buf(bb, BB_WRITEBUF_SIZE);
+			if (ret)
+				return ret;
+		} else {
+			bb->needs_write = 1;
+		}
+
+		bb->offset += now;
+		count -= now;
+		buf += now;
+	}
 
 	return bytes;
 }
@@ -134,6 +167,8 @@ static int nand_bb_open(struct cdev *cdev, struct filep *f)
 
 	bb->open = 1;
 	bb->offset = 0;
+	bb->needs_write = 0;
+	bb->writebuf = xmalloc(BB_WRITEBUF_SIZE);
 
 	return 0;
 }
@@ -142,7 +177,11 @@ static int nand_bb_close(struct cdev *cdev, struct filep *f)
 {
 	struct nand_bb *bb = cdev->priv;
 
+	if (bb->needs_write)
+		nand_bb_write_buf(bb, bb->offset % BB_WRITEBUF_SIZE);
+
 	bb->open = 0;
+	free(bb->writebuf);
 
 	return 0;
 }

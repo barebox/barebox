@@ -1,11 +1,15 @@
 menu "Video drivers                 "
 
 config VIDEO
-	bool "Enable  Framebuffersupport"
+	bool "Enable Framebuffer support"
 
 config DRIVER_VIDEO_IMX
 	bool "i.MX framebuffer driver"
 	depends on ARCH_IMX
 	depends on VIDEO
+
+config IMXFB_DRIVER_VIDEO_IMX_OVERLAY
+	bool "i.MX framebuffer overlay support"
+	depends on DRIVER_VIDEO_IMX && (ARCH_IMX27 || ARCH_IMX21)
 
 endmenu

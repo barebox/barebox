@@ -114,6 +114,17 @@
 #define LCDISR_EOF	(1<<1)
 #define LCDISR_BOF	(1<<0)
 
+#define LCDC_LGWSAR	0x50
+#define LCDC_LGWSR	0x54
+#define LCDC_LGWVPWR	0x58
+#define LCDC_LGWPOR	0x5c
+#define LCDC_LGWPR	0x60
+#define LCDC_LGWCR	0x64
+#define LGWCR_GWAV(alpha)	(((alpha) & 0xff) << 24)
+#define LGWCR_GWE	(1 << 22)
+
+#define LCDC_LGWDCR	0x68
+
 /*
  * These are the bitfields for each
  * display depth that we support.
@@ -139,6 +150,12 @@ struct imxfb_info {
 	struct imx_fb_videomode *mode;
 
 	struct fb_info		info;
+	struct device_d		*dev;
+
+
+	struct fb_info		overlay;
+	struct param_d		param_alpha;
+	char			alpha_string[4];
 };
 
 #define IMX_NAME	"IMX"
@@ -354,6 +371,127 @@ static struct fb_ops imxfb_ops = {
 	.fb_disable	= imxfb_disable_controller,
 };
 
+#ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
+static void imxfb_overlay_enable_controller(struct fb_info *overlay)
+{
+	struct imxfb_info *fbi = overlay->priv;
+	unsigned int tmp;
+
+	tmp = readl(fbi->regs + LCDC_LGWCR);
+	tmp |= LGWCR_GWE;
+	writel(tmp , fbi->regs + LCDC_LGWCR);
+}
+
+static void imxfb_overlay_disable_controller(struct fb_info *overlay)
+{
+	struct imxfb_info *fbi = overlay->priv;
+	unsigned int tmp;
+
+	tmp = readl(fbi->regs + LCDC_LGWCR);
+	tmp &= ~LGWCR_GWE;
+	writel(tmp , fbi->regs + LCDC_LGWCR);
+}
+
+static int imxfb_overlay_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+		   u_int trans, struct fb_info *info)
+{
+	return 0;
+}
+
+static struct fb_ops imxfb_overlay_ops = {
+	.fb_setcolreg	= imxfb_overlay_setcolreg,
+	.fb_enable	= imxfb_overlay_enable_controller,
+	.fb_disable	= imxfb_overlay_disable_controller,
+};
+
+static int imxfb_alpha_set(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct fb_info *overlay = dev->priv;
+	struct imxfb_info *fbi = overlay->priv;
+	int alpha;
+	unsigned int tmp;
+
+	alpha = simple_strtoul(val, NULL, 0);
+	alpha &= 0xff;
+
+	tmp = readl(fbi->regs + LCDC_LGWCR);
+	tmp &= ~LGWCR_GWAV(0xff);
+	tmp |= LGWCR_GWAV(alpha);
+	writel(tmp , fbi->regs + LCDC_LGWCR);
+
+	sprintf(fbi->alpha_string, "%d", alpha);
+
+	return 0;
+}
+
+static int imxfb_register_overlay(struct imxfb_info *fbi)
+{
+	struct fb_info *overlay;
+	struct imxfb_rgb *rgb;
+	int ret;
+
+	overlay = &fbi->overlay;
+
+	overlay->priv = fbi;
+	overlay->mode = fbi->info.mode;
+	overlay->xres = fbi->info.xres;
+	overlay->yres = fbi->info.yres;
+	overlay->bits_per_pixel = fbi->info.bits_per_pixel;
+	overlay->fbops = &imxfb_overlay_ops;
+
+	overlay->screen_base = xzalloc(overlay->xres * overlay->yres *
+			(overlay->bits_per_pixel >> 3));
+
+	writel((unsigned long)overlay->screen_base, fbi->regs + LCDC_LGWSAR);
+	writel(SIZE_XMAX(overlay->xres) | SIZE_YMAX(overlay->yres),
+			fbi->regs + LCDC_LGWSR);
+	writel(VPW_VPW(overlay->xres * overlay->bits_per_pixel / 8 / 4),
+		fbi->regs + LCDC_LGWVPWR);
+	writel(0, fbi->regs + LCDC_LGWPR);
+	writel(LGWCR_GWAV(0x0), fbi->regs + LCDC_LGWCR);
+
+	switch (overlay->bits_per_pixel) {
+	case 32:
+		rgb = &def_rgb_18;
+		break;
+	case 16:
+	default:
+		if (fbi->pcr & PCR_TFT)
+			rgb = &def_rgb_16_tft;
+		else
+			rgb = &def_rgb_16_stn;
+		break;
+	case 8:
+		rgb = &def_rgb_8;
+		break;
+	}
+
+	/*
+	 * Copy the RGB parameters for this display
+	 * from the machine specific parameters.
+	 */
+	overlay->red    = rgb->red;
+	overlay->green  = rgb->green;
+	overlay->blue   = rgb->blue;
+	overlay->transp = rgb->transp;
+
+	ret = register_framebuffer(overlay);
+	if (ret < 0) {
+		dev_err(fbi->dev, "failed to register framebuffer\n");
+		return ret;
+	}
+
+	fbi->param_alpha.set = imxfb_alpha_set;
+	fbi->param_alpha.name = "alpha";
+	sprintf(fbi->alpha_string, "%d", 0);
+	fbi->param_alpha.value = fbi->alpha_string;
+	dev_add_param(&overlay->dev, &fbi->param_alpha);
+
+	return 0;
+}
+#endif
+
 static int imxfb_probe(struct device_d *dev)
 {
 	struct imxfb_info *fbi;
@@ -364,6 +502,11 @@ static int imxfb_probe(struct device_d *dev)
 	if (!pdata)
 		return -ENODEV;
 
+#ifdef CONFIG_ARCH_IMX27
+	PCCR0 &= ~PCCR0_LCDC_EN;
+	PCCR1 &= ~PCCR1_HCLK_LCDC;
+#endif
+
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
 
@@ -373,6 +516,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->pwmr = pdata->pwmr;
 	fbi->lscr1 = pdata->lscr1;
 	fbi->dmacr = pdata->dmacr;
+	fbi->dev = dev;
 	info->priv = fbi;
 	info->mode = &pdata->mode->mode;
 	info->xres = pdata->mode->mode.xres;
@@ -392,6 +536,10 @@ static int imxfb_probe(struct device_d *dev)
 		dev_err(dev, "failed to register framebuffer\n");
 		return ret;
 	}
+#ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
+	imxfb_register_overlay(fbi);
+#endif
+	imxfb_enable_controller(info);
 
 	return 0;
 }

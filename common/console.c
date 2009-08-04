@@ -265,9 +265,9 @@ void console_putc(unsigned int ch, char c)
 	case CONSOLE_INIT_FULL:
 		for_each_console(cdev) {
 			if (cdev->f_active & ch) {
-				cdev->putc(cdev, c);
 				if (c == '\n')
 					cdev->putc(cdev, '\r');
+				cdev->putc(cdev, c);
 			}
 		}
 		return;
@@ -302,9 +302,9 @@ void console_puts(unsigned int ch, const char *str)
 {
 	const char *s = str;
 	while (*s) {
-		console_putc(ch, *s);
 		if (*s == '\n')
 			console_putc(ch, '\r');
+		console_putc(ch, *s);
 		s++;
 	}
 }

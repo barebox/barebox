@@ -32,6 +32,8 @@
 #include <fs.h>
 #include <list.h>
 #include <xfuncs.h>
+#include <malloc.h>
+#include <fcntl.h>
 
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
@@ -347,24 +349,51 @@ __setup_end_tag (void)
 	params->hdr.size = 0;
 }
 
+struct zimage_header {
+	u32	unsused[9];
+	u32	magic;
+	u32	start;
+	u32	end;
+};
+
 static int do_bootz(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params);
 	const char *commandline = getenv("bootargs");
-	size_t size;
+	int fd, ret;
+	struct zimage_header header;
+	void *zimage;
 
 	if (argc != 2) {
 		u_boot_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	theKernel = read_file(argv[1], &size);
-	if (!theKernel) {
+	fd = open(argv[1], O_RDONLY);
+
+	ret = read(fd, &header, sizeof(header));
+	if (ret < sizeof(header)) {
 		printf("could not read %s\n", argv[1]);
-		return 1;
+		goto err_out;
 	}
 
-	printf("loaded zImage from %s with size %d\n", argv[1], size);
+	if (header.magic != 0x016f2818) {
+		printf("invalid magic 0x%08x\n", header.magic);
+		goto err_out;
+	}
+
+	zimage = xmalloc(header.end);
+	memcpy(zimage, &header, sizeof(header));
+
+	ret = read(fd, zimage + sizeof(header), header.end - sizeof(header));
+	if (ret < header.end - sizeof(header)) {
+		printf("could not read %s\n", argv[1]);
+		goto err_out1;
+	}
+
+	theKernel = zimage;
+
+	printf("loaded zImage from %s with size %d\n", argv[1], header.end);
 
 	setup_start_tag();
 	setup_serial_tag(&params);
@@ -382,6 +411,13 @@ static int do_bootz(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	theKernel (0, armlinux_architecture, armlinux_bootparams);
 
 	return 0;
+
+err_out1:
+	free(zimage);
+err_out:
+	close(fd);
+
+	return 1;
 }
 
 static const __maybe_unused char cmd_ls_help[] =

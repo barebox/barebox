@@ -1066,6 +1066,8 @@ static int __init imxnd_probe(struct device_d *dev)
 	} else 
 		host->pagesize_2k = 0;
 
+	this->options |= NAND_SKIP_BBTSCAN;
+
 	/* Scan to find existence of the device */
 	if (nand_scan(mtd, 1)) {
 		MTD_DEBUG(MTD_DEBUG_LEVEL0,

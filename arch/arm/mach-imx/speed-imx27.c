@@ -154,7 +154,7 @@ ulong imx_get_lcdclk(void)
 	return imx_get_perclk3();
 }
 
-int imx_dump_clocks(void)
+void imx_dump_clocks(void)
 {
 	uint32_t	cid = CID;
 
@@ -172,10 +172,7 @@ int imx_dump_clocks(void)
 	printf("clkin26: %10d Hz\n", clk_in_26m());
 	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
-	return 0;
 }
-
-late_initcall(imx_dump_clocks);
 
 /*
  * Set the divider of the CLKO pin. Returns

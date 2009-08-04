@@ -22,6 +22,8 @@
  */
 
 #include <asm-generic/div64.h>
+#include <common.h>
+#include <command.h>
 
 /*
  *  get the system pll clock in Hz
@@ -48,4 +50,19 @@ unsigned int imx_decode_pll(unsigned int pll, unsigned int f_ref)
 	do_div(ll, quot);
 	return (unsigned int) ll;
 }
+
+extern void imx_dump_clocks(void);
+
+static int do_clocks (cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	imx_dump_clocks();
+
+	return 0;
+}
+
+U_BOOT_CMD_START(dump_clocks)
+	.maxargs	= CONFIG_MAXARGS,
+	.cmd		= do_clocks,
+	.usage		= "show clock frequencies",
+U_BOOT_CMD_END
 

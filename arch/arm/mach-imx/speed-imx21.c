@@ -135,7 +135,7 @@ ulong imx_get_gptclk(void)
 	return imx_decode_perclk((PCDR1 & 0x3f) + 1);
 }
 
-int imx_dump_clocks(void)
+void imx_dump_clocks(void)
 {
 	uint32_t	cid = CID;
 
@@ -152,8 +152,6 @@ int imx_dump_clocks(void)
 	printf("clkin26: %10d Hz\n", clk_in_26m());
 	return 0;
 }
-
-late_initcall(imx_dump_clocks);
 
 /*
  * Set the divider of the CLKO pin (when CLK48DIV_CLKO is chosen).

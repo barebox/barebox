@@ -79,3 +79,23 @@ ulong imx_get_gptclk(void)
 	return imx_get_perclk1();
 }
 
+void imx_dump_clocks(void)
+{
+	uint32_t	cid = CID;
+
+	printf("chip id: [%d,%03x,%d,%03x]\n",
+	       (cid >> 28) & 0xf, (cid >> 16) & 0xfff,
+	       (cid >> 12) & 0xf, (cid >>  0) & 0xfff);
+
+	printf("spll:    %10d Hz\n", imx_get_spllclk());
+	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
+	printf("fclk:    %10d Hz\n", imx_get_fclk());
+	printf("hclk:    %10d Hz\n", imx_get_hclk());
+	printf("bclk:    %10d Hz\n", imx_get_bclk());
+	printf("perclk1: %10d Hz\n", imx_get_perclk1());
+	printf("perclk2: %10d Hz\n", imx_get_perclk2());
+	printf("perclk3: %10d Hz\n", imx_get_perclk3());
+	printf("uart:    %10d Hz\n", imx_get_uartclk());
+	printf("gpt:     %10d Hz\n", imx_get_gptclk());
+}
+

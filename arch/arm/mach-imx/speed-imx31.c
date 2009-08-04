@@ -52,13 +52,11 @@ ulong imx_get_perclk1(void)
 	return freq;
 }
 
-int imx_dump_clocks(void)
+void imx_dump_clocks(void)
 {
 	ulong cpufreq = imx_get_mcu_main_clk();
 	printf("mx31 cpu clock: %dMHz\n",cpufreq / 1000000);
 	printf("ipg clock     : %dHz\n", imx_get_perclk1());
-
-	return 0;
 }
 
 ulong imx_get_uartclk(void)
@@ -71,4 +69,3 @@ ulong imx_get_gptclk(void)
 	return imx_get_perclk1();
 }
 
-late_initcall(imx_dump_clocks);

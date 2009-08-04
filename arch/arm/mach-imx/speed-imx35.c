@@ -129,7 +129,7 @@ ulong imx_get_fecclk(void)
 	return imx_get_ipgclk();
 }
 
-static int imx_dump_clocks(void)
+void imx_dump_clocks(void)
 {
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
 	printf("ppll:    %10d Hz\n", imx_get_ppllclk());
@@ -138,10 +138,7 @@ static int imx_dump_clocks(void)
 	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
 	printf("uart:	 %10d Hz\n", imx_get_uartclk());
-	return 0;
 }
-
-late_initcall(imx_dump_clocks);
 
 /*
  * Set the divider of the CLKO pin. Returns

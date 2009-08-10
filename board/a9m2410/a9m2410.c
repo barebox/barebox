@@ -62,30 +62,6 @@ static struct device_d network_dev = {
         .size     = 16,
 };
 
-#if 0
-/*
- * dual 16550 based UART on the baseboard
- * connected to CS line 2 and interrupt line
- * GPIOX (EINT2 and EINT3), data width is 8 bit
- */
-static struct device_d ext_serial_dev[] = {
-	{
-		.name     = "16550",
-		.id       = "serial",
-		.map_base = CS2_BASE + 0x02000000, /* A25 = 1 */
-		.size     = 7,
-		.type     = DEVICE_TYPE_CONSOLE,
-	},
-	{
-		.name     = "16550",
-		.id       = "serial",
-		.map_base = CS2_BASE + 0x04000000, /* A26 = 1 */
-		.size     = 16,
-		.type     = DEVICE_TYPE_CONSOLE,
-	}
-};
-#endif
-
 static int a9m2410_devices_init(void)
 {
 	uint32_t reg;

@@ -67,7 +67,6 @@ static int a9m2440_devices_init(void)
 
 	/*
 	 * detect the current memory size
-	 * Note: On this card the second SDRAM page is not used
 	 */
 	reg = readl(BANKSIZE);
 

@@ -46,7 +46,7 @@
  *
  * We want the UPLL to run at 47.98 MHz
  */
-#define BOARD_SPECIFIC_UPLL ((0x3c << 12) + (2 << 4) + 2)
+#define BOARD_SPECIFIC_UPLL ((0x3c << 12) + (4 << 4) + 2)
 
 /*
  * SDRAM configuration for Samsung K4M563233E

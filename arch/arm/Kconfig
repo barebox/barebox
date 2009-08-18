@@ -285,6 +285,14 @@ config ARMCORTEXA8_DCACHE_SKIP
 	help
 	  If your architecture configuration uses some other method of disabling caches, enable this
 	  So that the D-Cache invalidation logic is skipped
+
+config ARM_OPTIMZED_STRING_FUNCTIONS
+	bool "use assembler optimzed string functions"
+	help
+	  Say yes here to use assembler optimized memcpy / memset functions.
+	  These functions work much faster than the normal versions but
+	  increase your binary size.
+
 endmenu
 
 source common/Kconfig

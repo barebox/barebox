@@ -609,7 +609,11 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 			      "%s:%d: n = %d, m = %d, i = %d, col = %d\n",
 			      __FUNCTION__, __LINE__, n, m, i, col);
 
+#ifdef CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS
+			memcpy((void *)(p), &buf[i], m);
+#else
 			memcpy32((void *)(p), &buf[i], m);
+#endif
 			col += m;
 			i += m;
 			n -= m;
@@ -694,7 +698,11 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 				m += mtd->oobsize;
 
 			m = min(n, m) & ~3;
+#ifdef CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS
+			memcpy(&buf[i], (void *)p, m);
+#else
 			memcpy32(&buf[i], (void *)(p), m);
+#endif
 			col += m;
 			i += m;
 			n -= m;

@@ -146,7 +146,7 @@ int cleanup_before_linux (void)
 	/* flush I/D-cache */
 	i = 0;
 	asm ("mcr p15, 0, %0, c7, c7, 0": :"r" (i));
-	return (0);
+	return 0;
 }
 /**
  * @page arm_boot_preparation Linux Preparation on ARM

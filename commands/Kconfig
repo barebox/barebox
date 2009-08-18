@@ -215,6 +215,15 @@ config CMD_BOOTZ
 	help
 	  compile in the 'bootz' command to start zImages
 
+config CMD_BOOTU
+	tristate
+	default y
+	depends on ARM
+	prompt "bootu"
+	help
+	   compile in the 'bootu' command to start raw (uncompressed)
+	   Linux images
+
 config CMD_RESET
 	tristate
 	prompt "reset"

@@ -296,7 +296,7 @@ err_out:
 	return 1;
 }
 
-static const __maybe_unused char cmd_ls_help[] =
+static const __maybe_unused char cmd_bootz_help[] =
 "Usage: bootz [FILE]\n"
 "Boot a Linux zImage\n";
 
@@ -304,7 +304,41 @@ U_BOOT_CMD_START(bootz)
 	.maxargs        = 2,
 	.cmd            = do_bootz,
 	.usage          = "bootz - start a zImage",
+	U_BOOT_CMD_HELP(cmd_bootz_help)
 U_BOOT_CMD_END
 #endif /* CONFIG_CMD_BOOTZ */
 
+#ifdef CONFIG_CMD_BOOTU
+static int do_bootu(cmd_tbl_t *cmdtp, int argc, char *argv[])
+{
+	void (*theKernel)(int zero, int arch, void *params);
+	const char *commandline = getenv("bootargs");
 
+	if (argc != 2) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
+
+	setup_start_tag();
+	setup_memory_tags();
+	setup_commandline_tag(commandline);
+	setup_end_tag();
+
+	cleanup_before_linux();
+	theKernel(0, armlinux_architecture, armlinux_bootparams);
+
+	return 1;
+}
+
+static const __maybe_unused char cmd_bootu_help[] =
+"Usage: bootu <address>\n";
+
+U_BOOT_CMD_START(bootu)
+	.maxargs        = 2,
+	.cmd            = do_bootu,
+	.usage          = "bootu - start a raw linux image",
+	U_BOOT_CMD_HELP(cmd_bootu_help)
+U_BOOT_CMD_END
+#endif /* CONFIG_CMD_BOOTU */

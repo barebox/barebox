@@ -54,7 +54,6 @@ static int PingSend(void)
 	NetArpWaitTxPacketSize = (pkt - NetArpWaitTxPacket) + IP_HDR_SIZE_NO_UDP + 8;
 
 	/* and do the ARP request */
-	NetArpWaitTry = 1;
 	NetArpWaitTimerStart = get_time_ns();
 	ArpRequest();
 	return 1;	/* waiting */

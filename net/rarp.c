@@ -59,13 +59,8 @@ RarpHandler(uchar * dummi0, unsigned dummi1, unsigned dummi2, unsigned dummi3)
 static void
 RarpTimeout(void)
 {
-	if (RarpTry >= TIMEOUT_COUNT) {
-		puts ("\nRetry count exceeded; starting again\n");
-		NetStartAgain ();
-	} else {
-		NetSetTimeout (TIMEOUT * SECOND, RarpTimeout);
-		RarpRequest ();
-	}
+	NetSetTimeout (TIMEOUT * SECOND, RarpTimeout);
+	RarpRequest ();
 }
 
 

@@ -329,13 +329,8 @@ BootpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 static void
 BootpTimeout(void)
 {
-	if (BootpTry >= TIMEOUT_COUNT) {
-		puts ("\nRetry count exceeded; starting again\n");
-		NetStartAgain ();
-	} else {
-		NetSetTimeout (TIMEOUT * SECOND, BootpTimeout);
-		BootpRequest ();
-	}
+	NetSetTimeout (TIMEOUT * SECOND, BootpTimeout);
+	BootpRequest ();
 }
 
 /*

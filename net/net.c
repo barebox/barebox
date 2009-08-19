@@ -177,7 +177,6 @@ uchar	       *NetArpWaitTxPacket;	/* THE transmit packet			*/
 int		NetArpWaitTxPacketSize;
 uchar 		NetArpWaitPacketBuf[PKTSIZE_ALIGN + PKTALIGN];
 uint64_t	NetArpWaitTimerStart;
-int		NetArpWaitTry;
 
 void ArpRequest (void)
 {
@@ -186,7 +185,7 @@ void ArpRequest (void)
 	ARP_t *arp;
 
 #ifdef ET_DEBUG
-	printf ("ARP broadcast %d\n", NetArpWaitTry);
+	printf ("ARP broadcast\n");
 #endif
 	pkt = NetTxPacket;
 
@@ -229,16 +228,8 @@ void ArpTimeoutCheck(void)
 
 	/* check for arp timeout */
 	if (is_timeout(NetArpWaitTimerStart, ARP_TIMEOUT)) {
-		NetArpWaitTry++;
-
-		if (NetArpWaitTry >= ARP_TIMEOUT_COUNT) {
-			puts ("\nARP Retry count exceeded; starting again\n");
-			NetArpWaitTry = 0;
-			NetStartAgain();
-		} else {
-			NetArpWaitTimerStart = get_time_ns();
-			ArpRequest();
-		}
+		NetArpWaitTimerStart = get_time_ns();
+		ArpRequest();
 	}
 }
 
@@ -436,38 +427,6 @@ restart:
 }
 
 /**********************************************************************/
-
-static void
-startAgainTimeout(void)
-{
-	NetState = NETLOOP_RESTART;
-}
-
-static void
-startAgainHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
-{
-	/* Totally ignore the packet */
-}
-
-void NetStartAgain (void)
-{
-	const char *nretry;
-	int noretry = 0, once = 0;
-
-	if ((nretry = getenv ("netretry")) != NULL) {
-		noretry = (strcmp (nretry, "no") == 0);
-		once = (strcmp (nretry, "once") == 0);
-	}
-	if (noretry) {
-		eth_halt ();
-		NetState = NETLOOP_FAIL;
-		return;
-	}
-	NetSetTimeout (10 * SECOND, startAgainTimeout);
-	NetSetHandler (startAgainHandler);
-}
-
-/**********************************************************************/
 /*
  *	Miscelaneous bits.
  */
@@ -530,7 +489,6 @@ NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len)
 		NetArpWaitTxPacketSize = (pkt - NetArpWaitTxPacket) + IP_HDR_SIZE + len;
 
 		/* and do the ARP request */
-		NetArpWaitTry = 1;
 		NetArpWaitTimerStart = get_time_ns();
 		ArpRequest();
 		return 1;	/* waiting */

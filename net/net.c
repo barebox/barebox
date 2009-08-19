@@ -84,7 +84,6 @@
 #include <driver.h>
 #include <errno.h>
 #include <linux/ctype.h>
-#include "bootp.h"
 #include "tftp.h"
 #include "rarp.h"
 #include "nfs.h"

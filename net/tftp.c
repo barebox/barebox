@@ -12,7 +12,6 @@
 #include <fs.h>
 #include <errno.h>
 #include "tftp.h"
-#include "bootp.h"
 
 #undef	ET_DEBUG
 

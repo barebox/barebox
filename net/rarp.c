@@ -26,7 +26,6 @@
 #include <clock.h>
 #include <net.h>
 #include "nfs.h"
-#include "bootp.h"
 #include "rarp.h"
 #include "tftp.h"
 

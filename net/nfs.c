@@ -30,7 +30,6 @@
 #include <libgen.h>
 #include <fs.h>
 #include "nfs.h"
-#include "bootp.h"
 
 /*#define NFS_DEBUG*/
 

@@ -425,7 +425,7 @@ static int imxfb_alpha_set(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
-static int imxfb_register_overlay(struct imxfb_info *fbi)
+static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 {
 	struct fb_info *overlay;
 	struct imxfb_rgb *rgb;
@@ -440,7 +440,10 @@ static int imxfb_register_overlay(struct imxfb_info *fbi)
 	overlay->bits_per_pixel = fbi->info.bits_per_pixel;
 	overlay->fbops = &imxfb_overlay_ops;
 
-	overlay->screen_base = xzalloc(overlay->xres * overlay->yres *
+	if (fb)
+		overlay->screen_base = fb;
+	else
+		overlay->screen_base = xzalloc(overlay->xres * overlay->yres *
 			(overlay->bits_per_pixel >> 3));
 
 	writel((unsigned long)overlay->screen_base, fbi->regs + LCDC_LGWSAR);
@@ -526,7 +529,10 @@ static int imxfb_probe(struct device_d *dev)
 
 	dev_info(dev, "i.MX Framebuffer driver\n");
 
-	fbi->info.screen_base = xzalloc(info->xres * info->yres *
+	if (pdata->framebuffer)
+		fbi->info.screen_base = pdata->framebuffer;
+	else
+		fbi->info.screen_base = xzalloc(info->xres * info->yres *
 			(info->bits_per_pixel >> 3));
 
 	imxfb_activate_var(&fbi->info);
@@ -537,7 +543,7 @@ static int imxfb_probe(struct device_d *dev)
 		return ret;
 	}
 #ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
-	imxfb_register_overlay(fbi);
+	imxfb_register_overlay(fbi, pdata->framebuffer_ovl);
 #endif
 	imxfb_enable_controller(info);
 

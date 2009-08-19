@@ -66,6 +66,9 @@ struct imx_fb_platform_data {
 	u_int		pwmr;
 	u_int		lscr1;
 	u_int		dmacr;
+
+	void		*framebuffer;
+	void		*framebuffer_ovl;
 };
 
 void set_imx_fb_info(struct imx_fb_platform_data *);

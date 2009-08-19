@@ -113,7 +113,9 @@ int do_sntp (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	if (NetLoopInit(SNTP) < 0)
 		return 1;
 
-	if (NetLoop(SNTP) < 0) {
+	SntpStart();
+
+	if (NetLoop() < 0) {
 		printf("SNTP failed: host %s not responding\n", argv[1]);
 		return 1;
 	}

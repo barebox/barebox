@@ -318,7 +318,7 @@ extern int NetTimeOffset;			/* offset time from UTC		*/
 int	NetLoopInit(proto_t);
 
 /* Do the work */
-int	NetLoop(proto_t);
+int	NetLoop(void);
 
 /* Shutdown adapters and cleanup */
 void	NetStop(void);

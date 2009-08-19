@@ -13,9 +13,6 @@
  *	Global functions and variables.
  */
 
-/* tftp.c */
-extern void	TftpStart (void);	/* Begin TFTP get */
-
 /**********************************************************************/
 
 #endif /* __TFTP_H__ */

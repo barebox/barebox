@@ -145,6 +145,7 @@ U_BOOT_CMD_END
  * after loading?
  * @note This command is available only, if enabled in the menuconfig.
  */
+extern void DhcpRequest(void);
 
 #ifdef CONFIG_NET_DHCP
 static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -154,7 +155,10 @@ static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (NetLoopInit(DHCP) < 0)
 		return 1;
 
-	if ((size = NetLoop(DHCP)) < 0)
+	NetOurIP = 0;
+	DhcpRequest();		/* Basically same as BOOTP */
+
+	if ((size = NetLoop()) < 0)
 		return 1;
 
 	/* NetLoop ok, update environment */
@@ -192,6 +196,9 @@ U_BOOT_CMD_END
 
 int net_store_fd;
 
+extern void TftpStart(void);       /* Begin TFTP get */
+extern void NfsStart(void);
+
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -223,7 +230,17 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (NetLoopInit(proto) < 0)
 		goto out;
 
-	if ((size = NetLoop(proto)) < 0) {
+	switch (proto) {
+	case TFTP:
+		TftpStart();
+		break;
+	case NFS:
+		NfsStart();
+	default:
+		break;
+	}
+
+	if ((size = NetLoop()) < 0) {
 		rcode = size;
 		goto out;
 	}
@@ -265,7 +282,7 @@ static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (NetLoopInit(CDP) < 0)
 		return 1;
 
-	r = NetLoop(CDP);
+	r = NetLoop();
 	if (r < 0) {
 		printf("cdp failed; perhaps not a CISCO switch?\n");
 		return 1;

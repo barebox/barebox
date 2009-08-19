@@ -71,6 +71,9 @@ RarpRequest (void)
 	uchar *pkt;
 	ARP_t *	rarp;
 
+	NetOurIP = 0;
+	RarpTry = 0;
+
 	printf("RARP broadcast %d\n", ++RarpTry);
 	pkt = NetTxPacket;
 

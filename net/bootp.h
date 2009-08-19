@@ -67,7 +67,6 @@ ulong		seed1, seed2;		/* seed for random BOOTP delay		*/
 extern void	BootpRequest (void);
 
 /****************** DHCP Support *********************/
-extern void DhcpRequest(void);
 
 /* DHCP States */
 typedef enum { INIT,

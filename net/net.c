@@ -299,63 +299,13 @@ int NetLoopInit(proto_t protocol)
 	return ret;
 }
 
-int NetLoop(proto_t protocol)
+int NetLoop(void)
 {
 	/*
 	 *	Start the ball rolling with the given start function.  From
 	 *	here on, this code is a state machine driven by received
 	 *	packets and timer events.
 	 */
-
-	switch (protocol) {
-#ifdef CONFIG_NET_TFTP
-	case TFTP:
-		/* always use ARP to get server ethernet address */
-		TftpStart();
-		break;
-#endif
-#ifdef CONFIG_NET_DHCP
-	case DHCP:
-		/* Start with a clean slate... */
-		NetOurIP = 0;
-		DhcpRequest();		/* Basically same as BOOTP */
-		break;
-#endif
-#ifdef CONFIG_NET_BOOTP
-	case BOOTP:
-		BootpRequest ();
-		break;
-#endif
-#ifdef CONFIG_NET_RARP
-	case RARP:
-		NetOurIP = 0;
-		RarpTry = 0;
-		RarpRequest ();
-		break;
-#endif
-#ifdef CONFIG_NET_PING
-	case PING:
-		PingStart();
-		break;
-#endif
-#ifdef CONFIG_NET_NFS
-	case NFS:
-		NfsStart();
-		break;
-#endif
-#ifdef CONFIG_NETCONSOLE
-	case NETCONS:
-		NcStart();
-		break;
-#endif
-#ifdef CONFIG_NET_SNTP
-	case SNTP:
-		SntpStart();
-		break;
-#endif
-	default:
-		break;
-	}
 
 	NetBootFileXferSize = 0;
 

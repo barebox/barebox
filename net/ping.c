@@ -97,6 +97,9 @@ int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return -1;
 	}
 
+	if (NetLoopInit(PING) < 0)
+		return 1;
+
 	if (NetLoop(PING) < 0) {
 		printf("ping failed; host %s is not alive\n", argv[1]);
 		return 1;

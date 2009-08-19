@@ -315,6 +315,9 @@ extern IPaddr_t	NetNtpServerIP;			/* the ip address to NTP 	*/
 extern int NetTimeOffset;			/* offset time from UTC		*/
 
 /* Initialize the network adapter */
+int	NetLoopInit(proto_t);
+
+/* Do the work */
 int	NetLoop(proto_t);
 
 /* Shutdown adapters and cleanup */

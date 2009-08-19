@@ -238,8 +238,7 @@ void ArpTimeoutCheck(void)
  *	Main network processing loop.
  */
 
-int
-NetLoop(proto_t protocol)
+int NetLoopInit(proto_t protocol)
 {
 	struct eth_device *eth_current = eth_get_current();
 	IPaddr_t ip;
@@ -292,6 +291,11 @@ NetLoop(proto_t protocol)
 	NetOurNativeVLAN = getenv_VLAN("nvlan");
 	NetServerIP = dev_get_param_ip(&eth_current->dev, "serverip");
 
+	return 0;
+}
+
+int NetLoop(proto_t protocol)
+{
 	/*
 	 *	Start the ball rolling with the given start function.  From
 	 *	here on, this code is a state machine driven by received

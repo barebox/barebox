@@ -151,6 +151,9 @@ static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int size;
 
+	if (NetLoopInit(DHCP) < 0)
+		return 1;
+
 	if ((size = NetLoop(DHCP)) < 0)
 		return 1;
 
@@ -217,6 +220,9 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	safe_strncpy (BootFile, remotefile, sizeof(BootFile));
 
+	if (NetLoopInit(proto) < 0)
+		goto out;
+
 	if ((size = NetLoop(proto)) < 0) {
 		rcode = size;
 		goto out;
@@ -255,6 +261,9 @@ static void cdp_update_env(void)
 static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int r;
+
+	if (NetLoopInit(CDP) < 0)
+		return 1;
 
 	r = NetLoop(CDP);
 	if (r < 0) {

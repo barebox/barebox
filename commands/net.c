@@ -152,45 +152,6 @@ U_BOOT_CMD_START(rarpboot)
 U_BOOT_CMD_END
 #endif /* CONFIG_NET_RARP */
 
-/**
- * @page rarp_command rarp
- *
- * Usage is: FIXME
- *
- * Load a file via network using rarp/tftp protocol. FIXME: Where to find it
- * after loading?
- * @note This command is available only, if enabled in the menuconfig.
- */
-extern void DhcpRequest(void);
-
-#ifdef CONFIG_NET_DHCP
-static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	int size;
-
-	if (NetLoopInit(DHCP) < 0)
-		return 1;
-
-	NetOurIP = 0;
-	DhcpRequest();		/* Basically same as BOOTP */
-
-	if ((size = NetLoop()) < 0)
-		return 1;
-
-	/* NetLoop ok, update environment */
-	netboot_update_env();
-
-	return 0;
-}
-
-U_BOOT_CMD_START(dhcp)
-	.maxargs	= 1,
-	.cmd		= do_dhcp,
-	.usage		= "invoke dhcp client to obtain ip/boot params",
-U_BOOT_CMD_END
-
-#endif	/* CONFIG_NET_DHCP */
-
 #ifdef CONFIG_NET_NFS
 static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {

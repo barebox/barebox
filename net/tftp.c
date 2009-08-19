@@ -39,7 +39,6 @@
 
 static int	TftpServerPort;		/* The UDP port at their end		*/
 static int	TftpOurPort;		/* The UDP port at our end		*/
-static int	TftpTimeoutCount;
 static ulong	TftpBlock;		/* packet sequence number		*/
 static ulong	TftpLastBlock;		/* last packet sequence number received */
 static ulong	TftpBlockWrap;		/* count of sequence number wraparounds */
@@ -226,7 +225,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 					"First block is not block 1 (%ld)\n"
 					"Starting again\n\n",
 					TftpBlock);
-				NetStartAgain ();
+				NetState = NETLOOP_FAIL;
 				break;
 			}
 		}
@@ -266,8 +265,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 	case TFTP_ERROR:
 		printf ("\nTFTP error: '%s' (%d)\n",
 					pkt + 2, ntohs(*(ushort *)pkt));
-		puts ("Starting again\n\n");
-		NetStartAgain ();
+		NetState = NETLOOP_FAIL;
 		break;
 	}
 }
@@ -276,14 +274,9 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 static void
 TftpTimeout (void)
 {
-	if (++TftpTimeoutCount > TIMEOUT_COUNT) {
-		puts ("\nRetry count exceeded; starting again\n");
-		NetStartAgain ();
-	} else {
-		puts ("T ");
-		NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
-		TftpSend ();
-	}
+	puts ("T ");
+	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
+	TftpSend ();
 }
 
 
@@ -336,7 +329,6 @@ TftpStart (void)
 	NetSetHandler (TftpHandler);
 
 	TftpServerPort = WELL_KNOWN_PORT;
-	TftpTimeoutCount = 0;
 	TftpState = STATE_RRQ;
 	/* Use a pseudo-random port unless a specific port is set */
 	TftpOurPort = 1024 + ((unsigned int)get_time_ns() % 3072);

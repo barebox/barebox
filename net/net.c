@@ -87,10 +87,6 @@
 #include "tftp.h"
 #include "rarp.h"
 #include "nfs.h"
-#ifdef CONFIG_STATUS_LED
-#include <status_led.h>
-#include <miiphy.h>
-#endif
 #ifdef CONFIG_NET_SNTP
 #include "sntp.h"
 #endif
@@ -148,11 +144,6 @@ extern void PingStart(void);
 #ifdef CONFIG_NET_SNTP
 IPaddr_t	NetNtpServerIP;		/* NTP server IP address		*/
 int		NetTimeOffset=0;	/* offset time from UTC			*/
-#endif
-
-#ifdef CONFIG_NETCONSOLE
-void NcStart(void);
-int nc_input_packet(uchar *pkt, unsigned dest, unsigned src, unsigned len);
 #endif
 
 uchar	PktBuf[(PKTBUFSRX+1) * PKTSIZE_ALIGN + PKTALIGN];

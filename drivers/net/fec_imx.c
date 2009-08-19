@@ -36,12 +36,12 @@
 
 #include "fec_imx.h"
 
-typedef struct {
-	uint8_t data[1500];	/**< actual data */
-	int length;		/**< actual length */
-	int used;		/**< buffer in use or not */
-	uint8_t head[16];	/**< MAC header(6 + 6 + 2) + 2(aligned) */
-} NBUF;
+struct fec_frame {
+	uint8_t data[1500];	/* actual data */
+	int length;		/* actual length */
+	int used;		/* buffer in use or not */
+	uint8_t head[16];	/* MAC header(6 + 6 + 2) + 2(aligned) */
+};
 
 /*
  * MII-interface related functions
@@ -469,7 +469,7 @@ static int fec_recv(struct eth_device *dev)
 	struct buffer_descriptor *rbd = &fec->rbd_base[fec->rbd_index];
 	unsigned long ievent;
 	int frame_length, len = 0;
-	NBUF *frame;
+	struct fec_frame *frame;
 	uint16_t bd_status;
 
 	/*

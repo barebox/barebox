@@ -39,7 +39,7 @@
 
 static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
-static void netboot_update_env (void)
+void netboot_update_env(void)
 {
 	struct eth_device *eth_current = eth_get_current();
 	char tmp[22];

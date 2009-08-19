@@ -359,6 +359,8 @@ void	print_IPaddr (IPaddr_t);
 #define print_IPaddr(IPaddr_t);
 #endif
 
+void netboot_update_env(void);
+
 /*
  * The following functions are a bit ugly, but necessary to deal with
  * alignment restrictions on ARM.

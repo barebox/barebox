@@ -79,14 +79,6 @@ PingHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 	NetState = NETLOOP_SUCCESS;
 }
 
-void PingStart(void)
-{
-	NetSetTimeout (10 * SECOND, PingTimeout);
-	NetSetHandler (PingHandler);
-
-	PingSend();
-}
-
 int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2)
@@ -100,7 +92,9 @@ int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (NetLoopInit(PING) < 0)
 		return 1;
 
-	PingStart();
+	NetSetTimeout (10 * SECOND, PingTimeout);
+	NetSetHandler (PingHandler);
+	PingSend();
 
 	if (NetLoop() < 0) {
 		printf("ping failed; host %s is not alive\n", argv[1]);

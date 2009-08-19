@@ -1,4 +1,4 @@
-obj-$(CONFIG_NET_DHCP)	+= bootp.o
+obj-$(CONFIG_NET_DHCP)	+= dhcp.o
 obj-$(CONFIG_NET)	+= eth.o
 obj-$(CONFIG_NET)	+= net.o
 obj-$(CONFIG_NET_NFS)	+= nfs.o

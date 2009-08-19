@@ -297,9 +297,8 @@ extern void ArpRequest (void);
 /* ------------------------------------ */
 
 #define NETLOOP_CONTINUE	1
-#define NETLOOP_RESTART		2
-#define NETLOOP_SUCCESS		3
-#define NETLOOP_FAIL		4
+#define NETLOOP_SUCCESS		2
+#define NETLOOP_FAIL		3
 
 typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP } proto_t;
 

@@ -281,7 +281,6 @@ NetLoop(proto_t protocol)
 	if (eth_open() < 0)
 		return -1;
 
-restart:
 	string_to_ethaddr(dev_get_param(&eth_get_current()->dev, "ethaddr"),
 			NetOurEther);
 
@@ -403,10 +402,6 @@ restart:
 
 
 		switch (NetState) {
-
-		case NETLOOP_RESTART:
-			goto restart;
-
 		case NETLOOP_SUCCESS:
 			if (NetBootFileXferSize > 0) {
 				char buf[10];

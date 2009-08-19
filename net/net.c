@@ -227,6 +227,7 @@ int NetLoopInit(proto_t protocol)
 	struct eth_device *eth_current = eth_get_current();
 	IPaddr_t ip;
 	int ret;
+	int	i;
 
 	if (!eth_current) {
 		printf("Current ethernet device not set!\n");
@@ -241,26 +242,19 @@ int NetLoopInit(proto_t protocol)
 	NetArpWaitTxPacket = NULL;
 	NetArpWaitPacketIP = 0;
 	NetArpWaitReplyIP = 0;
-	NetArpWaitTxPacket = NULL;
-	NetTxPacket = NULL;
 
-	if (!NetTxPacket) {
-		int	i;
-		/*
-		 *	Setup packet buffers, aligned correctly.
-		 */
-		NetTxPacket = &PktBuf[0] + (PKTALIGN - 1);
-		NetTxPacket -= (ulong)NetTxPacket % PKTALIGN;
-		for (i = 0; i < PKTBUFSRX; i++) {
-			NetRxPackets[i] = NetTxPacket + (i+1)*PKTSIZE_ALIGN;
-		}
+	/*
+	 *	Setup packet buffers, aligned correctly.
+	 */
+	NetTxPacket = &PktBuf[0] + (PKTALIGN - 1);
+	NetTxPacket -= (ulong)NetTxPacket % PKTALIGN;
+	for (i = 0; i < PKTBUFSRX; i++) {
+		NetRxPackets[i] = NetTxPacket + (i+1)*PKTSIZE_ALIGN;
 	}
 
-	if (!NetArpWaitTxPacket) {
-		NetArpWaitTxPacket = &NetArpWaitPacketBuf[0] + (PKTALIGN - 1);
-		NetArpWaitTxPacket -= (ulong)NetArpWaitTxPacket % PKTALIGN;
-		NetArpWaitTxPacketSize = 0;
-	}
+	NetArpWaitTxPacket = &NetArpWaitPacketBuf[0] + (PKTALIGN - 1);
+	NetArpWaitTxPacket -= (ulong)NetArpWaitTxPacket % PKTALIGN;
+	NetArpWaitTxPacketSize = 0;
 
 	if (eth_open() < 0)
 		return -1;

@@ -147,6 +147,7 @@ void armlinux_add_dram(struct device_d *dev)
 	list_add_tail(&mem->list, &memory_list);
 }
 
+#ifdef CONFIG_CMD_BOOTM
 int do_bootm_linux(struct image_data *data)
 {
 	void (*theKernel)(int zero, int arch, void *params);
@@ -224,7 +225,9 @@ static int armlinux_register_image_handler(void)
 }
 
 late_initcall(armlinux_register_image_handler);
+#endif /* CONFIG_CMD_BOOTM */
 
+#ifdef CONFIG_CMD_BOOTZ
 struct zimage_header {
 	u32	unsused[9];
 	u32	magic;
@@ -302,5 +305,6 @@ U_BOOT_CMD_START(bootz)
 	.cmd            = do_bootz,
 	.usage          = "bootz - start a zImage",
 U_BOOT_CMD_END
+#endif /* CONFIG_CMD_BOOTZ */
 
 

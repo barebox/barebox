@@ -1,7 +1,7 @@
 #ifndef __ARCH_ARMLINUX_H
 #define __ARCH_ARMLINUX_H
 
-#ifdef CONFIG_CMD_BOOTM
+#if defined CONFIG_CMD_BOOTM || defined CONFIG_CMD_BOOTZ
 void armlinux_set_bootparams(void *params);
 void armlinux_set_architecture(int architecture);
 void armlinux_add_dram(struct device_d *dev);

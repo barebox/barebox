@@ -207,6 +207,14 @@ config CMD_BOOTM_SHOW_TYPE
 	depends on CMD_BOOTM
 	prompt "show image information"
 
+config CMD_BOOTZ
+	tristate
+	default y
+	depends on ARM
+	prompt "bootz"
+	help
+	  compile in the 'bootz' command to start zImages
+
 config CMD_RESET
 	tristate
 	prompt "reset"

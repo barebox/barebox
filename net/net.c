@@ -566,7 +566,8 @@ NetReceive(uchar * inpkt, int len)
 			NetCopyIP(&arp->ar_data[16], &arp->ar_data[6]);
 			memcpy   (&arp->ar_data[ 0], NetOurEther, 6);
 			NetCopyIP(&arp->ar_data[ 6], &NetOurIP);
-			(void) eth_send((uchar *)et, (pkt - (uchar *)et) + ARP_HDR_SIZE);
+			memcpy(NetTxPacket, et, (pkt - (uchar *)et) + ARP_HDR_SIZE);
+			eth_send((uchar *)NetTxPacket, (pkt - (uchar *)et) + ARP_HDR_SIZE);
 			return;
 
 		case ARPOP_REPLY:		/* arp reply */

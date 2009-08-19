@@ -135,12 +135,6 @@ ushort		NetOurNativeVLAN = 0xFFFF;	/* ditto			*/
 
 char		BootFile[128];		/* Boot File name			*/
 
-#ifdef CONFIG_NET_PING
-IPaddr_t	NetPingIP;		/* the ip address to ping 		*/
-
-extern void PingStart(void);
-#endif
-
 #ifdef CONFIG_NET_SNTP
 IPaddr_t	NetNtpServerIP;		/* NTP server IP address		*/
 int		NetTimeOffset=0;	/* offset time from UTC			*/
@@ -790,14 +784,6 @@ static int net_check_prereq (proto_t protocol)
 
 	switch (protocol) {
 		/* Fall through */
-#ifdef CONFIG_NET_PING
-	case PING:
-		if (NetPingIP == 0) {
-			puts ("*** ERROR: ping address not given\n");
-			return -1;
-		}
-		goto common;
-#endif
 #ifdef CONFIG_NET_SNTP
 	case SNTP:
 		if (NetNtpServerIP == 0) {

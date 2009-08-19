@@ -5,6 +5,8 @@
 
 static ushort PingSeqNo;
 
+static IPaddr_t	NetPingIP;		/* the ip address to ping 		*/
+
 static int PingSend(void)
 {
 	static uchar mac[6];

@@ -305,8 +305,6 @@ typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP 
 /* from net/net.c */
 extern char	BootFile[128];			/* Boot File name		*/
 
-extern IPaddr_t	NetPingIP;			/* the ip address to ping 		*/
-
 /* when CDP completes these hold the return values */
 extern ushort CDPNativeVLAN;
 extern ushort CDPApplianceVLAN;

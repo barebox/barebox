@@ -289,59 +289,6 @@ __setup_initrd_tag(ulong initrd_start, ulong initrd_end)
 	params = tag_next(params);
 }
 
-#if 0 /* FIXME: doesn't compile */
-void
-__setup_videolfb_tag(gd_t *gd)
-{
-	/* An ATAG_VIDEOLFB node tells the kernel where and how large
-	 * the framebuffer for video was allocated (among other things).
-	 * Note that a _physical_ address is passed !
-	 *
-	 * We only use it to pass the address and size, the other entries
-	 * in the tag_videolfb are not of interest.
-	 */
-	params->hdr.tag = ATAG_VIDEOLFB;
-	params->hdr.size = tag_size(tag_videolfb);
-
-	params->u.videolfb.lfb_base = (u32)gd->fb_base;
-	/* Fb size is calculated according to parameters for our panel */
-	params->u.videolfb.lfb_size = calc_fbsize();
-
-	params = tag_next(params);
-}
-#endif
-#if 0 /* FIXME: doesn't compile */
-void
-__setup_serial_tag(struct tag **tmp)
-{
-	struct tag *params = *tmp;
-	struct tag_serialnr serialnr;
-	void get_board_serial(struct tag_serialnr *serialnr);
-
-	get_board_serial(&serialnr);
-	params->hdr.tag = ATAG_SERIAL;
-	params->hdr.size = tag_size(tag_serialnr);
-	params->u.serialnr.low = serialnr.low;
-	params->u.serialnr.high = serialnr.high;
-	params = tag_next(params);
-	*tmp = params;
-}
-#endif
-#if 0 /* FIXME: doesn't compile */
-void
-__setup_revision_tag(struct tag **in_params)
-{
-	u32 rev = 0;
-	u32 get_board_rev(void);
-
-	rev = get_board_rev();
-	params->hdr.tag = ATAG_REVISION;
-	params->hdr.size = tag_size(tag_revision);
-	params->u.revision.rev = rev;
-	params = tag_next(params);
-}
-#endif
-
 void
 __setup_end_tag (void)
 {

@@ -242,6 +242,7 @@ int NetLoopInit(proto_t protocol)
 {
 	struct eth_device *eth_current = eth_get_current();
 	IPaddr_t ip;
+	int ret;
 
 	if (!eth_current) {
 		printf("Current ethernet device not set!\n");
@@ -291,7 +292,11 @@ int NetLoopInit(proto_t protocol)
 	NetOurNativeVLAN = getenv_VLAN("nvlan");
 	NetServerIP = dev_get_param_ip(&eth_current->dev, "serverip");
 
-	return 0;
+	ret = net_check_prereq(protocol);
+	if (ret)
+		eth_halt();
+
+	return ret;
 }
 
 int NetLoop(proto_t protocol)
@@ -302,67 +307,59 @@ int NetLoop(proto_t protocol)
 	 *	packets and timer events.
 	 */
 
-	switch (net_check_prereq (protocol)) {
-	case 1:
-		/* network not configured */
-		eth_halt();
-		return -1;
-	case 0:
-		switch (protocol) {
+	switch (protocol) {
 #ifdef CONFIG_NET_TFTP
-		case TFTP:
-			/* always use ARP to get server ethernet address */
-			TftpStart();
-			break;
+	case TFTP:
+		/* always use ARP to get server ethernet address */
+		TftpStart();
+		break;
 #endif
 #ifdef CONFIG_NET_DHCP
-		case DHCP:
-			/* Start with a clean slate... */
-			BootpTry = 0;
-			NetOurIP = 0;
-			DhcpRequest();		/* Basically same as BOOTP */
-			break;
+	case DHCP:
+		/* Start with a clean slate... */
+		BootpTry = 0;
+		NetOurIP = 0;
+		DhcpRequest();		/* Basically same as BOOTP */
+		break;
 #endif
 #ifdef CONFIG_NET_BOOTP
-		case BOOTP:
-			BootpTry = 0;
-			BootpRequest ();
-			break;
+	case BOOTP:
+		BootpTry = 0;
+		BootpRequest ();
+		break;
 #endif
 #ifdef CONFIG_NET_RARP
-		case RARP:
-			NetOurIP = 0;
-			RarpTry = 0;
-			RarpRequest ();
-			break;
+	case RARP:
+		NetOurIP = 0;
+		RarpTry = 0;
+		RarpRequest ();
+		break;
 #endif
 #ifdef CONFIG_NET_PING
-		case PING:
-			PingStart();
-			break;
+	case PING:
+		PingStart();
+		break;
 #endif
 #ifdef CONFIG_NET_NFS
-		case NFS:
-			NfsStart();
-			break;
+	case NFS:
+		NfsStart();
+		break;
 #endif
 #ifdef CONFIG_NETCONSOLE
-		case NETCONS:
-			NcStart();
-			break;
+	case NETCONS:
+		NcStart();
+		break;
 #endif
 #ifdef CONFIG_NET_SNTP
-		case SNTP:
-			SntpStart();
-			break;
+	case SNTP:
+		SntpStart();
+		break;
 #endif
-		default:
-			break;
-		}
-
-		NetBootFileXferSize = 0;
+	default:
 		break;
 	}
+
+	NetBootFileXferSize = 0;
 
 	/*
 	 *	Main packet reception loop.  Loop receiving packets until
@@ -859,7 +856,7 @@ static int net_check_prereq (proto_t protocol)
 	case PING:
 		if (NetPingIP == 0) {
 			puts ("*** ERROR: ping address not given\n");
-			return 1;
+			return -1;
 		}
 		goto common;
 #endif
@@ -867,7 +864,7 @@ static int net_check_prereq (proto_t protocol)
 	case SNTP:
 		if (NetNtpServerIP == 0) {
 			puts ("*** ERROR: NTP server address not given\n");
-			return 1;
+			return -1;
 		}
 		goto common;
 #endif
@@ -878,13 +875,12 @@ static int net_check_prereq (proto_t protocol)
 	case TFTP:
 		if (NetServerIP == 0) {
 			printf("*** ERROR: `%s.serverip' not set\n", dev_id(&edev->dev));
-			return 1;
+			return -1;
 		}
-    common:
-
+common:
 		if (NetOurIP == 0) {
 			printf("*** ERROR: `%s.ipaddr' not set\n", dev_id(&edev->dev));
-			return 1;
+			return -1;
 		}
 		/* Fall through */
 
@@ -893,13 +889,14 @@ static int net_check_prereq (proto_t protocol)
 	case BOOTP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
 			printf("*** ERROR: `%s.ethaddr' not set\n", dev_id(&edev->dev));
-			return 1;
+			return -1;
 		}
 		/* Fall through */
 	default:
 		return 0;
 	}
-	return 0;		/* OK */
+
+	return -1; /* not reached */
 }
 /**********************************************************************/
 

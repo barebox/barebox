@@ -123,9 +123,25 @@ U_BOOT_CMD_END
  */
 
 #ifdef CONFIG_NET_RARP
+extern void RarpRequest(void);
+
 static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	return netboot_common (RARP, cmdtp, argc, argv);
+	int size;
+
+	if (NetLoopInit(RARP) < 0)
+		return 1;
+
+	NetOurIP = 0;
+	RarpRequest();		/* Basically same as BOOTP */
+
+	if ((size = NetLoop()) < 0)
+		return 1;
+
+	/* NetLoop ok, update environment */
+	netboot_update_env();
+
+	return 0;
 }
 
 U_BOOT_CMD_START(rarpboot)

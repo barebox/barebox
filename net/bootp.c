@@ -45,7 +45,6 @@
 #endif
 
 ulong		BootpID;
-int		BootpTry;
 #ifdef CONFIG_BOOTP_RANDOM_DELAY
 ulong		seed1, seed2;
 #endif
@@ -533,7 +532,7 @@ BootpRequest (void)
 	dhcp_state = INIT;
 #endif
 
-	printf("BOOTP broadcast %d\n", ++BootpTry);
+	printf("BOOTP broadcast\n");
 	pkt = NetTxPacket;
 	memset ((void*)pkt, 0, PKTSIZE);
 

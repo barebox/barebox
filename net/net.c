@@ -317,14 +317,12 @@ int NetLoop(proto_t protocol)
 #ifdef CONFIG_NET_DHCP
 	case DHCP:
 		/* Start with a clean slate... */
-		BootpTry = 0;
 		NetOurIP = 0;
 		DhcpRequest();		/* Basically same as BOOTP */
 		break;
 #endif
 #ifdef CONFIG_NET_BOOTP
 	case BOOTP:
-		BootpTry = 0;
 		BootpRequest ();
 		break;
 #endif

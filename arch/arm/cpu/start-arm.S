@@ -97,7 +97,7 @@ _bss_end:
 
 
 _TEXT_BASE:
-	.word TEXT_BASE
+	.word _stext
 
 _MALLOC_BASE:
 	.word MALLOC_BASE

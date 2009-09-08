@@ -15,6 +15,7 @@ config ARCH_TEXT_BASE
 	default 0x23f00000 if MACH_PM9263
 	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
 	default 0x31fc0000 if MACH_A9M2410
+	default 0x87f00000 if MACH_FREESCALE_MX25_3STACK
 	default 0x87f00000 if MACH_PCM043
 	default 0xa7f00000 if MACH_PCA100
 	default 0x33fc0000 if MACH_A9M2440
@@ -32,6 +33,7 @@ config BOARDINFO
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Ronetix PM9263" if MACH_PM9263
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
+	default "Freescale MX25 3Stack" if MACH_FREESCALE_MX25_3STACK
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
 	default "Digi A9M2410" if MACH_A9M2410
 	default "Phytec phyCard-i.MX27" if MACH_PCA100
@@ -157,6 +159,15 @@ config MACH_FREESCALE_MX35_3STACK
 	help
 	  Say Y here if you are using the Freescale MX35 3stack board equipped
 	  with a Freescale i.MX35 Processor
+
+config MACH_FREESCALE_MX25_3STACK
+	bool "Freescale MX25 3stack"
+	select HAS_CFI
+	select ARCH_IMX25
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using the Freescale MX25 3stack board equipped
+	  with a Freescale i.MX25 Processor
 
 config MACH_ECO920
 	bool "eco920"

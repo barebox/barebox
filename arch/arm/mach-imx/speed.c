@@ -32,23 +32,39 @@
  *  f = 2 * f_ref * --------------------
  *                        pd + 1
  */
-unsigned int imx_decode_pll(unsigned int pll, unsigned int f_ref)
+unsigned int imx_decode_pll(unsigned int reg_val, unsigned int freq)
 {
 	unsigned long long ll;
-	unsigned int quot;
+	int mfn_abs;
+	unsigned int mfi, mfn, mfd, pd;
 
-	unsigned int mfi = (pll >> 10) & 0xf;
-	unsigned int mfn = pll & 0x3ff;
-	unsigned int mfd = (pll >> 16) & 0x3ff;
-	unsigned int pd =  (pll >> 26) & 0xf;
+	mfi = (reg_val >> 10) & 0xf;
+	mfn = reg_val & 0x3ff;
+	mfd = (reg_val >> 16) & 0x3ff;
+	pd =  (reg_val >> 26) & 0xf;
 
 	mfi = mfi <= 5 ? 5 : mfi;
 
-	ll = 2 * (unsigned long long)f_ref * ( (mfi << 16) + (mfn << 16) / (mfd + 1));
-	quot = (pd + 1) * (1 << 16);
-	ll += quot / 2;
-	do_div(ll, quot);
-	return (unsigned int) ll;
+	mfn_abs = mfn;
+
+#if !defined CONFIG_ARCH_MX1 && !defined CONFIG_ARCH_MX21
+	if (mfn >= 0x200) {
+		mfn |= 0xFFFFFE00;
+		mfn_abs = -mfn;
+	}
+#endif
+
+	freq *= 2;
+	freq /= pd + 1;
+
+	ll = (unsigned long long)freq * mfn_abs;
+
+	do_div(ll, mfd + 1);
+	if (mfn < 0)
+		ll = -ll;
+	ll = (freq * mfi) + ll;
+
+	return ll;
 }
 
 extern void imx_dump_clocks(void);

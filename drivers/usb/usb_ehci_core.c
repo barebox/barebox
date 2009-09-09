@@ -31,6 +31,7 @@
 #include <xfuncs.h>
 #include <clock.h>
 #include <errno.h>
+#include <asm/mmu.h>
 
 #include "usb_ehci.h"
 
@@ -119,18 +120,18 @@ static struct descriptor {
 #define ehci_is_TDI()	(0)
 #endif
 
-#if defined(CONFIG_EHCI_DCACHE)
+#ifdef CONFIG_MMU
 /*
  * Routines to handle (flush/invalidate) the dcache for the QH and qTD
  * structures and data buffers. This is needed on platforms using this
  * EHCI support with dcache enabled.
  */
-static void flush_invalidate(u32 addr, int size, int flush)
+static void flush_invalidate(void *addr, int size, int flush)
 {
 	if (flush)
-		flush_dcache_range(addr, addr + size);
+		dma_flush_range(addr, addr + size);
 	else
-		invalidate_dcache_range(addr, addr + size);
+		dma_inv_range(addr, addr + size);
 }
 
 static void cache_qtd(struct qTD *qtd, int flush)
@@ -138,9 +139,9 @@ static void cache_qtd(struct qTD *qtd, int flush)
 	u32 *ptr = (u32 *)qtd->qt_buffer[0];
 	int len = (qtd->qt_token & 0x7fff0000) >> 16;
 
-	flush_invalidate((u32)qtd, sizeof(struct qTD), flush);
+	flush_invalidate(qtd, sizeof(struct qTD), flush);
 	if (ptr && len)
-		flush_invalidate((u32)ptr, len, flush);
+		flush_invalidate(ptr, len, flush);
 }
 
 
@@ -159,8 +160,7 @@ static void cache_qh(struct QH *qh, int flush)
 	 * Walk the QH list and flush/invalidate all entries
 	 */
 	while (1) {
-		printf("huhu\n");
-		flush_invalidate((u32)qh_addr(qh), sizeof(struct QH), flush);
+		flush_invalidate(qh_addr(qh), sizeof(struct QH), flush);
 		if ((u32)qh & QH_LINK_TYPE_QH)
 			break;
 		qh = qh_addr(qh);
@@ -181,7 +181,6 @@ static void cache_qh(struct QH *qh, int flush)
 	 * Walk the qTD list and flush/invalidate all entries
 	 */
 	while (1) {
-		printf("haha\n");
 		if (qtd == NULL)
 			break;
 		cache_qtd(qtd, flush);
@@ -201,7 +200,7 @@ static inline void ehci_invalidate_dcache(struct QH *qh)
 {
 	cache_qh(qh, 0);
 }
-#else /* CONFIG_EHCI_DCACHE */
+#else /* CONFIG_MMU */
 /*
  *
  */
@@ -212,7 +211,7 @@ static inline void ehci_flush_dcache(struct QH *qh)
 static inline void ehci_invalidate_dcache(struct QH *qh)
 {
 }
-#endif /* CONFIG_EHCI_DCACHE */
+#endif /* CONFIG_MMU */
 
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {

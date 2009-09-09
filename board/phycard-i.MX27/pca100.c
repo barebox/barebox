@@ -38,6 +38,7 @@
 #include <asm/arch/imx-pll.h>
 #include <gpio.h>
 #include <asm/mmu.h>
+#include <usb/isp1504.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -72,6 +73,37 @@ static struct device_d nand_dev = {
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
 };
+
+#ifdef CONFIG_USB
+static struct device_d usbh2_dev = {
+	.name     = "ehci",
+	.map_base = IMX_OTG_BASE + 0x400,
+	.size     = 0x200,
+};
+
+static void pca100_usbh_init(void)
+{
+	uint32_t temp;
+
+	temp = readl(IMX_OTG_BASE + 0x600);
+	temp &= ~((3 << 21) | 1);
+	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
+	writel(temp, IMX_OTG_BASE + 0x600);
+
+	temp = readl(IMX_OTG_BASE + 0x584);
+	temp &= ~(3 << 30);
+	temp |= 2 << 30;
+	writel(temp, IMX_OTG_BASE + 0x584);
+
+	mdelay(10);
+
+	imx_gpio_direction_output(GPIO_PORTB + 24, 0);
+
+	mdelay(10);
+
+	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+}
+#endif
 
 #ifdef CONFIG_MMU
 static void pca100_mmu_init(void)
@@ -131,11 +163,20 @@ static int pca100_devices_init(void)
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
+		/* USB host 2 */
+		PA0_PF_USBH2_CLK,
+		PA1_PF_USBH2_DIR,
+		PA2_PF_USBH2_DATA7,
+		PA3_PF_USBH2_NXT,
+		PA4_PF_USBH2_STP,
+		PD19_AF_USBH2_DATA4,
+		PD20_AF_USBH2_DATA3,
+		PD21_AF_USBH2_DATA6,
+		PD22_AF_USBH2_DATA0,
+		PD23_AF_USBH2_DATA2,
+		PD24_AF_USBH2_DATA1,
+		PD26_AF_USBH2_DATA5,
 	};
-
-	/* initizalize gpios */
-	for (i = 0; i < ARRAY_SIZE(mode); i++)
-		imx_gpio_mode(mode[i]);
 
 	/* disable the usb phys */
 	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
@@ -143,11 +184,20 @@ static int pca100_devices_init(void)
 	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
 	imx_gpio_direction_output(GPIO_PORTB + 24, 1);
 
+	/* initizalize gpios */
+	for (i = 0; i < ARRAY_SIZE(mode); i++)
+		imx_gpio_mode(mode[i]);
+
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
 	register_device(&fec_dev);
 
 	PCCR1 |= PCCR1_PERCLK2_EN;
+
+#ifdef CONFIG_USB
+	pca100_usbh_init();
+	register_device(&usbh2_dev);
+#endif
 
 	nand = get_device_by_name("nand0");
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");

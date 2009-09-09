@@ -280,6 +280,13 @@ static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct eth_device *edev;
 
+	if (argc == 1) {
+		edev = eth_get_current();
+		if (edev)
+			printf("%s%d\n", edev->dev.name, edev->dev.id);
+		return 0;
+	}
+
 	if (argc != 2) {
 		u_boot_cmd_usage(cmdtp);
 		return 1;
@@ -297,7 +304,7 @@ static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_ethact_help[] =
-"Usage: ethact /dev/ethx\n";
+"Usage: ethact [ethx]\n";
 
 U_BOOT_CMD_START(ethact)
 	.maxargs	= 3,

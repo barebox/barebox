@@ -161,10 +161,6 @@ struct usb_device {
 
 	int have_langid;		/* whether string_langid is valid yet */
 	int string_langid;		/* language ID for strings */
-	int (*irq_handle)(struct usb_device *dev);
-	unsigned long irq_status;
-	int irq_act_len;		/* transfered bytes */
-	void *privptr;
 	/*
 	 * Child devices -  if this is a hub device
 	 * Each instance needs its own set of data structures.

@@ -41,6 +41,7 @@
 #include <asm/arch/imx-pll.h>
 #include <asm/arch/imxfb.h>
 #include <asm/mmu.h>
+#include <usb/isp1504.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -149,6 +150,33 @@ static struct device_d imxfb_dev = {
 	.platform_data	= &pcm038_fb_data,
 };
 
+#ifdef CONFIG_USB
+static struct device_d usbh2_dev = {
+	.name     = "ehci",
+	.map_base = IMX_OTG_BASE + 0x400,
+	.size     = 0x200,
+};
+
+static void pcm038_usbh_init(void)
+{
+	uint32_t temp;
+
+	temp = readl(IMX_OTG_BASE + 0x600);
+	temp &= ~((3 << 21) | 1);
+	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
+	writel(temp, IMX_OTG_BASE + 0x600);
+
+	temp = readl(IMX_OTG_BASE + 0x584);
+	temp &= ~(3 << 30);
+	temp |= 2 << 30;
+	writel(temp, IMX_OTG_BASE + 0x584);
+
+	mdelay(10);
+
+	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+}
+#endif
+
 #ifdef CONFIG_MMU
 static void pcm038_mmu_init(void)
 {
@@ -235,6 +263,19 @@ static int pcm038_devices_init(void)
 		PA29_PF_VSYNC,
 		PA30_PF_CONTRAST,
 		PA31_PF_OE_ACD,
+		/* USB host 2 */
+		PA0_PF_USBH2_CLK,
+		PA1_PF_USBH2_DIR,
+		PA2_PF_USBH2_DATA7,
+		PA3_PF_USBH2_NXT,
+		PA4_PF_USBH2_STP,
+		PD19_AF_USBH2_DATA4,
+		PD20_AF_USBH2_DATA3,
+		PD21_AF_USBH2_DATA6,
+		PD22_AF_USBH2_DATA0,
+		PD23_AF_USBH2_DATA2,
+		PD24_AF_USBH2_DATA1,
+		PD26_AF_USBH2_DATA5,
 	};
 
 	pcm038_mmu_init();
@@ -269,6 +310,11 @@ static int pcm038_devices_init(void)
 	register_device(&sdram_dev);
 	register_device(&sram_dev);
 	register_device(&imxfb_dev);
+
+#ifdef CONFIG_USB
+	pcm038_usbh_init();
+	register_device(&usbh2_dev);
+#endif
 
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock

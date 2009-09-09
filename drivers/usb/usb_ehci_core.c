@@ -231,11 +231,6 @@ static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 	return -1;
 }
 
-static void ehci_free(void *p, size_t sz)
-{
-
-}
-
 static int ehci_reset(struct ehci_priv *ehci)
 {
 	uint32_t cmd;
@@ -263,35 +258,6 @@ static int ehci_reset(struct ehci_priv *ehci)
 	}
 out:
 	return ret;
-}
-
-static void *ehci_alloc(size_t sz, size_t align)
-{
-	static struct QH qh __attribute__((aligned(32)));
-	static struct qTD td[3] __attribute__((aligned (32)));
-	static int ntds;
-	void *p;
-
-	switch (sz) {
-	case sizeof(struct QH):
-		p = &qh;
-		ntds = 0;
-		break;
-	case sizeof(struct qTD):
-		if (ntds == 3) {
-			debug("out of TDs\n");
-			return NULL;
-		}
-		p = &td[ntds];
-		ntds++;
-		break;
-	default:
-		debug("unknown allocation size\n");
-		return NULL;
-	}
-
-	memset(p, sz, 0);
-	return p;
 }
 
 static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
@@ -335,6 +301,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t cmd;
 	int ret = 0;
 	uint64_t start;
+	static struct QH __qh __attribute__((aligned(32)));
+	static struct qTD __td[3] __attribute__((aligned(32)));
 
 	debug("dev=%p, pipe=%lx, buffer=%p, length=%d, req=%p\n", dev, pipe,
 	      buffer, length, req);
@@ -345,12 +313,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		      le16_to_cpu(req->value), le16_to_cpu(req->value),
 		      le16_to_cpu(req->index));
 
-	qh = ehci_alloc(sizeof(struct QH), 32);
-	if (!qh) {
-		printf("unable to allocate QH\n");
-		return -1;
-	}
+	memset(&__qh, sizeof(struct QH), 0);
+	memset(&__td, sizeof(struct qTD) * 3, 0);
 
+	qh = &__qh;
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	c = (usb_pipespeed(pipe) != USB_SPEED_HIGH &&
 	     usb_pipeendpoint(pipe) == 0) ? 1 : 0;
@@ -377,11 +343,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	    usb_gettoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe));
 
 	if (req != NULL) {
-		td = ehci_alloc(sizeof(struct qTD), 32);
-		if (!td) {
-			printf("unable to allocate SETUP td\n");
-			goto fail;
-		}
+		td = &__td[0];
+
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 		token = (0 << 31) |
@@ -390,7 +353,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		td->qt_token = cpu_to_hc32(token);
 		if (ehci_td_buffer(td, req, sizeof(*req)) != 0) {
 			debug("unable construct SETUP td\n");
-			ehci_free(td, sizeof(*td));
 			goto fail;
 		}
 		*tdp = cpu_to_hc32((uint32_t) td);
@@ -400,11 +362,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	if (length > 0 || req == NULL) {
-		td = ehci_alloc(sizeof(struct qTD), 32);
-		if (!td) {
-			printf("unable to allocate DATA td\n");
-			goto fail;
-		}
+		td = &__td[1];
+
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 		token = (toggle << 31) |
@@ -416,7 +375,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		td->qt_token = cpu_to_hc32(token);
 		if (ehci_td_buffer(td, buffer, length) != 0) {
 			printf("unable construct DATA td\n");
-			ehci_free(td, sizeof(*td));
 			goto fail;
 		}
 		*tdp = cpu_to_hc32((uint32_t) td);
@@ -424,11 +382,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	if (req) {
-		td = ehci_alloc(sizeof(struct qTD), 32);
-		if (!td) {
-			printf("unable to allocate ACK td\n");
-			goto fail;
-		}
+		td = &__td[2];
+
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 		token = (toggle << 31) |
@@ -496,7 +451,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	token = hc32_to_cpu(qh->qh_overlay.qt_token);
 	if (!(token & 0x80)) {
-		debug("TOKEN=%#x\n", token);
+		debug("TOKEN=0x%08x\n", token);
 		switch (token & 0xfc) {
 		case 0:
 			toggle = token >> 31;
@@ -535,10 +490,8 @@ fail:
 	td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
 	while (td != (void *)QT_NEXT_TERMINATE) {
 		qh->qh_overlay.qt_next = td->qt_next;
-		ehci_free(td, sizeof(*td));
 		td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
 	}
-	ehci_free(qh, sizeof(*qh));
 	return -1;
 }
 

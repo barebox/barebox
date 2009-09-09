@@ -237,6 +237,7 @@ config MACH_PCA100
 	bool "phyCard-i.MX27"
 	select ARCH_IMX27
 	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_MMU
 	help
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor

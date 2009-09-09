@@ -37,6 +37,7 @@
 #include <asm/arch/imx-nand.h>
 #include <asm/arch/imx-pll.h>
 #include <gpio.h>
+#include <asm/mmu.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -71,6 +72,29 @@ static struct device_d nand_dev = {
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
 };
+
+#ifdef CONFIG_MMU
+static void pca100_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+}
+#else
+static void pca100_mmu_init(void)
+{
+}
+#endif
 
 static int pca100_devices_init(void)
 {
@@ -149,6 +173,7 @@ static struct device_d pca100_serial_device = {
 
 static int pca100_console_init(void)
 {
+	pca100_mmu_init();
 	register_device(&pca100_serial_device);
 	return 0;
 }

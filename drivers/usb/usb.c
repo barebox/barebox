@@ -320,7 +320,7 @@ static int usb_new_device(struct usb_device *dev)
 
 	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, desc, 64);
 	if (err < 0) {
-		USB_PRINTF("%s: usb_get_descriptor() failed\n", __func__);
+		USB_PRINTF("%s: usb_get_descriptor() failed with %d\n", __func__, err);
 		return 1;
 	}
 
@@ -579,21 +579,19 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 			void *data, int len, int *actual_length, int timeout)
 {
 	struct usb_host *host = dev->host;
+	int ret;
 
 	if (len < 0)
 		return -1;
-	dev->status = USB_ST_NOT_PROC; /*not yet processed */
-	host->submit_bulk_msg(dev, pipe, data, len);
-	while (timeout--) {
-		if (!((volatile unsigned long)dev->status & USB_ST_NOT_PROC))
-			break;
-		wait_ms(1);
-	}
+
+	dev->status = USB_ST_NOT_PROC; /* not yet processed */
+	ret = host->submit_bulk_msg(dev, pipe, data, len);
+	if (ret)
+		return ret;
+
 	*actual_length = dev->act_len;
-	if (dev->status == 0)
-		return 0;
-	else
-		return -1;
+
+	return (dev->status == 0) ? 0 : -1;
 }
 
 

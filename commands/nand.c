@@ -150,8 +150,8 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 {
 	struct nand_bb *bb = cdev->priv;
 
-	if (offset != 0 || count != bb->raw_size) {
-		printf("can only erase whole device\n");
+	if (offset != 0) {
+		printf("can only erase from beginning of device\n");
 		return -EINVAL;
 	}
 

@@ -267,7 +267,6 @@ free_out:
 static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt;
-	struct device_d *dev;
 	struct nand_bb *bb;
 	int command = 0, badblock = 0;
 
@@ -304,16 +303,15 @@ static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (command & NAND_DEL) {
 		while (optind < argc) {
 			struct cdev *cdev;
+
 			cdev = cdev_by_name(basename(argv[optind]));
 			if (!cdev) {
 				printf("no such device: %s\n", argv[optind]);
 				return 1;
 			}
-			dev = cdev->dev;
-
-			bb = dev->priv;
+			bb = cdev->priv;
 			close(bb->fd);
-			unregister_device(dev);
+			devfs_remove(cdev);
 			free(bb);
 			optind++;
 		}

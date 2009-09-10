@@ -130,6 +130,7 @@ static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 {
 	struct cdev *cdev;
+	int ret;
 
 	cdev = cdev_by_name(filename + 1);
 
@@ -139,8 +140,13 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 	f->size = cdev->size;
 	f->inode = cdev;
 
-	if (cdev->ops->open)
-		return cdev->ops->open(cdev, f);
+	if (cdev->ops->open) {
+		ret = cdev->ops->open(cdev, f);
+		if (ret)
+			return ret;
+	}
+
+	cdev->open++;
 
 	return 0;
 }
@@ -148,9 +154,16 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 static int devfs_close(struct device_d *_dev, FILE *f)
 {
 	struct cdev *cdev = f->inode;
+	int ret;
 
-	if (cdev->ops->close)
-		return cdev->ops->close(cdev, f);
+	if (cdev->ops->close) {
+		ret = cdev->ops->close(cdev, f);
+		if (ret)
+			return ret;
+	}
+
+	cdev->open--;
+
 	return 0;
 }
 
@@ -301,11 +314,16 @@ int devfs_create(struct cdev *new)
 	return 0;
 }
 
-void devfs_remove(struct cdev *cdev)
+int devfs_remove(struct cdev *cdev)
 {
+	if (cdev->open)
+		return -EBUSY;
+
 	list_del(&cdev->list);
 	if (cdev->dev)
 		list_del(&cdev->devices_list);
+
+	return 0;
 }
 
 int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
@@ -333,7 +351,7 @@ int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 	new->dev = cdev->dev;
 	new->flags = flags | DEVFS_IS_PARTITION;
 
-	list_add_tail(&new->list, &cdev_list);
+	devfs_create(new);
 
 	return 0;
 }
@@ -341,6 +359,7 @@ int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 int devfs_del_partition(const char *name)
 {
 	struct cdev *cdev;
+	int ret;
 
 	cdev = cdev_by_name(name);
 	if (!cdev)
@@ -351,7 +370,10 @@ int devfs_del_partition(const char *name)
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;
 
-	devfs_remove(cdev);
+	ret = devfs_remove(cdev);
+	if (ret)
+		return ret;
+
 	free(cdev->name);
 	free(cdev);
 

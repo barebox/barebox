@@ -301,10 +301,11 @@ struct cdev {
 	unsigned long offset;
 	size_t size;
 	unsigned int flags;
+	int open;
 };
 
 int devfs_create(struct cdev *);
-void devfs_remove(struct cdev *);
+int devfs_remove(struct cdev *);
 struct cdev *cdev_by_name(const char *filename);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);

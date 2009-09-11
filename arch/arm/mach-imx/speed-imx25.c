@@ -57,22 +57,7 @@ unsigned long imx_get_perclk(int per)
 	if (readl(IMX_CCM_BASE + 0x64) & (1 << per))
 		fref = imx_get_upllclk();
 	else
-		fref = imx_get_ipgclk();
-
-	return fref / (val + 1);
-}
-
-unsigned long imx_get_perclk_(int per)
-{
-	ulong ofs = (per & 0x3) * 8;
-	ulong reg = per & ~0x3;
-	ulong val = (readl(IMX_CCM_BASE + CCM_PCDR0 + reg) >> ofs) & 0x3f;
-	ulong fref;
-
-	if (readl(IMX_CCM_BASE + 0x64) & (1 << per))
-		fref = imx_get_upllclk();
-	else
-		fref = imx_get_ipgclk();
+		fref = imx_get_ahbclk();
 
 	return fref / (val + 1);
 }
@@ -93,9 +78,9 @@ int imx_dump_clocks(void)
 	printf("upll:    %10d Hz\n", imx_get_upllclk());
 	printf("arm:     %10d Hz\n", imx_get_armclk());
 	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
-	printf("uart:    %10d Hz\n", imx_get_perclk(0));
+	printf("uart:    %10d Hz\n", imx_get_perclk(15));
 	printf("gpt:     %10d Hz\n", imx_get_ipgclk());
-	printf("nand:    %10d Hz\n", imx_get_perclk_(8));
+	printf("nand:    %10d Hz\n", imx_get_perclk(8));
 	return 0;
 }
 

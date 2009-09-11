@@ -48,11 +48,11 @@ int ls(const char *path, ulong flags)
 
 	string_list_init(&sl);
 
-	if (flags & LS_SHOWARG)
-		printf("%s:\n", path);
-
 	if (stat(path, &s))
 		return errno;
+
+	if (flags & LS_SHOWARG && s.st_mode & S_IFDIR)
+		printf("%s:\n", path);
 
 	if (!(s.st_mode & S_IFDIR)) {
 		ls_one(path, &s);
@@ -113,8 +113,10 @@ out:
 
 static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	int ret, opt;
+	int ret, opt, o;
+	struct stat s;
 	ulong flags = LS_COLUMN;
+	struct string_list sl;
 
 	getopt_reset();
 
@@ -140,13 +142,53 @@ static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return ret ? 1 : 0;
 	}
 
-	while (optind < argc) {
-		ret = ls(argv[optind], flags);
+	string_list_init(&sl);
+
+	o = optind;
+
+	/* first pass: all files */
+	while (o < argc) {
+		ret = stat(argv[o], &s);
 		if (ret) {
-			perror("ls");
-			return 1;
+			optind++;
+			continue;
 		}
-		optind++;
+
+		if (!(s.st_mode & S_IFDIR)) {
+			if (flags & LS_COLUMN)
+				string_list_add(&sl, argv[o]);
+			else
+				ls_one(argv[o], &s);
+		}
+
+		o++;
+	}
+
+	if (flags & LS_COLUMN)
+		string_list_print_by_column(&sl);
+
+	string_list_free(&sl);
+
+	o = optind;
+
+	/* second pass: directories */
+	while (o < argc) {
+		ret = stat(argv[o], &s);
+		if (ret) {
+			o++;
+			continue;
+		}
+
+		if (s.st_mode & S_IFDIR) {
+			ret = ls(argv[o], flags);
+			if (ret) {
+				perror("ls");
+				o++;
+				continue;
+			}
+		}
+
+		o++;
 	}
 
 	return 0;

@@ -99,3 +99,43 @@ int imx_dump_clocks(void)
 	return 0;
 }
 
+/*
+ * Set the divider of the CLKO pin. Returns
+ * the new divider (which may be smaller
+ * than the desired one)
+ */
+int imx_clko_set_div(int div)
+{
+	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+
+	div -= 1;
+	div &= 0x3f;
+
+	mcr &= ~(0x3f << 24);
+	mcr |= div << 24;
+
+	writel(mcr, IMX_CCM_BASE + 0x64);
+
+	return div + 1;
+}
+
+/*
+ * Set the clock source for the CLKO pin
+ */
+void imx_clko_set_src(int src)
+{
+	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+
+	if (src < 0) {
+		mcr &= ~(1 << 30);
+		writel(mcr, IMX_CCM_BASE + 0x64);
+		return;
+	}
+
+	mcr |= 1 << 30;
+	mcr &= ~(0xf << 20);
+	mcr |= (src & 0xf) << 20;
+
+	writel(mcr, IMX_CCM_BASE + 0x64);
+}
+

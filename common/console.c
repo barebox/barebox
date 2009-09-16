@@ -125,7 +125,7 @@ int console_register(struct console_device *newcdev)
 	char ch;
 
 	strcpy(dev->name, "cs");
-	dev->type_data = newcdev->dev->type_data;
+	dev->type_data = newcdev;
 	register_device(dev);
 
 	if (newcdev->setbrg) {
@@ -173,7 +173,7 @@ int console_register(struct console_device *newcdev)
 }
 EXPORT_SYMBOL(console_register);
 
-int getc_raw(void)
+static int getc_raw(void)
 {
 	struct console_device *cdev;
 	int active = 0;
@@ -204,6 +204,7 @@ int getc(void)
 	 */
 	start = get_time_ns();
 	while (1) {
+		fsl_udc_irq();
 		if (tstc()) {
 			kfifo_putc(console_input_buffer, getc_raw());
 

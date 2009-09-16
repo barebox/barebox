@@ -14,3 +14,6 @@ config USB_ISP1504
 	bool "ISP1504 Tranceiver support"
 
 endif
+
+source drivers/usb/gadget/Kconfig
+

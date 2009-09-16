@@ -1,0 +1,34 @@
+menuconfig USB_GADGET
+	bool "USB gadget support            "
+
+if USB_GADGET
+
+config USB_GADGET_DUALSPEED
+	bool
+
+choice
+	prompt "USB Peripheral Controller"
+
+config USB_GADGET_DRIVER_ARC
+	bool
+	prompt "Arc OTG device core"
+	depends on ARCH_IMX
+	select USB_GADGET_DUALSPEED
+endchoice
+
+choice
+	prompt "USB Gadget drivers"
+
+config USB_GADGET_DFU
+	bool
+	prompt "Device Firmware Update Gadget"
+
+config USB_GADGET_SERIAL
+	bool
+	depends on EXPERIMENTAL
+	prompt "Serial Gadget"
+
+endchoice
+
+endif
+

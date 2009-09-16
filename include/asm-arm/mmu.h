@@ -22,8 +22,8 @@ void dma_free_coherent(void *mem);
 void dma_clean_range(const void *, const void *);
 void dma_flush_range(const void *, const void *);
 void dma_inv_range(const void *, const void *);
-unsigned long dma_to_phys(void *virt);
-void *phys_to_dma(unsigned long phys);
+unsigned long virt_to_phys(void *virt);
+void *phys_to_virt(unsigned long phys);
 
 #else
 static inline void *dma_alloc_coherent(size_t size)
@@ -36,12 +36,12 @@ static inline void dma_free_coherent(void *mem)
 	free(mem);
 }
 
-static inline void *phys_to_dma(unsigned long phys)
+static inline void *phys_to_virt(unsigned long phys)
 {
 	return (void *)phys;
 }
 
-static inline unsigned long dma_to_phys(void *mem)
+static inline unsigned long virt_to_phys(void *mem)
 {
 	return (unsigned long)mem;
 }

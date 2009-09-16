@@ -118,12 +118,12 @@ void *dma_alloc_coherent(size_t size)
 	return NULL; 
 }
 
-unsigned long dma_to_phys(void *virt)
+unsigned long virt_to_phys(void *virt)
 {
 	return (unsigned long)virt - dma_coherent_offset;
 }
 
-void *phys_to_dma(unsigned long phys)
+void *phys_to_virt(unsigned long phys)
 {
 	return (void *)(phys + dma_coherent_offset);
 }

@@ -178,7 +178,7 @@ static int fec_rbd_init(struct fec_priv *fec, int count, int size)
 
 	for (ix = 0; ix < count; ix++) {
 		if (!once) {
-			writel(dma_to_phys((void *)p), &fec->rbd_base[ix].data_pointer);
+			writel(virt_to_phys((void *)p), &fec->rbd_base[ix].data_pointer);
 			p += size;
 		}
 		writew(FEC_RBD_EMPTY, &fec->rbd_base[ix].status);
@@ -512,7 +512,7 @@ static int fec_recv(struct eth_device *dev)
 			/*
 			 * Get buffer address and size
 			 */
-			frame = phys_to_dma(readl(&rbd->data_pointer));
+			frame = phys_to_virt(readl(&rbd->data_pointer));
 			frame_length = readw(&rbd->data_length) - 4;
 			NetReceive(frame->data, frame_length);
 			len = frame_length;
@@ -576,8 +576,8 @@ static int fec_probe(struct device_d *dev)
 	base &= ~(DB_ALIGNMENT - 1);
 	fec->tbd_base = (struct buffer_descriptor *)base;
 
-	writel((uint32_t)dma_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
-	writel((uint32_t)dma_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+	writel((uint32_t)virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
+	writel((uint32_t)virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
 
 	fec->xcv_type = pdata->xcv_type;
 

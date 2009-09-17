@@ -1378,7 +1378,12 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 		if (rcode != 1 && ctx->old_flag == 0) {
 			done_word(&temp, ctx);
 			done_pipe(ctx,PIPE_SEQ);
-			code = run_list(ctx->list_head);
+			if (ctx->list_head->num_progs) {
+				code = run_list(ctx->list_head);
+			} else {
+				free_pipe_list(ctx->list_head, 0);
+				continue;
+			}
 			if (code == -2) {	/* exit */
 				b_free(&temp);
 

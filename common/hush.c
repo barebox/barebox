@@ -1393,6 +1393,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 					code = 0;
 					continue;
 				}
+				code = last_return_code;
 				break;
 			}
 		} else {

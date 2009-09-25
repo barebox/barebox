@@ -88,7 +88,7 @@ static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 	if (ret != -1)
 		f->pos = pos;
 
-	return ret;
+	return ret - cdev->offset;
 }
 
 static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)

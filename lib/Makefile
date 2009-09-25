@@ -27,4 +27,4 @@ obj-$(CONFIG_GLOB)		+= fnmatch.o
 obj-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
 obj-y			+= glob.o
 obj-y			+= notifier.o
-
+obj-y			+= copy_file.o

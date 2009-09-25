@@ -26,4 +26,6 @@ int recursive_action(const char *fileName, unsigned flags,
 
 char * safe_strncpy(char *dst, const char *src, size_t size);
 
+int copy_file(const char *src, const char *dst);
+
 #endif /* __LIBBB_H */

@@ -204,7 +204,6 @@ int getc(void)
 	 */
 	start = get_time_ns();
 	while (1) {
-		fsl_udc_irq();
 		if (tstc()) {
 			kfifo_putc(console_input_buffer, getc_raw());
 

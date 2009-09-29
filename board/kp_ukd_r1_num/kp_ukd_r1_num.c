@@ -116,8 +116,8 @@ static int mcfv4e_devices_init(void)
 	 * Create partitions that should be
 	 * not touched by any regular user
 	 */
-	devfs_add_partition("nor0", 0x00000, 0x80000, PARTITION_FIXED, "self");	/* ourself */
-	devfs_add_partition("nor0", 0x80000, 0x40000, PARTITION_FIXED, "env");	/* environment */
+	devfs_add_partition("nor0", 0x00000, 0x80000, PARTITION_FIXED, "self0");	/* ourself */
+	devfs_add_partition("nor0", 0x80000, 0x40000, PARTITION_FIXED, "env0");	/* environment */
 	dev_protect(&cfi_dev, 0xc0000, 0, 2);
 
 	//register_device(&sram_dev);

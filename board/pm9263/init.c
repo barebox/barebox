@@ -96,8 +96,8 @@ static int pm9263_devices_init(void)
 	register_device(&macb_dev);
 	register_device(&cfi_dev);
 
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x20000100);

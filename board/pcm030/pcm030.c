@@ -76,8 +76,8 @@ static int devices_init (void)
 	register_device(&sdram_dev);
 	register_device(&eth_dev);
 
-	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x00f60000, 0x20000, PARTITION_FIXED, "env");
+	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x00f60000, 0x20000, PARTITION_FIXED, "env0");
 
 	return 0;
 }

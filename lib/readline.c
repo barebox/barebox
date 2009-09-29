@@ -3,6 +3,7 @@
 #include <init.h>
 #include <xfuncs.h>
 #include <complete.h>
+#include <linux/ctype.h>
 
 /*
  * cmdline-editing related codes from vivi.
@@ -177,7 +178,7 @@ int readline(const char *prompt, char *buf, int len)
 	unsigned long eol_num = 0;
 	unsigned long rlen;
 	unsigned long wlen;
-	char ichar;
+	unsigned char ichar;
 	int insert = 1;
 	int rc = 0;
 #ifdef CONFIG_AUTO_COMPLETE
@@ -327,7 +328,8 @@ int readline(const char *prompt, char *buf, int len)
 			continue;
 		}
 		default:
-			cread_add_char(ichar, insert, &num, &eol_num, buf, len);
+			if (isascii(ichar) && isprint(ichar))
+				cread_add_char(ichar, insert, &num, &eol_num, buf, len);
 			break;
 		}
 	}

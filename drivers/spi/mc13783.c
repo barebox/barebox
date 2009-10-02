@@ -120,11 +120,6 @@ static uint32_t pmic_read_reg(struct pmic_priv *pmic, int reg)
 
 	buf = MXC_PMIC_REG_NUM(reg);
 
-	/* Need to read twice here, as seen in redboot code.
-	 * FIXME: Is this a pmic bug or a bug in the spi
-	 * controller?
-	 */
-	spi_rw(pmic->spi, &buf, 4);
 	spi_rw(pmic->spi, &buf, 4);
 
 	return buf;
@@ -218,7 +213,7 @@ static int pmic_probe(struct device_d *dev)
 	pmic_device->cdev.dev = dev;
 	pmic_device->cdev.ops = &pmic_fops;
 
-	spi->mode = SPI_MODE_2 | SPI_CS_HIGH;
+	spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
 	spi->bits_per_word = 32;
 	pmic_device->spi = spi;
 

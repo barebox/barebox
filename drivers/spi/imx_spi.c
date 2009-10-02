@@ -24,6 +24,8 @@
 #include <spi/spi.h>
 #include <xfuncs.h>
 #include <asm/io.h>
+#include <gpio.h>
+#include <asm/arch/spi.h>
 
 #define MXC_CSPIRXDATA		0x00
 #define MXC_CSPITXDATA		0x04
@@ -53,22 +55,19 @@
 #define MXC_CSPISTAT_TE		(1 << 0)
 #define MXC_CSPISTAT_TH		(1 << 1)
 #define MXC_CSPISTAT_TF		(1 << 2)
-#define MXC_CSPISTAT_RR		(1 << 3)
-#define MXC_CSPISTAT_RH         (1 << 4)
-#define MXC_CSPISTAT_RF         (1 << 5)
-#define MXC_CSPISTAT_RO         (1 << 6)
-#define MXC_CSPISTAT_TC_0_7	(1 << 7)
-#define MXC_CSPISTAT_TC_0_5	(1 << 8)
-#define MXC_CSPISTAT_TC_0_4	(1 << 8)
-#define MXC_CSPISTAT_TC_0_0	(1 << 3)
-#define MXC_CSPISTAT_BO_0_7	0
-#define MXC_CSPISTAT_BO_0_5	(1 << 7)
-#define MXC_CSPISTAT_BO_0_4	(1 << 7)
-#define MXC_CSPISTAT_BO_0_0	(1 << 8)
+#define MXC_CSPISTAT_RR		(1 << 4)
+#define MXC_CSPISTAT_RH         (1 << 5)
+#define MXC_CSPISTAT_RF         (1 << 6)
+#define MXC_CSPISTAT_RO         (1 << 7)
 
 #define MXC_CSPIPERIOD_32KHZ	(1 << 15)
 
 #define MXC_CSPITEST_LBC	(1 << 14)
+
+struct imx_spi {
+	struct spi_master master;
+	int *chipselect;
+};
 
 static int imx_spi_setup(struct spi_device *spi)
 {
@@ -89,7 +88,7 @@ static unsigned int spi_xchg_single(ulong base, unsigned int data)
 
 	writel(cfg_reg, base + MXC_CSPICTRL);
 
-	while (readl(base + MXC_CSPICTRL) & MXC_CSPICTRL_XCH);
+	while (!(readl(base + MXC_CSPIINT) & MXC_CSPISTAT_RR));
 
 	return readl(base + MXC_CSPIRXDATA);
 }
@@ -97,23 +96,41 @@ static unsigned int spi_xchg_single(ulong base, unsigned int data)
 static void mxc_spi_chipselect(struct spi_device *spi, int is_active)
 {
 	struct spi_master *master = spi->master;
+	struct imx_spi *imx = container_of(master, struct imx_spi, master);
 	ulong base = master->dev->map_base;
+	unsigned int cs = 0;
+	int gpio = imx->chipselect[spi->chip_select];
 	u32 ctrl_reg;
 
-	ctrl_reg = MXC_CSPICTRL_CS(spi->chip_select)
-		| MXC_CSPICTRL_BITCOUNT(spi->bits_per_word - 1)
+	if (spi->mode & SPI_CS_HIGH)
+		cs = 1;
+
+	if (!is_active) {
+		if (gpio >= 0)
+			gpio_set_value(gpio, !cs);
+		return;
+	}
+
+	ctrl_reg = MXC_CSPICTRL_BITCOUNT(spi->bits_per_word - 1)
 		| MXC_CSPICTRL_DATARATE(7) /* FIXME: calculate data rate */
 		| MXC_CSPICTRL_ENABLE
 		| MXC_CSPICTRL_MASTER;
 
+	if (gpio < 0) {
+		ctrl_reg |= MXC_CSPICTRL_CS(gpio + 32);
+	}
+
 	if (spi->mode & SPI_CPHA)
 		ctrl_reg |= MXC_CSPICTRL_PHA;
-	if (!(spi->mode & SPI_CPOL))
+	if (spi->mode & SPI_CPOL)
 		ctrl_reg |= MXC_CSPICTRL_LOWPOL;
 	if (spi->mode & SPI_CS_HIGH)
 		ctrl_reg |= MXC_CSPICTRL_HIGHSSPOL;
 
 	writel(ctrl_reg, base + MXC_CSPICTRL);
+
+	if (gpio >= 0)
+		gpio_set_value(gpio, cs);
 }
 
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
@@ -134,28 +151,34 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 			i++;
 		}
 	}
+
+	mxc_spi_chipselect(spi, 0);
+
 	return 0;
 }
 
 static int imx_spi_probe(struct device_d *dev)
 {
 	struct spi_master *master;
+	struct imx_spi *imx;
+	struct spi_imx_master *pdata = dev->platform_data;
 
-	debug("%s\n", __FUNCTION__);
+	imx = xzalloc(sizeof(*imx));
 
-	master = xzalloc(sizeof(struct spi_master));
-	debug("master: %p %d\n", master, sizeof(struct spi_master));
-
+	master = &imx->master;
 	master->dev = dev;
 
 	master->setup = imx_spi_setup;
 	master->transfer = imx_spi_transfer;
-	master->num_chipselect = 1; /* FIXME: Board dependent */
+	master->num_chipselect = pdata->num_chipselect;
+	imx->chipselect = pdata->chipselect;
 
 	writel(MXC_CSPICTRL_ENABLE | MXC_CSPICTRL_MASTER,
 		     dev->map_base + MXC_CSPICTRL);
 	writel(MXC_CSPIPERIOD_32KHZ,
 		     dev->map_base + MXC_CSPIPERIOD);
+	while (readl(dev->map_base + MXC_CSPIINT) & MXC_CSPISTAT_RR)
+		readl(dev->map_base + MXC_CSPIRXDATA);
 	writel(0, dev->map_base + MXC_CSPIINT);
 
 	spi_register_master(master);

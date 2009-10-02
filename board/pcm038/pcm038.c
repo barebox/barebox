@@ -42,6 +42,7 @@
 #include <asm/arch/imxfb.h>
 #include <asm/mmu.h>
 #include <usb/isp1504.h>
+#include <asm/arch/spi.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -84,9 +85,17 @@ static struct device_d fec_dev = {
 	.platform_data	= &fec_info,
 };
 
+static int pcm038_spi_cs[] = {GPIO_PORTD + 28};
+
+static struct spi_imx_master pcm038_spi_0_data = {
+	.chipselect = pcm038_spi_cs,
+	.num_chipselect = ARRAY_SIZE(pcm038_spi_cs),
+};
+
 static struct device_d spi_dev = {
 	.name     = "imx_spi",
 	.map_base = 0x1000e000,
+	.platform_data = &pcm038_spi_0_data,
 };
 
 static struct spi_board_info pcm038_spi_board_info[] = {
@@ -229,9 +238,7 @@ static int pcm038_devices_init(void)
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
 		PD25_PF_CSPI1_RDY,
-		PD26_PF_CSPI1_SS2,
-		PD27_PF_CSPI1_SS1,
-		PD28_PF_CSPI1_SS0,
+		GPIO_PORTD | 28 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
@@ -302,6 +309,8 @@ static int pcm038_devices_init(void)
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
+	gpio_direction_output(GPIO_PORTD | 28, 0);
+	gpio_set_value(GPIO_PORTD | 28, 0);
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	register_device(&spi_dev);
 

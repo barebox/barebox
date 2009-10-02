@@ -605,6 +605,21 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 }
 EXPORT_SYMBOL(protect);
 
+int protect_file(const char *file, int prot)
+{
+	int fd, ret;
+
+	fd = open(file, O_WRONLY);
+	if (fd < 0)
+		return fd;
+
+	ret = protect(fd, ~0, 0, prot);
+
+	close(fd);
+
+	return ret;
+}
+
 void *memmap(int fd, int flags)
 {
 	struct device_d *dev;

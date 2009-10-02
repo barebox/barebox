@@ -132,6 +132,7 @@ int umount(const char *pathname);
 /* not-so-standard functions */
 int erase(int fd, size_t count, unsigned long offset);
 int protect(int fd, size_t count, unsigned long offset, int prot);
+int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);
 
 #define PROT_READ	1

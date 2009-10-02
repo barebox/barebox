@@ -252,7 +252,7 @@ static int imx31_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");	/* ourself */
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");	/* environment */
 
-	dev_protect(&cfi_dev, 0x20000, 0, 1);
+	protect_file("/dev/env0", 1);
 
 	register_device(&sram_dev);
 	register_device(&nand_dev);

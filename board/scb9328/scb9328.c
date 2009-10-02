@@ -94,7 +94,7 @@ static int scb9328_devices_init(void) {
 
 	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
-	dev_protect(&cfi_dev, 0x20000, 0, 1);
+	protect_file("/dev/env0", 1);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x08000100);

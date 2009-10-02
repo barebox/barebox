@@ -336,7 +336,8 @@ static int pcm038_devices_init(void)
 	default:
 		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
-		dev_protect(&cfi_dev, 0x40000, 0, 1);
+		protect_file("/dev/env0", 1);
+
 		envdev = "NOR";
 	}
 

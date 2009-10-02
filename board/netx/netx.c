@@ -78,7 +78,7 @@ static int netx_devices_init(void) {
 	/* Do not overwrite primary env for now */
 	devfs_add_partition("nor0", 0xc0000, 0x80000, PARTITION_FIXED, "env0");
 
-	dev_protect(&cfi_dev, 0x40000, 0, 1);
+	protect_file("/dev/env0", 1);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);

@@ -264,7 +264,7 @@ static int macb_init(struct eth_device *edev)
 	else
 		val &= ~MACB_BIT(RMII);
 
-#if defined(CONFIG_ARCH_AT91SAM9)
+#if defined(CONFIG_ARCH_AT91)
 	val |= MACB_BIT(CLKEN);
 #endif
 	writel(val, macb->regs + MACB_USRIO);

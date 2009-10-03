@@ -66,7 +66,7 @@ config DRIVER_NET_FEC_IMX
 
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
-	depends on ARCH_AT91SAM9
+	depends on ARCH_AT91
 	select MIIPHY
 
 config DRIVER_NET_TAP

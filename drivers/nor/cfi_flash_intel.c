@@ -130,6 +130,8 @@ static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const u
 	}
 	return retcode;
 }
+#else
+#define intel_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
 static int intel_flash_status_check (flash_info_t * info, flash_sect_t sector,

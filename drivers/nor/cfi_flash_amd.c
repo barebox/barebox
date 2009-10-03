@@ -137,6 +137,8 @@ static int amd_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uch
 					   "buffer write");
 	return retcode;
 }
+#else
+#define amd_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
 struct cfi_cmd_set cfi_cmd_set_amd = {

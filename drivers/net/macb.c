@@ -47,8 +47,8 @@
 #include <miiphy.h>
 #include <errno.h>
 #include <asm/io.h>
+#include <asm/arch/board.h>
 #include <asm/arch/clk.h>
-#include <asm/arch/ether.h>
 
 #include "macb.h"
 
@@ -411,7 +411,7 @@ static int macb_probe(struct device_d *dev)
 	struct macb_device *macb;
 	unsigned long macb_hz;
 	u32 ncfgr;
-	struct at91sam_ether_platform_data *pdata;
+	struct at91_ether_platform_data *pdata;
 
 	if (!dev->platform_data) {
 		printf("macb: no platform_data\n");

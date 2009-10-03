@@ -33,19 +33,7 @@
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/ether.h>
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.name     = "mem",
-	.map_base = 0x20000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
+#include <asm/arch/board.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -53,16 +41,9 @@ static struct device_d cfi_dev = {
 	.size     = 4 * 1024 * 1024,
 };
 
-static struct at91sam_ether_platform_data macb_pdata = {
+static struct at91_ether_platform_data macb_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
-};
-
-static struct device_d macb_dev = {
-	.name     = "macb",
-	.map_base = AT91C_BASE_MACB,
-	.size     = 0x1000,
-	.platform_data = &macb_pdata,
 };
 
 static int pm9263_devices_init(void)
@@ -92,14 +73,13 @@ static int pm9263_devices_init(void)
 
 	writel(1 << AT91C_ID_EMAC, AT91C_PMC_PCER);
 
-	register_device(&sdram_dev);
-	register_device(&macb_dev);
+	at91_add_device_sdram(64 * 1024 * 1024);
+	at91_add_device_eth(&macb_pdata);
 	register_device(&cfi_dev);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_PM9263);
 
@@ -108,17 +88,11 @@ static int pm9263_devices_init(void)
 
 device_initcall(pm9263_devices_init);
 
-static struct device_d pm9263_serial_device = {
-	.name     = "atmel_serial",
-	.map_base = AT91C_BASE_DBGU,
-	.size     = 4096,
-};
-
 static int pm9263_console_init(void)
 {
 	writel(AT91C_PC31_DTXD | AT91C_PC30_DRXD, AT91C_PIOC_PDR);
 
-	register_device(&pm9263_serial_device);
+	at91_register_uart(0);
 	return 0;
 }
 

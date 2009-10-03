@@ -33,8 +33,7 @@
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/ether.h>
-#include <asm/arch/atmel_nand.h>
+#include <asm/arch/board.h>
 #include <gpio.h>
 
 #define NAND_READY_GPIO (32 * 2 + 13) /* Port C pin 13 */
@@ -55,48 +54,20 @@ static struct atmel_nand_data nand_pdata = {
 #endif
 };
 
-static struct device_d nand_dev = {
-	.name     = "atmel_nand",
-	.map_base = 0x40000000,
-	.size     = 0x10,
-	.platform_data = &nand_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name = "sram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.name     = "mem",
-	.map_base = 0x20000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &sram_pdata,
-};
-
-static struct at91sam_ether_platform_data macb_pdata = {
+static struct at91_ether_platform_data macb_pdata = {
 	.flags    = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
 };
 
-static struct device_d macb_dev = {
-	.name     = "macb",
-	.map_base = AT91C_BASE_EMACB,
-	.size     = 0x1000,
-	.platform_data = &macb_pdata,
-};
-
 static int at91sam9260ek_devices_init(void)
 {
-	register_device(&sdram_dev);
-
 	gpio_direction_input(NAND_READY_GPIO);
 	gpio_direction_output(NAND_ENABLE_GPIO, 1);
 
-	register_device(&nand_dev);
-	register_device(&macb_dev);
+	at91_add_device_nand(&nand_pdata);
+	at91_add_device_eth(&macb_pdata);
 
-	armlinux_add_dram(&sdram_dev);
+	at91_add_device_sdram(64 * 1024 * 1024);
 	armlinux_set_bootparams((void *)0x20000100);
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 
@@ -110,15 +81,9 @@ static int at91sam9260ek_devices_init(void)
 
 device_initcall(at91sam9260ek_devices_init);
 
-static struct device_d at91sam9260ek_serial_device = {
-	.name     = "atmel_serial",
-	.map_base = AT91C_BASE_DBGU,
-	.size     = 4096,
-};
-
 static int at91sam9260ek_console_init(void)
 {
-	register_device(&at91sam9260ek_serial_device);
+	at91_register_uart(0);
 	return 0;
 }
 

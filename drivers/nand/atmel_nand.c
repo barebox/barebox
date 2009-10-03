@@ -32,7 +32,7 @@
 #include <linux/mtd/nand.h>
 
 #include <asm/io.h>
-#include <asm/arch/atmel_nand.h>
+#include <asm/arch/board.h>
 
 #include <errno.h>
 

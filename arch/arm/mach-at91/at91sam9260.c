@@ -5,14 +5,14 @@
 
 static struct at91_gpio_bank at91sam9260_gpio[] = {
 	{
-		.id		= AT91C_ID_PIOA,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOA,
+		.id		= AT91SAM9260_ID_PIOA,
+		.offset		= AT91_PIOA,
 	}, {
-		.id		= AT91C_ID_PIOB,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOB,
+		.id		= AT91SAM9260_ID_PIOB,
+		.offset		= AT91_PIOB,
 	}, {
-		.id		= AT91C_ID_PIOC,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOC,
+		.id		= AT91SAM9260_ID_PIOC,
+		.offset		= AT91_PIOC,
 	}
 };
 

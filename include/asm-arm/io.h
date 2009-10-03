@@ -26,13 +26,21 @@
 #ifndef __ASM_ARM_IO_H
 #define __ASM_ARM_IO_H
 
-#define readb(a) (*(volatile unsigned char *)(a))
-#define readw(a) (*(volatile unsigned short *)(a))
-#define readl(a) (*(volatile unsigned int *)(a))
+#define __raw_writeb(v,a)	(*(volatile unsigned char *)(a) = (v))
+#define __raw_writew(v,a)	(*(volatile unsigned short *)(a) = (v))
+#define __raw_writel(v,a)	(*(volatile unsigned int *)(a) = (v))
 
-#define writeb(v,a) (*(volatile unsigned char *)(a) = (v))
-#define writew(v,a) (*(volatile unsigned short *)(a) = (v))
-#define writel(v,a) (*(volatile unsigned int *)(a) = (v))
+#define __raw_readb(a)		(*(volatile unsigned char *)(a))
+#define __raw_readw(a)		(*(volatile unsigned short *)(a))
+#define __raw_readl(a)		(*(volatile unsigned int *)(a))
+
+#define writeb(v,a) __raw_writeb(v,a)
+#define writew(v,a) __raw_writew(v,a)
+#define writel(v,a) __raw_writel(v,a)
+
+#define readb(a) __raw_readb(a)
+#define readw(a) __raw_readw(a)
+#define readl(a) __raw_readl(a)
 
 /* for the ARM architecture the string functions are library based */
 extern void writesb(void __iomem*, const void*, int);

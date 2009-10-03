@@ -34,25 +34,56 @@
 #include <nand.h>
 #include <linux/mtd/nand.h>
 #include <asm/arch/board.h>
+#include <asm/arch/at91sam9_smc.h>
+#include <asm/arch/sam9_smc.h>
 #include <gpio.h>
-
-#define NAND_READY_GPIO (32 * 2 + 13) /* Port C pin 13 */
-#define NAND_ENABLE_GPIO (32 * 2 + 14) /* Port C pin 14 */
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
 /*	.det_pin	= ... not connected */
-	.ecc_base	= (void __iomem *)AT91C_BASE_HECC,
+	.ecc_base	= (void __iomem *)(AT91_BASE_SYS + AT91_ECC),
 	.ecc_mode	= NAND_ECC_HW,
-	.rdy_pin	= NAND_READY_GPIO,
-	.enable_pin	= NAND_ENABLE_GPIO,
+	.rdy_pin	= AT91_PIN_PC13,
+	.enable_pin	= AT91_PIN_PC14,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
 	.bus_width_16	= 1,
 #else
 	.bus_width_16	= 0,
 #endif
 };
+
+static struct sam9_smc_config ek_nand_smc_config = {
+	.ncs_read_setup		= 0,
+	.nrd_setup		= 1,
+	.ncs_write_setup	= 0,
+	.nwe_setup		= 1,
+
+	.ncs_read_pulse		= 3,
+	.nrd_pulse		= 3,
+	.ncs_write_pulse	= 3,
+	.nwe_pulse		= 3,
+
+	.read_cycle		= 5,
+	.write_cycle		= 5,
+
+	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE | AT91_SMC_EXNWMODE_DISABLE,
+	.tdf_cycles		= 2,
+};
+
+static void ek_add_device_nand(void)
+{
+	/* setup bus-width (8 or 16) */
+	if (nand_pdata.bus_width_16)
+		ek_nand_smc_config.mode |= AT91_SMC_DBW_16;
+	else
+		ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
+
+	/* configure chip-select 3 (NAND) */
+	sam9_smc_configure(3, &ek_nand_smc_config);
+
+	at91_add_device_nand(&nand_pdata);
+}
 
 static struct at91_ether_platform_data macb_pdata = {
 	.flags    = AT91SAM_ETHER_RMII,
@@ -61,14 +92,11 @@ static struct at91_ether_platform_data macb_pdata = {
 
 static int at91sam9260ek_devices_init(void)
 {
-	gpio_direction_input(NAND_READY_GPIO);
-	gpio_direction_output(NAND_ENABLE_GPIO, 1);
-
-	at91_add_device_nand(&nand_pdata);
+	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
 
 	at91_add_device_sdram(64 * 1024 * 1024);
-	armlinux_set_bootparams((void *)0x20000100);
+	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
@@ -83,7 +111,7 @@ device_initcall(at91sam9260ek_devices_init);
 
 static int at91sam9260ek_console_init(void)
 {
-	at91_register_uart(0);
+	at91_register_uart(0, 0);
 	return 0;
 }
 

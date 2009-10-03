@@ -5,21 +5,27 @@
 
 static struct at91_gpio_bank at91sam9263_gpio[] = {
 	{
-		.id		= AT91C_ID_PIOA,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOA,
+		.id		= AT91SAM9263_ID_PIOA,
+		.offset		= AT91_PIOA,
 	}, {
-		.id		= AT91C_ID_PIOB,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOB,
+		.id		= AT91SAM9263_ID_PIOB,
+		.offset		= AT91_PIOB,
 	}, {
-		.id		= AT91C_ID_PIOCDE,
-		.regbase	= (void __iomem *)AT91C_BASE_PIOC,
+		.id		= AT91SAM9263_ID_PIOCDE,
+		.offset		= AT91_PIOC,
+	}, {
+		.id		= AT91SAM9263_ID_PIOCDE,
+		.offset		= AT91_PIOD,
+	}, {
+		.id		= AT91SAM9263_ID_PIOCDE,
+		.offset		= AT91_PIOE,
 	}
 };
 
 static int at91sam9263_initialize(void)
 {
 	/* Register GPIO subsystem */
-	at91_gpio_init(at91sam9263_gpio, 3);
+	at91_gpio_init(at91sam9263_gpio, 5);
 	return 0;
 }
 

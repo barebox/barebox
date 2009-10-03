@@ -39,6 +39,7 @@ struct atmel_nand_data {
 
 void at91_add_device_nand(struct atmel_nand_data *data);
 
+ /* Ethernet (EMAC & MACB) */
 #define AT91SAM_ETHER_MII		(0 << 0)
 #define AT91SAM_ETHER_RMII		(1 << 0)
 #define AT91SAM_ETHER_FORCE_LINK	(1 << 1)
@@ -50,8 +51,16 @@ struct at91_ether_platform_data {
 
 void at91_add_device_eth(struct at91_ether_platform_data *data);
 
+/* SDRAM */
 void at91_add_device_sdram(u32 size);
 
-void at91_register_uart(unsigned id);
+ /* Serial */
+#define ATMEL_UART_CTS	0x01
+#define ATMEL_UART_RTS	0x02
+#define ATMEL_UART_DSR	0x04
+#define ATMEL_UART_DTR	0x08
+#define ATMEL_UART_DCD	0x10
+#define ATMEL_UART_RI	0x20
 
+void at91_register_uart(unsigned id, unsigned pins);
 #endif

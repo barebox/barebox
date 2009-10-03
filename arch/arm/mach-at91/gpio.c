@@ -24,43 +24,15 @@
 #include <common.h>
 #include <errno.h>
 #include <asm/io.h>
+#include <asm/arch/gpio.h>
 #include <gpio.h>
-
-#define OFS_PIO_PER	0x00	/* Enable Register */
-#define OFS_PIO_PDR	0x04	/* Disable Register */
-#define OFS_PIO_PSR	0x08	/* Status Register */
-#define OFS_PIO_OER	0x10	/* Output Enable Register */
-#define OFS_PIO_ODR	0x14	/* Output Disable Register */
-#define OFS_PIO_OSR	0x18	/* Output Status Register */
-#define OFS_PIO_IFER	0x20	/* Glitch Input Filter Enable */
-#define OFS_PIO_IFDR	0x24	/* Glitch Input Filter Disable */
-#define OFS_PIO_IFSR	0x28	/* Glitch Input Filter Status */
-#define OFS_PIO_SODR	0x30	/* Set Output Data Register */
-#define OFS_PIO_CODR	0x34	/* Clear Output Data Register */
-#define OFS_PIO_ODSR	0x38	/* Output Data Status Register */
-#define OFS_PIO_PDSR	0x3c	/* Pin Data Status Register */
-#define OFS_PIO_IER	0x40	/* Interrupt Enable Register */
-#define OFS_PIO_IDR	0x44	/* Interrupt Disable Register */
-#define OFS_PIO_IMR	0x48	/* Interrupt Mask Register */
-#define OFS_PIO_ISR	0x4c	/* Interrupt Status Register */
-#define OFS_PIO_MDER	0x50	/* Multi-driver Enable Register */
-#define OFS_PIO_MDDR	0x54	/* Multi-driver Disable Register */
-#define OFS_PIO_MDSR	0x58	/* Multi-driver Status Register */
-#define OFS_PIO_PUDR	0x60	/* Pull-up Disable Register */
-#define OFS_PIO_PUER	0x64	/* Pull-up Enable Register */
-#define OFS_PIO_PUSR	0x68	/* Pull-up Status Register */
-#define OFS_PIO_ASR	0x70	/* Peripheral A Select Register */
-#define OFS_PIO_BSR	0x74	/* Peripheral B Select Register */
-#define OFS_PIO_ABSR	0x78	/* AB Status Register */
-#define OFS_PIO_OWER	0xa0	/* Output Write Enable Register */
-#define OFS_PIO_OWDR	0xa4	/* Output Write Disable Register */
-#define OFS_PIO_OWSR	0xa8	/* Output Write Status Register */
 
 static int gpio_banks;
 static struct at91_gpio_bank *gpio;
 
 static inline void __iomem *pin_to_controller(unsigned pin)
 {
+	pin -= PIN_BASE;
 	pin /= 32;
 	if (likely(pin < gpio_banks))
 		return gpio[pin].regbase;
@@ -70,8 +42,64 @@ static inline void __iomem *pin_to_controller(unsigned pin)
 
 static inline unsigned pin_to_mask(unsigned pin)
 {
+	pin -= PIN_BASE;
 	return 1 << (pin % 32);
 }
+
+/*
+ * mux the pin to the "GPIO" peripheral role.
+ */
+int at91_set_GPIO_periph(unsigned pin, int use_pullup)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(mask, pio + PIO_PER);
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_GPIO_periph);
+
+/*
+ * mux the pin to the "A" internal peripheral role.
+ */
+int at91_set_A_periph(unsigned pin, int use_pullup)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(mask, pio + PIO_ASR);
+	__raw_writel(mask, pio + PIO_PDR);
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_A_periph);
+
+/*
+ * mux the pin to the "B" internal peripheral role.
+ */
+int at91_set_B_periph(unsigned pin, int use_pullup)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(mask, pio + PIO_BSR);
+	__raw_writel(mask, pio + PIO_PDR);
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_B_periph);
 
 /*
  * mux the pin to the gpio controller (instead of "A" or "B" peripheral), and
@@ -85,10 +113,10 @@ int at91_set_gpio_input(unsigned pin, int use_pullup)
 	if (!pio)
 		return -EINVAL;
 
-	writel(mask, pio + OFS_PIO_IDR);
-	writel(mask, pio + (use_pullup ? OFS_PIO_PUER : OFS_PIO_PUDR));
-	writel(mask, pio + OFS_PIO_ODR);
-	writel(mask, pio + OFS_PIO_PER);
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(mask, pio + PIO_ODR);
+	__raw_writel(mask, pio + PIO_PER);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_gpio_input);
@@ -105,23 +133,86 @@ int at91_set_gpio_output(unsigned pin, int value)
 	if (!pio)
 		return -EINVAL;
 
-	writel(mask, pio + OFS_PIO_IDR);
-	writel(mask, pio + OFS_PIO_PUDR);
-	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
-	writel(mask, pio + OFS_PIO_OER);
-	writel(mask, pio + OFS_PIO_PER);
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + PIO_PUDR);
+	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	__raw_writel(mask, pio + PIO_OER);
+	__raw_writel(mask, pio + PIO_PER);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_gpio_output);
+
+/*
+ * enable/disable the glitch filter; mostly used with IRQ handling.
+ */
+int at91_set_deglitch(unsigned pin, int is_on)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+	__raw_writel(mask, pio + (is_on ? PIO_IFER : PIO_IFDR));
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_deglitch);
+
+/*
+ * enable/disable the multi-driver; This is only valid for output and
+ * allows the output pin to run as an open collector output.
+ */
+int at91_set_multi_drive(unsigned pin, int is_on)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+
+	__raw_writel(mask, pio + (is_on ? PIO_MDER : PIO_MDDR));
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_multi_drive);
+
+/*
+ * assuming the pin is muxed as a gpio output, set its value.
+ */
+int at91_set_gpio_value(unsigned pin, int value)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio)
+		return -EINVAL;
+	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_gpio_value);
+
+/*
+ * read the pin's value (works even if it's not muxed as a gpio).
+ */
+int at91_get_gpio_value(unsigned pin)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+	u32		pdsr;
+
+	if (!pio)
+		return -EINVAL;
+	pdsr = __raw_readl(pio + PIO_PDSR);
+	return (pdsr & mask) != 0;
+}
+EXPORT_SYMBOL(at91_get_gpio_value);
 
 int gpio_direction_input(unsigned pin)
 {
 	void __iomem	*pio = pin_to_controller(pin);
 	unsigned	mask = pin_to_mask(pin);
 
-	if (!pio || !(readl(pio + OFS_PIO_PSR) & mask))
+	if (!pio || !(__raw_readl(pio + PIO_PSR) & mask))
 		return -EINVAL;
-	writel(mask, pio + OFS_PIO_ODR);
+	__raw_writel(mask, pio + PIO_ODR);
 	return 0;
 }
 EXPORT_SYMBOL(gpio_direction_input);
@@ -131,46 +222,15 @@ int gpio_direction_output(unsigned pin, int value)
 	void __iomem	*pio = pin_to_controller(pin);
 	unsigned	mask = pin_to_mask(pin);
 
-	if (!pio || !(readl(pio + OFS_PIO_PSR) & mask))
+	if (!pio || !(__raw_readl(pio + PIO_PSR) & mask))
 		return -EINVAL;
-	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
-	writel(mask, pio + OFS_PIO_OER);
+	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	__raw_writel(mask, pio + PIO_OER);
 	return 0;
 }
 EXPORT_SYMBOL(gpio_direction_output);
 
 /*--------------------------------------------------------------------------*/
-
-/*
- * assuming the pin is muxed as a gpio output, set its value.
- */
-void gpio_set_value(unsigned pin, int value)
-{
-	void __iomem	*pio = pin_to_controller(pin);
-	unsigned	mask = pin_to_mask(pin);
-
-	if (!pio)
-		return;
-	writel(mask, pio + (value ? OFS_PIO_SODR : OFS_PIO_CODR));
-}
-EXPORT_SYMBOL(gpio_set_value);
-
-
-/*
- * read the pin's value (works even if it's not muxed as a gpio).
- */
-int gpio_get_value(unsigned pin)
-{
-	void __iomem	*pio = pin_to_controller(pin);
-	unsigned	mask = pin_to_mask(pin);
-	u32		pdsr;
-
-	if (!pio)
-		return -EINVAL;
-	pdsr = readl(pio + OFS_PIO_PDSR);
-	return (pdsr & mask) != 0;
-}
-EXPORT_SYMBOL(gpio_get_value);
 
 int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 {
@@ -181,7 +241,10 @@ int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 	gpio_banks = nr_banks;
 
 	for (i = 0, last = NULL; i < nr_banks; i++, last = data, data++) {
-		data->chipbase = i * 32;
+		data->chipbase = PIN_BASE + i * 32;
+		data->regbase = data->offset +
+			(void __iomem *)AT91_BASE_SYS;
+
 
 		/* AT91SAM9263_ID_PIOCDE groups PIOC, PIOD, PIOE */
 		if (last && last->id == data->id)

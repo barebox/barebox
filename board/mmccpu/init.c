@@ -33,11 +33,14 @@
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
+#include <asm/arch/at91_pmc.h>
 #include <asm/arch/board.h>
+#include <asm/arch/gpio.h>
+#include <asm/arch/io.h>
 
 static struct device_d cfi_dev = {
 	.name		= "cfi_flash",
-	.map_base	= 0x10000000,
+	.map_base	= AT91_CHIPSELECT_0,
 	.size		= 0,	/* zero means autodetect size */
 };
 
@@ -48,39 +51,16 @@ static struct at91_ether_platform_data macb_pdata = {
 
 static int mmccpu_devices_init(void)
 {
-	u32 pe = AT91C_PC25_ERXDV |
-		AT91C_PC22_ERX2 |
-		AT91C_PC23_ERX3 |
-		AT91C_PC20_ETX2 |
-		AT91C_PC21_ETX3;
+	/*
+	 * PB27 enables the 50MHz oscillator for Ethernet PHY
+	 * 1 - enable
+	 * 0 - disable
+	 */
+	at91_set_gpio_output(AT91_PIN_PB27, 1);
+	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
-	writel(pe, AT91C_BASE_PIOC + PIO_BSR(0));
-	writel(pe, AT91C_BASE_PIOC + PIO_PDR(0));
-
-	pe = AT91C_PE21_ETXCK |
-		AT91C_PE23_ETX0 |
-		AT91C_PE24_ETX1 |
-		AT91C_PE25_ERX0 |
-		AT91C_PE26_ERX1 |
-		AT91C_PE27_ERXER |
-		AT91C_PE28_ETXEN |
-		AT91C_PE29_EMDC |
-		AT91C_PE30_EMDIO;
-
-	writel(pe, AT91C_BASE_PIOE + PIO_ASR(0));
-	writel(pe, AT91C_BASE_PIOE + PIO_PDR(0));
-
-	/* set PB27 to '1', enable 50MHz oscillator */
-	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_PER(0));
-	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_OER(0));
-	writel(AT91C_PIO_PB27, AT91C_BASE_PIOB + PIO_SODR(0));
-
-	/* set PB4, PB5 to '1', enable 50MHz oscillator */
-	writel(AT91C_PIO_PB4|AT91C_PIO_PB5, AT91C_BASE_PIOB + PIO_PER(0));
-	writel(AT91C_PIO_PB4|AT91C_PIO_PB5, AT91C_BASE_PIOB + PIO_OER(0));
-	writel(AT91C_PIO_PB4|AT91C_PIO_PB5, AT91C_BASE_PIOB + PIO_SODR(0));
-
-	writel(1 << AT91C_ID_EMAC, AT91C_PMC_PCER);
+	/* Enable clock */
+	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_EMAC);
 
 	at91_add_device_sdram(128 * 1024 * 1024);
 	at91_add_device_eth(&macb_pdata);
@@ -89,7 +69,7 @@ static int mmccpu_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 128 * 1024, PARTITION_FIXED, "env0");
 
-	armlinux_set_bootparams((void *)0x20000100);
+	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_MMCCPU);
 
 	return 0;
@@ -99,9 +79,7 @@ device_initcall(mmccpu_devices_init);
 
 static int mmccpu_console_init(void)
 {
-	writel(AT91C_PC31_DTXD | AT91C_PC30_DRXD, AT91C_PIOC_PDR);
-
-	at91_register_uart(0);
+	at91_register_uart(0, 0);
 	return 0;
 }
 

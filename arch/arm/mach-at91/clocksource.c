@@ -33,11 +33,15 @@
 #include <init.h>
 #include <clock.h>
 #include <asm/hardware.h>
+#include <asm/arch/at91_pit.h>
+#include <asm/arch/at91_pmc.h>
+#include <asm/arch/at91_rstc.h>
+#include <asm/arch/io.h>
 #include <asm/io.h>
 
 uint64_t at91sam9_clocksource_read(void)
 {
-	return readl(AT91C_PITC_PIIR);
+	return at91_sys_read(AT91_PIT_PIIR);
 }
 
 static struct clocksource cs = {
@@ -52,10 +56,10 @@ static int clocksource_init (void)
 	 * Enable PITC Clock
 	 * The clock is already enabled for system controller in boot
 	 */
-	writel(1 << AT91C_ID_SYS, AT91C_PMC_PCER);
+	at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
 
 	/* Enable PITC */
-	writel(0xfffff | AT91C_PITC_PITEN, AT91C_PITC_PIMR);
+	at91_sys_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
 
 	cs.mult = clocksource_hz2mult(1000000 * 6, cs.shift);
 
@@ -71,7 +75,8 @@ core_initcall(clocksource_init);
  */
 void reset_cpu (ulong ignored)
 {
-	writel((0xa5 << 24) | AT91C_RSTC_PROCRST | AT91C_RSTC_PERRST,
-			AT91C_RSTC_RCR);
+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY |
+				     AT91_RSTC_PROCRST |
+				     AT91_RSTC_PERRST);
 }
 EXPORT_SYMBOL(reset_cpu);

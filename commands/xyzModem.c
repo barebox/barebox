@@ -162,7 +162,7 @@ static bool parse_num(char *s, unsigned long *val, char **es, char *delim)
 	int radix = 10;
 	char c;
 	unsigned long result = 0;
-	int digit;
+	int digit = 0;
 
 	while (*s == ' ')
 		s++;

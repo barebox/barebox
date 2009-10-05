@@ -828,22 +828,6 @@ static void __bare_init mxc_nand_set_datawidth(struct mtd_info *mtd, int datawid
 static int mxc_nand_scan_bbt(struct mtd_info *mtd)
 {
 	struct nand_chip *nand_chip = mtd->priv;
-	struct imx_nand_host *host = nand_chip->priv;
-
-	if (mtd->writesize == 2048) {
-		mxc_nand_set_writesize(mtd, 2048);
-		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_64), NFC_SPAS);
-		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
-		nand_chip->ecc.layout = &nand_hw_eccoob_2k;
-	} else if (mtd->writesize == 4096) {
-		mxc_nand_set_writesize(mtd, 4096);
-		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_128), NFC_SPAS);
-		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
-		nand_chip->ecc.layout = &nand_hw_eccoob_4k;
-	} else {
-		mxc_nand_set_writesize(mtd, 512);
-		nand_chip->ecc.layout = &nand_hw_eccoob_512;
-	}
 
 	/* propagate ecc.layout to mtd_info */
 	mtd->ecclayout = nand_chip->ecc.layout;
@@ -961,7 +945,28 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
 
 	/* Scan to find existence of the device */
-	if (nand_scan(mtd, 1)) {
+	if (nand_scan_ident(mtd, 1)) {
+		err = -ENXIO;
+		dev_err(dev, "Unable to find any NAND device\n");
+		goto err_out;
+	}
+
+	if (mtd->writesize == 2048) {
+		mxc_nand_set_writesize(mtd, 2048);
+		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_64), NFC_SPAS);
+		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
+		this->ecc.layout = &nand_hw_eccoob_2k;
+	} else if (mtd->writesize == 4096) {
+		mxc_nand_set_writesize(mtd, 4096);
+		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_128), NFC_SPAS);
+		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
+		this->ecc.layout = &nand_hw_eccoob_4k;
+	} else {
+		mxc_nand_set_writesize(mtd, 512);
+		this->ecc.layout = &nand_hw_eccoob_512;
+	}
+
+	if (nand_scan_tail(mtd)) {
 		dev_err(dev, "Unable to find any NAND device.\n");
 		err = -ENXIO;
 		goto err_out;

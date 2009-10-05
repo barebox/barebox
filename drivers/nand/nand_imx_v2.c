@@ -745,26 +745,10 @@ static void mxc_nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 	memcpy32(oob_buf, chip->oob_poi, mtd->oobsize);
 }
 
-/* Define some generic bad / good block scan pattern which are used
- * while scanning a device for factory marked good / bad blocks. */
-static uint8_t scan_ff_pattern[] = { 0xff, 0xff };
-
-static struct nand_bbt_descr smallpage_memorybased = {
-	.options = NAND_BBT_SCAN2NDPAGE,
-	.offs = 5,
-	.len = 1,
-	.pattern = scan_ff_pattern
-};
-
-static struct nand_bbt_descr largepage_memorybased = {
-	.options = 0,
-	.offs = 0,
-	.len = 2,
-	.pattern = scan_ff_pattern
-};
-
-/* Generic flash bbt decriptors
-*/
+/*
+ * We must provide a private bbt decriptor, because the settings from
+ * the generic one collide with our ECC hardware.
+ */
 static uint8_t bbt_pattern[] = { 'B', 'b', 't', '0' };
 static uint8_t mirror_pattern[] = { '1', 't', 'b', 'B' };
 
@@ -824,29 +808,6 @@ static void __bare_init mxc_nand_set_datawidth(struct mtd_info *mtd, int datawid
 	writel(rcsr, IMX_CCM_BASE + CCM_RCSR);
 }
 #endif
-
-static int mxc_nand_scan_bbt(struct mtd_info *mtd)
-{
-	struct nand_chip *nand_chip = mtd->priv;
-
-	/* propagate ecc.layout to mtd_info */
-	mtd->ecclayout = nand_chip->ecc.layout;
-
-	/* use flash based bbt */
-	nand_chip->bbt_td = &bbt_main_descr;
-	nand_chip->bbt_md = &bbt_mirror_descr;
-
-	/* update flash based bbt */
-	nand_chip->options |= NAND_USE_FLASH_BBT;
-
-	if (!nand_chip->badblock_pattern) {
-		nand_chip->badblock_pattern = (mtd->writesize > 512) ?
-		    &largepage_memorybased : &smallpage_memorybased;
-	}
-
-	/* Build bad block table */
-	return nand_scan_bbt(mtd, nand_chip->badblock_pattern);
-}
 
 static void mxc_nfc_init(struct imx_nand_host *host)
 {
@@ -914,7 +875,13 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->write_buf = mxc_nand_write_buf;
 	this->read_buf = mxc_nand_read_buf;
 	this->verify_buf = mxc_nand_verify_buf;
-	this->scan_bbt = mxc_nand_scan_bbt;
+
+	/* use flash based bbt */
+	this->bbt_td = &bbt_main_descr;
+	this->bbt_md = &bbt_mirror_descr;
+
+	/* update flash based bbt */
+	this->options |= NAND_USE_FLASH_BBT;
 
 	host->regs = (void __iomem *)dev->map_base;
 

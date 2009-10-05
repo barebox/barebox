@@ -1095,17 +1095,35 @@ void __bare_init imx_nand_load_image(void *dest, int size, int pagesize,
 
 #ifdef IMX_NAND_BOOT_DEBUG
 #include <command.h>
-static int do_imgcopy (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	imx_nand_load_image((void *)0x80000000, 0x40000, 2048, 16384);
+	void *dest;
+	int size, pagesize, blocksize;
+
+	if (argc < 4) {
+		u_boot_cmd_usage(cmdtp);
+		return 1;
+	}
+
+	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
+	size = strtoul_suffix(argv[2], NULL, 0);
+	pagesize = strtoul_suffix(argv[3], NULL, 0);
+	blocksize = strtoul_suffix(argv[4], NULL, 0);
+
+	imx_nand_load_image(dest, size, pagesize, blocksize * 1024);
+
 	return 0;
 }
 
+static const __maybe_unused char cmd_nand_boot_test_help[] =
+"Usage: nand_boot_test <dest> <size> <pagesize> <blocksize in kiB>\n";
 
-U_BOOT_CMD_START(imgcopy)
+U_BOOT_CMD_START(nand_boot_test)
 	.maxargs	= CONFIG_MAXARGS,
-	.cmd		= do_imgcopy,
-	.usage		= "",
+	.cmd		= do_nand_boot_test,
+	.usage		= "load an image from NAND",
+	U_BOOT_CMD_HELP(cmd_nand_boot_test_help)
 U_BOOT_CMD_END
+
 #endif
 #endif

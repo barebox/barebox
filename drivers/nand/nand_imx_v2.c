@@ -101,10 +101,6 @@ static inline unsigned long raw_read(void *reg)
 	return val;
 }
 
-#define NFMS (*((volatile u32 *)(IMX_CCM_BASE + 0x28)))
-#define NFMS_NF_DWIDTH              14
-#define NFMS_NF_PG_SZ               8
-
 struct imx_nand_host {
 	struct mtd_info mtd;
 	struct nand_chip nand;
@@ -792,22 +788,60 @@ static struct nand_bbt_descr bbt_mirror_descr = {
 	.pattern = mirror_pattern
 };
 
+#ifdef CONFIG_ARCH_IMX25
+
+#define RCSR_NFC_FMS		(1 << 8)
+#define RCSR_NFC_4K		(1 << 9)
+#define RCSR_NFC_16BIT_SEL	(1 << 14)
+
+static void __bare_init mxc_nand_set_writesize(struct mtd_info *mtd, int writesize)
+{
+	unsigned int rcsr;
+
+	rcsr = readl(IMX_CCM_BASE + CCM_RCSR);
+	rcsr &= ~(RCSR_NFC_FMS | RCSR_NFC_4K);
+
+	if (writesize == 2048)
+		rcsr |= RCSR_NFC_FMS;
+	if (writesize == 4096)
+		rcsr |= RCSR_NFC_FMS | RCSR_NFC_4K;
+
+	writel(rcsr, IMX_CCM_BASE + CCM_RCSR);
+}
+
+static void __bare_init mxc_nand_set_datawidth(struct mtd_info *mtd, int datawidth)
+{
+	unsigned int rcsr;
+
+	rcsr = readl(IMX_CCM_BASE + CCM_RCSR);
+
+	if (datawidth == 16)
+		rcsr |= RCSR_NFC_16BIT_SEL;
+	else
+		rcsr &= ~RCSR_NFC_16BIT_SEL;
+
+
+	writel(rcsr, IMX_CCM_BASE + CCM_RCSR);
+}
+#endif
+
 static int mxc_nand_scan_bbt(struct mtd_info *mtd)
 {
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
 	if (mtd->writesize == 2048) {
-		NFMS |= 1 << NFMS_NF_PG_SZ;
+		mxc_nand_set_writesize(mtd, 2048);
 		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_64), NFC_SPAS);
 		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
 		nand_chip->ecc.layout = &nand_hw_eccoob_2k;
 	} else if (mtd->writesize == 4096) {
-		NFMS |= 1 << NFMS_NF_PG_SZ;
+		mxc_nand_set_writesize(mtd, 4096);
 		raw_write(((raw_read(NFC_SPAS) & 0xff00) | NFC_SPAS_128), NFC_SPAS);
 		raw_write((raw_read(NFC_CONFIG1) | NFC_ECC_MODE_4), NFC_CONFIG1);
 		nand_chip->ecc.layout = &nand_hw_eccoob_4k;
 	} else {
+		mxc_nand_set_writesize(mtd, 512);
 		nand_chip->ecc.layout = &nand_hw_eccoob_512;
 	}
 
@@ -881,8 +915,9 @@ static int __init imxnd_probe(struct device_d *dev)
 	if (pdata->width == 2) {
 		this->read_byte = mxc_nand_read_byte16;
 		this->options |= NAND_BUSWIDTH_16;
-		NFMS |= 1 << NFMS_NF_DWIDTH;
-	}
+		mxc_nand_set_datawidth(mtd, 16);
+	} else
+		mxc_nand_set_datawidth(mtd, 8);
 
 	/* 50 us command delay time */
 	this->chip_delay = 5;

@@ -849,35 +849,6 @@ static void mxc_nfc_init(struct imx_nand_host *host)
 	raw_write(NFC_WPC_UNLOCK, NFC_WRPROT);
 }
 
-static int mxc_alloc_buf(void)
-{
-	int err = 0;
-
-	data_buf = kzalloc(NAND_MAX_PAGESIZE, GFP_KERNEL);
-	if (!data_buf) {
-		printk(KERN_ERR "%s: failed to allocate data_buf\n", __func__);
-		err = -ENOMEM;
-		goto out;
-	}
-	oob_buf = kzalloc(NAND_MAX_OOBSIZE, GFP_KERNEL);
-	if (!oob_buf) {
-		printk(KERN_ERR "%s: failed to allocate oob_buf\n", __func__);
-		err = -ENOMEM;
-		goto out;
-	}
-
-      out:
-	return err;
-}
-
-#if 0
-static void mxc_free_buf(void)
-{
-	kfree(data_buf);
-	kfree(oob_buf);
-}
-#endif
-
 static int __init imxnd_probe(struct device_d *dev)
 {
 	struct nand_chip *this;
@@ -888,8 +859,8 @@ static int __init imxnd_probe(struct device_d *dev)
 	int err = 0;
 
 	/* init data buf */
-	if (mxc_alloc_buf())
-		goto err_out;
+	data_buf = xzalloc(NAND_MAX_PAGESIZE);
+	oob_buf = xzalloc(NAND_MAX_OOBSIZE);
 
 	/* Allocate memory for MTD device structure and private data */
 	host = kzalloc(sizeof(struct imx_nand_host), GFP_KERNEL);

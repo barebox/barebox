@@ -87,7 +87,7 @@ static void pca100_usbh_init(void)
 
 	temp = readl(IMX_OTG_BASE + 0x600);
 	temp &= ~((3 << 21) | 1);
-	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
+	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
 	writel(temp, IMX_OTG_BASE + 0x600);
 
 	temp = readl(IMX_OTG_BASE + 0x584);

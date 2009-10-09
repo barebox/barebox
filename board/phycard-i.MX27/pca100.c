@@ -97,7 +97,7 @@ static void pca100_usbh_init(void)
 
 	mdelay(10);
 
-	imx_gpio_direction_output(GPIO_PORTB + 24, 0);
+	gpio_direction_output(GPIO_PORTB + 24, 0);
 
 	mdelay(10);
 
@@ -180,9 +180,9 @@ static int pca100_devices_init(void)
 
 	/* disable the usb phys */
 	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
-	imx_gpio_direction_output(GPIO_PORTB + 23, 1);
+	gpio_direction_output(GPIO_PORTB + 23, 1);
 	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
-	imx_gpio_direction_output(GPIO_PORTB + 24, 1);
+	gpio_direction_output(GPIO_PORTB + 24, 1);
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)

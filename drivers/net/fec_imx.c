@@ -257,12 +257,6 @@ static int fec_init(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 
 	/*
-	 * Initialize RxBD/TxBD rings
-	 */
-	fec_rbd_init(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
-	fec_tbd_init(fec);
-
-	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
 	writel(0xffffffff, fec->regs + FEC_IEVENT);
@@ -336,6 +330,12 @@ static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 	int ret;
+
+	/*
+	 * Initialize RxBD/TxBD rings
+	 */
+	fec_rbd_init(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+	fec_tbd_init(fec);
 
 	/* full-duplex, heartbeat disabled */
 	writel(1 << 2, fec->regs + FEC_X_CNTRL);

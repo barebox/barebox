@@ -117,7 +117,7 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	struct stat s;
 	int prot = 1;
 	unsigned long start = 0, size = ~0;
-	int ret = 0;
+	int ret = 0, err;
 
 	if (argc == 1) {
 		u_boot_cmd_usage(cmdtp);
@@ -154,7 +154,8 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 			goto out;
 		}
 
-        if(protect(fd, size, start, prot)) {
+	err = protect(fd, size, start, prot);
+        if (err && err != -ENOSYS) {
 		perror("protect");
 		ret = 1;
 		goto out;

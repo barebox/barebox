@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.0.0-git
-# Thu Nov 29 10:27:43 2007
+# U-Boot version: 2.0.0-rc10
+# Mon Oct 12 14:15:55 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x00000000
 CONFIG_BOARDINFO="sandbox"
@@ -11,30 +11,40 @@ CONFIG_CMD_MEMORY=y
 CONFIG_ENV_HANDLING=y
 
 #
-# General Settings              
+# General Settings
 #
-CONFIG_TEXT_BASE=0x00000000
+CONFIG_LOCALVERSION_AUTO=y
+
+#
+# memory layout
+#
+CONFIG_STACK_SIZE=0x8000
+CONFIG_MALLOC_SIZE=0x400000
 # CONFIG_BROKEN is not set
 # CONFIG_EXPERIMENTAL is not set
 CONFIG_PROMPT="uboot:"
 CONFIG_BAUDRATE=115200
-CONFIG_CMDLINE_EDITING=y
-# CONFIG_AUTO_COMPLETE is not set
 # CONFIG_LONGHELP is not set
 CONFIG_CBSIZE=1024
 CONFIG_MAXARGS=16
 CONFIG_SHELL_HUSH=y
 # CONFIG_SHELL_SIMPLE is not set
+CONFIG_GLOB=y
 CONFIG_PROMPT_HUSH_PS2="> "
+CONFIG_CMDLINE_EDITING=y
+CONFIG_AUTO_COMPLETE=y
 CONFIG_DYNAMIC_CRC_TABLE=y
 CONFIG_ERRNO_MESSAGES=y
 CONFIG_TIMESTAMP=y
+CONFIG_CONSOLE_FULL=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # CONFIG_OF_FLAT_TREE is not set
-# CONFIG_DEFAULT_ENVIRONMENT is not set
+CONFIG_PARTITION=y
+CONFIG_DEFAULT_ENVIRONMENT=y
+CONFIG_DEFAULT_ENVIRONMENT_PATH="board/sandbox/env"
 
 #
-# Debugging                     
+# Debugging
 #
 CONFIG_DEBUG_INFO=y
 # CONFIG_ENABLE_FLASH_NOISE is not set
@@ -42,11 +52,11 @@ CONFIG_DEBUG_INFO=y
 # CONFIG_ENABLE_DEVICE_NOISE is not set
 
 #
-# Commands                      
+# Commands
 #
 
 #
-# scripting                     
+# scripting
 #
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_SLEEP=y
@@ -54,11 +64,12 @@ CONFIG_CMD_SAVEENV=y
 CONFIG_CMD_LOADENV=y
 CONFIG_CMD_EXPORT=y
 CONFIG_CMD_PRINTENV=y
-CONFIG_CMD_HELP=y
 CONFIG_CMD_READLINE=y
+CONFIG_CMD_TRUE=y
+CONFIG_CMD_FALSE=y
 
 #
-# file commands                 
+# file commands
 #
 CONFIG_CMD_LS=y
 CONFIG_CMD_RM=y
@@ -72,25 +83,26 @@ CONFIG_CMD_MOUNT=y
 CONFIG_CMD_UMOUNT=y
 
 #
-# console                       
+# console
 #
 CONFIG_CMD_CLEAR=y
 CONFIG_CMD_ECHO=y
 
 #
-# memory                        
+# memory
 #
+# CONFIG_CMD_LOADB is not set
 CONFIG_CMD_MEMINFO=y
 CONFIG_CMD_CRC=y
 # CONFIG_CMD_MTEST is not set
 
 #
-# flash                         
+# flash
 #
 # CONFIG_CMD_FLASH is not set
 
 #
-# booting                       
+# booting
 #
 # CONFIG_CMD_BOOTM is not set
 CONFIG_CMD_RESET=y
@@ -98,6 +110,9 @@ CONFIG_CMD_GO=y
 CONFIG_CMD_TIMEOUT=y
 CONFIG_CMD_PARTITION=y
 CONFIG_CMD_TEST=y
+CONFIG_CMD_VERSION=y
+CONFIG_CMD_HELP=y
+CONFIG_CMD_DEVINFO=y
 CONFIG_NET=y
 CONFIG_NET_BOOTP=y
 CONFIG_NET_DHCP=y
@@ -108,30 +123,47 @@ CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
 
 #
-# Drivers                       
+# Drivers
 #
 
 #
-# serial drivers                
+# serial drivers
 #
 CONFIG_DRIVER_SERIAL_LINUX_COMSOLE=y
+# CONFIG_DRIVER_SERIAL_NS16550 is not set
 
 #
-# Network drivers               
+# Network drivers
 #
 # CONFIG_DRIVER_NET_SMC911X is not set
-# CONFIG_DRIVER_NET_TAP is not set
+# CONFIG_DRIVER_NET_SMC91111 is not set
+CONFIG_DRIVER_NET_TAP=y
 
 #
-# flash drivers                 
+# SPI drivers
+#
+# CONFIG_SPI is not set
+
+#
+# flash drivers
 #
 # CONFIG_DRIVER_CFI is not set
-# CONFIG_DRIVER_CFI_NEW is not set
+# CONFIG_DRIVER_CFI_OLD is not set
 # CONFIG_NAND is not set
+# CONFIG_USB is not set
+# CONFIG_USB_GADGET is not set
 
 #
-# Filesystem support            
+# Video drivers
+#
+# CONFIG_VIDEO is not set
+
+#
+# Filesystem support
 #
 CONFIG_FS_CRAMFS=y
+CONFIG_FS_RAMFS=y
+CONFIG_FS_DEVFS=y
 CONFIG_ZLIB=y
 CONFIG_CRC32=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y

@@ -65,6 +65,7 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 		if (ret) {
 			printf("skipping bad block at 0x%08x\n", bb->offset);
 			bb->offset += bb->info.erasesize;
+			continue;
 		}
 
 		now = min(count, (size_t)(bb->info.erasesize -

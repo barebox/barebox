@@ -1,0 +1,8 @@
+#!/bin/sh
+
+eth0.ipaddr=172.0.0.2
+eth0.netmask=255.255.255.0
+eth0.gateway=172.0.0.1
+eth0.serverip=172.0.0.1
+eth0.ethaddr=80:81:82:83:84:85
+

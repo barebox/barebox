@@ -19,7 +19,8 @@ CFLAGS += -Dmalloc=u_boot_malloc \
 		-Dfputc=u_boot_fputc -Dfgets=u_boot_fgets \
 		-Dfputs=u_boot_fputs -Dsetenv=u_boot_setenv \
 		-Dgetenv=u_boot_getenv -Dprintf=u_boot_printf \
-		-Dglob=u_boot_glob -Dglobfree=u_boot_globfree
+		-Dglob=u_boot_glob -Dglobfree=u_boot_globfree \
+		-Dioctl=u_boot_ioctl
 
 ifeq ($(incdir-y),)
 incdir-y := $(machine-y)

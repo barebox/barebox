@@ -247,7 +247,7 @@ static int ehci_reset(struct ehci_priv *ehci)
 	}
 
 	if (ehci_is_TDI()) {
-		reg_ptr = (uint32_t *)((u8 *)&ehci->hcor + USBMODE);
+		reg_ptr = (uint32_t *)((u8 *)ehci->hcor + USBMODE);
 		tmp = ehci_readl(reg_ptr);
 		tmp |= USBMODE_CM_HC;
 #if defined(CONFIG_EHCI_MMIO_BIG_ENDIAN)

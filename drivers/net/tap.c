@@ -29,7 +29,7 @@
 
 struct tap_priv {
 	int fd;
-	char name[20];
+	char *name;
 };
 
 int tap_eth_send (struct eth_device *edev, void *packet, int length)
@@ -80,6 +80,7 @@ int tap_probe(struct device_d *dev)
 	int ret = 0;
 
 	priv = malloc(sizeof(struct tap_priv));
+	priv->name = "uboot";
 
 	priv->fd = tap_alloc(priv->name);
 	if (priv->fd < 0) {

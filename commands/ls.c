@@ -150,7 +150,9 @@ static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	while (o < argc) {
 		ret = stat(argv[o], &s);
 		if (ret) {
-			optind++;
+			printf("%s: %s: %s\n", argv[0],
+					argv[o], errno_str());
+			o++;
 			continue;
 		}
 

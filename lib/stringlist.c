@@ -30,15 +30,16 @@ void string_list_print_by_column(struct string_list *sl)
 	if (!len)
 		return;
 
-	num = 80 / len;
+	num = 80 / (len + 1);
 	if (len == 0)
 		len = 1;
 
 	i = 0;
 	list_for_each_entry(entry, &sl->list, list) {
-		printf("%-*s    ", len, entry->str);
 		if (!(++i % num))
-			printf("\n");
+			printf("%s\n", entry->str);
+		else
+			printf("%-*s", len, entry->str);
 	}
 	if (i % num)
 		printf("\n");

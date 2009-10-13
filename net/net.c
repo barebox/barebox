@@ -388,7 +388,7 @@ int NetLoop(proto_t protocol)
 		if (ctrlc()) {
 			eth_halt();
 			puts ("\nAbort\n");
-			return (-1);
+			return -1;
 		}
 
 		ArpTimeoutCheck();
@@ -420,7 +420,7 @@ int NetLoop(proto_t protocol)
 
 		case NETLOOP_FAIL:
 			eth_halt();
-			return (-1);
+			return -1;
 		}
 	}
 }
@@ -859,7 +859,7 @@ static int net_check_prereq (proto_t protocol)
 	case PING:
 		if (NetPingIP == 0) {
 			puts ("*** ERROR: ping address not given\n");
-			return (1);
+			return 1;
 		}
 		goto common;
 #endif
@@ -867,7 +867,7 @@ static int net_check_prereq (proto_t protocol)
 	case SNTP:
 		if (NetNtpServerIP == 0) {
 			puts ("*** ERROR: NTP server address not given\n");
-			return (1);
+			return 1;
 		}
 		goto common;
 #endif
@@ -878,13 +878,13 @@ static int net_check_prereq (proto_t protocol)
 	case TFTP:
 		if (NetServerIP == 0) {
 			printf("*** ERROR: `%s.serverip' not set\n", dev_id(&edev->dev));
-			return (1);
+			return 1;
 		}
     common:
 
 		if (NetOurIP == 0) {
 			printf("*** ERROR: `%s.ipaddr' not set\n", dev_id(&edev->dev));
-			return (1);
+			return 1;
 		}
 		/* Fall through */
 
@@ -893,13 +893,13 @@ static int net_check_prereq (proto_t protocol)
 	case BOOTP:
 		if (memcmp (NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
 			printf("*** ERROR: `%s.ethaddr' not set\n", dev_id(&edev->dev));
-			return (1);
+			return 1;
 		}
 		/* Fall through */
 	default:
-		return (0);
+		return 0;
 	}
-	return (0);		/* OK */
+	return 0;		/* OK */
 }
 /**********************************************************************/
 
@@ -921,7 +921,7 @@ NetCksum(uchar * ptr, int len)
 		xsum += *p++;
 	xsum = (xsum & 0xffff) + (xsum >> 16);
 	xsum = (xsum & 0xffff) + (xsum >> 16);
-	return (xsum & 0xffff);
+	return xsum & 0xffff;
 }
 
 int
@@ -1074,7 +1074,7 @@ void print_IPaddr (IPaddr_t x)
 
 ushort getenv_VLAN(char *var)
 {
-	return (string_to_VLAN(getenv(var)));
+	return string_to_VLAN(getenv(var));
 }
 
 int string_to_ethaddr(const char *str, char *enetaddr)

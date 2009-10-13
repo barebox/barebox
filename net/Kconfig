@@ -11,10 +11,6 @@ config NET_RARP
 	bool
 	prompt "rarp protocol support"
 
-config NET_SNTP
-	bool
-	prompt "sntp support"
-
 config NET_NFS
 	bool
 	prompt "nfs support"

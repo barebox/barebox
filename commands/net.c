@@ -75,19 +75,6 @@ void netboot_update_env(void)
 #endif
 	if (NetOurNISDomain[0])
 		setenv ("domain", NetOurNISDomain);
-
-#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_TIMEOFFSET
-	if (NetTimeOffset) {
-		sprintf (tmp, "%d", NetTimeOffset);
-		setenv ("timeoffset", tmp);
-	}
-#endif
-#if defined CONFIG_NET_SNTP && defined CONFIG_BOOTP_NTPSERVER
-	if (NetNtpServerIP) {
-		ip_to_string (NetNtpServerIP, tmp);
-		setenv ("ntpserverip", tmp);
-	}
-#endif
 }
 
 static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])

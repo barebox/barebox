@@ -309,9 +309,6 @@ extern char	BootFile[128];			/* Boot File name		*/
 extern ushort CDPNativeVLAN;
 extern ushort CDPApplianceVLAN;
 
-extern IPaddr_t	NetNtpServerIP;			/* the ip address to NTP 	*/
-extern int NetTimeOffset;			/* offset time from UTC		*/
-
 /* Initialize the network adapter */
 int	NetLoopInit(proto_t);
 

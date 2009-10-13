@@ -65,12 +65,6 @@
  *	We want:	- load the boot file
  *	Next step:	none
  *
- * SNTP:
- *
- *	Prerequisites:	- own ethernet address
- *			- own IP address
- *	We want:	- network time
- *	Next step:	none
  */
 
 
@@ -87,9 +81,6 @@
 #include "tftp.h"
 #include "rarp.h"
 #include "nfs.h"
-#ifdef CONFIG_NET_SNTP
-#include "sntp.h"
-#endif
 
 #define ARP_TIMEOUT		(5 * SECOND)	/* Seconds before trying ARP again */
 #ifndef	CONFIG_NET_RETRY_COUNT
@@ -134,11 +125,6 @@ ushort		NetOurVLAN = 0xFFFF;		/* default is without VLAN	*/
 ushort		NetOurNativeVLAN = 0xFFFF;	/* ditto			*/
 
 char		BootFile[128];		/* Boot File name			*/
-
-#ifdef CONFIG_NET_SNTP
-IPaddr_t	NetNtpServerIP;		/* NTP server IP address		*/
-int		NetTimeOffset=0;	/* offset time from UTC			*/
-#endif
 
 uchar	PktBuf[(PKTBUFSRX+1) * PKTSIZE_ALIGN + PKTALIGN];
 
@@ -779,14 +765,6 @@ static int net_check_prereq (proto_t protocol)
 
 	switch (protocol) {
 		/* Fall through */
-#ifdef CONFIG_NET_SNTP
-	case SNTP:
-		if (NetNtpServerIP == 0) {
-			puts ("*** ERROR: NTP server address not given\n");
-			return -1;
-		}
-		goto common;
-#endif
 #ifdef CONFIG_NET_NFS
 	case NFS:
 #endif
@@ -796,7 +774,7 @@ static int net_check_prereq (proto_t protocol)
 			printf("*** ERROR: `%s.serverip' not set\n", dev_id(&edev->dev));
 			return -1;
 		}
-common:
+
 		if (NetOurIP == 0) {
 			printf("*** ERROR: `%s.ipaddr' not set\n", dev_id(&edev->dev));
 			return -1;

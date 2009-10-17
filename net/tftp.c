@@ -71,11 +71,6 @@ store_block (unsigned block, uchar * src, unsigned len)
 	return 0;
 }
 
-static void TftpSend (void);
-static void TftpTimeout (void);
-
-/**********************************************************************/
-
 static void
 TftpSend (void)
 {
@@ -116,6 +111,13 @@ TftpSend (void)
 	NetSendUDPPacket(NetServerEther, NetServerIP, TftpServerPort, TftpOurPort, len);
 }
 
+static void
+TftpTimeout (void)
+{
+	puts ("T ");
+	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
+	TftpSend ();
+}
 
 static void
 TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
@@ -242,16 +244,6 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 		break;
 	}
 }
-
-
-static void
-TftpTimeout (void)
-{
-	puts ("T ");
-	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
-	TftpSend ();
-}
-
 
 void
 TftpStart (void)

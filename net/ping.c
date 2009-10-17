@@ -83,12 +83,9 @@ PingHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 
 int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	if (argc < 2)
-		return -1;
-
-	if (string_to_ip(argv[1], &NetPingIP)) {
+	if (argc < 2 || string_to_ip(argv[1], &NetPingIP)) {
 		printf ("Usage:\n%s\n", cmdtp->usage);
-		return -1;
+		return 1;
 	}
 
 	if (NetLoopInit(PING) < 0)

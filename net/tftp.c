@@ -140,9 +140,7 @@ static void TftpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 		break;
 
 	case TFTP_OACK:
-#ifdef ET_DEBUG
-		printf("Got OACK: %s %s\n", pkt, pkt+strlen(pkt)+1);
-#endif
+		debug("Got OACK: %s %s\n", pkt, pkt+strlen(pkt)+1);
 		TftpState = STATE_OACK;
 		TftpServerPort = src;
 		TftpSend(); /* Send ACK */
@@ -171,10 +169,8 @@ static void TftpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			}
 		}
 
-#ifdef ET_DEBUG
 		if (TftpState == STATE_RRQ)
-			puts("Server did not acknowledge timeout option!\n");
-#endif
+			debug("Server did not acknowledge timeout option!\n");
 
 		if (TftpState == STATE_RRQ || TftpState == STATE_OACK) {
 			/* first block received */

@@ -281,9 +281,6 @@ void
 TftpStart (void)
 {
 	char ip1[16], ip2[16];
-#ifdef CONFIG_TFTP_PORT
-	char *ep;             /* Environment pointer */
-#endif
 
 	tftp_filename = BootFile;
 
@@ -300,14 +297,6 @@ TftpStart (void)
 	TftpState = STATE_RRQ;
 	/* Use a pseudo-random port unless a specific port is set */
 	TftpOurPort = 1024 + ((unsigned int)get_time_ns() % 3072);
-#ifdef CONFIG_TFTP_PORT
-	if ((ep = getenv("tftpdstp")) != NULL) {
-		TftpServerPort = simple_strtol(ep, NULL, 10);
-	}
-	if ((ep = getenv("tftpsrcp")) != NULL) {
-		TftpOurPort= simple_strtol(ep, NULL, 10);
-	}
-#endif
 	TftpBlock = 0;
 
 	/* zero out server ether in case the server ip has changed */

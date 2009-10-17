@@ -59,7 +59,6 @@ static int	NfsState;
 #define STATE_READ_REQ			6
 #define STATE_READLINK_REQ		7
 
-static char default_filename[64];
 static char *nfs_filename;
 static char *nfs_path;
 static char nfs_path_buff[2048];
@@ -651,6 +650,8 @@ NfsHandler (uchar *pkt, unsigned dest, unsigned src, unsigned len)
 void
 NfsStart (void)
 {
+	char *p = BootFile;
+
 #ifdef NFS_DEBUG
 	printf ("%s\n", __FUNCTION__);
 #endif
@@ -665,28 +666,14 @@ NfsStart (void)
 		return;
 	}
 
-	if (BootFile[0] == '\0') {
-		sprintf (default_filename, "/nfsroot/%02lX%02lX%02lX%02lX.img",
-			NetOurIP & 0xFF,
-			(NetOurIP >>  8) & 0xFF,
-			(NetOurIP >> 16) & 0xFF,
-			(NetOurIP >> 24) & 0xFF	);
-		strcpy (nfs_path, default_filename);
+	p = strchr (p, ':');
 
-		printf ("*** Warning: no boot file name; using '%s'\n",
-			nfs_path);
+	if (p != NULL) {
+		string_to_ip (BootFile, &NfsServerIP);
+		++p;
+		strcpy (nfs_path, p);
 	} else {
-		char *p=BootFile;
-
-		p = strchr (p, ':');
-
-		if (p != NULL) {
-			string_to_ip (BootFile, &NfsServerIP);
-			++p;
-			strcpy (nfs_path, p);
-		} else {
-			strcpy (nfs_path, BootFile);
-		}
+		strcpy (nfs_path, BootFile);
 	}
 
 	nfs_filename = basename (nfs_path);

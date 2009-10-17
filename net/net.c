@@ -191,7 +191,7 @@ void ArpRequest (void)
 	(void) eth_send (NetTxPacket, (pkt - NetTxPacket) + ARP_HDR_SIZE);
 }
 
-void ArpTimeoutCheck(void)
+static void ArpTimeoutCheck(void)
 {
 	if (!NetArpWaitPacketIP)
 		return;

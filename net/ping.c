@@ -108,5 +108,5 @@ int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 U_BOOT_CMD_START(ping)
 	.maxargs	= 2,
 	.cmd		= do_ping,
-	.usage		= "send icmp echo_request to network host",
+	.usage		= "ping <destination>",
 U_BOOT_CMD_END

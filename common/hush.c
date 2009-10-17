@@ -513,7 +513,6 @@ static int run_pipe_real(struct pipe *pi)
 	int i;
 	int nextin;
 	struct child_prog *child;
-	cmd_tbl_t *cmdtp;
 	char *p;
 	char *path;
 	int ret;
@@ -589,23 +588,8 @@ static int run_pipe_real(struct pipe *pi)
 			free(path);
 			return ret;
 		}
-		/* Look up command in command table */
-		if ((cmdtp = find_cmd(child->argv[i]))) {
-			int rcode;
 
-			/* found - check max args */
-			if ((child->argc - i) > cmdtp->maxargs) {
-				printf ("Usage:\n%s\n", cmdtp->usage);
-				return -1;
-			}
-			/* OK - call function to do the command */
-			rcode = cmdtp->cmd(cmdtp, child->argc-i, &child->argv[i]);
-
-			return rcode;
-		} else {
-			printf ("Unknown command '%s' - try 'help'\n", child->argv[i]);
-			return -1;	/* give up after bad command */
-		}
+		return execute_command(child->argc - i, &child->argv[i]);
 	}
 	return -1;
 }

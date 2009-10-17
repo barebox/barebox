@@ -91,6 +91,25 @@ static int compare(struct list_head *a, struct list_head *b)
 	return strcmp(na, nb);
 }
 
+int execute_command(int argc, char **argv)
+{
+	cmd_tbl_t *cmdtp;
+
+	/* Look up command in command table */
+	if ((cmdtp = find_cmd(argv[0]))) {
+		/* found - check max args */
+		if (argc > cmdtp->maxargs) {
+			u_boot_cmd_usage(cmdtp);
+			return -1;
+		}
+		/* OK - call function to do the command */
+		return cmdtp->cmd(cmdtp, argc, argv);
+	} else {
+		printf ("Unknown command '%s' - try 'help'\n", argv[0]);
+		return -1;	/* give up after bad command */
+	}
+}
+
 int register_command(cmd_tbl_t *cmd)
 {
 	/*

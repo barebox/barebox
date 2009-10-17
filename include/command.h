@@ -71,6 +71,7 @@ extern cmd_tbl_t  __u_boot_cmd_end;
 
 /* common/command.c */
 cmd_tbl_t *find_cmd(const char *cmd);
+int execute_command(int argc, char **argv);
 void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
 
 /*

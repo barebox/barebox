@@ -176,7 +176,6 @@ static void process_macros (const char *input, char *output)
 
 int run_command (const char *cmd, int flag)
 {
-	cmd_tbl_t *cmdtp;
 	char cmdbuf[CONFIG_CBSIZE];	/* working copy of cmd		*/
 	char *token;			/* start of token in cmdbuf	*/
 	char *sep;			/* end of token (separator) in cmdbuf */
@@ -251,23 +250,7 @@ int run_command (const char *cmd, int flag)
 			continue;
 		}
 
-		/* Look up command in command table */
-		if ((cmdtp = find_cmd(argv[0])) == NULL) {
-			printf ("Unknown command '%s' - try 'help'\n", argv[0]);
-			rc = -1;	/* give up after bad command */
-			continue;
-		}
-
-		/* found - check max args */
-		if (argc > cmdtp->maxargs) {
-			printf ("Usage:\n%s\n", cmdtp->usage);
-			rc = -1;
-			continue;
-		}
-
-		/* OK - call function to do the command */
-		if ((cmdtp->cmd) (cmdtp, argc, argv) != 0)
-			rc = -1;
+		rc = execute_command(argc, argv);
 	}
 
 	return rc;

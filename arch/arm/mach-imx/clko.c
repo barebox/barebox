@@ -8,8 +8,6 @@ static int do_clko (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt, div = 0, src = -2, ret;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "d:s:")) > 0) {
 		switch(opt) {
 		case 'd':

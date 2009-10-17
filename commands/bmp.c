@@ -45,8 +45,6 @@ static int do_bmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int offscreen = 0;
 	void *adr, *buf;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "f:x:y:o")) > 0) {
 		switch(opt) {
 		case 'f':

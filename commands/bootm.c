@@ -377,8 +377,6 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
 
-	getopt_reset();
-
 	/* Collect options from registered handlers */
 	strcpy(options, "nh");
 	list_for_each_entry(handler, &handler_list, list) {

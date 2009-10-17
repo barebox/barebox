@@ -271,8 +271,6 @@ static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	struct nand_bb *bb;
 	int command = 0, badblock = 0;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "adb:")) > 0) {
 		if (command) {
 			printf("only one command may be given\n");

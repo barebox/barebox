@@ -37,8 +37,6 @@ static int do_timeout(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int flags = 0, opt, countdown;
 	uint64_t start, second;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "t:crsa")) > 0) {
 		switch(opt) {
 		case 'r':

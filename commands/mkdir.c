@@ -30,8 +30,6 @@ static int do_mkdir (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int opt, parent = 0, ret;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "p")) > 0) {
 		switch(opt) {
 		case 'p':

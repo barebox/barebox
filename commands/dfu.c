@@ -105,7 +105,6 @@ static int do_dfu(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char *productname = CONFIG_BOARDINFO;
 	u16 idVendor = 0, idProduct = 0;
 
-	getopt_reset();
 
 	while((opt = getopt(argc, argv, "m:p:V:P:")) > 0) {
 		switch(opt) {

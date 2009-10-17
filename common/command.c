@@ -34,6 +34,7 @@
 #include <init.h>
 #include <complete.h>
 #include <linux/utsrelease.h>
+#include <getopt.h>
 
 const char version_string[] =
 	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
@@ -95,6 +96,8 @@ int execute_command(int argc, char **argv)
 {
 	cmd_tbl_t *cmdtp;
 	int ret;
+
+	getopt_reset();
 
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {

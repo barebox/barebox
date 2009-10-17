@@ -699,8 +699,6 @@ static int do_load_serial_bin(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char *output_file = NULL;
 	struct console_device *cdev = NULL;
 
-	getopt_reset();
-
 	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
 		switch (opt) {
 		case 'f':

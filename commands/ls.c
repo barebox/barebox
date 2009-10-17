@@ -118,8 +118,6 @@ static int do_ls (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	ulong flags = LS_COLUMN;
 	struct string_list sl;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "RCl")) > 0) {
 		switch(opt) {
 		case 'R':

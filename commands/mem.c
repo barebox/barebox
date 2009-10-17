@@ -138,8 +138,6 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 {
 	int opt;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, optstr)) > 0) {
 		switch(opt) {
 		case 'b':

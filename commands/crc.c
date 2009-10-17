@@ -38,8 +38,6 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char *buf;
 	int fd, opt, err = 0, filegiven = 0, verify = 0, now;
 
-	getopt_reset();
-
 	while((opt = getopt(argc, argv, "f:v:")) > 0) {
 		switch(opt) {
 		case 'f':

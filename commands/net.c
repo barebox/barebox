@@ -189,8 +189,6 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	safe_strncpy (BootFile, remotefile, sizeof(BootFile));
-
 	if (NetLoopInit(proto) < 0)
 		goto out;
 

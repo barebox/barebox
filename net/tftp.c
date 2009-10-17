@@ -227,11 +227,11 @@ static void TftpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 	}
 }
 
-void TftpStart(void)
+void TftpStart(char *filename)
 {
 	char ip1[16], ip2[16];
 
-	tftp_filename = BootFile;
+	tftp_filename = filename;
 
 	printf("TFTP from server %s; our IP address is %s\n"
 			"\nFilename '%s'.\nLoading: *\b",

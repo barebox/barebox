@@ -301,9 +301,6 @@ extern void ArpRequest (void);
 
 typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP } proto_t;
 
-/* from net/net.c */
-extern char	BootFile[128];			/* Boot File name		*/
-
 /* when CDP completes these hold the return values */
 extern ushort CDPNativeVLAN;
 extern ushort CDPApplianceVLAN;

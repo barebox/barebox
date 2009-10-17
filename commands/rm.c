@@ -28,10 +28,8 @@ static int do_rm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int i = 1;
 
-	if (argc < 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	while (i < argc) {
 		if (unlink(argv[i])) {

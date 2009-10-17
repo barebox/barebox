@@ -326,10 +326,8 @@ static int do_mem_mtest (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	ulong start, end, pattern = 0;
 
-	if (argc < 3) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 3)
+		return COMMAND_ERROR_USAGE;
 
 	start = simple_strtoul(argv[1], NULL, 0);
 	end = simple_strtoul(argv[2], NULL, 0);

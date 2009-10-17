@@ -254,10 +254,8 @@ static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename) < 0)
 		return 1;
 
-	if (optind + 1 >= argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (optind + 1 >= argc)
+		return COMMAND_ERROR_USAGE;
 
 	adr = strtoul_suffix(argv[optind++], NULL, 0);
 
@@ -322,10 +320,8 @@ static int do_mem_cmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
 		return 1;
 
-	if (optind + 2 > argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (optind + 2 > argc)
+		return COMMAND_ERROR_USAGE;
 
 	addr1 = strtoul_suffix(argv[optind], NULL, 0);
 	addr2 = strtoul_suffix(argv[optind + 1], NULL, 0);
@@ -433,10 +429,8 @@ static int do_mem_cp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
 		return 1;
 
-	if (optind + 2 > argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (optind + 2 > argc)
+		return COMMAND_ERROR_USAGE;
 
 	src = strtoul_suffix(argv[optind], NULL, 0);
 	dest = strtoul_suffix(argv[optind + 1], NULL, 0);
@@ -530,10 +524,8 @@ static int do_memset(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file) < 0)
 		return 1;
 
-	if (optind + 3 > argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (optind + 3 > argc)
+		return COMMAND_ERROR_USAGE;
 
 	s = strtoul_suffix(argv[optind], NULL, 0);
 	c = strtoul_suffix(argv[optind + 1], NULL, 0);

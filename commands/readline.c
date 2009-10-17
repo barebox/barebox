@@ -31,10 +31,8 @@ static int do_readline (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	char *buf = xzalloc(CONFIG_CBSIZE);
 
-	if (argc < 3) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 3)
+		return COMMAND_ERROR_USAGE;
 
 	if (readline(argv[1], buf, CONFIG_CBSIZE) < 0) {
 		free(buf);

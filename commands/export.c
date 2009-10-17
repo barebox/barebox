@@ -33,10 +33,8 @@ static int do_export ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int i = 1;
 	char *ptr;
 
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	while (i < argc) {
 		if ((ptr = strchr(argv[i], '='))) {

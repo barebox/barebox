@@ -53,10 +53,8 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (!filegiven && optind == argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (!filegiven && optind == argc)
+		return COMMAND_ERROR_USAGE;
 
 	if (optind < argc) {
 		if (parse_area_spec(argv[optind], &start, &size)) {

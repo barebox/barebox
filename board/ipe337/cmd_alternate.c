@@ -12,10 +12,8 @@ static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	size_t size;
 	ulong *ptr, val = 0, bitcount = 0;
 
-	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 0;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	buf = read_file(argv[1], &size);
 	if (!buf)

@@ -30,10 +30,8 @@
 
 static int do_setenv ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	setenv(argv[1], argv[2]);
 

@@ -124,10 +124,8 @@ static int do_dfu(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (argc != optind + 1) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != optind + 1)
+		return COMMAND_ERROR_USAGE;
 
 	argstr = argv[optind];
 

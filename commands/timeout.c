@@ -58,10 +58,8 @@ static int do_timeout(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
 
 	timeout = simple_strtoul(argv[optind], NULL, 0);
 

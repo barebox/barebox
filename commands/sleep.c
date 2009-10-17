@@ -29,10 +29,8 @@ static int do_sleep (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	uint64_t start;
 	ulong delay;
 
-	if (argc != 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	delay = simple_strtoul(argv[1], NULL, 10);
 

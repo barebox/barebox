@@ -107,10 +107,8 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	off_t devsize;
 	struct stat s;
 
-	if (argc != 3) {
-		printf("Usage:\n  %s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc != 3)
+		return COMMAND_ERROR_USAGE;
 
 	if (stat(argv[1], &s)) {
 		perror("addpart");

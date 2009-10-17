@@ -11,10 +11,8 @@ static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	void *buf;
 	int len;
 
-	if (argc < 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	buf = read_file(argv[1], &len);
 	if (!buf) {

@@ -1582,10 +1582,8 @@ int run_shell(void)
 
 static int do_sh(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	return execute_script(argv[1], argc - 1, argv + 1);
 }
@@ -1604,10 +1602,8 @@ U_BOOT_CMD_END
 
 static int do_source(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	return source_script(argv[1], argc - 1, argv + 1);
 }

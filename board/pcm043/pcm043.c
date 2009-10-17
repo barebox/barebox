@@ -256,10 +256,8 @@ static int do_cpufreq(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	unsigned long freq;
 
-	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	freq = simple_strtoul(argv[1], NULL, 0);
 
@@ -271,8 +269,7 @@ static int do_cpufreq(cmd_tbl_t *cmdtp, int argc, char *argv[])
 		writel(MPCTL_PARAM_532, IMX_CCM_BASE + CCM_MPCTL);
 		break;
 	default:
-		u_boot_cmd_usage(cmdtp);
-		return 1;
+		return COMMAND_ERROR_USAGE;
 	}
 
 	printf("Switched CPU frequency to %dMHz\n", freq);

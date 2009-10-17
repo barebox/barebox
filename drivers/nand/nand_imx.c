@@ -1189,10 +1189,8 @@ static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	void *dest;
 	int size, pagesize, blocksize;
 
-	if (argc < 4) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 4)
+		return COMMAND_ERROR_USAGE;
 
 	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
 	size = strtoul_suffix(argv[2], NULL, 0);

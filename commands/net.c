@@ -171,10 +171,8 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char  *localfile;
 	char  *remotefile;
 
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	remotefile = argv[1];
 
@@ -275,10 +273,8 @@ static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	edev = eth_get_byname(argv[1]);
 	if (edev)

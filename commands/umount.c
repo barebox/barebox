@@ -28,10 +28,8 @@ static int do_umount (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	int ret = 0;
 
-	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	if ((ret = umount(argv[1]))) {
 		perror("umount");

@@ -48,10 +48,8 @@ static int do_mount (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc != 4) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 4)
+		return COMMAND_ERROR_USAGE;
 
 	if ((ret = mount(argv[1], argv[2], argv[3]))) {
 		perror("mount");

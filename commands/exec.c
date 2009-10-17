@@ -34,10 +34,8 @@ static int do_exec(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	int i;
 	char *script;
 
-	if (argc < 2) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
 
 	for (i=1; i<argc; ++i) {
 		script = read_file(argv[i]);

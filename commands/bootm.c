@@ -408,10 +408,8 @@ static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
 
 	os_handle = map_image(argv[optind], data.verify);
 	if (!os_handle)

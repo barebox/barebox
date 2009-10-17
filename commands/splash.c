@@ -50,10 +50,8 @@ static int do_splash(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	char *src, *dst;
 	unsigned long *dstl, *srcl;
 
-	if (argc == 1) {
-		printf ("Usage:\n%s\n", cmdtp->usage);
-		return 1;
-	}
+	if (argc == 1)
+		return COMMAND_ERROR_USAGE;
 
 	if (!fbd) {
 		printf("No framebuffer found\n");

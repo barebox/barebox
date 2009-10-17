@@ -396,10 +396,8 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	int linepos;
 	char c;
 
-	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	/* check if we are called as "sedit" insted of "edit" */
 	if (*argv[0] == 's')

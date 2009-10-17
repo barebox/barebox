@@ -45,10 +45,8 @@ static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	unsigned long start = 0, size = ~0;
 	int ret = 0;
 
-	if (argc == 1) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc == 1)
+		return COMMAND_ERROR_USAGE;
 
 	filename = argv[1];
 
@@ -119,10 +117,8 @@ static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	unsigned long start = 0, size = ~0;
 	int ret = 0, err;
 
-	if (argc == 1) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc == 1)
+		return COMMAND_ERROR_USAGE;
 
 	filename = argv[1];
 

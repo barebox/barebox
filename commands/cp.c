@@ -44,10 +44,8 @@ static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 	int last_is_dir = 0;
 	int i;
 
-	if (argc < 3) {
-		u_boot_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc < 3)
+		return COMMAND_ERROR_USAGE;
 
 	if (!stat(argv[argc - 1], &statbuf)) {
 		if (S_ISDIR(statbuf.st_mode))

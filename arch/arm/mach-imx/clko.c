@@ -21,10 +21,8 @@ static int do_clko (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (div == 0 && src == -2) {
-		u_boot_cmd_usage(cmdtp);
-		return 0;
-	}
+	if (div == 0 && src == -2)
+		return COMMAND_ERROR_USAGE;
 
 	if (src == -1) {
 		imx_clko_set_src(-1);

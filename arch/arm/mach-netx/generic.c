@@ -134,8 +134,7 @@ int do_loadxc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 
 failure:
-	printf ("Usage:\n%s\n", cmdtp->usage);
-	return 1;
+	return COMMAND_ERROR_USAGE;
 }
 
 void reset_cpu(ulong addr)

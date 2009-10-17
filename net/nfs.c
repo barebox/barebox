@@ -664,15 +664,7 @@ NfsStart (char *p)
 		return;
 	}
 
-	p = strchr (p, ':');
-
-	if (p != NULL) {
-		string_to_ip (BootFile, &NfsServerIP);
-		++p;
-		strcpy (nfs_path, p);
-	} else {
-		strcpy (nfs_path, BootFile);
-	}
+	strcpy (nfs_path, p);
 
 	nfs_filename = basename (nfs_path);
 	nfs_path     = dirname (nfs_path);

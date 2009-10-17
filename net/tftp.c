@@ -280,19 +280,18 @@ TftpTimeout (void)
 void
 TftpStart (void)
 {
+	char ip1[16], ip2[16];
 #ifdef CONFIG_TFTP_PORT
 	char *ep;             /* Environment pointer */
 #endif
 
 	tftp_filename = BootFile;
 
-	puts ("TFTP from server ");	print_IPaddr (NetServerIP);
-	puts ("; our IP address is ");	print_IPaddr (NetOurIP);
-	putchar('\n');
-
-	printf ("Filename '%s'.", tftp_filename);
-
-	puts ("\nLoading: *\b");
+	printf("TFTP from server %s; our IP address is %s\n"
+			"\nFilename '%s'.\nLoading: *\b",
+			ip_to_string(NetServerIP, ip1),
+			ip_to_string(NetOurIP, ip2),
+			tftp_filename);
 
 	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
 	NetSetHandler (TftpHandler);

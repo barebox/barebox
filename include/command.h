@@ -74,16 +74,6 @@ cmd_tbl_t *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
 void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
 
-/*
- * Monitor Command
- *
- * All commands use a common argument format:
- *
- * void function (cmd_tbl_t *cmdtp, int argc, char *argv[]);
- */
-
-typedef	void 	command_t (cmd_tbl_t *, int, char *[]);
-
 #endif	/* __ASSEMBLY__ */
 
 /*

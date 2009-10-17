@@ -46,9 +46,8 @@ static int	TftpState;
 
 #define STATE_RRQ	1
 #define STATE_DATA	2
-#define STATE_TOO_LARGE	3
-#define STATE_BAD_MAGIC	4
-#define STATE_OACK	5
+#define STATE_BAD_MAGIC	3
+#define STATE_OACK	4
 
 #define TFTP_BLOCK_SIZE		512		    /* default TFTP block size	*/
 #define TFTP_SEQUENCE_SIZE	((ulong)(1<<16))    /* sequence number is 16 bit */
@@ -111,17 +110,6 @@ TftpSend (void)
 		*s++ = htons(TFTP_ACK);
 		*s++ = htons(TftpBlock);
 		pkt = (uchar *)s;
-		len = pkt - xp;
-		break;
-
-	case STATE_TOO_LARGE:
-		xp = pkt;
-		s = (ushort *)pkt;
-		*s++ = htons(TFTP_ERROR);
-		*s++ = htons(3);
-		pkt = (uchar *)s;
-		strcpy ((char *)pkt, "File too large");
-		pkt += 14 /*strlen("File too large")*/ + 1;
 		len = pkt - xp;
 		break;
 

@@ -74,6 +74,10 @@ cmd_tbl_t *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
 void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
 
+#define COMMAND_SUCCESS		0
+#define COMMAND_ERROR		1
+#define COMMAND_ERROR_USAGE	2
+
 #endif	/* __ASSEMBLY__ */
 
 /*

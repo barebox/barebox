@@ -94,6 +94,7 @@ static int compare(struct list_head *a, struct list_head *b)
 int execute_command(int argc, char **argv)
 {
 	cmd_tbl_t *cmdtp;
+	int ret;
 
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {
@@ -103,7 +104,12 @@ int execute_command(int argc, char **argv)
 			return -1;
 		}
 		/* OK - call function to do the command */
-		return cmdtp->cmd(cmdtp, argc, argv);
+		ret = cmdtp->cmd(cmdtp, argc, argv);
+		if (ret == COMMAND_ERROR_USAGE) {
+			u_boot_cmd_usage(cmdtp);
+			return COMMAND_ERROR;
+		}
+		return ret;
 	} else {
 		printf ("Unknown command '%s' - try 'help'\n", argv[0]);
 		return -1;	/* give up after bad command */

@@ -53,8 +53,6 @@ static int	TftpState;
 #define TFTP_BLOCK_SIZE		512		    /* default TFTP block size	*/
 #define TFTP_SEQUENCE_SIZE	((ulong)(1<<16))    /* sequence number is 16 bit */
 
-#define DEFAULT_NAME_LEN	(8 + 4 + 1)
-static char default_filename[DEFAULT_NAME_LEN];
 static char *tftp_filename;
 
 extern int net_store_fd;
@@ -286,19 +284,7 @@ TftpStart (void)
 	char *ep;             /* Environment pointer */
 #endif
 
-	if (BootFile[0] == '\0') {
-		sprintf(default_filename, "%02lX%02lX%02lX%02lX.img",
-			NetOurIP & 0xFF,
-			(NetOurIP >>  8) & 0xFF,
-			(NetOurIP >> 16) & 0xFF,
-			(NetOurIP >> 24) & 0xFF	);
-		tftp_filename = default_filename;
-
-		printf ("*** Warning: no boot file name; using '%s'\n",
-			tftp_filename);
-	} else {
-		tftp_filename = BootFile;
-	}
+	tftp_filename = BootFile;
 
 	puts ("TFTP from server ");	print_IPaddr (NetServerIP);
 	puts ("; our IP address is ");	print_IPaddr (NetOurIP);

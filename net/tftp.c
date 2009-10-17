@@ -303,11 +303,6 @@ TftpStart (void)
 
 	printf ("Filename '%s'.", tftp_filename);
 
-	if (NetBootFileSize)
-		printf (" Size is 0x%x Bytes = %s",
-			NetBootFileSize<<9,
-			size_human_readable(NetBootFileSize<<9));
-
 	puts ("\nLoading: *\b");
 
 	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);

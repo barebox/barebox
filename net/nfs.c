@@ -711,11 +711,6 @@ NfsStart (void)
 	}
 	printf ("\nFilename '%s/%s'.", nfs_path, nfs_filename);
 
-	if (NetBootFileSize)
-		printf (" Size is 0x%x Bytes = %s",
-			NetBootFileSize<<9,
-			size_human_readable (NetBootFileSize<<9));
-
 	NetSetTimeout (NFS_TIMEOUT * SECOND, NfsTimeout);
 	NetSetHandler (NfsHandler);
 

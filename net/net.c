@@ -101,7 +101,6 @@ IPaddr_t	NetOurDNS2IP=0;			/* Our 2nd DNS IP address	*/
 char		NetOurNISDomain[32]={0,};	/* Our NIS domain		*/
 char		NetOurHostName[32]={0,};	/* Our hostname			*/
 char		NetOurRootPath[64]={0,};	/* Our bootpath			*/
-ushort		NetBootFileSize=0;		/* Our bootfile size in blocks	*/
 
 /** END OF BOOTP EXTENTIONS **/
 

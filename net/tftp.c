@@ -288,17 +288,6 @@ TftpStart (void)
 
 	puts ("TFTP from server ");	print_IPaddr (NetServerIP);
 	puts ("; our IP address is ");	print_IPaddr (NetOurIP);
-
-	/* Check if we need to send across this subnet */
-	if (NetOurGatewayIP && NetOurSubnetMask) {
-	    IPaddr_t OurNet 	= NetOurIP    & NetOurSubnetMask;
-	    IPaddr_t ServerNet 	= NetServerIP & NetOurSubnetMask;
-
-	    if (OurNet != ServerNet) {
-		puts ("; sending through gateway ");
-		print_IPaddr (NetOurGatewayIP) ;
-	    }
-	}
 	putchar('\n');
 
 	printf ("Filename '%s'.", tftp_filename);

@@ -160,8 +160,8 @@ U_BOOT_CMD_END
 
 int net_store_fd;
 
-extern void TftpStart(void);       /* Begin TFTP get */
-extern void NfsStart(void);
+extern void TftpStart(char *);       /* Begin TFTP get */
+extern void NfsStart(char *);
 
 static int
 netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -196,10 +196,10 @@ netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	switch (proto) {
 	case TFTP:
-		TftpStart();
+		TftpStart(remotefile);
 		break;
 	case NFS:
-		NfsStart();
+		NfsStart(remotefile);
 	default:
 		break;
 	}

@@ -648,10 +648,8 @@ NfsHandler (uchar *pkt, unsigned dest, unsigned src, unsigned len)
 
 
 void
-NfsStart (void)
+NfsStart (char *p)
 {
-	char *p = BootFile;
-
 #ifdef NFS_DEBUG
 	printf ("%s\n", __FUNCTION__);
 #endif

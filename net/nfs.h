@@ -66,7 +66,7 @@ struct rpc_t {
 		} reply;
 	} u;
 };
-extern void	NfsStart (void);	/* Begin NFS */
+extern void	NfsStart (char *);	/* Begin NFS */
 
 
 /**********************************************************************/

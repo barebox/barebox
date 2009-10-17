@@ -81,10 +81,10 @@ static void TftpTimeout (void);
 static void
 TftpSend (void)
 {
-	volatile uchar *	pkt;
-	volatile uchar *	xp;
-	int			len = 0;
-	volatile ushort *s;
+	uchar *pkt;
+	uchar *xp;
+	int len = 0;
+	ushort *s;
 
 	/*
 	 *	We will always be sending some sort of packet, so

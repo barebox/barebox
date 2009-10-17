@@ -17,11 +17,7 @@
 
 #define WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
 #define TIMEOUT		5		/* Seconds to timeout for a lost pkt	*/
-#ifndef	CONFIG_NET_RETRY_COUNT
 # define TIMEOUT_COUNT	10		/* # of timeouts before giving up  */
-#else
-# define TIMEOUT_COUNT  (CONFIG_NET_RETRY_COUNT * 2)
-#endif
 					/* (for checking the image size)	*/
 #define HASHES_PER_LINE	65		/* Number of "loading" hashes per line	*/
 
@@ -55,8 +51,7 @@ static char *tftp_filename;
 
 extern int net_store_fd;
 
-static int
-store_block (unsigned block, uchar * src, unsigned len)
+static int store_block(unsigned block, uchar * src, unsigned len)
 {
 	ulong offset = block * TFTP_BLOCK_SIZE + TftpBlockWrapOffset;
 	ulong newsize = offset + len;
@@ -71,8 +66,7 @@ store_block (unsigned block, uchar * src, unsigned len)
 	return 0;
 }
 
-static void
-TftpSend (void)
+static void TftpSend(void)
 {
 	uchar *pkt;
 	uchar *xp;
@@ -86,7 +80,6 @@ TftpSend (void)
 	pkt = NetTxPacket + NetEthHdrSize() + IP_HDR_SIZE;
 
 	switch (TftpState) {
-
 	case STATE_RRQ:
 		xp = pkt;
 		s = (ushort *)pkt;
@@ -108,40 +101,37 @@ TftpSend (void)
 		break;
 	}
 
-	NetSendUDPPacket(NetServerEther, NetServerIP, TftpServerPort, TftpOurPort, len);
+	NetSendUDPPacket(NetServerEther, NetServerIP, TftpServerPort,
+			TftpOurPort, len);
 }
 
-static void
-TftpTimeout (void)
+static void TftpTimeout(void)
 {
-	puts ("T ");
-	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
-	TftpSend ();
+	puts("T ");
+	NetSetTimeout(TIMEOUT * SECOND, TftpTimeout);
+	TftpSend();
 }
 
-static void
-TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
+static void TftpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
 	ushort proto;
 	ushort *s;
 
-	if (dest != TftpOurPort) {
+	if (dest != TftpOurPort)
 		return;
-	}
-	if (TftpState != STATE_RRQ && src != TftpServerPort) {
-		return;
-	}
 
-	if (len < 2) {
+	if (TftpState != STATE_RRQ && src != TftpServerPort)
 		return;
-	}
+
+	if (len < 2)
+		return;
+
 	len -= 2;
 	/* warning: don't use increment (++) in ntohs() macros!! */
 	s = (ushort *)pkt;
 	proto = *s++;
 	pkt = (uchar *)s;
 	switch (ntohs(proto)) {
-
 	case TFTP_RRQ:
 	case TFTP_WRQ:
 	case TFTP_ACK:
@@ -155,7 +145,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 #endif
 		TftpState = STATE_OACK;
 		TftpServerPort = src;
-		TftpSend (); /* Send ACK */
+		TftpSend(); /* Send ACK */
 		break;
 	case TFTP_DATA:
 		if (len < 2)
@@ -177,14 +167,13 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			if (((TftpBlock - 1) % 10) == 0) {
 				putchar('#');
 			} else if ((TftpBlock % (10 * HASHES_PER_LINE)) == 0) {
-				puts ("\n\t ");
+				puts("\n\t ");
 			}
 		}
 
 #ifdef ET_DEBUG
-		if (TftpState == STATE_RRQ) {
-			puts ("Server did not acknowledge timeout option!\n");
-		}
+		if (TftpState == STATE_RRQ)
+			puts("Server did not acknowledge timeout option!\n");
 #endif
 
 		if (TftpState == STATE_RRQ || TftpState == STATE_OACK) {
@@ -196,7 +185,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			TftpBlockWrapOffset = 0;
 
 			if (TftpBlock != 1) {	/* Assertion */
-				printf ("\nTFTP error: "
+				printf("\nTFTP error: "
 					"First block is not block 1 (%ld)\n"
 					"Starting again\n\n",
 					TftpBlock);
@@ -205,48 +194,44 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			}
 		}
 
-		if (TftpBlock == TftpLastBlock) {
-			/*
-			 *	Same block again; ignore it.
-			 */
+		if (TftpBlock == TftpLastBlock)
+			/* Same block again; ignore it. */
 			break;
-		}
 
 		TftpLastBlock = TftpBlock;
-		NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
+		NetSetTimeout(TIMEOUT * SECOND, TftpTimeout);
 
-		if (store_block (TftpBlock - 1, pkt + 2, len) < 0) {
+		if (store_block(TftpBlock - 1, pkt + 2, len) < 0) {
 			perror("write");
 			NetState = NETLOOP_FAIL;
 			return;
 		}
 
 		/*
-		 *	Acknoledge the block just received, which will prompt
+		 *	Acknowledge the block just received, which will prompt
 		 *	the server for the next one.
 		 */
-		TftpSend ();
+		TftpSend();
 
 		if (len < TFTP_BLOCK_SIZE) {
 			/*
 			 *	We received the whole thing.  Try to
 			 *	run it.
 			 */
-			puts ("\ndone\n");
+			puts("\ndone\n");
 			NetState = NETLOOP_SUCCESS;
 		}
 		break;
 
 	case TFTP_ERROR:
-		printf ("\nTFTP error: '%s' (%d)\n",
+		printf("\nTFTP error: '%s' (%d)\n",
 					pkt + 2, ntohs(*(ushort *)pkt));
 		NetState = NETLOOP_FAIL;
 		break;
 	}
 }
 
-void
-TftpStart (void)
+void TftpStart(void)
 {
 	char ip1[16], ip2[16];
 
@@ -258,17 +243,17 @@ TftpStart (void)
 			ip_to_string(NetOurIP, ip2),
 			tftp_filename);
 
-	NetSetTimeout (TIMEOUT * SECOND, TftpTimeout);
-	NetSetHandler (TftpHandler);
+	NetSetTimeout(TIMEOUT * SECOND, TftpTimeout);
+	NetSetHandler(TftpHandler);
 
 	TftpServerPort = WELL_KNOWN_PORT;
 	TftpState = STATE_RRQ;
-	/* Use a pseudo-random port unless a specific port is set */
+	/* Use a pseudo-random port */
 	TftpOurPort = 1024 + ((unsigned int)get_time_ns() % 3072);
 	TftpBlock = 0;
 
 	/* zero out server ether in case the server ip has changed */
 	memset(NetServerEther, 0, 6);
 
-	TftpSend ();
+	TftpSend();
 }

@@ -118,11 +118,6 @@ config CMD_ECHO
 	default y
 	prompt "echo"
 
-config CMD_SPLASH
-	depends on BROKEN
-	tristate
-	prompt "splash"
-
 endmenu
 
 menu "memory                        "

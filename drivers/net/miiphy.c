@@ -171,6 +171,7 @@ static ssize_t miiphy_write(struct cdev *cdev, const void *_buf, size_t count, u
 static struct file_operations miiphy_ops = {
 	.read  = miiphy_read,
 	.write = miiphy_write,
+	.lseek = dev_lseek_default,
 };
 
 static int miiphy_probe(struct device_d *dev)

@@ -40,7 +40,7 @@ static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
 			return 0;
 		}
 		printf("## Error: \"%s\" not defined\n", argv[1]);
-		return -EINVAL;
+		return 1;
 	}
 
 	current_c = get_current_context();

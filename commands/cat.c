@@ -57,6 +57,7 @@ static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	while (args < argc) {
 		fd = open(argv[args], O_RDONLY);
 		if (fd < 0) {
+			err = 1;
 			printf("could not open %s: %s\n", argv[args], errno_str());
 			goto out;
 		}

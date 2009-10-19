@@ -103,7 +103,6 @@ static const __maybe_unused char cmd_timeout_help[] =
 "  -s  silent mode\n";
 
 U_BOOT_CMD_START(timeout)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_timeout,
 	.usage		= "wait for a specified timeout",
 	U_BOOT_CMD_HELP(cmd_timeout_help)

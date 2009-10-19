@@ -56,7 +56,6 @@ static int do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(exit)
-	.maxargs	= 2,
 	.cmd		= do_exit,
 	.usage		= "exit script",
 U_BOOT_CMD_END
@@ -101,11 +100,6 @@ int execute_command(int argc, char **argv)
 
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {
-		/* found - check max args */
-		if (argc > cmdtp->maxargs) {
-			u_boot_cmd_usage(cmdtp);
-			return -1;
-		}
 		/* OK - call function to do the command */
 		ret = cmdtp->cmd(cmdtp, argc, argv);
 		if (ret == COMMAND_ERROR_USAGE) {

@@ -348,7 +348,6 @@ static const __maybe_unused char cmd_nand_help[] =
 "  -b  <ofs> <dev> mark block at offset ofs as bad\n";
 
 U_BOOT_CMD_START(nand)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_nand,
 	.usage		= "",
 	U_BOOT_CMD_HELP(cmd_nand_help)

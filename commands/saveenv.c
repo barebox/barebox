@@ -101,7 +101,6 @@ static const __maybe_unused char cmd_saveenv_help[] =
 "Note that envfs can only handle files. Directories are skipped silently.\n";
 
 U_BOOT_CMD_START(saveenv)
-	.maxargs	= 3,
 	.cmd		= do_saveenv,
 	.usage		= "save environment to persistent storage",
 	U_BOOT_CMD_HELP(cmd_saveenv_help)

@@ -1594,7 +1594,6 @@ static const __maybe_unused char cmd_sh_help[] =
 "Execute a shell script\n";
 
 U_BOOT_CMD_START(sh)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_sh,
 	.usage		= "run shell script",
 	U_BOOT_CMD_HELP(cmd_sh_help)
@@ -1622,7 +1621,6 @@ static const __maybe_unused char cmd_source_usage[] =
 "execute shell script in current shell environment";
 
 U_BOOT_CMD_START(source)
-	.maxargs	= CONFIG_MAXARGS,
 	.aliases	= source_aliases,
 	.cmd		= do_source,
 	.usage		= cmd_source_usage,

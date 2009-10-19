@@ -50,7 +50,6 @@ static const __maybe_unused char cmd_readline_help[] =
 "readline reads a line of user input into variable VAR.\n";
 
 U_BOOT_CMD_START(readline)
-	.maxargs	= 3,
 	.cmd		= do_readline,
 	.usage		= "prompt for user input",
 	U_BOOT_CMD_HELP(cmd_readline_help)

@@ -233,7 +233,6 @@ static const __maybe_unused char cmd_md_help[] =
 
 
 U_BOOT_CMD_START(md)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_md,
 	.usage		= "memory display",
 	U_BOOT_CMD_HELP(cmd_md_help)
@@ -297,7 +296,6 @@ static const __maybe_unused char cmd_mw_help[] =
 "see 'help md' for supported options.\n";
 
 U_BOOT_CMD_START(mw)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_mw,
 	.usage		= "memory write (fill)",
 	U_BOOT_CMD_HELP(cmd_mw_help)
@@ -407,7 +405,6 @@ static const __maybe_unused char cmd_memcmp_help[] =
 "compared\n";
 
 U_BOOT_CMD_START(memcmp)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_cmp,
 	.usage		= "memory compare",
 	U_BOOT_CMD_HELP(cmd_memcmp_help)
@@ -504,7 +501,6 @@ static const __maybe_unused char cmd_memcpy_help[] =
 "Copy memory at <src> of <count> bytes to <dst>\n";
 
 U_BOOT_CMD_START(memcpy)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mem_cp,
 	.usage		= "memory copy",
 	U_BOOT_CMD_HELP(cmd_memcpy_help)
@@ -570,7 +566,6 @@ static const __maybe_unused char cmd_memset_help[] =
 "Fill the first n bytes of area with byte c\n";
 
 U_BOOT_CMD_START(memset)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_memset,
 	.usage		= "memory fill",
 	U_BOOT_CMD_HELP(cmd_memset_help)

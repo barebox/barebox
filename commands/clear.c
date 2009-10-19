@@ -32,7 +32,6 @@ static int do_clear (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(clear)
-	.maxargs	= 1,
 	.cmd		= do_clear,
 	.usage		= "clear screen",
 U_BOOT_CMD_END

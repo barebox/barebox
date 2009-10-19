@@ -31,7 +31,6 @@ static int do_meminfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(meminfo)
-	.maxargs	= 1,
 	.cmd		= do_meminfo,
 	.usage		= "print info about memory usage",
 U_BOOT_CMD_END

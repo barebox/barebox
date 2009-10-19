@@ -187,7 +187,6 @@ static const __maybe_unused char cmd_icache_help[] =
 "Usage: icache [0|1]\n";
 
 U_BOOT_CMD_START(icache)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_icache,
 	.usage		= "show/change icache status",
 	U_BOOT_CMD_HELP(cmd_icache_help)

@@ -348,7 +348,6 @@ static const __maybe_unused char cmd_mtest_help[] =
 "\nsimple RAM read/write test\n";
 
 U_BOOT_CMD_START(mtest)
-	.maxargs	= 4,
 	.cmd		= do_mem_mtest,
 	.usage		= "simple RAM test",
 	U_BOOT_CMD_HELP(cmd_mtest_help)

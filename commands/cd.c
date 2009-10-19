@@ -52,7 +52,6 @@ static const __maybe_unused char cmd_cd_help[] =
 "change to directory. If called without argument, change to /\n";
 
 U_BOOT_CMD_START(cd)
-	.maxargs	= 2,
 	.cmd		= do_cd,
 	.usage		= "change working directory",
 	U_BOOT_CMD_HELP(cmd_cd_help)

@@ -79,7 +79,6 @@ static const __maybe_unused char cmd_go_help[] =
 "in which case the file is memmapped and executed\n";
 
 U_BOOT_CMD_START(go)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_go,
 	.usage		= "start application at address or file",
 	U_BOOT_CMD_HELP(cmd_go_help)

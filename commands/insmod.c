@@ -36,7 +36,6 @@ static const __maybe_unused char cmd_insmod_help[] =
 "Usage: insmod <module>\n"; 
 
 U_BOOT_CMD_START(insmod)
-	.maxargs	= 2,
 	.cmd		= do_insmod,
 	.usage		= "insert a module",
 	U_BOOT_CMD_HELP(cmd_insmod_help)

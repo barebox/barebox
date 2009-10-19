@@ -807,7 +807,6 @@ static const __maybe_unused char cmd_loadb_help[] =
     "  -c        - Create file if it is not present - default disabled";
 #ifdef CONFIG_CMD_LOADB
 U_BOOT_CMD_START(loadb)
-	.maxargs = 8,
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (kermit mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)
@@ -815,7 +814,6 @@ U_BOOT_CMD_END
 #endif
 #ifdef CONFIG_CMD_LOADY
 U_BOOT_CMD_START(loady)
-	.maxargs = 8,
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (ymodem mode)",
 	U_BOOT_CMD_HELP(cmd_loadb_help)

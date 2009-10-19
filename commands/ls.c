@@ -200,7 +200,6 @@ static const __maybe_unused char cmd_ls_help[] =
 "  -R  list subdirectories recursively\n";
 
 U_BOOT_CMD_START(ls)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_ls,
 	.usage		= "list a file or directory",
 	U_BOOT_CMD_HELP(cmd_ls_help)

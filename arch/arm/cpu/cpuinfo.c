@@ -130,7 +130,6 @@ static int do_cpuinfo(cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(cpuinfo)
-	.maxargs        = CONFIG_MAXARGS,
 	.cmd            = do_cpuinfo,
 	.usage          = "Show info about CPU",
 U_BOOT_CMD_END

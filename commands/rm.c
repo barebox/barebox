@@ -47,7 +47,6 @@ static const __maybe_unused char cmd_rm_help[] =
 "Remove files\n";
 
 U_BOOT_CMD_START(rm)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_rm,
 	.usage		= "remove files",
 	U_BOOT_CMD_HELP(cmd_rm_help)

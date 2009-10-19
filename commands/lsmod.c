@@ -13,7 +13,6 @@ static int do_lsmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(lsmod)
-	.maxargs	= 1,
 	.cmd		= do_lsmod,
 	.usage		= "list modules",
 U_BOOT_CMD_END

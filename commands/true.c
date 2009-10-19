@@ -30,7 +30,6 @@ static int do_true (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(true)
-	.maxargs	= 1,
 	.cmd		= do_true,
 	.usage		= "do nothing, successfully",
 U_BOOT_CMD_END

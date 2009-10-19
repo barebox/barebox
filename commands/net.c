@@ -87,7 +87,6 @@ static const __maybe_unused char cmd_tftp_help[] =
 "Load a file via network using BootP/TFTP protocol.\n";
 
 U_BOOT_CMD_START(tftp)
-	.maxargs	= 3,
 	.cmd		= do_tftpb,
 	.usage		= "Load file using tftp protocol",
 	U_BOOT_CMD_HELP(cmd_tftp_help)
@@ -132,7 +131,6 @@ static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(rarpboot)
-	.maxargs	= 3,
 	.cmd		= do_rarpb,
 	.usage		= "boot image via network using rarp/tftp protocol",
 	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
@@ -150,7 +148,6 @@ static const __maybe_unused char cmd_nfs_help[] =
 "Load a file via network using nfs protocol.\n";
 
 U_BOOT_CMD_START(nfs)
-	.maxargs	= 3,
 	.cmd		= do_nfs,
 	.usage		= "boot image via network using nfs protocol",
 	U_BOOT_CMD_HELP(cmd_nfs_help)
@@ -254,7 +251,6 @@ static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(cdp)
-	.maxargs	= 1,
 	.cmd		= do_cdp,
 	.usage		= "Perform CDP network configuration",
 	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
@@ -291,7 +287,6 @@ static const __maybe_unused char cmd_ethact_help[] =
 "Usage: ethact [ethx]\n";
 
 U_BOOT_CMD_START(ethact)
-	.maxargs	= 3,
 	.cmd		= do_ethact,
 	.usage		= "set current ethernet device",
 	U_BOOT_CMD_HELP(cmd_ethact_help)

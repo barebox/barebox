@@ -64,7 +64,6 @@ static const __maybe_unused char cmd_mkdir_help[] =
 "Create new directories\n";
 
 U_BOOT_CMD_START(mkdir)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mkdir,
 	.usage		= "make directories",
 	U_BOOT_CMD_HELP(cmd_mkdir_help)

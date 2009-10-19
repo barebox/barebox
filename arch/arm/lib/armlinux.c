@@ -301,7 +301,6 @@ static const __maybe_unused char cmd_bootz_help[] =
 "Boot a Linux zImage\n";
 
 U_BOOT_CMD_START(bootz)
-	.maxargs        = 2,
 	.cmd            = do_bootz,
 	.usage          = "bootz - start a zImage",
 	U_BOOT_CMD_HELP(cmd_bootz_help)
@@ -336,7 +335,6 @@ static const __maybe_unused char cmd_bootu_help[] =
 "Usage: bootu <address>\n";
 
 U_BOOT_CMD_START(bootu)
-	.maxargs        = 2,
 	.cmd            = do_bootu,
 	.usage          = "bootu - start a raw linux image",
 	U_BOOT_CMD_HELP(cmd_bootu_help)

@@ -562,7 +562,6 @@ static const __maybe_unused char cmd_edit_help[] =
 static const __maybe_unused char cmd_edit_usage[] = "edit a file";
 
 U_BOOT_CMD_START(edit)
-	.maxargs	= 2,
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
 	.usage		= cmd_edit_usage,

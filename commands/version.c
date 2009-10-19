@@ -32,7 +32,6 @@ static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(version)
-	.maxargs	= 1,
 	.cmd		= do_version,
 	.usage		= "print monitor version",
 U_BOOT_CMD_END

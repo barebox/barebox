@@ -335,7 +335,6 @@ static const __maybe_unused char cmd_devinfo_help[] =
 "information about this device and its parameters.\n";
 
 U_BOOT_CMD_START(devinfo)
-	.maxargs	= 2,
 	.cmd		= do_devinfo,
 	.usage		= "display info about devices and drivers",
 	U_BOOT_CMD_HELP(cmd_devinfo_help)

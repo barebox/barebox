@@ -46,7 +46,6 @@ extern struct list_head command_list;
 struct cmd_tbl_s {
 	const char	*name;		/* Command Name			*/
 	const char	**aliases;
-	int		maxargs;	/* maximum number of arguments	*/
 					/* Implementation function	*/
 	int		(*cmd)(struct cmd_tbl_s *, int, char *[]);
 	const char	*usage;		/* Usage message	(short)	*/

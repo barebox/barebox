@@ -609,7 +609,6 @@ static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(dhcp)
-	.maxargs	= 1,
 	.cmd		= do_dhcp,
 	.usage		= "invoke dhcp client to obtain ip/boot params",
 U_BOOT_CMD_END

@@ -46,7 +46,6 @@ static const __maybe_unused char cmd_setenv_help[] =
 
 
 U_BOOT_CMD_START(setenv)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_setenv,
 	.usage		= "set environment variables",
 	U_BOOT_CMD_HELP(cmd_setenv_help)

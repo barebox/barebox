@@ -51,7 +51,6 @@ static const __maybe_unused char cmd_loadenv_help[] =
 "Note that envfs can only handle files. Directories are skipped silently.\n";
 
 U_BOOT_CMD_START(loadenv)
-	.maxargs	= 3,
 	.cmd		= do_loadenv,
 	.usage		= "load environment from persistent storage",
 	U_BOOT_CMD_HELP(cmd_loadenv_help)

@@ -144,7 +144,6 @@ void reset_cpu(ulong addr)
 
 
 U_BOOT_CMD_START(loadxc)
-	.maxargs	= 2,
 	.cmd		= do_loadxc,
 	.usage		= "load xmac/xpec engine with ethernet firmware",
 U_BOOT_CMD_END

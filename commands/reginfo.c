@@ -30,7 +30,6 @@ static int do_reginfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(reginfo)
-	.maxargs	= 1,
 	.cmd		= do_reginfo,
 	.usage		= "print register information",
 U_BOOT_CMD_END

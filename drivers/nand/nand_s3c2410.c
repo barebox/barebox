@@ -505,7 +505,6 @@ static const __maybe_unused char cmd_nand_boot_test_help[] =
 "Usage: nand_boot_test <dest> <size> <pagesize>\n";
 
 U_BOOT_CMD_START(nand_boot_test)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_nand_boot_test,
 	.usage		= "load an image from NAND",
 	U_BOOT_CMD_HELP(cmd_nand_boot_test_help)

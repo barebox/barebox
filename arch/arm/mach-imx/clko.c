@@ -47,7 +47,6 @@ static __maybe_unused char cmd_clko_help[] =
 "               for disabling clock output\n";
 
 U_BOOT_CMD_START(clko)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_clko,
 	.usage		= "Adjust CLKO setting",
 	U_BOOT_CMD_HELP(cmd_clko_help)

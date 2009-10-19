@@ -56,7 +56,6 @@ static const __maybe_unused char cmd_export_help[] =
 "export an environment variable to subsequently executed scripts\n";
 
 U_BOOT_CMD_START(export)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_export,
 	.usage		= "export environment variables",
 	U_BOOT_CMD_HELP(cmd_export_help)

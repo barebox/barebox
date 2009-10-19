@@ -72,7 +72,6 @@ static const __maybe_unused char cmd_printenv_help[] =
 
 
 U_BOOT_CMD_START(printenv)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_printenv,
 	.usage		= "print environment variables",
 	U_BOOT_CMD_HELP(cmd_printenv_help)

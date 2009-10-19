@@ -26,7 +26,6 @@ static const __maybe_unused char cmd_rmdir_help[] =
 "Remove directories. The directories have to be empty.\n";
 
 U_BOOT_CMD_START(rmdir)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_rmdir,
 	.usage		= "remove directorie(s)",
 	U_BOOT_CMD_HELP(cmd_rmdir_help)

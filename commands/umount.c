@@ -43,7 +43,6 @@ static const __maybe_unused char cmd_umount_help[] =
 "umount a filesystem mounted on a specific mountpoint\n";
 
 U_BOOT_CMD_START(umount)
-	.maxargs	= 2,
 	.cmd		= do_umount,
 	.usage		= "umount a filesystem",
 	U_BOOT_CMD_HELP(cmd_umount_help)

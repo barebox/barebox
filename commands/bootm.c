@@ -458,7 +458,6 @@ static const __maybe_unused char cmd_bootm_help[] =
 
 
 U_BOOT_CMD_START(bootm)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_bootm,
 	.usage		= "boot application image",
 	U_BOOT_CMD_HELP(cmd_bootm_help)
@@ -524,7 +523,7 @@ static int image_info (ulong addr)
 }
 
 U_BOOT_CMD(
-	iminfo,	CONFIG_MAXARGS,	1,	do_iminfo,
+	iminfo,		1,	do_iminfo,
 	"iminfo  - print header information for application image\n",
 	"addr [addr ...]\n"
 	"    - print header information for application image starting at\n"

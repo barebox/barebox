@@ -115,7 +115,6 @@ static const __maybe_unused char cmd_crc_help[] =
 "  -v <crc>    Verfify\n";
 
 U_BOOT_CMD_START(crc32)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_crc,
 	.usage		= "crc32 checksum calculation",
 	U_BOOT_CMD_HELP(cmd_crc_help)

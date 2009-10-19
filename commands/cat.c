@@ -91,7 +91,6 @@ static const __maybe_unused char cmd_cat_help[] =
 "and \\n and \\t are printed, but this should be optional\n";
 
 U_BOOT_CMD_START(cat)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_cat,
 	.usage		= "concatenate file(s)",
 	U_BOOT_CMD_HELP(cmd_cat_help)

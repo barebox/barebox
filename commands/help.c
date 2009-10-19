@@ -62,7 +62,6 @@ static const __maybe_unused char cmd_help_help[] =
 static const char *help_aliases[] = { "?", NULL};
 
 U_BOOT_CMD_START(help)
-	.maxargs	= 2,
 	.cmd		= do_help,
 	.aliases	= help_aliases,
 	.usage		= "print online help",

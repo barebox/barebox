@@ -77,7 +77,6 @@ static int do_clocks (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(dump_clocks)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_clocks,
 	.usage		= "show clock frequencies",
 U_BOOT_CMD_END

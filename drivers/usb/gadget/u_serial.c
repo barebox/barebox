@@ -485,7 +485,6 @@ static int do_mycdev (cmd_tbl_t *cmdtp, int argc, char *argv[])
 }
 
 U_BOOT_CMD_START(mycdev)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_mycdev,
 U_BOOT_CMD_END
 

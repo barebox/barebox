@@ -231,7 +231,6 @@ static const __maybe_unused char cmd_test_usage[] = "minimal test like /bin/sh";
 
 U_BOOT_CMD_START(test)
 	.aliases	= test_aliases,
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_test,
 	.usage		= cmd_test_usage,
 	U_BOOT_CMD_HELP(cmd_test_help)

@@ -155,7 +155,6 @@ static const __maybe_unused char cmd_addpart_help[] =
 "Note: That this command has to be reworked and will probably change it's API.";
 
 U_BOOT_CMD_START(addpart)
-	.maxargs = 3,
 	.cmd = do_addpart,
 	.usage = "adds a partition table to a device",
 	U_BOOT_CMD_HELP(cmd_addpart_help)
@@ -201,7 +200,6 @@ static const __maybe_unused char cmd_delpart_help[] =
 "Delete partitions previously added to a device with addpart.\n";
 
 U_BOOT_CMD_START(delpart)
-	.maxargs = CONFIG_MAXARGS,
 	.cmd = do_delpart,
 	.usage = "delete partition(s)",
 	U_BOOT_CMD_HELP(cmd_delpart_help)

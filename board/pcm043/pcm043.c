@@ -283,7 +283,6 @@ static const __maybe_unused char cmd_cpufreq_help[] =
 "Set CPU frequency to <freq> MHz\n";
 
 U_BOOT_CMD_START(cpufreq)
-	.maxargs        = CONFIG_MAXARGS,
 	.cmd            = do_cpufreq,
 	.usage          = "adjust CPU frequency",
 	U_BOOT_CMD_HELP(cmd_cpufreq_help)

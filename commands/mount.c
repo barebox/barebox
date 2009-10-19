@@ -71,7 +71,6 @@ static const __maybe_unused char cmd_mount_help[] =
 "root directory.\n";
 
 U_BOOT_CMD_START(mount)
-	.maxargs	= 4,
 	.cmd		= do_mount,
 	.usage		= "mount a filesystem to a device",
 	U_BOOT_CMD_HELP(cmd_mount_help)

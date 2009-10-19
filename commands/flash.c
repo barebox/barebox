@@ -90,7 +90,6 @@ static const __maybe_unused char cmd_erase_help[] =
 "is given\n";
 
 U_BOOT_CMD_START(erase)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_flerase,
 	.usage		= "erase FLASH memory",
 	U_BOOT_CMD_HELP(cmd_erase_help)
@@ -168,14 +167,12 @@ static const __maybe_unused char cmd_protect_help[] =
 "is given\n";
 
 U_BOOT_CMD_START(protect)
-	.maxargs	= 4,
 	.cmd		= do_protect,
 	.usage		= "enable FLASH write protection",
 	U_BOOT_CMD_HELP(cmd_protect_help)
 U_BOOT_CMD_END
 
 U_BOOT_CMD_START(unprotect)
-	.maxargs	= 4,
 	.cmd		= do_protect,
 	.usage		= "disable FLASH write protection",
 	U_BOOT_CMD_HELP(cmd_protect_help)

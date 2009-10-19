@@ -49,7 +49,6 @@ static const __maybe_unused char cmd_alternate_help[] =
 "\n";
 
 U_BOOT_CMD_START(alternate)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_alternate,
 	.usage		= "count zero bits in a file",
 	U_BOOT_CMD_HELP(cmd_alternate_help)

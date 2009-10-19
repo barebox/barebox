@@ -174,7 +174,6 @@ static const __maybe_unused char cmd_dfu_help[] =
 "where s is for save mode and r for read back of firmware\n";
 
 U_BOOT_CMD_START(dfu)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_dfu,
 	.usage		= "Device firmware update",
 	U_BOOT_CMD_HELP(cmd_dfu_help)

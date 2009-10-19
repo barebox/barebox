@@ -202,7 +202,6 @@ static const __maybe_unused char cmd_bmp_help[] =
 "  -o        render offscreen\n";
 
 U_BOOT_CMD_START(bmp)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_bmp,
 	.usage		= "show a bmp image",
 	U_BOOT_CMD_HELP(cmd_bmp_help)

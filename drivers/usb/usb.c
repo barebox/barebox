@@ -490,7 +490,6 @@ static const __maybe_unused char cmd_usb_help[] =
 "(re-)detect USB devices\n";
 
 U_BOOT_CMD_START(usb)
-	.maxargs	= CONFIG_MAXARGS,
 	.cmd		= do_usb,
 	.usage		= "(re-)detect USB devices",
 	U_BOOT_CMD_HELP(cmd_usb_help)

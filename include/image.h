@@ -84,7 +84,7 @@
 #define IH_CPU IH_CPU_PPC
 #elif defined(__ARM__)
 #define IH_CPU IH_CPU_ARM
-#elif defined(__I386__)
+#elif defined(__I386__) || defined(__x86_64__)
 #define IH_CPU IH_CPU_I386
 #elif defined(__mips__)
 #define IH_CPU IH_CPU_MIPS

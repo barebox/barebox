@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include <ioctl.h>
 #include <nand.h>
+#include <errno.h>
 
 static 	ssize_t nand_read(struct cdev *cdev, void* buf, size_t count, ulong offset, ulong flags)
 {
@@ -158,8 +159,41 @@ static struct file_operations nand_ops = {
 	.erase  = nand_erase,
 };
 
+static ssize_t nand_read_oob(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+{
+	struct mtd_info *info = cdev->priv;
+	struct nand_chip *chip = info->priv;
+	struct mtd_oob_ops ops;
+	int ret;
+
+	if (count < info->oobsize)
+		return -EINVAL;
+
+	ops.mode = MTD_OOB_RAW;
+	ops.ooboffs = 0;
+	ops.ooblen = info->oobsize;
+	ops.oobbuf = buf;
+	ops.datbuf = NULL;
+	ops.len = info->oobsize;
+
+	offset /= info->oobsize;
+	ret = info->read_oob(info, offset << chip->page_shift, &ops);
+	if (ret)
+		return ret;
+
+	return info->oobsize;
+}
+
+static struct file_operations nand_ops_oob = {
+	.read   = nand_read_oob,
+	.ioctl  = nand_ioctl,
+	.lseek  = dev_lseek_default,
+};
+
 int add_mtd_device(struct mtd_info *mtd)
 {
+	struct nand_chip *chip = mtd->priv;
+
 	strcpy(mtd->class_dev.name, "nand");
 	register_device(&mtd->class_dev);
 
@@ -175,6 +209,13 @@ int add_mtd_device(struct mtd_info *mtd)
 	dev_add_param(&mtd->class_dev, &mtd->param_size);
 
 	devfs_create(&mtd->cdev);
+
+	mtd->cdev_oob.ops = &nand_ops_oob;
+	mtd->cdev_oob.size = (mtd->size >> chip->page_shift) * mtd->oobsize;
+	mtd->cdev_oob.name = asprintf("nand_oob%d", mtd->class_dev.id);
+	mtd->cdev_oob.priv = mtd;
+	mtd->cdev_oob.dev = &mtd->class_dev;
+	devfs_create(&mtd->cdev_oob);
 
 	return 0;
 }

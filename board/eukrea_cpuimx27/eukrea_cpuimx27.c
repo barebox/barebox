@@ -47,10 +47,16 @@ static struct device_d cfi_dev = {
 	.size     = 64 * 1024 * 1024,
 };
 
+static struct memory_platform_data ram_pdata = {
+	.name = "ram0",
+	.flags = DEVFS_RDWR,
+};
+
 static struct device_d sdram_dev = {
-	.name     = "ram",
+	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
+	.platform_data = &ram_pdata,
 };
 
 static struct fec_platform_data fec_info = {
@@ -132,6 +138,7 @@ static int eukrea_cpuimx27_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
+	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_CPUIMX27);
 

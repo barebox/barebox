@@ -498,8 +498,9 @@ static int dm9000_probe(struct device_d *dev)
 	edev->send = dm9000_eth_send;
 	edev->recv = dm9000_eth_rx;
 	edev->halt = dm9000_eth_halt;
-	edev->get_ethaddr = dm9000_get_ethaddr;
 	edev->set_ethaddr = dm9000_set_ethaddr;
+	if (pdata->srom)
+		edev->get_ethaddr = dm9000_get_ethaddr;
 
 	/* RESET device */
 	dm9000_reset(priv);

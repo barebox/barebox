@@ -10,6 +10,7 @@ struct dm9000_platform_data {
 	unsigned long iobase;
 	unsigned long iodata;
 	int buswidth;
+	int srom;
 };
 
 #endif /* __DM9000_H__ */

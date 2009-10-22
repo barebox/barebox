@@ -41,6 +41,7 @@
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
 #include <ns16550.h>
+#include <asm/mmu.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -138,6 +139,29 @@ static struct device_d quad_uart_serial_device = {
 };
 #endif
 
+#ifdef CONFIG_MMU
+static void eukrea_cpuimx27_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+}
+#else
+static void eukrea_cpuimx27_mmu_init(void)
+{
+}
+#endif
+
 static int eukrea_cpuimx27_devices_init(void)
 {
 	char *envdev = "no";
@@ -169,6 +193,8 @@ static int eukrea_cpuimx27_devices_init(void)
 		PE15_PF_UART1_RTS,
 #endif
 	};
+
+	eukrea_cpuimx27_mmu_init();
 
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x0000CC03;

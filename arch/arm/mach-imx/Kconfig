@@ -249,6 +249,15 @@ config PCM037_SDRAM_BANK1_256MB
 endchoice
 endif
 
+if MACH_EUKREA_CPUIMX27
+choice
+	prompt "SDRAM Size"
+config EUKREA_CPUIMX27_SDRAM_128MB
+	bool "128 MB"
+config EUKREA_CPUIMX27_SDRAM_256MB
+	bool "256 MB"
+endchoice
+endif
 endmenu
 
 menu "i.MX specific settings        "

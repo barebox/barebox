@@ -6,14 +6,21 @@
 	ldr		r1,	=val;	\
 	str		r1,   [r0];
 
+#if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
+#define ROWS0	ESDCTL_ROW14
+#define CFG0	0x00695729
+#elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
+#define ROWS0	ESDCTL_ROW13
+#define CFG0	0x00395B28
+#endif
 
-#define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
+#define ESDCTL0_VAL (ESDCTL0_SDE | ROWS0 | ESDCTL0_COL10)
 
 .macro sdram_init
 	/*
 	 * DDR on CSD0
 	 */
-	writel(0x00000008, ESDMISC) /* Enable DDR SDRAM operation */
+	writel(0x0000000C, ESDMISC) /* Enable DDR SDRAM operation */
 
 	writel(0x55555555, DSCR(3)) /* Set the driving strength   */
 	writel(0x55555555, DSCR(5))
@@ -22,7 +29,7 @@
 	writel(0x15555555, DSCR(8))
 
 	writel(0x00000004, ESDMISC) /* Initial reset */
-	writel(0x0039572A, ESDCFG0)
+	writel(CFG0, ESDCFG0)
 	
 	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0) /* precharge CSD0 all banks */
 	writel(0x00000000, 0xA0000F00)	/* CSD0 precharge address (A10 = 1) */
@@ -40,7 +47,11 @@
 	ldr		r0, =0xA0000033
 	mov		r1, #0xda
 	strb		r1, [r0]
+#if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
+	ldr		r0, =0xA2000000
+#elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
 	ldr		r0, =0xA1000000
+#endif
 	mov		r1, #0xff
 	strb		r1, [r0]
 	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 | ESDCTL0_BL | ESDCTL0_SMODE_NORMAL, ESDCTL0)

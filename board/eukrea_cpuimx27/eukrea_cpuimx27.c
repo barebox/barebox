@@ -52,10 +52,16 @@ static struct memory_platform_data ram_pdata = {
 	.flags = DEVFS_RDWR,
 };
 
+#if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
+#define SDRAM0	256
+#elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
+#define SDRAM0	128
+#endif
+
 static struct device_d sdram_dev = {
 	.name     = "mem",
 	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
+	.size     = SDRAM0 * 1024 * 1024,
 	.platform_data = &ram_pdata,
 };
 

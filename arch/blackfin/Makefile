@@ -16,29 +16,9 @@ ifndef CONFIG_BFIN_BOOT_BYPASS
 all: uboot.ldr
 endif
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
-#	Update machine arch and proc symlinks if something which affects
-#	them changed.  We use .arch to indicate when they were updated
-#	last, otherwise make uses the target directory mtime.
-
-include/asm-blackfin/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-blackfin/arch -> include/asm-blackfin/$(INCDIR)'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-blackfin
-	$(Q)ln -fsn $(srctree)/include/asm-blackfin/$(INCDIR) include/asm-blackfin/arch
-else
-	$(Q)ln -fsn $(INCDIR) include/asm-blackfin/arch
-endif
-	@touch $@
-
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-blackfin/.arch
 
 
 ifneq ($(board-y),)
@@ -57,8 +37,6 @@ common-y += $(BOARD)
 common-y += arch/blackfin/lib/ $(CPU)
 
 lds-y += $(BOARD)/u-boot.lds
-
-MRPROPER_FILES += include/asm-blackfin/arch include/asm-blackfin/proc
 
 ifdef CONFIG_BFIN_BOOT_FLASH16
 FLASHBITS :=-B 16

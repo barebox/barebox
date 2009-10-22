@@ -44,8 +44,15 @@
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
 	.map_base = 0xC0000000,
-	.size     = 64 * 1024 * 1024,
+	.size     = 32 * 1024 * 1024,
 };
+#ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
+static struct device_d cfi_dev1 = {
+	.name     = "cfi_flash",
+	.map_base = 0xC2000000,
+	.size     = 32 * 1024 * 1024,
+};
+#endif
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -133,6 +140,9 @@ static int eukrea_cpuimx27_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);
+#ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
+	register_device(&cfi_dev1);
+#endif
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
 

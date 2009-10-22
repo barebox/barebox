@@ -257,6 +257,13 @@ config EUKREA_CPUIMX27_SDRAM_128MB
 config EUKREA_CPUIMX27_SDRAM_256MB
 	bool "256 MB"
 endchoice
+choice
+	prompt "NOR Flash Size"
+config EUKREA_CPUIMX27_NOR_32MB
+	bool "<= 32 MB"
+config EUKREA_CPUIMX27_NOR_64MB
+	bool "> 32 MB"
+endchoice
 endif
 endmenu
 

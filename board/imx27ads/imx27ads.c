@@ -23,11 +23,11 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <fec.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>

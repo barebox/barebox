@@ -26,7 +26,7 @@
 #define   __INCLUDE_DEBUG_LL_H__
 
 #if defined (CONFIG_DEBUG_LL)
-# include <asm/arch/debug_ll.h>
+# include <mach/debug_ll.h>
 
 #define PUTC_LL(x) putc(x)
 # define PUTHEX_LL(value)  ({ unsigned long v = (unsigned long) (value); \

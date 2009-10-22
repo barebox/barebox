@@ -91,7 +91,7 @@
 
 /**
  * macro for Padconfig Registers @see
- * include/asm/arch-arm/arch-omap/omap3-mux.h
+ * include/mach-arm/arch-omap/omap3-mux.h
  */
 #define	CP(X) (CONTROL_PADCONF_##X)
 

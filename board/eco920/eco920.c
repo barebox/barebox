@@ -22,7 +22,7 @@
  */
 
 #include <common.h>
-#include <asm/arch/AT91RM9200.h>
+#include <mach/AT91RM9200.h>
 #include <at91rm9200_net.h>
 #include <dm9161.h>
 #include <miiphy.h>

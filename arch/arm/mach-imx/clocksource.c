@@ -33,8 +33,8 @@
 #include <init.h>
 #include <clock.h>
 #include <notifier.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/clock.h>
+#include <mach/imx-regs.h>
+#include <mach/clock.h>
 
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
 

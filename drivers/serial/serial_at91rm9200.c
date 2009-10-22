@@ -31,7 +31,7 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/hardware.h>
+#include <mach/hardware.h>
 
 #if !defined(CONFIG_DBGU) && !defined(CONFIG_USART0) && !defined(CONFIG_USART1)
 #error must define one of CONFIG_DBGU or CONFIG_USART0 or CONFIG_USART1

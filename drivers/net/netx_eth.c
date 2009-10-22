@@ -3,9 +3,9 @@
 #include <net.h>
 #include <asm/io.h>
 #include <miiphy.h>
-#include <asm/arch/netx-xc.h>
-#include <asm/arch/netx-eth.h>
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-xc.h>
+#include <mach/netx-eth.h>
+#include <mach/netx-regs.h>
 #include <xfuncs.h>
 #include <miiphy.h>
 #include <init.h>

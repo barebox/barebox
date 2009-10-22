@@ -33,9 +33,9 @@
 #include <clock.h>
 #include <asm/io.h>
 
-#include <asm/arch/silicon.h>
-#include <asm/arch/gpmc.h>
-#include <asm/arch/gpmc_nand.h>
+#include <mach/silicon.h>
+#include <mach/gpmc.h>
+#include <mach/gpmc_nand.h>
 
 #ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND
 

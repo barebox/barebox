@@ -25,7 +25,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-regs.h>
 
 uint64_t netx_clocksource_read(void)
 {

@@ -47,8 +47,8 @@
 #include <miiphy.h>
 #include <errno.h>
 #include <asm/io.h>
-#include <asm/arch/board.h>
-#include <asm/arch/clk.h>
+#include <mach/board.h>
+#include <mach/clk.h>
 
 #include "macb.h"
 

@@ -20,8 +20,8 @@
  */
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/iomux-v3.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/iomux-v3.h>
+#include <mach/imx-regs.h>
 
 /*
  * setups a single pin:

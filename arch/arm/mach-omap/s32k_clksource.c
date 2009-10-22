@@ -34,11 +34,11 @@
 #include <clock.h>
 #include <init.h>
 #include <asm/io.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/clocks.h>
-#include <asm/arch/timers.h>
-#include <asm/arch/sys_info.h>
-#include <asm/arch/syslib.h>
+#include <mach/silicon.h>
+#include <mach/clocks.h>
+#include <mach/timers.h>
+#include <mach/sys_info.h>
+#include <mach/syslib.h>
 
 /**
  * @brief Provide a simple clock read

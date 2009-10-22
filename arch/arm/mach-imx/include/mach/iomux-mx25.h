@@ -1,7 +1,7 @@
 #ifndef __MACH_IOMUX_MX25_H__
 #define __MACH_IOMUX_MX25_H__
 
-#include <asm/arch/iomux-v3.h>
+#include <mach/iomux-v3.h>
 
 #define SRE		(1 << 0)
 #define DSE_STD		(0 << 1)

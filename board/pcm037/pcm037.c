@@ -27,14 +27,14 @@
 #include <driver.h>
 #include <environment.h>
 #include <usb/isp1504.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/iomux-mx31.h>
+#include <mach/imx-regs.h>
+#include <mach/iomux-mx31.h>
 #include <asm/armlinux.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
 #include <asm/mach-types.h>
-#include <asm/arch/imx-nand.h>
+#include <mach/imx-nand.h>
 
 
 /*

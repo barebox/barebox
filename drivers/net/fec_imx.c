@@ -29,9 +29,9 @@
 
 #include <asm/mmu.h>
 #include <asm/io.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <clock.h>
-#include <asm/arch/clock.h>
+#include <mach/clock.h>
 #include <xfuncs.h>
 
 #include "fec_imx.h"

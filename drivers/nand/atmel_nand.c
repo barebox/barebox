@@ -32,7 +32,7 @@
 #include <linux/mtd/nand.h>
 
 #include <asm/io.h>
-#include <asm/arch/board.h>
+#include <mach/board.h>
 
 #include <errno.h>
 

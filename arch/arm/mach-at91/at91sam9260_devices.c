@@ -12,11 +12,11 @@
 #include <common.h>
 #include <asm/armlinux.h>
 #include <asm/hardware.h>
-#include <asm/arch/board.h>
-#include <asm/arch/at91_pmc.h>
-#include <asm/arch/at91sam9260_matrix.h>
-#include <asm/arch/gpio.h>
-#include <asm/arch/io.h>
+#include <mach/board.h>
+#include <mach/at91_pmc.h>
+#include <mach/at91sam9260_matrix.h>
+#include <mach/gpio.h>
+#include <mach/io.h>
 
 static struct memory_platform_data sram_pdata = {
 	.name = "sram0",

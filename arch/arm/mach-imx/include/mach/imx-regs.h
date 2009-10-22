@@ -40,17 +40,17 @@
 #endif
 
 #ifdef CONFIG_ARCH_IMX1
-# include <asm/arch/imx1-regs.h>
+# include <mach/imx1-regs.h>
 #elif defined CONFIG_ARCH_IMX21
-# include <asm/arch/imx21-regs.h>
+# include <mach/imx21-regs.h>
 #elif defined CONFIG_ARCH_IMX27
-# include <asm/arch/imx27-regs.h>
+# include <mach/imx27-regs.h>
 #elif defined CONFIG_ARCH_IMX31
-# include <asm/arch/imx31-regs.h>
+# include <mach/imx31-regs.h>
 #elif defined CONFIG_ARCH_IMX35
-# include <asm/arch/imx35-regs.h>
+# include <mach/imx35-regs.h>
 #elif defined CONFIG_ARCH_IMX25
-# include <asm/arch/imx25-regs.h>
+# include <mach/imx25-regs.h>
 #else
 # error "unknown i.MX soc type"
 #endif

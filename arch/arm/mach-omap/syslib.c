@@ -32,7 +32,7 @@
 
 #include <config.h>
 #include <asm/io.h>
-#include <asm/arch/syslib.h>
+#include <mach/syslib.h>
 
 /**
  * @brief simple spin loop

@@ -48,13 +48,13 @@
 #include <driver.h>
 #include <asm/io.h>
 #include <ns16550.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/sdrc.h>
-#include <asm/arch/sys_info.h>
-#include <asm/arch/syslib.h>
-#include <asm/arch/control.h>
-#include <asm/arch/omap3-mux.h>
-#include <asm/arch/gpmc.h>
+#include <mach/silicon.h>
+#include <mach/sdrc.h>
+#include <mach/sys_info.h>
+#include <mach/syslib.h>
+#include <mach/control.h>
+#include <mach/omap3-mux.h>
+#include <mach/gpmc.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/

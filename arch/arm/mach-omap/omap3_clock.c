@@ -40,11 +40,11 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/clocks.h>
-#include <asm/arch/timers.h>
-#include <asm/arch/sys_info.h>
-#include <asm/arch/syslib.h>
+#include <mach/silicon.h>
+#include <mach/clocks.h>
+#include <mach/timers.h>
+#include <mach/sys_info.h>
+#include <mach/syslib.h>
 
 /* Following functions are exported from omap3_clock_core.S */
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM

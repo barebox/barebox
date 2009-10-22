@@ -25,17 +25,17 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <asm/armlinux.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
 #include <asm/mach-types.h>
-#include <asm/arch/imx-nand.h>
+#include <mach/imx-nand.h>
 #include <fec.h>
 #include <nand.h>
-#include <asm/arch/imx25-flash-header.h>
-#include <asm/arch/iomux-mx25.h>
+#include <mach/imx25-flash-header.h>
+#include <mach/iomux-mx25.h>
 
 extern unsigned long _stext;
 

@@ -19,7 +19,7 @@
 #ifndef __MACH_IOMUX_MX35_H__
 #define __MACH_IOMUX_MX35_H__
 
-#include <asm/arch/iomux-v3.h>
+#include <mach/iomux-v3.h>
 
 /*
  * The naming convention for the pad modes is MX35_PAD_<padname>__<padmode>

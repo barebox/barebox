@@ -24,7 +24,7 @@
 #include <common.h>
 #include <errno.h>
 #include <asm/io.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <gpio.h>
 
 static int gpio_banks;

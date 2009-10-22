@@ -32,8 +32,8 @@
 #include <partition.h>
 #include <nand.h>
 #include <asm/io.h>
-#include <asm/arch/s3c24x0-iomap.h>
-#include <asm/arch/s3c24x0-nand.h>
+#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c24x0-nand.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name		= "ram0",

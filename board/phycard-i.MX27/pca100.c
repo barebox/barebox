@@ -23,9 +23,9 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <fec.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
 #include <partition.h>
@@ -34,8 +34,8 @@
 #include <nand.h>
 #include <spi/spi.h>
 #include <asm/io.h>
-#include <asm/arch/imx-nand.h>
-#include <asm/arch/imx-pll.h>
+#include <mach/imx-nand.h>
+#include <mach/imx-pll.h>
 #include <gpio.h>
 #include <asm/mmu.h>
 #include <usb/isp1504.h>

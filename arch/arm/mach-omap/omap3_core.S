@@ -37,9 +37,9 @@
  */
 
 #include <config.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/wdt.h>
-#include <asm/arch/clocks.h>
+#include <mach/silicon.h>
+#include <mach/wdt.h>
+#include <mach/clocks.h>
 
 #ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 .globl arch_init_lowlevel

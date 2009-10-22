@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/imx-pll.h>
+#include <mach/imx-regs.h>
+#include <mach/imx-pll.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\

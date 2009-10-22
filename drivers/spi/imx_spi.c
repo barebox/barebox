@@ -25,7 +25,7 @@
 #include <xfuncs.h>
 #include <asm/io.h>
 #include <gpio.h>
-#include <asm/arch/spi.h>
+#include <mach/spi.h>
 
 #define MXC_CSPIRXDATA		0x00
 #define MXC_CSPITXDATA		0x04

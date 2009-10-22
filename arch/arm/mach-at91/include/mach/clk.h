@@ -24,7 +24,7 @@
 #ifndef __ASM_ARM_ARCH_CLK_H__
 #define __ASM_ARM_ARCH_CLK_H__
 
-#include <asm/arch/hardware.h>
+#include <mach/hardware.h>
 
 static inline unsigned long get_macb_pclk_rate(unsigned int dev_id)
 {

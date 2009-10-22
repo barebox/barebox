@@ -5,7 +5,7 @@
  */
 
 #include <config.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\

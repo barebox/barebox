@@ -37,9 +37,9 @@
  */
 
 #include <config.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/clocks.h>
-#include <asm/arch/gpmc.h>
+#include <mach/silicon.h>
+#include <mach/clocks.h>
+#include <mach/gpmc.h>
 
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
 /**

@@ -24,7 +24,7 @@
  */
 
 #include <common.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 
 void imx_gpio_mode(int gpio_mode)
 {

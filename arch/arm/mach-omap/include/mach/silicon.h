@@ -23,7 +23,7 @@
 
 /* Each platform silicon header comes here */
 #ifdef CONFIG_ARCH_OMAP3
-#include <asm/arch/omap3-silicon.h>
+#include <mach/omap3-silicon.h>
 #endif
 
 /* If Architecture specific init functions are present */

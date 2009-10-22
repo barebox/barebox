@@ -1,6 +1,6 @@
 #include <common.h>
-#include <asm/arch/netx-regs.h>
-#include <asm/arch/netx-cm.h>
+#include <mach/netx-regs.h>
+#include <mach/netx-cm.h>
 
 #define I2C_CTRL_ENABLE		(1<<0)
 #define I2C_CTRL_SPEED_25	(0<<1)

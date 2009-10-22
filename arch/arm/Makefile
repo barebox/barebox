@@ -32,6 +32,14 @@ board-$(CONFIG_MACH_EUKREA_CPUIMX27) := eukrea_cpuimx27
 cpu-$(CONFIG_ARM920T)              := arm920t
 cpu-$(CONFIG_ARM926EJS)            := arm926ejs
 
+machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
+
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
+else
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
+endif
+
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE) -P
@@ -41,25 +49,6 @@ ifndef CONFIG_MODULES
 CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_uboot += -static --gc-sections
 endif
-
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
-#	Update machine arch and proc symlinks if something which affects
-#	them changed.  We use .arch to indicate when they were updated
-#	last, otherwise make uses the target directory mtime.
-
-include/asm-arm/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-arm/arch -> include/asm-arm/$(INCDIR)'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-arm
-	$(Q)ln -fsn $(srctree)/include/asm-arm/$(INCDIR) include/asm-arm/arch
-else
-	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
-endif
-	@touch $@
 
 uboot.netx: uboot.bin
 	$(Q)scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
@@ -78,7 +67,6 @@ all: $(KBUILD_IMAGE)
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-arm/.arch
 
 # Add architecture specific flags
 ifeq ($(CONFIG_ARMCORTEXA8),y)
@@ -104,4 +92,3 @@ lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/arm/lib/u-boot.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
 
 CLEAN_FILES    += arch/arm/lib/u-boot.lds
-MRPROPER_FILES += include/asm-arm/arch

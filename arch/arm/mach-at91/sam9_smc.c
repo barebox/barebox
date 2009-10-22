@@ -10,11 +10,11 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/hardware.h>
-#include <asm/arch/io.h>
+#include <mach/hardware.h>
+#include <mach/io.h>
 
-#include <asm/arch/at91sam9_smc.h>
-#include <asm/arch/sam9_smc.h>
+#include <mach/at91sam9_smc.h>
+#include <mach/sam9_smc.h>
 
 void sam9_smc_configure(int cs, struct sam9_smc_config* config)
 {

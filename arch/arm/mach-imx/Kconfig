@@ -264,6 +264,18 @@ config EUKREA_CPUIMX27_NOR_32MB
 config EUKREA_CPUIMX27_NOR_64MB
 	bool "> 32 MB"
 endchoice
+choice
+	prompt "Quad UART Port"
+	depends on DRIVER_SERIAL_NS16550
+config EUKREA_CPUIMX27_QUART1
+	bool "Q1"
+config EUKREA_CPUIMX27_QUART2
+	bool "Q2"
+config EUKREA_CPUIMX27_QUART3
+	bool "Q3"
+config EUKREA_CPUIMX27_QUART4
+	bool "Q4"
+endchoice
 endif
 endmenu
 

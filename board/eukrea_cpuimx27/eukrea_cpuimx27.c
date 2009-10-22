@@ -40,6 +40,7 @@
 #include <asm/io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
+#include <ns16550.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -94,6 +95,49 @@ static struct device_d nand_dev = {
 	.platform_data	= &nand_info,
 };
 
+#ifdef CONFIG_DRIVER_SERIAL_NS16550
+unsigned int quad_uart_read(unsigned long base, unsigned char reg_idx)
+{
+	unsigned int reg_addr = (unsigned int)base;
+	reg_addr += reg_idx << 1;
+	return 0xff & readw(reg_addr);
+}
+EXPORT_SYMBOL(quad_uart_read);
+
+void quad_uart_write(unsigned int val, unsigned long base,
+		     unsigned char reg_idx)
+{
+	unsigned int reg_addr = (unsigned int)base;
+	reg_addr += reg_idx << 1;
+	writew(0xff & val, reg_addr);
+}
+EXPORT_SYMBOL(quad_uart_write);
+
+static struct NS16550_plat quad_uart_serial_plat = {
+	.clock = 14745600,
+	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
+	.reg_read = quad_uart_read,
+	.reg_write = quad_uart_write,
+};
+
+#ifdef CONFIG_EUKREA_CPUIMX27_QUART1
+#define QUART_OFFSET 0x200000
+#elif defined CONFIG_EUKREA_CPUIMX27_QUART2
+#define QUART_OFFSET 0x400000
+#elif defined CONFIG_EUKREA_CPUIMX27_QUART3
+#define QUART_OFFSET 0x800000
+#elif defined CONFIG_EUKREA_CPUIMX27_QUART4
+#define QUART_OFFSET 0x1000000
+#endif
+
+static struct device_d quad_uart_serial_device = {
+	.name = "serial_ns16550",
+	.map_base = IMX_CS3_BASE + QUART_OFFSET,
+	.size = 0xF,
+	.platform_data = (void *)&quad_uart_serial_plat,
+};
+#endif
+
 static int eukrea_cpuimx27_devices_init(void)
 {
 	char *envdev = "no";
@@ -118,22 +162,18 @@ static int eukrea_cpuimx27_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
+#ifdef CONFIG_DRIVER_SERIAL_IMX
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
+#endif
 	};
 
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x0000CC03;
 	CS0L = 0xa0330D01;
 	CS0A = 0x00220800;
-
-	/* configure 8 bit UART on cs3 */
-	FMCR &= ~0x2;
-	CS3U = 0x0000DCF6;
-	CS3L = 0x444A4541;
-	CS3A = 0x44443302;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -162,16 +202,27 @@ static int eukrea_cpuimx27_devices_init(void)
 
 device_initcall(eukrea_cpuimx27_devices_init);
 
+#ifdef CONFIG_DRIVER_SERIAL_IMX
 static struct device_d eukrea_cpuimx27_serial_device = {
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
 };
+#endif
 
 static int eukrea_cpuimx27_console_init(void)
 {
+#ifdef CONFIG_DRIVER_SERIAL_IMX
 	register_device(&eukrea_cpuimx27_serial_device);
-
+#endif
+	/* configure 8 bit UART on cs3 */
+	FMCR &= ~0x2;
+	CS3U = 0x0000DCF6;
+	CS3L = 0x444A4541;
+	CS3A = 0x44443302;
+#ifdef CONFIG_DRIVER_SERIAL_NS16550
+	register_device(&quad_uart_serial_device);
+#endif
 	return 0;
 }
 

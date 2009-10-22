@@ -59,13 +59,6 @@ ifneq ($(KBUILD_SRC),)
 else
 	$(Q)ln -fsn $(INCDIR) include/asm-arm/arch
 endif
-	@echo '  SYMLINK include/asm-arm/proc -> include/asm-arm/proc-armv'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-arm
-	$(Q)ln -fsn $(srctree)/include/asm-arm/proc-armv include/asm-arm/proc
-else
-	$(Q)ln -fsn proc-armv include/asm-arm/proc
-endif
 	@touch $@
 
 uboot.netx: uboot.bin
@@ -111,4 +104,4 @@ lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/arm/lib/u-boot.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
 
 CLEAN_FILES    += arch/arm/lib/u-boot.lds
-MRPROPER_FILES += include/asm-arm/arch include/asm-arm/proc
+MRPROPER_FILES += include/asm-arm/arch

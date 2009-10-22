@@ -25,6 +25,6 @@
 #ifndef __M68K_HARDWARE_H
 #define __M68K_HARDWARE_H
 
-#include <asm/arch/hardware.h>
+#include <mach/hardware.h>
 
 #endif

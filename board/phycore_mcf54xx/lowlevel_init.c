@@ -23,7 +23,7 @@
  */
 #include <common.h>
 #include <config.h>
-#include <asm/arch/mcf54xx-regs.h>
+#include <mach/mcf54xx-regs.h>
 
 /** Initialize board specific very early inits
  *

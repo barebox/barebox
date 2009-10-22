@@ -23,7 +23,7 @@
  */
 #include <common.h>
 #include <asm/ptrace.h>
-#include <asm/arch/mcf54xx-regs.h>
+#include <mach/mcf54xx-regs.h>
 
 #ifdef CONFIG_USE_IRQ
 void enable_interrupts(void)

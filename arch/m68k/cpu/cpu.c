@@ -24,8 +24,8 @@
 #include <common.h>
 #include <command.h>
 #include <init.h>
-#include <asm/proc/processor.h> // FIXME -stup place
-#include <asm/arch/mcf54xx-regs.h>
+#include <proc/processor.h> // FIXME -stup place
+#include <mach/mcf54xx-regs.h>
 
 static uint32_t CACR_shadow = MCF5XXX_CACR_BEC;
 

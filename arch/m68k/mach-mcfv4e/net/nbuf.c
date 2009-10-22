@@ -26,10 +26,10 @@
 #include <malloc.h>
 #include <linux/types.h>
 
-#include <asm/proc/net/queue.h>
-#include <asm/proc/net/net.h>
+#include <proc/net/queue.h>
+#include <proc/net/net.h>
 
-#include <asm/arch/mcf54xx-regs.h>
+#include <mach/mcf54xx-regs.h>
 
 
 #define ASSERT(x)

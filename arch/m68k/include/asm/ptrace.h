@@ -33,7 +33,7 @@
 #define PTRACE_SETOPTIONS	21
 
 
-#include <asm/proc/ptrace.h>
+#include <proc/ptrace.h>
 
 #ifndef __ASSEMBLY__
 

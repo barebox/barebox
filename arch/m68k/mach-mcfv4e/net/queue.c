@@ -25,7 +25,7 @@
  * @todo Replace by u-boot standard list functions
  */
 #include <linux/types.h>
-#include <asm/proc/net/queue.h>
+#include <proc/net/queue.h>
 
 /** Initialize the specified queue to an empty state
  *

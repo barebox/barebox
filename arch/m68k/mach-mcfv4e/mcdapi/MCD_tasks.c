@@ -5,7 +5,7 @@
  * Notes:
  */
 #include <asm/types.h>
-#include <asm/proc/mcdapi/MCD_dma.h>
+#include <proc/mcdapi/MCD_dma.h>
 
 u32 MCD_varTab0[];
 u32 MCD_varTab1[];

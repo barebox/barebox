@@ -25,7 +25,7 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <asm/arch/linux.h>
+#include <mach/linux.h>
 
 struct tap_priv {
 	int fd;

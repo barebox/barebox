@@ -22,7 +22,7 @@
 
 #include <common.h>
 #include <driver.h>
-#include <asm/arch/linux.h>
+#include <mach/linux.h>
 #include <xfuncs.h>
 
 int u_boot_register_console(char *name, int stdinfd, int stdoutfd)

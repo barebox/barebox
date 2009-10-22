@@ -1,5 +1,5 @@
 /*
- * include/asm-ppc/mpc5xxx.h
+ * arch/ppc/mach-mpc5xxx/include/mach/mpc5xxx.h
  *
  * Prototypes, etc. for the Motorola MGT5xxx/MPC5xxx
  * embedded cpu chips

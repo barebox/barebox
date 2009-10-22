@@ -41,9 +41,9 @@
 #include <asm/processor.h>
 #include <asm/io.h>
 #include <command.h>
-#include <asm/arch/sdma.h>
+#include <mach/sdma.h>
 #include <asm/bitops.h>
-#include <asm/arch/clocks.h>
+#include <mach/clocks.h>
 
 struct irq_action {
 	interrupt_handler_t *handler;

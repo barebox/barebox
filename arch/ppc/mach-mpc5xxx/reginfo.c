@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <config.h>
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 
 void reginfo(void)
 {

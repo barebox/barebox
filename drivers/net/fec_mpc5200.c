@@ -7,15 +7,15 @@
  */
 
 #include <common.h>
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
 #include <miiphy.h>
 #include <driver.h>
-#include <asm/arch/sdma.h>
-#include <asm/arch/fec.h>
-#include <asm/arch/clocks.h>
+#include <mach/sdma.h>
+#include <mach/fec.h>
+#include <mach/clocks.h>
 #include <miiphy.h>
 #include "fec_mpc5200.h"
 

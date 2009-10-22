@@ -168,6 +168,7 @@ CROSS_COMPILE   ?=
 
 # Architecture as present in compile.h
 UTS_MACHINE := $(ARCH)
+SRCARCH 	:= $(ARCH)
 
 KCONFIG_CONFIG	?= .config
 
@@ -749,7 +750,9 @@ ifneq ($(KBUILD_SRC),)
 		/bin/false; \
 	fi;
 	$(Q)if [ ! -d include2 ]; then mkdir -p include2; fi;
-	$(Q)ln -fsn $(srctree)/include/asm-$(ARCH) include2/asm
+	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/u-boot.h ]; then  \
+	    ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
+	    fi
 endif
 
 # prepare2 creates a makefile if using a separate output directory
@@ -780,10 +783,34 @@ export CPPFLAGS_uboot.lds += -P -C -U$(ARCH)
 # hard to detect, but I suppose "make mrproper" is a good idea
 # before switching between archs anyway.
 
+define check-symlink
+	set -e;								\
+	if [ -L include/asm ]; then					\
+		asmlink=`readlink include/asm | cut -d '-' -f 2`;	\
+		if [ "$$asmlink" != "$(SRCARCH)" ]; then		\
+			echo "ERROR: the symlink $@ points to asm-$$asmlink but asm-$(SRCARCH) was expected";	\
+			echo "       set ARCH or save .config and run 'make mrproper' to fix it";		\
+			exit 1;						\
+		fi;							\
+	fi
+endef
+
+# We create the target directory of the symlink if it does
+# not exist so the test in chack-symlink works and we have a
+# directory for generated filesas used by some architectures.
+define create-symlink
+	if [ ! -L include/asm ]; then					\
+			echo '  SYMLINK $@ -> include/asm-$(SRCARCH)';	\
+			if [ ! -d include/asm-$(SRCARCH) ]; then	\
+				mkdir -p include/asm-$(SRCARCH);	\
+			fi;						\
+			ln -fsn asm-$(SRCARCH) $@;			\
+	fi
+endef
+
 include/asm:
-	@echo '  SYMLINK $@ -> include/asm-$(ARCH)'
-	$(Q)if [ ! -d include ]; then mkdir -p include; fi;
-	@ln -fsn asm-$(ARCH) $@
+	$(Q)$(check-symlink)
+	$(Q)$(create-symlink)
 
 include/config.h: include/config/auto.conf
 	@echo '  SYMLINK $@ -> board/$(board-y)/config.h'

@@ -113,7 +113,6 @@
 #include <xfuncs.h>
 #include <linux/ctype.h>    /* isalpha, isdigit */
 #include <common.h>        /* readline */
-#include <hush.h>
 #include <environment.h>
 #include <command.h>        /* find_cmd */
 #include <driver.h>
@@ -170,6 +169,10 @@ typedef enum {
 #define FLAG_DONE  (1<<RES_DONE)
 #define FLAG_IN    (1<<RES_IN)
 #define FLAG_START (1<<RES_XXXX)
+
+#define FLAG_EXIT_FROM_LOOP 1
+#define FLAG_PARSE_SEMICOLON (1 << 1)	  /* symbol ';' is special for parser */
+#define FLAG_REPARSING       (1 << 2)	  /* >=2nd pass */
 
 /* This holds pointers to the various results of parsing */
 struct p_context {

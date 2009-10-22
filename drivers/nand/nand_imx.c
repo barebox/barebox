@@ -969,14 +969,6 @@ static void imx_low_erase(struct mtd_info *mtd)
  *
  * @return  The function always returns 0.
  */
-static uint8_t scan_ff_pattern[] = { 0xff, 0xff };
-
-static struct nand_bbt_descr smallpage_memorybased = {
-	.options = NAND_BBT_SCAN2NDPAGE,
-	.offs = 5,
-	.len = 1,
-	.pattern = scan_ff_pattern
-};
 
 static int __init imxnd_probe(struct device_d *dev)
 {
@@ -1067,12 +1059,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.layout = &nand_hw_eccoob_16;
 	}
 
-	if (pdata->is2k) {
-		host->pagesize_2k = 1;
-		NFMS |= (1 << NFMS_BIT);
-		this->badblock_pattern = &smallpage_memorybased;
-	} else 
-		host->pagesize_2k = 0;
+	host->pagesize_2k = 0;
 
 	this->options |= NAND_SKIP_BBTSCAN;
 

@@ -152,16 +152,17 @@ struct imx_nand_host {
 /*
  * OOB placement block for use with hardware ecc generation
  */
-static struct nand_ecclayout nand_hw_eccoob_8 = {
+static struct nand_ecclayout nand_hw_eccoob_smallpage = {
 	.eccbytes = 5,
 	.eccpos = {6, 7, 8, 9, 10},
-	.oobfree = {{0, 5}, {11, 5}}
+	.oobfree = {{0, 5}, {12, 4}}
 };
 
-static struct nand_ecclayout nand_hw_eccoob_16 = {
-	.eccbytes = 5,
-	.eccpos = {6, 7, 8, 9, 10},
-	.oobfree = {{0, 6}, {12, 4}}
+static struct nand_ecclayout nand_hw_eccoob_largepage = {
+	.eccbytes = 20,
+	.eccpos = {6, 7, 8, 9, 10, 22, 23, 24, 25, 26,
+		   38, 39, 40, 41, 42, 54, 55, 56, 57, 58},
+	.oobfree = {{2, 4}, {11, 10}, {27, 10}, {43, 10}, {59, 5}, }
 };
 
 /*
@@ -1025,14 +1026,14 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.mode = NAND_ECC_HW;
 		this->ecc.size = 512;
 		this->ecc.bytes = 3;
-		this->ecc.layout = &nand_hw_eccoob_8;
+		this->ecc.layout = &nand_hw_eccoob_smallpage;
 		tmp = readw(host->regs + NFC_CONFIG1);
 		tmp |= NFC_ECC_EN;
 		writew(tmp, host->regs + NFC_CONFIG1);
 	} else {
 		this->ecc.size = 512;
 		this->ecc.bytes = 3;
-		this->ecc.layout = &nand_hw_eccoob_8;
+		this->ecc.layout = &nand_hw_eccoob_smallpage;
 		this->ecc.mode = NAND_ECC_SOFT;
 		tmp = readw(host->regs + NFC_CONFIG1);
 		tmp &= ~NFC_ECC_EN;
@@ -1056,17 +1057,24 @@ static int __init imxnd_probe(struct device_d *dev)
 	/* NAND bus width determines access funtions used by upper layer */
 	if (pdata->width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
-		this->ecc.layout = &nand_hw_eccoob_16;
+		this->ecc.layout = &nand_hw_eccoob_smallpage;
 	}
-
-	host->pagesize_2k = 0;
 
 	this->options |= NAND_SKIP_BBTSCAN;
 
-	/* Scan to find existence of the device */
-	if (nand_scan(mtd, 1)) {
-		MTD_DEBUG(MTD_DEBUG_LEVEL0,
-		      "MXC_ND: Unable to find any NAND device.\n");
+	/* first scan to find the device and get the page size */
+	if (nand_scan_ident(mtd, 1)) {
+		err = -ENXIO;
+		goto escan;
+	}
+
+	if (mtd->writesize == 2048) {
+		this->ecc.layout = &nand_hw_eccoob_largepage;
+		host->pagesize_2k = 1;
+	}
+
+	/* second phase scan */
+	if (nand_scan_tail(mtd)) {
 		err = -ENXIO;
 		goto escan;
 	}

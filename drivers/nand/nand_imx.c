@@ -246,17 +246,25 @@ static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
  * @param	buf_id	      Specify Internal RAM Buffer number (0-3)
  * @param       spare_only    set true if only the spare area is transferred
  */
-static void __nand_boot_init send_page(struct imx_nand_host *host, u8 buf_id,
+static void __nand_boot_init send_page(struct imx_nand_host *host,
 		unsigned int ops)
 {
-	/* NANDFC buffer 0 is used for page read/write */
+	int bufs, i;
 
-	writew(buf_id, host->regs + NFC_BUF_ADDR);
+	if (host->pagesize_2k)
+		bufs = 4;
+	else
+		bufs = 1;
 
-	writew(ops, host->regs + NFC_CONFIG2);
+	for (i = 0; i < bufs; i++) {
+		/* NANDFC buffer 0 is used for page read/write */
+		writew(i, host->regs + NFC_BUF_ADDR);
 
-	/* Wait for operation to complete */
-	wait_op_done(host);
+		writew(ops, host->regs + NFC_CONFIG2);
+
+		/* Wait for operation to complete */
+		wait_op_done(host);
+	}
 }
 
 /*
@@ -651,16 +659,11 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 
-		if (host->pagesize_2k) {
+		if (host->pagesize_2k)
 			/* send read confirm command */
 			send_cmd(host, NAND_CMD_READSTART);
-			/* read for each AREA */
-			send_page(host, 0, NFC_OUTPUT);
-			send_page(host, 1, NFC_OUTPUT);
-			send_page(host, 2, NFC_OUTPUT);
-			send_page(host, 3, NFC_OUTPUT);
-		} else
-			send_page(host, 0, NFC_OUTPUT);
+
+		send_page(host, NFC_OUTPUT);
 
 		memcpy32(host->data_buf, host->regs + MAIN_AREA0, mtd->writesize);
 		copy_spare(mtd, 1);
@@ -700,15 +703,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	case NAND_CMD_PAGEPROG:
 		memcpy32(host->regs + MAIN_AREA0, host->data_buf, mtd->writesize);
 		copy_spare(mtd, 0);
-		send_page(host, 0, NFC_INPUT);
-
-		if (host->pagesize_2k) {
-			/* data in 4 areas datas */
-			send_page(host, 1, NFC_INPUT);
-			send_page(host, 2, NFC_INPUT);
-			send_page(host, 3, NFC_INPUT);
-		}
-
+		send_page(host, NFC_INPUT);
 		send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 		break;
@@ -912,7 +907,7 @@ static int __nand_boot_init block_is_bad(struct imx_nand_host *host, u32 offs)
 {
 	send_cmd(host, NAND_CMD_READOOB);
 	nfc_addr(host, offs);
-	send_page(host, 0, 1, NFC_OUTPUT);
+	send_page(host, NFC_OUTPUT);
 
 	return (readw(host->regs + SPARE_AREA0 + 4) & 0xff) == 0xff ? 0 : 1;
 }
@@ -958,7 +953,9 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 				send_cmd(&host, NAND_CMD_READ0);
 				nfc_addr(&host, block * blocksize +
 						page * pagesize);
-				send_page(&host, 0, 0, NFC_OUTPUT);
+				if (host.pagesize_2k)
+					send_cmd(&host, NAND_CMD_READSTART);
+				send_page(&host, NFC_OUTPUT);
 				page++;
 				memcpy32(dest, host.regs, 512);
 				dest += pagesize;

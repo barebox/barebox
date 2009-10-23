@@ -3,7 +3,7 @@
 
 #include <linux/mtd/mtd.h>
 
-void imx_nand_load_image(void *dest, int size, int pagesize, int blocksize);
+void imx_nand_load_image(void *dest, int size);
 
 struct imx_nand_platform_data {
 	int width;

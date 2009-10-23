@@ -233,7 +233,7 @@ console_initcall(pca100_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, 512, 16384);
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
 }
 #endif
 

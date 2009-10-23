@@ -29,9 +29,6 @@
 #include <asm/io.h>
 #include <errno.h>
 
-#define NFMS (*((volatile u32 *)(IMX_SYSTEM_CTL_BASE + 0x14)))
-#define NFMS_BIT 5
-
 #define DVR_VER "2.0"
 
 /*
@@ -902,14 +899,35 @@ static int __nand_boot_init block_is_bad(struct imx_nand_host *host, u32 offs)
 	return (readw(host->regs + SPARE_AREA0 + 4) & 0xff) == 0xff ? 0 : 1;
 }
 
-void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
-		int blocksize)
+void __nand_boot_init imx_nand_load_image(void *dest, int size)
 {
 	struct imx_nand_host host;
-	u32 tmp, page, block;
+	u32 tmp, page, block, blocksize, pagesize;
+
+#ifdef CONFIG_ARCH_IMX27
+	tmp = readl(IMX_SYSTEM_CTL_BASE + 0x14);
+	if (tmp & (1 << 5))
+		host.pagesize_2k = 1;
+	else
+		host.pagesize_2k = 0;
+#endif
+#ifdef CONFIG_ARCH_IMX31
+	tmp = readl(IMX_CCM_BASE + CCM_RCSR);
+	if (tmp & RCSR_NFMS)
+		host.pagesize_2k = 1;
+	else
+		host.pagesize_2k = 0;
+#endif
+
+	if (host.pagesize_2k) {
+		pagesize = 2048;
+		blocksize = 128 * 1024;
+	} else {
+		pagesize = 512;
+		blocksize = 16 * 1024;
+	}
 
 	host.regs = (void __iomem *)IMX_NFC_BASE;
-	host.pagesize_2k = (pagesize == 2048);
 
 	send_cmd(&host, NAND_CMD_RESET);
 
@@ -965,23 +983,21 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	void *dest;
-	int size, pagesize, blocksize;
+	int size;
 
-	if (argc < 4)
+	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
 
 	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
 	size = strtoul_suffix(argv[2], NULL, 0);
-	pagesize = strtoul_suffix(argv[3], NULL, 0);
-	blocksize = strtoul_suffix(argv[4], NULL, 0);
 
-	imx_nand_load_image(dest, size, pagesize, blocksize);
+	imx_nand_load_image(dest, size);
 
 	return 0;
 }
 
 static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size> <pagesize> <blocksize>\n";
+"Usage: nand_boot_test <dest> <size>\n";
 
 U_BOOT_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,

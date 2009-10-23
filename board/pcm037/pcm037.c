@@ -303,8 +303,6 @@ console_initcall(imx31_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	int pagesize = (readl(IMX_CCM_BASE + CCM_RCSR) & RCSR_NFMS) ? 2048 : 512;
-
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, pagesize, 16384);
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
 }
 #endif

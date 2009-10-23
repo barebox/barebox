@@ -1,5 +1,6 @@
 /*
  * (C) 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ * (C) 2009 Pengutronix, Juergen Beisert <kernel@pengutronix.de>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -27,16 +28,18 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
+#include <fs.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/imx-pll.h>
+#include <asm/arch/iomux-mx35.h>
 #include <asm/armlinux.h>
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
+#include <nand.h>
 #include <asm/mach-types.h>
-#include <asm/arch/imx-nand.h>
 #include <fec.h>
-#include <asm/arch/imx-pll.h>
-#include <asm/arch/iomux-mx35.h>
+#include <asm/arch/imx-nand.h>
 
 #define CYG_MACRO_START
 #define CYG_MACRO_END
@@ -79,6 +82,7 @@ static struct device_d sdram0_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
+	.flash_bbt = 1,
 };
 
 static struct device_d nand_dev = {
@@ -89,25 +93,43 @@ static struct device_d nand_dev = {
 
 static int imx35_devices_init(void)
 {
+	uint32_t reg;
+
 	/* CS0: Nor Flash */
 	writel(0x0000cf03, CSCR_U(0));
 	writel(0x10000d03, CSCR_L(0));
 	writel(0x00720900, CSCR_A(0));
 
-	register_device(&cfi_dev);
-
-	/*
-	 * Create partitions that should be
-	 * not touched by any regular user
-	 */
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");	/* ourself */
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");	/* environment */
-
-	protect_file("/dev/env0", 1);
-
-	register_device(&nand_dev);
+	reg = readl(IMX_CCM_BASE + CCM_RCSR);
+	/* some fuses provide us vital information about connected hardware */
+	if (reg & 0x20000000)
+		nand_info.width = 2;    /* 16 bit */
+	else
+		nand_info.width = 1;    /* 8 bit */
 
 	register_device(&fec_dev);
+	/*
+	 * This platform supports NOR and NAND
+	 */
+	register_device(&nand_dev);
+	register_device(&cfi_dev);
+
+	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
+		switch ( (reg >> 25) & 0x3) {
+		case 0x01:              /* NAND is the source */
+			devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+			dev_add_bb_dev("self_raw", "self0");
+			devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+			dev_add_bb_dev("env_raw", "env0");
+			break;
+
+		case 0x00:              /* NOR is the source */
+			devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0"); /* ourself */
+			devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");  /* environment */
+			protect_file("/dev/env0", 1);
+			break;
+		}
+	}
 
 	register_device(&sdram0_dev);
 
@@ -288,3 +310,13 @@ U_BOOT_CMD_START(cpufreq)
 	U_BOOT_CMD_HELP(cmd_cpufreq_help)
 U_BOOT_CMD_END
 
+#ifdef CONFIG_NAND_IMX_BOOT
+void __bare_init nand_boot(void)
+{
+	/*
+	 * The driver is able to detect NAND's pagesize by CPU internal
+	 * fuses or external pull ups. But not the blocksize...
+	 */
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+}
+#endif

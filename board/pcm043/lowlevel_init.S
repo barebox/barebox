@@ -41,6 +41,8 @@
 #define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 #define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
 
+	.section ".text_bare_init","ax"
+
 ARM_PPMRR:              .word   0x40000015
 L2CACHE_PARAM:          .word   0x00030024
 CCM_CCMR_W:             .word   0x003F4208
@@ -129,11 +131,13 @@ board_init_lowlevel:
 
 	#define DDRTYPE	0x00000800
 
-	writel(DDRTYPE, IMX_IOMUXC_BASE + 0x794)
-	writel(DDRTYPE, IMX_IOMUXC_BASE + 0x798)
-	writel(DDRTYPE, IMX_IOMUXC_BASE + 0x79c)
-	writel(DDRTYPE, IMX_IOMUXC_BASE + 0x7a0)
-	writel(DDRTYPE, IMX_IOMUXC_BASE + 0x7a4)
+	ldr	r0, =IMX_IOMUXC_BASE + 0x794
+	ldr	r1, =DDRTYPE
+	str	r1, [r0], #4	/* IMX_IOMUXC_BASE + 0x794 */
+	str	r1, [r0], #4	/* IMX_IOMUXC_BASE + 0x798 */
+	str	r1, [r0], #4	/* IMX_IOMUXC_BASE + 0x79c */
+	str	r1, [r0], #4	/* IMX_IOMUXC_BASE + 0x7a0 */
+	str	r1, [r0]	/* IMX_IOMUXC_BASE + 0x7a4 */
 
 	/* MDDR init, enable mDDR*/
 	writel(0x00000304, ESDMISC) /* was 0x00000004 */
@@ -192,5 +196,36 @@ board_init_lowlevel:
 	orr r1, r1, #0x1000
 	str r1, [r0, #L2X0_AUX_CTRL]
 
-	mov pc, lr
+#ifdef CONFIG_NAND_IMX_BOOT
+	ldr	sp, =TEXT_BASE - 4	/* Setup a temporary stack in SDRAM */
+
+	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
+	ldr	r2, =IMX_NFC_BASE + 0x800	/* end of NFC SRAM                  */
+
+	/* skip NAND boot if not running from NFC space */
+	cmp	pc, r0
+	blo	ret
+	cmp	pc, r2
+	bhs	ret
+
+	/* Move ourselves out of NFC SRAM */
+	ldr	r1, =TEXT_BASE
+
+copy_loop:
+	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
+	stmia	r1!, {r3-r9}		/* copy to   target address [r1]    */
+	cmp	r0, r2			/* until source end addreee [r2]    */
+	ble	copy_loop
+
+	ldr	pc, =1f			/* Jump to SDRAM                    */
+1:
+	bl	nand_boot		/* Load U-Boot from NAND Flash      */
+
+	/* rebase the return address */
+	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
+	sub	r10, r10, r1		/* adjust return address from NFC SRAM */
+ret:
+#endif /* CONFIG_NAND_IMX_BOOT */
+
+	mov pc, r10
 

@@ -234,10 +234,10 @@ static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
  * @param	buf_id	      Specify Internal RAM Buffer number (0-3)
  * @param       spare_only    set true if only the spare area is transferred
  */
-static void send_prog_page(struct imx_nand_host *host, u8 buf_id,
-		int spare_only)
+static void __nand_boot_init send_page(struct imx_nand_host *host, u8 buf_id,
+		int spare_only, unsigned int ops)
 {
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_prog_page (%d)\n", spare_only);
+	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_page (%d)\n", spare_only);
 
 	/* NANDFC buffer 0 is used for page read/write */
 
@@ -253,38 +253,7 @@ static void send_prog_page(struct imx_nand_host *host, u8 buf_id,
 		writew(config1, host->regs + NFC_CONFIG1);
 	}
 
-	writew(NFC_INPUT, host->regs + NFC_CONFIG2);
-
-	/* Wait for operation to complete */
-	wait_op_done(host, spare_only);
-}
-
-/*
- * This function requests the NANDFC to initate the transfer
- * of data from the NAND device into in the NANDFC ram buffer.
- *
- * @param  	buf_id		Specify Internal RAM Buffer number (0-3)
- * @param       spare_only    	set true if only the spare area is transferred
- */
-static void __nand_boot_init send_read_page(struct imx_nand_host *host,
-		u8 buf_id, int spare_only)
-{
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_read_page (%d)\n", spare_only);
-
-	/* NANDFC buffer 0 is used for page read/write */
-	writew(buf_id, host->regs + NFC_BUF_ADDR);
-
-	/* Configure spare or page+spare access */
-	if (!host->pagesize_2k) {
-		u32 config1 = readw(host->regs + NFC_CONFIG1);
-		if (spare_only)
-			config1 |= NFC_SP_EN;
-		else
-			config1 &= ~NFC_SP_EN;
-		writew(config1, host->regs + NFC_CONFIG1);
-	}
-
-	writew(NFC_OUTPUT, host->regs + NFC_CONFIG2);
+	writew(ops, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
 	wait_op_done(host, spare_only);
@@ -838,13 +807,13 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 
 	case NAND_CMD_PAGEPROG:
-		send_prog_page(host, 0, host->spare_only);
+		send_page(host, 0, host->spare_only, NFC_INPUT);
 
 		if (host->pagesize_2k) {
 			/* data in 4 areas datas */
-			send_prog_page(host, 1, host->spare_only);
-			send_prog_page(host, 2, host->spare_only);
-			send_prog_page(host, 3, host->spare_only);
+			send_page(host, 1, host->spare_only, NFC_INPUT);
+			send_page(host, 2, host->spare_only, NFC_INPUT);
+			send_page(host, 3, host->spare_only, NFC_INPUT);
 		}
 
 		break;
@@ -912,12 +881,12 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 			/* send read confirm command */
 			send_cmd(host, NAND_CMD_READSTART);
 			/* read for each AREA */
-			send_read_page(host, 0, host->spare_only);
-			send_read_page(host, 1, host->spare_only);
-			send_read_page(host, 2, host->spare_only);
-			send_read_page(host, 3, host->spare_only);
+			send_page(host, 0, host->spare_only, NFC_OUTPUT);
+			send_page(host, 1, host->spare_only, NFC_OUTPUT);
+			send_page(host, 2, host->spare_only, NFC_OUTPUT);
+			send_page(host, 3, host->spare_only, NFC_OUTPUT);
 		} else {
-			send_read_page(host, 0, host->spare_only);
+			send_page(host, 0, host->spare_only, NFC_OUTPUT);
 		}
 		break;
 
@@ -1116,7 +1085,7 @@ static int __nand_boot_init block_is_bad(struct imx_nand_host *host, u32 offs)
 {
 	send_cmd(host, NAND_CMD_READOOB);
 	nfc_addr(host, offs);
-	send_read_page(host, 0, 1);
+	send_page(host, 0, 1, NFC_OUTPUT);
 
 	return (readw(host->regs + SPARE_AREA0 + 4) & 0xff) == 0xff ? 0 : 1;
 }
@@ -1162,7 +1131,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size, int pagesize,
 				send_cmd(&host, NAND_CMD_READ0);
 				nfc_addr(&host, block * blocksize +
 						page * pagesize);
-				send_read_page(&host, 0, 0);
+				send_page(&host, 0, 0, NFC_OUTPUT);
 				page++;
 				memcpy32(dest, host.regs, 512);
 				dest += pagesize;

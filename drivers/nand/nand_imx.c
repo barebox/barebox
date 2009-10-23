@@ -184,7 +184,7 @@ static void __nand_boot_init memcpy32(void *trg, const void *src, int size)
  * @param       max_retries     number of retry attempts (separated by 1 us)
  * @param       param           parameter for debug
  */
-static void __nand_boot_init wait_op_done(struct imx_nand_host *host, u16 param)
+static void __nand_boot_init wait_op_done(struct imx_nand_host *host)
 {
 	u32 tmp;
 	int i;
@@ -217,7 +217,7 @@ static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
 	writew(NFC_CMD, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, cmd);
+	wait_op_done(host);
 }
 
 /*
@@ -236,7 +236,7 @@ static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
 	writew(NFC_ADDR, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, addr);
+	wait_op_done(host);
 }
 
 /*
@@ -256,14 +256,14 @@ static void __nand_boot_init send_page(struct imx_nand_host *host, u8 buf_id,
 	writew(ops, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, 0);
+	wait_op_done(host);
 }
 
 /*
  * This function requests the NANDFC to perform a read of the
  * NAND device ID.
  */
-static void send_read_id(struct imx_nand_host *host)
+static void noinline send_read_id(struct imx_nand_host *host)
 {
 	struct nand_chip *this = &host->nand;
 	u16 tmp;
@@ -279,7 +279,7 @@ static void send_read_id(struct imx_nand_host *host)
 	writew(NFC_ID, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, 0);
+	wait_op_done(host);
 
 	if (this->options & NAND_BUSWIDTH_16) {
 		volatile u16 *mainbuf = host->regs + MAIN_AREA0;
@@ -326,7 +326,7 @@ static u16 get_dev_status(struct imx_nand_host *host)
 	writew(NFC_STATUS, host->regs + NFC_CONFIG2);
 
 	/* Wait for operation to complete */
-	wait_op_done(host, 0);
+	wait_op_done(host);
 
 	/* Status is placed in first word of main buffer */
 	/* get status, then recovery area 1 data */

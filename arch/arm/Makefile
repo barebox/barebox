@@ -100,6 +100,8 @@ endif
 all: $(KBUILD_IMAGE)
 
 archprepare: maketools
+maketools:
+	$(Q)$(MAKE) $(build)=arch/arm/tools arch/arm/include/asm/mach-types.h
 
 PHONY += maketools
 
@@ -121,4 +123,4 @@ common-y += arch/arm/lib/ arch/arm/cpu/
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/u-boot.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/u-boot.lds
 
-CLEAN_FILES += arch/arm/lib/u-boot.lds
+CLEAN_FILES += arch/arm/include/asm/mach-types.h arch/arm/lib/u-boot.lds

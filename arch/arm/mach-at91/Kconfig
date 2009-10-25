@@ -6,6 +6,7 @@ config ARCH_TEXT_BASE
 
 config BOARDINFO
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260EK
+	default "Atmel at91sam9261-ek" if MACH_AT91SAM9261EK
 	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
 	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
@@ -23,6 +24,10 @@ config ARCH_AT91SAM9260
 	bool "AT91SAM9260"
 	select CPU_ARM926T
 	select HAS_MACB
+
+config ARCH_AT91SAM9261
+	bool "AT91SAM9261"
+	select CPU_ARM926T
 
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
@@ -49,6 +54,25 @@ config MACH_AT91SAM9260EK
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_AT91SAM9261
+
+choice
+	prompt "AT91SAM9261 Board Type"
+
+config MACH_AT91SAM9261EK
+	bool "Atmel AT91SAM9261-EK Evaluation Kit"
+	select HAS_DM9000
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	help
+	  Select this if you are using Atmel's AT91SAM9261-EK Evaluation Kit.
+	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3820>
 
 endchoice
 

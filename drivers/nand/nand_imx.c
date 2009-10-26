@@ -1016,7 +1016,6 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 {
 	struct imx_nand_host host;
 	u32 tmp, page, block, blocksize, pagesize;
-	void __iomem *base = (void __iomem *)IMX_NFC_BASE;
 
 #ifdef CONFIG_ARCH_IMX27
 	tmp = readl(IMX_SYSTEM_CTL_BASE + 0x14);
@@ -1032,7 +1031,12 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 	else
 		host.pagesize_2k = 0;
 #endif
-
+#ifdef CONFIG_ARCH_IMX35
+	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 8))
+		host.pagesize_2k = 1;
+	else
+		host.pagesize_2k = 0;
+#endif
 	if (host.pagesize_2k) {
 		pagesize = 2048;
 		blocksize = 128 * 1024;
@@ -1041,13 +1045,14 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 		blocksize = 16 * 1024;
 	}
 
+	host.base = (void __iomem *)IMX_NFC_BASE;
 	if (nfc_is_v21()) {
-		host.regs = base + 0x1000;
-		host.spare0 = base + 0x1000;
+		host.regs = host.base + 0x1000;
+		host.spare0 = host.base + 0x1000;
 		host.spare_len = 64;
 	} else if (nfc_is_v1()) {
-		host.regs = base;
-		host.spare0 = base + 0x800;
+		host.regs = host.base;
+		host.spare0 = host.base + 0x800;
 		host.spare_len = 16;
 	}
 
@@ -1061,9 +1066,26 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 	writew(0x4, host.regs + NFC_WRPROT);
 
 	tmp = readw(host.regs + NFC_CONFIG1);
-	tmp |= NFC_ECC_EN;
+	tmp |= NFC_ECC_EN | NFC_INT_MSK;
+	if (nfc_is_v21())
+		/* currently no support for 218 byte OOB with stronger ECC */
+		tmp |= NFC_ECC_MODE;
 	tmp &= ~NFC_SP_EN;
 	writew(tmp, host.regs + NFC_CONFIG1);
+
+	if (nfc_is_v21()) {
+		if (host.pagesize_2k) {
+			tmp = readw(host.regs + NFC_SPAS);
+			tmp &= 0xff00;
+			tmp |= NFC_SPAS_64;
+			writew(tmp, host.regs + NFC_SPAS);
+		} else {
+			tmp = readw(host.regs + NFC_SPAS);
+			tmp &= 0xff00;
+			tmp |= NFC_SPAS_16;
+			writew(tmp, host.regs + NFC_SPAS);
+		}
+	}
 
 	block = page = 0;
 
@@ -1094,7 +1116,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 					continue;
 			}
 
-			memcpy32(dest, host.regs, pagesize);
+			memcpy32(dest, host.base, pagesize);
 			dest += pagesize;
 			size -= pagesize;
 

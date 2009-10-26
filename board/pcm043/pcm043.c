@@ -83,7 +83,7 @@ struct imx_nand_platform_data nand_info = {
 
 static struct device_d nand_dev = {
 	.name     = "imx_nand",
-	.map_base = IMX_NAND_BASE,
+	.map_base = IMX_NFC_BASE,
 	.platform_data	= &nand_info,
 };
 

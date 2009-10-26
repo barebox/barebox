@@ -109,8 +109,8 @@ board_init_lowlevel:
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =0xa0f00000		/* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =IMX_NAND_BASE		/* start of NFC SRAM                */
-	ldr	r2, =IMX_NAND_BASE + 0x1000	/* end of NFC SRAM                  */
+	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
+	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
 
 	/* skip NAND boot if not running from NFC space */
 	cmp	pc, r0
@@ -131,7 +131,7 @@ copy_loop:
 1:
 	bl	nand_boot		/* Load U-Boot from NAND Flash      */
 
-	ldr	r1, =IMX_NAND_BASE - TEXT_BASE
+	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
 	sub	r10, r10, r1		/* adjust return address from NFC SRAM */
 					/* to SDRAM                            */
 

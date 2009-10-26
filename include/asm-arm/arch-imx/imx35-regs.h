@@ -43,7 +43,7 @@
 #define IMX_CCM_BASE		0x53F80000
 #define IMX_IIM_BASE		0x53FF0000
 #define IMX_M3IF_BASE		0xB8003000
-#define IMX_NAND_BASE		0xBB000000
+#define IMX_NFC_BASE		0xBB000000
 
 /*
  * Clock Controller Module (CCM)

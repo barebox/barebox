@@ -1052,7 +1052,7 @@ void __bare_init imx_nand_load_image(void *dest, int size, int pagesize,
 	int width = 1;
 	u32 page, block;
 
-	host->regs = (void *)IMX_NAND_BASE;
+	host->regs = (void *)IMX_NFC_BASE;
 
 	debug("%s\n", __func__);
 

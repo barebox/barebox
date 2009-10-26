@@ -639,9 +639,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		else
 			host->buf_start = column + mtd->writesize;
 
-		if (host->pagesize_2k)
-			/* only READ0 is valid */
-			command = NAND_CMD_READ0;
+		command = NAND_CMD_READ0;
 
 		send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);

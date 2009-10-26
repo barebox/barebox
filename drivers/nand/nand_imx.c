@@ -46,6 +46,7 @@
 #define NFC_ECC_STATUS_RESULT	0xE0C
 #define NFC_RSLTMAIN_AREA	0xE0E
 #define NFC_RSLTSPARE_AREA	0xE10
+#define NFC_SPAS		0xe10
 #define NFC_WRPROT		0xE12
 #define NFC_V1_UNLOCKSTART_BLKADDR	0xe14
 #define NFC_V1_UNLOCKEND_BLKADDR	0xe16
@@ -113,6 +114,7 @@
  */
 #define NFC_INT            0x8000
 
+#define NFC_ECC_MODE        (1 << 0)
 #define NFC_SP_EN           (1 << 2)
 #define NFC_ECC_EN          (1 << 3)
 #define NFC_INT_MSK         (1 << 4)
@@ -120,6 +122,11 @@
 #define NFC_RST             (1 << 6)
 #define NFC_CE              (1 << 7)
 #define NFC_ONE_CYCLE       (1 << 8)
+
+#define NFC_SPAS_16			 8
+#define NFC_SPAS_64			 32
+#define NFC_SPAS_128			 64
+#define NFC_SPAS_218			 109
 
 #ifdef CONFIG_NAND_IMX_BOOT
 #define __nand_boot_init __bare_init
@@ -876,6 +883,9 @@ static int __init imxnd_probe(struct device_d *dev)
 	tmp = readw(host->regs + NFC_CONFIG1);
 	tmp |= NFC_INT_MSK;
 	tmp &= ~NFC_SP_EN;
+	if (nfc_is_v21())
+		/* currently no support for 218 byte OOB with stronger ECC */
+		tmp |= NFC_ECC_MODE;
 	writew(tmp, host->regs + NFC_CONFIG1);
 
 	if (pdata->hw_ecc) {
@@ -940,6 +950,19 @@ static int __init imxnd_probe(struct device_d *dev)
 	if (mtd->writesize == 2048) {
 		this->ecc.layout = oob_largepage;
 		host->pagesize_2k = 1;
+		if (nfc_is_v21()) {
+			tmp = readw(host->regs + NFC_SPAS);
+			tmp &= 0xff00;
+			tmp |= NFC_SPAS_64;
+			writew(tmp, host->regs + NFC_SPAS);
+		}
+	} else {
+		if (nfc_is_v21()) {
+			tmp = readw(host->regs + NFC_SPAS);
+			tmp &= 0xff00;
+			tmp |= NFC_SPAS_16;
+			writew(tmp, host->regs + NFC_SPAS);
+		}
 	}
 
 	/* second phase scan */

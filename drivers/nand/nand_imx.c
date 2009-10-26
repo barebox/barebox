@@ -771,6 +771,34 @@ static void imx_low_erase(struct mtd_info *mtd)
 
 }
 #endif
+
+/*
+ * The generic flash bbt decriptors overlap with our ecc
+ * hardware, so define some i.MX specific ones.
+ */
+static uint8_t bbt_pattern[] = { 'B', 'b', 't', '0' };
+static uint8_t mirror_pattern[] = { '1', 't', 'b', 'B' };
+
+static struct nand_bbt_descr bbt_main_descr = {
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
+	.offs = 0,
+	.len = 4,
+	.veroffs = 4,
+	.maxblocks = 4,
+	.pattern = bbt_pattern,
+};
+
+static struct nand_bbt_descr bbt_mirror_descr = {
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
+	.offs = 0,
+	.len = 4,
+	.veroffs = 4,
+	.maxblocks = 4,
+	.pattern = mirror_pattern,
+};
+
 /*
  * This function is called during the driver binding process.
  *
@@ -896,7 +924,12 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.layout = &nandv1_hw_eccoob_smallpage;
 	}
 
-	this->options |= NAND_SKIP_BBTSCAN;
+	if (pdata->flash_bbt) {
+		this->bbt_td = &bbt_main_descr;
+		this->bbt_md = &bbt_mirror_descr;
+		/* update flash based bbt */
+		this->options |= NAND_USE_FLASH_BBT;
+	}
 
 	/* first scan to find the device and get the page size */
 	if (nand_scan_ident(mtd, 1)) {

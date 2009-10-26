@@ -127,6 +127,11 @@ struct imx_nand_host {
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
 
+	void			*spare0;
+	void			*main_area0;
+	void			*main_area1;
+
+	void __iomem		*base;
 	void __iomem		*regs;
 	int			status_request;
 	struct clk		*clk;
@@ -277,7 +282,7 @@ static void send_read_id(struct imx_nand_host *host)
 	wait_op_done(host);
 
 	if (this->options & NAND_BUSWIDTH_16) {
-		volatile u16 *mainbuf = host->regs + MAIN_AREA0;
+		volatile u16 *mainbuf = host->main_area0;
 
 		/*
 		 * Pack the every-other-byte result for 16-bit ID reads
@@ -289,7 +294,7 @@ static void send_read_id(struct imx_nand_host *host)
 		mainbuf[1] = (mainbuf[2] & 0xff) | ((mainbuf[3] & 0xff) << 8);
 		mainbuf[2] = (mainbuf[4] & 0xff) | ((mainbuf[5] & 0xff) << 8);
 	}
-	memcpy32(host->data_buf, host->regs + MAIN_AREA0, 16);
+	memcpy32(host->data_buf, host->main_area0, 16);
 }
 
 /*
@@ -300,7 +305,7 @@ static void send_read_id(struct imx_nand_host *host)
  */
 static u16 get_dev_status(struct imx_nand_host *host)
 {
-	volatile u16 *mainbuf = host->regs + MAIN_AREA1;
+	volatile u16 *mainbuf = host->main_area1;
 	u32 store;
 	u16 ret, tmp;
 	/* Issue status request to NAND device */
@@ -482,7 +487,7 @@ static void copy_spare(struct mtd_info *mtd, int bfrom)
 	u16 i, j;
 	u16 n = mtd->writesize >> 9;
 	u8 *d = host->data_buf + mtd->writesize;
-	u8 *s = host->regs + SPARE_AREA0;
+	u8 *s = host->spare0;
 	u16 t = host->spare_len;
 
 	j = (mtd->oobsize / n >> 1) << 1;
@@ -650,7 +655,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 
 		send_page(host, NFC_OUTPUT);
 
-		memcpy32(host->data_buf, host->regs + MAIN_AREA0, mtd->writesize);
+		memcpy32(host->data_buf, host->main_area0, mtd->writesize);
 		copy_spare(mtd, 1);
 		break;
 
@@ -686,7 +691,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 
 	case NAND_CMD_PAGEPROG:
-		memcpy32(host->regs + MAIN_AREA0, host->data_buf, mtd->writesize);
+		memcpy32(host->main_area0, host->data_buf, mtd->writesize);
 		copy_spare(mtd, 0);
 		send_page(host, NFC_INPUT);
 		send_cmd(host, command);
@@ -761,6 +766,11 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	host->data_buf = (uint8_t *)(host + 1);
 	host->spare_len = 16;
+
+	host->regs = host->base;
+	host->main_area0 = host->base;
+	host->main_area1 = host->base + 0x200;
+	host->spare0 = host->base + 0x800;
 
 	host->dev = dev;
 	/* structures must be linked */
@@ -924,7 +934,9 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 		blocksize = 16 * 1024;
 	}
 
-	host.regs = (void __iomem *)IMX_NFC_BASE;
+	host.base = (void __iomem *)IMX_NFC_BASE;
+	host.regs = host.base;
+	host.spare0 =  host.base + 0x800;
 
 	send_cmd(&host, NAND_CMD_RESET);
 
@@ -964,11 +976,11 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 			page++;
 
 			if (host.pagesize_2k) {
-				if ((readw(host.regs + SPARE_AREA0) & 0xff)
+				if ((readw(host.spare0) & 0xff)
 						!= 0xff)
 					continue;
 			} else {
-				if ((readw(host.regs + SPARE_AREA0 + 4) & 0xff00)
+				if ((readw(host.spare0 + 4) & 0xff00)
 						!= 0xff00)
 					continue;
 			}

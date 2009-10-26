@@ -215,7 +215,7 @@ static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
  * @param       addr    address to be written to NFC.
  * @param       islast  True if this is the last address cycle for command
  */
-static void __nand_boot_init send_addr(struct imx_nand_host *host, u16 addr)
+static void __nand_boot_init noinline send_addr(struct imx_nand_host *host, u16 addr)
 {
 	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_addr(host, 0x%x %d)\n", addr, islast);
 
@@ -884,19 +884,18 @@ static struct driver_d imx_nand_driver = {
 
 static void __nand_boot_init nfc_addr(struct imx_nand_host *host, u32 offs)
 {
-	send_addr(host, offs & 0xff);
-	send_addr(host, (offs >> 9) & 0xff);
-	send_addr(host, (offs >> 17) & 0xff);
-	send_addr(host, (offs >> 25) & 0xff);
-}
-
-static int __nand_boot_init block_is_bad(struct imx_nand_host *host, u32 offs)
-{
-	send_cmd(host, NAND_CMD_READOOB);
-	nfc_addr(host, offs);
-	send_page(host, NFC_OUTPUT);
-
-	return (readw(host->regs + SPARE_AREA0 + 4) & 0xff) == 0xff ? 0 : 1;
+	if (host->pagesize_2k) {
+		send_addr(host, offs & 0xff);
+		send_addr(host, offs & 0xff);
+		send_addr(host, (offs >> 11) & 0xff);
+		send_addr(host, (offs >> 19) & 0xff);
+		send_addr(host, (offs >> 27) & 0xff);
+	} else {
+		send_addr(host, offs & 0xff);
+		send_addr(host, (offs >> 9) & 0xff);
+		send_addr(host, (offs >> 17) & 0xff);
+		send_addr(host, (offs >> 25) & 0xff);
+	}
 }
 
 void __nand_boot_init imx_nand_load_image(void *dest, int size)
@@ -944,35 +943,45 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 
 	tmp = readw(host.regs + NFC_CONFIG1);
 	tmp |= NFC_ECC_EN;
+	tmp &= ~NFC_SP_EN;
 	writew(tmp, host.regs + NFC_CONFIG1);
 
 	block = page = 0;
 
 	while (1) {
-		if (!block_is_bad(&host, block * blocksize)) {
-			page = 0;
-			while (page * pagesize < blocksize) {
-				debug("page: %d block: %d dest: %p src "
-						"0x%08x\n",
-						page, block, dest,
-						block * blocksize +
-						page * pagesize);
+		page = 0;
+		while (page * pagesize < blocksize) {
+			debug("page: %d block: %d dest: %p src "
+					"0x%08x\n",
+					page, block, dest,
+					block * blocksize +
+					page * pagesize);
 
-				send_cmd(&host, NAND_CMD_READ0);
-				nfc_addr(&host, block * blocksize +
-						page * pagesize);
-				if (host.pagesize_2k)
-					send_cmd(&host, NAND_CMD_READSTART);
-				send_page(&host, NFC_OUTPUT);
-				page++;
-				memcpy32(dest, host.regs, 512);
-				dest += pagesize;
-				size -= pagesize;
-				if (size <= 0)
-					return;
+			send_cmd(&host, NAND_CMD_READ0);
+			nfc_addr(&host, block * blocksize +
+					page * pagesize);
+			if (host.pagesize_2k)
+				send_cmd(&host, NAND_CMD_READSTART);
+			send_page(&host, NFC_OUTPUT);
+			page++;
+
+			if (host.pagesize_2k) {
+				if ((readw(host.regs + SPARE_AREA0) & 0xff)
+						!= 0xff)
+					continue;
+			} else {
+				if ((readw(host.regs + SPARE_AREA0 + 4) & 0xff00)
+						!= 0xff00)
+					continue;
 			}
-		} else
-			debug("skip bad block at 0x%08x\n", block * blocksize);
+
+			memcpy32(dest, host.regs, pagesize);
+			dest += pagesize;
+			size -= pagesize;
+
+			if (size <= 0)
+				return;
+		}
 		block++;
 	}
 }

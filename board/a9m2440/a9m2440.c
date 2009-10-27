@@ -57,14 +57,14 @@ static struct device_d nand_dev = {
 };
 
 /*
- * SMSC 91C111 network controller on the baseboard
- * connected to CS line 1 and interrupt line
- * GPIO3, data width is 32 bit
+ * cs8900 network controller onboard
+ * Connected to CS line 5 + A24 and interrupt line EINT9,
+ * data width is 16 bit
  */
 static struct device_d network_dev = {
-        .name     = "smc91c111",
-        .map_base = CS1_BASE + 0x300,
-        .size     = 16,
+	.name     = "cs8900",
+	.map_base = CS5_BASE + (1 << 24) + 0x300,
+	.size     = 16,
 };
 
 static int a9m2440_devices_init(void)
@@ -140,10 +140,10 @@ static int a9m2440_devices_init(void)
 	/* ----------- configure the access to the outer space ---------- */
 	reg = readl(BWSCON);
 
-	/* CS#1 to access the network controller */
-	reg &= ~0xf0;
-	reg |= 0xe0;
-	writel(0x1350, BANKCON1);
+	/* CS#5 to access the network controller */
+	reg &= ~0x00f00000;
+	reg |=  0x00d00000;	/* 16 bit */
+	writel(0x1f4c, BANKCON5);
 
 	/* CS#2 to the dual 16550 UART */
 	reg &= ~0xf00;

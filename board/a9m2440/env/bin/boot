@@ -24,7 +24,9 @@ else
 	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp"
 fi
 
-bootargs="$bootargs mtdparts=\"NAND 64MiB 3,3V 8-bit:$nand_parts\""
+bootargs="$bootargs mtdparts=\"NAND 32MiB 3,3V 8-bit:$nand_parts\""
+
+bootargs="$bootargs cs89x0_media=rj45 cs89x0_mac=$eth0.ethaddr"
 
 if [ x$kernel = xnet ]; then
 	if [ x$ip = xdhcp ]; then

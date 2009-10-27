@@ -2,6 +2,8 @@
 
 . /env/config
 
+part=/dev/nand0.root.bb
+
 if [ x$1 = x ]; then
 	image=$jffs2
 else

@@ -49,58 +49,6 @@
 #define BOARD_SPECIFIC_UPLL ((0x3c << 12) + (4 << 4) + 2)
 
 /*
- * SDRAM configuration for Samsung K4M563233E
- *  - 2M x 32Bit x 4 Banks Mobile SDRAM
- *  - 90 pin FBGA
- *  - CL2@100MHz
- */
-/*
- * SDRAM uses 32bit width
- */
-#define BOARD_SPECIFIC_BWSCON ((0x02 << 24) + (0x02 << 28))
-/*
- * 32MiB SDRAM in bank6
- *  - MT = 11 (= sync dram type)
- *  - Trcd = 00 (= CL2)
- *  - SCAN = 01 (= 9 bit collumns)
- */
-#define BOARD_SPECIFIC_BANKCON6 ((0x3 << 15) + (0x0 << 2) + 0x1)
-/*
- * 32MiB SDRAM in bank7
- *  - MT = 11 (= sync dram type)
- *  - Trcd = 00 (= CL2)
- *  - SCAN = 01 (= 9 bit collumns)
- */
-#define BOARD_SPECIFIC_BANKCON7 ((0x3 << 15) + (0x0 << 2) + 0x1)
-/*
- * SDRAM refresh settings
- *  - REFEN = 1 (= refresh enabled)
- *  - TREFMD = 0 (= auto refresh)
- *  - Trp = 00 (= 2 RAS precharge clocks)
- *  - Tsrc = 01 (= 5 clocks -> row cycle time @100MHz 2+5=7 -> 70ns)
- *  - Refrsh = 2^11 + 1 - 100 * 15.6 = 2049 - 1560 = 489
- */
-#define BOARD_SPECIFIC_REFRESH ((0x1 << 23) + (0x0 << 22) + (0x0 << 20) + (0x1 << 18) + 489)
-/*
- * SDRAM banksize
- *  - BURST_EN = 1 (= burst mode enabled)
- *  - SCKE_EN = 1 (= SDRAM SCKE enabled)
- *  - SCLK_EN = 1 (= clock active only during accesses)
- *  - BK67MAP = 000 (= 32MiB)
- */
-#define BOARD_SPECIFIC_BANKSIZE ((1 << 7) + (1 << 5) + (1 << 4) + 0)
-/*
- * SDRAM mode register bank6
- * CL = 010 (= 2 clocks)
- */
-#define BOARD_SPECIFIC_MRSRB6 (0x2 << 4)
-/*
- * SDRAM mode register bank7
- * CL = 010 (= 2 clocks)
- */
-#define BOARD_SPECIFIC_MRSRB7 (0x2 << 4)
-
-/*
  * Flash access timings
  * Tacls  = 0ns (but 20ns data setup time)
  * Twrph0 = 25ns (write) 35ns (read)

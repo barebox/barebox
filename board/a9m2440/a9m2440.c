@@ -34,6 +34,7 @@
 #include <asm/io.h>
 #include <asm/arch/s3c24x0-iomap.h>
 #include <asm/arch/s3c24x0-nand.h>
+#include <asm/arch/s3c24xx-generic.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name		= "ram0",
@@ -67,41 +68,70 @@ static struct device_d network_dev = {
 	.size     = 16,
 };
 
+static int a9m2440_check_for_ram(uint32_t addr)
+{
+	uint32_t tmp1, tmp2;
+	int rc = 0;
+
+	tmp1 = readl(addr);
+	tmp2 = readl(addr + sizeof(uint32_t));
+
+	writel(0xaaaaaaaa, addr);
+	writel(0x55555555, addr + sizeof(uint32_t));
+	if ((readl(addr) != 0xaaaaaaaa) || (readl(addr + sizeof(uint32_t)) != 0x55555555))
+		rc = 1;	/* seems no RAM */
+
+	writel(0x55555555, addr);
+	writel(0xaaaaaaaa, addr + sizeof(uint32_t));
+	if ((readl(addr) != 0x55555555) || (readl(addr + sizeof(uint32_t)) != 0xaaaaaaaa))
+		rc = 1;	/* seems no RAM */
+
+	writel(tmp1, addr);
+	writel(tmp2, addr + sizeof(uint32_t));
+
+	return rc;
+}
+
+static void a9m2440_disable_second_sdram_bank(void)
+{
+	writel(readl(BANKCON7) & ~(0x3 << 15),BANKCON7);
+	writel(readl(MISCCR) | (1 << 18), MISCCR); /* disable clock */
+}
+
 static int a9m2440_devices_init(void)
 {
 	uint32_t reg;
 
 	/*
-	 * detect the current memory size
+	 * The special SDRAM setup code for this machine will always enable
+	 * both SDRAM banks. But the second SDRAM device may not exists!
+	 * So we must check here, if the second bank is populated to get the
+	 * correct RAM size.
 	 */
-	reg = readl(BANKSIZE);
-
-	switch (reg &= 0x7) {
+	switch (readl(BANKSIZE) & 0x7) {
 	case 0:
-		sdram_dev.size = 32 * 1024 * 1024;
+		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 32 * 1024 * 1024))
+			a9m2440_disable_second_sdram_bank();
 		break;
 	case 1:
-		sdram_dev.size = 64 * 1024 * 1024;
+		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 64 * 1024 * 1024))
+			a9m2440_disable_second_sdram_bank();
 		break;
 	case 2:
-		sdram_dev.size = 128 * 1024 * 1024;
+		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 128 * 1024 * 1024))
+			a9m2440_disable_second_sdram_bank();
 		break;
 	case 4:
-		sdram_dev.size = 2 * 1024 * 1024;
-		break;
 	case 5:
-		sdram_dev.size = 4 * 1024 * 1024;
+	case 6:		/* not supported on this machine */
 		break;
-	case 6:
-		sdram_dev.size = 8 * 1024 * 1024;
-		break;
-	case 7:
-		sdram_dev.size = 16 * 1024 * 1024;
+	default:
+		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 16 * 1024 * 1024))
+			a9m2440_disable_second_sdram_bank();
 		break;
 	}
 
-	/* both banks are present */
-	sdram_dev.size <<= 1;
+	sdram_dev.size = s3c24x0_get_memory_size();
 
 	/* ---------- configure the GPIOs ------------- */
 	writel(0x007FFFFF, GPACON);

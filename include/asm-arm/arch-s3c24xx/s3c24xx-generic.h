@@ -30,3 +30,4 @@ uint32_t s3c24xx_get_fclk(void);
 uint32_t s3c24xx_get_hclk(void);
 uint32_t s3c24xx_get_pclk(void);
 uint32_t s3c24xx_get_uclk(void);
+uint32_t s3c24x0_get_memory_size(void);

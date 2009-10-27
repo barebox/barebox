@@ -19,7 +19,7 @@
  */
 /**
  * @file
- * @brief Basic clock and timer handling for S3C24xx CPUs
+ * @brief Basic clock, sdram and timer handling for S3C24xx CPUs
  */
 
 #include <config.h>
@@ -121,6 +121,52 @@ uint32_t s3c24xx_get_pclk(void)
 uint32_t s3c24xx_get_uclk(void)
 {
     return s3c24xx_get_upllclk();
+}
+
+/**
+ * Calculate the amount of connected and available memory
+ * @return Memory size in bytes
+ */
+uint32_t s3c24x0_get_memory_size(void)
+{
+	uint32_t reg, size;
+
+	/*
+	 * detect the current memory size
+	 */
+	reg = readl(BANKSIZE);
+
+	switch (reg & 0x7) {
+	case 0:
+		size = 32 * 1024 * 1024;
+		break;
+	case 1:
+		size = 64 * 1024 * 1024;
+		break;
+	case 2:
+		size = 128 * 1024 * 1024;
+		break;
+	case 4:
+		size = 2 * 1024 * 1024;
+		break;
+	case 5:
+		size = 4 * 1024 * 1024;
+		break;
+	case 6:
+		size = 8 * 1024 * 1024;
+		break;
+	default:
+		size = 16 * 1024 * 1024;
+		break;
+	}
+
+	/*
+	 * Is bank7 also configured for SDRAM usage?
+	 */
+	if ((readl(BANKCON7) & (0x3 << 15)) == (0x3 << 15))
+		size <<= 1;	/* also count this bank */
+
+	return size;
 }
 
 /**

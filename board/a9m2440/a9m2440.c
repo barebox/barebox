@@ -153,7 +153,7 @@ static int a9m2440_devices_init(void)
 	writel(reg, BWSCON);
 
 	/* release the reset signal to the network and UART device */
-        reg = readl(MISCCR);
+	reg = readl(MISCCR);
 	reg |= 0x10000;
 	writel(reg, MISCCR);
 
@@ -165,9 +165,9 @@ static int a9m2440_devices_init(void)
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
-        dev_add_bb_dev("self_raw", "self0");
+	dev_add_bb_dev("self_raw", "self0");
 
-        devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 	armlinux_add_dram(&sdram_dev);

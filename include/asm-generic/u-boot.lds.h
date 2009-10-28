@@ -1,6 +1,6 @@
 
 #ifdef CONFIG_ARCH_IMX25
-#include <asm/arch/u-boot.lds.h>
+#include <mach/u-boot.lds.h>
 #endif
 
 #ifndef PRE_IMAGE

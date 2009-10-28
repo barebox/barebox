@@ -18,7 +18,7 @@
  *
  */
 
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 
 #define CPU200
 

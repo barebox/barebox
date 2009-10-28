@@ -27,12 +27,12 @@
 
 #include <common.h>
 #include <command.h>
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 #include <asm/processor.h>
 #include <asm/byteorder.h>
 #include <init.h>
 #include <types.h>
-#include <asm/arch/clocks.h>
+#include <mach/clocks.h>
 
 #if defined(CONFIG_OF_FLAT_TREE)
 #include <ft_build.h>

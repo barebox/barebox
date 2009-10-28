@@ -32,7 +32,7 @@
  */
 
 #include <config.h>
-#include <asm/arch/silicon.h>
+#include <mach/silicon.h>
 
 #ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
 /**

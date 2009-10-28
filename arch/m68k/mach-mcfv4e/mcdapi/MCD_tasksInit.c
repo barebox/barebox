@@ -11,7 +11,7 @@
  */
 
 #include <asm/types.h>
-#include <asm/proc/mcdapi/MCD_dma.h>
+#include <proc/mcdapi/MCD_dma.h>
 
 extern dmaRegs *MCD_dmaBar;
 

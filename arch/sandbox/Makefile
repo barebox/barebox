@@ -1,7 +1,7 @@
 
 CPPFLAGS += -fno-strict-aliasing
 
-machine-y	   := sandbox
+machine-y := sandbox
 
 board-y := sandbox
 lds-y   := board/sandbox/u-boot.lds
@@ -22,10 +22,13 @@ CFLAGS += -Dmalloc=u_boot_malloc \
 		-Dglob=u_boot_glob -Dglobfree=u_boot_globfree \
 		-Dioctl=u_boot_ioctl
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
+machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
+
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
+else
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
-INCDIR   := arch-$(incdir-y)
 
 SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 				  -e s/arm.*/arm/ -e s/sa110/arm/ \
@@ -50,24 +53,10 @@ endif
 
 CPPFLAGS += -DELF_CLASS="$(ELF_CLASS)"
 export ELF_FORMAT ELF_ARCH SUBARCH ELF_CLASS
-#	Update machine arch and proc symlinks if something which affects
-#	them changed.  We use .arch to indicate when they were updated
-#	last, otherwise make uses the target directory mtime.
-
-include/asm-sandbox/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-sandbox/arch -> include/asm-sandbox/$(INCDIR)'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-sandbox
-	$(Q)ln -fsn $(srctree)/include/asm-sandbox/$(INCDIR) include/asm-sandbox/arch
-else
-	$(Q)ln -fsn $(INCDIR) include/asm-sandbox/arch
-endif
-	@touch $@
 
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-sandbox/.arch
 
 cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 	-Wl,--start-group $(uboot-common) -Wl,--end-group \
@@ -76,4 +65,3 @@ cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
 common-y += board/sandbox/ arch/sandbox/os/
 
 CLEAN_FILES += board/sandbox/u-boot.lds
-MRPROPER_FILES += include/asm-sandbox/arch

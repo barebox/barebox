@@ -1,6 +1,6 @@
 #include <common.h>
 
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-regs.h>
 
 int timer_init (void)
 {

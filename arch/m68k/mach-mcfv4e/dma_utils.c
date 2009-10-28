@@ -10,10 +10,10 @@
 #include <common.h>
 #include <init.h>
 #include <linux/types.h>
-#include <asm/arch/mcf54xx-regs.h>
-#include <asm/proc/mcdapi/MCD_dma.h>
+#include <mach/mcf54xx-regs.h>
+#include <proc/mcdapi/MCD_dma.h>
 
-#include <asm/proc/dma_utils.h>
+#include <proc/dma_utils.h>
 
 /*
  * This global keeps track of which initiators have been

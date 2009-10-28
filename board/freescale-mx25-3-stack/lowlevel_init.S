@@ -21,9 +21,9 @@
  * MA 02111-1307 USA
  */
 
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/imx-pll.h>
-#include <asm/arch/esdctl.h>
+#include <mach/imx-regs.h>
+#include <mach/imx-pll.h>
+#include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>
 
 #define writel(val, reg) \

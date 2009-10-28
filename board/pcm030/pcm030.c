@@ -31,8 +31,8 @@
 #include <driver.h>
 #include <cfi_flash.h>
 #include <init.h>
-#include <asm/arch/mpc5xxx.h>
-#include <asm/arch/fec.h>
+#include <mach/mpc5xxx.h>
+#include <mach/fec.h>
 #include <types.h>
 #include <partition.h>
 #include <mem_malloc.h>

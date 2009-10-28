@@ -23,10 +23,10 @@
 #include <common.h>
 #include <driver.h>
 #include <malloc.h>
-#include <asm/arch/linux.h>
+#include <mach/linux.h>
 #include <init.h>
 #include <errno.h>
-#include <asm/arch/hostfile.h>
+#include <mach/hostfile.h>
 #include <xfuncs.h>
 
 struct hf_priv {

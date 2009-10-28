@@ -16,9 +16,9 @@
  */
 
 #include <common.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <asm/io.h>
-#include <asm/arch/clock.h>
+#include <mach/clock.h>
 #include <init.h>
 
 unsigned long imx_get_mpllclk(void)

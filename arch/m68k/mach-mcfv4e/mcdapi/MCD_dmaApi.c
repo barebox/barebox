@@ -6,9 +6,9 @@
  */
 
 #include <asm/types.h>
-#include <asm/proc/mcdapi/MCD_dma.h>
-#include <asm/proc/mcdapi/MCD_tasksInit.h>
-#include <asm/proc/mcdapi/MCD_progCheck.h>
+#include <proc/mcdapi/MCD_dma.h>
+#include <proc/mcdapi/MCD_tasksInit.h>
+#include <proc/mcdapi/MCD_progCheck.h>
 
 /*
  * This is an API-internal pointer to the DMA's registers

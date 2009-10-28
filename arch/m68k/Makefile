@@ -46,31 +46,13 @@ CFLAGS += -msoft-float -mcfv4e -gdwarf-2 -feliminate-unused-debug-types \
 LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 #  --verbose --stats
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
+machdirs := $(patsubst %,arch/m68k/mach-%/,$(machine-y))
 
-#	Update machine arch and proc symlinks if something which affects
-#	them changed.  We use .arch to indicate when they were updated
-#	last, otherwise make uses the target directory mtime.
-
-include/asm-m68k/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-m68k/arch -> include/asm-m68k/$(INCDIR)'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-m68k
-	$(Q)ln -fsn $(srctree)/include/asm-m68k/$(INCDIR) include/asm-m68k/arch
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
 else
-	$(Q)ln -fsn $(INCDIR) include/asm-m68k/arch
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
-	@echo '  SYMLINK include/asm-m68k/proc -> include/asm-m68k/proc-mcfv4e'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-m68k
-	$(Q)ln -fsn $(srctree)/include/asm-m68k/proc-mcfv4e include/asm-m68k/proc
-else
-	$(Q)ln -fsn proc-mcfv4e include/asm-m68k/proc
-endif
-	@touch $@
 
 
 all: $(KBUILD_IMAGE)
@@ -78,7 +60,6 @@ all: $(KBUILD_IMAGE)
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-m68k/.arch
 
 
 ifneq ($(board-y),)
@@ -100,4 +81,3 @@ lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/m68k/lib/u-boot.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
 
 CLEAN_FILES    += arch/m68k/lib/u-boot.lds
-MRPROPER_FILES += include/asm-m68k/arch include/asm-m68k/proc

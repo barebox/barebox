@@ -24,7 +24,7 @@
 #include <common.h>
 #include <clock.h>
 #include <init.h>
-#include <asm/arch/clocks.h>
+#include <mach/clocks.h>
 #include <asm/common.h>
 
 /* ------------------------------------------------------------------------- */

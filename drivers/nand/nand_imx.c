@@ -24,9 +24,9 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/imx-nand.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/generic.h>
+#include <mach/generic.h>
+#include <mach/imx-nand.h>
+#include <mach/imx-regs.h>
 #include <asm/io.h>
 #include <errno.h>
 

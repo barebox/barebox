@@ -33,10 +33,10 @@
 #include <init.h>
 #include <clock.h>
 #include <asm/hardware.h>
-#include <asm/arch/at91_pit.h>
-#include <asm/arch/at91_pmc.h>
-#include <asm/arch/at91_rstc.h>
-#include <asm/arch/io.h>
+#include <mach/at91_pit.h>
+#include <mach/at91_pmc.h>
+#include <mach/at91_rstc.h>
+#include <mach/io.h>
 #include <asm/io.h>
 
 uint64_t at91sam9_clocksource_read(void)

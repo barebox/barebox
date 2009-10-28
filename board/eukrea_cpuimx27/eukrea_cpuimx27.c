@@ -25,21 +25,21 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <fec.h>
 #include <notifier.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
-#include <asm/arch/pmic.h>
+#include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>
 #include <command.h>
 #include <asm/io.h>
-#include <asm/arch/imx-nand.h>
-#include <asm/arch/imx-pll.h>
+#include <mach/imx-nand.h>
+#include <mach/imx-pll.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",

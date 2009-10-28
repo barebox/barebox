@@ -25,8 +25,8 @@
 #include <init.h>
 #include <malloc.h>
 #include <asm/io.h>
-#include <asm/arch/s3c24xx-generic.h>
-#include <asm/arch/s3c24x0-iomap.h>
+#include <mach/s3c24xx-generic.h>
+#include <mach/s3c24x0-iomap.h>
 
 /* Note: Offsets are for little endian access */
 #define ULCON 0x00		/* line control */

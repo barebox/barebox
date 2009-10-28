@@ -27,7 +27,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 
 /* #define DEBUG */
 

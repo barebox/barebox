@@ -24,9 +24,9 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/mach-types.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <asm/armlinux.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
 #include <fs.h>

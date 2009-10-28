@@ -17,14 +17,14 @@
 #include <common.h>
 #include <fb.h>
 #include <asm/io.h>
-#include <asm/arch/imxfb.h>
+#include <mach/imxfb.h>
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
-#include <asm/arch/imx-regs.h>
+#include <mach/imx-regs.h>
 #include <asm-generic/div64.h>
-#include <asm/arch/clock.h>
+#include <mach/clock.h>
 
 #define LCDC_SSA	0x00
 

@@ -23,13 +23,13 @@
 #include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-regs.h>
 #include <partition.h>
 #include <asm/armlinux.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <asm/mach-types.h>
-#include <asm/arch/netx-eth.h>
+#include <mach/netx-eth.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",

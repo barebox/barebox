@@ -23,7 +23,7 @@
 #include <common.h>
 #include <driver.h>
 #include <malloc.h>
-#include <asm/arch/linux.h>
+#include <mach/linux.h>
 #include <init.h>
 #include <errno.h>
 

@@ -23,7 +23,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/arch/linux.h>
+#include <mach/linux.h>
 
 static uint64_t linux_clocksource_read(void)
 {

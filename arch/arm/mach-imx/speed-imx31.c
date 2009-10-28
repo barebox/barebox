@@ -17,8 +17,8 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/clock.h>
+#include <mach/imx-regs.h>
+#include <mach/clock.h>
 #include <init.h>
 
 ulong imx_get_mpl_dpdgck_clk(void)

@@ -26,8 +26,8 @@
 #include <driver.h>
 #include <fec.h>
 #include <environment.h>
-#include <asm/arch/mcf54xx-regs.h>
-#include <asm/arch/clocks.h>
+#include <mach/mcf54xx-regs.h>
+#include <mach/clocks.h>
 #include <asm/io.h>
 #include <partition.h>
 

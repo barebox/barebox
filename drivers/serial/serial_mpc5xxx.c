@@ -34,13 +34,13 @@
  */
 
 #include <common.h>
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 #include <driver.h>
 #include <init.h>
 #include <console.h>
 #include <xfuncs.h>
 #include <reloc.h>
-#include <asm/arch/clocks.h>
+#include <mach/clocks.h>
 
 static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)
 {

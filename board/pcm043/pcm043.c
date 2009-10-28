@@ -29,17 +29,17 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/imx-pll.h>
-#include <asm/arch/iomux-mx35.h>
+#include <mach/imx-regs.h>
 #include <asm/armlinux.h>
-#include <asm/arch/gpio.h>
+#include <mach/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
 #include <nand.h>
 #include <asm/mach-types.h>
+#include <mach/imx-nand.h>
 #include <fec.h>
-#include <asm/arch/imx-nand.h>
+#include <mach/imx-pll.h>
+#include <mach/iomux-mx35.h>
 
 #define CYG_MACRO_START
 #define CYG_MACRO_END

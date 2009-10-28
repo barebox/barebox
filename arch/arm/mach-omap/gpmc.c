@@ -30,10 +30,10 @@
 #include <common.h>
 #include <init.h>
 #include <asm/io.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/gpmc.h>
-#include <asm/arch/sys_info.h>
-#include <asm/arch/syslib.h>
+#include <mach/silicon.h>
+#include <mach/gpmc.h>
+#include <mach/sys_info.h>
+#include <mach/syslib.h>
 
 /**
  * @brief Do a Generic initialization of GPMC. if you choose otherwise,

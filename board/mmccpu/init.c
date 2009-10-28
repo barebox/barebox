@@ -33,10 +33,10 @@
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/at91_pmc.h>
-#include <asm/arch/board.h>
-#include <asm/arch/gpio.h>
-#include <asm/arch/io.h>
+#include <mach/at91_pmc.h>
+#include <mach/board.h>
+#include <mach/gpio.h>
+#include <mach/io.h>
 
 static struct device_d cfi_dev = {
 	.name		= "cfi_flash",

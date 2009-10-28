@@ -22,7 +22,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <asm/io.h>
-#include <asm/arch/clk.h>
+#include <mach/clk.h>
 
 /* USART3 register offsets */
 #define USART3_CR				0x0000

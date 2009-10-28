@@ -19,7 +19,7 @@
  */
 
 #include <config.h>
-#include <asm/arch/s3c24x0-iomap.h>
+#include <mach/s3c24x0-iomap.h>
 
 	.section ".text_bare_init.s3c24x0_disable_wd","ax"
 

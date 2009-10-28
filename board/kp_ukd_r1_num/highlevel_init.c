@@ -24,7 +24,7 @@
 #include <common.h>
 #include <reloc.h>
 #include <config.h>
-#include <asm/arch/mcf54xx-regs.h>
+#include <mach/mcf54xx-regs.h>
 
 static void board_gpio_init(void)
 {

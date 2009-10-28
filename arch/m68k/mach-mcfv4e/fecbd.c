@@ -7,12 +7,12 @@
 #include <common.h>
 #include <linux/types.h>
 
-#include <asm/arch/mcf54xx-regs.h>
-#include <asm/proc/mcdapi/MCD_dma.h>
-#include <asm/proc/net/net.h>
-#include <asm/proc/fecbd.h>
-#include <asm/proc/fec.h>
-#include <asm/proc/dma_utils.h>
+#include <mach/mcf54xx-regs.h>
+#include <proc/mcdapi/MCD_dma.h>
+#include <proc/net/net.h>
+#include <proc/fecbd.h>
+#include <proc/fec.h>
+#include <proc/dma_utils.h>
 
 #define ASSERT(x) if (!(x)) hang();
 

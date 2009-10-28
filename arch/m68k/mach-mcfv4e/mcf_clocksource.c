@@ -24,9 +24,9 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/arch/mcf54xx-regs.h>
-#include <asm/arch/clocks.h>
-#include <asm/proc/processor.h> //FIXME - move to other file
+#include <mach/mcf54xx-regs.h>
+#include <mach/clocks.h>
+#include <proc/processor.h> //FIXME - move to other file
 
 #ifdef CONFIG_USE_IRQ
 

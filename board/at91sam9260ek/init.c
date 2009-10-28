@@ -33,9 +33,9 @@
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <asm/arch/board.h>
-#include <asm/arch/at91sam9_smc.h>
-#include <asm/arch/sam9_smc.h>
+#include <mach/board.h>
+#include <mach/at91sam9_smc.h>
+#include <mach/sam9_smc.h>
 #include <gpio.h>
 
 static struct atmel_nand_data nand_pdata = {

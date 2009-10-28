@@ -32,9 +32,9 @@
 #include <partition.h>
 #include <nand.h>
 #include <asm/io.h>
-#include <asm/arch/s3c24x0-iomap.h>
-#include <asm/arch/s3c24x0-nand.h>
-#include <asm/arch/s3c24xx-generic.h>
+#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c24x0-nand.h>
+#include <mach/s3c24xx-generic.h>
 
 #include "baseboards.h"
 

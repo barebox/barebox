@@ -22,7 +22,7 @@
  *  Implements a watchdog triggered reset for V4e Coldfire cores
  */
 #include <common.h>
-#include <asm/arch/mcf54xx-regs.h>
+#include <mach/mcf54xx-regs.h>
 
 /**
  * Reset the cpu by setting up the watchdog timer and let it time out

@@ -24,7 +24,7 @@
 #include <spi/spi.h>
 #include <xfuncs.h>
 #include <errno.h>
-#include <asm/arch/pmic.h>
+#include <mach/pmic.h>
 
 #define REG_INTERRUPT_STATUS_0			0x0
 #define	REG_INTERRUPT_MASK			0x1

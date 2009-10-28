@@ -16,9 +16,9 @@
  */
 
 #include <common.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/generic.h>
-#include <asm/arch/clock.h>
+#include <mach/imx-regs.h>
+#include <mach/generic.h>
+#include <mach/clock.h>
 #include <init.h>
 
 #ifndef CLK32

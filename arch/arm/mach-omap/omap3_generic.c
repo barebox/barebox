@@ -37,15 +37,15 @@
 #include <common.h>
 #include <init.h>
 #include <asm/io.h>
-#include <asm/arch/silicon.h>
-#include <asm/arch/gpmc.h>
-#include <asm/arch/sdrc.h>
-#include <asm/arch/control.h>
-#include <asm/arch/omap3-smx.h>
-#include <asm/arch/clocks.h>
-#include <asm/arch/wdt.h>
-#include <asm/arch/sys_info.h>
-#include <asm/arch/syslib.h>
+#include <mach/silicon.h>
+#include <mach/gpmc.h>
+#include <mach/sdrc.h>
+#include <mach/control.h>
+#include <mach/omap3-smx.h>
+#include <mach/clocks.h>
+#include <mach/wdt.h>
+#include <mach/sys_info.h>
+#include <mach/syslib.h>
 
 /**
  * @brief Reset the CPU

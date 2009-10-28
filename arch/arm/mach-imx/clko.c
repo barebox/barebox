@@ -1,8 +1,8 @@
 #include <common.h>
 #include <command.h>
 #include <getopt.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/clock.h>
+#include <mach/imx-regs.h>
+#include <mach/clock.h>
 
 static int do_clko (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {

@@ -20,7 +20,7 @@
 
 #include <common.h>
 #include <command.h>
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-regs.h>
 #include "eth_firmware.h"
 
 struct fw_header {

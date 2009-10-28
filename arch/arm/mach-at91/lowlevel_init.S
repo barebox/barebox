@@ -28,14 +28,14 @@
 
 #include <linux/autoconf.h>
 #include <config.h>
-#include <asm/arch/hardware.h>
-#include <asm/arch/at91_pmc.h>
-#include <asm/arch/at91_pio.h>
-#include <asm/arch/at91_rstc.h>
-#include <asm/arch/at91_wdt.h>
-#include <asm/arch/at91sam9_matrix.h>
-#include <asm/arch/at91sam9_sdramc.h>
-#include <asm/arch/at91sam9_smc.h>
+#include <mach/hardware.h>
+#include <mach/at91_pmc.h>
+#include <mach/at91_pio.h>
+#include <mach/at91_rstc.h>
+#include <mach/at91_wdt.h>
+#include <mach/at91sam9_matrix.h>
+#include <mach/at91sam9_sdramc.h>
+#include <mach/at91sam9_smc.h>
 
 _TEXT_BASE:
 	.word	TEXT_BASE

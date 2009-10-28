@@ -21,29 +21,17 @@ ifndef CONFIG_MODULE
 CPPFLAGS += -fdata-sections -ffunction-sections
 endif
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
+machdirs := $(patsubst %,arch/ppc/mach-%/,$(cpu-y))
 
-#	Update machine arch and proc symlinks if something which affects
-#	them changed.  We use .arch to indicate when they were updated
-#	last, otherwise make uses the target directory mtime.
-
-include/asm-ppc/.arch: $(wildcard include/config/arch/*.h) include/config/auto.conf
-	@echo '  SYMLINK include/asm-ppc/arch -> include/asm-ppc/$(INCDIR)'
-ifneq ($(KBUILD_SRC),)
-	$(Q)mkdir -p include/asm-ppc
-	$(Q)ln -fsn $(srctree)/include/asm-ppc/$(INCDIR) include/asm-ppc/arch
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
 else
-	$(Q)ln -fsn $(INCDIR) include/asm-ppc/arch
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
-	@touch $@
 
 archprepare: maketools
 
 PHONY += maketools
-maketools: include/asm-ppc/.arch
 
 
 ifneq ($(board-y),)
@@ -62,5 +50,3 @@ common-y += $(BOARD) $(CPU)
 common-y += arch/ppc/lib/
 
 lds-y += $(BOARD)/u-boot.lds
-
-MRPROPER_FILES += include/asm-ppc/arch

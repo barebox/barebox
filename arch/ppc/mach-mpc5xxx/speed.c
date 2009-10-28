@@ -22,7 +22,7 @@
  */
 
 #include <common.h>
-#include <asm/arch/mpc5xxx.h>
+#include <mach/mpc5xxx.h>
 #include <init.h>
 #include <asm/processor.h>
 #include <types.h>

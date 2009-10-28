@@ -19,8 +19,8 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch/imx-regs.h>
-#include <asm/arch/iomux-mx31.h>
+#include <mach/imx-regs.h>
+#include <mach/iomux-mx31.h>
 
 /*
  * IOMUX register (base) addresses

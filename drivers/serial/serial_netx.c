@@ -22,7 +22,7 @@
  */
 
 #include <common.h>
-#include <asm/arch/netx-regs.h>
+#include <mach/netx-regs.h>
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>

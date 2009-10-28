@@ -12,6 +12,7 @@ config ARCH_TEXT_BASE
 	default 0xa0000000 if MACH_IMX27ADS
 	default 0x87f00000 if MACH_PCM037
 	default 0x23f00000 if MACH_AT91SAM9260_EK
+	default 0x23f00000 if MACH_AT91SAM9263_EK
 	default 0x23f00000 if MACH_PM9263
 	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
 	default 0x31fc0000 if MACH_A9M2410
@@ -30,6 +31,7 @@ config BOARDINFO
 	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
+	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263_EK
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Ronetix PM9263" if MACH_PM9263
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
@@ -207,6 +209,12 @@ config MACH_AT91SAM9260_EK
 	select ARCH_AT91SAM9260
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
+
+config MACH_AT91SAM9263_EK
+	bool "Atmel AT91SAM9263-EK"
+	select ARCH_AT91SAM9263
+	help
+	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 
 config MACH_PM9263
 	bool "Ronetix PM9263"

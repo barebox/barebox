@@ -1,0 +1,26 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = xnand ]; then
+	part=/dev/nand0.uboot
+elif [ x$1 = xnor ]; then
+	part=/dev/nor0.uboot
+else
+	echo "usage: $0 nor|nand"
+	exit 1
+fi
+
+loadb -f uboot.bin -c
+
+unprotect $part
+echo
+echo "erasing partition $part"
+erase $part
+
+echo
+echo "flashing uboot.bin to $part"
+echo
+cp uboot.bin $part
+crc32 -f uboot.bin
+crc32 -f $part

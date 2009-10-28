@@ -28,13 +28,15 @@
 #include <driver.h>
 #include <init.h>
 #include <asm/io.h>
-#include <asm/arch/s3c24x0-iomap.h>
+#include <mach/s3c24x0-iomap.h>
 
 /**
  * Initialize the CPU to be able to work with the a9m2410dev evaluation board
  */
 int a9m2410dev_devices_init(void)
 {
+	unsigned int reg;
+
 	/* ---------- configure the GPIOs ------------- */
 	writel(0x007FFFFF, GPACON);
 	writel(0x00000000, GPCCON);

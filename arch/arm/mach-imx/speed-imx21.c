@@ -150,7 +150,6 @@ void imx_dump_clocks(void)
 	printf("perclk3: %10d Hz\n", imx_get_perclk3());
 	printf("perclk4: %10d Hz\n", imx_get_perclk4());
 	printf("clkin26: %10d Hz\n", clk_in_26m());
-	return 0;
 }
 
 /*

@@ -177,6 +177,11 @@ int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
+static inline const char *dev_name(const struct device_d *dev)
+{
+	return dev->name;
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;
@@ -238,7 +243,7 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 extern const char *dev_id(const struct device_d *dev);
 
 #define dev_printf(dev, format, arg...)	\
-	printf("%s@%s: " format , (dev)->name , \
+	printf("%s@%s: " format , dev_name(dev) , \
 	       dev_id(dev) , ## arg)
 
 #define dev_emerg(dev, format, arg...)		\

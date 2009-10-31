@@ -96,21 +96,6 @@ config ARCH_S3C24xx
 
 endchoice
 
-choice
-	prompt "Select your board"
-	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP && !ARCH_IMX && !ARCH_S3C24xx
-
-config MACH_NXDB500
-	bool "Hilscher Netx nxdb500"
-	depends on ARCH_NETX
-	select HAS_NETX_ETHER
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	help
-	  Say Y here if you are using the Hilscher Netx nxdb500 board
-
-endchoice
-
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-at91rm9200/Kconfig
 source arch/arm/mach-imx/Kconfig

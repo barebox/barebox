@@ -1,8 +1,4 @@
 
-config ARCH_S3C24xx
-	bool
-	select ARM920T
-
 config CPU_S3C2410
 	select ARCH_S3C24xx
 	bool

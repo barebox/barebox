@@ -26,7 +26,6 @@ config ARCH_TEXT_BASE
 	default 0x80e80000 if MACH_BEAGLE
 
 menu "OMAP Platform Features"
-	depends on MACH_OMAP
 
 config BOARDINFO
 	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP

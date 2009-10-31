@@ -23,6 +23,9 @@
 menu "OMAP Features"
 	depends on ARCH_OMAP
 
+config MACH_OMAP
+	bool
+
 choice
 	prompt "Select OMAP Variant"
 

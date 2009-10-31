@@ -68,15 +68,6 @@ config ARM926EJS
 config ARMCORTEXA8
 	bool
 
-config ARCH_AT91SAM9260
-	bool
-	select ARM926EJS
-
-config ARCH_AT91SAM9263
-	bool
-	select ARM926EJS
-	select MACH_HAS_LOWLEVEL_INIT
-
 menu "System Type"
 
 choice
@@ -107,7 +98,7 @@ endchoice
 
 choice
 	prompt "Select your board"
-	depends on !ARCH_OMAP
+	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP
 
 config MACH_MX1ADS
 	bool "mx1ads"
@@ -193,14 +184,6 @@ config MACH_FREESCALE_MX25_3STACK
 	  Say Y here if you are using the Freescale MX25 3stack board equipped
 	  with a Freescale i.MX25 Processor
 
-config MACH_ECO920
-	bool "eco920"
-	depends on ARCH_AT91RM9200
-	select HAS_AT91_ETHER
-	select HAS_CFI
-	help
-	  Say Y here if you are using the Motorola MX1ADS board
-
 config MACH_NXDB500
 	bool "Hilscher Netx nxdb500"
 	depends on ARCH_NETX
@@ -219,27 +202,6 @@ config MACH_PCM037
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
 	  with a Freescale i.MX31 Processor
-
-config MACH_AT91SAM9260_EK
-	bool "Atmel AT91SAM9260-EK"
-	depends on ARCH_AT91
-	select ARCH_AT91SAM9260
-	help
-	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
-
-config MACH_AT91SAM9263_EK
-	bool "Atmel AT91SAM9263-EK"
-	depends on ARCH_AT91
-	select ARCH_AT91SAM9263
-	help
-	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
-
-config MACH_PM9263
-	bool "Ronetix PM9263"
-	depends on ARCH_AT91
-	select ARCH_AT91SAM9263
-	help
-	  Say y here if you are using the Ronetix PM9263 Board
 
 config MACH_A9M2410
 	bool "Digi A9M2410"
@@ -272,13 +234,6 @@ config MACH_PCA100
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor
 
-config MACH_MMCCPU
-	bool "Bucyrus MMC-CPU"
-	depends on ARCH_AT91
-	select ARCH_AT91SAM9263
-	help
-	  Say y here if you are using the Bucyrus MMC-CPU
-
 config MACH_EUKREA_CPUIMX27
 	bool "EUKREA CPUIMX27"
 	depends on ARCH_IMX
@@ -291,6 +246,8 @@ config MACH_EUKREA_CPUIMX27
 
 endchoice
 
+source arch/arm/mach-at91/Kconfig
+source arch/arm/mach-at91rm9200/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-omap/Kconfig

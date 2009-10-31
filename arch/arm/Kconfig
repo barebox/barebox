@@ -98,7 +98,7 @@ endchoice
 
 choice
 	prompt "Select your board"
-	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP && !ARCH_IMX
+	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP && !ARCH_IMX && !ARCH_S3C24xx
 
 config MACH_NXDB500
 	bool "Hilscher Netx nxdb500"
@@ -108,27 +108,6 @@ config MACH_NXDB500
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board
-
-config MACH_A9M2410
-	bool "Digi A9M2410"
-	depends on ARCH_S3C24xx
-	select CPU_S3C2410
-	select MACH_HAS_LOWLEVEL_INIT
-	select S3C24XX_PLL_INIT
-	select S3C24XX_SDRAM_INIT
-	help
-	  Say Y here if you are using Digi's Connect Core 9M equipped
-	  with a Samsung S3C2410 Processor
-
-config MACH_A9M2440
-	bool "Digi A9M2440"
-	depends on ARCH_S3C24xx
-	select CPU_S3C2440
-	select MACH_HAS_LOWLEVEL_INIT
-	select S3C24XX_PLL_INIT
-	help
-	  Say Y here if you are using Digi's Connect Core 9M equipped
-	  with a Samsung S3C2440 Processor
 
 endchoice
 

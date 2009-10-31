@@ -98,91 +98,7 @@ endchoice
 
 choice
 	prompt "Select your board"
-	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP
-
-config MACH_MX1ADS
-	bool "mx1ads"
-	depends on ARCH_IMX
-	select ARCH_IMX1
-	select HAS_CS8900
-	help
-	  Say Y here if you are using the Motorola MX1ADS board
-
-config MACH_SCB9328
-	bool "Synertronixx scb9328"
-	depends on ARCH_IMX
-	select ARCH_IMX1
-	select HAS_DM9000
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	select HAVE_MMU
-	help
-	  Say Y here if you are using the Synertronixx scb9328 board
-
-config MACH_PCM038
-	bool "phyCORE-i.MX27"
-	depends on ARCH_IMX
-	select ARCH_IMX27
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	select SPI
-	select DRIVER_SPI_IMX
-	select DRIVER_SPI_MC13783
-	select HAVE_MMU
-	help
-	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_IMX21ADS
-	bool "Freescale i.MX21ADS"
-	depends on ARCH_IMX
-	select ARCH_IMX21
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	select HAS_CS8900
-	help
-	  Say Y here if you are using the Freescale i.MX21ads board equipped
-	  with a Freescale i.MX21 Processor
-
-config MACH_IMX27ADS
-	bool "Freescale i.MX27ADS"
-	depends on ARCH_IMX
-	select ARCH_IMX27
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	help
-	  Say Y here if you are using the Freescale i.MX27ads board equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_PCM043
-        bool "phyCORE-i.MX35"
-	depends on ARCH_IMX
-	select ARCH_IMX35
-        select HAS_CFI
-        select MACH_HAS_LOWLEVEL_INIT
-        help
-          Say Y here if you are using Phytec's phyCORE-i.MX35 (pcm043) equipped
-          with a Freescale i.MX35 Processor
-
-config MACH_FREESCALE_MX35_3STACK
-	bool "Freescale MX35 3stack"
-	depends on ARCH_IMX
-	select ARCH_IMX35
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	help
-	  Say Y here if you are using the Freescale MX35 3stack board equipped
-	  with a Freescale i.MX35 Processor
-
-config MACH_FREESCALE_MX25_3STACK
-	bool "Freescale MX25 3stack"
-	depends on ARCH_IMX
-	select ARCH_IMX25
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	help
-	  Say Y here if you are using the Freescale MX25 3stack board equipped
-	  with a Freescale i.MX25 Processor
+	depends on !ARCH_AT91 && !ARCH_AT91RM9200 && !ARCH_OMAP && !ARCH_IMX
 
 config MACH_NXDB500
 	bool "Hilscher Netx nxdb500"
@@ -192,16 +108,6 @@ config MACH_NXDB500
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board
-
-config MACH_PCM037
-	bool "phyCORE-i.MX31"
-	depends on ARCH_IMX
-	select ARCH_IMX31
-	select MACH_HAS_LOWLEVEL_INIT
-	select USB_ISP1504 if USB
-	help
-	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
-	  with a Freescale i.MX31 Processor
 
 config MACH_A9M2410
 	bool "Digi A9M2410"
@@ -223,26 +129,6 @@ config MACH_A9M2440
 	help
 	  Say Y here if you are using Digi's Connect Core 9M equipped
 	  with a Samsung S3C2440 Processor
-
-config MACH_PCA100
-	bool "phyCard-i.MX27"
-	depends on ARCH_IMX
-	select ARCH_IMX27
-	select MACH_HAS_LOWLEVEL_INIT
-	select HAVE_MMU
-	help
-	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_EUKREA_CPUIMX27
-	bool "EUKREA CPUIMX27"
-	depends on ARCH_IMX
-	select ARCH_IMX27
-	select HAS_CFI
-	select MACH_HAS_LOWLEVEL_INIT
-	help
-	  Say Y here if you are using Eukrea's CPUIMX27 equipped
-	  with a Freescale i.MX27 Processor
 
 endchoice
 

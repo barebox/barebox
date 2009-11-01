@@ -5,8 +5,8 @@ config ARCH_TEXT_BASE
 	default 0x23f00000
 
 config BOARDINFO
-	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
-	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263_EK
+	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260EK
+	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Ronetix PM9263" if MACH_PM9263
 
@@ -34,7 +34,7 @@ choice
 
 	prompt "AT91SAM9260 Board Type"
 
-config MACH_AT91SAM9260_EK
+config MACH_AT91SAM9260EK
 	bool "Atmel AT91SAM9260-EK"
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
@@ -50,7 +50,7 @@ if ARCH_AT91SAM9263
 choice
 	prompt "AT91SAM9263 Board Type"
 
-config MACH_AT91SAM9263_EK
+config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
 	help
 	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board

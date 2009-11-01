@@ -18,7 +18,7 @@ CONFIG_ARCH_IMX31=y
 # CONFIG_MACH_NXDB500 is not set
 CONFIG_MACH_PCM037=y
 # CONFIG_MACH_OMAP is not set
-# CONFIG_MACH_AT91SAM9260_EK is not set
+# CONFIG_MACH_AT91SAM9260EK is not set
 
 #
 # Arm specific settings         

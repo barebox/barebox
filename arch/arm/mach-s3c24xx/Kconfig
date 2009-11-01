@@ -1,5 +1,13 @@
 if ARCH_S3C24xx
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x31fc0000
+
+config BOARDINFO
+	default "Digi A9M2440" if MACH_A9M2440
+	default "Digi A9M2410" if MACH_A9M2410
+
 config CPU_S3C2410
 	bool
 

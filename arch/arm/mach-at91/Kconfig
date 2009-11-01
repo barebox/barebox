@@ -1,5 +1,15 @@
 if ARCH_AT91
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x23f00000
+
+config BOARDINFO
+	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
+	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263_EK
+	default "Bucyrus MMC-CPU" if MACH_MMCCPU
+	default "Ronetix PM9263" if MACH_PM9263
+
 comment "Atmel AT91 System-on-Chip"
 
 choice

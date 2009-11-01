@@ -1,47 +1,6 @@
 #
 #
 #
-config ARCH_TEXT_BASE
-	hex
-	default 0x08f00000 if MACH_MX1ADS
-	default 0x08f80000 if MACH_SCB9328
-	default 0x81f00000 if MACH_NXDB500
-	default 0x21e00000 if MACH_ECO920
-	default 0xa0000000 if MACH_PCM038
-	default 0xc0000000 if MACH_IMX21ADS
-	default 0xa0000000 if MACH_IMX27ADS
-	default 0x87f00000 if MACH_PCM037
-	default 0x23f00000 if MACH_AT91SAM9260_EK
-	default 0x23f00000 if MACH_AT91SAM9263_EK
-	default 0x23f00000 if MACH_PM9263
-	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
-	default 0x31fc0000 if MACH_A9M2410
-	default 0x87f00000 if MACH_FREESCALE_MX25_3STACK
-	default 0x87f00000 if MACH_PCM043
-	default 0xa7f00000 if MACH_PCA100
-	default 0x31fc0000 if MACH_A9M2440
-	default 0x23f00000 if MACH_MMCCPU
-	default 0xa0000000 if MACH_EUKREA_CPUIMX27
-
-config BOARDINFO
-	default "Synertronixx scb9328" if MACH_SCB9328
-	default "Hilscher Netx nxdb500" if MACH_NXDB500
-	default "Phytec phyCORE-i.MX27" if MACH_PCM038
-	default "Freescale i.MX21 ADS" if MACH_IMX21ADS
-	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
-	default "Phytec phyCORE-i.MX31" if MACH_PCM037
-	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260_EK
-	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263_EK
-	default "Digi A9M2440" if MACH_A9M2440
-	default "Ronetix PM9263" if MACH_PM9263
-	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
-	default "Freescale MX25 3Stack" if MACH_FREESCALE_MX25_3STACK
-	default "Phytec phyCORE-i.MX35" if MACH_PCM043
-	default "Digi A9M2410" if MACH_A9M2410
-	default "Phytec phyCard-i.MX27" if MACH_PCA100
-	default "Bucyrus MMC-CPU" if MACH_MMCCPU
-	default "Eukrea CPUIMX27" if MACH_EUKREA_CPUIMX27
-
 config BOARD_LINKER_SCRIPT
 	bool
 	default n

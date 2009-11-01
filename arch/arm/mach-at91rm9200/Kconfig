@@ -1,5 +1,11 @@
 if ARCH_AT91RM9200
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x21e00000 if MACH_ECO920
+
+config BOARDINFO
+
 comment "Atmel AT91RM9200 System-on-Chip"
 
 choice

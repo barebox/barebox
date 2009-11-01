@@ -1,5 +1,12 @@
 if ARCH_NETX
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x81f00000 if MACH_NXDB500
+
+config BOARDINFO
+	default "Hilscher Netx nxdb500" if MACH_NXDB500
+
 config NETX_SDRAM_CTRL
 	hex
 	default 0x010D0001 if MACH_NXDKN

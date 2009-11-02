@@ -13,6 +13,22 @@ AS		+= -EL
 LD		+= -EL
 endif
 
+comma = ,
+
+# This selects which instruction set is used.
+# Note that GCC does not numerically define an architecture version
+# macro, but instead defines a whole series of macros which makes
+# testing for a specific architecture or later rather impossible.
+arch-$(CONFIG_CPU_32v7)		:=-D__LINUX_ARM_ARCH__=7 $(call cc-option,-march=armv7-a,-march=armv5t -Wa$(comma)-march=armv7-a)
+arch-$(CONFIG_CPU_32v5)		:=-D__LINUX_ARM_ARCH__=5 $(call cc-option,-march=armv5te,-march=armv4t)
+arch-$(CONFIG_CPU_32v4T)	:=-D__LINUX_ARM_ARCH__=4 -march=armv4t
+
+# This selects how we optimise for the processor.
+tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
+tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
+
+CPPFLAGS += $(arch-y) $(tune-y)
+
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
 machine-$(CONFIG_ARCH_AT91)		:= at91
@@ -80,11 +96,6 @@ all: $(KBUILD_IMAGE)
 archprepare: maketools
 
 PHONY += maketools
-
-# Add architecture specific flags
-ifeq ($(CONFIG_CPU_V7),y)
-CPPFLAGS += -march=armv7a
-endif
 
 ifneq ($(board-y),)
 BOARD := board/$(board-y)/

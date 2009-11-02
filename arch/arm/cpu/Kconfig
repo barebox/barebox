@@ -50,3 +50,14 @@ config CPU_32v5
 
 config CPU_32v7
 	bool
+
+comment "processor features"
+
+config CPU_BIG_ENDIAN
+	bool "Build big-endian kernel"
+	depends on ARCH_SUPPORTS_BIG_ENDIAN
+	help
+	  Say Y if you plan on running a kernel in big-endian mode.
+	  Note that your board must be properly built and your board
+	  port must properly enable any big-endian related features
+	  of your chipset/board/processor.

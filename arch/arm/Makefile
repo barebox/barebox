@@ -3,6 +3,16 @@ CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 CPPFLAGS	+=$(call cc-option,-marm,)
 
+ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
+CPPFLAGS	+= -mbig-endian
+AS		+= -EB
+LD		+= -EB
+else
+CPPFLAGS	+= -mlittle-endian
+AS		+= -EL
+LD		+= -EL
+endif
+
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
 machine-$(CONFIG_ARCH_AT91)		:= at91

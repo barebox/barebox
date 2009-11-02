@@ -30,8 +30,8 @@ board-$(CONFIG_MACH_A9M2440)       := a9m2440
 board-$(CONFIG_MACH_EUKREA_CPUIMX27) := eukrea_cpuimx27
 
 # FIXME "cpu-y" never used on ARM!
-cpu-$(CONFIG_ARM920T)              := arm920t
-cpu-$(CONFIG_ARM926EJS)            := arm926ejs
+cpu-$(CONFIG_CPU_ARM920T)            := arm920t
+cpu-$(CONFIG_CPU_ARM926T)            := arm926ejs
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
@@ -70,7 +70,7 @@ archprepare: maketools
 PHONY += maketools
 
 # Add architecture specific flags
-ifeq ($(CONFIG_ARMCORTEXA8),y)
+ifeq ($(CONFIG_CPU_V7),y)
 CPPFLAGS += -march=armv7a
 endif
 

@@ -131,7 +131,7 @@ reset:
 	bl arch_init_lowlevel
 #endif
 
-#ifdef CONFIG_ARMCORTEXA8
+#ifdef CONFIG_CPU_V7
 	/*
 	 * Invalidate v7 I/D caches
 	 */
@@ -139,7 +139,7 @@ reset:
 	mcr     p15, 0, r0, c8, c7, 0  /* invalidate TLBs */
 	mcr     p15, 0, r0, c7, c5, 0  /* invalidate icache */
 	/* Invalidate all Dcaches */
-#ifndef CONFIG_ARMCORTEXA8_DCACHE_SKIP
+#ifndef CONFIG_CPU_V7_DCACHE_SKIP
 	/* If Arch specific ROM code SMI handling does not exist */
 	mrc	p15, 1, r0, c0, c0, 1	/* read clidr */
 	ands	r3, r0, #0x7000000	/* extract loc from clidr */
@@ -180,7 +180,7 @@ finished_inval:
 	mov	r10, #0			/* swith back to cache level 0 */
 	mcr	p15, 2, r10, c0, c0, 0	/* select current cache level in cssr */
 	isb
-#endif /* CONFIG_ARMCORTEXA8_DCACHE_SKIP */
+#endif /* CONFIG_CPU_V7_DCACHE_SKIP */
 
 #else
 	/*

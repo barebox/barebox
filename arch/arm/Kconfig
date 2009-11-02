@@ -18,15 +18,6 @@ config ARM
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	default y
 
-config ARM920T
-	bool
-
-config ARM926EJS
-	bool
-
-config ARMCORTEXA8
-	bool
-
 menu "System Type"
 
 choice
@@ -37,24 +28,25 @@ config ARCH_AT91
 
 config ARCH_AT91RM9200
 	bool "Atmel AT91RM9200"
-	select ARM920T
+	select CPU_ARM920T
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
 
 config ARCH_NETX
 	bool "Hilscher NetX based"
-	select ARM926EJS
+	select CPU_ARM926T
 
 config ARCH_OMAP
 	bool "TI OMAP"
 
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2412, S3C2413, S3C2440, S3C2442, S3C2443"
-	select ARM920T
+	select CPU_ARM920T
 
 endchoice
 
+source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-at91rm9200/Kconfig
 source arch/arm/mach-imx/Kconfig
@@ -92,9 +84,9 @@ config INITRD_TAG
 	  If you want to start a 2.6 kernel and use an
 	  initrd image say y here.
 
-config ARMCORTEXA8_DCACHE_SKIP
+config CPU_V7_DCACHE_SKIP
 	bool "Skip DCache Invlidate"
-	depends on ARMCORTEXA8
+	depends on CPU_V7
 	default n
 	help
 	  If your architecture configuration uses some other method of disabling caches, enable this

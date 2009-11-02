@@ -31,7 +31,7 @@ choice
 
 config ARCH_OMAP3
 	bool "OMAP3"
-	select ARMCORTEXA8
+	select CPU_V7
 	select ARCH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_SOURCE_S32K
 	help

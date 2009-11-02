@@ -36,20 +36,20 @@ choice
 
 config ARCH_IMX1
 	bool "i.MX1"
-	select ARM920T
+	select CPU_ARM920T
 
 config ARCH_IMX21
 	bool "i.MX21"
-	select ARM926EJS
+	select CPU_ARM926T
 
 config ARCH_IMX25
 	bool "i.MX25"
-	select ARM926EJS
+	select CPU_ARM926T
 	select ARCH_HAS_FEC_IMX
 
 config ARCH_IMX27
 	bool "i.MX27"
-	select ARM926EJS
+	select CPU_ARM926T
 	select ARCH_HAS_FEC_IMX
 
 config ARCH_IMX31

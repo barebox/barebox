@@ -5,6 +5,7 @@
 # serial_pl010.o
 # serial_pl011.o
 # serial_xuartlite.o
+obj-$(CONFIG_DRIVER_SERIAL_ARM_DCC)		+= arm_dcc.o
 obj-$(CONFIG_DRIVER_SERIAL_IMX)			+= serial_imx.o
 obj-$(CONFIG_DRIVER_SERIAL_ATMEL)		+= atmel.o
 obj-$(CONFIG_DRIVER_SERIAL_NETX)		+= serial_netx.o

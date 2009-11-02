@@ -1,5 +1,9 @@
 menu "serial drivers                "
 
+config DRIVER_SERIAL_ARM_DCC
+	depends on ARM
+	bool "ARM Debug Communications Channel (DCC) serial driver"
+
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX
 	default y

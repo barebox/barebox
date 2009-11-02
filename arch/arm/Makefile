@@ -1,37 +1,41 @@
 
 CPPFLAGS += -D__ARM__ -fno-strict-aliasing
 
+# Machine directory name.  This list is sorted alphanumerically
+# by CONFIG_* macro name.
+machine-$(CONFIG_ARCH_AT91)		:= at91
+machine-$(CONFIG_ARCH_AT91RM9200)	:= at91rm9200
+machine-$(CONFIG_ARCH_IMX)		:= imx
+machine-$(CONFIG_ARCH_NETX)		:= netx
+machine-$(CONFIG_ARCH_OMAP)		:= omap
+machine-$(CONFIG_ARCH_S3C24xx)		:= s3c24xx
 
-machine-$(CONFIG_ARCH_IMX)	   := imx
-machine-$(CONFIG_ARCH_NETX)	   := netx
-machine-$(CONFIG_ARCH_AT91RM9200)  := at91rm9200
-machine-$(CONFIG_ARCH_OMAP)        := omap
-machine-$(CONFIG_ARCH_AT91)	   := at91
-machine-$(CONFIG_ARCH_S3C24xx)     := s3c24xx
-board-$(CONFIG_MACH_MX1ADS)	   := mx1ads
-board-$(CONFIG_MACH_ECO920)	   := eco920
-board-$(CONFIG_MACH_SCB9328)	   := scb9328
-board-$(CONFIG_MACH_PCM038)	   := pcm038
-board-$(CONFIG_MACH_IMX21ADS)	   := imx21ads
-board-$(CONFIG_MACH_IMX27ADS)	   := imx27ads
-board-$(CONFIG_MACH_NXDB500)       := netx
-board-$(CONFIG_MACH_PCM037)	   := pcm037
-board-$(CONFIG_MACH_OMAP)	   := omap
-board-$(CONFIG_MACH_AT91SAM9260EK):= at91sam9260ek
-board-$(CONFIG_MACH_AT91SAM9263EK):= at91sam9263ek
-board-$(CONFIG_MACH_PM9263)        := pm9263
-board-$(CONFIG_MACH_FREESCALE_MX35_3STACK) := freescale-mx35-3-stack
-board-$(CONFIG_MACH_FREESCALE_MX25_3STACK) := freescale-mx25-3-stack
-board-$(CONFIG_MACH_PCM043)        := pcm043
-board-$(CONFIG_MACH_A9M2410)       := a9m2410
-board-$(CONFIG_MACH_PCA100)        := phycard-i.MX27
-board-$(CONFIG_MACH_MMCCPU)        := mmccpu
-board-$(CONFIG_MACH_A9M2440)       := a9m2440
-board-$(CONFIG_MACH_EUKREA_CPUIMX27) := eukrea_cpuimx27
+# Board directory name.  This list is sorted alphanumerically
+# by CONFIG_* macro name.
+board-$(CONFIG_MACH_A9M2410)			:= a9m2410
+board-$(CONFIG_MACH_A9M2440)			:= a9m2440
+board-$(CONFIG_MACH_AT91SAM9260EK)		:= at91sam9260ek
+board-$(CONFIG_MACH_AT91SAM9263EK)		:= at91sam9263ek
+board-$(CONFIG_MACH_ECO920)			:= eco920
+board-$(CONFIG_MACH_EUKREA_CPUIMX27)		:= eukrea_cpuimx27
+board-$(CONFIG_MACH_FREESCALE_MX35_3STACK)	:= freescale-mx35-3-stack
+board-$(CONFIG_MACH_FREESCALE_MX25_3STACK)	:= freescale-mx25-3-stack
+board-$(CONFIG_MACH_IMX21ADS)			:= imx21ads
+board-$(CONFIG_MACH_IMX27ADS)			:= imx27ads
+board-$(CONFIG_MACH_MMCCPU)			:= mmccpu
+board-$(CONFIG_MACH_MX1ADS)			:= mx1ads
+board-$(CONFIG_MACH_NXDB500)			:= netx
+board-$(CONFIG_MACH_OMAP)			:= omap
+board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
+board-$(CONFIG_MACH_PCM037)			:= pcm037
+board-$(CONFIG_MACH_PCM038)			:= pcm038
+board-$(CONFIG_MACH_PCM043)			:= pcm043
+board-$(CONFIG_MACH_PM9263)			:= pm9263
+board-$(CONFIG_MACH_SCB9328)			:= scb9328
 
 # FIXME "cpu-y" never used on ARM!
-cpu-$(CONFIG_CPU_ARM920T)            := arm920t
-cpu-$(CONFIG_CPU_ARM926T)            := arm926ejs
+cpu-$(CONFIG_CPU_ARM920T)	:= arm920t
+cpu-$(CONFIG_CPU_ARM926T)	:= arm926ejs
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
@@ -60,7 +64,7 @@ uboot.netx: uboot.bin
 		--cookie=$(CONFIG_NETX_COOKIE);
 
 ifeq ($(machine-y),netx)
-KBUILD_IMAGE := uboot.netx 
+KBUILD_IMAGE := uboot.netx
 endif
 
 all: $(KBUILD_IMAGE)
@@ -75,21 +79,21 @@ CPPFLAGS += -march=armv7a
 endif
 
 ifneq ($(board-y),)
-BOARD  := board/$(board-y)/
+BOARD := board/$(board-y)/
 else
-BOARD  :=
+BOARD :=
 endif
 
 ifneq ($(machine-y),)
-MACH  := arch/arm/mach-$(machine-y)/
+MACH := arch/arm/mach-$(machine-y)/
 else
-MACH  :=
+MACH :=
 endif
 
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/arm/lib/u-boot.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
+lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/u-boot.lds
+lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/u-boot.lds
 
-CLEAN_FILES    += arch/arm/lib/u-boot.lds
+CLEAN_FILES += arch/arm/lib/u-boot.lds

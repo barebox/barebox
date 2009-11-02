@@ -1,5 +1,7 @@
 
-CPPFLAGS += -D__ARM__ -fno-strict-aliasing
+CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
+# Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
+CPPFLAGS	+=$(call cc-option,-marm,)
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.

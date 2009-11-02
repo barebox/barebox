@@ -1,7 +1,7 @@
 #ifndef __STRING_H
 #define __STRING_H
 
-#include <list.h>
+#include <linux/list.h>
 
 struct string_list {
 	struct list_head list;

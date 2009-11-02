@@ -25,7 +25,7 @@
 #define _CONSOLE_H_
 
 #include <param.h>
-#include <list.h>
+#include <linux/list.h>
 #include <driver.h>
 
 #define CONSOLE_STDIN           (1 << 0)

@@ -30,7 +30,7 @@
 #include <zlib.h>
 #include <init.h>
 #include <fs.h>
-#include <list.h>
+#include <linux/list.h>
 #include <xfuncs.h>
 #include <malloc.h>
 #include <fcntl.h>

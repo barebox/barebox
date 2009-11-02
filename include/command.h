@@ -27,7 +27,7 @@
 #ifndef __COMMAND_H
 #define __COMMAND_H
 
-#include <list.h>
+#include <linux/list.h>
 
 #ifndef NULL
 #define NULL	0

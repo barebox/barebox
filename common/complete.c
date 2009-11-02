@@ -20,7 +20,7 @@
 #include <common.h>
 #include <complete.h>
 #include <xfuncs.h>
-#include <list.h>
+#include <linux/list.h>
 #include <malloc.h>
 #include <fs.h>
 #include <linux/stat.h>

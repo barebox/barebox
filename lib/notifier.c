@@ -1,5 +1,5 @@
 #include <common.h>
-#include <list.h>
+#include <linux/list.h>
 #include <notifier.h>
 
 int notifier_chain_register(struct notifier_head *nh, struct notifier_block *n)

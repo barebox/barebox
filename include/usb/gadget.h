@@ -18,7 +18,7 @@
 #include <usb/ch9.h>
 #include <malloc.h>
 #include <errno.h>
-#include <list.h>
+#include <linux/list.h>
 
 struct usb_ep;
 

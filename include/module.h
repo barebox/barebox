@@ -3,7 +3,7 @@
 
 #include <elf.h>
 #include <linux/compiler.h>
-#include <list.h>
+#include <linux/list.h>
 
 #ifndef MODULE_SYMBOL_PREFIX
 #define MODULE_SYMBOL_PREFIX

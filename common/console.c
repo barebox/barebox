@@ -34,7 +34,7 @@
 #include <clock.h>
 #include <kfifo.h>
 #include <module.h>
-#include <list.h>
+#include <linux/list.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);

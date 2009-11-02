@@ -2,7 +2,7 @@
 #define __BOOT_H
 
 #include <image.h>
-#include <list.h>
+#include <linux/list.h>
 
 struct image_data {
 	struct image_handle *os;

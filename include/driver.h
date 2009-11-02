@@ -23,7 +23,7 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <list.h>
+#include <linux/list.h>
 
 #define MAX_DRIVER_NAME 32
 

@@ -11,7 +11,7 @@
 
 #include <driver.h>
 #include <linux/types.h>
-#include <list.h>
+#include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>
 
 #define MTD_CHAR_MAJOR 90

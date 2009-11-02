@@ -32,7 +32,7 @@
 #include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
-#include <list.h>
+#include <linux/list.h>
 
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);

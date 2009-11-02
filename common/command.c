@@ -30,7 +30,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <environment.h>
-#include <list.h>
+#include <linux/list.h>
 #include <init.h>
 #include <complete.h>
 #include <linux/utsrelease.h>

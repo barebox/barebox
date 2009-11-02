@@ -26,7 +26,7 @@
 #include <command.h>
 #include <fs.h>
 #include <kallsyms.h>
-#include <list.h>
+#include <linux/list.h>
 
 static unsigned int find_sec(Elf_Ehdr *hdr,
 			     Elf_Shdr *sechdrs,

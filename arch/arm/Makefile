@@ -33,10 +33,6 @@ board-$(CONFIG_MACH_PCM043)			:= pcm043
 board-$(CONFIG_MACH_PM9263)			:= pm9263
 board-$(CONFIG_MACH_SCB9328)			:= scb9328
 
-# FIXME "cpu-y" never used on ARM!
-cpu-$(CONFIG_CPU_ARM920T)	:= arm920t
-cpu-$(CONFIG_CPU_ARM926T)	:= arm926ejs
-
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)

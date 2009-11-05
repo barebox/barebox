@@ -3,14 +3,14 @@ When porting from old U-Boot the follwing steps must be taken (please complain
 if there's something missing here ;)
 
 
-- Most of the macros in include/configs/yourboard.h can be removed, espacially
+- Most of the macros in include/configs/yourboard.h can be removed, especially
   the CONFIG_COMMANDS section. The goal is to remove this file entirely, but
   for now some values are still needed here. If you think some things are better
   configured with the Kconfig system feel free to add them there.
 
 - The linker script needs a new section for the initcalls. The handling of the
-  U-Boot command table has changed also (The commands are now sorted by the
-  linker instead in runtime). To change it you need an entry like the following
+  U-Boot command table has changed, too. (The commands are now sorted by the
+  linker instead at runtime.) To change it you need an entry like the following
   in your linker script:
 
 #include <asm-generic/u-boot.lds.h>
@@ -29,22 +29,22 @@ if there's something missing here ;)
 extra-y += u-boot.lds
 
 - Register the devices present in your system in the board specific .c file.
-  To see anything you at least have to register a console. In scb9328.c this
+  To see anything you have to at least register a console. In scb9328.c this
   looks like this:
 
-static struct device_d scb9328_serial_device = {
-        .name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
+	static struct device_d scb9328_serial_device = {
+		.name     = "imx_serial",
+		.map_base = IMX_UART1_BASE,
+		.size     = 4096,
+	};
 
-static int scb9328_console_init(void)
-{
-	register_device(&scb9328_serial_device);
-	return 0;
-}
+	static int scb9328_console_init(void)
+	{
+		register_device(&scb9328_serial_device);
+		return 0;
+	}
 
-console_initcall(scb9328_console_init);
+	console_initcall(scb9328_console_init);
 
 - For most boards you will have to register a cfi_flash device. NAND flash
   is not ported yet.
@@ -52,7 +52,7 @@ console_initcall(scb9328_console_init);
 - Call devfs_add_partition() to add an environment partition for your device:
   devfs_add_partition("nor0", 0x40000, 0x20000, "env0");
   This will add an area starting at 0x40000 of size 0x20000 of the device
-  cfi_dev as env0.
+  nor0 as env0.
 
 - Port missing drivers. Depending on the driver this can a be rather simple
   process:
@@ -66,11 +66,11 @@ console_initcall(scb9328_console_init);
   - Basically do the same as with serial drivers.
   - Identify the parts of the driver which handle the MAC address. There are
     now two functions handling them in struct eth_device. 
-    
+
     get_mac_address() retrieve the MAC address from the EEPROM if one is
-		      connected. If you don't have an EEPROM just return -1.
+                      connected. If you don't have an EEPROM just return -1.
     set_mac_address() set the MAC address in the device. All magic previously
-		      done with getenv/setenv(ethaddr) must be removed.
+                      done with getenv/setenv(ethaddr) must be removed.
 
     During startup U-Boot calls get_mac_address() to see if an EEPROM is
     connected. If so, it calls set_mac_address() with this address. This
@@ -85,11 +85,11 @@ console_initcall(scb9328_console_init);
     for examples.
 
 - Add a clocksource for your system. PowerPCs have a generic decrementer
-  counter, so if you have a PowerPC aou have nothing to do here. on ARM
-  this is SoC dependend. See Documentation/timekeeping.txt for further
+  counter, so if you have a PowerPC you have nothing to do here. On ARM
+  this is SoC dependent. See Documentation/timekeeping.txt for further
   information.
 
-- Adjust start.S. On PowerpC there is at least the Problem that the relocation
+- Adjust start.S. On PowerPC there is at least the Problem that the relocation
   offset is defined at compile time. It is easily possible to determine the
   address U-Boot is currently starting from at runtime and thus allowing it
   U-Boot to be started at any address. Look at the relocation code and replace
@@ -103,7 +103,7 @@ calc_source:
 
   (I'm almost sure that PowerPC has a dedicated instruction for this, un-
   fortunately I know next to nothing of PowerPC assembler, so if you have
-  a better way to archieve this, please write to the list)
+  a better way to archieve this, please write to the list.)
 
   On PowerPC U-Boot now runs at the address it was linked to, so you have
   to adjust TEXT_BASE to be in RAM. This makes the various fixup relocation
@@ -111,5 +111,5 @@ calc_source:
   binary space. It also simplifies debugging because you will see the correct
   addresses in the objdump without doing offset calculation.
 
-- On arm most of the duplicate code under cpu/arm* is already merged into
+- On ARM most of the duplicate code under cpu/arm* is already merged into
   arch/arm/cpu. The start.S files are missing though.

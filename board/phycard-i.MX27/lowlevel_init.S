@@ -6,6 +6,7 @@
 
 #include <config.h>
 #include <mach/imx-regs.h>
+#include <mach/imx-pll.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -72,7 +73,24 @@ board_init_lowlevel:
 	bhi	1f
 
 	mov	pc,r10
+
 1:
+	writel(IMX_PLL_PD(0) |
+		 IMX_PLL_MFD(51) |
+		 IMX_PLL_MFI(7) |
+		 IMX_PLL_MFN(35), MPCTL0) /* 399 MHz */
+
+	writel(IMX_PLL_PD(1) |
+		 IMX_PLL_MFD(12) |
+		 IMX_PLL_MFI(9) |
+		 IMX_PLL_MFN(3), SPCTL0) /* SPLL = 2 * 26 * 4.61538 MHz = 240 MHz */
+
+	writel(CSCR_MPLL_RESTART | CSCR_SPLL_RESTART | CSCR_ARM_SRC_MPLL |
+	       CSCR_MCU_SEL | CSCR_SP_SEL | CSCR_FPM_EN | CSCR_MPEN |
+	       CSCR_SPEN | CSCR_ARM_DIV(0) | CSCR_AHB_DIV(1) | CSCR_USB_DIV(3) |
+	       CSCR_SD_CNT(3) | CSCR_SSI2_SEL | CSCR_SSI1_SEL | CSCR_H264_SEL |
+	       CSCR_MSHC_SEL, CSCR)
+
 	sdram_init
 
 #ifdef CONFIG_NAND_IMX_BOOT

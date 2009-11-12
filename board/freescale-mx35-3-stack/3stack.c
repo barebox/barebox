@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2007 Sascha Hauer, Pengutronix 
+ * Copyright (C) 2007 Sascha Hauer, Pengutronix
+ *               2009 Marc Kleine-Budde, Pengutronix
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,86 +17,148 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  *
+ * Derived from:
+ *
+ * * mx35_3stack.c - board file for u-boot-v1
+ *   Copyright (C) 2007, Guennadi Liakhovetski <lg@denx.de>
+ *   (C) Copyright 2008-2009 Freescale Semiconductor, Inc.
+ *
  */
 
 #include <common.h>
-#include <net.h>
 #include <cfi_flash.h>
-#include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
-#include <fec.h>
-#include <mach/gpio.h>
-#include <asm/armlinux.h>
-#include <asm/mach-types.h>
-#include <mach/pmic.h>
-#include <partition.h>
-#include <fs.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <fec.h>
+#include <fs.h>
+#include <init.h>
 #include <nand.h>
-#include <spi/spi.h>
+#include <net.h>
+#include <partition.h>
+
+#include <asm/armlinux.h>
 #include <asm/io.h>
+#include <asm/mach-types.h>
+
+#include <mach/gpio.h>
 #include <mach/imx-nand.h>
+#include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
+#include <mach/iomux-v3.h>
+#include <mach/pmic.h>
+
+#include <i2c/i2c.h>
+#include <i2c/mc13892.h>
+#include <i2c/mc9sdz60.h>
 
 static struct device_d cfi_dev = {
-	.name     = "cfi_flash",
-	.map_base = 0xa0000000,
-	.size     = 64 * 1024 * 1024,
+	.name		= "cfi_flash",
+	.map_base	= IMX_CS0_BASE,
+	.size		= 64 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
+static struct fec_platform_data fec_info = {
+	.xcv_type = MII100,
+	.phy_addr = 0x1F,
+};
+
+static struct device_d fec_dev = {
+	.name		= "fec_imx",
+	.map_base	= IMX_FEC_BASE,
+	.platform_data	= &fec_info,
+};
+
+static struct memory_platform_data sdram_pdata = {
 	.name = "ram0",
 	.flags = DEVFS_RDWR,
 };
 
 static struct device_d sdram_dev = {
-	.name     = "mem",
-	.map_base = 0x80000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
+	.name		= "mem",
+	.map_base	= IMX_SDRAM_CS0,
+	.size		= 128 * 1024 * 1024,
+	.platform_data	= &sdram_pdata,
 };
 
-static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
+struct imx_nand_platform_data nand_info = {
+	.hw_ecc		= 1,
+	.flash_bbt	= 1,
 };
 
-static struct device_d fec_dev = {
-	.name     = "fec_imx",
-	.map_base = 0x50038000,
-	.platform_data	= &fec_info,
+static struct device_d nand_dev = {
+	.name		= "imx_nand",
+	.map_base	= IMX_NFC_BASE,
+	.platform_data	= &nand_info,
 };
 
-/*
- * SMSC 9217 network controller
- */
 static struct device_d smc911x_dev = {
-	.name     = "smc911x",
-	.map_base = IMX_CS5_BASE,
-	.size     = IMX_CS5_RANGE,	/* area size */
+	.name		= "smc911x",
+	.map_base	= IMX_CS5_BASE,
+	.size		= IMX_CS5_RANGE,
+};
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("mc13892", 0x08),
+	}, {
+		I2C_BOARD_INFO("mc9sdz60", 0x69),
+	},
+};
+
+static struct device_d i2c_dev = {
+	.name		= "i2c-imx",
+	.map_base	= IMX_I2C1_BASE,
 };
 
 static int f3s_devices_init(void)
 {
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	register_device(&smc911x_dev);
-	/* FEC is currently broken. It seems to work
-	 * shortly but after a few moments the board
-	 * goes to nirvana
-	 */
-//	register_device(&fec_dev);
+	uint32_t reg;
+
+	/* CS0: Nor Flash */
+	writel(0x0000cf03, CSCR_U(0));
+	writel(0x10000d03, CSCR_L(0));
+	writel(0x00720900, CSCR_A(0));
+
+	reg = readl(IMX_CCM_BASE + CCM_RCSR);
+	/* some fuses provide us vital information about connected hardware */
+	if (reg & 0x20000000)
+		nand_info.width = 2;	/* bit */
+	else
+		nand_info.width = 1;	/* 8 bit */
 
 	/*
-	 * Create partitions that should be
-	 * not touched by any regular user
+	 * This platform supports NOR and NAND
 	 */
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");	/* ourself */
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");	/* environment */
+	register_device(&nand_dev);
+	register_device(&cfi_dev);
+
+	switch ( (reg >> 25) & 0x3) {
+	case 0x01:		/* NAND is the source */
+		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		break;
+
+	case 0x00:		/* NOR is the source */
+		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
+		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+		protect_file("/dev/env0", 1);
+		break;
+	}
+
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	register_device(&i2c_dev);
+
+	register_device(&fec_dev);
+	register_device(&smc911x_dev);
+
+	register_device(&sdram_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
-	armlinux_set_architecture(MACH_TYPE_PCM037); /* FIXME */
+	armlinux_set_architecture(MACH_TYPE_MX35_3DS);
 
 	return 0;
 }
@@ -103,9 +166,9 @@ static int f3s_devices_init(void)
 device_initcall(f3s_devices_init);
 
 static struct device_d f3s_serial_device = {
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
+	.name		= "imx_serial",
+	.map_base	= IMX_UART1_BASE,
+	.size		= 4096,
 };
 
 static struct pad_desc f3s_pads[] = {
@@ -129,10 +192,16 @@ static struct pad_desc f3s_pads[] = {
 	MX35_PAD_FEC_TDATA2__FEC_TDATA_2,
 	MX35_PAD_FEC_RDATA3__FEC_RDATA_3,
 	MX35_PAD_FEC_TDATA3__FEC_TDATA_3,
+
 	MX35_PAD_RXD1__UART1_RXD_MUX,
 	MX35_PAD_TXD1__UART1_TXD_MUX,
 	MX35_PAD_RTS1__UART1_RTS,
 	MX35_PAD_CTS1__UART1_CTS,
+
+	MX35_PAD_I2C1_CLK__I2C1_SCL,
+	MX35_PAD_I2C1_DAT__I2C1_SDA,
+
+	MX35_PAD_WDOG_RST__GPIO1_6,
 };
 
 static int f3s_console_init(void)
@@ -145,18 +214,19 @@ static int f3s_console_init(void)
 
 console_initcall(f3s_console_init);
 
-static int f3s_core_setup(void)
+static int f3s_core_init(void)
 {
-	u32 tmp;
+	u32 reg;
 
 	writel(0x0000D843, CSCR_U(5)); /* CS5: smc9117 */
 	writel(0x22252521, CSCR_L(5));
 	writel(0x22220A00, CSCR_A(5));
 
-	/* FIXME: The rest is currently done in Assembler. Remove assembler
-	 *        config once the board is running stable
-	 */
-	return 0;
+	/* enable clock for I2C1 and FEC */
+	reg = readl(IMX_CCM_BASE + CCM_CGR1);
+	reg |= 0x3 << CCM_CGR1_FEC_SHIFT;
+	reg |= 0x3 << CCM_CGR1_I2C1_SHIFT;
+	reg = writel(reg, IMX_CCM_BASE + CCM_CGR1);
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.*/
 	/*
@@ -177,17 +247,17 @@ static int f3s_core_setup(void)
 	writel(0x0, IMX_AIPS1_BASE + 0x44);
 	writel(0x0, IMX_AIPS1_BASE + 0x48);
 	writel(0x0, IMX_AIPS1_BASE + 0x4C);
-	tmp = readl(IMX_AIPS1_BASE + 0x50);
-	tmp &= 0x00FFFFFF;
-	writel(tmp, IMX_AIPS1_BASE + 0x50);
+	reg = readl(IMX_AIPS1_BASE + 0x50);
+	reg &= 0x00FFFFFF;
+	writel(reg, IMX_AIPS1_BASE + 0x50);
 
 	writel(0x0, IMX_AIPS2_BASE + 0x40);
 	writel(0x0, IMX_AIPS2_BASE + 0x44);
 	writel(0x0, IMX_AIPS2_BASE + 0x48);
 	writel(0x0, IMX_AIPS2_BASE + 0x4C);
-	tmp = readl(IMX_AIPS2_BASE + 0x50);
-	tmp &= 0x00FFFFFF;
-	writel(tmp, IMX_AIPS2_BASE + 0x50);
+	reg = readl(IMX_AIPS2_BASE + 0x50);
+	reg &= 0x00FFFFFF;
+	writel(reg, IMX_AIPS2_BASE + 0x50);
 
 	/* MAX (Multi-Layer AHB Crossbar Switch) setup */
 
@@ -217,5 +287,90 @@ static int f3s_core_setup(void)
 	return 0;
 }
 
-core_initcall(f3s_core_setup);
+core_initcall(f3s_core_init);
+
+static int f3s_get_rev(struct i2c_client *client)
+{
+	u8 reg[3];
+	int rev;
+
+	i2c_read_reg(client, 0x7, reg, sizeof(reg));
+
+	rev = reg[0] << 16 | reg [1] << 8 | reg[2];
+	dev_info(&client->dev, "revision: 0x%x\n", rev);
+
+	/* just return '0' or '1' */
+	return !!((rev >> 6) & 0x7);
+}
+
+static void f3s_pmic_init_v2(struct i2c_client *client)
+{
+	u8 reg[3];
+
+	i2c_read_reg(client, 0x1e, reg, sizeof(reg));
+	reg[2] |= 0x03;
+	i2c_write_reg(client, 0x1e, reg, sizeof(reg));
+
+	i2c_read_reg(client, 0x20, reg, sizeof(reg));
+	reg[2] |= 0x01;
+	i2c_write_reg(client, 0x20, reg, sizeof(reg));
+}
+
+static void f3s_pmic_init_all(struct i2c_client *client)
+{
+	u8 reg[1];
+
+	i2c_read_reg(client, 0x20, reg, sizeof(reg));
+	reg[0] |= 0x04;
+	i2c_write_reg(client, 0x20, reg, sizeof(reg));
+
+	mdelay(200);
+
+	i2c_read_reg(client, 0x1a, reg, sizeof(reg));
+	reg[0] &= 0x7f;
+	i2c_write_reg(client, 0x1a, reg, sizeof(reg));
+
+	mdelay(200);
+
+	reg[0] |= 0x80;
+	i2c_write_reg(client, 0x1a, reg, sizeof(reg));
+}
+
+static int f3s_pmic_init(void)
+{
+	struct i2c_client *client;
+	int rev;
+
+	client = mc13892_get_client();
+	if (!client)
+		return -ENODEV;
+
+	rev = f3s_get_rev(client);
+	if (rev) {
+		printf("i.MX35 CPU board version 2.0\n");
+		f3s_pmic_init_v2(client);
+	} else {
+		printf("i.MX35 CPU board version 1.0\n");
+	}
+
+	client = mc9sdz60_get_client();
+	if (!client)
+		return -ENODEV;
+	f3s_pmic_init_all(client);
+
+	return 0;
+}
+
+late_initcall(f3s_pmic_init);
+
+#ifdef CONFIG_NAND_IMX_BOOT
+void __bare_init nand_boot(void)
+{
+	/*
+	 * The driver is able to detect NAND's pagesize by CPU internal
+	 * fuses or external pull ups. But not the blocksize...
+	 */
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+}
+#endif
 

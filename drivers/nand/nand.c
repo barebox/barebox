@@ -171,7 +171,7 @@ int add_mtd_device(struct mtd_info *mtd)
 
 	mtd->param_size.flags = PARAM_FLAG_RO;
 	mtd->param_size.name = "size";
-	mtd->param_size.value = asprintf("%d", mtd->size);
+	mtd->param_size.value = asprintf("%u", mtd->size);
 	dev_add_param(&mtd->class_dev, &mtd->param_size);
 
 	devfs_create(&mtd->cdev);

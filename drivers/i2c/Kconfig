@@ -1,2 +1,10 @@
 menuconfig I2C
 	bool "I2C drivers                   "
+
+if I2C
+
+config DRIVER_I2C_IMX
+	bool "i.MX I2C Master driver"
+	depends on ARCH_IMX
+
+endif

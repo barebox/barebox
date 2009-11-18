@@ -62,13 +62,14 @@ static int do_saveenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
 
 	ret = erase(fd, ~0, 0);
 
-	close(fd);
-
 	/* ENOSYS is no error here, many devices do not need it */
 	if (ret && errno != -ENOSYS) {
 		printf("could not erase %s: %s\n", filename, errno_str());
+		close(fd);
 		return 1;
 	}
+
+	close(fd);
 
 	ret = envfs_save(filename, dirname);
 	if (ret) {

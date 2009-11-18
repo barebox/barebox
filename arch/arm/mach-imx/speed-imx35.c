@@ -93,7 +93,7 @@ static unsigned long get_3_3_div(unsigned long in)
 	return (((in >> 3) & 0x7) + 1) * ((in & 0x7) + 1);
 }
 
-unsigned long imx_get_gptclk(void)
+unsigned long imx_get_ipg_perclk(void)
 {
 	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	ulong pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
@@ -107,10 +107,15 @@ unsigned long imx_get_gptclk(void)
 	} else {
 		/* perclk from AHB divided clock */
 		fref = imx_get_ahbclk();
-		div = ((pdr0 >> 12) & 0x7) + 1;	//FIXME check datasheet 111 -> 7 ?
+		div = ((pdr0 >> 12) & 0x7) + 1;
 	}
 
 	return fref / div;
+}
+
+unsigned long imx_get_gptclk(void)
+{
+	return imx_get_ipgclk();
 }
 
 unsigned long imx_get_uartclk(void)
@@ -137,6 +142,7 @@ void imx_dump_clocks(void)
 	printf("gpt:     %10d Hz\n", imx_get_gptclk());
 	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
+	printf("ipg_per: %10d Hz\n", imx_get_ipg_perclk());
 	printf("uart:	 %10d Hz\n", imx_get_uartclk());
 }
 

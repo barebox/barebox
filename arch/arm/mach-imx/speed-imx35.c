@@ -129,9 +129,15 @@ unsigned long imx_get_uartclk(void)
 	else
 		return imx_get_ppllclk() / div;
 }
+
 ulong imx_get_fecclk(void)
 {
 	return imx_get_ipgclk();
+}
+
+ulong imx_get_i2cclk(void)
+{
+	return imx_get_ipg_perclk();
 }
 
 void imx_dump_clocks(void)

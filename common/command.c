@@ -108,7 +108,11 @@ int execute_command(int argc, char **argv)
 		}
 		return ret;
 	} else {
+#ifdef CONFIG_CMD_HELP
 		printf ("Unknown command '%s' - try 'help'\n", argv[0]);
+#else
+		printf ("Unknown command '%s'\n", argv[0]);
+#endif
 		return -1;	/* give up after bad command */
 	}
 }

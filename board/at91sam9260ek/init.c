@@ -37,6 +37,9 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <gpio.h>
+#include <mach/io.h>
+#include <mach/at91_pmc.h>
+#include <mach/at91_rstc.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -90,9 +93,40 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
+static void at91sam9260ek_phy_reset(void)
+{
+	unsigned long rstc;
+	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_EMAC);
+
+	at91_set_gpio_input(AT91_PIN_PA14, 0);
+	at91_set_gpio_input(AT91_PIN_PA15, 0);
+	at91_set_gpio_input(AT91_PIN_PA17, 0);
+	at91_set_gpio_input(AT91_PIN_PA25, 0);
+	at91_set_gpio_input(AT91_PIN_PA26, 0);
+	at91_set_gpio_input(AT91_PIN_PA28, 0);
+
+	rstc = at91_sys_read(AT91_RSTC_MR) & AT91_RSTC_ERSTL;
+
+	/* Need to reset PHY -> 500ms reset */
+	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
+				     (AT91_RSTC_ERSTL & (0x0d << 8)) |
+				     AT91_RSTC_URSTEN);
+
+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
+
+	/* Wait for end hardware reset */
+	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL));
+
+	/* Restore NRST value */
+	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
+				     (rstc) |
+				     AT91_RSTC_URSTEN);
+}
+
 static int at91sam9260ek_devices_init(void)
 {
 	ek_add_device_nand();
+	at91sam9260ek_phy_reset();
 	at91_add_device_eth(&macb_pdata);
 
 	at91_add_device_sdram(64 * 1024 * 1024);

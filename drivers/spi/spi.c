@@ -173,7 +173,7 @@ int spi_register_master(struct spi_master *master)
 {
 	int			status = -ENODEV;
 
-	debug("%s: %s:%s\n", __FUNCTION__, master->dev->name, master->dev->id);
+	debug("%s: %s:%d\n", __func__, master->dev->name, master->dev->id);
 
 	/* even if it's just one always-selected device, there must
 	 * be at least one chipselect

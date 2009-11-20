@@ -284,7 +284,7 @@ static int fec_init(struct eth_device *dev)
 		 * and do not drop the Preamble.
 		 */
 		writel(((imx_get_fecclk() >> 20) / 5) << 1,
-				fec->regs + FEC_MII_SPEED);	
+				fec->regs + FEC_MII_SPEED);
 	}
 
 	if (fec->xcv_type == RMII) {
@@ -495,7 +495,7 @@ static int fec_recv(struct eth_device *dev)
 		/* Graceful stop complete */
 		if (readl(fec->regs + FEC_X_CNTRL) & 0x00000001) {
 			fec_halt(dev);
-			writel(readl(fec->regs + FEC_X_CNTRL) & ~0x00000001, 
+			writel(readl(fec->regs + FEC_X_CNTRL) & ~0x00000001,
 					fec->regs + FEC_X_CNTRL);
 			fec_init(dev);
 		}

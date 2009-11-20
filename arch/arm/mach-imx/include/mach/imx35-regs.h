@@ -66,6 +66,9 @@
 #define CCM_CGR2	0x34
 #define CCM_CGR3	0x38
 
+#define CCM_CGR1_FEC_SHIFT	0
+#define CCM_CGR1_I2C1_SHIFT	10
+
 #define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
 #define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
 #define PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)

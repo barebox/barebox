@@ -1,0 +1,2 @@
+menuconfig I2C
+	bool "I2C drivers                   "

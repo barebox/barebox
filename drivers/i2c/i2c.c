@@ -1,0 +1,353 @@
+/*
+ * Copyright (C) 2009 Marc Kleine-Budde <mkl@pengutronix.de>
+ *
+ * This file is released under the GPLv2
+ *
+ * Derived from:
+ * - i2c-core.c - a device driver for the iic-bus interface
+ *   Copyright (C) 1995-99 Simon G. Vogl
+ * - at24.c - handle most I2C EEPROMs
+ *   Copyright (C) 2005-2007 David Brownell
+ *   Copyright (C) 2008 Wolfram Sang, Pengutronix
+ * - spi.c - u-boot-v2 SPI Framework
+ *   Copyright (C) 2008 Sascha Hauer, Pengutronix
+ * - Linux SPI Framework
+ *   Copyright (C) 2005 David Brownell
+ *
+ */
+
+#include <clock.h>
+#include <common.h>
+#include <errno.h>
+#include <malloc.h>
+#include <xfuncs.h>
+
+#include <i2c/i2c.h>
+
+/**
+ * I2C devices should normally not be created by I2C device drivers;
+ * that would make them board-specific. Similarly with I2C master
+ * drivers. Device registration normally goes into like
+ * arch/.../mach.../board-YYY.c with other readonly (flashable)
+ * information about mainboard devices.
+ */
+struct boardinfo {
+	struct list_head	list;
+	unsigned int		bus_num;
+	unsigned int		n_board_info;
+	struct i2c_board_info	board_info[0];
+};
+
+static LIST_HEAD(board_list);
+
+
+/**
+ * i2c_transfer - execute a single or combined I2C message
+ * @param	adap	Handle to I2C bus
+ * @param	msgs	One or more messages to execute before STOP is
+ *			issued to terminate the operation; each
+ *			message begins with a START.
+ *
+ * @param	num	Number of messages to be executed.
+ *
+ * Returns negative errno, else the number of messages executed.
+ *
+ * Note that there is no requirement that each message be sent to the
+ * same slave address, although that is the most common model.
+ */
+int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+{
+	uint64_t start;
+	int ret, try;
+
+	/*
+	 * REVISIT the fault reporting model here is weak:
+	 *
+	 *  - When we get an error after receiving N bytes from a slave,
+	 *    there is no way to report "N".
+	 *
+	 *  - When we get a NAK after transmitting N bytes to a slave,
+	 *    there is no way to report "N" ... or to let the master
+	 *    continue executing the rest of this combined message, if
+	 *    that's the appropriate response.
+	 *
+	 *  - When for example "num" is two and we successfully complete
+	 *    the first message but get an error part way through the
+	 *    second, it's unclear whether that should be reported as
+	 *    one (discarding status on the second message) or errno
+	 *    (discarding status on the first one).
+	 */
+
+	for (ret = 0; ret < num; ret++) {
+		dev_dbg(adap->dev, "master_xfer[%d] %c, addr=0x%02x, "
+			"len=%d\n", ret, (msgs[ret].flags & I2C_M_RD)
+			? 'R' : 'W', msgs[ret].addr, msgs[ret].len);
+	}
+
+	/* Retry automatically on arbitration loss */
+	start = get_time_ns();
+	for (ret = 0, try = 0; try <= 2; try++) {
+		ret = adap->master_xfer(adap, msgs, num);
+		if (ret != -EAGAIN)
+			break;
+		if (is_timeout(start, SECOND >> 1))
+			break;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL(i2c_transfer);
+
+/**
+ * i2c_master_send - issue a single I2C message in master transmit mode
+ *
+ * @param	client	Handle to slave device
+ * @param	buf	Data that will be written to the slave
+ * @param	count	How many bytes to write
+ *
+ * Returns negative errno, or else the number of bytes written.
+ */
+int i2c_master_send(struct i2c_client *client, const char *buf, int count)
+{
+	struct i2c_adapter *adap = client->adapter;
+	struct i2c_msg msg;
+	int ret;
+
+	msg.addr = client->addr;
+	msg.len = count;
+	msg.buf = (char *)buf;
+
+	ret = i2c_transfer(adap, &msg, 1);
+
+	/*
+	 * If everything went ok (i.e. 1 msg transmitted), return
+	 * #bytes transmitted, else error code.
+	 */
+	return (ret == 1) ? count : ret;
+}
+EXPORT_SYMBOL(i2c_master_send);
+
+/**
+ * i2c_master_recv - issue a single I2C message in master receive mode
+ *
+ * @param	client	Handle to slave device
+ * @param	buf	Where to store data read from slave
+ * @param	count	How many bytes to read
+ *
+ * Returns negative errno, or else the number of bytes read.
+ */
+int i2c_master_recv(struct i2c_client *client, char *buf, int count)
+{
+	struct i2c_adapter *adap = client->adapter;
+	struct i2c_msg msg;
+	int ret;
+
+	msg.addr = client->addr;
+	msg.flags = I2C_M_RD;
+	msg.len = count;
+	msg.buf = buf;
+
+	ret = i2c_transfer(adap, &msg, 1);
+
+	/*
+	 * If everything went ok (i.e. 1 msg transmitted), return
+	 * #bytes transmitted, else error code.
+	 */
+	return (ret == 1) ? count : ret;
+}
+EXPORT_SYMBOL(i2c_master_recv);
+
+int i2c_read_reg(struct i2c_client *client, u32 addr, u8 *buf, u16 count)
+{
+	u8 msgbuf[2];
+	struct i2c_msg msg[] = {
+		{
+			.addr	= client->addr,
+			.buf	= msgbuf,
+		},
+		{
+			.addr	= client->addr,
+			.flags	= I2C_M_RD,
+			.buf	= buf,
+			.len	= count,
+		},
+	};
+	int status, i;
+
+	i = 0;
+	if (addr & I2C_ADDR_16_BIT)
+		msgbuf[i++] = addr >> 8;
+	msgbuf[i++] = addr;
+	msg->len = i;
+
+	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
+	dev_dbg(&client->dev, "%s: %zu@%d --> %d\n", __func__,
+		count, addr, status);
+
+	if (status == ARRAY_SIZE(msg))
+		return count;
+	else if (status >= 0)
+		return -EIO;
+	else
+		return status;
+}
+EXPORT_SYMBOL(i2c_read_reg);
+
+int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16 count)
+{
+	u8 msgbuf[256];				/* FIXME */
+	struct i2c_msg msg[] = {
+		{
+			.addr	= client->addr,
+			.buf	= msgbuf,
+			.len	= count,
+		}
+	};
+	int status, i;
+
+	i = 0;
+	if (addr & I2C_ADDR_16_BIT)
+		msgbuf[i++] = addr >> 8;
+	msgbuf[i++] = addr;
+	msg->len += i;
+
+	memcpy(msg->buf + i, buf, count);
+
+	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
+	dev_dbg(&client->dev, "%s: %u@%d --> %d\n", __func__,
+		count, addr, status);
+
+	if (status == ARRAY_SIZE(msg))
+		return count;
+	else if (status >= 0)
+		return -EIO;
+	else
+		return status;
+}
+EXPORT_SYMBOL(i2c_write_reg);
+
+/**
+ * i2c_new_device - instantiate one new I2C device
+ *
+ * @param	adapter	Controller to which device is connected
+ * @param	chip	Describes the I2C device
+ *
+ * On typical mainboards, this is purely internal; and it's not needed
+ * after board init creates the hard-wired devices. Some development
+ * platforms may not be able to use i2c_register_board_info though,
+ * and this is exported so that for example a USB or parport based
+ * adapter driver could add devices (which it would learn about
+ * out-of-band).
+ *
+ * Returns the new device, or NULL.
+ */
+struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
+				  struct i2c_board_info *chip)
+{
+	struct i2c_client *client;
+	int status;
+
+	client = xzalloc(sizeof *client);
+	strcpy(client->dev.name, chip->type);
+	client->dev.type_data = client;
+	client->adapter = adapter;
+	client->addr = chip->addr;
+
+	status = register_device(&client->dev);
+
+#if 0
+	/* drivers may modify this initial i/o setup */
+	status = master->setup(client);
+	if (status < 0) {
+		printf("can't setup %s, status %d\n",
+		       client->dev.name, status);
+		goto fail;
+	}
+#endif
+
+	return client;
+
+#if 0
+ fail:
+	free(proxy);
+	return NULL;
+#endif
+}
+EXPORT_SYMBOL(i2c_new_device);
+
+/**
+ * i2c_register_board_info - register I2C devices for a given board
+ *
+ * @param	info	array of chip descriptors
+ * @param	n	how many descriptors are provided
+ *
+ * Board-specific early init code calls this (probably during
+ * arch_initcall) with segments of the I2C device table.
+ *
+ * Other code can also call this, e.g. a particular add-on board might
+ * provide I2C devices through its expansion connector, so code
+ * initializing that board would naturally declare its I2C devices.
+ *
+ */
+int i2c_register_board_info(int bus_num, struct i2c_board_info const *info, unsigned n)
+{
+	struct boardinfo *bi;
+
+	bi = xmalloc(sizeof(*bi) + n * sizeof(*info));
+
+	bi->n_board_info = n;
+	bi->bus_num = bus_num;
+	memcpy(bi->board_info, info, n * sizeof(*info));
+
+	list_add_tail(&bi->list, &board_list);
+
+	return 0;
+}
+
+static void scan_boardinfo(struct i2c_adapter *adapter)
+{
+	struct boardinfo	*bi;
+
+	list_for_each_entry(bi, &board_list, list) {
+		struct i2c_board_info *chip = bi->board_info;
+		unsigned n;
+
+		if (bi->bus_num != adapter->nr)
+			continue;
+
+		for (n = bi->n_board_info; n > 0; n--, chip++) {
+			debug("%s: bus_num: %d, chip->addr 0x%02x\n", __func__, bi->bus_num, chip->addr);
+			/*
+			 * NOTE: this relies on i2c_new_device to
+			 * issue diagnostics when given bogus inputs
+			 */
+			(void) i2c_new_device(adapter, chip);
+		}
+	}
+}
+
+/**
+ * i2c_register_master - register I2C master controller
+ *
+ * @param	master	initialized master, originally from i2c_alloc_master()
+ *
+ * I2C master controllers connect to their drivers using some non-I2C
+ * bus, such as the platform bus. The final stage of probe() in that
+ * code includes calling i2c_register_master() to hook up to this I2C
+ * bus glue.
+ *
+ * I2C controllers use board specific (often SOC specific) bus
+ * numbers, and board-specific addressing for I2C devices combines
+ * those numbers with chip select numbers. Since I2C does not directly
+ * support dynamic device identification, boards need configuration
+ * tables telling which chip is at which address.
+ *
+ */
+int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
+{
+	/* populate children from any i2c device tables */
+	scan_boardinfo(adapter);
+
+	return 0;
+}
+EXPORT_SYMBOL(i2c_register_master);

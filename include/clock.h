@@ -1,3 +1,5 @@
+#include <linux/types.h>
+
 #ifndef CLOCK_H
 #define CLOCK_H
 

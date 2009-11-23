@@ -7,4 +7,7 @@ config DRIVER_I2C_IMX
 	bool "i.MX I2C Master driver"
 	depends on ARCH_IMX
 
+config DRIVER_I2C_MC13892
+	bool "MC13892 a.k.a. PMIC driver"
+
 endif

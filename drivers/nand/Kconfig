@@ -13,11 +13,6 @@ config NAND_IMX
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX25
 
-config NAND_IMX_V2
-	bool
-	prompt "i.MX NAND driver v2 (obsoleted, use v1 instead)"
-	depends on ARCH_IMX25
-
 config NAND_IMX_BOOT
 	bool
 	prompt "Support Starting U-Boot from NAND"

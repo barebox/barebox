@@ -55,6 +55,9 @@ struct imx_fb_videomode {
 	unsigned char	bpp;
 };
 
+/**
+ * Define relevant framebuffer information
+ */
 struct imx_fb_platform_data {
 	struct imx_fb_videomode *mode;
 
@@ -67,9 +70,15 @@ struct imx_fb_platform_data {
 	u_int		lscr1;
 	u_int		dmacr;
 
+	/** force a memory area to be used, else NULL for dynamic allocation */
 	void		*framebuffer;
+	/** force a memory area to be used, else NULL for dynamic allocation */
 	void		*framebuffer_ovl;
 };
 
 void set_imx_fb_info(struct imx_fb_platform_data *);
 
+/**
+ * @file
+ * @brief i.MX related framebuffer declarations
+ */

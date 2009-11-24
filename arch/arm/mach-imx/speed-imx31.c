@@ -41,6 +41,18 @@ ulong imx_get_mcu_main_clk(void)
 	return imx_get_mpl_dpdgck_clk();
 }
 
+/**
+ * Calculate the current pixel clock speed (aka HSP or IPU)
+ * @return 0 on failure or current frequency in Hz
+ */
+ulong imx_get_lcdclk(void)
+{
+	ulong hsp_podf = (readl(IMX_CCM_BASE + CCM_PDR0) >> 11) & 0x03;
+	ulong base_clk = imx_get_mcu_main_clk();
+
+	return base_clk / (hsp_podf + 1);
+}
+
 ulong imx_get_perclk1(void)
 {
 	u32 freq = imx_get_mcu_main_clk();

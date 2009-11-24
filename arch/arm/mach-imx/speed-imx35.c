@@ -118,6 +118,37 @@ unsigned long imx_get_gptclk(void)
 	return imx_get_ipgclk();
 }
 
+/**
+ * Calculate the current pixel clock speed (aka HSP or IPU)
+ * @return 0 on failure or current frequency in Hz
+ */
+unsigned long imx_get_lcdclk(void)
+{
+	unsigned long hsp_podf = (readl(IMX_CCM_BASE + CCM_PDR0) >> 20) & 0x03;
+	unsigned long base_clk = imx_get_armclk();
+
+	if (base_clk > 400 * 1000 * 1000) {
+		switch(hsp_podf) {
+		case 0:
+			return base_clk >> 2;
+		case 1:
+			return base_clk >> 3;
+		case 2:
+			return base_clk / 3;
+		}
+	} else {
+		switch(hsp_podf) {
+		case 0:
+		case 2:
+			return base_clk / 3;
+		case 1:
+			return base_clk / 6;
+		}
+	}
+
+	return 0;
+}
+
 unsigned long imx_get_uartclk(void)
 {
 	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);

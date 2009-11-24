@@ -104,7 +104,7 @@ void udelay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout(start, usecs * 1000));
+	while(!is_timeout(start, usecs * USECOND));
 }
 EXPORT_SYMBOL(udelay);
 
@@ -112,7 +112,7 @@ void mdelay(unsigned long msecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout(start, msecs * 1000000));
+	while(!is_timeout(start, msecs * MSECOND));
 }
 EXPORT_SYMBOL(mdelay);
 

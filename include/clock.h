@@ -1,4 +1,4 @@
-#include <linux/types.h>
+#include <types.h>
 
 #ifndef CLOCK_H
 #define CLOCK_H

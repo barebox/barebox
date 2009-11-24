@@ -6,5 +6,6 @@ obj-$(CONFIG_ARCH_IMX27) += speed-imx27.o gpio.o imx27.o
 obj-$(CONFIG_ARCH_IMX31) += speed-imx31.o iomux-v2.o
 obj-$(CONFIG_ARCH_IMX35) += speed-imx35.o iomux-v3.o
 obj-$(CONFIG_IMX_CLKO)	+= clko.o
+obj-$(CONFIG_NAND_IMX) += nand.o
 obj-y += speed.o
 

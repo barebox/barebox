@@ -932,6 +932,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	if (pdata->width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
 		this->ecc.layout = &nandv1_hw_eccoob_smallpage;
+		imx_nand_set_layout(0, 16);
 	}
 
 	if (pdata->flash_bbt) {
@@ -946,6 +947,8 @@ static int __init imxnd_probe(struct device_d *dev)
 		err = -ENXIO;
 		goto escan;
 	}
+
+	imx_nand_set_layout(mtd->writesize, pdata->width == 2 ? 16 : 8);
 
 	if (mtd->writesize == 2048) {
 		this->ecc.layout = oob_largepage;

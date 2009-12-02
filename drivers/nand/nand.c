@@ -58,12 +58,17 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 	void *wrbuf = NULL;
 	size_t count = _count;
 
+	if (NOTALIGNED(offset)) {
+		printf("offset 0x%08x not page aligned\n", offset);
+		return -EINVAL;
+	}
+
 	debug("write: 0x%08x 0x%08x\n", offset, count);
 
 	while (count) {
 		now = count > info->writesize ? info->writesize : count;
 
-		if (NOTALIGNED(now) || NOTALIGNED(offset)) {
+		if (NOTALIGNED(now)) {
 			debug("not aligned: %d %d\n", info->writesize, (offset % info->writesize));
 			wrbuf = xmalloc(info->writesize);
 			memset(wrbuf, 0xff, info->writesize);

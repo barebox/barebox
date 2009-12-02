@@ -1,5 +1,5 @@
 
-#ifdef CONFIG_ARCH_IMX25
+#if defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX35
 #include <mach/u-boot.lds.h>
 #endif
 

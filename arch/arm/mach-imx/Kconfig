@@ -29,6 +29,10 @@ config BOARDINFO
 config ARCH_HAS_FEC_IMX
 	bool
 
+config ARCH_IMX_INTERNAL_BOOT
+	bool "support internal boot mode"
+	depends on ARCH_IMX25 || ARCH_IMX35
+
 comment "Freescale i.MX System-on-Chip"
 
 choice

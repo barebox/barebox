@@ -50,11 +50,22 @@ static 	ssize_t nand_read(struct cdev *cdev, void* buf, size_t count, ulong offs
 
 #define NOTALIGNED(x) (x & (info->writesize - 1)) != 0
 
+static int all_ff(const void *buf, int len)
+{
+	int i;
+	const uint8_t *p = buf;
+
+	for (i = 0; i < len; i++)
+		if (p[i] != 0xFF)
+			return 0;
+	return 1;
+}
+
 static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulong offset, ulong flags)
 {
 	struct mtd_info *info = cdev->priv;
 	size_t retlen, now;
-	int ret;
+	int ret = 0;
 	void *wrbuf = NULL;
 	size_t count = _count;
 
@@ -73,9 +84,13 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 			wrbuf = xmalloc(info->writesize);
 			memset(wrbuf, 0xff, info->writesize);
 			memcpy(wrbuf + (offset % info->writesize), buf, now);
-			ret = info->write(info, offset & ~(info->writesize - 1), info->writesize, &retlen, wrbuf);
+			if (!all_ff(wrbuf, info->writesize))
+				ret = info->write(info, offset & ~(info->writesize - 1),
+						info->writesize, &retlen, wrbuf);
+			free(wrbuf);
 		} else {
-			ret = info->write(info, offset, now, &retlen, buf);
+			if (!all_ff(buf, info->writesize))
+				ret = info->write(info, offset, now, &retlen, buf);
 			debug("offset: 0x%08x now: 0x%08x retlen: 0x%08x\n", offset, now, retlen);
 		}
 		if (ret)
@@ -87,9 +102,6 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 	}
 
 out:
-	if (wrbuf)
-		free(wrbuf);
-
 	return ret ? ret : _count;
 }
 

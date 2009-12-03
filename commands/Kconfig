@@ -284,4 +284,12 @@ config CMD_BMP
 	help
 	  show bmp files on framebuffer devices
 
+config CMD_GPIO
+	bool
+	depends on GENERIC_GPIO
+	prompt "gpio commands"
+	help
+	  include gpio_set_value, gpio_get_value, gpio_direction_input and
+	  gpio_direction_output commands to control gpios.
+
 endmenu

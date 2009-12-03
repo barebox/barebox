@@ -25,6 +25,7 @@ choice
 
 config ARCH_AT91
 	bool "Atmel AT91"
+	select GENERIC_GPIO
 
 config ARCH_AT91RM9200
 	bool "Atmel AT91RM9200"
@@ -32,6 +33,7 @@ config ARCH_AT91RM9200
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
+	select GENERIC_GPIO
 
 config ARCH_NETX
 	bool "Hilscher NetX based"

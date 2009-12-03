@@ -15,6 +15,9 @@ config ENV_HANDLING
 	select CRC32
 	bool
 
+config GENERIC_GPIO
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION_AUTO

@@ -24,28 +24,105 @@
  */
 
 #include <common.h>
+#include <errno.h>
+#include <asm/io.h>
 #include <mach/imx-regs.h>
+
+#if defined CONFIG_ARCH_IMX1 || defined CONFIG_ARCH_IMX21 || defined CONFIG_ARCH_IMX27
+#define GPIO_DR		0x1c
+#define GPIO_GDIR	0x00
+#define GPIO_PSR	0x24
+#define GPIO_ICR1	0x28
+#define GPIO_ICR2	0x2C
+#define GPIO_IMR	0x30
+#define GPIO_ISR	0x34
+#else
+#define GPIO_DR		0x00
+#define GPIO_GDIR	0x04
+#define GPIO_PSR	0x08
+#define GPIO_ICR1	0x0C
+#define GPIO_ICR2	0x10
+#define GPIO_IMR	0x14
+#define GPIO_ISR	0x18
+#define GPIO_ISR	0x18
+#endif
+
+extern void *imx_gpio_base[];
+extern int imx_gpio_count;
+
+static void *gpio_get_base(unsigned gpio)
+{
+	if (gpio >= imx_gpio_count)
+		return 0;
+
+	return imx_gpio_base[gpio / 32];
+}
 
 void gpio_set_value(unsigned gpio, int value)
 {
-	if(value)
-		DR(gpio >> GPIO_PORT_SHIFT) |= (1 << (gpio & GPIO_PIN_MASK));
+	void *base = gpio_get_base(gpio);
+	int shift = gpio % 32;
+	u32 val;
+
+	if (!base)
+		return;
+
+	val = readl(base + GPIO_DR);
+
+	if (value)
+		val |= 1 << shift;
 	else
-		DR(gpio >> GPIO_PORT_SHIFT) &= ~(1 << (gpio & GPIO_PIN_MASK));
+		val &= ~(1 << shift);
+
+	writel(val, base + GPIO_DR);
 }
 
 int gpio_direction_input(unsigned gpio)
 {
-	imx_gpio_mode(gpio | GPIO_IN | GPIO_GIUS | GPIO_GPIO);
+	void *base = gpio_get_base(gpio);
+	int shift = gpio % 32;
+	u32 val;
+
+	if (!base)
+		return -EINVAL;
+
+	val = readl(base + GPIO_GDIR);
+	val &= ~(1 << shift);
+	writel(val, base + GPIO_GDIR);
+
 	return 0;
 }
 
 
 int gpio_direction_output(unsigned gpio, int value)
 {
+	void *base = gpio_get_base(gpio);
+	int shift = gpio % 32;
+	u32 val;
+
+	if (!base)
+		return -EINVAL;
+
 	gpio_set_value(gpio, value);
-	imx_gpio_mode(gpio | GPIO_OUT | GPIO_GIUS | GPIO_GPIO);
+
+	val = readl(base + GPIO_GDIR);
+	val |= 1 << shift;
+	writel(val, base + GPIO_GDIR);
+
 	return 0;
 }
 
+int gpio_get_value(unsigned gpio)
+{
+	void *base = gpio_get_base(gpio);
+	int shift = gpio % 32;
+	u32 val;
+
+	if (!base)
+		return -EINVAL;
+
+	val = readl(base + GPIO_DR);
+
+	return val & (1 << shift) ? 1 : 0;
+}
 

@@ -18,6 +18,8 @@
 #include <common.h>
 #include <mach/imx-regs.h>
 
+#include "gpio.h"
+
 int imx_silicon_revision(void)
 {
 	// Known values:
@@ -25,3 +27,15 @@ int imx_silicon_revision(void)
 	//   0x201D101D : mask set ID 1M55B or M55B
 	return CID;
 }
+
+void *imx_gpio_base[] = {
+	(void *)0x10015000,
+	(void *)0x10015100,
+	(void *)0x10015200,
+	(void *)0x10015300,
+	(void *)0x10015400,
+	(void *)0x10015500,
+};
+
+int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
+

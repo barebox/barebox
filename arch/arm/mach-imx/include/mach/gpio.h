@@ -3,6 +3,7 @@
 
 void imx_gpio_mode(int gpio_mode);
 void gpio_set_value(unsigned gpio, int value);
+int gpio_get_value(unsigned gpio);
 int gpio_direction_output(unsigned gpio, int value);
 int gpio_direction_input(unsigned gpio);
 

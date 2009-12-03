@@ -16,22 +16,13 @@
  */
 
 #include <common.h>
-#include <mach/imx-regs.h>
 
 #include "gpio.h"
 
-int imx_silicon_revision(void)
-{
-	return CID >> 28;
-}
-
 void *imx_gpio_base[] = {
-	(void *)0x10015000,
-	(void *)0x10015100,
-	(void *)0x10015200,
-	(void *)0x10015300,
-	(void *)0x10015400,
-	(void *)0x10015500,
+	(void *)0x53fcc000,
+	(void *)0x53fd0000,
+	(void *)0x53fa4000,
 };
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;

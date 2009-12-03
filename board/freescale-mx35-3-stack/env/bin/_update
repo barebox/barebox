@@ -20,7 +20,7 @@ fi
 
 ping $eth0.serverip
 if [ $? -ne 0 ] ; then
-	echo "update aborted"
+	echo "Server did not reply! Update aborted."
 	exit 1
 fi
 
@@ -28,9 +28,12 @@ unprotect $part
 
 echo
 echo "erasing partition $part"
+echo
 erase $part
 
 echo
 echo "flashing $image to $part"
 echo
 tftp $image $part
+
+protect $part

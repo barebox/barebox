@@ -31,6 +31,7 @@ uboot
 uboot.S
 uboot.bin
 uboot.netx
+uboot.map
 System.map
 Module.symvers
 ARCH

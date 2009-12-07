@@ -13,4 +13,11 @@ config IMXFB_DRIVER_VIDEO_IMX_OVERLAY
 	bool "i.MX framebuffer overlay support"
 	depends on DRIVER_VIDEO_IMX && (ARCH_IMX27 || ARCH_IMX21)
 
+config DRIVER_VIDEO_IMX_IPU
+	bool "i.MX31/35 framebuffer driver"
+	depends on ARCH_IMX35 || ARCH_IMX_31
+	help
+	  Add support for the IPU framebuffer device found on
+	  i.MX31 and i.MX35 CPUs.
+
 endif

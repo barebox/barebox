@@ -47,6 +47,7 @@
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
 #include <mach/pmic.h>
+#include <mach/imx-ipu-fb.h>
 
 #include <i2c/i2c.h>
 #include <i2c/mc13892.h>
@@ -111,6 +112,39 @@ static struct device_d i2c_dev = {
 	.map_base	= IMX_I2C1_BASE,
 };
 
+/*
+ * Generic display, shipped with the PDK
+ */
+static struct fb_videomode CTP_CLAA070LC0ACW = {
+	/* 800x480 @ 60 Hz */
+	.name		= "CTP-CLAA070LC0ACW",
+	.refresh	= 60,
+	.xres		= 800,
+	.yres		= 480,
+	.pixclock	= KHZ2PICOS(27000),
+	.left_margin	= 50,
+	.right_margin	= 50,	/* whole line should have 900 clocks */
+	.upper_margin	= 10,
+	.lower_margin	= 10,	/* whole frame should have 500 lines */
+	.hsync_len	= 1,	/* note: DE only display */
+	.vsync_len	= 1,	/* note: DE only display */
+	.sync		= FB_SYNC_CLK_IDLE_EN | FB_SYNC_OE_ACT_HIGH,
+	.vmode		= FB_VMODE_NONINTERLACED,
+	.flag		= 0,
+};
+
+static struct imx_ipu_fb_platform_data ipu_fb_data = {
+	.mode		= &CTP_CLAA070LC0ACW,
+	.bpp		= 16,
+};
+
+static struct device_d imxfb_dev = {
+	.name		= "imx-ipu-fb",
+	.map_base	= 0x53fc0000,
+	.size		= 0x1000,
+	.platform_data	= &ipu_fb_data,
+};
+
 static int f3s_devices_init(void)
 {
 	uint32_t reg;
@@ -155,6 +189,7 @@ static int f3s_devices_init(void)
 	register_device(&smc911x_dev);
 
 	register_device(&sdram_dev);
+	register_device(&imxfb_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
@@ -164,6 +199,14 @@ static int f3s_devices_init(void)
 }
 
 device_initcall(f3s_devices_init);
+
+static int f3s_enable_display(void)
+{
+	gpio_direction_output(1, 1);
+	return 0;
+}
+
+late_initcall(f3s_enable_display);
 
 static struct device_d f3s_serial_device = {
 	.name		= "imx_serial",
@@ -202,6 +245,32 @@ static struct pad_desc f3s_pads[] = {
 	MX35_PAD_I2C1_DAT__I2C1_SDA,
 
 	MX35_PAD_WDOG_RST__GPIO1_6,
+	/* Display */
+	MX35_PAD_LD0__IPU_DISPB_DAT_0,
+	MX35_PAD_LD1__IPU_DISPB_DAT_1,
+	MX35_PAD_LD2__IPU_DISPB_DAT_2,
+	MX35_PAD_LD3__IPU_DISPB_DAT_3,
+	MX35_PAD_LD4__IPU_DISPB_DAT_4,
+	MX35_PAD_LD5__IPU_DISPB_DAT_5,
+	MX35_PAD_LD6__IPU_DISPB_DAT_6,
+	MX35_PAD_LD7__IPU_DISPB_DAT_7,
+	MX35_PAD_LD8__IPU_DISPB_DAT_8,
+	MX35_PAD_LD9__IPU_DISPB_DAT_9,
+	MX35_PAD_LD10__IPU_DISPB_DAT_10,
+	MX35_PAD_LD11__IPU_DISPB_DAT_11,
+	MX35_PAD_LD12__IPU_DISPB_DAT_12,
+	MX35_PAD_LD13__IPU_DISPB_DAT_13,
+	MX35_PAD_LD14__IPU_DISPB_DAT_14,
+	MX35_PAD_LD15__IPU_DISPB_DAT_15,
+	MX35_PAD_LD16__IPU_DISPB_DAT_16,
+	MX35_PAD_LD17__IPU_DISPB_DAT_17,
+	MX35_PAD_D3_HSYNC__IPU_DISPB_D3_HSYNC,
+	MX35_PAD_D3_FPSHIFT__IPU_DISPB_D3_CLK,
+	MX35_PAD_D3_DRDY__IPU_DISPB_D3_DRDY,
+	MX35_PAD_CONTRAST__GPIO1_1,
+	MX35_PAD_D3_VSYNC__IPU_DISPB_D3_VSYNC,
+	MX35_PAD_D3_REV__IPU_DISPB_D3_REV,
+	MX35_PAD_D3_CLS__IPU_DISPB_D3_CLS,
 };
 
 static int f3s_console_init(void)

@@ -77,7 +77,7 @@ endif
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -mabi=apcs-gnu -DTEXT_BASE=$(TEXT_BASE) -P
+CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
 
 ifndef CONFIG_MODULES
 # Add cleanup flags

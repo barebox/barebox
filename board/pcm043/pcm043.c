@@ -39,6 +39,7 @@
 #include <mach/imx-nand.h>
 #include <fec.h>
 #include <fb.h>
+#include <asm/mmu.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
@@ -143,9 +144,34 @@ static struct device_d imx_ipu_fb_dev = {
 	.platform_data	= &ipu_fb_data,
 };
 
+#ifdef CONFIG_MMU
+static void pcm043_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+}
+#else
+static void pcm043_mmu_init(void)
+{
+}
+#endif
+
 static int imx35_devices_init(void)
 {
 	uint32_t reg;
+
+	pcm043_mmu_init();
 
 	/* CS0: Nor Flash */
 	writel(0x0000cf03, CSCR_U(0));

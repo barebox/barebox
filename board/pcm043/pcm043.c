@@ -38,6 +38,8 @@
 #include <asm/mach-types.h>
 #include <mach/imx-nand.h>
 #include <fec.h>
+#include <fb.h>
+#include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
 
@@ -91,6 +93,56 @@ static struct device_d nand_dev = {
 	.platform_data	= &nand_info,
 };
 
+#ifdef CONFIG_PCM043_DISPLAY_SHARP
+static const struct fb_videomode pcm043_fb_mode = {
+	/* 240x320 @ 60 Hz */
+	.name		= "Sharp-LQ035Q7",
+	.refresh	= 60,
+	.xres		= 240,
+	.yres		= 320,
+	.pixclock	= 185925,
+	.left_margin	= 9,
+	.right_margin	= 16,
+	.upper_margin	= 7,
+	.lower_margin	= 9,
+	.hsync_len	= 1,
+	.vsync_len	= 1,
+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_SHARP_MODE | FB_SYNC_CLK_INVERT | FB_SYNC_CLK_IDLE_EN,
+	.vmode		= FB_VMODE_NONINTERLACED,
+	.flag		= 0,
+};
+#else
+static struct fb_videomode pcm043_fb_mode = {
+	/* 240x320 @ 60 Hz */
+	.name		= "TX090",
+	.refresh	= 60,
+	.xres		= 240,
+	.yres		= 320,
+	.pixclock	= 38255,
+	.left_margin	= 144,
+	.right_margin	= 0,
+	.upper_margin	= 7,
+	.lower_margin	= 40,
+	.hsync_len	= 96,
+	.vsync_len	= 1,
+	.sync		= FB_SYNC_VERT_HIGH_ACT | FB_SYNC_OE_ACT_HIGH,
+	.vmode		= FB_VMODE_NONINTERLACED,
+	.flag		= 0,
+};
+#endif
+
+static struct imx_ipu_fb_platform_data ipu_fb_data = {
+	.mode		= &pcm043_fb_mode,
+	.bpp		= 16,
+};
+
+static struct device_d imx_ipu_fb_dev = {
+	.name		= "imx-ipu-fb",
+	.map_base	= 0x53fc0000,
+	.size		= 0x1000,
+	.platform_data	= &ipu_fb_data,
+};
+
 static int imx35_devices_init(void)
 {
 	uint32_t reg;
@@ -132,6 +184,7 @@ static int imx35_devices_init(void)
 	}
 
 	register_device(&sdram0_dev);
+	register_device(&imx_ipu_fb_dev);
 
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);

@@ -9,6 +9,28 @@
 #define FB_VISUAL_DIRECTCOLOR		4	/* Direct color */
 #define FB_VISUAL_STATIC_PSEUDOCOLOR	5	/* Pseudo color readonly */
 
+#define FB_SYNC_HOR_HIGH_ACT	1	/* horizontal sync high active	*/
+#define FB_SYNC_VERT_HIGH_ACT	2	/* vertical sync high active	*/
+#define FB_SYNC_EXT		4	/* external sync		*/
+#define FB_SYNC_COMP_HIGH_ACT	8	/* composite sync high active   */
+#define FB_SYNC_BROADCAST	16	/* broadcast video timings      */
+					/* vtotal = 144d/288n/576i => PAL  */
+					/* vtotal = 121d/242n/484i => NTSC */
+#define FB_SYNC_ON_GREEN	32	/* sync on green */
+
+#define FB_VMODE_NONINTERLACED  0	/* non interlaced */
+#define FB_VMODE_INTERLACED	1	/* interlaced	*/
+#define FB_VMODE_DOUBLE		2	/* double scan */
+#define FB_VMODE_ODD_FLD_FIRST	4	/* interlaced: top line first */
+#define FB_VMODE_MASK		255
+
+#define FB_VMODE_YWRAP		256	/* ywrap instead of panning     */
+#define FB_VMODE_SMOOTH_XPAN	512	/* smooth xpan possible (internally used) */
+#define FB_VMODE_CONUPDATE	512	/* don't update x/yoffset	*/
+
+#define PICOS2KHZ(a) (1000000000UL/(a))
+#define KHZ2PICOS(a) (1000000000UL/(a))
+
 struct fb_videomode {
 	const char *name;	/* optional */
 	u32 refresh;		/* optional */

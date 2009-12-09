@@ -72,7 +72,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 
 	switch (writesize) {
 	case 512:
-		fmcr &= FMCR_NF_FMS;
+		fmcr &= ~FMCR_NF_FMS;
 		break;
 	case 2048:
 		fmcr |= FMCR_NF_FMS;

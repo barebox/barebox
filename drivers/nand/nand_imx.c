@@ -748,6 +748,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 
 	case NAND_CMD_ERASE1:
 	case NAND_CMD_ERASE2:
+	case NAND_CMD_RESET:
 		send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 		break;

@@ -68,7 +68,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 {
 	unsigned int fmcr;
 
-	fmcr = readl(FMCR);
+	fmcr = FMCR;
 
 	switch (writesize) {
 	case 512:
@@ -92,7 +92,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 		break;
 	}
 
-	writel(fmcr, FMCR);
+	FMCR = fmcr;
 }
 
 #else

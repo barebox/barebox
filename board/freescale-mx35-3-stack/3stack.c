@@ -60,8 +60,8 @@ static struct device_d cfi_dev = {
 };
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
-	.phy_addr = 0x1F,
+	.xcv_type	= MII100,
+	.phy_addr	= 0x1F,
 };
 
 static struct device_d fec_dev = {
@@ -71,8 +71,8 @@ static struct device_d fec_dev = {
 };
 
 static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.name	= "ram0",
+	.flags	= DEVFS_RDWR,
 };
 
 static struct device_d sdram_dev = {
@@ -167,7 +167,7 @@ static int f3s_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&cfi_dev);
 
-	switch ( (reg >> 25) & 0x3) {
+	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */
 		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
@@ -332,7 +332,7 @@ static int f3s_core_init(void)
 
 	/* MPR - priority is M4 > M2 > M3 > M5 > M0 > M1 */
 #define MAX_PARAM1 0x00302154
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x0);   /* for S0 */
+	writel(MAX_PARAM1, IMX_MAX_BASE + 0x000); /* for S0 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x100); /* for S1 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x200); /* for S2 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x300); /* for S3 */

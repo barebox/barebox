@@ -53,6 +53,7 @@
 #include <driver.h>
 #include <asm/io.h>
 #include <ns16550.h>
+#include <asm/armlinux.h>
 #include <mach/silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
@@ -244,20 +245,8 @@ static struct device_d sdram_dev = {
 	.name = "mem",
 	.map_base = 0x80000000,
 	.size = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
+	.platform_data = &sram_pdata,
 };
-
-#ifndef CONFIG_CMD_MEMORY
-static struct driver_d ram_drv = {
-       .name = "ram",
-       .probe = dummy_probe,
-       .open = dev_open_default,
-       .close = dev_close_default,
-       .read = mem_read,
-       .write = mem_write,
-       .lseek = dev_lseek_default,
-};
-#endif
 
 static int beagle_devices_init(void)
 {
@@ -265,11 +254,6 @@ static int beagle_devices_init(void)
        ret = register_device(&sdram_dev);
        if (ret)
                goto failed;
-#ifndef CONFIG_CMD_MEMORY
-       ret = register_driver(&ram_drv);
-       if (ret)
-               goto failed;
-#endif
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);

@@ -67,10 +67,12 @@ static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	if (lseek(fd, start, SEEK_SET) == -1) {
-		perror("lseek");
-		err = 1;
-		goto out;
+	if (start > 0) {
+		if (lseek(fd, start, SEEK_SET) == -1) {
+			perror("lseek");
+			err = 1;
+			goto out;
+		}
 	}
 
 	buf = xmalloc(4096);

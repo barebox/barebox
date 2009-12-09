@@ -177,8 +177,6 @@ static int i2c_imx_trx_complete(struct i2c_adapter *adapter)
 			dev_err(adapter->dev, "<%s> TXR timeout\n", __func__);
 			return -EIO;
 		}
-
-		writeb(0x0, base + IMX_I2C_I2SR);
 	}
 
 	return 0;
@@ -359,6 +357,9 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	dev_dbg(adapter->dev,
 		"<%s> write slave address: addr=0x%02x\n",
 		__func__, (msgs->addr << 1) | 0x01);
+
+	/* clear IIF */
+	writeb(0x0, base + IMX_I2C_I2SR);
 
 	/* write slave address */
 	writeb((msgs->addr << 1) | 0x01, base + IMX_I2C_I2DR);

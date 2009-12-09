@@ -48,6 +48,7 @@
 #include <driver.h>
 #include <asm/io.h>
 #include <ns16550.h>
+#include <asm/armlinux.h>
 #include <mach/silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
@@ -646,20 +647,6 @@ struct device_d sdram_dev = {
 	.platform_data = &ram_pdata,
 };
 
-/*------------------------- RAM Devices -------------------------------------*/
-#ifndef CONFIG_CMD_MEMORY
-
-static struct driver_d ram_drv = {
-	.name = "ram",
-	.probe = dummy_probe,
-	.open  = dev_open_default,
-	.close = dev_close_default,
-	.read = mem_read,
-	.write = mem_write,
-	.lseek  = dev_lseek_default,
-};
-#endif
-
 /*-----------------------Generic Devices Initialization ---------------------*/
 
 static int sdp3430_devices_init(void)
@@ -668,11 +655,6 @@ static int sdp3430_devices_init(void)
 	ret = register_device(&sdram_dev);
 	if (ret)
 		goto failed;
-#ifndef CONFIG_CMD_MEMORY
-	ret = register_driver(&ram_drv);
-	if (ret)
-		goto failed;
-#endif
 	ret = sdp3430_flash_init();
 	if (ret)
 		goto failed;

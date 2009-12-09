@@ -457,6 +457,8 @@ static int i2c_imx_xfer(struct i2c_adapter *adapter,
 			result = i2c_imx_read(adapter, &msgs[i]);
 		else
 			result = i2c_imx_write(adapter, &msgs[i]);
+		if (result)
+			goto fail0;
 	}
 
 fail0:

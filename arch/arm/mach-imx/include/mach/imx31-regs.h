@@ -138,7 +138,7 @@
 #define CCM_PDR1	0x08
 #define CCM_RCSR	0x0c
 #define CCM_MPCTL	0x10
-#define CCM_UPCTL	0x10
+#define CCM_UPCTL	0x14
 #define CCM_SPCTL	0x18
 #define CCM_COSR	0x1C
 

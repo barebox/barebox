@@ -108,8 +108,9 @@ static struct spi_board_info pcm038_spi_board_info[] = {
 };
 
 static struct imx_nand_platform_data nand_info = {
-	.width = 1,
-	.hw_ecc = 1,
+	.width		= 1,
+	.hw_ecc		= 1,
+	.flash_bbt	= 1,
 };
 
 static struct device_d nand_dev = {

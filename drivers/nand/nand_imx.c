@@ -977,11 +977,6 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	add_mtd_device(mtd);
 
-#ifdef CONFIG_MXC_NAND_LOW_LEVEL_ERASE
-	/* Erase all the blocks of a NAND */
-	imx_low_erase(mtd);
-#endif
-
 	dev->priv = host;
 
 	return 0;

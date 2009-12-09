@@ -156,6 +156,8 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 		return -EINVAL;
 	}
 
+	lseek(bb->fd, 0, SEEK_SET);
+
 	return erase(bb->fd, bb->raw_size, 0);
 }
 

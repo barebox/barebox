@@ -205,10 +205,18 @@ static int i2c_imx_wait_iif(struct i2c_adapter *adapter)
 static int i2c_imx_acked(struct i2c_adapter *adapter)
 {
 	unsigned long base = adapter->dev->map_base;
+	uint64_t start;
 
-	if (readb(base + IMX_I2C_I2SR) & I2SR_RXAK) {
-		dev_notice(adapter->dev, "<%s> No ACK\n", __func__);
-		return -EIO;
+	start = get_time_ns();
+	while (1) {
+		unsigned int reg = readb(base + IMX_I2C_I2SR);
+		if (!(reg & I2SR_RXAK))
+			break;
+
+		if (is_timeout(start, MSECOND)) {
+			dev_err(adapter->dev, "<%s> No ACK\n", __func__);
+			return -EIO;
+		}
 	}
 
 	return 0;
@@ -398,6 +406,12 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 			temp = readb(base + IMX_I2C_I2CR);
 			temp &= ~(I2CR_MSTA | I2CR_MTX);
 			writeb(temp, base + IMX_I2C_I2CR);
+
+			/*
+			 * adding this delay helps on low bitrates
+			 */
+			udelay(i2c_imx->disable_delay);
+
 			i2c_imx_bus_busy(adapter, 0);
 			i2c_imx->stopped = 1;
 		} else if (i == (msgs->len - 2)) {

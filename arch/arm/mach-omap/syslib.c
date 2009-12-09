@@ -31,6 +31,7 @@
  */
 
 #include <config.h>
+#include <common.h>
 #include <asm/io.h>
 #include <mach/syslib.h>
 

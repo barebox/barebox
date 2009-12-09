@@ -152,7 +152,9 @@ static int i2c_imx_bus_busy(struct i2c_adapter *adapter, int for_busy)
 		if (!for_busy && !(temp & I2SR_IBB))
 			break;
 		if (is_timeout(start, MSECOND)) {
-			dev_warn(adapter->dev, "<%s> I2C bus is busy\n", __func__);
+			dev_err(adapter->dev,
+				 "<%s> timeout waiting for I2C bus %s\n",
+				 __func__,for_busy ? "busy" : "not busy");
 			return -EIO;
 		}
 	}
@@ -172,7 +174,7 @@ static int i2c_imx_trx_complete(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_warn(adapter->dev, "<%s> TXR timeout\n", __func__);
+			dev_err(adapter->dev, "<%s> TXR timeout\n", __func__);
 			return -EIO;
 		}
 
@@ -194,7 +196,7 @@ static int i2c_imx_wait_iif(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_warn(adapter->dev, "<%s> IIF timeout\n", __func__);
+			dev_err(adapter->dev, "<%s> IIF timeout\n", __func__);
 			return -EIO;
 		}
 	}

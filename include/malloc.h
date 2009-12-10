@@ -218,6 +218,7 @@
 #ifndef __MALLOC_H
 #define __MALLOC_H
 
+#include <types.h>
 
 /* Preliminaries */
 

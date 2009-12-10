@@ -234,8 +234,8 @@
 void* memset(void*, int, size_t);
 void* memcpy(void*, const void*, size_t);
 #else
-Void_t* memset();
-Void_t* memcpy();
+void* memset();
+void* memcpy();
 #endif
 #endif
 
@@ -341,13 +341,13 @@ do {                                                                          \
 
 #if __STD_C
 
-Void_t * __default_morecore_init (ptrdiff_t);
-Void_t *(*__morecore)(ptrdiff_t) = __default_morecore_init;
+void * __default_morecore_init (ptrdiff_t);
+void *(*__morecore)(ptrdiff_t) = __default_morecore_init;
 
 #else
 
-Void_t * __default_morecore_init ();
-Void_t *(*__morecore)() = __default_morecore_init;
+void * __default_morecore_init ();
+void *(*__morecore)() = __default_morecore_init;
 
 #endif
 
@@ -358,9 +358,9 @@ Void_t *(*__morecore)() = __default_morecore_init;
 #else /* INTERNAL_LINUX_C_LIB */
 
 #if __STD_C
-extern Void_t*     sbrk(ptrdiff_t);
+extern void*     sbrk(ptrdiff_t);
 #else
-extern Void_t*     sbrk();
+extern void*     sbrk();
 #endif
 
 #ifndef MORECORE
@@ -802,7 +802,7 @@ nextchunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 /* conversion from malloc headers to user pointers, and back */
 
-#define chunk2mem(p)   ((Void_t*)((char*)(p) + 2*SIZE_SZ))
+#define chunk2mem(p)   ((void*)((char*)(p) + 2*SIZE_SZ))
 #define mem2chunk(mem) ((mchunkptr)((char*)(mem) - 2*SIZE_SZ))
 
 /* pad request bytes into a usable size */
@@ -1491,9 +1491,9 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 */
 
 #if __STD_C
-Void_t* mALLOc(size_t bytes)
+void* mALLOc(size_t bytes)
 #else
-Void_t* mALLOc(bytes) size_t bytes;
+void* mALLOc(bytes) size_t bytes;
 #endif
 {
   mchunkptr victim;                  /* inspected/selected chunk */
@@ -1746,9 +1746,9 @@ Void_t* mALLOc(bytes) size_t bytes;
 
 
 #if __STD_C
-void fREe(Void_t* mem)
+void fREe(void* mem)
 #else
-void fREe(mem) Void_t* mem;
+void fREe(mem) void* mem;
 #endif
 {
   mchunkptr p;         /* chunk corresponding to mem */
@@ -1873,9 +1873,9 @@ void fREe(mem) Void_t* mem;
 
 
 #if __STD_C
-Void_t* rEALLOc(Void_t* oldmem, size_t bytes)
+void* rEALLOc(void* oldmem, size_t bytes)
 #else
-Void_t* rEALLOc(oldmem, bytes) Void_t* oldmem; size_t bytes;
+void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
 #endif
 {
   INTERNAL_SIZE_T    nb;      /* padded request size */
@@ -1885,7 +1885,7 @@ Void_t* rEALLOc(oldmem, bytes) Void_t* oldmem; size_t bytes;
 
   mchunkptr newp;             /* chunk to return */
   INTERNAL_SIZE_T    newsize; /* its size */
-  Void_t*   newmem;           /* corresponding user mem */
+  void*   newmem;           /* corresponding user mem */
 
   mchunkptr next;             /* next contiguous chunk after oldp */
   INTERNAL_SIZE_T  nextsize;  /* its size */
@@ -2075,9 +2075,9 @@ Void_t* rEALLOc(oldmem, bytes) Void_t* oldmem; size_t bytes;
 
 
 #if __STD_C
-Void_t* mEMALIGn(size_t alignment, size_t bytes)
+void* mEMALIGn(size_t alignment, size_t bytes)
 #else
-Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
+void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
 #endif
 {
   INTERNAL_SIZE_T    nb;      /* padded  request size */
@@ -2169,9 +2169,9 @@ Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
 */
 
 #if __STD_C
-Void_t* vALLOc(size_t bytes)
+void* vALLOc(size_t bytes)
 #else
-Void_t* vALLOc(bytes) size_t bytes;
+void* vALLOc(bytes) size_t bytes;
 #endif
 {
   return mEMALIGn (malloc_getpagesize, bytes);
@@ -2184,9 +2184,9 @@ Void_t* vALLOc(bytes) size_t bytes;
 
 
 #if __STD_C
-Void_t* pvALLOc(size_t bytes)
+void* pvALLOc(size_t bytes)
 #else
-Void_t* pvALLOc(bytes) size_t bytes;
+void* pvALLOc(bytes) size_t bytes;
 #endif
 {
   size_t pagesize = malloc_getpagesize;
@@ -2200,9 +2200,9 @@ Void_t* pvALLOc(bytes) size_t bytes;
 */
 
 #if __STD_C
-Void_t* cALLOc(size_t n, size_t elem_size)
+void* cALLOc(size_t n, size_t elem_size)
 #else
-Void_t* cALLOc(n, elem_size) size_t n; size_t elem_size;
+void* cALLOc(n, elem_size) size_t n; size_t elem_size;
 #endif
 {
   mchunkptr p;
@@ -2216,7 +2216,7 @@ Void_t* cALLOc(n, elem_size) size_t n; size_t elem_size;
   mchunkptr oldtop = top;
   INTERNAL_SIZE_T oldtopsize = chunksize(top);
 #endif
-  Void_t* mem = mALLOc (sz);
+  void* mem = mALLOc (sz);
 
   if ((long)n < 0) return 0;
 
@@ -2254,9 +2254,9 @@ Void_t* cALLOc(n, elem_size) size_t n; size_t elem_size;
 
 #if !defined(INTERNAL_LINUX_C_LIB) || !defined(__ELF__)
 #if __STD_C
-void cfree(Void_t *mem)
+void cfree(void *mem)
 #else
-void cfree(mem) Void_t *mem;
+void cfree(mem) void *mem;
 #endif
 {
   fREe(mem);
@@ -2358,9 +2358,9 @@ int malloc_trim(pad) size_t pad;
 */
 
 #if __STD_C
-size_t malloc_usable_size(Void_t* mem)
+size_t malloc_usable_size(void* mem)
 #else
-size_t malloc_usable_size(mem) Void_t* mem;
+size_t malloc_usable_size(mem) void* mem;
 #endif
 {
   mchunkptr p;

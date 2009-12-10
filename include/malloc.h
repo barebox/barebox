@@ -234,14 +234,6 @@
 #endif /*__STDC__*/
 #endif /*__STD_C*/
 
-#ifndef Void_t
-#if (__STD_C || defined(WIN32))
-#define Void_t      void
-#else
-#define Void_t      char
-#endif
-#endif /*Void_t*/
-
 #if __STD_C
 #include <linux/stddef.h>	/* for size_t */
 #else
@@ -313,27 +305,27 @@ extern "C" {
 
 #if __STD_C
 
-Void_t* mALLOc(size_t);
-void    fREe(Void_t*);
-Void_t* rEALLOc(Void_t*, size_t);
-Void_t* mEMALIGn(size_t, size_t);
-Void_t* vALLOc(size_t);
-Void_t* pvALLOc(size_t);
-Void_t* cALLOc(size_t, size_t);
-void    cfree(Void_t*);
+void* mALLOc(size_t);
+void    fREe(void*);
+void* rEALLOc(void*, size_t);
+void* mEMALIGn(size_t, size_t);
+void* vALLOc(size_t);
+void* pvALLOc(size_t);
+void* cALLOc(size_t, size_t);
+void    cfree(void*);
 int     malloc_trim(size_t);
-size_t  malloc_usable_size(Void_t*);
+size_t  malloc_usable_size(void*);
 void    malloc_stats(void);
 int     mALLOPt(int, int);
 struct mallinfo mALLINFo(void);
 #else
-Void_t* mALLOc();
+void* mALLOc();
 void    fREe();
-Void_t* rEALLOc();
-Void_t* mEMALIGn();
-Void_t* vALLOc();
-Void_t* pvALLOc();
-Void_t* cALLOc();
+void* rEALLOc();
+void* mEMALIGn();
+void* vALLOc();
+void* pvALLOc();
+void* cALLOc();
 void    cfree();
 int     malloc_trim();
 size_t  malloc_usable_size();

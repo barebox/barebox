@@ -3,10 +3,6 @@
 
 #include <types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Public routines */
 
 void* malloc(size_t);
@@ -22,11 +18,6 @@ size_t malloc_usable_size(void*);
 void malloc_stats(void);
 int mallopt(int, int);
 struct mallinfo mallinfo(void);
-
-
-#ifdef __cplusplus
-};  /* end of extern "C" */
-#endif
 
 #endif
 

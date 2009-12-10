@@ -222,9 +222,6 @@
 
 */
 
-/* to be able to compile this file (is going to be removed) */
-#define __STD_C 1
-
 #ifndef DEFAULT_TRIM_THRESHOLD
 #define DEFAULT_TRIM_THRESHOLD (128 * 1024)
 #endif
@@ -448,15 +445,9 @@
 #define HAVE_MEMCPY
 #define USE_MEMCPY 1
 
-#if (__STD_C || defined(HAVE_MEMCPY))
-
-#if __STD_C
+#if defined(HAVE_MEMCPY)
 void* memset(void*, int, size_t);
 void* memcpy(void*, const void*, size_t);
-#else
-void* memset();
-void* memcpy();
-#endif
 #endif
 
 #if USE_MEMCPY
@@ -559,17 +550,8 @@ do {                                                                          \
 
 #ifdef INTERNAL_LINUX_C_LIB
 
-#if __STD_C
-
 void * __default_morecore_init (ptrdiff_t);
 void *(*__morecore)(ptrdiff_t) = __default_morecore_init;
-
-#else
-
-void * __default_morecore_init ();
-void *(*__morecore)() = __default_morecore_init;
-
-#endif
 
 #define MORECORE (*__morecore)
 #define MORECORE_FAILURE 0
@@ -577,11 +559,7 @@ void *(*__morecore)() = __default_morecore_init;
 
 #else /* INTERNAL_LINUX_C_LIB */
 
-#if __STD_C
 extern void*     sbrk(ptrdiff_t);
-#else
-extern void*     sbrk();
-#endif
 
 #ifndef MORECORE
 #define MORECORE sbrk
@@ -1329,11 +1307,7 @@ static unsigned long mmapped_mem;
   in malloc. In which case, please report it!)
 */
 
-#if __STD_C
 static void do_check_chunk(mchunkptr p)
-#else
-static void do_check_chunk(p) mchunkptr p;
-#endif
 {
 
   /* No checkable chunk is mmapped */
@@ -1349,11 +1323,7 @@ static void do_check_chunk(p) mchunkptr p;
 }
 
 
-#if __STD_C
 static void do_check_free_chunk(mchunkptr p)
-#else
-static void do_check_free_chunk(p) mchunkptr p;
-#endif
 {
   INTERNAL_SIZE_T sz = p->size & ~PREV_INUSE;
 
@@ -1381,11 +1351,7 @@ static void do_check_free_chunk(p) mchunkptr p;
     assert(sz == SIZE_SZ);
 }
 
-#if __STD_C
 static void do_check_inuse_chunk(mchunkptr p)
-#else
-static void do_check_inuse_chunk(p) mchunkptr p;
-#endif
 {
   mchunkptr next = next_chunk(p);
   do_check_chunk(p);
@@ -1413,11 +1379,7 @@ static void do_check_inuse_chunk(p) mchunkptr p;
 
 }
 
-#if __STD_C
 static void do_check_malloced_chunk(mchunkptr p, INTERNAL_SIZE_T s)
-#else
-static void do_check_malloced_chunk(p, s) mchunkptr p; INTERNAL_SIZE_T s;
-#endif
 {
 
   do_check_inuse_chunk(p);
@@ -1535,11 +1497,7 @@ static void do_check_malloced_chunk(p, s) mchunkptr p; INTERNAL_SIZE_T s;
   Main interface to sbrk (but see also malloc_trim).
 */
 
-#if __STD_C
 static void malloc_extend_top(INTERNAL_SIZE_T nb)
-#else
-static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
-#endif
 {
   char*     brk;                  /* return value from sbrk */
   INTERNAL_SIZE_T front_misalign; /* unusable bytes at front of sbrked space */
@@ -1709,11 +1667,7 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 
 */
 
-#if __STD_C
 void* malloc(size_t bytes)
-#else
-void* malloc(bytes) size_t bytes;
-#endif
 {
   mchunkptr victim;                  /* inspected/selected chunk */
   INTERNAL_SIZE_T victim_size;       /* its size */
@@ -1964,11 +1918,7 @@ void* malloc(bytes) size_t bytes;
 */
 
 
-#if __STD_C
 void free(void* mem)
-#else
-void free(mem) void* mem;
-#endif
 {
   mchunkptr p;         /* chunk corresponding to mem */
   INTERNAL_SIZE_T hd;  /* its head field */
@@ -2091,11 +2041,7 @@ void free(mem) void* mem;
 */
 
 
-#if __STD_C
 void* realloc(void* oldmem, size_t bytes)
-#else
-void* realloc(oldmem, bytes) void* oldmem; size_t bytes;
-#endif
 {
   INTERNAL_SIZE_T    nb;      /* padded request size */
 
@@ -2293,11 +2239,7 @@ void* realloc(oldmem, bytes) void* oldmem; size_t bytes;
 */
 
 
-#if __STD_C
 void* memalign(size_t alignment, size_t bytes)
-#else
-void* memalign(alignment, bytes) size_t alignment; size_t bytes;
-#endif
 {
   INTERNAL_SIZE_T    nb;      /* padded  request size */
   char*     m;                /* memory returned by malloc call */
@@ -2387,11 +2329,7 @@ void* memalign(alignment, bytes) size_t alignment; size_t bytes;
     be figured out from all the includes/defines above.)
 */
 
-#if __STD_C
 void* valloc(size_t bytes)
-#else
-void* valloc(bytes) size_t bytes;
-#endif
 {
   return memalign (malloc_getpagesize, bytes);
 }
@@ -2402,11 +2340,7 @@ void* valloc(bytes) size_t bytes;
 */
 
 
-#if __STD_C
 void* pvalloc(size_t bytes)
-#else
-void* pvalloc(bytes) size_t bytes;
-#endif
 {
   size_t pagesize = malloc_getpagesize;
   return memalign (pagesize, (bytes + pagesize - 1) & ~(pagesize - 1));
@@ -2418,11 +2352,7 @@ void* pvalloc(bytes) size_t bytes;
 
 */
 
-#if __STD_C
 void* calloc(size_t n, size_t elem_size)
-#else
-void* calloc(n, elem_size) size_t n; size_t elem_size;
-#endif
 {
   mchunkptr p;
   INTERNAL_SIZE_T csz;
@@ -2472,11 +2402,7 @@ void* calloc(n, elem_size) size_t n; size_t elem_size;
 */
 
 #if !defined(INTERNAL_LINUX_C_LIB) || !defined(__ELF__)
-#if __STD_C
 void cfree(void *mem)
-#else
-void cfree(mem) void *mem;
-#endif
 {
   free(mem);
 }
@@ -2507,11 +2433,7 @@ void cfree(mem) void *mem;
 
 */
 #ifdef USE_MALLOC_TRIM
-#if __STD_C
 int malloc_trim(size_t pad)
-#else
-int malloc_trim(pad) size_t pad;
-#endif
 {
   long  top_size;        /* Amount of top-most memory */
   long  extra;           /* Amount to release */
@@ -2576,11 +2498,7 @@ int malloc_trim(pad) size_t pad;
 
 */
 
-#if __STD_C
 size_t malloc_usable_size(void* mem)
-#else
-size_t malloc_usable_size(mem) void* mem;
-#endif
 {
   mchunkptr p;
   if (mem == 0)
@@ -2698,11 +2616,7 @@ void malloc_stats()
 
 */
 #ifndef __U_BOOT__
-#if __STD_C
 int mallopt(int param_number, int value)
-#else
-int mallopt(param_number, value) int param_number; int value;
-#endif
 {
   switch(param_number)
   {

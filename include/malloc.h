@@ -316,32 +316,6 @@ extern "C" {
 
 
 /*
-  WIN32 causes an emulation of sbrk to be compiled in
-  mmap-based options are not currently supported in WIN32.
-*/
-
-/* #define WIN32 */
-#ifdef WIN32
-#define MORECORE wsbrk
-#define HAVE_MMAP 0
-
-#define LACKS_UNISTD_H
-#define LACKS_SYS_PARAM_H
-
-/*
-  Include 'windows.h' to get the necessary declarations for the
-  Microsoft Visual C++ data structures and routines used in the 'sbrk'
-  emulation.
-
-  Define WIN32_LEAN_AND_MEAN so that only the essential Microsoft
-  Visual C++ header files are included.
-*/
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-
-/*
   HAVE_MEMCPY should be defined if you are not otherwise using
   ANSI STD C, but still have memcpy and memset in your C library
   and want to use them in calloc and realloc. Otherwise simple
@@ -355,14 +329,7 @@ extern "C" {
 */
 
 #define HAVE_MEMCPY
-
-#ifndef USE_MEMCPY
-#ifdef HAVE_MEMCPY
 #define USE_MEMCPY 1
-#else
-#define USE_MEMCPY 0
-#endif
-#endif
 
 #if (__STD_C || defined(HAVE_MEMCPY))
 
@@ -370,13 +337,8 @@ extern "C" {
 void* memset(void*, int, size_t);
 void* memcpy(void*, const void*, size_t);
 #else
-#ifdef WIN32
-/* On Win32 platforms, 'memset()' and 'memcpy()' are already declared in */
-/* 'windows.h' */
-#else
 Void_t* memset();
 Void_t* memcpy();
-#endif
 #endif
 #endif
 
@@ -502,58 +464,7 @@ do {                                                                          \
   bsd/gnu getpagesize.h
 */
 
-#define	LACKS_UNISTD_H	/* Shortcut for U-Boot */
 #define	malloc_getpagesize	4096
-
-#ifndef LACKS_UNISTD_H
-#  include <unistd.h>
-#endif
-
-#ifndef malloc_getpagesize
-#  ifdef _SC_PAGESIZE         /* some SVR4 systems omit an underscore */
-#    ifndef _SC_PAGE_SIZE
-#      define _SC_PAGE_SIZE _SC_PAGESIZE
-#    endif
-#  endif
-#  ifdef _SC_PAGE_SIZE
-#    define malloc_getpagesize sysconf(_SC_PAGE_SIZE)
-#  else
-#    if defined(BSD) || defined(DGUX) || defined(HAVE_GETPAGESIZE)
-       extern size_t getpagesize();
-#      define malloc_getpagesize getpagesize()
-#    else
-#      ifdef WIN32
-#        define malloc_getpagesize (4096) /* TBD: Use 'GetSystemInfo' instead */
-#      else
-#        ifndef LACKS_SYS_PARAM_H
-#          include <sys/param.h>
-#        endif
-#        ifdef EXEC_PAGESIZE
-#          define malloc_getpagesize EXEC_PAGESIZE
-#        else
-#          ifdef NBPG
-#            ifndef CLSIZE
-#              define malloc_getpagesize NBPG
-#            else
-#              define malloc_getpagesize (NBPG * CLSIZE)
-#            endif
-#          else
-#            ifdef NBPC
-#              define malloc_getpagesize NBPC
-#            else
-#              ifdef PAGESIZE
-#                define malloc_getpagesize PAGESIZE
-#              else
-#                define malloc_getpagesize (4096) /* just guess */
-#              endif
-#            endif
-#          endif
-#        endif
-#      endif
-#    endif
-#  endif
-#endif
-
 
 /*
 
@@ -766,16 +677,6 @@ struct mallinfo {
       the default value is 0, and attempts to set it to non-zero values
       in mallopt will fail.
 */
-
-
-/*
-    USE_DL_PREFIX will prefix all public routines with the string 'dl'.
-      Useful to quickly avoid procedure declaration conflicts and linker
-      symbol conflicts with existing memory allocation routines.
-
-*/
-
-/* #define USE_DL_PREFIX */
 
 
 /*

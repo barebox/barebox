@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <module.h>
 
+/* to be able to compile this file (is going to be removed) */
+#define __STD_C 1
+
 #ifndef DEFAULT_TRIM_THRESHOLD
 #define DEFAULT_TRIM_THRESHOLD (128 * 1024)
 #endif
@@ -460,7 +463,6 @@ struct mallinfo {
 */
 
 #define	malloc_getpagesize	4096
-
 
 /*
   Emulation of sbrk for WIN32
@@ -1412,7 +1414,7 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 	SIZE_SZ|PREV_INUSE;
       /* If possible, release the rest. */
       if (old_top_size >= MINSIZE)
-	fREe(chunk2mem(old_top));
+	free(chunk2mem(old_top));
     }
   }
 
@@ -1491,9 +1493,9 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 */
 
 #if __STD_C
-void* mALLOc(size_t bytes)
+void* malloc(size_t bytes)
 #else
-void* mALLOc(bytes) size_t bytes;
+void* malloc(bytes) size_t bytes;
 #endif
 {
   mchunkptr victim;                  /* inspected/selected chunk */
@@ -1746,9 +1748,9 @@ void* mALLOc(bytes) size_t bytes;
 
 
 #if __STD_C
-void fREe(void* mem)
+void free(void* mem)
 #else
-void fREe(mem) void* mem;
+void free(mem) void* mem;
 #endif
 {
   mchunkptr p;         /* chunk corresponding to mem */
@@ -1873,9 +1875,9 @@ void fREe(mem) void* mem;
 
 
 #if __STD_C
-void* rEALLOc(void* oldmem, size_t bytes)
+void* realloc(void* oldmem, size_t bytes)
 #else
-void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
+void* realloc(oldmem, bytes) void* oldmem; size_t bytes;
 #endif
 {
   INTERNAL_SIZE_T    nb;      /* padded request size */
@@ -1900,13 +1902,13 @@ void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
   mchunkptr fwd;              /* misc temp for linking */
 
 #ifdef REALLOC_ZERO_BYTES_FREES
-  if (bytes == 0) { fREe(oldmem); return 0; }
+  if (bytes == 0) { free(oldmem); return 0; }
 #endif
 
   if ((long)bytes < 0) return 0;
 
   /* realloc of null is supposed to be same as malloc */
-  if (oldmem == 0) return mALLOc(bytes);
+  if (oldmem == 0) return malloc(bytes);
 
   newp    = oldp    = mem2chunk(oldmem);
   newsize = oldsize = chunksize(oldp);
@@ -2009,7 +2011,7 @@ void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
 
     /* Must allocate */
 
-    newmem = mALLOc (bytes);
+    newmem = malloc (bytes);
 
     if (newmem == 0)  /* propagate failure */
       return 0;
@@ -2026,7 +2028,7 @@ void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
 
     /* Otherwise copy, free, and exit */
     MALLOC_COPY(newmem, oldmem, oldsize - SIZE_SZ);
-    fREe(oldmem);
+    free(oldmem);
     return newmem;
   }
 
@@ -2040,7 +2042,7 @@ void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
     set_head_size(newp, nb);
     set_head(remainder, remainder_size | PREV_INUSE);
     set_inuse_bit_at_offset(remainder, remainder_size);
-    fREe(chunk2mem(remainder)); /* let free() deal with it */
+    free(chunk2mem(remainder)); /* let free() deal with it */
   }
   else
   {
@@ -2075,9 +2077,9 @@ void* rEALLOc(oldmem, bytes) void* oldmem; size_t bytes;
 
 
 #if __STD_C
-void* mEMALIGn(size_t alignment, size_t bytes)
+void* memalign(size_t alignment, size_t bytes)
 #else
-void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
+void* memalign(alignment, bytes) size_t alignment; size_t bytes;
 #endif
 {
   INTERNAL_SIZE_T    nb;      /* padded  request size */
@@ -2094,7 +2096,7 @@ void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
 
   /* If need less alignment than we give anyway, just relay to malloc */
 
-  if (alignment <= MALLOC_ALIGNMENT) return mALLOc(bytes);
+  if (alignment <= MALLOC_ALIGNMENT) return malloc(bytes);
 
   /* Otherwise, ensure that it is at least a minimum chunk size */
 
@@ -2103,7 +2105,7 @@ void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
   /* Call malloc with worst case padding to hit alignment. */
 
   nb = request2size(bytes);
-  m  = (char*)(mALLOc(nb + alignment + MINSIZE));
+  m  = (char*)(malloc(nb + alignment + MINSIZE));
 
   if (m == 0) return 0; /* propagate failure */
 
@@ -2136,7 +2138,7 @@ void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
     set_head(newp, newsize | PREV_INUSE);
     set_inuse_bit_at_offset(newp, newsize);
     set_head_size(p, leadsize);
-    fREe(chunk2mem(p));
+    free(chunk2mem(p));
     p = newp;
 
     assert (newsize >= nb && (((unsigned long)(chunk2mem(p))) % alignment) == 0);
@@ -2151,7 +2153,7 @@ void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
     remainder = chunk_at_offset(p, nb);
     set_head(remainder, remainder_size | PREV_INUSE);
     set_head_size(p, nb);
-    fREe(chunk2mem(remainder));
+    free(chunk2mem(remainder));
   }
 
   check_inuse_chunk(p);
@@ -2169,12 +2171,12 @@ void* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
 */
 
 #if __STD_C
-void* vALLOc(size_t bytes)
+void* valloc(size_t bytes)
 #else
-void* vALLOc(bytes) size_t bytes;
+void* valloc(bytes) size_t bytes;
 #endif
 {
-  return mEMALIGn (malloc_getpagesize, bytes);
+  return memalign (malloc_getpagesize, bytes);
 }
 
 /*
@@ -2184,13 +2186,13 @@ void* vALLOc(bytes) size_t bytes;
 
 
 #if __STD_C
-void* pvALLOc(size_t bytes)
+void* pvalloc(size_t bytes)
 #else
-void* pvALLOc(bytes) size_t bytes;
+void* pvalloc(bytes) size_t bytes;
 #endif
 {
   size_t pagesize = malloc_getpagesize;
-  return mEMALIGn (pagesize, (bytes + pagesize - 1) & ~(pagesize - 1));
+  return memalign (pagesize, (bytes + pagesize - 1) & ~(pagesize - 1));
 }
 
 /*
@@ -2200,9 +2202,9 @@ void* pvALLOc(bytes) size_t bytes;
 */
 
 #if __STD_C
-void* cALLOc(size_t n, size_t elem_size)
+void* calloc(size_t n, size_t elem_size)
 #else
-void* cALLOc(n, elem_size) size_t n; size_t elem_size;
+void* calloc(n, elem_size) size_t n; size_t elem_size;
 #endif
 {
   mchunkptr p;
@@ -2216,7 +2218,7 @@ void* cALLOc(n, elem_size) size_t n; size_t elem_size;
   mchunkptr oldtop = top;
   INTERNAL_SIZE_T oldtopsize = chunksize(top);
 #endif
-  void* mem = mALLOc (sz);
+  void* mem = malloc (sz);
 
   if ((long)n < 0) return 0;
 
@@ -2259,7 +2261,7 @@ void cfree(void *mem)
 void cfree(mem) void *mem;
 #endif
 {
-  fREe(mem);
+  free(mem);
 }
 #endif
 
@@ -2480,9 +2482,9 @@ void malloc_stats()
 */
 #ifndef __U_BOOT__
 #if __STD_C
-int mALLOPt(int param_number, int value)
+int mallopt(int param_number, int value)
 #else
-int mALLOPt(param_number, value) int param_number; int value;
+int mallopt(param_number, value) int param_number; int value;
 #endif
 {
   switch(param_number)

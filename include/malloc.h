@@ -220,119 +220,25 @@
 
 #include <types.h>
 
-/* Preliminaries */
-
-#ifndef __STD_C
-#ifdef __STDC__
-#define __STD_C     1
-#else
-#if __cplusplus
-#define __STD_C     1
-#else
-#define __STD_C     0
-#endif /*__cplusplus*/
-#endif /*__STDC__*/
-#endif /*__STD_C*/
-
-#if __STD_C
-#include <linux/stddef.h>	/* for size_t */
-#else
-#include <sys/types.h>
-#endif	/* __STD_C */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-
-/*
-  Compile-time options
-*/
-
-
-
-#if defined(INTERNAL_LINUX_C_LIB) && defined(__ELF__)
-
-#define cALLOc		__libc_calloc
-#define fREe		__libc_free
-#define mALLOc		__libc_malloc
-#define mEMALIGn	__libc_memalign
-#define rEALLOc		__libc_realloc
-#define vALLOc		__libc_valloc
-#define pvALLOc		__libc_pvalloc
-#define mALLINFo	__libc_mallinfo
-#define mALLOPt		__libc_mallopt
-
-#pragma weak calloc = __libc_calloc
-#pragma weak free = __libc_free
-#pragma weak cfree = __libc_free
-#pragma weak malloc = __libc_malloc
-#pragma weak memalign = __libc_memalign
-#pragma weak realloc = __libc_realloc
-#pragma weak valloc = __libc_valloc
-#pragma weak pvalloc = __libc_pvalloc
-#pragma weak mallinfo = __libc_mallinfo
-#pragma weak mallopt = __libc_mallopt
-
-#else
-
-#ifdef USE_DL_PREFIX
-#define cALLOc		dlcalloc
-#define fREe		dlfree
-#define mALLOc		dlmalloc
-#define mEMALIGn	dlmemalign
-#define rEALLOc		dlrealloc
-#define vALLOc		dlvalloc
-#define pvALLOc		dlpvalloc
-#define mALLINFo	dlmallinfo
-#define mALLOPt		dlmallopt
-#else /* USE_DL_PREFIX */
-#define cALLOc		calloc
-#define fREe		free
-#define mALLOc		malloc
-#define mEMALIGn	memalign
-#define rEALLOc		realloc
-#define vALLOc		valloc
-#define pvALLOc		pvalloc
-#define mALLINFo	mallinfo
-#define mALLOPt		mallopt
-#endif /* USE_DL_PREFIX */
-
-#endif
-
 /* Public routines */
 
-#if __STD_C
-
-void* mALLOc(size_t);
-void    fREe(void*);
-void* rEALLOc(void*, size_t);
-void* mEMALIGn(size_t, size_t);
-void* vALLOc(size_t);
-void* pvALLOc(size_t);
-void* cALLOc(size_t, size_t);
-void    cfree(void*);
-int     malloc_trim(size_t);
-size_t  malloc_usable_size(void*);
-void    malloc_stats(void);
-int     mALLOPt(int, int);
-struct mallinfo mALLINFo(void);
-#else
-void* mALLOc();
-void    fREe();
-void* rEALLOc();
-void* mEMALIGn();
-void* vALLOc();
-void* pvALLOc();
-void* cALLOc();
-void    cfree();
-int     malloc_trim();
-size_t  malloc_usable_size();
-void    malloc_stats();
-int     mALLOPt();
-struct mallinfo mALLINFo();
-#endif
+void* malloc(size_t);
+void free(void*);
+void* realloc(void*, size_t);
+void* memalign(size_t, size_t);
+void* vallocc(size_t);
+void* pvalloc(size_t);
+void* calloc(size_t, size_t);
+void cfree(void*);
+int malloc_trim(size_t);
+size_t malloc_usable_size(void*);
+void malloc_stats(void);
+int mallopt(int, int);
+struct mallinfo mallinfo(void);
 
 
 #ifdef __cplusplus

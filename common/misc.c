@@ -20,56 +20,7 @@
  */
 
 #include <common.h>
-#include <mem_malloc.h>
 #include <errno.h>
-
-/*
- * Begin and End of memory area for malloc(), and current "brk"
- */
-static ulong malloc_start = 0;
-static ulong malloc_end = 0;
-static ulong malloc_brk = 0;
-
-ulong mem_malloc_start(void)
-{
-	return malloc_start;
-}
-
-ulong mem_malloc_end(void)
-{
-	return malloc_end;
-}
-
-void mem_malloc_init (void *start, void *end)
-{
-	malloc_start = (ulong)start;
-	malloc_end = (ulong)end;
-	malloc_brk = malloc_start;
-}
-
-void *sbrk_no_zero(ptrdiff_t increment)
-{
-	ulong old = malloc_brk;
-	ulong new = old + increment;
-
-        if ((new < malloc_start) || (new > malloc_end))
- 		return NULL;
-
-	malloc_brk = new;
-
-	return (void *)old;
-}
-
-void *sbrk (ptrdiff_t increment)
-{
-	void *old = sbrk_no_zero(increment);
-
-	/* Only clear increment, if valid address was returned */
-	if (old != NULL)
-		memset (old, 0, increment);
-
-	return old;
-}
 
 int errno;
 EXPORT_SYMBOL(errno);

@@ -2,6 +2,7 @@
 #include <config.h>
 #include <malloc.h>
 #include <string.h>
+#include <mem_malloc.h>
 
 #include <stdio.h>
 #include <module.h>
@@ -201,7 +202,7 @@
      Define this if your system does not have a <sys/param.h>.
   MORECORE                  (default: sbrk)
      The name of the routine to call to obtain more memory from the system.
-  MORECORE_FAILURE          (default: -1)
+  NULL          (default: -1)
      The value returned upon failure of MORECORE.
   MORECORE_CLEARS           (default 1)
      True (1) if the routine mapped to MORECORE zeroes out memory (which
@@ -398,49 +399,6 @@
 
 
 /*   #define REALLOC_ZERO_BYTES_FREES */
-
-/*
-
-  Special defines for linux libc
-
-  Except when compiled using these special defines for Linux libc
-  using weak aliases, this malloc is NOT designed to work in
-  multithreaded applications.  No semaphores or other concurrency
-  control are provided to ensure that multiple malloc or free calls
-  don't run at the same time, which could be disasterous. A single
-  semaphore could be used across malloc, realloc, and free (which is
-  essentially the effect of the linux weak alias approach). It would
-  be hard to obtain finer granularity.
-
-*/
-
-
-#ifdef INTERNAL_LINUX_C_LIB
-
-void * __default_morecore_init (ptrdiff_t);
-void *(*__morecore)(ptrdiff_t) = __default_morecore_init;
-
-#define MORECORE (*__morecore)
-#define MORECORE_FAILURE 0
-#define MORECORE_CLEARS 1
-
-#else /* INTERNAL_LINUX_C_LIB */
-
-extern void*     sbrk(ptrdiff_t);
-
-#ifndef MORECORE
-#define MORECORE sbrk
-#endif
-
-#ifndef MORECORE_FAILURE
-#define MORECORE_FAILURE -1
-#endif
-
-#ifndef MORECORE_CLEARS
-#define MORECORE_CLEARS 1
-#endif
-
-#endif /* INTERNAL_LINUX_C_LIB */
 
 /*
   Define HAVE_MMAP to optionally make malloc() use mmap() to
@@ -932,9 +890,57 @@ static mbinptr av_[NAV * 2 + 2] = {
 #define mark_binblock(ii)   (binblocks |= idx2binblock(ii))
 #define clear_binblock(ii)  (binblocks &= ~(idx2binblock(ii)))
 
+/* ----------------------------------------------------------------------- */
 
-
+/*
+ * Begin and End of memory area for malloc(), and current "brk"
+ */
+static ulong malloc_start;
+static ulong malloc_end;
+static ulong malloc_brk;
 
+ulong mem_malloc_start(void)
+{
+	return malloc_start;
+}
+
+ulong mem_malloc_end(void)
+{
+	return malloc_end;
+}
+
+void mem_malloc_init (void *start, void *end)
+{
+	malloc_start = (ulong)start;
+	malloc_end = (ulong)end;
+	malloc_brk = malloc_start;
+}
+
+static void *sbrk_no_zero(ptrdiff_t increment)
+{
+	ulong old = malloc_brk;
+	ulong new = old + increment;
+
+        if ((new < malloc_start) || (new > malloc_end))
+ 		return NULL;
+
+	malloc_brk = new;
+
+	return (void *)old;
+}
+
+static void *sbrk (ptrdiff_t increment)
+{
+	void *old = sbrk_no_zero(increment);
+
+	/* Only clear increment, if valid address was returned */
+	if (old != NULL)
+		memset (old, 0, increment);
+
+	return old;
+}
+
+/* ----------------------------------------------------------------------- */
 
 /*  Other static bookkeeping data */
 
@@ -1077,10 +1083,10 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
   if (sbrk_base != (char*)(-1))
     sbrk_size = (sbrk_size + (pagesz - 1)) & ~(pagesz - 1);
 
-  brk = (char*)(MORECORE (sbrk_size));
+  brk = (char*)(sbrk (sbrk_size));
 
   /* Fail if sbrk failed or if a foreign sbrk call killed our space */
-  if (brk == (char*)(MORECORE_FAILURE) ||
+  if (brk == (char*)(NULL) ||
       (brk < old_end && old_top != initial_top))
     return;
 
@@ -1114,8 +1120,8 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
 		   ~(pagesz - 1)) - ((unsigned long)(brk + sbrk_size));
 
     /* Allocate correction */
-    new_brk = (char*)(MORECORE (correction));
-    if (new_brk == (char*)(MORECORE_FAILURE)) return;
+    new_brk = (char*)(sbrk (correction));
+    if (new_brk == (char*)(NULL)) return;
 
     sbrked_mem += correction;
 
@@ -1899,10 +1905,9 @@ void* calloc(size_t n, size_t elem_size)
 
 
   /* check if expand_top called, in which case don't need to clear */
-#if MORECORE_CLEARS
   mchunkptr oldtop = top;
   INTERNAL_SIZE_T oldtopsize = chunksize(top);
-#endif
+
   void* mem = malloc (sz);
 
   if ((long)n < 0) return 0;
@@ -1919,13 +1924,11 @@ void* calloc(size_t n, size_t elem_size)
 
     csz = chunksize(p);
 
-#if MORECORE_CLEARS
     if (p == oldtop && csz > oldtopsize)
     {
       /* clear only the bytes from non-freshly-sbrked memory */
       csz = oldtopsize;
     }
-#endif
 
     memset(mem, 0, csz - SIZE_SZ);
     return mem;
@@ -1989,18 +1992,18 @@ int malloc_trim(size_t pad)
   else
   {
     /* Test to make sure no one else called sbrk */
-    current_brk = (char*)(MORECORE (0));
+    current_brk = (char*)(sbrk (0));
     if (current_brk != (char*)(top) + top_size)
       return 0;     /* Apparently we don't own memory; must fail */
 
     else
     {
-      new_brk = (char*)(MORECORE (-extra));
+      new_brk = (char*)(sbrk (-extra));
 
-      if (new_brk == (char*)(MORECORE_FAILURE)) /* sbrk failed? */
+      if (new_brk == (char*)(NULL)) /* sbrk failed? */
       {
 	/* Try to figure out what we have */
-	current_brk = (char*)(MORECORE (0));
+	current_brk = (char*)(sbrk (0));
 	top_size = current_brk - (char*)top;
 	if (top_size >= (long)MINSIZE) /* if not, we are very very dead! */
 	{

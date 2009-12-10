@@ -186,7 +186,7 @@ char * _strrchr(const char * s, int c)
        return NULL;
 }
 #endif
-EXPORT_SYMBOL(strrchr);
+EXPORT_SYMBOL(_strrchr);
 
 #ifndef __HAVE_ARCH_STRLEN
 /**
@@ -539,7 +539,7 @@ char * _strstr(const char * s1,const char * s2)
 	return NULL;
 }
 #endif
-EXPORT_SYMBOL(strstr);
+EXPORT_SYMBOL(_strstr);
 
 #ifndef __HAVE_ARCH_MEMCHR
 /**

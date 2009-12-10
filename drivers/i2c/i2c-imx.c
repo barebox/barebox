@@ -152,7 +152,9 @@ static int i2c_imx_bus_busy(struct i2c_adapter *adapter, int for_busy)
 		if (!for_busy && !(temp & I2SR_IBB))
 			break;
 		if (is_timeout(start, MSECOND)) {
-			dev_warn(adapter->dev, "<%s> I2C bus is busy\n", __func__);
+			dev_err(adapter->dev,
+				 "<%s> timeout waiting for I2C bus %s\n",
+				 __func__,for_busy ? "busy" : "not busy");
 			return -EIO;
 		}
 	}
@@ -172,11 +174,9 @@ static int i2c_imx_trx_complete(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_warn(adapter->dev, "<%s> TXR timeout\n", __func__);
+			dev_err(adapter->dev, "<%s> TXR timeout\n", __func__);
 			return -EIO;
 		}
-
-		writeb(0x0, base + IMX_I2C_I2SR);
 	}
 
 	return 0;
@@ -194,7 +194,7 @@ static int i2c_imx_wait_iif(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_warn(adapter->dev, "<%s> IIF timeout\n", __func__);
+			dev_err(adapter->dev, "<%s> IIF timeout\n", __func__);
 			return -EIO;
 		}
 	}
@@ -205,10 +205,18 @@ static int i2c_imx_wait_iif(struct i2c_adapter *adapter)
 static int i2c_imx_acked(struct i2c_adapter *adapter)
 {
 	unsigned long base = adapter->dev->map_base;
+	uint64_t start;
 
-	if (readb(base + IMX_I2C_I2SR) & I2SR_RXAK) {
-		dev_notice(adapter->dev, "<%s> No ACK\n", __func__);
-		return -EIO;
+	start = get_time_ns();
+	while (1) {
+		unsigned int reg = readb(base + IMX_I2C_I2SR);
+		if (!(reg & I2SR_RXAK))
+			break;
+
+		if (is_timeout(start, MSECOND)) {
+			dev_err(adapter->dev, "<%s> No ACK\n", __func__);
+			return -EIO;
+		}
 	}
 
 	return 0;
@@ -358,6 +366,9 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 		"<%s> write slave address: addr=0x%02x\n",
 		__func__, (msgs->addr << 1) | 0x01);
 
+	/* clear IIF */
+	writeb(0x0, base + IMX_I2C_I2SR);
+
 	/* write slave address */
 	writeb((msgs->addr << 1) | 0x01, base + IMX_I2C_I2DR);
 
@@ -395,6 +406,12 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 			temp = readb(base + IMX_I2C_I2CR);
 			temp &= ~(I2CR_MSTA | I2CR_MTX);
 			writeb(temp, base + IMX_I2C_I2CR);
+
+			/*
+			 * adding this delay helps on low bitrates
+			 */
+			udelay(i2c_imx->disable_delay);
+
 			i2c_imx_bus_busy(adapter, 0);
 			i2c_imx->stopped = 1;
 		} else if (i == (msgs->len - 2)) {
@@ -440,6 +457,8 @@ static int i2c_imx_xfer(struct i2c_adapter *adapter,
 			result = i2c_imx_read(adapter, &msgs[i]);
 		else
 			result = i2c_imx_write(adapter, &msgs[i]);
+		if (result)
+			goto fail0;
 	}
 
 fail0:

@@ -399,37 +399,6 @@
 /*   #define REALLOC_ZERO_BYTES_FREES */
 
 /*
-    Debugging:
-
-    Because freed chunks may be overwritten with link fields, this
-    malloc will often die when freed memory is overwritten by user
-    programs.  This can be very effective (albeit in an annoying way)
-    in helping track down dangling pointers.
-
-    If you compile with -DDEBUG, a number of assertion checks are
-    enabled that will catch more memory errors. You probably won't be
-    able to make much sense of the actual assertion errors, but they
-    should help you locate incorrectly overwritten memory.  The
-    checking is fairly extensive, and will slow down execution
-    noticeably. Calling malloc_stats or mallinfo with DEBUG set will
-    attempt to check every non-mmapped allocated and free chunk in the
-    course of computing the summmaries. (By nature, mmapped regions
-    cannot be checked very much automatically.)
-
-    Setting DEBUG may also be helpful if you are trying to modify
-    this code. The assertions in the check routines spell out in more
-    detail the assumptions and invariants underlying the algorithms.
-
-*/
-
-#ifdef DEBUG
-/* #include <assert.h> */
-#define assert(x) ((void)0)
-#else
-#define assert(x) ((void)0)
-#endif
-
-/*
   HAVE_MEMCPY should be defined if you are not otherwise using
   ANSI STD C, but still have memcpy and memset in your C library
   and want to use them in calloc and realloc. Otherwise simple
@@ -697,7 +666,6 @@ GmListElement* makeGmListElement (void* bas)
 {
 	GmListElement* this;
 	this = (GmListElement*)(void*)LocalAlloc (0, sizeof (GmListElement));
-	assert (this);
 	if (this)
 	{
 		this->base = bas;
@@ -710,19 +678,16 @@ GmListElement* makeGmListElement (void* bas)
 void gcleanup ()
 {
 	BOOL rval;
-	assert ( (head == NULL) || (head->base == (void*)gAddressBase));
 	if (gAddressBase && (gNextAddress - gAddressBase))
 	{
 		rval = VirtualFree ((void*)gAddressBase,
 							gNextAddress - gAddressBase,
 							MEM_DECOMMIT);
-	assert (rval);
 	}
 	while (head)
 	{
 		GmListElement* next = head->next;
 		rval = VirtualFree (head->base, 0, MEM_RELEASE);
-		assert (rval);
 		LocalFree (head);
 		head = next;
 	}
@@ -800,8 +765,6 @@ gAllocatedSize))
 				/* by another thread */
 			}
 			while (gAddressBase == 0);
-
-			assert (new_address == (void*)gAddressBase);
 
 			gAllocatedSize = new_size;
 
@@ -1292,125 +1255,6 @@ static unsigned long mmapped_mem;
 
 
 
-/*
-  Debugging support
-*/
-
-#ifdef DEBUG
-
-
-/*
-  These routines make a number of assertions about the states
-  of data structures that should be true at all times. If any
-  are not true, it's very likely that a user program has somehow
-  trashed memory. (It's also possible that there is a coding error
-  in malloc. In which case, please report it!)
-*/
-
-static void do_check_chunk(mchunkptr p)
-{
-
-  /* No checkable chunk is mmapped */
-  assert(!chunk_is_mmapped(p));
-
-  /* Check for legal address ... */
-  assert((char*)p >= sbrk_base);
-  if (p != top)
-    assert((char*)p + sz <= (char*)top);
-  else
-    assert((char*)p + sz <= sbrk_base + sbrked_mem);
-
-}
-
-
-static void do_check_free_chunk(mchunkptr p)
-{
-  INTERNAL_SIZE_T sz = p->size & ~PREV_INUSE;
-
-  do_check_chunk(p);
-
-  /* Check whether it claims to be free ... */
-  assert(!inuse(p));
-
-  /* Unless a special marker, must have OK fields */
-  if ((long)sz >= (long)MINSIZE)
-  {
-    assert((sz & MALLOC_ALIGN_MASK) == 0);
-    assert(aligned_OK(chunk2mem(p)));
-    /* ... matching footer field */
-    assert(next->prev_size == sz);
-    /* ... and is fully consolidated */
-    assert(prev_inuse(p));
-    assert (next == top || inuse(next));
-
-    /* ... and has minimally sane links */
-    assert(p->fd->bk == p);
-    assert(p->bk->fd == p);
-  }
-  else /* markers are always of size SIZE_SZ */
-    assert(sz == SIZE_SZ);
-}
-
-static void do_check_inuse_chunk(mchunkptr p)
-{
-  mchunkptr next = next_chunk(p);
-  do_check_chunk(p);
-
-  /* Check whether it claims to be in use ... */
-  assert(inuse(p));
-
-  /* ... and is surrounded by OK chunks.
-    Since more things can be checked with free chunks than inuse ones,
-    if an inuse chunk borders them and debug is on, it's worth doing them.
-  */
-  if (!prev_inuse(p))
-  {
-    mchunkptr prv = prev_chunk(p);
-    assert(next_chunk(prv) == p);
-    do_check_free_chunk(prv);
-  }
-  if (next == top)
-  {
-    assert(prev_inuse(next));
-    assert(chunksize(next) >= MINSIZE);
-  }
-  else if (!inuse(next))
-    do_check_free_chunk(next);
-
-}
-
-static void do_check_malloced_chunk(mchunkptr p, INTERNAL_SIZE_T s)
-{
-
-  do_check_inuse_chunk(p);
-
-  /* Legal size ... */
-  assert((long)sz >= (long)MINSIZE);
-  assert((sz & MALLOC_ALIGN_MASK) == 0);
-  assert(room >= 0);
-  assert(room < (long)MINSIZE);
-
-  /* ... and alignment */
-  assert(aligned_OK(chunk2mem(p)));
-
-
-  /* ... and was allocated at front of an available chunk */
-  assert(prev_inuse(p));
-
-}
-
-
-#define check_free_chunk(P)  do_check_free_chunk(P)
-#define check_inuse_chunk(P) do_check_inuse_chunk(P)
-#define check_chunk(P) do_check_chunk(P)
-#define check_malloced_chunk(P,N) do_check_malloced_chunk(P,N)
-#else
-#define check_free_chunk(P)
-#define check_inuse_chunk(P)
-#define check_chunk(P)
-#define check_malloced_chunk(P,N)
-#endif
-
 
 
 /*
@@ -1597,9 +1441,6 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
     max_sbrked_mem = sbrked_mem;
   if ((unsigned long)(mmapped_mem + sbrked_mem) > (unsigned long)max_total_mem)
     max_total_mem = mmapped_mem + sbrked_mem;
-
-  /* We always land on a page boundary */
-  assert(((unsigned long)((char*)top + top_size) & (pagesz - 1)) == 0);
 }
 
 
@@ -1710,7 +1551,6 @@ void* malloc(size_t bytes)
       victim_size = chunksize(victim);
       unlink(victim, bck, fwd);
       set_inuse_bit_at_offset(victim, victim_size);
-      check_malloced_chunk(victim, nb);
       return chunk2mem(victim);
     }
 
@@ -1737,7 +1577,6 @@ void* malloc(size_t bytes)
       {
 	unlink(victim, bck, fwd);
 	set_inuse_bit_at_offset(victim, victim_size);
-	check_malloced_chunk(victim, nb);
 	return chunk2mem(victim);
       }
     }
@@ -1760,7 +1599,6 @@ void* malloc(size_t bytes)
       link_last_remainder(remainder);
       set_head(remainder, remainder_size | PREV_INUSE);
       set_foot(remainder, remainder_size);
-      check_malloced_chunk(victim, nb);
       return chunk2mem(victim);
     }
 
@@ -1769,7 +1607,6 @@ void* malloc(size_t bytes)
     if (remainder_size >= 0)  /* exhaust */
     {
       set_inuse_bit_at_offset(victim, victim_size);
-      check_malloced_chunk(victim, nb);
       return chunk2mem(victim);
     }
 
@@ -1824,7 +1661,6 @@ void* malloc(size_t bytes)
 	    link_last_remainder(remainder);
 	    set_head(remainder, remainder_size | PREV_INUSE);
 	    set_foot(remainder, remainder_size);
-	    check_malloced_chunk(victim, nb);
 	    return chunk2mem(victim);
 	  }
 
@@ -1832,7 +1668,6 @@ void* malloc(size_t bytes)
 	  {
 	    set_inuse_bit_at_offset(victim, victim_size);
 	    unlink(victim, bck, fwd);
-	    check_malloced_chunk(victim, nb);
 	    return chunk2mem(victim);
 	  }
 
@@ -1888,7 +1723,6 @@ void* malloc(size_t bytes)
   set_head(victim, nb | PREV_INUSE);
   top = chunk_at_offset(victim, nb);
   set_head(top, remainder_size | PREV_INUSE);
-  check_malloced_chunk(victim, nb);
   return chunk2mem(victim);
 
 }
@@ -1937,8 +1771,6 @@ void free(void* mem)
   p = mem2chunk(mem);
   hd = p->size;
 
-
-  check_inuse_chunk(p);
 
   sz = hd & ~PREV_INUSE;
   next = chunk_at_offset(p, sz);
@@ -2080,8 +1912,6 @@ void* realloc(void* oldmem, size_t bytes)
   nb = request2size(bytes);
 
 
-  check_inuse_chunk(oldp);
-
   if ((long)(oldsize) < (long)(nb))
   {
 
@@ -2213,7 +2043,6 @@ void* realloc(void* oldmem, size_t bytes)
     set_inuse_bit_at_offset(newp, newsize);
   }
 
-  check_inuse_chunk(newp);
   return chunk2mem(newp);
 }
 
@@ -2299,8 +2128,6 @@ void* memalign(size_t alignment, size_t bytes)
     set_head_size(p, leadsize);
     free(chunk2mem(p));
     p = newp;
-
-    assert (newsize >= nb && (((unsigned long)(chunk2mem(p))) % alignment) == 0);
   }
 
   /* Also give back spare room at the end */
@@ -2315,7 +2142,6 @@ void* memalign(size_t alignment, size_t bytes)
     free(chunk2mem(remainder));
   }
 
-  check_inuse_chunk(p);
   return chunk2mem(p);
 
 }
@@ -2469,7 +2295,6 @@ int malloc_trim(size_t pad)
 	  sbrked_mem = current_brk - sbrk_base;
 	  set_head(top, top_size | PREV_INUSE);
 	}
-	check_chunk(top);
 	return 0;
       }
 
@@ -2478,7 +2303,6 @@ int malloc_trim(size_t pad)
 	/* Success. Adjust top accordingly. */
 	set_head(top, (top_size - extra) | PREV_INUSE);
 	sbrked_mem -= extra;
-	check_chunk(top);
 	return 1;
       }
     }
@@ -2509,7 +2333,6 @@ size_t malloc_usable_size(void* mem)
     if(!chunk_is_mmapped(p))
     {
       if (!inuse(p)) return 0;
-      check_inuse_chunk(p);
       return chunksize(p) - SIZE_SZ;
     }
     return chunksize(p) - 2*SIZE_SZ;
@@ -2540,11 +2363,9 @@ static void malloc_update_mallinfo(void)
     for (p = last(b); p != b; p = p->bk)
     {
 #ifdef DEBUG
-      check_free_chunk(p);
       for (q = next_chunk(p);
 	   q < top && inuse(q) && (long)(chunksize(q)) >= (long)MINSIZE;
 	   q = next_chunk(q))
-	check_inuse_chunk(q);
 #endif
       avail += chunksize(p);
       navail++;

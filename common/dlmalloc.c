@@ -621,20 +621,20 @@ static unsigned long top_pad          = DEFAULT_TOP_PAD;
 static char* sbrk_base = (char*)(-1);
 
 /* The maximum memory obtained from system via sbrk */
-static unsigned long max_sbrked_mem = 0;
+static unsigned long max_sbrked_mem;
 
 /* The maximum via either sbrk or mmap */
-static unsigned long max_total_mem = 0;
+static unsigned long max_total_mem;
 
 /* internal working copy of mallinfo */
-static struct mallinfo current_mallinfo = {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static struct mallinfo current_mallinfo;
 
 /* The total memory obtained from system via sbrk */
 #define sbrked_mem  (current_mallinfo.arena)
 
 /* Tracking mmaps */
 
-static unsigned long mmapped_mem = 0;
+static unsigned long mmapped_mem;
 
 
 

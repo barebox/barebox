@@ -1,6 +1,7 @@
 
 #include <config.h>
 #include <malloc.h>
+#include <string.h>
 
 #include <stdio.h>
 #include <module.h>
@@ -397,109 +398,6 @@
 
 
 /*   #define REALLOC_ZERO_BYTES_FREES */
-
-/*
-  HAVE_MEMCPY should be defined if you are not otherwise using
-  ANSI STD C, but still have memcpy and memset in your C library
-  and want to use them in calloc and realloc. Otherwise simple
-  macro versions are defined here.
-
-  USE_MEMCPY should be defined as 1 if you actually want to
-  have memset and memcpy called. People report that the macro
-  versions are often enough faster than libc versions on many
-  systems that it is better to use them.
-
-*/
-
-#define HAVE_MEMCPY
-#define USE_MEMCPY 1
-
-#if defined(HAVE_MEMCPY)
-void* memset(void*, int, size_t);
-void* memcpy(void*, const void*, size_t);
-#endif
-
-#if USE_MEMCPY
-
-/* The following macros are only invoked with (2n+1)-multiples of
-   INTERNAL_SIZE_T units, with a positive integer n. This is exploited
-   for fast inline execution when n is small. */
-
-#define MALLOC_ZERO(charp, nbytes)                                            \
-do {                                                                          \
-  INTERNAL_SIZE_T mzsz = (nbytes);                                            \
-  if(mzsz <= 9*sizeof(mzsz)) {                                                \
-    INTERNAL_SIZE_T* mz = (INTERNAL_SIZE_T*) (charp);                         \
-    if(mzsz >= 5*sizeof(mzsz)) {     *mz++ = 0;                               \
-				     *mz++ = 0;                               \
-      if(mzsz >= 7*sizeof(mzsz)) {   *mz++ = 0;                               \
-				     *mz++ = 0;                               \
-	if(mzsz >= 9*sizeof(mzsz)) { *mz++ = 0;                               \
-				     *mz++ = 0; }}}                           \
-				     *mz++ = 0;                               \
-				     *mz++ = 0;                               \
-				     *mz   = 0;                               \
-  } else memset((charp), 0, mzsz);                                            \
-} while(0)
-
-#define MALLOC_COPY(dest,src,nbytes)                                          \
-do {                                                                          \
-  INTERNAL_SIZE_T mcsz = (nbytes);                                            \
-  if(mcsz <= 9*sizeof(mcsz)) {                                                \
-    INTERNAL_SIZE_T* mcsrc = (INTERNAL_SIZE_T*) (src);                        \
-    INTERNAL_SIZE_T* mcdst = (INTERNAL_SIZE_T*) (dest);                       \
-    if(mcsz >= 5*sizeof(mcsz)) {     *mcdst++ = *mcsrc++;                     \
-				     *mcdst++ = *mcsrc++;                     \
-      if(mcsz >= 7*sizeof(mcsz)) {   *mcdst++ = *mcsrc++;                     \
-				     *mcdst++ = *mcsrc++;                     \
-	if(mcsz >= 9*sizeof(mcsz)) { *mcdst++ = *mcsrc++;                     \
-				     *mcdst++ = *mcsrc++; }}}                 \
-				     *mcdst++ = *mcsrc++;                     \
-				     *mcdst++ = *mcsrc++;                     \
-				     *mcdst   = *mcsrc  ;                     \
-  } else memcpy(dest, src, mcsz);                                             \
-} while(0)
-
-#else /* !USE_MEMCPY */
-
-/* Use Duff's device for good zeroing/copying performance. */
-
-#define MALLOC_ZERO(charp, nbytes)                                            \
-do {                                                                          \
-  INTERNAL_SIZE_T* mzp = (INTERNAL_SIZE_T*)(charp);                           \
-  long mctmp = (nbytes)/sizeof(INTERNAL_SIZE_T), mcn;                         \
-  if (mctmp < 8) mcn = 0; else { mcn = (mctmp-1)/8; mctmp %= 8; }             \
-  switch (mctmp) {                                                            \
-    case 0: for(;;) { *mzp++ = 0;                                             \
-    case 7:           *mzp++ = 0;                                             \
-    case 6:           *mzp++ = 0;                                             \
-    case 5:           *mzp++ = 0;                                             \
-    case 4:           *mzp++ = 0;                                             \
-    case 3:           *mzp++ = 0;                                             \
-    case 2:           *mzp++ = 0;                                             \
-    case 1:           *mzp++ = 0; if(mcn <= 0) break; mcn--; }                \
-  }                                                                           \
-} while(0)
-
-#define MALLOC_COPY(dest,src,nbytes)                                          \
-do {                                                                          \
-  INTERNAL_SIZE_T* mcsrc = (INTERNAL_SIZE_T*) src;                            \
-  INTERNAL_SIZE_T* mcdst = (INTERNAL_SIZE_T*) dest;                           \
-  long mctmp = (nbytes)/sizeof(INTERNAL_SIZE_T), mcn;                         \
-  if (mctmp < 8) mcn = 0; else { mcn = (mctmp-1)/8; mctmp %= 8; }             \
-  switch (mctmp) {                                                            \
-    case 0: for(;;) { *mcdst++ = *mcsrc++;                                    \
-    case 7:           *mcdst++ = *mcsrc++;                                    \
-    case 6:           *mcdst++ = *mcsrc++;                                    \
-    case 5:           *mcdst++ = *mcsrc++;                                    \
-    case 4:           *mcdst++ = *mcsrc++;                                    \
-    case 3:           *mcdst++ = *mcsrc++;                                    \
-    case 2:           *mcdst++ = *mcsrc++;                                    \
-    case 1:           *mcdst++ = *mcsrc++; if(mcn <= 0) break; mcn--; }       \
-  }                                                                           \
-} while(0)
-
-#endif
 
 /*
 
@@ -1783,7 +1681,7 @@ void* realloc(void* oldmem, size_t bytes)
 	    newp = prev;
 	    newsize += prevsize + nextsize;
 	    newmem = chunk2mem(newp);
-	    MALLOC_COPY(newmem, oldmem, oldsize - SIZE_SZ);
+	    memcpy(newmem, oldmem, oldsize - SIZE_SZ);
 	    top = chunk_at_offset(newp, nb);
 	    set_head(top, (newsize - nb) | PREV_INUSE);
 	    set_head_size(newp, nb);
@@ -1799,7 +1697,7 @@ void* realloc(void* oldmem, size_t bytes)
 	  newp = prev;
 	  newsize += nextsize + prevsize;
 	  newmem = chunk2mem(newp);
-	  MALLOC_COPY(newmem, oldmem, oldsize - SIZE_SZ);
+	  memcpy(newmem, oldmem, oldsize - SIZE_SZ);
 	  goto split;
 	}
       }
@@ -1811,7 +1709,7 @@ void* realloc(void* oldmem, size_t bytes)
 	newp = prev;
 	newsize += prevsize;
 	newmem = chunk2mem(newp);
-	MALLOC_COPY(newmem, oldmem, oldsize - SIZE_SZ);
+	memcpy(newmem, oldmem, oldsize - SIZE_SZ);
 	goto split;
       }
     }
@@ -1834,7 +1732,7 @@ void* realloc(void* oldmem, size_t bytes)
     }
 
     /* Otherwise copy, free, and exit */
-    MALLOC_COPY(newmem, oldmem, oldsize - SIZE_SZ);
+    memcpy(newmem, oldmem, oldsize - SIZE_SZ);
     free(oldmem);
     return newmem;
   }
@@ -2029,7 +1927,7 @@ void* calloc(size_t n, size_t elem_size)
     }
 #endif
 
-    MALLOC_ZERO(mem, csz - SIZE_SZ);
+    memset(mem, 0, csz - SIZE_SZ);
     return mem;
   }
 }

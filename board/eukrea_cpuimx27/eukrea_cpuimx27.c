@@ -88,6 +88,7 @@ static struct device_d fec_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
+	.flash_bbt = 1,
 };
 
 static struct device_d nand_dev = {

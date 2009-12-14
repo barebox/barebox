@@ -18,7 +18,8 @@
  * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file This file contains high-level init functions.
+/** @file
+ *  @brief This file contains high-level init functions.
  *
  */
 #include <common.h>
@@ -115,7 +116,7 @@ void board_init_highlevel(void)
 
 /** Provide address of early debug low-level output
  *
- * @fixme Should return real address for UART register map.
+ * @todo Should return real address for UART register map.
  */
 void *get_early_console_base(const char *name)
 {

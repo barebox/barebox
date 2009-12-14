@@ -40,7 +40,7 @@
  *
  * Will be constant time as its generally used in bypass conditions only.
  * This is necessary until timers are accessible. if you need timed delays
- * use @ref mdelay or @udelay instead
+ * use @ref mdelay or @ref udelay instead
  *
  * @param[in] loops number of loops
  *

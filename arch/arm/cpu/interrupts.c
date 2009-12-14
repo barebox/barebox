@@ -198,9 +198,3 @@ void do_irq (struct pt_regs *pt_regs)
 	show_regs (pt_regs);
 	bad_mode ();
 }
-
-/**
- * @page arm_interrupts Interrupt handling on ARM
- *
- * Why U-boot doesn't use interrupts?
- */

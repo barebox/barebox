@@ -18,7 +18,8 @@
  * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file This file contains callbacks for the PCI subsystem
+/** @file
+ *  @brief This file contains callbacks for the PCI subsystem
  *
  */
 #include <common.h>

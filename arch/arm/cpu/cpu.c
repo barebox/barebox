@@ -162,12 +162,6 @@ int cleanup_before_linux (void)
  * required.
  */
 
-/**
- * @page arm_for_linux Preparing for Linux to run
- *
- * What's to do on ARM to run Linux after U-Boot did its job?
- */
-
 static int do_icache(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	if (argc == 1) {

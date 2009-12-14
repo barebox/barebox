@@ -18,7 +18,8 @@
  * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file This file contains ...
+/** @file
+ *  @brief This file contains ...
  *
  */
 #include <common.h>

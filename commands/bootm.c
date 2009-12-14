@@ -595,4 +595,5 @@ void bz_internal_error(int errcode)
  * - @subpage arm_boot_preparation
  * - @subpage ppc_boot_preparation
  * - @subpage x86_boot_preparation
+ * - @subpage m68k_boot_preparation
  */

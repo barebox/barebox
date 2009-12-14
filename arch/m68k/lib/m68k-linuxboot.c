@@ -18,7 +18,8 @@
  * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file Linux boot preparation code.
+/** @file
+ *  @brief Linux boot preparation code.
  *
  * This file is responsible to start a linux kernel on
  * Coldfire targets.

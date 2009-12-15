@@ -431,7 +431,7 @@ static int cramfs_probe(struct device_d *dev)
 	if (strncmp(fsdev->backingstore, "/dev/", 5))
 		return -ENODEV;
 
-	priv->cdev = cdev_by_name(fsdev->backingstore);
+	priv->cdev = cdev_by_name(fsdev->backingstore + 5);
 	if (!priv->cdev)
 		return -ENODEV;
 

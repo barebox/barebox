@@ -201,9 +201,9 @@ static const __maybe_unused char cmd_bmp_help[] =
 "  -y <yofs> y offset (default center)\n"
 "  -o        render offscreen\n";
 
-U_BOOT_CMD_START(bmp)
+BAREBOX_CMD_START(bmp)
 	.cmd		= do_bmp,
 	.usage		= "show a bmp image",
-	U_BOOT_CMD_HELP(cmd_bmp_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_bmp_help)
+BAREBOX_CMD_END
 

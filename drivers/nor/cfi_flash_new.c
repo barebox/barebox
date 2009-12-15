@@ -45,7 +45,7 @@
 #include <errno.h>
 
 /*
- * This file implements a Common Flash Interface (CFI) driver for U-Boot.
+ * This file implements a Common Flash Interface (CFI) driver for barebox.
  * The width of the port and the width of the chips are determined at initialization.
  * These widths are used to calculate the address for access CFI data structures.
  *

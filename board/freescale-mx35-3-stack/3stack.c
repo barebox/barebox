@@ -19,7 +19,7 @@
  *
  * Derived from:
  *
- * * mx35_3stack.c - board file for u-boot-v1
+ * * mx35_3stack.c - board file for barebox-v1
  *   Copyright (C) 2007, Guennadi Liakhovetski <lg@denx.de>
  *   (C) Copyright 2008-2009 Freescale Semiconductor, Inc.
  *

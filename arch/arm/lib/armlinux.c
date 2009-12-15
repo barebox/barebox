@@ -38,7 +38,7 @@
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
 #include <asm/setup.h>
-#include <asm/u-boot-arm.h>
+#include <asm/barebox-arm.h>
 
 static struct tag *params;
 static int armlinux_architecture = 0;
@@ -244,7 +244,7 @@ static int do_bootz(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	void *zimage;
 
 	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
+		barebox_cmd_usage(cmdtp);
 		return 1;
 	}
 
@@ -300,11 +300,11 @@ static const __maybe_unused char cmd_bootz_help[] =
 "Usage: bootz [FILE]\n"
 "Boot a Linux zImage\n";
 
-U_BOOT_CMD_START(bootz)
+BAREBOX_CMD_START(bootz)
 	.cmd            = do_bootz,
 	.usage          = "bootz - start a zImage",
-	U_BOOT_CMD_HELP(cmd_bootz_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_bootz_help)
+BAREBOX_CMD_END
 #endif /* CONFIG_CMD_BOOTZ */
 
 #ifdef CONFIG_CMD_BOOTU
@@ -314,7 +314,7 @@ static int do_bootu(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	const char *commandline = getenv("bootargs");
 
 	if (argc != 2) {
-		u_boot_cmd_usage(cmdtp);
+		barebox_cmd_usage(cmdtp);
 		return 1;
 	}
 
@@ -334,9 +334,9 @@ static int do_bootu(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_bootu_help[] =
 "Usage: bootu <address>\n";
 
-U_BOOT_CMD_START(bootu)
+BAREBOX_CMD_START(bootu)
 	.cmd            = do_bootu,
 	.usage          = "bootu - start a raw linux image",
-	U_BOOT_CMD_HELP(cmd_bootu_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_bootu_help)
+BAREBOX_CMD_END
 #endif /* CONFIG_CMD_BOOTU */

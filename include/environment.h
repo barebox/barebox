@@ -25,7 +25,7 @@
 #define _ENVIRONMENT_H_
 
 
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 /**
  * Managment of a environment variable
  */
@@ -59,7 +59,7 @@ struct stat;
 int file_size_action(const char *, struct stat *, void *, int);
 int file_save_action(const char *, struct stat *, void *, int);
 
-#endif /* __U_BOOT__ */
+#endif /* __BAREBOX__ */
 
 /* This part is used for the host and the target */
 struct action_data {
@@ -76,5 +76,5 @@ struct action_data {
  * @brief Environment handling
  *
  * Important: This file will also be used on the host to create
- * the default environment when building the U-Boot binary.
+ * the default environment when building the barebox binary.
  */

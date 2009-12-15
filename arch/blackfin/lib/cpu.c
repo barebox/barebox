@@ -1,5 +1,5 @@
 /*
- * U-boot - cpu.c CPU specific functions
+ * barebox - cpu.c CPU specific functions
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *
@@ -71,9 +71,9 @@ void icache_enable(void)
 	I0 = (unsigned int *)ICPLB_ADDR0;
 	I1 = (unsigned int *)ICPLB_DATA0;
 
-	/* We only setup instruction caching for U-Boot itself.
+	/* We only setup instruction caching for barebox itself.
 	 * This has the nice side effect that we trigger an
-	 * exception when U-Boot goes crazy.
+	 * exception when barebox goes crazy.
 	 */
 	*I0++ = TEXT_BASE & ~((1 << 20) - 1);
 	*I1++ = PAGE_SIZE_1MB | CPLB_L1_CHBL | CPLB_USER_RD | CPLB_VALID | CPLB_LOCK;

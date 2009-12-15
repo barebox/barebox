@@ -43,7 +43,7 @@ static int do_sleep (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(sleep)
+BAREBOX_CMD_START(sleep)
 	.cmd		= do_sleep,
 	.usage		= "delay execution for n seconds",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

@@ -1,5 +1,5 @@
 /*
- * U-boot - board.c First C file to be called contains init routines
+ * barebox - board.c First C file to be called contains init routines
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

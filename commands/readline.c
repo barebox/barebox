@@ -49,9 +49,9 @@ static const __maybe_unused char cmd_readline_help[] =
 "Usage: readline <prompt> VAR\n"
 "readline reads a line of user input into variable VAR.\n";
 
-U_BOOT_CMD_START(readline)
+BAREBOX_CMD_START(readline)
 	.cmd		= do_readline,
 	.usage		= "prompt for user input",
-	U_BOOT_CMD_HELP(cmd_readline_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_readline_help)
+BAREBOX_CMD_END
 

@@ -16,10 +16,10 @@ TODO
     Run-up and run-down should be reentrant, so if bootm is failing the system
     can re-initialize devices. csc 21.03.2008 19:48:49)
 [ ] Clean up make system. Currently I think there are many things from the
-    Linux make system which are not needed for U-Boot.
+    Linux make system which are not needed for barebox.
     (Please retain definitions and related for module loading and relocation, so
-    that special U-Boot modules containing an ELF object can be linked to the
-    running U-Boot. csc 21.03.2008 19:52:49)
+    that special barebox modules containing an ELF object can be linked to the
+    running barebox. csc 21.03.2008 19:52:49)
 [ ] get/set for nonextisting parameters crashes
 [ ] There is a xmalloc function which panics when out of memory. Use this
     function where we don't want to check for oom. Same applies to
@@ -69,7 +69,7 @@ TODO
     preprocessor.
     The #ifdefs should be located in their related header files only.
 [ ] Create an example board, which implements all functions stubs required
-    to compile a full U-Boot build. Functions are just stubs containing a
+    to compile a full barebox build. Functions are just stubs containing a
     panic() call - Real code must be filled in accordingly.
     Can be copied as starting point for a new target board.
 [ ] Add generic PCI bios code and a PCI bus driver model. The driver should
@@ -81,14 +81,14 @@ TODO
 DONE
 ----
 
-[x] Rename vmlinux -> u-boot
+[x] Rename vmlinux -> barebox
 [x] Implement current work directory
 [x] ARCH=linux should catch ctrl-c
 [x] Implement 'rm'
 [x] the mount command currently does not accept a full path (i.e. /dev/nor0) but
     only a device id string (nor0). This sucks.
 [x] FS support is not optional eventhough the Kconfig system claims it.
-[x] U-Boot used to have support for different consoles. The old code was huge and
+[x] barebox used to have support for different consoles. The old code was huge and
     ineffective, so I removed it. Reimplement it using the driver model.
 [x] Mount without options should show mounted filesystems
 [x] Add/fix help texts for commands

@@ -380,7 +380,7 @@ write_record (char *buf)
 # endif /* CFG_CMD_SAVES */
 
 #ifdef	CFG_LOADS_BAUD_CHANGE
-U_BOOT_CMD(
+BAREBOX_CMD(
 	loads, 3, 0,	do_load_serial,
 	"loads   - load S-Record file over serial line\n",
 	"[ off ] [ baud ]\n"
@@ -389,7 +389,7 @@ U_BOOT_CMD(
 );
 
 #else	/* ! CFG_LOADS_BAUD_CHANGE */
-U_BOOT_CMD(
+BAREBOX_CMD(
 	loads, 2, 0,	do_load_serial,
 	"loads   - load S-Record file over serial line\n",
 	"[ off ]\n"
@@ -404,7 +404,7 @@ U_BOOT_CMD(
 
 #if (CONFIG_COMMANDS & CFG_CMD_SAVES)
 #ifdef	CFG_LOADS_BAUD_CHANGE
-U_BOOT_CMD(
+BAREBOX_CMD(
 	saves, 4, 0,	do_save_serial,
 	"saves   - save S-Record file over serial line\n",
 	"[ off ] [size] [ baud ]\n"
@@ -412,7 +412,7 @@ U_BOOT_CMD(
 	" with offset 'off', size 'size' and baudrate 'baud'\n"
 );
 #else	/* ! CFG_LOADS_BAUD_CHANGE */
-U_BOOT_CMD(
+BAREBOX_CMD(
 	saves, 3, 0,	do_save_serial,
 	"saves   - save S-Record file over serial line\n",
 	"[ off ] [size]\n"

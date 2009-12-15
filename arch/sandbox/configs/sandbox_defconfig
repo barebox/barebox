@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc10
+# barebox version: 2.0.0-rc10
 # Mon Oct 12 14:15:55 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x00000000
@@ -22,7 +22,7 @@ CONFIG_STACK_SIZE=0x8000
 CONFIG_MALLOC_SIZE=0x400000
 # CONFIG_BROKEN is not set
 # CONFIG_EXPERIMENTAL is not set
-CONFIG_PROMPT="uboot:"
+CONFIG_PROMPT="barebox:"
 CONFIG_BAUDRATE=115200
 # CONFIG_LONGHELP is not set
 CONFIG_CBSIZE=1024

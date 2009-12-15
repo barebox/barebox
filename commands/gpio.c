@@ -39,11 +39,11 @@ static int do_gpio_get_value(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_gpio_get_value_help[] =
 "Usage: gpio_set_value <gpio>\n";
 
-U_BOOT_CMD_START(gpio_get_value)
+BAREBOX_CMD_START(gpio_get_value)
 	.cmd		= do_gpio_get_value,
 	.usage		= "return a gpio's value",
-	U_BOOT_CMD_HELP(cmd_gpio_get_value_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_gpio_get_value_help)
+BAREBOX_CMD_END
 
 static int do_gpio_set_value(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -63,11 +63,11 @@ static int do_gpio_set_value(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_gpio_set_value_help[] =
 "Usage: gpio_set_value <gpio> <value>\n";
 
-U_BOOT_CMD_START(gpio_set_value)
+BAREBOX_CMD_START(gpio_set_value)
 	.cmd		= do_gpio_set_value,
 	.usage		= "set a gpio's output value",
-	U_BOOT_CMD_HELP(cmd_gpio_set_value_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_gpio_set_value_help)
+BAREBOX_CMD_END
 
 static int do_gpio_direction_input(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -88,11 +88,11 @@ static int do_gpio_direction_input(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_do_gpio_direction_input_help[] =
 "Usage: gpio_direction_input <gpio>\n";
 
-U_BOOT_CMD_START(gpio_direction_input)
+BAREBOX_CMD_START(gpio_direction_input)
 	.cmd		= do_gpio_direction_input,
 	.usage		= "set a gpio as output",
-	U_BOOT_CMD_HELP(cmd_do_gpio_direction_input_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_do_gpio_direction_input_help)
+BAREBOX_CMD_END
 
 static int do_gpio_direction_output(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -114,9 +114,9 @@ static int do_gpio_direction_output(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_gpio_direction_output_help[] =
 "Usage: gpio_direction_output <gpio> <value>\n";
 
-U_BOOT_CMD_START(gpio_direction_output)
+BAREBOX_CMD_START(gpio_direction_output)
 	.cmd		= do_gpio_direction_output,
 	.usage		= "set a gpio as output",
-	U_BOOT_CMD_HELP(cmd_gpio_direction_output_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_gpio_direction_output_help)
+BAREBOX_CMD_END
 

@@ -2,26 +2,26 @@
  * Copyright (c) 2008 Carsten Schlote <c.schlote@konzeptpark.de>
  * See file CREDITS for list of people who contributed to this project.
  *
- * This file is part of U-Boot V2.
+ * This file is part of barebox.
  *
- * U-Boot V2 is free software: you can redistribute it and/or modify
+ * barebox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * U-Boot V2 is distributed in the hope that it will be useful,
+ * barebox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
+ * along with barebox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
  *  Generic Linker file for M68k targets
  */
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
 OUTPUT_FORMAT("elf32-m68k", "elf32-m68k",
 	      "elf32-m68k")
@@ -54,16 +54,16 @@ SECTIONS
 	} =0xdeadbeef
 
 	. = ALIGN(4);
-	__u_boot_cmd_start = .;
-	.u_boot_cmd : { U_BOOT_CMDS }
-	__u_boot_cmd_end = .;
+	__barebox_cmd_start = .;
+	.barebox_cmd : { BAREBOX_CMDS }
+	__barebox_cmd_end = .;
 
-	__u_boot_initcalls_start = .;
-	.u_boot_initcalls : { INITCALLS }
-	__u_boot_initcalls_end = .;
+	__barebox_initcalls_start = .;
+	.barebox_initcalls : { INITCALLS }
+	__barebox_initcalls_end = .;
 
 	__usymtab_start = .;
-	__usymtab : { U_BOOT_SYMS }
+	__usymtab : { BAREBOX_SYMS }
 	__usymtab_end = .;
 
 	/* End of text and rodata section */
@@ -88,5 +88,5 @@ SECTIONS
 	_end = .;
 
 	. = ALIGN(4);
-	_u_boot_heap_start = .;
+	_barebox_heap_start = .;
 }

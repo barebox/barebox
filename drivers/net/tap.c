@@ -1,5 +1,5 @@
 /*
- * tap.c - A tap ethernet driver for U-Boot
+ * tap.c - A tap ethernet driver for barebox
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -80,7 +80,7 @@ int tap_probe(struct device_d *dev)
 	int ret = 0;
 
 	priv = malloc(sizeof(struct tap_priv));
-	priv->name = "uboot";
+	priv->name = "barebox";
 
 	priv->fd = tap_alloc(priv->name);
 	if (priv->fd < 0) {

@@ -89,11 +89,11 @@ static const __maybe_unused char cmd_erase_help[] =
 "Erase a flash device or parts of a device if an area specification\n"
 "is given\n";
 
-U_BOOT_CMD_START(erase)
+BAREBOX_CMD_START(erase)
 	.cmd		= do_flerase,
 	.usage		= "erase FLASH memory",
-	U_BOOT_CMD_HELP(cmd_erase_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_erase_help)
+BAREBOX_CMD_END
 
 /** @page erase_command erase Erase flash memory
  *
@@ -166,17 +166,17 @@ static const __maybe_unused char cmd_protect_help[] =
 "(un)protect a flash device or parts of a device if an area specification\n"
 "is given\n";
 
-U_BOOT_CMD_START(protect)
+BAREBOX_CMD_START(protect)
 	.cmd		= do_protect,
 	.usage		= "enable FLASH write protection",
-	U_BOOT_CMD_HELP(cmd_protect_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_protect_help)
+BAREBOX_CMD_END
 
-U_BOOT_CMD_START(unprotect)
+BAREBOX_CMD_START(unprotect)
 	.cmd		= do_protect,
 	.usage		= "disable FLASH write protection",
-	U_BOOT_CMD_HELP(cmd_protect_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_protect_help)
+BAREBOX_CMD_END
 
 /** @page protect_command protect Protect a flash memory
  *

@@ -135,14 +135,14 @@ int icache_status (void)
  * Prepare a "clean" CPU for Linux to run
  * @return 0 (always)
  *
- * This function is called by the generic U-Boot part just before we call
+ * This function is called by the generic barebox part just before we call
  * Linux. It prepares the processor for Linux.
  */
 int cleanup_before_linux (void)
 {
 	int i;
 
-	shutdown_uboot();
+	shutdown_barebox();
 
 #ifdef CONFIG_MMU
 	mmu_disable();
@@ -158,7 +158,7 @@ int cleanup_before_linux (void)
  *
  * For ARM we never enable data cache so we do not need to disable it again.
  * Linux can be called with instruction cache enabled. As this is the
- * default setting we are running in U-Boot, there's no special preparation
+ * default setting we are running in barebox, there's no special preparation
  * required.
  */
 
@@ -180,8 +180,8 @@ static int do_icache(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_icache_help[] =
 "Usage: icache [0|1]\n";
 
-U_BOOT_CMD_START(icache)
+BAREBOX_CMD_START(icache)
 	.cmd		= do_icache,
 	.usage		= "show/change icache status",
-	U_BOOT_CMD_HELP(cmd_icache_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_icache_help)
+BAREBOX_CMD_END

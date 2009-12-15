@@ -608,8 +608,8 @@ static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(dhcp)
+BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
 	.usage		= "invoke dhcp client to obtain ip/boot params",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

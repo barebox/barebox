@@ -63,8 +63,8 @@ static const __maybe_unused char cmd_mkdir_help[] =
 "Usage: mkdir [directories]\n"
 "Create new directories\n";
 
-U_BOOT_CMD_START(mkdir)
+BAREBOX_CMD_START(mkdir)
 	.cmd		= do_mkdir,
 	.usage		= "make directories",
-	U_BOOT_CMD_HELP(cmd_mkdir_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_mkdir_help)
+BAREBOX_CMD_END

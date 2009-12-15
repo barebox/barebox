@@ -49,4 +49,4 @@ endif
 common-y += $(BOARD) $(CPU)
 common-y += arch/ppc/lib/
 
-lds-y += $(BOARD)/u-boot.lds
+lds-y += $(BOARD)/barebox.lds

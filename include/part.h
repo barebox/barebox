@@ -63,9 +63,9 @@ typedef struct block_dev_desc {
 #define PART_TYPE_AMIGA		0x04
 
 /*
- * Type string for U-Boot bootable partitions
+ * Type string for barebox bootable partitions
  */
-#define BOOT_PART_TYPE	"U-Boot"	/* primary boot partition type	*/
+#define BOOT_PART_TYPE	"barebox"	/* primary boot partition type	*/
 #define BOOT_PART_COMP	"PPCBoot"	/* PPCBoot compatibility type	*/
 
 /* device types */

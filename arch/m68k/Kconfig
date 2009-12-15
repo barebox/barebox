@@ -1,18 +1,18 @@
 #
-# Default location of link U-Boot Image on M68k/Coldfire
+# Default location of link barebox Image on M68k/Coldfire
 #
 config ARCH_TEXT_BASE
 	hex
 	default 0x07f00000 if MACH_MCF54xx
 	default 0x07f00000 if MACH_MCF5445x
 	help
-		Vector table for M68k and U-Boot Link Address
+		Vector table for M68k and barebox Link Address
 
 		On M68k/Coldfire cores all exceptions and interrupts are routed through
 		a vector array. This vector is by default at address 0x0000_0000, but
 		can be moved to any other 1MB aligned address.
 
-		We take advantage of this to move U-Boot out of low memory. Some BDM
+		We take advantage of this to move barebox out of low memory. Some BDM
 		debuggers won't like a moved vector base and might need tweaking to
 		work.
 
@@ -171,7 +171,7 @@ config INITRD_TAG
 endmenu
 
 #
-# Common U-Boot options
+# Common barebox options
 #
 
 source common/Kconfig

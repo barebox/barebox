@@ -1,5 +1,5 @@
 /*
- * NFS support driver - based on etherboot and U-BOOT's tftp.c
+ * NFS support driver - based on etherboot and barebox's tftp.c
  *
  * Masami Komiya <mkomiya@sonare.it> 2004
  *
@@ -539,7 +539,7 @@ nfs_read_reply (uchar *pkt, unsigned len)
 }
 
 /**************************************************************************
-Interfaces of U-BOOT
+Interfaces of barebox
 **************************************************************************/
 
 static void

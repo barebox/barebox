@@ -50,11 +50,11 @@ static const __maybe_unused char cmd_loadenv_help[] =
 "If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
 "Note that envfs can only handle files. Directories are skipped silently.\n";
 
-U_BOOT_CMD_START(loadenv)
+BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
 	.usage		= "load environment from persistent storage",
-	U_BOOT_CMD_HELP(cmd_loadenv_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_loadenv_help)
+BAREBOX_CMD_END
 
 /**
  * @page loadenv_command loadenv

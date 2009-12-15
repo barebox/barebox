@@ -23,7 +23,7 @@
  */
 
 /*
- *  U-Boot - Startup Code for MPC5xxx CPUs
+ *  barebox - Startup Code for MPC5xxx CPUs
  */
 #include <config.h>
 
@@ -317,7 +317,7 @@ _continue_init:
 	ori	r3, r3, (TEXT_BASE)@l
 #endif
 
-	mr	r1,  r3		/* Set new stack just below U-Boot code */
+	mr	r1,  r3		/* Set new stack just below barebox code */
 	subi    r1,  r1, 0x10
 
 	mr	r10, r3 	/* Save copy of Destination Address	*/
@@ -333,7 +333,7 @@ calc_source:
 
 before_relocate:
 	/*
-	 * We are now ready to copy U-Boot to RAM.
+	 * We are now ready to copy barebox to RAM.
 	 *
 	 * destination = r3
 	 * source      = r4
@@ -828,8 +828,8 @@ pc:
 _text_base:
 	.long TEXT_BASE
 
-.globl _u_boot_start
-_u_boot_start:
+.globl _barebox_start
+_barebox_start:
 	.long _start
 
 .globl _bss_start

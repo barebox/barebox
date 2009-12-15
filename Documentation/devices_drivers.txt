@@ -1,5 +1,5 @@
 
----------- Devices and drivers in U-Boot --------------
+---------- Devices and drivers in barebox --------------
 
 We follow a rather simplistic driver model here. There is a struct device which
 describes a particular device present in the system. A struct driver represents

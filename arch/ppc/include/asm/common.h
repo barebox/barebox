@@ -1,7 +1,7 @@
 #ifndef __ASM_COMMON_H
 #define __ASM_COMMON_H
 
-#include <asm/u-boot.h>
+#include <asm/barebox.h>
 
 void	upmconfig     (unsigned int, unsigned int *, unsigned int);
 ulong	get_tbclk     (void);

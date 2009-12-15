@@ -18,7 +18,7 @@
 #include <common.h>
 
 /*
- * The u-boot networking stack is a little weird.  It seems like the
+ * The barebox networking stack is a little weird.  It seems like the
  * networking core allocates receive buffers up front without any
  * regard to the hardware that's supposed to actually receive those
  * packets.

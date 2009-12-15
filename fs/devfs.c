@@ -1,5 +1,5 @@
 /*
- * devfs.c - a device file system for U-Boot
+ * devfs.c - a device file system for barebox
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

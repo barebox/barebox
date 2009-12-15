@@ -240,7 +240,7 @@ EXPORT_SYMBOL(reset_cpu);
 
 /**
 
-@page dev_s3c24xx_arch Samsung's S3C24xx Platforms in U-Boot-v2
+@page dev_s3c24xx_arch Samsung's S3C24xx Platforms in barebox
 
 @section s3c24xx_boards Boards using S3C24xx Processors
 
@@ -274,20 +274,20 @@ All S3C24xx common headers are located here.
 
 /** @page dev_s3c24xx_mach Samsung's S3C24xx based platforms
 
-@par U-Boot-v2 Map
+@par barebox Map
 
-The location of the U-Boot-v2 itself depends on the available amount of
+The location of the barebox itself depends on the available amount of
 installed SDRAM memory:
 
-- 0x30fc.0000 Start of U-Boot-v2 when 16MiB SDRAM is available
-- 0x31fc.0000 Start of U-Boot-v2 when 32MiB SDRAM is available
-- 0x33fc.0000 Start of U-Boot-v2 when 64MiB SDRAM is available
+- 0x30fc.0000 Start of barebox when 16MiB SDRAM is available
+- 0x31fc.0000 Start of barebox when 32MiB SDRAM is available
+- 0x33fc.0000 Start of barebox when 64MiB SDRAM is available
 
 Adjust the CONFIG_TEXT_BASE/CONFIG_ARCH_TEXT_BASE symbol in accordance to
 the available memory.
 
 @note The RAM based filesystem and the stack resides always below the
-U-Boot-v2 start address.
+barebox start address.
 
 @li @subpage dev_s3c24xx_wd_handling
 @li @subpage dev_s3c24xx_pll_handling

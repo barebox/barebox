@@ -349,8 +349,8 @@ static const __maybe_unused char cmd_nand_help[] =
 "  -d  <dev>  deregister a bad block aware device\n"
 "  -b  <ofs> <dev> mark block at offset ofs as bad\n";
 
-U_BOOT_CMD_START(nand)
+BAREBOX_CMD_START(nand)
 	.cmd		= do_nand,
 	.usage		= "",
-	U_BOOT_CMD_HELP(cmd_nand_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_nand_help)
+BAREBOX_CMD_END

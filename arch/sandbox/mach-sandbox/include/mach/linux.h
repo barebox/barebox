@@ -12,7 +12,7 @@ int linux_getc (void);
 void linux_putc (const char c);
 int linux_tstc(int fd);
 
-int u_boot_register_console(char *name_template, int stdinfd, int stdoutfd);
+int barebox_register_console(char *name_template, int stdinfd, int stdoutfd);
 
 struct linux_console_data {
 	int stdinfd;

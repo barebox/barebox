@@ -1,10 +1,10 @@
 /*
  * cs8900.c
  *
- * Cirrus Logic Crystal CS89X0 Ethernet driver for u-boot v2
+ * Cirrus Logic Crystal CS89X0 Ethernet driver for barebox
  * Copyright (C) 2009 Ivo Clarysse <ivo.clarysse@gmail.com>
  *
- * Based on cs8900.c from u-boot mainline,
+ * Based on cs8900.c from barebox mainline,
  *   (C) 2003 Wolfgang Denk, wd@denx.de
  *   (C) Copyright 2002 Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  *   Marius Groeger <mgroeger@sysgo.de>

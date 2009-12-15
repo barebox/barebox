@@ -1,5 +1,5 @@
 /*
- * U-boot - io.h IO routines
+ * barebox - io.h IO routines
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

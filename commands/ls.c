@@ -199,8 +199,8 @@ static const __maybe_unused char cmd_ls_help[] =
 "List information about the FILEs (the current directory by default).\n"
 "  -R  list subdirectories recursively\n";
 
-U_BOOT_CMD_START(ls)
+BAREBOX_CMD_START(ls)
 	.cmd		= do_ls,
 	.usage		= "list a file or directory",
-	U_BOOT_CMD_HELP(cmd_ls_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_ls_help)
+BAREBOX_CMD_END

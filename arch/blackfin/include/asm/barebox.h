@@ -1,4 +1,8 @@
 /*
+ * barebox - barebox.h Structure declarations for board specific data
+ *
+ * Copyright (c) 2005 blackfin.uclinux.org
+ *
  * (C) Copyright 2000-2004
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
@@ -19,56 +23,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
- *
  */
 
-#include <asm-generic/u-boot.lds.h>
+#ifndef _BAREBOX_H_
+#define _BAREBOX_H_	1
 
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
-ENTRY(_start)
-SECTIONS
-{
-	. = TEXT_BASE;
+typedef struct bd_info {
+	int bi_baudrate;		/* serial console baudrate */
+	unsigned long bi_ip_addr;	/* IP Address */
+	unsigned char bi_enetaddr[6];	/* Ethernet adress */
+	unsigned long bi_arch_number;	/* unique id for this board */
+	unsigned long bi_boot_params;	/* where this board expects params */
+	unsigned long bi_memstart;	/* start of DRAM memory */
+	unsigned long bi_memsize;	/* size  of DRAM memory in bytes */
+	unsigned long bi_flashstart;	/* start of FLASH memory */
+	unsigned long bi_flashsize;	/* size  of FLASH memory */
+	unsigned long bi_flashoffset;	/* reserved area for startup monitor */
+} bd_t;
 
-	PRE_IMAGE
+#define bi_env_data bi_env->data
+#define bi_env_crc  bi_env->crc
 
-	. = ALIGN(4);
-	.text      :
-	{
-		_stext = .;
-		_text = .;
-		*(.text_entry*)
-		*(.text_bare_init*)
-		*(.text*)
-	}
-
-	. = ALIGN(4);
-	.rodata : { *(.rodata*) }
-
-	_etext = .;			/* End of text and rodata section */
-
-	. = ALIGN(4);
-	.data : { *(.data*) }
-
-	. = ALIGN(4);
-	.got : { *(.got*) }
-
-	. = .;
-	__u_boot_cmd_start = .;
-	.u_boot_cmd : { U_BOOT_CMDS }
-	__u_boot_cmd_end = .;
-
-	__u_boot_initcalls_start = .;
-	.u_boot_initcalls : { INITCALLS }
-	__u_boot_initcalls_end = .;
-
-	__usymtab_start = .;
-	__usymtab : { U_BOOT_SYMS }
-	__usymtab_end = .;
-
-	. = ALIGN(4);
-	__bss_start = .;
-	.bss : { *(.bss*) }
-	_end = .;
-}
+#endif	/* _BAREBOX_H_ */

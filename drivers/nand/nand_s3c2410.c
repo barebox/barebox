@@ -439,7 +439,7 @@ static void __nand_boot_init nfc_addr(unsigned long host, uint32_t offs)
  * @param[in] page Start page to read from
  * @param[in] pagesize Size of each page in the NAND
  *
- * This function must be located in the first 4kiB of the U-Boot-v2 image
+ * This function must be located in the first 4kiB of the barebox image
  * (guess why). When this routine is running the SDRAM is up and running
  * and it runs from the correct address (physical=linked address).
  * TODO Could we access the platform data from the boardfile?
@@ -504,11 +504,11 @@ static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_nand_boot_test_help[] =
 "Usage: nand_boot_test <dest> <size> <pagesize>\n";
 
-U_BOOT_CMD_START(nand_boot_test)
+BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
 	.usage		= "load an image from NAND",
-	U_BOOT_CMD_HELP(cmd_nand_boot_test_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
+BAREBOX_CMD_END
 #endif
 
 #endif /* CONFIG_S3C24XX_NAND_BOOT */

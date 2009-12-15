@@ -16,7 +16,7 @@
 #define O_DIRECTORY	00200000	/* must be a directory */
 #define O_NOFOLLOW	00400000	/* don't follow links */
 
-/* U-Boot additional flags */
+/* barebox additional flags */
 #define O_RWSIZE_MASK	00000070
 #define O_RWSIZE_SHIFT	3
 #define O_RWSIZE_1      00000010

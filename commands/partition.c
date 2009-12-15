@@ -154,11 +154,11 @@ static const __maybe_unused char cmd_addpart_help[] =
 "\n"
 "Note: That this command has to be reworked and will probably change it's API.";
 
-U_BOOT_CMD_START(addpart)
+BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
 	.usage = "adds a partition table to a device",
-	U_BOOT_CMD_HELP(cmd_addpart_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_addpart_help)
+BAREBOX_CMD_END
 
 /** @page addpart_command addpart Add a partition to a device
  *
@@ -199,11 +199,11 @@ static const __maybe_unused char cmd_delpart_help[] =
 "Usage: delpart FILE...\n"
 "Delete partitions previously added to a device with addpart.\n";
 
-U_BOOT_CMD_START(delpart)
+BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
 	.usage = "delete partition(s)",
-	U_BOOT_CMD_HELP(cmd_delpart_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_delpart_help)
+BAREBOX_CMD_END
 
 /** @page delpart_command delpart Delete a partition
  *

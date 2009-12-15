@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc9
+# barebox version: 2.0.0-rc9
 # Wed Jul  1 14:23:41 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x31fc0000
@@ -75,7 +75,7 @@ CONFIG_EXPERIMENTAL=y
 # CONFIG_KALLSYMS is not set
 CONFIG_MACH_HAS_LOWLEVEL_INIT=y
 CONFIG_MACH_DO_LOWLEVEL_INIT=y
-CONFIG_PROMPT="uboot:"
+CONFIG_PROMPT="barebox:"
 CONFIG_BAUDRATE=38400
 CONFIG_LONGHELP=y
 CONFIG_CBSIZE=1024

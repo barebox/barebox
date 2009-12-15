@@ -42,8 +42,8 @@ static const __maybe_unused char cmd_umount_help[] =
 "Usage: umount <mountpoint>\n"
 "umount a filesystem mounted on a specific mountpoint\n";
 
-U_BOOT_CMD_START(umount)
+BAREBOX_CMD_START(umount)
 	.cmd		= do_umount,
 	.usage		= "umount a filesystem",
-	U_BOOT_CMD_HELP(cmd_umount_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_umount_help)
+BAREBOX_CMD_END

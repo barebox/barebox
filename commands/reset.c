@@ -31,7 +31,7 @@ static int cmd_reset (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 1;
 }
 
-U_BOOT_CMD_START(reset)
+BAREBOX_CMD_START(reset)
 	.cmd		= cmd_reset,
 	.usage		= "Perform RESET of the CPU",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

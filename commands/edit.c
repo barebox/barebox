@@ -561,12 +561,12 @@ static const __maybe_unused char cmd_edit_help[] =
 
 static const __maybe_unused char cmd_edit_usage[] = "edit a file";
 
-U_BOOT_CMD_START(edit)
+BAREBOX_CMD_START(edit)
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
 	.usage		= cmd_edit_usage,
-	U_BOOT_CMD_HELP(cmd_edit_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_edit_help)
+BAREBOX_CMD_END
 
 
 /**

@@ -29,7 +29,7 @@ static int do_reginfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(reginfo)
+BAREBOX_CMD_START(reginfo)
 	.cmd		= do_reginfo,
 	.usage		= "print register information",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

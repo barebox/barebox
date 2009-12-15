@@ -135,7 +135,7 @@ int dev_add_param(struct device_d *dev, struct param_d *newparam)
 @section params_devices Devices can have several parameters.
 
 In case of a network device this may be the IP address, networking mask or
-similar and users need access to these parameters. In U-Boot this is solved
+similar and users need access to these parameters. In barebox this is solved
 with device paramters. Device parameters are always strings, although there
 are functions to interpret them as something else. 'hush' users can access
 parameters as a local variable which have a dot (.) in them. So setting the

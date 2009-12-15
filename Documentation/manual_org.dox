@@ -6,7 +6,7 @@ than listed here. But these files are the main control files:
 
  - Documentation
   - Documentation/Doxyfile
-  - Documentation/uboot-main.dox
+  - Documentation/barebox-main.dox
    - Documentation/users_manual.dox
     - Documentation/commands.dox
    - Documentation/developers_manual.dox

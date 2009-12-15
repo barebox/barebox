@@ -24,18 +24,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
- *
- ********************************************************************
- * NOTE: This header file defines an interface to U-Boot. Including
- * this (unmodified) header file in another file is considered normal
- * use of U-Boot, and does *not* fall under the heading of "derived
- * work".
- ********************************************************************
  */
 
-#ifndef _U_BOOT_H_
-#define _U_BOOT_H_	1
+#ifndef _BAREBOX_ARM_H_
+#define _BAREBOX_ARM_H_	1
 
-//typedef struct bd_info {} bd_t;
+/* for the following variables, see start.S */
+extern ulong _armboot_start;	/* code start */
+extern ulong _bss_start;	/* code + data end == BSS start */
+extern ulong _bss_end;		/* BSS end */
 
-#endif	/* _U_BOOT_H_ */
+/* cpu/.../cpu.c */
+int	cleanup_before_linux(void);
+
+/* board/.../... */
+int	board_init(void);
+int	dram_init (void);
+
+#endif	/* _BAREBOX_ARM_H_ */

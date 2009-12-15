@@ -90,11 +90,11 @@ static const __maybe_unused char cmd_cat_help[] =
 "Concatenate files on stdout. Currently only printable characters\n"
 "and \\n and \\t are printed, but this should be optional\n";
 
-U_BOOT_CMD_START(cat)
+BAREBOX_CMD_START(cat)
 	.cmd		= do_cat,
 	.usage		= "concatenate file(s)",
-	U_BOOT_CMD_HELP(cmd_cat_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_cat_help)
+BAREBOX_CMD_END
 
 /**
  * @page cat_command cat (concatenate)

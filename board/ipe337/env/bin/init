@@ -15,7 +15,7 @@ if [ $? != 0 ]; then
 	echo "Type update_system [<imagename>] to update rootfs into flash."
 	echo "Type update_application [<imagename>] to update applications into flash."
 	echo "Type update_persistent [<imagename>] to update persistent into flash."
-	echo "Type update_ubootenv [<imagename>] to update ubootenv into flash (use with care!)."
+	echo "Type update_bareboxenv [<imagename>] to update bareboxenv into flash (use with care!)."
 	echo "Type reset_ageing to initialize the ageing partittion (use with care!)."
 	echo
 	exit

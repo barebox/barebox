@@ -1,5 +1,5 @@
 /*
- * U-boot - muldi3.c contains routines for mult and div
+ * barebox - muldi3.c contains routines for mult and div
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

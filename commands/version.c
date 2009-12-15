@@ -31,8 +31,8 @@ static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(version)
+BAREBOX_CMD_START(version)
 	.cmd		= do_version,
 	.usage		= "print monitor version",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

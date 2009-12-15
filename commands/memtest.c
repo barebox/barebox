@@ -347,9 +347,9 @@ static const __maybe_unused char cmd_mtest_help[] =
 #endif
 "\nsimple RAM read/write test\n";
 
-U_BOOT_CMD_START(mtest)
+BAREBOX_CMD_START(mtest)
 	.cmd		= do_mem_mtest,
 	.usage		= "simple RAM test",
-	U_BOOT_CMD_HELP(cmd_mtest_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_mtest_help)
+BAREBOX_CMD_END
 

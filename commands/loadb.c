@@ -806,17 +806,17 @@ static const __maybe_unused char cmd_loadb_help[] =
     "console baudrate"
     "  -c        - Create file if it is not present - default disabled";
 #ifdef CONFIG_CMD_LOADB
-U_BOOT_CMD_START(loadb)
+BAREBOX_CMD_START(loadb)
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (kermit mode)",
-	U_BOOT_CMD_HELP(cmd_loadb_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_loadb_help)
+BAREBOX_CMD_END
 #endif
 #ifdef CONFIG_CMD_LOADY
-U_BOOT_CMD_START(loady)
+BAREBOX_CMD_START(loady)
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (ymodem mode)",
-	U_BOOT_CMD_HELP(cmd_loadb_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_loadb_help)
+BAREBOX_CMD_END
 #endif
 

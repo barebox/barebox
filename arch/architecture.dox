@@ -5,7 +5,7 @@
 Never include an object file by name directly! Linker Script Files defines the
 layout, not the content. Content is defined in objecfiles instead.
 
-Don't rely on the given object file order to create your binary U-Boot v2! This
+Don't rely on the given object file order to create your binary barebox v2! This
 may work, but is not relyable in all cases (and its a very bad style)!
 
 For the special case some layout contraints exists, use specific section
@@ -19,11 +19,11 @@ For example the ARM architecture starts its reset code at address 0x0000000,
 the x86 architecture at 0x000FFFF0, PowerPC at 0x00000100 or 0xFFFFF100.
 
 So for the special reset code on all architectures it must be located at
-architecture specific locations within the binary U-Boot image.
+architecture specific locations within the binary barebox image.
 
 All reset code uses section ".text_entry" for its localisation within the
-binary U-Boot image. Its up to the linker script file to use this section name
-to find the right place in whatever environment and U-Boot sizes.
+binary barebox image. Its up to the linker script file to use this section name
+to find the right place in whatever environment and barebox sizes.
 
 @code
 	.section ".text_entry","ax"
@@ -45,7 +45,7 @@ Features required for every CPU:
 
 @section time_keeping Time keeping
 
-In U-Boot-v2 we are using the clocksource mechanism from the Linux Kernel.
+In barebox we are using the clocksource mechanism from the Linux Kernel.
 This makes it fairly easy to add timer functionality for a new board or
 architecture.
 
@@ -78,7 +78,7 @@ the Linux Kernel can be used nearly 1:1, except for the register accesses.
 Note: For clocksources the __lshrdi3 symbol is needed. You can find the
 function for your architecture in the Linux Kernel or a libc of your choice.
 
-Note: U-Boot-v2 expects an upward counting counter!
+Note: barebox expects an upward counting counter!
 
 @section reset_function Reset function
 

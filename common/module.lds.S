@@ -22,7 +22,7 @@
  *
  */
 
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
 SECTIONS
 {
@@ -38,7 +38,7 @@ SECTIONS
 	. = ALIGN(4);
 	.got : { *(.got) }
 
-	.u_boot_cmd : { U_BOOT_CMDS }
+	.barebox_cmd : { BAREBOX_CMDS }
 	. = ALIGN(4);
 	.bss : { *(.bss) }
 }

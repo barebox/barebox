@@ -46,9 +46,9 @@ static __maybe_unused char cmd_clko_help[] =
 "  -s  <source> Clock select. See Ref. Manual for valid sources. Use -1\n"
 "               for disabling clock output\n";
 
-U_BOOT_CMD_START(clko)
+BAREBOX_CMD_START(clko)
 	.cmd		= do_clko,
 	.usage		= "Adjust CLKO setting",
-	U_BOOT_CMD_HELP(cmd_clko_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_clko_help)
+BAREBOX_CMD_END
 

@@ -51,11 +51,11 @@ static const __maybe_unused char cmd_cd_help[] =
 "Usage: cd [directory]\n"
 "change to directory. If called without argument, change to /\n";
 
-U_BOOT_CMD_START(cd)
+BAREBOX_CMD_START(cd)
 	.cmd		= do_cd,
 	.usage		= "change working directory",
-	U_BOOT_CMD_HELP(cmd_cd_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_cd_help)
+BAREBOX_CMD_END
 
 /**
  * @page cd_command cd (change working directory)

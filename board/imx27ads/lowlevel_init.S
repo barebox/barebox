@@ -82,7 +82,7 @@ MODE_REG_VAL0		.long 0x00000000 // system/external device dependent data
 NORMAL_MODE		.long 0x00000000 // system/external device dependent data (SMODE=000)
 .endm
 
-.macro sdram_init_uboot
+.macro sdram_init_barebox
 	/* configure 16 bit nor flash on cs0 */
 	writel(0x0000CC03, 0xd8002000)
 	writel(0xa0330D01, 0xd8002004)

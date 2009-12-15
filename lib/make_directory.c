@@ -1,7 +1,7 @@
 
 #include <string.h>
 #include <errno.h>
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 #include <fs.h>
 #include <malloc.h>
 #include <common.h>
@@ -33,7 +33,7 @@ int make_directory(const char *dir)
 
 			/* If we failed for any other reason than the directory
 			 * already exists, output a diagnostic and return -1.*/
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 			if (errno != -EEXIST)
 #else
 			if (errno != EEXIST)
@@ -52,6 +52,6 @@ out:
 	free(path);
 	return errno;
 }
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 EXPORT_SYMBOL(make_directory);
 #endif

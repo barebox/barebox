@@ -1,10 +1,10 @@
 #########################################################################
 #									#
-# Regular Maintainers for U-Boot board support:				#
+# Regular Maintainers for barebox board support:				#
 #									#
 # For any board without permanent maintainer, please contact		#
 #	Wolfgang Denk <wd@denx.de>					#
-# and Cc: the <U-Boot-Users@lists.sourceforge.net> mailing lists.	#
+# and Cc: the <barebox-Users@lists.sourceforge.net> mailing lists.	#
 #									#
 # Note: lists sorted by Maintainer Name					#
 #########################################################################

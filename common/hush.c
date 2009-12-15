@@ -1596,11 +1596,11 @@ static const __maybe_unused char cmd_sh_help[] =
 "\n"
 "Execute a shell script\n";
 
-U_BOOT_CMD_START(sh)
+BAREBOX_CMD_START(sh)
 	.cmd		= do_sh,
 	.usage		= "run shell script",
-	U_BOOT_CMD_HELP(cmd_sh_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_sh_help)
+BAREBOX_CMD_END
 
 static int do_source(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -1623,12 +1623,12 @@ static const __maybe_unused char cmd_source_help[] =
 static const __maybe_unused char cmd_source_usage[] =
 "execute shell script in current shell environment";
 
-U_BOOT_CMD_START(source)
+BAREBOX_CMD_START(source)
 	.aliases	= source_aliases,
 	.cmd		= do_source,
 	.usage		= cmd_source_usage,
-	U_BOOT_CMD_HELP(cmd_source_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_source_help)
+BAREBOX_CMD_END
 
 /**
  * @file

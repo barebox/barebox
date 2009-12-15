@@ -2,20 +2,20 @@
  * Copyright (c) 2008 Carsten Schlote <c.schlote@konzeptpark.de>
  * See file CREDITS for list of people who contributed to this project.
  *
- * This file is part of U-Boot V2.
+ * This file is part of barebox.
  *
- * U-Boot V2 is free software: you can redistribute it and/or modify
+ * barebox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * U-Boot V2 is distributed in the hope that it will be useful,
+ * barebox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
+ * along with barebox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -134,7 +134,7 @@ void cpu_cache_disable(void)
  * Prepare a "clean" CPU for Linux to run
  * @return 0 (always)
  *
- * This function is called by the generic U-Boot part just before we call
+ * This function is called by the generic barebox part just before we call
  * Linux. It prepares the processor for Linux.
  */
 int cleanup_before_linux (void)
@@ -157,7 +157,7 @@ int cleanup_before_linux (void)
  * For M68K we never enable data cache so we do not need to disable it again.
  *
  * Linux can be called with instruction cache enabled. As this is the
- * default setting we are running in U-Boot, there's no special preparation
+ * default setting we are running in barebox, there's no special preparation
  * required.
  */
 

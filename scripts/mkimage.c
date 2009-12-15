@@ -118,7 +118,7 @@ table_entry_t os_name[] = {
     {	IH_OS_SCO,	"sco",		"SCO",			},
     {	IH_OS_SOLARIS,	"solaris",	"Solaris",		},
     {	IH_OS_SVR4,	"svr4",		"SVR4",			},
-    {	IH_OS_U_BOOT,	"u-boot",	"U-Boot",		},
+    {	IH_OS_BAREBOX,	"barebox",	"barebox",		},
     {	IH_OS_VXWORKS,	"vxworks",	"VxWorks",		},
     {	-1,		"",		"",			},
 };
@@ -269,14 +269,14 @@ NXTARG:		;
 
 	if (!eflag) {
 		ep = addr;
-		/* If XIP, entry point must be after the U-Boot header */
+		/* If XIP, entry point must be after the barebox header */
 		if (xflag)
 			ep += sizeof(image_header_t);
 	}
 
 	/*
 	 * If XIP, ensure the entry point is equal to the load address plus
-	 * the size of the U-Boot header.
+	 * the size of the barebox header.
 	 */
 	if (xflag) {
 		if (ep != addr + sizeof(image_header_t)) {

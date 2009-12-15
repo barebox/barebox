@@ -1,5 +1,5 @@
 /*
- * ubootenv.c - generate or read a U-Boot environment archive
+ * bareboxenv.c - generate or read a barebox environment archive
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -125,8 +125,8 @@ char *concat_subpath_file(const char *path, const char *f)
 void usage(char *prgname)
 {
 	printf( "Usage : %s [OPTION] DIRECTORY FILE\n"
-		"Load an u-boot environment sector into a directory or\n"
-		"save a directory into an u-boot environment sector\n"
+		"Load an barebox environment sector into a directory or\n"
+		"save a directory into an barebox environment sector\n"
 		"\n"
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"

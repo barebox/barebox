@@ -75,6 +75,6 @@ void board_init_r (ulong end_of_ram)
 
 	/* Initialization complete - start the monitor */
 
-	start_uboot();
+	start_barebox();
 }
 

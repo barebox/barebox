@@ -1,5 +1,5 @@
 /*
- * U-boot - interrupt.S Processing of interrupts and exception handling
+ * barebox - interrupt.S Processing of interrupts and exception handling
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

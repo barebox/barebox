@@ -1,5 +1,5 @@
 /*
- * U-boot - traps.c Routines related to interrupts and exceptions
+ * barebox - traps.c Routines related to interrupts and exceptions
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

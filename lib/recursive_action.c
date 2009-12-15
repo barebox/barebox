@@ -6,7 +6,7 @@
  *
  * Licensed under GPLv2 or later, see file LICENSE in this tarball for details.
  */
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 
 #include <common.h>
 #include <fs.h>
@@ -129,6 +129,6 @@ done_nak_warn:
 	return 0;
 }
 
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 EXPORT_SYMBOL(recursive_action);
 #endif

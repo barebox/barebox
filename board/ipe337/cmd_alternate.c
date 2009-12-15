@@ -48,9 +48,9 @@ static const __maybe_unused char cmd_alternate_help[] =
 "Usage: alternate <file>"
 "\n";
 
-U_BOOT_CMD_START(alternate)
+BAREBOX_CMD_START(alternate)
 	.cmd		= do_alternate,
 	.usage		= "count zero bits in a file",
-	U_BOOT_CMD_HELP(cmd_alternate_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_alternate_help)
+BAREBOX_CMD_END
 

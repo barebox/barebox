@@ -1,5 +1,5 @@
 /*
- * U-boot - traps.h
+ * barebox - traps.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

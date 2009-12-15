@@ -1,5 +1,5 @@
 /*
- * U-boot - string.h String functions
+ * barebox - string.h String functions
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

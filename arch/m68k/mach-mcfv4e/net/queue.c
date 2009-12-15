@@ -2,27 +2,27 @@
  * Copyright (c) 2008 Carsten Schlote <c.schlote@konzeptpark.de>
  * See file CREDITS for list of people who contributed to this project.
  *
- * This file is part of U-Boot V2.
+ * This file is part of barebox.
  *
- * U-Boot V2 is free software: you can redistribute it and/or modify
+ * barebox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * U-Boot V2 is distributed in the hope that it will be useful,
+ * barebox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
+ * along with barebox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
  *  Implements a first in, first out linked list
  *
  * @note Simple selfcontaining basic code
- * @todo Replace by u-boot standard list functions
+ * @todo Replace by barebox standard list functions
  */
 #include <linux/types.h>
 #include <proc/net/queue.h>

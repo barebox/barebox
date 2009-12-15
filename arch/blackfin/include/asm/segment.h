@@ -1,5 +1,5 @@
 /*
- * U-boot - segment.h
+ * barebox - segment.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

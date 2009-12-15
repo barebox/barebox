@@ -83,7 +83,7 @@
 
 #define	CONFIG_EXTRA_ENV_SETTINGS											\
 	"mtdids=nor0=physmap-flash.0\0"											\
-	"mtdparts=mtdparts=physmap-flash.0:128k(uboot)ro,128k(env),1536k(kernel),-(jffs2)\0"				\
+	"mtdparts=mtdparts=physmap-flash.0:128k(barebox)ro,128k(env),1536k(kernel),-(jffs2)\0"				\
 	"bootargs_base=setenv bootargs console=ttyAT0,115200\0"								\
 	"bootargs_nfs=setenv bootargs $(bootargs) root=/dev/nfs ip=dhcp nfsroot=$(serverip):$(nfsrootfs),v3,tcp\0"	\
 	"bootargs_mtd=setenv bootargs $(bootargs) $(mtdparts)\0"							\
@@ -113,7 +113,7 @@
 #define CFG_BAUDRATE_TABLE	{115200 , 19200, 38400, 57600, 9600 }
 
 #define	CFG_LONGHELP				/* undef to save memory		*/
-#define CFG_PROMPT		"uboot> "	/* Monitor Command Prompt */
+#define CFG_PROMPT		"barebox> "	/* Monitor Command Prompt */
 #define CFG_CBSIZE		1024		/* Console I/O Buffer Size */
 #define CFG_MAXARGS		32		/* max number of command args */
 #define CFG_PBSIZE		(CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */

@@ -6,7 +6,7 @@
  *
  * This includes each of the architecture Clock definitions under it.
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008

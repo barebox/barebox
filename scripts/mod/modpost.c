@@ -91,8 +91,8 @@ static int is_vmlinux(const char *modname)
 	else
 		myname = modname;
 
-	return (strcmp(myname, "uboot") == 0) ||
-	       (strcmp(myname, "uboot.o") == 0);
+	return (strcmp(myname, "barebox") == 0) ||
+	       (strcmp(myname, "barebox.o") == 0);
 }
 
 void *do_nofail(void *ptr, const char *expr)

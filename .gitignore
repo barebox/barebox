@@ -27,16 +27,16 @@ tags
 TAGS
 cross_arch
 cross_compile
-uboot
-uboot.S
-uboot.bin
-uboot.netx
-uboot.map
+barebox
+barebox.S
+barebox.bin
+barebox.netx
+barebox.map
 System.map
 Module.symvers
 ARCH
 CROSS_COMPILE
-uboot_default_env
+barebox_default_env
 
 #
 # Generated include files

@@ -1,5 +1,5 @@
 /*
- * U-boot - hw_irq.h
+ * barebox - hw_irq.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

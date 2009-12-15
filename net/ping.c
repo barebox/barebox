@@ -103,7 +103,7 @@ int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(ping)
+BAREBOX_CMD_START(ping)
 	.cmd		= do_ping,
 	.usage		= "ping <destination>",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

@@ -1,10 +1,10 @@
 #!/bin/sh -x
-# Based on the uboot file create the System.map file
+# Based on the barebox file create the System.map file
 # System.map is used by module-init tools and some debugging
 # tools to retrieve the actual addresses of symbols in the kernel.
 #
 # Usage
-# mksysmap uboot System.map
+# mksysmap barebox System.map
 
 
 #####

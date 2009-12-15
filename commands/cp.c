@@ -84,11 +84,11 @@ static const __maybe_unused char cmd_cp_help[] =
 "filename (not a target directory).\n"
 "This command is file based only. See memcpy for memory copy\n";
 
-U_BOOT_CMD_START(cp)
+BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
 	.usage		= "copy files",
-	U_BOOT_CMD_HELP(cmd_cp_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_cp_help)
+BAREBOX_CMD_END
 
 /**
  * @page cp_command cp: Copy file

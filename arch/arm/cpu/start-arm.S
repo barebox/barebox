@@ -83,8 +83,8 @@ _fiq:			.word fiq
 /*
  * These are defined in the board-specific linker script.
  */
-.globl _u_boot_start
-_u_boot_start:
+.globl _barebox_start
+_barebox_start:
 	.word _start
 
 .globl _bss_start
@@ -210,13 +210,13 @@ finished_inval:
 	bl	board_init_lowlevel
 #endif
 
-relocate:				/* relocate U-Boot to RAM	    */
+relocate:				/* relocate barebox to RAM	    */
 	adr	r0, _start		/* r0 <- current position of code   */
 	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
 	cmp     r0, r1                  /* don't reloc during debug         */
 	beq     stack_setup
 
-	ldr	r2, _u_boot_start
+	ldr	r2, _barebox_start
 	ldr	r3, _bss_start
 	sub	r2, r3, r2		/* r2 <- size of armboot            */
 	add	r2, r0, r2		/* r2 <- source end address         */
@@ -246,4 +246,4 @@ clbss_l:
 	ldr	pc, _start_armboot
 
 _start_armboot:
-	.word start_uboot
+	.word start_barebox

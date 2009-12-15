@@ -1,5 +1,5 @@
 /*
- * U-boot - mem_init.h Header file for memory initialization
+ * barebox - mem_init.h Header file for memory initialization
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

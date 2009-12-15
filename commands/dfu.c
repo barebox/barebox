@@ -101,7 +101,7 @@ static int do_dfu(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	struct usb_dfu_pdata pdata;
 	char *endptr, *argstr;
 	struct usb_dfu_dev *dfu_alts = NULL;
-	char *manufacturer = "U-Boot";
+	char *manufacturer = "barebox";
 	char *productname = CONFIG_BOARDINFO;
 	u16 idVendor = 0, idProduct = 0;
 
@@ -165,7 +165,7 @@ out:
 static const __maybe_unused char cmd_dfu_help[] =
 "Usage: dfu [OPTION]... description\n"
 "start dfu firmware update\n"
-" -m <str> Manufacturer string (U-Boot)\n"
+" -m <str> Manufacturer string (barebox)\n"
 " -p <str> product string (" CONFIG_BOARDINFO ")\n"
 " -V <id>  vendor id\n"
 " -P <id>  product id\n"
@@ -173,8 +173,8 @@ static const __maybe_unused char cmd_dfu_help[] =
 "device1(name1)[sr],device2(name2)[sr]\n"
 "where s is for save mode and r for read back of firmware\n";
 
-U_BOOT_CMD_START(dfu)
+BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,
 	.usage		= "Device firmware update",
-	U_BOOT_CMD_HELP(cmd_dfu_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_dfu_help)
+BAREBOX_CMD_END

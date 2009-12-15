@@ -36,7 +36,7 @@
  *
  *
  *
- *		12/15/2003      Initial port to u-boot by Sascha Hauer
+ *		12/15/2003      Initial port to barebox by Sascha Hauer
  *				<saschahauer@web.de>
  *
  * ... see commit logs

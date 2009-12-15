@@ -1,5 +1,5 @@
 /*
- * U-boot - blackfin_linux.c
+ * barebox - blackfin_linux.c
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

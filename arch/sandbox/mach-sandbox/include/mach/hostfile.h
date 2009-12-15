@@ -9,7 +9,7 @@ struct hf_platform_data {
 	char *name;
 };
 
-int u_boot_register_filedev(struct hf_platform_data *hf);
+int barebox_register_filedev(struct hf_platform_data *hf);
 
 #endif /* __ASM_ARCH_HOSTFILE_H */
 

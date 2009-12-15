@@ -1,5 +1,5 @@
 /*
- * U-boot - u-boot.lds.S
+ * barebox - barebox.lds.S
  *
  * Copyright (c) 2005-2007 Analog Device Inc.
  *
@@ -26,7 +26,7 @@
  */
 
 #include <config.h>
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
 OUTPUT_ARCH("bfin")
 SEARCH_DIR(/lib); SEARCH_DIR(/usr/lib); SEARCH_DIR(/usr/local/lib);
@@ -67,16 +67,16 @@ SECTIONS
 	.got : { *(.got) }
 
 	. = .;
-	___u_boot_cmd_start = .;
-	.u_boot_cmd : { U_BOOT_CMDS }
-	___u_boot_cmd_end = .;
+	___barebox_cmd_start = .;
+	.barebox_cmd : { BAREBOX_CMDS }
+	___barebox_cmd_end = .;
 
-	___u_boot_initcalls_start = .;
-	.u_boot_initcalls : { INITCALLS }
-	___u_boot_initcalls_end = .;
+	___barebox_initcalls_start = .;
+	.barebox_initcalls : { INITCALLS }
+	___barebox_initcalls_end = .;
 
 	___usymtab_start = .;
-	__usymtab : { U_BOOT_SYMS }
+	__usymtab : { BAREBOX_SYMS }
 	___usymtab_end = .;
 
 	. = ALIGN(4);

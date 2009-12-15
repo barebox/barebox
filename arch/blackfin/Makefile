@@ -13,7 +13,7 @@ CFLAGS += -D__blackfin__
 KALLSYMS         += --symbol-prefix=_
 
 ifndef CONFIG_BFIN_BOOT_BYPASS
-all: uboot.ldr
+all: barebox.ldr
 endif
 
 archprepare: maketools
@@ -36,7 +36,7 @@ endif
 common-y += $(BOARD)
 common-y += arch/blackfin/lib/ $(CPU)
 
-lds-y += $(BOARD)/u-boot.lds
+lds-y += $(BOARD)/barebox.lds
 
 ifdef CONFIG_BFIN_BOOT_FLASH16
 FLASHBITS :=-B 16
@@ -46,7 +46,7 @@ endif
 
 ifneq ($(cpu-y),)
 ifndef CONFIG_BFIN_BOOT_BYPASS
-uboot.ldr: uboot
+barebox.ldr: barebox
 	rm -f $@
 	$(CROSS_COMPILE)ldr -T $(cpu-y) -c $(FLASHBITS) -i $(CPU)/init_sdram.o $@ $<
 endif

@@ -1,5 +1,5 @@
 /*
- * libgen.c - some libgen functions needed for U-Boot
+ * libgen.c - some libgen functions needed for barebox
  *
  * See file CREDITS for list of people who contributed to this
  * project.

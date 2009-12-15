@@ -12,7 +12,7 @@
  * (C) Copyright Yggdrasil Computing, Inc. 2000
  *     (usb_device_id matching changes by Adam J. Richter)
  *
- * Adapted for U-Boot:
+ * Adapted for barebox:
  * (C) Copyright 2001 Denis Peter, MPL AG Switzerland
  *
  * See file CREDITS for list of people who contributed to this
@@ -489,11 +489,11 @@ static const __maybe_unused char cmd_usb_help[] =
 "Usage: usb\n"
 "(re-)detect USB devices\n";
 
-U_BOOT_CMD_START(usb)
+BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,
 	.usage		= "(re-)detect USB devices",
-	U_BOOT_CMD_HELP(cmd_usb_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_usb_help)
+BAREBOX_CMD_END
 
 /*
  * disables the asynch behaviour of the control message. This is used for data
@@ -700,7 +700,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 	 * According to 9.4.10 of the Universal Serial Bus Specification
 	 * Revision 2.0 such devices can return with a STALL. This results in
 	 * some USB sticks timeouting during initialization and then being
-	 * unusable in U-Boot.
+	 * unusable in barebox.
 	 */
 	if (if_face->num_altsetting == 1)
 		return 0;

@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc10
+# barebox version: 2.0.0-rc10
 # Sat Sep 26 18:45:28 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x23f00000

@@ -86,11 +86,11 @@ static const __maybe_unused char cmd_tftp_help[] =
 "Usage: tftp <file> [localfile]\n"
 "Load a file via network using BootP/TFTP protocol.\n";
 
-U_BOOT_CMD_START(tftp)
+BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
 	.usage		= "Load file using tftp protocol",
-	U_BOOT_CMD_HELP(cmd_tftp_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_tftp_help)
+BAREBOX_CMD_END
 
 /**
  * @page tftp_command tftp
@@ -130,11 +130,11 @@ static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(rarpboot)
+BAREBOX_CMD_START(rarpboot)
 	.cmd		= do_rarpb,
 	.usage		= "boot image via network using rarp/tftp protocol",
-	U_BOOT_CMD_HELP("[loadAddress] [bootfilename]\n")
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP("[loadAddress] [bootfilename]\n")
+BAREBOX_CMD_END
 #endif /* CONFIG_NET_RARP */
 
 #ifdef CONFIG_NET_NFS
@@ -147,11 +147,11 @@ static const __maybe_unused char cmd_nfs_help[] =
 "Usage: nfs <file> [localfile]\n"
 "Load a file via network using nfs protocol.\n";
 
-U_BOOT_CMD_START(nfs)
+BAREBOX_CMD_START(nfs)
 	.cmd		= do_nfs,
 	.usage		= "boot image via network using nfs protocol",
-	U_BOOT_CMD_HELP(cmd_nfs_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_nfs_help)
+BAREBOX_CMD_END
 
 #endif	/* CONFIG_NET_NFS */
 
@@ -250,11 +250,11 @@ static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(cdp)
+BAREBOX_CMD_START(cdp)
 	.cmd		= do_cdp,
 	.usage		= "Perform CDP network configuration",
-	U_BOOT_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
+BAREBOX_CMD_END
 
 #endif	/* CONFIG_NET_CDP */
 
@@ -286,9 +286,9 @@ static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_ethact_help[] =
 "Usage: ethact [ethx]\n";
 
-U_BOOT_CMD_START(ethact)
+BAREBOX_CMD_START(ethact)
 	.cmd		= do_ethact,
 	.usage		= "set current ethernet device",
-	U_BOOT_CMD_HELP(cmd_ethact_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_ethact_help)
+BAREBOX_CMD_END
 

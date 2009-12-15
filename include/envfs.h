@@ -6,7 +6,7 @@
 #define ENVFS_MAGIC		    0x798fba79	/* some random number */
 #define ENVFS_INODE_MAGIC	0x67a8c78d
 #define ENVFS_END_MAGIC		0x6a87d6cd
-#define ENVFS_SIGNATURE	"U-Boot envfs"
+#define ENVFS_SIGNATURE	"barebox envfs"
 
 struct envfs_inode {
 	uint32_t magic;	/* ENVFS_INODE_MAGIC */

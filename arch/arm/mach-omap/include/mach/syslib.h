@@ -6,7 +6,7 @@
  *
  * Implemented by arch/arm/mach-omap/syslib.c
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
  */
 /*
  * (C) Copyright 2004-2008

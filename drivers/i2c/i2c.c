@@ -9,7 +9,7 @@
  * - at24.c - handle most I2C EEPROMs
  *   Copyright (C) 2005-2007 David Brownell
  *   Copyright (C) 2008 Wolfram Sang, Pengutronix
- * - spi.c - u-boot-v2 SPI Framework
+ * - spi.c - barebox-v2 SPI Framework
  *   Copyright (C) 2008 Sascha Hauer, Pengutronix
  * - Linux SPI Framework
  *   Copyright (C) 2005 David Brownell

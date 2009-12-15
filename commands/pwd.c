@@ -29,7 +29,7 @@ static int do_pwd (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(pwd)
+BAREBOX_CMD_START(pwd)
 	.cmd		= do_pwd,
 	.usage		= "print working directory",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

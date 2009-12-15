@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc5-git
+# barebox version: 2.0.0-rc5-git
 # Tue Jun 24 02:22:41 2008
 #
 CONFIG_ARCH_TEXT_BASE=0x80e80000

@@ -12,7 +12,7 @@ static int do_lsmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(lsmod)
+BAREBOX_CMD_START(lsmod)
 	.cmd		= do_lsmod,
 	.usage		= "list modules",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

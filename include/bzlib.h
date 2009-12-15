@@ -66,10 +66,10 @@
 #ifndef _BZLIB_H
 #define _BZLIB_H
 
-/* Configure for U-Boot environment */
+/* Configure for barebox environment */
 #define BZ_NO_STDIO
 #define BZ_NO_COMPRESS
-/* End of configuration for U-Boot environment */
+/* End of configuration for barebox environment */
 
 #ifdef __cplusplus
 extern "C" {

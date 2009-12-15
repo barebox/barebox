@@ -383,11 +383,11 @@ static const __maybe_unused char cmd_cpufreq_help[] =
 "\n"
 "Set CPU frequency to <freq> MHz\n";
 
-U_BOOT_CMD_START(cpufreq)
+BAREBOX_CMD_START(cpufreq)
 	.cmd            = do_cpufreq,
 	.usage          = "adjust CPU frequency",
-	U_BOOT_CMD_HELP(cmd_cpufreq_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_cpufreq_help)
+BAREBOX_CMD_END
 
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)

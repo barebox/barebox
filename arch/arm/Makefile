@@ -82,11 +82,11 @@ CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
 ifndef CONFIG_MODULES
 # Add cleanup flags
 CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_uboot += -static --gc-sections
+LDFLAGS_barebox += -static --gc-sections
 endif
 
-uboot.netx: uboot.bin
-	$(Q)scripts/gen_netx_image -i uboot.bin -o uboot.netx		\
+barebox.netx: barebox.bin
+	$(Q)scripts/gen_netx_image -i barebox.bin -o barebox.netx		\
 		--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
 		--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
 		--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
@@ -94,7 +94,7 @@ uboot.netx: uboot.bin
 		--cookie=$(CONFIG_NETX_COOKIE);
 
 ifeq ($(machine-y),netx)
-KBUILD_IMAGE := uboot.netx
+KBUILD_IMAGE := barebox.netx
 endif
 
 all: $(KBUILD_IMAGE)
@@ -120,7 +120,7 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/u-boot.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/u-boot.lds
+lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
+lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds
 
-CLEAN_FILES += arch/arm/include/asm/mach-types.h arch/arm/lib/u-boot.lds
+CLEAN_FILES += arch/arm/include/asm/mach-types.h arch/arm/lib/barebox.lds

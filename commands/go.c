@@ -78,8 +78,8 @@ static const __maybe_unused char cmd_go_help[] =
 "If addr does not start with a digit it is interpreted as a filename\n"
 "in which case the file is memmapped and executed\n";
 
-U_BOOT_CMD_START(go)
+BAREBOX_CMD_START(go)
 	.cmd		= do_go,
 	.usage		= "start application at address or file",
-	U_BOOT_CMD_HELP(cmd_go_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_go_help)
+BAREBOX_CMD_END

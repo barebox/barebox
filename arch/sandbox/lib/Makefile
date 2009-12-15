@@ -1,4 +1,4 @@
-CPPFLAGS_u-boot.lds = -U$(SUBARCH) -DELF_ARCH=$(ELF_ARCH) \
+CPPFLAGS_barebox.lds = -U$(SUBARCH) -DELF_ARCH=$(ELF_ARCH) \
 	-DELF_FORMAT="$(ELF_FORMAT)"
 
-extra-y += u-boot.lds
+extra-y += barebox.lds

@@ -1,5 +1,5 @@
 /*
- * U-boot - bf533_string.c Contains library routines.
+ * barebox - bf533_string.c Contains library routines.
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

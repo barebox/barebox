@@ -1,5 +1,5 @@
 /*
- * U-boot - bitops.h Routines for bit operations
+ * barebox - bitops.h Routines for bit operations
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

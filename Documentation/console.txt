@@ -1,6 +1,6 @@
--------------- U-Boot consoles ------------------
+-------------- barebox consoles ------------------
 
-U-Boot supports multiple consoles which may be simultaneously active.
+barebox supports multiple consoles which may be simultaneously active.
 Depending on the configuration none, the first or all consoles are
 activated on startup, see CONSOLE_ACTIVATE_FIRST and CONSOLE_ACTIVATE_ALL
 options.

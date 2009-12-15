@@ -20,12 +20,12 @@ obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_MODULES) += module.lds
 
 ifdef CONFIG_DEFAULT_ENVIRONMENT
-$(obj)/startup.o: include/uboot_default_env.h
-$(obj)/env.o: include/uboot_default_env.h
+$(obj)/startup.o: include/barebox_default_env.h
+$(obj)/env.o: include/barebox_default_env.h
 
 ENV_FILES := $(shell find $(srctree)/$(CONFIG_DEFAULT_ENVIRONMENT_PATH))
 endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 
-include/uboot_default_env.h: $(ENV_FILES)
-	$(Q)scripts/ubootenv -s $(srctree)/$(CONFIG_DEFAULT_ENVIRONMENT_PATH) uboot_default_env
-	$(Q)cat uboot_default_env | scripts/bin2c default_environment > $@
+include/barebox_default_env.h: $(ENV_FILES)
+	$(Q)scripts/bareboxenv -s $(srctree)/$(CONFIG_DEFAULT_ENVIRONMENT_PATH) barebox_default_env
+	$(Q)cat barebox_default_env | scripts/bin2c default_environment > $@

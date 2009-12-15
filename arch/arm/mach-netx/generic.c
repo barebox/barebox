@@ -91,7 +91,7 @@ int loadxc(int xcno) {
 	memset32((void*)NETX_PA_XPEC(xcno) + XPEC_RAM_START, 0, 0x2000);
 	memset32((void*)NETX_PA_XMAC(xcno), 0, 0x800);
 
-	/* can't use u-boot memcpy here, we need 32bit accesses */
+	/* can't use barebox memcpy here, we need 32bit accesses */
 	if(xcno == 0) {
 		memcpy32((void*)(NETX_PA_XMAC(xcno) + XMAC_RPU_PROGRAM_START), rpu_eth0, sizeof(rpu_eth0));
 		memcpy32((void*)(NETX_PA_XMAC(xcno) + XMAC_TPU_PROGRAM_START), tpu_eth0, sizeof(tpu_eth0));
@@ -143,8 +143,8 @@ void reset_cpu(ulong addr)
 }
 
 
-U_BOOT_CMD_START(loadxc)
+BAREBOX_CMD_START(loadxc)
 	.cmd		= do_loadxc,
 	.usage		= "load xmac/xpec engine with ethernet firmware",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

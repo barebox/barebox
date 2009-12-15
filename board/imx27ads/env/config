@@ -4,7 +4,7 @@
 kernel=net
 root=net
 
-# use 'dhcp' todo dhcp in uboot and in kernel
+# use 'dhcp' todo dhcp in barebox and in kernel
 ip=dhcp
 
 eth0.ipaddr=192.168.23.164
@@ -20,6 +20,6 @@ autoboot_timeout=3
 nfsroot="/tmp/imx27ads"
 bootargs="console=ttymxc0,115200"
 
-mtdparts="128k(uboot)ro,128k(ubootenv),1536k(kernel),-(root)"
+mtdparts="128k(barebox)ro,128k(bareboxenv),1536k(kernel),-(root)"
 rootpart="/dev/mtdblock3"
 

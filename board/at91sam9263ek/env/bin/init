@@ -30,7 +30,7 @@ if [ $? != 0 ]; then
 	echo
 	echo "type update_kernel nor [<imagename>] to update kernel into flash"
 	echo "type update_root nor [<imagename>] to update rootfs into flash"
-	echo "type update_uboot_xmodem nor to update uboot into flash"
+	echo "type update_barebox_xmodem nor to update barebox into flash"
 	echo
 	exit
 fi

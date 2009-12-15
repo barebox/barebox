@@ -1,6 +1,6 @@
------------- U-Boot timekeeping -------------
+------------ barebox timekeeping -------------
 
-In U-Boot we use the clocksource mechanism from the Linux Kernel. This makes
+In barebox we use the clocksource mechanism from the Linux Kernel. This makes
 it fairly easy to add timer functionality for a new board or architecture.
 Apart from initialization there is only one function required:
 clocksource_read(). This function returns the current value of a free running

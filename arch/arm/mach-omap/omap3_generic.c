@@ -11,7 +11,7 @@
  * Important one is @ref a_init which is architecture init code.
  * The implemented functions are present in sys_info.h
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008
@@ -400,7 +400,7 @@ void a_init(void)
 
 	try_unlock_memory();
 
-	/* Writing to AuxCR in U-boot using SMI for GP DEV */
+	/* Writing to AuxCR in barebox using SMI for GP DEV */
 	/* Currently SMI in Kernel on ES2 devices seems to have an isse
 	 * Once that is resolved, we can postpone this config to kernel
 	 */

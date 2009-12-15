@@ -1,4 +1,4 @@
-ubootenv
+bareboxenv
 bin2c
 mkimage
 kallsyms

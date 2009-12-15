@@ -80,7 +80,7 @@ struct mx25_nand_flash_header __flash_header mx25_3ds_header = {
 
 extern unsigned long __bss_start;
 
-unsigned long __image_len u_boot_len = 0x40000; 
+unsigned long __image_len barebox_len = 0x40000;
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= RMII,
@@ -208,7 +208,7 @@ static int imx25_devices_init(void)
 #endif
 
 	/* FEC does only work when the CPLD is initialized.
-	 * Currently we do not do this in U-Boot, so it
+	 * Currently we do not do this in barebox, so it
 	 * does only work when Linux has been started after
 	 * the last powercycle.
 	 */

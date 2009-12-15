@@ -41,7 +41,7 @@ static int do_help (cmd_tbl_t * cmdtp, int argc, char *argv[])
 
 	/* command help (long version) */
 	if ((cmdtp = find_cmd(argv[1])) != NULL) {
-		u_boot_cmd_usage(cmdtp);
+		barebox_cmd_usage(cmdtp);
 		return 0;
 	} else {
 		printf ("Unknown command '%s' - try 'help'"
@@ -61,10 +61,10 @@ static const __maybe_unused char cmd_help_help[] =
 
 static const char *help_aliases[] = { "?", NULL};
 
-U_BOOT_CMD_START(help)
+BAREBOX_CMD_START(help)
 	.cmd		= do_help,
 	.aliases	= help_aliases,
 	.usage		= "print online help",
-	U_BOOT_CMD_HELP(cmd_help_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_help_help)
+BAREBOX_CMD_END
 

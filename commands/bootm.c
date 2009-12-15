@@ -106,7 +106,7 @@ static const char *image_os(image_header_t *hdr)
 	case IH_OS_LINUX:	os = "Linux";			break;
 	case IH_OS_VXWORKS:	os = "VxWorks";			break;
 	case IH_OS_QNX:		os = "QNX";			break;
-	case IH_OS_U_BOOT:	os = "U-Boot";			break;
+	case IH_OS_BAREBOX:	os = "barebox";			break;
 	case IH_OS_RTEMS:	os = "RTEMS";			break;
 #ifdef CONFIG_ARTOS
 	case IH_OS_ARTOS:	os = "ARTOS";			break;
@@ -457,11 +457,11 @@ static const __maybe_unused char cmd_bootm_help[] =
 " -h             show advanced options\n";
 
 
-U_BOOT_CMD_START(bootm)
+BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
 	.usage		= "boot application image",
-	U_BOOT_CMD_HELP(cmd_bootm_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_bootm_help)
+BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_IMI
 static int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
@@ -522,7 +522,7 @@ static int image_info (ulong addr)
 	return 0;
 }
 
-U_BOOT_CMD(
+BAREBOX_CMD(
 	iminfo,		1,	do_iminfo,
 	"iminfo  - print header information for application image\n",
 	"addr [addr ...]\n"
@@ -589,7 +589,7 @@ void bz_internal_error(int errcode)
  * @page boot_preparation Preparing for Boot
  *
  * This chapter describes what's to be done to forward the control from
- * U-Boot to Linux. This part describes the generic part, below you can find
+ * barebox to Linux. This part describes the generic part, below you can find
  * the architecture specific part.
  *
  * - @subpage arm_boot_preparation

@@ -4,7 +4,7 @@
 kernel=net
 root=net
 
-# use 'dhcp' todo dhcp in uboot and in kernel
+# use 'dhcp' todo dhcp in barebox and in kernel
 ip=dhcp
 
 #

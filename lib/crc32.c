@@ -8,7 +8,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef __U_BOOT__	/* Shut down "ANSI does not permit..." warnings */
+#ifdef __BAREBOX__	/* Shut down "ANSI does not permit..." warnings */
 #include <common.h>	/* to get command definitions like CFG_CMD_JFFS2 */
 #endif
 
@@ -149,7 +149,7 @@ ulong crc32(ulong crc, const unsigned char *buf, uint len)
     } while (--len);
     return crc ^ 0xffffffffL;
 }
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 EXPORT_SYMBOL(crc32);
 #endif
 

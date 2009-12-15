@@ -1,5 +1,5 @@
 /*
- * U-Boot Header File
+ * barebox Header File
  *
  * Generic Clocksource for V4E
  *

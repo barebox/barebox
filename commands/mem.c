@@ -232,11 +232,11 @@ static const __maybe_unused char cmd_md_help[] =
 "respectively\n";
 
 
-U_BOOT_CMD_START(md)
+BAREBOX_CMD_START(md)
 	.cmd		= do_mem_md,
 	.usage		= "memory display",
-	U_BOOT_CMD_HELP(cmd_md_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_md_help)
+BAREBOX_CMD_END
 
 static int do_mem_mw ( cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -295,11 +295,11 @@ static const __maybe_unused char cmd_mw_help[] =
 "Write value(s) to the specifies region.\n"
 "see 'help md' for supported options.\n";
 
-U_BOOT_CMD_START(mw)
+BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,
 	.usage		= "memory write (fill)",
-	U_BOOT_CMD_HELP(cmd_mw_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_mw_help)
+BAREBOX_CMD_END
 
 static int do_mem_cmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -404,11 +404,11 @@ static const __maybe_unused char cmd_memcmp_help[] =
 "be left unspecified in which case the whole file is\n"
 "compared\n";
 
-U_BOOT_CMD_START(memcmp)
+BAREBOX_CMD_START(memcmp)
 	.cmd		= do_mem_cmp,
 	.usage		= "memory compare",
-	U_BOOT_CMD_HELP(cmd_memcmp_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_memcmp_help)
+BAREBOX_CMD_END
 
 static int do_mem_cp(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -500,11 +500,11 @@ static const __maybe_unused char cmd_memcpy_help[] =
 "\n"
 "Copy memory at <src> of <count> bytes to <dst>\n";
 
-U_BOOT_CMD_START(memcpy)
+BAREBOX_CMD_START(memcpy)
 	.cmd		= do_mem_cp,
 	.usage		= "memory copy",
-	U_BOOT_CMD_HELP(cmd_memcpy_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_memcpy_help)
+BAREBOX_CMD_END
 
 static int do_memset(cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
@@ -565,11 +565,11 @@ static const __maybe_unused char cmd_memset_help[] =
 "\n"
 "Fill the first n bytes of area with byte c\n";
 
-U_BOOT_CMD_START(memset)
+BAREBOX_CMD_START(memset)
 	.cmd		= do_memset,
 	.usage		= "memory fill",
-	U_BOOT_CMD_HELP(cmd_memset_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_memset_help)
+BAREBOX_CMD_END
 
 static struct file_operations memops = {
 	.read  = mem_read,

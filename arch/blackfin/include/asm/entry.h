@@ -1,5 +1,5 @@
 /*
- * U-boot - entry.h Routines for context saving and restoring
+ * barebox - entry.h Routines for context saving and restoring
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

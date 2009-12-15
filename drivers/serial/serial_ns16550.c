@@ -5,7 +5,7 @@
  * FileName: drivers/serial/serial_ns16550.c
  *
  * NS16550 support
- * Modified from U-Boot V1 drivers/serial.c and drivers/ns16550.c
+ * Modified from barebox V1 drivers/serial.c and drivers/ns16550.c
  * originally from linux source (arch/ppc/boot/ns16550.c)
  * modified to use CFG_ISA_MEM and new defines
  */
@@ -63,7 +63,7 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 	    cdev->dev->platform_data;
 	unsigned int clk = plat->clock;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	/* FIXME: Legacy Code copied from U-Boot V1 implementation
+	/* FIXME: Legacy Code copied from barebox V1 implementation
 	 */
 #ifdef CONFIG_ARCH_OMAP1510
 	unsigned long base = cdev->dev->map_base;

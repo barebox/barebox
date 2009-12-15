@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 	struct stat s;
 	int opt;
 	unsigned char *buf;
-	int bytes, err, uboot_size, ofs, i;
+	int bytes, err, barebox_size, ofs, i;
 	uint32_t *ptr;
 	uint32_t checksum = 0;
 	uint32_t memctrl = 0, sdramctrl = 0, sdramtimctrl = 0, entrypoint = 0, cookie = 0;
@@ -158,22 +158,22 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	uboot_size = s.st_size;
-	printf("found u-boot image. size: %d bytes. Using entrypoint 0x%08x\n",uboot_size,entrypoint);
+	barebox_size = s.st_size;
+	printf("found barebox image. size: %d bytes. Using entrypoint 0x%08x\n",barebox_size,entrypoint);
 
-	buf = malloc(uboot_size + sizeof(struct netx_bootblock) + 4);
+	buf = malloc(barebox_size + sizeof(struct netx_bootblock) + 4);
 	if(!buf) {
 		perror("malloc");
 		exit(1);
 	}
-	memset(buf, 0, uboot_size + sizeof(struct netx_bootblock) + 4);
+	memset(buf, 0, barebox_size + sizeof(struct netx_bootblock) + 4);
 
 	nb = (struct netx_bootblock *)buf;
 
 	nb->cookie = cookie;
 	nb->ctrl.mem_ctrl = memctrl;
 	nb->appl_entrypoint = entrypoint;
-	nb->appl_size = (uboot_size >> 2);
+	nb->appl_size = (barebox_size >> 2);
 
 	nb->appl_start_addr = entrypoint;
 	nb->signature = NETX_IDENTIFICATION;
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 	nb->config.normal.sdram_timing_ctrl = sdramtimctrl;
 
 	ofs = sizeof(struct netx_bootblock);
-	bytes = uboot_size;
+	bytes = barebox_size;
 
 	while(bytes) {
 		err = read(fd, buf + ofs, bytes);
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	bytes = uboot_size + sizeof(struct netx_bootblock);
+	bytes = barebox_size + sizeof(struct netx_bootblock);
 	ofs = 0;
 	while(bytes) {
 		err = write(fd, buf + ofs, bytes);

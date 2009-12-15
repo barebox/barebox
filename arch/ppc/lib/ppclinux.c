@@ -81,7 +81,7 @@ static int do_bootm_linux(struct image_data *idata)
 				((unsigned long)initrd_data + ((initrd_len + 3) & ~3));
 		} else if (len1) {
 			/* We could check here if this is a multifile image
-			 * with only a kernel and an oftree. Original U-Boot
+			 * with only a kernel and an oftree. Original barebox
 			 * did not do this, so leave it out for now.
 			 */
 			initrd_data = (void *)((unsigned long)data + ((os_len + 3) & ~3));
@@ -97,7 +97,7 @@ static int do_bootm_linux(struct image_data *idata)
 
 #ifdef CONFIG_OF_FLAT_TREE
 	if (idata->oftree) {
-		/* The oftree can be given either as an uboot image or as a
+		/* The oftree can be given either as an barebox image or as a
 		 * binary blob. First try to read it as an image.
 		 */
 		oftree_handle = map_image(idata->oftree, 1);

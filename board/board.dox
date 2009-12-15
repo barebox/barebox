@@ -1,7 +1,7 @@
 /** @page dev_board Adapting a new Board
 
-To add a new board to U-Boot a few steps must be done, to extend and modify
-the U-Boot source tree.
+To add a new board to barebox a few steps must be done, to extend and modify
+the barebox source tree.
 
 @section board_add_files Files/Directories to be added
 
@@ -58,9 +58,9 @@ at the right architecture.
 
 @note Consider to use an unique page lable.
 
-@subsection board_lscript board/\<boardname\>/u-boot.ld.S
+@subsection board_lscript board/\<boardname\>/barebox.ld.S
 
-If your board needs a special binary U-Boot layout, you can provide a local
+If your board needs a special binary barebox layout, you can provide a local
 board linker script file. This will replace the generic one provided by your
 architecture or CPU support.
 

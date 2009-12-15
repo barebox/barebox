@@ -14,7 +14,7 @@ config DRIVER_CFI_NEW
 	default y
 	bool "new cfi flash driver"
 	help
-	  The old cfi flash driver is mainly an adopted version from U-Boot v1
+	  The old cfi flash driver is mainly an adopted version from barebox v1
 	  whereas the new driver contains some more experimental features such
 	  as selecting the supported chiptypes and bus widths making the driver
 	  smaller.

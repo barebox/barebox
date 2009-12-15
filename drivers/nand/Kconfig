@@ -15,7 +15,7 @@ config NAND_IMX
 
 config NAND_IMX_BOOT
 	bool
-	prompt "Support Starting U-Boot from NAND"
+	prompt "Support Starting barebox from NAND"
 	depends on NAND_IMX || NAND_IMX_V2
 
 config NAND_OMAP_GPMC

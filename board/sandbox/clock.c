@@ -1,5 +1,5 @@
 /*
- * clock.c - wrapper between a U-Boot clocksource and linux
+ * clock.c - wrapper between a barebox clocksource and linux
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

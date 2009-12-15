@@ -1,5 +1,5 @@
 /*
- * U-boot - ptrace.h
+ * barebox - ptrace.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

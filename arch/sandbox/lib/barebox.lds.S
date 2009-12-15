@@ -1,4 +1,4 @@
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
 OUTPUT_FORMAT(ELF_FORMAT)
 OUTPUT_ARCH(ELF_ARCH)
@@ -71,13 +71,13 @@ SECTIONS
   } =0x90909090
 
   . = ALIGN(64);
-  __u_boot_initcalls_start = .;
-  __u_boot_initcalls : { INITCALLS }
-  __u_boot_initcalls_end = .;
+  __barebox_initcalls_start = .;
+  __barebox_initcalls : { INITCALLS }
+  __barebox_initcalls_end = .;
   . = ALIGN(64);
-  __u_boot_cmd_start = .;
-  __u_boot_cmd : { U_BOOT_CMDS }
-  __u_boot_cmd_end = .;
+  __barebox_cmd_start = .;
+  __barebox_cmd : { BAREBOX_CMDS }
+  __barebox_cmd_end = .;
 
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);

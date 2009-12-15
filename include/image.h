@@ -21,9 +21,9 @@
  * MA 02111-1307 USA
  *
  ********************************************************************
- * NOTE: This header file defines an interface to U-Boot. Including
+ * NOTE: This header file defines an interface to barebox. Including
  * this (unmodified) header file in another file is considered normal
- * use of U-Boot, and does *not* fall under the heading of "derived
+ * use of barebox, and does *not* fall under the heading of "derived
  * work".
  ********************************************************************
  */
@@ -53,7 +53,7 @@
 #define IH_OS_VXWORKS		14	/* VxWorks	*/
 #define IH_OS_PSOS		15	/* pSOS		*/
 #define IH_OS_QNX		16	/* QNX		*/
-#define IH_OS_U_BOOT		17	/* Firmware	*/
+#define IH_OS_BAREBOX		17	/* Firmware	*/
 #define IH_OS_RTEMS		18	/* RTEMS	*/
 #define IH_OS_ARTOS		19	/* ARTOS	*/
 #define IH_OS_UNITY		20	/* Unity OS	*/
@@ -106,14 +106,14 @@
  * Image Types
  *
  * "Standalone Programs" are directly runnable in the environment
- *	provided by U-Boot; it is expected that (if they behave
- *	well) you can continue to work in U-Boot after return from
+ *	provided by barebox; it is expected that (if they behave
+ *	well) you can continue to work in barebox after return from
  *	the Standalone Program.
  * "OS Kernel Images" are usually images of some Embedded OS which
  *	will take over control completely. Usually these programs
  *	will install their own set of exception handlers, device
  *	drivers, set up the MMU, etc. - this means, that you cannot
- *	expect to re-enter U-Boot except by resetting the CPU.
+ *	expect to re-enter barebox except by resetting the CPU.
  * "RAMDisk Images" are more or less just data blocks, and their
  *	parameters (address, size) are passed to an OS kernel that is
  *	being started.
@@ -132,12 +132,12 @@
  *	a multiple of 4 bytes - except for the last file).
  *
  * "Firmware Images" are binary images containing firmware (like
- *	U-Boot or FPGA images) which usually will be programmed to
+ *	barebox or FPGA images) which usually will be programmed to
  *	flash memory.
  *
  * "Script files" are command sequences that will be executed by
- *	U-Boot's command interpreter; this feature is especially
- *	useful when you configure U-Boot to use a real shell (hush)
+ *	barebox's command interpreter; this feature is especially
+ *	useful when you configure barebox to use a real shell (hush)
  *	as command interpreter (=> Shell Scripts).
  */
 

@@ -461,13 +461,13 @@ void ft_setup(void *blob, bd_t * bd, ulong initrd_start, ulong initrd_end)
 	int len;
 	struct ft_cxt cxt;
 	ulong clock;
-#if defined(CONFIG_OF_HAS_UBOOT_ENV)
+#if defined(CONFIG_OF_HAS_BAREBOX_ENV)
 	int k, nxt;
 #endif
 #if defined(CONFIG_OF_HAS_BD_T)
 	u8 *end;
 #endif
-#if defined(CONFIG_OF_HAS_UBOOT_ENV) || defined(CONFIG_OF_HAS_BD_T)
+#if defined(CONFIG_OF_HAS_BAREBOX_ENV) || defined(CONFIG_OF_HAS_BD_T)
 	int i;
 	static char tmpenv[256];
 #endif
@@ -491,8 +491,8 @@ void ft_setup(void *blob, bd_t * bd, ulong initrd_start, ulong initrd_end)
 	/* back into root */
 	ft_backtrack_node(&cxt);
 
-#ifdef CONFIG_OF_HAS_UBOOT_ENV
-	ft_begin_node(&cxt, "u-boot-env");
+#ifdef CONFIG_OF_HAS_BAREBOX_ENV
+	ft_begin_node(&cxt, "barebox-env");
 
 	for (i = 0; env_get_char(i) != '\0'; i = nxt + 1) {
 		char *s, *lval, *rval;

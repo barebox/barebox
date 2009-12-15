@@ -1,5 +1,5 @@
 /*
- * U-boot - processor.h
+ * barebox - processor.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

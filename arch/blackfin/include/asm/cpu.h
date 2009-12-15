@@ -1,6 +1,6 @@
 
 /*
- *  U-boot - cpu.h
+ *  barebox - cpu.h
  *
  *  Copyright (c) 2005 blackfin.uclinux.org
  *

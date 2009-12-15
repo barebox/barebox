@@ -12,7 +12,7 @@
  * configurations while running in SDRAM/Flash. This provides
  * relocation and execution capability for the same.
  *
- * Orignally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
+ * Orignally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008

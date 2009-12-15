@@ -11,8 +11,8 @@
  *  Add Hardware ECC support for AT91SAM9260 / AT91SAM9263
  *     Richard Genoud (richard.genoud@gmail.com), Adeneo Copyright (C) 2007
  *
- *     Derived from Das U-Boot source code
- *     		(u-boot-1.1.5/board/atmel/at91sam9263ek/nand.c)
+ *     Derived from Das barebox source code
+ *     		(barebox-1.1.5/board/atmel/at91sam9263ek/nand.c)
  *     (C) Copyright 2006 ATMEL Rousset, Lacressonniere Nicolas
  *
  *

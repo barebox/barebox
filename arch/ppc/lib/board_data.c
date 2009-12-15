@@ -34,7 +34,7 @@ int init_board_data(bd_t *bd)
 
 #ifdef CFG_EXTBDINFO
 	strncpy ((char *)bd->bi_s_version, "1.2", sizeof (bd->bi_s_version));
-	strncpy ((char *)bd->bi_r_version, U_BOOT_VERSION, sizeof (bd->bi_r_version));
+	strncpy ((char *)bd->bi_r_version, BAREBOX_VERSION, sizeof (bd->bi_r_version));
 
 	bd->bi_procfreq = gd->cpu_clk;	/* Processor Speed, In Hz */
 	bd->bi_plb_busfreq = gd->bus_clk;

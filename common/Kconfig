@@ -65,7 +65,7 @@ config TEXT_BASE
 	hex
 	default ARCH_TEXT_BASE
 	help
-	  The Address U-Boot gets linked at.
+	  The Address barebox gets linked at.
 
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
@@ -78,7 +78,7 @@ choice
 config MEMORY_LAYOUT_DEFAULT
 	bool "use default memory layout"
 	help
-	  select this option to use U-Boots standard memory layout:
+	  select this option to use bareboxs standard memory layout:
 	  
 	  stack
 	  -----
@@ -138,19 +138,19 @@ config KALLSYMS
 	depends on BROKEN
 	bool "kallsyms"
 	help
-	  With Kallsyms enabled all symbols are compiled into the U-Boot image.
+	  With Kallsyms enabled all symbols are compiled into the barebox image.
 	  This is useful to print a nice backtrace when an exception occurs.
 	  No architecture supports backtraces at the moment, so this option
 	  is quite useless at the moment
 
 config RELOCATABLE
 	depends on PPC
-	bool "generate relocatable U-Boot binary"
+	bool "generate relocatable barebox binary"
 	help
-	  A non relocatable U-Boot binary will run at it's compiled in
+	  A non relocatable barebox binary will run at it's compiled in
 	  link address in RAM. This leads to smaller image sizes but may
-	  put U-Boot just in the middle of RAM. With this option enabled
-	  instead U-Boot can determine this address at runtime and thus
+	  put barebox just in the middle of RAM. With this option enabled
+	  instead barebox can determine this address at runtime and thus
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
 
@@ -164,15 +164,15 @@ config MACH_DO_LOWLEVEL_INIT
 	help
 	  This entry enables SDRAM and other board low level initialization
 	  on many platforms. Disabling this option allows configurations to use
-	  U-boot as a second stage boot loader.
+	  barebox as a second stage boot loader.
 
 config ARCH_HAS_LOWLEVEL_INIT
 	bool
 
 config PROMPT
 	string
-	prompt "U-Boot command prompt"
-	default "uboot:"
+	prompt "barebox command prompt"
+	default "barebox:"
 
 config BAUDRATE
 	int
@@ -205,7 +205,7 @@ choice
 		bool "hush parser"
 		help
 		  Enable hush support. This is the most advanced shell available
-		  for U-Boot.
+		  for barebox.
 
 	config SHELL_SIMPLE
 		bool "Simple parser"
@@ -280,7 +280,7 @@ config CONSOLE_ACTIVATE_FIRST
 	prompt "activate first console on startup"
 	help
 	  Normally on startup all consoles are disabled, so you won't
-	  see anything from U-Boot starting. Enabling this option
+	  see anything from barebox starting. Enabling this option
 	  enables the first console.
 
 config CONSOLE_ACTIVATE_ALL
@@ -331,7 +331,7 @@ config DEFAULT_ENVIRONMENT_PATH
 	prompt "Default environment path"
 	help
 	  The path the default environment will be taken from. Relative
-	  pathes will be relative to the U-Boot Toplevel dir, but absolute
+	  pathes will be relative to the barebox Toplevel dir, but absolute
 	  pathes are fine aswell.
 
 endmenu
@@ -342,7 +342,7 @@ config DEBUG_INFO
 	bool
 	prompt "enable debug symbols"
 	help
-	  Enable build of u-boot with -g.
+	  Enable build of barebox with -g.
 
 config ENABLE_FLASH_NOISE
 	bool

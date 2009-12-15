@@ -48,7 +48,7 @@ arch_init_lowlevel:
 	mov	r0, pc			/* Store the current pc address */
 	sub	r0, r0, #8		/* Reduce offset */
 	ldr	r1, arch_start		/* Load the link address for arch_int */
-	ldr	r2, uboot_start		/* load the link address of start_init*/
+	ldr	r2, barebox_start		/* load the link address of start_init*/
 	sub	r1, r1, r2		/* get the offset */
 	/* subtract the offset from PC of arch=Current start */
 	sub	r0, r0, r1
@@ -91,7 +91,7 @@ next:
 
 arch_start:
 	.word	arch_init_lowlevel
-uboot_start:
+barebox_start:
 	.word	_start
 SRAM_INTVECT:
 	.word	OMAP_SRAM_INTVECT

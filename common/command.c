@@ -37,7 +37,7 @@
 #include <getopt.h>
 
 const char version_string[] =
-	"U-Boot " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
+	"barebox " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
 
 LIST_HEAD(command_list);
 EXPORT_SYMBOL(command_list);
@@ -55,14 +55,14 @@ static int do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return -r - 2;
 }
 
-U_BOOT_CMD_START(exit)
+BAREBOX_CMD_START(exit)
 	.cmd		= do_exit,
 	.usage		= "exit script",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 
 #endif
 
-void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
+void barebox_cmd_usage(cmd_tbl_t *cmdtp)
 {
 #ifdef	CONFIG_LONGHELP
 		/* found - print (long) help info */
@@ -81,7 +81,7 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp)
 		}
 #endif	/* CONFIG_LONGHELP */
 }
-EXPORT_SYMBOL(u_boot_cmd_usage);
+EXPORT_SYMBOL(barebox_cmd_usage);
 
 static int compare(struct list_head *a, struct list_head *b)
 {
@@ -103,7 +103,7 @@ int execute_command(int argc, char **argv)
 		/* OK - call function to do the command */
 		ret = cmdtp->cmd(cmdtp, argc, argv);
 		if (ret == COMMAND_ERROR_USAGE) {
-			u_boot_cmd_usage(cmdtp);
+			barebox_cmd_usage(cmdtp);
 			return COMMAND_ERROR;
 		}
 		return ret;
@@ -159,7 +159,7 @@ EXPORT_SYMBOL(register_command);
 cmd_tbl_t *find_cmd (const char *cmd)
 {
 	cmd_tbl_t *cmdtp;
-	cmd_tbl_t *cmdtp_temp = &__u_boot_cmd_start;	/*Init value */
+	cmd_tbl_t *cmdtp_temp = &__barebox_cmd_start;	/*Init value */
 	int len;
 	int n_found = 0;
 	len = strlen (cmd);
@@ -193,8 +193,8 @@ static int init_command_list(void)
 {
 	cmd_tbl_t *cmdtp;
 
-	for (cmdtp = &__u_boot_cmd_start;
-			cmdtp != &__u_boot_cmd_end;
+	for (cmdtp = &__barebox_cmd_start;
+			cmdtp != &__barebox_cmd_end;
 			cmdtp++)
 		register_command(cmdtp);
 

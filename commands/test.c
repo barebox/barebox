@@ -1,7 +1,7 @@
 /*
  * test.c - sh like test
  *
- * Originally based on U-Boots do_test, but mostly reimplemented
+ * Originally based on bareboxs do_test, but mostly reimplemented
  * for smaller binary size
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
@@ -229,9 +229,9 @@ static const __maybe_unused char cmd_test_help[] =
 
 static const __maybe_unused char cmd_test_usage[] = "minimal test like /bin/sh";
 
-U_BOOT_CMD_START(test)
+BAREBOX_CMD_START(test)
 	.aliases	= test_aliases,
 	.cmd		= do_test,
 	.usage		= cmd_test_usage,
-	U_BOOT_CMD_HELP(cmd_test_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_test_help)
+BAREBOX_CMD_END

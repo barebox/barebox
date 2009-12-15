@@ -7,7 +7,7 @@
  *
  * Copyright (C) 2003 Kai-Uwe Bloem,
  * Auerswald GmbH & Co KG, <linux-development@auerswald.de>
- * - adapted from the www.tuxbox.org u-boot tree, added "ls" command
+ * - adapted from the www.tuxbox.org barebox tree, added "ls" command
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (Version 2) as

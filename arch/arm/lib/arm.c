@@ -1,7 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <mem_malloc.h>
-#include <asm/u-boot-arm.h>
+#include <asm/barebox-arm.h>
 #include <asm-generic/memory_layout.h>
 #include <reloc.h>
 

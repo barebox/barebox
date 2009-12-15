@@ -53,7 +53,7 @@ out:
 	return 1;
 }
 
-U_BOOT_CMD_START(exec)
+BAREBOX_CMD_START(exec)
 	.cmd		= do_exec,
 	.usage		= "execute a script",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

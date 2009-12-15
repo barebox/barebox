@@ -1,5 +1,5 @@
 /*
- * U-boot - posix_types.h
+ * barebox - posix_types.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

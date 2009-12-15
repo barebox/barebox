@@ -19,7 +19,7 @@
  * Run time initialization includes
  * @li serial @ref serial_ns16550.c driver device definition
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008
@@ -142,7 +142,7 @@ static void sdrc_init(void)
  * @brief Do the pin muxing required for Board operation.
  *
  * See @ref MUX_VAL for description of the muxing mode. Since some versions
- * of Linux depend on all pin muxing being done at U-Boot level, we may need to
+ * of Linux depend on all pin muxing being done at barebox level, we may need to
  * enable CONFIG_MACH_OMAP_ADVANCED_MUX to enable the full fledged pin muxing.
  *
  * @return void

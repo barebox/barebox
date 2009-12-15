@@ -23,11 +23,11 @@
  * @brief Environment handling support (host and target)
  *
  * Important: This file will also be used on the host to create
- * the default environment when building the U-Boot binary. So
- * do not add any new U-Boot related functions here!
+ * the default environment when building the barebox binary. So
+ * do not add any new barebox related functions here!
  */
 
-#ifdef __U_BOOT__
+#ifdef __BAREBOX__
 #include <common.h>
 #include <command.h>
 #include <malloc.h>

@@ -76,8 +76,8 @@ static int do_clocks (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(dump_clocks)
+BAREBOX_CMD_START(dump_clocks)
 	.cmd		= do_clocks,
 	.usage		= "show clock frequencies",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

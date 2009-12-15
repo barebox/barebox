@@ -1,5 +1,5 @@
 /*
- * U-boot -  byteorder.h
+ * barebox -  byteorder.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

@@ -30,7 +30,7 @@ static int do_meminfo (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(meminfo)
+BAREBOX_CMD_START(meminfo)
 	.cmd		= do_meminfo,
 	.usage		= "print info about memory usage",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

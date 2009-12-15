@@ -57,9 +57,9 @@ source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-s3c24xx/Kconfig
 
 config AEABI
-	bool "Use the ARM EABI to compile u-boot"
+	bool "Use the ARM EABI to compile barebox"
 	help
-	  This option allows for u-boot to be compiled using the latest
+	  This option allows for barebox to be compiled using the latest
 	  ARM ABI (aka EABI).
 
 	  To use this you need GCC version 4.0.0 or later.

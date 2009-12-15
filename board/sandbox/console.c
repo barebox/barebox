@@ -25,7 +25,7 @@
 #include <mach/linux.h>
 #include <xfuncs.h>
 
-int u_boot_register_console(char *name, int stdinfd, int stdoutfd)
+int barebox_register_console(char *name, int stdinfd, int stdoutfd)
 {
 	struct device_d *dev;
 	struct linux_console_data *data;

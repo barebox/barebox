@@ -116,7 +116,7 @@ copy_loop:
 
 	ldr	pc, =1f			/* Jump to SDRAM                    */
 1:
-	bl	nand_boot		/* Load U-Boot from NAND Flash      */
+	bl	nand_boot		/* Load barebox from NAND Flash      */
 
 	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
 	sub	r10, r10, r1		/* adjust return address from NFC SRAM */

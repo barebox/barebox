@@ -1,5 +1,5 @@
 /*
- * U-boot - types.h
+ * barebox - types.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

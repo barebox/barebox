@@ -31,7 +31,7 @@ static int do_clear (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(clear)
+BAREBOX_CMD_START(clear)
 	.cmd		= do_clear,
 	.usage		= "clear screen",
-U_BOOT_CMD_END
+BAREBOX_CMD_END

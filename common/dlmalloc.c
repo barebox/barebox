@@ -401,7 +401,7 @@
   operating system immediately after a free().
 */
 
-#define HAVE_MMAP 0	/* Not available for U-Boot */
+#define HAVE_MMAP 0	/* Not available for barebox */
 
 /*
   Define HAVE_MREMAP to make realloc() use mremap() to re-allocate
@@ -409,7 +409,7 @@
   kernel versions newer than 1.3.77.
 */
 
-#undef	HAVE_MREMAP	/* Not available for U-Boot */
+#undef	HAVE_MREMAP	/* Not available for barebox */
 
 /*
 
@@ -935,7 +935,7 @@ static void *sbrk(ptrdiff_t increment)
 /*  Other static bookkeeping data */
 
 /* variables holding tunable values */
-#ifndef __U_BOOT__
+#ifndef __BAREBOX__
 static unsigned long trim_threshold = DEFAULT_TRIM_THRESHOLD;
 static unsigned int n_mmaps_max = DEFAULT_MMAP_MAX;
 static unsigned long mmap_threshold = DEFAULT_MMAP_THRESHOLD;
@@ -2014,7 +2014,7 @@ void malloc_stats(void)
 
     See descriptions of tunable parameters above.
 */
-#ifndef __U_BOOT__
+#ifndef __BAREBOX__
 int mallopt(int param_number, int value)
 {
 	switch (param_number) {

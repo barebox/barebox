@@ -1,5 +1,5 @@
 /*
- * bus.c - U-Boot driver model
+ * bus.c - barebox driver model
  *
  * Copyright (c) 2009 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

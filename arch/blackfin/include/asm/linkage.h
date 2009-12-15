@@ -1,5 +1,5 @@
 /*
- * U-boot - linkage.h
+ * barebox - linkage.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

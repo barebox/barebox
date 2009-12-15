@@ -27,7 +27,7 @@
 
 /**
  * @file
- * @brief Main entry into the C part of U-Boot-v2
+ * @brief Main entry into the C part of barebox
  */
 #include <common.h>
 #include <init.h>
@@ -41,8 +41,8 @@
 #include <reloc.h>
 #include <asm-generic/memory_layout.h>
 
-extern initcall_t __u_boot_initcalls_start[], __u_boot_early_initcalls_end[],
-		  __u_boot_initcalls_end[];
+extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
+		  __barebox_initcalls_end[];
 
 static void display_meminfo(void)
 {
@@ -50,8 +50,8 @@ static void display_meminfo(void)
 	ulong mend   = mem_malloc_end();
 	ulong msize  = mend - mstart + 1;
 
-	debug("U-Boot code : 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
-	       _u_boot_start, _bss_start, _bss_end);
+	debug("barebox code : 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
+	       _barebox_start, _bss_start, _bss_end);
 	printf("Malloc space: 0x%08lx -> 0x%08lx (size %s)\n",
 		mstart, mend, size_human_readable(msize));
 #ifdef CONFIG_ARM
@@ -79,7 +79,7 @@ void early_init (void)
 #endif /* CONFIG_HAS_EARLY_INIT */
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-#include <uboot_default_env.h>
+#include <barebox_default_env.h>
 
 static struct memory_platform_data default_env_platform_data = {
 	.name = "defaultenv",
@@ -110,7 +110,7 @@ static int mount_root(void)
 }
 fs_initcall(mount_root);
 
-void start_uboot (void)
+void start_barebox (void)
 {
 	initcall_t *initcall;
 	int result;
@@ -126,8 +126,8 @@ void start_uboot (void)
 	init_data_ptr = &__early_init_data_begin;
 #endif /* CONFIG_HAS_EARLY_INIT */
 
-	for (initcall = __u_boot_initcalls_start;
-			initcall < __u_boot_initcalls_end; initcall++) {
+	for (initcall = __barebox_initcalls_start;
+			initcall < __barebox_initcalls_end; initcall++) {
 		PUTHEX_LL(*initcall);
 		PUTC_LL('\n');
 		result = (*initcall)();
@@ -167,11 +167,11 @@ void hang (void)
 	for (;;);
 }
 
-/* Everything needed to cleanly shutdown U-Boot.
+/* Everything needed to cleanly shutdown barebox.
  * Should be called before starting an OS to get
  * the devices into a clean state
  */
-void shutdown_uboot(void)
+void shutdown_barebox(void)
 {
 	devices_shutdown();
 }

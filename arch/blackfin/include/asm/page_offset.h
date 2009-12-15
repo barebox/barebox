@@ -1,5 +1,5 @@
 /*
- * U-boot - page_offset.h
+ * barebox - page_offset.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

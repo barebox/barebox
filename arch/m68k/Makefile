@@ -2,20 +2,20 @@
 # (C) Copyright 2007 Carsten Schlote <schlote@vahanus.net>
 # See file CREDITS for list of people who contributed to this project.
 #
-# This file is part of U-Boot V2.
+# This file is part of barebox.
 #
-# U-Boot V2 is free software: you can redistribute it and/or modify
+# barebox is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# U-Boot V2 is distributed in the hope that it will be useful,
+# barebox is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
+# along with barebox.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 CPPFLAGS += -isystem $(gccincdir) -D __M68K__ \
@@ -42,8 +42,8 @@ AFLAGS += -gdwarf-2 -save-temps
 # FIXME - remove overide
 CFLAGS += -msoft-float -mcfv4e -gdwarf-2 -feliminate-unused-debug-types \
 	-fmerge-all-constants
-# Incompatible code in U-Boot for -std=c99
-LDFLAGS_uboot  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
+# Incompatible code in barebox for -std=c99
+LDFLAGS_barebox  :=-L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
 #  --verbose --stats
 
 machdirs := $(patsubst %,arch/m68k/mach-%/,$(machine-y))
@@ -77,7 +77,7 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/m68k/lib/ arch/m68k/cpu/
 
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/m68k/lib/u-boot.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/u-boot.lds
+lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/m68k/lib/barebox.lds
+lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/barebox.lds
 
-CLEAN_FILES    += arch/m68k/lib/u-boot.lds
+CLEAN_FILES    += arch/m68k/lib/barebox.lds

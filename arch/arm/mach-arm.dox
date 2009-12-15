@@ -1,5 +1,5 @@
 /* This document is intended to provide the developer with information
- * how to integrate a new CPU (MACH) into this part of the U-Boot tree
+ * how to integrate a new CPU (MACH) into this part of the barebox tree
  */
 
 /** @page dev_arm_mach ARM based CPU (MACH) into the tree
@@ -26,14 +26,14 @@ In the case the boot happens from NAND flash memory, further steps are required.
 Most of the known processor devices are reading the first few blocks from the
 NAND flash memory into some kind of internal SRAM. This small part must be able
 to initialize the SDRAM controller and to read the remaining rest of the
-U-Boot-v2 binary from the NAND flash memory prior returning from \<board_init_lowlevel\>.
+barebox binary from the NAND flash memory prior returning from \<board_init_lowlevel\>.
 
 When \<board_init_lowlevel\> returns it will be assumed there is now a working
 RAM that can be used for all further steps.
 
-Next step is relocation of U-Boot itself (if not already done). It gets copied
-to RAM and the last assembler instruction is a jump into start_uboot(). This
-target address is the first C instruction in U-Boot. At this point of time:\n
+Next step is relocation of barebox itself (if not already done). It gets copied
+to RAM and the last assembler instruction is a jump into start_barebox(). This
+target address is the first C instruction in barebox. At this point of time:\n
 "runtime address == link address".
 
 @section mach_arm_files List of changes

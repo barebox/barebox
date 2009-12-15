@@ -1,5 +1,5 @@
 /*
- * U-boot - system.h
+ * barebox - system.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

@@ -52,7 +52,7 @@
  .    o	  skeleton.c by Donald Becker ( becker@cesdis.gsfc.nasa.gov )
  .
  . History:
- .	06/19/03  Richard Woodruff Made u-boot environment aware and added mac addr checks.
+ .	06/19/03  Richard Woodruff Made barebox environment aware and added mac addr checks.
  .	10/17/01  Marco Hasewinkel Modify for DNP/1110
  .	07/25/01  Woojung Huh	   Modify for ADS Bitsy
  .	04/25/01  Daris A Nevil	   Initial public release through SMSC

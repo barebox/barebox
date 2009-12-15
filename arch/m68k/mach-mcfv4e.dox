@@ -1,5 +1,5 @@
 /* This document is intended to provide the developer with information
- * how to integrate a new CPU (MACH) into this part of the U-Boot tree
+ * how to integrate a new CPU (MACH) into this part of the barebox tree
  */
 
 /** @page dev_m68k_mach M68k/Coldfire based CPU (MACH) into the tree
@@ -31,8 +31,8 @@ be C.
 When \<board_init_lowlevel\> returns it will be assumed that there is now
 working RAM that can be used for all further steps.
 
-Next step is relocation of U-Boot itself. It gets copied to the end of
-available RAM and the last assembly instruction is a jump to \<start_uboot\>.
+Next step is relocation of barebox itself. It gets copied to the end of
+available RAM and the last assembly instruction is a jump to \<start_barebox\>.
 
 At this point of time: "runtime address == link address".
 

@@ -29,8 +29,8 @@ static int do_false (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 1;
 }
 
-U_BOOT_CMD_START(false)
+BAREBOX_CMD_START(false)
 	.cmd		= do_false,
 	.usage		= "do nothing, unsuccessfully",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

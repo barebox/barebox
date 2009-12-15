@@ -23,7 +23,7 @@ MAKEFLAGS += -rR --no-print-directory
 # their own directory. If in some directory we have a dependency on
 # a file in another dir (which doesn't happen often, but it's often
 # unavoidable when linking the built-in.o targets which finally
-# turn into uboot), we will call a sub make in that other dir, and
+# turn into barebox), we will call a sub make in that other dir, and
 # after that we are sure that everything which is in that other dir
 # is now up to date.
 #
@@ -292,13 +292,13 @@ LINUXINCLUDE    := -Iinclude \
 		   -I$(objtree)/arch/$(ARCH)/include \
 		   -include include/linux/autoconf.h
 
-CPPFLAGS        := -D__KERNEL__ -D__U_BOOT__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
+CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
 CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -fno-strict-aliasing -fno-common -Os -pipe
 AFLAGS          := -D__ASSEMBLY__
 
-LDFLAGS		:= -Map uboot.map
+LDFLAGS		:= -Map barebox.map
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
@@ -395,7 +395,7 @@ config %config: scripts_basic outputmakefile FORCE
 
 else
 # ===========================================================================
-# Build targets only - this includes uboot, arch specific targets, clean
+# Build targets only - this includes barebox, arch specific targets, clean
 # targets and others. In general all targets except *config targets.
 
 # Additional helpers built in scripts/
@@ -405,7 +405,7 @@ PHONY += scripts
 scripts: scripts_basic include/config/auto.conf
 	$(Q)$(MAKE) $(build)=$(@)
 
-# Objects we will link into uboot / subdirs we need to visit
+# Objects we will link into barebox / subdirs we need to visit
 common-y		:= common/ drivers/ commands/ lib/ net/ fs/
 
 ifeq ($(dot-config),1)
@@ -434,8 +434,8 @@ endif # $(dot-config)
 # The all: target is the default when no target is given on the
 # command line.
 # This allow a user to issue only 'make' to build a kernel
-# Defaults uboot but it is usually overridden in the arch makefile
-all: uboot.bin
+# Defaults barebox but it is usually overridden in the arch makefile
+all: barebox.bin
 
 include $(srctree)/arch/$(ARCH)/Makefile
 
@@ -461,58 +461,58 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # set in the environment
 # Also any assignments in arch/$(ARCH)/Makefile take precedence over
 # this default value
-export KBUILD_IMAGE ?= uboot
+export KBUILD_IMAGE ?= barebox
 
-uboot-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
+barebox-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
-uboot-alldirs	:= $(sort $(uboot-dirs) $(patsubst %/,%,$(filter %/, \
+barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(common-n) $(common-) \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 
-# Build uboot
+# Build barebox
 # ---------------------------------------------------------------------------
-# uboot is built from the objects selected by $(uboot-init) and
-# $(uboot-main). Most are built-in.o files from top-level directories
+# barebox is built from the objects selected by $(barebox-init) and
+# $(barebox-main). Most are built-in.o files from top-level directories
 # in the kernel tree, others are specified in arch/$(ARCH)Makefile.
-# Ordering when linking is important, and $(uboot-init) must be first.
+# Ordering when linking is important, and $(barebox-init) must be first.
 #
-# FIXME: This picture is wrong for U-Boot. We have no init, driver, mm
+# FIXME: This picture is wrong for barebox. We have no init, driver, mm
 #
-# uboot
+# barebox
 #   ^
 #   |
-#   +-< $(uboot-init)
+#   +-< $(barebox-init)
 #   |   +--< init/version.o + more
 #   |
-#   +--< $(uboot-main)
+#   +--< $(barebox-main)
 #   |    +--< driver/built-in.o mm/built-in.o + more
 #   |
 #   +-< kallsyms.o (see description in CONFIG_KALLSYMS section)
 #
-# uboot version cannot be updated during normal
+# barebox version cannot be updated during normal
 # descending-into-subdirs phase since we do not yet know if we need to
-# update uboot.
+# update barebox.
 #
 # System.map is generated to document addresses of all kernel symbols
 
-uboot-common := $(common-y)
-uboot-all    := $(uboot-common)
-uboot-lds    := $(lds-y)
+barebox-common := $(common-y)
+barebox-all    := $(barebox-common)
+barebox-lds    := $(lds-y)
 
-# Rule to link uboot
+# Rule to link barebox
 # May be overridden by arch/$(ARCH)/Makefile
-quiet_cmd_uboot__ ?= LD      $@
-      cmd_uboot__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_uboot) -o $@ \
-      -T $(uboot-lds) $(uboot-head)                         \
-      --start-group $(uboot-common) --end-group                  \
-      $(filter-out $(uboot-lds) $(uboot-common) FORCE ,$^)
+quiet_cmd_barebox__ ?= LD      $@
+      cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
+      -T $(barebox-lds) $(barebox-head)                         \
+      --start-group $(barebox-common) --end-group                  \
+      $(filter-out $(barebox-lds) $(barebox-common) FORCE ,$^)
 
-# Generate new uboot version
-quiet_cmd_uboot_version = GEN     .version
-      cmd_uboot_version = set -e;                     \
+# Generate new barebox version
+quiet_cmd_barebox_version = GEN     .version
+      cmd_barebox_version = set -e;                     \
 	if [ ! -r .version ]; then			\
 	  rm -f .version;				\
 	  echo 1 >.version;				\
@@ -526,16 +526,16 @@ quiet_cmd_uboot_version = GEN     .version
 quiet_cmd_sysmap = SYSMAP
       cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
 
-# Link of uboot
+# Link of barebox
 # Generate System.map and verify that the content is consistent
-# Use + in front of the uboot_version rule to silent warning with make -j2
+# Use + in front of the barebox_version rule to silent warning with make -j2
 # First command is ':' to allow us to use + in front of the rule
-define rule_uboot__
+define rule_barebox__
 	:
 
-	$(call cmd,uboot__)
+	$(call cmd,barebox__)
 
-	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
+	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
@@ -547,20 +547,20 @@ define rule_uboot__
 endef
 
 ifdef CONFIG_KALLSYMS
-# Generate section listing all symbols and add it into uboot $(kallsyms.o)
+# Generate section listing all symbols and add it into barebox $(kallsyms.o)
 # It's a three stage process:
-# o .tmp_uboot1 has all symbols and sections, but __kallsyms is
+# o .tmp_barebox1 has all symbols and sections, but __kallsyms is
 #   empty
 #   Running kallsyms on that gives us .tmp_kallsyms1.o with
-#   the right size - uboot version is updated during this step
-# o .tmp_uboot2 now has a __kallsyms section of the right size,
+#   the right size - barebox version is updated during this step
+# o .tmp_barebox2 now has a __kallsyms section of the right size,
 #   but due to the added section, some addresses have shifted.
 #   From here, we generate a correct .tmp_kallsyms2.o
-# o The correct .tmp_kallsyms2.o is linked into the final uboot.
-# o Verify that the System.map from uboot matches the map from
-#   .tmp_uboot2, just in case we did not generate kallsyms correctly.
+# o The correct .tmp_kallsyms2.o is linked into the final barebox.
+# o Verify that the System.map from barebox matches the map from
+#   .tmp_barebox2, just in case we did not generate kallsyms correctly.
 # o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
-#   .tmp_uboot3 and .tmp_kallsyms3.o.  This is only meant as a
+#   .tmp_barebox3 and .tmp_kallsyms3.o.  This is only meant as a
 #   temporary bypass to allow the kernel to be built while the
 #   maintainers work out what went wrong with kallsyms.
 
@@ -575,22 +575,22 @@ kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 define verify_kallsyms
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-	  $(cmd_sysmap) .tmp_uboot$(last_kallsyms) .tmp_System.map
+	  $(cmd_sysmap) .tmp_barebox$(last_kallsyms) .tmp_System.map
 	$(Q)cmp -s System.map .tmp_System.map ||                             \
 		(echo Inconsistent kallsyms data;                            \
 		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
 		 rm .tmp_kallsyms* ; /bin/false )
 endef
 
-# Update uboot version before link
+# Update barebox version before link
 # Use + in front of this rule to silent warning about make -j1
 # First command is ':' to allow us to use + in front of this rule
-cmd_ksym_ld = $(cmd_uboot__)
+cmd_ksym_ld = $(cmd_barebox__)
 define rule_ksym_ld
 	:
-	+$(call cmd,uboot_version)
-	$(call cmd,uboot__)
-	$(Q)echo 'cmd_$@ := $(cmd_uboot__)' > $(@D)/.$(@F).cmd
+	+$(call cmd,barebox_version)
+	$(call cmd,barebox__)
+	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 endef
 
 # Generate .S file with all kernel symbols
@@ -600,18 +600,18 @@ quiet_cmd_kallsyms = KSYM    $@
 .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
 	$(call if_changed_dep,as_o_S)
 
-.tmp_kallsyms%.S: .tmp_uboot% $(KALLSYMS)
+.tmp_kallsyms%.S: .tmp_barebox% $(KALLSYMS)
 	$(call cmd,kallsyms)
 
-# .tmp_uboot1 must be complete except kallsyms, so update uboot version
-.tmp_uboot1: $(uboot-lds) $(uboot-all) FORCE
+# .tmp_barebox1 must be complete except kallsyms, so update barebox version
+.tmp_barebox1: $(barebox-lds) $(barebox-all) FORCE
 	$(call if_changed_rule,ksym_ld)
 
-.tmp_uboot2: $(uboot-lds) $(uboot-all) .tmp_kallsyms1.o FORCE
-	$(call if_changed,uboot__)
+.tmp_barebox2: $(barebox-lds) $(barebox-all) .tmp_kallsyms1.o FORCE
+	$(call if_changed,barebox__)
 
-.tmp_uboot3: $(uboot-lds) $(uboot-all) .tmp_kallsyms2.o FORCE
-	$(call if_changed,uboot__)
+.tmp_barebox3: $(barebox-lds) $(barebox-all) .tmp_kallsyms2.o FORCE
+	$(call if_changed,barebox__)
 
 # Needs to visit scripts/ before $(KALLSYMS) can be used.
 $(KALLSYMS): scripts ;
@@ -619,7 +619,7 @@ $(KALLSYMS): scripts ;
 # Generate some data for debugging strange kallsyms problems
 debug_kallsyms: .tmp_map$(last_kallsyms)
 
-.tmp_map%: .tmp_uboot% FORCE
+.tmp_map%: .tmp_barebox% FORCE
 	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
 
 .tmp_map3: .tmp_map2
@@ -630,39 +630,39 @@ endif # ifdef CONFIG_KALLSYMS
 
 # Do modpost on a prelinked vmlinux. The finally linked vmlinux has
 # relevant sections renamed as per the linker script.
-quiet_cmd_uboot-modpost = LD      $@
-      cmd_uboot-modpost = $(LD) $(LDFLAGS) -r -o $@                          \
-	 $(vmlinux-init) --start-group $(uboot-main) --end-group             \
-	 $(filter-out $(uboot-init) $(uboot-main) $(uboot-lds) FORCE ,$^)
-define rule_uboot-modpost
+quiet_cmd_barebox-modpost = LD      $@
+      cmd_barebox-modpost = $(LD) $(LDFLAGS) -r -o $@                          \
+	 $(vmlinux-init) --start-group $(barebox-main) --end-group             \
+	 $(filter-out $(barebox-init) $(barebox-main) $(barebox-lds) FORCE ,$^)
+define rule_barebox-modpost
 	:
-	+$(call cmd,uboot-modpost)
+	+$(call cmd,barebox-modpost)
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-	$(Q)echo 'cmd_$@ := $(cmd_uboot-modpost)' > $(dot-target).cmd
+	$(Q)echo 'cmd_$@ := $(cmd_barebox-modpost)' > $(dot-target).cmd
 endef
 
-uboot.bin: uboot
-	$(Q)$(OBJCOPY) -O binary uboot uboot.bin
-	$(Q)$(OBJDUMP) -d uboot > uboot.S
+barebox.bin: barebox
+	$(Q)$(OBJCOPY) -O binary barebox barebox.bin
+	$(Q)$(OBJDUMP) -d barebox > barebox.S
 
-# uboot image
-uboot: $(uboot-lds) $(uboot-head) $(uboot-common) $(kallsyms.o) FORCE
-	$(call uboot-modpost)
-	$(call if_changed_rule,uboot__)
+# barebox image
+barebox: $(barebox-lds) $(barebox-head) $(barebox-common) $(kallsyms.o) FORCE
+	$(call barebox-modpost)
+	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(uboot-head) $(uboot-common) ) $(uboot-lds): $(uboot-dirs) ;
+$(sort $(barebox-head) $(barebox-common) ) $(barebox-lds): $(barebox-dirs) ;
 
-# Handle descending into subdirectories listed in $(uboot-dirs)
+# Handle descending into subdirectories listed in $(barebox-dirs)
 # Preset locale variables to speed up the build process. Limit locale
 # tweaks to this spot to avoid wrong language settings when running
 # make menuconfig etc.
 # Error messages still appears in the original language
 
-PHONY += $(uboot-dirs)
-$(uboot-dirs): prepare scripts
+PHONY += $(barebox-dirs)
+$(barebox-dirs): prepare scripts
 	$(Q)$(MAKE) $(build)=$@
 
 # Build the kernel release string
@@ -754,7 +754,7 @@ ifneq ($(KBUILD_SRC),)
 		/bin/false; \
 	fi;
 	$(Q)if [ ! -d include2 ]; then mkdir -p include2; fi;
-	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/u-boot.h ]; then  \
+	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/barebox.h ]; then  \
 	    ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
 	    fi
 endif
@@ -778,10 +778,10 @@ prepare0: archprepare FORCE
 # All the preparing..
 prepare prepare-all: prepare0
 
-# Leave this as default for preprocessing uboot.lds.S, which is now
+# Leave this as default for preprocessing barebox.lds.S, which is now
 # done in arch/$(ARCH)/kernel/Makefile
 
-export CPPFLAGS_uboot.lds += -P -C -U$(ARCH)
+export CPPFLAGS_barebox.lds += -P -C -U$(ARCH)
 
 # FIXME: The asm symlink changes when $(ARCH) changes. That's
 # hard to detect, but I suppose "make mrproper" is a good idea
@@ -869,7 +869,7 @@ all: modules
 #	Build modules
 
 PHONY += modules
-modules: $(uboot-dirs) $(if $(KBUILD_BUILTIN),uboot)
+modules: $(barebox-dirs) $(if $(KBUILD_BUILTIN),barebox)
 	@echo '  Building modules, stage 2.';
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
 
@@ -937,9 +937,9 @@ endif # CONFIG_MODULES
 
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
-CLEAN_FILES +=	uboot System.map include/uboot_default_env.h \
-                .tmp_version .tmp_uboot* uboot.bin uboot.S \
-		.tmp_kallsyms* uboot_default_env
+CLEAN_FILES +=	barebox System.map include/barebox_default_env.h \
+                .tmp_version .tmp_barebox* barebox.bin barebox.S \
+		.tmp_kallsyms* barebox_default_env
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
@@ -952,7 +952,7 @@ MRPROPER_FILES += .config .config.old include/asm .version .old_version \
 #
 clean: rm-dirs  := $(CLEAN_DIRS)
 clean: rm-files := $(CLEAN_FILES)
-clean-dirs      := $(addprefix _clean_,$(srctree) $(uboot-alldirs))
+clean-dirs      := $(addprefix _clean_,$(srctree) $(barebox-alldirs))
 
 PHONY += $(clean-dirs) clean archclean
 $(clean-dirs):
@@ -1025,7 +1025,7 @@ help:
 	@echo  ''
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
-	@echo  '* uboot           - Build the bare kernel'
+	@echo  '* barebox           - Build the bare kernel'
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
 	@echo  '  dir/file.ko     - Build module including final link'

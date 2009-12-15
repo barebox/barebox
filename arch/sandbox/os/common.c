@@ -1,5 +1,5 @@
 /*
- * common.c - common wrapper functions between U-Boot and the host
+ * common.c - common wrapper functions between barebox and the host
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -22,10 +22,10 @@
 
 /**
  * @file
- * @brief Common wrapper functions between U-Boot and the host
+ * @brief Common wrapper functions between barebox and the host
  */
 /*
- * These are host includes. Never include any U-Boot header
+ * These are host includes. Never include any barebox header
  * files here...
  */
 #include <stdio.h>
@@ -45,7 +45,7 @@
 #include <signal.h>
 #include <sys/select.h>
 /*
- * ...except the ones needed to connect with U-Boot
+ * ...except the ones needed to connect with barebox
  */
 #include <mach/linux.h>
 #include <mach/hostfile.h>
@@ -96,7 +96,7 @@ int linux_tstc(int fd)
 
 	/*
 	 * We set the timeout here to 100us, because otherwise
-	 * U-Boot would eat all cpu resources while waiting
+	 * barebox would eat all cpu resources while waiting
 	 * for input.
 	 */
 	ret = select(fd + 1, &rfds, NULL, NULL, &tv);
@@ -217,7 +217,7 @@ void  flush_cache(unsigned long dummy1, unsigned long dummy2)
 	/* why should we? */
 }
 
-extern void start_uboot(void);
+extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
 static int add_image(char *str, char *name)
@@ -267,7 +267,7 @@ static int add_image(char *str, char *name)
 			printf("warning: mmapping %s failed\n", file);
 	}
 
-	ret = u_boot_register_filedev(hf);
+	ret = barebox_register_filedev(hf);
 	if (ret)
 		goto err_out;
 	return 0;
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			u_boot_register_console("cout", -1, fd);
+			barebox_register_console("cout", -1, fd);
 			break;
 		case 'I':
 			fd = open(optarg, O_RDWR);
@@ -338,17 +338,17 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			u_boot_register_console("cin", fd, -1);
+			barebox_register_console("cin", fd, -1);
 			break;
 		default:
 			exit(1);
 		}
 	}
 
-	u_boot_register_console("console", fileno(stdin), fileno(stdout));
+	barebox_register_console("console", fileno(stdin), fileno(stdout));
 
 	rawmode();
-	start_uboot();
+	start_barebox();
 
 	/* never reached */
 	return 0;
@@ -363,12 +363,12 @@ static void print_usage(const char *prgname)
 {
 	printf(
 "Usage: %s [OPTIONS]\n"
-"Start U-Boot.\n"
+"Start barebox.\n"
 "Options:\n"
-"  -i <file>   Map a file to U-Boot. This option can be given multiple\n"
+"  -i <file>   Map a file to barebox. This option can be given multiple\n"
 "              times. The files will show up as /dev/fd0 ... /dev/fdx\n"
-"              under U-Boot.\n"
-"  -e <file>   Map a file to U-Boot. With this option files are mapped as\n"
+"              under barebox.\n"
+"  -e <file>   Map a file to barebox. With this option files are mapped as\n"
 "              /dev/env0 ... /dev/envx and thus are used as default\n"
 "              environment. An empty file generated with dd will do to get\n"
 "              started wth an empty environment\n"
@@ -381,27 +381,27 @@ static void print_usage(const char *prgname)
 }
 
 /**
- * @page uboot_simul U-Boot Simulator
+ * @page barebox_simul barebox Simulator
  *
- * U-Boot can be run as a simulator on your host to check and debug new non
+ * barebox can be run as a simulator on your host to check and debug new non
  * hardware related features.
  *
- * @section simu_build How to build U-Boot for simulation
+ * @section simu_build How to build barebox for simulation
  *
- * @section simu_run How to run U-Boot simulator
+ * @section simu_run How to run barebox simulator
  *
- * $ uboot [\<OPTIONS\>]
+ * $ barebox [\<OPTIONS\>]
  *
  * Options can be:
  *
  * -i \<file\>
  *
- * Map a \<file\> to U-Boot. This option can be given multiple times. The \<file\>s
- * will show up as /dev/fd0 ... /dev/fdx in the U-Boot simulator.
+ * Map a \<file\> to barebox. This option can be given multiple times. The \<file\>s
+ * will show up as /dev/fd0 ... /dev/fdx in the barebox simulator.
  *
  * -e \<file\>
  *
- * Map \<file\> to U-Boot. With this option \<file\>s are mapped as /dev/env0 ...
+ * Map \<file\> to barebox. With this option \<file\>s are mapped as /dev/env0 ...
  * /dev/envx and thus are used as default environment. A clean file generated
  * with dd will do to get started with an empty environment
  *
@@ -415,6 +415,6 @@ static void print_usage(const char *prgname)
  * Register \<file\> as a console capable of doing stdin. \<file\> can be a regular
  * file or a fifo.
  *
- * @section simu_dbg How to debug U-Boot simulator
+ * @section simu_dbg How to debug barebox simulator
  *
  */

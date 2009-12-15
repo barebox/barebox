@@ -21,7 +21,7 @@
  * MA 02111-1307 USA
  */
 
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
 OUTPUT_ARCH("powerpc")
 /* Do we need any of these for elf?
@@ -30,7 +30,7 @@ SECTIONS
 {
   . = TEXT_BASE;
 
-  /* Read-only sections, merged into text segment: */ 
+  /* Read-only sections, merged into text segment: */
   .interp : { *(.interp) }
   .hash          : { *(.hash)		}
   .dynsym        : { *(.dynsym)		}
@@ -96,17 +96,17 @@ SECTIONS
   PROVIDE (edata = .);
 
   . = .;
-  __u_boot_cmd_start = .;
-  .u_boot_cmd : { U_BOOT_CMDS }
-  __u_boot_cmd_end = .;
+  __barebox_cmd_start = .;
+  .barebox_cmd : { BAREBOX_CMDS }
+  __barebox_cmd_end = .;
 
-  __u_boot_initcalls_start = .;
-  .u_boot_initcalls : { INITCALLS }
-  __u_boot_initcalls_end = .;
-  __initcall_entries = (__u_boot_initcalls_end - __u_boot_initcalls_start) >> 2;
+  __barebox_initcalls_start = .;
+  .barebox_initcalls : { INITCALLS }
+  __barebox_initcalls_end = .;
+  __initcall_entries = (__barebox_initcalls_end - __barebox_initcalls_start) >> 2;
 
   __usymtab_start = .;
-  __usymtab : { U_BOOT_SYMS }
+  __usymtab : { BAREBOX_SYMS }
   __usymtab_end = .;
 
   __early_init_data_begin = .;

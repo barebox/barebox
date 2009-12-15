@@ -102,9 +102,9 @@ static const __maybe_unused char cmd_timeout_help[] =
 "  -r  interrupt on return\n"
 "  -s  silent mode\n";
 
-U_BOOT_CMD_START(timeout)
+BAREBOX_CMD_START(timeout)
 	.cmd		= do_timeout,
 	.usage		= "wait for a specified timeout",
-	U_BOOT_CMD_HELP(cmd_timeout_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_timeout_help)
+BAREBOX_CMD_END
 

@@ -1,5 +1,5 @@
 
-When porting from old U-Boot the follwing steps must be taken (please complain
+When porting from old barebox the follwing steps must be taken (please complain
 if there's something missing here ;)
 
 
@@ -9,24 +9,24 @@ if there's something missing here ;)
   configured with the Kconfig system feel free to add them there.
 
 - The linker script needs a new section for the initcalls. The handling of the
-  U-Boot command table has changed, too. (The commands are now sorted by the
+  barebox command table has changed, too. (The commands are now sorted by the
   linker instead at runtime.) To change it you need an entry like the following
   in your linker script:
 
-#include <asm-generic/u-boot.lds.h>
+#include <asm-generic/barebox.lds.h>
 
-	__u_boot_cmd_start = .;
-	.u_boot_cmd : { U_BOOT_CMDS }
-	__u_boot_cmd_end = .;
+	__barebox_cmd_start = .;
+	.barebox_cmd : { BAREBOX_CMDS }
+	__barebox_cmd_end = .;
 
-	__u_boot_initcalls_start = .;
-	.u_boot_initcalls : { INITCALLS }
-	__u_boot_initcalls_end = .;
+	__barebox_initcalls_start = .;
+	.barebox_initcalls : { INITCALLS }
+	__barebox_initcalls_end = .;
 
-- Rename your linker script to u-boot.lds.S and add the following entry to the
+- Rename your linker script to barebox.lds.S and add the following entry to the
   Makefile to make sure the linker script is generated:
 
-extra-y += u-boot.lds
+extra-y += barebox.lds
 
 - Register the devices present in your system in the board specific .c file.
   To see anything you have to at least register a console. In scb9328.c this
@@ -72,7 +72,7 @@ extra-y += u-boot.lds
     set_mac_address() set the MAC address in the device. All magic previously
                       done with getenv/setenv(ethaddr) must be removed.
 
-    During startup U-Boot calls get_mac_address() to see if an EEPROM is
+    During startup barebox calls get_mac_address() to see if an EEPROM is
     connected. If so, it calls set_mac_address() with this address. This
     is done even if networking is not used during startup. This makes sure
     that the MAC address is set in the device and Linux can pick it up later.
@@ -91,8 +91,8 @@ extra-y += u-boot.lds
 
 - Adjust start.S. On PowerPC there is at least the Problem that the relocation
   offset is defined at compile time. It is easily possible to determine the
-  address U-Boot is currently starting from at runtime and thus allowing it
-  U-Boot to be started at any address. Look at the relocation code and replace
+  address barebox is currently starting from at runtime and thus allowing it
+  barebox to be started at any address. Look at the relocation code and replace
   TEXT_BASE with the following calculation of the runtime address:
 
 	bl     calc_source     /* Calculate Source Address             */
@@ -105,7 +105,7 @@ calc_source:
   fortunately I know next to nothing of PowerPC assembler, so if you have
   a better way to archieve this, please write to the list.)
 
-  On PowerPC U-Boot now runs at the address it was linked to, so you have
+  On PowerPC barebox now runs at the address it was linked to, so you have
   to adjust TEXT_BASE to be in RAM. This makes the various fixup relocation
   functions unnecessary. On PowerPC the removal of -fPIC saves around 10% of
   binary space. It also simplifies debugging because you will see the correct

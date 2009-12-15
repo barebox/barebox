@@ -46,8 +46,8 @@ static const __maybe_unused char cmd_rm_help[] =
 "Usage: rm [FILES]\n"
 "Remove files\n";
 
-U_BOOT_CMD_START(rm)
+BAREBOX_CMD_START(rm)
 	.cmd		= do_rm,
 	.usage		= "remove files",
-	U_BOOT_CMD_HELP(cmd_rm_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_rm_help)
+BAREBOX_CMD_END

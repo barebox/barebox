@@ -71,11 +71,11 @@ static const __maybe_unused char cmd_printenv_help[] =
 "    - print value of environment variable 'name'\n";
 
 
-U_BOOT_CMD_START(printenv)
+BAREBOX_CMD_START(printenv)
 	.cmd		= do_printenv,
 	.usage		= "print environment variables",
-	U_BOOT_CMD_HELP(cmd_printenv_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_printenv_help)
+BAREBOX_CMD_END
 
 /**
  * @page printenv_command printenv

@@ -116,9 +116,9 @@ static const __maybe_unused char cmd_crc_help[] =
 "  -f <file>   Use file instead of memory\n"
 "  -v <crc>    Verfify\n";
 
-U_BOOT_CMD_START(crc32)
+BAREBOX_CMD_START(crc32)
 	.cmd		= do_crc,
 	.usage		= "crc32 checksum calculation",
-	U_BOOT_CMD_HELP(cmd_crc_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_crc_help)
+BAREBOX_CMD_END
 

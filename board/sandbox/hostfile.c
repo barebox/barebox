@@ -1,5 +1,5 @@
 /*
- * hostfile.c - use files from the host to simalute U-Boot devices
+ * hostfile.c - use files from the host to simalute barebox devices
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -97,7 +97,7 @@ static int hf_init(void)
 
 device_initcall(hf_init);
 
-int u_boot_register_filedev(struct hf_platform_data *hf)
+int barebox_register_filedev(struct hf_platform_data *hf)
 {
 	struct device_d *dev;
 

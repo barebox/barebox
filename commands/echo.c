@@ -96,8 +96,8 @@ no_optarg_out:
 	return 1;
 }
 
-U_BOOT_CMD_START(echo)
+BAREBOX_CMD_START(echo)
 	.cmd		= do_echo,
 	.usage		= "echo args to console",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

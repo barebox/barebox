@@ -1,5 +1,5 @@
 /*
- * U-boot - start.S Startup file of u-boot for BF533/BF561
+ * barebox - start.S Startup file of barebox for BF533/BF561
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *
@@ -333,8 +333,8 @@ _clear_bss_skip:
         [p0] = r0;
 #endif
 
-	p0.l = _start_uboot;
-	p0.h = _start_uboot;
+	p0.l = _start_barebox;
+	p0.h = _start_barebox;
 	jump (p0);
 
 reset_start:

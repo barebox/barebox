@@ -1,2 +1,2 @@
 config.h
-uboot_default_env.h
+barebox_default_env.h

@@ -64,14 +64,14 @@ __attribute__((aligned(64)))
 
 typedef struct cmd_tbl_s	cmd_tbl_t;
 
-extern cmd_tbl_t  __u_boot_cmd_start;
-extern cmd_tbl_t  __u_boot_cmd_end;
+extern cmd_tbl_t  __barebox_cmd_start;
+extern cmd_tbl_t  __barebox_cmd_end;
 
 
 /* common/command.c */
 cmd_tbl_t *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
-void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
+void barebox_cmd_usage(cmd_tbl_t *cmdtp);
 
 #define COMMAND_SUCCESS		0
 #define COMMAND_ERROR		1
@@ -88,20 +88,20 @@ void u_boot_cmd_usage(cmd_tbl_t *cmdtp);
 #define __stringify(x)		__stringify_1(x)
 
 
-#define Struct_Section  __attribute__ ((unused,section (".u_boot_cmd")))
+#define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 
-#define U_BOOT_CMD_START(_name)				\
-const cmd_tbl_t __u_boot_cmd_##_name	\
-	__attribute__ ((unused,section (".u_boot_cmd_" __stringify(_name)))) = {				\
+#define BAREBOX_CMD_START(_name)				\
+const cmd_tbl_t __barebox_cmd_##_name	\
+	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {				\
 	.name		= #_name,
 
-#define U_BOOT_CMD_END					\
+#define BAREBOX_CMD_END					\
 };
 
 #ifdef CONFIG_LONGHELP
-#define U_BOOT_CMD_HELP(text)	.help = text,
+#define BAREBOX_CMD_HELP(text)	.help = text,
 #else
-#define U_BOOT_CMD_HELP(text)
+#define BAREBOX_CMD_HELP(text)
 #endif
 
 int register_command(cmd_tbl_t *);

@@ -295,7 +295,7 @@ struct module * load_module(void *mod_image, unsigned long len)
 	sym = (void *)sechdrs[symindex].sh_addr;
 
 #ifdef CONFIG_COMMAND
-	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".u_boot_cmd");
+	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".barebox_cmd");
 	if (cmdindex) {
 		cmd_tbl_t *cmd = (cmd_tbl_t *)sechdrs[cmdindex].sh_addr;
 		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(cmd_tbl_t); i++) {

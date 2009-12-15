@@ -70,11 +70,11 @@ static const __maybe_unused char cmd_mount_help[] =
 "<mountpoint> must be an empty directory descending directly from the\n"
 "root directory.\n";
 
-U_BOOT_CMD_START(mount)
+BAREBOX_CMD_START(mount)
 	.cmd		= do_mount,
 	.usage		= "mount a filesystem to a device",
-	U_BOOT_CMD_HELP(cmd_mount_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_mount_help)
+BAREBOX_CMD_END
 
 /** @page mount_command mount
  * Usage: mount [\<device> \<fstype> \<mountpoint>]
@@ -90,7 +90,7 @@ U_BOOT_CMD_END
  * root directory.
  */
 
-/** @page how_mount_works How mount works in U-Boot
+/** @page how_mount_works How mount works in barebox
  *
  * Mounting a filesystem ontop of a device is working like devices and drivers
  * are finding together.

@@ -129,8 +129,8 @@ static int do_cpuinfo(cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(cpuinfo)
+BAREBOX_CMD_START(cpuinfo)
 	.cmd            = do_cpuinfo,
 	.usage          = "Show info about CPU",
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 

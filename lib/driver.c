@@ -1,5 +1,5 @@
 /*
- * driver.c - U-Boot driver model
+ * driver.c - barebox driver model
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -22,7 +22,7 @@
 
 /**
  * @file
- * @brief U-Boot's driver model, and devinfo command
+ * @brief barebox's driver model, and devinfo command
  */
 
 #include <common.h>
@@ -334,11 +334,11 @@ static const __maybe_unused char cmd_devinfo_help[] =
 "drivers. If called with a device path as argument devinfo shows more detailed\n"
 "information about this device and its parameters.\n";
 
-U_BOOT_CMD_START(devinfo)
+BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
 	.usage		= "display info about devices and drivers",
-	U_BOOT_CMD_HELP(cmd_devinfo_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_devinfo_help)
+BAREBOX_CMD_END
 
 #endif
 
@@ -353,7 +353,7 @@ U_BOOT_CMD_END
  *
  * Example from an MPC5200 based system:
 @verbatim
-  uboot:/ devinfo /dev/eth0
+  barebox:/ devinfo /dev/eth0
   base  : 0x1002b000
   size  : 0x00000000
   driver: fec_mpc5xxx

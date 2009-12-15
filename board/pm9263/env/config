@@ -12,13 +12,13 @@ autoboot_timeout=3
 nfsroot="/ptx/work/octopus/mkl/bucyrus/OSELAS.BSP-Bucyrus-Grabowski-trunk/platform-Ronetix-PM9263/root"
 bootargs="console=ttyS0,115200"
 
-nor_parts="256k(uboot)ro,64k(ubootenv),1536k(kernel),-(root)"
+nor_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
 rootpart_nor="/dev/mtdblock3"
 
-#nand_parts="256k(uboot)ro,64k(ubootenv),1536k(kernel),-(root)"
+#nand_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
 #rootpart_nand="/dev/mtdblock7"
 
-# use 'dhcp' to do dhcp in uboot and in kernel
+# use 'dhcp' to do dhcp in barebox and in kernel
 ip=dhcp
 
 # or set your networking parameters here

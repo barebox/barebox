@@ -484,9 +484,9 @@ static int do_mycdev (cmd_tbl_t *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-U_BOOT_CMD_START(mycdev)
+BAREBOX_CMD_START(mycdev)
 	.cmd		= do_mycdev,
-U_BOOT_CMD_END
+BAREBOX_CMD_END
 
 /**
  * gserial_disconnect - notify TTY I/O glue that USB link is inactive

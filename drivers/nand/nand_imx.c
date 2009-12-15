@@ -1148,11 +1148,11 @@ static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_nand_boot_test_help[] =
 "Usage: nand_boot_test <dest> <size>\n";
 
-U_BOOT_CMD_START(nand_boot_test)
+BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
 	.usage		= "list a file or directory",
-	U_BOOT_CMD_HELP(cmd_nand_boot_test_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
+BAREBOX_CMD_END
 #endif
 
 #endif /* CONFIG_NAND_IMX_BOOT */

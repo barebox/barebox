@@ -45,11 +45,11 @@ static const __maybe_unused char cmd_setenv_help[] =
 "    - delete environment variable 'name'\n";
 
 
-U_BOOT_CMD_START(setenv)
+BAREBOX_CMD_START(setenv)
 	.cmd		= do_setenv,
 	.usage		= "set environment variables",
-	U_BOOT_CMD_HELP(cmd_setenv_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_setenv_help)
+BAREBOX_CMD_END
 
 /**
  * @page setenv_command setenv: set an environment variable

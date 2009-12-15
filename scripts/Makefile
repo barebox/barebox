@@ -2,7 +2,7 @@
 # scripts contains sources for various helper programs used throughout
 # the kernel for the build process.
 # ---------------------------------------------------------------------------
-# kallsyms:      Find all symbols in uboot
+# kallsyms:      Find all symbols in barebox
 # pnmttologo:    Convert pnm files to logo files
 # conmakehash:   Create chartable
 # conmakehash:	 Create arrays for initializing the kernel console tables
@@ -13,7 +13,7 @@ hostprogs-$(CONFIG_VT)           += conmakehash
 hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
 hostprogs-y                      += bin2c
 hostprogs-y                      += mkimage
-hostprogs-y                      += ubootenv
+hostprogs-y                      += bareboxenv
 hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
 
 always		:= $(hostprogs-y) $(hostprogs-m)

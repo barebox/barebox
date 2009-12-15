@@ -18,20 +18,20 @@
  * MA 02111-1307 USA
  *
  ********************************************************************
- * NOTE: This header file defines an interface to U-Boot. Including
+ * NOTE: This header file defines an interface to barebox. Including
  * this (unmodified) header file in another file is considered normal
- * use of U-Boot, and does *not* fall under the heading of "derived
+ * use of barebox, and does *not* fall under the heading of "derived
  * work".
  ********************************************************************
  */
 
-#ifndef __U_BOOT_H__
-#define __U_BOOT_H__
+#ifndef __BAREBOX_H__
+#define __BAREBOX_H__
 
 /*
- * Board information passed to Linux kernel from U-Boot
+ * Board information passed to Linux kernel from barebox
  *
- * include/asm-ppc/u-boot.h
+ * include/asm-ppc/barebox.h
  */
 
 #ifndef __ASSEMBLY__
@@ -131,4 +131,4 @@ typedef struct bd_info {
 } bd_t;
 
 #endif /* __ASSEMBLY__ */
-#endif	/* __U_BOOT_H__ */
+#endif	/* __BAREBOX_H__ */

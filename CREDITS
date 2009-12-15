@@ -5,7 +5,7 @@
 #
 #
 #   This is at least a partial credits-file of individual people that
-#   have contributed to the U-Boot project. It is sorted by name and
+#   have contributed to the barebox project. It is sorted by name and
 #   formatted to allow easy grepping and beautification by scripts.
 #   The fields are: name (N), email (E), web-address (W), PGP key ID
 #   and fingerprint (P), description (D), and snail-mail address (S).
@@ -123,7 +123,7 @@ D: FLAGA DM Support
 
 N: Wolfgang Denk
 E: wd@denx.de
-D: U-Boot initial version, continuing maintenance, ARMBoot merge
+D: barebox initial version, continuing maintenance, ARMBoot merge
 W: http://www.denx.de
 
 N: Dan A. Dickey

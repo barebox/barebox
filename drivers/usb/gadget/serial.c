@@ -110,7 +110,7 @@ printf("%s\n", __func__);
 	 */
 
 	/* device description: manufacturer, product */
-	sprintf(manufacturer, "u-boot with %s",
+	sprintf(manufacturer, "barebox with %s",
 		gadget->name);
 	status = usb_string_id(cdev);
 	if (status < 0)

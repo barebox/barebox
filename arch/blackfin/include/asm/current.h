@@ -1,5 +1,5 @@
 /*
- * U-boot - current.h
+ * barebox - current.h
  *
  * Copyright (c) 2005 blackfin.uclinux.org
  *

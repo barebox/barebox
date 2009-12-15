@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-git
+# barebox version: 2.0.0-git
 # Fri Oct 19 11:00:09 2007
 #
 CONFIG_ARCH_TEXT_BASE=0x08f80000
@@ -34,7 +34,7 @@ CONFIG_HAS_MODULES=y
 CONFIG_TEXT_BASE=0x08f80000
 # CONFIG_BROKEN is not set
 # CONFIG_EXPERIMENTAL is not set
-CONFIG_PROMPT="uboot:"
+CONFIG_PROMPT="barebox:"
 CONFIG_BAUDRATE=115200
 CONFIG_CMDLINE_EDITING=y
 # CONFIG_AUTO_COMPLETE is not set

@@ -3,15 +3,15 @@
 . /env/config
 
 if [ x$1 = xnand ]; then
-	part=/dev/nand0.uboot
+	part=/dev/nand0.barebox
 elif [ x$1 = xnor ]; then
-	part=/dev/nor0.uboot
+	part=/dev/nor0.barebox
 else
 	echo "usage: $0 nor|nand"
 	exit 1
 fi
 
-loadb -f uboot.bin -c
+loadb -f barebox.bin -c
 
 unprotect $part
 echo
@@ -19,8 +19,8 @@ echo "erasing partition $part"
 erase $part
 
 echo
-echo "flashing uboot.bin to $part"
+echo "flashing barebox.bin to $part"
 echo
-cp uboot.bin $part
-crc32 -f uboot.bin
+cp barebox.bin $part
+crc32 -f barebox.bin
 crc32 -f $part

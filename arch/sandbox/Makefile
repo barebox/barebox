@@ -4,23 +4,23 @@ CPPFLAGS += -fno-strict-aliasing
 machine-y := sandbox
 
 board-y := sandbox
-lds-y   := board/sandbox/u-boot.lds
+lds-y   := board/sandbox/barebox.lds
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 CPPFLAGS += -P
-CFLAGS += -Dmalloc=u_boot_malloc \
-		-Dfree=u_boot_free -Drealloc=u_boot_realloc \
-		-Dread=u_boot_read -Dwrite=u_boot_write \
-		-Dopen=u_boot_open -Dclose=u_boot_close \
-		-Dlseek=u_boot_lseek -Dperror=u_boot_perror \
-		-Derrno=u_boot_errno -Dgetc=u_boot_getc \
-		-Dputc=u_boot_putc -Dfgetc=u_boot_fgetc \
-		-Dfputc=u_boot_fputc -Dfgets=u_boot_fgets \
-		-Dfputs=u_boot_fputs -Dsetenv=u_boot_setenv \
-		-Dgetenv=u_boot_getenv -Dprintf=u_boot_printf \
-		-Dglob=u_boot_glob -Dglobfree=u_boot_globfree \
-		-Dioctl=u_boot_ioctl
+CFLAGS += -Dmalloc=barebox_malloc \
+		-Dfree=barebox_free -Drealloc=barebox_realloc \
+		-Dread=barebox_read -Dwrite=barebox_write \
+		-Dopen=barebox_open -Dclose=barebox_close \
+		-Dlseek=barebox_lseek -Dperror=barebox_perror \
+		-Derrno=barebox_errno -Dgetc=barebox_getc \
+		-Dputc=barebox_putc -Dfgetc=barebox_fgetc \
+		-Dfputc=barebox_fputc -Dfgets=barebox_fgets \
+		-Dfputs=barebox_fputs -Dsetenv=barebox_setenv \
+		-Dgetenv=barebox_getenv -Dprintf=barebox_printf \
+		-Dglob=barebox_glob -Dglobfree=barebox_globfree \
+		-Dioctl=barebox_ioctl
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
@@ -58,10 +58,10 @@ archprepare: maketools
 
 PHONY += maketools
 
-cmd_uboot__ = $(CC) -o $@ -Wl,-T,$(uboot-lds) \
-	-Wl,--start-group $(uboot-common) -Wl,--end-group \
+cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
+	-Wl,--start-group $(barebox-common) -Wl,--end-group \
 	-lrt -lpthread
 
 common-y += board/sandbox/ arch/sandbox/os/
 
-CLEAN_FILES += board/sandbox/u-boot.lds
+CLEAN_FILES += board/sandbox/barebox.lds

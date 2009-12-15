@@ -2,7 +2,7 @@
 #define _LINUX_KERNEL_H
 
 #include <linux/compiler.h>
-#include <linux/uboot-wrapper.h>
+#include <linux/barebox-wrapper.h>
 
 /*
  * min()/max()/clamp() macros that also do

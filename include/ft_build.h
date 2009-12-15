@@ -7,7 +7,7 @@
 #define FT_BUILD_H
 
 #include <linux/types.h>
-#include <asm/u-boot.h>
+#include <asm/barebox.h>
 
 /* Definitions used by the flattened device tree */
 #define OF_DT_HEADER		0xd00dfeed	/* marker */

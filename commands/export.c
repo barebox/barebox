@@ -55,11 +55,11 @@ static const __maybe_unused char cmd_export_help[] =
 "Usage: export <var>[=value]...\n"
 "export an environment variable to subsequently executed scripts\n";
 
-U_BOOT_CMD_START(export)
+BAREBOX_CMD_START(export)
 	.cmd		= do_export,
 	.usage		= "export environment variables",
-	U_BOOT_CMD_HELP(cmd_export_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_export_help)
+BAREBOX_CMD_END
 
 /**
  * @page export_command export: Export an environment variable

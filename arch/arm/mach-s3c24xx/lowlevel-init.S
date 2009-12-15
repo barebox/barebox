@@ -223,7 +223,7 @@ SDRAMDATA:
 @page dev_s3c24xx_sdram_handling SDRAM controller initialisation
 
 The SDRAM controller is very simple and its initialisation requires only a
-few steps. U-Boot-v2 provides a generic routine to do this step.
+few steps. barebox provides a generic routine to do this step.
 
 Enable CONFIG_S3C24XX_SDRAM_INIT and CONFIG_MACH_HAS_LOWLEVEL_INIT to be able
 to call the generic s3c24x0_sdram_init() assembler function from within the
@@ -292,14 +292,14 @@ machine specific board_init_lowlevel() assembler function.
 an initialized stack pointer.
 
 @note Basicly this routine runs from inside the internal SRAM. After load of
-the whole U-Boot-v2 image from the NAND flash memory into the SDRAM it adjusts
+the whole barebox image from the NAND flash memory into the SDRAM it adjusts
 the link register to the final SDRAM adress and returns.
 
 @note In the NAND boot mode, ECC is not checked. So, the first x KBytes used
-by U-Boot-v2 should have no bit error.
+by barebox should have no bit error.
 
-Due to the fact the code to load the whole U-Boot-v2 from NAND must fit into
-the first 4kiB of the U-Boot-v2 image, the shrinked NAND driver is very
+Due to the fact the code to load the whole barebox from NAND must fit into
+the first 4kiB of the barebox image, the shrinked NAND driver is very
 minimalistic. Setup the NAND access timing is done in a safe manner, what
 means: Slowest possible values are used. If you want to increase the speed you
 should define the BOARD_DEFAULT_NAND_TIMING to a valid setting into the

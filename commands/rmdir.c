@@ -25,8 +25,8 @@ static const __maybe_unused char cmd_rmdir_help[] =
 "Usage: rmdir [directories]\n"
 "Remove directories. The directories have to be empty.\n";
 
-U_BOOT_CMD_START(rmdir)
+BAREBOX_CMD_START(rmdir)
 	.cmd		= do_rmdir,
 	.usage		= "remove directorie(s)",
-	U_BOOT_CMD_HELP(cmd_rmdir_help)
-U_BOOT_CMD_END
+	BAREBOX_CMD_HELP(cmd_rmdir_help)
+BAREBOX_CMD_END

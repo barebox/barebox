@@ -2,20 +2,20 @@
  * Copyright (c) 2008 Carsten Schlote <c.schlote@konzeptpark.de>
  * See file CREDITS for list of people who contributed to this project.
  *
- * This file is part of U-Boot V2.
+ * This file is part of barebox.
  *
- * U-Boot V2 is free software: you can redistribute it and/or modify
+ * barebox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * U-Boot V2 is distributed in the hope that it will be useful,
+ * barebox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with U-Boot V2.  If not, see <http://www.gnu.org/licenses/>.
+ * along with barebox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -55,13 +55,13 @@
 	.equ ___SP_INIT,__CORE_SRAM1+__CORE_SRAM1_SIZE-16
 
 /*
- * Vector table for M68k and U-Boot Link Address
+ * Vector table for M68k and barebox Link Address
  *
  * On M68k/Coldfire cores all exceptions and interrupts are routed through
  * a vector array. This vector is by default at address 0x0000_0000, but
  * can be moved to any other 1MB aligned address.
  *
- * We take advantage of this to move U-Boot out of low memory. Some BDM
+ * We take advantage of this to move barebox out of low memory. Some BDM
  * debuggers won't like a moved vector base and might need tweaking to
  * work.
  *
@@ -69,8 +69,8 @@
  *       1MB aligned.
  */
 
-	.globl _u_boot_start
-_u_boot_start:
+	.globl _barebox_start
+_barebox_start:
 
 VECTOR_TABLE:
 _VECTOR_TABLE:
@@ -357,7 +357,7 @@ vectorFF:   .long   _asm_isr_handler
  * * do important init, like SDRAM, only if we don't start from memory!
  * * setup Memory and board specific bits prior to relocation.
  * * Setup stack
- * * relocate U-Boot to ram
+ * * relocate barebox to ram
  *
  */
 	.globl _start
@@ -446,7 +446,7 @@ saveland:
 	 * because memory timing is board-dependend, you will
 	 * find a lowlevel_init.[c|S] in your board directory.
 	 *
-	 * Do not jump/call other u-boot code here!
+	 * Do not jump/call other barebox code here!
 	 */
 #ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
 	bsr.l	board_init_lowlevel
@@ -454,7 +454,7 @@ saveland:
 #endif
 
 	/*
-	 * relocate U-Boot Code to RAM (including copy of vectors)
+	 * relocate barebox Code to RAM (including copy of vectors)
 	 */
 relocate:
 	lea.l  	%pc@(VECTOR_TABLE),%a0
@@ -516,16 +516,16 @@ skip_copy_vectors:
 	/*
 	 * Call other half of initcode in relocated code
 	 *
-	 * You allowed to call other U-Boot code from here
+	 * You allowed to call other barebox code from here
 	 */
 	jsr.l	board_init_highlevel
 	nop
 #endif
 	/*
-	 * Now jump to real link address and U-Boot entry point
+	 * Now jump to real link address and barebox entry point
 	 */
 	nop
-	jmp.l	start_uboot
+	jmp.l	start_barebox
 	nop
 	nop
 

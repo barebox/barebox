@@ -181,3 +181,43 @@ scripts/              -> Kconfig system
 
 Documentation/        -> Doxygen generated documentation
 
+
+Release Strategy
+----------------
+
+Barebox is developed with git. From time to time, tarball releases are
+branched from the repository and released on the project web site. Here
+are the release rules:
+
+- Releases follow a time based scheme:
+
+  barebox-xxxx.yy.z.tar.bz2
+          ^^^^ ^^ ^----------- Bugfix Number, starting at 0
+            \   \------------- Month
+             \---------------- Year
+
+  Example: barebox-2009.12.0.tar.bz2
+
+- Releases are made around the beginning of the month. As we are aiming
+  for monthly releases, development is considered to be a continuous
+  process. If you find bugs in one release, you have the chance to get
+  patches in on a very short time scale.
+
+- Usually, there are no bugfix releases, so z=0. If there is a need
+  to make a bugfix release, z is the right place to increment.
+
+- If there may be a reason for pre releases, they are called
+
+  barebox-xxxx.yy.z-pren.tar.bz
+                       ^------ Number of prerelease, starting with 1
+
+  Example: barebox-2009.12.0-pre1.tar.bz2
+
+  We think that there is no need for pre releases, but if it's ever
+  necessary, this is the scheme we follow.
+
+- Only the monthly releases are archived on the web site. The tarballs
+  are located in http://www.barebox.org/download/ and this location
+  does never change, in order to make life easier for distribution
+  people.
+

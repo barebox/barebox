@@ -4,7 +4,7 @@
  *
  * FileName: include/asm-arm/arch-omap/omap3-clock.h
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
  *
  */
 /*

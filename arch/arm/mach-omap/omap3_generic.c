@@ -11,7 +11,7 @@
  * Important one is @ref a_init which is architecture init code.
  * The implemented functions are present in sys_info.h
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008

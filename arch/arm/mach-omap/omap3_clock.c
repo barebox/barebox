@@ -12,10 +12,10 @@
  * This critical path is handled by relocating the relevant functions in
  * omap3_clock_core.S to OMAP's ISRAM and executing it there.
  *
- * @warning: IMPORTANT: These functions run from ISRAM stack, so no bss sections
- * should be used: functions cannot use global variables/switch constructs.
+ * @warning IMPORTANT: These functions run from ISRAM stack, so no bss sections
+ * should be used, functions cannot use global variables/switch constructs.
  *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/barebox-v1.tar.gz
+ * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
  */
 /*
  * (C) Copyright 2006-2008

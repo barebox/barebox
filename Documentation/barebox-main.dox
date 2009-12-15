@@ -1,6 +1,6 @@
 /** @mainpage Universal Bootloader
 
-@section barebox_v2_intro Introduction
+@section barebox_intro Introduction
 
 This is barebox, our proposal for a next generation of the famous barebox
 bootloader. barebox offers an excellent choice as a bootloader for

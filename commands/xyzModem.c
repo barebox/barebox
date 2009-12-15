@@ -3,7 +3,7 @@
  * @brief RedBoot stream handler for xyzModem protocol
  *
  * FileName: commands/xyzModem.c
- * Originally from barebox V1 xyzModem.c
+ * Originally from u-boot xyzModem.c
  */
 /*
  * 2008 - Nishanth Menon <x0nishan@ti.com>

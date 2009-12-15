@@ -5,7 +5,7 @@
  * FileName: drivers/serial/serial_ns16550.c
  *
  * NS16550 support
- * Modified from barebox V1 drivers/serial.c and drivers/ns16550.c
+ * Modified from u-boot drivers/serial.c and drivers/ns16550.c
  * originally from linux source (arch/ppc/boot/ns16550.c)
  * modified to use CFG_ISA_MEM and new defines
  */
@@ -49,7 +49,7 @@
 /*********** Private Functions **********************************/
 
 /**
- * @brief ns16550_calc_divisor - compute the divisor for a baud rate
+ * @brief Compute the divisor for a baud rate
  *
  * @param[in] cdev pointer to console device
  * @param[in] baudrate baud rate
@@ -87,7 +87,7 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 }
 
 /**
- * @brief ns16550_serial_init_port - initialize the device
+ * @brief Initialize the device
  *
  * @param[in] cdev pointer to console device
  */
@@ -120,7 +120,7 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 /*********** Exposed Functions **********************************/
 
 /**
- * @brief ns16550_putc- put a character to the serial port
+ * @brief Put a character to the serial port
  *
  * @param[in] cdev pointer to console device
  * @param[in] c character to put
@@ -136,7 +136,7 @@ static void ns16550_putc(struct console_device *cdev, char c)
 }
 
 /**
- * @brief ns16550_getc - retrieve a character from serial port
+ * @brief Retrieve a character from serial port
  *
  * @param[in] cdev pointer to console device
  *
@@ -153,7 +153,7 @@ static int ns16550_getc(struct console_device *cdev)
 }
 
 /**
- * @brief ns16550_tstc - test if character is available
+ * @brief Test if character is available
  *
  * @param[in] cdev pointer to console device
  *
@@ -168,7 +168,7 @@ static int ns16550_tstc(struct console_device *cdev)
 }
 
 /**
- * @brief ns16550_setbaudrate - set the baudrate for the uart port
+ * @brief Set the baudrate for the uart port
  *
  * @param[in] cdev  console device
  * @param[in] baud_rate baud rate to set
@@ -192,7 +192,7 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 }
 
 /**
- * @brief ns16550_probe - Probe entry point -called on the first match for device
+ * @brief Probe entry point -called on the first match for device
  *
  * @param[in] dev matched device
  *
@@ -237,7 +237,7 @@ static struct driver_d ns16550_serial_driver = {
 };
 
 /**
- * @brief ns16550_serial_init - driver initialization function
+ * @brief driver initialization function
  *
  * @return result of register_driver
  */

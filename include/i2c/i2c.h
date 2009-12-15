@@ -1,5 +1,5 @@
 /*
- * i2c.h - definitions for the barebox-v2 i2c framework
+ * i2c.h - definitions for the barebox i2c framework
  *
  * Copyricht (C) 2009 by Marc Kleine-Budde <mkl@pengutronix.de>
  *

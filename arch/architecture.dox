@@ -5,7 +5,7 @@
 Never include an object file by name directly! Linker Script Files defines the
 layout, not the content. Content is defined in objecfiles instead.
 
-Don't rely on the given object file order to create your binary barebox v2! This
+Don't rely on the given object file order to create your binary barebox! This
 may work, but is not relyable in all cases (and its a very bad style)!
 
 For the special case some layout contraints exists, use specific section

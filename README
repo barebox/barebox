@@ -1,21 +1,18 @@
-barebox
-------
+Barebox
+-------
 
-This is barebox, our proposal for a next generation of the famous barebox
-bootloader. barebox offers an excellent choice as a bootloader for
-today's embedded systems, seen from a user's point of view.
-Nevertheless, there are quite some design flaws which turned out over
-the last years and we think that they cannot be solved in a production
-tree. So this tree tries to do several things right - without caring
-about losing support for old boards.
+Barebox is a bootloader that follows the tradition of Das U-Boot, while
+adapting modern design ideas from the Linux kernel.
 
-General features include:
 
-- A posix based file API
-  inside barebox the usual open/close/read/write/lseek functions are used.
+Features
+--------
+
+- A POSIX based file API
+  Inside barebox the usual open/close/read/write/lseek functions are used.
   This makes it familiar to everyone who has programmed under unix systems.
 
-- usual shell commands like ls/cd/mkdir/echo/cat,...
+- Usual shell commands like ls/cd/mkdir/echo/cat,...
 
 - The environment is not a variable store anymore, but a file store. It has
   currently some limitations, of course. The environment is not a real
@@ -24,7 +21,7 @@ General features include:
   saves the files under a certain directory (by default /env) in persistent
   storage (by default /dev/env0). There is a counterpart called loadenv, too.
 
-- Real filesystem support
+- filesystem support
   The loader starts up with mounting a ramdisk on /. Then a devfs is mounted
   on /dev allowing the user (or shell commands) to access devices. Apart from
   these two filesystems there is currently one filesystem ported: cramfs. One
@@ -72,10 +69,10 @@ General features include:
   except the ones really needed: moving the cursor and typing characters.
 
 
-Building barebox
----------------
+Building Barebox
+----------------
 
-barebox uses the Linux kernel's build system. It consists of two parts:
+Barebox uses the Linux kernel's build system. It consists of two parts:
 the makefile infrastructure (kbuild), plus a configuration system
 (kconfig). So building barebox is very similar to building the Linux
 kernel.
@@ -109,7 +106,7 @@ If everything goes well, the result is a file called barebox:
   # ls -l barebox
     -rwxr-xr-x 1 rsc ptx 114073 Jun 26 22:34 barebox
 
-barebox usually needs an environment for storing the configuation data.
+Barebox usually needs an environment for storing the configuation data.
 You can generate an environment using the example environment contained
 in examples/environment:
 
@@ -131,6 +128,7 @@ just like every other program:
 Specifying -[ie] <file> tells barebox to map the file as a device
 under /dev. Files given with '-e' will appear as /dev/env[n]. Files
 given with '-i' will appear as /dev/fd[n].
+
 If barebox finds a valid configuration sector on /dev/env0 it will
 load it to /env. It then executes /env/init if it exists. If you have
 loaded the example environment barebox will show you a menu asking for
@@ -149,9 +147,10 @@ Memory can be examined as usual using md/mw commands. They both understand
 the -f <file> option to tell the commands that they should work on the
 specified files instead of /dev/mem which holds the complete address space.
 Note that if you call 'md /dev/fd0' (without -f) barebox will segfault on
-the host, because it will interpret /dev/fd0 as a number. 
+the host, because it will interpret /dev/fd0 as a number.
 
-Directory layout
+
+Directory Layout
 ----------------
 
 Most of the directory layout is based upon the Linux Kernel:
@@ -180,4 +179,5 @@ net/                  -> Networking stuff
 
 scripts/              -> Kconfig system
 
-Documentation/        -> 
+Documentation/        -> Doxygen generated documentation
+

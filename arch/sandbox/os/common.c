@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'e':
 			sprintf(str, "env%d", envno);
-			ret = add_image(optarg, "env");
+			ret = add_image(optarg, str);
 			if (ret)
 				exit(1);
 			envno++;

@@ -20,6 +20,8 @@
 #ifndef __LINUX_MTD_NAND_H
 #define __LINUX_MTD_NAND_H
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #include <linux/mtd/mtd.h>
 
 struct mtd_info;
@@ -610,5 +612,7 @@ struct platform_nand_chip *get_platform_nandchip(struct mtd_info *mtd)
 
 	return chip->priv;
 }
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __LINUX_MTD_NAND_H */

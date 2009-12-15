@@ -7,6 +7,8 @@
 #ifndef __MTD_ABI_H__
 #define __MTD_ABI_H__
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 struct erase_info_user {
 	uint32_t start;
 	uint32_t length;
@@ -148,5 +150,7 @@ enum mtd_file_modes {
 	MTD_MODE_OTP_USER = MTD_OTP_USER,
 	MTD_MODE_RAW,
 };
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __MTD_ABI_H__ */

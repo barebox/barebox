@@ -43,6 +43,8 @@
 #include <malloc.h>
 #include <module.h>
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_8 = {
 	.eccbytes = 3,
@@ -2643,3 +2645,4 @@ EXPORT_SYMBOL(nand_scan_ident);
 EXPORT_SYMBOL(nand_scan_tail);
 EXPORT_SYMBOL(nand_release);
 
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */

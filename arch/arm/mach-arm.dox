@@ -31,7 +31,7 @@ barebox binary from the NAND flash memory prior returning from \<board_init_lowl
 When \<board_init_lowlevel\> returns it will be assumed there is now a working
 RAM that can be used for all further steps.
 
-Next step is relocation of barebox itself (if not already done). It gets copied
+Next step is relocation of @a barebox itself (if not already done). It gets copied
 to RAM and the last assembler instruction is a jump into start_barebox(). This
 target address is the first C instruction in barebox. At this point of time:\n
 "runtime address == link address".

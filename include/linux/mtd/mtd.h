@@ -9,6 +9,8 @@
 #ifndef __MTD_MTD_H__
 #define __MTD_MTD_H__
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #include <driver.h>
 #include <linux/types.h>
 #include <linux/list.h>
@@ -259,5 +261,7 @@ static inline void mtd_erase_callback(struct erase_info *instr)
 #define MTD_DEBUG(n, args...) do { } while(0)
 
 #endif /* CONFIG_MTD_DEBUG */
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __MTD_MTD_H__ */

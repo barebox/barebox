@@ -276,18 +276,18 @@ All S3C24xx common headers are located here.
 
 @par barebox Map
 
-The location of the barebox itself depends on the available amount of
+The location of the @a barebox itself depends on the available amount of
 installed SDRAM memory:
 
-- 0x30fc.0000 Start of barebox when 16MiB SDRAM is available
-- 0x31fc.0000 Start of barebox when 32MiB SDRAM is available
-- 0x33fc.0000 Start of barebox when 64MiB SDRAM is available
+- 0x30fc.0000 Start of @a barebox when 16MiB SDRAM is available
+- 0x31fc.0000 Start of @a barebox when 32MiB SDRAM is available
+- 0x33fc.0000 Start of @a barebox when 64MiB SDRAM is available
 
-Adjust the CONFIG_TEXT_BASE/CONFIG_ARCH_TEXT_BASE symbol in accordance to
+Adjust the @p CONFIG_TEXT_BASE/CONFIG_ARCH_TEXT_BASE symbol in accordance to
 the available memory.
 
 @note The RAM based filesystem and the stack resides always below the
-barebox start address.
+@a barebox start address.
 
 @li @subpage dev_s3c24xx_wd_handling
 @li @subpage dev_s3c24xx_pll_handling

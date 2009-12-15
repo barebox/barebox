@@ -35,7 +35,6 @@
  *  - i.MX27
  *  - i.MX31
  *
- * FIXME: Stop doxygen from parsing the text below
  */
 	.section ".text_entry","ax"
 

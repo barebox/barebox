@@ -61,6 +61,8 @@
 #include <errno.h>
 #include <malloc.h>
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 /**
  * check_pattern - [GENERIC] check if a pattern is in the buffer
  * @buf:	the buffer to search
@@ -1218,3 +1220,5 @@ int nand_isbad_bbt(struct mtd_info *mtd, loff_t offs, int allowbbt)
 
 EXPORT_SYMBOL(nand_scan_bbt);
 EXPORT_SYMBOL(nand_default_bbt);
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */

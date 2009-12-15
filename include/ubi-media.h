@@ -30,6 +30,8 @@
 #ifndef __UBI_MEDIA_H__
 #define __UBI_MEDIA_H__
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #include <asm/byteorder.h>
 
 /* The version of UBI images supported by this implementation */
@@ -364,6 +366,8 @@ struct ubi_vtbl_record {
 	__u8    padding[23];
 	__be32  crc;
 } __attribute__ ((packed));
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* !__UBI_MEDIA_H__ */
 

@@ -1,6 +1,8 @@
 #ifndef __INCLUDE_SPI_H
 #define __INCLUDE_SPI_H
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #include <driver.h>
 
 struct spi_board_info {
@@ -346,5 +348,7 @@ static inline int spi_register_board_info(struct spi_board_info const *info,
 	return 0;
 }
 #endif
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __INCLUDE_SPI_H */

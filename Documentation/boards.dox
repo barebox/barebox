@@ -1,6 +1,6 @@
 /** @page supported_boards Supported Boards
 
-This is a list of boards that are currently supported by barebox.
+This is a list of boards that are currently supported by @a barebox.
 
 PowerPC type:
 

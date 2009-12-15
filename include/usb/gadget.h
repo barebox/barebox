@@ -15,6 +15,8 @@
 #ifndef __LINUX_USB_GADGET_H
 #define __LINUX_USB_GADGET_H
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #include <usb/ch9.h>
 #include <malloc.h>
 #include <errno.h>
@@ -896,5 +898,7 @@ extern struct usb_ep *usb_ep_autoconfig(struct usb_gadget *,
 			struct usb_endpoint_descriptor *);
 
 extern void usb_ep_autoconfig_reset(struct usb_gadget *);
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __LINUX_USB_GADGET_H */

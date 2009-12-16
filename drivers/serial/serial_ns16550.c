@@ -63,7 +63,7 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 	    cdev->dev->platform_data;
 	unsigned int clk = plat->clock;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	/* FIXME: Legacy Code copied from barebox V1 implementation
+	/* FIXME: Legacy Code copied from U-Boot V1 implementation
 	 */
 #ifdef CONFIG_ARCH_OMAP1510
 	unsigned long base = cdev->dev->map_base;

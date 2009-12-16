@@ -13,8 +13,11 @@ curbit		.req	r3
 
 	.globl	 __udivsi3
 	.type  __udivsi3       ,function
+	.globl   __aeabi_uidiv
+	.type  __aeabi_uidiv   ,function
 	.align	0
  __udivsi3      :
+__aeabi_uidiv   :
 	cmp	divisor, #0
 	beq	Ldiv0
 	mov	curbit, #1

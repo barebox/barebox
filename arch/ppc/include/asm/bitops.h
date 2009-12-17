@@ -279,41 +279,8 @@ extern __inline__ int ext2_test_bit(int nr, __const__ void * addr)
 #define ext2_find_first_zero_bit(addr, size) \
 	ext2_find_next_zero_bit((addr), (size), 0)
 
-extern __inline__ unsigned long ext2_find_next_zero_bit(void *addr,
-	unsigned long size, unsigned long offset)
-{
-	unsigned int *p = ((unsigned int *) addr) + (offset >> 5);
-	unsigned int result = offset & ~31UL;
-	unsigned int tmp;
-
-	if (offset >= size)
-		return size;
-	size -= result;
-	offset &= 31UL;
-	if (offset) {
-		tmp = cpu_to_le32p(p++);
-		tmp |= ~0UL >> (32-offset);
-		if (size < 32)
-			goto found_first;
-		if (tmp != ~0U)
-			goto found_middle;
-		size -= 32;
-		result += 32;
-	}
-	while (size >= 32) {
-		if ((tmp = cpu_to_le32p(p++)) != ~0U)
-			goto found_middle;
-		result += 32;
-		size -= 32;
-	}
-	if (!size)
-		return result;
-	tmp = cpu_to_le32p(p);
-found_first:
-	tmp |= ~0U << size;
-found_middle:
-	return result + ffz(tmp);
-}
+#define ext2_find_next_zero_bit(addr, size, off) \
+	generic_find_next_zero_le_bit((unsigned long*)addr, size, off)
 
 /* Bitmap functions for the minix filesystem.  */
 #define minix_test_and_set_bit(nr,addr) ext2_set_bit(nr,addr)

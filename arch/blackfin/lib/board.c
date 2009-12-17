@@ -44,7 +44,7 @@ int blackfin_mem_malloc_init(void)
 
 core_initcall(blackfin_mem_malloc_init);
 
-int arch_execute(unsigned long address, int argc, char *argv[])
+int arch_execute(void * address, int argc, char *argv[])
 {
 	int ret;
 

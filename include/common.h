@@ -133,7 +133,7 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base);
 void start_barebox(void);
 void shutdown_barebox(void);
 
-int arch_execute(unsigned long address, int argc, char *argv[]);
+int arch_execute(void *, int argc, char *argv[]);
 
 int run_shell(void);
 

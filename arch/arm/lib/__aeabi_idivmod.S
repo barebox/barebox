@@ -1,5 +1,12 @@
-/* Copyright 1995, 1996, 1998, 1999, 2000, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+/*
+ * linux/arch/arm/lib/lib1funcs.S: Optimized ARM division routines
+ *
+ * Author: Nicolas Pitre <nico@fluxnic.net>
+ *   - contributed to gcc-3.4 on Sep 30, 2003
+ *   - adapted for the Linux kernel on Oct 2, 2003
+ */
+
+/* Copyright 1995, 1996, 1998, 1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -22,28 +29,22 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING.  If not, write to
-the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
 
-#ifdef __ARMEB__
-#define al r1
-#define ah r0
-#else
-#define al r0
-#define ah r1
-#endif
-	.section .text.__lshrdi3
 
-.globl __lshrdi3
-__lshrdi3:
-.globl __aeabi_llsr
-__aeabi_llsr:
+#include <linux/linkage.h>
+#include <asm/assembler.h>
 
-	subs	r3, r2, #32
-	rsb	ip, r2, #32
-	movmi	al, al, lsr r2
-	movpl	al, ah, lsr r3
-	orrmi	al, al, ah, lsl ip
-	mov	ah, ah, lsr r2
+.section .text.__aeabi_idivmod
+
+ENTRY(__aeabi_idivmod)
+
+	stmfd	sp!, {r0, r1, ip, lr}
+	bl	__aeabi_idiv
+	ldmfd	sp!, {r1, r2, ip, lr}
+	mul	r3, r0, r2
+	sub	r1, r1, r3
 	mov	pc, lr
 
+ENDPROC(__aeabi_idivmod)

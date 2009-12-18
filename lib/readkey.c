@@ -70,7 +70,7 @@ char read_key(void)
 			}
 		}
 		esc[i] = 0;
-		for (i = 0; i < 18; i++){
+		for (i = 0; i < ARRAY_SIZE(esccmds); i++){
 			if (!strcmp(esc, esccmds[i].seq))
 				return esccmds[i].val;
 		}

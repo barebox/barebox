@@ -32,7 +32,7 @@
 
 #define DVR_VER "2.0"
 
-#define nfc_is_v21()		(cpu_is_mx25() || cpu_is_mx35())
+#define nfc_is_v21()		(cpu_is_mx25() || cpu_is_mx35() || cpu_is_mx21())
 #define nfc_is_v1()		(cpu_is_mx31() || cpu_is_mx27())
 
 /*

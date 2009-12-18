@@ -52,7 +52,7 @@ static const struct esc_cmds esccmds[] = {
 	{"[6~", KEY_PAGEDOWN},// Cursor Key Page Down
 };
 
-char read_key(void)
+int read_key(void)
 {
 	char c;
 	char esc[5];

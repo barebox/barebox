@@ -17,8 +17,8 @@
 #define MAX_CMDBUF_SIZE		256
 
 #define CTL_BACKSPACE		('\b')
-#define DEL			((char)255)
-#define DEL7			((char)127)
+#define DEL			255
+#define DEL7			127
 #define CREAD_HIST_CHAR		('!')
 
 #define getcmd_putch(ch)	putchar(ch)
@@ -178,7 +178,7 @@ int readline(const char *prompt, char *buf, int len)
 	unsigned long eol_num = 0;
 	unsigned long rlen;
 	unsigned long wlen;
-	unsigned char ichar;
+	int ichar;
 	int insert = 1;
 	int rc = 0;
 #ifdef CONFIG_AUTO_COMPLETE

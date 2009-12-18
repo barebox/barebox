@@ -110,7 +110,15 @@ struct i2c_board_info {
 #define I2C_BOARD_INFO(dev_type, dev_addr) \
 	.type = dev_type, .addr = (dev_addr)
 
+#ifdef CONFIG_I2C
 extern int i2c_register_board_info(int busnum, struct i2c_board_info const *info, unsigned n);
+#else
+static inline int i2c_register_board_info(int busnum,
+		struct i2c_board_info const *info, unsigned n)
+{
+	return 0;
+}
+#endif
 extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
 
 extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);

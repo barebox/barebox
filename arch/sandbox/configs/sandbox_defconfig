@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # barebox version: 2.0.0-rc10
-# Mon Oct 12 14:15:55 2009
+# Fri Dec 18 11:53:08 2009
 #
 CONFIG_ARCH_TEXT_BASE=0x00000000
 CONFIG_BOARDINFO="sandbox"
@@ -114,10 +114,8 @@ CONFIG_CMD_VERSION=y
 CONFIG_CMD_HELP=y
 CONFIG_CMD_DEVINFO=y
 CONFIG_NET=y
-CONFIG_NET_BOOTP=y
 CONFIG_NET_DHCP=y
 # CONFIG_NET_RARP is not set
-# CONFIG_NET_SNTP is not set
 # CONFIG_NET_NFS is not set
 CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
@@ -143,6 +141,7 @@ CONFIG_DRIVER_NET_TAP=y
 # SPI drivers
 #
 # CONFIG_SPI is not set
+# CONFIG_I2C is not set
 
 #
 # flash drivers
@@ -152,10 +151,6 @@ CONFIG_DRIVER_NET_TAP=y
 # CONFIG_NAND is not set
 # CONFIG_USB is not set
 # CONFIG_USB_GADGET is not set
-
-#
-# Video drivers
-#
 # CONFIG_VIDEO is not set
 
 #

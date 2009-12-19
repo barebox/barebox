@@ -103,7 +103,7 @@ config CPU_V7_DCACHE_SKIP
 	  So that the D-Cache invalidation logic is skipped
 
 config ARM_OPTIMZED_STRING_FUNCTIONS
-	bool "use assembler optimzed string functions"
+	bool "use assembler optimized string functions"
 	help
 	  Say yes here to use assembler optimized memcpy / memset functions.
 	  These functions work much faster than the normal versions but

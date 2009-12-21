@@ -120,7 +120,7 @@ static int no_autopart=0;
 module_param(no_autopart, int, 0);
 #endif
 
-#ifdef MTD_NAND_DISKONCHIP_BBTWRITE
+#ifdef CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE
 static int inftl_bbt_write=1;
 #else
 static int inftl_bbt_write=0;

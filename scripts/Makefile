@@ -3,14 +3,8 @@
 # the kernel for the build process.
 # ---------------------------------------------------------------------------
 # kallsyms:      Find all symbols in barebox
-# pnmttologo:    Convert pnm files to logo files
-# conmakehash:   Create chartable
-# conmakehash:	 Create arrays for initializing the kernel console tables
 
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
-hostprogs-$(CONFIG_LOGO)         += pnmtologo
-hostprogs-$(CONFIG_VT)           += conmakehash
-hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
 hostprogs-y                      += bin2c
 hostprogs-y                      += mkimage
 hostprogs-y                      += bareboxenv
@@ -18,10 +12,6 @@ hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
 
 always		:= $(hostprogs-y) $(hostprogs-m)
 
-# The following hostprogs-y programs are only build on demand
-hostprogs-y += unifdef
-
-#subdir-$(CONFIG_MODVERSIONS) += genksyms
 subdir-y                     += mod
 
 # Let clean descend into subdirs

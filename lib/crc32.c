@@ -9,7 +9,7 @@
  */
 
 #ifdef __BAREBOX__	/* Shut down "ANSI does not permit..." warnings */
-#include <common.h>	/* to get command definitions like CFG_CMD_JFFS2 */
+#include <common.h>
 #endif
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE

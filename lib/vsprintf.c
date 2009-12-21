@@ -206,7 +206,9 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int 
 	return buf;
 }
 
+#ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
+#endif
 
 static char *string(char *buf, char *end, char *s, int field_width, int precision, int flags)
 {

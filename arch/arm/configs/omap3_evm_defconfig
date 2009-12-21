@@ -1,15 +1,22 @@
 #
 # Automatically generated make config: don't edit
-# U-Boot version: 2.0.0-rc10
-# Mon Dec 14 16:16:09 2009
+# barebox version: 2009.12.0-pre
+# Fri Dec 18 16:39:27 2009
 #
+# CONFIG_BOARD_LINKER_SCRIPT is not set
 CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
 
 #
 # System Type
 #
+# CONFIG_ARCH_AT91 is not set
+# CONFIG_ARCH_AT91RM9200 is not set
+# CONFIG_ARCH_IMX is not set
+# CONFIG_ARCH_NETX is not set
 CONFIG_ARCH_OMAP=y
+# CONFIG_ARCH_S3C24xx is not set
+
 #
 # Processor Type
 #
@@ -20,7 +27,6 @@ CONFIG_CPU_32v7=y
 #
 # processor features
 #
-CONFIG_ARCH_TEXT_BASE=0x80e80000
 CONFIG_BOARDINFO="Texas Instrument's OMAP3EVM"
 
 #
@@ -38,10 +44,13 @@ CONFIG_GPMC=y
 #
 # OMAP Platform Features
 #
+# CONFIG_MACH_OMAP343xSDP is not set
+# CONFIG_MACH_BEAGLE is not set
 CONFIG_MACH_OMAP3EVM=y
 CONFIG_OMAP3EVM_UART1=y
 # CONFIG_OMAP3EVM_UART3 is not set
 CONFIG_HAS_OMAP_NAND=y
+# CONFIG_MACH_OMAP_GPMC_NAND is not set
 CONFIG_AEABI=y
 
 #
@@ -52,6 +61,7 @@ CONFIG_CMD_ARM_CPUINFO=y
 # CONFIG_SETUP_MEMORY_TAGS is not set
 # CONFIG_INITRD_TAG is not set
 # CONFIG_CPU_V7_DCACHE_SKIP is not set
+# CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS is not set
 CONFIG_HAS_KALLSYMS=y
 CONFIG_HAS_MODULES=y
 # CONFIG_CMD_MEMORY is not set
@@ -152,6 +162,7 @@ CONFIG_CMD_MEMINFO=y
 #
 # flash
 #
+# CONFIG_CMD_FLASH is not set
 
 #
 # booting
@@ -175,6 +186,7 @@ CONFIG_CMD_DEVINFO=y
 #
 # serial drivers
 #
+# CONFIG_DRIVER_SERIAL_ARM_DCC is not set
 CONFIG_DRIVER_SERIAL_NS16550=y
 CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS=y
 
@@ -182,11 +194,17 @@ CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS=y
 # SPI drivers
 #
 # CONFIG_SPI is not set
+# CONFIG_I2C is not set
 
 #
 # flash drivers
 #
-
+# CONFIG_DRIVER_CFI is not set
+CONFIG_DRIVER_CFI_OLD=y
+# CONFIG_NAND is not set
+# CONFIG_USB is not set
+# CONFIG_USB_GADGET is not set
+# CONFIG_VIDEO is not set
 
 #
 # Filesystem support
@@ -195,3 +213,4 @@ CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS=y
 CONFIG_FS_RAMFS=y
 CONFIG_FS_DEVFS=y
 CONFIG_CRC16=y
+# CONFIG_GENERIC_FIND_NEXT_BIT is not set

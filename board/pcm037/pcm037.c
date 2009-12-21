@@ -25,6 +25,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <fs.h>
 #include <environment.h>
 #include <usb/isp1504.h>
 #include <mach/imx-regs.h>

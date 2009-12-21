@@ -1,7 +1,7 @@
-VERSION = 2
-PATCHLEVEL = 0
+VERSION = 2009
+PATCHLEVEL = 12
 SUBLEVEL = 0
-EXTRAVERSION =-rc10
+EXTRAVERSION =-pre
 NAME = Amissive Actinocutious Kiwi
 
 # *DOCUMENTATION*
@@ -939,7 +939,7 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.S \
-		.tmp_kallsyms* barebox_default_env
+		.tmp_kallsyms* barebox_default_env barebox.ldr
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

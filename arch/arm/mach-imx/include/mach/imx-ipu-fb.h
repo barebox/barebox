@@ -25,7 +25,7 @@
  * struct mx3fb_platform_data - mx3fb platform data
  */
 struct imx_ipu_fb_platform_data {
-	struct fb_videomode	*mode;
+	const struct fb_videomode	*mode;
 	unsigned char		bpp;
 	void __iomem		*framebuffer;
 };

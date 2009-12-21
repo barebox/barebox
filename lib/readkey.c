@@ -52,7 +52,7 @@ static const struct esc_cmds esccmds[] = {
 	{"[6~", KEY_PAGEDOWN},// Cursor Key Page Down
 };
 
-char read_key(void)
+int read_key(void)
 {
 	char c;
 	char esc[5];
@@ -70,7 +70,7 @@ char read_key(void)
 			}
 		}
 		esc[i] = 0;
-		for (i = 0; i < 18; i++){
+		for (i = 0; i < ARRAY_SIZE(esccmds); i++){
 			if (!strcmp(esc, esccmds[i].seq))
 				return esccmds[i].val;
 		}

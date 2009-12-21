@@ -1,39 +1,47 @@
 #
 # Automatically generated make config: don't edit
 # barebox version: 2.0.0-rc10
-# Sat Sep 26 18:45:28 2009
+# Fri Dec 18 11:47:16 2009
 #
-CONFIG_ARCH_TEXT_BASE=0x23f00000
-CONFIG_BOARDINFO="Atmel at91sam9263-ek"
 # CONFIG_BOARD_LINKER_SCRIPT is not set
 CONFIG_GENERIC_LINKER_SCRIPT=y
 CONFIG_ARM=y
-CONFIG_CPU_ARM926T=y
-CONFIG_ARCH_AT91=y
-CONFIG_ARCH_AT91SAM9263=y
-# CONFIG_MACH_MX1ADS is not set
-# CONFIG_MACH_SCB9328 is not set
-# CONFIG_MACH_PCM038 is not set
-# CONFIG_MACH_IMX21ADS is not set
-# CONFIG_MACH_IMX27ADS is not set
-# CONFIG_MACH_PCM043 is not set
-# CONFIG_MACH_FREESCALE_MX35_3STACK is not set
-# CONFIG_MACH_FREESCALE_MX25_3STACK is not set
-# CONFIG_MACH_ECO920 is not set
-# CONFIG_MACH_NXDB500 is not set
-# CONFIG_MACH_PCM037 is not set
-# CONFIG_MACH_OMAP is not set
-# CONFIG_MACH_AT91SAM9260EK is not set
-CONFIG_MACH_AT91SAM9263EK=y
-# CONFIG_MACH_PM9263 is not set
-# CONFIG_MACH_A9M2410 is not set
-# CONFIG_MACH_A9M2440 is not set
-# CONFIG_MACH_PCA100 is not set
-# CONFIG_MACH_MMCCPU is not set
-# CONFIG_MACH_EUKREA_CPUIMX27 is not set
 
 #
-# Arm specific settings         
+# System Type
+#
+CONFIG_ARCH_AT91=y
+# CONFIG_ARCH_AT91RM9200 is not set
+# CONFIG_ARCH_IMX is not set
+# CONFIG_ARCH_NETX is not set
+# CONFIG_ARCH_OMAP is not set
+# CONFIG_ARCH_S3C24xx is not set
+
+#
+# Processor Type
+#
+CONFIG_CPU_32=y
+CONFIG_CPU_ARM926T=y
+CONFIG_CPU_32v5=y
+
+#
+# processor features
+#
+CONFIG_ARCH_TEXT_BASE=0x23f00000
+CONFIG_BOARDINFO="Atmel at91sam9263-ek"
+
+#
+# Atmel AT91 System-on-Chip
+#
+# CONFIG_ARCH_AT91SAM9260 is not set
+CONFIG_ARCH_AT91SAM9263=y
+CONFIG_MACH_AT91SAM9263EK=y
+# CONFIG_MACH_MMCCPU is not set
+# CONFIG_MACH_PM9263 is not set
+# CONFIG_AEABI is not set
+
+#
+# Arm specific settings
 #
 CONFIG_CMD_ARM_CPUINFO=y
 CONFIG_CMDLINE_TAG=y
@@ -45,14 +53,15 @@ CONFIG_HAS_KALLSYMS=y
 CONFIG_HAS_MODULES=y
 CONFIG_CMD_MEMORY=y
 CONFIG_ENV_HANDLING=y
+CONFIG_GENERIC_GPIO=y
 
 #
-# General Settings              
+# General Settings
 #
 CONFIG_LOCALVERSION_AUTO=y
 
 #
-# memory layout                 
+# memory layout
 #
 CONFIG_HAVE_CONFIGURABLE_TEXT_BASE=y
 CONFIG_TEXT_BASE=0x23f00000
@@ -87,7 +96,7 @@ CONFIG_DEFAULT_ENVIRONMENT=y
 CONFIG_DEFAULT_ENVIRONMENT_PATH="board/at91sam9263ek/env"
 
 #
-# Debugging                     
+# Debugging
 #
 # CONFIG_DEBUG_INFO is not set
 # CONFIG_ENABLE_FLASH_NOISE is not set
@@ -95,11 +104,11 @@ CONFIG_DEFAULT_ENVIRONMENT_PATH="board/at91sam9263ek/env"
 # CONFIG_ENABLE_DEVICE_NOISE is not set
 
 #
-# Commands                      
+# Commands
 #
 
 #
-# scripting                     
+# scripting
 #
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_SLEEP=y
@@ -112,7 +121,7 @@ CONFIG_CMD_TRUE=y
 CONFIG_CMD_FALSE=y
 
 #
-# file commands                 
+# file commands
 #
 CONFIG_CMD_LS=y
 CONFIG_CMD_RM=y
@@ -126,13 +135,13 @@ CONFIG_CMD_MOUNT=y
 CONFIG_CMD_UMOUNT=y
 
 #
-# console                       
+# console
 #
 CONFIG_CMD_CLEAR=y
 CONFIG_CMD_ECHO=y
 
 #
-# memory                        
+# memory
 #
 # CONFIG_CMD_LOADB is not set
 CONFIG_CMD_MEMINFO=y
@@ -141,12 +150,12 @@ CONFIG_CMD_MTEST=y
 # CONFIG_CMD_MTEST_ALTERNATIVE is not set
 
 #
-# flash                         
+# flash
 #
 CONFIG_CMD_FLASH=y
 
 #
-# booting                       
+# booting
 #
 CONFIG_CMD_BOOTM=y
 CONFIG_CMD_BOOTM_ZLIB=y
@@ -162,40 +171,41 @@ CONFIG_CMD_TEST=y
 CONFIG_CMD_VERSION=y
 CONFIG_CMD_HELP=y
 CONFIG_CMD_DEVINFO=y
+CONFIG_CMD_GPIO=y
 CONFIG_NET=y
-CONFIG_NET_BOOTP=y
 CONFIG_NET_DHCP=y
 # CONFIG_NET_RARP is not set
-# CONFIG_NET_SNTP is not set
 CONFIG_NET_NFS=y
 CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
 
 #
-# Drivers                       
+# Drivers
 #
 
 #
-# serial drivers                
+# serial drivers
 #
+# CONFIG_DRIVER_SERIAL_ARM_DCC is not set
 # CONFIG_DRIVER_SERIAL_NS16550 is not set
 CONFIG_DRIVER_SERIAL_ATMEL=y
 CONFIG_MIIPHY=y
 
 #
-# Network drivers               
+# Network drivers
 #
 # CONFIG_DRIVER_NET_SMC911X is not set
 # CONFIG_DRIVER_NET_SMC91111 is not set
 CONFIG_DRIVER_NET_MACB=y
 
 #
-# SPI drivers                   
+# SPI drivers
 #
 # CONFIG_SPI is not set
+# CONFIG_I2C is not set
 
 #
-# flash drivers                 
+# flash drivers
 #
 CONFIG_DRIVER_CFI=y
 CONFIG_DRIVER_CFI_NEW=y
@@ -212,14 +222,11 @@ CONFIG_NAND_ATMEL=y
 # CONFIG_MTD_NAND_ECC_SMC is not set
 CONFIG_MTD_NAND_IDS=y
 # CONFIG_USB is not set
-
-#
-# Video drivers                 
-#
+# CONFIG_USB_GADGET is not set
 # CONFIG_VIDEO is not set
 
 #
-# Filesystem support            
+# Filesystem support
 #
 # CONFIG_FS_CRAMFS is not set
 CONFIG_FS_RAMFS=y

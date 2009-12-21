@@ -394,7 +394,7 @@ static int do_edit(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	int lastscrcol;
 	int i;
 	int linepos;
-	char c;
+	int c;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;

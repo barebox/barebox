@@ -67,9 +67,7 @@ static struct device_d dm9000_dev = {
 
 static int scb9328_devices_init(void) {
 
-	/* adjust chipselects */
-	GPR(0) = 0x00800000;
-	GIUS(0) = 0x0043fffe;
+	imx_gpio_mode(PA23_PF_CS5);
 
 /* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
 	FMCR = 0x1;

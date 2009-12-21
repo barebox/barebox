@@ -113,7 +113,7 @@ static const struct fb_videomode pcm043_fb_mode = {
 	.flag		= 0,
 };
 #else
-static struct fb_videomode pcm043_fb_mode = {
+static const struct fb_videomode pcm043_fb_mode = {
 	/* 240x320 @ 60 Hz */
 	.name		= "TX090",
 	.refresh	= 60,

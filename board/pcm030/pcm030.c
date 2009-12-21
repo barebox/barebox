@@ -38,10 +38,6 @@
 #include <mem_malloc.h>
 #include <reloc.h>
 
-#ifdef CONFIG_VIDEO_OPENIP
-#include <openip.h>
-#endif
-
 struct device_d cfi_dev = {
 	.name     = "cfi_flash",
 	.map_base = 0xff000000,
@@ -230,17 +226,6 @@ long int initdram (int board_type)
 	return dramsize + dramsize2;
 }
 
-#ifdef	CONFIG_PCI
-static struct pci_controller hose;
-
-extern void pci_mpc5xxx_init(struct pci_controller *);
-
-void pci_init_board(void)
-{
-	pci_mpc5xxx_init(&hose);
-}
-#endif
-
 #if defined(CONFIG_OF_FLAT_TREE) && defined(CONFIG_OF_BOARD_SETUP)
 void
 ft_board_setup(void *blob, bd_t *bd)
@@ -249,123 +234,3 @@ ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
-#if defined (CFG_CMD_IDE) && defined (CONFIG_IDE_RESET)
-
-#define GPIO_PSC2_4	0x02000000UL
-
-void init_ide_reset (void)
-{
-	debug ("init_ide_reset\n");
-
-    	/* Configure PSC2_4 as GPIO output for ATA reset */
-	*(vu_long *) MPC5XXX_WU_GPIO_ENABLE |= GPIO_PSC2_4;
-	*(vu_long *) MPC5XXX_WU_GPIO_DIR    |= GPIO_PSC2_4;
-	/* Deassert reset */
-	*(vu_long *) MPC5XXX_WU_GPIO_DATA   |= GPIO_PSC2_4;
-}
-
-void ide_set_reset (int idereset)
-{
-	debug ("ide_reset(%d)\n", idereset);
-
-	if (idereset) {
-		*(vu_long *) MPC5XXX_WU_GPIO_DATA &= ~GPIO_PSC2_4;
-		/* Make a delay. MPC5200 spec says 25 usec min */
-		udelay(500000);
-	} else {
-		*(vu_long *) MPC5XXX_WU_GPIO_DATA |=  GPIO_PSC2_4;
-	}
-}
-#endif /* defined (CFG_CMD_IDE) && defined (CONFIG_IDE_RESET) */
-
-#ifdef CONFIG_VIDEO_OPENIP
-
-#define DISPLAY_WIDTH   320
-#define DISPLAY_HEIGHT  240
-
-#ifdef CONFIG_VIDEO_OPENIP_8BPP
-#error CONFIG_VIDEO_OPENIP_8BPP not supported.
-#endif /* CONFIG_VIDEO_OPENIP_8BPP */
-
-#ifdef CONFIG_VIDEO_OPENIP_16BPP
-#error CONFIG_VIDEO_OPENIP_16BPP not supported.
-#endif /* CONFIG_VIDEO_OPENIP_16BPP */
-#ifdef CONFIG_VIDEO_OPENIP_32BPP
-
-
-
-static const SMI_REGS init_regs [] =
-{
-	{0x00008, 0x0248013f},
-	{0x0000c, 0x021100f0},
-	{0x00010, 0x018c0106},
-	{0x00014, 0x00800000},
-	{0x00018, 0x00800000},
-	{0x00000, 0x00003701},
-	{0, 0}
-};
-#endif /* CONFIG_VIDEO_OPENIP_32BPP */
-
-#ifdef CONFIG_CONSOLE_EXTRA_INFO
-/*
- * Return text to be printed besides the logo.
- */
-void video_get_info_str (int line_number, char *info)
-{
-	if (line_number == 1) {
-		strcpy (info, " Board: phyCORE-MPC5200B tiny (Phytec Messtechnik GmbH)");
-	} else if (line_number == 2) {
-		strcpy (info, "    on a PCM-980 baseboard");
-	}
-	else {
-		info [0] = '\0';
-	}
-}
-#endif
-
-/*
- * Returns OPENIP register base address. First thing called in the driver.
- */
-unsigned int board_video_init (void)
-{
-ulong dummy;
-dummy  = *(vu_long *)OPENIP_MMIO_BASE; /*dummy read*/
-dummy  = *(vu_long *)OPENIP_MMIO_BASE; /*dummy read*/
-	return OPENIP_MMIO_BASE;
-}
-
-/*
- * Returns OPENIP framebuffer address
- */
-unsigned int board_video_get_fb (void)
-{
-
-	return OPENIP_FB_BASE;
-}
-
-/*
- * Called after initializing the OPENIP and before clearing the screen.
- */
-void board_validate_screen (unsigned int base)
-{
-}
-
-/*
- * Return a pointer to the initialization sequence.
- */
-const SMI_REGS *board_get_regs (void)
-{
-	return init_regs;
-}
-
-int board_get_width (void)
-{
-	return DISPLAY_WIDTH;
-}
-
-int board_get_height (void)
-{
-	return DISPLAY_HEIGHT;
-}
-
-#endif /* CONFIG_VIDEO_OPENIP */

@@ -224,31 +224,37 @@ static struct file_operations nand_bb_ops = {
 int dev_add_bb_dev(char *path, const char *name)
 {
 	struct nand_bb *bb;
-	int ret;
+	int ret = -ENOMEM;
 	struct stat s;
 
 	bb = xzalloc(sizeof(*bb));
 	bb->devname = asprintf("/dev/%s", basename(path));
+	if (!bb->devname)
+		goto out1;
+
 	if (name)
 		bb->cdev.name = strdup(name);
 	else
 		bb->cdev.name = asprintf("%s.bb", basename(path));
 
+	if (!bb->cdev.name)
+		goto out2;
+
 	ret = stat(bb->devname, &s);
 	if (ret)
-		goto free_out;
+		goto out3;
 
 	bb->raw_size = s.st_size;
 
 	bb->fd = open(bb->devname, O_RDWR);
 	if (bb->fd < 0) {
 		ret = -ENODEV;
-		goto free_out;
+		goto out3;
 	}
 
 	ret = ioctl(bb->fd, MEMGETINFO, &bb->info);
 	if (ret)
-		goto free_out;
+		goto out4;
 
 	nand_bb_calc_size(bb);
 	bb->cdev.ops = &nand_bb_ops;
@@ -258,7 +264,13 @@ int dev_add_bb_dev(char *path, const char *name)
 
 	return 0;
 
-free_out:
+out4:
+	close(bb->fd);
+out3:
+	free(bb->cdev.name);
+out2:
+	free(bb->devname);
+out1:
 	free(bb);
 	return ret;
 }

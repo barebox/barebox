@@ -71,7 +71,7 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 		       struct module *mod);
 #else
 #define EXPORT_SYMBOL(sym)
-#endif /* CONFIG_MODULE */
+#endif /* CONFIG_MODULES */
 
 extern struct list_head module_list;
 

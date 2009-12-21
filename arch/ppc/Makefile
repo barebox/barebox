@@ -17,7 +17,7 @@ TEXT_BASE = $(CONFIG_TEXT_BASE)
 CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
 
 # Add cleanup flags
-ifndef CONFIG_MODULE
+ifndef CONFIG_MODULES
 CPPFLAGS += -fdata-sections -ffunction-sections
 endif
 

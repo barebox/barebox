@@ -240,7 +240,9 @@ int add_mtd_device(struct mtd_info *mtd)
 int del_mtd_device (struct mtd_info *mtd)
 {
 	unregister_device(&mtd->class_dev);
+	free(mtd->cdev_oob.name);
 	free(mtd->param_size.value);
+	free(mtd->cdev.name);
 	return 0;
 }
 

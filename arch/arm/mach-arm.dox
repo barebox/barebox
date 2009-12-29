@@ -40,12 +40,12 @@ target address is the first C instruction in barebox. At this point of time:\n
 
 Lets call the new MACH new_cpu.
 
- - create a new subdirectory in /arch/arm/new_cpu
- - create a new subdirectory in /include/asm-arm/new_cpu
- - add CPU specific definitions into /include/asm-arm/new_cpu/
- - add /arch/arm/new_cpu/Kconfig
- - add /arch/arm/new_cpu/Makfile
- - add other CPU specific code into /arch/arm/new_cpu/
+ - create a new subdirectory in /arch/arm/mach-new_cpu
+ - create a new subdirectory in /arch/arm/mach-new_cpu/include
+ - add CPU specific definitions into /arch/arm/mach-new_cpu/include
+ - add /arch/arm/mach-new_cpu/Kconfig
+ - add /arch/arm/mach-new_cpu/Makfile
+ - add other CPU specific code into /arch/arm/mach-new_cpu/
  - modify /arch/arm/Kconfig
  - modify /arch/arm/Makfile
 

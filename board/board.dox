@@ -58,7 +58,7 @@ at the right architecture.
 
 @note Consider to use an unique page lable.
 
-@subsection board_lscript board/\<boardname\>/barebox.ld.S
+@subsection board_lscript board/\<boardname\>/barebox.lds.S
 
 If your board needs a special binary @a barebox layout, you can provide a local
 board linker script file. This will replace the generic one provided by your

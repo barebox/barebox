@@ -6,7 +6,7 @@
 
 #define MAGIC		0x19691228
 
-static int do_alternate (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_alternate(struct command *cmdtp, int argc, char *argv[])
 {
 	void *buf;
 	size_t size;

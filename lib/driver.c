@@ -280,7 +280,7 @@ void devices_shutdown(void)
 
 #ifdef CONFIG_CMD_DEVINFO
 
-static int do_devinfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
 	struct driver_d *drv;

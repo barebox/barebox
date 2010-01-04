@@ -29,7 +29,7 @@ static inline void set_pixel(struct fb_info *info, void *adr, int r, int g, int 
 	}
 }
 
-static int do_bmp(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bmp(struct command *cmdtp, int argc, char *argv[])
 {
 	int ret, opt, fd;
 	char *fbdev = "/dev/fb0";

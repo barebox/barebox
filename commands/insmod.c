@@ -5,7 +5,7 @@
 #include <fs.h>
 #include <malloc.h>
 
-static int do_insmod (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_insmod(struct command *cmdtp, int argc, char *argv[])
 {
 	struct module *module;
 	void *buf;

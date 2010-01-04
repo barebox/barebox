@@ -42,12 +42,11 @@ extern struct list_head command_list;
 /*
  * Monitor Command Table
  */
-
-struct cmd_tbl_s {
+struct command {
 	const char	*name;		/* Command Name			*/
 	const char	**aliases;
 					/* Implementation function	*/
-	int		(*cmd)(struct cmd_tbl_s *, int, char *[]);
+	int		(*cmd)(struct command *, int, char *[]);
 	const char	*usage;		/* Usage message	(short)	*/
 
 	struct list_head list;		/* List of commands		*/
@@ -61,17 +60,14 @@ __attribute__((aligned(64)))
 #endif
 ;
 
-
-typedef struct cmd_tbl_s	cmd_tbl_t;
-
-extern cmd_tbl_t  __barebox_cmd_start;
-extern cmd_tbl_t  __barebox_cmd_end;
+extern struct command __barebox_cmd_start;
+extern struct command __barebox_cmd_end;
 
 
 /* common/command.c */
-cmd_tbl_t *find_cmd(const char *cmd);
+struct command *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
-void barebox_cmd_usage(cmd_tbl_t *cmdtp);
+void barebox_cmd_usage(struct command *cmdtp);
 
 #define COMMAND_SUCCESS		0
 #define COMMAND_ERROR		1
@@ -86,7 +82,7 @@ void barebox_cmd_usage(cmd_tbl_t *cmdtp);
 #define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 
 #define BAREBOX_CMD_START(_name)				\
-const cmd_tbl_t __barebox_cmd_##_name	\
+const struct command __barebox_cmd_##_name	\
 	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {				\
 	.name		= #_name,
 
@@ -99,6 +95,6 @@ const cmd_tbl_t __barebox_cmd_##_name	\
 #define BAREBOX_CMD_HELP(text)
 #endif
 
-int register_command(cmd_tbl_t *);
+int register_command(struct command *);
 
 #endif	/* __COMMAND_H */

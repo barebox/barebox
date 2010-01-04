@@ -81,7 +81,7 @@ PingHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
 	NetState = NETLOOP_SUCCESS;
 }
 
-int do_ping (cmd_tbl_t *cmdtp, int argc, char *argv[])
+int do_ping(struct command *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2 || string_to_ip(argv[1], &NetPingIP))
 		return COMMAND_ERROR_USAGE;

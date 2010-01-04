@@ -706,7 +706,7 @@ NfsStart (char *p)
 	NfsSend ();
 }
 
-static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nfs(struct command *cmdtp, int argc, char *argv[])
 {
 	int   rcode = 0;
 	char  *localfile;

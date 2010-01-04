@@ -478,7 +478,7 @@ static int __usb_init(void)
 	return 0;
 }
 
-static int do_usb(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_usb(struct command *cmdtp, int argc, char *argv[])
 {
 	__usb_init();
 

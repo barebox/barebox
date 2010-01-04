@@ -162,7 +162,7 @@ int cleanup_before_linux (void)
  * required.
  */
 
-static int do_icache(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_icache(struct command *cmdtp, int argc, char *argv[])
 {
 	if (argc == 1) {
 		printf("icache is %sabled\n", icache_status() ? "en" : "dis");

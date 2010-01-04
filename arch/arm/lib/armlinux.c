@@ -235,7 +235,7 @@ struct zimage_header {
 	u32	end;
 };
 
-static int do_bootz(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params);
 	const char *commandline = getenv("bootargs");
@@ -308,7 +308,7 @@ BAREBOX_CMD_END
 #endif /* CONFIG_CMD_BOOTZ */
 
 #ifdef CONFIG_CMD_BOOTU
-static int do_bootu(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params);
 	const char *commandline = getenv("bootargs");

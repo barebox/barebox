@@ -279,7 +279,7 @@ out1:
 #define NAND_DEL (1 << 1)
 #define NAND_MARKBAD (1 << 2)
 
-static int do_nand(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nand(struct command *cmdtp, int argc, char *argv[])
 {
 	int opt;
 	struct nand_bb *bb;

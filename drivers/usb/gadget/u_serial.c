@@ -470,7 +470,7 @@ fail_out:
 }
 #include <command.h>
 
-static int do_mycdev (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_mycdev(struct command *cmdtp, int argc, char *argv[])
 {
 
 	int i,j;

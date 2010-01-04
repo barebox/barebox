@@ -30,7 +30,7 @@
 #include <malloc.h>
 #include <linux/ctype.h>
 
-static int do_crc (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_crc(struct command *cmdtp, int argc, char *argv[])
 {
 	ulong start = 0, size = ~0, total = 0;
 	ulong crc = 0, vcrc = 0;

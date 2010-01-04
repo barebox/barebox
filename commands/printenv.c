@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <environment.h>
 
-static int do_printenv (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_printenv(struct command *cmdtp, int argc, char *argv[])
 {
 	struct variable_d *var;
 	struct env_context *c, *current_c;

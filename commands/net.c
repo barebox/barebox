@@ -76,7 +76,7 @@ void netboot_update_env(void)
 #ifdef CONFIG_NET_RARP
 extern void RarpRequest(void);
 
-static int do_rarpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_rarpb(struct command *cmdtp, int argc, char *argv[])
 {
 	int size;
 
@@ -102,7 +102,7 @@ BAREBOX_CMD_START(rarpboot)
 BAREBOX_CMD_END
 #endif /* CONFIG_NET_RARP */
 
-static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_ethact(struct command *cmdtp, int argc, char *argv[])
 {
 	struct eth_device *edev;
 

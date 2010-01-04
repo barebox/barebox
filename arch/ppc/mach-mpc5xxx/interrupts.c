@@ -314,7 +314,7 @@ void irq_free_handler(int irq)
 /****************************************************************************/
 
 #if (CONFIG_COMMANDS & CFG_CMD_IRQ)
-void do_irqinfo(cmd_tbl_t * cmdtp, bd_t * bd, int flag, int argc, char *argv[])
+void do_irqinfo(struct command * cmdtp, bd_t * bd, int flag, int argc, char *argv[])
 {
 	int irq, re_enable;
 	u32 intr_ctrl;

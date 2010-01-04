@@ -256,7 +256,7 @@ void TftpStart(char *filename)
 	TftpSend();
 }
 
-static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 {
 	int   rcode = 0;
 	char  *localfile;

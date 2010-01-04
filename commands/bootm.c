@@ -52,7 +52,7 @@
  *  - loaded (first part of) image to header load address,
  *  - disabled interrupts.
  */
-typedef void boot_os_Fcn (cmd_tbl_t *cmdtp, int flag,
+typedef void boot_os_Fcn(struct command *cmdtp, int flag,
 			  int	argc, char *argv[],
 			  ulong	addr,		/* of image to boot */
 			  ulong	*len_ptr,	/* multi-file image length table */
@@ -364,7 +364,7 @@ static int handler_parse_options(struct image_data *data, int opt, char *optarg)
 	return -1;
 }
 
-static int do_bootm (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 {
 	ulong	iflag;
 	int	opt;
@@ -464,7 +464,7 @@ BAREBOX_CMD_START(bootm)
 BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_IMI
-static int do_iminfo ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_iminfo(struct command *cmdtp, int argc, char *argv[])
 {
 	int	arg;
 	ulong	addr;

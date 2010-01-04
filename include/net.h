@@ -279,10 +279,6 @@ extern uchar		NetEtherNullAddr[6];
 extern ushort		NetOurVLAN;		/* Our VLAN 			*/
 extern ushort		NetOurNativeVLAN;	/* Our Native VLAN 		*/
 
-extern uchar		NetCDPAddr[6]; 		/* Ethernet CDP address		*/
-extern ushort		CDPNativeVLAN;		/* CDP returned native VLAN	*/
-extern ushort		CDPApplianceVLAN;	/* CDP returned appliance VLAN	*/
-
 extern int		NetState;		/* Network loop state		*/
 
 /* ---------- Added by sha ------------ */
@@ -300,10 +296,6 @@ extern void ArpRequest (void);
 #define NETLOOP_FAIL		3
 
 typedef enum { BOOTP, RARP, ARP, TFTP, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP } proto_t;
-
-/* when CDP completes these hold the return values */
-extern ushort CDPNativeVLAN;
-extern ushort CDPApplianceVLAN;
 
 /* Initialize the network adapter */
 int	NetLoopInit(proto_t);

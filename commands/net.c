@@ -210,54 +210,6 @@ out:
 	return rcode;
 }
 
-#ifdef CONFIG_NET_CDP
-
-static void cdp_update_env(void)
-{
-	char tmp[16];
-
-	if (CDPApplianceVLAN != htons(-1)) {
-		printf("CDP offered appliance VLAN %d\n", ntohs(CDPApplianceVLAN));
-		VLAN_to_string(CDPApplianceVLAN, tmp);
-		setenv("vlan", tmp);
-		NetOurVLAN = CDPApplianceVLAN;
-	}
-
-	if (CDPNativeVLAN != htons(-1)) {
-		printf("CDP offered native VLAN %d\n", ntohs(CDPNativeVLAN));
-		VLAN_to_string(CDPNativeVLAN, tmp);
-		setenv("nvlan", tmp);
-		NetOurNativeVLAN = CDPNativeVLAN;
-	}
-
-}
-
-static int do_cdp (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	int r;
-
-	if (NetLoopInit(CDP) < 0)
-		return 1;
-
-	r = NetLoop();
-	if (r < 0) {
-		printf("cdp failed; perhaps not a CISCO switch?\n");
-		return 1;
-	}
-
-	cdp_update_env();
-
-	return 0;
-}
-
-BAREBOX_CMD_START(cdp)
-	.cmd		= do_cdp,
-	.usage		= "Perform CDP network configuration",
-	BAREBOX_CMD_HELP("[loadAddress] [host ip addr:bootfilename]\n")
-BAREBOX_CMD_END
-
-#endif	/* CONFIG_NET_CDP */
-
 static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {
 	struct eth_device *edev;

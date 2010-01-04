@@ -189,18 +189,6 @@ void ArpRequest (void)
 	(void) eth_send (NetTxPacket, (pkt - NetTxPacket) + ARP_HDR_SIZE);
 }
 
-static void ArpTimeoutCheck(void)
-{
-	if (!NetArpWaitPacketIP)
-		return;
-
-	/* check for arp timeout */
-	if (is_timeout(NetArpWaitTimerStart, ARP_TIMEOUT)) {
-		NetArpWaitTimerStart = get_time_ns();
-		ArpRequest();
-	}
-}
-
 /**********************************************************************/
 /*
  *	Main network processing loop.
@@ -298,7 +286,12 @@ int NetLoop(void)
 			return -1;
 		}
 
-		ArpTimeoutCheck();
+		/* check for arp timeout */
+		if (NetArpWaitPacketIP &&
+				is_timeout(NetArpWaitTimerStart, ARP_TIMEOUT)) {
+			NetArpWaitTimerStart = get_time_ns();
+			ArpRequest();
+		}
 
 		/*
 		 *	Check for a timeout, and run the timeout handler

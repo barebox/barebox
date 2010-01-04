@@ -380,7 +380,8 @@ static int cfi_protect(struct cdev *cdev, size_t count, unsigned long offset, in
 	unsigned long start, end;
 	int i, ret = 0;
 
-	debug("%s: protect 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	debug("%s: %sprotect 0x%08x (size %d)\n",
+		__FUNCTION__, (prot? "" : "un"), offset, count);
 
 	start = flash_find_sector(finfo, cdev->dev->map_base + offset);
 	end   = flash_find_sector(finfo, cdev->dev->map_base + offset + count - 1);

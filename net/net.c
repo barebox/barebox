@@ -576,9 +576,6 @@ NetReceive(uchar * inpkt, int len)
 				/* save address for later use */
 				memcpy(NetArpWaitPacketMAC, &arp->ar_data[0], 6);
 
-#ifdef CONFIG_NETCONSOLE
-				(*packetHandler)(0,0,0,0);
-#endif
 				/* modify header, and transmit it */
 				memcpy(((Ethernet_t *)NetArpWaitTxPacket)->et_dest, NetArpWaitPacketMAC, 6);
 				(void) eth_send(NetArpWaitTxPacket, NetArpWaitTxPacketSize);
@@ -736,13 +733,6 @@ NetReceive(uchar * inpkt, int len)
 				return;
 			}
 		}
-#endif
-
-#ifdef CONFIG_NETCONSOLE
-		nc_input_packet((uchar *)ip +IP_HDR_SIZE,
-						ntohs(ip->udp_dst),
-						ntohs(ip->udp_src),
-						ntohs(ip->udp_len) - 8);
 #endif
 		/*
 		 *	IP header OK.  Pass the packet to the current handler.

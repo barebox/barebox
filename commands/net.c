@@ -32,12 +32,8 @@
 #include <driver.h>
 #include <net.h>
 #include <fs.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <libbb.h>
-#include <libgen.h>
-
-static int netboot_common (proto_t, cmd_tbl_t *, int , char *[]);
 
 void netboot_update_env(void)
 {
@@ -77,37 +73,6 @@ void netboot_update_env(void)
 		setenv ("domain", NetOurNISDomain);
 }
 
-static int do_tftpb (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	return netboot_common (TFTP, cmdtp, argc, argv);
-}
-
-static const __maybe_unused char cmd_tftp_help[] =
-"Usage: tftp <file> [localfile]\n"
-"Load a file via network using BootP/TFTP protocol.\n";
-
-BAREBOX_CMD_START(tftp)
-	.cmd		= do_tftpb,
-	.usage		= "Load file using tftp protocol",
-	BAREBOX_CMD_HELP(cmd_tftp_help)
-BAREBOX_CMD_END
-
-/**
- * @page tftp_command tftp
- *
- * Usage is: tftp \<filename\> [\<localfilename\>]
- *
- * Load a file via network using BootP/TFTP protocol. The loaded file you
- * can find after download in you current ramdisk. Refer \b ls command.
- *
- * \<localfile> can be the local filename only, or also a device name. In the
- * case of a device name, the will gets stored there. This works also for
- * partitions of flash memory. Refer \b erase, \b unprotect for flash
- * preparation.
- *
- * Note: This command is available only, if enabled in the menuconfig.
- */
-
 #ifdef CONFIG_NET_RARP
 extern void RarpRequest(void);
 
@@ -136,79 +101,6 @@ BAREBOX_CMD_START(rarpboot)
 	BAREBOX_CMD_HELP("[loadAddress] [bootfilename]\n")
 BAREBOX_CMD_END
 #endif /* CONFIG_NET_RARP */
-
-#ifdef CONFIG_NET_NFS
-static int do_nfs (cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	return netboot_common(NFS, cmdtp, argc, argv);
-}
-
-static const __maybe_unused char cmd_nfs_help[] =
-"Usage: nfs <file> [localfile]\n"
-"Load a file via network using nfs protocol.\n";
-
-BAREBOX_CMD_START(nfs)
-	.cmd		= do_nfs,
-	.usage		= "boot image via network using nfs protocol",
-	BAREBOX_CMD_HELP(cmd_nfs_help)
-BAREBOX_CMD_END
-
-#endif	/* CONFIG_NET_NFS */
-
-int net_store_fd;
-
-extern void TftpStart(char *);       /* Begin TFTP get */
-extern void NfsStart(char *);
-
-static int
-netboot_common (proto_t proto, cmd_tbl_t *cmdtp, int argc, char *argv[])
-{
-	int   rcode = 0;
-	int   size;
-	char  *localfile;
-	char  *remotefile;
-
-	if (argc < 2)
-		return COMMAND_ERROR_USAGE;
-
-	remotefile = argv[1];
-
-	if (argc == 2)
-		localfile = basename(remotefile);
-	else
-		localfile = argv[2];
-
-	net_store_fd = open(localfile, O_WRONLY | O_CREAT);
-	if (net_store_fd < 0) {
-		perror("open");
-		return 1;
-	}
-
-	if (NetLoopInit(proto) < 0)
-		goto out;
-
-	switch (proto) {
-	case TFTP:
-		TftpStart(remotefile);
-		break;
-	case NFS:
-		NfsStart(remotefile);
-	default:
-		break;
-	}
-
-	if ((size = NetLoop()) < 0) {
-		rcode = size;
-		goto out;
-	}
-
-	/* NetLoop ok, update environment */
-	netboot_update_env();
-
-out:
-	close(net_store_fd);
-	return rcode;
-}
 
 static int do_ethact (cmd_tbl_t *cmdtp, int argc, char *argv[])
 {

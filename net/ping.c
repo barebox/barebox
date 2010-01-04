@@ -18,9 +18,7 @@ static int PingSend(void)
 
 	memcpy(mac, NetEtherNullAddr, 6);
 
-#ifdef ET_DEBUG
-	printf("sending ARP for %08lx\n", NetPingIP);
-#endif
+	pr_debug("sending ARP for %08lx\n", NetPingIP);
 
 	NetArpWaitPacketIP = NetPingIP;
 	NetArpWaitPacketMAC = mac;

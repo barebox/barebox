@@ -15,8 +15,6 @@
 #include <fcntl.h>
 #include "tftp.h"
 
-#undef	ET_DEBUG
-
 #define WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
 #define TIMEOUT		5		/* Seconds to timeout for a lost pkt	*/
 # define TIMEOUT_COUNT	10		/* # of timeouts before giving up  */

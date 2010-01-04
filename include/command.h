@@ -79,11 +79,6 @@ void barebox_cmd_usage(cmd_tbl_t *cmdtp);
 
 #endif	/* __ASSEMBLY__ */
 
-/*
- * Configurable monitor commands definitions have been moved
- * to include/cmd_confdefs.h
- */
-
 #define __stringify_1(x)	#x
 #define __stringify(x)		__stringify_1(x)
 

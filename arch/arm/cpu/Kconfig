@@ -35,6 +35,11 @@ config CPU_ARM926T
 	  Say Y if you want support for the ARM926T processor.
 	  Otherwise, say N.
 
+# ARMv6
+config CPU_V6
+	bool
+	select CPU_32v6
+
 # ARMv7
 config CPU_V7
 	bool
@@ -46,6 +51,9 @@ config CPU_32v4T
 	bool
 
 config CPU_32v5
+	bool
+
+config CPU_32v6
 	bool
 
 config CPU_32v7

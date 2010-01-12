@@ -34,6 +34,7 @@ config ARCH_AT91RM9200
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
+	select GENERIC_GPIO
 
 config ARCH_IMX
 	bool "Freescale iMX-based"

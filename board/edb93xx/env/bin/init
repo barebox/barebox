@@ -1,0 +1,19 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+. /env/config
+
+# add partitions to barebox
+. /env/bin/set_nor_parts
+addpart /dev/nor0 ${nor_parts}
+
+echo
+echo -n "Hit any key to stop autoboot: "
+timeout -a $autoboot_timeout
+if [ $? != 0 ]; then
+	exit
+fi
+
+boot

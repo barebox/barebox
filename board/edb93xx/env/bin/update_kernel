@@ -1,0 +1,16 @@
+#!/bin/sh
+
+. /env/config
+
+if [ $# != 1 ];
+then
+				echo "Usage: $0 <1/2>"
+				exit 1
+fi
+
+partition=/dev/nor0.kernel_$1
+
+cd /
+tftp ${board}/kernel.img || exit 1
+
+flash_partition kernel.img ${partition}

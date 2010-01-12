@@ -7,6 +7,11 @@ if ATA
 
 comment "drive types"
 
+config ATA_DISK
+	bool "disk drives"
+	help
+	  Add support for regular disk drives
+
 comment "interface types"
 
 endif

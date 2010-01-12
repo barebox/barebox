@@ -35,7 +35,7 @@ Blackfin type:
 
 x86 type:
 
-@li nothing yet
+@li @subpage generic_pc
 
 coldfire/m68k type:
 

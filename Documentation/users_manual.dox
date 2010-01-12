@@ -10,5 +10,6 @@ work easier.
 @li @subpage readline_parser
 @li @subpage command_reference
 @li @subpage partitions
+@li @subpage x86_bootloader
 
 */

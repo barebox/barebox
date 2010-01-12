@@ -27,3 +27,7 @@ extern int bios_disk_rw_int13_extensions(int, int, void*) __attribute__((regparm
 extern uint16_t bios_get_memsize(void);
 
 #endif
+
+#ifdef CONFIG_CMD_LINUX16
+extern void bios_start_linux(unsigned) __attribute__((regparm(1)));
+#endif

@@ -6,3 +6,4 @@ obj-y += gdt.o
 obj-$(CONFIG_X86_BIOS_BRINGUP) += memory16.o
 obj-$(CONFIG_X86_BIOS_BRINGUP) += traveler.o
 obj-$(CONFIG_X86_BIOS_BRINGUP) += bios_disk.o
+obj-$(CONFIG_CMD_LINUX16) += linux_start.o

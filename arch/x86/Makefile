@@ -1,0 +1,50 @@
+CPPFLAGS += -D__X86__ -fno-strict-aliasing
+
+board-y := x86_generic
+machine-y := i386
+
+TEXT_BASE = $(CONFIG_TEXT_BASE)
+
+CPPFLAGS += -march=i386 -DTEXT_BASE=$(TEXT_BASE) -P
+
+ifndef CONFIG_MODULES
+# Add cleanup flags
+CPPFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS_uboot += -static --gc-sections
+endif
+
+ifeq ($(incdir-y),)
+incdir-y := $(machine-y)
+endif
+INCDIR   := arch-$(incdir-y)
+
+all: $(KBUILD_IMAGE)
+
+
+
+
+
+
+ifneq ($(board-y),)
+BOARD  := board/$(board-y)/
+else
+BOARD  :=
+endif
+
+ifneq ($(machine-y),)
+MACH  := arch/x86/mach-$(machine-y)/
+else
+MACH  :=
+endif
+
+common-y += $(BOARD) $(MACH)
+common-y += arch/x86/lib/
+common-y += arch/x86/boot/
+
+# arch/x86/cpu/
+
+lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/x86/lib/barebox.lds
+lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/barebox.lds
+
+CLEAN_FILES    += arch/x86/lib/barebox.lds barebox.map barebox.S
+

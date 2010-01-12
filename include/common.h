@@ -31,6 +31,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/stddef.h>
 #include <asm/common.h>
 
 #define pr_info(fmt, arg...)	printf(fmt, ##arg)

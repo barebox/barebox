@@ -643,7 +643,30 @@ endef
 
 barebox.bin: barebox
 	$(Q)$(OBJCOPY) -O binary barebox barebox.bin
+ifdef CONFIG_X86
+ifdef CONFIG_X86_HDBOOT
+	@echo "-------------------------------------------------" > barebox.S
+	@echo " * MBR content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .bootsector -mi8086 -d barebox >> barebox.S
+	@echo "-------------------------------------------------" >> barebox.S
+	@echo " * Boot loader content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .bootstrapping -mi8086 -d barebox >> barebox.S
+endif
+	@echo "-------------------------------------------------" >> barebox.S
+	@echo " * Regular Text content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .text -d barebox >> barebox.S
+	@echo "-------------------------------------------------" >> barebox.S
+	@echo " * Regular Data content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .data -d barebox >> barebox.S
+	@echo "-------------------------------------------------" >> barebox.S
+	@echo " * Commands content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .barebox_cmd -d barebox >> barebox.S
+	@echo "-------------------------------------------------" >> barebox.S
+	@echo " * Init Calls content" >> barebox.S
+	$(Q)$(OBJDUMP) -j .barebox_initcalls -d barebox >> barebox.S
+else
 	$(Q)$(OBJDUMP) -d barebox > barebox.S
+endif
 
 # barebox image
 barebox: $(barebox-lds) $(barebox-head) $(barebox-common) $(kallsyms.o) FORCE

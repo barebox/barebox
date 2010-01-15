@@ -198,9 +198,9 @@ static int eukrea_cpuimx27_devices_init(void)
 	eukrea_cpuimx27_mmu_init();
 
 	/* configure 16 bit nor flash on cs0 */
-	CS0U = 0x0000CC03;
-	CS0L = 0xa0330D01;
-	CS0A = 0x00220800;
+	CS0U = 0x00008F03;
+	CS0L = 0xA0330D01;
+	CS0A = 0x002208C0;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -244,9 +244,9 @@ static int eukrea_cpuimx27_console_init(void)
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
-	CS3U = 0x0000DCF6;
-	CS3L = 0x444A4541;
-	CS3A = 0x44443302;
+	CS3U = 0x0000D603;
+	CS3L = 0x0D1D0D01;
+	CS3A = 0x00D20000;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	register_device(&quad_uart_serial_device);
 #endif

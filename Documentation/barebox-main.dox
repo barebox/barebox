@@ -64,7 +64,7 @@ things right - without caring about losing support for old boards.
 
 - getopt
   - There is a small getopt implementation. Some commands got really
-    complicated (both in code and in usage) due to the fact that @a barebox only
+    complicated (both in code and in usage) due to the fact that @a U-Boot only
     allowed positional parameters.
 
 - editor

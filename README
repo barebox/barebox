@@ -61,7 +61,7 @@ Features
 
 - getopt
   There is a small getopt implementation. Some commands got really
-  complicated (both in code and in usage) due to the fact that barebox only
+  complicated (both in code and in usage) due to the fact that U-Boot only
   allowed positional parameters.
 
 - editor

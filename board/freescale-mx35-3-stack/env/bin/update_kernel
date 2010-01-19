@@ -1,8 +1,8 @@
 #!/bin/sh
 
 . /env/config
+image=$kernel
 
-image=$uimage
 if [ x$1 = xnand ]; then
 	part=/dev/nand0.kernel.bb
 elif [ x$1 = xnor ]; then

@@ -3,43 +3,53 @@
 . /env/config
 
 if [ x$1 = xnand ]; then
-	root=nand
-	kernel=nand
+	rootfs_loc=nand
+	kernel_loc=nand
+elif [ x$1 = xnor ]; then
+	rootfs_loc=nor
+	kernel_loc=nor
+elif [ x$1 = xnet ]; then
+	rootfs_loc=net
+	kernel_loc=net
 fi
 
-if [ x$1 = xnet ]; then
-	root=net
-	kernel=net
-fi
-
-if [ x$1 = xnor ]; then
-	root=nor
-	kernel=nor
-fi
 
 if [ x$ip = xdhcp ]; then
 	bootargs="$bootargs ip=dhcp"
-else
+elif [ x$ip != xno ]; then
 	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
 fi
 
-if [ x$root = xnand ]; then
-	bootargs="$bootargs root=$rootpart_nand rootfstype=jffs2"
-elif [ x$root = xnor ]; then
-	bootargs="$bootargs root=$rootpart_nor rootfstype=jffs2"
+
+if [ $rootfs_loc != net ]; then
+	if [ x$rootfs_loc = xnand ]; then
+		rootfs_mtdblock=$rootfs_mtdblock_nand
+	else
+		rootfs_mtdblock=$rootfs_mtdblock_nor
+	fi
+
+
+	if [ $rootfs_type = ubifs ]; then
+		bootargs="$bootargs root=ubi0:root ubi.mtd=$rootfs_mtdblock"
+	else
+		bootargs="$bootargs root=/dev/mtdblock$rootfs_mtdblock"
+	fi
+
+	bootargs="$bootargs rootfstype=$rootfs_type"
 else
 	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp"
 fi
 
-bootargs="$bootargs mtdparts=physmap-flash.0:$nor_parts;imx_nand:$nand_parts"
 
-if [ $kernel = net ]; then
+bootargs="$bootargs mtdparts=\"physmap-flash.0:$nor_parts;mxc_nand:$nand_parts\""
+
+if [ $kernel_loc = net ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
-	tftp $uimage uImage || exit 1
+	tftp $kernel uImage || exit 1
 	bootm uImage
-elif [ $kernel = nor ]; then
+elif [ $kernel_loc = nor ]; then
 	bootm /dev/nor0.kernel
 else
 	bootm /dev/nand0.kernel.bb

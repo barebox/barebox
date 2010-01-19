@@ -2,7 +2,12 @@
 
 . /env/config
 
-image=$uimage
+if [ $rootfs_type = ubifs ]; then
+	image=${rootfs}.ubi
+else
+	image=${rootfs}.$rootfs_type
+fi
+
 if [ x$1 = xnand ]; then
 	part=/dev/nand0.root.bb
 elif [ x$1 = xnor ]; then
@@ -13,4 +18,3 @@ else
 fi
 
 . /env/bin/_update $2
-

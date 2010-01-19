@@ -71,7 +71,7 @@ static int clocksource_init (void)
 core_initcall(clocksource_init);
 
 /*
- * Reset the cpu by setting up the watchdog timer and let it time out
+ * Reset the cpu through the reset controller
  */
 void reset_cpu (ulong ignored)
 {

@@ -80,7 +80,7 @@ config CMD_ARM_CPUINFO
 	help
 	  Say yes here to get a cpuinfo command to show some
 	  information about the cp15 registers
-	
+
 config CMDLINE_TAG
 	bool "Send commandline to kernel"
 	default y

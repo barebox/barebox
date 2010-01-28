@@ -1,7 +1,7 @@
 /*
  * i2c.h - definitions for the barebox i2c framework
  *
- * Copyricht (C) 2009 by Marc Kleine-Budde <mkl@pengutronix.de>
+ * Copyright (C) 2009 by Marc Kleine-Budde <mkl@pengutronix.de>
  *
  * This file is released under the GPLv2
  *

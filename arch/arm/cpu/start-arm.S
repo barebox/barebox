@@ -127,16 +127,16 @@ reset:
 	msr	cpsr,r0
 
 #ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
-	bl arch_init_lowlevel
+	bl	arch_init_lowlevel
 #endif
 
 #ifdef CONFIG_CPU_V7
 	/*
 	 * Invalidate v7 I/D caches
 	 */
-	mov     r0, #0                 /* set up for MCR */
-	mcr     p15, 0, r0, c8, c7, 0  /* invalidate TLBs */
-	mcr     p15, 0, r0, c7, c5, 0  /* invalidate icache */
+	mov	r0, #0			/* set up for MCR */
+	mcr	p15, 0, r0, c8, c7, 0	/* invalidate TLBs */
+	mcr	p15, 0, r0, c7, c5, 0	/* invalidate icache */
 	/* Invalidate all Dcaches */
 #ifndef CONFIG_CPU_V7_DCACHE_SKIP
 	/* If Arch specific ROM code SMI handling does not exist */
@@ -212,8 +212,8 @@ finished_inval:
 relocate:				/* relocate barebox to RAM	    */
 	adr	r0, _start		/* r0 <- current position of code   */
 	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
-	cmp     r0, r1                  /* don't reloc during debug         */
-	beq     stack_setup
+	cmp	r0, r1			/* don't reloc during debug         */
+	beq	stack_setup
 
 	ldr	r2, _barebox_start
 	ldr	r3, _bss_start

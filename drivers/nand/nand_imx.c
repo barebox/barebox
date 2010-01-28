@@ -32,8 +32,8 @@
 
 #define DVR_VER "2.0"
 
-#define nfc_is_v21()		(cpu_is_mx25() || cpu_is_mx35() || cpu_is_mx21())
-#define nfc_is_v1()		(cpu_is_mx31() || cpu_is_mx27())
+#define nfc_is_v21()		(cpu_is_mx25() || cpu_is_mx35())
+#define nfc_is_v1()		(cpu_is_mx31() || cpu_is_mx27() || cpu_is_mx21())
 
 /*
  * Addresses for NFC registers
@@ -249,8 +249,18 @@ static void __nand_boot_init send_cmd(struct imx_nand_host *host, u16 cmd)
 	writew(cmd, host->regs + NFC_FLASH_CMD);
 	writew(NFC_CMD, host->regs + NFC_CONFIG2);
 
-	/* Wait for operation to complete */
-	wait_op_done(host);
+	if (cpu_is_mx21() && (cmd == NAND_CMD_RESET)) {
+		/* Reset completion is indicated by NFC_CONFIG2 */
+		/* being set to 0 */
+		int i;
+		for (i = 0; i < 100000; i++) {
+			if (readw(host->regs + NFC_CONFIG2) == 0) {
+				break;
+			}
+		}
+	} else
+		/* Wait for operation to complete */
+		wait_op_done(host);
 }
 
 /*
@@ -826,8 +836,12 @@ static int __init imxnd_probe(struct device_d *dev)
 	struct nand_ecclayout *oob_smallpage, *oob_largepage;
 	u16 tmp;
 	int err = 0;
+
 #ifdef CONFIG_ARCH_IMX27
 	PCCR1 |= PCCR1_NFC_BAUDEN;
+#endif
+#ifdef CONFIG_ARCH_IMX21
+	PCCR0 |= PCCR0_NFC_EN;
 #endif
 	/* Allocate memory for MTD device structure and private data */
 	host = kzalloc(sizeof(struct imx_nand_host) + NAND_MAX_PAGESIZE +
@@ -1015,7 +1029,13 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 {
 	struct imx_nand_host host;
 	u32 tmp, page, block, blocksize, pagesize;
-
+#ifdef CONFIG_ARCH_IMX21
+	tmp = readl(IMX_SYSTEM_CTL_BASE + 0x14);
+	if (tmp & (1 << 5))
+		host.pagesize_2k = 1;
+	else
+		host.pagesize_2k = 0;
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	tmp = readl(IMX_SYSTEM_CTL_BASE + 0x14);
 	if (tmp & (1 << 5))

@@ -59,7 +59,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 	writel(rcsr, IMX_CCM_BASE + CCM_RCSR);
 }
 
-#elif defined CONFIG_ARCH_IMX27
+#elif defined(CONFIG_ARCH_IMX21) || defined (CONFIG_ARCH_IMX27)
 
 #define FMCR_NF_FMS		(1 << 5)
 #define FMCR_NF_16BIT_SEL	(1 << 4)

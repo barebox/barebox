@@ -107,6 +107,7 @@
 #define MPCTL1_BRMO		(1 << 6)
 #define MPCTL1_LF		(1 << 15)
 
+#define PCCR0_NFC_EN   (1 << 19)
 #define PCCR1_GPT1_EN	(1 << 25)
 
 #define CCSR_32K_SR		(1 << 15)

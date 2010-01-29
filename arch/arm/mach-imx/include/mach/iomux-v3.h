@@ -68,25 +68,25 @@ struct pad_desc {
 /*
  * Use to set PAD control
  */
-#define PAD_CTL_DRIVE_VOLTAGE_3_3_V	0
-#define PAD_CTL_DRIVE_VOLTAGE_1_8_V	1
+#define PAD_CTL_DRIVE_VOLTAGE_3_3_V	(0)
+#define PAD_CTL_DRIVE_VOLTAGE_1_8_V	(1 << 13)
 
-#define PAD_CTL_NO_HYSTERESIS		0
-#define PAD_CTL_HYSTERESIS		1
+#define PAD_CTL_NO_HYSTERESIS		(0)
+#define PAD_CTL_HYSTERESIS		(1 << 8)
 
-#define PAD_CTL_PULL_DISABLED		0x0
-#define PAD_CTL_PULL_KEEPER		0xa
-#define PAD_CTL_PULL_DOWN_100K		0xc
-#define PAD_CTL_PULL_UP_47K		0xd
-#define PAD_CTL_PULL_UP_100K		0xe
-#define PAD_CTL_PULL_UP_22K		0xf
+#define PAD_CTL_PULL_DISABLED		(0)
+#define PAD_CTL_PULL_KEEPER		(0xa << 4)
+#define PAD_CTL_PULL_DOWN_100K		(0xc << 4)
+#define PAD_CTL_PULL_UP_47K		(0xd << 4)
+#define PAD_CTL_PULL_UP_100K		(0xe << 4)
+#define PAD_CTL_PULL_UP_22K		(0xf << 4)
 
-#define PAD_CTL_OUTPUT_CMOS		0
-#define PAD_CTL_OUTPUT_OPEN_DRAIN	1
+#define PAD_CTL_OUTPUT_CMOS		(0)
+#define PAD_CTL_OUTPUT_OPEN_DRAIN	(1 << 3)
 
-#define PAD_CTL_DRIVE_STRENGTH_NORM	0
-#define PAD_CTL_DRIVE_STRENGTH_HIGH	1
-#define PAD_CTL_DRIVE_STRENGTH_MAX	2
+#define PAD_CTL_DRIVE_STRENGTH_NORM	(0)
+#define PAD_CTL_DRIVE_STRENGTH_HIGH	(1 << 1)
+#define PAD_CTL_DRIVE_STRENGTH_MAX	(2 << 1)
 
 #define PAD_CTL_SLEW_RATE_SLOW		0
 #define PAD_CTL_SLEW_RATE_FAST		1

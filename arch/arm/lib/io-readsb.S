@@ -10,6 +10,8 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
+.section .text.readsb
+
 .Linsb_align:	rsb	ip, ip, #4
 		cmp	ip, r2
 		movgt	ip, r2
@@ -22,8 +24,6 @@
 		strgtb	r3, [r1], #1
 		subs	r2, r2, ip
 		bne	.Linsb_aligned
-
-.section .text.readsb
 
 ENTRY(readsb)
 		teq	r2, #0		@ do we have to check for the zero len?

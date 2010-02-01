@@ -1166,22 +1166,17 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 static int smc91c111_get_ethaddr(struct eth_device *edev, unsigned char *m)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
-	unsigned address[3];
+	int valid = 0;
+	int i;
 
 	SMC_SELECT_BANK(priv, 1);
-	address[0] = SMC_inw(priv, ADDR0_REG);
-	address[1] = SMC_inw(priv, ADDR0_REG + 2);
-	address[2] = SMC_inw(priv, ADDR0_REG + 4);
 
-	if (address[0] + address[1] + address[2] == 0)
-		return -1;	/* no eeprom, no mac */
+	for (i = 0; i < 6; ++i)
+		valid += m[i] = SMC_inb(priv, (ADDR0_REG + i));
 
-	m[0] = address[0] >> 8;
-	m[1] = address[0];
-	m[2] = address[1] >> 8;
-	m[3] = address[1];
-	m[4] = address[2] >> 8;
-	m[5] = address[2];
+	/* no eeprom, no mac */
+	if (!valid)
+		return -1;
 
 	return 0;
 }

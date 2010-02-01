@@ -37,7 +37,7 @@
  * @param[in] argc Argument count from command line
  * @param[in] argv List of input arguments
  */
-static int do_cp ( cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_cp(struct command *cmdtp, int argc, char *argv[])
 {
 	int ret = 1;
 	struct stat statbuf;

@@ -589,7 +589,7 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 
 }
 
-static int do_dhcp (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_dhcp(struct command *cmdtp, int argc, char *argv[])
 {
 	int size;
 

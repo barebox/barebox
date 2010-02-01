@@ -107,7 +107,7 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 	return ret;
 }
 
-static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
+static int do_addpart(struct command * cmdtp, int argc, char *argv[])
 {
 	char *devname;
 	char *endp;
@@ -189,7 +189,7 @@ BAREBOX_CMD_END
  * @note This command has to be reworked and will probably change it's API.
  */
 
-static int do_delpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
+static int do_delpart(struct command * cmdtp, int argc, char *argv[])
 {
 	int i, err;
 

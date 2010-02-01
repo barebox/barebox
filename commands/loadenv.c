@@ -27,7 +27,7 @@
 #include <command.h>
 #include <environment.h>
 
-static int do_loadenv(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_loadenv(struct command *cmdtp, int argc, char *argv[])
 {
 	char *filename, *dirname;
 

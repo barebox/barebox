@@ -53,12 +53,10 @@ void mmu_init(void)
 void mmu_enable(void)
 {
 	asm volatile (
-		"mrc p15, 0, r1, c1, c0, 0;"
-		"orr r1, r1, #0x0007;"  /* enable MMU + Dcache */
-		"mcr p15, 0, r1, c1, c0, 0"
+		"bl __mmu_cache_on;"
 		:
 		:
-		: "r1" /* Clobber list */
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
         );
 }
 
@@ -67,28 +65,13 @@ void mmu_enable(void)
  */
 void mmu_disable(void)
 {
+
 	asm volatile (
-		"nop; "
-		"nop; "
-		"nop; "
-		"nop; "
-		"nop; "
-		"nop; "
-		/* test, clean and invalidate cache */
-		"1:	mrc	p15, 0, r15, c7, c14, 3;" 
-		"	bne	1b;"
-		"	mov	pc, lr;"
-		"	mov r0, #0x0;"
-		"	mcr p15, 0, r0, c7, c10, 4;" /* drain the write buffer   */
-		"	mcr p15, 0, r1, c7, c6, 0;"  /* clear data cache         */
-		"	mrc p15, 0, r1, c1, c0, 0;"
-		"	bic r1, r1, #0x0007;"        /* disable MMU + DCache     */
-		"	mcr p15, 0, r1, c1, c0, 0;"
-		"	mcr p15, 0, r0, c7, c6, 0;" /* flush d-cache             */
-		"	mcr p15, 0, r0, c8, c7, 0;" /* flush i+d-TLBs            */
+		"bl __mmu_cache_flush;"
+		"bl __mmu_cache_off;"
 		:
 		:
-		: "r0" /* Clobber list */
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
 	);
 }
 

@@ -39,7 +39,7 @@
  * @param[in] argc Argument count from command line
  * @param[in] argv List of input arguments
  */
-static int do_cat(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_cat(struct command *cmdtp, int argc, char *argv[])
 {
 	int ret;
 	int fd, i;

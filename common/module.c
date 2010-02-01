@@ -297,8 +297,8 @@ struct module * load_module(void *mod_image, unsigned long len)
 #ifdef CONFIG_COMMAND
 	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".barebox_cmd");
 	if (cmdindex) {
-		cmd_tbl_t *cmd = (cmd_tbl_t *)sechdrs[cmdindex].sh_addr;
-		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(cmd_tbl_t); i++) {
+		struct command *cmd =(struct command *)sechdrs[cmdindex].sh_addr;
+		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(struct command); i++) {
 			register_command(cmd);
 			cmd++;
 		}

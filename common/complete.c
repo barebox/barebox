@@ -69,7 +69,7 @@ out:
 
 static int command_complete(struct string_list *sl, char *instr)
 {
-	cmd_tbl_t *cmdtp;
+	struct command *cmdtp;
 	char cmd[128];
 
 	for_each_command(cmdtp) {

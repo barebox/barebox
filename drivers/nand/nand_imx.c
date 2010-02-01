@@ -1149,7 +1149,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 #ifdef CONFIG_NAND_IMX_BOOT_DEBUG
 #include <command.h>
 
-static int do_nand_boot_test(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 {
 	void *dest;
 	int size;

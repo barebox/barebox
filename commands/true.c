@@ -24,7 +24,7 @@
 #include <common.h>
 #include <command.h>
 
-static int do_true (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_true(struct command *cmdtp, int argc, char *argv[])
 {
 	return 0;
 }

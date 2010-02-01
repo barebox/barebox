@@ -44,7 +44,7 @@ EXPORT_SYMBOL(command_list);
 
 #ifdef CONFIG_SHELL_HUSH
 
-static int do_exit (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_exit(struct command *cmdtp, int argc, char *argv[])
 {
 	int r;
 
@@ -62,7 +62,7 @@ BAREBOX_CMD_END
 
 #endif
 
-void barebox_cmd_usage(cmd_tbl_t *cmdtp)
+void barebox_cmd_usage(struct command *cmdtp)
 {
 #ifdef	CONFIG_LONGHELP
 		/* found - print (long) help info */
@@ -85,15 +85,15 @@ EXPORT_SYMBOL(barebox_cmd_usage);
 
 static int compare(struct list_head *a, struct list_head *b)
 {
-	char *na = (char*)list_entry(a, cmd_tbl_t, list)->name;
-	char *nb = (char*)list_entry(b, cmd_tbl_t, list)->name;
+	char *na = (char*)list_entry(a, struct command, list)->name;
+	char *nb = (char*)list_entry(b, struct command, list)->name;
 
 	return strcmp(na, nb);
 }
 
 int execute_command(int argc, char **argv)
 {
-	cmd_tbl_t *cmdtp;
+	struct command *cmdtp;
 	int ret;
 
 	getopt_reset();
@@ -117,7 +117,7 @@ int execute_command(int argc, char **argv)
 	}
 }
 
-int register_command(cmd_tbl_t *cmd)
+int register_command(struct command *cmd)
 {
 	/*
 	 * We do not check if the command already exists.
@@ -133,9 +133,9 @@ int register_command(cmd_tbl_t *cmd)
 		char **aliases = (char**)cmd->aliases;
 		while(*aliases) {
 			char *usage = "alias for ";
-			cmd_tbl_t *c = xzalloc(sizeof(cmd_tbl_t));
+			struct command *c = xzalloc(sizeof(struct command));
 
-			memcpy(c, cmd, sizeof(cmd_tbl_t));
+			memcpy(c, cmd, sizeof(struct command));
 
 			c->name = *aliases;
 			c->usage = xmalloc(strlen(usage) + strlen(cmd->name) + 1);
@@ -156,15 +156,15 @@ EXPORT_SYMBOL(register_command);
 /*
  * find command table entry for a command
  */
-cmd_tbl_t *find_cmd (const char *cmd)
+struct command *find_cmd (const char *cmd)
 {
-	cmd_tbl_t *cmdtp;
-	cmd_tbl_t *cmdtp_temp = &__barebox_cmd_start;	/*Init value */
+	struct command *cmdtp;
+	struct command *cmdtp_temp = &__barebox_cmd_start;	/*Init value */
 	int len;
 	int n_found = 0;
 	len = strlen (cmd);
 
-	cmdtp = list_entry(&command_list, cmd_tbl_t, list);
+	cmdtp = list_entry(&command_list, struct command, list);
 
 	for_each_command(cmdtp) {
 		if (strncmp (cmd, cmdtp->name, len) == 0) {
@@ -191,7 +191,7 @@ cmd_tbl_t *find_cmd (const char *cmd)
  */
 static int init_command_list(void)
 {
-	cmd_tbl_t *cmdtp;
+	struct command *cmdtp;
 
 	for (cmdtp = &__barebox_cmd_start;
 			cmdtp != &__barebox_cmd_end;

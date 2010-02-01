@@ -37,7 +37,7 @@
 #include <fcntl.h>
 #include <linux/stat.h>
 
-static int do_flerase (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_flerase(struct command *cmdtp, int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;
@@ -107,7 +107,7 @@ BAREBOX_CMD_END
  * Refer \b addpart, \b delpart and \b devinfo for partition handling.
  */
 
-static int do_protect (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_protect(struct command *cmdtp, int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;

@@ -122,7 +122,7 @@
 #include <glob.h>
 
 /*cmd_boot.c*/
-extern int do_bootd (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
+extern int do_bootd(struct command *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
 #define SPECIAL_VAR_SYMBOL 03
 
 
@@ -1583,7 +1583,7 @@ int run_shell(void)
 	return rcode;
 }
 
-static int do_sh(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_sh(struct command *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -1602,7 +1602,7 @@ BAREBOX_CMD_START(sh)
 	BAREBOX_CMD_HELP(cmd_sh_help)
 BAREBOX_CMD_END
 
-static int do_source(cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_source(struct command *cmdtp, int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;

@@ -27,7 +27,7 @@
 #include <xfuncs.h>
 #include <environment.h>
 
-static int do_readline (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_readline(struct command *cmdtp, int argc, char *argv[])
 {
 	char *buf = xzalloc(CONFIG_CBSIZE);
 

@@ -24,7 +24,7 @@
 #include <common.h>
 #include <command.h>
 
-static int do_version (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_version(struct command *cmdtp, int argc, char *argv[])
 {
 	extern char version_string[];
 	printf ("\n%s\n", version_string);

@@ -30,7 +30,7 @@
 #include <linux/ctype.h>
 #include <errno.h>
 
-static int do_go (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_go(struct command *cmdtp, int argc, char *argv[])
 {
 	void	*addr;
 	int     rcode = 1;

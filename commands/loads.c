@@ -42,7 +42,7 @@ static int save_serial (ulong offset, ulong size);
 static int write_record (char *buf);
 # endif /* CFG_CMD_SAVES */
 
-int do_load_serial (cmd_tbl_t *cmdtp, int argc, char *argv[])
+int do_load_serial(struct command *cmdtp, int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong addr;
@@ -233,7 +233,7 @@ read_record (char *buf, ulong len)
 
 #if (CONFIG_COMMANDS & CFG_CMD_SAVES)
 
-int do_save_serial (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_save_serial(struct command *cmdtp, int flag, int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong size   = 0;

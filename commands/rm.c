@@ -24,7 +24,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_rm (cmd_tbl_t *cmdtp, int argc, char *argv[])
+static int do_rm(struct command *cmdtp, int argc, char *argv[])
 {
 	int i = 1;
 

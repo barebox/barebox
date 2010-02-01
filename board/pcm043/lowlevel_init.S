@@ -96,7 +96,7 @@ board_init_lowlevel:
 	ldr r2, CCM_CCMR_W
 	str r2, [r0, #CCM_CCMR]
 
-	ldr r3, MPCTL_PARAM_399_W  /* consumer path*/
+	ldr r3, MPCTL_PARAM_532_W  /* consumer path*/
 
 	/*Set MPLL , arm clock and ahb clock*/
 	str r3, [r0, #CCM_MPCTL]

@@ -29,6 +29,9 @@
 #include <malloc.h>
 #include <libgen.h>
 #include <fs.h>
+#include <libgen.h>
+#include <fcntl.h>
+#include <errno.h>
 #include "nfs.h"
 
 /*#define NFS_DEBUG*/
@@ -63,7 +66,7 @@ static char *nfs_filename;
 static char *nfs_path;
 static char nfs_path_buff[2048];
 
-extern int net_store_fd;
+static int net_store_fd;
 
 static __inline__ int
 store_block (uchar * src, unsigned offset, unsigned len)
@@ -702,4 +705,55 @@ NfsStart (char *p)
 
 	NfsSend ();
 }
+
+static int do_nfs(struct command *cmdtp, int argc, char *argv[])
+{
+	int   rcode = 0;
+	char  *localfile;
+	char  *remotefile;
+
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
+
+	remotefile = argv[1];
+
+	if (argc == 2)
+		localfile = basename(remotefile);
+	else
+		localfile = argv[2];
+
+	net_store_fd = open(localfile, O_WRONLY | O_CREAT);
+	if (net_store_fd < 0) {
+		perror("open");
+		return 1;
+	}
+
+	if (NetLoopInit(NFS) < 0)
+		goto out;
+
+	NfsStart(remotefile);
+
+	rcode = NetLoop();
+	if (rcode < 0) {
+		rcode = 1;
+		goto out;
+	}
+
+	/* NetLoop ok, update environment */
+	netboot_update_env();
+
+out:
+	close(net_store_fd);
+	return rcode;
+}
+
+static const __maybe_unused char cmd_nfs_help[] =
+"Usage: nfs <file> [localfile]\n"
+"Load a file via network using nfs protocol.\n";
+
+BAREBOX_CMD_START(nfs)
+	.cmd		= do_nfs,
+	.usage		= "boot image via network using nfs protocol",
+	BAREBOX_CMD_HELP(cmd_nfs_help)
+BAREBOX_CMD_END
 

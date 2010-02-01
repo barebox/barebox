@@ -6,6 +6,7 @@ obj-$(CONFIG_DRIVER_NET_NETX)		+= netx_eth.o
 obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= at91_ether.o
 obj-$(CONFIG_DRIVER_NET_MPC5200)	+= fec_mpc5200.o
 obj-$(CONFIG_DRIVER_NET_FEC_IMX)	+= fec_imx.o
+obj-$(CONFIG_DRIVER_NET_EP93XX)		+= ep93xx.o
 obj-$(CONFIG_DRIVER_NET_MACB)		+= macb.o
 obj-$(CONFIG_DRIVER_NET_TAP)		+= tap.o
 obj-$(CONFIG_MIIPHY)			+= miiphy.o

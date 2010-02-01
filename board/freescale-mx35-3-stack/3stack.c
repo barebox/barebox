@@ -60,8 +60,8 @@ static struct device_d cfi_dev = {
 };
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
-	.phy_addr = 0x1F,
+	.xcv_type	= MII100,
+	.phy_addr	= 0x1F,
 };
 
 static struct device_d fec_dev = {
@@ -71,8 +71,8 @@ static struct device_d fec_dev = {
 };
 
 static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.name	= "ram0",
+	.flags	= DEVFS_RDWR,
 };
 
 static struct device_d sdram_dev = {
@@ -157,7 +157,7 @@ static int f3s_devices_init(void)
 	reg = readl(IMX_CCM_BASE + CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
 	if (reg & 0x20000000)
-		nand_info.width = 2;	/* bit */
+		nand_info.width = 2;	/* 16 bit */
 	else
 		nand_info.width = 1;	/* 8 bit */
 
@@ -167,17 +167,17 @@ static int f3s_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&cfi_dev);
 
-	switch ( (reg >> 25) & 0x3) {
+	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */
 		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+		devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
 		break;
 
 	case 0x00:		/* NOR is the source */
 		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+		devfs_add_partition("nor0", 0x40000, 0x80000, PARTITION_FIXED, "env0");
 		protect_file("/dev/env0", 1);
 		break;
 	}
@@ -332,7 +332,7 @@ static int f3s_core_init(void)
 
 	/* MPR - priority is M4 > M2 > M3 > M5 > M0 > M1 */
 #define MAX_PARAM1 0x00302154
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x0);   /* for S0 */
+	writel(MAX_PARAM1, IMX_MAX_BASE + 0x000); /* for S0 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x100); /* for S1 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x200); /* for S2 */
 	writel(MAX_PARAM1, IMX_MAX_BASE + 0x300); /* for S3 */
@@ -358,74 +358,84 @@ static int f3s_core_init(void)
 
 core_initcall(f3s_core_init);
 
-static int f3s_get_rev(struct i2c_client *client)
+static int f3s_get_rev(struct mc13892 *mc13892)
 {
-	u8 reg[3];
-	int rev;
+	u32 rev;
+	int err;
 
-	i2c_read_reg(client, 0x7, reg, sizeof(reg));
+	err = mc13892_reg_read(mc13892, MC13892_REG_IDENTIFICATION, &rev);
+	if (err)
+		return err;
 
-	rev = reg[0] << 16 | reg [1] << 8 | reg[2];
-	dev_info(&client->dev, "revision: 0x%x\n", rev);
+	dev_info(&mc13892->client->dev, "revision: 0x%x\n", rev);
+	if (rev == 0x00ffffff)
+		return -ENODEV;
 
-	/* just return '0' or '1' */
-	return !!((rev >> 6) & 0x7);
+	return ((rev >> 6) & 0x7) ? 20 : 10;
 }
 
-static void f3s_pmic_init_v2(struct i2c_client *client)
+static int f3s_pmic_init_v2(struct mc13892 *mc13892)
 {
-	u8 reg[3];
+	int err = 0;
 
-	i2c_read_reg(client, 0x1e, reg, sizeof(reg));
-	reg[2] |= 0x03;
-	i2c_write_reg(client, 0x1e, reg, sizeof(reg));
+	err |= mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x03, 0x03);
+	err |= mc13892_set_bits(mc13892, MC13892_REG_MODE_0, 0x01, 0x01);
+	if (err)
+		dev_err(&mc13892->client->dev,
+			"Init sequence failed, the system might not be working!\n");
 
-	i2c_read_reg(client, 0x20, reg, sizeof(reg));
-	reg[2] |= 0x01;
-	i2c_write_reg(client, 0x20, reg, sizeof(reg));
+	return err;
 }
 
-static void f3s_pmic_init_all(struct i2c_client *client)
+static int f3s_pmic_init_all(struct mc9sdz60 *mc9sdz60)
 {
-	u8 reg[1];
+	int err = 0;
 
-	i2c_read_reg(client, 0x20, reg, sizeof(reg));
-	reg[0] |= 0x04;
-	i2c_write_reg(client, 0x20, reg, sizeof(reg));
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_INT_FLAG_1, 0x04, 0x04);
 
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_2, 0x80, 0x00);
 	mdelay(200);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_2, 0x80, 0x80);
 
-	i2c_read_reg(client, 0x1a, reg, sizeof(reg));
-	reg[0] &= 0x7f;
-	i2c_write_reg(client, 0x1a, reg, sizeof(reg));
+	if (err)
+		dev_err(&mc9sdz60->client->dev,
+			"Init sequence failed, the system might not be working!\n");
 
-	mdelay(200);
-
-	reg[0] |= 0x80;
-	i2c_write_reg(client, 0x1a, reg, sizeof(reg));
+	return err;
 }
 
 static int f3s_pmic_init(void)
 {
-	struct i2c_client *client;
+	struct mc13892 *mc13892;
+	struct mc9sdz60 *mc9sdz60;
 	int rev;
 
-	client = mc13892_get_client();
-	if (!client)
-		return -ENODEV;
-
-	rev = f3s_get_rev(client);
-	if (rev) {
-		printf("i.MX35 CPU board version 2.0\n");
-		f3s_pmic_init_v2(client);
-	} else {
-		printf("i.MX35 CPU board version 1.0\n");
+	mc13892 = mc13892_get();
+	if (!mc13892) {
+		printf("FAILED to get mc13892 handle!\n");
+		return 0;
 	}
 
-	client = mc9sdz60_get_client();
-	if (!client)
-		return -ENODEV;
-	f3s_pmic_init_all(client);
+	rev = f3s_get_rev(mc13892);
+	switch (rev) {
+	case 10:
+		break;
+	case 20:
+		f3s_pmic_init_v2(mc13892);
+		break;
+	default:
+		printf("FAILED to identify board revision!\n");
+		return 0;
+	}
+	printf("i.MX35 PDK CPU board version %d.%d\n", rev / 10, rev % 10);
+
+	mc9sdz60 = mc9sdz60_get();
+	if (!mc9sdz60) {
+		printf("FAILED to get mc9sdz60 handle!\n");
+		return 0;
+	}
+
+	f3s_pmic_init_all(mc9sdz60);
 
 	return 0;
 }
@@ -442,4 +452,3 @@ void __bare_init nand_boot(void)
 	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
 }
 #endif
-

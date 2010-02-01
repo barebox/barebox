@@ -41,8 +41,10 @@
 #include <linux/stat.h>
 #include <libgen.h>
 
+#define SIZE_REMAINING ((ulong)-1)
+
 static int mtd_part_do_parse_one(char *devname, const char *partstr,
-				 char **endp, unsigned long offset,
+				 char **endp, unsigned long *offset,
 				 off_t devsize, size_t *retsize)
 {
 	ulong size;
@@ -54,11 +56,17 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 	memset(buf, 0, PATH_MAX);
 
 	if (*partstr == '-') {
-		size = devsize - offset;
+		size = SIZE_REMAINING;
 		end = (char *)partstr + 1;
 	} else {
 		size = strtoul_suffix(partstr, &end, 0);
 	}
+
+	if (*end == '@')
+		*offset = strtoul_suffix(end+1, &end, 0);
+
+	if (size == SIZE_REMAINING)
+		size = devsize - *offset;
 
 	partstr = end;
 
@@ -76,7 +84,7 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 		end++;
 	}
 
-	if (size + offset > devsize) {
+	if (size + *offset > devsize) {
 		printf("%s: partition end is beyond device\n", buf);
 		return -EINVAL;
 	}
@@ -93,7 +101,7 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 
 	*retsize = size;
 
-	ret = devfs_add_partition(devname, offset, size, flags, buf);
+	ret = devfs_add_partition(devname, *offset, size, flags, buf);
 	if (ret)
 		printf("cannot create %s: %s\n", buf, strerror(-ret));
 	return ret;
@@ -123,7 +131,7 @@ static int do_addpart(cmd_tbl_t * cmdtp, int argc, char *argv[])
 	while (1) {
 		size_t size = 0;
 
-		if (mtd_part_do_parse_one(devname, endp, &endp, offset, devsize, &size))
+		if (mtd_part_do_parse_one(devname, endp, &endp, &offset, devsize, &size))
 			return 1;
 
 		offset += size;
@@ -146,10 +154,11 @@ static const __maybe_unused char cmd_addpart_help[] =
 "\n"
 "addpart adds a partition description to a device. The partition description\n"
 "has the form\n"
-"size1(name1)[ro],size2(name2)[ro],...\n"
-"<device> is the device name under. Size can be given in decimal or if prefixed\n"
-"with 0x in hex. Sizes can have an optional suffix K,M,G. The size of the last\n"
-"partition can be specified as '-' for the remaining space of the device.\n"
+"size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n"
+"<device> is the device name under. Size and offset can be given in decimal\n"
+"or - if prefixed with 0x in hex. Both can have an optional suffix K,M,G.\n"
+"The size of the last partition can be specified as '-' for the remaining\n"
+"space of the device.\n"
 "This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
 "\n"
 "Note: That this command has to be reworked and will probably change it's API.";
@@ -167,12 +176,12 @@ BAREBOX_CMD_END
  * Adds a partition description to a device. The partition description has the
  * form
  *
- * size1(name1)[ro],size2(name2)[ro],...
+ * size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...
  *
- * \<device> is the device name under. Sizes can be given in decimal or - if
- * prefixed with 0x - in hex. Sizes can have an optional suffix K,M,G. The
- * size of the last partition can be specified as '-' for the remaining space
- * of the device.
+ * \<device> is the device name under. Size and offset can be given in decimal
+ * or - if prefixed with 0x - in hex. Both can have an optional suffix K,M,G.
+ * The size of the last partition can be specified as '-' for the remaining
+ * space of the device.
  *
  * @note The format is the same as used in the Linux kernel for cmdline mtd
  * partitions.

@@ -1,0 +1,108 @@
+/** @page edb9301 Cirrus Logic EDB9301
+
+This boards is based on a Cirrus Logic EP9301 CPU. The board is shipped with:
+
+- 16MiB NOR type Flash Memory
+- 32MiB synchronous dynamic RAM on CS3
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+
+*/
+
+/** @page edb9302 Cirrus Logic EDB9302
+
+This board is based on a Cirrus Logic EP9302 CPU. The board is shipped with:
+
+- 16MiB NOR type Flash Memory
+- 32MiB synchronous dynamic RAM on CS3
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+
+*/
+
+/** @page edb9302a Cirrus Logic EDB9302A
+
+This board is based on a Cirrus Logic EP9302 CPU. The board is shipped with:
+
+- 16MiB NOR type Flash Memory
+- 32MiB synchronous dynamic RAM on CS0
+- 512kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+
+*/
+
+/** @page edb9307 Cirrus Logic EDB9307
+
+This board is based on a Cirrus Logic EP9307 CPU. The board is shipped with:
+
+- 32MiB NOR type Flash Memory
+- 64MiB synchronous dynamic RAM on CS3
+- 512kiB asynchronous SRAM
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+- Real-Time Clock
+- IR receiver
+
+*/
+
+/** @page edb9307a Cirrus Logic EDB9307A
+
+This board is based on a Cirrus Logic EP9307 CPU. The board is shipped with:
+
+- 32MiB NOR type Flash Memory
+- 64MiB synchronous dynamic RAM on CS0
+- 512kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+- Real-Time Clock
+- IR receiver
+
+*/
+
+/** @page edb9312 Cirrus Logic EDB9312
+
+This board is based on a Cirrus Logic EP9312 CPU. The board is shipped with:
+
+- 32MiB NOR type Flash Memory
+- 64MiB synchronous dynamic RAM on CS3
+- 512kiB asynchronous SRAM
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+- Real-Time Clock
+- IR receiver
+
+*/
+
+/** @page edb9315 Cirrus Logic EDB9315
+
+This board is based on a Cirrus Logic EP9315 CPU. The board is shipped with:
+
+- 32MiB NOR type Flash Memory
+- 64MiB synchronous dynamic RAM on CS3
+- 512kiB asynchronous SRAM
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+- Real-Time Clock
+- IR receiver
+
+*/
+
+/** @page edb9315a Cirrus Logic EDB9315A
+
+This board is based on a Cirrus Logic EP9315 CPU. The board is shipped with:
+
+- 32MiB NOR type Flash Memory
+- 64MiB synchronous dynamic RAM on CS0
+- 128kiB serial EEPROM
+- MII 10/100 Ethernet PHY
+- Stereo audio codec
+- Real-Time Clock
+- IR receiver
+
+*/

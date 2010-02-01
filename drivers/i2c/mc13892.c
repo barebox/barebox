@@ -26,47 +26,99 @@
 #include <errno.h>
 
 #include <i2c/i2c.h>
-
-#include <asm/byteorder.h>
+#include <i2c/mc13892.h>
 
 #define DRIVERNAME		"mc13892"
 
-struct mc_priv {
-	struct cdev		cdev;
-	struct i2c_client	*client;
-};
+#define to_mc13892(a)		container_of(a, struct mc13892, cdev)
 
-#define to_mc_priv(a)		container_of(a, struct mc_priv, cdev)
+static struct mc13892 *mc_dev;
 
-static struct mc_priv *mc_dev;
-
-struct i2c_client *mc13892_get_client(void)
+struct mc13892 *mc13892_get(void)
 {
 	if (!mc_dev)
 		return NULL;
 
-	return mc_dev->client;
+	return mc_dev;
 }
+EXPORT_SYMBOL(mc13892_get);
 
-static u32 mc_read_reg(struct mc_priv *mc, int reg)
+int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
 {
-	u32 buf;
+	u8 buf[3];
+	int ret;
 
-	i2c_read_reg(mc->client, reg, (u8 *)&buf, sizeof(buf));
+	ret = i2c_read_reg(mc13892->client, reg, buf, 3);
+	*val = buf[0] << 16 | buf[1] << 8 | buf[2] << 0;
 
-	return buf;
+	return ret == 3 ? 0 : ret;
 }
+EXPORT_SYMBOL(mc13892_reg_read)
+
+int mc13892_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
+{
+	u8 buf[] = {
+		val >> 16,
+		val >>  8,
+		val >>  0,
+	};
+	int ret;
+
+	ret = i2c_write_reg(mc13892->client, reg, buf, 3);
+
+	return ret == 3 ? 0 : ret;
+}
+EXPORT_SYMBOL(mc13892_reg_write)
+
+int mc13892_set_bits(struct mc13892 *mc13892, enum mc13892_reg reg, u32 mask, u32 val)
+{
+	u32 tmp;
+	int err;
+
+	err = mc13892_reg_read(mc13892, reg, &tmp);
+	tmp = (tmp & ~mask) | val;
+
+	if (!err)
+		err = mc13892_reg_write(mc13892, reg, tmp);
+
+	return err;
+}
+EXPORT_SYMBOL(mc13892_set_bits);
 
 static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
 {
-	struct mc_priv *priv = to_mc_priv(cdev);
-	int i = count >> 2;
+	struct mc13892 *priv = to_mc13892(cdev);
 	u32 *buf = _buf;
+	size_t i = count >> 2;
+	int err;
 
 	offset >>= 2;
 
 	while (i) {
-		*buf = mc_read_reg(priv, offset);
+		err = mc13892_reg_read(priv, offset, buf);
+		if (err)
+			return (ssize_t)err;
+		buf++;
+		i--;
+		offset++;
+	}
+
+	return count;
+}
+
+static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
+{
+	struct mc13892 *mc13892 = to_mc13892(cdev);
+	const u32 *buf = _buf;
+	size_t i = count >> 2;
+	int err;
+
+	offset >>= 2;
+
+	while (i) {
+		err = mc13892_reg_write(mc13892, offset, *buf);
+		if (err)
+			return (ssize_t)err;
 		buf++;
 		i--;
 		offset++;
@@ -78,6 +130,7 @@ static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset
 static struct file_operations mc_fops = {
 	.lseek	= dev_lseek_default,
 	.read	= mc_read,
+	.write	= mc_write,
 };
 
 static int mc_probe(struct device_d *dev)
@@ -85,7 +138,7 @@ static int mc_probe(struct device_d *dev)
 	if (mc_dev)
 		return -EBUSY;
 
-	mc_dev = xzalloc(sizeof(struct mc_priv));
+	mc_dev = xzalloc(sizeof(struct mc13892));
 	mc_dev->cdev.name = DRIVERNAME;
 	mc_dev->client = to_i2c_client(dev);
 	mc_dev->cdev.size = 256;

@@ -1,0 +1,29 @@
+
+menu "Board specific settings       "
+
+if X86_BOOTLOADER
+
+config X86_GENERIC_HAS_ISA
+	bool "ISA support"
+	help
+	  Say Y here if the target supports a ISA bus
+
+config X86_GENERIC_HAS_PCI
+	bool "PCI support"
+	select HAS_PCI
+	help
+	  Say Y here if the target supports a PCI bus
+
+config X86_GENERIC_HAS_VIDEO
+	bool "video support"
+	help
+	  Say Y here if the target supports a video output
+
+config X86_GENERIC_HAS_USB
+	bool "USB support"
+	help
+	  Say Y here if the target supports a USB interface
+
+endif
+
+endmenu

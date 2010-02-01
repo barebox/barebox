@@ -64,6 +64,11 @@ config DRIVER_NET_FEC_IMX
 	depends on ARCH_HAS_FEC_IMX
 	select MIIPHY
 
+config DRIVER_NET_EP93XX
+	bool "EP93xx Ethernet driver"
+	depends on ARCH_EP93XX
+	select MIIPHY
+
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
 	depends on ARCH_AT91

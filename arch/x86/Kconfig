@@ -1,0 +1,67 @@
+#
+#
+#
+config ARCH_TEXT_BASE
+	hex
+	default 0x00007c00 if MACH_X86_GENERIC
+
+config BOARDINFO
+	default "Generic x86 bootloader" if MACH_X86_GENERIC
+
+config BOARD_LINKER_SCRIPT
+	bool
+	default n
+
+config GENERIC_LINKER_SCRIPT
+	bool
+	default y
+	depends on !BOARD_LINKER_SCRIPT
+
+config X86
+	bool
+	select HAS_KALLSYMS
+	select HAS_MODULES
+	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	select HAVE_CONFIGURABLE_TEXT_BASE
+	default y
+
+choice
+	prompt "Select your board"
+
+config MACH_X86_GENERIC
+	bool "Generic x86"
+	select X86_BOOTLOADER
+	help
+	  Say Y here if you want barebox to be your BIOS based bootloader
+
+endchoice
+
+choice
+	prompt "Bring up type"
+
+	config X86_BIOS_BRINGUP
+		prompt "16 bit BIOS"
+		bool
+		help
+		   Barebox will act as a BIOS based bootloader. This includes
+		   some 16 bit real mode code and some restrictions everyone knows
+		   from BIOS based systems.
+
+	config X86_NATIVE_BRINGUP
+		bool "native"
+		help
+		   Barebox will act as a native bootloader. This includes all the
+		   required initialization needed to bring up a piece of hardware.
+		   Note: Not implemented yet
+
+endchoice
+
+source arch/x86/boot/Kconfig
+source arch/x86/mach-i386/Kconfig
+
+source common/Kconfig
+source commands/Kconfig
+source net/Kconfig
+source drivers/Kconfig
+source fs/Kconfig
+source lib/Kconfig

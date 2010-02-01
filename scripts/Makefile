@@ -14,5 +14,7 @@ always		:= $(hostprogs-y) $(hostprogs-m)
 
 subdir-y                     += mod
 
+subdir-$(CONFIG_X86)             += setupmbr
+
 # Let clean descend into subdirs
-subdir-	+= basic kconfig
+subdir-	+= basic kconfig setupmbr

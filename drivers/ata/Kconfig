@@ -1,0 +1,26 @@
+menuconfig ATA
+	bool "ATA                           "
+	help
+	  Add support for ATA types of drives like harddisks and CDROMs.
+
+if ATA
+
+comment "drive types"
+
+config ATA_DISK
+	bool "disk drives"
+	help
+	  Add support for regular disk drives
+
+comment "interface types"
+
+config ATA_BIOS
+	bool "BIOS based"
+	depends on X86_BIOS_BRINGUP
+	help
+	  Gain disk drive access via int13 calls to the standard PC-BIOS.
+	  The advantage of this driver is, it still uses user's defined boot
+	  media to work on. Disadvantage is: Due to its 16 bit nature it is
+	  slow.
+
+endif

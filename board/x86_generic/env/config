@@ -1,0 +1,31 @@
+#
+# basic config
+#
+# boot source: 'disk' or 'net'
+kernel=disk
+root=disk
+
+# data for the NFS case
+nfsroot="/path/to/nfs_root"
+
+# data for the disk case
+kernel_device=/dev/biosdisk0.1
+rootpart_disk=/dev/sda1
+rootpart_fs=ext2
+
+baudrate=115200
+serial=ttyS0
+
+# use UART for console
+bootargs="console=$serial,$baudrate"
+
+autoboot_timeout=3
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+#  ip=dhcp
+# or set your networking parameters here
+#  eth0.ipaddr=192.168.3.11
+#  eth0.netmask=255.255.255.0
+#  eth0.gateway=a.b.c.d
+#  eth0.serverip=192.168.3.10
+#  eth0.ethaddr=aa.bb.cc.dd.ee.ff

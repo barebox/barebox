@@ -1,0 +1,20 @@
+if X86_BIOS_BRINGUP
+
+menu "BIOS boot source              "
+
+config X86_HDBOOT
+	bool "HD boot"
+	help
+	  Add code to boot from harddisk
+
+config X86_VESA
+	bool
+	default y if X86_GENERIC_HAS_VIDEO
+
+config X86_VGA
+	bool
+	default y if X86_GENERIC_HAS_VIDEO
+
+endmenu
+
+endif

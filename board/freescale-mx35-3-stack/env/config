@@ -1,28 +1,35 @@
 #!/bin/sh
 
-# can be either 'net', 'nor' or 'nand''
-kernel=net
-root=net
-
-uimage=uImage-pcm038
-jffs2=root-pcm038.jffs2
-
-autoboot_timeout=3
-
-nfsroot="/ptx/work/octopus/rsc/svn/oselas/bsp/phytec/phyCORE-i.MX27/OSELAS.BSP-Phytec-phyCORE-i.MX27-trunk/root"
-bootargs="console=ttymxc0,115200"
-
-nor_parts="256k(barebox)ro,128k(bareboxenv),1536k(kernel),-(root)"
-rootpart_nor="/dev/mtdblock3"
-
-nand_parts="256k(barebox)ro,128k(bareboxenv),1536k(kernel),-(root)"
-rootpart_nand="/dev/mtdblock7"
-
 # use 'dhcp' to do dhcp in barebox and in kernel
-ip=dhcp
+# use 'no' if you don't want to pass the ip from barebox to the kernel
+#ip=dhcp
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
 #eth0.netmask=a.b.c.d
 #eth0.gateway=a.b.c.d
 #eth0.serverip=a.b.c.d
+
+# can be either 'net', 'nor' or 'nand''
+kernel_loc=nand
+rootfs_loc=nand
+
+# can be either 'jffs2', or 'ubifs'
+rootfs_type=ubifs
+
+kernel=uImage-mx35-3-stack
+rootfs=root-mx35-3-stack
+envimage=u-boot-v2-environment-mx35-3-stack
+
+autoboot_timeout=3
+
+nfsroot="/path/to/nfs/root"
+bootargs="console=ttymxc0,115200"
+
+bootargs="$bootargs video=mx3fb:CTP-CLAA070LC0ACW"
+
+nor_parts="256k(barebox)ro,512k(bareboxenv),2M(kernel),-(root)"
+rootfs_mtdblock_nor=3
+
+nand_parts="256k(barebox)ro,512k(bareboxenv),2M(kernel),-(root)"
+rootfs_mtdblock_nand=7

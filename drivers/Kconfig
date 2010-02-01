@@ -6,6 +6,7 @@ source "drivers/spi/Kconfig"
 source "drivers/i2c/Kconfig"
 source "drivers/nor/Kconfig"
 source "drivers/nand/Kconfig"
+source "drivers/ata/Kconfig"
 source "drivers/usb/Kconfig"
 source "drivers/video/Kconfig"
 

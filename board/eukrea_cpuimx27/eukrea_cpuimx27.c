@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <errno.h>
 #include <net.h>
 #include <cfi_flash.h>
 #include <init.h>
@@ -42,6 +43,8 @@
 #include <mach/imx-pll.h>
 #include <ns16550.h>
 #include <asm/mmu.h>
+#include <i2c/i2c.h>
+#include <i2c/lp3972.h>
 
 static struct device_d cfi_dev = {
 	.name     = "cfi_flash",
@@ -140,6 +143,17 @@ static struct device_d quad_uart_serial_device = {
 };
 #endif
 
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("lp3972", 0x34),
+	},
+};
+
+static struct device_d i2c_dev = {
+	.name		= "i2c-imx",
+	.map_base	= IMX_I2C1_BASE,
+};
+
 #ifdef CONFIG_MMU
 static void eukrea_cpuimx27_mmu_init(void)
 {
@@ -187,6 +201,8 @@ static int eukrea_cpuimx27_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
+		PD17_PF_I2C_DATA,
+		PD18_PF_I2C_CLK,
 #ifdef CONFIG_DRIVER_SERIAL_IMX
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
@@ -198,9 +214,9 @@ static int eukrea_cpuimx27_devices_init(void)
 	eukrea_cpuimx27_mmu_init();
 
 	/* configure 16 bit nor flash on cs0 */
-	CS0U = 0x0000CC03;
-	CS0L = 0xa0330D01;
-	CS0A = 0x00220800;
+	CS0U = 0x00008F03;
+	CS0L = 0xA0330D01;
+	CS0A = 0x002208C0;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -212,6 +228,10 @@ static int eukrea_cpuimx27_devices_init(void)
 #endif
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
+
+	PCCR0 |= PCCR0_I2C1_EN;
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	register_device(&i2c_dev);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
@@ -244,9 +264,9 @@ static int eukrea_cpuimx27_console_init(void)
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
-	CS3U = 0x0000DCF6;
-	CS3L = 0x444A4541;
-	CS3A = 0x44443302;
+	CS3U = 0x0000D603;
+	CS3L = 0x0D1D0D01;
+	CS3A = 0x00D20000;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	register_device(&quad_uart_serial_device);
 #endif
@@ -257,8 +277,17 @@ console_initcall(eukrea_cpuimx27_console_init);
 
 static int eukrea_cpuimx27_late_init(void)
 {
+	struct i2c_client *client;
+	u8 reg[1];
+
 	console_flush();
 	register_device(&fec_dev);
+
+	client = lp3972_get_client();
+	if (!client)
+		return -ENODEV;
+	reg[0] = 0xa0;
+	i2c_write_reg(client, 0x39, reg, sizeof(reg));
 
 	return 0;
 }

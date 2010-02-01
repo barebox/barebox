@@ -219,6 +219,14 @@ config CMD_BOOTU
 	   compile in the 'bootu' command to start raw (uncompressed)
 	   Linux images
 
+config CMD_LINUX16
+	tristate
+	default y if X86
+	prompt "linux16"
+	help
+	  Compile the linux16 command to be able to boot bzImages
+	  via real mode.
+
 config CMD_RESET
 	tristate
 	prompt "reset"

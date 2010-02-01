@@ -1337,6 +1337,10 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 	volatile cfiptr_t src;
 	volatile cfiptr_t dst;
 
+	/* reduce width due to possible alignment problems */
+	const unsigned long ptr = (unsigned long)dest | (unsigned long)cp | info->portwidth;
+	const int width = ptr & -ptr;
+
 	switch (info->vendor) {
 	case CFI_CMDSET_INTEL_STANDARD:
 	case CFI_CMDSET_INTEL_EXTENDED:
@@ -1348,7 +1352,7 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 		if ((retcode = flash_status_check (info, sector, info->buffer_write_tout,
 						   "write to buffer")) == ERR_OK) {
 			/* reduce the number of loops by the width of the port	*/
-			switch (info->portwidth) {
+			switch (width) {
 			case FLASH_CFI_8BIT:
 				cnt = len;
 				break;
@@ -1367,7 +1371,7 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 			}
 			flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
 			while (cnt-- > 0) {
-				switch (info->portwidth) {
+				switch (width) {
 				case FLASH_CFI_8BIT:
 					*dst.cp++ = *src.cp++;
 					break;
@@ -1402,7 +1406,7 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar *
 		flash_unlock_seq(info,0);
 		flash_write_cmd (info, sector, 0, AMD_CMD_WRITE_TO_BUFFER);
 
-		switch (info->portwidth) {
+		switch (width) {
 		case FLASH_CFI_8BIT:
 			cnt = len;
 			flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);

@@ -40,10 +40,6 @@
 #include <mach/ep93xx-regs.h>
 #include "ep93xx.h"
 
-static int ep93xx_eth_send_packet(struct eth_device *edev,
-				void *packet, int length);
-static int ep93xx_eth_rcv_packet(struct eth_device *edev);
-
 static int ep93xx_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 			uint8_t phy_reg, uint16_t *value);
 static int ep93xx_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
@@ -318,123 +314,6 @@ static void ep93xx_eth_halt(struct eth_device *edev)
 	pr_debug("-ep93xx_eth_halt\n");
 }
 
-static int ep93xx_eth_get_ethaddr(struct eth_device *edev,
-				unsigned char *mac_addr)
-{
-	struct mac_regs *regs = ep93xx_get_regs(edev);
-	uint32_t value;
-
-	value = readl(&regs->indad);
-	mac_addr[0] = value & 0xFF;
-	mac_addr[1] = (value >> 8) & 0xFF;
-	mac_addr[2] = (value >> 16) & 0xFF;
-	mac_addr[3] = (value >> 24) & 0xFF;
-
-	value = readl(&regs->indad_upper);
-	mac_addr[4] = value & 0xFF;
-	mac_addr[5] = (value >> 8) & 0xFF;
-
-	return 0;
-}
-
-static int ep93xx_eth_set_ethaddr(struct eth_device *edev,
-				unsigned char *mac_addr)
-{
-	struct mac_regs *regs = ep93xx_get_regs(edev);
-
-	writel(AFP_IAPRIMARY, &regs->afp);
-
-	writel(mac_addr[0] | (mac_addr[1] << 8) |
-		(mac_addr[2] << 16) | (mac_addr[3] << 24),
-		&regs->indad);
-	writel(mac_addr[4] | (mac_addr[5] << 8), &regs->indad_upper);
-
-	return 0;
-}
-
-static int ep93xx_eth_probe(struct device_d *dev)
-{
-	struct eth_device *edev;
-	struct ep93xx_eth_priv *priv;
-	int ret = -1;
-
-	pr_debug("ep93xx_eth_probe()\n");
-
-	edev = xzalloc(sizeof(struct eth_device) +
-		sizeof(struct ep93xx_eth_priv));
-	dev->type_data = edev;
-	edev->priv = (struct ep93xx_eth_priv *)(edev + 1);
-
-	priv = edev->priv;
-	priv->regs = (struct mac_regs *)MAC_BASE;
-
-	edev->init = ep93xx_eth_init_dev;
-	edev->open = ep93xx_eth_open;
-	edev->send = ep93xx_eth_send_packet;
-	edev->recv = ep93xx_eth_rcv_packet;
-	edev->halt = ep93xx_eth_halt;
-	edev->get_ethaddr = ep93xx_eth_get_ethaddr;
-	edev->set_ethaddr = ep93xx_eth_set_ethaddr;
-
-	priv->miiphy.read = ep93xx_phy_read;
-	priv->miiphy.write = ep93xx_phy_write;
-	priv->miiphy.address = 0;
-	priv->miiphy.flags = 0;
-
-	priv->tx_dq.base = calloc(NUMTXDESC,
-				sizeof(struct tx_descriptor));
-	if (priv->tx_dq.base == NULL) {
-		pr_err("calloc() failed: tx_dq.base");
-		goto eth_probe_failed_0;
-	}
-
-	priv->tx_sq.base = calloc(NUMTXDESC,
-				sizeof(struct tx_status));
-	if (priv->tx_sq.base == NULL) {
-		pr_err("calloc() failed: tx_sq.base");
-		goto eth_probe_failed_1;
-	}
-
-	priv->rx_dq.base = calloc(NUMRXDESC,
-				sizeof(struct rx_descriptor));
-	if (priv->rx_dq.base == NULL) {
-		pr_err("calloc() failed: rx_dq.base");
-		goto eth_probe_failed_2;
-	}
-
-	priv->rx_sq.base = calloc(NUMRXDESC,
-				sizeof(struct rx_status));
-	if (priv->rx_sq.base == NULL) {
-		pr_err("calloc() failed: rx_sq.base");
-		goto eth_probe_failed_3;
-	}
-
-	miiphy_register(&priv->miiphy);
-	eth_register(edev);
-
-	ret = 0;
-
-	goto eth_probe_done;
-
-eth_probe_failed_3:
-	free(priv->rx_dq.base);
-	/* Fall through */
-
-eth_probe_failed_2:
-	free(priv->tx_sq.base);
-	/* Fall through */
-
-eth_probe_failed_1:
-	free(priv->tx_dq.base);
-	/* Fall through */
-
-eth_probe_failed_0:
-	/* Fall through */
-
-eth_probe_done:
-	return ret;
-}
-
 /**
  * Copy a frame of data from the MAC into the protocol layer for further
  * processing.
@@ -557,6 +436,123 @@ static int ep93xx_eth_send_packet(struct eth_device *edev,
 eth_send_failed_0:
 	pr_debug("-ep93xx_eth_send_packet %d\n", ret);
 
+	return ret;
+}
+
+static int ep93xx_eth_get_ethaddr(struct eth_device *edev,
+				unsigned char *mac_addr)
+{
+	struct mac_regs *regs = ep93xx_get_regs(edev);
+	uint32_t value;
+
+	value = readl(&regs->indad);
+	mac_addr[0] = value & 0xFF;
+	mac_addr[1] = (value >> 8) & 0xFF;
+	mac_addr[2] = (value >> 16) & 0xFF;
+	mac_addr[3] = (value >> 24) & 0xFF;
+
+	value = readl(&regs->indad_upper);
+	mac_addr[4] = value & 0xFF;
+	mac_addr[5] = (value >> 8) & 0xFF;
+
+	return 0;
+}
+
+static int ep93xx_eth_set_ethaddr(struct eth_device *edev,
+				unsigned char *mac_addr)
+{
+	struct mac_regs *regs = ep93xx_get_regs(edev);
+
+	writel(AFP_IAPRIMARY, &regs->afp);
+
+	writel(mac_addr[0] | (mac_addr[1] << 8) |
+		(mac_addr[2] << 16) | (mac_addr[3] << 24),
+		&regs->indad);
+	writel(mac_addr[4] | (mac_addr[5] << 8), &regs->indad_upper);
+
+	return 0;
+}
+
+static int ep93xx_eth_probe(struct device_d *dev)
+{
+	struct eth_device *edev;
+	struct ep93xx_eth_priv *priv;
+	int ret = -1;
+
+	pr_debug("ep93xx_eth_probe()\n");
+
+	edev = xzalloc(sizeof(struct eth_device) +
+		sizeof(struct ep93xx_eth_priv));
+	dev->type_data = edev;
+	edev->priv = (struct ep93xx_eth_priv *)(edev + 1);
+
+	priv = edev->priv;
+	priv->regs = (struct mac_regs *)MAC_BASE;
+
+	edev->init = ep93xx_eth_init_dev;
+	edev->open = ep93xx_eth_open;
+	edev->send = ep93xx_eth_send_packet;
+	edev->recv = ep93xx_eth_rcv_packet;
+	edev->halt = ep93xx_eth_halt;
+	edev->get_ethaddr = ep93xx_eth_get_ethaddr;
+	edev->set_ethaddr = ep93xx_eth_set_ethaddr;
+
+	priv->miiphy.read = ep93xx_phy_read;
+	priv->miiphy.write = ep93xx_phy_write;
+	priv->miiphy.address = 0;
+	priv->miiphy.flags = 0;
+
+	priv->tx_dq.base = calloc(NUMTXDESC,
+				sizeof(struct tx_descriptor));
+	if (priv->tx_dq.base == NULL) {
+		pr_err("calloc() failed: tx_dq.base");
+		goto eth_probe_failed_0;
+	}
+
+	priv->tx_sq.base = calloc(NUMTXDESC,
+				sizeof(struct tx_status));
+	if (priv->tx_sq.base == NULL) {
+		pr_err("calloc() failed: tx_sq.base");
+		goto eth_probe_failed_1;
+	}
+
+	priv->rx_dq.base = calloc(NUMRXDESC,
+				sizeof(struct rx_descriptor));
+	if (priv->rx_dq.base == NULL) {
+		pr_err("calloc() failed: rx_dq.base");
+		goto eth_probe_failed_2;
+	}
+
+	priv->rx_sq.base = calloc(NUMRXDESC,
+				sizeof(struct rx_status));
+	if (priv->rx_sq.base == NULL) {
+		pr_err("calloc() failed: rx_sq.base");
+		goto eth_probe_failed_3;
+	}
+
+	miiphy_register(&priv->miiphy);
+	eth_register(edev);
+
+	ret = 0;
+
+	goto eth_probe_done;
+
+eth_probe_failed_3:
+	free(priv->rx_dq.base);
+	/* Fall through */
+
+eth_probe_failed_2:
+	free(priv->tx_sq.base);
+	/* Fall through */
+
+eth_probe_failed_1:
+	free(priv->tx_dq.base);
+	/* Fall through */
+
+eth_probe_failed_0:
+	/* Fall through */
+
+eth_probe_done:
 	return ret;
 }
 

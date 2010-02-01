@@ -110,7 +110,7 @@ inline void dump_rx_descriptor_queue(struct eth_device *edev)
 /**
  * Dump all RX status queue entries to the terminal.
  */
-inline void dump_rx_status_queue(void)
+inline void dump_rx_status_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -128,7 +128,7 @@ inline void dump_rx_status_queue(void)
 /**
  * Dump all TX descriptor queue entries to the terminal.
  */
-inline void dump_tx_descriptor_queue(void)
+inline void dump_tx_descriptor_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -146,7 +146,7 @@ inline void dump_tx_descriptor_queue(void)
 /**
  * Dump all TX status queue entries to the terminal.
  */
-inline void dump_tx_status_queue(void)
+inline void dump_tx_status_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -161,10 +161,10 @@ inline void dump_tx_status_queue(void)
 }
 #else
 #define dump_dev(x)
-#define dump_rx_descriptor_queue()
-#define dump_rx_status_queue()
-#define dump_tx_descriptor_queue()
-#define dump_tx_status_queue()
+#define dump_rx_descriptor_queue(x)
+#define dump_rx_status_queue(x)
+#define dump_tx_descriptor_queue(x)
+#define dump_tx_status_queue(x)
 #endif	/* defined(EP93XX_MAC_DEBUG) */
 
 /**
@@ -291,11 +291,11 @@ static int ep93xx_eth_open(struct eth_device *edev)
 	writel(TXCTL_STXON, &regs->txctl);
 
 	/* Dump data structures if we're debugging */
-	dump_dev();
-	dump_rx_descriptor_queue();
-	dump_rx_status_queue();
-	dump_tx_descriptor_queue();
-	dump_tx_status_queue();
+	dump_dev(edev);
+	dump_rx_descriptor_queue(edev);
+	dump_rx_status_queue(edev);
+	dump_tx_descriptor_queue(edev);
+	dump_tx_status_queue(edev);
 
 	pr_debug("-ep93xx_eth_open\n");
 
@@ -470,8 +470,8 @@ static int ep93xx_eth_rcv_packet(struct eth_device *edev)
 			pr_err("packet rx error, status %08X %08X\n",
 				priv->rx_sq.current->word1,
 				priv->rx_sq.current->word2);
-			dump_rx_descriptor_queue();
-			dump_rx_status_queue();
+			dump_rx_descriptor_queue(edev);
+			dump_rx_status_queue(edev);
 		}
 
 		/*
@@ -544,8 +544,8 @@ static int ep93xx_eth_send_packet(struct eth_device *edev,
 	if (!TX_STATUS_TXWE(priv->tx_sq.current)) {
 		pr_err("packet tx error, status %08X\n",
 			priv->tx_sq.current->word1);
-		dump_tx_descriptor_queue();
-		dump_tx_status_queue();
+		dump_tx_descriptor_queue(edev);
+		dump_tx_status_queue(edev);
 
 		/* TODO: Add better error handling? */
 		goto eth_send_failed_0;

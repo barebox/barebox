@@ -563,12 +563,12 @@ eth_probe_done:
 /**
  * Maximum MII address we support
  */
-#define MII_ADDRESS_MAX			(31)
+#define MII_ADDRESS_MAX			31
 
 /**
  * Maximum MII register address we support
  */
-#define MII_REGISTER_MAX		(31)
+#define MII_REGISTER_MAX		31
 
 /**
  * Read a 16-bit value from an MII register.

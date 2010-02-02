@@ -61,34 +61,34 @@ static inline struct mac_regs *ep93xx_get_regs(struct eth_device *edev)
 /**
  * Dump ep93xx_mac values to the terminal.
  */
-inline void dump_dev(struct eth_device *edev)
+static void dump_dev(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
 
 	printf("\ndump_dev()\n");
-	printf("  rx_dq.base	     %08X\n", priv->rx_dq.base);
-	printf("  rx_dq.current	     %08X\n", priv->rx_dq.current);
-	printf("  rx_dq.end	     %08X\n", priv->rx_dq.end);
-	printf("  rx_sq.base	     %08X\n", priv->rx_sq.base);
-	printf("  rx_sq.current	     %08X\n", priv->rx_sq.current);
-	printf("  rx_sq.end	     %08X\n", priv->rx_sq.end);
+	printf("  rx_dq.base	     %p\n", priv->rx_dq.base);
+	printf("  rx_dq.current	     %p\n", priv->rx_dq.current);
+	printf("  rx_dq.end	     %p\n", priv->rx_dq.end);
+	printf("  rx_sq.base	     %p\n", priv->rx_sq.base);
+	printf("  rx_sq.current	     %p\n", priv->rx_sq.current);
+	printf("  rx_sq.end	     %p\n", priv->rx_sq.end);
 
 	for (i = 0; i < NUMRXDESC; i++)
-		printf("  rx_buffer[%2.d]      %08X\n", i, NetRxPackets[i]);
+		printf("  rx_buffer[%2.d]      %p\n", i, NetRxPackets[i]);
 
-	printf("  tx_dq.base	     %08X\n", priv->tx_dq.base);
-	printf("  tx_dq.current	     %08X\n", priv->tx_dq.current);
-	printf("  tx_dq.end	     %08X\n", priv->tx_dq.end);
-	printf("  tx_sq.base	     %08X\n", priv->tx_sq.base);
-	printf("  tx_sq.current	     %08X\n", priv->tx_sq.current);
-	printf("  tx_sq.end	     %08X\n", priv->tx_sq.end);
+	printf("  tx_dq.base	     %p\n", priv->tx_dq.base);
+	printf("  tx_dq.current	     %p\n", priv->tx_dq.current);
+	printf("  tx_dq.end	     %p\n", priv->tx_dq.end);
+	printf("  tx_sq.base	     %p\n", priv->tx_sq.base);
+	printf("  tx_sq.current	     %p\n", priv->tx_sq.current);
+	printf("  tx_sq.end	     %p\n", priv->tx_sq.end);
 }
 
 /**
  * Dump all RX descriptor queue entries to the terminal.
  */
-inline void dump_rx_descriptor_queue(struct eth_device *edev)
+static void dump_rx_descriptor_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -96,8 +96,8 @@ inline void dump_rx_descriptor_queue(struct eth_device *edev)
 	printf("\ndump_rx_descriptor_queue()\n");
 	printf("  descriptor address	 word1		 word2\n");
 	for (i = 0; i < NUMRXDESC; i++) {
-		printf("  [ %08X ]	     %08X	 %08X\n",
-			(priv->rx_dq.base + i),
+		printf("  [ %p ]	     %08X	 %08X\n",
+			priv->rx_dq.base + i,
 			(priv->rx_dq.base + i)->word1,
 			(priv->rx_dq.base + i)->word2);
 	}
@@ -106,7 +106,7 @@ inline void dump_rx_descriptor_queue(struct eth_device *edev)
 /**
  * Dump all RX status queue entries to the terminal.
  */
-inline void dump_rx_status_queue(struct eth_device *edev)
+static void dump_rx_status_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -114,8 +114,8 @@ inline void dump_rx_status_queue(struct eth_device *edev)
 	printf("\ndump_rx_status_queue()\n");
 	printf("  descriptor address	 word1		 word2\n");
 	for (i = 0; i < NUMRXDESC; i++) {
-		printf("  [ %08X ]	     %08X	 %08X\n",
-			(priv->rx_sq.base + i),
+		printf("  [ %p ]	     %08X	 %08X\n",
+			priv->rx_sq.base + i,
 			(priv->rx_sq.base + i)->word1,
 			(priv->rx_sq.base + i)->word2);
 	}
@@ -124,7 +124,7 @@ inline void dump_rx_status_queue(struct eth_device *edev)
 /**
  * Dump all TX descriptor queue entries to the terminal.
  */
-inline void dump_tx_descriptor_queue(struct eth_device *edev)
+static void dump_tx_descriptor_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -132,8 +132,8 @@ inline void dump_tx_descriptor_queue(struct eth_device *edev)
 	printf("\ndump_tx_descriptor_queue()\n");
 	printf("  descriptor address	 word1		 word2\n");
 	for (i = 0; i < NUMTXDESC; i++) {
-		printf("  [ %08X ]	     %08X	 %08X\n",
-			(priv->tx_dq.base + i),
+		printf("  [ %p ]	     %08X	 %08X\n",
+			priv->tx_dq.base + i,
 			(priv->tx_dq.base + i)->word1,
 			(priv->tx_dq.base + i)->word2);
 	}
@@ -142,7 +142,7 @@ inline void dump_tx_descriptor_queue(struct eth_device *edev)
 /**
  * Dump all TX status queue entries to the terminal.
  */
-inline void dump_tx_status_queue(struct eth_device *edev)
+static void dump_tx_status_queue(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	int i;
@@ -150,8 +150,8 @@ inline void dump_tx_status_queue(struct eth_device *edev)
 	printf("\ndump_tx_status_queue()\n");
 	printf("  descriptor address	 word1\n");
 	for (i = 0; i < NUMTXDESC; i++) {
-		printf("  [ %08X ]	     %08X\n",
-			(priv->rx_sq.base + i),
+		printf("  [ %p ]	     %08X\n",
+			priv->rx_sq.base + i,
 			(priv->rx_sq.base + i)->word1);
 	}
 }

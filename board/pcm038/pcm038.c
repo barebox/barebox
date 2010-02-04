@@ -382,18 +382,17 @@ static int pcm038_console_init(void)
 
 console_initcall(pcm038_console_init);
 
-static noinline void pll_wait(void)
-{
-	volatile int i;
-
-	for (i = 0; i < 100000; i++);
-}
+extern void *pcm038_pll_init, *pcm038_pll_init_end;
 
 static int pcm038_power_init(void)
 {
 	int ret;
+	void *vram = 0xffff4c00;
+	void (*pllfunc)(void) = vram;
 
-	printf("initialising PLLs\n");
+	printf("initialising PLLs: 0x%p 0x%p\n", &pcm038_pll_init);
+
+	memcpy(vram, &pcm038_pll_init, 0x100);
 
 	console_flush();
 
@@ -406,42 +405,7 @@ static int pcm038_power_init(void)
 	/* wait for good power level */
 	udelay(100000);
 
-#define CSCR_VAL CSCR_USB_DIV(3) |	\
-		 CSCR_SD_CNT(3) |	\
-		 CSCR_MSHC_SEL |	\
-		 CSCR_H264_SEL |	\
-		 CSCR_SSI1_SEL |	\
-		 CSCR_SSI2_SEL |	\
-		 CSCR_MCU_SEL |		\
-		 CSCR_ARM_SRC_MPLL |	\
-		 CSCR_SP_SEL |		\
-		 CSCR_ARM_DIV(0) |	\
-		 CSCR_FPM_EN |		\
-		 CSCR_SPEN |		\
-		 CSCR_MPEN
-
-	/*
-	 * pll clock initialization - see section 3.4.3 of the i.MX27 manual
-	 */
-	MPCTL0 = IMX_PLL_PD(0) |
-		 IMX_PLL_MFD(51) |
-		 IMX_PLL_MFI(7) |
-		 IMX_PLL_MFN(35); /* MPLL = 399 MHz */
-
-	SPCTL0 = IMX_PLL_PD(1) |
-		 IMX_PLL_MFD(12) |
-		 IMX_PLL_MFI(9) |
-		 IMX_PLL_MFN(3); /* SPLL = 240 MHz */
-
-	/*
-	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
-	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
-	 * System clock (HCLK) = 133 MHz
-	 */
-
-	pll_wait();
-	CSCR = CSCR_VAL | CSCR_AHB_DIV(1) | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
-	pll_wait();
+	pllfunc();
 
 	/* clock gating enable */
 	GPCR = 0x00050f08;

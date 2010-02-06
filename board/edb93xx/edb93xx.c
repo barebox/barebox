@@ -32,6 +32,8 @@
 #include <mach/ep93xx-regs.h>
 #include "edb93xx.h"
 
+#define DEVCFG_U1EN (1 << 18)
+
 /*
  * Up to 32MiB NOR type flash, connected to
  * CS line 6, data width is 16 bit
@@ -163,6 +165,12 @@ static int edb93xx_console_init(void)
 	uint32_t value = readl(&syscon->pwrcnt);
 	value |= SYSCON_PWRCNT_UART_BAUD;
 	writel(value, &syscon->pwrcnt);
+
+	/* Enable UART1 */
+	value = readl(&syscon->devicecfg);
+	value |= DEVCFG_U1EN;
+	writel(0xAA, &syscon->sysswlock);
+	writel(value, &syscon->devicecfg);
 
 	register_device(&edb93xx_serial_device);
 

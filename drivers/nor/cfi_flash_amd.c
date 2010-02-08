@@ -1,6 +1,6 @@
 #include <common.h>
 #include <stdio.h>
-#include <cfi_flash.h>
+#include "cfi_flash.h"
 
 static void flash_unlock_seq (flash_info_t * info, flash_sect_t sect)
 {

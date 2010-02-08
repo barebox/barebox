@@ -650,11 +650,5 @@ extern void flash_read_factory_serial(flash_info_t * info, void * buffer, int of
 #define FLASH_ERASE_TIMEOUT	120000	/* timeout for erasing in ms		*/
 #define FLASH_WRITE_TIMEOUT	500	/* timeout for writes  in ms		*/
 
-struct cfi_platform_data {
-        flash_info_t finfo;
-};
-
-int flash_init (void);
-
 #endif /* __CFI_FLASH_H */
 

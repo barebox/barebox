@@ -40,9 +40,9 @@
 #include <clock.h>
 #include <init.h>
 #include <malloc.h>
-#include <cfi_flash.h>
 #include <asm/io.h>
 #include <errno.h>
+#include "cfi_flash.h"
 
 /*
  * This file implements a Common Flash Interface (CFI) driver for barebox.

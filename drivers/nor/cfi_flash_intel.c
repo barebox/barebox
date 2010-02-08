@@ -1,5 +1,5 @@
 #include <common.h>
-#include <cfi_flash.h>
+#include "cfi_flash.h"
 
 /*
  * read jedec ids from device and set corresponding fields in info struct

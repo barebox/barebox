@@ -29,7 +29,6 @@
 
 #include <common.h>
 #include <driver.h>
-#include <cfi_flash.h>
 #include <init.h>
 #include <mach/mpc5xxx.h>
 #include <mach/fec.h>

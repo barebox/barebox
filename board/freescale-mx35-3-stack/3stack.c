@@ -26,7 +26,6 @@
  */
 
 #include <common.h>
-#include <cfi_flash.h>
 #include <environment.h>
 #include <errno.h>
 #include <fcntl.h>

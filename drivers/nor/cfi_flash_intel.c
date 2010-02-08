@@ -69,29 +69,32 @@ static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const u
 	sector = find_sector (info, dest);
 	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
 	flash_write_cmd (info, sector, 0, FLASH_CMD_WRITE_TO_BUFFER);
-	if ((retcode = flash_generic_status_check (info, sector, info->buffer_write_tout,
-					   "write to buffer")) == ERR_OK) {
-		/* reduce the number of loops by the width of the port	*/
-		cnt = len >> (info->portwidth - 1);
 
-		flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
-		while (cnt-- > 0) {
-			if (bankwidth_is_1(info)) {
-				*dst.cp++ = *src.cp++;
-			} else if (bankwidth_is_2(info)) {
-				*dst.wp++ = *src.wp++;
-			} else if (bankwidth_is_4(info)) {
-				*dst.lp++ = *src.lp++;
-			} else if (bankwidth_is_8(info)) {
-				*dst.llp++ = *src.llp++;
-			}
+	retcode = flash_generic_status_check (info, sector, info->buffer_write_tout,
+					   "write to buffer");
+	if (retcode != ERR_OK)
+		return retcode;
+
+	/* reduce the number of loops by the width of the port	*/
+	cnt = len >> (info->portwidth - 1);
+
+	flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
+	while (cnt-- > 0) {
+		if (bankwidth_is_1(info)) {
+			*dst.cp++ = *src.cp++;
+		} else if (bankwidth_is_2(info)) {
+			*dst.wp++ = *src.wp++;
+		} else if (bankwidth_is_4(info)) {
+			*dst.lp++ = *src.lp++;
+		} else if (bankwidth_is_8(info)) {
+			*dst.llp++ = *src.llp++;
 		}
-		flash_write_cmd (info, sector, 0,
-				 FLASH_CMD_WRITE_BUFFER_CONFIRM);
-		retcode = flash_status_check (info, sector,
-						   info->buffer_write_tout,
-						   "buffer write");
 	}
+
+	flash_write_cmd (info, sector, 0, FLASH_CMD_WRITE_BUFFER_CONFIRM);
+	retcode = flash_status_check (info, sector,
+					   info->buffer_write_tout,
+					   "buffer write");
 	return retcode;
 }
 #else

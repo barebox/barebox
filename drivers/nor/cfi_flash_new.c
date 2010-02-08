@@ -123,7 +123,6 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 	ctladdr.cp = flash_make_addr (info, 0, 0);
 	cptr.cp = (uchar *) dest;
 
-
 	/* Check if Flash is (sufficiently) erased */
 	if (bankwidth_is_1(info)) {
 		flag = ((cptr.cp[0] & cword.c) == cword.c);
@@ -488,7 +487,7 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 	}
 
 	flash_write_cmd (info, 0, 0, info->cmd_reset);
-	return (info->size);
+	return info->size;
 }
 
 /* loop through the sectors from the highest address
@@ -563,7 +562,9 @@ static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong
 		}
 		for (; (cnt == 0) && (i < info->portwidth); ++i, ++cp)
 			flash_add_byte (info, &cword, (*(uchar *) cp));
-		if ((rc = flash_write_cfiword (info, wp, cword)) != 0)
+
+		rc = flash_write_cfiword (info, wp, cword);
+		if (rc)
 			return rc;
 		wp = cp;
 	}
@@ -609,7 +610,7 @@ static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong
 	}
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 	if (cnt == 0) {
-		return (0);
+		return 0;
 	}
 
 	/*

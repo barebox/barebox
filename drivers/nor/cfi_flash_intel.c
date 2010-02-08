@@ -34,18 +34,11 @@ static int intel_flash_is_busy (flash_info_t * info, flash_sect_t sect)
 
 static int intel_flash_erase_one (flash_info_t * info, long sect)
 {
-	int rcode = 0;
-
 	flash_write_cmd (info, sect, 0, FLASH_CMD_CLEAR_STATUS);
 	flash_write_cmd (info, sect, 0, FLASH_CMD_BLOCK_ERASE);
 	flash_write_cmd (info, sect, 0, FLASH_CMD_ERASE_CONFIRM);
 
-	if (flash_status_check
-	    (info, sect, info->erase_blk_tout, "erase")) {
-		rcode = 1;
-	} else
-		putchar('.');
-	return rcode;
+	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
 }
 
 static void intel_flash_prepare_write(flash_info_t * info)

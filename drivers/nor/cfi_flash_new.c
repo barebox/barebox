@@ -521,6 +521,7 @@ static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
                 if (ret)
                         goto out;
+		printf(".");
         }
 out:
         putchar('\n');

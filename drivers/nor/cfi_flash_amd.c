@@ -73,20 +73,13 @@ static int amd_flash_is_busy (flash_info_t * info, flash_sect_t sect)
 
 static int amd_flash_erase_one (flash_info_t * info, long sect)
 {
-	int rcode = 0;
-
 	flash_unlock_seq (info, sect);
 	flash_write_cmd (info, sect, AMD_ADDR_ERASE_START,
 				AMD_CMD_ERASE_START);
 	flash_unlock_seq (info, sect);
 	flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
 
-	if (flash_status_check
-	    (info, sect, info->erase_blk_tout, "erase")) {
-		rcode = 1;
-	} else
-		putchar('.');
-	return rcode;
+	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
 }
 
 static void amd_flash_prepare_write(flash_info_t * info)

@@ -25,6 +25,10 @@
  */
 
 #include <driver.h>
+#include <asm/io.h>
+
+typedef unsigned long flash_sect_t;
+struct cfi_cmd_set;
 
 /*-----------------------------------------------------------------------
  * FLASH Info: contains chip specific data, per FLASH bank
@@ -32,7 +36,6 @@
 
 typedef struct {
 	struct driver_d driver;
-	struct cdev cdev;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/
@@ -55,7 +58,100 @@ typedef struct {
 	ushort	ext_addr;		/* extended query table address		*/
 	ushort	cfi_version;		/* cfi version				*/
 	ushort	cfi_offset;		/* offset for cfi query 		*/
+	struct cfi_cmd_set *cfi_cmd_set;
+	struct cdev cdev;
 } flash_info_t;
+
+struct cfi_cmd_set {
+	int (*flash_write_cfibuffer) (flash_info_t * info, ulong dest, const uchar * cp, int len);
+	int (*flash_erase_one) (flash_info_t * info, long sect);
+	int (*flash_is_busy) (flash_info_t * info, flash_sect_t sect);
+	void (*flash_read_jedec_ids) (flash_info_t * info);
+	void (*flash_prepare_write) (flash_info_t * info);
+	int (*flash_status_check) (flash_info_t * info, flash_sect_t sector, uint64_t tout, char *prompt);
+};
+
+extern struct cfi_cmd_set cfi_cmd_set_intel;
+extern struct cfi_cmd_set cfi_cmd_set_amd;
+
+#define FLASH_CMD_CFI			0x98
+#define FLASH_CMD_READ_ID		0x90
+#define FLASH_CMD_RESET			0xff
+#define FLASH_CMD_BLOCK_ERASE		0x20
+#define FLASH_CMD_ERASE_CONFIRM		0xD0
+#define FLASH_CMD_WRITE			0x40
+#define FLASH_CMD_PROTECT		0x60
+#define FLASH_CMD_PROTECT_SET		0x01
+#define FLASH_CMD_PROTECT_CLEAR		0xD0
+#define FLASH_CMD_CLEAR_STATUS		0x50
+#define FLASH_CMD_WRITE_TO_BUFFER	0xE8
+#define FLASH_CMD_WRITE_BUFFER_CONFIRM	0xD0
+
+#define FLASH_STATUS_DONE		0x80
+#define FLASH_STATUS_ESS		0x40
+#define FLASH_STATUS_ECLBS		0x20
+#define FLASH_STATUS_PSLBS		0x10
+#define FLASH_STATUS_VPENS		0x08
+#define FLASH_STATUS_PSS		0x04
+#define FLASH_STATUS_DPS		0x02
+#define FLASH_STATUS_R			0x01
+#define FLASH_STATUS_PROTECT		0x01
+
+#define AMD_CMD_RESET			0xF0
+#define AMD_CMD_WRITE			0xA0
+#define AMD_CMD_ERASE_START		0x80
+#define AMD_CMD_ERASE_SECTOR		0x30
+#define AMD_CMD_UNLOCK_START		0xAA
+#define AMD_CMD_UNLOCK_ACK		0x55
+#define AMD_CMD_WRITE_TO_BUFFER		0x25
+#define AMD_CMD_WRITE_BUFFER_CONFIRM	0x29
+
+#define AMD_STATUS_TOGGLE		0x40
+#define AMD_STATUS_ERROR		0x20
+
+#define AMD_ADDR_ERASE_START	((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
+#define AMD_ADDR_START		((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
+#define AMD_ADDR_ACK		((info->portwidth == FLASH_CFI_8BIT) ? 0x555 : 0x2AA)
+
+#define FLASH_OFFSET_MANUFACTURER_ID	0x00
+#define FLASH_OFFSET_DEVICE_ID		0x01
+#define FLASH_OFFSET_DEVICE_ID2		0x0E
+#define FLASH_OFFSET_DEVICE_ID3		0x0F
+#define FLASH_OFFSET_CFI		0x55
+#define FLASH_OFFSET_CFI_ALT		0x555
+#define FLASH_OFFSET_CFI_RESP		0x10
+#define FLASH_OFFSET_PRIMARY_VENDOR	0x13
+#define FLASH_OFFSET_EXT_QUERY_T_P_ADDR	0x15	/* extended query table primary addr */
+#define FLASH_OFFSET_WTOUT		0x1F
+#define FLASH_OFFSET_WBTOUT		0x20
+#define FLASH_OFFSET_ETOUT		0x21
+#define FLASH_OFFSET_CETOUT		0x22
+#define FLASH_OFFSET_WMAX_TOUT		0x23
+#define FLASH_OFFSET_WBMAX_TOUT		0x24
+#define FLASH_OFFSET_EMAX_TOUT		0x25
+#define FLASH_OFFSET_CEMAX_TOUT		0x26
+#define FLASH_OFFSET_SIZE		0x27
+#define FLASH_OFFSET_INTERFACE		0x28
+#define FLASH_OFFSET_BUFFER_SIZE	0x2A
+#define FLASH_OFFSET_NUM_ERASE_REGIONS	0x2C
+#define FLASH_OFFSET_ERASE_REGIONS	0x2D
+#define FLASH_OFFSET_PROTECT		0x02
+#define FLASH_OFFSET_USER_PROTECTION	0x85
+#define FLASH_OFFSET_INTEL_PROTECTION	0x81
+
+#define CFI_CMDSET_NONE			0
+#define CFI_CMDSET_INTEL_EXTENDED	1
+#define CFI_CMDSET_AMD_STANDARD		2
+#define CFI_CMDSET_INTEL_STANDARD	3
+#define CFI_CMDSET_AMD_EXTENDED		4
+#define CFI_CMDSET_MITSU_STANDARD	256
+#define CFI_CMDSET_MITSU_EXTENDED	257
+#define CFI_CMDSET_SST			258
+
+#ifdef CFG_FLASH_CFI_AMD_RESET /* needed for STM_ID_29W320DB on UC100 */
+# undef  FLASH_CMD_RESET
+# define FLASH_CMD_RESET	AMD_CMD_RESET /* use AMD-Reset instead */
+#endif
 
 /*
  * Values for the width of the port
@@ -82,6 +178,112 @@ typedef struct {
 
 /* convert between bit value and numeric value */
 #define CFI_FLASH_SHIFT_WIDTH	3
+/* Prototypes */
+
+int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
+void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
+flash_sect_t find_sector (flash_info_t * info, ulong addr);
+int flash_status_check (flash_info_t * info, flash_sect_t sector,
+			       uint64_t tout, char *prompt);
+int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
+			       uint64_t tout, char *prompt);
+
+int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
+void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf);
+
+/*
+ * create an address based on the offset and the port width
+ */
+static inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offset)
+{
+	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
+}
+
+/*
+ * read a character at a port width address
+ */
+static inline uchar flash_read_uchar (flash_info_t * info, uint offset)
+{
+	uchar *cp;
+
+	cp = flash_make_addr (info, 0, offset);
+#if defined(__LITTLE_ENDIAN)
+	return (cp[0]);
+#else
+	return (cp[info->portwidth - 1]);
+#endif
+}
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
+#define bankwidth_is_1(info) (info->portwidth == 1)
+#else
+#define bankwidth_is_1(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_2
+#define bankwidth_is_2(info) (info->portwidth == 2)
+#else
+#define bankwidth_is_2(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_4
+#define bankwidth_is_4(info) (info->portwidth == 4)
+#else
+#define bankwidth_is_4(info) 0
+#endif
+
+#ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_8
+#define bankwidth_is_8(info) (info->portwidth == 8)
+#else
+#define bankwidth_is_8(info) 0
+#endif
+
+typedef union {
+	unsigned char c;
+	unsigned short w;
+	unsigned long l;
+	unsigned long long ll;
+} cfiword_t;
+
+typedef union {
+	volatile unsigned char *cp;
+	volatile unsigned short *wp;
+	volatile unsigned long *lp;
+	volatile unsigned long long *llp;
+} cfiptr_t;
+
+static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *addr)
+{
+	if (bankwidth_is_1(info)) {
+		debug("fw addr %p val %02x\n", addr, datum.c);
+		writeb(datum.c, addr);
+	} else if (bankwidth_is_2(info)) {
+		debug("fw addr %p val %04x\n", addr, datum.w);
+		writew(datum.w, addr);
+	} else if (bankwidth_is_4(info)) {
+		debug("fw addr %p val %08x\n", addr, datum.l);
+		writel(datum.l, addr);
+	} else if (bankwidth_is_8(info)) {
+		memcpy((void *)addr, &datum.ll, 8);
+	}
+}
+
+extern void flash_print_info (flash_info_t *);
+extern int flash_sect_erase (ulong addr_first, ulong addr_last);
+extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
+
+/* common/flash.c */
+extern void flash_protect (int flag, ulong from, ulong to, flash_info_t *info);
+extern int flash_write (char *, ulong, ulong);
+extern flash_info_t *addr2info (ulong);
+//extern int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
+
+/* board/?/flash.c */
+#if defined(CFG_FLASH_PROTECTION)
+extern int flash_real_protect(flash_info_t *info, long sector, int prot);
+extern void flash_read_user_serial(flash_info_t * info, void * buffer, int offset, int len);
+extern void flash_read_factory_serial(flash_info_t * info, void * buffer, int offset, int len);
+#endif	/* CFG_FLASH_PROTECTION */
 
 /*-----------------------------------------------------------------------
  * return codes from flash_write():

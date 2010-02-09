@@ -45,7 +45,7 @@
 #ifdef DEBUG
 #define pr_debug(fmt, arg...)	printf(fmt, ##arg)
 #else
-#define pr_debug(fmt, arg...) do {} while(0)
+#define pr_debug(fmt, arg...)	do {} while(0)
 #endif
 
 #define debug(fmt, arg...)	pr_debug(fmt, ##arg)
@@ -138,7 +138,32 @@ int arch_execute(void *, int argc, char *argv[]);
 
 int run_shell(void);
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+/* Force a compilation error if condition is true */
+#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
+
+/* Force a compilation error if condition is constant and true */
+#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+
+/* Force a compilation error if a constant expression is not a power of 2 */
+#define BUILD_BUG_ON_NOT_POWER_OF_2(n)			\
+	BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
+
+/*
+ * Force a compilation error if condition is true, but also produce a
+ * result (of value 0 and type size_t), so the expression can be used
+ * e.g. in a structure initializer (or where-ever else comma
+ * expressions aren't permitted).
+ */
+#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+
+#define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
+
+#define ARRAY_SIZE(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+#define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -163,5 +188,7 @@ int run_shell(void);
 #define LLONG_MAX	((long long)(~0ULL>>1))
 #define LLONG_MIN	(-LLONG_MAX - 1)
 #define ULLONG_MAX	(~0ULL)
+
+#define PAGE_SIZE	4096
 
 #endif	/* __COMMON_H_ */

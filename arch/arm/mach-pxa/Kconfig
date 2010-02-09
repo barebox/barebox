@@ -3,10 +3,12 @@ if ARCH_PXA
 config ARCH_TEXT_BASE
 	hex
 	default 0xa0000000 if MACH_MIOA701
+	default 0xa3f00000 if MACH_PCM027
 
 config BOARDINFO
 	string
 	default "Scoter Mitac Mio A701" if MACH_MIOA701
+	default "Phytec phyCORE-PXA270" if MACH_PCM027
 
 # ----------------------------------------------------------
 
@@ -37,6 +39,14 @@ config MACH_MIOA701
 	select PWM
 	help
 	  Say Y here if you are using a Mitac Mio A701 smartphone
+
+config MACH_PCM027
+	bool "Phytec phyCORE-PXA270"
+	select HAS_CFI
+	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_MMU
+	help
+	  Say Y here if you are using a Phytec phyCORE PXA270
 	  board
 endchoice
 

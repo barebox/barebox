@@ -111,6 +111,11 @@ static void setup_refresh_timer(void)
 
 static void program_mode_registers(void)
 {
+	struct sdram_regs *sdram = (struct sdram_regs *)SDRAM_BASE;
+
+	/* Select mode register update mode */
+	writel(GLCONFIG_MRS | GLCONFIG_CKE, &sdram->glconfig);
+
 	PROGRAM_MODE_REG(0);
 
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)

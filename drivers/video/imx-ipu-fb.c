@@ -398,7 +398,7 @@ static inline u32 reg_read(struct ipu_fb_info *fbi, unsigned long reg)
 
 	val = readl(fbi->regs + reg);
 
-	debug("%s: %p 0x%08x\n", __func__, ipu_base + reg, val);
+	debug("%s: %p 0x%08x\n", __func__, fbi->regs + reg, val);
 
 	return val;
 }
@@ -406,7 +406,7 @@ static inline u32 reg_read(struct ipu_fb_info *fbi, unsigned long reg)
 static inline void reg_write(struct ipu_fb_info *fbi, u32 value,
 		unsigned long reg)
 {
-	debug("%s: %p 0x%08x\n", __func__, ipu_base + reg, value);
+	debug("%s: %p 0x%08x\n", __func__, fbi->regs + reg, value);
 
 	writel(value, fbi->regs + reg);
 }

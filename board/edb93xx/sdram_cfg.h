@@ -43,12 +43,13 @@
  * CLK cycle time min:
  *	@ CAS latency = 3: 7.5ns
  *	@ CAS latency = 2: 10ns
- * We're running at 66MHz (15ns cycle time) external bus speed (HCLK),
- * so it's safe to use CAS latency = 2
+ * We're running at 66MHz (EDB9301) / 100Mhz (EDB9302(a)) external
+ * bus speed (HCLK), with a cycle time of 15ns / 10ns, so it's safe
+ * to use CAS latency = 2
  *
  * RAS-to-CAS delay min:
  *	20ns
- * At 15ns cycle time, we use RAS-to-CAS delay = 2
+ * At 15ns/10ns cycle time, we use RAS-to-CAS delay = 2
  *
  * SROMLL = 1: Swap BA[1:0] with A[13:12], making the SDRAM appear
  * as four blocks of 8MB size, instead of eight blocks of 4MB size:

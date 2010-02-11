@@ -25,8 +25,7 @@
 #include <config.h>
 #include <mach/ep93xx-regs.h>
 
-#if defined(CONFIG_MACH_EDB9301) || defined(CONFIG_MACH_EDB9302) || \
-	defined(CONFIG_MACH_EDB9302A)
+#if defined(CONFIG_MACH_EDB9301)
 /*
  * fclk_div: 2, nbyp1: 1, hclk_div: 5, pclk_div: 2
  * pll1_x1: 294912000.000000, pll1_x2ip: 36864000.000000,
@@ -39,7 +38,8 @@
 			3 << SYSCON_CLKSET1_HCLK_DIV_SHIFT |	   \
 			SYSCON_CLKSET1_NBYP1 |			   \
 			1 << SYSCON_CLKSET1_FCLK_DIV_SHIFT)
-#elif defined(CONFIG_MACH_EDB9307) || defined(CONFIG_MACH_EDB9307A) ||\
+#elif defined(CONFIG_MACH_EDB9302) || defined(CONFIG_MACH_EDB9302A) ||	\
+	defined(CONFIG_MACH_EDB9307) || defined(CONFIG_MACH_EDB9307A) || \
 	defined CONFIG_MACH_EDB9312 || defined(CONFIG_MACH_EDB9315) ||\
 	defined(CONFIG_MACH_EDB9315A)
 /*

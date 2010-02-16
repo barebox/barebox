@@ -26,13 +26,13 @@
 #ifndef __ASM_ARM_IO_H
 #define __ASM_ARM_IO_H
 
-#define __raw_writeb(v,a)	(*(volatile unsigned char *)(a) = (v))
-#define __raw_writew(v,a)	(*(volatile unsigned short *)(a) = (v))
-#define __raw_writel(v,a)	(*(volatile unsigned int *)(a) = (v))
+#define __raw_writeb(v,a)	(__chk_io_ptr(a), *(volatile unsigned char __force  *)(a) = (v))
+#define __raw_writew(v,a)	(__chk_io_ptr(a), *(volatile unsigned short __force *)(a) = (v))
+#define __raw_writel(v,a)	(__chk_io_ptr(a), *(volatile unsigned int __force   *)(a) = (v))
 
-#define __raw_readb(a)		(*(volatile unsigned char *)(a))
-#define __raw_readw(a)		(*(volatile unsigned short *)(a))
-#define __raw_readl(a)		(*(volatile unsigned int *)(a))
+#define __raw_readb(a)		(__chk_io_ptr(a), *(volatile unsigned char __force  *)(a))
+#define __raw_readw(a)		(__chk_io_ptr(a), *(volatile unsigned short __force *)(a))
+#define __raw_readl(a)		(__chk_io_ptr(a), *(volatile unsigned int __force   *)(a))
 
 #define writeb(v,a) __raw_writeb(v,a)
 #define writew(v,a) __raw_writew(v,a)

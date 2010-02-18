@@ -255,13 +255,13 @@ typedef union {
 static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *addr)
 {
 	if (bankwidth_is_1(info)) {
-		debug("fw addr %p val %02x\n", addr, datum.c); 
+		debug("fw addr %p val %02x\n", addr, datum.c);
 		writeb(datum.c, addr);
 	} else if (bankwidth_is_2(info)) {
-		debug("fw addr %p val %04x\n", addr, datum.w); 
+		debug("fw addr %p val %04x\n", addr, datum.w);
 		writew(datum.w, addr);
 	} else if (bankwidth_is_4(info)) {
-		debug("fw addr %p val %08x\n", addr, datum.l); 
+		debug("fw addr %p val %08x\n", addr, datum.l);
 		writel(datum.l, addr);
 	} else if (bankwidth_is_8(info)) {
 		memcpy((void *)addr, &datum.ll, 8);
@@ -649,12 +649,6 @@ extern void flash_read_factory_serial(flash_info_t * info, void * buffer, int of
  */
 #define FLASH_ERASE_TIMEOUT	120000	/* timeout for erasing in ms		*/
 #define FLASH_WRITE_TIMEOUT	500	/* timeout for writes  in ms		*/
-
-struct cfi_platform_data {
-        flash_info_t finfo;
-};
-
-int flash_init (void);
 
 #endif /* __CFI_FLASH_H */
 

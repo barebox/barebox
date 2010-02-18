@@ -30,7 +30,6 @@
 #include <asm/armlinux.h>
 #include <s1d13706fb.h>
 #include <net.h>
-#include <cfi_flash.h>
 #include <init.h>
 
 /*

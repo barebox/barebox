@@ -30,7 +30,6 @@
 
 #include <common.h>
 #include <command.h>
-#include <cfi_flash.h>
 #include <errno.h>
 #include <getopt.h>
 #include <fs.h>

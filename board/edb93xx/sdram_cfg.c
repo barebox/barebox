@@ -31,9 +31,9 @@
 		(SDRAM_BASE_ADDR | SDRAM_BANK_SEL_##bank | SDRAM_MODE_REG_VAL))
 
 #define PRECHARGE_BANK(bank)		(*(volatile uint32_t *)	\
-				(SDRAM_BASE_ADDR | SDRAM_BANK_SEL_##bank))
+		(SDRAM_BASE_ADDR | SDRAM_BANK_SEL_##bank)) = 0
 
-static void force_precharge(void);
+static void precharge_all_banks(void);
 static void setup_refresh_timer(void);
 static void program_mode_registers(void);
 
@@ -48,7 +48,7 @@ void sdram_cfg(void)
 
 	early_udelay(200);
 
-	force_precharge();
+	precharge_all_banks();
 
 	setup_refresh_timer();
 
@@ -58,13 +58,22 @@ void sdram_cfg(void)
 	writel(GLCONFIG_CKE, &sdram->glconfig);
 }
 
-static void force_precharge(void)
+static void precharge_all_banks(void)
 {
+	struct sdram_regs *sdram = (struct sdram_regs *)SDRAM_BASE;
+
+	/* Issue PRECHARGE ALL commands */
+	writel(GLCONFIG_INIT | GLCONFIG_CKE, &sdram->glconfig);
+
 	/*
-	 * Errata most EP93xx revisions say that PRECHARGE ALL isn't always
+	 * Errata of most EP93xx revisions say that PRECHARGE ALL isn't always
 	 * issued.
 	 *
-	 * Do a read from each bank to make sure they're precharged
+	 *  Cirrus proposes a workaround which consists in performing a read from
+	 * each bank to force the precharge. This causes some boards to hang.
+	 * Writing to the SDRAM banks instead of reading has the same
+	 * side-effect (the SDRAM controller issues the necessary precharges),
+	 * but is known to work on all supported boards
 	 */
 
 	PRECHARGE_BANK(0);

@@ -20,7 +20,6 @@
 
 #include <common.h>
 #include <net.h>
-#include <cfi_flash.h>
 #include <init.h>
 #include <environment.h>
 #include <mach/imx-regs.h>

@@ -363,6 +363,6 @@ static const __maybe_unused char cmd_nand_help[] =
 
 BAREBOX_CMD_START(nand)
 	.cmd		= do_nand,
-	.usage		= "",
+	.usage		= "NAND specific handling",
 	BAREBOX_CMD_HELP(cmd_nand_help)
 BAREBOX_CMD_END

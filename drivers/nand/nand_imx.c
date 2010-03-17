@@ -1166,11 +1166,13 @@ static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size>\n";
+"Usage: nand_boot_test <dest> <size>\n"
+"This command loads the booloader from the NAND memory like the reset\n"
+"routine does. Its intended for development tests only";
 
 BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
-	.usage		= "list a file or directory",
+	.usage		= "load bootloader from NAND",
 	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
 BAREBOX_CMD_END
 #endif

@@ -24,7 +24,7 @@
  * Definitions related to passing arguments to kernel.
  */
 
-#define CONFIG_MX35_HCLK_FREQ	24000000
+#define CONFIG_MX25_HCLK_FREQ	24000000
 
 #endif
 

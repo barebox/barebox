@@ -7,13 +7,13 @@
 unsigned long imx_get_mpllclk(void)
 {
 	ulong mpctl = readl(IMX_CCM_BASE + CCM_MPCTL);
-	return imx_decode_pll(mpctl, CONFIG_MX35_HCLK_FREQ);
+	return imx_decode_pll(mpctl, CONFIG_MX25_HCLK_FREQ);
 }
 
 unsigned long imx_get_upllclk(void)
 {
 	ulong ppctl = readl(IMX_CCM_BASE + CCM_UPCTL);
-	return imx_decode_pll(ppctl, CONFIG_MX35_HCLK_FREQ);
+	return imx_decode_pll(ppctl, CONFIG_MX25_HCLK_FREQ);
 }
 
 unsigned long imx_get_armclk(void)

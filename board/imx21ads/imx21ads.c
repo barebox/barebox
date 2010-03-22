@@ -148,3 +148,12 @@ static int mx21ads_console_init(void)
 }
 
 console_initcall(mx21ads_console_init);
+
+#ifdef CONFIG_NAND_IMX_BOOT
+void __bare_init nand_boot(void)
+{
+	PCCR0 |= PCCR0_NFC_EN;
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+}
+#endif
+

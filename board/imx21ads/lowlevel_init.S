@@ -20,12 +20,13 @@
 #include <config.h>
 #include <mach/imx-regs.h>
 
+	.section ".text_bare_init","ax"
 
 .globl board_init_lowlevel
 board_init_lowlevel:
 
 /* Save lr, because it is overwritten by the calls to mem_delay. */
-	mov	r5, lr
+	mov	r10, lr
 
 /*
  * Initialize the AHB-Lite IP Interface (AIPI) module (to enable access to
@@ -71,6 +72,15 @@ board_init_lowlevel:
 	ldr	r1, =0xffffffc9
 	str	r1, [r0]
 
+	/* Skip SDRAM initialization if we run from RAM */
+	cmp	pc, #0xc0000000
+	bls	1f
+	cmp	pc, #0xc8000000
+	bhi	1f
+
+	mov	pc, r10
+1:
+
 	/* Precharge */
 	ldr	r0, =SDCTL0
 	ldr	r1, =0x92120300
@@ -105,7 +115,43 @@ board_init_lowlevel:
 	ldr	r1, =0x8212F339
 	str	r1, [r0]
 
-	mov	pc, r5
+	/* Set NFC_CLK to 24MHz */
+	ldr	r0, =PCDR0
+	ldr	r1, =0x6419a007
+	str	r1, [r0]
+
+#ifdef CONFIG_NAND_IMX_BOOT
+	ldr	sp, =TEXT_BASE - 4	/* Setup a temporary stack in SDRAM */
+
+	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM        */
+	ldr	r2, =IMX_NFC_BASE + 0x800	/* end of NFC SRAM          */
+
+	/* skip NAND boot if not running from NFC space */
+	cmp	pc, r0
+	bls	ret
+	cmp	pc, r2
+	bhi	ret
+
+	/* Move ourselves out of NFC SRAM */
+	ldr	r1, =TEXT_BASE
+
+copy_loop:
+	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
+	stmia	r1!, {r3-r9}		/* copy to   target address [r1]    */
+	cmp	r0, r2			/* until source end addreee [r2]    */
+	ble	copy_loop
+
+	ldr	pc, =1f			/* Jump to SDRAM                    */
+1:
+	bl	nand_boot		/* Load barebox from NAND Flash     */
+
+	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
+	sub	r10, r10, r1		/* adjust return address from NFC   */
+					/* SRAM to SDRAM                    */
+#endif /* CONFIG_NAND_IMX_BOOT */
+
+ret:
+	mov	pc, r10
 
 /*
  *  spin for a while.  we need to wait at least 200 usecs.

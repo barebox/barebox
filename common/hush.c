@@ -699,7 +699,7 @@ static int run_list_real(struct pipe *pi)
 		debug("run_pipe_real returned %d\n",rcode);
 		if (rcode < -1) {
 			last_return_code = -rcode - 2;
-			return -2;	/* exit */
+			return rcode;	/* exit */
 		}
 		last_return_code=rcode;
 		if ( rmode == RES_IF || rmode == RES_ELIF )
@@ -1371,17 +1371,9 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 				free_pipe_list(ctx->list_head, 0);
 				continue;
 			}
-			if (code == -2) {	/* exit */
+			if (code < -1) {	/* exit */
 				b_free(&temp);
-
-				/* XXX hackish way to not allow exit from main loop */
-				if (inp->peek == file_peek) {
-					printf("exit not allowed from main input shell.\n");
-					code = 0;
-					continue;
-				}
-				code = last_return_code;
-				break;
+				return -code - 2;
 			}
 		} else {
 			if (ctx->old_flag != 0) {

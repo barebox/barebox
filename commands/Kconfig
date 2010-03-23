@@ -118,6 +118,12 @@ config CMD_ECHO
 	default y
 	prompt "echo"
 
+config CMD_ECHO_E
+	bool
+	depends on CMD_ECHO
+	select PROCESS_ESCAPE_SEQUENCE
+	prompt "support -e option to echo"
+
 endmenu
 
 menu "memory                        "

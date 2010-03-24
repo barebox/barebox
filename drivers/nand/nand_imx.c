@@ -200,12 +200,17 @@ static struct nand_ecclayout nandv2_hw_eccoob_largepage = {
 	}
 };
 
-static void __nand_boot_init memcpy32(void *trg, const void *src, int size)
+static void memcpy32(void *trg, const void *src, int size)
 {
 	int i;
 	unsigned int *t = trg;
 	unsigned const int *s = src;
 
+#ifdef CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS
+	if (!((unsigned long)trg & 0x3) && !((unsigned long)src & 0x3))
+		memcpy(trg, src, size);
+	else
+#endif
 	for (i = 0; i < (size >> 2); i++)
 		*t++ = *s++;
 }
@@ -1025,6 +1030,16 @@ static void __nand_boot_init nfc_addr(struct imx_nand_host *host, u32 offs)
 	}
 }
 
+static void __nand_boot_init __memcpy32(void *trg, const void *src, int size)
+{
+	int i;
+	unsigned int *t = trg;
+	unsigned const int *s = src;
+
+	for (i = 0; i < (size >> 2); i++)
+		*t++ = *s++;
+}
+
 void __nand_boot_init imx_nand_load_image(void *dest, int size)
 {
 	struct imx_nand_host host;
@@ -1135,7 +1150,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 					continue;
 			}
 
-			memcpy32(dest, host.base, pagesize);
+			__memcpy32(dest, host.base, pagesize);
 			dest += pagesize;
 			size -= pagesize;
 

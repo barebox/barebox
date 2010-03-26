@@ -84,7 +84,7 @@ out:
 }
 
 static const __maybe_unused char cmd_erase_help[] =
-"Usage: Erase <device> [area]\n"
+"Usage: erase <device> [area]\n"
 "Erase a flash device or parts of a device if an area specification\n"
 "is given\n";
 

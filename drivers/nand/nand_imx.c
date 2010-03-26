@@ -505,7 +505,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
 	int n = mtd->oobsize + mtd->writesize - col;
 
 	n = min(n, len);
-	memcpy32(host->data_buf + col, buf, n);
+	memcpy(host->data_buf + col, buf, n);
 
 	host->buf_start += n;
 }
@@ -529,7 +529,7 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 
 	n = min(n, len);
 
-	memcpy32(buf, host->data_buf + col, len);
+	memcpy(buf, host->data_buf + col, len);
 
 	host->buf_start += len;
 }

@@ -198,6 +198,7 @@ int envfs_load(char *filename, char *dir)
 	if (crc32(0, (unsigned char *)&super, sizeof(struct envfs_super) - 4)
 		   != ENVFS_32(super.sb_crc)) {
 		printf("wrong crc on env superblock\n");
+		ret = -EIO;
 		goto out;
 	}
 
@@ -207,18 +208,20 @@ int envfs_load(char *filename, char *dir)
 	ret = read(envfd, buf, size);
 	if (ret < size) {
 		perror("read");
+		ret = errno;
 		goto out;
 	}
 
 	if (crc32(0, (unsigned char *)buf, size)
 		     != ENVFS_32(super.crc)) {
 		printf("wrong crc on env\n");
+		ret = -EIO;
 		goto out;
 	}
 
 	while (size) {
 		struct envfs_inode *inode;
-        uint32_t inode_size,inode_namelen;
+		uint32_t inode_size, inode_namelen;
 
 		inode = (struct envfs_inode *)buf;
 
@@ -251,6 +254,7 @@ int envfs_load(char *filename, char *dir)
 				inode_size);
 		if (ret < inode_size) {
 			perror("write");
+			ret = errno;
 			close(fd);
 			goto out;
 		}

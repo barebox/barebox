@@ -60,6 +60,17 @@ static inline void dma_inv_range(unsigned long s, unsigned long e)
 
 #endif
 
+void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask);
+
+struct outer_cache_fns {
+	void (*inv_range)(unsigned long, unsigned long);
+	void (*clean_range)(unsigned long, unsigned long);
+	void (*flush_range)(unsigned long, unsigned long);
+	void (*disable)(void);
+};
+
+extern struct outer_cache_fns outer_cache;
+
 void __dma_clean_range(unsigned long, unsigned long);
 void __dma_flush_range(unsigned long, unsigned long);
 void __dma_inv_range(unsigned long, unsigned long);

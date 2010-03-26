@@ -28,3 +28,5 @@ obj-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
 obj-y			+= glob.o
 obj-y			+= notifier.o
 obj-y			+= copy_file.o
+obj-y			+= lzo/
+obj-$(CONFIG_LZO_DECOMPRESS)		+= decompress_unlzo.o

@@ -300,4 +300,12 @@ config CMD_GPIO
 	  include gpio_set_value, gpio_get_value, gpio_direction_input and
 	  gpio_direction_output commands to control gpios.
 
+config CMD_UNLZO
+	bool
+	select LZO_DECOMPRESS
+	prompt "unlzo"
+	help
+	  Say yes here to get the unlzo command. lzo is a fast compression
+	  algorithm by Markus Franz Xaver Johannes Oberhumer.
+
 endmenu

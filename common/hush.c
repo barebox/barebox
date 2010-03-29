@@ -779,8 +779,9 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	int cnt=0, pathc;
 	const char *s;
 	char *dest;
+
 	for (cnt=1, s=src; s && *s; s++) {
-		if (*s == '\\') s++;
+		if (*s == '\\' && strchr("*[?", *(s + 1))) s++;
 		cnt++;
 	}
 	dest = xmalloc(cnt);
@@ -794,7 +795,7 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	pglob->gl_pathv[pathc-1] = dest;
 	pglob->gl_pathv[pathc] = NULL;
 	for (s=src; s && *s; s++, dest++) {
-		if (*s == '\\') s++;
+		if (*s == '\\' && strchr("*[?", *(s + 1))) s++;
 		*dest = *s;
 	}
 	*dest='\0';

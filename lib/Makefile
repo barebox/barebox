@@ -30,3 +30,4 @@ obj-y			+= notifier.o
 obj-y			+= copy_file.o
 obj-y			+= lzo/
 obj-$(CONFIG_LZO_DECOMPRESS)		+= decompress_unlzo.o
+obj-$(CONFIG_PROCESS_ESCAPE_SEQUENCE)	+= process_escape_sequence.o

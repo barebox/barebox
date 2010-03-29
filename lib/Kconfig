@@ -13,5 +13,8 @@ config CRC16
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 
+config PROCESS_ESCAPE_SEQUENCE
+	def_bool n
+
 source lib/lzo/Kconfig
 

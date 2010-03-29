@@ -389,15 +389,19 @@ static int static_peek(struct in_str *i)
 	return *i->p;
 }
 
-
 static char *getprompt(void)
 {
-	static char *prompt;
+	static char prompt[PATH_MAX + 32];
 
-	if (!prompt)
-		prompt = xmalloc(PATH_MAX + strlen(CONFIG_PROMPT) + 1);
+#ifdef CONFIG_HUSH_FANCY_PROMPT
+	const char *ps1 = getenv("PS1");
 
+	if (ps1)
+		process_escape_sequence(ps1, prompt, PATH_MAX + 32);
+	else
+#endif
 	sprintf(prompt, "%s%s ", CONFIG_PROMPT, getcwd());
+
 	return prompt;
 }
 

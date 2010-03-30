@@ -65,8 +65,8 @@ typedef void (interrupt_handler_t)(void *);
  */
 void reginfo(void);
 
-void	hang (void) __attribute__ ((noreturn));
-void	panic(const char *fmt, ...);
+void __noreturn hang (void);
+void __noreturn panic(const char *fmt, ...);
 
 /* */
 long int initdram (int);

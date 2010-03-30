@@ -593,7 +593,7 @@ char *asprintf(const char *fmt, ...)
 }
 EXPORT_SYMBOL(asprintf);
 
-void panic(const char *fmt, ...)
+void __noreturn panic(const char *fmt, ...)
 {
 	va_list	args;
 	va_start(args, fmt);

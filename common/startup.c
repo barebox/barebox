@@ -161,7 +161,7 @@ void start_barebox (void)
 	/* NOTREACHED - no way out of command loop except booting */
 }
 
-void hang (void)
+void __noreturn hang (void)
 {
 	puts ("### ERROR ### Please RESET the board ###\n");
 	for (;;);

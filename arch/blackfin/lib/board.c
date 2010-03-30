@@ -54,3 +54,8 @@ int arch_execute(void * address, int argc, char *argv[])
 
 	return ret;
 }
+
+void arch_shutdown(void)
+{
+	icache_disable();
+}

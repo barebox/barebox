@@ -3,3 +3,4 @@
  * executing an external program
  */
 #define ARCH_HAS_EXECUTE
+#define ARCH_SHUTDOWN

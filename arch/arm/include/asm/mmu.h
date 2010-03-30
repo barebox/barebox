@@ -60,5 +60,9 @@ static inline void dma_inv_range(unsigned long s, unsigned long e)
 
 #endif
 
+void __dma_clean_range(unsigned long, unsigned long);
+void __dma_flush_range(unsigned long, unsigned long);
+void __dma_inv_range(unsigned long, unsigned long);
+
 #endif /* __ASM_MMU_H */
 

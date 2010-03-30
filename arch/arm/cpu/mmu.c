@@ -98,7 +98,7 @@ void *dma_alloc_coherent(size_t size)
 	if (mem)
 		return mem + dma_coherent_offset;
 
-	return NULL; 
+	return NULL;
 }
 
 unsigned long virt_to_phys(void *virt)
@@ -114,5 +114,20 @@ void *phys_to_virt(unsigned long phys)
 void dma_free_coherent(void *mem)
 {
 	free(mem - dma_coherent_offset);
+}
+
+void dma_clean_range(unsigned long start, unsigned long end)
+{
+	__dma_clean_range(start, end);
+}
+
+void dma_flush_range(unsigned long start, unsigned long end)
+{
+	__dma_flush_range(start, end);
+}
+
+void dma_inv_range(unsigned long start, unsigned long end)
+{
+	__dma_inv_range(start, end);
 }
 

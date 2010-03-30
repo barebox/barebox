@@ -135,6 +135,7 @@ void start_barebox(void);
 void shutdown_barebox(void);
 
 int arch_execute(void *, int argc, char *argv[]);
+void arch_shutdown(void);
 
 int run_shell(void);
 

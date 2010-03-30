@@ -192,7 +192,7 @@ int do_bootm_linux(struct image_data *data)
 	/* we assume that the kernel is in place */
 	printf("\nStarting kernel ...\n\n");
 
-	cleanup_before_linux();
+	shutdown_barebox();
 	theKernel (0, armlinux_architecture, armlinux_bootparams);
 
 	return -1;
@@ -283,7 +283,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 #endif
 	setup_end_tag();
 
-	cleanup_before_linux();
+	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);
 
 	return 0;
@@ -325,7 +325,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	setup_commandline_tag(commandline);
 	setup_end_tag();
 
-	cleanup_before_linux();
+	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);
 
 	return 1;

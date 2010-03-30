@@ -56,7 +56,7 @@
  *
  * @return void
  */
-void reset_cpu(ulong addr)
+void __noreturn reset_cpu(ulong addr)
 {
 	/* FIXME: Enable WDT and cause reset */
 	hang();

@@ -32,7 +32,7 @@
 #include <asm/cpu.h>
 #include <init.h>
 
-void reset_cpu(ulong ignored)
+void __noreturn reset_cpu(ulong ignored)
 {
 	icache_disable();
 
@@ -43,6 +43,9 @@ void reset_cpu(ulong ignored)
 	:
 	: "r" (L1_ISRAM)
 	);
+
+	/* Not reached */
+	while (1);
 }
 
 void icache_disable(void)

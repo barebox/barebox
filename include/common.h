@@ -80,7 +80,7 @@ int	readline	(const char *prompt, char *buf, int len);
 long	get_ram_size  (volatile long *, long);
 
 /* $(CPU)/cpu.c */
-void	reset_cpu     (ulong addr);
+void __noreturn reset_cpu(unsigned long addr);
 
 /* $(CPU)/interrupts.c */
 //void	timer_interrupt	   (struct pt_regs *);

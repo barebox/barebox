@@ -1085,11 +1085,11 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 	writew(0x4, host.regs + NFC_WRPROT);
 
 	tmp = readw(host.regs + NFC_CONFIG1);
-	tmp |= NFC_ECC_EN | NFC_INT_MSK;
+	tmp |= NFC_ECC_EN;
 	if (nfc_is_v21())
 		/* currently no support for 218 byte OOB with stronger ECC */
 		tmp |= NFC_ECC_MODE;
-	tmp &= ~NFC_SP_EN;
+	tmp &= ~(NFC_SP_EN | NFC_INT_MSK);
 	writew(tmp, host.regs + NFC_CONFIG1);
 
 	if (nfc_is_v21()) {

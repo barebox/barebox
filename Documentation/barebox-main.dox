@@ -48,7 +48,7 @@ things right - without caring about losing support for old boards.
 - simulation target
   - @a barebox can be compiled to run under Linux. While this is rather useless
     in real world this is a great debugging and development aid. New features
-    can be easily developped and tested on long train journeys and started
+    can be easily developed and tested on long train journeys and started
     under gdb. There is a console driver for linux which emulates a serial
     device and a tap based ethernet driver. Linux files can be mapped to
     devices under @a barebox to emulate storage devices.
@@ -59,7 +59,7 @@ things right - without caring about losing support for old boards.
     'eth0.ip=192.168.0.7' or 'echo $eth0.ip'
 
 - initcalls
-  - hooks in the startup process can be archieved with *_initcall() directives
+  - hooks in the startup process can be achieved with *_initcall() directives
     in each file.
 
 - getopt
@@ -91,7 +91,7 @@ cross_compile pointing to your architecture and compiler. For @p ARCH=sandbox
 we do not need a cross compiler so it is sufficient to specify the
 architecture:
 
-@code # ln -s sandbox cross_arch @endcode
+@code # ln -s arch/sandbox cross_arch @endcode
 
 In order to configure the various aspects of @a barebox, start the @a barebox
 configuration system:
@@ -102,7 +102,7 @@ This command starts a menu box and lets you select all the different
 options available for your architecture. Once the configuration was
 finished (you can simulate this by using the standard demo config file
 with 'make sandbox_defconfig'), there is a .config file in the toplevel
-directory of the sourcode.
+directory of the sourcecode.
 
 Once @a barebox is configured, we can start the compilation
 
@@ -115,7 +115,7 @@ If everything goes well, the result is a file called @p barebox:
     -rwxr-xr-x 1 rsc ptx 114073 Jun 26 22:34 barebox
 @endcode
 
-@a barebox usually needs an environment for storing the configuation data.
+@a barebox usually needs an environment for storing the configuration data.
 You can generate an environment using the example environment contained
 in board/sandbox/env:
 
@@ -146,7 +146,7 @@ loaded the example environment @a barebox will show you a menu asking for
 your settings.
 
 If you have started @a barebox as root you will find a new tap device on your
-host which you can configure using ifconfig. Once you configured @a barebox's
+host which you can configure using ifconfig. Once you configured the
 network settings accordingly you can do a ping or tftpboot.
 
 If you have mapped a cramfs image try mounting it with
@@ -191,7 +191,7 @@ net /                     -> Networking stuff
 
 scripts /                 -> Kconfig system
 
-Documentation /           -> Parts of the documention, also doxygen
+Documentation /           -> Parts of the documentation, also doxygen
 @endverbatim
 
 @section license barebox's License

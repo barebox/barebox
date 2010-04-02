@@ -69,3 +69,11 @@ config CPU_BIG_ENDIAN
 	  Note that your board must be properly built and your board
 	  port must properly enable any big-endian related features
 	  of your chipset/board/processor.
+
+config ARCH_HAS_L2X0
+	bool
+
+config CACHE_L2X0
+	bool "Enable L2x0 PrimeCell"
+	depends on ARCH_HAS_L2X0
+

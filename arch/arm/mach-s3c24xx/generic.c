@@ -221,7 +221,7 @@ static int clocksource_init (void)
 }
 core_initcall(clocksource_init);
 
-void reset_cpu(ulong addr)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	/* Disable watchdog */
 	writew(0x0000, WTCON);

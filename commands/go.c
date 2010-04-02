@@ -35,6 +35,7 @@ static int do_go(struct command *cmdtp, int argc, char *argv[])
 	void	*addr;
 	int     rcode = 1;
 	int	fd = -1;
+	int	(*func)(int argc, char *argv[]);
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -54,17 +55,21 @@ static int do_go(struct command *cmdtp, int argc, char *argv[])
 	} else
 		addr = (void *)simple_strtoul(argv[1], NULL, 16);
 
-	printf ("## Starting application at 0x%08lX ...\n", addr);
+	printf("## Starting application at 0x%08lX ...\n", addr);
 
 	console_flush();
 
-#ifdef ARCH_HAS_EXECUTE
-	rcode = arch_execute(addr, argc, &argv[1]);
-#else
-	rcode = ((ulong (*)(int, char *[]))addr) (--argc, &argv[1]);
-#endif
+	func = addr;
 
-	printf ("## Application terminated, rcode = 0x%lX\n", rcode);
+	shutdown_barebox();
+	func(argc - 1, &argv[1]);
+
+	/*
+	 * The application returned. Since we have shutdown barebox and
+	 * we know nothing about the state of the cpu/memory we can't
+	 * do anything here.
+	 */
+	while (1);
 out:
 	if (fd > 0)
 		close(fd);

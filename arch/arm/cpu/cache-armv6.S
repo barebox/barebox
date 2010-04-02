@@ -61,7 +61,7 @@ ENDPROC(__mmu_cache_flush)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_inv_range)
+ENTRY(__dma_inv_range)
 	tst	r0, #D_CACHE_LINE_SIZE - 1
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 #ifdef HARVARD_CACHE
@@ -94,7 +94,7 @@ ENTRY(dma_inv_range)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_clean_range)
+ENTRY(__dma_clean_range)
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 1:
 #ifdef HARVARD_CACHE
@@ -114,7 +114,7 @@ ENTRY(dma_clean_range)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_flush_range)
+ENTRY(__dma_flush_range)
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 1:
 #ifdef HARVARD_CACHE

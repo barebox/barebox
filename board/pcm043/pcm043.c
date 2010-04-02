@@ -145,7 +145,7 @@ static struct device_d imx_ipu_fb_dev = {
 };
 
 #ifdef CONFIG_MMU
-static void pcm043_mmu_init(void)
+static int pcm043_mmu_init(void)
 {
 	mmu_init();
 
@@ -159,19 +159,20 @@ static void pcm043_mmu_init(void)
 #else
 	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
 #endif
+
 	mmu_enable();
+
+#ifdef CONFIG_CACHE_L2X0
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+#endif
+	return 0;
 }
-#else
-static void pcm043_mmu_init(void)
-{
-}
+postcore_initcall(pcm043_mmu_init);
 #endif
 
 static int imx35_devices_init(void)
 {
 	uint32_t reg;
-
-	pcm043_mmu_init();
 
 	/* CS0: Nor Flash */
 	writel(0x0000cf03, CSCR_U(0));

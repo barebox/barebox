@@ -55,7 +55,7 @@ See above.
 int     (*probe) (struct device_d *);
 int     (*remove)(struct device_d *);
 
-These are called if a instance of a device is found or gone.
+These are called if an instance of a device is found or gone.
 
 ssize_t (*read)  (struct device_d*, void* buf, size_t count, ulong offset, ulong flags);
 ssize_t (*write) (struct device_d*, const void* buf, size_t count, ulong offset, ulong flags);
@@ -67,6 +67,6 @@ void *type_data;
 
 This is somewhat redundant with the type data in struct device. Currently the
 filesystem implementation uses this field while ethernet drivers use the same
-field in struct device. Probably one of both should be removed.
+field in struct device. Probably one of them should be removed.
 
 

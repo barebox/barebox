@@ -425,7 +425,8 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
 
 	writel((uint32_t)(eth_data), &fec->tbd_base[fec->tbd_index].data_pointer);
-	dma_flush_range(eth_data, eth_data + data_length);
+	dma_flush_range((unsigned long)eth_data,
+			(unsigned long)(eth_data + data_length));
 	/*
 	 * update BD's status now
 	 * This block:

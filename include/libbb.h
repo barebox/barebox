@@ -28,4 +28,6 @@ char * safe_strncpy(char *dst, const char *src, size_t size);
 
 int copy_file(const char *src, const char *dst);
 
+int process_escape_sequence(const char *source, char *dest, int destlen);
+
 #endif /* __LIBBB_H */

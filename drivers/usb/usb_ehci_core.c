@@ -129,9 +129,9 @@ static struct descriptor {
 static void flush_invalidate(void *addr, int size, int flush)
 {
 	if (flush)
-		dma_flush_range(addr, addr + size);
+		dma_flush_range((unsigned long)addr, (unsigned long)(addr + size));
 	else
-		dma_inv_range(addr, addr + size);
+		dma_inv_range((unsigned long)addr, (unsigned long)(addr + size));
 }
 
 static void cache_qtd(struct qTD *qtd, int flush)

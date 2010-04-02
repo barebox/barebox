@@ -25,7 +25,7 @@
 
 #include <common.h>
 
-void reset_cpu(ulong addr)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	/** How to reset the machine? */
 	while(1)

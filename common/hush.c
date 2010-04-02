@@ -389,15 +389,19 @@ static int static_peek(struct in_str *i)
 	return *i->p;
 }
 
-
 static char *getprompt(void)
 {
-	static char *prompt;
+	static char prompt[PATH_MAX + 32];
 
-	if (!prompt)
-		prompt = xmalloc(PATH_MAX + strlen(CONFIG_PROMPT) + 1);
+#ifdef CONFIG_HUSH_FANCY_PROMPT
+	const char *ps1 = getenv("PS1");
 
+	if (ps1)
+		process_escape_sequence(ps1, prompt, PATH_MAX + 32);
+	else
+#endif
 	sprintf(prompt, "%s%s ", CONFIG_PROMPT, getcwd());
+
 	return prompt;
 }
 
@@ -699,7 +703,7 @@ static int run_list_real(struct pipe *pi)
 		debug("run_pipe_real returned %d\n",rcode);
 		if (rcode < -1) {
 			last_return_code = -rcode - 2;
-			return -2;	/* exit */
+			return rcode;	/* exit */
 		}
 		last_return_code=rcode;
 		if ( rmode == RES_IF || rmode == RES_ELIF )
@@ -779,8 +783,9 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	int cnt=0, pathc;
 	const char *s;
 	char *dest;
+
 	for (cnt=1, s=src; s && *s; s++) {
-		if (*s == '\\') s++;
+		if (*s == '\\' && strchr("*[?", *(s + 1))) s++;
 		cnt++;
 	}
 	dest = xmalloc(cnt);
@@ -794,7 +799,7 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	pglob->gl_pathv[pathc-1] = dest;
 	pglob->gl_pathv[pathc] = NULL;
 	for (s=src; s && *s; s++, dest++) {
-		if (*s == '\\') s++;
+		if (*s == '\\' && strchr("*[?", *(s + 1))) s++;
 		*dest = *s;
 	}
 	*dest='\0';
@@ -1371,17 +1376,9 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 				free_pipe_list(ctx->list_head, 0);
 				continue;
 			}
-			if (code == -2) {	/* exit */
+			if (code < -1) {	/* exit */
 				b_free(&temp);
-
-				/* XXX hackish way to not allow exit from main loop */
-				if (inp->peek == file_peek) {
-					printf("exit not allowed from main input shell.\n");
-					code = 0;
-					continue;
-				}
-				code = last_return_code;
-				break;
+				return -code - 2;
 			}
 		} else {
 			if (ctx->old_flag != 0) {

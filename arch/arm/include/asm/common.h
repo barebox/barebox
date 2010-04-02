@@ -1,1 +1,1 @@
-/* nothing */
+#define ARCH_SHUTDOWN

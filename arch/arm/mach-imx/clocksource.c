@@ -95,7 +95,7 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu by setting up the watchdog timer and let it time out
  */
-void reset_cpu (ulong ignored)
+void __noreturn reset_cpu (unsigned long ignored)
 {
 	/* Disable watchdog and set Time-Out field to 0 */
 	WCR = 0x0000;

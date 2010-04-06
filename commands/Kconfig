@@ -118,6 +118,12 @@ config CMD_ECHO
 	default y
 	prompt "echo"
 
+config CMD_ECHO_E
+	bool
+	depends on CMD_ECHO
+	select PROCESS_ESCAPE_SEQUENCE
+	prompt "support -e option to echo"
+
 endmenu
 
 menu "memory                        "
@@ -299,5 +305,13 @@ config CMD_GPIO
 	help
 	  include gpio_set_value, gpio_get_value, gpio_direction_input and
 	  gpio_direction_output commands to control gpios.
+
+config CMD_UNLZO
+	bool
+	select LZO_DECOMPRESS
+	prompt "unlzo"
+	help
+	  Say yes here to get the unlzo command. lzo is a fast compression
+	  algorithm by Markus Franz Xaver Johannes Oberhumer.
 
 endmenu

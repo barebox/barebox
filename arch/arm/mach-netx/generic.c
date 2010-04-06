@@ -137,9 +137,12 @@ failure:
 	return COMMAND_ERROR_USAGE;
 }
 
-void reset_cpu(ulong addr)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	SYSTEM_REG(SYSTEM_RES_CR) = 0x01000008;
+
+	/* Not reached */
+	while (1);
 }
 
 

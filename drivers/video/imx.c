@@ -251,6 +251,9 @@ static void imxfb_enable_controller(struct fb_info *info)
 	struct imxfb_info *fbi = info->priv;
 
 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
+#ifdef CONFIG_ARCH_IMX21
+	PCCR0 |= PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN;
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_LCDC_EN;
 	PCCR1 |= PCCR1_HCLK_LCDC;
@@ -263,6 +266,9 @@ static void imxfb_disable_controller(struct fb_info *info)
 	struct imxfb_info *fbi = info->priv;
 
 	writel(0, fbi->regs + LCDC_RMCR);
+#ifdef CONFIG_ARCH_IMX21
+	PCCR0 &= ~(PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN);
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 &= ~PCCR0_LCDC_EN;
 	PCCR1 &= ~PCCR1_HCLK_LCDC;
@@ -505,6 +511,9 @@ static int imxfb_probe(struct device_d *dev)
 	if (!pdata)
 		return -ENODEV;
 
+#ifdef CONFIG_ARCH_IMX21
+	PCCR0 &= ~(PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN);
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 &= ~PCCR0_LCDC_EN;
 	PCCR1 &= ~PCCR1_HCLK_LCDC;

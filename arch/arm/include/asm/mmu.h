@@ -19,9 +19,9 @@ void setup_dma_coherent(unsigned long offset);
 void *dma_alloc_coherent(size_t size);
 void dma_free_coherent(void *mem);
 
-void dma_clean_range(const void *, const void *);
-void dma_flush_range(const void *, const void *);
-void dma_inv_range(const void *, const void *);
+void dma_clean_range(unsigned long, unsigned long);
+void dma_flush_range(unsigned long, unsigned long);
+void dma_inv_range(unsigned long, unsigned long);
 unsigned long virt_to_phys(void *virt);
 void *phys_to_virt(unsigned long phys);
 
@@ -46,19 +46,34 @@ static inline unsigned long virt_to_phys(void *mem)
 	return (unsigned long)mem;
 }
 
-static inline void dma_clean_range(const void *s, const void *e)
+static inline void dma_clean_range(unsigned long s, unsigned long e)
 {
 }
 
-static inline void dma_flush_range(const void *s, const void *e)
+static inline void dma_flush_range(unsigned long s, unsigned long e)
 {
 }
 
-static inline void dma_inv_range(const void *s, const void *e)
+static inline void dma_inv_range(unsigned long s, unsigned long e)
 {
 }
 
 #endif
+
+void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask);
+
+struct outer_cache_fns {
+	void (*inv_range)(unsigned long, unsigned long);
+	void (*clean_range)(unsigned long, unsigned long);
+	void (*flush_range)(unsigned long, unsigned long);
+	void (*disable)(void);
+};
+
+extern struct outer_cache_fns outer_cache;
+
+void __dma_clean_range(unsigned long, unsigned long);
+void __dma_flush_range(unsigned long, unsigned long);
+void __dma_inv_range(unsigned long, unsigned long);
 
 #endif /* __ASM_MMU_H */
 

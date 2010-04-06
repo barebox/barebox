@@ -65,8 +65,8 @@ typedef void (interrupt_handler_t)(void *);
  */
 void reginfo(void);
 
-void	hang (void) __attribute__ ((noreturn));
-void	panic(const char *fmt, ...);
+void __noreturn hang (void);
+void __noreturn panic(const char *fmt, ...);
 
 /* */
 long int initdram (int);
@@ -80,7 +80,7 @@ int	readline	(const char *prompt, char *buf, int len);
 long	get_ram_size  (volatile long *, long);
 
 /* $(CPU)/cpu.c */
-void	reset_cpu     (ulong addr);
+void __noreturn reset_cpu(unsigned long addr);
 
 /* $(CPU)/interrupts.c */
 //void	timer_interrupt	   (struct pt_regs *);
@@ -134,7 +134,7 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base);
 void start_barebox(void);
 void shutdown_barebox(void);
 
-int arch_execute(void *, int argc, char *argv[]);
+void arch_shutdown(void);
 
 int run_shell(void);
 

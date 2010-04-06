@@ -44,13 +44,7 @@ int blackfin_mem_malloc_init(void)
 
 core_initcall(blackfin_mem_malloc_init);
 
-int arch_execute(void * address, int argc, char *argv[])
+void arch_shutdown(void)
 {
-	int ret;
-
 	icache_disable();
-	ret = ((ulong (*)(int, char *[]))address) (argc, &argv[0]);
-	icache_enable();
-
-	return ret;
 }

@@ -226,6 +226,15 @@ config PROMPT_HUSH_PS2
 	prompt "hush PS2"
 	default "> "
 
+config HUSH_FANCY_PROMPT
+	bool
+	depends on SHELL_HUSH
+	select PROCESS_ESCAPE_SEQUENCE
+	prompt "allow fancy hush prompts"
+	help
+	  Allow to set PS1 from the command line. PS1 can have several escaped commands
+	  like \h for CONFIG_BOARDINFO or \w for the current working directory.
+
 config CMDLINE_EDITING
 	bool
 	prompt "Enable command line editing"

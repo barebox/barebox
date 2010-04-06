@@ -72,6 +72,11 @@ unsigned long imx_get_fecclk(void)
 	return imx_get_ipgclk();
 }
 
+unsigned long imx_get_lcdclk(void)
+{
+	return imx_get_perclk(7);
+}
+
 int imx_dump_clocks(void)
 {
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
@@ -81,6 +86,7 @@ int imx_dump_clocks(void)
 	printf("uart:    %10d Hz\n", imx_get_perclk(15));
 	printf("gpt:     %10d Hz\n", imx_get_ipgclk());
 	printf("nand:    %10d Hz\n", imx_get_perclk(8));
+	printf("lcd:     %10d Hz\n", imx_get_perclk(7));
 	return 0;
 }
 

@@ -132,17 +132,15 @@ int icache_status (void)
 }
 
 /**
- * Prepare a "clean" CPU for Linux to run
+ * Disable MMU and D-cache, flush caches
  * @return 0 (always)
  *
- * This function is called by the generic barebox part just before we call
- * Linux. It prepares the processor for Linux.
+ * This function is called by shutdown_barebox to get a clean
+ * memory/cache state.
  */
-int cleanup_before_linux (void)
+void arch_shutdown(void)
 {
 	int i;
-
-	shutdown_barebox();
 
 #ifdef CONFIG_MMU
 	mmu_disable();
@@ -151,8 +149,8 @@ int cleanup_before_linux (void)
 	/* flush I/D-cache */
 	i = 0;
 	asm ("mcr p15, 0, %0, c7, c7, 0": :"r" (i));
-	return 0;
 }
+
 /**
  * @page arm_boot_preparation Linux Preparation on ARM
  *

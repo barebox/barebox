@@ -60,11 +60,16 @@ void mmu_enable(void)
         );
 }
 
+struct outer_cache_fns outer_cache;
+
 /*
  * Clean and invalide caches, disable MMU
  */
 void mmu_disable(void)
 {
+
+	if (outer_cache.disable)
+		outer_cache.disable();
 
 	asm volatile (
 		"bl __mmu_cache_flush;"
@@ -98,7 +103,7 @@ void *dma_alloc_coherent(size_t size)
 	if (mem)
 		return mem + dma_coherent_offset;
 
-	return NULL; 
+	return NULL;
 }
 
 unsigned long virt_to_phys(void *virt)
@@ -114,5 +119,26 @@ void *phys_to_virt(unsigned long phys)
 void dma_free_coherent(void *mem)
 {
 	free(mem - dma_coherent_offset);
+}
+
+void dma_clean_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.clean_range)
+		outer_cache.clean_range(start, end);
+	__dma_clean_range(start, end);
+}
+
+void dma_flush_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.flush_range)
+		outer_cache.flush_range(start, end);
+	__dma_flush_range(start, end);
+}
+
+void dma_inv_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.inv_range)
+		outer_cache.inv_range(start, end);
+	__dma_inv_range(start, end);
 }
 

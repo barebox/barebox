@@ -27,7 +27,7 @@
 /**
  * Reset the cpu by setting up the watchdog timer and let it time out
  */
-void reset_cpu (ulong ignored)
+void __noreturn reset_cpu (unsigned long ignored)
 {
         while ( ignored ) { ; };
 

@@ -128,7 +128,7 @@ ENDPROC(__mmu_cache_flush)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_inv_range)
+ENTRY(__dma_inv_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	tst	r0, r3
@@ -145,14 +145,14 @@ ENTRY(dma_inv_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(dma_inv_range)
+ENDPROC(__dma_inv_range)
 
 /*
  *	v7_dma_clean_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_clean_range)
+ENTRY(__dma_clean_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	bic	r0, r0, r3
@@ -163,14 +163,14 @@ ENTRY(dma_clean_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(dma_clean_range)
+ENDPROC(__dma_clean_range)
 
 /*
  *	v7_dma_flush_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-ENTRY(dma_flush_range)
+ENTRY(__dma_flush_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	bic	r0, r0, r3
@@ -181,5 +181,5 @@ ENTRY(dma_flush_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(dma_flush_range)
+ENDPROC(__dma_flush_range)
 

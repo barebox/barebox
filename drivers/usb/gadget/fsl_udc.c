@@ -1224,7 +1224,8 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req)
 
 	req->ep = ep;
 
-	dma_flush_range(req->req.buf, req->req.buf + req->req.length);
+	dma_flush_range((unsigned long)req->req.buf,
+			(unsigned long)(req->req.buf + req->req.length));
 
 	req->req.status = -EINPROGRESS;
 	req->req.actual = 0;

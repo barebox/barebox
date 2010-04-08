@@ -113,10 +113,6 @@ static struct device_d i2c_dev = {
 
 /*
  * Generic display, shipped with the PDK
- * FIXME: The power for the display is driven by the mc9s08. This is
- * currently not done in software, for the display to work you have to
- * short circuit pins 2 and 3 of q6 on the personality board, or better,
- * send a patch.
  */
 static struct fb_videomode CTP_CLAA070LC0ACW = {
 	/* 800x480 @ 60 Hz */

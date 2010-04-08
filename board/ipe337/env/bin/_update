@@ -9,7 +9,7 @@ if [ -z "$part" -o -z "$image" ]; then
 	exit 1
 fi
 
-if [ \! -e "$part" ]; then
+if [ ! -e "$part" ]; then
 	echo "Partition $part does not exist"
 	exit 1
 fi

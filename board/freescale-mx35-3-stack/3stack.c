@@ -206,6 +206,10 @@ device_initcall(f3s_devices_init);
 static int f3s_enable_display(void)
 {
 	gpio_direction_output(1, 1);
+
+	/* Enable power to the LCD. (bit 6 hi.) */
+	mc9sdz60_set_bits( mc9sdz60_get(), MC9SDZ60_REG_GPIO_1, 0x40, 0x40);
+
 	return 0;
 }
 
@@ -394,11 +398,11 @@ static int f3s_pmic_init_all(struct mc9sdz60 *mc9sdz60)
 {
 	int err = 0;
 
-	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_INT_FLAG_1, 0x04, 0x04);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_1, 0x04, 0x04);
 
-	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_2, 0x80, 0x00);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_2, 0x80, 0x00);
 	mdelay(200);
-	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_2, 0x80, 0x80);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_2, 0x80, 0x80);
 
 	if (err)
 		dev_err(&mc9sdz60->client->dev,

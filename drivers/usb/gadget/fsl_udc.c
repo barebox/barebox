@@ -560,7 +560,7 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		if (j != req->dtd_count - 1) {
 			next_td = curr_td->next_td_virt;
 		}
-		free(curr_td);
+		dma_free_coherent(curr_td);
 	}
 
 	dma_inv_range(req->req.buf, req->req.buf + req->req.length);
@@ -1112,11 +1112,11 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req, unsigned *length,
 	*length = min(req->req.length - req->req.actual,
 			(unsigned)EP_MAX_LENGTH_TRANSFER);
 
-	dtd = memalign(32, sizeof(struct ep_td_struct));
+	dtd = dma_alloc_coherent(sizeof(struct ep_td_struct));
 	if (dtd == NULL)
 		return dtd;
-	*dma = (dma_addr_t)dtd;
 
+	*dma = (dma_addr_t)virt_to_phys(dtd);
 	dtd->td_dma = *dma;
 	/* Clear reserved field */
 	swap_temp = cpu_to_le32(dtd->size_ioc_sts);
@@ -2078,13 +2078,14 @@ static int struct_udc_setup(struct fsl_udc *udc,
 		size += QH_ALIGNMENT + 1;
 		size &= ~(QH_ALIGNMENT - 1);
 	}
-	udc->ep_qh = memalign(2048, size);
+
+	udc->ep_qh = dma_alloc_coherent(size);
 	if (!udc->ep_qh) {
 		ERR("malloc QHs for udc failed\n");
 		kfree(udc->eps);
 		return -1;
 	}
-	udc->ep_qh_dma = (dma_addr_t)udc->ep_qh;
+	udc->ep_qh_dma = (dma_addr_t)virt_to_phys(udc->ep_qh);
 
 	udc->ep_qh_size = size;
 

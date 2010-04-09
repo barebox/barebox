@@ -99,7 +99,7 @@ void *dma_alloc_coherent(size_t size)
 {
 	void *mem;
 
-	mem = malloc(size);
+	mem = memalign(4096, size);
 	if (mem)
 		return mem + dma_coherent_offset;
 

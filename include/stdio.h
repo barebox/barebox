@@ -49,7 +49,7 @@ int	vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 #define stdin		0
 #define stdout		1
 #define stderr		2
-#define MAX_FILES	16
+#define MAX_FILES	128
 
 void	fprintf(int file, const char *fmt, ...);
 int	fputs(int file, const char *s);

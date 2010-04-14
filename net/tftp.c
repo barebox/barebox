@@ -281,8 +281,7 @@ static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 
 	TftpStart(remotefile);
 
-	rcode = NetLoop();
-	if (rcode < 0) {
+	if (NetLoop() < 0) {
 		rcode = 1;
 		goto out;
 	}

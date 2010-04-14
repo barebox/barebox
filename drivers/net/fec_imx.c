@@ -543,10 +543,10 @@ static int fec_probe(struct device_d *dev)
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
-        edev = (struct eth_device *)xzalloc(sizeof(struct eth_device));
-        dev->type_data = edev;
-	fec = (struct fec_priv *)malloc(sizeof(*fec));
-        edev->priv = fec;
+	edev = (struct eth_device *)xzalloc(sizeof(struct eth_device));
+	dev->type_data = edev;
+	fec = (struct fec_priv *)xzalloc(sizeof(*fec));
+	edev->priv = fec;
 	edev->open = fec_open,
 	edev->init = fec_init,
 	edev->send = fec_send,

@@ -396,9 +396,9 @@ static int f3s_pmic_init_all(struct mc9sdz60 *mc9sdz60)
 
 	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_GPIO_1, 0x04, 0x04);
 
-	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_2, 0x80, 0x00);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_1, 0x80, 0x00);
 	mdelay(200);
-	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_2, 0x80, 0x80);
+	err |= mc9sdz60_set_bits(mc9sdz60, MC9SDZ60_REG_RESET_1, 0x80, 0x80);
 
 	if (err)
 		dev_err(&mc9sdz60->client->dev,

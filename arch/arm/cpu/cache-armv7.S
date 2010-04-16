@@ -49,6 +49,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, r12
 ENDPROC(__mmu_cache_on)
 
+.section ".text_bare_init.text"
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
 		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)
@@ -105,6 +106,7 @@ iflush:
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
 		mov	pc, lr
 ENDPROC(__mmu_cache_flush)
+.section ".text.text"
 
 /*
  * cache_line_size - get the cache line size from the CSIDR register

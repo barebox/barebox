@@ -31,6 +31,7 @@ __common_mmu_cache_on:
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back to
 		sub	pc, lr, r0, lsr #32	@ properly flush pipeline
 
+
 ENTRY(__mmu_cache_off)
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r0, c1, c0
@@ -42,6 +43,7 @@ ENTRY(__mmu_cache_off)
 #endif
 		mov	pc, lr
 
+.section ".text_bare_init.text"
 ENTRY(__mmu_cache_flush)
 		mov	r1, #0
 		mcr	p15, 0, r1, c7, c14, 0	@ clean+invalidate D
@@ -50,6 +52,7 @@ ENTRY(__mmu_cache_flush)
 		mcr	p15, 0, r1, c7, c10, 4	@ drain WB
 		mov	pc, lr
 ENDPROC(__mmu_cache_flush)
+.section ".text.text"
 
 /*
  *	v6_dma_inv_range(start,end)

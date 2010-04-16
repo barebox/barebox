@@ -41,6 +41,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, lr
 ENDPROC(__mmu_cache_off)
 
+.section ".text_bare_init.text"
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r6, c0, c0	@ get processor ID
 		mov	r2, #64*1024		@ default: 32K dcache size (*2)
@@ -73,6 +74,7 @@ no_cache_id:
 		mov	pc, lr
 ENDPROC(__mmu_cache_flush)
 
+.section ".text.text"
 /*
  *	dma_inv_range(start, end)
  *

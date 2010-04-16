@@ -27,12 +27,7 @@
  */
 
 #ifndef _BAREBOX_ARM_H_
-#define _BAREBOX_ARM_H_	1
-
-/* for the following variables, see start.S */
-extern ulong _armboot_start;	/* code start */
-extern ulong _bss_start;	/* code + data end == BSS start */
-extern ulong _bss_end;		/* BSS end */
+#define _BAREBOX_ARM_H_
 
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);

@@ -20,5 +20,5 @@
 # MA 02111-1307 USA
 #
 
-obj-y += lowlevel_init.o
+obj-y += lowlevel.o
 obj-y += pcm043.o

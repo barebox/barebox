@@ -390,13 +390,3 @@ BAREBOX_CMD_START(cpufreq)
 	BAREBOX_CMD_HELP(cmd_cpufreq_help)
 BAREBOX_CMD_END
 
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	/*
-	 * The driver is able to detect NAND's pagesize by CPU internal
-	 * fuses or external pull ups. But not the blocksize...
-	 */
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
-}
-#endif

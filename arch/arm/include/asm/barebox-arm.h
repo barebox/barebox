@@ -36,4 +36,7 @@ int	cleanup_before_linux(void);
 int	board_init(void);
 int	dram_init (void);
 
+void board_init_lowlevel(void);
+void board_init_lowlevel_return(void);
+
 #endif	/* _BAREBOX_ARM_H_ */

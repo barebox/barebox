@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include "cfi_flash.h"
 
-static void flash_unlock_seq (flash_info_t * info, flash_sect_t sect)
+static void flash_unlock_seq (flash_info_t * info)
 {
-	flash_write_cmd (info, sect, AMD_ADDR_START, AMD_CMD_UNLOCK_START);
-	flash_write_cmd (info, sect, AMD_ADDR_ACK, AMD_CMD_UNLOCK_ACK);
+	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_UNLOCK_START);
+	flash_write_cmd (info, 0, AMD_ADDR_ACK, AMD_CMD_UNLOCK_ACK);
 }
 
 /*
@@ -21,7 +21,7 @@ static void amd_read_jedec_ids (flash_info_t * info)
 	info->device_id2      = 0;
 
 	flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
-	flash_unlock_seq(info, 0);
+	flash_unlock_seq(info);
 	flash_write_cmd(info, 0, AMD_ADDR_START, FLASH_CMD_READ_ID);
 	udelay(1000); /* some flash are slow to respond */
 	info->manufacturer_id = flash_read_uchar (info,
@@ -73,10 +73,10 @@ static int amd_flash_is_busy (flash_info_t * info, flash_sect_t sect)
 
 static int amd_flash_erase_one (flash_info_t * info, long sect)
 {
-	flash_unlock_seq (info, sect);
+	flash_unlock_seq(info);
 	flash_write_cmd (info, sect, AMD_ADDR_ERASE_START,
 				AMD_CMD_ERASE_START);
-	flash_unlock_seq (info, sect);
+	flash_unlock_seq(info);
 	flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
 
 	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
@@ -84,7 +84,7 @@ static int amd_flash_erase_one (flash_info_t * info, long sect)
 
 static void amd_flash_prepare_write(flash_info_t * info)
 {
-	flash_unlock_seq (info, 0);
+	flash_unlock_seq(info);
 	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_WRITE);
 }
 
@@ -103,7 +103,7 @@ static int amd_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uch
 	dst.cp = (uchar *) dest;
 	sector = find_sector (info, dest);
 
-	flash_unlock_seq(info,0);
+	flash_unlock_seq(info);
 	flash_make_cmd (info, AMD_CMD_WRITE_TO_BUFFER, &cword);
 	flash_write_word(info, cword, (void *)dest);
 

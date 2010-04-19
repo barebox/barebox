@@ -28,6 +28,11 @@
 	writel(0x15555555, DSCR(8))
 
 	writel(0x00000004, ESDMISC) /* Initial reset */
+
+	/*
+	 * tXP=3, tWTR=0, tRP=2, tMRD=2, tWR=1,
+	 * tRAS=4, tRRD=1, tCAS=3, tRCD=3, tRC=10
+	 */
 	writel(0x006ac73a, ESDCFG0)
 
 	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0) /* precharge CSD0 all banks */

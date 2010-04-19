@@ -116,11 +116,9 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 static int flash_write_cfiword (flash_info_t * info, ulong dest,
 				cfiword_t cword)
 {
-	cfiptr_t ctladdr;
 	cfiptr_t cptr;
 	int flag;
 
-	ctladdr.cp = flash_make_addr (info, 0, 0);
 	cptr.cp = (uchar *) dest;
 
 	/* Check if Flash is (sufficiently) erased */
@@ -138,24 +136,9 @@ static int flash_write_cfiword (flash_info_t * info, ulong dest,
 	if (!flag)
 		return 2;
 
-	/* Disable interrupts which might cause a timeout here */
-//	flag = disable_interrupts ();
-
 	info->cfi_cmd_set->flash_prepare_write(info);
 
-	if (bankwidth_is_1(info)) {
-		cptr.cp[0] = cword.c;
-	} else if (bankwidth_is_2(info)) {
-		cptr.wp[0] = cword.w;
-	} else if (bankwidth_is_4(info)) {
-		cptr.lp[0] = cword.l;
-	} else if (bankwidth_is_8(info)) {
-		cptr.llp[0] = cword.ll;
-	}
-
-	/* re-enable interrupts if necessary */
-	if (flag)
-		enable_interrupts ();
+	flash_write_word(info, cword, (void *)dest);
 
 	return flash_status_check (info, find_sector (info, dest),
 					info->write_tout, "write");

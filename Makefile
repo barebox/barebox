@@ -641,9 +641,16 @@ define rule_barebox-modpost
 	$(Q)echo 'cmd_$@ := $(cmd_barebox-modpost)' > $(dot-target).cmd
 endef
 
-barebox.bin: barebox
-	$(Q)$(OBJCOPY) -O binary barebox barebox.bin
+quiet_cmd_objcopy = OBJCOPY $@
+      cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
+
+OBJCOPYFLAGS_barebox.bin = -O binary
+
+barebox.bin: barebox FORCE
+	$(call if_changed,objcopy)
+
 ifdef CONFIG_X86
+barebox.S: barebox
 ifdef CONFIG_X86_HDBOOT
 	@echo "-------------------------------------------------" > barebox.S
 	@echo " * MBR content" >> barebox.S
@@ -665,7 +672,11 @@ endif
 	@echo " * Init Calls content" >> barebox.S
 	$(Q)$(OBJDUMP) -j .barebox_initcalls -d barebox >> barebox.S
 else
-	$(Q)$(OBJDUMP) -d barebox > barebox.S
+quiet_cmd_disasm = DISASM  $@
+      cmd_disasm = $(OBJDUMP) -d $< > $@
+
+barebox.S: barebox FORCE
+	$(call if_changed,disasm)
 endif
 
 # barebox image

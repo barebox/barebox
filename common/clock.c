@@ -84,8 +84,7 @@ uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant)
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
-
-	if (start_ns + time_offset_ns < get_time_ns())
+	if ((int64_t)(start_ns + time_offset_ns - get_time_ns()) < 0)
 		return 1;
 	else
 		return 0;

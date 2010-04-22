@@ -420,12 +420,3 @@ static int pcm038_power_init(void)
 
 late_initcall(pcm038_power_init);
 
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	PCCR1 |= PCCR1_NFC_BAUDEN;  /* FIXME: Really needed? Probably not */
-
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
-}
-#endif
-

@@ -74,9 +74,11 @@ unsigned long imx_get_ahbclk(void)
 {
 	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	struct arm_ahb_div *aad;
-	unsigned long fref = imx_get_armclk();
+	unsigned long fref = imx_get_mpllclk();
 
 	aad = &clk_consumer[(pdr0 >> 16) & 0xf];
+	if (aad->sel)
+		fref = fref * 3 / 4;
 
 	return fref / aad->ahb;
 }

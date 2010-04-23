@@ -121,7 +121,7 @@ int gpio_get_value(unsigned gpio)
 	if (!base)
 		return -EINVAL;
 
-	val = readl(base + GPIO_DR);
+	val = readl(base + GPIO_PSR);
 
 	return val & (1 << shift) ? 1 : 0;
 }

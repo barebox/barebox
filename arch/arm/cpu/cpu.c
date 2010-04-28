@@ -28,107 +28,39 @@
 #include <common.h>
 #include <command.h>
 #include <asm/mmu.h>
-
-/**
- * Read special processor register
- * @return co-processor 15, register #1 (control register)
- */
-static unsigned long read_p15_c1 (void)
-{
-	unsigned long value;
-
-	__asm__ __volatile__(
-		"mrc	p15, 0, %0, c1, c0, 0   @ read control reg\n"
-		: "=r" (value)
-		:
-		: "memory");
-
-#ifdef MMU_DEBUG
-	printf ("p15/c1 is = %08lx\n", value);
-#endif
-	return value;
-}
-
-/**
- *
- * Write special processor register
- * @param[in] value to write
- * @return to co-processor 15, register #1 (control register)
- */
-static void write_p15_c1 (unsigned long value)
-{
-#ifdef MMU_DEBUG
-	printf ("write %08lx to p15/c1\n", value);
-#endif
-	__asm__ __volatile__(
-		"mcr	p15, 0, %0, c1, c0, 0   @ write it back\n"
-		:
-		: "r" (value)
-		: "memory");
-
-	read_p15_c1 ();
-}
-
-/**
- * Wait for co prozessor (waste time)
- * Co processor seems to need some delay between accesses
- */
-static void cp_delay (void)
-{
-	volatile int i;
-
-	for (i = 0; i < 100; i++)	/* FIXME does it work as expected?? */
-		;
-}
-
-/** mmu off/on */
-#define C1_MMU		(1<<0)
-/** alignment faults off/on */
-#define C1_ALIGN	(1<<1)
-/** dcache off/on */
-#define C1_DC		(1<<2)
-/** big endian off/on */
-#define C1_BIG_ENDIAN	(1<<7)
-/** system protection */
-#define C1_SYS_PROT	(1<<8)
-/** ROM protection */
-#define C1_ROM_PROT	(1<<9)
-/** icache off/on */
-#define C1_IC		(1<<12)
-/** location of vectors: low/high addresses */
-#define C1_HIGH_VECTORS (1<<13)
+#include <asm/system.h>
 
 /**
  * Enable processor's instruction cache
  */
-void icache_enable (void)
+void icache_enable(void)
 {
-	ulong reg;
+	u32 r;
 
-	reg = read_p15_c1 ();		/* get control reg. */
-	cp_delay ();
-	write_p15_c1 (reg | C1_IC);
+	r = get_cr();
+	r |= CR_I;
+	set_cr(r);
 }
 
 /**
  * Disable processor's instruction cache
  */
-void icache_disable (void)
+void icache_disable(void)
 {
-	ulong reg;
+	u32 r;
 
-	reg = read_p15_c1 ();
-	cp_delay ();
-	write_p15_c1 (reg & ~C1_IC);
+	r = get_cr();
+	r &= ~CR_I;
+	set_cr(r);
 }
 
 /**
  * Detect processor's current instruction cache status
  * @return 0=disabled, 1=enabled
  */
-int icache_status (void)
+int icache_status(void)
 {
-	return (read_p15_c1 () & C1_IC) != 0;
+	return (get_cr () & CR_I) != 0;
 }
 
 /**

@@ -295,7 +295,7 @@ static void __nand_boot_init noinline send_addr(struct imx_nand_host *host, u16 
  * @param       spare_only    set true if only the spare area is transferred
  */
 static void __nand_boot_init send_page(struct imx_nand_host *host,
-		unsigned int ops, int wait)
+		unsigned int ops)
 {
 	int bufs, i;
 
@@ -311,8 +311,7 @@ static void __nand_boot_init send_page(struct imx_nand_host *host,
 		writew(ops, host->regs + NFC_CONFIG2);
 
 		/* Wait for operation to complete */
-		if (wait)
-			wait_op_done(host);
+		wait_op_done(host);
 	}
 }
 
@@ -672,16 +671,10 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 {
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
-	static int cached = -1;
 
 	MTD_DEBUG(MTD_DEBUG_LEVEL3,
 	      "imx_nand_command (cmd = 0x%x, col = 0x%x, page = 0x%x)\n",
 	      command, column, page_addr);
-
-	if (cached != -1)
-		wait_op_done(host);
-	if (command != NAND_CMD_READ0)
-		cached = -1;
 
 	/*
 	 * Reset command state information
@@ -709,44 +702,17 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 
 		command = NAND_CMD_READ0;
 
-		if (cached == page_addr) {
-			memcpy32(host->data_buf, host->main_area0, mtd->writesize);
-			copy_spare(mtd, 1);
+		send_cmd(host, command);
+		mxc_do_addr_cycle(mtd, column, page_addr);
 
-			send_cmd(host, command);
-			mxc_do_addr_cycle(mtd, column, page_addr + 1);
+		if (host->pagesize_2k)
+			/* send read confirm command */
+			send_cmd(host, NAND_CMD_READSTART);
 
-			if (host->pagesize_2k)
-				/* send read confirm command */
-				send_cmd(host, NAND_CMD_READSTART);
+		send_page(host, NFC_OUTPUT);
 
-			send_page(host, NFC_OUTPUT, 0);
-
-			cached = page_addr + 1;
-		} else {
-			host->buf_start = column;
-			send_cmd(host, command);
-			mxc_do_addr_cycle(mtd, column, page_addr);
-
-			if (host->pagesize_2k)
-				/* send read confirm command */
-				send_cmd(host, NAND_CMD_READSTART);
-
-			send_page(host, NFC_OUTPUT, 1);
-			memcpy32(host->data_buf, host->main_area0, mtd->writesize);
-			copy_spare(mtd, 1);
-
-			send_cmd(host, command);
-			mxc_do_addr_cycle(mtd, column, page_addr + 1);
-
-			if (host->pagesize_2k)
-				/* send read confirm command */
-				send_cmd(host, NAND_CMD_READSTART);
-
-			send_page(host, NFC_OUTPUT, 0);
-			cached = page_addr + 1;
-		}
-
+		memcpy32(host->data_buf, host->main_area0, mtd->writesize);
+		copy_spare(mtd, 1);
 		break;
 
 	case NAND_CMD_SEQIN:
@@ -783,7 +749,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	case NAND_CMD_PAGEPROG:
 		memcpy32(host->main_area0, host->data_buf, mtd->writesize);
 		copy_spare(mtd, 0);
-		send_page(host, NFC_INPUT, 1);
+		send_page(host, NFC_INPUT);
 		send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 		break;
@@ -884,7 +850,7 @@ static int __init imxnd_probe(struct device_d *dev)
 #endif
 	/* Allocate memory for MTD device structure and private data */
 	host = kzalloc(sizeof(struct imx_nand_host) + NAND_MAX_PAGESIZE +
-			NAND_MAX_OOBSIZE * 2, GFP_KERNEL);
+			NAND_MAX_OOBSIZE, GFP_KERNEL);
 	if (!host)
 		return -ENOMEM;
 
@@ -1171,7 +1137,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 					page * pagesize);
 			if (host.pagesize_2k)
 				send_cmd(&host, NAND_CMD_READSTART);
-			send_page(&host, NFC_OUTPUT, 1);
+			send_page(&host, NFC_OUTPUT);
 			page++;
 
 			if (host.pagesize_2k) {

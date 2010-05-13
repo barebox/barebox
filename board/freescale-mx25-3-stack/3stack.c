@@ -41,7 +41,7 @@ extern unsigned long _stext;
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b _start\n");
+	__asm__ __volatile__("b exception_vectors\n");
 }
 
 struct imx_dcd_entry __dcd_entry_0x400 dcd_entry[] = {

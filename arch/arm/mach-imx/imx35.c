@@ -16,6 +16,9 @@
  */
 
 #include <common.h>
+#include <asm/io.h>
+#include <mach/imx-regs.h>
+#include <mach/generic.h>
 
 #include "gpio.h"
 
@@ -27,3 +30,11 @@ void *imx_gpio_base[] = {
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
+int imx_silicon_revision()
+{
+	uint32_t reg;
+	reg = readl(IMX_IIM_BASE + IIM_SREV);
+	reg += IMX35_CHIP_REVISION_1_0;
+
+	return (reg & 0xFF);
+}

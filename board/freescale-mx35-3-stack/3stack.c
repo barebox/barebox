@@ -201,10 +201,8 @@ device_initcall(f3s_devices_init);
 
 static int f3s_enable_display(void)
 {
-	gpio_direction_output(1, 1);
-
 	/* Enable power to the LCD. (bit 6 hi.) */
-	mc9sdz60_set_bits( mc9sdz60_get(), MC9SDZ60_REG_GPIO_1, 0x40, 0x40);
+	mc9sdz60_set_bits(mc9sdz60_get(), MC9SDZ60_REG_GPIO_1, 0x40, 0x40);
 
 	return 0;
 }
@@ -270,7 +268,7 @@ static struct pad_desc f3s_pads[] = {
 	MX35_PAD_D3_HSYNC__IPU_DISPB_D3_HSYNC,
 	MX35_PAD_D3_FPSHIFT__IPU_DISPB_D3_CLK,
 	MX35_PAD_D3_DRDY__IPU_DISPB_D3_DRDY,
-	MX35_PAD_CONTRAST__GPIO1_1,
+	MX35_PAD_CONTRAST__IPU_DISPB_CONTR,
 	MX35_PAD_D3_VSYNC__IPU_DISPB_D3_VSYNC,
 	MX35_PAD_D3_REV__IPU_DISPB_D3_REV,
 	MX35_PAD_D3_CLS__IPU_DISPB_D3_CLS,

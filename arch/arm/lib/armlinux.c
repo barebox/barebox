@@ -110,7 +110,7 @@ static void setup_commandline_tag(const char *commandline)
 
 static void setup_revision_tag(void)
 {
-	if( system_rev) {
+	if (system_rev) {
 		params->hdr.tag = ATAG_REVISION;
 		params->hdr.size = tag_size(tag_revision);
 

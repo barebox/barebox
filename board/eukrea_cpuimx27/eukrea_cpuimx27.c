@@ -276,18 +276,20 @@ console_initcall(eukrea_cpuimx27_console_init);
 
 static int eukrea_cpuimx27_late_init(void)
 {
+#ifdef CONFIG_DRIVER_I2C_LP3972
 	struct i2c_client *client;
 	u8 reg[1];
-
+#endif
 	console_flush();
 	register_device(&fec_dev);
 
+#ifdef CONFIG_DRIVER_I2C_LP3972
 	client = lp3972_get_client();
 	if (!client)
 		return -ENODEV;
 	reg[0] = 0xa0;
 	i2c_write_reg(client, 0x39, reg, sizeof(reg));
-
+#endif
 	return 0;
 }
 

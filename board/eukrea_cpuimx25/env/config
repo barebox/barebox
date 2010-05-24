@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# can be either 'net' or 'jffs2' or 'ubifs'
+kernel=nand
+root=jffs2
+
+basedir=cpuimx25
+uimage=$basedir/uImage
+rootfs=$basedir/rootfs
+
+autoboot_timeout=1
+
+nfsroot=""
+bootargs="console=ttymxc0,115200"
+
+nand_parts="256k(barebox)ro,128k(bareboxenv),2176k(kernel),-(root)"
+rootpartnum_nand=3
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+eth0.serverip=192.168.1.15

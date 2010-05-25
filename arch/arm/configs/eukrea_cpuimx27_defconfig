@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# barebox version: 2.0.0-rc10
-# Fri Dec 18 11:47:22 2009
+# barebox version: 2010.05.0
+# Tue May 25 09:57:55 2010
 #
 # CONFIG_BOARD_LINKER_SCRIPT is not set
 CONFIG_GENERIC_LINKER_SCRIPT=y
@@ -12,6 +12,7 @@ CONFIG_ARM=y
 #
 # CONFIG_ARCH_AT91 is not set
 # CONFIG_ARCH_AT91RM9200 is not set
+# CONFIG_ARCH_EP93XX is not set
 CONFIG_ARCH_IMX=y
 # CONFIG_ARCH_NETX is not set
 # CONFIG_ARCH_OMAP is not set
@@ -46,7 +47,7 @@ CONFIG_MACH_EUKREA_CPUIMX27=y
 # CONFIG_MACH_PCM038 is not set
 
 #
-# Board specific settings
+# Board specific settings       
 #
 CONFIG_EUKREA_CPUIMX27_SDRAM_128MB=y
 # CONFIG_EUKREA_CPUIMX27_SDRAM_256MB is not set
@@ -58,18 +59,15 @@ CONFIG_EUKREA_CPUIMX27_QUART1=y
 # CONFIG_EUKREA_CPUIMX27_QUART4 is not set
 
 #
-# i.MX specific settings
+# i.MX specific settings        
 #
 CONFIG_IMX_CLKO=y
 # CONFIG_AEABI is not set
 
 #
-# Arm specific settings
+# Arm specific settings         
 #
 CONFIG_CMD_ARM_CPUINFO=y
-CONFIG_CMDLINE_TAG=y
-CONFIG_SETUP_MEMORY_TAGS=y
-# CONFIG_INITRD_TAG is not set
 CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS=y
 CONFIG_GREGORIAN_CALENDER=y
 CONFIG_HAS_KALLSYMS=y
@@ -79,12 +77,12 @@ CONFIG_ENV_HANDLING=y
 CONFIG_GENERIC_GPIO=y
 
 #
-# General Settings
+# General Settings              
 #
 CONFIG_LOCALVERSION_AUTO=y
 
 #
-# memory layout
+# memory layout                 
 #
 CONFIG_HAVE_MMU=y
 CONFIG_MMU=y
@@ -108,6 +106,7 @@ CONFIG_SHELL_HUSH=y
 # CONFIG_SHELL_SIMPLE is not set
 CONFIG_GLOB=y
 CONFIG_PROMPT_HUSH_PS2="> "
+CONFIG_HUSH_FANCY_PROMPT=y
 CONFIG_CMDLINE_EDITING=y
 CONFIG_AUTO_COMPLETE=y
 CONFIG_DYNAMIC_CRC_TABLE=y
@@ -122,7 +121,7 @@ CONFIG_DEFAULT_ENVIRONMENT=y
 CONFIG_DEFAULT_ENVIRONMENT_PATH="board/eukrea_cpuimx27/env"
 
 #
-# Debugging
+# Debugging                     
 #
 # CONFIG_DEBUG_INFO is not set
 # CONFIG_ENABLE_FLASH_NOISE is not set
@@ -130,11 +129,11 @@ CONFIG_DEFAULT_ENVIRONMENT_PATH="board/eukrea_cpuimx27/env"
 # CONFIG_ENABLE_DEVICE_NOISE is not set
 
 #
-# Commands
+# Commands                      
 #
 
 #
-# scripting
+# scripting                     
 #
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_SLEEP=y
@@ -147,7 +146,7 @@ CONFIG_CMD_TRUE=y
 CONFIG_CMD_FALSE=y
 
 #
-# file commands
+# file commands                 
 #
 CONFIG_CMD_LS=y
 CONFIG_CMD_RM=y
@@ -161,13 +160,14 @@ CONFIG_CMD_MOUNT=y
 CONFIG_CMD_UMOUNT=y
 
 #
-# console
+# console                       
 #
 CONFIG_CMD_CLEAR=y
 CONFIG_CMD_ECHO=y
+CONFIG_CMD_ECHO_E=y
 
 #
-# memory
+# memory                        
 #
 # CONFIG_CMD_LOADB is not set
 CONFIG_CMD_MEMINFO=y
@@ -176,19 +176,20 @@ CONFIG_CMD_MTEST=y
 # CONFIG_CMD_MTEST_ALTERNATIVE is not set
 
 #
-# flash
+# flash                         
 #
 CONFIG_CMD_FLASH=y
 
 #
-# booting
+# booting                       
 #
 CONFIG_CMD_BOOTM=y
 # CONFIG_CMD_BOOTM_ZLIB is not set
 # CONFIG_CMD_BOOTM_BZLIB is not set
-# CONFIG_CMD_BOOTM_SHOW_TYPE is not set
+CONFIG_CMD_BOOTM_SHOW_TYPE=y
 CONFIG_CMD_BOOTZ=y
 CONFIG_CMD_BOOTU=y
+# CONFIG_CMD_LINUX16 is not set
 CONFIG_CMD_RESET=y
 CONFIG_CMD_GO=y
 CONFIG_CMD_TIMEOUT=y
@@ -197,7 +198,10 @@ CONFIG_CMD_TEST=y
 CONFIG_CMD_VERSION=y
 CONFIG_CMD_HELP=y
 CONFIG_CMD_DEVINFO=y
+CONFIG_CMD_BMP=y
 CONFIG_CMD_GPIO=y
+CONFIG_CMD_UNLZO=y
+CONFIG_CMD_I2C=y
 CONFIG_NET=y
 CONFIG_NET_DHCP=y
 # CONFIG_NET_RARP is not set
@@ -206,11 +210,11 @@ CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
 
 #
-# Drivers
+# Drivers                       
 #
 
 #
-# serial drivers
+# serial drivers                
 #
 # CONFIG_DRIVER_SERIAL_ARM_DCC is not set
 CONFIG_DRIVER_SERIAL_IMX=y
@@ -218,27 +222,33 @@ CONFIG_DRIVER_SERIAL_NS16550=y
 CONFIG_MIIPHY=y
 
 #
-# Network drivers
+# Network drivers               
 #
 # CONFIG_DRIVER_NET_SMC911X is not set
 # CONFIG_DRIVER_NET_SMC91111 is not set
 CONFIG_DRIVER_NET_FEC_IMX=y
 
 #
-# SPI drivers
+# SPI drivers                   
 #
-CONFIG_SPI=y
-CONFIG_DRIVER_SPI_IMX=y
-CONFIG_DRIVER_SPI_MC13783=y
-# CONFIG_I2C is not set
+# CONFIG_SPI is not set
+CONFIG_I2C=y
+CONFIG_DRIVER_I2C_IMX=y
+# CONFIG_DRIVER_I2C_MC13892 is not set
+# CONFIG_DRIVER_I2C_MC9SDZ60 is not set
+CONFIG_DRIVER_I2C_LP3972=y
 
 #
-# flash drivers
+# flash drivers                 
 #
 CONFIG_HAS_CFI=y
 CONFIG_DRIVER_CFI=y
-# CONFIG_DRIVER_CFI_NEW is not set
-CONFIG_DRIVER_CFI_OLD=y
+CONFIG_DRIVER_CFI_INTEL=y
+# CONFIG_DRIVER_CFI_AMD is not set
+# CONFIG_DRIVER_CFI_BANK_WIDTH_1 is not set
+CONFIG_DRIVER_CFI_BANK_WIDTH_2=y
+# CONFIG_DRIVER_CFI_BANK_WIDTH_4 is not set
+# CONFIG_DRIVER_CFI_BANK_WIDTH_8 is not set
 CONFIG_CFI_BUFFER_WRITE=y
 CONFIG_NAND=y
 CONFIG_NAND_IMX=y
@@ -246,15 +256,20 @@ CONFIG_NAND_IMX=y
 # CONFIG_MTD_NAND_VERIFY_WRITE is not set
 # CONFIG_MTD_NAND_ECC_SMC is not set
 CONFIG_MTD_NAND_IDS=y
+# CONFIG_ATA is not set
 # CONFIG_USB is not set
 # CONFIG_USB_GADGET is not set
-# CONFIG_VIDEO is not set
+CONFIG_VIDEO=y
+CONFIG_DRIVER_VIDEO_IMX=y
+# CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY is not set
 
 #
-# Filesystem support
+# Filesystem support            
 #
 # CONFIG_FS_CRAMFS is not set
 CONFIG_FS_RAMFS=y
 CONFIG_FS_DEVFS=y
 CONFIG_CRC32=y
 # CONFIG_GENERIC_FIND_NEXT_BIT is not set
+CONFIG_PROCESS_ESCAPE_SEQUENCE=y
+CONFIG_LZO_DECOMPRESS=y

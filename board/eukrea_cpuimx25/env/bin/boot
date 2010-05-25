@@ -32,7 +32,7 @@ if [ x$root = xjffs2 ]; then
 fi
 
 if [ x$root = xubifs ]; then
-	bootargs="$bootargs root=ubi0:root ubi.mtd=$rootpartnum_nand rootfstype=ubifs"
+	bootargs="$bootargs root=ubi0:$ubiroot ubi.mtd=$rootpartnum_nand rootfstype=ubifs"
 fi
 
 if [ x$root = xnet ]; then

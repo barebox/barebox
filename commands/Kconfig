@@ -314,4 +314,12 @@ config CMD_UNLZO
 	  Say yes here to get the unlzo command. lzo is a fast compression
 	  algorithm by Markus Franz Xaver Johannes Oberhumer.
 
+config CMD_I2C
+	bool
+	depends on I2C
+	prompt "i2c commands"
+	help
+	  include i2c_probe, i2c_read and i2c_write commands to communicate
+	  on i2c bus.
+
 endmenu

@@ -66,6 +66,7 @@ struct i2c_adapter {
 	struct device_d		*dev;	/* ptr to device */
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
+	struct list_head	list;
 };
 
 
@@ -120,6 +121,7 @@ static inline int i2c_register_board_info(int busnum,
 }
 #endif
 extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
+struct i2c_adapter *i2c_get_adapter(int busnum);
 
 extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 extern int i2c_master_send(struct i2c_client *client, const char *buf, int count);

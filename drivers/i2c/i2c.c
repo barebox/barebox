@@ -39,7 +39,7 @@ struct boardinfo {
 };
 
 static LIST_HEAD(board_list);
-
+static LIST_HEAD(adapter_list);
 
 /**
  * i2c_transfer - execute a single or combined I2C message
@@ -327,6 +327,23 @@ static void scan_boardinfo(struct i2c_adapter *adapter)
 }
 
 /**
+ *
+ * i2c_get_adapter - get an i2c adapter from its busnum
+ *
+ * @param	busnum	the desired bus number
+ *
+ */
+struct i2c_adapter *i2c_get_adapter(int busnum)
+{
+	struct i2c_adapter *adap;
+
+	list_for_each_entry(adap, &adapter_list, list)
+		if (adap->nr == busnum)
+			return adap;
+	return NULL;
+}
+
+/**
  * i2c_register_master - register I2C master controller
  *
  * @param	master	initialized master, originally from i2c_alloc_master()
@@ -345,6 +362,11 @@ static void scan_boardinfo(struct i2c_adapter *adapter)
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
+	if (i2c_get_adapter(adapter->nr))
+		return -EBUSY;
+
+	list_add_tail(&adapter_list, &adapter->list);
+
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);
 

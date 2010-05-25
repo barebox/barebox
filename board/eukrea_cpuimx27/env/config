@@ -4,16 +4,16 @@
 kernel=nor
 root=nor
 
-uimage=cpuimx27/uImage
-jffs2=cpuimx27/rootfs.jffs2
+uimage=mx27/uImage
+jffs2=mx27/rootfs.jffs2
 
-autoboot_timeout=3
+autoboot_timeout=1
 
-# TFP410-SVGA TFP410-VGA CMO-QVGA Optrex-WVGA Sharp-QVGA-EK
+# DVI-SVGA DVI-VGA CMO-QVGA
 video="CMO-QVGA"
-bootargs="console=ttymxc0,115200 fec_mac=$eth0.ethaddr rtc-pcf8563.probe=0,0x51 video=mxcfb:$video"
+bootargs="console=ttymxc0,115200 fec_mac=$eth0.ethaddr video=mxcfb:$video"
 
-nor_parts="256k(barebox)ro,128k(bareboxenv),1792k(kernel),-(root)"
+nor_parts="256k(barebox)ro,128k(bareboxenv),2176k(kernel),-(root)"
 rootpart_nor="/dev/mtdblock3"
 
 nand_parts="-(nand)"
@@ -28,4 +28,4 @@ ip=dhcp
 #eth0.ipaddr=a.b.c.d
 #eth0.netmask=a.b.c.d
 #eth0.gateway=a.b.c.d
-eth0.serverip=192.168.1.15
+#eth0.serverip=a.b.c.d

@@ -17,10 +17,14 @@ if [ x$1 = xnor ]; then
 	kernel=nor
 fi
 
-if [ x$ip = xdhcp ]; then
-	bootargs="$bootargs ip=dhcp"
+if [ x$root = xnet ]; then
+	if [ x$ip = xdhcp ]; then
+		bootargs="$bootargs ip=dhcp"
+	else
+		bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+	fi
 else
-	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+	bootargs="$bootargs ip=off"
 fi
 
 if [ x$root = xnand ]; then

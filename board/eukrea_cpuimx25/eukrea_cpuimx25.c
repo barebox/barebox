@@ -237,7 +237,7 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
-	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
+	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25);
 
 	return 0;
 }

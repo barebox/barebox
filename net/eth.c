@@ -36,7 +36,13 @@ static LIST_HEAD(netdev_list);
 
 void eth_set_current(struct eth_device *eth)
 {
+	if (eth_current && eth_current->active) {
+		eth_current->halt(eth_current);
+		eth_current->active = 0;
+	}
+
 	eth_current = eth;
+	net_update_env();
 }
 
 struct eth_device * eth_get_current(void)
@@ -57,36 +63,36 @@ struct eth_device *eth_get_byname(char *ethname)
 	return NULL;
 }
 
-int eth_open(void)
-{
-	if (!eth_current)
-		return -ENODEV;
-
-	return eth_current->open(eth_current);
-}
-
-void eth_halt(void)
-{
-	if (!eth_current)
-		return;
-
-	eth_current->halt(eth_current);
-
-	eth_current->state = ETH_STATE_PASSIVE;
-}
-
 int eth_send(void *packet, int length)
 {
+	int ret;
+
 	if (!eth_current)
 		return -ENODEV;
+
+	if (!eth_current->active) {
+		ret = eth_current->open(eth_current);
+		if (ret)
+			return ret;
+		eth_current->active = 1;
+	}
 
 	return eth_current->send(eth_current, packet, length);
 }
 
 int eth_rx(void)
 {
+	int ret;
+
 	if (!eth_current)
 		return -ENODEV;
+
+	if (!eth_current->active) {
+		ret = eth_current->open(eth_current);
+		if (ret)
+			return ret;
+		eth_current->active = 1;
+	}
 
 	return eth_current->recv(eth_current);
 }
@@ -104,11 +110,15 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 
 	edev->set_ethaddr(edev, ethaddr);
 
+	if (edev == eth_current)
+		net_update_env();
+
 	return 0;
 }
 
 static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
+	struct eth_device *edev = dev->type_data;
 	IPaddr_t ip;
 
 	if (string_to_ip(val, &ip))
@@ -116,6 +126,9 @@ static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const cha
 
 	free(param->value);
 	param->value = strdup(val);
+
+	if (edev == eth_current)
+		net_update_env();
 
 	return 0;
 }
@@ -157,7 +170,7 @@ int eth_register(struct eth_device *edev)
 
 	if (edev->get_ethaddr(edev, ethaddr) == 0) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
-		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
+		printf("got MAC address from EEPROM: %s\n",&ethaddr_str);
 		dev_set_param(dev, "ethaddr", ethaddr_str);
 	}
 
@@ -180,9 +193,12 @@ void eth_unregister(struct eth_device *edev)
 	if (edev->param_serverip.value)
 		free(edev->param_serverip.value);
 
-	if (eth_current == edev)
+	if (eth_current == edev) {
+		eth_current->halt(eth_current);
 		eth_current = NULL;
+	}
 
 	list_del(&edev->list);
 }
+
 

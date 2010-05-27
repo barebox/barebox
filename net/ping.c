@@ -62,7 +62,6 @@ static int PingSend(void)
 static void
 PingTimeout (void)
 {
-	eth_halt();
 	NetState = NETLOOP_FAIL;	/* we did not get the reply */
 }
 

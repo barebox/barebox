@@ -228,9 +228,6 @@ int NetLoopInit(proto_t protocol)
 	NetArpWaitTxPacket -= (ulong)NetArpWaitTxPacket % PKTALIGN;
 	NetArpWaitTxPacketSize = 0;
 
-	if (eth_open() < 0)
-		return -1;
-
 	string_to_ethaddr(dev_get_param(&eth_get_current()->dev, "ethaddr"),
 			NetOurEther);
 
@@ -243,8 +240,6 @@ int NetLoopInit(proto_t protocol)
 	NetServerIP = dev_get_param_ip(&eth_current->dev, "serverip");
 
 	ret = net_check_prereq(protocol);
-	if (ret)
-		eth_halt();
 
 	return ret;
 }
@@ -281,7 +276,6 @@ int NetLoop(void)
 		 *	Abort if ctrl-c was pressed.
 		 */
 		if (ctrlc()) {
-			eth_halt();
 			puts ("\nAbort\n");
 			return -1;
 		}
@@ -315,11 +309,9 @@ int NetLoop(void)
 				sprintf(buf, "0x%lx", NetBootFileXferSize);
 				setenv("filesize", buf);
 			}
-			eth_halt();
 			return NetBootFileXferSize;
 
 		case NETLOOP_FAIL:
-			eth_halt();
 			return -1;
 		}
 	}
@@ -957,5 +949,18 @@ void ethaddr_to_string(const unsigned char *enetaddr, char *str)
 	sprintf (str, "%02X:%02X:%02X:%02X:%02X:%02X",
 		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],
 		 enetaddr[4], enetaddr[5]);
+}
+
+void net_update_env(void)
+{
+	struct eth_device *edev = eth_get_current();
+
+	NetOurIP = dev_get_param_ip(&edev->dev, "ipaddr");
+	NetServerIP = dev_get_param_ip(&edev->dev, "serverip");
+	NetOurGatewayIP = dev_get_param_ip(&edev->dev, "gateway");
+	NetOurSubnetMask = dev_get_param_ip(&edev->dev, "netmask");
+
+	string_to_ethaddr(dev_get_param(&edev->dev, "ethaddr"),
+			NetOurEther);
 }
 

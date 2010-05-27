@@ -39,12 +39,16 @@ void netboot_update_env(void)
 {
 	struct eth_device *eth_current = eth_get_current();
 	char tmp[22];
+	IPaddr_t net_gateway_ip = NetOurGatewayIP;
+	IPaddr_t net_ip = NetOurIP;
+	IPaddr_t net_server_ip = NetServerIP;
+	IPaddr_t netmask = NetOurSubnetMask;
 
-	if (NetOurGatewayIP)
-		dev_set_param_ip(&eth_current->dev, "gateway", NetOurGatewayIP);
+	if (net_gateway_ip)
+		dev_set_param_ip(&eth_current->dev, "gateway", net_gateway_ip);
 
-	if (NetOurSubnetMask)
-		dev_set_param_ip(&eth_current->dev, "netmask", NetOurSubnetMask);
+	if (netmask)
+		dev_set_param_ip(&eth_current->dev, "netmask", netmask);
 
 
 	if (NetOurHostName[0])
@@ -53,11 +57,11 @@ void netboot_update_env(void)
 	if (NetOurRootPath[0])
 		setenv ("rootpath", NetOurRootPath);
 
-	if (NetOurIP)
-		dev_set_param_ip(&eth_current->dev, "ipaddr", NetOurIP);
+	if (net_ip)
+		dev_set_param_ip(&eth_current->dev, "ipaddr", net_ip);
 
-	if (NetServerIP)
-		dev_set_param_ip(&eth_current->dev, "serverip", NetServerIP);
+	if (net_server_ip)
+		dev_set_param_ip(&eth_current->dev, "serverip", net_server_ip);
 
 	if (NetOurDNSIP) {
 		ip_to_string (NetOurDNSIP, tmp);

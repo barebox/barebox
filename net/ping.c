@@ -2,102 +2,103 @@
 #include <command.h>
 #include <clock.h>
 #include <net.h>
+#include <errno.h>
+#include <linux/err.h>
 
-static ushort PingSeqNo;
+static uint16_t ping_sequence_number;
 
-static IPaddr_t	NetPingIP;		/* the ip address to ping 		*/
+static IPaddr_t	net_ping_ip;		/* the ip address to ping 		*/
 
-static int PingSend(void)
+#define PING_STATE_INIT		0
+#define PING_STATE_SUCCESS	1
+
+static int ping_state;
+
+static struct net_connection *ping_con;
+
+static int ping_send(void)
 {
-	static uchar mac[6];
-	IP_t *ip;
-	ushort *s;
-	uchar *pkt;
+	unsigned char *payload;
+	struct icmphdr *icmp;
+	uint64_t ts;
 
-	/* XXX always send arp request */
+	icmp = ping_con->icmp;
 
-	memcpy(mac, NetEtherNullAddr, 6);
+	icmp->type = ICMP_ECHO_REQUEST;
+	icmp->code = 0;
+	icmp->checksum = 0;
+	icmp->un.echo.id = 0;
+	icmp->un.echo.sequence = htons(ping_sequence_number);
 
-	pr_debug("sending ARP for %08lx\n", NetPingIP);
+	ping_sequence_number++;
 
-	NetArpWaitPacketIP = NetPingIP;
-	NetArpWaitPacketMAC = mac;
-
-	pkt = NetArpWaitTxPacket;
-	pkt += NetSetEther(pkt, mac, PROT_IP);
-
-	ip = (IP_t *)pkt;
-
-	/*
-	 *	Construct an IP and ICMP header.  (need to set no fragment bit - XXX)
-	 */
-	ip->ip_hl_v  = 0x45;		/* IP_HDR_SIZE / 4 (not including UDP) */
-	ip->ip_tos   = 0;
-	ip->ip_len   = htons(IP_HDR_SIZE_NO_UDP + 8);
-	ip->ip_id    = htons(NetIPID++);
-	ip->ip_off   = htons(0x4000);	/* No fragmentation */
-	ip->ip_ttl   = 255;
-	ip->ip_p     = 0x01;		/* ICMP */
-	ip->ip_sum   = 0;
-	NetCopyIP((void*)&ip->ip_src, &NetOurIP); /* already in network byte order */
-	NetCopyIP((void*)&ip->ip_dst, &NetPingIP);	   /* - "" - */
-	ip->ip_sum   = ~NetCksum((uchar *)ip, IP_HDR_SIZE_NO_UDP / 2);
-
-	s = &ip->udp_src;		/* XXX ICMP starts here */
-	s[0] = htons(0x0800);		/* echo-request, code */
-	s[1] = 0;			/* checksum */
-	s[2] = 0; 			/* identifier */
-	s[3] = htons(PingSeqNo++);	/* sequence number */
-	s[1] = ~NetCksum((uchar *)s, 8/2);
-
-	/* size of the waiting packet */
-	NetArpWaitTxPacketSize = (pkt - NetArpWaitTxPacket) + IP_HDR_SIZE_NO_UDP + 8;
-
-	/* and do the ARP request */
-	NetArpWaitTimerStart = get_time_ns();
-	ArpRequest();
-	return 1;	/* waiting */
+	payload = (char *)(icmp + 1);
+	ts = get_time_ns();
+	memcpy(payload, &ts, sizeof(ts));
+	payload[8] = 0xab;
+	payload[9] = 0xcd;
+	return net_icmp_send(ping_con, 9);
 }
 
-static void
-PingTimeout (void)
-{
-	NetState = NETLOOP_FAIL;	/* we did not get the reply */
-}
-
-static void
-PingHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
+void ping_handler(char *pkt, unsigned len)
 {
 	IPaddr_t tmp;
-	IP_t *ip = (IP_t *)pkt;
+	struct iphdr *ip = net_eth_to_iphdr(pkt);
 
-	tmp = NetReadIP((void *)&ip->ip_src);
-	if (tmp != NetPingIP)
+	tmp = net_read_ip((void *)&ip->saddr);
+	if (tmp != net_ping_ip)
 		return;
 
-	NetState = NETLOOP_SUCCESS;
+	ping_state = PING_STATE_SUCCESS;
 }
 
 int do_ping(struct command *cmdtp, int argc, char *argv[])
 {
-	if (argc < 2 || string_to_ip(argv[1], &NetPingIP))
+	int ret;
+	uint64_t ping_start = 0;
+
+	if (argc < 2 || string_to_ip(argv[1], &net_ping_ip))
 		return COMMAND_ERROR_USAGE;
 
-	if (NetLoopInit(PING) < 0)
-		return 1;
-
-	NetSetTimeout (10 * SECOND, PingTimeout);
-	NetSetHandler (PingHandler);
-	PingSend();
-
-	if (NetLoop() < 0) {
-		printf("ping failed; host %s is not alive\n", argv[1]);
-		return 1;
+	ping_con = net_icmp_new(net_ping_ip, ping_handler);
+	if (IS_ERR(ping_con)) {
+		ret = PTR_ERR(ping_con);
+		goto out;
 	}
 
-	printf("host %s is alive\n", argv[1]);
+	ping_start = get_time_ns();
+	ret = ping_send();
+	if (ret)
+		goto out_unreg;
 
-	return 0;
+	ping_state = PING_STATE_INIT;
+	ping_sequence_number = 0;
+
+	while (ping_state == PING_STATE_INIT) {
+		if (ctrlc()) {
+			ret = -EINTR;
+			break;
+		}
+
+		net_poll();
+
+		if (is_timeout(ping_start, 10 * SECOND)) {
+			ping_start = get_time_ns();
+			ret = ping_send();
+			if (ret)
+				goto out_unreg;
+		}
+	}
+
+	if (!ret)
+		printf("host %s is alive\n", argv[1]);
+
+out_unreg:
+	net_unregister(ping_con);
+out:
+	if (ret)
+		printf("ping failed: %s\n", strerror(-ret));
+	return ping_state == PING_STATE_SUCCESS ? 0 : 1;
 }
 
 BAREBOX_CMD_START(ping)

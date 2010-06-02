@@ -668,7 +668,7 @@ static int smc911x_eth_rx(struct eth_device *edev)
 				": dropped bad packet. Status: 0x%08x\n",
 				status);
 		else
-			NetReceive(NetRxPackets[0], pktlen);
+			net_receive(NetRxPackets[0], pktlen);
 	}
 
 	return 0;

@@ -137,7 +137,7 @@ static int usbnet_recv(struct eth_device *edev)
 		if (info->rx_fixup)
 			return info->rx_fixup(dev, rx_buf, alen);
 		else
-			NetReceive(rx_buf, alen);
+			net_receive(rx_buf, alen);
 	}
 
         return 0;

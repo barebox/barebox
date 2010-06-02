@@ -35,48 +35,6 @@
 #include <errno.h>
 #include <libbb.h>
 
-void netboot_update_env(void)
-{
-	struct eth_device *eth_current = eth_get_current();
-	char tmp[22];
-	IPaddr_t net_gateway_ip = NetOurGatewayIP;
-	IPaddr_t net_ip = NetOurIP;
-	IPaddr_t net_server_ip = NetServerIP;
-	IPaddr_t netmask = NetOurSubnetMask;
-
-	if (net_gateway_ip)
-		dev_set_param_ip(&eth_current->dev, "gateway", net_gateway_ip);
-
-	if (netmask)
-		dev_set_param_ip(&eth_current->dev, "netmask", netmask);
-
-
-	if (NetOurHostName[0])
-		setenv ("hostname", NetOurHostName);
-
-	if (NetOurRootPath[0])
-		setenv ("rootpath", NetOurRootPath);
-
-	if (net_ip)
-		dev_set_param_ip(&eth_current->dev, "ipaddr", net_ip);
-
-	if (net_server_ip)
-		dev_set_param_ip(&eth_current->dev, "serverip", net_server_ip);
-
-	if (NetOurDNSIP) {
-		ip_to_string (NetOurDNSIP, tmp);
-		setenv ("dnsip", tmp);
-	}
-#ifdef CONFIG_BOOTP_DNS2
-	if (NetOurDNS2IP) {
-		ip_to_string (NetOurDNS2IP, tmp);
-		setenv ("dnsip2", tmp);
-	}
-#endif
-	if (NetOurNISDomain[0])
-		setenv ("domain", NetOurNISDomain);
-}
-
 #ifdef CONFIG_NET_RARP
 extern void RarpRequest(void);
 

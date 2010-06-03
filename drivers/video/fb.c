@@ -32,15 +32,22 @@ static int fb_enable_set(struct device_d *dev, struct param_d *param,
 {
 	struct fb_info *info = dev->priv;
 	int enable;
+	char *new;
+
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
 
 	enable = simple_strtoul(val, NULL, 0);
 
-	if (enable)
+	if (enable) {
 		info->fbops->fb_enable(info);
-	else
+		new = "1";
+	} else {
 		info->fbops->fb_disable(info);
+		new = "0";
+	}
 
-	sprintf(info->enable_string, "%d", !!enable);
+	dev_param_set_generic(dev, param, new);
 
 	return 0;
 }
@@ -71,13 +78,9 @@ int register_framebuffer(struct fb_info *info)
 
 	sprintf(dev->name, "fb");
 
-	info->param_enable.set = fb_enable_set;
-	info->param_enable.name = "enable";
-	sprintf(info->enable_string, "%d", 0);
-	info->param_enable.value = info->enable_string;
-	dev_add_param(dev, &info->param_enable);
-
 	register_device(&info->dev);
+	dev_add_param(dev, "enable", fb_enable_set, NULL, 0);
+	dev_set_param(dev, "enable", "0");
 
 	devfs_create(&info->cdev);
 

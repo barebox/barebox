@@ -41,12 +41,6 @@ struct eth_device {
 	struct eth_device *next;
 	void *priv;
 
-	struct param_d param_ip;
-	struct param_d param_netmask;
-	struct param_d param_gateway;
-	struct param_d param_serverip;
-	struct param_d param_ethaddr;
-
 	struct device_d dev;
 
 	struct list_head list;

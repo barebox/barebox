@@ -18,4 +18,11 @@ config NET_PING
 config NET_TFTP
 	bool
 	prompt "tftp support"
+
+config NET_NETCONSOLE
+	bool
+	prompt "network console support"
+	help
+	  This option adds support for a simple udp based network console.
+
 endif

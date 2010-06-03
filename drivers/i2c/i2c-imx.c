@@ -214,7 +214,7 @@ static int i2c_imx_acked(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, MSECOND)) {
-			dev_err(adapter->dev, "<%s> No ACK\n", __func__);
+			dev_dbg(adapter->dev, "<%s> No ACK\n", __func__);
 			return -EIO;
 		}
 	}

@@ -76,6 +76,24 @@
 #define PDR0_AUTO_CON		(1 << 0)
 #define PDR0_PER_SEL		(1 << 26)
 
+
+#define IIM_STAT	0x0000
+#define IIM_STATM	0x0004
+#define IIM_ERR		0x0008
+#define IIM_EMASK	0x000C
+#define IIM_FCTL	0x0010
+#define IIM_UA		0x0014
+#define IIM_LA		0x0018
+#define IIM_SDAT	0x001C
+#define IIM_PREV	0x0020
+#define IIM_SREV	0x0024
+#define IIM_PREG_P	0x0028
+#define IIM_SCS0	0x002C
+#define IIM_SCS1	0x0030
+#define IIM_SCS2	0x0034
+#define IIM_SCS3	0x0038
+
+
 /*
  * Adresses and ranges of the external chip select lines
  */

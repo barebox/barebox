@@ -44,6 +44,8 @@ static struct tag *params;
 static int armlinux_architecture = 0;
 static void *armlinux_bootparams = NULL;
 
+static unsigned int system_rev;
+
 static void setup_start_tag(void)
 {
 	params = (struct tag *)armlinux_bootparams;
@@ -106,6 +108,18 @@ static void setup_commandline_tag(const char *commandline)
 	params = tag_next(params);
 }
 
+static void setup_revision_tag(void)
+{
+	if (system_rev) {
+		params->hdr.tag = ATAG_REVISION;
+		params->hdr.size = tag_size(tag_revision);
+
+		params->u.revision.rev = system_rev;
+
+		params = tag_next(params);
+	}
+}
+
 #if 0
 static void setup_initrd_tag(ulong initrd_start, ulong initrd_end)
 {
@@ -147,6 +161,12 @@ void armlinux_add_dram(struct device_d *dev)
 	list_add_tail(&mem->list, &memory_list);
 }
 
+void armlinux_set_revision(unsigned int rev)
+{
+	system_rev = rev;
+}
+
+
 #ifdef CONFIG_CMD_BOOTM
 int do_bootm_linux(struct image_data *data)
 {
@@ -184,6 +204,7 @@ int do_bootm_linux(struct image_data *data)
 	if (initrd_start && initrd_end)
 		setup_initrd_tag (initrd_start, initrd_end);
 #endif
+	setup_revision_tag();
 	setup_end_tag();
 
 	if (relocate_image(data->os, (void *)ntohl(os_header->ih_load)))
@@ -281,6 +302,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	if (initrd_start && initrd_end)
 		setup_initrd_tag (initrd_start, initrd_end);
 #endif
+	setup_revision_tag();
 	setup_end_tag();
 
 	shutdown_barebox();
@@ -323,6 +345,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	setup_start_tag();
 	setup_memory_tags();
 	setup_commandline_tag(commandline);
+	setup_revision_tag();
 	setup_end_tag();
 
 	shutdown_barebox();

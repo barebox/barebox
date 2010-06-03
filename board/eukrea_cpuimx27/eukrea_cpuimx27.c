@@ -40,6 +40,7 @@
 #include <asm/io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
+#include <mach/imxfb.h>
 #include <ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
@@ -176,6 +177,39 @@ static void eukrea_cpuimx27_mmu_init(void)
 }
 #endif
 
+#ifdef CONFIG_DRIVER_VIDEO_IMX
+static struct imx_fb_videomode imxfb_mode = {
+	.mode = {
+		.name		= "CMO-QVGA",
+		.refresh	= 60,
+		.xres		= 320,
+		.yres		= 240,
+		.pixclock	= 156000,
+		.hsync_len	= 30,
+		.left_margin	= 38,
+		.right_margin	= 20,
+		.vsync_len	= 3,
+		.upper_margin	= 15,
+		.lower_margin	= 4,
+	},
+	.pcr		= 0xFAD08B80,
+	.bpp		= 16,};
+
+static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
+	.mode	= &imxfb_mode,
+	.pwmr	= 0x00A903FF,
+	.lscr1	= 0x00120300,
+	.dmacr	= 0x00020010,
+};
+
+static struct device_d imxfb_dev = {
+	.name		= "imxfb",
+	.map_base	= 0x10021000,
+	.size		= 0x1000,
+	.platform_data	= &eukrea_cpuimx27_fb_data,
+};
+#endif
+
 static int eukrea_cpuimx27_devices_init(void)
 {
 	char *envdev = "no";
@@ -208,6 +242,31 @@ static int eukrea_cpuimx27_devices_init(void)
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
 #endif
+#ifdef CONFIG_DRIVER_VIDEO_IMX
+		PA5_PF_LSCLK,
+		PA6_PF_LD0,
+		PA7_PF_LD1,
+		PA8_PF_LD2,
+		PA9_PF_LD3,
+		PA10_PF_LD4,
+		PA11_PF_LD5,
+		PA12_PF_LD6,
+		PA13_PF_LD7,
+		PA14_PF_LD8,
+		PA15_PF_LD9,
+		PA16_PF_LD10,
+		PA17_PF_LD11,
+		PA18_PF_LD12,
+		PA19_PF_LD13,
+		PA20_PF_LD14,
+		PA21_PF_LD15,
+		PA22_PF_LD16,
+		PA23_PF_LD17,
+		PA28_PF_HSYNC,
+		PA29_PF_VSYNC,
+		PA31_PF_OE_ACD,
+		GPIO_PORTE | 5 | GPIO_GPIO | GPIO_OUT,
+#endif
 	};
 
 	eukrea_cpuimx27_mmu_init();
@@ -217,7 +276,7 @@ static int eukrea_cpuimx27_devices_init(void)
 	CS0L = 0xA0330D01;
 	CS0A = 0x002208C0;
 
-	/* initizalize gpios */
+	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
@@ -238,6 +297,12 @@ static int eukrea_cpuimx27_devices_init(void)
 	envdev = "NOR";
 
 	printf("Using environment in %s Flash\n", envdev);
+
+#ifdef CONFIG_DRIVER_VIDEO_IMX
+	register_device(&imxfb_dev);
+	gpio_direction_output(GPIO_PORTE | 5, 0);
+	gpio_set_value(GPIO_PORTE | 5, 1);
+#endif
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);

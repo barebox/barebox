@@ -47,10 +47,16 @@
 #include <mach/iomux-v3.h>
 #include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
+#include <mach/generic.h>
 
 #include <i2c/i2c.h>
 #include <i2c/mc13892.h>
 #include <i2c/mc9sdz60.h>
+
+
+/* Board rev for the PDK 3stack */
+#define MX35PDK_BOARD_REV_1		0
+#define MX35PDK_BOARD_REV_2		1
 
 static struct device_d cfi_dev = {
 	.name		= "cfi_flash",
@@ -144,6 +150,32 @@ static struct device_d imxfb_dev = {
 	.platform_data	= &ipu_fb_data,
 };
 
+/*
+ * Revision to be passed to kernel. The kernel provided
+ * by freescale relies on this.
+ *
+ * C --> CPU type
+ * S --> Silicon revision
+ * B --> Board rev
+ *
+ * 31    20     16     12    8      4     0
+ *        | Cmaj | Cmin | B  | Smaj | Smin|
+ *
+ * e.g 0x00035120 --> i.MX35, Cpu silicon rev 2.0, Board rev 2
+*/
+static unsigned int imx35_3ds_system_rev = 0x00035000;
+
+static void set_silicon_rev( int rev)
+{
+	imx35_3ds_system_rev = imx35_3ds_system_rev | (rev & 0xFF);
+}
+
+static void set_board_rev(int rev)
+{
+	imx35_3ds_system_rev =  (imx35_3ds_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
+}
+
+
 static int f3s_devices_init(void)
 {
 	uint32_t reg;
@@ -181,6 +213,8 @@ static int f3s_devices_init(void)
 		break;
 	}
 
+	set_silicon_rev(imx_silicon_revision());
+
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	register_device(&i2c_dev);
 
@@ -201,10 +235,8 @@ device_initcall(f3s_devices_init);
 
 static int f3s_enable_display(void)
 {
-	gpio_direction_output(1, 1);
-
 	/* Enable power to the LCD. (bit 6 hi.) */
-	mc9sdz60_set_bits( mc9sdz60_get(), MC9SDZ60_REG_GPIO_1, 0x40, 0x40);
+	mc9sdz60_set_bits(mc9sdz60_get(), MC9SDZ60_REG_GPIO_1, 0x40, 0x40);
 
 	return 0;
 }
@@ -248,6 +280,8 @@ static struct pad_desc f3s_pads[] = {
 	MX35_PAD_I2C1_DAT__I2C1_SDA,
 
 	MX35_PAD_WDOG_RST__GPIO1_6,
+	MX35_PAD_COMPARE__GPIO1_5,
+
 	/* Display */
 	MX35_PAD_LD0__IPU_DISPB_DAT_0,
 	MX35_PAD_LD1__IPU_DISPB_DAT_1,
@@ -270,7 +304,7 @@ static struct pad_desc f3s_pads[] = {
 	MX35_PAD_D3_HSYNC__IPU_DISPB_D3_HSYNC,
 	MX35_PAD_D3_FPSHIFT__IPU_DISPB_D3_CLK,
 	MX35_PAD_D3_DRDY__IPU_DISPB_D3_DRDY,
-	MX35_PAD_CONTRAST__GPIO1_1,
+	MX35_PAD_CONTRAST__IPU_DISPB_CONTR,
 	MX35_PAD_D3_VSYNC__IPU_DISPB_D3_VSYNC,
 	MX35_PAD_D3_REV__IPU_DISPB_D3_REV,
 	MX35_PAD_D3_CLS__IPU_DISPB_D3_CLS,
@@ -374,12 +408,15 @@ static int f3s_get_rev(struct mc13892 *mc13892)
 	if (rev == 0x00ffffff)
 		return -ENODEV;
 
-	return ((rev >> 6) & 0x7) ? 20 : 10;
+	return ((rev >> 6) & 0x7) ? MX35PDK_BOARD_REV_2 : MX35PDK_BOARD_REV_1;
 }
 
 static int f3s_pmic_init_v2(struct mc13892 *mc13892)
 {
 	int err = 0;
+
+	/* COMPARE pin (GPIO1_5) as output and set high */
+	gpio_direction_output( 32*0 + 5 , 1);
 
 	err |= mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x03, 0x03);
 	err |= mc13892_set_bits(mc13892, MC13892_REG_MODE_0, 0x01, 0x01);
@@ -421,16 +458,18 @@ static int f3s_pmic_init(void)
 
 	rev = f3s_get_rev(mc13892);
 	switch (rev) {
-	case 10:
+	case MX35PDK_BOARD_REV_1:
 		break;
-	case 20:
+	case MX35PDK_BOARD_REV_2:
 		f3s_pmic_init_v2(mc13892);
 		break;
 	default:
 		printf("FAILED to identify board revision!\n");
 		return 0;
 	}
-	printf("i.MX35 PDK CPU board version %d.%d\n", rev / 10, rev % 10);
+
+	set_board_rev(rev);
+	printf("i.MX35 PDK CPU board version %d.\n", rev );
 
 	mc9sdz60 = mc9sdz60_get();
 	if (!mc9sdz60) {
@@ -439,6 +478,8 @@ static int f3s_pmic_init(void)
 	}
 
 	f3s_pmic_init_all(mc9sdz60);
+
+	armlinux_set_revision(imx35_3ds_system_rev);
 
 	return 0;
 }

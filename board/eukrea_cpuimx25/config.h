@@ -1,4 +1,6 @@
 /*
+ * (c) 2010 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -15,26 +17,11 @@
  * MA 02111-1307 USA
  */
 
-#include <common.h>
-#include <asm/io.h>
-#include <mach/imx-regs.h>
-#include <mach/generic.h>
+#ifndef __CONFIG_H
+#define __CONFIG_H
 
-#include "gpio.h"
+#define CONFIG_MX25_HCLK_FREQ	24000000
 
-void *imx_gpio_base[] = {
-	(void *)0x53fcc000,
-	(void *)0x53fd0000,
-	(void *)0x53fa4000,
-};
+#endif
 
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
-int imx_silicon_revision()
-{
-	uint32_t reg;
-	reg = readl(IMX_IIM_BASE + IIM_SREV);
-	reg += IMX35_CHIP_REVISION_1_0;
-
-	return (reg & 0xFF);
-}
+/* nothing to do here yet */

@@ -7,11 +7,11 @@ if VIDEO
 
 config DRIVER_VIDEO_IMX
 	bool "i.MX framebuffer driver"
-	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX27
+	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX25 || ARCH_IMX27
 
 config IMXFB_DRIVER_VIDEO_IMX_OVERLAY
 	bool "i.MX framebuffer overlay support"
-	depends on DRIVER_VIDEO_IMX && (ARCH_IMX27 || ARCH_IMX21)
+	depends on DRIVER_VIDEO_IMX && (ARCH_IMX27 || ARCH_IMX25 || ARCH_IMX21)
 
 config DRIVER_VIDEO_IMX_IPU
 	bool "i.MX31/35 framebuffer driver"

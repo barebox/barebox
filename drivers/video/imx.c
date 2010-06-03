@@ -258,7 +258,12 @@ static void imxfb_enable_controller(struct fb_info *info)
 	PCCR0 |= PCCR0_LCDC_EN;
 	PCCR1 |= PCCR1_HCLK_LCDC;
 #endif
-
+#ifdef CONFIG_ARCH_IMX25
+	writel(readl(IMX_CCM_BASE + CCM_CGCR0) | (1 << 24) | (1 << 7),
+		IMX_CCM_BASE + CCM_CGCR0);
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 29),
+		IMX_CCM_BASE + CCM_CGCR1);
+#endif
 }
 
 static void imxfb_disable_controller(struct fb_info *info)
@@ -272,6 +277,12 @@ static void imxfb_disable_controller(struct fb_info *info)
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 &= ~PCCR0_LCDC_EN;
 	PCCR1 &= ~PCCR1_HCLK_LCDC;
+#endif
+#ifdef CONFIG_ARCH_IMX25
+	writel(readl(IMX_CCM_BASE + CCM_CGCR0) & ~((1 << 24) | (1 << 7)),
+		IMX_CCM_BASE + CCM_CGCR0);
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
+		IMX_CCM_BASE + CCM_CGCR1);
 #endif
 }
 
@@ -517,6 +528,12 @@ static int imxfb_probe(struct device_d *dev)
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 &= ~PCCR0_LCDC_EN;
 	PCCR1 &= ~PCCR1_HCLK_LCDC;
+#endif
+#ifdef CONFIG_ARCH_IMX25
+	writel(readl(IMX_CCM_BASE + CCM_CGCR0) & ~((1 << 24) | (1 << 7)),
+		IMX_CCM_BASE + CCM_CGCR0);
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
+		IMX_CCM_BASE + CCM_CGCR1);
 #endif
 
 	fbi = xzalloc(sizeof(*fbi));

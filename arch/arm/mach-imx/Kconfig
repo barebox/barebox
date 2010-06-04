@@ -210,7 +210,9 @@ choice
 config MACH_PCM037
 	bool "phyCORE-i.MX31"
 	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_MMU
 	select USB_ISP1504 if USB
+	select ARCH_HAS_L2X0
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
 	  with a Freescale i.MX31 Processor

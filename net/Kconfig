@@ -25,4 +25,8 @@ config NET_NETCONSOLE
 	help
 	  This option adds support for a simple udp based network console.
 
+config NET_RESOLV
+	bool
+	prompt "dns support"
+
 endif

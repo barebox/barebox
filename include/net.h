@@ -274,6 +274,17 @@ int setenv_ip(const char *name, IPaddr_t ip);
 int string_to_ethaddr(const char *str, char *enetaddr);
 void ethaddr_to_string(const unsigned char *enetaddr, char *str);
 
+#ifdef CONFIG_NET_RESOLV
+IPaddr_t resolv(char *host);
+#else
+static inline IPaddr_t resolv(char *host)
+{
+	IPaddr_t ip = 0;
+	string_to_ip(host, &ip);
+	return ip;
+}
+#endif
+
 /**
  * is_zero_ether_addr - Determine if give Ethernet address is all zeros.
  * @addr: Pointer to a six-byte array containing the Ethernet address

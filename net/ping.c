@@ -57,8 +57,14 @@ int do_ping(struct command *cmdtp, int argc, char *argv[])
 	int ret;
 	uint64_t ping_start = 0;
 
-	if (argc < 2 || string_to_ip(argv[1], &net_ping_ip))
+	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
+
+	net_ping_ip = resolv(argv[1]);
+	if (!net_ping_ip) {
+		printf("unknown host %s\n", argv[1]);
+		return 1;
+	}
 
 	ping_con = net_icmp_new(net_ping_ip, ping_handler);
 	if (IS_ERR(ping_con)) {

@@ -365,7 +365,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	if (i2c_get_adapter(adapter->nr))
 		return -EBUSY;
 
-	list_add_tail(&adapter_list, &adapter->list);
+	list_add_tail(&adapter->list, &adapter_list);
 
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);

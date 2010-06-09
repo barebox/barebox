@@ -21,7 +21,7 @@
  */
 
 #ifndef __ASM_ARCH_MX25_REGS_H
-#define __ASM_ARCH_MX35_REGS_H
+#define __ASM_ARCH_MX25_REGS_H
 
 /*
  * sanity check

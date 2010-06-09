@@ -77,6 +77,11 @@ unsigned long imx_get_lcdclk(void)
 	return imx_get_perclk(7);
 }
 
+unsigned long imx_get_i2cclk(void)
+{
+	return imx_get_perclk(6);
+}
+
 int imx_dump_clocks(void)
 {
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());

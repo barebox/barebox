@@ -24,7 +24,6 @@
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
-#include <asm/cache-l2x0.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -56,13 +55,7 @@ CCM_BASE_ADDR_W:        .word   IMX_CCM_BASE
 board_init_lowlevel:
 	mov     r10, lr
 
-/*
- * End of ARM1136 init
- */
 #define MX25_CCM_MCR	0x64
-#define MX25_CCM_CGR0	0x0c
-#define MX25_CCM_CGR1	0x10
-#define MX25_CCM_CGR2	0x14
 
 	ldr r0, CCM_BASE_ADDR_W
 	/* default CLKO to 1/32 of the ARM core */
@@ -75,9 +68,9 @@ board_init_lowlevel:
 	str r1, [r0, #MX25_CCM_MCR]
 
 	/* enable all the clocks */
-	writel(0x1FFFFFFF, IMX_CCM_BASE + MX25_CCM_CGR0)
-	writel(0xFFFFFFFF, IMX_CCM_BASE + MX25_CCM_CGR1)
-	writel(0x000FDFFF, IMX_CCM_BASE + MX25_CCM_CGR2)
+	writel(0x1FFFFFFF, IMX_CCM_BASE + CCM_CGCR0)
+	writel(0xFFFFFFFF, IMX_CCM_BASE + CCM_CGCR1)
+	writel(0x000FDFFF, IMX_CCM_BASE + CCM_CGCR2)
 	writel(0x0000FEFF, IMX_CCM_BASE + MX25_CCM_MCR)
 
 	/* Skip SDRAM initialization if we run from RAM */

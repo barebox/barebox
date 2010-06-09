@@ -10,6 +10,9 @@ config DRIVER_I2C_IMX
 config DRIVER_I2C_MC13892
 	bool "MC13892 a.k.a. PMIC driver"
 
+config DRIVER_I2C_MC34704
+	bool "MC34704 PMIC driver"
+
 config DRIVER_I2C_MC9SDZ60
 	bool "MC9SDZ60 driver"
 

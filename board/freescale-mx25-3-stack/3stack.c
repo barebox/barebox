@@ -36,6 +36,8 @@
 #include <nand.h>
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
+#include <i2c/i2c.h>
+#include <i2c/mc34704.h>
 
 extern unsigned long _stext;
 
@@ -183,7 +185,17 @@ static struct device_d usbh2_dev = {
 };
 #endif
 
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("mc34704", 0x54),
+	},
+};
 #define IOMUXC_BASE_ADDR        0x43FAC000
+
+static struct device_d i2c_dev = {
+	.name     = "i2c-imx",
+	.map_base = IMX_I2C1_BASE,
+};
 
 static int imx25_devices_init(void)
 {
@@ -256,6 +268,9 @@ static int imx25_devices_init(void)
 	register_device(&sdram0_dev);
 	register_device(&sram0_dev);
 
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	register_device(&i2c_dev);
+
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
 
@@ -303,6 +318,9 @@ static struct pad_desc imx25_pads[] = {
 	MX25_PAD_VSYNC__USBH2_DATA5,
 	MX25_PAD_LSCLK__USBH2_DATA6,
 	MX25_PAD_OE_ACD__USBH2_DATA7,
+	/* i2c */
+	MX25_PAD_I2C1_CLK__SCL,
+	MX25_PAD_I2C1_DAT__SDA,
 };
 
 static int imx25_console_init(void)

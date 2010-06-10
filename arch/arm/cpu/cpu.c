@@ -75,12 +75,19 @@ void arch_shutdown(void)
 	int i;
 
 #ifdef CONFIG_MMU
+	/* nearly the same as below, but this could also disable
+	 * second level cache.
+	 */
 	mmu_disable();
+#else
+	asm volatile (
+		"bl __mmu_cache_flush;"
+		"bl __mmu_cache_off;"
+		:
+		:
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
+	);
 #endif
-
-	/* flush I/D-cache */
-	i = 0;
-	asm ("mcr p15, 0, %0, c7, c7, 0": :"r" (i));
 }
 
 /**

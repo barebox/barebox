@@ -345,11 +345,20 @@ static LIST_HEAD(connection_list);
 
 static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler)
 {
+	struct eth_device *edev = eth_get_current();
 	struct net_connection *con;
 	int ret;
 
-	if (!is_valid_ether_addr(net_ether))
+	if (!edev)
 		return ERR_PTR(-ENETDOWN);
+
+	if (!is_valid_ether_addr(net_ether)) {
+		char str[sizeof("xx:xx:xx:xx:xx:xx")];
+		random_ether_addr(net_ether);
+		ethaddr_to_string(net_ether, str);
+		printf("warning: No MAC address set. Using random address %s\n", str);
+		dev_set_param(&edev->dev, "ethaddr", str);
+	}
 
 	/* If we don't have an ip only broadcast is allowed */
 	if (!net_ip && dest != 0xffffffff)

@@ -332,15 +332,21 @@ BAREBOX_CMD_END
 #ifdef CONFIG_CMD_BOOTU
 static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 {
-	void (*theKernel)(int zero, int arch, void *params);
+	void (*theKernel)(int zero, int arch, void *params) = NULL;
 	const char *commandline = getenv("bootargs");
+	int fd;
 
 	if (argc != 2) {
 		barebox_cmd_usage(cmdtp);
 		return 1;
 	}
 
-	theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
+	fd = open(argv[1], O_RDONLY);
+	if (fd > 0)
+		theKernel = (void *)memmap(fd, PROT_READ);
+
+	if (!theKernel)
+		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
 	setup_start_tag();
 	setup_memory_tags();

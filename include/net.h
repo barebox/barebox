@@ -16,6 +16,7 @@
 #include <linux/types.h>
 #include <param.h>
 #include <malloc.h>
+#include <stdlib.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
 

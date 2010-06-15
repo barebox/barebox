@@ -32,6 +32,7 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <progress.h>
 #include <linux/err.h>
 
 #define SUNRPC_PORT     111
@@ -123,7 +124,6 @@ struct rpc_t {
 	} u;
 };
 
-#define HASHES_PER_LINE 65	/* Number of "loading" hashes per line	*/
 #define NFS_TIMEOUT 60
 
 static unsigned long rpc_id = 0;
@@ -540,10 +540,10 @@ static int nfs_read_reply(unsigned char *pkt, unsigned len)
 
 	data = (uint32_t *)(pkt + sizeof(struct rpc_reply));
 
-	if (nfs_offset && !((nfs_offset) % (NFS_READ_SIZE / 2 * 10 * HASHES_PER_LINE)))
-		puts ("\n\t ");
-	if (!(nfs_offset % ((NFS_READ_SIZE / 2) * 10)))
-		putchar ('#');
+	if (!nfs_offset) {
+		uint32_t filesize = ntohl(net_read_uint32(data + 6));
+		init_progression_bar(filesize);
+	}
 
 	rlen = ntohl(net_read_uint32(data + 18));
 
@@ -629,7 +629,7 @@ static void nfs_handler(char *packet, unsigned len)
 			nfs_state = STATE_READLINK_REQ;
 		else
 			goto err_umount;
-
+		show_progress(nfs_offset);
 		break;
 	}
 
@@ -659,7 +659,7 @@ static void nfs_start(char *p)
 	nfs_filename = basename (nfs_path);
 	nfs_path     = dirname (nfs_path);
 
-	printf("\nFilename '%s/%s'.\nLoading: ", nfs_path, nfs_filename);
+	printf("\nFilename '%s/%s'.\n", nfs_path, nfs_filename);
 
 	nfs_timer_start = get_time_ns();
 

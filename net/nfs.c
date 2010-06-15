@@ -124,7 +124,7 @@ struct rpc_t {
 	} u;
 };
 
-#define NFS_TIMEOUT 60
+#define NFS_TIMEOUT 1
 
 static unsigned long rpc_id = 0;
 static int nfs_offset = -1;
@@ -399,6 +399,8 @@ static void nfs_send(void)
 		nfs_readlink_req();
 		break;
 	}
+
+	nfs_timer_start = get_time_ns();
 }
 
 static int rpc_check_reply(unsigned char *pkt, int isnfs)
@@ -661,8 +663,6 @@ static void nfs_start(char *p)
 
 	printf("\nFilename '%s/%s'.\n", nfs_path, nfs_filename);
 
-	nfs_timer_start = get_time_ns();
-
 	nfs_state = STATE_PRCLOOKUP_PROG_MOUNT_REQ;
 
 	nfs_send();
@@ -706,8 +706,10 @@ static int do_nfs(struct command *cmdtp, int argc, char *argv[])
 			break;
 		}
 		net_poll();
-		if (is_timeout(nfs_timer_start, NFS_TIMEOUT * SECOND))
-			break;
+		if (is_timeout(nfs_timer_start, NFS_TIMEOUT * SECOND)) {
+			show_progress(-1);
+			nfs_send();
+		}
 	}
 
 	net_unregister(nfs_con);

@@ -387,16 +387,21 @@ BAREBOX_CMD_END
 /**
  * @page tftp_command tftp
  *
- * Usage is: tftp \<filename\> [\<localfilename\>]
+ * Usage:
+ *	tftp \<remotefilename\> [\<localfilename\>]
  *
- * Load a file via network using BootP/TFTP protocol. The loaded file you
- * can find after download in you current ramdisk. Refer \b ls command.
+ * or
  *
- * \<localfile> can be the local filename only, or also a device name. In the
- * case of a device name, the will gets stored there. This works also for
- * partitions of flash memory. Refer \b erase, \b unprotect for flash
- * preparation.
+ *	tftp -p \<localfilename\> [\<remotefilename\>]
  *
- * Note: This command is available only, if enabled in the menuconfig.
+ * Load a file from a tftp server or upload a file to a tftp server if
+ * the -p option is given. The second file argument can be skipped in
+ * which case the first filename is used (without the directory part).
+ *
+ * \<localfile> can be the local filename or a device file under /dev.
+ * This also works for flash memory. Refer to \b erase, \b unprotect for
+ * flash preparation.
+ *
+ * Note: This command is available only if enabled in menuconfig.
  */
 

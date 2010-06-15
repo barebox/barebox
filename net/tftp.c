@@ -14,6 +14,9 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <progress.h>
+#include <getopt.h>
+#include <fs.h>
+#include <linux/stat.h>
 #include <linux/err.h>
 
 #define TFTP_PORT	69		/* Well known TFTP port #		*/
@@ -38,41 +41,89 @@ static uint64_t		tftp_timer_start;
 static int		tftp_err;
 
 #define STATE_RRQ	1
-#define STATE_DATA	2
-#define STATE_OACK	3
-#define STATE_DONE	4
+#define STATE_WRQ	2
+#define STATE_RDATA	3
+#define STATE_WDATA	4
+#define STATE_OACK	5
+#define STATE_LAST	6
+#define STATE_DONE	7
 
 #define TFTP_BLOCK_SIZE		512		    /* default TFTP block size	*/
-#define TFTP_SEQUENCE_SIZE	((unsigned long)(1<<16))    /* sequence number is 16 bit */
 
 static char *tftp_filename;
 static struct net_connection *tftp_con;
-static int net_store_fd;
+static int tftp_fd;
 static int tftp_size;
+
+#ifdef CONFIG_NET_TFTP_PUSH
+static int tftp_push;
+
+static inline void do_tftp_push(int push)
+{
+	tftp_push = push;
+}
+
+#else
+
+#define tftp_push	0
+
+static inline void do_tftp_push(int push)
+{
+}
+#endif
 
 static int tftp_send(void)
 {
-	unsigned char *pkt;
 	unsigned char *xp;
 	int len = 0;
 	uint16_t *s;
-	unsigned char *packet = net_udp_get_payload(tftp_con);
+	unsigned char *pkt = net_udp_get_payload(tftp_con);
 	int ret;
-
-	pkt = packet;
+	static int last_len;
 
 	switch (tftp_state) {
 	case STATE_RRQ:
+	case STATE_WRQ:
 		xp = pkt;
 		s = (uint16_t *)pkt;
-		*s++ = htons(TFTP_RRQ);
+		if (tftp_state == STATE_RRQ)
+			*s++ = htons(TFTP_RRQ);
+		else
+			*s++ = htons(TFTP_WRQ);
 		pkt = (unsigned char *)s;
 		pkt += sprintf((unsigned char *)pkt, "%s%coctet%ctimeout%c%d",
 				tftp_filename, 0, 0, 0, TIMEOUT) + 1;
 		len = pkt - xp;
 		break;
 
-	case STATE_DATA:
+	case STATE_WDATA:
+		if (!tftp_push)
+			break;
+
+		if (tftp_last_block == tftp_block) {
+			len = last_len;
+			break;
+		}
+
+		tftp_last_block = tftp_block;
+		s = (uint16_t *)pkt;
+		*s++ = htons(TFTP_DATA);
+		*s++ = htons(tftp_block);
+		len = read(tftp_fd, s, 512);
+		if (len < 0) {
+			perror("read");
+			tftp_err = -errno;
+			tftp_state = STATE_DONE;
+			return tftp_err;
+		}
+		tftp_size += len;
+		if (len < 512)
+			tftp_state = STATE_LAST;
+		len += 4;
+		last_len = len;
+		break;
+
+	case STATE_RDATA:
 	case STATE_OACK:
 		xp = pkt;
 		s = (uint16_t *)pkt;
@@ -103,24 +154,52 @@ static void tftp_handler(char *packet, unsigned len)
 		return;
 
 	len -= 2;
-	/* warning: don't use increment (++) in ntohs() macros!! */
+
 	s = (uint16_t *)pkt;
 	proto = *s++;
 	pkt = (unsigned char *)s;
+
 	switch (ntohs(proto)) {
 	case TFTP_RRQ:
 	case TFTP_WRQ:
-	case TFTP_ACK:
-		break;
 	default:
+		break;
+	case TFTP_ACK:
+		if (!tftp_push)
+			break;
+
+		tftp_block = ntohs(*(uint16_t *)pkt);
+		if (tftp_block != tftp_last_block) {
+			debug("ack %d != %d\n", tftp_block, tftp_last_block);
+			break;
+		}
+		tftp_block++;
+		if (tftp_state == STATE_LAST) {
+			tftp_state = STATE_DONE;
+			break;
+		}
+		tftp_con->udp->uh_dport = udp->uh_sport;
+		tftp_state = STATE_WDATA;
+		tftp_send();
 		break;
 
 	case TFTP_OACK:
 		debug("Got OACK: %s %s\n", pkt, pkt + strlen(pkt) + 1);
-		tftp_state = STATE_OACK;
 		tftp_server_port = ntohs(udp->uh_sport);
 		tftp_con->udp->uh_dport = udp->uh_sport;
-		tftp_send(); /* Send ACK */
+
+		if (tftp_push) {
+			/* send first block */
+			tftp_state = STATE_WDATA;
+			tftp_block = 1;
+		} else {
+			/* send ACK */
+			tftp_state = STATE_OACK;
+			tftp_block = 0;
+		}
+
+		tftp_send();
+
 		break;
 	case TFTP_DATA:
 		if (len < 2)
@@ -133,7 +212,7 @@ static void tftp_handler(char *packet, unsigned len)
 
 		if (tftp_state == STATE_RRQ || tftp_state == STATE_OACK) {
 			/* first block received */
-			tftp_state = STATE_DATA;
+			tftp_state = STATE_RDATA;
 			tftp_con->udp->uh_dport = udp->uh_sport;
 			tftp_server_port = ntohs(udp->uh_sport);
 			tftp_last_block = 0;
@@ -156,7 +235,7 @@ static void tftp_handler(char *packet, unsigned len)
 		if (!(tftp_block % 10))
 			tftp_size++;
 
-		ret = write(net_store_fd, pkt + 2, len);
+		ret = write(tftp_fd, pkt + 2, len);
 		if (ret < 0) {
 			perror("write");
 			tftp_err = -errno;
@@ -190,24 +269,47 @@ static void tftp_handler(char *packet, unsigned len)
 
 static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 {
-	char *localfile;
-	char *remotefile;
+	char *localfile, *remotefile, *file1, *file2;
 	char ip1[16];
+	int opt;
+	struct stat s;
+	unsigned long flags;
 
+	do_tftp_push(0);
+	tftp_last_block = 0;
 	tftp_size = 0;
 
-	if (argc < 2)
+	while((opt = getopt(argc, argv, "p")) > 0) {
+		switch(opt) {
+		case 'p':
+			do_tftp_push(1);
+			break;
+		}
+	}
+
+	if (argc <= optind)
 		return COMMAND_ERROR_USAGE;
 
-	remotefile = argv[1];
+	file1 = argv[optind++];
 
-	if (argc == 2)
-		localfile = basename(remotefile);
+	if (argc == optind)
+		file2 = basename(file1);
 	else
-		localfile = argv[2];
+		file2 = argv[optind];
 
-	net_store_fd = open(localfile, O_WRONLY | O_CREAT);
-	if (net_store_fd < 0) {
+	if (tftp_push) {
+		localfile = file1;
+		remotefile = file2;
+		stat(localfile, &s);
+		flags = O_RDONLY;
+	} else {
+		localfile = file2;
+		remotefile = file1;
+		flags = O_WRONLY | O_CREAT;
+	}
+
+	tftp_fd = open(localfile, flags);
+	if (tftp_fd < 0) {
 		perror("open");
 		return 1;
 	}
@@ -220,15 +322,16 @@ static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 
 	tftp_filename = remotefile;
 
-	printf("TFTP from server %s; Filename: '%s'\n",
+	printf("TFTP %s server %s ('%s' -> '%s')\n",
+			tftp_push ? "to" : "from",
 			ip_to_string(net_get_serverip(), ip1),
-			tftp_filename);
+			file1, file2);
 
-	init_progression_bar(0);
+	init_progression_bar(tftp_push ? s.st_size : 0);
 
 	tftp_timer_start = get_time_ns();
-	tftp_state = STATE_RRQ;
-	tftp_block = 0;
+	tftp_state = tftp_push ? STATE_WRQ : STATE_RRQ;
+	tftp_block = 1;
 
 	tftp_err = tftp_send();
 	if (tftp_err)
@@ -248,11 +351,12 @@ static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 out_unreg:
 	net_unregister(tftp_con);
 out_close:
-	close(net_store_fd);
+	close(tftp_fd);
 
 	if (tftp_err) {
 		printf("\ntftp failed: %s\n", strerror(-tftp_err));
-		unlink(localfile);
+		if (!tftp_push)
+			unlink(localfile);
 	}
 
 	printf("\n");
@@ -261,12 +365,22 @@ out_close:
 }
 
 static const __maybe_unused char cmd_tftp_help[] =
-"Usage: tftp <file> [localfile]\n"
-"Load a file via network using BootP/TFTP protocol.\n";
+"Usage: tftp <remotefile> [localfile]\n"
+"Load a file from a TFTP server.\n"
+#ifdef CONFIG_NET_TFTP_PUSH
+"or\n"
+"       tftp -p <localfile> [remotefile]\n"
+"Upload a file to a TFTP server\n"
+#endif
+;
 
 BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
-	.usage		= "Load file using tftp protocol",
+	.usage		=
+#ifdef CONFIG_NET_TFTP_PUSH
+			"(up-)"
+#endif
+			"Load file using tftp protocol",
 	BAREBOX_CMD_HELP(cmd_tftp_help)
 BAREBOX_CMD_END
 

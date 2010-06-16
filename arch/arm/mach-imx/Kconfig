@@ -16,6 +16,7 @@ config ARCH_TEXT_BASE
 	default 0x87f00000 if MACH_PCM037
 	default 0x87f00000 if MACH_PCM043
 	default 0x08f80000 if MACH_SCB9328
+	default 0xa7e00000 if MACH_NESO
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -30,6 +31,7 @@ config BOARDINFO
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
 	default "Synertronixx scb9328" if MACH_SCB9328
+	default "Garz+Fricke Neso" if MACH_NESO
 
 config ARCH_HAS_FEC_IMX
 	bool
@@ -193,6 +195,14 @@ config MACH_PCM038
 	select HAVE_MMU
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
+	  with a Freescale i.MX27 Processor
+
+config MACH_NESO
+	bool "Garz+Fricke Neso"
+	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_MMU
+	help
+	  Say Y here if you are using the Garz+Fricke Neso board equipped
 	  with a Freescale i.MX27 Processor
 
 endchoice

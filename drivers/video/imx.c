@@ -152,6 +152,7 @@ struct imxfb_info {
 	struct fb_info		info;
 	struct device_d		*dev;
 
+	void			(*enable)(int enable);
 
 	struct fb_info		overlay;
 };
@@ -262,11 +263,16 @@ static void imxfb_enable_controller(struct fb_info *info)
 	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 29),
 		IMX_CCM_BASE + CCM_CGCR1);
 #endif
+	if (fbi->enable)
+		fbi->enable(1);
 }
 
 static void imxfb_disable_controller(struct fb_info *info)
 {
 	struct imxfb_info *fbi = info->priv;
+
+	if (fbi->enable)
+		fbi->enable(0);
 
 	writel(0, fbi->regs + LCDC_RMCR);
 #ifdef CONFIG_ARCH_IMX21
@@ -546,6 +552,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->pwmr = pdata->pwmr;
 	fbi->lscr1 = pdata->lscr1;
 	fbi->dmacr = pdata->dmacr;
+	fbi->enable = pdata->enable;
 	fbi->dev = dev;
 	info->priv = fbi;
 	info->mode = &pdata->mode->mode;

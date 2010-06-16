@@ -579,8 +579,6 @@ static int imxfb_probe(struct device_d *dev)
 #ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
 	imxfb_register_overlay(fbi, pdata->framebuffer_ovl);
 #endif
-	imxfb_enable_controller(info);
-
 	return 0;
 }
 

@@ -81,21 +81,24 @@ void __naked __bare_init reset(void)
  */
 void __naked __bare_init board_init_lowlevel_return(void)
 {
-	uint32_t r;
+	uint32_t r, addr;
+
+	/*
+	 * Get runtime address of this function. Do not
+	 * put any code above this.
+	 */
+	__asm__ __volatile__("1: adr %0, 1b":"=r"(addr));
 
 	/* Setup the stack */
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
-	/* Get runtime address of this function */
-	__asm__ __volatile__("adr %0, 0":"=r"(r));
-
 	/* Get start of binary image */
-	r -= (uint32_t)&board_init_lowlevel_return - TEXT_BASE;
+	addr -= (uint32_t)&board_init_lowlevel_return - TEXT_BASE;
 
 	/* relocate to link address if necessary */
-	if (r != TEXT_BASE)
-		memcpy((void *)TEXT_BASE, (void *)r,
+	if (addr != TEXT_BASE)
+		memcpy((void *)TEXT_BASE, (void *)addr,
 				(unsigned int)&__bss_start - TEXT_BASE);
 
 	/* clear bss */

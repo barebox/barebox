@@ -416,7 +416,7 @@ static int dm9000_eth_rx (struct eth_device *edev)
 
 		/* Pass to upper layer */
 		debug("passing packet to upper layer\n");
-		NetReceive(NetRxPackets[0], RxLen);
+		net_receive(NetRxPackets[0], RxLen);
 		return RxLen;
 	}
 	return 0;

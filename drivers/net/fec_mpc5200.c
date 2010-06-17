@@ -645,7 +645,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 			 */
 			memcpy(buff, frame->head, 14);
 			memcpy(buff + 14, frame->data, frame_length);
-			NetReceive(buff, frame_length);
+			net_receive(buff, frame_length);
 			len = frame_length;
 		}
 		/*

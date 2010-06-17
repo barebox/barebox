@@ -14,6 +14,9 @@ fi
 
 if [ -f /env/logo.bmp ]; then
 	bmp /env/logo.bmp
+elif [ -f /env/logo.bmp.lzo ]; then
+	unlzo /env/logo.bmp.lzo /logo.bmp
+	bmp /logo.bmp
 fi
 
 if [ -z $eth0.ethaddr ]; then

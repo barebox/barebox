@@ -80,8 +80,6 @@ struct fb_info {
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */
-	struct param_d param_enable;
-	char enable_string[1];
 
 	void *screen_base;
 

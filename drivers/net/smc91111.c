@@ -1156,7 +1156,7 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 
 	if (!is_error) {
 		/* Pass the packet up to the protocol layers. */
-		NetReceive(NetRxPackets[0], packet_length);
+		net_receive(NetRxPackets[0], packet_length);
 		return packet_length;
 	}
 

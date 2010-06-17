@@ -63,8 +63,6 @@ struct imx_dcd_entry __dcd_entry_0x400 dcd_entry[] = {
 	{ .ptr_type = 4, .addr = 0x53f80008, .val = 0x20034000, },
 };
 
-#define APP_DEST	0x80000000
-
 struct imx_flash_header __flash_header_0x400 eukrea_cpuimx25_header = {
 	.app_code_jump_vector	= TEXT_BASE + 0x2000,
 	.app_code_barker	= APP_CODE_BARKER,

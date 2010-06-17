@@ -111,7 +111,7 @@ static int netx_eth_rx (struct eth_device *edev)
 	/* get data */
 	memcpy((void*)NetRxPackets[0], (void *)(SRAM_BASE(seg) + frameno * 1560), len);
 	/* pass to barebox */
-	NetReceive(NetRxPackets[0], len);
+	net_receive(NetRxPackets[0], len);
 
 	PFIFO_REG(PFIFO_BASE(EMPTY_PTR_FIFO(xcno))) =
 		FIFO_PTR_SEGMENT(seg) |

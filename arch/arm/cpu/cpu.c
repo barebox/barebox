@@ -72,8 +72,6 @@ int icache_status(void)
  */
 void arch_shutdown(void)
 {
-	int i;
-
 #ifdef CONFIG_MMU
 	/* nearly the same as below, but this could also disable
 	 * second level cache.

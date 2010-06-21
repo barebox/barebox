@@ -415,13 +415,13 @@ static int asix_rx_fixup(struct usbnet *dev, void *buf, int len)
 
 	while (len > 0) {
 		if ((short)(header & 0x0000ffff) != ~((short)((header & 0xffff0000) >> 16)))
-			dev_err(&dev->dev, "asix_rx_fixup() Bad Header Length");
-	
+			dev_err(&dev->edev.dev, "asix_rx_fixup() Bad Header Length");
+
 		/* get the packet length */
 		size = (unsigned short) (header & 0x0000ffff);
 
 		if (size > 1514) {
-			dev_err(&dev->dev, "asix_rx_fixup() Bad RX Length %d", size);
+			dev_err(&dev->edev.dev, "asix_rx_fixup() Bad RX Length %d", size);
 			return 0;
 		}
 
@@ -440,7 +440,7 @@ static int asix_rx_fixup(struct usbnet *dev, void *buf, int len)
 	}
 
 	if (len < 0) {
-		dev_err(&dev->dev,"asix_rx_fixup() Bad SKB Length %d", len);
+		dev_err(&dev->edev.dev,"asix_rx_fixup() Bad SKB Length %d", len);
 		return -1;
 	}
 	return 0;
@@ -503,13 +503,13 @@ static int ax88172_bind(struct usbnet *dev)
 	unsigned long gpio_bits = dev->driver_info->data;
 	struct asix_data *data = (struct asix_data *)&dev->data;
 
-	dev_dbg(&dev->dev, "%s\n", __func__);
+	dev_dbg(&dev->edev.dev, "%s\n", __func__);
 
 	data->eeprom_len = AX88172_EEPROM_LEN;
 
 	ret = usbnet_get_endpoints(dev);
 	if (ret) {
-		dev_err(&dev->dev, "can not get EPs\n");
+		dev_err(&dev->edev.dev, "can not get EPs\n");
 		return ret;
 	}
 

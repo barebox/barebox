@@ -56,6 +56,9 @@ void __naked __bare_init reset(void)
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 
+#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
+	arch_init_lowlevel();
+#endif
 	__asm__ __volatile__ (
 		"bl __mmu_cache_flush;"
 		:

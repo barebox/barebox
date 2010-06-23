@@ -38,5 +38,6 @@ int	dram_init (void);
 
 void board_init_lowlevel(void);
 void board_init_lowlevel_return(void);
+void arch_init_lowlevel(void);
 
 #endif	/* _BAREBOX_ARM_H_ */

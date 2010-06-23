@@ -31,6 +31,7 @@
 #include <xfuncs.h>
 #include <clock.h>
 #include <errno.h>
+#include <usb/ehci.h>
 #include <asm/mmu.h>
 
 #include "usb_ehci.h"
@@ -43,6 +44,7 @@ struct ehci_priv {
 	struct QH *qh_list;
 	void *qhp;
 	int portreset;
+	unsigned long flags;
 };
 
 #define to_ehci(ptr) container_of(ptr, struct ehci_priv, host)
@@ -112,13 +114,8 @@ static struct descriptor {
 		255		/* bInterval */
 	},
 };
-#define CONFIG_EHCI_IS_TDI // FIXME
 
-#if defined(CONFIG_EHCI_IS_TDI)
-#define ehci_is_TDI()	(1)
-#else
-#define ehci_is_TDI()	(0)
-#endif
+#define ehci_is_TDI()	(ehci->flags & EHCI_HAS_TT)
 
 #ifdef CONFIG_MMU
 /*
@@ -861,9 +858,18 @@ static int ehci_probe(struct device_d *dev)
 	struct usb_host *host;
 	struct ehci_priv *ehci;
 	uint32_t reg;
+	struct ehci_platform_data *pdata = dev->platform_data;
 
 	ehci = xmalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
+
+	if (pdata)
+		ehci->flags = pdata->flags;
+	else
+		/* default to EHCI_HAS_TT to not change behaviour of boards
+		 * with platform_data
+		 */
+		ehci->flags = EHCI_HAS_TT;
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;

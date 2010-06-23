@@ -92,7 +92,7 @@ next:
 arch_start:
 	.word	arch_init_lowlevel
 barebox_start:
-	.word	_start
+	.word	exception_vectors
 SRAM_INTVECT:
 	.word	OMAP_SRAM_INTVECT
 

@@ -770,11 +770,32 @@ unknown:
 	return -1;
 }
 
+/* force HC to halt state from unknown (EHCI spec section 2.3) */
+static int ehci_halt(struct ehci_priv *ehci)
+{
+	u32	temp = ehci_readl(&ehci->hcor->or_usbsts);
+
+	/* disable any irqs left enabled by previous code */
+	ehci_writel(&ehci->hcor->or_usbintr, 0);
+
+	if (temp & STS_HALT)
+		return 0;
+
+	temp = ehci_readl(&ehci->hcor->or_usbcmd);
+	temp &= ~CMD_RUN;
+	ehci_writel(&ehci->hcor->or_usbcmd, temp);
+
+	return handshake(&ehci->hcor->or_usbsts,
+			  STS_HALT, STS_HALT, 16 * 125);
+}
+
 static int ehci_init(struct usb_host *host)
 {
 	struct ehci_priv *ehci = to_ehci(host);
 	uint32_t reg;
 	uint32_t cmd;
+
+	ehci_halt(ehci);
 
 	/* EHCI spec section 4.1 */
 	if (ehci_reset(ehci) != 0)

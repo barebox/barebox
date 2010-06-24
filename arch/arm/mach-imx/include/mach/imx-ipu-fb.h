@@ -28,6 +28,8 @@ struct imx_ipu_fb_platform_data {
 	const struct fb_videomode	*mode;
 	unsigned char		bpp;
 	void __iomem		*framebuffer;
+	/** hook to enable backlight and stuff */
+	void			(*enable)(int enable);
 };
 
 #endif /* __MACH_IMX_IPU_FB_H__ */

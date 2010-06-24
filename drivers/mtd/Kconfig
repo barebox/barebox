@@ -4,5 +4,6 @@ menuconfig MTD
 if MTD
 
 source "drivers/mtd/nand/Kconfig"
+source "drivers/mtd/ubi/Kconfig"
 
 endif

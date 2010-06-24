@@ -1,0 +1,6 @@
+config UBI
+	bool "UBI support               "
+	select PARTITION_NEED_MTD
+	help
+	  This enables support for UBI (unsorted block images)
+

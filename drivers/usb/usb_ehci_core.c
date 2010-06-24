@@ -213,18 +213,20 @@ static inline void ehci_invalidate_dcache(struct QH *qh)
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {
 	uint32_t result;
+	uint64_t start;
 
-	do {
+	start = get_time_ns();
+
+	while (1) {
 		result = ehci_readl(ptr);
 		if (result == ~(uint32_t)0)
 			return -1;
 		result &= mask;
 		if (result == done)
 			return 0;
-		udelay(1);
-		usec--;
-	} while (usec > 0);
-	return -1;
+		if (is_timeout(start, usec * USECOND))
+			return -ETIMEDOUT;
+	}
 }
 
 static int ehci_reset(struct ehci_priv *ehci)

@@ -1,4 +1,5 @@
 obj-y			+= ctype.o
+obj-y			+= rbtree.o
 obj-y			+= display_options.o
 obj-y			+= ldiv.o
 obj-y			+= string.o

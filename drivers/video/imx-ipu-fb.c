@@ -899,8 +899,6 @@ static int imxfb_probe(struct device_d *dev)
 		return ret;
 	}
 
-	ipu_fb_enable(info);
-
 	return 0;
 }
 

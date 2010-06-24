@@ -15,6 +15,7 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>
+#include <asm-generic/div64.h>
 
 #define MTD_CHAR_MAJOR 90
 #define MTD_BLOCK_MAJOR 31
@@ -211,7 +212,16 @@ struct mtd_info {
 	char *size_str;
 };
 
+static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
+{
+	do_div(sz, mtd->erasesize);
+	return sz;
+}
 
+static inline uint32_t mtd_mod_by_eb(uint64_t sz, struct mtd_info *mtd)
+{
+	return do_div(sz, mtd->erasesize);
+}
 	/* Kernel-side ioctl definitions */
 
 extern int add_mtd_device(struct mtd_info *mtd);

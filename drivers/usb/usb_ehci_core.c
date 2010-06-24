@@ -801,11 +801,6 @@ static int ehci_init(struct usb_host *host)
 	if (ehci_reset(ehci) != 0)
 		return -1;
 
-#if defined(CONFIG_EHCI_HCD_INIT_AFTER_RESET)
-	if (ehci_hcd_init() != 0)
-		return -1;
-#endif
-
 	/* Set head of reclaim list */
 	ehci->qhp = xzalloc(sizeof(struct QH) + 32);
 	ehci->qh_list = (struct QH *)(((unsigned long)ehci->qhp + 32) & ~31);

@@ -676,6 +676,8 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				ehci_writel(status_reg, reg);
 				break;
 			} else {
+				int ret;
+
 				reg |= EHCI_PS_PR;
 				reg &= ~EHCI_PS_PE;
 				ehci_writel(status_reg, reg);
@@ -686,6 +688,22 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 */
 				wait_ms(50);
 				ehci->portreset |= 1 << le16_to_cpu(req->index);
+				/* terminate the reset */
+				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
+				/*
+				 * A host controller must terminate the reset
+				 * and stabilize the state of the port within
+				 * 2 milliseconds
+				 */
+				ret = handshake(status_reg, EHCI_PS_PR, 0,
+						2 * 1000);
+				if (!ret)
+					ehci->portreset |=
+						1 << le16_to_cpu(req->index);
+				else
+					printf("port(%d) reset error\n",
+						le16_to_cpu(req->index) - 1);
+
 			}
 			break;
 		default:

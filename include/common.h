@@ -109,8 +109,8 @@ unsigned long long	simple_strtoull(const char *cp,char **endp,unsigned int base)
 long	simple_strtol(const char *cp,char **endp,unsigned int base);
 
 /* lib_generic/crc32.c */
-ulong crc32 (ulong, const unsigned char *, uint);
-ulong crc32_no_comp (ulong, const unsigned char *, uint);
+uint32_t crc32(uint32_t, const void*, unsigned int);
+uint32_t crc32_no_comp(uint32_t, const void*, unsigned int);
 
 /* common/console.c */
 int	ctrlc (void);

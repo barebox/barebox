@@ -132,8 +132,10 @@ static const ulong crc_table[256] = {
 #define DO8(buf)  DO4(buf); DO4(buf);
 
 /* ========================================================================= */
-ulong crc32(ulong crc, const unsigned char *buf, uint len)
+uint32_t crc32(uint32_t crc, const void *_buf, unsigned int len)
 {
+    const unsigned char *buf = _buf;
+
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
     if (crc_table_empty)
       make_crc_table();
@@ -153,13 +155,13 @@ ulong crc32(ulong crc, const unsigned char *buf, uint len)
 EXPORT_SYMBOL(crc32);
 #endif
 
-#if 0
-
 /* No ones complement version. JFFS2 (and other things ?)
  * don't use ones compliment in their CRC calculations.
  */
-uLong crc32_no_comp(uLong crc, const Bytef *buf, uint len)
+uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
 {
+   const unsigned char *buf = _buf;
+
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
     if (crc_table_empty)
       make_crc_table();
@@ -176,4 +178,3 @@ uLong crc32_no_comp(uLong crc, const Bytef *buf, uint len)
     return crc;
 }
 
-#endif

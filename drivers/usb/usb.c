@@ -453,6 +453,7 @@ static int __usb_init(void)
 {
 	struct usb_device *dev, *tmp;
 	struct usb_host *host;
+	int ret;
 
 	list_for_each_entry_safe(dev, tmp, &usb_device_list, list) {
 		list_del(&dev->list);
@@ -466,7 +467,9 @@ static int __usb_init(void)
 	dev_index = 0;
 
 	list_for_each_entry(host, &host_list, list) {
-		host->init(host);
+		ret = host->init(host);
+		if (ret)
+			continue;
 
 		dev = usb_alloc_new_device();
 		dev->host = host;

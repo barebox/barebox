@@ -1,6 +1,6 @@
 obj-y	+= net/
 obj-y	+= serial/
-obj-y	+= nand/
+obj-y	+= mtd/
 obj-y	+= nor/
 obj-y	+= usb/
 obj-$(CONFIG_ATA) += ata/

@@ -1,0 +1,8 @@
+menuconfig MTD
+        bool "Memory Technology Device (MTD) support"
+
+if MTD
+
+source "drivers/mtd/nand/Kconfig"
+
+endif

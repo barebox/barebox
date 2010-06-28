@@ -1,5 +1,5 @@
 menuconfig NAND
-	bool "NAND support                  "
+	bool "NAND support              "
 	select MTD_NAND_IDS
 	help
 	  This enables support for accessing all type of NAND flash

@@ -74,8 +74,7 @@ static int amd_flash_is_busy (flash_info_t * info, flash_sect_t sect)
 static int amd_flash_erase_one (flash_info_t * info, long sect)
 {
 	flash_unlock_seq(info);
-	flash_write_cmd (info, sect, AMD_ADDR_ERASE_START,
-				AMD_CMD_ERASE_START);
+	flash_write_cmd (info, 0, AMD_ADDR_ERASE_START, AMD_CMD_ERASE_START);
 	flash_unlock_seq(info);
 	flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
 

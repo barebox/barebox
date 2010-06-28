@@ -123,6 +123,7 @@ static int nand_ioctl(struct cdev *cdev, int request, void *buf)
 		user->size	= info->size;
 		user->erasesize	= info->erasesize;
 		user->oobsize	= info->oobsize;
+		user->mtd	= info;
 		/* The below fields are obsolete */
 		user->ecctype	= -1;
 		user->eccsize	= 0;
@@ -220,6 +221,7 @@ int add_mtd_device(struct mtd_info *mtd)
 	mtd->cdev.name = asprintf("nand%d", mtd->class_dev.id);
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
+	mtd->cdev.mtd = mtd;
 
 	sprintf(str, "%u", mtd->size);
 	dev_add_param_fixed(&mtd->class_dev, "size", str);

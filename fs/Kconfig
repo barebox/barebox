@@ -16,4 +16,7 @@ config FS_DEVFS
 	default y
 	prompt "devfs support"
 
+config PARTITION_NEED_MTD
+	bool
+
 endmenu

@@ -307,6 +307,7 @@ struct cdev {
 	size_t size;
 	unsigned int flags;
 	int open;
+	struct mtd_info *mtd;
 };
 
 int devfs_create(struct cdev *);

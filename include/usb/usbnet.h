@@ -54,8 +54,6 @@ struct usbnet {
 #		define EVENT_RX_MEMORY	2
 #		define EVENT_STS_SPLIT	3
 #		define EVENT_LINK_RESET	4
-	/* FIXME: Our eth_device should have this, not us! */
-	struct device_d dev;
 };
 
 #if 0

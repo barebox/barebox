@@ -142,6 +142,25 @@ static void setup_end_tag (void)
 	params->hdr.size = 0;
 }
 
+static void setup_tags(void)
+{
+	const char *commandline = getenv("bootargs");
+
+	setup_start_tag();
+	setup_memory_tags();
+	setup_commandline_tag(commandline);
+#if 0
+	if (initrd_start && initrd_end)
+		setup_initrd_tag (initrd_start, initrd_end);
+#endif
+	setup_revision_tag();
+	setup_end_tag();
+
+	printf("commandline: %s\n"
+	       "arch_number: %d\n", commandline, armlinux_architecture);
+
+}
+
 void armlinux_set_bootparams(void *params)
 {
 	armlinux_bootparams = params;
@@ -172,7 +191,6 @@ int do_bootm_linux(struct image_data *data)
 {
 	void (*theKernel)(int zero, int arch, void *params);
 	image_header_t *os_header = &data->os->header;
-	const char *commandline = getenv("bootargs");
 
 	if (os_header->ih_type == IH_TYPE_MULTI) {
 		printf("Multifile images not handled at the moment\n");
@@ -189,23 +207,12 @@ int do_bootm_linux(struct image_data *data)
 		return -1;
 	}
 
-	printf("commandline: %s\n"
-	       "arch_number: %d\n", commandline, armlinux_architecture);
-
 	theKernel = (void *)ntohl(os_header->ih_ep);
 
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	setup_start_tag();
-	setup_memory_tags();
-	setup_commandline_tag(commandline);
-#if 0
-	if (initrd_start && initrd_end)
-		setup_initrd_tag (initrd_start, initrd_end);
-#endif
-	setup_revision_tag();
-	setup_end_tag();
+	setup_tags();
 
 	if (relocate_image(data->os, (void *)ntohl(os_header->ih_load)))
 		return -1;
@@ -259,7 +266,6 @@ struct zimage_header {
 static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params);
-	const char *commandline = getenv("bootargs");
 	int fd, ret;
 	struct zimage_header header;
 	void *zimage;
@@ -295,15 +301,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 
 	printf("loaded zImage from %s with size %d\n", argv[1], header.end);
 
-	setup_start_tag();
-	setup_memory_tags();
-	setup_commandline_tag(commandline);
-#if 0
-	if (initrd_start && initrd_end)
-		setup_initrd_tag (initrd_start, initrd_end);
-#endif
-	setup_revision_tag();
-	setup_end_tag();
+	setup_tags();
 
 	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);
@@ -333,7 +331,6 @@ BAREBOX_CMD_END
 static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params) = NULL;
-	const char *commandline = getenv("bootargs");
 	int fd;
 
 	if (argc != 2) {
@@ -348,11 +345,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	if (!theKernel)
 		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-	setup_start_tag();
-	setup_memory_tags();
-	setup_commandline_tag(commandline);
-	setup_revision_tag();
-	setup_end_tag();
+	setup_tags();
 
 	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);

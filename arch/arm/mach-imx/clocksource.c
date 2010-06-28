@@ -35,12 +35,14 @@
 #include <notifier.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
+#include <asm/io.h>
 
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
+#define timer_base (IMX_TIM1_BASE)
 
 uint64_t imx_clocksource_read(void)
 {
-	return GPT(GPT_TCN);
+	return readl(timer_base + GPT_TCN);
 }
 
 static struct clocksource cs = {
@@ -62,8 +64,10 @@ static struct notifier_block imx_clock_notifier = {
 static int clocksource_init (void)
 {
 	int i;
+	uint32_t val;
+
 	/* setup GP Timer 1 */
-	GPT(GPT_TCTL) = TCTL_SWR;
+	writel(TCTL_SWR, timer_base + GPT_TCTL);
 
 #ifdef CONFIG_ARCH_IMX21
 	PCCR1 |= PCCR1_GPT1_EN;
@@ -74,12 +78,12 @@ static int clocksource_init (void)
 #endif
 
 	for (i = 0; i < 100; i++)
-		GPT(GPT_TCTL) = 0; /* We have no udelay by now */
+		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
 
-	GPT(GPT_TPRER) = 0;
-	GPT(GPT_TCTL) |= TCTL_FRR | (1<<TCTL_CLKSOURCE); /* Freerun Mode, PERCLK1 input */
-	GPT(GPT_TCTL) &= ~TCTL_TEN;
-	GPT(GPT_TCTL) |= TCTL_TEN; /* Enable timer */
+	writel(0, timer_base + GPT_TPRER);
+	val = readl(timer_base + GPT_TCTL);
+	val |= TCTL_FRR | (1 << TCTL_CLKSOURCE) | TCTL_TEN; /* Freerun Mode, PERCLK1 input */
+	writel(val, timer_base + GPT_TCTL);
 
 	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
 

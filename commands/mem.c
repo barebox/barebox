@@ -455,27 +455,35 @@ static int do_mem_cp(struct command *cmdtp, int argc, char *argv[])
 	}
 
 	while (count > 0) {
-		int now, r, w;
+		int now, r, w, tmp;
 
 		now = min(RW_BUF_SIZE, count);
 
-		if ((r = read(sourcefd, rw_buf, now)) < 0) {
+		r = read(sourcefd, rw_buf, now);
+		if (r < 0) {
 			perror("read");
 			goto out;
 		}
 
-		if ((w = write(destfd, rw_buf, r)) < 0) {
-			perror("write");
-			goto out;
+		if (!r)
+			break;
+
+		tmp = 0;
+		now = r;
+		while (now) {
+			w = write(destfd, rw_buf + tmp, now);
+			if (w < 0) {
+				perror("write");
+				goto out;
+			}
+	                if (!w)
+			        break;
+
+			now -= w;
+			tmp += w;
 		}
 
-		if (r < now)
-			break;
-
-		if (w < r)
-			break;
-
-		count -= now;
+		count -= r;
 	}
 
 	if (count) {

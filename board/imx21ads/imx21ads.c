@@ -35,6 +35,7 @@
 #include <asm/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
+#include <mach/iomux-mx21.h>
 
 #define MX21ADS_IO_REG    0xCC800000
 #define MX21ADS_IO_LCDON  (1 << 9)

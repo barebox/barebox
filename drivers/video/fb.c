@@ -39,6 +39,9 @@ static int fb_enable_set(struct device_d *dev, struct param_d *param,
 
 	enable = simple_strtoul(val, NULL, 0);
 
+	if (info->enabled == !!enable)
+		return 0;
+
 	if (enable) {
 		info->fbops->fb_enable(info);
 		new = "1";
@@ -48,6 +51,8 @@ static int fb_enable_set(struct device_d *dev, struct param_d *param,
 	}
 
 	dev_param_set_generic(dev, param, new);
+
+	info->enabled = !!enable;
 
 	return 0;
 }

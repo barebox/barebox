@@ -96,7 +96,9 @@ struct fb_info {
 	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
 	struct fb_bitfield green;	/* else only length is significant */
 	struct fb_bitfield blue;
-	struct fb_bitfield transp;	/* transparency			*/	
+	struct fb_bitfield transp;	/* transparency			*/
+
+	int enabled;
 };
 
 int register_framebuffer(struct fb_info *info);

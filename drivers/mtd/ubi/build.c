@@ -399,7 +399,7 @@ static int uif_init(struct ubi_device *ubi)
 #ifdef UBI_LINUX
 	ubi->cdev.owner = THIS_MODULE;
 #endif
-	err = cdev_add(&ubi->cdev, dev, 1);
+	err = ubi_cdev_add(ubi);
 	if (err) {
 		ubi_err("cannot add character device");
 		goto out_unreg;
@@ -424,7 +424,7 @@ out_volumes:
 	kill_volumes(ubi);
 out_sysfs:
 	ubi_sysfs_close(ubi);
-	cdev_del(&ubi->cdev);
+	ubi_cdev_remove(ubi);
 out_unreg:
 	unregister_chrdev_region(ubi->cdev.dev, ubi->vtbl_slots + 1);
 	ubi_err("cannot initialize UBI %s, error %d", ubi->ubi_name, err);
@@ -439,7 +439,7 @@ static void uif_close(struct ubi_device *ubi)
 {
 	kill_volumes(ubi);
 	ubi_sysfs_close(ubi);
-	cdev_del(&ubi->cdev);
+	ubi_cdev_remove(ubi);
 	unregister_chrdev_region(ubi->cdev.dev, ubi->vtbl_slots + 1);
 }
 
@@ -724,7 +724,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num, int vid_hdr_offset)
 	 */
 	for (i = 0; i < UBI_MAX_DEVICES; i++) {
 		ubi = ubi_devices[i];
-		if (ubi && mtd->index == ubi->mtd->index) {
+		if (ubi && mtd == ubi->mtd) {
 			dbg_err("mtd%d is already attached to ubi%d",
 				mtd->index, i);
 			return -EEXIST;
@@ -879,15 +879,21 @@ out_free:
  * Note, the invocations of this function has to be serialized by the
  * @ubi_devices_mutex.
  */
-int ubi_detach_mtd_dev(int ubi_num, int anyway)
+int ubi_detach_mtd_dev(struct mtd_info *mtd, int anyway)
 {
 	struct ubi_device *ubi;
-
-	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
-		return -EINVAL;
+	int ubi_num = 0, i;
 
 	spin_lock(&ubi_devices_lock);
-	ubi = ubi_devices[ubi_num];
+
+	for (i = 0; i < UBI_MAX_DEVICES; i++) {
+		ubi = ubi_devices[i];
+		if (ubi && mtd == ubi->mtd) {
+			ubi_num = i;
+			break;
+		}
+	}
+
 	if (!ubi) {
 		spin_unlock(&ubi_devices_lock);
 		return -EINVAL;
@@ -919,7 +925,6 @@ int ubi_detach_mtd_dev(int ubi_num, int anyway)
 	ubi_eba_close(ubi);
 	ubi_wl_close(ubi);
 	vfree(ubi->vtbl);
-	put_mtd_device(ubi->mtd);
 	vfree(ubi->peb_buf1);
 	vfree(ubi->peb_buf2);
 #ifdef CONFIG_MTD_UBI_DEBUG
@@ -929,141 +934,6 @@ int ubi_detach_mtd_dev(int ubi_num, int anyway)
 	kfree(ubi);
 	return 0;
 }
-
-/**
- * find_mtd_device - open an MTD device by its name or number.
- * @mtd_dev: name or number of the device
- *
- * This function tries to open and MTD device described by @mtd_dev string,
- * which is first treated as an ASCII number, and if it is not true, it is
- * treated as MTD device name. Returns MTD device description object in case of
- * success and a negative error code in case of failure.
- */
-static struct mtd_info * __init open_mtd_device(const char *mtd_dev)
-{
-	struct mtd_info *mtd;
-	int mtd_num;
-	char *endp;
-
-	mtd_num = simple_strtoul(mtd_dev, &endp, 0);
-	if (*endp != '\0' || mtd_dev == endp) {
-		/*
-		 * This does not look like an ASCII integer, probably this is
-		 * MTD device name.
-		 */
-		mtd = get_mtd_device_nm(mtd_dev);
-	} else
-		mtd = get_mtd_device(NULL, mtd_num);
-
-	return mtd;
-}
-
-int __init ubi_init(void)
-{
-	int err, i, k;
-
-	/* Ensure that EC and VID headers have correct size */
-	BUILD_BUG_ON(sizeof(struct ubi_ec_hdr) != 64);
-	BUILD_BUG_ON(sizeof(struct ubi_vid_hdr) != 64);
-
-	if (mtd_devs > UBI_MAX_DEVICES) {
-		ubi_err("too many MTD devices, maximum is %d", UBI_MAX_DEVICES);
-		return -EINVAL;
-	}
-
-	/* Create base sysfs directory and sysfs files */
-	ubi_class = class_create(THIS_MODULE, UBI_NAME_STR);
-	if (IS_ERR(ubi_class)) {
-		err = PTR_ERR(ubi_class);
-		ubi_err("cannot create UBI class");
-		goto out;
-	}
-
-	err = class_create_file(ubi_class, &ubi_version);
-	if (err) {
-		ubi_err("cannot create sysfs file");
-		goto out_class;
-	}
-
-	err = misc_register(&ubi_ctrl_cdev);
-	if (err) {
-		ubi_err("cannot register device");
-		goto out_version;
-	}
-
-#ifdef UBI_LINUX
-	ubi_wl_entry_slab = kmem_cache_create("ubi_wl_entry_slab",
-					      sizeof(struct ubi_wl_entry),
-					      0, 0, NULL);
-	if (!ubi_wl_entry_slab)
-		goto out_dev_unreg;
-#endif
-
-	/* Attach MTD devices */
-	for (i = 0; i < mtd_devs; i++) {
-		struct mtd_dev_param *p = &mtd_dev_param[i];
-		struct mtd_info *mtd;
-
-		cond_resched();
-
-		mtd = open_mtd_device(p->name);
-		if (IS_ERR(mtd)) {
-			err = PTR_ERR(mtd);
-			goto out_detach;
-		}
-
-		mutex_lock(&ubi_devices_mutex);
-		err = ubi_attach_mtd_dev(mtd, UBI_DEV_NUM_AUTO,
-					 p->vid_hdr_offs);
-		mutex_unlock(&ubi_devices_mutex);
-		if (err < 0) {
-			put_mtd_device(mtd);
-			ubi_err("cannot attach mtd%d", mtd->index);
-			goto out_detach;
-		}
-	}
-
-	return 0;
-
-out_detach:
-	for (k = 0; k < i; k++)
-		if (ubi_devices[k]) {
-			mutex_lock(&ubi_devices_mutex);
-			ubi_detach_mtd_dev(ubi_devices[k]->ubi_num, 1);
-			mutex_unlock(&ubi_devices_mutex);
-		}
-#ifdef UBI_LINUX
-	kmem_cache_destroy(ubi_wl_entry_slab);
-out_dev_unreg:
-#endif
-	misc_deregister(&ubi_ctrl_cdev);
-out_version:
-	class_remove_file(ubi_class, &ubi_version);
-out_class:
-	class_destroy(ubi_class);
-out:
-	ubi_err("UBI error: cannot initialize UBI, error %d", err);
-	return err;
-}
-module_init(ubi_init);
-
-void __exit ubi_exit(void)
-{
-	int i;
-
-	for (i = 0; i < UBI_MAX_DEVICES; i++)
-		if (ubi_devices[i]) {
-			mutex_lock(&ubi_devices_mutex);
-			ubi_detach_mtd_dev(ubi_devices[i]->ubi_num, 1);
-			mutex_unlock(&ubi_devices_mutex);
-		}
-	kmem_cache_destroy(ubi_wl_entry_slab);
-	misc_deregister(&ubi_ctrl_cdev);
-	class_remove_file(ubi_class, &ubi_version);
-	class_destroy(ubi_class);
-	mtd_devs = 0;
-}
-module_exit(ubi_exit);
 
 /**
  * bytes_str_to_int - convert a string representing number of bytes to an

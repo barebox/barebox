@@ -173,6 +173,23 @@ int ubi_start_update(struct ubi_device *ubi, struct ubi_volume *vol,
 	return 0;
 }
 
+int ubi_finish_update(struct ubi_device *ubi, struct ubi_volume *vol)
+{
+	int err;
+
+	/* The update is finished, clear the update marker */
+	err = clear_update_marker(ubi, vol, vol->upd_bytes);
+	if (err)
+		return err;
+	err = ubi_wl_flush(ubi);
+	if (err == 0) {
+		vol->updating = 0;
+		vfree(vol->upd_buf);
+	}
+
+	return err;
+}
+
 /**
  * ubi_start_leb_change - start atomic LEB change.
  * @ubi: UBI device description object
@@ -320,13 +337,12 @@ int ubi_more_update_data(struct ubi_device *ubi, struct ubi_volume *vol,
 		if (err)
 			return -EFAULT;
 
-		if (offs + len == vol->usable_leb_size ||
-		    vol->upd_received + len == vol->upd_bytes) {
+		if (offs + len == vol->usable_leb_size) {
 			int flush_len = offs + len;
 
 			/*
-			 * OK, we gathered either the whole eraseblock or this
-			 * is the last chunk, it's time to flush the buffer.
+			 * OK, we gathered the whole eraseblock, it's time to flush
+			 * the buffer.
 			 */
 			ubi_assert(flush_len <= vol->usable_leb_size);
 			err = write_leb(ubi, vol, lnum, vol->upd_buf, flush_len,
@@ -370,18 +386,6 @@ int ubi_more_update_data(struct ubi_device *ubi, struct ubi_volume *vol,
 	}
 
 	ubi_assert(vol->upd_received <= vol->upd_bytes);
-	if (vol->upd_received == vol->upd_bytes) {
-		/* The update is finished, clear the update marker */
-		err = clear_update_marker(ubi, vol, vol->upd_bytes);
-		if (err)
-			return err;
-		err = ubi_wl_flush(ubi);
-		if (err == 0) {
-			vol->updating = 0;
-			err = to_write;
-			vfree(vol->upd_buf);
-		}
-	}
 
 	return err;
 }

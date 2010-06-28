@@ -323,7 +323,7 @@ int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req)
 	vol->cdev.owner = THIS_MODULE;
 #endif
 	dev = MKDEV(MAJOR(ubi->cdev.dev), vol_id + 1);
-	err = cdev_add(&vol->cdev, dev, 1);
+	err = ubi_volume_cdev_add(ubi, vol);
 	if (err) {
 		ubi_err("cannot add character device");
 		goto out_mapping;
@@ -390,7 +390,7 @@ out_gluebi:
 		dbg_err("cannot destroy gluebi for volume %d:%d",
 			ubi->ubi_num, vol_id);
 out_cdev:
-	cdev_del(&vol->cdev);
+	ubi_volume_cdev_remove(vol);
 out_mapping:
 	kfree(vol->eba_tbl);
 out_acc:
@@ -457,7 +457,7 @@ int ubi_remove_volume(struct ubi_volume_desc *desc)
 
 	kfree(vol->eba_tbl);
 	vol->eba_tbl = NULL;
-	cdev_del(&vol->cdev);
+	ubi_volume_cdev_remove(vol);
 	volume_sysfs_close(vol);
 
 	spin_lock(&ubi->volumes_lock);
@@ -634,7 +634,7 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 	vol->cdev.owner = THIS_MODULE;
 #endif
 	dev = MKDEV(MAJOR(ubi->cdev.dev), vol->vol_id + 1);
-	err = cdev_add(&vol->cdev, dev, 1);
+	err = ubi_volume_cdev_add(ubi, vol);
 	if (err) {
 		ubi_err("cannot add character device for volume %d, error %d",
 			vol_id, err);
@@ -656,7 +656,7 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 
 	err = volume_sysfs_init(ubi, vol);
 	if (err) {
-		cdev_del(&vol->cdev);
+		ubi_volume_cdev_remove(vol);
 		err = ubi_destroy_gluebi(vol);
 		volume_sysfs_close(vol);
 		return err;
@@ -668,7 +668,7 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 out_gluebi:
 	err = ubi_destroy_gluebi(vol);
 out_cdev:
-	cdev_del(&vol->cdev);
+	ubi_volume_cdev_remove(vol);
 	return err;
 }
 
@@ -688,7 +688,7 @@ void ubi_free_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 
 	ubi->volumes[vol->vol_id] = NULL;
 	err = ubi_destroy_gluebi(vol);
-	cdev_del(&vol->cdev);
+	ubi_volume_cdev_remove(vol);
 	volume_sysfs_close(vol);
 }
 

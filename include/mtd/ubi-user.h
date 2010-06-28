@@ -265,4 +265,36 @@ struct ubi_leb_change_req {
 	uint8_t padding[7];
 } __attribute__ ((packed));
 
+/**
+ * ubi_attach_mtd_dev - attach an MTD device.
+ * @mtd_dev: MTD device description object
+ * @ubi_num: number to assign to the new UBI device
+ * @vid_hdr_offset: VID header offset
+ *
+ * This function attaches MTD device @mtd_dev to UBI and assign @ubi_num number
+ * to the newly created UBI device, unless @ubi_num is %UBI_DEV_NUM_AUTO, in
+ * which case this function finds a vacant device nubert and assings it
+ * automatically. Returns the new UBI device number in case of success and a
+ * negative error code in case of failure.
+ *
+ * This of course is originally not exported but is now part of the UBI
+ * interface to barebox.
+ */
+int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num, int vid_hdr_offset);
+
+/**
+ * ubi_detach_mtd_dev - detach an MTD device.
+ * @ubi_num: UBI device number to detach from
+ * @anyway: detach MTD even if device reference count is not zero
+ *
+ * This function destroys an UBI device number @ubi_num and detaches the
+ * underlying MTD device. Returns zero in case of success and %-EBUSY if the
+ * UBI device is busy and cannot be destroyed, and %-EINVAL if it does not
+ * exist.
+ *
+ * This of course is originally not exported but is now part of the UBI
+ * interface to barebox.
+ */
+int ubi_detach_mtd_dev(struct mtd_info *mtd, int anyway);
+
 #endif /* __UBI_USER_H__ */

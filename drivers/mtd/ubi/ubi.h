@@ -448,6 +448,7 @@ void ubi_free_volume(struct ubi_device *ubi, struct ubi_volume *vol);
 /* upd.c */
 int ubi_start_update(struct ubi_device *ubi, struct ubi_volume *vol,
 		     long long bytes);
+int ubi_finish_update(struct ubi_device *ubi, struct ubi_volume *vol);
 int ubi_more_update_data(struct ubi_device *ubi, struct ubi_volume *vol,
 			 const void __user *buf, int count);
 int ubi_start_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
@@ -516,11 +517,17 @@ int ubi_io_write_vid_hdr(struct ubi_device *ubi, int pnum,
 
 /* build.c */
 int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num, int vid_hdr_offset);
-int ubi_detach_mtd_dev(int ubi_num, int anyway);
+int ubi_detach_mtd_dev(struct mtd_info *mtd, int anyway);
 struct ubi_device *ubi_get_device(int ubi_num);
 void ubi_put_device(struct ubi_device *ubi);
 struct ubi_device *ubi_get_by_major(int major);
 int ubi_major2num(int major);
+
+/* cdev.c */
+int ubi_cdev_add(struct ubi_device *ubi);
+void ubi_cdev_remove(struct ubi_device *ubi);
+int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol);
+void ubi_volume_cdev_remove(struct ubi_volume *vol);
 
 /*
  * ubi_rb_for_each_entry - walk an RB-tree.

@@ -495,7 +495,7 @@ static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
         unsigned long start, end;
         int i, ret = 0;
 
-	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	debug("%s: erase 0x%08x (size %d)\n", __func__, offset, count);
 
         start = find_sector(finfo, cdev->dev->map_base + offset);
         end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);

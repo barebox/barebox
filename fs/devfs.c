@@ -193,6 +193,8 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 			user->eccsize	= 0;
 			return 0;
 		}
+		if (!cdev->ops->ioctl)
+			return -EINVAL;
 		return cdev->ops->ioctl(cdev, request, buf);
 	default:
 		return -EINVAL;
@@ -202,17 +204,14 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 {
 	struct cdev *cdev = f->inode;
-	int ret = -EINVAL;
-
-	if (!cdev->ops->ioctl)
-		goto out;
 
 	if (cdev->flags & DEVFS_IS_PARTITION)
-		ret = partition_ioctl(cdev, request, buf);
-	else
-		ret = cdev->ops->ioctl(cdev, request, buf);
-out:
-	return ret;
+		return partition_ioctl(cdev, request, buf);
+
+	if (!cdev->ops->ioctl)
+		return -EINVAL;
+
+	return cdev->ops->ioctl(cdev, request, buf);
 }
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)

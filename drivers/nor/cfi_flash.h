@@ -26,6 +26,7 @@
 
 #include <driver.h>
 #include <asm/io.h>
+#include <linux/mtd/mtd.h>
 
 typedef unsigned long flash_sect_t;
 struct cfi_cmd_set;
@@ -60,6 +61,12 @@ struct flash_info {
 	ushort	cfi_offset;		/* offset for cfi query 		*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct cdev cdev;
+#ifdef CONFIG_PARTITION_NEED_MTD
+	struct mtd_info mtd;
+#endif
+	int numeraseregions;
+	struct mtd_erase_region_info *eraseregions;
+	void *base;
 };
 
 struct cfi_cmd_set {

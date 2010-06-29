@@ -7,7 +7,7 @@
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct
  *
 */
-static void intel_read_jedec_ids (flash_info_t * info)
+static void intel_read_jedec_ids (struct flash_info *info)
 {
 	info->manufacturer_id = 0;
 	info->device_id       = 0;
@@ -27,12 +27,12 @@ static void intel_read_jedec_ids (flash_info_t * info)
  * flash_is_busy - check to see if the flash is busy
  * This routine checks the status of the chip and returns true if the chip is busy
  */
-static int intel_flash_is_busy (flash_info_t * info, flash_sect_t sect)
+static int intel_flash_is_busy (struct flash_info *info, flash_sect_t sect)
 {
 	return !flash_isset (info, sect, 0, FLASH_STATUS_DONE);
 }
 
-static int intel_flash_erase_one (flash_info_t * info, long sect)
+static int intel_flash_erase_one (struct flash_info *info, long sect)
 {
 	flash_write_cmd (info, sect, 0, FLASH_CMD_CLEAR_STATUS);
 	flash_write_cmd (info, sect, 0, FLASH_CMD_BLOCK_ERASE);
@@ -41,14 +41,14 @@ static int intel_flash_erase_one (flash_info_t * info, long sect)
 	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
 }
 
-static void intel_flash_prepare_write(flash_info_t * info)
+static void intel_flash_prepare_write(struct flash_info *info)
 {
 	flash_write_cmd (info, 0, 0, FLASH_CMD_CLEAR_STATUS);
 	flash_write_cmd (info, 0, 0, FLASH_CMD_WRITE);
 }
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
-static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar * cp,
+static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, const uchar * cp,
 				  int len)
 {
 	flash_sect_t sector;
@@ -94,7 +94,7 @@ static int intel_flash_write_cfibuffer (flash_info_t * info, ulong dest, const u
 #define intel_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
-static int intel_flash_status_check (flash_info_t * info, flash_sect_t sector,
+static int intel_flash_status_check (struct flash_info *info, flash_sect_t sector,
 				    uint64_t tout, char *prompt)
 {
 	int retcode;

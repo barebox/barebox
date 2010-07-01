@@ -26,7 +26,7 @@ TODO
     strdup/xstrdup.
 [ ] cleanup common.h. There are far too many things in it where we better have
     a seperate header file.
-    (Use doxygen to track header file hierachy)
+    (Use doxygen to track header file hierarchy)
 [ ] Rewrite network stack. The one-loop-for-all-protocols stack is just too
     ugly and big and uses thousands of global variables. Identify common
     functions and make a loop per network protocol
@@ -74,7 +74,7 @@ TODO
     Can be copied as starting point for a new target board.
 [ ] Add generic PCI bios code and a PCI bus driver model. The driver should
     be configured by an appropriate platformconfig. Detected PCI buses and
-    devices should be represented as a hierachical tree in /dev
+    devices should be represented as a hierarchical tree in /dev
 [ ] Work out, how to mount driver on PCI devices. The mechanism should be
     transparent to the driver code.
 

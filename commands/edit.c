@@ -399,7 +399,7 @@ static int do_edit(struct command * cmdtp, int argc, char *argv[])
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	/* check if we are called as "sedit" insted of "edit" */
+	/* check if we are called as "sedit" instead of "edit" */
 	if (*argv[0] == 's')
 		smartscroll = 1;
 

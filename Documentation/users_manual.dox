@@ -11,5 +11,6 @@ work easier.
 @li @subpage command_reference
 @li @subpage partitions
 @li @subpage x86_bootloader
+@li @subpage net_netconsole
 
 */

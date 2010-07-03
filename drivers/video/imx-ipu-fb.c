@@ -36,6 +36,8 @@
 struct ipu_fb_info {
 	void __iomem		*regs;
 
+	void			(*enable)(int enable);
+
 	struct fb_info		info;
 	struct device_d		*dev;
 };
@@ -828,6 +830,8 @@ static void ipu_fb_enable(struct fb_info *info)
 	 * Linux driver calls sdc_set_brightness() here again,
 	 * once is enough for us
 	 */
+	if (fbi->enable)
+		fbi->enable(1);
 }
 
 static void ipu_fb_disable(struct fb_info *info)
@@ -836,6 +840,9 @@ static void ipu_fb_disable(struct fb_info *info)
 	u32 reg;
 
 	printf("%s\n", __func__);
+
+	if (fbi->enable)
+		fbi->enable(0);
 
 	reg = reg_read(fbi, SDC_COM_CONF);
 	reg &= ~SDC_COM_BG_EN;
@@ -868,6 +875,7 @@ static int imxfb_probe(struct device_d *dev)
 	info->yres = pdata->mode->yres;
 	info->bits_per_pixel = pdata->bpp;
 	info->fbops = &imxfb_ops;
+	fbi->enable = pdata->enable;
 
 	dev_info(dev, "i.MX Framebuffer driver\n");
 
@@ -890,8 +898,6 @@ static int imxfb_probe(struct device_d *dev)
 		dev_err(dev, "failed to register framebuffer\n");
 		return ret;
 	}
-
-	ipu_fb_enable(info);
 
 	return 0;
 }

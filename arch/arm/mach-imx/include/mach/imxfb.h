@@ -74,6 +74,8 @@ struct imx_fb_platform_data {
 	void		*framebuffer;
 	/** force a memory area to be used, else NULL for dynamic allocation */
 	void		*framebuffer_ovl;
+	/** hook to enable backlight and stuff */
+	void		(*enable)(int enable);
 };
 
 void set_imx_fb_info(struct imx_fb_platform_data *);

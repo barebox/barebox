@@ -190,7 +190,7 @@ static int at91rm9200_eth_rx (struct eth_device *edev)
 		return 0;
 
 	size = rbfp->size & RBF_SIZE;
-	NetReceive ((volatile uchar *) (rbfp->addr & RBF_ADDR), size);
+	net_receive((volatile uchar *) (rbfp->addr & RBF_ADDR), size);
 
 	rbfp->addr &= ~RBF_OWNER;
 	if (rbfp->addr & RBF_WRAP)

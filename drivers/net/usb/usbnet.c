@@ -74,7 +74,7 @@ int usbnet_get_endpoints(struct usbnet *dev)
 			in->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
 	dev->out = usb_sndbulkpipe (dev->udev,
 			out->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
-	dev_dbg(&dev->dev, "found endpoints: IN=%d OUT=%d\n",
+	dev_dbg(&dev->edev.dev, "found endpoints: IN=%d OUT=%d\n",
 			in->bEndpointAddress, out->bEndpointAddress);
 
 	return 0;
@@ -89,14 +89,14 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	struct driver_info	*info = dev->driver_info;
 	int			len, alen, ret;
 
-	dev_dbg(&dev->dev, "%s\n",__func__);
+	dev_dbg(&edev->dev, "%s\n",__func__);
 
 	/* some devices want funky USB-level framing, for
 	 * win32 driver (usually) and/or hardware quirks
 	 */
         if(info->tx_fixup) {
                 if(info->tx_fixup(dev, eth_data, data_length, tx_buffer, &len)) {
-                        dev_dbg(&dev->dev, "can't tx_fixup packet");
+			dev_dbg(&edev->dev, "can't tx_fixup packet");
                         return 0;
                 }
         } else {
@@ -137,7 +137,7 @@ static int usbnet_recv(struct eth_device *edev)
 		if (info->rx_fixup)
 			return info->rx_fixup(dev, rx_buf, alen);
 		else
-			NetReceive(rx_buf, alen);
+			net_receive(rx_buf, alen);
 	}
 
         return 0;
@@ -191,7 +191,7 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	struct driver_info *info;
 	int status;
 
-	dev_dbg(&edev->dev, "%s\n", __func__);
+	dev_dbg(&usbdev->dev, "%s\n", __func__);
 
 	undev = xzalloc(sizeof (*undev));
 
@@ -206,6 +206,7 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev->recv = usbnet_recv,
 	edev->halt = usbnet_halt,
 	edev->priv = undev;
+	edev->dev = usbdev->dev; /* will be overwritten by eth_register */
 
 	info = (struct driver_info *)prod->driver_info;
 	undev->driver_info = info;

@@ -190,7 +190,7 @@ static int macb_recv(struct eth_device *edev)
 				buffer = (void *)NetRxPackets[0];
 			}
 
-			NetReceive(buffer, length);
+			net_receive(buffer, length);
 			if (++rx_tail >= CFG_MACB_RX_RING_SIZE)
 				rx_tail = 0;
 			reclaim_rx_buffers(macb, rx_tail);

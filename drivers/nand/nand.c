@@ -210,6 +210,7 @@ static struct file_operations nand_ops_oob = {
 int add_mtd_device(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
+	char str[16];
 
 	strcpy(mtd->class_dev.name, "nand");
 	register_device(&mtd->class_dev);
@@ -220,10 +221,8 @@ int add_mtd_device(struct mtd_info *mtd)
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
 
-	mtd->param_size.flags = PARAM_FLAG_RO;
-	mtd->param_size.name = "size";
-	mtd->param_size.value = asprintf("%u", mtd->size);
-	dev_add_param(&mtd->class_dev, &mtd->param_size);
+	sprintf(str, "%u", mtd->size);
+	dev_add_param_fixed(&mtd->class_dev, "size", str);
 
 	devfs_create(&mtd->cdev);
 

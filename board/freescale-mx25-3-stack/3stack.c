@@ -36,6 +36,9 @@
 #include <nand.h>
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
+#include <linux/err.h>
+#include <i2c/i2c.h>
+#include <i2c/mc34704.h>
 
 extern unsigned long _stext;
 
@@ -183,11 +186,35 @@ static struct device_d usbh2_dev = {
 };
 #endif
 
-#define IOMUXC_BASE_ADDR        0x43FAC000
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("mc34704", 0x54),
+	},
+};
 
-static int imx25_devices_init(void)
+static struct device_d i2c_dev = {
+	.name     = "i2c-imx",
+	.map_base = IMX_I2C1_BASE,
+};
+
+static int imx25_3ds_pmic_init(void)
 {
-	ulong val;
+	struct mc34704 *pmic;
+
+	pmic = mc34704_get();
+	if (pmic == NULL)
+		return -EIO;
+
+	return mc34704_reg_write(pmic, 0x2, 0x9);
+}
+
+static int imx25_3ds_fec_init(void)
+{
+	int ret;
+
+	ret = imx25_3ds_pmic_init();
+	if (ret < 0)
+		return ret;
 
 	/*
 	 * Set up the FEC_RESET_B and FEC_ENABLE GPIO pins.
@@ -197,36 +224,27 @@ static int imx25_devices_init(void)
 	 * FEC_RESET_B: gpio2[3] is ALT 5 mode of pin A17
 	 * FEC_ENABLE_B: gpio4[8] is ALT 5 mode of pin D12
 	 */
-	writel(0x8, IOMUXC_BASE_ADDR + 0x0238); /* open drain */
-	writel(0x0, IOMUXC_BASE_ADDR + 0x028C); /* cmos, no pu/pd */
+	writel(0x8, IMX_IOMUXC_BASE + 0x0238); /* open drain */
+	writel(0x0, IMX_IOMUXC_BASE + 0x028C); /* cmos, no pu/pd */
 
-#define GPIO2_BASE_ADDR         0x53FD0000
-#define GPIO4_BASE_ADDR         0x53F9C000
-#define GPIO_GDIR               0x04
-#define GPIO_DR                 0x00
+#define FEC_ENABLE_GPIO		35
+#define FEC_RESET_B_GPIO	104
 
 	/* make the pins output */
-	val = (1 << 3) | readl(GPIO2_BASE_ADDR + GPIO_GDIR);
-	writel(val, GPIO2_BASE_ADDR + GPIO_GDIR);
-
-	val = (1 << 8) | readl(GPIO4_BASE_ADDR + GPIO_GDIR);
-	writel(val, GPIO4_BASE_ADDR + GPIO_GDIR);
-
-	/* drop PHY power */
-	val = readl(GPIO2_BASE_ADDR + GPIO_DR) & ~(1 << 3);
-	writel(val, GPIO2_BASE_ADDR + GPIO_DR);
-
-	/* assert reset */
-	val = readl(GPIO4_BASE_ADDR + GPIO_DR) & ~(1 << 8);
-	writel(val, GPIO4_BASE_ADDR + GPIO_DR);
+	gpio_direction_output(FEC_ENABLE_GPIO, 0);  /* drop PHY power */
+	gpio_direction_output(FEC_RESET_B_GPIO, 0); /* assert reset */
 	udelay(2);
 
 	/* turn on power & lift reset */
-	val = (1 << 3) | readl(GPIO2_BASE_ADDR + GPIO_DR);
-	writel(val, GPIO2_BASE_ADDR + GPIO_DR);
-	val = (1 << 8) | readl(GPIO4_BASE_ADDR + GPIO_DR);
-	writel(val, GPIO4_BASE_ADDR + GPIO_DR);
+	gpio_set_value(FEC_ENABLE_GPIO, 1);
+	gpio_set_value(FEC_RESET_B_GPIO, 1);
 
+	return 0;
+}
+late_initcall(imx25_3ds_fec_init);
+
+static int imx25_devices_init(void)
+{
 #ifdef CONFIG_USB
 	/* USB does not work yet. Don't know why. Maybe
 	 * the CPLD has to be initialized.
@@ -235,11 +253,6 @@ static int imx25_devices_init(void)
 	register_device(&usbh2_dev);
 #endif
 
-	/* FEC does only work when the CPLD is initialized.
-	 * Currently we do not do this in barebox, so it
-	 * does only work when Linux has been started after
-	 * the last powercycle.
-	 */
 	register_device(&fec_dev);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
@@ -256,6 +269,10 @@ static int imx25_devices_init(void)
 	register_device(&sdram0_dev);
 	register_device(&sram0_dev);
 
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	register_device(&i2c_dev);
+
+	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
 
@@ -303,6 +320,9 @@ static struct pad_desc imx25_pads[] = {
 	MX25_PAD_VSYNC__USBH2_DATA5,
 	MX25_PAD_LSCLK__USBH2_DATA6,
 	MX25_PAD_OE_ACD__USBH2_DATA7,
+	/* i2c */
+	MX25_PAD_I2C1_CLK__SCL,
+	MX25_PAD_I2C1_DAT__SDA,
 };
 
 static int imx25_console_init(void)
@@ -320,7 +340,7 @@ console_initcall(imx25_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024, 2048, 16384);
+	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
 }
 #endif
 

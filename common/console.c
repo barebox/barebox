@@ -57,25 +57,31 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
 	struct console_device *cdev = dev->type_data;
+	char active[4];
 	unsigned int flag = 0, i = 0;
 
+	if (!val)
+		dev_param_set_generic(dev, param, NULL);
+
 	if (strchr(val, 'i') && cdev->f_caps & CONSOLE_STDIN) {
-		cdev->active[i++] = 'i';
+		active[i++] = 'i';
 		flag |= CONSOLE_STDIN;
 	}
 
 	if (strchr(val, 'o') && cdev->f_caps & CONSOLE_STDOUT) {
-		cdev->active[i++] = 'o';
+		active[i++] = 'o';
 		flag |= CONSOLE_STDOUT;
 	}
 
 	if (strchr(val, 'e') && cdev->f_caps & CONSOLE_STDERR) {
-		cdev->active[i++] = 'e';
+		active[i++] = 'e';
 		flag |= CONSOLE_STDERR;
 	}
 
-	cdev->active[i] = 0;
+	active[i] = 0;
 	cdev->f_active = flag;
+
+	dev_param_set_generic(dev, param, active);
 
 	return 0;
 }
@@ -85,7 +91,11 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 {
 	struct console_device *cdev = dev->type_data;
 	int baudrate;
+	char baudstr[16];
 	unsigned char c;
+
+	if (!val)
+		dev_param_set_generic(dev, param, NULL);
 
 	baudrate = simple_strtoul(val, NULL, 10);
 
@@ -101,7 +111,8 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 	} else
 		cdev->setbrg(cdev, baudrate);
 
-	sprintf(cdev->baudrate_string, "%d", baudrate);
+	sprintf(baudstr, "%d", baudrate);
+	dev_param_set_generic(dev, param, baudstr);
 
 	return 0;
 }
@@ -129,29 +140,20 @@ int console_register(struct console_device *newcdev)
 	register_device(dev);
 
 	if (newcdev->setbrg) {
-		newcdev->baudrate_param.set = console_baudrate_set;
-		newcdev->baudrate_param.name = "baudrate";
-		sprintf(newcdev->baudrate_string, "%d",
-			CONFIG_BAUDRATE);
-		console_baudrate_set(dev, &newcdev->baudrate_param,
-			newcdev->baudrate_string);
-		newcdev->baudrate_param.value = newcdev->baudrate_string;
-		dev_add_param(dev, &newcdev->baudrate_param);
+		dev_add_param(dev, "baudrate", console_baudrate_set, NULL, 0);
+		dev_set_param(dev, "baudrate", "115200");
 	}
 
-	newcdev->active_param.set = console_std_set;
-	newcdev->active_param.name  = "active";
-	newcdev->active_param.value = newcdev->active;
-	dev_add_param(dev, &newcdev->active_param);
+	dev_add_param(dev, "active", console_std_set, NULL, 0);
 
 	initialized = CONSOLE_INIT_FULL;
 #ifdef CONFIG_CONSOLE_ACTIVATE_ALL
-	console_std_set(dev, &newcdev->active_param, "ioe");
+	dev_set_param(dev, "active", "ioe");
 #endif
 #ifdef CONFIG_CONSOLE_ACTIVATE_FIRST
 	if (list_empty(&console_list)) {
 		first = 1;
-		console_std_set(dev, &newcdev->active_param, "ioe");
+		dev_set_param(dev, "active", "ioe");
 	}
 #endif
 

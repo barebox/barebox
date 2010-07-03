@@ -1,0 +1,109 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = xnand ]; then
+	rootfs_loc=nand
+	kernel_loc=nand
+elif [ x$1 = xnor ]; then
+	rootfs_loc=nor
+	kernel_loc=nor
+elif [ x$1 = xnet ]; then
+	rootfs_loc=net
+	kernel_loc=net
+fi
+
+if [ x$ip = xdhcp ]; then
+	bootargs="$bootargs ip=dhcp"
+elif [ x$ip = xnone ]; then
+	bootargs="ip=none"
+else
+	bootargs="$bootargs ip=$eth0.ipaddr::$eth0.gateway:$eth0.netmask:::"
+fi
+
+
+if [ x$rootfs_loc = xnet ]; then
+	bootargs="$bootargs root=/dev/nfs nfsroot=$nfsroot,v3,tcp noinitrd"
+elif [ x$rootfs_loc = xinitrd ]; then
+	bootargs="$bootargs root=/dev/ram0 rdinit=/sbin/init"
+else
+	if [ x$rootfs_loc = xnand ]; then
+		rootfs_mtdblock=$rootfs_mtdblock_nand
+	else
+		rootfs_mtdblock=$rootfs_mtdblock_nor
+	fi
+
+	if [ x$rootfs_type = xubifs ]; then
+		bootargs="$bootargs root=ubi0:root ubi.mtd=$rootfs_mtdblock"
+	else
+		bootargs="$bootargs root=/dev/mtdblock$rootfs_mtdblock"
+	fi
+
+	bootargs="$bootargs rootfstype=$rootfs_type noinitrd"
+fi
+
+if [ -n $nor_parts ]; then
+	mtdparts="${mtdparts}physmap-flash.o:${nor_parts};"
+fi
+
+if [ -n $nand_parts ]; then
+	mtdparts="${mtdparts}$nand_device:${nor_parts};"
+fi
+
+if [ -n $mtdparts ]; then
+	bootargs="${bootargs} mtdparts=\"${mtdparts}\""
+fi
+
+if [ ! -e /dev/ram0.kernelraw ]; then
+	# arm raw kernel images are usually located at sdram start + 0x8000
+	addpart dev/ram0 8M@0x8000(kernelraw)
+fi
+
+if [ ! -e /dev/ram0.kernel ]; then
+	# Here we can safely put the kernel without risking of overwriting it
+	# while extracting
+	addpart dev/ram0 8M(kernel)
+fi
+
+if [ x$kernel_loc = xnet ]; then
+	if [ x$ip = xdhcp ]; then
+		dhcp
+	fi
+	if [ $kernelimage_type = uimage ]; then
+		netload="/dev/ram0.kernel"
+	elif [ $kernelimage_type = zimage ]; then
+		netload="/dev/ram0.kernel"
+	elif [ $kernelimage_type = raw ]; then
+		netload="/dev/ram0.kernelraw"
+	elif [ $kernelimage_type = raw_lzo ]; then
+		netload="/dev/ram0.kernel"
+	else
+		echo "error: set kernelimage_type to one of 'uimage', 'zimage', 'raw' or 'raw_lzo'"
+		exit 1
+	fi
+	tftp $kernelimage $netload || exit 1
+	kdev="$netload"
+elif [ x$kernel_loc = xnor ]; then
+	kdev="/dev/nor0.kernel"
+elif [ x$kernel_loc = xnand ]; then
+	kdev="/dev/nand0.kernel.bb"
+else
+	echo "error: set kernel_loc to one of 'net', 'nand' or 'nor'"
+	exit 1
+fi
+
+echo "booting kernel of type $kernelimage_type from $kdev"
+
+if [ x$kernelimage_type = xuimage ]; then
+	bootm $kdev
+elif [ x$kernelimage_type = xzimage ]; then
+	bootz $kdev
+elif [ x$kernelimage_type = xraw ]; then
+	if [ $kernel_loc != net ]; then
+		cp $kdev /dev/ram0.kernelraw
+	fi
+	bootu /dev/ram0.kernelraw
+elif [ x$kernelimage_type = xraw_lzo ]; then
+	unlzo $kdev /dev/ram0.kernelraw
+	bootu /dev/ram0.kernelraw
+fi

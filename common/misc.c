@@ -56,6 +56,10 @@ const char *strerror(int errnum)
 	case	ENAMETOOLONG	: str = "File name too long"; break;
 	case	ENOSYS		: str = "Function not implemented"; break;
 	case	ENOTEMPTY	: str = "Directory not empty"; break;
+	case	EHOSTUNREACH	: str = "No route to host"; break;
+	case	EINTR		: str = "Interrupted system call"; break;
+	case	ENETUNREACH	: str = "Network is unreachable"; break;
+	case	ENETDOWN	: str = "Network is down"; break;
 #if 0 /* These are probably not needed */
 	case	ENOTBLK		: str = "Block device required"; break;
 	case	EFBIG		: str = "File too large"; break;
@@ -79,8 +83,6 @@ const char *strerror(int errnum)
 	case	EAFNOSUPPORT	: str = "Address family not supported by protocol"; break;
 	case	EADDRINUSE	: str = "Address already in use"; break;
 	case	EADDRNOTAVAIL	: str = "Cannot assign requested address"; break;
-	case	ENETDOWN	: str = "Network is down"; break;
-	case	ENETUNREACH	: str = "Network is unreachable"; break;
 	case	ENETRESET	: str = "Network dropped connection because of reset"; break;
 	case	ECONNABORTED	: str = "Software caused connection abort"; break;
 	case	ECONNRESET	: str = "Connection reset by peer"; break;
@@ -88,7 +90,6 @@ const char *strerror(int errnum)
 	case	ETIMEDOUT	: str = "Connection timed out"; break;
 	case	ECONNREFUSED	: str = "Connection refused"; break;
 	case	EHOSTDOWN	: str = "Host is down"; break;
-	case	EHOSTUNREACH	: str = "No route to host"; break;
 	case	EALREADY	: str = "Operation already in progress"; break;
 	case	EINPROGRESS	: str = "Operation now in progress"; break;
 	case	ESTALE		: str = "Stale NFS file handle"; break;

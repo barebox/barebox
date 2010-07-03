@@ -33,17 +33,22 @@
 
 struct param_d *get_param_by_name(struct device_d *dev, const char *name)
 {
-	struct param_d *param = dev->param;
+	struct param_d *p;
 
-	while (param) {
-		if (!strcmp(param->name, name))
-			return param;
-		param = param->next;
+	list_for_each_entry(p, &dev->parameters, list) {
+		if (!strcmp(p->name, name))
+			return p;
 	}
 
 	return NULL;
 }
 
+/**
+ * dev_get_param - get the value of a parameter
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @return	The value
+ */
 const char *dev_get_param(struct device_d *dev, const char *name)
 {
 	struct param_d *param = get_param_by_name(dev, name);
@@ -53,10 +58,7 @@ const char *dev_get_param(struct device_d *dev, const char *name)
 		return NULL;
 	}
 
-	if (param->get)
-		return param->get(dev, param);
-
-	return param->value;
+	return param->get(dev, param);
 }
 
 #ifdef CONFIG_NET
@@ -80,6 +82,12 @@ int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 }
 #endif
 
+/**
+ * dev_set_param - set a parameter of a device to a new value
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param value	The new value of the parameter
+ */
 int dev_set_param(struct device_d *dev, const char *name, const char *val)
 {
 	struct param_d *param;
@@ -101,33 +109,122 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
 		return -EACCES;
 	}
 
-	if (param->set) {
-		errno = param->set(dev, param, val);
-		return errno;
+	errno = param->set(dev, param, val);
+	return errno;
+}
+
+/**
+ * dev_param_set_generic - generic setter function for a parameter
+ * @param dev	The device
+ * @param p	the parameter
+ * @param val	The new value
+ *
+ * If used the value of a parameter is a string allocated with
+ * malloc and freed with free. If val is NULL the value is freed. This is
+ * used during deregistration of the parameter to free the alloctated
+ * memory.
+ */
+int dev_param_set_generic(struct device_d *dev, struct param_d *p,
+		const char *val)
+{
+	if (p->value)
+		free(p->value);
+	if (!val) {
+		p->value = NULL;
+		return 0;
 	}
-
-	if (param->value)
-		free(param->value);
-
-	param->value = strdup(val);
+	p->value = strdup(val);
 	return 0;
 }
 
-int dev_add_param(struct device_d *dev, struct param_d *newparam)
+static char *param_get_generic(struct device_d *dev, struct param_d *p)
 {
-	struct param_d *param = dev->param;
+	return p->value;
+}
 
-	newparam->next = NULL;
+static struct param_d *__dev_add_param(struct device_d *dev, char *name,
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		char *(*get)(struct device_d *dev, struct param_d *p),
+		unsigned long flags)
+{
+	struct param_d *param;
 
-	if (param) {
-		while (param->next)
-			param = param->next;
-			param->next = newparam;
-	} else {
-		dev->param = newparam;
-	}
+	param = xzalloc(sizeof(*param));
+
+	if (set)
+		param->set = set;
+	else
+		param->set = dev_param_set_generic;
+	if (get)
+		param->get = get;
+	else
+		param->get = param_get_generic;
+
+	param->name = strdup(name);
+	param->flags = flags;
+	list_add_tail(&param->list, &dev->parameters);
+
+	return param;
+}
+
+/**
+ * dev_add_param - add a parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param set	setter function for the parameter
+ * @param get	getter function for the parameter
+ * @param flags
+ *
+ * This function adds a new parameter to a device. The get/set functions can
+ * be zero in which case the generic functions are used. The generic functions
+ * expect the parameter value to be a string which can be freed with free(). Do
+ * not use static arrays when using the generic functions.
+ */
+int dev_add_param(struct device_d *dev, char *name,
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		char *(*get)(struct device_d *dev, struct param_d *param),
+		unsigned long flags)
+{
+	struct param_d *param;
+
+	param = __dev_add_param(dev, name, set, get, flags);
+
+	return param ? 0 : -EINVAL;
+}
+
+/**
+ * dev_add_param_fixed - add a readonly parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param value	The value of the parameter
+ */
+int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
+{
+	struct param_d *param;
+
+	param = __dev_add_param(dev, name, NULL, NULL, PARAM_FLAG_RO);
+	if (!param)
+		return -EINVAL;
+
+	param->value = strdup(value);
 
 	return 0;
+}
+
+/**
+ * dev_remove_parameters - remove all parameters from a device and free their
+ * memory
+ * @param dev	The device
+ */
+void dev_remove_parameters(struct device_d *dev)
+{
+	struct param_d *p, *n;
+
+	list_for_each_entry_safe(p, n, &dev->parameters, list) {
+		p->set(dev, p, NULL);
+		list_del(&p->list);
+		free(p);
+	}
 }
 
 /** @page dev_params Device parameters
@@ -145,50 +242,6 @@ IP address of the first ethernet device is a matter of typing
 devices currently present. If called with a device id as parameter it shows the
 parameters available for a device.
 
-@section params_programming Device parameters programming API
-
-@code
-struct param_d {
-	char* (*get)(struct device_d *, struct param_d *param);
-	int (*set)(struct device_d *, struct param_d *param, const char *val);
-	ulong flags;
-	char *name;
-	struct param_d *next;
-	char *value;
-};
-@endcode
-
-@code
-int dev_add_param(struct device_d *dev, struct param_d *newparam);
-@endcode
-
-This function adds a new parameter to a device. At least the name field in
-the new parameter struct has to be initialized. The 'get' and 'set' fields
-can be set to NULL in which case the framework handles them. It is also
-allowed to implement only one of the get/set functions. Care must be taken
-with the initial value of the parameter. If the framework handles the set
-function it will try to free the value of the parameter. If this is a
-static array bad things will happen. A parameter can have the flag
-PARAM_FLAG_RO which means that the parameter is readonly. It is perfectly ok
-then to point the value to a static array.
-
-@code
-const char *dev_get_param(struct device_d *dev, const char *name);
-@endcode
-
-This function returns a pointer to the value of the parameter specified
-with dev and name.
-If the framework handles the get/set functions the parameter value strings
-are alloceted with malloc and freed with free when another value is set for
-this parameter. Drivers implementing set/get themselves are allowed to
-return values in static arrays. This means that the pointers returned from
-dev_get_param() are only valid until the next call to dev_get_param. If this
-is not long enough strdup() or similar must be used.
-
-@code
-int dev_set_param(struct device_d *dev, const char *name, const char *val);
-@endcode
-
-Set the value of a parameter.
+See the individual functions for parameter programming.
 
 */

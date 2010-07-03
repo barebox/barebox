@@ -1299,18 +1299,3 @@ Makefile: ;
 # information in a variable se we can use it in if_changed and friends.
 .PHONY: $(PHONY)
 
-#
-# sanity checks for check default environemnt
-#
-ifdef CONFIG_DEFAULT_ENVIRONMENT
-
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_PATH),"")
-$(error default environment path empty))
-endif
-
-saved-env_path := $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
-CONFIG_DEFAULT_ENVIRONMENT_PATH := $(shell cd $(if $(filter /%,$(CONFIG_DEFAULT_ENVIRONMENT_PATH)),,$(srctree)/)$(CONFIG_DEFAULT_ENVIRONMENT_PATH) && /bin/pwd)
-$(if $(CONFIG_DEFAULT_ENVIRONMENT_PATH),, \
-	$(error default environment path $(saved-env_path) does not exist))
-
-endif # ifdef CONFIG_DEFAULT_ENVIRONMENT

@@ -33,6 +33,7 @@
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
 #include <asm/io.h>
+#include <asm/mmu.h>
 #include <partition.h>
 #include <asm/mach-types.h>
 #include <mach/imx-nand.h>
@@ -117,6 +118,7 @@ static struct device_d sdram1_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
+	.flash_bbt = 1,
 };
 
 static struct device_d nand_dev = {
@@ -226,8 +228,37 @@ static void pcm037_usb_init(void)
 }
 #endif
 
+#ifdef CONFIG_MMU
+static void pcm037_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+
+#ifdef CONFIG_CACHE_L2X0
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+#endif
+}
+#else
+static void pcm037_mmu_init(void)
+{
+}
+#endif
+
 static int imx31_devices_init(void)
 {
+	pcm037_mmu_init();
+
 	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
 	__REG(CSCR_L(0)) = 0x10000d03;
 	__REG(CSCR_A(0)) = 0x00720900;

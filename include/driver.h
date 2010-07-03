@@ -98,7 +98,7 @@ struct device_d {
 
 	/*! The parameters for this device. This is used to carry information
 	 * of board specific data from the board code to the device driver. */
-	struct param_d *param;
+	struct list_head parameters;
 
 	struct list_head cdevs;
 };

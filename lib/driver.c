@@ -107,6 +107,7 @@ int register_device(struct device_d *new_device)
 	list_add_tail(&new_device->list, &device_list);
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
+	INIT_LIST_HEAD(&new_device->parameters);
 
 	for_each_driver(drv) {
 		if (!match(drv, new_device))
@@ -313,16 +314,11 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 		if (dev->driver)
 			dev->driver->info(dev);
 
-		param = dev->param;
+		printf("%s\n", list_empty(&dev->parameters) ?
+				"no parameters available" : "Parameters:");
 
-		printf("%s\n", param ?
-				"Parameters:" : "no parameters available");
-
-		while (param) {
+		list_for_each_entry(param, &dev->parameters, list)
 			printf("%16s = %s\n", param->name, param->value);
-			param = param->next;
-		}
-
 	}
 
 	return 0;

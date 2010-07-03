@@ -38,6 +38,7 @@
 #include <gpio.h>
 #include <asm/mmu.h>
 #include <usb/isp1504.h>
+#include <mach/iomux-mx27.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -147,7 +148,7 @@ static int pca100_devices_init(void)
 		PD11_AOUT_FEC_TX_CLK,
 		PD12_AOUT_FEC_RXD0,
 		PD13_AOUT_FEC_RX_DV,
-		PD14_AOUT_FEC_CLR,
+		PD14_AOUT_FEC_RX_CLK,
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,

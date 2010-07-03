@@ -80,8 +80,6 @@ struct fb_info {
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */
-	struct param_d param_enable;
-	char enable_string[1];
 
 	void *screen_base;
 
@@ -98,7 +96,9 @@ struct fb_info {
 	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
 	struct fb_bitfield green;	/* else only length is significant */
 	struct fb_bitfield blue;
-	struct fb_bitfield transp;	/* transparency			*/	
+	struct fb_bitfield transp;	/* transparency			*/
+
+	int enabled;
 };
 
 int register_framebuffer(struct fb_info *info);

@@ -7,10 +7,6 @@ config NET_DHCP
 	bool
 	prompt "dhcp support"
 
-config NET_RARP
-	bool
-	prompt "rarp protocol support"
-
 config NET_NFS
 	bool
 	prompt "nfs support"
@@ -22,4 +18,19 @@ config NET_PING
 config NET_TFTP
 	bool
 	prompt "tftp support"
+
+config NET_TFTP_PUSH
+	bool
+	prompt "tftp push support"
+
+config NET_NETCONSOLE
+	bool
+	prompt "network console support"
+	help
+	  This option adds support for a simple udp based network console.
+
+config NET_RESOLV
+	bool
+	prompt "dns support"
+
 endif

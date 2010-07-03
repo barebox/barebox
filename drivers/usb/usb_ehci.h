@@ -187,8 +187,4 @@ struct QH {
 	uint8_t fill[16];
 };
 
-/* Low level init functions */
-int ehci_hcd_init(void);
-int ehci_hcd_stop(void);
-
 #endif /* USB_EHCI_H */

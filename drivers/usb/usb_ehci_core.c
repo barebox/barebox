@@ -31,6 +31,7 @@
 #include <xfuncs.h>
 #include <clock.h>
 #include <errno.h>
+#include <usb/ehci.h>
 #include <asm/mmu.h>
 
 #include "usb_ehci.h"
@@ -43,6 +44,7 @@ struct ehci_priv {
 	struct QH *qh_list;
 	void *qhp;
 	int portreset;
+	unsigned long flags;
 };
 
 #define to_ehci(ptr) container_of(ptr, struct ehci_priv, host)
@@ -112,13 +114,8 @@ static struct descriptor {
 		255		/* bInterval */
 	},
 };
-#define CONFIG_EHCI_IS_TDI // FIXME
 
-#if defined(CONFIG_EHCI_IS_TDI)
-#define ehci_is_TDI()	(1)
-#else
-#define ehci_is_TDI()	(0)
-#endif
+#define ehci_is_TDI()	(ehci->flags & EHCI_HAS_TT)
 
 #ifdef CONFIG_MMU
 /*
@@ -216,18 +213,20 @@ static inline void ehci_invalidate_dcache(struct QH *qh)
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {
 	uint32_t result;
+	uint64_t start;
 
-	do {
+	start = get_time_ns();
+
+	while (1) {
 		result = ehci_readl(ptr);
 		if (result == ~(uint32_t)0)
 			return -1;
 		result &= mask;
 		if (result == done)
 			return 0;
-		udelay(1);
-		usec--;
-	} while (usec > 0);
-	return -1;
+		if (is_timeout(start, usec * USECOND))
+			return -ETIMEDOUT;
+	}
 }
 
 static int ehci_reset(struct ehci_priv *ehci)
@@ -679,6 +678,8 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				ehci_writel(status_reg, reg);
 				break;
 			} else {
+				int ret;
+
 				reg |= EHCI_PS_PR;
 				reg &= ~EHCI_PS_PE;
 				ehci_writel(status_reg, reg);
@@ -689,6 +690,22 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 */
 				wait_ms(50);
 				ehci->portreset |= 1 << le16_to_cpu(req->index);
+				/* terminate the reset */
+				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
+				/*
+				 * A host controller must terminate the reset
+				 * and stabilize the state of the port within
+				 * 2 milliseconds
+				 */
+				ret = handshake(status_reg, EHCI_PS_PR, 0,
+						2 * 1000);
+				if (!ret)
+					ehci->portreset |=
+						1 << le16_to_cpu(req->index);
+				else
+					printf("port(%d) reset error\n",
+						le16_to_cpu(req->index) - 1);
+
 			}
 			break;
 		default:
@@ -753,20 +770,36 @@ unknown:
 	return -1;
 }
 
+/* force HC to halt state from unknown (EHCI spec section 2.3) */
+static int ehci_halt(struct ehci_priv *ehci)
+{
+	u32	temp = ehci_readl(&ehci->hcor->or_usbsts);
+
+	/* disable any irqs left enabled by previous code */
+	ehci_writel(&ehci->hcor->or_usbintr, 0);
+
+	if (temp & STS_HALT)
+		return 0;
+
+	temp = ehci_readl(&ehci->hcor->or_usbcmd);
+	temp &= ~CMD_RUN;
+	ehci_writel(&ehci->hcor->or_usbcmd, temp);
+
+	return handshake(&ehci->hcor->or_usbsts,
+			  STS_HALT, STS_HALT, 16 * 125);
+}
+
 static int ehci_init(struct usb_host *host)
 {
 	struct ehci_priv *ehci = to_ehci(host);
 	uint32_t reg;
 	uint32_t cmd;
 
+	ehci_halt(ehci);
+
 	/* EHCI spec section 4.1 */
 	if (ehci_reset(ehci) != 0)
 		return -1;
-
-#if defined(CONFIG_EHCI_HCD_INIT_AFTER_RESET)
-	if (ehci_hcd_init() != 0)
-		return -1;
-#endif
 
 	/* Set head of reclaim list */
 	ehci->qhp = xzalloc(sizeof(struct QH) + 32);
@@ -861,9 +894,18 @@ static int ehci_probe(struct device_d *dev)
 	struct usb_host *host;
 	struct ehci_priv *ehci;
 	uint32_t reg;
+	struct ehci_platform_data *pdata = dev->platform_data;
 
 	ehci = xmalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
+
+	if (pdata)
+		ehci->flags = pdata->flags;
+	else
+		/* default to EHCI_HAS_TT to not change behaviour of boards
+		 * with platform_data
+		 */
+		ehci->flags = EHCI_HAS_TT;
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;

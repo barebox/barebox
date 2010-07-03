@@ -152,10 +152,9 @@ struct imxfb_info {
 	struct fb_info		info;
 	struct device_d		*dev;
 
+	void			(*enable)(int enable);
 
 	struct fb_info		overlay;
-	struct param_d		param_alpha;
-	char			alpha_string[4];
 };
 
 #define IMX_NAME	"IMX"
@@ -264,11 +263,16 @@ static void imxfb_enable_controller(struct fb_info *info)
 	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 29),
 		IMX_CCM_BASE + CCM_CGCR1);
 #endif
+	if (fbi->enable)
+		fbi->enable(1);
 }
 
 static void imxfb_disable_controller(struct fb_info *info)
 {
 	struct imxfb_info *fbi = info->priv;
+
+	if (fbi->enable)
+		fbi->enable(0);
 
 	writel(0, fbi->regs + LCDC_RMCR);
 #ifdef CONFIG_ARCH_IMX21
@@ -427,7 +431,11 @@ static int imxfb_alpha_set(struct device_d *dev, struct param_d *param,
 	struct fb_info *overlay = dev->priv;
 	struct imxfb_info *fbi = overlay->priv;
 	int alpha;
+	char alphastr[16];
 	unsigned int tmp;
+
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
 
 	alpha = simple_strtoul(val, NULL, 0);
 	alpha &= 0xff;
@@ -437,7 +445,9 @@ static int imxfb_alpha_set(struct device_d *dev, struct param_d *param,
 	tmp |= LGWCR_GWAV(alpha);
 	writel(tmp , fbi->regs + LCDC_LGWCR);
 
-	sprintf(fbi->alpha_string, "%d", alpha);
+	sprintf(alphastr, "%d", alpha);
+
+	dev_param_set_generic(dev, param, alphastr);
 
 	return 0;
 }
@@ -502,11 +512,8 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 		return ret;
 	}
 
-	fbi->param_alpha.set = imxfb_alpha_set;
-	fbi->param_alpha.name = "alpha";
-	sprintf(fbi->alpha_string, "%d", 0);
-	fbi->param_alpha.value = fbi->alpha_string;
-	dev_add_param(&overlay->dev, &fbi->param_alpha);
+	dev_add_param(&overlay->dev, "alpha", imxfb_alpha_set, NULL, 0);
+	dev_set_param(&overlay->dev, "alpha", "0");
 
 	return 0;
 }
@@ -545,6 +552,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->pwmr = pdata->pwmr;
 	fbi->lscr1 = pdata->lscr1;
 	fbi->dmacr = pdata->dmacr;
+	fbi->enable = pdata->enable;
 	fbi->dev = dev;
 	info->priv = fbi;
 	info->mode = &pdata->mode->mode;
@@ -571,8 +579,6 @@ static int imxfb_probe(struct device_d *dev)
 #ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
 	imxfb_register_overlay(fbi, pdata->framebuffer_ovl);
 #endif
-	imxfb_enable_controller(info);
-
 	return 0;
 }
 

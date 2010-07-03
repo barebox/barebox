@@ -335,9 +335,9 @@ static int ep93xx_eth_rcv_packet(struct eth_device *edev)
 			 * protocol stack. We track the total number of
 			 * bytes in the frame (nbytes_frame) which will be
 			 * used when we pass the data off to the protocol
-			 * layer via NetReceive().
+			 * layer via net_receive().
 			 */
-			NetReceive((uchar *)priv->rx_dq.current->word1,
+			net_receive((uchar *)priv->rx_dq.current->word1,
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));
 			pr_debug("reporting %d bytes...\n",
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));

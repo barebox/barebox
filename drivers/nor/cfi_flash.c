@@ -42,6 +42,7 @@
 #include <malloc.h>
 #include <asm/io.h>
 #include <errno.h>
+#include <progress.h>
 #include "cfi_flash.h"
 
 /*
@@ -499,11 +500,13 @@ static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
         start = find_sector(finfo, cdev->dev->map_base + offset);
         end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
 
+	init_progression_bar(end - start);
+
         for (i = start; i <= end; i++) {
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
                 if (ret)
                         goto out;
-		printf(".");
+		show_progress(i - start);
         }
 out:
         putchar('\n');

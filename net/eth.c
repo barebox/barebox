@@ -36,7 +36,13 @@ static LIST_HEAD(netdev_list);
 
 void eth_set_current(struct eth_device *eth)
 {
+	if (eth_current && eth_current->active) {
+		eth_current->halt(eth_current);
+		eth_current->active = 0;
+	}
+
 	eth_current = eth;
+	net_update_env();
 }
 
 struct eth_device * eth_get_current(void)
@@ -57,36 +63,36 @@ struct eth_device *eth_get_byname(char *ethname)
 	return NULL;
 }
 
-int eth_open(void)
-{
-	if (!eth_current)
-		return -ENODEV;
-
-	return eth_current->open(eth_current);
-}
-
-void eth_halt(void)
-{
-	if (!eth_current)
-		return;
-
-	eth_current->halt(eth_current);
-
-	eth_current->state = ETH_STATE_PASSIVE;
-}
-
 int eth_send(void *packet, int length)
 {
+	int ret;
+
 	if (!eth_current)
 		return -ENODEV;
+
+	if (!eth_current->active) {
+		ret = eth_current->open(eth_current);
+		if (ret)
+			return ret;
+		eth_current->active = 1;
+	}
 
 	return eth_current->send(eth_current, packet, length);
 }
 
 int eth_rx(void)
 {
+	int ret;
+
 	if (!eth_current)
 		return -ENODEV;
+
+	if (!eth_current->active) {
+		ret = eth_current->open(eth_current);
+		if (ret)
+			return ret;
+		eth_current->active = 1;
+	}
 
 	return eth_current->recv(eth_current);
 }
@@ -96,26 +102,37 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 	struct eth_device *edev = dev->type_data;
 	char ethaddr[sizeof("xx:xx:xx:xx:xx:xx")];
 
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
+
 	if (string_to_ethaddr(val, ethaddr) < 0)
 		return -EINVAL;
 
-	free(param->value);
-	param->value = strdup(val);
+	dev_param_set_generic(dev, param, val);
 
 	edev->set_ethaddr(edev, ethaddr);
+
+	if (edev == eth_current)
+		net_update_env();
 
 	return 0;
 }
 
 static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
+	struct eth_device *edev = dev->type_data;
 	IPaddr_t ip;
+
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
 
 	if (string_to_ip(val, &ip))
 		return -EINVAL;
 
-	free(param->value);
-	param->value = strdup(val);
+	dev_param_set_generic(dev, param, val);
+
+	if (edev == eth_current)
+		net_update_env();
 
 	return 0;
 }
@@ -135,21 +152,11 @@ int eth_register(struct eth_device *edev)
 	register_device(&edev->dev);
 
 	dev->type_data = edev;
-	edev->param_ip.name = "ipaddr";
-	edev->param_ip.set = &eth_set_ipaddr;
-	edev->param_ethaddr.name = "ethaddr";
-	edev->param_ethaddr.set = &eth_set_ethaddr;
-	edev->param_gateway.name = "gateway";
-	edev->param_gateway.set = &eth_set_ipaddr;
-	edev->param_netmask.name = "netmask";
-	edev->param_netmask.set = &eth_set_ipaddr;
-	edev->param_serverip.name = "serverip";
-	edev->param_serverip.set = &eth_set_ipaddr;
-	dev_add_param(dev, &edev->param_ip);
-	dev_add_param(dev, &edev->param_ethaddr);
-	dev_add_param(dev, &edev->param_gateway);
-	dev_add_param(dev, &edev->param_netmask);
-	dev_add_param(dev, &edev->param_serverip);
+	dev_add_param(dev, "ipaddr", eth_set_ipaddr, NULL, 0);
+	dev_add_param(dev, "ethaddr", eth_set_ethaddr, NULL, 0);
+	dev_add_param(dev, "gateway", eth_set_ipaddr, NULL, 0);
+	dev_add_param(dev, "netmask", eth_set_ipaddr, NULL, 0);
+	dev_add_param(dev, "serverip", eth_set_ipaddr, NULL, 0);
 
 	edev->init(edev);
 
@@ -157,7 +164,7 @@ int eth_register(struct eth_device *edev)
 
 	if (edev->get_ethaddr(edev, ethaddr) == 0) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
-		printf("got MAC address from EEPROM: %s\n",ethaddr_str);
+		printf("got MAC address from EEPROM: %s\n",&ethaddr_str);
 		dev_set_param(dev, "ethaddr", ethaddr_str);
 	}
 
@@ -169,20 +176,9 @@ int eth_register(struct eth_device *edev)
 
 void eth_unregister(struct eth_device *edev)
 {
-	if (edev->param_ip.value)
-		free(edev->param_ip.value);
-	if (edev->param_ethaddr.value)
-		free(edev->param_ethaddr.value);
-	if (edev->param_gateway.value)
-		free(edev->param_gateway.value);
-	if (edev->param_netmask.value)
-		free(edev->param_netmask.value);
-	if (edev->param_serverip.value)
-		free(edev->param_serverip.value);
-
-	if (eth_current == edev)
-		eth_current = NULL;
+	dev_remove_parameters(&edev->dev);
 
 	list_del(&edev->list);
 }
+
 

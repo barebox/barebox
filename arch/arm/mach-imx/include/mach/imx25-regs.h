@@ -21,7 +21,7 @@
  */
 
 #ifndef __ASM_ARCH_MX25_REGS_H
-#define __ASM_ARCH_MX35_REGS_H
+#define __ASM_ARCH_MX25_REGS_H
 
 /*
  * sanity check
@@ -46,6 +46,7 @@
 #define IMX_M3IF_BASE		0xB8003000
 #define IMX_NFC_BASE		0xBB000000
 #define IMX_FEC_BASE		0x50038000
+#define IMX_I2C1_BASE		0x43F80000
 
 /*
  * Clock Controller Module (CCM)

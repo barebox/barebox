@@ -1065,7 +1065,7 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 	else
 		host.pagesize_2k = 0;
 #endif
-#ifdef CONFIG_ARCH_IMX35
+#if defined(CONFIG_ARCH_IMX35) || defined(CONFIG_ARCH_IMX25)
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 8))
 		host.pagesize_2k = 1;
 	else

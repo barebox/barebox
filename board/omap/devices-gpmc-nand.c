@@ -37,47 +37,14 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 
-#ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND
-
 #define GPMC_CONF1_VALx8	0x00000800
 #define GPMC_CONF1_VALx16	0x00001800
 /* Set up the generic params */
-#ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND_LP_X8
-#define GPMC_NAND_ECC_LAYOUT	GPMC_NAND_ECC_LP_x8_LAYOUT
-#define GPMC_CONF1_VAL		GPMC_CONF1_VALx8
-#define GPMC_NAND_DEV_WIDTH	8
-#endif
-
-#ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND_LP_X16
-#define GPMC_NAND_ECC_LAYOUT	GPMC_NAND_ECC_LP_x16_LAYOUT
-#define GPMC_CONF1_VAL		GPMC_CONF1_VALx16
-#define GPMC_NAND_DEV_WIDTH	16
-#endif
-
-#ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND_SP_X8
-#define GPMC_NAND_ECC_LAYOUT	GPMC_NAND_ECC_SP_x8_LAYOUT
-#define GPMC_CONF1_VAL		GPMC_CONF1_VALx8
-#define GPMC_NAND_DEV_WIDTH	8
-#endif
-
-#ifdef CONFIG_MACH_OMAP_GPMC_GENERICNAND_SP_X16
-#define GPMC_NAND_ECC_LAYOUT	GPMC_NAND_ECC_SP_x16_LAYOUT
-#define GPMC_CONF1_VAL		GPMC_CONF1_VALx16
-#define GPMC_NAND_DEV_WIDTH	16
-#endif
-
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
-/**
- * The following is the organization of ECC as expected by BootROM.
- * Based on the type of device, this can vary. select the config accordingly
- */
-static struct nand_ecclayout boot_rom_ecc = GPMC_NAND_ECC_LAYOUT;
-#endif
 
 /** GPMC timing for our nand device */
 static struct gpmc_config nand_cfg = {
 	.cfg = {
-		GPMC_CONF1_VAL,	/*CONF1 */
+		0,		/*CONF1 */
 		0x00141400,	/*CONF2 */
 		0x00141400,	/*CONF3 */
 		0x0F010F01,	/*CONF4 */
@@ -97,16 +64,9 @@ static struct gpmc_config nand_cfg = {
 
 /** NAND platform specific settings settings */
 static struct gpmc_nand_platform_data nand_plat = {
-	.cs = CONFIG_MACH_OMAP_CS,
-	.device_width = GPMC_NAND_DEV_WIDTH,
+	.cs = 0,
 	.max_timeout = MSECOND,
 	.wait_mon_pin = 0,
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
-	.plat_options = NAND_HWECC_ENABLE,
-	.oob = &boot_rom_ecc,
-#else
-	.plat_options = NAND_HWECC_DISABLE,
-#endif
 	.priv = (void *)&nand_cfg,
 };
 
@@ -123,16 +83,19 @@ static struct device_d gpmc_generic_nand_nand_device = {
  *
  * @return success/fail based on device funtion
  */
-static int gpmc_generic_nand_devices_init(void)
+int gpmc_generic_nand_devices_init(int cs, int width, int hwecc)
 {
+	nand_plat.cs = cs;
+
+	if (width == 16)
+		nand_cfg.cfg[0] = GPMC_CONF1_VALx16;
+	else
+		nand_cfg.cfg[0] = GPMC_CONF1_VALx8;
+
+	nand_plat.device_width = width;
+	nand_plat.plat_options = hwecc ? NAND_HWECC_ENABLE : 0;
+
 	/* Configure GPMC CS before register */
 	gpmc_cs_config(nand_plat.cs, &nand_cfg);
 	return register_device(&gpmc_generic_nand_nand_device);
 }
-
-device_initcall(gpmc_generic_nand_devices_init);
-
-#endif				/* CONFIG_MACH_OMAP_GPMC_GENERICNAND */
-
-/* All specific optimized nand configurations for GPMC NAND comes here */
-

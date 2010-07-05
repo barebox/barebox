@@ -24,5 +24,5 @@ obj-$(CONFIG_MACH_DO_LOWLEVEL_INIT) += platform.o
 obj-$(CONFIG_MACH_OMAP343xSDP) += board-sdp343x.o
 obj-$(CONFIG_MACH_BEAGLE) += board-beagle.o
 obj-$(CONFIG_MACH_OMAP3EVM) += board-omap3evm.o
-obj-$(CONFIG_MACH_OMAP_GPMC_GENERICNAND) += devices-gpmc-nand.o
+obj-y += devices-gpmc-nand.o
 

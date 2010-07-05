@@ -259,10 +259,12 @@ static int beagle_devices_init(void)
        ret = register_device(&sdram_dev);
        if (ret)
                goto failed;
+
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
+       gpmc_generic_nand_devices_init(0, 16, 1);
        armlinux_add_dram(&sdram_dev);
 failed:
        return ret;

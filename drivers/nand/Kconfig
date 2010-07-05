@@ -25,14 +25,6 @@ config NAND_OMAP_GPMC
 	 Support for NAND flash using GPMC. GPMC is a common memory
 	 interface found on Texas Instrument's OMAP platforms
 
-config NAND_OMAP_GPMC_HWECC
-	bool "The Hardware ECC support"
-	depends on NAND && NAND_OMAP_GPMC
-	default n
-	help
-	 The ECC compuatation for the data to be written/read can be either by
-	 software or omap has Hw ecc engine which calculates it.
-
 config NAND_ATMEL
 	bool
 	prompt "Atmel (AT91SAM9xxx) NAND driver"

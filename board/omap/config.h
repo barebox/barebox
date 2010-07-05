@@ -30,9 +30,4 @@
 #ifndef __MACH_OMAP_CONFIG_H
 #define __MACH_OMAP_CONFIG_H
 
-/** define CFG_MALLOC_LEN from Kconfig define */
-#define CFG_MALLOC_LEN     CONFIG_OMAP_MALLOC_LEN
-/** define CONFIG_STACKSIZE from Kconfig define */
-#define CONFIG_STACKSIZE   CONFIG_OMAP_CONFIG_STACKSIZE
-
 #endif /* __MACH_OMAP_CONFIG_H */

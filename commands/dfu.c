@@ -162,16 +162,24 @@ out:
 	return 1;
 }
 
-static const __maybe_unused char cmd_dfu_help[] =
-"Usage: dfu [OPTION]... description\n"
-"start dfu firmware update\n"
-" -m <str> Manufacturer string (barebox)\n"
-" -p <str> product string (" CONFIG_BOARDINFO ")\n"
-" -V <id>  vendor id\n"
-" -P <id>  product id\n"
-"description has the form\n"
-"device1(name1)[sr],device2(name2)[sr]\n"
-"where s is for save mode and r for read back of firmware\n";
+BAREBOX_CMD_HELP_START(dfu)
+BAREBOX_CMD_HELP_USAGE("dfu [OPTIONS] <description>\n")
+BAREBOX_CMD_HELP_SHORT("Start firmware update with the Device Firmware Update (DFU) protocol.\n")
+BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
+BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string (" CONFIG_BOARDINFO ")\n")
+BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
+BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page dfu_command
+\<description> has the following form:
+device1(name1)[sr],device2(name2)[sr]
+'s' means 'safe mode' (download the complete image before flashing) and
+'r' that readback of the firmware is allowed.
+
+\todo Add example, how to use dfu from a Linux or Windows host.
+ */
 
 BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,

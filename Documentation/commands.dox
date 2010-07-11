@@ -10,6 +10,7 @@
 @li @subpage crc_command
 @li @subpage delpart_command
 @li @subpage devinfo_command
+@li @subpage dfu_command
 @li @subpage edit_command
 @li @subpage erase_command
 @li @subpage export_command

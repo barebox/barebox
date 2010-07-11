@@ -2,6 +2,7 @@
  * @page command_reference Supported Shell Commands
 
 @li @subpage addpart_command
+@li @subpage bmp_command
 @li @subpage cat_command
 @li @subpage cd_command
 @li @subpage cp_command

@@ -5,6 +5,7 @@
 @li @subpage bmp_command
 @li @subpage cat_command
 @li @subpage cd_command
+@li @subpage clear_command
 @li @subpage cp_command
 @li @subpage delpart_command
 @li @subpage devinfo_command

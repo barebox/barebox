@@ -7,6 +7,7 @@
 @li @subpage cd_command
 @li @subpage clear_command
 @li @subpage cp_command
+@li @subpage crc_command
 @li @subpage delpart_command
 @li @subpage devinfo_command
 @li @subpage edit_command

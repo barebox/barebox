@@ -143,19 +143,18 @@ static int do_crc(struct command *cmdtp, int argc, char *argv[])
 	return err;
 }
 
-static const __maybe_unused char cmd_crc_help[] =
-"Usage: crc32 [OPTION] [AREA]\n"
-"Calculate a crc32 checksum of a memory area\n"
-"Options:\n"
-"  -f <file>   Use file instead of memory\n"
+BAREBOX_CMD_HELP_START(crc)
+BAREBOX_CMD_HELP_USAGE("crc32 [OPTION] [AREA]\n")
+BAREBOX_CMD_HELP_SHORT("Calculate a crc32 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_OPT  ("-f <file>", "Use file instead of memory.\n")
 #ifdef CONFIG_CMD_CRC_CMP
-"  -F <file>   Use file to compare\n"
+BAREBOX_CMD_HELP_OPT  ("-F <file>", "Use file to compare.\n")
 #endif
-"  -v <crc>    Verfify\n";
+BAREBOX_CMD_HELP_OPT  ("-v <crc>",  "Verfify\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)
 	.cmd		= do_crc,
 	.usage		= "crc32 checksum calculation",
 	BAREBOX_CMD_HELP(cmd_crc_help)
 BAREBOX_CMD_END
-

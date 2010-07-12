@@ -85,22 +85,15 @@ out:
 	return err;
 }
 
-static const __maybe_unused char cmd_cat_help[] =
-"Usage: cat [FILES]\n"
-"Concatenate files on stdout. Currently only printable characters\n"
-"and \\n and \\t are printed, but this should be optional\n";
+BAREBOX_CMD_HELP_START(cat)
+BAREBOX_CMD_HELP_USAGE("cat [FILES]\n")
+BAREBOX_CMD_HELP_SHORT("Concatenate files on stdout.\n")
+BAREBOX_CMD_HELP_TEXT ("Currently only printable characters and \\ n and \\ t are printed,\n")
+BAREBOX_CMD_HELP_TEXT ("but this should be optional.\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cat)
 	.cmd		= do_cat,
 	.usage		= "concatenate file(s)",
 	BAREBOX_CMD_HELP(cmd_cat_help)
 BAREBOX_CMD_END
-
-/**
- * @page cat_command cat (concatenate)
- *
- * Usage is: cat \<file\> [\<file\> ...]
- *
- * Concatenate files to stdout. Currently only printable characters
- * and \\n and \\t are printed, but this should be optional
- */

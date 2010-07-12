@@ -39,20 +39,6 @@ config ARCH_OMAP3
 
 endchoice
 
-config OMAP_CONFIG_STACKSIZE
-	prompt "STACKSIZE"
-	hex
-	default 0x00020000
-	help
-	  Select the Stack Size when defaults are used
-
-config OMAP_MALLOC_LEN
-	prompt "MALLOC LENGTH"
-	hex
-	default 0x00001000
-	help
-	  Select the Malloc Length when defaults are used
-
  ### Generic Clock configurations to be enabled by Mach - invisible to enable.
  config OMAP_CLOCK_UART
  	bool

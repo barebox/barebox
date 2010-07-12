@@ -102,10 +102,57 @@ struct gpmc_nand_info {
 	uint64_t timeout;
 	unsigned inuse:1;
 	unsigned wait_pol:1;
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
 	unsigned char ecc_parity_pairs;
 	unsigned int ecc_config;
-#endif
+};
+
+/* Typical BOOTROM oob layouts-requires hwecc **/
+
+/** Large Page x8 NAND device Layout */
+static struct nand_ecclayout ecc_lp_x8 = {
+	.eccbytes = 12,
+	.eccpos = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+	.oobfree = {
+		{
+			.offset = 60,
+			.length = 2,
+		}
+	}
+};
+
+/** Large Page x16 NAND device Layout */
+static struct nand_ecclayout ecc_lp_x16 = {
+	.eccbytes = 12,
+	.eccpos = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+	.oobfree = {
+		{
+			.offset = 60,
+			.length = 2,
+		}
+	}
+};
+
+/** Small Page x8 NAND device Layout */
+static struct nand_ecclayout ecc_sp_x8 = {
+	.eccbytes = 3,
+	.eccpos = {1, 2, 3},
+	.oobfree = {
+		{
+			.offset = 14,
+			.length = 2,
+		}
+	}
+};
+
+/** Small Page x16 NAND device Layout */
+static struct nand_ecclayout ecc_sp_x16 = {
+	.eccbytes = 3,
+	.eccpos = {2, 3, 4},
+	.oobfree = {
+		{
+			.offset = 14,
+			.length = 2 }
+	}
 };
 
 /**
@@ -202,8 +249,6 @@ static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 		writeb(cmd, nand->IO_ADDR_W);
 	return;
 }
-
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
 
 /**
  * @brief This function will generate true ECC value, which can be used
@@ -345,7 +390,6 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 		break;
 	}
 }
-#endif				/* CONFIG_NAND_OMAP_GPMC_HWECC */
 
 /**
  * @brief nand device probe.
@@ -362,6 +406,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	struct mtd_info *minfo;
 	unsigned long cs_base;
 	int err;
+	struct nand_ecclayout *layout, *lsp, *llp;
 
 	gpmcnand_dbg("pdev=%x", (unsigned int)pdev);
 	pdata = (struct gpmc_nand_platform_data *)pdev->platform_data;
@@ -453,11 +498,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	/* State my controller */
 	nand->controller = &oinfo->controller;
 
-	/* if a different placement scheme is requested */
-	if (pdata->oob)
-		nand->ecc.layout = pdata->oob;
-
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
 	if (pdata->plat_options & NAND_HWECC_ENABLE) {
 		/* Program how many columns we expect+
 		 * enable the cs we want and enable the engine
@@ -474,7 +514,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		nand->ecc.steps = nand->ecc.layout->eccbytes / nand->ecc.bytes;
 		oinfo->ecc_parity_pairs = 12;
 	} else
-#endif
 		nand->ecc.mode = NAND_ECC_SOFT;
 
 	/* All information is ready.. now lets call setup, if present */
@@ -495,14 +534,46 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	writeb(NAND_CMD_RESET, oinfo->gpmc_command);
 	mdelay(1);
 
-	/* In normal mode, we scan to get just the device
-	 * presence and then to get the device geometry
-	 */
-	if (nand_scan(minfo, 1)) {
-		gpmcnand_err("device scan failed\n");
+	/* first scan to find the device and get the page size */
+	if (nand_scan_ident(minfo, 1)) {
 		err = -ENXIO;
 		goto out_release_mem;
 	}
+
+	switch (pdata->device_width) {
+	case 8:
+		lsp = &ecc_sp_x8;
+		llp = &ecc_lp_x8;
+		break;
+	case 16:
+		lsp = &ecc_sp_x16;
+		llp = &ecc_lp_x16;
+		break;
+	default:
+		err = -EINVAL;
+		goto out_release_mem;
+	}
+
+	switch (minfo->writesize) {
+	case 512:
+		layout = lsp;
+		break;
+	case 2048:
+		layout = llp;
+		break;
+	default:
+		err = -EINVAL;
+		goto out_release_mem;
+	}
+
+	/* second phase scan */
+	if (nand_scan_tail(minfo)) {
+		err = -ENXIO;
+		goto out_release_mem;
+	}
+
+	if (pdata->plat_options & NAND_HWECC_ENABLE)
+		nand->ecc.layout = layout;
 
 	/* We are all set to register with the system now! */
 	err = add_mtd_device(minfo);

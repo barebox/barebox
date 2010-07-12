@@ -17,6 +17,7 @@
 @li @subpage gpio_for_users
 @li @subpage tftp_command
 @li @subpage loadenv_command
+@li @subpage ls_command
 @li @subpage mount_command
 @li @subpage printenv_command
 @li @subpage protect_command

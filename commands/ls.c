@@ -194,10 +194,11 @@ static int do_ls(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_ls_help[] =
-"Usage: ls [OPTION]... [FILE]...\n"
-"List information about the FILEs (the current directory by default).\n"
-"  -R  list subdirectories recursively\n";
+BAREBOX_CMD_HELP_START(ls)
+BAREBOX_CMD_HELP_USAGE("ls [OPTION]... [FILE]...\n")
+BAREBOX_CMD_HELP_SHORT("List information about the FILEs (the current directory by default).\n")
+BAREBOX_CMD_HELP_OPT  ("-R",  "list subdirectories recursively\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ls)
 	.cmd		= do_ls,

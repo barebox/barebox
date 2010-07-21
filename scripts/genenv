@@ -1,17 +1,19 @@
 #!/bin/bash
 
 # Generate the default environment file from a list of directories
-# usage: genenv <basedir> <dir>...
+# usage: genenv <basedir> <objdir> <dir>...
 # where <basedir> is the base directory for relative pathes in <dir>
+# where <objdir> is the base directory for relative pathes for result
+objtree=$2
 cd $1 || exit 1
-shift
+shift 2
 
 tempdir=$(mktemp -d)
 
 for i in $*; do
 	cp -r $i/* $tempdir
 done
-scripts/bareboxenv -s $tempdir barebox_default_env
+$objtree/scripts/bareboxenv -s $tempdir $objtree/barebox_default_env
 
 rm -r $tempdir
 

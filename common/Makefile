@@ -26,6 +26,8 @@ ENV_FILES := $(shell cd $(srctree); for i in $(CONFIG_DEFAULT_ENVIRONMENT_PATH);
 
 endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 
-include/barebox_default_env.h: $(ENV_FILES)
-	$(Q)scripts/genenv $(srctree) $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
-	$(Q)cat barebox_default_env | scripts/bin2c default_environment > $@
+barebox_default_env: $(ENV_FILES)
+	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
+
+include/barebox_default_env.h: barebox_default_env
+	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@

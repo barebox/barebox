@@ -3,8 +3,10 @@ CPPFLAGS += -fno-strict-aliasing
 
 machine-y := sandbox
 
-board-y := sandbox
-lds-y   := board/sandbox/barebox.lds
+board-y := arch/sandbox/board
+BOARD	:= $(board-y)/
+lds-y   := $(BOARD)/barebox.lds
+
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -62,6 +64,6 @@ cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
 	-lrt -lpthread
 
-common-y += board/sandbox/ arch/sandbox/os/
+common-y += $(BOARD) arch/sandbox/os/
 
-CLEAN_FILES += board/sandbox/barebox.lds
+CLEAN_FILES += $(BOARD)/barebox.lds

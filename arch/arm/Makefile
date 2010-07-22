@@ -118,7 +118,7 @@ maketools:
 PHONY += maketools
 
 ifneq ($(board-y),)
-BOARD := board/$(board-y)/
+BOARD := arch/arm/boards/$(board-y)/
 else
 BOARD :=
 endif

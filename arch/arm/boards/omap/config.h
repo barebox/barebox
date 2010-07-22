@@ -2,7 +2,7 @@
  * @file
  * @brief provide a wrapper for standard malloc and stack size defines
  *
- * FileName: board/omap/config.h
+ * FileName: arch/arm/boards/omap/config.h
  *
  * Standard defines should be configurable for us to move Stack and malloc
  * areas around this defines some basics for that

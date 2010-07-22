@@ -117,9 +117,9 @@ If everything goes well, the result is a file called @p barebox:
 
 @a barebox usually needs an environment for storing the configuration data.
 You can generate an environment using the example environment contained
-in board/sandbox/env:
+in arch/sanbox/board/env:
 
-@code # ./scripts/bareboxenv -s -p 0x10000 board/sandbox/env/ env.bin @endcode
+@code # ./scripts/bareboxenv -s -p 0x10000 arch/sanbox/board/env/ env.bin @endcode
 
 To get some files to play with you can generate a cramfs image:
 

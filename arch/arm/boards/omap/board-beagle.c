@@ -27,7 +27,7 @@
 /**
  * @page ti_beagle Texas Instruments Beagle Board
  *
- * FileName: board/omap/board-beagle.c
+ * FileName: arch/arm/boards/omap/board-beagle.c
  *
  * Beagle Board from Texas Instruments as described here:
  * http://www.beagleboard.org
@@ -49,7 +49,7 @@
  * Run time initialization includes
  * @li serial @ref serial_ns16550.c driver device definition
  *
- * Originally from board/omap/board-sdp343x.c
+ * Originally from arch/arm/boards/omap/board-sdp343x.c
  */
 
 #include <common.h>

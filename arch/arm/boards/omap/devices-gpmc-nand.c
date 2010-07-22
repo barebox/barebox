@@ -2,7 +2,7 @@
  * @file
  * @brief GPMC specific NAND devices
  *
- * FileName: board/omap/devices-gpmc-nand.c
+ * FileName: arch/arm/boards/omap/devices-gpmc-nand.c
  *
  * GPMC NAND Devices such as those from Micron, Samsung are listed here
  */

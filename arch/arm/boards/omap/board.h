@@ -2,7 +2,7 @@
  * @file
  * @brief exported generic APIs which various board files implement
  *
- * FileName: board/omap/board.h
+ * FileName: arch/arm/boards/omap/board.h
  *
  * This file will not contain any board specific implementations.
  */

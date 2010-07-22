@@ -2,7 +2,7 @@
  * @file
  * @brief Wrapper to call board level initialization routine
  *
- * FileName: board/omap/platform.S
+ * FileName: arch/arm/boards/omap/platform.S
  *
  * board_init_lowlevel is defined here. This calls board_init which
  * is linked to the binary - the board_init only has a SRAM stack.

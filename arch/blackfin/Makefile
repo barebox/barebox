@@ -22,7 +22,7 @@ PHONY += maketools
 
 
 ifneq ($(board-y),)
-BOARD  := board/$(board-y)/
+BOARD  := arch/blackfin/boards/$(board-y)/
 else
 BOARD  :=
 endif

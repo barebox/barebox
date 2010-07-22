@@ -83,6 +83,6 @@ config GPMC
 	 NAND, OneNAND etc.
 
 # Get the board specific configurations
-source board/omap/Kconfig
+source arch/arm/boards/omap/Kconfig
 
 endmenu

@@ -5,24 +5,24 @@ the @a barebox source tree.
 
 @section board_add_files Files/Directories to be added
 
- - board/\<boardname\>
- - board/\<boardname\>/Makefile
- - board/\<boardname\>/\<boardname\>.c
- - board/\<boardname\>/\<boardname\>.dox
+ - arch/\<architecture\>/boards/\<boardname\>
+ - arch/\<architecture\>/boards/\<boardname\>/Makefile
+ - arch/\<architecture\>/boards/\<boardname\>/\<boardname\>.c
+ - arch/\<architecture\>/boards/\<boardname\>/\<boardname\>.dox
  - include/configs/\<boardname\>.h
  - arch/\<architecture\>/configs/\<boardname\>_defconfig
 
-@subsection board_makefile board/\<boardname\>Makefile
+@subsection board_makefile arch/\<architecture\>/boards/\<boardname\>Makefile
 
 @verbatim
 	obj-y += all files that builds the BSP (Assembler and/or C files)
 @endverbatim
 
-@subsection board_basefile board/\<boardname\>\<boardname\>.c
+@subsection board_basefile arch/\<architecture\>/boards/\<boardname\>\<boardname\>.c
 
 TBD
 
-@subsection board_doxygen board/\<boardname\>/\<boardname\>.dox
+@subsection board_doxygen arch/\<architecture\>/boards/\<boardname\>/\<boardname\>.dox
 
 This file should describe in short words your new board, what CPU
 it uses, what resources are provided and features it supports.
@@ -58,7 +58,7 @@ at the right architecture.
 
 @note Consider to use an unique page lable.
 
-@subsection board_lscript board/\<boardname\>/barebox.lds.S
+@subsection board_lscript arch/\<architecture\>/boards/\<boardname\>/barebox.lds.S
 
 If your board needs a special binary @a barebox layout, you can provide a local
 board linker script file. This will replace the generic one provided by your

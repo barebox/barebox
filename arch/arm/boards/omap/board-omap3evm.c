@@ -2,7 +2,7 @@
  * @file
  * @brief Board Initialization routines for OMAP3EVM.
  *
- * FileName: board/omap/board-omap3evm.c
+ * FileName: arch/arm/boards/omap/board-omap3evm.c
  *
  * This board is based on OMAP3530.
  * More on OMAP3530 (including documentation can be found here):
@@ -21,7 +21,7 @@
  * Run time initialization includes
  * @li serial @ref serial_ns16550.c driver device definition
  *
- * Originally from board/omap/board-beagle.c
+ * Originally from arch/arm/boards/omap/board-beagle.c
  */
 
 /*

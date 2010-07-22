@@ -26,7 +26,7 @@ all: $(KBUILD_IMAGE)
 
 
 ifneq ($(board-y),)
-BOARD  := board/$(board-y)/
+BOARD  := arch/x86/boards/$(board-y)/
 else
 BOARD  :=
 endif

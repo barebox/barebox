@@ -34,6 +34,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <asm/byteorder.h>
 #include <asm/global_data.h>
@@ -276,6 +277,10 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	}
 
 	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
 
 	ret = read(fd, &header, sizeof(header));
 	if (ret < sizeof(header)) {

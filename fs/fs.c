@@ -229,6 +229,16 @@ static void put_file(FILE *f)
 	files[f->no].in_use = 0;
 }
 
+static int check_fd(int fd)
+{
+	if (fd < 0 || fd >= MAX_FILES || !files[fd].in_use) {
+		errno = -EBADF;
+		return errno;
+	}
+
+	return 0;
+}
+
 static struct device_d *get_fs_device_by_path(char **path)
 {
 	struct device_d *dev;
@@ -457,6 +467,9 @@ int ioctl(int fd, int request, void *buf)
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
 
+	if (check_fd(fd))
+		return errno;
+
 	dev = f->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -473,6 +486,9 @@ int read(int fd, void *buf, size_t count)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
 
 	dev = f->dev;
 
@@ -493,6 +509,9 @@ ssize_t write(int fd, const void *buf, size_t count)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
 
 	dev = f->dev;
 
@@ -523,6 +542,9 @@ off_t lseek(int fildes, off_t offset, int whence)
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fildes];
 	off_t pos;
+
+	if (check_fd(fildes))
+		return -1;
 
 	errno = 0;
 
@@ -567,6 +589,9 @@ int erase(int fd, size_t count, unsigned long offset)
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
 
+	if (check_fd(fd))
+		return errno;
+
 	dev = f->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -588,6 +613,9 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
 
 	dev = f->dev;
 
@@ -627,6 +655,9 @@ void *memmap(int fd, int flags)
 	FILE *f = &files[fd];
 	void *ret = (void *)-1;
 
+	if (check_fd(fd))
+		return ret;
+
 	dev = f->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
@@ -645,6 +676,9 @@ int close(int fd)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
 
 	dev = f->dev;
 

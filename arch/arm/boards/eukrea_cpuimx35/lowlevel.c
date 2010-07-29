@@ -62,7 +62,6 @@ void __bare_init __naked board_init_lowlevel(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = IMX_CCM_BASE;
-	unsigned long iomuxc_base = IMX_IOMUXC_BASE;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
@@ -132,80 +131,32 @@ void __bare_init __naked board_init_lowlevel(void)
 	if (r > 0x80000000 && r < 0x90000000)
 		board_init_lowlevel_return();
 
-	/* Set DDR Type to SDRAM, drive strength workaround	*
-	 * 0x00000000	MDDR					*
-	 * 0x00000800	3,3V SDRAM				*/
-
-	r = 0x00000800;
-	writel(r, iomuxc_base + 0x794);
-	writel(r, iomuxc_base + 0x798);
-	writel(r, iomuxc_base + 0x79c);
-	writel(r, iomuxc_base + 0x7a0);
-	writel(r, iomuxc_base + 0x7a4);
-
-	/* MDDR init, enable mDDR*/
-	writel(0x00000304, ESDMISC); /* was 0x00000004 */
-
-	/* set timing paramters */
-	writel(0x00255417, ESDCFG0);
-	/* select Precharge-All mode */
+	/* Init Mobile DDR */
+	writel(0x00000004, ESDMISC);
+	writel(0x0000000C, ESDMISC);
+	writel(0x0009572B, ESDCFG0);
 	writel(0x92220000, ESDCTL0);
-	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS0 + 0x400);
-
-	/* select Load-Mode-Register mode */
-	writel(0xB8001000, ESDCTL0);
-	/* Load reg EMR2 */
-	writeb(0xda, 0x84000000);
-	/* Load reg EMR3 */
-	writeb(0xda, 0x86000000);
-	/* Load reg EMR1 -- enable DLL */
-	writeb(0xda, 0x82000400);
-	/* Load reg MR -- reset DLL */
-	writeb(0xda, 0x80000333);
-
-	/* select Precharge-All mode */
-	writel(0x92220000, ESDCTL0);
-	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS0 + 0x400);
-
-	/* select Manual-Refresh mode */
+	writeb(0xda, IMX_SDRAM_CS0 + 0x400);
 	writel(0xA2220000, ESDCTL0);
-	/* Manual-Refresh 2 times */
 	writel(0x87654321, IMX_SDRAM_CS0);
 	writel(0x87654321, IMX_SDRAM_CS0);
-
-	/* select Load-Mode-Register mode */
 	writel(0xB2220000, ESDCTL0);
-	/* Load reg MR -- CL3, BL8, end DLL reset */
-	writeb(0xda, 0x80000233);
-	/* Load reg EMR1 -- OCD default */
-	writeb(0xda, 0x82000780);
-	/* Load reg EMR1 -- OCD exit */
-	writeb(0xda, 0x82000400);
-
-	/* select normal-operation mode
-	 * DSIZ32-bit, BL8, COL10-bit, ROW13-bit
-	 * disable PWT & PRCT
-	 * disable Auto-Refresh */
-	writel(0x82220080, ESDCTL0);
-
-	/* enable Auto-Refresh */
-	writel(0x82228080, ESDCTL0);
-	/* enable Auto-Refresh */
-	writel(0x00002000, ESDCTL1);
+	writeb(0xda, IMX_SDRAM_CS0 + 0x33);
+	writeb(0xda, IMX_SDRAM_CS0 + 0x2000000);
+	writel(0x82224080, ESDCTL0);
+	writel(0x00000004, ESDMISC);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
+	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x1000)
 		board_init_lowlevel_return();
 
 	src = (unsigned int *)IMX_NFC_BASE;
 	trg = (unsigned int *)TEXT_BASE;
 
 	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x800 / sizeof(int); i++)
+	for (i = 0; i < 0x1000 / sizeof(int); i++)
 		*trg++ = *src++;
 
 	/* Jump to SDRAM */

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# barebox version: 2010.06.0
-# Mon Jun  7 18:25:47 2010
+# barebox version: 2010.07.0
+# Wed Jul 28 21:46:15 2010
 #
 # CONFIG_BOARD_LINKER_SCRIPT is not set
 CONFIG_GENERIC_LINKER_SCRIPT=y
@@ -110,7 +110,8 @@ CONFIG_CONSOLE_FULL=y
 CONFIG_CONSOLE_ACTIVATE_FIRST=y
 # CONFIG_OF_FLAT_TREE is not set
 # CONFIG_PARTITION is not set
-# CONFIG_DEFAULT_ENVIRONMENT is not set
+CONFIG_DEFAULT_ENVIRONMENT=y
+CONFIG_DEFAULT_ENVIRONMENT_PATH="arch/arm/boards/eukrea_cpuimx35/env"
 
 #
 # Debugging                     
@@ -170,7 +171,8 @@ CONFIG_CMD_MTEST=y
 #
 # flash                         
 #
-# CONFIG_CMD_FLASH is not set
+CONFIG_CMD_FLASH=y
+# CONFIG_CMD_UBI is not set
 
 #
 # booting                       
@@ -195,10 +197,12 @@ CONFIG_CMD_GPIO=y
 CONFIG_CMD_UNLZO=y
 CONFIG_NET=y
 CONFIG_NET_DHCP=y
-# CONFIG_NET_RARP is not set
 # CONFIG_NET_NFS is not set
 CONFIG_NET_PING=y
 CONFIG_NET_TFTP=y
+# CONFIG_NET_TFTP_PUSH is not set
+# CONFIG_NET_NETCONSOLE is not set
+# CONFIG_NET_RESOLV is not set
 
 #
 # Drivers                       
@@ -229,12 +233,14 @@ CONFIG_DRIVER_NET_FEC_IMX=y
 # flash drivers                 
 #
 # CONFIG_DRIVER_CFI is not set
+CONFIG_MTD=y
 CONFIG_NAND=y
 CONFIG_NAND_IMX=y
-# CONFIG_NAND_IMX_BOOT is not set
+CONFIG_NAND_IMX_BOOT=y
 # CONFIG_MTD_NAND_VERIFY_WRITE is not set
 # CONFIG_MTD_NAND_ECC_SMC is not set
 CONFIG_MTD_NAND_IDS=y
+# CONFIG_UBI is not set
 # CONFIG_ATA is not set
 # CONFIG_USB is not set
 # CONFIG_USB_GADGET is not set

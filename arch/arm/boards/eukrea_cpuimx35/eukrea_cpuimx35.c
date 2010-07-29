@@ -99,14 +99,20 @@ static struct fb_videomode imxfb_mode = {
 	.lower_margin	= 4,
 	.hsync_len	= 30,
 	.vsync_len	= 3,
-	.sync		= FB_SYNC_OE_ACT_HIGH,
+	.sync		= 0,
 	.vmode		= FB_VMODE_NONINTERLACED,
 	.flag		= 0,
 };
 
+static void eukrea_cpuimx35_enable_display(int enable)
+{
+	gpio_direction_output(4, enable);
+}
+
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &imxfb_mode,
 	.bpp		= 16,
+	.enable		= eukrea_cpuimx35_enable_display,
 };
 
 static struct device_d imxfb_dev = {
@@ -164,15 +170,6 @@ static int eukrea_cpuimx35_devices_init(void)
 
 device_initcall(eukrea_cpuimx35_devices_init);
 
-static int eukrea_cpuimx35_enable_display(void)
-{
-	gpio_direction_output(1, 1);
-	gpio_direction_output(0, 0);
-	return 0;
-}
-
-late_initcall(eukrea_cpuimx35_enable_display);
-
 static struct device_d eukrea_cpuimx35_serial_device = {
 	.name		= "imx_serial",
 	.map_base	= IMX_UART1_BASE,
@@ -205,12 +202,23 @@ static struct pad_desc eukrea_cpuimx35_pads[] = {
 	MX35_PAD_TXD1__UART1_TXD_MUX,
 	MX35_PAD_RTS1__UART1_RTS,
 	MX35_PAD_CTS1__UART1_CTS,
+
+	MX35_PAD_LD23__GPIO3_29,
+	MX35_PAD_CONTRAST__GPIO1_1,
+	MX35_PAD_D3_CLS__GPIO1_4,
 };
 
 static int eukrea_cpuimx35_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx35_pads,
 		ARRAY_SIZE(eukrea_cpuimx35_pads));
+
+	/* screen default on to prevent flicker */
+	gpio_direction_output(4, 1);
+	/* backlight default off */
+	gpio_direction_output(1, 0);
+	/* led default off */
+	gpio_direction_output(32 * 2 + 29, 1);
 
 	register_device(&eukrea_cpuimx35_serial_device);
 	return 0;

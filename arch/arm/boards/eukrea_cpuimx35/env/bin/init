@@ -13,10 +13,14 @@ if [ -e /dev/nand0 ]; then
 fi
 
 if [ -f /env/logo.bmp ]; then
+	fb0.enable=1
 	bmp /env/logo.bmp
+	gpio_direction_out 1 1
 elif [ -f /env/logo.bmp.lzo ]; then
 	unlzo /env/logo.bmp.lzo /logo.bmp
+	fb0.enable=1
 	bmp /logo.bmp
+	gpio_direction_out 1 1
 fi
 
 if [ -z $eth0.ethaddr ]; then

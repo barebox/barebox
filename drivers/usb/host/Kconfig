@@ -1,0 +1,2 @@
+config USB_EHCI
+	bool "EHCI driver"

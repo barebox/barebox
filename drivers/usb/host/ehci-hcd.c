@@ -34,7 +34,7 @@
 #include <usb/ehci.h>
 #include <asm/mmu.h>
 
-#include "usb_ehci.h"
+#include "ehci.h"
 
 struct ehci_priv {
 	int rootdev;

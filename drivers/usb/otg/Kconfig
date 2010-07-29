@@ -1,0 +1,6 @@
+config USB_ULPI
+	bool
+
+config USB_ISP1504
+	select USB_ULPI
+	bool "ISP1504 Tranceiver support"

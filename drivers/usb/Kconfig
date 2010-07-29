@@ -3,15 +3,9 @@ menuconfig USB
 
 if USB
 
-config USB_EHCI
-	bool "EHCI driver"
+source drivers/usb/host/Kconfig
 
-config USB_ULPI
-	bool
-
-config USB_ISP1504
-	select USB_ULPI
-	bool "ISP1504 Tranceiver support"
+source drivers/usb/otg/Kconfig
 
 endif
 

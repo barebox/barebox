@@ -36,6 +36,7 @@
 #include <nand.h>
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
+#include <mach/generic.h>
 #include <linux/err.h>
 #include <i2c/i2c.h>
 #include <i2c/mc34704.h>
@@ -275,6 +276,7 @@ static int imx25_devices_init(void)
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
+	armlinux_set_serial(imx_uid());
 
 	return 0;
 }

@@ -6,6 +6,7 @@ int imx_silicon_revision(void);
 #define IMX35_CHIP_REVISION_1_0   0x10
 #define IMX35_CHIP_REVISION_2_0   0x20
 
+u64 imx_uid(void);
 
 
 #ifdef CONFIG_ARCH_IMX1

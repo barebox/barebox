@@ -140,5 +140,8 @@
 /* important definition of some bits of WCR */
 #define WCR_WDE 0x04
 
+/* IIM fuse definitions */
+#define IIM_UID		0x820
+
 #endif /* __ASM_ARCH_MX25_REGS_H */
 

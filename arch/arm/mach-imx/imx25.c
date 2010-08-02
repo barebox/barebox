@@ -16,6 +16,8 @@
  */
 
 #include <common.h>
+#include <mach/imx-regs.h>
+#include <asm/io.h>
 
 #include "gpio.h"
 
@@ -28,3 +30,13 @@ void *imx_gpio_base[] = {
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
+u64 imx_uid(void)
+{
+	u64 uid = 0;
+	int i;
+
+	for (i = 0; i < 8; i++)
+		uid = (uid << 8) | readb(IMX_IIM_BASE + IIM_UID + i*4);
+
+	return uid;
+}

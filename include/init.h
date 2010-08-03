@@ -11,6 +11,7 @@ typedef int (*initcall_t)(void);
 #define core_initcall(fn)		__define_initcall("0",fn,0)
 #define postcore_initcall(fn)		__define_initcall("1",fn,1)
 #define console_initcall(fn)		__define_initcall("2",fn,2)
+#define postconsole_initcall(fn)	__define_initcall("3",fn,3)
 #define coredevice_initcall(fn)		__define_initcall("4",fn,4)
 #define fs_initcall(fn)			__define_initcall("5",fn,5)
 #define device_initcall(fn)		__define_initcall("6",fn,6)

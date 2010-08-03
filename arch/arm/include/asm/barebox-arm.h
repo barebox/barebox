@@ -32,7 +32,7 @@
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);
 
-/* board/.../... */
+/* arch/<arch>board(s)/.../... */
 int	board_init(void);
 int	dram_init (void);
 

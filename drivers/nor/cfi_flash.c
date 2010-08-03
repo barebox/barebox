@@ -77,7 +77,7 @@ static uint flash_offset_cfi[2]={FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT};
  * Functions
  */
 
-static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
+static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
 {
 #if defined(__LITTLE_ENDIAN)
 	unsigned short	w;
@@ -114,7 +114,7 @@ static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
 	}
 }
 
-static int flash_write_cfiword (flash_info_t * info, ulong dest,
+static int flash_write_cfiword (struct flash_info *info, ulong dest,
 				cfiword_t cword)
 {
 	cfiptr_t cptr;
@@ -159,7 +159,7 @@ void print_longlong (char *str, unsigned long long data)
 		sprintf (&str[i * 2], "%2.2x", *cp++);
 }
 
-static void flash_printqry (flash_info_t * info, flash_sect_t sect)
+static void flash_printqry (struct flash_info *info, flash_sect_t sect)
 {
 	cfiptr_t cptr;
 	int x, y;
@@ -188,7 +188,7 @@ static void flash_printqry (flash_info_t * info, flash_sect_t sect)
 /*
  * read a short word by swapping for ppc format.
  */
-static ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint offset)
+static ushort flash_read_ushort (struct flash_info *info, flash_sect_t sect, uint offset)
 {
 	uchar *addr;
 	ushort retval;
@@ -220,7 +220,7 @@ static ushort flash_read_ushort (flash_info_t * info, flash_sect_t sect, uint of
  * read a long word by picking the least significant byte of each maximum
  * port size word. Swap for ppc format.
  */
-static ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offset)
+static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint offset)
 {
 	uchar *addr;
 	ulong retval;
@@ -254,7 +254,7 @@ static ulong flash_read_long (flash_info_t * info, flash_sect_t sect, uint offse
  * http://www.jedec.org/download/search/jesd68.pdf
  *
 */
-static int flash_detect_cfi (flash_info_t * info)
+static int flash_detect_cfi (struct flash_info *info)
 {
 	int cfi_offset;
 	debug ("flash detect cfi\n");
@@ -291,7 +291,7 @@ static int flash_detect_cfi (flash_info_t * info)
 /*
  * The following code cannot be run from FLASH!
  */
-static ulong flash_get_size (flash_info_t *info, ulong base)
+static ulong flash_get_size (struct flash_info *info, ulong base)
 {
 	int i, j;
 	flash_sect_t sect_cnt;
@@ -302,6 +302,7 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 	int erase_region_size;
 	int erase_region_count;
 	int geometry_reversed = 0;
+	int cur_offset = 0;
 
 	info->ext_addr = 0;
 	info->cfi_version = 0;
@@ -401,10 +402,14 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 		       size_ratio, info->portwidth << CFI_FLASH_SHIFT_WIDTH,
 		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
 		debug ("found %d erase regions\n", num_erase_regions);
+		info->eraseregions = xzalloc(sizeof(*(info->eraseregions)) * num_erase_regions);
+		info->numeraseregions = num_erase_regions;
 		sect_cnt = 0;
 		sector = base;
 
 		for (i = 0; i < num_erase_regions; i++) {
+			struct mtd_erase_region_info *region = &info->eraseregions[i];
+
 			if (i > NUM_ERASE_REGIONS) {
 				printf ("%d erase regions found, only %d used\n",
 					num_erase_regions, NUM_ERASE_REGIONS);
@@ -424,6 +429,11 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
 			erase_region_count = (tmp & 0xffff) + 1;
 			debug ("erase_region_count = %d erase_region_size = %d\n",
 				erase_region_count, erase_region_size);
+
+			region->offset = cur_offset;
+			region->erasesize = erase_region_size;
+			region->numblocks = erase_region_count;
+			cur_offset += erase_region_size * erase_region_count;
 
 			/* increase the space malloced for the sector start addresses */
 			info->start = realloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
@@ -478,7 +488,7 @@ static ulong flash_get_size (flash_info_t *info, ulong base)
  * when the passed address is greater or equal to the sector address
  * we have a match
  */
-flash_sect_t find_sector (flash_info_t * info, ulong addr)
+flash_sect_t find_sector (struct flash_info *info, ulong addr)
 {
 	flash_sect_t sector;
 
@@ -489,28 +499,38 @@ flash_sect_t find_sector (flash_info_t * info, ulong addr)
 	return sector;
 }
 
-static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
+static int __cfi_erase(struct cdev *cdev, size_t count, unsigned long offset,
+		int verbose)
 {
-        flash_info_t *finfo = (flash_info_t *)cdev->priv;
+        struct flash_info *finfo = (struct flash_info *)cdev->priv;
         unsigned long start, end;
         int i, ret = 0;
 
-	printf("%s: erase 0x%08x (size %d)\n", __FUNCTION__, offset, count);
+	debug("%s: erase 0x%08x (size %d)\n", __func__, offset, count);
 
         start = find_sector(finfo, cdev->dev->map_base + offset);
         end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
 
-	init_progression_bar(end - start);
+	if (verbose)
+		init_progression_bar(end - start);
 
         for (i = start; i <= end; i++) {
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
                 if (ret)
                         goto out;
-		show_progress(i - start);
+
+		if (verbose)
+			show_progress(i - start);
         }
 out:
-        putchar('\n');
+	if (verbose)
+	        putchar('\n');
         return ret;
+}
+
+static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
+{
+	return __cfi_erase(cdev, count, offset, 1);
 }
 
 /*
@@ -519,7 +539,7 @@ out:
  * 1 - write timeout
  * 2 - Flash not erased
  */
-static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong cnt)
+static int write_buff (struct flash_info *info, const uchar * src, ulong addr, ulong cnt)
 {
 	ulong wp;
 	ulong cp;
@@ -614,7 +634,7 @@ static int write_buff (flash_info_t * info, const uchar * src, ulong addr, ulong
 	return flash_write_cfiword (info, wp, cword);
 }
 
-static int flash_real_protect (flash_info_t * info, long sector, int prot)
+static int flash_real_protect (struct flash_info *info, long sector, int prot)
 {
 	int retcode = 0;
 
@@ -649,7 +669,7 @@ static int flash_real_protect (flash_info_t * info, long sector, int prot)
 
 static int cfi_protect(struct cdev *cdev, size_t count, unsigned long offset, int prot)
 {
-	flash_info_t *finfo = (flash_info_t *)cdev->priv;
+	struct flash_info *finfo = (struct flash_info *)cdev->priv;
 	unsigned long start, end;
 	int i, ret = 0;
 	const char *action = (prot? "protect" : "unprotect");
@@ -672,7 +692,7 @@ out:
 
 static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, unsigned long offset, ulong flags)
 {
-        flash_info_t *finfo = (flash_info_t *)cdev->priv;
+        struct flash_info *finfo = (struct flash_info *)cdev->priv;
         int ret;
 
 	debug("cfi_write: buf=0x%08x addr=0x%08x count=0x%08x\n",buf, cdev->dev->map_base + offset, count);
@@ -683,7 +703,7 @@ static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, unsig
 
 static void cfi_info (struct device_d* dev)
 {
-        flash_info_t *info = (flash_info_t *)dev->priv;
+        struct flash_info *info = (struct flash_info *)dev->priv;
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
@@ -775,7 +795,7 @@ static void cfi_info (struct device_d* dev)
 /*
  * flash_read_user_serial - read the OneTimeProgramming cells
  */
-static void flash_read_user_serial (flash_info_t * info, void *buffer, int offset,
+static void flash_read_user_serial (struct flash_info *info, void *buffer, int offset,
 			     int len)
 {
 	uchar *src;
@@ -791,7 +811,7 @@ static void flash_read_user_serial (flash_info_t * info, void *buffer, int offse
 /*
  * flash_read_factory_serial - read the device Id from the protection area
  */
-static void flash_read_factory_serial (flash_info_t * info, void *buffer, int offset,
+static void flash_read_factory_serial (struct flash_info *info, void *buffer, int offset,
 				int len)
 {
 	uchar *src;
@@ -804,7 +824,7 @@ static void flash_read_factory_serial (flash_info_t * info, void *buffer, int of
 
 #endif
 
-int flash_status_check (flash_info_t * info, flash_sect_t sector,
+int flash_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt)
 {
 	return info->cfi_cmd_set->flash_status_check(info, sector, tout, prompt);
@@ -814,7 +834,7 @@ int flash_status_check (flash_info_t * info, flash_sect_t sector,
  *  wait for XSR.7 to be set. Time out with an error if it does not.
  *  This routine does not set the flash to read-array mode.
  */
-int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
+int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt)
 {
 	uint64_t start;
@@ -839,7 +859,7 @@ int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
 /*
  * make a proper sized command based on the port and chip widths
  */
-void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
+void flash_make_cmd (struct flash_info *info, uchar cmd, void *cmdbuf)
 {
 	int i;
 	uchar *cp = (uchar *) cmdbuf;
@@ -855,7 +875,7 @@ void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf)
 /*
  * Write a proper sized command to the correct address
  */
-void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
+void flash_write_cmd (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
 
 	uchar *addr;
@@ -866,7 +886,7 @@ void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar
 	flash_write_word(info, cword, addr);
 }
 
-int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
+int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
 	cfiptr_t cptr;
 	cfiword_t cword;
@@ -903,7 +923,7 @@ int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cm
 	return retval;
 }
 
-int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
+int flash_isset (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
 	cfiptr_t cptr;
 	cfiword_t cword;
@@ -934,10 +954,72 @@ struct file_operations cfi_ops = {
 	.memmap  = generic_memmap_ro,
 };
 
+#ifdef CONFIG_PARTITION_NEED_MTD
+static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
+		size_t *retlen, u_char *buf)
+{
+	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
+
+	memcpy(buf, info->base + from, len);
+	*retlen = len;
+
+	return 0;
+}
+
+static int cfi_mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+		size_t *retlen, const u_char *buf)
+{
+	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
+	int ret;
+
+	ret = write_buff(info, buf, (unsigned long)info->base + to, len);
+	*retlen = len;
+
+        return ret;
+}
+
+static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+{
+	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
+	struct cdev *cdev = &info->cdev;
+	int ret;
+
+	ret = __cfi_erase(cdev, instr->len, instr->addr, 0);
+
+	if (ret) {
+		instr->state = MTD_ERASE_FAILED;
+		return -EIO;
+	}
+
+	instr->state = MTD_ERASE_DONE;
+	mtd_erase_callback(instr);
+
+	return 0;
+}
+
+static void cfi_init_mtd(struct flash_info *info)
+{
+	struct mtd_info *mtd = &info->mtd;
+
+	mtd->read = cfi_mtd_read;
+	mtd->write = cfi_mtd_write;
+	mtd->erase = cfi_mtd_erase;
+	mtd->size = info->size;
+	mtd->name = info->cdev.name;
+	mtd->erasesize = info->eraseregions[1].erasesize; /* FIXME */
+	mtd->writesize = 1;
+	mtd->subpage_sft = 0;
+	mtd->eraseregions = info->eraseregions;
+	mtd->numeraseregions = info->numeraseregions;
+	mtd->flags = MTD_CAP_NORFLASH;
+	info->cdev.mtd = mtd;
+}
+#endif
+
 static int cfi_probe (struct device_d *dev)
 {
 	unsigned long size = 0;
-	flash_info_t *info = xzalloc(sizeof(flash_info_t));
+	struct flash_info *info = xzalloc(sizeof(*info));
 
 	dev->priv = (void *)info;
 
@@ -946,6 +1028,7 @@ static int cfi_probe (struct device_d *dev)
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
 	size += info->size = flash_get_size(info, dev->map_base);
+	info->base = (void __iomem *)dev->map_base;
 
 	if (dev->size == 0) {
 		printf("cfi_probe: size : 0x%08x\n", info->size);
@@ -963,6 +1046,10 @@ static int cfi_probe (struct device_d *dev)
 	info->cdev.dev = dev;
 	info->cdev.ops = &cfi_ops;
 	info->cdev.priv = info;
+
+#ifdef CONFIG_PARTITION_NEED_MTD
+	cfi_init_mtd(info);
+#endif
 	devfs_create(&info->cdev);
 
 	return 0;

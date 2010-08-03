@@ -26,6 +26,7 @@
 
 #include <driver.h>
 #include <asm/io.h>
+#include <linux/mtd/mtd.h>
 
 typedef unsigned long flash_sect_t;
 struct cfi_cmd_set;
@@ -34,7 +35,7 @@ struct cfi_cmd_set;
  * FLASH Info: contains chip specific data, per FLASH bank
  */
 
-typedef struct {
+struct flash_info {
 	struct driver_d driver;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
@@ -60,15 +61,21 @@ typedef struct {
 	ushort	cfi_offset;		/* offset for cfi query 		*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct cdev cdev;
-} flash_info_t;
+#ifdef CONFIG_PARTITION_NEED_MTD
+	struct mtd_info mtd;
+#endif
+	int numeraseregions;
+	struct mtd_erase_region_info *eraseregions;
+	void *base;
+};
 
 struct cfi_cmd_set {
-	int (*flash_write_cfibuffer) (flash_info_t * info, ulong dest, const uchar * cp, int len);
-	int (*flash_erase_one) (flash_info_t * info, long sect);
-	int (*flash_is_busy) (flash_info_t * info, flash_sect_t sect);
-	void (*flash_read_jedec_ids) (flash_info_t * info);
-	void (*flash_prepare_write) (flash_info_t * info);
-	int (*flash_status_check) (flash_info_t * info, flash_sect_t sector, uint64_t tout, char *prompt);
+	int (*flash_write_cfibuffer) (struct flash_info *info, ulong dest, const uchar * cp, int len);
+	int (*flash_erase_one) (struct flash_info *info, long sect);
+	int (*flash_is_busy) (struct flash_info *info, flash_sect_t sect);
+	void (*flash_read_jedec_ids) (struct flash_info *info);
+	void (*flash_prepare_write) (struct flash_info *info);
+	int (*flash_status_check) (struct flash_info *info, flash_sect_t sector, uint64_t tout, char *prompt);
 };
 
 extern struct cfi_cmd_set cfi_cmd_set_intel;
@@ -180,21 +187,21 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define CFI_FLASH_SHIFT_WIDTH	3
 /* Prototypes */
 
-int flash_isset (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
-void flash_write_cmd (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
-flash_sect_t find_sector (flash_info_t * info, ulong addr);
-int flash_status_check (flash_info_t * info, flash_sect_t sector,
+int flash_isset (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
+void flash_write_cmd (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
+flash_sect_t find_sector (struct flash_info *info, ulong addr);
+int flash_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
-int flash_generic_status_check (flash_info_t * info, flash_sect_t sector,
+int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
 
-int flash_isequal (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd);
-void flash_make_cmd (flash_info_t * info, uchar cmd, void *cmdbuf);
+int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
+void flash_make_cmd (struct flash_info *info, uchar cmd, void *cmdbuf);
 
 /*
  * create an address based on the offset and the port width
  */
-static inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, uint offset)
+static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect, uint offset)
 {
 	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
 }
@@ -202,7 +209,7 @@ static inline uchar *flash_make_addr (flash_info_t * info, flash_sect_t sect, ui
 /*
  * read a character at a port width address
  */
-static inline uchar flash_read_uchar (flash_info_t * info, uint offset)
+static inline uchar flash_read_uchar (struct flash_info *info, uint offset)
 {
 	uchar *cp;
 
@@ -252,7 +259,7 @@ typedef union {
 	volatile unsigned long long *llp;
 } cfiptr_t;
 
-static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *addr)
+static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
 	if (bankwidth_is_1(info)) {
 		debug("fw addr %p val %02x\n", addr, datum.c);
@@ -268,21 +275,21 @@ static inline void flash_write_word(flash_info_t *info, cfiword_t datum, void *a
 	}
 }
 
-extern void flash_print_info (flash_info_t *);
+extern void flash_print_info (struct flash_info *);
 extern int flash_sect_erase (ulong addr_first, ulong addr_last);
 extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
 
 /* common/flash.c */
-extern void flash_protect (int flag, ulong from, ulong to, flash_info_t *info);
+extern void flash_protect (int flag, ulong from, ulong to, struct flash_info *info);
 extern int flash_write (char *, ulong, ulong);
-extern flash_info_t *addr2info (ulong);
+extern struct flash_info *addr2info (ulong);
 //extern int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
 
 /* board/?/flash.c */
 #if defined(CFG_FLASH_PROTECTION)
-extern int flash_real_protect(flash_info_t *info, long sector, int prot);
-extern void flash_read_user_serial(flash_info_t * info, void * buffer, int offset, int len);
-extern void flash_read_factory_serial(flash_info_t * info, void * buffer, int offset, int len);
+extern int flash_real_protect(struct flash_info *info, long sector, int prot);
+extern void flash_read_user_serial(struct flash_info *info, void * buffer, int offset, int len);
+extern void flash_read_factory_serial(struct flash_info *info, void * buffer, int offset, int len);
 #endif	/* CFG_FLASH_PROTECTION */
 
 /*-----------------------------------------------------------------------

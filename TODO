@@ -33,7 +33,6 @@ TODO
 [-] Cleanup cpu/*. Many functions there are not cpu specific. For example the
     cache functions for arm are common for most arm processors. (done for ARM)
     (I will check this for m68k arch - csc 21.03.2008 19:56:24)
-[ ] Board support should go to arch/*/boards/*
 [ ] Move SoC specific header files from include/ to include/asm/arch/
 [ ] Several .c/.h files do not have GNU/copyright headers.
 [ ] The cramfs driver currently uses direct memory accesses instead of read().
@@ -108,4 +107,4 @@ DONE
     be any key, ctrl-c or a certain string. Maybe like this:
     countdown -m msg -t timeout -x [ctrl-c|anykey|string]
     If done, remove the corresponding stuff from common/main.c
-
+[X] Board support should go to arch/*/boards/*

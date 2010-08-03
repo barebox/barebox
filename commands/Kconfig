@@ -180,6 +180,12 @@ menu "flash                         "
 config CMD_FLASH
 	tristate
 	prompt "protect/erase"
+
+config CMD_UBI
+	tristate
+	default y if UBI
+	prompt "ubimkvol, ubirmvol, ubiattach"
+
 endmenu
 
 

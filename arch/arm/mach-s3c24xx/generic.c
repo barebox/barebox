@@ -244,8 +244,8 @@ EXPORT_SYMBOL(reset_cpu);
 
 @section s3c24xx_boards Boards using S3C24xx Processors
 
-@li @subpage board/a9m2410/a9m2410.c
-@li @subpage board/a9m2440/a9m2440.c
+@li @subpage arch/arm/boards/a9m2410/a9m2410.c
+@li @subpage arch/arm/boards/a9m2440/a9m2440.c
 
 @section s3c24xx_arch Documentation for S3C24xx Architectures Files
 

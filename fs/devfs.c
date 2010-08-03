@@ -31,6 +31,8 @@
 #include <linux/stat.h>
 #include <ioctl.h>
 #include <nand.h>
+#include <linux/err.h>
+#include <linux/mtd/mtd.h>
 #include <linux/mtd/mtd-abi.h>
 #include <partition.h>
 
@@ -170,6 +172,7 @@ static int devfs_close(struct device_d *_dev, FILE *f)
 static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 {
 	size_t offset;
+	struct mtd_info_user *user = buf;
 
 	switch (request) {
 	case MEMSETBADBLOCK:
@@ -178,6 +181,20 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 		offset += cdev->offset;
 		return cdev->ops->ioctl(cdev, request, (void *)offset);
 	case MEMGETINFO:
+		if (cdev->mtd) {
+			user->type	= cdev->mtd->type;
+			user->flags	= cdev->mtd->flags;
+			user->size	= cdev->mtd->size;
+			user->erasesize	= cdev->mtd->erasesize;
+			user->oobsize	= cdev->mtd->oobsize;
+			user->mtd	= cdev->mtd;
+			/* The below fields are obsolete */
+			user->ecctype	= -1;
+			user->eccsize	= 0;
+			return 0;
+		}
+		if (!cdev->ops->ioctl)
+			return -EINVAL;
 		return cdev->ops->ioctl(cdev, request, buf);
 	default:
 		return -EINVAL;
@@ -187,17 +204,14 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 {
 	struct cdev *cdev = f->inode;
-	int ret = -EINVAL;
-
-	if (!cdev->ops->ioctl)
-		goto out;
 
 	if (cdev->flags & DEVFS_IS_PARTITION)
-		ret = partition_ioctl(cdev, request, buf);
-	else
-		ret = cdev->ops->ioctl(cdev, request, buf);
-out:
-	return ret;
+		return partition_ioctl(cdev, request, buf);
+
+	if (!cdev->ops->ioctl)
+		return -EINVAL;
+
+	return cdev->ops->ioctl(cdev, request, buf);
 }
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
@@ -351,6 +365,17 @@ int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 	new->dev = cdev->dev;
 	new->flags = flags | DEVFS_IS_PARTITION;
 
+#ifdef CONFIG_PARTITION_NEED_MTD
+	if (cdev->mtd) {
+		new->mtd = mtd_add_partition(cdev->mtd, offset, size, flags, name);
+		if (IS_ERR(new->mtd)) {
+			int ret = PTR_ERR(new->mtd);
+			free(new);
+			return ret;
+		}
+	}
+#endif
+
 	devfs_create(new);
 
 	return 0;
@@ -369,6 +394,11 @@ int devfs_del_partition(const char *name)
 		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;
+
+#ifdef CONFIG_PARTITION_NEED_MTD
+	if (cdev->mtd)
+		mtd_del_partition(cdev->mtd);
+#endif
 
 	ret = devfs_remove(cdev);
 	if (ret)

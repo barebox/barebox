@@ -68,54 +68,11 @@ struct gpmc_nand_platform_data {
 #define NAND_WAITPOL_HIGH       (1 << 0)
 #define NAND_WAITPOL_MASK       (1 << 0)
 
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
 /** plat_options: hw ecc enabled */
 #define NAND_HWECC_ENABLE       (1 << 1)
-#endif
 /** plat_options: hw ecc disabled */
-#define NAND_HWECC_DISABLE      (0 << 1)
 #define NAND_HWECC_MASK         (1 << 1)
 
-/* Typical BOOTROM oob layouts-requires hwecc **/
-#ifdef CONFIG_NAND_OMAP_GPMC_HWECC
-/** Large Page x8 NAND device Layout */
-#define GPMC_NAND_ECC_LP_x8_LAYOUT {\
-	.eccbytes = 12,\
-	.eccpos = {1, 2, 3, 4, 5, 6, 7, 8,\
-		9, 10, 11, 12},\
-	.oobfree = {\
-		{.offset = 60,\
-		 .length = 2 } } \
-}
-
-/** Large Page x16 NAND device Layout */
-#define GPMC_NAND_ECC_LP_x16_LAYOUT {\
-	.eccbytes = 12,\
-	.eccpos = {2, 3, 4, 5, 6, 7, 8, 9,\
-		10, 11, 12, 13},\
-	.oobfree = {\
-		{.offset = 60,\
-		 .length = 2 } } \
-}
-
-/** Small Page x8 NAND device Layout */
-#define GPMC_NAND_ECC_SP_x8_LAYOUT {\
-	.eccbytes = 3,\
-	.eccpos = {1, 2, 3},\
-	.oobfree = {\
-		{.offset = 14,\
-		 .length = 2 } } \
-}
-
-/** Small Page x16 NAND device Layout */
-#define GPMC_NAND_ECC_SP_x16_LAYOUT {\
-	.eccbytes = 3,\
-	.eccpos = {2, 3, 4},\
-	.oobfree = {\
-		{.offset = 14,\
-		 .length = 2 } } \
-}
-
-#endif				/* CONFIG_NAND_OMAP_GPMC_HWECC */
+int gpmc_generic_nand_devices_init(int cs, int width, int hwecc);
 
 #endif				/* __ASM_OMAP_NAND_GPMC_H */

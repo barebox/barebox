@@ -851,11 +851,11 @@ include/asm:
 	$(Q)$(create-symlink)
 
 include/config.h: include/config/auto.conf
-	@echo '  SYMLINK $@ -> board/$(board-y)/config.h'
+	@echo '  SYMLINK $@ -> $(BOARD)/config.h'
 ifneq ($(KBUILD_SRC),)
-	$(Q)ln -fsn $(srctree)/board/$(board-y)/config.h $@
+	$(Q)ln -fsn $(srctree)/$(BOARD)/config.h $@
 else
-	@ln -fsn ../board/$(board-y)/config.h $@
+	@ln -fsn ../$(BOARD)/config.h $@
 endif
 
 # Generate some files

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "cfi_flash.h"
 
-static void flash_unlock_seq (flash_info_t * info)
+static void flash_unlock_seq (struct flash_info *info)
 {
 	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_UNLOCK_START);
 	flash_write_cmd (info, 0, AMD_ADDR_ACK, AMD_CMD_UNLOCK_ACK);
@@ -14,7 +14,7 @@ static void flash_unlock_seq (flash_info_t * info)
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct
  *
 */
-static void amd_read_jedec_ids (flash_info_t * info)
+static void amd_read_jedec_ids (struct flash_info *info)
 {
 	info->manufacturer_id = 0;
 	info->device_id       = 0;
@@ -39,7 +39,7 @@ static void amd_read_jedec_ids (flash_info_t * info)
 	flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
 }
 
-static int flash_toggle (flash_info_t * info, flash_sect_t sect, uint offset, uchar cmd)
+static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
 	cfiptr_t cptr;
 	cfiword_t cword;
@@ -66,12 +66,12 @@ static int flash_toggle (flash_info_t * info, flash_sect_t sect, uint offset, uc
  * flash_is_busy - check to see if the flash is busy
  * This routine checks the status of the chip and returns true if the chip is busy
  */
-static int amd_flash_is_busy (flash_info_t * info, flash_sect_t sect)
+static int amd_flash_is_busy (struct flash_info *info, flash_sect_t sect)
 {
 	return flash_toggle (info, sect, 0, AMD_STATUS_TOGGLE);
 }
 
-static int amd_flash_erase_one (flash_info_t * info, long sect)
+static int amd_flash_erase_one (struct flash_info *info, long sect)
 {
 	flash_unlock_seq(info);
 	flash_write_cmd (info, 0, AMD_ADDR_ERASE_START, AMD_CMD_ERASE_START);
@@ -81,14 +81,14 @@ static int amd_flash_erase_one (flash_info_t * info, long sect)
 	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
 }
 
-static void amd_flash_prepare_write(flash_info_t * info)
+static void amd_flash_prepare_write(struct flash_info *info)
 {
 	flash_unlock_seq(info);
 	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_WRITE);
 }
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
-static int amd_flash_write_cfibuffer (flash_info_t * info, ulong dest, const uchar * cp,
+static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const uchar * cp,
 				  int len)
 {
 	flash_sect_t sector;

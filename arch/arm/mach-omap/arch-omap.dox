@@ -39,7 +39,7 @@ Motivation for code organization is driven from:
 Code is Organized into three main directories:
 @li arch/arm/mach-omap -contains files for ALL peripherals which are present on board with very few exceptions. We will come to these exceptions in later sections.
 @li include/asm-arm/arch-omap - contains files for ALL OMAP on-silicon peripherals. No Board specific files here please!
-@li board/omap - contains files for ALL boards using OMAP processors.
+@li arch/arm/boards/omap - contains files for ALL boards using OMAP processors.
 
 @section mach_omap arch/arm/mach-omap directory guidelines
 It is rather simple: All common peripherals should be isolated as separate driver libraries as far as possible. Exceptions such as clock configuration code may be isolated by the following naming convention: omapX_function_name.[cS], where X belongs to the OMAP variant. The exception is for devices who have existing code locations - potentially drivers/i2c/busses and the like.
@@ -52,7 +52,7 @@ All OMAP common headers are located here. Where we have to incorporate a OMAP va
 
 include/asm-arm/arch-omap/silicon.h contains includes for omapX-silicon.h which defines the base addresses for the peripherals on that platform. the usual convention is to use #define OMAP_SOMETHING_BASE to allow re-use.
 
-@section board_omap board/omap directory guidelines
+@section board_omap arch/arm/boards/omap directory guidelines
 All Board specific files go here. In u-boot, we always had to use common config file which is shared by other drivers to get serial, ethernet baseaddress etc.. we can easily use the device_d structure to handle it with @a barebox. This is more like programming for Linux kernel - it is pretty easy.
 Each specific board file has board-XYZ.c and potentially and equivalent h file.
 
@@ -66,7 +66,7 @@ The responsibility of arch_init_lowlevel and related calls is to setup OMAP. No 
 Once this is past, the code returns back to arm common code (cpu/start-arm.S). Here Instruction and Data caches are disabled. The execution proceeds to normal board initialization.
 
 @section board_boot The board boot path
-If the proper CONFIG_MACH_DO_LOWLEVEL_INIT flag is setup, board_init_lowlevel is called. This again would call a common file board/omap/platform.S which setups a temporary SRAM stack and bumps the control to board_init.
+If the proper CONFIG_MACH_DO_LOWLEVEL_INIT flag is setup, board_init_lowlevel is called. This again would call a common file arch/arm/boards/omap/platform.S which setups a temporary SRAM stack and bumps the control to board_init.
 Every Board in OMAP platform can potentially define a board_init and enable defconfig in arch/arm/configs directory. The responsibility here is to setup OMAP for board configurations - this includes SDRAM configuration and pin muxing configuration.
 
 Once this is complete, @a barebox boot process proceeds by calling init functions and finally entering shell prompt
@@ -87,7 +87,7 @@ static int my_board_devices_init(void) {
 device_initcall(my_board_devices_init);
 @endcode
 
-You may probably be interested in calling console_initcall to get a console.. Modify board/omap/Kconfig to add your OMAP board, create a defconfig, do a make C=2 to enable sparse warnings, you can potentially have a binary done in no time! if you remember to put doxygen comments in your code, you can do a make docs and get the documentation done too..
+You may probably be interested in calling console_initcall to get a console.. Modify arch/arm/boards/omap/Kconfig to add your OMAP board, create a defconfig, do a make C=2 to enable sparse warnings, you can potentially have a binary done in no time! if you remember to put doxygen comments in your code, you can do a make docs and get the documentation done too..
 
 
 */

@@ -148,7 +148,7 @@ void prcm_init(void)
 {
 	int xip_safe;
 	u32 osc_clk = 0, sys_clkin_sel = 0;
-	u32 clk_index, sil_index;
+	u32 clk_index, sil_index = 0;
 	struct dpll_param *dpll_param_p;
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
 	int p0, p1, p2, p3;
@@ -176,14 +176,6 @@ void prcm_init(void)
 		clk_index = sys_clkin_sel;
 	}
 
-	/* The DPLL tables are defined according to sysclk value and
-	 * silicon revision. The clk_index value will be used to get
-	 * the values for that input sysclk from the DPLL param table
-	 * and sil_index will get the values for that SysClk for the
-	 * appropriate silicon rev.
-	 */
-	if (get_cpu_rev() >= CPU_ES2)
-		sil_index = 1;
 	/* Unlock MPU DPLL (slows things down, and needed later) */
 	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOW_POWER_BYPASS);
 	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_MPU), LDELAY);

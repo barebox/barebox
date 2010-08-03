@@ -66,6 +66,7 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <mach/gpmc_nand.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/

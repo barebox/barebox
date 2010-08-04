@@ -23,7 +23,7 @@
 #define USB_EHCI_H
 
 #if !defined(CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS)
-#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	2
+#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	16
 #endif
 
 /* (shifted) direction/type/recipient from the USB 2.0 spec, table 9.2 */

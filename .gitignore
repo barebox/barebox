@@ -19,6 +19,7 @@
 *.symtypes
 *.elf
 *.mcp
+*.orig
 
 #
 # Top-level generic files
@@ -59,3 +60,6 @@ series
 
 # cscope files
 cscope.*
+
+# patches
+*.patch

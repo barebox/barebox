@@ -293,7 +293,9 @@ static int do_mem_mw(struct command *cmdtp, int argc, char *argv[])
 static const __maybe_unused char cmd_mw_help[] =
 "Usage: mw [OPTIONS] <region> <value(s)>\n"
 "Write value(s) to the specifies region.\n"
-"see 'help md' for supported options.\n";
+"options:\n"
+"  -b, -w, -l	use byte, halfword, or word accesses\n"
+"  -d <file>	write file (default /dev/mem)\n";
 
 BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,

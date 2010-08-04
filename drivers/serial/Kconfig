@@ -4,6 +4,15 @@ config DRIVER_SERIAL_ARM_DCC
 	depends on ARM
 	bool "ARM Debug Communications Channel (DCC) serial driver"
 
+config SERIAL_AMBA_PL011
+	bool "ARM AMBA PL011 serial port support"
+	depends on ARM_AMBA
+	help
+	  This selects the ARM(R) AMBA(R) PrimeCell PL011 UART.  If you have
+	  an Integrator/PP2, Integrator/CP or Versatile platform, say Y here.
+
+	  If unsure, say N.
+
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX
 	default y

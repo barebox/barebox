@@ -18,6 +18,9 @@ config ARM
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	default y
 
+config ARM_AMBA
+	bool
+
 menu "System Type"
 
 choice

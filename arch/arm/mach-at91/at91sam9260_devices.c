@@ -18,6 +18,8 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 
+#include "generic.h"
+
 static struct memory_platform_data sram_pdata = {
 	.name = "sram0",
 	.flags = DEVFS_RDWR,
@@ -106,8 +108,6 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	/* card detect pin */
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
-
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_PIOC);
 
 	nand_dev.platform_data = data;
 	register_device(&nand_dev);
@@ -233,37 +233,37 @@ void at91_register_uart(unsigned id, unsigned pins)
 	switch (id) {
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
+			at91_clock_associate("mck", &dbgu_serial_device, "usart");
 			register_device(&dbgu_serial_device);
 			break;
 		case AT91SAM9260_ID_US0:
 			configure_usart0_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US0);
+			at91_clock_associate("usart0_clk", &uart0_serial_device, "usart");
 			register_device(&uart0_serial_device);
 			break;
 		case AT91SAM9260_ID_US1:
 			configure_usart1_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US1);
+			at91_clock_associate("usart1_clk", &uart1_serial_device, "usart");
 			register_device(&uart1_serial_device);
 			break;
 		case AT91SAM9260_ID_US2:
 			configure_usart2_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US2);
+			at91_clock_associate("usart2_clk", &uart2_serial_device, "usart");
 			register_device(&uart2_serial_device);
 			break;
 		case AT91SAM9260_ID_US3:
 			configure_usart3_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US3);
+			at91_clock_associate("usart3_clk", &uart3_serial_device, "usart");
 			register_device(&uart3_serial_device);
 			break;
 		case AT91SAM9260_ID_US4:
 			configure_usart4_pins();
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US4);
+			at91_clock_associate("usart4_clk", &uart4_serial_device, "usart");
 			register_device(&uart4_serial_device);
 			break;
 		case AT91SAM9260_ID_US5:
 			configure_usart5_pins();
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_US5);
+			at91_clock_associate("usart5_clk", &uart5_serial_device, "usart");
 			register_device(&uart5_serial_device);
 			break;
 		default:

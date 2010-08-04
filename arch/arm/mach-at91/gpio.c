@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <linux/clk.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <mach/gpio.h>
@@ -245,6 +246,8 @@ int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 		data->regbase = data->offset +
 			(void __iomem *)AT91_BASE_SYS;
 
+		/* enable PIO controller's clock */
+		clk_enable(data->clock);
 
 		/* AT91SAM9263_ID_PIOCDE groups PIOC, PIOD, PIOE */
 		if (last && last->id == data->id)

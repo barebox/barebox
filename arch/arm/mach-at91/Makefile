@@ -1,4 +1,4 @@
-obj-y += clocksource.o gpio.o
+obj-y += clock.o clocksource.o gpio.o
 
 obj-$(CONFIG_MACH_DO_LOWLEVEL_INIT) += lowlevel_init.o
 

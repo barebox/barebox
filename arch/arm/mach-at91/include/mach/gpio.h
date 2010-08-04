@@ -241,6 +241,7 @@ struct at91_gpio_bank {
 	struct at91_gpio_bank *next;	/* bank sharing same IRQ/clock/... */
 	unsigned short id;		/* peripheral ID */
 	unsigned long offset;		/* offset from system peripheral base */
+	struct clk *clock;
 };
 
 extern int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks);

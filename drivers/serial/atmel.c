@@ -22,7 +22,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <asm/io.h>
-#include <mach/clk.h>
+#include <linux/clk.h>
 
 /* USART3 register offsets */
 #define USART3_CR				0x0000
@@ -309,6 +309,21 @@
 		    << USART3_##name##_OFFSET))		\
 	 | USART3_BF(name,value))
 
+/*
+ * We wrap our port structure around the generic console_device.
+ */
+struct atmel_uart_port {
+	struct console_device	uart;		/* uart */
+	struct clk		*clk;		/* uart clock */
+	u32			uartclk;
+};
+
+static inline struct atmel_uart_port *
+to_atmel_uart_port(struct console_device *uart)
+{
+	return container_of(uart, struct atmel_uart_port, uart);
+}
+
 static void atmel_serial_putc(struct console_device *cdev, char c)
 {
 	struct device_d *dev = cdev->dev;
@@ -336,16 +351,15 @@ static int atmel_serial_getc(struct console_device *cdev)
 static int atmel_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
+	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 	unsigned long divisor;
-	unsigned long usart_hz;
 
 	/*
 	 *              Master Clock
 	 * Baud Rate = --------------
 	 *                16 * CD
 	 */
-	usart_hz = get_usart_clk_rate(0);
-	divisor = (usart_hz / 16 + baudrate / 2) / baudrate;
+	divisor = (uart->uartclk / 16 + baudrate / 2) / baudrate;
 	writel(USART3_BF(CD, divisor), dev->map_base + USART3_BRGR);
 
 	return 0;
@@ -359,6 +373,11 @@ static int atmel_serial_setbaudrate(struct console_device *cdev, int baudrate)
 static int atmel_serial_init_port(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
+	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
+
+	uart->clk = clk_get(dev, "usart");
+	clk_enable(uart->clk);
+	uart->uartclk = clk_get_rate(uart->clk);
 
 	writel(USART3_BIT(RSTRX) | USART3_BIT(RSTTX), dev->map_base + USART3_CR);
 
@@ -376,9 +395,12 @@ static int atmel_serial_init_port(struct console_device *cdev)
 
 static int atmel_serial_probe(struct device_d *dev)
 {
+	struct atmel_uart_port *uart;
 	struct console_device *cdev;
 
-	cdev = malloc(sizeof(struct console_device));
+	uart = malloc(sizeof(struct atmel_uart_port));
+
+	cdev = &uart->uart;
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

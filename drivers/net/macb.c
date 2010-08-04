@@ -48,7 +48,7 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <mach/board.h>
-#include <mach/clk.h>
+#include <linux/clk.h>
 
 #include "macb.h"
 
@@ -412,6 +412,9 @@ static int macb_probe(struct device_d *dev)
 	unsigned long macb_hz;
 	u32 ncfgr;
 	struct at91_ether_platform_data *pdata;
+#if defined(CONFIG_ARCH_AT91)
+	struct clk *pclk;
+#endif
 
 	if (!dev->platform_data) {
 		printf("macb: no platform_data\n");
@@ -450,7 +453,13 @@ static int macb_probe(struct device_d *dev)
 	 * Do some basic initialization so that we at least can talk
 	 * to the PHY
 	 */
+#if defined(CONFIG_ARCH_AT91)
+	pclk = clk_get(dev, "macb_clk");
+	clk_enable(pclk);
+	macb_hz = clk_get_rate(pclk);
+#else
 	macb_hz = get_macb_pclk_rate(0);
+#endif
 	if (macb_hz < 20000000)
 		ncfgr = MACB_BF(CLK, MACB_CLK_DIV8);
 	else if (macb_hz < 40000000)

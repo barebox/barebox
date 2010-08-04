@@ -327,6 +327,8 @@ static int beagle_devices_init(void)
 	gpmc_generic_nand_devices_init(0, 16, 1);
 
 	armlinux_add_dram(&sdram_dev);
+	armlinux_set_bootparams((void *)0x80000100);
+	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);
 failed:
 	return ret;
 }

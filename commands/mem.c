@@ -217,7 +217,6 @@ static const __maybe_unused char cmd_md_help[] =
 "display (hexdump) a memory region.\n"
 "options:\n"
 "  -s <file>   display file (default /dev/mem)\n"
-"  -d <file>   write file (default /dev/mem)\n"
 "  -b          output in bytes\n"
 "  -w          output in halfwords (16bit)\n"
 "  -l          output in words (32bit)\n"

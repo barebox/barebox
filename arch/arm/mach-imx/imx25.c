@@ -35,8 +35,14 @@ u64 imx_uid(void)
 	u64 uid = 0;
 	int i;
 
+	/*
+	 * This code assumes that the UID is stored little-endian. The
+	 * Freescale AN3682 document is silent about the endianess, but
+	 * experimentation shows that this is the case. All other multi-byte
+	 * values in IIM are big-endian as per AN3682.
+	 */
 	for (i = 0; i < 8; i++)
-		uid = (uid << 8) | readb(IMX_IIM_BASE + IIM_UID + i*4);
+		uid |= (u64)readb(IMX_IIM_BASE + IIM_UID + i*4) << (i*8);
 
 	return uid;
 }

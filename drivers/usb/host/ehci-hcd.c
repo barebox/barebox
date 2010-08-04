@@ -899,21 +899,24 @@ static int ehci_probe(struct device_d *dev)
 	ehci = xmalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
 
-	if (pdata)
+	if (pdata) {
 		ehci->flags = pdata->flags;
-	else
+		ehci->hccr = (void *)(dev->map_base + pdata->hccr_offset);
+		ehci->hcor = (void *)(dev->map_base + pdata->hcor_offset);
+	}
+	else {
 		/* default to EHCI_HAS_TT to not change behaviour of boards
 		 * with platform_data
 		 */
 		ehci->flags = EHCI_HAS_TT;
+		ehci->hccr = (void *)(dev->map_base + 0x100);
+		ehci->hcor = (void *)(dev->map_base + 0x140);
+	}
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
-
-	ehci->hccr = (void *)(dev->map_base + 0x100);
-	ehci->hcor = (void *)(dev->map_base + 0x140);
 
 	usb_register_host(host);
 

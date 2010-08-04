@@ -5,6 +5,8 @@
 
 struct ehci_platform_data {
 	unsigned long flags;
+	unsigned long hccr_offset;
+	unsigned long hcor_offset;
 };
 
 #endif  /* __USB_EHCI_H */

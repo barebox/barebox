@@ -189,6 +189,20 @@ static void mux_config(void)
 	MUX_VAL(CP(HSUSB0_DATA7), (IEN | PTD | DIS | M0));
 	/* I2C1_SCL default mux mode is mode0 */
 	/* I2C1_SDA default mux mode is mode0 */
+	/* USB EHCI (port 2) */
+	MUX_VAL(CP(MCSPI1_CS3),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CLK),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_SIMO),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_SOMI),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CS0),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CS1),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D10_ES2),	(IDIS | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D11_ES2),	(IDIS | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D12_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D13_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D14_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D15_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(UART2_RX),		(IEN  | PTD | DIS | M4)) /*GPIO_147*/;
 }
 
 /**

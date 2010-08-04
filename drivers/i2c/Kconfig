@@ -23,4 +23,8 @@ config DRIVER_I2C_MC9SDZ60
 config DRIVER_I2C_LP3972
 	bool "LP3972 driver"
 
+config DRIVER_I2C_TWL4030
+	bool "TWL4030 driver"
+	select GPIO
+
 endif

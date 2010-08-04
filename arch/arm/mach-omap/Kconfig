@@ -78,9 +78,18 @@ config GPMC
 	depends on  (ARCH_OMAP2 || ARCH_OMAP3)
 	default y
 	help
-	 Enable this if you use Texas Instrument's General purpose Memory
-	 Controller(GPMC). GPMC allows you to configure devices such as NOR,
-	 NAND, OneNAND etc.
+	  Enable this if you use Texas Instrument's General purpose Memory
+	  Controller(GPMC). GPMC allows you to configure devices such as NOR,
+	  NAND, OneNAND etc.
+
+config GPIO
+	prompt "Support for GPIO configuration"
+	bool
+	select GENERIC_GPIO
+	depends on  (ARCH_OMAP2 || ARCH_OMAP3)
+	default y
+	help
+	  Enable this if you use Texas Instrument's General Purpose IO
 
 # Get the board specific configurations
 source arch/arm/boards/omap/Kconfig

@@ -53,6 +53,7 @@ config ARCH_S3C24xx
 
 endchoice
 
+source arch/arm/common/Kconfig
 source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-at91rm9200/Kconfig

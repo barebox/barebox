@@ -130,7 +130,7 @@ MACH :=
 endif
 
 common-y += $(BOARD) $(MACH)
-common-y += arch/arm/lib/ arch/arm/cpu/
+common-y += arch/arm/lib/ arch/arm/cpu/ arch/arm/common/
 
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds

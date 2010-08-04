@@ -8,6 +8,11 @@
 #define NULL ((void *)0)
 #endif
 
+enum {
+	false	= 0,
+	true	= 1
+};
+
 #ifndef _SIZE_T
 #include <linux/types.h>
 #endif

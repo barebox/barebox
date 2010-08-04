@@ -898,6 +898,7 @@ static int ehci_probe(struct device_d *dev)
 
 	ehci = xmalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
+	dev->priv = ehci;
 
 	if (pdata) {
 		ehci->flags = pdata->flags;
@@ -926,9 +927,16 @@ static int ehci_probe(struct device_d *dev)
 	return 0;
 }
 
+static void ehci_remove(struct device_d *dev)
+{
+	struct ehci_priv *ehci = dev->priv;
+	ehci_halt(ehci);
+}
+
 static struct driver_d ehci_driver = {
 	.name  = "ehci",
 	.probe = ehci_probe,
+	.remove = ehci_remove,
 };
 
 static int ehcil_init(void)

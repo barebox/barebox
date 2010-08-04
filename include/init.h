@@ -1,6 +1,12 @@
 #ifndef _INIT_H
 #define _INIT_H
 
+/*
+ * fake define to simplify the linux sync
+ */
+#define __init
+#define __initdata
+
 typedef int (*initcall_t)(void);
 
 #define __define_initcall(level,fn,id) \

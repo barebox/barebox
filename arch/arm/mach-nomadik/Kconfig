@@ -1,0 +1,11 @@
+if ARCH_NOMADIK
+
+choice
+	prompt "Nomadik boards"
+
+endchoice
+
+config NOMADIK_8815
+	bool
+
+endif

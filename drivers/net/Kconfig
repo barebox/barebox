@@ -4,6 +4,9 @@ config HAS_CS8900
 config HAS_DM9000
 	bool
 
+config HAS_MACB
+	bool
+
 config HAS_AT91_ETHER
 	bool
 
@@ -71,7 +74,7 @@ config DRIVER_NET_EP93XX
 
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
-	depends on ARCH_AT91
+	depends on HAS_MACB
 	select MIIPHY
 
 config DRIVER_NET_TAP

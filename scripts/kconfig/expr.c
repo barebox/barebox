@@ -87,7 +87,7 @@ struct expr *expr_copy(struct expr *org)
 		break;
 	case E_AND:
 	case E_OR:
-	case E_CHOICE:
+	case E_LIST:
 		e->left.expr = expr_copy(org->left.expr);
 		e->right.expr = expr_copy(org->right.expr);
 		break;
@@ -217,7 +217,7 @@ int expr_eq(struct expr *e1, struct expr *e2)
 		expr_free(e2);
 		trans_count = old_count;
 		return res;
-	case E_CHOICE:
+	case E_LIST:
 	case E_RANGE:
 	case E_NONE:
 		/* panic */;
@@ -348,7 +348,7 @@ struct expr *expr_trans_bool(struct expr *e)
 /*
  * e1 || e2 -> ?
  */
-struct expr *expr_join_or(struct expr *e1, struct expr *e2)
+static struct expr *expr_join_or(struct expr *e1, struct expr *e2)
 {
 	struct expr *tmp;
 	struct symbol *sym1, *sym2;
@@ -412,7 +412,7 @@ struct expr *expr_join_or(struct expr *e1, struct expr *e2)
 	return NULL;
 }
 
-struct expr *expr_join_and(struct expr *e1, struct expr *e2)
+static struct expr *expr_join_and(struct expr *e1, struct expr *e2)
 {
 	struct expr *tmp;
 	struct symbol *sym1, *sym2;
@@ -648,7 +648,7 @@ struct expr *expr_transform(struct expr *e)
 	case E_EQUAL:
 	case E_UNEQUAL:
 	case E_SYMBOL:
-	case E_CHOICE:
+	case E_LIST:
 		break;
 	default:
 		e->left.expr = expr_transform(e->left.expr);
@@ -932,7 +932,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 		break;
 	case E_SYMBOL:
 		return expr_alloc_comp(type, e->left.sym, sym);
-	case E_CHOICE:
+	case E_LIST:
 	case E_RANGE:
 	case E_NONE:
 		/* panic */;
@@ -955,14 +955,14 @@ tristate expr_calc_value(struct expr *e)
 	case E_AND:
 		val1 = expr_calc_value(e->left.expr);
 		val2 = expr_calc_value(e->right.expr);
-		return E_AND(val1, val2);
+		return EXPR_AND(val1, val2);
 	case E_OR:
 		val1 = expr_calc_value(e->left.expr);
 		val2 = expr_calc_value(e->right.expr);
-		return E_OR(val1, val2);
+		return EXPR_OR(val1, val2);
 	case E_NOT:
 		val1 = expr_calc_value(e->left.expr);
-		return E_NOT(val1);
+		return EXPR_NOT(val1);
 	case E_EQUAL:
 		sym_calc_value(e->left.sym);
 		sym_calc_value(e->right.sym);
@@ -1000,9 +1000,9 @@ int expr_compare_type(enum expr_type t1, enum expr_type t2)
 		if (t2 == E_OR)
 			return 1;
 	case E_OR:
-		if (t2 == E_CHOICE)
+		if (t2 == E_LIST)
 			return 1;
-	case E_CHOICE:
+	case E_LIST:
 		if (t2 == 0)
 			return 1;
 	default:
@@ -1034,12 +1034,18 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 		expr_print(e->left.expr, fn, data, E_NOT);
 		break;
 	case E_EQUAL:
-		fn(data, e->left.sym, e->left.sym->name);
+		if (e->left.sym->name)
+			fn(data, e->left.sym, e->left.sym->name);
+		else
+			fn(data, NULL, "<choice>");
 		fn(data, NULL, "=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
 	case E_UNEQUAL:
-		fn(data, e->left.sym, e->left.sym->name);
+		if (e->left.sym->name)
+			fn(data, e->left.sym, e->left.sym->name);
+		else
+			fn(data, NULL, "<choice>");
 		fn(data, NULL, "!=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
@@ -1053,11 +1059,11 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 		fn(data, NULL, " && ");
 		expr_print(e->right.expr, fn, data, E_AND);
 		break;
-	case E_CHOICE:
+	case E_LIST:
 		fn(data, e->right.sym, e->right.sym->name);
 		if (e->left.expr) {
 			fn(data, NULL, " ^ ");
-			expr_print(e->left.expr, fn, data, E_CHOICE);
+			expr_print(e->left.expr, fn, data, E_LIST);
 		}
 		break;
 	case E_RANGE:
@@ -1081,7 +1087,7 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 
 static void expr_print_file_helper(void *data, struct symbol *sym, const char *str)
 {
-	fwrite(str, strlen(str), 1, data);
+	xfwrite(str, strlen(str), 1, data);
 }
 
 void expr_fprint(struct expr *e, FILE *out)
@@ -1091,7 +1097,32 @@ void expr_fprint(struct expr *e, FILE *out)
 
 static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *str)
 {
-	str_append((struct gstr*)data, str);
+	struct gstr *gs = (struct gstr*)data;
+	const char *sym_str = NULL;
+
+	if (sym)
+		sym_str = sym_get_string_value(sym);
+
+	if (gs->max_width) {
+		unsigned extra_length = strlen(str);
+		const char *last_cr = strrchr(gs->s, '\n');
+		unsigned last_line_length;
+
+		if (sym_str)
+			extra_length += 4 + strlen(sym_str);
+
+		if (!last_cr)
+			last_cr = gs->s;
+
+		last_line_length = strlen(gs->s) - (last_cr - gs->s);
+
+		if ((last_line_length + extra_length) > gs->max_width)
+			str_append(gs, "\\\n");
+	}
+
+	str_append(gs, str);
+	if (sym && sym->type != S_UNKNOWN)
+		str_printf(gs, " [=%s]", sym_str);
 }
 
 void expr_gstr_print(struct expr *e, struct gstr *gs)

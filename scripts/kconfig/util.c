@@ -29,6 +29,8 @@ struct file *file_lookup(const char *name)
 /* write a dependency file as used by kbuild to track dependencies */
 int file_write_dep(const char *name)
 {
+	struct symbol *sym, *env_sym;
+	struct expr *e;
 	struct file *file;
 	FILE *out;
 
@@ -44,21 +46,39 @@ int file_write_dep(const char *name)
 		else
 			fprintf(out, "\t%s\n", file->name);
 	}
-	fprintf(out, "\ninclude/config/auto.conf: \\\n"
-		     "\t$(deps_config)\n\n"
-		     "$(deps_config): ;\n");
+	fprintf(out, "\n%s: \\\n"
+		     "\t$(deps_config)\n\n", conf_get_autoconfig_name());
+
+	expr_list_for_each_sym(sym_env_list, e, sym) {
+		struct property *prop;
+		const char *value;
+
+		prop = sym_get_env_prop(sym);
+		env_sym = prop_get_symbol(prop);
+		if (!env_sym)
+			continue;
+		value = getenv(env_sym->name);
+		if (!value)
+			value = "";
+		fprintf(out, "ifneq \"$(%s)\" \"%s\"\n", env_sym->name, value);
+		fprintf(out, "%s: FORCE\n", conf_get_autoconfig_name());
+		fprintf(out, "endif\n");
+	}
+
+	fprintf(out, "\n$(deps_config): ;\n");
 	fclose(out);
 	rename("..config.tmp", name);
 	return 0;
 }
 
 
-/* Allocate initial growable sting */
+/* Allocate initial growable string */
 struct gstr str_new(void)
 {
 	struct gstr gs;
 	gs.s = malloc(sizeof(char) * 64);
-	gs.len = 16;
+	gs.len = 64;
+	gs.max_width = 0;
 	strcpy(gs.s, "\0");
 	return gs;
 }
@@ -69,6 +89,7 @@ struct gstr str_assign(const char *s)
 	struct gstr gs;
 	gs.s = strdup(s);
 	gs.len = strlen(s) + 1;
+	gs.max_width = 0;
 	return gs;
 }
 
@@ -84,12 +105,15 @@ void str_free(struct gstr *gs)
 /* Append to growable string */
 void str_append(struct gstr *gs, const char *s)
 {
-	size_t l = strlen(gs->s) + strlen(s) + 1;
-	if (l > gs->len) {
-		gs->s   = realloc(gs->s, l);
-		gs->len = l;
+	size_t l;
+	if (s) {
+		l = strlen(gs->s) + strlen(s) + 1;
+		if (l > gs->len) {
+			gs->s   = realloc(gs->s, l);
+			gs->len = l;
+		}
+		strcat(gs->s, s);
 	}
-	strcat(gs->s, s);
 }
 
 /* Append printf formatted string to growable string */

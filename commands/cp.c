@@ -80,8 +80,6 @@ out:
 static const __maybe_unused char cmd_cp_help[] =
 "Usage: cp <source> <destination>\n"
 "cp copies file <source> to <destination>.\n"
-"Currently only this form is supported and you have to specify the exact target\n"
-"filename (not a target directory).\n"
 "This command is file based only. See memcpy for memory copy\n";
 
 BAREBOX_CMD_START(cp)

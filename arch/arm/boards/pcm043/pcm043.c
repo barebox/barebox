@@ -44,12 +44,6 @@
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
 
-#define CYG_MACRO_START
-#define CYG_MACRO_END
-#define ARM_MMU_FIRST_LEVEL_SECTION_ID 0x2
-#define ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS(ttb_base, table_index) \
-        (unsigned long *)((unsigned long)(ttb_base) + ((table_index) << 2))
-
 /*
  * Up to 32MiB NOR type flash, connected to
  * CS line 0, data width is 16 bit

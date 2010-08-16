@@ -356,6 +356,24 @@ config IMX_CLKO
 	  The i.MX SoCs have a Pin which can output different reference frequencies.
 	  Say y here if you want to have the clko command which lets you select the
 	  frequency to output on this pin.
+
+config IMX_IIM
+	tristate "IIM fusebox device"
+	depends on ARCH_IMX25 || ARCH_IMX35
+	help
+	  Device driver for the IC Identification Module (IIM) fusebox. Use the 
+	  regular md/mw commands to program and read the fusebox.
+
+config IMX_IIM_FUSE_BLOW
+	bool "IIM fuses blow support"
+	depends on IMX_IIM
+	help
+	  Enable this option to add permanent programming of the fusebox, using
+	  fuses blowing.
+
+	  Warning: blown fuses can not be unblown. Using this option may damage
+	  your CPU, or make it unbootalbe. Use with care.
+
 endmenu
 
 endif

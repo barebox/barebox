@@ -1,4 +1,9 @@
 /*
+ * (c) 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -15,27 +20,23 @@
  * MA 02111-1307 USA
  */
 
-#include <common.h>
-#include <asm/io.h>
-#include <mach/imx-regs.h>
-#include <mach/iim.h>
-#include <mach/generic.h>
+#ifndef __MACH_IMX_IIM_H
+#define __MACH_IMX_IIM_H
 
-#include "gpio.h"
+#define IIM_STAT	0x0000
+#define IIM_STATM	0x0004
+#define IIM_ERR		0x0008
+#define IIM_EMASK	0x000C
+#define IIM_FCTL	0x0010
+#define IIM_UA		0x0014
+#define IIM_LA		0x0018
+#define IIM_SDAT	0x001C
+#define IIM_PREV	0x0020
+#define IIM_SREV	0x0024
+#define IIM_PREG_P	0x0028
+#define IIM_SCS0	0x002C
+#define IIM_SCS1	0x0030
+#define IIM_SCS2	0x0034
+#define IIM_SCS3	0x0038
 
-void *imx_gpio_base[] = {
-	(void *)0x53fcc000,
-	(void *)0x53fd0000,
-	(void *)0x53fa4000,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
-int imx_silicon_revision()
-{
-	uint32_t reg;
-	reg = readl(IMX_IIM_BASE + IIM_SREV);
-	reg += IMX35_CHIP_REVISION_1_0;
-
-	return (reg & 0xFF);
-}
+#endif /* __MACH_IMX_IIM_H */

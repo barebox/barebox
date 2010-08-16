@@ -16,7 +16,9 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <mach/imx-regs.h>
+#include <mach/iim.h>
 #include <asm/io.h>
 
 #include "gpio.h"
@@ -46,3 +48,45 @@ u64 imx_uid(void)
 
 	return uid;
 }
+
+static struct imx_iim_platform_data imx25_iim_pdata = {
+	.mac_addr_base	= IMX_IIM_BASE + IIM_MAC_ADDR,
+};
+
+static struct device_d imx25_iim_dev = {
+	.name		= "imx_iim",
+	.map_base	= IMX_IIM_BASE,
+	.platform_data	= &imx25_iim_pdata,
+};
+
+static struct device_d imx25_iim_bank0_dev = {
+	.name		= "imx_iim_bank",
+	.id		= 0,
+	.map_base	= IIM_BANK0_BASE,
+	.size		= IIM_BANK_SIZE,
+};
+
+static struct device_d imx25_iim_bank1_dev = {
+	.name		= "imx_iim_bank",
+	.id		= 1,
+	.map_base	= IIM_BANK1_BASE,
+	.size		= IIM_BANK_SIZE,
+};
+
+static struct device_d imx25_iim_bank2_dev = {
+	.name		= "imx_iim_bank",
+	.id		= 2,
+	.map_base	= IIM_BANK2_BASE,
+	.size		= IIM_BANK_SIZE,
+};
+
+static int imx25_iim_init(void)
+{
+	register_device(&imx25_iim_dev);
+	register_device(&imx25_iim_bank0_dev);
+	register_device(&imx25_iim_bank1_dev);
+	register_device(&imx25_iim_bank2_dev);
+
+	return 0;
+}
+coredevice_initcall(imx25_iim_init);

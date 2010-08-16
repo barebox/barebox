@@ -32,6 +32,7 @@
 #include <mach/imx-regs.h>
 #include <clock.h>
 #include <mach/clock.h>
+#include <mach/iim.h>
 #include <xfuncs.h>
 
 #include "fec_imx.h"
@@ -235,8 +236,7 @@ static void fec_rbd_clean(int last, struct buffer_descriptor *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-	/* no eeprom */
-	return -1;
+	return imx_iim_get_mac(mac);
 }
 
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)

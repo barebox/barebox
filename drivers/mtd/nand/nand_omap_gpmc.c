@@ -548,10 +548,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		goto out_release_mem;
 	}
 
-	if (pdata->plat_options & NAND_HWECC_ENABLE)
+	if (pdata->plat_options & NAND_HWECC_ENABLE) {
 		nand->ecc.layout = layout;
 
-	if (pdata->plat_options & NAND_HWECC_ENABLE) {
 		/* Program how many columns we expect+
 		 * enable the cs we want and enable the engine
 		 */

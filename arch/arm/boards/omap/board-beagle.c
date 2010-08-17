@@ -273,6 +273,7 @@ static struct device_d sdram_dev = {
 	.platform_data = &sram_pdata,
 };
 
+#ifdef CONFIG_USB_EHCI_OMAP
 static struct omap_hcd omap_ehci_pdata = {
 	.port_mode[0] = EHCI_HCD_OMAP_MODE_PHY,
 	.port_mode[1] = EHCI_HCD_OMAP_MODE_PHY,
@@ -295,6 +296,7 @@ static struct device_d usbh_dev = {
 	.size     = 4 * 1024,
 	.platform_data = &ehci_pdata,
 };
+#endif /* CONFIG_USB_EHCI_OMAP */
 
 static struct device_d i2c_dev = {
 	.name		= "i2c-omap",
@@ -318,8 +320,10 @@ static int beagle_devices_init(void)
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	register_device(&i2c_dev);
 
+#ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
 		register_device(&usbh_dev);
+#endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);

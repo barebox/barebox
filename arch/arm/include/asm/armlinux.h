@@ -21,7 +21,7 @@ static inline void armlinux_add_dram(struct device_d *dev)
 {
 }
 
-static inline void armlinux_set_revision(unsigned int)
+static inline void armlinux_set_revision(unsigned int rev)
 {
 }
 

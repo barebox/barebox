@@ -29,6 +29,8 @@
 
 #define DRIVERNAME	"imx_iim"
 
+static unsigned long mac_addr_base;
+
 static int do_fuse_sense(unsigned long reg_base, unsigned int bank,
 		unsigned int row)
 {
@@ -224,6 +226,11 @@ static int imx_iim_blow_enable_set(struct device_d *dev, struct param_d *param,
 
 static int imx_iim_probe(struct device_d *dev)
 {
+	struct imx_iim_platform_data *pdata = dev->platform_data;
+
+	if (pdata)
+		mac_addr_base = pdata->mac_addr_base;
+
 	return 0;
 }
 
@@ -288,4 +295,17 @@ static int imx_iim_init(void)
 
 	return 0;
 }
-device_initcall(imx_iim_init);
+coredevice_initcall(imx_iim_init);
+
+int imx_iim_get_mac(unsigned char *mac)
+{
+	int i;
+
+	if (mac_addr_base == 0)
+		return -EINVAL;
+
+	for (i = 0; i < 6; i++)
+		 mac[i] = readb(mac_addr_base + i*4);
+
+	return 0;
+}

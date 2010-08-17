@@ -39,4 +39,17 @@
 #define IIM_SCS2	0x0034
 #define IIM_SCS3	0x0038
 
+struct imx_iim_platform_data {
+	unsigned long	mac_addr_base;
+};
+
+#ifdef CONFIG_IMX_IIM
+int imx_iim_get_mac(unsigned char *mac);
+#else
+static inline int imx_iim_get_mac(unsigned char *mac)
+{
+	return -EINVAL;
+}
+#endif /* CONFIG_IMX_IIM */
+
 #endif /* __MACH_IMX_IIM_H */

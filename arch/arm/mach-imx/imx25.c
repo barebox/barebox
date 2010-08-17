@@ -44,13 +44,13 @@ u64 imx_uid(void)
 	 * values in IIM are big-endian as per AN3682.
 	 */
 	for (i = 0; i < 8; i++)
-		uid |= (u64)readb(IMX_IIM_BASE + IIM_UID + i*4) << (i*8);
+		uid |= (u64)readb(IIM_UID + i*4) << (i*8);
 
 	return uid;
 }
 
 static struct imx_iim_platform_data imx25_iim_pdata = {
-	.mac_addr_base	= IMX_IIM_BASE + IIM_MAC_ADDR,
+	.mac_addr_base	= IIM_MAC_ADDR,
 };
 
 static struct device_d imx25_iim_dev = {

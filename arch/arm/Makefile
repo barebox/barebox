@@ -39,7 +39,6 @@ CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
 machine-$(CONFIG_ARCH_AT91)		:= at91
-machine-$(CONFIG_ARCH_AT91RM9200)	:= at91rm9200
 machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
 machine-$(CONFIG_ARCH_IMX)		:= imx
 machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik

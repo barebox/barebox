@@ -30,10 +30,6 @@ config ARCH_AT91
 	bool "Atmel AT91"
 	select GENERIC_GPIO
 
-config ARCH_AT91RM9200
-	bool "Atmel AT91RM9200"
-	select CPU_ARM920T
-
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
@@ -65,7 +61,6 @@ endchoice
 source arch/arm/common/Kconfig
 source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
-source arch/arm/mach-at91rm9200/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-netx/Kconfig

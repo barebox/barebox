@@ -257,6 +257,13 @@ config AUTO_COMPLETE
 	depends on CMDLINE_EDITING
 	prompt "Enable auto completion"
 
+config MENU
+	bool
+	prompt "Menu Framework"
+	help
+	   a menu framework that allow us to create list menu to simplify
+	   barebox and make it more user-frendly
+
 config DYNAMIC_CRC_TABLE
 	bool
 	depends on CRC32

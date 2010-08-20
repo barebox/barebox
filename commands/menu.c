@@ -45,12 +45,13 @@ struct cmd_menu {
 	int		re_entrant;
 	char		*description;
 	char		*command;
+	char		*submenu;
 	int		num;
 #endif
 };
 
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-#define OPTS		"m:earlc:d:RsSn:"
+#define OPTS		"m:earlc:d:RsSn:u:"
 #define	is_entry(x)	((x)->entry)
 #else
 #define OPTS		"m:ls"
@@ -60,15 +61,16 @@ struct cmd_menu {
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
 /*
  * menu -e -a -m <menu> -c <command> [-R] -d <description>
+ * menu -e -a -m <menu> -u submenu -d <description>
  */
 static int do_menu_entry_add(struct cmd_menu *cm)
 {
 	struct menu_entry *me;
-	struct menu *m;
+	struct menu *m, *sm;
 	int len;
 	int ret = -ENOMEM;
 
-	if (!cm->menu || !cm->command || !cm->description)
+	if (!cm->menu || (!cm->command && !cm->submenu) || !cm->description)
 		return -EINVAL;
 
 	m = menu_get_by_name(cm->menu);
@@ -83,16 +85,29 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 	if (!me)
 		goto free;
 
-	me->action = menu_action_run;
+	if (cm->submenu) {
+		me->action = menu_action_show;
 
-	len = strlen(cm->command) + 1;
+		sm = menu_get_by_name(cm->submenu);
 
-	me->priv = calloc(len, sizeof(char));
+		if (!sm) {
+			eprintf("SubMenu '%s' not found\n", cm->menu);
+			goto free;
+		}
 
-	if (!me->priv)
-		goto free;
+		me->priv = sm;
+	} else {
+		me->action = menu_action_run;
 
-	strncpy(me->priv, cm->command, len);
+		len = strlen(cm->command) + 1;
+
+		me->priv = calloc(len, sizeof(char));
+
+		if (!me->priv)
+			goto free;
+
+		strncpy(me->priv, cm->command, len);
+	}
 
 	len = strlen(cm->description) + 1;
 
@@ -371,6 +386,9 @@ static int do_menu(struct command *cmdtp, int argc, char *argv[])
 		case 'c':
 			cm.command = optarg;
 			break;
+		case 'u':
+			cm.submenu = optarg;
+			break;
 		case 'd':
 			cm.description = optarg;
 			break;
@@ -453,6 +471,10 @@ static const __maybe_unused char cmd_menu_help[] =
 "Add an entry\n"
 "  (-R for do no exit the menu after executing the command)\n"
 "  menu -e -a -m <menu> -c <command> [-R] -d <description>\n"
+
+"Add a submenu entry\n"
+"  (-R is not needed)\n"
+"  menu -e -a -m <menu> -u <menu> -d <description>\n"
 "\n"
 "Remove an entry\n"
 "  menu -e -r -m <name> -n <num>\n"

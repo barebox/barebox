@@ -306,6 +306,13 @@ void menu_action_run(struct menu *m, struct menu_entry *me)
 		udelay(1000000);
 }
 
+void menu_action_show(struct menu *m, struct menu_entry *me)
+{
+	struct menu *sm = me->priv;
+
+	menu_show(sm);
+}
+
 static int menu_init(void)
 {
 	INIT_LIST_HEAD(&menus.list);

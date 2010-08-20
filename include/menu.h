@@ -82,6 +82,7 @@ struct menu_entry* menu_entry_get_by_num(struct menu* m, int num);
  * menu entry action functions
  */
 void menu_action_run(struct menu *m, struct menu_entry *me);
+void menu_action_show(struct menu *m, struct menu_entry *me);
 void menu_action_exit(struct menu *m, struct menu_entry *me);
 
 #endif /* __MENU_H__ */

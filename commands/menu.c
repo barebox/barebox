@@ -67,7 +67,6 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 {
 	struct menu_entry *me;
 	struct menu *m, *sm;
-	int len;
 	int ret = -ENOMEM;
 
 	if (!cm->menu || (!cm->command && !cm->submenu) || !cm->description)
@@ -99,24 +98,14 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 	} else {
 		me->action = menu_action_run;
 
-		len = strlen(cm->command) + 1;
-
-		me->priv = calloc(len, sizeof(char));
-
+		me->priv = strdup(cm->command);
 		if (!me->priv)
 			goto free;
-
-		strncpy(me->priv, cm->command, len);
 	}
 
-	len = strlen(cm->description) + 1;
-
-	me->display = calloc(len, sizeof(char));;
-
-	if (!m->display)
+	me->display = strdup(cm->description);
+	if (!me->display)
 		goto free;
-
-	strncpy(me->display, cm->description, len);
 
 	ret = menu_add_entry(m, me);
 
@@ -175,7 +164,6 @@ static int do_menu_entry_remove(struct cmd_menu *cm)
 static int do_menu_add(struct cmd_menu *cm)
 {
 	struct menu *m;
-	int len = 0;
 	int ret = -ENOMEM;
 
 	if (!cm->menu || !cm->description)
@@ -186,22 +174,13 @@ static int do_menu_add(struct cmd_menu *cm)
 	if (!m)
 		goto free;
 
-	len = strlen(cm->menu) + 1;
-
-	m->name = calloc(len, sizeof(char));;
+	m->name = strdup(cm->menu);
 	if (!m->name)
 		goto free;
 
-	strncpy(m->name, cm->menu, len);
-
-	len = strlen(cm->description) + 1;
-
-	m->display = calloc(len, sizeof(char));;
-
+	m->display = strdup(cm->description);
 	if (!m->display)
 		goto free;
-
-	strncpy(m->display, cm->description, len);
 
 	ret = menu_add(m);
 

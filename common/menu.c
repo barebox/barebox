@@ -30,11 +30,14 @@
 #include <errno.h>
 #include <readkey.h>
 
-static struct menu menus;
+static LIST_HEAD(menus);
 
 struct menu* menu_get_menus(void)
 {
-	return &menus;
+	if (list_empty(&menus))
+		return NULL;
+
+	return list_entry(&menus, struct menu, list);
 }
 
 void menu_free(struct menu *m)
@@ -60,7 +63,7 @@ int menu_add(struct menu *m)
 	if (menu_get_by_name(m->name))
 		return -EEXIST;
 
-	list_add_tail(&m->list, &menus.list);
+	list_add_tail(&m->list, &menus);
 
 	return 0;
 }
@@ -112,7 +115,7 @@ struct menu* menu_get_by_name(char *name)
 	if (!name)
 		return NULL;
 
-	list_for_each_entry(m, &menus.list, list) {
+	list_for_each_entry(m, &menus, list) {
 		if(strcmp(m->name, name) == 0)
 			return m;
 	}
@@ -291,11 +294,3 @@ void menu_action_show(struct menu *m, struct menu_entry *me)
 
 	menu_show(sm);
 }
-
-static int menu_init(void)
-{
-	INIT_LIST_HEAD(&menus.list);
-
-	return 0;
-}
-postcore_initcall(menu_init);

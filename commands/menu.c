@@ -278,6 +278,9 @@ static int do_menu_list(struct cmd_menu *cm)
 	struct menu* m = NULL;
 	struct menu* menus = menu_get_menus();
 
+	if (!menus)
+		return 0;
+
 	if (is_entry(cm)) {
 		if (cm->menu)
 			m = menu_get_by_name(cm->menu);

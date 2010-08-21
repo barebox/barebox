@@ -39,21 +39,15 @@ struct menu* menu_get_menus(void)
 
 void menu_free(struct menu *m)
 {
-	struct list_head *pos;
-	struct menu_entry *me;
+	struct menu_entry *me, *tmp;
 
 	if (!m)
 		return;
 	free(m->name);
 	free(m->display);
 
-	pos = &m->entries.list;
-
-	if (pos->prev != pos->next && pos->prev != 0)
-		list_for_each(pos, &m->entries.list) {
-			me = list_entry(pos, struct menu_entry, list);
-			menu_entry_free(me);
-		}
+	list_for_each_entry_safe(me, tmp, &m->entries.list, list)
+		menu_entry_free(me);
 
 	free(m);
 }

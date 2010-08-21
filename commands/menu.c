@@ -266,7 +266,7 @@ static void print_entries(struct menu *m)
 	struct list_head *pos;
 	struct menu_entry *me;
 
-	list_for_each(pos, &(m->entries.list)) {
+	list_for_each(pos, &(m->entries)) {
 		me = list_entry(pos, struct menu_entry, list);
 		printf("%d: %s\n", me->num, me->display);
 	}

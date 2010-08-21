@@ -43,7 +43,8 @@ struct menu {
 	char *display;
 
 	struct list_head list;
-	struct menu_entry entries;
+	struct list_head entries;
+
 	int nb_entries;
 	int width;
 	struct menu_entry *selected;
@@ -59,7 +60,7 @@ static inline struct menu* menu_alloc(void)
 
 	m = calloc(1, sizeof(struct menu));
 	if (m) {
-		INIT_LIST_HEAD(&m->entries.list);
+		INIT_LIST_HEAD(&m->entries);
 		m->nb_entries = 0;
 	}
 	return m;

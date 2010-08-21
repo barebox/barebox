@@ -46,7 +46,7 @@ void menu_free(struct menu *m)
 	free(m->name);
 	free(m->display);
 
-	list_for_each_entry_safe(me, tmp, &m->entries.list, list)
+	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
 
 	free(m);
@@ -86,7 +86,7 @@ int menu_add_entry(struct menu *m, struct menu_entry *me)
 
 	m->nb_entries++;
 	me->num = m->nb_entries;
-	list_add_tail(&me->list, &m->entries.list);
+	list_add_tail(&me->list, &m->entries);
 
 	return 0;
 }
@@ -102,7 +102,7 @@ void menu_remove_entry(struct menu *m, struct menu_entry *me)
 	m->nb_entries--;
 	list_del(&me->list);
 
-	list_for_each(pos, &m->entries.list) {
+	list_for_each(pos, &m->entries) {
 		me = list_entry(pos, struct menu_entry, list);
 		me->num = i++;
 	}
@@ -133,7 +133,7 @@ struct menu_entry* menu_entry_get_by_num(struct menu* m, int num)
 	if (!m || num < 1 || num > m->nb_entries)
 		return NULL;
 
-	list_for_each(pos, &m->entries.list) {
+	list_for_each(pos, &m->entries) {
 		me = list_entry(pos, struct menu_entry, list);
 		if(me->num == num)
 			return me;
@@ -168,7 +168,7 @@ int menu_set_selected_entry(struct menu *m, struct menu_entry* me)
 	if (!m || !me)
 		return -EINVAL;
 
-	list_for_each(pos, &m->entries.list) {
+	list_for_each(pos, &m->entries) {
 		tmp = list_entry(pos, struct menu_entry, list);
 		if(me == tmp) {
 			m->selected = me;
@@ -207,14 +207,14 @@ static void print_menu(struct menu *m)
 		puts(m->name);
 	}
 
-	list_for_each(pos, &m->entries.list) {
+	list_for_each(pos, &m->entries) {
 		me = list_entry(pos, struct menu_entry, list);
 		if(m->selected != me)
 			print_menu_entry(m, me, 0);
 	}
 
 	if (!m->selected) {
-		m->selected = list_first_entry(&m->entries.list,
+		m->selected = list_first_entry(&m->entries,
 						struct menu_entry, list);
 	}
 
@@ -226,7 +226,7 @@ int menu_show(struct menu *m)
 	int ch;
 	int escape = 0;
 
-	if(!m || list_empty(&m->entries.list))
+	if(!m || list_empty(&m->entries))
 		return -EINVAL;
 
 	print_menu(m);
@@ -245,7 +245,7 @@ int menu_show(struct menu *m)
 			print_menu_entry(m, m->selected, 0);
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);
-			if (&(m->selected->list) == &(m->entries.list)) {
+			if (&(m->selected->list) == &(m->entries)) {
 				m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 							 list);
 			}
@@ -256,7 +256,7 @@ int menu_show(struct menu *m)
 			print_menu_entry(m, m->selected, 0);
 			m->selected = list_entry(m->selected->list.next, struct menu_entry,
 						 list);
-			if (&(m->selected->list) == &(m->entries.list)) {
+			if (&(m->selected->list) == &(m->entries)) {
 				m->selected = list_entry(m->selected->list.next, struct menu_entry,
 							 list);
 			}

@@ -80,9 +80,8 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 	}
 
 	me = menu_entry_alloc();
-
 	if (!me)
-		goto free;
+		return -ENOMEM;
 
 	if (cm->submenu) {
 		me->action = menu_action_show;

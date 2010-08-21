@@ -263,13 +263,10 @@ static int do_menu_show(struct cmd_menu *cm)
 
 static void print_entries(struct menu *m)
 {
-	struct list_head *pos;
 	struct menu_entry *me;
 
-	list_for_each(pos, &(m->entries)) {
-		me = list_entry(pos, struct menu_entry, list);
+	list_for_each_entry(me, &m->entries, list)
 		printf("%d: %s\n", me->num, me->display);
-	}
 }
 
 /*
@@ -278,7 +275,6 @@ static void print_entries(struct menu *m)
  */
 static int do_menu_list(struct cmd_menu *cm)
 {
-	struct list_head *pos;
 	struct menu* m = NULL;
 	struct menu* menus = menu_get_menus();
 
@@ -292,8 +288,7 @@ static int do_menu_list(struct cmd_menu *cm)
 		}
 	}
 
-	list_for_each(pos, &menus->list) {
-		m = list_entry(pos, struct menu, list);
+	list_for_each_entry(m, &menus->list, list) {
 		printf("%s: %s\n", m->name, m->display? m->display : m->name);
 		if (is_entry(cm))
 			print_entries(m);

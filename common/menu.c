@@ -93,7 +93,6 @@ int menu_add_entry(struct menu *m, struct menu_entry *me)
 
 void menu_remove_entry(struct menu *m, struct menu_entry *me)
 {
-	struct list_head *pos;
 	int i = 1;
 
 	if (!m || !me)
@@ -102,22 +101,18 @@ void menu_remove_entry(struct menu *m, struct menu_entry *me)
 	m->nb_entries--;
 	list_del(&me->list);
 
-	list_for_each(pos, &m->entries) {
-		me = list_entry(pos, struct menu_entry, list);
+	list_for_each_entry(me, &m->entries, list)
 		me->num = i++;
-	}
 }
 
 struct menu* menu_get_by_name(char *name)
 {
-	struct list_head *pos;
 	struct menu* m;
 
 	if (!name)
 		return NULL;
 
-	list_for_each(pos, &menus.list) {
-		m = list_entry(pos, struct menu, list);
+	list_for_each_entry(m, &menus.list, list) {
 		if(strcmp(m->name, name) == 0)
 			return m;
 	}
@@ -127,14 +122,12 @@ struct menu* menu_get_by_name(char *name)
 
 struct menu_entry* menu_entry_get_by_num(struct menu* m, int num)
 {
-	struct list_head *pos;
 	struct menu_entry* me;
 
 	if (!m || num < 1 || num > m->nb_entries)
 		return NULL;
 
-	list_for_each(pos, &m->entries) {
-		me = list_entry(pos, struct menu_entry, list);
+	list_for_each_entry(me, &m->entries, list) {
 		if(me->num == num)
 			return me;
 	}
@@ -162,14 +155,12 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me, int reverse)
 
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me)
 {
-	struct list_head *pos;
 	struct menu_entry* tmp;
 
 	if (!m || !me)
 		return -EINVAL;
 
-	list_for_each(pos, &m->entries) {
-		tmp = list_entry(pos, struct menu_entry, list);
+	list_for_each_entry(tmp, &m->entries, list) {
 		if(me == tmp) {
 			m->selected = me;
 			return 0;
@@ -195,7 +186,6 @@ int menu_set_selected(struct menu *m, int num)
 
 static void print_menu(struct menu *m)
 {
-	struct list_head *pos;
 	struct menu_entry *me;
 
 	clear();
@@ -207,8 +197,7 @@ static void print_menu(struct menu *m)
 		puts(m->name);
 	}
 
-	list_for_each(pos, &m->entries) {
-		me = list_entry(pos, struct menu_entry, list);
+	list_for_each_entry(me, &m->entries, list) {
 		if(m->selected != me)
 			print_menu_entry(m, me, 0);
 	}

@@ -55,7 +55,14 @@ struct menu {
  */
 static inline struct menu* menu_alloc(void)
 {
-	return calloc(1, sizeof(struct menu));
+	struct menu *m;
+
+	m = calloc(1, sizeof(struct menu));
+	if (m) {
+		INIT_LIST_HEAD(&m->entries.list);
+		m->nb_entries = 0;
+	}
+	return m;
 }
 void menu_free(struct menu *m);
 int menu_add(struct menu* m);

@@ -68,10 +68,6 @@ int menu_add(struct menu *m)
 
 	list_add_tail(&m->list, &menus.list);
 
-	m->nb_entries = 0;
-
-	INIT_LIST_HEAD(&m->entries.list);
-
 	return 0;
 }
 

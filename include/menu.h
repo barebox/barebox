@@ -32,10 +32,10 @@ struct menu_entry {
 	int num;
 	char *display;
 	void (*action)(struct menu *m, struct menu_entry *me);
+	void (*free)(struct menu_entry *me);
 	int non_re_ent;
 
 	struct list_head list;
-	void *priv;
 };
 
 struct menu {
@@ -65,6 +65,8 @@ static inline struct menu* menu_alloc(void)
 	}
 	return m;
 }
+struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *display);
+struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *command);
 void menu_free(struct menu *m);
 int menu_add(struct menu* m);
 void menu_remove(struct menu *m);
@@ -89,8 +91,6 @@ struct menu_entry* menu_entry_get_by_num(struct menu* m, int num);
 /*
  * menu entry action functions
  */
-void menu_action_run(struct menu *m, struct menu_entry *me);
-void menu_action_show(struct menu *m, struct menu_entry *me);
 void menu_action_exit(struct menu *m, struct menu_entry *me);
 
 #endif /* __MENU_H__ */

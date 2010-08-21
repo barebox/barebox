@@ -29,6 +29,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <readkey.h>
+#include <linux/err.h>
 
 static LIST_HEAD(menus);
 
@@ -143,8 +144,7 @@ void menu_entry_free(struct menu_entry *me)
 	if (!me)
 		return;
 
-	free(me->display);
-	free(me);
+	me->free(me);
 }
 
 static void print_menu_entry(struct menu *m, struct menu_entry *me, int reverse)
@@ -273,14 +273,74 @@ int menu_show(struct menu *m)
 
 void menu_action_exit(struct menu *m, struct menu_entry *me) {}
 
-void menu_action_run(struct menu *m, struct menu_entry *me)
+struct submenu {
+	char *submenu;
+	struct menu_entry entry;
+};
+
+static void menu_action_show(struct menu *m, struct menu_entry *me)
 {
+	struct submenu *s = container_of(me, struct submenu, entry);
+	struct menu *sm;
+
+	sm = menu_get_by_name(s->submenu);
+	if (sm)
+		menu_show(sm);
+	else
+		eprintf("no such menu: %s\n", s->submenu);
+}
+
+static void submenu_free(struct menu_entry *me)
+{
+	struct submenu *s = container_of(me, struct submenu, entry);
+
+	free(s->entry.display);
+	free(s->submenu);
+	free(s);
+}
+
+struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *display)
+{
+	struct submenu *s = calloc(1, sizeof(*s));
 	int ret;
-	const char *s = getenv((const char*)me->priv);
+
+	if (!s)
+		return ERR_PTR(-ENOMEM);
+
+	s->submenu = strdup(submenu);
+	s->entry.action = menu_action_show;
+	s->entry.free = submenu_free;
+	s->entry.display = strdup(display);
+	if (!s->entry.display || !s->submenu) {
+		ret = -ENOMEM;
+		goto err_free;
+	}
+
+	ret = menu_add_entry(parent, &s->entry);
+	if (ret)
+		goto err_free;
+
+	return &s->entry;
+
+err_free:
+	submenu_free(&s->entry);
+	return ERR_PTR(ret);
+}
+
+struct action_entry {
+	char *command;
+	struct menu_entry entry;
+};
+
+static void menu_action_command(struct menu *m, struct menu_entry *me)
+{
+	struct action_entry *e = container_of(me, struct action_entry, entry);
+	int ret;
+	const char *s = getenv(e->command);
 
 	/* can be a command as boot */
 	if (!s)
-		s = me->priv;
+		s = e->command;
 
 	ret = run_command (s, 0);
 
@@ -288,9 +348,41 @@ void menu_action_run(struct menu *m, struct menu_entry *me)
 		udelay(1000000);
 }
 
-void menu_action_show(struct menu *m, struct menu_entry *me)
+static void menu_command_free(struct menu_entry *me)
 {
-	struct menu *sm = me->priv;
+	struct action_entry *e = container_of(me, struct action_entry, entry);
 
-	menu_show(sm);
+	free(e->entry.display);
+	free(e->command);
+
+	free(e);
 }
+
+struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *command)
+{
+	struct action_entry *e = calloc(1, sizeof(*e));
+	int ret;
+
+	if (!e)
+		return ERR_PTR(-ENOMEM);
+
+	e->command = strdup(command);
+	e->entry.action = menu_action_command;
+	e->entry.free = menu_command_free;
+	e->entry.display = strdup(display);
+
+	if (!e->entry.display || !e->command) {
+		ret = -ENOMEM;
+		goto err_free;
+	}
+
+	ret = menu_add_entry(m, &e->entry);
+	if (ret)
+		goto err_free;
+
+	return &e->entry;
+err_free:
+	menu_command_free(&e->entry);
+	return ERR_PTR(ret);
+}
+

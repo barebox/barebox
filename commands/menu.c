@@ -26,6 +26,7 @@
 #include <menu.h>
 #include <getopt.h>
 #include <errno.h>
+#include <linux/err.h>
 
 typedef enum {
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
@@ -66,8 +67,7 @@ struct cmd_menu {
 static int do_menu_entry_add(struct cmd_menu *cm)
 {
 	struct menu_entry *me;
-	struct menu *m, *sm;
-	int ret = -ENOMEM;
+	struct menu *m;
 
 	if (!cm->menu || (!cm->command && !cm->submenu) || !cm->description)
 		return -EINVAL;
@@ -79,50 +79,16 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 		return -EINVAL;
 	}
 
-	me = menu_entry_alloc();
+	if (cm->submenu)
+		me = menu_add_submenu(m, cm->submenu, cm->description);
+	else
+		me = menu_add_command_entry(m, cm->description, cm->command);
 	if (!me)
-		return -ENOMEM;
-
-	if (cm->submenu) {
-		me->action = menu_action_show;
-
-		sm = menu_get_by_name(cm->submenu);
-
-		if (!sm) {
-			eprintf("SubMenu '%s' not found\n", cm->menu);
-			goto free;
-		}
-
-		me->priv = sm;
-	} else {
-		me->action = menu_action_run;
-
-		me->priv = strdup(cm->command);
-		if (!me->priv)
-			goto free;
-	}
-
-	me->display = strdup(cm->description);
-	if (!me->display)
-		goto free;
-
-	ret = menu_add_entry(m, me);
-
-	if (ret)
-		goto free;
+		return PTR_ERR(me);
 
 	me->non_re_ent = !cm->re_entrant;
 
 	return 0;
-
-free:
-	eputs("Entry add fail\n");
-
-	free(me->priv);
-
-	menu_entry_free(me);
-
-	return ret;
 }
 
 /*

@@ -23,6 +23,8 @@
 #ifndef __MACH_IMX_IIM_H
 #define __MACH_IMX_IIM_H
 
+#include <errno.h>
+
 #define IIM_STAT	0x0000
 #define IIM_STATM	0x0004
 #define IIM_ERR		0x0008

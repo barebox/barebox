@@ -10,7 +10,7 @@ than listed here. But these files are the main control files:
    - Documentation/users_manual.dox
     - Documentation/commands.dox
    - Documentation/developers_manual.dox
-    - board/board.dox
+    - Documentation/board.dox
     - arch/architecture.dox
      - arch/arm/mach-arm.dox
      - arch/blackfin/mach-bf.dox

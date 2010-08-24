@@ -47,7 +47,7 @@ if [ -n $nor_parts ]; then
 fi
 
 if [ -n $nand_parts ]; then
-	mtdparts="${mtdparts}$nand_device:${nor_parts};"
+	mtdparts="${mtdparts}${nand_device}:${nand_parts};"
 fi
 
 if [ -n $mtdparts ]; then

@@ -62,7 +62,7 @@ fi
 if [ ! -e /dev/ram0.kernel ]; then
 	# Here we can safely put the kernel without risking of overwriting it
 	# while extracting
-	addpart dev/ram0 8M(kernel)
+	addpart dev/ram0 8M@8M(kernel)
 fi
 
 if [ x$kernel_loc = xnet ]; then

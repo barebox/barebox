@@ -2,12 +2,12 @@
 #include <command.h>
 #include <net.h>
 #include <asm/io.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <mach/netx-xc.h>
 #include <mach/netx-eth.h>
 #include <mach/netx-regs.h>
 #include <xfuncs.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <init.h>
 #include <driver.h>
 
@@ -48,7 +48,7 @@
 #define CON_FIFO_PORT_LO(xcno)  (6 + ((xcno) << 3))    /* Index of the FIFO where sent Data packages are confirmed */
 
 struct netx_eth_priv {
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 	int xcno;
 };
 
@@ -119,25 +119,28 @@ static int netx_eth_rx (struct eth_device *edev)
 	return 0;
 }
 
-static int netx_miiphy_read(struct miiphy_device *mdev, uint8_t phy_addr,
-		uint8_t reg, uint16_t * val)
+static int netx_miidev_read(struct mii_device *mdev, int phy_addr, int reg)
 {
+	int value;
+
 	MIIMU_REG = MIIMU_SNRDY | MIIMU_PREAMBLE | MIIMU_PHYADDR(phy_addr) |
 	            MIIMU_REGADDR(reg) | MIIMU_PHY_NRES;
 
 	while(MIIMU_REG & MIIMU_SNRDY);
 
-	*val = MIIMU_REG >> 16;
+	value = MIIMU_REG >> 16;
 
-/*	printf("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n",__FUNCTION__,addr,reg,*value); */
+	debug("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n", __FUNCTION__,
+	      addr, reg, value)
 
-	return 0;
+	return value;
 }
 
-static int netx_miiphy_write(struct miiphy_device *mdev, uint8_t phy_addr,
-	uint8_t reg, uint16_t val)
+static int netx_miidev_write(struct mii_device *mdev, int phy_addr,
+	int reg, int val)
 {
-/*	printf("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n",__FUNCTION__,addr,reg,value); */
+	debug("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n",__FUNCTION__,
+	      addr, reg, val);
 
 	MIIMU_REG = MIIMU_SNRDY | MIIMU_PREAMBLE | MIIMU_PHYADDR(phy_addr) |
 	            MIIMU_REGADDR(reg) | MIIMU_PHY_NRES | MIIMU_OPMODE_WRITE |
@@ -187,7 +190,7 @@ static int netx_eth_init_dev(struct eth_device *edev)
 	for (i = 2; i <= 18; i++)
 		PFIFO_REG( PFIFO_BASE(EMPTY_PTR_FIFO(xcno)) ) = FIFO_PTR_FRAMENO(i) | FIFO_PTR_SEGMENT(xcno);
 
-	miiphy_restart_aneg(&priv->miiphy);
+	miidev_restart_aneg(&priv->miidev);
 	return 0;
 }
 
@@ -257,13 +260,13 @@ static int netx_eth_probe(struct device_d *dev)
 	edev->get_ethaddr = netx_eth_get_ethaddr;
 	edev->set_ethaddr = netx_eth_set_ethaddr;
 
-	priv->miiphy.read = netx_miiphy_read;
-	priv->miiphy.write = netx_miiphy_write;
-	priv->miiphy.address = 0;
-	priv->miiphy.flags = 0;
+	priv->miidev.read = netx_miidev_read;
+	priv->miidev.write = netx_miidev_write;
+	priv->miidev.address = 0;
+	priv->miidev.flags = 0;
 
 	netx_eth_init_phy();
-	miiphy_register(&priv->miiphy);
+	mii_register(&priv->miidev);
 	eth_register(edev);
 
         return 0;

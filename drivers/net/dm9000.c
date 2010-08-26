@@ -46,7 +46,7 @@
 #include <command.h>
 #include <driver.h>
 #include <clock.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
@@ -167,7 +167,7 @@
 struct dm9000_priv {
 	unsigned long iobase;
 	unsigned long iodata;
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 	int buswidth;
 };
 
@@ -200,9 +200,9 @@ static void DM9000_iow(struct dm9000_priv *priv, int reg, u8 value)
 	writeb(value, priv->iodata);
 }
 
-static int dm9000_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
-		uint8_t reg, uint16_t * val)
+static int dm9000_phy_read(struct mii_device *mdev, int addr, int reg)
 {
+	int val;
 	struct eth_device *edev = mdev->edev;
 	struct dm9000_priv *priv = edev->priv;
 
@@ -211,15 +211,14 @@ static int dm9000_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 	DM9000_iow(priv, DM9000_EPCR, 0xc);	/* Issue phyxcer read command */
 	udelay(100);			/* Wait read complete */
 	DM9000_iow(priv, DM9000_EPCR, 0x0);	/* Clear phyxcer read command */
-	*val = (DM9000_ior(priv, DM9000_EPDRH) << 8) | DM9000_ior(priv, DM9000_EPDRL);
+	val = (DM9000_ior(priv, DM9000_EPDRH) << 8) | DM9000_ior(priv, DM9000_EPDRL);
 
 	/* The read data keeps on REG_0D & REG_0E */
 	debug("phy_read(%d): %d\n", reg, val);
-	return 0;
+	return val;
 }
 
-static int dm9000_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
-	uint8_t reg, uint16_t val)
+static int dm9000_phy_write(struct mii_device *mdev, int addr, int reg, int val)
 {
 	struct eth_device *edev = mdev->edev;
 	struct dm9000_priv *priv = edev->priv;
@@ -268,8 +267,8 @@ static int dm9000_eth_open(struct eth_device *edev)
 {
 	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
 
-	miiphy_wait_aneg(&priv->miiphy);
-	miiphy_print_status(&priv->miiphy);
+	miidev_wait_aneg(&priv->miidev);
+	miidev_print_status(&priv->miidev);
 	return 0;
 }
 
@@ -466,7 +465,7 @@ static int dm9000_init_dev(struct eth_device *edev)
 {
 	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
 
-	miiphy_restart_aneg(&priv->miiphy);
+	miidev_restart_aneg(&priv->miidev);
 	return 0;
 }
 
@@ -523,13 +522,13 @@ static int dm9000_probe(struct device_d *dev)
 	DM9000_iow(priv, DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN);	/* RX enable */
 	DM9000_iow(priv, DM9000_IMR, IMR_PAR);	/* Enable TX/RX interrupt mask */
 
-	priv->miiphy.read = dm9000_phy_read;
-	priv->miiphy.write = dm9000_phy_write;
-	priv->miiphy.address = 0;
-	priv->miiphy.flags = 0;
-	priv->miiphy.edev = edev;
+	priv->miidev.read = dm9000_phy_read;
+	priv->miidev.write = dm9000_phy_write;
+	priv->miidev.address = 0;
+	priv->miidev.flags = 0;
+	priv->miidev.edev = edev;
 
-	miiphy_register(&priv->miiphy);
+	mii_register(&priv->miidev);
 	eth_register(edev);
 
         return 0;

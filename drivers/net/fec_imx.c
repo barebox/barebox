@@ -22,9 +22,9 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <driver.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <fec.h>
 
 #include <asm/mmu.h>
@@ -47,8 +47,7 @@ struct fec_frame {
 /*
  * MII-interface related functions
  */
-static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t * retVal)
+static int fec_miidev_read(struct mii_device *mdev, int phyAddr, int regAddr)
 {
 	struct eth_device *edev = mdev->edev;
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
@@ -88,13 +87,11 @@ static int fec_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = readl(fec->regs + FEC_MII_DATA);
-
-	return 0;
+	return readl(fec->regs + FEC_MII_DATA);
 }
 
-static int fec_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t data)
+static int fec_miidev_write(struct mii_device *mdev, int phyAddr,
+	int regAddr, int data)
 {
 	struct eth_device *edev = mdev->edev;
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
@@ -317,7 +314,7 @@ static int fec_init(struct eth_device *dev)
 	writel(FEC_MAX_PKT_SIZE, fec->regs + FEC_EMRBR);
 
 	if (fec->xcv_type != SEVENWIRE)
-		miiphy_restart_aneg(&fec->miiphy);
+		miidev_restart_aneg(&fec->miidev);
 
 	return 0;
 }
@@ -351,10 +348,10 @@ static int fec_open(struct eth_device *edev)
 	fec_rx_task_enable(fec);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		ret = miiphy_wait_aneg(&fec->miiphy);
+		ret = miidev_wait_aneg(&fec->miidev);
 		if (ret)
 			return ret;
-		miiphy_print_status(&fec->miiphy);
+		miidev_print_status(&fec->miidev);
 	}
 
 	return 0;
@@ -583,13 +580,13 @@ static int fec_probe(struct device_d *dev)
 	fec->xcv_type = pdata->xcv_type;
 
 	if (fec->xcv_type != SEVENWIRE) {
-		fec->miiphy.read = fec_miiphy_read;
-		fec->miiphy.write = fec_miiphy_write;
-		fec->miiphy.address = pdata->phy_addr;
-		fec->miiphy.flags = pdata->xcv_type == MII10 ? MIIPHY_FORCE_10 : 0;
-		fec->miiphy.edev = edev;
+		fec->miidev.read = fec_miidev_read;
+		fec->miidev.write = fec_miidev_write;
+		fec->miidev.address = pdata->phy_addr;
+		fec->miidev.flags = pdata->xcv_type == MII10 ? MIIDEV_FORCE_10 : 0;
+		fec->miidev.edev = edev;
 
-		miiphy_register(&fec->miiphy);
+		mii_register(&fec->miidev);
 	}
 
 	eth_register(edev);

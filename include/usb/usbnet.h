@@ -23,7 +23,7 @@
 #define	__LINUX_USB_USBNET_H
 
 #include <net.h>
-#include <miiphy.h>
+#include <miidev.h>
 
 /* interface from usbnet core to each USB networking link we handle */
 struct usbnet {
@@ -40,7 +40,7 @@ struct usbnet {
 
 	/* protocol/interface state */
 	struct eth_device	edev;
-	struct miiphy_device	miiphy;
+	struct mii_device	miidev;
 
 	int			msg_enable;
 	unsigned long		data [5];

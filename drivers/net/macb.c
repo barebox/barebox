@@ -44,7 +44,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <mach/board.h>
@@ -98,7 +98,7 @@ struct macb_device {
 	const struct device	*dev;
 	struct eth_device	netdev;
 
-	struct miiphy_device	miiphy;
+	struct mii_device	miidev;
 
 	unsigned int		flags;
 };
@@ -214,8 +214,8 @@ static int macb_open(struct eth_device *edev)
 
 	debug("%s\n", __func__);
 
-	miiphy_wait_aneg(&macb->miiphy);
-	miiphy_print_status(&macb->miiphy);
+	miidev_wait_aneg(&macb->miidev);
+	miidev_print_status(&macb->miidev);
 
 	ncfgr = readl(macb->regs + MACB_NCFGR);
 	ncfgr &= ~(MACB_BIT(SPD) | MACB_BIT(FD));
@@ -293,8 +293,7 @@ static void macb_halt(struct eth_device *edev)
 	writel(MACB_BIT(CLRSTAT), macb->regs + MACB_NCR);
 }
 
-static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
-		uint8_t reg, uint16_t * value)
+static int macb_phy_read(struct mii_device *mdev, int addr, int reg)
 {
 	struct eth_device *edev = mdev->edev;
 	struct macb_device *macb = edev->priv;
@@ -303,6 +302,7 @@ static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
 	unsigned long netstat;
 	unsigned long frame;
 	int iflag;
+	int value;
 	uint64_t start;
 
 	debug("%s\n", __func__);
@@ -331,7 +331,7 @@ static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
 	} while (!(netstat & MACB_BIT(IDLE)));
 
 	frame = readl(macb->regs + MACB_MAN);
-	*value = MACB_BFEXT(DATA, frame);
+	value = MACB_BFEXT(DATA, frame);
 
 	iflag = disable_interrupts();
 	netctl = readl(macb->regs + MACB_NCR);
@@ -340,11 +340,10 @@ static int macb_phy_read(struct miiphy_device *mdev, uint8_t addr,
 	if (iflag)
 		enable_interrupts();
 
-	return 0;
+	return value;
 }
 
-static int macb_phy_write(struct miiphy_device *mdev, uint8_t addr,
-	uint8_t reg, uint16_t value)
+static int macb_phy_write(struct mii_device *mdev, int addr, int reg, int value)
 {
 	struct eth_device *edev = mdev->edev;
 	struct macb_device *macb = edev->priv;
@@ -435,12 +434,12 @@ static int macb_probe(struct device_d *dev)
 	edev->get_ethaddr = macb_get_ethaddr;
 	edev->set_ethaddr = macb_set_ethaddr;
 
-	macb->miiphy.read = macb_phy_read;
-	macb->miiphy.write = macb_phy_write;
-	macb->miiphy.address = pdata->phy_addr;
-	macb->miiphy.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
-		MIIPHY_FORCE_LINK : 0;
-	macb->miiphy.edev = edev;
+	macb->miidev.read = macb_phy_read;
+	macb->miidev.write = macb_phy_write;
+	macb->miidev.address = pdata->phy_addr;
+	macb->miidev.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
+		MIIDEV_FORCE_LINK : 0;
+	macb->miidev.edev = edev;
 	macb->flags = pdata->flags;
 
 	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE); 
@@ -471,7 +470,7 @@ static int macb_probe(struct device_d *dev)
 
 	writel(ncfgr, macb->regs + MACB_NCFGR);
 
-	miiphy_register(&macb->miiphy);
+	mii_register(&macb->miidev);
 	eth_register(edev);
 
 	return 0;

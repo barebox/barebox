@@ -5,7 +5,7 @@ menuconfig NET_USB
 if NET_USB
 
 config NET_USB_ASIX
-	select MIIPHY
+	select MIIDEV
 	bool "Asix compatible"
 
 endif

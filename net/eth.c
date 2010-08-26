@@ -26,7 +26,7 @@
 #include <driver.h>
 #include <init.h>
 #include <net.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <errno.h>
 #include <malloc.h>
 

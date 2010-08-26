@@ -30,7 +30,7 @@
 
 #include <command.h>
 #include <net.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <malloc.h>
 #include <init.h>
 #include <xfuncs.h>
@@ -367,7 +367,7 @@
 #define CHIP_9218	0x118a
 
 struct smc911x_priv {
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 	unsigned long base;
 };
 
@@ -465,8 +465,7 @@ static int smc911x_set_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int smc911x_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
-		uint8_t reg, uint16_t * val)
+static int smc911x_phy_read(struct mii_device *mdev, int phy_addr, int reg)
 {
 	struct eth_device *edev = mdev->edev;
 
@@ -477,13 +476,11 @@ static int smc911x_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
-	*val = smc911x_get_mac_csr(edev, MII_DATA);
-
-	return 0;
+	return smc911x_get_mac_csr(edev, MII_DATA);
 }
 
-static int smc911x_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
-	uint8_t reg, uint16_t val)
+static int smc911x_phy_write(struct mii_device *mdev, int phy_addr,
+	int reg, int val)
 {
 	struct eth_device *edev = mdev->edev;
 
@@ -579,8 +576,8 @@ static int smc911x_eth_open(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
 
-	miiphy_wait_aneg(&priv->miiphy);
-	miiphy_print_status(&priv->miiphy);
+	miidev_wait_aneg(&priv->miidev);
+	miidev_print_status(&priv->miidev);
 
 	/* Turn on Tx + Rx */
 	smc911x_enable(edev);
@@ -681,7 +678,7 @@ static int smc911x_init_dev(struct eth_device *edev)
 	smc911x_set_mac_csr(edev, MAC_CR, MAC_CR_TXEN | MAC_CR_RXEN |
 			MAC_CR_HBDIS);
 
-	miiphy_restart_aneg(&priv->miiphy);
+	miidev_restart_aneg(&priv->miidev);
 
 	return 0;
 }
@@ -729,17 +726,17 @@ static int smc911x_probe(struct device_d *dev)
 	edev->get_ethaddr = smc911x_get_ethaddr;
 	edev->set_ethaddr = smc911x_set_ethaddr;
 
-	priv->miiphy.read = smc911x_phy_read;
-	priv->miiphy.write = smc911x_phy_write;
-	priv->miiphy.address = 1;
-	priv->miiphy.flags = 0;
-	priv->miiphy.edev = edev;
+	priv->miidev.read = smc911x_phy_read;
+	priv->miidev.write = smc911x_phy_write;
+	priv->miidev.address = 1;
+	priv->miidev.flags = 0;
+	priv->miidev.edev = edev;
 	priv->base = dev->map_base;
 
 	smc911x_reset(edev);
 	smc911x_phy_reset(edev);
 
-	miiphy_register(&priv->miiphy);
+	mii_register(&priv->miidev);
 	eth_register(edev);
 
         return 0;

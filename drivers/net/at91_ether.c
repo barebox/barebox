@@ -24,7 +24,7 @@
 #include <at91rm9200_net.h>
 #include <init.h>
 #include <net.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <malloc.h>
 #include <driver.h>
 
@@ -208,7 +208,7 @@ static void at91rm9200_eth_halt (struct eth_device *edev)
 };
 
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-int  at91rm9200_miiphy_read(char *devname, unsigned char addr,
+int  at91rm9200_miidev_read(char *devname, unsigned char addr,
 		unsigned char reg, unsigned short * value)
 {
 	at91rm9200_EmacEnableMDIO (p_mac);
@@ -217,7 +217,7 @@ int  at91rm9200_miiphy_read(char *devname, unsigned char addr,
 	return 0;
 }
 
-int  at91rm9200_miiphy_write(char *devname, unsigned char addr,
+int  at91rm9200_miidev_write(char *devname, unsigned char addr,
 		unsigned char reg, unsigned short value)
 {
 	at91rm9200_EmacEnableMDIO (p_mac);
@@ -228,10 +228,10 @@ int  at91rm9200_miiphy_write(char *devname, unsigned char addr,
 
 #endif	/* defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII) */
 
-int at91rm9200_miiphy_initialize(void)
+int at91rm9200_miidev_initialize(void)
 {
 #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-	miiphy_register("at91rm9200phy", at91rm9200_miiphy_read, at91rm9200_miiphy_write);
+	mii_register("at91rm9200phy", at91rm9200_miidev_read, at91rm9200_miidev_write);
 #endif
 	return 0;
 }

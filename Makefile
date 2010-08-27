@@ -290,7 +290,7 @@ LINUXINCLUDE    := -Iinclude \
                    $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
 		   -I$(srctree)/arch/$(ARCH)/include \
 		   -I$(objtree)/arch/$(ARCH)/include \
-		   -include include/linux/autoconf.h
+                   -include include/generated/autoconf.h
 
 CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
@@ -978,7 +978,7 @@ CLEAN_FILES +=	barebox System.map include/barebox_default_env.h \
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
 MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                  include/linux/autoconf.h include/linux/version.h      \
+                  include/generated/autoconf.h include/linux/version.h      \
                   include/linux/utsrelease.h include/config.h           \
 		  Module.symvers tags TAGS cscope*
 

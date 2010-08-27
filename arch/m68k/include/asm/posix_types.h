@@ -27,7 +27,6 @@
 #define __ARCH_M68K_POSIX_TYPES_H
 
 
-typedef unsigned short		__kernel_dev_t;
 typedef unsigned long		__kernel_ino_t;
 typedef unsigned short		__kernel_mode_t;
 typedef unsigned short		__kernel_nlink_t;

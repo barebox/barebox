@@ -69,12 +69,11 @@ struct device_d {
 	 * something like eth0 or nor0. */
 	int id;
 
-	/*! FIXME */
-	unsigned long size;
+	resource_size_t size;
 
 	/*! For devices which are directly mapped into memory, i.e. NOR
 	 * Flash or SDRAM. */
-	unsigned long map_base;
+	resource_size_t map_base;
 
 	void *platform_data; /*! board specific information about this device */
 

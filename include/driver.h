@@ -25,7 +25,8 @@
 
 #include <linux/list.h>
 
-#define MAX_DRIVER_NAME 32
+#define MAX_DRIVER_NAME		32
+#define FORMAT_DRIVER_MANE_ID	"%s%d"
 
 #include <param.h>
 
@@ -176,9 +177,11 @@ int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
+extern const char *dev_id(const struct device_d *dev);
+
 static inline const char *dev_name(const struct device_d *dev)
 {
-	return dev->name;
+	return dev_id(dev);
 }
 
 /* linear list over all available devices
@@ -239,11 +242,10 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 }
 
 /* debugging and troubleshooting/diagnostic helpers. */
-extern const char *dev_id(const struct device_d *dev);
 
 #define dev_printf(dev, format, arg...)	\
-	printf("%s@%s: " format , dev_name(dev) , \
-	       dev_id(dev) , ## arg)
+	printf("%s@%s: " format , (dev)->name , \
+	       dev_name(dev) , ## arg)
 
 #define dev_emerg(dev, format, arg...)		\
 	dev_printf((dev) , format , ## arg)

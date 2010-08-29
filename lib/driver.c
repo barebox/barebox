@@ -45,11 +45,9 @@ static LIST_HEAD(active);
 struct device_d *get_device_by_name(const char *name)
 {
 	struct device_d *dev;
-	char devname[MAX_DRIVER_NAME + 3];
 
 	for_each_device(dev) {
-		sprintf(devname, "%s%d", dev->name, dev->id);
-		if(!strcmp(name, devname))
+		if(!strcmp(dev_name(dev), name))
 			return dev;
 	}
 
@@ -115,7 +113,7 @@ int register_device(struct device_d *new_device)
 		}
 	}
 
-	debug ("register_device: %s\n",new_device->name);
+	debug ("register_device: %s\n", dev_name(new_device));
 
 	if (!new_device->bus) {
 //		dev_err(new_device, "no bus type associated. Needs fixup\n");
@@ -138,7 +136,7 @@ EXPORT_SYMBOL(register_device);
 
 int unregister_device(struct device_d *old_dev)
 {
-	debug("unregister_device: %s:%s\n",old_dev->name, old_dev->id);
+	debug("unregister_device: %s\n", dev_name(old_dev));
 
 	if (!list_empty(&old_dev->children)) {
 		errno = -EBUSY;
@@ -182,7 +180,7 @@ struct driver_d *get_driver_by_name(const char *name)
 
 static void noinfo(struct device_d *dev)
 {
-	printf("no info available for %s\n", dev->name);
+	printf("no info available for %s\n", dev_name(dev));
 }
 
 static void noshortinfo(struct device_d *dev)
@@ -255,7 +253,7 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 	for (i = 0; i < depth; i++)
 		printf("|    ");
 
-	printf("%c----%s%d", edge, dev->name, dev->id);
+	printf("%c----%s", edge, dev_name(dev));
 	if (!list_empty(&dev->cdevs)) {
 		printf(" (");
 		list_for_each_entry(cdev, &dev->cdevs, devices_list) {
@@ -282,7 +280,7 @@ const char *dev_id(const struct device_d *dev)
 {
 	static char buf[sizeof(unsigned long) * 2];
 
-	sprintf(buf, "%s%d", dev->name, dev->id);
+	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
 
 	return buf;
 }

@@ -1,9 +1,9 @@
 #ifndef _ASM_ARM_UNALIGNED_H
 #define _ASM_ARM_UNALIGNED_H
 
-#include <unaligned/le_byteshift.h>
-#include <unaligned/be_byteshift.h>
-#include <unaligned/generic.h>
+#include <linux/unaligned/le_byteshift.h>
+#include <linux/unaligned/be_byteshift.h>
+#include <linux/unaligned/generic.h>
 
 /*
  * Select endianness

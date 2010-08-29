@@ -36,6 +36,9 @@ struct module * load_module(void *mod_image, unsigned long len);
 #define EXPORT_SYMBOL(sym)					\
 	__EXPORT_SYMBOL(sym, "")
 
+#define EXPORT_SYMBOL_GPL(sym)					\
+	__EXPORT_SYMBOL(sym, "")
+
 struct module {
 	/* Unique handle for this module */
 	char name[MODULE_NAME_LEN];
@@ -71,6 +74,7 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 		       struct module *mod);
 #else
 #define EXPORT_SYMBOL(sym)
+#define EXPORT_SYMBOL_GPL(sym)
 #endif /* CONFIG_MODULES */
 
 extern struct list_head module_list;

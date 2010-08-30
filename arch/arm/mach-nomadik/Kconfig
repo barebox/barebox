@@ -13,7 +13,7 @@ choice
 config MACH_NOMADIK_8815NHK
 	bool "ST 8815 Nomadik Hardware Kit (evaluation board)"
 	select NOMADIK_8815
-	select COMMON_CLKDEV
+	select CLKDEV_LOOKUP
 
 endchoice
 

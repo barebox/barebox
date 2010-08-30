@@ -1,0 +1,2 @@
+config COMMON_CLKDEV
+	bool

@@ -140,5 +140,14 @@
 /* important definition of some bits of WCR */
 #define WCR_WDE 0x04
 
+/* IIM fuse definitions */
+#define IIM_BANK_SIZE	32	/* excluding alignment padding for each row */
+#define IIM_BANK0_BASE	(IMX_IIM_BASE + 0x800)
+#define IIM_BANK1_BASE	(IMX_IIM_BASE + 0xc00)
+#define IIM_BANK2_BASE	(IMX_IIM_BASE + 0x1000)
+
+#define IIM_UID		(IIM_BANK0_BASE + 0x20)
+#define IIM_MAC_ADDR	(IIM_BANK0_BASE + 0x68)
+
 #endif /* __ASM_ARCH_MX25_REGS_H */
 

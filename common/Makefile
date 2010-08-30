@@ -15,6 +15,7 @@ obj-y += env.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
+obj-$(CONFIG_MENU) += menu.o
 obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_MODULES) += module.lds
 

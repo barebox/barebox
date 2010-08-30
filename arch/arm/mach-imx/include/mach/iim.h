@@ -1,0 +1,57 @@
+/*
+ * (c) 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+#ifndef __MACH_IMX_IIM_H
+#define __MACH_IMX_IIM_H
+
+#include <errno.h>
+
+#define IIM_STAT	0x0000
+#define IIM_STATM	0x0004
+#define IIM_ERR		0x0008
+#define IIM_EMASK	0x000C
+#define IIM_FCTL	0x0010
+#define IIM_UA		0x0014
+#define IIM_LA		0x0018
+#define IIM_SDAT	0x001C
+#define IIM_PREV	0x0020
+#define IIM_SREV	0x0024
+#define IIM_PREG_P	0x0028
+#define IIM_SCS0	0x002C
+#define IIM_SCS1	0x0030
+#define IIM_SCS2	0x0034
+#define IIM_SCS3	0x0038
+
+struct imx_iim_platform_data {
+	unsigned long	mac_addr_base;
+};
+
+#ifdef CONFIG_IMX_IIM
+int imx_iim_get_mac(unsigned char *mac);
+#else
+static inline int imx_iim_get_mac(unsigned char *mac)
+{
+	return -EINVAL;
+}
+#endif /* CONFIG_IMX_IIM */
+
+#endif /* __MACH_IMX_IIM_H */

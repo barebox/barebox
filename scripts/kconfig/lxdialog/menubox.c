@@ -157,9 +157,9 @@ static void print_buttons(WINDOW * win, int height, int width, int selected)
 	int x = width / 2 - 16;
 	int y = height - 2;
 
-	print_button(win, "Select", y, x, selected == 0);
-	print_button(win, " Exit ", y, x + 12, selected == 1);
-	print_button(win, " Help ", y, x + 24, selected == 2);
+	print_button(win, gettext("Select"), y, x, selected == 0);
+	print_button(win, gettext(" Exit "), y, x + 12, selected == 1);
+	print_button(win, gettext(" Help "), y, x + 24, selected == 2);
 
 	wmove(win, y, x + 1 + 12 * selected);
 	wrefresh(win);
@@ -383,6 +383,10 @@ do_resize:
 		case 'n':
 		case 'm':
 		case '/':
+		case 'h':
+		case '?':
+		case 'z':
+		case '\n':
 			/* save scroll info */
 			*s_scroll = scroll;
 			delwin(menu);
@@ -390,8 +394,10 @@ do_resize:
 			item_set(scroll + choice);
 			item_set_selected(1);
 			switch (key) {
+			case 'h':
+			case '?':
+				return 2;
 			case 's':
-				return 3;
 			case 'y':
 				return 3;
 			case 'n':
@@ -402,18 +408,12 @@ do_resize:
 				return 6;
 			case '/':
 				return 7;
+			case 'z':
+				return 8;
+			case '\n':
+				return button;
 			}
 			return 0;
-		case 'h':
-		case '?':
-			button = 2;
-		case '\n':
-			*s_scroll = scroll;
-			delwin(menu);
-			delwin(dialog);
-			item_set(scroll + choice);
-			item_set_selected(1);
-			return button;
 		case 'e':
 		case 'x':
 			key = KEY_ESC;

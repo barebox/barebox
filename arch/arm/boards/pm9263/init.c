@@ -107,9 +107,6 @@ static int pm9263_devices_init(void)
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
 	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
-	/* Enable clock */
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_EMAC);
-
 	at91_add_device_sdram(64 * 1024 * 1024);
 	pm_add_device_nand();
 	at91_add_device_eth(&macb_pdata);

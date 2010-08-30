@@ -260,7 +260,7 @@ typedef struct {
 	uint16_t usedTbdIndex;		/* next transmit BD to clean */
 	uint16_t cleanTbdNum;		/* the number of available transmit BDs */
 
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 } mpc5xxx_fec_priv;
 
 /* Ethernet parameter area */

@@ -1,3 +1,16 @@
+config ARCH
+	string
+	option env="ARCH"
+
+config KERNELVERSION
+	string
+	option env="KERNELVERSION"
+
+config DEFCONFIG_LIST
+	string
+	option defconfig_list
+	default "$ARCH_DEFCONFIG"
+	default "arch/$ARCH/defconfig"
 
 config GREGORIAN_CALENDER
 	bool
@@ -243,6 +256,13 @@ config AUTO_COMPLETE
 	bool
 	depends on CMDLINE_EDITING
 	prompt "Enable auto completion"
+
+config MENU
+	bool
+	prompt "Menu Framework"
+	help
+	   a menu framework that allow us to create list menu to simplify
+	   barebox and make it more user-frendly
 
 config DYNAMIC_CRC_TABLE
 	bool

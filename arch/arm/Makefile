@@ -39,9 +39,9 @@ CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
 machine-$(CONFIG_ARCH_AT91)		:= at91
-machine-$(CONFIG_ARCH_AT91RM9200)	:= at91rm9200
 machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
 machine-$(CONFIG_ARCH_IMX)		:= imx
+machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
 machine-$(CONFIG_ARCH_NETX)		:= netx
 machine-$(CONFIG_ARCH_OMAP)		:= omap
 machine-$(CONFIG_ARCH_S3C24xx)		:= s3c24xx
@@ -69,6 +69,7 @@ board-$(CONFIG_MACH_IMX21ADS)			:= imx21ads
 board-$(CONFIG_MACH_IMX27ADS)			:= imx27ads
 board-$(CONFIG_MACH_MMCCPU)			:= mmccpu
 board-$(CONFIG_MACH_MX1ADS)			:= mx1ads
+board-$(CONFIG_MACH_NOMADIK_8815NHK)		:= nhk8815
 board-$(CONFIG_MACH_NXDB500)			:= netx
 board-$(CONFIG_ARCH_OMAP)			:= omap
 board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
@@ -130,7 +131,7 @@ MACH :=
 endif
 
 common-y += $(BOARD) $(MACH)
-common-y += arch/arm/lib/ arch/arm/cpu/
+common-y += arch/arm/lib/ arch/arm/cpu/ arch/arm/common/
 
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds

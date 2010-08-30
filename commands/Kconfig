@@ -50,6 +50,16 @@ config CMD_FALSE
 	default y
 	prompt "false"
 
+config CMD_MENU
+	tristate
+	depends on MENU
+	prompt "menu"
+
+config CMD_MENU_MANAGEMENT
+	tristate
+	depends on CMD_MENU
+	prompt "menu scripts management"
+
 endmenu
 
 menu "file commands                 "

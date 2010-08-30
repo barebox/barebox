@@ -4,13 +4,16 @@ config HAS_CS8900
 config HAS_DM9000
 	bool
 
+config HAS_MACB
+	bool
+
 config HAS_AT91_ETHER
 	bool
 
 config HAS_NETX_ETHER
 	bool
 
-config MIIPHY
+config MIIDEV
 	bool
 
 menu "Network drivers               "
@@ -22,7 +25,7 @@ config DRIVER_NET_CS8900
 
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
-	select MIIPHY
+	select MIIDEV
 	help
 	  This option enables support for the SMSC LAN9[12]1[567]
 	  ethernet chip.
@@ -35,7 +38,7 @@ config DRIVER_NET_SMC911X_ADDRESS_SHIFT
 
 config DRIVER_NET_SMC91111
 	bool "smc91111 ethernet driver"
-	select MIIPHY
+	select MIIDEV
 	help
 	  This option enables support for the SMSC LAN91C111
 	  ethernet chip.
@@ -43,12 +46,12 @@ config DRIVER_NET_SMC91111
 config DRIVER_NET_DM9000
 	bool "Davicom dm9000 ethernet driver"
 	depends on HAS_DM9000
-	select MIIPHY
+	select MIIDEV
 
 config DRIVER_NET_NETX
 	bool "Hilscher Netx ethernet driver"
 	depends on HAS_NETX_ETHER
-	select MIIPHY
+	select MIIDEV
 
 config DRIVER_NET_AT91_ETHER
 	bool "at91 ethernet driver"
@@ -57,22 +60,22 @@ config DRIVER_NET_AT91_ETHER
 config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"
 	depends on ARCH_MPC5200
-	select MIIPHY
+	select MIIDEV
 
 config DRIVER_NET_FEC_IMX
 	bool "i.MX FEC Ethernet driver"
 	depends on ARCH_HAS_FEC_IMX
-	select MIIPHY
+	select MIIDEV
 
 config DRIVER_NET_EP93XX
 	bool "EP93xx Ethernet driver"
 	depends on ARCH_EP93XX
-	select MIIPHY
+	select MIIDEV
 
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
-	depends on ARCH_AT91
-	select MIIPHY
+	depends on HAS_MACB
+	select MIIDEV
 
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"

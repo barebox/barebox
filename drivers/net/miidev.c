@@ -1,5 +1,5 @@
 /*
- * miiphy.c - generic phy abstraction
+ * miidev.c - generic phy abstraction
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -23,12 +23,12 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <clock.h>
 #include <net.h>
 #include <malloc.h>
 
-int miiphy_restart_aneg(struct miiphy_device *mdev)
+int miidev_restart_aneg(struct mii_device *mdev)
 {
 	uint16_t status;
 	int timeout;
@@ -36,17 +36,17 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 	/*
 	 * Reset PHY, then delay 300ns
 	 */
-	mdev->write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
+	mii_write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
 
-	if (mdev->flags & MIIPHY_FORCE_LINK)
+	if (mdev->flags & MIIDEV_FORCE_LINK)
 		return 0;
 
 	udelay(1000);
 
-	if (mdev->flags & MIIPHY_FORCE_10) {
+	if (mdev->flags & MIIDEV_FORCE_10) {
 		printf("Forcing 10 Mbps ethernet link... ");
-		mdev->read(mdev, mdev->address, MII_BMSR, &status);
-		mdev->write(mdev, mdev->address, MII_BMCR, BMCR_FULLDPLX | BMCR_CTST);
+		status = mii_read(mdev, mdev->address, MII_BMSR);
+		mii_write(mdev, mdev->address, MII_BMCR, BMCR_FULLDPLX | BMCR_CTST);
 
 		timeout = 20;
 		do {	/* wait for link status to go down */
@@ -55,29 +55,29 @@ int miiphy_restart_aneg(struct miiphy_device *mdev)
 				debug("hmmm, should not have waited...");
 				break;
 			}
-			mdev->read(mdev, mdev->address, MII_BMSR, &status);
+			status = mii_read(mdev, mdev->address, MII_BMSR);
 		} while (status & BMSR_LSTATUS);
 
 	} else {	/* MII100 */
 		/*
 		 * Set the auto-negotiation advertisement register bits
 		 */
-		mdev->read(mdev, mdev->address, MII_ADVERTISE, &status);
+		status = mii_read(mdev, mdev->address, MII_ADVERTISE);
 		status |= ADVERTISE_ALL;
-		mdev->write(mdev, mdev->address, MII_ADVERTISE, status);
+		mii_write(mdev, mdev->address, MII_ADVERTISE, status);
 
-		mdev->write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
+		mii_write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
 	}
 
 	return 0;
 }
 
-int miiphy_wait_aneg(struct miiphy_device *mdev)
+int miidev_wait_aneg(struct mii_device *mdev)
 {
 	uint64_t start;
-	uint16_t status;
+	int status;
 
-	if (mdev->flags & MIIPHY_FORCE_LINK)
+	if (mdev->flags & MIIDEV_FORCE_LINK)
 		return 0;
 
 	/*
@@ -90,7 +90,8 @@ int miiphy_wait_aneg(struct miiphy_device *mdev)
 			return -1;
 		}
 
-		if (mdev->read(mdev, mdev->address, MII_BMSR, &status)) {
+		status = mii_read(mdev, mdev->address, MII_BMSR);
+		if (status < 0) {
 			printf("%s: Autonegotiation failed. status: 0x%04x\n", mdev->cdev.name, status);
 			return -1;
 		}
@@ -99,22 +100,25 @@ int miiphy_wait_aneg(struct miiphy_device *mdev)
 	return 0;
 }
 
-int miiphy_print_status(struct miiphy_device *mdev)
+int miidev_print_status(struct mii_device *mdev)
 {
-	uint16_t bmsr, bmcr, lpa;
+	int bmsr, bmcr, lpa;
 	char *duplex;
 	int speed;
 
-	if (mdev->flags & MIIPHY_FORCE_LINK) {
+	if (mdev->flags & MIIDEV_FORCE_LINK) {
 		printf("Forcing link present...\n");
 		return 0;
 	}
 
-	if (mdev->read(mdev, mdev->address, MII_BMSR, &bmsr) != 0)
+	bmsr = mii_read(mdev, mdev->address, MII_BMSR);
+	if (bmsr < 0)
 		goto err_out;
-	if (mdev->read(mdev, mdev->address, MII_BMCR, &bmcr) != 0)
+	bmcr = mii_read(mdev, mdev->address, MII_BMCR);
+	if (bmcr < 0)
 		goto err_out;
-	if (mdev->read(mdev, mdev->address, MII_LPA, &lpa) != 0)
+	lpa = mii_read(mdev, mdev->address, MII_LPA);
+	if (lpa < 0)
 		goto err_out;
 
 	printf("%s: Link is %s", mdev->cdev.name,
@@ -136,14 +140,14 @@ err_out:
 	return -1;
 }
 
-static ssize_t miiphy_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	uint16_t *buf = _buf;
-	struct miiphy_device *mdev = cdev->priv;
+	struct mii_device *mdev = cdev->priv;
 
 	while (i > 1) {
-		mdev->read(mdev, mdev->address, offset, buf);
+		*buf = mii_read(mdev, mdev->address, offset);
 		buf++;
 		i -= 2;
 		offset++;
@@ -152,14 +156,14 @@ static ssize_t miiphy_read(struct cdev *cdev, void *_buf, size_t count, ulong of
 	return count;
 }
 
-static ssize_t miiphy_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miidev_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
 {
 	int i = count;
 	const uint16_t *buf = _buf;
-	struct miiphy_device *mdev = cdev->priv;
+	struct mii_device *mdev = cdev->priv;
 
 	while (i > 1) {
-		mdev->write(mdev, mdev->address, offset, *buf);
+		mii_write(mdev, mdev->address, offset, *buf);
 		buf++;
 		i -= 2;
 		offset++;
@@ -168,57 +172,57 @@ static ssize_t miiphy_write(struct cdev *cdev, const void *_buf, size_t count, u
 	return count;
 }
 
-static struct file_operations miiphy_ops = {
-	.read  = miiphy_read,
-	.write = miiphy_write,
+static struct file_operations miidev_ops = {
+	.read  = miidev_read,
+	.write = miidev_write,
 	.lseek = dev_lseek_default,
 };
 
-static int miiphy_probe(struct device_d *dev)
+static int miidev_probe(struct device_d *dev)
 {
-	struct miiphy_device *mdev = dev->priv;
+	struct mii_device *mdev = dev->priv;
 
 	mdev->cdev.name = asprintf("phy%d", dev->id);
 	mdev->cdev.size = 32;
-	mdev->cdev.ops = &miiphy_ops;
+	mdev->cdev.ops = &miidev_ops;
 	mdev->cdev.priv = mdev;
 	mdev->cdev.dev = dev;
 	devfs_create(&mdev->cdev);
 	return 0;
 }
 
-static void miiphy_remove(struct device_d *dev)
+static void miidev_remove(struct device_d *dev)
 {
-	struct miiphy_device *mdev = dev->priv;
+	struct mii_device *mdev = dev->priv;
 
 	free(mdev->cdev.name);
 	devfs_remove(&mdev->cdev);
 }
 
-static struct driver_d miiphy_drv = {
-        .name  = "miiphy",
-        .probe = miiphy_probe,
-	.remove = miiphy_remove,
+static struct driver_d miidev_drv = {
+        .name  = "miidev",
+        .probe = miidev_probe,
+	.remove = miidev_remove,
 };
 
-int miiphy_register(struct miiphy_device *mdev)
+int mii_register(struct mii_device *mdev)
 {
 	mdev->dev.priv = mdev;
-	strcpy(mdev->dev.name, "miiphy");
+	strcpy(mdev->dev.name, "miidev");
 
 	return register_device(&mdev->dev);
 }
 
-void miiphy_unregister(struct miiphy_device *mdev)
+void mii_unregister(struct mii_device *mdev)
 {
 	unregister_device(&mdev->dev);
 }
 
-static int miiphy_init(void)
+static int miidev_init(void)
 {
-	register_driver(&miiphy_drv);
+	register_driver(&miidev_drv);
 	return 0;
 }
 
-device_initcall(miiphy_init);
+device_initcall(miidev_init);
 

@@ -141,7 +141,7 @@ struct fec_priv {
 	int rbd_index;				/* next receive BD to read   */
 	struct buffer_descriptor *tbd_base;	/* TBD ring                  */
 	int tbd_index;				/* next transmit BD to write */
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 };
 
 /**

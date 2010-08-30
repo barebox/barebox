@@ -172,7 +172,6 @@ struct cdev_ {
 #define module_put(...)		do { } while (0)
 #define module_init(...)
 #define module_exit(...)
-#define EXPORT_SYMBOL_GPL(...)
 #define module_param_call(...)
 #define MODULE_PARM_DESC(...)
 #define MODULE_VERSION(...)

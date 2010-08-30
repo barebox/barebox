@@ -160,7 +160,7 @@ static int usbnet_init(struct eth_device *edev)
                 return ret;
         }
 
-	miiphy_restart_aneg(&dev->miiphy);
+	miidev_restart_aneg(&dev->miidev);
 
 	return 0;
 }
@@ -171,10 +171,10 @@ static int usbnet_open(struct eth_device *edev)
 
 	dev_dbg(&edev->dev, "%s\n",__func__);
 
-	if (miiphy_wait_aneg(&dev->miiphy))
+	if (miidev_wait_aneg(&dev->miidev))
 		return -1;
 
-	miiphy_print_status(&dev->miiphy);
+	miidev_print_status(&dev->miidev);
 
 	return 0;
 }

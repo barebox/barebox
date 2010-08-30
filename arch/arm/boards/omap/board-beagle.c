@@ -59,6 +59,7 @@
 #include <asm/io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
+#include <asm/mach-types.h>
 #include <mach/silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
@@ -67,6 +68,10 @@
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
+#include <mach/ehci.h>
+#include <i2c/i2c.h>
+#include <linux/err.h>
+#include <usb/ehci.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -189,6 +194,20 @@ static void mux_config(void)
 	MUX_VAL(CP(HSUSB0_DATA7), (IEN | PTD | DIS | M0));
 	/* I2C1_SCL default mux mode is mode0 */
 	/* I2C1_SDA default mux mode is mode0 */
+	/* USB EHCI (port 2) */
+	MUX_VAL(CP(MCSPI1_CS3),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CLK),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_SIMO),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_SOMI),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CS0),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(MCSPI2_CS1),		(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D10_ES2),	(IDIS | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D11_ES2),	(IDIS | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D12_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D13_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D14_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(ETK_D15_ES2),	(IEN  | PTU | DIS | M3));
+	MUX_VAL(CP(UART2_RX),		(IEN  | PTD | DIS | M4)) /*GPIO_147*/;
 }
 
 /**
@@ -254,6 +273,42 @@ static struct device_d sdram_dev = {
 	.platform_data = &sram_pdata,
 };
 
+#ifdef CONFIG_USB_EHCI_OMAP
+static struct omap_hcd omap_ehci_pdata = {
+	.port_mode[0] = EHCI_HCD_OMAP_MODE_PHY,
+	.port_mode[1] = EHCI_HCD_OMAP_MODE_PHY,
+	.port_mode[2] = EHCI_HCD_OMAP_MODE_UNKNOWN,
+	.phy_reset  = 1,
+	.reset_gpio_port[0]  = -EINVAL,
+	.reset_gpio_port[1]  = 147,
+	.reset_gpio_port[2]  = -EINVAL
+};
+
+static struct ehci_platform_data ehci_pdata = {
+	.flags = 0,
+	.hccr_offset = 0x100,
+	.hcor_offset = 0x110,
+};
+
+static struct device_d usbh_dev = {
+	.name     = "ehci",
+	.map_base = 0x48064700,
+	.size     = 4 * 1024,
+	.platform_data = &ehci_pdata,
+};
+#endif /* CONFIG_USB_EHCI_OMAP */
+
+static struct device_d i2c_dev = {
+	.name		= "i2c-omap",
+	.map_base	= OMAP_I2C1_BASE,
+};
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("twl4030", 0x48),
+	},
+};
+
 static int beagle_devices_init(void)
 {
 	int ret;
@@ -262,6 +317,13 @@ static int beagle_devices_init(void)
 	if (ret)
 		goto failed;
 
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	register_device(&i2c_dev);
+
+#ifdef CONFIG_USB_EHCI_OMAP
+	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
+		register_device(&usbh_dev);
+#endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
@@ -269,6 +331,8 @@ static int beagle_devices_init(void)
 	gpmc_generic_nand_devices_init(0, 16, 1);
 
 	armlinux_add_dram(&sdram_dev);
+	armlinux_set_bootparams((void *)0x80000100);
+	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);
 failed:
 	return ret;
 }

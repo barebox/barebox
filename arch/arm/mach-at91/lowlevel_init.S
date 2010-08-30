@@ -26,7 +26,6 @@
  * MA 02111-1307 USA
  */
 
-#include <linux/autoconf.h>
 #include <config.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>

@@ -11,12 +11,12 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <driver.h>
 #include <mach/sdma.h>
 #include <mach/fec.h>
 #include <mach/clocks.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include "fec_mpc5200.h"
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
@@ -31,8 +31,7 @@ typedef struct {
 /*
  * MII-interface related functions
  */
-static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t * retVal)
+static int fec5xxx_miidev_read(struct mii_device *mdev, int phyAddr, int regAddr)
 {
 	struct eth_device *edev = mdev->edev;
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
@@ -68,13 +67,11 @@ static int fec5xxx_miiphy_read(struct miiphy_device *mdev, uint8_t phyAddr,
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	*retVal = (uint16_t) fec->eth->mii_data;
-
-	return 0;
+	return fec->eth->mii_data;
 }
 
-static int fec5xxx_miiphy_write(struct miiphy_device *mdev, uint8_t phyAddr,
-	uint8_t regAddr, uint16_t data)
+static int fec5xxx_miidev_write(struct mii_device *mdev, int phyAddr,
+	int regAddr, int data)
 {
 	struct eth_device *edev = mdev->edev;
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
@@ -385,7 +382,7 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	debug("mpc5xxx_fec_init... Done \n");
 
 	if (fec->xcv_type != SEVENWIRE)
-		miiphy_restart_aneg(&fec->miiphy);
+		miidev_restart_aneg(&fec->miidev);
 
 	return 0;
 }
@@ -416,8 +413,8 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		miiphy_wait_aneg(&fec->miiphy);
-		miiphy_print_status(&fec->miiphy);
+		miidev_wait_aneg(&fec->miidev);
+		miidev_print_status(&fec->miidev);
 	}
 
 	return 0;
@@ -559,7 +556,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	if (fec->xcv_type != SEVENWIRE) {
 		uint16_t phyStatus;
-		fec5xxx_miiphy_read(&fec->miiphy, 0, 0x1, &phyStatus);
+		fec5xxx_miidev_read(&fec->miidev, 0, 0x1, &phyStatus);
 	}
 
 	/*
@@ -685,13 +682,13 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	loadtask(0, 2);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		fec->miiphy.read = fec5xxx_miiphy_read;
-		fec->miiphy.write = fec5xxx_miiphy_write;
-		fec->miiphy.address = CONFIG_PHY_ADDR;
-		fec->miiphy.flags = pdata->xcv_type == MII10 ? MIIPHY_FORCE_10 : 0;
-		fec->miiphy.edev = edev;
+		fec->miidev.read = fec5xxx_miidev_read;
+		fec->miidev.write = fec5xxx_miidev_write;
+		fec->miidev.address = CONFIG_PHY_ADDR;
+		fec->miidev.flags = pdata->xcv_type == MII10 ? MIIDEV_FORCE_10 : 0;
+		fec->miidev.edev = edev;
 
-		miiphy_register(&fec->miiphy);
+		mii_register(&fec->miidev);
 	}
 
 	eth_register(edev);

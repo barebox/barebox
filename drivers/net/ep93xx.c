@@ -34,16 +34,15 @@
 #include <command.h>
 #include <init.h>
 #include <malloc.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <asm/io.h>
 #include <linux/types.h>
 #include <mach/ep93xx-regs.h>
 #include "ep93xx.h"
 
-static int ep93xx_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
-			uint8_t phy_reg, uint16_t *value);
-static int ep93xx_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
-			uint8_t phy_reg, uint16_t value);
+static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg);
+static int ep93xx_phy_write(struct mii_device *mdev, int phy_addr, int phy_reg,
+			    int value);
 
 static inline struct ep93xx_eth_priv *ep93xx_get_priv(struct eth_device *edev)
 {
@@ -497,10 +496,10 @@ static int ep93xx_eth_probe(struct device_d *dev)
 	edev->get_ethaddr = ep93xx_eth_get_ethaddr;
 	edev->set_ethaddr = ep93xx_eth_set_ethaddr;
 
-	priv->miiphy.read = ep93xx_phy_read;
-	priv->miiphy.write = ep93xx_phy_write;
-	priv->miiphy.address = 0;
-	priv->miiphy.flags = 0;
+	priv->miidev.read = ep93xx_phy_read;
+	priv->miidev.write = ep93xx_phy_write;
+	priv->miidev.address = 0;
+	priv->miidev.flags = 0;
 
 	priv->tx_dq.base = calloc(NUMTXDESC,
 				sizeof(struct tx_descriptor));
@@ -530,7 +529,7 @@ static int ep93xx_eth_probe(struct device_d *dev)
 		goto eth_probe_failed_3;
 	}
 
-	miiphy_register(&priv->miiphy);
+	mii_register(&priv->miidev);
 	eth_register(edev);
 
 	ret = 0;
@@ -573,11 +572,10 @@ eth_probe_done:
 /**
  * Read a 16-bit value from an MII register.
  */
-static int ep93xx_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
-			uint8_t phy_reg, uint16_t *value)
+static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg)
 {
 	struct mac_regs *regs = ep93xx_get_regs(mdev->edev);
-	int ret = -1;
+	int value = -1;
 	uint32_t self_ctl;
 
 	pr_debug("+ep93xx_phy_read\n");
@@ -604,26 +602,23 @@ static int ep93xx_phy_read(struct miiphy_device *mdev, uint8_t phy_addr,
 	while (readl(&regs->miists) & MIISTS_BUSY)
 		; /* noop */
 
-	*value = (unsigned short)readl(&regs->miidata);
+	value = (unsigned short)readl(&regs->miidata);
 
 	/* Restore the saved SelfCTL value and return. */
 	writel(self_ctl, &regs->selfctl);
 
-	ret = 0;
-
 	pr_debug("-ep93xx_phy_read\n");
 
-	return ret;
+	return value;
 }
 
 /**
  * Write a 16-bit value to an MII register.
  */
-static int ep93xx_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
+static int ep93xx_phy_write(struct mii_device *mdev, uint8_t phy_addr,
 			uint8_t phy_reg, uint16_t value)
 {
 	struct mac_regs *regs = ep93xx_get_regs(mdev->edev);
-	int ret = -1;
 	uint32_t self_ctl;
 
 	pr_debug("+ep93xx_phy_write\n");
@@ -651,11 +646,9 @@ static int ep93xx_phy_write(struct miiphy_device *mdev, uint8_t phy_addr,
 	/* Restore the saved SelfCTL value and return. */
 	writel(self_ctl, &regs->selfctl);
 
-	ret = 0;
-
 	pr_debug("-ep93xx_phy_write\n");
 
-	return ret;
+	return 0;
 }
 
 static struct driver_d ep93xx_eth_driver = {

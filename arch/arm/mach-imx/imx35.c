@@ -18,6 +18,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
+#include <mach/iim.h>
 #include <mach/generic.h>
 
 #include "gpio.h"

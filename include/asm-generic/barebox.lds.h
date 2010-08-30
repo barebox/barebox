@@ -15,7 +15,8 @@
 	KEEP(*(.initcall.4))			\
 	KEEP(*(.initcall.5))			\
 	KEEP(*(.initcall.6))			\
-	KEEP(*(.initcall.7))
+	KEEP(*(.initcall.7))			\
+	KEEP(*(.initcall.8))
 
 #define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
 

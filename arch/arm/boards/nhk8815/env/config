@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# can be either 'net' or 'flash'
+kernel=net
+root=net
+
+# use 'dhcp' todo dhcp in uboot and in kernel
+ip=dhcp
+
+#
+# setup default ethernet address
+#
+#eth0.serverip=192.168.23.108
+
+# Partition			Size	Start
+# XloaderTOC + X-Loader		256KB	0x00000000
+# Memory init function		256KB	0x00040000
+# Barebox + env			2MB	0x00080000
+# Kernel Image			3MB	0x00280000
+# JFFS2 Root filesystem		22MB	0x00580000
+# JFFS2 User Data		100MB	0x01b80000
+
+nand_parts="256k(xloader)ro,256k(meminit),2M(uboot),3M(kernel),22M(rootfs),100M(userfs),384k(free),128k(ubootenv)"
+
+uimage=uImage-nhk15
+
+# use 'dhcp' to do dhcp in uboot and in kernel
+ip=dhcp
+
+autoboot_timeout=3
+
+bootargs="root=/dev/ram0 console=ttyAMA1,115200n8 init=linuxrc"

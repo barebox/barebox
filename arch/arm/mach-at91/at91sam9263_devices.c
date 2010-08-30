@@ -18,6 +18,8 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 
+#include "generic.h"
+
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
 	.flags = DEVFS_RDWR,
@@ -106,9 +108,6 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
 
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_PIOA |
-				      1 << AT91SAM9263_ID_PIOCDE);
-
 	nand_dev.platform_data = data;
 	register_device(&nand_dev);
 }
@@ -184,22 +183,22 @@ void at91_register_uart(unsigned id, unsigned pins)
 	switch (id) {
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
+			at91_clock_associate("mck", &dbgu_serial_device, "usart");
 			register_device(&dbgu_serial_device);
 			break;
 		case AT91SAM9263_ID_US0:
 			configure_usart0_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_US0);
+			at91_clock_associate("usart0_clk", &uart0_serial_device, "usart");
 			register_device(&uart0_serial_device);
 			break;
 		case AT91SAM9263_ID_US1:
 			configure_usart1_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_US1);
+			at91_clock_associate("usart1_clk", &uart1_serial_device, "usart");
 			register_device(&uart1_serial_device);
 			break;
 		case AT91SAM9263_ID_US2:
 			configure_usart2_pins(pins);
-			at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9263_ID_US2);
+			at91_clock_associate("usart2_clk", &uart2_serial_device, "usart");
 			register_device(&uart2_serial_device);
 			break;
 		default:

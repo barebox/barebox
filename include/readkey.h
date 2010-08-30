@@ -22,6 +22,11 @@
 
 #define ANSI_CLEAR_SCREEN "\e[2J\e[;H"
 
+#define printf_reverse(fmt,args...)	printf("\e[7m" fmt "\e[m",##args)
+#define puts_reverse(fmt)		puts("\e[7m" fmt "\e[m")
+#define gotoXY(row, col)		printf("\e[%d;%dH", row, col)
+#define clear()				puts("\e[2J")
+
 int read_key(void);
 
 #endif /* READKEY_H */

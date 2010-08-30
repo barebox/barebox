@@ -67,7 +67,7 @@
 
 #include <command.h>
 #include <net.h>
-#include <miiphy.h>
+#include <miidev.h>
 #include <malloc.h>
 #include <init.h>
 #include <xfuncs.h>
@@ -451,7 +451,7 @@ struct accessors {
 };
 
 struct smc91c111_priv {
-	struct miiphy_device miiphy;
+	struct mii_device miidev;
 	struct accessors a;
 	unsigned long base;
 };
@@ -621,8 +621,8 @@ static void smc_wait_mmu_release_complete(struct smc91c111_priv *priv)
 	}
 }
 
-static int smc91c111_phy_write(struct miiphy_device *mdev, uint8_t phyaddr,
-	uint8_t phyreg, uint16_t phydata)
+static int smc91c111_phy_write(struct mii_device *mdev, int phyaddr,
+	int phyreg, int phydata)
 {
 	struct eth_device *edev = mdev->edev;
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
@@ -723,8 +723,7 @@ static int smc91c111_phy_write(struct miiphy_device *mdev, uint8_t phyaddr,
 	return 0;
 }
 
-static int smc91c111_phy_read(struct miiphy_device *mdev, uint8_t phyaddr,
-		uint8_t phyreg, uint16_t * val)
+static int smc91c111_phy_read(struct mii_device *mdev, int phyaddr, int phyreg)
 {
 	struct eth_device *edev = mdev->edev;
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
@@ -827,8 +826,7 @@ static int smc91c111_phy_read(struct miiphy_device *mdev, uint8_t phyaddr,
 			phydata |= 0x0001;
 	}
 
-	*val = phydata;
-	return 0;
+	return phydata;
 }
 
 static void smc91c111_reset(struct eth_device *edev)
@@ -896,8 +894,8 @@ static int smc91c111_eth_open(struct eth_device *edev)
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
 	smc91c111_enable(edev);
 
-	miiphy_wait_aneg(&priv->miiphy);
-	miiphy_print_status(&priv->miiphy);
+	miidev_wait_aneg(&priv->miidev);
+	miidev_print_status(&priv->miidev);
 
 	return 0;
 }
@@ -1287,7 +1285,7 @@ static int smc91c111_init_dev(struct eth_device *edev)
 	SMC_SELECT_BANK(priv, 0);
 	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
 
-	miiphy_restart_aneg(&priv->miiphy);
+	miidev_restart_aneg(&priv->miidev);
 
 	return 0;
 }
@@ -1314,16 +1312,16 @@ static int smc91c111_probe(struct device_d *dev)
 	edev->get_ethaddr = smc91c111_get_ethaddr;
 	edev->set_ethaddr = smc91c111_set_ethaddr;
 
-	priv->miiphy.read = smc91c111_phy_read;
-	priv->miiphy.write = smc91c111_phy_write;
-	priv->miiphy.address = 0;
-	priv->miiphy.flags = 0;
-	priv->miiphy.edev = edev;
+	priv->miidev.read = smc91c111_phy_read;
+	priv->miidev.write = smc91c111_phy_write;
+	priv->miidev.address = 0;
+	priv->miidev.flags = 0;
+	priv->miidev.edev = edev;
 	priv->base = dev->map_base;
 
 	smc91c111_reset(edev);
 
-	miiphy_register(&priv->miiphy);
+	mii_register(&priv->miidev);
 	eth_register(edev);
 
 	return 0;

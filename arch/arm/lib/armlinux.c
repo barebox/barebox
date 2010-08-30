@@ -46,6 +46,7 @@ static int armlinux_architecture = 0;
 static void *armlinux_bootparams = NULL;
 
 static unsigned int system_rev;
+static u64 system_serial;
 
 static void setup_start_tag(void)
 {
@@ -121,6 +122,19 @@ static void setup_revision_tag(void)
 	}
 }
 
+static void setup_serial_tag(void)
+{
+	if (system_serial) {
+		params->hdr.tag = ATAG_SERIAL;
+		params->hdr.size = tag_size(tag_serialnr);
+
+		params->u.serialnr.low  = system_serial & 0xffffffff;
+		params->u.serialnr.high = system_serial >> 32;
+
+		params = tag_next(params);
+	}
+}
+
 #if 0
 static void setup_initrd_tag(ulong initrd_start, ulong initrd_end)
 {
@@ -155,6 +169,7 @@ static void setup_tags(void)
 		setup_initrd_tag (initrd_start, initrd_end);
 #endif
 	setup_revision_tag();
+	setup_serial_tag();
 	setup_end_tag();
 
 	printf("commandline: %s\n"
@@ -186,6 +201,10 @@ void armlinux_set_revision(unsigned int rev)
 	system_rev = rev;
 }
 
+void armlinux_set_serial(u64 serial)
+{
+	system_serial = serial;
+}
 
 #ifdef CONFIG_CMD_BOOTM
 int do_bootm_linux(struct image_data *data)

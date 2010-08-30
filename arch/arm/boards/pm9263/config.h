@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define AT91_MASTER_CLOCK  99328000        /* peripheral = main / 2 */
+#define AT91_MAIN_CLOCK	18432000
 
 #define MASTER_PLL_DIV		6
 #define MASTER_PLL_MUL		65

@@ -344,21 +344,19 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
 }
 
 /**
- * i2c_register_master - register I2C master controller
+ * i2c_add_numbered_adapter - declare i2c adapter, use static bus number
+ * @adapter: the adapter to register (with adap->nr initialized)
  *
- * @param	master	initialized master, originally from i2c_alloc_master()
+ * This routine is used to declare an I2C adapter when its bus number
+ * matters.  For example, use it for I2C adapters from system-on-chip CPUs,
+ * or otherwise built in to the system's mainboard, and where i2c_board_info
+ * is used to properly configure I2C devices.
  *
- * I2C master controllers connect to their drivers using some non-I2C
- * bus, such as the platform bus. The final stage of probe() in that
- * code includes calling i2c_register_master() to hook up to this I2C
- * bus glue.
- *
- * I2C controllers use board specific (often SOC specific) bus
- * numbers, and board-specific addressing for I2C devices combines
- * those numbers with chip select numbers. Since I2C does not directly
- * support dynamic device identification, boards need configuration
- * tables telling which chip is at which address.
- *
+ * When this returns zero, the specified adapter became available for
+ * clients using the bus number provided in adap->nr.  Also, the table
+ * of I2C devices pre-declared using i2c_register_board_info() is scanned,
+ * and the appropriate driver model device nodes are created.  Otherwise, a
+ * negative errno value is returned.
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
@@ -372,4 +370,4 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 
 	return 0;
 }
-EXPORT_SYMBOL(i2c_register_master);
+EXPORT_SYMBOL(i2c_add_numbered_adapter);

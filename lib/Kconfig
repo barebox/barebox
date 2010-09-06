@@ -10,6 +10,13 @@ config CRC32
 config CRC16
 	bool
 
+menuconfig DIGEST
+	bool "Digest"
+
+if DIGEST
+
+endif
+
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 

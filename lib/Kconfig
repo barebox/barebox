@@ -21,6 +21,9 @@ config MD5
 config SHA1
 	bool "SHA1"
 
+config SHA256
+	bool "SHA256"
+
 endif
 
 config GENERIC_FIND_NEXT_BIT

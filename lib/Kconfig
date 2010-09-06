@@ -15,6 +15,9 @@ menuconfig DIGEST
 
 if DIGEST
 
+config MD5
+	bool "MD5"
+
 endif
 
 config GENERIC_FIND_NEXT_BIT

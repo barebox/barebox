@@ -18,6 +18,9 @@ if DIGEST
 config MD5
 	bool "MD5"
 
+config SHA1
+	bool "SHA1"
+
 endif
 
 config GENERIC_FIND_NEXT_BIT

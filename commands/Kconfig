@@ -60,12 +60,17 @@ config CMD_MENU_MANAGEMENT
 	depends on CMD_MENU
 	prompt "menu scripts management"
 
-config CMD_PASSWD
+config CMD_LOGIN
 	tristate
 	select PASSWORD
+	prompt "login"
+
+config CMD_PASSWD
+	tristate
+	select CMD_LOGIN
 	prompt "passwd"
 
-if CMD_PASSWD
+if CMD_LOGIN || CMD_PASSWD
 
 choice
 	prompt "passwd mode"

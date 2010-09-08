@@ -60,6 +60,29 @@ config CMD_MENU_MANAGEMENT
 	depends on CMD_MENU
 	prompt "menu scripts management"
 
+config CMD_PASSWD
+	tristate
+	select PASSWORD
+	prompt "passwd"
+
+if CMD_PASSWD
+
+choice
+	prompt "passwd mode"
+
+config PASSWD_MODE_HIDE
+	bool "Hide"
+
+config PASSWD_MODE_STAR
+	bool "Star"
+
+config PASSWD_MODE_CLEAR
+	bool "Clear"
+
+endchoice
+
+endif
+
 endmenu
 
 menu "file commands                 "

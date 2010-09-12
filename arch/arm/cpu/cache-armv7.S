@@ -1,4 +1,5 @@
 #include <linux/linkage.h>
+#include <init.h>
 
 ENTRY(__mmu_cache_on)
 		mov	r12, lr
@@ -49,7 +50,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, r12
 ENDPROC(__mmu_cache_on)
 
-.section ".text_bare_init.text"
+__BARE_INIT
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
 		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)

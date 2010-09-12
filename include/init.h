@@ -7,6 +7,10 @@
 #define __init
 #define __initdata
 
+/* For assembly routines */
+#define __BARE_INIT	.section ".text_bare_init.text","ax"
+
+#ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
 
 #define __define_initcall(level,fn,id) \
@@ -39,6 +43,8 @@ typedef int (*initcall_t)(void);
  * Mainly useful for booting from NAND Controllers
  */
 #define __bare_init          __section(.text_bare_init.text)
+
+#endif
 
 #endif /* _INIT_H */
 

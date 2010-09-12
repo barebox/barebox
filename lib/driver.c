@@ -56,14 +56,24 @@ struct device_d *get_device_by_name(const char *name)
 	return NULL;
 }
 
+struct device_d *get_device_by_name_id(const char *name, int id)
+{
+	struct device_d *dev;
+
+	for_each_device(dev) {
+		if(!strcmp(dev->name, name) && id == dev->id)
+			return dev;
+	}
+
+	return NULL;
+}
+
 int get_free_deviceid(const char *name_template)
 {
 	int i = 0;
-	char name[MAX_DRIVER_NAME + 3];
 
 	while (1) {
-		sprintf(name, "%s%d", name_template, i);
-		if (!get_device_by_name(name))
+		if (!get_device_by_name_id(name_template, i))
 			return i;
 		i++;
 	};
@@ -95,7 +105,15 @@ int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
 
-	new_device->id = get_free_deviceid(new_device->name);
+	if (new_device->id == 0) {
+		new_device->id = get_free_deviceid(new_device->name);
+	} else {
+		if (get_device_by_name_id(new_device->name, new_device->id)) {
+			eprintf("register_device: already registered %s\n",
+				dev_name(new_device));
+			return -EINVAL;
+		}
+	}
 
 	debug ("register_device: %s\n",new_device->name);
 

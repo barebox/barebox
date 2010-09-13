@@ -143,7 +143,7 @@ config MACH_FREESCALE_MX25_3STACK
 	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select I2C
-	select DRIVER_I2C_MC34704
+	select I2C_MC34704
 	help
 	  Say Y here if you are using the Freescale MX25 3stack board equipped
 	  with a Freescale i.MX25 Processor
@@ -253,9 +253,9 @@ config MACH_FREESCALE_MX35_3STACK
 	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select I2C
-	select DRIVER_I2C_IMX
-	select DRIVER_I2C_MC13892
-	select DRIVER_I2C_MC9SDZ60
+	select I2C_IMX
+	select I2C_MC13892
+	select I2C_MC9SDZ60
 	help
 	  Say Y here if you are using the Freescale MX35 3stack board equipped
 	  with a Freescale i.MX35 Processor

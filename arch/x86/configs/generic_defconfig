@@ -1,85 +1,15 @@
-#
-# Automatically generated make config: don't edit
-# barebox version: 2009.12.0-x86-trunk
-#
-CONFIG_ARCH_TEXT_BASE=0x00007c00
-CONFIG_BOARDINFO="Generic x86 bootloader"
-# CONFIG_BOARD_LINKER_SCRIPT is not set
-CONFIG_GENERIC_LINKER_SCRIPT=y
-CONFIG_X86=y
-CONFIG_MACH_X86_GENERIC=y
-CONFIG_X86_BIOS_BRINGUP=y
-# CONFIG_X86_NATIVE_BRINGUP is not set
-
-#
-# BIOS boot source              
-#
 CONFIG_X86_HDBOOT=y
-
-#
-# Board specific settings       
-#
-CONFIG_GREGORIAN_CALENDER=y
-CONFIG_HAS_KALLSYMS=y
-CONFIG_HAS_MODULES=y
-CONFIG_CMD_MEMORY=y
-CONFIG_ENV_HANDLING=y
-
-#
-# General Settings              
-#
-CONFIG_LOCALVERSION_AUTO=y
-
-#
-# memory layout                 
-#
-CONFIG_HAVE_CONFIGURABLE_TEXT_BASE=y
-CONFIG_TEXT_BASE=0x00007c00
-CONFIG_HAVE_CONFIGURABLE_MEMORY_LAYOUT=y
-CONFIG_MEMORY_LAYOUT_DEFAULT=y
-# CONFIG_MEMORY_LAYOUT_FIXED is not set
 CONFIG_STACK_SIZE=0x7000
-CONFIG_MALLOC_SIZE=0x400000
 CONFIG_BROKEN=y
 CONFIG_EXPERIMENTAL=y
-# CONFIG_MODULES is not set
-# CONFIG_KALLSYMS is not set
 CONFIG_PROMPT="uboot:"
-CONFIG_BAUDRATE=115200
 CONFIG_LONGHELP=y
-CONFIG_CBSIZE=1024
-CONFIG_MAXARGS=16
-CONFIG_SHELL_HUSH=y
-# CONFIG_SHELL_SIMPLE is not set
 CONFIG_GLOB=y
-CONFIG_PROMPT_HUSH_PS2="> "
 CONFIG_CMDLINE_EDITING=y
 CONFIG_AUTO_COMPLETE=y
-CONFIG_DYNAMIC_CRC_TABLE=y
-CONFIG_ERRNO_MESSAGES=y
-CONFIG_TIMESTAMP=y
-CONFIG_CONSOLE_FULL=y
-CONFIG_CONSOLE_ACTIVATE_FIRST=y
-# CONFIG_OF_FLAT_TREE is not set
 CONFIG_PARTITION=y
-CONFIG_DEFAULT_ENVIRONMENT=y
 CONFIG_DEFAULT_ENVIRONMENT_PATH="arch/x86/boards/x86_generic/env"
-
-#
-# Debugging                     
-#
 CONFIG_DEBUG_INFO=y
-# CONFIG_ENABLE_FLASH_NOISE is not set
-# CONFIG_ENABLE_PARTITION_NOISE is not set
-# CONFIG_ENABLE_DEVICE_NOISE is not set
-
-#
-# Commands                      
-#
-
-#
-# scripting                     
-#
 CONFIG_CMD_EDIT=y
 CONFIG_CMD_SLEEP=y
 CONFIG_CMD_SAVEENV=y
@@ -89,98 +19,13 @@ CONFIG_CMD_PRINTENV=y
 CONFIG_CMD_READLINE=y
 # CONFIG_CMD_TRUE is not set
 # CONFIG_CMD_FALSE is not set
-
-#
-# file commands                 
-#
-CONFIG_CMD_LS=y
-CONFIG_CMD_RM=y
-CONFIG_CMD_CAT=y
-CONFIG_CMD_MKDIR=y
-CONFIG_CMD_RMDIR=y
-CONFIG_CMD_CP=y
-CONFIG_CMD_PWD=y
-CONFIG_CMD_CD=y
-CONFIG_CMD_MOUNT=y
-CONFIG_CMD_UMOUNT=y
-
-#
-# console                       
-#
-CONFIG_CMD_CLEAR=y
-CONFIG_CMD_ECHO=y
-
-#
-# memory                        
-#
-# CONFIG_CMD_LOADB is not set
-# CONFIG_CMD_LOADY is not set
-# CONFIG_CMD_LOADS is not set
 CONFIG_CMD_MEMINFO=y
-# CONFIG_CMD_CRC is not set
-# CONFIG_CMD_MTEST is not set
-
-#
-# flash                         
-#
-# CONFIG_CMD_FLASH is not set
-
-#
-# booting                       
-#
 # CONFIG_CMD_BOOTM is not set
-CONFIG_CMD_LINUX16=y
 CONFIG_CMD_RESET=y
 CONFIG_CMD_GO=y
 CONFIG_CMD_TIMEOUT=y
-# CONFIG_CMD_PARTITION is not set
-CONFIG_CMD_TEST=y
-CONFIG_CMD_VERSION=y
-CONFIG_CMD_HELP=y
-CONFIG_CMD_DEVINFO=y
-# CONFIG_NET is not set
-
-#
-# Drivers                       
-#
-
-#
-# serial drivers                
-#
 CONFIG_DRIVER_SERIAL_NS16550=y
-
-#
-# SPI drivers                   
-#
 # CONFIG_SPI is not set
-# CONFIG_I2C is not set
-
-#
-# flash drivers                 
-#
-# CONFIG_DRIVER_CFI is not set
-# CONFIG_DRIVER_CFI_OLD is not set
-# CONFIG_NAND is not set
 CONFIG_ATA=y
-
-#
-# drive types
-#
 CONFIG_ATA_DISK=y
-
-#
-# interface types
-#
 CONFIG_ATA_BIOS=y
-# CONFIG_USB is not set
-# CONFIG_USB_GADGET is not set
-# CONFIG_VIDEO is not set
-
-#
-# Filesystem support            
-#
-# CONFIG_FS_CRAMFS is not set
-CONFIG_FS_RAMFS=y
-CONFIG_FS_DEVFS=y
-CONFIG_CRC32=y
-# CONFIG_GENERIC_FIND_NEXT_BIT is not set

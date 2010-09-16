@@ -46,7 +46,6 @@ include/asm
 include/asm-*/asm-offsets.h
 include/config
 include/linux/compile.h
-include/linux/utsrelease.h
 include/generated
 
 # stgit generated dirs

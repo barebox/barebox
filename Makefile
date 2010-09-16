@@ -796,7 +796,7 @@ endif
 # prepare2 creates a makefile if using a separate output directory
 prepare2: prepare3 outputmakefile
 
-prepare1: prepare2 include/generated/version.h include/linux/utsrelease.h \
+prepare1: prepare2 include/generated/version.h include/generated/utsrelease.h \
                    include/asm include/config.h include/config/auto.conf
 
 ifneq ($(KBUILD_MODULES),)
@@ -882,7 +882,7 @@ endef
 include/generated/version.h: $(srctree)/Makefile FORCE
 	$(call filechk,version.h)
 
-include/linux/utsrelease.h: include/config/kernel.release FORCE
+include/generated/utsrelease.h: include/config/kernel.release FORCE
 	$(call filechk,utsrelease.h)
 
 # ---------------------------------------------------------------------------
@@ -979,7 +979,7 @@ CLEAN_FILES +=	barebox System.map include/barebox_default_env.h \
 MRPROPER_DIRS  += include/config include2 usr/include
 MRPROPER_FILES += .config .config.old include/asm .version .old_version \
                   include/generated/autoconf.h include/generated/version.h      \
-                  include/linux/utsrelease.h include/config.h           \
+                  include/generated/utsrelease.h include/config.h           \
 		  Module.symvers tags TAGS cscope*
 
 # clean - Delete most, but leave enough to build external modules

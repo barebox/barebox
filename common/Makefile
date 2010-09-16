@@ -20,8 +20,8 @@ obj-$(CONFIG_MODULES) += module.o
 extra-$(CONFIG_MODULES) += module.lds
 
 ifdef CONFIG_DEFAULT_ENVIRONMENT
-$(obj)/startup.o: include/barebox_default_env.h
-$(obj)/env.o: include/barebox_default_env.h
+$(obj)/startup.o: include/generated/barebox_default_env.h
+$(obj)/env.o: include/generated/barebox_default_env.h
 
 ENV_FILES := $(shell cd $(srctree); for i in $(CONFIG_DEFAULT_ENVIRONMENT_PATH); do find $${i} -type f -exec readlink -f {} \;; done)
 
@@ -30,5 +30,5 @@ endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 barebox_default_env: $(ENV_FILES)
 	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
 
-include/barebox_default_env.h: barebox_default_env
+include/generated/barebox_default_env.h: barebox_default_env
 	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@

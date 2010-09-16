@@ -35,7 +35,7 @@
 #include <asm/io.h>
 #include <partition.h>
 #include <nand.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <fec.h>
 #include <fb.h>

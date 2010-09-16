@@ -38,7 +38,7 @@
 
 #include <asm/armlinux.h>
 #include <asm/io.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 
 #include <mach/gpio.h>
 #include <mach/imx-nand.h>

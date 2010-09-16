@@ -33,7 +33,7 @@
 #include <asm/mmu.h>
 
 #include <partition.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <fec.h>

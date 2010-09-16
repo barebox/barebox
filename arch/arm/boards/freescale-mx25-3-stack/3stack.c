@@ -30,7 +30,7 @@
 #include <mach/gpio.h>
 #include <asm/io.h>
 #include <partition.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <fec.h>
 #include <nand.h>

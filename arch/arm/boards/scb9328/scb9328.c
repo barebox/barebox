@@ -22,7 +22,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>

@@ -25,7 +25,7 @@
 #include <partition.h>
 #include <nand.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <asm/io.h>
 
 #include <mach/hardware.h>

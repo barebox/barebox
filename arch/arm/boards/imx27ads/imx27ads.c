@@ -30,7 +30,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {

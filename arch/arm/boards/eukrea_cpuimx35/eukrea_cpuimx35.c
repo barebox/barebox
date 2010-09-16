@@ -40,7 +40,7 @@
 
 #include <asm/armlinux.h>
 #include <asm/io.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <asm/mmu.h>
 
 #include <mach/gpio.h>

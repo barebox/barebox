@@ -114,7 +114,7 @@ all: $(KBUILD_IMAGE)
 
 archprepare: maketools
 maketools:
-	$(Q)$(MAKE) $(build)=arch/arm/tools arch/arm/include/asm/mach-types.h
+	$(Q)$(MAKE) $(build)=arch/arm/tools include/generated/mach-types.h
 
 PHONY += maketools
 
@@ -136,4 +136,4 @@ common-y += arch/arm/lib/ arch/arm/cpu/ arch/arm/common/
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
 lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds
 
-CLEAN_FILES += arch/arm/include/asm/mach-types.h arch/arm/lib/barebox.lds
+CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds

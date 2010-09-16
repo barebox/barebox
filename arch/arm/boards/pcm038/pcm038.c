@@ -27,7 +27,7 @@
 #include <notifier.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>

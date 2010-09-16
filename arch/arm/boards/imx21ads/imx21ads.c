@@ -32,7 +32,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <mach/iomux-mx21.h>

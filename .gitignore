@@ -46,7 +46,6 @@ include/asm
 include/asm-*/asm-offsets.h
 include/config
 include/linux/compile.h
-include/linux/version.h
 include/linux/utsrelease.h
 include/generated
 

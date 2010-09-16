@@ -349,7 +349,7 @@ endif
 
 no-dot-config-targets := clean mrproper distclean \
 			 cscope TAGS tags help %docs check% \
-			 include/linux/version.h headers_% \
+			 include/generated/version.h headers_% \
 			 kernelrelease kernelversion
 
 config-targets := 0
@@ -796,7 +796,7 @@ endif
 # prepare2 creates a makefile if using a separate output directory
 prepare2: prepare3 outputmakefile
 
-prepare1: prepare2 include/linux/version.h include/linux/utsrelease.h \
+prepare1: prepare2 include/generated/version.h include/linux/utsrelease.h \
                    include/asm include/config.h include/config/auto.conf
 
 ifneq ($(KBUILD_MODULES),)
@@ -879,7 +879,7 @@ define filechk_version.h
 	echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';)
 endef
 
-include/linux/version.h: $(srctree)/Makefile FORCE
+include/generated/version.h: $(srctree)/Makefile FORCE
 	$(call filechk,version.h)
 
 include/linux/utsrelease.h: include/config/kernel.release FORCE
@@ -978,7 +978,7 @@ CLEAN_FILES +=	barebox System.map include/barebox_default_env.h \
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
 MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                  include/generated/autoconf.h include/linux/version.h      \
+                  include/generated/autoconf.h include/generated/version.h      \
                   include/linux/utsrelease.h include/config.h           \
 		  Module.symvers tags TAGS cscope*
 

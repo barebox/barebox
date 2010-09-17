@@ -149,13 +149,26 @@ void menu_entry_free(struct menu_entry *me)
 	me->free(me);
 }
 
-static void print_menu_entry(struct menu *m, struct menu_entry *me, int reverse)
+static void print_menu_entry(struct menu *m, struct menu_entry *me,
+			     int selected)
 {
 	gotoXY(me->num + 1, 3);
-	if (reverse)
-		printf_reverse("%d: %-*s", me->num, m->width, me->display);
-	else
-		printf("%d: %-*s", me->num, m->width, me->display);
+	if (selected)
+		printf("\e[7m");
+
+	if (me->type == MENU_ENTRY_BOX) {
+		if (me->box_state)
+			puts("[*]");
+		else
+			puts("[ ]");
+	} else {
+		puts("   ");
+	}
+
+	printf(" %d: %-*s", me->num, m->width, me->display);
+
+	if (selected)
+		printf("\e[m");
 }
 
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me)
@@ -306,6 +319,14 @@ int menu_show(struct menu *m)
 			}
 			print_menu_entry(m, m->selected, 1);
 			break;
+		case ' ':
+			if (m->selected->type != MENU_ENTRY_BOX)
+				break;
+			m->selected->box_state = !m->selected->box_state;
+			if (m->selected->action)
+				m->selected->action(m, m->selected);
+			print_menu_entry(m, m->selected, 1);
+			break;
 		case '\n':
 		case '\r':
 			clear();
@@ -334,6 +355,9 @@ static void menu_action_show(struct menu *m, struct menu_entry *me)
 {
 	struct submenu *s = container_of(me, struct submenu, entry);
 	struct menu *sm;
+
+	if (me->type == MENU_ENTRY_BOX && !me->box_state)
+		return;
 
 	sm = menu_get_by_name(s->submenu);
 	if (sm)
@@ -410,7 +434,8 @@ static void menu_command_free(struct menu_entry *me)
 	free(e);
 }
 
-struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *command)
+struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
+					  char *command, menu_entry_type type)
 {
 	struct action_entry *e = calloc(1, sizeof(*e));
 	int ret;
@@ -421,6 +446,7 @@ struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *c
 	e->command = strdup(command);
 	e->entry.action = menu_action_command;
 	e->entry.free = menu_command_free;
+	e->entry.type = type;
 	e->entry.display = strdup(display);
 
 	if (!e->entry.display || !e->command) {

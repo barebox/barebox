@@ -28,12 +28,23 @@
 
 struct menu;
 
+typedef enum {
+	MENU_ENTRY_NORMAL = 0,
+	MENU_ENTRY_BOX,
+} menu_entry_type;
+
 struct menu_entry {
 	int num;
 	char *display;
 	void (*action)(struct menu *m, struct menu_entry *me);
 	void (*free)(struct menu_entry *me);
 	int non_re_ent;
+
+	/* MENU_ENTRY_BOX */
+	int box_state;
+	void (*box_action)(struct menu *m, struct menu_entry *me);
+
+	menu_entry_type type;
 
 	struct list_head list;
 };
@@ -69,7 +80,8 @@ static inline struct menu* menu_alloc(void)
 	return m;
 }
 struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *display);
-struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *command);
+struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
+					  char *command, menu_entry_type type);
 void menu_free(struct menu *m);
 int menu_add(struct menu* m);
 void menu_remove(struct menu *m);

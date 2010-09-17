@@ -49,11 +49,13 @@ struct cmd_menu {
 	char		*submenu;
 	int		num;
 	int		auto_select;
+	menu_entry_type	type;
+	int		box_state;
 #endif
 };
 
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-#define OPTS		"m:earlc:d:RsSn:u:A:"
+#define OPTS		"m:earlc:d:RsSn:u:A:b:B:"
 #define	is_entry(x)	((x)->entry)
 #else
 #define OPTS		"m:ls"
@@ -62,8 +64,8 @@ struct cmd_menu {
 
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
 /*
- * menu -e -a -m <menu> -c <command> [-R] -d <description>
- * menu -e -a -m <menu> -u submenu -d <description>
+ * menu -e -a -m <menu> -c <command> [-R] [-b 0|1 ] -d <description>
+ * menu -e -a -m <menu> -u submenu -d [-b 0|1] <description>
  */
 static int do_menu_entry_add(struct cmd_menu *cm)
 {
@@ -83,11 +85,15 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 	if (cm->submenu)
 		me = menu_add_submenu(m, cm->submenu, cm->description);
 	else
-		me = menu_add_command_entry(m, cm->description, cm->command);
+		me = menu_add_command_entry(m, cm->description, cm->command,
+					    cm->type);
 	if (!me)
 		return PTR_ERR(me);
 
-	me->non_re_ent = !cm->re_entrant;
+	me->box_state = cm->box_state > 0 ? 1 : 0;
+
+	if (!cm->submenu)
+		me->non_re_ent = !cm->re_entrant;
 
 	return 0;
 }
@@ -358,6 +364,12 @@ static int do_menu(struct command *cmdtp, int argc, char *argv[])
 			break;
 		case 'A':
 			cm.auto_select = simple_strtoul(optarg, NULL, 10);
+		case 'b':
+			cm.type = MENU_ENTRY_BOX;
+			cm.box_state = simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'B':
+			cm.command = optarg;
 			break;
 #endif
 		default:
@@ -430,11 +442,15 @@ static const __maybe_unused char cmd_menu_help[] =
 "\n"
 "Add an entry\n"
 "  (-R for do no exit the menu after executing the command)\n"
-"  menu -e -a -m <menu> -c <command> [-R] -d <description>\n"
+"  (-b for box style 1 for selected)\n"
+"  (and optional -c for the command to run when we change the state)\n"
+"  menu -e -a -m <menu> -c <command> [-R] [-b 0|1] -d <description>\n"
 
 "Add a submenu entry\n"
 "  (-R is not needed)\n"
-"  menu -e -a -m <menu> -u <menu> -d <description>\n"
+"  (-b for box style 1 for selected)\n"
+"  (and -c is not needed)\n"
+"  menu -e -a -m <menu> -u submenu -d [-b 0|1] <description>\n"
 "\n"
 "Remove an entry\n"
 "  menu -e -r -m <name> -n <num>\n"

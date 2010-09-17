@@ -202,7 +202,7 @@ static int do_menu_select(struct cmd_menu *cm)
 		return -EINVAL;
 	}
 
-	if (!menu_set_selected(m, cm->num)) {
+	if (menu_set_selected(m, cm->num) < 0) {
 		eprintf("Entry '%d' not found\n", cm->num);
 		return -EINVAL;
 	}

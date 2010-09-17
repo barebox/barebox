@@ -28,6 +28,7 @@
 #include <errno.h>
 
 static struct device_d tap_device = {
+	.id	  = -1,
         .name     = "tap",
 };
 

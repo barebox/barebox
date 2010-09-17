@@ -58,6 +58,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id		= -1,
 	.name		= "fec_imx",
 	.map_base	= IMX_FEC_BASE,
 	.platform_data	= &fec_info,
@@ -69,6 +70,7 @@ static struct memory_platform_data sdram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.map_base	= IMX_SDRAM_CS0,
 	.size		= 128 * 1024 * 1024,
@@ -82,6 +84,7 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id		= -1,
 	.name		= "imx_nand",
 	.map_base	= IMX_NFC_BASE,
 	.platform_data	= &nand_info,
@@ -116,6 +119,7 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 };
 
 static struct device_d imxfb_dev = {
+	.id		= -1,
 	.name		= "imx-ipu-fb",
 	.map_base	= 0x53fc0000,
 	.size		= 0x1000,
@@ -171,6 +175,7 @@ static int eukrea_cpuimx35_devices_init(void)
 device_initcall(eukrea_cpuimx35_devices_init);
 
 static struct device_d eukrea_cpuimx35_serial_device = {
+	.id		= -1,
 	.name		= "imx_serial",
 	.map_base	= IMX_UART1_BASE,
 	.size		= 4096,

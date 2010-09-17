@@ -41,6 +41,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id		= -1,
 	.name     	= "ram",
 	.map_base	= CS6_BASE,
 	.platform_data  = &ram_pdata,
@@ -52,6 +53,7 @@ static struct s3c24x0_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "s3c24x0_nand",
 	.map_base = S3C24X0_NAND_BASE,
 	.platform_data	= &nand_info,
@@ -63,6 +65,7 @@ static struct device_d nand_dev = {
  * GPIO3, data width is 32 bit
  */
 static struct device_d network_dev = {
+	.id       = -1,
         .name     = "smc91c111",
         .map_base = CS1_BASE + 0x300,
         .size     = 16,
@@ -178,6 +181,7 @@ void __bare_init nand_boot(void)
 #endif
 
 static struct device_d a9m2410_serial_device = {
+	.id       = -1,
 	.name     = "s3c24x0_serial",
 	.map_base = UART1_BASE,
 	.size     = UART1_SIZE,

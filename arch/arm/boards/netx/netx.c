@@ -31,6 +31,7 @@
 #include <mach/netx-eth.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
@@ -42,6 +43,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0x80000000,
 	.size     = 64 * 1024 * 1024,
@@ -53,6 +55,7 @@ struct netx_eth_platform_data eth0_data = {
 };
 
 static struct device_d netx_eth_dev0 = {
+	.id		= -1,
 	.name		= "netx-eth",
 	.platform_data	= &eth0_data,
 };
@@ -62,6 +65,7 @@ struct netx_eth_platform_data eth1_data = {
 };
 
 static struct device_d netx_eth_dev1 = {
+	.id		= -1,
 	.name		= "netx-eth",
 	.platform_data	= &eth1_data,
 };
@@ -89,6 +93,7 @@ static int netx_devices_init(void) {
 device_initcall(netx_devices_init);
 
 static struct device_d netx_serial_device = {
+	.id	  = -1,
 	.name     = "netx_serial",
 	.map_base = NETX_PA_UART0,
 	.size     = 0x40,

@@ -54,6 +54,7 @@ static struct imx_iim_platform_data imx25_iim_pdata = {
 };
 
 static struct device_d imx25_iim_dev = {
+	.id		= -1,
 	.name		= "imx_iim",
 	.map_base	= IMX_IIM_BASE,
 	.platform_data	= &imx25_iim_pdata,

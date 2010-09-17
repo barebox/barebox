@@ -114,6 +114,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id	  = -1,
 	.name     = "fec_imx",
 	.map_base = IMX_FEC_BASE,
 	.platform_data	= &fec_info,
@@ -125,6 +126,7 @@ static struct memory_platform_data sdram_pdata = {
 };
 
 static struct device_d sdram0_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = IMX_SDRAM_CS0,
 #if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
@@ -143,6 +145,7 @@ static struct memory_platform_data sram_pdata = {
 };
 
 static struct device_d sram0_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0x78000000,
 	.size     = 128 * 1024,
@@ -155,6 +158,7 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = IMX_NFC_BASE,
 	.platform_data	= &nand_info,
@@ -181,6 +185,7 @@ static void imx25_usb_init(void)
 }
 
 static struct device_d usbh2_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = IMX_OTG_BASE + 0x400,
 	.size     = 0x200,
@@ -194,6 +199,7 @@ static struct i2c_board_info i2c_devices[] = {
 };
 
 static struct device_d i2c_dev = {
+	.id	  = -1,
 	.name     = "i2c-imx",
 	.map_base = IMX_I2C1_BASE,
 };
@@ -284,6 +290,7 @@ static int imx25_devices_init(void)
 device_initcall(imx25_devices_init);
 
 static struct device_d imx25_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 16 * 1024,

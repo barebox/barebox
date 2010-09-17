@@ -37,6 +37,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id = -1,
 	.name = "mem",
 	.map_base = 0x00000000,
 	.platform_data = &ram_pdata,

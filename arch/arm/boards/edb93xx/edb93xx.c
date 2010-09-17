@@ -39,6 +39,7 @@
  * CS line 6, data width is 16 bit
  */
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0x60000000,
 	.size     = EDB93XX_CFI_FLASH_SIZE,
@@ -50,6 +51,7 @@ static struct memory_platform_data ram_dev_pdata0 = {
 };
 
 static struct device_d sdram0_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = CONFIG_EP93XX_SDRAM_BANK0_BASE,
 	.size     = CONFIG_EP93XX_SDRAM_BANK0_SIZE,
@@ -63,6 +65,7 @@ static struct memory_platform_data ram_dev_pdata1 = {
 };
 
 static struct device_d sdram1_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = CONFIG_EP93XX_SDRAM_BANK1_BASE,
 	.size     = CONFIG_EP93XX_SDRAM_BANK1_SIZE,
@@ -77,6 +80,7 @@ static struct memory_platform_data ram_dev_pdata2 = {
 };
 
 static struct device_d sdram2_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = CONFIG_EP93XX_SDRAM_BANK2_BASE,
 	.size     = CONFIG_EP93XX_SDRAM_BANK2_SIZE,
@@ -91,6 +95,7 @@ static struct memory_platform_data ram_dev_pdata3 = {
 };
 
 static struct device_d sdram3_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = CONFIG_EP93XX_SDRAM_BANK3_BASE,
 	.size     = CONFIG_EP93XX_SDRAM_BANK3_SIZE,
@@ -99,6 +104,7 @@ static struct device_d sdram3_dev = {
 #endif
 
 static struct device_d eth_dev = {
+	.id	  = -1,
 	.name     = "ep93xx_eth",
 };
 
@@ -149,6 +155,7 @@ static int ep93xx_devices_init(void)
 device_initcall(ep93xx_devices_init);
 
 static struct device_d edb93xx_serial_device = {
+	.id	  = -1,
 	.name     = "pl010_serial",
 	.map_base = UART1_BASE,
 	.size     = 4096,

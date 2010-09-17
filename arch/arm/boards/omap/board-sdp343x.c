@@ -610,6 +610,7 @@ static struct NS16550_plat serial_plat = {
 };
 
 static struct device_d sdp3430_serial_device = {
+	.id = -1,
 	.name = "serial_ns16550",
 	.map_base = OMAP_UART3_BASE,
 	.size = 1024,
@@ -646,6 +647,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 struct device_d sdram_dev = {
+	.id = -1,
 	.name = "mem",
 	.map_base = 0x80000000,
 	.size = 128 * 1024 * 1024,

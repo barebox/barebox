@@ -38,6 +38,7 @@
 #include <mach/io.h>
 
 static struct device_d cfi_dev = {
+	.id		= -1,
 	.name		= "cfi_flash",
 	.map_base	= AT91_CHIPSELECT_0,
 	.size		= 0,	/* zero means autodetect size */

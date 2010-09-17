@@ -44,6 +44,7 @@
  * CS line 0, data width is 16 bit
  */
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = IMX_CS0_BASE,
 	.size     = 32 * 1024 * 1024,	/* area size */
@@ -59,6 +60,7 @@ static struct memory_platform_data sram_dev_pdata0 = {
 };
 
 static struct device_d sram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = IMX_CS4_BASE,
 	.size     = IMX_CS4_RANGE,	/* area size */
@@ -71,6 +73,7 @@ static struct device_d sram_dev = {
  * GPIO3, data width is 16 bit
  */
 static struct device_d network_dev = {
+	.id	  = -1,
 	.name     = "smc911x",
 	.map_base = IMX_CS1_BASE,
 	.size     = IMX_CS1_RANGE,	/* area size */
@@ -88,6 +91,7 @@ static struct memory_platform_data ram_dev_pdata0 = {
 };
 
 static struct device_d sdram0_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = IMX_SDRAM_CS0,
 	.size     = SDRAM0 * 1024 * 1024,	/* fix size */
@@ -108,6 +112,7 @@ static struct memory_platform_data ram_dev_pdata1 = {
 };
 
 static struct device_d sdram1_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = IMX_SDRAM_CS1,
 	.size     = SDRAM1 * 1024 * 1024,	/* fix size */
@@ -122,6 +127,7 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = 0xB8000000,
 	.platform_data	= &nand_info,
@@ -129,12 +135,14 @@ static struct device_d nand_dev = {
 
 #ifdef CONFIG_USB
 static struct device_d usbotg_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = IMX_OTG_BASE,
 	.size     = 0x200,
 };
 
 static struct device_d usbh2_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = IMX_OTG_BASE + 0x400,
 	.size     = 0x200,
@@ -313,6 +321,7 @@ static int imx31_devices_init(void)
 device_initcall(imx31_devices_init);
 
 static struct device_d imx31_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 16 * 1024,

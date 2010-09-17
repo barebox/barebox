@@ -26,6 +26,7 @@ static struct memory_platform_data sram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = AT91_CHIPSELECT_1,
 	.platform_data = &sram_pdata,
@@ -40,6 +41,7 @@ void at91_add_device_sdram(u32 size)
 
 #if defined(CONFIG_DRIVER_NET_MACB)
 static struct device_d macb_dev = {
+	.id	  = -1,
 	.name     = "macb",
 	.map_base = AT91SAM9260_BASE_EMAC,
 	.size     = 0x1000,
@@ -82,6 +84,7 @@ void at91_add_device_eth(struct at91_ether_platform_data *data) {}
 
 #if defined(CONFIG_NAND_ATMEL)
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "atmel_nand",
 	.map_base = AT91_CHIPSELECT_3,
 	.size     = 0x10,
@@ -117,6 +120,7 @@ void at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
 static struct device_d dbgu_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91_BASE_SYS + AT91_DBGU,
 	.size     = 4096,
@@ -129,6 +133,7 @@ static inline void configure_dbgu_pins(void)
 }
 
 static struct device_d uart0_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US0,
 	.size     = 4096,
@@ -154,6 +159,7 @@ static inline void configure_usart0_pins(unsigned pins)
 }
 
 static struct device_d uart1_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US1,
 	.size     = 4096,
@@ -171,6 +177,7 @@ static inline void configure_usart1_pins(unsigned pins)
 }
 
 static struct device_d uart2_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US2,
 	.size     = 4096,
@@ -188,6 +195,7 @@ static inline void configure_usart2_pins(unsigned pins)
 }
 
 static struct device_d uart3_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US3,
 	.size     = 4096,
@@ -205,6 +213,7 @@ static inline void configure_usart3_pins(unsigned pins)
 }
 
 static struct device_d uart4_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US4,
 	.size     = 4096,
@@ -217,6 +226,7 @@ static inline void configure_usart4_pins(void)
 }
 
 static struct device_d uart5_serial_device = {
+	.id	  = -1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US5,
 	.size     = 4096,

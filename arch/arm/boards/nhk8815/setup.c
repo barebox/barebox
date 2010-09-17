@@ -34,6 +34,7 @@
 #include <mach/fsmc.h>
 
 static struct device_d nhk8815_network_dev = {
+	.id = -1,
 	.name = "smc91c111",
 	.map_base = 0x34000300,
 	.size = 16,
@@ -62,6 +63,7 @@ static struct nomadik_nand_platform_data nhk8815_nand_data = {
 };
 
 static struct device_d nhk8815_nand_device = {
+	.id		= -1,
 	.name		= "nomadik_nand",
 	.platform_data	= &nhk8815_nand_data,
 };

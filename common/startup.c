@@ -86,6 +86,7 @@ static struct memory_platform_data default_env_platform_data = {
 };
 
 static struct device_d default_env_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.platform_data	= &default_env_platform_data,
 };

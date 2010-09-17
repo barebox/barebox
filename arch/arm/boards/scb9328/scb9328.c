@@ -33,6 +33,7 @@
 #include <dm9000.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 
 	.map_base = 0x10000000,
@@ -45,6 +46,7 @@ static struct memory_platform_data sdram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0x08000000,
 	.size     = 16 * 1024 * 1024,
@@ -59,6 +61,7 @@ static struct dm9000_platform_data dm9000_data = {
 };
 
 static struct device_d dm9000_dev = {
+	.id	  = -1,
 	.name     = "dm9000",
 	.map_base = 0x16000000,
 	.size     = 8,
@@ -104,6 +107,7 @@ static int scb9328_devices_init(void) {
 device_initcall(scb9328_devices_init);
 
 static struct device_d scb9328_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,

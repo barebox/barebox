@@ -218,6 +218,7 @@ static struct NS16550_plat serial_plat = {
 };
 
 static struct device_d omap3evm_serial_device = {
+	.id		= -1,
 	.name		= "serial_ns16550",
 #if defined(CONFIG_OMAP3EVM_UART1)
 	.map_base	= OMAP_UART1_BASE,
@@ -246,6 +247,7 @@ static struct memory_platform_data sram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.map_base	= 0x80000000,
 	.size		= 128 * 1024 * 1024,

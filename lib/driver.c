@@ -103,7 +103,7 @@ int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
 
-	if (new_device->id == 0) {
+	if (new_device->id < 0) {
 		new_device->id = get_free_deviceid(new_device->name);
 	} else {
 		if (get_device_by_name_id(new_device->name, new_device->id)) {

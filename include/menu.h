@@ -42,6 +42,9 @@ struct menu {
 	char *name;
 	char *display;
 
+	int auto_select;
+	char *auto_display;
+
 	struct list_head list;
 	struct list_head entries;
 
@@ -74,6 +77,7 @@ struct menu* menu_get_by_name(char *name);
 int menu_show(struct menu *m);
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me);
 int menu_set_selected(struct menu *m, int num);
+int menu_set_auto_select(struct menu *m, int delay);
 struct menu* menu_get_menus(void);
 
 /*

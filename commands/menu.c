@@ -48,11 +48,12 @@ struct cmd_menu {
 	char		*command;
 	char		*submenu;
 	int		num;
+	int		auto_select;
 #endif
 };
 
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-#define OPTS		"m:earlc:d:RsSn:u:"
+#define OPTS		"m:earlc:d:RsSn:u:A:"
 #define	is_entry(x)	((x)->entry)
 #else
 #define OPTS		"m:ls"
@@ -212,7 +213,7 @@ static int do_menu_select(struct cmd_menu *cm)
 #endif
 
 /*
- * menu -s -m <menu>
+ * menu -s -m <menu> [-A <auto select delay>] [-d <display]
  */
 static int do_menu_show(struct cmd_menu *cm)
 {
@@ -222,6 +223,17 @@ static int do_menu_show(struct cmd_menu *cm)
 		m = menu_get_by_name(cm->menu);
 	else
 		m = menu_get_by_name("boot");
+
+	if (!m)
+		return -EINVAL;
+
+	if (cm->auto_select != -EINVAL) {
+		menu_set_auto_select(m, cm->auto_select);
+
+		free(m->auto_display);
+
+		m->auto_display = strdup(cm->description);
+	}
 
 	return menu_show(m);
 }
@@ -300,6 +312,7 @@ static int do_menu(struct command *cmdtp, int argc, char *argv[])
 	memset(&cm, 0, sizeof(struct cmd_menu));
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
 	cm.num = -EINVAL;
+	cm.auto_select = -EINVAL;
 #endif
 
 	cm.action = action_show;
@@ -342,6 +355,9 @@ static int do_menu(struct command *cmdtp, int argc, char *argv[])
 			break;
 		case 'n':
 			cm.num = simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'A':
+			cm.auto_select = simple_strtoul(optarg, NULL, 10);
 			break;
 #endif
 		default:
@@ -398,7 +414,9 @@ static const __maybe_unused char cmd_menu_help[] =
 "How to\n"
 "\n"
 "Show menu\n"
-"  menu -s -m <menu>\n"
+"  (-A auto select delay)\n"
+"  (-d auto select description)\n"
+"  menu -s -m <menu> [-A delay] [-d auto_display]\n"
 "\n"
 "List menu\n"
 "  menu -l\n"

@@ -29,6 +29,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <readkey.h>
+#include <clock.h>
 #include <linux/err.h>
 
 static LIST_HEAD(menus);
@@ -49,6 +50,7 @@ void menu_free(struct menu *m)
 		return;
 	free(m->name);
 	free(m->display);
+	free(m->auto_display);
 
 	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
@@ -187,6 +189,16 @@ int menu_set_selected(struct menu *m, int num)
 	return 0;
 }
 
+int menu_set_auto_select(struct menu *m, int delay)
+{
+	if (!m)
+		return -EINVAL;
+
+	m->auto_select = delay;
+
+	return 0;
+}
+
 static void print_menu(struct menu *m)
 {
 	struct menu_entry *me;
@@ -217,14 +229,54 @@ int menu_show(struct menu *m)
 {
 	int ch;
 	int escape = 0;
+	int countdown;
+	int auto_display_len = 16;
+	uint64_t start, second;
 
 	if(!m || list_empty(&m->entries))
 		return -EINVAL;
 
 	print_menu(m);
 
+	countdown = m->auto_select;
+	if (m->auto_select >= 0) {
+		gotoXY(m->nb_entries + 2, 3);
+		if (!m->auto_display) {
+			printf("Auto Select in");
+		} else {
+			auto_display_len = strlen(m->auto_display);
+			printf(m->auto_display);
+		}
+		printf(" %2d", countdown--);
+	}
+
+	start = get_time_ns();
+	second = start;
+	while (m->auto_select > 0 && !is_timeout(start, m->auto_select * SECOND)) {
+		if (tstc()) {
+			m->auto_select = -1;
+			break;
+		}
+
+		if (is_timeout(second, SECOND)) {
+			printf("\b\b%2d", countdown--);
+			second += SECOND;
+		}
+	}
+
+	gotoXY(m->nb_entries + 2, 3);
+	printf("%*c", auto_display_len + 4, ' ');
+
+	gotoXY(m->selected->num + 1, 3);
+
 	do {
-		ch = getc();
+		if (m->auto_select >= 0)
+			ch = '\n';
+		else
+			ch = getc();
+
+		m->auto_select = -1;
+
 		switch(ch) {
 		case 0x1b:
 			escape = 1;

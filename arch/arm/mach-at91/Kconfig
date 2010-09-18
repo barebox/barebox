@@ -7,6 +7,7 @@ config ARCH_TEXT_BASE
 config BOARDINFO
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260EK
 	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
+	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Ronetix PM9263" if MACH_PM9263
 
@@ -28,6 +29,11 @@ config ARCH_AT91SAM9263
 	select CPU_ARM926T
 	select HAS_MACB
 
+config ARCH_AT91SAM9G20
+	bool "AT91SAM9G20"
+	select CPU_ARM926T
+	select HAS_MACB
+
 endchoice
 
 # ----------------------------------------------------------
@@ -43,6 +49,25 @@ config MACH_AT91SAM9260EK
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_AT91SAM9G20
+
+choice
+
+	prompt "AT91SAM9G20 Board Type"
+
+config MACH_AT91SAM9G20EK
+	bool "Atmel AT91SAM9G20-EK Evaluation Kit"
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	help
+	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit
+	  that embeds only one SD/MMC slot.
 
 endchoice
 
@@ -87,5 +112,13 @@ config MTD_NAND_ATMEL_BUSWIDTH_16
 	help
 	  On AT91SAM926x boards both types of NAND flash can be present
 	  (8 and 16 bit data bus width).
+
+config AT91_HAVE_2MMC
+	bool "Have 2 MMC"
+	depends on MACH_AT91SAM9G20EK
+	help
+	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
+	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
+	  onwards.
 
 endif

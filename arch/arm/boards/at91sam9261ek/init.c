@@ -155,7 +155,10 @@ static int at91sam9261ek_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
-	armlinux_set_architecture(MACH_TYPE_AT91SAM9261EK);
+	if (machine_is_at91sam9g10ek())
+		armlinux_set_architecture(MACH_TYPE_AT91SAM9G10EK);
+	else
+		armlinux_set_architecture(MACH_TYPE_AT91SAM9261EK);
 
 	return 0;
 }

@@ -8,6 +8,7 @@ config BOARDINFO
 	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260EK
 	default "Atmel at91sam9261-ek" if MACH_AT91SAM9261EK
 	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
+	default "Atmel at91sam9g10-ek" if MACH_AT91SAM9G10EK
 	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
 	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
@@ -35,6 +36,10 @@ config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
 	select CPU_ARM926T
 	select HAS_MACB
+
+config ARCH_AT91SAM9G10
+	bool "AT91SAM9G10"
+	select CPU_ARM926T
 
 config ARCH_AT91SAM9G20
 	bool "AT91SAM9G20"
@@ -87,6 +92,25 @@ config MACH_PM9261
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using the Ronetix PM9261 Board
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_AT91SAM9G10
+
+choice
+	prompt "AT91SAM9G10 Board Type"
+
+config MACH_AT91SAM9G10EK
+	bool "Atmel AT91SAM9G10-EK Evaluation Kit"
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	select HAS_DM9000
+	help
+	  Select this if you are using Atmel's AT91SAM9G10-EK Evaluation Kit.
+	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4588>
 
 endchoice
 

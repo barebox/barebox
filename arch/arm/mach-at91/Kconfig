@@ -10,6 +10,9 @@ config BOARDINFO
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Ronetix PM9263" if MACH_PM9263
 
+config HAVE_NAND_ATMEL_BUSWIDTH_16
+	bool
+
 comment "Atmel AT91 System-on-Chip"
 
 choice
@@ -38,6 +41,7 @@ choice
 
 config MACH_AT91SAM9260EK
 	bool "Atmel AT91SAM9260-EK"
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
 
@@ -54,6 +58,7 @@ choice
 
 config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 
@@ -70,5 +75,16 @@ config MACH_PM9263
 endchoice
 
 endif
+
+# ----------------------------------------------------------
+
+comment "AT91 Board Options"
+
+config MTD_NAND_ATMEL_BUSWIDTH_16
+	bool "Enable 16-bit data bus interface to NAND flash"
+	depends on HAVE_NAND_ATMEL_BUSWIDTH_16
+	help
+	  On AT91SAM926x boards both types of NAND flash can be present
+	  (8 and 16 bit data bus width).
 
 endif

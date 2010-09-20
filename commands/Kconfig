@@ -271,6 +271,7 @@ config CMD_BOOTU
 
 config CMD_LINUX16
 	tristate
+	depends on X86
 	default y if X86
 	prompt "linux16"
 	help

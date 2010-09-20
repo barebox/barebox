@@ -51,7 +51,7 @@ int twl4030_reg_read(struct twl4030 *twl4030, u16 reg, u8 *val)
 	msg->flags = I2C_M_RD;	/* Read the register value */
 	msg->len = 1;	/* only n bytes */
 	msg->buf = val;
-	ret = i2c_transfer(twl4030->client->adapter, &xfer_msg, 2);
+	ret = i2c_transfer(twl4030->client->adapter, xfer_msg, 2);
 
 	/* i2c_transfer returns number of messages transferred */
 	if (ret < 0) {
@@ -96,9 +96,9 @@ int twl4030_reg_write(struct twl4030 *twl4030, u16 reg, u8 val)
 }
 EXPORT_SYMBOL(twl4030_reg_write)
 
-int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u32 mask, u32 val)
+int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u8 mask, u8 val)
 {
-	u32 tmp;
+	u8 tmp;
 	int err;
 
 	err = twl4030_reg_read(twl4030, reg, &tmp);

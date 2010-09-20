@@ -81,6 +81,8 @@ config S3C24XX_SDRAM_INIT
 config S3C24XX_NAND_BOOT
 	bool
 	prompt "Booting from NAND"
+	select MTD
+	select NAND
 	select NAND_S3C24X0
 	help
 	  Add generic support to boot from NAND flash. Image loading will be

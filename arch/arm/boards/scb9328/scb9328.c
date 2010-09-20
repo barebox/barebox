@@ -57,7 +57,7 @@ static struct dm9000_platform_data dm9000_data = {
 	.iobase   = 0x16000000,
 	.iodata   = 0x16000004,
 	.buswidth = DM9000_WIDTH_16,
-	.srom     = 1;
+	.srom     = 1,
 };
 
 static struct device_d dm9000_dev = {

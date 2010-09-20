@@ -456,6 +456,6 @@ extern struct twl4030 *twl4030_get(void);
 
 extern int twl4030_reg_read(struct twl4030 *twl4030, u16 reg, u8 *val);
 extern int twl4030_reg_write(struct twl4030 *twl4030, u16 reg, u8 val);
-extern int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u32 mask, u32 val);
+extern int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u8 mask, u8 val);
 
 #endif /* __I2C_TWL4030_H */

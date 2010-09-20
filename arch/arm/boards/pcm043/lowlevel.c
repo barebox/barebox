@@ -37,6 +37,7 @@
 #define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 #define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
 
+#ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
 	uint32_t r;
@@ -55,15 +56,17 @@ static void __bare_init __naked insdram(void)
 
 	board_init_lowlevel_return();
 }
+#endif
 
 void __bare_init __naked board_init_lowlevel(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = IMX_CCM_BASE;
 	unsigned long iomuxc_base = IMX_IOMUXC_BASE;
+#ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
-
+#endif
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */
 	r |= CR_U; /* unaligned accesses  */

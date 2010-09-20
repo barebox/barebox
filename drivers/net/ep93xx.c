@@ -40,6 +40,8 @@
 #include <mach/ep93xx-regs.h>
 #include "ep93xx.h"
 
+#define EP93XX_MAX_PKT_SIZE    1536
+
 static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg);
 static int ep93xx_phy_write(struct mii_device *mdev, int phy_addr, int phy_reg,
 			    int value);
@@ -231,7 +233,7 @@ static int ep93xx_eth_open(struct eth_device *edev)
 	writel(0x00040000, &regs->txdthrshld);
 	writel(0x00040000, &regs->txststhrshld);
 
-	writel((TXSTARTMAX << 0) | (PKTSIZE_ALIGN << 16), &regs->maxfrmlen);
+	writel((TXSTARTMAX << 0) | (EP93XX_MAX_PKT_SIZE << 16), &regs->maxfrmlen);
 	writel(BMCTL_TXEN, &regs->bmctl);
 
 	/*
@@ -267,7 +269,7 @@ static int ep93xx_eth_open(struct eth_device *edev)
 		(priv->rx_dq.base + i)->word1 = (uint32_t)NetRxPackets[i];
 
 		/* set buffer length, clear buffer index and NSOF */
-		(priv->rx_dq.base + i)->word2 = PKTSIZE_ALIGN;
+		(priv->rx_dq.base + i)->word2 = EP93XX_MAX_PKT_SIZE;
 	}
 
 	memset(priv->tx_dq.base, 0,
@@ -615,8 +617,8 @@ static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg)
 /**
  * Write a 16-bit value to an MII register.
  */
-static int ep93xx_phy_write(struct mii_device *mdev, uint8_t phy_addr,
-			uint8_t phy_reg, uint16_t value)
+static int ep93xx_phy_write(struct mii_device *mdev, int phy_addr,
+			int phy_reg, int value)
 {
 	struct mac_regs *regs = ep93xx_get_regs(mdev->edev);
 	uint32_t self_ctl;

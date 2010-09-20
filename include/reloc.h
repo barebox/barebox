@@ -30,7 +30,7 @@ void early_init(void);
  * put a variable into early init RAM. This section will
  * be relocated into SRAM during early init
  */
-#define __initdata	__attribute__ ((__section__ (".early_init_data")))
+#define __early_initdata	__attribute__ ((__section__ (".early_init_data")))
 
 /* Access init data */
 #define INITDATA(var) *(typeof(var) *)((ulong)(&var) - \
@@ -53,7 +53,7 @@ static inline void early_init(void)
 #define RELOC(a) a
 #define RELOC_VAR(v) v
 
-#define __initdata
+#define __early_initdata
 
 #define INITDATA(var)	var
 

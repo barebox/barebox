@@ -51,7 +51,7 @@ static void display_banner (void)
 	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
 }
 
-static int __initdata initialized = 0;
+static int __early_initdata initialized = 0;
 
 static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
@@ -246,7 +246,7 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-void __initdata *early_console_base;
+void __early_initdata *early_console_base;
 
 void console_putc(unsigned int ch, char c)
 {

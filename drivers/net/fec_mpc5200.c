@@ -556,7 +556,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	if (fec->xcv_type != SEVENWIRE) {
 		uint16_t phyStatus;
-		fec5xxx_miidev_read(&fec->miidev, 0, 0x1, &phyStatus);
+		phyStatus = fec5xxx_miidev_read(&fec->miidev, 0, 0x1);
 	}
 
 	/*

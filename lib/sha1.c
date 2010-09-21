@@ -29,6 +29,7 @@
 #include <digest.h>
 #include <init.h>
 #include <linux/string.h>
+#include <asm/byteorder.h>
 
 #define SHA1_SUM_POS	-0x20
 #define SHA1_SUM_LEN	20
@@ -44,23 +45,8 @@ sha1_context;
 /*
  * 32-bit integer manipulation macros (big endian)
  */
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i) {				\
-	(n) = ( (uint32_t) (b)[(i)    ] << 24 )	\
-	    | ( (uint32_t) (b)[(i) + 1] << 16 )	\
-	    | ( (uint32_t) (b)[(i) + 2] <<  8 )	\
-	    | ( (uint32_t) (b)[(i) + 3]       );	\
-}
-#endif
-
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i) {				\
-	(b)[(i)    ] = (unsigned char) ( (n) >> 24 );	\
-	(b)[(i) + 1] = (unsigned char) ( (n) >> 16 );	\
-	(b)[(i) + 2] = (unsigned char) ( (n) >>  8 );	\
-	(b)[(i) + 3] = (unsigned char) ( (n)       );	\
-}
-#endif
+#define GET_UINT32_BE(n,b,i) (n) = be32_to_cpu(((uint32_t*)(b))[i / 4])
+#define PUT_UINT32_BE(n,b,i) ((uint32_t*)(b))[i / 4] = cpu_to_be32(n)
 
 /*
  * SHA-1 context setup

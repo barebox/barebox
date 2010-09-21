@@ -22,6 +22,7 @@
 #include <digest.h>
 #include <init.h>
 #include <linux/string.h>
+#include <asm/byteorder.h>
 
 #define SHA256_SUM_LEN	32
 
@@ -34,22 +35,8 @@ typedef struct {
 /*
  * 32-bit integer manipulation macros (big endian)
  */
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i) {				\
-	(n) = ( (unsigned long) (b)[(i)    ] << 24 )	\
-	    | ( (unsigned long) (b)[(i) + 1] << 16 )	\
-	    | ( (unsigned long) (b)[(i) + 2] <<  8 )	\
-	    | ( (unsigned long) (b)[(i) + 3]       );	\
-}
-#endif
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i) {				\
-	(b)[(i)    ] = (unsigned char) ( (n) >> 24 );	\
-	(b)[(i) + 1] = (unsigned char) ( (n) >> 16 );	\
-	(b)[(i) + 2] = (unsigned char) ( (n) >>  8 );	\
-	(b)[(i) + 3] = (unsigned char) ( (n)       );	\
-}
-#endif
+#define GET_UINT32_BE(n,b,i) (n) = be32_to_cpu(((uint32_t*)(b))[i / 4])
+#define PUT_UINT32_BE(n,b,i) ((uint32_t*)(b))[i / 4] = cpu_to_be32(n)
 
 static void sha256_starts(sha256_context * ctx)
 {

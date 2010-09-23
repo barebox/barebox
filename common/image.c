@@ -22,9 +22,14 @@
  */
 
 #ifdef __BAREBOX__
+#include <common.h>
 #include <image.h>
+#include <rtc.h>
+#else
+#include <time.h>
 #endif
 
+#if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
 typedef struct table_entry {
 	int	id;		/* as defined in image.h	*/
 	char	*sname;		/* short (input) name		*/
@@ -131,4 +136,174 @@ const char *image_get_type_name(uint8_t type)
 const char *image_get_comp_name(uint8_t comp)
 {
 	return get_table_entry_name(comp_name, "Unknown Compression", comp);
+}
+#endif
+
+/**
+ * image_multi_count - get component (sub-image) count
+ * @hdr: pointer to the header of the multi component image
+ *
+ * image_multi_count() returns number of components in a multi
+ * component image.
+ *
+ * Note: no checking of the image type is done, caller must pass
+ * a valid multi component image.
+ *
+ * returns:
+ *     number of components
+ */
+ulong image_multi_count(const image_header_t *hdr)
+{
+	ulong i, count = 0;
+	uint32_t *size;
+
+	/* get start of the image payload, which in case of multi
+	 * component images that points to a table of component sizes */
+	size = (uint32_t *)image_get_data (hdr);
+
+	/* count non empty slots */
+	for (i = 0; size[i]; ++i)
+		count++;
+
+	return count;
+}
+
+/**
+ * image_multi_getimg - get component data address and size
+ * @hdr: pointer to the header of the multi component image
+ * @idx: index of the requested component
+ * @data: pointer to a ulong variable, will hold component data address
+ * @len: pointer to a ulong variable, will hold component size
+ *
+ * image_multi_getimg() returns size and data address for the requested
+ * component in a multi component image.
+ *
+ * Note: no checking of the image type is done, caller must pass
+ * a valid multi component image.
+ *
+ * returns:
+ *     data address and size of the component, if idx is valid
+ *     0 in data and len, if idx is out of range
+ */
+void image_multi_getimg(const image_header_t *hdr, ulong idx,
+			ulong *data, ulong *len)
+{
+	int i;
+	uint32_t *size;
+	ulong offset, count, img_data;
+
+	/* get number of component */
+	count = image_multi_count(hdr);
+
+	/* get start of the image payload, which in case of multi
+	 * component images that points to a table of component sizes */
+	size = (uint32_t *)image_get_data(hdr);
+
+	/* get address of the proper component data start, which means
+	 * skipping sizes table (add 1 for last, null entry) */
+	img_data = image_get_data(hdr) + (count + 1) * sizeof (uint32_t);
+
+	if (idx < count) {
+		*len = uimage_to_cpu(size[idx]);
+		offset = 0;
+
+		/* go over all indices preceding requested component idx */
+		for (i = 0; i < idx; i++) {
+			/* add up i-th component size, rounding up to 4 bytes */
+			offset += (uimage_to_cpu(size[i]) + 3) & ~3 ;
+		}
+
+		/* calculate idx-th component data address */
+		*data = img_data + offset;
+	} else {
+		*len = 0;
+		*data = 0;
+	}
+}
+
+static void image_print_type(const image_header_t *hdr)
+{
+	const char *os, *arch, *type, *comp;
+
+	os = image_get_os_name(image_get_os(hdr));
+	arch = image_get_arch_name(image_get_arch(hdr));
+	type = image_get_type_name(image_get_type(hdr));
+	comp = image_get_comp_name(image_get_comp(hdr));
+
+	printf ("%s %s %s (%s)\n", arch, os, type, comp);
+}
+
+#if defined(CONFIG_TIMESTAMP) || defined(CONFIG_CMD_DATE) || !defined(__BAREBOX__)
+static void image_print_time(time_t timestamp)
+{
+#if defined(__BAREBOX__)
+	struct rtc_time tm;
+
+	to_tm(timestamp, &tm);
+	printf("%4d-%02d-%02d  %2d:%02d:%02d UTC\n",
+			tm.tm_year, tm.tm_mon, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
+#else
+	printf("%s", ctime(&timestamp));
+#endif
+}
+#endif /* CONFIG_TIMESTAMP || CONFIG_CMD_DATE || !__BAREBOX__ */
+
+void image_print_size(uint32_t size)
+{
+#ifdef __BAREBOX__
+	printf("%d Bytes = %s\n", size, size_human_readable(size));
+#else
+	printf("%d Bytes = %.2f kB = %.2f MB\n",
+			size, (double)size / 1.024e3,
+			(double)size / 1.048576e6);
+#endif
+}
+
+void image_print_contents(const void *ptr)
+{
+	const image_header_t *hdr = (const image_header_t *)ptr;
+	const char *p;
+
+#ifdef __BAREBOX__
+	p = "   ";
+#else
+	p = "";
+#endif
+
+	printf("%sImage Name:   %.*s\n", p, IH_NMLEN, image_get_name(hdr));
+#if defined(CONFIG_TIMESTAMP) || defined(CONFIG_CMD_DATE) || !defined(__BAREBOX__)
+	printf("%sCreated:      ", p);
+	image_print_time((time_t)image_get_time(hdr));
+#endif
+	printf ("%sImage Type:   ", p);
+	image_print_type(hdr);
+	printf ("%sData Size:    ", p);
+	image_print_size(image_get_data_size(hdr));
+	printf ("%sLoad Address: %08x\n", p, image_get_load(hdr));
+	printf ("%sEntry Point:  %08x\n", p, image_get_ep(hdr));
+
+	if (image_check_type(hdr, IH_TYPE_MULTI) ||
+			image_check_type(hdr, IH_TYPE_SCRIPT)) {
+		int i;
+		ulong data, len;
+		ulong count = image_multi_count(hdr);
+
+		printf ("%sContents:\n", p);
+		for (i = 0; i < count; i++) {
+			image_multi_getimg(hdr, i, &data, &len);
+
+			printf("%s   Image %d: ", p, i);
+			image_print_size(len);
+
+			if (image_check_type(hdr, IH_TYPE_SCRIPT) && i > 0) {
+				/*
+				 * the user may need to know offsets
+				 * if planning to do something with
+				 * multiple files
+				 */
+				printf("%s    Offset = 0x%08lx\n", p, data);
+			}
+		}
+	}
 }

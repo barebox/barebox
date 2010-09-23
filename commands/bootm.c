@@ -203,7 +203,7 @@ struct image_handle *map_image(const char *filename, int verify)
 		puts ("OK\n");
 	}
 
-	print_image_hdr(header);
+	image_print_contents(header);
 
 	close(fd);
 
@@ -450,50 +450,6 @@ BAREBOX_CMD(
 );
 
 #endif	/* CONFIG_CMD_IMI */
-
-void
-print_image_hdr (image_header_t *hdr)
-{
-#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
-	time_t timestamp = (time_t)image_get_time(hdr);
-	struct rtc_time tm;
-#endif
-
-	printf ("   Image Name:   %.*s\n", IH_NMLEN, image_get_name(hdr));
-#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
-	to_tm (timestamp, &tm);
-	printf ("   Created:      %4d-%02d-%02d  %2d:%02d:%02d UTC\n",
-		tm.tm_year, tm.tm_mon, tm.tm_mday,
-		tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
-#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-	printf ("   Image Type:   %s %s %s (%s)\n",
-			image_get_arch_name(image_get_arch(hdr)),
-			image_get_os_name(image_get_os(hdr)),
-			image_get_type_name(image_get_type(hdr)),
-			image_get_comp_name(image_get_comp(hdr)));
-#endif
-	printf ("   Data Size:    %d Bytes = %s\n"
-		"   Load Address: %08x\n"
-		"   Entry Point:  %08x\n",
-			image_get_size(hdr),
-			size_human_readable(image_get_size(hdr)),
-			image_get_load(hdr),
-			image_get_ep(hdr));
-
-	if (image_check_type(hdr, IH_TYPE_MULTI)) {
-		int i;
-		uint32_t len;
-		uint32_t *len_ptr = (uint32_t *)((ulong)hdr + image_get_header_size());
-
-		puts ("   Contents:\n");
-		for (i=0; len_ptr[i]; ++i) {
-			len = ntohl(len_ptr[i]);
-			printf ("   Image %d: %8ld Bytes = %s", i, len,
-				size_human_readable (len));
-		}
-	}
-}
 
 #ifdef CONFIG_BZLIB
 void bz_internal_error(int errcode)

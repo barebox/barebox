@@ -212,7 +212,7 @@ int do_bootm_linux(struct image_data *data)
 	void (*theKernel)(int zero, int arch, void *params);
 	image_header_t *os_header = &data->os->header;
 
-	if (os_header->ih_type == IH_TYPE_MULTI) {
+	if (image_check_type(os_header, IH_TYPE_MULTI)) {
 		printf("Multifile images not handled at the moment\n");
 		return -1;
 	}
@@ -227,14 +227,14 @@ int do_bootm_linux(struct image_data *data)
 		return -1;
 	}
 
-	theKernel = (void *)ntohl(os_header->ih_ep);
+	theKernel = (void *)image_get_ep(os_header);
 
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
 	setup_tags();
 
-	if (relocate_image(data->os, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(data->os, (void *)image_get_load(os_header)))
 		return -1;
 
 	/* we assume that the kernel is in place */

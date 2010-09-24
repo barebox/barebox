@@ -396,7 +396,7 @@ extern void *pcm038_pll_init, *pcm038_pll_init_end;
 static int pcm038_power_init(void)
 {
 	int ret;
-	void *vram = 0xffff4c00;
+	void *vram = (void*)0xffff4c00;
 	void (*pllfunc)(void) = vram;
 
 	printf("initialising PLLs: 0x%p 0x%p\n", &pcm038_pll_init);

@@ -748,6 +748,7 @@ static int mx3fb_set_par(struct fb_info *info)
 		rgb = &def_rgb_24;
 		break;
 	case 16:
+	default:
 		rgb = &def_rgb_16;
 		break;
 	}

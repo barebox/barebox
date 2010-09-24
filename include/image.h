@@ -96,7 +96,7 @@
 #define IH_ARCH IH_ARCH_MIPS
 #elif defined(__nios__)
 #define IH_ARCH IH_ARCH_NIOS
-#elif defined(__M68K__)
+#elif defined(__m68k__)
 #define IH_ARCH IH_ARCH_M68K
 #elif defined(__microblaze__)
 #define IH_ARCH IH_ARCH_MICROBLAZE
@@ -348,7 +348,7 @@ static inline int image_check_target_arch(const image_header_t *hdr)
 	if (!image_check_arch(hdr, IH_ARCH_BLACKFIN))
 #elif defined(__I386__)
 	if (!image_check_arch(hdr, IH_ARCH_I386))
-#elif defined(__M68K__)
+#elif defined(__m68k__)
 	if (!image_check_arch(hdr, IH_ARCH_M68K))
 #elif defined(__microblaze__)
 	if (!image_check_arch(hdr, IH_ARCH_MICROBLAZE))

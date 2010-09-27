@@ -5,7 +5,8 @@ machine-y := i386
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -march=i386 -DTEXT_BASE=$(TEXT_BASE) -P
+CPPFLAGS += -march=i386 -m32 -DTEXT_BASE=$(TEXT_BASE) -P
+LDFLAGS += -m elf_i386
 
 ifndef CONFIG_MODULES
 # Add cleanup flags

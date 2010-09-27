@@ -9,6 +9,7 @@
 
 #include <asm/ptrace.h>
 #include <asm/types.h>
+#include <linux/stringify.h>
 
 /* Machine State Register (MSR) Fields */
 
@@ -887,22 +888,19 @@ n:
 
 /* Macros for setting and retrieving special purpose registers */
 
-#define stringify(s)	tostring(s)
-#define tostring(s)	#s
-
 #define mfdcr(rn)	({unsigned int rval; \
-			asm volatile("mfdcr %0," stringify(rn) \
+			asm volatile("mfdcr %0," __stringify(rn) \
 				     : "=r" (rval)); rval;})
-#define mtdcr(rn, v)	asm volatile("mtdcr " stringify(rn) ",%0" : : "r" (v))
+#define mtdcr(rn, v)	asm volatile("mtdcr " __stringify(rn) ",%0" : : "r" (v))
 
 #define mfmsr()		({unsigned int rval; \
 			asm volatile("mfmsr %0" : "=r" (rval)); rval;})
 #define mtmsr(v)	asm volatile("mtmsr %0" : : "r" (v))
 
 #define mfspr(rn)	({unsigned int rval; \
-			asm volatile("mfspr %0," stringify(rn) \
+			asm volatile("mfspr %0," __stringify(rn) \
 				     : "=r" (rval)); rval;})
-#define mtspr(rn, v)	asm volatile("mtspr " stringify(rn) ",%0" : : "r" (v))
+#define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
 
 #define tlbie(v)	asm volatile("tlbie %0 \n sync" : : "r" (v))
 

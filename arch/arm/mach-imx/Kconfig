@@ -40,6 +40,28 @@ config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
 	depends on ARCH_IMX25 || ARCH_IMX35
 
+choice
+	depends on ARCH_IMX_INTERNAL_BOOT
+	prompt "Internal boot source"
+	help
+	  Determines the location of the header information for internal boot.
+	  0x100 for OneNAND
+	  0x400 for NAND, SD/MMC or Serial ROM
+	  0x1000 for NOR
+
+config ARCH_IMX_INTERNAL_BOOT_NAND
+	default y
+	bool "NAND, SD/MMC, Serial ROM"
+	select NAND_IMX_BOOT
+
+config ARCH_IMX_INTERNAL_BOOT_NOR
+	bool "NOR"
+
+config ARCH_IMX_INTERNAL_BOOT_ONENAND
+	bool "OneNAND"
+
+endchoice
+
 comment "Freescale i.MX System-on-Chip"
 
 choice

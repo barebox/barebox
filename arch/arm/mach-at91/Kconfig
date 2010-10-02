@@ -14,6 +14,7 @@ config BOARDINFO
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Ronetix PM9261" if MACH_PM9261
 	default "Ronetix PM9263" if MACH_PM9263
+	default "Ronetix PM9G45" if MACH_PM9G45
 
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
@@ -175,6 +176,11 @@ config MACH_AT91SAM9M10G45EK
 	help
 	  Select this if you are using Atmel's AT91SAM9M10G45-EK Evaluation Kit.
 	  <http://atmel.com/dyn/products/tools_card_v2.asp?tool_id=4735>
+
+config MACH_PM9G45
+	bool "Ronetix PM9G45"
+	help
+	  Say y here if you are using the Ronetix PM9G45 Board
 
 endchoice
 

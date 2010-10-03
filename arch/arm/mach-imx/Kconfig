@@ -43,6 +43,7 @@ config ARCH_IMX_INTERNAL_BOOT
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT
 	prompt "Internal boot source"
+	default ARCH_IMX_INTERNAL_BOOT_NAND
 	help
 	  Determines the location of the header information for internal boot.
 	  0x100 for OneNAND
@@ -50,7 +51,6 @@ choice
 	  0x1000 for NOR
 
 config ARCH_IMX_INTERNAL_BOOT_NAND
-	default y
 	bool "NAND, SD/MMC, Serial ROM"
 	select NAND_IMX_BOOT
 

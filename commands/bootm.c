@@ -95,108 +95,22 @@ fixup_silent_linux ()
 }
 #endif /* CONFIG_SILENT_CONSOLE */
 
-#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-static const char *image_os(image_header_t *hdr)
-{
-	char *os;
-
-	switch (hdr->ih_os) {
-	case IH_OS_INVALID:	os = "Invalid OS";		break;
-	case IH_OS_NETBSD:	os = "NetBSD";			break;
-	case IH_OS_LINUX:	os = "Linux";			break;
-	case IH_OS_VXWORKS:	os = "VxWorks";			break;
-	case IH_OS_QNX:		os = "QNX";			break;
-	case IH_OS_BAREBOX:	os = "barebox";			break;
-	case IH_OS_RTEMS:	os = "RTEMS";			break;
-#ifdef CONFIG_ARTOS
-	case IH_OS_ARTOS:	os = "ARTOS";			break;
-#endif
-#ifdef CONFIG_LYNXKDI
-	case IH_OS_LYNXOS:	os = "LynxOS";			break;
-#endif
-	default:		os = "Unknown OS";		break;
-	}
-
-	return os;
-}
-
-static const char *image_arch(image_header_t *hdr)
-{
-	char *arch;
-
-	switch (hdr->ih_arch) {
-	case IH_CPU_INVALID:	arch = "Invalid CPU";		break;
-	case IH_CPU_ALPHA:	arch = "Alpha";			break;
-	case IH_CPU_ARM:	arch = "ARM";			break;
-	case IH_CPU_AVR32:	arch = "AVR32";			break;
-	case IH_CPU_I386:	arch = "Intel x86";		break;
-	case IH_CPU_IA64:	arch = "IA64";			break;
-	case IH_CPU_MIPS:	arch = "MIPS";			break;
-	case IH_CPU_MIPS64:	arch = "MIPS 64 Bit";		break;
-	case IH_CPU_PPC:	arch = "PowerPC";		break;
-	case IH_CPU_S390:	arch = "IBM S390";		break;
-	case IH_CPU_SH:		arch = "SuperH";		break;
-	case IH_CPU_SPARC:	arch = "SPARC";			break;
-	case IH_CPU_SPARC64:	arch = "SPARC 64 Bit";		break;
-	case IH_CPU_M68K:	arch = "M68K"; 			break;
-	case IH_CPU_MICROBLAZE:	arch = "Microblaze"; 		break;
-	case IH_CPU_NIOS:	arch = "Nios";			break;
-	case IH_CPU_NIOS2:	arch = "Nios-II";		break;
-	default:		arch = "Unknown Architecture";	break;
-	}
-
-	return arch;
-}
-
-static const char *image_type(image_header_t *hdr)
-{
-	char *type;
-
-	switch (hdr->ih_type) {
-	case IH_TYPE_INVALID:	type = "Invalid Image";		break;
-	case IH_TYPE_STANDALONE:type = "Standalone Program";	break;
-	case IH_TYPE_KERNEL:	type = "Kernel Image";		break;
-	case IH_TYPE_RAMDISK:	type = "RAMDisk Image";		break;
-	case IH_TYPE_MULTI:	type = "Multi-File Image";	break;
-	case IH_TYPE_FIRMWARE:	type = "Firmware";		break;
-	case IH_TYPE_SCRIPT:	type = "Script";		break;
-	case IH_TYPE_FLATDT:	type = "Flat Device Tree";	break;
-	default:		type = "Unknown Image";		break;
-	}
-	return type;
-}
-
-static const char *image_compression(image_header_t *hdr)
-{
-	char *comp;
-
-	switch (hdr->ih_comp) {
-	case IH_COMP_NONE:	comp = "uncompressed";		break;
-	case IH_COMP_GZIP:	comp = "gzip compressed";	break;
-	case IH_COMP_BZIP2:	comp = "bzip2 compressed";	break;
-	default:		comp = "unknown compression";	break;
-	}
-
-	return comp;
-}
-#endif
-
 int relocate_image(struct image_handle *handle, void *load_address)
 {
 	image_header_t *hdr = &handle->header;
-	unsigned long len  = ntohl(hdr->ih_size);
+	unsigned long len  = image_get_size(hdr);
 	unsigned long data = (unsigned long)(handle->data);
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
 
-	switch (hdr->ih_comp) {
+	switch (image_get_comp(hdr)) {
 	case IH_COMP_NONE:
-		if(ntohl(hdr->ih_load) == data) {
+		if(image_get_load(hdr) == data) {
 			printf ("   XIP ... ");
 		} else {
-			memmove ((void *) ntohl(hdr->ih_load), (uchar *)data, len);
+			memmove ((void *) image_get_load(hdr), (uchar *)data, len);
 		}
 		break;
 #ifdef CONFIG_CMD_BOOTM_ZLIB
@@ -223,7 +137,8 @@ int relocate_image(struct image_handle *handle, void *load_address)
 		break;
 #endif
 	default:
-		printf ("Unimplemented compression type %d\n", hdr->ih_comp);
+		printf("Unimplemented compression type %d\n",
+		       image_get_comp(hdr));
 		return -1;
 	}
 
@@ -247,24 +162,24 @@ struct image_handle *map_image(const char *filename, int verify)
 	handle = xzalloc(sizeof(struct image_handle));
 	header = &handle->header;
 
-	if (read(fd, header, sizeof(image_header_t)) < 0) {
+	if (read(fd, header, image_get_header_size()) < 0) {
 		printf("could not read: %s\n", errno_str());
 		goto err_out;
 	}
 
-	if (ntohl(header->ih_magic) != IH_MAGIC) {
+	if (image_check_magic(header)) {
 		puts ("Bad Magic Number\n");
 		goto err_out;
 	}
 
-	checksum = ntohl(header->ih_hcrc);
+	checksum = image_get_hcrc(header);
 	header->ih_hcrc = 0;
 
-	if (crc32 (0, (uchar *)header, sizeof(image_header_t)) != checksum) {
+	if (crc32 (0, (uchar *)header, image_get_header_size()) != checksum) {
 		puts ("Bad Header Checksum\n");
 		goto err_out;
 	}
-	len  = ntohl(header->ih_size);
+	len  = image_get_size(header);
 
 	handle->data = memmap(fd, PROT_READ);
 	if (handle->data == (void *)-1) {
@@ -275,19 +190,20 @@ struct image_handle *map_image(const char *filename, int verify)
 			goto err_out;
 		}
 	} else {
-		handle->data = (void *)((unsigned long)handle->data + sizeof(image_header_t));
+		handle->data = (void *)((unsigned long)handle->data +
+						       image_get_header_size());
 	}
 
 	if (verify) {
 		puts ("   Verifying Checksum ... ");
-		if (crc32 (0, handle->data, len) != ntohl(header->ih_dcrc)) {
+		if (crc32 (0, handle->data, len) != image_get_dcrc(header)) {
 			printf ("Bad Data CRC\n");
 			goto err_out;
 		}
 		puts ("OK\n");
 	}
 
-	print_image_hdr(header);
+	image_print_contents(header);
 
 	close(fd);
 
@@ -416,8 +332,9 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	os_header = &os_handle->header;
 
-	if (os_header->ih_arch != IH_CPU)	{
-		printf ("Unsupported Architecture 0x%x\n", os_header->ih_arch);
+	if (image_check_arch(os_header, IH_ARCH)) {
+		printf("Unsupported Architecture 0x%x\n",
+		       image_get_arch(os_header));
 		goto err_out;
 	}
 
@@ -433,14 +350,15 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
-		if (handler->image_type == os_header->ih_os) {
+		if (image_check_os(os_header, handler->image_type)) {
 			handler->bootm(&data);
 			printf("handler returned!\n");
 			goto err_out;
 		}
 	}
 
-	printf("no image handler found for image type %d\n", os_header->ih_os);
+	printf("no image handler found for image type %d\n",
+	       image_get_os(os_header));
 
 err_out:
 	if (os_handle)
@@ -489,17 +407,17 @@ static int image_info (ulong addr)
 	printf ("\n## Checking Image at %08lx ...\n", addr);
 
 	/* Copy header so we can blank CRC field for re-calculation */
-	memmove (&header, (char *)addr, sizeof(image_header_t));
+	memmove (&header, (char *)addr, image_get_header_size());
 
-	if (ntohl(hdr->ih_magic) != IH_MAGIC) {
+	if (image_check_magic(hdr)) {
 		puts ("   Bad Magic Number\n");
 		return 1;
 	}
 
 	data = (ulong)&header;
-	len  = sizeof(image_header_t);
+	len  = image_get_header_size();
 
-	checksum = ntohl(hdr->ih_hcrc);
+	checksum = image_get_hcrc(hdr);
 	hdr->ih_hcrc = 0;
 
 	if (crc32 (0, (uchar *)data, len) != checksum) {
@@ -510,11 +428,11 @@ static int image_info (ulong addr)
 	/* for multi-file images we need the data part, too */
 	print_image_hdr ((image_header_t *)addr);
 
-	data = addr + sizeof(image_header_t);
-	len  = ntohl(hdr->ih_size);
+	data = addr + image_get_header_size();
+	len  = image_get_size(hdr);
 
 	puts ("   Verifying Checksum ... ");
-	if (crc32 (0, (uchar *)data, len) != ntohl(hdr->ih_dcrc)) {
+	if (crc32 (0, (uchar *)data, len) != image_get_dcrc(hdr)) {
 		puts ("   Bad Data CRC\n");
 		return 1;
 	}
@@ -532,46 +450,6 @@ BAREBOX_CMD(
 );
 
 #endif	/* CONFIG_CMD_IMI */
-
-void
-print_image_hdr (image_header_t *hdr)
-{
-#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
-	time_t timestamp = (time_t)ntohl(hdr->ih_time);
-	struct rtc_time tm;
-#endif
-
-	printf ("   Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
-#if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
-	to_tm (timestamp, &tm);
-	printf ("   Created:      %4d-%02d-%02d  %2d:%02d:%02d UTC\n",
-		tm.tm_year, tm.tm_mon, tm.tm_mday,
-		tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
-#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-	printf ("   Image Type:   %s %s %s (%s)\n", image_arch(hdr), image_os(hdr),
-			image_type(hdr), image_compression(hdr));
-#endif
-	printf ("   Data Size:    %d Bytes = %s\n"
-		"   Load Address: %08x\n"
-		"   Entry Point:  %08x\n",
-			ntohl(hdr->ih_size),
-			size_human_readable(ntohl(hdr->ih_size)),
-			ntohl(hdr->ih_load),
-			ntohl(hdr->ih_ep));
-
-	if (hdr->ih_type == IH_TYPE_MULTI) {
-		int i;
-		ulong len;
-		ulong *len_ptr = (ulong *)((ulong)hdr + sizeof(image_header_t));
-
-		puts ("   Contents:\n");
-		for (i=0; (len = ntohl(*len_ptr)); ++i, ++len_ptr) {
-			printf ("   Image %d: %8ld Bytes = %s", i, len,
-				size_human_readable (len));
-		}
-	}
-}
 
 #ifdef CONFIG_BZLIB
 void bz_internal_error(int errcode)

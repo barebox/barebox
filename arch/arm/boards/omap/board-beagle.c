@@ -59,7 +59,7 @@
 #include <asm/io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
@@ -241,6 +241,7 @@ static struct NS16550_plat serial_plat = {
 };
 
 static struct device_d beagle_serial_device = {
+	.id = -1,
 	.name = "serial_ns16550",
 	.map_base = OMAP_UART3_BASE,
 	.size = 1024,
@@ -267,6 +268,7 @@ static struct memory_platform_data sram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id = -1,
 	.name = "mem",
 	.map_base = 0x80000000,
 	.size = 128 * 1024 * 1024,
@@ -291,6 +293,7 @@ static struct ehci_platform_data ehci_pdata = {
 };
 
 static struct device_d usbh_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = 0x48064700,
 	.size     = 4 * 1024,
@@ -299,6 +302,7 @@ static struct device_d usbh_dev = {
 #endif /* CONFIG_USB_EHCI_OMAP */
 
 static struct device_d i2c_dev = {
+	.id		= -1,
 	.name		= "i2c-omap",
 	.map_base	= OMAP_I2C1_BASE,
 };

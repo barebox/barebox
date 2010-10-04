@@ -109,20 +109,20 @@ static int do_bootm_linux(struct image_data *data)
 	const char *commandline = getenv ("bootargs");
 	uint32_t loadaddr,loadsize;
 
-	if (os_header->ih_type == IH_TYPE_MULTI) {
+	if (image_check_type(os_header, IH_TYPE_MULTI)) {
 		printf("Multifile images not handled at the moment\n");
 		return -1;
 	}
 
 	printf("commandline: %s\n", commandline);
 
-	theKernel = (void (*)(int,int,uint))ntohl((os_header->ih_ep));
+	theKernel = (void (*)(int,int,uint))image_get_ep(os_header);
 
 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
 	       (ulong) theKernel);
 
-	loadaddr = (uint32_t)ntohl(os_header->ih_load);
-	loadsize = (uint32_t)ntohl(os_header->ih_size);
+	loadaddr = (uint32_t)image_get_load(os_header);
+	loadsize = (uint32_t)image_get_size(os_header);
 	setup_boot_record( (char*)(loadaddr+loadsize),(char*)commandline);
 
 	if (relocate_image(data->os, (void *)loadaddr))

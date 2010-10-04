@@ -135,6 +135,7 @@ int console_register(struct console_device *newcdev)
 	int first = 0;
 	char ch;
 
+	dev->id = -1;
 	strcpy(dev->name, "cs");
 	dev->type_data = newcdev;
 	register_device(dev);

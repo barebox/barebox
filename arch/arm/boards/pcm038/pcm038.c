@@ -27,7 +27,7 @@
 #include <notifier.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>
@@ -45,6 +45,7 @@
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
@@ -56,6 +57,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
@@ -68,6 +70,7 @@ static struct memory_platform_data sram_pdata = {
 };
 
 static struct device_d sram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xc8000000,
 	.size     = 512 * 1024, /* Can be up to 2MiB */
@@ -80,6 +83,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id	  = -1,
 	.name     = "fec_imx",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
@@ -93,6 +97,7 @@ static struct spi_imx_master pcm038_spi_0_data = {
 };
 
 static struct device_d spi_dev = {
+	.id	  = -1,
 	.name     = "imx_spi",
 	.map_base = 0x1000e000,
 	.platform_data = &pcm038_spi_0_data,
@@ -114,6 +119,7 @@ static struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
@@ -154,6 +160,7 @@ static struct imx_fb_platform_data pcm038_fb_data = {
 };
 
 static struct device_d imxfb_dev = {
+	.id		= -1,
 	.name		= "imxfb",
 	.map_base	= 0x10021000,
 	.size		= 0x1000,
@@ -162,6 +169,7 @@ static struct device_d imxfb_dev = {
 
 #ifdef CONFIG_USB
 static struct device_d usbh2_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = IMX_OTG_BASE + 0x400,
 	.size     = 0x200,
@@ -363,6 +371,7 @@ static int pcm038_devices_init(void)
 device_initcall(pcm038_devices_init);
 
 static struct device_d pcm038_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
@@ -387,7 +396,7 @@ extern void *pcm038_pll_init, *pcm038_pll_init_end;
 static int pcm038_power_init(void)
 {
 	int ret;
-	void *vram = 0xffff4c00;
+	void *vram = (void*)0xffff4c00;
 	void (*pllfunc)(void) = vram;
 
 	printf("initialising PLLs: 0x%p 0x%p\n", &pcm038_pll_init);

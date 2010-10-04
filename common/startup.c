@@ -79,13 +79,14 @@ void early_init (void)
 #endif /* CONFIG_HAS_EARLY_INIT */
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-#include <barebox_default_env.h>
+#include <generated/barebox_default_env.h>
 
 static struct memory_platform_data default_env_platform_data = {
 	.name = "defaultenv",
 };
 
 static struct device_d default_env_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.platform_data	= &default_env_platform_data,
 };

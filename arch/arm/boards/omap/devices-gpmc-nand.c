@@ -72,6 +72,7 @@ static struct gpmc_nand_platform_data nand_plat = {
 
 /** NAND device definition */
 static struct device_d gpmc_generic_nand_nand_device = {
+	.id = -1,
 	.name = "gpmc_nand",
 	.map_base = OMAP_GPMC_BASE,
 	.size = 1024 * 4,	/* GPMC size */

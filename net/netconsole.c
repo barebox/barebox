@@ -124,11 +124,6 @@ static void nc_putc(struct console_device *cdev, char c)
 	priv->busy = 0;
 }
 
-static int nc_setbaudrate(struct console_device *cdev, int baudrate)
-{
-	return 0;
-}
-
 static int nc_port_set(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
@@ -185,7 +180,6 @@ static int netconsole_init(void)
 	cdev->tstc = nc_tstc;
 	cdev->putc = nc_putc;
 	cdev->getc = nc_getc;
-	cdev->setbrg = nc_setbaudrate;
 
 	g_priv = priv;
 

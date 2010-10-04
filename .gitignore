@@ -45,11 +45,8 @@ barebox_default_env
 include/asm
 include/asm-*/asm-offsets.h
 include/config
-include/linux/autoconf.h
 include/linux/compile.h
-include/linux/version.h
-include/linux/utsrelease.h
-include/asm-sandbox/arch
+include/generated
 
 # stgit generated dirs
 patches-*

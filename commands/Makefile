@@ -51,3 +51,5 @@ obj-$(CONFIG_CMD_UNLZO)		+= unlzo.o
 obj-$(CONFIG_CMD_I2C)		+= i2c.o
 obj-$(CONFIG_CMD_UBI)		+= ubi.o
 obj-$(CONFIG_CMD_MENU)		+= menu.o
+obj-$(CONFIG_CMD_PASSWD)	+= passwd.o
+obj-$(CONFIG_CMD_LOGIN)		+= login.o

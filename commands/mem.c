@@ -616,6 +616,7 @@ static struct memory_platform_data mem_dev_pdata = {
 };
 
 static struct device_d mem_dev = {
+	.id = -1,
 	.name  = "mem",
 	.map_base = 0,
 	.size   = ~0, /* FIXME: should be 0x100000000, ahem... */

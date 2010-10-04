@@ -30,10 +30,11 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
@@ -45,6 +46,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
@@ -57,6 +59,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id	  = -1,
 	.name     = "fec_imx",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
@@ -147,6 +150,7 @@ static int mx27ads_devices_init(void)
 device_initcall(mx27ads_devices_init);
 
 static struct device_d mx27ads_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,

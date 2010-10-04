@@ -1,3 +1,4 @@
+
 /*
  * common.c - common wrapper functions between barebox and the host
  *
@@ -296,7 +297,23 @@ int main(int argc, char *argv[])
 	}
 	mem_malloc_init(ram, ram + malloc_size);
 
-	while ((opt = getopt(argc, argv, "hi:e:I:O:")) != -1) {
+	while (1) {
+		int option_index = 0;
+		static struct option long_options[] = {
+			{"help",   0, 0, 'h'},
+			{"image",  1, 0, 'i'},
+			{"env",    1, 0, 'e'},
+			{"stdout", 1, 0, 'O'},
+			{"stdin",  1, 0, 'I'},
+			{0, 0, 0, 0},
+		};
+
+		opt = getopt_long(argc, argv, "hi:e:O:I:",
+			long_options, &option_index);
+
+		if (opt == -1)
+			break;
+
 		switch (opt) {
 		case 'h':
 			print_usage(basename(argv[0]));
@@ -363,19 +380,20 @@ static void print_usage(const char *prgname)
 {
 	printf(
 "Usage: %s [OPTIONS]\n"
-"Start barebox.\n"
-"Options:\n"
-"  -i <file>   Map a file to barebox. This option can be given multiple\n"
-"              times. The files will show up as /dev/fd0 ... /dev/fdx\n"
-"              under barebox.\n"
-"  -e <file>   Map a file to barebox. With this option files are mapped as\n"
-"              /dev/env0 ... /dev/envx and thus are used as default\n"
-"              environment. An empty file generated with dd will do to get\n"
-"              started wth an empty environment\n"
-"  -O <file>   Register file as a console capable of doing stdout. File can\n"
-"              be a regular file or a fifo.\n"
-"  -I <file>   Register file as a console capable of doing stdin. File can\n"
-"              be a regular file or a fifo.\n",
+"Start barebox.\n\n"
+"Options:\n\n"
+"  -i, --image=<file>   Map an image file to barebox. This option can be given\n"
+"                       multiple times. The files will show up as\n"
+"                       /dev/fd0 ... /dev/fdx under barebox.\n"
+"  -e, --env=<file>     Map a file with an environment to barebox. With this \n"
+"                       option, files are mapped as /dev/env0 ... /dev/envx\n"
+"                       and thus are used as the default environment.\n"
+"                       An empty file generated with dd will do to get started\n"
+"                       with an empty environment.\n"
+"  -O, --stdout=<file>  Register a file as a console capable of doing stdout.\n"
+"                       <file> can be a regular file or a FIFO.\n"
+"  -I, --stdin=<file>   Register a file as a console capable of doing stdin.\n"
+"                       <file> can be a regular file or a FIFO.\n",
 	prgname
 	);
 }

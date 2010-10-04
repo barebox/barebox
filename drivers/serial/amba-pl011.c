@@ -34,6 +34,7 @@
 #include <asm/io.h>
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 
 /*
  * We wrap our port structure around the generic console_device.
@@ -159,6 +160,9 @@ static int pl011_probe(struct device_d *dev)
 	uart = malloc(sizeof(struct amba_uart_port));
 
 	uart->clk = clk_get(dev, NULL);
+
+	if (IS_ERR(uart->clk))
+		return PTR_ERR(uart->clk);
 
 	cdev = &uart->uart;
 	dev->type_data = cdev;

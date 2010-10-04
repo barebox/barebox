@@ -24,7 +24,7 @@
 #include <environment.h>
 #include <fec.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -87,6 +87,7 @@ static void pm_add_device_nand(void)
 }
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = AT91_CHIPSELECT_0,
 	.size     = 4 * 1024 * 1024,

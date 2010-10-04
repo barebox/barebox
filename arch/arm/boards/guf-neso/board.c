@@ -35,7 +35,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 
 #include <mach/gpio.h>
 #include <mach/spi.h>
@@ -59,6 +59,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = 128 * 1024 * 1024,
@@ -71,6 +72,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id	  = -1,
 	.name     = "fec_imx",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
@@ -83,6 +85,7 @@ static struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
@@ -137,6 +140,7 @@ static struct imx_fb_platform_data neso_fb_data = {
 };
 
 static struct device_d imxfb_dev = {
+	.id		= -1,
 	.name		= "imxfb",
 	.map_base	= 0x10021000,
 	.size		= 0x1000,
@@ -146,6 +150,7 @@ static struct device_d imxfb_dev = {
 #ifdef CONFIG_USB
 
 static struct device_d usbh2_dev = {
+	.id	  = -1,
 	.name     = "ehci",
 	.map_base = IMX_OTG_BASE + 0x400,
 	.size     = 0x200,
@@ -356,6 +361,7 @@ static int neso_devices_init(void)
 device_initcall(neso_devices_init);
 
 static struct device_d neso_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,

@@ -23,7 +23,7 @@
 #include <asm/hardware.h>
 #include <mach/hardware.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 
 #include "clock.h"
 
@@ -37,6 +37,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id = -1,
 	.name = "mem",
 	.map_base = 0x00000000,
 	.platform_data = &ram_pdata,
@@ -50,12 +51,14 @@ void st8815_add_device_sdram(u32 size)
 }
 
 static struct device_d uart0_serial_device = {
+	.id = 0,
 	.name = "uart-pl011",
 	.map_base = NOMADIK_UART0_BASE,
 	.size = 4096,
 };
 
 static struct device_d uart1_serial_device = {
+	.id = 1,
 	.name = "uart-pl011",
 	.map_base = NOMADIK_UART1_BASE,
 	.size = 4096,
@@ -65,11 +68,11 @@ void st8815_register_uart(unsigned id)
 {
 	switch (id) {
 	case 0:
-		nmdk_clk_create(&st8815_clk_48, uart0_serial_device.name);
+		nmdk_clk_create(&st8815_clk_48, dev_name(&uart0_serial_device));
 		register_device(&uart0_serial_device);
 		break;
 	case 1:
-		nmdk_clk_create(&st8815_clk_48, uart1_serial_device.name);
+		nmdk_clk_create(&st8815_clk_48, dev_name(&uart1_serial_device));
 		register_device(&uart1_serial_device);
 		break;
 	}

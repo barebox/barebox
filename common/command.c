@@ -33,7 +33,7 @@
 #include <linux/list.h>
 #include <init.h>
 #include <complete.h>
-#include <linux/utsrelease.h>
+#include <generated/utsrelease.h>
 #include <getopt.h>
 
 const char version_string[] =

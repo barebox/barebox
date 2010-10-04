@@ -27,7 +27,6 @@
 #define _ASM_X86_POSIX_TYPES_H
 
 typedef unsigned long	__kernel_ino_t;
-typedef unsigned short	__kernel_dev_t;
 typedef unsigned short	__kernel_mode_t;
 typedef unsigned short	__kernel_nlink_t;
 typedef long		__kernel_off_t;

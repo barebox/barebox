@@ -8,7 +8,7 @@
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <init.h>
-#include <asm/clkdev.h>
+#include <linux/clkdev.h>
 
 #include "clock.h"
 
@@ -33,11 +33,6 @@ void clk_disable(struct clk *clk)
 {
 }
 EXPORT_SYMBOL(clk_disable);
-
-int __clk_get(struct clk *clk)
-{
-	return 1;
-}
 
 /* Create a clock structure with the given name */
 int nmdk_clk_create(struct clk *clk, const char *dev_id)

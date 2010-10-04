@@ -28,7 +28,7 @@
 #include <driver.h>
 #include <init.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <partition.h>
 #include <nand.h>
 #include <asm/io.h>
@@ -44,6 +44,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.map_base	= CS6_BASE,
 	.platform_data	= &ram_pdata,
@@ -54,6 +55,7 @@ static struct s3c24x0_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "s3c24x0_nand",
 	.map_base = S3C24X0_NAND_BASE,
 	.platform_data	= &nand_info,
@@ -65,6 +67,7 @@ static struct device_d nand_dev = {
  * data width is 16 bit
  */
 static struct device_d network_dev = {
+	.id	  = -1,
 	.name     = "cs8900",
 	.map_base = CS5_BASE + (1 << 24) + 0x300,
 	.size     = 16,
@@ -184,6 +187,7 @@ void __bare_init nand_boot(void)
 #endif
 
 static struct device_d a9m2440_serial_device = {
+	.id	  = -1,
 	.name     = "s3c24x0_serial",
 	.map_base = UART1_BASE,
 	.size     = UART1_SIZE,

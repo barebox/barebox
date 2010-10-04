@@ -6,6 +6,7 @@
 #include <fs.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0x20000000,
 	.size     = 32 * 1024 * 1024,
@@ -17,6 +18,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0x0,
 	.size     = 128 * 1024 * 1024,
@@ -24,6 +26,7 @@ static struct device_d sdram_dev = {
 };
 
 static struct device_d smc911x_dev = {
+	.id	  = -1,
 	.name     = "smc911x",
 	.map_base = 0x24000000,
 	.size     = 4096,
@@ -52,6 +55,7 @@ static int ipe337_devices_init(void) {
 device_initcall(ipe337_devices_init);
 
 static struct device_d blackfin_serial_device = {
+	.id	  = -1,
 	.name     = "blackfin_serial",
 	.map_base = 0,
 	.size     = 4096,

@@ -264,6 +264,34 @@ config MENU
 	   a menu framework that allow us to create list menu to simplify
 	   barebox and make it more user-frendly
 
+config PASSWORD
+	bool
+	prompt "Password Framework"
+	select DIGEST
+	help
+	  allow you to have password protection framework
+
+if PASSWORD
+
+choice
+	prompt "passwd checksum"
+
+config PASSWD_SUM_MD5
+	bool "MD5"
+	select MD5
+
+config PASSWD_SUM_SHA1
+	bool "SHA1"
+	select SHA1
+
+config PASSWD_SUM_SHA256
+	bool "SHA256"
+	select SHA256
+
+endchoice
+
+endif
+
 config DYNAMIC_CRC_TABLE
 	bool
 	depends on CRC32

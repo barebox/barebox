@@ -18,8 +18,7 @@
 # along with barebox.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CPPFLAGS += -isystem $(gccincdir) -D __M68K__ \
-	-fno-strict-aliasing
+CPPFLAGS += -isystem $(gccincdir) -fno-strict-aliasing
 
 
 machine-$(CONFIG_ARCH_MCF54xx)	   := mcfv4e

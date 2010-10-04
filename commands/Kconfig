@@ -60,6 +60,34 @@ config CMD_MENU_MANAGEMENT
 	depends on CMD_MENU
 	prompt "menu scripts management"
 
+config CMD_LOGIN
+	tristate
+	select PASSWORD
+	prompt "login"
+
+config CMD_PASSWD
+	tristate
+	select CMD_LOGIN
+	prompt "passwd"
+
+if CMD_LOGIN || CMD_PASSWD
+
+choice
+	prompt "passwd mode"
+
+config PASSWD_MODE_HIDE
+	bool "Hide"
+
+config PASSWD_MODE_STAR
+	bool "Star"
+
+config PASSWD_MODE_CLEAR
+	bool "Clear"
+
+endchoice
+
+endif
+
 endmenu
 
 menu "file commands                 "
@@ -243,6 +271,7 @@ config CMD_BOOTU
 
 config CMD_LINUX16
 	tristate
+	depends on X86
 	default y if X86
 	prompt "linux16"
 	help

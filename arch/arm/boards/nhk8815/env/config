@@ -20,7 +20,7 @@ ip=dhcp
 # JFFS2 Root filesystem		22MB	0x00580000
 # JFFS2 User Data		100MB	0x01b80000
 
-nand_parts="256k(xloader)ro,256k(meminit),2M(uboot),3M(kernel),22M(rootfs),100M(userfs),384k(free),128k(ubootenv)"
+nand_parts="256k(xloader)ro,256k(meminit),2M(barebox),3M(kernel),22M(rootfs),100M(userfs),384k(free),128k(bareboxenv)"
 
 uimage=uImage-nhk15
 

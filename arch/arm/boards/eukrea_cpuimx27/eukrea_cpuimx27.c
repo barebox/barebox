@@ -30,7 +30,7 @@
 #include <notifier.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>
@@ -48,12 +48,14 @@
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC0000000,
 	.size     = 32 * 1024 * 1024,
 };
 #ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
 static struct device_d cfi_dev1 = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC2000000,
 	.size     = 32 * 1024 * 1024,
@@ -72,6 +74,7 @@ static struct memory_platform_data ram_pdata = {
 #endif
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xa0000000,
 	.size     = SDRAM0 * 1024 * 1024,
@@ -84,6 +87,7 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d fec_dev = {
+	.id	  = -1,
 	.name     = "fec_imx",
 	.map_base = 0x1002b000,
 	.platform_data	= &fec_info,
@@ -96,6 +100,7 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = 0xd8000000,
 	.platform_data	= &nand_info,
@@ -137,6 +142,7 @@ static struct NS16550_plat quad_uart_serial_plat = {
 #endif
 
 static struct device_d quad_uart_serial_device = {
+	.id = -1,
 	.name = "serial_ns16550",
 	.map_base = IMX_CS3_BASE + QUART_OFFSET,
 	.size = 0xF,
@@ -151,6 +157,7 @@ static struct i2c_board_info i2c_devices[] = {
 };
 
 static struct device_d i2c_dev = {
+	.id		= -1,
 	.name		= "i2c-imx",
 	.map_base	= IMX_I2C1_BASE,
 };
@@ -204,6 +211,7 @@ static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 };
 
 static struct device_d imxfb_dev = {
+	.id		= -1,
 	.name		= "imxfb",
 	.map_base	= 0x10021000,
 	.size		= 0x1000,
@@ -316,6 +324,7 @@ device_initcall(eukrea_cpuimx27_devices_init);
 
 #ifdef CONFIG_DRIVER_SERIAL_IMX
 static struct device_d eukrea_cpuimx27_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,
@@ -342,14 +351,14 @@ console_initcall(eukrea_cpuimx27_console_init);
 
 static int eukrea_cpuimx27_late_init(void)
 {
-#ifdef CONFIG_DRIVER_I2C_LP3972
+#ifdef CONFIG_I2C_LP3972
 	struct i2c_client *client;
 	u8 reg[1];
 #endif
 	console_flush();
 	register_device(&fec_dev);
 
-#ifdef CONFIG_DRIVER_I2C_LP3972
+#ifdef CONFIG_I2C_LP3972
 	client = lp3972_get_client();
 	if (!client)
 		return -ENODEV;

@@ -265,7 +265,9 @@ static void i2c_imx_stop(struct i2c_adapter *adapter)
 		temp = readb(base + IMX_I2C_I2CR);
 		temp &= ~(I2CR_MSTA | I2CR_MTX);
 		writeb(temp, base + IMX_I2C_I2CR);
-		i2c_imx->stopped = 1;
+		/* wait for the stop condition to be send, otherwise the i2c
+		 * controller is disabled before the STOP is sent completely */
+		i2c_imx->stopped = i2c_imx_bus_busy(adapter, 0) ? 0 : 1;
 	}
 	if (cpu_is_mx1()) {
 		/*
@@ -275,11 +277,9 @@ static void i2c_imx_stop(struct i2c_adapter *adapter)
 		udelay(i2c_imx->disable_delay);
 	}
 
-	if (!i2c_imx->stopped)
-		i2c_imx_bus_busy(adapter, 0);
-
-	/* Disable I2C controller */
+	/* Disable I2C controller, and force our state to stopped */
 	writeb(0, base + IMX_I2C_I2CR);
+	i2c_imx->stopped = 1;
 }
 
 static void i2c_imx_set_clk(struct imx_i2c_struct *i2c_imx,

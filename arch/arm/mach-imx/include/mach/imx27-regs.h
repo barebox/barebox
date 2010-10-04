@@ -83,9 +83,9 @@
 #include "esdctl.h"
 
 /* Watchdog Registers*/
-#define WCR  __REG(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG(IMX_WDT_BASE + 0x04) /* Watchdog Service Register */
-#define WSTR __REG(IMX_WDT_BASE + 0x08) /* Watchdog Status Register  */
+#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
+#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
+#define WSTR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Status Register  */
 
 /* important definition of some bits of WCR */
 #define WCR_WDE 0x04

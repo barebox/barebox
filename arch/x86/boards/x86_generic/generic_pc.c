@@ -36,6 +36,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id		= -1,
 	.name		= "mem",
 	.size		= 16 * 1024 * 1024,
 	.map_base	= 0,
@@ -43,6 +44,7 @@ static struct device_d sdram_dev = {
 };
 
 static struct device_d bios_disk_dev = {
+	.id		= -1,
 	.name		= "biosdrive",
 	.size		= 1,
 };
@@ -95,6 +97,7 @@ static struct NS16550_plat serial_plat = {
 
 /* we are expecting always one serial interface */
 static struct device_d generic_pc_serial_device = {
+       .id = -1,
        .name = "serial_ns16550",
        .map_base = 0x3f8,
        .size = 8,

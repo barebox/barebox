@@ -32,7 +32,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <mach/iomux-mx21.h>
@@ -41,6 +41,7 @@
 #define MX21ADS_IO_LCDON  (1 << 9)
 
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xC8000000,
 	.size     = 32 * 1024 * 1024,
@@ -52,6 +53,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0xc0000000,
 	.size     = 64 * 1024 * 1024,
@@ -64,12 +66,14 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct device_d nand_dev = {
+	.id	  = -1,
 	.name     = "imx_nand",
 	.map_base = 0xDF003000,
 	.platform_data  = &nand_info,
 };
 
 static struct device_d cs8900_dev = {
+	.id	  = -1,
 	.name     = "cs8900",
 	.map_base = IMX_CS1_BASE,
 	// IRQ is connected to UART3_RTS
@@ -108,6 +112,7 @@ static struct imx_fb_platform_data imx_fb_data = {
 };
 
 static struct device_d imxfb_dev = {
+	.id		= -1,
 	.name           = "imxfb",
 	.map_base       = 0x10021000,
 	.size           = 0x1000,
@@ -220,6 +225,7 @@ static int mx21ads_enable_display(void)
 late_initcall(mx21ads_enable_display);
 
 static struct device_d mx21ads_serial_device = {
+	.id	  = -1,
 	.name     = "imx_serial",
 	.map_base = IMX_UART1_BASE,
 	.size     = 4096,

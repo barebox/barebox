@@ -1,5 +1,5 @@
 /*
- *  arch/arm/common/clkdev.c
+ * drivers/clk/lookup_clkdev.c
  *
  *  Copyright (C) 2008 Russell King.
  *
@@ -14,13 +14,12 @@
 #include <linux/list.h>
 #include <errno.h>
 #include <linux/err.h>
+#include <linux/string.h>
 #include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <init.h>
 #include <malloc.h>
 #include <stdio.h>
-
-#include <asm/clkdev.h>
-#include <mach/clkdev.h>
 
 static LIST_HEAD(clocks);
 
@@ -31,7 +30,7 @@ static LIST_HEAD(clocks);
  *  If an entry has a device ID, it must match
  *  If an entry has a connection ID, it must match
  * Then we take the most specific entry - with the following
- * order of precidence: dev+con > dev only > con only.
+ * order of precedence: dev+con > dev only > con only.
  */
 static struct clk *clk_find(const char *dev_id, const char *con_id)
 {
@@ -51,12 +50,13 @@ static struct clk *clk_find(const char *dev_id, const char *con_id)
 				continue;
 			match += 1;
 		}
-		if (match == 0)
-			continue;
 
 		if (match > best) {
 			clk = p->clk;
-			best = match;
+			if (match != 3)
+				best = match;
+			else
+				break;
 		}
 	}
 	return clk;
@@ -93,6 +93,14 @@ void clkdev_add(struct clk_lookup *cl)
 	list_add_tail(&cl->node, &clocks);
 }
 EXPORT_SYMBOL(clkdev_add);
+
+void __init clkdev_add_table(struct clk_lookup *cl, size_t num)
+{
+	while (num--) {
+		list_add_tail(&cl->node, &clocks);
+		cl++;
+	}
+}
 
 #define MAX_DEV_ID	20
 #define MAX_CON_ID	16

@@ -42,6 +42,7 @@ ulong mcfv4e_get_bus_clk(void)
  * CS line 0, data width is 32 bit
  */
 static struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = CFG_FLASH_ADDRESS,
 	.size     = CFG_FLASH_SIZE,
@@ -52,6 +53,7 @@ static struct device_d cfi_dev = {
  * to CS4, data width is 16 bit
  */
 //static struct device_d sram_dev = {
+//	.id	  = -1,
 //	.name     = "sram",
 //FIXME	.map_base = IMX_CS4_BASE,
 //FIXME	.size     = IMX_CS4_RANGE,	/* area size */
@@ -61,6 +63,7 @@ static struct device_d cfi_dev = {
  * ?MiB NAND type flash, data width 8 bit
  */
 //static struct device_d nand_dev = {
+//	.id	  = -1,
 //	.name     = "cfi_flash_nand",
 //	.map_base = 0xfc000000,	/* FIXME */
 //	.size     = 32 * 1024 * 1024,	/* FIXME */
@@ -75,12 +78,14 @@ static struct fec_platform_data fec_info = {
 };
 
 static struct device_d network_dev0 = {
+	.id	  = -1,
 	.name     = "fec_mcf54xx",
 	.map_base = MCF_FEC_ADDR(0),
 	.size     = MCF_FEC_SIZE(0),	   /* area size */
 	.platform_data	= &fec_info,
 };
 static struct device_d network_dev1 = {
+	.id	  = -1,
 	.name     = "fec_mcf54xx",
 	.map_base = MCF_FEC_ADDR(1),
 	.size     = MCF_FEC_SIZE(1),	   /* area size */
@@ -96,6 +101,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = CFG_SDRAM_ADDRESS,
 	.size     = CFG_SDRAM_SIZE,
@@ -134,6 +140,7 @@ static int mcfv4e_devices_init(void)
 device_initcall(mcfv4e_devices_init);
 
 static struct device_d mcfv4e_serial_device = {
+	.id	  = -1,
 	.name     = "mcfv4e_serial",
 	.map_base = 1+CFG_EARLY_UART_PORT,
 	.size     = 16 * 1024,

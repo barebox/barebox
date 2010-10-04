@@ -1,4 +1,5 @@
 #include <linux/linkage.h>
+#include <init.h>
 
 #define CACHE_DLINESIZE 32
 
@@ -41,7 +42,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, lr
 ENDPROC(__mmu_cache_off)
 
-.section ".text_bare_init.text"
+__BARE_INIT
 ENTRY(__mmu_cache_flush)
 1:		mrc	p15, 0, r15, c7, c14, 3	@ test,clean,invalidate D cache
 		bne	1b

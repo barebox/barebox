@@ -28,6 +28,7 @@
 #define __COMMAND_H
 
 #include <linux/list.h>
+#include <linux/stringify.h>
 
 #ifndef NULL
 #define NULL	0
@@ -74,10 +75,6 @@ void barebox_cmd_usage(struct command *cmdtp);
 #define COMMAND_ERROR_USAGE	2
 
 #endif	/* __ASSEMBLY__ */
-
-#define __stringify_1(x)	#x
-#define __stringify(x)		__stringify_1(x)
-
 
 #define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 

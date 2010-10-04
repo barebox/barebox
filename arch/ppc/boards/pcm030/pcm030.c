@@ -38,6 +38,7 @@
 #include <reloc.h>
 
 struct device_d cfi_dev = {
+	.id	  = -1,
 	.name     = "cfi_flash",
 	.map_base = 0xff000000,
 	.size     = 16 * 1024 * 1024,
@@ -49,6 +50,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 struct device_d sdram_dev = {
+	.id	  = -1,
 	.name     = "mem",
 	.map_base = 0x0,
 	.size     = 64 * 1024 * 1024,
@@ -60,6 +62,7 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 };
 
 struct device_d eth_dev = {
+	.id		= -1,
 	.name		= "fec_mpc5xxx",
 	.map_base	= MPC5XXX_FEC,
 	.platform_data	= &fec_info,
@@ -80,12 +83,14 @@ static int devices_init (void)
 device_initcall(devices_init);
 
 static struct device_d psc3 = {
+	.id	  = -1,
 	.name     = "mpc5xxx_serial",
 	.map_base = MPC5XXX_PSC3,
 	.size     = 4096,
 };
 
 static struct device_d psc6 = {
+	.id	  = -1,
 	.name     = "mpc5xxx_serial",
 	.map_base = MPC5XXX_PSC6,
 	.size     = 4096,

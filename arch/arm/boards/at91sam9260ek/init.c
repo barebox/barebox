@@ -24,7 +24,7 @@
 #include <environment.h>
 #include <fec.h>
 #include <asm/armlinux.h>
-#include <asm/mach-types.h>
+#include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -39,6 +39,25 @@
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
+
+/*
+ * board revision encoding
+ * bit 0:
+ *	0 => 1 mmc
+ *	1 => 2 mmcs (board from revision C)
+ */
+#define HAVE_2MMC	(1 << 0)
+static void ek_set_board_type(void)
+{
+	if (machine_is_at91sam9g20ek()) {
+		armlinux_set_architecture(MACH_TYPE_AT91SAM9G20EK);
+#ifdef CONFIG_AT91_HAVE_2MMC
+		armlinux_set_revision(HAVE_2MMC);
+#endif
+	} else {
+		armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
+	}
+}
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -130,7 +149,7 @@ static int at91sam9260ek_devices_init(void)
 
 	at91_add_device_sdram(64 * 1024 * 1024);
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
-	armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
+	ek_set_board_type();
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");

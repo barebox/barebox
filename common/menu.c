@@ -29,6 +29,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <readkey.h>
+#include <clock.h>
 #include <linux/err.h>
 
 static LIST_HEAD(menus);
@@ -49,6 +50,7 @@ void menu_free(struct menu *m)
 		return;
 	free(m->name);
 	free(m->display);
+	free(m->auto_display);
 
 	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
@@ -147,13 +149,26 @@ void menu_entry_free(struct menu_entry *me)
 	me->free(me);
 }
 
-static void print_menu_entry(struct menu *m, struct menu_entry *me, int reverse)
+static void print_menu_entry(struct menu *m, struct menu_entry *me,
+			     int selected)
 {
 	gotoXY(me->num + 1, 3);
-	if (reverse)
-		printf_reverse("%d: %-*s", me->num, m->width, me->display);
-	else
-		printf("%d: %-*s", me->num, m->width, me->display);
+	if (selected)
+		printf("\e[7m");
+
+	if (me->type == MENU_ENTRY_BOX) {
+		if (me->box_state)
+			puts("[*]");
+		else
+			puts("[ ]");
+	} else {
+		puts("   ");
+	}
+
+	printf(" %d: %-*s", me->num, m->width, me->display);
+
+	if (selected)
+		printf("\e[m");
 }
 
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me)
@@ -183,6 +198,16 @@ int menu_set_selected(struct menu *m, int num)
 		return -EINVAL;
 
 	m->selected = me;
+
+	return 0;
+}
+
+int menu_set_auto_select(struct menu *m, int delay)
+{
+	if (!m)
+		return -EINVAL;
+
+	m->auto_select = delay;
 
 	return 0;
 }
@@ -217,14 +242,54 @@ int menu_show(struct menu *m)
 {
 	int ch;
 	int escape = 0;
+	int countdown;
+	int auto_display_len = 16;
+	uint64_t start, second;
 
 	if(!m || list_empty(&m->entries))
 		return -EINVAL;
 
 	print_menu(m);
 
+	countdown = m->auto_select;
+	if (m->auto_select >= 0) {
+		gotoXY(m->nb_entries + 2, 3);
+		if (!m->auto_display) {
+			printf("Auto Select in");
+		} else {
+			auto_display_len = strlen(m->auto_display);
+			printf(m->auto_display);
+		}
+		printf(" %2d", countdown--);
+	}
+
+	start = get_time_ns();
+	second = start;
+	while (m->auto_select > 0 && !is_timeout(start, m->auto_select * SECOND)) {
+		if (tstc()) {
+			m->auto_select = -1;
+			break;
+		}
+
+		if (is_timeout(second, SECOND)) {
+			printf("\b\b%2d", countdown--);
+			second += SECOND;
+		}
+	}
+
+	gotoXY(m->nb_entries + 2, 3);
+	printf("%*c", auto_display_len + 4, ' ');
+
+	gotoXY(m->selected->num + 1, 3);
+
 	do {
-		ch = getc();
+		if (m->auto_select >= 0)
+			ch = '\n';
+		else
+			ch = getc();
+
+		m->auto_select = -1;
+
 		switch(ch) {
 		case 0x1b:
 			escape = 1;
@@ -252,6 +317,14 @@ int menu_show(struct menu *m)
 				m->selected = list_entry(m->selected->list.next, struct menu_entry,
 							 list);
 			}
+			print_menu_entry(m, m->selected, 1);
+			break;
+		case ' ':
+			if (m->selected->type != MENU_ENTRY_BOX)
+				break;
+			m->selected->box_state = !m->selected->box_state;
+			if (m->selected->action)
+				m->selected->action(m, m->selected);
 			print_menu_entry(m, m->selected, 1);
 			break;
 		case '\n':
@@ -282,6 +355,9 @@ static void menu_action_show(struct menu *m, struct menu_entry *me)
 {
 	struct submenu *s = container_of(me, struct submenu, entry);
 	struct menu *sm;
+
+	if (me->type == MENU_ENTRY_BOX && !me->box_state)
+		return;
 
 	sm = menu_get_by_name(s->submenu);
 	if (sm)
@@ -358,7 +434,8 @@ static void menu_command_free(struct menu_entry *me)
 	free(e);
 }
 
-struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *command)
+struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
+					  char *command, menu_entry_type type)
 {
 	struct action_entry *e = calloc(1, sizeof(*e));
 	int ret;
@@ -369,6 +446,7 @@ struct menu_entry *menu_add_command_entry(struct menu *m, char *display, char *c
 	e->command = strdup(command);
 	e->entry.action = menu_action_command;
 	e->entry.free = menu_command_free;
+	e->entry.type = type;
 	e->entry.display = strdup(display);
 
 	if (!e->entry.display || !e->command) {

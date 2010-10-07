@@ -373,7 +373,15 @@ static inline int image_check_target_arch(const image_header_t *hdr)
 
 	return 1;
 }
-#endif /* USE_HOSTCC */
+#endif
+
+ulong image_multi_count(const image_header_t *hdr);
+void image_multi_getimg(const image_header_t *hdr, ulong idx,
+			ulong *data, ulong *len);
+
+void image_print_size(uint32_t size);
+
+void image_print_contents(const void *ptr);
 
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);

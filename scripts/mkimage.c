@@ -1,4 +1,6 @@
 /*
+ * (C) Copyright 2008 Semihalf
+ *
  * (C) Copyright 2000-2004
  * DENX Software Engineering
  * Wolfgang Denk, wd@denx.de
@@ -38,8 +40,6 @@ char *cmdname;
 
 static	void	copy_file (int, const char *, int);
 static	void	usage	(void);
-static	void	print_header (image_header_t *);
-static	void	print_type (image_header_t *);
 static	int	get_table_entry (table_entry_t *, char *, char *);
 static	int	get_arch(char *);
 static	int	get_comp(char *);
@@ -255,7 +255,7 @@ NXTARG:		;
 		}
 
 		/* for multi-file images we need the data part, too */
-		print_header ((image_header_t *)ptr);
+		image_print_contents((image_header_t *)ptr);
 
 		(void) munmap((void *)ptr, sbuf.st_size);
 		(void) close (ifd);
@@ -381,7 +381,7 @@ NXTARG:		;
 
 	image_set_hcrc(hdr, checksum);
 
-	print_header (hdr);
+	image_print_contents(hdr);
 
 	(void) munmap((void *)ptr, sbuf.st_size);
 
@@ -502,71 +502,6 @@ usage ()
 			 "          -x ==> set XIP (execute in place)\n"
 		);
 	exit (EXIT_FAILURE);
-}
-
-static void
-print_header (image_header_t *hdr)
-{
-	time_t timestamp;
-	uint32_t size;
-
-	timestamp = (time_t)image_get_time(hdr);
-	size = image_get_size(hdr);
-
-	printf ("Image Name:   %.*s\n", IH_NMLEN, image_get_name(hdr));
-	printf ("Created:      %s", ctime(&timestamp));
-	printf ("Image Type:   "); print_type(hdr);
-	printf ("Data Size:    %d Bytes = %.2f kB = %.2f MB\n",
-		size, (double)size / 1.024e3, (double)size / 1.048576e6 );
-	printf ("Load Address: 0x%08X\n", image_get_load(hdr));
-	printf ("Entry Point:  0x%08X\n", image_get_ep(hdr));
-
-	if (image_check_type(hdr, IH_TYPE_MULTI) ||
-	    image_check_type(hdr, IH_TYPE_SCRIPT)) {
-		int i, ptrs;
-		uint32_t pos;
-		uint32_t *len_ptr = (uint32_t *) (
-					(unsigned long)hdr + image_get_header_size()
-				);
-
-		/* determine number of images first (to calculate image offsets) */
-		for (i=0; len_ptr[i]; ++i)	/* null pointer terminates list */
-			;
-		ptrs = i;		/* null pointer terminates list */
-
-		pos = image_get_header_size() + ptrs * sizeof(long);
-		printf ("Contents:\n");
-		for (i=0; len_ptr[i]; ++i) {
-			size = ntohl(len_ptr[i]);
-
-			printf ("   Image %d: %8d Bytes = %4d kB = %d MB\n",
-				i, size, size>>10, size>>20);
-			if (image_check_type(hdr, IH_TYPE_SCRIPT) && i > 0) {
-				/*
-				 * the user may need to know offsets
-				 * if planning to do something with
-				 * multiple files
-				 */
-				printf ("    Offset = %08X\n", pos);
-			}
-			/* copy_file() will pad the first files to even word align */
-			size += 3;
-			size &= ~3;
-			pos += size;
-		}
-	}
-}
-
-
-static void
-print_type (image_header_t *hdr)
-{
-	printf ("%s %s %s (%s)\n",
-		image_get_arch_name(image_get_arch(hdr)),
-		image_get_os_name(image_get_os(hdr)),
-		image_get_type_name(image_get_type(hdr)),
-		image_get_comp_name(image_get_comp(hdr))
-	);
 }
 
 static int get_arch(char *name)

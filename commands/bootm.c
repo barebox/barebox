@@ -95,92 +95,6 @@ fixup_silent_linux ()
 }
 #endif /* CONFIG_SILENT_CONSOLE */
 
-#ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-static const char *image_os(image_header_t *hdr)
-{
-	char *os;
-
-	switch (hdr->ih_os) {
-	case IH_OS_INVALID:	os = "Invalid OS";		break;
-	case IH_OS_NETBSD:	os = "NetBSD";			break;
-	case IH_OS_LINUX:	os = "Linux";			break;
-	case IH_OS_VXWORKS:	os = "VxWorks";			break;
-	case IH_OS_QNX:		os = "QNX";			break;
-	case IH_OS_BAREBOX:	os = "barebox";			break;
-	case IH_OS_RTEMS:	os = "RTEMS";			break;
-#ifdef CONFIG_ARTOS
-	case IH_OS_ARTOS:	os = "ARTOS";			break;
-#endif
-#ifdef CONFIG_LYNXKDI
-	case IH_OS_LYNXOS:	os = "LynxOS";			break;
-#endif
-	default:		os = "Unknown OS";		break;
-	}
-
-	return os;
-}
-
-static const char *image_arch(image_header_t *hdr)
-{
-	char *arch;
-
-	switch (hdr->ih_arch) {
-	case IH_CPU_INVALID:	arch = "Invalid CPU";		break;
-	case IH_CPU_ALPHA:	arch = "Alpha";			break;
-	case IH_CPU_ARM:	arch = "ARM";			break;
-	case IH_CPU_AVR32:	arch = "AVR32";			break;
-	case IH_CPU_I386:	arch = "Intel x86";		break;
-	case IH_CPU_IA64:	arch = "IA64";			break;
-	case IH_CPU_MIPS:	arch = "MIPS";			break;
-	case IH_CPU_MIPS64:	arch = "MIPS 64 Bit";		break;
-	case IH_CPU_PPC:	arch = "PowerPC";		break;
-	case IH_CPU_S390:	arch = "IBM S390";		break;
-	case IH_CPU_SH:		arch = "SuperH";		break;
-	case IH_CPU_SPARC:	arch = "SPARC";			break;
-	case IH_CPU_SPARC64:	arch = "SPARC 64 Bit";		break;
-	case IH_CPU_M68K:	arch = "M68K"; 			break;
-	case IH_CPU_MICROBLAZE:	arch = "Microblaze"; 		break;
-	case IH_CPU_NIOS:	arch = "Nios";			break;
-	case IH_CPU_NIOS2:	arch = "Nios-II";		break;
-	default:		arch = "Unknown Architecture";	break;
-	}
-
-	return arch;
-}
-
-static const char *image_type(image_header_t *hdr)
-{
-	char *type;
-
-	switch (hdr->ih_type) {
-	case IH_TYPE_INVALID:	type = "Invalid Image";		break;
-	case IH_TYPE_STANDALONE:type = "Standalone Program";	break;
-	case IH_TYPE_KERNEL:	type = "Kernel Image";		break;
-	case IH_TYPE_RAMDISK:	type = "RAMDisk Image";		break;
-	case IH_TYPE_MULTI:	type = "Multi-File Image";	break;
-	case IH_TYPE_FIRMWARE:	type = "Firmware";		break;
-	case IH_TYPE_SCRIPT:	type = "Script";		break;
-	case IH_TYPE_FLATDT:	type = "Flat Device Tree";	break;
-	default:		type = "Unknown Image";		break;
-	}
-	return type;
-}
-
-static const char *image_compression(image_header_t *hdr)
-{
-	char *comp;
-
-	switch (hdr->ih_comp) {
-	case IH_COMP_NONE:	comp = "uncompressed";		break;
-	case IH_COMP_GZIP:	comp = "gzip compressed";	break;
-	case IH_COMP_BZIP2:	comp = "bzip2 compressed";	break;
-	default:		comp = "unknown compression";	break;
-	}
-
-	return comp;
-}
-#endif
-
 int relocate_image(struct image_handle *handle, void *load_address)
 {
 	image_header_t *hdr = &handle->header;
@@ -549,8 +463,11 @@ print_image_hdr (image_header_t *hdr)
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
 #ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
-	printf ("   Image Type:   %s %s %s (%s)\n", image_arch(hdr), image_os(hdr),
-			image_type(hdr), image_compression(hdr));
+	printf ("   Image Type:   %s %s %s (%s)\n",
+			image_arch(hdr->ih_arch),
+			image_os(hdr->ih_os),
+			image_type(hdr->ih_type),
+			image_compression(hdr->ih_comp));
 #endif
 	printf ("   Data Size:    %d Bytes = %s\n"
 		"   Load Address: %08x\n"

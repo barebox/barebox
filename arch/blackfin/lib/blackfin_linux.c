@@ -47,10 +47,10 @@ static int do_bootm_linux(struct image_data *idata)
 	struct image_handle *os_handle = idata->os;
 	image_header_t *os_header = &os_handle->header;
 
-	appl = (int (*)(char *))ntohl(os_header->ih_ep);
+	appl = (int (*)(char *))image_get_ep(os_header);
 	printf("Starting Kernel at 0x%08x\n", appl);
 
-	if (relocate_image(os_handle, (void *)ntohl(os_header->ih_load)))
+	if (relocate_image(os_handle, (void *)image_get_load(os_header)))
 		return -1;
 
 	icache_disable();

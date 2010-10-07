@@ -56,7 +56,7 @@ int lflag    = 0;
 int vflag    = 0;
 int xflag    = 0;
 int opt_os   = IH_OS_LINUX;
-int opt_arch = IH_CPU_PPC;
+int opt_arch = IH_ARCH_PPC;
 int opt_type = IH_TYPE_KERNEL;
 int opt_comp = IH_COMP_GZIP;
 

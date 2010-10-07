@@ -97,10 +97,12 @@ do_build_target() {
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
 	cross_compile=`eval echo '$CROSS_COMPILE_'${target}`
-	if [ ! "${cross_compile}" ]
+	cross_compile_set=`eval echo '${CROSS_COMPILE_'${target}'+set}'`
+	if [ "${cross_compile_set}" = "" ]
 	then
 		cross_compile=`eval echo '$CROSS_COMPILE_'${arch}`
-		if [ ! "${cross_compile}" ]
+		cross_compile_set=`eval echo '${CROSS_COMPILE_'${arch}'+set}'`
+		if [ "${cross_compile_set}" = "" ]
 		then
 			cross_compile=${CROSS_COMPILE}
 		fi
@@ -237,7 +239,7 @@ fi
 
 [ -d "${LOGDIR}" ] || mkdir ${LOGDIR} || exit 1
 
-if [ ! "${CONFIG}" ] && [ ! "${CROSS_COMPILE}" ]
+if [ ! "${CONFIG}" ] && [ ! "${CROSS_COMPILE+set}" ]
 then
 	echo "You need to specify a CONFIG or a CROSS_COMPILE"
 	usage

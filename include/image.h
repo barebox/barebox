@@ -61,45 +61,45 @@
 /*
  * CPU Architecture Codes (supported by Linux)
  */
-#define IH_ARCH_INVALID		0	/* Invalid CPU	*/
-#define IH_ARCH_ALPHA		1	/* Alpha	*/
-#define IH_ARCH_ARM		2	/* ARM		*/
-#define IH_ARCH_I386		3	/* Intel x86	*/
-#define IH_ARCH_IA64		4	/* IA64		*/
-#define IH_ARCH_MIPS		5	/* MIPS		*/
-#define IH_ARCH_MIPS64		6	/* MIPS	 64 Bit */
-#define IH_ARCH_PPC		7	/* PowerPC	*/
-#define IH_ARCH_S390		8	/* IBM S390	*/
-#define IH_ARCH_SH		9	/* SuperH	*/
-#define IH_ARCH_SPARC		10	/* Sparc	*/
-#define IH_ARCH_SPARC64		11	/* Sparc 64 Bit */
-#define IH_ARCH_M68K		12	/* M68K		*/
-#define IH_ARCH_NIOS		13	/* Nios-32	*/
-#define IH_ARCH_MICROBLAZE	14	/* MicroBlaze   */
-#define IH_ARCH_NIOS2		15	/* Nios-II	*/
-#define IH_ARCH_BLACKFIN		16	/* Blackfin	*/
-#define IH_ARCH_AVR32		17	/* AVR32	*/
+#define IH_CPU_INVALID		0	/* Invalid CPU	*/
+#define IH_CPU_ALPHA		1	/* Alpha	*/
+#define IH_CPU_ARM		2	/* ARM		*/
+#define IH_CPU_I386		3	/* Intel x86	*/
+#define IH_CPU_IA64		4	/* IA64		*/
+#define IH_CPU_MIPS		5	/* MIPS		*/
+#define IH_CPU_MIPS64		6	/* MIPS	 64 Bit */
+#define IH_CPU_PPC		7	/* PowerPC	*/
+#define IH_CPU_S390		8	/* IBM S390	*/
+#define IH_CPU_SH		9	/* SuperH	*/
+#define IH_CPU_SPARC		10	/* Sparc	*/
+#define IH_CPU_SPARC64		11	/* Sparc 64 Bit */
+#define IH_CPU_M68K		12	/* M68K		*/
+#define IH_CPU_NIOS		13	/* Nios-32	*/
+#define IH_CPU_MICROBLAZE	14	/* MicroBlaze   */
+#define IH_CPU_NIOS2		15	/* Nios-II	*/
+#define IH_CPU_BLACKFIN		16	/* Blackfin	*/
+#define IH_CPU_AVR32		17	/* AVR32	*/
 
 #if defined(__PPC__)
-#define IH_ARCH IH_ARCH_PPC
+#define IH_CPU IH_CPU_PPC
 #elif defined(__ARM__)
-#define IH_ARCH IH_ARCH_ARM
+#define IH_CPU IH_CPU_ARM
 #elif defined(__I386__) || defined(__x86_64__)
-#define IH_ARCH IH_ARCH_I386
+#define IH_CPU IH_CPU_I386
 #elif defined(__mips__)
-#define IH_ARCH IH_ARCH_MIPS
+#define IH_CPU IH_CPU_MIPS
 #elif defined(__nios__)
-#define IH_ARCH IH_ARCH_NIOS
+#define IH_CPU IH_CPU_NIOS
 #elif defined(__m68k__)
-#define IH_ARCH IH_ARCH_M68K
+#define IH_CPU IH_CPU_M68K
 #elif defined(__microblaze__)
-#define IH_ARCH IH_ARCH_MICROBLAZE
+#define IH_CPU IH_CPU_MICROBLAZE
 #elif defined(__nios2__)
-#define IH_ARCH IH_ARCH_NIOS2
+#define IH_CPU IH_CPU_NIOS2
 #elif defined(__blackfin__)
-#define IH_ARCH IH_ARCH_BLACKFIN
+#define IH_CPU IH_CPU_BLACKFIN
 #elif defined(__avr32__)
-#define IH_ARCH IH_ARCH_AVR32
+#define IH_CPU IH_CPU_AVR32
 #endif
 
 /*

@@ -330,7 +330,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	os_header = &os_handle->header;
 
-	if (os_header->ih_arch != IH_ARCH)	{
+	if (os_header->ih_arch != IH_CPU)	{
 		printf ("Unsupported Architecture 0x%x\n", os_header->ih_arch);
 		goto err_out;
 	}

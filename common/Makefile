@@ -13,7 +13,6 @@ obj-$(CONFIG_CONSOLE_FULL) += console.o
 obj-$(CONFIG_CONSOLE_SIMPLE) += console_simple.o
 obj-$(CONFIG_DIGEST) += digest.o
 obj-y += env.o
-obj-$(CONFIG_CMD_BOOTM_SHOW_TYPE) += image.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o

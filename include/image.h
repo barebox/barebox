@@ -187,33 +187,6 @@ struct image_handle {
 	int flags;
 };
 
-#if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
-const char *image_os(uint8_t os);
-const char *image_arch(uint8_t arch);
-const char *image_type(uint8_t type);
-const char *image_compression(uint8_t comp);
-#else
-static inline const char *image_os(uint8_t os)
-{
-	return NULL;
-}
-
-static inline const char *image_arch(uint8_t arch)
-{
-	return NULL;
-}
-
-static inline const char *image_type(uint8_t type)
-{
-	return NULL;
-}
-
-static inline const char *image_compression(uint8_t comp)
-{
-	return NULL;
-}
-#endif
-
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);
 

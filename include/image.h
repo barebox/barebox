@@ -32,11 +32,6 @@
 #define __IMAGE_H__
 
 #include <linux/types.h>
-#ifdef __BAREBOX__
-#include <asm/byteorder.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 
 /*
  * Operating System Codes
@@ -82,9 +77,8 @@
 #define IH_ARCH_NIOS		13	/* Nios-32	*/
 #define IH_ARCH_MICROBLAZE	14	/* MicroBlaze   */
 #define IH_ARCH_NIOS2		15	/* Nios-II	*/
-#define IH_ARCH_BLACKFIN	16	/* Blackfin	*/
+#define IH_ARCH_BLACKFIN		16	/* Blackfin	*/
 #define IH_ARCH_AVR32		17	/* AVR32	*/
-#define IH_ARCH_LINUX		18	/* Linux	*/
 
 #if defined(__PPC__)
 #define IH_ARCH IH_ARCH_PPC
@@ -106,8 +100,6 @@
 #define IH_ARCH IH_ARCH_BLACKFIN
 #elif defined(__avr32__)
 #define IH_ARCH IH_ARCH_AVR32
-#elif defined(CONFIG_LINUX)
-#define IH_ARCH IH_ARCH_LINUX
 #endif
 
 /*
@@ -196,184 +188,31 @@ struct image_handle {
 };
 
 #if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
-const char *image_get_os_name(uint8_t os);
-const char *image_get_arch_name(uint8_t arch);
-const char *image_get_type_name(uint8_t type);
-const char *image_get_comp_name(uint8_t comp);
+const char *image_os(uint8_t os);
+const char *image_arch(uint8_t arch);
+const char *image_type(uint8_t type);
+const char *image_compression(uint8_t comp);
 #else
-static inline const char *image_get_os_name(uint8_t os)
+static inline const char *image_os(uint8_t os)
 {
 	return NULL;
 }
 
-static inline const char *image_get_arch_name(uint8_t arch)
+static inline const char *image_arch(uint8_t arch)
 {
 	return NULL;
 }
 
-static inline const char *image_get_type_name(uint8_t type)
+static inline const char *image_type(uint8_t type)
 {
 	return NULL;
 }
 
-static inline const char *image_get_comp_name(uint8_t comp)
+static inline const char *image_compression(uint8_t comp)
 {
 	return NULL;
 }
 #endif
-
-#define uimage_to_cpu(x)		be32_to_cpu(x)
-#define cpu_to_uimage(x)		cpu_to_be32(x)
-
-static inline uint32_t image_get_header_size(void)
-{
-	return sizeof(image_header_t);
-}
-
-#define image_get_hdr_u32(x)					\
-static inline uint32_t image_get_##x(const image_header_t *hdr)	\
-{								\
-	return uimage_to_cpu(hdr->ih_##x);			\
-}
-
-image_get_hdr_u32(magic);	/* image_get_magic */
-image_get_hdr_u32(hcrc);	/* image_get_hcrc */
-image_get_hdr_u32(time);	/* image_get_time */
-image_get_hdr_u32(size);	/* image_get_size */
-image_get_hdr_u32(load);	/* image_get_load */
-image_get_hdr_u32(ep);		/* image_get_ep */
-image_get_hdr_u32(dcrc);	/* image_get_dcrc */
-
-#define image_get_hdr_u8(x)					\
-static inline uint8_t image_get_##x(const image_header_t *hdr)	\
-{								\
-	return hdr->ih_##x;					\
-}
-image_get_hdr_u8(os);		/* image_get_os */
-image_get_hdr_u8(arch);		/* image_get_arch */
-image_get_hdr_u8(type);		/* image_get_type */
-image_get_hdr_u8(comp);		/* image_get_comp */
-
-static inline char *image_get_name(const image_header_t *hdr)
-{
-	return (char*)hdr->ih_name;
-}
-
-static inline uint32_t image_get_data_size(const image_header_t *hdr)
-{
-	return image_get_size(hdr);
-}
-
-/**
- * image_get_data - get image payload start address
- * @hdr: image header
- *
- * image_get_data() returns address of the image payload. For single
- * component images it is image data start. For multi component
- * images it points to the null terminated table of sub-images sizes.
- *
- * returns:
- *     image payload data start address
- */
-static inline ulong image_get_data(const image_header_t *hdr)
-{
-	return ((ulong)hdr + image_get_header_size());
-}
-
-static inline uint32_t image_get_image_size(const image_header_t *hdr)
-{
-	return (image_get_size(hdr) + image_get_header_size());
-}
-
-static inline ulong image_get_image_end(const image_header_t *hdr)
-{
-	return ((ulong)hdr + image_get_image_size(hdr));
-}
-
-#define image_set_hdr_u32(x)						\
-static inline void image_set_##x(image_header_t *hdr, uint32_t val)	\
-{									\
-	hdr->ih_##x = cpu_to_uimage(val);				\
-}
-
-image_set_hdr_u32(magic);	/* image_set_magic */
-image_set_hdr_u32(hcrc);	/* image_set_hcrc */
-image_set_hdr_u32(time);	/* image_set_time */
-image_set_hdr_u32(size);	/* image_set_size */
-image_set_hdr_u32(load);	/* image_set_load */
-image_set_hdr_u32(ep);		/* image_set_ep */
-image_set_hdr_u32(dcrc);	/* image_set_dcrc */
-
-#define image_set_hdr_u8(x)						\
-static inline void image_set_##x(image_header_t *hdr, uint8_t val)	\
-{									\
-	hdr->ih_##x = val;						\
-}
-
-image_set_hdr_u8(os);		/* image_set_os */
-image_set_hdr_u8(arch);		/* image_set_arch */
-image_set_hdr_u8(type);		/* image_set_type */
-image_set_hdr_u8(comp);		/* image_set_comp */
-
-static inline void image_set_name(image_header_t *hdr, const char *name)
-{
-	strncpy(image_get_name(hdr), name, IH_NMLEN);
-}
-
-static inline int image_check_magic(const image_header_t *hdr)
-{
-	return (image_get_magic(hdr) == IH_MAGIC);
-}
-static inline int image_check_type(const image_header_t *hdr, uint8_t type)
-{
-	return (image_get_type(hdr) == type);
-}
-static inline int image_check_arch(const image_header_t *hdr, uint8_t arch)
-{
-	return (image_get_arch(hdr) == arch);
-}
-static inline int image_check_os(const image_header_t *hdr, uint8_t os)
-{
-	return (image_get_os(hdr) == os);
-}
-
-#ifdef __BAREBOX__
-static inline int image_check_target_arch(const image_header_t *hdr)
-{
-#if defined(__ARM__)
-	if (!image_check_arch(hdr, IH_ARCH_ARM))
-#elif defined(__avr32__)
-	if (!image_check_arch(hdr, IH_ARCH_AVR32))
-#elif defined(__bfin__)
-	if (!image_check_arch(hdr, IH_ARCH_BLACKFIN))
-#elif defined(__I386__)
-	if (!image_check_arch(hdr, IH_ARCH_I386))
-#elif defined(__m68k__)
-	if (!image_check_arch(hdr, IH_ARCH_M68K))
-#elif defined(__microblaze__)
-	if (!image_check_arch(hdr, IH_ARCH_MICROBLAZE))
-#elif defined(__mips__)
-	if (!image_check_arch(hdr, IH_ARCH_MIPS))
-#elif defined(__nios__)
-	if (!image_check_arch(hdr, IH_ARCH_NIOS))
-#elif defined(__nios2__)
-	if (!image_check_arch(hdr, IH_ARCH_NIOS2))
-#elif defined(__PPC__)
-	if (!image_check_arch(hdr, IH_ARCH_PPC))
-#elif defined(__sh__)
-	if (!image_check_arch(hdr, IH_ARCH_SH))
-#elif defined(__sparc__)
-	if (!image_check_arch(hdr, IH_ARCH_SPARC))
-#elif defined(CONFIG_LINUX)
-	if (!image_check_arch(hdr, IH_ARCH_LINUX))
-#else
-# error Unknown CPU type
-#endif
-		return 0;
-
-	return 1;
-}
-#endif /* USE_HOSTCC */
 
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);

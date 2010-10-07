@@ -113,22 +113,22 @@ static char *get_table_entry_name(table_entry_t *table, char *msg, int id)
 	return msg;
 }
 
-const char *image_get_os_name(uint8_t os)
+const char *image_os(uint8_t os)
 {
 	return get_table_entry_name(os_name, "Unknown OS", os);
 }
 
-const char *image_get_arch_name(uint8_t arch)
+const char *image_arch(uint8_t arch)
 {
 	return get_table_entry_name(arch_name, "Unknown Architecture", arch);
 }
 
-const char *image_get_type_name(uint8_t type)
+const char *image_type(uint8_t type)
 {
 	return get_table_entry_name(type_name, "Unknown Image", type);
 }
 
-const char *image_get_comp_name(uint8_t comp)
+const char *image_compression(uint8_t comp)
 {
 	return get_table_entry_name(comp_name, "Unknown Compression", comp);
 }

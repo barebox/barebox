@@ -98,19 +98,19 @@ fixup_silent_linux ()
 int relocate_image(struct image_handle *handle, void *load_address)
 {
 	image_header_t *hdr = &handle->header;
-	unsigned long len  = image_get_size(hdr);
+	unsigned long len  = ntohl(hdr->ih_size);
 	unsigned long data = (unsigned long)(handle->data);
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = CFG_BOOTM_LEN;
 #endif
 
-	switch (image_get_comp(hdr)) {
+	switch (hdr->ih_comp) {
 	case IH_COMP_NONE:
-		if(image_get_load(hdr) == data) {
+		if(ntohl(hdr->ih_load) == data) {
 			printf ("   XIP ... ");
 		} else {
-			memmove ((void *) image_get_load(hdr), (uchar *)data, len);
+			memmove ((void *) ntohl(hdr->ih_load), (uchar *)data, len);
 		}
 		break;
 #ifdef CONFIG_CMD_BOOTM_ZLIB
@@ -137,8 +137,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 		break;
 #endif
 	default:
-		printf("Unimplemented compression type %d\n",
-		       image_get_comp(hdr));
+		printf ("Unimplemented compression type %d\n", hdr->ih_comp);
 		return -1;
 	}
 
@@ -162,24 +161,24 @@ struct image_handle *map_image(const char *filename, int verify)
 	handle = xzalloc(sizeof(struct image_handle));
 	header = &handle->header;
 
-	if (read(fd, header, image_get_header_size()) < 0) {
+	if (read(fd, header, sizeof(image_header_t)) < 0) {
 		printf("could not read: %s\n", errno_str());
 		goto err_out;
 	}
 
-	if (image_check_magic(header)) {
+	if (ntohl(header->ih_magic) != IH_MAGIC) {
 		puts ("Bad Magic Number\n");
 		goto err_out;
 	}
 
-	checksum = image_get_hcrc(header);
+	checksum = ntohl(header->ih_hcrc);
 	header->ih_hcrc = 0;
 
-	if (crc32 (0, (uchar *)header, image_get_header_size()) != checksum) {
+	if (crc32 (0, (uchar *)header, sizeof(image_header_t)) != checksum) {
 		puts ("Bad Header Checksum\n");
 		goto err_out;
 	}
-	len  = image_get_size(header);
+	len  = ntohl(header->ih_size);
 
 	handle->data = memmap(fd, PROT_READ);
 	if (handle->data == (void *)-1) {
@@ -190,13 +189,12 @@ struct image_handle *map_image(const char *filename, int verify)
 			goto err_out;
 		}
 	} else {
-		handle->data = (void *)((unsigned long)handle->data +
-						       image_get_header_size());
+		handle->data = (void *)((unsigned long)handle->data + sizeof(image_header_t));
 	}
 
 	if (verify) {
 		puts ("   Verifying Checksum ... ");
-		if (crc32 (0, handle->data, len) != image_get_dcrc(header)) {
+		if (crc32 (0, handle->data, len) != ntohl(header->ih_dcrc)) {
 			printf ("Bad Data CRC\n");
 			goto err_out;
 		}
@@ -332,9 +330,8 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	os_header = &os_handle->header;
 
-	if (image_check_arch(os_header, IH_ARCH)) {
-		printf("Unsupported Architecture 0x%x\n",
-		       image_get_arch(os_header));
+	if (os_header->ih_arch != IH_ARCH)	{
+		printf ("Unsupported Architecture 0x%x\n", os_header->ih_arch);
 		goto err_out;
 	}
 
@@ -350,15 +347,14 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
-		if (image_check_os(os_header, handler->image_type)) {
+		if (handler->image_type == os_header->ih_os) {
 			handler->bootm(&data);
 			printf("handler returned!\n");
 			goto err_out;
 		}
 	}
 
-	printf("no image handler found for image type %d\n",
-	       image_get_os(os_header));
+	printf("no image handler found for image type %d\n", os_header->ih_os);
 
 err_out:
 	if (os_handle)
@@ -407,17 +403,17 @@ static int image_info (ulong addr)
 	printf ("\n## Checking Image at %08lx ...\n", addr);
 
 	/* Copy header so we can blank CRC field for re-calculation */
-	memmove (&header, (char *)addr, image_get_header_size());
+	memmove (&header, (char *)addr, sizeof(image_header_t));
 
-	if (image_check_magic(hdr)) {
+	if (ntohl(hdr->ih_magic) != IH_MAGIC) {
 		puts ("   Bad Magic Number\n");
 		return 1;
 	}
 
 	data = (ulong)&header;
-	len  = image_get_header_size();
+	len  = sizeof(image_header_t);
 
-	checksum = image_get_hcrc(hdr);
+	checksum = ntohl(hdr->ih_hcrc);
 	hdr->ih_hcrc = 0;
 
 	if (crc32 (0, (uchar *)data, len) != checksum) {
@@ -428,11 +424,11 @@ static int image_info (ulong addr)
 	/* for multi-file images we need the data part, too */
 	print_image_hdr ((image_header_t *)addr);
 
-	data = addr + image_get_header_size();
-	len  = image_get_size(hdr);
+	data = addr + sizeof(image_header_t);
+	len  = ntohl(hdr->ih_size);
 
 	puts ("   Verifying Checksum ... ");
-	if (crc32 (0, (uchar *)data, len) != image_get_dcrc(hdr)) {
+	if (crc32 (0, (uchar *)data, len) != ntohl(hdr->ih_dcrc)) {
 		puts ("   Bad Data CRC\n");
 		return 1;
 	}
@@ -455,11 +451,11 @@ void
 print_image_hdr (image_header_t *hdr)
 {
 #if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
-	time_t timestamp = (time_t)image_get_time(hdr);
+	time_t timestamp = (time_t)ntohl(hdr->ih_time);
 	struct rtc_time tm;
 #endif
 
-	printf ("   Image Name:   %.*s\n", IH_NMLEN, image_get_name(hdr));
+	printf ("   Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
 #if defined(CONFIG_CMD_DATE) || defined(CONFIG_TIMESTAMP)
 	to_tm (timestamp, &tm);
 	printf ("   Created:      %4d-%02d-%02d  %2d:%02d:%02d UTC\n",
@@ -468,27 +464,26 @@ print_image_hdr (image_header_t *hdr)
 #endif	/* CONFIG_CMD_DATE, CONFIG_TIMESTAMP */
 #ifdef CONFIG_CMD_BOOTM_SHOW_TYPE
 	printf ("   Image Type:   %s %s %s (%s)\n",
-			image_get_arch_name(image_get_arch(hdr)),
-			image_get_os_name(image_get_os(hdr)),
-			image_get_type_name(image_get_type(hdr)),
-			image_get_comp_name(image_get_comp(hdr)));
+			image_arch(hdr->ih_arch),
+			image_os(hdr->ih_os),
+			image_type(hdr->ih_type),
+			image_compression(hdr->ih_comp));
 #endif
 	printf ("   Data Size:    %d Bytes = %s\n"
 		"   Load Address: %08x\n"
 		"   Entry Point:  %08x\n",
-			image_get_size(hdr),
-			size_human_readable(image_get_size(hdr)),
-			image_get_load(hdr),
-			image_get_ep(hdr));
+			ntohl(hdr->ih_size),
+			size_human_readable(ntohl(hdr->ih_size)),
+			ntohl(hdr->ih_load),
+			ntohl(hdr->ih_ep));
 
-	if (image_check_type(hdr, IH_TYPE_MULTI)) {
+	if (hdr->ih_type == IH_TYPE_MULTI) {
 		int i;
-		uint32_t len;
-		uint32_t *len_ptr = (uint32_t *)((ulong)hdr + image_get_header_size());
+		ulong len;
+		ulong *len_ptr = (ulong *)((ulong)hdr + sizeof(image_header_t));
 
 		puts ("   Contents:\n");
-		for (i=0; len_ptr[i]; ++i) {
-			len = ntohl(len_ptr[i]);
+		for (i=0; (len = ntohl(*len_ptr)); ++i, ++len_ptr) {
 			printf ("   Image %d: %8ld Bytes = %s", i, len,
 				size_human_readable (len));
 		}

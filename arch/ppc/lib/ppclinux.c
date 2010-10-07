@@ -45,7 +45,7 @@ static int do_bootm_linux(struct image_data *idata)
 	printf("entering %s: os_header: %p initrd_header: %p oftree: %s\n",
 			__FUNCTION__, os_header, initrd_header, idata->oftree);
 
-	if (image_check_type(os_header, IH_TYPE_MULTI)) {
+	if (os_header->ih_type == IH_TYPE_MULTI) {
 		unsigned long *data = (unsigned long *)(idata->os->data);
 		unsigned long len1 = 0, len2 = 0;
 
@@ -199,9 +199,9 @@ static int do_bootm_linux(struct image_data *idata)
 #endif /* CONFIG_MPC5xxx */
 	}
 
-	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))image_get_ep(os_header); /* FIXME */
+	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))ntohl(os_header->ih_ep); /* FIXME */
 
-	if (relocate_image(idata->os, (void *)image_get_load(os_header)))
+	if (relocate_image(idata->os, (void *)ntohl(os_header->ih_load)))
 		return -1;
 
 #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)

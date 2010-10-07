@@ -224,7 +224,7 @@ NXTARG:		;
 		 */
 		memcpy (hdr, ptr, sizeof(image_header_t));
 
-		if (image_check_magic(hdr)) {
+		if (ntohl(hdr->ih_magic) != IH_MAGIC) {
 			fprintf (stderr,
 				"%s: Bad Magic Number: \"%s\" is no valid image\n",
 				cmdname, imagefile);
@@ -232,10 +232,10 @@ NXTARG:		;
 		}
 
 		data = (char *)hdr;
-		len  = image_get_header_size();
+		len  = sizeof(image_header_t);
 
-		checksum = image_get_hcrc(hdr);
-		image_set_hcrc(hdr, 0);	/* clear for re-calculation */
+		checksum = ntohl(hdr->ih_hcrc);
+		hdr->ih_hcrc = htonl(0);	/* clear for re-calculation */
 
 		if (crc32 (0, (unsigned char *)data, len) != checksum) {
 			fprintf (stderr,
@@ -244,10 +244,10 @@ NXTARG:		;
 			exit (EXIT_FAILURE);
 		}
 
-		data = (char *)(ptr + image_get_header_size());
-		len  = sbuf.st_size - image_get_header_size() ;
+		data = (char *)(ptr + sizeof(image_header_t));
+		len  = sbuf.st_size - sizeof(image_header_t) ;
 
-		if (crc32 (0, (unsigned char *)data, len) != image_get_dcrc(hdr)) {
+		if (crc32 (0, (unsigned char *)data, len) != ntohl(hdr->ih_dcrc)) {
 			fprintf (stderr,
 				"%s: ERROR: \"%s\" has corrupted data!\n",
 				cmdname, imagefile);
@@ -268,16 +268,15 @@ NXTARG:		;
 	 *
 	 * write dummy header, to be fixed later
 	 */
-	memset (hdr, 0, image_get_header_size());
+	memset (hdr, 0, sizeof(image_header_t));
 
-	if (write(ifd, hdr, image_get_header_size()) != image_get_header_size()) {
+	if (write(ifd, hdr, sizeof(image_header_t)) != sizeof(image_header_t)) {
 		fprintf (stderr, "%s: Write error on %s: %s\n",
 			cmdname, imagefile, strerror(errno));
 		exit (EXIT_FAILURE);
 	}
 
-	if ((opt_type == IH_TYPE_MULTI) ||
-	    (opt_type == IH_TYPE_SCRIPT)) {
+	if (opt_type == IH_TYPE_MULTI || opt_type == IH_TYPE_SCRIPT) {
 		char *file = datafile;
 		uint32_t size;
 
@@ -359,27 +358,27 @@ NXTARG:		;
 	hdr = (image_header_t *)ptr;
 
 	checksum = crc32 (0,
-			  (unsigned char *)(ptr + image_get_header_size()),
-			  sbuf.st_size - image_get_header_size()
+			  (unsigned char *)(ptr + sizeof(image_header_t)),
+			  sbuf.st_size - sizeof(image_header_t)
 			 );
 
 	/* Build new header */
-	image_set_magic(hdr, IH_MAGIC);
-	image_set_time(hdr, sbuf.st_mtime);
-	image_set_size(hdr, sbuf.st_size - image_get_header_size());
-	image_set_load(hdr, addr);
-	image_set_ep(hdr, ep);
-	image_set_dcrc(hdr, checksum);
-	image_set_os(hdr, opt_os);
-	image_set_arch(hdr, opt_arch);
-	image_set_type(hdr, opt_type);
-	image_set_comp(hdr, opt_comp);
+	hdr->ih_magic = htonl(IH_MAGIC);
+	hdr->ih_time  = htonl(sbuf.st_mtime);
+	hdr->ih_size  = htonl(sbuf.st_size - sizeof(image_header_t));
+	hdr->ih_load  = htonl(addr);
+	hdr->ih_ep    = htonl(ep);
+	hdr->ih_dcrc  = htonl(checksum);
+	hdr->ih_os    = opt_os;
+	hdr->ih_arch  = opt_arch;
+	hdr->ih_type  = opt_type;
+	hdr->ih_comp  = opt_comp;
 
-	image_set_name(hdr, name);
+	strncpy((char *)hdr->ih_name, name, IH_NMLEN);
 
-	checksum = crc32(0,(unsigned char *)hdr, image_get_header_size());
+	checksum = crc32(0,(unsigned char *)hdr,sizeof(image_header_t));
 
-	image_set_hcrc(hdr, checksum);
+	hdr->ih_hcrc = htonl(checksum);
 
 	print_header (hdr);
 
@@ -444,14 +443,14 @@ copy_file (int ifd, const char *datafile, int pad)
 		 * reserved for it.
 		 */
 
-		if ((unsigned)sbuf.st_size < image_get_header_size()) {
+		if ((unsigned)sbuf.st_size < sizeof(image_header_t)) {
 			fprintf (stderr,
 				"%s: Bad size: \"%s\" is too small for XIP\n",
 				cmdname, datafile);
 			exit (EXIT_FAILURE);
 		}
 
-		for (p = ptr; p < ptr + image_get_header_size(); p++) {
+		for (p=ptr; p < ptr+sizeof(image_header_t); p++) {
 			if ( *p != 0xff ) {
 				fprintf (stderr,
 					"%s: Bad file: \"%s\" has invalid buffer for XIP\n",
@@ -460,7 +459,7 @@ copy_file (int ifd, const char *datafile, int pad)
 			}
 		}
 
-		offset = image_get_header_size();
+		offset = sizeof(image_header_t);
 	}
 
 	size = sbuf.st_size - offset;
@@ -510,23 +509,22 @@ print_header (image_header_t *hdr)
 	time_t timestamp;
 	uint32_t size;
 
-	timestamp = (time_t)image_get_time(hdr);
-	size = image_get_size(hdr);
+	timestamp = (time_t)ntohl(hdr->ih_time);
+	size = ntohl(hdr->ih_size);
 
-	printf ("Image Name:   %.*s\n", IH_NMLEN, image_get_name(hdr));
+	printf ("Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
 	printf ("Created:      %s", ctime(&timestamp));
 	printf ("Image Type:   "); print_type(hdr);
 	printf ("Data Size:    %d Bytes = %.2f kB = %.2f MB\n",
 		size, (double)size / 1.024e3, (double)size / 1.048576e6 );
-	printf ("Load Address: 0x%08X\n", image_get_load(hdr));
-	printf ("Entry Point:  0x%08X\n", image_get_ep(hdr));
+	printf ("Load Address: 0x%08X\n", ntohl(hdr->ih_load));
+	printf ("Entry Point:  0x%08X\n", ntohl(hdr->ih_ep));
 
-	if (image_check_type(hdr, IH_TYPE_MULTI) ||
-	    image_check_type(hdr, IH_TYPE_SCRIPT)) {
+	if (hdr->ih_type == IH_TYPE_MULTI || hdr->ih_type == IH_TYPE_SCRIPT) {
 		int i, ptrs;
 		uint32_t pos;
 		uint32_t *len_ptr = (uint32_t *) (
-					(unsigned long)hdr + image_get_header_size()
+					(unsigned long)hdr + sizeof(image_header_t)
 				);
 
 		/* determine number of images first (to calculate image offsets) */
@@ -534,14 +532,14 @@ print_header (image_header_t *hdr)
 			;
 		ptrs = i;		/* null pointer terminates list */
 
-		pos = image_get_header_size() + ptrs * sizeof(long);
+		pos = sizeof(image_header_t) + ptrs * sizeof(long);
 		printf ("Contents:\n");
 		for (i=0; len_ptr[i]; ++i) {
 			size = ntohl(len_ptr[i]);
 
 			printf ("   Image %d: %8d Bytes = %4d kB = %d MB\n",
 				i, size, size>>10, size>>20);
-			if (image_check_type(hdr, IH_TYPE_SCRIPT) && i > 0) {
+			if (hdr->ih_type == IH_TYPE_SCRIPT && i > 0) {
 				/*
 				 * the user may need to know offsets
 				 * if planning to do something with
@@ -562,10 +560,10 @@ static void
 print_type (image_header_t *hdr)
 {
 	printf ("%s %s %s (%s)\n",
-		image_get_arch_name(image_get_arch(hdr)),
-		image_get_os_name(image_get_os(hdr)),
-		image_get_type_name(image_get_type(hdr)),
-		image_get_comp_name(image_get_comp(hdr))
+		image_arch(hdr->ih_arch),
+		image_os(hdr->ih_os),
+		image_type(hdr->ih_type),
+		image_compression(hdr->ih_comp)
 	);
 }
 

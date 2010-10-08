@@ -41,4 +41,11 @@ config MCI_S3C
 	  Enable this entry to add support to read and write SD cards on a
 	  Samsung S3C24xx based system.
 
+config MCI_IMX
+	bool "i.MX"
+	depends on ARCH_IMX27 || ARCH_IMX31
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Freescale i.MX based system.
+
 endif

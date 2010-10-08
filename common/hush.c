@@ -790,6 +790,7 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	}
 	dest = xmalloc(cnt);
 	if (!(flags & GLOB_APPEND)) {
+		globfree(pglob);
 		pglob->gl_pathv = NULL;
 		pglob->gl_pathc = 0;
 		pglob->gl_offs = 0;

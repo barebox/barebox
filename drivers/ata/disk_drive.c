@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <string.h>
 #include <linux/kernel.h>
+#include <malloc.h>
 
 /**
  * Description of one partition table entry (D*S type)
@@ -269,15 +270,18 @@ static struct file_operations disk_ops = {
  */
 static int disk_probe(struct device_d *dev)
 {
-	uint8_t sector[512];
+	uint8_t *sector;
 	int rc;
 	struct ata_interface *intf = dev->platform_data;
 	struct cdev *disk_cdev;
 
+	sector = xmalloc(SECTOR_SIZE);
+
 	rc = intf->read(dev, 0, 1, sector);
 	if (rc != 0) {
 		dev_err(dev, "Cannot read MBR of this device\n");
-		return -1;
+		rc = -ENODEV;
+		goto on_error;
 	}
 
 	/* It seems a valuable disk. Register it */
@@ -306,7 +310,8 @@ static int disk_probe(struct device_d *dev)
 
 	if ((sector[510] != 0x55) || (sector[511] != 0xAA)) {
 		dev_info(dev, "No partition table found\n");
-		return 0;
+		rc = 0;
+		goto on_error;
 	}
 
 	/* guess the size of this drive */
@@ -314,9 +319,11 @@ static int disk_probe(struct device_d *dev)
 	dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
 	disk_cdev->size = dev->size;
 
-	disk_register_partitions(dev, (struct partition_entry*)&sector[446]);
+	rc = disk_register_partitions(dev, (struct partition_entry*)&sector[446]);
 
-	return 0;
+on_error:
+	free(sector);
+	return rc;
 }
 
 #ifdef CONFIG_ATA_BIOS

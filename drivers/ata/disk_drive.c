@@ -23,6 +23,7 @@
  * @brief Generic disk drive support
  *
  * @todo Support for disks larger than 4 GiB
+ * @todo Reliable size detection for BIOS based disks (on x86 only)
  */
 
 #include <stdio.h>
@@ -299,11 +300,16 @@ static int disk_probe(struct device_d *dev)
 	else
 #endif
 		disk_cdev->name = asprintf("disk%d", dev->id);
-	/**
-	 * @todo we need the size of the drive, else its nearly impossible
-	 * to do anything with it (at least with the generic routines)
-	 */
-	disk_cdev->size = 32;	/* FIXME */
+
+	/* On x86, BIOS based disks are coming without a valid .size field */
+	if (dev->size == 0) {
+		/*
+		 * We need always the size of the drive, else its nearly impossible
+		 * to do anything with it (at least with the generic routines)
+		 */
+		disk_cdev->size = 32;
+	} else
+		disk_cdev->size = dev->size;
 	disk_cdev->ops = &disk_ops;
 	disk_cdev->dev = dev;
 	devfs_create(disk_cdev);
@@ -314,10 +320,13 @@ static int disk_probe(struct device_d *dev)
 		goto on_error;
 	}
 
-	/* guess the size of this drive */
-	dev->size = disk_guess_size(dev, (struct partition_entry*)&sector[446]) * SECTOR_SIZE;
-	dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
-	disk_cdev->size = dev->size;
+	if (dev->size == 0) {
+		/* guess the size of this drive if not otherwise given */
+		dev->size = disk_guess_size(dev,
+			(struct partition_entry*)&sector[446]) * SECTOR_SIZE;
+		dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
+		disk_cdev->size = dev->size;
+	}
 
 	rc = disk_register_partitions(dev, (struct partition_entry*)&sector[446]);
 

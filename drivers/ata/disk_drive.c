@@ -281,10 +281,6 @@ static int disk_probe(struct device_d *dev)
 
 	/* It seems a valuable disk. Register it */
 	disk_cdev = xzalloc(sizeof(struct cdev));
-	if (disk_cdev == NULL) {
-		dev_err(dev, "Out of memory\n");
-		return -ENOMEM;
-	}
 
 	/*
 	 * BIOS based disks needs special handling. Not the driver can

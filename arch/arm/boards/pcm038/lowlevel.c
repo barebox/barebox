@@ -31,6 +31,8 @@
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
 
+#include "pll.h"
+
 #ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
@@ -67,6 +69,11 @@ void __bare_init __naked board_init_lowlevel(void)
 	r = get_pc();
 	if (r > 0xa0000000 && r < 0xb0000000)
 		board_init_lowlevel_return();
+
+	/* re-program the PLL prior(!) starting the SDRAM controller */
+	MPCTL0 = MPCTL0_VAL;
+	SPCTL0 = SPCTL0_VAL;
+	CSCR = CSCR_VAL | CSCR_UPDATE_DIS | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
 
 	/*
 	 * DDR on CSD0

@@ -44,6 +44,8 @@
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 
+#include "pll.h"
+
 static struct device_d cfi_dev = {
 	.id	  = -1,
 	.name     = "cfi_flash",
@@ -379,11 +381,6 @@ static struct device_d pcm038_serial_device = {
 
 static int pcm038_console_init(void)
 {
-	/* bring PLLs to reset default */
-	MPCTL0 = 0x00211803;
-	SPCTL0 = 0x1002700c;
-	CSCR = 0x33fc1307;
-
 	register_device(&pcm038_serial_device);
 
 	return 0;
@@ -391,39 +388,49 @@ static int pcm038_console_init(void)
 
 console_initcall(pcm038_console_init);
 
-extern void *pcm038_pll_init, *pcm038_pll_init_end;
+/**
+ * The spctl0 register is a beast: Seems you can read it
+ * only one times without writing it again.
+ */
+static inline uint32_t get_pll_spctl10(void)
+{
+	uint32_t reg;
 
+	reg = SPCTL0;
+	SPCTL0 = reg;
+
+	return reg;
+}
+
+/**
+ * If the PLL settings are in place switch the CPU core frequency to the max. value
+ */
 static int pcm038_power_init(void)
 {
+	uint32_t spctl0;
 	int ret;
-	void *vram = (void*)0xffff4c00;
-	void (*pllfunc)(void) = vram;
 
-	printf("initialising PLLs: 0x%p 0x%p\n", &pcm038_pll_init);
+	spctl0 = get_pll_spctl10();
 
-	memcpy(vram, &pcm038_pll_init, 0x100);
-
-	console_flush();
-
-	ret = pmic_power();
-	if (ret) {
-		printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
-		return 0;
+	/* PLL registers already set to their final values? */
+	if (spctl0 == SPCTL0_VAL && MPCTL0 == MPCTL0_VAL) {
+		console_flush();
+		ret = pmic_power();
+		if (ret == 0) {
+			/* wait for required power level to run the CPU at 400 MHz */
+			udelay(100000);
+			CSCR = CSCR_VAL_FINAL;
+			PCDR0 = 0x130410c3;
+			PCDR1 = 0x09030911;
+			/* Clocks have changed. Notify clients */
+			clock_notifier_call_chain();
+		} else {
+			printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
+		}
 	}
-
-	/* wait for good power level */
-	udelay(100000);
-
-	pllfunc();
 
 	/* clock gating enable */
 	GPCR = 0x00050f08;
-
-	PCDR0 = 0x130410c3;
-	PCDR1 = 0x09030911;
-
-	/* Clocks have changed. Notify clients */
-	clock_notifier_call_chain();
 
 	return 0;
 }

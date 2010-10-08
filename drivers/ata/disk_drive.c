@@ -105,7 +105,8 @@ static int disk_register_partitions(struct device_d *dev, struct partition_entry
 			if (table[part_order[i]].partition_size > 0x7fffff)
 				continue;
 #endif
-			dev_info(dev, "Registering partition %s to drive %s\n", partition_name, drive_name);
+			dev_dbg(dev, "Registering partition %s to drive %s\n",
+				partition_name, drive_name);
 			rc = devfs_add_partition(drive_name,
 				table[part_order[i]].partition_start * SECTOR_SIZE,
 				table[part_order[i]].partition_size * SECTOR_SIZE,

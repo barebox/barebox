@@ -159,6 +159,11 @@ ulong imx_get_i2cclk(void)
 	return imx_get_ipgclk();
 }
 
+ulong imx_get_mmcclk(void)
+{
+	return imx_get_perclk2();
+}
+
 void imx_dump_clocks(void)
 {
 	uint32_t	cid = CID;

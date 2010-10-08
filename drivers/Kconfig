@@ -9,6 +9,7 @@ source "drivers/mtd/Kconfig"
 source "drivers/ata/Kconfig"
 source "drivers/usb/Kconfig"
 source "drivers/video/Kconfig"
+source "drivers/mci/Kconfig"
 source "drivers/clk/Kconfig"
 
 endmenu

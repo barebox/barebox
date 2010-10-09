@@ -927,7 +927,7 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 		}
 		rc = mci_block_write(mci_dev, buffer, sector_start);
 		if (rc != 0) {
-			pr_err("Writing block %u failed\n", (unsigned)sector_start);
+			pr_err("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count--;
@@ -973,7 +973,7 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 		}
 		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start);
 		if (rc != 0) {
-			pr_err("Reading block %lu failed\n", (unsigned)sector_start);
+			pr_err("Reading block %lu failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count--;
@@ -1154,8 +1154,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 			pr_debug("Card seems to be a MultiMediaCard\n");
 			rc = mmc_send_op_cond(mci_dev);
 			if (rc) {
-				pr_err("MultiMediaCard did not respond to voltage select!\n");
-				rc = -ENODEV;
+				pr_err("MultiMediaCard voltage select failed with %d\n", rc);
 				goto on_error;
 			}
 		} else

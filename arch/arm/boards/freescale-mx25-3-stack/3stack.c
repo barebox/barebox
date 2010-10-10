@@ -39,7 +39,7 @@
 #include <mach/generic.h>
 #include <linux/err.h>
 #include <i2c/i2c.h>
-#include <i2c/mc34704.h>
+#include <mfd/mc34704.h>
 
 extern unsigned long _stext;
 extern void exception_vectors(void);

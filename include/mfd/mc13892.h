@@ -79,9 +79,17 @@ enum mc13892_reg {
 	MC13892_REG_TEST4		= 0x3f,
 };
 
+enum mc13892_mode {
+	MC13892_MODE_I2C,
+	MC13892_MODE_SPI,
+};
+
 struct mc13892 {
 	struct cdev		cdev;
 	struct i2c_client	*client;
+	struct spi_device	*spi;
+	enum mc13892_mode	mode;
+	
 };
 
 extern struct mc13892 *mc13892_get(void);

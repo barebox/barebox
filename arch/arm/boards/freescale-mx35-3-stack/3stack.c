@@ -50,8 +50,8 @@
 #include <mach/generic.h>
 
 #include <i2c/i2c.h>
-#include <i2c/mc13892.h>
-#include <i2c/mc9sdz60.h>
+#include <mfd/mc13892.h>
+#include <mfd/mc9sdz60.h>
 
 
 /* Board rev for the PDK 3stack */

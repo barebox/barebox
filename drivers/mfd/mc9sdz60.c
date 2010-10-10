@@ -26,7 +26,7 @@
 #include <errno.h>
 
 #include <i2c/i2c.h>
-#include <i2c/mc9sdz60.h>
+#include <mfd/mc9sdz60.h>
 
 #define DRIVERNAME		"mc9sdz60"
 

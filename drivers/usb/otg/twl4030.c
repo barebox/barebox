@@ -37,7 +37,7 @@
  * MA 02111-1307 USA
  */
 
-#include <i2c/twl4030.h>
+#include <mfd/twl4030.h>
 #include <usb/twl4030.h>
 #include <clock.h>
 

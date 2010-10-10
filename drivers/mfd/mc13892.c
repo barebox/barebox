@@ -26,7 +26,7 @@
 #include <errno.h>
 
 #include <i2c/i2c.h>
-#include <i2c/mc13892.h>
+#include <mfd/mc13892.h>
 
 #define DRIVERNAME		"mc13892"
 

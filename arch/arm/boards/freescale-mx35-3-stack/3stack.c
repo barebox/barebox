@@ -111,7 +111,7 @@ static struct device_d smc911x_dev = {
 
 static struct i2c_board_info i2c_devices[] = {
 	{
-		I2C_BOARD_INFO("mc13892", 0x08),
+		I2C_BOARD_INFO("mc13892-i2c", 0x08),
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},

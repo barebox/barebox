@@ -19,8 +19,4 @@ config DRIVER_SPI_IMX_2_3
 	depends on ARCH_IMX51
 	default y
 
-config DRIVER_SPI_MC13783
-	bool "MC13783 a.k.a. PMIC driver"
-	depends on SPI
-
 endmenu

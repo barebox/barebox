@@ -11,5 +11,6 @@ source "drivers/usb/Kconfig"
 source "drivers/video/Kconfig"
 source "drivers/mci/Kconfig"
 source "drivers/clk/Kconfig"
+source "drivers/mfd/Kconfig"
 
 endmenu

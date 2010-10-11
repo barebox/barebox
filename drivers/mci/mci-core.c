@@ -45,7 +45,7 @@
  * @brief Memory Card framework
  *
  * Checked with the following cards:
- * - old Canon SD 16 MiB, does not like the 0x08 command (SD_CMD_SEND_IF_COND) -> failed
+ * - Canon MMC 16 MiB
  * - Kingston 512 MiB
  * - SanDisk 512 MiB
  * - Transcend SD Ultra, 1 GiB (Industrial)

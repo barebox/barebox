@@ -20,10 +20,14 @@
 #include <init.h>
 #include <gpio.h>
 #include <environment.h>
+#include <errno.h>
+#include <mci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
+#include <mach/clock.h>
+#include <mach/mci.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -35,6 +39,17 @@ static struct device_d sdram_dev = {
 	.map_base = IMX_MEMORY_BASE,
 	.size     = 64 * 1024 * 1024,
 	.platform_data = &ram_pdata,
+};
+
+static struct stm_mci_platform_data mci_pdata = {
+	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
+	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
+};
+
+static struct device_d mci_dev = {
+	.name     = "stm_mci",
+	.map_base = IMX_SSP1_BASE,
+	.platform_data = &mci_pdata,
 };
 
 static const uint32_t pad_setup[] = {
@@ -205,19 +220,63 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
 
+/**
+ * Try to register an environment storage on the attached MCI card
+ * @return 0 on success
+ *
+ * We relay on the existance of a useable SD card, already attached to
+ * our system, to get someting like a persistant memory for our environment.
+ * If this SD card is also the boot media, we can use the second partition
+ * for our environment purpose (if present!).
+ */
+static int register_persistant_environment(void)
+{
+	struct cdev *cdev;
+
+	/*
+	 * The chumby one only has one MCI card socket.
+	 * So, we expect its name as "disk0".
+	 */
+	cdev = cdev_by_name("disk0");
+	if (cdev == NULL) {
+		pr_err("No MCI card preset\n");
+		return -ENODEV;
+	}
+
+	/* MCI card is present, also a useable partition on it? */
+	cdev = cdev_by_name("disk0.1");
+	if (cdev == NULL) {
+		pr_err("No second partition available\n");
+		pr_info("Please create at least a second partition with"
+			" 256 kiB...512 kiB in size (your choice)\n");
+		return -ENODEV;
+	}
+
+	/* use the full partition as our persistant environment storage */
+	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
+}
+
 static int falconwing_devices_init(void)
 {
-	int i;
+	int i, rc;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
 
 	register_device(&sdram_dev);
+	imx_set_ioclk(480U * 1000U);	/* enable IOCLK to run at the PLL frequency */
+	/* run the SSP unit clock at 100,000 kHz */
+	imx_set_sspclk(0, 100U * 1000U, 1);
+	register_device(&mci_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
+
+	rc = register_persistant_environment();
+	if (rc != 0)
+		printf("Cannot create the 'env0' persistant environment storage (%d)\n", rc);
 
 	return 0;
 }
@@ -268,4 +327,24 @@ make ARCH=arm CROSS_COMPILE=armv5compiler
 @endverbatim
 
 @note replace the armv5compiler with your ARM v5 cross compiler.
+
+@section setup_falconwing How to prepare an MCI card to boot the "chumby one" with barebox
+
+- Create four primary partitions on the MCI card
+ - the first one for the bootlets (about 256 kiB)
+ - the second one for the persistant environment (size is up to you, at least 256k)
+ - the third one for the kernel (2 MiB ... 4 MiB in size)
+ - the 4th one for the root filesystem which can fill the rest of the available space
+
+- Mark the first partition with the partition ID "53" and copy the bootlets
+  into this partition (currently not part of @b barebox!).
+
+- Copy the default @b barebox environment into the second partition (no filesystem required).
+
+- Copy the kernel into the third partition (no filesystem required).
+
+- Create the root filesystem in the 4th partition. You may copy an image into this
+  partition or you can do it in the classic way: mkfs on it, mount it and copy
+  all required data and programs into it.
+
 */

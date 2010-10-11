@@ -30,6 +30,11 @@ if [ x${type} = xkernel ]; then
 elif [ x${type} = xrootfs ]; then
 	image=$rootfsimage
 	type=root
+elif [ x${type} = xbarebox ]; then
+	image=$bareboximage
+	if [ x${image} = x ]; then
+		imamge=barebox.bin
+	fi
 else
 	. /env/bin/_update_help
 	exit 1

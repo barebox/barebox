@@ -94,6 +94,8 @@ static int mci_set_blocklen(struct device_d *mci_dev, unsigned len)
 	return mci_send_cmd(mci_dev, &cmd, NULL);
 }
 
+static void *sector_buf;
+
 /**
  * Write one block of data to the card
  * @param mci_dev MCI instance
@@ -106,13 +108,21 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
+	const void *buf;
+
+	if ((unsigned long)src & 0x3) {
+		memcpy(sector_buf, src, 512);
+		buf = sector_buf;
+	} else {
+		buf = src;
+	}
 
 	mci_setup_cmd(&cmd,
 		MMC_CMD_WRITE_SINGLE_BLOCK,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
 		MMC_RSP_R1);
 
-	data.src = src;
+	data.src = buf;
 	data.blocks = 1;
 	data.blocksize = mci->write_bl_len;
 	data.flags = MMC_DATA_WRITE;
@@ -1299,6 +1309,10 @@ static struct driver_d mci_driver = {
 
 static int mci_init(void)
 {
+	sector_buf = memalign(32, 512);
+	if (!sector_buf)
+		return -ENOMEM;
+
 	return register_driver(&mci_driver);
 }
 

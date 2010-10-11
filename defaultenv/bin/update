@@ -1,0 +1,45 @@
+#!/bin/sh
+
+. /env/config
+
+type=""
+device_type=""
+
+while getopt "ht:d:f:" Option
+do
+if [ ${Option} = t ]; then
+	type=${OPTARG}
+elif [ ${Option} = d ]; then
+	device_type=${OPTARG}
+elif [ ${Option} = f ]; then
+	imagename=${OPTARG}
+else
+	. /env/bin/_update_help
+	exit 0
+fi
+done
+
+if [ x${type} = xkernel ]; then
+	image=$kernelimage
+elif [ x${type} = xrootfs ]; then
+	image=$rootfsimage
+	type=root
+else
+	. /env/bin/_update_help
+	exit 1
+fi
+
+if [ x${imagename} != x ]; then
+	image=${imagename}
+fi
+
+if [ x${device_type} = xnand ]; then
+	part=/dev/nand0.${type}.bb
+elif [ x${device_type} = xnor ]; then
+	part=/dev/nor0.${type}
+else
+	. /env/bin/_update_help
+	exit 1
+fi
+
+. /env/bin/_update

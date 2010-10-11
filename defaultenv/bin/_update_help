@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "usage: $0 -t <kernel|rootfs> -d <nor|nand> [-f imagename]"
+echo "update tools."
+echo""
+echo "type update -t kernel -d <nor|nand> [-f imagename] to update kernel into flash"
+echo "type update -t rootfs -d <nor|nand> [-f imagename] to update rootfs into flash"
+

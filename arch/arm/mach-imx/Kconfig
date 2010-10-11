@@ -38,7 +38,7 @@ config ARCH_HAS_FEC_IMX
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
-	depends on ARCH_IMX25 || ARCH_IMX35
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51
 
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT
@@ -92,6 +92,11 @@ config ARCH_IMX31
 config ARCH_IMX35
 	bool "i.MX35"
 	select CPU_V6
+	select ARCH_HAS_FEC_IMX
+
+config ARCH_IMX51
+	bool "i.MX51"
+	select CPU_V7
 	select ARCH_HAS_FEC_IMX
 
 endchoice
@@ -297,6 +302,16 @@ endchoice
 endif
 
 # ----------------------------------------------------------
+
+if ARCH_IMX51
+
+choice
+
+	prompt "i.MX51 Board Type"
+
+endchoice
+
+endif
 
 menu "Board specific settings       "
 

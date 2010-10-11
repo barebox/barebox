@@ -84,12 +84,16 @@ struct pad_desc {
 #define PAD_CTL_OUTPUT_CMOS		(0)
 #define PAD_CTL_OUTPUT_OPEN_DRAIN	(1 << 3)
 
-#define PAD_CTL_DRIVE_STRENGTH_NORM	(0)
-#define PAD_CTL_DRIVE_STRENGTH_HIGH	(1 << 1)
-#define PAD_CTL_DRIVE_STRENGTH_MAX	(2 << 1)
+#define PAD_CTL_DRIVE_STRENGTH_LOW	(0 << 1)
+#define PAD_CTL_DRIVE_STRENGTH_MED	(1 << 1)
+#define PAD_CTL_DRIVE_STRENGTH_HIGH	(2 << 1)
+#define PAD_CTL_DRIVE_STRENGTH_MAX	(3 << 1)
 
 #define PAD_CTL_SLEW_RATE_SLOW		0
 #define PAD_CTL_SLEW_RATE_FAST		1
+
+#define PAD_CTL_DRV_VOT_LOW            (0 << 13)
+#define PAD_CTL_DRV_VOT_HIGH           (1 << 13)
 
 /*
  * setups a single pad:

@@ -8,6 +8,10 @@ if [ -e /dev/nor0 ]; then
 	addpart /dev/nor0 $nor_parts
 fi
 
+if [ -e /dev/disk0 ]; then
+	addpart /dev/disk0 $disk_parts
+fi
+
 if [ -e /dev/nand0 ]; then
 	addpart /dev/nand0 $nand_parts
 

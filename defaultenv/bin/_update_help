@@ -1,10 +1,11 @@
 #!/bin/sh
 
-echo "usage: $0 -t <kernel|rootfs> -d <nor|nand> [-f imagename] -c"
+echo "usage: $0 -t <kernel|rootfs> -d <nor|nand> [-m tftp|xmodem] [-f imagename] -c"
 echo "update tools."
 echo ""
 echo "options"
 echo " -c     to check the crc32 for the image and flashed one"
 echo ""
-echo "type update -t kernel -d <nor|nand> [-f imagename] to update kernel into flash"
-echo "type update -t rootfs -d <nor|nand> [-f imagename] to update rootfs into flash"
+echo "default mode is tftp"
+echo "type update -t kernel -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update kernel into flash"
+echo "type update -t rootfs -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update rootfs into flash"

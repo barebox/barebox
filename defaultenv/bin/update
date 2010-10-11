@@ -5,8 +5,9 @@
 type=""
 device_type=""
 check=n
+mode=tftp
 
-while getopt "ht:d:f:c" Option
+while getopt "ht:d:f:m:c" Option
 do
 if [ ${Option} = t ]; then
 	type=${OPTARG}
@@ -16,6 +17,8 @@ elif [ ${Option} = f ]; then
 	imagename=${OPTARG}
 elif [ ${Option} = c ]; then
 	check=y
+elif [ ${Option} = m ]; then
+	mode=${OPTARG}
 else
 	. /env/bin/_update_help
 	exit 0
@@ -41,6 +44,12 @@ if [ x${device_type} = xnand ]; then
 elif [ x${device_type} = xnor ]; then
 	part=/dev/nor0.${type}
 else
+	. /env/bin/_update_help
+	exit 1
+fi
+
+if [ x${mode} != xtftp ] && [ x${mode} != xxmodem ] ; then
+	echo "unsupported mode ${mode}."
 	. /env/bin/_update_help
 	exit 1
 fi

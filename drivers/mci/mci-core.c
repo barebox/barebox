@@ -1148,25 +1148,15 @@ static int mci_card_probe(struct device_d *mci_dev)
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
 	rc = sd_send_if_cond(mci_dev);
-	if (rc) {
+	rc = sd_send_op_cond(mci_dev);
+	if (rc && rc == -ETIMEDOUT) {
 		/* If the command timed out, we check for an MMC card */
-		if (rc == -ETIMEDOUT) {
-			pr_debug("Card seems to be a MultiMediaCard\n");
-			rc = mmc_send_op_cond(mci_dev);
-			if (rc) {
-				pr_err("MultiMediaCard voltage select failed with %d\n", rc);
-				goto on_error;
-			}
-		} else
-			goto on_error;
-	} else {
-		/* Its a 2.xx card. Setup operation conditions */
-		rc = sd_send_op_cond(mci_dev);
-		if (rc) {
-			pr_debug("Cannot setup SD card's operation condition\n");
-			goto on_error;
-		}
+		pr_debug("Card seems to be a MultiMediaCard\n");
+		rc = mmc_send_op_cond(mci_dev);
 	}
+
+	if (rc)
+		goto on_error;
 
 	rc = mci_startup(mci_dev);
 	if (rc) {

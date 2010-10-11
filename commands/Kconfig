@@ -202,6 +202,11 @@ config CMD_CRC
 	select CRC32
 	prompt "crc"
 
+config CMD_CRC_CMP
+	tristate
+	depends on CMD_CRC
+	prompt "compare 2 files crc"
+
 config CMD_MTEST
 	tristate
 	prompt "mtest"

@@ -82,6 +82,7 @@ board-$(CONFIG_MACH_PM9263)			:= pm9263
 board-$(CONFIG_MACH_SCB9328)			:= scb9328
 board-$(CONFIG_MACH_NESO)			:= guf-neso
 board-$(CONFIG_MACH_MX23EVK)			:= freescale-mx23-evk
+board-$(CONFIG_MACH_CHUMBY)			:= chumby_falconwing
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

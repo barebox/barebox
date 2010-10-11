@@ -15,6 +15,7 @@ ARM type:
 @li @subpage imx27ads
 @li @subpage the3stack
 @li @subpage mx23_evk
+@li @subpage chumbyone
 @li @subpage scb9328
 @li @subpage netx
 @li @subpage dev_omap_arch

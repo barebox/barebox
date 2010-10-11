@@ -39,6 +39,10 @@ config ARCH_IMX
 	bool "Freescale iMX-based"
 	select GENERIC_GPIO
 
+config ARCH_STM
+	bool "SigmaTel/FSL iMX-based"
+	select GENERIC_GPIO
+
 config ARCH_NETX
 	bool "Hilscher NetX based"
 	select CPU_ARM926T
@@ -62,6 +66,7 @@ source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-imx/Kconfig
+source arch/arm/mach-stm/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig

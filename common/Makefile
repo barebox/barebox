@@ -26,12 +26,18 @@ ifdef CONFIG_DEFAULT_ENVIRONMENT
 $(obj)/startup.o: include/generated/barebox_default_env.h
 $(obj)/env.o: include/generated/barebox_default_env.h
 
-ENV_FILES := $(shell cd $(srctree); for i in $(CONFIG_DEFAULT_ENVIRONMENT_PATH); do find $${i} -type f -exec readlink -f {} \;; done)
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC),y)
+DEFAULT_ENVIRONMENT_PATH = "defaultenv"
+endif
+
+DEFAULT_ENVIRONMENT_PATH += $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
+
+ENV_FILES := $(shell cd $(srctree); for i in $(DEFAULT_ENVIRONMENT_PATH); do find $${i} -type f -exec readlink -f {} \;; done)
 
 endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 
 barebox_default_env: $(ENV_FILES)
-	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
+	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(DEFAULT_ENVIRONMENT_PATH)
 
 include/generated/barebox_default_env.h: barebox_default_env
 	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@

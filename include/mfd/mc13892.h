@@ -79,6 +79,21 @@ enum mc13892_reg {
 	MC13892_REG_TEST4		= 0x3f,
 };
 
+enum mc13892_revision {
+	MC13892_REVISION_1_0,
+	MC13892_REVISION_1_1,
+	MC13892_REVISION_1_2,
+	MC13892_REVISION_2_0,
+	MC13892_REVISION_2_0a,
+	MC13892_REVISION_2_1,
+	MC13892_REVISION_3_0,
+	MC13892_REVISION_3_1,
+	MC13892_REVISION_3_2,
+	MC13892_REVISION_3_2a,
+	MC13892_REVISION_3_3,
+	MC13892_REVISION_3_5,
+};
+
 enum mc13892_mode {
 	MC13892_MODE_I2C,
 	MC13892_MODE_SPI,
@@ -89,7 +104,7 @@ struct mc13892 {
 	struct i2c_client	*client;
 	struct spi_device	*spi;
 	enum mc13892_mode	mode;
-	
+	enum mc13892_revision	revision;
 };
 
 extern struct mc13892 *mc13892_get(void);
@@ -97,5 +112,10 @@ extern struct mc13892 *mc13892_get(void);
 extern int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val);
 extern int mc13892_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val);
 extern int mc13892_set_bits(struct mc13892 *mc13892, enum mc13892_reg reg, u32 mask, u32 val);
+
+static inline enum mc13892_revision mc13892_get_revision(struct mc13892 *mc13892)
+{
+	return mc13892->revision;
+}
 
 #endif /* __ASM_ARCH_MC13892_H */

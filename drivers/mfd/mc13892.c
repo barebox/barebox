@@ -25,6 +25,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <spi/spi.h>
+#include <malloc.h>
 
 #include <i2c/i2c.h>
 #include <mfd/mc13892.h>
@@ -210,8 +211,63 @@ static struct file_operations mc_fops = {
 	.write	= mc_write,
 };
 
+struct mc13892_rev {
+	u16 rev_id;
+	enum mc13892_revision rev;
+	char *revstr;
+};
+
+static struct mc13892_rev mc13892_revisions[] = {
+	{ 0x01, MC13892_REVISION_1_0, "1.0" },
+	{ 0x09, MC13892_REVISION_1_1, "1.1" },
+	{ 0x0a, MC13892_REVISION_1_2, "1.2" },
+	{ 0x10, MC13892_REVISION_2_0, "2.0" },
+	{ 0x11, MC13892_REVISION_2_1, "2.1" },
+	{ 0x18, MC13892_REVISION_3_0, "3.0" },
+	{ 0x19, MC13892_REVISION_3_1, "3.1" },
+	{ 0x1a, MC13892_REVISION_3_2, "3.2" },
+	{ 0x02, MC13892_REVISION_3_2a, "3.2a" },
+	{ 0x1b, MC13892_REVISION_3_3, "3.3" },
+	{ 0x1d, MC13892_REVISION_3_5, "3.5" },
+};
+
+static int mc13893_query_revision(struct mc13892 *mc13892)
+{
+	unsigned int rev_id;
+	char *revstr;
+	int rev, i;
+
+	mc13892_reg_read(mc13892, 7, &rev_id);
+
+	for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
+		if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
+			break;
+
+	if (i == ARRAY_SIZE(mc13892_revisions))
+		return -EINVAL;
+
+	rev = mc13892_revisions[i].rev;
+	revstr = mc13892_revisions[i].revstr;
+
+	if (rev == MC13892_REVISION_2_0) {
+		if ((rev_id >> 9) & 0x3) {
+			rev = MC13892_REVISION_2_0a;
+			revstr = "2.0a";
+		}
+	}
+
+	dev_info(mc_dev->cdev.dev, "PMIC ID: 0x%08x [Rev: %s]\n",
+			rev_id, revstr);
+
+	mc13892->revision = rev;
+
+	return rev;
+}
+
 static int mc_probe(struct device_d *dev, enum mc13892_mode mode)
 {
+	int rev;
+
 	if (mc_dev)
 		return -EBUSY;
 
@@ -229,6 +285,12 @@ static int mc_probe(struct device_d *dev, enum mc13892_mode mode)
 	mc_dev->cdev.size = 256;
 	mc_dev->cdev.dev = dev;
 	mc_dev->cdev.ops = &mc_fops;
+
+	rev = mc13893_query_revision(mc_dev);
+	if (rev < 0) {
+		free(mc_dev);
+		return -EINVAL;
+	}
 
 	devfs_create(&mc_dev->cdev);
 

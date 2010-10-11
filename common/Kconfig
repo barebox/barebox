@@ -248,6 +248,13 @@ config HUSH_FANCY_PROMPT
 	  Allow to set PS1 from the command line. PS1 can have several escaped commands
 	  like \h for CONFIG_BOARDINFO or \w for the current working directory.
 
+config HUSH_GETOPT
+	bool
+	depends on SHELL_HUSH
+	prompt "enable builtin getopt"
+	help
+	  This enables a getopt function builtin to hush.
+
 config CMDLINE_EDITING
 	bool
 	prompt "Enable command line editing"

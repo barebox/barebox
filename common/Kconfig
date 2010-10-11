@@ -394,6 +394,8 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	depends on DEFAULT_ENVIRONMENT
 	select SHELL_HUSH
 	select HUSH_GETOPT
+	select CMD_CRC
+	select CMD_CRC_CMP
 	prompt "Default environment generic"
 	help
 	  With this option barebox will use the generic default

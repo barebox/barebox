@@ -4,8 +4,9 @@
 
 type=""
 device_type=""
+check=n
 
-while getopt "ht:d:f:" Option
+while getopt "ht:d:f:c" Option
 do
 if [ ${Option} = t ]; then
 	type=${OPTARG}
@@ -13,6 +14,8 @@ elif [ ${Option} = d ]; then
 	device_type=${OPTARG}
 elif [ ${Option} = f ]; then
 	imagename=${OPTARG}
+elif [ ${Option} = c ]; then
+	check=y
 else
 	. /env/bin/_update_help
 	exit 0
@@ -43,3 +46,6 @@ else
 fi
 
 . /env/bin/_update
+if [ x${check} = xy ]; then
+	crc32 -f $image -F $part
+fi

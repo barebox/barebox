@@ -2,8 +2,10 @@ if ARCH_STM
 
 config ARCH_TEXT_BASE
 	hex
+	default 0x41000000 if MACH_MX23EVK
 
 config BOARDINFO
+	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 
 comment "SigmaTel/Freescale i.MX System-on-Chip"
 
@@ -20,6 +22,11 @@ if ARCH_IMX23
 
 choice
 	prompt "i.MX23 Board Type"
+
+config MACH_MX23EVK
+	bool "mx23-evk"
+	help
+	  Say Y here if you are using the Freescale i.MX23-EVK board
 
 endchoice
 

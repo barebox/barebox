@@ -52,6 +52,7 @@
 #define IMX_SDHC2_BASE		0x53FB8000
 #define IMX_SDHC3_BASE		0x53FBC000
 #define IMX_OTG_BASE		0x53FF4000
+#define IMX_WDOG_BASE		0x53fdc000
 
 /*
  * Clock Controller Module (CCM)

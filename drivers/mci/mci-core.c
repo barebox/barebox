@@ -45,7 +45,7 @@
  * @brief Memory Card framework
  *
  * Checked with the following cards:
- * - old Canon SD 16 MiB, does not like the 0x08 command (SD_CMD_SEND_IF_COND) -> failed
+ * - Canon MMC 16 MiB
  * - Kingston 512 MiB
  * - SanDisk 512 MiB
  * - Transcend SD Ultra, 1 GiB (Industrial)
@@ -94,6 +94,8 @@ static int mci_set_blocklen(struct device_d *mci_dev, unsigned len)
 	return mci_send_cmd(mci_dev, &cmd, NULL);
 }
 
+static void *sector_buf;
+
 /**
  * Write one block of data to the card
  * @param mci_dev MCI instance
@@ -106,13 +108,21 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
+	const void *buf;
+
+	if ((unsigned long)src & 0x3) {
+		memcpy(sector_buf, src, 512);
+		buf = sector_buf;
+	} else {
+		buf = src;
+	}
 
 	mci_setup_cmd(&cmd,
 		MMC_CMD_WRITE_SINGLE_BLOCK,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
 		MMC_RSP_R1);
 
-	data.src = src;
+	data.src = buf;
 	data.blocks = 1;
 	data.blocksize = mci->write_bl_len;
 	data.flags = MMC_DATA_WRITE;
@@ -927,7 +937,7 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 		}
 		rc = mci_block_write(mci_dev, buffer, sector_start);
 		if (rc != 0) {
-			pr_err("Writing block %u failed\n", (unsigned)sector_start);
+			pr_err("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count--;
@@ -973,7 +983,7 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 		}
 		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start);
 		if (rc != 0) {
-			pr_err("Reading block %lu failed\n", (unsigned)sector_start);
+			pr_err("Reading block %lu failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count--;
@@ -1148,26 +1158,15 @@ static int mci_card_probe(struct device_d *mci_dev)
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
 	rc = sd_send_if_cond(mci_dev);
-	if (rc) {
+	rc = sd_send_op_cond(mci_dev);
+	if (rc && rc == -ETIMEDOUT) {
 		/* If the command timed out, we check for an MMC card */
-		if (rc == -ETIMEDOUT) {
-			pr_debug("Card seems to be a MultiMediaCard\n");
-			rc = mmc_send_op_cond(mci_dev);
-			if (rc) {
-				pr_err("MultiMediaCard did not respond to voltage select!\n");
-				rc = -ENODEV;
-				goto on_error;
-			}
-		} else
-			goto on_error;
-	} else {
-		/* Its a 2.xx card. Setup operation conditions */
-		rc = sd_send_op_cond(mci_dev);
-		if (rc) {
-			pr_debug("Cannot setup SD card's operation condition\n");
-			goto on_error;
-		}
+		pr_debug("Card seems to be a MultiMediaCard\n");
+		rc = mmc_send_op_cond(mci_dev);
 	}
+
+	if (rc)
+		goto on_error;
 
 	rc = mci_startup(mci_dev);
 	if (rc) {
@@ -1310,6 +1309,10 @@ static struct driver_d mci_driver = {
 
 static int mci_init(void)
 {
+	sector_buf = memalign(32, 512);
+	if (!sector_buf)
+		return -ENOMEM;
+
 	return register_driver(&mci_driver);
 }
 

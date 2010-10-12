@@ -1,0 +1,28 @@
+menu MFD
+
+config I2C_MC13892
+	depends on I2C || SPI
+	bool "MC13892 a.k.a. PMIC driver"
+
+config I2C_MC34704
+	depends on I2C
+	bool "MC34704 PMIC driver"
+
+config I2C_MC9SDZ60
+	depends on I2C
+	bool "MC9SDZ60 driver"
+
+config I2C_LP3972
+	depends on I2C
+	bool "LP3972 driver"
+
+config I2C_TWL4030
+	depends on I2C
+	bool "TWL4030 driver"
+	select GPIO
+
+config DRIVER_SPI_MC13783
+	depends on SPI
+	bool "MC13783 a.k.a. PMIC driver"
+
+endmenu

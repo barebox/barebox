@@ -1,5 +1,5 @@
 
-#if defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX35
+#if defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX35 || defined CONFIG_ARCH_IMX51
 #include <mach/barebox.lds.h>
 #endif
 

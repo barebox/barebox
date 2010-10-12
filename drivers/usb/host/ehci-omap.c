@@ -11,7 +11,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#include <i2c/twl4030.h>
+#include <mfd/twl4030.h>
 #include <usb/twl4030.h>
 #include <mach/ehci.h>
 #include <common.h>

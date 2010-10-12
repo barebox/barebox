@@ -12,7 +12,7 @@
 #include <errno.h>
 
 #include <i2c/i2c.h>
-#include <i2c/twl4030.h>
+#include <mfd/twl4030.h>
 
 #define DRIVERNAME		"twl4030"
 

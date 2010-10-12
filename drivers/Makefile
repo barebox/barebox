@@ -9,3 +9,4 @@ obj-$(CONFIG_I2C) += i2c/
 obj-$(CONFIG_MCI) += mci/
 obj-$(CONFIG_VIDEO) += video/
 obj-y	+= clk/
+obj-y	+= mfd/

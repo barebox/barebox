@@ -44,7 +44,7 @@
 #include <ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
-#include <i2c/lp3972.h>
+#include <mfd/lp3972.h>
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {

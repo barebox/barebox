@@ -16,12 +16,10 @@ void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 		ttb[virt] = (phys << 20) | flags;
 
 	asm volatile (
-		"mov r0, #0;"
-		"mcr p15, 0, r0, c7, c6, 0;" /* flush d-cache */
-		"mcr p15, 0, r0, c8, c7, 0;" /* flush i+d-TLBs */
+		"bl __mmu_cache_flush;"
 		:
 		:
-		: "r0","memory" /* clobber list */
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
 	);
 }
 

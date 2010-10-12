@@ -45,3 +45,9 @@ u64 imx_uid(void);
 #define cpu_is_mx35()	(0)
 #endif
 
+#ifdef CONFIG_ARCH_IMX51
+#define cpu_is_mx51()	(1)
+#else
+#define cpu_is_mx51()	(0)
+#endif
+

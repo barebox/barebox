@@ -9,8 +9,14 @@ config DRIVER_SPI_IMX
 	depends on ARCH_IMX
 	depends on SPI
 
-config DRIVER_SPI_MC13783
-	bool "MC13783 a.k.a. PMIC driver"
-	depends on SPI
+config DRIVER_SPI_IMX_0_0
+	bool
+	depends on ARCH_IMX27
+	default y
+
+config DRIVER_SPI_IMX_2_3
+	bool
+	depends on ARCH_IMX51
+	default y
 
 endmenu

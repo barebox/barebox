@@ -27,7 +27,7 @@
 #include <errno.h>
 
 #include <i2c/i2c.h>
-#include <i2c/mc34704.h>
+#include <mfd/mc34704.h>
 
 #define DRIVERNAME		"mc34704"
 

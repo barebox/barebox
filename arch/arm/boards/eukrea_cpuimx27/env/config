@@ -3,9 +3,11 @@
 # can be either 'net', 'nor' or 'nand''
 kernel=nor
 root=nor
+rootfstype=ubifs
 
-uimage=mx27/uImage
-jffs2=mx27/rootfs.jffs2
+basedir=cpuimx27
+uimage=$basedir/uImage
+rootfs=$basedir/rootfs
 
 autoboot_timeout=1
 
@@ -18,6 +20,9 @@ rootpart_nor="/dev/mtdblock3"
 
 nand_parts="-(nand)"
 rootpart_nand=""
+
+rootpartnum=3
+ubiroot="eukrea-cpuimx27-rootfs"
 
 nfsroot=""
 

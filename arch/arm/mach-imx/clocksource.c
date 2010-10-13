@@ -76,6 +76,10 @@ static int clocksource_init (void)
 	PCCR0 |= PCCR0_GPT1_EN;
 	PCCR1 |= PCCR1_PERCLK1_EN;
 #endif
+#ifdef CONFIG_ARCH_IMX25
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 19),
+		IMX_CCM_BASE + CCM_CGCR1);
+#endif
 
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */

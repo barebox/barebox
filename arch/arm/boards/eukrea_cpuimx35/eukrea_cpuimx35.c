@@ -51,6 +51,8 @@
 #include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
+#include <i2c/i2c.h>
+#include <usb/fsl_usb2.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
@@ -126,6 +128,70 @@ static struct device_d imxfb_dev = {
 	.platform_data	= &ipu_fb_data,
 };
 
+static struct device_d i2c_dev = {
+	.id	  = -1,
+	.name     = "i2c-imx",
+	.map_base = IMX_I2C1_BASE,
+};
+
+static struct device_d esdhc_dev = {
+	.name		= "imx-esdhc",
+	.map_base	= IMX_SDHC1_BASE,
+};
+
+#ifdef CONFIG_USB
+
+#define MX35_H1_SIC_SHIFT	21
+#define MX35_H1_SIC_MASK	(0x3 << MX35_H1_SIC_SHIFT)
+#define MX35_H1_PM_BIT		(1 << 8)
+#define MX35_H1_IPPUE_UP_BIT	(1 << 7)
+#define MX35_H1_IPPUE_DOWN_BIT	(1 << 6)
+#define MX35_H1_TLL_BIT		(1 << 5)
+#define MX35_H1_USBTE_BIT	(1 << 4)
+#define MXC_EHCI_INTERFACE_SINGLE_UNI	(2 << 0)
+
+static void imx35_usb_init(void)
+{
+	unsigned int tmp;
+
+	/* Host 1 */
+	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp &= ~(MX35_H1_SIC_MASK | MX35_H1_PM_BIT | MX35_H1_TLL_BIT |
+		MX35_H1_USBTE_BIT | MX35_H1_IPPUE_DOWN_BIT | MX35_H1_IPPUE_UP_BIT);
+	tmp |= (MXC_EHCI_INTERFACE_SINGLE_UNI) << MX35_H1_SIC_SHIFT;
+	tmp |= MX35_H1_USBTE_BIT;
+	tmp |= MX35_H1_IPPUE_DOWN_BIT;
+	writel(tmp, IMX_OTG_BASE + 0x600);
+
+	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp |= 3 << 30;
+	writel(tmp, IMX_OTG_BASE + 0x584);
+
+	/* Set to Host mode */
+	tmp = readl(IMX_OTG_BASE + 0x5a8);
+	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
+}
+
+static struct device_d usbh2_dev = {
+	.id	  = -1,
+	.name     = "ehci",
+	.map_base = IMX_OTG_BASE + 0x400,
+	.size     = 0x200,
+};
+#endif
+
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+
+static struct device_d usbotg_dev = {
+	.name     = "fsl-udc",
+	.map_base = IMX_OTG_BASE,
+	.size     = 0x200,
+	.platform_data = &usb_pdata,
+};
+
 #ifdef CONFIG_MMU
 static int eukrea_cpuimx35_mmu_init(void)
 {
@@ -153,6 +219,8 @@ postcore_initcall(eukrea_cpuimx35_mmu_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
+	unsigned int tmp;
+
 	register_device(&nand_dev);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
@@ -164,6 +232,18 @@ static int eukrea_cpuimx35_devices_init(void)
 
 	register_device(&sdram_dev);
 	register_device(&imxfb_dev);
+
+	register_device(&i2c_dev);
+	register_device(&esdhc_dev);
+
+#ifdef CONFIG_USB
+	imx35_usb_init();
+	register_device(&usbh2_dev);
+#endif
+	/* Workaround ENGcm09152 */
+	tmp = readl(IMX_OTG_BASE + 0x608);
+	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
+	register_device(&usbotg_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
@@ -211,6 +291,16 @@ static struct pad_desc eukrea_cpuimx35_pads[] = {
 	MX35_PAD_LD23__GPIO3_29,
 	MX35_PAD_CONTRAST__GPIO1_1,
 	MX35_PAD_D3_CLS__GPIO1_4,
+
+	MX35_PAD_I2C1_CLK__I2C1_SCL,
+	MX35_PAD_I2C1_DAT__I2C1_SDA,
+
+	MX35_PAD_SD1_CMD__ESDHC1_CMD,
+	MX35_PAD_SD1_CLK__ESDHC1_CLK,
+	MX35_PAD_SD1_DATA0__ESDHC1_DAT0,
+	MX35_PAD_SD1_DATA1__ESDHC1_DAT1,
+	MX35_PAD_SD1_DATA2__ESDHC1_DAT2,
+	MX35_PAD_SD1_DATA3__ESDHC1_DAT3,
 };
 
 static int eukrea_cpuimx35_console_init(void)
@@ -219,7 +309,7 @@ static int eukrea_cpuimx35_console_init(void)
 		ARRAY_SIZE(eukrea_cpuimx35_pads));
 
 	/* screen default on to prevent flicker */
-	gpio_direction_output(4, 1);
+	gpio_direction_output(4, 0);
 	/* backlight default off */
 	gpio_direction_output(1, 0);
 	/* led default off */
@@ -235,10 +325,15 @@ static int eukrea_cpuimx35_core_init(void)
 {
 	u32 reg;
 
-	/* enable clock for I2C1 and FEC */
+	/* enable clock for I2C1, SDHC1, USB and FEC */
 	reg = readl(IMX_CCM_BASE + CCM_CGR1);
 	reg |= 0x3 << CCM_CGR1_FEC_SHIFT;
+	reg |= 0x3 << CCM_CGR1_SDHC1_SHIFT;
+	reg |= 0x3 << CCM_CGR1_I2C1_SHIFT,
 	reg = writel(reg, IMX_CCM_BASE + CCM_CGR1);
+	reg = readl(IMX_CCM_BASE + CCM_CGR2);
+	reg |= 0x3 << CCM_CGR2_USB_SHIFT;
+	reg = writel(reg, IMX_CCM_BASE + CCM_CGR2);
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.*/
 	/*

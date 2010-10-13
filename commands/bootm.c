@@ -167,7 +167,7 @@ struct image_handle *map_image(const char *filename, int verify)
 		goto err_out;
 	}
 
-	if (image_check_magic(header)) {
+	if (image_get_magic(header) != IH_MAGIC) {
 		puts ("Bad Magic Number\n");
 		goto err_out;
 	}
@@ -332,7 +332,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	os_header = &os_handle->header;
 
-	if (image_check_arch(os_header, IH_ARCH)) {
+	if (image_get_arch(os_header) != IH_ARCH) {
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
@@ -350,7 +350,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
-		if (image_check_os(os_header, handler->image_type)) {
+		if (image_get_os(os_header) == handler->image_type) {
 			handler->bootm(&data);
 			printf("handler returned!\n");
 			goto err_out;
@@ -409,7 +409,7 @@ static int image_info (ulong addr)
 	/* Copy header so we can blank CRC field for re-calculation */
 	memmove (&header, (char *)addr, image_get_header_size());
 
-	if (image_check_magic(hdr)) {
+	if (image_get_magic(hdr) != IH_MAGIC) {
 		puts ("   Bad Magic Number\n");
 		return 1;
 	}

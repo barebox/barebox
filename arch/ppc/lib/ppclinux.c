@@ -45,7 +45,7 @@ static int do_bootm_linux(struct image_data *idata)
 	printf("entering %s: os_header: %p initrd_header: %p oftree: %s\n",
 			__FUNCTION__, os_header, initrd_header, idata->oftree);
 
-	if (image_check_type(os_header, IH_TYPE_MULTI)) {
+	if (image_get_type(os_header) == IH_TYPE_MULTI) {
 		unsigned long *data = (unsigned long *)(idata->os->data);
 		unsigned long len1 = 0, len2 = 0;
 

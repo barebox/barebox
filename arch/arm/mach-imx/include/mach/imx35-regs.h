@@ -51,6 +51,7 @@
 #define IMX_SDHC1_BASE		0x53FB4000
 #define IMX_SDHC2_BASE		0x53FB8000
 #define IMX_SDHC3_BASE		0x53FBC000
+#define IMX_OTG_BASE		0x53FF4000
 
 /*
  * Clock Controller Module (CCM)
@@ -73,6 +74,8 @@
 
 #define CCM_CGR1_FEC_SHIFT	0
 #define CCM_CGR1_I2C1_SHIFT	10
+#define CCM_CGR1_SDHC1_SHIFT	26
+#define CCM_CGR2_USB_SHIFT	22
 
 #define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
 #define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)

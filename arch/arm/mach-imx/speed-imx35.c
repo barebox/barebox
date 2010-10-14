@@ -163,6 +163,17 @@ unsigned long imx_get_uartclk(void)
 		return imx_get_ppllclk() / div;
 }
 
+unsigned long imx_get_mmcclk(void)
+{
+	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
+	unsigned long div = get_3_3_div(pdr3);
+
+	if (pdr3 & (1 << 6))
+		return imx_get_armclk() / div;
+	else
+		return imx_get_ppllclk() / div;
+}
+
 ulong imx_get_fecclk(void)
 {
 	return imx_get_ipgclk();
@@ -183,6 +194,7 @@ void imx_dump_clocks(void)
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
 	printf("ipg_per: %10d Hz\n", imx_get_ipg_perclk());
 	printf("uart:	 %10d Hz\n", imx_get_uartclk());
+	printf("sdhc1:   %10d Hz\n", imx_get_mmcclk());
 }
 
 /*

@@ -46,9 +46,12 @@
  *
  * Checked with the following cards:
  * - Canon MMC 16 MiB
+ * - Integral MicroSDHC, 8 GiB (Class 4)
  * - Kingston 512 MiB
  * - SanDisk 512 MiB
  * - Transcend SD Ultra, 1 GiB (Industrial)
+ * - Transcend SDHC, 4 GiB (Class 6)
+ * - Transcend SDHC, 8 GiB (Class 6)
  */
 
 /**

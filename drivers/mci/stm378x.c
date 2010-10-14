@@ -474,7 +474,7 @@ static int stm_mci_adtc(struct device_d *hw_dev, struct mci_cmd *cmd,
  */
 static unsigned setup_clock_speed(struct device_d *hw_dev, unsigned nc)
 {
-	unsigned ssp, div1, div2, reg;
+	unsigned ssp, div, rate, reg;
 
 	if (nc == 0U) {
 		/* TODO stop the clock */
@@ -483,21 +483,21 @@ static unsigned setup_clock_speed(struct device_d *hw_dev, unsigned nc)
 
 	ssp = imx_get_sspclk() * 1000;
 
-	for (div1 = 2; div1 < 255; div1 += 2) {
-		div2 = ssp / nc / div1;
-		if (div2 <= 0x100)
+	for (div = 2; div < 255; div += 2) {
+		rate = (((ssp + (nc >> 1) ) / nc) + (div >> 1)) / div;
+		if (rate <= 0x100)
 			break;
 	}
-	if (div1 >= 255) {
+	if (div >= 255) {
 		pr_warning("Cannot set clock to %d Hz\n", nc);
 		return 0;
 	}
 
 	reg = readl(hw_dev->map_base + HW_SSP_TIMING) & SSP_TIMING_TIMEOUT_MASK;
-	reg |= SSP_TIMING_CLOCK_DIVIDE(div1) | SSP_TIMING_CLOCK_RATE(div2 - 1);
+	reg |= SSP_TIMING_CLOCK_DIVIDE(div) | SSP_TIMING_CLOCK_RATE(rate - 1);
 	writel(reg, hw_dev->map_base + HW_SSP_TIMING);
 
-	return ssp / div1 / div2;
+	return ssp / div / rate;
 }
 
 /**

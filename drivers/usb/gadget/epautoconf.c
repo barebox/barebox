@@ -19,6 +19,7 @@
  *
  */
 
+#include <init.h>
 #include <common.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>

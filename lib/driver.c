@@ -54,7 +54,7 @@ struct device_d *get_device_by_name(const char *name)
 	return NULL;
 }
 
-struct device_d *get_device_by_name_id(const char *name, int id)
+static struct device_d *get_device_by_name_id(const char *name, int id)
 {
 	struct device_d *dev;
 
@@ -315,7 +315,7 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 		for_each_driver(drv)
 			printf("%10s\n",drv->name);
 	} else {
-		struct device_d *dev = get_device_by_name(argv[1]);
+		dev = get_device_by_name(argv[1]);
 
 		if (!dev) {
 			printf("no such device: %s\n",argv[1]);

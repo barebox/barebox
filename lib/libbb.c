@@ -29,7 +29,7 @@ char *concat_path_file(const char *path, const char *filename)
 	while (*filename == '/')
 		filename++;
 
-	str = xmalloc(strlen(path) + (lc==0 ? 1 : 0) + strlen(filename) + 1);
+	str = xmalloc(strlen(path) + (lc==NULL ? 1 : 0) + strlen(filename) + 1);
 	sprintf(str, "%s%s%s", path, (lc==NULL ? "/" : ""), filename);
 
 	return str;

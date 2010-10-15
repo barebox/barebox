@@ -137,7 +137,7 @@ const char *getenv (const char *name)
 	const char *val;
 
 	if (strchr(name, '.')) {
-		const char *ret = 0;
+		const char *ret = NULL;
 		char *devstr = strdup(name);
 		char *par = strchr(devstr, '.');
 		struct device_d *dev;

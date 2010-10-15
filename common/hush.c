@@ -362,7 +362,7 @@ static int b_addqchr(o_string *o, int ch, int quote)
 }
 
 /* belongs in utility.c */
-char *simple_itoa(unsigned int i)
+static char *simple_itoa(unsigned int i)
 {
 	/* 21 digits plus null terminator, good for 64-bit or smaller ints */
 	static char local[22];
@@ -636,10 +636,10 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		}
 		if (child->sp) {
 			char * str = NULL;
-			struct p_context ctx;
+			struct p_context ctx1;
 			str = make_string((child->argv + i));
-			parse_string_outer(&ctx, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
-			release_context(&ctx);
+			parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+			release_context(&ctx1);
 			free(str);
 			return last_return_code;
 		}
@@ -948,7 +948,7 @@ static int set_local_var(const char *s, int flg_export)
 	 * NAME=VALUE format.  So the first order of business is to
 	 * split 's' on the '=' into 'name' and 'value' */
 	value = strchr(name, '=');
-	if (value==0 && ++value==0) {
+	if (!value) {
 		free(name);
 		return -1;
 	}

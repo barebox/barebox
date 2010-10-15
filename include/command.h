@@ -78,9 +78,10 @@ void barebox_cmd_usage(struct command *cmdtp);
 
 #define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 
-#define BAREBOX_CMD_START(_name)				\
-const struct command __barebox_cmd_##_name	\
-	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {				\
+#define BAREBOX_CMD_START(_name)							\
+extern const struct command __barebox_cmd_##_name;					\
+const struct command __barebox_cmd_##_name						\
+	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {	\
 	.name		= #_name,
 
 #define BAREBOX_CMD_END					\

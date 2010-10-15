@@ -110,7 +110,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 	return 0;
 }
 
-int open_and_lseek(const char *filename, int mode, off_t pos)
+static int open_and_lseek(const char *filename, int mode, off_t pos)
 {
 	int fd, ret;
 

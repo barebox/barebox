@@ -33,4 +33,6 @@ ulong imx_get_mmcclk(void);
 int imx_clko_set_div(int div);
 void imx_clko_set_src(int src);
 
+void imx_dump_clocks(void);
+
 #endif /* __ASM_ARCH_CLOCK_H */

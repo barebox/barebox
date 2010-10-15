@@ -58,7 +58,7 @@ static int textx  = 0;		/* position in text */
 static struct line *curline;	/* line where the cursor is */
 
 static struct line *scrline;	/* the first line on screen */
-int scrcol = 0;			/* the first column on screen */
+static int scrcol = 0;		/* the first column on screen */
 
 static void pos(int x, int y)
 {

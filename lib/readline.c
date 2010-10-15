@@ -120,10 +120,10 @@ static char* hist_next(void)
 
 #define ERASE_TO_EOL() {				\
 	if (num < eol_num) {				\
-		int tmp;				\
-		for (tmp = num; tmp < eol_num; tmp++)	\
+		int t;					\
+		for (t = num; t < eol_num; t++)		\
 			getcmd_putch(' ');		\
-		while (tmp-- > num)			\
+		while (t-- > num)			\
 			getcmd_putch(CTL_BACKSPACE);	\
 		eol_num = num;				\
 	}						\

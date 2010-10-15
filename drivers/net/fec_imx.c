@@ -216,7 +216,7 @@ static void fec_tbd_init(struct fec_priv *fec)
  * @param[in] last 1 if this is the last buffer descriptor in the chain, else 0
  * @param[in] pRbd buffer descriptor to mark free again
  */
-static void fec_rbd_clean(int last, struct buffer_descriptor *pRbd)
+static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 {
 	/*
 	 * Reset buffer descriptor as empty
@@ -464,7 +464,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 static int fec_recv(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
-	struct buffer_descriptor *rbd = &fec->rbd_base[fec->rbd_index];
+	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
 	unsigned long ievent;
 	int frame_length, len = 0;
 	struct fec_frame *frame;
@@ -568,11 +568,11 @@ static int fec_probe(struct device_d *dev)
 			sizeof(struct buffer_descriptor) + 2 * DB_ALIGNMENT);
 	base += (DB_ALIGNMENT - 1);
 	base &= ~(DB_ALIGNMENT - 1);
-	fec->rbd_base = (struct buffer_descriptor *)base;
+	fec->rbd_base = (struct buffer_descriptor __force __iomem *)base;
 	base += FEC_RBD_NUM * sizeof (struct buffer_descriptor) +
 		(DB_ALIGNMENT - 1);
 	base &= ~(DB_ALIGNMENT - 1);
-	fec->tbd_base = (struct buffer_descriptor *)base;
+	fec->tbd_base = (struct buffer_descriptor __force __iomem *)base;
 
 	writel((uint32_t)virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
 	writel((uint32_t)virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);

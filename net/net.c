@@ -209,7 +209,7 @@ static void arp_handler(struct arprequest *arp)
 	}
 }
 
-int arp_request(IPaddr_t dest, unsigned char *ether)
+static int arp_request(IPaddr_t dest, unsigned char *ether)
 {
 	char *pkt;
 	struct arprequest *arp;
@@ -437,7 +437,7 @@ void net_unregister(struct net_connection *con)
 	free(con);
 }
 
-int net_ip_send(struct net_connection *con, int len)
+static int net_ip_send(struct net_connection *con, int len)
 {
 	con->ip->tot_len = htons(sizeof(struct iphdr) + len);
 	con->ip->id = htons(net_ip_id++);;

@@ -27,6 +27,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <cache.h>
 #include <asm/mmu.h>
 #include <asm/system.h>
 

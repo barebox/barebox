@@ -213,11 +213,6 @@ off_t linux_lseek(int fd, off_t offset)
 	return lseek(fd, offset, SEEK_SET);
 }
 
-void  flush_cache(unsigned long dummy1, unsigned long dummy2)
-{
-	/* why should we? */
-}
-
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 

@@ -1,7 +1,6 @@
 #ifndef __CACHE_H
 #define __CACHE_H
 
-void	flush_cache   (unsigned long, unsigned long);
 int	icache_status (void);
 void	icache_enable (void);
 void	icache_disable(void);

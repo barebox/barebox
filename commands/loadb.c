@@ -636,7 +636,6 @@ static ulong load_serial_ymodem(void)
 				0) {
 			size += res;
 			addr += res;
-			flush_cache((ulong) yModemBuf, res);
 			wr = write(ofd, ymodemBuf, res);
 			if (res != wr) {
 				perror("ymodem");

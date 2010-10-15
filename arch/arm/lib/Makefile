@@ -1,7 +1,6 @@
 obj-y	+= armlinux.o
 obj-y	+= _ashldi3.o
 obj-y	+= _ashrdi3.o
-obj-y	+= cache.o
 obj-y	+= div0.o
 obj-y	+= _divsi3.o
 obj-y	+= _modsi3.o

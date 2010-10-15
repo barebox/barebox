@@ -120,7 +120,7 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 static struct kfifo *console_input_buffer;
 static struct kfifo *console_output_buffer;
 
-int getc_buffer_flush(void)
+static int getc_buffer_flush(void)
 {
 	console_input_buffer = kfifo_alloc(1024);
 	console_output_buffer = kfifo_alloc(1024);
@@ -247,7 +247,9 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-void __early_initdata *early_console_base;
+#ifdef CONFIG_HAS_EARLY_INIT
+static void __early_initdata *early_console_base;
+#endif
 
 void console_putc(unsigned int ch, char c)
 {

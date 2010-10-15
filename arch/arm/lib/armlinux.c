@@ -40,6 +40,7 @@
 #include <asm/global_data.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
+#include <asm/armlinux.h>
 
 static struct tag *params;
 static int armlinux_architecture = 0;
@@ -207,7 +208,7 @@ void armlinux_set_serial(u64 serial)
 }
 
 #ifdef CONFIG_CMD_BOOTM
-int do_bootm_linux(struct image_data *data)
+static int do_bootm_linux(struct image_data *data)
 {
 	void (*theKernel)(int zero, int arch, void *params);
 	image_header_t *os_header = &data->os->header;

@@ -101,19 +101,34 @@ static int clocksource_init (void)
 core_initcall(clocksource_init);
 
 /*
+ * Watchdog Registers
+ */
+#ifdef CONFIG_ARCH_IMX1
+#define WDOG_WCR	0x00 /* Watchdog Control Register */
+#define WDOG_WSR	0x04 /* Watchdog Service Register */
+#define WDOG_WSTR	0x08 /* Watchdog Status Register  */
+#define WDOG_WCR_WDE	(1 << 0)
+#else
+#define WDOG_WCR	0x00 /* Watchdog Control Register */
+#define WDOG_WSR	0x02 /* Watchdog Service Register */
+#define WDOG_WSTR	0x04 /* Watchdog Status Register  */
+#define WDOG_WCR_WDE	(1 << 2)
+#endif
+
+/*
  * Reset the cpu by setting up the watchdog timer and let it time out
  */
 void __noreturn reset_cpu (unsigned long ignored)
 {
 	/* Disable watchdog and set Time-Out field to 0 */
-	WCR = 0x0000;
+	writew(0x0, IMX_WDT_BASE + WDOG_WCR);
 
 	/* Write Service Sequence */
-	WSR = 0x5555;
-	WSR = 0xAAAA;
+	writew(0x5555, IMX_WDT_BASE + WDOG_WSR);
+	writew(0xaaaa, IMX_WDT_BASE + WDOG_WSR);
 
 	/* Enable watchdog */
-	WCR = WCR_WDE;
+	writew(WDOG_WCR_WDE, IMX_WDT_BASE + WDOG_WCR);
 
 	while (1);
 	/*NOTREACHED*/

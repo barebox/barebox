@@ -225,7 +225,7 @@ void unmap_image(struct image_handle *handle)
 }
 EXPORT_SYMBOL(unmap_image);
 
-LIST_HEAD(handler_list);
+static LIST_HEAD(handler_list);
 
 int register_image_handler(struct image_handler *handler)
 {

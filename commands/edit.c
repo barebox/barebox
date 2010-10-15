@@ -231,7 +231,7 @@ static int edit_read_file(const char *path)
 			line->prev = lastline;
 			if (lastline)
 				lastline->next = line;
-			line->next = 0;
+			line->next = NULL;
 			lastline = line;
 
 			if (!lineend)

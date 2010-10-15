@@ -420,7 +420,7 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 
 	if (newchunks < oldchunks) {
 		if (!newchunks)
-			node->data = 0;
+			node->data = NULL;
 		while (newchunks--)
 			data = data->next;
 		while (data) {

@@ -21,6 +21,7 @@
  * MA 02111-1307 USA
  */
 
+#include <common.h>
 #include <config.h>
 #if defined (__PPC__) && !defined (__SANDBOX__)
 /*

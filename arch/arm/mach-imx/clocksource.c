@@ -40,7 +40,7 @@
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
 #define timer_base (IMX_TIM1_BASE)
 
-uint64_t imx_clocksource_read(void)
+static uint64_t imx_clocksource_read(void)
 {
 	return readl(timer_base + GPT_TCN);
 }

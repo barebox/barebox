@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <malloc.h>
+#include <libbb.h>
+
 #define RW_BUF_SIZE	(ulong)4096
 
 /**

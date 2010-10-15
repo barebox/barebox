@@ -218,4 +218,6 @@ int run_shell(void);
 
 int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 
+extern const char version_string[];
+
 #endif	/* __COMMON_H_ */

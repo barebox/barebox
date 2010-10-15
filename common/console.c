@@ -43,8 +43,6 @@ EXPORT_SYMBOL(console_list);
 #define CONSOLE_INIT_EARLY	1
 #define CONSOLE_INIT_FULL	2
 
-extern char version_string[];
-
 static void display_banner (void)
 {
 	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));

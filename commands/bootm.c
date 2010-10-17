@@ -368,18 +368,24 @@ err_out:
 	return 1;
 }
 
-static const __maybe_unused char cmd_bootm_help[] =
-"Usage: bootm [OPTION] image\n"
-"Boot application image\n"
-" -n             do not verify the images (speeds up boot process)\n"
-" -h             show advanced options\n";
-
+BAREBOX_CMD_HELP_START(bootm)
+BAREBOX_CMD_HELP_USAGE("bootm [-n] image\n")
+BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
+BAREBOX_CMD_HELP_OPT  ("-n",  "Do not verify the image (speeds up boot process)\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
-	.usage		= "boot application image",
+	.usage		= "boot an application image",
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
+
+/**
+ * @page bootm_command
+
+\todo What does bootm do, what kind of image does it boot?
+
+ */
 
 #ifdef CONFIG_CMD_IMI
 static int do_iminfo(struct command *cmdtp, int argc, char *argv[])
@@ -440,14 +446,16 @@ static int image_info (ulong addr)
 	return 0;
 }
 
-BAREBOX_CMD(
-	iminfo,		1,	do_iminfo,
-	"iminfo  - print header information for application image\n",
-	"addr [addr ...]\n"
-	"    - print header information for application image starting at\n"
-	"      address 'addr' in memory; this includes verification of the\n"
-	"      image contents (magic number, header and payload checksums)\n"
-);
+BAREBOX_CMD_HELP_START(iminfo)
+BAREBOX_CMD_HELP_USAGE("iminfo\n")
+BAREBOX_CMD_HELP_SHORT("Print header information for an application image.\n")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(iminfo)
+	.cmd		= do_iminfo,
+	.usage		= "print header information for an application image",
+	BAREBOX_CMD_HELP(cmd_iminfo_help)
+BAREBOX_CMD_END
 
 #endif	/* CONFIG_CMD_IMI */
 

@@ -3,6 +3,7 @@
 
 @li @subpage addpart_command
 @li @subpage bmp_command
+@li @subpage bootm_command
 @li @subpage cat_command
 @li @subpage cd_command
 @li @subpage clear_command

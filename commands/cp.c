@@ -51,7 +51,7 @@ static int do_cp(struct command *cmdtp, int argc, char *argv[])
 		if (S_ISDIR(statbuf.st_mode))
 			last_is_dir = 1;
 	}
-	
+
 	if (argc > 3 && !last_is_dir) {
 		printf("cp: target `%s' is not a directory\n", argv[argc - 1]);
 		return 1;
@@ -77,10 +77,19 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_cp_help[] =
-"Usage: cp <source> <destination>\n"
-"cp copies file <source> to <destination>.\n"
-"This command is file based only. See memcpy for memory copy\n";
+BAREBOX_CMD_HELP_START(cp)
+BAREBOX_CMD_HELP_USAGE("cp <source> <destination>\n")
+BAREBOX_CMD_HELP_SHORT("copy file from <source> to <destination>.\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page cp_command
+This command operates on files.
+
+If you want to copy between memory blocks, use 'memcpy'.
+
+\todo What does this mean? Add examples.
+ */
 
 BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
@@ -88,14 +97,3 @@ BAREBOX_CMD_START(cp)
 	BAREBOX_CMD_HELP(cmd_cp_help)
 BAREBOX_CMD_END
 
-/**
- * @page cp_command cp: Copy file
- *
- * Usage: cp \<source> [\<source>] \<destination>
- *
- * \c cp copies file \<source> to \<destination>
- *
- * Currently only this form is supported and you have to specify the exact
- * target filename (not a target directory).\n
- * This command is file based only. See memcpy for generic memory copy
- */

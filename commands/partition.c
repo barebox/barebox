@@ -158,11 +158,12 @@ BAREBOX_CMD_HELP_END
 
 /**
  * @page addpart_command
-Size and offset can be given in decimal hex (prefixed with 0x).  Both
-can have an optional suffix K, M or G. The size of the last partition
-can be specified as '-' for the remaining space on the device. This
-format is the same as used by the Linux kernel or cmdline mtd
-partitions.
+
+The size and the offset can be given in decimal (without any prefix) and
+in hex (prefixed with 0x). Both can have an optional suffix K, M or G.
+The size of the last partition can be specified as '-' for the remaining
+space on the device.  This format is the same as used by the Linux
+kernel or cmdline mtd partitions.
 
 \todo This command has to be reworked and will probably change it's API.
 */
@@ -188,9 +189,21 @@ static int do_delpart(struct command * cmdtp, int argc, char *argv[])
 	return 1;
 }
 
-static const __maybe_unused char cmd_delpart_help[] =
-"Usage: delpart FILE...\n"
-"Delete partitions previously added to a device with addpart.\n";
+BAREBOX_CMD_HELP_START(delpart)
+BAREBOX_CMD_HELP_USAGE("delpart <part 1> [<part n>] \n")
+BAREBOX_CMD_HELP_SHORT("Delete partitions previously added to a device with addpart.\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page delpart_command
+
+Partitions are created by adding their description with the addpart
+command. If you want to get rid of a partition again, use delpart. The
+argument list is taken as a list of partitions to be deleted.
+
+\todo Add an example
+
+ */
 
 BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
@@ -198,9 +211,3 @@ BAREBOX_CMD_START(delpart)
 	BAREBOX_CMD_HELP(cmd_delpart_help)
 BAREBOX_CMD_END
 
-/** @page delpart_command delpart Delete a partition
- *
- * Usage is: delpart \<partions>
- *
- * Delete a partition previously added to a device with addpart.
- */

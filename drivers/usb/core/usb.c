@@ -745,7 +745,7 @@ int usb_get_class_descriptor(struct usb_device *dev, int ifnum,
 /********************************************************************
  * get string index in buffer
  */
-int usb_get_string(struct usb_device *dev, unsigned short langid,
+static int usb_get_string(struct usb_device *dev, unsigned short langid,
 		   unsigned char index, void *buf, int size)
 {
 	int i;
@@ -884,42 +884,35 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 #define USB_HUB_PRINTF(fmt, args...)
 #endif
 
-int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
+static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
 {
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 		USB_REQ_GET_DESCRIPTOR, USB_DIR_IN | USB_RT_HUB,
 		USB_DT_HUB << 8, 0, data, size, USB_CNTL_TIMEOUT);
 }
 
-int usb_clear_hub_feature(struct usb_device *dev, int feature)
-{
-	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
-				USB_REQ_CLEAR_FEATURE, USB_RT_HUB, feature,
-				0, NULL, 0, USB_CNTL_TIMEOUT);
-}
-
-int usb_clear_port_feature(struct usb_device *dev, int port, int feature)
+static int usb_clear_port_feature(struct usb_device *dev, int port, int feature)
 {
 	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 				USB_REQ_CLEAR_FEATURE, USB_RT_PORT, feature,
 				port, NULL, 0, USB_CNTL_TIMEOUT);
 }
 
-int usb_set_port_feature(struct usb_device *dev, int port, int feature)
+static int usb_set_port_feature(struct usb_device *dev, int port, int feature)
 {
 	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 				USB_REQ_SET_FEATURE, USB_RT_PORT, feature,
 				port, NULL, 0, USB_CNTL_TIMEOUT);
 }
 
-int usb_get_hub_status(struct usb_device *dev, void *data)
+static int usb_get_hub_status(struct usb_device *dev, void *data)
 {
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_STATUS, USB_DIR_IN | USB_RT_HUB, 0, 0,
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
 }
 
-int usb_get_port_status(struct usb_device *dev, int port, void *data)
+static int usb_get_port_status(struct usb_device *dev, int port, void *data)
 {
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_STATUS, USB_DIR_IN | USB_RT_PORT, 0, port,
@@ -1068,7 +1061,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 }
 
 
-int usb_hub_configure(struct usb_device *dev)
+static int usb_hub_configure(struct usb_device *dev)
 {
 	unsigned char buffer[USB_BUFSIZ], *bitmap;
 	struct usb_hub_descriptor *descriptor;
@@ -1284,7 +1277,7 @@ int usb_driver_register(struct usb_driver *drv)
 }
 
 /* returns 0 if no match, 1 if match */
-int usb_match_device(struct usb_device *dev, const struct usb_device_id *id)
+static int usb_match_device(struct usb_device *dev, const struct usb_device_id *id)
 {
 	if ((id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) &&
 	    id->idVendor != le16_to_cpu(dev->descriptor.idVendor))
@@ -1298,7 +1291,7 @@ int usb_match_device(struct usb_device *dev, const struct usb_device_id *id)
 }
 
 /* returns 0 if no match, 1 if match */
-int usb_match_one_id(struct usb_device *usbdev,
+static int usb_match_one_id(struct usb_device *usbdev,
 		     const struct usb_device_id *id)
 {
 	/* proc_connectinfo in devio.c may call us with id == NULL. */
@@ -1312,7 +1305,7 @@ int usb_match_one_id(struct usb_device *usbdev,
 }
 EXPORT_SYMBOL(usb_match_one_id);
 
-const struct usb_device_id *usb_match_id(struct usb_device *usbdev,
+static const struct usb_device_id *usb_match_id(struct usb_device *usbdev,
 					 const struct usb_device_id *id)
 {
 	/* proc_connectinfo in devio.c may call us with id == NULL. */

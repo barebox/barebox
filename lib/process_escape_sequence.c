@@ -21,6 +21,7 @@
  */
 #include <common.h>
 #include <fs.h>
+#include <libbb.h>
 
 int process_escape_sequence(const char *source, char *dest, int destlen)
 {

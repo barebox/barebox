@@ -311,8 +311,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		      le16_to_cpu(req->value), le16_to_cpu(req->value),
 		      le16_to_cpu(req->index));
 
-	memset(&__qh, sizeof(struct QH), 0);
-	memset(&__td, sizeof(struct qTD) * 3, 0);
+	memset(&__qh, 0, sizeof(struct QH));
+	memset(&__td, 0, sizeof(struct qTD) * 3);
 
 	qh = &__qh;
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
@@ -503,7 +503,7 @@ static inline int min3(int a, int b, int c)
 	return a;
 }
 
-int
+static int
 ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		 int length, struct devrequest *req)
 {

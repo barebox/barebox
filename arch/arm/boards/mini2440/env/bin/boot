@@ -1,0 +1,40 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = xnand ]; then
+	root=nand
+	kernel=nand
+fi
+
+if [ x$1 = xnet ]; then
+	root=net
+	kernel=net
+fi
+
+if [ x$root = xnand ]; then
+	bootargs="$bootargs root=$rootpart_nand rootfstype=jffs2"
+fi
+if [ x$root = xnet ]; then
+	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp"
+	if [ x$ip = xdhcp ]; then
+		bootargs="$bootargs ip=dhcp"
+	else
+		bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask:::"
+	fi
+fi
+
+bootargs="$bootargs mtdparts=\"NAND 32MiB 3,3V 8-bit:$nand_parts\""
+
+bootargs="$bootargs cs89x0_media=rj45 cs89x0_mac=$eth0.ethaddr"
+
+if [ x$kernel = xnet ]; then
+	if [ x$ip = xdhcp ]; then
+		dhcp
+	fi
+	tftp $uimage uImage || exit 1
+	bootm uImage
+else
+	bootm /dev/nand0.kernel.bb
+fi
+

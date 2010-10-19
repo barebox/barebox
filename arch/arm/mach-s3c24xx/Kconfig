@@ -5,6 +5,7 @@ config ARCH_TEXT_BASE
 	default 0x31fc0000
 
 config BOARDINFO
+	default "Mini 2440"    if MACH_MINI2440
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Digi A9M2410" if MACH_A9M2410
 
@@ -35,6 +36,14 @@ config MACH_A9M2440
 	select S3C24XX_PLL_INIT
 	help
 	  Say Y here if you are using Digi's Connect Core 9M equipped
+	  with a Samsung S3C2440 Processor
+
+config MACH_MINI2440
+	bool "Mini 2440"
+	select CPU_S3C2440
+	select HAS_DM9000
+	help
+	  Say Y here if you are using Mini 2440 dev board equipped 
 	  with a Samsung S3C2440 Processor
 
 endchoice

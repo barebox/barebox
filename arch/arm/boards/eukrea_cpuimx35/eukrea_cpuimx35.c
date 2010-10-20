@@ -53,6 +53,7 @@
 #include <mach/imx-pll.h>
 #include <i2c/i2c.h>
 #include <usb/fsl_usb2.h>
+#include <mach/usb.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
@@ -140,16 +141,6 @@ static struct device_d esdhc_dev = {
 };
 
 #ifdef CONFIG_USB
-
-#define MX35_H1_SIC_SHIFT	21
-#define MX35_H1_SIC_MASK	(0x3 << MX35_H1_SIC_SHIFT)
-#define MX35_H1_PM_BIT		(1 << 8)
-#define MX35_H1_IPPUE_UP_BIT	(1 << 7)
-#define MX35_H1_IPPUE_DOWN_BIT	(1 << 6)
-#define MX35_H1_TLL_BIT		(1 << 5)
-#define MX35_H1_USBTE_BIT	(1 << 4)
-#define MXC_EHCI_INTERFACE_SINGLE_UNI	(2 << 0)
-
 static void imx35_usb_init(void)
 {
 	unsigned int tmp;

@@ -90,6 +90,26 @@ static unsigned long pll3_sw_get_rate(void)
 	return pll_get_rate((void __iomem *)MX51_PLL3_BASE_ADDR);
 }
 
+static unsigned long get_rate_select(int select,
+	unsigned long (* get_rate1)(void),
+	unsigned long (* get_rate2)(void),
+	unsigned long (* get_rate3)(void),
+	unsigned long (* get_rate4)(void))
+{
+	switch (select) {
+	case 0:
+		return get_rate1() ? get_rate1() : 0;
+	case 1:
+		return get_rate2() ? get_rate2() : 0;
+	case 2:
+		return get_rate3 ? get_rate3() : 0;
+	case 3:
+		return get_rate4 ? get_rate4() : 0;
+	}
+
+	return 0;
+}
+
 unsigned long imx_get_uartclk(void)
 {
 	u32 reg, prediv, podf;
@@ -140,15 +160,22 @@ unsigned long imx_get_mmcclk(void)
 {
 	u32 reg, prediv, podf, rate;
 
+	reg = ccm_readl(MX51_CCM_CSCMR1);
+	reg &= MX51_CCM_CSCMR1_ESDHC1_MSHC1_CLK_SEL_MASK;
+	reg >>= MX51_CCM_CSCMR1_ESDHC1_MSHC1_CLK_SEL_OFFSET;
+	rate = get_rate_select(reg,
+			pll1_main_get_rate,
+			pll2_sw_get_rate,
+			pll3_sw_get_rate,
+			NULL);
+
 	reg = ccm_readl(MX51_CCM_CSCDR1);
 	prediv = ((reg & MX51_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PRED_MASK) >>
 			MX51_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PRED_OFFSET) + 1;
 	podf = ((reg & MX51_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PODF_MASK) >>
 			MX51_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PODF_OFFSET) + 1;
 
-	rate = pll2_sw_get_rate() / (prediv * podf);
-
-	return rate;
+	return rate / (prediv * podf);
 }
 
 void imx_dump_clocks(void)

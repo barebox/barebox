@@ -138,24 +138,44 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
  * @param mci_dev MCI instance
  * @param dst Where to store the data read from the card
  * @param blocknum Block number to read
+ * @param blocks number of blocks to read
  */
-static int mci_read_block(struct device_d *mci_dev, void *dst, unsigned blocknum)
+static int mci_read_block(struct device_d *mci_dev, void *dst, unsigned blocknum,
+		int blocks)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
+	int ret;
+	unsigned mmccmd;
+
+	if (blocks > 1)
+		mmccmd = MMC_CMD_READ_MULTIPLE_BLOCK;
+	else
+		mmccmd = MMC_CMD_READ_SINGLE_BLOCK;
 
 	mci_setup_cmd(&cmd,
-		MMC_CMD_READ_SINGLE_BLOCK,
+		mmccmd,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
 		MMC_RSP_R1);
 
 	data.dest = dst;
-	data.blocks = 1;
+	data.blocks = blocks;
 	data.blocksize = mci->read_bl_len;
 	data.flags = MMC_DATA_READ;
 
-	return mci_send_cmd(mci_dev, &cmd, &data);
+	ret = mci_send_cmd(mci_dev, &cmd, &data);
+	if (ret)
+		return ret;
+
+	if (blocks > 1) {
+		mci_setup_cmd(&cmd,
+			MMC_CMD_STOP_TRANSMISSION,
+			0,
+			MMC_RSP_R1b);
+			ret = mci_send_cmd(mci_dev, &cmd, NULL);
+	}
+	return ret;
 }
 
 /**
@@ -979,19 +999,20 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 	}
 
 	while (sector_count) {
+		int now = min(sector_count, 32);
 		if (sector_start > MAX_BUFFER_NUMBER) {
 			pr_err("Cannot handle block number %lu. Too large!\n",
 				(unsigned)sector_start);
 			return -EINVAL;
 		}
-		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start);
+		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, now);
 		if (rc != 0) {
 			pr_err("Reading block %lu failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
-		sector_count--;
-		buffer += mci->read_bl_len;
-		sector_start++;
+		sector_count -= now;
+		buffer += mci->read_bl_len * now;
+		sector_start += now;
 	}
 
 	return 0;

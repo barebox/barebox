@@ -59,6 +59,7 @@ config ARCH_OMAP
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2412, S3C2413, S3C2440, S3C2442, S3C2443"
 	select CPU_ARM920T
+	select GENERIC_GPIO
 
 endchoice
 

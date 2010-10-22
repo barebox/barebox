@@ -20,7 +20,6 @@
  * @fn void protected_mode_jump(void)
  * @brief Switches the first time from real mode to flat mode
  */
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <asm/modes.h>
 #include "boot.h"
@@ -86,4 +85,3 @@ in_pm32:
 
 	.size protected_mode_jump, .-protected_mode_jump
 
-#endif

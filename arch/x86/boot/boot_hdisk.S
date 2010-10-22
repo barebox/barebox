@@ -31,7 +31,6 @@
  * from the boot media.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 	.file "boot_hdisk.S"
 	.code16
@@ -173,4 +172,3 @@ notification_string:	.asciz "UBOOT2 "
 chs_string:	.asciz "CHS "
 jmp_string:	.asciz "JMP "
 
-#endif

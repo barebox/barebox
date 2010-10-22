@@ -30,7 +30,6 @@
  * @brief Fix segment:offset settings of some buggy BIOSs
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 	.file "boot_main.S"
 	.code16
@@ -55,4 +54,3 @@ _start:
 
 	.size _start, .-_start
 
-#endif

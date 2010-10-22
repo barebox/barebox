@@ -38,7 +38,6 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 	.section .boot.text.bios_get_memsize, "ax"
 	.code32
@@ -70,4 +69,3 @@ bios_get_memsize:
 
 	.size bios_get_memsize, .-bios_get_memsize
 
-#endif

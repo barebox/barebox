@@ -16,7 +16,6 @@
 @li @subpage mount_command
 @li @subpage printenv_command
 @li @subpage protect_command
-@li @subpage rarp_command
 @li @subpage saveenv_command
 @li @subpage setenv_command
 @li @subpage sh_command

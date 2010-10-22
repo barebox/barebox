@@ -51,7 +51,7 @@ if [ -n $nand_parts ]; then
 fi
 
 if [ -n $mtdparts ]; then
-	bootargs="${bootargs} mtdparts=\"${mtdparts}\""
+	bootargs="${bootargs} mtdparts=${mtdparts}"
 fi
 
 if [ ! -e /dev/ram0.kernelraw ]; then

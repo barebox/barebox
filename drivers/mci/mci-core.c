@@ -1344,7 +1344,7 @@ device_initcall(mci_init);
 
 /**
  * Create a new mci device (for convenience)
- * @param pdata MCI device's platform data for this MCI device
+ * @param host mci_host for this MCI device
  * @return 0 on success
  */
 int mci_register(struct mci_host *host)

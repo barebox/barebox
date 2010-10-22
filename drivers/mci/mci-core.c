@@ -349,7 +349,7 @@ static int mci_switch(struct device_d *mci_dev, unsigned set, unsigned index,
 static int mmc_change_freq(struct device_d *mci_dev)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
-	char ext_csd[512];
+	char *ext_csd = sector_buf;
 	char cardtype;
 	int err;
 
@@ -441,8 +441,8 @@ static int sd_change_freq(struct device_d *mci_dev)
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
-	uint32_t switch_status[16];
-	uint scr[2];
+	uint32_t *switch_status = sector_buf;
+	uint32_t *scr = sector_buf;
 	int timeout;
 	int err;
 
@@ -463,7 +463,7 @@ static int sd_change_freq(struct device_d *mci_dev)
 
 retry_scr:
 	pr_debug("Trying to read the SCR (try %d of %d)\n", 4 - timeout, 3);
-	data.dest = (char *)&scr;
+	data.dest = (char *)scr;
 	data.blocksize = 8;
 	data.blocks = 1;
 	data.flags = MMC_DATA_READ;
@@ -504,7 +504,7 @@ retry_scr:
 	timeout = 4;
 	while (timeout--) {
 		err = sd_switch(mci_dev, SD_SWITCH_CHECK, 0, 1,
-				(uint8_t*)&switch_status);
+				(uint8_t*)switch_status);
 		if (err) {
 			pr_debug("Checking SD transfer switch frequency feature failed: %d\n", err);
 			return err;
@@ -522,7 +522,7 @@ retry_scr:
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
 		return 0;
 
-	err = sd_switch(mci_dev, SD_SWITCH_SWITCH, 0, 1, (uint8_t*)&switch_status);
+	err = sd_switch(mci_dev, SD_SWITCH_SWITCH, 0, 1, (uint8_t*)switch_status);
 	if (err) {
 		pr_debug("Switching SD transfer frequency failed: %d\n", err);
 		return err;

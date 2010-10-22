@@ -176,7 +176,7 @@ BAREBOX_CMD_END
  * Adds a partition description to a device. The partition description has the
  * form
  *
- * size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...
+ * size1[\@offset1](name1)[ro],size2[\@offset2](name2)[ro],...
  *
  * \<device> is the device name under. Size and offset can be given in decimal
  * or - if prefixed with 0x - in hex. Both can have an optional suffix K,M,G.

@@ -729,7 +729,6 @@ static void sdc_enable_channel(struct ipu_fb_info *fbi, void *fbmem)
 static int mx3fb_set_par(struct fb_info *info)
 {
 	struct ipu_fb_info *fbi = info->priv;
-	struct imx_ipu_fb_rgb *rgb;
 	struct fb_videomode *mode = info->mode;
 	int ret;
 
@@ -739,29 +738,6 @@ static int mx3fb_set_par(struct fb_info *info)
 
 	reg_write(fbi, (mode->left_margin << 16) | mode->upper_margin,
 			SDC_BG_POS);
-
-	switch (info->bits_per_pixel) {
-	case 32:
-		rgb = &def_rgb_32;
-		break;
-	case 24:
-		rgb = &def_rgb_24;
-		break;
-	case 16:
-	default:
-		rgb = &def_rgb_16;
-		break;
-	}
-
-	/*
-	 * Copy the RGB parameters for this display
-	 * from the machine specific parameters.
-	 */
-	info->red    = rgb->red;
-	info->green  = rgb->green;
-	info->blue   = rgb->blue;
-	info->transp = rgb->transp;
-
 
 	return 0;
 }
@@ -853,6 +829,39 @@ static struct fb_ops imxfb_ops = {
 	.fb_disable = ipu_fb_disable,
 };
 
+static void imxfb_init_info(struct fb_info *info, struct fb_videomode *mode,
+		int bpp)
+{
+	struct imx_ipu_fb_rgb *rgb;
+
+	info->mode = mode;
+	info->xres = mode->xres;
+	info->yres = mode->yres;
+	info->bits_per_pixel = bpp;
+
+	switch (info->bits_per_pixel) {
+	case 32:
+		rgb = &def_rgb_32;
+		break;
+	case 24:
+		rgb = &def_rgb_24;
+		break;
+	case 16:
+	default:
+		rgb = &def_rgb_16;
+		break;
+	}
+
+	/*
+	 * Copy the RGB parameters for this display
+	 * from the machine specific parameters.
+	 */
+	info->red    = rgb->red;
+	info->green  = rgb->green;
+	info->blue   = rgb->blue;
+	info->transp = rgb->transp;
+}
+
 static int imxfb_probe(struct device_d *dev)
 {
 	struct ipu_fb_info *fbi;
@@ -869,12 +878,10 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->regs = (void *)dev->map_base;
 	fbi->dev = dev;
 	info->priv = fbi;
-	info->mode = pdata->mode;
-	info->xres = pdata->mode->xres;
-	info->yres = pdata->mode->yres;
-	info->bits_per_pixel = pdata->bpp;
 	info->fbops = &imxfb_ops;
 	fbi->enable = pdata->enable;
+
+	imxfb_init_info(info, pdata->mode, pdata->bpp);
 
 	dev_info(dev, "i.MX Framebuffer driver\n");
 

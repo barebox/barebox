@@ -10,6 +10,7 @@
 @li @subpage edit_command
 @li @subpage erase_command
 @li @subpage export_command
+@li @subpage gpio_for_users
 @li @subpage tftp_command
 @li @subpage loadenv_command
 @li @subpage mount_command

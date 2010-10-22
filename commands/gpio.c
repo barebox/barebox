@@ -37,7 +37,7 @@ static int do_gpio_get_value(struct command *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_gpio_get_value_help[] =
-"Usage: gpio_set_value <gpio>\n";
+"Usage: gpio_get_value <gpio>\n";
 
 BAREBOX_CMD_START(gpio_get_value)
 	.cmd		= do_gpio_get_value,

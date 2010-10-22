@@ -50,7 +50,11 @@ All basic devices you'd like to register should be put here with postcore_initca
 All OMAP common headers are located here. Where we have to incorporate a OMAP variant specific header, add a omapX_function_name.h.
 @warning Do not add board specific header files/information here. Put them in mach-omap.
 
-include/asm-arm/arch-omap/silicon.h contains includes for omapX-silicon.h which defines the base addresses for the peripherals on that platform. the usual convention is to use #define OMAP_SOMETHING_BASE to allow re-use.
+include/asm-arm/arch-omap/silicon.h contains includes for omapX-silicon.h which defines the base addresses for the peripherals on that platform. the usual convention is to use
+@code
+#define OMAP_SOMETHING_BASE
+@endcode
+to allow re-use.
 
 @section board_omap arch/arm/boards/omap directory guidelines
 All Board specific files go here. In u-boot, we always had to use common config file which is shared by other drivers to get serial, ethernet baseaddress etc.. we can easily use the device_d structure to handle it with @a barebox. This is more like programming for Linux kernel - it is pretty easy.

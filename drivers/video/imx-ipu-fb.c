@@ -722,31 +722,11 @@ static void sdc_enable_channel(struct ipu_fb_info *fbi, void *fbmem)
 	mdelay(2);
 }
 
-/*
- * mx3fb_set_par() - set framebuffer parameters and change the operating mode.
- * @return:	0 on success or negative error code on failure.
- */
-static int mx3fb_set_par(struct fb_info *info)
-{
-	struct ipu_fb_info *fbi = info->priv;
-	struct fb_videomode *mode = info->mode;
-	int ret;
-
-	ret = sdc_init_panel(info, IPU_PIX_FMT_RGB666);
-	if (ret < 0)
-		return ret;
-
-	reg_write(fbi, (mode->left_margin << 16) | mode->upper_margin,
-			SDC_BG_POS);
-
-	return 0;
-}
-
 /* References in this function refer to respective Linux kernel sources */
 static void ipu_fb_enable(struct fb_info *info)
 {
 	struct ipu_fb_info *fbi = info->priv;
-
+	struct fb_videomode *mode = info->mode;
 	u32 reg;
 
 	/* pcm037.c::mxc_board_init() */
@@ -799,7 +779,10 @@ static void ipu_fb_enable(struct fb_info *info)
 		~(SDC_COM_GWSEL | SDC_COM_KEY_COLOR_G);
 	reg_write(fbi, reg, SDC_COM_CONF);
 
-	mx3fb_set_par(info);
+	sdc_init_panel(info, IPU_PIX_FMT_RGB666);
+
+	reg_write(fbi, (mode->left_margin << 16) | mode->upper_margin,
+			SDC_BG_POS);
 
 	sdc_enable_channel(fbi, info->screen_base);
 

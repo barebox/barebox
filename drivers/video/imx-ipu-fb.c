@@ -840,8 +840,6 @@ static void ipu_fb_disable(struct fb_info *info)
 	struct ipu_fb_info *fbi = info->priv;
 	u32 reg;
 
-	printf("%s\n", __func__);
-
 	if (fbi->enable)
 		fbi->enable(0);
 

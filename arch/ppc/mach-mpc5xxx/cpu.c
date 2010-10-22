@@ -71,7 +71,7 @@ int checkcpu (void)
 
 /* ------------------------------------------------------------------------- */
 
-void __noreturn reset_cpu (unsigned long unused)
+void __noreturn reset_cpu (unsigned long addr)
 {
 	ulong msr;
 	/* Interrupts and MMU off */

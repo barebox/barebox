@@ -118,7 +118,7 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu by setting up the watchdog timer and let it time out
  */
-void __noreturn reset_cpu (unsigned long ignored)
+void __noreturn reset_cpu (unsigned long addr)
 {
 	/* Disable watchdog and set Time-Out field to 0 */
 	writew(0x0, IMX_WDT_BASE + WDOG_WCR);

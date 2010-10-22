@@ -138,7 +138,7 @@ uint64_t linux_get_time(void)
 	return now;
 }
 
-void __attribute__((noreturn)) reset_cpu(int unused)
+void __attribute__((noreturn)) reset_cpu(unsigned long addr)
 {
 	cookmode();
 	exit(0);

@@ -72,7 +72,7 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu
  */
-void __noreturn reset_cpu(unsigned long ignored)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	struct syscon_regs *syscon = (struct syscon_regs *)SYSCON_BASE;
 	uint32_t value;

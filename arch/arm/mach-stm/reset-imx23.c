@@ -48,7 +48,7 @@
  * TODO There is a much easier way to reset the CPU: Refer bit 2 in
  *       the HW_CLKCTRL_RESET register, data sheet page 106/4-30
  */
-void __noreturn reset_cpu (unsigned long ignored)
+void __noreturn reset_cpu (unsigned long addr)
 {
 	writel(WDOG_COUNTER_RATE, IMX_WDT_BASE + HW_RTC_WATCHDOG);
 	writel(BM_RTC_CTRL_WATCHDOGEN, IMX_WDT_BASE + HW_RTC_CTRL_SET);

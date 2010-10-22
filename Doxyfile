@@ -483,7 +483,6 @@ INPUT                  = Documentation \
                          drivers \
                          commands \
                          common \
-                         board \
                          lib \
                          scripts/setupmbr \
 			 net

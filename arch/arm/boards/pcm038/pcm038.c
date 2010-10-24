@@ -43,6 +43,7 @@
 #include <usb/isp1504.h>
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
+#include <mach/devices-imx27.h>
 
 #include "pll.h"
 
@@ -84,25 +85,11 @@ static struct fec_platform_data fec_info = {
 	.phy_addr = 1,
 };
 
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = 0x1002b000,
-	.platform_data	= &fec_info,
-};
-
 static int pcm038_spi_cs[] = {GPIO_PORTD + 28};
 
 static struct spi_imx_master pcm038_spi_0_data = {
 	.chipselect = pcm038_spi_cs,
 	.num_chipselect = ARRAY_SIZE(pcm038_spi_cs),
-};
-
-static struct device_d spi_dev = {
-	.id	  = -1,
-	.name     = "imx_spi",
-	.map_base = 0x1000e000,
-	.platform_data = &pcm038_spi_0_data,
 };
 
 static struct spi_board_info pcm038_spi_board_info[] = {
@@ -118,13 +105,6 @@ static struct imx_nand_platform_data nand_info = {
 	.width		= 1,
 	.hw_ecc		= 1,
 	.flash_bbt	= 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = 0xd8000000,
-	.platform_data	= &nand_info,
 };
 
 static struct imx_fb_videomode imxfb_mode = {
@@ -159,14 +139,6 @@ static struct imx_fb_platform_data pcm038_fb_data = {
 	.pwmr	= 0x00A903FF,
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,
-};
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name		= "imxfb",
-	.map_base	= 0x10021000,
-	.size		= 0x1000,
-	.platform_data	= &pcm038_fb_data,
 };
 
 #ifdef CONFIG_USB
@@ -323,13 +295,13 @@ static int pcm038_devices_init(void)
 	gpio_direction_output(GPIO_PORTD | 28, 0);
 	gpio_set_value(GPIO_PORTD | 28, 0);
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
-	register_device(&spi_dev);
+	imx27_add_spi0(&pcm038_spi_0_data);
 
 	register_device(&cfi_dev);
-	register_device(&nand_dev);
+	imx27_add_nand(&nand_info);
 	register_device(&sdram_dev);
 	register_device(&sram_dev);
-	register_device(&imxfb_dev);
+	imx27_add_fb(&pcm038_fb_data);
 
 #ifdef CONFIG_USB
 	pcm038_usbh_init();
@@ -339,7 +311,7 @@ static int pcm038_devices_init(void)
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock
 	 */
-	register_device(&fec_dev);
+	imx27_add_fec(&fec_info);
 
 	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
 	case GPCR_BOOT_8BIT_NAND_2k:
@@ -372,16 +344,9 @@ static int pcm038_devices_init(void)
 
 device_initcall(pcm038_devices_init);
 
-static struct device_d pcm038_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int pcm038_console_init(void)
 {
-	register_device(&pcm038_serial_device);
+	imx27_add_uart0();
 
 	return 0;
 }

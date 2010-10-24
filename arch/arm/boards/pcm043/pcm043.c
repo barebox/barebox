@@ -43,6 +43,7 @@
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
+#include <mach/devices-imx35.h>
 
 /*
  * Up to 32MiB NOR type flash, connected to
@@ -57,13 +58,6 @@ static struct device_d cfi_dev = {
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
-};
-
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = IMX_FEC_BASE,
-	.platform_data	= &fec_info,
 };
 
 static struct memory_platform_data ram_pdata = {
@@ -83,13 +77,6 @@ struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
 	.flash_bbt = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = IMX_NFC_BASE,
-	.platform_data	= &nand_info,
 };
 
 #ifdef CONFIG_PCM043_DISPLAY_SHARP
@@ -135,14 +122,6 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.bpp		= 16,
 };
 
-static struct device_d imx_ipu_fb_dev = {
-	.id		= -1,
-	.name		= "imx-ipu-fb",
-	.map_base	= 0x53fc0000,
-	.size		= 0x1000,
-	.platform_data	= &ipu_fb_data,
-};
-
 #ifdef CONFIG_MMU
 static int pcm043_mmu_init(void)
 {
@@ -185,11 +164,11 @@ static int imx35_devices_init(void)
 	else
 		nand_info.width = 1;    /* 8 bit */
 
-	register_device(&fec_dev);
+	imx35_add_fec(&fec_info);
 	/*
 	 * This platform supports NOR and NAND
 	 */
-	register_device(&nand_dev);
+	imx35_add_nand(&nand_info);
 	register_device(&cfi_dev);
 
 	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
@@ -210,7 +189,7 @@ static int imx35_devices_init(void)
 	}
 
 	register_device(&sdram0_dev);
-	register_device(&imx_ipu_fb_dev);
+	imx35_add_fb(&ipu_fb_data);
 
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
@@ -220,13 +199,6 @@ static int imx35_devices_init(void)
 }
 
 device_initcall(imx35_devices_init);
-
-static struct device_d imx35_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 16 * 1024,
-};
 
 static struct pad_desc pcm043_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
@@ -261,7 +233,7 @@ static int imx35_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(pcm043_pads, ARRAY_SIZE(pcm043_pads));
 
-	register_device(&imx35_serial_device);
+	imx35_add_uart0();
 	return 0;
 }
 

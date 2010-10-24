@@ -36,6 +36,7 @@
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <mach/iomux-mx21.h>
+#include <mach/devices-imx21.h>
 
 #define MX21ADS_IO_REG    0xCC800000
 #define MX21ADS_IO_LCDON  (1 << 9)
@@ -63,13 +64,6 @@ static struct device_d sdram_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = 0xDF003000,
-	.platform_data  = &nand_info,
 };
 
 static struct device_d cs8900_dev = {
@@ -109,14 +103,6 @@ static struct imx_fb_platform_data imx_fb_data = {
 	.pwmr           = 0x00a903ff,
 	.lscr1          = 0x00120300,
 	.dmacr          = 0x00020008,
-};
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name           = "imxfb",
-	.map_base       = 0x10021000,
-	.size           = 0x1000,
-	.platform_data  = &imx_fb_data,
 };
 
 static int imx21ads_timing_init(void)
@@ -199,9 +185,9 @@ static int mx21ads_devices_init(void)
 
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
-	register_device(&nand_dev);
+	imx21_add_nand(&nand_info);
 	register_device(&cs8900_dev);
-	register_device(&imxfb_dev);
+	imx21_add_fb(&imx_fb_data);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xc0000100);
@@ -224,16 +210,9 @@ static int mx21ads_enable_display(void)
 
 late_initcall(mx21ads_enable_display);
 
-static struct device_d mx21ads_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int mx21ads_console_init(void)
 {
-	register_device(&mx21ads_serial_device);
+	imx21_add_uart0();
 	return 0;
 }
 

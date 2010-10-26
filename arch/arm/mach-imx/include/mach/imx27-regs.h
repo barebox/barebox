@@ -219,14 +219,6 @@
 #define ESDCFG_TWTR		(1 << 20)
 #define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
 
-#define ESDMISC_RST		(1 << 1)
-#define ESDMISC_MDDREN		(1 << 2)
-#define ESDMISC_MDDR_DL_RST	(1 << 3)
-#define ESDMISC_MDDR_MDIS	(1 << 4)
-#define ESDMISC_LHD		(1 << 5)
-#define ESDMISC_MA10_SHARE	(1 << 6)
-#define ESDMISC_SDRAM_RDY	(1 << 6)
-
 /*
  * Definitions for the clocksource driver
  */

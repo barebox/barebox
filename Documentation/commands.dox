@@ -1,5 +1,19 @@
 /**
- * @page command_reference Supported Shell Commands
+ * @page command_reference Shell Commands
+
+<i>This section describes the commands which are available on the @a
+Barebox shell. </i>
+
+@a Barebox, as a bootloader, usually shall start the Linux kernel right
+away. However, there are several use cases around which make it
+necessary to have some (customizable) logic and interactive scripting
+possibilities. In order to achieve this, @a Barebox offers several
+commands on it's integrated commandline shell.
+
+The following alphabetically sorted list documents all commands
+available in @a Barebox:
+
+\todo Sort this by functionality?
 
 @li @subpage addpart_command
 @li @subpage bmp_command
@@ -28,4 +42,5 @@
 @li @subpage sh_command
 @li @subpage unprotect_command
 @li @subpage linux16_command
+
 */

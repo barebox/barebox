@@ -7,6 +7,7 @@ you find a lot of nice tricks on these pages to make your life easier.
 @li @subpage building
 @li @subpage first_steps
 @li @subpage command_reference
+@li @subpage gpio_for_users
 
 \todo Rework the following sections
 @li @subpage shell_notes

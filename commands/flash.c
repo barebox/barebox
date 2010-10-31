@@ -83,10 +83,10 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_erase_help[] =
-"Usage: erase <device> [area]\n"
-"Erase a flash device or parts of a device if an area specification\n"
-"is given\n";
+BAREBOX_CMD_HELP_START(erase)
+BAREBOX_CMD_HELP_USAGE("erase <device> [area]\n")
+BAREBOX_CMD_HELP_SHORT("Erase a flash device or parts of a device if an area specification is given.\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(erase)
 	.cmd		= do_flerase,
@@ -94,16 +94,18 @@ BAREBOX_CMD_START(erase)
 	BAREBOX_CMD_HELP(cmd_erase_help)
 BAREBOX_CMD_END
 
-/** @page erase_command erase Erase flash memory
- *
- * Usage is: erase \<devicee>
- *
- * Erase the flash memory behind the device. It depends on the device given,
- * what area will be erased. If the device represents the whole flash memory
- * the whole memory will be erased. If the device represents a partition on
- * a main flash memory, only this partition part will be erased.
- *
- * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+/**
+ * @page erase_command
+
+<p> Erase the flash memory handled by this device. Which area will be
+erased depends on the device: If the device represents the whole flash
+memory, the whole memory will be erased. If the device represents a
+partition on a main flash memory, only this partition part will be
+erased. </p>
+
+Refer to \ref addpart_command, \ref delpart_command and \ref
+devinfo_command for partition handling.
+
  */
 
 static int do_protect(struct command *cmdtp, int argc, char *argv[])

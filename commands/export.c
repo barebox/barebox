@@ -51,9 +51,10 @@ static int do_export(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_export_help[] =
-"Usage: export <var>[=value]...\n"
-"export an environment variable to subsequently executed scripts\n";
+BAREBOX_CMD_HELP_START(export)
+BAREBOX_CMD_HELP_USAGE("export <var>[=value]\n")
+BAREBOX_CMD_HELP_SHORT("export an environment variable to subsequently executed scripts\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(export)
 	.cmd		= do_export,
@@ -61,10 +62,3 @@ BAREBOX_CMD_START(export)
 	BAREBOX_CMD_HELP(cmd_export_help)
 BAREBOX_CMD_END
 
-/**
- * @page export_command export: Export an environment variable
- *
- * Usage: export \<var>[=value]...
- *
- * Export an environment variable to subsequently executed scripts.
- */

@@ -1069,7 +1069,8 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = \
 			DOXYGEN_SHOULD_SKIP_THIS \
-			CONFIG_CMD_DEVINFO
+			CONFIG_CMD_DEVINFO \
+			CONFIG_NET_TFTP_PUSH
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

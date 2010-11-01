@@ -94,12 +94,10 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_saveenv_help[] =
-"Usage: saveenv [<envfs>] [<directory>]\n"
-"Save the files in <directory> to the persistent storage device <envfs>.\n"
-"<envfs> is normally a block in flash, but could be any other file.\n"
-"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
-"Note that envfs can only handle files. Directories are skipped silently.\n";
+BAREBOX_CMD_HELP_START(saveenv)
+BAREBOX_CMD_HELP_USAGE("saveenv [envfs] [directory]\n")
+BAREBOX_CMD_HELP_SHORT("Save the files in <directory> to the persistent storage device <envfs>.\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(saveenv)
 	.cmd		= do_saveenv,
@@ -108,15 +106,14 @@ BAREBOX_CMD_START(saveenv)
 BAREBOX_CMD_END
 
 /**
- * @page saveenv_command saveenv
- *
- * Usage: saveenv [\<envfs>] [\<directory>]
- *
- * Save the files in \<directory> to the persistent storage device \<envfs>.
- * \<envfs> is normally a block in flash, but could be any other file.
- *
- * If ommitted \<directory> defaults to \c /env and \<envfs> defaults to
- * \c /dev/env0.
- *
- * @note envfs can only handle files. Directories are skipped silently.
+ * @page saveenv_command
+
+<p>\<envfs> is usually a block in flash but can be any other file. If
+ommitted, \<directory> defaults to /env and \<envfs> defaults to
+/dev/env0. Note that envfs can only handle files, directories are being
+skipped silently.</p>
+
+\todo What does 'block in flash' mean? Add example.
+
  */
+

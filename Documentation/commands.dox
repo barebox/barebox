@@ -42,7 +42,6 @@ available in @a Barebox:
 @li @subpage protect_command
 @li @subpage saveenv_command
 @li @subpage setenv_command
-@li @subpage sh_command
 @li @subpage unprotect_command
 @li @subpage linux16_command
 

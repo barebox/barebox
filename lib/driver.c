@@ -244,6 +244,27 @@ int dummy_probe(struct device_d *dev)
 }
 EXPORT_SYMBOL(dummy_probe);
 
+const char *dev_id(const struct device_d *dev)
+{
+	static char buf[sizeof(unsigned long) * 2];
+
+	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
+
+	return buf;
+}
+
+void devices_shutdown(void)
+{
+	struct device_d *dev;
+
+	list_for_each_entry(dev, &active, active) {
+		if (dev->driver->remove)
+			dev->driver->remove(dev);
+	}
+}
+
+#ifdef CONFIG_CMD_DEVINFO
+
 static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 {
 	struct device_d *child;
@@ -275,27 +296,6 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 
 	return 0;
 }
-
-const char *dev_id(const struct device_d *dev)
-{
-	static char buf[sizeof(unsigned long) * 2];
-
-	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
-
-	return buf;
-}
-
-void devices_shutdown(void)
-{
-	struct device_d *dev;
-
-	list_for_each_entry(dev, &active, active) {
-		if (dev->driver->remove)
-			dev->driver->remove(dev);
-	}
-}
-
-#ifdef CONFIG_CMD_DEVINFO
 
 static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 {

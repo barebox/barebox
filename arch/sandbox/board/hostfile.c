@@ -79,7 +79,9 @@ static int hf_probe(struct device_d *dev)
 	priv->cdev.size = hf->size;
 	priv->cdev.ops = &hf_fops;
 	priv->cdev.priv = hf;
+#ifdef CONFIG_FS_DEVFS
 	devfs_create(&priv->cdev);
+#endif
 
 	return 0;
 }

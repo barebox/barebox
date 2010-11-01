@@ -136,8 +136,7 @@ static void setup_serial_tag(void)
 	}
 }
 
-#if 0
-static void setup_initrd_tag(ulong initrd_start, ulong initrd_end)
+static void setup_initrd_tag(image_header_t *header)
 {
 	/* an ATAG_INITRD node tells the kernel where the compressed
 	 * ramdisk can be found. ATAG_RDIMG is a better name, actually.
@@ -145,12 +144,11 @@ static void setup_initrd_tag(ulong initrd_start, ulong initrd_end)
 	params->hdr.tag = ATAG_INITRD2;
 	params->hdr.size = tag_size(tag_initrd);
 
-	params->u.initrd.start = initrd_start;
-	params->u.initrd.size = initrd_end - initrd_start;
+	params->u.initrd.start = image_get_load(header);
+	params->u.initrd.size = image_get_data_size(header);
 
 	params = tag_next(params);
 }
-#endif
 
 static void setup_end_tag (void)
 {
@@ -158,17 +156,17 @@ static void setup_end_tag (void)
 	params->hdr.size = 0;
 }
 
-static void setup_tags(void)
+static void setup_tags(struct image_data *data)
 {
 	const char *commandline = getenv("bootargs");
 
 	setup_start_tag();
 	setup_memory_tags();
 	setup_commandline_tag(commandline);
-#if 0
-	if (initrd_start && initrd_end)
-		setup_initrd_tag (initrd_start, initrd_end);
-#endif
+
+	if (data && data->initrd)
+		setup_initrd_tag (&data->initrd->header);
+
 	setup_revision_tag();
 	setup_serial_tag();
 	setup_end_tag();
@@ -233,13 +231,17 @@ static int do_bootm_linux(struct image_data *data)
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	setup_tags();
+	setup_tags(data);
 
 	if (relocate_image(data->os, (void *)image_get_load(os_header)))
 		return -1;
 
+	if (data->initrd)
+		if (relocate_image(data->initrd, (void *)image_get_load(&data->initrd->header)))
+			return -1;
+
 	/* we assume that the kernel is in place */
-	printf("\nStarting kernel ...\n\n");
+	printf("\nStarting kernel %s...\n\n", data->initrd ? "with initrd " : "");
 
 	shutdown_barebox();
 	theKernel (0, armlinux_architecture, armlinux_bootparams);
@@ -336,7 +338,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 
 	printf("loaded zImage from %s with size %d\n", argv[1], header.end);
 
-	setup_tags();
+	setup_tags(NULL);
 
 	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);
@@ -380,7 +382,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	if (!theKernel)
 		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-	setup_tags();
+	setup_tags(NULL);
 
 	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);

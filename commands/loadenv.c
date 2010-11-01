@@ -43,28 +43,22 @@ static int do_loadenv(struct command *cmdtp, int argc, char *argv[])
 	return envfs_load(filename, dirname);
 }
 
-static const __maybe_unused char cmd_loadenv_help[] =
-"Usage: loadenv [ENVFS] [DIRECTORY]\n"
-"Load the persistent storage contained in <envfs> to the directory\n"
-"<directory>.\n"
-"If ommitted <directory> defaults to /env and <envfs> defaults to /dev/env0.\n"
-"Note that envfs can only handle files. Directories are skipped silently.\n";
+BAREBOX_CMD_HELP_START(loadenv)
+BAREBOX_CMD_HELP_USAGE("loadenv [ENVFS] [DIRECTORY]\n")
+BAREBOX_CMD_HELP_SHORT("Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page loadenv_command
+
+ENVFS can only handle files, directories are skipped silently.
+
+\todo This needs proper documentation. What is ENVFS, why is it FS etc. Explain the concepts.
+
+ */
 
 BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
-	.usage		= "load environment from persistent storage",
+	.usage		= "Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).",
 	BAREBOX_CMD_HELP(cmd_loadenv_help)
 BAREBOX_CMD_END
-
-/**
- * @page loadenv_command loadenv
- *
- * Usage: loadenv [\<directory>] [\<envfs>]
- *
- * Load the persistent storage contained in \<envfs> to the directory \<directory>.
- *
- * If ommitted \<directory> defaults to \c /env and \<envfs> defaults to
- * \c /dev/env0.
- *
- * @note envfs can only handle files. Directories are skipped silently.
- */

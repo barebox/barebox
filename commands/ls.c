@@ -195,7 +195,7 @@ static int do_ls(struct command *cmdtp, int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(ls)
-BAREBOX_CMD_HELP_USAGE("ls [OPTION]... [FILE]...\n")
+BAREBOX_CMD_HELP_USAGE("ls [OPTIONS] [FILES]\n")
 BAREBOX_CMD_HELP_SHORT("List information about the FILEs (the current directory by default).\n")
 BAREBOX_CMD_HELP_OPT  ("-R",  "list subdirectories recursively\n")
 BAREBOX_CMD_HELP_END

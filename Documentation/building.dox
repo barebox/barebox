@@ -15,19 +15,17 @@ x86_64.
 
 \todo Find out about issues on x86_64.
 
-Selecting the architecture and the corresponding cross compiler can be
-done with two methods: You can either specify it using the environment
-variables @p ARCH and @p CROSS_COMPILE or you can create the soft links
-<i>cross_arch</i> and <i>cross_compile</i>, pointing to your
-architecture and compiler.
+Selecting the architecture and the corresponding cross compiler is done
+by setting the following environment variables:
 
-\todo How to use the links? This doesn't work!
+- ARCH=\<architecture>
+- CROSS_COMPILE=\<compiler-prefix>
 
 For @p ARCH=sandbox we do not need a cross compiler, so it is sufficient
 to specify the architecture:
 
 @code
-# ln -s arch/sandbox cross_arch
+# export ARCH=sandbox
 @endcode
 
 In order to configure the various aspects of @a barebox, start the
@@ -52,7 +50,7 @@ After @a barebox is configured, we can start the compilation:
 You can use '-j \<n\>' in order to do a parallel build if you have more
 than one cpus.
 
-If everything goes well, the result is a file called @p barebox: 
+If everything goes well, the result is a file called @p barebox:
 
 @code
 # ls -l barebox

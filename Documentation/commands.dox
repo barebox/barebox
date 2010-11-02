@@ -34,7 +34,7 @@ available in @a Barebox:
 @li @subpage gpio_set_value_command
 @li @subpage gpio_direction_input_command
 @li @subpage gpio_direction_output_command
-@li @subpage tftp_command
+@li @subpage linux16_command
 @li @subpage loadenv_command
 @li @subpage ls_command
 @li @subpage mount_command
@@ -42,7 +42,7 @@ available in @a Barebox:
 @li @subpage protect_command
 @li @subpage saveenv_command
 @li @subpage setenv_command
+@li @subpage tftp_command
 @li @subpage unprotect_command
-@li @subpage linux16_command
 
 */

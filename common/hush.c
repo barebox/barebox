@@ -120,6 +120,8 @@
 #include <fs.h>
 #include <libbb.h>
 #include <glob.h>
+#include <getopt.h>
+#include <linux/list.h>
 
 /*cmd_boot.c*/
 extern int do_bootd(struct command *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
@@ -174,6 +176,12 @@ typedef enum {
 #define FLAG_PARSE_SEMICOLON (1 << 1)	  /* symbol ';' is special for parser */
 #define FLAG_REPARSING       (1 << 2)	  /* >=2nd pass */
 
+struct option {
+	struct list_head	list;
+	char	opt;
+	char	*optarg;
+};
+
 /* This holds pointers to the various results of parsing */
 struct p_context {
 	struct child_prog *child;
@@ -187,6 +195,9 @@ struct p_context {
 
 	char **global_argv;
 	unsigned int global_argc;
+
+	int options_parsed;
+	struct list_head options;
 };
 
 
@@ -267,13 +278,14 @@ static void setup_string_in_str(struct in_str *i, const char *s);
 static int free_pipe_list(struct pipe *head, int indent);
 static int free_pipe(struct pipe *pi, int indent);
 /*  really run the final data structures: */
-static int run_list_real(struct pipe *pi);
-static int run_pipe_real(struct pipe *pi);
+static int run_list_real(struct p_context *ctx, struct pipe *pi);
+static int run_pipe_real(struct p_context *ctx, struct pipe *pi);
 /*   extended glob support: */
 /*   variable assignment: */
 static int is_assignment(const char *s);
 /*   data structure manipulation: */
 static void initialize_context(struct p_context *ctx);
+static void release_context(struct p_context *ctx);
 static int done_word(o_string *dest, struct p_context *ctx);
 static int done_command(struct p_context *ctx);
 static int done_pipe(struct p_context *ctx, pipe_style type);
@@ -350,7 +362,7 @@ static int b_addqchr(o_string *o, int ch, int quote)
 }
 
 /* belongs in utility.c */
-char *simple_itoa(unsigned int i)
+static char *simple_itoa(unsigned int i)
 {
 	/* 21 digits plus null terminator, good for 64-bit or smaller ints */
 	static char local[22];
@@ -498,6 +510,50 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 	i->p = s;
 }
 
+#ifdef CONFIG_HUSH_GETOPT
+static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
+{
+	char *optstring, *var;
+	int opt;
+	char opta[2];
+	struct option *o;
+
+	if (child->argc != 3)
+		return -2 - 1;
+
+	optstring = child->argv[1];
+	var = child->argv[2];
+
+	getopt_reset();
+
+	if (!ctx->options_parsed) {
+		while((opt = getopt(ctx->global_argc, ctx->global_argv, optstring)) > 0) {
+			o = xzalloc(sizeof(*o));
+			o->opt = opt;
+			o->optarg = xstrdup(optarg);
+			list_add_tail(&o->list, &ctx->options);
+		}
+	}
+
+	ctx->options_parsed = 1;
+
+	if (list_empty(&ctx->options))
+		return -1;
+
+	o = list_first_entry(&ctx->options, struct option, list);
+
+	opta[0] = o->opt;
+	opta[1] = 0;
+	setenv(var, opta);
+	setenv("OPTARG", o->optarg);
+
+	free(o->optarg);
+	list_del(&o->list);
+	free(o);
+
+	return 0;
+}
+#endif
 
 /* run_pipe_real() starts all the jobs, but doesn't wait for anything
  * to finish.  See checkjobs().
@@ -515,7 +571,7 @@ static void setup_string_in_str(struct in_str *i, const char *s)
  * now has its stdout directed to the input of the appropriate pipe,
  * so this routine is noticeably simpler.
  */
-static int run_pipe_real(struct pipe *pi)
+static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 {
 	int i;
 	int nextin;
@@ -541,7 +597,7 @@ static int run_pipe_real(struct pipe *pi)
 	if (pi->num_progs == 1 && child->group) {
 		int rcode;
 		debug("non-subshell grouping\n");
-		rcode = run_list_real(child->group);
+		rcode = run_list_real(ctx, child->group);
 		return rcode;
 	} else if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
 		for (i=0; is_assignment(child->argv[i]); i++) { /* nothing */ }
@@ -580,13 +636,17 @@ static int run_pipe_real(struct pipe *pi)
 		}
 		if (child->sp) {
 			char * str = NULL;
-			struct p_context ctx;
+			struct p_context ctx1;
 			str = make_string((child->argv + i));
-			parse_string_outer(&ctx, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+			parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+			release_context(&ctx1);
 			free(str);
 			return last_return_code;
 		}
-
+#ifdef CONFIG_HUSH_GETOPT
+		if (!strcmp(child->argv[i], "getopt"))
+			return builtin_getopt(ctx, child);
+#endif
 		if (strchr(child->argv[i], '/')) {
 			return execute_script(child->argv[i], child->argc-i, &child->argv[i]);
 		}
@@ -601,7 +661,7 @@ static int run_pipe_real(struct pipe *pi)
 	return -1;
 }
 
-static int run_list_real(struct pipe *pi)
+static int run_list_real(struct p_context *ctx, struct pipe *pi)
 {
 	char *save_name = NULL;
 	char **list = NULL;
@@ -699,7 +759,7 @@ static int run_list_real(struct pipe *pi)
 		}
 		if (pi->num_progs == 0)
 			continue;
-		rcode = run_pipe_real(pi);
+		rcode = run_pipe_real(ctx, pi);
 		debug("run_pipe_real returned %d\n",rcode);
 		if (rcode < -1) {
 			last_return_code = -rcode - 2;
@@ -790,6 +850,7 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	}
 	dest = xmalloc(cnt);
 	if (!(flags & GLOB_APPEND)) {
+		globfree(pglob);
 		pglob->gl_pathv = NULL;
 		pglob->gl_pathc = 0;
 		pglob->gl_offs = 0;
@@ -853,11 +914,11 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 }
 
 /* Select which version we will use */
-static int run_list(struct pipe *pi)
+static int run_list(struct p_context *ctx, struct pipe *pi)
 {
 	int rcode = 0;
 
-	rcode = run_list_real(pi);
+	rcode = run_list_real(ctx, pi);
 
 	/* free_pipe_list has the side effect of clearing memory
 	 * In the long run that function can be merged with run_list_real,
@@ -887,7 +948,7 @@ static int set_local_var(const char *s, int flg_export)
 	 * NAME=VALUE format.  So the first order of business is to
 	 * split 's' on the '=' into 'name' and 'value' */
 	value = strchr(name, '=');
-	if (value==0 && ++value==0) {
+	if (!value) {
 		free(name);
 		return -1;
 	}
@@ -928,7 +989,21 @@ static void initialize_context(struct p_context *ctx)
 	ctx->w=RES_NONE;
 	ctx->stack=NULL;
 	ctx->old_flag=0;
+	ctx->options_parsed = 0;
+	INIT_LIST_HEAD(&ctx->options);
 	done_command(ctx);   /* creates the memory for working child */
+}
+
+static void release_context(struct p_context *ctx)
+{
+#ifdef CONFIG_HUSH_GETOPT
+	struct option *opt, *tmp;
+
+	list_for_each_entry_safe(opt, tmp, &ctx->options, list) {
+		free(opt->optarg);
+		free(opt);
+	}
+#endif
 }
 
 /* normal return is 0
@@ -1371,7 +1446,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			done_word(&temp, ctx);
 			done_pipe(ctx,PIPE_SEQ);
 			if (ctx->list_head->num_progs) {
-				code = run_list(ctx->list_head);
+				code = run_list(ctx, ctx->list_head);
 			} else {
 				free_pipe_list(ctx->list_head, 0);
 				continue;
@@ -1533,7 +1608,12 @@ static char * make_string(char ** inp)
 int run_command (const char *cmd, int flag)
 {
 	struct p_context ctx;
-	return parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
+	int ret;
+
+	ret = parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
+	release_context(&ctx);
+
+	return ret;
 }
 
 static int execute_script(const char *path, int argc, char *argv[])
@@ -1564,6 +1644,7 @@ static int source_script(const char *path, int argc, char *argv[])
 
 	ret = parse_string_outer(&ctx, script, FLAG_PARSE_SEMICOLON);
 
+	release_context(&ctx);
 	free(script);
 
 	return ret;
@@ -1577,6 +1658,7 @@ int run_shell(void)
 
 	setup_file_in_str(&input);
 	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
+	release_context(&ctx);
 	return rcode;
 }
 
@@ -1626,6 +1708,31 @@ BAREBOX_CMD_START(source)
 	.usage		= cmd_source_usage,
 	BAREBOX_CMD_HELP(cmd_source_help)
 BAREBOX_CMD_END
+
+#ifdef CONFIG_HUSH_GETOPT
+static int do_getopt(struct command *cmdtp, int argc, char *argv[])
+{
+	/*
+	 * This function is never reached. The 'getopt' command is
+	 * only here to provide a help text for the getopt builtin.
+	 */
+	return 0;
+}
+
+static const __maybe_unused char cmd_getopt_help[] =
+"Usage: getopt <optstring> <var>\n"
+"\n"
+"hush option parser. <optstring> is a string with valid options. Add\n"
+"a colon to an options if this option has a required argument or two\n"
+"colons for an optional argument. The current option is saved in <var>,\n"
+"arguments are saved in OPTARG.\n";
+
+BAREBOX_CMD_START(getopt)
+	.cmd		= do_getopt,
+	.usage		= "getopt <optstring> <var>",
+	BAREBOX_CMD_HELP(cmd_getopt_help)
+BAREBOX_CMD_END
+#endif
 
 /**
  * @file

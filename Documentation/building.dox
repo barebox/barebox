@@ -1,0 +1,60 @@
+/** @page building Building
+
+<i>This section describes how to build the Barebox bootloader.</i>
+
+@a Barebox uses Kconfig/Kbuild from the Linux kernel to build it's
+sources. It consists of two parts: the makefile infrastructure (kbuild)
+and a configuration system (kconfig). So building @a barebox is very
+similar to building the Linux kernel.
+
+In the examples below we use the "sandbox" configuration, which is a
+port of @a Barebox to the Linux userspace. This makes it possible to
+test the code without having real hardware or even qemu. Note that the
+sandbox architecture does only work well on x86 and has some issues on
+x86_64.
+
+\todo Find out about issues on x86_64.
+
+Selecting the architecture and the corresponding cross compiler is done
+by setting the following environment variables:
+
+- ARCH=\<architecture>
+- CROSS_COMPILE=\<compiler-prefix>
+
+For @p ARCH=sandbox we do not need a cross compiler, so it is sufficient
+to specify the architecture:
+
+@code
+# export ARCH=sandbox
+@endcode
+
+In order to configure the various aspects of @a barebox, start the
+@a barebox configuration system:
+
+@code
+# make menuconfig
+@endcode
+
+This command starts a menu box and lets you select all the different
+options available for the selected architecture. Once the configuration
+is finished (you can simulate this by using the default config file with
+'make sandbox_defconfig'), there is a .config file in the toplevel
+directory of the sourcecode.
+
+After @a barebox is configured, we can start the compilation:
+
+@code
+# make
+@endcode
+
+You can use '-j \<n\>' in order to do a parallel build if you have more
+than one cpus.
+
+If everything goes well, the result is a file called @p barebox:
+
+@code
+# ls -l barebox
+-rwxr-xr-x 1 rsc ptx 114073 Jun 26 22:34 barebox
+@endcode
+
+*/

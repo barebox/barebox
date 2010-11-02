@@ -26,13 +26,13 @@
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
-#include <asm/cache-l2x0.h>
 #include <asm/io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
+#ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
 	uint32_t r;
@@ -45,17 +45,32 @@ static void __bare_init __naked insdram(void)
 
 	board_init_lowlevel_return();
 }
-
-#define MX25_CCM_MCR	0x64
-#define MX25_CCM_CGR0	0x0c
-#define MX25_CCM_CGR1	0x10
-#define MX25_CCM_CGR2	0x14
+#endif
 
 void __bare_init __naked board_init_lowlevel(void)
 {
 	uint32_t r;
+#ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
+#endif
+	register uint32_t loops = 0x20000;
+
+	/* restart the MPLL and wait until it's stable */
+	writel(readl(IMX_CCM_BASE + CCM_CCTL) | (1 << 27),
+						IMX_CCM_BASE + CCM_CCTL);
+	while (readl(IMX_CCM_BASE + CCM_CCTL) & (1 << 27)) {};
+
+	/* Configure dividers and ARM clock source
+	 * 	ARM @ 400 MHz
+	 * 	AHB @ 133 MHz
+	 */
+	writel(0x20034000, IMX_CCM_BASE + CCM_CCTL);
+
+	/* Enable UART1 / FEC / */
+/*	writel(0x1FFFFFFF, IMX_CCM_BASE + CCM_CGCR0);
+	writel(0xFFFFFFFF, IMX_CCM_BASE + CCM_CGCR1);
+	writel(0x000FDFFF, IMX_CCM_BASE + CCM_CGCR2);*/
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -102,23 +117,46 @@ void __bare_init __naked board_init_lowlevel(void)
 	 */
 	writel(0x1, 0xb8003000);
 
-	/* enable all the clocks */
-	writel(0x038A81A2, IMX_CCM_BASE + MX25_CCM_CGR0);
-	writel(0x24788F00, IMX_CCM_BASE + MX25_CCM_CGR1);
-	writel(0x00004438, IMX_CCM_BASE + MX25_CCM_CGR2);
-	writel(0x00, IMX_CCM_BASE + MX25_CCM_MCR);
+	/* Speed up NAND controller by adjusting the NFC divider */
+	r = readl(IMX_CCM_BASE + CCM_PCDR2);
+	r &= ~0xf;
+	r |= 0x1;
+	writel(r, IMX_CCM_BASE + CCM_PCDR2);
+
+	/* Skip SDRAM initialization if we run from RAM */
+	r = get_pc();
+	if (r > 0x80000000 && r < 0x90000000)
+		board_init_lowlevel_return();
+
+	/* Init Mobile DDR */
+	writel(0x0000000E, ESDMISC);
+	writel(0x00000004, ESDMISC);
+	__asm__ volatile ("1:\n"
+			"subs %0, %1, #1\n"
+			"bne 1b":"=r" (loops):"0" (loops));
+
+	writel(0x0029572B, ESDCFG0);
+	writel(0x92210000, ESDCTL0);
+	writeb(0xda, IMX_SDRAM_CS0 + 0x400);
+	writel(0xA2210000, ESDCTL0);
+	writeb(0xda, IMX_SDRAM_CS0);
+	writeb(0xda, IMX_SDRAM_CS0);
+	writel(0xB2210000, ESDCTL0);
+	writeb(0xda, IMX_SDRAM_CS0 + 0x33);
+	writeb(0xda, IMX_SDRAM_CS0 + 0x1000000);
+	writel(0x82216080, ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x1000)
+	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
 		board_init_lowlevel_return();
 
 	src = (unsigned int *)IMX_NFC_BASE;
 	trg = (unsigned int *)TEXT_BASE;
 
 	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x1000 / sizeof(int); i++)
+	for (i = 0; i < 0x800 / sizeof(int); i++)
 		*trg++ = *src++;
 
 	/* Jump to SDRAM */

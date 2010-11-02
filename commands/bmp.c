@@ -193,17 +193,28 @@ failed_memmap:
 	return 1;
 }
 
-static const __maybe_unused char cmd_bmp_help[] =
-"Usage: bmp [OPTION]... FILE\n"
-"show bmp image FILE.\n"
-"  -f <fb>   framebuffer device (/dev/fb0)\n"
-"  -x <xofs> x offset (default center)\n"
-"  -y <yofs> y offset (default center)\n"
-"  -o        render offscreen\n";
+BAREBOX_CMD_HELP_START(bmp)
+BAREBOX_CMD_HELP_USAGE("bmp [OPTIONS] FILE\n")
+BAREBOX_CMD_HELP_SHORT("Show the bitmap FILE on the framebuffer.\n")
+BAREBOX_CMD_HELP_OPT  ("-f <fb>",   "framebuffer device (/dev/fb0)\n")
+BAREBOX_CMD_HELP_OPT  ("-x <xofs>", "x offset (default center)\n")
+BAREBOX_CMD_HELP_OPT  ("-y <yofs>", "y offset (default center)\n")
+BAREBOX_CMD_HELP_OPT  ("-o",        "render offscreen\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page bmp_command
+
+This command displays a graphics in the bitmap (.bmp) format on the
+framebuffer. Currently the bmp command supports images with 8 and 24 bit
+color depth.
+
+\todo What does the -o (offscreen) option do?
+
+ */
 
 BAREBOX_CMD_START(bmp)
 	.cmd		= do_bmp,
 	.usage		= "show a bmp image",
 	BAREBOX_CMD_HELP(cmd_bmp_help)
 BAREBOX_CMD_END
-

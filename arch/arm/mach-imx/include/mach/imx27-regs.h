@@ -82,14 +82,6 @@
 
 #include "esdctl.h"
 
-/* Watchdog Registers*/
-#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
-#define WSTR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Status Register  */
-
-/* important definition of some bits of WCR */
-#define WCR_WDE 0x04
-
 /* PLL registers */
 #define CSCR		__REG(IMX_PLL_BASE + 0x00) /* Clock Source Control Register       */
 #define MPCTL0		__REG(IMX_PLL_BASE + 0x04) /* MCU PLL Control Register 0          */
@@ -226,14 +218,6 @@
 #define ESDCFG_TRP(x)		(((x) & 0x3) << 18)
 #define ESDCFG_TWTR		(1 << 20)
 #define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
-
-#define ESDMISC_RST		(1 << 1)
-#define ESDMISC_MDDREN		(1 << 2)
-#define ESDMISC_MDDR_DL_RST	(1 << 3)
-#define ESDMISC_MDDR_MDIS	(1 << 4)
-#define ESDMISC_LHD		(1 << 5)
-#define ESDMISC_MA10_SHARE	(1 << 6)
-#define ESDMISC_SDRAM_RDY	(1 << 6)
 
 /*
  * Definitions for the clocksource driver

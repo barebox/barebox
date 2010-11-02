@@ -109,7 +109,7 @@ static int do_bootm_linux(struct image_data *data)
 	const char *commandline = getenv ("bootargs");
 	uint32_t loadaddr,loadsize;
 
-	if (image_check_type(os_header, IH_TYPE_MULTI)) {
+	if (image_get_type(os_header) == IH_TYPE_MULTI) {
 		printf("Multifile images not handled at the moment\n");
 		return -1;
 	}

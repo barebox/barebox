@@ -31,6 +31,11 @@ static int do_clear(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
+BAREBOX_CMD_HELP_START(clear)
+BAREBOX_CMD_HELP_USAGE("clear\n")
+BAREBOX_CMD_HELP_SHORT("Clear the screen.\n")
+BAREBOX_CMD_HELP_END
+
 BAREBOX_CMD_START(clear)
 	.cmd		= do_clear,
 	.usage		= "clear screen",

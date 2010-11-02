@@ -167,7 +167,7 @@ struct image_handle *map_image(const char *filename, int verify)
 		goto err_out;
 	}
 
-	if (image_check_magic(header)) {
+	if (image_get_magic(header) != IH_MAGIC) {
 		puts ("Bad Magic Number\n");
 		goto err_out;
 	}
@@ -225,7 +225,7 @@ void unmap_image(struct image_handle *handle)
 }
 EXPORT_SYMBOL(unmap_image);
 
-LIST_HEAD(handler_list);
+static LIST_HEAD(handler_list);
 
 int register_image_handler(struct image_handler *handler)
 {
@@ -332,7 +332,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	os_header = &os_handle->header;
 
-	if (image_check_arch(os_header, IH_ARCH)) {
+	if (image_get_arch(os_header) != IH_ARCH) {
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
@@ -350,7 +350,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
-		if (image_check_os(os_header, handler->image_type)) {
+		if (image_get_os(os_header) == handler->image_type) {
 			handler->bootm(&data);
 			printf("handler returned!\n");
 			goto err_out;
@@ -368,18 +368,24 @@ err_out:
 	return 1;
 }
 
-static const __maybe_unused char cmd_bootm_help[] =
-"Usage: bootm [OPTION] image\n"
-"Boot application image\n"
-" -n             do not verify the images (speeds up boot process)\n"
-" -h             show advanced options\n";
-
+BAREBOX_CMD_HELP_START(bootm)
+BAREBOX_CMD_HELP_USAGE("bootm [-n] image\n")
+BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
+BAREBOX_CMD_HELP_OPT  ("-n",  "Do not verify the image (speeds up boot process)\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
-	.usage		= "boot application image",
+	.usage		= "boot an application image",
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
+
+/**
+ * @page bootm_command
+
+\todo What does bootm do, what kind of image does it boot?
+
+ */
 
 #ifdef CONFIG_CMD_IMI
 static int do_iminfo(struct command *cmdtp, int argc, char *argv[])
@@ -409,7 +415,7 @@ static int image_info (ulong addr)
 	/* Copy header so we can blank CRC field for re-calculation */
 	memmove (&header, (char *)addr, image_get_header_size());
 
-	if (image_check_magic(hdr)) {
+	if (image_get_magic(hdr) != IH_MAGIC) {
 		puts ("   Bad Magic Number\n");
 		return 1;
 	}
@@ -440,14 +446,16 @@ static int image_info (ulong addr)
 	return 0;
 }
 
-BAREBOX_CMD(
-	iminfo,		1,	do_iminfo,
-	"iminfo  - print header information for application image\n",
-	"addr [addr ...]\n"
-	"    - print header information for application image starting at\n"
-	"      address 'addr' in memory; this includes verification of the\n"
-	"      image contents (magic number, header and payload checksums)\n"
-);
+BAREBOX_CMD_HELP_START(iminfo)
+BAREBOX_CMD_HELP_USAGE("iminfo\n")
+BAREBOX_CMD_HELP_SHORT("Print header information for an application image.\n")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(iminfo)
+	.cmd		= do_iminfo,
+	.usage		= "print header information for an application image",
+	BAREBOX_CMD_HELP(cmd_iminfo_help)
+BAREBOX_CMD_END
 
 #endif	/* CONFIG_CMD_IMI */
 

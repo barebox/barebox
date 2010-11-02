@@ -135,11 +135,11 @@ struct buffer_descriptor {
  * @brief i.MX27-FEC private structure
  */
 struct fec_priv {
-	void *regs;
+	void __iomem *regs;
 	xceiver_type xcv_type;			/* transceiver type          */
-	struct buffer_descriptor *rbd_base;	/* RBD ring                  */
+	struct buffer_descriptor __iomem *rbd_base;	/* RBD ring                  */
 	int rbd_index;				/* next receive BD to read   */
-	struct buffer_descriptor *tbd_base;	/* TBD ring                  */
+	struct buffer_descriptor __iomem *tbd_base;	/* TBD ring                  */
 	int tbd_index;				/* next transmit BD to write */
 	struct mii_device miidev;
 };

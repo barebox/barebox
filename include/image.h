@@ -320,61 +320,6 @@ static inline void image_set_name(image_header_t *hdr, const char *name)
 	strncpy(image_get_name(hdr), name, IH_NMLEN);
 }
 
-static inline int image_check_magic(const image_header_t *hdr)
-{
-	return (image_get_magic(hdr) == IH_MAGIC);
-}
-static inline int image_check_type(const image_header_t *hdr, uint8_t type)
-{
-	return (image_get_type(hdr) == type);
-}
-static inline int image_check_arch(const image_header_t *hdr, uint8_t arch)
-{
-	return (image_get_arch(hdr) == arch);
-}
-static inline int image_check_os(const image_header_t *hdr, uint8_t os)
-{
-	return (image_get_os(hdr) == os);
-}
-
-#ifdef __BAREBOX__
-static inline int image_check_target_arch(const image_header_t *hdr)
-{
-#if defined(__ARM__)
-	if (!image_check_arch(hdr, IH_ARCH_ARM))
-#elif defined(__avr32__)
-	if (!image_check_arch(hdr, IH_ARCH_AVR32))
-#elif defined(__bfin__)
-	if (!image_check_arch(hdr, IH_ARCH_BLACKFIN))
-#elif defined(__I386__)
-	if (!image_check_arch(hdr, IH_ARCH_I386))
-#elif defined(__m68k__)
-	if (!image_check_arch(hdr, IH_ARCH_M68K))
-#elif defined(__microblaze__)
-	if (!image_check_arch(hdr, IH_ARCH_MICROBLAZE))
-#elif defined(__mips__)
-	if (!image_check_arch(hdr, IH_ARCH_MIPS))
-#elif defined(__nios__)
-	if (!image_check_arch(hdr, IH_ARCH_NIOS))
-#elif defined(__nios2__)
-	if (!image_check_arch(hdr, IH_ARCH_NIOS2))
-#elif defined(__PPC__)
-	if (!image_check_arch(hdr, IH_ARCH_PPC))
-#elif defined(__sh__)
-	if (!image_check_arch(hdr, IH_ARCH_SH))
-#elif defined(__sparc__)
-	if (!image_check_arch(hdr, IH_ARCH_SPARC))
-#elif defined(CONFIG_LINUX)
-	if (!image_check_arch(hdr, IH_ARCH_LINUX))
-#else
-# error Unknown CPU type
-#endif
-		return 0;
-
-	return 1;
-}
-#endif
-
 ulong image_multi_count(const image_header_t *hdr);
 void image_multi_getimg(const image_header_t *hdr, ulong idx,
 			ulong *data, ulong *len);
@@ -391,6 +336,7 @@ void	print_image_hdr (image_header_t *hdr);
  * image.
  */
 struct image_handle *map_image(const char *filename, int verify);
+void unmap_image(struct image_handle *handle);
 
 /*
  * Relocate an image to load_address by uncompressing

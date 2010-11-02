@@ -93,7 +93,7 @@ static struct device_d nand_dev = {
 };
 
 #ifdef CONFIG_PCM043_DISPLAY_SHARP
-static const struct fb_videomode pcm043_fb_mode = {
+static struct fb_videomode pcm043_fb_mode = {
 	/* 240x320 @ 60 Hz */
 	.name		= "Sharp-LQ035Q7",
 	.refresh	= 60,
@@ -111,7 +111,7 @@ static const struct fb_videomode pcm043_fb_mode = {
 	.flag		= 0,
 };
 #else
-static const struct fb_videomode pcm043_fb_mode = {
+static struct fb_videomode pcm043_fb_mode = {
 	/* 240x320 @ 60 Hz */
 	.name		= "TX090",
 	.refresh	= 60,

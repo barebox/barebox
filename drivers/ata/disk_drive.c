@@ -23,6 +23,7 @@
  * @brief Generic disk drive support
  *
  * @todo Support for disks larger than 4 GiB
+ * @todo Reliable size detection for BIOS based disks (on x86 only)
  */
 
 #include <stdio.h>
@@ -34,6 +35,7 @@
 #include <errno.h>
 #include <string.h>
 #include <linux/kernel.h>
+#include <malloc.h>
 
 /**
  * Description of one partition table entry (D*S type)
@@ -105,7 +107,8 @@ static int disk_register_partitions(struct device_d *dev, struct partition_entry
 			if (table[part_order[i]].partition_size > 0x7fffff)
 				continue;
 #endif
-			dev_info(dev, "Registering partition %s to drive %s\n", partition_name, drive_name);
+			dev_dbg(dev, "Registering partition %s to drive %s\n",
+				partition_name, drive_name);
 			rc = devfs_add_partition(drive_name,
 				table[part_order[i]].partition_start * SECTOR_SIZE,
 				table[part_order[i]].partition_size * SECTOR_SIZE,
@@ -268,23 +271,22 @@ static struct file_operations disk_ops = {
  */
 static int disk_probe(struct device_d *dev)
 {
-	uint8_t sector[512];
+	uint8_t *sector;
 	int rc;
 	struct ata_interface *intf = dev->platform_data;
 	struct cdev *disk_cdev;
 
+	sector = xmalloc(SECTOR_SIZE);
+
 	rc = intf->read(dev, 0, 1, sector);
 	if (rc != 0) {
 		dev_err(dev, "Cannot read MBR of this device\n");
-		return -1;
+		rc = -ENODEV;
+		goto on_error;
 	}
 
 	/* It seems a valuable disk. Register it */
 	disk_cdev = xzalloc(sizeof(struct cdev));
-	if (disk_cdev == NULL) {
-		dev_err(dev, "Out of memory\n");
-		return -ENOMEM;
-	}
 
 	/*
 	 * BIOS based disks needs special handling. Not the driver can
@@ -298,28 +300,39 @@ static int disk_probe(struct device_d *dev)
 	else
 #endif
 		disk_cdev->name = asprintf("disk%d", dev->id);
-	/**
-	 * @todo we need the size of the drive, else its nearly impossible
-	 * to do anything with it (at least with the generic routines)
-	 */
-	disk_cdev->size = 32;	/* FIXME */
+
+	/* On x86, BIOS based disks are coming without a valid .size field */
+	if (dev->size == 0) {
+		/*
+		 * We need always the size of the drive, else its nearly impossible
+		 * to do anything with it (at least with the generic routines)
+		 */
+		disk_cdev->size = 32;
+	} else
+		disk_cdev->size = dev->size;
 	disk_cdev->ops = &disk_ops;
 	disk_cdev->dev = dev;
 	devfs_create(disk_cdev);
 
 	if ((sector[510] != 0x55) || (sector[511] != 0xAA)) {
 		dev_info(dev, "No partition table found\n");
-		return 0;
+		rc = 0;
+		goto on_error;
 	}
 
-	/* guess the size of this drive */
-	dev->size = disk_guess_size(dev, (struct partition_entry*)&sector[446]) * SECTOR_SIZE;
-	dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
-	disk_cdev->size = dev->size;
+	if (dev->size == 0) {
+		/* guess the size of this drive if not otherwise given */
+		dev->size = disk_guess_size(dev,
+			(struct partition_entry*)&sector[446]) * SECTOR_SIZE;
+		dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
+		disk_cdev->size = dev->size;
+	}
 
-	disk_register_partitions(dev, (struct partition_entry*)&sector[446]);
+	rc = disk_register_partitions(dev, (struct partition_entry*)&sector[446]);
 
-	return 0;
+on_error:
+	free(sector);
+	return rc;
 }
 
 #ifdef CONFIG_ATA_BIOS

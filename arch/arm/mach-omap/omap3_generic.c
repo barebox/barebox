@@ -52,11 +52,11 @@
  *
  * In case of crashes, reset the CPU
  *
- * @param[in] addr -Cause of crash
+ * @param addr Cause of crash
  *
  * @return void
  */
-void __noreturn reset_cpu(ulong addr)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	/* FIXME: Enable WDT and cause reset */
 	hang();

@@ -24,6 +24,7 @@
 #include <asm-generic/div64.h>
 #include <common.h>
 #include <command.h>
+#include <mach/clock.h>
 
 /*
  *  get the system pll clock in Hz

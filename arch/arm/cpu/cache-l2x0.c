@@ -127,7 +127,7 @@ static void l2x0_clean_range(unsigned long start, unsigned long end)
 	cache_sync();
 }
 
-void l2x0_flush_range(unsigned long start, unsigned long end)
+static void l2x0_flush_range(unsigned long start, unsigned long end)
 {
 	start &= ~(CACHE_LINE_SIZE - 1);
 	while (start < end) {

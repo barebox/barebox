@@ -76,21 +76,35 @@ void barebox_cmd_usage(struct command *cmdtp);
 
 #endif	/* __ASSEMBLY__ */
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 
-#define BAREBOX_CMD_START(_name)				\
-const struct command __barebox_cmd_##_name	\
-	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {				\
+#define BAREBOX_CMD_START(_name)							\
+extern const struct command __barebox_cmd_##_name;					\
+const struct command __barebox_cmd_##_name						\
+	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {	\
 	.name		= #_name,
 
 #define BAREBOX_CMD_END					\
 };
+
+#define BAREBOX_CMD_HELP_START(_name) \
+static const __maybe_unused char cmd_##_name##_help[] =
+
+#define BAREBOX_CMD_HELP_USAGE(_name) "Usage: " _name
+#define BAREBOX_CMD_HELP_SHORT(_text) _text
+#define BAREBOX_CMD_HELP_OPT(_opt, _desc) _opt "\t" _desc
+#define BAREBOX_CMD_HELP_TEXT(_text)
+#define BAREBOX_CMD_HELP_END ;
 
 #ifdef CONFIG_LONGHELP
 #define BAREBOX_CMD_HELP(text)	.help = text,
 #else
 #define BAREBOX_CMD_HELP(text)
 #endif
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 int register_command(struct command *);
 

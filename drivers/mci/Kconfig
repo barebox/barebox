@@ -1,0 +1,64 @@
+menuconfig MCI
+	bool "MCI drivers                   "
+	select ATA
+	select ATA_DISK
+	help
+	  Add support for MCI drivers, used to handle MMC and SD cards
+
+if MCI
+
+comment "--- Feature list ---"
+
+config MCI_STARTUP
+	bool "Probe on system start"
+	help
+	  Say 'y' here if the MCI framework should probe for attached MCI cards
+	  on system start up. This is required if the card carries barebox's
+	  environment (for example on systems where the MCI card is the sole
+	  bootmedia). Otherwise probing run on demand with "mci*.probe=1"
+
+config MCI_INFO
+	bool "MCI Info"
+	depends on CMD_DEVINFO
+	default y
+	help
+	  This entry adds more info about the attached MCI card, when the
+	  'devinfo' command is used on the mci device.
+
+comment "--- MCI host drivers ---"
+
+config MCI_STM378X
+	bool "i.MX23"
+	depends on ARCH_STM
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  i.MX23 based system.
+
+config MCI_S3C
+	bool "S3C"
+	depends on ARCH_S3C24xx
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Samsung S3C24xx based system.
+
+config MCI_IMX
+	bool "i.MX"
+	depends on ARCH_IMX27 || ARCH_IMX31
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Freescale i.MX based system.
+
+config MCI_IMX_ESDHC
+	bool "i.MX esdhc"
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Freescale i.MX25/35/51 based system.
+
+config MCI_IMX_ESDHC_PIO
+	bool "use PIO mode"
+	depends on MCI_IMX_ESDHC
+	help
+	  mostly useful for debugging. Normally you should use DMA.
+
+endif

@@ -66,6 +66,7 @@ void __bare_init __naked board_init_lowlevel(void)
 	unsigned int *trg, *src;
 	int i;
 #endif
+	register uint32_t loops = 0x20000;
 
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */
@@ -118,7 +119,7 @@ void __bare_init __naked board_init_lowlevel(void)
 	writel(r, ccm_base + CCM_CGR0);
 
 	r = readl(ccm_base + CCM_CGR1);
-	r |= 0x00000C00;
+	r |= 0x00030C00;
 	r |= 0x00000003;
 	writel(r, ccm_base + CCM_CGR1);
 
@@ -132,31 +133,34 @@ void __bare_init __naked board_init_lowlevel(void)
 		board_init_lowlevel_return();
 
 	/* Init Mobile DDR */
+	writel(0x0000000E, ESDMISC);
 	writel(0x00000004, ESDMISC);
-	writel(0x0000000C, ESDMISC);
+	__asm__ volatile ("1:\n"
+			"subs %0, %1, #1\n"
+			"bne 1b":"=r" (loops):"0" (loops));
+
 	writel(0x0009572B, ESDCFG0);
 	writel(0x92220000, ESDCTL0);
 	writeb(0xda, IMX_SDRAM_CS0 + 0x400);
 	writel(0xA2220000, ESDCTL0);
-	writel(0x87654321, IMX_SDRAM_CS0);
-	writel(0x87654321, IMX_SDRAM_CS0);
+	writeb(0xda, IMX_SDRAM_CS0);
+	writeb(0xda, IMX_SDRAM_CS0);
 	writel(0xB2220000, ESDCTL0);
 	writeb(0xda, IMX_SDRAM_CS0 + 0x33);
 	writeb(0xda, IMX_SDRAM_CS0 + 0x2000000);
-	writel(0x82224080, ESDCTL0);
-	writel(0x00000004, ESDMISC);
+	writel(0x82228080, ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x1000)
+	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
 		board_init_lowlevel_return();
 
 	src = (unsigned int *)IMX_NFC_BASE;
 	trg = (unsigned int *)TEXT_BASE;
 
 	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x1000 / sizeof(int); i++)
+	for (i = 0; i < 0x800 / sizeof(int); i++)
 		*trg++ = *src++;
 
 	/* Jump to SDRAM */

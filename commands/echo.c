@@ -111,8 +111,25 @@ no_optarg_out:
 	return 1;
 }
 
+BAREBOX_CMD_HELP_START(echo)
+BAREBOX_CMD_HELP_USAGE("echo [OPTIONS] [STRING]\n")
+BAREBOX_CMD_HELP_SHORT("Display a line of text.\n")
+BAREBOX_CMD_HELP_OPT  ("-n",  "do not output the trailing newline\n")
+BAREBOX_CMD_HELP_OPT  ("-a",  "FIXME\n")
+BAREBOX_CMD_HELP_OPT  ("-o",  "FIXME\n")
+BAREBOX_CMD_HELP_OPT  ("-e",  "FIXME\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page echo_command
+
+\todo Add documentation for -a, -o and -e.
+
+ */
+
 BAREBOX_CMD_START(echo)
 	.cmd		= do_echo,
 	.usage		= "echo args to console",
+	BAREBOX_CMD_HELP(cmd_echo_help)
 BAREBOX_CMD_END
 

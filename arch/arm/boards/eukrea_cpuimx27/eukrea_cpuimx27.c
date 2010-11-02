@@ -44,7 +44,7 @@
 #include <ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
-#include <i2c/lp3972.h>
+#include <mfd/lp3972.h>
 #include <mach/iomux-mx27.h>
 
 static struct device_d cfi_dev = {
@@ -275,6 +275,7 @@ static int eukrea_cpuimx27_devices_init(void)
 		PA29_PF_VSYNC,
 		PA31_PF_OE_ACD,
 		GPIO_PORTE | 5 | GPIO_GPIO | GPIO_OUT,
+		GPIO_PORTA | 25 | GPIO_GPIO | GPIO_OUT,
 #endif
 	};
 
@@ -311,6 +312,8 @@ static int eukrea_cpuimx27_devices_init(void)
 	register_device(&imxfb_dev);
 	gpio_direction_output(GPIO_PORTE | 5, 0);
 	gpio_set_value(GPIO_PORTE | 5, 1);
+	gpio_direction_output(GPIO_PORTA | 25, 0);
+	gpio_set_value(GPIO_PORTA | 25, 1);
 #endif
 
 	armlinux_add_dram(&sdram_dev);

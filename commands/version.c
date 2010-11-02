@@ -26,7 +26,6 @@
 
 static int do_version(struct command *cmdtp, int argc, char *argv[])
 {
-	extern char version_string[];
 	printf ("\n%s\n", version_string);
 	return 0;
 }

@@ -1,6 +1,5 @@
 obj-y += bat_rw.o
 obj-y += board.o
-obj-y += cache.o
 obj-y += extable.o
 obj-$(CONFIG_USE_IRQ) += interrupts.o
 obj-y += kgdb.o

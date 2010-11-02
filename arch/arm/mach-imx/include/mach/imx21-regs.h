@@ -72,14 +72,6 @@
 #define CS5L __REG(IMX_EIM_BASE + 0x2C) /* Chip Select 5 Lower Register    */
 #define EIM  __REG(IMX_EIM_BASE + 0x30) /* EIM Configuration Register      */
 
-/* Watchdog Registers*/
-#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
-#define WRSR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Reset Status Register  */
-
-/* important definition of some bits of WCR */
-#define WCR_WDE 0x04
-
 /* PLL registers */
 #define CSCR		__REG(IMX_PLL_BASE + 0x00) /* Clock Source Control Register       */
 #define MPCTL0		__REG(IMX_PLL_BASE + 0x04) /* MCU PLL Control Register 0          */

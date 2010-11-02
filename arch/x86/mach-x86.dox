@@ -2,7 +2,7 @@
  * how to integrate a new CPU (MACH) into this part of the barebox tree
  */
 
-/** @page x86_runtime barebox on x86 at runtime
+/** @page dev_x86_mach barebox on x86 at runtime
 
 @section mach_x86_memory_layout barebox's memory layout (BIOS based)
 

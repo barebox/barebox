@@ -41,8 +41,6 @@
  * Called from a 16 bit real mode segment and returns into a 32 bit segment
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <asm/modes.h>
 
 	.file "walkyrie.S"
@@ -180,4 +178,3 @@ enter_realmode:
 
 	.size prot_to_real, .-prot_to_real
 
-#endif

@@ -149,45 +149,30 @@ static int do_addpart(struct command * cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_addpart_help[] =
-"Usage: addpart <device> <partition description>\n"
-"\n"
-"addpart adds a partition description to a device. The partition description\n"
-"has the form\n"
-"size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n"
-"<device> is the device name under. Size and offset can be given in decimal\n"
-"or - if prefixed with 0x in hex. Both can have an optional suffix K,M,G.\n"
-"The size of the last partition can be specified as '-' for the remaining\n"
-"space of the device.\n"
-"This format is the same as used in the Linux kernel for cmdline mtd partitions.\n"
-"\n"
-"Note: That this command has to be reworked and will probably change it's API.";
+BAREBOX_CMD_HELP_START(addpart)
+BAREBOX_CMD_HELP_USAGE("addpart <device> <part_desc>\n")
+BAREBOX_CMD_HELP_SHORT("Add a partition description to a device.\n")
+BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
+BAREBOX_CMD_HELP_OPT  ("<part_desc>", "size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page addpart_command
+
+The size and the offset can be given in decimal (without any prefix) and
+in hex (prefixed with 0x). Both can have an optional suffix K, M or G.
+The size of the last partition can be specified as '-' for the remaining
+space on the device.  This format is the same as used by the Linux
+kernel or cmdline mtd partitions.
+
+\todo This command has to be reworked and will probably change it's API.
+*/
 
 BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
 	.usage = "adds a partition table to a device",
 	BAREBOX_CMD_HELP(cmd_addpart_help)
 BAREBOX_CMD_END
-
-/** @page addpart_command addpart Add a partition to a device
- *
- * Usage is: addpart \<device> \<partition description>
- *
- * Adds a partition description to a device. The partition description has the
- * form
- *
- * size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...
- *
- * \<device> is the device name under. Size and offset can be given in decimal
- * or - if prefixed with 0x - in hex. Both can have an optional suffix K,M,G.
- * The size of the last partition can be specified as '-' for the remaining
- * space of the device.
- *
- * @note The format is the same as used in the Linux kernel for cmdline mtd
- * partitions.
- *
- * @note This command has to be reworked and will probably change it's API.
- */
 
 static int do_delpart(struct command * cmdtp, int argc, char *argv[])
 {
@@ -204,9 +189,21 @@ static int do_delpart(struct command * cmdtp, int argc, char *argv[])
 	return 1;
 }
 
-static const __maybe_unused char cmd_delpart_help[] =
-"Usage: delpart FILE...\n"
-"Delete partitions previously added to a device with addpart.\n";
+BAREBOX_CMD_HELP_START(delpart)
+BAREBOX_CMD_HELP_USAGE("delpart <part 1> [<part n>] \n")
+BAREBOX_CMD_HELP_SHORT("Delete partitions previously added to a device with addpart.\n")
+BAREBOX_CMD_HELP_END
+
+/**
+ * @page delpart_command
+
+Partitions are created by adding their description with the addpart
+command. If you want to get rid of a partition again, use delpart. The
+argument list is taken as a list of partitions to be deleted.
+
+\todo Add an example
+
+ */
 
 BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
@@ -214,9 +211,3 @@ BAREBOX_CMD_START(delpart)
 	BAREBOX_CMD_HELP(cmd_delpart_help)
 BAREBOX_CMD_END
 
-/** @page delpart_command delpart Delete a partition
- *
- * Usage is: delpart \<partions>
- *
- * Delete a partition previously added to a device with addpart.
- */

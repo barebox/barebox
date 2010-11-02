@@ -73,7 +73,7 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu through the reset controller
  */
-void __noreturn reset_cpu (unsigned long ignored)
+void __noreturn reset_cpu (unsigned long addr)
 {
 	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY |
 				     AT91_RSTC_PROCRST |

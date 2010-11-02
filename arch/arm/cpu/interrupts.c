@@ -28,6 +28,14 @@
 #include <common.h>
 #include <asm/ptrace.h>
 
+void do_undefined_instruction (struct pt_regs *pt_regs);
+void do_software_interrupt (struct pt_regs *pt_regs);
+void do_prefetch_abort (struct pt_regs *pt_regs);
+void do_data_abort (struct pt_regs *pt_regs);
+void do_not_used (struct pt_regs *pt_regs);
+void do_fiq (struct pt_regs *pt_regs);
+void do_irq (struct pt_regs *pt_regs);
+
 #ifdef CONFIG_USE_IRQ
 /* enable IRQ interrupts */
 void enable_interrupts (void)
@@ -62,7 +70,7 @@ int disable_interrupts (void)
 /**
  * FIXME
  */
-void bad_mode (void)
+static void bad_mode (void)
 {
 	panic ("Resetting CPU ...\n");
 	reset_cpu (0);

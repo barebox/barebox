@@ -563,7 +563,8 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		dma_free_coherent(curr_td);
 	}
 
-	dma_inv_range(req->req.buf, req->req.buf + req->req.length);
+	dma_inv_range((unsigned long)req->req.buf,
+		(unsigned long)(req->req.buf + req->req.length));
 
 	if (status && (status != -ESHUTDOWN))
 		VDBG("complete %s req %p stat %d len %u/%u",

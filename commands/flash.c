@@ -83,10 +83,10 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_erase_help[] =
-"Usage: erase <device> [area]\n"
-"Erase a flash device or parts of a device if an area specification\n"
-"is given\n";
+BAREBOX_CMD_HELP_START(erase)
+BAREBOX_CMD_HELP_USAGE("erase <device> [area]\n")
+BAREBOX_CMD_HELP_SHORT("Erase a flash device or parts of a device if an area specification is given.\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(erase)
 	.cmd		= do_flerase,
@@ -94,16 +94,18 @@ BAREBOX_CMD_START(erase)
 	BAREBOX_CMD_HELP(cmd_erase_help)
 BAREBOX_CMD_END
 
-/** @page erase_command erase Erase flash memory
- *
- * Usage is: erase \<devicee>
- *
- * Erase the flash memory behind the device. It depends on the device given,
- * what area will be erased. If the device represents the whole flash memory
- * the whole memory will be erased. If the device represents a partition on
- * a main flash memory, only this partition part will be erased.
- *
- * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+/**
+ * @page erase_command
+
+<p> Erase the flash memory handled by this device. Which area will be
+erased depends on the device: If the device represents the whole flash
+memory, the whole memory will be erased. If the device represents a
+partition on a main flash memory, only this partition part will be
+erased. </p>
+
+Refer to \ref addpart_command, \ref delpart_command and \ref
+devinfo_command for partition handling.
+
  */
 
 static int do_protect(struct command *cmdtp, int argc, char *argv[])
@@ -160,43 +162,57 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_protect_help[] =
-"Usage: (un)protect <device> [area]\n"
-"(un)protect a flash device or parts of a device if an area specification\n"
-"is given\n";
+BAREBOX_CMD_HELP_START(protect)
+BAREBOX_CMD_HELP_USAGE("protect <device> [area]\n")
+BAREBOX_CMD_HELP_SHORT("protect a flash device (or parts of a device, if an area is specified)\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(protect)
 	.cmd		= do_protect,
-	.usage		= "enable FLASH write protection",
+	.usage		= "enable flash write protection",
 	BAREBOX_CMD_HELP(cmd_protect_help)
 BAREBOX_CMD_END
+
+/**
+ * @page protect_command
+
+Protect the flash memory behind the device. It depends on the device
+given, what area will be protected. If the device represents the whole
+flash memory the whole memory will be protected. If the device
+represents a partition on a main flash memory, only this partition part
+will be protected.
+
+Refer addpart_command, delpart_command and devinfo_command for partition
+handling.
+
+\todo Rework this documentation, what is an 'area'? Explain more about
+flashes here.
+
+ */
+
+BAREBOX_CMD_HELP_START(unprotect)
+BAREBOX_CMD_HELP_USAGE("unprotect <device> [area]\n")
+BAREBOX_CMD_HELP_SHORT("unprotect a flash device (or parts of a device, if an area is specified)\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(unprotect)
 	.cmd		= do_protect,
-	.usage		= "disable FLASH write protection",
-	BAREBOX_CMD_HELP(cmd_protect_help)
+	.usage		= "disable flash write protection",
+	BAREBOX_CMD_HELP(cmd_unprotect_help)
 BAREBOX_CMD_END
 
-/** @page protect_command protect Protect a flash memory
- *
- * Usage is: protect \<devicee>
- *
- * Protect the flash memory behind the device. It depends on the device given,
- * what area will be protected. If the device represents the whole flash memory
- * the whole memory will be protected. If the device represents a partition on
- * a main flash memory, only this partition part will be protected.
- *
- * Refer \b addpart, \b delpart and \b devinfo for partition handling.
+/**
+ * @page unprotect_command
+
+Unprotect the flash memory behind the device. It depends on the device given,
+what area will be unprotected. If the device represents the whole flash memory
+the whole memory will be unprotected. If the device represents a partition
+on a main flash memory, only this partition part will be unprotected.
+
+Refer addpart_command, delpart_command and devinfo_command for partition
+handling.
+
+\todo Rework this documentation, what does it mean?
+
  */
 
-/** @page unprotect_command unprotect Unprotect a flash memory
- *
- * Usage is: unprotect \<devicee>
- *
- * Unprotect the flash memory behind the device. It depends on the device given,
- * what area will be unprotected. If the device represents the whole flash memory
- * the whole memory will be unprotected. If the device represents a partition
- * on a main flash memory, only this partition part will be unprotected.
- *
- * Refer \b addpart, \b delpart and \b devinfo for partition handling.
- */

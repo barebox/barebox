@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
+#include <mach/gpio.h>
 
 #if defined CONFIG_ARCH_IMX1 || defined CONFIG_ARCH_IMX21 || defined CONFIG_ARCH_IMX27
 #define GPIO_DR		0x1c
@@ -47,20 +48,20 @@
 #define GPIO_ISR	0x18
 #endif
 
-extern void *imx_gpio_base[];
+extern void __iomem *imx_gpio_base[];
 extern int imx_gpio_count;
 
-static void *gpio_get_base(unsigned gpio)
+static void __iomem *gpio_get_base(unsigned gpio)
 {
 	if (gpio >= imx_gpio_count)
-		return 0;
+		return NULL;
 
 	return imx_gpio_base[gpio / 32];
 }
 
 void gpio_set_value(unsigned gpio, int value)
 {
-	void *base = gpio_get_base(gpio);
+	void __iomem *base = gpio_get_base(gpio);
 	int shift = gpio % 32;
 	u32 val;
 
@@ -79,7 +80,7 @@ void gpio_set_value(unsigned gpio, int value)
 
 int gpio_direction_input(unsigned gpio)
 {
-	void *base = gpio_get_base(gpio);
+	void __iomem *base = gpio_get_base(gpio);
 	int shift = gpio % 32;
 	u32 val;
 
@@ -96,7 +97,7 @@ int gpio_direction_input(unsigned gpio)
 
 int gpio_direction_output(unsigned gpio, int value)
 {
-	void *base = gpio_get_base(gpio);
+	void __iomem *base = gpio_get_base(gpio);
 	int shift = gpio % 32;
 	u32 val;
 
@@ -114,7 +115,7 @@ int gpio_direction_output(unsigned gpio, int value)
 
 int gpio_get_value(unsigned gpio)
 {
-	void *base = gpio_get_base(gpio);
+	void __iomem *base = gpio_get_base(gpio);
 	int shift = gpio % 32;
 	u32 val;
 

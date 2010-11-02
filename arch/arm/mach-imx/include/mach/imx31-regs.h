@@ -120,16 +120,6 @@
 #endif
 
 /*
- * Watchdog Registers
- */
-#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
-#define WSTR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Status Register  */
-
-/* important definition of some bits of WCR */
-#define WCR_WDE 0x04
-
-/*
  * Clock Controller Module (CCM)
  */
 #define IMX_CCM_BASE	0x53f80000

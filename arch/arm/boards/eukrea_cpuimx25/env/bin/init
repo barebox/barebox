@@ -14,9 +14,11 @@ fi
 
 if [ -f /env/logo.bmp ]; then
 	bmp /env/logo.bmp
+	fb0.enable=1
 elif [ -f /env/logo.bmp.lzo ]; then
 	unlzo /env/logo.bmp.lzo /logo.bmp
 	bmp /logo.bmp
+	fb0.enable=1
 fi
 
 if [ -z $eth0.ethaddr ]; then

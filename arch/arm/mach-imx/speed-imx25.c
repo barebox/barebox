@@ -82,7 +82,12 @@ unsigned long imx_get_i2cclk(void)
 	return imx_get_perclk(6);
 }
 
-int imx_dump_clocks(void)
+unsigned long imx_get_mmcclk(void)
+{
+	return imx_get_perclk(3);
+}
+
+void imx_dump_clocks(void)
 {
 	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
 	printf("upll:    %10d Hz\n", imx_get_upllclk());
@@ -92,7 +97,8 @@ int imx_dump_clocks(void)
 	printf("gpt:     %10d Hz\n", imx_get_ipgclk());
 	printf("nand:    %10d Hz\n", imx_get_perclk(8));
 	printf("lcd:     %10d Hz\n", imx_get_perclk(7));
-	return 0;
+	printf("i2c:     %10d Hz\n", imx_get_perclk(6));
+	printf("sdhc1:   %10d Hz\n", imx_get_perclk(3));
 }
 
 /*

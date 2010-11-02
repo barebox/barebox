@@ -8,18 +8,23 @@ PowerPC type:
 
 ARM type:
 
+
 @li @subpage pcm037
 @li @subpage pcm038
 @li @subpage pcm043
 @li @subpage imx21ads
 @li @subpage imx27ads
 @li @subpage the3stack
+@li @subpage mx23_evk
+@li @subpage board_babage
+@li @subpage chumbyone
 @li @subpage scb9328
 @li @subpage netx
 @li @subpage dev_omap_arch
 @li @subpage a9m2440
 @li @subpage a9m2410
 @li @subpage eukrea_cpuimx27
+@li @subpage eukrea_cpuimx35
 @li @subpage edb9301
 @li @subpage edb9302
 @li @subpage edb9302a
@@ -28,6 +33,7 @@ ARM type:
 @li @subpage edb9312
 @li @subpage edb9315
 @li @subpage edb9315a
+@li @subpage board_cupid
 
 Blackfin type:
 

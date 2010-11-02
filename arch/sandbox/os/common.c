@@ -138,7 +138,7 @@ uint64_t linux_get_time(void)
 	return now;
 }
 
-void __attribute__((noreturn)) reset_cpu(int unused)
+void __attribute__((noreturn)) reset_cpu(unsigned long addr)
 {
 	cookmode();
 	exit(0);
@@ -211,11 +211,6 @@ ssize_t linux_write(int fd, const void *buf, size_t count)
 off_t linux_lseek(int fd, off_t offset)
 {
 	return lseek(fd, offset, SEEK_SET);
-}
-
-void  flush_cache(unsigned long dummy1, unsigned long dummy2)
-{
-	/* why should we? */
 }
 
 extern void start_barebox(void);

@@ -364,15 +364,29 @@ out_close:
 	return tftp_err == 0 ? 0 : 1;
 }
 
-static const __maybe_unused char cmd_tftp_help[] =
-"Usage: tftp <remotefile> [localfile]\n"
-"Load a file from a TFTP server.\n"
+BAREBOX_CMD_HELP_START(tftp)
 #ifdef CONFIG_NET_TFTP_PUSH
-"or\n"
-"       tftp -p <localfile> [remotefile]\n"
-"Upload a file to a TFTP server\n"
+BAREBOX_CMD_HELP_USAGE("tftp <remotefile> [localfile], tftp -p <localfile> [remotefile]\n")
+BAREBOX_CMD_HELP_SHORT("Load a file from or upload to TFTP server.\n")
+BAREBOX_CMD_HELP_END
+#else
+BAREBOX_CMD_HELP_USAGE("tftp <remotefile> [localfile]\n")
+BAREBOX_CMD_HELP_SHORT("Load a file from a TFTP server.\n")
+BAREBOX_CMD_HELP_END
 #endif
-;
+
+/**
+ * @page tftp_command
+
+The second file argument can be skipped in which case the first filename
+is used (without the directory part).
+
+\<localfile> can be the local filename or a device file under /dev.
+This also works for flash memory. Refer to \ref erase_command and \ref
+unprotect_command for flash preparation.
+
+\note This command is available only if enabled in menuconfig.
+ */
 
 BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
@@ -383,25 +397,4 @@ BAREBOX_CMD_START(tftp)
 			"Load file using tftp protocol",
 	BAREBOX_CMD_HELP(cmd_tftp_help)
 BAREBOX_CMD_END
-
-/**
- * @page tftp_command tftp
- *
- * Usage:
- *	tftp \<remotefilename\> [\<localfilename\>]
- *
- * or
- *
- *	tftp -p \<localfilename\> [\<remotefilename\>]
- *
- * Load a file from a tftp server or upload a file to a tftp server if
- * the -p option is given. The second file argument can be skipped in
- * which case the first filename is used (without the directory part).
- *
- * \<localfile> can be the local filename or a device file under /dev.
- * This also works for flash memory. Refer to \b erase, \b unprotect for
- * flash preparation.
- *
- * Note: This command is available only if enabled in menuconfig.
- */
 

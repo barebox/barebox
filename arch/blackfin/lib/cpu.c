@@ -32,7 +32,7 @@
 #include <asm/cpu.h>
 #include <init.h>
 
-void __noreturn reset_cpu(ulong ignored)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	icache_disable();
 

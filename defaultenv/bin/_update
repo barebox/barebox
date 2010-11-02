@@ -10,18 +10,16 @@ if [ ! -e "$part" ]; then
 	exit 1
 fi
 
-if [ $# = 1 ]; then
-	image=$1
-fi
+if [ x$mode = xtftp ]; then
+	if [ x$ip = xdhcp ]; then
+		dhcp
+	fi
 
-if [ x$ip = xdhcp ]; then
-	dhcp
-fi
-
-ping $eth0.serverip
-if [ $? -ne 0 ] ; then
-	echo "Server did not reply! Update aborted."
-	exit 1
+	ping $eth0.serverip
+	if [ $? -ne 0 ] ; then
+		echo "Server did not reply! Update aborted."
+		exit 1
+	fi
 fi
 
 unprotect $part
@@ -34,6 +32,12 @@ erase $part
 echo
 echo "flashing $image to $part"
 echo
-tftp $image $part
+
+if [ x$mode = xtftp ]; then
+	tftp $image $part
+else
+	loadb -f $image -c
+	cp $image $part
+fi
 
 protect $part

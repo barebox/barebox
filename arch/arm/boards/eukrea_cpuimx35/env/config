@@ -13,7 +13,7 @@ autoboot_timeout=1
 nfsroot=""
 bootargs="console=ttymxc0,115200"
 
-nand_parts="256k(barebox)ro,128k(bareboxenv),2176k(kernel),-(root)"
+nand_parts="256k(barebox)ro,128k(bareboxenv),2432k(kernel),-(root)"
 rootpartnum_nand=3
 ubiroot="eukrea-cpuimx35-rootfs"
 

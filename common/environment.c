@@ -109,7 +109,7 @@ int envfs_save(char *filename, char *dirname)
 	struct action_data data;
 	void *buf = NULL;
 
-	data.writep = 0;
+	data.writep = NULL;
 	data.base = dirname;
 
 	/* first pass: calculate size */

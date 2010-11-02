@@ -65,26 +65,22 @@ static int do_printenv(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_printenv_help[] =
-"\n    - print values of all environment variables\n"
-"printenv name ...\n"
-"    - print value of environment variable 'name'\n";
+BAREBOX_CMD_HELP_START(printenv)
+BAREBOX_CMD_HELP_USAGE("printenv [variable]\n")
+BAREBOX_CMD_HELP_SHORT("Print value of one or all environment variables.\n")
+BAREBOX_CMD_HELP_END
 
+/**
+ * @page printenv_command
+
+<p>If an argument is given, printenv prints the content of an environment
+variable to the terminal. If no argument is specified, all variables are
+printed.</p>
+
+ */
 
 BAREBOX_CMD_START(printenv)
 	.cmd		= do_printenv,
-	.usage		= "print environment variables",
+	.usage		= "Print value of one or all environment variables.",
 	BAREBOX_CMD_HELP(cmd_printenv_help)
 BAREBOX_CMD_END
-
-/**
- * @page printenv_command printenv
- *
- * Usage: printenv [\<name>]
- *
- * Print environment variables.
- * If \<name> was given, it prints out its content if the environment variable
- * \<name> exists.
- *
- * Without the \<name> argument all current environment variables are printed.
- */

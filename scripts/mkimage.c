@@ -224,7 +224,7 @@ NXTARG:		;
 		 */
 		memcpy (hdr, ptr, sizeof(image_header_t));
 
-		if (image_check_magic(hdr)) {
+		if (image_get_magic(hdr) != IH_MAGIC) {
 			fprintf (stderr,
 				"%s: Bad Magic Number: \"%s\" is no valid image\n",
 				cmdname, imagefile);

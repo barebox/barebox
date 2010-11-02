@@ -68,6 +68,7 @@ static struct device_d fec_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
+	.flash_bbt = 1,
 };
 
 static struct device_d nand_dev = {
@@ -108,6 +109,11 @@ static void pca100_usbh_init(void)
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
 }
 #endif
+
+static struct device_d mmc_dev = {
+	.name		= "imx-mmc",
+	.map_base	= 0x10014000,
+};
 
 #ifdef CONFIG_MMU
 static void pca100_mmu_init(void)
@@ -180,7 +186,16 @@ static int pca100_devices_init(void)
 		PD23_AF_USBH2_DATA2,
 		PD24_AF_USBH2_DATA1,
 		PD26_AF_USBH2_DATA5,
+		/* SDHC */
+		PB4_PF_SD2_D0,
+		PB5_PF_SD2_D1,
+		PB6_PF_SD2_D2,
+		PB7_PF_SD2_D3,
+		PB8_PF_SD2_CMD,
+		PB9_PF_SD2_CLK,
 	};
+
+	PCCR0 |= PCCR0_SDHC2_EN;
 
 	/* disable the usb phys */
 	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
@@ -195,6 +210,7 @@ static int pca100_devices_init(void)
 	register_device(&nand_dev);
 	register_device(&sdram_dev);
 	register_device(&fec_dev);
+	register_device(&mmc_dev);
 
 	PCCR1 |= PCCR1_PERCLK2_EN;
 

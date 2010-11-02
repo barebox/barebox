@@ -58,7 +58,7 @@ static int textx  = 0;		/* position in text */
 static struct line *curline;	/* line where the cursor is */
 
 static struct line *scrline;	/* the first line on screen */
-int scrcol = 0;			/* the first column on screen */
+static int scrcol = 0;		/* the first column on screen */
 
 static void pos(int x, int y)
 {
@@ -231,7 +231,7 @@ static int edit_read_file(const char *path)
 			line->prev = lastline;
 			if (lastline)
 				lastline->next = line;
-			line->next = 0;
+			line->next = NULL;
 			lastline = line;
 
 			if (!lineend)
@@ -550,35 +550,25 @@ out:
 
 static const char *edit_aliases[] = { "sedit", NULL};
 
-static const __maybe_unused char cmd_edit_help[] =
-"Usage: (s)edit <file>\n"
-"This is a very small editor. Its only features are moving the cursor with\n"
-"the usual keys and typing characters.\n"
-"<ctrl-c> quits the editor without saving,\n"
-"<ctrl-d> quits the editor with saving the current file.\n"
-"\n"
-"If called as sedit the editor uses ansi codes to scroll the screen.\n";
+BAREBOX_CMD_HELP_START(edit)
+BAREBOX_CMD_HELP_USAGE("(s)edit <file>\n")
+BAREBOX_CMD_HELP_SHORT("A small editor. <ctrl-c> is exit, <ctrl-d> exit-with-save.\n")
+BAREBOX_CMD_HELP_END
 
-static const __maybe_unused char cmd_edit_usage[] = "edit a file";
+/**
+ * @page edit_command
+
+<p> Barebox contains a small text editor which can be used to edit
+config files in /env. You can move the cursor around with the arrow keys
+and type characters. </p>
+
+If called as sedit, the editor uses ansi codes to scroll the screen.
+ */
 
 BAREBOX_CMD_START(edit)
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
-	.usage		= cmd_edit_usage,
+	.usage		= "Usage: (s)edit <file>",
 	BAREBOX_CMD_HELP(cmd_edit_help)
 BAREBOX_CMD_END
 
-
-/**
- * @page edit_command edit (editor)
- *
- * Usage is: [s]edit \<file\>
- *
- * This is a very small editor. It's only features are moving the cursor with
- * the usual keys and typing characters.
- *
- * \b \<ctrl-c\> quits the editor without saving,\n
- * \b \<ctrl-d\> quits the editor with saving the current file.
- *
- * If called as \c sedit the editor uses ansi codes to scroll the screen.
- */

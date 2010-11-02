@@ -54,7 +54,7 @@ struct device_d *get_device_by_name(const char *name)
 	return NULL;
 }
 
-struct device_d *get_device_by_name_id(const char *name, int id)
+static struct device_d *get_device_by_name_id(const char *name, int id)
 {
 	struct device_d *dev;
 
@@ -244,6 +244,26 @@ int dummy_probe(struct device_d *dev)
 }
 EXPORT_SYMBOL(dummy_probe);
 
+const char *dev_id(const struct device_d *dev)
+{
+	static char buf[sizeof(unsigned long) * 2];
+
+	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
+
+	return buf;
+}
+
+void devices_shutdown(void)
+{
+	struct device_d *dev;
+
+	list_for_each_entry(dev, &active, active) {
+		if (dev->driver->remove)
+			dev->driver->remove(dev);
+	}
+}
+
+#ifdef CONFIG_CMD_DEVINFO
 static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 {
 	struct device_d *child;
@@ -276,27 +296,6 @@ static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
 	return 0;
 }
 
-const char *dev_id(const struct device_d *dev)
-{
-	static char buf[sizeof(unsigned long) * 2];
-
-	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
-
-	return buf;
-}
-
-void devices_shutdown(void)
-{
-	struct device_d *dev;
-
-	list_for_each_entry(dev, &active, active) {
-		if (dev->driver->remove)
-			dev->driver->remove(dev);
-	}
-}
-
-#ifdef CONFIG_CMD_DEVINFO
-
 static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 {
 	struct device_d *dev;
@@ -315,7 +314,7 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 		for_each_driver(drv)
 			printf("%10s\n",drv->name);
 	} else {
-		struct device_d *dev = get_device_by_name(argv[1]);
+		dev = get_device_by_name(argv[1]);
 
 		if (!dev) {
 			printf("no such device: %s\n",argv[1]);
@@ -340,30 +339,22 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_devinfo_help[] =
-"Usage: devinfo [DEVICE]\n"
-"If called without arguments devinfo shows a summary about known devices and\n"
-"drivers. If called with a device path as argument devinfo shows more detailed\n"
-"information about this device and its parameters.\n";
-
-BAREBOX_CMD_START(devinfo)
-	.cmd		= do_devinfo,
-	.usage		= "display info about devices and drivers",
-	BAREBOX_CMD_HELP(cmd_devinfo_help)
-BAREBOX_CMD_END
-
-#endif
+BAREBOX_CMD_HELP_START(devinfo)
+BAREBOX_CMD_HELP_USAGE("devinfo [DEVICE]\n")
+BAREBOX_CMD_HELP_SHORT("Output device information.\n")
+BAREBOX_CMD_HELP_END
 
 /**
- * @page devinfo_command devinfo
- *
- * Usage is: devinfo /dev/\<device>
- *
- * If called without arguments devinfo shows a summary about known devices and
- * drivers. If called with a device path as argument devinfo shows more
- * detailed information about this device and its parameters.
- *
- * Example from an MPC5200 based system:
+ * @page devinfo_command
+
+If called without arguments, devinfo shows a summary of the known
+devices and drivers.
+
+If called with a device path being the argument, devinfo shows more
+default information about this device and its parameters.
+
+Example from an MPC5200 based system:
+
 @verbatim
   barebox:/ devinfo /dev/eth0
   base  : 0x1002b000
@@ -378,5 +369,12 @@ BAREBOX_CMD_END
      netmask = 255.255.255.0
     serverip = 192.168.23.2
 @endverbatim
- *
  */
+
+BAREBOX_CMD_START(devinfo)
+	.cmd		= do_devinfo,
+	.usage		= "Show information about devices and drivers.",
+	BAREBOX_CMD_HELP(cmd_devinfo_help)
+BAREBOX_CMD_END
+#endif
+

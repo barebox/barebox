@@ -40,6 +40,9 @@
 #include <nand.h>
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
+#include <i2c/i2c.h>
+#include <usb/fsl_usb2.h>
+#include <mach/usb.h>
 
 extern unsigned long _stext;
 extern void exception_vectors(void);
@@ -151,6 +154,60 @@ static struct device_d imxfb_dev = {
 	.platform_data	= &eukrea_cpuimx25_fb_data,
 };
 
+static struct device_d i2c_dev = {
+	.id	  = -1,
+	.name     = "i2c-imx",
+	.map_base = IMX_I2C1_BASE,
+};
+
+static struct device_d esdhc_dev = {
+	.name		= "imx-esdhc",
+	.map_base	= 0x53fb4000,
+};
+
+#ifdef CONFIG_USB
+static void imx25_usb_init(void)
+{
+	unsigned int tmp;
+
+	/* Host 1 */
+	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp &= ~(MX35_H1_SIC_MASK | MX35_H1_PM_BIT | MX35_H1_TLL_BIT |
+		MX35_H1_USBTE_BIT | MX35_H1_IPPUE_DOWN_BIT | MX35_H1_IPPUE_UP_BIT);
+	tmp |= (MXC_EHCI_INTERFACE_SINGLE_UNI) << MX35_H1_SIC_SHIFT;
+	tmp |= MX35_H1_USBTE_BIT;
+	tmp |= MX35_H1_IPPUE_DOWN_BIT;
+	writel(tmp, IMX_OTG_BASE + 0x600);
+
+	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp |= 3 << 30;
+	writel(tmp, IMX_OTG_BASE + 0x584);
+
+	/* Set to Host mode */
+	tmp = readl(IMX_OTG_BASE + 0x5a8);
+	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
+}
+
+static struct device_d usbh2_dev = {
+	.id	  = -1,
+	.name     = "ehci",
+	.map_base = IMX_OTG_BASE + 0x400,
+	.size     = 0x200,
+};
+#endif
+
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+
+static struct device_d usbotg_dev = {
+	.name     = "fsl-udc",
+	.map_base = IMX_OTG_BASE,
+	.size     = 0x200,
+	.platform_data = &usb_pdata,
+};
+
 #ifdef CONFIG_MMU
 static void eukrea_cpuimx25_mmu_init(void)
 {
@@ -209,6 +266,16 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 	MX25_PAD_HSYNC__LCDC_HSYN,
 	/* BACKLIGHT CONTROL */
 	MX25_PAD_PWM__GPIO26,
+	/* I2C */
+	MX25_PAD_I2C1_CLK__SCL,
+	MX25_PAD_I2C1_DAT__SDA,
+	/* SDCard */
+	MX25_PAD_SD1_CLK__CLK,
+	MX25_PAD_SD1_CMD__CMD,
+	MX25_PAD_SD1_DATA0__DAT0,
+	MX25_PAD_SD1_DATA1__DAT1,
+	MX25_PAD_SD1_DATA2__DAT2,
+	MX25_PAD_SD1_DATA3__DAT3,
 };
 
 static int eukrea_cpuimx25_devices_init(void)
@@ -217,6 +284,7 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
 		ARRAY_SIZE(eukrea_cpuimx25_pads));
+
 	register_device(&fec_dev);
 
 	nand_info.width = 1;
@@ -238,6 +306,15 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	register_device(&imxfb_dev);
 
+	register_device(&i2c_dev);
+	register_device(&esdhc_dev);
+
+#ifdef CONFIG_USB
+	imx25_usb_init();
+	register_device(&usbh2_dev);
+#endif
+	register_device(&usbotg_dev);
+
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25);
@@ -256,7 +333,6 @@ static struct device_d eukrea_cpuimx25_serial_device = {
 
 static int eukrea_cpuimx25_console_init(void)
 {
-	writel(0x03010101, IMX_CCM_BASE + CCM_PCDR3);
 	register_device(&eukrea_cpuimx25_serial_device);
 	return 0;
 }
@@ -270,10 +346,17 @@ void __bare_init nand_boot(void)
 }
 #endif
 
-static int eukrea_cpuimx25_core_setup(void)
-{
-	writel(0x01010103, IMX_CCM_BASE + CCM_PCDR2);
-	return 0;
+static int eukrea_cpuimx25_core_init(void) {
+	/* enable UART1, FEC, SDHC, USB & I2C clock */
+	writel(readl(IMX_CCM_BASE + CCM_CGCR0) | (1 << 6) | (1 << 23)
+		| (1 << 15) | (1 << 21) | (1 << 3) | (1 << 28),
+		IMX_CCM_BASE + CCM_CGCR0);
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 23) | (1 << 15)
+		| (1 << 13), IMX_CCM_BASE + CCM_CGCR1);
+	writel(readl(IMX_CCM_BASE + CCM_CGCR2) | (1 << 14),
+		IMX_CCM_BASE + CCM_CGCR2);
 
+	return 0;
 }
-core_initcall(eukrea_cpuimx25_core_setup);
+
+core_initcall(eukrea_cpuimx25_core_init);

@@ -1,0 +1,36 @@
+#!/bin/sh
+
+machine=falconwing
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+# use 'none' if you want to skip kernel ip autoconfiguration
+ip=none
+
+# or set your networking parameters here (if a USB network adapter is attached)
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d
+
+# can be either 'net' or 'disk'
+kernel_loc=disk
+# can be either 'net', or 'disk' or 'initrd'
+rootfs_loc=disk
+
+# can be any regular filesystem like ext2, ext3, reiserfs in case of 'rootfs_loc=disk'
+rootfs_type=ext2
+# Where is the rootfs in case of 'rootfs_loc=disk'
+rootfs_part=mmcblk0p4
+
+# Where is the rootfs in case of 'rootfs_loc=net'
+nfsroot=FIXME
+
+# The image type of the kernel. Can be uimage, zimage
+kernelimage_type=uimage
+# Where to get the kernel image in case of 'kernel_loc=disk'
+kernel_part=disk0.2
+
+# base kernel parameter
+bootargs="console=ttyAM0,115200 debug ro lcd_panel=lms350 ssp1=mmc line=1 sysrq_always_enabled rotary=1"
+
+autoboot_timeout=2

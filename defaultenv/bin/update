@@ -1,0 +1,65 @@
+#!/bin/sh
+
+. /env/config
+
+type=""
+device_type=""
+check=n
+mode=tftp
+
+while getopt "ht:d:f:m:c" Option
+do
+if [ ${Option} = t ]; then
+	type=${OPTARG}
+elif [ ${Option} = d ]; then
+	device_type=${OPTARG}
+elif [ ${Option} = f ]; then
+	imagename=${OPTARG}
+elif [ ${Option} = c ]; then
+	check=y
+elif [ ${Option} = m ]; then
+	mode=${OPTARG}
+else
+	. /env/bin/_update_help
+	exit 0
+fi
+done
+
+if [ x${type} = xkernel ]; then
+	image=$kernelimage
+elif [ x${type} = xrootfs ]; then
+	image=$rootfsimage
+	type=root
+elif [ x${type} = xbarebox ]; then
+	image=$bareboximage
+	if [ x${image} = x ]; then
+		imamge=barebox.bin
+	fi
+else
+	. /env/bin/_update_help
+	exit 1
+fi
+
+if [ x${imagename} != x ]; then
+	image=${imagename}
+fi
+
+if [ x${device_type} = xnand ]; then
+	part=/dev/nand0.${type}.bb
+elif [ x${device_type} = xnor ]; then
+	part=/dev/nor0.${type}
+else
+	. /env/bin/_update_help
+	exit 1
+fi
+
+if [ x${mode} != xtftp ] && [ x${mode} != xxmodem ] ; then
+	echo "unsupported mode ${mode}."
+	. /env/bin/_update_help
+	exit 1
+fi
+
+. /env/bin/_update
+if [ x${check} = xy ]; then
+	crc32 -f $image -F $part
+fi

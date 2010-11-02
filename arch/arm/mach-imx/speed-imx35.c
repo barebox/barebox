@@ -19,6 +19,7 @@
 #include <mach/imx-regs.h>
 #include <asm/io.h>
 #include <mach/clock.h>
+#include <mach/generic.h>
 #include <init.h>
 
 unsigned long imx_get_mpllclk(void)
@@ -27,7 +28,7 @@ unsigned long imx_get_mpllclk(void)
 	return imx_decode_pll(mpctl, CONFIG_MX35_HCLK_FREQ);
 }
 
-unsigned long imx_get_ppllclk(void)
+static unsigned long imx_get_ppllclk(void)
 {
 	ulong ppctl = readl(IMX_CCM_BASE + CCM_PPCTL);
 	return imx_decode_pll(ppctl, CONFIG_MX35_HCLK_FREQ);
@@ -56,7 +57,7 @@ static struct arm_ahb_div clk_consumer[] = {
 	{ .arm = 0, .ahb = 0, .sel = 0},
 };
 
-unsigned long imx_get_armclk(void)
+static unsigned long imx_get_armclk(void)
 {
 	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	struct arm_ahb_div *aad;
@@ -83,7 +84,7 @@ unsigned long imx_get_ahbclk(void)
 	return fref / aad->ahb;
 }
 
-unsigned long imx_get_ipgclk(void)
+static unsigned long imx_get_ipgclk(void)
 {
 	ulong clk = imx_get_ahbclk();
 
@@ -95,7 +96,7 @@ static unsigned long get_3_3_div(unsigned long in)
 	return (((in >> 3) & 0x7) + 1) * ((in & 0x7) + 1);
 }
 
-unsigned long imx_get_ipg_perclk(void)
+static unsigned long imx_get_ipg_perclk(void)
 {
 	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
 	ulong pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
@@ -163,6 +164,17 @@ unsigned long imx_get_uartclk(void)
 		return imx_get_ppllclk() / div;
 }
 
+unsigned long imx_get_mmcclk(void)
+{
+	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
+	unsigned long div = get_3_3_div(pdr3);
+
+	if (pdr3 & (1 << 6))
+		return imx_get_armclk() / div;
+	else
+		return imx_get_ppllclk() / div;
+}
+
 ulong imx_get_fecclk(void)
 {
 	return imx_get_ipgclk();
@@ -183,6 +195,7 @@ void imx_dump_clocks(void)
 	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
 	printf("ipg_per: %10d Hz\n", imx_get_ipg_perclk());
 	printf("uart:	 %10d Hz\n", imx_get_uartclk());
+	printf("sdhc1:   %10d Hz\n", imx_get_mmcclk());
 }
 
 /*

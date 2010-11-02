@@ -51,6 +51,8 @@
 #define IMX_SDHC1_BASE		0x53FB4000
 #define IMX_SDHC2_BASE		0x53FB8000
 #define IMX_SDHC3_BASE		0x53FBC000
+#define IMX_OTG_BASE		0x53FF4000
+#define IMX_WDOG_BASE		0x53fdc000
 
 /*
  * Clock Controller Module (CCM)
@@ -73,6 +75,8 @@
 
 #define CCM_CGR1_FEC_SHIFT	0
 #define CCM_CGR1_I2C1_SHIFT	10
+#define CCM_CGR1_SDHC1_SHIFT	26
+#define CCM_CGR2_USB_SHIFT	22
 
 #define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
 #define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
@@ -131,16 +135,6 @@
 #define TPRER_PRES     (0xff)  /* Prescale */
 #define TSTAT_CAPT     (1<<1)  /* Capture event */
 #define TSTAT_COMP     (1)     /* Compare event */
-
-/*
- * Watchdog Registers
- */
-#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
-#define WSTR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Status Register  */
-
-/* important definition of some bits of WCR */
-#define WCR_WDE 0x04
 
 #endif /* __ASM_ARCH_MX35_REGS_H */
 

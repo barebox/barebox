@@ -266,6 +266,7 @@ void image_print_contents(const void *ptr)
 {
 	const image_header_t *hdr = (const image_header_t *)ptr;
 	const char *p;
+	int type;
 
 #ifdef __BAREBOX__
 	p = "   ";
@@ -285,8 +286,8 @@ void image_print_contents(const void *ptr)
 	printf ("%sLoad Address: %08x\n", p, image_get_load(hdr));
 	printf ("%sEntry Point:  %08x\n", p, image_get_ep(hdr));
 
-	if (image_check_type(hdr, IH_TYPE_MULTI) ||
-			image_check_type(hdr, IH_TYPE_SCRIPT)) {
+	type = image_get_type(hdr);
+	if (type == IH_TYPE_MULTI || type == IH_TYPE_SCRIPT) {
 		int i;
 		ulong data, len;
 		ulong count = image_multi_count(hdr);
@@ -298,7 +299,7 @@ void image_print_contents(const void *ptr)
 			printf("%s   Image %d: ", p, i);
 			image_print_size(len);
 
-			if (image_check_type(hdr, IH_TYPE_SCRIPT) && i > 0) {
+			if (image_get_type(hdr) != IH_TYPE_SCRIPT && i > 0) {
 				/*
 				 * the user may need to know offsets
 				 * if planning to do something with

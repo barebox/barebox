@@ -47,21 +47,14 @@ static int do_cd(struct command *cmdtp, int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_cd_help[] =
-"Usage: cd [directory]\n"
-"change to directory. If called without argument, change to /\n";
+BAREBOX_CMD_HELP_START(cd)
+BAREBOX_CMD_HELP_USAGE("cd [directory]\n")
+BAREBOX_CMD_HELP_SHORT("Change to directory.\n")
+BAREBOX_CMD_HELP_TEXT ("If called without an argument, change to the root directory /.\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cd)
 	.cmd		= do_cd,
 	.usage		= "change working directory",
 	BAREBOX_CMD_HELP(cmd_cd_help)
 BAREBOX_CMD_END
-
-/**
- * @page cd_command cd (change working directory)
- *
- * Usage is: cd [\<directory name>]
- *
- * Change to \<directory name>. If called without argument, change to \b /
- * (root)
- */

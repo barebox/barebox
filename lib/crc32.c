@@ -42,7 +42,7 @@ static void make_crc_table(void);
   the information needed to generate CRC's on data a byte at a time for all
   combinations of CRC register values and incoming bytes.
 */
-static void make_crc_table()
+static void make_crc_table(void)
 {
   ulong c;
   int n, k;

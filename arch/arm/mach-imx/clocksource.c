@@ -40,7 +40,7 @@
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
 #define timer_base (IMX_TIM1_BASE)
 
-uint64_t imx_clocksource_read(void)
+static uint64_t imx_clocksource_read(void)
 {
 	return readl(timer_base + GPT_TCN);
 }
@@ -76,6 +76,10 @@ static int clocksource_init (void)
 	PCCR0 |= PCCR0_GPT1_EN;
 	PCCR1 |= PCCR1_PERCLK1_EN;
 #endif
+#ifdef CONFIG_ARCH_IMX25
+	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 19),
+		IMX_CCM_BASE + CCM_CGCR1);
+#endif
 
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
@@ -97,19 +101,34 @@ static int clocksource_init (void)
 core_initcall(clocksource_init);
 
 /*
+ * Watchdog Registers
+ */
+#ifdef CONFIG_ARCH_IMX1
+#define WDOG_WCR	0x00 /* Watchdog Control Register */
+#define WDOG_WSR	0x04 /* Watchdog Service Register */
+#define WDOG_WSTR	0x08 /* Watchdog Status Register  */
+#define WDOG_WCR_WDE	(1 << 0)
+#else
+#define WDOG_WCR	0x00 /* Watchdog Control Register */
+#define WDOG_WSR	0x02 /* Watchdog Service Register */
+#define WDOG_WSTR	0x04 /* Watchdog Status Register  */
+#define WDOG_WCR_WDE	(1 << 2)
+#endif
+
+/*
  * Reset the cpu by setting up the watchdog timer and let it time out
  */
-void __noreturn reset_cpu (unsigned long ignored)
+void __noreturn reset_cpu (unsigned long addr)
 {
 	/* Disable watchdog and set Time-Out field to 0 */
-	WCR = 0x0000;
+	writew(0x0, IMX_WDT_BASE + WDOG_WCR);
 
 	/* Write Service Sequence */
-	WSR = 0x5555;
-	WSR = 0xAAAA;
+	writew(0x5555, IMX_WDT_BASE + WDOG_WSR);
+	writew(0xaaaa, IMX_WDT_BASE + WDOG_WSR);
 
 	/* Enable watchdog */
-	WCR = WCR_WDE;
+	writew(WDOG_WCR_WDE, IMX_WDT_BASE + WDOG_WCR);
 
 	while (1);
 	/*NOTREACHED*/

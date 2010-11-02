@@ -288,29 +288,28 @@ on_error:
 	return rc;
 }
 
-static const __maybe_unused char cmd_linux16_help[] =
-"Usage: linux16 <file>\n"
-"Boot a linux kernel via real mode code\n";
+BAREBOX_CMD_HELP_START(linux16)
+BAREBOX_CMD_HELP_USAGE("linux16 <file>\n")
+BAREBOX_CMD_HELP_SHORT("Boot a kernel on x86 via real mode code.\n")
+BAREBOX_CMD_HELP_END
 
+/**
+ * @page linux16_command
+
+<p> Only kernel images in bzImage format are supported by now. See \ref
+x86_boot_preparation for more info about how to use this command.</p>
+
+ */
 
 BAREBOX_CMD_START(linux16)
 	.cmd		= do_linux16,
-	.usage		= "boot linux kernel",
+	.usage		= "boot a linux kernel",
 	BAREBOX_CMD_HELP(cmd_linux16_help)
 BAREBOX_CMD_END
 
 /**
  * @file
  * @brief Boot support for Linux on x86
- */
-
-/**
- * @page linux16_command linux16: Boot a bzImage kernel on x86
- *
- * Usage is: linux16 \<file\>
- *
- * Boot a linux kernel via real mode code. Only kernel images in the
- * @p bzImage format are supported.
  */
 
 /**

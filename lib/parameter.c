@@ -86,7 +86,7 @@ int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
  * dev_set_param - set a parameter of a device to a new value
  * @param dev	The device
  * @param name	The name of the parameter
- * @param value	The new value of the parameter
+ * @param val	The new value of the parameter
  */
 int dev_set_param(struct device_d *dev, const char *name, const char *val)
 {

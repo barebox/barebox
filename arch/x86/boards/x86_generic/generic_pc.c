@@ -46,7 +46,7 @@ static struct device_d sdram_dev = {
 static struct device_d bios_disk_dev = {
 	.id		= -1,
 	.name		= "biosdrive",
-	.size		= 1,
+	.size		= 0,	/* auto guess */
 };
 
 /*

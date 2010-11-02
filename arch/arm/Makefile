@@ -41,6 +41,7 @@ CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 machine-$(CONFIG_ARCH_AT91)		:= at91
 machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
 machine-$(CONFIG_ARCH_IMX)		:= imx
+machine-$(CONFIG_ARCH_STM)		:= stm
 machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
 machine-$(CONFIG_ARCH_NETX)		:= netx
 machine-$(CONFIG_ARCH_OMAP)		:= omap
@@ -80,6 +81,10 @@ board-$(CONFIG_MACH_PCM043)			:= pcm043
 board-$(CONFIG_MACH_PM9263)			:= pm9263
 board-$(CONFIG_MACH_SCB9328)			:= scb9328
 board-$(CONFIG_MACH_NESO)			:= guf-neso
+board-$(CONFIG_MACH_MX23EVK)			:= freescale-mx23-evk
+board-$(CONFIG_MACH_CHUMBY)			:= chumby_falconwing
+board-$(CONFIG_MACH_FREESCALE_MX51_PDK)		:= freescale-mx51-pdk
+board-$(CONFIG_MACH_GUF_CUPID)			:= guf-cupid
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

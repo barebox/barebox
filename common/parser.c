@@ -6,9 +6,8 @@ static int parse_line (char *line, char *argv[])
 {
 	int nargs = 0;
 
-#ifdef DEBUG_PARSER
-	printf ("parse_line: \"%s\"\n", line);
-#endif
+	pr_debug("parse_line: \"%s\"\n", line);
+
 	while (nargs < CONFIG_MAXARGS) {
 
 		/* skip any white space */
@@ -18,9 +17,9 @@ static int parse_line (char *line, char *argv[])
 
 		if (*line == '\0') {	/* end of line, no more args	*/
 			argv[nargs] = NULL;
-#ifdef DEBUG_PARSER
-		printf ("parse_line: nargs=%d\n", nargs);
-#endif
+
+		pr_debug("parse_line: nargs=%d\n", nargs);
+
 			return (nargs);
 		}
 
@@ -33,9 +32,9 @@ static int parse_line (char *line, char *argv[])
 
 		if (*line == '\0') {	/* end of line, no more args	*/
 			argv[nargs] = NULL;
-#ifdef DEBUG_PARSER
-		printf ("parse_line: nargs=%d\n", nargs);
-#endif
+
+		pr_debug("parse_line: nargs=%d\n", nargs);
+
 			return (nargs);
 		}
 
@@ -43,10 +42,8 @@ static int parse_line (char *line, char *argv[])
 	}
 
 	printf ("** Too many args (max. %d) **\n", CONFIG_MAXARGS);
+	pr_debug("parse_line: nargs=%d\n", nargs);
 
-#ifdef DEBUG_PARSER
-	printf ("parse_line: nargs=%d\n", nargs);
-#endif
 	return (nargs);
 }
 
@@ -61,12 +58,12 @@ static void process_macros (const char *input, char *output)
 	/* 1 = waiting for '(' or '{' */
 	/* 2 = waiting for ')' or '}' */
 	/* 3 = waiting for '''  */
-#ifdef DEBUG_PARSER
+#ifdef DEBUG
 	char *output_start = output;
-
-	printf ("[PROCESS_MACROS] INPUT len %d: \"%s\"\n", strlen (input),
-		input);
 #endif
+
+	pr_debug("[PROCESS_MACROS] INPUT len %d: \"%s\"\n", strlen (input),
+		input);
 
 	prev = '\0';		/* previous character   */
 
@@ -153,10 +150,8 @@ static void process_macros (const char *input, char *output)
 	if (outputcnt)
 		*output = 0;
 
-#ifdef DEBUG_PARSER
-	printf ("[PROCESS_MACROS] OUTPUT len %d: \"%s\"\n",
+	pr_debug("[PROCESS_MACROS] OUTPUT len %d: \"%s\"\n",
 		strlen (output_start), output_start);
-#endif
 }
 
 /****************************************************************************
@@ -185,8 +180,8 @@ int run_command (const char *cmd, int flag)
 	int argc, inquotes;
 	int rc = 0;
 
-#ifdef DEBUG_PARSER
-	printf ("[RUN_COMMAND] cmd[%p]=\"", cmd);
+#ifdef DEBUG
+	pr_debug("[RUN_COMMAND] cmd[%p]=\"", cmd);
 	puts (cmd ? cmd : "NULL");	/* use puts - string may be loooong */
 	puts ("\"\n");
 #endif
@@ -202,13 +197,13 @@ int run_command (const char *cmd, int flag)
 
 	strcpy (cmdbuf, cmd);
 
-	/* Process separators and check for invalid
+	/*
+	 * Process separators and check for invalid
 	 * repeatable commands
 	 */
 
-#ifdef DEBUG_PARSER
-	printf ("[PROCESS_SEPARATORS] %s\n", cmd);
-#endif
+	pr_debug("[PROCESS_SEPARATORS] %s\n", cmd);
+
 	while (*str) {
 
 		/*
@@ -235,11 +230,11 @@ int run_command (const char *cmd, int flag)
 			str = sep + 1;	/* start of command for next pass */
 			*sep = '\0';
 		}
-		else
+		else {
 			str = sep;	/* no more commands for next pass */
-#ifdef DEBUG_PARSER
-		printf ("token: \"%s\"\n", token);
-#endif
+		}
+
+		pr_debug("token: \"%s\"\n", token);
 
 		/* find macros in this token and replace them */
 		process_macros (token, finaltoken);

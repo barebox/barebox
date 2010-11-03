@@ -28,13 +28,14 @@ struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {
 };
 
 #define CPUIMX35_DEST_BASE 0x80000000
+#define CPUIMX35_FLASH_HEADER_BASE (CPUIMX35_DEST_BASE + FLASH_HEADER_OFFSET)
 struct imx_flash_header __flash_header_section flash_header = {
 	.app_code_jump_vector	= CPUIMX35_DEST_BASE + 0x1000,
 	.app_code_barker	= APP_CODE_BARKER,
 	.app_code_csf		= 0,
-	.dcd_ptr_ptr		= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd),
+	.dcd_ptr_ptr		= CPUIMX35_FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd),
 	.super_root_key		= 0,
-	.dcd			= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd_barker),
+	.dcd			= CPUIMX35_FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd_barker),
 	.app_dest		= CPUIMX35_DEST_BASE,
 	.dcd_barker		= DCD_BARKER,
 	.dcd_block_len		= sizeof(dcd_entry),

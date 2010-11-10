@@ -321,15 +321,9 @@ static void send_page(struct imx_nand_host *host,
 static void send_read_id(struct imx_nand_host *host)
 {
 	struct nand_chip *this = &host->nand;
-	u16 tmp;
 
 	/* NANDFC buffer 0 is used for device ID output */
 	writew(0x0, host->regs + NFC_BUF_ADDR);
-
-	/* Read ID into main buffer */
-	tmp = readw(host->regs + NFC_CONFIG1);
-	tmp &= ~NFC_SP_EN;
-	writew(tmp, host->regs + NFC_CONFIG1);
 
 	writew(NFC_ID, host->regs + NFC_CONFIG2);
 
@@ -362,7 +356,7 @@ static u16 get_dev_status(struct imx_nand_host *host)
 {
 	void *main_buf = host->main_area0;
 	u32 store;
-	u16 ret, tmp;
+	u16 ret;
 
 	writew(0x0, host->regs + NFC_BUF_ADDR);
 
@@ -372,11 +366,6 @@ static u16 get_dev_status(struct imx_nand_host *host)
 	 * and restore it afterwards.
 	 */
 	store = readl(main_buf);
-
-	/* Read status into main buffer */
-	tmp = readw(host->regs + NFC_CONFIG1);
-	tmp &= ~NFC_SP_EN;
-	writew(tmp, host->regs + NFC_CONFIG1);
 
 	writew(NFC_STATUS, host->regs + NFC_CONFIG2);
 

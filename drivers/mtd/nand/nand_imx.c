@@ -104,6 +104,7 @@ struct imx_nand_host {
 	uint8_t			*data_buf;
 	unsigned int		buf_start;
 	int			spare_len;
+	int			eccsize;
 
 	void			(*preset)(struct mtd_info *);
 	void			(*send_cmd)(struct imx_nand_host *, uint16_t);
@@ -363,7 +364,7 @@ static void imx_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 	 */
 }
 
-static int imx_nand_correct_data(struct mtd_info *mtd, u_char * dat,
+static int imx_nand_correct_data_v1(struct mtd_info *mtd, u_char * dat,
 				 u_char * read_ecc, u_char * calc_ecc)
 {
 	struct nand_chip *nand_chip = mtd->priv;
@@ -383,6 +384,40 @@ static int imx_nand_correct_data(struct mtd_info *mtd, u_char * dat,
 	}
 
 	return 0;
+}
+
+static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
+				u_char *read_ecc, u_char *calc_ecc)
+{
+	struct nand_chip *nand_chip = mtd->priv;
+	struct imx_nand_host *host = nand_chip->priv;
+	u32 ecc_stat, err;
+	int no_subpages = 1;
+	int ret = 0;
+	u8 ecc_bit_mask, err_limit;
+
+	ecc_bit_mask = (host->eccsize == 4) ? 0x7 : 0xf;
+	err_limit = (host->eccsize == 4) ? 0x4 : 0x8;
+
+	no_subpages = mtd->writesize >> 9;
+
+	ecc_stat = readl(host->regs + NFC_V2_ECC_STATUS_RESULT1);
+
+	do {
+		err = ecc_stat & ecc_bit_mask;
+		if (err > err_limit) {
+			printk(KERN_WARNING "UnCorrectable RS-ECC Error\n");
+			return -1;
+		} else {
+			ret += err;
+		}
+		ecc_stat >>= 4;
+	} while (--no_subpages);
+
+	mtd->ecc_stats.corrected += ret;
+	pr_debug("%d Symbol Correctable RS-ECC Error\n", ret);
+
+	return ret;
 }
 
 static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,
@@ -818,12 +853,14 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->regs = host->base + 0x1e00;
 		host->spare0 = host->base + 0x1000;
 		host->spare_len = 64;
+		host->eccsize = 1;
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
 	} else if (nfc_is_v1()) {
 		host->regs = host->base + 0xe00;
 		host->spare0 = host->base + 0x800;
 		host->spare_len = 16;
+		host->eccsize = 4;
 		oob_smallpage = &nandv1_hw_eccoob_smallpage;
 		oob_largepage = &nandv1_hw_eccoob_largepage;
 	}
@@ -865,7 +902,10 @@ static int __init imxnd_probe(struct device_d *dev)
 	if (pdata->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
 		this->ecc.hwctl = imx_nand_enable_hwecc;
-		this->ecc.correct = imx_nand_correct_data;
+		if (nfc_is_v1())
+			this->ecc.correct = imx_nand_correct_data_v1;
+		else
+			this->ecc.correct = imx_nand_correct_data_v2_v3;
 		this->ecc.mode = NAND_ECC_HW;
 		this->ecc.size = 512;
 		tmp = readw(host->regs + NFC_V1_V2_CONFIG1);

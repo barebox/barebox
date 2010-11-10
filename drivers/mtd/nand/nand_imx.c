@@ -975,19 +975,11 @@ static int __init imxnd_probe(struct device_d *dev)
 	if (mtd->writesize == 2048) {
 		this->ecc.layout = oob_largepage;
 		host->pagesize_2k = 1;
-		if (nfc_is_v21()) {
-			tmp = readw(host->regs + NFC_SPAS);
-			tmp &= 0xff00;
-			tmp |= NFC_SPAS_64;
-			writew(tmp, host->regs + NFC_SPAS);
-		}
+		if (nfc_is_v21())
+			writew(NFC_SPAS_64, host->regs + NFC_SPAS);
 	} else {
-		if (nfc_is_v21()) {
-			tmp = readw(host->regs + NFC_SPAS);
-			tmp &= 0xff00;
-			tmp |= NFC_SPAS_16;
-			writew(tmp, host->regs + NFC_SPAS);
-		}
+		if (nfc_is_v21())
+			writew(NFC_SPAS_16, host->regs + NFC_SPAS);
 	}
 
 	/* second phase scan */
@@ -1186,17 +1178,10 @@ void __nand_boot_init imx_nand_load_image(void *dest, int size)
 	writew(tmp, regs + NFC_CONFIG1);
 
 	if (nfc_is_v21()) {
-		if (pagesize_2k) {
-			tmp = readw(regs + NFC_SPAS);
-			tmp &= 0xff00;
-			tmp |= NFC_SPAS_64;
-			writew(tmp, regs + NFC_SPAS);
-		} else {
-			tmp = readw(regs + NFC_SPAS);
-			tmp &= 0xff00;
-			tmp |= NFC_SPAS_16;
-			writew(tmp, regs + NFC_SPAS);
-		}
+		if (pagesize_2k)
+			writew(NFC_SPAS_64, regs + NFC_SPAS);
+		else
+			writew(NFC_SPAS_16, regs + NFC_SPAS);
 	}
 
 	block = page = 0;

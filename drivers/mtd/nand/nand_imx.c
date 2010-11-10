@@ -114,6 +114,7 @@ struct imx_nand_host {
 	void			(*send_page)(struct imx_nand_host *, unsigned int);
 	void			(*send_read_id)(struct imx_nand_host *);
 	uint16_t		(*get_dev_status)(struct imx_nand_host *);
+	int			(*check_int)(struct imx_nand_host *);
 };
 
 /*
@@ -175,16 +176,21 @@ static void memcpy32(void *trg, const void *src, int size)
 		*t++ = *s++;
 }
 
-/*
- * This function polls the NANDFC to wait for the basic operation to complete by
- * checking the INT bit of config2 register.
- *
- * @param       max_retries     number of retry attempts (separated by 1 us)
- * @param       param           parameter for debug
- */
+static int check_int_v1_v2(struct imx_nand_host *host)
+{
+	uint32_t tmp;
+
+	tmp = readw(host->regs + NFC_V1_V2_CONFIG2);
+	if (!(tmp & NFC_V1_V2_CONFIG2_INT))
+		return 0;
+
+	writew(tmp & ~NFC_V1_V2_CONFIG2_INT, host->regs + NFC_V1_V2_CONFIG2);
+
+	return 1;
+}
+
 static void wait_op_done(struct imx_nand_host *host)
 {
-	u32 tmp;
 	int i;
 
 	/* This is a timeout of roughly 15ms on my system. We
@@ -192,12 +198,8 @@ static void wait_op_done(struct imx_nand_host *host)
 	 * here as we might be here from nand booting.
 	 */
 	for (i = 0; i < 100000; i++) {
-		if (readw(host->regs + NFC_V1_V2_CONFIG2) & NFC_V1_V2_CONFIG2_INT) {
-			tmp = readw(host->regs + NFC_V1_V2_CONFIG2);
-			tmp  &= ~NFC_V1_V2_CONFIG2_INT;
-			writew(tmp, host->regs + NFC_V1_V2_CONFIG2);
+		if (host->check_int(host))
 			return;
-		}
 	}
 }
 
@@ -913,6 +915,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->send_page = send_page_v1_v2;
 		host->send_read_id = send_read_id_v1_v2;
 		host->get_dev_status = get_dev_status_v1_v2;
+		host->check_int = check_int_v1_v2;
 	}
 
 	if (nfc_is_v21()) {

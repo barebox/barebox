@@ -51,3 +51,8 @@ static inline struct device_d *imx51_add_mmc1(void *pdata)
 	return imx_add_mmc((void *)MX51_MMC_SDHC2_BASE_ADDR, 0, pdata);
 }
 
+static inline struct device_d *imx51_add_nand(struct imx_nand_platform_data *pdata)
+{
+	return imx_add_nand((void *)MX51_NFC_AXI_BASE_ADDR, pdata);
+}
+

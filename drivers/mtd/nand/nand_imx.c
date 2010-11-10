@@ -142,7 +142,6 @@ struct imx_nand_host {
 
 	void			*spare0;
 	void			*main_area0;
-	void			*main_area1;
 
 	void __iomem		*base;
 	void __iomem		*regs;
@@ -361,18 +360,18 @@ static void send_read_id(struct imx_nand_host *host)
  */
 static u16 get_dev_status(struct imx_nand_host *host)
 {
-	volatile u16 *mainbuf = host->main_area1;
+	void *main_buf = host->main_area0;
 	u32 store;
 	u16 ret, tmp;
-	/* Issue status request to NAND device */
 
-	/* store the main area1 first word, later do recovery */
-	store = *((u32 *) mainbuf);
+	writew(0x0, host->regs + NFC_BUF_ADDR);
+
 	/*
-	 * NANDFC buffer 1 is used for device status to prevent
-	 * corruption of read/write buffer on status requests.
+	 * The device status is stored in main_area0. To
+	 * prevent corruption of the buffer save the value
+	 * and restore it afterwards.
 	 */
-	writew(1, host->regs + NFC_BUF_ADDR);
+	store = readl(main_buf);
 
 	/* Read status into main buffer */
 	tmp = readw(host->regs + NFC_CONFIG1);
@@ -386,8 +385,9 @@ static u16 get_dev_status(struct imx_nand_host *host)
 
 	/* Status is placed in first word of main buffer */
 	/* get status, then recovery area 1 data */
-	ret = mainbuf[0];
-	*((u32 *) mainbuf) = store;
+	ret = readw(main_buf);
+
+	writel(store, main_buf);
 
 	return ret;
 }
@@ -858,7 +858,6 @@ static int __init imxnd_probe(struct device_d *dev)
 	host->base = (void __iomem *)dev->map_base;
 
 	host->main_area0 = host->base;
-	host->main_area1 = host->base + 0x200;
 
 	if (nfc_is_v21()) {
 		host->regs = host->base + 0x1e00;

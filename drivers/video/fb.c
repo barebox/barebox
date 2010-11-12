@@ -80,6 +80,7 @@ int register_framebuffer(struct fb_info *info)
 
 	dev = &info->dev;
 	dev->priv = info;
+	dev->id = id;
 
 	sprintf(dev->name, "fb");
 

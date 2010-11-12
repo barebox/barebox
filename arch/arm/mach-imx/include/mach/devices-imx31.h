@@ -29,7 +29,7 @@ static inline struct device_d *imx31_add_nand(struct imx_nand_platform_data *pda
 	return imx_add_nand((void *)0xb8000000, pdata);
 }
 
-static inline struct device_d *imx31_add_fb(struct imx_fb_platform_data *pdata)
+static inline struct device_d *imx31_add_fb(struct imx_ipu_fb_platform_data *pdata)
 {
 	return imx_add_ipufb((void *)IPU_BASE, pdata);
 }

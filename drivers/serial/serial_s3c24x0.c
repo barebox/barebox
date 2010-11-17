@@ -113,7 +113,7 @@ static void s3c24x0_serial_flush(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 
-	while (!readb(dev->map_base + UTRSTAT) & 0x4)
+	while (!(readb(dev->map_base + UTRSTAT) & 0x4))
 		;
 }
 

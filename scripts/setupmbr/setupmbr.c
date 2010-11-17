@@ -42,8 +42,8 @@
 #include <assert.h>
 
 /* include the info from this barebox release */
-#include "include/generated/utsrelease.h"
-#include "arch/x86/include/asm/barebox.lds.h"
+#include "../../include/generated/utsrelease.h"
+#include "../../arch/x86/include/asm/barebox.lds.h"
 
 /** define to disable integrity tests and debug messages */
 #define NDEBUG

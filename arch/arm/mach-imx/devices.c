@@ -57,3 +57,8 @@ struct device_d *imx_add_mmc(void *base, int id, void *pdata)
 {
 	return imx_add_device("imx-mmc", id, base, 0x1000, pdata);
 }
+
+struct device_d *imx_add_esdhc(void *base, int id, void *pdata)
+{
+	return imx_add_device("imx-esdhc", id, base, 0x1000, pdata);
+}

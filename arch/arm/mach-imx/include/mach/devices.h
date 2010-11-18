@@ -14,4 +14,5 @@ struct device_d *imx_add_nand(void *base, struct imx_nand_platform_data *pdata);
 struct device_d *imx_add_fb(void *base, struct imx_fb_platform_data *pdata);
 struct device_d *imx_add_ipufb(void *base, struct imx_ipu_fb_platform_data *pdata);
 struct device_d *imx_add_mmc(void *base, int id, void *pdata);
+struct device_d *imx_add_esdhc(void *base, int id, void *pdata);
 

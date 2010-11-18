@@ -43,12 +43,12 @@ static inline struct device_d *imx51_add_fec(struct fec_platform_data *pdata)
 
 static inline struct device_d *imx51_add_mmc0(void *pdata)
 {
-	return imx_add_mmc((void *)MX51_MMC_SDHC1_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX51_MMC_SDHC1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx51_add_mmc1(void *pdata)
 {
-	return imx_add_mmc((void *)MX51_MMC_SDHC2_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX51_MMC_SDHC2_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx51_add_nand(struct imx_nand_platform_data *pdata)

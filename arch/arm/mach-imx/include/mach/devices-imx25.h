@@ -33,6 +33,6 @@ static inline struct device_d *imx25_add_fec(struct fec_platform_data *pdata)
 
 static inline struct device_d *imx25_add_mmc0(void *pdata)
 {
-	return imx_add_mmc((void *)0x53fb4000, 0, pdata);
+	return imx_add_esdhc((void *)0x53fb4000, 0, pdata);
 }
 

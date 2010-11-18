@@ -440,20 +440,20 @@
 #define MEMORY_WAIT_TIME 16
 
 struct accessors {
-	void (*ob)(unsigned, unsigned long);
-	void (*ow)(unsigned, unsigned long);
-	void (*ol)(unsigned long, unsigned long);
-	void (*osl)(unsigned long, const void*, int);
-	unsigned (*ib)(unsigned long);
-	unsigned (*iw)(unsigned long);
-	unsigned long (*il)(unsigned long);
-	void (*isl)(unsigned long, void*, int);
+	void (*ob)(unsigned, void __iomem *);
+	void (*ow)(unsigned, void __iomem *);
+	void (*ol)(unsigned long, void __iomem *);
+	void (*osl)(void __iomem *, const void  *, int);
+	unsigned (*ib)(void __iomem *);
+	unsigned (*iw)(void __iomem *);
+	unsigned long (*il)(void __iomem *);
+	void (*isl)(void __iomem *, void*, int);
 };
 
 struct smc91c111_priv {
 	struct mii_device miidev;
 	struct accessors a;
-	unsigned long base;
+	void __iomem *base;
 };
 
 #if (SMC_DEBUG > 2 )
@@ -483,44 +483,44 @@ struct smc91c111_priv {
 
 #define ETH_ZLEN 60
 
-static void a_outb(unsigned value, unsigned long offset)
+static void a_outb(unsigned value, void __iomem *offset)
 {
 	writeb(value, offset);
 }
 
-static void a_outw(unsigned value, unsigned long offset)
+static void a_outw(unsigned value, void __iomem *offset)
 {
 	writew(value, offset);
 }
 
-static void a_outl(unsigned long value, unsigned long offset)
+static void a_outl(unsigned long value, void __iomem *offset)
 {
 	writel(value, offset);
 }
 
-static void a_outsl(unsigned long offset, const void *data, int count)
+static void a_outsl(void __iomem *offset, const void *data, int count)
 {
-	writesl((void*)offset, data, count);
+	writesl(offset, data, count);
 }
 
-static unsigned a_inb(unsigned long offset)
+static unsigned a_inb(void __iomem *offset)
 {
 	return readb(offset);
 }
 
-static unsigned a_inw(unsigned long offset)
+static unsigned a_inw(void __iomem *offset)
 {
 	return readw(offset);
 }
 
-static unsigned long a_inl(unsigned long offset)
+static unsigned long a_inl(void __iomem *offset)
 {
 	return readl(offset);
 }
 
-static inline void a_insl(unsigned long offset, void *data, int count)
+static inline void a_insl(void __iomem *offset, void *data, int count)
 {
-	readsl((void*)offset, data, count);
+	readsl(offset, data, count);
 }
 
 /* access happens via a 32 bit bus */
@@ -1317,7 +1317,7 @@ static int smc91c111_probe(struct device_d *dev)
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
-	priv->base = dev->map_base;
+	priv->base = IOMEM(dev->map_base);
 
 	smc91c111_reset(edev);
 

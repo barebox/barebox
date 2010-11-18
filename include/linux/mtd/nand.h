@@ -359,10 +359,11 @@ struct nand_buffers {
  *			(determine if errors are correctable)
  * @write_page:		[REPLACEABLE] High-level page write function
  */
-
+#define IOMEM(addr) ((void __force __iomem *)addr)
 struct nand_chip {
-	void		*IO_ADDR_R;
-	void		*IO_ADDR_W;
+
+	void __iomem	*IO_ADDR_R;
+	void __iomem	*IO_ADDR_W;
 
 	uint8_t		(*read_byte)(struct mtd_info *mtd);
 	u16		(*read_word)(struct mtd_info *mtd);

@@ -754,7 +754,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	}
 
 	fsdev = xzalloc(sizeof(struct fs_device_d));
-	if (!fs_drv->flags & FS_DRIVER_NO_DEV) {
+	if (!(fs_drv->flags & FS_DRIVER_NO_DEV)) {
 		fsdev->backingstore = strdup(device);
 		if (!device) {
 			printf("need a device for driver %s\n", fsname);

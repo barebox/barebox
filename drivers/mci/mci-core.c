@@ -999,7 +999,7 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 	}
 
 	while (sector_count) {
-		int now = min(sector_count, 32);
+		int now = min(sector_count, 32U);
 		if (sector_start > MAX_BUFFER_NUMBER) {
 			pr_err("Cannot handle block number %lu. Too large!\n",
 				(unsigned)sector_start);

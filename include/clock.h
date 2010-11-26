@@ -3,6 +3,8 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+#define CLOCKSOURCE_MASK(bits) (uint64_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
+
 struct clocksource {
 	uint32_t	shift;
 	uint32_t	mult;

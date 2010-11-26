@@ -638,12 +638,10 @@ static int flash_real_protect (struct flash_info *info, long sector, int prot)
 {
 	int retcode = 0;
 
-	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
-	flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT);
-	if (prot)
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_SET);
-	else
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
+	retcode = info->cfi_cmd_set->flash_real_protect(info, sector, prot);
+
+	if (retcode)
+		return retcode;
 
 	if ((retcode =
 	     flash_status_check (info, sector, info->erase_blk_tout,

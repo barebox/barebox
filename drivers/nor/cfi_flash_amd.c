@@ -133,6 +133,11 @@ static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const
 #define amd_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
+static int amd_flash_real_protect (struct flash_info *info, long sector, int prot)
+{
+	return 0;
+}
+
 struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_write_cfibuffer = amd_flash_write_cfibuffer,
 	.flash_erase_one = amd_flash_erase_one,
@@ -140,5 +145,6 @@ struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_read_jedec_ids = amd_read_jedec_ids,
 	.flash_prepare_write = amd_flash_prepare_write,
 	.flash_status_check = flash_generic_status_check,
+	.flash_real_protect = amd_flash_real_protect,
 };
 

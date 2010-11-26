@@ -126,6 +126,18 @@ static int intel_flash_status_check (struct flash_info *info, flash_sect_t secto
 	return retcode;
 }
 
+static int intel_flash_real_protect (struct flash_info *info, long sector, int prot)
+{
+	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
+	flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT);
+	if (prot)
+		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_SET);
+	else
+		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
+
+	return 0;
+}
+
 struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_write_cfibuffer = intel_flash_write_cfibuffer,
 	.flash_erase_one = intel_flash_erase_one,
@@ -133,5 +145,6 @@ struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_read_jedec_ids = intel_read_jedec_ids,
 	.flash_prepare_write = intel_flash_prepare_write,
 	.flash_status_check = intel_flash_status_check,
+	.flash_real_protect = intel_flash_real_protect,
 };
 

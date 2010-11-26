@@ -76,6 +76,7 @@ struct cfi_cmd_set {
 	void (*flash_read_jedec_ids) (struct flash_info *info);
 	void (*flash_prepare_write) (struct flash_info *info);
 	int (*flash_status_check) (struct flash_info *info, flash_sect_t sector, uint64_t tout, char *prompt);
+	int (*flash_real_protect) (struct flash_info *info, long sector, int prot);
 };
 
 extern struct cfi_cmd_set cfi_cmd_set_intel;

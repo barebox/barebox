@@ -22,6 +22,14 @@ if [ x$mode = xtftp ]; then
 	fi
 fi
 
+if [ x$mode = xxmodem ]; then
+	loadb -f $image -c
+	if [ $? -ne 0 ] ; then
+		echo "loadb failed or cancelled! Update aborted."
+		exit 1
+	fi
+fi
+
 unprotect $part
 
 echo
@@ -36,7 +44,6 @@ echo
 if [ x$mode = xtftp ]; then
 	tftp $image $part
 else
-	loadb -f $image -c
 	cp $image $part
 fi
 

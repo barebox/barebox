@@ -328,9 +328,9 @@ sub top_of_kernel_tree {
 	my ($root) = @_;
 
 	my @tree_check = (
-		"COPYING", "CREDITS", "Kbuild", "MAINTAINERS", "Makefile",
-		"README", "Documentation", "arch", "include", "drivers",
-		"fs", "init", "ipc", "kernel", "lib", "scripts",
+		"arch", "commands", "common", "COPYING", "CREDITS", "defaultenv",  
+		"Documentation", "Doxyfile", "drivers", "fs", "include", "lib",
+		"MAKEALL", "Makefile", "net", "README", "scripts", "TODO"
 	);
 
 	foreach my $check (@tree_check) {

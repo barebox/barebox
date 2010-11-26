@@ -135,6 +135,23 @@ static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const
 
 static int amd_flash_real_protect (struct flash_info *info, long sector, int prot)
 {
+	if (info->manufacturer_id != (uchar)ATM_MANUFACT)
+		return 0;
+
+	if (prot) {
+		flash_unlock_seq (info);
+		flash_write_cmd (info, 0, AMD_ADDR_START,
+				 ATM_CMD_SOFTLOCK_START);
+		flash_unlock_seq (info);
+		flash_write_cmd (info, sector, 0, ATM_CMD_LOCK_SECT);
+	} else {
+		flash_write_cmd (info, 0, AMD_ADDR_START,
+				 AMD_CMD_UNLOCK_START);
+		if (info->device_id == ATM_ID_BV6416)
+			flash_write_cmd (info, sector, 0,
+					 ATM_CMD_UNLOCK_SECT);
+	}
+
 	return 0;
 }
 

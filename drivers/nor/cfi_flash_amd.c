@@ -2,6 +2,23 @@
 #include <stdio.h>
 #include "cfi_flash.h"
 
+/*-----------------------------------------------------------------------
+ * Reverse the order of the erase regions in the CFI QRY structure.
+ * This is needed for chips that are either a) correctly detected as
+ * top-boot, or b) buggy.
+ */
+static void cfi_reverse_geometry(struct cfi_qry *qry)
+{
+	unsigned int i, j;
+	u32 tmp;
+
+	for (i = 0, j = qry->num_erase_regions - 1; i < j; i++, j--) {
+		tmp = qry->erase_region_info[i];
+		qry->erase_region_info[i] = qry->erase_region_info[j];
+		qry->erase_region_info[j] = tmp;
+	}
+}
+
 static void flash_unlock_seq (struct flash_info *info)
 {
 	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_UNLOCK_START);
@@ -184,6 +201,23 @@ static int amd_flash_real_protect (struct flash_info *info, long sector, int pro
 	return 0;
 }
 
+static void amd_flash_fixup (struct flash_info *info, struct cfi_qry *qry)
+{
+	/* check if flash geometry needs reversal */
+	if (qry->num_erase_regions > 1) {
+		/* reverse geometry if top boot part */
+		if (info->cfi_version < 0x3131) {
+			/* CFI < 1.1, try to guess from device id */
+			if ((info->device_id & 0x80) != 0)
+				cfi_reverse_geometry(qry);
+		} else if (flash_read_uchar(info, info->ext_addr + 0xf) == 3) {
+			/* CFI >= 1.1, deduct from top/bottom flag */
+			/* note: ext_addr is valid since cfi_version > 0 */
+			cfi_reverse_geometry(qry);
+		}
+	}
+}
+
 struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_write_cfibuffer = amd_flash_write_cfibuffer,
 	.flash_erase_one = amd_flash_erase_one,
@@ -192,5 +226,6 @@ struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_prepare_write = amd_flash_prepare_write,
 	.flash_status_check = flash_generic_status_check,
 	.flash_real_protect = amd_flash_real_protect,
+	.flash_fixup = amd_flash_fixup,
 };
 

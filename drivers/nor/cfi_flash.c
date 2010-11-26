@@ -314,7 +314,6 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 	uchar num_erase_regions;
 	int erase_region_size;
 	int erase_region_count;
-	int geometry_reversed = 0;
 	int cur_offset = 0;
 	struct cfi_qry qry;
 
@@ -368,38 +367,7 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 		info->cfi_cmd_set->flash_read_jedec_ids (info);
 		flash_write_cmd (info, 0, info->cfi_offset, FLASH_CMD_CFI);
 
-		switch (info->vendor) {
-		case CFI_CMDSET_INTEL_STANDARD:
-		case CFI_CMDSET_INTEL_EXTENDED:
-		default:
-#ifdef CFG_FLASH_PROTECTION
-			/* read legacy lock/unlock bit from intel flash */
-			if (info->ext_addr) {
-				info->legacy_unlock = flash_read_uchar (info,
-						info->ext_addr + 5) & 0x08;
-			}
-#endif
-			break;
-		case CFI_CMDSET_AMD_STANDARD:
-		case CFI_CMDSET_AMD_EXTENDED:
-			/* check if flash geometry needs reversal */
-			if (num_erase_regions <= 1)
-				break;
-			/* reverse geometry if top boot part */
-			if (info->cfi_version < 0x3131) {
-				/* CFI < 1.1, try to guess from device id */
-				if ((info->device_id & 0x80) != 0) {
-					geometry_reversed = 1;
-				}
-				break;
-			}
-			/* CFI >= 1.1, deduct from top/bottom flag */
-			/* note: ext_addr is valid since cfi_version > 0 */
-			if (flash_read_uchar(info, info->ext_addr + 0xf) == 3) {
-				geometry_reversed = 1;
-			}
-			break;
-		}
+		info->cfi_cmd_set->flash_fixup (info, &qry);
 
 		debug ("manufacturer is %d\n", info->vendor);
 		debug ("manufacturer id is 0x%x\n", info->manufacturer_id);
@@ -423,7 +391,6 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 		sector = base;
 
 		for (i = 0; i < num_erase_regions; i++) {
-			unsigned int __region = i;
 			struct mtd_erase_region_info *region = &info->eraseregions[i];
 
 			if (i > NUM_ERASE_REGIONS) {
@@ -431,11 +398,9 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 					num_erase_regions, NUM_ERASE_REGIONS);
 				break;
 			}
-			if (geometry_reversed)
-				__region = num_erase_regions - 1 - i;
-			
-			tmp = le32_to_cpu(qry.erase_region_info[__region]);
-			debug("erase region %u: 0x%08lx\n", __region, tmp);
+
+			tmp = le32_to_cpu(qry.erase_region_info[i]);
+			debug("erase region %u: 0x%08lx\n", i, tmp);
 
 			erase_region_count = (tmp & 0xffff) + 1;
 			tmp >>= 16;

@@ -141,6 +141,17 @@ static int intel_flash_real_protect (struct flash_info *info, long sector, int p
 	return 0;
 }
 
+static void intel_flash_fixup (struct flash_info *info, struct cfi_qry *qry)
+{
+#ifdef CFG_FLASH_PROTECTION
+	/* read legacy lock/unlock bit from intel flash */
+	if (info->ext_addr) {
+		info->legacy_unlock = flash_read_uchar (info,
+				info->ext_addr + 5) & 0x08;
+	}
+#endif
+}
+
 struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_write_cfibuffer = intel_flash_write_cfibuffer,
 	.flash_erase_one = intel_flash_erase_one,
@@ -149,5 +160,6 @@ struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_prepare_write = intel_flash_prepare_write,
 	.flash_status_check = intel_flash_status_check,
 	.flash_real_protect = intel_flash_real_protect,
+	.flash_fixup = intel_flash_fixup,
 };
 

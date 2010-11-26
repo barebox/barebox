@@ -201,7 +201,11 @@ static int amd_flash_real_protect (struct flash_info *info, long sector, int pro
 	return 0;
 }
 
-static void amd_flash_fixup (struct flash_info *info, struct cfi_qry *qry)
+/*
+ * Manufacturer-specific quirks. Add workarounds for geometry
+ * reversal, etc. here.
+ */
+static void flash_fixup_amd (struct flash_info *info, struct cfi_qry *qry)
 {
 	/* check if flash geometry needs reversal */
 	if (qry->num_erase_regions > 1) {
@@ -216,6 +220,39 @@ static void amd_flash_fixup (struct flash_info *info, struct cfi_qry *qry)
 			cfi_reverse_geometry(qry);
 		}
 	}
+}
+
+static void flash_fixup_atmel(struct flash_info *info, struct cfi_qry *qry)
+{
+	int reverse_geometry = 0;
+
+	/* Check the "top boot" bit in the PRI */
+	if (info->ext_addr && !(flash_read_uchar(info, info->ext_addr + 6) & 1))
+		reverse_geometry = 1;
+
+	/* AT49BV6416(T) list the erase regions in the wrong order.
+	 * However, the device ID is identical with the non-broken
+	 * AT49BV642D since u-boot only reads the low byte (they
+	 * differ in the high byte.) So leave out this fixup for now.
+	 */
+	if (info->device_id == 0xd6 || info->device_id == 0xd2)
+		reverse_geometry = !reverse_geometry;
+
+	if (reverse_geometry)
+		cfi_reverse_geometry(qry);
+}
+
+static void amd_flash_fixup(struct flash_info *info, struct cfi_qry *qry)
+{
+	/* Do manufacturer-specific fixups */
+	switch (info->manufacturer_id) {
+	case 0x0001:
+		flash_fixup_amd(info, qry);
+		break;
+	case 0x001f:
+		flash_fixup_atmel(info, qry);
+		break;
+        }
 }
 
 struct cfi_cmd_set cfi_cmd_set_amd = {

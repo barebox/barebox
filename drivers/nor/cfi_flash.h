@@ -73,6 +73,39 @@ struct flash_info {
 
 #define NUM_ERASE_REGIONS	4 /* max. number of erase regions */
 
+/* CFI standard query structure */
+struct cfi_qry {
+	u8	qry[3];
+	u16	p_id;
+	u16	p_adr;
+	u16	a_id;
+	u16	a_adr;
+	u8	vcc_min;
+	u8	vcc_max;
+	u8	vpp_min;
+	u8	vpp_max;
+	u8	word_write_timeout_typ;
+	u8	buf_write_timeout_typ;
+	u8	block_erase_timeout_typ;
+	u8	chip_erase_timeout_typ;
+	u8	word_write_timeout_max;
+	u8	buf_write_timeout_max;
+	u8	block_erase_timeout_max;
+	u8	chip_erase_timeout_max;
+	u8	dev_size;
+	u16	interface_desc;
+	u16	max_buf_write_size;
+	u8	num_erase_regions;
+	u32	erase_region_info[NUM_ERASE_REGIONS];
+} __attribute__((packed));
+
+struct cfi_pri_hdr {
+	u8	pri[3];
+	u8	major_version;
+	u8	minor_version;
+} __attribute__((packed));
+
+
 struct cfi_cmd_set {
 	int (*flash_write_cfibuffer) (struct flash_info *info, ulong dest, const uchar * cp, int len);
 	int (*flash_erase_one) (struct flash_info *info, long sect);

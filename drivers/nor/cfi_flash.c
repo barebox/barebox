@@ -269,6 +269,24 @@ static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint o
  * http://www.jedec.org/download/search/jesd68.pdf
  *
 */
+u32 jedec_read_mfr(struct flash_info *info)
+{
+	int bank = 0;
+	uchar mfr;
+
+	/* According to JEDEC "Standard Manufacturer's Identification Code"
+	 * (http://www.jedec.org/download/search/jep106W.pdf)
+	 * several first banks can contain 0x7f instead of actual ID
+	 */
+	do {
+		mfr = flash_read_uchar (info,
+				(bank << 8) | FLASH_OFFSET_MANUFACTURER_ID);
+		bank++;
+	} while (mfr == FLASH_ID_CONTINUATION);
+
+	return mfr;
+}
+
 static int flash_detect_cfi (struct flash_info *info)
 {
 	int cfi_offset;

@@ -16,8 +16,8 @@ static void intel_read_jedec_ids (struct flash_info *info)
 	flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
 	flash_write_cmd(info, 0, 0, FLASH_CMD_READ_ID);
 	udelay(1000); /* some flash are slow to respond */
-	info->manufacturer_id = flash_read_uchar (info,
-					FLASH_OFFSET_MANUFACTURER_ID);
+
+	info->manufacturer_id = jedec_read_mfr(info);
 	info->device_id = flash_read_uchar (info,
 					FLASH_OFFSET_DEVICE_ID);
 	flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);

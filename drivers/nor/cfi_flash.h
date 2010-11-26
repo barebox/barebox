@@ -107,6 +107,8 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define FLASH_STATUS_R			0x01
 #define FLASH_STATUS_PROTECT		0x01
 
+#define FLASH_ID_CONTINUATION		0x7F
+
 #define AMD_CMD_RESET			0xF0
 #define AMD_CMD_WRITE			0xA0
 #define AMD_CMD_ERASE_START		0x80
@@ -211,6 +213,7 @@ static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect
 }
 
 uchar flash_read_uchar (struct flash_info *info, uint offset);
+u32 jedec_read_mfr(struct flash_info *info);
 
 #ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
 #define bankwidth_is_1(info) (info->portwidth == 1)

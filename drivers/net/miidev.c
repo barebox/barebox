@@ -208,6 +208,7 @@ static struct driver_d miidev_drv = {
 int mii_register(struct mii_device *mdev)
 {
 	mdev->dev.priv = mdev;
+	mdev->dev.id = -1;
 	strcpy(mdev->dev.name, "miidev");
 
 	return register_device(&mdev->dev);

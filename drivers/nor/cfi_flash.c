@@ -186,6 +186,21 @@ static void flash_printqry (struct flash_info *info, flash_sect_t sect)
 #endif
 
 /*
+ * read a character at a port width address
+ */
+uchar flash_read_uchar (struct flash_info *info, uint offset)
+{
+	uchar *cp;
+
+	cp = flash_make_addr (info, 0, offset);
+#if defined(__LITTLE_ENDIAN)
+	return (cp[0]);
+#else
+	return (cp[info->portwidth - 1]);
+#endif
+}
+
+/*
  * read a short word by swapping for ppc format.
  */
 static ushort flash_read_ushort (struct flash_info *info, flash_sect_t sect, uint offset)

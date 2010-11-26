@@ -211,20 +211,7 @@ static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect
 	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
 }
 
-/*
- * read a character at a port width address
- */
-static inline uchar flash_read_uchar (struct flash_info *info, uint offset)
-{
-	uchar *cp;
-
-	cp = flash_make_addr (info, 0, offset);
-#if defined(__LITTLE_ENDIAN)
-	return (cp[0]);
-#else
-	return (cp[info->portwidth - 1]);
-#endif
-}
+uchar flash_read_uchar (struct flash_info *info, uint offset);
 
 #ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
 #define bankwidth_is_1(info) (info->portwidth == 1)

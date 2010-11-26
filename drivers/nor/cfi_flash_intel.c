@@ -9,18 +9,19 @@
 */
 static void intel_read_jedec_ids (struct flash_info *info)
 {
+	info->cmd_reset		= FLASH_CMD_RESET;
 	info->manufacturer_id = 0;
 	info->device_id       = 0;
 	info->device_id2      = 0;
 
-	flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
+	flash_write_cmd(info, 0, 0, info->cmd_reset);
 	flash_write_cmd(info, 0, 0, FLASH_CMD_READ_ID);
 	udelay(1000); /* some flash are slow to respond */
 
 	info->manufacturer_id = jedec_read_mfr(info);
 	info->device_id = flash_read_uchar (info,
 					FLASH_OFFSET_DEVICE_ID);
-	flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
+	flash_write_cmd(info, 0, 0, info->cmd_reset);
 }
 
 /*

@@ -16,6 +16,7 @@ static void flash_unlock_seq (struct flash_info *info)
 */
 static void amd_read_jedec_ids (struct flash_info *info)
 {
+	info->cmd_reset		= AMD_CMD_RESET;
 	info->manufacturer_id = 0;
 	info->device_id       = 0;
 	info->device_id2      = 0;
@@ -38,7 +39,7 @@ static void amd_read_jedec_ids (struct flash_info *info)
 		info->addr_unlock2 = 0x555;
 	}
 
-	flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
+	flash_write_cmd(info, 0, 0, info->cmd_reset);
 	flash_unlock_seq(info);
 	flash_write_cmd(info, 0, info->addr_unlock1, FLASH_CMD_READ_ID);
 	udelay(1000); /* some flash are slow to respond */
@@ -54,7 +55,7 @@ static void amd_read_jedec_ids (struct flash_info *info)
 		info->device_id2 |= flash_read_uchar (info,
 					FLASH_OFFSET_DEVICE_ID3);
 	}
-	flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
+	flash_write_cmd(info, 0, 0, info->cmd_reset);
 }
 
 static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)

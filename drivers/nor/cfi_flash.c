@@ -372,7 +372,6 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 		case CFI_CMDSET_INTEL_STANDARD:
 		case CFI_CMDSET_INTEL_EXTENDED:
 		default:
-			info->cmd_reset = FLASH_CMD_RESET;
 #ifdef CFG_FLASH_PROTECTION
 			/* read legacy lock/unlock bit from intel flash */
 			if (info->ext_addr) {
@@ -383,7 +382,6 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 			break;
 		case CFI_CMDSET_AMD_STANDARD:
 		case CFI_CMDSET_AMD_EXTENDED:
-			info->cmd_reset = AMD_CMD_RESET;
 			/* check if flash geometry needs reversal */
 			if (num_erase_regions <= 1)
 				break;

@@ -59,6 +59,8 @@ struct flash_info {
 	ushort	ext_addr;		/* extended query table address		*/
 	ushort	cfi_version;		/* cfi version				*/
 	ushort	cfi_offset;		/* offset for cfi query 		*/
+	ulong	addr_unlock1;		/* unlock address 1 for AMD flash roms	*/
+	ulong	addr_unlock2;		/* unlock address 2 for AMD flash roms	*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct cdev cdev;
 #ifdef CONFIG_PARTITION_NEED_MTD
@@ -116,10 +118,6 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 
 #define AMD_STATUS_TOGGLE		0x40
 #define AMD_STATUS_ERROR		0x20
-
-#define AMD_ADDR_ERASE_START	((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
-#define AMD_ADDR_START		((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
-#define AMD_ADDR_ACK		((info->portwidth == FLASH_CFI_8BIT) ? 0x555 : 0x2AA)
 
 #define ATM_CMD_UNLOCK_SECT		0x70
 #define ATM_CMD_SOFTLOCK_START		0x80
@@ -187,6 +185,7 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define FLASH_CFI_X8		0x00
 #define FLASH_CFI_X16		0x01
 #define FLASH_CFI_X8X16		0x02
+#define FLASH_CFI_X16X32	0x05
 
 /* convert between bit value and numeric value */
 #define CFI_FLASH_SHIFT_WIDTH	3

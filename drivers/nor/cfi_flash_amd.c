@@ -4,8 +4,8 @@
 
 static void flash_unlock_seq (struct flash_info *info)
 {
-	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_UNLOCK_START);
-	flash_write_cmd (info, 0, AMD_ADDR_ACK, AMD_CMD_UNLOCK_ACK);
+	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_UNLOCK_START);
+	flash_write_cmd (info, 0, info->addr_unlock2, AMD_CMD_UNLOCK_ACK);
 }
 
 /*
@@ -20,9 +20,27 @@ static void amd_read_jedec_ids (struct flash_info *info)
 	info->device_id       = 0;
 	info->device_id2      = 0;
 
+	/* calculate command offsets as in the Linux driver */
+	info->addr_unlock1 = 0x555;
+	info->addr_unlock2 = 0x2AA;
+
+	/*
+	 * modify the unlock address if we are in compatibility mode
+	 */
+	if (	/* x8/x16 in x8 mode */
+		((info->chipwidth == FLASH_CFI_BY8) &&
+			(info->interface == FLASH_CFI_X8X16)) ||
+		/* x16/x32 in x16 mode */
+		((info->chipwidth == FLASH_CFI_BY16) &&
+			(info->interface == FLASH_CFI_X16X32)))
+	{
+		info->addr_unlock1 = 0xaaa;
+		info->addr_unlock2 = 0x555;
+	}
+
 	flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
 	flash_unlock_seq(info);
-	flash_write_cmd(info, 0, AMD_ADDR_START, FLASH_CMD_READ_ID);
+	flash_write_cmd(info, 0, info->addr_unlock1, FLASH_CMD_READ_ID);
 	udelay(1000); /* some flash are slow to respond */
 	info->manufacturer_id = flash_read_uchar (info,
 					FLASH_OFFSET_MANUFACTURER_ID);
@@ -74,7 +92,7 @@ static int amd_flash_is_busy (struct flash_info *info, flash_sect_t sect)
 static int amd_flash_erase_one (struct flash_info *info, long sect)
 {
 	flash_unlock_seq(info);
-	flash_write_cmd (info, 0, AMD_ADDR_ERASE_START, AMD_CMD_ERASE_START);
+	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_ERASE_START);
 	flash_unlock_seq(info);
 	flash_write_cmd (info, sect, 0, AMD_CMD_ERASE_SECTOR);
 
@@ -84,7 +102,7 @@ static int amd_flash_erase_one (struct flash_info *info, long sect)
 static void amd_flash_prepare_write(struct flash_info *info)
 {
 	flash_unlock_seq(info);
-	flash_write_cmd (info, 0, AMD_ADDR_START, AMD_CMD_WRITE);
+	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_WRITE);
 }
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
@@ -140,12 +158,12 @@ static int amd_flash_real_protect (struct flash_info *info, long sector, int pro
 
 	if (prot) {
 		flash_unlock_seq (info);
-		flash_write_cmd (info, 0, AMD_ADDR_START,
+		flash_write_cmd (info, 0, info->addr_unlock1,
 				 ATM_CMD_SOFTLOCK_START);
 		flash_unlock_seq (info);
 		flash_write_cmd (info, sector, 0, ATM_CMD_LOCK_SECT);
 	} else {
-		flash_write_cmd (info, 0, AMD_ADDR_START,
+		flash_write_cmd (info, 0, info->addr_unlock1,
 				 AMD_CMD_UNLOCK_START);
 		if (info->device_id == ATM_ID_BV6416)
 			flash_write_cmd (info, sector, 0,

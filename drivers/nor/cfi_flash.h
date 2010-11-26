@@ -71,6 +71,8 @@ struct flash_info {
 	void *base;
 };
 
+#define NUM_ERASE_REGIONS	4 /* max. number of erase regions */
+
 struct cfi_cmd_set {
 	int (*flash_write_cfibuffer) (struct flash_info *info, ulong dest, const uchar * cp, int len);
 	int (*flash_erase_one) (struct flash_info *info, long sect);
@@ -204,6 +206,47 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
 void flash_make_cmd (struct flash_info *info, uchar cmd, void *cmdbuf);
 
+static inline void flash_write8(u8 value, void *addr)
+{
+	writeb(value, addr);
+}
+
+static inline void flash_write16(u16 value, void *addr)
+{
+	writew(value, addr);
+}
+
+static inline void flash_write32(u32 value, void *addr)
+{
+	writel(value, addr);
+}
+
+static inline void flash_write64(u64 value, void *addr)
+{
+	memcpy((void *)addr, &value, 8);
+}
+
+static inline u8 flash_read8(void *addr)
+{
+	return readb(addr);
+}
+
+static inline u16 flash_read16(void *addr)
+{
+	return readw(addr);
+}
+
+static inline u32 flash_read32(void *addr)
+{
+	return readl(addr);
+}
+
+static inline u64 flash_read64(void *addr)
+{
+	/* No architectures currently implement readq() */
+	return *(volatile u64 *)addr;
+}
+
 /*
  * create an address based on the offset and the port width
  */
@@ -246,26 +289,19 @@ typedef union {
 	unsigned long long ll;
 } cfiword_t;
 
-typedef union {
-	volatile unsigned char *cp;
-	volatile unsigned short *wp;
-	volatile unsigned long *lp;
-	volatile unsigned long long *llp;
-} cfiptr_t;
-
 static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
 	if (bankwidth_is_1(info)) {
 		debug("fw addr %p val %02x\n", addr, datum.c);
-		writeb(datum.c, addr);
+		flash_write8(datum.c, addr);
 	} else if (bankwidth_is_2(info)) {
 		debug("fw addr %p val %04x\n", addr, datum.w);
-		writew(datum.w, addr);
+		flash_write16(datum.w, addr);
 	} else if (bankwidth_is_4(info)) {
 		debug("fw addr %p val %08x\n", addr, datum.l);
-		writel(datum.l, addr);
+		flash_write32(datum.l, addr);
 	} else if (bankwidth_is_8(info)) {
-		memcpy((void *)addr, &datum.ll, 8);
+		flash_write64(datum.ll, addr);
 	}
 }
 

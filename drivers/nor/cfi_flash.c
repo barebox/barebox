@@ -117,20 +117,20 @@ static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
 static int flash_write_cfiword (struct flash_info *info, ulong dest,
 				cfiword_t cword)
 {
-	cfiptr_t cptr;
+	void *dstaddr;
 	int flag;
 
-	cptr.cp = (uchar *) dest;
+	dstaddr = (uchar *) dest;
 
 	/* Check if Flash is (sufficiently) erased */
 	if (bankwidth_is_1(info)) {
-		flag = ((cptr.cp[0] & cword.c) == cword.c);
+		flag = ((flash_read8(dstaddr) & cword.c) == cword.c);
 	} else if (bankwidth_is_2(info)) {
-		flag = ((cptr.wp[0] & cword.w) == cword.w);
+		flag = ((flash_read16(dstaddr) & cword.w) == cword.w);
 	} else if (bankwidth_is_4(info)) {
-		flag = ((cptr.lp[0] & cword.l) == cword.l);
+		flag = ((flash_read32(dstaddr) & cword.l) == cword.l);
 	} else if (bankwidth_is_8(info)) {
-		flag = ((cptr.llp[0] & cword.ll) == cword.ll);
+		flag = ((flash_read64(dstaddr) & cword.ll) == cword.ll);
 	} else
 		return 2;
 
@@ -163,6 +163,7 @@ static void flash_printqry (struct flash_info *info, flash_sect_t sect)
 {
 	cfiptr_t cptr;
 	int x, y;
+	unsigned char c;
 
 	for (x = 0; x < 0x40; x += 16U / info->portwidth) {
 		cptr.cp =
@@ -194,9 +195,9 @@ uchar flash_read_uchar (struct flash_info *info, uint offset)
 
 	cp = flash_make_addr (info, 0, offset);
 #if defined(__LITTLE_ENDIAN)
-	return (cp[0]);
+	return flash_read8(cp);
 #else
-	return (cp[info->portwidth - 1]);
+	return flash_read8(cp + info->portwidth - 1);
 #endif
 }
 
@@ -249,17 +250,19 @@ static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint o
 	debug ("long addr is at %p info->portwidth = %d\n", addr,
 	       info->portwidth);
 	for (x = 0; x < 4 * info->portwidth; x++) {
-		debug ("addr[%x] = 0x%x\n", x, addr[x]);
+		debug ("addr[%x] = 0x%x\n", x, flash_read8(addr + x));
 	}
 #endif
 #if defined(__LITTLE_ENDIAN)
-	retval = (addr[0] << 16) | (addr[(info->portwidth)] << 24) |
-		(addr[(2 * info->portwidth)]) | (addr[(3 * info->portwidth)] << 8);
+	retval = ((flash_read8(addr) << 16) |
+		  (flash_read8(addr + info->portwidth) << 24) |
+		  (flash_read8(addr + 2 * info->portwidth)) |
+		  (flash_read8(addr + 3 * info->portwidth) << 8));
 #else
-	retval = (addr[(2 * info->portwidth) - 1] << 24) |
-		(addr[(info->portwidth) - 1] << 16) |
-		(addr[(4 * info->portwidth) - 1] << 8) |
-		addr[(3 * info->portwidth) - 1];
+	retval = ((flash_read8(addr + 2 * info->portwidth - 1) << 24) |
+		  (flash_read8(addr + info->portwidth - 1) << 16) |
+		  (flash_read8(addr + 4 * info->portwidth - 1) << 8) |
+		  (flash_read8(addr + 3 * info->portwidth - 1)));
 #endif
 	return retval;
 }
@@ -576,7 +579,7 @@ static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
 static int write_buff (struct flash_info *info, const uchar * src, ulong addr, ulong cnt)
 {
 	ulong wp;
-	ulong cp;
+	uchar *p;
 	int aln;
 	cfiword_t cword;
 	int i, rc;
@@ -585,28 +588,27 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 	int buffered_size;
 #endif
 	/* get lower aligned address */
-	/* get lower aligned address */
 	wp = (addr & ~(info->portwidth - 1));
 
 	/* handle unaligned start */
 	if ((aln = addr - wp) != 0) {
 		cword.l = 0;
-		cp = wp;
-		for (i = 0; i < aln; ++i, ++cp)
-			flash_add_byte (info, &cword, (*(uchar *) cp));
+		p = (uchar*)wp;
+		for (i = 0; i < aln; ++i)
+			flash_add_byte (info, &cword, flash_read8(p + i));
 
 		for (; (i < info->portwidth) && (cnt > 0); i++) {
 			flash_add_byte (info, &cword, *src++);
 			cnt--;
-			cp++;
 		}
-		for (; (cnt == 0) && (i < info->portwidth); ++i, ++cp)
-			flash_add_byte (info, &cword, (*(uchar *) cp));
+		for (; (cnt == 0) && (i < info->portwidth); ++i)
+			flash_add_byte (info, &cword, flash_read8(p + i));
 
 		rc = flash_write_cfiword (info, wp, cword);
-		if (rc)
+		if (rc != 0)
 			return rc;
-		wp = cp;
+
+		wp += i;
 	}
 
 	/* handle the aligned part */
@@ -657,12 +659,13 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 	 * handle unaligned tail bytes
 	 */
 	cword.l = 0;
-	for (i = 0, cp = wp; (i < info->portwidth) && (cnt > 0); ++i, ++cp) {
+	p = (uchar*)wp;
+	for (i = 0; (i < info->portwidth) && (cnt > 0); ++i) {
 		flash_add_byte (info, &cword, *src++);
 		--cnt;
 	}
-	for (; i < info->portwidth; ++i, ++cp) {
-		flash_add_byte (info, &cword, (*(uchar *) cp));
+	for (; i < info->portwidth; ++i) {
+		flash_add_byte (info, &cword, flash_read8(p + i));
 	}
 
 	return flash_write_cfiword (info, wp, cword);
@@ -920,35 +923,35 @@ void flash_write_cmd (struct flash_info *info, flash_sect_t sect, uint offset, u
 
 int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
-	cfiptr_t cptr;
+	void *addr;
 	cfiword_t cword;
 	int retval;
 
-	cptr.cp = flash_make_addr (info, sect, offset);
+	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 
-	debug ("is= cmd %x(%c) addr %p ", cmd, cmd, cptr.cp);
+	debug ("is= cmd %x(%c) addr %p ", cmd, cmd, addr);
 	if (bankwidth_is_1(info)) {
-		debug ("is= %x %x\n", cptr.cp[0], cword.c);
-		retval = (cptr.cp[0] == cword.c);
+		debug ("is= %x %x\n", flash_read8(addr), cword.c);
+		retval = (flash_read8(addr) == cword.c);
 	} else if (bankwidth_is_2(info)) {
-		debug ("is= %4.4x %4.4x\n", cptr.wp[0], cword.w);
-		retval = (cptr.wp[0] == cword.w);
+		debug ("is= %4.4x %4.4x\n", flash_read16(addr), cword.w);
+		retval = (flash_read16(addr) == cword.w);
 	} else if (bankwidth_is_4(info)) {
-		debug ("is= %8.8lx %8.8lx\n", cptr.lp[0], cword.l);
-		retval = (cptr.lp[0] == cword.l);
+		debug ("is= %8.8lx %8.8lx\n", flash_read32(addr), cword.l);
+		retval = (flash_read32(addr) == cword.l);
 	} else if (bankwidth_is_8(info)) {
 #ifdef DEBUG
 		{
 			char str1[20];
 			char str2[20];
 
-			print_longlong (str1, cptr.llp[0]);
+			print_longlong (str1, flash_read32(addr));
 			print_longlong (str2, cword.ll);
 			debug ("is= %s %s\n", str1, str2);
 		}
 #endif
-		retval = (cptr.llp[0] == cword.ll);
+		retval = (flash_read32(addr) == cword.ll);
 	} else
 		retval = 0;
 
@@ -957,20 +960,20 @@ int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, ucha
 
 int flash_isset (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
 {
-	cfiptr_t cptr;
+	void *addr;
 	cfiword_t cword;
 	int retval;
 
-	cptr.cp = flash_make_addr (info, sect, offset);
+	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 	if (bankwidth_is_1(info)) {
-		retval = ((cptr.cp[0] & cword.c) == cword.c);
+		retval = ((flash_read8(addr) & cword.c) == cword.c);
 	} else if (bankwidth_is_2(info)) {
-		retval = ((cptr.wp[0] & cword.w) == cword.w);
+		retval = ((flash_read16(addr) & cword.w) == cword.w);
 	} else if (bankwidth_is_4(info)) {
-		retval = ((cptr.lp[0] & cword.l) == cword.l);
+		retval = ((flash_read32(addr) & cword.l) == cword.l);
 	} else if (bankwidth_is_8(info)) {
-		retval = ((cptr.llp[0] & cword.ll) == cword.ll);
+		retval = ((flash_read64(addr) & cword.ll) == cword.ll);
 	} else
 		retval = 0;
 

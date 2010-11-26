@@ -54,11 +54,9 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 	flash_sect_t sector;
 	int cnt;
 	int retcode;
-	volatile cfiptr_t src;
-	volatile cfiptr_t dst;
+	void *src = (void*)cp;
+	void *dst = (void *)dest;
 
-	src.cp = (uchar *)cp;
-	dst.cp = (uchar *) dest;
 	sector = find_sector (info, dest);
 	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
 	flash_write_cmd (info, sector, 0, FLASH_CMD_WRITE_TO_BUFFER);
@@ -74,13 +72,17 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 	flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
 	while (cnt-- > 0) {
 		if (bankwidth_is_1(info)) {
-			*dst.cp++ = *src.cp++;
+			flash_write8(flash_read8(src), dst);
+			src += 1, dst += 1;
 		} else if (bankwidth_is_2(info)) {
-			*dst.wp++ = *src.wp++;
+			flash_write16(flash_read16(src), dst);
+			src += 2, dst += 2;
 		} else if (bankwidth_is_4(info)) {
-			*dst.lp++ = *src.lp++;
+			flash_write32(flash_read32(src), dst);
+			src += 4, dst += 4;
 		} else if (bankwidth_is_8(info)) {
-			*dst.llp++ = *src.llp++;
+			flash_write64(flash_read64(src), dst);
+			src += 8, dst += 8;
 		}
 	}
 

@@ -279,7 +279,8 @@ static int flash_detect_cfi (struct flash_info *info)
 		for (info->chipwidth = FLASH_CFI_BY8;
 		     info->chipwidth <= info->portwidth;
 		     info->chipwidth <<= 1) {
-			flash_write_cmd (info, 0, 0, info->cmd_reset);
+			flash_write_cmd (info, 0, 0, AMD_CMD_RESET);
+			flash_write_cmd (info, 0, 0, FLASH_CMD_RESET);
 			for (cfi_offset=0; cfi_offset < sizeof(flash_offset_cfi)/sizeof(uint); cfi_offset++) {
 				flash_write_cmd (info, 0, flash_offset_cfi[cfi_offset], FLASH_CMD_CFI);
 				if (flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP, 'Q')

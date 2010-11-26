@@ -33,7 +33,7 @@ elif [ x${type} = xrootfs ]; then
 elif [ x${type} = xbarebox ]; then
 	image=$bareboximage
 	if [ x${image} = x ]; then
-		imamge=barebox.bin
+		image=barebox.bin
 	fi
 else
 	. /env/bin/_update_help

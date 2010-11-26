@@ -494,9 +494,9 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 		if ((info->interface == FLASH_CFI_X8X16) && (info->chipwidth == FLASH_CFI_BY8)) {
 			info->portwidth >>= 1;	/* XXX - Need to test on x8/x16 in parallel. */
 		}
+		flash_write_cmd (info, 0, 0, info->cmd_reset);
 	}
 
-	flash_write_cmd (info, 0, 0, info->cmd_reset);
 	return info->size;
 }
 

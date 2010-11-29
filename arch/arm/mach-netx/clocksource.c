@@ -34,7 +34,7 @@ uint64_t netx_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= netx_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
 

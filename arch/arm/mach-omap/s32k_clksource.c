@@ -56,7 +56,7 @@ static uint64_t s32k_clocksource_read(void)
 /* A bit obvious isn't it? */
 static struct clocksource s32k_cs = {
 	.read = s32k_clocksource_read,
-	.mask = 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift = 10,
 };
 

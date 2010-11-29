@@ -196,7 +196,7 @@ static uint64_t s3c24xx_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= s3c24xx_clocksource_read,
-	.mask	= 0x0000ffff,
+	.mask	= CLOCKSOURCE_MASK(16),
 	.shift	= 10,
 };
 

@@ -55,7 +55,7 @@ static uint64_t blackfin_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= blackfin_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
 

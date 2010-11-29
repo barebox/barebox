@@ -56,7 +56,7 @@ static uint64_t pit_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= pit_clocksource_read,
-	.mask	= 0x0000ffff,
+	.mask	= CLOCKSOURCE_MASK(16),
 	.shift	= 10,
 };
 

@@ -56,7 +56,7 @@ uint64_t ppc_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= ppc_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 15,
 };
 

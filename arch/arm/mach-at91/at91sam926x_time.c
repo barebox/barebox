@@ -46,7 +46,7 @@ uint64_t at91sam9_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= at91sam9_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
 

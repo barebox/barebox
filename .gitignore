@@ -48,6 +48,9 @@ include/config
 include/linux/compile.h
 include/generated
 
+# Generated files
+Doxyfile.version
+
 # stgit generated dirs
 patches-*
 

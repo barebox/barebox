@@ -46,6 +46,7 @@
 #include <i2c/i2c.h>
 #include <mfd/lp3972.h>
 #include <mach/iomux-mx27.h>
+#include <mach/devices-imx27.h>
 
 static struct device_d cfi_dev = {
 	.id	  = -1,
@@ -86,24 +87,10 @@ static struct fec_platform_data fec_info = {
 	.phy_addr = 1,
 };
 
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = 0x1002b000,
-	.platform_data	= &fec_info,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
 	.flash_bbt = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = 0xd8000000,
-	.platform_data	= &nand_info,
 };
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
@@ -154,12 +141,6 @@ static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("lp3972", 0x34),
 	},
-};
-
-static struct device_d i2c_dev = {
-	.id		= -1,
-	.name		= "i2c-imx",
-	.map_base	= IMX_I2C1_BASE,
 };
 
 #ifdef CONFIG_MMU
@@ -294,12 +275,12 @@ static int eukrea_cpuimx27_devices_init(void)
 #ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
 	register_device(&cfi_dev1);
 #endif
-	register_device(&nand_dev);
+	imx27_add_nand(&nand_info);
 	register_device(&sdram_dev);
 
 	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	register_device(&i2c_dev);
+	imx27_add_i2c0(NULL);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
@@ -359,7 +340,7 @@ static int eukrea_cpuimx27_late_init(void)
 	u8 reg[1];
 #endif
 	console_flush();
-	register_device(&fec_dev);
+	imx27_add_fec(&fec_info);
 
 #ifdef CONFIG_I2C_LP3972
 	client = lp3972_get_client();

@@ -220,4 +220,6 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 
 extern const char version_string[];
 
+#define IOMEM(addr)	((void __force __iomem *)(addr))
+
 #endif	/* __COMMON_H_ */

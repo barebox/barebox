@@ -43,11 +43,6 @@ x86 type:
 
 @li @subpage generic_pc
 
-coldfire/m68k type:
-
-@li @subpage phycore_mcf54xx
-@li @subpage kp_ukd_r1
-
 */
 
 /* TODO

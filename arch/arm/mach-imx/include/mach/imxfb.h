@@ -1,3 +1,6 @@
+#ifndef __MACH_IMXFB_H
+#define __MACH_IMXFB_H
+
 /*
  * This structure describes the machine which we are running on.
  */
@@ -79,6 +82,8 @@ struct imx_fb_platform_data {
 };
 
 void set_imx_fb_info(struct imx_fb_platform_data *);
+
+#endif /* __MACH_IMXFB_H */
 
 /**
  * @file

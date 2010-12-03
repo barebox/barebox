@@ -95,6 +95,15 @@ void imx_nand_set_layout(int writesize, int datawidth)
 	FMCR = fmcr;
 }
 
+#elif defined CONFIG_ARCH_IMX51
+
+void imx_nand_set_layout(int writesize, int datawidth)
+{
+	/* Just silence the compiler warning below. On i.MX51 we don't
+	 * have external boot.
+	 */
+}
+
 #else
 #warning using empty imx_nand_set_layout(). NAND flash will not work properly if not booting from it
 

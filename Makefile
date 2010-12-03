@@ -762,6 +762,9 @@ include/config/kernel.release: include/config/auto.conf FORCE
 	$(Q)rm -f $@
 	$(Q)echo $(kernelrelease) > $@
 
+Doxyfile.version: include/config/auto.conf FORCE
+	$(Q)rm -f $@
+	$(Q)echo "PROJECT_NUMBER = $(KERNELRELEASE)" > $@
 
 # Things we need to do before we recursively start building the kernel
 # or the modules are listed in "prepare".
@@ -973,7 +976,7 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.S \
-		.tmp_kallsyms* barebox_default_env barebox.ldr
+		.tmp_kallsyms* barebox_default_env barebox.ldr Doxyfile.version
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include
@@ -1098,7 +1101,7 @@ help:
 
 docs : htmldocs
 
-htmldocs:
+htmldocs: Doxyfile.version
 	@echo  'Running doxygen with local Doxyfile'
 	$(Q)doxygen Doxyfile
 

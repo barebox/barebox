@@ -35,7 +35,7 @@ static uint64_t nmdk_read_timer(void)
 static struct clocksource nmdk_clksrc = {
 	.read	= nmdk_read_timer,
 	.shift	= 20,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 };
 
 static void nmdk_timer_reset(void)

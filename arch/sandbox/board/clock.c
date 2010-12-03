@@ -32,7 +32,7 @@ static uint64_t linux_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= linux_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
 

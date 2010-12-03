@@ -120,7 +120,7 @@ void at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
 static struct device_d dbgu_serial_device = {
-	.id	  = -1,
+	.id	  = 0,
 	.name     = "atmel_serial",
 	.map_base = AT91_BASE_SYS + AT91_DBGU,
 	.size     = 4096,
@@ -133,7 +133,7 @@ static inline void configure_dbgu_pins(void)
 }
 
 static struct device_d uart0_serial_device = {
-	.id	  = -1,
+	.id	  = 1,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US0,
 	.size     = 4096,
@@ -159,7 +159,7 @@ static inline void configure_usart0_pins(unsigned pins)
 }
 
 static struct device_d uart1_serial_device = {
-	.id	  = -1,
+	.id	  = 2,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US1,
 	.size     = 4096,
@@ -177,7 +177,7 @@ static inline void configure_usart1_pins(unsigned pins)
 }
 
 static struct device_d uart2_serial_device = {
-	.id	  = -1,
+	.id	  = 3,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US2,
 	.size     = 4096,
@@ -195,7 +195,7 @@ static inline void configure_usart2_pins(unsigned pins)
 }
 
 static struct device_d uart3_serial_device = {
-	.id	  = -1,
+	.id	  = 4,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US3,
 	.size     = 4096,
@@ -213,7 +213,7 @@ static inline void configure_usart3_pins(unsigned pins)
 }
 
 static struct device_d uart4_serial_device = {
-	.id	  = -1,
+	.id	  = 5,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US4,
 	.size     = 4096,
@@ -226,7 +226,7 @@ static inline void configure_usart4_pins(void)
 }
 
 static struct device_d uart5_serial_device = {
-	.id	  = -1,
+	.id	  = 6,
 	.name     = "atmel_serial",
 	.map_base = AT91SAM9260_BASE_US5,
 	.size     = 4096,

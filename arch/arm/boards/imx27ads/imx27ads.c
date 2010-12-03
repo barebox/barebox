@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <generated/mach-types.h>
 #include <mach/iomux-mx27.h>
+#include <mach/devices-imx27.h>
 
 static struct device_d cfi_dev = {
 	.id	  = -1,
@@ -56,13 +57,6 @@ static struct device_d sdram_dev = {
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
-};
-
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = 0x1002b000,
-	.platform_data	= &fec_info,
 };
 
 static int imx27ads_timing_init(void)
@@ -134,7 +128,7 @@ static int mx27ads_devices_init(void)
 
 	register_device(&cfi_dev);
 	register_device(&sdram_dev);
-	register_device(&fec_dev);
+	imx27_add_fec(&fec_info);
 
 	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");
@@ -149,16 +143,9 @@ static int mx27ads_devices_init(void)
 
 device_initcall(mx27ads_devices_init);
 
-static struct device_d mx27ads_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int mx27ads_console_init(void)
 {
-	register_device(&mx27ads_serial_device);
+	imx27_add_uart0();
 	return 0;
 }
 

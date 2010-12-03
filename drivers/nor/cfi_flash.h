@@ -59,6 +59,8 @@ struct flash_info {
 	ushort	ext_addr;		/* extended query table address		*/
 	ushort	cfi_version;		/* cfi version				*/
 	ushort	cfi_offset;		/* offset for cfi query 		*/
+	ulong	addr_unlock1;		/* unlock address 1 for AMD flash roms	*/
+	ulong	addr_unlock2;		/* unlock address 2 for AMD flash roms	*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct cdev cdev;
 #ifdef CONFIG_PARTITION_NEED_MTD
@@ -69,6 +71,41 @@ struct flash_info {
 	void *base;
 };
 
+#define NUM_ERASE_REGIONS	4 /* max. number of erase regions */
+
+/* CFI standard query structure */
+struct cfi_qry {
+	u8	qry[3];
+	u16	p_id;
+	u16	p_adr;
+	u16	a_id;
+	u16	a_adr;
+	u8	vcc_min;
+	u8	vcc_max;
+	u8	vpp_min;
+	u8	vpp_max;
+	u8	word_write_timeout_typ;
+	u8	buf_write_timeout_typ;
+	u8	block_erase_timeout_typ;
+	u8	chip_erase_timeout_typ;
+	u8	word_write_timeout_max;
+	u8	buf_write_timeout_max;
+	u8	block_erase_timeout_max;
+	u8	chip_erase_timeout_max;
+	u8	dev_size;
+	u16	interface_desc;
+	u16	max_buf_write_size;
+	u8	num_erase_regions;
+	u32	erase_region_info[NUM_ERASE_REGIONS];
+} __attribute__((packed));
+
+struct cfi_pri_hdr {
+	u8	pri[3];
+	u8	major_version;
+	u8	minor_version;
+} __attribute__((packed));
+
+
 struct cfi_cmd_set {
 	int (*flash_write_cfibuffer) (struct flash_info *info, ulong dest, const uchar * cp, int len);
 	int (*flash_erase_one) (struct flash_info *info, long sect);
@@ -76,6 +113,8 @@ struct cfi_cmd_set {
 	void (*flash_read_jedec_ids) (struct flash_info *info);
 	void (*flash_prepare_write) (struct flash_info *info);
 	int (*flash_status_check) (struct flash_info *info, flash_sect_t sector, uint64_t tout, char *prompt);
+	int (*flash_real_protect) (struct flash_info *info, long sector, int prot);
+	void (*flash_fixup) (struct flash_info *info, struct cfi_qry *qry);
 };
 
 extern struct cfi_cmd_set cfi_cmd_set_intel;
@@ -104,6 +143,8 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define FLASH_STATUS_R			0x01
 #define FLASH_STATUS_PROTECT		0x01
 
+#define FLASH_ID_CONTINUATION		0x7F
+
 #define AMD_CMD_RESET			0xF0
 #define AMD_CMD_WRITE			0xA0
 #define AMD_CMD_ERASE_START		0x80
@@ -116,9 +157,9 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define AMD_STATUS_TOGGLE		0x40
 #define AMD_STATUS_ERROR		0x20
 
-#define AMD_ADDR_ERASE_START	((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
-#define AMD_ADDR_START		((info->portwidth == FLASH_CFI_8BIT) ? 0xAAA : 0x555)
-#define AMD_ADDR_ACK		((info->portwidth == FLASH_CFI_8BIT) ? 0x555 : 0x2AA)
+#define ATM_CMD_UNLOCK_SECT		0x70
+#define ATM_CMD_SOFTLOCK_START		0x80
+#define ATM_CMD_LOCK_SECT		0x40
 
 #define FLASH_OFFSET_MANUFACTURER_ID	0x00
 #define FLASH_OFFSET_DEVICE_ID		0x01
@@ -182,6 +223,7 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define FLASH_CFI_X8		0x00
 #define FLASH_CFI_X16		0x01
 #define FLASH_CFI_X8X16		0x02
+#define FLASH_CFI_X16X32	0x05
 
 /* convert between bit value and numeric value */
 #define CFI_FLASH_SHIFT_WIDTH	3
@@ -198,6 +240,47 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
 void flash_make_cmd (struct flash_info *info, uchar cmd, void *cmdbuf);
 
+static inline void flash_write8(u8 value, void *addr)
+{
+	writeb(value, addr);
+}
+
+static inline void flash_write16(u16 value, void *addr)
+{
+	writew(value, addr);
+}
+
+static inline void flash_write32(u32 value, void *addr)
+{
+	writel(value, addr);
+}
+
+static inline void flash_write64(u64 value, void *addr)
+{
+	memcpy((void *)addr, &value, 8);
+}
+
+static inline u8 flash_read8(void *addr)
+{
+	return readb(addr);
+}
+
+static inline u16 flash_read16(void *addr)
+{
+	return readw(addr);
+}
+
+static inline u32 flash_read32(void *addr)
+{
+	return readl(addr);
+}
+
+static inline u64 flash_read64(void *addr)
+{
+	/* No architectures currently implement readq() */
+	return *(volatile u64 *)addr;
+}
+
 /*
  * create an address based on the offset and the port width
  */
@@ -206,20 +289,8 @@ static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect
 	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
 }
 
-/*
- * read a character at a port width address
- */
-static inline uchar flash_read_uchar (struct flash_info *info, uint offset)
-{
-	uchar *cp;
-
-	cp = flash_make_addr (info, 0, offset);
-#if defined(__LITTLE_ENDIAN)
-	return (cp[0]);
-#else
-	return (cp[info->portwidth - 1]);
-#endif
-}
+uchar flash_read_uchar (struct flash_info *info, uint offset);
+u32 jedec_read_mfr(struct flash_info *info);
 
 #ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
 #define bankwidth_is_1(info) (info->portwidth == 1)
@@ -252,26 +323,19 @@ typedef union {
 	unsigned long long ll;
 } cfiword_t;
 
-typedef union {
-	volatile unsigned char *cp;
-	volatile unsigned short *wp;
-	volatile unsigned long *lp;
-	volatile unsigned long long *llp;
-} cfiptr_t;
-
 static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
 	if (bankwidth_is_1(info)) {
 		debug("fw addr %p val %02x\n", addr, datum.c);
-		writeb(datum.c, addr);
+		flash_write8(datum.c, addr);
 	} else if (bankwidth_is_2(info)) {
 		debug("fw addr %p val %04x\n", addr, datum.w);
-		writew(datum.w, addr);
+		flash_write16(datum.w, addr);
 	} else if (bankwidth_is_4(info)) {
 		debug("fw addr %p val %08x\n", addr, datum.l);
-		writel(datum.l, addr);
+		flash_write32(datum.l, addr);
 	} else if (bankwidth_is_8(info)) {
-		memcpy((void *)addr, &datum.ll, 8);
+		flash_write64(datum.ll, addr);
 	}
 }
 

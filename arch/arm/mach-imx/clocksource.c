@@ -47,7 +47,7 @@ static uint64_t imx_clocksource_read(void)
 
 static struct clocksource cs = {
 	.read	= imx_clocksource_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
 

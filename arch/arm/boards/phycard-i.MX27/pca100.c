@@ -1,4 +1,4 @@
-	/*
+/*
  * Copyright (C) 2007 Sascha Hauer, Pengutronix 
  *
  * This program is free software; you can redistribute it and/or
@@ -39,6 +39,7 @@
 #include <asm/mmu.h>
 #include <usb/isp1504.h>
 #include <mach/iomux-mx27.h>
+#include <mach/devices-imx27.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -58,24 +59,10 @@ static struct fec_platform_data fec_info = {
 	.phy_addr = 1,
 };
 
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = 0x1002b000,
-	.platform_data	= &fec_info,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
 	.flash_bbt = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = 0xd8000000,
-	.platform_data	= &nand_info,
 };
 
 #ifdef CONFIG_USB
@@ -109,11 +96,6 @@ static void pca100_usbh_init(void)
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
 }
 #endif
-
-static struct device_d mmc_dev = {
-	.name		= "imx-mmc",
-	.map_base	= 0x10014000,
-};
 
 #ifdef CONFIG_MMU
 static void pca100_mmu_init(void)
@@ -207,10 +189,10 @@ static int pca100_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	register_device(&nand_dev);
+	imx27_add_nand(&nand_info);
 	register_device(&sdram_dev);
-	register_device(&fec_dev);
-	register_device(&mmc_dev);
+	imx27_add_fec(&fec_info);
+	imx27_add_mmc0(NULL);
 
 	PCCR1 |= PCCR1_PERCLK2_EN;
 

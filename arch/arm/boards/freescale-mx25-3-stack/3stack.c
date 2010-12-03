@@ -40,6 +40,7 @@
 #include <linux/err.h>
 #include <i2c/i2c.h>
 #include <mfd/mc34704.h>
+#include <mach/devices-imx25.h>
 
 extern unsigned long _stext;
 extern void exception_vectors(void);
@@ -112,13 +113,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 1,
 };
 
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = IMX_FEC_BASE,
-	.platform_data	= &fec_info,
-};
-
 static struct memory_platform_data sdram_pdata = {
 	.name	= "ram0",
 	.flags	= DEVFS_RDWR,
@@ -156,13 +150,6 @@ struct imx_nand_platform_data nand_info = {
 	.hw_ecc	= 1,
 };
 
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = IMX_NFC_BASE,
-	.platform_data	= &nand_info,
-};
-
 #ifdef CONFIG_USB
 static void imx25_usb_init(void)
 {
@@ -195,12 +182,6 @@ static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("mc34704", 0x54),
 	},
-};
-
-static struct device_d i2c_dev = {
-	.id	  = -1,
-	.name     = "i2c-imx",
-	.map_base = IMX_I2C1_BASE,
 };
 
 static int imx25_3ds_pmic_init(void)
@@ -259,12 +240,12 @@ static int imx25_devices_init(void)
 	register_device(&usbh2_dev);
 #endif
 
-	register_device(&fec_dev);
+	imx25_add_fec(&fec_info);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
-	register_device(&nand_dev);
+	imx25_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
@@ -276,7 +257,7 @@ static int imx25_devices_init(void)
 	register_device(&sram0_dev);
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	register_device(&i2c_dev);
+	imx25_add_i2c0(NULL);
 
 	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
@@ -287,13 +268,6 @@ static int imx25_devices_init(void)
 }
 
 device_initcall(imx25_devices_init);
-
-static struct device_d imx25_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 16 * 1024,
-};
 
 static struct pad_desc imx25_pads[] = {
 	MX25_PAD_FEC_MDC__MDC,
@@ -339,7 +313,7 @@ static int imx25_console_init(void)
 
 	writel(0x03010101, 0x53f80024);
 
-	register_device(&imx25_serial_device);
+	imx25_add_uart0();
 	return 0;
 }
 

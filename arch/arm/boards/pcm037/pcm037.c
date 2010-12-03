@@ -37,7 +37,7 @@
 #include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-
+#include <mach/devices-imx31.h>
 
 /*
  * Up to 32MiB NOR type flash, connected to
@@ -124,13 +124,6 @@ struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
 	.flash_bbt = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = 0xB8000000,
-	.platform_data	= &nand_info,
 };
 
 #ifdef CONFIG_USB
@@ -295,7 +288,7 @@ static int imx31_devices_init(void)
 	protect_file("/dev/env0", 1);
 
 	register_device(&sram_dev);
-	register_device(&nand_dev);
+	imx31_add_nand(&nand_info);
 	register_device(&network_dev);
 
 	register_device(&sdram0_dev);
@@ -320,13 +313,6 @@ static int imx31_devices_init(void)
 
 device_initcall(imx31_devices_init);
 
-static struct device_d imx31_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 16 * 1024,
-};
-
 static int imx31_console_init(void)
 {
 	/* init gpios for serial port */
@@ -335,7 +321,7 @@ static int imx31_console_init(void)
 	imx_iomux_mode(MX31_PIN_CTS1__CTS1);
 	imx_iomux_mode(MX31_PIN_RTS1__RTS1);
 
-	register_device(&imx31_serial_device);
+	imx31_add_uart0();
 	return 0;
 }
 

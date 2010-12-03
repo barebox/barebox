@@ -43,6 +43,7 @@
 #include <i2c/i2c.h>
 #include <usb/fsl_usb2.h>
 #include <mach/usb.h>
+#include <mach/devices-imx25.h>
 
 extern unsigned long _stext;
 extern void exception_vectors(void);
@@ -88,13 +89,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 1,
 };
 
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = IMX_FEC_BASE,
-	.platform_data	= &fec_info,
-};
-
 static struct memory_platform_data sdram_pdata = {
 	.name	= "ram0",
 	.flags	= DEVFS_RDWR,
@@ -111,13 +105,6 @@ static struct device_d sdram0_dev = {
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = IMX_NFC_BASE,
-	.platform_data	= &nand_info,
 };
 
 static struct imx_fb_videomode imxfb_mode = {
@@ -143,26 +130,6 @@ static struct imx_fb_platform_data eukrea_cpuimx25_fb_data = {
 	.pwmr		= 0x00A903FF,
 	.lscr1		= 0x00120300,
 	.dmacr		= 0x80040060,
-};
-
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name		= "imxfb",
-	.map_base	= 0x53fbc000,
-	.size		= 0x1000,
-	.platform_data	= &eukrea_cpuimx25_fb_data,
-};
-
-static struct device_d i2c_dev = {
-	.id	  = -1,
-	.name     = "i2c-imx",
-	.map_base = IMX_I2C1_BASE,
-};
-
-static struct device_d esdhc_dev = {
-	.name		= "imx-esdhc",
-	.map_base	= 0x53fb4000,
 };
 
 #ifdef CONFIG_USB
@@ -285,10 +252,10 @@ static int eukrea_cpuimx25_devices_init(void)
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
 		ARRAY_SIZE(eukrea_cpuimx25_pads));
 
-	register_device(&fec_dev);
+	imx25_add_fec(&fec_info);
 
 	nand_info.width = 1;
-	register_device(&nand_dev);
+	imx25_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000,
 		PARTITION_FIXED, "self_raw");
@@ -304,10 +271,10 @@ static int eukrea_cpuimx25_devices_init(void)
 	gpio_direction_output(26, 1);
 	gpio_set_value(26, 1);
 
-	register_device(&imxfb_dev);
+	imx25_add_fb(&eukrea_cpuimx25_fb_data);
 
-	register_device(&i2c_dev);
-	register_device(&esdhc_dev);
+	imx25_add_i2c0(NULL);
+	imx25_add_mmc0(NULL);
 
 #ifdef CONFIG_USB
 	imx25_usb_init();
@@ -324,16 +291,9 @@ static int eukrea_cpuimx25_devices_init(void)
 
 device_initcall(eukrea_cpuimx25_devices_init);
 
-static struct device_d eukrea_cpuimx25_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 16 * 1024,
-};
-
 static int eukrea_cpuimx25_console_init(void)
 {
-	register_device(&eukrea_cpuimx25_serial_device);
+	imx25_add_uart0();
 	return 0;
 }
 

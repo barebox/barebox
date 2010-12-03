@@ -87,7 +87,6 @@ TODO
 @li @subpage dev_arm_mach
 @li @subpage dev_bf_mach
 @li @subpage dev_ppc_mach
-@li @subpage dev_m68k_mach
 @li @subpage dev_x86_mach
 
 */

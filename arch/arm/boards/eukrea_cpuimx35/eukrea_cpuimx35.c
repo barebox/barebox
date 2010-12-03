@@ -54,17 +54,11 @@
 #include <i2c/i2c.h>
 #include <usb/fsl_usb2.h>
 #include <mach/usb.h>
+#include <mach/devices-imx35.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
 	.phy_addr	= 0x1F,
-};
-
-static struct device_d fec_dev = {
-	.id		= -1,
-	.name		= "fec_imx",
-	.map_base	= IMX_FEC_BASE,
-	.platform_data	= &fec_info,
 };
 
 static struct memory_platform_data sdram_pdata = {
@@ -84,13 +78,6 @@ struct imx_nand_platform_data nand_info = {
 	.width		= 1,
 	.hw_ecc		= 1,
 	.flash_bbt	= 1,
-};
-
-static struct device_d nand_dev = {
-	.id		= -1,
-	.name		= "imx_nand",
-	.map_base	= IMX_NFC_BASE,
-	.platform_data	= &nand_info,
 };
 
 static struct fb_videomode imxfb_mode = {
@@ -119,25 +106,6 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &imxfb_mode,
 	.bpp		= 16,
 	.enable		= eukrea_cpuimx35_enable_display,
-};
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name		= "imx-ipu-fb",
-	.map_base	= 0x53fc0000,
-	.size		= 0x1000,
-	.platform_data	= &ipu_fb_data,
-};
-
-static struct device_d i2c_dev = {
-	.id	  = -1,
-	.name     = "i2c-imx",
-	.map_base = IMX_I2C1_BASE,
-};
-
-static struct device_d esdhc_dev = {
-	.name		= "imx-esdhc",
-	.map_base	= IMX_SDHC1_BASE,
 };
 
 #ifdef CONFIG_USB
@@ -212,20 +180,20 @@ static int eukrea_cpuimx35_devices_init(void)
 {
 	unsigned int tmp;
 
-	register_device(&nand_dev);
+	imx35_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&fec_dev);
+	imx35_add_fec(&fec_info);
 
 	register_device(&sdram_dev);
-	register_device(&imxfb_dev);
+	imx35_add_fb(&ipu_fb_data);
 
-	register_device(&i2c_dev);
-	register_device(&esdhc_dev);
+	imx35_add_i2c0(NULL);
+	imx35_add_mmc0(NULL);
 
 #ifdef CONFIG_USB
 	imx35_usb_init();
@@ -244,13 +212,6 @@ static int eukrea_cpuimx35_devices_init(void)
 }
 
 device_initcall(eukrea_cpuimx35_devices_init);
-
-static struct device_d eukrea_cpuimx35_serial_device = {
-	.id		= -1,
-	.name		= "imx_serial",
-	.map_base	= IMX_UART1_BASE,
-	.size		= 4096,
-};
 
 static struct pad_desc eukrea_cpuimx35_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
@@ -306,7 +267,7 @@ static int eukrea_cpuimx35_console_init(void)
 	/* led default off */
 	gpio_direction_output(32 * 2 + 29, 1);
 
-	register_device(&eukrea_cpuimx35_serial_device);
+	imx35_add_uart0();
 	return 0;
 }
 

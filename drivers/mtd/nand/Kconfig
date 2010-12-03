@@ -11,12 +11,12 @@ if NAND
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"
-	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX25
+	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX25 || ARCH_IMX51
 
 config NAND_IMX_BOOT
 	bool
 	prompt "Support Starting barebox from NAND"
-	depends on NAND_IMX || NAND_IMX_V2
+	depends on NAND_IMX && !ARCH_IMX51
 
 choice
 	depends on NAND_IMX_BOOT

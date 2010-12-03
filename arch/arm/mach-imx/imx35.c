@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
@@ -39,3 +40,21 @@ int imx_silicon_revision()
 
 	return (reg & 0xFF);
 }
+
+/*
+ * There are some i.MX35 CPUs in the wild, comming with bogus L2 cache settings.
+ * These misconfigured CPUs will run amok immediately when the L2 cache gets
+ * enabled. Workaraound is to setup the correct register setting prior enabling
+ * the L2 cache. This should not hurt already working CPUs, as they are using the
+ * same value
+ */
+
+#define L2_MEM_VAL 0x10
+
+static int imx35_l2_fix(void)
+{
+	writel(0x515, IMX_CLKCTL_BASE + L2_MEM_VAL);
+
+	return 0;
+}
+core_initcall(imx35_l2_fix);

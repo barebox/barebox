@@ -52,7 +52,7 @@
 # define SSP_CTRL0_SFTRST (1 << 31)
 # define SSP_CTRL0_CLKGATE (1 << 30)
 # define SSP_CTRL0_RUN (1 << 29)
-# define SSP_CTRL0_LOCK_CS (1 << 29)
+# define SSP_CTRL0_LOCK_CS (1 << 27)
 # define SSP_CTRL0_READ (1 << 25)
 # define SSP_CTRL0_IGNORE_CRC (1 << 26)
 # define SSP_CTRL0_DATA_XFER (1 << 24)

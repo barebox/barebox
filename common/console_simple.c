@@ -3,6 +3,8 @@
 #include <fs.h>
 #include <errno.h>
 
+LIST_HEAD(console_list);
+EXPORT_SYMBOL(console_list);
 static struct console_device *console;
 
 int printf (const char *fmt, ...)
@@ -42,6 +44,25 @@ int vprintf (const char *fmt, va_list args)
 	return i;
 }
 EXPORT_SYMBOL(vprintf);
+
+void fprintf (int file, const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+	char printbuffer[CFG_PBSIZE];
+
+	va_start (args, fmt);
+
+	/* For this to work, printbuffer must be larger than
+	 * anything we ever want to print.
+	 */
+	i = vsprintf (printbuffer, fmt, args);
+	va_end (args);
+
+	/* Print the string */
+	fputs(file, printbuffer);
+}
+EXPORT_SYMBOL(fprintf);
 
 void console_puts(unsigned int ch, const char *str)
 {
@@ -127,7 +148,10 @@ EXPORT_SYMBOL(ctrlc);
 
 int console_register(struct console_device *newcdev)
 {
-	if (!console)
+	if (!console) {
 		console = newcdev;
+		console_list.prev = console_list.next = &newcdev->list;
+		newcdev->list.prev = newcdev->list.next = &console_list;
+	}
 	return 0;
 }

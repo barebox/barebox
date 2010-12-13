@@ -108,7 +108,7 @@ static int stm_serial_setbaudrate(struct console_device *cdev, int new_baudrate)
 	writel(0, dev->map_base + UARTDBGCR);
 
 	/* Calculate and set baudrate */
-	quot = (imx_get_xclk() * 4000) / new_baudrate;
+	quot = (imx_get_xclk() * 4) / new_baudrate;
 	writel(quot & 0x3f, dev->map_base + UARTDBGFBRD);
 	writel(quot >> 6, dev->map_base + UARTDBGIBRD);
 

@@ -481,7 +481,7 @@ static unsigned setup_clock_speed(struct device_d *hw_dev, unsigned nc)
 		return 0;
 	}
 
-	ssp = imx_get_sspclk(0) * 1000;
+	ssp = imx_get_sspclk(0);
 
 	for (div = 2; div < 255; div += 2) {
 		rate = DIV_ROUND_CLOSEST(DIV_ROUND_CLOSEST(ssp, nc), div);
@@ -658,20 +658,20 @@ static int stm_mci_probe(struct device_d *hw_dev)
 	host->host_caps = pd->caps;
 
 	if (pd->f_min == 0) {
-		host->f_min = imx_get_sspclk(0) / 254U / 256U * 1000U;
+		host->f_min = imx_get_sspclk(0) / 254U / 256U;
 		pr_debug("Min. frequency is %u Hz\n", host->f_min);
 	} else {
 		host->f_min = pd->f_min;
 		pr_debug("Min. frequency is %u Hz, could be %u Hz\n",
-			host->f_min, imx_get_sspclk(0) / 254U / 256U * 1000U);
+			host->f_min, imx_get_sspclk(0) / 254U / 256U);
 	}
 	if (pd->f_max == 0) {
-		host->f_max = imx_get_sspclk(0) / 2U / 1U * 1000U;
+		host->f_max = imx_get_sspclk(0) / 2U / 1U;
 		pr_debug("Max. frequency is %u Hz\n", host->f_max);
 	} else {
 		host->f_max =  pd->f_max;
 		pr_debug("Max. frequency is %u Hz, could be %u Hz\n",
-			host->f_max, imx_get_sspclk(0) / 2U / 1U * 1000U);
+			host->f_max, imx_get_sspclk(0) / 2U / 1U);
 	}
 
 #ifdef CONFIG_MCI_INFO

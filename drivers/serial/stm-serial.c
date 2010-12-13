@@ -134,13 +134,6 @@ static int stm_clocksource_clock_change(struct notifier_block *nb, unsigned long
 static int stm_serial_init_port(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	/*
-	 * If the board specific file registers this console we should force
-	 * the usage of the debug UART pins, to be able to let the user see
-	 * the output, even if the board file forgets to configure these pins.
-	 */
-	imx_gpio_mode(PWM1_DUART_TX);
-	imx_gpio_mode(PWM0_DUART_RX);
 
 	/* Disable UART */
 	writel(0, dev->map_base + UARTDBGCR);

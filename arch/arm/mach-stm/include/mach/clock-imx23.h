@@ -1,6 +1,4 @@
 /*
- * (C) Copyright 2010 Juergen Beisert - Pengutronix
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -10,18 +8,19 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
  */
 
-#ifndef __MACH_CLOCK_H
-# define __MACH_CLOCK_H
+#ifndef MACH_CLOCK_IMX23_H
+# define MACH_CLOCK_IMX23_H
 
-#if defined CONFIG_ARCH_IMX23
-# include <mach/clock-imx23.h>
-#endif
+unsigned imx_get_mpllclk(void);
+unsigned imx_get_emiclk(void);
+unsigned imx_get_ioclk(void);
+unsigned imx_get_armclk(void);
+unsigned imx_get_hclk(void);
+unsigned imx_get_xclk(void);
+unsigned imx_get_sspclk(unsigned);
+unsigned imx_set_sspclk(unsigned, unsigned, int);
+unsigned imx_set_ioclk(unsigned);
 
-#endif /* __MACH_CLOCK_H */
+#endif /* MACH_CLOCK_IMX23_H */

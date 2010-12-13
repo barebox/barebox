@@ -222,4 +222,6 @@ extern const char version_string[];
 
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 
+#define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
+
 #endif	/* __COMMON_H_ */

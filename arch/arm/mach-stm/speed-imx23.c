@@ -244,8 +244,7 @@ unsigned imx_set_sspclk(unsigned index, unsigned nc, int high)
 		printf("Cannot setup SSP unit clock to %u Hz, base clock is only %u Hz\n", nc, ssp_div);
 		ssp_div = 1U;
 	} else {
-		ssp_div += nc - 1U;
-		ssp_div /= nc;
+		ssp_div = DIV_ROUND_UP(ssp_div, nc);
 		if (ssp_div > CLKCTRL_SSP_DIV_MASK)
 			ssp_div = CLKCTRL_SSP_DIV_MASK;
 	}

@@ -224,9 +224,6 @@ static unsigned int cspi_2_3_xchg_single(struct imx_spi *imx, unsigned int data)
 	return readl(base + CSPI_2_3_RXDATA);
 }
 
-/* FIXME: include/linux/kernel.h */
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-
 static unsigned int cspi_2_3_clkdiv(unsigned int fin, unsigned int fspi)
 {
 	/*

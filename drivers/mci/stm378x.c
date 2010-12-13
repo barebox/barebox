@@ -484,7 +484,7 @@ static unsigned setup_clock_speed(struct device_d *hw_dev, unsigned nc)
 	ssp = imx_get_sspclk(0) * 1000;
 
 	for (div = 2; div < 255; div += 2) {
-		rate = (((ssp + (nc >> 1) ) / nc) + (div >> 1)) / div;
+		rate = DIV_ROUND_CLOSEST(DIV_ROUND_CLOSEST(ssp, nc), div);
 		if (rate <= 0x100)
 			break;
 	}

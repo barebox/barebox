@@ -224,4 +224,11 @@ extern const char version_string[];
 
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
 
+#define DIV_ROUND_CLOSEST(x, divisor)(			\
+{							\
+	typeof(divisor) __divisor = divisor;		\
+	(((x) + ((__divisor) / 2)) / (__divisor));	\
+}							\
+)
+
 #endif	/* __COMMON_H_ */

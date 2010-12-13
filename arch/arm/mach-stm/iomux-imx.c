@@ -25,6 +25,8 @@
 
 #define HW_PINCTRL_CTRL 0x000
 #define HW_PINCTRL_MUXSEL0 0x100
+
+#ifdef CONFIG_ARCH_IMX23
 #define HW_PINCTRL_DRIVE0 0x200
 #define HW_PINCTRL_PULL0 0x400
 #define HW_PINCTRL_DOUT0 0x500
@@ -32,6 +34,17 @@
 #define HW_PINCTRL_DOE0 0x700
 
 #define MAX_GPIO_NO 95
+#endif
+
+#ifdef CONFIG_ARCH_IMX28
+#define HW_PINCTRL_DRIVE0 0x300
+#define HW_PINCTRL_PULL0 0x600
+#define HW_PINCTRL_DOUT0 0x700
+#define HW_PINCTRL_DIN0 0x900
+#define HW_PINCTRL_DOE0 0xb00
+
+#define MAX_GPIO_NO 159
+#endif
 
 static uint32_t calc_mux_reg(uint32_t no)
 {
@@ -94,9 +107,11 @@ void imx_gpio_mode(unsigned m)
 	if (VE_PRESENT(m)) {
 		reg_offset = calc_strength_reg(gpio_pin);
 		if (GET_VOLTAGE(m) == 1)
-			writel(0x1 << (((gpio_pin % 8) << 2) + 2), IMX_IOMUXC_BASE + reg_offset + 4);
+			writel(0x1 << (((gpio_pin % 8) << 2) + 2),
+				IMX_IOMUXC_BASE + reg_offset + BIT_SET);
 		else
-			writel(0x1 << (((gpio_pin % 8) << 2) + 2), IMX_IOMUXC_BASE + reg_offset + 8);
+			writel(0x1 << (((gpio_pin % 8) << 2) + 2),
+				IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
 	}
 
 	if (PE_PRESENT(m)) {
@@ -111,9 +126,11 @@ void imx_gpio_mode(unsigned m)
 			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + (GET_GPIOVAL(m) == 1 ? 4 : 8));
 			/* then the direction */
 			reg_offset = calc_output_enable_reg(gpio_pin);
-			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + 4);
+			writel(0x1 << (gpio_pin % 32),
+				IMX_IOMUXC_BASE + reg_offset + BIT_SET);
 		} else {
-			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + 8);
+			writel(0x1 << (gpio_pin % 32),
+				IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
 		}
 	}
 }

@@ -23,5 +23,8 @@
 #if defined CONFIG_ARCH_IMX23
 # include <mach/clock-imx23.h>
 #endif
+#if defined CONFIG_ARCH_IMX28
+# include <mach/clock-imx28.h>
+#endif
 
 #endif /* __MACH_CLOCK_H */

@@ -18,6 +18,10 @@ config ARCH_IMX23
 	bool "i.MX23"
 	select CPU_ARM926T
 
+config ARCH_IMX28
+	bool "i.MX28"
+	select CPU_ARM926T
+
 endchoice
 
 if ARCH_IMX23

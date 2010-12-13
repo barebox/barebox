@@ -23,6 +23,9 @@
 #if defined CONFIG_ARCH_IMX23
 # include <mach/iomux-imx23.h>
 #endif
+#if defined CONFIG_ARCH_IMX28
+# include <mach/iomux-imx28.h>
+#endif
 
 void imx_gpio_mode(unsigned);
 

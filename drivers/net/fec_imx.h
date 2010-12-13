@@ -73,8 +73,6 @@
 #define FEC_IEVENT_LATE_COL             0x00200000
 #define FEC_IEVENT_COL_RETRY_LIM        0x00100000
 #define FEC_IEVENT_XFIFO_UN             0x00080000
-#define FEC_IEVENT_XFIFO_ERROR          0x00040000
-#define FEC_IEVENT_RFIFO_ERROR          0x00020000
 
 #define FEC_IMASK_HBERR                 0x80000000
 #define FEC_IMASK_BABR                  0x40000000
@@ -84,8 +82,6 @@
 #define FEC_IMASK_LATE_COL              0x00200000
 #define FEC_IMASK_COL_RETRY_LIM         0x00100000
 #define FEC_IMASK_XFIFO_UN              0x00080000
-#define FEC_IMASK_XFIFO_ERROR           0x00040000
-#define FEC_IMASK_RFIFO_ERROR           0x00020000
 
 #define FEC_RCNTRL_MAX_FL_SHIFT         16
 #define FEC_RCNTRL_LOOP                 0x01

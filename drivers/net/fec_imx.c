@@ -476,8 +476,7 @@ static int fec_recv(struct eth_device *dev)
 	ievent = readl(fec->regs + FEC_IEVENT);
 	writel(ievent, fec->regs + FEC_IEVENT);
 
-	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
-				FEC_IEVENT_RFIFO_ERROR)) {
+	if (ievent & FEC_IEVENT_BABT) {
 		/* BABT, Rx/Tx FIFO errors */
 		fec_halt(dev);
 		fec_init(dev);

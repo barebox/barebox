@@ -21,6 +21,7 @@ config ARCH_IMX23
 config ARCH_IMX28
 	bool "i.MX28"
 	select CPU_ARM926T
+	select ARCH_HAS_FEC_IMX
 
 endchoice
 

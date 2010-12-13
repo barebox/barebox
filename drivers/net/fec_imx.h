@@ -63,8 +63,19 @@
 #define FEC_MIIGSK_ENR_READY		(1 << 2)
 #define FEC_MIIGSK_ENR_EN		(1 << 1)
 
+#define FEC_R_CNTRL_GRS			(1 << 31)
+#define FEC_R_CNTRL_NO_LGTH_CHECK	(1 << 30)
+#ifdef CONFIG_ARCH_IMX28
+# define FEC_R_CNTRL_MAX_FL(x)		(((x) & 0x3fff) << 16)
+#else
+# define FEC_R_CNTRL_MAX_FL(x)		(((x) & 0x7ff) << 16)
+#endif
+#define FEC_R_CNTRL_RMII_10T		(1 << 9) /* i.MX28 specific */
+#define FEC_R_CNTRL_RMII_MODE		(1 << 8) /* i.MX28 specific */
+#define FEC_R_CNTRL_FCE			(1 << 5)
+#define FEC_R_CNTRL_MII_MODE		(1 << 2)
 
-#define FEC_IEVENT_HBERR                0x80000000
+#define FEC_IEVENT_HBERR                0x80000000 /* Note: Not on i.MX28 */
 #define FEC_IEVENT_BABR                 0x40000000
 #define FEC_IEVENT_BABT                 0x20000000
 #define FEC_IEVENT_GRA                  0x10000000
@@ -74,7 +85,7 @@
 #define FEC_IEVENT_COL_RETRY_LIM        0x00100000
 #define FEC_IEVENT_XFIFO_UN             0x00080000
 
-#define FEC_IMASK_HBERR                 0x80000000
+#define FEC_IMASK_HBERR                 0x80000000 /* Note: Not on i.MX28 */
 #define FEC_IMASK_BABR                  0x40000000
 #define FEC_IMASK_BABT                  0x20000000
 #define FEC_IMASK_GRA                   0x10000000
@@ -120,6 +131,8 @@
  * @brief Receive & Transmit Buffer Descriptor definitions
  *
  * Note: The first BD must be aligned (see DB_ALIGNMENT)
+ *
+ * BTW: Don't trust the i.MX27 and i.MX28 data sheet
  */
 struct buffer_descriptor {
 	uint16_t data_length;		/**< payload's length in bytes */

@@ -28,11 +28,11 @@ config MCI_INFO
 comment "--- MCI host drivers ---"
 
 config MCI_STM378X
-	bool "i.MX23"
+	bool "i.MX23/i.MX28"
 	depends on ARCH_STM
 	help
 	  Enable this entry to add support to read and write SD cards on a
-	  i.MX23 based system.
+	  i.MX23/i.MX28 based system.
 
 config MCI_S3C
 	bool "S3C"

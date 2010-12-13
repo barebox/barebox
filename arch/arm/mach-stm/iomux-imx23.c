@@ -31,6 +31,8 @@
 #define HW_PINCTRL_DIN0 0x600
 #define HW_PINCTRL_DOE0 0x700
 
+#define MAX_GPIO_NO 95
+
 static uint32_t calc_mux_reg(uint32_t no)
 {
 	/* each register controls 16 pads */
@@ -77,7 +79,7 @@ void imx_gpio_mode(unsigned m)
 	writel(reg, IMX_IOMUXC_BASE + reg_offset);
 
 	/* some pins are disabled when configured for GPIO */
-	if ((gpio_pin > 95) && (GET_FUNC(m) == IS_GPIO)) {
+	if ((gpio_pin > MAX_GPIO_NO) && (GET_FUNC(m) == IS_GPIO)) {
 		printf("Cannot configure pad %d to GPIO\n", gpio_pin);
 		return;
 	}

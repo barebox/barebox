@@ -168,8 +168,10 @@ int eth_register(struct eth_device *edev)
 		dev_set_param(dev, "ethaddr", ethaddr_str);
 	}
 
-	if (!eth_current)
+	if (!eth_current) {
 		eth_current = edev;
+		net_update_env();
+	}
 
 	return 0;
 }

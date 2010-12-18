@@ -34,6 +34,7 @@
 #include <clock.h>
 #include <kfifo.h>
 #include <module.h>
+#include <poller.h>
 #include <linux/list.h>
 
 LIST_HEAD(console_list);
@@ -205,6 +206,8 @@ int getc(void)
 	 */
 	start = get_time_ns();
 	while (1) {
+		poller_call();
+
 		if (tstc()) {
 			kfifo_putc(console_input_buffer, getc_raw());
 
@@ -397,6 +400,8 @@ EXPORT_SYMBOL(vprintf);
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
+	poller_call();
+
 	if (tstc() && getc() == 3)
 		return 1;
 	return 0;

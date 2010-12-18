@@ -1,0 +1,6 @@
+menuconfig LED
+	bool "LED support"
+
+if LED
+
+endif

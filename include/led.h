@@ -1,6 +1,8 @@
 #ifndef __LED_H
 #define __LED_H
 
+#include <errno.h>
+
 struct led {
 	void (*set)(struct led *, unsigned int value);
 	int max_value;
@@ -23,5 +25,46 @@ int led_set(struct led *led, unsigned int value);
 int led_register(struct led *led);
 void led_unregister(struct led *led);
 void led_unregister(struct led *led);
+
+/* gpio LED support */
+struct gpio_led {
+	int gpio;
+	bool active_low;
+	struct led led;
+};
+
+struct gpio_rgb_led {
+	int gpio_r, gpio_g, gpio_b;
+	bool active_low;
+	struct led led;
+};
+
+#ifdef CONFIG_LED_GPIO
+int led_gpio_register(struct gpio_led *led);
+void led_gpio_unregister(struct gpio_led *led);
+#else
+static inline int led_gpio_register(struct gpio_led *led)
+{
+	return -ENOSYS;
+}
+
+static inline void led_gpio_unregister(struct gpio_led *led)
+{
+}
+#endif
+
+#ifdef CONFIG_LED_GPIO_RGB
+int led_gpio_rgb_register(struct gpio_rgb_led *led);
+void led_gpio_rgb_unregister(struct gpio_led *led);
+#else
+static inline int led_gpio_rgb_register(struct gpio_rgb_led *led)
+{
+	return -ENOSYS;
+}
+
+static inline void led_gpio_rgb_unregister(struct gpio_led *led)
+{
+}
+#endif
 
 #endif /* __LED_H */

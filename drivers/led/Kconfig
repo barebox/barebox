@@ -3,4 +3,12 @@ menuconfig LED
 
 if LED
 
+config LED_GPIO
+	bool "gpio LED support"
+	depends on GENERIC_GPIO
+
+config LED_GPIO_RGB
+	bool "gpio rgb LED support"
+	depends on LED_GPIO
+
 endif

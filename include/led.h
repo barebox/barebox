@@ -26,6 +26,38 @@ int led_register(struct led *led);
 void led_unregister(struct led *led);
 void led_unregister(struct led *led);
 
+/* LED trigger support */
+enum led_trigger {
+	LED_TRIGGER_PANIC,
+	LED_TRIGGER_HEARTBEAT,
+	LED_TRIGGER_NET_RX,
+	LED_TRIGGER_NET_TX,
+	LED_TRIGGER_NET_TXRX,
+	LED_TRIGGER_MAX,
+};
+
+enum trigger_type {
+	TRIGGER_ENABLE,
+	TRIGGER_DISABLE,
+	TRIGGER_FLASH,
+};
+
+#ifdef CONFIG_LED_TRIGGERS
+int led_set_trigger(enum led_trigger trigger, struct led *led);
+void led_trigger(enum led_trigger trigger, enum trigger_type);
+#else
+static inline int led_set_trigger(enum led_trigger trigger, struct led *led)
+{
+	return 0;
+}
+
+static inline void led_trigger(enum led_trigger trigger, enum trigger_type type)
+{
+}
+#endif
+
+int led_get_trigger(enum led_trigger trigger);
+
 /* gpio LED support */
 struct gpio_led {
 	int gpio;

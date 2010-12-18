@@ -77,6 +77,8 @@ int eth_send(void *packet, int length)
 		eth_current->active = 1;
 	}
 
+	led_trigger_network(LED_TRIGGER_NET_TX);
+
 	return eth_current->send(eth_current, packet, length);
 }
 
@@ -183,4 +185,8 @@ void eth_unregister(struct eth_device *edev)
 	list_del(&edev->list);
 }
 
-
+void led_trigger_network(enum led_trigger trigger)
+{
+	led_trigger(trigger, TRIGGER_FLASH);
+	led_trigger(LED_TRIGGER_NET_TXRX, TRIGGER_FLASH);
+}

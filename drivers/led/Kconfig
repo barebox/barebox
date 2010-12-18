@@ -11,4 +11,11 @@ config LED_GPIO_RGB
 	bool "gpio rgb LED support"
 	depends on LED_GPIO
 
+config LED_TRIGGERS
+	select POLLER
+	bool "LED triggers support"
+	help
+	  This allows to assign certain triggers like heartbeat or network
+	  activity to LEDs.
+
 endif

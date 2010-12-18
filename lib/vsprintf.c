@@ -17,6 +17,7 @@
 #include <malloc.h>
 
 #include <common.h>
+#include <led.h>
 #include <reloc.h>
 
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
@@ -625,6 +626,9 @@ void __noreturn panic(const char *fmt, ...)
 	vprintf(fmt, args);
 	putchar('\n');
 	va_end(args);
+
+	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
+
 #if defined (CONFIG_PANIC_HANG)
 	hang();
 #else

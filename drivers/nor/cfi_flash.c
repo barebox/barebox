@@ -498,6 +498,11 @@ static int __cfi_erase(struct cdev *cdev, size_t count, unsigned long offset,
                 if (ret)
                         goto out;
 
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out;
+		}
+
 		if (verbose)
 			show_progress(i - start);
         }

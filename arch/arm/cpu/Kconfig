@@ -61,6 +61,9 @@ config CPU_32v7
 
 comment "processor features"
 
+config ARCH_SUPPORTS_BIG_ENDIAN
+	bool
+
 config CPU_BIG_ENDIAN
 	bool "Build big-endian kernel"
 	depends on ARCH_SUPPORTS_BIG_ENDIAN

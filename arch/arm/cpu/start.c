@@ -70,6 +70,9 @@ void __naked __bare_init reset(void)
 	r = get_cr();
 	r &= ~(CR_M | CR_C | CR_B | CR_S | CR_R | CR_V);
 	r |= CR_A | CR_I;
+#ifdef __ARMEB__
+	r |= CR_B;
+#endif
 	set_cr(r);
 
 #ifdef CONFIG_MACH_DO_LOWLEVEL_INIT

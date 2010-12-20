@@ -134,7 +134,7 @@ static int do_crc(struct command *cmdtp, int argc, char *argv[])
 #endif
 
 	if (verify && crc != vcrc) {
-		printf(" != 0x%08x ** ERROR **", vcrc);
+		printf(" != 0x%08lx ** ERROR **", vcrc);
 		err = 1;
 	}
 

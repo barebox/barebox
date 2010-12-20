@@ -485,7 +485,7 @@ static int __cfi_erase(struct cdev *cdev, size_t count, unsigned long offset,
         unsigned long start, end;
         int i, ret = 0;
 
-	debug("%s: erase 0x%08x (size %d)\n", __func__, offset, count);
+	debug("%s: erase 0x%08lx (size %d)\n", __func__, offset, count);
 
         start = find_sector(finfo, cdev->dev->map_base + offset);
         end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
@@ -656,8 +656,8 @@ static int cfi_protect(struct cdev *cdev, size_t count, unsigned long offset, in
 	int i, ret = 0;
 	const char *action = (prot? "protect" : "unprotect");
 
-	printf("%s: %s 0x%08x (size %d)\n", __FUNCTION__,
-		action, cdev->dev->map_base + offset, count);
+	printf("%s: %s 0x%08lx (size %d)\n", __FUNCTION__,
+	       action, cdev->dev->map_base + offset, count);
 
 	start = find_sector(finfo, cdev->dev->map_base + offset);
 	end   = find_sector(finfo, cdev->dev->map_base + offset + count - 1);
@@ -1012,7 +1012,7 @@ static int cfi_probe (struct device_d *dev)
 	info->base = (void __iomem *)dev->map_base;
 
 	if (dev->size == 0) {
-		printf("cfi_probe: size : 0x%08x\n", info->size);
+		printf("cfi_probe: size : 0x%08lx\n", info->size);
 		dev->size = info->size;
 	}
 

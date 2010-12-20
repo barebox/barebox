@@ -55,7 +55,7 @@ static int do_go(struct command *cmdtp, int argc, char *argv[])
 	} else
 		addr = (void *)simple_strtoul(argv[1], NULL, 16);
 
-	printf("## Starting application at 0x%08lX ...\n", addr);
+	printf("## Starting application at 0x%p ...\n", addr);
 
 	console_flush();
 

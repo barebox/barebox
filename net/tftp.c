@@ -218,7 +218,7 @@ static void tftp_handler(char *packet, unsigned len)
 			tftp_last_block = 0;
 
 			if (tftp_block != 1) {	/* Assertion */
-				printf("error: First block is not block 1 (%ld)\n",
+				printf("error: First block is not block 1 (%d)\n",
 					tftp_block);
 				tftp_err = -EINVAL;
 				tftp_state = STATE_DONE;

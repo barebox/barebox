@@ -231,4 +231,14 @@ extern const char version_string[];
 }							\
 )
 
+#define abs(x) ({                               \
+		long __x = (x);                 \
+		(__x < 0) ? -__x : __x;         \
+	})
+
+#define abs64(x) ({                             \
+		s64 __x = (x);                  \
+		(__x < 0) ? -__x : __x;         \
+	})
+
 #endif	/* __COMMON_H_ */

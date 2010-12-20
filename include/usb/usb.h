@@ -267,7 +267,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate);
 		((x_ & 0xFF000000UL) >> 24)); \
 	})
 
-#ifdef __LITTLE_ENDIAN
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 # define swap_16(x) (x)
 # define swap_32(x) (x)
 #else

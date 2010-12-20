@@ -88,7 +88,7 @@ struct cramfs_super {
 #error "No byte order defined in __BYTE_ORDER"
 #endif
 
-#ifdef __LITTLE_ENDIAN
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 #define CRAMFS_16(x)	(x)
 #define CRAMFS_24(x)	(x)
 #define CRAMFS_32(x)	(x)
@@ -96,7 +96,7 @@ struct cramfs_super {
 #define CRAMFS_GET_OFFSET(x)	((x)->offset)
 #define CRAMFS_SET_OFFSET(x,y)	((x)->offset = (y))
 #define CRAMFS_SET_NAMELEN(x,y) ((x)->namelen = (y))
-#elif defined __BIG_ENDIAN
+#elif __BYTE_ORDER ==__BIG_ENDIAN
 #ifdef __KERNEL__
 #define CRAMFS_16(x)	swab16(x)
 #define CRAMFS_24(x)	((swab32(x)) >> 8)

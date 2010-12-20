@@ -266,9 +266,9 @@ static int falconwing_devices_init(void)
 		imx_gpio_mode(pad_setup[i]);
 
 	register_device(&sdram_dev);
-	imx_set_ioclk(480U * 1000U);	/* enable IOCLK to run at the PLL frequency */
+	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
-	imx_set_sspclk(0, 100U * 1000U, 1);
+	imx_set_sspclk(0, 100000000, 1);
 	register_device(&mci_dev);
 
 	armlinux_add_dram(&sdram_dev);

@@ -55,7 +55,7 @@ static void display_meminfo(void)
 	printf("Malloc space: 0x%08lx -> 0x%08lx (size %s)\n",
 		mstart, mend, size_human_readable(msize));
 #ifdef CONFIG_ARM
-	printf("Stack space : 0x%08lx -> 0x%08lx (size %s)\n",
+	printf("Stack space : 0x%08x -> 0x%08x (size %s)\n",
 		STACK_BASE, STACK_BASE + STACK_SIZE,
 		size_human_readable(STACK_SIZE));
 #endif

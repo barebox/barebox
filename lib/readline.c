@@ -140,7 +140,7 @@ static char* hist_next(void)
 static void cread_add_char(char ichar, int insert, unsigned long *num,
 	       unsigned long *eol_num, char *buf, unsigned long len)
 {
-	unsigned long wlen;
+	unsigned wlen;
 
 	/* room ??? */
 	if (insert || *num == *eol_num) {
@@ -177,7 +177,7 @@ int readline(const char *prompt, char *buf, int len)
 	unsigned long num = 0;
 	unsigned long eol_num = 0;
 	unsigned long rlen;
-	unsigned long wlen;
+	unsigned wlen;
 	int ichar;
 	int insert = 1;
 	int rc = 0;

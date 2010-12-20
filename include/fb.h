@@ -73,10 +73,13 @@ struct fb_ops {
 			    unsigned blue, unsigned transp, struct fb_info *info);
 	void (*fb_enable)(struct fb_info *info);
 	void (*fb_disable)(struct fb_info *info);
+	int (*fb_activate_var)(struct fb_info *info);
 };
 
 struct fb_info {
 	struct fb_videomode *mode;
+	struct fb_videomode *mode_list;
+	unsigned num_modes;
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */

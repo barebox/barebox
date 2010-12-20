@@ -28,6 +28,7 @@
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
+#include <mach/fb.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -51,6 +52,45 @@ static struct device_d mci_dev = {
 	.name     = "stm_mci",
 	.map_base = IMX_SSP1_BASE,
 	.platform_data = &mci_pdata,
+};
+
+static struct fb_videomode falconwing_vmode = {
+	/*
+	 * Nanovision NMA35QV65-B2-K01 (directly connected)
+	 * Clock: 6.25 MHz
+	 * Syncs: high active, DE low active
+	 * Display area: 70.08 mm x 52.56 mm
+	 */
+	.name = "NMA35",
+	.refresh = 60,
+	.xres = 320,
+	.yres = 240,
+	.pixclock = KHZ2PICOS(6250),    /* max. 10 MHz */
+	/* line lenght should be 64 µs */
+	.left_margin = 28,
+	.hsync_len = 24,
+	.right_margin = 28,
+	/* frame rate should be 60 Hz */
+	.upper_margin = 8,
+	.vsync_len = 4,
+	.lower_margin = 8,
+	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+	.vmode = FB_VMODE_NONINTERLACED,
+	.flag = 0,
+};
+
+static struct imx_fb_videomode fb_mode = {
+	.mode_list = &falconwing_vmode,
+	.mode_cnt = 1,
+	/* the NMA35 is a 24 bit display, but only 18 bits are connected */
+	.ld_intf_width = STMLCDIF_18BIT,
+};
+
+static struct device_d ldcif_dev = {
+	.name = "stmfb",
+	.map_base = IMX_FB_BASE,
+	.size = 4096,
+	.platform_data = &fb_mode,
 };
 
 static const uint32_t pad_setup[] = {
@@ -113,33 +153,34 @@ static const uint32_t pad_setup[] = {
 	PWM0_DUART_RX | STRENGTH(S4MA),	/*  strength is TBD */
 
 	/* lcd */
-	LCD_VSYNC,	/* kernel tries with 12 mA for all LCD related pins */
-	LCD_HSYNC,
-	LCD_ENABE,
-	LCD_DOTCLOCK,
-	LCD_D17,
-	LCD_D16,
-	LCD_D15,
-	LCD_D14,
-	LCD_D13,
-	LCD_D12,
-	LCD_D11,
-	LCD_D10,
-	LCD_D9,
-	LCD_D8,
-	LCD_D7,
-	LCD_D6,
-	LCD_D5,
-	LCD_D4,
-	LCD_D3,
-	LCD_D2,
-	LCD_D1,
-	LCD_D0,
+	LCD_VSYNC | STRENGTH(S12MA),
+	LCD_HSYNC | STRENGTH(S12MA),
+	LCD_ENABE | STRENGTH(S12MA),
+	LCD_DOTCLOCK | STRENGTH(S12MA),
+	LCD_D17 | STRENGTH(S12MA),
+	LCD_D16 | STRENGTH(S12MA),
+	LCD_D15 | STRENGTH(S12MA),
+	LCD_D14 | STRENGTH(S12MA),
+	LCD_D13 | STRENGTH(S12MA),
+	LCD_D12 | STRENGTH(S12MA),
+	LCD_D11 | STRENGTH(S12MA),
+	LCD_D10 | STRENGTH(S12MA),
+	LCD_D9 | STRENGTH(S12MA),
+	LCD_D8 | STRENGTH(S12MA),
+	LCD_D7 | STRENGTH(S12MA),
+	LCD_D6 | STRENGTH(S12MA),
+	LCD_D5 | STRENGTH(S12MA),
+	LCD_D4 | STRENGTH(S12MA),
+	LCD_D3 | STRENGTH(S12MA),
+	LCD_D2 | STRENGTH(S12MA),
+	LCD_D1 | STRENGTH(S12MA),
+	LCD_D0 | STRENGTH(S12MA),
 
 	/* LCD usage currently unknown */
 	LCD_CS,	/* used as SPI SS */
 	LCD_RS,	/* used as SPI CLK */
-	LCD_RESET,
+	/* keep the display in reset state */
+	LCD_RESET_GPIO | STRENGTH(S4MA) | GPIO_OUT | GPIO_VALUE(0),
 	LCD_WR,	/* used as SPI MOSI */
 
 	/* I2C to the MMA7455L, KXTE9, AT24C08 (DCID), AT24C128B (ID EEPROM) and QN8005B */
@@ -270,6 +311,7 @@ static int falconwing_devices_init(void)
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
 	register_device(&mci_dev);
+	register_device(&ldcif_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));

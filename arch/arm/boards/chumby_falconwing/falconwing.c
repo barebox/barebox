@@ -225,8 +225,8 @@ static const uint32_t pad_setup[] = {
  * Try to register an environment storage on the attached MCI card
  * @return 0 on success
  *
- * We relay on the existance of a useable SD card, already attached to
- * our system, to get someting like a persistant memory for our environment.
+ * We rely on the existence of a usable SD card, already attached to
+ * our system, to get something like a persistent memory for our environment.
  * If this SD card is also the boot media, we can use the second partition
  * for our environment purpose (if present!).
  */
@@ -253,7 +253,7 @@ static int register_persistant_environment(void)
 		return -ENODEV;
 	}
 
-	/* use the full partition as our persistant environment storage */
+	/* use the full partition as our persistent environment storage */
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 

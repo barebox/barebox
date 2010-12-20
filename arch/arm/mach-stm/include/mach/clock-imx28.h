@@ -22,6 +22,8 @@ unsigned imx_get_xclk(void);
 unsigned imx_get_sspclk(unsigned);
 unsigned imx_set_sspclk(unsigned, unsigned, int);
 unsigned imx_set_ioclk(unsigned, unsigned);
+unsigned imx_set_lcdifclk(unsigned);
+unsigned imx_get_lcdifclk(void);
 unsigned imx_get_fecclk(void);
 void imx_enable_enetclk(void);
 

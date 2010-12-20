@@ -20,4 +20,11 @@ config DRIVER_VIDEO_IMX_IPU
 	  Add support for the IPU framebuffer device found on
 	  i.MX31 and i.MX35 CPUs.
 
+config DRIVER_VIDEO_STM
+	bool "i.MX23/28 framebuffer driver"
+	depends on ARCH_STM
+	help
+	  Say 'Y' here to enable framebuffer and splash screen support for
+	  i.MX23 and i.MX28 based systems.
+
 endif

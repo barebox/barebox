@@ -1000,7 +1000,6 @@ static void cfi_init_mtd(struct flash_info *info)
 
 static int cfi_probe (struct device_d *dev)
 {
-	unsigned long size = 0;
 	struct flash_info *info = xzalloc(sizeof(*info));
 
 	dev->priv = (void *)info;
@@ -1009,7 +1008,7 @@ static int cfi_probe (struct device_d *dev)
 
 	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
-	size += info->size = flash_get_size(info, dev->map_base);
+	info->size = flash_get_size(info, dev->map_base);
 	info->base = (void __iomem *)dev->map_base;
 
 	if (dev->size == 0) {

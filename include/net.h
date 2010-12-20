@@ -56,7 +56,6 @@ int eth_open(void);			/* open the device		*/
 int eth_send(void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
 void eth_halt(void);			/* stop SCC			*/
-char *eth_get_name(void);		/* get name of current device	*/
 
 /*
  *	Ethernet header

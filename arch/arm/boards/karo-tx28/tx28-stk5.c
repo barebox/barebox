@@ -23,6 +23,7 @@
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
+#include <mach/fb.h>
 
 static struct stm_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
@@ -46,6 +47,152 @@ static struct device_d fec_dev = {
 	.name = "fec_imx",
 	.map_base = IMX_FEC0_BASE,
 	.platform_data = &fec_info,
+};
+
+/*
+ * The TX28 EVK comes with a VGA connector. We can support many video modes
+ *
+ * Note: The VGA connector is driven from the LCD lines via an ADV7125. This
+ * DA converter needs an high active DE signal to show a video signal.
+ */
+static struct fb_videomode tx28evk_vmodes[] = {
+	{
+	/*
+	 * Modeline "640x480" x 59.9 (to be used with the VGA connector)
+	 * Clock: 25.18 MHz
+	 * Line: 640 656 752 800 (31.5 kHz)
+	 * Frame: 480 490 492 525
+	 * Syncs: -hsync -vsync
+	 */
+		.name = "VGA",
+		.refresh = 60,
+		.xres = 640,
+		.yres = 480,
+		.pixclock = KHZ2PICOS(25180),
+		.left_margin = 48,
+		.hsync_len = 96,
+		.right_margin = 16,
+		.upper_margin = 33,
+		.vsync_len = 2,
+		.lower_margin = 10,
+		.sync = FB_SYNC_DE_HIGH_ACT,
+		.vmode = FB_VMODE_NONINTERLACED,
+		.flag = 0,
+	}, {
+	/*
+	 * Emerging ETV570 640 x 480 display (directly connected)
+	 * Clock: 25.175 MHz
+	 * Syncs: low active, DE high active
+	 * Display area: 115.2 mm x 86.4 mm
+	 */
+		.name = "ETV570",
+		.refresh = 60,
+		.xres = 640,
+		.yres = 480,
+		.pixclock = KHZ2PICOS(25175),
+		.left_margin = 114,
+		.hsync_len = 30,
+		.right_margin = 16,
+		.upper_margin = 32,
+		.vsync_len = 3,
+		.lower_margin = 10,
+		.sync = FB_SYNC_DE_HIGH_ACT,
+		.vmode = FB_VMODE_NONINTERLACED,
+		.flag = 0,
+		/*
+		 * This display is connected:
+		 *  display side   -> CPU side
+		 * ----------------------------
+		 * RESET# pin  -> GPIO126 (3/30) LCD_RESET -> L = display reset
+		 * PWRCTRL pin -> GPIO63 (1/31) LCD_ENABLE - > H=on, L=off
+		 * LEDCTRL pin -> GPIO112 (2/16) PWM0 -> 2.5 V = LEDs off
+		 *                                    ->   0 V = LEDs on
+		 *
+		 * Note: Backlight is on, only if PWRCTRL=H _and_ LEDCTRL=0
+		 */
+	}, {
+	/*
+	 * Modeline "800x600" x 60.3
+	 * Clock: 40.00 MHz
+	 * Line: 800 840 968 1056 (37.9 kHz)
+	 * Frame: 600 601 605 628
+	 * Syncs: +hsync +vsync
+	 */
+		.name = "SVGA",
+		.refresh = 60,
+		.xres = 800,
+		.yres = 600,
+		.pixclock = KHZ2PICOS(40000),
+		.left_margin = 88,
+		.hsync_len = 128,
+		.right_margin = 40,
+		.upper_margin = 23,
+		.vsync_len = 4,
+		.lower_margin = 1,
+		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT |
+				FB_SYNC_DE_HIGH_ACT,
+		.vmode = FB_VMODE_NONINTERLACED,
+		.flag = 0,
+	}, {
+	/*
+	 * Modeline "1024x768" x 60.0
+	 * Clock: 65.00 MHz
+	 * Line: 1024 1048 1184 1344 (48.4 kHz)
+	 * Frame: 768 771 777 806
+	 * Syncs: -hsync -vsync
+	 */
+		.name = "XGA",
+		.refresh = 60,
+		.xres = 1024,
+		.yres = 768,
+		.pixclock = KHZ2PICOS(65000),
+		.left_margin = 160,
+		.hsync_len = 136,
+		.right_margin = 24,
+		.upper_margin = 29,
+		.vsync_len = 6,
+		.lower_margin = 3,
+		.sync = FB_SYNC_DE_HIGH_ACT,
+		.vmode = FB_VMODE_NONINTERLACED,
+		.flag = 0,
+	}, {
+	/*
+	 * Modeline "1280x1024" x 60.0
+	 * Clock: 108.00 MHz
+	 * Line: 1280 1328 1440 1688 (64.0 kHz)
+	 * Frame: 1024 1025 1028 1066
+	 * Syncs: +hsync +vsync
+	 */
+		.name = "SXGA",
+		.refresh = 60,
+		.xres = 1280,
+		.yres = 1024,
+		.pixclock = KHZ2PICOS(108000),
+		.left_margin = 248,
+		.hsync_len = 112,
+		.right_margin = 48,
+		.upper_margin = 38,
+		.vsync_len = 3,
+		.lower_margin = 1,
+		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT |
+				FB_SYNC_DE_HIGH_ACT,
+		.vmode = FB_VMODE_NONINTERLACED,
+		.flag = 0,
+	},
+};
+
+static struct imx_fb_videomode imxfb_mode = {
+	.mode_list = tx28evk_vmodes,
+	.mode_cnt = ARRAY_SIZE(tx28evk_vmodes),
+	.dotclk_delay = 0,	/* no adaption required */
+	.ld_intf_width = STMLCDIF_24BIT,	/* full 24 bit */
+};
+
+static struct device_d ldcif_dev = {
+	.name = "stmfb",
+	.map_base = IMX_FB_BASE,
+	.size = 4096,
+	.platform_data = &imxfb_mode,
 };
 
 static const uint32_t tx28_starterkit_pad_setup[] = {
@@ -205,6 +352,7 @@ void base_board_init(void)
 	imx_set_sspclk(0, 100000000, 1);
 
 	register_device(&mci_socket);
+	register_device(&ldcif_dev);
 
 	imx_enable_enetclk();
 	register_device(&fec_dev);

@@ -125,7 +125,7 @@ void imx_gpio_mode(uint32_t m)
 	if (PE_PRESENT(m)) {
 		reg_offset = calc_pullup_reg(gpio_pin);
 		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
-				(GET_PULLUP(m) == 1 ? 4 : 8));
+				(GET_PULLUP(m) == 1 ? BIT_SET : BIT_CLR));
 	}
 
 	if (GET_FUNC(m) == IS_GPIO) {
@@ -133,7 +133,7 @@ void imx_gpio_mode(uint32_t m)
 			/* first set the output value */
 			reg_offset = calc_output_reg(gpio_pin);
 			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE +
-				reg_offset + (GET_GPIOVAL(m) == 1 ? 4 : 8));
+				reg_offset + (GET_GPIOVAL(m) == 1 ? BIT_SET : BIT_CLR));
 			/* then the direction */
 			reg_offset = calc_output_enable_reg(gpio_pin);
 			writel(0x1 << (gpio_pin % 32),

@@ -20,6 +20,8 @@
 #ifndef __ASM_MACH_GPIO_H
 #define __ASM_MACH_GPIO_H
 
+#include <types.h>
+
 #if defined CONFIG_ARCH_IMX23
 # include <mach/iomux-imx23.h>
 #endif
@@ -27,6 +29,6 @@
 # include <mach/iomux-imx28.h>
 #endif
 
-void imx_gpio_mode(unsigned);
+void imx_gpio_mode(uint32_t);
 
 #endif /* __ASM_MACH_GPIO_H */

@@ -41,6 +41,7 @@ config ARCH_IMX
 
 config ARCH_STM
 	bool "SigmaTel/FSL iMX-based"
+	select GENERIC_GPIO
 
 config ARCH_NETX
 	bool "Hilscher NetX based"

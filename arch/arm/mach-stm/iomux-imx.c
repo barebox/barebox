@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
+#include <errno.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
 
@@ -74,6 +75,12 @@ static unsigned calc_output_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_DOUT0;
+}
+
+static unsigned calc_input_reg(unsigned no)
+{
+	/* each register controls 32 pads */
+	return  ((no >> 5) << 4) + HW_PINCTRL_DIN0;
 }
 
 /**
@@ -136,4 +143,57 @@ void imx_gpio_mode(uint32_t m)
 				IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
 		}
 	}
+}
+
+int gpio_direction_input(unsigned gpio)
+{
+	unsigned reg_offset;
+
+	if (gpio > MAX_GPIO_NO)
+		return -EINVAL;
+
+	reg_offset = calc_output_enable_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
+
+	return 0;
+}
+
+int gpio_direction_output(unsigned gpio, int val)
+{
+	unsigned reg_offset;
+
+	if (gpio > MAX_GPIO_NO)
+		return -EINVAL;
+
+	/* first set the output value... */
+	reg_offset = calc_output_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE +
+		reg_offset + (val != 0 ? BIT_SET : BIT_CLR));
+	/* ...then the direction */
+	reg_offset = calc_output_enable_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE + reg_offset + BIT_SET);
+
+	return 0;
+}
+
+void gpio_set_value(unsigned gpio, int val)
+{
+	unsigned reg_offset;
+
+	reg_offset = calc_output_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE +
+				reg_offset + (val != 0 ? BIT_SET : BIT_CLR));
+}
+
+int gpio_get_value(unsigned gpio)
+{
+	uint32_t reg;
+	unsigned reg_offset;
+
+	reg_offset = calc_input_reg(gpio);
+	reg = readl(IMX_IOMUXC_BASE + reg_offset);
+	if (reg & (0x1 << (gpio % 32)))
+		return 1;
+
+	return 0;
 }

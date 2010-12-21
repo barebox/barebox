@@ -30,5 +30,9 @@
 #endif
 
 void imx_gpio_mode(uint32_t);
+void gpio_set_value(unsigned, int);
+int gpio_direction_input(unsigned);
+int gpio_direction_output(unsigned, int);
+int gpio_get_value(unsigned);
 
 #endif /* __ASM_MACH_GPIO_H */

@@ -10,3 +10,4 @@ obj-$(CONFIG_MCI) += mci/
 obj-$(CONFIG_VIDEO) += video/
 obj-y	+= clk/
 obj-y	+= mfd/
+obj-$(CONFIG_LED) += led/

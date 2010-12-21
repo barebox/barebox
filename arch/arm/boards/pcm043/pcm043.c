@@ -39,6 +39,7 @@
 #include <mach/imx-nand.h>
 #include <fec.h>
 #include <fb.h>
+#include <led.h>
 #include <asm/mmu.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
@@ -148,6 +149,10 @@ static int pcm043_mmu_init(void)
 postcore_initcall(pcm043_mmu_init);
 #endif
 
+struct gpio_led led0 = {
+	.gpio = 1 * 32 + 6,
+};
+
 static int imx35_devices_init(void)
 {
 	uint32_t reg;
@@ -156,6 +161,8 @@ static int imx35_devices_init(void)
 	writel(0x0000cf03, CSCR_U(0));
 	writel(0x10000d03, CSCR_L(0));
 	writel(0x00720900, CSCR_A(0));
+
+	led_gpio_register(&led0);
 
 	reg = readl(IMX_CCM_BASE + CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
@@ -226,7 +233,8 @@ static struct pad_desc pcm043_pads[] = {
 	MX35_PAD_RTS1__UART1_RTS,
 	MX35_PAD_CTS1__UART1_CTS,
 	MX35_PAD_I2C1_CLK__I2C1_SCL,
-	MX35_PAD_I2C1_DAT__I2C1_SDA
+	MX35_PAD_I2C1_DAT__I2C1_SDA,
+	MX35_PAD_ATA_CS0__GPIO2_6, /* LED */
 };
 
 static int imx35_console_init(void)

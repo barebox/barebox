@@ -18,6 +18,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <clock.h>
+#include <led.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
 
@@ -416,5 +417,7 @@ static inline unsigned char *net_udp_get_payload(struct net_connection *con)
 
 int net_udp_send(struct net_connection *con, int len);
 int net_icmp_send(struct net_connection *con, int len);
+
+void led_trigger_network(enum led_trigger trigger);
 
 #endif /* __NET_H__ */

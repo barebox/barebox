@@ -19,7 +19,13 @@ all: $(KBUILD_IMAGE)
 
 
 
+machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
+else
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
+endif
 
 ifneq ($(board-y),)
 BOARD  := arch/x86/boards/$(board-y)/

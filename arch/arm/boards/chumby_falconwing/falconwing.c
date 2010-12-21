@@ -390,4 +390,89 @@ make ARCH=arm CROSS_COMPILE=armv5compiler
   partition or you can do it in the classic way: mkfs on it, mount it and copy
   all required data and programs into it.
 
+@section gpio_falconwing Available GPIOs
+
+The Falconwing uses some GPIOs to control various features. With the regular
+GPIO commands these features can be controlled at @a barebox's runtime.
+
+<table width="100%" border="1" cellspacing="1" cellpadding="3">
+	<tr>
+		<td>No</td>
+		<td>Direction</td>
+		<td>Function</td>
+		<td>Reset</td>
+		<td>Set</td>
+	</tr>
+	<tr>
+		<td>8</td>
+		<td>Output</td>
+		<td>Switch Audio Amplifier</td>
+		<td>Off</td>
+		<td>On</td>
+	</tr>
+	<tr>
+		<td>11</td>
+		<td>Input</td>
+		<td>Head Phone Detection</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>14</td>
+		<td>Input</td>
+		<td>Unused (J113)</td>
+		<td>User</td>
+		<td>User</td>
+	</tr>
+	<tr>
+		<td>15</td>
+		<td>Input</td>
+		<td>Unused (J114)</td>
+		<td>User</td>
+		<td>User</td>
+	</tr>
+	<tr>
+		<td>26</td>
+		<td>Output</td>
+		<td>USB Power</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>27</td>
+		<td>Input</td>
+		<td>Display Connected</td>
+		<td>Display<br>Attached</td>
+		<td>Display<br>Disconnected</td>
+	</tr>
+	<tr>
+		<td>29</td>
+		<td>Output</td>
+		<td>USB HUB Reset</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>50</td>
+		<td>Output</td>
+		<td>Display Reset</td>
+		<td>Display<br>Reset</td>
+		<td>Display<br>Running</td>
+	</tr>
+	<tr>
+		<td>60</td>
+		<td>Output</td>
+		<td>Display Backlight</td>
+		<td>Backlight<br>Off</td>
+		<td>Backlight<br>On (100 %)</td>
+	</tr>
+	<tr>
+		<td>62</td>
+		<td>Input</td>
+		<td>Bend</td>
+		<td>Not pressed</td>
+		<td>Pressed</td>
+	</tr>
+</table>
+
 */

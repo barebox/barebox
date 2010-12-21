@@ -46,31 +46,31 @@
 #define MAX_GPIO_NO 159
 #endif
 
-static uint32_t calc_mux_reg(uint32_t no)
+static unsigned calc_mux_reg(unsigned no)
 {
 	/* each register controls 16 pads */
 	return ((no >> 4) << 4) + HW_PINCTRL_MUXSEL0;
 }
 
-static uint32_t calc_strength_reg(uint32_t no)
+static unsigned calc_strength_reg(unsigned no)
 {
 	/* each register controls 8 pads */
 	return  ((no >> 3) << 4) + HW_PINCTRL_DRIVE0;
 }
 
-static uint32_t calc_pullup_reg(uint32_t no)
+static unsigned calc_pullup_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_PULL0;
 }
 
-static uint32_t calc_output_enable_reg(uint32_t no)
+static unsigned calc_output_enable_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_DOE0;
 }
 
-static uint32_t calc_output_reg(uint32_t no)
+static unsigned calc_output_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_DOUT0;
@@ -81,7 +81,8 @@ static uint32_t calc_output_reg(uint32_t no)
  */
 void imx_gpio_mode(unsigned m)
 {
-	uint32_t reg_offset, gpio_pin, reg;
+	uint32_t reg;
+	unsigned gpio_pin, reg_offset;
 
 	gpio_pin = GET_GPIO_NO(m);
 

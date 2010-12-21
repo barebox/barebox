@@ -14,11 +14,6 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_uboot += -static --gc-sections
 endif
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
 all: $(KBUILD_IMAGE)
 
 

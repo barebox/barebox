@@ -77,7 +77,7 @@ static unsigned calc_output_reg(unsigned no)
 }
 
 /**
- * @param[in] m One of the defines from iomux-mx23.h to configure *one* pin
+ * @param[in] m One pin define per call from iomux-mx23.h/iomux-mx28.h
  */
 void imx_gpio_mode(uint32_t m)
 {

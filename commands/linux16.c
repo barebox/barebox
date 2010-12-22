@@ -260,7 +260,8 @@ static int do_linux16(struct command *cmdtp, int argc, char *argv[])
 	if (setup_sects >= 15) {
 		void *src = lh;
 		if (lh->kernel_version != 0)
-			printf("Kernel version: '%s'\n", src + lh->kernel_version + DISK_SECTOR_SIZE);
+			printf("Kernel version: '%s'\n",
+			       (char *)src + lh->kernel_version + DISK_SECTOR_SIZE);
 	}
 
 	/*

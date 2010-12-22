@@ -28,6 +28,7 @@
 #include <environment.h>
 #include <fs.h>
 #include <errno.h>
+#include <getopt.h>
 #include <malloc.h>
 #include <asm/syslib.h>
 
@@ -153,18 +154,25 @@ struct linux_kernel_header {
 static int do_linux16(struct command *cmdtp, int argc, char *argv[])
 {
 	struct linux_kernel_header *lh = NULL;
-	int rc;
+	int rc, opt;
 	unsigned setup_sects;
 	unsigned real_mode_size;
 	size_t image_size;
 	const char *cmdline = getenv("bootargs");
+	const char *kernel_file;
 
-	if (argc < 2) {
-		perror("linux16");
-		return 1;
+	while((opt = getopt(argc, argv, "")) > 0) {
+		switch(opt) {
+		}
 	}
 
-	lh = read_file(argv[1], &image_size);
+	if (optind == argc) {
+		printf("No kernel filename given\n");
+		return 1;
+	}
+	kernel_file = argv[optind];
+
+	lh = read_file(kernel_file, &image_size);
 	if (lh == NULL) {
 		printf("Cannot read file '%s'\n", argv[1]);
 		return 1;

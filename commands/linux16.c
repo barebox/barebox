@@ -141,6 +141,10 @@ struct linux_kernel_header {
 #endif
 } __attribute__ ((packed));
 
+/* This is -1. Keep this value in sync with the kernel */
+#define NORMAL_VGA	0xffff		/* 80x25 mode */
+#define ASK_VGA		0xfffd		/* ask for it at bootup */
+
 /**
  * Load an x86 Linux kernel bzImage and start it
  * @param cmdtp FIXME
@@ -157,12 +161,24 @@ static int do_linux16(struct command *cmdtp, int argc, char *argv[])
 	int rc, opt;
 	unsigned setup_sects;
 	unsigned real_mode_size;
+	int vid_mode = NORMAL_VGA;
 	size_t image_size;
 	const char *cmdline = getenv("bootargs");
 	const char *kernel_file;
 
-	while((opt = getopt(argc, argv, "")) > 0) {
+	while((opt = getopt(argc, argv, "v:")) > 0) {
 		switch(opt) {
+		case 'v':
+			vid_mode = simple_strtoul(optarg, NULL, 0);
+			if (vid_mode == 0) {
+				if (!strcmp(optarg, "ask"))
+					vid_mode = ASK_VGA;
+				else {
+					printf("Unknown video mode: %s\n", optarg);
+					return 1;
+				}
+			}
+			break;
 		}
 	}
 
@@ -226,6 +242,14 @@ static int do_linux16(struct command *cmdtp, int argc, char *argv[])
 		rc = 1;
 		goto on_error;
 	}
+
+	/*
+	 * The kernel does not check for the "vga=<val>" kernel command line
+	 * parameter anymore. It expects this kind of information in the
+	 * boot parameters instead.
+	 */
+	if (vid_mode != NORMAL_VGA)
+		lh->vid_mode = vid_mode;
 
 	/* If SETUP_SECTS is not set, set it to the default.  */
 	if (setup_sects == 0) {
@@ -297,16 +321,21 @@ on_error:
 }
 
 BAREBOX_CMD_HELP_START(linux16)
-BAREBOX_CMD_HELP_USAGE("linux16 <file>\n")
-BAREBOX_CMD_HELP_SHORT("Boot a kernel on x86 via real mode code.\n")
+BAREBOX_CMD_HELP_USAGE("linux16 <file> [-v <mode>]\n")
+BAREBOX_CMD_HELP_SHORT("Boot a kernel <file> on x86 via real mode code.\n")
+BAREBOX_CMD_HELP_OPT  ("-v <mode>",   "VESA video mode number or 'ask'\n")
 BAREBOX_CMD_HELP_END
 
 /**
  * @page linux16_command
 
-<p> Only kernel images in bzImage format are supported by now. See \ref
+<p>Only kernel images in bzImage format are supported by now. See \ref
 x86_boot_preparation for more info about how to use this command.</p>
 
+<p>For the video mode refer the Linux kernel documentation
+'Documentation/fb/vesafb.txt' for correct VESA mode numbers. If the keyword
+'ask' instead of a number is given, the starting kernel will ask for a number.
+</p>
  */
 
 BAREBOX_CMD_START(linux16)

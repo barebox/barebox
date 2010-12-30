@@ -81,6 +81,11 @@
 #define HS_DEVICE               0x2
 #define GP_DEVICE               0x3
 
+/**
+ * Hawkeye definitions to identify silicon families
+ */
+#define OMAP_HAWKEYE_34XX	0xB7AE
+
 /** These are implemented by the System specific code in omapX-generic.c */
 u32 get_cpu_type(void);
 u32 get_cpu_rev(void);

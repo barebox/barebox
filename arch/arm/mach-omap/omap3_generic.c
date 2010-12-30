@@ -70,7 +70,19 @@ EXPORT_SYMBOL(reset_cpu);
  */
 u32 get_cpu_type(void)
 {
-	/* FIXME: need to get register defines for 3430 */
+	u32 idcode_val;
+	u16 hawkeye;
+
+	idcode_val = readl(IDCODE_REG);
+
+	hawkeye = get_hawkeye(idcode_val);
+
+	if (hawkeye == OMAP_HAWKEYE_34XX)
+		return CPU_3430;
+
+	/*
+	 * Fallback to OMAP3430 as default.
+	 */
 	return CPU_3430;
 }
 

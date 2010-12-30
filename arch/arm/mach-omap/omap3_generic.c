@@ -82,13 +82,13 @@ u32 get_cpu_type(void)
 u32 get_cpu_rev(void)
 {
 	u32 idcode_val;
+	u32 version;
+
 	idcode_val = readl(IDCODE_REG);
-	if ((idcode_val & (HAWKEYE_MASK | VERSION_MASK)) == HAWKEYE_ES2_1)
-		return CPU_ES2P1;
-	if ((idcode_val & HAWKEYE_MASK) == HAWKEYE_ES2)
-		return CPU_ES2;
-	/* unsupported! */
-	return CPU_ES1;
+
+	version = get_version(idcode_val);
+
+	return version;
 }
 
 /**

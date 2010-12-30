@@ -116,17 +116,17 @@
 #define OMAP_TAP_BASE		(OMAP_L4_WKUP_BASE + 0xA000)
 #define IDCODE_REG		(OMAP_TAP_BASE + 0x204)
 
-/************ Generic Chip specific Definitions **********/
-/**
- * CHIP			F number	HAWKEYE (hex)
- * OMAP3430 ES1.0	F771609		B6D6
- * OMAP3430 ES2.0	F771609A	B7AE
- */
+/** Masks to extract information from ID code register */
+#define IDCODE_HAWKEYE_MASK	0x0FFFF000
+#define IDCODE_VERSION_MASK	0xF0000000
+
+ #define get_hawkeye(v)		(((v) & IDCODE_HAWKEYE_MASK) >> 12)
+ #define get_version(v)		(((v) & IDCODE_VERSION_MASK) >> 28)
+
 #define HAWKEYE_ES1		0x0B6D6000
 #define HAWKEYE_ES2		0x0B7AE000
 #define HAWKEYE_ES2_1		0x1B7AE000
-#define HAWKEYE_MASK		0x0FFFF000
-#define VERSION_MASK		0xF0000000
+
 #define DEVICE_MASK		((0x1 << 8)|(0x1 << 9)|(0x1 << 10))
 
 #define OMAP_SDRC_CS0		0x80000000

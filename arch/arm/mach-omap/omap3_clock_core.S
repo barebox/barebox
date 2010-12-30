@@ -212,8 +212,8 @@ pll_div_val5:
  *
  * The tables are defined for separately each silicon revision.
  */
-.globl mpu_dpll_param_es1
-mpu_dpll_param_es1:
+.globl mpu_dpll_param_34x_es1
+mpu_dpll_param_34x_es1:
 /*    	M	N	FREQSEL	M2	*/
 .word	0x0FE,	0x07,	0x05,	0x01		/* 12   MHz	*/
 .word	0x17D,	0x0C,	0x03,	0x01		/* 13   MHz	*/
@@ -221,8 +221,8 @@ mpu_dpll_param_es1:
 .word	0x17D,	0x19,	0x03,	0x01		/* 26   MHz	*/
 .word	0x1FA,	0x32,	0x03,	0x01		/* 38.4 MHz	*/
 
-.globl mpu_dpll_param_es2
-mpu_dpll_param_es2:
+.globl mpu_dpll_param_34x_es2
+mpu_dpll_param_34x_es2:
 /*    	M	N	FREQSEL	M2	*/
 .word	0x0FA,	0x05,	0x07,	0x01		/* 12   MHz	*/
 .word	0x1F4,	0x0C,	0x03,	0x01		/* 13   MHz	*/
@@ -231,24 +231,24 @@ mpu_dpll_param_es2:
 .word	0x271,	0x2F,	0x03,	0x01		/* 38.4 MHz	*/
 
 /**
- * @brief Get address of MPU DPLL param table.
+ * @brief Get address of MPU DPLL param table (OMAP34XX).
  *
  * @param rev Silicon revision.
  *
  * @return Address of the param table
  */
-.globl get_mpu_dpll_param
-get_mpu_dpll_param:
+.globl get_mpu_dpll_param_34x
+get_mpu_dpll_param_34x:
 	mov	r3, r0
 	lsl	r3, r3, #16		/* Isolate silicon revision */
 	lsr	r3, r3, #16
 	cmp	r3, #0			/* Revision 1 ? */
-	adr	r0, mpu_dpll_param_es1
+	adr	r0, mpu_dpll_param_34x_es1
 	bxeq	lr
-	adr	r0, mpu_dpll_param_es2
+	adr	r0, mpu_dpll_param_34x_es2
 	mov	pc, lr
 
-iva_dpll_param_es1:
+iva_dpll_param_34x_es1:
 /*    	M	N	FREQSEL	M2				*/
 .word	0x07D,	0x05,	0x07,	0x01		/* 12   MHz	*/
 .word	0x0FA,	0x0C,	0x03,	0x01		/* 13   MHz	*/
@@ -256,7 +256,7 @@ iva_dpll_param_es1:
 .word	0x07D,	0x0C,	0x07,	0x01		/* 26   MHz	*/
 .word	0x13F,	0x30,	0x03,	0x01		/* 38.4 MHz	*/
 
-iva_dpll_param_es2:
+iva_dpll_param_34x_es2:
 /*    	M	N	FREQSEL	M2				*/
 .word	0x0B4,	0x05,	0x07,	0x01		/* 12   MHz	*/
 .word	0x168,	0x0C,	0x03,	0x01		/* 13   MHz	*/
@@ -265,24 +265,24 @@ iva_dpll_param_es2:
 .word	0x0E1,	0x17,	0x06,	0x01		/* 38.4 MHz	*/
 
 /**
- * @brief Get address of IVA DPLL param table.
+ * @brief Get address of IVA DPLL param table (OMAP34XX).
  *
  * @param rev Silicon revision.
  *
  * @return Address of the param table
  */
-.globl get_iva_dpll_param
-get_iva_dpll_param:
+.globl get_iva_dpll_param_34x
+get_iva_dpll_param_34x:
 	mov	r3, r0
 	lsl	r3, r3, #16		/* Isolate silicon revision */
 	lsr	r3, r3, #16
 	cmp	r3, #0			/* Revision 1 ? */
-	adr	r0, iva_dpll_param_es1
+	adr	r0, iva_dpll_param_34x_es1
 	bxeq	lr
-	adr	r0, iva_dpll_param_es2
+	adr	r0, iva_dpll_param_34x_es2
 	mov	pc, lr
 
-core_dpll_param_es1:
+core_dpll_param_34x_es1:
 /*    	M	N	FREQSEL	M2				*/
 .word	0x19F,	0x0E,	0x03,	0x01		/* 12   MHz	*/
 .word	0x1B2,	0x10,	0x03,	0x01		/* 13   MHz	*/
@@ -290,7 +290,7 @@ core_dpll_param_es1:
 .word	0x1B2,	0x21,	0x03,	0x01		/* 26   MHz	*/
 .word	0x19F,	0x2F,	0x03,	0x01		/* 38.4 MHz	*/
 
-core_dpll_param_es2:
+core_dpll_param_34x_es2:
 /*    	M	N	FREQSEL	M2				*/
 .word	0x0A6,	0x05,	0x07,	0x01		/* 12   MHz	*/
 .word	0x14C,	0x0C,	0x03,	0x01		/* 13   MHz	*/
@@ -299,25 +299,25 @@ core_dpll_param_es2:
 .word	0x19F,	0x2F,	0x03,	0x01		/* 38.4 MHz	*/
 
 /**
- * @brief Get address of CORE DPLL param table.
+ * @brief Get address of CORE DPLL param table (OMAP34XX).
  *
  * @param rev Silicon revision.
  *
  * @return Address of the param table
  */
-.globl get_core_dpll_param
-get_core_dpll_param:
+.globl get_core_dpll_param_34x
+get_core_dpll_param_34x:
 	mov	r3, r0
 	lsl	r3, r3, #16		/* Isolate silicon revision */
 	lsr	r3, r3, #16
 	cmp	r3, #0			/* Revision 1 ? */
-	adr	r0, core_dpll_param_es1
+	adr	r0, core_dpll_param_34x_es1
 	bxeq	lr
-	adr	r0, core_dpll_param_es2
+	adr	r0, core_dpll_param_34x_es2
 	mov	pc, lr
 
 /* PER DPLL values are same for both ES1 and ES2 */
-per_dpll_param:
+per_dpll_param_34x:
 /*    	M	N	FREQSEL	M2				*/
 .word	0x0D8,	0x05,	0x07,	0x09		/* 12   MHz	*/
 .word	0x1B0,	0x0C,	0x03,	0x09		/* 13   MHz	*/
@@ -326,13 +326,13 @@ per_dpll_param:
 .word	0x0E1,	0x13,	0x07,	0x09		/* 38.4 MHz	*/
 
 /**
- * @brief Get address of PER DPLL param table.
+ * @brief Get address of PER DPLL param table (OMAP34XX).
  *
  * @param rev Silicon revision (not used).
  *
  * @return Address of the param table
  */
-.globl get_per_dpll_param
-get_per_dpll_param:
-	adr r0, per_dpll_param
+.globl get_per_dpll_param_34x
+get_per_dpll_param_34x:
+	adr r0, per_dpll_param_34x
 	mov pc, lr

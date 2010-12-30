@@ -230,10 +230,23 @@ mpu_dpll_param_es2:
 .word	0x0FA,	0x0C,	0x07,	0x01		/* 26   MHz	*/
 .word	0x271,	0x2F,	0x03,	0x01		/* 38.4 MHz	*/
 
+/**
+ * @brief Get address of MPU DPLL param table.
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
 .globl get_mpu_dpll_param
 get_mpu_dpll_param:
-	adr r0, mpu_dpll_param_es2
-	mov pc, lr
+	mov	r3, r0
+	lsl	r3, r3, #16		/* Isolate silicon revision */
+	lsr	r3, r3, #16
+	cmp	r3, #0			/* Revision 1 ? */
+	adr	r0, mpu_dpll_param_es1
+	bxeq	lr
+	adr	r0, mpu_dpll_param_es2
+	mov	pc, lr
 
 iva_dpll_param_es1:
 /*    	M	N	FREQSEL	M2				*/
@@ -251,10 +264,23 @@ iva_dpll_param_es2:
 .word	0x0B4,	0x0C,	0x07,	0x01		/* 26   MHz	*/
 .word	0x0E1,	0x17,	0x06,	0x01		/* 38.4 MHz	*/
 
+/**
+ * @brief Get address of IVA DPLL param table.
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
 .globl get_iva_dpll_param
 get_iva_dpll_param:
-	adr r0, iva_dpll_param_es2
-	mov pc, lr
+	mov	r3, r0
+	lsl	r3, r3, #16		/* Isolate silicon revision */
+	lsr	r3, r3, #16
+	cmp	r3, #0			/* Revision 1 ? */
+	adr	r0, iva_dpll_param_es1
+	bxeq	lr
+	adr	r0, iva_dpll_param_es2
+	mov	pc, lr
 
 core_dpll_param_es1:
 /*    	M	N	FREQSEL	M2				*/
@@ -272,10 +298,23 @@ core_dpll_param_es2:
 .word	0x0A6,	0x0C,	0x07,	0x01		/* 26   MHz	*/
 .word	0x19F,	0x2F,	0x03,	0x01		/* 38.4 MHz	*/
 
+/**
+ * @brief Get address of CORE DPLL param table.
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
 .globl get_core_dpll_param
 get_core_dpll_param:
-	adr r0, core_dpll_param_es2
-	mov pc, lr
+	mov	r3, r0
+	lsl	r3, r3, #16		/* Isolate silicon revision */
+	lsr	r3, r3, #16
+	cmp	r3, #0			/* Revision 1 ? */
+	adr	r0, core_dpll_param_es1
+	bxeq	lr
+	adr	r0, core_dpll_param_es2
+	mov	pc, lr
 
 /* PER DPLL values are same for both ES1 and ES2 */
 per_dpll_param:
@@ -286,6 +325,13 @@ per_dpll_param:
 .word	0x0D8,	0x0C,	0x07,	0x09		/* 26   MHz	*/
 .word	0x0E1,	0x13,	0x07,	0x09		/* 38.4 MHz	*/
 
+/**
+ * @brief Get address of PER DPLL param table.
+ *
+ * @param rev Silicon revision (not used).
+ *
+ * @return Address of the param table
+ */
 .globl get_per_dpll_param
 get_per_dpll_param:
 	adr r0, per_dpll_param

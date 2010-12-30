@@ -144,7 +144,7 @@ static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel)
  */
 static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_core_dpll_param();
+	struct dpll_param *dp = get_core_dpll_param(cpu_rev);
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
 	int p0, p1, p2, p3;
 #endif
@@ -242,7 +242,7 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_per_dpll_param();
+	struct dpll_param *dp = get_per_dpll_param(cpu_rev);
 
 	dp += clk_sel;
 
@@ -300,7 +300,7 @@ static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_mpu_dpll_param();
+	struct dpll_param *dp = get_mpu_dpll_param(cpu_rev);
 
 	dp += clk_sel;
 
@@ -325,7 +325,7 @@ static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_iva_dpll_param();
+	struct dpll_param *dp = get_iva_dpll_param(cpu_rev);
 
 	dp += clk_sel;
 

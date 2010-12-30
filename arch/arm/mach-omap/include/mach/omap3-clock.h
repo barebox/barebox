@@ -125,10 +125,10 @@ struct dpll_param {
 	unsigned int m2;
 };
 /* External functions see omap3_clock_core.S */
-extern struct dpll_param *get_mpu_dpll_param(void);
-extern struct dpll_param *get_iva_dpll_param(void);
-extern struct dpll_param *get_core_dpll_param(void);
-extern struct dpll_param *get_per_dpll_param(void);
+extern struct dpll_param *get_mpu_dpll_param(u32);
+extern struct dpll_param *get_iva_dpll_param(u32);
+extern struct dpll_param *get_core_dpll_param(u32);
+extern struct dpll_param *get_per_dpll_param(u32);
 
 #endif /* __ASSEMBLY__ */
 

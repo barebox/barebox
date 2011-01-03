@@ -92,6 +92,12 @@
 #define PLL_FAST_RELOCK_BYPASS	6	/* CORE */
 #define PLL_LOCK		7	/* MPU, IVA, CORE & PER */
 
+/*
+ * Bit positions indicating current SYSCLK divider
+ */
+#define SYSCLK_DIV_1		(1 << 6)
+#define SYSCLK_DIV_2		(1 << 7)
+
 /* The following configurations are OPP and SysClk value independant
  * and hence are defined here.
  */

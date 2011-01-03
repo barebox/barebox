@@ -65,12 +65,20 @@ static void per_clocks_enable(void);
  */
 static u32 get_osc_clk_speed(void)
 {
-	u32 start, cstart, cend, cdiff, val;
+	u32 start, cstart, cend, cdiff, cdiv, val;
 
 	val = readl(PRM_REG(CLKSRC_CTRL));
-	/* If SYS_CLK is being divided by 2, remove for now */
-	val = (val & (~(0x1 << 7))) | (0x1 << 6);
-	writel(val, PRM_REG(CLKSRC_CTRL));
+
+	if (val & SYSCLK_DIV_2)
+		cdiv = 2;
+	else if (val & SYSCLK_DIV_1)
+		cdiv = 1;
+	else
+		/*
+		 * Should never reach here!
+		 * To proceed, assume divider as 1.
+		 */
+		cdiv = 1;
 
 	/* enable timer2 */
 	val = readl(CM_REG(CLKSEL_WKUP)) | (0x1 << 0);
@@ -96,6 +104,9 @@ static u32 get_osc_clk_speed(void)
 	/* get end sys_clk count */
 	cend = readl(OMAP_GPTIMER1_BASE + TCRR);
 	cdiff = cend - cstart;	/* get elapsed ticks */
+
+	if (cdiv == 2)
+		cdiff *= 2;
 
 	/* based on number of ticks assign speed */
 	if (cdiff > 19000)

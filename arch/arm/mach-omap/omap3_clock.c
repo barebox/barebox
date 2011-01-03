@@ -554,6 +554,7 @@ static void init_iva_dpll_36x(u32 cpu_rev, u32 clk_sel)
 void prcm_init(void)
 {
 	u32 osc_clk = 0, sys_clkin_sel = 0;
+	u32 cpu_type = get_cpu_type();
 	u32 cpu_rev = get_cpu_rev();
 	u32 clk_index;
 
@@ -565,8 +566,15 @@ void prcm_init(void)
 	/* set input crystal speed */
 	sr32(PRM_REG(CLKSEL), 0, 3, sys_clkin_sel);
 
-	/* If the input clock is greater than 19.2M always divide/2 */
-	if (sys_clkin_sel > 2) {
+	/*
+	 * OMAP3430:
+	 *	If the input clock is greater than 19.2M always divide/2
+	 * OMAP3630:
+	 *	DDR corruption was observed on exit from OFF mode, when
+	 *	sys clock is lower than 26M. As workaround, it is maintained
+	 *	at 26M.
+	 */
+	if ((cpu_type != CPU_3630) && (sys_clkin_sel > 2)) {
 		/* input clock divider */
 		sr32(PRM_REG(CLKSRC_CTRL), 6, 2, 2);
 		clk_index = sys_clkin_sel / 2;
@@ -582,10 +590,22 @@ void prcm_init(void)
 	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOW_POWER_BYPASS);
 	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_MPU), LDELAY);
 
-	init_core_dpll_34x(cpu_rev, clk_index);
-	init_per_dpll_34x(cpu_rev, clk_index);
-	init_mpu_dpll_34x(cpu_rev, clk_index);
-	init_iva_dpll_34x(cpu_rev, clk_index);
+	if (cpu_type == CPU_3430) {
+		init_core_dpll_34x(cpu_rev, clk_index);
+		init_per_dpll_34x(cpu_rev, clk_index);
+		init_mpu_dpll_34x(cpu_rev, clk_index);
+		init_iva_dpll_34x(cpu_rev, clk_index);
+	}
+	else if (cpu_type == CPU_3630) {
+		init_core_dpll_36x(cpu_rev, clk_index);
+		init_per_dpll_36x(cpu_rev, clk_index);
+		init_mpu_dpll_36x(cpu_rev, clk_index);
+		init_iva_dpll_36x(cpu_rev, clk_index);
+	}
+	else {
+		/* Unknown CPU */
+		hang();
+	}
 
 	/*
 	 * Clock configuration complete. Lock MPU PLL.

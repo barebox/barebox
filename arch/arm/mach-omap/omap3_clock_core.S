@@ -336,3 +336,91 @@ per_dpll_param_34x:
 get_per_dpll_param_34x:
 	adr r0, per_dpll_param_34x
 	mov pc, lr
+
+.globl mpu_dpll_param_36x
+mpu_dpll_param_36x:
+/* FIXME: All values correspond to 26MHz only */
+/*    	M	N	FREQSEL	M2	*/
+.word	0x12C,	0x0C,	0x00,	0x01		/* 12   MHz	*/
+.word	0x12C,	0x0C,	0x00,	0x01		/* 13   MHz	*/
+.word	0x12C,	0x0C,	0x00,	0x01		/* 19.2 MHz	*/
+.word	0x12C,	0x0C,	0x00,	0x01		/* 26   MHz	*/
+.word	0x12C,	0x0C,	0x00,	0x01		/* 38.4 MHz	*/
+
+/**
+ * @brief Get address of MPU DPLL param table (OMAP36XX).
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
+.globl get_mpu_dpll_param_36x
+get_mpu_dpll_param_36x:
+	adr r0, mpu_dpll_param_36x
+	mov pc, lr
+
+.globl iva_dpll_param_36x
+iva_dpll_param_36x:
+/* FIXME: All values correspond to 26MHz only */
+/*    	M	N	FREQSEL	M2	*/
+.word	0x00A,	0x00,	0x00,	0x01		/* 12   MHz	*/
+.word	0x00A,	0x00,	0x00,	0x01		/* 13   MHz	*/
+.word	0x00A,	0x00,	0x00,	0x01		/* 19.2 MHz	*/
+.word	0x00A,	0x00,	0x00,	0x01		/* 26   MHz	*/
+.word	0x00A,	0x00,	0x00,	0x01		/* 38.4 MHz	*/
+
+/**
+ * @brief Get address of IVA DPLL param table (OMAP36XX).
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
+.globl get_iva_dpll_param_36x
+get_iva_dpll_param_36x:
+	adr r0, iva_dpll_param_36x
+	mov pc, lr
+
+.globl core_dpll_param_36x
+core_dpll_param_36x:
+/* FIXME: All values correspond to 26MHz only */
+/*    	M	N	FREQSEL	M2	*/
+.word	0x0C8,	0x0C,	0x00,	0x01		/* 12   MHz	*/
+.word	0x0C8,	0x0C,	0x00,	0x01		/* 13   MHz	*/
+.word	0x0C8,	0x0C,	0x00,	0x01		/* 19.2 MHz	*/
+.word	0x0C8,	0x0C,	0x00,	0x01		/* 26   MHz	*/
+.word	0x0C8,	0x0C,	0x00,	0x01		/* 38.4 MHz	*/
+
+/**
+ * @brief Get address of IVA DPLL param table (OMAP36XX).
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
+.globl get_core_dpll_param_36x
+get_core_dpll_param_36x:
+	adr r0, core_dpll_param_36x
+	mov pc, lr
+
+.globl per_dpll_param_36x
+per_dpll_param_36x:
+/* FIXME: All values correspond to 26MHz only */
+/*	M	N	M2	M3	M4	M5	M6	m2DIV */
+.word	0x1B0,	0x0C,	9,	0x10,	9,	4,	3,	1 /* 12   MHz */
+.word	0x1B0,	0x0C,	9,	0x10,	9,	4,	3,	1 /* 13   MHz */
+.word	0x1B0,	0x0C,	9,	0x10,	9,	4,	3,	1 /* 19.2 MHz */
+.word	0x1B0,	0x0C,	9,	0x10,	9,	4,	3,	1 /* 26   MHz */
+.word	0x1B0,	0x0C,	9,	0x10,	9,	4,	3,	1 /* 38.4 MHz */
+
+/**
+ * @brief Get address of PER DPLL param table (OMAP36XX).
+ *
+ * @param rev Silicon revision.
+ *
+ * @return Address of the param table
+ */
+.globl get_per_dpll_param_36x
+get_per_dpll_param_36x:
+	adr r0, per_dpll_param_36x
+	mov pc, lr

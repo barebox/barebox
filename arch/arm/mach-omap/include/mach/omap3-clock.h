@@ -142,6 +142,10 @@ extern struct dpll_param *get_iva_dpll_param_34x(u32);
 extern struct dpll_param *get_core_dpll_param_34x(u32);
 extern struct dpll_param *get_per_dpll_param_34x(u32);
 
+extern struct dpll_param *get_mpu_dpll_param_36x(u32);
+extern struct dpll_param *get_iva_dpll_param_36x(u32);
+extern struct dpll_param *get_core_dpll_param_36x(u32);
+extern struct dpll_param_per_36x *get_per_dpll_param_36x(u32);
 #endif /* __ASSEMBLY__ */
 
 #endif  /* endif _OMAP343X_CLOCKS_H_ */

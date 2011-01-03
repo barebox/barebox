@@ -124,6 +124,18 @@ struct dpll_param {
 	unsigned int fsel;
 	unsigned int m2;
 };
+
+struct dpll_param_per_36x {
+	unsigned int m;
+	unsigned int n;
+	unsigned int m2;
+	unsigned int m3;
+	unsigned int m4;
+	unsigned int m5;
+	unsigned int m6;
+	unsigned int m2div;
+};
+
 /* External functions see omap3_clock_core.S */
 extern struct dpll_param *get_mpu_dpll_param_34x(u32);
 extern struct dpll_param *get_iva_dpll_param_34x(u32);

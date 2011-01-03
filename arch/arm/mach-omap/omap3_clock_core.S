@@ -194,7 +194,7 @@ pll_div_val3:
 pll_div_add4:
     .word CM_CLKSEL_GFX
 pll_div_val4:
-    .word (GFX_DIV << 0)
+    .word GFX_DIV_34X
 pll_div_add5:
     .word CM_CLKSEL1_EMU
 pll_div_val5:

@@ -192,7 +192,7 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 		sr32(CM_REG(CLKSEL_CORE), 4, 2, CORE_FUSB_DIV);
 		sr32(CM_REG(CLKSEL_CORE), 2, 2, CORE_L4_DIV);
 		sr32(CM_REG(CLKSEL_CORE), 0, 2, CORE_L3_DIV);
-		sr32(CM_REG(CLKSEL_GFX), 0, 3, GFX_DIV);
+		sr32(CM_REG(CLKSEL_GFX), 0, 3, GFX_DIV_34X);
 		sr32(CM_REG(CLKSEL_WKUP), 1, 2, WKUP_RSM);
 
 		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */

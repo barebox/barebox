@@ -66,7 +66,7 @@ EXPORT_SYMBOL(reset_cpu);
 /**
  * @brief Low level CPU type
  *
- * @return CPU_3430
+ * @return Detected CPU type
  */
 u32 get_cpu_type(void)
 {
@@ -79,6 +79,9 @@ u32 get_cpu_type(void)
 
 	if (hawkeye == OMAP_HAWKEYE_34XX)
 		return CPU_3430;
+
+	if (hawkeye == OMAP_HAWKEYE_36XX)
+		return CPU_3630;
 
 	/*
 	 * Fallback to OMAP3430 as default.

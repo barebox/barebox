@@ -44,11 +44,12 @@
 #define DDR_133		133    /* most combo, some mem d-boards */
 #define DDR_165		165    /* future parts */
 
-#define CPU_3430	0x3430
-#define CPU_2430	0x2430
-#define CPU_2420	0x2420
-#define CPU_1710	0x1710
 #define CPU_1610	0x1610
+#define CPU_1710	0x1710
+#define CPU_2420	0x2420
+#define CPU_2430	0x2430
+#define CPU_3430	0x3430
+#define CPU_3630	0x3630
 
 /**
  * Define CPU revisions
@@ -80,6 +81,7 @@
  * Hawkeye definitions to identify silicon families
  */
 #define OMAP_HAWKEYE_34XX	0xB7AE
+#define OMAP_HAWKEYE_36XX	0xB891
 
 /** These are implemented by the System specific code in omapX-generic.c */
 u32 get_cpu_type(void);

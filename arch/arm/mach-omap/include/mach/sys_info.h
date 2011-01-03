@@ -62,6 +62,10 @@
 #define OMAP34XX_ES3		cpu_revision(CPU_3430, 3)
 #define OMAP34XX_ES3_1		cpu_revision(CPU_3430, 4)
 
+#define OMAP36XX_ES1		cpu_revision(CPU_3630, 0)
+#define OMAP36XX_ES1_1		cpu_revision(CPU_3630, 1)
+#define OMAP36XX_ES1_2		cpu_revision(CPU_3630, 2)
+
 #define GPMC_MUXED		1
 #define GPMC_NONMUXED		0
 

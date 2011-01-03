@@ -92,6 +92,7 @@ u32 get_cpu_type(void)
 /**
  * @brief Extract the OMAP ES revision
  *
+ * The significance of the CPU revision depends upon the cpu type.
  * Latest known revision is considered default.
  *
  * @return silicon version
@@ -105,31 +106,54 @@ u32 get_cpu_rev(void)
 
 	version = get_version(idcode_val);
 
-	/*
-	 * On OMAP3430 ES1.0 the IDCODE register is not exposed on L4.
-	 * Use CPU ID to check for the same.
-	 */
-	__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 0":"=r"(retval));
-	if ((retval & 0xf) == 0x0) {
-		retval = OMAP34XX_ES1;
-	} else {
+	switch (get_cpu_type()) {
+	case CPU_3630:
 		switch (version) {
-		case 0: /* This field was not set in early samples */
+		case 0:
+			retval = OMAP36XX_ES1;
+			break;
 		case 1:
-			retval = OMAP34XX_ES2;
+			retval = OMAP36XX_ES1_1;
 			break;
 		case 2:
-			retval = OMAP34XX_ES2_1;
-			break;
-		case 3:
-			retval = OMAP34XX_ES3;
-			break;
-		case 4:
 			/*
-			 * Same as default case
+			 * Fall through the default case.
 			 */
 		default:
-			retval = OMAP34XX_ES3_1;
+			retval = OMAP36XX_ES1_2;
+		}
+		break;
+	case CPU_3430:
+		/*
+		 * Same as default case
+		 */
+	default:
+		/*
+		 * On OMAP3430 ES1.0 the IDCODE register is not exposed on L4.
+		 * Use CPU ID to check for the same.
+		 */
+		__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 0":"=r"(retval));
+		if ((retval & 0xf) == 0x0) {
+			retval = OMAP34XX_ES1;
+		} else {
+			switch (version) {
+			case 0: /* This field was not set in early samples */
+			case 1:
+				retval = OMAP34XX_ES2;
+				break;
+			case 2:
+				retval = OMAP34XX_ES2_1;
+				break;
+			case 3:
+				retval = OMAP34XX_ES3;
+				break;
+			case 4:
+				/*
+				 * Same as default case
+				 */
+			default:
+				retval = OMAP34XX_ES3_1;
+			}
 		}
 	}
 

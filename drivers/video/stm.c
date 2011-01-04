@@ -486,7 +486,10 @@ static int stmfb_probe(struct device_d *hw_dev)
 	fbi.info.mode = &fbi.info.mode_list[0];
 	fbi.info.xres = fbi.info.mode->xres;
 	fbi.info.yres = fbi.info.mode->yres;
-	fbi.info.bits_per_pixel = 16;
+	if (pdata->bits_per_pixel)
+		fbi.info.bits_per_pixel = pdata->bits_per_pixel;
+	else
+		fbi.info.bits_per_pixel = 16;
 
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {

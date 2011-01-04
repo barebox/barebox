@@ -25,6 +25,7 @@ static inline void set_pixel(struct fb_info *info, void *adr, int r, int g, int 
 		*(u16 *)adr = px;
 		break;
 	case 32:
+		*(u32 *)adr = px;
 		break;
 	}
 }

@@ -157,8 +157,7 @@ static int pl011_probe(struct device_d *dev)
 	struct amba_uart_port *uart;
 	struct console_device *cdev;
 
-	uart = malloc(sizeof(struct amba_uart_port));
-
+	uart = xmalloc(sizeof(struct amba_uart_port));
 	uart->clk = clk_get(dev, NULL);
 
 	if (IS_ERR(uart->clk))

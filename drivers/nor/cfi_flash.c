@@ -305,7 +305,7 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 #endif
 
 	/* first only malloc space for the first sector */
-	info->start = malloc(sizeof(ulong));
+	info->start = xmalloc(sizeof(ulong));
 
 	info->start[0] = base;
 	info->protect = 0;
@@ -394,8 +394,8 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 			cur_offset += erase_region_size * erase_region_count;
 
 			/* increase the space malloced for the sector start addresses */
-			info->start = realloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
-			info->protect = realloc(info->protect, sizeof(uchar) * (erase_region_count + sect_cnt));
+			info->start = xrealloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
+			info->protect = xrealloc(info->protect, sizeof(uchar) * (erase_region_count + sect_cnt));
 
 			for (j = 0; j < erase_region_count; j++) {
 				info->start[sect_cnt] = sector;

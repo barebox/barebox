@@ -392,7 +392,7 @@ struct net_connection {
 
 static inline char *net_alloc_packet(void)
 {
-	return memalign(32, PKTSIZE);
+	return xmemalign(32, PKTSIZE);
 }
 
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,

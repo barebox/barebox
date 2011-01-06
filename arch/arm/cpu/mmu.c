@@ -95,13 +95,7 @@ void setup_dma_coherent(unsigned long offset)
 
 void *dma_alloc_coherent(size_t size)
 {
-	void *mem;
-
-	mem = memalign(4096, size);
-	if (mem)
-		return mem + dma_coherent_offset;
-
-	return NULL;
+	return xmemalign(4096, size) + dma_coherent_offset;
 }
 
 unsigned long virt_to_phys(void *virt)

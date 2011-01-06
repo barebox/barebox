@@ -365,7 +365,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler)
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
-	con->packet = memalign(32, PKTSIZE);
+	con->packet = xmemalign(32, PKTSIZE);
 	memset(con->packet, 0, PKTSIZE);
 
 	con->et = (struct ethernet *)con->packet;
@@ -658,7 +658,7 @@ static int net_init(void)
 	int i;
 
 	for (i = 0; i < PKTBUFSRX; i++)
-		NetRxPackets[i] =  memalign(32, PKTSIZE);
+		NetRxPackets[i] =  xmemalign(32, PKTSIZE);
 
 	return 0;
 }

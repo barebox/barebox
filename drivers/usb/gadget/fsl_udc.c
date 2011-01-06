@@ -1016,8 +1016,6 @@ fsl_alloc_request(struct usb_ep *_ep)
 	struct fsl_req *req;
 
 	req = xzalloc(sizeof *req);
-	if (!req)
-		return NULL;
 
 	INIT_LIST_HEAD(&req->queue);
 
@@ -2095,7 +2093,7 @@ static int struct_udc_setup(struct fsl_udc *udc,
 	udc->status_req = container_of(fsl_alloc_request(NULL),
 			struct fsl_req, req);
 	/* allocate a small amount of memory to get valid address */
-	udc->status_req->req.buf = kmalloc(8, GFP_KERNEL);
+	udc->status_req->req.buf = xmalloc(8);
 	udc->resume_state = USB_STATE_NOTATTACHED;
 	udc->usb_state = USB_STATE_POWERED;
 	udc->ep0_dir = 0;

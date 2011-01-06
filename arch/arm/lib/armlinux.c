@@ -41,6 +41,7 @@
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
 #include <asm/armlinux.h>
+#include <asm/system.h>
 
 static struct tag *params;
 static int armlinux_architecture = 0;
@@ -85,9 +86,10 @@ static void setup_memory_tags(void)
 	}
 }
 
-static void setup_commandline_tag(const char *commandline)
+static void setup_commandline_tag(const char *commandline, int swap)
 {
 	const char *p;
+	size_t words;
 
 	if (!commandline)
 		return;
@@ -102,11 +104,19 @@ static void setup_commandline_tag(const char *commandline)
 	if (*p == '\0')
 		return;
 
+	words = (strlen(p) + 1 /* NUL */ + 3 /* round up */) >> 2;
 	params->hdr.tag = ATAG_CMDLINE;
-	params->hdr.size =
-	    (sizeof (struct tag_header) + strlen(p) + 1 + 4) >> 2;
+	params->hdr.size = (sizeof(struct tag_header) >> 2) + words;
 
 	strcpy(params->u.cmdline.cmdline, p);
+
+#ifdef CONFIG_BOOT_ENDIANNESS_SWITCH
+	if (swap) {
+		u32 *cmd = (u32 *)params->u.cmdline.cmdline;
+		while (words--)
+			cmd[words] = swab32(cmd[words]);
+	}
+#endif
 
 	params = tag_next(params);
 }
@@ -156,13 +166,13 @@ static void setup_end_tag (void)
 	params->hdr.size = 0;
 }
 
-static void setup_tags(struct image_data *data)
+static void setup_tags(struct image_data *data, int swap)
 {
 	const char *commandline = getenv("bootargs");
 
 	setup_start_tag();
 	setup_memory_tags();
-	setup_commandline_tag(commandline);
+	setup_commandline_tag(commandline, swap);
 
 	if (data && data->initrd)
 		setup_initrd_tag (&data->initrd->header);
@@ -231,7 +241,7 @@ static int do_bootm_linux(struct image_data *data)
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	setup_tags(data);
+	setup_tags(data, 0);
 
 	if (relocate_image(data->os, (void *)image_get_load(os_header)))
 		return -1;
@@ -290,18 +300,21 @@ late_initcall(armlinux_register_image_handler);
 
 #ifdef CONFIG_CMD_BOOTZ
 struct zimage_header {
-	u32	unsused[9];
+	u32	unused[9];
 	u32	magic;
 	u32	start;
 	u32	end;
 };
 
+#define ZIMAGE_MAGIC 0x016F2818
+
 static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 {
 	void (*theKernel)(int zero, int arch, void *params);
-	int fd, ret;
+	int fd, ret, swap = 0;
 	struct zimage_header header;
 	void *zimage;
+	u32 end;
 
 	if (argc != 2) {
 		barebox_cmd_usage(cmdtp);
@@ -320,27 +333,53 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 		goto err_out;
 	}
 
-	if (header.magic != 0x016f2818) {
+	switch (header.magic) {
+#ifdef CONFIG_BOOT_ENDIANNESS_SWITCH
+	case swab32(ZIMAGE_MAGIC):
+		swap = 1;
+		/* fall through */
+#endif
+	case ZIMAGE_MAGIC:
+		break;
+	default:
 		printf("invalid magic 0x%08x\n", header.magic);
 		goto err_out;
 	}
 
-	zimage = xmalloc(header.end);
+	end = header.end;
+
+	if (swap)
+		end = swab32(end);
+
+	zimage = xmalloc(end);
 	memcpy(zimage, &header, sizeof(header));
 
-	ret = read(fd, zimage + sizeof(header), header.end - sizeof(header));
-	if (ret < header.end - sizeof(header)) {
+	ret = read(fd, zimage + sizeof(header), end - sizeof(header));
+	if (ret < end - sizeof(header)) {
 		printf("could not read %s\n", argv[1]);
 		goto err_out1;
 	}
 
+	if (swap) {
+		void *ptr;
+		for (ptr = zimage; ptr < zimage + end; ptr += 4)
+			*(u32 *)ptr = swab32(*(u32 *)ptr);
+	}
+
 	theKernel = zimage;
 
-	printf("loaded zImage from %s with size %d\n", argv[1], header.end);
+	printf("loaded zImage from %s with size %d\n", argv[1], end);
 
-	setup_tags(NULL);
+	setup_tags(NULL, swap);
 
 	shutdown_barebox();
+	if (swap) {
+		u32 reg;
+		__asm__ __volatile__("mrc p15, 0, %0, c1, c0" : "=r" (reg));
+		reg ^= CR_B; /* swap big-endian flag */
+		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
+	}
+
 	theKernel(0, armlinux_architecture, armlinux_bootparams);
 
 	return 0;
@@ -382,7 +421,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	if (!theKernel)
 		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-	setup_tags(NULL);
+	setup_tags(NULL, 0);
 
 	shutdown_barebox();
 	theKernel(0, armlinux_architecture, armlinux_bootparams);

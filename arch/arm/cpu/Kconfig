@@ -73,6 +73,15 @@ config CPU_BIG_ENDIAN
 	  port must properly enable any big-endian related features
 	  of your chipset/board/processor.
 
+config BOOT_ENDIANNESS_SWITCH
+	bool "Support switching of Linux kernel endianness"
+	help
+	  Say Y here if you need to switch CPU endianness before running
+	  Linux kernel, e.g. if you want big-endian Barebox to run
+	  little-endian Linux.
+
+	  Currently implemented only by "bootz" command.
+
 config ARCH_HAS_L2X0
 	bool
 

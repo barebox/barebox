@@ -57,6 +57,10 @@
 # error "unknown i.MX soc type"
 #endif
 
+/* There's a off-by-one betweem the gpio bank number and the gpiochip */
+/* range e.g. GPIO_1_5 is gpio 5 under linux */
+#define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
+
 #define GPIO_PIN_MASK 0x1f
 
 #define GPIO_PORT_SHIFT 5

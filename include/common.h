@@ -222,4 +222,23 @@ extern const char version_string[];
 
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 
+#define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
+
+#define DIV_ROUND_CLOSEST(x, divisor)(			\
+{							\
+	typeof(divisor) __divisor = divisor;		\
+	(((x) + ((__divisor) / 2)) / (__divisor));	\
+}							\
+)
+
+#define abs(x) ({                               \
+		long __x = (x);                 \
+		(__x < 0) ? -__x : __x;         \
+	})
+
+#define abs64(x) ({                             \
+		s64 __x = (x);                  \
+		(__x < 0) ? -__x : __x;         \
+	})
+
 #endif	/* __COMMON_H_ */

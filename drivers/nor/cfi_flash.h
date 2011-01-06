@@ -25,10 +25,12 @@
  */
 
 #include <driver.h>
+#include <asm/byteorder.h>
 #include <asm/io.h>
 #include <linux/mtd/mtd.h>
 
 typedef unsigned long flash_sect_t;
+typedef u64 cfiword_t;
 struct cfi_cmd_set;
 
 /*-----------------------------------------------------------------------
@@ -238,7 +240,7 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
 
 int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
-void flash_make_cmd (struct flash_info *info, uchar cmd, void *cmdbuf);
+void flash_make_cmd(struct flash_info *info, uchar cmd, cfiword_t *cmdbuf);
 
 static inline void flash_write8(u8 value, void *addr)
 {
@@ -316,26 +318,19 @@ u32 jedec_read_mfr(struct flash_info *info);
 #define bankwidth_is_8(info) 0
 #endif
 
-typedef union {
-	unsigned char c;
-	unsigned short w;
-	unsigned long l;
-	unsigned long long ll;
-} cfiword_t;
-
 static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
 	if (bankwidth_is_1(info)) {
-		debug("fw addr %p val %02x\n", addr, datum.c);
-		flash_write8(datum.c, addr);
+		debug("fw addr %p val %02x\n", addr, (u8)datum);
+		flash_write8(datum, addr);
 	} else if (bankwidth_is_2(info)) {
-		debug("fw addr %p val %04x\n", addr, datum.w);
-		flash_write16(datum.w, addr);
+		debug("fw addr %p val %04x\n", addr, (u16)datum);
+		flash_write16(datum, addr);
 	} else if (bankwidth_is_4(info)) {
-		debug("fw addr %p val %08x\n", addr, datum.l);
-		flash_write32(datum.l, addr);
+		debug("fw addr %p val %08x\n", addr, (u32)datum);
+		flash_write32(datum, addr);
 	} else if (bankwidth_is_8(info)) {
-		flash_write64(datum.ll, addr);
+		flash_write64(datum, addr);
 	}
 }
 

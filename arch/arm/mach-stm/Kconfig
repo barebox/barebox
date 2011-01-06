@@ -4,10 +4,12 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x41000000 if MACH_MX23EVK
 	default 0x42000000 if MACH_CHUMBY
+	default 0x47000000 if MACH_TX28
 
 config BOARDINFO
 	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 	default "Chumby Falconwing" if MACH_CHUMBY
+	default "Karo TX28" if MACH_TX28
 
 comment "SigmaTel/Freescale i.MX System-on-Chip"
 
@@ -17,6 +19,11 @@ choice
 config ARCH_IMX23
 	bool "i.MX23"
 	select CPU_ARM926T
+
+config ARCH_IMX28
+	bool "i.MX28"
+	select CPU_ARM926T
+	select ARCH_HAS_FEC_IMX
 
 endchoice
 
@@ -41,7 +48,36 @@ endchoice
 
 endif
 
+if ARCH_IMX28
+
+choice
+	prompt "i.MX28 Board Type"
+
+config MACH_TX28
+	bool "KARO tx28"
+	help
+	  Say Y here if you are using the KARO TX28 CPU module.
+
+endchoice
+
+endif
+
 menu "Board specific settings       "
+
+if MACH_TX28
+
+choice
+	prompt "TX28 Base Board Type"
+
+config MACH_TX28STK5
+	bool "TX28-stk5"
+	help
+	  Select this entry if you are running the TX28 CPU module on the
+	  KARO TX28 Starterkit5.
+
+endchoice
+
+endif
 
 endmenu
 

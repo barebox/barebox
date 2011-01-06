@@ -119,7 +119,7 @@ static int do_menu_entry_remove(struct cmd_menu *cm)
 	me = menu_entry_get_by_num(m, cm->num);
 
 	if (!me) {
-		eprintf("Entry '%s' not found\n", cm->num);
+		eprintf("Entry '%i' not found\n", cm->num);
 		return -EINVAL;
 	}
 

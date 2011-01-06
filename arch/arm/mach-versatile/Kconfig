@@ -1,0 +1,16 @@
+
+if ARCH_VERSATILE
+
+choice
+	prompt "ARM Board type"
+
+config MACH_VERSATILEPB
+	bool "ARM Versatile/PB (ARM926EJ-S)"
+	select ARM_AMBA
+	select CLKDEV_LOOKUP
+
+endchoice
+
+source arch/arm/boards/versatile/Kconfig
+
+endif

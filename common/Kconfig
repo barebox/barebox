@@ -414,6 +414,9 @@ config DEFAULT_ENVIRONMENT_PATH
 	  Relative pathes will be relative to the barebox Toplevel dir, but absolute
 	  pathes are fine aswell.
 
+config POLLER
+	bool "generic polling infrastructure"
+
 endmenu
 
 menu "Debugging                     "

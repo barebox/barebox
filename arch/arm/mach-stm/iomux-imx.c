@@ -20,53 +20,76 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
+#include <errno.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
 
 #define HW_PINCTRL_CTRL 0x000
 #define HW_PINCTRL_MUXSEL0 0x100
+
+#ifdef CONFIG_ARCH_IMX23
 #define HW_PINCTRL_DRIVE0 0x200
 #define HW_PINCTRL_PULL0 0x400
 #define HW_PINCTRL_DOUT0 0x500
 #define HW_PINCTRL_DIN0 0x600
 #define HW_PINCTRL_DOE0 0x700
 
-static uint32_t calc_mux_reg(uint32_t no)
+#define MAX_GPIO_NO 95
+#endif
+
+#ifdef CONFIG_ARCH_IMX28
+#define HW_PINCTRL_DRIVE0 0x300
+#define HW_PINCTRL_PULL0 0x600
+#define HW_PINCTRL_DOUT0 0x700
+#define HW_PINCTRL_DIN0 0x900
+#define HW_PINCTRL_DOE0 0xb00
+
+#define MAX_GPIO_NO 159
+#endif
+
+static unsigned calc_mux_reg(unsigned no)
 {
 	/* each register controls 16 pads */
 	return ((no >> 4) << 4) + HW_PINCTRL_MUXSEL0;
 }
 
-static uint32_t calc_strength_reg(uint32_t no)
+static unsigned calc_strength_reg(unsigned no)
 {
 	/* each register controls 8 pads */
 	return  ((no >> 3) << 4) + HW_PINCTRL_DRIVE0;
 }
 
-static uint32_t calc_pullup_reg(uint32_t no)
+static unsigned calc_pullup_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_PULL0;
 }
 
-static uint32_t calc_output_enable_reg(uint32_t no)
+static unsigned calc_output_enable_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_DOE0;
 }
 
-static uint32_t calc_output_reg(uint32_t no)
+static unsigned calc_output_reg(unsigned no)
 {
 	/* each register controls 32 pads */
 	return  ((no >> 5) << 4) + HW_PINCTRL_DOUT0;
 }
 
-/**
- * @param[in] m One of the defines from iomux-mx23.h to configure *one* pin
- */
-void imx_gpio_mode(unsigned m)
+static unsigned calc_input_reg(unsigned no)
 {
-	uint32_t reg_offset, gpio_pin, reg;
+	/* each register controls 32 pads */
+	return  ((no >> 5) << 4) + HW_PINCTRL_DIN0;
+}
+
+/**
+ * @param[in] m One pin define per call from iomux-mx23.h/iomux-mx28.h
+ */
+void imx_gpio_mode(uint32_t m)
+{
+	uint32_t reg;
+	unsigned gpio_pin, reg_offset;
 
 	gpio_pin = GET_GPIO_NO(m);
 
@@ -77,7 +100,7 @@ void imx_gpio_mode(unsigned m)
 	writel(reg, IMX_IOMUXC_BASE + reg_offset);
 
 	/* some pins are disabled when configured for GPIO */
-	if ((gpio_pin > 95) && (GET_FUNC(m) == IS_GPIO)) {
+	if ((gpio_pin > MAX_GPIO_NO) && (GET_FUNC(m) == IS_GPIO)) {
 		printf("Cannot configure pad %d to GPIO\n", gpio_pin);
 		return;
 	}
@@ -92,26 +115,87 @@ void imx_gpio_mode(unsigned m)
 	if (VE_PRESENT(m)) {
 		reg_offset = calc_strength_reg(gpio_pin);
 		if (GET_VOLTAGE(m) == 1)
-			writel(0x1 << (((gpio_pin % 8) << 2) + 2), IMX_IOMUXC_BASE + reg_offset + 4);
+			writel(0x1 << (((gpio_pin % 8) << 2) + 2),
+				IMX_IOMUXC_BASE + reg_offset + BIT_SET);
 		else
-			writel(0x1 << (((gpio_pin % 8) << 2) + 2), IMX_IOMUXC_BASE + reg_offset + 8);
+			writel(0x1 << (((gpio_pin % 8) << 2) + 2),
+				IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
 	}
 
 	if (PE_PRESENT(m)) {
 		reg_offset = calc_pullup_reg(gpio_pin);
-		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + (GET_PULLUP(m) == 1 ? 4 : 8));
+		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
+				(GET_PULLUP(m) == 1 ? BIT_SET : BIT_CLR));
 	}
 
 	if (GET_FUNC(m) == IS_GPIO) {
 		if (GET_GPIODIR(m) == 1) {
 			/* first set the output value */
 			reg_offset = calc_output_reg(gpio_pin);
-			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + (GET_GPIOVAL(m) == 1 ? 4 : 8));
+			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE +
+				reg_offset + (GET_GPIOVAL(m) == 1 ? BIT_SET : BIT_CLR));
 			/* then the direction */
 			reg_offset = calc_output_enable_reg(gpio_pin);
-			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + 4);
+			writel(0x1 << (gpio_pin % 32),
+				IMX_IOMUXC_BASE + reg_offset + BIT_SET);
 		} else {
-			writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset + 8);
+			/* then the direction */
+			reg_offset = calc_output_enable_reg(gpio_pin);
+			writel(0x1 << (gpio_pin % 32),
+				IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
 		}
 	}
+}
+
+int gpio_direction_input(unsigned gpio)
+{
+	unsigned reg_offset;
+
+	if (gpio > MAX_GPIO_NO)
+		return -EINVAL;
+
+	reg_offset = calc_output_enable_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE + reg_offset + BIT_CLR);
+
+	return 0;
+}
+
+int gpio_direction_output(unsigned gpio, int val)
+{
+	unsigned reg_offset;
+
+	if (gpio > MAX_GPIO_NO)
+		return -EINVAL;
+
+	/* first set the output value... */
+	reg_offset = calc_output_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE +
+		reg_offset + (val != 0 ? BIT_SET : BIT_CLR));
+	/* ...then the direction */
+	reg_offset = calc_output_enable_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE + reg_offset + BIT_SET);
+
+	return 0;
+}
+
+void gpio_set_value(unsigned gpio, int val)
+{
+	unsigned reg_offset;
+
+	reg_offset = calc_output_reg(gpio);
+	writel(0x1 << (gpio % 32), IMX_IOMUXC_BASE +
+				reg_offset + (val != 0 ? BIT_SET : BIT_CLR));
+}
+
+int gpio_get_value(unsigned gpio)
+{
+	uint32_t reg;
+	unsigned reg_offset;
+
+	reg_offset = calc_input_reg(gpio);
+	reg = readl(IMX_IOMUXC_BASE + reg_offset);
+	if (reg & (0x1 << (gpio % 32)))
+		return 1;
+
+	return 0;
 }

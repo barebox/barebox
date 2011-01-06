@@ -148,7 +148,7 @@ between @b barebox releases.
 - gpio_no: Architecture dependend GPIO number
 - initial_value: Output value
 
-<p> To avoid glitches on the pad the routines will first sett up the
+<p> To avoid glitches on the pad the routines will first set up the
 pad's value and afterwards switch the pad to output (if the silicon is
 able to do so). If the pad is already configured in non-GPIO mode (if
 available), this command may silently fail. </p>

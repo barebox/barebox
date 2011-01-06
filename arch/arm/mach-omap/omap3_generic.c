@@ -66,29 +66,98 @@ EXPORT_SYMBOL(reset_cpu);
 /**
  * @brief Low level CPU type
  *
- * @return CPU_3430
+ * @return Detected CPU type
  */
 u32 get_cpu_type(void)
 {
-	/* FIXME: need to get register defines for 3430 */
+	u32 idcode_val;
+	u16 hawkeye;
+
+	idcode_val = readl(IDCODE_REG);
+
+	hawkeye = get_hawkeye(idcode_val);
+
+	if (hawkeye == OMAP_HAWKEYE_34XX)
+		return CPU_3430;
+
+	if (hawkeye == OMAP_HAWKEYE_36XX)
+		return CPU_3630;
+
+	/*
+	 * Fallback to OMAP3430 as default.
+	 */
 	return CPU_3430;
 }
 
 /**
- * @brief Extract the OMAP ES rev
+ * @brief Extract the OMAP ES revision
  *
- * @return CPU_ES version
+ * The significance of the CPU revision depends upon the cpu type.
+ * Latest known revision is considered default.
+ *
+ * @return silicon version
  */
 u32 get_cpu_rev(void)
 {
 	u32 idcode_val;
+	u32 version, retval;
+
 	idcode_val = readl(IDCODE_REG);
-	if ((idcode_val & (HAWKEYE_MASK | VERSION_MASK)) == HAWKEYE_ES2_1)
-		return CPU_ES2P1;
-	if ((idcode_val & HAWKEYE_MASK) == HAWKEYE_ES2)
-		return CPU_ES2;
-	/* unsupported! */
-	return CPU_ES1;
+
+	version = get_version(idcode_val);
+
+	switch (get_cpu_type()) {
+	case CPU_3630:
+		switch (version) {
+		case 0:
+			retval = OMAP36XX_ES1;
+			break;
+		case 1:
+			retval = OMAP36XX_ES1_1;
+			break;
+		case 2:
+			/*
+			 * Fall through the default case.
+			 */
+		default:
+			retval = OMAP36XX_ES1_2;
+		}
+		break;
+	case CPU_3430:
+		/*
+		 * Same as default case
+		 */
+	default:
+		/*
+		 * On OMAP3430 ES1.0 the IDCODE register is not exposed on L4.
+		 * Use CPU ID to check for the same.
+		 */
+		__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 0":"=r"(retval));
+		if ((retval & 0xf) == 0x0) {
+			retval = OMAP34XX_ES1;
+		} else {
+			switch (version) {
+			case 0: /* This field was not set in early samples */
+			case 1:
+				retval = OMAP34XX_ES2;
+				break;
+			case 2:
+				retval = OMAP34XX_ES2_1;
+				break;
+			case 3:
+				retval = OMAP34XX_ES3;
+				break;
+			case 4:
+				/*
+				 * Same as default case
+				 */
+			default:
+				retval = OMAP34XX_ES3_1;
+			}
+		}
+	}
+
+	return retval;
 }
 
 /**

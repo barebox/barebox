@@ -628,19 +628,29 @@ int net_receive(unsigned char *pkt, int len)
 {
 	struct ethernet *et = (struct ethernet *)pkt;
 	int et_protlen = ntohs(et->et_protlen);
+	int ret;
 
-	if (len < ETHER_HDR_SIZE)
-		return 0;
+	led_trigger_network(LED_TRIGGER_NET_RX);
+
+	if (len < ETHER_HDR_SIZE) {
+		ret = 0;
+		goto out;
+	}
 
 	switch (et_protlen) {
 	case PROT_ARP:
-		return net_handle_arp(pkt, len);
+		ret = net_handle_arp(pkt, len);
+		break;
 	case PROT_IP:
-		return net_handle_ip(pkt, len);
+		ret = net_handle_ip(pkt, len);
+		break;
 	default:
 		debug("%s: got unknown protocol type: %d\n", __func__, et_protlen);
-		return 1;
+		ret = 1;
+		break;
 	}
+out:
+	return ret;
 }
 
 static int net_init(void)

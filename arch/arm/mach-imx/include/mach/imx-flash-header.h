@@ -20,6 +20,18 @@
 	#define FLASH_HEADER_OFFSET 0x0400
 #endif
 
+#define __flash_header_0x1000	__section(.flash_header_0x1000)
+#define __dcd_entry_0x1000	__section(.dcd_entry_0x1000)
+#define __image_len_0x1000	__section(.image_len_0x1000)
+
+#define __flash_header_0x0100	__section(.flash_header_0x0100)
+#define __dcd_entry_0x0100	__section(.dcd_entry_0x0100)
+#define __image_len_0x0100	__section(.image_len_0x0100)
+
+#define __flash_header_0x0400	__section(.flash_header_0x0400)
+#define __dcd_entry_0x0400	__section(.dcd_entry_0x0400)
+#define __image_len_0x0400	__section(.image_len_0x0400)
+
 /*
  * NOR is not automatically copied anywhere by the boot ROM
  */

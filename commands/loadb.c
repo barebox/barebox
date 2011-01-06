@@ -625,7 +625,6 @@ static ulong load_serial_ymodem(void)
 	int res, wr;
 	connection_info_t info;
 	char ymodemBuf[1024];
-	ulong store_addr = ~0;
 	ulong addr = 0;
 
 	size = 0;
@@ -802,7 +801,7 @@ static const __maybe_unused char cmd_loadb_help[] =
     "  -f file   - where to download to - defaults to " DEF_FILE "\n"
     "  -o offset - what offset to download - defaults to 0\n"
     "  -b baud   - baudrate at which to download - defaults to "
-    "console baudrate"
+    "console baudrate\n"
     "  -c        - Create file if it is not present - default disabled";
 #ifdef CONFIG_CMD_LOADB
 BAREBOX_CMD_START(loadb)

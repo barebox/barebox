@@ -61,6 +61,10 @@ config ARCH_S3C24xx
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
+config ARCH_VERSATILE
+	bool "ARM Versatile boards (ARM926EJ-S)"
+	select CPU_ARM926T
+
 endchoice
 
 source arch/arm/cpu/Kconfig
@@ -72,6 +76,7 @@ source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-s3c24xx/Kconfig
+source arch/arm/mach-versatile/Kconfig
 
 config AEABI
 	bool "Use the ARM EABI to compile barebox"

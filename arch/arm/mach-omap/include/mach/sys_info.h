@@ -44,27 +44,27 @@
 #define DDR_133		133    /* most combo, some mem d-boards */
 #define DDR_165		165    /* future parts */
 
-#define CPU_3430	0x3430
-#define CPU_2430	0x2430
-#define CPU_2420	0x2420
-#define CPU_1710	0x1710
 #define CPU_1610	0x1610
+#define CPU_1710	0x1710
+#define CPU_2420	0x2420
+#define CPU_2430	0x2430
+#define CPU_3430	0x3430
+#define CPU_3630	0x3630
 
 /**
- * CPU revision
+ * Define CPU revisions
  */
-#define CPU_ES1		1
-#define CPU_ES1P1	2
-#define CPU_ES1P2	3
-#define CPU_ES2		4
-#define CPU_ES2P1	5
-#define CPU_ES2P2	6
-#define CPU_ES3		7
-#define CPU_ES3P1	8
-#define CPU_ES3P2	9
-#define CPU_ES4		10
-#define CPU_ES4P1	11
-#define CPU_ES4P2	12
+#define	cpu_revision(cpu,rev)	(((cpu) << 16) | (rev))
+
+#define OMAP34XX_ES1		cpu_revision(CPU_3430, 0)
+#define OMAP34XX_ES2		cpu_revision(CPU_3430, 1)
+#define OMAP34XX_ES2_1		cpu_revision(CPU_3430, 2)
+#define OMAP34XX_ES3		cpu_revision(CPU_3430, 3)
+#define OMAP34XX_ES3_1		cpu_revision(CPU_3430, 4)
+
+#define OMAP36XX_ES1		cpu_revision(CPU_3630, 0)
+#define OMAP36XX_ES1_1		cpu_revision(CPU_3630, 1)
+#define OMAP36XX_ES1_2		cpu_revision(CPU_3630, 2)
 
 #define GPMC_MUXED		1
 #define GPMC_NONMUXED		0
@@ -80,6 +80,12 @@
 #define EMU_DEVICE              0x1
 #define HS_DEVICE               0x2
 #define GP_DEVICE               0x3
+
+/**
+ * Hawkeye definitions to identify silicon families
+ */
+#define OMAP_HAWKEYE_34XX	0xB7AE
+#define OMAP_HAWKEYE_36XX	0xB891
 
 /** These are implemented by the System specific code in omapX-generic.c */
 u32 get_cpu_type(void);

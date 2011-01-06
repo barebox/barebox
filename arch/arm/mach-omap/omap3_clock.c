@@ -65,12 +65,20 @@ static void per_clocks_enable(void);
  */
 static u32 get_osc_clk_speed(void)
 {
-	u32 start, cstart, cend, cdiff, val;
+	u32 start, cstart, cend, cdiff, cdiv, val;
 
 	val = readl(PRM_REG(CLKSRC_CTRL));
-	/* If SYS_CLK is being divided by 2, remove for now */
-	val = (val & (~(0x1 << 7))) | (0x1 << 6);
-	writel(val, PRM_REG(CLKSRC_CTRL));
+
+	if (val & SYSCLK_DIV_2)
+		cdiv = 2;
+	else if (val & SYSCLK_DIV_1)
+		cdiv = 1;
+	else
+		/*
+		 * Should never reach here!
+		 * To proceed, assume divider as 1.
+		 */
+		cdiv = 1;
 
 	/* enable timer2 */
 	val = readl(CM_REG(CLKSEL_WKUP)) | (0x1 << 0);
@@ -96,6 +104,9 @@ static u32 get_osc_clk_speed(void)
 	/* get end sys_clk count */
 	cend = readl(OMAP_GPTIMER1_BASE + TCRR);
 	cdiff = cend - cstart;	/* get elapsed ticks */
+
+	if (cdiv == 2)
+		cdiff *= 2;
 
 	/* based on number of ticks assign speed */
 	if (cdiff > 19000)
@@ -137,89 +148,87 @@ static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel)
 }
 
 /**
- * @brief Inits clocks for PRCM
+ * @brief Initialize CORE DPLL for OMAP34x
  *
- * This is called from SRAM, or Flash (using temp SRAM stack).
- * if CONFIG_OMAP3_COPY_CLOCK_SRAM is defined, @ref go_to_speed
- *
- * @return void
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
  */
-void prcm_init(void)
+static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	int xip_safe;
-	u32 osc_clk = 0, sys_clkin_sel = 0;
-	u32 clk_index, sil_index = 0;
-	struct dpll_param *dpll_param_p;
+	struct dpll_param *dp = get_core_dpll_param_34x(cpu_rev);
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
 	int p0, p1, p2, p3;
-	f_lock_pll = (void *)(OMAP_SRAM_INTVECT + OMAP_SRAM_INTVECT_COPYSIZE);
 #endif
 
-	xip_safe = running_in_sram();
+	dp += clk_sel;
 
-	/* Gauge the input clock speed and find out the sys_clkin_sel
-	 * value corresponding to the input clock.
-	 */
-	osc_clk = get_osc_clk_speed();
-	get_sys_clkin_sel(osc_clk, &sys_clkin_sel);
-	/* set input crystal speed */
-	sr32(PRM_REG(CLKSEL), 0, 3, sys_clkin_sel);
-
-	/* If the input clock is greater than 19.2M always divide/2 */
-	if (sys_clkin_sel > 2) {
-		/* input clock divider */
-		sr32(PRM_REG(CLKSRC_CTRL), 6, 2, 2);
-		clk_index = sys_clkin_sel / 2;
-	} else {
-		/* input clock divider */
-		sr32(PRM_REG(CLKSRC_CTRL), 6, 2, 1);
-		clk_index = sys_clkin_sel;
-	}
-
-	/* Unlock MPU DPLL (slows things down, and needed later) */
-	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOW_POWER_BYPASS);
-	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_MPU), LDELAY);
-
-	/* Getting the base address of Core DPLL param table */
-	dpll_param_p = (struct dpll_param *)get_core_dpll_param();
-	/* Moving it to the right sysclk and ES rev base */
-	dpll_param_p = dpll_param_p + MAX_SIL_INDEX * clk_index + sil_index;
-	if (xip_safe) {
-		/* CORE DPLL */
-		/* sr32(CM_REG(CLKSEL2_EMU)) set override to work when asleep */
+	if (running_in_sram()) {
 		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_FAST_RELOCK_BYPASS);
 		wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_CKGEN), LDELAY);
-		/* For 3430 ES1.0 Errata 1.50, default value directly doesnt
-		   work. write another value and then default value. */
+
+		/*
+		 * OMAP3430 ES1.0 Errata 1.50
+		 * Writing default value doesn't work. First write a different
+		 * value and then write the default value.
+		 */
+
+		/* CM_CLKSEL1_EMU[DIV_DPLL3] */
 		sr32(CM_REG(CLKSEL1_EMU), 16, 5, CORE_M3X2 + 1);
 		sr32(CM_REG(CLKSEL1_EMU), 16, 5, CORE_M3X2);
-		sr32(CM_REG(CLKSEL1_PLL), 27, 2, dpll_param_p->m2);
-		sr32(CM_REG(CLKSEL1_PLL), 16, 11, dpll_param_p->m);
-		sr32(CM_REG(CLKSEL1_PLL), 8, 7, dpll_param_p->n);
+
+		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
+		sr32(CM_REG(CLKSEL1_PLL), 27, 2, dp->m2);
+
+		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
+		sr32(CM_REG(CLKSEL1_PLL), 16, 11, dp->m);
+
+		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
+		sr32(CM_REG(CLKSEL1_PLL), 8, 7, dp->n);
+
+		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
 		sr32(CM_REG(CLKSEL1_PLL), 6, 1, 0);
+
 		sr32(CM_REG(CLKSEL_CORE), 8, 4, CORE_SSI_DIV);
 		sr32(CM_REG(CLKSEL_CORE), 4, 2, CORE_FUSB_DIV);
 		sr32(CM_REG(CLKSEL_CORE), 2, 2, CORE_L4_DIV);
 		sr32(CM_REG(CLKSEL_CORE), 0, 2, CORE_L3_DIV);
-		sr32(CM_REG(CLKSEL_GFX), 0, 3, GFX_DIV);
+		sr32(CM_REG(CLKSEL_GFX), 0, 3, GFX_DIV_34X);
 		sr32(CM_REG(CLKSEL_WKUP), 1, 2, WKUP_RSM);
-		sr32(CM_REG(CLKEN_PLL), 4, 4, dpll_param_p->fsel);
+
+		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
+		sr32(CM_REG(CLKEN_PLL), 4, 4, dp->fsel);
+
+		/* Lock Mode */
 		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
 		wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_CKGEN), LDELAY);
 	} else if (running_in_flash()) {
 #ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-		/* if running from flash,
-		 * jump to small relocated code area in SRAM.
+		f_lock_pll = (void *)(OMAP_SRAM_INTVECT +
+					OMAP_SRAM_INTVECT_COPYSIZE);
+
+		/*
+		 * Jump to small relocated code area in SRAM.
 		 */
 		p0 = readl(CM_REG(CLKEN_PLL));
 		sr32((u32) &p0, 0, 3, PLL_FAST_RELOCK_BYPASS);
-		sr32((u32) &p0, 4, 4, dpll_param_p->fsel);
+
+		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
+		sr32((u32) &p0, 4, 4, dp->fsel);
 
 		p1 = readl(CM_REG(CLKSEL1_PLL));
-		sr32((u32) &p1, 27, 2, dpll_param_p->m2);
-		sr32((u32) &p1, 16, 11, dpll_param_p->m);
-		sr32((u32) &p1, 8, 7, dpll_param_p->n);
-		sr32((u32) &p1, 6, 1, 0);	/* set source for 96M */
+
+		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
+		sr32((u32) &p1, 27, 2, dp->m2);
+
+		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
+		sr32((u32) &p1, 16, 11, dp->m);
+
+		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
+		sr32((u32) &p1, 8, 7, dp->n);
+
+		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
+		sr32((u32) &p1, 6, 1, 0);
+
 		p2 = readl(CM_REG(CLKSEL_CORE));
 		sr32((u32) &p2, 8, 4, CORE_SSI_DIV);
 		sr32((u32) &p2, 4, 2, CORE_FUSB_DIV);
@@ -234,70 +243,386 @@ void prcm_init(void)
 		hang();
 #endif
 	}
+}
 
-	/* PER DPLL */
+/**
+ * @brief Initialize PER DPLL for OMAP34x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_per_dpll_param_34x(cpu_rev);
+
+	dp += clk_sel;
+
+	/*
+	 * OMAP3430 ES1.0 Errata 1.50
+	 * Writing default value doesn't work. First write a different
+	 * value and then write the default value.
+	 */
+
 	sr32(CM_REG(CLKEN_PLL), 16, 3, PLL_STOP);
 	wait_on_value((0x1 << 1), 0, CM_REG(IDLEST_CKGEN), LDELAY);
 
-	/* Getting the base address to PER  DPLL param table */
-	/* Set N */
-	dpll_param_p = (struct dpll_param *)get_per_dpll_param();
-	/* Moving it to the right sysclk base */
-	dpll_param_p = dpll_param_p + clk_index;
-	/* Errata 1.50 Workaround for 3430 ES1.0 only */
-	/* If using default divisors, write default divisor + 1
-	   and then the actual divisor value */
-	/* Need to change it to silicon and revisino check */
-	if (1) {
-		sr32(CM_REG(CLKSEL1_EMU), 24, 5, PER_M6X2 + 1);	/* set M6 */
-		sr32(CM_REG(CLKSEL1_EMU), 24, 5, PER_M6X2);	/* set M6 */
-		sr32(CM_REG(CLKSEL_CAM), 0, 5, PER_M5X2 + 1);	/* set M5 */
-		sr32(CM_REG(CLKSEL_CAM), 0, 5, PER_M5X2);	/* set M5 */
-		sr32(CM_REG(CLKSEL_DSS), 0, 5, PER_M4X2 + 1);	/* set M4 */
-		sr32(CM_REG(CLKSEL_DSS), 0, 5, PER_M4X2);	/* set M4 */
-		sr32(CM_REG(CLKSEL_DSS), 8, 5, PER_M3X2 + 1);	/* set M3 */
-		sr32(CM_REG(CLKSEL_DSS), 8, 5, PER_M3X2);	/* set M3 */
-		/* set M2 */
-		sr32(CM_REG(CLKSEL3_PLL), 0, 5, dpll_param_p->m2 + 1);
-		sr32(CM_REG(CLKSEL3_PLL), 0, 5, dpll_param_p->m2);
-	} else {
-		sr32(CM_REG(CLKSEL1_EMU), 24, 5, PER_M6X2);	/* set M6 */
-		sr32(CM_REG(CLKSEL_CAM), 0, 5, PER_M5X2);	/* set M5 */
-		sr32(CM_REG(CLKSEL_DSS), 0, 5, PER_M4X2);	/* set M4 */
-		sr32(CM_REG(CLKSEL_DSS), 8, 5, PER_M3X2);	/* set M3 */
-		sr32(CM_REG(CLKSEL3_PLL), 0, 5, dpll_param_p->m2);
-	}
-	sr32(CM_REG(CLKSEL2_PLL), 8, 11, dpll_param_p->m);	/* set m */
-	sr32(CM_REG(CLKSEL2_PLL), 0, 7, dpll_param_p->n);	/* set n */
-	sr32(CM_REG(CLKEN_PLL), 20, 4, dpll_param_p->fsel);	/* FREQSEL */
-	sr32(CM_REG(CLKEN_PLL), 16, 3, PLL_LOCK);	/* lock mode */
+	/* Set M6 */
+	sr32(CM_REG(CLKSEL1_EMU), 24, 5, PER_M6X2 + 1);
+	sr32(CM_REG(CLKSEL1_EMU), 24, 5, PER_M6X2);
+
+	/* Set M5 */
+	sr32(CM_REG(CLKSEL_CAM), 0, 5, PER_M5X2 + 1);
+	sr32(CM_REG(CLKSEL_CAM), 0, 5, PER_M5X2);
+
+	/* Set M4 */
+	sr32(CM_REG(CLKSEL_DSS), 0, 5, PER_M4X2 + 1);
+	sr32(CM_REG(CLKSEL_DSS), 0, 5, PER_M4X2);
+
+	/* Set M3 */
+	sr32(CM_REG(CLKSEL_DSS), 8, 5, PER_M3X2 + 1);
+	sr32(CM_REG(CLKSEL_DSS), 8, 5, PER_M3X2);
+
+	/* Set M2 */
+	sr32(CM_REG(CLKSEL3_PLL), 0, 5, dp->m2 + 1);
+	sr32(CM_REG(CLKSEL3_PLL), 0, 5, dp->m2);
+
+	/* M (PERIPH_DPLL_MULT): CM_CLKSEL2_PLL[8:18] */
+	sr32(CM_REG(CLKSEL2_PLL), 8, 11, dp->m);
+
+	/* N (PERIPH_DPLL_DIV): CM_CLKSEL2_PLL[0:6] */
+	sr32(CM_REG(CLKSEL2_PLL), 0, 7, dp->n);
+
+	/* FREQSEL (PERIPH_DPLL_FREQSEL): CM_CLKEN_PLL[20:23] */
+	sr32(CM_REG(CLKEN_PLL), 20, 4, dp->fsel);
+
+	/* LOCK MODE (EN_PERIPH_DPLL): CM_CLKEN_PLL[16:18] */
+	sr32(CM_REG(CLKEN_PLL), 16, 3, PLL_LOCK);
 	wait_on_value((0x1 << 1), 2, CM_REG(IDLEST_CKGEN), LDELAY);
+}
 
-	/* Getting the base address to MPU DPLL param table */
-	dpll_param_p = (struct dpll_param *)get_mpu_dpll_param();
-	/* Moving it to the right sysclk and ES rev base */
-	dpll_param_p = dpll_param_p + MAX_SIL_INDEX * clk_index + sil_index;
-	/* MPU DPLL (unlocked already) */
-	sr32(CM_REG(CLKSEL2_PLL_MPU), 0, 5, dpll_param_p->m2);	/* Set M2 */
-	sr32(CM_REG(CLKSEL1_PLL_MPU), 8, 11, dpll_param_p->m);	/* Set M */
-	sr32(CM_REG(CLKSEL1_PLL_MPU), 0, 7, dpll_param_p->n);	/* Set N */
-	sr32(CM_REG(CLKEN_PLL_MPU), 4, 4, dpll_param_p->fsel);	/* FREQSEL */
-	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOCK);	/* lock mode */
-	wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_PLL_MPU), LDELAY);
+/**
+ * @brief Initialize MPU DPLL for OMAP34x
+ *
+ * The MPU DPLL is already unlocked when control reaches here. This
+ * function doesn't lock the DPLL either - defers to the caller.
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_mpu_dpll_param_34x(cpu_rev);
 
-	/* Getting the base address to IVA DPLL param table */
-	dpll_param_p = (struct dpll_param *)get_iva_dpll_param();
-	/* Moving it to the right sysclk and ES rev base */
-	dpll_param_p = dpll_param_p + MAX_SIL_INDEX * clk_index + sil_index;
-	/* IVA DPLL (set to 12*20=240MHz) */
+	dp += clk_sel;
+
+	/* M2 (MPU_DPLL_CLKOUT_DIV) : CM_CLKSEL2_PLL_MPU[0:4] */
+	sr32(CM_REG(CLKSEL2_PLL_MPU), 0, 5, dp->m2);
+
+	/* M (MPU_DPLL_MULT) : CM_CLKSEL2_PLL_MPU[8:18] */
+	sr32(CM_REG(CLKSEL1_PLL_MPU), 8, 11, dp->m);
+
+	/* N (MPU_DPLL_DIV) : CM_CLKSEL2_PLL_MPU[0:6] */
+	sr32(CM_REG(CLKSEL1_PLL_MPU), 0, 7, dp->n);
+
+	/* FREQSEL (MPU_DPLL_FREQSEL) : CM_CLKEN_PLL_MPU[4:7] */
+	sr32(CM_REG(CLKEN_PLL_MPU), 4, 4, dp->fsel);
+}
+
+/**
+ * @brief Initialize IVA DPLL for OMAP34x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_iva_dpll_param_34x(cpu_rev);
+
+	dp += clk_sel;
+
+	/* EN_IVA2_DPLL : CM_CLKEN_PLL_IVA2[0:2] */
 	sr32(CM_REG(CLKEN_PLL_IVA2), 0, 3, PLL_STOP);
 	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_IVA2), LDELAY);
-	sr32(CM_REG(CLKSEL2_PLL_IVA2), 0, 5, dpll_param_p->m2);	/* set M2 */
-	sr32(CM_REG(CLKSEL1_PLL_IVA2), 8, 11, dpll_param_p->m);	/* set M */
-	sr32(CM_REG(CLKSEL1_PLL_IVA2), 0, 7, dpll_param_p->n);	/* set N */
-	sr32(CM_REG(CLKEN_PLL_IVA2), 4, 4, dpll_param_p->fsel);	/* FREQSEL */
-	sr32(CM_REG(CLKEN_PLL_IVA2), 0, 3, PLL_LOCK);	/* lock mode */
+
+	/* M2 (IVA2_DPLL_CLKOUT_DIV) : CM_CLKSEL2_PLL_IVA2[0:4] */
+	sr32(CM_REG(CLKSEL2_PLL_IVA2), 0, 5, dp->m2);
+
+	/* M (IVA2_DPLL_MULT) : CM_CLKSEL1_PLL_IVA2[8:18] */
+	sr32(CM_REG(CLKSEL1_PLL_IVA2), 8, 11, dp->m);
+
+	/* N (IVA2_DPLL_DIV) : CM_CLKSEL1_PLL_IVA2[0:6] */
+	sr32(CM_REG(CLKSEL1_PLL_IVA2), 0, 7, dp->n);
+
+	/* FREQSEL (IVA2_DPLL_FREQSEL) : CM_CLKEN_PLL_IVA2[4:7] */
+	sr32(CM_REG(CLKEN_PLL_IVA2), 4, 4, dp->fsel);
+
+	/* LOCK (MODE (EN_IVA2_DPLL) : CM_CLKEN_PLL_IVA2[0:2] */
+	sr32(CM_REG(CLKEN_PLL_IVA2), 0, 3, PLL_LOCK);
 	wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_PLL_IVA2), LDELAY);
+}
+
+/**
+ * @brief Initialize CORE DPLL for OMAP36x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_core_dpll_param_36x(cpu_rev);
+#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
+	int p0, p1, p2, p3;
+#endif
+
+	dp += clk_sel;
+
+	if (running_in_sram()) {
+		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_FAST_RELOCK_BYPASS);
+		wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_CKGEN), LDELAY);
+
+		/* CM_CLKSEL1_EMU[DIV_DPLL3] */
+		sr32(CM_REG(CLKSEL1_EMU), 16, 5, CORE_M3X2);
+
+		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
+		sr32(CM_REG(CLKSEL1_PLL), 27, 5, dp->m2);
+
+		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
+		sr32(CM_REG(CLKSEL1_PLL), 16, 11, dp->m);
+
+		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
+		sr32(CM_REG(CLKSEL1_PLL), 8, 7, dp->n);
+
+		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
+		sr32(CM_REG(CLKSEL1_PLL), 6, 1, 0);
+
+		sr32(CM_REG(CLKSEL_CORE), 8, 4, CORE_SSI_DIV);
+		sr32(CM_REG(CLKSEL_CORE), 4, 2, CORE_FUSB_DIV);
+		sr32(CM_REG(CLKSEL_CORE), 2, 2, CORE_L4_DIV);
+		sr32(CM_REG(CLKSEL_CORE), 0, 2, CORE_L3_DIV);
+		sr32(CM_REG(CLKSEL_GFX),  0, 3, GFX_DIV_36X);
+		sr32(CM_REG(CLKSEL_WKUP), 1, 2, WKUP_RSM);
+
+		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
+		sr32(CM_REG(CLKEN_PLL), 4, 4, dp->fsel);
+
+		/* Lock Mode */
+		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
+		wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_CKGEN), LDELAY);
+	} else if (running_in_flash()) {
+#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
+		f_lock_pll = (void *)(OMAP_SRAM_INTVECT +
+					OMAP_SRAM_INTVECT_COPYSIZE);
+
+		/*
+		 * Jump to small relocated code area in SRAM.
+		 */
+		p0 = readl(CM_REG(CLKEN_PLL));
+		sr32((u32) &p0, 0, 3, PLL_FAST_RELOCK_BYPASS);
+
+		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
+		sr32((u32) &p0, 4, 4, dp->fsel);
+
+		p1 = readl(CM_REG(CLKSEL1_PLL));
+
+		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
+		sr32((u32) &p1, 27, 5, dp->m2);
+
+		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
+		sr32((u32) &p1, 16, 11, dp->m);
+
+		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
+		sr32((u32) &p1, 8, 7, dp->n);
+
+		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
+		sr32((u32) &p1, 6, 1, 0);
+
+		p2 = readl(CM_REG(CLKSEL_CORE));
+		sr32((u32) &p2, 8, 4, CORE_SSI_DIV);
+		sr32((u32) &p2, 4, 2, CORE_FUSB_DIV);
+		sr32((u32) &p2, 2, 2, CORE_L4_DIV);
+		sr32((u32) &p2, 0, 2, CORE_L3_DIV);
+
+		p3 = CM_REG(IDLEST_CKGEN);
+
+		(*f_lock_pll) (p0, p1, p2, p3);
+#else
+		/***Oopps.. Wrong .config!! *****/
+		hang();
+#endif
+	}
+}
+
+/**
+ * @brief Initialize PER DPLL for OMAP36x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_per_dpll_36x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param_per_36x *dp = get_per_dpll_param_36x(cpu_rev);
+
+	dp += clk_sel;
+
+	sr32(CM_REG(CLKEN_PLL), 16, 3, PLL_STOP);
+	wait_on_value((0x1 << 1), 0, CM_REG(IDLEST_CKGEN), LDELAY);
+
+	/* Set M6 (DIV_DPLL4): CM_CLKSEL1_EMU[24:29] */
+	sr32(CM_REG(CLKSEL1_EMU), 24, 6, dp->m6);
+
+	/* Set M5 (CLKSEL_CAM): CM_CLKSEL_CAM[0:5] */
+	sr32(CM_REG(CLKSEL_CAM), 0, 6, dp->m5);
+
+	/* Set M4 (CLKSEL_DSS1): CM_CLKSEL_DSS[0:5] */
+	sr32(CM_REG(CLKSEL_DSS), 0, 6, dp->m4);
+
+	/* Set M3 (CLKSEL_DSS2): CM_CLKSEL_DSS[8:13] */
+	sr32(CM_REG(CLKSEL_DSS), 8, 6, dp->m3);
+
+	/* Set M2: CM_CLKSEL3_PLL[0:4] */
+	sr32(CM_REG(CLKSEL3_PLL), 0, 5, dp->m2);
+
+	/* M (PERIPH_DPLL_MULT): CM_CLKSEL2_PLL[8:19] */
+	sr32(CM_REG(CLKSEL2_PLL), 8, 12, dp->m);
+
+	/* N (PERIPH_DPLL_DIV): CM_CLKSEL2_PLL[0:6] */
+	sr32(CM_REG(CLKSEL2_PLL), 0, 7, dp->n);
+
+	/* M2DIV (CLKSEL_96M): CM_CLKSEL_CORE[12:13] */
+	sr32(CM_REG(CLKSEL_CORE), 12, 2, dp->m2div);
+
+	/* LOCK MODE (EN_PERIPH_DPLL): CM_CLKEN_PLL[16:18] */
+	sr32(CM_REG(CLKEN_PLL), 16, 3, PLL_LOCK);
+	wait_on_value((0x1 << 1), 2, CM_REG(IDLEST_CKGEN), LDELAY);
+}
+
+/**
+ * @brief Initialize MPU DPLL for OMAP36x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_mpu_dpll_36x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_mpu_dpll_param_36x(cpu_rev);
+
+	dp += clk_sel;
+
+	/* M2 (MPU_DPLL_CLKOUT_DIV) : CM_CLKSEL2_PLL_MPU[0:4] */
+	sr32(CM_REG(CLKSEL2_PLL_MPU), 0, 5, dp->m2);
+
+	/* M (MPU_DPLL_MULT) : CM_CLKSEL2_PLL_MPU[8:18] */
+	sr32(CM_REG(CLKSEL1_PLL_MPU), 8, 11, dp->m);
+
+	/* N (MPU_DPLL_DIV) : CM_CLKSEL2_PLL_MPU[0:6] */
+	sr32(CM_REG(CLKSEL1_PLL_MPU), 0, 7, dp->n);
+
+	/* FREQSEL (MPU_DPLL_FREQSEL) : CM_CLKEN_PLL_MPU[4:7] */
+	sr32(CM_REG(CLKEN_PLL_MPU), 4, 4, dp->fsel);
+}
+
+/**
+ * @brief Initialize IVA DPLL for OMAP36x
+ *
+ * @param[in] cpu_rev - Silicon revision
+ * @param[in] clk_sel - Clock selection used as index into the dpll table
+ */
+static void init_iva_dpll_36x(u32 cpu_rev, u32 clk_sel)
+{
+	struct dpll_param *dp = get_iva_dpll_param_36x(cpu_rev);
+
+	dp += clk_sel;
+
+	/* EN_IVA2_DPLL : CM_CLKEN_PLL_IVA2[0:2] */
+	sr32(CM_REG(CLKEN_PLL_IVA2), 0, 3, PLL_STOP);
+	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_IVA2), LDELAY);
+
+	/* M2 (IVA2_DPLL_CLKOUT_DIV) : CM_CLKSEL2_PLL_IVA2[0:4] */
+	sr32(CM_REG(CLKSEL2_PLL_IVA2), 0, 5, dp->m2);
+
+	/* M (IVA2_DPLL_MULT) : CM_CLKSEL1_PLL_IVA2[8:18] */
+	sr32(CM_REG(CLKSEL1_PLL_IVA2), 8, 11, dp->m);
+
+	/* N (IVA2_DPLL_DIV) : CM_CLKSEL1_PLL_IVA2[0:6] */
+	sr32(CM_REG(CLKSEL1_PLL_IVA2), 0, 7, dp->n);
+
+	/* FREQSEL (IVA2_DPLL_FREQSEL) : CM_CLKEN_PLL_IVA2[4:7] */
+	sr32(CM_REG(CLKEN_PLL_IVA2), 4, 4, dp->fsel);
+
+	/* LOCK (MODE (EN_IVA2_DPLL) : CM_CLKEN_PLL_IVA2[0:2] */
+	sr32(CM_REG(CLKEN_PLL_IVA2), 0, 3, PLL_LOCK);
+	wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_PLL_IVA2), LDELAY);
+}
+
+/**
+ * @brief Inits clocks for PRCM
+ *
+ * This is called from SRAM, or Flash (using temp SRAM stack).
+ * if CONFIG_OMAP3_COPY_CLOCK_SRAM is defined, @ref go_to_speed
+ *
+ * @return void
+ */
+void prcm_init(void)
+{
+	u32 osc_clk = 0, sys_clkin_sel = 0;
+	u32 cpu_type = get_cpu_type();
+	u32 cpu_rev = get_cpu_rev();
+	u32 clk_index;
+
+	/* Gauge the input clock speed and find out the sys_clkin_sel
+	 * value corresponding to the input clock.
+	 */
+	osc_clk = get_osc_clk_speed();
+	get_sys_clkin_sel(osc_clk, &sys_clkin_sel);
+	/* set input crystal speed */
+	sr32(PRM_REG(CLKSEL), 0, 3, sys_clkin_sel);
+
+	/*
+	 * OMAP3430:
+	 *	If the input clock is greater than 19.2M always divide/2
+	 * OMAP3630:
+	 *	DDR corruption was observed on exit from OFF mode, when
+	 *	sys clock is lower than 26M. As workaround, it is maintained
+	 *	at 26M.
+	 */
+	if ((cpu_type != CPU_3630) && (sys_clkin_sel > 2)) {
+		/* input clock divider */
+		sr32(PRM_REG(CLKSRC_CTRL), 6, 2, 2);
+		clk_index = sys_clkin_sel / 2;
+	} else {
+		/* input clock divider */
+		sr32(PRM_REG(CLKSRC_CTRL), 6, 2, 1);
+		clk_index = sys_clkin_sel;
+	}
+
+	/*
+	 * Unlock the MPU PLL. Run slow while clocks are being configured.
+	 */
+	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOW_POWER_BYPASS);
+	wait_on_value((0x1 << 0), 0, CM_REG(IDLEST_PLL_MPU), LDELAY);
+
+	if (cpu_type == CPU_3430) {
+		init_core_dpll_34x(cpu_rev, clk_index);
+		init_per_dpll_34x(cpu_rev, clk_index);
+		init_mpu_dpll_34x(cpu_rev, clk_index);
+		init_iva_dpll_34x(cpu_rev, clk_index);
+	}
+	else if (cpu_type == CPU_3630) {
+		init_core_dpll_36x(cpu_rev, clk_index);
+		init_per_dpll_36x(cpu_rev, clk_index);
+		init_mpu_dpll_36x(cpu_rev, clk_index);
+		init_iva_dpll_36x(cpu_rev, clk_index);
+	}
+	else {
+		/* Unknown CPU */
+		hang();
+	}
+
+	/*
+	 * Clock configuration complete. Lock MPU PLL.
+	 */
+	sr32(CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOCK);
+	wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_PLL_MPU), LDELAY);
 
 	/* Set up GPTimers to sys_clk source only */
 	sr32(CM_REG(CLKSEL_PER), 0, 8, 0xff);

@@ -22,3 +22,9 @@
 #else
 # define cpu_is_mx23()	(0)
 #endif
+
+#ifdef CONFIG_ARCH_IMX28
+# define cpu_is_mx28()	(1)
+#else
+# define cpu_is_mx28()	(0)
+#endif

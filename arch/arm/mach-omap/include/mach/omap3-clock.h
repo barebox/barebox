@@ -92,6 +92,12 @@
 #define PLL_FAST_RELOCK_BYPASS	6	/* CORE */
 #define PLL_LOCK		7	/* MPU, IVA, CORE & PER */
 
+/*
+ * Bit positions indicating current SYSCLK divider
+ */
+#define SYSCLK_DIV_1		(1 << 6)
+#define SYSCLK_DIV_2		(1 << 7)
+
 /* The following configurations are OPP and SysClk value independant
  * and hence are defined here.
  */
@@ -102,7 +108,8 @@
 #define CORE_FUSB_DIV		2        /* 41.5MHz: */
 #define CORE_L4_DIV		2        /*  83MHz : L4 */
 #define CORE_L3_DIV		2        /* 166MHz : L3 {DDR} */
-#define GFX_DIV			2        /*  83MHz : CM_CLKSEL_GFX */
+#define GFX_DIV_34X		3        /*  96MHz : CM_CLKSEL_GFX (OMAP34XX) */
+#define GFX_DIV_36X		5        /* 200MHz : CM_CLKSEL_GFX (OMAP36XX) */
 #define WKUP_RSM		2        /* 41.5MHz: CM_CLKSEL_WKUP */
 
 /* PER DPLL */
@@ -124,12 +131,28 @@ struct dpll_param {
 	unsigned int fsel;
 	unsigned int m2;
 };
-/* External functions see omap3_clock_core.S */
-extern struct dpll_param *get_mpu_dpll_param(void);
-extern struct dpll_param *get_iva_dpll_param(void);
-extern struct dpll_param *get_core_dpll_param(void);
-extern struct dpll_param *get_per_dpll_param(void);
 
+struct dpll_param_per_36x {
+	unsigned int m;
+	unsigned int n;
+	unsigned int m2;
+	unsigned int m3;
+	unsigned int m4;
+	unsigned int m5;
+	unsigned int m6;
+	unsigned int m2div;
+};
+
+/* External functions see omap3_clock_core.S */
+extern struct dpll_param *get_mpu_dpll_param_34x(u32);
+extern struct dpll_param *get_iva_dpll_param_34x(u32);
+extern struct dpll_param *get_core_dpll_param_34x(u32);
+extern struct dpll_param *get_per_dpll_param_34x(u32);
+
+extern struct dpll_param *get_mpu_dpll_param_36x(u32);
+extern struct dpll_param *get_iva_dpll_param_36x(u32);
+extern struct dpll_param *get_core_dpll_param_36x(u32);
+extern struct dpll_param_per_36x *get_per_dpll_param_36x(u32);
 #endif /* __ASSEMBLY__ */
 
 #endif  /* endif _OMAP343X_CLOCKS_H_ */

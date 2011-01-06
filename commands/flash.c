@@ -63,7 +63,7 @@ static int do_flerase(struct command *cmdtp, int argc, char *argv[])
 
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
-		printf("open %s:", filename, errno_str());
+		printf("open %s: %s", filename, errno_str());
 		return 1;
 	}
 
@@ -139,7 +139,7 @@ static int do_protect(struct command *cmdtp, int argc, char *argv[])
 
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
-		printf("open %s:", filename, errno_str());
+		printf("open %s: %s", filename, errno_str());
 		return 1;
 	}
 

@@ -17,18 +17,14 @@
  * MA 02111-1307 USA
  */
 
-#ifndef ASM_ARCH_CLOCK_IMX23_H
-#define ASM_ARCH_CLOCK_IMX23_H
+#ifndef __MACH_CLOCK_H
+# define __MACH_CLOCK_H
 
-unsigned imx_get_mpllclk(void);
-unsigned imx_get_emiclk(void);
-unsigned imx_get_ioclk(void);
-unsigned imx_get_armclk(void);
-unsigned imx_get_hclk(void);
-unsigned imx_get_xclk(void);
-unsigned imx_get_sspclk(unsigned);
-unsigned imx_set_sspclk(unsigned, unsigned, int);
-unsigned imx_set_ioclk(unsigned);
+#if defined CONFIG_ARCH_IMX23
+# include <mach/clock-imx23.h>
+#endif
+#if defined CONFIG_ARCH_IMX28
+# include <mach/clock-imx28.h>
+#endif
 
-#endif /* ASM_ARCH_CLOCK_IMX23_H */
-
+#endif /* __MACH_CLOCK_H */

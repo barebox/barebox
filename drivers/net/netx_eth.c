@@ -7,7 +7,6 @@
 #include <mach/netx-eth.h>
 #include <mach/netx-regs.h>
 #include <xfuncs.h>
-#include <miidev.h>
 #include <init.h>
 #include <driver.h>
 

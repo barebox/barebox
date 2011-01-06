@@ -29,10 +29,13 @@
 
 #include <asm/mmu.h>
 #include <asm/io.h>
+#include <mach/generic.h>
 #include <mach/imx-regs.h>
 #include <clock.h>
 #include <mach/clock.h>
-#include <mach/iim.h>
+#ifndef CONFIG_ARCH_STM
+# include <mach/iim.h>
+#endif
 #include <xfuncs.h>
 
 #include "fec_imx.h"
@@ -151,6 +154,39 @@ static int fec_tx_task_disable(struct fec_priv *fec)
 }
 
 /**
+ * Swap endianess to send data on an i.MX28 based platform
+ * @param buf Pointer to little endian data
+ * @param len Size in words (max. 1500 bytes)
+ * @return Pointer to the big endian data
+ */
+static void *imx28_fix_endianess_wr(uint32_t *buf, unsigned wlen)
+{
+	unsigned u;
+	static uint32_t data[376];	/* = 1500 bytes + 4 bytes */
+
+	for (u = 0; u < wlen; u++, buf++)
+		data[u] = __swab32(*buf);
+
+	return data;
+}
+
+/**
+ * Swap endianess to read data on an i.MX28 based platform
+ * @param buf Pointer to little endian data
+ * @param len Size in words (max. 1500 bytes)
+ *
+ * TODO: Check for the risk of destroying some other data behind the buffer
+ * if its size is not a multiple of 4.
+ */
+static void imx28_fix_endianess_rd(uint32_t *buf, unsigned wlen)
+{
+	unsigned u;
+
+	for (u = 0; u < wlen; u++, buf++)
+		*buf = __swab32(*buf);
+}
+
+/**
  * Initialize receive task's buffer descriptors
  * @param[in] fec all we know about the device yet
  * @param[in] count receive buffer count to be allocated
@@ -233,7 +269,11 @@ static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
+#ifdef CONFIG_ARCH_STM
+	return -1;
+#else
 	return imx_iim_get_mac(mac);
+#endif
 }
 
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
@@ -270,12 +310,13 @@ static int fec_init(struct eth_device *dev)
 		/*
 		 * Frame length=1518; 7-wire mode
 		 */
-		writel((1518 << 16), fec->regs + FEC_R_CNTRL);
+		writel(FEC_R_CNTRL_MAX_FL(1518), fec->regs + FEC_R_CNTRL);
 	} else {
 		/*
 		 * Frame length=1518; MII mode;
 		 */
-		writel((1518 << 16) | (1 << 2), fec->regs + FEC_R_CNTRL);
+		writel(FEC_R_CNTRL_MAX_FL(1518) | FEC_R_CNTRL_MII_MODE,
+			fec->regs + FEC_R_CNTRL);
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
@@ -285,16 +326,26 @@ static int fec_init(struct eth_device *dev)
 	}
 
 	if (fec->xcv_type == RMII) {
-		/* disable the gasket and wait */
-		writel(0, fec->regs + FEC_MIIGSK_ENR);
-		while (readl(fec->regs + FEC_MIIGSK_ENR) & FEC_MIIGSK_ENR_READY)
-			udelay(1);
+		if (cpu_is_mx28()) {
+			/* just another way to enable RMII */
+			uint32_t reg = readl(fec->regs + FEC_R_CNTRL);
+			writel(reg | FEC_R_CNTRL_RMII_MODE
+				/* the linux driver add these bits, why not we? */
+				/* | FEC_R_CNTRL_FCE | */
+				/* FEC_R_CNTRL_NO_LGTH_CHECK */,
+				fec->regs + FEC_R_CNTRL);
+		} else {
+			/* disable the gasket and wait */
+			writel(0, fec->regs + FEC_MIIGSK_ENR);
+			while (readl(fec->regs + FEC_MIIGSK_ENR) & FEC_MIIGSK_ENR_READY)
+				udelay(1);
 
-		/* configure the gasket for RMII, 50 MHz, no loopback, no echo */
-		writel(FEC_MIIGSK_CFGR_IF_MODE_RMII, fec->regs + FEC_MIIGSK_CFGR);
+			/* configure the gasket for RMII, 50 MHz, no loopback, no echo */
+			writel(FEC_MIIGSK_CFGR_IF_MODE_RMII, fec->regs + FEC_MIIGSK_CFGR);
 
-		/* re-enable the gasket */
-		writel(FEC_MIIGSK_ENR_EN, fec->regs + FEC_MIIGSK_ENR);
+			/* re-enable the gasket */
+			writel(FEC_MIIGSK_ENR_EN, fec->regs + FEC_MIIGSK_ENR);
+		}
 	}
 
 	/*
@@ -419,6 +470,9 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	 * Note: We are always using the first buffer for transmission,
 	 * the second will be empty and only used to stop the DMA engine
 	 */
+	if (cpu_is_mx28())
+		eth_data = imx28_fix_endianess_wr(eth_data, (data_length + 3) >> 2);
+
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
 
 	writel((uint32_t)(eth_data), &fec->tbd_base[fec->tbd_index].data_pointer);
@@ -476,18 +530,19 @@ static int fec_recv(struct eth_device *dev)
 	ievent = readl(fec->regs + FEC_IEVENT);
 	writel(ievent, fec->regs + FEC_IEVENT);
 
-	if (ievent & (FEC_IEVENT_BABT | FEC_IEVENT_XFIFO_ERROR |
-				FEC_IEVENT_RFIFO_ERROR)) {
+	if (ievent & FEC_IEVENT_BABT) {
 		/* BABT, Rx/Tx FIFO errors */
 		fec_halt(dev);
 		fec_init(dev);
 		printf("some error: 0x%08x\n", ievent);
 		return 0;
 	}
-	if (ievent & FEC_IEVENT_HBERR) {
-		/* Heartbeat error */
-		writel(readl(fec->regs + FEC_X_CNTRL) | 0x1,
-				fec->regs + FEC_X_CNTRL);
+	if (!cpu_is_mx28()) {
+		if (ievent & FEC_IEVENT_HBERR) {
+			/* Heartbeat error */
+			writel(readl(fec->regs + FEC_X_CNTRL) | 0x1,
+					fec->regs + FEC_X_CNTRL);
+		}
 	}
 	if (ievent & FEC_IEVENT_GRA) {
 		/* Graceful stop complete */
@@ -507,6 +562,12 @@ static int fec_recv(struct eth_device *dev)
 	if (!(bd_status & FEC_RBD_EMPTY)) {
 		if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
 			((readw(&rbd->data_length) - 4) > 14)) {
+
+			if (cpu_is_mx28())
+				imx28_fix_endianess_rd(
+					(void *)readl(&rbd->data_pointer),
+					(readw(&rbd->data_length) + 3) >> 2);
+
 			/*
 			 * Get buffer address and size
 			 */

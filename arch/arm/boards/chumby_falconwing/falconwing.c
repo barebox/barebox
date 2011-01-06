@@ -28,6 +28,7 @@
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
+#include <mach/fb.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -35,6 +36,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
+	.id       = -1,
 	.name     = "mem",
 	.map_base = IMX_MEMORY_BASE,
 	.size     = 64 * 1024 * 1024,
@@ -50,6 +52,45 @@ static struct device_d mci_dev = {
 	.name     = "stm_mci",
 	.map_base = IMX_SSP1_BASE,
 	.platform_data = &mci_pdata,
+};
+
+static struct fb_videomode falconwing_vmode = {
+	/*
+	 * Nanovision NMA35QV65-B2-K01 (directly connected)
+	 * Clock: 6.25 MHz
+	 * Syncs: high active, DE low active
+	 * Display area: 70.08 mm x 52.56 mm
+	 */
+	.name = "NMA35",
+	.refresh = 60,
+	.xres = 320,
+	.yres = 240,
+	.pixclock = KHZ2PICOS(6250),    /* max. 10 MHz */
+	/* line lenght should be 64 µs */
+	.left_margin = 28,
+	.hsync_len = 24,
+	.right_margin = 28,
+	/* frame rate should be 60 Hz */
+	.upper_margin = 8,
+	.vsync_len = 4,
+	.lower_margin = 8,
+	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+	.vmode = FB_VMODE_NONINTERLACED,
+	.flag = 0,
+};
+
+static struct imx_fb_videomode fb_mode = {
+	.mode_list = &falconwing_vmode,
+	.mode_cnt = 1,
+	/* the NMA35 is a 24 bit display, but only 18 bits are connected */
+	.ld_intf_width = STMLCDIF_18BIT,
+};
+
+static struct device_d ldcif_dev = {
+	.name = "stmfb",
+	.map_base = IMX_FB_BASE,
+	.size = 4096,
+	.platform_data = &fb_mode,
 };
 
 static const uint32_t pad_setup[] = {
@@ -112,33 +153,34 @@ static const uint32_t pad_setup[] = {
 	PWM0_DUART_RX | STRENGTH(S4MA),	/*  strength is TBD */
 
 	/* lcd */
-	LCD_VSYNC,	/* kernel tries with 12 mA for all LCD related pins */
-	LCD_HSYNC,
-	LCD_ENABE,
-	LCD_DOTCLOCK,
-	LCD_D17,
-	LCD_D16,
-	LCD_D15,
-	LCD_D14,
-	LCD_D13,
-	LCD_D12,
-	LCD_D11,
-	LCD_D10,
-	LCD_D9,
-	LCD_D8,
-	LCD_D7,
-	LCD_D6,
-	LCD_D5,
-	LCD_D4,
-	LCD_D3,
-	LCD_D2,
-	LCD_D1,
-	LCD_D0,
+	LCD_VSYNC | STRENGTH(S12MA),
+	LCD_HSYNC | STRENGTH(S12MA),
+	LCD_ENABE | STRENGTH(S12MA),
+	LCD_DOTCLOCK | STRENGTH(S12MA),
+	LCD_D17 | STRENGTH(S12MA),
+	LCD_D16 | STRENGTH(S12MA),
+	LCD_D15 | STRENGTH(S12MA),
+	LCD_D14 | STRENGTH(S12MA),
+	LCD_D13 | STRENGTH(S12MA),
+	LCD_D12 | STRENGTH(S12MA),
+	LCD_D11 | STRENGTH(S12MA),
+	LCD_D10 | STRENGTH(S12MA),
+	LCD_D9 | STRENGTH(S12MA),
+	LCD_D8 | STRENGTH(S12MA),
+	LCD_D7 | STRENGTH(S12MA),
+	LCD_D6 | STRENGTH(S12MA),
+	LCD_D5 | STRENGTH(S12MA),
+	LCD_D4 | STRENGTH(S12MA),
+	LCD_D3 | STRENGTH(S12MA),
+	LCD_D2 | STRENGTH(S12MA),
+	LCD_D1 | STRENGTH(S12MA),
+	LCD_D0 | STRENGTH(S12MA),
 
 	/* LCD usage currently unknown */
 	LCD_CS,	/* used as SPI SS */
 	LCD_RS,	/* used as SPI CLK */
-	LCD_RESET,
+	/* keep the display in reset state */
+	LCD_RESET_GPIO | STRENGTH(S4MA) | GPIO_OUT | GPIO_VALUE(0),
 	LCD_WR,	/* used as SPI MOSI */
 
 	/* I2C to the MMA7455L, KXTE9, AT24C08 (DCID), AT24C128B (ID EEPROM) and QN8005B */
@@ -224,8 +266,8 @@ static const uint32_t pad_setup[] = {
  * Try to register an environment storage on the attached MCI card
  * @return 0 on success
  *
- * We relay on the existance of a useable SD card, already attached to
- * our system, to get someting like a persistant memory for our environment.
+ * We rely on the existence of a usable SD card, already attached to
+ * our system, to get something like a persistent memory for our environment.
  * If this SD card is also the boot media, we can use the second partition
  * for our environment purpose (if present!).
  */
@@ -252,7 +294,7 @@ static int register_persistant_environment(void)
 		return -ENODEV;
 	}
 
-	/* use the full partition as our persistant environment storage */
+	/* use the full partition as our persistent environment storage */
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
@@ -265,10 +307,11 @@ static int falconwing_devices_init(void)
 		imx_gpio_mode(pad_setup[i]);
 
 	register_device(&sdram_dev);
-	imx_set_ioclk(480U * 1000U);	/* enable IOCLK to run at the PLL frequency */
+	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
-	imx_set_sspclk(0, 100U * 1000U, 1);
+	imx_set_sspclk(0, 100000000, 1);
 	register_device(&mci_dev);
+	register_device(&ldcif_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
@@ -346,5 +389,90 @@ make ARCH=arm CROSS_COMPILE=armv5compiler
 - Create the root filesystem in the 4th partition. You may copy an image into this
   partition or you can do it in the classic way: mkfs on it, mount it and copy
   all required data and programs into it.
+
+@section gpio_falconwing Available GPIOs
+
+The Falconwing uses some GPIOs to control various features. With the regular
+GPIO commands these features can be controlled at @a barebox's runtime.
+
+<table width="100%" border="1" cellspacing="1" cellpadding="3">
+	<tr>
+		<td>No</td>
+		<td>Direction</td>
+		<td>Function</td>
+		<td>Reset</td>
+		<td>Set</td>
+	</tr>
+	<tr>
+		<td>8</td>
+		<td>Output</td>
+		<td>Switch Audio Amplifier</td>
+		<td>Off</td>
+		<td>On</td>
+	</tr>
+	<tr>
+		<td>11</td>
+		<td>Input</td>
+		<td>Head Phone Detection</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>14</td>
+		<td>Input</td>
+		<td>Unused (J113)</td>
+		<td>User</td>
+		<td>User</td>
+	</tr>
+	<tr>
+		<td>15</td>
+		<td>Input</td>
+		<td>Unused (J114)</td>
+		<td>User</td>
+		<td>User</td>
+	</tr>
+	<tr>
+		<td>26</td>
+		<td>Output</td>
+		<td>USB Power</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>27</td>
+		<td>Input</td>
+		<td>Display Connected</td>
+		<td>Display<br>Attached</td>
+		<td>Display<br>Disconnected</td>
+	</tr>
+	<tr>
+		<td>29</td>
+		<td>Output</td>
+		<td>USB HUB Reset</td>
+		<td>TBD</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td>50</td>
+		<td>Output</td>
+		<td>Display Reset</td>
+		<td>Display<br>Reset</td>
+		<td>Display<br>Running</td>
+	</tr>
+	<tr>
+		<td>60</td>
+		<td>Output</td>
+		<td>Display Backlight</td>
+		<td>Backlight<br>Off</td>
+		<td>Backlight<br>On (100 %)</td>
+	</tr>
+	<tr>
+		<td>62</td>
+		<td>Input</td>
+		<td>Bend</td>
+		<td>Not pressed</td>
+		<td>Pressed</td>
+	</tr>
+</table>
 
 */

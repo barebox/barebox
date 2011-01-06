@@ -35,8 +35,6 @@ barebox.netx
 barebox.map
 System.map
 Module.symvers
-ARCH
-CROSS_COMPILE
 barebox_default_env
 
 #

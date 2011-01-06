@@ -39,14 +39,13 @@ static int fb_enable_set(struct device_d *dev, struct param_d *param,
 
 	enable = simple_strtoul(val, NULL, 0);
 
-	if (info->enabled == !!enable)
-		return 0;
-
 	if (enable) {
-		info->fbops->fb_enable(info);
+		if (!info->enabled)
+			info->fbops->fb_enable(info);
 		new = "1";
 	} else {
-		info->fbops->fb_disable(info);
+		if (info->enabled)
+			info->fbops->fb_disable(info);
 		new = "0";
 	}
 
@@ -55,6 +54,35 @@ static int fb_enable_set(struct device_d *dev, struct param_d *param,
 	info->enabled = !!enable;
 
 	return 0;
+}
+
+static int fb_setup_mode(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct fb_info *info = dev->priv;
+	int mode, ret;
+
+	if (info->enabled != 0)
+		return -EPERM;
+
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
+
+	for (mode = 0; mode < info->num_modes; mode++) {
+		if (!strcmp(info->mode_list[mode].name, val))
+			break;
+	}
+	if (mode >= info->num_modes)
+		return -EINVAL;
+
+	info->mode = &info->mode_list[mode];
+
+	ret = info->fbops->fb_activate_var(info);
+
+	if (ret == 0)
+		dev_param_set_generic(dev, param, val);
+
+	return ret;
 }
 
 static struct file_operations fb_ops = {
@@ -87,6 +115,12 @@ int register_framebuffer(struct fb_info *info)
 	register_device(&info->dev);
 	dev_add_param(dev, "enable", fb_enable_set, NULL, 0);
 	dev_set_param(dev, "enable", "0");
+
+	if (info->num_modes && (info->mode_list != NULL) &&
+			(info->fbops->fb_activate_var != NULL)) {
+		dev_add_param(dev, "mode_name", fb_setup_mode, NULL, 0);
+		dev_set_param(dev, "mode_name", info->mode_list[0].name);
+	}
 
 	devfs_create(&info->cdev);
 

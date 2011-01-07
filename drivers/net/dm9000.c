@@ -165,8 +165,8 @@
 #define IMR_PRM			(1<<0)
 
 struct dm9000_priv {
-	unsigned long iobase;
-	unsigned long iodata;
+	void __iomem *iobase;
+	void __iomem *iodata;
 	struct mii_device miidev;
 	int buswidth;
 };
@@ -246,11 +246,11 @@ static int dm9000_check_id(struct dm9000_priv *priv)
 	id_val |= DM9000_ior(priv, DM9000_PIDL) << 16;
 	id_val |= DM9000_ior(priv, DM9000_PIDH) << 24;
 	if (id_val == DM9000_ID) {
-		printf("dm9000 i/o: 0x%x, id: 0x%x \n", priv->iobase,
+		printf("dm9000 i/o: 0x%p, id: 0x%x \n", priv->iobase,
 		       id_val);
 		return 0;
 	} else {
-		printf("dm9000 not found at 0x%08x id: 0x%08x\n",
+		printf("dm9000 not found at 0x%p id: 0x%08x\n",
 		       priv->iobase, id_val);
 		return -1;
 	}
@@ -489,8 +489,8 @@ static int dm9000_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->buswidth = pdata->buswidth;
-	priv->iodata = pdata->iodata;
-	priv->iobase = pdata->iobase;
+	priv->iodata = (void *)pdata->iodata;
+	priv->iobase = (void *)pdata->iobase;
 
 	edev->init = dm9000_init_dev;
 	edev->open = dm9000_eth_open;

@@ -81,15 +81,15 @@ ulong imx_get_gptclk(void)
 
 void imx_dump_clocks(void)
 {
-	printf("spll:    %10d Hz\n", imx_get_spllclk());
-	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
-	printf("fclk:    %10d Hz\n", imx_get_fclk());
-	printf("hclk:    %10d Hz\n", imx_get_hclk());
-	printf("bclk:    %10d Hz\n", imx_get_bclk());
-	printf("perclk1: %10d Hz\n", imx_get_perclk1());
-	printf("perclk2: %10d Hz\n", imx_get_perclk2());
-	printf("perclk3: %10d Hz\n", imx_get_perclk3());
-	printf("uart:    %10d Hz\n", imx_get_uartclk());
-	printf("gpt:     %10d Hz\n", imx_get_gptclk());
+	printf("spll:    %10ld Hz\n", imx_get_spllclk());
+	printf("mpll:    %10ld Hz\n", imx_get_mpllclk());
+	printf("fclk:    %10ld Hz\n", imx_get_fclk());
+	printf("hclk:    %10ld Hz\n", imx_get_hclk());
+	printf("bclk:    %10ld Hz\n", imx_get_bclk());
+	printf("perclk1: %10ld Hz\n", imx_get_perclk1());
+	printf("perclk2: %10ld Hz\n", imx_get_perclk2());
+	printf("perclk3: %10ld Hz\n", imx_get_perclk3());
+	printf("uart:    %10ld Hz\n", imx_get_uartclk());
+	printf("gpt:     %10ld Hz\n", imx_get_gptclk());
 }
 

@@ -145,16 +145,16 @@ void imx_dump_clocks(void)
 	uint32_t	cid = CID;
 
 	printf("chip id: [%08x]\n", cid);
-	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
-	printf("spll:    %10d Hz\n", imx_get_spllclk());
-	printf("arm:     %10d Hz\n", imx_get_armclk());
-	printf("fclk:    %10d Hz\n", imx_get_fclk());
-	printf("nfcclk:  %10d Hz\n", imx_get_nfcclk());
-	printf("perclk1: %10d Hz\n", imx_get_perclk1());
-	printf("perclk2: %10d Hz\n", imx_get_perclk2());
-	printf("perclk3: %10d Hz\n", imx_get_perclk3());
-	printf("perclk4: %10d Hz\n", imx_get_perclk4());
-	printf("clkin26: %10d Hz\n", clk_in_26m());
+	printf("mpll:    %10ld Hz\n", imx_get_mpllclk());
+	printf("spll:    %10ld Hz\n", imx_get_spllclk());
+	printf("arm:     %10ld Hz\n", imx_get_armclk());
+	printf("fclk:    %10ld Hz\n", imx_get_fclk());
+	printf("nfcclk:  %10ld Hz\n", imx_get_nfcclk());
+	printf("perclk1: %10ld Hz\n", imx_get_perclk1());
+	printf("perclk2: %10ld Hz\n", imx_get_perclk2());
+	printf("perclk3: %10ld Hz\n", imx_get_perclk3());
+	printf("perclk4: %10ld Hz\n", imx_get_perclk4());
+	printf("clkin26: %10ld Hz\n", clk_in_26m());
 }
 
 /*

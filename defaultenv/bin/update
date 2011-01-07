@@ -35,6 +35,11 @@ elif [ x${type} = xbarebox ]; then
 	if [ x${image} = x ]; then
 		image=barebox.bin
 	fi
+elif [ x${type} = xbareboxenv ]; then
+	image=$bareboxenvimage
+	if [ x${image} = x ]; then
+		image=bareboxenv.bin
+	fi
 else
 	. /env/bin/_update_help
 	exit 1

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "usage: update -t <kernel|rootfs|barebox> -d <nor|nand> [-m tftp|xmodem] [-f imagename] -c"
+echo "usage: update -t <kernel|rootfs|barebox|bareboxenv> -d <nor|nand> [-m tftp|xmodem] [-f imagename] -c"
 echo "update tools."
 echo ""
 echo "options"
@@ -10,3 +10,4 @@ echo "default mode is tftp"
 echo "type update -t kernel -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update kernel into flash"
 echo "type update -t rootfs -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update rootfs into flash"
 echo "type update -t barebox -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update barebox into flash"
+echo "type update -t bareboxenv -d <nor|nand> [-m tftp|xmodem] [-f imagename] to update bareboxenv into flash"

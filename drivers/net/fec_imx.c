@@ -458,7 +458,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 
 	/* Check for valid length of data. */
 	if ((data_length > 1500) || (data_length <= 0)) {
-		printf("Payload (%d) to large!\n");
+		printf("Payload (%d) to large!\n", data_length);
 		return -1;
 	}
 
@@ -519,7 +519,7 @@ static int fec_recv(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
-	unsigned long ievent;
+	uint32_t ievent;
 	int frame_length, len = 0;
 	struct fec_frame *frame;
 	uint16_t bd_status;
@@ -577,7 +577,7 @@ static int fec_recv(struct eth_device *dev)
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {
-				printf("error frame: 0x%08x 0x%08x\n", rbd, bd_status);
+				printf("error frame: 0x%p 0x%08x\n", rbd, bd_status);
 			}
 		}
 		/*

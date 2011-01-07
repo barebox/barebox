@@ -41,7 +41,7 @@ static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
 	    adr + size < NETX_PA_XPEC(xcno) + XPEC_MEM_SIZE)
 		return 0;
 
-	printf("%s: illegal pointer %p\n",__FUNCTION__,adr);
+	printf("%s: illegal pointer 0x%08lx\n", __func__ ,adr);
 	return -1;
 }
 

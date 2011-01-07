@@ -219,7 +219,7 @@ static int do_bootm_linux(struct image_data *idata)
 		else
 			of_start  = (ulong)kbd - of_len - 8192;
 		of_start &= ~(4096 - 1);	/* align on page */
-		debug ("## device tree at 0x%08lX ... 0x%08lX (len=%ld=0x%lX)\n",
+		debug ("## device tree at 0x%p ... 0x%p (len=%ld=0x%lX)\n",
 			of_data, of_data + of_len - 1, of_len, of_len);
 
 		of_flat_tree = (char *)of_start;

@@ -65,7 +65,7 @@ int checkcpu (void)
 	printf (" v%d.%d, Core v%d.%d", SVR_MJREV (svr), SVR_MNREV (svr),
 		PVR_MAJ(pvr), PVR_MIN(pvr));
 #endif
-	printf (" at %s Hz\n", clock);
+	printf (" at %ld Hz\n", clock);
 	return 0;
 }
 

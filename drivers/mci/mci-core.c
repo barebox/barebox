@@ -1001,13 +1001,13 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 	while (sector_count) {
 		int now = min(sector_count, 32U);
 		if (sector_start > MAX_BUFFER_NUMBER) {
-			pr_err("Cannot handle block number %lu. Too large!\n",
+			pr_err("Cannot handle block number %u. Too large!\n",
 				(unsigned)sector_start);
 			return -EINVAL;
 		}
 		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, now);
 		if (rc != 0) {
-			pr_err("Reading block %lu failed with %d\n", (unsigned)sector_start, rc);
+			pr_err("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count -= now;

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "usage: $0 -t <kernel|rootfs|barebox> -d <nor|nand> [-m tftp|xmodem] [-f imagename] -c"
+echo "usage: update -t <kernel|rootfs|barebox> -d <nor|nand> [-m tftp|xmodem] [-f imagename] -c"
 echo "update tools."
 echo ""
 echo "options"

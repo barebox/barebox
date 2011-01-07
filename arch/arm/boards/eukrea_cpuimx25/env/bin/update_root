@@ -1,8 +1,0 @@
-#!/bin/sh
-
-. /env/config
-
-image=$rootfs
-part=/dev/nand0.root.bb
-
-. /env/bin/_update $1

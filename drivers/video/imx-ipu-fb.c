@@ -488,7 +488,7 @@ static int sdc_init_panel(struct fb_info *info, enum pixel_fmt pixel_fmt)
 		div = 0x40;
 	}
 
-	dev_dbg(&info->dev, "pixel clk = %u, divider %u.%u\n",
+	dev_dbg(&info->dev, "pixel clk = %lu, divider %u.%u\n",
 		pixel_clk, div >> 4, (div & 7) * 125);
 
 	/*

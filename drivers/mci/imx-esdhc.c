@@ -355,7 +355,7 @@ void set_sysctl(struct mci_host *mci, u32 clock)
 	div -= 1;
 	pre_div >>= 1;
 
-	dev_dbg(host->dev, "set clock: wanted: %d got: %d\n", clock, host->cur_clock);
+	dev_dbg(host->dev, "set clock: wanted: %d got: %ld\n", clock, host->cur_clock);
 	dev_dbg(host->dev, "pre_div: %d div: %d\n", pre_div, div);
 
 	clk = (pre_div << 8) | (div << 4);

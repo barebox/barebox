@@ -56,7 +56,6 @@ choice
 
 config ARCH_IMX_INTERNAL_BOOT_NAND
 	bool "NAND, SD/MMC, Serial ROM"
-	select NAND_IMX_BOOT
 
 config ARCH_IMX_INTERNAL_BOOT_NOR
 	bool "NOR"

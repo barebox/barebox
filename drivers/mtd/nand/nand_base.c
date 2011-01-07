@@ -167,7 +167,7 @@ static void nand_select_chip(struct mtd_info *mtd, int chipnr)
 	case 0:
 		break;
 	default:
-		printf("%s: illegal chip number %d\n", chipnr);
+		printf("%s: illegal chip number %d\n", __func__, chipnr);
 	}
 }
 

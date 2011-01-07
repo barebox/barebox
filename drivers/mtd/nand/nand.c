@@ -37,7 +37,7 @@ static 	ssize_t nand_read(struct cdev *cdev, void* buf, size_t count, ulong offs
 	size_t retlen;
 	int ret;
 
-	debug("nand_read: 0x%08x 0x%08x\n", offset, count);
+	debug("nand_read: 0x%08lx 0x%08x\n", offset, count);
 
 	ret = info->read(info, offset, count, &retlen, buf);
 
@@ -70,17 +70,17 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 	size_t count = _count;
 
 	if (NOTALIGNED(offset)) {
-		printf("offset 0x%08x not page aligned\n", offset);
+		printf("offset 0x%0lx not page aligned\n", offset);
 		return -EINVAL;
 	}
 
-	debug("write: 0x%08x 0x%08x\n", offset, count);
+	debug("write: 0x%08lx 0x%08x\n", offset, count);
 
 	while (count) {
 		now = count > info->writesize ? info->writesize : count;
 
 		if (NOTALIGNED(now)) {
-			debug("not aligned: %d %d\n", info->writesize, (offset % info->writesize));
+			debug("not aligned: %d %ld\n", info->writesize, (offset % info->writesize));
 			wrbuf = xmalloc(info->writesize);
 			memset(wrbuf, 0xff, info->writesize);
 			memcpy(wrbuf + (offset % info->writesize), buf, now);
@@ -91,7 +91,7 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 		} else {
 			if (!all_ff(buf, info->writesize))
 				ret = info->write(info, offset, now, &retlen, buf);
-			debug("offset: 0x%08x now: 0x%08x retlen: 0x%08x\n", offset, now, retlen);
+			debug("offset: 0x%08lx now: 0x%08x retlen: 0x%08x\n", offset, now, retlen);
 		}
 		if (ret)
 			goto out;
@@ -112,10 +112,10 @@ static int nand_ioctl(struct cdev *cdev, int request, void *buf)
 
 	switch (request) {
 	case MEMGETBADBLOCK:
-		debug("MEMGETBADBLOCK: 0x%08x\n", (off_t)buf);
+		debug("MEMGETBADBLOCK: 0x%08lx\n", (off_t)buf);
 		return info->block_isbad(info, (off_t)buf);
 	case MEMSETBADBLOCK:
-		debug("MEMSETBADBLOCK: 0x%08x\n", (off_t)buf);
+		debug("MEMSETBADBLOCK: 0x%08lx\n", (off_t)buf);
 		return info->block_markbad(info, (off_t)buf);
 	case MEMGETINFO:
 		user->type	= info->type;

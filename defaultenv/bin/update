@@ -1,11 +1,11 @@
 #!/bin/sh
 
-. /env/config
-
 type=""
 device_type=""
 check=n
 mode=tftp
+
+. /env/config
 
 while getopt "ht:d:f:m:c" Option
 do

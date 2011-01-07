@@ -93,7 +93,7 @@ static int scb9328_devices_init(void) {
 	register_device(&sdram_dev);
 	register_device(&dm9000_dev);
 
-	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 

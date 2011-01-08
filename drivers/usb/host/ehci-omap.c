@@ -201,7 +201,7 @@ int ehci_omap_init(struct omap_hcd *omap)
 		v &= ~OMAP_UHH_HOSTCONFIG_P3_CONNECT_STATUS;
 
 	/* Bypass the TLL module for PHY mode operation */
-	 if (get_cpu_rev() <= CPU_ES2P1) {
+	 if (get_cpu_rev() <= OMAP34XX_ES2_1) {
 		if ((omap->port_mode[0] == EHCI_HCD_OMAP_MODE_PHY) ||
 			(omap->port_mode[1] == EHCI_HCD_OMAP_MODE_PHY) ||
 				(omap->port_mode[2] == EHCI_HCD_OMAP_MODE_PHY))

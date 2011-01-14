@@ -209,24 +209,6 @@ static inline unsigned calc_line_length(unsigned ppl, unsigned bpp)
 	return (ppl * bpp) >> 3;
 }
 
-static int stmfb_memory_mmgt(struct fb_info *fb_info, unsigned size)
-{
-	struct imxfb_info *fbi = fb_info->priv;
-
-	if (fbi->memory_size != 0) {
-		free(fb_info->screen_base);
-		fb_info->screen_base = NULL;
-		fbi->memory_size = 0;
-	}
-
-	if (fbi->memory_size == 0) {
-		fb_info->screen_base = xzalloc(size);
-		fbi->memory_size = size;
-	}
-
-	return 0;
-}
-
 static void stmfb_enable_controller(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
@@ -308,7 +290,6 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	struct imx_fb_videomode *pdata = fbi->pdata;
 	struct fb_videomode *mode = fb_info->mode;
 	uint32_t reg;
-	int ret;
 	unsigned size;
 
 	/*
@@ -317,11 +298,8 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	size = calc_line_length(mode->xres, fb_info->bits_per_pixel) *
 		mode->yres;
 
-	ret = stmfb_memory_mmgt(fb_info, size);
-	if (ret != 0) {
-		dev_err(fbi->hw_dev, "Cannot allocate framebuffer memory\n");
-		return ret;
-	}
+	fb_info->screen_base = xrealloc(fb_info->screen_base, size);
+	fbi->memory_size = size;
 
 	/** @todo ensure HCLK is active at this point of time! */
 

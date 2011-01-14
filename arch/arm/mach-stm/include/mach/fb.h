@@ -37,6 +37,9 @@ struct imx_fb_videomode {
 
 	unsigned dotclk_delay;	/**< refer manual HW_LCDIF_VDCTRL4 register */
 	unsigned ld_intf_width;	/**< refer STMLCDIF_* macros */
+
+	void *fixed_screen;	/**< if != NULL use this as framebuffer memory */
+	unsigned fixed_screen_size; /**< framebuffer memory size for fixed_screen */
 };
 
 #endif /* __MACH_FB_H */

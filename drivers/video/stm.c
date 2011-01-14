@@ -298,8 +298,15 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	size = calc_line_length(mode->xres, fb_info->bits_per_pixel) *
 		mode->yres;
 
-	fb_info->screen_base = xrealloc(fb_info->screen_base, size);
-	fbi->memory_size = size;
+	if (pdata->fixed_screen) {
+		if (pdata->fixed_screen_size < size)
+			return -ENOMEM;
+		fb_info->screen_base = pdata->fixed_screen;
+		fbi->memory_size = pdata->fixed_screen_size;
+	} else {
+		fb_info->screen_base = xrealloc(fb_info->screen_base, size);
+		fbi->memory_size = size;
+	}
 
 	/** @todo ensure HCLK is active at this point of time! */
 

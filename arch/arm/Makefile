@@ -35,6 +35,7 @@ CFLAGS_ABI	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-th
 endif
 
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
+AFLAGS   += -include asm/unified.h
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.

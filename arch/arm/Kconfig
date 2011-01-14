@@ -78,6 +78,9 @@ source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-s3c24xx/Kconfig
 source arch/arm/mach-versatile/Kconfig
 
+config ARM_ASM_UNIFIED
+	bool
+
 config AEABI
 	bool "Use the ARM EABI to compile barebox"
 	help

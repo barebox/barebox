@@ -21,6 +21,7 @@
 #include <asm/io.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
+#include <asm/mmu.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -81,6 +82,28 @@ static const uint32_t tx28_pad_setup[] = {
 };
 
 extern void base_board_init(void);
+
+#ifdef CONFIG_MMU
+static int tx28_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0x40000000, 0x40000000, 128, PMD_SECT_DEF_CACHED);
+	arm_create_section(0x50000000, 0x40000000, 128, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+
+	return 0;
+}
+postcore_initcall(tx28_mmu_init);
+#endif
 
 static int tx28_devices_init(void)
 {

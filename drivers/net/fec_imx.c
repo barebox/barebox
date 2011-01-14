@@ -565,7 +565,7 @@ static int fec_recv(struct eth_device *dev)
 
 			if (cpu_is_mx28())
 				imx28_fix_endianess_rd(
-					(void *)readl(&rbd->data_pointer),
+					phys_to_virt(readl(&rbd->data_pointer)),
 					(readw(&rbd->data_length) + 3) >> 2);
 
 			/*

@@ -81,7 +81,7 @@ static const char *trap_to_string(int trapnr)
 
 void trap_c (struct pt_regs *regs)
 {
-	unsigned long trapnr = (regs->seqstat) & SEQSTAT_EXCAUSE;
+	uint32_t trapnr = (regs->seqstat) & SEQSTAT_EXCAUSE;
 	const char *str;
 
 	printf("Exception occured!\n\n");

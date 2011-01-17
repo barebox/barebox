@@ -30,6 +30,7 @@
 
 #include <driver.h>
 #include <usb/usb_defs.h>
+#include <asm/byteorder.h>
 
 /* Everything is aribtrary */
 #define USB_ALTSETTINGALLOC		4

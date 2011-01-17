@@ -166,7 +166,7 @@ int eth_register(struct eth_device *edev)
 
 	if (edev->get_ethaddr(edev, ethaddr) == 0) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
-		printf("got MAC address from EEPROM: %s\n",&ethaddr_str);
+		printf("got MAC address from EEPROM: %s\n", ethaddr_str);
 		dev_set_param(dev, "ethaddr", ethaddr_str);
 	}
 

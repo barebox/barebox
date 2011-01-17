@@ -311,7 +311,7 @@ void ft_dump_blob(const void *bphp)
 		}
 
 		if (tag != OF_DT_PROP) {
-			fprintf(stderr, "%*s ** Unknown tag 0x%08x at 0x%x\n",
+			fprintf(stderr, "%*s ** Unknown tag 0x%08x at 0x%p\n",
 				depth * shift, "", tag, --p);
 			break;
 		}

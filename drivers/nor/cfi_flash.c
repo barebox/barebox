@@ -424,14 +424,12 @@ static ulong flash_get_size (struct flash_info *info, ulong base)
 		/* multiply the size by the number of chips */
 		info->size = (1 << qry.dev_size) * size_ratio;
 		info->buffer_size = (1 << le16_to_cpu(qry.max_buf_write_size));
-		tmp = 1 << qry.block_erase_timeout_typ;
-		info->erase_blk_tout = (tmp * (1 << qry.block_erase_timeout_max));
-		tmp = (1 << qry.buf_write_timeout_typ) *
-			(1 << qry.buf_write_timeout_max);
-		info->buffer_write_tout = tmp * 1000;
-		tmp = (1 << qry.word_write_timeout_typ) *
-		      (1 << qry.word_write_timeout_max);
-		info->write_tout = tmp * 1000;
+		info->erase_blk_tout = 1 << (qry.block_erase_timeout_typ +
+					     qry.block_erase_timeout_max);
+		info->buffer_write_tout = 1 << (qry.buf_write_timeout_typ +
+						qry.buf_write_timeout_max);
+		info->write_tout = 1 << (qry.word_write_timeout_typ +
+					 qry.word_write_timeout_max);
 		info->flash_id = FLASH_MAN_CFI;
 		if ((info->interface == FLASH_CFI_X8X16) && (info->chipwidth == FLASH_CFI_BY8)) {
 			info->portwidth >>= 1;	/* XXX - Need to test on x8/x16 in parallel. */
@@ -699,11 +697,11 @@ static void cfi_info (struct device_d* dev)
 	if (info->device_id == 0x7E) {
 		printf("%04X", info->device_id2);
 	}
-	printf ("\n  Erase timeout: %ld ms, write timeout: %ld ms\n",
+	printf ("\n  Erase timeout: %ld ms, write timeout: %ld us\n",
 		info->erase_blk_tout,
 		info->write_tout);
 	if (info->buffer_size > 1) {
-		printf ("  Buffer write timeout: %ld ms, buffer size: %d bytes\n",
+		printf ("  Buffer write timeout: %ld us, buffer size: %d bytes\n",
 		info->buffer_write_tout,
 		info->buffer_size);
 	}

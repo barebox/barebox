@@ -687,7 +687,7 @@ static int smc911x_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
-	ulong val;
+	uint32_t val;
 	int i;
 
 	debug("smc911x_eth_init()\n");

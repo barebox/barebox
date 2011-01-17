@@ -187,15 +187,15 @@ ulong imx_get_i2cclk(void)
 
 void imx_dump_clocks(void)
 {
-	printf("mpll:    %10d Hz\n", imx_get_mpllclk());
-	printf("ppll:    %10d Hz\n", imx_get_ppllclk());
-	printf("arm:     %10d Hz\n", imx_get_armclk());
-	printf("gpt:     %10d Hz\n", imx_get_gptclk());
-	printf("ahb:     %10d Hz\n", imx_get_ahbclk());
-	printf("ipg:     %10d Hz\n", imx_get_ipgclk());
-	printf("ipg_per: %10d Hz\n", imx_get_ipg_perclk());
-	printf("uart:	 %10d Hz\n", imx_get_uartclk());
-	printf("sdhc1:   %10d Hz\n", imx_get_mmcclk());
+	printf("mpll:    %10ld Hz\n", imx_get_mpllclk());
+	printf("ppll:    %10ld Hz\n", imx_get_ppllclk());
+	printf("arm:     %10ld Hz\n", imx_get_armclk());
+	printf("gpt:     %10ld Hz\n", imx_get_gptclk());
+	printf("ahb:     %10ld Hz\n", imx_get_ahbclk());
+	printf("ipg:     %10ld Hz\n", imx_get_ipgclk());
+	printf("ipg_per: %10ld Hz\n", imx_get_ipg_perclk());
+	printf("uart:	 %10ld Hz\n", imx_get_uartclk());
+	printf("sdhc1:   %10ld Hz\n", imx_get_mmcclk());
 }
 
 /*

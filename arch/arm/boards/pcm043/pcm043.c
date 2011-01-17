@@ -354,7 +354,7 @@ static int do_cpufreq(struct command *cmdtp, int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 	}
 
-	printf("Switched CPU frequency to %dMHz\n", freq);
+	printf("Switched CPU frequency to %ldMHz\n", freq);
 
 	return 0;
 }

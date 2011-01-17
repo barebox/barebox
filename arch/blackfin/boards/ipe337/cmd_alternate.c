@@ -21,7 +21,7 @@ static int do_alternate(struct command *cmdtp, int argc, char *argv[])
 
 	ptr = buf;
 	if ((*ptr) != MAGIC) {
-		printf("Wrong magic! Expected 0x%08x, got 0x%08x.\n", MAGIC, *ptr);
+		printf("Wrong magic! Expected 0x%08x, got 0x%08lx.\n", MAGIC, *ptr);
 		return 1;
 	}
 
@@ -38,7 +38,7 @@ static int do_alternate(struct command *cmdtp, int argc, char *argv[])
 		} while (val >>= 1);
 	}
 
-	printf("Bitcount : %d\n", bitcount);
+	printf("Bitcount : %ld\n", bitcount);
 
 	free(buf);
 	return (bitcount & 1) ? 3 : 2;

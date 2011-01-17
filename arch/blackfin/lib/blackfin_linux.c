@@ -48,7 +48,7 @@ static int do_bootm_linux(struct image_data *idata)
 	image_header_t *os_header = &os_handle->header;
 
 	appl = (int (*)(char *))image_get_ep(os_header);
-	printf("Starting Kernel at 0x%08x\n", appl);
+	printf("Starting Kernel at 0x%p\n", appl);
 
 	if (relocate_image(os_handle, (void *)image_get_load(os_header)))
 		return -1;

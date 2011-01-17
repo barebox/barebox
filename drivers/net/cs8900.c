@@ -364,7 +364,7 @@ static void cs8900_info(struct device_d *dev)
 	struct cs8900_priv *priv = (struct cs8900_priv *)edev->priv;
 	u16 v;
 
-	printf("%s Rev. %s (PID: 0x%04x) at 0x%08x\n", priv->chip->name,
+	printf("%s Rev. %s (PID: 0x%04x) at 0x%p\n", priv->chip->name,
 	       priv->product->rev_name, priv->product->product_id,
 	       priv->regs);
 
@@ -399,7 +399,7 @@ static int cs8900_check_id(struct cs8900_priv *priv)
 	u16 v;
 	v = cs8900_ior(priv, PP_BI_VID);
 	if (v != CRYSTAL_SEMI_EISA_ID) {
-		printf("No CS89x0 variant found at 0x%08x vid: 0x%04x\n",
+		printf("No CS89x0 variant found at 0x%p vid: 0x%04x\n",
 		       priv->regs, v);
 		return -1;
 	}
@@ -424,7 +424,7 @@ static int cs8900_check_id(struct cs8900_priv *priv)
 		printf("Invalid chip type %d\n", product->chip_type);
 		goto out;
 	}
-	printf("%s Rev. %s (PID: 0x%04x) found at 0x%08x\n", chip->name,
+	printf("%s Rev. %s (PID: 0x%04x) found at 0x%p\n", chip->name,
 	       product->rev_name, v, priv->regs);
 	priv->chip = chip;
 	priv->product = product;

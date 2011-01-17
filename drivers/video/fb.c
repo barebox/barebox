@@ -77,12 +77,18 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 
 	info->mode = &info->mode_list[mode];
 
+	info->xres = info->mode->xres;
+	info->yres = info->mode->yres;
+
 	ret = info->fbops->fb_activate_var(info);
 
-	dev->map_base = (unsigned long)info->screen_base;
-
-	if (ret == 0)
+	if (!ret) {
+		dev->map_base = (unsigned long)info->screen_base;
+		info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
+		dev->size = info->cdev.size;
 		dev_param_set_generic(dev, param, val);
+	} else
+		info->cdev.size = 0;
 
 	return ret;
 }

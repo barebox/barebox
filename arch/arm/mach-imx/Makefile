@@ -11,3 +11,4 @@ obj-$(CONFIG_IMX_IIM)	+= iim.o
 obj-$(CONFIG_NAND_IMX) += nand.o
 obj-y += speed.o
 obj-y += devices.o
+obj-y += boot.o

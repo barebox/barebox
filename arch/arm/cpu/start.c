@@ -25,6 +25,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
+#include <asm/sections.h>
 
 void __naked __section(.text_entry) exception_vectors(void)
 {
@@ -39,8 +40,6 @@ void __naked __section(.text_entry) exception_vectors(void)
 		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
 	);
 }
-
-extern char __bss_start, _end;
 
 /*
  * The actual reset vector. This code is position independent and usually
@@ -108,7 +107,7 @@ void __naked __bare_init board_init_lowlevel_return(void)
 				(unsigned int)&__bss_start - TEXT_BASE);
 
 	/* clear bss */
-	memset(&__bss_start, 0, &_end - &__bss_start);
+	memset(__bss_start, 0, __bss_stop - __bss_start);
 
 	/* call start_barebox with its absolute address */
 	r = (unsigned int)&start_barebox;

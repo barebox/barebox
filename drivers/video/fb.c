@@ -79,6 +79,8 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 
 	ret = info->fbops->fb_activate_var(info);
 
+	dev->map_base = (unsigned long)info->screen_base;
+
 	if (ret == 0)
 		dev_param_set_generic(dev, param, val);
 

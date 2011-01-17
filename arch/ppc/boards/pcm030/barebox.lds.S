@@ -55,6 +55,8 @@ SECTIONS
   .plt : { *(.plt) }
   .text      :
   {
+    _text = .;
+    _stext = .;
     arch/ppc/mach-mpc5xxx/start.o	(.text)
     *(.text*)
     *(.got1*)
@@ -134,6 +136,7 @@ SECTIONS
    *(.bss*)
    *(COMMON)
   }
+  __bss_stop = .;
   _end = . ;
   PROVIDE (end = .);
 }

@@ -3,7 +3,6 @@
 #include <mem_malloc.h>
 #include <asm/barebox-arm.h>
 #include <asm-generic/memory_layout.h>
-#include <reloc.h>
 
 static int arm_mem_malloc_init(void)
 {

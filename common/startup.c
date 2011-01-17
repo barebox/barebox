@@ -40,6 +40,7 @@
 #include <environment.h>
 #include <reloc.h>
 #include <asm-generic/memory_layout.h>
+#include <asm/sections.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -50,8 +51,8 @@ static void display_meminfo(void)
 	ulong mend   = mem_malloc_end();
 	ulong msize  = mend - mstart + 1;
 
-	debug("barebox code : 0x%08lX -> 0x%08lX  BSS: -> 0x%08lX\n",
-	       _barebox_start, _bss_start, _bss_end);
+	debug("barebox code: 0x%p -> 0x%p\n", _stext, _etext);
+	debug("bss segment:  0x%p -> 0x%p\n", __bss_start, __bss_stop);
 	printf("Malloc space: 0x%08lx -> 0x%08lx (size %s)\n",
 		mstart, mend, size_human_readable(msize));
 #ifdef CONFIG_ARM

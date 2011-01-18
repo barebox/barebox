@@ -183,7 +183,7 @@ static int miidev_probe(struct device_d *dev)
 	struct mii_device *mdev = dev->priv;
 
 	mdev->cdev.name = asprintf("phy%d", dev->id);
-	mdev->cdev.size = 32;
+	mdev->cdev.size = 64;
 	mdev->cdev.ops = &miidev_ops;
 	mdev->cdev.priv = mdev;
 	mdev->cdev.dev = dev;

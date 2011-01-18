@@ -36,6 +36,7 @@
 #include <module.h>
 #include <poller.h>
 #include <linux/list.h>
+#include <linux/stringify.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -141,7 +142,7 @@ int console_register(struct console_device *newcdev)
 
 	if (newcdev->setbrg) {
 		dev_add_param(dev, "baudrate", console_baudrate_set, NULL, 0);
-		dev_set_param(dev, "baudrate", "115200");
+		dev_set_param(dev, "baudrate", __stringify(CONFIG_BAUDRATE));
 	}
 
 	dev_add_param(dev, "active", console_std_set, NULL, 0);

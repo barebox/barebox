@@ -2,6 +2,7 @@ if ARCH_AT91
 
 config ARCH_TEXT_BASE
 	hex
+	default 0x73f00000 if ARCH_AT91SAM9G45
 	default 0x23f00000
 
 config BOARDINFO

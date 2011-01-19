@@ -12,7 +12,6 @@ obj-y	+= lib1funcs.o
 obj-y	+= ashrdi3.o
 obj-y	+= ashldi3.o
 obj-y	+= lshrdi3.o
-obj-y	+= _bswapsi2.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memcpy.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memset.o
 

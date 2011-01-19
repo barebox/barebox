@@ -919,6 +919,13 @@ static int ehci_probe(struct device_d *dev)
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
 
+	if (ehci->flags & EHCI_HAS_TT) {
+		/* Set to host mode */
+		reg = ehci_readl(ehci->hcor + USBMODE);
+		reg |= USBMODE_CM_HC;
+		writel(reg, ehci->hcor + USBMODE);
+	}
+
 	usb_register_host(host);
 
 	reg = HC_VERSION(ehci_readl(&ehci->hccr->cr_capbase));

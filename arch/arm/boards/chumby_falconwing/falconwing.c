@@ -22,6 +22,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
+#include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <generated/mach-types.h>
@@ -29,6 +30,7 @@
 #include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
+#include <mach/usb.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -197,10 +199,10 @@ static const uint32_t pad_setup[] = {
 	/* backlight control, to be controled by PWM, here we only want to disable it */
 	PWM2_GPIO | GPIO_OUT | GPIO_VALUE(0),	/* 1 enables, 0 disables the backlight */
 
-	/* send a reset signal to the USB hub */
+	/* USB hub reset (active low) */
 	AUART1_TX_GPIO | GPIO_OUT | GPIO_VALUE(0),
 
-	/* USB power disable (FIXME what level to be switched off) */
+	/* USB power (active high) */
 	AUART1_CTS_GPIO | GPIO_OUT | GPIO_VALUE(0),
 
 	/* Detecting if a display is connected (0 = display attached) (external pull up) */
@@ -298,6 +300,35 @@ static int register_persistant_environment(void)
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
+static struct ehci_platform_data chumby_usb_pdata = {
+	.flags = EHCI_HAS_TT,
+	.hccr_offset = 0x100,
+	.hcor_offset = 0x140,
+};
+
+static struct device_d usb_dev = {
+	.name		= "ehci",
+	.id		= -1,
+	.map_base	= IMX_USB_BASE,
+	.size		= 0x200,
+	.platform_data	= &chumby_usb_pdata,
+};
+
+#define GPIO_USB_HUB_RESET	29
+#define GPIO_USB_HUB_POWER	26
+
+static void falconwing_init_usb(void)
+{
+	/* power USB hub */
+	gpio_direction_output(GPIO_USB_HUB_POWER, 1);
+	mdelay(1);
+	/* bring USB hub out of reset */
+	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
+
+	imx_usb_phy_enable();
+	register_device(&usb_dev);
+}
+
 static int falconwing_devices_init(void)
 {
 	int i, rc;
@@ -312,6 +343,8 @@ static int falconwing_devices_init(void)
 	imx_set_sspclk(0, 100000000, 1);
 	register_device(&mci_dev);
 	register_device(&ldcif_dev);
+
+	falconwing_init_usb();
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));

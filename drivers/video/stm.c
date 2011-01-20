@@ -255,6 +255,9 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
 	/* start the engine right now */
 	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + BIT_SET);
+
+	if (fbi->pdata->enable)
+		fbi->pdata->enable(1);
 }
 
 static void stmfb_disable_controller(struct fb_info *fb_info)
@@ -262,6 +265,9 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 	struct imxfb_info *fbi = fb_info->priv;
 	unsigned loop;
 	uint32_t reg;
+
+	if (fbi->pdata->enable)
+		fbi->pdata->enable(0);
 
 	/*
 	 * Even if we disable the controller here, it will still continue

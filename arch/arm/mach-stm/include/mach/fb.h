@@ -40,6 +40,8 @@ struct imx_fb_videomode {
 
 	void *fixed_screen;	/**< if != NULL use this as framebuffer memory */
 	unsigned fixed_screen_size; /**< framebuffer memory size for fixed_screen */
+
+	void (*enable)(int enable); /**< hook to enable backlight */
 };
 
 #endif /* __MACH_FB_H */

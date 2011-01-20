@@ -25,6 +25,7 @@
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
+#include <asm/mmu.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
@@ -263,6 +264,28 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY2_GPIO | GPIO_IN | PULLUP(1),
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
+
+#ifdef CONFIG_MMU
+static int falconwing_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0x40000000, 0x40000000, 64, PMD_SECT_DEF_CACHED);
+	arm_create_section(0x50000000, 0x40000000, 64, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+
+	return 0;
+}
+postcore_initcall(falconwing_mmu_init);
+#endif
 
 /**
  * Try to register an environment storage on the attached MCI card

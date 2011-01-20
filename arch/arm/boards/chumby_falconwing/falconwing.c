@@ -98,7 +98,7 @@ static struct fb_videomode falconwing_vmode = {
 	.flag = 0,
 };
 
-static struct imx_fb_videomode fb_mode = {
+static struct imx_fb_platformdata fb_mode = {
 	.mode_list = &falconwing_vmode,
 	.mode_cnt = 1,
 	/* the NMA35 is a 24 bit display, but only 18 bits are connected */

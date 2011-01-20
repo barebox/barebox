@@ -142,7 +142,7 @@ struct imxfb_info {
 	unsigned memory_size;
 	struct fb_info info;
 	struct device_d *hw_dev;
-	struct imx_fb_videomode *pdata;
+	struct imx_fb_platformdata *pdata;
 };
 
 /* the RGB565 true colour mode */
@@ -293,7 +293,7 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 static int stmfb_activate_var(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
-	struct imx_fb_videomode *pdata = fbi->pdata;
+	struct imx_fb_platformdata *pdata = fbi->pdata;
 	struct fb_videomode *mode = fb_info->mode;
 	uint32_t reg;
 	unsigned size;
@@ -442,7 +442,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 
 static void stmfb_info(struct device_d *hw_dev)
 {
-	struct imx_fb_videomode *pdata = hw_dev->platform_data;
+	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
 	unsigned u;
 
 	printf(" Supported video modes:\n");
@@ -469,7 +469,7 @@ static struct imxfb_info fbi = {
 
 static int stmfb_probe(struct device_d *hw_dev)
 {
-	struct imx_fb_videomode *pdata = hw_dev->platform_data;
+	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
 	int ret;
 
 	/* just init */
@@ -524,8 +524,8 @@ device_initcall(stmfb_init);
  * (platform specific).
  *
  * For the developer: Don't forget to set the data bus width to the display
- * in the imx_fb_videomode structure. You will else end up with ugly colours.
+ * in the imx_fb_platformdata structure. You will else end up with ugly colours.
  * If you fight against jitter you can vary the clock delay. This is a feature
  * of the i.MX28 and you can vary it between 2 ns ... 8 ns in 2 ns steps. Give
- * the required value in the imx_fb_videomode structure.
+ * the required value in the imx_fb_platformdata structure.
  */

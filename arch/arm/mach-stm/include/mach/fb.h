@@ -31,7 +31,7 @@
 /** swap RGB to BGR */
 #define FB_SYNC_SWAP_RGB	(1 << 31)
 
-struct imx_fb_videomode {
+struct imx_fb_platformdata {
 	struct fb_videomode *mode_list;
 	unsigned mode_cnt;
 

@@ -33,7 +33,7 @@
 #include <mach/imx-regs.h>
 #include <clock.h>
 #include <mach/clock.h>
-#ifndef CONFIG_ARCH_STM
+#ifndef CONFIG_ARCH_MXS
 # include <mach/iim.h>
 #endif
 #include <xfuncs.h>
@@ -269,7 +269,7 @@ static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-#ifdef CONFIG_ARCH_STM
+#ifdef CONFIG_ARCH_MXS
 	return -1;
 #else
 	return imx_iim_get_mac(mac);

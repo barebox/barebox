@@ -120,7 +120,8 @@ unsigned imx_set_lcdifclk(unsigned nc)
 			best_frac, best_div, 480 * 18 / best_frac,
 			480000 * 18 / best_frac / best_div);
 
-	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_FRAC) & ~MASK_PIXFRAC;
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_FRAC);
+	reg &= ~SET_PIXFRAC(MASK_PIXFRAC);
 	reg |= SET_PIXFRAC(best_frac);
 	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_FRAC);
 	writel(reg & ~CLKCTRL_FRAC_CLKGATEPIX, IMX_CCM_BASE + HW_CLKCTRL_FRAC);

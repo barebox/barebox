@@ -48,6 +48,7 @@
 # define CTRL1_FIFO_CLEAR (1 << 21)
 # define SET_BYTE_PACKAGING(x) (((x) & 0xf) << 16)
 # define GET_BYTE_PACKAGING(x) (((x) >> 16) & 0xf)
+# define CTRL1_RESET (1 << 0)
 
 #ifdef CONFIG_ARCH_IMX28
 # define HW_LCDIF_CTRL2 0x20
@@ -253,6 +254,11 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 
 	/* stop FIFO reset */
 	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
+
+	/* enable LCD using LCD_RESET signal*/
+	if (fbi->pdata->flags & USE_LCD_RESET)
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_SET);
+
 	/* start the engine right now */
 	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + BIT_SET);
 
@@ -265,6 +271,11 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 	struct imxfb_info *fbi = fb_info->priv;
 	unsigned loop;
 	uint32_t reg;
+
+
+	/* disable LCD using LCD_RESET signal*/
+	if (fbi->pdata->flags & USE_LCD_RESET)
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
 
 	if (fbi->pdata->enable)
 		fbi->pdata->enable(0);

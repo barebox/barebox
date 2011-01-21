@@ -31,6 +31,8 @@
 /** swap RGB to BGR */
 #define FB_SYNC_SWAP_RGB	(1 << 31)
 
+#define USE_LCD_RESET		1
+
 struct imx_fb_platformdata {
 	struct fb_videomode *mode_list;
 	unsigned mode_cnt;
@@ -42,6 +44,7 @@ struct imx_fb_platformdata {
 	void *fixed_screen;	/**< if != NULL use this as framebuffer memory */
 	unsigned fixed_screen_size; /**< framebuffer memory size for fixed_screen */
 
+	unsigned flags;
 	void (*enable)(int enable); /**< hook to enable backlight */
 };
 

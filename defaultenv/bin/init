@@ -4,15 +4,15 @@ PATH=/env/bin
 export PATH
 
 . /env/config
-if [ -e /dev/nor0 ]; then
+if [ -e /dev/nor0 -a -n "$nor_parts" ]; then
 	addpart /dev/nor0 $nor_parts
 fi
 
-if [ -e /dev/disk0 ]; then
+if [ -e /dev/disk0 -a -n "$disk_parts" ]; then
 	addpart /dev/disk0 $disk_parts
 fi
 
-if [ -e /dev/nand0 ]; then
+if [ -e /dev/nand0 -a -n "$nand_parts" ]; then
 	addpart /dev/nand0 $nand_parts
 
 	# Uh, oh, hush first expands wildcards and then starts executing
@@ -28,9 +28,6 @@ echo
 echo -n "Hit any key to stop autoboot: "
 timeout -a $autoboot_timeout
 if [ $? != 0 ]; then
-	echo
-	update -h
-	echo
 	exit
 fi
 

@@ -40,6 +40,26 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 
+/*
+ * board revision encoding
+ * bit 0-3: lcd type
+ *	0 => truly TFT1N4633-E (sam9m10g45-ek)
+ *	1 => LG philips LB043WQ1 (sam9m10-ekes and sam9g45-ekes)
+ */
+#define HAVE_LCD_TRULY_TFT1N4633E	(0 << 0)
+#define HAVE_LCD_LG_LB043WQ1		(1 << 0)
+static void ek_set_board_revision(void)
+{
+	u32 rev;
+
+#ifdef CONFIG_LCD_LG_LB043WQ1
+		rev = HAVE_LCD_LG_LB043WQ1;
+#else
+		rev = HAVE_LCD_TRULY_TFT1N4633E;
+#endif
+		armlinux_set_revision(rev);
+}
+
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
@@ -103,6 +123,7 @@ static int at91sam9m10g45ek_devices_init(void)
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_6 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9M10G45EK);
+	ek_set_board_revision();
 
 	return 0;
 }

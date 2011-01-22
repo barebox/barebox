@@ -174,7 +174,8 @@ config MACH_AT91SAM9M10G45EK
 	bool "Atmel AT91SAM9M10G45-EK Evaluation Kit"
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
-	  Select this if you are using Atmel's AT91SAM9M10G45-EK Evaluation Kit.
+	  Select this if you are using Atmel's AT91SAM9M10G45-EK Evaluation Kit
+	  or AT91SAM9G45-EKES or AT91SAM9M10-EKES (for those 2 select the LG LCD)
 	  <http://atmel.com/dyn/products/tools_card_v2.asp?tool_id=4735>
 
 config MACH_PM9G45
@@ -204,5 +205,21 @@ config AT91_HAVE_2MMC
 	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
 	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
 	  onwards.
+
+choice
+	prompt "LCD type"
+	depends on MACH_AT91SAM9M10G45EK
+
+config LCD_TRULY_TFT1N4633E
+	bool "truly TFT1N4633-E"
+	help
+	  Found on AT91SAM9M10G45-EK
+
+config LCD_LG_LB043WQ1
+	bool "LG philips LB043WQ1"
+	help
+	  Found on AT91SAM9G45-EKES and AT91SAM9M10-EKES
+
+endchoice
 
 endif

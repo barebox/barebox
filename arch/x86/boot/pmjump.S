@@ -51,7 +51,7 @@ protected_mode_jump:
 	.code32
 
 	.extern uboot_entry
-	.extern __bss_end
+	.extern __bss_stop
 
 	.type	in_pm32, @function
 in_pm32:
@@ -65,7 +65,7 @@ in_pm32:
  * Our flat mode code uses its own stack area behind the bss. With this we
  * are still able to return to real mode temporarely
  */
-	movl $__bss_end + 32768, %esp
+	movl $__bss_stop + 32768, %esp
 
 	# Set up TR to make Intel VT happy
 	ltr %di

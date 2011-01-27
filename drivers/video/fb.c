@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <init.h>
 
 static int fb_ioctl(struct cdev* cdev, int req, void *data)
 {
@@ -135,3 +136,40 @@ int register_framebuffer(struct fb_info *info)
 	return 0;
 }
 
+static void fb_info(struct device_d *dev)
+{
+	struct fb_info *info = dev->priv;
+	int i;
+
+	if (!info->num_modes)
+		return;
+
+	printf("available modes:\n");
+
+	for (i = 0; i < info->num_modes; i++) {
+		struct fb_videomode *mode = &info->mode_list[i];
+
+		printf("%-10s %dx%d@%d\n", mode->name,
+				mode->xres, mode->yres, mode->refresh);
+	}
+
+	printf("\n");
+}
+
+static int fb_probe(struct device_d *hw_dev)
+{
+	return 0;
+}
+
+static struct driver_d fb_driver = {
+	.name  = "fb",
+	.probe = fb_probe,
+	.info = fb_info,
+};
+
+static int fb_init_driver(void)
+{
+	register_driver(&fb_driver);
+	return 0;
+}
+device_initcall(fb_init_driver);

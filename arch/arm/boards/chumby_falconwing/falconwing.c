@@ -22,6 +22,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
+#include <sizes.h>
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
@@ -98,12 +99,16 @@ static struct fb_videomode falconwing_vmode = {
 	.flag = 0,
 };
 
+#define MAX_FB_SIZE SZ_1M
+
 static struct imx_fb_platformdata fb_mode = {
 	.mode_list = &falconwing_vmode,
 	.mode_cnt = 1,
 	/* the NMA35 is a 24 bit display, but only 18 bits are connected */
 	.ld_intf_width = STMLCDIF_18BIT,
 	.enable = chumby_fb_enable,
+	.fixed_screen = (void *)(0x40000000 + SZ_64M - MAX_FB_SIZE),
+	.fixed_screen_size = MAX_FB_SIZE,
 };
 
 static struct device_d ldcif_dev = {

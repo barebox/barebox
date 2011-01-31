@@ -351,25 +351,6 @@ static int write_data(struct device_d *hw_dev, const void *buffer, unsigned leng
  */
 static int transfer_data(struct device_d *hw_dev, struct mci_data *data)
 {
-	unsigned length;
-
-	if (data != NULL) {
-		length = data->blocks * data->blocksize;
-#if 0
-		/*
-		 * For the records: When writing data with high clock speeds it
-		 * could be a good idea to fill the FIFO prior starting the
-		 * transaction.
-		 * But last time I tried it, it failed badly. Don't know why yet
-		 */
-		if (data->flags & MMC_DATA_WRITE) {
-			err = write_data(host, data->src, 16);
-			data->src += 16;
-			length -= 16;
-		}
-#endif
-	}
-
 	/*
 	 * Everything is ready for the transaction now:
 	 * - transfer configuration
@@ -380,6 +361,8 @@ static int transfer_data(struct device_d *hw_dev, struct mci_data *data)
 	writel(SSP_CTRL0_RUN, hw_dev->map_base + HW_SSP_CTRL0 + 4);
 
 	if (data != NULL) {
+		unsigned length = data->blocks * data->blocksize;
+
 		if (data->flags & MMC_DATA_READ)
 			return read_data(hw_dev, data->dest, length);
 		else

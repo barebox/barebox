@@ -34,8 +34,8 @@ else
 	fi
 
 	if [ x$rootfs_type = xubifs ]; then
-		if [ x$ubiroot = x ]; then
-			ubiroot = "root"
+		if [ -z $ubiroot ]; then
+			ubiroot="root"
 		fi
 		bootargs="$bootargs root=ubi0:$ubiroot ubi.mtd=$rootfs_mtdblock"
 	else

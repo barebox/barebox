@@ -144,6 +144,27 @@ static void arp_handler(struct arprequest *arp)
 	}
 }
 
+struct eth_device *net_route(IPaddr_t dest)
+{
+	struct eth_device *edev;
+
+	for_each_netdev(edev) {
+		if (!edev->ipaddr)
+			continue;
+
+		if ((dest & edev->netmask) == (edev->ipaddr & edev->netmask)) {
+			pr_debug("Route: Using %s (ip=%pI4, nm=%pI4) to reach %pI4\n",
+			      dev_name(&edev->dev), &edev->ipaddr, &edev->netmask,
+				       &dest);
+			return edev;
+		}
+	}
+
+	pr_debug("Route: No device found for %pI4\n", &dest);
+
+	return NULL;
+}
+
 static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *ether)
 {
 	char *pkt;
@@ -153,6 +174,9 @@ static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *et
 	struct ethernet *et;
 	unsigned retries = 0;
 	int ret;
+
+	if (!edev)
+		return -EHOSTUNREACH;
 
 	if (!arp_packet) {
 		arp_packet = net_alloc_packet();
@@ -295,9 +319,11 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 	int ret;
 
 	if (!edev) {
-		edev = eth_get_current();
+		edev = net_route(dest);
+		if (!edev && net_gateway)
+			edev = net_route(net_gateway);
 		if (!edev)
-			return ERR_PTR(-ENETDOWN);
+			return ERR_PTR(-EHOSTUNREACH);
 	}
 
 	if (!is_valid_ether_addr(edev->ethaddr)) {

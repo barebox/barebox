@@ -226,6 +226,7 @@ IPaddr_t net_get_serverip(void);
 IPaddr_t net_get_gateway(void);
 IPaddr_t net_get_nameserver(void);
 const char *net_get_domainname(void);
+struct eth_device *net_route(IPaddr_t ip);
 
 /* Do the work */
 void net_poll(void);

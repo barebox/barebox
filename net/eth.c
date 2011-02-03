@@ -31,7 +31,7 @@
 static struct eth_device *eth_current;
 static uint64_t last_link_check;
 
-static LIST_HEAD(netdev_list);
+LIST_HEAD(netdev_list);
 
 struct eth_ethaddr {
 	struct list_head list;
@@ -104,7 +104,7 @@ void eth_register_ethaddr(int ethid, const char *ethaddr)
 
 	eth_drop_ethaddr(ethid);
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (edev->dev.id == ethid) {
 			register_preset_mac_address(edev, ethaddr);
 			return;
@@ -121,7 +121,7 @@ static struct eth_device *eth_get_by_node(struct device_node *node)
 {
 	struct eth_device *edev;
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (!edev->parent)
 			continue;
 		if (!edev->parent->device_node)
@@ -163,7 +163,7 @@ struct eth_device *eth_get_byname(const char *ethname)
 {
 	struct eth_device *edev;
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (!strcmp(ethname, dev_name(&edev->dev)))
 			return edev;
 	}
@@ -179,7 +179,7 @@ int eth_complete(struct string_list *sl, char *instr)
 
 	len = strlen(instr);
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		devname = dev_name(&edev->dev);
 		if (strncmp(instr, devname, len))
 			continue;
@@ -273,7 +273,7 @@ int eth_rx(void)
 {
 	struct eth_device *edev;
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (edev->active)
 			__eth_rx(edev);
 	}
@@ -337,7 +337,7 @@ static int eth_of_fixup(struct device_node *root, void *unused)
 		eth_of_fixup_node(root, addr->node ? addr->node->full_name : NULL,
 				  addr->ethid, addr->ethaddr);
 
-	list_for_each_entry(edev, &netdev_list, list)
+	for_each_netdev(edev)
 		eth_of_fixup_node(root, edev->nodepath, edev->dev.id, edev->ethaddr);
 
 	return 0;

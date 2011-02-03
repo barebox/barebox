@@ -466,4 +466,8 @@ void led_trigger_network(enum led_trigger trigger);
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
 
+extern struct list_head netdev_list;
+
+#define for_each_netdev(netdev) list_for_each_entry(netdev, &netdev_list, list)
+
 #endif /* __NET_H__ */

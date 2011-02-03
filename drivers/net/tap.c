@@ -79,7 +79,7 @@ int tap_probe(struct device_d *dev)
 	struct tap_priv *priv;
 	int ret = 0;
 
-	priv = malloc(sizeof(struct tap_priv));
+	priv = xmalloc(sizeof(struct tap_priv));
 	priv->name = "barebox";
 
 	priv->fd = tap_alloc(priv->name);
@@ -88,7 +88,7 @@ int tap_probe(struct device_d *dev)
 		goto out;
 	}
 
-	edev = malloc(sizeof(struct eth_device));
+	edev = xmalloc(sizeof(struct eth_device));
 	dev->type_data = edev;
 	edev->priv = priv;
 

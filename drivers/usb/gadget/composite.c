@@ -903,9 +903,6 @@ static int __init composite_bind(struct usb_gadget *gadget)
 	int				status = -ENOMEM;
 
 	cdev = xzalloc(sizeof *cdev);
-	if (!cdev)
-		return status;
-
 	cdev->gadget = gadget;
 	set_gadget_data(gadget, cdev);
 	INIT_LIST_HEAD(&cdev->configs);

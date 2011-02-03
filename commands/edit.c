@@ -184,10 +184,8 @@ static struct line *line_realloc(int len, struct line *line)
 {
 	int size = 32;
 
-	if (!line) {
+	if (!line)
 		line = xzalloc(sizeof(struct line));
-		line->data = malloc(32);
-	}
 
 	while (size < len)
 		size <<= 1;

@@ -9,7 +9,7 @@
 #endif
 #define	__BYTE_ORDER	__BIG_ENDIAN
 
-#include <linux/byteorder/swab.h>
+#include <linux/swab.h>
 
 #define __constant_htonl(x) ((__u32)(x))
 #define __constant_ntohl(x) ((__u32)(x))

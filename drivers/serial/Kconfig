@@ -19,7 +19,7 @@ config DRIVER_SERIAL_IMX
 	bool "i.MX serial driver"
 
 config DRIVER_SERIAL_STM378X
-	depends on ARCH_STM
+	depends on ARCH_MXS
 	default y
 	bool "i.MX23/i.MX28 serial driver"
 

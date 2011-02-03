@@ -31,6 +31,7 @@
 #include <mach/gpio.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
+#include <led.h>
 
 #include <partition.h>
 #include <generated/mach-types.h>
@@ -130,6 +131,11 @@ static struct imx_fb_platform_data eukrea_cpuimx25_fb_data = {
 	.pwmr		= 0x00A903FF,
 	.lscr1		= 0x00120300,
 	.dmacr		= 0x80040060,
+};
+
+struct gpio_led led0 = {
+	.gpio = 2 * 32 + 19,
+	.active_low = 1,
 };
 
 #ifdef CONFIG_USB
@@ -243,6 +249,8 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 	MX25_PAD_SD1_DATA1__DAT1,
 	MX25_PAD_SD1_DATA2__DAT2,
 	MX25_PAD_SD1_DATA3__DAT3,
+	/* LED */
+	MX25_PAD_POWER_FAIL__GPIO19,
 };
 
 static int eukrea_cpuimx25_devices_init(void)
@@ -251,6 +259,8 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
 		ARRAY_SIZE(eukrea_cpuimx25_pads));
+
+	led_gpio_register(&led0);
 
 	imx25_add_fec(&fec_info);
 
@@ -270,6 +280,9 @@ static int eukrea_cpuimx25_devices_init(void)
 	/* enable LCD */
 	gpio_direction_output(26, 1);
 	gpio_set_value(26, 1);
+
+	/* LED : default OFF */
+	gpio_direction_output(2 * 32 + 19, 1);
 
 	imx25_add_fb(&eukrea_cpuimx25_fb_data);
 

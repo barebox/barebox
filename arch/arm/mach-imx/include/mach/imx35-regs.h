@@ -79,6 +79,9 @@
 #define CCM_CGR1_SDHC1_SHIFT	26
 #define CCM_CGR2_USB_SHIFT	22
 
+#define CCM_RCSR_MEM_CTRL_SHIFT		25
+#define CCM_RCSR_MEM_TYPE_SHIFT		23
+
 #define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
 #define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
 #define PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)

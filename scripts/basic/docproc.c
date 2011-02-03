@@ -122,8 +122,11 @@ int symfilecnt = 0;
 
 void add_new_symbol(struct symfile *sym, char * symname)
 {
-	sym->symbollist =
-          realloc(sym->symbollist, (sym->symbolcnt + 1) * sizeof(char *));
+	sym->symbollist = realloc(sym->symbollist, (sym->symbolcnt + 1) * sizeof(char *));
+	if (!sym->symbollist) {
+		fprintf(stderr, "docproc: out of memory\n");
+		exit(1);
+	}
 	sym->symbollist[sym->symbolcnt++].name = strdup(symname);
 }
 

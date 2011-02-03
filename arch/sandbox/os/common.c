@@ -73,17 +73,6 @@ static void cookmode(void)
 	tcsetattr(0, TCSANOW, &term_orig);
 }
 
-void linux_putc(const char c)
-{
-	fputc(c, stdout);
-
-	/* If \n, also do \r */
-	if (c == '\n')
-		linux_putc ('\r');
-
-	fflush(stdout);
-}
-
 int linux_tstc(int fd)
 {
 	struct timeval tv = {
@@ -115,15 +104,6 @@ int ctrlc(void)
 	if (linux_read_nonblock(0, &chr, 1) == 1 && chr == 3)
 		return 1;
 	return 0;
-}
-
-int linux_getc(void)
-{
-	char ret;
-
-	read(0, &ret, 1);
-
-	return ret;
 }
 
 uint64_t linux_get_time(void)

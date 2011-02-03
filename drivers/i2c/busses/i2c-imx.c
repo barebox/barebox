@@ -151,7 +151,7 @@ static int i2c_imx_bus_busy(struct i2c_adapter *adapter, int for_busy)
 			break;
 		if (!for_busy && !(temp & I2SR_IBB))
 			break;
-		if (is_timeout(start, MSECOND)) {
+		if (is_timeout(start, 500 * MSECOND)) {
 			dev_err(adapter->dev,
 				 "<%s> timeout waiting for I2C bus %s\n",
 				 __func__,for_busy ? "busy" : "not busy");
@@ -170,7 +170,7 @@ static int i2c_imx_trx_complete(struct i2c_adapter *adapter)
 	start = get_time_ns();
 	while (1) {
 		unsigned int reg = readb(base + IMX_I2C_I2SR);
-		if (reg & I2SR_ICF)
+		if (reg & I2SR_IIF)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
@@ -178,26 +178,7 @@ static int i2c_imx_trx_complete(struct i2c_adapter *adapter)
 			return -EIO;
 		}
 	}
-
-	return 0;
-}
-
-static int i2c_imx_wait_iif(struct i2c_adapter *adapter)
-{
-	unsigned long base = adapter->dev->map_base;
-	uint64_t start;
-
-	start = get_time_ns();
-	while (1) {
-		unsigned int reg = readb(base + IMX_I2C_I2SR);
-		if (reg & I2SR_IIF)
-			break;
-
-		if (is_timeout(start, 100 * MSECOND)) {
-			dev_err(adapter->dev, "<%s> IIF timeout\n", __func__);
-			return -EIO;
-		}
-	}
+	writeb(0, base + IMX_I2C_I2SR);
 
 	return 0;
 }
@@ -277,9 +258,13 @@ static void i2c_imx_stop(struct i2c_adapter *adapter)
 		udelay(i2c_imx->disable_delay);
 	}
 
+	if (!i2c_imx->stopped) {
+		i2c_imx_bus_busy(adapter, 0);
+		i2c_imx->stopped = 1;
+	}
+
 	/* Disable I2C controller, and force our state to stopped */
 	writeb(0, base + IMX_I2C_I2CR);
-	i2c_imx->stopped = 1;
 }
 
 static void i2c_imx_set_clk(struct imx_i2c_struct *i2c_imx,
@@ -376,10 +361,6 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	if (result)
 		return result;
 	result = i2c_imx_acked(adapter);
-	if (result)
-		return result;
-
-	result = i2c_imx_wait_iif(adapter);
 	if (result)
 		return result;
 

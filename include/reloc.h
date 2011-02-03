@@ -1,7 +1,7 @@
 #ifndef __RELOC_H
 #define __RELOC_H
 
-extern unsigned long _barebox_start, _bss_start, _bss_end, _text_base;
+extern unsigned long _text_base;
 
 #ifdef CONFIG_HAS_EARLY_INIT
 

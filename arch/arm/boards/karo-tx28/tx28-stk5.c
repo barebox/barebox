@@ -19,7 +19,10 @@
 #include <errno.h>
 #include <mci.h>
 #include <fec.h>
+#include <sizes.h>
+#include <reloc.h>
 #include <asm/io.h>
+#include <asm/sections.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
@@ -181,11 +184,15 @@ static struct fb_videomode tx28evk_vmodes[] = {
 	},
 };
 
+#define MAX_FB_SIZE SZ_2M
+
 static struct imx_fb_videomode imxfb_mode = {
 	.mode_list = tx28evk_vmodes,
 	.mode_cnt = ARRAY_SIZE(tx28evk_vmodes),
 	.dotclk_delay = 0,	/* no adaption required */
 	.ld_intf_width = STMLCDIF_24BIT,	/* full 24 bit */
+	.fixed_screen = (void *)(0x40000000 + SZ_128M - MAX_FB_SIZE),
+	.fixed_screen_size = MAX_FB_SIZE,
 };
 
 static struct device_d ldcif_dev = {
@@ -352,6 +359,12 @@ void base_board_init(void)
 	imx_set_sspclk(0, 100000000, 1);
 
 	register_device(&mci_socket);
+
+	if (imxfb_mode.fixed_screen < (void *)&_end) {
+		printf("Warning: fixed_screen overlaps barebox\n");
+		imxfb_mode.fixed_screen = NULL;
+	}
+
 	register_device(&ldcif_dev);
 
 	imx_enable_enetclk();

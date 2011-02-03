@@ -70,3 +70,11 @@ char *xstrdup(const char *s)
 }
 EXPORT_SYMBOL(xstrdup);
 
+void* xmemalign(size_t alignment, size_t bytes)
+{
+	void *p = memalign(alignment, bytes);
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xmemalign);

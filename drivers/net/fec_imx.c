@@ -33,7 +33,7 @@
 #include <mach/imx-regs.h>
 #include <clock.h>
 #include <mach/clock.h>
-#ifndef CONFIG_ARCH_STM
+#ifndef CONFIG_ARCH_MXS
 # include <mach/iim.h>
 #endif
 #include <xfuncs.h>
@@ -269,7 +269,7 @@ static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-#ifdef CONFIG_ARCH_STM
+#ifdef CONFIG_ARCH_MXS
 	return -1;
 #else
 	return imx_iim_get_mac(mac);
@@ -565,7 +565,7 @@ static int fec_recv(struct eth_device *dev)
 
 			if (cpu_is_mx28())
 				imx28_fix_endianess_rd(
-					(void *)readl(&rbd->data_pointer),
+					phys_to_virt(readl(&rbd->data_pointer)),
 					(readw(&rbd->data_length) + 3) >> 2);
 
 			/*

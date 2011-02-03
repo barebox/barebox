@@ -440,14 +440,14 @@ static int cs8900_probe(struct device_d *dev)
 
 	debug("cs8900_init()\n");
 
-	priv = (struct cs8900_priv *)malloc(sizeof(*priv));
+	priv = (struct cs8900_priv *)xmalloc(sizeof(*priv));
 	priv->regs = (u16 *)dev->map_base;
 	if (cs8900_check_id(priv)) {
 		free(priv);
 		return -1;
 	}
 
-	edev = (struct eth_device *)malloc(sizeof(struct eth_device));
+	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
 	dev->type_data = edev;
 	edev->priv = priv;
 

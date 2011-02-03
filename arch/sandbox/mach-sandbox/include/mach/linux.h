@@ -8,8 +8,6 @@ int linux_read(int fd, void *buf, size_t count);
 int linux_read_nonblock(int fd, void *buf, size_t count);
 ssize_t linux_write(int fd, const void *buf, size_t count);
 off_t linux_lseek(int fildes, off_t offset);
-int linux_getc (void);
-void linux_putc (const char c);
 int linux_tstc(int fd);
 
 int barebox_register_console(char *name_template, int stdinfd, int stdoutfd);

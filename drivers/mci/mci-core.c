@@ -1333,10 +1333,7 @@ static struct driver_d mci_driver = {
 
 static int mci_init(void)
 {
-	sector_buf = memalign(32, 512);
-	if (!sector_buf)
-		return -ENOMEM;
-
+	sector_buf = xmemalign(32, 512);
 	return register_driver(&mci_driver);
 }
 

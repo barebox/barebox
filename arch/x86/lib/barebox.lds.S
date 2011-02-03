@@ -188,7 +188,7 @@ SECTIONS
 		__bss_start = .;
 		*(.bss*);
 		*( COMMON )
-		__bss_end = .;
+		__bss_stop = .;
 		_end = .;
 	} > barebox
 }

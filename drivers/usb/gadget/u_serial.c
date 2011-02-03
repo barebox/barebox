@@ -205,11 +205,7 @@ gs_alloc_req(struct usb_ep *ep, unsigned len)
 
 	if (req != NULL) {
 		req->length = len;
-		req->buf = memalign(32, len);
-		if (req->buf == NULL) {
-			usb_ep_free_request(ep, req);
-			return NULL;
-		}
+		req->buf = xmemalign(32, len);
 	}
 
 	return req;

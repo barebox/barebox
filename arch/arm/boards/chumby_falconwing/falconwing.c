@@ -22,13 +22,16 @@
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
+#include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
+#include <asm/mmu.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
+#include <mach/usb.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
@@ -53,6 +56,22 @@ static struct device_d mci_dev = {
 	.map_base = IMX_SSP1_BASE,
 	.platform_data = &mci_pdata,
 };
+
+#define GPIO_LCD_RESET		50
+#define GPIO_LCD_BACKLIGHT	60
+
+static void chumby_fb_enable(int enable)
+{
+	gpio_direction_output(GPIO_LCD_RESET, enable);
+
+	/* Give the display a chance to sync before we enable
+	 * the backlight to avoid flickering
+	 */
+	if (enable)
+		mdelay(100);
+
+	gpio_direction_output(GPIO_LCD_BACKLIGHT, enable);
+}
 
 static struct fb_videomode falconwing_vmode = {
 	/*
@@ -79,11 +98,12 @@ static struct fb_videomode falconwing_vmode = {
 	.flag = 0,
 };
 
-static struct imx_fb_videomode fb_mode = {
+static struct imx_fb_platformdata fb_mode = {
 	.mode_list = &falconwing_vmode,
 	.mode_cnt = 1,
 	/* the NMA35 is a 24 bit display, but only 18 bits are connected */
 	.ld_intf_width = STMLCDIF_18BIT,
+	.enable = chumby_fb_enable,
 };
 
 static struct device_d ldcif_dev = {
@@ -197,10 +217,10 @@ static const uint32_t pad_setup[] = {
 	/* backlight control, to be controled by PWM, here we only want to disable it */
 	PWM2_GPIO | GPIO_OUT | GPIO_VALUE(0),	/* 1 enables, 0 disables the backlight */
 
-	/* send a reset signal to the USB hub */
+	/* USB hub reset (active low) */
 	AUART1_TX_GPIO | GPIO_OUT | GPIO_VALUE(0),
 
-	/* USB power disable (FIXME what level to be switched off) */
+	/* USB power (active high) */
 	AUART1_CTS_GPIO | GPIO_OUT | GPIO_VALUE(0),
 
 	/* Detecting if a display is connected (0 = display attached) (external pull up) */
@@ -262,6 +282,28 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
 
+#ifdef CONFIG_MMU
+static int falconwing_mmu_init(void)
+{
+	mmu_init();
+
+	arm_create_section(0x40000000, 0x40000000, 64, PMD_SECT_DEF_CACHED);
+	arm_create_section(0x50000000, 0x40000000, 64, PMD_SECT_DEF_UNCACHED);
+
+	setup_dma_coherent(0x10000000);
+
+#if TEXT_BASE & (0x100000 - 1)
+#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
+#else
+	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
+#endif
+	mmu_enable();
+
+	return 0;
+}
+postcore_initcall(falconwing_mmu_init);
+#endif
+
 /**
  * Try to register an environment storage on the attached MCI card
  * @return 0 on success
@@ -298,6 +340,35 @@ static int register_persistant_environment(void)
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
+static struct ehci_platform_data chumby_usb_pdata = {
+	.flags = EHCI_HAS_TT,
+	.hccr_offset = 0x100,
+	.hcor_offset = 0x140,
+};
+
+static struct device_d usb_dev = {
+	.name		= "ehci",
+	.id		= -1,
+	.map_base	= IMX_USB_BASE,
+	.size		= 0x200,
+	.platform_data	= &chumby_usb_pdata,
+};
+
+#define GPIO_USB_HUB_RESET	29
+#define GPIO_USB_HUB_POWER	26
+
+static void falconwing_init_usb(void)
+{
+	/* power USB hub */
+	gpio_direction_output(GPIO_USB_HUB_POWER, 1);
+	mdelay(1);
+	/* bring USB hub out of reset */
+	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
+
+	imx_usb_phy_enable();
+	register_device(&usb_dev);
+}
+
 static int falconwing_devices_init(void)
 {
 	int i, rc;
@@ -312,6 +383,8 @@ static int falconwing_devices_init(void)
 	imx_set_sspclk(0, 100000000, 1);
 	register_device(&mci_dev);
 	register_device(&ldcif_dev);
+
+	falconwing_init_usb();
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));

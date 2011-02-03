@@ -1,11 +1,11 @@
 #!/bin/sh
 
-. /env/config
-
 type=""
 device_type=""
 check=n
 mode=tftp
+
+. /env/config
 
 while getopt "ht:d:f:m:c" Option
 do
@@ -34,6 +34,11 @@ elif [ x${type} = xbarebox ]; then
 	image=$bareboximage
 	if [ x${image} = x ]; then
 		image=barebox.bin
+	fi
+elif [ x${type} = xbareboxenv ]; then
+	image=$bareboxenvimage
+	if [ x${image} = x ]; then
+		image=bareboxenv.bin
 	fi
 else
 	. /env/bin/_update_help

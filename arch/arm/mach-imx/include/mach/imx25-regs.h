@@ -79,6 +79,9 @@
 #define PDR0_AUTO_CON		(1 << 0)
 #define PDR0_PER_SEL		(1 << 26)
 
+#define CCM_RCSR_MEM_CTRL_SHIFT		30
+#define CCM_RCSR_MEM_TYPE_SHIFT		28
+
 /*
  * Adresses and ranges of the external chip select lines
  */

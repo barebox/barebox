@@ -66,6 +66,13 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_USB
+static struct device_d usbotg_dev = {
+	.id	  = -1,
+	.name     = "ehci",
+	.map_base = IMX_OTG_BASE,
+	.size     = 0x200,
+};
+
 static struct device_d usbh2_dev = {
 	.id	  = -1,
 	.name     = "ehci",
@@ -73,27 +80,19 @@ static struct device_d usbh2_dev = {
 	.size     = 0x200,
 };
 
-static void pca100_usbh_init(void)
+static void pca100_usb_register(void)
 {
-	uint32_t temp;
-
-	temp = readl(IMX_OTG_BASE + 0x600);
-	temp &= ~((3 << 21) | 1);
-	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
-	writel(temp, IMX_OTG_BASE + 0x600);
-
-	temp = readl(IMX_OTG_BASE + 0x584);
-	temp &= ~(3 << 30);
-	temp |= 2 << 30;
-	writel(temp, IMX_OTG_BASE + 0x584);
-
 	mdelay(10);
 
 	gpio_direction_output(GPIO_PORTB + 24, 0);
+	gpio_direction_output(GPIO_PORTB + 23, 0);
 
 	mdelay(10);
 
+	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
+	register_device(&usbotg_dev);
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	register_device(&usbh2_dev);
 }
 #endif
 
@@ -119,6 +118,38 @@ static void pca100_mmu_init(void)
 {
 }
 #endif
+
+static void pca100_usb_init(void)
+{
+	u32 reg;
+
+	reg = readl(IMX_OTG_BASE + 0x600);
+	reg &= ~((3 << 21) | 1);
+	reg |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
+	writel(reg, IMX_OTG_BASE + 0x600);
+
+	/*
+	 * switch usbotg and usbh2 to ulpi mode. Do this *before*
+	 * the iomux setup to prevent funny hardware bugs from
+	 * triggering. Also, do this even when USB support is
+	 * disabled to give Linux USB support a good start.
+	 */
+	reg = readl(IMX_OTG_BASE + 0x584);
+	reg &= ~(3 << 30);
+	reg |= 2 << 30;
+	writel(reg, IMX_OTG_BASE + 0x584);
+
+	reg = readl(IMX_OTG_BASE + 0x184);
+	reg &= ~(3 << 30);
+	reg |= 2 << 30;
+	writel(reg, IMX_OTG_BASE + 0x184);
+
+	/* disable the usb phys */
+	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
+	gpio_direction_output(GPIO_PORTB + 23, 1);
+	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
+	gpio_direction_output(GPIO_PORTB + 24, 1);
+}
 
 static int pca100_devices_init(void)
 {
@@ -175,15 +206,23 @@ static int pca100_devices_init(void)
 		PB7_PF_SD2_D3,
 		PB8_PF_SD2_CMD,
 		PB9_PF_SD2_CLK,
+		PC7_PF_USBOTG_DATA5,
+		PC8_PF_USBOTG_DATA6,
+		PC9_PF_USBOTG_DATA0,
+		PC10_PF_USBOTG_DATA2,
+		PC11_PF_USBOTG_DATA1,
+		PC12_PF_USBOTG_DATA4,
+		PC13_PF_USBOTG_DATA3,
+		PE0_PF_USBOTG_NXT,
+		PE1_PF_USBOTG_STP,
+		PE2_PF_USBOTG_DIR,
+		PE24_PF_USBOTG_CLK,
+		PE25_PF_USBOTG_DATA7,
 	};
 
 	PCCR0 |= PCCR0_SDHC2_EN;
 
-	/* disable the usb phys */
-	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
-	gpio_direction_output(GPIO_PORTB + 23, 1);
-	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
-	gpio_direction_output(GPIO_PORTB + 24, 1);
+	pca100_usb_init();
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -197,8 +236,7 @@ static int pca100_devices_init(void)
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
 #ifdef CONFIG_USB
-	pca100_usbh_init();
-	register_device(&usbh2_dev);
+	pca100_usb_register();
 #endif
 
 	nand = get_device_by_name("nand0");

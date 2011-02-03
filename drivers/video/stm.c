@@ -48,6 +48,7 @@
 # define CTRL1_FIFO_CLEAR (1 << 21)
 # define SET_BYTE_PACKAGING(x) (((x) & 0xf) << 16)
 # define GET_BYTE_PACKAGING(x) (((x) >> 16) & 0xf)
+# define CTRL1_RESET (1 << 0)
 
 #ifdef CONFIG_ARCH_IMX28
 # define HW_LCDIF_CTRL2 0x20
@@ -142,7 +143,7 @@ struct imxfb_info {
 	unsigned memory_size;
 	struct fb_info info;
 	struct device_d *hw_dev;
-	struct imx_fb_videomode *pdata;
+	struct imx_fb_platformdata *pdata;
 };
 
 /* the RGB565 true colour mode */
@@ -209,24 +210,6 @@ static inline unsigned calc_line_length(unsigned ppl, unsigned bpp)
 	return (ppl * bpp) >> 3;
 }
 
-static int stmfb_memory_mmgt(struct fb_info *fb_info, unsigned size)
-{
-	struct imxfb_info *fbi = fb_info->priv;
-
-	if (fbi->memory_size != 0) {
-		free(fb_info->screen_base);
-		fb_info->screen_base = NULL;
-		fbi->memory_size = 0;
-	}
-
-	if (fbi->memory_size == 0) {
-		fb_info->screen_base = xzalloc(size);
-		fbi->memory_size = size;
-	}
-
-	return 0;
-}
-
 static void stmfb_enable_controller(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
@@ -271,8 +254,16 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 
 	/* stop FIFO reset */
 	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
+
+	/* enable LCD using LCD_RESET signal*/
+	if (fbi->pdata->flags & USE_LCD_RESET)
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_SET);
+
 	/* start the engine right now */
 	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + BIT_SET);
+
+	if (fbi->pdata->enable)
+		fbi->pdata->enable(1);
 }
 
 static void stmfb_disable_controller(struct fb_info *fb_info)
@@ -280,6 +271,14 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 	struct imxfb_info *fbi = fb_info->priv;
 	unsigned loop;
 	uint32_t reg;
+
+
+	/* disable LCD using LCD_RESET signal*/
+	if (fbi->pdata->flags & USE_LCD_RESET)
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
+
+	if (fbi->pdata->enable)
+		fbi->pdata->enable(0);
 
 	/*
 	 * Even if we disable the controller here, it will still continue
@@ -305,10 +304,9 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 static int stmfb_activate_var(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
-	struct imx_fb_videomode *pdata = fbi->pdata;
+	struct imx_fb_platformdata *pdata = fbi->pdata;
 	struct fb_videomode *mode = fb_info->mode;
 	uint32_t reg;
-	int ret;
 	unsigned size;
 
 	/*
@@ -317,10 +315,14 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	size = calc_line_length(mode->xres, fb_info->bits_per_pixel) *
 		mode->yres;
 
-	ret = stmfb_memory_mmgt(fb_info, size);
-	if (ret != 0) {
-		dev_err(fbi->hw_dev, "Cannot allocate framebuffer memory\n");
-		return ret;
+	if (pdata->fixed_screen) {
+		if (pdata->fixed_screen_size < size)
+			return -ENOMEM;
+		fb_info->screen_base = pdata->fixed_screen;
+		fbi->memory_size = pdata->fixed_screen_size;
+	} else {
+		fb_info->screen_base = xrealloc(fb_info->screen_base, size);
+		fbi->memory_size = size;
 	}
 
 	/** @todo ensure HCLK is active at this point of time! */
@@ -451,7 +453,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 
 static void stmfb_info(struct device_d *hw_dev)
 {
-	struct imx_fb_videomode *pdata = hw_dev->platform_data;
+	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
 	unsigned u;
 
 	printf(" Supported video modes:\n");
@@ -478,7 +480,7 @@ static struct imxfb_info fbi = {
 
 static int stmfb_probe(struct device_d *hw_dev)
 {
-	struct imx_fb_videomode *pdata = hw_dev->platform_data;
+	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
 	int ret;
 
 	/* just init */
@@ -495,7 +497,10 @@ static int stmfb_probe(struct device_d *hw_dev)
 	fbi.info.mode = &fbi.info.mode_list[0];
 	fbi.info.xres = fbi.info.mode->xres;
 	fbi.info.yres = fbi.info.mode->yres;
-	fbi.info.bits_per_pixel = 16;
+	if (pdata->bits_per_pixel)
+		fbi.info.bits_per_pixel = pdata->bits_per_pixel;
+	else
+		fbi.info.bits_per_pixel = 16;
 
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {
@@ -533,8 +538,8 @@ device_initcall(stmfb_init);
  * (platform specific).
  *
  * For the developer: Don't forget to set the data bus width to the display
- * in the imx_fb_videomode structure. You will else end up with ugly colours.
+ * in the imx_fb_platformdata structure. You will else end up with ugly colours.
  * If you fight against jitter you can vary the clock delay. This is a feature
  * of the i.MX28 and you can vary it between 2 ns ... 8 ns in 2 ns steps. Give
- * the required value in the imx_fb_videomode structure.
+ * the required value in the imx_fb_platformdata structure.
  */

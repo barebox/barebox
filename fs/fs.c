@@ -765,6 +765,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	}
 	sprintf(fsdev->dev.name, "%s", fsname);
 	fsdev->dev.type_data = fsdev;
+	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 
 	if ((ret = register_device(&fsdev->dev))) {
 		free(fsdev);

@@ -64,7 +64,9 @@ if [ x${mode} != xtftp ] && [ x${mode} != xxmodem ] ; then
 	exit 1
 fi
 
-. /env/bin/_update
+. /env/bin/_update || exit 1
 if [ x${check} = xy ]; then
 	crc32 -f $image -F $part
+else
+	true
 fi

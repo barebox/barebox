@@ -37,9 +37,6 @@ config BOARDINFO
 	default "Freescale i.MX51 PDK" if MACH_FREESCALE_MX51_PDK
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
 
-config ARCH_HAS_FEC_IMX
-	bool
-
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
 	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51

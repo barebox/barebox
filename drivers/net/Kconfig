@@ -13,6 +13,9 @@ config HAS_AT91_ETHER
 config HAS_NETX_ETHER
 	bool
 
+config ARCH_HAS_FEC_IMX
+	bool
+
 config MIIDEV
 	bool
 

@@ -95,6 +95,7 @@ board-$(CONFIG_MACH_FREESCALE_MX51_PDK)		:= freescale-mx51-pdk
 board-$(CONFIG_MACH_GUF_CUPID)			:= guf-cupid
 board-$(CONFIG_MACH_MINI2440)			:= mini2440
 board-$(CONFIG_MACH_VERSATILEPB)		:= versatile
+board-$(CONFIG_MACH_TX25)			:= karo-tx25
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

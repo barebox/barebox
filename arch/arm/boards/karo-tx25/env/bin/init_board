@@ -1,0 +1,6 @@
+
+if [ -e /dev/fb0 -a -e /env/splash.bmp ]; then
+	bmp /env/splash.bmp
+	fb0.enable=1
+fi
+

@@ -21,7 +21,7 @@
 
 #include <mach/iomux-v3.h>
 
-#define MX51_FEC_PAD_CTRL      (PAD_CTL_DRV_VOT_HIGH | PAD_CTL_DRIVE_STRENGTH_HIGH)
+#define MX51_FEC_PAD_CTRL      (PAD_CTL_DVS | PAD_CTL_DSE_HIGH)
 
 /*
  * The naming convention for the pad modes is MX51_PAD_<padname>__<padmode>

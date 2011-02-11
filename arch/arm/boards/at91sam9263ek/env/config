@@ -1,28 +1,41 @@
 #!/bin/sh
 
-# can be either 'net', 'nor' or 'nand''
-kernel=net
-root=net
-
-uimage=uImage
-jffs2=root.jffs2
-
-autoboot_timeout=3
-
-nfsroot=""
-bootargs="console=ttyS0,115200"
-
-nor_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
-rootpart_nor="/dev/mtdblock3"
-
-#nand_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
-#rootpart_nand="/dev/mtdblock7"
-
 # use 'dhcp' to do dhcp in barebox and in kernel
+# use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
 #eth0.netmask=a.b.c.d
 #eth0.gateway=a.b.c.d
-#eth0.serverip=192.168.23.1
+#eth0.serverip=a.b.c.d
+
+# can be either 'net' , 'nor' or 'nand'
+kernel_loc=net
+# can be either 'net', 'nor', 'nand' or 'initrd'
+rootfs_loc=net
+
+# can be either 'jffs2' or 'ubifs'
+rootfs_type=ubifs
+rootfsimage=root.$rootfs_type
+
+# The image type of the kernel. Can be uimage, zimage, raw, or raw_lzo
+#kernelimage_type=zimage
+#kernelimage=zImage
+kernelimage_type=uimage
+kernelimage=uImage
+#kernelimage_type=raw
+#kernelimage=Image
+#kernelimage_type=raw_lzo
+#kernelimage=Image.lzo
+
+nand_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
+rootfs_mtdblock_nand=3
+
+autoboot_timeout=3
+
+bootargs="console=ttyS0,115200"
+
+# set a fancy prompt (if support is compiled in)
+PS1="\e[1;32mbarebox@\e[1;31m\h:\w\e[0m "
+

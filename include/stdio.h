@@ -8,6 +8,9 @@
  * STDIO based functions (can always be used)
  */
 
+#define ORIG_printf	printf
+#undef printf
+
 /* serial stuff */
 void	serial_printf(const char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
 
@@ -59,5 +62,7 @@ int	fputs(int file, const char *s);
 int	fputc(int file, const char c);
 int	ftstc(int file);
 int	fgetc(int file);
+
+#define printf			ORIG_printf
 
 #endif /* __STDIO_H */

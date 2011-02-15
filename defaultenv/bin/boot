@@ -46,11 +46,14 @@ else
 fi
 
 if [ -n $nor_parts ]; then
-	mtdparts="${mtdparts}physmap-flash.0:${nor_parts};"
+	mtdparts="${mtdparts}physmap-flash.0:${nor_parts}"
 fi
 
 if [ -n $nand_parts ]; then
-	mtdparts="${mtdparts}${nand_device}:${nand_parts};"
+	if [ -n ${mtdparts} ]; then
+		mtdparts="${mtdparts};"
+	fi
+	mtdparts="${mtdparts}${nand_device}:${nand_parts}"
 fi
 
 if [ -n $mtdparts ]; then

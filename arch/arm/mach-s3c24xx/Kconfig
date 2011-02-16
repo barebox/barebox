@@ -43,7 +43,7 @@ config MACH_MINI2440
 	select CPU_S3C2440
 	select HAS_DM9000
 	help
-	  Say Y here if you are using Mini 2440 dev board equipped 
+	  Say Y here if you are using Mini 2440 dev board equipped
 	  with a Samsung S3C2440 Processor
 
 endchoice

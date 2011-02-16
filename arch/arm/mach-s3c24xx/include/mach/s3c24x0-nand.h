@@ -45,6 +45,7 @@ extern void s3c24x0_nand_load_image(void*, int, int, int);
  */
 struct s3c24x0_nand_platform_data {
 	uint32_t nand_timing;	/**< value for the NFCONF register (timing bits only) */
+	char flash_bbt;	/**< force a flash based BBT */
 };
 
 /**

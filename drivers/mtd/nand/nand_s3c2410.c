@@ -349,6 +349,7 @@ static int s3c24x0_nand_inithw(struct s3c24x0_nand_host *host)
 static int s3c24x0_nand_probe(struct device_d *dev)
 {
 	struct nand_chip *chip;
+	struct s3c24x0_nand_platform_data *pdata = dev->platform_data;
 	struct mtd_info *mtd;
 	struct s3c24x0_nand_host *host;
 	int ret;
@@ -392,6 +393,11 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	chip->ecc.size = 512;
 	chip->ecc.bytes = 3;
 	chip->ecc.layout = &nand_hw_eccoob;
+
+	if (pdata->flash_bbt) {
+		/* use a flash based bbt */
+		chip->options |= NAND_USE_FLASH_BBT;
+	}
 
 	ret = s3c24x0_nand_inithw(host);
 	if (ret != 0)

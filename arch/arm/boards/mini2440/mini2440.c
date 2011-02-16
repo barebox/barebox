@@ -138,6 +138,15 @@ static struct device_d mini2440_serial_device = {
 
 static int mini2440_console_init(void)
 {
+	/*
+	 * configure the UART1 right now, as barebox will
+	 * start to send data immediately
+	 */
+	s3c_gpio_mode(GPH0_NCTS0);
+	s3c_gpio_mode(GPH1_NRTS0);
+	s3c_gpio_mode(GPH2_TXD0);
+	s3c_gpio_mode(GPH3_RXD0);
+
 	register_device(&mini2440_serial_device);
 	return 0;
 }

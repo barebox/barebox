@@ -33,12 +33,14 @@
 #include <partition.h>
 #include <dm9000.h>
 #include <nand.h>
+#include <mci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <mach/gpio.h>
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>
 #include <mach/s3c24xx-generic.h>
+#include <mach/mci.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name		= "ram0",
@@ -81,6 +83,19 @@ static struct device_d dm9000_dev = {
 	.map_base = CS4_BASE + 0x300,
 	.size     = 8,
 	.platform_data = &dm9000_data,
+};
+
+static struct s3c_mci_platform_data mci_data = {
+	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
+	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,
+	.gpio_detect = 232,	/* GPG8_GPIO */
+	.detect_invert = 0,
+};
+
+static struct device_d mci_dev = {
+	.name     = "s3c_mci",
+	.map_base = S3C2410_SDI_BASE,
+	.platform_data	= &mci_data,
 };
 
 static const unsigned pin_usage[] = {
@@ -252,6 +267,7 @@ static int mini2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", NULL);
 #endif
+	register_device(&mci_dev);
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);

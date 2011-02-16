@@ -48,7 +48,6 @@ static struct device_d sdram_dev = {
 	.id		= -1,
 	.name		= "mem",
 	.map_base	= CS6_BASE,
-	.size		= 64 * 1024 * 1024,
 	.platform_data	= &ram_pdata,
 };
 
@@ -86,6 +85,8 @@ static struct device_d dm9000_dev = {
 static int mini2440_devices_init(void)
 {
 	uint32_t reg;
+
+	sdram_dev.size = s3c24x0_get_memory_size();
 
 	reg = readl(BWSCON);
 

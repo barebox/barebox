@@ -41,6 +41,10 @@ config MACH_A9M2440
 config MACH_MINI2440
 	bool "Mini 2440"
 	select CPU_S3C2440
+	select MACH_HAS_LOWLEVEL_INIT
+	select MACH_DO_LOWLEVEL_INIT
+	select S3C24XX_PLL_INIT
+	select S3C24XX_SDRAM_INIT
 	select HAS_DM9000
 	help
 	  Say Y here if you are using Mini 2440 dev board equipped

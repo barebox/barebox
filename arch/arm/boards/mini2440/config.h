@@ -26,6 +26,28 @@
  */
 #define S3C24XX_CLOCK_REFERENCE 12000000
 
+/**
+ * Define the main clock configuration to be used in register CLKDIVN
+ *
+ * We must limit the frequency of the connected SDRAMs with the clock ratio
+ * setup to 1:4:8. This will result into FCLK:HCLK:PCLK = 405Mhz:102MHz:51MHz
+ */
+#define BOARD_SPECIFIC_CLKDIVN 0x05
+
+/**
+ * Define the MPLL configuration to be used in register MPLLCON
+ *
+ * We want the MPLL to run at 405.0 MHz
+ */
+#define BOARD_SPECIFIC_MPLL ((0x7f << 12) + (2 << 4) + 1)
+
+/**
+ * Define the UPLL configuration to be used in register UPLLCON
+ *
+ * We want the UPLL to run at 48.0 MHz
+ */
+#define BOARD_SPECIFIC_UPLL ((0x38 << 12) + (2 << 4) + 2)
+
 /*
  * Flash access timings
  * Tacls  = 0ns (but 20ns data setup time)

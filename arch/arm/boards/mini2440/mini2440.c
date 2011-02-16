@@ -29,15 +29,15 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
+#include <dm9000.h>
 #include <nand.h>
+#include <asm/armlinux.h>
 #include <asm/io.h>
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>
 #include <mach/s3c24xx-generic.h>
-#include <dm9000.h>
 
 static struct memory_platform_data ram_pdata = {
 	.name		= "ram0",

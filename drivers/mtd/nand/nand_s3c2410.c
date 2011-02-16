@@ -194,6 +194,57 @@ static void __nand_boot_init disable_nand_controller(void __iomem *host)
 
 /* ----------------------------------------------------------------------- */
 
+#ifdef CONFIG_CPU_S3C2440
+/**
+ * Read one block of data from the NAND port
+ * @param[in] mtd Instance data
+ * @param[out] buf buffer to write data to
+ * @param[in] len byte count
+ *
+ * This is a special block read variant for the S3C2440 CPU.
+ */
+static void s3c2440_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+{
+	struct nand_chip *nand_chip = mtd->priv;
+	struct s3c24x0_nand_host *host = nand_chip->priv;
+
+	readsl(host->base + NFDATA, buf, len >> 2);
+
+	/* cleanup any fractional read */
+	if (len & 3) {
+		buf += len & ~3;
+
+		for (; len & 3; len--)
+			*buf++ = readb(host->base + NFDATA);
+	}
+}
+
+/**
+ * Write one block of data to the NAND port
+ * @param[in] mtd Instance data
+ * @param[out] buf buffer to read data from
+ * @param[in] len byte count
+ *
+ * This is a special block write variant for the S3C2440 CPU.
+ */
+static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
+					int len)
+{
+	struct nand_chip *nand_chip = mtd->priv;
+	struct s3c24x0_nand_host *host = nand_chip->priv;
+
+	writesl(host->base + NFDATA, buf, len >> 2);
+
+	/* cleanup any fractional write */
+	if (len & 3) {
+		buf += len & ~3;
+
+		for (; len & 3; len--, buf++)
+			writeb(*buf, host->base + NFDATA);
+	}
+}
+#endif
+
 /**
  * Check the ECC and try to repair the data if possible
  * @param[in] mtd_info FIXME
@@ -390,6 +441,10 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 
 	chip->IO_ADDR_R = chip->IO_ADDR_W = IOMEM(dev->map_base + NFDATA);
 
+#ifdef CONFIG_CPU_S3C2440
+	chip->read_buf = s3c2440_nand_read_buf;
+	chip->write_buf = s3c2440_nand_write_buf;
+#endif
 	chip->cmd_ctrl = s3c24x0_nand_hwcontrol;
 	chip->dev_ready = s3c24x0_nand_devready;
 	chip->select_chip = s3c24x0_nand_select_chip;

@@ -77,14 +77,13 @@
 #define NFCMD 0x08
 #define NFADDR 0x0C
 #define NFDATA 0x10
-
-#define NFECC 0x1C
 #define NFSTAT 0x20
+#define NFECC 0x2C
 
 /* S3C2440 specific bits */
 #define NFSTAT_BUSY (1)
 #define NFCONT_nFCE (1 << 1)
-#define NFCONF_INITECC (1 << 12)
+#define NFCONT_INITECC (1 << 4)
 #define NFCONT_EN (1)
 
 #endif	/* CONFIG_CPU_S3C2440 */
@@ -272,7 +271,12 @@ static void s3c2410_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 	struct nand_chip *nand_chip = mtd->priv;
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
+#ifdef CONFIG_CPU_S3C2410
 	writel(readl(host->base + NFCONF) | NFCONF_INITECC , host->base + NFCONF);
+#endif
+#ifdef CONFIG_CPU_S3C2440
+	writel(readl(host->base + NFCONT) | NFCONT_INITECC , host->base + NFCONT);
+#endif
 }
 
 static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, uint8_t *ecc_code)
@@ -280,10 +284,18 @@ static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, 
 	struct nand_chip *nand_chip = mtd->priv;
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
+#ifdef CONFIG_CPU_S3C2410
 	ecc_code[0] = readb(host->base + NFECC);
 	ecc_code[1] = readb(host->base + NFECC + 1);
 	ecc_code[2] = readb(host->base + NFECC + 2);
+#endif
+#ifdef CONFIG_CPU_S3C2440
+	unsigned long ecc = readl(host->base + NFECC);
 
+	ecc_code[0] = ecc;
+	ecc_code[1] = ecc >> 8;
+	ecc_code[2] = ecc >> 16;
+#endif
 	return 0;
 }
 

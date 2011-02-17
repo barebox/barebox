@@ -610,8 +610,8 @@ static int fec_probe(struct device_d *dev)
 	edev->send = fec_send;
 	edev->recv = fec_recv;
 	edev->halt = fec_halt;
-	edev->get_ethaddr = fec_get_hwaddr,
-	edev->set_ethaddr = fec_set_hwaddr,
+	edev->get_ethaddr = fec_get_hwaddr;
+	edev->set_ethaddr = fec_set_hwaddr;
 
 	fec->regs = (void *)dev->map_base;
 

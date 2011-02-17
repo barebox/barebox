@@ -605,11 +605,11 @@ static int fec_probe(struct device_d *dev)
 	dev->type_data = edev;
 	fec = (struct fec_priv *)xzalloc(sizeof(*fec));
 	edev->priv = fec;
-	edev->open = fec_open,
-	edev->init = fec_init,
-	edev->send = fec_send,
-	edev->recv = fec_recv,
-	edev->halt = fec_halt,
+	edev->open = fec_open;
+	edev->init = fec_init;
+	edev->send = fec_send;
+	edev->recv = fec_recv;
+	edev->halt = fec_halt;
 	edev->get_ethaddr = fec_get_hwaddr,
 	edev->set_ethaddr = fec_set_hwaddr,
 

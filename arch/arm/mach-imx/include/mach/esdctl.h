@@ -31,6 +31,10 @@
 #define ESDCTL0_REF4				(3 << 13)
 #define ESDCTL0_REF8				(4 << 13)
 #define ESDCTL0_REF16				(5 << 13)
+#define ESDCTL0_PWDT_DISABLED			(0 << 10)
+#define ESDCTL0_PWDT_PRECHARGE_PWDN		(1 << 10)
+#define ESDCTL0_PWDT_PWDN_64			(2 << 10)
+#define ESDCTL0_PWDT_PWDN_128			(3 << 10)
 #define ESDCTL0_FP				(1 << 8)
 #define ESDCTL0_BL				(1 << 7)
 

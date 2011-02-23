@@ -169,6 +169,7 @@ struct dm9000_priv {
 	void __iomem *iodata;
 	struct mii_device miidev;
 	int buswidth;
+	int srom;
 };
 
 #ifdef CONFIG_DM9000_DEBUG
@@ -433,12 +434,17 @@ static u16 read_srom_word(struct dm9000_priv *priv, int offset)
 static int dm9000_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct dm9000_priv *priv = (struct dm9000_priv *)edev->priv;
-	int i;
+	int i, oft;
 
-        for (i = 0; i < 3; i++)
-		((u16 *) adr)[i] = read_srom_word(priv, i);
+	if (priv->srom) {
+		for (i = 0; i < 3; i++)
+			((u16 *) adr)[i] = read_srom_word(priv, i);
+	} else {
+		for (i = 0, oft = 0x10; i < 6; i++, oft++)
+			adr[i] = DM9000_ior(priv, oft);
+	}
 
-        return 0;
+	return 0;
 }
 
 static int dm9000_set_ethaddr(struct eth_device *edev, unsigned char *adr)
@@ -491,6 +497,7 @@ static int dm9000_probe(struct device_d *dev)
 	priv->buswidth = pdata->buswidth;
 	priv->iodata = (void *)pdata->iodata;
 	priv->iobase = (void *)pdata->iobase;
+	priv->srom = pdata->srom;
 
 	edev->init = dm9000_init_dev;
 	edev->open = dm9000_eth_open;
@@ -498,8 +505,7 @@ static int dm9000_probe(struct device_d *dev)
 	edev->recv = dm9000_eth_rx;
 	edev->halt = dm9000_eth_halt;
 	edev->set_ethaddr = dm9000_set_ethaddr;
-	if (pdata->srom)
-		edev->get_ethaddr = dm9000_get_ethaddr;
+	edev->get_ethaddr = dm9000_get_ethaddr;
 
 	/* RESET device */
 	dm9000_reset(priv);

@@ -39,9 +39,34 @@ config BOARDINFO
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
 	default "Ka-Ro tx25" if MACH_TX25
 
+choice
+	prompt "Select boot mode"
+	help
+	  i.MX processors support two different boot modes. With the internal
+	  boot mode the boot medium contains a header describing the image to
+	  load. The header also contains a register/value table which can be
+	  used to setup SDRAM. The internal ROM code then initializes SDRAM
+	  using the register/value table, loads the whole barebox image to
+	  SDRAM and starts it. The internal boot mode is available on newer
+	  i.MX processors (i.MX25, i.MX35 and i.MX51). and supports booting
+	  from NOR, NAND, MMC/SD and serial ROMs.
+	  The external boot mode only supports booting from NAND and NOR. With
+	  NOR flash the image is just started in NOR flash. With NAND flash
+	  the NAND controller loads the first 2kbyte from NAND into the NAND
+	  controllers internal SRAM where it is then started. It's the
+	  responsibility of these 2kbyte to load the rest of the boot image.
+	  The external boot mode is supported on older i.MX processors (i.MX1,
+	  i.MX21, i.MX25, i.MX27, i.MX21, i.MX35).
+
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
 	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51
+
+config ARCH_IMX_EXTERNAL_BOOT
+	bool "support external boot mode"
+	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
+
+endchoice
 
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT
@@ -61,6 +86,32 @@ config ARCH_IMX_INTERNAL_BOOT_NOR
 
 config ARCH_IMX_INTERNAL_BOOT_ONENAND
 	bool "OneNAND"
+
+endchoice
+
+config NAND_IMX_BOOT
+	bool
+	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
+	default y
+
+config ARCH_IMX_EXTERNAL_BOOT_NAND
+	bool
+	prompt "Support Starting barebox from NAND"
+	depends on ARCH_IMX_EXTERNAL_BOOT
+
+choice
+	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
+	default NAND_IMX_BOOT_512_2K
+	prompt "select nand pagesize you want to support booting from"
+
+config NAND_IMX_BOOT_512
+	bool "512 byte page size"
+
+config NAND_IMX_BOOT_2K
+	bool "2048 byte page size"
+
+config NAND_IMX_BOOT_512_2K
+	bool "512 byte and 2048 byte pagesize"
 
 endchoice
 

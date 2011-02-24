@@ -9,6 +9,7 @@ obj-$(CONFIG_ARCH_IMX51) += speed-imx51.o imx51.o iomux-v3.o
 obj-$(CONFIG_IMX_CLKO)	+= clko.o
 obj-$(CONFIG_IMX_IIM)	+= iim.o
 obj-$(CONFIG_NAND_IMX) += nand.o
+obj-$(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND) += internal-nand-boot.o
 obj-y += speed.o
 obj-y += devices.o
 obj-y += boot.o

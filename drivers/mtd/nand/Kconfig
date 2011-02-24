@@ -13,27 +13,6 @@ config NAND_IMX
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX25 || ARCH_IMX51
 
-config NAND_IMX_BOOT
-	bool
-	prompt "Support Starting barebox from NAND"
-	depends on NAND_IMX && !ARCH_IMX51
-
-choice
-	depends on NAND_IMX_BOOT
-	default NAND_IMX_BOOT_512_2K
-	prompt "select nand pagesize you want to support booting from"
-
-config NAND_IMX_BOOT_512
-	bool "512 byte page size"
-
-config NAND_IMX_BOOT_2K
-	bool "2048 byte page size"
-
-config NAND_IMX_BOOT_512_2K
-	bool "512 byte and 2048 byte pagesize"
-
-endchoice
-
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"
 	depends on ((ARCH_OMAP2 || ARCH_OMAP3) && GPMC)

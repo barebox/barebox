@@ -598,7 +598,6 @@ static int mxs_mci_initialize(struct mci_host *host, struct device_d *mci_dev)
 	mxs_mci_reset(mxs_mci);
 
 	/* restore the last settings */
-	host->clock = mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, host->clock);
 	mxs_mci_setup_timeout(mxs_mci, 0xffff);
 	writel(SSP_CTRL0_IGNORE_CRC |
 		SSP_CTRL0_BUS_WIDTH(mxs_mci->bus_width),
@@ -661,9 +660,9 @@ static void mxs_mci_set_ios(struct mci_host *host, struct device_d *mci_dev,
 		break;
 	}
 
-	host->clock = mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, clock);
+	mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, clock);
 	pr_debug("IO settings: bus width=%d, frequency=%u Hz\n", host->bus_width,
-			host->clock);
+			mxs_mci->clock);
 }
 
 /* ----------------------------------------------------------------------- */

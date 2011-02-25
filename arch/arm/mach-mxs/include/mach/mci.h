@@ -18,7 +18,7 @@
 #ifndef __MACH_MMC_H
 #define __MACH_MMC_H
 
-struct stm_mci_platform_data {
+struct mxs_mci_platform_data {
 	unsigned caps;	/**< supported operating modes (MMC_MODE_*) */
 	unsigned voltages; /**< supported voltage range (MMC_VDD_*) */
 	unsigned f_min;	/**< min operating frequency in Hz (0 -> no limit) */

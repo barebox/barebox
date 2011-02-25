@@ -47,13 +47,13 @@ static struct device_d sdram_dev = {
 	.platform_data = &ram_pdata,
 };
 
-static struct stm_mci_platform_data mci_pdata = {
+static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 };
 
 static struct device_d mci_dev = {
-	.name     = "stm_mci",
+	.name     = "mxs_mci",
 	.map_base = IMX_SSP1_BASE,
 	.platform_data = &mci_pdata,
 };

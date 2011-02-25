@@ -29,9 +29,10 @@
 #include <mach/fb.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
-	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
+	.caps = MMC_MODE_4BIT,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 	.f_min = 400 * 1000,
+	.f_max = 25000000,
 };
 
 static struct device_d mci_socket = {

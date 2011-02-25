@@ -199,7 +199,7 @@ static void tx28_fb_enable(int enable)
 	 * the backlight to avoid flickering
 	 */
 	if (enable)
-		mdelay(100);
+		mdelay(300);
 
 	gpio_direction_output(GPIO_BACKLIGHT, !enable);
 }
@@ -293,7 +293,7 @@ static const uint32_t tx28_starterkit_pad_setup[] = {
 	/* sync signals */
 	LCD_WR_RWN_LCD_HSYNC | VE_3_3V | BITKEEPER(0),
 	LCD_RD_E_LCD_VSYNC | VE_3_3V | BITKEEPER(0),
-	LCD_CS_LCD_ENABLE | VE_3_3V | BITKEEPER(0),
+	LCD_CS | VE_3_3V | BITKEEPER(0),
 	LCD_RS_LCD_DOTCLK | VE_3_3V | BITKEEPER(0),
 	/* data signals */
 	LCD_D0 | VE_3_3V | BITKEEPER(0),

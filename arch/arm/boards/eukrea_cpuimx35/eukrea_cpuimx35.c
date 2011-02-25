@@ -199,11 +199,12 @@ static int eukrea_cpuimx35_devices_init(void)
 	imx35_usb_init();
 	register_device(&usbh2_dev);
 #endif
+#ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	tmp = readl(IMX_OTG_BASE + 0x608);
 	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
 	register_device(&usbotg_dev);
-
+#endif
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35);

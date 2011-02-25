@@ -27,7 +27,7 @@ config MCI_INFO
 
 comment "--- MCI host drivers ---"
 
-config MCI_STM378X
+config MCI_MXS
 	bool "i.MX23/i.MX28"
 	depends on ARCH_MXS
 	help

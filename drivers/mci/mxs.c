@@ -578,13 +578,17 @@ static void stm_mci_reset(struct device_d *hw_dev)
 		;
 }
 
+/* ------------------------- MCI API -------------------------------------- */
+
 /**
- * Initialize the engine
- * @param hw_dev Host interface instance
+ * Keep the attached MMC/SD unit in a well know state
+ * @param mci_pdata MCI platform data
  * @param mci_dev MCI device instance
+ * @return 0 on success, negative value else
  */
-static int stm_mci_initialize(struct device_d *hw_dev, struct device_d *mci_dev)
+static int stm_mci_initialize(struct mci_host *mci_pdata, struct device_d *mci_dev)
 {
+	struct device_d *hw_dev = mci_pdata->hw_dev;
 	struct mci_host *host = GET_MCI_PDATA(mci_dev);
 	struct stm_mci_host *host_data = (struct stm_mci_host*)GET_HOST_DATA(hw_dev);
 
@@ -605,21 +609,6 @@ static int stm_mci_initialize(struct device_d *hw_dev, struct device_d *mci_dev)
 		SSP_CTRL1_WORD_LENGTH(7), hw_dev->map_base + HW_SSP_CTRL1);
 
 	return 0;
-}
-
-/* ------------------------- MCI API -------------------------------------- */
-
-/**
- * Keep the attached MMC/SD unit in a well know state
- * @param mci_pdata MCI platform data
- * @param mci_dev MCI device instance
- * @return 0 on success, negative value else
- */
-static int mci_reset(struct mci_host *mci_pdata, struct device_d *mci_dev)
-{
-	struct device_d *hw_dev = mci_pdata->hw_dev;
-
-	return stm_mci_initialize(hw_dev, mci_dev);
 }
 
 /**
@@ -716,7 +705,7 @@ static int stm_mci_probe(struct device_d *hw_dev)
 	host->hw_dev = hw_dev;
 	host->send_cmd = mci_request,
 	host->set_ios = mci_set_ios,
-	host->init = mci_reset,
+	host->init = stm_mci_initialize,
 
 	/* feed forward the platform specific values */
 	host->voltages = pd->voltages;

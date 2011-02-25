@@ -586,10 +586,9 @@ static void mxs_mci_reset(struct device_d *hw_dev)
  * @param mci_dev MCI device instance
  * @return 0 on success, negative value else
  */
-static int mxs_mci_initialize(struct mci_host *mci_pdata, struct device_d *mci_dev)
+static int mxs_mci_initialize(struct mci_host *host, struct device_d *mci_dev)
 {
-	struct device_d *hw_dev = mci_pdata->hw_dev;
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct device_d *hw_dev = host->hw_dev;
 	struct mxs_mci_host *host_data = (struct mxs_mci_host*)GET_HOST_DATA(hw_dev);
 
 	/* enable the clock to this unit to be able to reset it */
@@ -618,10 +617,10 @@ static int mxs_mci_initialize(struct mci_host *mci_pdata, struct device_d *mci_d
  * @param data The data to handle in the command (can be NULL)
  * @return 0 on success, negative value else
  */
-static int mxs_mci_request(struct mci_host *mci_pdata, struct mci_cmd *cmd,
+static int mxs_mci_request(struct mci_host *host, struct mci_cmd *cmd,
 			struct mci_data *data)
 {
-	struct device_d *hw_dev = mci_pdata->hw_dev;
+	struct device_d *hw_dev = host->hw_dev;
 	int rc;
 
 	if ((cmd->resp_type == 0) || (data == NULL))
@@ -642,12 +641,11 @@ static int mxs_mci_request(struct mci_host *mci_pdata, struct mci_cmd *cmd,
  *
  * Drivers currently realized values are stored in MCI's platformdata
  */
-static void mxs_mci_set_ios(struct mci_host *mci_pdata, struct device_d *mci_dev,
+static void mxs_mci_set_ios(struct mci_host *host, struct device_d *mci_dev,
 			unsigned bus_width, unsigned clock)
 {
-	struct device_d *hw_dev = mci_pdata->hw_dev;
+	struct device_d *hw_dev = host->hw_dev;
 	struct mxs_mci_host *host_data = (struct mxs_mci_host*)GET_HOST_DATA(hw_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
 
 	switch (bus_width) {
 	case 8:

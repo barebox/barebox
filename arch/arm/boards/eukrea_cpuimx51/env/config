@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# otg port mode : can be 'host' or 'device'
+otg_mode="device"
+# video mode : can be 'CMO-QVGA' or any modefb mode
+# ex : 640x480M-16@60 800x600M-24@60 1024x768M-16@60
+video="CMO-QVGA"
+
+machine=eukrea-cpuimx51
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+# use 'none' if you want to skip kernel ip autoconfiguration
+ip=none
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d
+
+# can be either 'net' or 'nand'
+kernel_loc=nand
+# can be either 'net', 'nand' or 'initrd'
+rootfs_loc=nand
+
+# rootfs
+rootfs_type=ubifs
+rootfsimage=$machine/rootfs.$rootfs_type
+
+# kernel
+kernelimage_type=uimage
+kernelimage=$machine/uImage-${machine}.bin
+kernelimage=uImage
+
+# barebox and it's env
+bareboximage=$machine/barebox-${machine}.bin
+bareboxenvimage=$machine/bareboxenv-${machine}.bin
+
+nfsroot="$eth0.serverip:/srv/nfs/$machine"
+
+autoboot_timeout=1
+
+if [ x$video = xCMO-QVGA ]; then
+        screen_type="tft"
+else
+        screen_type="dvi"
+fi
+
+bootargs="console=ttymxc0,115200 otg_mode=$otg_mode video=$video screen_type=$screen_type"
+
+nand_parts="256k(barebox)ro,128k(bareboxenv),3M(kernel),-(root)"
+rootfs_mtdblock_nand=3
+nand_device="mxc_nand"
+ubiroot="$machine-rootfs"
+device_type="nand"
+
+# set a fancy prompt (if support is compiled in)
+PS1="\e[1;32mbarebox@\e[1;31m\h:\w\e[0m "

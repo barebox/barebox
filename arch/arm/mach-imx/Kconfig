@@ -5,6 +5,7 @@ config ARCH_TEXT_BASE
 	default 0x83f00000 if MACH_EUKREA_CPUIMX25
 	default 0xa0000000 if MACH_EUKREA_CPUIMX27
 	default 0x87f00000 if MACH_EUKREA_CPUIMX35
+	default 0x97f00000 if MACH_EUKREA_CPUIMX51SD
 	default 0x08f00000 if MACH_MX1ADS
 	default 0xc0000000 if MACH_IMX21ADS
 	default 0xa0000000 if MACH_IMX27ADS
@@ -25,6 +26,7 @@ config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
 	default "Eukrea CPUIMX27" if MACH_EUKREA_CPUIMX27
 	default "Eukrea CPUIMX35" if MACH_EUKREA_CPUIMX35
+	default "Eukrea CPUIMX51" if MACH_EUKREA_CPUIMX51SD
 	default "Freescale i.MX21 ADS" if MACH_IMX21ADS
 	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
@@ -382,6 +384,14 @@ config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select HAVE_MMU
 	select MACH_HAS_LOWLEVEL_INIT
+
+config MACH_EUKREA_CPUIMX51SD
+	bool "EUKREA CPUIMX51"
+	select HAVE_MMU
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using Eukrea's CPUIMX51 equipped
+	  with a Freescale i.MX51 Processor
 
 endchoice
 

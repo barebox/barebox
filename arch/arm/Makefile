@@ -70,6 +70,7 @@ board-$(CONFIG_MACH_EDB9315A)			:= edb93xx
 board-$(CONFIG_MACH_EUKREA_CPUIMX25)		:= eukrea_cpuimx25
 board-$(CONFIG_MACH_EUKREA_CPUIMX27)		:= eukrea_cpuimx27
 board-$(CONFIG_MACH_EUKREA_CPUIMX35)		:= eukrea_cpuimx35
+board-$(CONFIG_MACH_EUKREA_CPUIMX51SD)		:= eukrea_cpuimx51
 board-$(CONFIG_MACH_FREESCALE_MX25_3STACK)	:= freescale-mx25-3-stack
 board-$(CONFIG_MACH_FREESCALE_MX35_3STACK)	:= freescale-mx35-3-stack
 board-$(CONFIG_MACH_IMX21ADS)			:= imx21ads

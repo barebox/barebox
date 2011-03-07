@@ -20,7 +20,6 @@ ENTRY(__mmu_cache_on)
 #endif
 		orrne	r0, r0, #1		@ MMU enabled
 		movne	r1, #-1
-		mcrne	p15, 0, r3, c2, c0, 0	@ load page table pointer
 		mcrne	p15, 0, r1, c3, c0, 0	@ load domain access control
 #endif
 		mcr	p15, 0, r0, c1, c0, 0	@ load control register

@@ -24,6 +24,52 @@ void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 }
 
 /*
+ * Create a second level translation table for the given virtual address.
+ * We initially create a flat uncached mapping on it.
+ * Not yet exported, but may be later if someone finds use for it.
+ */
+static u32 *arm_create_pte(unsigned long virt)
+{
+	u32 *table;
+	int i;
+
+	table = memalign(0x400, 0x400);
+
+	ttb[virt] = (unsigned long)table | PMD_TYPE_TABLE;
+
+	for (i = 0; i < 256; i++)
+		table[i] = virt | PTE_TYPE_SMALL | PTE_SMALL_AP_UNO_SRW;
+
+	return table;
+}
+
+/*
+ * We have 8 exception vectors and the table consists of absolute
+ * jumps, so we need 8 * 4 bytes for the instructions and another
+ * 8 * 4 bytes for the addresses.
+ */
+#define ARM_VECTORS_SIZE	(sizeof(u32) * 8 * 2)
+
+/*
+ * Allocate a page, map it to the zero page and copy our exception
+ * vectors there.
+ */
+static void vectors_init(void)
+{
+	u32 *exc;
+	void *vectors;
+	extern unsigned long exception_vectors;
+
+	exc = arm_create_pte(0x0);
+
+	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
+	memset(vectors, 0, PAGE_SIZE);
+	memcpy(vectors, &exception_vectors, ARM_VECTORS_SIZE);
+
+	exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_SMALL_AP_UNO_SRW;
+}
+
+/*
  * Prepare MMU for usage and create a flat mapping. Board
  * code is responsible to remap the SDRAM cached
  */
@@ -42,6 +88,8 @@ void mmu_init(void)
 
 	/* create a flat mapping */
 	arm_create_section(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT);
+
+	vectors_init();
 }
 
 /*

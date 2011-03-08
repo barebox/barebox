@@ -31,8 +31,7 @@ void mmu_init(void)
 {
 	int i;
 
-	ttb = xzalloc(0x8000);
-	ttb = (void *)(((unsigned long)ttb + 0x4000) & ~0x3fff);
+	ttb = memalign(0x10000, 0x4000);
 
 	/* Set the ttb register */
 	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);

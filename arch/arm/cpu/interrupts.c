@@ -27,6 +27,7 @@
 
 #include <common.h>
 #include <asm/ptrace.h>
+#include <asm/unwind.h>
 
 void do_undefined_instruction (struct pt_regs *pt_regs);
 void do_software_interrupt (struct pt_regs *pt_regs);
@@ -115,6 +116,9 @@ void show_regs (struct pt_regs *regs)
 		fast_interrupts_enabled (regs) ? "on" : "off",
 		processor_modes[processor_mode (regs)],
 		thumb_mode (regs) ? " (T)" : "");
+#ifdef CONFIG_ARM_UNWIND
+	unwind_backtrace(regs);
+#endif
 }
 
 /**

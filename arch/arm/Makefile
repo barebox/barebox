@@ -34,6 +34,10 @@ else
 CFLAGS_ABI	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
 endif
 
+ifeq ($(CONFIG_ARM_UNWIND),y)
+CFLAGS_ABI	+=-funwind-tables
+endif
+
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 AFLAGS   += -include asm/unified.h
 

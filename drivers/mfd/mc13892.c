@@ -132,7 +132,7 @@ int mc13892_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
 #endif
 	return -EINVAL;
 }
-EXPORT_SYMBOL(mc13892_reg_write)
+EXPORT_SYMBOL(mc13892_reg_write);
 
 int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
 {
@@ -146,7 +146,7 @@ int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
 #endif
 	return -EINVAL;
 }
-EXPORT_SYMBOL(mc13892_reg_read)
+EXPORT_SYMBOL(mc13892_reg_read);
 
 int mc13892_set_bits(struct mc13892 *mc13892, enum mc13892_reg reg, u32 mask, u32 val)
 {

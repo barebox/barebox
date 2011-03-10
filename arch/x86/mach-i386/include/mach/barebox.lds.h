@@ -23,20 +23,6 @@
  * @brief Adapt linker script content in accordance to Kconfig settings
  */
 
-#define INITCALLS			\
-	KEEP(*(.initcall.0))			\
-	KEEP(*(.initcall.1))			\
-	KEEP(*(.initcall.2))			\
-	KEEP(*(.initcall.3))			\
-	KEEP(*(.initcall.4))			\
-	KEEP(*(.initcall.5))			\
-	KEEP(*(.initcall.6))			\
-	KEEP(*(.initcall.7))
-
-#define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
-
-#define BAREBOX_SYMS	KEEP(*(__usymtab))
-
 /**
  * Area in the MBR of the barebox basic boot code. This offset must be in
  * accordance to the 'indirect_sector_lba' label.

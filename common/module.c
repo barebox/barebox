@@ -294,7 +294,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
 	sym = (void *)sechdrs[symindex].sh_addr;
 
-#ifdef CONFIG_COMMAND
 	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".barebox_cmd");
 	if (cmdindex) {
 		struct command *cmd =(struct command *)sechdrs[cmdindex].sh_addr;
@@ -303,7 +302,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 			cmd++;
 		}
 	}
-#endif
 
 	for (i = 0; i < numsyms; i++) {
 		if (!strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "init_module")) {

@@ -257,7 +257,6 @@ static int biosdisk_probe(struct device_d *dev)
 
 		strcpy(drive_dev->name, "biosdisk");
 		drive_dev->id = drive - 0x80;
-		drive_dev->size = 1;
 		drive_dev->map_base = 0;
 		drive_dev->platform_data = p;
 

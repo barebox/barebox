@@ -14,17 +14,18 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_uboot += -static --gc-sections
 endif
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
 all: $(KBUILD_IMAGE)
 
 
 
 
+machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
+else
+CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
+endif
 
 ifneq ($(board-y),)
 BOARD  := arch/x86/boards/$(board-y)/

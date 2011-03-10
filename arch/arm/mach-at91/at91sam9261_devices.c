@@ -26,7 +26,7 @@ static struct memory_platform_data ram_pdata = {
 };
 
 static struct device_d sdram_dev = {
-	.id		= 0,
+	.id		= -1,
 	.name		= "mem",
 	.map_base	= AT91_CHIPSELECT_1,
 	.platform_data	= &ram_pdata,

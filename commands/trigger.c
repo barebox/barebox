@@ -79,7 +79,7 @@ static int do_trigger(struct command *cmdtp, int argc, char *argv[])
 		led = led_by_name_or_number(argv[optind]);
 
 		if (!led) {
-			printf("no such led: %d\n", argv[optind]);
+			printf("no such led: %s\n", argv[optind]);
 			return 1;
 		}
 

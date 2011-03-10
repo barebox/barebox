@@ -58,7 +58,7 @@ extern uint16_t pers_env_size;
 extern uint8_t pers_env_drive;
 
 /**
- * Persistant environment "not used" marker.
+ * Persistent environment "not used" marker.
  * Note: Must be in accordance to the value the tool "setup_mbr" writes.
  */
 #define PATCH_AREA_PERS_SIZE_UNUSED 0x000
@@ -74,13 +74,13 @@ static int devices_init(void)
 	register_device(&bios_disk_dev);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {
-		rc = devfs_add_partition("disk0",	/* FIXME */
+		rc = devfs_add_partition("biosdisk0",
 				pers_env_storage * 512,
 				(unsigned)pers_env_size * 512,
 				DEVFS_PARTITION_FIXED, "env0");
 		printf("Partition: %d\n", rc);
 	} else
-		printf("No persistant storage defined\n");
+		printf("No persistent storage defined\n");
 
         return 0;
 }

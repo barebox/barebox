@@ -10,8 +10,8 @@ ip=dhcp
 #eth0.gateway=a.b.c.d
 #eth0.serverip=a.b.c.d
 
-# can be either 'net' or 'nand'
-kernel_loc=net
+# can be either 'nfs', 'tftp' or 'nand'
+kernel_loc=tftp
 # can be either 'net', 'nand' or 'initrd'
 rootfs_loc=net
 

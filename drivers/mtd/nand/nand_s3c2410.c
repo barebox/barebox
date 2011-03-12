@@ -571,6 +571,10 @@ static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 
 	s3c24x0_nand_load_image(dest, size, 0, pagesize);
 
+	/* re-enable the controller again, as this was a test only */
+	enable_nand_controller((void *)S3C24X0_NAND_BASE,
+				BOARD_DEFAULT_NAND_TIMING);
+
 	return 0;
 }
 

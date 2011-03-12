@@ -99,7 +99,7 @@ struct s3c24x0_nand_host {
 };
 
 /**
- * oob placement block for use with hardware ecc generation
+ * oob placement block for use with hardware ecc generation on small page
  */
 static struct nand_ecclayout nand_hw_eccoob = {
 	.eccbytes = 3,
@@ -247,13 +247,13 @@ static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 
 /**
  * Check the ECC and try to repair the data if possible
- * @param[in] mtd_info FIXME
+ * @param[in] mtd_info Not used
  * @param[inout] dat Pointer to the data buffer that might contain a bit error
  * @param[in] read_ecc ECC data from the OOB space
  * @param[in] calc_ecc ECC data calculated from the data
  * @return 0 no error, 1 repaired error, -1 no way...
  *
- * @note: Alsways 512 byte of data
+ * @note: This routine works always on a 24 bit ECC
  */
 static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 				uint8_t *read_ecc, uint8_t *calc_ecc)
@@ -648,3 +648,18 @@ static int __init s3c24x0_nand_init(void)
 }
 
 device_initcall(s3c24x0_nand_init);
+
+/**
+ * @file
+ * @brief Support for various kinds of NAND devices
+ *
+ * ECC handling in this driver (in accordance to the current 2.6.38 kernel):
+ * - for small page NANDs it generates 3 ECC bytes out of 512 data bytes
+ * - for large page NANDs it generates 24 ECC bytes out of 2048 data bytes
+ *
+ * As small page NANDs are using 48 bits ECC per default, this driver uses a
+ * local OOB layout description, to shrink it down to 24 bits. This is a bad
+ * idea, but we cannot change it here, as the kernel is using this layout.
+ *
+ * For large page NANDs this driver uses the default layout, as the kernel does.
+ */

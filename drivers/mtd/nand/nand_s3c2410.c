@@ -272,8 +272,7 @@ static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	 * to see if we have an 0xff,0xff,0xff read ECC and then ignore
 	 * the error, on the assumption that this is an un-eccd page.
 	 */
-	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff && read_ecc[2] == 0xff
-		/* && info->platform->ignore_unset_ecc */)
+	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff && read_ecc[2] == 0xff)
 		return 0;
 
 	/* Can we correct this ECC (ie, one row and column change).
@@ -431,10 +430,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	mtd->priv = chip;
 
 	/* init the default settings */
-#if 0
-	/* TODO: Will follow later */
-	init_nand_chip_bw8(chip);
-#endif
+
 	/* 50 us command delay time */
 	chip->chip_delay = 50;
 	chip->priv = host;

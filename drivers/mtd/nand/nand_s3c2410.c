@@ -449,7 +449,6 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	chip->ecc.calculate = s3c2410_nand_calculate_ecc;
 	chip->ecc.correct = s3c2410_nand_correct_data;
 	chip->ecc.hwctl = s3c2410_nand_enable_hwecc;
-	chip->ecc.calculate = s3c2410_nand_calculate_ecc;
 
 	/* our hardware capabilities */
 	chip->ecc.mode = NAND_ECC_HW;

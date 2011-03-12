@@ -492,37 +492,78 @@ static void __nand_boot_init wait_for_completion(void __iomem *host)
 		;
 }
 
-static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs)
+/**
+ * Convert a page offset into a page address for the NAND
+ * @param host Where to write the address to
+ * @param offs Page's offset in the NAND
+ * @param ps Page size (512 or 2048)
+ * @param c Address cycle count (3, 4 or 5)
+ *
+ * Uses the offset of the page to generate an page address into the NAND. This
+ * differs when using a 512 byte or 2048 bytes per page NAND.
+ * The collumn part of the page address to be generated is always forced to '0'.
+ */
+static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs,
+					int ps, int c)
 {
-	send_addr(host, offs & 0xff);
-	send_addr(host, (offs >> 9) & 0xff);
-	send_addr(host, (offs >> 17) & 0xff);
-	send_addr(host, (offs >> 25) & 0xff);
+	send_addr(host, 0); /* collumn part 1 */
+
+	if (ps == 512) {
+		send_addr(host, offs >> 9);
+		send_addr(host, offs >> 17);
+		if (c > 3)
+			send_addr(host, offs >> 25);
+	} else {
+		send_addr(host, 0); /* collumn part 2 */
+		send_addr(host, offs >> 11);
+		send_addr(host, offs >> 19);
+		if (c > 4)
+			send_addr(host, offs >> 27);
+		send_cmd(host, NAND_CMD_READSTART);
+	}
 }
 
 /**
- * Load a sequential count of blocks from the NAND into memory
+ * Load a sequential count of pages from the NAND into memory
  * @param[out] dest Pointer to target area (in SDRAM)
  * @param[in] size Bytes to read from NAND device
  * @param[in] page Start page to read from
- * @param[in] pagesize Size of each page in the NAND
  *
  * This function must be located in the first 4kiB of the barebox image
- * (guess why). When this routine is running the SDRAM is up and running
- * and it runs from the correct address (physical=linked address).
- * TODO Could we access the platform data from the boardfile?
- * Due to it makes no sense this function does not return in case of failure.
+ * (guess why).
  */
-void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, int pagesize)
+void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 {
 	void __iomem *host = (void __iomem *)S3C24X0_NAND_BASE;
-	int i;
+	unsigned pagesize;
+	int i, cycle;
 
 	/*
 	 * Reenable the NFC and use the default (but slow) access
 	 * timing or the board specific setting if provided.
 	 */
 	enable_nand_controller(host, BOARD_DEFAULT_NAND_TIMING);
+
+	/* use the current NAND hardware configuration */
+	switch (readl(S3C24X0_NAND_BASE) & 0xf) {
+	case 0x6:	/* 8 bit, 4 addr cycles, 512 bpp, normal NAND */
+		pagesize = 512;
+		cycle = 4;
+		break;
+	case 0xc:	/* 8 bit, 4 addr cycles, 2048 bpp, advanced NAND */
+		pagesize = 2048;
+		cycle = 4;
+		break;
+	case 0xe:	/* 8 bit, 5 addr cycles, 2048 bpp, advanced NAND */
+		pagesize = 2048;
+		cycle = 5;
+		break;
+	default:
+		/* we cannot output an error message here :-( */
+		disable_nand_controller(host);
+		return;
+	}
+
 	enable_cs(host);
 
 	/* Reset the NAND device */
@@ -533,7 +574,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, in
 	do {
 		enable_cs(host);
 		send_cmd(host, NAND_CMD_READ0);
-		nfc_addr(host, page * pagesize);
+		nfc_addr(host, page * pagesize, pagesize, cycle);
 		wait_for_completion(host);
 		/* copy one page (do *not* use readsb() here!)*/
 		for (i = 0; i < pagesize; i++)
@@ -555,16 +596,15 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, in
 static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 {
 	void *dest;
-	int size, pagesize;
+	int size;
 
 	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
 
 	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
 	size = strtoul_suffix(argv[2], NULL, 0);
-	pagesize = strtoul_suffix(argv[3], NULL, 0);
 
-	s3c24x0_nand_load_image(dest, size, 0, pagesize);
+	s3c24x0_nand_load_image(dest, size, 0);
 
 	/* re-enable the controller again, as this was a test only */
 	enable_nand_controller((void *)S3C24X0_NAND_BASE,
@@ -574,7 +614,7 @@ static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size> <pagesize>\n";
+"Usage: nand_boot_test <dest> <size>\n";
 
 BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,

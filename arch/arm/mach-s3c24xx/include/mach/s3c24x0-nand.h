@@ -19,7 +19,7 @@
  */
 
 #ifdef CONFIG_S3C24XX_NAND_BOOT
-extern void s3c24x0_nand_load_image(void*, int, int, int);
+extern void s3c24x0_nand_load_image(void*, int, int);
 #endif
 
 /**

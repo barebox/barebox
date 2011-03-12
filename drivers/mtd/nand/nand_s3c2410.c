@@ -450,11 +450,24 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	chip->ecc.correct = s3c2410_nand_correct_data;
 	chip->ecc.hwctl = s3c2410_nand_enable_hwecc;
 
-	/* our hardware capabilities */
+	/*
+	 * Setup ECC handling in accordance to the kernel
+	 * - 1 times 512 bytes with 24 bit ECC for small page
+	 * - 8 times 256 bytes with 24 bit ECC each for large page
+	 */
 	chip->ecc.mode = NAND_ECC_HW;
-	chip->ecc.size = 512;
-	chip->ecc.bytes = 3;
-	chip->ecc.layout = &nand_hw_eccoob;
+	chip->ecc.bytes = 3;	/* always 24 bit ECC per turn */
+#ifdef CONFIG_CPU_S3C2440
+	if (readl(host->base) & 0x8) {
+		/* large page (2048 bytes per page) */
+		chip->ecc.size = 256;
+	} else
+#endif
+	{
+		/* small page (512 bytes per page) */
+		chip->ecc.size = 512;
+		chip->ecc.layout = &nand_hw_eccoob;
+	}
 
 	if (pdata->flash_bbt) {
 		/* use a flash based bbt */

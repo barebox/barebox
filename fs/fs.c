@@ -292,8 +292,6 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	struct stat s;
 	unsigned int m;
 
-	errno = 0;
-
 	if (stat(path, &s)) {
 		if (flags & S_UB_DOES_NOT_EXIST)
 			return 0;
@@ -325,6 +323,8 @@ static int path_check_prereq(const char *path, unsigned int flags)
 		errno = -ENOTDIR;
 		goto out;
 	}
+
+	errno = 0;
 out:
 	return errno;
 }
@@ -800,6 +800,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 			e = e->next;
 		e->next = entry;
 	}
+	errno = 0;
 out:
 	free(path);
 	return errno;

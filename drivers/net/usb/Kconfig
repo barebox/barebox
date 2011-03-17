@@ -8,4 +8,8 @@ config NET_USB_ASIX
 	select MIIDEV
 	bool "Asix compatible"
 
+config NET_USB_SMSC95XX
+	select MIIDEV
+	bool "SMSC95xx"
+
 endif

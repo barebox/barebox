@@ -91,7 +91,73 @@ config GPIO
 	help
 	  Enable this if you use Texas Instrument's General Purpose IO
 
-# Get the board specific configurations
-source arch/arm/boards/omap/Kconfig
+config ARCH_TEXT_BASE
+	hex
+	default 0x80e80000 if MACH_OMAP343xSDP
+	default 0x80e80000 if MACH_BEAGLE
+
+config BOARDINFO
+	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
+	default "Texas Instrument's Beagle" if MACH_BEAGLE
+	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
+	default "Texas Instrument's Panda" if MACH_PANDA
+
+choice
+	prompt "Select OMAP board"
+
+config MACH_OMAP343xSDP
+	bool "Texas Instrument's SDP343x"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	help
+	  Say Y here if you are using SDP343x platform
+
+config MACH_BEAGLE
+	bool "Texas Instrument's Beagle Board"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	  help
+	  Say Y here if you are using Beagle Board
+
+config MACH_OMAP3EVM
+	bool "Texas Instrument's OMAP3 EVM"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	  help
+	  Say Y here if you are using OMAP3EVM
+
+endchoice
+
+if MACH_OMAP3EVM
+	choice
+	prompt "Select UART"
+
+	config OMAP3EVM_UART1
+		bool "Use UART1"
+		depends on MACH_OMAP3EVM
+		help
+		  Say Y here if you would like to use UART1 as console.
+
+	config OMAP3EVM_UART3
+		bool "Use UART3"
+		depends on MACH_OMAP3EVM
+		help
+		  Say Y here if you would like to use UART3 as console.
+	endchoice
+endif
+
+config MACH_OMAP_ADVANCED_MUX
+	bool "Enable advanced pin muxing"
+	depends on MACH_OMAP343xSDP
+	default n
+	help
+	  Say Y here if you would like to have complete pin muxing to be
+	  done at boot time
+
+config HAS_OMAP_NAND
+	bool
 
 endmenu

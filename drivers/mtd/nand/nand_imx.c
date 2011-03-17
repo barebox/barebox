@@ -1145,7 +1145,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	imx_nand_set_layout(mtd->writesize, pdata->width == 2 ? 16 : 8);
 
-	if (mtd->writesize == 2048) {
+	if (mtd->writesize >= 2048) {
 		this->ecc.layout = oob_largepage;
 		host->pagesize_2k = 1;
 		if (nfc_is_v21())

@@ -58,6 +58,24 @@ static void __iomem *gpio_bank[] = {
 };
 #endif
 
+#ifdef CONFIG_ARCH_OMAP4
+
+#define OMAP_GPIO_OE		0x0134
+#define OMAP_GPIO_DATAIN	0x0138
+#define OMAP_GPIO_DATAOUT	0x013c
+#define OMAP_GPIO_CLEARDATAOUT	0x0190
+#define OMAP_GPIO_SETDATAOUT	0x0194
+
+static void __iomem *gpio_bank[] = {
+	(void *)0x4a310000,
+	(void *)0x48055000,
+	(void *)0x48057000,
+	(void *)0x48059000,
+	(void *)0x4805b000,
+	(void *)0x4805d000,
+};
+#endif
+
 static inline void __iomem *get_gpio_base(int gpio)
 {
 	return gpio_bank[gpio >> 5];

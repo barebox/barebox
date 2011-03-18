@@ -38,6 +38,14 @@ config ARCH_OMAP3
 	help
 	  Say Y here if you are using Texas Instrument's OMAP343x based platform
 
+config ARCH_OMAP4
+	bool "OMAP4"
+	select CPU_V7
+	select GENERIC_GPIO
+	select OMAP_CLOCK_SOURCE_S32K
+	help
+	  Say Y here if you are using Texas Instrument's OMAP4 based platform
+
 endchoice
 
 ### Generic Clock configurations to be enabled by Mach - invisible to enable.
@@ -76,7 +84,7 @@ config OMAP3_COPY_CLOCK_SRAM
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
-	depends on  (ARCH_OMAP2 || ARCH_OMAP3)
+	depends on  (ARCH_OMAP2 || ARCH_OMAP3 || ARCH_OMAP4)
 	default y
 	help
 	  Enable this if you use Texas Instrument's General purpose Memory
@@ -106,6 +114,7 @@ config MACH_OMAP343xSDP
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
+	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using SDP343x platform
 
@@ -114,6 +123,7 @@ config MACH_BEAGLE
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
+	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using Beagle Board
 
@@ -122,6 +132,7 @@ config MACH_OMAP3EVM
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
+	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using OMAP3EVM
 

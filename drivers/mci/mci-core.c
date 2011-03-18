@@ -215,6 +215,16 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 	struct mci_cmd cmd;
 	int timeout = 1000;
 	int err;
+	unsigned voltages;
+
+	/*
+	 * Most cards do not answer if some reserved bits
+	 * in the ocr are set. However, Some controller
+	 * can set bit 7 (reserved for low voltages), but
+	 * how to manage low voltages SD card is not yet
+	 * specified.
+	 */
+	voltages = host->voltages & 0xff8000;
 
 	do {
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, 0, MMC_RSP_R1);
@@ -225,7 +235,7 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 		}
 
 		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND,
-			host->voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0),
+			voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0),
 			MMC_RSP_R3);
 		err = mci_send_cmd(mci_dev, &cmd, NULL);
 		if (err) {

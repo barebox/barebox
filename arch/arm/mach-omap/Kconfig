@@ -136,6 +136,14 @@ config MACH_OMAP3EVM
 	  help
 	  Say Y here if you are using OMAP3EVM
 
+config MACH_PANDA
+	bool "Texas Instrument's Panda Board"
+	select HAVE_MMU
+	select HAVE_NOSHELL
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using OMAP4 Panda board
+
 endchoice
 
 if MACH_OMAP3EVM

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# can be either 'net' or 'flash'
+kernel=flash
+root=flash
+
+# use 'dhcp' todo dhcp in barebox and in kernel
+ip=none
+
+autoboot_timeout=3
+
+nor_parts="256k(barebox),128k(env),4M(kernel),-(rootfs)"
+
+# set a fancy prompt (if support is compiled in)
+PS1="\e[1;33mbarebox@\e[1;32mgeneric:\w\e[0m "
+

@@ -1,0 +1,39 @@
+config NIOS2
+	bool
+	select HAS_KALLSYMS
+	select HAS_MODULES
+	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	default y
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x00000000
+
+config BOARDINFO
+	default "Altera Generic Board" if GENERIC
+
+choice
+	prompt "Select your board"
+
+config GENERIC
+	bool "Generic   "
+	select NIOS2
+
+
+endchoice
+
+menu "Board configuration           "
+
+config EARLY_PRINTF
+	default n
+	bool "Enable early printf functions"
+
+endmenu
+
+source common/Kconfig
+source commands/Kconfig
+source net/Kconfig
+source drivers/Kconfig
+source fs/Kconfig
+source lib/Kconfig
+

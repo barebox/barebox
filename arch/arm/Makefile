@@ -87,6 +87,7 @@ board-$(CONFIG_MACH_OMAP343xSDP)		:= omap
 board-$(CONFIG_MACH_BEAGLE)			:= omap
 board-$(CONFIG_MACH_OMAP3EVM)			:= omap
 board-$(CONFIG_MACH_PANDA)			:= panda
+board-$(CONFIG_MACH_PCM049)			:= pcm049
 board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
 board-$(CONFIG_MACH_PCM037)			:= pcm037
 board-$(CONFIG_MACH_PCM038)			:= pcm038

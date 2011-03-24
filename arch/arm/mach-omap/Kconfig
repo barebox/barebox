@@ -105,6 +105,7 @@ config BOARDINFO
 	default "Texas Instrument's Beagle" if MACH_BEAGLE
 	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
 	default "Texas Instrument's Panda" if MACH_PANDA
+	default "Phytec phyCORE pcm049" if MACH_PCM049
 
 choice
 	prompt "Select OMAP board"
@@ -143,6 +144,16 @@ config MACH_PANDA
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using OMAP4 Panda board
+
+config MACH_PCM049
+	bool "Phytec phyCORE pcm049"
+	select HAVE_MMU
+	select HAVE_NOSHELL
+	depends on ARCH_OMAP4
+	select MACH_HAS_LOWLEVEL_INIT
+	help
+	  Say Y here if you are using Phytecs phyCORE pcm049 board
+	  based on OMAP4
 
 endchoice
 

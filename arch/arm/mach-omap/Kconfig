@@ -72,7 +72,7 @@ config OMAP3_COPY_CLOCK_SRAM
 	help
 	  Say Y here if you like to have initial OMAP3 Clock configuration done from SRAM.
 
-config GPMC
+config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
 	depends on  (ARCH_OMAP2 || ARCH_OMAP3)

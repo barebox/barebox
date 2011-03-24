@@ -15,7 +15,7 @@ config NAND_IMX
 
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"
-	depends on ((ARCH_OMAP2 || ARCH_OMAP3) && GPMC)
+	depends on OMAP_GPMC
 	help
 	 Support for NAND flash using GPMC. GPMC is a common memory
 	 interface found on Texas Instrument's OMAP platforms

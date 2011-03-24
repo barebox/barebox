@@ -1,4 +1,5 @@
 menuconfig ATA
+	select BLOCK
 	bool "ATA                           "
 	help
 	  Add support for ATA types of drives like harddisks and CDROMs.

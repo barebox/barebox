@@ -6,6 +6,7 @@ obj-$(CONFIG_KALLSYMS)		+= kallsyms.o
 obj-$(CONFIG_ENV_HANDLING)	+= environment.o
 obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o
 obj-$(CONFIG_POLLER)		+= poller.o
+obj-$(CONFIG_BLOCK)		+= block.o
 
 obj-y += dlmalloc.o
 obj-y += clock.o

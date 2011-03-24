@@ -31,6 +31,12 @@ config ENV_HANDLING
 config GENERIC_GPIO
 	bool
 
+config BLOCK
+	bool
+
+config BLOCK_WRITE
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION_AUTO

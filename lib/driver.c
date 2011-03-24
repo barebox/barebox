@@ -147,6 +147,7 @@ int unregister_device(struct device_d *old_dev)
 		old_dev->bus->remove(old_dev);
 
 	list_del(&old_dev->list);
+	list_del(&old_dev->active);
 
 	/* remove device from parents child list */
 	if (old_dev->parent)

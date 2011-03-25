@@ -169,6 +169,16 @@ static int devfs_close(struct device_d *_dev, FILE *f)
 	return 0;
 }
 
+static int devfs_flush(struct device_d *_dev, FILE *f)
+{
+	struct cdev *cdev = f->inode;
+
+	if (cdev->ops->flush)
+		return cdev->ops->flush(cdev);
+
+	return 0;
+}
+
 static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 {
 	size_t offset;
@@ -287,6 +297,7 @@ static struct fs_driver_d devfs_driver = {
 	.lseek     = devfs_lseek,
 	.open      = devfs_open,
 	.close     = devfs_close,
+	.flush     = devfs_flush,
 	.ioctl     = devfs_ioctl,
 	.opendir   = devfs_opendir,
 	.readdir   = devfs_readdir,

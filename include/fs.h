@@ -53,6 +53,7 @@ struct fs_driver_d {
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
 	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
+	int (*flush)(struct device_d *dev, FILE *f);
 	off_t (*lseek)(struct device_d *dev, FILE *f, off_t pos);
 
 	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
@@ -98,6 +99,7 @@ int open(const char *pathname, int flags, ...);
 int creat(const char *pathname, mode_t mode);
 int unlink(const char *pathname);
 int close(int fd);
+int flush(int fd);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
 int ioctl(int fd, int request, void *buf);

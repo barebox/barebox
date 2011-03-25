@@ -292,6 +292,7 @@ struct file_operations {
 	off_t (*lseek)(struct cdev*, off_t);
 	int (*open)(struct cdev*);
 	int (*close)(struct cdev*);
+	int (*flush)(struct cdev*);
 	int (*erase)(struct cdev*, size_t count, unsigned long offset);
 	int (*protect)(struct cdev*, size_t count, unsigned long offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);

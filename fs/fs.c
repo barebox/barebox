@@ -536,6 +536,26 @@ ssize_t write(int fd, const void *buf, size_t count)
 }
 EXPORT_SYMBOL(write);
 
+int flush(int fd)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	if (fsdrv->flush)
+		errno = fsdrv->flush(dev, f);
+	else
+		errno = 0;
+
+	return errno;
+}
+
 off_t lseek(int fildes, off_t offset, int whence)
 {
 	struct device_d *dev;

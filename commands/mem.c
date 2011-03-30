@@ -418,7 +418,7 @@ static int do_mem_cp(struct command *cmdtp, int argc, char *argv[])
 	char *sourcefile = DEVMEM;
 	char *destfile = DEVMEM;
 	int sourcefd, destfd;
-	int mode = O_RWSIZE_1;
+	int mode = 0;
 	struct stat statbuf;
 	int ret = 0;
 

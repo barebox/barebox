@@ -36,6 +36,9 @@
 enum gpmc_ecc_mode {
 	OMAP_ECC_SOFT,
 	OMAP_ECC_HAMMING_CODE_HW_ROMCODE,
+	OMAP_ECC_BCH4_CODE_HW,
+	OMAP_ECC_BCH8_CODE_HW,
+	OMAP_ECC_BCH8_CODE_HW_ROMCODE,
 };
 
 /** omap nand platform data structure */

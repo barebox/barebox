@@ -33,6 +33,11 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/nand_ecc.h>
 
+enum gpmc_ecc_mode {
+	OMAP_ECC_SOFT,
+	OMAP_ECC_HAMMING_CODE_HW_ROMCODE,
+};
+
 /** omap nand platform data structure */
 struct gpmc_nand_platform_data {
 	/** Chip select you want to use */
@@ -46,6 +51,8 @@ struct gpmc_nand_platform_data {
 	 * platform specific configs here
 	 */
 	unsigned short plat_options;
+	/** ecc mode to use */
+	enum gpmc_ecc_mode ecc_mode;
 	/** setup any special options */
 	unsigned int options;
 	/** set up device access as 8,16 as per GPMC config */
@@ -68,11 +75,6 @@ struct gpmc_nand_platform_data {
 #define NAND_WAITPOL_HIGH       (1 << 0)
 #define NAND_WAITPOL_MASK       (1 << 0)
 
-/** plat_options: hw ecc enabled */
-#define NAND_HWECC_ENABLE       (1 << 1)
-/** plat_options: hw ecc disabled */
-#define NAND_HWECC_MASK         (1 << 1)
-
-int gpmc_generic_nand_devices_init(int cs, int width, int hwecc);
+int gpmc_generic_nand_devices_init(int cs, int width, enum gpmc_ecc_mode);
 
 #endif				/* __ASM_OMAP_NAND_GPMC_H */

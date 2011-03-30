@@ -548,7 +548,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		goto out_release_mem;
 	}
 
-	if (pdata->plat_options & NAND_HWECC_ENABLE) {
+	if (pdata->ecc_mode == OMAP_ECC_HAMMING_CODE_HW_ROMCODE) {
 		nand->ecc.layout = layout;
 
 		/* Program how many columns we expect+

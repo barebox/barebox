@@ -156,24 +156,3 @@ int gpio_get_value(unsigned gpio)
 
 	return (__raw_readl(reg) & (1 << get_gpio_index(gpio))) != 0;
 }
-
-static void _reset_gpio(int gpio)
-{
-	gpio_direction_input(gpio);
-}
-
-int omap_request_gpio(int gpio)
-{
-	if (check_gpio(gpio) < 0)
-		return -EINVAL;
-
-	return 0;
-}
-
-void omap_free_gpio(int gpio)
-{
-	if (check_gpio(gpio) < 0)
-		return;
-
-	_reset_gpio(gpio);
-}

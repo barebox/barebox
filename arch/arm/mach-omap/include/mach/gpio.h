@@ -38,10 +38,6 @@
 #ifndef _GPIO_H
 #define _GPIO_H
 
-/* Request a gpio before using it */
-int omap_request_gpio(int gpio);
-/* Reset and free a gpio after using it */
-void omap_free_gpio(int gpio);
 void gpio_set_value(unsigned gpio, int value);
 int gpio_get_value(unsigned gpio);
 int gpio_direction_output(unsigned gpio, int value);

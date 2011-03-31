@@ -41,7 +41,7 @@ static int do_saveenv(struct command *cmdtp, int argc, char *argv[])
 	else
 		dirname = argv[2];
 	if (argc < 2)
-		filename = "/dev/env0";
+		filename = default_environment_path;
 	else
 		filename = argv[1];
 

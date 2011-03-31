@@ -62,6 +62,9 @@ static inline int setenv(const char *var, const char *val)
 int env_pop_context(void);
 int env_push_context(void);
 
+/* defaults to /dev/env0 */
+extern char *default_environment_path;
+
 int envfs_load(char *filename, char *dirname);
 int envfs_save(char *filename, char *dirname);
 

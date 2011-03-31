@@ -36,7 +36,7 @@ static int do_loadenv(struct command *cmdtp, int argc, char *argv[])
 	else
 		dirname = argv[2];
 	if (argc < 2)
-		filename = "/dev/env0";
+		filename = default_environment_path;
 	else
 		filename = argv[1];
 	printf("loading environment from %s\n", filename);

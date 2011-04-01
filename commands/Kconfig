@@ -1,7 +1,14 @@
 config REGINFO
 	bool
 
-menu "Commands                      "
+config COMMAND_SUPPORT
+	bool
+	depends on !SHELL_NONE
+	default y
+
+if COMMAND_SUPPORT
+
+menu "commands                      "
 
 menu "scripting                     "
 
@@ -404,3 +411,5 @@ config CMD_USB
 	  The usb command allows to rescan for USB devices.
 
 endmenu
+
+endif

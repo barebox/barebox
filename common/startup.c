@@ -118,7 +118,9 @@ void start_barebox (void)
 {
 	initcall_t *initcall;
 	int result;
+#ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
+#endif
 
 #ifdef CONFIG_HAS_EARLY_INIT
 	/* We are running from RAM now, copy early initdata from
@@ -150,6 +152,7 @@ void start_barebox (void)
 #endif
 	}
 #endif
+#ifdef CONFIG_COMMAND_SUPPORT
 	printf("running /env/bin/init...\n");
 
 	if (!stat("/env/bin/init", &s)) {
@@ -157,7 +160,7 @@ void start_barebox (void)
 	} else {
 		printf("not found\n");
 	}
-
+#endif
 	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;)
 		run_shell();

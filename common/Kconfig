@@ -223,6 +223,7 @@ choice
 	config SHELL_HUSH
 		bool "hush parser"
 		select ENVIRONMENT_VARIABLES
+		select COMMAND_SUPPORT
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
@@ -230,6 +231,7 @@ choice
 	config SHELL_SIMPLE
 		bool "Simple parser"
 		select ENVIRONMENT_VARIABLES
+		select COMMAND_SUPPORT
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 endchoice

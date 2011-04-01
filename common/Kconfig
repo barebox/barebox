@@ -62,6 +62,9 @@ config LOCALVERSION_AUTO
 config BOARDINFO
 	string
 
+config ENVIRONMENT_VARIABLES
+	bool "environment variables support"
+
 menu "memory layout                 "
 
 config HAVE_MMU
@@ -219,12 +222,14 @@ choice
 
 	config SHELL_HUSH
 		bool "hush parser"
+		select ENVIRONMENT_VARIABLES
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
 
 	config SHELL_SIMPLE
 		bool "Simple parser"
+		select ENVIRONMENT_VARIABLES
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 endchoice

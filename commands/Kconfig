@@ -29,11 +29,13 @@ config CMD_LOADENV
 	prompt "loadenv"
 
 config CMD_EXPORT
+	depends on ENVIRONMENT_VARIABLES
 	tristate
 	prompt "export"
 
 config CMD_PRINTENV
 	tristate
+	depends on ENVIRONMENT_VARIABLES
 	prompt "printenv"
 
 config CMD_READLINE

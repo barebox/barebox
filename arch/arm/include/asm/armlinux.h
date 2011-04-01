@@ -25,7 +25,7 @@ static inline void armlinux_set_revision(unsigned int rev)
 {
 }
 
-void armlinux_set_serial(u64)
+static inline void armlinux_set_serial(u64 serial)
 {
 }
 #endif

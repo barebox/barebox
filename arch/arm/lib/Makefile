@@ -1,4 +1,5 @@
 obj-$(CONFIG_ARM_LINUX)	+= armlinux.o
+obj-$(CONFIG_CMD_BOOTM)	+= bootm.o
 obj-y	+= div0.o
 obj-y	+= findbit.o
 obj-y	+= arm.o

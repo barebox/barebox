@@ -231,36 +231,3 @@ void start_linux(void *adr, int swap, struct image_data *data)
 
 	kernel(0, armlinux_architecture, armlinux_bootparams);
 }
-
-#ifdef CONFIG_CMD_BOOTU
-static int do_bootu(struct command *cmdtp, int argc, char *argv[])
-{
-	void (*theKernel)(int zero, int arch, void *params) = NULL;
-	int fd;
-
-	if (argc != 2) {
-		barebox_cmd_usage(cmdtp);
-		return 1;
-	}
-
-	fd = open(argv[1], O_RDONLY);
-	if (fd > 0)
-		theKernel = (void *)memmap(fd, PROT_READ);
-
-	if (!theKernel)
-		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
-
-	start_linux(theKernel, 0, NULL);
-
-	return 1;
-}
-
-static const __maybe_unused char cmd_bootu_help[] =
-"Usage: bootu <address>\n";
-
-BAREBOX_CMD_START(bootu)
-	.cmd            = do_bootu,
-	.usage          = "bootu - start a raw linux image",
-	BAREBOX_CMD_HELP(cmd_bootu_help)
-BAREBOX_CMD_END
-#endif /* CONFIG_CMD_BOOTU */

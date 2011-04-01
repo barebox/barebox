@@ -1338,7 +1338,9 @@ on_error:
 static struct driver_d mci_driver = {
 	.name	= "mci",
 	.probe	= mci_probe,
+#ifdef CONFIG_MCI_INFO
 	.info	= mci_info,
+#endif
 };
 
 static int mci_init(void)

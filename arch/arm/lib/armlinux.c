@@ -215,6 +215,23 @@ void armlinux_set_serial(u64 serial)
 	system_serial = serial;
 }
 
+void start_linux(void *adr, int swap, struct image_data *data)
+{
+	void (*kernel)(int zero, int arch, void *params) = adr;
+
+	setup_tags(data, swap);
+
+	shutdown_barebox();
+	if (swap) {
+		u32 reg;
+		__asm__ __volatile__("mrc p15, 0, %0, c1, c0" : "=r" (reg));
+		reg ^= CR_B; /* swap big-endian flag */
+		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
+	}
+
+	kernel(0, armlinux_architecture, armlinux_bootparams);
+}
+
 #ifdef CONFIG_CMD_BOOTM
 static int do_bootm_linux(struct image_data *data)
 {
@@ -241,8 +258,6 @@ static int do_bootm_linux(struct image_data *data)
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	setup_tags(data, 0);
-
 	if (relocate_image(data->os, (void *)image_get_load(os_header)))
 		return -1;
 
@@ -253,8 +268,7 @@ static int do_bootm_linux(struct image_data *data)
 	/* we assume that the kernel is in place */
 	printf("\nStarting kernel %s...\n\n", data->initrd ? "with initrd " : "");
 
-	shutdown_barebox();
-	theKernel (0, armlinux_architecture, armlinux_bootparams);
+	start_linux(theKernel, 0, data);
 
 	return -1;
 }
@@ -370,17 +384,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 
 	printf("loaded zImage from %s with size %d\n", argv[1], end);
 
-	setup_tags(NULL, swap);
-
-	shutdown_barebox();
-	if (swap) {
-		u32 reg;
-		__asm__ __volatile__("mrc p15, 0, %0, c1, c0" : "=r" (reg));
-		reg ^= CR_B; /* swap big-endian flag */
-		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
-	}
-
-	theKernel(0, armlinux_architecture, armlinux_bootparams);
+	start_linux(theKernel, swap, NULL);
 
 	return 0;
 
@@ -421,10 +425,7 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	if (!theKernel)
 		theKernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-	setup_tags(NULL, 0);
-
-	shutdown_barebox();
-	theKernel(0, armlinux_architecture, armlinux_bootparams);
+	start_linux(theKernel, 0, NULL);
 
 	return 1;
 }

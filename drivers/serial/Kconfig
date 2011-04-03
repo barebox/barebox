@@ -43,6 +43,11 @@ config DRIVER_SERIAL_BLACKFIN
 	default y
 	bool "Blackfin serial driver"
 
+config DRIVER_SERIAL_ALTERA
+	depends on NIOS2
+	default y
+	bool "Altera serial driver"
+
 config DRIVER_SERIAL_NS16550
 	default n
 	bool "NS16550 serial driver"

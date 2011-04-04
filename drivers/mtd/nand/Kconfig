@@ -33,6 +33,14 @@ config NAND_ECC_HW_NONE
 	default y
 	prompt "Support skipping ecc support"
 
+config NAND_INFO
+	bool
+	default y
+	prompt "Nand vendor/size information"
+	help
+	  Show informational strings about the vendor and nand flash type
+	  during startup
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"

@@ -86,6 +86,7 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 /* Must be a multiple of the largest NAND page size */
 #define BB_WRITEBUF_SIZE	4096
 
+#ifdef CONFIG_NAND_WRITE
 static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 {
 	int ret, now;
@@ -160,6 +161,7 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 
 	return erase(bb->fd, bb->raw_size, 0);
 }
+#endif
 
 static int nand_bb_open(struct cdev *cdev, struct filep *f)
 {
@@ -180,9 +182,10 @@ static int nand_bb_close(struct cdev *cdev, struct filep *f)
 {
 	struct nand_bb *bb = cdev->priv;
 
+#ifdef CONFIG_NAND_WRITE
 	if (bb->needs_write)
 		nand_bb_write_buf(bb, bb->offset % BB_WRITEBUF_SIZE);
-
+#endif
 	bb->open = 0;
 	free(bb->writebuf);
 
@@ -211,8 +214,10 @@ static struct file_operations nand_bb_ops = {
 	.open   = nand_bb_open,
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,
+#ifdef CONFIG_NAND_WRITE
 	.write 	= nand_bb_write,
 	.erase	= nand_bb_erase,
+#endif
 };
 
 /**

@@ -1018,10 +1018,12 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 		chip->read_word = nand_read_word;
 	if (!chip->block_bad)
 		chip->block_bad = nand_block_bad;
+#ifdef CONFIG_NAND_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
 	if (!chip->write_buf)
 		chip->write_buf = busw ? nand_write_buf16 : nand_write_buf;
+#endif
 	if (!chip->read_buf)
 		chip->read_buf = busw ? nand_read_buf16 : nand_read_buf;
 	if (!chip->verify_buf)
@@ -1175,12 +1177,13 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	if (*maf_id != NAND_MFR_SAMSUNG && !type->pagesize)
 		chip->options &= ~NAND_SAMSUNG_LP_OPTIONS;
 
+#ifdef CONFIG_NAND_WRITE
 	/* Check for AND chips with 4 page planes */
 	if (chip->options & NAND_4PAGE_ARRAY)
 		chip->erase_cmd = multi_erase_cmd;
 	else
 		chip->erase_cmd = single_erase_cmd;
-
+#endif
 	/* Do not replace user supplied command function ! */
 	if (mtd->writesize > 512 && chip->cmdfunc == nand_command)
 		chip->cmdfunc = nand_command_lp;
@@ -1303,8 +1306,10 @@ int nand_scan_tail(struct mtd_info *mtd)
 		}
 	}
 
+#ifdef CONFIG_NAND_WRITE
 	if (!chip->write_page)
 		chip->write_page = nand_write_page;
+#endif
 
 	/*
 	 * check ECC mode, default to software if 3byte/512byte hardware ECC is
@@ -1312,9 +1317,10 @@ int nand_scan_tail(struct mtd_info *mtd)
 	 */
 	if (!chip->ecc.read_page_raw)
 		chip->ecc.read_page_raw = nand_read_page_raw;
+#ifdef CONFIG_NAND_WRITE
 	if (!chip->ecc.write_page_raw)
 		chip->ecc.write_page_raw = nand_write_page_raw;
-
+#endif
 	switch (chip->ecc.mode) {
 	case NAND_ECC_HW:
 		nand_check_hwecc(mtd, chip);
@@ -1334,9 +1340,11 @@ int nand_scan_tail(struct mtd_info *mtd)
 		printk(KERN_WARNING "NAND_ECC_NONE selected by board driver. "
 		       "This is not recommended !!\n");
 		chip->ecc.read_page = nand_read_page_raw;
+#ifdef CONFIG_NAND_WRITE
 		chip->ecc.write_page = nand_write_page_raw;
-		chip->ecc.read_oob = nand_read_oob_std;
 		chip->ecc.write_oob = nand_write_oob_std;
+#endif
+		chip->ecc.read_oob = nand_read_oob_std;
 		chip->ecc.size = mtd->writesize;
 		chip->ecc.bytes = 0;
 		break;
@@ -1398,11 +1406,13 @@ int nand_scan_tail(struct mtd_info *mtd)
 	/* Fill in remaining MTD driver data */
 	mtd->type = MTD_NANDFLASH;
 	mtd->flags = MTD_CAP_NANDFLASH;
+#ifdef CONFIG_NAND_WRITE
 	mtd->erase = nand_erase;
-	mtd->read = nand_read;
 	mtd->write = nand_write;
-	mtd->read_oob = nand_read_oob;
 	mtd->write_oob = nand_write_oob;
+#endif
+	mtd->read = nand_read;
+	mtd->read_oob = nand_read_oob;
 	mtd->lock = NULL;
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;

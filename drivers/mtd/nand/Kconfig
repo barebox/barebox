@@ -8,6 +8,11 @@ menuconfig NAND
 
 if NAND
 
+config NAND_WRITE
+	bool
+	default y
+	prompt "Support writing to Nand"
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"

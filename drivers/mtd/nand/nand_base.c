@@ -281,11 +281,14 @@ int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 {
 	struct nand_chip *chip = mtd->priv;
 
+#ifdef CONFIG_NAND_BBT
 	if (!chip->bbt)
 		return chip->block_bad(mtd, ofs, getchip);
-
 	/* Return info from the table */
 	return nand_isbad_bbt(mtd, ofs, allowbbt);
+#else
+	return chip->block_bad(mtd, ofs, getchip);
+#endif
 }
 
 /*
@@ -1028,9 +1031,10 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 		chip->read_buf = busw ? nand_read_buf16 : nand_read_buf;
 	if (!chip->verify_buf)
 		chip->verify_buf = busw ? nand_verify_buf16 : nand_verify_buf;
+#ifdef CONFIG_NAND_BBT
 	if (!chip->scan_bbt)
 		chip->scan_bbt = nand_default_bbt;
-
+#endif
 	if (!chip->controller) {
 		chip->controller = &chip->hwcontrol;
 	}
@@ -1428,9 +1432,12 @@ int nand_scan_tail(struct mtd_info *mtd)
 	/* Check, if we should skip the bad block table scan */
 	if (chip->options & NAND_SKIP_BBTSCAN)
 		return 0;
-
+#ifdef CONFIG_NAND_BBT
 	/* Build bad block table */
 	return chip->scan_bbt(mtd);
+#else
+	return 0;
+#endif
 }
 
 /**

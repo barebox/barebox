@@ -2288,6 +2288,23 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 	return 0;
 }
 
+static void __maybe_unused nand_check_hwecc(struct mtd_info *mtd, struct nand_chip *chip)
+{
+	if ((!chip->ecc.calculate || !chip->ecc.correct ||
+	     !chip->ecc.hwctl) &&
+	    (!chip->ecc.read_page || !chip->ecc.write_page)) {
+		printk(KERN_WARNING "No ECC functions supplied, "
+		       "Hardware ECC not possible\n");
+		BUG();
+	}
+
+	if (mtd->writesize < chip->ecc.size) {
+		printk(KERN_WARNING "%d byte HW ECC not possible on "
+		       "%d byte page size\n",
+			chip->ecc.size, mtd->writesize);
+		BUG();
+	}
+}
 
 /**
  * nand_scan_tail - [NAND Interface] Scan for the NAND device
@@ -2356,17 +2373,10 @@ int nand_scan_tail(struct mtd_info *mtd)
 		if (!chip->ecc.write_oob)
 			chip->ecc.write_oob = nand_write_oob_std;
 
+		nand_check_hwecc(mtd, chip);
+		break;
+
 	case NAND_ECC_HW_SYNDROME:
-		if ((!chip->ecc.calculate || !chip->ecc.correct ||
-		     !chip->ecc.hwctl) &&
-		    (!chip->ecc.read_page ||
-		     chip->ecc.read_page == nand_read_page_hwecc ||
-		     !chip->ecc.write_page ||
-		     chip->ecc.write_page == nand_write_page_hwecc)) {
-			printk(KERN_WARNING "No ECC functions supplied, "
-			       "Hardware ECC not possible\n");
-			BUG();
-		}
 		/* Use standard syndrome read/write page function ? */
 		if (!chip->ecc.read_page)
 			chip->ecc.read_page = nand_read_page_syndrome;
@@ -2377,12 +2387,8 @@ int nand_scan_tail(struct mtd_info *mtd)
 		if (!chip->ecc.write_oob)
 			chip->ecc.write_oob = nand_write_oob_syndrome;
 
-		if (mtd->writesize >= chip->ecc.size)
-			break;
-		printk(KERN_WARNING "%d byte HW ECC not possible on "
-		       "%d byte page size, fallback to SW ECC\n",
-		       chip->ecc.size, mtd->writesize);
-		chip->ecc.mode = NAND_ECC_SOFT;
+		nand_check_hwecc(mtd, chip);
+		break;
 
 	case NAND_ECC_SOFT:
 		chip->ecc.calculate = nand_calculate_ecc;

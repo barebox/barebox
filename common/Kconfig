@@ -148,13 +148,10 @@ config MODULES
 
 config KALLSYMS
 	depends on HAS_KALLSYMS
-	depends on BROKEN
 	bool "kallsyms"
 	help
 	  With Kallsyms enabled all symbols are compiled into the barebox image.
 	  This is useful to print a nice backtrace when an exception occurs.
-	  No architecture supports backtraces at the moment, so this option
-	  is quite useless at the moment
 
 config RELOCATABLE
 	depends on PPC

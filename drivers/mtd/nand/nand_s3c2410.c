@@ -99,7 +99,7 @@ struct s3c24x0_nand_host {
 };
 
 /**
- * oob placement block for use with hardware ecc generation
+ * oob placement block for use with hardware ecc generation on small page
  */
 static struct nand_ecclayout nand_hw_eccoob = {
 	.eccbytes = 3,
@@ -247,13 +247,13 @@ static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 
 /**
  * Check the ECC and try to repair the data if possible
- * @param[in] mtd_info FIXME
+ * @param[in] mtd_info Not used
  * @param[inout] dat Pointer to the data buffer that might contain a bit error
  * @param[in] read_ecc ECC data from the OOB space
  * @param[in] calc_ecc ECC data calculated from the data
  * @return 0 no error, 1 repaired error, -1 no way...
  *
- * @note: Alsways 512 byte of data
+ * @note: This routine works always on a 24 bit ECC
  */
 static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 				uint8_t *read_ecc, uint8_t *calc_ecc)
@@ -272,8 +272,7 @@ static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	 * to see if we have an 0xff,0xff,0xff read ECC and then ignore
 	 * the error, on the assumption that this is an un-eccd page.
 	 */
-	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff && read_ecc[2] == 0xff
-		/* && info->platform->ignore_unset_ecc */)
+	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff && read_ecc[2] == 0xff)
 		return 0;
 
 	/* Can we correct this ECC (ie, one row and column change).
@@ -431,10 +430,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	mtd->priv = chip;
 
 	/* init the default settings */
-#if 0
-	/* TODO: Will follow later */
-	init_nand_chip_bw8(chip);
-#endif
+
 	/* 50 us command delay time */
 	chip->chip_delay = 50;
 	chip->priv = host;
@@ -453,13 +449,25 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	chip->ecc.calculate = s3c2410_nand_calculate_ecc;
 	chip->ecc.correct = s3c2410_nand_correct_data;
 	chip->ecc.hwctl = s3c2410_nand_enable_hwecc;
-	chip->ecc.calculate = s3c2410_nand_calculate_ecc;
 
-	/* our hardware capabilities */
+	/*
+	 * Setup ECC handling in accordance to the kernel
+	 * - 1 times 512 bytes with 24 bit ECC for small page
+	 * - 8 times 256 bytes with 24 bit ECC each for large page
+	 */
 	chip->ecc.mode = NAND_ECC_HW;
-	chip->ecc.size = 512;
-	chip->ecc.bytes = 3;
-	chip->ecc.layout = &nand_hw_eccoob;
+	chip->ecc.bytes = 3;	/* always 24 bit ECC per turn */
+#ifdef CONFIG_CPU_S3C2440
+	if (readl(host->base) & 0x8) {
+		/* large page (2048 bytes per page) */
+		chip->ecc.size = 256;
+	} else
+#endif
+	{
+		/* small page (512 bytes per page) */
+		chip->ecc.size = 512;
+		chip->ecc.layout = &nand_hw_eccoob;
+	}
 
 	if (pdata->flash_bbt) {
 		/* use a flash based bbt */
@@ -497,37 +505,78 @@ static void __nand_boot_init wait_for_completion(void __iomem *host)
 		;
 }
 
-static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs)
+/**
+ * Convert a page offset into a page address for the NAND
+ * @param host Where to write the address to
+ * @param offs Page's offset in the NAND
+ * @param ps Page size (512 or 2048)
+ * @param c Address cycle count (3, 4 or 5)
+ *
+ * Uses the offset of the page to generate an page address into the NAND. This
+ * differs when using a 512 byte or 2048 bytes per page NAND.
+ * The collumn part of the page address to be generated is always forced to '0'.
+ */
+static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs,
+					int ps, int c)
 {
-	send_addr(host, offs & 0xff);
-	send_addr(host, (offs >> 9) & 0xff);
-	send_addr(host, (offs >> 17) & 0xff);
-	send_addr(host, (offs >> 25) & 0xff);
+	send_addr(host, 0); /* collumn part 1 */
+
+	if (ps == 512) {
+		send_addr(host, offs >> 9);
+		send_addr(host, offs >> 17);
+		if (c > 3)
+			send_addr(host, offs >> 25);
+	} else {
+		send_addr(host, 0); /* collumn part 2 */
+		send_addr(host, offs >> 11);
+		send_addr(host, offs >> 19);
+		if (c > 4)
+			send_addr(host, offs >> 27);
+		send_cmd(host, NAND_CMD_READSTART);
+	}
 }
 
 /**
- * Load a sequential count of blocks from the NAND into memory
+ * Load a sequential count of pages from the NAND into memory
  * @param[out] dest Pointer to target area (in SDRAM)
  * @param[in] size Bytes to read from NAND device
  * @param[in] page Start page to read from
- * @param[in] pagesize Size of each page in the NAND
  *
  * This function must be located in the first 4kiB of the barebox image
- * (guess why). When this routine is running the SDRAM is up and running
- * and it runs from the correct address (physical=linked address).
- * TODO Could we access the platform data from the boardfile?
- * Due to it makes no sense this function does not return in case of failure.
+ * (guess why).
  */
-void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, int pagesize)
+void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 {
 	void __iomem *host = (void __iomem *)S3C24X0_NAND_BASE;
-	int i;
+	unsigned pagesize;
+	int i, cycle;
 
 	/*
 	 * Reenable the NFC and use the default (but slow) access
 	 * timing or the board specific setting if provided.
 	 */
 	enable_nand_controller(host, BOARD_DEFAULT_NAND_TIMING);
+
+	/* use the current NAND hardware configuration */
+	switch (readl(S3C24X0_NAND_BASE) & 0xf) {
+	case 0x6:	/* 8 bit, 4 addr cycles, 512 bpp, normal NAND */
+		pagesize = 512;
+		cycle = 4;
+		break;
+	case 0xc:	/* 8 bit, 4 addr cycles, 2048 bpp, advanced NAND */
+		pagesize = 2048;
+		cycle = 4;
+		break;
+	case 0xe:	/* 8 bit, 5 addr cycles, 2048 bpp, advanced NAND */
+		pagesize = 2048;
+		cycle = 5;
+		break;
+	default:
+		/* we cannot output an error message here :-( */
+		disable_nand_controller(host);
+		return;
+	}
+
 	enable_cs(host);
 
 	/* Reset the NAND device */
@@ -538,7 +587,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, in
 	do {
 		enable_cs(host);
 		send_cmd(host, NAND_CMD_READ0);
-		nfc_addr(host, page * pagesize);
+		nfc_addr(host, page * pagesize, pagesize, cycle);
 		wait_for_completion(host);
 		/* copy one page (do *not* use readsb() here!)*/
 		for (i = 0; i < pagesize; i++)
@@ -560,22 +609,25 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page, in
 static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
 {
 	void *dest;
-	int size, pagesize;
+	int size;
 
 	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
 
 	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
 	size = strtoul_suffix(argv[2], NULL, 0);
-	pagesize = strtoul_suffix(argv[3], NULL, 0);
 
-	s3c24x0_nand_load_image(dest, size, 0, pagesize);
+	s3c24x0_nand_load_image(dest, size, 0);
+
+	/* re-enable the controller again, as this was a test only */
+	enable_nand_controller((void *)S3C24X0_NAND_BASE,
+				BOARD_DEFAULT_NAND_TIMING);
 
 	return 0;
 }
 
 static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size> <pagesize>\n";
+"Usage: nand_boot_test <dest> <size>\n";
 
 BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
@@ -596,3 +648,18 @@ static int __init s3c24x0_nand_init(void)
 }
 
 device_initcall(s3c24x0_nand_init);
+
+/**
+ * @file
+ * @brief Support for various kinds of NAND devices
+ *
+ * ECC handling in this driver (in accordance to the current 2.6.38 kernel):
+ * - for small page NANDs it generates 3 ECC bytes out of 512 data bytes
+ * - for large page NANDs it generates 24 ECC bytes out of 2048 data bytes
+ *
+ * As small page NANDs are using 48 bits ECC per default, this driver uses a
+ * local OOB layout description, to shrink it down to 24 bits. This is a bad
+ * idea, but we cannot change it here, as the kernel is using this layout.
+ *
+ * For large page NANDs this driver uses the default layout, as the kernel does.
+ */

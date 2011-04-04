@@ -599,7 +599,7 @@ endef
 
 # Generate .S file with all kernel symbols
 quiet_cmd_kallsyms = KSYM    $@
-      cmd_kallsyms = $(NM) -g -n $< | $(KALLSYMS) > $@
+      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) --all-symbols > $@
 
 .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
 	$(call if_changed_dep,as_o_S)

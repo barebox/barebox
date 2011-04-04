@@ -15,6 +15,7 @@
 #include <linux/ctype.h>
 #include <asm-generic/div64.h>
 #include <malloc.h>
+#include <kallsyms.h>
 
 #include <common.h>
 #include <led.h>

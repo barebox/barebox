@@ -31,6 +31,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <dm9000.h>
+#include <led.h>
 
 static struct device_d cfi_dev = {
 	.id	  = -1,
@@ -68,9 +69,30 @@ static struct device_d dm9000_dev = {
 	.platform_data = &dm9000_data,
 };
 
-static int scb9328_devices_init(void) {
+struct gpio_led leds[] = {
+	{
+		.gpio = 32 + 21,
+	}, {
+		.gpio = 32 + 22,
+	}, {
+		.gpio = 32 + 23,
+	}, {
+		.gpio = 32 + 24,
+	},
+};
+
+static int scb9328_devices_init(void)
+{
+	int i;
 
 	imx_gpio_mode(PA23_PF_CS5);
+	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 21);
+	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 22);
+	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 23);
+	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 24);
+
+	for (i = 0; i < ARRAY_SIZE(leds); i++)
+		led_gpio_register(&leds[i]);
 
 /* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
 	FMCR = 0x1;

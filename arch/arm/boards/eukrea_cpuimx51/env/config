@@ -18,7 +18,7 @@ ip=none
 #eth0.gateway=a.b.c.d
 #eth0.serverip=a.b.c.d
 
-# can be either 'net' or 'nand'
+# can be either 'nfs', 'tftp' or 'nand'
 kernel_loc=nand
 # can be either 'net', 'nand' or 'initrd'
 rootfs_loc=nand

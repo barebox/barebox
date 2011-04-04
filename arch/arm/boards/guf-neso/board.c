@@ -167,11 +167,6 @@ static void neso_mmu_init(void)
 
 	setup_dma_coherent(0x10000000);
 
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
 	mmu_enable();
 }
 #else

@@ -22,6 +22,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
+#include <sizes.h>
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
@@ -46,13 +47,13 @@ static struct device_d sdram_dev = {
 	.platform_data = &ram_pdata,
 };
 
-static struct stm_mci_platform_data mci_pdata = {
+static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 };
 
 static struct device_d mci_dev = {
-	.name     = "stm_mci",
+	.name     = "mxs_mci",
 	.map_base = IMX_SSP1_BASE,
 	.platform_data = &mci_pdata,
 };
@@ -98,12 +99,16 @@ static struct fb_videomode falconwing_vmode = {
 	.flag = 0,
 };
 
+#define MAX_FB_SIZE SZ_1M
+
 static struct imx_fb_platformdata fb_mode = {
 	.mode_list = &falconwing_vmode,
 	.mode_cnt = 1,
 	/* the NMA35 is a 24 bit display, but only 18 bits are connected */
 	.ld_intf_width = STMLCDIF_18BIT,
 	.enable = chumby_fb_enable,
+	.fixed_screen = (void *)(0x40000000 + SZ_64M - MAX_FB_SIZE),
+	.fixed_screen_size = MAX_FB_SIZE,
 };
 
 static struct device_d ldcif_dev = {
@@ -292,11 +297,6 @@ static int falconwing_mmu_init(void)
 
 	setup_dma_coherent(0x10000000);
 
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
 	mmu_enable();
 
 	return 0;

@@ -8,9 +8,12 @@ if [ x$1 = xnand ]; then
 elif [ x$1 = xnor ]; then
 	rootfs_loc=nor
 	kernel_loc=nor
-elif [ x$1 = xnet ]; then
+elif [ x$1 = xnfs ]; then
 	rootfs_loc=net
-	kernel_loc=net
+	kernel_loc=nfs
+elif [ x$1 = xtftp ]; then
+	rootfs_loc=net
+	kernel_loc=tftp
 fi
 
 if [ x$ip = xdhcp ]; then
@@ -71,7 +74,7 @@ if [ ! -e /dev/ram0.kernel ]; then
 	addpart /dev/ram0 8M@8M(kernel)
 fi
 
-if [ x$kernel_loc = xnet ]; then
+if [ x$kernel_loc = xnfs ] || [ x$kernel_loc = xtftp ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
@@ -87,14 +90,14 @@ if [ x$kernel_loc = xnet ]; then
 		echo "error: set kernelimage_type to one of 'uimage', 'zimage', 'raw' or 'raw_lzo'"
 		exit 1
 	fi
-	tftp $kernelimage $netload || exit 1
+	$kernel_loc $kernelimage $netload || exit 1
 	kdev="$netload"
 elif [ x$kernel_loc = xnor ]; then
 	kdev="/dev/nor0.kernel"
 elif [ x$kernel_loc = xnand ]; then
 	kdev="/dev/nand0.kernel.bb"
 else
-	echo "error: set kernel_loc to one of 'net', 'nand' or 'nor'"
+	echo "error: set kernel_loc to one of 'nfs', 'tftp', 'nand' or 'nor'"
 	exit 1
 fi
 

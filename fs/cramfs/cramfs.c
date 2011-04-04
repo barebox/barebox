@@ -456,7 +456,6 @@ static void cramfs_remove(struct device_d *dev)
 }
 
 static struct fs_driver_d cramfs_driver = {
-	.type		= FS_TYPE_CRAMFS,
 	.open		= cramfs_open,
 	.close		= cramfs_close,
 	.read		= cramfs_read,

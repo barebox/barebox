@@ -282,7 +282,6 @@ static void devfs_delete(struct device_d *dev)
 }
 
 static struct fs_driver_d devfs_driver = {
-	.type      = FS_TYPE_DEVFS,
 	.read      = devfs_read,
 	.write     = devfs_write,
 	.lseek     = devfs_lseek,

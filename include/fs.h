@@ -3,10 +3,6 @@
 
 #include <driver.h>
 
-#define FS_TYPE_CRAMFS 1
-#define FS_TYPE_RAMFS  2
-#define FS_TYPE_DEVFS  3
-
 #define PATH_MAX       1024        /* include/linux/limits.h */
 
 struct partition;
@@ -41,7 +37,6 @@ typedef struct filep {
 #define FS_DRIVER_NO_DEV	1
 
 struct fs_driver_d {
-	ulong type;
 	char *name;
 	int (*probe) (struct device_d *dev);
 	int (*mkdir)(struct device_d *dev, const char *pathname);

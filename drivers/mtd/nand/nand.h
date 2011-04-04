@@ -10,5 +10,6 @@ int nand_write_oob_std(struct mtd_info *mtd, struct nand_chip *chip,
 
 void nand_init_ecc_hw(struct nand_chip *chip);
 void nand_init_ecc_soft(struct nand_chip *chip);
+void nand_init_ecc_hw_syndrome(struct nand_chip *chip);
 
 #endif /* __NAND_H */

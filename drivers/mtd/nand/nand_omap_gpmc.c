@@ -682,13 +682,13 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	gpmcnand_dbg("pdev=%x", (unsigned int)pdev);
 	pdata = (struct gpmc_nand_platform_data *)pdev->platform_data;
 	if (pdata == NULL) {
-		gpmcnand_err("platform data missing\n");
+		dev_dbg(pdev, "platform data missing\n");
 		return -ENODEV;
 	}
 
 	oinfo = calloc(1, sizeof(struct gpmc_nand_info));
 	if (!oinfo) {
-		gpmcnand_err("oinfo alloc failed!\n");
+		dev_dbg(pdev, "oinfo alloc failed!\n");
 		return -ENOMEM;
 	}
 
@@ -705,7 +705,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	minfo->priv = (void *)nand;
 
 	if (pdata->cs >= GPMC_NUM_CS) {
-		gpmcnand_err("Invalid CS!\n");
+		dev_dbg(pdev, "Invalid CS!\n");
 		err = -EINVAL;
 		goto out_release_mem;
 	}
@@ -729,7 +729,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	/* If we are 16 bit dev, our gpmc config tells us that */
 	if ((readl(cs_base) & 0x3000) == 0x1000) {
-		debug("16 bit dev\n");
+		dev_dbg(pdev, "16 bit dev\n");
 		nand->options |= NAND_BUSWIDTH_16;
 	}
 
@@ -744,7 +744,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	 * until you get a failure or success
 	 */
 	if (pdata->wait_mon_pin > 4) {
-		gpmcnand_err("Invalid wait monitoring pin\n");
+		dev_dbg(pdev, "Invalid wait monitoring pin\n");
 		err = -EINVAL;
 		goto out_release_mem;
 	}
@@ -774,7 +774,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	if (pdata->nand_setup) {
 		err = pdata->nand_setup(pdata);
 		if (err) {
-			gpmcnand_err("pdataform setup failed\n");
+			dev_dbg(pdev, "pdataform setup failed\n");
 			goto out_release_mem;
 		}
 	}
@@ -826,7 +826,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	/* We are all set to register with the system now! */
 	err = add_mtd_device(minfo);
 	if (err) {
-		gpmcnand_err("device registration failed\n");
+		dev_dbg(pdev, "device registration failed\n");
 		goto out_release_mem;
 	}
 
@@ -838,7 +838,7 @@ out_release_mem:
 	if (oinfo)
 		free(oinfo);
 
-	gpmcnand_err("Failed!!\n");
+	dev_dbg(pdev, "Failed!!\n");
 	return err;
 }
 

@@ -2133,32 +2133,6 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 	return chip->block_markbad(mtd, ofs);
 }
 
-/**
- * nand_suspend - [MTD Interface] Suspend the NAND flash
- * @mtd:	MTD device structure
- */
-static int nand_suspend(struct mtd_info *mtd)
-{
-	struct nand_chip *chip = mtd->priv;
-
-	return nand_get_device(chip, mtd, FL_PM_SUSPENDED);
-}
-
-/**
- * nand_resume - [MTD Interface] Resume the NAND flash
- * @mtd:	MTD device structure
- */
-static void nand_resume(struct mtd_info *mtd)
-{
-	struct nand_chip *chip = mtd->priv;
-
-	if (chip->state == FL_PM_SUSPENDED)
-		nand_release_device(mtd);
-	else
-		printk(KERN_ERR "nand_resume() called for a chip which is not "
-		       "in suspended state\n");
-}
-
 /*
  * Set default functions
  */
@@ -2591,8 +2565,6 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->sync = nand_sync;
 	mtd->lock = NULL;
 	mtd->unlock = NULL;
-	mtd->suspend = nand_suspend;
-	mtd->resume = nand_resume;
 	mtd->block_isbad = nand_block_isbad;
 	mtd->block_markbad = nand_block_markbad;
 

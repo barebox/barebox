@@ -143,7 +143,7 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 	f->inode = cdev;
 
 	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, f);
+		ret = cdev->ops->open(cdev);
 		if (ret)
 			return ret;
 	}
@@ -159,7 +159,7 @@ static int devfs_close(struct device_d *_dev, FILE *f)
 	int ret;
 
 	if (cdev->ops->close) {
-		ret = cdev->ops->close(cdev, f);
+		ret = cdev->ops->close(cdev);
 		if (ret)
 			return ret;
 	}

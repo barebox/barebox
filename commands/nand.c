@@ -163,7 +163,7 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 }
 #endif
 
-static int nand_bb_open(struct cdev *cdev, struct filep *f)
+static int nand_bb_open(struct cdev *cdev)
 {
 	struct nand_bb *bb = cdev->priv;
 
@@ -178,7 +178,7 @@ static int nand_bb_open(struct cdev *cdev, struct filep *f)
 	return 0;
 }
 
-static int nand_bb_close(struct cdev *cdev, struct filep *f)
+static int nand_bb_close(struct cdev *cdev)
 {
 	struct nand_bb *bb = cdev->priv;
 

@@ -81,7 +81,7 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	return err;
 }
 
-static int ubi_volume_cdev_open(struct cdev *cdev, struct filep *f)
+static int ubi_volume_cdev_open(struct cdev *cdev)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
@@ -90,7 +90,7 @@ static int ubi_volume_cdev_open(struct cdev *cdev, struct filep *f)
 	return 0;
 }
 
-static int ubi_volume_cdev_close(struct cdev *cdev, struct filep *f)
+static int ubi_volume_cdev_close(struct cdev *cdev)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 	struct ubi_volume *vol = priv->vol;

@@ -93,4 +93,5 @@ SECTIONS
 	.bss : { *(.bss*) }
 	__bss_stop = .;
 	_end = .;
+	_barebox_image_size = __bss_start - _text;
 }

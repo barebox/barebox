@@ -1322,20 +1322,24 @@ int nand_scan_tail(struct mtd_info *mtd)
 		chip->ecc.write_page_raw = nand_write_page_raw;
 #endif
 	switch (chip->ecc.mode) {
+#ifdef CONFIG_NAND_ECC_HW
 	case NAND_ECC_HW:
 		nand_check_hwecc(mtd, chip);
 		nand_init_ecc_hw(chip);
 		break;
-
+#endif
+#ifdef CONFIG_NAND_ECC_HW_SYNDROME
 	case NAND_ECC_HW_SYNDROME:
 		nand_check_hwecc(mtd, chip);
 		nand_init_ecc_hw_syndrome(chip);
 		break;
-
+#endif
+#ifdef CONFIG_NAND_ECC_SOFT
 	case NAND_ECC_SOFT:
 		nand_init_ecc_soft(chip);
 		break;
-
+#endif
+#ifdef CONFIG_NAND_ECC_NONE
 	case NAND_ECC_NONE:
 		printk(KERN_WARNING "NAND_ECC_NONE selected by board driver. "
 		       "This is not recommended !!\n");
@@ -1348,7 +1352,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		chip->ecc.size = mtd->writesize;
 		chip->ecc.bytes = 0;
 		break;
-
+#endif
 	default:
 		printk(KERN_WARNING "Invalid NAND_ECC_MODE %d\n",
 		       chip->ecc.mode);

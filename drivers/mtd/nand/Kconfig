@@ -13,6 +13,26 @@ config NAND_WRITE
 	default y
 	prompt "Support writing to Nand"
 
+config NAND_ECC_SOFT
+	bool
+	default y
+	prompt "Support software ecc"
+
+config NAND_ECC_HW
+	bool
+	default y
+	prompt "Support hardware ecc"
+
+config NAND_ECC_HW_SYNDROME
+	bool
+	default y
+	prompt "Support syndrome hardware ecc controllers"
+
+config NAND_ECC_HW_NONE
+	bool
+	default y
+	prompt "Support skipping ecc support"
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"

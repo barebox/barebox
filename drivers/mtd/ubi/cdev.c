@@ -9,7 +9,6 @@ struct ubi_volume_cdev_priv {
 	struct ubi_device *ubi;
 	struct ubi_volume *vol;
 	int updating;
-	unsigned long mode;
 };
 
 static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
@@ -86,12 +85,7 @@ static int ubi_volume_cdev_open(struct cdev *cdev, struct filep *f)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
-	/* only allow read or write, but not both */
-	if ((f->flags & O_ACCMODE) == O_RDWR)
-		return -EINVAL;
-
 	priv->updating = 0;
-	priv->mode = f->flags & O_ACCMODE;
 
 	return 0;
 }
@@ -132,7 +126,7 @@ static off_t ubi_volume_cdev_lseek(struct cdev *cdev, off_t ofs)
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
 	/* We can only update ubi volumes sequentially */
-	if (priv->mode == O_WRONLY)
+	if (priv->updating)
 		return -EINVAL;
 
 	return ofs;

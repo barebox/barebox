@@ -134,6 +134,14 @@ ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
 endif
 
+barebox.bin.ift: barebox.bin
+	@echo "  IFT    " $@
+	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1
+
+ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
+KBUILD_IMAGE := barebox.bin.ift
+endif
+
 all: $(KBUILD_IMAGE)
 
 archprepare: maketools

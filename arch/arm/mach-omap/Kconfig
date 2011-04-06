@@ -83,6 +83,10 @@ config OMAP_GPMC
 	  Controller(GPMC). GPMC allows you to configure devices such as NOR,
 	  NAND, OneNAND etc.
 
+config OMAP_BUILD_IFT
+	prompt "build ift binary"
+	bool
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x80e80000 if MACH_OMAP343xSDP

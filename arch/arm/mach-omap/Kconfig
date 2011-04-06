@@ -32,6 +32,7 @@ choice
 config ARCH_OMAP3
 	bool "OMAP3"
 	select CPU_V7
+	select GENERIC_GPIO
 	select ARCH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_SOURCE_S32K
 	help
@@ -39,40 +40,40 @@ config ARCH_OMAP3
 
 endchoice
 
- ### Generic Clock configurations to be enabled by Mach - invisible to enable.
- config OMAP_CLOCK_UART
- 	bool
- config OMAP_CLOCK_UART2
- 	bool
- config OMAP_CLOCK_UART3
- 	bool
- config OMAP_CLOCK_I2C
- 	bool
+### Generic Clock configurations to be enabled by Mach - invisible to enable.
+config OMAP_CLOCK_UART
+	bool
+config OMAP_CLOCK_UART2
+	bool
+config OMAP_CLOCK_UART3
+	bool
+config OMAP_CLOCK_I2C
+	bool
 
- # Blind enable all possible clocks.. think twice before you do this.
- config OMAP_CLOCK_ALL
- 	bool
+# Blind enable all possible clocks.. think twice before you do this.
+config OMAP_CLOCK_ALL
+	bool
 
- config OMAP_CLOCK_SOURCE_S32K
- 	bool
+config OMAP_CLOCK_SOURCE_S32K
+	bool
 
- config OMAP3_CLOCK_CONFIG
- 	prompt "Clock Configuration"
- 	bool
- 	depends on ARCH_OMAP3
- 	default y
- 	help
- 	  Say Y here if you like to have OMAP3 Clock configuration done.
+config OMAP3_CLOCK_CONFIG
+	prompt "Clock Configuration"
+	bool
+	depends on ARCH_OMAP3
+	default y
+	help
+	  Say Y here if you like to have OMAP3 Clock configuration done.
 
- config OMAP3_COPY_CLOCK_SRAM
- 	prompt "SRAM copy of Clock code"
- 	bool
- 	depends on OMAP3_CLOCK_CONFIG
- 	default y
- 	help
- 	  Say Y here if you like to have initial OMAP3 Clock configuration done from SRAM.
+config OMAP3_COPY_CLOCK_SRAM
+	prompt "SRAM copy of Clock code"
+	bool
+	depends on OMAP3_CLOCK_CONFIG
+	default y
+	help
+	  Say Y here if you like to have initial OMAP3 Clock configuration done from SRAM.
 
-config GPMC
+config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
 	depends on  (ARCH_OMAP2 || ARCH_OMAP3)
@@ -82,16 +83,73 @@ config GPMC
 	  Controller(GPMC). GPMC allows you to configure devices such as NOR,
 	  NAND, OneNAND etc.
 
-config GPIO
-	prompt "Support for GPIO configuration"
-	bool
-	select GENERIC_GPIO
-	depends on  (ARCH_OMAP2 || ARCH_OMAP3)
-	default y
-	help
-	  Enable this if you use Texas Instrument's General Purpose IO
+config ARCH_TEXT_BASE
+	hex
+	default 0x80e80000 if MACH_OMAP343xSDP
+	default 0x80e80000 if MACH_BEAGLE
 
-# Get the board specific configurations
-source arch/arm/boards/omap/Kconfig
+config BOARDINFO
+	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
+	default "Texas Instrument's Beagle" if MACH_BEAGLE
+	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
+	default "Texas Instrument's Panda" if MACH_PANDA
+
+choice
+	prompt "Select OMAP board"
+
+config MACH_OMAP343xSDP
+	bool "Texas Instrument's SDP343x"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	help
+	  Say Y here if you are using SDP343x platform
+
+config MACH_BEAGLE
+	bool "Texas Instrument's Beagle Board"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	  help
+	  Say Y here if you are using Beagle Board
+
+config MACH_OMAP3EVM
+	bool "Texas Instrument's OMAP3 EVM"
+	select MACH_HAS_LOWLEVEL_INIT
+	select OMAP_CLOCK_ALL
+	select HAS_OMAP_NAND
+	  help
+	  Say Y here if you are using OMAP3EVM
+
+endchoice
+
+if MACH_OMAP3EVM
+	choice
+	prompt "Select UART"
+
+	config OMAP3EVM_UART1
+		bool "Use UART1"
+		depends on MACH_OMAP3EVM
+		help
+		  Say Y here if you would like to use UART1 as console.
+
+	config OMAP3EVM_UART3
+		bool "Use UART3"
+		depends on MACH_OMAP3EVM
+		help
+		  Say Y here if you would like to use UART3 as console.
+	endchoice
+endif
+
+config MACH_OMAP_ADVANCED_MUX
+	bool "Enable advanced pin muxing"
+	depends on MACH_OMAP343xSDP
+	default n
+	help
+	  Say Y here if you would like to have complete pin muxing to be
+	  done at boot time
+
+config HAS_OMAP_NAND
+	bool
 
 endmenu

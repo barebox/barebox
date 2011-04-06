@@ -84,7 +84,8 @@ static struct device_d gpmc_generic_nand_nand_device = {
  *
  * @return success/fail based on device funtion
  */
-int gpmc_generic_nand_devices_init(int cs, int width, int hwecc)
+int gpmc_generic_nand_devices_init(int cs, int width,
+		enum gpmc_ecc_mode eccmode)
 {
 	nand_plat.cs = cs;
 
@@ -94,7 +95,7 @@ int gpmc_generic_nand_devices_init(int cs, int width, int hwecc)
 		nand_cfg.cfg[0] = GPMC_CONF1_VALx8;
 
 	nand_plat.device_width = width;
-	nand_plat.plat_options = hwecc ? NAND_HWECC_ENABLE : 0;
+	nand_plat.ecc_mode = eccmode;
 
 	/* Configure GPMC CS before register */
 	gpmc_cs_config(nand_plat.cs, &nand_cfg);

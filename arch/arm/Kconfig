@@ -21,6 +21,11 @@ config ARM
 config ARM_AMBA
 	bool
 
+config ARM_LINUX
+	bool
+	default y
+	depends on CMD_BOOTZ || CMD_BOOTU || CMD_BOOTM
+
 menu "System Type"
 
 choice

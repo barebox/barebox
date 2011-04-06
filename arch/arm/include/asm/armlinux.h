@@ -25,9 +25,13 @@ static inline void armlinux_set_revision(unsigned int rev)
 {
 }
 
-void armlinux_set_serial(u64 serial)
+static inline void armlinux_set_serial(u64 serial)
 {
 }
 #endif
+
+struct image_data;
+
+void start_linux(void *adr, int swap, struct image_data *data);
 
 #endif /* __ARCH_ARMLINUX_H */

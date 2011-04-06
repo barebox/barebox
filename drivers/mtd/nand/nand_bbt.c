@@ -557,6 +557,7 @@ static int search_read_bbts(struct mtd_info *mtd, uint8_t * buf, struct nand_bbt
  * (Re)write the bad block table
  *
 */
+#ifdef CONFIG_NAND_WRITE
 static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
 		     struct nand_bbt_descr *td, struct nand_bbt_descr *md,
 		     int chipsel)
@@ -745,6 +746,14 @@ static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
 	       "nand_bbt: Error while writing bad block table %d\n", res);
 	return res;
 }
+#else
+static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
+		     struct nand_bbt_descr *td, struct nand_bbt_descr *md,
+		     int chipsel)
+{
+	return 0;
+}
+#endif
 
 /**
  * nand_memory_bbt - [GENERIC] create a memory based bad block table

@@ -50,6 +50,7 @@ static 	ssize_t nand_read(struct cdev *cdev, void* buf, size_t count, ulong offs
 
 #define NOTALIGNED(x) (x & (info->writesize - 1)) != 0
 
+#ifdef CONFIG_NAND_WRITE
 static int all_ff(const void *buf, int len)
 {
 	int i;
@@ -104,6 +105,7 @@ static ssize_t nand_write(struct cdev* cdev, const void *buf, size_t _count, ulo
 out:
 	return ret ? ret : _count;
 }
+#endif
 
 static int nand_ioctl(struct cdev *cdev, int request, void *buf)
 {
@@ -133,6 +135,7 @@ static int nand_ioctl(struct cdev *cdev, int request, void *buf)
 	return 0;
 }
 
+#ifdef CONFIG_NAND_WRITE
 static ssize_t nand_erase(struct cdev *cdev, size_t count, unsigned long offset)
 {
 	struct mtd_info *info = cdev->priv;
@@ -162,6 +165,8 @@ static ssize_t nand_erase(struct cdev *cdev, size_t count, unsigned long offset)
 
 	return 0;
 }
+#endif
+
 #if 0
 static char* mtd_get_size(struct device_d *, struct param_d *param)
 {
@@ -171,10 +176,12 @@ static char* mtd_get_size(struct device_d *, struct param_d *param)
 
 static struct file_operations nand_ops = {
 	.read   = nand_read,
+#ifdef CONFIG_NAND_WRITE
 	.write  = nand_write,
+	.erase  = nand_erase,
+#endif
 	.ioctl  = nand_ioctl,
 	.lseek  = dev_lseek_default,
-	.erase  = nand_erase,
 };
 
 static ssize_t nand_read_oob(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)

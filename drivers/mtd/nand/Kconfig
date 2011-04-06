@@ -8,6 +8,47 @@ menuconfig NAND
 
 if NAND
 
+config NAND_WRITE
+	bool
+	default y
+	prompt "Support writing to Nand"
+
+config NAND_ECC_SOFT
+	bool
+	default y
+	prompt "Support software ecc"
+
+config NAND_ECC_HW
+	bool
+	default y
+	prompt "Support hardware ecc"
+
+config NAND_ECC_HW_SYNDROME
+	bool
+	default y
+	prompt "Support syndrome hardware ecc controllers"
+
+config NAND_ECC_HW_NONE
+	bool
+	default y
+	prompt "Support skipping ecc support"
+
+config NAND_INFO
+	bool
+	default y
+	prompt "Nand vendor/size information"
+	help
+	  Show informational strings about the vendor and nand flash type
+	  during startup
+
+config NAND_BBT
+	bool
+	default y
+	prompt "support bad block tables"
+	help
+	  Say y here to include support for bad block tables. This speeds
+	  up the process of checking for bad blocks
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"

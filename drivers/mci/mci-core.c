@@ -106,6 +106,7 @@ static void *sector_buf;
  * @param blocknum Block number to write
  * @return Transaction status (0 on success)
  */
+#ifdef CONFIG_MCI_WRITE
 static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned blocknum)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
@@ -132,6 +133,7 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
 
 	return mci_send_cmd(mci_dev, &cmd, &data);
 }
+#endif
 
 /**
  * Read one block of data from the card
@@ -944,6 +946,7 @@ static int sd_send_if_cond(struct device_d *mci_dev)
  *
  * This routine expects the buffer has the correct size to read all data!
  */
+#ifdef CONFIG_MCI_WRITE
 static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 			unsigned sector_count, const void *buffer)
 {
@@ -980,6 +983,7 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 
 	return 0;
 }
+#endif
 
 /**
  * Read a chunk of sectors from media
@@ -1218,7 +1222,9 @@ static int mci_card_probe(struct device_d *mci_dev)
 	disk_dev = xzalloc(sizeof(struct device_d) + sizeof(struct ata_interface));
 	p = (struct ata_interface*)&disk_dev[1];
 
+#ifdef CONFIG_MCI_WRITE
 	p->write = mci_sd_write;
+#endif
 	p->read = mci_sd_read;
 	p->priv = mci_dev;
 

@@ -25,6 +25,11 @@ config MCI_INFO
 	  This entry adds more info about the attached MCI card, when the
 	  'devinfo' command is used on the mci device.
 
+config MCI_WRITE
+	bool "Support writing to MCI cards"
+	default y
+	select ATA_WRITE
+
 comment "--- MCI host drivers ---"
 
 config MCI_MXS

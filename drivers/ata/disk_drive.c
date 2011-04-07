@@ -60,6 +60,7 @@ struct partition_entry {
  * @param table partition table
  * @return size in sectors
  */
+#ifdef CONFIG_ATA_BIOS
 static unsigned long disk_guess_size(struct device_d *dev, struct partition_entry *table)
 {
 	int part_order[4] = {0, 1, 2, 3};
@@ -83,6 +84,7 @@ static unsigned long disk_guess_size(struct device_d *dev, struct partition_entr
 #endif
 	return size;
 }
+#endif
 
 /**
  * Register partitions found on the drive
@@ -186,6 +188,7 @@ static int disk_probe(struct device_d *dev)
 #endif
 		atablk->blk.cdev.name = asprintf("disk%d", dev->id);
 
+#ifdef CONFIG_ATA_BIOS
 	/* On x86, BIOS based disks are coming without a valid .size field */
 	if (dev->size == 0) {
 		/* guess the size of this drive if not otherwise given */
@@ -193,7 +196,7 @@ static int disk_probe(struct device_d *dev)
 			(struct partition_entry*)&sector[446]) * SECTOR_SIZE;
 		dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
 	}
-
+#endif
 	atablk->blk.num_blocks = dev->size / SECTOR_SIZE;
 	atablk->blk.ops = &ataops;
 	atablk->blk.blockbits = 9;

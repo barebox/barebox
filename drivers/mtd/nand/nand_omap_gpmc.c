@@ -675,11 +675,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		return -ENODEV;
 	}
 
-	oinfo = calloc(1, sizeof(struct gpmc_nand_info));
-	if (!oinfo) {
-		dev_dbg(pdev, "oinfo alloc failed!\n");
-		return -ENOMEM;
-	}
+	oinfo = xzalloc(sizeof(*oinfo));
 
 	/* fill up my data structures */
 	oinfo->pdev = pdev;

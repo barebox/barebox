@@ -103,6 +103,7 @@ static int register_default_env(void)
 device_initcall(register_default_env);
 #endif
 
+#if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
 	mount("none", "ramfs", "/");
@@ -111,6 +112,7 @@ static int mount_root(void)
 	return 0;
 }
 fs_initcall(mount_root);
+#endif
 
 void start_barebox (void)
 {

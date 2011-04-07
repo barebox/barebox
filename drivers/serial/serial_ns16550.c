@@ -211,9 +211,7 @@ static int ns16550_probe(struct device_d *dev)
 	if ((plat->reg_read == NULL) || (plat->reg_write == NULL))
 		return -EINVAL;
 
-	cdev = calloc(1, sizeof(struct console_device));
-	if (cdev == NULL)
-		return -ENOMEM;
+	cdev = xzalloc(sizeof(*cdev));
 
 	dev->type_data = cdev;
 	cdev->dev = dev;

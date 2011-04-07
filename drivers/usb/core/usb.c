@@ -449,7 +449,7 @@ static struct usb_device *usb_alloc_new_device(void)
 	return usbdev;
 }
 
-static int __usb_init(void)
+void usb_rescan(void)
 {
 	struct usb_device *dev, *tmp;
 	struct usb_host *host;
@@ -477,26 +477,7 @@ static int __usb_init(void)
 	}
 
 	printf("%d USB Device(s) found\n", dev_index);
-
-	return 0;
 }
-
-static int do_usb(struct command *cmdtp, int argc, char *argv[])
-{
-	__usb_init();
-
-	return 0;
-}
-
-static const __maybe_unused char cmd_usb_help[] =
-"Usage: usb\n"
-"(re-)detect USB devices\n";
-
-BAREBOX_CMD_START(usb)
-	.cmd		= do_usb,
-	.usage		= "(re-)detect USB devices",
-	BAREBOX_CMD_HELP(cmd_usb_help)
-BAREBOX_CMD_END
 
 /*
  * disables the asynch behaviour of the control message. This is used for data

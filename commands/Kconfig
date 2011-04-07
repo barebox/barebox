@@ -393,4 +393,12 @@ config CMD_LED_TRIGGER
 	  The trigger command allows to control LED triggers from the command
 	  line.
 
+config CMD_USB
+	bool
+	depends on USB
+	prompt "usb command"
+	default y
+	help
+	  The usb command allows to rescan for USB devices.
+
 endmenu

@@ -8,6 +8,10 @@ if ATA
 
 comment "drive types"
 
+config ATA_WRITE
+	select BLOCK_WRITE
+	bool "support writing to ATA drives"
+
 config ATA_DISK
 	bool "disk drives"
 	help

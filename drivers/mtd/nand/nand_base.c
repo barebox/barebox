@@ -981,26 +981,6 @@ int nand_block_isbad(struct mtd_info *mtd, loff_t offs)
 	return nand_block_checkbad(mtd, offs, 1, 0);
 }
 
-/**
- * nand_block_markbad - [MTD Interface] Mark block at the given offset as bad
- * @mtd:	MTD device structure
- * @ofs:	offset relative to mtd start
- */
-static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
-{
-	struct nand_chip *chip = mtd->priv;
-	int ret;
-
-	if ((ret = nand_block_isbad(mtd, ofs))) {
-		/* If it was bad already, return success and do nothing. */
-		if (ret > 0)
-			return 0;
-		return ret;
-	}
-
-	return chip->block_markbad(mtd, ofs);
-}
-
 /*
  * Set default functions
  */
@@ -1431,8 +1411,9 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->lock = NULL;
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;
+#ifdef CONFIG_NAND_WRITE
 	mtd->block_markbad = nand_block_markbad;
-
+#endif
 	/* propagate ecc.layout to mtd_info */
 	mtd->ecclayout = chip->ecc.layout;
 

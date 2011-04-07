@@ -9,6 +9,7 @@ int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs);
 int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 			       int allowbbt);
 int nand_block_isbad(struct mtd_info *mtd, loff_t offs);
+int nand_block_markbad(struct mtd_info *mtd, loff_t ofs);
 void nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len);
 void nand_write_buf16(struct mtd_info *mtd, const uint8_t *buf, int len);
 void single_erase_cmd(struct mtd_info *mtd, int page);

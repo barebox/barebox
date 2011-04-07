@@ -8,6 +8,7 @@ obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o
 obj-$(CONFIG_POLLER)		+= poller.o
 obj-$(CONFIG_BLOCK)		+= block.o
 
+obj-y += memory.o
 obj-y += dlmalloc.o
 obj-y += clock.o
 obj-y += version.o

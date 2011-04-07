@@ -90,8 +90,10 @@ void nand_init_ecc_hw(struct nand_chip *chip)
 	/* Use standard hwecc read page function ? */
 	if (!chip->ecc.read_page)
 		chip->ecc.read_page = nand_read_page_hwecc;
+#ifdef CONFIG_NAND_READ_OOB
 	if (!chip->ecc.read_oob)
 		chip->ecc.read_oob = nand_read_oob_std;
+#endif
 #ifdef CONFIG_NAND_WRITE
 	if (!chip->ecc.write_oob)
 		chip->ecc.write_oob = nand_write_oob_std;

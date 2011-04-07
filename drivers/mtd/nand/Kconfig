@@ -49,6 +49,11 @@ config NAND_BBT
 	  Say y here to include support for bad block tables. This speeds
 	  up the process of checking for bad blocks
 
+config NAND_READ_OOB
+	bool
+	default y
+	prompt "create a device for reading the OOB data"
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"

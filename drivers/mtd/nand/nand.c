@@ -184,6 +184,7 @@ static struct file_operations nand_ops = {
 	.lseek  = dev_lseek_default,
 };
 
+#ifdef CONFIG_NAND_READ_OOB
 static ssize_t nand_read_oob(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
 {
 	struct mtd_info *info = cdev->priv;
@@ -215,9 +216,39 @@ static struct file_operations nand_ops_oob = {
 	.lseek  = dev_lseek_default,
 };
 
-int add_mtd_device(struct mtd_info *mtd)
+static int nand_init_oob_cdev(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
+
+	mtd->cdev_oob.ops = &nand_ops_oob;
+	mtd->cdev_oob.size = (mtd->size >> chip->page_shift) * mtd->oobsize;
+	mtd->cdev_oob.name = asprintf("nand_oob%d", mtd->class_dev.id);
+	mtd->cdev_oob.priv = mtd;
+	mtd->cdev_oob.dev = &mtd->class_dev;
+	devfs_create(&mtd->cdev_oob);
+
+	return 0;
+}
+
+static void nand_exit_oob_cdev(struct mtd_info *mtd)
+{
+	free(mtd->cdev_oob.name);
+}
+#else
+
+static int nand_init_oob_cdev(struct mtd_info *mtd)
+{
+	return 0;
+}
+
+static void nand_exit_oob_cdev(struct mtd_info *mtd)
+{
+	return;
+}
+#endif
+
+int add_mtd_device(struct mtd_info *mtd)
+{
 	char str[16];
 
 	strcpy(mtd->class_dev.name, "nand");
@@ -235,12 +266,7 @@ int add_mtd_device(struct mtd_info *mtd)
 
 	devfs_create(&mtd->cdev);
 
-	mtd->cdev_oob.ops = &nand_ops_oob;
-	mtd->cdev_oob.size = (mtd->size >> chip->page_shift) * mtd->oobsize;
-	mtd->cdev_oob.name = asprintf("nand_oob%d", mtd->class_dev.id);
-	mtd->cdev_oob.priv = mtd;
-	mtd->cdev_oob.dev = &mtd->class_dev;
-	devfs_create(&mtd->cdev_oob);
+	nand_init_oob_cdev(mtd);
 
 	return 0;
 }
@@ -248,7 +274,7 @@ int add_mtd_device(struct mtd_info *mtd)
 int del_mtd_device (struct mtd_info *mtd)
 {
 	unregister_device(&mtd->class_dev);
-	free(mtd->cdev_oob.name);
+	nand_exit_oob_cdev(mtd);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
 	return 0;

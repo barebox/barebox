@@ -601,6 +601,7 @@ static int nand_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
  * @ops:	oob ops structure
  * @len:	size of oob to transfer
  */
+#ifdef CONFIG_NAND_READ_OOB
 static uint8_t *nand_transfer_oob(struct nand_chip *chip, uint8_t *oob,
 				  struct mtd_oob_ops *ops, size_t len)
 {
@@ -641,6 +642,7 @@ static uint8_t *nand_transfer_oob(struct nand_chip *chip, uint8_t *oob,
 	}
 	return NULL;
 }
+#endif
 
 /**
  * nand_do_read_ops - [Internal] Read data with ECC
@@ -706,6 +708,7 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 
 			buf += bytes;
 
+#ifdef CONFIG_NAND_READ_OOB
 			if (unlikely(oob)) {
 				/* Raw mode does data:oob:data:oob */
 				if (ops->mode != MTD_OOB_RAW) {
@@ -720,7 +723,7 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 					buf = nand_transfer_oob(chip,
 						buf, ops, mtd->oobsize);
 			}
-
+#endif
 			if (!(chip->options & NAND_NO_READRDY)) {
 				/*
 				 * Apply delay or wait for ready/busy pin. Do
@@ -836,6 +839,7 @@ int nand_read_oob_std(struct mtd_info *mtd, struct nand_chip *chip,
  *
  * NAND read out-of-band data from the spare area
  */
+#ifdef CONFIG_NAND_READ_OOB
 static int nand_do_read_oob(struct mtd_info *mtd, loff_t from,
 			    struct mtd_oob_ops *ops)
 {
@@ -961,6 +965,7 @@ static int nand_read_oob(struct mtd_info *mtd, loff_t from,
  out:
 	return ret;
 }
+#endif
 
 /**
  * nand_block_isbad - [MTD Interface] Check if block at offset is bad
@@ -1420,7 +1425,9 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->write_oob = nand_write_oob;
 #endif
 	mtd->read = nand_read;
+#ifdef CONFIG_NAND_READ_OOB
 	mtd->read_oob = nand_read_oob;
+#endif
 	mtd->lock = NULL;
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;

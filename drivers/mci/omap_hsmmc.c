@@ -543,7 +543,7 @@ static void mmc_set_ios(struct mci_host *mci, struct device_d *dev,
 	writel(readl(&mmc_base->sysctl) | CEN_ENABLE, &mmc_base->sysctl);
 }
 
-static int mxcmci_probe(struct device_d *dev)
+static int omap_mmc_probe(struct device_d *dev)
 {
 	struct omap_hsmmc *hsmmc;
 
@@ -567,16 +567,16 @@ static int mxcmci_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mxcmci_driver = {
+static struct driver_d omap_mmc_driver = {
         .name  = "omap-hsmmc",
-        .probe = mxcmci_probe,
+        .probe = omap_mmc_probe,
 };
 
-static int mxcmci_init_driver(void)
+static int omap_mmc_init_driver(void)
 {
-        register_driver(&mxcmci_driver);
+        register_driver(&omap_mmc_driver);
         return 0;
 }
 
-device_initcall(mxcmci_init_driver);
+device_initcall(omap_mmc_init_driver);
 

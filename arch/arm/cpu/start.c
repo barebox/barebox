@@ -31,6 +31,7 @@ void __naked __section(.text_entry) exception_vectors(void)
 {
 	__asm__ __volatile__ (
 		"b reset\n"				/* reset */
+#ifdef CONFIG_ARM_EXCEPTIONS
 		"ldr pc, =undefined_instruction\n"	/* undefined instruction */
 		"ldr pc, =software_interrupt\n"		/* software interrupt (SWI) */
 		"ldr pc, =prefetch_abort\n"		/* prefetch abort */
@@ -38,6 +39,15 @@ void __naked __section(.text_entry) exception_vectors(void)
 		"ldr pc, =not_used\n"			/* (reserved) */
 		"ldr pc, =irq\n"			/* irq (interrupt) */
 		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
+#else
+		"1: bne 1b\n"				/* undefined instruction */
+		"1: bne 1b\n"				/* software interrupt (SWI) */
+		"1: bne 1b\n"				/* prefetch abort */
+		"1: bne 1b\n"				/* data abort */
+		"1: bne 1b\n"				/* (reserved) */
+		"1: bne 1b\n"				/* irq (interrupt) */
+		"1: bne 1b\n"				/* fiq (fast interrupt) */
+#endif
 	);
 }
 

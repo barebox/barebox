@@ -30,6 +30,7 @@
 #include <xfuncs.h>
 #include <init.h>
 #include <module.h>
+#include <libbb.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -783,7 +784,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 			goto out;
 		}
 	}
-	sprintf(fsdev->dev.name, "%s", fsname);
+	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
 	fsdev->dev.type_data = fsdev;
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 
@@ -807,7 +808,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	/* add mtab entry */
 	entry = &fsdev->mtab; 
-	sprintf(entry->path, "%s", path);
+	safe_strncpy(entry->path, path, PATH_MAX);
 	entry->dev = dev;
 	entry->parent_device = parent_device;
 	entry->next = NULL;

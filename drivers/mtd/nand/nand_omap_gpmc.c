@@ -470,7 +470,7 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	unsigned int bch_mod = 0, bch_wrapmode = 0, eccsize1 = 0, eccsize0 = 0;
 	unsigned int ecc_conf_val = 0, ecc_size_conf_val = 0;
-	int dev_width = 0;
+	int dev_width = nand->options & NAND_BUSWIDTH_16 ? 0 : 1;
 	int ecc_size = nand->ecc.size;
 	int cs = 0;
 
@@ -508,7 +508,11 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 	/* clear ecc and enable bits */
 	if (oinfo->ecc_mode == OMAP_ECC_HAMMING_CODE_HW_ROMCODE) {
 		writel(0x00000101, oinfo->gpmc_base + GPMC_ECC_CONTROL);
-		ecc_size_conf_val = (eccsize1 << 22) | 0x0000000F;
+		/* Size 0 = 0xFF, Size1 is 0xFF - both are 512 bytes
+		 * tell all regs to generate size0 sized regs
+		 * we just have a single ECC engine for all CS
+		 */
+		ecc_size_conf_val = 0x3FCFF000;
 		ecc_conf_val = (dev_width << 7) | (cs << 1) | (0x1);
 	} else {
 		writel(0x1, oinfo->gpmc_base + GPMC_ECC_CONTROL);
@@ -557,6 +561,14 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
 		oinfo->nand.ecc.bytes    = 3;
 		oinfo->nand.ecc.size     = 512;
+		oinfo->ecc_parity_pairs  = 12;
+		if (oinfo->nand.options & NAND_BUSWIDTH_16) {
+			offset = 2;
+		} else {
+			offset = 1;
+			oinfo->nand.badblock_pattern = &bb_descrip_flashbased;
+		}
+		omap_oobinfo.eccbytes = 3 * (minfo->oobsize / 16);
 		for (i = 0; i < omap_oobinfo.eccbytes; i++)
 			omap_oobinfo.eccpos[i] = i + offset;
 		omap_oobinfo.oobfree->offset = offset + omap_oobinfo.eccbytes;
@@ -612,8 +624,6 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 	default:
 		return -EINVAL;
 	}
-
-	omap_oobinfo.eccbytes = oinfo->nand.ecc.bytes;
 
 	oinfo->ecc_mode = mode;
 

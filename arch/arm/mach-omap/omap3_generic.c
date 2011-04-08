@@ -46,6 +46,7 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/xload.h>
 
 /**
  * @brief Reset the CPU
@@ -482,4 +483,17 @@ void a_init(void)
 	prcm_init();
 #endif
 
+}
+
+#define OMAP3_TRACING_VECTOR1 0x4020ffb4
+
+enum omap_boot_src omap3_bootsrc(void)
+{
+	u32 bootsrc = readl(OMAP3_TRACING_VECTOR1);
+
+	if (bootsrc & (1 << 2))
+		return OMAP_BOOTSRC_NAND;
+	if (bootsrc & (1 << 6))
+		return OMAP_BOOTSRC_MMC1;
+	return OMAP_BOOTSRC_UNKNOWN;
 }

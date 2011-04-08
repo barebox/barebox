@@ -5,6 +5,7 @@
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
+#include <mach/xload.h>
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -404,3 +405,16 @@ static int omap_vector_init(void)
 	return 0;
 }
 core_initcall(omap_vector_init);
+
+#define OMAP4_TRACING_VECTOR3 0x4030d048
+
+enum omap_boot_src omap4_bootsrc(void)
+{
+	u32 bootsrc = readl(OMAP4_TRACING_VECTOR3);
+
+	if (bootsrc & (1 << 3))
+		return OMAP_BOOTSRC_NAND;
+	if (bootsrc & (1 << 5))
+		return OMAP_BOOTSRC_MMC1;
+	return OMAP_BOOTSRC_UNKNOWN;
+}

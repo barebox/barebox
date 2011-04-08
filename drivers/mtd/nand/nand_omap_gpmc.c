@@ -377,6 +377,11 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
+		if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
+				read_ecc[2] == 0xff && calc_ecc[0] == 0x0 &&
+				calc_ecc[1] == 0x0 && calc_ecc[0] == 0x0)
+			break;
+
 		/* Regenerate the orginal ECC */
 		orig_ecc = gen_true_ecc(read_ecc);
 		new_ecc = gen_true_ecc(calc_ecc);

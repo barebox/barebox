@@ -780,8 +780,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 		if (!device) {
 			printf("need a device for driver %s\n", fsname);
 			errno = -ENODEV;
-			free(fsdev);
-			goto out;
+			goto out1;
 		}
 	}
 	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
@@ -789,16 +788,14 @@ int mount(const char *device, const char *fsname, const char *_path)
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 
 	if ((ret = register_device(&fsdev->dev))) {
-		free(fsdev);
 		errno = ret;
-		goto out;
+		goto out1;
 	}
 
 	if (!fsdev->dev.driver) {
 		/* driver didn't accept the device. Bail out */
-		free(fsdev);
 		errno = -EINVAL;
-		goto out;
+		goto out2;
 	}
 
 	if (parent_device)
@@ -822,6 +819,16 @@ int mount(const char *device, const char *fsname, const char *_path)
 		e->next = entry;
 	}
 	errno = 0;
+
+	free(path);
+	return 0;
+
+out2:
+	unregister_device(&fsdev->dev);
+out1:
+	if (fsdev->backingstore)
+		free(fsdev->backingstore);
+	free(fsdev);
 out:
 	free(path);
 	return errno;

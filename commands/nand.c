@@ -63,7 +63,7 @@ static int do_nand(struct command *cmdtp, int argc, char *argv[])
 
 	if (command & NAND_ADD) {
 		while (optind < argc) {
-			if (dev_add_bb_dev(argv[optind], NULL))
+			if (dev_add_bb_dev(basename(argv[optind]), NULL))
 				return 1;
 
 			optind++;

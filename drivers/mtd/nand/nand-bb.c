@@ -31,6 +31,7 @@
 #include <linux/mtd/mtd-abi.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <linux/list.h>
 
 struct nand_bb {
 	char cdevname[MAX_DRIVER_NAME];
@@ -47,6 +48,8 @@ struct nand_bb {
 	void *writebuf;
 
 	struct cdev cdev;
+
+	struct list_head list;
 };
 
 static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
@@ -218,6 +221,8 @@ static struct file_operations nand_bb_ops = {
 #endif
 };
 
+static LIST_HEAD(bb_list);
+
 /**
  * Add a bad block aware device ontop of another (NAND) device
  * @param[in] dev The device to add a partition on
@@ -258,6 +263,8 @@ int dev_add_bb_dev(char *path, const char *name)
 	if (ret)
 		goto out4;
 
+	list_add_tail(&bb->list, &bb_list);
+
 	return 0;
 
 out4:
@@ -267,3 +274,18 @@ out1:
 	return ret;
 }
 
+int dev_remove_bb_dev(const char *name)
+{
+	struct nand_bb *bb;
+
+	list_for_each_entry(bb, &bb_list, list) {
+		if (!strcmp(bb->cdev.name, name)) {
+			devfs_remove(&bb->cdev);
+			cdev_close(bb->cdev_parent);
+			free(bb);
+			return 0;
+		}
+	}
+
+	return -ENODEV;
+}

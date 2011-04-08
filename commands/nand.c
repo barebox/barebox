@@ -39,7 +39,6 @@
 static int do_nand(struct command *cmdtp, int argc, char *argv[])
 {
 	int opt;
-	struct nand_bb *bb;
 	int command = 0, badblock = 0;
 
 	while((opt = getopt(argc, argv, "adb:")) > 0) {
@@ -72,17 +71,7 @@ static int do_nand(struct command *cmdtp, int argc, char *argv[])
 
 	if (command & NAND_DEL) {
 		while (optind < argc) {
-			struct cdev *cdev;
-
-			cdev = cdev_by_name(basename(argv[optind]));
-			if (!cdev) {
-				printf("no such device: %s\n", argv[optind]);
-				return 1;
-			}
-			bb = cdev->priv;
-			close(bb->fd);
-			devfs_remove(cdev);
-			free(bb);
+			dev_remove_bb_dev(basename(argv[optind]));
 			optind++;
 		}
 	}

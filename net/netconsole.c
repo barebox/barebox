@@ -50,7 +50,7 @@ struct nc_priv {
 
 static struct nc_priv *g_priv;
 
-static void nc_handler(char *pkt, unsigned len)
+static void nc_handler(void *ctx, char *pkt, unsigned len)
 {
 	struct nc_priv *priv = g_priv;
 	unsigned char *packet = net_eth_to_udp_payload(pkt);
@@ -65,7 +65,7 @@ static int nc_init(void)
 	if (priv->con)
 		net_unregister(priv->con);
 
-	priv->con = net_udp_new(priv->ip, priv->port, nc_handler);
+	priv->con = net_udp_new(priv->ip, priv->port, nc_handler, NULL);
 	if (IS_ERR(priv->con)) {
 		int ret = PTR_ERR(priv->con);
 		priv->con = NULL;

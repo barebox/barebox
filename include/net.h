@@ -363,7 +363,7 @@ static inline int is_valid_ether_addr(const u8 *addr)
 	return !is_multicast_ether_addr(addr) && !is_zero_ether_addr(addr);
 }
 
-typedef void rx_handler_f(char *packet, unsigned int len);
+typedef void rx_handler_f(void *ctx, char *packet, unsigned int len);
 
 void eth_set_current(struct eth_device *eth);
 struct eth_device *eth_get_current(void);
@@ -388,6 +388,7 @@ struct net_connection {
 	struct list_head list;
 	rx_handler_f *handler;
 	int proto;
+	void *priv;
 };
 
 static inline char *net_alloc_packet(void)
@@ -396,9 +397,10 @@ static inline char *net_alloc_packet(void)
 }
 
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
-		rx_handler_f *handler);
+		rx_handler_f *handler, void *ctx);
 
-struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler);
+struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
+		void *ctx);
 
 void net_unregister(struct net_connection *con);
 

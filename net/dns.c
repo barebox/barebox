@@ -116,7 +116,7 @@ static int dns_send(char *name)
 	return ret;
 }
 
-static void dns_handler(char *packet, unsigned len)
+static void dns_handler(void *ctx, char *packet, unsigned len)
 {
 	struct header *header;
 	unsigned char *p, *e, *s;
@@ -211,7 +211,7 @@ IPaddr_t resolv(char *host)
 
 	debug("resolving host %s via nameserver %s\n", host, getenv("nameserver"));
 
-	dns_con = net_udp_new(ip, DNS_PORT, dns_handler);
+	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))
 		return PTR_ERR(dns_con);
 	dns_timer_start = get_time_ns();

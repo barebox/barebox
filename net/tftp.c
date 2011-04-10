@@ -141,7 +141,7 @@ static int tftp_send(void)
 	return ret;
 }
 
-static void tftp_handler(char *packet, unsigned len)
+static void tftp_handler(void *ctx, char *packet, unsigned len)
 {
 	uint16_t proto;
 	uint16_t *s;
@@ -314,7 +314,7 @@ static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	tftp_con = net_udp_new(net_get_serverip(), TFTP_PORT, tftp_handler);
+	tftp_con = net_udp_new(net_get_serverip(), TFTP_PORT, tftp_handler, NULL);
 	if (IS_ERR(tftp_con)) {
 		tftp_err = PTR_ERR(tftp_con);
 		goto out_close;

@@ -84,6 +84,22 @@ config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
 	depends on LINUX
 
+config DRIVER_NET_TSE
+	depends on NIOS2
+	bool "Altera TSE ethernet driver"
+	select MIIDEV
+	help
+	  This option enables support for the Altera TSE MAC.
+
+config TSE_USE_DEDICATED_DESC_MEM
+	depends on DRIVER_NET_TSE
+	bool "Altera TSE uses dedicated descriptor memory"
+	help
+	  This option tells the TSE driver to use an onchip memory
+	  to store SGDMA descriptors. Descriptor memory is not
+	  reserved with a malloc but directly mapped to the memory
+	  address (defined in config.h)
+
 source "drivers/net/usb/Kconfig"
 
 endmenu

@@ -11,11 +11,14 @@ static struct device_d cfi_dev = {
 	.size     = NIOS_SOPC_FLASH_SIZE,
 };
 
+static int phy_address = 1;
+
 static struct device_d mac_dev = {
-	.id       = -1,
-	.name     = "altera_tse",
-	.map_base = NIOS_SOPC_TSE_BASE,
-	.size     = 0x00000400,
+	.id            = -1,
+	.name          = "altera_tse",
+	.map_base      = NIOS_SOPC_TSE_BASE,
+	.size          = 0x00000400,
+	.platform_data = &phy_address,
 };
 
 static struct memory_platform_data ram_pdata = {

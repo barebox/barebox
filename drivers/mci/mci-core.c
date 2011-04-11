@@ -599,6 +599,7 @@ static void mci_detect_version_from_csd(struct device_d *mci_dev)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int version;
+	char *vstr;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
 		/* the version is coded in the bits 127:126 (left aligned) */
@@ -606,30 +607,31 @@ static void mci_detect_version_from_csd(struct device_d *mci_dev)
 
 		switch (version) {
 		case 0:
-			printf("Detecting a 1.2 revision card\n");
+			vstr = "1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		case 1:
-			printf("Detecting a 1.4 revision card\n");
+			vstr = "1.4";
 			mci->version = MMC_VERSION_1_4;
 			break;
 		case 2:
-			printf("Detecting a 2.2 revision card\n");
+			vstr = "2.2";
 			mci->version = MMC_VERSION_2_2;
 			break;
 		case 3:
-			printf("Detecting a 3.0 revision card\n");
+			vstr = "3.0";
 			mci->version = MMC_VERSION_3;
 			break;
 		case 4:
-			printf("Detecting a 4.0 revision card\n");
+			vstr = "4.0";
 			mci->version = MMC_VERSION_4;
 			break;
 		default:
-			printf("Unknow revision. Falling back to a 1.2 revision card\n");
+			vstr = "unknown, fallback to 1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
+		printf("detected card version %s\n", vstr);
 	}
 }
 

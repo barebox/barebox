@@ -127,3 +127,53 @@ char *simple_itoa(unsigned int i)
 	return p + 1;
 }
 EXPORT_SYMBOL(simple_itoa);
+
+/*
+ * write_full - write to filedescriptor
+ *
+ * Like write, but guarantees to write the full buffer out, else
+ * it returns with an error.
+ */
+int write_full(int fd, void *buf, size_t size)
+{
+	size_t insize = size;
+	int now;
+
+	while (size) {
+		now = write(fd, buf, size);
+		if (now <= 0)
+			return now;
+		size -= now;
+		buf += now;
+	}
+
+	return insize;
+}
+EXPORT_SYMBOL(write_full);
+
+/*
+ * read_full - read from filedescriptor
+ *
+ * Like read, but this function only returns less bytes than
+ * requested when the end of file is reached.
+ */
+int read_full(int fd, void *buf, size_t size)
+{
+	size_t insize = size;
+	int now;
+	int total = 0;
+
+	while (size) {
+		now = read(fd, buf, size);
+		if (now == 0)
+			return total;
+		if (now < 0)
+			return now;
+		total += now;
+		size -= now;
+		buf += now;
+	}
+
+	return insize;
+}
+EXPORT_SYMBOL(read_full);

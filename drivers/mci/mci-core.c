@@ -955,8 +955,8 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s called: Write %u block(s), starting at %lu",
-		__func__, sector_count, (unsigned)sector_count);
+	pr_debug("%s: Write %u block(s), starting at %u",
+		__func__, sector_count, (unsigned)sector_start);
 
 	if (mci->write_bl_len != 512) {
 		pr_warning("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
@@ -1003,8 +1003,8 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s called: Read %u block(s), starting at %lu to %08X\n",
-		__func__, sector_count, (unsigned)sector_start, buffer);
+	pr_debug("%s: Read %u block(s), starting at %u\n",
+		__func__, sector_count, (unsigned)sector_start);
 
 	if (mci->read_bl_len != 512) {
 		pr_warning("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",

@@ -56,11 +56,8 @@ static struct device_d pcm049_serial_device = {
 	.platform_data = (void *)&serial_plat,
 };
 
-static u32 bootsrc;
-
 static int pcm049_console_init(void)
 {
-	bootsrc = readl(0x4030d048);
 	/* Register the serial port */
 	return register_device(&pcm049_serial_device);
 }

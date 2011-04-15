@@ -412,9 +412,9 @@ enum omap_boot_src omap4_bootsrc(void)
 {
 	u32 bootsrc = readl(OMAP4_TRACING_VECTOR3);
 
-	if (bootsrc & (1 << 3))
-		return OMAP_BOOTSRC_NAND;
 	if (bootsrc & (1 << 5))
 		return OMAP_BOOTSRC_MMC1;
+	if (bootsrc & (1 << 3))
+		return OMAP_BOOTSRC_NAND;
 	return OMAP_BOOTSRC_UNKNOWN;
 }

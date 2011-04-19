@@ -465,7 +465,7 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	unsigned int bch_mod = 0, bch_wrapmode = 0, eccsize1 = 0, eccsize0 = 0;
 	unsigned int ecc_conf_val = 0, ecc_size_conf_val = 0;
-	int dev_width = nand->options & NAND_BUSWIDTH_16 ? 0 : 1;
+	int dev_width = nand->options & NAND_BUSWIDTH_16 ? 1 : 0;
 	int ecc_size = nand->ecc.size;
 	int cs = 0;
 

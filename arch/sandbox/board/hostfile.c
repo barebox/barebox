@@ -109,6 +109,7 @@ int barebox_register_filedev(struct hf_platform_data *hf)
 
 	strcpy(dev->name, "hostfile");
 	dev->size = hf->size;
+	dev->id = -1;
 	dev->map_base = hf->map_base;
 
 	return register_device(dev);

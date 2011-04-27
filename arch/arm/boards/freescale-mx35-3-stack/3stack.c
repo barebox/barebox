@@ -131,7 +131,8 @@ static void set_board_rev(int rev)
 
 static int f3s_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+	arm_add_mem_device("ram1", IMX_SDRAM_CS1, 128 * 1024 * 1024);
 
 	return 0;
 }

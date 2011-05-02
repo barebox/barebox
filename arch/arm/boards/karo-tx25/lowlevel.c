@@ -72,7 +72,6 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 void __bare_init __naked board_init_lowlevel(void)
 {
 	uint32_t r;
-	int i;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 #endif

@@ -381,7 +381,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 /*
  *	Handle DHCP received packets.
  */
-static void dhcp_handler(char *packet, unsigned int len)
+static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 {
 	char *pkt = net_eth_to_udp_payload(packet);
 	struct udphdr *udp = net_eth_to_udphdr(packet);
@@ -439,7 +439,7 @@ static int do_dhcp(struct command *cmdtp, int argc, char *argv[])
 {
 	int ret;
 
-	dhcp_con = net_udp_new(0xffffffff, PORT_BOOTPS, dhcp_handler);
+	dhcp_con = net_udp_new(0xffffffff, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
 		ret = PTR_ERR(dhcp_con);
 		goto out;

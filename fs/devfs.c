@@ -36,34 +36,7 @@
 #include <linux/mtd/mtd-abi.h>
 #include <partition.h>
 
-static LIST_HEAD(cdev_list);
-
-struct cdev *cdev_by_name(const char *filename)
-{
-	struct cdev *cdev;
-
-	list_for_each_entry(cdev, &cdev_list, list) {
-		if (!strcmp(cdev->name, filename))
-			return cdev;
-	}
-	return NULL;
-}
-
-ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
-{
-	if (!cdev->ops->read)
-		return -ENOSYS;
-
-	return cdev->ops->read(cdev, buf, count, cdev->offset +offset, flags);
-}
-
-ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
-{
-	if (!cdev->ops->write)
-		return -ENOSYS;
-
-	return cdev->ops->write(cdev, buf, count, cdev->offset + offset, flags);
-}
+extern struct list_head cdev_list;
 
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 {
@@ -143,7 +116,7 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 	f->inode = cdev;
 
 	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, f);
+		ret = cdev->ops->open(cdev);
 		if (ret)
 			return ret;
 	}
@@ -159,7 +132,7 @@ static int devfs_close(struct device_d *_dev, FILE *f)
 	int ret;
 
 	if (cdev->ops->close) {
-		ret = cdev->ops->close(cdev, f);
+		ret = cdev->ops->close(cdev);
 		if (ret)
 			return ret;
 	}
@@ -169,49 +142,21 @@ static int devfs_close(struct device_d *_dev, FILE *f)
 	return 0;
 }
 
-static int partition_ioctl(struct cdev *cdev, int request, void *buf)
+static int devfs_flush(struct device_d *_dev, FILE *f)
 {
-	size_t offset;
-	struct mtd_info_user *user = buf;
+	struct cdev *cdev = f->inode;
 
-	switch (request) {
-	case MEMSETBADBLOCK:
-	case MEMGETBADBLOCK:
-		offset = (off_t)buf;
-		offset += cdev->offset;
-		return cdev->ops->ioctl(cdev, request, (void *)offset);
-	case MEMGETINFO:
-		if (cdev->mtd) {
-			user->type	= cdev->mtd->type;
-			user->flags	= cdev->mtd->flags;
-			user->size	= cdev->mtd->size;
-			user->erasesize	= cdev->mtd->erasesize;
-			user->oobsize	= cdev->mtd->oobsize;
-			user->mtd	= cdev->mtd;
-			/* The below fields are obsolete */
-			user->ecctype	= -1;
-			user->eccsize	= 0;
-			return 0;
-		}
-		if (!cdev->ops->ioctl)
-			return -EINVAL;
-		return cdev->ops->ioctl(cdev, request, buf);
-	default:
-		return -EINVAL;
-	}
+	if (cdev->ops->flush)
+		return cdev->ops->flush(cdev);
+
+	return 0;
 }
 
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 {
 	struct cdev *cdev = f->inode;
 
-	if (cdev->flags & DEVFS_IS_PARTITION)
-		return partition_ioctl(cdev, request, buf);
-
-	if (!cdev->ops->ioctl)
-		return -EINVAL;
-
-	return cdev->ops->ioctl(cdev, request, buf);
+	return cdev_ioctl(cdev, request, buf);
 }
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
@@ -282,12 +227,12 @@ static void devfs_delete(struct device_d *dev)
 }
 
 static struct fs_driver_d devfs_driver = {
-	.type      = FS_TYPE_DEVFS,
 	.read      = devfs_read,
 	.write     = devfs_write,
 	.lseek     = devfs_lseek,
 	.open      = devfs_open,
 	.close     = devfs_close,
+	.flush     = devfs_flush,
 	.ioctl     = devfs_ioctl,
 	.opendir   = devfs_opendir,
 	.readdir   = devfs_readdir,
@@ -312,101 +257,3 @@ static int devfs_init(void)
 }
 
 coredevice_initcall(devfs_init);
-
-int devfs_create(struct cdev *new)
-{
-	struct cdev *cdev;
-
-	cdev = cdev_by_name(new->name);
-	if (cdev)
-		return -EEXIST;
-
-	list_add_tail(&new->list, &cdev_list);
-	if (new->dev)
-		list_add_tail(&new->devices_list, &new->dev->cdevs);
-
-	return 0;
-}
-
-int devfs_remove(struct cdev *cdev)
-{
-	if (cdev->open)
-		return -EBUSY;
-
-	list_del(&cdev->list);
-	if (cdev->dev)
-		list_del(&cdev->devices_list);
-
-	return 0;
-}
-
-int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
-		int flags, const char *name)
-{
-	struct cdev *cdev, *new;
-
-	cdev = cdev_by_name(name);
-	if (cdev)
-		return -EEXIST;
-
-	cdev = cdev_by_name(devname);
-	if (!cdev)
-		return -ENOENT;
-
-	if (offset + size > cdev->size)
-		return -EINVAL;
-
-	new = xzalloc(sizeof (*new));
-	new->name = strdup(name);
-	new->ops = cdev->ops;
-	new->priv = cdev->priv;
-	new->size = size;
-	new->offset = offset + cdev->offset;
-	new->dev = cdev->dev;
-	new->flags = flags | DEVFS_IS_PARTITION;
-
-#ifdef CONFIG_PARTITION_NEED_MTD
-	if (cdev->mtd) {
-		new->mtd = mtd_add_partition(cdev->mtd, offset, size, flags, name);
-		if (IS_ERR(new->mtd)) {
-			int ret = PTR_ERR(new->mtd);
-			free(new);
-			return ret;
-		}
-	}
-#endif
-
-	devfs_create(new);
-
-	return 0;
-}
-
-int devfs_del_partition(const char *name)
-{
-	struct cdev *cdev;
-	int ret;
-
-	cdev = cdev_by_name(name);
-	if (!cdev)
-		return -ENOENT;
-
-	if (!(cdev->flags & DEVFS_IS_PARTITION))
-		return -EINVAL;
-	if (cdev->flags & DEVFS_PARTITION_FIXED)
-		return -EPERM;
-
-#ifdef CONFIG_PARTITION_NEED_MTD
-	if (cdev->mtd)
-		mtd_del_partition(cdev->mtd);
-#endif
-
-	ret = devfs_remove(cdev);
-	if (ret)
-		return ret;
-
-	free(cdev->name);
-	free(cdev);
-
-	return 0;
-}
-

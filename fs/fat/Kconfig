@@ -1,0 +1,15 @@
+menuconfig FS_FAT
+	bool
+	prompt "FAT filesystem support"
+
+if FS_FAT
+
+config FS_FAT_WRITE
+	bool
+	prompt "FAT write support"
+
+config FS_FAT_LFN
+	bool
+	prompt "Support long filenames"
+
+endif

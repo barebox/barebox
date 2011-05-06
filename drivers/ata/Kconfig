@@ -1,4 +1,5 @@
 menuconfig ATA
+	select BLOCK
 	bool "ATA                           "
 	help
 	  Add support for ATA types of drives like harddisks and CDROMs.
@@ -6,6 +7,10 @@ menuconfig ATA
 if ATA
 
 comment "drive types"
+
+config ATA_WRITE
+	select BLOCK_WRITE
+	bool "support writing to ATA drives"
 
 config ATA_DISK
 	bool "disk drives"

@@ -33,11 +33,7 @@
 #include <linux/list.h>
 #include <init.h>
 #include <complete.h>
-#include <generated/utsrelease.h>
 #include <getopt.h>
-
-const char version_string[] =
-	"barebox " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
 
 LIST_HEAD(command_list);
 EXPORT_SYMBOL(command_list);

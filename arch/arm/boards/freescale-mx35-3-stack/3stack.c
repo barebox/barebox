@@ -207,6 +207,8 @@ static int f3s_devices_init(void)
 	imx35_add_fec(&fec_info);
 	register_device(&smc911x_dev);
 
+	imx35_add_mmc0(NULL);
+
 	register_device(&sdram_dev);
 	imx35_add_fb(&ipu_fb_data);
 

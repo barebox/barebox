@@ -83,7 +83,11 @@ board-$(CONFIG_MACH_MMCCPU)			:= mmccpu
 board-$(CONFIG_MACH_MX1ADS)			:= mx1ads
 board-$(CONFIG_MACH_NOMADIK_8815NHK)		:= nhk8815
 board-$(CONFIG_MACH_NXDB500)			:= netx
-board-$(CONFIG_ARCH_OMAP)			:= omap
+board-$(CONFIG_MACH_OMAP343xSDP)		:= omap
+board-$(CONFIG_MACH_BEAGLE)			:= omap
+board-$(CONFIG_MACH_OMAP3EVM)			:= omap
+board-$(CONFIG_MACH_PANDA)			:= panda
+board-$(CONFIG_MACH_PCM049)			:= pcm049
 board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
 board-$(CONFIG_MACH_PCM037)			:= pcm037
 board-$(CONFIG_MACH_PCM038)			:= pcm038
@@ -130,6 +134,14 @@ barebox.netx: barebox.bin
 
 ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
+endif
+
+barebox.bin.ift: barebox.bin
+	@echo "  IFT    " $@
+	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1
+
+ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
+KBUILD_IMAGE := barebox.bin.ift
 endif
 
 all: $(KBUILD_IMAGE)

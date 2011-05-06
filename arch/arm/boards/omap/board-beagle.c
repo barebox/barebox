@@ -56,6 +56,7 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
+#include <sizes.h>
 #include <asm/io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
@@ -72,6 +73,7 @@
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>
+#include <mach/xload.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -313,6 +315,13 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
+static struct device_d hsmmc_dev = {
+	.id = -1,
+	.name = "omap-hsmmc",
+	.map_base = 0x4809C000,
+	.size = SZ_4K,
+};
+
 static int beagle_devices_init(void)
 {
 	int ret;
@@ -332,7 +341,9 @@ static int beagle_devices_init(void)
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
-	gpmc_generic_nand_devices_init(0, 16, 1);
+	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_HAMMING_CODE_HW_ROMCODE);
+
+	register_device(&hsmmc_dev);
 
 	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
@@ -341,3 +352,34 @@ failed:
 	return ret;
 }
 device_initcall(beagle_devices_init);
+
+#ifdef CONFIG_SHELL_NONE
+
+int run_shell(void)
+{
+	int (*func)(void) = NULL;
+
+	switch (omap3_bootsrc()) {
+	case OMAP_BOOTSRC_MMC1:
+		printf("booting from MMC1\n");
+		func = omap_xload_boot_mmc();
+		break;
+	case OMAP_BOOTSRC_UNKNOWN:
+		printf("unknown boot source. Fall back to nand\n");
+	case OMAP_BOOTSRC_NAND:
+		printf("booting from NAND\n");
+		func = omap_xload_boot_nand(SZ_128K, SZ_256K);
+		break;
+	}
+
+	if (!func) {
+		printf("booting failed\n");
+		while (1);
+	}
+
+	shutdown_barebox();
+	func();
+
+	while (1);
+}
+#endif

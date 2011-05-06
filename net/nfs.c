@@ -562,7 +562,7 @@ static int nfs_read_reply(unsigned char *pkt, unsigned len)
 Interfaces of barebox
 **************************************************************************/
 
-static void nfs_handler(char *packet, unsigned len)
+static void nfs_handler(void *ctx, char *packet, unsigned len)
 {
 	char *pkt = net_eth_to_udp_payload(packet);
 	int ret;
@@ -689,7 +689,7 @@ static int do_nfs(struct command *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	nfs_con = net_udp_new(net_get_serverip(), 0, nfs_handler);
+	nfs_con = net_udp_new(net_get_serverip(), 0, nfs_handler, NULL);
 	if (IS_ERR(nfs_con)) {
 		nfs_err = PTR_ERR(nfs_con);
 		goto err_udp;

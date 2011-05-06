@@ -25,6 +25,9 @@
 #ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-silicon.h>
 #endif
+#ifdef CONFIG_ARCH_OMAP4
+#include <mach/omap4-silicon.h>
+#endif
 
 /* If Architecture specific init functions are present */
 #ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT

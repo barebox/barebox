@@ -152,6 +152,8 @@ int console_register(struct console_device *newcdev)
 		console = newcdev;
 		console_list.prev = console_list.next = &newcdev->list;
 		newcdev->list.prev = newcdev->list.next = &console_list;
+
+		barebox_banner();
 	}
 	return 0;
 }

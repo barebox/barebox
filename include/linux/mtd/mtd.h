@@ -178,10 +178,6 @@ struct mtd_info {
 	int (*lock) (struct mtd_info *mtd, loff_t ofs, size_t len);
 	int (*unlock) (struct mtd_info *mtd, loff_t ofs, size_t len);
 
-	/* Power Management functions */
-	int (*suspend) (struct mtd_info *mtd);
-	void (*resume) (struct mtd_info *mtd);
-
 	/* Bad block management functions */
 	int (*block_isbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*block_markbad) (struct mtd_info *mtd, loff_t ofs);

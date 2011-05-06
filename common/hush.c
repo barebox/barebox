@@ -121,6 +121,7 @@
 #include <libbb.h>
 #include <glob.h>
 #include <getopt.h>
+#include <libbb.h>
 #include <linux/list.h>
 
 /*cmd_boot.c*/
@@ -359,20 +360,6 @@ static int b_addqchr(o_string *o, int ch, int quote)
 			return rc;
 	}
 	return b_addchr(o, ch);
-}
-
-/* belongs in utility.c */
-static char *simple_itoa(unsigned int i)
-{
-	/* 21 digits plus null terminator, good for 64-bit or smaller ints */
-	static char local[22];
-	char *p = &local[21];
-	*p-- = '\0';
-	do {
-		*p-- = '0' + i % 10;
-		i /= 10;
-	} while (i > 0);
-	return p + 1;
 }
 
 static int b_adduint(o_string *o, unsigned int i)

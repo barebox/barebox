@@ -290,8 +290,9 @@ struct file_operations {
 
 	int (*ioctl)(struct cdev*, int, void *);
 	off_t (*lseek)(struct cdev*, off_t);
-	int (*open)(struct cdev*, struct filep*);
-	int (*close)(struct cdev*, struct filep*);
+	int (*open)(struct cdev*);
+	int (*close)(struct cdev*);
+	int (*flush)(struct cdev*);
 	int (*erase)(struct cdev*, size_t count, unsigned long offset);
 	int (*protect)(struct cdev*, size_t count, unsigned long offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);
@@ -314,8 +315,13 @@ struct cdev {
 int devfs_create(struct cdev *);
 int devfs_remove(struct cdev *);
 struct cdev *cdev_by_name(const char *filename);
+struct cdev *cdev_open(const char *name, unsigned long flags);
+void cdev_close(struct cdev *cdev);
+int cdev_flush(struct cdev *cdev);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
+int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
 
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)

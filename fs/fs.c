@@ -30,6 +30,7 @@
 #include <xfuncs.h>
 #include <init.h>
 #include <module.h>
+#include <libbb.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -536,6 +537,26 @@ ssize_t write(int fd, const void *buf, size_t count)
 }
 EXPORT_SYMBOL(write);
 
+int flush(int fd)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	FILE *f = &files[fd];
+
+	if (check_fd(fd))
+		return errno;
+
+	dev = f->dev;
+
+	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	if (fsdrv->flush)
+		errno = fsdrv->flush(dev, f);
+	else
+		errno = 0;
+
+	return errno;
+}
+
 off_t lseek(int fildes, off_t offset, int whence)
 {
 	struct device_d *dev;
@@ -759,25 +780,22 @@ int mount(const char *device, const char *fsname, const char *_path)
 		if (!device) {
 			printf("need a device for driver %s\n", fsname);
 			errno = -ENODEV;
-			free(fsdev);
-			goto out;
+			goto out1;
 		}
 	}
-	sprintf(fsdev->dev.name, "%s", fsname);
+	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
 	fsdev->dev.type_data = fsdev;
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 
 	if ((ret = register_device(&fsdev->dev))) {
-		free(fsdev);
 		errno = ret;
-		goto out;
+		goto out1;
 	}
 
 	if (!fsdev->dev.driver) {
 		/* driver didn't accept the device. Bail out */
-		free(fsdev);
 		errno = -EINVAL;
-		goto out;
+		goto out2;
 	}
 
 	if (parent_device)
@@ -787,7 +805,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	/* add mtab entry */
 	entry = &fsdev->mtab; 
-	sprintf(entry->path, "%s", path);
+	safe_strncpy(entry->path, path, PATH_MAX);
 	entry->dev = dev;
 	entry->parent_device = parent_device;
 	entry->next = NULL;
@@ -801,6 +819,16 @@ int mount(const char *device, const char *fsname, const char *_path)
 		e->next = entry;
 	}
 	errno = 0;
+
+	free(path);
+	return 0;
+
+out2:
+	unregister_device(&fsdev->dev);
+out1:
+	if (fsdev->backingstore)
+		free(fsdev->backingstore);
+	free(fsdev);
 out:
 	free(path);
 	return errno;

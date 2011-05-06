@@ -97,7 +97,7 @@ void arch_shutdown(void)
  * default setting we are running in barebox, there's no special preparation
  * required.
  */
-
+#ifdef CONFIG_COMMAND
 static int do_icache(struct command *cmdtp, int argc, char *argv[])
 {
 	if (argc == 1) {
@@ -121,3 +121,4 @@ BAREBOX_CMD_START(icache)
 	.usage		= "show/change icache status",
 	BAREBOX_CMD_HELP(cmd_icache_help)
 BAREBOX_CMD_END
+#endif

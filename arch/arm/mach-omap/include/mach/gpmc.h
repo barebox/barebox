@@ -66,6 +66,7 @@
 #define GPMC_ECC7_RESULT	(0x218)
 #define GPMC_ECC8_RESULT	(0x21C)
 #define GPMC_ECC9_RESULT	(0x220)
+#define GPMC_ECC_BCH_RESULT_0	0x240
 
 #define GPMC_CONFIG1_0		(0x60)
 #define GPMC_CONFIG1_1		(0x90)

@@ -106,6 +106,7 @@ static void *sector_buf;
  * @param blocknum Block number to write
  * @return Transaction status (0 on success)
  */
+#ifdef CONFIG_MCI_WRITE
 static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned blocknum)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
@@ -132,6 +133,7 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
 
 	return mci_send_cmd(mci_dev, &cmd, &data);
 }
+#endif
 
 /**
  * Read one block of data from the card
@@ -597,6 +599,7 @@ static void mci_detect_version_from_csd(struct device_d *mci_dev)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int version;
+	char *vstr;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
 		/* the version is coded in the bits 127:126 (left aligned) */
@@ -604,30 +607,31 @@ static void mci_detect_version_from_csd(struct device_d *mci_dev)
 
 		switch (version) {
 		case 0:
-			printf("Detecting a 1.2 revision card\n");
+			vstr = "1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		case 1:
-			printf("Detecting a 1.4 revision card\n");
+			vstr = "1.4";
 			mci->version = MMC_VERSION_1_4;
 			break;
 		case 2:
-			printf("Detecting a 2.2 revision card\n");
+			vstr = "2.2";
 			mci->version = MMC_VERSION_2_2;
 			break;
 		case 3:
-			printf("Detecting a 3.0 revision card\n");
+			vstr = "3.0";
 			mci->version = MMC_VERSION_3;
 			break;
 		case 4:
-			printf("Detecting a 4.0 revision card\n");
+			vstr = "4.0";
 			mci->version = MMC_VERSION_4;
 			break;
 		default:
-			printf("Unknow revision. Falling back to a 1.2 revision card\n");
+			vstr = "unknown, fallback to 1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
+		printf("detected card version %s\n", vstr);
 	}
 }
 
@@ -680,7 +684,7 @@ static void mci_extract_max_tran_speed_from_csd(struct device_d *mci_dev)
 	unit = tran_speed_unit[(mci->csd[0] & 0x7)];
 	time = tran_speed_time[((mci->csd[0] >> 3) & 0xf)];
 	if ((unit == 0) || (time == 0)) {
-		pr_warning("Unsupported 'TRAN_SPEED' unit/time value."
+		pr_debug("Unsupported 'TRAN_SPEED' unit/time value."
 				" Can't calculate card's max. transfer speed\n");
 		return;
 	}
@@ -798,13 +802,13 @@ static int mci_startup(struct device_d *mci_dev)
 	/* sanitiy? */
 	if (mci->read_bl_len > 512) {
 		mci->read_bl_len = 512;
-		pr_warning("Limiting max. read block size down to %u\n",
+		pr_debug("Limiting max. read block size down to %u\n",
 				mci->read_bl_len);
 	}
 
 	if (mci->write_bl_len > 512) {
 		mci->write_bl_len = 512;
-		pr_warning("Limiting max. write block size down to %u\n",
+		pr_debug("Limiting max. write block size down to %u\n",
 				mci->read_bl_len);
 	}
 	pr_debug("Read block length: %u, Write block length: %u\n",
@@ -944,6 +948,7 @@ static int sd_send_if_cond(struct device_d *mci_dev)
  *
  * This routine expects the buffer has the correct size to read all data!
  */
+#ifdef CONFIG_MCI_WRITE
 static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 			unsigned sector_count, const void *buffer)
 {
@@ -952,11 +957,11 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s called: Write %u block(s), starting at %lu",
-		__func__, sector_count, (unsigned)sector_count);
+	pr_debug("%s: Write %u block(s), starting at %u",
+		__func__, sector_count, (unsigned)sector_start);
 
 	if (mci->write_bl_len != 512) {
-		pr_warning("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
+		pr_debug("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
 				mci->read_bl_len);
 		return -EINVAL;
 	}
@@ -964,13 +969,13 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 	while (sector_count) {
 		/* size of the block number field in the MMC/SD command is 32 bit only */
 		if (sector_start > MAX_BUFFER_NUMBER) {
-			pr_err("Cannot handle block number %llu. Too large!\n",
+			pr_debug("Cannot handle block number %llu. Too large!\n",
 				sector_start);
 			return -EINVAL;
 		}
 		rc = mci_block_write(mci_dev, buffer, sector_start);
 		if (rc != 0) {
-			pr_err("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
+			pr_debug("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count--;
@@ -980,6 +985,7 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 
 	return 0;
 }
+#endif
 
 /**
  * Read a chunk of sectors from media
@@ -999,11 +1005,11 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s called: Read %u block(s), starting at %lu to %08X\n",
-		__func__, sector_count, (unsigned)sector_start, buffer);
+	pr_debug("%s: Read %u block(s), starting at %u\n",
+		__func__, sector_count, (unsigned)sector_start);
 
 	if (mci->read_bl_len != 512) {
-		pr_warning("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
+		pr_debug("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
 				mci->read_bl_len);
 		return -EINVAL;
 	}
@@ -1017,7 +1023,7 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 		}
 		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, now);
 		if (rc != 0) {
-			pr_err("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
+			pr_debug("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
 			return rc;
 		}
 		sector_count -= now;
@@ -1186,7 +1192,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 	/* reset the card */
 	rc = mci_go_idle(mci_dev);
 	if (rc) {
-		pr_warning("Cannot reset the SD/MMC card\n");
+		pr_warn("Cannot reset the SD/MMC card\n");
 		goto on_error;
 	}
 
@@ -1204,7 +1210,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 
 	rc = mci_startup(mci_dev);
 	if (rc) {
-		printf("Card's startup fails with %d\n", rc);
+		pr_debug("Card's startup fails with %d\n", rc);
 		goto on_error;
 	}
 
@@ -1218,7 +1224,9 @@ static int mci_card_probe(struct device_d *mci_dev)
 	disk_dev = xzalloc(sizeof(struct device_d) + sizeof(struct ata_interface));
 	p = (struct ata_interface*)&disk_dev[1];
 
+#ifdef CONFIG_MCI_WRITE
 	p->write = mci_sd_write;
+#endif
 	p->read = mci_sd_read;
 	p->priv = mci_dev;
 
@@ -1313,7 +1321,7 @@ static int mci_probe(struct device_d *mci_dev)
 		 */
 		rc = add_mci_parameter(mci_dev);
 		if (rc != 0) {
-			pr_err("Failed to add 'probe' parameter to the MCI device\n");
+			pr_debug("Failed to add 'probe' parameter to the MCI device\n");
 			goto on_error;
 		}
 	}
@@ -1323,7 +1331,7 @@ static int mci_probe(struct device_d *mci_dev)
 	/* add params on demand */
 	rc = add_mci_parameter(mci_dev);
 	if (rc != 0) {
-		pr_err("Failed to add 'probe' parameter to the MCI device\n");
+		pr_debug("Failed to add 'probe' parameter to the MCI device\n");
 		goto on_error;
 	}
 #endif
@@ -1338,7 +1346,9 @@ on_error:
 static struct driver_d mci_driver = {
 	.name	= "mci",
 	.probe	= mci_probe,
+#ifdef CONFIG_MCI_INFO
 	.info	= mci_info,
+#endif
 };
 
 static int mci_init(void)

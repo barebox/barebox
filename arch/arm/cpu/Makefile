@@ -1,6 +1,6 @@
 obj-y += cpu.o
-obj-y += exceptions.o
-obj-y += interrupts.o
+obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions.o
+obj-$(CONFIG_ARM_EXCEPTIONS) += interrupts.o
 obj-y += start.o
 
 #

@@ -12,6 +12,13 @@
  */
 #include <common.h>
 #include <linux/mtd/nand.h>
+
+#ifdef CONFIG_NAND_INFO
+#define __NANDSTR(str)	str
+#else
+#define __NANDSTR(str)	""
+#endif
+
 /*
 *	Chip ID list
 *
@@ -26,47 +33,47 @@
 struct nand_flash_dev nand_flash_ids[] = {
 
 #ifdef CONFIG_MTD_NAND_MUSEUM_IDS
-	{"NAND 1MiB 5V 8-bit",		0x6e, 256, 1, 0x1000, 0},
-	{"NAND 2MiB 5V 8-bit",		0x64, 256, 2, 0x1000, 0},
-	{"NAND 4MiB 5V 8-bit",		0x6b, 512, 4, 0x2000, 0},
-	{"NAND 1MiB 3,3V 8-bit",	0xe8, 256, 1, 0x1000, 0},
-	{"NAND 1MiB 3,3V 8-bit",	0xec, 256, 1, 0x1000, 0},
-	{"NAND 2MiB 3,3V 8-bit",	0xea, 256, 2, 0x1000, 0},
-	{"NAND 4MiB 3,3V 8-bit",	0xd5, 512, 4, 0x2000, 0},
-	{"NAND 4MiB 3,3V 8-bit",	0xe3, 512, 4, 0x2000, 0},
-	{"NAND 4MiB 3,3V 8-bit",	0xe5, 512, 4, 0x2000, 0},
-	{"NAND 8MiB 3,3V 8-bit",	0xd6, 512, 8, 0x2000, 0},
+	{__NANDSTR("NAND 1MiB 5V 8-bit"),	0x6e, 256, 1, 0x1000, 0},
+	{__NANDSTR("NAND 2MiB 5V 8-bit"),	0x64, 256, 2, 0x1000, 0},
+	{__NANDSTR("NAND 4MiB 5V 8-bit"),	0x6b, 512, 4, 0x2000, 0},
+	{__NANDSTR("NAND 1MiB 3,3V 8-bit"),	0xe8, 256, 1, 0x1000, 0},
+	{__NANDSTR("NAND 1MiB 3,3V 8-bit"),	0xec, 256, 1, 0x1000, 0},
+	{__NANDSTR("NAND 2MiB 3,3V 8-bit"),	0xea, 256, 2, 0x1000, 0},
+	{__NANDSTR("NAND 4MiB 3,3V 8-bit"),	0xd5, 512, 4, 0x2000, 0},
+	{__NANDSTR("NAND 4MiB 3,3V 8-bit"),	0xe3, 512, 4, 0x2000, 0},
+	{__NANDSTR("NAND 4MiB 3,3V 8-bit"),	0xe5, 512, 4, 0x2000, 0},
+	{__NANDSTR("NAND 8MiB 3,3V 8-bit"),	0xd6, 512, 8, 0x2000, 0},
 
-	{"NAND 8MiB 1,8V 8-bit",	0x39, 512, 8, 0x2000, 0},
-	{"NAND 8MiB 3,3V 8-bit",	0xe6, 512, 8, 0x2000, 0},
-	{"NAND 8MiB 1,8V 16-bit",	0x49, 512, 8, 0x2000, NAND_BUSWIDTH_16},
-	{"NAND 8MiB 3,3V 16-bit",	0x59, 512, 8, 0x2000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 8MiB 1,8V 8-bit"),	0x39, 512, 8, 0x2000, 0},
+	{__NANDSTR("NAND 8MiB 3,3V 8-bit"),	0xe6, 512, 8, 0x2000, 0},
+	{__NANDSTR("NAND 8MiB 1,8V 16-bit"),	0x49, 512, 8, 0x2000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 8MiB 3,3V 16-bit"),	0x59, 512, 8, 0x2000, NAND_BUSWIDTH_16},
 #endif
 
-	{"NAND 16MiB 1,8V 8-bit",	0x33, 512, 16, 0x4000, 0},
-	{"NAND 16MiB 3,3V 8-bit",	0x73, 512, 16, 0x4000, 0},
-	{"NAND 16MiB 1,8V 16-bit",	0x43, 512, 16, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 16MiB 3,3V 16-bit",	0x53, 512, 16, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 16MiB 1,8V 8-bit"),	0x33, 512, 16, 0x4000, 0},
+	{__NANDSTR("NAND 16MiB 3,3V 8-bit"),	0x73, 512, 16, 0x4000, 0},
+	{__NANDSTR("NAND 16MiB 1,8V 16-bit"),	0x43, 512, 16, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 16MiB 3,3V 16-bit"),	0x53, 512, 16, 0x4000, NAND_BUSWIDTH_16},
 
-	{"NAND 32MiB 1,8V 8-bit",	0x35, 512, 32, 0x4000, 0},
-	{"NAND 32MiB 3,3V 8-bit",	0x75, 512, 32, 0x4000, 0},
-	{"NAND 32MiB 1,8V 16-bit",	0x45, 512, 32, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 32MiB 3,3V 16-bit",	0x55, 512, 32, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 32MiB 1,8V 8-bit"),	0x35, 512, 32, 0x4000, 0},
+	{__NANDSTR("NAND 32MiB 3,3V 8-bit"),	0x75, 512, 32, 0x4000, 0},
+	{__NANDSTR("NAND 32MiB 1,8V 16-bit"),	0x45, 512, 32, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 32MiB 3,3V 16-bit"),	0x55, 512, 32, 0x4000, NAND_BUSWIDTH_16},
 
-	{"NAND 64MiB 1,8V 8-bit",	0x36, 512, 64, 0x4000, 0},
-	{"NAND 64MiB 3,3V 8-bit",	0x76, 512, 64, 0x4000, 0},
-	{"NAND 64MiB 1,8V 16-bit",	0x46, 512, 64, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 64MiB 3,3V 16-bit",	0x56, 512, 64, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 64MiB 1,8V 8-bit"),	0x36, 512, 64, 0x4000, 0},
+	{__NANDSTR("NAND 64MiB 3,3V 8-bit"),	0x76, 512, 64, 0x4000, 0},
+	{__NANDSTR("NAND 64MiB 1,8V 16-bit"),	0x46, 512, 64, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 64MiB 3,3V 16-bit"),	0x56, 512, 64, 0x4000, NAND_BUSWIDTH_16},
 
-	{"NAND 128MiB 1,8V 8-bit",	0x78, 512, 128, 0x4000, 0},
-	{"NAND 128MiB 1,8V 8-bit",	0x39, 512, 128, 0x4000, 0},
-	{"NAND 128MiB 3,3V 8-bit",	0x79, 512, 128, 0x4000, 0},
-	{"NAND 128MiB 1,8V 16-bit",	0x72, 512, 128, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 128MiB 1,8V 16-bit",	0x49, 512, 128, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 128MiB 3,3V 16-bit",	0x74, 512, 128, 0x4000, NAND_BUSWIDTH_16},
-	{"NAND 128MiB 3,3V 16-bit",	0x59, 512, 128, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 128MiB 1,8V 8-bit"),	0x78, 512, 128, 0x4000, 0},
+	{__NANDSTR("NAND 128MiB 1,8V 8-bit"),	0x39, 512, 128, 0x4000, 0},
+	{__NANDSTR("NAND 128MiB 3,3V 8-bit"),	0x79, 512, 128, 0x4000, 0},
+	{__NANDSTR("NAND 128MiB 1,8V 16-bit"),	0x72, 512, 128, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 128MiB 1,8V 16-bit"),	0x49, 512, 128, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 128MiB 3,3V 16-bit"),	0x74, 512, 128, 0x4000, NAND_BUSWIDTH_16},
+	{__NANDSTR("NAND 128MiB 3,3V 16-bit"),	0x59, 512, 128, 0x4000, NAND_BUSWIDTH_16},
 
-	{"NAND 256MiB 3,3V 8-bit",	0x71, 512, 256, 0x4000, 0},
+	{__NANDSTR("NAND 256MiB 3,3V 8-bit"),	0x71, 512, 256, 0x4000, 0},
 
 	/*
 	 * These are the new chips with large page size. The pagesize and the
@@ -76,40 +83,40 @@ struct nand_flash_dev nand_flash_ids[] = {
 #define LP_OPTIONS16 (LP_OPTIONS | NAND_BUSWIDTH_16)
 
 	/*512 Megabit */
-	{"NAND 64MiB 1,8V 8-bit",	0xA2, 0,  64, 0, LP_OPTIONS},
-	{"NAND 64MiB 3,3V 8-bit",	0xF2, 0,  64, 0, LP_OPTIONS},
-	{"NAND 64MiB 1,8V 16-bit",	0xB2, 0,  64, 0, LP_OPTIONS16},
-	{"NAND 64MiB 3,3V 16-bit",	0xC2, 0,  64, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 64MiB 1,8V 8-bit"),	0xA2, 0,  64, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 64MiB 3,3V 8-bit"),	0xF2, 0,  64, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 64MiB 1,8V 16-bit"),	0xB2, 0,  64, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 64MiB 3,3V 16-bit"),	0xC2, 0,  64, 0, LP_OPTIONS16},
 
 	/* 1 Gigabit */
-	{"NAND 128MiB 1,8V 8-bit",	0xA1, 0, 128, 0, LP_OPTIONS},
-	{"NAND 128MiB 3,3V 8-bit",	0xF1, 0, 128, 0, LP_OPTIONS},
-	{"NAND 128MiB 1,8V 16-bit",	0xB1, 0, 128, 0, LP_OPTIONS16},
-	{"NAND 128MiB 3,3V 16-bit",	0xC1, 0, 128, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 128MiB 1,8V 8-bit"),	0xA1, 0, 128, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 128MiB 3,3V 8-bit"),	0xF1, 0, 128, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 128MiB 1,8V 16-bit"),	0xB1, 0, 128, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 128MiB 3,3V 16-bit"),	0xC1, 0, 128, 0, LP_OPTIONS16},
 
 	/* 2 Gigabit */
-	{"NAND 256MiB 1,8V 8-bit",	0xAA, 0, 256, 0, LP_OPTIONS},
-	{"NAND 256MiB 3,3V 8-bit",	0xDA, 0, 256, 0, LP_OPTIONS},
-	{"NAND 256MiB 1,8V 16-bit",	0xBA, 0, 256, 0, LP_OPTIONS16},
-	{"NAND 256MiB 3,3V 16-bit",	0xCA, 0, 256, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 256MiB 1,8V 8-bit"),	0xAA, 0, 256, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 256MiB 3,3V 8-bit"),	0xDA, 0, 256, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 256MiB 1,8V 16-bit"),	0xBA, 0, 256, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 256MiB 3,3V 16-bit"),	0xCA, 0, 256, 0, LP_OPTIONS16},
 
 	/* 4 Gigabit */
-	{"NAND 512MiB 1,8V 8-bit",	0xAC, 0, 512, 0, LP_OPTIONS},
-	{"NAND 512MiB 3,3V 8-bit",	0xDC, 0, 512, 0, LP_OPTIONS},
-	{"NAND 512MiB 1,8V 16-bit",	0xBC, 0, 512, 0, LP_OPTIONS16},
-	{"NAND 512MiB 3,3V 16-bit",	0xCC, 0, 512, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 512MiB 1,8V 8-bit"),	0xAC, 0, 512, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 512MiB 3,3V 8-bit"),	0xDC, 0, 512, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 512MiB 1,8V 16-bit"),	0xBC, 0, 512, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 512MiB 3,3V 16-bit"),	0xCC, 0, 512, 0, LP_OPTIONS16},
 
 	/* 8 Gigabit */
-	{"NAND 1GiB 1,8V 8-bit",	0xA3, 0, 1024, 0, LP_OPTIONS},
-	{"NAND 1GiB 3,3V 8-bit",	0xD3, 0, 1024, 0, LP_OPTIONS},
-	{"NAND 1GiB 1,8V 16-bit",	0xB3, 0, 1024, 0, LP_OPTIONS16},
-	{"NAND 1GiB 3,3V 16-bit",	0xC3, 0, 1024, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 1GiB 1,8V 8-bit"),	0xA3, 0, 1024, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 1GiB 3,3V 8-bit"),	0xD3, 0, 1024, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 1GiB 1,8V 16-bit"),	0xB3, 0, 1024, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 1GiB 3,3V 16-bit"),	0xC3, 0, 1024, 0, LP_OPTIONS16},
 
 	/* 16 Gigabit */
-	{"NAND 2GiB 1,8V 8-bit",	0xA5, 0, 2048, 0, LP_OPTIONS},
-	{"NAND 2GiB 3,3V 8-bit",	0xD5, 0, 2048, 0, LP_OPTIONS},
-	{"NAND 2GiB 1,8V 16-bit",	0xB5, 0, 2048, 0, LP_OPTIONS16},
-	{"NAND 2GiB 3,3V 16-bit",	0xC5, 0, 2048, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 2GiB 1,8V 8-bit"),	0xA5, 0, 2048, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 2GiB 3,3V 8-bit"),	0xD5, 0, 2048, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 2GiB 1,8V 16-bit"),	0xB5, 0, 2048, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 2GiB 3,3V 16-bit"),	0xC5, 0, 2048, 0, LP_OPTIONS16},
 
 	/*
 	 * Renesas AND 1 Gigabit. Those chips do not support extended id and
@@ -121,7 +128,7 @@ struct nand_flash_dev nand_flash_ids[] = {
 	 * erased in one go There are more speed improvements for reads and
 	 * writes possible, but not implemented now
 	 */
-	{"AND 128MiB 3,3V 8-bit",	0x01, 2048, 128, 0x4000,
+	{__NANDSTR("AND 128MiB 3,3V 8-bit"),	0x01, 2048, 128, 0x4000,
 	 NAND_IS_AND | NAND_NO_AUTOINCR |NAND_NO_READRDY | NAND_4PAGE_ARRAY |
 	 BBT_AUTO_REFRESH
 	},
@@ -133,15 +140,15 @@ struct nand_flash_dev nand_flash_ids[] = {
 *	Manufacturer ID list
 */
 struct nand_manufacturers nand_manuf_ids[] = {
-	{NAND_MFR_TOSHIBA, "Toshiba"},
-	{NAND_MFR_SAMSUNG, "Samsung"},
-	{NAND_MFR_FUJITSU, "Fujitsu"},
-	{NAND_MFR_NATIONAL, "National"},
-	{NAND_MFR_RENESAS, "Renesas"},
-	{NAND_MFR_STMICRO, "ST Micro"},
-	{NAND_MFR_HYNIX, "Hynix"},
-	{NAND_MFR_MICRON, "Micron"},
-	{NAND_MFR_AMD, "AMD"},
+	{NAND_MFR_TOSHIBA, __NANDSTR("Toshiba")},
+	{NAND_MFR_SAMSUNG, __NANDSTR("Samsung")},
+	{NAND_MFR_FUJITSU, __NANDSTR("Fujitsu")},
+	{NAND_MFR_NATIONAL, __NANDSTR("National")},
+	{NAND_MFR_RENESAS, __NANDSTR("Renesas")},
+	{NAND_MFR_STMICRO, __NANDSTR("ST Micro")},
+	{NAND_MFR_HYNIX, __NANDSTR("Hynix")},
+	{NAND_MFR_MICRON, __NANDSTR("Micron")},
+	{NAND_MFR_AMD, __NANDSTR("AMD")},
 	{0x0, "Unknown"}
 };
 

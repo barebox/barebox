@@ -44,6 +44,8 @@
 #define EXPORT_SYMBOL(x)
 #endif
 
+char *default_environment_path = "/dev/env0";
+
 int file_size_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
 {

@@ -44,11 +44,26 @@ struct env_context *get_current_context(void);
 char *var_val(struct variable_d *);
 char *var_name(struct variable_d *);
 
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
 const char *getenv(const char *);
 int setenv(const char *, const char *);
+#else
+static inline char *getenv(const char *var)
+{
+	return NULL;
+}
+
+static inline int setenv(const char *var, const char *val)
+{
+	return 0;
+}
+#endif
 
 int env_pop_context(void);
 int env_push_context(void);
+
+/* defaults to /dev/env0 */
+extern char *default_environment_path;
 
 int envfs_load(char *filename, char *dirname);
 int envfs_save(char *filename, char *dirname);

@@ -18,6 +18,7 @@ size_t malloc_usable_size(void*);
 void malloc_stats(void);
 int mallopt(int, int);
 struct mallinfo mallinfo(void);
+void *sbrk(ptrdiff_t increment);
 
 #endif
 

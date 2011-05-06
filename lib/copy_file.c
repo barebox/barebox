@@ -17,6 +17,7 @@ int copy_file(const char *src, const char *dst)
 	int srcfd = 0, dstfd = 0;
 	int r, w;
 	int ret = 1;
+	void *buf;
 
 	rw_buf = xmalloc(RW_BUF_SIZE);
 
@@ -40,10 +41,16 @@ int copy_file(const char *src, const char *dst)
 		}
 		if (!r)
 			break;
-		w = write(dstfd, rw_buf, r);
-		if (w < 0) {
-			perror("write");
-			goto out;
+
+		buf = rw_buf;
+		while (r) {
+			w = write(dstfd, buf, r);
+			if (w < 0) {
+				perror("write");
+				goto out;
+			}
+			buf += w;
+			r -= w;
 		}
 	}
 

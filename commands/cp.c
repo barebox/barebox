@@ -31,6 +31,7 @@
 #include <libbb.h>
 #include <fs.h>
 #include <malloc.h>
+#include <libgen.h>
 
 /**
  * @param[in] cmdtp FIXME
@@ -60,7 +61,7 @@ static int do_cp(struct command *cmdtp, int argc, char *argv[])
 	for (i = 1; i < argc - 1; i++) {
 		if (last_is_dir) {
 			char *dst;
-			dst = concat_path_file(argv[argc - 1], argv[i]);
+			dst = concat_path_file(argv[argc - 1], basename(argv[i]));
 			ret = copy_file(argv[i], dst);
 			if (ret)
 				goto out;

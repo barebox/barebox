@@ -43,7 +43,7 @@ void kfifo_free(struct kfifo *fifo);
  * bytes copied.
  */
 unsigned int kfifo_put(struct kfifo *fifo,
-				unsigned char *buffer, unsigned int len);
+				const unsigned char *buffer, unsigned int len);
 
 /**
  * kfifo_get - gets some data from the FIFO

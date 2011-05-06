@@ -103,6 +103,7 @@ static int register_default_env(void)
 device_initcall(register_default_env);
 #endif
 
+#if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
 	mount("none", "ramfs", "/");
@@ -111,12 +112,15 @@ static int mount_root(void)
 	return 0;
 }
 fs_initcall(mount_root);
+#endif
 
 void start_barebox (void)
 {
 	initcall_t *initcall;
 	int result;
+#ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
+#endif
 
 #ifdef CONFIG_HAS_EARLY_INIT
 	/* We are running from RAM now, copy early initdata from
@@ -140,14 +144,16 @@ void start_barebox (void)
 	display_meminfo();
 
 #ifdef CONFIG_ENV_HANDLING
-	if (envfs_load("/dev/env0", "/env")) {
+	if (envfs_load(default_environment_path, "/env")) {
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-		printf("no valid environment found on /dev/env0. "
-			"Using default environment\n");
+		printf("no valid environment found on %s. "
+			"Using default environment\n",
+			default_environment_path);
 		envfs_load("/dev/defaultenv", "/env");
 #endif
 	}
 #endif
+#ifdef CONFIG_COMMAND_SUPPORT
 	printf("running /env/bin/init...\n");
 
 	if (!stat("/env/bin/init", &s)) {
@@ -155,7 +161,7 @@ void start_barebox (void)
 	} else {
 		printf("not found\n");
 	}
-
+#endif
 	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;)
 		run_shell();

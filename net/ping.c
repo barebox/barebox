@@ -40,7 +40,7 @@ static int ping_send(void)
 	return net_icmp_send(ping_con, 9);
 }
 
-static void ping_handler(char *pkt, unsigned len)
+static void ping_handler(void *ctx, char *pkt, unsigned len)
 {
 	IPaddr_t tmp;
 	struct iphdr *ip = net_eth_to_iphdr(pkt);
@@ -66,7 +66,7 @@ static int do_ping(struct command *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	ping_con = net_icmp_new(net_ping_ip, ping_handler);
+	ping_con = net_icmp_new(net_ping_ip, ping_handler, NULL);
 	if (IS_ERR(ping_con)) {
 		ret = PTR_ERR(ping_con);
 		goto out;

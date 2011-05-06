@@ -31,6 +31,15 @@ config ENV_HANDLING
 config GENERIC_GPIO
 	bool
 
+config BLOCK
+	bool
+
+config BLOCK_WRITE
+	bool
+
+config HAVE_NOSHELL
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION_AUTO
@@ -55,6 +64,9 @@ config LOCALVERSION_AUTO
 
 config BOARDINFO
 	string
+
+config ENVIRONMENT_VARIABLES
+	bool "environment variables support"
 
 menu "memory layout                 "
 
@@ -136,6 +148,22 @@ config EXPERIMENTAL
 	bool
 	prompt "Prompt for experimental code"
 
+choice
+	prompt "malloc implementation"
+
+config MALLOC_DLMALLOC
+	bool "dlmalloc"
+
+config MALLOC_DUMMY
+	bool "dummy malloc"
+	depends on SHELL_NONE
+	help
+	  select this option to use a dummy malloc implementation. With this
+	  memory is never freed. This is suitable for well tested noninteractive
+	  environments only.
+
+endchoice
+
 config MODULES
 	depends on HAS_MODULES
 	depends on EXPERIMENTAL
@@ -213,14 +241,26 @@ choice
 
 	config SHELL_HUSH
 		bool "hush parser"
+		select ENVIRONMENT_VARIABLES
+		select COMMAND_SUPPORT
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
 
 	config SHELL_SIMPLE
 		bool "Simple parser"
+		select ENVIRONMENT_VARIABLES
+		select COMMAND_SUPPORT
 		help
 		  simple shell. No if/then, no return values from commands, no loops
+
+	config SHELL_NONE
+		depends on HAVE_NOSHELL
+		bool "no shell (noninteractive build)"
+		help
+		  No shell at all. This means no shell is started and your board has
+		  to provide a run_shell() function which is started at the end of
+		  the barebox startup process.
 endchoice
 
 config GLOB
@@ -389,7 +429,7 @@ config DEFAULT_ENVIRONMENT
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool
 	depends on DEFAULT_ENVIRONMENT
-	select SHELL_HUSH
+	depends on SHELL_HUSH
 	select HUSH_GETOPT
 	select CMD_CRC
 	select CMD_CRC_CMP

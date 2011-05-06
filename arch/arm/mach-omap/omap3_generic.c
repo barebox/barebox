@@ -46,6 +46,7 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/xload.h>
 
 /**
  * @brief Reset the CPU
@@ -484,36 +485,15 @@ void a_init(void)
 
 }
 
-/**
- * @brief Uart port register read function for OMAP3
- *
- * @param base base address of UART
- * @param reg_idx register index
- *
- * @return character read from register
- */
-unsigned int omap_uart_read(unsigned long base, unsigned char reg_idx)
-{
-	unsigned int *reg_addr = (unsigned int *)base;
-	reg_addr += reg_idx;
-	return readb(reg_addr);
-}
-EXPORT_SYMBOL(omap_uart_read);
+#define OMAP3_TRACING_VECTOR1 0x4020ffb4
 
-/**
- * @brief Uart port register write function for OMAP3
- *
- * @param val value to write
- * @param base base address of UART
- * @param reg_idx register index
- *
- * @return void
- */
-void omap_uart_write(unsigned int val, unsigned long base,
-		     unsigned char reg_idx)
+enum omap_boot_src omap3_bootsrc(void)
 {
-	unsigned int *reg_addr = (unsigned int *)base;
-	reg_addr += reg_idx;
-	writeb(val, reg_addr);
+	u32 bootsrc = readl(OMAP3_TRACING_VECTOR1);
+
+	if (bootsrc & (1 << 2))
+		return OMAP_BOOTSRC_NAND;
+	if (bootsrc & (1 << 6))
+		return OMAP_BOOTSRC_MMC1;
+	return OMAP_BOOTSRC_UNKNOWN;
 }
-EXPORT_SYMBOL(omap_uart_write);

@@ -252,6 +252,8 @@ int usb_clear_halt(struct usb_device *dev, int pipe);
 int usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 int usb_set_interface(struct usb_device *dev, int interface, int alternate);
 
+void usb_rescan(void);
+
 /* big endian -> little endian conversion */
 /* some CPUs are already little endian e.g. the ARM920T */
 #define __swap_16(x) \

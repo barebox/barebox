@@ -45,12 +45,6 @@ EXPORT_SYMBOL(console_list);
 #define CONSOLE_INIT_EARLY	1
 #define CONSOLE_INIT_FULL	2
 
-static void display_banner (void)
-{
-	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
-	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
-}
-
 static int __early_initdata initialized = 0;
 
 static int console_std_set(struct device_d *dev, struct param_d *param,
@@ -169,7 +163,7 @@ int console_register(struct console_device *newcdev)
 
 #ifndef CONFIG_HAS_EARLY_INIT
 	if (first)
-		display_banner();
+		barebox_banner();
 #endif
 
 	return 0;
@@ -420,7 +414,7 @@ void early_console_start(const char *name, int baudrate)
 		early_console_init(base, baudrate);
 		INITDATA(initialized) = CONSOLE_INIT_EARLY;
 		INITDATA(early_console_base) = base;
-		display_banner();
+		barebox_banner();
 	}
 }
 

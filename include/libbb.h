@@ -30,4 +30,6 @@ int copy_file(const char *src, const char *dst);
 
 int process_escape_sequence(const char *source, char *dest, int destlen);
 
+char *simple_itoa(unsigned int i);
+
 #endif /* __LIBBB_H */

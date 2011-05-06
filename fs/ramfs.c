@@ -543,7 +543,6 @@ static void ramfs_remove(struct device_d *dev)
 }
 
 static struct fs_driver_d ramfs_driver = {
-	.type      = FS_TYPE_RAMFS,
 	.create    = ramfs_create,
 	.unlink    = ramfs_unlink,
 	.open      = ramfs_open,

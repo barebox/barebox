@@ -205,7 +205,7 @@ int setenv(const char *_name, const char *value)
 	struct variable_d *var;
 	int ret = 0;
 
-	if (!*value)
+	if (value && !*value)
 		value = NULL;
 
 

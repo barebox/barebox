@@ -150,7 +150,7 @@ BAREBOX_CMD_HELP_OPT  ("-f <file>", "Use file instead of memory.\n")
 #ifdef CONFIG_CMD_CRC_CMP
 BAREBOX_CMD_HELP_OPT  ("-F <file>", "Use file to compare.\n")
 #endif
-BAREBOX_CMD_HELP_OPT  ("-v <crc>",  "Verfify\n")
+BAREBOX_CMD_HELP_OPT  ("-v <crc>",  "Verify\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)

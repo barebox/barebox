@@ -48,7 +48,7 @@ static struct device_d epcs_flash_device = {
 };
 */
 
-static int comBoard_devices_init(void)
+static int generic_devices_init(void)
 {
 	register_device(&cfi_dev);
 	register_device(&ram_dev);
@@ -63,7 +63,7 @@ static int comBoard_devices_init(void)
 	return 0;
 }
 
-device_initcall(comBoard_devices_init);
+device_initcall(generic_devices_init);
 
 
 static int altera_console_init(void)

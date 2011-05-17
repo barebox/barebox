@@ -66,6 +66,7 @@ static void hf_info(struct device_d *dev)
 static struct file_operations hf_fops = {
 	.read  = hf_read,
 	.write = hf_write,
+	.lseek = dev_lseek_default,
 };
 
 static int hf_probe(struct device_d *dev)

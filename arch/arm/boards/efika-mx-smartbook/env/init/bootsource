@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# by default pick kernel from MMC card if booting from
+# it, otherwise default to boot from internal harddisk
+
+if [ $barebox_loc = mmc ]; then
+	global.boot.default=mmc-left
+else
+	global.boot.default=hd-internal
+fi

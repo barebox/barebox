@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "internal harddisk"
+	exit
+fi
+
+path="/mnt/internal-hd0.0"
+
+global.bootm.image="${path}/linuximage"
+
+oftree=${path}/oftree
+if [ -f $oftree ]; then
+	global.bootm.oftree="$oftree"
+fi
+
+global.linux.bootargs.dyn.root="root=/dev/sda2"

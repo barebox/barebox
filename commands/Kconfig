@@ -222,6 +222,28 @@ config CMD_CRC_CMP
 	depends on CMD_CRC
 	prompt "compare 2 files crc"
 
+config CMD_DIGEST
+       tristate
+       select DIGEST
+
+config CMD_MD5SUM
+	tristate
+	select CMD_DIGEST
+	select MD5
+	prompt "md5sum"
+
+config CMD_SHA1SUM
+	tristate
+	select CMD_DIGEST
+	select SHA1
+	prompt "sha1sum"
+
+config CMD_SHA256SUM
+	tristate
+	select CMD_DIGEST
+	select SHA256
+	prompt "sha256sum"
+
 config CMD_MTEST
 	tristate
 	prompt "mtest"

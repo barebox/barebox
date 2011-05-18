@@ -67,6 +67,8 @@ config MACH_A9M2410DEV
 
 endchoice
 
+source arch/arm/boards/mini2440/Kconfig 
+
 endmenu
 
 menu "S3C24X0 Features              "

@@ -13,6 +13,8 @@ tempdir=$(mktemp -d)
 for i in $*; do
 	cp -r $i/* $tempdir
 done
+find $tempdir -name .svn |xargs rm -r
+
 $objtree/scripts/bareboxenv -s $tempdir $objtree/barebox_default_env
 
 rm -r $tempdir

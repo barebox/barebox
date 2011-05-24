@@ -303,9 +303,9 @@ int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 	    (chip->pagebuf << chip->page_shift) < (to + ops->len))
 		chip->pagebuf = -1;
 
-	/* If we're not given explicit OOB data, let it be 0xFF */
-	if (likely(!oob))
-		memset(chip->oob_poi, 0xff, mtd->oobsize);
+	/* Initialize to all 0xFF, to avoid the possibility of
+	   left over OOB data from a previous OOB read. */
+	memset(chip->oob_poi, 0xff, mtd->oobsize);
 
 	while(1) {
 		int bytes = mtd->writesize;

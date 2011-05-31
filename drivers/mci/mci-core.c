@@ -957,7 +957,7 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s: Write %u block(s), starting at %u",
+	pr_debug("%s: Write %u block(s), starting at %u\n",
 		__func__, sector_count, (unsigned)sector_start);
 
 	if (mci->write_bl_len != 512) {

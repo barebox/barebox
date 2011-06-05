@@ -12,6 +12,7 @@ int complete(char *instr, char **outstr);
 void complete_reset(void);
 
 int command_complete(struct string_list *sl, char *instr);
+int device_complete(struct string_list *sl, char *instr);
 
 #endif /* __COMPLETE_ */
 

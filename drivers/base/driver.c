@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <linux/list.h>
+#include <complete.h>
 
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);
@@ -443,6 +444,7 @@ BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
 	.usage		= "Show information about devices and drivers.",
 	BAREBOX_CMD_HELP(cmd_devinfo_help)
+	BAREBOX_CMD_COMPLETE(device_complete)
 BAREBOX_CMD_END
 #endif
 

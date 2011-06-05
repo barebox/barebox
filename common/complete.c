@@ -145,6 +145,26 @@ int command_complete(struct string_list *sl, char *instr)
 	return 0;
 }
 
+int device_complete(struct string_list *sl, char *instr)
+{
+	struct device_d *dev;
+	int len;
+
+	if (!instr)
+		instr = "";
+
+	len = strlen(instr);
+
+	for_each_device(dev) {
+		if (strncmp(instr, dev_name(dev), len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", dev_name(dev));
+	}
+
+	return COMPLETE_CONTINUE;
+}
+
 static int device_param_complete(char *begin, struct device_d *dev,
 				 struct string_list *sl, char *instr)
 {

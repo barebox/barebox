@@ -1,0 +1,146 @@
+/*
+ * Copyright (C) 2009-2011 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+ *
+ * Under GPLv2
+ */
+
+#include <common.h>
+#include <asm/system.h>
+#include <asm/barebox-arm.h>
+#include <mach/hardware.h>
+#include <mach/at91rm9200.h>
+#include <mach/at91rm9200_mc.h>
+#include <mach/at91_pio.h>
+#include <mach/at91_pmc.h>
+#include <mach/io.h>
+#include <init.h>
+
+void static inline access_sdram(void)
+{
+	writel(0x00000000, AT91_SDRAM_BASE);
+}
+
+void __naked __bare_init arch_init_lowlevel(void)
+{
+	/*
+	 * relocate exception table
+	 */
+	__asm__ __volatile__ (
+"	ldr	r0, =exception_vectors\n"
+"	ldr	r1, =0x0\n"
+"	mov	r2, #16\n"
+"loopev:\n"
+"	subs	r2, r2, #1\n"
+"	ldr	r3, [r0], #4\n"
+"	str	r3, [r1], #4\n"
+"	bne	loopev\n"
+"	mov	pc, lr\n"
+);
+}
+
+void __naked __bare_init board_init_lowlevel(void)
+{
+	u32 r;
+	int i;
+
+	/*
+	 * PMC Check if the PLL is already initialized
+	 */
+	r = at91_sys_read(AT91_PMC_MCKR);
+	if (r & AT91_PMC_CSS)
+		goto end;
+
+	/*
+	 * Enable the Main Oscillator
+	 */
+	at91_sys_write(AT91_CKGR_MOR, CONFIG_SYS_MOR_VAL);
+
+	do {
+		r = at91_sys_read(AT91_PMC_SR);
+	} while (!(r & AT91_PMC_MOSCS));
+
+	/*
+	 * EBI_CFGR
+	 */
+	at91_sys_write(AT91_EBI_CFGR, CONFIG_SYS_EBI_CFGR_VAL);
+
+	/*
+	 * SMC2_CSR[0]: 16bit, 2 TDF, 4 WS
+	 */
+	at91_sys_write(AT91_SMC_CSR(0), CONFIG_SYS_SMC_CSR0_VAL);
+
+	/*
+	 * Init Clocks
+	 */
+
+	/*
+	 * PLLAR: x MHz for PCK
+	 */
+	at91_sys_write(AT91_CKGR_PLLAR, CONFIG_SYS_PLLAR_VAL);
+
+	do {
+		r = at91_sys_read(AT91_PMC_SR);
+	} while (!(r & AT91_PMC_LOCKA));
+
+	/*
+	 * PCK/x = MCK Master Clock from SLOW
+	 */
+	at91_sys_write(AT91_PMC_MCKR, CONFIG_SYS_MCKR2_VAL1);
+
+	/*
+	 * PCK/x = MCK Master Clock from PLLA
+	 */
+	at91_sys_write(AT91_PMC_MCKR, CONFIG_SYS_MCKR2_VAL2);
+
+	do {
+		r = at91_sys_read(AT91_PMC_SR);
+	} while (!(r & AT91_PMC_MCKRDY));
+
+	/*
+	 * Init SDRAM
+	 */
+
+	/* PIOC_ASR: Configure PIOC as peripheral (D16/D31) */
+	at91_sys_write(AT91_PIOC + PIO_ASR, CONFIG_SYS_PIOC_ASR_VAL);
+	/* PIOC_BSR */
+	at91_sys_write(AT91_PIOC + PIO_BSR, CONFIG_SYS_PIOC_BSR_VAL);
+	/* PIOC_PDR */
+	at91_sys_write(AT91_PIOC + PIO_PDR, CONFIG_SYS_PIOC_PDR_VAL);
+
+	/* EBI_CSA : CS1=SDRAM */
+	at91_sys_write(AT91_EBI_CSA, CONFIG_SYS_EBI_CSA_VAL);
+
+	/* SDRC_CR */
+	at91_sys_write(AT91_SDRAMC_CR, CONFIG_SYS_SDRC_CR_VAL);
+	/* SDRC_MR : Precharge All */
+	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_PRECHARGE);
+	/* access SDRAM */
+	access_sdram();
+	/* SDRC_MR : refresh */
+	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_REFRESH);
+
+	/* access SDRAM 8 times */
+	for (i = 0; i < 8; i++)
+		access_sdram();
+
+	/* SDRC_MR : Load Mode Register */
+	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_LMR);
+	/* access SDRAM */
+	access_sdram();
+	/* SDRC_TR : Write refresh rate */
+	at91_sys_write(AT91_SDRAMC_TR, CONFIG_SYS_SDRC_TR_VAL);
+	/* access SDRAM */
+	access_sdram();
+	/* SDRC_MR : Normal Mode */
+	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
+	/* access SDRAM */
+	access_sdram();
+
+	/* switch from FastBus to Asynchronous clock mode */
+	r = get_cr();
+	r |= 0xC0000000;	/* set bit 31 (iA) and 30 (nF) */
+	set_cr(r);
+
+end:
+	board_init_lowlevel_return();
+}

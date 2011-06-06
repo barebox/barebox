@@ -27,4 +27,17 @@ config DRIVER_VIDEO_STM
 	  Say 'Y' here to enable framebuffer and splash screen support for
 	  i.MX23 and i.MX28 based systems.
 
+config DRIVER_VIDEO_S3C
+	bool "S3C244x framebuffer driver"
+	depends on ARCH_S3C24xx
+	help
+	  Add support for the S3C244x LCD controller.
+
+if DRIVER_VIDEO_S3C
+
+config DRIVER_VIDEO_S3C_VERBOSE
+	bool "S3C244x verbose framebuffer info"
+
+endif
+
 endif

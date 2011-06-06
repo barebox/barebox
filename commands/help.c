@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 
 /*
  * Use puts() instead of printf() to avoid printf buffer overflow
@@ -68,5 +69,6 @@ BAREBOX_CMD_START(help)
 	.aliases	= help_aliases,
 	.usage		= "print online help",
 	BAREBOX_CMD_HELP(cmd_help_help)
+	BAREBOX_CMD_COMPLETE(command_complete)
 BAREBOX_CMD_END
 

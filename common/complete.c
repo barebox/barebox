@@ -20,13 +20,10 @@
 #include <common.h>
 #include <complete.h>
 #include <xfuncs.h>
-#include <linux/list.h>
-#include <malloc.h>
 #include <fs.h>
 #include <linux/stat.h>
 #include <libgen.h>
 #include <command.h>
-#include <stringlist.h>
 #include <environment.h>
 
 static int file_complete(struct string_list *sl, char *instr)
@@ -131,7 +128,7 @@ static int path_command_complete(struct string_list *sl, char *instr)
 	return 0;
 }
 
-static int command_complete(struct string_list *sl, char *instr)
+int command_complete(struct string_list *sl, char *instr)
 {
 	struct command *cmdtp;
 
@@ -236,6 +233,32 @@ void complete_reset(void)
 	tab_pressed = 0;
 }
 
+static char* cmd_complete_lookup(struct string_list *sl, char *instr)
+{
+	struct command *cmdtp;
+	int len;
+	int ret = 1;
+	char *res = NULL;
+
+	for_each_command(cmdtp) {
+		len = strlen(cmdtp->name);
+		if (!strncmp(instr, cmdtp->name, len) && instr[len] == ' ') {
+			instr += len + 1;
+			if (cmdtp->complete) {
+				ret = cmdtp->complete(sl, instr);
+				res = instr;
+			}
+			goto end;
+		}
+	}
+
+end:
+	if (ret == COMPLETE_CONTINUE && *instr == '$')
+		env_param_complete(sl, instr + 1, 1);
+
+	return res;
+}
+
 int complete(char *instr, char **outstr)
 {
 	struct string_list sl, *entry, *first_entry;
@@ -259,20 +282,22 @@ int complete(char *instr, char **outstr)
 	while (*t == ' ')
 		t++;
 
-	instr = t;
-
 	/* get the completion possibilities */
-	if ((t = strrchr(t, ' '))) {
-		t++;
-		file_complete(&sl, t);
+	instr = cmd_complete_lookup(&sl, t);
+	if (!instr) {
 		instr = t;
-	} else {
-		command_complete(&sl, instr);
-		path_command_complete(&sl, instr);
-		env_param_complete(&sl, instr, 0);
+		if ((t = strrchr(t, ' '))) {
+			t++;
+			file_complete(&sl, t);
+			instr = t;
+		} else {
+			command_complete(&sl, instr);
+			path_command_complete(&sl, instr);
+			env_param_complete(&sl, instr, 0);
+		}
+		if (*instr == '$')
+			env_param_complete(&sl, instr + 1, 1);
 	}
-	if (*instr == '$')
-		env_param_complete(&sl, instr + 1, 1);
 
 	pos = strlen(instr);
 

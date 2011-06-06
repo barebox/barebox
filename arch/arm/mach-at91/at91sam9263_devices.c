@@ -10,6 +10,7 @@
  *
  */
 #include <common.h>
+#include <sizes.h>
 #include <asm/armlinux.h>
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
@@ -213,3 +214,80 @@ void at91_register_uart(unsigned id, unsigned pins)
 	}
 
 }
+
+#if defined(CONFIG_MCI_ATMEL)
+static struct device_d mci0_device = {
+	.id		= 0,
+	.name		= "atmel_mci",
+	.map_base	= AT91SAM9263_BASE_MCI0,
+	.size		= SZ_16K,
+};
+
+static struct device_d mci1_device = {
+	.id		= 1,
+	.name		= "atmel_mci",
+	.map_base	= AT91SAM9263_BASE_MCI1,
+	.size		= SZ_16K,
+};
+
+/* Consider only one slot : slot 0 */
+void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
+{
+	if (!data)
+		return;
+
+	/* need bus_width */
+	if (!data->bus_width)
+		return;
+
+	/* input/irq */
+	if (data->detect_pin) {
+		at91_set_gpio_input(data->detect_pin, 1);
+		at91_set_deglitch(data->detect_pin, 1);
+	}
+
+	if (data->wp_pin)
+		at91_set_gpio_input(data->wp_pin, 1);
+
+	if (mmc_id == 0) {		/* MCI0 */
+		/* CLK */
+		at91_set_A_periph(AT91_PIN_PA12, 0);
+
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA1, 1);
+
+		/* DAT0, maybe DAT1..DAT3 and maybe DAT4..DAT7 */
+		at91_set_A_periph(AT91_PIN_PA0, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA3, 1);
+			at91_set_A_periph(AT91_PIN_PA4, 1);
+			at91_set_A_periph(AT91_PIN_PA5, 1);
+		}
+
+		mci0_device.platform_data = data;
+		at91_clock_associate("mci0_clk", &mci0_device, "mci_clk");
+		register_device(&mci0_device);
+
+	} else {			/* MCI1 */
+		/* CLK */
+		at91_set_A_periph(AT91_PIN_PA6, 0);
+
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA7, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_A_periph(AT91_PIN_PA8, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA9, 1);
+			at91_set_A_periph(AT91_PIN_PA10, 1);
+			at91_set_A_periph(AT91_PIN_PA11, 1);
+		}
+
+		mci1_device.platform_data = data;
+		at91_clock_associate("mci1_clk", &mci1_device, "mci_clk");
+		register_device(&mci1_device);
+	}
+}
+#else
+void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
+#endif

@@ -63,4 +63,14 @@ void at91_add_device_sdram(u32 size);
 #define ATMEL_UART_RI	0x20
 
 void at91_register_uart(unsigned id, unsigned pins);
+
+/* Multimedia Card Interface */
+struct atmel_mci_platform_data {
+	unsigned bus_width;
+	unsigned host_caps; /* MCI_MODE_* from mci.h */
+	unsigned detect_pin;
+	unsigned wp_pin;
+};
+
+void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);
 #endif

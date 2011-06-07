@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <readkey.h>
 
 static int do_clear(int argc, char *argv[])
@@ -39,4 +40,5 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clear)
 	.cmd		= do_clear,
 	.usage		= "clear screen",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

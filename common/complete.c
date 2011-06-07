@@ -188,6 +188,11 @@ static int device_param_complete(char *begin, struct device_d *dev,
 	return 0;
 }
 
+int empty_complete(struct string_list *sl, char *instr)
+{
+	return COMPLETE_END;
+}
+
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
 	struct device_d *dev;

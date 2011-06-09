@@ -654,6 +654,8 @@ static int omap_gpmc_eccmode_set(struct device_d *dev, struct param_d *param, co
 		return -EINVAL;
 	}
 
+	dev_param_set_generic(dev, param, ecc_mode_strings[i]);
+
 	return omap_gpmc_eccmode(oinfo, i);
 }
 
@@ -811,7 +813,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 
 	nand->options |= NAND_SKIP_BBTSCAN;
-	omap_gpmc_eccmode(oinfo, pdata->ecc_mode);
+
+	dev_add_param(pdev, "eccmode", omap_gpmc_eccmode_set, NULL, 0);
+	dev_set_param(pdev, "eccmode", ecc_mode_strings[pdata->ecc_mode]);
 
 	/* We are all set to register with the system now! */
 	err = add_mtd_device(minfo);
@@ -819,8 +823,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		dev_dbg(pdev, "device registration failed\n");
 		goto out_release_mem;
 	}
-
-	dev_add_param(pdev, "eccmode", omap_gpmc_eccmode_set, NULL, 0);
 
 	return 0;
 

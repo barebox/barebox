@@ -193,6 +193,11 @@ int empty_complete(struct string_list *sl, char *instr)
 	return COMPLETE_END;
 }
 
+int cammand_var_complete(struct string_list *sl, char *instr)
+{
+	return COMPLETE_CONTINUE;
+}
+
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
 	struct device_d *dev;

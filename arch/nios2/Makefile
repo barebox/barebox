@@ -1,4 +1,4 @@
-CPPFLAGS += -fno-strict-aliasing
+CPPFLAGS += -fno-strict-aliasing -mno-hw-mul
 
 board-$(CONFIG_GENERIC) := generic
 

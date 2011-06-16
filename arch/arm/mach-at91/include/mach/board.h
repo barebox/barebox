@@ -21,6 +21,7 @@
 #ifndef __ASM_ARCH_BOARD_H
 #define __ASM_ARCH_BOARD_H
 
+#include <net.h>
 #include <linux/mtd/mtd.h>
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
@@ -47,6 +48,7 @@ void at91_add_device_nand(struct atmel_nand_data *data);
 struct at91_ether_platform_data {
 	unsigned int flags;
 	int phy_addr;
+	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 
 void at91_add_device_eth(struct at91_ether_platform_data *data);

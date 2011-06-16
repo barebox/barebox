@@ -431,7 +431,7 @@ static int macb_probe(struct device_d *dev)
 	edev->send = macb_send;
 	edev->recv = macb_recv;
 	edev->halt = macb_halt;
-	edev->get_ethaddr = macb_get_ethaddr;
+	edev->get_ethaddr = pdata->get_ethaddr ? pdata->get_ethaddr : macb_get_ethaddr;
 	edev->set_ethaddr = macb_set_ethaddr;
 
 	macb->miidev.read = macb_phy_read;

@@ -35,16 +35,16 @@ unprotect $part
 echo
 echo "erasing partition $part"
 echo
-erase $part
+erase $part || exit 1
 
 echo
 echo "flashing $image to $part"
 echo
 
 if [ x$mode = xtftp ]; then
-	tftp $image $part
+	tftp $image $part || exit 1
 else
-	cp $image $part
+	cp $image $part || exit 1
 fi
 
 protect $part

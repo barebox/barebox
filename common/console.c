@@ -189,6 +189,20 @@ static int getc_raw(void)
 	}
 }
 
+static int tstc_raw(void)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (!(cdev->f_active & CONSOLE_STDIN))
+			continue;
+		if (cdev->tstc(cdev))
+			return 1;
+	}
+
+	return 0;
+}
+
 int getc(void)
 {
 	unsigned char ch;
@@ -203,7 +217,7 @@ int getc(void)
 	while (1) {
 		poller_call();
 
-		if (tstc()) {
+		if (tstc_raw()) {
 			kfifo_putc(console_input_buffer, getc_raw());
 
 			start = get_time_ns();
@@ -230,16 +244,7 @@ EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
-	struct console_device *cdev;
-
-	for_each_console(cdev) {
-		if (!(cdev->f_active & CONSOLE_STDIN))
-			continue;
-		if (cdev->tstc(cdev))
-			return 1;
-	}
-
-	return 0;
+	return kfifo_len(console_input_buffer) || tstc_raw();
 }
 EXPORT_SYMBOL(tstc);
 

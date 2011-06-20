@@ -526,7 +526,7 @@ static int tse_probe(struct device_d *dev)
 	tx_desc = (struct alt_sgdma_descriptor *)NIOS_SOPC_TSE_DESC_MEM_BASE;
 	rx_desc = tx_desc + 2;
 #else
-	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), &dma_handle);
+	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), (unsigned long *)&dma_handle);
 	rx_desc = tx_desc + 2;
 
 	if (!tx_desc) {

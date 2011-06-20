@@ -20,6 +20,8 @@
 
 #define printk			printf
 
+#define pr_warn			pr_warning
+
 #define __init
 
 #define MODULE_AUTHOR(x)

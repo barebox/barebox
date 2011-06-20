@@ -14,8 +14,8 @@ struct spi_board_info {
 	/* mode becomes spi_device.mode, and is essential for chips
 	 * where the default of SPI_CS_HIGH = 0 is wrong.
 	 */
-	u8		mode;
-
+	u8	mode;
+	void	*platform_data;
 };
 
 /**

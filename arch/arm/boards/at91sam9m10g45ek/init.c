@@ -111,18 +111,28 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
-static struct atmel_mci_platform_data mci0_pdata = {
+#if defined(CONFIG_MCI_ATMEL)
+static struct atmel_mci_platform_data ek_mci_data = {
 	.bus_width	= 4,
 	.host_caps	= MMC_MODE_HS,
 	.detect_pin	= AT91_PIN_PD10,
 };
+
+static void ek_add_device_mci(void)
+{
+	at91_add_device_mci(0, &ek_mci_data);
+}
+#else
+static void ek_add_device_mci(void) {}
+#endif
+
 
 static int at91sam9m10g45ek_devices_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
 	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
-	at91_add_device_mci(0, &mci0_pdata);
+	ek_add_device_mci();
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");

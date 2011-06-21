@@ -456,7 +456,7 @@ static int mci_probe(struct device_d *hw_dev)
 	else if (pd->bus_width == 8)
 		host->mci.host_caps |= MMC_MODE_8BIT;
 
-	host->base = (struct atmel_mci_regs *)hw_dev->map_base;
+	host->base = (void __iomem *)hw_dev->map_base;
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");

@@ -451,9 +451,9 @@ static int mci_probe(struct device_d *hw_dev)
 	host->mci.init = mci_reset;
 
 	host->mci.host_caps = pd->host_caps;
-	if (pd->bus_width == 4)
+	if (pd->bus_width >= 4)
 		host->mci.host_caps |= MMC_MODE_4BIT;
-	else if (pd->bus_width == 8)
+	if (pd->bus_width == 8)
 		host->mci.host_caps |= MMC_MODE_8BIT;
 
 	host->base = (void __iomem *)hw_dev->map_base;

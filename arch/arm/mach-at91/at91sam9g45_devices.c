@@ -285,7 +285,7 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 		/* DAT0, maybe DAT1..DAT3 and maybe DAT4..DAT7 */
 		at91_set_A_periph(AT91_PIN_PA2, 1);
-		if (data->bus_width == 4) {
+		if (data->bus_width >= 4) {
 			at91_set_A_periph(AT91_PIN_PA3, 1);
 			at91_set_A_periph(AT91_PIN_PA4, 1);
 			at91_set_A_periph(AT91_PIN_PA5, 1);
@@ -310,7 +310,7 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 		/* DAT0, maybe DAT1..DAT3 and maybe DAT4..DAT7 */
 		at91_set_A_periph(AT91_PIN_PA23, 1);
-		if (data->bus_width == 4) {
+		if (data->bus_width >= 4) {
 			at91_set_A_periph(AT91_PIN_PA24, 1);
 			at91_set_A_periph(AT91_PIN_PA25, 1);
 			at91_set_A_periph(AT91_PIN_PA26, 1);

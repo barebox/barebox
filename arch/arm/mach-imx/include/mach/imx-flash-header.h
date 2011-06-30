@@ -49,6 +49,11 @@ struct imx_dcd_entry {
 	unsigned long val;
 };
 
+struct imx_dcd_v2_entry {
+	__be32 addr;
+	__be32 val;
+};
+
 #define DCD_BARKER	0xb17219e9
 
 struct imx_rsa_public_key {
@@ -71,6 +76,53 @@ struct imx_flash_header {
 	unsigned long			app_dest;
 	unsigned long			dcd_barker;
 	unsigned long			dcd_block_len;
+};
+
+#define IVT_HEADER_TAG		0xd1
+#define IVT_VERSION		0x40
+
+#define DCD_HEADER_TAG		0xd2
+#define DCD_VERSION		0x40
+
+#define DCD_COMMAND_WRITE_TAG	0xcc
+#define DCD_COMMAND_WRITE_PARAM	0x04
+
+struct imx_ivt_header {
+	uint8_t tag;
+	__be16 length;
+	uint8_t version;
+} __attribute__((packed));
+
+struct imx_dcd_command {
+	uint8_t tag;
+	__be16 length;
+	uint8_t param;
+} __attribute__((packed));
+
+struct imx_dcd {
+	struct imx_ivt_header header;
+	struct imx_dcd_command command;
+};
+
+struct imx_boot_data {
+	uint32_t start;
+	uint32_t size;
+	uint32_t plugin;
+};
+
+struct imx_flash_header_v2 {
+	struct imx_ivt_header header;
+
+	uint32_t entry;
+	uint32_t reserved1;
+	uint32_t dcd_ptr;
+	uint32_t boot_data_ptr;
+	uint32_t self;
+	uint32_t csf;
+	uint32_t reserved2;
+
+	struct imx_boot_data boot_data;
+	struct imx_dcd dcd;
 };
 
 #endif /* __MACH_FLASH_HEADER_H */

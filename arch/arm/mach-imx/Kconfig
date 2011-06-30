@@ -50,8 +50,8 @@ choice
 	  used to setup SDRAM. The internal ROM code then initializes SDRAM
 	  using the register/value table, loads the whole barebox image to
 	  SDRAM and starts it. The internal boot mode is available on newer
-	  i.MX processors (i.MX25, i.MX35 and i.MX51). and supports booting
-	  from NOR, NAND, MMC/SD and serial ROMs.
+	  i.MX processors (i.MX25, i.MX35, i.MX51 and i.MX53). and supports
+	  booting from NOR, NAND, MMC/SD and serial ROMs.
 	  The external boot mode only supports booting from NAND and NOR. With
 	  NOR flash the image is just started in NOR flash. With NAND flash
 	  the NAND controller loads the first 2kbyte from NAND into the NAND
@@ -62,7 +62,7 @@ choice
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
-	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53
 
 config ARCH_IMX_EXTERNAL_BOOT
 	bool "support external boot mode"
@@ -151,6 +151,11 @@ config ARCH_IMX35
 
 config ARCH_IMX51
 	bool "i.MX51"
+	select CPU_V7
+	select ARCH_HAS_FEC_IMX
+
+config ARCH_IMX53
+	bool "i.MX53"
 	select CPU_V7
 	select ARCH_HAS_FEC_IMX
 
@@ -396,6 +401,20 @@ config MACH_EUKREA_CPUIMX51SD
 endchoice
 
 endif
+
+# ----------------------------------------------------------
+
+if ARCH_IMX53
+
+choice
+
+	prompt "i.MX53 Board Type"
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
 
 menu "Board specific settings       "
 

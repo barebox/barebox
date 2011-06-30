@@ -161,7 +161,8 @@
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
 #if defined CONFIG_ARCH_IMX31 || defined CONFIG_ARCH_IMX35 || \
-	defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX51
+	defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX51 || \
+	defined CONFIG_ARCH_IMX53
 # define	UCR1_VAL (0)
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32

@@ -373,7 +373,7 @@ static int imx_spi_probe(struct device_d *dev)
 		version = SPI_IMX_VER_0_0;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
-	if (cpu_is_mx51())
+	if (cpu_is_mx51() || cpu_is_mx53())
 		version = SPI_IMX_VER_2_3;
 #endif
 	imx->chipselect = spi_imx_devtype_data[version].chipselect;

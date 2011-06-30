@@ -71,6 +71,11 @@ static inline int imx51_iim_register_fec_ethaddr(void)
 	return 0;
 }
 
+static inline int imx53_iim_register_fec_ethaddr(void)
+{
+	return imx51_iim_register_fec_ethaddr();
+}
+
 static inline int imx25_iim_register_fec_ethaddr(void)
 {
 	int ret;

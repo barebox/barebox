@@ -18,6 +18,7 @@ ARM type:
 @li @subpage the3stack
 @li @subpage mx23_evk
 @li @subpage board_babage
+@li @subpage board_loco
 @li @subpage chumbyone
 @li @subpage scb9328
 @li @subpage netx

@@ -19,6 +19,7 @@ config ARCH_TEXT_BASE
 	default 0x08f80000 if MACH_SCB9328
 	default 0xa7e00000 if MACH_NESO
 	default 0x97f00000 if MACH_MX51_PDK
+	default 0x7ff00000 if MACH_MX53_LOCO
 	default 0x87f00000 if MACH_GUF_CUPID
 	default 0x93d00000 if MACH_TX25
 
@@ -38,6 +39,7 @@ config BOARDINFO
 	default "Synertronixx scb9328" if MACH_SCB9328
 	default "Garz+Fricke Neso" if MACH_NESO
 	default "Freescale i.MX51 PDK" if MACH_FREESCALE_MX51_PDK
+	default "Freescale i.MX53 LOCO" if MACH_FREESCALE_MX53_LOCO
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
 	default "Ka-Ro tx25" if MACH_TX25
 
@@ -409,6 +411,11 @@ if ARCH_IMX53
 choice
 
 	prompt "i.MX53 Board Type"
+
+config MACH_FREESCALE_MX53_LOCO
+	bool "Freescale i.MX53 LOCO"
+	select HAVE_MMU
+	select MACH_HAS_LOWLEVEL_INIT
 
 endchoice
 

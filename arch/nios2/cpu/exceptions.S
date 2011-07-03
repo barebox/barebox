@@ -122,7 +122,7 @@ _exception:
 	mov     r4, sp  /* ptr to regs */
 	callr   r3
 
-	/* Restore regsisters and return from exception*/
+	/* Restore registers and return from exception */
 _exception_return:
 	ldw     r1, 4(sp)
 	ldw     r2, 8(sp)

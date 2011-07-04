@@ -257,10 +257,10 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			return err;
 		if (data->flags & MMC_DATA_WRITE) {
 			dma_flush_range((unsigned long)data->src,
-				(unsigned long)(data->src + 512));
+				(unsigned long)(data->src + data->blocks * 512));
 		} else
 			dma_clean_range((unsigned long)data->src,
-				(unsigned long)(data->src + 512));
+				(unsigned long)(data->src + data->blocks * 512));
 
 	}
 
@@ -317,7 +317,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 		if (data->flags & MMC_DATA_READ) {
 			dma_inv_range((unsigned long)data->dest,
-					(unsigned long)(data->dest + 512));
+					(unsigned long)(data->dest + data->blocks * 512));
 		}
 #endif
 	}

@@ -15,6 +15,7 @@ struct spi_board_info {
 	 * where the default of SPI_CS_HIGH = 0 is wrong.
 	 */
 	u8	mode;
+	u8	bits_per_word;
 	void	*platform_data;
 };
 

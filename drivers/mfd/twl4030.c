@@ -60,7 +60,7 @@ int twl4030_reg_read(struct twl4030 *twl4030, u16 reg, u8 *val)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(twl4030_reg_read)
+EXPORT_SYMBOL(twl4030_reg_read);
 
 int twl4030_reg_write(struct twl4030 *twl4030, u16 reg, u8 val)
 {
@@ -94,7 +94,7 @@ int twl4030_reg_write(struct twl4030 *twl4030, u16 reg, u8 val)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(twl4030_reg_write)
+EXPORT_SYMBOL(twl4030_reg_write);
 
 int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u8 mask, u8 val)
 {

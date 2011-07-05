@@ -92,6 +92,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	return proxy;
 
 fail:
+	unregister_device(&proxy->dev);
 	free(proxy);
 	return NULL;
 }

@@ -20,7 +20,7 @@
  * @file
  * @brief x86 posix types
  *
- * Minimal set to make all the other header files copied from the Linxu kernel happy
+ * Minimal set to make all the other header files copied from the Linux kernel happy
  */
 
 #ifndef _ASM_X86_POSIX_TYPES_H

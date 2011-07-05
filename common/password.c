@@ -87,6 +87,7 @@ int password(unsigned char *passwd, size_t length, int flags)
 		}
 	} while(1);
 }
+EXPORT_SYMBOL(password);
 
 int is_passwd_enable(void)
 {
@@ -101,11 +102,13 @@ int is_passwd_enable(void)
 
 	return 1;
 }
+EXPORT_SYMBOL(is_passwd_enable);
 
 int passwd_disable(void)
 {
 	return unlink(PASSWD_FILE);
 }
+EXPORT_SYMBOL(passwd_disable);
 
 static unsigned char to_digit(unsigned char c)
 {
@@ -167,6 +170,7 @@ exit:
 
 	return ret;
 }
+EXPORT_SYMBOL(read_passwd);
 
 int write_passwd(unsigned char *sum, size_t length)
 {
@@ -215,6 +219,7 @@ exit:
 
 	return ret;
 }
+EXPORT_SYMBOL(write_passwd);
 
 int check_passwd(unsigned char* passwd, size_t length)
 {
@@ -258,6 +263,7 @@ err1:
 
 	return ret;
 }
+EXPORT_SYMBOL(check_passwd);
 
 int set_passwd(unsigned char* passwd, size_t length)
 {
@@ -284,3 +290,4 @@ int set_passwd(unsigned char* passwd, size_t length)
 
 	return ret;
 }
+EXPORT_SYMBOL(set_passwd);

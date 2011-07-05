@@ -65,7 +65,7 @@ config CMD_MENU
 	prompt "menu"
 
 config CMD_MENU_MANAGEMENT
-	tristate
+	bool
 	depends on CMD_MENU
 	prompt "menu scripts management"
 

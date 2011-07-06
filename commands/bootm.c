@@ -282,7 +282,6 @@ static int handler_parse_options(struct image_data *data, int opt, char *optarg)
 
 static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 {
-	ulong	iflag;
 	int	opt;
 	image_header_t *os_header;
 	struct image_handle *os_handle, *initrd_handle = NULL;
@@ -344,7 +343,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	 * recover from any failures any more...
 	 */
 
-	iflag = disable_interrupts();
+	disable_interrupts();
 
 	puts ("OK\n");
 

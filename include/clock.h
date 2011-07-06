@@ -25,6 +25,8 @@ int init_clock(struct clocksource *);
 
 uint64_t get_time_ns(void);
 
+void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from, uint32_t to, uint32_t maxsec);
+
 uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant);
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns);

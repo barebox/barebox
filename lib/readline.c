@@ -176,7 +176,6 @@ int readline(const char *prompt, char *buf, int len)
 {
 	unsigned long num = 0;
 	unsigned long eol_num = 0;
-	unsigned long rlen;
 	unsigned wlen;
 	int ichar;
 	int insert = 1;
@@ -191,7 +190,6 @@ int readline(const char *prompt, char *buf, int len)
 	puts (prompt);
 
 	while (1) {
-		rlen = 1;
 		ichar = read_key();
 
 		if ((ichar == '\n') || (ichar == '\r')) {

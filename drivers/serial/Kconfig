@@ -48,6 +48,11 @@ config DRIVER_SERIAL_ALTERA
 	default y
 	bool "Altera serial driver"
 
+config DRIVER_SERIAL_ALTERA_JTAG
+	depends on NIOS2
+	default n
+	bool "Altera JTAG serial driver"
+
 config DRIVER_SERIAL_NS16550
 	default n
 	bool "NS16550 serial driver"

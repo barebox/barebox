@@ -73,4 +73,11 @@ config MCI_OMAP_HSMMC
 	  Enable this entry to add support to read and write SD cards on a
 	  OMAP4 based system.
 
+config MCI_ATMEL
+	bool "ATMEL (AT91)"
+	depends on ARCH_AT91
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Atmel AT91.
+
 endif

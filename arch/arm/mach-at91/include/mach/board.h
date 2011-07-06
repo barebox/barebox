@@ -21,6 +21,7 @@
 #ifndef __ASM_ARCH_BOARD_H
 #define __ASM_ARCH_BOARD_H
 
+#include <net.h>
 #include <linux/mtd/mtd.h>
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
@@ -47,6 +48,7 @@ void at91_add_device_nand(struct atmel_nand_data *data);
 struct at91_ether_platform_data {
 	unsigned int flags;
 	int phy_addr;
+	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 
 void at91_add_device_eth(struct at91_ether_platform_data *data);
@@ -63,4 +65,14 @@ void at91_add_device_sdram(u32 size);
 #define ATMEL_UART_RI	0x20
 
 void at91_register_uart(unsigned id, unsigned pins);
+
+/* Multimedia Card Interface */
+struct atmel_mci_platform_data {
+	unsigned bus_width;
+	unsigned host_caps; /* MCI_MODE_* from mci.h */
+	unsigned detect_pin;
+	unsigned wp_pin;
+};
+
+void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);
 #endif

@@ -145,6 +145,8 @@ static int pcm049_devices_init(void)
 	register_device(&sram_dev);
 	register_device(&hsmmc_dev);
 
+	gpmc_generic_init(0x10);
+
 	pcm049_network_init();
 
 	gpmc_generic_nand_devices_init(0, 8, OMAP_ECC_BCH8_CODE_HW);

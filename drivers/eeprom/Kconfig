@@ -1,0 +1,11 @@
+menu "EEPROM support"
+
+config EEPROM_AT25
+	tristate "SPI EEPROMs from most vendors"
+	depends on SPI
+	help
+	  Enable this driver to get read/write support to most SPI EEPROMs,
+	  after you configure the board init code to know about each eeprom
+	  on your target board.
+
+endmenu

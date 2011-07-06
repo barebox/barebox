@@ -42,31 +42,6 @@ extern "C" {
 #define S_IWOTH 00002		/* read permission for other */
 #define S_IXOTH 00001		/* execute/search permission for other */
 
-#ifdef	__PPC__
-
-struct stat {
-	dev_t		st_dev;		/* file system id */
-	ino_t		st_ino;		/* file id */
-	mode_t		st_mode;	/* ownership/protection */
-	nlink_t		st_nlink;	/* number of links */
-	uid_t 		st_uid;		/* user id */
-	gid_t 		st_gid;		/* group id */
-	dev_t		st_rdev;
-	off_t		st_size;	/* file size in # of bytes */
-	unsigned long  	st_blksize;	/* block size */
-	unsigned long  	st_blocks;	/* file size in # of blocks */
-	unsigned long  	st_atime;	/* time file was last accessed */
-	unsigned long  	__unused1;
-	unsigned long  	st_mtime;	/* time file was last modified */
-	unsigned long  	__unused2;
-	unsigned long  	st_ctime;	/* time file status was last changed */
-	unsigned long  	__unused3;
-	unsigned long  	__unused4;
-	unsigned long  	__unused5;
-};
-
-#else
-
 struct stat {
 	unsigned short st_dev;
 	unsigned short __pad1;
@@ -89,39 +64,6 @@ struct stat {
 	unsigned long  __unused4;
 	unsigned long  __unused5;
 };
-
-#endif	/* __ARM__ */
-
-#if defined (__MIPS__)
-
-struct stat {
-	dev_t           st_dev;
-	long            st_pad1[3];
-	ino_t           st_ino;
-	mode_t          st_mode;
-	nlink_t         st_nlink;
-	uid_t           st_uid;
-	gid_t           st_gid;
-	dev_t           st_rdev;
-	long            st_pad2[2];
-	off_t           st_size;
-	long            st_pad3;
-	/*
-	 * Actually this should be timestruc_t st_atime, st_mtime and st_ctime
-	 * but we don't have it under Linux.
-	 */
-	time_t          st_atime;
-	long            reserved0;
-	time_t          st_mtime;
-	long            reserved1;
-	time_t          st_ctime;
-	long            reserved2;
-	long            st_blksize;
-	long            st_blocks;
-	long            st_pad4[14];
-};
-
-#endif	/* __MIPS__ */
 
 #ifdef __cplusplus
 }

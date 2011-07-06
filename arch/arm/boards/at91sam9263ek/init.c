@@ -99,6 +99,21 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
+#if defined(CONFIG_MCI_ATMEL)
+static struct atmel_mci_platform_data __initdata ek_mci_data = {
+	.bus_width	= 4,
+	.detect_pin	= AT91_PIN_PE18,
+	.wp_pin		= AT91_PIN_PE19,
+};
+
+static void ek_add_device_mci(void)
+{
+	at91_add_device_mci(1, &ek_mci_data);
+}
+#else
+static void ek_add_device_mci(void) {}
+#endif
+
 static int at91sam9263ek_devices_init(void)
 {
 	/*
@@ -113,6 +128,7 @@ static int at91sam9263ek_devices_init(void)
 	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
 	register_device(&cfi_dev);
+	ek_add_device_mci();
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

@@ -116,8 +116,14 @@ void	irq_free_handler   (int);
 void	enable_interrupts  (void);
 int	disable_interrupts (void);
 #else
-#define enable_interrupts() do {} while (0)
-#define disable_interrupts() 0
+static inline void enable_interrupts(void)
+{
+}
+
+static inline int disable_interrupts(void)
+{
+	return 0;
+}
 #endif
 
 /* lib_$(ARCH)/time.c */

@@ -75,16 +75,25 @@ static struct device_d nand_dev = {
  * Area 2: Offset 0x304...0x307
  */
 static struct dm9000_platform_data dm9000_data = {
-	.iobase   = CS4_BASE + 0x300,
-	.iodata   = CS4_BASE + 0x304,
 	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
 };
 
+static struct resource dm9000_resources[] = {
+	[0] = {
+		.start	= CS4_BASE + 0x300,
+		.size	= 4,
+	},
+	[1] = {
+		.start	= CS4_BASE + 0x304,
+		.size	= 4,
+	},
+};
+
 static struct device_d dm9000_dev = {
 	.name     = "dm9000",
-	.map_base = CS4_BASE + 0x300,
-	.size     = 8,
+	.num_resources	= ARRAY_SIZE(dm9000_resources),
+	.resource	= dm9000_resources,
 	.platform_data = &dm9000_data,
 };
 

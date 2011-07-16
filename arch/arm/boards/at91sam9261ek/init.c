@@ -89,8 +89,6 @@ static void ek_add_device_nand(void)
  */
 #if defined(CONFIG_DRIVER_NET_DM9000)
 static struct dm9000_platform_data dm9000_data = {
-	.iobase		= AT91_CHIPSELECT_2,
-	.iodata		= AT91_CHIPSELECT_2 + 4,
 	.buswidth	= DM9000_WIDTH_16,
 	.srom		= 0,
 };
@@ -98,7 +96,11 @@ static struct dm9000_platform_data dm9000_data = {
 static struct resource dm9000_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_2,
-		.size	= 8,
+		.size	= 4,
+	},
+	[1] = {
+		.start	= AT91_CHIPSELECT_2 + 4,
+		.size	= 4,
 	},
 };
 

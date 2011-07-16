@@ -491,12 +491,18 @@ static int dm9000_probe(struct device_d *dev)
 		printf("dm9000: no platform_data\n");
 		return -ENODEV;
 	}
+
+	if (dev->num_resources < 2) {
+		printf("dm9000: need 2 resources base and data");
+		return -ENODEV;
+	}
+
 	pdata = dev->platform_data;
 
 	priv = edev->priv;
 	priv->buswidth = pdata->buswidth;
-	priv->iodata = (void *)pdata->iodata;
-	priv->iobase = (void *)pdata->iobase;
+	priv->iodata = (void __iomem *)dev->resource[1].start;
+	priv->iobase = (void __iomem *)dev->resource[0].start;
 	priv->srom = pdata->srom;
 
 	edev->init = dm9000_init_dev;

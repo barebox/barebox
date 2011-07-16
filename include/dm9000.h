@@ -7,8 +7,6 @@
 #define DM9000_WIDTH_32		3
 
 struct dm9000_platform_data {
-	unsigned long iobase;
-	unsigned long iodata;
 	int buswidth;
 	int srom;
 };

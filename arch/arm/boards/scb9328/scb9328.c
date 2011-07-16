@@ -55,18 +55,27 @@ static struct device_d sdram_dev = {
 };
 
 static struct dm9000_platform_data dm9000_data = {
-	.iobase   = 0x16000000,
-	.iodata   = 0x16000004,
 	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
 };
 
+static struct resource dm9000_resources[] = {
+	[0] = {
+		.start	= 0x16000000,
+		.size	= 4,
+	},
+	[1] = {
+		.start	= 0x16000004,
+		.size	= 4,
+	},
+};
+
 static struct device_d dm9000_dev = {
-	.id	  = -1,
-	.name     = "dm9000",
-	.map_base = 0x16000000,
-	.size     = 8,
-	.platform_data = &dm9000_data,
+	.id		= -1,
+	.name		= "dm9000",
+	.num_resources	= ARRAY_SIZE(dm9000_resources),
+	.resource	= dm9000_resources,
+	.platform_data	= &dm9000_data,
 };
 
 struct gpio_led leds[] = {

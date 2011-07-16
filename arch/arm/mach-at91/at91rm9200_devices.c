@@ -20,6 +20,12 @@
 
 #include "generic.h"
 
+static struct resource sdram_dev_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_1,
+	},
+};
+
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
 	.flags = DEVFS_RDWR,
@@ -28,13 +34,14 @@ static struct memory_platform_data ram_pdata = {
 static struct device_d sdram_dev = {
 	.id = -1,
 	.name = "mem",
-	.map_base = AT91_CHIPSELECT_1,
+	.num_resources	= ARRAY_SIZE(sdram_dev_resources),
+	.resource	= sdram_dev_resources,
 	.platform_data = &ram_pdata,
 };
 
 void at91_add_device_sdram(u32 size)
 {
-	sdram_dev.size = size;
+	sdram_dev_resources[0].size = size;
 	register_device(&sdram_dev);
 	armlinux_add_dram(&sdram_dev);
 }
@@ -44,11 +51,18 @@ void at91_add_device_sdram(u32 size)
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_NET_AT91_ETHER)
+static struct resource eth_resources[] = {
+	[0] = {
+		.start	= AT91_VA_BASE_EMAC,
+		.size	= 0x1000,
+	},
+};
+
 static struct device_d at91rm9200_eth_device = {
 	.id		= 0,
 	.name		= "at91_ether",
-	.map_base	= AT91_VA_BASE_EMAC,
-	.size		= 0x1000,
+	.resource	= eth_resources,
+	.num_resources	= ARRAY_SIZE(eth_resources),
 };
 
 void __init at91_add_device_eth(struct at91_ether_platform_data *data)
@@ -91,11 +105,18 @@ void __init at91_add_device_eth(struct at91_ether_platform_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_NAND_ATMEL)
+static struct resource nand_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_3,
+		.size	= 0x10,
+	},
+};
+
 static struct device_d at91rm9200_nand_device = {
 	.id		= -1,
 	.name		= "atmel_nand",
-	.map_base	= AT91_CHIPSELECT_3,
-	.size		= 0x10,
+	.resource	= nand_resources,
+	.num_resources	= ARRAY_SIZE(nand_resources),
 };
 
 void __init at91_add_device_nand(struct atmel_nand_data *data)
@@ -143,11 +164,18 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
  *  UART
  * -------------------------------------------------------------------- */
 
+static struct resource dbgu_resources[] = {
+	[0] = {
+		.start	= AT91_BASE_SYS + AT91_DBGU,
+		.size	= 4096,
+	},
+};
+
 static struct device_d dbgu_serial_device = {
 	.id		= 0,
 	.name		= "atmel_serial",
-	.map_base	= (AT91_BASE_SYS + AT91_DBGU),
-	.size		= 4096,
+	.resource	= dbgu_resources,
+	.num_resources	= ARRAY_SIZE(dbgu_resources),
 };
 
 static inline void configure_dbgu_pins(void)
@@ -156,11 +184,18 @@ static inline void configure_dbgu_pins(void)
 	at91_set_A_periph(AT91_PIN_PA31, 1);		/* DTXD */
 }
 
+static struct resource uart0_resources[] = {
+	[0] = {
+		.start	= AT91RM9200_BASE_US0,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart0_serial_device = {
 	.id		= 1,
 	.name		= "atmel_serial",
-	.map_base	= AT91RM9200_BASE_US0,
-	.size		= 4096,
+	.resource	= uart0_resources,
+	.num_resources	= ARRAY_SIZE(uart0_resources),
 };
 
 static inline void configure_usart0_pins(unsigned pins)
@@ -180,11 +215,18 @@ static inline void configure_usart0_pins(unsigned pins)
 	}
 }
 
+static struct resource uart1_resources[] = {
+	[0] = {
+		.start	= AT91RM9200_BASE_US1,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart1_serial_device = {
 	.id		= 2,
 	.name		= "atmel_serial",
-	.map_base	= AT91RM9200_BASE_US1,
-	.size		= 4096,
+	.resource	= uart1_resources,
+	.num_resources	= ARRAY_SIZE(uart1_resources),
 };
 
 static inline void configure_usart1_pins(unsigned pins)
@@ -206,11 +248,18 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PB26, 0);	/* RTS1 */
 }
 
+static struct resource uart2_resources[] = {
+	[0] = {
+		.start	= AT91RM9200_BASE_US2,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart2_serial_device = {
 	.id		= 3,
 	.name		= "atmel_serial",
-	.map_base	= AT91RM9200_BASE_US2,
-	.size		= 4096,
+	.resource	= uart2_resources,
+	.num_resources	= ARRAY_SIZE(uart2_resources),
 };
 
 static inline void configure_usart2_pins(unsigned pins)
@@ -224,11 +273,18 @@ static inline void configure_usart2_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PA31, 0);	/* RTS2 */
 }
 
+static struct resource uart3_resources[] = {
+	[0] = {
+		.start	= AT91RM9200_BASE_US3,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart3_serial_device = {
 	.id		= 4,
 	.name		= "atmel_serial",
-	.map_base	= AT91RM9200_BASE_US3,
-	.size		= 4096,
+	.resource	= uart3_resources,
+	.num_resources	= ARRAY_SIZE(uart3_resources),
 };
 
 static inline void configure_usart3_pins(unsigned pins)

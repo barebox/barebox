@@ -21,6 +21,12 @@
 
 #include "generic.h"
 
+static struct resource sdram_dev_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_6,
+	},
+};
+
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
 	.flags = DEVFS_RDWR,
@@ -29,23 +35,31 @@ static struct memory_platform_data ram_pdata = {
 static struct device_d sdram_dev = {
 	.id		= -1,
 	.name		= "mem",
-	.map_base	= AT91_CHIPSELECT_6,
+	.num_resources	= ARRAY_SIZE(sdram_dev_resources),
+	.resource	= sdram_dev_resources,
 	.platform_data	= &ram_pdata,
 };
 
 void at91_add_device_sdram(u32 size)
 {
-	sdram_dev.size = size;
+	sdram_dev_resources[0].size = size;
 	register_device(&sdram_dev);
 	armlinux_add_dram(&sdram_dev);
 }
 
 #if defined(CONFIG_DRIVER_NET_MACB)
+static struct resource eth_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_EMAC,
+		.size	= 0x1000,
+	},
+};
+
 static struct device_d macb_dev = {
 	.id		= 0,
 	.name		= "macb",
-	.map_base	= AT91SAM9G45_BASE_EMAC,
-	.size		= 0x1000,
+	.resource	= eth_resources,
+	.num_resources	= ARRAY_SIZE(eth_resources),
 };
 
 void at91_add_device_eth(struct at91_ether_platform_data *data)
@@ -84,11 +98,18 @@ void at91_add_device_eth(struct at91_ether_platform_data *data) {}
 #endif
 
 #if defined(CONFIG_NAND_ATMEL)
+static struct resource nand_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_3,
+		.size	= 0x10,
+	},
+};
+
 static struct device_d nand_dev = {
 	.id		= -1,
 	.name		= "atmel_nand",
-	.map_base	= AT91_CHIPSELECT_3,
-	.size		= 0x10,
+	.resource	= nand_resources,
+	.num_resources	= ARRAY_SIZE(nand_resources),
 };
 
 void at91_add_device_nand(struct atmel_nand_data *data)
@@ -123,11 +144,18 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 void at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
+static struct resource dbgu_resources[] = {
+	[0] = {
+		.start	= (AT91_BASE_SYS + AT91_DBGU),
+		.size	= 4096,
+	},
+};
+
 static struct device_d dbgu_serial_device = {
 	.id	  = -1,
 	.name     = "atmel_serial",
-	.map_base = (AT91_BASE_SYS + AT91_DBGU),
-	.size     = 4096,
+	.resource	= dbgu_resources,
+	.num_resources	= ARRAY_SIZE(dbgu_resources),
 };
 
 static inline void configure_dbgu_pins(void)
@@ -136,11 +164,18 @@ static inline void configure_dbgu_pins(void)
 	at91_set_A_periph(AT91_PIN_PB13, 1);		/* DTXD */
 }
 
+static struct resource uart0_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_US0,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart0_serial_device = {
 	.id	  = -1,
 	.name     = "atmel_serial",
-	.map_base = AT91SAM9G45_BASE_US0,
-	.size     = 4096,
+	.resource	= uart0_resources,
+	.num_resources	= ARRAY_SIZE(uart0_resources),
 };
 
 static inline void configure_usart0_pins(unsigned pins)
@@ -154,11 +189,18 @@ static inline void configure_usart0_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PB15, 0);	/* CTS0 */
 }
 
+static struct resource uart1_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_US1,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart1_serial_device = {
 	.id	  = -1,
 	.name     = "atmel_serial",
-	.map_base = AT91SAM9G45_BASE_US1,
-	.size     = 4096,
+	.resource	= uart1_resources,
+	.num_resources	= ARRAY_SIZE(uart1_resources),
 };
 
 static inline void configure_usart1_pins(unsigned pins)
@@ -172,11 +214,18 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PD17, 0);	/* CTS1 */
 }
 
+static struct resource uart2_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_US2,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart2_serial_device = {
 	.id	  = -1,
 	.name     = "atmel_serial",
-	.map_base = AT91SAM9G45_BASE_US2,
-	.size     = 4096,
+	.resource	= uart2_resources,
+	.num_resources	= ARRAY_SIZE(uart2_resources),
 };
 
 static inline void configure_usart2_pins(unsigned pins)
@@ -190,11 +239,18 @@ static inline void configure_usart2_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PC11, 0);	/* CTS2 */
 }
 
+static struct resource uart3_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_US3,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart3_serial_device = {
 	.id	  = -1,
 	.name     = "atmel_serial",
-	.map_base = AT91SAM9G45_ID_US3,
-	.size     = 4096,
+	.resource	= uart3_resources,
+	.num_resources	= ARRAY_SIZE(uart3_resources),
 };
 
 static inline void configure_usart3_pins(unsigned pins)
@@ -243,18 +299,32 @@ void at91_register_uart(unsigned id, unsigned pins)
 }
 
 #if defined(CONFIG_MCI_ATMEL)
+static struct resource mci0_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_MCI0,
+		.size	= SZ_16K,
+	},
+};
+
 static struct device_d mci0_device = {
 	.id		= 0,
 	.name		= "atmel_mci",
-	.map_base	= AT91SAM9G45_BASE_MCI0,
-	.size		= SZ_16K,
+	.num_resources	= ARRAY_SIZE(mci0_resources),
+	.resource	= mci0_resources,
+};
+
+static struct resource mci1_resources[] = {
+	[0] = {
+		.start	= AT91SAM9G45_BASE_MCI1,
+		.size	= SZ_16K,
+	},
 };
 
 static struct device_d mci1_device = {
 	.id		= 1,
 	.name		= "atmel_mci",
-	.map_base	= AT91SAM9G45_BASE_MCI1,
-	.size		= SZ_16K,
+	.num_resources	= ARRAY_SIZE(mci1_resources),
+	.resource	= mci1_resources,
 };
 
 /* Consider only one slot : slot 0 */

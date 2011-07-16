@@ -87,11 +87,18 @@ static void ek_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
+static struct resource cfi_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_0,
+		.size	= 8 * 1024 * 1024,
+	},
+};
+
 static struct device_d cfi_dev = {
 	.id		= -1,
 	.name		= "cfi_flash",
-	.map_base	= AT91_CHIPSELECT_0,
-	.size		= 8 * 1024 * 1024,
+	.num_resources	= ARRAY_SIZE(cfi_resources),
+	.resource	= cfi_resources,
 };
 
 static struct at91_ether_platform_data macb_pdata = {

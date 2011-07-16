@@ -95,11 +95,18 @@ static struct dm9000_platform_data dm9000_data = {
 	.srom		= 0,
 };
 
+static struct resource dm9000_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_2,
+		.size	= 8,
+	},
+};
+
 static struct device_d dm9000_dev = {
 	.id		= 0,
 	.name		= "dm9000",
-	.map_base	= AT91_CHIPSELECT_2,
-	.size		= 8,
+	.num_resources	= ARRAY_SIZE(dm9000_resources),
+	.resource	= dm9000_resources,
 	.platform_data	= &dm9000_data,
 };
 

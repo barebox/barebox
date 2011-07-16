@@ -24,6 +24,7 @@
 #define DRIVER_H
 
 #include <linux/list.h>
+#include <linux/ioport.h>
 
 #define MAX_DRIVER_NAME		32
 #define FORMAT_DRIVER_MANE_ID	"%s%d"
@@ -75,6 +76,9 @@ struct device_d {
 	/*! For devices which are directly mapped into memory, i.e. NOR
 	 * Flash or SDRAM. */
 	resource_size_t map_base;
+
+	struct resource *resource;
+	int num_resources;
 
 	void *platform_data; /*! board specific information about this device */
 

@@ -103,6 +103,25 @@ int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
 
+	/* if no map_base available use the first resource if available
+	 * so we do not need to duplicate it
+	 * Temporary fixup until we get rid of map_base and size
+	 */
+	if (new_device->map_base) {
+		if (new_device->resource) {
+			dev_err(new_device, "map_base and resource specifed\n");
+			return -EIO;
+		}
+		dev_warn(new_device, "uses map_base. Please convert to use resources\n");
+		new_device->resource = xzalloc(sizeof(struct resource));
+		new_device->resource[0].start = new_device->map_base;
+		new_device->resource[0].size = new_device->size;
+		new_device->num_resources = 1;
+	} else if (new_device->resource) {
+		new_device->map_base = new_device->resource[0].start;
+		new_device->size = new_device->resource[0].size;
+	}
+
 	if (new_device->id < 0) {
 		new_device->id = get_free_deviceid(new_device->name);
 	} else {

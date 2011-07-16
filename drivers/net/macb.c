@@ -85,7 +85,7 @@ struct macb_dma_desc {
 #define TXBUF_USED		0x80000000
 
 struct macb_device {
-	void			*regs;
+	void			__iomem *regs;
 
 	unsigned int		rx_tail;
 	unsigned int		tx_tail;
@@ -446,7 +446,7 @@ static int macb_probe(struct device_d *dev)
 	macb->rx_ring = xmalloc(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
 	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
 
-	macb->regs = (void *)dev->map_base;
+	macb->regs = (void __iomem *)dev->resource[0].start;
 
 	/*
 	 * Do some basic initialization so that we at least can talk

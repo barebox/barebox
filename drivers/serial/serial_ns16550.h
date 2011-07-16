@@ -81,10 +81,6 @@
 #define LSR_TEMT	0x40	/* Xmitter empty */
 #define LSR_ERR		0x80	/* Error */
 
-#ifdef CONFIG_ARCH_OMAP1510
-#define OSC_12M_SEL	0x01	/* selects 6.5 * current clk div */
-#endif
-
 /* useful defaults for LCR */
 #define LCR_8N1		0x03
 

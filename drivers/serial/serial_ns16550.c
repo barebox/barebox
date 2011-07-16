@@ -62,26 +62,7 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 	struct NS16550_plat *plat = (struct NS16550_plat *)
 	    cdev->dev->platform_data;
 	unsigned int clk = plat->clock;
-#ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	/* FIXME: Legacy Code copied from U-Boot V1 implementation
-	 */
-#ifdef CONFIG_ARCH_OMAP1510
-	unsigned long base = cdev->dev->map_base;
-	/* If can't cleanly clock 115200 set div to 1 */
-	if ((clk == 12000000) && (baudrate == 115200)) {
-		/* enable 6.5 * divisor */
-		plat->reg_write(OSC_12M_SEL, base, osc_12m_sel);
-		return 1;	/* return 1 for base divisor */
-	}
-	/* clear if previously set */
-	plat->reg_write(0, base, osc_12m_sel);
-#elif defined(CONFIG_ARCH_OMAP1610)
-	/* If can't cleanly clock 115200 set div to 1 */
-	if ((clk == 48000000) && (baudrate == 115200))
-		return 26;	/* return 26 for base divisor */
-#endif
 
-#endif				/* End of OMAP specific handling */
 	return (clk / MODE_X_DIV / baudrate);
 
 }

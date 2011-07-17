@@ -36,32 +36,53 @@ static struct memory_platform_data ram_pdata = {
 	.flags = DEVFS_RDWR,
 };
 
+static struct resource sdram_dev_resources[] = {
+	[0] = {
+		.start	= 0x00000000,
+	},
+};
+
 static struct device_d sdram_dev = {
 	.id = -1,
 	.name = "mem",
-	.map_base = 0x00000000,
+	.num_resources	= ARRAY_SIZE(sdram_dev_resources),
+	.resource	= sdram_dev_resources,
 	.platform_data = &ram_pdata,
 };
 
 void st8815_add_device_sdram(u32 size)
 {
-	sdram_dev.size = size;
+	sdram_dev_resources[0].size = size;
 	register_device(&sdram_dev);
 	armlinux_add_dram(&sdram_dev);
 }
 
+static struct resource uart0_serial_resources[] = {
+	[0] = {
+		.start	= NOMADIK_UART0_BASE,
+		.size	= 4096,
+	},
+};
+
 static struct device_d uart0_serial_device = {
 	.id = 0,
 	.name = "uart-pl011",
-	.map_base = NOMADIK_UART0_BASE,
-	.size = 4096,
+	.num_resources	= ARRAY_SIZE(uart0_serial_resources),
+	.resource	= uart0_serial_resources,
+};
+
+static struct resource uart1_serial_resources[] = {
+	[0] = {
+		.start	= NOMADIK_UART1_BASE,
+		.size	= 4096,
+	},
 };
 
 static struct device_d uart1_serial_device = {
 	.id = 1,
 	.name = "uart-pl011",
-	.map_base = NOMADIK_UART1_BASE,
-	.size = 4096,
+	.num_resources	= ARRAY_SIZE(uart1_serial_resources),
+	.resource	= uart1_serial_resources,
 };
 
 void st8815_register_uart(unsigned id)

@@ -33,11 +33,18 @@
 #include <mach/nand.h>
 #include <mach/fsmc.h>
 
+static struct resource nhk8815_network_resources[] = {
+	[0] = {
+		.start	= 0x34000300,
+		.size	= 16,
+	},
+};
+
 static struct device_d nhk8815_network_dev = {
 	.id = -1,
 	.name = "smc91c111",
-	.map_base = 0x34000300,
-	.size = 16,
+	.num_resources	= ARRAY_SIZE(nhk8815_network_resources),
+	.resource	= nhk8815_network_resources,
 };
 
 static int nhk8815_nand_init(void)

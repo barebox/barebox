@@ -40,6 +40,7 @@
  * We wrap our port structure around the generic console_device.
  */
 struct amba_uart_port {
+	void __iomem		*base;
 	struct console_device	uart;		/* uart */
 	struct clk		*clk;		/* uart clock */
 	u32			uartclk;
@@ -53,7 +54,6 @@ to_amba_uart_port(struct console_device *uart)
 
 static int pl011_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct device_d *dev = cdev->dev;
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 	unsigned int temp;
 	unsigned int divider;
@@ -72,37 +72,37 @@ static int pl011_setbaudrate(struct console_device *cdev, int baudrate)
 	temp = (8 * remainder) / baudrate;
 	fraction = (temp >> 1) + (temp & 1);
 
-	writel(divider, dev->map_base + UART011_IBRD);
-	writel(fraction, dev->map_base + UART011_FBRD);
+	writel(divider, uart->base + UART011_IBRD);
+	writel(fraction, uart->base + UART011_FBRD);
 
 	return 0;
 }
 
 static void pl011_putc(struct console_device *cdev, char c)
 {
-	struct device_d *dev = cdev->dev;
+	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
 	/* Wait until there is space in the FIFO */
-	while (readl(dev->map_base + UART01x_FR) & UART01x_FR_TXFF);
+	while (readl(uart->base + UART01x_FR) & UART01x_FR_TXFF);
 
 	/* Send the character */
-	writel(c, dev->map_base + UART01x_DR);
+	writel(c, uart->base + UART01x_DR);
 }
 
 static int pl011_getc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 	unsigned int data;
 
 	/* Wait until there is data in the FIFO */
-	while (readl(dev->map_base + UART01x_FR) & UART01x_FR_RXFE);
+	while (readl(uart->base + UART01x_FR) & UART01x_FR_RXFE);
 
-	data = readl(dev->map_base + UART01x_DR);
+	data = readl(uart->base + UART01x_DR);
 
 	/* Check for an error flag */
 	if (data & 0xffffff00) {
 		/* Clear the error */
-		writel(0xffffffff, dev->map_base + UART01x_ECR);
+		writel(0xffffffff, uart->base + UART01x_ECR);
 		return -1;
 	}
 
@@ -111,9 +111,9 @@ static int pl011_getc(struct console_device *cdev)
 
 static int pl011_tstc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
-	return !(readl(dev->map_base + UART01x_FR) & UART01x_FR_RXFE);
+	return !(readl(uart->base + UART01x_FR) & UART01x_FR_RXFE);
 }
 
 int pl011_init_port (struct console_device *cdev)
@@ -121,10 +121,12 @@ int pl011_init_port (struct console_device *cdev)
 	struct device_d *dev = cdev->dev;
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
+	uart->base = (void __iomem *)dev->resource[0].start;
+
 	/*
 	 ** First, disable everything.
 	 */
-	writel(0x0, dev->map_base + UART011_CR);
+	writel(0x0, uart->base + UART011_CR);
 
 	/*
 	 * Try to enable the clock producer.

@@ -189,8 +189,8 @@ static int nomadik_nand_probe(struct device_d *dev)
 		goto err;
 	}
 
-	host->cmd_va = (void __iomem*)pdata->cmd_va;
-	host->addr_va = (void __iomem*)pdata->addr_va;
+	host->cmd_va = (void __iomem*)dev->resource[1].start;
+	host->addr_va = (void __iomem*)dev->resource[0].start;
 
 	/* Link all private pointers */
 	mtd = &host->mtd;
@@ -198,8 +198,8 @@ static int nomadik_nand_probe(struct device_d *dev)
 	mtd->priv = nand;
 	nand->priv = host;
 
-	nand->IO_ADDR_R = (void __iomem*)pdata->data_va;
-	nand->IO_ADDR_W = (void __iomem*)pdata->data_va;
+	nand->IO_ADDR_R = (void __iomem *)dev->resource[2].start;
+	nand->IO_ADDR_W = (void __iomem *)dev->resource[2].start;
 	nand->cmd_ctrl = nomadik_cmd_ctrl;
 
 	nand->ecc.mode = NAND_ECC_HW;

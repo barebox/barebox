@@ -2,9 +2,6 @@
 #define __ASM_ARCH_NAND_H
 
 struct nomadik_nand_platform_data {
-	unsigned long data_va;
-	unsigned long cmd_va;
-	unsigned long addr_va;
 	int options;
 	int (*init) (void);
 };

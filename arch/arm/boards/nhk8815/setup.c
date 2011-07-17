@@ -61,17 +61,29 @@ static int nhk8815_nand_init(void)
 }
 
 static struct nomadik_nand_platform_data nhk8815_nand_data = {
-	.addr_va	= NAND_IO_ADDR,
-	.cmd_va		= NAND_IO_CMD,
-	.data_va	= NAND_IO_DATA,
 	.options	= NAND_COPYBACK | NAND_CACHEPRG | NAND_NO_PADDING \
 			| NAND_NO_READRDY | NAND_NO_AUTOINCR,
 	.init		= nhk8815_nand_init,
 };
 
+static struct resource nhk8815_nand_resources[] = {
+	{
+		.start	= NAND_IO_ADDR,
+		.size	= 0xfff,
+	}, {
+		.start	= NAND_IO_CMD,
+		.size	= 0xfff,
+	}, {
+		.start	= NAND_IO_DATA,
+		.size	= 0xfff,
+	}
+};
+
 static struct device_d nhk8815_nand_device = {
 	.id		= -1,
 	.name		= "nomadik_nand",
+	.num_resources	= ARRAY_SIZE(nhk8815_nand_resources),
+	.resource	= nhk8815_nand_resources,
 	.platform_data	= &nhk8815_nand_data,
 };
 

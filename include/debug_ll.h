@@ -35,9 +35,22 @@
 			     ch = ((v >> (i*4)) & 0xf);\
 			     ch += (ch >= 10) ? 'a' - 10 : '0';\
 			     PUTC_LL (ch); }})
+
+static __inline__ void PUTS_LL(char * str)
+{
+	while (*str) {
+		if (*str == '\n') {
+			PUTC_LL('\r');
+		}
+		PUTC_LL(*str);
+		str++;
+	}
+}
+
 #else
 # define PUTC_LL(c) do {} while (0)
 # define PUTHEX_LL(v) do {} while (0)
+# define PUTS_LL(c) do {} while (0)
 
 #endif
 

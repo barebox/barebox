@@ -113,11 +113,11 @@ struct imx_i2c_struct {
 #ifdef CONFIG_I2C_DEBUG
 static void i2c_imx_dump_reg(struct i2c_adapter *adapter)
 {
-	unsigned long base = adapter->dev->map_base;
+	struct imx_i2c_struct *i2c_imx = to_imx_i2c_struct(adapter);
 	u32 reg_cr, reg_sr;
 
-	reg_cr = readb(base + IMX_I2C_I2CR);
-	reg_sr = readb(base + IMX_I2C_I2SR);
+	reg_cr = readb(i2c_imx->base + IMX_I2C_I2CR);
+	reg_sr = readb(i2c_imx->base + IMX_I2C_I2SR);
 
 	dev_dbg(adapter->dev, "CONTROL:\t"
 		"IEN =%d, IIEN=%d, MSTA=%d, MTX =%d, TXAK=%d, RSTA=%d\n",

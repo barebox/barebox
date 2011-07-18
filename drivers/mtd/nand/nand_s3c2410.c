@@ -422,7 +422,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	host->dev = dev;
-	host->base = IOMEM(dev->map_base);
+	host->base = dev_request_mem_region(dev, 0);
 
 	/* structures must be linked */
 	chip = &host->nand;
@@ -435,7 +435,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	chip->chip_delay = 50;
 	chip->priv = host;
 
-	chip->IO_ADDR_R = chip->IO_ADDR_W = IOMEM(dev->map_base + NFDATA);
+	chip->IO_ADDR_R = chip->IO_ADDR_W = host->base + NFDATA;
 
 #ifdef CONFIG_CPU_S3C2440
 	chip->read_buf = s3c2440_nand_read_buf;

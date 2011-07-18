@@ -134,12 +134,16 @@ void start_barebox (void)
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {
+		PUTS_LL("<<");
 		PUTHEX_LL(*initcall);
-		PUTC_LL('\n');
 		result = (*initcall)();
+		PUTC_LL('>');
 		if (result)
 			hang();
+		PUTS_LL(">\n");
 	}
+
+	PUTS_LL("initcalls done\n");
 
 	display_meminfo();
 

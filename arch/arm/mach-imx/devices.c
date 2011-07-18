@@ -9,8 +9,11 @@ static struct device_d *imx_add_device(char *name, int id, void *base, int size,
 	dev = xzalloc(sizeof(*dev));
 	strcpy(dev->name,name);
 	dev->id = id;
-	dev->map_base = (unsigned long)base;
-	dev->size = size;
+	dev->resource = xzalloc(sizeof(struct resource));
+	dev->resource[0].start = (resource_size_t)base;
+	dev->resource[0].size = size;
+	dev->resource[0].flags = IORESOURCE_MEM;
+	dev->num_resources = 1;
 	dev->platform_data = pdata;
 
 	register_device(dev);

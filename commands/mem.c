@@ -612,7 +612,7 @@ static struct driver_d mem_drv = {
 
 static struct memory_platform_data mem_dev_pdata = {
 	.name = "mem",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d mem_dev = {

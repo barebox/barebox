@@ -47,7 +47,7 @@ static struct device_d cfi_dev = {
 
 static struct memory_platform_data ram_dev_pdata0 = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram0_dev = {
@@ -61,7 +61,7 @@ static struct device_d sdram0_dev = {
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
 static struct memory_platform_data ram_dev_pdata1 = {
 	.name = "ram1",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram1_dev = {
@@ -76,7 +76,7 @@ static struct device_d sdram1_dev = {
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 3)
 static struct memory_platform_data ram_dev_pdata2 = {
 	.name = "ram2",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram2_dev = {
@@ -91,7 +91,7 @@ static struct device_d sdram2_dev = {
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
 static struct memory_platform_data ram_dev_pdata3 = {
 	.name = "ram3",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram3_dev = {

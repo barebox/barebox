@@ -47,7 +47,7 @@ static struct fec_platform_data fec_info = {
 
 static struct memory_platform_data sdram0_pdata = {
 	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
+	.flags	= IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram0_dev = {
@@ -60,7 +60,7 @@ static struct device_d sdram0_dev = {
 
 static struct memory_platform_data sdram1_pdata = {
 	.name	= "ram1",
-	.flags	= DEVFS_RDWR,
+	.flags	= IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram1_dev = {
@@ -73,7 +73,7 @@ static struct device_d sdram1_dev = {
 
 static struct memory_platform_data sram_pdata = {
 	.name	= "sram0",
-	.flags	= DEVFS_RDWR,
+	.flags	= IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sram0_dev = {

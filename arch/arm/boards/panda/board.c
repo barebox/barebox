@@ -54,7 +54,7 @@ console_initcall(panda_console_init);
 
 static struct memory_platform_data sram_pdata = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram_dev = {

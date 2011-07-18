@@ -65,7 +65,7 @@ static struct device_d cfi_dev1 = {
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 #if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB

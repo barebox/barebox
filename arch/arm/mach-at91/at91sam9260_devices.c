@@ -29,7 +29,7 @@ static struct resource sdram_dev_resources[] = {
 
 static struct memory_platform_data sram_pdata = {
 	.name = "sram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram_dev = {

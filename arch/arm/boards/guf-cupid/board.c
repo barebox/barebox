@@ -57,7 +57,7 @@ static struct device_d fec_dev = {
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram0_dev = {

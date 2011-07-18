@@ -344,7 +344,6 @@ int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)
 #define DEVFS_IS_PARTITION		(1 << 2)
-#define DEVFS_RDWR			(1 << 3)
 
 int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 		int flags, const char *name);

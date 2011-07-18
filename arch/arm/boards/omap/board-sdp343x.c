@@ -643,7 +643,7 @@ static int sdp3430_flash_init(void)
 
 static struct memory_platform_data ram_pdata = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 struct device_d sdram_dev = {

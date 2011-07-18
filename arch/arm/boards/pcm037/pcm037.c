@@ -56,7 +56,7 @@ static struct device_d cfi_dev = {
  */
 static struct memory_platform_data sram_dev_pdata0 = {
 	.name = "sram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sram_dev = {
@@ -87,7 +87,7 @@ static struct device_d network_dev = {
 
 static struct memory_platform_data ram_dev_pdata0 = {
 	.name = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram0_dev = {
@@ -108,7 +108,7 @@ static struct device_d sdram0_dev = {
 
 static struct memory_platform_data ram_dev_pdata1 = {
 	.name = "ram1",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d sdram1_dev = {

@@ -23,7 +23,7 @@ static struct device_d mac_dev = {
 
 static struct memory_platform_data ram_pdata = {
 	.name  = "ram0",
-	.flags = DEVFS_RDWR,
+	.flags = IORESOURCE_MEM_WRITEABLE,
 };
 
 static struct device_d ram_dev = {

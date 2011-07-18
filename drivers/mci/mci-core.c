@@ -1231,8 +1231,8 @@ static int mci_card_probe(struct device_d *mci_dev)
 	p->priv = mci_dev;
 
 	strcpy(disk_dev->name, "disk");
-	disk_dev->size = mci->capacity;
-	disk_dev->map_base = 0;
+	disk_dev->resource[0].size = mci->capacity;
+	disk_dev->resource[0].start = 0;
 	disk_dev->platform_data = p;
 
 	register_device(disk_dev);

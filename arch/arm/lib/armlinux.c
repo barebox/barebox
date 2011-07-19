@@ -79,8 +79,8 @@ static void setup_memory_tags(void)
 		params->hdr.tag = ATAG_MEM;
 		params->hdr.size = tag_size(tag_mem32);
 
-		params->u.mem.start = mem->dev->map_base;
-		params->u.mem.size = mem->dev->size;
+		params->u.mem.start = mem->dev->resource[0].start;
+		params->u.mem.size = mem->dev->resource[0].size;
 
 		params = tag_next(params);
 	}

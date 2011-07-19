@@ -143,13 +143,13 @@ int pl011_init_port (struct console_device *cdev)
 	 ** Set the UART to be 8 bits, 1 stop bit, no parity, fifo enabled.
 	 */
 	writel((UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN),
-	       dev->map_base + UART011_LCRH);
+	       uart->base + UART011_LCRH);
 
 	/*
 	 ** Finally, enable the UART
 	 */
 	writel((UART01x_CR_UARTEN | UART011_CR_TXE | UART011_CR_RXE),
-	       dev->map_base + UART011_CR);
+	       uart->base + UART011_CR);
 
 	return 0;
 }

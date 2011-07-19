@@ -446,7 +446,7 @@ static int macb_probe(struct device_d *dev)
 	macb->rx_ring = xmalloc(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
 	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
 
-	macb->regs = (void __iomem *)dev->resource[0].start;
+	macb->regs = dev_request_mem_region(dev, 0);
 
 	/*
 	 * Do some basic initialization so that we at least can talk

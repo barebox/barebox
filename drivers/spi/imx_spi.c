@@ -379,7 +379,7 @@ static int imx_spi_probe(struct device_d *dev)
 	imx->chipselect = spi_imx_devtype_data[version].chipselect;
 	imx->xchg_single = spi_imx_devtype_data[version].xchg_single;
 	imx->init = spi_imx_devtype_data[version].init;
-	imx->regs = (void __iomem *)dev->map_base;
+	imx->regs = dev_request_mem_region(dev, 0);
 
 	imx->init(imx);
 

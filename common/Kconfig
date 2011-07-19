@@ -482,4 +482,14 @@ config ENABLE_DEVICE_NOISE
 	help
 	  Enable this to get noisy device handling routines
 
+config DEBUG_LL
+	bool
+	depends on HAS_DEBUG_LL
+	prompt "low level debug messages"
+	help
+	  Enable this to get low level debug messages during barebox initialization.
+
 endmenu
+
+config HAS_DEBUG_LL
+	bool

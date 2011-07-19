@@ -322,7 +322,7 @@ static int imx_serial_probe(struct device_d *dev)
 	priv = xmalloc(sizeof(*priv));
 	cdev = &priv->cdev;
 
-	priv->regs = (void __force __iomem *)dev->map_base;
+	priv->regs = dev_request_mem_region(dev, 0);
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

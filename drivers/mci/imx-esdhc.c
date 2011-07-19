@@ -457,7 +457,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	mci = &host->mci;
 
 	host->dev = dev;
-	host->regs = (struct fsl_esdhc *)dev->map_base;
+	host->regs = dev_request_mem_region(dev, 0);
 
 	/* First reset the eSDHC controller */
 	ret = esdhc_reset(host->regs);

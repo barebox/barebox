@@ -97,10 +97,12 @@ static struct resource dm9000_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_2,
 		.size	= 4,
+		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
 		.start	= AT91_CHIPSELECT_2 + 4,
 		.size	= 4,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

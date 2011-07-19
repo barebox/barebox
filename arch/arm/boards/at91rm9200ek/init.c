@@ -37,6 +37,7 @@
 static struct resource cfi_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_0,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

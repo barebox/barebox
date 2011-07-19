@@ -91,6 +91,7 @@ static struct resource cfi_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_0,
 		.size	= 8 * 1024 * 1024,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

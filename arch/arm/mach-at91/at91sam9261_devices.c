@@ -35,6 +35,7 @@ static struct resource nand_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_3,
 		.size	= 0x10,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -81,6 +82,7 @@ static struct resource dbgu_resources[] = {
 	[0] = {
 		.start	= (AT91_BASE_SYS + AT91_DBGU),
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -101,6 +103,7 @@ static struct resource uart0_resources[] = {
 	[0] = {
 		.start	= AT91SAM9261_BASE_US0,
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -126,6 +129,7 @@ static struct resource uart1_resources[] = {
 	[0] = {
 		.start	= AT91SAM9261_BASE_US1,
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -151,6 +155,7 @@ static struct resource uart2_resources[] = {
 	[0] = {
 		.start	= AT91SAM9261_BASE_US2,
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -205,6 +210,7 @@ static struct resource mci_resources[] = {
 	[0] = {
 		.start	= AT91SAM9261_BASE_MCI,
 		.size	= SZ_16K,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

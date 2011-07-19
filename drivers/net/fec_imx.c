@@ -613,7 +613,7 @@ static int fec_probe(struct device_d *dev)
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
 
-	fec->regs = (void *)dev->map_base;
+	fec->regs = dev_request_mem_region(dev, 0);
 
 	/* Reset chip. */
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);

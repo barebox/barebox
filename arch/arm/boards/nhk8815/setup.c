@@ -37,6 +37,7 @@ static struct resource nhk8815_network_resources[] = {
 	[0] = {
 		.start	= 0x34000300,
 		.size	= 16,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -70,12 +71,15 @@ static struct resource nhk8815_nand_resources[] = {
 	{
 		.start	= NAND_IO_ADDR,
 		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
 	}, {
 		.start	= NAND_IO_CMD,
 		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
 	}, {
 		.start	= NAND_IO_DATA,
 		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
 	}
 };
 

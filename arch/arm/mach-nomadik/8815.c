@@ -44,6 +44,7 @@ static struct resource uart0_serial_resources[] = {
 	[0] = {
 		.start	= NOMADIK_UART0_BASE,
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 
@@ -58,6 +59,7 @@ static struct resource uart1_serial_resources[] = {
 	[0] = {
 		.start	= NOMADIK_UART1_BASE,
 		.size	= 4096,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

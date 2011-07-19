@@ -45,45 +45,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 0x1f,
 };
 
-static struct memory_platform_data sdram0_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &sdram0_pdata,
-};
-
-static struct memory_platform_data sdram1_pdata = {
-	.name	= "ram1",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram1_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS1,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &sdram1_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name	= "sram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x78000000,
-	.size     = 128 * 1024,
-	.platform_data = &sram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
@@ -156,6 +117,8 @@ static void noinline gpio_fec_active(void)
 
 static int tx25_devices_init(void)
 {
+	struct device_d *sdram_dev;
+
 	gpio_fec_active();
 
 	imx25_add_fec(&fec_info);
@@ -171,12 +134,15 @@ static int tx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
-	register_device(&sdram1_dev);
-	register_device(&sram0_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	add_mem_device("ram0", 0x78000000, 128 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 
-	armlinux_add_dram(&sdram0_dev);
-	armlinux_add_dram(&sdram1_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_TX25);
 	armlinux_set_serial(imx_uid());

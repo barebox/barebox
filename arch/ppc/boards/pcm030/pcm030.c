@@ -44,19 +44,6 @@ struct device_d cfi_dev = {
 	.size     = 16 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x0,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct mpc5xxx_fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -71,7 +58,8 @@ struct device_d eth_dev = {
 static int devices_init (void)
 {
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+	add_mem_device("ram0", 0x0, 64 * 1024 * 1024,
+		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&eth_dev);
 
 	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self0");

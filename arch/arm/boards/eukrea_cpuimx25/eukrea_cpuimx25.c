@@ -90,19 +90,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 1,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &sdram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
@@ -255,6 +242,8 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 
 static int eukrea_cpuimx25_devices_init(void)
 {
+	struct device_d *sdram_dev;
+
 	eukrea_cpuimx25_mmu_init();
 
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
@@ -275,7 +264,9 @@ static int eukrea_cpuimx25_devices_init(void)
 		PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 
 	/* enable LCD */
 	gpio_direction_output(26, 1);
@@ -295,7 +286,6 @@ static int eukrea_cpuimx25_devices_init(void)
 #endif
 	register_device(&usbotg_dev);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25);
 

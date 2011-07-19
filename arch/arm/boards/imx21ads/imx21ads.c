@@ -48,19 +48,6 @@ static struct device_d cfi_dev = {
 	.size     = 32 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xc0000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
@@ -145,6 +132,7 @@ core_initcall(imx21ads_timing_init);
 static int mx21ads_devices_init(void)
 {
 	int i;
+	struct device_d *sdram_dev;
 	unsigned int mode[] = {
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
@@ -184,12 +172,13 @@ static int mx21ads_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0xc0000000, 64 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	imx21_add_nand(&nand_info);
 	register_device(&cs8900_dev);
 	imx21_add_fb(&imx_fb_data);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xc0000100);
 	armlinux_set_architecture(MACH_TYPE_MX21ADS);
 

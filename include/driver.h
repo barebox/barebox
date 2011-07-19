@@ -202,6 +202,12 @@ static inline void __iomem *dev_request_mem_region(struct device_d *dev, int num
 	return dev_get_mem_region(dev, num);
 }
 
+/*
+ * register a memory device
+ */
+struct device_d *add_mem_device(const char *name, resource_size_t start,
+		resource_size_t size, unsigned int flags);
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;
@@ -348,11 +354,6 @@ int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
 int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
-
-struct memory_platform_data {
-	char *name;
-	unsigned int flags;
-};
 
 #endif /* DRIVER_H */
 

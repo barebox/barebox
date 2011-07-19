@@ -44,18 +44,6 @@
 #include <mach/mci.h>
 #include <mach/fb.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= CS6_BASE,
-	.platform_data	= &ram_pdata,
-};
-
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2440_TACLS, A9M2440_TWRPH0, A9M2440_TWRPH1),
 	.flash_bbt = 1,	/* same as the kernel */
@@ -316,8 +304,7 @@ static int mini2440_devices_init(void)
 {
 	uint32_t reg;
 	int i;
-
-	sdram_dev.size = s3c24x0_get_memory_size();
+	struct device_d *sdram_dev;
 
 	/* ----------- configure the access to the outer space ---------- */
 	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
@@ -338,7 +325,11 @@ static int mini2440_devices_init(void)
 	writel(reg, MISCCR);
 
 	register_device(&nand_dev);
-	register_device(&sdram_dev);
+
+	sdram_dev = add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size(),
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+
 	register_device(&dm9000_dev);
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -352,8 +343,7 @@ static int mini2440_devices_init(void)
 #endif
 	register_device(&mci_dev);
 	register_device(&s3cfb_dev);
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
 	return 0;

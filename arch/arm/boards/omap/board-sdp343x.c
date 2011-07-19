@@ -61,6 +61,7 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <errno.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -641,34 +642,19 @@ static int sdp3430_flash_init(void)
 	return 0;
 }
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 /*-----------------------Generic Devices Initialization ---------------------*/
 
 static int sdp3430_devices_init(void)
 {
+	struct device_d *sdram_dev;
 	int ret;
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
-	ret = sdp3430_flash_init();
-	if (ret)
-		goto failed;
 
-	armlinux_add_dram(&sdram_dev);
-failed:
-	return ret;
+	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	if (!sdram_dev)
+		return -EIO;
+	armlinux_add_dram(sdram_dev);
+	return sdp3430_flash_init();
 }
 
 device_initcall(sdp3430_devices_init);

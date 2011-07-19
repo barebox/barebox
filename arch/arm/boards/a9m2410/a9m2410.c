@@ -35,18 +35,6 @@
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name     	= "ram",
-	.map_base	= CS6_BASE,
-	.platform_data  = &ram_pdata,
-};
-
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2410_TACLS, A9M2410_TWRPH0, A9M2410_TWRPH1)
@@ -74,6 +62,8 @@ static struct device_d network_dev = {
 static int a9m2410_devices_init(void)
 {
 	uint32_t reg;
+	resource_size_t size = 0;
+	struct device_d *sdram_dev;
 
 	/*
 	 * detect the current memory size
@@ -83,25 +73,25 @@ static int a9m2410_devices_init(void)
 
 	switch (reg &= 0x7) {
 	case 0:
-		sdram_dev.size = 32 * 1024 * 1024;
+		size = 32 * 1024 * 1024;
 		break;
 	case 1:
-		sdram_dev.size = 64 * 1024 * 1024;
+		size = 64 * 1024 * 1024;
 		break;
 	case 2:
-		sdram_dev.size = 128 * 1024 * 1024;
+		size = 128 * 1024 * 1024;
 		break;
 	case 4:
-		sdram_dev.size = 2 * 1024 * 1024;
+		size = 2 * 1024 * 1024;
 		break;
 	case 5:
-		sdram_dev.size = 4 * 1024 * 1024;
+		size = 4 * 1024 * 1024;
 		break;
 	case 6:
-		sdram_dev.size = 8 * 1024 * 1024;
+		size = 8 * 1024 * 1024;
 		break;
 	case 7:
-		sdram_dev.size = 16 * 1024 * 1024;
+		size = 16 * 1024 * 1024;
 		break;
 	}
 
@@ -152,7 +142,8 @@ static int a9m2410_devices_init(void)
 
 	/* ----------- the devices the boot loader should work with -------- */
 	register_device(&nand_dev);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", CS6_BASE, size,
+				   IORESOURCE_MEM_WRITEABLE);
 	register_device(&network_dev);
 
 #ifdef CONFIG_NAND
@@ -164,8 +155,8 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
+	armlinux_add_dram(sdram_dev);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;

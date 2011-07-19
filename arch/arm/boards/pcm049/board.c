@@ -63,32 +63,6 @@ static int pcm049_console_init(void)
 }
 console_initcall(pcm049_console_init);
 
-static struct memory_platform_data sram_pdata = {
-	.name = "sram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x40300000,
-	.size = 48 * 1024,
-	.platform_data = &sram_pdata,
-};
-
-static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = SZ_512M,
-	.platform_data = &sdram_pdata,
-};
-
 #ifdef CONFIG_MMU
 static int pcm049_mmu_init(void)
 {
@@ -141,8 +115,13 @@ static void pcm049_network_init(void)
 
 static int pcm049_devices_init(void)
 {
-	register_device(&sdram_dev);
-	register_device(&sram_dev);
+	struct device_d *sdram_dev;
+
+	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_512M,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	add_mem_device("ram0", 0x40300000, 48 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 	register_device(&hsmmc_dev);
 
 	gpmc_generic_init(0x10);
@@ -160,7 +139,6 @@ static int pcm049_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM049);
 

@@ -34,19 +34,6 @@
 #include <mach/fb.h>
 #include <mach/usb.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id       = -1,
-	.name     = "mem",
-	.map_base = IMX_MEMORY_BASE,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
@@ -372,12 +359,14 @@ static void falconwing_init_usb(void)
 static int falconwing_devices_init(void)
 {
 	int i, rc;
+	struct device_d *sdram_dev;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
 
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
@@ -386,8 +375,8 @@ static int falconwing_devices_init(void)
 
 	falconwing_init_usb();
 
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
+	armlinux_add_dram(sdram_dev);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
 	rc = register_persistant_environment();

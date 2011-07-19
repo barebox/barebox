@@ -55,19 +55,6 @@ static struct device_d fec_dev = {
 	.platform_data	= &fec_info,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
@@ -158,6 +145,7 @@ postcore_initcall(cupid_mmu_init);
 static int cupid_devices_init(void)
 {
 	uint32_t reg;
+	struct device_d *sdram_dev;
 
 	gpio_direction_output(GPIO_LCD_ENABLE, 0);
 	gpio_direction_output(GPIO_LCD_BACKLIGHT, 0);
@@ -177,11 +165,12 @@ static int cupid_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	register_device(&imx_ipu_fb_dev);
 	register_device(&esdhc_dev);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_GUF_CUPID);
 

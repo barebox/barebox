@@ -52,19 +52,6 @@ static int panda_console_init(void)
 }
 console_initcall(panda_console_init);
 
-static struct memory_platform_data sram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = SZ_1G,
-	.platform_data = &sram_pdata,
-};
-
 #ifdef CONFIG_MMU
 static int panda_mmu_init(void)
 {
@@ -145,6 +132,8 @@ static struct device_d hsmmc_dev = {
 
 static int panda_devices_init(void)
 {
+	struct device_d *sdram_dev;
+
 	panda_boardrev_init();
 
 	if (gpio_get_value(182)) {
@@ -171,11 +160,12 @@ static int panda_devices_init(void)
 		sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);
 	}
 
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_1G,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	register_device(&hsmmc_dev);
 	panda_ehci_init();
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP4_PANDA);
 

@@ -41,19 +41,6 @@
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id       = -1,
-	.name     = "mem",
-	.map_base = 0x90000000,
-	.size     = 512 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -242,9 +229,12 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
+	struct device_d *sdram_dev;
 	babbage_mmu_init();
 
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	imx51_add_fec(&fec_info);
 	imx51_add_mmc0(NULL);
 
@@ -254,7 +244,6 @@ static int f3s_devices_init(void)
 
 	babbage_power_init();
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 

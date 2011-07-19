@@ -113,38 +113,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 1,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	.size     = 64 * 1024 * 1024,
-#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	.size     = 128 * 1024 * 1024,
-#else
-#error "Unsupported SDRAM type"
-#endif
-	.platform_data = &sdram_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name	= "sram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x78000000,
-	.size     = 128 * 1024,
-	.platform_data = &sram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
@@ -232,6 +200,8 @@ late_initcall(imx25_3ds_fec_init);
 
 static int imx25_devices_init(void)
 {
+	struct device_d *sdram_dev;
+
 #ifdef CONFIG_USB
 	/* USB does not work yet. Don't know why. Maybe
 	 * the CPLD has to be initialized.
@@ -253,13 +223,21 @@ static int imx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
-	register_device(&sram0_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 
+#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
+	64 * 1024 * 1024,
+#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
+	128 * 1024 * 1024,
+#else
+#error "Unsupported SDRAM type"
+#endif
+				   IORESOURCE_MEM_WRITEABLE);
+	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx25_add_i2c0(NULL);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
 	armlinux_set_serial(imx_uid());

@@ -41,19 +41,6 @@ static struct device_d cfi_dev = {
 	.size     = 32 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -97,6 +84,7 @@ core_initcall(imx27ads_timing_init);
 static int mx27ads_devices_init(void)
 {
 	int i;
+	struct device_d *sdram_dev;
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
@@ -127,14 +115,15 @@ static int mx27ads_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	imx27_add_fec(&fec_info);
 
+	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	imx27_add_fec(&fec_info);
 	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_MX27ADS);
 

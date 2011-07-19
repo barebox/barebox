@@ -21,30 +21,13 @@
 
 #include "generic.h"
 
-static struct resource sdram_dev_resources[] = {
-	[0] = {
-		.start	= AT91_CHIPSELECT_6,
-	},
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.num_resources	= ARRAY_SIZE(sdram_dev_resources),
-	.resource	= sdram_dev_resources,
-	.platform_data	= &ram_pdata,
-};
-
 void at91_add_device_sdram(u32 size)
 {
-	sdram_dev_resources[0].size = size;
-	register_device(&sdram_dev);
-	armlinux_add_dram(&sdram_dev);
+	struct device_d *sdram_dev;
+
+	sdram_dev = add_mem_device("ram0", AT91_CHIPSELECT_6, size,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 }
 
 #if defined(CONFIG_DRIVER_NET_MACB)

@@ -42,23 +42,13 @@
 #include <mach/platform.h>
 #include <mach/init.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x00000000,
-	.platform_data	= &ram_pdata,
-};
-
 void versatile_add_sdram(u32 size)
 {
-	sdram_dev.size = size;
-	register_device(&sdram_dev);
-	armlinux_add_dram(&sdram_dev);
+	struct device_d *sdram_dev;
+
+	sdram_dev = add_mem_device("ram0", 0x00000000, size,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 }
 
 static struct device_d uart0_serial_device = {

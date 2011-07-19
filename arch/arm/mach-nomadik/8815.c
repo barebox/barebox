@@ -31,30 +31,13 @@ static struct clk st8815_clk_48 = {
        .rate = 48 * 1000 * 1000,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct resource sdram_dev_resources[] = {
-	[0] = {
-		.start	= 0x00000000,
-	},
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.num_resources	= ARRAY_SIZE(sdram_dev_resources),
-	.resource	= sdram_dev_resources,
-	.platform_data = &ram_pdata,
-};
-
 void st8815_add_device_sdram(u32 size)
 {
-	sdram_dev_resources[0].size = size;
-	register_device(&sdram_dev);
-	armlinux_add_dram(&sdram_dev);
+	struct device_d *sdram_dev;
+
+	sdram_dev = add_mem_device("ram0", 0x00000000, size,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 }
 
 static struct resource uart0_serial_resources[] = {

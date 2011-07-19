@@ -54,19 +54,6 @@
 #define LCD_POWER_GPIO (GPIO_PORTF + 18)
 #define BACKLIGHT_POWER_GPIO (GPIO_PORTE + 5)
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 31,
@@ -178,6 +165,7 @@ static void neso_mmu_init(void)
 static int neso_devices_init(void)
 {
 	int i;
+	struct device_d *sdram_dev;
 
 	unsigned int mode[] = {
 		/* UART1 */
@@ -309,7 +297,9 @@ static int neso_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	imx27_add_fb(&neso_fb_data);
 
 #ifdef CONFIG_USB
@@ -325,7 +315,6 @@ static int neso_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_NESO);
 

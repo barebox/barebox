@@ -30,19 +30,6 @@
 #include <asm/syslib.h>
 #include <ns16550.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.size		= 16 * 1024 * 1024,
-	.map_base	= 0,
-	.platform_data	= &ram_pdata,
-};
-
 static struct device_d bios_disk_dev = {
 	.id		= -1,
 	.name		= "biosdrive",
@@ -70,7 +57,8 @@ static int devices_init(void)
 	sdram_dev.size = bios_get_memsize();	/* extended memory only */
 	sdram_dev.size <<= 10;
 
-	register_device(&sdram_dev);
+	add_mem_device("ram0", 0x0, 16 * 1024 * 1024,
+		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&bios_disk_dev);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {

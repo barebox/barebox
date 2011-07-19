@@ -23,19 +23,6 @@
 #include <mach/imx-regs.h>
 #include <asm/mmu.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = IMX_MEMORY_BASE,
-	.size = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 /* setup the CPU card internal signals */
 static const uint32_t tx28_pad_setup[] = {
 	/* NAND interface */
@@ -103,15 +90,16 @@ postcore_initcall(tx28_mmu_init);
 static int tx28_devices_init(void)
 {
 	int i;
+	struct device_d *sdram_dev;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(tx28_pad_setup); i++)
 		imx_gpio_mode(tx28_pad_setup[i]);
 
-	register_device(&sdram_dev);
-
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)(sdram_dev.map_base + 0x100));
+	sdram_dev = add_mem_device("ram0", IMX_MEMORY_BASE, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_TX28);
 
 	base_board_init();

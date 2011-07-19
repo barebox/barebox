@@ -12,19 +12,6 @@ static struct device_d cfi_dev = {
 	.size     = 32 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x0,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct device_d smc911x_dev = {
 	.id	  = -1,
 	.name     = "smc911x",
@@ -34,7 +21,8 @@ static struct device_d smc911x_dev = {
 
 static int ipe337_devices_init(void) {
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+	add_mem_device("ram0", 0x0, 128 * 1024 * 1024,
+		       IORESOURCE_MEM_WRITEABLE);
 
 	/* Reset smc911x */
 	*pFIO0_DIR = (1<<12);

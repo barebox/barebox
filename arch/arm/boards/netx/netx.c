@@ -37,19 +37,6 @@ static struct device_d cfi_dev = {
 	.size     = 32 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x80000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 struct netx_eth_platform_data eth0_data = {
 	.xcno = 0,
 };
@@ -71,8 +58,13 @@ static struct device_d netx_eth_dev1 = {
 };
 
 static int netx_devices_init(void) {
+	struct device_d *sdram_dev;
+
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+
+	sdram_dev = add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	register_device(&netx_eth_dev0);
 	register_device(&netx_eth_dev1);
 
@@ -83,7 +75,6 @@ static int netx_devices_init(void) {
 
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_NXDB500);
 

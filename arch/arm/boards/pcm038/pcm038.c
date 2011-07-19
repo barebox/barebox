@@ -54,32 +54,6 @@ static struct device_d cfi_dev = {
 	.size     = 32 * 1024 * 1024,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name = "sram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xc8000000,
-	.size     = 512 * 1024, /* Can be up to 2MiB */
-	.platform_data = &sram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -191,6 +165,7 @@ static int pcm038_devices_init(void)
 {
 	int i;
 	char *envdev;
+	struct device_d *sdram_dev;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -294,8 +269,11 @@ static int pcm038_devices_init(void)
 
 	register_device(&cfi_dev);
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
-	register_device(&sram_dev);
+	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
+				   IORESOURCE_MEM_WRITEABLE);
 	imx27_add_fb(&pcm038_fb_data);
 
 #ifdef CONFIG_USB
@@ -330,7 +308,6 @@ static int pcm038_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
 

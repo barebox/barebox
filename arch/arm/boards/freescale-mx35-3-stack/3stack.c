@@ -71,19 +71,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 0x1F,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= IMX_SDRAM_CS0,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sdram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.hw_ecc		= 1,
 	.flash_bbt	= 1,
@@ -165,6 +152,7 @@ static void set_board_rev(int rev)
 static int f3s_devices_init(void)
 {
 	uint32_t reg;
+	struct device_d *sdram_dev;
 
 	/* CS0: Nor Flash */
 	writel(0x0000cf03, CSCR_U(0));
@@ -209,10 +197,11 @@ static int f3s_devices_init(void)
 
 	imx35_add_mmc0(NULL);
 
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	imx35_add_fb(&ipu_fb_data);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX35_3DS);
 

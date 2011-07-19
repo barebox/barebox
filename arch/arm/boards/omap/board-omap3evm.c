@@ -58,6 +58,7 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <errno.h>
 #include "board.h"
 
 
@@ -241,26 +242,15 @@ static int omap3evm_init_console(void)
 console_initcall(omap3evm_init_console);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
-static struct memory_platform_data sram_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= 0x80000000,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sram_pdata,
-};
-
 static int omap3evm_init_devices(void)
 {
-	int ret;
+	struct device_d *sdram_dev;
 
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
+	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	if (!sdram_dev)
+		return -EIO;
+	armlinux_add_dram(sdram_dev);
 
 #ifdef CONFIG_GPMC
 	/*
@@ -268,10 +258,6 @@ static int omap3evm_init_devices(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-
-	armlinux_add_dram(&sdram_dev);
-
-failed:
-	return ret;
+	return 0;
 }
 device_initcall(omap3evm_init_devices);

@@ -264,19 +264,6 @@ static int beagle_console_init(void)
 console_initcall(beagle_console_init);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
-static struct memory_platform_data sram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = 128 * 1024 * 1024,
-	.platform_data = &sram_pdata,
-};
-
 #ifdef CONFIG_USB_EHCI_OMAP
 static struct omap_hcd omap_ehci_pdata = {
 	.port_mode[0] = EHCI_HCD_OMAP_MODE_PHY,
@@ -324,11 +311,13 @@ static struct device_d hsmmc_dev = {
 
 static int beagle_devices_init(void)
 {
-	int ret;
+	struct device_d *sdram_dev;
 
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
+	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	if (!sdram_dev)
+		return -EIO;
+	armlinux_add_dram(sdram_dev);
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	register_device(&i2c_dev);
@@ -345,11 +334,10 @@ static int beagle_devices_init(void)
 
 	register_device(&hsmmc_dev);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);
-failed:
-	return ret;
+
+	return 0;
 }
 device_initcall(beagle_devices_init);
 

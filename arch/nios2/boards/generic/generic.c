@@ -21,19 +21,6 @@ static struct device_d mac_dev = {
 	.platform_data = &phy_address,
 };
 
-static struct memory_platform_data ram_pdata = {
-	.name  = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d ram_dev = {
-	.id            = -1,
-	.name          = "mem",
-	.map_base      = NIOS_SOPC_MEMORY_BASE,
-	.size          = NIOS_SOPC_MEMORY_SIZE,
-	.platform_data = &ram_pdata,
-};
-
 static struct device_d altera_serial_device = {
 	.id       = -1,
 	.name     = "altera_serial",
@@ -51,7 +38,8 @@ static struct device_d epcs_flash_device = {
 static int generic_devices_init(void)
 {
 	register_device(&cfi_dev);
-	register_device(&ram_dev);
+	add_mem_device("ram0", NIOS_SOPC_MEMORY_BASE, NIOS_SOPC_MEMORY_SIZE,
+		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&mac_dev);
 	/*register_device(&epcs_flash_device);*/
 

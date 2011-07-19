@@ -25,24 +25,14 @@
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.name     = "mem",
-	.map_base = IMX_MEMORY_BASE,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static int mx23_evk_devices_init(void)
 {
-	register_device(&sdram_dev);
+	struct device_d *sdram_dev;
 
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
+	sdram_dev = add_mem_device("ram0", IMX_MEMORY_BASE, 32 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX23EVK);
 
 	return 0;

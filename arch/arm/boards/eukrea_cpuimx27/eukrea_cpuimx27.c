@@ -63,24 +63,11 @@ static struct device_d cfi_dev1 = {
 };
 #endif
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
 #if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
 #define SDRAM0	256
 #elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
 #define SDRAM0	128
 #endif
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = SDRAM0 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -197,6 +184,7 @@ static struct device_d imxfb_dev = {
 
 static int eukrea_cpuimx27_devices_init(void)
 {
+	struct device_d *sdram_dev;
 	char *envdev = "no";
 	int i;
 
@@ -271,7 +259,9 @@ static int eukrea_cpuimx27_devices_init(void)
 	register_device(&cfi_dev1);
 #endif
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 
 	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
@@ -292,7 +282,6 @@ static int eukrea_cpuimx27_devices_init(void)
 	gpio_set_value(GPIO_PORTA | 25, 1);
 #endif
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_CPUIMX27);
 

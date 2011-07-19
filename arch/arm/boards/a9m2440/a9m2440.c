@@ -38,18 +38,6 @@
 
 #include "baseboards.h"
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= CS6_BASE,
-	.platform_data	= &ram_pdata,
-};
-
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2440_TACLS, A9M2440_TWRPH0, A9M2440_TWRPH1)
 };
@@ -106,6 +94,7 @@ static void a9m2440_disable_second_sdram_bank(void)
 static int a9m2440_devices_init(void)
 {
 	uint32_t reg;
+	struct device_d *sdram_dev;
 
 	/*
 	 * The special SDRAM setup code for this machine will always enable
@@ -136,8 +125,6 @@ static int a9m2440_devices_init(void)
 		break;
 	}
 
-	sdram_dev.size = s3c24x0_get_memory_size();
-
 	/* ----------- configure the access to the outer space ---------- */
 	reg = readl(BWSCON);
 
@@ -159,7 +146,8 @@ static int a9m2440_devices_init(void)
 
 	/* ----------- the devices the boot loader should work with -------- */
 	register_device(&nand_dev);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size(),
+				   IORESOURCE_MEM_WRITEABLE);
 	register_device(&network_dev);
 
 #ifdef CONFIG_NAND
@@ -170,8 +158,8 @@ static int a9m2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
+	armlinux_add_dram(sdram_dev);
+	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2440);
 
 	return 0;

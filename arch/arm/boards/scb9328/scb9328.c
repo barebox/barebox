@@ -41,19 +41,6 @@ static struct device_d cfi_dev = {
 	.size     = 16 * 1024 * 1024,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x08000000,
-	.size     = 16 * 1024 * 1024,
-	.platform_data = &sdram_pdata,
-};
-
 static struct dm9000_platform_data dm9000_data = {
 	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
@@ -93,6 +80,7 @@ struct gpio_led leds[] = {
 static int scb9328_devices_init(void)
 {
 	int i;
+	struct device_d *sdram_dev;
 
 	imx_gpio_mode(PA23_PF_CS5);
 	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 21);
@@ -121,14 +109,15 @@ static int scb9328_devices_init(void)
 	CS5L = 0x00000D03;
 
 	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	register_device(&dm9000_dev);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x08000100);
 	armlinux_set_architecture(MACH_TYPE_SCB9328);
 

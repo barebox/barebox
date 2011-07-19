@@ -61,19 +61,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 0x1F,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= IORESOURCE_MEM_WRITEABLE,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= IMX_SDRAM_CS0,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sdram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width		= 1,
 	.hw_ecc		= 1,
@@ -173,6 +160,8 @@ postcore_initcall(eukrea_cpuimx35_mmu_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
+	struct device_d *sdram_dev;
+
 	imx35_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
@@ -182,7 +171,9 @@ static int eukrea_cpuimx35_devices_init(void)
 
 	imx35_add_fec(&fec_info);
 
-	register_device(&sdram_dev);
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	armlinux_add_dram(sdram_dev);
 	imx35_add_fb(&ipu_fb_data);
 
 	imx35_add_i2c0(NULL);
@@ -198,7 +189,6 @@ static int eukrea_cpuimx35_devices_init(void)
 	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
 	register_device(&usbotg_dev);
 #endif
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35);
 

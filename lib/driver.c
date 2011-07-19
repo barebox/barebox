@@ -116,6 +116,7 @@ int register_device(struct device_d *new_device)
 		new_device->resource = xzalloc(sizeof(struct resource));
 		new_device->resource[0].start = new_device->map_base;
 		new_device->resource[0].size = new_device->size;
+		new_device->resource[0].flags = IORESOURCE_MEM;
 		new_device->num_resources = 1;
 	} else if (new_device->resource) {
 		new_device->map_base = new_device->resource[0].start;

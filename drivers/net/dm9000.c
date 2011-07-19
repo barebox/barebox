@@ -501,8 +501,8 @@ static int dm9000_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->buswidth = pdata->buswidth;
-	priv->iodata = (void __iomem *)dev->resource[1].start;
-	priv->iobase = (void __iomem *)dev->resource[0].start;
+	priv->iodata = dev_request_mem_region(dev, 1);
+	priv->iobase = dev_request_mem_region(dev, 0);
 	priv->srom = pdata->srom;
 
 	edev->init = dm9000_init_dev;

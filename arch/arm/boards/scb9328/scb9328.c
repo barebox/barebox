@@ -50,10 +50,12 @@ static struct resource dm9000_resources[] = {
 	[0] = {
 		.start	= 0x16000000,
 		.size	= 4,
+		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
 		.start	= 0x16000004,
 		.size	= 4,
+		.flags	= IORESOURCE_MEM,
 	},
 };
 

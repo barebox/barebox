@@ -233,6 +233,23 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
+void __iomem *dev_get_mem_region(struct device_d *dev, int num)
+{
+	int i, n = 0;
+
+	for (i = 0; i < dev->num_resources; i++) {
+		struct resource *res = &dev->resource[i];
+		if (resource_type(res) == IORESOURCE_MEM) {
+			if (n == num)
+				return (void __force __iomem *)res->start;
+			n++;
+		}
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(dev_get_mem_region);
+
 int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
 	printf("%s: currently broken\n", __func__);

@@ -188,6 +188,20 @@ static inline const char *dev_name(const struct device_d *dev)
 	return dev_id(dev);
 }
 
+/*
+ * get register base 'num' for a device
+ */
+void __iomem *dev_get_mem_region(struct device_d *dev, int num);
+
+/*
+ * exlusively request register base 'num' for a device
+ */
+static inline void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+{
+	/* no resource tracking yet */
+	return dev_get_mem_region(dev, num);
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;

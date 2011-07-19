@@ -121,7 +121,7 @@ int pl011_init_port (struct console_device *cdev)
 	struct device_d *dev = cdev->dev;
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
-	uart->base = (void __iomem *)dev->resource[0].start;
+	uart->base = dev_request_mem_region(dev, 0);
 
 	/*
 	 ** First, disable everything.

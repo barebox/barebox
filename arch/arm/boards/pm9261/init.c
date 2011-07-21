@@ -147,19 +147,12 @@ static void __init pm_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9000 */
 
-static struct device_d cfi_dev = {
-	.id		= 0,
-	.name		= "cfi_flash",
-	.map_base	= AT91_CHIPSELECT_0,
-	.size		= 4 * 1024 * 1024,
-};
-
 static int pm9261_devices_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
 	pm_add_device_nand();
-	register_device(&cfi_dev);
-	pm_add_device_dm9000();
+	add_generic_device("cfi_flash", 0, NULL, AT91_CHIPSELECT_0, 4 * 1024 * 1024,
+			   IORESOURCE_MEM, NULL);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");

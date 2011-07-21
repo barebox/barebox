@@ -203,10 +203,22 @@ static inline void __iomem *dev_request_mem_region(struct device_d *dev, int num
 }
 
 /*
+ * register a generic device
+ * with only one resource
+ */
+struct device_d *add_generic_device(const char* devname, int id, const char *resname,
+		resource_size_t start, resource_size_t size, unsigned int flags,
+		void *pdata);
+
+/*
  * register a memory device
  */
-struct device_d *add_mem_device(const char *name, resource_size_t start,
-		resource_size_t size, unsigned int flags);
+static inline struct device_d *add_mem_device(const char *name, resource_size_t start,
+		resource_size_t size, unsigned int flags)
+{
+	return add_generic_device("mem", -1, name, start, size,
+				  IORESOURCE_MEM | flags, NULL);
+}
 
 /* linear list over all available devices
  */

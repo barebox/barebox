@@ -25,22 +25,26 @@
 #include <driver.h>
 #include <xfuncs.h>
 
-struct device_d *add_mem_device(const char *name, resource_size_t start,
-		resource_size_t size, unsigned int flags)
+struct device_d *add_generic_device(const char* devname, int id, const char *resname,
+		resource_size_t start, resource_size_t size, unsigned int flags,
+		void *pdata)
 {
 	struct device_d *dev;
 
 	dev = xzalloc(sizeof(*dev));
-	strcpy(dev->name, "mem");
-	dev->id = -1;
+	strcpy(dev->name, devname);
+	dev->id = id;
 	dev->resource = xzalloc(sizeof(struct resource));
 	dev->num_resources = 1;
-	dev->resource[0].name = xstrdup(name);
+	if (resname)
+		dev->resource[0].name = xstrdup(resname);
 	dev->resource[0].start = start;
 	dev->resource[0].size = size;
-	dev->resource[0].flags = IORESOURCE_MEM | flags;
+	dev->resource[0].flags = flags;
+	dev->platform_data = pdata;
 
 	register_device(dev);
 
 	return dev;
 }
+EXPORT_SYMBOL(add_generic_device);

@@ -33,21 +33,6 @@
 #include <mach/nand.h>
 #include <mach/fsmc.h>
 
-static struct resource nhk8815_network_resources[] = {
-	[0] = {
-		.start	= 0x34000300,
-		.size	= 16,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d nhk8815_network_dev = {
-	.id = -1,
-	.name = "smc91c111",
-	.num_resources	= ARRAY_SIZE(nhk8815_network_resources),
-	.resource	= nhk8815_network_resources,
-};
-
 static int nhk8815_nand_init(void)
 {
 	/* FSMC setup for nand chip select (8-bit nand in 8815NHK) */
@@ -104,7 +89,8 @@ static int nhk8815_devices_init(void)
 	writel(0x0000305b, FSMC_BCR(1));
 	writel(0x00033f33, FSMC_BTR(1));
 
-	register_device(&nhk8815_network_dev);
+	add_generic_device("smc91c111", -1, NULL, 0x34000300, 16,
+			   IORESOURCE_MEM, NULL);
 
 	register_device(&nhk8815_nand_device);
 

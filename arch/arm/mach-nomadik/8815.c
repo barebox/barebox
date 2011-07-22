@@ -40,46 +40,20 @@ void st8815_add_device_sdram(u32 size)
 	armlinux_add_dram(sdram_dev);
 }
 
-static struct resource uart0_serial_resources[] = {
-	[0] = {
-		.start	= NOMADIK_UART0_BASE,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart0_serial_device = {
-	.id = 0,
-	.name = "uart-pl011",
-	.num_resources	= ARRAY_SIZE(uart0_serial_resources),
-	.resource	= uart0_serial_resources,
-};
-
-static struct resource uart1_serial_resources[] = {
-	[0] = {
-		.start	= NOMADIK_UART1_BASE,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart1_serial_device = {
-	.id = 1,
-	.name = "uart-pl011",
-	.num_resources	= ARRAY_SIZE(uart1_serial_resources),
-	.resource	= uart1_serial_resources,
-};
-
 void st8815_register_uart(unsigned id)
 {
+	resource_size_t start;
+	struct device_d *dev;
+
 	switch (id) {
 	case 0:
-		nmdk_clk_create(&st8815_clk_48, dev_name(&uart0_serial_device));
-		register_device(&uart0_serial_device);
+		start = NOMADIK_UART1_BASE;
 		break;
 	case 1:
-		nmdk_clk_create(&st8815_clk_48, dev_name(&uart1_serial_device));
-		register_device(&uart1_serial_device);
+		start = NOMADIK_UART1_BASE;
 		break;
 	}
+	dev = add_generic_device("uart-pl011", id, NULL, start, 4096,
+			   IORESOURCE_MEM, NULL);
+	nmdk_clk_create(&st8815_clk_48, dev_name(dev));
 }

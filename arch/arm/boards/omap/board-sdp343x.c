@@ -641,7 +641,6 @@ static int sdp3430_flash_init(void)
 static int sdp3430_devices_init(void)
 {
 	struct device_d *sdram_dev;
-	int ret;
 
 	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);

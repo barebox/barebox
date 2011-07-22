@@ -70,15 +70,6 @@ static struct gpmc_nand_platform_data nand_plat = {
 	.priv = (void *)&nand_cfg,
 };
 
-/** NAND device definition */
-static struct device_d gpmc_generic_nand_nand_device = {
-	.id = -1,
-	.name = "gpmc_nand",
-	.map_base = OMAP_GPMC_BASE,
-	.size = 1024 * 4,	/* GPMC size */
-	.platform_data = (void *)&nand_plat,
-};
-
 /**
  * @brief gpmc_generic_nand_devices_init - init generic nand device
  *
@@ -99,5 +90,9 @@ int gpmc_generic_nand_devices_init(int cs, int width,
 
 	/* Configure GPMC CS before register */
 	gpmc_cs_config(nand_plat.cs, &nand_cfg);
-	return register_device(&gpmc_generic_nand_nand_device);
+
+	add_generic_device("gpmc_nand", -1, NULL, OMAP_GPMC_BASE, 1024 * 4,
+			   IORESOURCE_MEM, &nand_plat);
+
+	return 0;
 }

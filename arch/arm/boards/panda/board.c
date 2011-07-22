@@ -113,13 +113,6 @@ static void __init panda_boardrev_init(void)
 	pr_info("PandaBoard Revision: %03d\n", board_revision);
 }
 
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C100,
-	.size = SZ_4K,
-};
-
 static int panda_devices_init(void)
 {
 	struct device_d *sdram_dev;
@@ -153,7 +146,8 @@ static int panda_devices_init(void)
 	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_1G,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();
 
 	armlinux_set_bootparams((void *)0x80000100);

@@ -50,8 +50,7 @@ static int at91rm9200ek_devices_init(void)
 	at91_add_device_sdram(64 * 1024 * 1024);
 	at91_add_device_eth(&ether_pdata);
 
-	add_generic_device("cfi_flash", 0, NULL, AT91_CHIPSELECT_0, 0,
-			   IORESOURCE_MEM, NULL);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

@@ -120,8 +120,7 @@ static int at91sam9263ek_devices_init(void)
 	at91_add_device_sdram(64 * 1024 * 1024);
 	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
-	add_generic_device("cfi_flash", 0, NULL, AT91_CHIPSELECT_0, 8 * 1024 * 1024,
-			   IORESOURCE_MEM, NULL);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 8 * 1024 * 1024, 0);
 	ek_add_device_mci();
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)

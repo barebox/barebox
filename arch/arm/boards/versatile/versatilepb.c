@@ -33,13 +33,6 @@
 #include <partition.h>
 #include <sizes.h>
 
-static struct device_d cfi_dev = {
-	.id		= -1,
-	.name		= "cfi_flash",
-	.map_base	= VERSATILE_FLASH_BASE,
-	.size		= VERSATILE_FLASH_SIZE,
-};
-
 static int vpb_console_init(void)
 {
 	versatile_register_uart(0);
@@ -58,7 +51,7 @@ static int vpb_devices_init(void)
 {
 	versatile_add_sdram(64 * 1024 *1024);
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 

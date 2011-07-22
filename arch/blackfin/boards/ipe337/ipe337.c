@@ -5,13 +5,6 @@
 #include <partition.h>
 #include <fs.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0x20000000,
-	.size     = 32 * 1024 * 1024,
-};
-
 static struct device_d smc911x_dev = {
 	.id	  = -1,
 	.name     = "smc911x",
@@ -20,7 +13,7 @@ static struct device_d smc911x_dev = {
 };
 
 static int ipe337_devices_init(void) {
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0x20000000, 32 * 1024 * 1024, 0);
 	add_mem_device("ram0", 0x0, 128 * 1024 * 1024,
 		       IORESOURCE_MEM_WRITEABLE);
 

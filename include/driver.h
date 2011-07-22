@@ -220,6 +220,13 @@ static inline struct device_d *add_mem_device(const char *name, resource_size_t 
 				  IORESOURCE_MEM | flags, NULL);
 }
 
+static inline struct device_d *add_cfi_flash_device(int id, resource_size_t start,
+		resource_size_t size, unsigned int flags)
+{
+	return add_generic_device("cfi_flash", id, NULL, start, size,
+				  IORESOURCE_MEM | flags, NULL);
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;

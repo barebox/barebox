@@ -151,8 +151,7 @@ static int pm9261_devices_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
 	pm_add_device_nand();
-	add_generic_device("cfi_flash", 0, NULL, AT91_CHIPSELECT_0, 4 * 1024 * 1024,
-			   IORESOURCE_MEM, NULL);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 4 * 1024 * 1024, 0);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");

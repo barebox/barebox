@@ -4,13 +4,6 @@
 #include <partition.h>
 #include <fs.h>
 
-static struct device_d cfi_dev = {
-	.id       = -1,
-	.name     = "cfi_flash",
-	.map_base = NIOS_SOPC_FLASH_BASE,
-	.size     = NIOS_SOPC_FLASH_SIZE,
-};
-
 static int phy_address = 1;
 
 static struct device_d mac_dev = {
@@ -37,7 +30,7 @@ static struct device_d epcs_flash_device = {
 
 static int generic_devices_init(void)
 {
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, NIOS_SOPC_FLASH_BASE, NIOS_SOPC_FLASH_SIZE, 0);
 	add_mem_device("ram0", NIOS_SOPC_MEMORY_BASE, NIOS_SOPC_MEMORY_SIZE,
 		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&mac_dev);

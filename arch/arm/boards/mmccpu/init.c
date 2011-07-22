@@ -54,8 +54,7 @@ static int mmccpu_devices_init(void)
 
 	at91_add_device_sdram(128 * 1024 * 1024);
 	at91_add_device_eth(&macb_pdata);
-	add_generic_device("cfi_flash", 0, NULL, AT91_CHIPSELECT_0, 0,
-			   IORESOURCE_MEM, NULL);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 
 	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 128 * 1024, PARTITION_FIXED, "env0");

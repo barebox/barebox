@@ -59,13 +59,6 @@
 #define MX35PDK_BOARD_REV_1		0
 #define MX35PDK_BOARD_REV_2		1
 
-static struct device_d cfi_dev = {
-	.id		= -1,
-	.name		= "cfi_flash",
-	.map_base	= IMX_CS0_BASE,
-	.size		= 64 * 1024 * 1024,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
 	.phy_addr	= 0x1F,
@@ -170,7 +163,7 @@ static int f3s_devices_init(void)
 	 * This platform supports NOR and NAND
 	 */
 	imx35_add_nand(&nand_info);
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */

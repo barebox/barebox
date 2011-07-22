@@ -40,17 +40,6 @@
 #include <mach/devices-imx31.h>
 
 /*
- * Up to 32MiB NOR type flash, connected to
- * CS line 0, data width is 16 bit
- */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = IMX_CS0_BASE,
-	.size     = 32 * 1024 * 1024,	/* area size */
-};
-
-/*
  * SMSC 9217 network controller
  * connected to CS line 1 and interrupt line
  * GPIO3, data width is 16 bit
@@ -227,7 +216,11 @@ static int imx31_devices_init(void)
 	__REG(CSCR_L(5)) = 0x444A0301;
 	__REG(CSCR_A(5)) = 0x44443302;
 
-	register_device(&cfi_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 0, data width is 16 bit
+	 */
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	/*
 	 * Create partitions that should be

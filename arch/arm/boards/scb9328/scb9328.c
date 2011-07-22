@@ -33,14 +33,6 @@
 #include <dm9000.h>
 #include <led.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-
-	.map_base = 0x10000000,
-	.size     = 16 * 1024 * 1024,
-};
-
 static struct dm9000_platform_data dm9000_data = {
 	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
@@ -110,7 +102,7 @@ static int scb9328_devices_init(void)
 	CS5U = 0x00008400;
 	CS5L = 0x00000D03;
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0x10000000, 16 * 1024 * 1024, 0);
 	sdram_dev = add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);

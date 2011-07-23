@@ -246,6 +246,23 @@ static inline struct device_d *add_dm9000_device(int id, resource_size_t base,
 }
 #endif
 
+#ifdef CONFIG_USB_EHCI
+struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata);
+#else
+static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata)
+{
+	return NULL;
+}
+#endif
+
+static inline struct device_d *add_generic_usb_ehci_device(int id,
+		resource_size_t base, void *pdata)
+{
+	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;

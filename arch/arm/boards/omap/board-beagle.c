@@ -271,16 +271,6 @@ static struct omap_hcd omap_ehci_pdata = {
 
 static struct ehci_platform_data ehci_pdata = {
 	.flags = 0,
-	.hccr_offset = 0x100,
-	.hcor_offset = 0x110,
-};
-
-static struct device_d usbh_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = 0x48064700,
-	.size     = 4 * 1024,
-	.platform_data = &ehci_pdata,
 };
 #endif /* CONFIG_USB_EHCI_OMAP */
 
@@ -318,7 +308,8 @@ static int beagle_devices_init(void)
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
-		register_device(&usbh_dev);
+		add_usb_ehci_device(-1, 0x48064700 + 0x100,
+				    0x48064700 + 0x110, &ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */

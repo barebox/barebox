@@ -109,13 +109,6 @@ static struct imx_fb_platform_data pcm038_fb_data = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pcm038_usbh_init(void)
 {
 	uint32_t temp;
@@ -271,7 +264,7 @@ static int pcm038_devices_init(void)
 
 #ifdef CONFIG_USB
 	pcm038_usbh_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	/* Register the fec device after the PLL re-initialisation

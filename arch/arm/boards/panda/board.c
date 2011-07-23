@@ -61,18 +61,9 @@ static int panda_mmu_init(void)
 device_initcall(panda_mmu_init);
 #endif
 
+#ifdef CONFIG_USB_EHCI
 static struct ehci_platform_data ehci_pdata = {
 	.flags = 0,
-	.hccr_offset = 0x0,
-	.hcor_offset = 0x10,
-};
-
-static struct device_d usbh_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = 0x4a064c00,
-	.size     = 4 * 1024,
-	.platform_data = &ehci_pdata,
 };
 
 static void panda_ehci_init(void)
@@ -105,8 +96,13 @@ static void panda_ehci_init(void)
 	/* enable power to hub */
 	gpio_set_value(GPIO_HUB_POWER, 1);
 
-	register_device(&usbh_dev);
+	add_usb_ehci_device(-1, 0x4a064c00,
+			    0x4a064c00 + 0x10, &ehci_pdata);
 }
+#else
+static void panda_ehci_init(void)
+{}
+#endif
 
 static void __init panda_boardrev_init(void)
 {

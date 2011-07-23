@@ -327,20 +327,6 @@ static int register_persistant_environment(void)
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
-static struct ehci_platform_data chumby_usb_pdata = {
-	.flags = EHCI_HAS_TT,
-	.hccr_offset = 0x100,
-	.hcor_offset = 0x140,
-};
-
-static struct device_d usb_dev = {
-	.name		= "ehci",
-	.id		= -1,
-	.map_base	= IMX_USB_BASE,
-	.size		= 0x200,
-	.platform_data	= &chumby_usb_pdata,
-};
-
 #define GPIO_USB_HUB_RESET	29
 #define GPIO_USB_HUB_POWER	26
 
@@ -353,7 +339,8 @@ static void falconwing_init_usb(void)
 	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
 
 	imx_usb_phy_enable();
-	register_device(&usb_dev);
+
+	add_generic_usb_ehci_device(-1, IMX_USB_BASE, NULL);
 }
 
 static int falconwing_devices_init(void)

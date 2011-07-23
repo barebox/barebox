@@ -97,3 +97,24 @@ struct device_d *add_dm9000_device(int id, resource_size_t base,
 }
 EXPORT_SYMBOL(add_dm9000_device);
 #endif
+
+#ifdef CONFIG_USB_EHCI
+struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata)
+{
+	struct device_d *dev;
+
+	dev = alloc_device("ehci", id, pdata);
+	dev->resource = xzalloc(sizeof(struct resource) * 2);
+	dev->num_resources = 2;
+	dev->resource[0].start = hccr;
+	dev->resource[0].flags = IORESOURCE_MEM;
+	dev->resource[1].start = hcor;
+	dev->resource[1].flags = IORESOURCE_MEM;
+
+	register_device(dev);
+
+	return dev;
+}
+EXPORT_SYMBOL(add_usb_ehci_device);
+#endif

@@ -149,12 +149,6 @@ static void imx25_usb_init(void)
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
 
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
 static struct fsl_usb2_platform_data usb_pdata = {
@@ -284,7 +278,7 @@ static int eukrea_cpuimx25_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx25_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 	register_device(&usbotg_dev);
 

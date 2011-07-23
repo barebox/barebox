@@ -89,7 +89,7 @@ static void ek_add_device_nand(void)
  */
 #if defined(CONFIG_DRIVER_NET_DM9000)
 static struct dm9000_platform_data dm9000_data = {
-	.buswidth	= DM9000_WIDTH_16,
+	.buswidth	= IORESOURCE_MEM_16BIT,
 	.srom		= 0,
 };
 

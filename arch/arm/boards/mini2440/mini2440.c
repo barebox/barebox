@@ -63,7 +63,7 @@ static struct device_d nand_dev = {
  * Area 2: Offset 0x304...0x307
  */
 static struct dm9000_platform_data dm9000_data = {
-	.buswidth = DM9000_WIDTH_16,
+	.buswidth = IORESOURCE_MEM_16BIT,
 	.srom     = 1,
 };
 

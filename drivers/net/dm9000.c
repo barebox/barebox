@@ -294,16 +294,16 @@ static int dm9000_eth_send (struct eth_device *edev,
 	writeb(DM9000_MWCMD, priv->iobase);
 
 	switch (priv->buswidth) {
-	case DM9000_WIDTH_8:
+	case IORESOURCE_MEM_8BIT:
 		for (i = 0; i < length; i++)
 			writeb(data_ptr[i] & 0xff, priv->iodata);
 		break;
-	case DM9000_WIDTH_16:
+	case IORESOURCE_MEM_16BIT:
 		tmplen = (length + 1) / 2;
 		for (i = 0; i < tmplen; i++)
 			writew(((u16 *)data_ptr)[i], priv->iodata);
 		break;
-	case DM9000_WIDTH_32:
+	case IORESOURCE_MEM_32BIT:
 		tmplen = (length + 3) / 4;
 		for (i = 0; i < tmplen; i++)
 			writel(((u32 *) data_ptr)[i], priv->iodata);
@@ -371,20 +371,20 @@ static int dm9000_eth_rx (struct eth_device *edev)
 	/* Move data from DM9000 */
 	/* Read received packet from RX SRAM */
 	switch (priv->buswidth) {
-	case DM9000_WIDTH_8:
+	case IORESOURCE_MEM_8BIT:
 		RxStatus = readb(priv->iodata) + (readb(priv->iodata) << 8);
 		RxLen = readb(priv->iodata) + (readb(priv->iodata) << 8);
 		for (i = 0; i < RxLen; i++)
 			rdptr[i] = readb(priv->iodata);
 		break;
-	case DM9000_WIDTH_16:
+	case IORESOURCE_MEM_16BIT:
 		RxStatus = readw(priv->iodata);
 		RxLen = readw(priv->iodata);
 		tmplen = (RxLen + 1) / 2;
 		for (i = 0; i < tmplen; i++)
 			((u16 *) rdptr)[i] = readw(priv->iodata);
 		break;
-	case DM9000_WIDTH_32:
+	case IORESOURCE_MEM_32BIT:
 		tmpdata = readl(priv->iodata);
 		RxStatus = tmpdata;
 		RxLen = tmpdata >> 16;

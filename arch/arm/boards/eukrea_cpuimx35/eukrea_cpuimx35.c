@@ -126,6 +126,7 @@ static struct device_d usbh2_dev = {
 };
 #endif
 
+#ifdef CONFIG_USB_GADGET
 static struct fsl_usb2_platform_data usb_pdata = {
 	.operating_mode	= FSL_USB2_DR_DEVICE,
 	.phy_mode	= FSL_USB2_PHY_UTMI,
@@ -137,6 +138,7 @@ static struct device_d usbotg_dev = {
 	.size     = 0x200,
 	.platform_data = &usb_pdata,
 };
+#endif
 
 #ifdef CONFIG_MMU
 static int eukrea_cpuimx35_mmu_init(void)

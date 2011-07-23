@@ -63,28 +63,7 @@ static struct device_d nand_dev = {
  * Area 2: Offset 0x304...0x307
  */
 static struct dm9000_platform_data dm9000_data = {
-	.buswidth = IORESOURCE_MEM_16BIT,
 	.srom     = 1,
-};
-
-static struct resource dm9000_resources[] = {
-	[0] = {
-		.start	= CS4_BASE + 0x300,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-	[1] = {
-		.start	= CS4_BASE + 0x304,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d dm9000_dev = {
-	.name     = "dm9000",
-	.num_resources	= ARRAY_SIZE(dm9000_resources),
-	.resource	= dm9000_resources,
-	.platform_data = &dm9000_data,
 };
 
 static struct s3c_mci_platform_data mci_data = {
@@ -332,7 +311,8 @@ static int mini2440_devices_init(void)
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
 
-	register_device(&dm9000_dev);
+	add_dm9000_device(0, CS4_BASE + 0x300, CS4_BASE + 0x304,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
 	devfs_del_partition("self_raw");

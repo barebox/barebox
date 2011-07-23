@@ -500,7 +500,8 @@ static int dm9000_probe(struct device_d *dev)
 	pdata = dev->platform_data;
 
 	priv = edev->priv;
-	priv->buswidth = pdata->buswidth;
+
+	priv->buswidth = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 	priv->iodata = dev_request_mem_region(dev, 1);
 	priv->iobase = dev_request_mem_region(dev, 0);
 	priv->srom = pdata->srom;

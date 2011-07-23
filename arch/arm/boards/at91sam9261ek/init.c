@@ -89,29 +89,7 @@ static void ek_add_device_nand(void)
  */
 #if defined(CONFIG_DRIVER_NET_DM9000)
 static struct dm9000_platform_data dm9000_data = {
-	.buswidth	= IORESOURCE_MEM_16BIT,
 	.srom		= 0,
-};
-
-static struct resource dm9000_resources[] = {
-	[0] = {
-		.start	= AT91_CHIPSELECT_2,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-	[1] = {
-		.start	= AT91_CHIPSELECT_2 + 4,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d dm9000_dev = {
-	.id		= 0,
-	.name		= "dm9000",
-	.num_resources	= ARRAY_SIZE(dm9000_resources),
-	.resource	= dm9000_resources,
-	.platform_data	= &dm9000_data,
 };
 
 /*
@@ -147,7 +125,8 @@ static void __init ek_add_device_dm9000(void)
 	/* Configure Interrupt pin as input, no pull-up */
 	at91_set_gpio_input(AT91_PIN_PC11, 0);
 
-	register_device(&dm9000_dev);
+	add_dm9000_device(0, AT91_CHIPSELECT_2, AT91_CHIPSELECT_2 + 4,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 }
 #else
 static void __init ek_add_device_dm9000(void) {}

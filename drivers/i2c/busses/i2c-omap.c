@@ -716,7 +716,6 @@ i2c_omap_probe(struct device_d *pdev)
 {
 	struct omap_i2c_struct	*i2c_omap;
 	/* struct i2c_platform_data *pdata; */
-	/* unsigned long base = pdev->map_base; */
 	int r;
 	u32 speed = 0;
 
@@ -732,7 +731,7 @@ i2c_omap_probe(struct device_d *pdev)
 		speed = 100;	/* Defualt speed */
 
 	i2c_omap->speed = speed;
-	i2c_omap->base = (void*)pdev->map_base;
+	i2c_omap->base = dev_request_mem_region(pdev, 0);
 	printf ("I2C probe\n");
 	omap_i2c_unidle(i2c_omap);
 

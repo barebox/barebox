@@ -46,17 +46,6 @@
 #include <mach/iomux-mx35.h>
 #include <mach/devices-imx35.h>
 
-/*
- * Up to 32MiB NOR type flash, connected to
- * CS line 0, data width is 16 bit
- */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = IMX_CS0_BASE,
-	.size     = 32 * 1024 * 1024,	/* area size */
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -158,7 +147,11 @@ static int imx35_devices_init(void)
 	 * This platform supports NOR and NAND
 	 */
 	imx35_add_nand(&nand_info);
-	register_device(&cfi_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 0, data width is 16 bit
+	 */
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
 		switch ( (reg >> 25) & 0x3) {

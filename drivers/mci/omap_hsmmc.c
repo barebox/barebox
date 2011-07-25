@@ -558,7 +558,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.init = mmc_init_setup;
 	hsmmc->mci.host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
 
-	hsmmc->base = (struct hsmmc *)dev->map_base;
+	hsmmc->base = dev_request_mem_region(dev, 0);
 
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

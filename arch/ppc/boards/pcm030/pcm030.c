@@ -37,13 +37,6 @@
 #include <mem_malloc.h>
 #include <reloc.h>
 
-struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xff000000,
-	.size     = 16 * 1024 * 1024,
-};
-
 static struct mpc5xxx_fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -57,7 +50,7 @@ struct device_d eth_dev = {
 
 static int devices_init (void)
 {
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xff000000, 16 * 1024 * 1024, 0);
 	add_mem_device("ram0", 0x0, 64 * 1024 * 1024,
 		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&eth_dev);

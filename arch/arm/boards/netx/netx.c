@@ -30,13 +30,6 @@
 #include <generated/mach-types.h>
 #include <mach/netx-eth.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
 struct netx_eth_platform_data eth0_data = {
 	.xcno = 0,
 };
@@ -60,7 +53,7 @@ static struct device_d netx_eth_dev1 = {
 static int netx_devices_init(void) {
 	struct device_d *sdram_dev;
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
 	sdram_dev = add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);

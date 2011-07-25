@@ -34,13 +34,6 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -114,7 +107,7 @@ static int mx27ads_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
 	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);

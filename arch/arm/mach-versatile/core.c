@@ -51,34 +51,6 @@ void versatile_add_sdram(u32 size)
 	armlinux_add_dram(sdram_dev);
 }
 
-static struct device_d uart0_serial_device = {
-	.id = 0,
-	.name = "uart-pl011",
-	.map_base = VERSATILE_UART0_BASE,
-	.size = 4096,
-};
-
-static struct device_d uart1_serial_device = {
-	.id = 1,
-	.name = "uart-pl011",
-	.map_base = VERSATILE_UART1_BASE,
-	.size = 4096,
-};
-
-static struct device_d uart2_serial_device = {
-	.id = 2,
-	.name = "uart-pl011",
-	.map_base = VERSATILE_UART2_BASE,
-	.size = 4096,
-};
-
-static struct device_d uart3_serial_device = {
-	.id = 3,
-	.name = "uart-pl011",
-	.map_base = VERSATILE_UART3_BASE,
-	.size = 4096,
-};
-
 struct clk {
 	unsigned long rate;
 };
@@ -178,24 +150,28 @@ core_initcall(vpb_clocksource_init);
 
 void versatile_register_uart(unsigned id)
 {
+	resource_size_t start;
+	struct device_d *dev;
+
 	switch (id) {
 	case 0:
-		vpb_clk_create(&ref_clk_24, dev_name(&uart0_serial_device));
-		register_device(&uart0_serial_device);
+		start = VERSATILE_UART0_BASE;
 		break;
 	case 1:
-		vpb_clk_create(&ref_clk_24, dev_name(&uart1_serial_device));
-		register_device(&uart1_serial_device);
+		start = VERSATILE_UART1_BASE;
 		break;
 	case 2:
-		vpb_clk_create(&ref_clk_24, dev_name(&uart2_serial_device));
-		register_device(&uart2_serial_device);
+		start = VERSATILE_UART2_BASE;
 		break;
 	case 3:
-		vpb_clk_create(&ref_clk_24, dev_name(&uart3_serial_device));
-		register_device(&uart3_serial_device);
+		start = VERSATILE_UART3_BASE;
 		break;
+	default:
+		return;
 	}
+	dev = add_generic_device("uart-pl011", id, NULL, start, 4096,
+			   IORESOURCE_MEM, NULL);
+	vpb_clk_create(&ref_clk_24, dev_name(dev));
 }
 
 void __noreturn reset_cpu (unsigned long ignored)

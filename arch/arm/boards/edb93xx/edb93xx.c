@@ -38,13 +38,6 @@
  * Up to 32MiB NOR type flash, connected to
  * CS line 6, data width is 16 bit
  */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0x60000000,
-	.size     = EDB93XX_CFI_FLASH_SIZE,
-};
-
 static struct device_d eth_dev = {
 	.id	  = -1,
 	.name     = "ep93xx_eth",
@@ -54,7 +47,7 @@ static int ep93xx_devices_init(void)
 {
 	struct device_d *sdram_dev;
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
 
 	/*
 	 * Create partitions that should be

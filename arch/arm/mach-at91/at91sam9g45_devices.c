@@ -31,21 +31,6 @@ void at91_add_device_sdram(u32 size)
 }
 
 #if defined(CONFIG_DRIVER_NET_MACB)
-static struct resource eth_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_EMAC,
-		.size	= 0x1000,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d macb_dev = {
-	.id		= 0,
-	.name		= "macb",
-	.resource	= eth_resources,
-	.num_resources	= ARRAY_SIZE(eth_resources),
-};
-
 void at91_add_device_eth(struct at91_ether_platform_data *data)
 {
 	if (!data)
@@ -74,29 +59,14 @@ void at91_add_device_eth(struct at91_ether_platform_data *data)
 		at91_set_B_periph(AT91_PIN_PA27, 0);	/* ETXER */
 	}
 
-	macb_dev.platform_data = data;
-	register_device(&macb_dev);
+	add_generic_device("macb", 0, NULL, AT91SAM9G45_BASE_EMAC, 0x1000,
+			   IORESOURCE_MEM, data);
 }
 #else
 void at91_add_device_eth(struct at91_ether_platform_data *data) {}
 #endif
 
 #if defined(CONFIG_NAND_ATMEL)
-static struct resource nand_resources[] = {
-	[0] = {
-		.start	= AT91_CHIPSELECT_3,
-		.size	= 0x10,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d nand_dev = {
-	.id		= -1,
-	.name		= "atmel_nand",
-	.resource	= nand_resources,
-	.num_resources	= ARRAY_SIZE(nand_resources),
-};
-
 void at91_add_device_nand(struct atmel_nand_data *data)
 {
 	unsigned long csa;
@@ -122,48 +92,18 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
 
-	nand_dev.platform_data = data;
-	register_device(&nand_dev);
+	add_generic_device("atmel_nand", -1, NULL, AT91_CHIPSELECT_3, 0x10,
+			   IORESOURCE_MEM, data);
 }
 #else
 void at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
-
-static struct resource dbgu_resources[] = {
-	[0] = {
-		.start	= (AT91_BASE_SYS + AT91_DBGU),
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d dbgu_serial_device = {
-	.id	  = -1,
-	.name     = "atmel_serial",
-	.resource	= dbgu_resources,
-	.num_resources	= ARRAY_SIZE(dbgu_resources),
-};
 
 static inline void configure_dbgu_pins(void)
 {
 	at91_set_A_periph(AT91_PIN_PB12, 0);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PB13, 1);		/* DTXD */
 }
-
-static struct resource uart0_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_US0,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart0_serial_device = {
-	.id	  = -1,
-	.name     = "atmel_serial",
-	.resource	= uart0_resources,
-	.num_resources	= ARRAY_SIZE(uart0_resources),
-};
 
 static inline void configure_usart0_pins(unsigned pins)
 {
@@ -176,21 +116,6 @@ static inline void configure_usart0_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PB15, 0);	/* CTS0 */
 }
 
-static struct resource uart1_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_US1,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart1_serial_device = {
-	.id	  = -1,
-	.name     = "atmel_serial",
-	.resource	= uart1_resources,
-	.num_resources	= ARRAY_SIZE(uart1_resources),
-};
-
 static inline void configure_usart1_pins(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PB4, 1);		/* TXD1 */
@@ -202,21 +127,6 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PD17, 0);	/* CTS1 */
 }
 
-static struct resource uart2_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_US2,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart2_serial_device = {
-	.id	  = -1,
-	.name     = "atmel_serial",
-	.resource	= uart2_resources,
-	.num_resources	= ARRAY_SIZE(uart2_resources),
-};
-
 static inline void configure_usart2_pins(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PB6, 1);		/* TXD2 */
@@ -227,21 +137,6 @@ static inline void configure_usart2_pins(unsigned pins)
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PC11, 0);	/* CTS2 */
 }
-
-static struct resource uart3_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_US3,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart3_serial_device = {
-	.id	  = -1,
-	.name     = "atmel_serial",
-	.resource	= uart3_resources,
-	.num_resources	= ARRAY_SIZE(uart3_resources),
-};
 
 static inline void configure_usart3_pins(unsigned pins)
 {
@@ -256,72 +151,59 @@ static inline void configure_usart3_pins(unsigned pins)
 
 void at91_register_uart(unsigned id, unsigned pins)
 {
+	resource_size_t start;
+	struct device_d *dev;
+	char* clk_name;
+
 	switch (id) {
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
-			at91_clock_associate("mck", &dbgu_serial_device, "usart");
-			register_device(&dbgu_serial_device);
+			start = AT91_BASE_SYS + AT91_DBGU;
+			clk_name = "mck";
+			id = 0;
 			break;
 		case AT91SAM9G45_ID_US0:
 			configure_usart0_pins(pins);
-			at91_clock_associate("usart0_clk", &uart0_serial_device, "usart");
-			register_device(&uart0_serial_device);
+			clk_name = "usart0_clk";
+			start = AT91SAM9G45_BASE_US0;
+			id = 1;
 			break;
 		case AT91SAM9G45_ID_US1:
 			configure_usart1_pins(pins);
-			at91_clock_associate("usart1_clk", &uart1_serial_device, "usart");
-			register_device(&uart1_serial_device);
+			clk_name = "usart1_clk";
+			start = AT91SAM9G45_BASE_US1;
+			id = 2;
 			break;
 		case AT91SAM9G45_ID_US2:
 			configure_usart2_pins(pins);
-			at91_clock_associate("usart2_clk", &uart2_serial_device, "usart");
-			register_device(&uart2_serial_device);
+			clk_name = "usart2_clk";
+			start = AT91SAM9G45_BASE_US2;
+			id = 3;
 			break;
 		case AT91SAM9G45_ID_US3:
 			configure_usart3_pins(pins);
-			at91_clock_associate("usart3_clk", &uart2_serial_device, "usart");
-			register_device(&uart3_serial_device);
+			clk_name = "usart3_clk";
+			start = AT91SAM9G45_BASE_US3;
+			id = 4;
 			break;
 		default:
 			return;
 	}
 
+	dev = add_generic_device("atmel_serial", id, NULL, start, 4096,
+			   IORESOURCE_MEM, NULL);
+	at91_clock_associate(clk_name, dev, "usart");
+
 }
 
 #if defined(CONFIG_MCI_ATMEL)
-static struct resource mci0_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_MCI0,
-		.size	= SZ_16K,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d mci0_device = {
-	.id		= 0,
-	.name		= "atmel_mci",
-	.num_resources	= ARRAY_SIZE(mci0_resources),
-	.resource	= mci0_resources,
-};
-
-static struct resource mci1_resources[] = {
-	[0] = {
-		.start	= AT91SAM9G45_BASE_MCI1,
-		.size	= SZ_16K,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d mci1_device = {
-	.id		= 1,
-	.name		= "atmel_mci",
-	.num_resources	= ARRAY_SIZE(mci1_resources),
-	.resource	= mci1_resources,
-};
-
 /* Consider only one slot : slot 0 */
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 {
+	resource_size_t start;
+	struct device_d *dev;
+	char* clk_name;
+
 	if (!data)
 		return;
 
@@ -339,6 +221,8 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 		at91_set_gpio_input(data->wp_pin, 1);
 
 	if (mmc_id == 0) {		/* MCI0 */
+		start = AT91SAM9G45_BASE_MCI0;
+		clk_name = "mci0_clk";
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA0, 0);
 
@@ -358,12 +242,9 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 				at91_set_A_periph(AT91_PIN_PA9, 1);
 			}
 		}
-
-		mci0_device.platform_data = data;
-		at91_clock_associate("mci0_clk", &mci0_device, "mci_clk");
-		register_device(&mci0_device);
-
 	} else {			/* MCI1 */
+		start = AT91SAM9G45_BASE_MCI1;
+		clk_name = "mci1_clk";
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA31, 0);
 
@@ -383,11 +264,11 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 				at91_set_A_periph(AT91_PIN_PA30, 1);
 			}
 		}
-
-		mci1_device.platform_data = data;
-		at91_clock_associate("mci1_clk", &mci1_device, "mci_clk");
-		register_device(&mci1_device);
 	}
+
+	dev = add_generic_device("atmel_mci", mmc_id, NULL, start, 4096,
+			   IORESOURCE_MEM, data);
+	at91_clock_associate(clk_name, dev, "mci_clk");
 }
 #else
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}

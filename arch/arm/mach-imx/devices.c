@@ -2,23 +2,10 @@
 #include <driver.h>
 #include <mach/devices.h>
 
-static struct device_d *imx_add_device(char *name, int id, void *base, int size, void *pdata)
+static inline struct device_d *imx_add_device(char *name, int id, void *base, int size, void *pdata)
 {
-	struct device_d *dev;
-
-	dev = xzalloc(sizeof(*dev));
-	strcpy(dev->name,name);
-	dev->id = id;
-	dev->resource = xzalloc(sizeof(struct resource));
-	dev->resource[0].start = (resource_size_t)base;
-	dev->resource[0].size = size;
-	dev->resource[0].flags = IORESOURCE_MEM;
-	dev->num_resources = 1;
-	dev->platform_data = pdata;
-
-	register_device(dev);
-
-	return 0;
+	return add_generic_device(name, id, NULL, (resource_size_t)base, size,
+				  IORESOURCE_MEM, pdata);
 }
 
 struct device_d *imx_add_fec(void *base, struct fec_platform_data *pdata)

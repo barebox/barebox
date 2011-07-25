@@ -47,13 +47,6 @@
 
 #include "pll.h"
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -267,7 +260,7 @@ static int pcm038_devices_init(void)
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
 	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);

@@ -34,21 +34,6 @@ void at91_add_device_sdram(u32 size)
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_NET_AT91_ETHER)
-static struct resource eth_resources[] = {
-	[0] = {
-		.start	= AT91_VA_BASE_EMAC,
-		.size	= 0x1000,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d at91rm9200_eth_device = {
-	.id		= 0,
-	.name		= "at91_ether",
-	.resource	= eth_resources,
-	.num_resources	= ARRAY_SIZE(eth_resources),
-};
-
 void __init at91_add_device_eth(struct at91_ether_platform_data *data)
 {
 	if (!data)
@@ -77,8 +62,8 @@ void __init at91_add_device_eth(struct at91_ether_platform_data *data)
 		at91_set_B_periph(AT91_PIN_PB12, 0);	/* ETX2 */
 	}
 
-	at91rm9200_eth_device.platform_data = data;
-	register_device(&at91rm9200_eth_device);
+	add_generic_device("at91_ether", 0, NULL, AT91_VA_BASE_EMAC, 0x1000,
+			   IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_eth(struct at91_ether_platform_data *data) {}
@@ -89,21 +74,6 @@ void __init at91_add_device_eth(struct at91_ether_platform_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_NAND_ATMEL)
-static struct resource nand_resources[] = {
-	[0] = {
-		.start	= AT91_CHIPSELECT_3,
-		.size	= 0x10,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d at91rm9200_nand_device = {
-	.id		= -1,
-	.name		= "atmel_nand",
-	.resource	= nand_resources,
-	.num_resources	= ARRAY_SIZE(nand_resources),
-};
-
 void __init at91_add_device_nand(struct atmel_nand_data *data)
 {
 	unsigned int csa;
@@ -138,8 +108,8 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 	at91_set_A_periph(AT91_PIN_PC1, 0);		/* SMOE */
 	at91_set_A_periph(AT91_PIN_PC3, 0);		/* SMWE */
 
-	at91rm9200_nand_device.platform_data = data;
-	platform_device_register(&at91rm9200_nand_device);
+	add_generic_device("atmel_nand", 0, NULL, AT91_CHIPSELECT_3, 0x10,
+			   IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_nand(struct atmel_nand_data *data) {}
@@ -149,41 +119,11 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
  *  UART
  * -------------------------------------------------------------------- */
 
-static struct resource dbgu_resources[] = {
-	[0] = {
-		.start	= AT91_BASE_SYS + AT91_DBGU,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d dbgu_serial_device = {
-	.id		= 0,
-	.name		= "atmel_serial",
-	.resource	= dbgu_resources,
-	.num_resources	= ARRAY_SIZE(dbgu_resources),
-};
-
 static inline void configure_dbgu_pins(void)
 {
 	at91_set_A_periph(AT91_PIN_PA30, 0);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA31, 1);		/* DTXD */
 }
-
-static struct resource uart0_resources[] = {
-	[0] = {
-		.start	= AT91RM9200_BASE_US0,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart0_serial_device = {
-	.id		= 1,
-	.name		= "atmel_serial",
-	.resource	= uart0_resources,
-	.num_resources	= ARRAY_SIZE(uart0_resources),
-};
 
 static inline void configure_usart0_pins(unsigned pins)
 {
@@ -201,21 +141,6 @@ static inline void configure_usart0_pins(unsigned pins)
 		at91_set_gpio_output(AT91_PIN_PA21, 1);
 	}
 }
-
-static struct resource uart1_resources[] = {
-	[0] = {
-		.start	= AT91RM9200_BASE_US1,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart1_serial_device = {
-	.id		= 2,
-	.name		= "atmel_serial",
-	.resource	= uart1_resources,
-	.num_resources	= ARRAY_SIZE(uart1_resources),
-};
 
 static inline void configure_usart1_pins(unsigned pins)
 {
@@ -236,21 +161,6 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PB26, 0);	/* RTS1 */
 }
 
-static struct resource uart2_resources[] = {
-	[0] = {
-		.start	= AT91RM9200_BASE_US2,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart2_serial_device = {
-	.id		= 3,
-	.name		= "atmel_serial",
-	.resource	= uart2_resources,
-	.num_resources	= ARRAY_SIZE(uart2_resources),
-};
-
 static inline void configure_usart2_pins(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PA22, 0);		/* RXD2 */
@@ -261,21 +171,6 @@ static inline void configure_usart2_pins(unsigned pins)
 	if (pins & ATMEL_UART_RTS)
 		at91_set_B_periph(AT91_PIN_PA31, 0);	/* RTS2 */
 }
-
-static struct resource uart3_resources[] = {
-	[0] = {
-		.start	= AT91RM9200_BASE_US3,
-		.size	= 4096,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d uart3_serial_device = {
-	.id		= 4,
-	.name		= "atmel_serial",
-	.resource	= uart3_resources,
-	.num_resources	= ARRAY_SIZE(uart3_resources),
-};
 
 static inline void configure_usart3_pins(unsigned pins)
 {
@@ -290,33 +185,46 @@ static inline void configure_usart3_pins(unsigned pins)
 
 void __init at91_register_uart(unsigned id, unsigned pins)
 {
+	resource_size_t start;
+	struct device_d *dev;
+	char* clk_name;
+
 	switch (id) {
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
-			at91_clock_associate("mck", &dbgu_serial_device, "usart");
-			register_device(&dbgu_serial_device);
+			start = AT91_BASE_SYS + AT91_DBGU;
+			clk_name = "mck";
+			id = 0;
 			break;
 		case AT91RM9200_ID_US0:
 			configure_usart0_pins(pins);
-			at91_clock_associate("usart0_clk", &uart0_serial_device, "usart");
+			clk_name = "usart0_clk";
+			start = AT91RM9200_BASE_US0;
+			id = 1;
 			break;
 		case AT91RM9200_ID_US1:
 			configure_usart1_pins(pins);
-			at91_clock_associate("usart1_clk", &uart1_serial_device, "usart");
-			register_device(&uart1_serial_device);
+			clk_name = "usart1_clk";
+			start = AT91RM9200_BASE_US1;
+			id = 2;
 			break;
 		case AT91RM9200_ID_US2:
 			configure_usart2_pins(pins);
-			at91_clock_associate("usart2_clk", &uart2_serial_device, "usart");
-			register_device(&uart2_serial_device);
+			clk_name = "usart2_clk";
+			start = AT91RM9200_BASE_US2;
+			id = 3;
 			break;
 		case AT91RM9200_ID_US3:
 			configure_usart3_pins(pins);
-			at91_clock_associate("usart3_clk", &uart3_serial_device, "usart");
-			register_device(&uart3_serial_device);
+			clk_name = "usart3_clk";
+			start = AT91RM9200_BASE_US3;
+			id = 4;
 			break;
 		default:
 			return;
 	}
 
+	dev = add_generic_device("atmel_serial", id, NULL, start, 4096,
+			   IORESOURCE_MEM, NULL);
+	at91_clock_associate(clk_name, dev, "usart");
 }

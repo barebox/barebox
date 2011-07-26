@@ -6,18 +6,30 @@
 
 static int phy_address = 1;
 
+static struct resource mac_resources[] = {
+	[0] = {
+		.start	= NIOS_SOPC_TSE_BASE,
+		.size	= 0x400,
+		.flags	= IORESOURCE_MEM,
+	},
+	[1] = {
+		.start	= NIOS_SOPC_SGDMA_RX_BASE,
+		.size	= 0x40,
+		.flags	= IORESOURCE_MEM,
+	},
+	[2] = {
+		.start	= NIOS_SOPC_SGDMA_TX_BASE,
+		.size	= 0x40,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
 static struct device_d mac_dev = {
 	.id            = -1,
 	.name          = "altera_tse",
-	.map_base      = NIOS_SOPC_TSE_BASE,
-	.size          = 0x00000400,
+	.num_resources = ARRAY_SIZE(mac_resources),
+	.resource      = mac_resources,
 	.platform_data = &phy_address,
-};
-
-static struct device_d altera_serial_device = {
-	.id       = -1,
-	.name     = "altera_serial",
-	.map_base = NIOS_SOPC_UART_BASE,
 };
 
 /*
@@ -49,7 +61,8 @@ device_initcall(generic_devices_init);
 
 static int altera_console_init(void)
 {
-	register_device(&altera_serial_device);
+	add_generic_device("altera_serial", -1, NULL, NIOS_SOPC_UART_BASE, 0x20,
+			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

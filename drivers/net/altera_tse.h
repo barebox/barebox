@@ -287,16 +287,11 @@ struct alt_tse_mac {
 };
 
 struct altera_tse_priv {
-	struct alt_tse_mac *mac_dev;
-	struct alt_sgdma_registers *sgdma_rx;
-	struct alt_sgdma_registers *sgdma_tx;
-	unsigned int rx_sgdma_irq;
-	unsigned int tx_sgdma_irq;
-	unsigned int has_descriptor_mem;
-	unsigned int descriptor_mem_base;
-	unsigned int descriptor_mem_size;
-	struct alt_sgdma_descriptor *rx_desc;
-	struct alt_sgdma_descriptor *tx_desc;
+	void __iomem *tse_regs;
+	void __iomem *sgdma_rx_regs;
+	void __iomem *sgdma_tx_regs;
+	void __iomem *rx_desc;
+	void __iomem *tx_desc;
 	struct mii_device *miidev;
 };
 

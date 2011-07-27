@@ -28,8 +28,6 @@
 struct device_d;
 
 struct eth_device {
-	int iobase;
-	int state;
 	int active;
 
 	int  (*init) (struct eth_device*);

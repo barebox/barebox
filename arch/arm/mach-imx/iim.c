@@ -276,7 +276,7 @@ static int imx_iim_probe(struct device_d *dev)
 			imx_iim_blow_enable_set, NULL, 0);
 	if (err < 0)
 		return err;
-	err = dev_set_param(dev, "explicit_sense_enable", "0");
+	err = dev_set_param(dev, "explicit_sense_enable", "1");
 	if (err < 0)
 		return err;
 

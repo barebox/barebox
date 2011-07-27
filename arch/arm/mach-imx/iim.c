@@ -226,14 +226,14 @@ static int imx_iim_blow_enable_set(struct device_d *dev, struct param_d *param,
 	return dev_param_set_generic(dev, param, blow_enable ? "1" : "0");
 }
 
-static int imx_iim_add_bank(struct device_d *dev, int num)
+static int imx_iim_add_bank(struct device_d *dev, void __iomem *base, int num)
 {
 	struct iim_priv *priv;
 	struct cdev *cdev;
 
 	priv = xzalloc(sizeof (*priv));
 
-	priv->base	= (void __iomem *)dev->map_base;
+	priv->base	= base;
 	priv->bankbase	= priv->base + 0x800 + 0x400 * num;
 	priv->bank	= num;
 	priv->banksize	= 32;
@@ -254,12 +254,15 @@ static int imx_iim_probe(struct device_d *dev)
 	struct imx_iim_platform_data *pdata = dev->platform_data;
 	int err;
 	int i;
+	void __iomem *base;
+
+	base = dev_request_mem_region(dev, 0);
 
 	if (pdata)
 		mac_addr_base = pdata->mac_addr_base;
 
 	for (i = 0; i < 8; i++) {
-		imx_iim_add_bank(dev, i);
+		imx_iim_add_bank(dev, base, i);
 	}
 
 #ifdef CONFIG_IMX_IIM_FUSE_BLOW

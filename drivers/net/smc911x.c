@@ -368,6 +368,7 @@
 #define CHIP_9221	0x9221
 
 struct smc911x_priv {
+	struct eth_device edev;
 	struct mii_device miidev;
 	void __iomem *base;
 };
@@ -712,12 +713,10 @@ static int smc911x_probe(struct device_d *dev)
 
 	dev_info(dev, "detected %s controller\n", chip_ids[i].name);
 
-	edev = xzalloc(sizeof(struct eth_device) +
-			sizeof(struct smc911x_priv));
+	priv = xzalloc(sizeof(*priv));
+	edev = &priv->edev;
 	dev->type_data = edev;
-	edev->priv = (struct smc911x_priv *)(edev + 1);
-
-	priv = edev->priv;
+	edev->priv = priv;
 
 	edev->init = smc911x_init_dev;
 	edev->open = smc911x_eth_open;

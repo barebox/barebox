@@ -240,7 +240,7 @@ static int imx31_devices_init(void)
 	imx31_add_nand(&nand_info);
 	register_device(&network_dev);
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS1, SDRAM0 * 1024 * 1024,
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE

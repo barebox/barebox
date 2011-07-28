@@ -988,7 +988,7 @@ static int cfi_probe (struct device_d *dev)
 
 	if (info->flash_id == FLASH_UNKNOWN) {
 		printf ("## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
-			dev->map_base, info->size, info->size << 20);
+			dev->resource[0].start, info->size, info->size << 20);
 		return -ENODEV;
 	}
 

@@ -249,7 +249,7 @@ const char *dev_id(const struct device_d *dev)
 {
 	static char buf[MAX_DRIVER_NAME + 16];
 
-	snprintf(buf, sizeof(buf), FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
+	snprintf(buf, sizeof(buf), FORMAT_DRIVER_NAME_ID, dev->name, dev->id);
 
 	return buf;
 }

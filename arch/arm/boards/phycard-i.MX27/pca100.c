@@ -239,17 +239,10 @@ static int pca100_devices_init(void)
 
 device_initcall(pca100_devices_init);
 
-static struct device_d pca100_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int pca100_console_init(void)
 {
 	pca100_mmu_init();
-	register_device(&pca100_serial_device);
+	imx27_add_uart0();
 	return 0;
 }
 

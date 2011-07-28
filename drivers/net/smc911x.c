@@ -369,7 +369,7 @@
 
 struct smc911x_priv {
 	struct mii_device miidev;
-	unsigned long base;
+	void __iomem *base;
 };
 
 struct chip_id {
@@ -690,15 +690,18 @@ static int smc911x_probe(struct device_d *dev)
 	struct smc911x_priv *priv;
 	uint32_t val;
 	int i;
+	void *base;
 
-	val = readl(dev->map_base + BYTE_TEST);
+	base = dev_request_mem_region(dev, 0);
+
+	val = readl(base + BYTE_TEST);
 	if(val != 0x87654321) {
-		dev_err(dev, "no smc911x found on 0x%08x (byte_test=0x%08x)\n",
-			dev->map_base, val);
+		dev_err(dev, "no smc911x found on 0x%p (byte_test=0x%08x)\n",
+			base, val);
 		return -ENODEV;
 	}
 
-	val = readl(dev->map_base + ID_REV) >> 16;
+	val = readl(base + ID_REV) >> 16;
 	for(i = 0; chip_ids[i].id != 0; i++) {
 		if (chip_ids[i].id == val) break;
 	}
@@ -729,7 +732,7 @@ static int smc911x_probe(struct device_d *dev)
 	priv->miidev.address = 1;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
-	priv->base = dev->map_base;
+	priv->base = base;
 
 	smc911x_reset(edev);
 	smc911x_phy_reset(edev);

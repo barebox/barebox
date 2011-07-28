@@ -316,16 +316,3 @@ int imx_iim_read(unsigned int bank, int offset, void *buf, int count)
 
 	return ret;
 }
-
-int imx_iim_get_mac(unsigned char *mac)
-{
-	int i;
-
-	if (mac_addr_base == 0)
-		return -EINVAL;
-
-	for (i = 0; i < 6; i++)
-		 mac[i] = readb(mac_addr_base + i*4);
-
-	return 0;
-}

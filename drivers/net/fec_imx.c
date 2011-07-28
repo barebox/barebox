@@ -269,11 +269,7 @@ static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-#ifdef CONFIG_ARCH_MXS
 	return -1;
-#else
-	return imx_iim_get_mac(mac);
-#endif
 }
 
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)

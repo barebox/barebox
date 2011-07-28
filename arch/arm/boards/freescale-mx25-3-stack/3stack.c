@@ -37,6 +37,7 @@
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
+#include <mach/iim.h>
 #include <linux/err.h>
 #include <i2c/i2c.h>
 #include <mfd/mc34704.h>
@@ -210,6 +211,7 @@ static int imx25_devices_init(void)
 	register_device(&usbh2_dev);
 #endif
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))

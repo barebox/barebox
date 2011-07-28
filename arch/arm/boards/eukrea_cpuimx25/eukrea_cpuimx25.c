@@ -37,6 +37,7 @@
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
+#include <mach/iim.h>
 #include <fec.h>
 #include <nand.h>
 #include <mach/imx-flash-header.h>
@@ -251,6 +252,7 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	led_gpio_register(&led0);
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	nand_info.width = 1;

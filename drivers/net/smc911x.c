@@ -528,8 +528,8 @@ static void smc911x_reset(struct eth_device *edev)
 			if ((readl(priv->base + PMT_CTRL) & PMT_CTRL_READY))
 				break;
 			if (is_timeout(start, 100 * USECOND)) {
-				printf(DRIVERNAME
-					": timeout waiting for PM restore\n");
+				dev_err(&edev->dev,
+						"timeout waiting for PM restore\n");
 				return;
 			}
 		}
@@ -545,7 +545,7 @@ static void smc911x_reset(struct eth_device *edev)
 		if (!(readl(priv->base + E2P_CMD) & E2P_CMD_EPC_BUSY))
 			break;
 		if (is_timeout(start, 10 * MSECOND)) {
-			printf(DRIVERNAME ": reset timeout\n");
+			dev_err(&edev->dev, "reset timeout\n");
 			return;
 		}
 	}
@@ -610,7 +610,7 @@ static int smc911x_eth_send(struct eth_device *edev, void *packet, int length)
 					TX_FIFO_INF_TSUSED) >> 16)
 			break;
 		if (is_timeout(start, 100 * MSECOND)) {
-			printf("TX timeout\n");
+			dev_err(&edev->dev, "TX timeout\n");
 			return -1;
 		}
 	}
@@ -625,7 +625,7 @@ static int smc911x_eth_send(struct eth_device *edev, void *packet, int length)
 	if(!status)
 		return 0;
 
-	printf(DRIVERNAME ": failed to send packet: %s%s%s%s%s\n",
+	dev_err(&edev->dev, "failed to send packet: %s%s%s%s%s\n",
 		status & TX_STS_LOC ? "TX_STS_LOC " : "",
 		status & TX_STS_LATE_COLL ? "TX_STS_LATE_COLL " : "",
 		status & TX_STS_MANY_COLL ? "TX_STS_MANY_COLL " : "",
@@ -663,8 +663,7 @@ static int smc911x_eth_rx(struct eth_device *edev)
 			*data++ = readl(priv->base + RX_DATA_FIFO);
 
 		if(status & RX_STS_ES)
-			printf(DRIVERNAME
-				": dropped bad packet. Status: 0x%08x\n",
+			dev_err(&edev->dev, "dropped bad packet. Status: 0x%08x\n",
 				status);
 		else
 			net_receive(NetRxPackets[0], pktlen);
@@ -692,12 +691,9 @@ static int smc911x_probe(struct device_d *dev)
 	uint32_t val;
 	int i;
 
-	debug("smc911x_eth_init()\n");
-
 	val = readl(dev->map_base + BYTE_TEST);
 	if(val != 0x87654321) {
-		printf(DRIVERNAME
-			": no smc911x found on 0x%08x (byte_test=0x%08x)\n",
+		dev_err(dev, "no smc911x found on 0x%08x (byte_test=0x%08x)\n",
 			dev->map_base, val);
 		return -ENODEV;
 	}
@@ -707,11 +703,11 @@ static int smc911x_probe(struct device_d *dev)
 		if (chip_ids[i].id == val) break;
 	}
 	if (!chip_ids[i].id) {
-		printf(DRIVERNAME ": Unknown chip ID %04x\n", val);
+		dev_err(dev, "Unknown chip ID %04x\n", val);
 		return -ENODEV;
 	}
 
-	debug(DRIVERNAME ": detected %s controller\n", chip_ids[i].name);
+	dev_info(dev, "detected %s controller\n", chip_ids[i].name);
 
 	edev = xzalloc(sizeof(struct eth_device) +
 			sizeof(struct smc911x_priv));

@@ -200,25 +200,11 @@ static void imx28_fix_endianess_rd(uint32_t *buf, unsigned wlen)
 static int fec_rbd_init(struct fec_priv *fec, int count, int size)
 {
 	int ix;
-	static int once = 0;
-	unsigned long p = 0;
-
-	if (!once) {
-		/* reserve data memory and consider alignment */
-		p = (unsigned long)dma_alloc_coherent(size * count + DB_DATA_ALIGNMENT);
-		p += DB_DATA_ALIGNMENT - 1;
-		p &= ~(DB_DATA_ALIGNMENT - 1);
-	}
 
 	for (ix = 0; ix < count; ix++) {
-		if (!once) {
-			writel(virt_to_phys((void *)p), &fec->rbd_base[ix].data_pointer);
-			p += size;
-		}
 		writew(FEC_RBD_EMPTY, &fec->rbd_base[ix].status);
 		writew(0, &fec->rbd_base[ix].data_length);
 	}
-	once = 1;	/* malloc done now (and once) */
 	/*
 	 * mark the last RBD to close the ring
 	 */
@@ -592,6 +578,24 @@ static int fec_recv(struct eth_device *dev)
 	return len;
 }
 
+static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
+{
+	void *p;
+	int i;
+
+	/* reserve data memory and consider alignment */
+	p = dma_alloc_coherent(size * count);
+	if (!p)
+		return -ENOMEM;
+
+	for (i = 0; i < count; i++) {
+		writel(virt_to_phys(p), &fec->rbd_base[i].data_pointer);
+		p += size;
+	}
+
+	return 0;
+}
+
 static int fec_probe(struct device_d *dev)
 {
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
@@ -637,6 +641,8 @@ static int fec_probe(struct device_d *dev)
 
 	writel((uint32_t)virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
 	writel((uint32_t)virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+
+	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
 	fec->xcv_type = pdata->xcv_type;
 

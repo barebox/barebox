@@ -610,14 +610,6 @@ static struct NS16550_plat serial_plat = {
 	.reg_write = omap_uart_write,
 };
 
-static struct device_d sdp3430_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = OMAP_UART3_BASE,
-	.size = 1024,
-	.platform_data = (void *)&serial_plat,
-};
-
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in arch
  *
@@ -626,7 +618,9 @@ static struct device_d sdp3430_serial_device = {
 static int sdp3430_console_init(void)
 {
 	/* Register the serial port */
-	return register_device(&sdp3430_serial_device);
+	add_ns16550_device(-1, OMAP_UART3_BASE, 1024, &serial_plat);
+
+	return 0;
 }
 
 console_initcall(sdp3430_console_init);

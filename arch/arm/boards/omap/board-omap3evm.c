@@ -218,18 +218,6 @@ static struct NS16550_plat serial_plat = {
 	.reg_write	= omap_uart_write,
 };
 
-static struct device_d omap3evm_serial_device = {
-	.id		= -1,
-	.name		= "serial_ns16550",
-#if defined(CONFIG_OMAP3EVM_UART1)
-	.map_base	= OMAP_UART1_BASE,
-#elif defined(CONFIG_OMAP3EVM_UART3)
-	.map_base	= OMAP_UART3_BASE,
-#endif
-	.size		= 1024,
-	.platform_data	= (void *)&serial_plat,
-};
-
 /**
  * @brief Initialize the serial port to be used as console.
  *
@@ -237,7 +225,15 @@ static struct device_d omap3evm_serial_device = {
  */
 static int omap3evm_init_console(void)
 {
-	return register_device(&omap3evm_serial_device);
+	add_ns16550_device(-1,
+#if defined(CONFIG_OMAP3EVM_UART1)
+			OMAP_UART1_BASE,
+#elif defined(CONFIG_OMAP3EVM_UART3)
+			OMAP_UART3_BASE,
+#endif
+			1024, &serial_plat);
+
+	return 0;
 }
 console_initcall(omap3evm_init_console);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */

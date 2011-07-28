@@ -339,6 +339,8 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 	struct device_d *dev;
 	struct driver_d *drv;
 	struct param_d *param;
+	int i;
+	struct resource *res;
 
 	if (argc == 1) {
 		printf("devices:\n");
@@ -359,9 +361,17 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 			return -1;
 		}
 
-		printf("base  : 0x%08x\nsize  : 0x%08x\ndriver: %s\n\n",
-			dev->map_base, dev->size,
-			dev->driver ? 
+		printf("resources:\n");
+		for (i = 0; i < dev->num_resources; i++) {
+			res = &dev->resource[i];
+			printf("num   : %d\n", i);
+			if (res->name)
+				printf("name  : %s\n", res->name);
+			printf("start : 0x%08x\nsize  : 0x%08x\n",
+			       res->start, res->size);
+		}
+
+		printf("driver: %s\n\n", dev->driver ?
 				dev->driver->name : "none");
 
 		if (dev->driver)

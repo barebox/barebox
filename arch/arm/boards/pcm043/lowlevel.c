@@ -157,7 +157,7 @@ void __bare_init __naked board_init_lowlevel(void)
 	writel(0x00000304, ESDMISC); /* was 0x00000004 */
 
 	/* set timing paramters */
-	writel(0x00255417, ESDCFG0);
+	writel(0x0025541F, ESDCFG0);
 	/* select Precharge-All mode */
 	writel(0x92220000, ESDCTL0);
 	/* Precharge-All */

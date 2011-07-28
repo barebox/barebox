@@ -247,9 +247,9 @@ EXPORT_SYMBOL(dummy_probe);
 
 const char *dev_id(const struct device_d *dev)
 {
-	static char buf[sizeof(unsigned long) * 2];
+	static char buf[MAX_DRIVER_NAME + 16];
 
-	sprintf(buf, FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
+	snprintf(buf, sizeof(buf), FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
 
 	return buf;
 }

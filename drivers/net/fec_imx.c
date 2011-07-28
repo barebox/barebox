@@ -666,7 +666,7 @@ static void fec_remove(struct device_d *dev)
 /**
  * Driver description for registering
  */
-static struct driver_d imx27_driver = {
+static struct driver_d fec_driver = {
         .name   = "fec_imx",
         .probe  = fec_probe,
 	.remove = fec_remove,
@@ -674,7 +674,7 @@ static struct driver_d imx27_driver = {
 
 static int fec_register(void)
 {
-        register_driver(&imx27_driver);
+        register_driver(&fec_driver);
         return 0;
 }
 

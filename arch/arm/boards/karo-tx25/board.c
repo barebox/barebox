@@ -36,6 +36,7 @@
 #include <nand.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
+#include <mach/iim.h>
 #include <linux/err.h>
 #include <mach/devices-imx25.h>
 #include <asm/mmu.h>
@@ -121,6 +122,7 @@ static int tx25_devices_init(void)
 
 	gpio_fec_active();
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))

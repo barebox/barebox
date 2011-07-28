@@ -69,25 +69,12 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-static struct device_d smc911x_dev = {
-	.id		= -1,
-	.name		= "smc911x",
-	.map_base	= IMX_CS5_BASE,
-	.size		= IMX_CS5_RANGE,
-};
-
 static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("mc13892-i2c", 0x08),
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},
-};
-
-static struct device_d i2c_dev = {
-	.id		= -1,
-	.name		= "i2c-imx",
-	.map_base	= IMX_I2C1_BASE,
 };
 
 /*
@@ -183,10 +170,11 @@ static int f3s_devices_init(void)
 	set_silicon_rev(imx_silicon_revision());
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	register_device(&i2c_dev);
+	imx35_add_i2c0(NULL);
 
 	imx35_add_fec(&fec_info);
-	register_device(&smc911x_dev);
+	add_generic_device("smc911x", -1, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
+			IORESOURCE_MEM, NULL);
 
 	imx35_add_mmc0(NULL);
 

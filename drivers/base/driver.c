@@ -263,7 +263,7 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 
 	if (flags & PROT_WRITE)
 		return -EACCES;
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 
@@ -272,7 +272,7 @@ int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 	if (!cdev->dev)
 		return -EINVAL;
 
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 

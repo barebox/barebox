@@ -46,8 +46,15 @@ struct imx_iim_platform_data {
 };
 
 #ifdef CONFIG_IMX_IIM
+int imx_iim_read(unsigned int bank, int offset, void *buf, int count);
 int imx_iim_get_mac(unsigned char *mac);
 #else
+static inline int imx_iim_read(unsigned int bank, int offset, void *buf,
+		int count)
+{
+	return -EINVAL;
+}
+
 static inline int imx_iim_get_mac(unsigned char *mac)
 {
 	return -EINVAL;

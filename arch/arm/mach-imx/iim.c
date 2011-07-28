@@ -22,6 +22,8 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <param.h>
+#include <fcntl.h>
+#include <malloc.h>
 
 #include <asm/io.h>
 
@@ -73,7 +75,7 @@ static int do_fuse_sense(unsigned long reg_base, unsigned int bank,
 	return readb(reg_base + IIM_SDAT);
 }
 
-static ssize_t imx_iim_read(struct cdev *cdev, void *buf, size_t count,
+static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 		ulong offset, ulong flags)
 {
 	ulong size, i;
@@ -168,7 +170,7 @@ out:
 }
 #endif /* CONFIG_IMX_IIM_FUSE_BLOW */
 
-static ssize_t imx_iim_write(struct cdev *cdev, const void *buf, size_t count,
+static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t count,
 		ulong offset, ulong flags)
 {
 	ulong size, i;
@@ -204,8 +206,8 @@ static ssize_t imx_iim_write(struct cdev *cdev, const void *buf, size_t count,
 }
 
 static struct file_operations imx_iim_ops = {
-	.read	= imx_iim_read,
-	.write	= imx_iim_write,
+	.read	= imx_iim_cdev_read,
+	.write	= imx_iim_cdev_write,
 	.lseek	= dev_lseek_default,
 };
 
@@ -296,6 +298,24 @@ static int imx_iim_init(void)
 	return 0;
 }
 coredevice_initcall(imx_iim_init);
+
+int imx_iim_read(unsigned int bank, int offset, void *buf, int count)
+{
+	struct cdev *cdev;
+	char *name = asprintf(DRIVERNAME "_bank%d", bank);
+	int ret;
+
+	cdev = cdev_open(name, O_RDONLY);
+	if (!cdev)
+		return -ENODEV;
+
+	ret = cdev_read(cdev, buf, count, offset, 0);
+
+	cdev_close(cdev);
+	free(name);
+
+	return ret;
+}
 
 int imx_iim_get_mac(unsigned char *mac)
 {

@@ -55,6 +55,12 @@ int eth_send(void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
 void eth_halt(void);			/* stop SCC			*/
 
+/* associate a MAC address to a ethernet device. Should be called by
+ * board code for boards which store their MAC address at some unusual
+ * place.
+ */
+void eth_register_ethaddr(int ethid, const char *ethaddr);
+
 /*
  *	Ethernet header
  */

@@ -601,7 +601,7 @@ static int fec_probe(struct device_d *dev)
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
         struct eth_device *edev;
 	struct fec_priv *fec;
-	uint32_t base;
+	void *base;
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
@@ -629,18 +629,14 @@ static int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = (uint32_t)dma_alloc_coherent((2 + FEC_RBD_NUM) *
-			sizeof(struct buffer_descriptor) + 2 * DB_ALIGNMENT);
-	base += (DB_ALIGNMENT - 1);
-	base &= ~(DB_ALIGNMENT - 1);
-	fec->rbd_base = (struct buffer_descriptor __force __iomem *)base;
-	base += FEC_RBD_NUM * sizeof (struct buffer_descriptor) +
-		(DB_ALIGNMENT - 1);
-	base &= ~(DB_ALIGNMENT - 1);
-	fec->tbd_base = (struct buffer_descriptor __force __iomem *)base;
+	base = dma_alloc_coherent((2 + FEC_RBD_NUM) *
+			sizeof(struct buffer_descriptor));
+	fec->rbd_base = base;
+	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
+	fec->tbd_base = base;
 
-	writel((uint32_t)virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
-	writel((uint32_t)virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
+	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
 
 	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 

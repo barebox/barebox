@@ -42,25 +42,6 @@ static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2440_TACLS, A9M2440_TWRPH0, A9M2440_TWRPH1)
 };
 
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "s3c24x0_nand",
-	.map_base = S3C24X0_NAND_BASE,
-	.platform_data	= &nand_info,
-};
-
-/*
- * cs8900 network controller onboard
- * Connected to CS line 5 + A24 and interrupt line EINT9,
- * data width is 16 bit
- */
-static struct device_d network_dev = {
-	.id	  = -1,
-	.name     = "cs8900",
-	.map_base = CS5_BASE + (1 << 24) + 0x300,
-	.size     = 16,
-};
-
 static int a9m2440_check_for_ram(uint32_t addr)
 {
 	uint32_t tmp1, tmp2;
@@ -145,10 +126,17 @@ static int a9m2440_devices_init(void)
 	writel(reg, MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	register_device(&nand_dev);
+	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
+			   IORESOURCE_MEM, &nand_info);
 	sdram_dev = add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size(),
 				   IORESOURCE_MEM_WRITEABLE);
-	register_device(&network_dev);
+	/*
+	 * cs8900 network controller onboard
+	 * Connected to CS line 5 + A24 and interrupt line EINT9,
+	 * data width is 16 bit
+	 */
+	add_generic_device("cs8900", -1, NULL, CS5_BASE + (1 << 24) + 0x300, 16,
+			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -174,16 +162,10 @@ void __bare_init nand_boot(void)
 }
 #endif
 
-static struct device_d a9m2440_serial_device = {
-	.id	  = -1,
-	.name     = "s3c24x0_serial",
-	.map_base = UART1_BASE,
-	.size     = UART1_SIZE,
-};
-
 static int a9m2440_console_init(void)
 {
-	register_device(&a9m2440_serial_device);
+	add_generic_device("s3c24x0_serial", -1, NULL, UART1_BASE, UART1_SIZE,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

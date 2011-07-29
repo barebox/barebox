@@ -4,7 +4,7 @@
 struct hf_platform_data {
 	int fd;
 	size_t size;
-	unsigned long map_base;
+	unsigned long base;
 	char *filename;
 	char *name;
 };

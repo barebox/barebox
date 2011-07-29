@@ -236,10 +236,10 @@ static int add_image(char *str, char *name)
 	hf->name = strdup(name);
 
 	if (map) {
-		hf->map_base = (unsigned long)mmap(NULL, hf->size,
+		hf->base = (unsigned long)mmap(NULL, hf->size,
 				PROT_READ | (readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
-		if ((void *)hf->map_base == MAP_FAILED)
+		if ((void *)hf->base == MAP_FAILED)
 			printf("warning: mmapping %s failed\n", file);
 	}
 

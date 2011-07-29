@@ -91,8 +91,6 @@ static void babbage_mmu_init(void)
 }
 #endif
 
-//extern int babbage_power_init(void);
-
 #define BABBAGE_ECSPI1_CS0	(3 * 32 + 24)
 static int spi_0_cs[] = {BABBAGE_ECSPI1_CS0};
 

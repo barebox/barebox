@@ -27,7 +27,7 @@
 #include <linux/ioport.h>
 
 #define MAX_DRIVER_NAME		32
-#define FORMAT_DRIVER_MANE_ID	"%s%d"
+#define FORMAT_DRIVER_NAME_ID	"%s%d"
 
 #include <param.h>
 

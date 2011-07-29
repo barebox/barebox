@@ -32,14 +32,6 @@ static struct device_d mac_dev = {
 	.platform_data = &phy_address,
 };
 
-/*
-static struct device_d epcs_flash_device = {
-	.id       = -1,
-	.name     = "epcs_flash",
-	.map_base = NIOS_SOPC_EPCS_BASE,
-};
-*/
-
 static int generic_devices_init(void)
 {
 	add_cfi_flash_device(-1, NIOS_SOPC_FLASH_BASE, NIOS_SOPC_FLASH_SIZE, 0);

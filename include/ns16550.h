@@ -50,6 +50,8 @@ struct NS16550_plat {
 	 */
 	void (*reg_write) (unsigned int val, unsigned long base,
 				    unsigned char reg_offset);
+
+	int shift;
 };
 
 #endif				/* __NS16650_PLATFORM_H_ */

@@ -213,8 +213,6 @@ void board_init(void)
 
 static struct NS16550_plat serial_plat = {
 	.clock		= 48000000,      /* 48MHz (APLL96/2) */
-	.reg_read	= omap_uart_read,
-	.reg_write	= omap_uart_write,
 };
 
 /**
@@ -230,7 +228,7 @@ static int omap3evm_init_console(void)
 #elif defined(CONFIG_OMAP3EVM_UART3)
 			OMAP_UART3_BASE,
 #endif
-			1024, &serial_plat);
+			1024, IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }

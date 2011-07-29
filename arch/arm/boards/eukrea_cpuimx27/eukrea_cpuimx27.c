@@ -66,27 +66,9 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-unsigned int quad_uart_read(unsigned long base, unsigned char reg_idx)
-{
-	unsigned int reg_addr = (unsigned int)base;
-	reg_addr += reg_idx << 1;
-	return 0xff & readw(reg_addr);
-}
-EXPORT_SYMBOL(quad_uart_read);
-
-void quad_uart_write(unsigned int val, unsigned long base,
-		     unsigned char reg_idx)
-{
-	unsigned int reg_addr = (unsigned int)base;
-	reg_addr += reg_idx << 1;
-	writew(0xff & val, reg_addr);
-}
-EXPORT_SYMBOL(quad_uart_write);
-
 static struct NS16550_plat quad_uart_serial_plat = {
 	.clock = 14745600,
-	.reg_read = quad_uart_read,
-	.reg_write = quad_uart_write,
+	.shift = 1,
 };
 
 #ifdef CONFIG_EUKREA_CPUIMX27_QUART1
@@ -98,7 +80,6 @@ static struct NS16550_plat quad_uart_serial_plat = {
 #elif defined CONFIG_EUKREA_CPUIMX27_QUART4
 #define QUART_OFFSET 0x1000000
 #endif
-
 #endif
 
 static struct i2c_board_info i2c_devices[] = {
@@ -271,7 +252,7 @@ static int eukrea_cpuimx27_console_init(void)
 	CS3A = 0x00D20000;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	add_ns16550_device(-1, IMX_CS3_BASE + QUART_OFFSET, 0xf,
-			&quad_uart_serial_plat);
+			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
 #endif
 	return 0;
 }

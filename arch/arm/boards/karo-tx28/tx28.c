@@ -70,9 +70,11 @@ static const uint32_t tx28_pad_setup[] = {
 
 extern void base_board_init(void);
 
-#ifdef CONFIG_MMU
-static int tx28_mmu_init(void)
+static int tx28_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x40000000, 0x40000000, 128, PMD_SECT_DEF_CACHED);
@@ -81,23 +83,20 @@ static int tx28_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-
+#endif
 	return 0;
 }
-postcore_initcall(tx28_mmu_init);
-#endif
+mem_initcall(tx28_mem_init);
 
 static int tx28_devices_init(void)
 {
 	int i;
-	struct device_d *sdram_dev;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(tx28_pad_setup); i++)
 		imx_gpio_mode(tx28_pad_setup[i]);
 
-	sdram_dev = arm_add_mem_device("ram0", IMX_MEMORY_BASE, 128 * 1024 * 1024);
-	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
+	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_TX28);
 
 	base_board_init();

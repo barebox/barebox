@@ -146,9 +146,14 @@ static void pcm037_usb_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pcm037_mmu_init(void)
+static int pcm037_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024);
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
+#endif
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
@@ -161,17 +166,13 @@ static void pcm037_mmu_init(void)
 #ifdef CONFIG_CACHE_L2X0
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
 #endif
-}
-#else
-static void pcm037_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(pcm037_mem_init);
 
 static int imx31_devices_init(void)
 {
-	pcm037_mmu_init();
-
 	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
 	__REG(CSCR_L(0)) = 0x10000d03;
 	__REG(CSCR_A(0)) = 0x00720900;
@@ -219,10 +220,6 @@ static int imx31_devices_init(void)
 	add_generic_device("smc911x", -1, NULL,	IMX_CS1_BASE, IMX_CS1_RANGE,
 			IORESOURCE_MEM, NULL);
 
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024);
-#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
-#endif
 #ifdef CONFIG_USB
 	pcm037_usb_init();
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);

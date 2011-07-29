@@ -88,9 +88,11 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx27_mmu_init(void)
+static int eukrea_cpuimx27_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
@@ -99,12 +101,10 @@ static void eukrea_cpuimx27_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-}
-#else
-static void eukrea_cpuimx27_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(eukrea_cpuimx27_mem_init);
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
 static struct imx_fb_videomode imxfb_mode = {
@@ -192,8 +192,6 @@ static int eukrea_cpuimx27_devices_init(void)
 #endif
 	};
 
-	eukrea_cpuimx27_mmu_init();
-
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x00008F03;
 	CS0L = 0xA0330D01;
@@ -208,7 +206,6 @@ static int eukrea_cpuimx27_devices_init(void)
 	add_cfi_flash_device(-1, 0xC2000000, 32 * 1024 * 1024, 0);
 #endif
 	imx27_add_nand(&nand_info);
-	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
 
 	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));

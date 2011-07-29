@@ -54,9 +54,13 @@ static int pcm049_console_init(void)
 }
 console_initcall(pcm049_console_init);
 
-#ifdef CONFIG_MMU
-static int pcm049_mmu_init(void)
+static int pcm049_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0x80000000, SZ_512M);
+
+	add_mem_device("sram0", 0x40300000, 48 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
@@ -64,11 +68,10 @@ static int pcm049_mmu_init(void)
 	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
 
 	mmu_enable();
-
+#endif
 	return 0;
 }
-device_initcall(pcm049_mmu_init);
-#endif
+mem_initcall(pcm049_mem_init);
 
 static struct gpmc_config net_cfg = {
 	.cfg = {
@@ -93,9 +96,6 @@ static void pcm049_network_init(void)
 
 static int pcm049_devices_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, SZ_512M);
-	add_mem_device("ram0", 0x40300000, 48 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
 	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 

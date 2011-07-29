@@ -73,9 +73,12 @@ static struct pad_desc loco_pads[] = {
 	MX53_PAD_EIM_DA13__GPIO3_13,
 };
 
-#ifdef CONFIG_MMU
-static void loco_mmu_init(void)
+static int loco_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
+	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x70000000, 0x70000000, 512, PMD_SECT_DEF_CACHED);
@@ -86,12 +89,10 @@ static void loco_mmu_init(void)
 	setup_dma_coherent(0x20000000);
 
 	mmu_enable();
-}
-#else
-static void loco_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(loco_mem_init);
 
 #define LOCO_FEC_PHY_RST		IMX_GPIO_NR(7, 6)
 
@@ -104,11 +105,6 @@ static void loco_fec_reset(void)
 
 static int loco_devices_init(void)
 {
-	loco_mmu_init();
-
-	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
-
 	imx51_iim_register_fec_ethaddr();
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(NULL);

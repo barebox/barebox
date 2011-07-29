@@ -82,9 +82,16 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
-static int pm9g45_devices_init(void)
+static int pm9g45_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(pm9g45_mem_init);
+
+static int pm9g45_devices_init(void)
+{
 	pm_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
 

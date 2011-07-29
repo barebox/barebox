@@ -52,9 +52,14 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt = 1,
 };
 
-#ifdef CONFIG_MMU
-static int tx25_mmu_init(void)
+static int tx25_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024);
+	add_mem_device("ram0", 0x78000000, 128 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 32, PMD_SECT_DEF_CACHED);
@@ -64,17 +69,11 @@ static int tx25_mmu_init(void)
 
 	setup_dma_coherent(0x02000000);
 
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
 	mmu_enable();
-
+#endif
 	return 0;
 }
-postcore_initcall(tx25_mmu_init);
-#endif
+mem_initcall(tx25_mem_init);
 
 static struct pad_desc karo_tx25_padsd_fec[] = {
 	MX25_PAD_D11__GPIO_4_9,		/* FEC PHY power on pin */
@@ -133,11 +132,6 @@ static int tx25_devices_init(void)
 
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024);
-	arm_add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024);
-	add_mem_device("ram0", 0x78000000, 128 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_TX25);

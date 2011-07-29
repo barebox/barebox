@@ -42,6 +42,14 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr	= 4,
 };
 
+static int mmccpu_mem_init(void)
+{
+	at91_add_device_sdram(128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(mmccpu_mem_init);
+
 static int mmccpu_devices_init(void)
 {
 	/*
@@ -52,7 +60,6 @@ static int mmccpu_devices_init(void)
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
 	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
-	at91_add_device_sdram(128 * 1024 * 1024);
 	at91_add_device_eth(&macb_pdata);
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 

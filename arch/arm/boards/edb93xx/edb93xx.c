@@ -34,19 +34,8 @@
 
 #define DEVCFG_U1EN (1 << 18)
 
-static int ep93xx_devices_init(void)
+static int ep93xx_mem_init(void)
 {
-	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
-
-	/*
-	 * Create partitions that should be
-	 * not touched by any regular user
-	 */
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
-
-	protect_file("/dev/env0", 1);
-
 	arm_add_mem_device("ram0", CONFIG_EP93XX_SDRAM_BANK0_BASE,
 				   CONFIG_EP93XX_SDRAM_BANK0_SIZE);
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
@@ -61,6 +50,23 @@ static int ep93xx_devices_init(void)
 	arm_add_mem_device("ram3", CONFIG_EP93XX_SDRAM_BANK3_BASE,
 				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
 #endif
+
+	return 0;
+}
+mem_initcall(ep93xx_mem_init);
+
+static int ep93xx_devices_init(void)
+{
+	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
+
+	/*
+	 * Create partitions that should be
+	 * not touched by any regular user
+	 */
+	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+
+	protect_file("/dev/env0", 1);
 
 	/*
 	 * Up to 32MiB NOR type flash, connected to

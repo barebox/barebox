@@ -156,9 +156,11 @@ static struct fsl_usb2_platform_data usb_pdata = {
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
 
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx25_mmu_init(void)
+static int eukrea_cpuimx25_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
@@ -167,12 +169,10 @@ static void eukrea_cpuimx25_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-}
-#else
-static void eukrea_cpuimx25_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(eukrea_cpuimx25_mem_init);
 
 static struct pad_desc eukrea_cpuimx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,
@@ -230,8 +230,6 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 
 static int eukrea_cpuimx25_devices_init(void)
 {
-	eukrea_cpuimx25_mmu_init();
-
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
 		ARRAY_SIZE(eukrea_cpuimx25_pads));
 
@@ -250,8 +248,6 @@ static int eukrea_cpuimx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000,
 		PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024);
 
 	/* enable LCD */
 	gpio_direction_output(26, 1);

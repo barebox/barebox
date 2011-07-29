@@ -126,9 +126,16 @@ static void __init pm_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9000 */
 
-static int pm9261_devices_init(void)
+static int pm9261_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(pm9261_mem_init);
+
+static int pm9261_devices_init(void)
+{
 	pm_add_device_nand();
 	pm_add_device_dm9000();
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 4 * 1024 * 1024, 0);

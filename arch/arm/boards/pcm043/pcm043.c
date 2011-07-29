@@ -99,9 +99,11 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.bpp		= 16,
 };
 
-#ifdef CONFIG_MMU
-static int pcm043_mmu_init(void)
+static int pcm043_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
@@ -114,10 +116,11 @@ static int pcm043_mmu_init(void)
 #ifdef CONFIG_CACHE_L2X0
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
 #endif
+#endif
 	return 0;
 }
-postcore_initcall(pcm043_mmu_init);
-#endif
+mem_initcall(pcm043_mem_init);
+
 
 struct gpio_led led0 = {
 	.gpio = 1 * 32 + 6,
@@ -170,7 +173,6 @@ static int imx35_devices_init(void)
 	}
 
 
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 
 	armlinux_set_bootparams((void *)0x80000100);
@@ -216,6 +218,7 @@ static int imx35_console_init(void)
 	mxc_iomux_v3_setup_multiple_pads(pcm043_pads, ARRAY_SIZE(pcm043_pads));
 
 	imx35_add_uart0();
+
 	return 0;
 }
 

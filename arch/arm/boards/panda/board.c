@@ -44,20 +44,21 @@ static int panda_console_init(void)
 }
 console_initcall(panda_console_init);
 
-#ifdef CONFIG_MMU
-static int panda_mmu_init(void)
+static int panda_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
 	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
 
 	mmu_enable();
-
+#endif
 	return 0;
 }
-device_initcall(panda_mmu_init);
-#endif
+mem_initcall(panda_mem_init);
 
 #ifdef CONFIG_USB_EHCI
 static struct ehci_platform_data ehci_pdata = {
@@ -139,7 +140,6 @@ static int panda_devices_init(void)
 		sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);
 	}
 
-	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
 	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();

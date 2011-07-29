@@ -73,9 +73,11 @@ static struct pad_desc f3s_pads[] = {
 	IOMUX_PAD(0x60C, 0x21C, 3, 0x0, 0, 0x85), /* FIXME: needed? */
 };
 
-#ifdef CONFIG_MMU
-static void babbage_mmu_init(void)
+static int babbage_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x90000000, 0x90000000, 512, PMD_SECT_DEF_CACHED);
@@ -84,12 +86,10 @@ static void babbage_mmu_init(void)
 	setup_dma_coherent(0x20000000);
 
 	mmu_enable();
-}
-#else
-static void babbage_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(babbage_mem_init);
 
 #define BABBAGE_ECSPI1_CS0	(3 * 32 + 24)
 static int spi_0_cs[] = {BABBAGE_ECSPI1_CS0};
@@ -227,10 +227,6 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
-	babbage_mmu_init();
-
-	arm_add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024);
-
 	imx51_iim_register_fec_ethaddr();
 	imx51_add_fec(&fec_info);
 	imx51_add_mmc0(NULL);

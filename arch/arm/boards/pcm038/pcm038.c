@@ -129,9 +129,13 @@ static void pcm038_usbh_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pcm038_mmu_init(void)
+static int pcm038_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
+
+	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
+				   IORESOURCE_MEM_WRITEABLE);
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
@@ -140,12 +144,10 @@ static void pcm038_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-}
-#else
-static void pcm038_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(pcm038_mem_init);
 
 static int pcm038_devices_init(void)
 {
@@ -223,8 +225,6 @@ static int pcm038_devices_init(void)
 		PD26_AF_USBH2_DATA5,
 	};
 
-	pcm038_mmu_init();
-
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x0000CC03;
 	CS0L = 0xa0330D01;
@@ -249,14 +249,12 @@ static int pcm038_devices_init(void)
 
 	gpio_direction_output(GPIO_PORTD | 28, 0);
 	gpio_set_value(GPIO_PORTD | 28, 0);
+
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
-	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
-				   IORESOURCE_MEM_WRITEABLE);
 	imx27_add_fb(&pcm038_fb_data);
 
 #ifdef CONFIG_USB

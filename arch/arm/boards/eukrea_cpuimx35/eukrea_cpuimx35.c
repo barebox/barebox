@@ -126,9 +126,11 @@ static struct fsl_usb2_platform_data usb_pdata = {
 };
 #endif
 
-#ifdef CONFIG_MMU
-static int eukrea_cpuimx35_mmu_init(void)
+static int eukrea_cpuimx35_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
@@ -141,10 +143,10 @@ static int eukrea_cpuimx35_mmu_init(void)
 #ifdef CONFIG_CACHE_L2X0
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
 #endif
+#endif
 	return 0;
 }
-postcore_initcall(eukrea_cpuimx35_mmu_init);
-#endif
+mem_initcall(eukrea_cpuimx35_mem_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
@@ -156,8 +158,6 @@ static int eukrea_cpuimx35_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	imx35_add_fec(&fec_info);
-
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 
 	imx35_add_i2c0(NULL);

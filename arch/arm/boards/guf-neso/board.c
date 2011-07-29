@@ -136,9 +136,11 @@ static void neso_usbh_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void neso_mmu_init(void)
+static int neso_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
@@ -147,12 +149,10 @@ static void neso_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-}
-#else
-static void neso_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(neso_mem_init);
 
 static int neso_devices_init(void)
 {
@@ -280,15 +280,11 @@ static int neso_devices_init(void)
 	gpio_direction_output(OTG_PHY_CS_GPIO, 1);
 	gpio_direction_output(USBH2_PHY_CS_GPIO, 1);
 
-
-	neso_mmu_init();
-
 	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	imx27_add_fb(&neso_fb_data);
 
 #ifdef CONFIG_USB

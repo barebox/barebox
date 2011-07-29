@@ -76,10 +76,16 @@ static struct device_d nhk8815_nand_device = {
 	.platform_data	= &nhk8815_nand_data,
 };
 
-static int nhk8815_devices_init(void)
+static int nhk8815_mem_init(void)
 {
 	st8815_add_device_sdram(64 * 1024 *1024);
 
+	return 0;
+}
+mem_initcall(nhk8815_mem_init);
+
+static int nhk8815_devices_init(void)
+{
 	writel(0xC37800F0, NOMADIK_GPIO1_BASE + 0x20);
 	writel(0x00000000, NOMADIK_GPIO1_BASE + 0x24);
 	writel(0x00000000, NOMADIK_GPIO1_BASE + 0x28);

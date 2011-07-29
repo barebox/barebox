@@ -192,6 +192,22 @@ static int imx25_3ds_fec_init(void)
 }
 late_initcall(imx25_3ds_fec_init);
 
+static int imx25_mem_init(void)
+{
+#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
+#define SDRAM_SIZE	64 * 1024 * 1024
+#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
+#define SDRAM_SIZE	128 * 1024 * 1024
+#else
+#error "Unsupported SDRAM type"
+#endif
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM_SIZE);
+	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
+
+	return 0;
+}
+mem_initcall(imx25_mem_init);
+
 static int imx25_devices_init(void)
 {
 #ifdef CONFIG_USB
@@ -215,16 +231,6 @@ static int imx25_devices_init(void)
 
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
-#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-#define SDRAM_SIZE	64 * 1024 * 1024
-#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-#define SDRAM_SIZE	128 * 1024 * 1024
-#else
-#error "Unsupported SDRAM type"
-#endif
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM_SIZE);
-	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx25_add_i2c0(NULL);

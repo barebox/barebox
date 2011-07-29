@@ -132,10 +132,17 @@ static void __init ek_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9000 */
 
+static int at91sam9261ek_mem_init(void)
+{
+	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(at91sam9261ek_mem_init);
+
 static int at91sam9261ek_devices_init(void)
 {
 
-	at91_add_device_sdram(64 * 1024 * 1024);
 	ek_add_device_nand();
 	ek_add_device_dm9000();
 

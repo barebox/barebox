@@ -69,9 +69,11 @@ static void pca100_usb_register(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pca100_mmu_init(void)
+static int pca100_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
@@ -80,12 +82,10 @@ static void pca100_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-}
-#else
-static void pca100_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(pca100_mem_init);
 
 static void pca100_usb_init(void)
 {
@@ -197,7 +197,6 @@ static int pca100_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	imx27_add_fec(&fec_info);
 	imx27_add_mmc0(NULL);
 
@@ -224,7 +223,6 @@ device_initcall(pca100_devices_init);
 
 static int pca100_console_init(void)
 {
-	pca100_mmu_init();
 	imx27_add_uart0();
 	return 0;
 }

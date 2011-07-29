@@ -278,9 +278,16 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
-static int beagle_devices_init(void)
+static int beagle_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(beagle_mem_init);
+
+static int beagle_devices_init(void)
+{
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	add_generic_device("i2c-omap", -1, NULL, 0x4809C000, SZ_4K,
 			   IORESOURCE_MEM, NULL);

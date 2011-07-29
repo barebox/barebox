@@ -40,11 +40,10 @@ static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2410_TACLS, A9M2410_TWRPH0, A9M2410_TWRPH1)
 };
 
-static int a9m2410_devices_init(void)
+static int a9m2410_mem_init(void)
 {
-	uint32_t reg;
 	resource_size_t size = 0;
-	struct device_d *sdram_dev;
+	uint32_t reg;
 
 	/*
 	 * detect the current memory size
@@ -101,6 +100,16 @@ static int a9m2410_devices_init(void)
 	 */
 	writel(0x40140, MISCCR);
 
+	arm_add_mem_device("ram0", CS6_BASE, size);
+
+	return 0;
+}
+mem_initcall(a9m2410_mem_init);
+
+static int a9m2410_devices_init(void)
+{
+	uint32_t reg;
+
 	/* ----------- configure the access to the outer space ---------- */
 	reg = readl(BWSCON);
 
@@ -124,7 +133,6 @@ static int a9m2410_devices_init(void)
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
-	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, size);
 	/*
 	 * SMSC 91C111 network controller on the baseboard
 	 * connected to CS line 1 and interrupt line
@@ -142,7 +150,7 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
+	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;

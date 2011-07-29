@@ -141,13 +141,20 @@ static void at91sam9260ek_phy_reset(void)
 				     AT91_RSTC_URSTEN);
 }
 
+static int at91sam9260ek_mem_init(void)
+{
+	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(at91sam9260ek_mem_init);
+
 static int at91sam9260ek_devices_init(void)
 {
 	ek_add_device_nand();
 	at91sam9260ek_phy_reset();
 	at91_add_device_eth(&macb_pdata);
 
-	at91_add_device_sdram(64 * 1024 * 1024);
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	ek_set_board_type();
 

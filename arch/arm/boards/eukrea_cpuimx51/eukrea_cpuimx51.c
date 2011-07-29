@@ -93,9 +93,11 @@ static struct pad_desc eukrea_cpuimx51_pads[] = {
 #define GPIO_LAN8700_RESET	(1 * 32 + 31)
 #define GPIO_LCD_BL		(2 * 32 + 4)
 
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx51_mmu_init(void)
+static int eukrea_cpuimx51_mem_init(void)
 {
+	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x90000000, 0x90000000, 256, PMD_SECT_DEF_CACHED);
@@ -110,18 +112,13 @@ static void eukrea_cpuimx51_mmu_init(void)
 #endif
 
 	mmu_enable();
-}
-#else
-static void eukrea_cpuimx51_mmu_init(void)
-{
-}
 #endif
+	return 0;
+}
+mem_initcall(eukrea_cpuimx51_mem_init);
 
 static int eukrea_cpuimx51_devices_init(void)
 {
-	eukrea_cpuimx51_mmu_init();
-
-	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
 	imx51_add_fec(&fec_info);
 #ifdef CONFIG_MCI_IMX_ESDHC
 	imx51_add_mmc0(NULL);

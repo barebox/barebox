@@ -40,10 +40,16 @@ static int vpb_console_init(void)
 }
 console_initcall(vpb_console_init);
 
-static int vpb_devices_init(void)
+static int vpb_mem_init(void)
 {
 	versatile_add_sdram(64 * 1024 *1024);
 
+	return 0;
+}
+mem_initcall(vpb_mem_init);
+
+static int vpb_devices_init(void)
+{
 	add_cfi_flash_device(-1, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");

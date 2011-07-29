@@ -263,11 +263,18 @@ static const unsigned pin_usage[] = {
 	GPH7_RXD2,
 };
 
+static int mini2440_mem_init(void)
+{
+	arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
+
+	return 0;
+}
+mem_initcall(mini2440_mem_init);
+
 static int mini2440_devices_init(void)
 {
 	uint32_t reg;
 	int i;
-	struct device_d *sdram_dev;
 
 	/* ----------- configure the access to the outer space ---------- */
 	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
@@ -290,8 +297,6 @@ static int mini2440_devices_init(void)
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
 
-	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
-
 	add_dm9000_device(0, CS4_BASE + 0x300, CS4_BASE + 0x304,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 #ifdef CONFIG_NAND
@@ -308,7 +313,7 @@ static int mini2440_devices_init(void)
 			   IORESOURCE_MEM, &mci_data);
 	add_generic_device("s3c_fb", 0, NULL, S3C2410_LCD_BASE, 0,
 			   IORESOURCE_MEM, &s3c24x0_fb_data);
-	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
+	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
 	return 0;

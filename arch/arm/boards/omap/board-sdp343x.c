@@ -624,23 +624,22 @@ static int sdp3430_console_init(void)
 console_initcall(sdp3430_console_init);
 #endif				/* CONFIG_DRIVER_SERIAL_NS16550 */
 
-/*------------------------- FLASH Devices -----------------------------------*/
-static int sdp3430_flash_init(void)
+static int sdp3430_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(sdp3430_mem_init);
+
+static int sdp3430_devices_init(void)
 {
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
+
 	return 0;
-}
-
-/*-----------------------Generic Devices Initialization ---------------------*/
-
-static int sdp3430_devices_init(void)
-{
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
-
-	return sdp3430_flash_init();
 }
 
 device_initcall(sdp3430_devices_init);

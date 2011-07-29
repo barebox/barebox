@@ -72,11 +72,8 @@ static void a9m2440_disable_second_sdram_bank(void)
 	writel(readl(MISCCR) | (1 << 18), MISCCR); /* disable clock */
 }
 
-static int a9m2440_devices_init(void)
+static int a9m2440_mem_init(void)
 {
-	uint32_t reg;
-	struct device_d *sdram_dev;
-
 	/*
 	 * The special SDRAM setup code for this machine will always enable
 	 * both SDRAM banks. But the second SDRAM device may not exists!
@@ -106,6 +103,16 @@ static int a9m2440_devices_init(void)
 		break;
 	}
 
+	arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
+
+	return 0;
+}
+mem_initcall(a9m2440_mem_init);
+
+static int a9m2440_devices_init(void)
+{
+	uint32_t reg;
+
 	/* ----------- configure the access to the outer space ---------- */
 	reg = readl(BWSCON);
 
@@ -128,7 +135,6 @@ static int a9m2440_devices_init(void)
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
-	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
 	/*
 	 * cs8900 network controller onboard
 	 * Connected to CS line 5 + A24 and interrupt line EINT9,
@@ -145,7 +151,7 @@ static int a9m2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
+	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2440);
 
 	return 0;

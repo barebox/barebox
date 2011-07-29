@@ -50,6 +50,14 @@ struct gpio_led leds[] = {
 	},
 };
 
+static int scb9328_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(scb9328_mem_init);
+
 static int scb9328_devices_init(void)
 {
 	int i;
@@ -81,7 +89,6 @@ static int scb9328_devices_init(void)
 	CS5L = 0x00000D03;
 
 	add_cfi_flash_device(-1, 0x10000000, 16 * 1024 * 1024, 0);
-	arm_add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024);
 	add_dm9000_device(-1, 0x16000000, 0x16000004,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 

@@ -96,9 +96,11 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.enable		= cupid_fb_enable,
 };
 
-#ifdef CONFIG_MMU
-static int cupid_mmu_init(void)
+static int cupid_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
@@ -111,10 +113,10 @@ static int cupid_mmu_init(void)
 #ifdef CONFIG_CACHE_L2X0
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
 #endif
+#endif
 	return 0;
 }
-postcore_initcall(cupid_mmu_init);
-#endif
+mem_initcall(cupid_mem_init);
 
 static int cupid_devices_init(void)
 {
@@ -138,7 +140,6 @@ static int cupid_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 	imx35_add_mmc0(NULL);
 

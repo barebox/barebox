@@ -261,9 +261,11 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
 
-#ifdef CONFIG_MMU
-static int falconwing_mmu_init(void)
+static int falconwing_mem_init(void)
 {
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
+
+#ifdef CONFIG_MMU
 	mmu_init();
 
 	arm_create_section(0x40000000, 0x40000000, 64, PMD_SECT_DEF_CACHED);
@@ -272,11 +274,10 @@ static int falconwing_mmu_init(void)
 	setup_dma_coherent(0x10000000);
 
 	mmu_enable();
-
+#endif
 	return 0;
 }
-postcore_initcall(falconwing_mmu_init);
-#endif
+mem_initcall(falconwing_mem_init);
 
 /**
  * Try to register an environment storage on the attached MCI card
@@ -333,13 +334,11 @@ static void falconwing_init_usb(void)
 static int falconwing_devices_init(void)
 {
 	int i, rc;
-	struct device_d *sdram_dev;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
 
-	sdram_dev = arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
@@ -350,7 +349,7 @@ static int falconwing_devices_init(void)
 
 	falconwing_init_usb();
 
-	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
+	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
 	rc = register_persistant_environment();

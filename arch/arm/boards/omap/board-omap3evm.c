@@ -235,10 +235,16 @@ static int omap3evm_init_console(void)
 console_initcall(omap3evm_init_console);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
-static int omap3evm_init_devices(void)
+static int omap3evm_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
 
+	return 0;
+}
+mem_initcall(omap3evm_mem_init);
+
+static int omap3evm_init_devices(void)
+{
 #ifdef CONFIG_GPMC
 	/*
 	 * WP is made high and WAIT1 active Low

@@ -39,18 +39,6 @@
 #include <mach/imx-nand.h>
 #include <mach/devices-imx31.h>
 
-/*
- * SMSC 9217 network controller
- * connected to CS line 1 and interrupt line
- * GPIO3, data width is 16 bit
- */
-static struct device_d network_dev = {
-	.id	  = -1,
-	.name     = "smc911x",
-	.map_base = IMX_CS1_BASE,
-	.size     = IMX_CS1_RANGE,	/* area size */
-};
-
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define SDRAM0	128
 #elif defined CONFIG_PCM037_SDRAM_BANK0_256MB
@@ -238,9 +226,16 @@ static int imx31_devices_init(void)
 	add_mem_device("sram0", IMX_CS4_BASE, IMX_CS4_RANGE, /* area size */
 				   IORESOURCE_MEM_WRITEABLE);
 	imx31_add_nand(&nand_info);
-	register_device(&network_dev);
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS1, SDRAM0 * 1024 * 1024,
+	/*
+	 * SMSC 9217 network controller
+	 * connected to CS line 1 and interrupt line
+	 * GPIO3, data width is 16 bit
+	 */
+	add_generic_device("smc911x", -1, NULL,	IMX_CS1_BASE, IMX_CS1_RANGE,
+			IORESOURCE_MEM, NULL);
+
+	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE

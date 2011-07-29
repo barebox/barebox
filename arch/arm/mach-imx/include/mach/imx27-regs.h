@@ -29,6 +29,7 @@
 #define IMX_FB_BASE                (0x21000 + IMX_IO_BASE)
 #define IMX_PLL_BASE               (0x27000 + IMX_IO_BASE)
 #define IMX_SYSTEM_CTL_BASE        (0x27800 + IMX_IO_BASE)
+#define IMX_IIM_BASE               (0x28000 + IMX_IO_BASE)
 #define IMX_OTG_BASE               (0x24000 + IMX_IO_BASE)
 #define IMX_FEC_BASE               (0x2b000 + IMX_IO_BASE)
 

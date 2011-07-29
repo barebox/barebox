@@ -83,19 +83,12 @@ static struct NS16550_plat serial_plat = {
        .reg_write = x86_uart_write,
 };
 
-/* we are expecting always one serial interface */
-static struct device_d generic_pc_serial_device = {
-       .id = -1,
-       .name = "serial_ns16550",
-       .map_base = 0x3f8,
-       .size = 8,
-       .platform_data = (void *)&serial_plat,
-};
-
 static int pc_console_init(void)
 {
-       /* Register the serial port */
-       return register_device(&generic_pc_serial_device);
+	/* Register the serial port */
+	add_ns16550_device(-1, 0x3f8, 8, &serial_plat);
+
+	return 0;
 }
 console_initcall(pc_console_init);
 

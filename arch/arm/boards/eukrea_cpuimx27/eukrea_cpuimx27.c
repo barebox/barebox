@@ -100,13 +100,6 @@ static struct NS16550_plat quad_uart_serial_plat = {
 #define QUART_OFFSET 0x1000000
 #endif
 
-static struct device_d quad_uart_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = IMX_CS3_BASE + QUART_OFFSET,
-	.size = 0xF,
-	.platform_data = (void *)&quad_uart_serial_plat,
-};
 #endif
 
 static struct i2c_board_info i2c_devices[] = {
@@ -295,7 +288,8 @@ static int eukrea_cpuimx27_console_init(void)
 	CS3L = 0x0D1D0D01;
 	CS3A = 0x00D20000;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-	register_device(&quad_uart_serial_device);
+	add_ns16550_device(-1, IMX_CS3_BASE + QUART_OFFSET, 0xf,
+			&quad_uart_serial_plat);
 #endif
 	return 0;
 }

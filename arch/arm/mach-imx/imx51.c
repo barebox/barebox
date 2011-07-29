@@ -17,6 +17,7 @@
 
 #include <init.h>
 #include <common.h>
+#include <sizes.h>
 #include <asm/io.h>
 #include <mach/imx51-regs.h>
 
@@ -79,3 +80,12 @@ static int imx51_print_silicon_rev(void)
 	return 0;
 }
 device_initcall(imx51_print_silicon_rev);
+
+static int imx51_init(void)
+{
+	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
+			IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+coredevice_initcall(imx51_init);

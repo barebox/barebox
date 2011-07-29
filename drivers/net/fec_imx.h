@@ -144,6 +144,7 @@ struct buffer_descriptor {
  * @brief i.MX27-FEC private structure
  */
 struct fec_priv {
+	struct eth_device edev;
 	void __iomem *regs;
 	xceiver_type xcv_type;			/* transceiver type          */
 	struct buffer_descriptor __iomem *rbd_base;	/* RBD ring                  */

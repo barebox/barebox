@@ -46,13 +46,6 @@ struct imx_nand_platform_data nand_info = {
 	.hw_ecc = 1,
 };
 
-static struct device_d cs8900_dev = {
-	.id	  = -1,
-	.name     = "cs8900",
-	.map_base = IMX_CS1_BASE,
-	// IRQ is connected to UART3_RTS
-};
-
 /* Sharp LQ035Q7DB02 QVGA display */
 static struct imx_fb_videomode imx_fb_modedata = {
         .mode = {
@@ -169,7 +162,8 @@ static int mx21ads_devices_init(void)
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
 	imx21_add_nand(&nand_info);
-	register_device(&cs8900_dev);
+	add_generic_device("cs8900", -1, NULL,	IMX_CS1_BASE, 0x1000,
+			IORESOURCE_MEM, NULL);
 	imx21_add_fb(&imx_fb_data);
 
 	armlinux_set_bootparams((void *)0xc0000100);

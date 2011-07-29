@@ -441,7 +441,7 @@ static int cs8900_probe(struct device_d *dev)
 	debug("cs8900_init()\n");
 
 	priv = (struct cs8900_priv *)xmalloc(sizeof(*priv));
-	priv->regs = (u16 *)dev->map_base;
+	priv->regs = dev_request_mem_region(dev, 0);
 	if (cs8900_check_id(priv)) {
 		free(priv);
 		return -1;

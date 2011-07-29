@@ -28,7 +28,7 @@ void *phys_to_virt(unsigned long phys);
 #else
 static inline void *dma_alloc_coherent(size_t size)
 {
-	return xmalloc(size);
+	return xmemalign(4096, size);
 }
 
 static inline void dma_free_coherent(void *mem)

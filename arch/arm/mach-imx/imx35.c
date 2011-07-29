@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <sizes.h>
 #include <init.h>
 #include <asm/io.h>
 #include <mach/imx-regs.h>
@@ -58,3 +59,12 @@ static int imx35_l2_fix(void)
 	return 0;
 }
 core_initcall(imx35_l2_fix);
+
+static int imx35_init(void)
+{
+	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
+			IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+coredevice_initcall(imx35_init);

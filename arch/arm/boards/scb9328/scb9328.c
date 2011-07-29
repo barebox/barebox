@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <dm9000.h>
 #include <led.h>
+#include <mach/devices-imx1.h>
 
 static struct dm9000_platform_data dm9000_data = {
 	.buswidth = DM9000_WIDTH_16,
@@ -120,20 +121,14 @@ static int scb9328_devices_init(void)
 
 device_initcall(scb9328_devices_init);
 
-static struct device_d scb9328_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int scb9328_console_init(void)
 {
 	/* init gpios for serial port */
 	imx_gpio_mode(PC11_PF_UART1_TXD);
 	imx_gpio_mode(PC12_PF_UART1_RXD);
 
-	register_device(&scb9328_serial_device);
+	imx1_add_uart0();
+
 	return 0;
 }
 

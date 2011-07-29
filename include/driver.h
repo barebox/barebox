@@ -227,6 +227,14 @@ static inline struct device_d *add_cfi_flash_device(int id, resource_size_t star
 				  IORESOURCE_MEM | flags, NULL);
 }
 
+struct NS16550_plat;
+static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
+		resource_size_t size, struct NS16550_plat *pdata)
+{
+	return add_generic_device("serial_ns16550", id, NULL, start, size,
+				  IORESOURCE_MEM, pdata);
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;

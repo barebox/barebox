@@ -16,6 +16,9 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <sizes.h>
+#include <mach/imx-regs.h>
 
 #include "gpio.h"
 
@@ -27,3 +30,11 @@ void *imx_gpio_base[] = {
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
+static int imx31_init(void)
+{
+	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
+			IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+coredevice_initcall(imx31_init);

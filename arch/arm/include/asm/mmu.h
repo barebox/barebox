@@ -60,7 +60,13 @@ static inline void dma_inv_range(unsigned long s, unsigned long e)
 
 #endif
 
+#ifdef CONFIG_CACHE_L2X0
 void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask);
+#else
+static inline void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
+{
+}
+#endif
 
 struct outer_cache_fns {
 	void (*inv_range)(unsigned long, unsigned long);

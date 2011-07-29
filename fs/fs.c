@@ -1043,11 +1043,11 @@ ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong
 	ulong size;
 	struct device_d *dev;
 
-	if (!cdev->dev)
+	if (!cdev->dev || cdev->dev->num_resources < 1)
 		return -1;
 	dev = cdev->dev;
 
-	size = min((ulong)count, dev->size - offset);
+	size = min((ulong)count, dev->resource[0].size - offset);
 	memcpy_sz(buf, dev_get_mem_region(dev, 0) + offset, size, flags & O_RWSIZE_MASK);
 	return size;
 }
@@ -1058,11 +1058,11 @@ ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset
 	ulong size;
 	struct device_d *dev;
 
-	if (!cdev->dev)
+	if (!cdev->dev || cdev->dev->num_resources < 1)
 		return -1;
 	dev = cdev->dev;
 
-	size = min((ulong)count, dev->size - offset);
+	size = min((ulong)count, dev->resource[0].size - offset);
 	memcpy_sz(dev_get_mem_region(dev, 0) + offset, buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }

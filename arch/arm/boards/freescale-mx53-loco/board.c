@@ -78,18 +78,6 @@ static int loco_mem_init(void)
 	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
 	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x70000000, 0x70000000, 512, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x70000000, 512, PMD_SECT_DEF_UNCACHED);
-	arm_create_section(0xb0000000, 0xb0000000, 512, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xd0000000, 0xb0000000, 512, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x20000000);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(loco_mem_init);

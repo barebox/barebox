@@ -180,7 +180,7 @@ static void vectors_init(void)
 /*
  * Prepare MMU for usage enable it.
  */
-int mmu_init(void)
+static int mmu_init(void)
 {
 	struct arm_memory *mem;
 	int i;
@@ -227,6 +227,7 @@ int mmu_init(void)
 
 	return 0;
 }
+mmu_initcall(mmu_init);
 
 struct outer_cache_fns outer_cache;
 

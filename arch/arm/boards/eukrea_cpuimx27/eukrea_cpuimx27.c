@@ -92,16 +92,6 @@ static int eukrea_cpuimx27_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(eukrea_cpuimx27_mem_init);

@@ -48,14 +48,6 @@ static int panda_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(panda_mem_init);

@@ -60,15 +60,6 @@ static int pcm049_mem_init(void)
 
 	add_mem_device("sram0", 0x40300000, 48 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
-	/* warning: This shadows the second half of our ram */
-	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(pcm049_mem_init);

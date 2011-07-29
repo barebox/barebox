@@ -78,7 +78,6 @@ device_initcall(devices_init);
 
 static struct NS16550_plat serial_plat = {
        .clock = 1843200,
-       .f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
        .reg_read = x86_uart_read,
        .reg_write = x86_uart_write,
 };

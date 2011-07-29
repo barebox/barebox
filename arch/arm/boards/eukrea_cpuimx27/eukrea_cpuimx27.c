@@ -85,7 +85,6 @@ EXPORT_SYMBOL(quad_uart_write);
 
 static struct NS16550_plat quad_uart_serial_plat = {
 	.clock = 14745600,
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
 	.reg_read = quad_uart_read,
 	.reg_write = quad_uart_write,
 };

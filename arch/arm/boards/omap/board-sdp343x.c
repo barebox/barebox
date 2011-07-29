@@ -605,7 +605,6 @@ static void mux_config(void)
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,	/* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
 	.reg_read = omap_uart_read,
 	.reg_write = omap_uart_write,
 };

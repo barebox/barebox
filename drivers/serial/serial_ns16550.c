@@ -196,7 +196,10 @@ static int ns16550_probe(struct device_d *dev)
 
 	dev->type_data = cdev;
 	cdev->dev = dev;
-	cdev->f_caps = plat->f_caps;
+	if (plat->f_caps)
+		cdev->f_caps = plat->f_caps;
+	else
+		cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = ns16550_tstc;
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;

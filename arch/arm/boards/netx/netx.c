@@ -34,20 +34,8 @@ struct netx_eth_platform_data eth0_data = {
 	.xcno = 0,
 };
 
-static struct device_d netx_eth_dev0 = {
-	.id		= -1,
-	.name		= "netx-eth",
-	.platform_data	= &eth0_data,
-};
-
 struct netx_eth_platform_data eth1_data = {
 	.xcno = 1,
-};
-
-static struct device_d netx_eth_dev1 = {
-	.id		= -1,
-	.name		= "netx-eth",
-	.platform_data	= &eth1_data,
 };
 
 static int netx_devices_init(void) {
@@ -58,8 +46,8 @@ static int netx_devices_init(void) {
 	sdram_dev = add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
-	register_device(&netx_eth_dev0);
-	register_device(&netx_eth_dev1);
+	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth0_data);
+	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth1_data);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 
@@ -76,13 +64,6 @@ static int netx_devices_init(void) {
 
 device_initcall(netx_devices_init);
 
-static struct device_d netx_serial_device = {
-	.id	  = -1,
-	.name     = "netx_serial",
-	.map_base = NETX_PA_UART0,
-	.size     = 0x40,
-};
-
 static int netx_console_init(void)
 {
 	/* configure gpio for serial */
@@ -91,7 +72,8 @@ static int netx_console_init(void)
 	*(volatile unsigned long *)(0x00100808) = 2;
 	*(volatile unsigned long *)(0x0010080c) = 2;
 
-	register_device(&netx_serial_device);
+	add_generic_device("netx_serial", -1, NULL, NETX_PA_UART0, 0x40,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

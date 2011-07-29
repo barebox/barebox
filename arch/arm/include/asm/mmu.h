@@ -17,7 +17,7 @@ void setup_dma_coherent(unsigned long offset);
 
 #ifdef CONFIG_MMU
 void *dma_alloc_coherent(size_t size);
-void dma_free_coherent(void *mem);
+void dma_free_coherent(void *mem, size_t size);
 
 void dma_clean_range(unsigned long, unsigned long);
 void dma_flush_range(unsigned long, unsigned long);
@@ -26,12 +26,17 @@ unsigned long virt_to_phys(void *virt);
 void *phys_to_virt(unsigned long phys);
 
 #else
+static inline int mmu_init(void)
+{
+	return -EINVAL;
+}
+
 static inline void *dma_alloc_coherent(size_t size)
 {
 	return xmemalign(4096, size);
 }
 
-static inline void dma_free_coherent(void *mem)
+static inline void dma_free_coherent(void *mem, size_t size)
 {
 	free(mem);
 }

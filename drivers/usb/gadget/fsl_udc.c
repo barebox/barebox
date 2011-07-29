@@ -560,7 +560,7 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		if (j != req->dtd_count - 1) {
 			next_td = curr_td->next_td_virt;
 		}
-		dma_free_coherent(curr_td);
+		dma_free_coherent(curr_td, sizeof(struct ep_td_struct));
 	}
 
 	dma_inv_range((unsigned long)req->req.buf,

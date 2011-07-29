@@ -155,7 +155,7 @@ void *phys_to_virt(unsigned long phys)
 	return (void *)(phys + dma_coherent_offset);
 }
 
-void dma_free_coherent(void *mem)
+void dma_free_coherent(void *mem, size_t size)
 {
 	free(mem - dma_coherent_offset);
 }

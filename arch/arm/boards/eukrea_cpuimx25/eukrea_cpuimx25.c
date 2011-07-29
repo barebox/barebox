@@ -156,13 +156,6 @@ static struct fsl_usb2_platform_data usb_pdata = {
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
 
-static struct device_d usbotg_dev = {
-	.name     = "fsl-udc",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-	.platform_data = &usb_pdata,
-};
-
 #ifdef CONFIG_MMU
 static void eukrea_cpuimx25_mmu_init(void)
 {
@@ -280,7 +273,8 @@ static int eukrea_cpuimx25_devices_init(void)
 	imx25_usb_init();
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
-	register_device(&usbotg_dev);
+	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25);

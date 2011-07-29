@@ -149,14 +149,6 @@ static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,
 };
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name		= "imxfb",
-	.map_base	= 0x10021000,
-	.size		= 0x1000,
-	.platform_data	= &eukrea_cpuimx27_fb_data,
-};
 #endif
 
 static int eukrea_cpuimx27_devices_init(void)
@@ -252,7 +244,7 @@ static int eukrea_cpuimx27_devices_init(void)
 	printf("Using environment in %s Flash\n", envdev);
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
-	register_device(&imxfb_dev);
+	imx_add_fb((void *)0x10021000, &eukrea_cpuimx27_fb_data);
 	gpio_direction_output(GPIO_PORTE | 5, 0);
 	gpio_set_value(GPIO_PORTE | 5, 1);
 	gpio_direction_output(GPIO_PORTA | 25, 0);
@@ -267,19 +259,10 @@ static int eukrea_cpuimx27_devices_init(void)
 
 device_initcall(eukrea_cpuimx27_devices_init);
 
-#ifdef CONFIG_DRIVER_SERIAL_IMX
-static struct device_d eukrea_cpuimx27_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-#endif
-
 static int eukrea_cpuimx27_console_init(void)
 {
 #ifdef CONFIG_DRIVER_SERIAL_IMX
-	register_device(&eukrea_cpuimx27_serial_device);
+	imx_add_uart((void *)IMX_UART1_BASE, -1);
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;

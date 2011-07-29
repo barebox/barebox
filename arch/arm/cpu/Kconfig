@@ -87,5 +87,5 @@ config ARCH_HAS_L2X0
 
 config CACHE_L2X0
 	bool "Enable L2x0 PrimeCell"
-	depends on ARCH_HAS_L2X0
+	depends on MMU && ARCH_HAS_L2X0
 

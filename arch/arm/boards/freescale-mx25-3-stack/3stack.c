@@ -194,8 +194,6 @@ late_initcall(imx25_3ds_fec_init);
 
 static int imx25_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 #ifdef CONFIG_USB
 	/* USB does not work yet. Don't know why. Maybe
 	 * the CPLD has to be initialized.
@@ -218,17 +216,15 @@ static int imx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 
 #if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	64 * 1024 * 1024,
+#define SDRAM_SIZE	64 * 1024 * 1024
 #elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	128 * 1024 * 1024,
+#define SDRAM_SIZE	128 * 1024 * 1024
 #else
 #error "Unsupported SDRAM type"
 #endif
-				   IORESOURCE_MEM_WRITEABLE);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM_SIZE);
 	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx25_add_i2c0(NULL);

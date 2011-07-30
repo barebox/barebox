@@ -157,7 +157,6 @@ static void neso_mmu_init(void)
 static int neso_devices_init(void)
 {
 	int i;
-	struct device_d *sdram_dev;
 
 	unsigned int mode[] = {
 		/* UART1 */
@@ -289,9 +288,7 @@ static int neso_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	imx27_add_fb(&neso_fb_data);
 
 #ifdef CONFIG_USB

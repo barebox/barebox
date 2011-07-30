@@ -124,8 +124,7 @@ static int a9m2410_devices_init(void)
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
-	sdram_dev = add_mem_device("ram0", CS6_BASE, size,
-				   IORESOURCE_MEM_WRITEABLE);
+	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, size);
 	/*
 	 * SMSC 91C111 network controller on the baseboard
 	 * connected to CS line 1 and interrupt line
@@ -143,7 +142,6 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_add_dram(sdram_dev);
 	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 

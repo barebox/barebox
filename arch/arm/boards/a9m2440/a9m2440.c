@@ -128,8 +128,7 @@ static int a9m2440_devices_init(void)
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
-	sdram_dev = add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size(),
-				   IORESOURCE_MEM_WRITEABLE);
+	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
 	/*
 	 * cs8900 network controller onboard
 	 * Connected to CS line 5 + A24 and interrupt line EINT9,
@@ -146,7 +145,6 @@ static int a9m2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	armlinux_add_dram(sdram_dev);
 	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2440);
 

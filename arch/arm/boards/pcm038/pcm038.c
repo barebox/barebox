@@ -151,7 +151,6 @@ static int pcm038_devices_init(void)
 {
 	int i;
 	char *envdev;
-	struct device_d *sdram_dev;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -255,9 +254,7 @@ static int pcm038_devices_init(void)
 
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
-	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
 				   IORESOURCE_MEM_WRITEABLE);
 	imx27_add_fb(&pcm038_fb_data);

@@ -237,13 +237,7 @@ console_initcall(omap3evm_init_console);
 
 static int omap3evm_init_devices(void)
 {
-	struct device_d *sdram_dev;
-
-	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	if (!sdram_dev)
-		return -EIO;
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
 
 #ifdef CONFIG_GPMC
 	/*

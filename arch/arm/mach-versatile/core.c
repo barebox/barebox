@@ -44,11 +44,7 @@
 
 void versatile_add_sdram(u32 size)
 {
-	struct device_d *sdram_dev;
-
-	sdram_dev = add_mem_device("ram0", 0x00000000, size,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x00000000, size);
 }
 
 struct clk {

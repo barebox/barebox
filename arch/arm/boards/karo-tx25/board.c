@@ -118,8 +118,6 @@ static void noinline gpio_fec_active(void)
 
 static int tx25_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	gpio_fec_active();
 
 	imx25_iim_register_fec_ethaddr();
@@ -136,12 +134,8 @@ static int tx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024);
 	add_mem_device("ram0", 0x78000000, 128 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 

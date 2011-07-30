@@ -118,7 +118,6 @@ core_initcall(imx21ads_timing_init);
 static int mx21ads_devices_init(void)
 {
 	int i;
-	struct device_d *sdram_dev;
 	unsigned int mode[] = {
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
@@ -158,9 +157,7 @@ static int mx21ads_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	add_cfi_flash_device(-1, 0xC8000000, 32 * 1024 * 1024, 0);
-	sdram_dev = add_mem_device("ram0", 0xc0000000, 64 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xc0000000, 64 * 1024 * 1024);
 	imx21_add_nand(&nand_info);
 	add_generic_device("cs8900", -1, NULL,	IMX_CS1_BASE, 0x1000,
 			IORESOURCE_MEM, NULL);

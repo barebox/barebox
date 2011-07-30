@@ -230,8 +230,6 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 
 static int eukrea_cpuimx25_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	eukrea_cpuimx25_mmu_init();
 
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
@@ -253,9 +251,7 @@ static int eukrea_cpuimx25_devices_init(void)
 		PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024);
 
 	/* enable LCD */
 	gpio_direction_output(26, 1);

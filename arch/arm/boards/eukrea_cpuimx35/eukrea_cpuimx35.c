@@ -148,8 +148,6 @@ postcore_initcall(eukrea_cpuimx35_mmu_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	imx35_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
@@ -159,9 +157,7 @@ static int eukrea_cpuimx35_devices_init(void)
 
 	imx35_add_fec(&fec_info);
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 
 	imx35_add_i2c0(NULL);

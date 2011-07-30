@@ -34,4 +34,7 @@ struct image_data;
 
 void start_linux(void *adr, int swap, struct image_data *data);
 
+struct device_d *arm_add_mem_device(const char* name, resource_size_t start,
+				    resource_size_t size);
+
 #endif /* __ARCH_ARMLINUX_H */

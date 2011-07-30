@@ -23,11 +23,7 @@
 
 void at91_add_device_sdram(u32 size)
 {
-	struct device_d *sdram_dev;
-
-	sdram_dev = add_mem_device("ram0", AT91_CHIPSELECT_1, size,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 }
 
 #if defined(CONFIG_NAND_ATMEL)

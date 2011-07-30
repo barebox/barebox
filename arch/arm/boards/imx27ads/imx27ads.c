@@ -77,7 +77,6 @@ core_initcall(imx27ads_timing_init);
 static int mx27ads_devices_init(void)
 {
 	int i;
-	struct device_d *sdram_dev;
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
@@ -109,9 +108,7 @@ static int mx27ads_devices_init(void)
 
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
-	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	imx27_add_fec(&fec_info);
 	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");

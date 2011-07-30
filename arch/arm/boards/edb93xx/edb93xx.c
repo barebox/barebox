@@ -36,8 +36,6 @@
 
 static int ep93xx_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
 
 	/*
@@ -49,27 +47,19 @@ static int ep93xx_devices_init(void)
 
 	protect_file("/dev/env0", 1);
 
-	sdram_dev = add_mem_device("ram0", CONFIG_EP93XX_SDRAM_BANK0_BASE,
-				   CONFIG_EP93XX_SDRAM_BANK0_SIZE,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", CONFIG_EP93XX_SDRAM_BANK0_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK0_SIZE);
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
-	sdram_dev = add_mem_device("ram1", CONFIG_EP93XX_SDRAM_BANK1_BASE,
-				   CONFIG_EP93XX_SDRAM_BANK1_SIZE,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram1", CONFIG_EP93XX_SDRAM_BANK1_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK1_SIZE);
 #endif
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 3)
-	sdram_dev = add_mem_device("ram2", CONFIG_EP93XX_SDRAM_BANK2_BASE,
-				   CONFIG_EP93XX_SDRAM_BANK2_SIZE,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram2", CONFIG_EP93XX_SDRAM_BANK2_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
 #endif
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
-	sdram_dev = add_mem_device("ram3", CONFIG_EP93XX_SDRAM_BANK3_BASE,
-				   CONFIG_EP93XX_SDRAM_BANK2_SIZE,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram3", CONFIG_EP93XX_SDRAM_BANK3_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
 #endif
 
 	/*

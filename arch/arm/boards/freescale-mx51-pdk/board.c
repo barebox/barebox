@@ -227,13 +227,9 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	babbage_mmu_init();
 
-	sdram_dev = add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024);
 
 	imx51_iim_register_fec_ethaddr();
 	imx51_add_fec(&fec_info);

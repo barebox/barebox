@@ -170,8 +170,6 @@ static void pcm037_mmu_init(void)
 
 static int imx31_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	pcm037_mmu_init();
 
 	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
@@ -221,13 +219,9 @@ static int imx31_devices_init(void)
 	add_generic_device("smc911x", -1, NULL,	IMX_CS1_BASE, IMX_CS1_RANGE,
 			IORESOURCE_MEM, NULL);
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024);
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	sdram_dev = add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
 #endif
 #ifdef CONFIG_USB
 	pcm037_usb_init();

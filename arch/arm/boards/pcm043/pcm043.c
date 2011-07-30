@@ -125,7 +125,6 @@ struct gpio_led led0 = {
 
 static int imx35_devices_init(void)
 {
-	struct device_d *sdram_dev;
 	uint32_t reg;
 
 	/* CS0: Nor Flash */
@@ -171,9 +170,7 @@ static int imx35_devices_init(void)
 	}
 
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 
 	armlinux_set_bootparams((void *)0x80000100);

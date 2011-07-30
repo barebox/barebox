@@ -339,8 +339,7 @@ static int falconwing_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
 
-	sdram_dev = add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
+	sdram_dev = arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
@@ -351,7 +350,6 @@ static int falconwing_devices_init(void)
 
 	falconwing_init_usb();
 
-	armlinux_add_dram(sdram_dev);
 	armlinux_set_bootparams(dev_get_mem_region(sdram_dev, 0) + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 

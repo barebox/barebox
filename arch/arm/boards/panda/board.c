@@ -113,8 +113,6 @@ static void __init panda_boardrev_init(void)
 
 static int panda_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	panda_boardrev_init();
 
 	if (gpio_get_value(182)) {
@@ -141,9 +139,7 @@ static int panda_devices_init(void)
 		sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);
 	}
 
-	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_1G,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
 	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();

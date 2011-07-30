@@ -123,7 +123,6 @@ static int pca100_devices_init(void)
 {
 	int i;
 	struct device_d *nand;
-	struct device_d *sdram_dev;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -198,9 +197,7 @@ static int pca100_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	sdram_dev = add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 	imx27_add_fec(&fec_info);
 	imx27_add_mmc0(NULL);
 

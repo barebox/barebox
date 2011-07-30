@@ -134,7 +134,6 @@ static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 
 static int eukrea_cpuimx27_devices_init(void)
 {
-	struct device_d *sdram_dev;
 	char *envdev = "no";
 	int i;
 
@@ -209,9 +208,7 @@ static int eukrea_cpuimx27_devices_init(void)
 	add_cfi_flash_device(-1, 0xC2000000, 32 * 1024 * 1024, 0);
 #endif
 	imx27_add_nand(&nand_info);
-	sdram_dev = add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
 
 	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));

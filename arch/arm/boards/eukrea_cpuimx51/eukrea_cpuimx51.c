@@ -119,13 +119,9 @@ static void eukrea_cpuimx51_mmu_init(void)
 
 static int eukrea_cpuimx51_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
 	eukrea_cpuimx51_mmu_init();
 
-	sdram_dev = add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
 	imx51_add_fec(&fec_info);
 #ifdef CONFIG_MCI_IMX_ESDHC
 	imx51_add_mmc0(NULL);

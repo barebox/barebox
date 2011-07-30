@@ -638,13 +638,8 @@ static int sdp3430_flash_init(void)
 
 static int sdp3430_devices_init(void)
 {
-	struct device_d *sdram_dev;
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
 
-	sdram_dev = add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	if (!sdram_dev)
-		return -EIO;
-	armlinux_add_dram(sdram_dev);
 	return sdp3430_flash_init();
 }
 

@@ -93,11 +93,7 @@ static void pcm049_network_init(void)
 
 static int pcm049_devices_init(void)
 {
-	struct device_d *sdram_dev;
-
-	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_512M,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x80000000, SZ_512M);
 	add_mem_device("ram0", 0x40300000, 48 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,

@@ -53,7 +53,6 @@ struct gpio_led leds[] = {
 static int scb9328_devices_init(void)
 {
 	int i;
-	struct device_d *sdram_dev;
 
 	imx_gpio_mode(PA23_PF_CS5);
 	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 21);
@@ -82,9 +81,7 @@ static int scb9328_devices_init(void)
 	CS5L = 0x00000D03;
 
 	add_cfi_flash_device(-1, 0x10000000, 16 * 1024 * 1024, 0);
-	sdram_dev = add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024);
 	add_dm9000_device(-1, 0x16000000, 0x16000004,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 

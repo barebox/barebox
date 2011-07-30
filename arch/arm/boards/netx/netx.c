@@ -39,13 +39,9 @@ struct netx_eth_platform_data eth1_data = {
 };
 
 static int netx_devices_init(void) {
-	struct device_d *sdram_dev;
-
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
-	sdram_dev = add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024);
 	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth0_data);
 	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth1_data);
 

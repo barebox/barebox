@@ -119,7 +119,6 @@ postcore_initcall(cupid_mmu_init);
 static int cupid_devices_init(void)
 {
 	uint32_t reg;
-	struct device_d *sdram_dev;
 
 	gpio_direction_output(GPIO_LCD_ENABLE, 0);
 	gpio_direction_output(GPIO_LCD_BACKLIGHT, 0);
@@ -139,9 +138,7 @@ static int cupid_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 	imx35_add_mmc0(NULL);
 

@@ -132,7 +132,6 @@ static void set_board_rev(int rev)
 static int f3s_devices_init(void)
 {
 	uint32_t reg;
-	struct device_d *sdram_dev;
 
 	/* CS0: Nor Flash */
 	writel(0x0000cf03, CSCR_U(0));
@@ -178,9 +177,7 @@ static int f3s_devices_init(void)
 
 	imx35_add_mmc0(NULL);
 
-	sdram_dev = add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024);
 	imx35_add_fb(&ipu_fb_data);
 
 	armlinux_set_bootparams((void *)0x80000100);

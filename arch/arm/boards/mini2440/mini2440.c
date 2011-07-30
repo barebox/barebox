@@ -290,9 +290,7 @@ static int mini2440_devices_init(void)
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
 
-	sdram_dev = add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size(),
-				   IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(sdram_dev);
+	sdram_dev = arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
 
 	add_dm9000_device(0, CS4_BASE + 0x300, CS4_BASE + 0x304,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);

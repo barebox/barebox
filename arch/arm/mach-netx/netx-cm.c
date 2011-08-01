@@ -245,7 +245,6 @@ unsigned short crc16(unsigned short crc, unsigned int data)
 
 int netx_cm_init(void)
 {
-	DECLARE_GLOBAL_DATA_PTR;
 	int i;
 	char buf[MAX_USER_ZONE_SIZE];
 	struct netx_cm_userarea *area;

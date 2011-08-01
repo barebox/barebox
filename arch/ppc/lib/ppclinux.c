@@ -6,7 +6,6 @@
 #include <image.h>
 #include <init.h>
 #include <environment.h>
-#include <asm/global_data.h>
 #include <asm/bitops.h>
 #include <boot.h>
 #include <errno.h>

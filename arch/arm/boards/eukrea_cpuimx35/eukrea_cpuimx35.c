@@ -117,26 +117,14 @@ static void imx35_usb_init(void)
 	tmp = readl(IMX_OTG_BASE + 0x5a8);
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
+#ifdef CONFIG_USB_GADGET
 static struct fsl_usb2_platform_data usb_pdata = {
 	.operating_mode	= FSL_USB2_DR_DEVICE,
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
-
-static struct device_d usbotg_dev = {
-	.name     = "fsl-udc",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-	.platform_data = &usb_pdata,
-};
+#endif
 
 #ifdef CONFIG_MMU
 static int eukrea_cpuimx35_mmu_init(void)
@@ -181,13 +169,14 @@ static int eukrea_cpuimx35_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx35_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	tmp = readl(IMX_OTG_BASE + 0x608);
 	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
-	register_device(&usbotg_dev);
+	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
 #endif
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35);

@@ -53,20 +53,6 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbotg_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-};
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pca100_usb_register(void)
 {
 	mdelay(10);
@@ -77,9 +63,9 @@ static void pca100_usb_register(void)
 	mdelay(10);
 
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
-	register_device(&usbotg_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif
 

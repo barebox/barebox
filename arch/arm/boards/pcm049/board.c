@@ -43,15 +43,12 @@
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
 };
 
 static int pcm049_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, &serial_plat);
+	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }
@@ -73,20 +70,6 @@ static int pcm049_mmu_init(void)
 device_initcall(pcm049_mmu_init);
 #endif
 
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C100,
-	.size = SZ_4K,
-};
-
-static struct device_d smc911x_dev = {
-	.id		= -1,
-	.name		= "smc911x",
-	.map_base	= 0x2C000000,
-	.size		= 0x4000,
-};
-
 static struct gpmc_config net_cfg = {
 	.cfg = {
 		0x00001000,	/* CONF1 */
@@ -104,7 +87,8 @@ static void pcm049_network_init(void)
 {
 	gpmc_cs_config(5, &net_cfg);
 
-	register_device(&smc911x_dev);
+	add_generic_device("smc911x", -1, NULL, 0x2C000000, 0x4000,
+			   IORESOURCE_MEM, NULL);
 }
 
 static int pcm049_devices_init(void)
@@ -116,7 +100,8 @@ static int pcm049_devices_init(void)
 	armlinux_add_dram(sdram_dev);
 	add_mem_device("ram0", 0x40300000, 48 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 
 	gpmc_generic_init(0x10);
 

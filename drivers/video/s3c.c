@@ -331,11 +331,12 @@ static int s3cfb_activate_var(struct fb_info *fb_info)
 static void s3cfb_info(struct device_d *hw_dev)
 {
 	uint32_t con1, addr1, addr2, addr3;
+	struct s3cfb_info *fbi = hw_dev->priv;
 
-	con1 = readl(hw_dev->map_base + LCDCON1);
-	addr1 = readl(hw_dev->map_base + LCDSADDR1);
-	addr2 = readl(hw_dev->map_base + LCDSADDR2);
-	addr3 = readl(hw_dev->map_base + LCDSADDR3);
+	con1 = readl(fbi->base + LCDCON1);
+	addr1 = readl(fbi->base + LCDSADDR1);
+	addr2 = readl(fbi->base + LCDSADDR2);
+	addr3 = readl(fbi->base + LCDSADDR3);
 
 	printf(" Video hardware info:\n");
 	printf("  Video clock is running at %u Hz\n", s3c24xx_get_hclk() / ((GET_CLKVAL(con1) + 1) * 2));
@@ -371,15 +372,16 @@ static int s3cfb_probe(struct device_d *hw_dev)
 	if (! pdata)
 		return -ENODEV;
 
-	writel(0, hw_dev->map_base + LCDCON1);
-	writel(0, hw_dev->map_base + LCDCON5); /* FIXME not 0 for some displays */
+	fbi.base = dev_request_mem_region(hw_dev, 0);
+	writel(0, fbi.base + LCDCON1);
+	writel(0, fbi.base + LCDCON5); /* FIXME not 0 for some displays */
 
 	/* just init */
 	fbi.info.priv = &fbi;
 
 	/* add runtime hardware info */
 	fbi.hw_dev = hw_dev;
-	fbi.base = (void*)hw_dev->map_base;
+	hw_dev->priv = &fbi;
 
 	/* add runtime video info */
 	fbi.info.mode_list = pdata->mode_list;

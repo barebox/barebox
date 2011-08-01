@@ -58,20 +58,6 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbotg_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-};
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pcm037_usb_init(void)
 {
 	u32 tmp;
@@ -245,8 +231,8 @@ static int imx31_devices_init(void)
 #endif
 #ifdef CONFIG_USB
 	pcm037_usb_init();
-	register_device(&usbotg_dev);
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	armlinux_set_bootparams((void *)0x80000100);

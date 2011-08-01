@@ -35,29 +35,7 @@
 #include <mach/devices-imx1.h>
 
 static struct dm9000_platform_data dm9000_data = {
-	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
-};
-
-static struct resource dm9000_resources[] = {
-	[0] = {
-		.start	= 0x16000000,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-	[1] = {
-		.start	= 0x16000004,
-		.size	= 4,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-static struct device_d dm9000_dev = {
-	.id		= -1,
-	.name		= "dm9000",
-	.num_resources	= ARRAY_SIZE(dm9000_resources),
-	.resource	= dm9000_resources,
-	.platform_data	= &dm9000_data,
 };
 
 struct gpio_led leds[] = {
@@ -107,7 +85,8 @@ static int scb9328_devices_init(void)
 	sdram_dev = add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
-	register_device(&dm9000_dev);
+	add_dm9000_device(-1, 0x16000000, 0x16000004,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");

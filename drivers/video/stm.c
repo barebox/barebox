@@ -488,7 +488,7 @@ static int stmfb_probe(struct device_d *hw_dev)
 
 	/* add runtime hardware info */
 	fbi.hw_dev = hw_dev;
-	fbi.base = (void *)hw_dev->map_base;
+	fbi.base = dev_request_mem_region(hw_dev, 0);
 	fbi.pdata = pdata;
 
 	/* add runtime video info */

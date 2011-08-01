@@ -34,15 +34,6 @@
 
 #define DEVCFG_U1EN (1 << 18)
 
-/*
- * Up to 32MiB NOR type flash, connected to
- * CS line 6, data width is 16 bit
- */
-static struct device_d eth_dev = {
-	.id	  = -1,
-	.name     = "ep93xx_eth",
-};
-
 static int ep93xx_devices_init(void)
 {
 	struct device_d *sdram_dev;
@@ -81,7 +72,11 @@ static int ep93xx_devices_init(void)
 	armlinux_add_dram(sdram_dev);
 #endif
 
-	register_device(&eth_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 6, data width is 16 bit
+	 */
+	add_generic_device("ep93xx_eth", -1, NULL, 0, 0, IORESOURCE_MEM, NULL);
 
 	armlinux_set_bootparams((void *)CONFIG_EP93XX_SDRAM_BANK0_BASE + 0x100);
 
@@ -91,13 +86,6 @@ static int ep93xx_devices_init(void)
 }
 
 device_initcall(ep93xx_devices_init);
-
-static struct device_d edb93xx_serial_device = {
-	.id	  = -1,
-	.name     = "pl010_serial",
-	.map_base = UART1_BASE,
-	.size     = 4096,
-};
 
 static int edb93xx_console_init(void)
 {
@@ -117,7 +105,8 @@ static int edb93xx_console_init(void)
 	writel(0xAA, &syscon->sysswlock);
 	writel(value, &syscon->devicecfg);
 
-	register_device(&edb93xx_serial_device);
+	add_generic_device("pl010_serial", -1, NULL, UART1_BASE, 4096,
+			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

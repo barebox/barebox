@@ -114,14 +114,6 @@ static struct imx_fb_platform_data neso_fb_data = {
 };
 
 #ifdef CONFIG_USB
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void neso_usbh_init(void)
 {
 	uint32_t temp;
@@ -304,7 +296,7 @@ static int neso_devices_init(void)
 
 #ifdef CONFIG_USB
 	neso_usbh_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	imx27_add_fec(&fec_info);

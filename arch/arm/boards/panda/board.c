@@ -32,15 +32,13 @@ static int board_revision;
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
 };
 
 static int panda_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, &serial_plat);
+	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+			   &serial_plat);
 
 	return 0;
 }
@@ -61,18 +59,9 @@ static int panda_mmu_init(void)
 device_initcall(panda_mmu_init);
 #endif
 
+#ifdef CONFIG_USB_EHCI
 static struct ehci_platform_data ehci_pdata = {
 	.flags = 0,
-	.hccr_offset = 0x0,
-	.hcor_offset = 0x10,
-};
-
-static struct device_d usbh_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = 0x4a064c00,
-	.size     = 4 * 1024,
-	.platform_data = &ehci_pdata,
 };
 
 static void panda_ehci_init(void)
@@ -105,8 +94,13 @@ static void panda_ehci_init(void)
 	/* enable power to hub */
 	gpio_set_value(GPIO_HUB_POWER, 1);
 
-	register_device(&usbh_dev);
+	add_usb_ehci_device(-1, 0x4a064c00,
+			    0x4a064c00 + 0x10, &ehci_pdata);
 }
+#else
+static void panda_ehci_init(void)
+{}
+#endif
 
 static void __init panda_boardrev_init(void)
 {
@@ -116,13 +110,6 @@ static void __init panda_boardrev_init(void)
 
 	pr_info("PandaBoard Revision: %03d\n", board_revision);
 }
-
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C100,
-	.size = SZ_4K,
-};
 
 static int panda_devices_init(void)
 {
@@ -157,7 +144,8 @@ static int panda_devices_init(void)
 	sdram_dev = add_mem_device("ram0", 0x80000000, SZ_1G,
 				   IORESOURCE_MEM_WRITEABLE);
 	armlinux_add_dram(sdram_dev);
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();
 
 	armlinux_set_bootparams((void *)0x80000100);

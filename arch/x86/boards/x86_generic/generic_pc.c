@@ -78,7 +78,6 @@ device_initcall(devices_init);
 
 static struct NS16550_plat serial_plat = {
        .clock = 1843200,
-       .f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
        .reg_read = x86_uart_read,
        .reg_write = x86_uart_write,
 };
@@ -86,7 +85,7 @@ static struct NS16550_plat serial_plat = {
 static int pc_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, 0x3f8, 8, &serial_plat);
+	add_ns16550_device(-1, 0x3f8, 8, 0, &serial_plat);
 
 	return 0;
 }

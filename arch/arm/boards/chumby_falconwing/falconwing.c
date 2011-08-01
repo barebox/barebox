@@ -39,12 +39,6 @@ static struct mxs_mci_platform_data mci_pdata = {
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 };
 
-static struct device_d mci_dev = {
-	.name     = "mxs_mci",
-	.map_base = IMX_SSP1_BASE,
-	.platform_data = &mci_pdata,
-};
-
 #define GPIO_LCD_RESET		50
 #define GPIO_LCD_BACKLIGHT	60
 
@@ -96,13 +90,6 @@ static struct imx_fb_platformdata fb_mode = {
 	.enable = chumby_fb_enable,
 	.fixed_screen = (void *)(0x40000000 + SZ_64M - MAX_FB_SIZE),
 	.fixed_screen_size = MAX_FB_SIZE,
-};
-
-static struct device_d ldcif_dev = {
-	.name = "stmfb",
-	.map_base = IMX_FB_BASE,
-	.size = 4096,
-	.platform_data = &fb_mode,
 };
 
 static const uint32_t pad_setup[] = {
@@ -327,20 +314,6 @@ static int register_persistant_environment(void)
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
-static struct ehci_platform_data chumby_usb_pdata = {
-	.flags = EHCI_HAS_TT,
-	.hccr_offset = 0x100,
-	.hcor_offset = 0x140,
-};
-
-static struct device_d usb_dev = {
-	.name		= "ehci",
-	.id		= -1,
-	.map_base	= IMX_USB_BASE,
-	.size		= 0x200,
-	.platform_data	= &chumby_usb_pdata,
-};
-
 #define GPIO_USB_HUB_RESET	29
 #define GPIO_USB_HUB_POWER	26
 
@@ -353,7 +326,8 @@ static void falconwing_init_usb(void)
 	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
 
 	imx_usb_phy_enable();
-	register_device(&usb_dev);
+
+	add_generic_usb_ehci_device(-1, IMX_USB_BASE, NULL);
 }
 
 static int falconwing_devices_init(void)
@@ -370,8 +344,10 @@ static int falconwing_devices_init(void)
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
-	register_device(&mci_dev);
-	register_device(&ldcif_dev);
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP1_BASE, 0,
+			   IORESOURCE_MEM, &mci_pdata);
+	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
+			   IORESOURCE_MEM, &fb_mode);
 
 	falconwing_init_usb();
 
@@ -388,15 +364,12 @@ static int falconwing_devices_init(void)
 
 device_initcall(falconwing_devices_init);
 
-static struct device_d falconwing_serial_device = {
-	.name     = "stm_serial",
-	.map_base = IMX_DBGUART_BASE,
-	.size     = 8192,
-};
-
 static int falconwing_console_init(void)
 {
-	return register_device(&falconwing_serial_device);
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+			   IORESOURCE_MEM, NULL);
+
+	return 0;
 }
 
 console_initcall(falconwing_console_init);

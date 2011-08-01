@@ -71,12 +71,6 @@ struct device_d {
 	 * something like eth0 or nor0. */
 	int id;
 
-	resource_size_t size;
-
-	/*! For devices which are directly mapped into memory, i.e. NOR
-	 * Flash or SDRAM. */
-	resource_size_t map_base;
-
 	struct resource *resource;
 	int num_resources;
 
@@ -229,10 +223,38 @@ static inline struct device_d *add_cfi_flash_device(int id, resource_size_t star
 
 struct NS16550_plat;
 static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
-		resource_size_t size, struct NS16550_plat *pdata)
+		resource_size_t size, int flags, struct NS16550_plat *pdata)
 {
 	return add_generic_device("serial_ns16550", id, NULL, start, size,
-				  IORESOURCE_MEM, pdata);
+				  IORESOURCE_MEM | flags, pdata);
+}
+
+#ifdef CONFIG_DRIVER_NET_DM9000
+struct device_d *add_dm9000_device(int id, resource_size_t base,
+		resource_size_t data, int flags, void *pdata);
+#else
+static inline struct device_d *add_dm9000_device(int id, resource_size_t base,
+		resource_size_t data, int flags, void *pdata)
+{
+	return NULL;
+}
+#endif
+
+#ifdef CONFIG_USB_EHCI
+struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata);
+#else
+static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata)
+{
+	return NULL;
+}
+#endif
+
+static inline struct device_d *add_generic_usb_ehci_device(int id,
+		resource_size_t base, void *pdata)
+{
+	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
 }
 
 /* linear list over all available devices

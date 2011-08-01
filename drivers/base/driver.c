@@ -103,26 +103,6 @@ int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
 
-	/* if no map_base available use the first resource if available
-	 * so we do not need to duplicate it
-	 * Temporary fixup until we get rid of map_base and size
-	 */
-	if (new_device->map_base) {
-		if (new_device->resource) {
-			dev_err(new_device, "map_base and resource specifed\n");
-			return -EIO;
-		}
-		dev_warn(new_device, "uses map_base. Please convert to use resources\n");
-		new_device->resource = xzalloc(sizeof(struct resource));
-		new_device->resource[0].start = new_device->map_base;
-		new_device->resource[0].size = new_device->size;
-		new_device->resource[0].flags = IORESOURCE_MEM;
-		new_device->num_resources = 1;
-	} else if (new_device->resource) {
-		new_device->map_base = new_device->resource[0].start;
-		new_device->size = new_device->resource[0].size;
-	}
-
 	if (new_device->id < 0) {
 		new_device->id = get_free_deviceid(new_device->name);
 	} else {
@@ -263,7 +243,7 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 
 	if (flags & PROT_WRITE)
 		return -EACCES;
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 
@@ -272,7 +252,7 @@ int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 	if (!cdev->dev)
 		return -EINVAL;
 
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 
@@ -339,6 +319,8 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 	struct device_d *dev;
 	struct driver_d *drv;
 	struct param_d *param;
+	int i;
+	struct resource *res;
 
 	if (argc == 1) {
 		printf("devices:\n");
@@ -359,9 +341,17 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 			return -1;
 		}
 
-		printf("base  : 0x%08x\nsize  : 0x%08x\ndriver: %s\n\n",
-			dev->map_base, dev->size,
-			dev->driver ? 
+		printf("resources:\n");
+		for (i = 0; i < dev->num_resources; i++) {
+			res = &dev->resource[i];
+			printf("num   : %d\n", i);
+			if (res->name)
+				printf("name  : %s\n", res->name);
+			printf("start : 0x%08x\nsize  : 0x%08x\n",
+			       res->start, res->size);
+		}
+
+		printf("driver: %s\n\n", dev->driver ?
 				dev->driver->name : "none");
 
 		if (dev->driver)

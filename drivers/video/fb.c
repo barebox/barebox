@@ -84,9 +84,9 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 	ret = info->fbops->fb_activate_var(info);
 
 	if (!ret) {
-		dev->map_base = (unsigned long)info->screen_base;
+		dev->resource[0].start = (resource_size_t)info->screen_base;
 		info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
-		dev->size = info->cdev.size;
+		dev->resource[0].size = info->cdev.size;
 		dev_param_set_generic(dev, param, val);
 	} else
 		info->cdev.size = 0;
@@ -107,15 +107,19 @@ int register_framebuffer(struct fb_info *info)
 	int id = get_free_deviceid("fb");
 	struct device_d *dev;
 
+	dev = &info->dev;
+
 	info->cdev.ops = &fb_ops;
 	info->cdev.name = asprintf("fb%d", id);
 	info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
-	info->cdev.dev = &info->dev;
+	info->cdev.dev = dev;
 	info->cdev.priv = info;
-	info->cdev.dev->map_base = (unsigned long)info->screen_base;
-	info->cdev.dev->size = info->cdev.size;
+	dev->resource = xzalloc(sizeof(struct resource));
+	dev->resource[0].start = (resource_size_t)info->screen_base;
+	dev->resource[0].size = info->cdev.size;
+	dev->resource[0].flags = IORESOURCE_MEM;
+	dev->num_resources = 1;
 
-	dev = &info->dev;
 	dev->priv = info;
 	dev->id = id;
 

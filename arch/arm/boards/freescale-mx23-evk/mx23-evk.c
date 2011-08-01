@@ -40,15 +40,12 @@ static int mx23_evk_devices_init(void)
 
 device_initcall(mx23_evk_devices_init);
 
-static struct device_d mx23_evk_serial_device = {
-	.name     = "stm_serial",
-	.map_base = IMX_DBGUART_BASE,
-	.size     = 8192,
-};
-
 static int mx23_evk_console_init(void)
 {
-	return register_device(&mx23_evk_serial_device);
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+			   IORESOURCE_MEM, NULL);
+	
+	return 0;
 }
 
 console_initcall(mx23_evk_console_init);

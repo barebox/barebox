@@ -138,13 +138,6 @@ static void imx25_usb_init(void)
 	tmp = readl(IMX_OTG_BASE + 0x5a8);
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
 static struct i2c_board_info i2c_devices[] = {
@@ -208,7 +201,7 @@ static int imx25_devices_init(void)
 	 * the CPLD has to be initialized.
 	 */
 	imx25_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	imx25_iim_register_fec_ethaddr();

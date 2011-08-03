@@ -14,7 +14,6 @@
 #include <errno.h>
 
 #include <asm/byteorder.h>
-#include <asm/global_data.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
 #include <asm/armlinux.h>

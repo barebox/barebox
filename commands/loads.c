@@ -31,8 +31,6 @@
 #include <exports.h>
 #include <xyzModem.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
 static ulong load_serial (ulong offset);
 static int read_record (char *buf, ulong len);
 static int do_echo = 1;

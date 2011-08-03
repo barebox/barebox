@@ -67,8 +67,10 @@ static u32 *arm_create_pte(unsigned long virt)
 
 	ttb[virt] = (unsigned long)table | PMD_TYPE_TABLE;
 
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < 256; i++) {
 		table[i] = virt | PTE_TYPE_SMALL | PTE_FLAGS_UNCACHED;
+		virt += PAGE_SIZE;
+	}
 
 	return table;
 }

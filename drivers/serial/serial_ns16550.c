@@ -239,9 +239,6 @@ static int ns16550_probe(struct device_d *dev)
 	/* we do expect platform specific data */
 	if (plat == NULL)
 		return -EINVAL;
-	if (!(dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK) &&
-	    ((plat->reg_read == NULL) || (plat->reg_write == NULL)))
-		return -EINVAL;
 	dev->priv = dev_request_mem_region(dev, 0);
 
 	cdev = xzalloc(sizeof(*cdev));

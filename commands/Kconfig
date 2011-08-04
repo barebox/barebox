@@ -97,6 +97,16 @@ endchoice
 
 endif
 
+config CMD_TIME
+	bool "time"
+	  help
+	  Just like the unix time command this command allows to measure the
+	  execution time of a command. Note: barebox does not use interrupts,
+	  so the system timer can overrun during the execution of the command
+	  resulting in incorrect results. The timer gets updated in the function
+	  checking for ctrl-c, so the time command can be used with commands
+	  which are interruptible with ctrl-c.
+
 endmenu
 
 menu "file commands                 "

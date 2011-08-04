@@ -483,6 +483,9 @@ static int do_mem_cp(struct command *cmdtp, int argc, char *argv[])
 		}
 
 		count -= r;
+
+		if (ctrlc())
+			goto out;
 	}
 
 	if (count) {

@@ -135,16 +135,6 @@ static int pcm038_mem_init(void)
 
 	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
 				   IORESOURCE_MEM_WRITEABLE);
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(pcm038_mem_init);

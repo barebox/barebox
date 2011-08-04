@@ -70,12 +70,8 @@ config ENVIRONMENT_VARIABLES
 
 menu "memory layout                 "
 
-config HAVE_MMU
-	bool
-
 config MMU
 	bool "Enable MMU"
-	depends on HAVE_MMU
 	help
 	  Saying yes here enables the MMU. This is useful on some architectures
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt

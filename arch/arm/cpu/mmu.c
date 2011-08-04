@@ -1,10 +1,13 @@
 #include <common.h>
 #include <init.h>
 #include <asm/mmu.h>
+#include <errno.h>
+#include <sizes.h>
+#include <asm/memory.h>
 
 static unsigned long *ttb;
 
-void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
+static void create_section(unsigned long virt, unsigned long phys, int size_m,
 		unsigned int flags)
 {
 	int i;
@@ -24,6 +27,33 @@ void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 }
 
 /*
+ * Do it the simple way for now and invalidate the entire
+ * tlb
+ */
+static inline void tlb_invalidate(void)
+{
+	asm volatile (
+		"mov	r0, #0\n"
+		"mcr	p15, 0, r0, c7, c10, 4;	@ drain write buffer\n"
+		"mcr	p15, 0, r0, c8, c6, 0;  @ invalidate D TLBs\n"
+		"mcr	p15, 0, r0, c8, c5, 0;  @ invalidate I TLBs\n"
+		:
+		:
+		: "r0"
+	);
+}
+
+#ifdef CONFIG_CPU_V7
+#define PTE_FLAGS_CACHED (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_UNCACHED (0)
+#else
+#define PTE_FLAGS_CACHED (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_UNCACHED PTE_SMALL_AP_UNO_SRW
+#endif
+
+#define PTE_MASK ((1 << 12) - 1)
+
+/*
  * Create a second level translation table for the given virtual address.
  * We initially create a flat uncached mapping on it.
  * Not yet exported, but may be later if someone finds use for it.
@@ -37,12 +67,92 @@ static u32 *arm_create_pte(unsigned long virt)
 
 	ttb[virt] = (unsigned long)table | PMD_TYPE_TABLE;
 
-	for (i = 0; i < 256; i++)
-		table[i] = virt | PTE_TYPE_SMALL | PTE_SMALL_AP_UNO_SRW;
+	for (i = 0; i < 256; i++) {
+		table[i] = virt | PTE_TYPE_SMALL | PTE_FLAGS_UNCACHED;
+		virt += PAGE_SIZE;
+	}
 
 	return table;
 }
 
+static void remap_range(void *_start, size_t size, uint32_t flags)
+{
+	u32 pteentry;
+	struct arm_memory *mem;
+	unsigned long start = (unsigned long)_start;
+	u32 *p;
+	int numentries, i;
+
+	for_each_sdram_bank(mem) {
+		if (start >= mem->start && start < mem->start + mem->size)
+			goto found;
+	}
+
+	BUG();
+	return;
+
+found:
+	pteentry = (start - mem->start) >> PAGE_SHIFT;
+
+	numentries = size >> PAGE_SHIFT;
+
+	p = mem->ptes + pteentry;
+
+	for (i = 0; i < numentries; i++) {
+		p[i] &= ~PTE_MASK;
+		p[i] |= flags | PTE_TYPE_SMALL;
+	}
+
+	dma_flush_range((unsigned long)p,
+			(unsigned long)p + numentries * sizeof(u32));
+
+	tlb_invalidate();
+}
+
+/*
+ * remap the memory bank described by mem cachable and
+ * bufferable
+ */
+static int arm_mmu_remap_sdram(struct arm_memory *mem)
+{
+	unsigned long phys = (unsigned long)mem->start;
+	unsigned long ttb_start = phys >> 20;
+	unsigned long ttb_end = (phys + mem->size) >> 20;
+	unsigned long num_ptes = mem->size >> 10;
+	int i, pte;
+
+	debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
+			phys, mem->size);
+
+	/*
+	 * We replace each 1MiB section in this range with second level page
+	 * tables, therefore we must have 1Mib aligment here.
+	 */
+	if ((phys & (SZ_1M - 1)) || (mem->size & (SZ_1M - 1)))
+		return -EINVAL;
+
+	mem->ptes = memalign(0x400, num_ptes * sizeof(u32));
+
+	debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
+			mem->ptes, ttb_start, ttb_end);
+
+	for (i = 0; i < num_ptes; i++) {
+		mem->ptes[i] = (phys + i * 4096) | PTE_TYPE_SMALL |
+			PTE_FLAGS_CACHED;
+	}
+
+	pte = 0;
+
+	for (i = ttb_start; i < ttb_end; i++) {
+		ttb[i] = (unsigned long)(&mem->ptes[pte]) | PMD_TYPE_TABLE |
+			(0 << 4);
+		pte += 256;
+	}
+
+	tlb_invalidate();
+
+	return 0;
+}
 /*
  * We have 8 exception vectors and the table consists of absolute
  * jumps, so we need 8 * 4 bytes for the instructions and another
@@ -66,18 +176,20 @@ static void vectors_init(void)
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, &exception_vectors, ARM_VECTORS_SIZE);
 
-	exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_SMALL_AP_UNO_SRW;
+	exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
 }
 
 /*
- * Prepare MMU for usage and create a flat mapping. Board
- * code is responsible to remap the SDRAM cached
+ * Prepare MMU for usage enable it.
  */
-void mmu_init(void)
+static int mmu_init(void)
 {
+	struct arm_memory *mem;
 	int i;
 
 	ttb = memalign(0x10000, 0x4000);
+
+	debug("ttb: 0x%p\n", ttb);
 
 	/* Set the ttb register */
 	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
@@ -86,24 +198,38 @@ void mmu_init(void)
 	i = 0x3;
 	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
 
-	/* create a flat mapping */
-	arm_create_section(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT);
+	/* create a flat mapping using 1MiB sections */
+	create_section(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
+			PMD_TYPE_SECT);
 
 	vectors_init();
-}
 
-/*
- * enable the MMU. Should be called after mmu_init()
- */
-void mmu_enable(void)
-{
+	/*
+	 * First remap sdram cached using sections.
+	 * This is to speed up the generation of 2nd level page tables
+	 * below
+	 */
+	for_each_sdram_bank(mem)
+		create_section(mem->start, mem->start, mem->size >> 20,
+				PMD_SECT_DEF_CACHED);
+
 	asm volatile (
 		"bl __mmu_cache_on;"
 		:
 		:
 		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
         );
+
+	/*
+	 * Now that we have the MMU and caches on remap sdram again using
+	 * page tables
+	 */
+	for_each_sdram_bank(mem)
+		arm_mmu_remap_sdram(mem);
+
+	return 0;
 }
+mmu_initcall(mmu_init);
 
 struct outer_cache_fns outer_cache;
 
@@ -125,39 +251,41 @@ void mmu_disable(void)
 	);
 }
 
-/*
- * For boards which need coherent memory for DMA. The idea
- * is simple: Setup a uncached section containing your SDRAM
- * and call setup_dma_coherent() with the offset between the
- * cached and the uncached section. dma_alloc_coherent() then
- * works using normal malloc but returns the corresponding
- * pointer in the uncached area.
- */
-static unsigned long dma_coherent_offset;
-
-void setup_dma_coherent(unsigned long offset)
-{
-	dma_coherent_offset = offset;
-}
+#define PAGE_ALIGN(s) ((s) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
 void *dma_alloc_coherent(size_t size)
 {
-	return xmemalign(4096, size) + dma_coherent_offset;
+	void *ret;
+
+	size = PAGE_ALIGN(size);
+	ret = xmemalign(4096, size);
+
+#ifdef CONFIG_MMU
+	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
+
+	remap_range(ret, size, PTE_FLAGS_UNCACHED);
+#endif
+
+	return ret;
 }
 
 unsigned long virt_to_phys(void *virt)
 {
-	return (unsigned long)virt - dma_coherent_offset;
+	return (unsigned long)virt;
 }
 
 void *phys_to_virt(unsigned long phys)
 {
-	return (void *)(phys + dma_coherent_offset);
+	return (void *)phys;
 }
 
 void dma_free_coherent(void *mem, size_t size)
 {
-	free(mem - dma_coherent_offset);
+#ifdef CONFIG_MMU
+	remap_range(mem, size, PTE_FLAGS_CACHED);
+#endif
+
+	free(mem);
 }
 
 void dma_clean_range(unsigned long start, unsigned long end)

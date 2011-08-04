@@ -153,23 +153,17 @@ static int pcm037_mem_init(void)
 	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
 #endif
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-
-#ifdef CONFIG_CACHE_L2X0
-	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
-#endif
-#endif
 	return 0;
 }
 mem_initcall(pcm037_mem_init);
+
+static int pcm037_mmu_init(void)
+{
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+
+	return 0;
+}
+postmmu_initcall(pcm037_mmu_init);
 
 static int imx31_devices_init(void)
 {

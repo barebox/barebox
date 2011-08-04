@@ -39,7 +39,6 @@ config MACH_MX23EVK
 
 config MACH_CHUMBY
 	bool "Chumby Falconwing"
-	select HAVE_MMU
 	help
 	  Say Y here if you are using the "chumby one" aka falconwing from
 	  Chumby Industries
@@ -55,7 +54,6 @@ choice
 
 config MACH_TX28
 	bool "KARO tx28"
-	select HAVE_MMU
 	help
 	  Say Y here if you are using the KARO TX28 CPU module.
 

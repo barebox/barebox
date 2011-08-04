@@ -3,17 +3,25 @@
 
 #include <asm/pgtable.h>
 #include <malloc.h>
+#include <errno.h>
 
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
-void mmu_init(void);
-void mmu_enable(void);
-void mmu_disable(void);
-void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
-		unsigned int flags);
+struct arm_memory;
 
-void setup_dma_coherent(unsigned long offset);
+static inline void mmu_enable(void)
+{
+}
+void mmu_disable(void);
+static inline void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
+		unsigned int flags)
+{
+}
+
+static inline void setup_dma_coherent(unsigned long offset)
+{
+}
 
 #ifdef CONFIG_MMU
 void *dma_alloc_coherent(size_t size);
@@ -26,11 +34,6 @@ unsigned long virt_to_phys(void *virt);
 void *phys_to_virt(unsigned long phys);
 
 #else
-static inline int mmu_init(void)
-{
-	return -EINVAL;
-}
-
 static inline void *dma_alloc_coherent(size_t size)
 {
 	return xmemalign(4096, size);

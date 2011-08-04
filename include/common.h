@@ -221,6 +221,7 @@ int run_shell(void);
 #define ULLONG_MAX	(~0ULL)
 
 #define PAGE_SIZE	4096
+#define PAGE_SHIFT	12
 
 int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 

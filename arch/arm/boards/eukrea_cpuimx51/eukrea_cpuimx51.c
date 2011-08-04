@@ -97,22 +97,6 @@ static int eukrea_cpuimx51_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x90000000, 0x90000000, 256, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xa0000000, 0x90000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(eukrea_cpuimx51_mem_init);

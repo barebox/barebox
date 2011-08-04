@@ -59,18 +59,6 @@ static int tx25_mem_init(void)
 	add_mem_device("ram0", 0x78000000, 128 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 
-#ifdef CONFIG_MMU
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 32, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x82000000, 0x80000000, 32, PMD_SECT_DEF_UNCACHED);
-	arm_create_section(0x90000000, 0x90000000, 32, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x92000000, 0x90000000, 32, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x02000000);
-
-	mmu_enable();
-#endif
 	return 0;
 }
 mem_initcall(tx25_mem_init);

@@ -200,25 +200,11 @@ static void imx28_fix_endianess_rd(uint32_t *buf, unsigned wlen)
 static int fec_rbd_init(struct fec_priv *fec, int count, int size)
 {
 	int ix;
-	static int once = 0;
-	unsigned long p = 0;
-
-	if (!once) {
-		/* reserve data memory and consider alignment */
-		p = (unsigned long)dma_alloc_coherent(size * count + DB_DATA_ALIGNMENT);
-		p += DB_DATA_ALIGNMENT - 1;
-		p &= ~(DB_DATA_ALIGNMENT - 1);
-	}
 
 	for (ix = 0; ix < count; ix++) {
-		if (!once) {
-			writel(virt_to_phys((void *)p), &fec->rbd_base[ix].data_pointer);
-			p += size;
-		}
 		writew(FEC_RBD_EMPTY, &fec->rbd_base[ix].status);
 		writew(0, &fec->rbd_base[ix].data_length);
 	}
-	once = 1;	/* malloc done now (and once) */
 	/*
 	 * mark the last RBD to close the ring
 	 */
@@ -269,11 +255,7 @@ static void fec_rbd_clean(int last, struct buffer_descriptor __iomem *pRbd)
 
 static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 {
-#ifdef CONFIG_ARCH_MXS
 	return -1;
-#else
-	return imx_iim_get_mac(mac);
-#endif
 }
 
 static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
@@ -592,18 +574,36 @@ static int fec_recv(struct eth_device *dev)
 	return len;
 }
 
+static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
+{
+	void *p;
+	int i;
+
+	/* reserve data memory and consider alignment */
+	p = dma_alloc_coherent(size * count);
+	if (!p)
+		return -ENOMEM;
+
+	for (i = 0; i < count; i++) {
+		writel(virt_to_phys(p), &fec->rbd_base[i].data_pointer);
+		p += size;
+	}
+
+	return 0;
+}
+
 static int fec_probe(struct device_d *dev)
 {
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
         struct eth_device *edev;
 	struct fec_priv *fec;
-	uint32_t base;
+	void *base;
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
-	edev = (struct eth_device *)xzalloc(sizeof(struct eth_device));
+	fec = xzalloc(sizeof(*fec));
+	edev = &fec->edev;
 	dev->type_data = edev;
-	fec = (struct fec_priv *)xzalloc(sizeof(*fec));
 	edev->priv = fec;
 	edev->open = fec_open;
 	edev->init = fec_init;
@@ -613,7 +613,7 @@ static int fec_probe(struct device_d *dev)
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
 
-	fec->regs = (void *)dev->map_base;
+	fec->regs = dev_request_mem_region(dev, 0);
 
 	/* Reset chip. */
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
@@ -625,18 +625,16 @@ static int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = (uint32_t)dma_alloc_coherent((2 + FEC_RBD_NUM) *
-			sizeof(struct buffer_descriptor) + 2 * DB_ALIGNMENT);
-	base += (DB_ALIGNMENT - 1);
-	base &= ~(DB_ALIGNMENT - 1);
-	fec->rbd_base = (struct buffer_descriptor __force __iomem *)base;
-	base += FEC_RBD_NUM * sizeof (struct buffer_descriptor) +
-		(DB_ALIGNMENT - 1);
-	base &= ~(DB_ALIGNMENT - 1);
-	fec->tbd_base = (struct buffer_descriptor __force __iomem *)base;
+	base = dma_alloc_coherent((2 + FEC_RBD_NUM) *
+			sizeof(struct buffer_descriptor));
+	fec->rbd_base = base;
+	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
+	fec->tbd_base = base;
 
-	writel((uint32_t)virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
-	writel((uint32_t)virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
+	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+
+	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
 	fec->xcv_type = pdata->xcv_type;
 
@@ -664,7 +662,7 @@ static void fec_remove(struct device_d *dev)
 /**
  * Driver description for registering
  */
-static struct driver_d imx27_driver = {
+static struct driver_d fec_driver = {
         .name   = "fec_imx",
         .probe  = fec_probe,
 	.remove = fec_remove,
@@ -672,7 +670,7 @@ static struct driver_d imx27_driver = {
 
 static int fec_register(void)
 {
-        register_driver(&imx27_driver);
+        register_driver(&fec_driver);
         return 0;
 }
 

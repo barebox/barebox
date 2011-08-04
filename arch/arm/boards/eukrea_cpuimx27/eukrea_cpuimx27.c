@@ -48,39 +48,11 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-#ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
-static struct device_d cfi_dev1 = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC2000000,
-	.size     = 32 * 1024 * 1024,
-};
-#endif
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
 #if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
 #define SDRAM0	256
 #elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
 #define SDRAM0	128
 #endif
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = SDRAM0 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -94,28 +66,9 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-unsigned int quad_uart_read(unsigned long base, unsigned char reg_idx)
-{
-	unsigned int reg_addr = (unsigned int)base;
-	reg_addr += reg_idx << 1;
-	return 0xff & readw(reg_addr);
-}
-EXPORT_SYMBOL(quad_uart_read);
-
-void quad_uart_write(unsigned int val, unsigned long base,
-		     unsigned char reg_idx)
-{
-	unsigned int reg_addr = (unsigned int)base;
-	reg_addr += reg_idx << 1;
-	writew(0xff & val, reg_addr);
-}
-EXPORT_SYMBOL(quad_uart_write);
-
 static struct NS16550_plat quad_uart_serial_plat = {
 	.clock = 14745600,
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = quad_uart_read,
-	.reg_write = quad_uart_write,
+	.shift = 1,
 };
 
 #ifdef CONFIG_EUKREA_CPUIMX27_QUART1
@@ -127,14 +80,6 @@ static struct NS16550_plat quad_uart_serial_plat = {
 #elif defined CONFIG_EUKREA_CPUIMX27_QUART4
 #define QUART_OFFSET 0x1000000
 #endif
-
-static struct device_d quad_uart_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = IMX_CS3_BASE + QUART_OFFSET,
-	.size = 0xF,
-	.platform_data = (void *)&quad_uart_serial_plat,
-};
 #endif
 
 static struct i2c_board_info i2c_devices[] = {
@@ -143,23 +88,13 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx27_mmu_init(void)
+static int eukrea_cpuimx27_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
 
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void eukrea_cpuimx27_mmu_init(void)
-{
-}
-#endif
+mem_initcall(eukrea_cpuimx27_mem_init);
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
 static struct imx_fb_videomode imxfb_mode = {
@@ -184,14 +119,6 @@ static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 	.pwmr	= 0x00A903FF,
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,
-};
-
-static struct device_d imxfb_dev = {
-	.id		= -1,
-	.name		= "imxfb",
-	.map_base	= 0x10021000,
-	.size		= 0x1000,
-	.platform_data	= &eukrea_cpuimx27_fb_data,
 };
 #endif
 
@@ -255,8 +182,6 @@ static int eukrea_cpuimx27_devices_init(void)
 #endif
 	};
 
-	eukrea_cpuimx27_mmu_init();
-
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x00008F03;
 	CS0L = 0xA0330D01;
@@ -266,12 +191,11 @@ static int eukrea_cpuimx27_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 #ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
-	register_device(&cfi_dev1);
+	add_cfi_flash_device(-1, 0xC2000000, 32 * 1024 * 1024, 0);
 #endif
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
 
 	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
@@ -285,14 +209,13 @@ static int eukrea_cpuimx27_devices_init(void)
 	printf("Using environment in %s Flash\n", envdev);
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
-	register_device(&imxfb_dev);
+	imx_add_fb((void *)0x10021000, &eukrea_cpuimx27_fb_data);
 	gpio_direction_output(GPIO_PORTE | 5, 0);
 	gpio_set_value(GPIO_PORTE | 5, 1);
 	gpio_direction_output(GPIO_PORTA | 25, 0);
 	gpio_set_value(GPIO_PORTA | 25, 1);
 #endif
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_CPUIMX27);
 
@@ -301,19 +224,10 @@ static int eukrea_cpuimx27_devices_init(void)
 
 device_initcall(eukrea_cpuimx27_devices_init);
 
-#ifdef CONFIG_DRIVER_SERIAL_IMX
-static struct device_d eukrea_cpuimx27_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-#endif
-
 static int eukrea_cpuimx27_console_init(void)
 {
 #ifdef CONFIG_DRIVER_SERIAL_IMX
-	register_device(&eukrea_cpuimx27_serial_device);
+	imx_add_uart((void *)IMX_UART1_BASE, -1);
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
@@ -321,7 +235,8 @@ static int eukrea_cpuimx27_console_init(void)
 	CS3L = 0x0D1D0D01;
 	CS3A = 0x00D20000;
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-	register_device(&quad_uart_serial_device);
+	add_ns16550_device(-1, IMX_CS3_BASE + QUART_OFFSET, 0xf,
+			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
 #endif
 	return 0;
 }

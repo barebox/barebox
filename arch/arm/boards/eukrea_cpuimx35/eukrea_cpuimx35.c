@@ -61,19 +61,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 0x1F,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= IMX_SDRAM_CS0,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sdram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width		= 1,
 	.hw_ecc		= 1,
@@ -130,46 +117,30 @@ static void imx35_usb_init(void)
 	tmp = readl(IMX_OTG_BASE + 0x5a8);
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
+#ifdef CONFIG_USB_GADGET
 static struct fsl_usb2_platform_data usb_pdata = {
 	.operating_mode	= FSL_USB2_DR_DEVICE,
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
-
-static struct device_d usbotg_dev = {
-	.name     = "fsl-udc",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-	.platform_data = &usb_pdata,
-};
-
-#ifdef CONFIG_MMU
-static int eukrea_cpuimx35_mmu_init(void)
-{
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-
-#ifdef CONFIG_CACHE_L2X0
-	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
 #endif
+
+static int eukrea_cpuimx35_mem_init(void)
+{
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+
 	return 0;
 }
-postcore_initcall(eukrea_cpuimx35_mmu_init);
-#endif
+mem_initcall(eukrea_cpuimx35_mem_init);
+
+static int eukrea_cpuimx35_mmu_init(void)
+{
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+
+	return 0;
+}
+postmmu_initcall(eukrea_cpuimx35_mmu_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
@@ -181,8 +152,6 @@ static int eukrea_cpuimx35_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	imx35_add_fec(&fec_info);
-
-	register_device(&sdram_dev);
 	imx35_add_fb(&ipu_fb_data);
 
 	imx35_add_i2c0(NULL);
@@ -190,15 +159,15 @@ static int eukrea_cpuimx35_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx35_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	tmp = readl(IMX_OTG_BASE + 0x608);
 	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
-	register_device(&usbotg_dev);
+	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
 #endif
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35);
 

@@ -547,7 +547,7 @@ static int imxfb_probe(struct device_d *dev)
 	info = &fbi->info;
 
 	fbi->mode = pdata->mode;
-	fbi->regs = (void *)dev->map_base;
+	fbi->regs = dev_request_mem_region(dev, 0);
 	fbi->pcr = pdata->mode->pcr;
 	fbi->pwmr = pdata->pwmr;
 	fbi->lscr1 = pdata->lscr1;

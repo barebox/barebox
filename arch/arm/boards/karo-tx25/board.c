@@ -36,6 +36,7 @@
 #include <nand.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
+#include <mach/iim.h>
 #include <linux/err.h>
 #include <mach/devices-imx25.h>
 #include <asm/mmu.h>
@@ -45,74 +46,22 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 0x1f,
 };
 
-static struct memory_platform_data sdram0_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &sdram0_pdata,
-};
-
-static struct memory_platform_data sdram1_pdata = {
-	.name	= "ram1",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram1_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS1,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &sdram1_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name	= "sram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x78000000,
-	.size     = 128 * 1024,
-	.platform_data = &sram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
 	.flash_bbt = 1,
 };
 
-#ifdef CONFIG_MMU
-static int tx25_mmu_init(void)
+static int tx25_mem_init(void)
 {
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 32, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x82000000, 0x80000000, 32, PMD_SECT_DEF_UNCACHED);
-	arm_create_section(0x90000000, 0x90000000, 32, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x92000000, 0x90000000, 32, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x02000000);
-
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
-	mmu_enable();
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024);
+	add_mem_device("ram0", 0x78000000, 128 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 
 	return 0;
 }
-postcore_initcall(tx25_mmu_init);
-#endif
+mem_initcall(tx25_mem_init);
 
 static struct pad_desc karo_tx25_padsd_fec[] = {
 	MX25_PAD_D11__GPIO_4_9,		/* FEC PHY power on pin */
@@ -158,6 +107,7 @@ static int tx25_devices_init(void)
 {
 	gpio_fec_active();
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
@@ -171,12 +121,6 @@ static int tx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
-	register_device(&sdram1_dev);
-	register_device(&sram0_dev);
-
-	armlinux_add_dram(&sdram0_dev);
-	armlinux_add_dram(&sdram1_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_TX25);
 	armlinux_set_serial(imx_uid());

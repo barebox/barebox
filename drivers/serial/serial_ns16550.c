@@ -49,6 +49,70 @@
 /*********** Private Functions **********************************/
 
 /**
+ * @brief read register
+ *
+ * @param[in] cdev pointer to console device
+ * @param[in] offset
+ *
+ * @return value
+ */
+static uint32_t ns16550_read(struct console_device *cdev, uint32_t off)
+{
+	struct device_d *dev = cdev->dev;
+	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
+	int width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+
+	off <<= plat->shift;
+
+	if (plat->reg_read)
+		return plat->reg_read((unsigned long)dev->priv, off);
+
+	switch (width) {
+	case IORESOURCE_MEM_8BIT:
+		return readb(dev->priv + off);
+	case IORESOURCE_MEM_16BIT:
+		return readw(dev->priv + off);
+	case IORESOURCE_MEM_32BIT:
+		return readl(dev->priv + off);
+	}
+	return -1;
+}
+
+/**
+ * @brief write register
+ *
+ * @param[in] cdev pointer to console device
+ * @param[in] offset
+ * @param[in] val
+ */
+static void ns16550_write(struct console_device *cdev, uint32_t val,
+			  uint32_t off)
+{
+	struct device_d *dev = cdev->dev;
+	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
+	int width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+
+	off <<= plat->shift;
+
+	if (plat->reg_write) {
+		plat->reg_write(val, (unsigned long)dev->priv, off);
+		return;
+	}
+
+	switch (width) {
+	case IORESOURCE_MEM_8BIT:
+		writeb(val & 0xff, dev->priv + off);
+		break;
+	case IORESOURCE_MEM_16BIT:
+		writew(val & 0xffff, dev->priv + off);
+		break;
+	case IORESOURCE_MEM_32BIT:
+		writel(val, dev->priv + off);
+		break;
+	}
+}
+
+/**
  * @brief Compute the divisor for a baud rate
  *
  * @param[in] cdev pointer to console device
@@ -74,27 +138,24 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
  */
 static void ns16550_serial_init_port(struct console_device *cdev)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-	unsigned long base = cdev->dev->map_base;
 	unsigned int baud_divisor;
 
 	/* Setup the serial port with the defaults first */
 	baud_divisor = ns16550_calc_divisor(cdev, CONFIG_BAUDRATE);
 
 	/* initializing the device for the first time */
-	plat->reg_write(0x00, base, ier);
+	ns16550_write(cdev, 0x00, ier);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	plat->reg_write(0x07, base, mdr1);	/* Disable */
+	ns16550_write(cdev, 0x07, mdr1);	/* Disable */
 #endif
-	plat->reg_write(LCR_BKSE | LCRVAL, base, lcr);
-	plat->reg_write(baud_divisor & 0xFF, base, dll);
-	plat->reg_write((baud_divisor >> 8) & 0xff, base, dlm);
-	plat->reg_write(LCRVAL, base, lcr);
-	plat->reg_write(MCRVAL, base, mcr);
-	plat->reg_write(FCRVAL, base, fcr);
+	ns16550_write(cdev, LCR_BKSE | LCRVAL, lcr);
+	ns16550_write(cdev, baud_divisor & 0xFF, dll);
+	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
+	ns16550_write(cdev, LCRVAL, lcr);
+	ns16550_write(cdev, MCRVAL, mcr);
+	ns16550_write(cdev, FCRVAL, fcr);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	plat->reg_write(0x00, base, mdr1);
+	ns16550_write(cdev, 0x00,  mdr1);
 #endif
 }
 
@@ -108,12 +169,9 @@ static void ns16550_serial_init_port(struct console_device *cdev)
  */
 static void ns16550_putc(struct console_device *cdev, char c)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-	unsigned long base = cdev->dev->map_base;
 	/* Loop Doing Nothing */
-	while ((plat->reg_read(base, lsr) & LSR_THRE) == 0) ;
-	plat->reg_write(c, base, thr);
+	while ((ns16550_read(cdev, lsr) & LSR_THRE) == 0) ;
+	ns16550_write(cdev, c, thr);
 }
 
 /**
@@ -125,12 +183,9 @@ static void ns16550_putc(struct console_device *cdev, char c)
  */
 static int ns16550_getc(struct console_device *cdev)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-	unsigned long base = cdev->dev->map_base;
 	/* Loop Doing Nothing */
-	while ((plat->reg_read(base, lsr) & LSR_DR) == 0) ;
-	return plat->reg_read(base, rbr);
+	while ((ns16550_read(cdev, lsr) & LSR_DR) == 0) ;
+	return ns16550_read(cdev, rbr);
 }
 
 /**
@@ -142,10 +197,7 @@ static int ns16550_getc(struct console_device *cdev)
  */
 static int ns16550_tstc(struct console_device *cdev)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-	unsigned long base = cdev->dev->map_base;
-	return ((plat->reg_read(base, lsr) & LSR_DR) != 0);
+	return ((ns16550_read(cdev, lsr) & LSR_DR) != 0);
 }
 
 /**
@@ -158,17 +210,15 @@ static int ns16550_tstc(struct console_device *cdev)
  */
 static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-	unsigned long base = cdev->dev->map_base;
 	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
-	plat->reg_write(0x00, base, ier);
-	plat->reg_write(LCR_BKSE, base, lcr);
-	plat->reg_write(baud_divisor & 0xff, base, dll);
-	plat->reg_write((baud_divisor >> 8) & 0xff, base, dlm);
-	plat->reg_write(LCRVAL, base, lcr);
-	plat->reg_write(MCRVAL, base, mcr);
-	plat->reg_write(FCRVAL, base, fcr);
+
+	ns16550_write(cdev, 0x00, ier);
+	ns16550_write(cdev, LCR_BKSE, lcr);
+	ns16550_write(cdev, baud_divisor & 0xff, dll);
+	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
+	ns16550_write(cdev, LCRVAL, lcr);
+	ns16550_write(cdev, MCRVAL, mcr);
+	ns16550_write(cdev, FCRVAL, fcr);
 	return 0;
 }
 
@@ -189,14 +239,16 @@ static int ns16550_probe(struct device_d *dev)
 	/* we do expect platform specific data */
 	if (plat == NULL)
 		return -EINVAL;
-	if ((plat->reg_read == NULL) || (plat->reg_write == NULL))
-		return -EINVAL;
+	dev->priv = dev_request_mem_region(dev, 0);
 
 	cdev = xzalloc(sizeof(*cdev));
 
 	dev->type_data = cdev;
 	cdev->dev = dev;
-	cdev->f_caps = plat->f_caps;
+	if (plat->f_caps)
+		cdev->f_caps = plat->f_caps;
+	else
+		cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = ns16550_tstc;
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;

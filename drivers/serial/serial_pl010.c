@@ -37,7 +37,7 @@
 
 static int pl010_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct pl010_struct *pl010 = (struct pl010_struct *)cdev->dev->map_base;
+	struct pl010_struct *pl010 = cdev->dev->priv;
 	unsigned int divisor;
 
 	switch (baudrate) {
@@ -76,7 +76,7 @@ static int pl010_setbaudrate(struct console_device *cdev, int baudrate)
 
 static int pl010_init_port(struct console_device *cdev)
 {
-	struct pl010_struct *pl010 = (struct pl010_struct *)cdev->dev->map_base;
+	struct pl010_struct *pl010 = cdev->dev->priv;
 
 	/*
 	 * First, disable everything.
@@ -99,7 +99,7 @@ static int pl010_init_port(struct console_device *cdev)
 
 static void pl010_putc(struct console_device *cdev, char c)
 {
-	struct pl010_struct *pl010 = (struct pl010_struct *)cdev->dev->map_base;
+	struct pl010_struct *pl010 = cdev->dev->priv;
 
 	/* Wait until there is space in the FIFO */
 	while (readl(&pl010->flag) & UART_PL010_FR_TXFF)
@@ -111,7 +111,7 @@ static void pl010_putc(struct console_device *cdev, char c)
 
 static int pl010_getc(struct console_device *cdev)
 {
-	struct pl010_struct *pl010 = (struct pl010_struct *)cdev->dev->map_base;
+	struct pl010_struct *pl010 = cdev->dev->priv;
 	unsigned int data;
 
 	/* Wait until there is data in the FIFO */
@@ -132,7 +132,7 @@ static int pl010_getc(struct console_device *cdev)
 
 static int pl010_tstc(struct console_device *cdev)
 {
-	struct pl010_struct *pl010 = (struct pl010_struct *)cdev->dev->map_base;
+	struct pl010_struct *pl010 = cdev->dev->priv;
 
 	return !(readl(&pl010->flag) & UART_PL010_FR_RXFE);
 }
@@ -143,6 +143,7 @@ static int pl010_probe(struct device_d *dev)
 
 	cdev = xmalloc(sizeof(struct console_device));
 	dev->type_data = cdev;
+	dev->priv = dev_request_mem_region(dev, 0);
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl010_tstc;

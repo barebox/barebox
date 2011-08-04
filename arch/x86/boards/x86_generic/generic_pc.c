@@ -30,19 +30,6 @@
 #include <asm/syslib.h>
 #include <ns16550.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.size		= 16 * 1024 * 1024,
-	.map_base	= 0,
-	.platform_data	= &ram_pdata,
-};
-
 static struct device_d bios_disk_dev = {
 	.id		= -1,
 	.name		= "biosdrive",
@@ -70,7 +57,8 @@ static int devices_init(void)
 	sdram_dev.size = bios_get_memsize();	/* extended memory only */
 	sdram_dev.size <<= 10;
 
-	register_device(&sdram_dev);
+	add_mem_device("ram0", 0x0, 16 * 1024 * 1024,
+		       IORESOURCE_MEM_WRITEABLE);
 	register_device(&bios_disk_dev);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {
@@ -90,24 +78,16 @@ device_initcall(devices_init);
 
 static struct NS16550_plat serial_plat = {
        .clock = 1843200,
-       .f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
        .reg_read = x86_uart_read,
        .reg_write = x86_uart_write,
 };
 
-/* we are expecting always one serial interface */
-static struct device_d generic_pc_serial_device = {
-       .id = -1,
-       .name = "serial_ns16550",
-       .map_base = 0x3f8,
-       .size = 8,
-       .platform_data = (void *)&serial_plat,
-};
-
 static int pc_console_init(void)
 {
-       /* Register the serial port */
-       return register_device(&generic_pc_serial_device);
+	/* Register the serial port */
+	add_ns16550_device(-1, 0x3f8, 8, 0, &serial_plat);
+
+	return 0;
 }
 console_initcall(pc_console_init);
 

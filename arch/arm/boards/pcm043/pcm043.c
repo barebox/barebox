@@ -46,32 +46,8 @@
 #include <mach/iomux-mx35.h>
 #include <mach/devices-imx35.h>
 
-/*
- * Up to 32MiB NOR type flash, connected to
- * CS line 0, data width is 16 bit
- */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = IMX_CS0_BASE,
-	.size     = 32 * 1024 * 1024,	/* area size */
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -123,25 +99,21 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.bpp		= 16,
 };
 
-#ifdef CONFIG_MMU
-static int pcm043_mmu_init(void)
+static int pcm043_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-
-#ifdef CONFIG_CACHE_L2X0
-	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
-#endif
 	return 0;
 }
-postcore_initcall(pcm043_mmu_init);
-#endif
+mem_initcall(pcm043_mem_init);
+
+static int pcm043_mmu_init(void)
+{
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+
+	return 0;
+}
+postmmu_initcall(pcm043_mmu_init);
 
 struct gpio_led led0 = {
 	.gpio = 1 * 32 + 6,
@@ -170,7 +142,11 @@ static int imx35_devices_init(void)
 	 * This platform supports NOR and NAND
 	 */
 	imx35_add_nand(&nand_info);
-	register_device(&cfi_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 0, data width is 16 bit
+	 */
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
 		switch ( (reg >> 25) & 0x3) {
@@ -189,10 +165,9 @@ static int imx35_devices_init(void)
 		}
 	}
 
-	register_device(&sdram0_dev);
+
 	imx35_add_fb(&ipu_fb_data);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM043);
 
@@ -236,6 +211,7 @@ static int imx35_console_init(void)
 	mxc_iomux_v3_setup_multiple_pads(pcm043_pads, ARRAY_SIZE(pcm043_pads));
 
 	imx35_add_uart0();
+
 	return 0;
 }
 

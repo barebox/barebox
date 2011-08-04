@@ -381,7 +381,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	if (!host)
 		return -ENOMEM;
 
-	host->io_base = (void __iomem *)dev->map_base;
+	host->io_base = dev_request_mem_region(dev, 0);
 
 	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;

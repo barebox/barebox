@@ -61,6 +61,7 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <errno.h>
 #include "board.h"
 
 /******************** Board Boot Time *******************/
@@ -604,17 +605,6 @@ static void mux_config(void)
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,	/* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
-};
-
-static struct device_d sdp3430_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = OMAP_UART3_BASE,
-	.size = 1024,
-	.platform_data = (void *)&serial_plat,
 };
 
 /**
@@ -625,50 +615,31 @@ static struct device_d sdp3430_serial_device = {
 static int sdp3430_console_init(void)
 {
 	/* Register the serial port */
-	return register_device(&sdp3430_serial_device);
+	add_ns16550_device(-1, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+			   &serial_plat);
+
+	return 0;
 }
 
 console_initcall(sdp3430_console_init);
 #endif				/* CONFIG_DRIVER_SERIAL_NS16550 */
 
-/*------------------------- FLASH Devices -----------------------------------*/
-static int sdp3430_flash_init(void)
+static int sdp3430_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(sdp3430_mem_init);
+
+static int sdp3430_devices_init(void)
 {
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
+
 	return 0;
-}
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
-/*-----------------------Generic Devices Initialization ---------------------*/
-
-static int sdp3430_devices_init(void)
-{
-	int ret;
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
-	ret = sdp3430_flash_init();
-	if (ret)
-		goto failed;
-
-	armlinux_add_dram(&sdram_dev);
-failed:
-	return ret;
 }
 
 device_initcall(sdp3430_devices_init);

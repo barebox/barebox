@@ -64,7 +64,7 @@ static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)
 static int mpc5xxx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
-	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = dev->priv;
 
 	__mpc5xxx_serial_setbaudrate(psc, baudrate);
 
@@ -108,7 +108,7 @@ static int __mpc5xxx_serial_init(struct mpc5xxx_psc *psc)
 static int mpc5xxx_serial_init(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = dev->priv;
 
 	__mpc5xxx_serial_init(psc);
 
@@ -118,7 +118,7 @@ static int mpc5xxx_serial_init(struct console_device *cdev)
 static void mpc5xxx_serial_putc (struct console_device *cdev, const char c)
 {
 	struct device_d *dev = cdev->dev;
-	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = dev->priv;
 
 	/* Wait for last character to go. */
 	while (!(psc->psc_status & PSC_SR_TXEMP))
@@ -130,7 +130,7 @@ static void mpc5xxx_serial_putc (struct console_device *cdev, const char c)
 static int mpc5xxx_serial_getc (struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = dev->priv;
 
 	/* Wait for a character to arrive. */
 	while (!(psc->psc_status & PSC_SR_RXRDY))
@@ -142,7 +142,7 @@ static int mpc5xxx_serial_getc (struct console_device *cdev)
 static int mpc5xxx_serial_tstc (struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	struct mpc5xxx_psc *psc = (struct mpc5xxx_psc *)dev->map_base;
+	struct mpc5xxx_psc *psc = dev->priv;
 
 	return (psc->psc_status & PSC_SR_RXRDY);
 }
@@ -153,6 +153,7 @@ static int mpc5xxx_serial_probe(struct device_d *dev)
 	
 	cdev = xzalloc(sizeof(struct console_device));
 	dev->type_data = cdev;
+	dev->priv = dev_request_mem_region(dev, 0);
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = mpc5xxx_serial_tstc;

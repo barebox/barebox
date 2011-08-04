@@ -1,14 +1,12 @@
 /*
- * (C) Copyright 2000
- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ * Copyright (c) 2011 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
  * project.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * MA 02111-1307 USA
  */
 
@@ -485,6 +483,9 @@ static int do_mem_cp(struct command *cmdtp, int argc, char *argv[])
 		}
 
 		count -= r;
+
+		if (ctrlc())
+			goto out;
 	}
 
 	if (count) {
@@ -589,14 +590,13 @@ static struct file_operations memops = {
 
 static int mem_probe(struct device_d *dev)
 {
-	struct memory_platform_data *pdata = dev->platform_data;
 	struct cdev *cdev;
 
 	cdev = xzalloc(sizeof (*cdev));
 	dev->priv = cdev;
 
-	cdev->name = pdata->name;
-	cdev->size = dev->size;
+	cdev->name = (char*)dev->resource[0].name;
+	cdev->size = (unsigned long)dev->resource[0].size;
 	cdev->ops = &memops;
 	cdev->dev = dev;
 
@@ -610,19 +610,6 @@ static struct driver_d mem_drv = {
 	.probe = mem_probe,
 };
 
-static struct memory_platform_data mem_dev_pdata = {
-	.name = "mem",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d mem_dev = {
-	.id = -1,
-	.name  = "mem",
-	.map_base = 0,
-	.size   = ~0, /* FIXME: should be 0x100000000, ahem... */
-	.platform_data = &mem_dev_pdata,
-};
-
 static int mem_init(void)
 {
 	rw_buf = malloc(RW_BUF_SIZE);
@@ -631,8 +618,8 @@ static int mem_init(void)
 		return -1;
 	}
 
+	add_mem_device("mem", 0, ~0, IORESOURCE_MEM_WRITEABLE);
 	register_driver(&mem_drv);
-	register_device(&mem_dev);
 
 	return 0;
 }

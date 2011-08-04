@@ -1034,7 +1034,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	host->data_buf = (uint8_t *)(host + 1);
-	host->base = (void __iomem *)dev->map_base;
+	host->base = dev_request_mem_region(dev, 0);
 
 	host->main_area0 = host->base;
 

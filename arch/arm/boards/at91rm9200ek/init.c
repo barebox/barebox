@@ -34,16 +34,18 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 
-static struct device_d cfi_dev = {
-	.id		= 0,
-	.name		= "cfi_flash",
-	.map_base	= AT91_CHIPSELECT_0,
-};
-
 static struct at91_ether_platform_data ether_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
 };
+
+static int at91rm9200ek_mem_init(void)
+{
+	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(at91rm9200ek_mem_init);
 
 static int at91rm9200ek_devices_init(void)
 {
@@ -53,9 +55,9 @@ static int at91rm9200ek_devices_init(void)
 	 */
 	at91_set_gpio_output(AT91_PIN_PA23, 1);
 
-	at91_add_device_sdram(64 * 1024 * 1024);
 	at91_add_device_eth(&ether_pdata);
-	register_device(&cfi_dev);
+
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

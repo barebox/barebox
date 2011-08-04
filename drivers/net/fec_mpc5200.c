@@ -673,7 +673,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->get_ethaddr = mpc5xxx_fec_get_ethaddr,
 	edev->set_ethaddr = mpc5xxx_fec_set_ethaddr,
 
-	fec->eth = (ethernet_regs *)dev->map_base;
+	fec->eth = dev_request_mem_region(dev, 0);
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 

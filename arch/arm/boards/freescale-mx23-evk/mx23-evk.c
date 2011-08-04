@@ -25,24 +25,17 @@
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
+static int mx23_evk_mem_init(void)
+{
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 32 * 1024 * 1024);
 
-static struct device_d sdram_dev = {
-	.name     = "mem",
-	.map_base = IMX_MEMORY_BASE,
-	.size     = 32 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
+	return 0;
+}
+mem_initcall(mx23_evk_mem_init);
 
 static int mx23_evk_devices_init(void)
 {
-	register_device(&sdram_dev);
-
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
+	armlinux_set_bootparams((void*)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX23EVK);
 
 	return 0;
@@ -50,15 +43,12 @@ static int mx23_evk_devices_init(void)
 
 device_initcall(mx23_evk_devices_init);
 
-static struct device_d mx23_evk_serial_device = {
-	.name     = "stm_serial",
-	.map_base = IMX_DBGUART_BASE,
-	.size     = 8192,
-};
-
 static int mx23_evk_console_init(void)
 {
-	return register_device(&mx23_evk_serial_device);
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+			   IORESOURCE_MEM, NULL);
+	
+	return 0;
 }
 
 console_initcall(mx23_evk_console_init);

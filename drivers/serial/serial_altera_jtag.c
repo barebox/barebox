@@ -30,6 +30,12 @@
 #include <asm/io.h>
 #include <asm/nios2-io.h>
 
+struct altera_serial_jtag_priv {
+	struct console_device cdev;
+	void __iomem *regs;
+};
+
+
 static int altera_serial_jtag_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	return 0;
@@ -37,7 +43,10 @@ static int altera_serial_jtag_setbaudrate(struct console_device *cdev, int baudr
 
 static void altera_serial_jtag_putc(struct console_device *cdev, char c)
 {
-	struct nios_jtag *jtag = (struct nios_jtag *)cdev->dev->map_base;
+	struct altera_serial_jtag_priv *priv = container_of(cdev,
+		struct altera_serial_jtag_priv, cdev);
+
+	struct nios_jtag *jtag = priv->regs;
 	uint32_t st;
 
 	while (1) {
@@ -51,14 +60,20 @@ static void altera_serial_jtag_putc(struct console_device *cdev, char c)
 
 static int altera_serial_jtag_tstc(struct console_device *cdev)
 {
-	struct nios_jtag *jtag = (struct nios_jtag *)cdev->dev->map_base;
+	struct altera_serial_jtag_priv *priv = container_of(cdev,
+		struct altera_serial_jtag_priv, cdev);
+
+	struct nios_jtag *jtag = priv->regs;
 
 	return readl(&jtag->control) & NIOS_JTAG_RRDY;
 }
 
 static int altera_serial_jtag_getc(struct console_device *cdev)
 {
-	struct nios_jtag *jtag = (struct nios_jtag *)cdev->dev->map_base;
+	struct altera_serial_jtag_priv *priv = container_of(cdev,
+		struct altera_serial_jtag_priv, cdev);
+
+	struct nios_jtag *jtag = priv->regs;
 	uint32_t val;
 
 	while (1) {
@@ -73,8 +88,12 @@ static int altera_serial_jtag_getc(struct console_device *cdev)
 static int altera_serial_jtag_probe(struct device_d *dev) {
 
 	struct console_device *cdev;
+	struct altera_serial_jtag_priv *priv;
 
-	cdev = malloc(sizeof(struct console_device));
+	priv = xmalloc(sizeof(*priv));
+	cdev = &priv->cdev;
+
+	priv->regs = dev_request_mem_region(dev, 0);
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

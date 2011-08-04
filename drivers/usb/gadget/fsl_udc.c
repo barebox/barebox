@@ -560,7 +560,7 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		if (j != req->dtd_count - 1) {
 			next_td = curr_td->next_td_virt;
 		}
-		dma_free_coherent(curr_td);
+		dma_free_coherent(curr_td, sizeof(struct ep_td_struct));
 	}
 
 	dma_inv_range((unsigned long)req->req.buf,
@@ -2239,7 +2239,7 @@ static int fsl_udc_probe(struct device_d *dev)
 	udc_controller = xzalloc(sizeof(*udc_controller));
 	udc_controller->stopped = 1;
 
-	dr_regs = (void *)dev->map_base;
+	dr_regs = dev_request_mem_region(dev, 0);
 
 	/* Read Device Controller Capability Parameters register */
 	dccparams = readl(&dr_regs->dccparams);

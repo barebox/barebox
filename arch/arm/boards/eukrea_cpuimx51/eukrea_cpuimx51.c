@@ -42,19 +42,6 @@
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id       = -1,
-	.name     = "mem",
-	.map_base = 0x90000000,
-	.size     = 256 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
@@ -106,35 +93,16 @@ static struct pad_desc eukrea_cpuimx51_pads[] = {
 #define GPIO_LAN8700_RESET	(1 * 32 + 31)
 #define GPIO_LCD_BL		(2 * 32 + 4)
 
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx51_mmu_init(void)
+static int eukrea_cpuimx51_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
 
-	arm_create_section(0x90000000, 0x90000000, 256, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xa0000000, 0x90000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-#if TEXT_BASE & (0x100000 - 1)
-#warning cannot create vector section. Adjust TEXT_BASE to a 1M boundary
-#else
-	arm_create_section(0x0,        TEXT_BASE,   1, PMD_SECT_DEF_UNCACHED);
-#endif
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void eukrea_cpuimx51_mmu_init(void)
-{
-}
-#endif
+mem_initcall(eukrea_cpuimx51_mem_init);
 
 static int eukrea_cpuimx51_devices_init(void)
 {
-	eukrea_cpuimx51_mmu_init();
-
-	register_device(&sdram_dev);
 	imx51_add_fec(&fec_info);
 #ifdef CONFIG_MCI_IMX_ESDHC
 	imx51_add_mmc0(NULL);
@@ -150,7 +118,6 @@ static int eukrea_cpuimx51_devices_init(void)
 	gpio_set_value(GPIO_LAN8700_RESET, 1);
 	gpio_direction_output(GPIO_LCD_BL, 0);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX51SD);
 

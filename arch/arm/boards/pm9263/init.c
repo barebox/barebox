@@ -86,17 +86,18 @@ static void pm_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = AT91_CHIPSELECT_0,
-	.size     = 4 * 1024 * 1024,
-};
-
 static struct at91_ether_platform_data macb_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
 };
+
+static int pm9263_mem_init(void)
+{
+	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(pm9263_mem_init);
 
 static int pm9263_devices_init(void)
 {
@@ -108,10 +109,9 @@ static int pm9263_devices_init(void)
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
 	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
-	at91_add_device_sdram(64 * 1024 * 1024);
 	pm_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
-	register_device(&cfi_dev);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 4 * 1024 * 1024, 0);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");

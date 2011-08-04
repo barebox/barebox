@@ -30,51 +30,27 @@
 #include <generated/mach-types.h>
 #include <mach/netx-eth.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x80000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 struct netx_eth_platform_data eth0_data = {
 	.xcno = 0,
-};
-
-static struct device_d netx_eth_dev0 = {
-	.id		= -1,
-	.name		= "netx-eth",
-	.platform_data	= &eth0_data,
 };
 
 struct netx_eth_platform_data eth1_data = {
 	.xcno = 1,
 };
 
-static struct device_d netx_eth_dev1 = {
-	.id		= -1,
-	.name		= "netx-eth",
-	.platform_data	= &eth1_data,
-};
+static int netx_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, 64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(netx_mem_init);
 
 static int netx_devices_init(void) {
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	register_device(&netx_eth_dev0);
-	register_device(&netx_eth_dev1);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
+
+	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth0_data);
+	add_generic_device("netx-eth", -1, NULL, 0, 0, IORESOURCE_MEM, &eth1_data);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 
@@ -83,7 +59,6 @@ static int netx_devices_init(void) {
 
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_NXDB500);
 
@@ -91,13 +66,6 @@ static int netx_devices_init(void) {
 }
 
 device_initcall(netx_devices_init);
-
-static struct device_d netx_serial_device = {
-	.id	  = -1,
-	.name     = "netx_serial",
-	.map_base = NETX_PA_UART0,
-	.size     = 0x40,
-};
 
 static int netx_console_init(void)
 {
@@ -107,7 +75,8 @@ static int netx_console_init(void)
 	*(volatile unsigned long *)(0x00100808) = 2;
 	*(volatile unsigned long *)(0x0010080c) = 2;
 
-	register_device(&netx_serial_device);
+	add_generic_device("netx_serial", -1, NULL, NETX_PA_UART0, 0x40,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

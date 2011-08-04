@@ -33,13 +33,6 @@
 #include <mach/nand.h>
 #include <mach/fsmc.h>
 
-static struct device_d nhk8815_network_dev = {
-	.id = -1,
-	.name = "smc91c111",
-	.map_base = 0x34000300,
-	.size = 16,
-};
-
 static int nhk8815_nand_init(void)
 {
 	/* FSMC setup for nand chip select (8-bit nand in 8815NHK) */
@@ -54,24 +47,45 @@ static int nhk8815_nand_init(void)
 }
 
 static struct nomadik_nand_platform_data nhk8815_nand_data = {
-	.addr_va	= NAND_IO_ADDR,
-	.cmd_va		= NAND_IO_CMD,
-	.data_va	= NAND_IO_DATA,
 	.options	= NAND_COPYBACK | NAND_CACHEPRG | NAND_NO_PADDING \
 			| NAND_NO_READRDY | NAND_NO_AUTOINCR,
 	.init		= nhk8815_nand_init,
 };
 
+static struct resource nhk8815_nand_resources[] = {
+	{
+		.start	= NAND_IO_ADDR,
+		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
+	}, {
+		.start	= NAND_IO_CMD,
+		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
+	}, {
+		.start	= NAND_IO_DATA,
+		.size	= 0xfff,
+		.flags	= IORESOURCE_MEM,
+	}
+};
+
 static struct device_d nhk8815_nand_device = {
 	.id		= -1,
 	.name		= "nomadik_nand",
+	.num_resources	= ARRAY_SIZE(nhk8815_nand_resources),
+	.resource	= nhk8815_nand_resources,
 	.platform_data	= &nhk8815_nand_data,
 };
 
-static int nhk8815_devices_init(void)
+static int nhk8815_mem_init(void)
 {
 	st8815_add_device_sdram(64 * 1024 *1024);
 
+	return 0;
+}
+mem_initcall(nhk8815_mem_init);
+
+static int nhk8815_devices_init(void)
+{
 	writel(0xC37800F0, NOMADIK_GPIO1_BASE + 0x20);
 	writel(0x00000000, NOMADIK_GPIO1_BASE + 0x24);
 	writel(0x00000000, NOMADIK_GPIO1_BASE + 0x28);
@@ -81,7 +95,8 @@ static int nhk8815_devices_init(void)
 	writel(0x0000305b, FSMC_BCR(1));
 	writel(0x00033f33, FSMC_BTR(1));
 
-	register_device(&nhk8815_network_dev);
+	add_generic_device("smc91c111", -1, NULL, 0x34000300, 16,
+			   IORESOURCE_MEM, NULL);
 
 	register_device(&nhk8815_nand_device);
 

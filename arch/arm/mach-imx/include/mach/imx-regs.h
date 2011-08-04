@@ -52,7 +52,9 @@
 #elif defined CONFIG_ARCH_IMX25
 # include <mach/imx25-regs.h>
 #elif defined CONFIG_ARCH_IMX51
-#include <mach/imx51-regs.h>
+# include <mach/imx51-regs.h>
+#elif defined CONFIG_ARCH_IMX53
+# include <mach/imx53-regs.h>
 #else
 # error "unknown i.MX soc type"
 #endif

@@ -126,10 +126,16 @@ static void ek_add_device_mci(void)
 static void ek_add_device_mci(void) {}
 #endif
 
+static int at91sam9m10g45ek_mem_init(void)
+{
+	at91_add_device_sdram(128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(at91sam9m10g45ek_mem_init);
 
 static int at91sam9m10g45ek_devices_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
 	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
 	ek_add_device_mci();

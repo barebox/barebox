@@ -1175,7 +1175,6 @@ static int mci_card_probe(struct device_d *mci_dev)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_host *host = GET_MCI_PDATA(mci_dev);
-	struct device_d *disk_dev;
 	struct ata_interface *p;
 	int rc;
 
@@ -1221,8 +1220,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 	 * An MMC/SD card acts like an ordinary disk.
 	 * So, re-use the disk driver to gain access to this media
 	 */
-	disk_dev = xzalloc(sizeof(struct device_d) + sizeof(struct ata_interface));
-	p = (struct ata_interface*)&disk_dev[1];
+	p = xzalloc(sizeof(struct ata_interface));
 
 #ifdef CONFIG_MCI_WRITE
 	p->write = mci_sd_write;
@@ -1230,12 +1228,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 	p->read = mci_sd_read;
 	p->priv = mci_dev;
 
-	strcpy(disk_dev->name, "disk");
-	disk_dev->size = mci->capacity;
-	disk_dev->map_base = 0;
-	disk_dev->platform_data = p;
-
-	register_device(disk_dev);
+	add_generic_device("disk", -1, NULL, 0, mci->capacity, IORESOURCE_MEM, p);
 
 	pr_debug("SD Card successfully added\n");
 

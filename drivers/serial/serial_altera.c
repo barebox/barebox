@@ -27,9 +27,17 @@
 #include <asm/io.h>
 #include <asm/nios2-io.h>
 
+struct altera_serial_priv {
+	struct console_device cdev;
+	void __iomem *regs;
+};
+
 static int altera_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct nios_uart *uart = (struct nios_uart *)cdev->dev->map_base;
+	struct altera_serial_priv *priv = container_of(cdev,
+		struct altera_serial_priv, cdev);
+
+	struct nios_uart *uart = priv->regs;
 	uint16_t div;
 
 	div = (CPU_FREQ / baudrate) - 1;
@@ -40,7 +48,10 @@ static int altera_serial_setbaudrate(struct console_device *cdev, int baudrate)
 
 static void altera_serial_putc(struct console_device *cdev, char c)
 {
-	struct nios_uart *uart = (struct nios_uart *)cdev->dev->map_base;
+	struct altera_serial_priv *priv = container_of(cdev,
+		struct altera_serial_priv, cdev);
+
+	struct nios_uart *uart = priv->regs;
 
 	while ((readw(&uart->status) & NIOS_UART_TRDY) == 0);
 
@@ -49,14 +60,20 @@ static void altera_serial_putc(struct console_device *cdev, char c)
 
 static int altera_serial_tstc(struct console_device *cdev)
 {
-	struct nios_uart *uart = (struct nios_uart *)cdev->dev->map_base;
+	struct altera_serial_priv *priv = container_of(cdev,
+		struct altera_serial_priv, cdev);
+
+	struct nios_uart *uart = priv->regs;
 
 	return readw(&uart->status) & NIOS_UART_RRDY;
 }
 
 static int altera_serial_getc(struct console_device *cdev)
 {
-	struct nios_uart *uart = (struct nios_uart *)cdev->dev->map_base;
+	struct altera_serial_priv *priv = container_of(cdev,
+		struct altera_serial_priv, cdev);
+
+	struct nios_uart *uart = priv->regs;
 
 	while (altera_serial_tstc(cdev) == 0);
 
@@ -66,8 +83,12 @@ static int altera_serial_getc(struct console_device *cdev)
 static int altera_serial_probe(struct device_d *dev)
 {
 	struct console_device *cdev;
+	struct altera_serial_priv *priv;
 
-	cdev = xmalloc(sizeof(struct console_device));
+	priv = xmalloc(sizeof(*priv));
+	cdev = &priv->cdev;
+
+	priv->regs = dev_request_mem_region(dev, 0);
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

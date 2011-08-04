@@ -54,19 +54,6 @@
 #define LCD_POWER_GPIO (GPIO_PORTF + 18)
 #define BACKLIGHT_POWER_GPIO (GPIO_PORTE + 5)
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 31,
@@ -127,14 +114,6 @@ static struct imx_fb_platform_data neso_fb_data = {
 };
 
 #ifdef CONFIG_USB
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void neso_usbh_init(void)
 {
 	uint32_t temp;
@@ -157,23 +136,13 @@ static void neso_usbh_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void neso_mmu_init(void)
+static int neso_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void neso_mmu_init(void)
-{
-}
-#endif
+mem_initcall(neso_mem_init);
 
 static int neso_devices_init(void)
 {
@@ -301,20 +270,16 @@ static int neso_devices_init(void)
 	gpio_direction_output(OTG_PHY_CS_GPIO, 1);
 	gpio_direction_output(USBH2_PHY_CS_GPIO, 1);
 
-
-	neso_mmu_init();
-
 	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
 	imx27_add_fb(&neso_fb_data);
 
 #ifdef CONFIG_USB
 	neso_usbh_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	imx27_add_fec(&fec_info);
@@ -325,7 +290,6 @@ static int neso_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_NESO);
 

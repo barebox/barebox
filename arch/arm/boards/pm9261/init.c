@@ -89,18 +89,7 @@ static void pm_add_device_nand(void)
  */
 #if defined(CONFIG_DRIVER_NET_DM9000)
 static struct dm9000_platform_data dm9000_data = {
-	.iobase		= AT91_CHIPSELECT_2,
-	.iodata		= AT91_CHIPSELECT_2 + 4,
-	.buswidth	= DM9000_WIDTH_16,
 	.srom		= 1,
-};
-
-static struct device_d dm9000_dev = {
-	.id		= 0,
-	.name		= "dm9000",
-	.map_base	= AT91_CHIPSELECT_2,
-	.size		= 8,
-	.platform_data	= &dm9000_data,
 };
 
 /*
@@ -130,25 +119,26 @@ static void __init pm_add_device_dm9000(void)
 	/* Configure chip-select 2 (DM9000) */
 	sam9_smc_configure(2, &dm9000_smc_config);
 
-	register_device(&dm9000_dev);
+	add_dm9000_device(0, AT91_CHIPSELECT_2, AT91_CHIPSELECT_2 + 4,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 }
 #else
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9000 */
 
-static struct device_d cfi_dev = {
-	.id		= 0,
-	.name		= "cfi_flash",
-	.map_base	= AT91_CHIPSELECT_0,
-	.size		= 4 * 1024 * 1024,
-};
+static int pm9261_mem_init(void)
+{
+	at91_add_device_sdram(64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(pm9261_mem_init);
 
 static int pm9261_devices_init(void)
 {
-	at91_add_device_sdram(64 * 1024 * 1024);
 	pm_add_device_nand();
-	register_device(&cfi_dev);
 	pm_add_device_dm9000();
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 4 * 1024 * 1024, 0);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x10000, PARTITION_FIXED, "env0");

@@ -44,27 +44,9 @@
 #include <mach/mci.h>
 #include <mach/fb.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= CS6_BASE,
-	.platform_data	= &ram_pdata,
-};
-
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2440_TACLS, A9M2440_TWRPH0, A9M2440_TWRPH1),
 	.flash_bbt = 1,	/* same as the kernel */
-};
-
-static struct device_d nand_dev = {
-	.name     = "s3c24x0_nand",
-	.map_base = S3C24X0_NAND_BASE,
-	.platform_data	= &nand_info,
 };
 
 /*
@@ -75,17 +57,7 @@ static struct device_d nand_dev = {
  * Area 2: Offset 0x304...0x307
  */
 static struct dm9000_platform_data dm9000_data = {
-	.iobase   = CS4_BASE + 0x300,
-	.iodata   = CS4_BASE + 0x304,
-	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
-};
-
-static struct device_d dm9000_dev = {
-	.name     = "dm9000",
-	.map_base = CS4_BASE + 0x300,
-	.size     = 8,
-	.platform_data = &dm9000_data,
 };
 
 static struct s3c_mci_platform_data mci_data = {
@@ -93,12 +65,6 @@ static struct s3c_mci_platform_data mci_data = {
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,
 	.gpio_detect = 232,	/* GPG8_GPIO */
 	.detect_invert = 0,
-};
-
-static struct device_d mci_dev = {
-	.name     = "s3c_mci",
-	.map_base = S3C2410_SDI_BASE,
-	.platform_data	= &mci_data,
 };
 
 static struct fb_videomode s3c24x0_fb_modes[] = {
@@ -164,12 +130,6 @@ static struct s3c_fb_platform_data s3c24x0_fb_data = {
 	.mode_cnt		= sizeof(s3c24x0_fb_modes) / sizeof(struct fb_videomode),
 	.bits_per_pixel		= 16,
 	.passive_display	= 0,
-};
-
-static struct device_d s3cfb_dev = {
-	.name    = "s3c_fb",
-	.map_base = S3C2410_LCD_BASE,
-	.platform_data	= &s3c24x0_fb_data,
 };
 
 static const unsigned pin_usage[] = {
@@ -303,12 +263,18 @@ static const unsigned pin_usage[] = {
 	GPH7_RXD2,
 };
 
+static int mini2440_mem_init(void)
+{
+	arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
+
+	return 0;
+}
+mem_initcall(mini2440_mem_init);
+
 static int mini2440_devices_init(void)
 {
 	uint32_t reg;
 	int i;
-
-	sdram_dev.size = s3c24x0_get_memory_size();
 
 	/* ----------- configure the access to the outer space ---------- */
 	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
@@ -328,9 +294,11 @@ static int mini2440_devices_init(void)
 	reg |= 0x10000;
 	writel(reg, MISCCR);
 
-	register_device(&nand_dev);
-	register_device(&sdram_dev);
-	register_device(&dm9000_dev);
+	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
+			   IORESOURCE_MEM, &nand_info);
+
+	add_dm9000_device(0, CS4_BASE + 0x300, CS4_BASE + 0x304,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
 	devfs_del_partition("self_raw");
@@ -341,10 +309,11 @@ static int mini2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	register_device(&mci_dev);
-	register_device(&s3cfb_dev);
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
+	add_generic_device("s3c_mci", 0, NULL, S3C2410_SDI_BASE, 0,
+			   IORESOURCE_MEM, &mci_data);
+	add_generic_device("s3c_fb", 0, NULL, S3C2410_LCD_BASE, 0,
+			   IORESOURCE_MEM, &s3c24x0_fb_data);
+	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
 	return 0;
@@ -359,12 +328,6 @@ void __bare_init nand_boot(void)
 }
 #endif
 
-static struct device_d mini2440_serial_device = {
-	.name     = "s3c24x0_serial",
-	.map_base = UART1_BASE,
-	.size     = UART1_SIZE,
-};
-
 static int mini2440_console_init(void)
 {
 	/*
@@ -376,7 +339,8 @@ static int mini2440_console_init(void)
 	s3c_gpio_mode(GPH2_TXD0);
 	s3c_gpio_mode(GPH3_RXD0);
 
-	register_device(&mini2440_serial_device);
+	add_generic_device("s3c24x0_serial", -1, NULL, UART1_BASE, UART1_SIZE,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

@@ -41,19 +41,6 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -66,20 +53,6 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbotg_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-};
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pca100_usb_register(void)
 {
 	mdelay(10);
@@ -90,29 +63,19 @@ static void pca100_usb_register(void)
 	mdelay(10);
 
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
-	register_device(&usbotg_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
 	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pca100_mmu_init(void)
+static int pca100_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void pca100_mmu_init(void)
-{
-}
-#endif
+mem_initcall(pca100_mem_init);
 
 static void pca100_usb_init(void)
 {
@@ -224,7 +187,6 @@ static int pca100_devices_init(void)
 		imx_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
 	imx27_add_fec(&fec_info);
 	imx27_add_mmc0(NULL);
 
@@ -241,7 +203,6 @@ static int pca100_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(2149);
 
@@ -250,17 +211,9 @@ static int pca100_devices_init(void)
 
 device_initcall(pca100_devices_init);
 
-static struct device_d pca100_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int pca100_console_init(void)
 {
-	pca100_mmu_init();
-	register_device(&pca100_serial_device);
+	imx27_add_uart0();
 	return 0;
 }
 

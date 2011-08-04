@@ -70,12 +70,8 @@ config ENVIRONMENT_VARIABLES
 
 menu "memory layout                 "
 
-config HAVE_MMU
-	bool
-
 config MMU
 	bool "Enable MMU"
-	depends on HAVE_MMU
 	help
 	  Saying yes here enables the MMU. This is useful on some architectures
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt
@@ -482,4 +478,14 @@ config ENABLE_DEVICE_NOISE
 	help
 	  Enable this to get noisy device handling routines
 
+config DEBUG_LL
+	bool
+	depends on HAS_DEBUG_LL
+	prompt "low level debug messages"
+	help
+	  Enable this to get low level debug messages during barebox initialization.
+
 endmenu
+
+config HAS_DEBUG_LL
+	bool

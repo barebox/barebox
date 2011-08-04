@@ -1,9 +1,6 @@
-/*
- * (C) Copyright 2002
- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
+/**
+ * @file
+ * @brief Global defintions for the ARM i.MX51 based babbage board
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -21,10 +18,7 @@
  * MA 02111-1307 USA
  */
 
-#ifndef	__ASM_GBL_DATA_H
-#define __ASM_GBL_DATA_H
-typedef	struct	global_data gd_t;
+#ifndef __CONFIG_H
+#define __CONFIG_H
 
-#define DECLARE_GLOBAL_DATA_PTR
-
-#endif /* __ASM_GBL_DATA_H */
+#endif	/* __CONFIG_H */

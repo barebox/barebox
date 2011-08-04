@@ -35,22 +35,10 @@ static struct mxs_mci_platform_data mci_pdata = {
 	.f_max = 25000000,
 };
 
-static struct device_d mci_socket = {
-	.name = "mxs_mci",
-	.map_base = IMX_SSP0_BASE,
-	.platform_data = &mci_pdata,
-};
-
 /* PhyAD[0..2]=0, RMIISEL=1 */
 static struct fec_platform_data fec_info = {
 	.xcv_type = RMII,
 	.phy_addr = 0,
-};
-
-static struct device_d fec_dev = {
-	.name = "fec_imx",
-	.map_base = IMX_FEC0_BASE,
-	.platform_data = &fec_info,
 };
 
 /*
@@ -215,13 +203,6 @@ static struct imx_fb_platformdata tx28_fb_pdata = {
 	.enable = tx28_fb_enable,
 };
 
-static struct device_d ldcif_dev = {
-	.name = "stmfb",
-	.map_base = IMX_FB_BASE,
-	.size = 4096,
-	.platform_data = &tx28_fb_pdata,
-};
-
 static const uint32_t tx28_starterkit_pad_setup[] = {
 	/*
 	 * Part II of phy's initialization
@@ -378,17 +359,20 @@ void base_board_init(void)
 	/* run the SSP unit clock at 100 MHz */
 	imx_set_sspclk(0, 100000000, 1);
 
-	register_device(&mci_socket);
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0,
+			   IORESOURCE_MEM, &mci_pdata);
 
 	if (tx28_fb_pdata.fixed_screen < (void *)&_end) {
 		printf("Warning: fixed_screen overlaps barebox\n");
 		tx28_fb_pdata.fixed_screen = NULL;
 	}
 
-	register_device(&ldcif_dev);
+	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
+			   IORESOURCE_MEM, &tx28_fb_pdata);
 
 	imx_enable_enetclk();
-	register_device(&fec_dev);
+	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0,
+			   IORESOURCE_MEM, &fec_info);
 
 	ret = register_persistent_environment();
 	if (ret != 0)
@@ -396,15 +380,12 @@ void base_board_init(void)
 				"storage (%d)\n", ret);
 }
 
-static struct device_d tx28kit_serial_device = {
-	.name     = "stm_serial",
-	.map_base = IMX_DBGUART_BASE,
-	.size     = 8192,
-};
-
 static int tx28kit_console_init(void)
 {
-	return register_device(&tx28kit_serial_device);
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+			   IORESOURCE_MEM, NULL);
+	
+	return 0;
 }
 
 console_initcall(tx28kit_console_init);

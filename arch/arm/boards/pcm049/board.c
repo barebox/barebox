@@ -43,81 +43,26 @@
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
-};
-
-static struct device_d pcm049_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = OMAP44XX_UART3_BASE,
-	.size = 1024,
-	.platform_data = (void *)&serial_plat,
 };
 
 static int pcm049_console_init(void)
 {
 	/* Register the serial port */
-	return register_device(&pcm049_serial_device);
-}
-console_initcall(pcm049_console_init);
-
-static struct memory_platform_data sram_pdata = {
-	.name = "sram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x40300000,
-	.size = 48 * 1024,
-	.platform_data = &sram_pdata,
-};
-
-static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = SZ_512M,
-	.platform_data = &sdram_pdata,
-};
-
-#ifdef CONFIG_MMU
-static int pcm049_mmu_init(void)
-{
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
-	/* warning: This shadows the second half of our ram */
-	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	mmu_enable();
+	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }
-device_initcall(pcm049_mmu_init);
-#endif
+console_initcall(pcm049_console_init);
 
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C100,
-	.size = SZ_4K,
-};
+static int pcm049_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, SZ_512M);
 
-static struct device_d smc911x_dev = {
-	.id		= -1,
-	.name		= "smc911x",
-	.map_base	= 0x2C000000,
-	.size		= 0x4000,
-};
+	add_mem_device("sram0", 0x40300000, 48 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
+	return 0;
+}
+mem_initcall(pcm049_mem_init);
 
 static struct gpmc_config net_cfg = {
 	.cfg = {
@@ -136,14 +81,14 @@ static void pcm049_network_init(void)
 {
 	gpmc_cs_config(5, &net_cfg);
 
-	register_device(&smc911x_dev);
+	add_generic_device("smc911x", -1, NULL, 0x2C000000, 0x4000,
+			   IORESOURCE_MEM, NULL);
 }
 
 static int pcm049_devices_init(void)
 {
-	register_device(&sdram_dev);
-	register_device(&sram_dev);
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 
 	gpmc_generic_init(0x10);
 
@@ -160,7 +105,6 @@ static int pcm049_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM049);
 

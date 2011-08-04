@@ -14,8 +14,8 @@
  * static struct device_d my_nand_device = {
  *	.name = "gpmc_nand",
  *	.id = some identifier you need to show.. e.g. "gpmc_nand0"
- *	.map_base = GPMC base address
- *	.size = GPMC address map size.
+ *	.resource[0].start = GPMC base address
+ *	.resource[0].size = GPMC address map size.
  *	.platform_data = platform data - required - explained below
  * };
  * platform data required:
@@ -97,7 +97,7 @@ struct gpmc_nand_info {
 	void *gpmc_command;
 	void *gpmc_address;
 	void *gpmc_data;
-	unsigned long gpmc_base;
+	void __iomem *gpmc_base;
 	unsigned char wait_mon_mask;
 	uint64_t timeout;
 	unsigned inuse:1;
@@ -672,7 +672,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	struct gpmc_nand_platform_data *pdata;
 	struct nand_chip *nand;
 	struct mtd_info *minfo;
-	unsigned long cs_base;
+	void __iomem *cs_base;
 	int err;
 	struct nand_ecclayout *layout, *lsp, *llp;
 
@@ -703,7 +703,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 	/* Setup register specific data */
 	oinfo->gpmc_cs = pdata->cs;
-	oinfo->gpmc_base = pdev->map_base;
+	oinfo->gpmc_base = dev_request_mem_region(pdev, 0);
 	cs_base = oinfo->gpmc_base + GPMC_CONFIG1_0 +
 		(pdata->cs * GPMC_CONFIG_CS_SIZE);
 	oinfo->gpmc_command = (void *)(cs_base + GPMC_CS_NAND_COMMAND);

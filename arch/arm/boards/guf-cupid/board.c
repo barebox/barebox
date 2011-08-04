@@ -43,42 +43,16 @@
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
+#include <mach/devices-imx35.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
-};
-
-static struct device_d fec_dev = {
-	.id	  = -1,
-	.name     = "fec_imx",
-	.map_base = IMX_FEC_BASE,
-	.platform_data	= &fec_info,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
 };
 
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
 	.flash_bbt = 1,
-};
-
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "imx_nand",
-	.map_base = IMX_NFC_BASE,
-	.platform_data	= &nand_info,
 };
 
 static struct fb_videomode guf_cupid_fb_mode = {
@@ -122,38 +96,21 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.enable		= cupid_fb_enable,
 };
 
-static struct device_d imx_ipu_fb_dev = {
-	.id		= -1,
-	.name		= "imx-ipu-fb",
-	.map_base	= 0x53fc0000,
-	.size		= 0x1000,
-	.platform_data	= &ipu_fb_data,
-};
-
-static struct device_d esdhc_dev = {
-	.name		= "imx-esdhc",
-	.map_base	= IMX_SDHC1_BASE,
-};
-
-#ifdef CONFIG_MMU
-static int cupid_mmu_init(void)
+static int cupid_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
 
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-
-#ifdef CONFIG_CACHE_L2X0
-	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
-#endif
 	return 0;
 }
-postcore_initcall(cupid_mmu_init);
-#endif
+mem_initcall(cupid_mem_init);
+
+static int cupid_mmu_init(void)
+{
+	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
+
+	return 0;
+}
+postmmu_initcall(cupid_mmu_init);
 
 static int cupid_devices_init(void)
 {
@@ -169,19 +126,17 @@ static int cupid_devices_init(void)
 	else
 		nand_info.width = 1;    /* 8 bit */
 
-	register_device(&fec_dev);
-	register_device(&nand_dev);
+	imx35_add_fec(&fec_info);
+	imx35_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
-	register_device(&imx_ipu_fb_dev);
-	register_device(&esdhc_dev);
+	imx35_add_fb(&ipu_fb_data);
+	imx35_add_mmc0(NULL);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_GUF_CUPID);
 
@@ -189,13 +144,6 @@ static int cupid_devices_init(void)
 }
 
 device_initcall(cupid_devices_init);
-
-static struct device_d cupid_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 16 * 1024,
-};
 
 static struct pad_desc cupid_pads[] = {
 	/* UART1 */
@@ -289,7 +237,8 @@ static int cupid_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(cupid_pads, ARRAY_SIZE(cupid_pads));
 
-	register_device(&cupid_serial_device);
+	imx35_add_uart0();
+
 	return 0;
 }
 

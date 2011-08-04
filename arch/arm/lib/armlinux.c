@@ -37,11 +37,11 @@
 #include <errno.h>
 
 #include <asm/byteorder.h>
-#include <asm/global_data.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
 #include <asm/armlinux.h>
 #include <asm/system.h>
+#include <asm/memory.h>
 
 static struct tag *params;
 static int armlinux_architecture = 0;
@@ -64,23 +64,16 @@ static void setup_start_tag(void)
 	params = tag_next(params);
 }
 
-struct arm_memory {
-	struct list_head list;
-	struct device_d *dev;
-};
-
-static LIST_HEAD(memory_list);
-
 static void setup_memory_tags(void)
 {
 	struct arm_memory *mem;
 
-	list_for_each_entry(mem, &memory_list, list) {
+	for_each_sdram_bank(mem) {
 		params->hdr.tag = ATAG_MEM;
 		params->hdr.size = tag_size(tag_mem32);
 
-		params->u.mem.start = mem->dev->map_base;
-		params->u.mem.size = mem->dev->size;
+		params->u.mem.start = mem->dev->resource[0].start;
+		params->u.mem.size = mem->dev->resource[0].size;
 
 		params = tag_next(params);
 	}
@@ -194,15 +187,6 @@ void armlinux_set_bootparams(void *params)
 void armlinux_set_architecture(int architecture)
 {
 	armlinux_architecture = architecture;
-}
-
-void armlinux_add_dram(struct device_d *dev)
-{
-	struct arm_memory *mem = xzalloc(sizeof(*mem));
-
-	mem->dev = dev;
-
-	list_add_tail(&mem->list, &memory_list);
 }
 
 void armlinux_set_revision(unsigned int rev)

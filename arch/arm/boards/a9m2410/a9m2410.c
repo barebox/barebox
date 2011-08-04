@@ -35,44 +35,14 @@
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name		= "ram0",
-	.flags		= DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name     	= "ram",
-	.map_base	= CS6_BASE,
-	.platform_data  = &ram_pdata,
-};
-
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(A9M2410_TACLS, A9M2410_TWRPH0, A9M2410_TWRPH1)
 };
 
-static struct device_d nand_dev = {
-	.id	  = -1,
-	.name     = "s3c24x0_nand",
-	.map_base = S3C24X0_NAND_BASE,
-	.platform_data	= &nand_info,
-};
-
-/*
- * SMSC 91C111 network controller on the baseboard
- * connected to CS line 1 and interrupt line
- * GPIO3, data width is 32 bit
- */
-static struct device_d network_dev = {
-	.id       = -1,
-        .name     = "smc91c111",
-        .map_base = CS1_BASE + 0x300,
-        .size     = 16,
-};
-
-static int a9m2410_devices_init(void)
+static int a9m2410_mem_init(void)
 {
+	resource_size_t size = 0;
 	uint32_t reg;
 
 	/*
@@ -83,25 +53,25 @@ static int a9m2410_devices_init(void)
 
 	switch (reg &= 0x7) {
 	case 0:
-		sdram_dev.size = 32 * 1024 * 1024;
+		size = 32 * 1024 * 1024;
 		break;
 	case 1:
-		sdram_dev.size = 64 * 1024 * 1024;
+		size = 64 * 1024 * 1024;
 		break;
 	case 2:
-		sdram_dev.size = 128 * 1024 * 1024;
+		size = 128 * 1024 * 1024;
 		break;
 	case 4:
-		sdram_dev.size = 2 * 1024 * 1024;
+		size = 2 * 1024 * 1024;
 		break;
 	case 5:
-		sdram_dev.size = 4 * 1024 * 1024;
+		size = 4 * 1024 * 1024;
 		break;
 	case 6:
-		sdram_dev.size = 8 * 1024 * 1024;
+		size = 8 * 1024 * 1024;
 		break;
 	case 7:
-		sdram_dev.size = 16 * 1024 * 1024;
+		size = 16 * 1024 * 1024;
 		break;
 	}
 
@@ -130,6 +100,16 @@ static int a9m2410_devices_init(void)
 	 */
 	writel(0x40140, MISCCR);
 
+	arm_add_mem_device("ram0", CS6_BASE, size);
+
+	return 0;
+}
+mem_initcall(a9m2410_mem_init);
+
+static int a9m2410_devices_init(void)
+{
+	uint32_t reg;
+
 	/* ----------- configure the access to the outer space ---------- */
 	reg = readl(BWSCON);
 
@@ -151,9 +131,15 @@ static int a9m2410_devices_init(void)
 	writel(reg, MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	register_device(&nand_dev);
-	register_device(&sdram_dev);
-	register_device(&network_dev);
+	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
+			   IORESOURCE_MEM, &nand_info);
+	/*
+	 * SMSC 91C111 network controller on the baseboard
+	 * connected to CS line 1 and interrupt line
+	 * GPIO3, data width is 32 bit
+	 */
+	add_generic_device("smc91c111", -1, NULL, CS1_BASE + 0x300, 16,
+			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -164,8 +150,7 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void *)sdram_dev.map_base + 0x100);
+	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;
@@ -180,16 +165,10 @@ void __bare_init nand_boot(void)
 }
 #endif
 
-static struct device_d a9m2410_serial_device = {
-	.id       = -1,
-	.name     = "s3c24x0_serial",
-	.map_base = UART1_BASE,
-	.size     = UART1_SIZE,
-};
-
 static int a9m2410_console_init(void)
 {
-	register_device(&a9m2410_serial_device);
+	add_generic_device("s3c24x0_serial", -1, NULL, UART1_BASE, UART1_SIZE,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

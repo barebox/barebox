@@ -37,42 +37,17 @@
 #include <mem_malloc.h>
 #include <reloc.h>
 
-struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xff000000,
-	.size     = 16 * 1024 * 1024,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x0,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct mpc5xxx_fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
 
-struct device_d eth_dev = {
-	.id		= -1,
-	.name		= "fec_mpc5xxx",
-	.map_base	= MPC5XXX_FEC,
-	.platform_data	= &fec_info,
-};
-
 static int devices_init (void)
 {
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	register_device(&eth_dev);
+	add_cfi_flash_device(-1, 0xff000000, 16 * 1024 * 1024, 0);
+	add_mem_device("ram0", 0x0, 64 * 1024 * 1024,
+		       IORESOURCE_MEM_WRITEABLE);
+	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0,
+			   IORESOURCE_MEM, &fec_info);
 
 	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x00f60000, 0x20000, PARTITION_FIXED, "env0");
@@ -82,24 +57,12 @@ static int devices_init (void)
 
 device_initcall(devices_init);
 
-static struct device_d psc3 = {
-	.id	  = -1,
-	.name     = "mpc5xxx_serial",
-	.map_base = MPC5XXX_PSC3,
-	.size     = 4096,
-};
-
-static struct device_d psc6 = {
-	.id	  = -1,
-	.name     = "mpc5xxx_serial",
-	.map_base = MPC5XXX_PSC6,
-	.size     = 4096,
-};
-
 static int console_init(void)
 {
-	register_device(&psc3);
-	register_device(&psc6);
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 4096,
+			   IORESOURCE_MEM, NULL);
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 4096,
+			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 

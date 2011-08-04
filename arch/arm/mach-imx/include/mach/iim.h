@@ -24,6 +24,7 @@
 #define __MACH_IMX_IIM_H
 
 #include <errno.h>
+#include <net.h>
 
 #define IIM_STAT	0x0000
 #define IIM_STATM	0x0004
@@ -46,12 +47,47 @@ struct imx_iim_platform_data {
 };
 
 #ifdef CONFIG_IMX_IIM
+int imx_iim_read(unsigned int bank, int offset, void *buf, int count);
 int imx_iim_get_mac(unsigned char *mac);
 #else
-static inline int imx_iim_get_mac(unsigned char *mac)
+static inline int imx_iim_read(unsigned int bank, int offset, void *buf,
+		int count)
 {
 	return -EINVAL;
 }
 #endif /* CONFIG_IMX_IIM */
+
+static inline int imx51_iim_register_fec_ethaddr(void)
+{
+	int ret;
+	u8 buf[6];
+
+	ret = imx_iim_read(1, 9, buf, 6);
+	if (ret != 6)
+		return -EINVAL;
+
+	eth_register_ethaddr(0, buf);
+
+	return 0;
+}
+
+static inline int imx53_iim_register_fec_ethaddr(void)
+{
+	return imx51_iim_register_fec_ethaddr();
+}
+
+static inline int imx25_iim_register_fec_ethaddr(void)
+{
+	int ret;
+	u8 buf[6];
+
+	ret = imx_iim_read(0, 26, buf, 6);
+	if (ret != 6)
+		return -EINVAL;
+
+	eth_register_ethaddr(0, buf);
+
+	return 0;
+}
 
 #endif /* __MACH_IMX_IIM_H */

@@ -39,85 +39,16 @@
 #include <mach/imx-nand.h>
 #include <mach/devices-imx31.h>
 
-/*
- * Up to 32MiB NOR type flash, connected to
- * CS line 0, data width is 16 bit
- */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = IMX_CS0_BASE,
-	.size     = 32 * 1024 * 1024,	/* area size */
-};
-
-/*
- * up to 2MiB static RAM type memory, connected
- * to CS4, data width is 16 bit
- */
-static struct memory_platform_data sram_dev_pdata0 = {
-	.name = "sram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_CS4_BASE,
-	.size     = IMX_CS4_RANGE,	/* area size */
-	.platform_data = &sram_dev_pdata0,
-};
-
-/*
- * SMSC 9217 network controller
- * connected to CS line 1 and interrupt line
- * GPIO3, data width is 16 bit
- */
-static struct device_d network_dev = {
-	.id	  = -1,
-	.name     = "smc911x",
-	.map_base = IMX_CS1_BASE,
-	.size     = IMX_CS1_RANGE,	/* area size */
-};
-
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define SDRAM0	128
 #elif defined CONFIG_PCM037_SDRAM_BANK0_256MB
 #define SDRAM0	256
 #endif
 
-static struct memory_platform_data ram_dev_pdata0 = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = SDRAM0 * 1024 * 1024,	/* fix size */
-	.platform_data = &ram_dev_pdata0,
-};
-
-#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-
 #if defined CONFIG_PCM037_SDRAM_BANK1_128MB
 #define SDRAM1	128
 #elif defined CONFIG_PCM037_SDRAM_BANK1_256MB
 #define SDRAM1	256
-#endif
-
-static struct memory_platform_data ram_dev_pdata1 = {
-	.name = "ram1",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram1_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS1,
-	.size     = SDRAM1 * 1024 * 1024,	/* fix size */
-	.platform_data = &ram_dev_pdata1,
-};
 #endif
 
 struct imx_nand_platform_data nand_info = {
@@ -127,20 +58,6 @@ struct imx_nand_platform_data nand_info = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbotg_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-};
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pcm037_usb_init(void)
 {
 	u32 tmp;
@@ -229,32 +146,27 @@ static void pcm037_usb_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pcm037_mmu_init(void)
+static int pcm037_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024);
+#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
+	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
+#endif
 
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
+	return 0;
+}
+mem_initcall(pcm037_mem_init);
 
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
-
-#ifdef CONFIG_CACHE_L2X0
+static int pcm037_mmu_init(void)
+{
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);
-#endif
+
+	return 0;
 }
-#else
-static void pcm037_mmu_init(void)
-{
-}
-#endif
+postmmu_initcall(pcm037_mmu_init);
 
 static int imx31_devices_init(void)
 {
-	pcm037_mmu_init();
-
 	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
 	__REG(CSCR_L(0)) = 0x10000d03;
 	__REG(CSCR_A(0)) = 0x00720900;
@@ -271,7 +183,11 @@ static int imx31_devices_init(void)
 	__REG(CSCR_L(5)) = 0x444A0301;
 	__REG(CSCR_A(5)) = 0x44443302;
 
-	register_device(&cfi_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 0, data width is 16 bit
+	 */
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	/*
 	 * Create partitions that should be
@@ -282,24 +198,28 @@ static int imx31_devices_init(void)
 
 	protect_file("/dev/env0", 1);
 
-	register_device(&sram_dev);
+	/*
+	 * up to 2MiB static RAM type memory, connected
+	 * to CS4, data width is 16 bit
+	 */
+	add_mem_device("sram0", IMX_CS4_BASE, IMX_CS4_RANGE, /* area size */
+				   IORESOURCE_MEM_WRITEABLE);
 	imx31_add_nand(&nand_info);
-	register_device(&network_dev);
 
-	register_device(&sdram0_dev);
-#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	register_device(&sdram1_dev);
-#endif
+	/*
+	 * SMSC 9217 network controller
+	 * connected to CS line 1 and interrupt line
+	 * GPIO3, data width is 16 bit
+	 */
+	add_generic_device("smc911x", -1, NULL,	IMX_CS1_BASE, IMX_CS1_RANGE,
+			IORESOURCE_MEM, NULL);
+
 #ifdef CONFIG_USB
 	pcm037_usb_init();
-	register_device(&usbotg_dev);
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
-	armlinux_add_dram(&sdram0_dev);
-#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	armlinux_add_dram(&sdram1_dev);
-#endif
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM037);
 

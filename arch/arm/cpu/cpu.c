@@ -30,6 +30,7 @@
 #include <cache.h>
 #include <asm/mmu.h>
 #include <asm/system.h>
+#include <asm/memory.h>
 
 /**
  * Enable processor's instruction cache
@@ -87,6 +88,19 @@ void arch_shutdown(void)
 		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
 	);
 #endif
+}
+
+LIST_HEAD(memory_list);
+
+void armlinux_add_dram(struct device_d *dev)
+{
+	struct arm_memory *mem = xzalloc(sizeof(*mem));
+
+	mem->dev = dev;
+	mem->start = dev->resource[0].start;
+	mem->size = dev->resource[0].size;
+
+	list_add_tail(&mem->list, &memory_list);
 }
 
 /**

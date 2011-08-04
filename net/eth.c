@@ -34,6 +34,52 @@ static struct eth_device *eth_current;
 
 static LIST_HEAD(netdev_list);
 
+struct eth_ethaddr {
+	struct list_head list;
+	u8 ethaddr[6];
+	int ethid;
+};
+
+static LIST_HEAD(ethaddr_list);
+
+static int eth_get_registered_ethaddr(int ethid, void *buf)
+{
+	struct eth_ethaddr *addr;
+
+	list_for_each_entry(addr, &ethaddr_list, list) {
+		if (addr->ethid == ethid) {
+			memcpy(buf, addr->ethaddr, 6);
+			return 0;
+		}
+	}
+	return -EINVAL;
+}
+
+static void eth_drop_ethaddr(int ethid)
+{
+	struct eth_ethaddr *addr, *tmp;
+
+	list_for_each_entry_safe(addr, tmp, &ethaddr_list, list) {
+		if (addr->ethid == ethid) {
+			list_del(&addr->list);
+			free(addr);
+			return;
+		}
+	}
+}
+
+void eth_register_ethaddr(int ethid, const char *ethaddr)
+{
+	struct eth_ethaddr *addr;
+
+	eth_drop_ethaddr(ethid);
+
+	addr = xzalloc(sizeof(*addr));
+	addr->ethid = ethid;
+	memcpy(addr->ethaddr, ethaddr, 6);
+	list_add_tail(&addr->list, &ethaddr_list);
+}
+
 void eth_set_current(struct eth_device *eth)
 {
 	if (eth_current && eth_current->active) {
@@ -144,6 +190,7 @@ int eth_register(struct eth_device *edev)
         struct device_d *dev = &edev->dev;
 	unsigned char ethaddr_str[20];
 	unsigned char ethaddr[6];
+	int ret, found = 0;
 
 	if (!edev->get_ethaddr) {
 		dev_err(dev, "no get_mac_address found for current eth device\n");
@@ -165,7 +212,17 @@ int eth_register(struct eth_device *edev)
 
 	list_add_tail(&edev->list, &netdev_list);
 
-	if (edev->get_ethaddr(edev, ethaddr) == 0) {
+	ret = eth_get_registered_ethaddr(dev->id, ethaddr);
+	if (!ret)
+		found = 1;
+
+	if (!found) {
+		ret = edev->get_ethaddr(edev, ethaddr);
+		if (!ret)
+			found = 1;
+	}
+
+	if (found) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
 		if (is_valid_ether_addr(ethaddr)) {
 			dev_info(dev, "got MAC address from EEPROM: %s\n", ethaddr_str);

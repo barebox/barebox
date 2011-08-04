@@ -35,6 +35,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/clock.h>
+#include <mach/generic.h>
 
 #include "imx-esdhc.h"
 
@@ -75,6 +76,8 @@ struct fsl_esdhc_host {
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
+#define  SDHCI_CMD_ABORTCMD (0xC0 << 16)
+
 /* Return the XFERTYP flags for a given command and data packet */
 u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 {
@@ -104,6 +107,8 @@ u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 		xfertyp |= XFERTYP_RSPTYP_48_BUSY;
 	else if (cmd->resp_type & MMC_RSP_PRESENT)
 		xfertyp |= XFERTYP_RSPTYP_48;
+	if (cpu_is_mx53() && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+		xfertyp |= SDHCI_CMD_ABORTCMD;
 
 	return XFERTYP_CMD(cmd->cmdidx) | xfertyp;
 }
@@ -233,20 +238,8 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	esdhc_write32(&regs->irqstat, -1);
 
-	/* Wait for the bus to be idle */
-	while ((esdhc_read32(&regs->prsstat) & PRSSTAT_CICHB) ||
-			(esdhc_read32(&regs->prsstat) & PRSSTAT_CIDHB))
-		;
-
-	while (esdhc_read32(&regs->prsstat) & PRSSTAT_DLA)
-		;
-
 	/* Wait at least 8 SD clock cycles before the next command */
-	/*
-	 * Note: This is way more than 8 cycles, but 1ms seems to
-	 * resolve timing issues with some cards
-	 */
-	udelay(1000);
+	udelay(1);
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
@@ -323,6 +316,14 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	}
 
 	esdhc_write32(&regs->irqstat, -1);
+
+	/* Wait for the bus to be idle */
+	while ((esdhc_read32(&regs->prsstat) & PRSSTAT_CICHB) ||
+			(esdhc_read32(&regs->prsstat) & PRSSTAT_CIDHB))
+		;
+
+	while (esdhc_read32(&regs->prsstat) & PRSSTAT_DLA)
+		;
 
 	return 0;
 }
@@ -457,7 +458,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	mci = &host->mci;
 
 	host->dev = dev;
-	host->regs = (struct fsl_esdhc *)dev->map_base;
+	host->regs = dev_request_mem_region(dev, 0);
 
 	/* First reset the eSDHC controller */
 	ret = esdhc_reset(host->regs);

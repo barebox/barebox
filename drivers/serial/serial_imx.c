@@ -161,7 +161,8 @@
 # define	UCR4_VAL UCR4_CTSTL_32
 #endif
 #if defined CONFIG_ARCH_IMX31 || defined CONFIG_ARCH_IMX35 || \
-	defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX51
+	defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX51 || \
+	defined CONFIG_ARCH_IMX53
 # define	UCR1_VAL (0)
 # define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
 # define	UCR4_VAL UCR4_CTSTL_32
@@ -322,7 +323,7 @@ static int imx_serial_probe(struct device_d *dev)
 	priv = xmalloc(sizeof(*priv));
 	cdev = &priv->cdev;
 
-	priv->regs = (void __force __iomem *)dev->map_base;
+	priv->regs = dev_request_mem_region(dev, 0);
 	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

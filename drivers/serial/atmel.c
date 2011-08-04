@@ -313,6 +313,7 @@
  * We wrap our port structure around the generic console_device.
  */
 struct atmel_uart_port {
+	void __iomem		*base;
 	struct console_device	uart;		/* uart */
 	struct clk		*clk;		/* uart clock */
 	u32			uartclk;
@@ -326,31 +327,30 @@ to_atmel_uart_port(struct console_device *uart)
 
 static void atmel_serial_putc(struct console_device *cdev, char c)
 {
-	struct device_d *dev = cdev->dev;
+	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	while (!(readl(dev->map_base + USART3_CSR) & USART3_BIT(TXRDY)));
+	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(TXRDY)));
 
-	writel(c, dev->map_base + USART3_THR);
+	writel(c, uart->base + USART3_THR);
 }
 
 static int atmel_serial_tstc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	return (readl(dev->map_base + USART3_CSR) & USART3_BIT(RXRDY)) != 0;
+	return (readl(uart->base + USART3_CSR) & USART3_BIT(RXRDY)) != 0;
 }
 
 static int atmel_serial_getc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	while (!(readl(dev->map_base + USART3_CSR) & USART3_BIT(RXRDY))) ;
-	return readl(dev->map_base + USART3_RHR);
+	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(RXRDY))) ;
+	return readl(uart->base + USART3_RHR);
 }
 
 static int atmel_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct device_d *dev = cdev->dev;
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 	unsigned long divisor;
 
@@ -360,7 +360,7 @@ static int atmel_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	 *                16 * CD
 	 */
 	divisor = (uart->uartclk / 16 + baudrate / 2) / baudrate;
-	writel(USART3_BF(CD, divisor), dev->map_base + USART3_BRGR);
+	writel(USART3_BF(CD, divisor), uart->base + USART3_BRGR);
 
 	return 0;
 }
@@ -375,20 +375,21 @@ static int atmel_serial_init_port(struct console_device *cdev)
 	struct device_d *dev = cdev->dev;
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
+	uart->base = dev_request_mem_region(dev, 0);
 	uart->clk = clk_get(dev, "usart");
 	clk_enable(uart->clk);
 	uart->uartclk = clk_get_rate(uart->clk);
 
-	writel(USART3_BIT(RSTRX) | USART3_BIT(RSTTX), dev->map_base + USART3_CR);
+	writel(USART3_BIT(RSTRX) | USART3_BIT(RSTTX), uart->base + USART3_CR);
 
 	atmel_serial_setbaudrate(cdev, 115200);
 
-	writel(USART3_BIT(RXEN) | USART3_BIT(TXEN), dev->map_base + USART3_CR);
+	writel(USART3_BIT(RXEN) | USART3_BIT(TXEN), uart->base + USART3_CR);
 	writel((USART3_BF(USART_MODE, USART3_USART_MODE_NORMAL)
 			   | USART3_BF(USCLKS, USART3_USCLKS_MCK)
 			   | USART3_BF(CHRL, USART3_CHRL_8)
 			   | USART3_BF(PAR, USART3_PAR_NONE)
-			   | USART3_BF(NBSTOP, USART3_NBSTOP_1)), dev->map_base + USART3_MR);
+			   | USART3_BF(NBSTOP, USART3_NBSTOP_1)), uart->base + USART3_MR);
 
 	return 0;
 }

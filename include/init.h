@@ -30,10 +30,13 @@ typedef int (*initcall_t)(void);
 #define postcore_initcall(fn)		__define_initcall("2",fn,2)
 #define console_initcall(fn)		__define_initcall("3",fn,3)
 #define postconsole_initcall(fn)	__define_initcall("4",fn,4)
-#define coredevice_initcall(fn)		__define_initcall("5",fn,5)
-#define fs_initcall(fn)			__define_initcall("6",fn,6)
-#define device_initcall(fn)		__define_initcall("7",fn,7)
-#define late_initcall(fn)		__define_initcall("8",fn,8)
+#define mem_initcall(fn)		__define_initcall("5",fn,5)
+#define mmu_initcall(fn)		__define_initcall("6",fn,6)
+#define postmmu_initcall(fn)		__define_initcall("7",fn,7)
+#define coredevice_initcall(fn)		__define_initcall("8",fn,8)
+#define fs_initcall(fn)			__define_initcall("9",fn,9)
+#define device_initcall(fn)		__define_initcall("10",fn,10)
+#define late_initcall(fn)		__define_initcall("11",fn,11)
 
 /* section for code used very early when
  * - we're not running from where we linked at

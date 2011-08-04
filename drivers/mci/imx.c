@@ -493,7 +493,7 @@ static int mxcmci_probe(struct device_d *dev)
 	host->mci.init = mxcmci_init;
 	host->mci.host_caps = MMC_MODE_4BIT;
 
-	host->base = (struct mxcmci_regs *)dev->map_base;
+	host->base = dev_request_mem_region(dev, 0);
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

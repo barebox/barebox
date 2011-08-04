@@ -900,19 +900,21 @@ static int ehci_probe(struct device_d *dev)
 	host = &ehci->host;
 	dev->priv = ehci;
 
-	if (pdata) {
+	/* default to EHCI_HAS_TT to not change behaviour of boards
+	 * without platform_data
+	 */
+	if (pdata)
 		ehci->flags = pdata->flags;
-		ehci->hccr = (void *)(dev->map_base + pdata->hccr_offset);
-		ehci->hcor = (void *)(dev->map_base + pdata->hcor_offset);
-	}
-	else {
-		/* default to EHCI_HAS_TT to not change behaviour of boards
-		 * with platform_data
-		 */
+	else
 		ehci->flags = EHCI_HAS_TT;
-		ehci->hccr = (void *)(dev->map_base + 0x100);
-		ehci->hcor = (void *)(dev->map_base + 0x140);
+
+	if (dev->num_resources < 2) {
+		printf("echi: need 2 resources base and data");
+		return -ENODEV;
 	}
+
+	ehci->hccr = dev_request_mem_region(dev, 0);
+	ehci->hcor = dev_request_mem_region(dev, 1);
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;

@@ -19,7 +19,6 @@
  */
 
 #include <common.h>
-#include <net.h>
 #include <init.h>
 #include <environment.h>
 #include <mach/imx-regs.h>
@@ -40,19 +39,7 @@
 #include <mach/generic.h>
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id       = -1,
-	.name     = "mem",
-	.map_base = 0x90000000,
-	.size     = 512 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
+#include <mach/iim.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -86,23 +73,13 @@ static struct pad_desc f3s_pads[] = {
 	IOMUX_PAD(0x60C, 0x21C, 3, 0x0, 0, 0x85), /* FIXME: needed? */
 };
 
-#ifdef CONFIG_MMU
-static void babbage_mmu_init(void)
+static int babbage_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024);
 
-	arm_create_section(0x90000000, 0x90000000, 512, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0x90000000, 512, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x20000000);
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void babbage_mmu_init(void)
-{
-}
-#endif
+mem_initcall(babbage_mem_init);
 
 #define BABBAGE_ECSPI1_CS0	(3 * 32 + 24)
 static int spi_0_cs[] = {BABBAGE_ECSPI1_CS0};
@@ -240,9 +217,7 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
-	babbage_mmu_init();
-
-	register_device(&sdram_dev);
+	imx51_iim_register_fec_ethaddr();
 	imx51_add_fec(&fec_info);
 	imx51_add_mmc0(NULL);
 
@@ -252,7 +227,6 @@ static int f3s_devices_init(void)
 
 	babbage_power_init();
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 

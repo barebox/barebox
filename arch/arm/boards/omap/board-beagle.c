@@ -237,17 +237,6 @@ void board_init(void)
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
-};
-
-static struct device_d beagle_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = OMAP_UART3_BASE,
-	.size = 1024,
-	.platform_data = (void *)&serial_plat,
 };
 
 /**
@@ -259,23 +248,13 @@ static struct device_d beagle_serial_device = {
 static int beagle_console_init(void)
 {
 	/* Register the serial port */
-	return register_device(&beagle_serial_device);
+	add_ns16550_device(-1, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+			   &serial_plat);
+
+	return 0;
 }
 console_initcall(beagle_console_init);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
-
-static struct memory_platform_data sram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = 128 * 1024 * 1024,
-	.platform_data = &sram_pdata,
-};
 
 #ifdef CONFIG_USB_EHCI_OMAP
 static struct omap_hcd omap_ehci_pdata = {
@@ -290,24 +269,8 @@ static struct omap_hcd omap_ehci_pdata = {
 
 static struct ehci_platform_data ehci_pdata = {
 	.flags = 0,
-	.hccr_offset = 0x100,
-	.hcor_offset = 0x110,
-};
-
-static struct device_d usbh_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = 0x48064700,
-	.size     = 4 * 1024,
-	.platform_data = &ehci_pdata,
 };
 #endif /* CONFIG_USB_EHCI_OMAP */
-
-static struct device_d i2c_dev = {
-	.id		= -1,
-	.name		= "i2c-omap",
-	.map_base	= OMAP_I2C1_BASE,
-};
 
 static struct i2c_board_info i2c_devices[] = {
 	{
@@ -315,27 +278,24 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C000,
-	.size = SZ_4K,
-};
+static int beagle_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(beagle_mem_init);
 
 static int beagle_devices_init(void)
 {
-	int ret;
-
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
-
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	register_device(&i2c_dev);
+	add_generic_device("i2c-omap", -1, NULL, 0x4809C000, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
-		register_device(&usbh_dev);
+		add_usb_ehci_device(-1, 0x48064700 + 0x100,
+				    0x48064700 + 0x110, &ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_GPMC
 	/* WP is made high and WAIT1 active Low */
@@ -343,13 +303,13 @@ static int beagle_devices_init(void)
 #endif
 	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_HAMMING_CODE_HW_ROMCODE);
 
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, OMAP_I2C1_BASE, 0,
+			   IORESOURCE_MEM, NULL);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);
-failed:
-	return ret;
+
+	return 0;
 }
 device_initcall(beagle_devices_init);
 

@@ -16,7 +16,7 @@ config DRIVER_SPI_IMX_0_0
 
 config DRIVER_SPI_IMX_2_3
 	bool
-	depends on ARCH_IMX51
+	depends on ARCH_IMX51 || ARCH_IMX53
 	default y
 
 endmenu

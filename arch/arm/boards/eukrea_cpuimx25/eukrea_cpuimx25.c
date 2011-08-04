@@ -37,6 +37,7 @@
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
+#include <mach/iim.h>
 #include <fec.h>
 #include <nand.h>
 #include <mach/imx-flash-header.h>
@@ -88,19 +89,6 @@ unsigned long __image_len_section barebox_len = 0x40000;
 static struct fec_platform_data fec_info = {
 	.xcv_type	= RMII,
 	.phy_addr	= 1,
-};
-
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &sdram_pdata,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -161,12 +149,6 @@ static void imx25_usb_init(void)
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
 
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
 static struct fsl_usb2_platform_data usb_pdata = {
@@ -174,30 +156,13 @@ static struct fsl_usb2_platform_data usb_pdata = {
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
 
-static struct device_d usbotg_dev = {
-	.name     = "fsl-udc",
-	.map_base = IMX_OTG_BASE,
-	.size     = 0x200,
-	.platform_data = &usb_pdata,
-};
-
-#ifdef CONFIG_MMU
-static void eukrea_cpuimx25_mmu_init(void)
+static int eukrea_cpuimx25_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024);
 
-	arm_create_section(0x80000000, 0x80000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	return 0;
 }
-#else
-static void eukrea_cpuimx25_mmu_init(void)
-{
-}
-#endif
+mem_initcall(eukrea_cpuimx25_mem_init);
 
 static struct pad_desc eukrea_cpuimx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,
@@ -255,13 +220,12 @@ static struct pad_desc eukrea_cpuimx25_pads[] = {
 
 static int eukrea_cpuimx25_devices_init(void)
 {
-	eukrea_cpuimx25_mmu_init();
-
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
 		ARRAY_SIZE(eukrea_cpuimx25_pads));
 
 	led_gpio_register(&led0);
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	nand_info.width = 1;
@@ -274,8 +238,6 @@ static int eukrea_cpuimx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000,
 		PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
-	register_device(&sdram0_dev);
 
 	/* enable LCD */
 	gpio_direction_output(26, 1);
@@ -291,11 +253,11 @@ static int eukrea_cpuimx25_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx25_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
-	register_device(&usbotg_dev);
+	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25);
 

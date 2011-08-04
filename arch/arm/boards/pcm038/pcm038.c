@@ -47,39 +47,6 @@
 
 #include "pll.h"
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name = "sram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xc8000000,
-	.size     = 512 * 1024, /* Can be up to 2MiB */
-	.platform_data = &sram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -142,13 +109,6 @@ static struct imx_fb_platform_data pcm038_fb_data = {
 };
 
 #ifdef CONFIG_USB
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
-
 static void pcm038_usbh_init(void)
 {
 	uint32_t temp;
@@ -169,23 +129,15 @@ static void pcm038_usbh_init(void)
 }
 #endif
 
-#ifdef CONFIG_MMU
-static void pcm038_mmu_init(void)
+static int pcm038_mem_init(void)
 {
-	mmu_init();
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 
-	arm_create_section(0xa0000000, 0xa0000000, 128, PMD_SECT_DEF_CACHED);
-	arm_create_section(0xb0000000, 0xa0000000, 128, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
+				   IORESOURCE_MEM_WRITEABLE);
+	return 0;
 }
-#else
-static void pcm038_mmu_init(void)
-{
-}
-#endif
+mem_initcall(pcm038_mem_init);
 
 static int pcm038_devices_init(void)
 {
@@ -263,8 +215,6 @@ static int pcm038_devices_init(void)
 		PD26_AF_USBH2_DATA5,
 	};
 
-	pcm038_mmu_init();
-
 	/* configure 16 bit nor flash on cs0 */
 	CS0U = 0x0000CC03;
 	CS0L = 0xa0330D01;
@@ -289,18 +239,17 @@ static int pcm038_devices_init(void)
 
 	gpio_direction_output(GPIO_PORTD | 28, 0);
 	gpio_set_value(GPIO_PORTD | 28, 0);
+
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
-	register_device(&sdram_dev);
-	register_device(&sram_dev);
 	imx27_add_fb(&pcm038_fb_data);
 
 #ifdef CONFIG_USB
 	pcm038_usbh_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	/* Register the fec device after the PLL re-initialisation
@@ -330,7 +279,6 @@ static int pcm038_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
 

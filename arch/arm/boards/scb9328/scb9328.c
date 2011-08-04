@@ -32,41 +32,10 @@
 #include <fcntl.h>
 #include <dm9000.h>
 #include <led.h>
-
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-
-	.map_base = 0x10000000,
-	.size     = 16 * 1024 * 1024,
-};
-
-static struct memory_platform_data sdram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x08000000,
-	.size     = 16 * 1024 * 1024,
-	.platform_data = &sdram_pdata,
-};
+#include <mach/devices-imx1.h>
 
 static struct dm9000_platform_data dm9000_data = {
-	.iobase   = 0x16000000,
-	.iodata   = 0x16000004,
-	.buswidth = DM9000_WIDTH_16,
 	.srom     = 1,
-};
-
-static struct device_d dm9000_dev = {
-	.id	  = -1,
-	.name     = "dm9000",
-	.map_base = 0x16000000,
-	.size     = 8,
-	.platform_data = &dm9000_data,
 };
 
 struct gpio_led leds[] = {
@@ -80,6 +49,14 @@ struct gpio_led leds[] = {
 		.gpio = 32 + 24,
 	},
 };
+
+static int scb9328_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(scb9328_mem_init);
 
 static int scb9328_devices_init(void)
 {
@@ -111,15 +88,14 @@ static int scb9328_devices_init(void)
 	CS5U = 0x00008400;
 	CS5L = 0x00000D03;
 
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	register_device(&dm9000_dev);
+	add_cfi_flash_device(-1, 0x10000000, 16 * 1024 * 1024, 0);
+	add_dm9000_device(-1, 0x16000000, 0x16000004,
+			  IORESOURCE_MEM_16BIT, &dm9000_data);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x08000100);
 	armlinux_set_architecture(MACH_TYPE_SCB9328);
 
@@ -128,20 +104,14 @@ static int scb9328_devices_init(void)
 
 device_initcall(scb9328_devices_init);
 
-static struct device_d scb9328_serial_device = {
-	.id	  = -1,
-	.name     = "imx_serial",
-	.map_base = IMX_UART1_BASE,
-	.size     = 4096,
-};
-
 static int scb9328_console_init(void)
 {
 	/* init gpios for serial port */
 	imx_gpio_mode(PC11_PF_UART1_TXD);
 	imx_gpio_mode(PC12_PF_UART1_RXD);
 
-	register_device(&scb9328_serial_device);
+	imx1_add_uart0();
+
 	return 0;
 }
 

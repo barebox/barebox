@@ -213,6 +213,23 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
+void __iomem *dev_get_mem_region(struct device_d *dev, int num)
+{
+	int i, n = 0;
+
+	for (i = 0; i < dev->num_resources; i++) {
+		struct resource *res = &dev->resource[i];
+		if (resource_type(res) == IORESOURCE_MEM) {
+			if (n == num)
+				return (void __force __iomem *)res->start;
+			n++;
+		}
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(dev_get_mem_region);
+
 int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {
 	printf("%s: currently broken\n", __func__);
@@ -226,7 +243,7 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 
 	if (flags & PROT_WRITE)
 		return -EACCES;
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 
@@ -235,7 +252,7 @@ int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 	if (!cdev->dev)
 		return -EINVAL;
 
-	*map = (void *)cdev->dev->map_base;
+	*map = dev_get_mem_region(cdev->dev, 0);
 	return 0;
 }
 
@@ -249,7 +266,7 @@ const char *dev_id(const struct device_d *dev)
 {
 	static char buf[MAX_DRIVER_NAME + 16];
 
-	snprintf(buf, sizeof(buf), FORMAT_DRIVER_MANE_ID, dev->name, dev->id);
+	snprintf(buf, sizeof(buf), FORMAT_DRIVER_NAME_ID, dev->name, dev->id);
 
 	return buf;
 }
@@ -302,6 +319,8 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 	struct device_d *dev;
 	struct driver_d *drv;
 	struct param_d *param;
+	int i;
+	struct resource *res;
 
 	if (argc == 1) {
 		printf("devices:\n");
@@ -322,9 +341,17 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 			return -1;
 		}
 
-		printf("base  : 0x%08x\nsize  : 0x%08x\ndriver: %s\n\n",
-			dev->map_base, dev->size,
-			dev->driver ? 
+		printf("resources:\n");
+		for (i = 0; i < dev->num_resources; i++) {
+			res = &dev->resource[i];
+			printf("num   : %d\n", i);
+			if (res->name)
+				printf("name  : %s\n", res->name);
+			printf("start : 0x%08x\nsize  : 0x%08x\n",
+			       res->start, res->size);
+		}
+
+		printf("driver: %s\n\n", dev->driver ?
 				dev->driver->name : "none");
 
 		if (dev->driver)

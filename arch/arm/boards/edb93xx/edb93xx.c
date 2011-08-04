@@ -34,83 +34,30 @@
 
 #define DEVCFG_U1EN (1 << 18)
 
-/*
- * Up to 32MiB NOR type flash, connected to
- * CS line 6, data width is 16 bit
- */
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0x60000000,
-	.size     = EDB93XX_CFI_FLASH_SIZE,
-};
-
-static struct memory_platform_data ram_dev_pdata0 = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = CONFIG_EP93XX_SDRAM_BANK0_BASE,
-	.size     = CONFIG_EP93XX_SDRAM_BANK0_SIZE,
-	.platform_data = &ram_dev_pdata0,
-};
-
+static int ep93xx_mem_init(void)
+{
+	arm_add_mem_device("ram0", CONFIG_EP93XX_SDRAM_BANK0_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK0_SIZE);
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
-static struct memory_platform_data ram_dev_pdata1 = {
-	.name = "ram1",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram1_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = CONFIG_EP93XX_SDRAM_BANK1_BASE,
-	.size     = CONFIG_EP93XX_SDRAM_BANK1_SIZE,
-	.platform_data = &ram_dev_pdata1,
-};
+	arm_add_mem_device("ram1", CONFIG_EP93XX_SDRAM_BANK1_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK1_SIZE);
 #endif
-
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 3)
-static struct memory_platform_data ram_dev_pdata2 = {
-	.name = "ram2",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram2_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = CONFIG_EP93XX_SDRAM_BANK2_BASE,
-	.size     = CONFIG_EP93XX_SDRAM_BANK2_SIZE,
-	.platform_data = &ram_dev_pdata2,
-};
+	arm_add_mem_device("ram2", CONFIG_EP93XX_SDRAM_BANK2_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
 #endif
-
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
-static struct memory_platform_data ram_dev_pdata3 = {
-	.name = "ram3",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram3_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = CONFIG_EP93XX_SDRAM_BANK3_BASE,
-	.size     = CONFIG_EP93XX_SDRAM_BANK3_SIZE,
-	.platform_data = &ram_dev_pdata3,
-};
+	arm_add_mem_device("ram3", CONFIG_EP93XX_SDRAM_BANK3_BASE,
+				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
 #endif
 
-static struct device_d eth_dev = {
-	.id	  = -1,
-	.name     = "ep93xx_eth",
-};
+	return 0;
+}
+mem_initcall(ep93xx_mem_init);
 
 static int ep93xx_devices_init(void)
 {
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
 
 	/*
 	 * Create partitions that should be
@@ -121,29 +68,11 @@ static int ep93xx_devices_init(void)
 
 	protect_file("/dev/env0", 1);
 
-	register_device(&sdram0_dev);
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
-	register_device(&sdram1_dev);
-#endif
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 3)
-	register_device(&sdram2_dev);
-#endif
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
-	register_device(&sdram3_dev);
-#endif
-
-	armlinux_add_dram(&sdram0_dev);
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 2)
-	armlinux_add_dram(&sdram1_dev);
-#endif
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS >= 3)
-	armlinux_add_dram(&sdram2_dev);
-#endif
-#if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
-	armlinux_add_dram(&sdram3_dev);
-#endif
-
-	register_device(&eth_dev);
+	/*
+	 * Up to 32MiB NOR type flash, connected to
+	 * CS line 6, data width is 16 bit
+	 */
+	add_generic_device("ep93xx_eth", -1, NULL, 0, 0, IORESOURCE_MEM, NULL);
 
 	armlinux_set_bootparams((void *)CONFIG_EP93XX_SDRAM_BANK0_BASE + 0x100);
 
@@ -153,13 +82,6 @@ static int ep93xx_devices_init(void)
 }
 
 device_initcall(ep93xx_devices_init);
-
-static struct device_d edb93xx_serial_device = {
-	.id	  = -1,
-	.name     = "pl010_serial",
-	.map_base = UART1_BASE,
-	.size     = 4096,
-};
 
 static int edb93xx_console_init(void)
 {
@@ -179,7 +101,8 @@ static int edb93xx_console_init(void)
 	writel(0xAA, &syscon->sysswlock);
 	writel(value, &syscon->devicecfg);
 
-	register_device(&edb93xx_serial_device);
+	add_generic_device("pl010_serial", -1, NULL, UART1_BASE, 4096,
+			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

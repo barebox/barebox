@@ -37,6 +37,7 @@
 #include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
+#include <mach/iim.h>
 #include <linux/err.h>
 #include <i2c/i2c.h>
 #include <mfd/mc34704.h>
@@ -113,38 +114,6 @@ static struct fec_platform_data fec_info = {
 	.phy_addr	= 1,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = IMX_SDRAM_CS0,
-#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	.size     = 64 * 1024 * 1024,
-#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	.size     = 128 * 1024 * 1024,
-#else
-#error "Unsupported SDRAM type"
-#endif
-	.platform_data = &sdram_pdata,
-};
-
-static struct memory_platform_data sram_pdata = {
-	.name	= "sram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sram0_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0x78000000,
-	.size     = 128 * 1024,
-	.platform_data = &sram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width	= 1,
 	.hw_ecc	= 1,
@@ -169,13 +138,6 @@ static void imx25_usb_init(void)
 	tmp = readl(IMX_OTG_BASE + 0x5a8);
 	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
 }
-
-static struct device_d usbh2_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = IMX_OTG_BASE + 0x400,
-	.size     = 0x200,
-};
 #endif
 
 static struct i2c_board_info i2c_devices[] = {
@@ -230,6 +192,22 @@ static int imx25_3ds_fec_init(void)
 }
 late_initcall(imx25_3ds_fec_init);
 
+static int imx25_mem_init(void)
+{
+#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
+#define SDRAM_SIZE	64 * 1024 * 1024
+#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
+#define SDRAM_SIZE	128 * 1024 * 1024
+#else
+#error "Unsupported SDRAM type"
+#endif
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM_SIZE);
+	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
+
+	return 0;
+}
+mem_initcall(imx25_mem_init);
+
 static int imx25_devices_init(void)
 {
 #ifdef CONFIG_USB
@@ -237,9 +215,10 @@ static int imx25_devices_init(void)
 	 * the CPLD has to be initialized.
 	 */
 	imx25_usb_init();
-	register_device(&usbh2_dev);
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
+	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
@@ -253,13 +232,9 @@ static int imx25_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	register_device(&sdram0_dev);
-	register_device(&sram0_dev);
-
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx25_add_i2c0(NULL);
 
-	armlinux_add_dram(&sdram0_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
 	armlinux_set_serial(imx_uid());

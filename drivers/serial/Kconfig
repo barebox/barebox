@@ -28,7 +28,7 @@ config DRIVER_SERIAL_NETX
 	default y
 	bool "Netx serial driver"
 
-config DRIVER_SERIAL_LINUX_COMSOLE
+config DRIVER_SERIAL_LINUX_CONSOLE
 	depends on LINUX
 	default y
 	bool "linux console driver"

@@ -702,7 +702,7 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 	host->send_cmd = mxs_mci_request,
 	host->set_ios = mxs_mci_set_ios,
 	host->init = mxs_mci_initialize,
-	mxs_mci->regs = (void *)hw_dev->map_base;
+	mxs_mci->regs = dev_request_mem_region(dev, 0);
 
 	/* feed forward the platform specific values */
 	host->voltages = pd->voltages;
@@ -713,7 +713,7 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 #endif
 #ifdef CONFIG_ARCH_IMX28
 	/* one dedicated clock per unit */
-	switch (hw_dev->map_base) {
+	switch (hw_dev->resource[0].start) {
 	case IMX_SSP0_BASE:
 		mxs_mci->index = 0;
 		break;

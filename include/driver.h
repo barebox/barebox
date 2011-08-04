@@ -24,9 +24,10 @@
 #define DRIVER_H
 
 #include <linux/list.h>
+#include <linux/ioport.h>
 
 #define MAX_DRIVER_NAME		32
-#define FORMAT_DRIVER_MANE_ID	"%s%d"
+#define FORMAT_DRIVER_NAME_ID	"%s%d"
 
 #include <param.h>
 
@@ -70,11 +71,8 @@ struct device_d {
 	 * something like eth0 or nor0. */
 	int id;
 
-	resource_size_t size;
-
-	/*! For devices which are directly mapped into memory, i.e. NOR
-	 * Flash or SDRAM. */
-	resource_size_t map_base;
+	struct resource *resource;
+	int num_resources;
 
 	void *platform_data; /*! board specific information about this device */
 
@@ -182,6 +180,81 @@ extern const char *dev_id(const struct device_d *dev);
 static inline const char *dev_name(const struct device_d *dev)
 {
 	return dev_id(dev);
+}
+
+/*
+ * get register base 'num' for a device
+ */
+void __iomem *dev_get_mem_region(struct device_d *dev, int num);
+
+/*
+ * exlusively request register base 'num' for a device
+ */
+static inline void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+{
+	/* no resource tracking yet */
+	return dev_get_mem_region(dev, num);
+}
+
+/*
+ * register a generic device
+ * with only one resource
+ */
+struct device_d *add_generic_device(const char* devname, int id, const char *resname,
+		resource_size_t start, resource_size_t size, unsigned int flags,
+		void *pdata);
+
+/*
+ * register a memory device
+ */
+static inline struct device_d *add_mem_device(const char *name, resource_size_t start,
+		resource_size_t size, unsigned int flags)
+{
+	return add_generic_device("mem", -1, name, start, size,
+				  IORESOURCE_MEM | flags, NULL);
+}
+
+static inline struct device_d *add_cfi_flash_device(int id, resource_size_t start,
+		resource_size_t size, unsigned int flags)
+{
+	return add_generic_device("cfi_flash", id, NULL, start, size,
+				  IORESOURCE_MEM | flags, NULL);
+}
+
+struct NS16550_plat;
+static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
+		resource_size_t size, int flags, struct NS16550_plat *pdata)
+{
+	return add_generic_device("serial_ns16550", id, NULL, start, size,
+				  IORESOURCE_MEM | flags, pdata);
+}
+
+#ifdef CONFIG_DRIVER_NET_DM9000
+struct device_d *add_dm9000_device(int id, resource_size_t base,
+		resource_size_t data, int flags, void *pdata);
+#else
+static inline struct device_d *add_dm9000_device(int id, resource_size_t base,
+		resource_size_t data, int flags, void *pdata)
+{
+	return NULL;
+}
+#endif
+
+#ifdef CONFIG_USB_EHCI
+struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata);
+#else
+static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+		resource_size_t hcor, void *pdata)
+{
+	return NULL;
+}
+#endif
+
+static inline struct device_d *add_generic_usb_ehci_device(int id,
+		resource_size_t base, void *pdata)
+{
+	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
 }
 
 /* linear list over all available devices
@@ -326,16 +399,10 @@ int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)
 #define DEVFS_IS_PARTITION		(1 << 2)
-#define DEVFS_RDWR			(1 << 3)
 
 int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
-
-struct memory_platform_data {
-	char *name;
-	unsigned int flags;
-};
 
 #endif /* DRIVER_H */
 

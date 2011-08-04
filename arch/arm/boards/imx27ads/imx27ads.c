@@ -34,26 +34,6 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC0000000,
-	.size     = 32 * 1024 * 1024,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xa0000000,
-	.size     = 128 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -94,6 +74,14 @@ static int imx27ads_timing_init(void)
 
 core_initcall(imx27ads_timing_init);
 
+static int mx27ads_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(mx27ads_mem_init);
+
 static int mx27ads_devices_init(void)
 {
 	int i;
@@ -126,15 +114,13 @@ static int mx27ads_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
-	imx27_add_fec(&fec_info);
+	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
+	imx27_add_fec(&fec_info);
 	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_MX27ADS);
 

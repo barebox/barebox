@@ -197,7 +197,7 @@ static int disk_probe(struct device_d *dev)
 		dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
 	}
 #endif
-	atablk->blk.num_blocks = dev->size / SECTOR_SIZE;
+	atablk->blk.num_blocks = dev->resource[0].size / SECTOR_SIZE;
 	atablk->blk.ops = &ataops;
 	atablk->blk.blockbits = 9;
 	atablk->dev = dev;

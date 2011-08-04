@@ -32,66 +32,29 @@ static int board_revision;
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read = omap_uart_read,
-	.reg_write = omap_uart_write,
-};
-
-static struct device_d panda_serial_device = {
-	.id = -1,
-	.name = "serial_ns16550",
-	.map_base = OMAP44XX_UART3_BASE,
-	.size = 1024,
-	.platform_data = (void *)&serial_plat,
 };
 
 static int panda_console_init(void)
 {
 	/* Register the serial port */
-	return register_device(&panda_serial_device);
-}
-console_initcall(panda_console_init);
-
-static struct memory_platform_data sram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id = -1,
-	.name = "mem",
-	.map_base = 0x80000000,
-	.size = SZ_1G,
-	.platform_data = &sram_pdata,
-};
-
-#ifdef CONFIG_MMU
-static int panda_mmu_init(void)
-{
-	mmu_init();
-
-	arm_create_section(0x80000000, 0x80000000, 256, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x90000000, 0x80000000, 256, PMD_SECT_DEF_UNCACHED);
-
-	mmu_enable();
+	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+			   &serial_plat);
 
 	return 0;
 }
-device_initcall(panda_mmu_init);
-#endif
+console_initcall(panda_console_init);
 
+static int panda_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
+
+	return 0;
+}
+mem_initcall(panda_mem_init);
+
+#ifdef CONFIG_USB_EHCI
 static struct ehci_platform_data ehci_pdata = {
 	.flags = 0,
-	.hccr_offset = 0x0,
-	.hcor_offset = 0x10,
-};
-
-static struct device_d usbh_dev = {
-	.id	  = -1,
-	.name     = "ehci",
-	.map_base = 0x4a064c00,
-	.size     = 4 * 1024,
-	.platform_data = &ehci_pdata,
 };
 
 static void panda_ehci_init(void)
@@ -124,8 +87,13 @@ static void panda_ehci_init(void)
 	/* enable power to hub */
 	gpio_set_value(GPIO_HUB_POWER, 1);
 
-	register_device(&usbh_dev);
+	add_usb_ehci_device(-1, 0x4a064c00,
+			    0x4a064c00 + 0x10, &ehci_pdata);
 }
+#else
+static void panda_ehci_init(void)
+{}
+#endif
 
 static void __init panda_boardrev_init(void)
 {
@@ -135,13 +103,6 @@ static void __init panda_boardrev_init(void)
 
 	pr_info("PandaBoard Revision: %03d\n", board_revision);
 }
-
-static struct device_d hsmmc_dev = {
-	.id = -1,
-	.name = "omap-hsmmc",
-	.map_base = 0x4809C100,
-	.size = SZ_4K,
-};
 
 static int panda_devices_init(void)
 {
@@ -171,11 +132,10 @@ static int panda_devices_init(void)
 		sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);
 	}
 
-	register_device(&sdram_dev);
-	register_device(&hsmmc_dev);
+	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP4_PANDA);
 

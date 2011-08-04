@@ -41,36 +41,9 @@
 #define MX21ADS_IO_REG    0xCC800000
 #define MX21ADS_IO_LCDON  (1 << 9)
 
-static struct device_d cfi_dev = {
-	.id	  = -1,
-	.name     = "cfi_flash",
-	.map_base = 0xC8000000,
-	.size     = 32 * 1024 * 1024,
-};
-
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id	  = -1,
-	.name     = "mem",
-	.map_base = 0xc0000000,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,
-};
-
-static struct device_d cs8900_dev = {
-	.id	  = -1,
-	.name     = "cs8900",
-	.map_base = IMX_CS1_BASE,
-	// IRQ is connected to UART3_RTS
 };
 
 /* Sharp LQ035Q7DB02 QVGA display */
@@ -142,6 +115,14 @@ static int imx21ads_timing_init(void)
 
 core_initcall(imx21ads_timing_init);
 
+static int mx21ads_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0xc0000000, 64 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(mx21ads_mem_init);
+
 static int mx21ads_devices_init(void)
 {
 	int i;
@@ -183,13 +164,12 @@ static int mx21ads_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	register_device(&cfi_dev);
-	register_device(&sdram_dev);
+	add_cfi_flash_device(-1, 0xC8000000, 32 * 1024 * 1024, 0);
 	imx21_add_nand(&nand_info);
-	register_device(&cs8900_dev);
+	add_generic_device("cs8900", -1, NULL,	IMX_CS1_BASE, 0x1000,
+			IORESOURCE_MEM, NULL);
 	imx21_add_fb(&imx_fb_data);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0xc0000100);
 	armlinux_set_architecture(MACH_TYPE_MX21ADS);
 

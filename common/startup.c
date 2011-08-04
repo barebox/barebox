@@ -82,21 +82,11 @@ void early_init (void)
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include <generated/barebox_default_env.h>
 
-static struct memory_platform_data default_env_platform_data = {
-	.name = "defaultenv",
-};
-
-static struct device_d default_env_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.platform_data	= &default_env_platform_data,
-};
-
 static int register_default_env(void)
 {
-	default_env_dev.map_base = (unsigned long)default_environment;
-	default_env_dev.size = sizeof(default_environment);
-	register_device(&default_env_dev);
+	add_mem_device("defaultenv", (unsigned long)default_environment,
+		       sizeof(default_environment),
+		       IORESOURCE_MEM_WRITEABLE);
 	return 0;
 }
 
@@ -134,12 +124,16 @@ void start_barebox (void)
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {
+		PUTS_LL("<<");
 		PUTHEX_LL(*initcall);
-		PUTC_LL('\n');
 		result = (*initcall)();
+		PUTC_LL('>');
 		if (result)
 			hang();
+		PUTS_LL(">\n");
 	}
+
+	PUTS_LL("initcalls done\n");
 
 	display_meminfo();
 

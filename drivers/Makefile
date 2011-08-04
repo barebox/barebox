@@ -1,3 +1,4 @@
+obj-y	+= base/
 obj-y	+= net/
 obj-y	+= serial/
 obj-y	+= mtd/

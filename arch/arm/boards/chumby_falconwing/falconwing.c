@@ -34,28 +34,9 @@
 #include <mach/fb.h>
 #include <mach/usb.h>
 
-static struct memory_platform_data ram_pdata = {
-	.name = "ram0",
-	.flags = DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id       = -1,
-	.name     = "mem",
-	.map_base = IMX_MEMORY_BASE,
-	.size     = 64 * 1024 * 1024,
-	.platform_data = &ram_pdata,
-};
-
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
-};
-
-static struct device_d mci_dev = {
-	.name     = "mxs_mci",
-	.map_base = IMX_SSP1_BASE,
-	.platform_data = &mci_pdata,
 };
 
 #define GPIO_LCD_RESET		50
@@ -109,13 +90,6 @@ static struct imx_fb_platformdata fb_mode = {
 	.enable = chumby_fb_enable,
 	.fixed_screen = (void *)(0x40000000 + SZ_64M - MAX_FB_SIZE),
 	.fixed_screen_size = MAX_FB_SIZE,
-};
-
-static struct device_d ldcif_dev = {
-	.name = "stmfb",
-	.map_base = IMX_FB_BASE,
-	.size = 4096,
-	.platform_data = &fb_mode,
 };
 
 static const uint32_t pad_setup[] = {
@@ -287,22 +261,13 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
 
-#ifdef CONFIG_MMU
-static int falconwing_mmu_init(void)
+static int falconwing_mem_init(void)
 {
-	mmu_init();
-
-	arm_create_section(0x40000000, 0x40000000, 64, PMD_SECT_DEF_CACHED);
-	arm_create_section(0x50000000, 0x40000000, 64, PMD_SECT_DEF_UNCACHED);
-
-	setup_dma_coherent(0x10000000);
-
-	mmu_enable();
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
 
 	return 0;
 }
-postcore_initcall(falconwing_mmu_init);
-#endif
+mem_initcall(falconwing_mem_init);
 
 /**
  * Try to register an environment storage on the attached MCI card
@@ -340,20 +305,6 @@ static int register_persistant_environment(void)
 	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
 }
 
-static struct ehci_platform_data chumby_usb_pdata = {
-	.flags = EHCI_HAS_TT,
-	.hccr_offset = 0x100,
-	.hcor_offset = 0x140,
-};
-
-static struct device_d usb_dev = {
-	.name		= "ehci",
-	.id		= -1,
-	.map_base	= IMX_USB_BASE,
-	.size		= 0x200,
-	.platform_data	= &chumby_usb_pdata,
-};
-
 #define GPIO_USB_HUB_RESET	29
 #define GPIO_USB_HUB_POWER	26
 
@@ -366,7 +317,8 @@ static void falconwing_init_usb(void)
 	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
 
 	imx_usb_phy_enable();
-	register_device(&usb_dev);
+
+	add_generic_usb_ehci_device(-1, IMX_USB_BASE, NULL);
 }
 
 static int falconwing_devices_init(void)
@@ -377,17 +329,17 @@ static int falconwing_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
 
-	register_device(&sdram_dev);
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
-	register_device(&mci_dev);
-	register_device(&ldcif_dev);
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP1_BASE, 0,
+			   IORESOURCE_MEM, &mci_pdata);
+	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
+			   IORESOURCE_MEM, &fb_mode);
 
 	falconwing_init_usb();
 
-	armlinux_add_dram(&sdram_dev);
-	armlinux_set_bootparams((void*)(sdram_dev.map_base + 0x100));
+	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
 	rc = register_persistant_environment();
@@ -399,15 +351,12 @@ static int falconwing_devices_init(void)
 
 device_initcall(falconwing_devices_init);
 
-static struct device_d falconwing_serial_device = {
-	.name     = "stm_serial",
-	.map_base = IMX_DBGUART_BASE,
-	.size     = 8192,
-};
-
 static int falconwing_console_init(void)
 {
-	return register_device(&falconwing_serial_device);
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+			   IORESOURCE_MEM, NULL);
+
+	return 0;
 }
 
 console_initcall(falconwing_console_init);

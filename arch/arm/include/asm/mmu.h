@@ -3,21 +3,29 @@
 
 #include <asm/pgtable.h>
 #include <malloc.h>
+#include <errno.h>
 
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
-void mmu_init(void);
-void mmu_enable(void);
-void mmu_disable(void);
-void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
-		unsigned int flags);
+struct arm_memory;
 
-void setup_dma_coherent(unsigned long offset);
+static inline void mmu_enable(void)
+{
+}
+void mmu_disable(void);
+static inline void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
+		unsigned int flags)
+{
+}
+
+static inline void setup_dma_coherent(unsigned long offset)
+{
+}
 
 #ifdef CONFIG_MMU
 void *dma_alloc_coherent(size_t size);
-void dma_free_coherent(void *mem);
+void dma_free_coherent(void *mem, size_t size);
 
 void dma_clean_range(unsigned long, unsigned long);
 void dma_flush_range(unsigned long, unsigned long);
@@ -28,10 +36,10 @@ void *phys_to_virt(unsigned long phys);
 #else
 static inline void *dma_alloc_coherent(size_t size)
 {
-	return xmalloc(size);
+	return xmemalign(4096, size);
 }
 
-static inline void dma_free_coherent(void *mem)
+static inline void dma_free_coherent(void *mem, size_t size)
 {
 	free(mem);
 }
@@ -60,7 +68,13 @@ static inline void dma_inv_range(unsigned long s, unsigned long e)
 
 #endif
 
+#ifdef CONFIG_CACHE_L2X0
 void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask);
+#else
+static inline void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
+{
+}
+#endif
 
 struct outer_cache_fns {
 	void (*inv_range)(unsigned long, unsigned long);

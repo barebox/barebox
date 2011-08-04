@@ -58,6 +58,7 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <errno.h>
 #include "board.h"
 
 
@@ -212,21 +213,6 @@ void board_init(void)
 
 static struct NS16550_plat serial_plat = {
 	.clock		= 48000000,      /* 48MHz (APLL96/2) */
-	.f_caps		= CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR,
-	.reg_read	= omap_uart_read,
-	.reg_write	= omap_uart_write,
-};
-
-static struct device_d omap3evm_serial_device = {
-	.id		= -1,
-	.name		= "serial_ns16550",
-#if defined(CONFIG_OMAP3EVM_UART1)
-	.map_base	= OMAP_UART1_BASE,
-#elif defined(CONFIG_OMAP3EVM_UART3)
-	.map_base	= OMAP_UART3_BASE,
-#endif
-	.size		= 1024,
-	.platform_data	= (void *)&serial_plat,
 };
 
 /**
@@ -236,42 +222,35 @@ static struct device_d omap3evm_serial_device = {
  */
 static int omap3evm_init_console(void)
 {
-	return register_device(&omap3evm_serial_device);
+	add_ns16550_device(-1,
+#if defined(CONFIG_OMAP3EVM_UART1)
+			OMAP_UART1_BASE,
+#elif defined(CONFIG_OMAP3EVM_UART3)
+			OMAP_UART3_BASE,
+#endif
+			1024, IORESOURCE_MEM_8BIT, &serial_plat);
+
+	return 0;
 }
 console_initcall(omap3evm_init_console);
 #endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
-static struct memory_platform_data sram_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
+static int omap3evm_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
 
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= 0x80000000,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sram_pdata,
-};
+	return 0;
+}
+mem_initcall(omap3evm_mem_init);
 
 static int omap3evm_init_devices(void)
 {
-	int ret;
-
-	ret = register_device(&sdram_dev);
-	if (ret)
-		goto failed;
-
 #ifdef CONFIG_GPMC
 	/*
 	 * WP is made high and WAIT1 active Low
 	 */
 	gpmc_generic_init(0x10);
 #endif
-
-	armlinux_add_dram(&sdram_dev);
-
-failed:
-	return ret;
+	return 0;
 }
 device_initcall(omap3evm_init_devices);

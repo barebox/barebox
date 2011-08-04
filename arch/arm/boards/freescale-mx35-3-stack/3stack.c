@@ -59,41 +59,14 @@
 #define MX35PDK_BOARD_REV_1		0
 #define MX35PDK_BOARD_REV_2		1
 
-static struct device_d cfi_dev = {
-	.id		= -1,
-	.name		= "cfi_flash",
-	.map_base	= IMX_CS0_BASE,
-	.size		= 64 * 1024 * 1024,
-};
-
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
 	.phy_addr	= 0x1F,
 };
 
-static struct memory_platform_data sdram_pdata = {
-	.name	= "ram0",
-	.flags	= DEVFS_RDWR,
-};
-
-static struct device_d sdram_dev = {
-	.id		= -1,
-	.name		= "mem",
-	.map_base	= IMX_SDRAM_CS0,
-	.size		= 128 * 1024 * 1024,
-	.platform_data	= &sdram_pdata,
-};
-
 struct imx_nand_platform_data nand_info = {
 	.hw_ecc		= 1,
 	.flash_bbt	= 1,
-};
-
-static struct device_d smc911x_dev = {
-	.id		= -1,
-	.name		= "smc911x",
-	.map_base	= IMX_CS5_BASE,
-	.size		= IMX_CS5_RANGE,
 };
 
 static struct i2c_board_info i2c_devices[] = {
@@ -102,12 +75,6 @@ static struct i2c_board_info i2c_devices[] = {
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},
-};
-
-static struct device_d i2c_dev = {
-	.id		= -1,
-	.name		= "i2c-imx",
-	.map_base	= IMX_I2C1_BASE,
 };
 
 /*
@@ -161,6 +128,13 @@ static void set_board_rev(int rev)
 	imx35_3ds_system_rev =  (imx35_3ds_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
 }
 
+static int f3s_mem_init(void)
+{
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024);
+
+	return 0;
+}
+mem_initcall(f3s_mem_init);
 
 static int f3s_devices_init(void)
 {
@@ -182,7 +156,7 @@ static int f3s_devices_init(void)
 	 * This platform supports NOR and NAND
 	 */
 	imx35_add_nand(&nand_info);
-	register_device(&cfi_dev);
+	add_cfi_flash_device(-1, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */
@@ -202,17 +176,16 @@ static int f3s_devices_init(void)
 	set_silicon_rev(imx_silicon_revision());
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	register_device(&i2c_dev);
+	imx35_add_i2c0(NULL);
 
 	imx35_add_fec(&fec_info);
-	register_device(&smc911x_dev);
+	add_generic_device("smc911x", -1, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
+			IORESOURCE_MEM, NULL);
 
 	imx35_add_mmc0(NULL);
 
-	register_device(&sdram_dev);
 	imx35_add_fb(&ipu_fb_data);
 
-	armlinux_add_dram(&sdram_dev);
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX35_3DS);
 

@@ -208,6 +208,17 @@ config 64BIT
 
 endchoice
 
+menu "MIPS specific settings        "
+
+config CMD_MIPS_CPUINFO
+	bool "cpuinfo command"
+	default y
+	help
+	  Say yes here to get a cpuinfo command to show some
+	  information about the cpu model.
+
+endmenu
+
 source common/Kconfig
 source commands/Kconfig
 source net/Kconfig

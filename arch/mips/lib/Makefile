@@ -4,3 +4,5 @@ obj-y += lshrdi3.o
 obj-y += ashldi3.o
 obj-y += ashrdi3.o
 obj-y += memory.o
+
+obj-$(CONFIG_CMD_MIPS_CPUINFO) += cpuinfo.o

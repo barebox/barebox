@@ -7,6 +7,11 @@ config ARCH_TEXT_BASE
 choice
 	prompt "Board type"
 
+config BOARD_DLINK_DIR320
+	bool "D-Link DIR-320"
+
 endchoice
+
+source arch/mips/boards/dlink-dir-320/Kconfig
 
 endif

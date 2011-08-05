@@ -64,6 +64,7 @@ machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
 board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
+board-$(CONFIG_BOARD_DLINK_DIR320)	:= dlink-dir-320
 
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 

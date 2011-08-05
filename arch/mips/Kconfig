@@ -37,9 +37,19 @@ config MACH_MIPS_MALTA
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select HAS_DEBUG_LL
 
+config MACH_MIPS_BCM47XX
+	bool "Broadcom BCM47xx-based boards"
+	select CSRC_R4K_LIB
+	select DRIVER_SERIAL_NS16550
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_LITTLE_ENDIAN
+	select HAS_DEBUG_LL
+
 endchoice
 
 source arch/mips/mach-malta/Kconfig
+source arch/mips/mach-bcm47xx/Kconfig
 
 endmenu
 

@@ -63,6 +63,8 @@ LDFLAGS_barebox += -nostdlib
 machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
 board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 
+machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
+
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)

@@ -45,6 +45,11 @@ x86 type:
 
 @li @subpage generic_pc
 
+
+MIPS type:
+
+@li @subpage qemu_malta
+
 */
 
 /* TODO

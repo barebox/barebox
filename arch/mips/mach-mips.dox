@@ -51,4 +51,7 @@ Further reading:
  * Dominic Sweetman, See MIPS Run, Morgan Kaufmann, 2nd edition, 2006
 ISBN-13: 978-0120884216
 
+@subsection mach_mips_malta_info Malta boards
+
+@li @subpage dev_malta_mach
 */

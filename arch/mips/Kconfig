@@ -1,0 +1,184 @@
+#
+#
+#
+config MIPS
+	bool
+	select HAS_KALLSYMS
+	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	select HAVE_CONFIGURABLE_TEXT_BASE
+	default y
+
+config SYS_SUPPORTS_BIG_ENDIAN
+	bool
+
+config SYS_SUPPORTS_LITTLE_ENDIAN
+	bool
+
+config CSRC_R4K_LIB
+	bool
+
+config GENERIC_LINKER_SCRIPT
+	bool
+	default y
+
+#
+# Endianess selection.  Sufficiently obscure so many users don't know what to
+# answer,so we try hard to limit the available choices.  Also the use of a
+# choice statement should be more obvious to the user.
+#
+choice
+	prompt "Endianess selection"
+	help
+	  Some MIPS machines can be configured for either little or big endian
+	  byte order. These modes require different barebox images.
+	  In general there is one preferred byteorder for a
+	  particular system but some systems are just as commonly used in the
+	  one or the other endianness.
+
+config CPU_BIG_ENDIAN
+	bool "Big endian"
+	depends on SYS_SUPPORTS_BIG_ENDIAN
+
+config CPU_LITTLE_ENDIAN
+	bool "Little endian"
+	depends on SYS_SUPPORTS_LITTLE_ENDIAN
+	help
+
+endchoice
+
+menu "CPU selection"
+
+choice
+	prompt "CPU type"
+	default CPU_MIPS32_R2
+
+config CPU_MIPS32_R1
+	bool "MIPS32 Release 1"
+	depends on SYS_HAS_CPU_MIPS32_R1
+	select CPU_SUPPORTS_32BIT_KERNEL
+	help
+	  Choose this option to build a barebox for release 1 or later of the
+	  MIPS32 architecture.  Most modern embedded systems with a 32-bit
+	  MIPS processor are based on a MIPS32 processor.  If you know the
+	  specific type of processor in your system, choose those that one
+	  otherwise CPU_MIPS32_R1 is a safe bet for any MIPS32 system.
+	  Release 2 of the MIPS32 architecture is available since several
+	  years so chances are you even have a MIPS32 Release 2 processor
+	  in which case you should choose CPU_MIPS32_R2 instead for better
+	  performance.
+
+config CPU_MIPS32_R2
+	bool "MIPS32 Release 2"
+	depends on SYS_HAS_CPU_MIPS32_R2
+	select CPU_SUPPORTS_32BIT_KERNEL
+	help
+	  Choose this option to build a barebox for release 2 or later of the
+	  MIPS32 architecture.  Most modern embedded systems with a 32-bit
+	  MIPS processor are based on a MIPS32 processor.  If you know the
+	  specific type of processor in your system, choose those that one
+	  otherwise CPU_MIPS32_R1 is a safe bet for any MIPS32 system.
+
+config CPU_MIPS64_R1
+	bool "MIPS64 Release 1"
+	depends on SYS_HAS_CPU_MIPS64_R1
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
+	help
+	  Choose this option to build a barebox for release 1 or later of the
+	  MIPS64 architecture.  Many modern embedded systems with a 64-bit
+	  MIPS processor are based on a MIPS64 processor.  If you know the
+	  specific type of processor in your system, choose those that one
+	  otherwise CPU_MIPS64_R1 is a safe bet for any MIPS64 system.
+	  Release 2 of the MIPS64 architecture is available since several
+	  years so chances are you even have a MIPS64 Release 2 processor
+	  in which case you should choose CPU_MIPS64_R2 instead for better
+	  performance.
+
+config CPU_MIPS64_R2
+	bool "MIPS64 Release 2"
+	depends on SYS_HAS_CPU_MIPS64_R2
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
+	help
+	  Choose this option to build a barebox for release 2 or later of the
+	  MIPS64 architecture.  Many modern embedded systems with a 64-bit
+	  MIPS processor are based on a MIPS64 processor.  If you know the
+	  specific type of processor in your system, choose those that one
+	  otherwise CPU_MIPS64_R1 is a safe bet for any MIPS64 system.
+
+endchoice
+
+
+config SYS_HAS_CPU_MIPS32_R1
+	bool
+
+config SYS_HAS_CPU_MIPS32_R2
+	bool
+
+config SYS_HAS_CPU_MIPS64_R1
+	bool
+
+config SYS_HAS_CPU_MIPS64_R2
+	bool
+
+#
+# These two indicate any level of the MIPS32 and MIPS64 architecture
+#
+config CPU_MIPS32
+	bool
+	default y if CPU_MIPS32_R1 || CPU_MIPS32_R2
+
+config CPU_MIPS64
+	bool
+	default y if CPU_MIPS64_R1 || CPU_MIPS64_R2
+
+#
+# These two indicate the revision of the architecture, either Release 1 or Release 2
+#
+config CPU_MIPSR1
+	bool
+	default y if CPU_MIPS32_R1 || CPU_MIPS64_R1
+
+config CPU_MIPSR2
+	bool
+	default y if CPU_MIPS32_R2 || CPU_MIPS64_R2
+
+config SYS_SUPPORTS_32BIT_KERNEL
+	bool
+config SYS_SUPPORTS_64BIT_KERNEL
+	bool
+config CPU_SUPPORTS_32BIT_KERNEL
+	bool
+config CPU_SUPPORTS_64BIT_KERNEL
+	bool
+
+endmenu
+
+choice
+	prompt "Barebox code model"
+	help
+	  You should only select this option if you have a workload that
+	  actually benefits from 64-bit processing or if your machine has
+	  large memory.  You will only be presented a single option in this
+	  menu if your system does not support both 32-bit and 64-bit modes.
+
+config 32BIT
+	bool "32-bit barebox"
+	depends on CPU_SUPPORTS_32BIT_KERNEL && SYS_SUPPORTS_32BIT_KERNEL
+	help
+	  Select this option if you want to build a 32-bit barebox.
+
+config 64BIT
+	bool "64-bit barebox"
+	depends on CPU_SUPPORTS_64BIT_KERNEL && SYS_SUPPORTS_64BIT_KERNEL
+	help
+	  Select this option if you want to build a 64-bit barebox.
+
+endchoice
+
+source common/Kconfig
+source commands/Kconfig
+source net/Kconfig
+source drivers/Kconfig
+source fs/Kconfig
+source lib/Kconfig

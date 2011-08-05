@@ -21,6 +21,28 @@ config GENERIC_LINKER_SCRIPT
 	bool
 	default y
 
+menu "Machine selection"
+
+choice
+	prompt "System type"
+	default MACH_MIPS_MALTA
+
+config MACH_MIPS_MALTA
+	bool "MIPS Malta"
+	select CSRC_R4K_LIB
+	select DRIVER_SERIAL_NS16550
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select HAS_DEBUG_LL
+
+endchoice
+
+source arch/mips/mach-malta/Kconfig
+
+endmenu
+
 #
 # Endianess selection.  Sufficiently obscure so many users don't know what to
 # answer,so we try hard to limit the available choices.  Also the use of a

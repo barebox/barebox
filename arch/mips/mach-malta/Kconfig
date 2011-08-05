@@ -1,0 +1,12 @@
+if MACH_MIPS_MALTA
+
+config ARCH_TEXT_BASE
+	hex
+	default 0xa0800000
+
+choice
+	prompt "Board type"
+
+endchoice
+
+endif

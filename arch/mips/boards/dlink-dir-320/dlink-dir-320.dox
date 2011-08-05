@@ -1,0 +1,38 @@
+/** @page dlink_dir_320 D-Link DIR-320 wireless router
+
+The router has
+@li BCM5354 SoC;
+@li 32 MiB SDRAM;
+@li 4 MiB NOR type Flash Memory;
+@li RS232 serial interface (LV-TTL levels on board!);
+@li 1xUSB interface;
+@li 4 + 1 ethernet interfaces;
+@li 802.11b/g (WiFi) interface;
+@li JTAG interface;
+@li 5 LEDs;
+@li 2 buttons.
+
+The router uses CFE as firmware.
+
+Barebox can be started from CFE using tftp.
+You must setup tftp-server on host 192.168.0.1.
+Put your barebox.bin to tftp-server directory
+(usual /tftpboot or /srv/tftp).
+Connect your DIR-320 to your tftp-server network via
+one of four <LAN> sockets.
+
+Next, setup network on DIR-320 and run barebox.bin, e.g.:
+@verbatim
+CFE> ifconfig eth0 -addr=192.168.0.99
+CFE> boot -tftp -addr=a0800000 -raw 192.168.0.1:barebox.bin
+@endverbatim
+
+DIR-320 links:
+@li http://www.dlink.com.au/products/?pid=768
+@li http://wiki.openwrt.org/toh/d-link/dir-320
+
+CFE links:
+@li http://www.broadcom.com/support/communications_processors/downloads.php#cfe
+@li http://www.linux-mips.org/wiki/CFE
+
+*/

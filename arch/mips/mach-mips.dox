@@ -54,4 +54,8 @@ ISBN-13: 978-0120884216
 @subsection mach_mips_malta_info Malta boards
 
 @li @subpage dev_malta_mach
+
+@subsection mach_bcm47xx_info BCM47xx-based boards
+
+@li @subpage dev_bcm47xx_mach
 */

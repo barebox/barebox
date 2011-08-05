@@ -1,0 +1,7 @@
+/** @page dev_bcm47xx_mach BCM47xx in barebox
+
+@section bcm47xx_boards BCM47xx-based boards
+
+@li @subpage dlink_dir_320
+
+*/

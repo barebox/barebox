@@ -7,6 +7,11 @@ config ARCH_TEXT_BASE
 choice
 	prompt "Board type"
 
+config BOARD_QEMU_MALTA
+	bool "qemu malta"
+
 endchoice
+
+source arch/mips/boards/qemu-malta/Kconfig
 
 endif

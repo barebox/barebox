@@ -61,6 +61,7 @@ endif
 LDFLAGS_barebox += -nostdlib
 
 machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
+board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 

@@ -29,14 +29,6 @@
 #include <asm/ptrace.h>
 #include <asm/unwind.h>
 
-void do_undefined_instruction (struct pt_regs *pt_regs);
-void do_software_interrupt (struct pt_regs *pt_regs);
-void do_prefetch_abort (struct pt_regs *pt_regs);
-void do_data_abort (struct pt_regs *pt_regs);
-void do_not_used (struct pt_regs *pt_regs);
-void do_fiq (struct pt_regs *pt_regs);
-void do_irq (struct pt_regs *pt_regs);
-
 #ifdef CONFIG_USE_IRQ
 /* enable IRQ interrupts */
 void enable_interrupts (void)

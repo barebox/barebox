@@ -30,15 +30,6 @@
 #include <asm/unwind.h>
 
 /**
- * FIXME
- */
-static void bad_mode (void)
-{
-	panic ("Resetting CPU ...\n");
-	reset_cpu (0);
-}
-
-/**
  * Display current register set content
  * @param[in] regs Guess what
  */
@@ -82,6 +73,13 @@ void show_regs (struct pt_regs *regs)
 #endif
 }
 
+static void __noreturn do_exception(struct pt_regs *pt_regs)
+{
+	show_regs(pt_regs);
+
+	panic("");
+}
+
 /**
  * The CPU runs into an undefined instruction. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
@@ -89,8 +87,7 @@ void show_regs (struct pt_regs *regs)
 void do_undefined_instruction (struct pt_regs *pt_regs)
 {
 	printf ("undefined instruction\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
@@ -103,8 +100,7 @@ void do_undefined_instruction (struct pt_regs *pt_regs)
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
 	printf ("software interrupt\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
@@ -116,8 +112,7 @@ void do_software_interrupt (struct pt_regs *pt_regs)
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
 	printf ("prefetch abort\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
@@ -128,9 +123,15 @@ void do_prefetch_abort (struct pt_regs *pt_regs)
  */
 void do_data_abort (struct pt_regs *pt_regs)
 {
-	printf ("data abort\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	u32 far;
+
+	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
+
+	printf("unable to handle %s at address 0x%08x\n",
+			far < PAGE_SIZE ? "NULL pointer dereference" :
+			"paging request", far);
+
+	do_exception(pt_regs);
 }
 
 /**
@@ -142,8 +143,7 @@ void do_data_abort (struct pt_regs *pt_regs)
 void do_fiq (struct pt_regs *pt_regs)
 {
 	printf ("fast interrupt request\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
@@ -155,6 +155,5 @@ void do_fiq (struct pt_regs *pt_regs)
 void do_irq (struct pt_regs *pt_regs)
 {
 	printf ("interrupt request\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }

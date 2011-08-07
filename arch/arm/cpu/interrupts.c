@@ -97,8 +97,8 @@ void do_undefined_instruction (struct pt_regs *pt_regs)
  * The CPU catches a software interrupt
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * There is not functione behind this feature. So what to do else than
- * a reset? 
+ * There is no function behind this feature. So what to do else than
+ * a reset?
  */
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
@@ -111,7 +111,7 @@ void do_software_interrupt (struct pt_regs *pt_regs)
  * The CPU catches a prefetch abort. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * instruction fetch from an unmapped area
  */
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
@@ -124,7 +124,7 @@ void do_prefetch_abort (struct pt_regs *pt_regs)
  * The CPU catches a data abort. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * data fetch from an unmapped area
  */
 void do_data_abort (struct pt_regs *pt_regs)
 {
@@ -137,7 +137,7 @@ void do_data_abort (struct pt_regs *pt_regs)
  * The CPU catches a fast interrupt request.
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * We never enable FIQs, so this should not happen
  */
 void do_fiq (struct pt_regs *pt_regs)
 {
@@ -150,7 +150,7 @@ void do_fiq (struct pt_regs *pt_regs)
  * The CPU catches a regular interrupt.
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * We never enable interrupts, so this should not happen
  */
 void do_irq (struct pt_regs *pt_regs)
 {

@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sizes.h>
 #include <asm/memory.h>
+#include <asm/system.h>
 
 static unsigned long *ttb;
 
@@ -161,22 +162,46 @@ static int arm_mmu_remap_sdram(struct arm_memory *mem)
 #define ARM_VECTORS_SIZE	(sizeof(u32) * 8 * 2)
 
 /*
- * Allocate a page, map it to the zero page and copy our exception
- * vectors there.
+ * Map vectors and zero page
  */
 static void vectors_init(void)
 {
-	u32 *exc;
+	u32 *exc, *zero = NULL;
 	void *vectors;
 	extern unsigned long exception_vectors;
+	u32 cr;
 
-	exc = arm_create_pte(0x0);
+	cr = get_cr();
+	cr |= CR_V;
+	set_cr(cr);
+	cr = get_cr();
+
+	if (cr & CR_V) {
+		/*
+		 * If we can use high vectors, create the second level
+		 * page table for the high vectors and zero page
+		 */
+		exc = arm_create_pte(0xfff00000);
+		zero = arm_create_pte(0x0);
+
+		/* Set the zero page to faulting */
+		zero[0] = 0;
+	} else {
+		/*
+		 * Otherwise map the vectors to the zero page. We have to
+		 * live without being able to catch NULL pointer dereferences
+		 */
+		exc = arm_create_pte(0x0);
+	}
 
 	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, &exception_vectors, ARM_VECTORS_SIZE);
 
-	exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
+	if (cr & CR_V)
+		exc[256 - 16] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
+	else
+		exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
 }
 
 /*

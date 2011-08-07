@@ -173,19 +173,6 @@ void do_data_abort (struct pt_regs *pt_regs)
 }
 
 /**
- * The CPU catches a not-used(?) abort.
- * @param[in] pt_regs Register set content when the accident happens
- *
- * FIXME: What does it mean, why is reset the only solution?
- */
-void do_not_used (struct pt_regs *pt_regs)
-{
-	printf ("not used\n");
-	show_regs (pt_regs);
-	bad_mode ();
-}
-
-/**
  * The CPU catches a fast interrupt request.
  * @param[in] pt_regs Register set content when the interrupt happens
  *

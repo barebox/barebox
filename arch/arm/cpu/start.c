@@ -36,7 +36,7 @@ void __naked __section(.text_entry) exception_vectors(void)
 		"ldr pc, =software_interrupt\n"		/* software interrupt (SWI) */
 		"ldr pc, =prefetch_abort\n"		/* prefetch abort */
 		"ldr pc, =data_abort\n"			/* data abort */
-		"ldr pc, =not_used\n"			/* (reserved) */
+		"1: bne 1b\n"				/* (reserved) */
 		"ldr pc, =irq\n"			/* irq (interrupt) */
 		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
 #else

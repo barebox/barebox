@@ -136,11 +136,6 @@ data_abort:
 	bl 	do_data_abort
 
 	.align	5
-.globl not_used
-not_used:
-	get_bad_stack
-	bad_save_user_regs
-	bl 	do_not_used
 
 .globl irq
 .globl fiq

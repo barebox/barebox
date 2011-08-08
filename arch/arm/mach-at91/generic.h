@@ -10,5 +10,3 @@
 
  /* Clocks */
 extern int __init at91_clock_init(unsigned long main_clock);
-struct device_d;
-extern void __init at91_clock_associate(const char *id, struct device_d *dev, const char *func);

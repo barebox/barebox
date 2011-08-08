@@ -101,31 +101,25 @@ static inline void configure_usart2_pins(unsigned pins)
 void at91_register_uart(unsigned id, unsigned pins)
 {
 	resource_size_t start;
-	struct device_d *dev;
-	char* clk_name;
 
 	switch (id) {
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
 			start = AT91_BASE_SYS + AT91_DBGU;
-			clk_name = "mck";
 			id = 0;
 			break;
 		case AT91SAM9261_ID_US0:
 			configure_usart0_pins(pins);
-			clk_name = "usart0_clk";
 			start = AT91SAM9261_BASE_US0;
 			id = 1;
 			break;
 		case AT91SAM9261_ID_US1:
 			configure_usart1_pins(pins);
-			clk_name = "usart1_clk";
 			start = AT91SAM9261_BASE_US1;
 			id = 2;
 			break;
 		case AT91SAM9261_ID_US2:
 			configure_usart2_pins(pins);
-			clk_name = "usart3_clk";
 			start = AT91SAM9261_BASE_US2;
 			id = 3;
 			break;
@@ -133,9 +127,8 @@ void at91_register_uart(unsigned id, unsigned pins)
 			return;
 	}
 
-	dev = add_generic_device("atmel_serial", id, NULL, start, 4096,
+	add_generic_device("atmel_usart", id, NULL, start, 4096,
 			   IORESOURCE_MEM, NULL);
-	at91_clock_associate(clk_name, dev, "usart");
 }
 
 #if defined(CONFIG_MCI_ATMEL)
@@ -176,7 +169,6 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 	dev = add_generic_device("atmel_mci", 0, NULL, AT91SAM9261_BASE_MCI, SZ_16K,
 			   IORESOURCE_MEM, data);
-	at91_clock_associate("mci_clk", dev, "mci_clk");
 }
 #else
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}

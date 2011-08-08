@@ -34,6 +34,7 @@ choice
 config ARCH_AT91
 	bool "Atmel AT91"
 	select GENERIC_GPIO
+	select CLKDEV_LOOKUP
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

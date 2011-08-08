@@ -419,7 +419,7 @@ static int atmel_serial_probe(struct device_d *dev)
 }
 
 static struct driver_d atmel_serial_driver = {
-        .name  = "atmel_serial",
+        .name  = "atmel_usart",
         .probe = atmel_serial_probe,
 };
 

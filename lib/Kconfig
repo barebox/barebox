@@ -12,3 +12,6 @@ config PROCESS_ESCAPE_SEQUENCE
 
 source lib/lzo/Kconfig
 
+config FDT
+	bool
+

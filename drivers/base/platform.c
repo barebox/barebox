@@ -21,9 +21,14 @@
  */
 #include <common.h>
 #include <driver.h>
+#include <errno.h>
 
 static int platform_match(struct device_d *dev, struct driver_d *drv)
 {
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node &&
+			drv->of_compatible)
+		return of_match(dev, drv);
+
 	if (!strcmp(dev->name, drv->name))
 		return 0;
 

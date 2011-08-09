@@ -57,7 +57,7 @@ static int is_printable_string(const void *data, int len)
  * a string, concatenated strings, a byte, word, double word, or (if all
  * else fails) it is printed as a stream of bytes.
  */
-static void print_data(const void *data, int len)
+void of_print_property(const void *data, int len)
 {
 	int j;
 
@@ -169,7 +169,7 @@ int fdt_print(struct fdt_header *working_fdt, const char *pathp)
 				printf_indent(level, "%s;\n", pathp);
 			} else {
 				printf_indent(level, "%s = ", pathp);
-				print_data(nodep, len);
+				of_print_property(nodep, len);
 				printf(";\n");
 			}
 			break;

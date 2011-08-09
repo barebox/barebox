@@ -116,9 +116,19 @@ int register_device(struct device_d *new_device)
 
 	debug ("register_device: %s\n", dev_name(new_device));
 
-	if (!new_device->bus) {
-//		dev_err(new_device, "no bus type associated. Needs fixup\n");
+	if (!new_device->bus)
 		new_device->bus = &platform_bus;
+
+	if (new_device->bus == &platform_bus && new_device->resource) {
+		struct device_d *dev;
+
+		for_each_device(dev) {
+			if (!dev->resource)
+				continue;
+			if (dev->resource->start == new_device->resource->start) {
+				return -EBUSY;
+			}
+		}
 	}
 
 	list_add_tail(&new_device->list, &device_list);
@@ -378,6 +388,11 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 
 int dev_get_drvdata(struct device_d *dev, unsigned long *data)
 {
+	if (dev->of_id_entry) {
+		*data = dev->of_id_entry->data;
+		return 0;
+	}
+
 	if (dev->id_entry) {
 		*data = dev->id_entry->driver_data;
 		return 0;
@@ -435,6 +450,12 @@ static int do_devinfo(int argc, char *argv[])
 
 		list_for_each_entry(param, &dev->parameters, list)
 			printf("%16s = %s\n", param->name, dev_get_param(dev, param->name));
+#ifdef CONFIG_OFDEVICE
+		if (dev->device_node) {
+			printf("\ndevice node: %s\n", dev->device_node->full_name);
+			of_print_nodes(dev->device_node, 0);
+		}
+#endif
 	}
 
 	return 0;

@@ -25,6 +25,7 @@
 
 #include <linux/list.h>
 #include <linux/ioport.h>
+#include <of.h>
 
 #define MAX_DRIVER_NAME		32
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
@@ -106,6 +107,9 @@ struct device_d {
 	struct list_head cdevs;
 
 	struct platform_device_id *id_entry;
+	struct device_node *device_node;
+
+	struct of_device_id *of_id_entry;
 };
 
 /** @brief Describes a driver present in the system */
@@ -128,6 +132,7 @@ struct driver_d {
 	struct bus_type *bus;
 
 	struct platform_device_id *id_table;
+	struct of_device_id *of_compatible;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */
@@ -431,6 +436,11 @@ int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
+
+#define DRV_OF_COMPAT(compat) \
+	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL
+
+int dev_get_drvdata(struct device_d *dev, unsigned long *data);
 
 #endif /* DRIVER_H */
 

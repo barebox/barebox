@@ -21,6 +21,7 @@
 #include <common.h>
 #include <command.h>
 #include <password.h>
+#include <getopt.h>
 
 #define PASSWD_MAX_LENGTH	(128 + 1)
 
@@ -35,16 +36,32 @@
 static int do_login(struct command *cmdtp, int argc, char *argv[])
 {
 	unsigned char passwd[PASSWD_MAX_LENGTH];
-	int passwd_len;
+	int passwd_len, opt;
+	int timeout = 0;
+	char *timeout_cmd = "boot";
 
 	if (!is_passwd_enable()) {
 		puts("login: password not set\n");
 		return 0;
 	}
 
+	while((opt = getopt(argc, argv, "t:")) > 0) {
+		switch(opt) {
+		case 't':
+			timeout = simple_strtoul(optarg, NULL, 10);
+			break;
+		}
+	}
+
+	if (optind != argc)
+		timeout_cmd = argv[optind];
+
 	do {
 		puts("Password: ");
-		passwd_len = password(passwd, PASSWD_MAX_LENGTH, LOGIN_MODE);
+		passwd_len = password(passwd, PASSWD_MAX_LENGTH, LOGIN_MODE, timeout);
+
+		if (passwd_len < 0)
+			run_command(timeout_cmd, 0);
 
 		if (check_passwd(passwd, passwd_len))
 			return 0;
@@ -54,7 +71,10 @@ static int do_login(struct command *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_login_help[] =
-"";
+"Usage: login [[-t timeout] <command>]\n"
+"If a timeout is specified and expired the command will be executed\n"
+"by default boot\n"
+;
 
 BAREBOX_CMD_START(login)
 	.cmd		= do_login,

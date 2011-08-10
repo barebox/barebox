@@ -283,32 +283,33 @@ void devices_shutdown(void)
 }
 
 #ifdef CONFIG_CMD_DEVINFO
-static int do_devinfo_subtree(struct device_d *dev, int depth, char edge)
+static int do_devinfo_subtree(struct device_d *dev, int depth)
 {
 	struct device_d *child;
 	struct cdev *cdev;
 	int i;
 
 	for (i = 0; i < depth; i++)
-		printf("|    ");
+		printf("     ");
 
-	printf("%c----%s", edge, dev_name(dev));
+	printf("`---- %s", dev_name(dev));
 	if (!list_empty(&dev->cdevs)) {
-		printf(" (");
+		printf("\n");
 		list_for_each_entry(cdev, &dev->cdevs, devices_list) {
-			printf("%s", cdev->name);
-			if (!list_is_last(&cdev->devices_list, &dev->cdevs))
-				printf(", ");
+			for (i = 0; i < depth + 1; i++)
+				printf("     ");
+			printf("`---- 0x%08lx-0x%08lx: /dev/%s\n",
+					cdev->offset,
+					cdev->offset + cdev->size - 1,
+					cdev->name);
 		}
-		printf(")");
+	} else {
+		printf("\n");
 	}
-	printf("\n");
 
 	if (!list_empty(&dev->children)) {
 		device_for_each_child(dev, child) {
-			do_devinfo_subtree(child, depth + 1,
-					list_is_last(&child->sibling,
-						&dev->children) ? '`' : '|');
+			do_devinfo_subtree(child, depth + 1);
 		}
 	}
 
@@ -328,7 +329,7 @@ static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
 
 		for_each_device(dev) {
 			if (!dev->parent)
-				do_devinfo_subtree(dev, 0, '|');
+				do_devinfo_subtree(dev, 0);
 		}
 
 		printf("\ndrivers:\n");

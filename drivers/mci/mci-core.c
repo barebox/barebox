@@ -1359,9 +1359,7 @@ device_initcall(mci_init);
  */
 int mci_register(struct mci_host *host)
 {
-	struct device_d *mci_dev;
-
-	mci_dev = xzalloc(sizeof(struct device_d));
+	struct device_d *mci_dev = &host->dev;
 
 	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = (void*)host;

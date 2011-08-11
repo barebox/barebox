@@ -37,8 +37,8 @@ void st8815_add_device_sdram(u32 size)
 }
 
 static struct clk_lookup clocks_lookups[] = {
-	CLKDEV_CON_ID("uart-pl0110", &st8815_clk_48),
-	CLKDEV_CON_ID("uart-pl0111", &st8815_clk_48),
+	CLKDEV_DEV_ID("uart-pl0110", &st8815_clk_48),
+	CLKDEV_DEV_ID("uart-pl0111", &st8815_clk_48),
 };
 
 static int st8815_clkdev_init(void)

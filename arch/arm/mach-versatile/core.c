@@ -145,10 +145,10 @@ static int vpb_clocksource_init(void)
 core_initcall(vpb_clocksource_init);
 
 static struct clk_lookup clocks_lookups[] = {
-	CLKDEV_CON_ID("uart-pl0110", &ref_clk_24),
-	CLKDEV_CON_ID("uart-pl0111", &ref_clk_24),
-	CLKDEV_CON_ID("uart-pl0112", &ref_clk_24),
-	CLKDEV_CON_ID("uart-pl0113", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0110", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0111", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0112", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0113", &ref_clk_24),
 };
 
 static int versatile_clkdev_init(void)

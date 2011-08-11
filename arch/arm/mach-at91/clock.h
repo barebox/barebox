@@ -32,16 +32,3 @@ struct clk {
 extern int __init clk_register(struct clk *clk);
 extern struct clk mck;
 extern struct clk utmi_clk;
-
-#define CLKDEV_CON_ID(_id, _clk)			\
-	{						\
-		.con_id = _id,				\
-		.clk = _clk,				\
-	}
-
-#define CLKDEV_CON_DEV_ID(_con_id, _dev_id, _clk)	\
-	{						\
-		.con_id = _con_id,			\
-		.dev_id = _dev_id,			\
-		.clk = _clk,				\
-	}

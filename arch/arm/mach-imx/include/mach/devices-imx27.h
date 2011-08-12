@@ -11,6 +11,11 @@ static inline struct device_d *imx27_add_i2c0(struct i2c_platform_data *pdata)
 	return imx_add_i2c((void *)IMX_I2C1_BASE, 0, pdata);
 }
 
+static inline struct device_d *imx27_add_i2c1(struct i2c_platform_data *pdata)
+{
+	return imx_add_i2c((void *)IMX_I2C2_BASE, 1, pdata);
+}
+
 static inline struct device_d *imx27_add_uart0(void)
 {
 	return imx_add_uart((void *)IMX_UART1_BASE, 0);

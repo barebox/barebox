@@ -30,12 +30,6 @@
 #include <asm/syslib.h>
 #include <ns16550.h>
 
-static struct device_d bios_disk_dev = {
-	.id		= -1,
-	.name		= "biosdrive",
-	.size		= 0,	/* auto guess */
-};
-
 /*
  * These datas are from the MBR, created by the linker and filled by the
  * setup tool while installing barebox on the disk drive
@@ -54,12 +48,10 @@ static int devices_init(void)
 {
 	int rc;
 
-	sdram_dev.size = bios_get_memsize();	/* extended memory only */
-	sdram_dev.size <<= 10;
-
-	add_mem_device("ram0", 0x0, 16 * 1024 * 1024,
+	/* extended memory only */
+	add_mem_device("ram0", 0x0, bios_get_memsize() << 10,
 		       IORESOURCE_MEM_WRITEABLE);
-	register_device(&bios_disk_dev);
+	add_generic_device("biosdrive", -1, NULL, 0, 0, IORESOURCE_MEM, NULL);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {
 		rc = devfs_add_partition("biosdisk0",

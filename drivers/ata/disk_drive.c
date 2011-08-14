@@ -190,11 +190,11 @@ static int disk_probe(struct device_d *dev)
 
 #ifdef CONFIG_ATA_BIOS
 	/* On x86, BIOS based disks are coming without a valid .size field */
-	if (dev->size == 0) {
+	if (dev->resource[0].size == 0) {
 		/* guess the size of this drive if not otherwise given */
-		dev->size = disk_guess_size(dev,
+		dev->resource[0].size = disk_guess_size(dev,
 			(struct partition_entry*)&sector[446]) * SECTOR_SIZE;
-		dev_info(dev, "Drive size guessed to %u kiB\n", dev->size / 1024);
+		dev_info(dev, "Drive size guessed to %u kiB\n", dev->resource[0].size / 1024);
 	}
 #endif
 	atablk->blk.num_blocks = dev->resource[0].size / SECTOR_SIZE;

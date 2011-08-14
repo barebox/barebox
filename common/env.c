@@ -81,7 +81,7 @@ int env_push_context(void)
 	return 0;
 }
 
-device_initcall(env_push_context);
+postcore_initcall(env_push_context);
 
 /**
  * FIXME

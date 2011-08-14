@@ -27,6 +27,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <errno.h>
+#include <init.h>
 
 /* SPI devices should normally not be created by SPI device drivers; that
  * would make them board-specific.  Similarly with SPI master drivers.
@@ -77,6 +78,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->mode = chip->mode;
 	proxy->bits_per_word = chip->bits_per_word ? chip->bits_per_word : 8;
 	proxy->dev.platform_data = chip->platform_data;
+	proxy->dev.bus = &spi_bus;
 	strcpy(proxy->dev.name, chip->name);
 	/* allocate a free id for this chip */
 	proxy->dev.id = DEVICE_ID_DYNAMIC;
@@ -240,3 +242,25 @@ int spi_write_then_read(struct spi_device *spi,
 	return status;
 }
 EXPORT_SYMBOL(spi_write_then_read);
+
+static int spi_match(struct device_d *dev, struct driver_d *drv)
+{
+	return strcmp(dev->name, drv->name) ? -1 : 0;
+}
+
+static int spi_probe(struct device_d *dev)
+{
+	return dev->driver->probe(dev);
+}
+
+static void spi_remove(struct device_d *dev)
+{
+	dev->driver->remove(dev);
+}
+
+struct bus_type spi_bus = {
+	.name = "spi",
+	.match = spi_match,
+	.probe = spi_probe,
+	.remove = spi_remove,
+};

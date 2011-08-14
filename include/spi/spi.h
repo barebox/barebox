@@ -427,4 +427,11 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+extern struct bus_type spi_bus;
+
+static inline int spi_register_driver(struct driver_d *drv)
+{
+	drv->bus = &spi_bus;
+	return register_driver(drv);
+}
 #endif /* __INCLUDE_SPI_H */

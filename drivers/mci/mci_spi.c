@@ -423,7 +423,7 @@ static struct driver_d spi_mci_driver = {
 
 static int spi_mci_init_driver(void)
 {
-	register_driver(&spi_mci_driver);
+	spi_register_driver(&spi_mci_driver);
 	return 0;
 }
 

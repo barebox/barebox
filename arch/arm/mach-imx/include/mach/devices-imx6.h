@@ -42,7 +42,7 @@ static inline struct device_d *imx6_add_mmc3(struct esdhc_platform_data *pdata)
 
 static inline struct device_d *imx6_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)MX6_ENET_BASE_ADDR, pdata);
+	return imx_add_fec_imx6((void *)MX6_ENET_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx6_add_spi0(struct spi_imx_master *pdata)

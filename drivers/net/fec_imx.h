@@ -122,6 +122,12 @@ struct buffer_descriptor {
 	uint32_t data_pointer;		/**< payload's buffer address */
 };
 
+enum fec_type {
+	FEC_TYPE_IMX27,
+	FEC_TYPE_IMX28,
+	FEC_TYPE_IMX6,
+};
+
 /**
  * @brief i.MX27-FEC private structure
  */
@@ -139,7 +145,23 @@ struct fec_priv {
 	struct mii_bus miibus;
 	void (*phy_init)(struct phy_device *dev);
 	struct clk *clk;
+	enum fec_type type;
 };
+
+static inline int fec_is_imx27(struct fec_priv *priv)
+{
+	return priv->type == FEC_TYPE_IMX27;
+}
+
+static inline int fec_is_imx28(struct fec_priv *priv)
+{
+	return priv->type == FEC_TYPE_IMX28;
+}
+
+static inline int fec_is_imx6(struct fec_priv *priv)
+{
+	return priv->type == FEC_TYPE_IMX6;
+}
 
 /**
  * @brief Numbers of buffer descriptors for receiving

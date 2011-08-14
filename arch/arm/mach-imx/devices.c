@@ -8,9 +8,14 @@ static inline struct device_d *imx_add_device(char *name, int id, void *base, in
 				  IORESOURCE_MEM, pdata);
 }
 
-struct device_d *imx_add_fec(void *base, struct fec_platform_data *pdata)
+struct device_d *imx_add_fec_imx27(void *base, struct fec_platform_data *pdata)
 {
-	return imx_add_device("fec_imx", -1, base, 0x1000, pdata);
+	return imx_add_device("imx27-fec", -1, base, 0x1000, pdata);
+}
+
+struct device_d *imx_add_fec_imx6(void *base, struct fec_platform_data *pdata)
+{
+	return imx_add_device("imx6-fec", -1, base, 0x1000, pdata);
 }
 
 struct device_d *imx_add_spi(void *base, int id, struct spi_imx_master *pdata)

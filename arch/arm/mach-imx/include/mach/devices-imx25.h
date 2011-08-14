@@ -68,7 +68,7 @@ static inline struct device_d *imx25_add_fb(struct imx_fb_platform_data *pdata)
 
 static inline struct device_d *imx25_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)MX25_FEC_BASE_ADDR, pdata);
+	return imx_add_fec_imx27((void *)MX25_FEC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx25_add_mmc0(struct esdhc_platform_data *pdata)

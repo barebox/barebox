@@ -8,7 +8,8 @@
 #include <mach/imx-ipu-fb.h>
 #include <mach/esdhc.h>
 
-struct device_d *imx_add_fec(void *base, struct fec_platform_data *pdata);
+struct device_d *imx_add_fec_imx27(void *base, struct fec_platform_data *pdata);
+struct device_d *imx_add_fec_imx6(void *base, struct fec_platform_data *pdata);
 struct device_d *imx_add_spi(void *base, int id, struct spi_imx_master *pdata);
 struct device_d *imx_add_i2c(void *base, int id, struct i2c_platform_data *pdata);
 struct device_d *imx_add_uart_imx1(void *base, int id);

@@ -44,7 +44,7 @@ static inline struct device_d *imx51_add_uart2(void)
 
 static inline struct device_d *imx51_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)MX51_MXC_FEC_BASE_ADDR, pdata);
+	return imx_add_fec_imx27((void *)MX51_MXC_FEC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx51_add_mmc0(struct esdhc_platform_data *pdata)

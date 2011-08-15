@@ -124,6 +124,7 @@ int register_device(struct device_d *new_device)
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
+	INIT_LIST_HEAD(&new_device->active);
 
 	for_each_driver(drv) {
 		if (!match(drv, new_device))

@@ -492,6 +492,7 @@ static int mxcmci_probe(struct device_d *dev)
 	host->mci.set_ios = mxcmci_set_ios;
 	host->mci.init = mxcmci_init;
 	host->mci.host_caps = MMC_MODE_4BIT;
+	host->mci.hw_dev = dev;
 
 	host->base = dev_request_mem_region(dev, 0);
 

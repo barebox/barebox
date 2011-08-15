@@ -665,13 +665,13 @@ int mpc5xxx_fec_probe(struct device_d *dev)
         dev->type_data = edev;
 	fec = (mpc5xxx_fec_priv *)xmalloc(sizeof(*fec));
         edev->priv = fec;
-	edev->open = mpc5xxx_fec_open,
-	edev->init = mpc5xxx_fec_init,
-	edev->send = mpc5xxx_fec_send,
-	edev->recv = mpc5xxx_fec_recv,
-	edev->halt = mpc5xxx_fec_halt,
-	edev->get_ethaddr = mpc5xxx_fec_get_ethaddr,
-	edev->set_ethaddr = mpc5xxx_fec_set_ethaddr,
+	edev->open = mpc5xxx_fec_open;
+	edev->init = mpc5xxx_fec_init;
+	edev->send = mpc5xxx_fec_send;
+	edev->recv = mpc5xxx_fec_recv;
+	edev->halt = mpc5xxx_fec_halt;
+	edev->get_ethaddr = mpc5xxx_fec_get_ethaddr;
+	edev->set_ethaddr = mpc5xxx_fec_set_ethaddr;
 
 	fec->eth = dev_request_mem_region(dev, 0);
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;

@@ -24,7 +24,7 @@
 #include "gpio.h"
 
 void *imx_gpio_base[] = {
-	(void *)0x87f84000,
+	(void *)0x73f84000,
 	(void *)0x73f88000,
 	(void *)0x73f8c000,
 	(void *)0x73f90000,

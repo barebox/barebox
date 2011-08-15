@@ -79,6 +79,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->dev.platform_data = chip->platform_data;
 	strcpy(proxy->dev.name, chip->name);
 	proxy->dev.type_data = proxy;
+	dev_add_child(master->dev, &proxy->dev);
 	status = register_device(&proxy->dev);
 
 	/* drivers may modify this initial i/o setup */

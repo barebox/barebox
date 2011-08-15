@@ -612,6 +612,7 @@ static int fec_probe(struct device_d *dev)
 	edev->halt = fec_halt;
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
+	edev->parent = dev;
 
 	fec->regs = dev_request_mem_region(dev, 0);
 

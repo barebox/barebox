@@ -518,6 +518,7 @@ static int tse_probe(struct device_d *dev)
 	edev->halt = tse_eth_halt;
 	edev->get_ethaddr = tse_get_ethaddr;
 	edev->set_ethaddr = tse_set_ethaddr;
+	edev->parent = dev;
 
 #ifdef CONFIG_TSE_USE_DEDICATED_DESC_MEM
 	tx_desc = dev_request_mem_region(dev, 3);

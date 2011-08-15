@@ -513,6 +513,7 @@ static int dm9000_probe(struct device_d *dev)
 	edev->halt = dm9000_eth_halt;
 	edev->set_ethaddr = dm9000_set_ethaddr;
 	edev->get_ethaddr = dm9000_get_ethaddr;
+	edev->parent = dev;
 
 	/* RESET device */
 	dm9000_reset(priv);

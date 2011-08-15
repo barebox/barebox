@@ -725,6 +725,7 @@ static int smc911x_probe(struct device_d *dev)
 	edev->halt = smc911x_eth_halt;
 	edev->get_ethaddr = smc911x_get_ethaddr;
 	edev->set_ethaddr = smc911x_set_ethaddr;
+	edev->parent = dev;
 
 	priv->miidev.read = smc911x_phy_read;
 	priv->miidev.write = smc911x_phy_write;

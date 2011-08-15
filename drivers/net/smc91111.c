@@ -1311,6 +1311,7 @@ static int smc91c111_probe(struct device_d *dev)
 	edev->halt = smc91c111_eth_halt;
 	edev->get_ethaddr = smc91c111_get_ethaddr;
 	edev->set_ethaddr = smc91c111_set_ethaddr;
+	edev->parent = dev;
 
 	priv->miidev.read = smc91c111_phy_read;
 	priv->miidev.write = smc91c111_phy_write;

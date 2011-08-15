@@ -154,22 +154,6 @@ static struct clk vdec_clk = {
 	.type		= CLK_TYPE_PERIPHERAL,
 };
 
-/* One additional fake clock for ohci */
-static struct clk ohci_clk = {
-	.name		= "ohci_clk",
-	.pmc_mask	= 0,
-	.type		= CLK_TYPE_PERIPHERAL,
-	.parent		= &uhphs_clk,
-};
-
-/* One additional fake clock for second TC block */
-static struct clk tcb1_clk = {
-	.name		= "tcb1_clk",
-	.pmc_mask	= 0,
-	.type		= CLK_TYPE_PERIPHERAL,
-	.parent		= &tcb0_clk,
-};
-
 static struct clk *periph_clocks[] __initdata = {
 	&pioA_clk,
 	&pioB_clk,
@@ -202,6 +186,21 @@ static struct clk *periph_clocks[] __initdata = {
 	&tcb1_clk,
 };
 
+static struct clk_lookup periph_clocks_lookups[] = {
+	/* One additional fake clock for ohci */
+	CLKDEV_CON_ID("ohci_clk", &uhphs_clk),
+	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci0", &mmc0_clk),
+	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci1", &mmc1_clk),
+};
+
+static struct clk_lookup usart_clocks_lookups[] = {
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart0", &mck),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart1", &usart0_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart2", &usart1_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart3", &usart2_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart4", &usart3_clk),
+};
+
 /*
  * The two programmable clocks.
  * You must configure pin multiplexing to bring these signals out.
@@ -225,6 +224,11 @@ static void __init at91sam9g45_register_clocks(void)
 
 	for (i = 0; i < ARRAY_SIZE(periph_clocks); i++)
 		clk_register(periph_clocks[i]);
+
+	clkdev_add_table(periph_clocks_lookups,
+			 ARRAY_SIZE(periph_clocks_lookups));
+	clkdev_add_table(usart_clocks_lookups,
+			 ARRAY_SIZE(usart_clocks_lookups));
 
 	if (cpu_is_at91sam9m10() || cpu_is_at91sam9m11())
 		clk_register(&vdec_clk);

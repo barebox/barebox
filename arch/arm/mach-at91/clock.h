@@ -6,6 +6,8 @@
  * published by the Free Software Foundation.
  */
 
+#include <linux/clkdev.h>
+
 #define CLK_TYPE_PRIMARY	0x1
 #define CLK_TYPE_PLL		0x2
 #define CLK_TYPE_PROGRAMMABLE	0x4
@@ -16,8 +18,7 @@
 struct clk {
 	struct list_head node;
 	const char	*name;		/* unique clock name */
-	const char	*function;	/* function of the clock */
-	struct device_d	*dev;		/* device associated with function */
+	struct clk_lookup cl;
 	unsigned long	rate_hz;
 	struct clk	*parent;
 	u32		pmc_mask;
@@ -29,3 +30,5 @@ struct clk {
 
 
 extern int __init clk_register(struct clk *clk);
+extern struct clk mck;
+extern struct clk utmi_clk;

@@ -363,7 +363,7 @@ int sync (	/* 0: successful, -EIO: failed */
 /*
  * Get sector# from cluster#
  */
-DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
+static DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 	FATFS *fs,	/* File system object */
 	DWORD clst	/* Cluster# to be converted */
 )
@@ -377,7 +377,7 @@ DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 /*
  * FAT access - Read value of a FAT entry
  */
-DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster status */
+static DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster status */
 	FATFS *fs,	/* File system object */
 	DWORD clst	/* Cluster# to get the link information */
 )
@@ -424,7 +424,7 @@ DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster status 
  */
 #ifdef CONFIG_FS_FAT_WRITE
 
-int put_fat (
+static int put_fat (
 	FATFS *fs,	/* File system object */
 	DWORD clst,	/* Cluster# to be changed in range of 2 to fs->n_fatent - 1 */
 	DWORD val	/* New value to mark the cluster */
@@ -875,7 +875,7 @@ void fit_lfn (
  * Create numbered name
  */
 #ifdef CONFIG_FS_FAT_LFN
-void gen_numname (
+static void gen_numname (
 	BYTE *dst,		/* Pointer to generated SFN */
 	const BYTE *src,	/* Pointer to source SFN to be modified */
 	const WCHAR *lfn,	/* Pointer to LFN */

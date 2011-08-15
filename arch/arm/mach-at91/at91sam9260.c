@@ -169,6 +169,16 @@ static struct clk *periph_clocks[] = {
 	// irq0 .. irq2
 };
 
+static struct clk_lookup usart_clocks_lookups[] = {
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart0", &mck),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart1", &usart0_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart2", &usart1_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart3", &usart2_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart4", &usart3_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart5", &usart4_clk),
+	CLKDEV_CON_DEV_ID("usart", "atmel_usart6", &usart5_clk),
+};
+
 /*
  * The two programmable clocks.
  * You must configure pin multiplexing to bring these signals out.
@@ -192,6 +202,9 @@ static void __init at91sam9260_register_clocks(void)
 
 	for (i = 0; i < ARRAY_SIZE(periph_clocks); i++)
 		clk_register(periph_clocks[i]);
+
+	clkdev_add_table(usart_clocks_lookups,
+			 ARRAY_SIZE(usart_clocks_lookups));
 
 	clk_register(&pck0);
 	clk_register(&pck1);

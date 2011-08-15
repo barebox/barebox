@@ -144,10 +144,24 @@ static int vpb_clocksource_init(void)
 
 core_initcall(vpb_clocksource_init);
 
+static struct clk_lookup clocks_lookups[] = {
+	CLKDEV_DEV_ID("uart-pl0110", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0111", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0112", &ref_clk_24),
+	CLKDEV_DEV_ID("uart-pl0113", &ref_clk_24),
+};
+
+static int versatile_clkdev_init(void)
+{
+	clkdev_add_table(clocks_lookups, ARRAY_SIZE(clocks_lookups));
+
+	return 0;
+}
+postcore_initcall(versatile_clkdev_init);
+
 void versatile_register_uart(unsigned id)
 {
 	resource_size_t start;
-	struct device_d *dev;
 
 	switch (id) {
 	case 0:
@@ -165,9 +179,8 @@ void versatile_register_uart(unsigned id)
 	default:
 		return;
 	}
-	dev = add_generic_device("uart-pl011", id, NULL, start, 4096,
+	add_generic_device("uart-pl011", id, NULL, start, 4096,
 			   IORESOURCE_MEM, NULL);
-	vpb_clk_create(&ref_clk_24, dev_name(dev));
 }
 
 void __noreturn reset_cpu (unsigned long ignored)

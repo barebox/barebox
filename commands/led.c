@@ -37,6 +37,12 @@ static int do_led(struct command *cmdtp, int argc, char *argv[])
 	if (argc == 1) {
 		int i = 0;
 
+		led = led_by_number(i);
+		if (!led) {
+			printf("no registered LEDs\n");
+			return COMMAND_ERROR;
+		}
+
 		printf("registered LEDs:\n");
 
 		while ((led = led_by_number(i))) {

@@ -36,6 +36,19 @@ void st8815_add_device_sdram(u32 size)
 	arm_add_mem_device("ram0", 0x00000000, size);
 }
 
+static struct clk_lookup clocks_lookups[] = {
+	CLKDEV_DEV_ID("uart-pl0110", &st8815_clk_48),
+	CLKDEV_DEV_ID("uart-pl0111", &st8815_clk_48),
+};
+
+static int st8815_clkdev_init(void)
+{
+	clkdev_add_table(clocks_lookups, ARRAY_SIZE(clocks_lookups));
+
+	return 0;
+}
+postcore_initcall(st8815_clkdev_init);
+
 void st8815_register_uart(unsigned id)
 {
 	resource_size_t start;

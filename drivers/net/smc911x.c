@@ -732,6 +732,7 @@ static int smc911x_probe(struct device_d *dev)
 	priv->miidev.address = 1;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
+	priv->miidev.parent = dev;
 	priv->base = base;
 
 	smc911x_reset(edev);

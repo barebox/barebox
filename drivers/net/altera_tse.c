@@ -549,6 +549,7 @@ static int tse_probe(struct device_d *dev)
 	miidev->write = tse_phy_write;
 	miidev->flags = 0;
 	miidev->edev = edev;
+	miidev->parent = dev;
 
 	if (dev->platform_data != NULL)
 		miidev->address = *((int8_t *)(dev->platform_data));

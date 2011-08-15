@@ -541,6 +541,7 @@ static int dm9000_probe(struct device_d *dev)
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
+	priv->miidev.parent = dev;
 
 	mii_register(&priv->miidev);
 	eth_register(edev);

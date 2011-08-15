@@ -264,6 +264,7 @@ static int netx_eth_probe(struct device_d *dev)
 	priv->miidev.write = netx_miidev_write;
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
+	priv->miidev.parent = dev;
 
 	netx_eth_init_phy();
 	mii_register(&priv->miidev);

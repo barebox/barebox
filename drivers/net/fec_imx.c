@@ -645,6 +645,7 @@ static int fec_probe(struct device_d *dev)
 		fec->miidev.address = pdata->phy_addr;
 		fec->miidev.flags = pdata->xcv_type == MII10 ? MIIDEV_FORCE_10 : 0;
 		fec->miidev.edev = edev;
+		fec->miidev.parent = dev;
 
 		mii_register(&fec->miidev);
 	}

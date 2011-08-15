@@ -474,6 +474,7 @@ static int asix_init_mii(struct usbnet *dev)
 	dev->miidev.address = asix_get_phy_addr(dev);
 	dev->miidev.flags = 0;
 	dev->miidev.edev = &dev->edev;
+	dev->miidev.parent = &dev->udev->dev;
 
 	return mii_register(&dev->miidev);
 }

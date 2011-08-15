@@ -503,6 +503,7 @@ static int ep93xx_eth_probe(struct device_d *dev)
 	priv->miidev.write = ep93xx_phy_write;
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
+	priv->miidev.parent = dev;
 
 	priv->tx_dq.base = calloc(NUMTXDESC,
 				sizeof(struct tx_descriptor));

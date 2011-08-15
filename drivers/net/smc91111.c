@@ -1318,6 +1318,7 @@ static int smc91c111_probe(struct device_d *dev)
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
+	priv->miidev.parent = dev;
 	priv->base = dev_request_mem_region(dev, 0);
 
 	smc91c111_reset(edev);

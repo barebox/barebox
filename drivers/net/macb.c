@@ -441,6 +441,7 @@ static int macb_probe(struct device_d *dev)
 	macb->miidev.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
 		MIIDEV_FORCE_LINK : 0;
 	macb->miidev.edev = edev;
+	macb->miidev.parent = dev;
 	macb->flags = pdata->flags;
 
 	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE); 

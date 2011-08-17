@@ -272,6 +272,7 @@ static int at91rm9200_eth_init (struct device_d *dev)
 	edev->halt = at91rm9200_eth_halt;
 	edev->get_ethaddr = at91rm9200_get_ethaddr;
 	edev->set_ethaddr = at91rm9200_set_ethaddr;
+	edev->parent = dev;
 
 	p_mac = AT91C_BASE_EMAC;
 

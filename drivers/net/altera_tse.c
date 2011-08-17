@@ -518,6 +518,7 @@ static int tse_probe(struct device_d *dev)
 	edev->halt = tse_eth_halt;
 	edev->get_ethaddr = tse_get_ethaddr;
 	edev->set_ethaddr = tse_set_ethaddr;
+	edev->parent = dev;
 
 #ifdef CONFIG_TSE_USE_DEDICATED_DESC_MEM
 	tx_desc = dev_request_mem_region(dev, 3);
@@ -548,6 +549,7 @@ static int tse_probe(struct device_d *dev)
 	miidev->write = tse_phy_write;
 	miidev->flags = 0;
 	miidev->edev = edev;
+	miidev->parent = dev;
 
 	if (dev->platform_data != NULL)
 		miidev->address = *((int8_t *)(dev->platform_data));

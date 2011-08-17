@@ -199,6 +199,10 @@ int eth_register(struct eth_device *edev)
 
 	strcpy(edev->dev.name, "eth");
 	edev->dev.id = -1;
+
+	if (edev->parent)
+		dev_add_child(edev->parent, &edev->dev);
+
 	register_device(&edev->dev);
 
 	dev->type_data = edev;

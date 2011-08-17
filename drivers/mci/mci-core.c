@@ -1177,6 +1177,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 	struct mci_host *host = GET_MCI_PDATA(mci_dev);
 	struct ata_interface *p;
 	int rc;
+	struct device_d *dev;
 
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci_dev);
@@ -1228,7 +1229,8 @@ static int mci_card_probe(struct device_d *mci_dev)
 	p->read = mci_sd_read;
 	p->priv = mci_dev;
 
-	add_generic_device("disk", -1, NULL, 0, mci->capacity, IORESOURCE_MEM, p);
+	dev = add_generic_device("disk", -1, NULL, 0, mci->capacity, IORESOURCE_MEM, p);
+	dev_add_child(&host->dev, dev);
 
 	pr_debug("SD Card successfully added\n");
 
@@ -1359,12 +1361,11 @@ device_initcall(mci_init);
  */
 int mci_register(struct mci_host *host)
 {
-	struct device_d *mci_dev;
-
-	mci_dev = xzalloc(sizeof(struct device_d));
+	struct device_d *mci_dev = &host->dev;
 
 	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = (void*)host;
+	dev_add_child(host->hw_dev, mci_dev);
 
 	return register_device(mci_dev);
 }

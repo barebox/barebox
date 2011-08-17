@@ -43,6 +43,7 @@ struct eth_device {
 	void *priv;
 
 	struct device_d dev;
+	struct device_d *parent;
 
 	struct list_head list;
 };

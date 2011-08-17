@@ -194,6 +194,7 @@ struct mci_data {
 /** host information */
 struct mci_host {
 	struct device_d *hw_dev;	/**< the host MCI hardware device */
+	struct device_d dev;		/**< our device */
 	unsigned voltages;
 	unsigned host_caps;	/**< Host's interface capabilities, refer MMC_VDD_* */
 	unsigned f_min;		/**< host interface lower limit */

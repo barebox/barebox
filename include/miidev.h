@@ -33,6 +33,7 @@
 
 struct mii_device {
 	struct device_d dev;
+	struct device_d *parent;
 
 	int address;	/* The address the phy has on the bus */
 	int	(*read) (struct mii_device *dev, int addr, int reg);

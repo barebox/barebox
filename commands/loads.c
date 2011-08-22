@@ -26,19 +26,19 @@
  */
 #include <common.h>
 #include <command.h>
+#include <environment.h>
 #include <s_record.h>
 #include <net.h>
-#include <exports.h>
 #include <xyzModem.h>
 
 static ulong load_serial (ulong offset);
 static int read_record (char *buf, ulong len);
 static int do_echo = 1;
 
-# if (CONFIG_COMMANDS & CFG_CMD_SAVES)
+#ifdef CONFIG_CMD_SAVES
 static int save_serial (ulong offset, ulong size);
 static int write_record (char *buf);
-# endif /* CFG_CMD_SAVES */
+#endif /* CONFIG_CMD_SAVES */
 
 int do_load_serial(struct command *cmdtp, int argc, char *argv[])
 {
@@ -79,7 +79,6 @@ int do_load_serial(struct command *cmdtp, int argc, char *argv[])
 		rcode = 1;
 	} else {
 		printf ("## Start Addr      = 0x%08lX\n", addr);
-		load_addr = addr;
 	}
 
 	return rcode;
@@ -139,7 +138,7 @@ load_serial (ulong offset)
 		}
 		if (!do_echo) {	/* print a '.' every 100 lines */
 			if ((++line_count % 100) == 0)
-				putc ('.');
+				console_putc(CONSOLE_STDOUT, '.');
 		}
 	}
 
@@ -157,7 +156,7 @@ read_record (char *buf, ulong len)
 	for (p=buf; p < buf+len; ++p) {
 		c = getc();		/* read character		*/
 		if (do_echo)
-			putc (c);	/* ... and echo it		*/
+			console_putc(CONSOLE_STDOUT, c);
 
 		switch (c) {
 		case '\r':
@@ -170,13 +169,6 @@ read_record (char *buf, ulong len)
 		default:
 			*p = c;
 		}
-
-	    /* Check for the console hangup (if any different from serial) */
-	    if (gd->jt[XF_getc] != getc) {
-		if (ctrlc()) {
-		    return (-1);
-		}
-	    }
 	}
 
 	/* line too long - truncate */
@@ -184,9 +176,8 @@ read_record (char *buf, ulong len)
 	return (p - buf);
 }
 
-#if (CONFIG_COMMANDS & CFG_CMD_SAVES)
-
-int do_save_serial(struct command *cmdtp, int flag, int argc, char *argv[])
+#ifdef CONFIG_CMD_SAVES
+int do_save_serial(struct command *cmdtp, int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong size   = 0;
@@ -279,7 +270,7 @@ write_record (char *buf)
 	char c;
 
 	while((c = *buf++))
-		putc(c);
+		console_putc(CONSOLE_STDOUT, c);
 
 	/* Check for the console hangup (if any different from serial) */
 
@@ -288,26 +279,31 @@ write_record (char *buf)
 	}
 	return (0);
 }
-# endif /* CFG_CMD_SAVES */
+#endif /* CONFIG_CMD_SAVES */
 
-BAREBOX_CMD(
-	loads, 2, 0,	do_load_serial,
-	"loads   - load S-Record file over serial line\n",
+static const __maybe_unused char cmd_loads_help[] =
 	"[ off ]\n"
-	"    - load S-Record file over serial line with offset 'off'\n"
-);
+	"    - load S-Record file over serial line with offset 'off'\n";
+
+BAREBOX_CMD_START(loads)
+	.cmd		= do_load_serial,
+	.usage		= "load S-Record file over serial line",
+	BAREBOX_CMD_HELP(cmd_loads_help)
+BAREBOX_CMD_END
 
 /*
  * SAVES always requires LOADS support, but not vice versa
  */
 
-
-#if (CONFIG_COMMANDS & CFG_CMD_SAVES)
-BAREBOX_CMD(
-	saves, 3, 0,	do_save_serial,
-	"saves   - save S-Record file over serial line\n",
+#ifdef CONFIG_CMD_SAVES
+static const __maybe_unused char cmd_saves_help[] =
 	"[ off ] [size]\n"
-	"    - save S-Record file over serial line with offset 'off' and size 'size'\n"
-);
-#endif	/* CFG_CMD_SAVES */
+	"    - save S-Record file over serial line with offset 'off' "
+	"and size 'size'\n";
 
+BAREBOX_CMD_START(saves)
+	.cmd		= do_save_serial,
+	.usage		= "save S-Record file over serial line",
+	BAREBOX_CMD_HELP(cmd_saves_help)
+BAREBOX_CMD_END
+#endif	/* CONFIG_CMD_SAVES */

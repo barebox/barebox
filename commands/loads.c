@@ -45,7 +45,7 @@ int do_load_serial(struct command *cmdtp, int argc, char *argv[])
 	ulong offset = 0;
 	ulong addr;
 	int i;
-	char *env_echo;
+	const char *env_echo;
 	int rcode = 0;
 
 	if (((env_echo = getenv("loads_echo")) != NULL) && (*env_echo == '1')) {

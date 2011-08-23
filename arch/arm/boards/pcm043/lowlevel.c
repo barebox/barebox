@@ -37,6 +37,11 @@
 #define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 #define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
 
+#define IMX35_CHIP_REVISION_2_1		0x11
+
+#define CCM_PDR0_399	0x00011000
+#define CCM_PDR0_532	0x00001000
+
 #ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
@@ -111,7 +116,13 @@ void __bare_init __naked board_init_lowlevel(void)
 	writel(MPCTL_PARAM_532, ccm_base + CCM_MPCTL);
 
 	writel(PPCTL_PARAM_300, ccm_base + CCM_PPCTL);
-	writel(0x00001000, ccm_base + CCM_PDR0);
+
+	/* Check silicon revision and use 532MHz if >=2.1 */
+	r = readl(IMX_IIM_BASE + 0x24);
+	if (r >= IMX35_CHIP_REVISION_2_1)
+		writel(CCM_PDR0_532, ccm_base + CCM_PDR0);
+	else
+		writel(CCM_PDR0_399, ccm_base + CCM_PDR0);
 
 	r = readl(ccm_base + CCM_CGR0);
 	r |= 0x00300000;

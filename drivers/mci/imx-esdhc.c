@@ -567,16 +567,28 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
+	{
+		.compatible = "fsl,imx51-esdhc",
+	}, {
+		.compatible = "fsl,imx53-esdhc",
+	}, {
+		.compatible = "fsl,imx6q-usdhc",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d fsl_esdhc_driver = {
-        .name  = "imx-esdhc",
-        .probe = fsl_esdhc_probe,
+	.name  = "imx-esdhc",
+	.probe = fsl_esdhc_probe,
+	.of_compatible = DRV_OF_COMPAT(fsl_esdhc_compatible),
 };
 
 static int fsl_esdhc_init_driver(void)
 {
-        register_driver(&fsl_esdhc_driver);
-        return 0;
+	register_driver(&fsl_esdhc_driver);
+	return 0;
 }
 
 device_initcall(fsl_esdhc_init_driver);
-

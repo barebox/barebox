@@ -124,9 +124,9 @@ static int imx35_devices_init(void)
 	uint32_t reg;
 
 	/* CS0: Nor Flash */
-	writel(0x0000cf03, CSCR_U(0));
-	writel(0x10000d03, CSCR_L(0));
-	writel(0x00720900, CSCR_A(0));
+	writel(0x22C0CF00, CSCR_U(0));
+	writel(0x75000D01, CSCR_L(0));
+	writel(0x00000900, CSCR_A(0));
 
 	led_gpio_register(&led0);
 
@@ -276,10 +276,6 @@ static int pcm043_core_setup(void)
 	writel(0x0, IMX_MAX_BASE + 0xb00);	/* for M3 */
 	writel(0x0, IMX_MAX_BASE + 0xc00);	/* for M4 */
 	writel(0x0, IMX_MAX_BASE + 0xd00);	/* for M5 */
-
-	writel(0x0000DCF6, CSCR_U(0)); /* CS0: NOR Flash */
-	writel(0x444A4541, CSCR_L(0));
-	writel(0x44443302, CSCR_A(0));
 
 	/*
 	 * M3IF Control Register (M3IFCTL)

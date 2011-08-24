@@ -28,6 +28,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <of.h>
 
 /* SPI devices should normally not be created by SPI device drivers; that
  * would make them board-specific.  Similarly with SPI master drivers.
@@ -83,6 +84,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	/* allocate a free id for this chip */
 	proxy->dev.id = DEVICE_ID_DYNAMIC;
 	proxy->dev.type_data = proxy;
+	proxy->dev.device_node = chip->device_node;
 	dev_add_child(master->dev, &proxy->dev);
 
 	/* drivers may modify this initial i/o setup */
@@ -101,6 +103,27 @@ fail:
 	return NULL;
 }
 EXPORT_SYMBOL(spi_new_device);
+
+#ifdef CONFIG_OFDEVICE
+void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
+{
+	struct device_node *n;
+	struct spi_board_info chip;
+	struct property *reg;
+
+	device_node_for_nach_child(node, n) {
+		chip.name = n->name;
+		chip.bus_num = master->bus_num;
+		chip.max_speed_hz = 300000; /* FIXME */
+		reg = of_find_property(n, "reg");
+		if (!reg)
+			continue;
+		chip.chip_select = of_read_number(reg->value, 1);
+		chip.device_node = n;
+		spi_register_board_info(&chip, 1);
+	}
+}
+#endif
 
 /**
  * spi_register_board_info - register SPI devices for a given board
@@ -145,7 +168,7 @@ static void scan_boardinfo(struct spi_master *master)
 		unsigned		n;
 
 		for (n = bi->n_board_info; n > 0; n--, chip++) {
-			debug("%s %d %d\n", __FUNCTION__, chip->bus_num, master->bus_num);
+			printf("%s %d %d\n", __FUNCTION__, chip->bus_num, master->bus_num);
 			if (chip->bus_num != master->bus_num)
 				continue;
 			/* NOTE: this relies on spi_new_device to
@@ -155,6 +178,8 @@ static void scan_boardinfo(struct spi_master *master)
 		}
 	}
 }
+
+static LIST_HEAD(spi_master_list);
 
 /**
  * spi_register_master - register SPI master controller
@@ -187,6 +212,8 @@ int spi_register_master(struct spi_master *master)
 	 */
 	if (master->num_chipselect == 0)
 		return -EINVAL;
+
+	list_add_tail(&master->list, &spi_master_list);
 
 	/* populate children from any spi device tables */
 	scan_boardinfo(master);
@@ -245,6 +272,10 @@ EXPORT_SYMBOL(spi_write_then_read);
 
 static int spi_match(struct device_d *dev, struct driver_d *drv)
 {
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node &&
+			drv->of_compatible)
+		return of_match(dev, drv);
+
 	return strcmp(dev->name, drv->name) ? -1 : 0;
 }
 

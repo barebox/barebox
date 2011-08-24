@@ -17,6 +17,7 @@ struct spi_board_info {
 	u8	mode;
 	u8	bits_per_word;
 	void	*platform_data;
+	struct device_node *device_node;
 };
 
 /**
@@ -163,6 +164,8 @@ struct spi_master {
 
 	/* called on release() to free memory provided by spi_master */
 	void			(*cleanup)(struct spi_device *spi);
+
+	struct list_head list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -434,4 +437,7 @@ static inline int spi_register_driver(struct driver_d *drv)
 	drv->bus = &spi_bus;
 	return register_driver(drv);
 }
+
+void spi_of_register_slaves(struct spi_master *master, struct device_node *node);
+
 #endif /* __INCLUDE_SPI_H */

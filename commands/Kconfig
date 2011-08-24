@@ -343,6 +343,12 @@ config CMD_GO
 	tristate
 	prompt "go"
 
+config CMD_OFTREE
+	tristate
+	select OFTREE
+	prompt "oftree"
+	select FDT
+
 endmenu
 
 config CMD_TIMEOUT

@@ -15,3 +15,6 @@ source lib/lzo/Kconfig
 config FDT
 	bool
 
+config OFTREE
+	select FDT
+	bool

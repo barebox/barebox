@@ -19,4 +19,9 @@ config DRIVER_SPI_IMX_2_3
 	depends on ARCH_IMX51 || ARCH_IMX53
 	default y
 
+config DRIVER_SPI_ALTERA
+	bool "Altera SPI Master driver"
+	depends on NIOS2
+	depends on SPI
+
 endmenu

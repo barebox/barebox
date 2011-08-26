@@ -258,11 +258,13 @@ static int netx_eth_probe(struct device_d *dev)
 	edev->halt = netx_eth_halt;
 	edev->get_ethaddr = netx_eth_get_ethaddr;
 	edev->set_ethaddr = netx_eth_set_ethaddr;
+	edev->parent = dev;
 
 	priv->miidev.read = netx_miidev_read;
 	priv->miidev.write = netx_miidev_write;
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
+	priv->miidev.parent = dev;
 
 	netx_eth_init_phy();
 	mii_register(&priv->miidev);

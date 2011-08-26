@@ -513,6 +513,7 @@ static int dm9000_probe(struct device_d *dev)
 	edev->halt = dm9000_eth_halt;
 	edev->set_ethaddr = dm9000_set_ethaddr;
 	edev->get_ethaddr = dm9000_get_ethaddr;
+	edev->parent = dev;
 
 	/* RESET device */
 	dm9000_reset(priv);
@@ -540,6 +541,7 @@ static int dm9000_probe(struct device_d *dev)
 	priv->miidev.address = 0;
 	priv->miidev.flags = 0;
 	priv->miidev.edev = edev;
+	priv->miidev.parent = dev;
 
 	mii_register(&priv->miidev);
 	eth_register(edev);

@@ -41,7 +41,7 @@
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-static int imx_boot_save_loc(void)
+static int imx_25_35_boot_save_loc(void)
 {
 	const char *bareboxloc = NULL;
 	uint32_t reg;
@@ -86,10 +86,6 @@ static int imx_boot_save_loc(void)
 	return 0;
 }
 
-/*
- * This can only be called after env_push_context() has been called
- * so it is a late_initcall.
- */
-late_initcall(imx_boot_save_loc);
+coredevice_initcall(imx_25_35_boot_save_loc);
 
 #endif

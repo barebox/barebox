@@ -203,12 +203,10 @@ config CMD_LOADY
 	prompt "loady"
 
 config CMD_LOADS
-	depends on BROKEN
 	tristate
 	prompt "loads"
 
 config CMD_SAVES
-	depends on BROKEN
 	tristate
 	depends on CMD_LOADS
 	prompt "saves"

@@ -557,6 +557,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.set_ios = mmc_set_ios;
 	hsmmc->mci.init = mmc_init_setup;
 	hsmmc->mci.host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+	hsmmc->mci.hw_dev = dev;
 
 	hsmmc->base = dev_request_mem_region(dev, 0);
 

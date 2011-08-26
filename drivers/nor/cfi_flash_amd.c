@@ -142,28 +142,28 @@ static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const
 
 	if (bankwidth_is_1(info)) {
 		cnt = len;
-		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
+		flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 		while (cnt-- > 0) {
 			flash_write8(flash_read8(src), dst);
 			src += 1, dst += 1;
 		}
 	} else if (bankwidth_is_2(info)) {
 		cnt = len >> 1;
-		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
+		flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 		while (cnt-- > 0) {
 			flash_write16(flash_read16(src), dst);
 			src += 2, dst += 2;
 		}
 	} else if (bankwidth_is_4(info)) {
 		cnt = len >> 2;
-		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
+		flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 		while (cnt-- > 0) {
 			flash_write32(flash_read32(src), dst);
 			src += 4, dst += 4;
 		}
 	} else if (bankwidth_is_8(info)) {
 		cnt = len >> 3;
-		flash_write_cmd (info, sector, 0,  (uchar) cnt - 1);
+		flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 		while (cnt-- > 0) {
 			flash_write64(flash_read64(src), dst);
 			src += 8, dst += 8;

@@ -17,6 +17,7 @@
 #define IMX_UART3_BASE             (0x0c000 + IMX_IO_BASE)
 #define IMX_UART4_BASE             (0x0d000 + IMX_IO_BASE)
 #define IMX_SPI1_BASE              (0x0e000 + IMX_IO_BASE)
+#define IMX_SPI2_BASE              (0x0f000 + IMX_IO_BASE)
 #define IMX_I2C1_BASE              (0x12000 + IMX_IO_BASE)
 #define IMX_GPIO_BASE              (0x15000 + IMX_IO_BASE)
 #define IMX_TIM4_BASE              (0x19000 + IMX_IO_BASE)

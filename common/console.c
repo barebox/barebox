@@ -132,6 +132,8 @@ int console_register(struct console_device *newcdev)
 	dev->id = -1;
 	strcpy(dev->name, "cs");
 	dev->type_data = newcdev;
+	if (newcdev->dev)
+		dev_add_child(newcdev->dev, dev);
 	register_device(dev);
 
 	if (newcdev->setbrg) {

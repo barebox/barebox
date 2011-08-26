@@ -1,0 +1,15 @@
+/** @page qemu_malta QEmu malta emulated board
+
+Specific to this emulated board is, it does not require any setup code to bring the SDRAM and RS232 up.
+
+Emulator run string:
+@verbatim
+qemu-system-mips -nodefaults -M malta -m 256 -nographic -serial stdio -monitor null -bios barebox.bin
+@endverbatim
+
+Links:
+@li http://www.mips.com/products/development-kits/malta/
+@li http://www.linux-mips.org/wiki/Mips_Malta
+@li http://www.qemu.org/
+
+*/

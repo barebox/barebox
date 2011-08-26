@@ -206,6 +206,7 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev->recv = usbnet_recv,
 	edev->halt = usbnet_halt,
 	edev->priv = undev;
+	edev->parent = &usbdev->dev;
 
 	info = (struct driver_info *)prod->driver_info;
 	undev->driver_info = info;

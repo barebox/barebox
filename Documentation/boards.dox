@@ -45,6 +45,12 @@ x86 type:
 
 @li @subpage generic_pc
 
+
+MIPS type:
+
+@li @subpage dlink_dir_320
+@li @subpage qemu_malta
+
 */
 
 /* TODO

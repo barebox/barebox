@@ -672,6 +672,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->halt = mpc5xxx_fec_halt;
 	edev->get_ethaddr = mpc5xxx_fec_get_ethaddr;
 	edev->set_ethaddr = mpc5xxx_fec_set_ethaddr;
+	edev->parent = dev;
 
 	fec->eth = dev_request_mem_region(dev, 0);
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
@@ -687,6 +688,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 		fec->miidev.address = CONFIG_PHY_ADDR;
 		fec->miidev.flags = pdata->xcv_type == MII10 ? MIIDEV_FORCE_10 : 0;
 		fec->miidev.edev = edev;
+		fec->miidev.parent = dev;
 
 		mii_register(&fec->miidev);
 	}

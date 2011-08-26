@@ -27,6 +27,7 @@
 #include <digest.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <clock.h>
 
 #if defined(CONFIG_PASSWD_SUM_MD5)
 #define PASSWD_SUM "md5"
@@ -36,56 +37,64 @@
 #define PASSWD_SUM "sha256"
 #endif
 
-int password(unsigned char *passwd, size_t length, int flags)
+int password(unsigned char *passwd, size_t length, int flags, int timeout)
 {
 	unsigned char *buf = passwd;
 	int pos = 0;
 	unsigned char ch;
+	uint64_t start, second;
 
 	if (!passwd)
 		return -EINVAL;
 
+	start = get_time_ns();
+	second = start;
+
 	do {
-		ch = getc();
+		if (tstc()) {
+			ch = getc();
 
-		switch (ch) {
-		case '\r':
-		case '\n':
-			*buf = '\0';
-			puts("\r\n");
-			return pos;
-		case '\0':
-		case '\t':
-			continue;
-		case CTL_CH('c'):
-			passwd[0] = '\0';
-			puts("\r\n");
-			return 0;
-		case CTL_CH('h'):
-		case KEY_DEL7:
-		case KEY_DEL:
-			if (flags & STAR && pos > 0)
-				puts("\b \b");
-			*buf = '\0';
-			buf--;
-			pos--;
-			continue;
-		default:
-			if (pos < length - 1) {
-				if (flags & STAR)
-					putchar('*');
-				else if (flags & CLEAR)
-					putchar(ch);
+			switch (ch) {
+			case '\r':
+			case '\n':
+				*buf = '\0';
+				puts("\r\n");
+				return pos;
+			case '\0':
+			case '\t':
+				continue;
+			case CTL_CH('c'):
+				passwd[0] = '\0';
+				puts("\r\n");
+				return 0;
+			case CTL_CH('h'):
+			case KEY_DEL7:
+			case KEY_DEL:
+				if (flags & STAR && pos > 0)
+					puts("\b \b");
+				*buf = '\0';
+				buf--;
+				pos--;
+				continue;
+			default:
+				if (pos < length - 1) {
+					if (flags & STAR)
+						putchar('*');
+					else if (flags & CLEAR)
+						putchar(ch);
 
-				*buf = ch;
-				buf++;
-				pos++;
-			} else {
-				if (flags & STAR)
-					putchar('\a');
+					*buf = ch;
+					buf++;
+					pos++;
+				} else {
+					if (flags & STAR)
+						putchar('\a');
+				}
 			}
 		}
-	} while(1);
+	} while (!is_timeout(start, timeout * SECOND) || timeout == 0);
+
+	return -1;
 }
 EXPORT_SYMBOL(password);
 

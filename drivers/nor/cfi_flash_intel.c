@@ -70,7 +70,7 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 	/* reduce the number of loops by the width of the port	*/
 	cnt = len >> (info->portwidth - 1);
 
-	flash_write_cmd (info, sector, 0, (uchar) cnt - 1);
+	flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 	while (cnt-- > 0) {
 		if (bankwidth_is_1(info)) {
 			flash_write8(flash_read8(src), dst);

@@ -29,54 +29,6 @@
 #include <asm/ptrace.h>
 #include <asm/unwind.h>
 
-void do_undefined_instruction (struct pt_regs *pt_regs);
-void do_software_interrupt (struct pt_regs *pt_regs);
-void do_prefetch_abort (struct pt_regs *pt_regs);
-void do_data_abort (struct pt_regs *pt_regs);
-void do_not_used (struct pt_regs *pt_regs);
-void do_fiq (struct pt_regs *pt_regs);
-void do_irq (struct pt_regs *pt_regs);
-
-#ifdef CONFIG_USE_IRQ
-/* enable IRQ interrupts */
-void enable_interrupts (void)
-{
-	unsigned long temp;
-	__asm__ __volatile__("mrs %0, cpsr\n"
-			     "bic %0, %0, #0x80\n"
-			     "msr cpsr_c, %0"
-			     : "=r" (temp)
-			     :
-			     : "memory");
-}
-
-
-/*
- * disable IRQ/FIQ interrupts
- * returns true if interrupts had been enabled before we disabled them
- */
-int disable_interrupts (void)
-{
-	unsigned long old,temp;
-	__asm__ __volatile__("mrs %0, cpsr\n"
-			     "orr %1, %0, #0xc0\n"
-			     "msr cpsr_c, %1"
-			     : "=r" (old), "=r" (temp)
-			     :
-			     : "memory");
-	return(old & 0x80) == 0;
-}
-#endif
-
-/**
- * FIXME
- */
-static void bad_mode (void)
-{
-	panic ("Resetting CPU ...\n");
-	reset_cpu (0);
-}
-
 /**
  * Display current register set content
  * @param[in] regs Guess what
@@ -121,6 +73,13 @@ void show_regs (struct pt_regs *regs)
 #endif
 }
 
+static void __noreturn do_exception(struct pt_regs *pt_regs)
+{
+	show_regs(pt_regs);
+
+	panic("");
+}
+
 /**
  * The CPU runs into an undefined instruction. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
@@ -128,85 +87,73 @@ void show_regs (struct pt_regs *regs)
 void do_undefined_instruction (struct pt_regs *pt_regs)
 {
 	printf ("undefined instruction\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
  * The CPU catches a software interrupt
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * There is not functione behind this feature. So what to do else than
- * a reset? 
+ * There is no function behind this feature. So what to do else than
+ * a reset?
  */
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
 	printf ("software interrupt\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
  * The CPU catches a prefetch abort. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * instruction fetch from an unmapped area
  */
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
 	printf ("prefetch abort\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
  * The CPU catches a data abort. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * data fetch from an unmapped area
  */
 void do_data_abort (struct pt_regs *pt_regs)
 {
-	printf ("data abort\n");
-	show_regs (pt_regs);
-	bad_mode ();
-}
+	u32 far;
 
-/**
- * The CPU catches a not-used(?) abort.
- * @param[in] pt_regs Register set content when the accident happens
- *
- * FIXME: What does it mean, why is reset the only solution?
- */
-void do_not_used (struct pt_regs *pt_regs)
-{
-	printf ("not used\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
+
+	printf("unable to handle %s at address 0x%08x\n",
+			far < PAGE_SIZE ? "NULL pointer dereference" :
+			"paging request", far);
+
+	do_exception(pt_regs);
 }
 
 /**
  * The CPU catches a fast interrupt request.
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * We never enable FIQs, so this should not happen
  */
 void do_fiq (struct pt_regs *pt_regs)
 {
 	printf ("fast interrupt request\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }
 
 /**
  * The CPU catches a regular interrupt.
  * @param[in] pt_regs Register set content when the interrupt happens
  *
- * FIXME: What does it mean, why is reset the only solution?
+ * We never enable interrupts, so this should not happen
  */
 void do_irq (struct pt_regs *pt_regs)
 {
 	printf ("interrupt request\n");
-	show_regs (pt_regs);
-	bad_mode ();
+	do_exception(pt_regs);
 }

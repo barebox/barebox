@@ -42,13 +42,13 @@ static int do_passwd(struct command *cmdtp, int argc, char *argv[])
 	int ret = 1;
 
 	puts("Enter new password: ");
-	passwd1_len = password(passwd1, PASSWD_MAX_LENGTH, PASSWD_MODE);
+	passwd1_len = password(passwd1, PASSWD_MAX_LENGTH, PASSWD_MODE, 0);
 
 	if (passwd1_len < 0)
 		return 1;
 
 	puts("Retype new password: ");
-	passwd2_len = password(passwd2, PASSWD_MAX_LENGTH, PASSWD_MODE);
+	passwd2_len = password(passwd2, PASSWD_MAX_LENGTH, PASSWD_MODE, 0);
 
 	if (passwd2_len < 0)
 		return 1;

@@ -210,6 +210,8 @@ int mii_register(struct mii_device *mdev)
 	mdev->dev.priv = mdev;
 	mdev->dev.id = -1;
 	strcpy(mdev->dev.name, "miidev");
+	if (mdev->parent)
+		dev_add_child(mdev->parent, &mdev->dev);
 
 	return register_device(&mdev->dev);
 }

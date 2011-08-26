@@ -444,6 +444,7 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
 	dev->miidev.address = 1; /* FIXME: asix_get_phy_addr(dev); */
 	dev->miidev.flags = 0;
 	dev->miidev.edev = &dev->edev;
+	dev->miidev.parent = &dev->udev->dev;
 //	dev->miidev.name = dev->edev.name;
 
 	/* reset phy and wait for reset to complete */

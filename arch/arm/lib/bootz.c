@@ -4,9 +4,11 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <malloc.h>
+#include <sizes.h>
 #include <asm/byteorder.h>
 #include <asm/armlinux.h>
 #include <asm/system.h>
+#include <asm-generic/memory_layout.h>
 
 struct zimage_header {
 	u32	unused[9];
@@ -20,9 +22,11 @@ struct zimage_header {
 static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 {
 	int fd, ret, swap = 0;
-	struct zimage_header header;
+	struct zimage_header __header, *header;
 	void *zimage;
 	u32 end;
+	int usemap = 0;
+	struct arm_memory *mem = list_first_entry(&memory_list, struct arm_memory, list);
 
 	if (argc != 2) {
 		barebox_cmd_usage(cmdtp);
@@ -35,13 +39,27 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 		return 1;
 	}
 
-	ret = read(fd, &header, sizeof(header));
-	if (ret < sizeof(header)) {
-		printf("could not read %s\n", argv[1]);
-		goto err_out;
+	/*
+	 * We can save the memcpy of the zImage if it already is in
+	 * the first 128MB of SDRAM.
+	 */
+	zimage = memmap(fd, PROT_READ);
+	if (zimage && (unsigned long)zimage  >= mem->start &&
+			(unsigned long)zimage < mem->start + SZ_128M) {
+		usemap = 1;
+		header = zimage;
 	}
 
-	switch (header.magic) {
+	if (!usemap) {
+		header = &__header;
+		ret = read(fd, header, sizeof(header));
+		if (ret < sizeof(*header)) {
+			printf("could not read %s\n", argv[1]);
+			goto err_out;
+		}
+	}
+
+	switch (header->magic) {
 #ifdef CONFIG_BOOT_ENDIANNESS_SWITCH
 	case swab32(ZIMAGE_MAGIC):
 		swap = 1;
@@ -50,22 +68,33 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	case ZIMAGE_MAGIC:
 		break;
 	default:
-		printf("invalid magic 0x%08x\n", header.magic);
+		printf("invalid magic 0x%08x\n", header->magic);
 		goto err_out;
 	}
 
-	end = header.end;
+	end = header->end;
 
 	if (swap)
 		end = swab32(end);
 
-	zimage = xmalloc(end);
-	memcpy(zimage, &header, sizeof(header));
+	if (!usemap) {
+		if (mem->size <= SZ_128M) {
+			zimage = xmalloc(end);
+		} else {
+			zimage = (void *)mem->start + SZ_8M;
+			if (mem->start + SZ_8M + end >= MALLOC_BASE) {
+				printf("won't overwrite malloc space with image\n");
+				goto err_out1;
+			}
+		}
 
-	ret = read(fd, zimage + sizeof(header), end - sizeof(header));
-	if (ret < end - sizeof(header)) {
-		printf("could not read %s\n", argv[1]);
-		goto err_out1;
+		memcpy(zimage, &header, sizeof(header));
+
+		ret = read(fd, zimage + sizeof(header), end - sizeof(header));
+		if (ret < end - sizeof(header)) {
+			printf("could not read %s\n", argv[1]);
+			goto err_out1;
+		}
 	}
 
 	if (swap) {

@@ -231,16 +231,19 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 #define CFI_FLASH_SHIFT_WIDTH	3
 /* Prototypes */
 
-int flash_isset (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
-void flash_write_cmd (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
+int flash_isset(struct flash_info *info, flash_sect_t sect,
+				uint offset, u32 cmd);
+void flash_write_cmd(struct flash_info *info, flash_sect_t sect,
+				uint offset, u32 cmd);
 flash_sect_t find_sector (struct flash_info *info, ulong addr);
 int flash_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
 int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 			       uint64_t tout, char *prompt);
 
-int flash_isequal (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd);
-void flash_make_cmd(struct flash_info *info, uchar cmd, cfiword_t *cmdbuf);
+int flash_isequal(struct flash_info *info, flash_sect_t sect,
+				uint offset, u32 cmd);
+void flash_make_cmd(struct flash_info *info, u32 cmd, cfiword_t *cmdbuf);
 
 static inline void flash_write8(u8 value, void *addr)
 {

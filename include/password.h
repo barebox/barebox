@@ -28,7 +28,7 @@
 #define STAR	(1 << 1)
 #define CLEAR	(1 << 2)
 
-int password(unsigned char *passwd, size_t length, int flags);
+int password(unsigned char *passwd, size_t length, int flags, int timeout);
 
 int read_passwd(unsigned char *sum, size_t length);
 int write_passwd(unsigned char *sum, size_t length);

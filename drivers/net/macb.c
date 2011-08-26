@@ -433,6 +433,7 @@ static int macb_probe(struct device_d *dev)
 	edev->halt = macb_halt;
 	edev->get_ethaddr = pdata->get_ethaddr ? pdata->get_ethaddr : macb_get_ethaddr;
 	edev->set_ethaddr = macb_set_ethaddr;
+	edev->parent = dev;
 
 	macb->miidev.read = macb_phy_read;
 	macb->miidev.write = macb_phy_write;
@@ -440,6 +441,7 @@ static int macb_probe(struct device_d *dev)
 	macb->miidev.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
 		MIIDEV_FORCE_LINK : 0;
 	macb->miidev.edev = edev;
+	macb->miidev.parent = dev;
 	macb->flags = pdata->flags;
 
 	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE); 

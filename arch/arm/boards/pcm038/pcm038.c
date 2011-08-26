@@ -40,6 +40,7 @@
 #include <mach/imx-pll.h>
 #include <mach/imxfb.h>
 #include <asm/mmu.h>
+#include <i2c/i2c.h>
 #include <usb/isp1504.h>
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
@@ -213,6 +214,12 @@ static int pcm038_devices_init(void)
 		PD23_AF_USBH2_DATA2,
 		PD24_AF_USBH2_DATA1,
 		PD26_AF_USBH2_DATA5,
+		/* I2C1 */
+		PD17_PF_I2C_DATA | GPIO_PUEN,
+		PD18_PF_I2C_CLK,
+		/* I2C2 */
+		PC5_PF_I2C2_SDA,
+		PC6_PF_I2C2_SCL,
 	};
 
 	/* configure 16 bit nor flash on cs0 */
@@ -246,6 +253,10 @@ static int pcm038_devices_init(void)
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&pcm038_fb_data);
+
+	PCCR0 |= PCCR0_I2C1_EN | PCCR0_I2C2_EN;
+	imx27_add_i2c0(NULL);
+	imx27_add_i2c1(NULL);
 
 #ifdef CONFIG_USB
 	pcm038_usbh_init();

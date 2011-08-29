@@ -80,7 +80,6 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	strcpy(proxy->dev.name, chip->name);
 	proxy->dev.type_data = proxy;
 	dev_add_child(master->dev, &proxy->dev);
-	status = register_device(&proxy->dev);
 
 	/* drivers may modify this initial i/o setup */
 	status = master->setup(proxy);
@@ -90,10 +89,10 @@ struct spi_device *spi_new_device(struct spi_master *master,
 		goto fail;
 	}
 
-	return proxy;
+	register_device(&proxy->dev);
 
+	return proxy;
 fail:
-	unregister_device(&proxy->dev);
 	free(proxy);
 	return NULL;
 }

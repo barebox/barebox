@@ -37,7 +37,8 @@ struct spi_board_info {
  *	powers of two bytes (e.g. 20 bit samples use 32 bits).
  *	This may be changed by the device's driver, or left at the
  *	default (0) indicating protocol words are eight bit bytes.
- *	The spi_transfer.bits_per_word can override this for each transfer.
+ *	The spi_transfer.bits_per_word can override this for each transfer
+ *	(FIXME: not currently implemented).
  * @irq: Negative, or the number passed to request_irq() to receive
  *	interrupts from this device.
  * @controller_state: Controller's runtime state

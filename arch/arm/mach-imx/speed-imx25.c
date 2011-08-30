@@ -87,6 +87,11 @@ unsigned long imx_get_mmcclk(void)
 	return imx_get_perclk(3);
 }
 
+unsigned long imx_get_cspiclk(void)
+{
+	return imx_get_ipgclk();
+}
+
 void imx_dump_clocks(void)
 {
 	printf("mpll:    %10ld Hz\n", imx_get_mpllclk());

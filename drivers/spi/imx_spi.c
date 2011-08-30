@@ -310,23 +310,56 @@ static void cspi_2_3_init(struct imx_spi *imx)
 }
 #endif
 
+static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
+{
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	unsigned i;
+
+	if (spi->bits_per_word <= 8) {
+		const u8	*tx_buf = t->tx_buf;
+		u8		*rx_buf = t->rx_buf;
+		u8		rx_val;
+
+		for (i = 0; i < t->len; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	} else if (spi->bits_per_word <= 16) {
+		const u16	*tx_buf = t->tx_buf;
+		u16		*rx_buf = t->rx_buf;
+		u16		rx_val;
+
+		for (i = 0; i < t->len >> 1; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	} else if (spi->bits_per_word <= 32) {
+		const u32	*tx_buf = t->tx_buf;
+		u32		*rx_buf = t->rx_buf;
+		u32		rx_val;
+
+		for (i = 0; i < t->len >> 2; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	}
+}
+
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
-	struct spi_master *master = spi->master;
-	struct imx_spi *imx = container_of(master, struct imx_spi, master);
-	struct spi_transfer	*t = NULL;
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	struct spi_transfer *t = NULL;
 
 	imx->chipselect(spi, 1);
 
-	list_for_each_entry (t, &mesg->transfers, transfer_list) {
-		const u32 *txbuf = t->tx_buf;
-		u32 *rxbuf = t->rx_buf;
-		int i = 0;
+	mesg->actual_length = 0;
 
-		while(i < t->len >> 2) {
-			rxbuf[i] = imx->xchg_single(imx, txbuf[i]);
-			i++;
-		}
+	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+		imx_spi_do_transfer(spi, t);
+		mesg->actual_length += t->len;
 	}
 
 	imx->chipselect(spi, 0);

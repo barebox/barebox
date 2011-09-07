@@ -12,6 +12,16 @@
 #define GPT_TCN		0x24
 #define GPT_TSTAT	0x08
 
+/* WEIM registers */
+#define WEIM_CSxGCR1(n)	(((n) * 0x18) + 0x00)
+#define WEIM_CSxGCR2(n)	(((n) * 0x18) + 0x04)
+#define WEIM_CSxRCR1(n)	(((n) * 0x18) + 0x08)
+#define WEIM_CSxRCR2(n)	(((n) * 0x18) + 0x0c)
+#define WEIM_CSxWCR1(n)	(((n) * 0x18) + 0x10)
+#define WEIM_WCR	0x90
+#define WEIM_WIAR	0x94
+#define WEIM_EAR	0x98
+
 /* Part 2: Bitfields */
 #define TCTL_SWR	(1<<15)	/* Software reset */
 #define TCTL_FRR	(1<<9)	/* Freerun / restart */
@@ -134,4 +144,3 @@
 #define MX51_CHIP_REV_3_2	0x32
 
 #endif /* __MACH_IMX51_REGS_H */
-

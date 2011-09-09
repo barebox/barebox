@@ -49,6 +49,7 @@
 #include <asm/io.h>
 #include <mach/board.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 
 #include "macb.h"
 
@@ -456,6 +457,11 @@ static int macb_probe(struct device_d *dev)
 	 */
 #if defined(CONFIG_ARCH_AT91)
 	pclk = clk_get(dev, "macb_clk");
+	if (IS_ERR(pclk)) {
+		dev_err(dev, "no macb_clk\n");
+		return PTR_ERR(pclk);
+	}
+
 	clk_enable(pclk);
 	macb_hz = clk_get_rate(pclk);
 #else

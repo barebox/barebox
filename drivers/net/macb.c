@@ -392,7 +392,7 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 
 static int macb_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
-	struct macb_device *macb = edev->priv; 
+	struct macb_device *macb = edev->priv;
 
 	debug("%s\n", __func__);
 
@@ -444,7 +444,7 @@ static int macb_probe(struct device_d *dev)
 	macb->miidev.parent = dev;
 	macb->flags = pdata->flags;
 
-	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE); 
+	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE);
 	macb->rx_ring = xmalloc(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
 	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
 
@@ -479,15 +479,15 @@ static int macb_probe(struct device_d *dev)
 }
 
 static struct driver_d macb_driver = {
-        .name  = "macb",
-        .probe = macb_probe,
+	.name  = "macb",
+	.probe = macb_probe,
 };
 
 static int macb_driver_init(void)
 {
 	debug("%s\n", __func__);
-        register_driver(&macb_driver);
-        return 0;
+	register_driver(&macb_driver);
+	return 0;
 }
 
 device_initcall(macb_driver_init);

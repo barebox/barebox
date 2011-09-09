@@ -31,6 +31,8 @@
 #include <errno.h>
 #include <asm/io.h>
 
+#include <mach/omap_hsmmc.h>
+
 struct hsmmc {
 	unsigned char res1[0x10];
 	unsigned int sysconfig;		/* 0x10 */
@@ -549,6 +551,7 @@ static void mmc_set_ios(struct mci_host *mci, struct device_d *dev,
 static int omap_mmc_probe(struct device_d *dev)
 {
 	struct omap_hsmmc *hsmmc;
+	struct omap_hsmmc_platform_data *pdata;
 
 	hsmmc = xzalloc(sizeof(*hsmmc));
 
@@ -564,7 +567,12 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
 	hsmmc->mci.f_min = 400000;
-	hsmmc->mci.f_max = 52000000;
+
+	pdata = (struct omap_hsmmc_platform_data *)dev->platform_data;
+	if (pdata->f_max)
+		hsmmc->mci.f_max = pdata->f_max;
+	else
+		hsmmc->mci.f_max = 52000000;
 
 	mci_register(&hsmmc->mci);
 

@@ -43,6 +43,7 @@
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
+	.shift = 2,
 };
 
 static int pcm049_console_init(void)

@@ -132,5 +132,8 @@
 #define OMAP_SDRC_CS0		0x80000000
 #define OMAP_SDRC_CS1		0xA0000000
 
+/* PRM */
+#define PRM_RSTCTRL_RESET       0x04
+
 #endif /* __ASM_ARCH_OMAP3_H */
 

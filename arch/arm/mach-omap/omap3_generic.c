@@ -59,8 +59,9 @@
  */
 void __noreturn reset_cpu(unsigned long addr)
 {
-	/* FIXME: Enable WDT and cause reset */
-	hang();
+	writel(PRM_RSTCTRL_RESET, PRM_REG(RSTCTRL));
+
+	while (1);
 }
 EXPORT_SYMBOL(reset_cpu);
 

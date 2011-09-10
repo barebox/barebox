@@ -261,3 +261,44 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
 #endif
 
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+/* SPI */
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
+{
+	int i;
+	int cs_pin;
+	resource_size_t start;
+
+	for (i = 0; i < pdata->num_chipselect; i++) {
+		cs_pin = pdata->chipselect[i];
+
+		/* enable chip-select pin */
+		if (cs_pin > 0)
+			at91_set_gpio_output(cs_pin, 1);
+	}
+
+	/* Configure SPI bus(es) */
+	if (spi_id == 0) {
+		start = AT91SAM9G45_BASE_SPI0;
+		at91_set_A_periph(AT91_PIN_PB0, 0);	/* SPI0_MISO */
+		at91_set_A_periph(AT91_PIN_PB1, 0);	/* SPI0_MOSI */
+		at91_set_A_periph(AT91_PIN_PB2, 0);	/* SPI0_SPCK */
+
+		add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+	}
+
+	else if (spi_id == 1) {
+		start = AT91SAM9G45_BASE_SPI1;
+		at91_set_A_periph(AT91_PIN_PB14, 0);	/* SPI1_MISO */
+		at91_set_A_periph(AT91_PIN_PB15, 0);	/* SPI1_MOSI */
+		at91_set_A_periph(AT91_PIN_PB16, 0);	/* SPI1_SPCK */
+
+		add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+	}
+}
+
+#else
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
+#endif

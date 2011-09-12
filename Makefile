@@ -689,6 +689,9 @@ barebox: $(barebox-lds) $(barebox-head) $(barebox-common) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
 
+barebox.srec: barebox
+	$(OBJCOPY) -O srec $< $@
+
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
 $(sort $(barebox-head) $(barebox-common) ) $(barebox-lds): $(barebox-dirs) ;

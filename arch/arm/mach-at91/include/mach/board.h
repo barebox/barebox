@@ -22,6 +22,7 @@
 #define __ASM_ARCH_BOARD_H
 
 #include <net.h>
+#include <spi/spi.h>
 #include <linux/mtd/mtd.h>
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
@@ -75,4 +76,10 @@ struct atmel_mci_platform_data {
 };
 
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);
+
+/* SPI Master platform data */
+struct at91_spi_platform_data {
+	int *chipselect;	/* array of gpio_pins */
+	int num_chipselect;	/* chipselect array entry count */
+};
 #endif

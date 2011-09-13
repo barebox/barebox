@@ -1,6 +1,8 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
+#include <linux/stddef.h> /* for NULL */
+
 /*
  * Simple doubly linked list implementation.
  *

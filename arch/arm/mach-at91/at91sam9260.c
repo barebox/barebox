@@ -169,6 +169,11 @@ static struct clk *periph_clocks[] = {
 	// irq0 .. irq2
 };
 
+static struct clk_lookup periph_clocks_lookups[] = {
+	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi0", &spi0_clk),
+	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi1", &spi1_clk),
+};
+
 static struct clk_lookup usart_clocks_lookups[] = {
 	CLKDEV_CON_DEV_ID("usart", "atmel_usart0", &mck),
 	CLKDEV_CON_DEV_ID("usart", "atmel_usart1", &usart0_clk),
@@ -203,6 +208,8 @@ static void __init at91sam9260_register_clocks(void)
 	for (i = 0; i < ARRAY_SIZE(periph_clocks); i++)
 		clk_register(periph_clocks[i]);
 
+	clkdev_add_table(periph_clocks_lookups,
+			 ARRAY_SIZE(periph_clocks_lookups));
 	clkdev_add_table(usart_clocks_lookups,
 			 ARRAY_SIZE(usart_clocks_lookups));
 

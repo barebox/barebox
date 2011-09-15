@@ -248,7 +248,6 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 	dev = add_generic_device("atmel_mci", 0, NULL, AT91SAM9260_BASE_MCI, SZ_16K,
 			   IORESOURCE_MEM, data);
-	at91_clock_associate("mci_clk", dev, "mci_clk");
 }
 #else
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}

@@ -188,8 +188,6 @@ void at91_register_uart(unsigned id, unsigned pins)
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 {
 	resource_size_t start;
-	struct device_d *dev;
-	char* clk_name;
 
 	if (!data)
 		return;
@@ -209,7 +207,6 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 	if (mmc_id == 0) {		/* MCI0 */
 		start = AT91SAM9G45_BASE_MCI0;
-		clk_name = "mci0_clk";
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA0, 0);
 
@@ -231,7 +228,6 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 		}
 	} else {			/* MCI1 */
 		start = AT91SAM9G45_BASE_MCI1;
-		clk_name = "mci1_clk";
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA31, 0);
 
@@ -253,9 +249,8 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 		}
 	}
 
-	dev = add_generic_device("atmel_mci", mmc_id, NULL, start, 4096,
+	add_generic_device("atmel_mci", mmc_id, NULL, start, 4096,
 			   IORESOURCE_MEM, data);
-	at91_clock_associate(clk_name, dev, "mci_clk");
 }
 #else
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}

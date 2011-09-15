@@ -181,9 +181,6 @@ static struct clk *periph_clocks[] __initdata = {
 	&isi_clk,
 	&udphs_clk,
 	&mmc1_clk,
-	// irq0
-	&ohci_clk,
-	&tcb1_clk,
 };
 
 static struct clk_lookup periph_clocks_lookups[] = {

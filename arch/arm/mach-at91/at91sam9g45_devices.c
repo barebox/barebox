@@ -71,7 +71,7 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 		return;
 
 	data->ecc_base = (void __iomem *)(AT91_BASE_SYS + AT91_ECC);
-	data->ecc_mode = NAND_ECC_HW;
+	data->ecc_mode	= NAND_ECC_SOFT;
 
 	csa = at91_sys_read(AT91_MATRIX_EBICSA);
 	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_SMARTMEDIA);

@@ -78,13 +78,14 @@ static LIST_HEAD(usb_device_list);
 
 static void print_usb_device(struct usb_device *dev)
 {
-	printf("%s: %04x:%04x %s\n", dev->dev.name,
-			dev->descriptor.idVendor,
-			dev->descriptor.idProduct,
-			dev->prod);
+	printf("Bus %03d Device %03d: ID %04x:%04x %s\n",
+		dev->host->busnum, dev->devnum,
+		dev->descriptor.idVendor,
+		dev->descriptor.idProduct,
+		dev->prod);
 }
 
-static int host_busnum;
+static int host_busnum = 1;
 
 int usb_register_host(struct usb_host *host)
 {

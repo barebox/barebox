@@ -186,7 +186,14 @@ void armlinux_set_bootparams(void *params)
 
 void armlinux_set_architecture(int architecture)
 {
+	char *arch_number = asprintf("%d", architecture);
+
 	armlinux_architecture = architecture;
+
+	setenv("arch_number", arch_number);
+	export("arch_number");
+
+	kfree(arch_number);
 }
 
 void armlinux_set_revision(unsigned int rev)

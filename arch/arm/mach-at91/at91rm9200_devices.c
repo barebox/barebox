@@ -26,6 +26,24 @@ void at91_add_device_sdram(u32 size)
 }
 
 /* --------------------------------------------------------------------
+ *  USB Host
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_USB_OHCI)
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+{
+	if (!data)
+		return;
+
+	add_generic_device("at91_ohci", -1, NULL, AT91RM9200_UHP_BASE, 1024 * 1024,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
+#endif
+
+
+/* --------------------------------------------------------------------
  *  Ethernet
  * -------------------------------------------------------------------- */
 

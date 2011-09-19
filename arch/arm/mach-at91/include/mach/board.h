@@ -25,6 +25,13 @@
 #include <spi/spi.h>
 #include <linux/mtd/mtd.h>
 
+ /* USB Host */
+struct at91_usbh_data {
+	u8		ports;		/* number of ports on root hub */
+	u8		vbus_pin[2];	/* port power-control pin */
+};
+extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
+
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
 
  /* NAND / SmartMedia */

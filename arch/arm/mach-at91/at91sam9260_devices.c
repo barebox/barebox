@@ -26,6 +26,19 @@ void at91_add_device_sdram(u32 size)
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 }
 
+#if defined(CONFIG_USB_OHCI)
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+{
+	if (!data)
+		return;
+
+	add_generic_device("at91_ohci", -1, NULL, AT91SAM9260_UHP_BASE, 1024 * 1024,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
+#endif
+
 #if defined(CONFIG_DRIVER_NET_MACB)
 void at91_add_device_eth(struct at91_ether_platform_data *data)
 {

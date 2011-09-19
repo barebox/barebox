@@ -15,6 +15,7 @@ config BOARDINFO
 	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Calao USB-A9260" if MACH_USB_A9260
+	default "Calao USB-A9263" if MACH_USB_A9263
 	default "Calao USB-A9G20" if MACH_USB_A9G20
 	default "Ronetix PM9261" if MACH_PM9261
 	default "Ronetix PM9263" if MACH_PM9263
@@ -203,6 +204,12 @@ config MACH_PM9263
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
 
+config MACH_USB_A9263
+	bool "CALAO USB-A9263"
+	help
+	  Select this if you are using a Calao Systems USB-A9263.
+	  <http://www.calao-systems.com>
+
 endchoice
 
 endif
@@ -250,7 +257,7 @@ config AT91_HAVE_2MMC
 
 config AT91_HAVE_SRAM_128M
 	bool "Have 128 of ram"
-	depends on MACH_USB_A9G20
+	depends on MACH_USB_A9G20 || MACH_USB_A9263
 	help
 	  Select this if you board have 128 MiB of Ram (as USB_A9G20 C11)
 

@@ -45,6 +45,8 @@ static void usb_a9260_set_board_type(void)
 {
 	if (machine_is_usb_a9g20())
 		armlinux_set_architecture(MACH_TYPE_USB_A9G20);
+	else if (machine_is_usb_a9263())
+		armlinux_set_architecture(MACH_TYPE_USB_A9263);
 	else
 		armlinux_set_architecture(MACH_TYPE_USB_A9260);
 }
@@ -100,6 +102,11 @@ static void usb_a9260_add_device_nand(void)
 		sam9_smc_configure(3, &usb_a9g20_nand_smc_config);
 	else
 		sam9_smc_configure(3, &usb_a9260_nand_smc_config);
+
+	if (machine_is_usb_a9263()) {
+		nand_pdata.rdy_pin	= AT91_PIN_PA22;
+		nand_pdata.enable_pin	= AT91_PIN_PD15;
+	}
 
 	at91_add_device_nand(&nand_pdata);
 }

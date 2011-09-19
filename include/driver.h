@@ -205,6 +205,13 @@ struct device_d *add_generic_device(const char* devname, int id, const char *res
 		void *pdata);
 
 /*
+ * register a generic device
+ * with multiple resources
+ */
+struct device_d *add_generic_device_res(const char* devname, int id,
+		struct resource *res, int nb, void *pdata);
+
+/*
  * register a memory device
  */
 static inline struct device_d *add_mem_device(const char *name, resource_size_t start,

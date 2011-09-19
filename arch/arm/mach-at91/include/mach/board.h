@@ -29,7 +29,6 @@ void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
 
  /* NAND / SmartMedia */
 struct atmel_nand_data {
-	void __iomem	*ecc_base;
 	u8		enable_pin;	/* chip enable */
 	u8		det_pin;	/* card detect */
 	u8		rdy_pin;	/* ready/busy */

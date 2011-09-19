@@ -63,15 +63,25 @@ void at91_add_device_eth(struct at91_ether_platform_data *data) {}
 #endif
 
 #if defined(CONFIG_NAND_ATMEL)
+static struct resource nand_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_3,
+		.size	= SZ_256M,
+		.flags	= IORESOURCE_MEM,
+	},
+	[1] = {
+		.start	= AT91_BASE_SYS + AT91_ECC,
+		.size	= 512,
+		.flags	= IORESOURCE_MEM,
+	}
+};
+
 void at91_add_device_nand(struct atmel_nand_data *data)
 {
 	unsigned long csa;
 
 	if (!data)
 		return;
-
-	data->ecc_base = (void __iomem *)(AT91_BASE_SYS + AT91_ECC);
-	data->ecc_mode	= NAND_ECC_SOFT;
 
 	csa = at91_sys_read(AT91_MATRIX_EBICSA);
 	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_SMARTMEDIA);
@@ -88,8 +98,8 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
 
-	add_generic_device("atmel_nand", -1, NULL, AT91_CHIPSELECT_3, 0x10,
-			   IORESOURCE_MEM, data);
+	add_generic_device_res("atmel_nand", -1, nand_resources,
+			       ARRAY_SIZE(nand_resources), data);
 }
 #else
 void at91_add_device_nand(struct atmel_nand_data *data) {}

@@ -63,8 +63,6 @@ static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
 /*	.det_pin	= ... not connected */
-	.ecc_base	= (void __iomem *)(AT91_BASE_SYS + AT91_ECC),
-	.ecc_mode	= NAND_ECC_SOFT,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)

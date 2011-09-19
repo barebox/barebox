@@ -850,7 +850,7 @@ static int ehci_init(struct usb_host *host)
 
 static int
 submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
-		int length)
+		int length, int timeout)
 {
 
 	if (usb_pipetype(pipe) != PIPE_BULK) {
@@ -862,7 +862,7 @@ submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 static int
 submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
-		   int length, struct devrequest *setup)
+		   int length, struct devrequest *setup, int timeout)
 {
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);

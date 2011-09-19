@@ -521,6 +521,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 			void *data, unsigned short size, int timeout)
 {
 	struct usb_host *host = dev->host;
+	int ret;
 
 	if ((timeout == 0) && (!asynch_allowed)) {
 		/* request for a asynch control pipe is not allowed */
@@ -538,18 +539,9 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 		   request, requesttype, value, index, size);
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
-	host->submit_control_msg(dev, pipe, data, size, &setup_packet);
-	if (timeout == 0)
-		return (int)size;
-
-	if (dev->status != 0) {
-		/*
-		 * Let's wait a while for the timeout to elapse.
-		 * It has no real use, but it keeps the interface happy.
-		 */
-		wait_ms(timeout);
-		return -1;
-	}
+	ret = host->submit_control_msg(dev, pipe, data, size, &setup_packet, timeout);
+	if (ret)
+		return ret;
 
 	return dev->act_len;
 }
@@ -569,7 +561,7 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 		return -1;
 
 	dev->status = USB_ST_NOT_PROC; /* not yet processed */
-	ret = host->submit_bulk_msg(dev, pipe, data, len);
+	ret = host->submit_bulk_msg(dev, pipe, data, len, timeout);
 	if (ret)
 		return ret;
 

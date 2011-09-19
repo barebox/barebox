@@ -205,9 +205,9 @@ struct usb_host {
 	int (*init)(struct usb_host *);
 	int (*exit)(struct usb_host *);
 	int (*submit_bulk_msg)(struct usb_device *dev, unsigned long pipe,
-			void *buffer, int transfer_len);
+			void *buffer, int transfer_len, int timeout);
 	int (*submit_control_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
-			int transfer_len, struct devrequest *setup);
+			int transfer_len, struct devrequest *setup, int timeout);
 	int (*submit_int_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);

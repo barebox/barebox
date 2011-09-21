@@ -298,7 +298,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t c, toggle;
 	uint32_t cmd;
 	int ret = 0;
-	uint64_t start;
+	uint64_t start, timeout_val;
 	static struct QH __qh __attribute__((aligned(32)));
 	static struct qTD __td[3] __attribute__((aligned(32)));
 
@@ -415,13 +415,14 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	/* Wait for TDs to be processed. */
+	timeout_val = usb_pipebulk(pipe) ? (SECOND << 2) : (SECOND >> 2);
 	start = get_time_ns();
 	vtd = td;
 	do {
 		/* Invalidate dcache */
 		ehci_invalidate_dcache(ehci->qh_list);
 		token = hc32_to_cpu(vtd->qt_token);
-		if (is_timeout(start, SECOND >> 2)) {
+		if (is_timeout(start, timeout_val)) {
 			/* Disable async schedule. */
 			cmd = ehci_readl(&ehci->hcor->or_usbcmd);
 			cmd &= ~CMD_ASE;

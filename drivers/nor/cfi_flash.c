@@ -822,26 +822,12 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
  */
 void flash_make_cmd(struct flash_info *info, u32 cmd, cfiword_t *cmdbuf)
 {
-	int i;
-	int cp_offset;
-	int cword_offset;
-	uchar val;
-	uchar *cp;
+	cfiword_t result = 0;
+	int i = info->portwidth / info->chipwidth;
 
-	*cmdbuf = 0;
-	cp = (uchar *)cmdbuf;
-
-	for (i = info->portwidth; i > 0; i--) {
-		cword_offset = (info->portwidth-i) % info->chipwidth;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-		cp_offset = info->portwidth - i;
-		val = *((uchar *)&cmd + cword_offset);
-#else
-		cp_offset = i - 1;
-		val = *((uchar *)&cmd + sizeof(u32) - cword_offset - 1);
-#endif
-	cp[cp_offset] = (cword_offset >= sizeof(u32)) ? 0x00 : val;
-	}
+	while (i--)
+		result = (result << (8 * info->chipwidth)) | cmd;
+	*cmdbuf = result;
 }
 
 /*

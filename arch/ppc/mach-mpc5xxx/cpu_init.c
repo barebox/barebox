@@ -28,98 +28,11 @@
 /*
  * Breath some life into the CPU...
  *
- * Set up the memory map,
  * initialize a bunch of registers.
  */
 int cpu_init(void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
-
-	/*
-	 * Memory Controller: configure chip selects and enable them
-	 */
-#if defined(CFG_BOOTCS_START) && defined(CFG_BOOTCS_SIZE)
-	*(vu_long *)MPC5XXX_BOOTCS_START = START_REG(CFG_BOOTCS_START);
-	*(vu_long *)MPC5XXX_BOOTCS_STOP = STOP_REG(CFG_BOOTCS_START,
-			CFG_BOOTCS_SIZE);
-#endif
-#if defined(CFG_BOOTCS_CFG)
-	*(vu_long *)MPC5XXX_BOOTCS_CFG = CFG_BOOTCS_CFG;
-#endif
-
-#if defined(CFG_CS0_START) && defined(CFG_CS0_SIZE)
-	*(vu_long *)MPC5XXX_CS0_START = START_REG(CFG_CS0_START);
-	*(vu_long *)MPC5XXX_CS0_STOP = STOP_REG(CFG_CS0_START, CFG_CS0_SIZE);
-	/* CS0 and BOOT_CS cannot be enabled at once. */
-	/*	addecr |= (1 << 16); */
-#endif
-#if defined(CFG_CS0_CFG)
-	*(vu_long *)MPC5XXX_CS0_CFG = CFG_CS0_CFG;
-#endif
-
-#if defined(CFG_CS1_START) && defined(CFG_CS1_SIZE)
-	*(vu_long *)MPC5XXX_CS1_START = START_REG(CFG_CS1_START);
-	*(vu_long *)MPC5XXX_CS1_STOP = STOP_REG(CFG_CS1_START, CFG_CS1_SIZE);
-	addecr |= (1 << 17);
-#endif
-#if defined(CFG_CS1_CFG)
-	*(vu_long *)MPC5XXX_CS1_CFG = CFG_CS1_CFG;
-#endif
-
-#if defined(CFG_CS2_START) && defined(CFG_CS2_SIZE)
-	*(vu_long *)MPC5XXX_CS2_START = START_REG(CFG_CS2_START);
-	*(vu_long *)MPC5XXX_CS2_STOP = STOP_REG(CFG_CS2_START, CFG_CS2_SIZE);
-	addecr |= (1 << 18);
-#endif
-#if defined(CFG_CS2_CFG)
-	*(vu_long *)MPC5XXX_CS2_CFG = CFG_CS2_CFG;
-#endif
-
-#if defined(CFG_CS3_START) && defined(CFG_CS3_SIZE)
-	*(vu_long *)MPC5XXX_CS3_START = START_REG(CFG_CS3_START);
-	*(vu_long *)MPC5XXX_CS3_STOP = STOP_REG(CFG_CS3_START, CFG_CS3_SIZE);
-	addecr |= (1 << 19);
-#endif
-#if defined(CFG_CS3_CFG)
-	*(vu_long *)MPC5XXX_CS3_CFG = CFG_CS3_CFG;
-#endif
-
-#if defined(CFG_CS4_START) && defined(CFG_CS4_SIZE)
-	*(vu_long *)MPC5XXX_CS4_START = START_REG(CFG_CS4_START);
-	*(vu_long *)MPC5XXX_CS4_STOP = STOP_REG(CFG_CS4_START, CFG_CS4_SIZE);
-	addecr |= (1 << 20);
-#endif
-#if defined(CFG_CS4_CFG)
-	*(vu_long *)MPC5XXX_CS4_CFG = CFG_CS4_CFG;
-#endif
-
-#if defined(CFG_CS5_START) && defined(CFG_CS5_SIZE)
-	*(vu_long *)MPC5XXX_CS5_START = START_REG(CFG_CS5_START);
-	*(vu_long *)MPC5XXX_CS5_STOP = STOP_REG(CFG_CS5_START, CFG_CS5_SIZE);
-	addecr |= (1 << 21);
-#endif
-#if defined(CFG_CS5_CFG)
-	*(vu_long *)MPC5XXX_CS5_CFG = CFG_CS5_CFG;
-#endif
-
-	addecr |= 1;
-#if defined(CFG_CS6_START) && defined(CFG_CS6_SIZE)
-	*(vu_long *)MPC5XXX_CS6_START = START_REG(CFG_CS6_START);
-	*(vu_long *)MPC5XXX_CS6_STOP = STOP_REG(CFG_CS6_START, CFG_CS6_SIZE);
-	addecr |= (1 << 26);
-#endif
-#if defined(CFG_CS6_CFG)
-	*(vu_long *)MPC5XXX_CS6_CFG = CFG_CS6_CFG;
-#endif
-
-#if defined(CFG_CS7_START) && defined(CFG_CS7_SIZE)
-	*(vu_long *)MPC5XXX_CS7_START = START_REG(CFG_CS5_START);
-	*(vu_long *)MPC5XXX_CS7_STOP = STOP_REG(CFG_CS7_START, CFG_CS7_SIZE);
-	addecr |= (1 << 27);
-#endif
-#if defined(CFG_CS7_CFG)
-	*(vu_long *)MPC5XXX_CS7_CFG = CFG_CS7_CFG;
-#endif
 
 #if defined(CFG_CS_BURST)
 	*(vu_long *)MPC5XXX_CS_BURST = CFG_CS_BURST;

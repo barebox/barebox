@@ -782,6 +782,10 @@ void loadtask(int basetask, int tasks);
 /* retrieve configured sdram size connected to a chipselect */
 unsigned long mpc5200_get_sdram_size(unsigned int cs);
 
+/* configure a local plus bus chip select */
+#define MPC5200_BOOTCS 8
+void mpc5200_setup_cs(int cs, unsigned long start, unsigned long size, u32 cfg);
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __ASMPPC_MPC5XXX_H */

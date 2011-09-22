@@ -34,22 +34,6 @@ int cpu_init(void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
 
-#if defined(CFG_CS_BURST)
-	*(vu_long *)MPC5XXX_CS_BURST = CFG_CS_BURST;
-#endif
-#if defined(CFG_CS_DEADCYCLE)
-	*(vu_long *)MPC5XXX_CS_DEADCYCLE = CFG_CS_DEADCYCLE;
-#endif
-
-	/* Enable chip selects */
-	*(vu_long *)MPC5XXX_ADDECR = addecr;
-	*(vu_long *)MPC5XXX_CS_CTRL = (1 << 24);
-
-	/* Setup pin multiplexing */
-#if defined(CFG_GPS_PORT_CONFIG)
-	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = CFG_GPS_PORT_CONFIG;
-#endif
-
 	/* enable timebase */
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |= (1 << 13);
 
@@ -60,11 +44,6 @@ int cpu_init(void)
 	/* Configure the XLB Arbiter */
 	*(vu_long *)MPC5XXX_XLBARB_MPRIEN = 0xff;
 	*(vu_long *)MPC5XXX_XLBARB_MPRIVAL = 0x11111111;
-
-# if defined(CFG_XLB_PIPELINING)
-	/* Enable piplining */
-	*(vu_long *)(MPC5XXX_XLBARB + 0x40) &= ~(1 << 31);
-# endif
 
 	/* mask all interrupts */
 	*(vu_long *)MPC5XXX_ICTL_PER_MASK = 0xffffff00;

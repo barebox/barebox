@@ -36,8 +36,6 @@
 #define CFG_HID0_INIT		HID0_ICE | HID0_ICFI
 #define CFG_HID0_FINAL		HID0_ICE
 
-#define CFG_CS_BURST		0x00000000
-#define CFG_CS_DEADCYCLE	0x33333333
 
 #define CFG_BOOTMAPSZ		(8 << 20) /* Initial Memory map for Linux */
 

@@ -5,13 +5,7 @@
 
 extern unsigned long _text_base;
 
-void	upmconfig     (unsigned int, unsigned int *, unsigned int);
-ulong	get_tbclk     (void);
-
 unsigned long long get_ticks(void);
-
-int	get_clocks (void);
-ulong	get_bus_freq  (ulong);
 
 int	cpu_init      (void);
 

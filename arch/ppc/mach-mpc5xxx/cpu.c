@@ -33,6 +33,7 @@
 #include <asm/io.h>
 #include <init.h>
 #include <types.h>
+#include <errno.h>
 #include <mach/clocks.h>
 
 #if defined(CONFIG_OF_FLAT_TREE)
@@ -130,6 +131,43 @@ unsigned long mpc5200_get_sdram_size(unsigned int cs)
 		size = 0;
 
 	return size;
+}
+
+int mpc5200_setup_bus_clocks(unsigned int ipbdiv, unsigned long pcidiv)
+{
+	u32 cdmcfg = *(vu_long *)MPC5XXX_CDM_CFG;
+
+	cdmcfg &= ~0x103;
+
+	switch (ipbdiv) {
+	case 1:
+		break;
+	case 2:
+		cdmcfg |= 0x100;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	switch (pcidiv) {
+	case 1:
+		if (ipbdiv == 2)
+			return -EINVAL;
+		break;
+	case 2:
+		if (ipbdiv == 1)
+			cdmcfg |= 0x1; /* ipb / 2 */
+		break;
+	case 4:
+		cdmcfg |= 0x2; /* xlb / 4 */
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	*(vu_long *)MPC5XXX_CDM_CFG = cdmcfg;
+
+	return 0;
 }
 
 struct mpc5200_cs {

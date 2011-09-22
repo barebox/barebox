@@ -786,6 +786,9 @@ unsigned long mpc5200_get_sdram_size(unsigned int cs);
 #define MPC5200_BOOTCS 8
 void mpc5200_setup_cs(int cs, unsigned long start, unsigned long size, u32 cfg);
 
+/* configure bus speeds. Both dividers are relative to xlb clock */
+int mpc5200_setup_bus_clocks(unsigned int ipbdiv, unsigned long pcidiv);
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __ASMPPC_MPC5XXX_H */

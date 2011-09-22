@@ -109,7 +109,7 @@ EXPORT_SYMBOL(add_dm9000_device);
 struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 		resource_size_t hcor, void *pdata)
 {
-	resource_size_t *res;
+	struct resource *res;
 
 	res = xzalloc(sizeof(struct resource) * 2);
 	res[0].start = hccr;

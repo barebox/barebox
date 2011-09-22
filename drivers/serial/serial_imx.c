@@ -24,7 +24,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <notifier.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define URXD0	0x0	/* Receiver Register */
 #define URTX0	0x40	/* Transmitter Register */

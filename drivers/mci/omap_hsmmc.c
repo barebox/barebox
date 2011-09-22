@@ -29,7 +29,7 @@
 #include <mci.h>
 #include <clock.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include <mach/omap_hsmmc.h>
 

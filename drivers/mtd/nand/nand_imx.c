@@ -27,7 +27,7 @@
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 
 #define NFC_V3_FLASH_CMD		(host->regs_axi + 0x00)

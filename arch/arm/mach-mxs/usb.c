@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 
 #define POWER_CTRL			(IMX_POWER_BASE + 0x0)

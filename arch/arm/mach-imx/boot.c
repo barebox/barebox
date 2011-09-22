@@ -19,7 +19,7 @@
 #include <environment.h>
 #include <init.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 
 #if defined(CONFIG_ARCH_IMX25) || defined(CONFIG_ARCH_IMX35)

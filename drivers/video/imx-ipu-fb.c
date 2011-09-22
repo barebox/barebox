@@ -23,7 +23,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 #include <fb.h>
 #include <mach/imxfb.h>

@@ -21,7 +21,7 @@
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <linux/clk.h>
 
 /* USART3 register offsets */

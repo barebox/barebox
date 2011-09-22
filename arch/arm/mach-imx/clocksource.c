@@ -35,7 +35,7 @@
 #include <notifier.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
 #define timer_base (IMX_TIM1_BASE)

@@ -9,7 +9,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/hardware.h>
 #include <mach/io.h>
 

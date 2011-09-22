@@ -40,7 +40,7 @@
 #include <clock.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 #include <progress.h>
 #include "cfi_flash.h"

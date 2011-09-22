@@ -21,7 +21,7 @@
 #ifndef __ASM_ARCH_IO_H
 #define __ASM_ARCH_IO_H
 
-#include <asm/io.h>
+#include <io.h>
 
 static inline unsigned int at91_sys_read(unsigned int reg_offset)
 {

@@ -32,7 +32,7 @@
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <partition.h>
 #include <nand.h>
 #include <generated/mach-types.h>

@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <common.h>
 #include <asm/nios2-io.h>
-#include <asm/io.h>
+#include <io.h>
 
 void early_putc(char ch)
 {

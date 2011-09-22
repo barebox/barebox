@@ -27,7 +27,7 @@
 #include <nios2.h>
 #include <asm/nios2-io.h>
 #include <asm/types.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/ptrace.h>
 #include <common.h>
 #include <command.h>

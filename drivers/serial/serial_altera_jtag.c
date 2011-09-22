@@ -27,7 +27,7 @@
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/nios2-io.h>
 
 struct altera_serial_jtag_priv {

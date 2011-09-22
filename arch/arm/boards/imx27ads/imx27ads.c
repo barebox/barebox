@@ -24,7 +24,7 @@
 #include <environment.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <fec.h>
 #include <mach/gpio.h>
 #include <partition.h>

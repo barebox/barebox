@@ -29,7 +29,7 @@
 #include <linux/delay.h>
 #include <linux/rslib.h>
 #include <linux/moduleparam.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>

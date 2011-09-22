@@ -46,7 +46,7 @@
 #include <init.h>
 #include <miidev.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/board.h>
 #include <linux/clk.h>
 #include <linux/err.h>

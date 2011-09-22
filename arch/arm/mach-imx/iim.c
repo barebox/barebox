@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <malloc.h>
 
-#include <asm/io.h>
+#include <io.h>
 
 #include <mach/iim.h>
 

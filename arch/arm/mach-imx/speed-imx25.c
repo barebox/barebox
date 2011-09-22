@@ -1,6 +1,6 @@
 #include <common.h>
 #include <mach/imx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/clock.h>
 #include <init.h>
 

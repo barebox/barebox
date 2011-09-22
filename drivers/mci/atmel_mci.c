@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <clock.h>
 #include <gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/board.h>
 #include <linux/clk.h>
 #include <linux/err.h>

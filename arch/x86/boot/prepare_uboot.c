@@ -13,7 +13,7 @@
  */
 #include <asm/segment.h>
 #include <asm/modes.h>
-#include <asm/io.h>
+#include <io.h>
 #include "boot.h"
 
 /* be aware of: */

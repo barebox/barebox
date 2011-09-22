@@ -27,7 +27,7 @@
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include "ohci.h"
 

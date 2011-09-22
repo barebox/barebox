@@ -19,7 +19,7 @@
 #include <init.h>
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
-#include <asm/io.h>
+#include <io.h>
 #include <sizes.h>
 
 #include "gpio.h"

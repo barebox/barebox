@@ -24,7 +24,7 @@
 #include <common.h>
 #include <asm/byteorder.h>
 #include <usb/usb.h>
-#include <asm/io.h>
+#include <io.h>
 #include <malloc.h>
 #include <driver.h>
 #include <init.h>

@@ -27,7 +27,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/hardware.h>
 #include <nand.h>
 #include <sizes.h>

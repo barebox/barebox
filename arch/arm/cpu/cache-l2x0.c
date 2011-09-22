@@ -1,6 +1,6 @@
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 
 #define CACHE_LINE_SIZE		32

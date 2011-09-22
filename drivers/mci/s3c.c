@@ -39,7 +39,7 @@
 #include <mci.h>
 #include <errno.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/mci.h>
 #include <mach/s3c24xx-generic.h>
 #include <mach/s3c24x0-iomap.h>

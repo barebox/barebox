@@ -31,7 +31,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <mach/board.h>
 
 #include <errno.h>

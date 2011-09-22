@@ -32,7 +32,7 @@
 #include <spi/spi.h>
 #include <usb/isp1504.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

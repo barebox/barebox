@@ -36,7 +36,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define AS CONFIG_DRIVER_NET_SMC911X_ADDRESS_SHIFT
 

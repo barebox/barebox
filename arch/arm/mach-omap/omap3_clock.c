@@ -39,7 +39,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/silicon.h>
 #include <mach/clocks.h>
 #include <mach/timers.h>

@@ -6,7 +6,7 @@
 #include <linux/err.h>
 #include <linux/mtd/nand_ecc.h>
 #include <asm/byteorder.h>
-#include <asm/io.h>
+#include <io.h>
 #include <malloc.h>
 
 #include "nand.h"

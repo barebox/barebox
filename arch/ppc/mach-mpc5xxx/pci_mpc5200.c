@@ -26,7 +26,7 @@
 #if defined(CONFIG_PCI) && defined(CONFIG_MPC5200)
 
 #include <asm/processor.h>
-#include <asm/io.h>
+#include <io.h>
 #include <pci.h>
 #include <mpc5xxx.h>
 

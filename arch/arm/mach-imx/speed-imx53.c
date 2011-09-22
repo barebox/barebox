@@ -1,5 +1,5 @@
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm-generic/div64.h>
 #include <mach/imx-regs.h>
 #include "mach/clock-imx51_53.h"

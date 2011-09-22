@@ -18,7 +18,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx31.h>
 

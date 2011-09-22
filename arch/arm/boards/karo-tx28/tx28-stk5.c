@@ -21,7 +21,7 @@
 #include <fec.h>
 #include <sizes.h>
 #include <reloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/sections.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>

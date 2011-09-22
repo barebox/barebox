@@ -4,7 +4,7 @@
 #ifndef __ASM_PPC_MC146818RTC_H
 #define __ASM_PPC_MC146818RTC_H
 
-#include <asm/io.h>
+#include <io.h>
 
 #ifndef RTC_PORT
 #define RTC_PORT(x) (0x70 + (x))

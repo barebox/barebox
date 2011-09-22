@@ -16,7 +16,7 @@
 #include <init.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #ifdef CONFIG_ARCH_IMX23
 

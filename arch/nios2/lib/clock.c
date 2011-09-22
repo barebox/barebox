@@ -24,7 +24,7 @@
 #include <clock.h>
 #include <init.h>
 #include <asm/nios2-io.h>
-#include <asm/io.h>
+#include <io.h>
 
 static struct nios_timer *timer = (struct nios_timer *)NIOS_SOPC_TIMER_BASE;
 

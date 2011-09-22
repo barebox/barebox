@@ -43,7 +43,7 @@
 
 #include <linux/err.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <i2c/i2c.h>
 #include <mach/generic.h>
 #include <mach/omap3-clock.h>

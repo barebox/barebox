@@ -23,7 +23,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <xfuncs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/fb.h>

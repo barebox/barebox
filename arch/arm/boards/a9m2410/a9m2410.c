@@ -31,7 +31,7 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <nand.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>
 

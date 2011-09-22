@@ -30,7 +30,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <mach/nand.h>
 #include <mach/fsmc.h>
 

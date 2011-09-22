@@ -36,7 +36,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sdrc.h>

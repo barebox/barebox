@@ -37,7 +37,7 @@
 #include <mach/at91_st.h>
 #include <mach/at91_pmc.h>
 #include <mach/io.h>
-#include <asm/io.h>
+#include <io.h>
 
 /*
  * The ST_CRTR is updated asynchronously to the master clock ... but

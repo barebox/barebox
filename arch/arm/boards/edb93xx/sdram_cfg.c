@@ -23,7 +23,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include "sdram_cfg.h"
 #include "early_udelay.h"
 

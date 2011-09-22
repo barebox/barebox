@@ -29,7 +29,7 @@
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <led.h>
 

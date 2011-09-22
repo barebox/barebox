@@ -39,7 +39,7 @@
 #include <mci.h>
 #include <errno.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/bitops.h>
 #include <mach/imx-regs.h>
 #include <mach/mci.h>

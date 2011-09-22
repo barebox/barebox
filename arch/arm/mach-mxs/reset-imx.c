@@ -21,7 +21,7 @@
 #include <init.h>
 #include <notifier.h>
 #include <mach/imx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define HW_RTC_CTRL     0x000
 # define BM_RTC_CTRL_WATCHDOGEN (1 << 4)

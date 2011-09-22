@@ -26,7 +26,7 @@
 
 #include <driver.h>
 #include <asm/byteorder.h>
-#include <asm/io.h>
+#include <io.h>
 #include <linux/mtd/mtd.h>
 
 typedef unsigned long flash_sect_t;

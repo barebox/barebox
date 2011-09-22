@@ -31,7 +31,7 @@
 #include <init.h>
 #include <driver.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include <mach/silicon.h>
 #include <mach/gpmc.h>

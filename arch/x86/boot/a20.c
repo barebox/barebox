@@ -14,7 +14,7 @@
  */
 
 #include <asm/segment.h>
-#include <asm/io.h>
+#include <io.h>
 #include "boot.h"
 
 #define MAX_8042_LOOPS	100000

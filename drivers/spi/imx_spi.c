@@ -23,7 +23,7 @@
 #include <driver.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <gpio.h>
 #include <mach/spi.h>
 #include <mach/generic.h>

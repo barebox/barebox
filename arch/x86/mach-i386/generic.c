@@ -23,7 +23,7 @@
  * @brief x86 Architecture Initialization routines
  */
 
-#include <asm/io.h>
+#include <io.h>
 
 /** to work with the 8250 UART driver implementation we need this function */
 unsigned int x86_uart_read(unsigned long base, unsigned char reg_idx)

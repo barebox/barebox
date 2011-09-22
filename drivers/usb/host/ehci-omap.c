@@ -15,7 +15,7 @@
 #include <usb/twl4030.h>
 #include <mach/ehci.h>
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <clock.h>
 #include <gpio.h>
 #include <mach/omap3-silicon.h>

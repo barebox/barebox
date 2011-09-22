@@ -33,7 +33,7 @@
 #include <clock.h>
 #include <xfuncs.h>
 #include <gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <spi/spi.h>
 #include <mach/io.h>
 #include <mach/board.h>

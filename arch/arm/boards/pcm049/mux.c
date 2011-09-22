@@ -1,6 +1,6 @@
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 

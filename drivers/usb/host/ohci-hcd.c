@@ -53,7 +53,7 @@
 #include <errno.h>
 
 #include <asm/byteorder.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 
 #include "ohci.h"

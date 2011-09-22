@@ -1,7 +1,7 @@
 #include <common.h>
 #include <command.h>
 #include <net.h>
-#include <asm/io.h>
+#include <io.h>
 #include <miidev.h>
 #include <mach/netx-xc.h>
 #include <mach/netx-eth.h>

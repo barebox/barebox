@@ -27,7 +27,7 @@
 #include <init.h>
 #include <partition.h>
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <generated/mach-types.h>
 #include <mach/ep93xx-regs.h>
 #include "edb93xx.h"

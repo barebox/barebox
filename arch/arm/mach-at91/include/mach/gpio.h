@@ -13,7 +13,7 @@
 #ifndef __ASM_ARCH_AT91_GPIO_H
 #define __ASM_ARCH_AT91_GPIO_H
 
-#include <asm/io.h>
+#include <io.h>
 #include <asm-generic/errno.h>
 #include <mach/at91_pio.h>
 #include <mach/hardware.h>

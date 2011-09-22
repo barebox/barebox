@@ -247,17 +247,17 @@ void flash_make_cmd(struct flash_info *info, u32 cmd, cfiword_t *cmdbuf);
 
 static inline void flash_write8(u8 value, void *addr)
 {
-	writeb(value, addr);
+	cpu_writeb(value, addr);
 }
 
 static inline void flash_write16(u16 value, void *addr)
 {
-	writew(value, addr);
+	cpu_writew(value, addr);
 }
 
 static inline void flash_write32(u32 value, void *addr)
 {
-	writel(value, addr);
+	cpu_writel(value, addr);
 }
 
 static inline void flash_write64(u64 value, void *addr)
@@ -267,17 +267,17 @@ static inline void flash_write64(u64 value, void *addr)
 
 static inline u8 flash_read8(void *addr)
 {
-	return readb(addr);
+	return cpu_readb(addr);
 }
 
 static inline u16 flash_read16(void *addr)
 {
-	return readw(addr);
+	return cpu_readw(addr);
 }
 
 static inline u32 flash_read32(void *addr)
 {
-	return readl(addr);
+	return cpu_readl(addr);
 }
 
 static inline u64 flash_read64(void *addr)

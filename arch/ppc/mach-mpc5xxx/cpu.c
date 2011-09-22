@@ -113,3 +113,20 @@ int cpu_init_board_data(bd_t *bd)
 	bd->bi_pcifreq = get_pci_clock();
 	return 0;
 }
+
+unsigned long mpc5200_get_sdram_size(unsigned int cs)
+{
+	unsigned long size;
+
+	if (cs > 1)
+		return 0;
+
+	/* retrieve size of memory connected to SDRAM CS0 */
+	size = *(vu_long *)(MPC5XXX_SDRAM_CS0CFG + (cs * 4)) & 0xFF;
+	if (size >= 0x13)
+		size = (1 << (size - 0x13)) << 20;
+	else
+		size = 0;
+
+	return size;
+}

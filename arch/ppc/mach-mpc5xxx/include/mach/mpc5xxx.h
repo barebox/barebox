@@ -779,6 +779,9 @@ struct mpc5xxx_mscan {
 /* function prototypes */
 void loadtask(int basetask, int tasks);
 
+/* retrieve configured sdram size connected to a chipselect */
+unsigned long mpc5200_get_sdram_size(unsigned int cs);
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __ASMPPC_MPC5XXX_H */

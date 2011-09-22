@@ -171,8 +171,7 @@ long int initdram (int board_type)
 		} else {
 			*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0; /* disabled */
 		}
-	} else
-		puts(RELOC("skipping sdram initialization\n"));
+	}
 
 	/* retrieve size of memory connected to SDRAM CS0 */
 	dramsize = *(vu_long *)MPC5XXX_SDRAM_CS0CFG & 0xFF;

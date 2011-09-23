@@ -5,6 +5,7 @@
 #include <sizes.h>
 #include <asm/memory.h>
 #include <asm/system.h>
+#include <memory.h>
 
 static unsigned long *ttb;
 
@@ -114,23 +115,23 @@ static void remap_range(void *_start, size_t size, uint32_t flags)
  * remap the memory bank described by mem cachable and
  * bufferable
  */
-static int arm_mmu_remap_sdram(struct arm_memory *mem)
+static int arm_mmu_remap_sdram(struct memory_bank *bank)
 {
-	unsigned long phys = (unsigned long)mem->start;
+	unsigned long phys = (unsigned long)bank->start;
 	unsigned long ttb_start = phys >> 20;
-	unsigned long ttb_end = (phys + mem->size) >> 20;
-	unsigned long num_ptes = mem->size >> 10;
+	unsigned long ttb_end = (phys + bank->size) >> 20;
+	unsigned long num_ptes = bank->size >> 10;
 	int i, pte;
 	u32 *ptes;
 
 	debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
-			phys, mem->size);
+			phys, bank->size);
 
 	/*
 	 * We replace each 1MiB section in this range with second level page
 	 * tables, therefore we must have 1Mib aligment here.
 	 */
-	if ((phys & (SZ_1M - 1)) || (mem->size & (SZ_1M - 1)))
+	if ((phys & (SZ_1M - 1)) || (bank->size & (SZ_1M - 1)))
 		return -EINVAL;
 
 	ptes = memalign(0x400, num_ptes * sizeof(u32));
@@ -210,7 +211,7 @@ static void vectors_init(void)
  */
 static int mmu_init(void)
 {
-	struct arm_memory *mem;
+	struct memory_bank *bank;
 	int i;
 
 	ttb = memalign(0x10000, 0x4000);
@@ -235,8 +236,8 @@ static int mmu_init(void)
 	 * This is to speed up the generation of 2nd level page tables
 	 * below
 	 */
-	for_each_sdram_bank(mem)
-		create_section(mem->start, mem->start, mem->size >> 20,
+	for_each_memory_bank(bank)
+		create_section(bank->start, bank->start, bank->size >> 20,
 				PMD_SECT_DEF_CACHED);
 
 	asm volatile (
@@ -250,8 +251,8 @@ static int mmu_init(void)
 	 * Now that we have the MMU and caches on remap sdram again using
 	 * page tables
 	 */
-	for_each_sdram_bank(mem)
-		arm_mmu_remap_sdram(mem);
+	for_each_memory_bank(bank)
+		arm_mmu_remap_sdram(bank);
 
 	return 0;
 }

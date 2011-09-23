@@ -121,18 +121,3 @@ struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 }
 EXPORT_SYMBOL(add_usb_ehci_device);
 #endif
-
-#ifdef CONFIG_ARM
-#include <asm/armlinux.h>
-
-struct device_d *arm_add_mem_device(const char* name, resource_size_t start,
-				    resource_size_t size)
-{
-	struct device_d *dev;
-
-	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(dev);
-
-	return dev;
-}
-#endif

@@ -27,7 +27,7 @@
 
 #include <init.h>
 #include <stdio.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <asm/syslib.h>
 #include <asm-generic/memory_layout.h>
 

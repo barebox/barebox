@@ -34,7 +34,7 @@
 #include <mach/fec.h>
 #include <types.h>
 #include <partition.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <reloc.h>
 
 static struct mpc5xxx_fec_platform_data fec_info = {

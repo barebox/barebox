@@ -26,7 +26,7 @@
 #include <watchdog.h>
 #include <command.h>
 #include <malloc.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <init.h>
 #include <net.h>
 #include <reloc.h>

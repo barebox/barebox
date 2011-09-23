@@ -20,7 +20,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <asm-generic/memory_layout.h>
 
 static int mips_mem_malloc_init(void)

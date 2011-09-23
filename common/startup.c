@@ -33,7 +33,7 @@
 #include <init.h>
 #include <command.h>
 #include <malloc.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>

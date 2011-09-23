@@ -4,7 +4,6 @@
 struct arm_memory {
 	struct list_head list;
 	struct device_d *dev;
-	u32 *ptes;
 	unsigned long start;
 	unsigned long size;
 };

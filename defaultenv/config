@@ -3,6 +3,9 @@
 machine=FIXME
 #user=
 
+# Enter MAC address here if not retrieved automatically
+#eth0.ethaddr=de:ad:be:ef:00:00
+
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
@@ -12,7 +15,6 @@ ip=dhcp
 #eth0.netmask=a.b.c.d
 #eth0.serverip=a.b.c.d
 #eth0.gateway=a.b.c.d
-#eth0.ethaddr=de:ad:be:ef:00:00
 
 # can be either 'tftp', 'nfs', 'nand', 'nor' or 'disk'
 kernel_loc=tftp

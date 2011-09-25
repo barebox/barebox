@@ -32,12 +32,12 @@ elif [ x${type} = xrootfs ]; then
 	type=root
 elif [ x${type} = xbarebox ]; then
 	image=$bareboximage
-	if [ x${image} = x ]; then
+	if [ -z ${image} ]; then
 		image=barebox.bin
 	fi
 elif [ x${type} = xbareboxenv ]; then
 	image=$bareboxenvimage
-	if [ x${image} = x ]; then
+	if [ -z ${image} ]; then
 		image=bareboxenv.bin
 	fi
 elif [ x${type} = xxload ]; then
@@ -47,7 +47,7 @@ else
 	exit 1
 fi
 
-if [ x${imagename} != x ]; then
+if [ -n ${imagename} ]; then
 	image=${imagename}
 fi
 
@@ -60,7 +60,7 @@ else
 	exit 1
 fi
 
-if [ x${mode} != xtftp ] && [ x${mode} != xxmodem ] ; then
+if [ x${mode} != xtftp -a x${mode} != xxmodem ] ; then
 	echo "unsupported mode ${mode}."
 	. /env/bin/_update_help
 	exit 1

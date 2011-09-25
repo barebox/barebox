@@ -74,7 +74,7 @@ if [ ! -e /dev/ram0.kernel ]; then
 	addpart /dev/ram0 8M@8M(kernel)
 fi
 
-if [ x$kernel_loc = xnfs ] || [ x$kernel_loc = xtftp ]; then
+if [ x$kernel_loc = xnfs -o x$kernel_loc = xtftp ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi

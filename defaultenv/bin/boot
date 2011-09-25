@@ -2,6 +2,10 @@
 
 . /env/config
 
+if [ x$kernel_loc = xnet ]; then
+	kernel_loc=tftp
+fi
+
 if [ x$1 = xnand ]; then
 	rootfs_loc=nand
 	kernel_loc=nand

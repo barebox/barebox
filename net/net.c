@@ -136,7 +136,8 @@ IPaddr_t getenv_ip(const char *name)
 	if (!var)
 		return 0;
 
-	string_to_ip(var, &ip);
+	if (string_to_ip(var, &ip))
+		return 0;
 
 	return ip;
 }

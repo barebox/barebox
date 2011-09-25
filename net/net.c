@@ -113,8 +113,10 @@ int string_to_ip(const char *s, IPaddr_t *ip)
 			return -EINVAL;
 
 		val = simple_strtoul(s, &e, 10);
-		addr <<= 8;
-		addr |= (val & 0xFF);
+		if (val > 255)
+			return -EINVAL;
+
+		addr = (addr << 8) | val;
 
 		if (*e != '.' && i != 3)
 			return -EINVAL;

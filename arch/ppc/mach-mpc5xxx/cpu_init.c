@@ -142,7 +142,7 @@ int cpu_init(void)
 
 	/* Enable snooping for RAM */
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |= (1 << 15);
-	*(vu_long *)(MPC5XXX_XLBARB + 0x70) = CFG_SDRAM_BASE | 0x1d;
+	*(vu_long *)(MPC5XXX_XLBARB + 0x70) = 0 | 0x1d;
 
 # if defined(CFG_IPBSPEED_133)
 	/* Motorola reports IPB should better run at 133 MHz. */

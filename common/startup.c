@@ -38,7 +38,6 @@
 #include <fs.h>
 #include <linux/stat.h>
 #include <environment.h>
-#include <reloc.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 
@@ -61,23 +60,6 @@ static void display_meminfo(void)
 		size_human_readable(STACK_SIZE));
 #endif
 }
-
-#ifdef CONFIG_HAS_EARLY_INIT
-
-#define EARLY_INITDATA (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE \
-		- CONFIG_EARLY_INITDATA_SIZE)
-
-void *init_data_ptr = (void *)EARLY_INITDATA;
-
-void early_init (void)
-{
-	/* copy the early initdata segment to early init RAM */
-	memcpy((void *)EARLY_INITDATA, RELOC(&__early_init_data_begin),
-				(ulong)&__early_init_data_end -
-				(ulong)&__early_init_data_begin);
-}
-
-#endif /* CONFIG_HAS_EARLY_INIT */
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include <generated/barebox_default_env.h>
@@ -111,16 +93,6 @@ void start_barebox (void)
 #ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
 #endif
-
-#ifdef CONFIG_HAS_EARLY_INIT
-	/* We are running from RAM now, copy early initdata from
-	 * early RAM to RAM
-	 */
-	memcpy(&__early_init_data_begin, init_data_ptr,
-			(ulong)&__early_init_data_end -
-			(ulong)&__early_init_data_begin);
-	init_data_ptr = &__early_init_data_begin;
-#endif /* CONFIG_HAS_EARLY_INIT */
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {

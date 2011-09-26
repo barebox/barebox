@@ -802,21 +802,6 @@ trap_reloc:
 
 	blr
 
-	.globl reloc_offset
-reloc_offset:
-	mfspr	r4,  LR
-	bl	pc
-pc:
-	mfspr	r3,  LR
-	mtspr   LR, r4
-	addi	r4, r3, (_text_base - pc)
-	subi	r3, r3, (pc - _start)
-	lwz	r4, 0(r4)
-
-	sub	r3, r3, r4
-	subi	r3, r3, 0x100
-	blr
-
 .globl _text_base
 _text_base:
 	.long TEXT_BASE

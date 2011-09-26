@@ -398,23 +398,6 @@ config CONSOLE_ACTIVATE_ALL
 	  Enabling this options activates all consoles on startup, so
 	  you will get output and a prompt on all consoles simultaneously.
 
-config EARLY_CONSOLE_PORT
-	string
-	depends on HAS_EARLY_INIT
-	prompt "Console device for early output"
-	help
-	  Choose the device on which you want to have early output printed
-	  to. This is only used during startup when no device information
-	  is available.
-
-config EARLY_CONSOLE_BAUDRATE
-	int
-	default 115200
-	depends on HAS_EARLY_INIT
-	prompt "Early console baudrate"
-	help
-	  Choose the baudrate for your early console.
-
 config OF_FLAT_TREE
 	bool
 	prompt "Open Firmware flat device tree support"

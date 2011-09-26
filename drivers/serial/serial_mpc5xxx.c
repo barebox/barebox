@@ -39,7 +39,6 @@
 #include <init.h>
 #include <console.h>
 #include <xfuncs.h>
-#include <reloc.h>
 #include <mach/clocks.h>
 
 static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)
@@ -180,27 +179,3 @@ static int mpc5xxx_serial_register(void)
 }
 
 console_initcall(mpc5xxx_serial_register);
-
-#ifdef CONFIG_MPC5XXX_EARLY_CONSOLE
-
-void early_console_putc(void *base, char c)
-{
-	struct mpc5xxx_psc *psc =
-		(struct mpc5xxx_psc *)base;
-
-	/* Wait for last character to go. */
-	while (!(psc->psc_status & PSC_SR_TXEMP))
-		;
-
-	psc->psc_buffer_8 = c;
-}
-
-void early_console_init(void *base, int baudrate)
-{
-	struct mpc5xxx_psc *psc =
-		(struct mpc5xxx_psc *)base;
-	__mpc5xxx_serial_init(psc);
-	__mpc5xxx_serial_setbaudrate(psc, baudrate);
-}
-
-#endif

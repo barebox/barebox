@@ -3,6 +3,8 @@
 
 #include <asm/barebox.h>
 
+extern unsigned long _text_base;
+
 void	upmconfig     (unsigned int, unsigned int *, unsigned int);
 ulong	get_tbclk     (void);
 

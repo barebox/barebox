@@ -24,7 +24,6 @@
 #include <common.h>
 #include <mach/mpc5xxx.h>
 #include <types.h>
-#include <reloc.h>
 
 /*
  * Breath some life into the CPU...
@@ -176,8 +175,6 @@ int cpu_init(void)
 	*(vu_long *)MPC5XXX_ICTL_EXT &= ~0x00000f00;
 	/* route critical ints to normal ints */
 	*(vu_long *)MPC5XXX_ICTL_EXT |= 0x00000001;
-
-	early_init();
 
 	return 0;
 }

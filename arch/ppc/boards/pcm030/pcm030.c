@@ -35,7 +35,7 @@
 #include <types.h>
 #include <partition.h>
 #include <memory.h>
-#include <reloc.h>
+#include <sizes.h>
 
 static struct mpc5xxx_fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -67,15 +67,6 @@ static int console_init(void)
 }
 
 console_initcall(console_init);
-
-void *get_early_console_base(const char *name)
-{
-	if (!strcmp(name, RELOC("psc3")))
-		return (void *)MPC5XXX_PSC3;
-	if (!strcmp(name, RELOC("psc6")))
-		return (void *)MPC5XXX_PSC6;
-	return NULL;
-}
 
 #include "mt46v32m16-75.h"
 
@@ -131,7 +122,7 @@ long int initdram (int board_type)
 
 	ulong test1, test2;
 
-	if ((ulong)RELOC(initdram) > (2 << 30)) {
+	if (get_pc() > SZ_128M) {
 		/* setup SDRAM chip selects */
 		*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0x0000001b;/* 256MB at 0x0 */
 		*(vu_long *)MPC5XXX_SDRAM_CS1CFG = 0x10000000;/* disabled */

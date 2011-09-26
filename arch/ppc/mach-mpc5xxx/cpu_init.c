@@ -36,10 +36,6 @@ int cpu_init(void)
 {
 	unsigned long addecr = (1 << 25); /* Boot_CS */
 
-#if defined(CFG_RAMBOOT) && defined(CONFIG_MGT5100)
-	addecr |= (1 << 22); /* SDRAM enable */
-#endif
-
 	/*
 	 * Memory Controller: configure chip selects and enable them
 	 */
@@ -107,7 +103,6 @@ int cpu_init(void)
 	*(vu_long *)MPC5XXX_CS5_CFG = CFG_CS5_CFG;
 #endif
 
-#if defined(CONFIG_MPC5200)
 	addecr |= 1;
 #if defined(CFG_CS6_START) && defined(CFG_CS6_SIZE)
 	*(vu_long *)MPC5XXX_CS6_START = START_REG(CFG_CS6_START);
@@ -133,7 +128,6 @@ int cpu_init(void)
 #if defined(CFG_CS_DEADCYCLE)
 	*(vu_long *)MPC5XXX_CS_DEADCYCLE = CFG_CS_DEADCYCLE;
 #endif
-#endif /* CONFIG_MPC5200 */
 
 	/* Enable chip selects */
 	*(vu_long *)MPC5XXX_ADDECR = addecr;
@@ -144,7 +138,6 @@ int cpu_init(void)
 	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = CFG_GPS_PORT_CONFIG;
 #endif
 
-#if defined(CONFIG_MPC5200)
 	/* enable timebase */
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |= (1 << 13);
 
@@ -175,14 +168,10 @@ int cpu_init(void)
 	/* Enable piplining */
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) &= ~(1 << 31);
 # endif
-#endif	/* CONFIG_MPC5200 */
 
 	/* mask all interrupts */
-#if defined(CONFIG_MGT5100)
-	*(vu_long *)MPC5XXX_ICTL_PER_MASK = 0xfffffc00;
-#elif defined(CONFIG_MPC5200)
 	*(vu_long *)MPC5XXX_ICTL_PER_MASK = 0xffffff00;
-#endif
+
 	*(vu_long *)MPC5XXX_ICTL_CRIT |= 0x0001ffff;
 	*(vu_long *)MPC5XXX_ICTL_EXT &= ~0x00000f00;
 	/* route critical ints to normal ints */

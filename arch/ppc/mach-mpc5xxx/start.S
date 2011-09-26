@@ -91,9 +91,6 @@ boot_warm:
 # if defined(CFG_RAMBOOT)
 #  error CFG_LOWBOOT is incompatible with CFG_RAMBOOT
 # endif /* CFG_RAMBOOT */
-# if defined(CONFIG_MGT5100)
-#  error CFG_LOWBOOT is incompatible with MGT5100
-# endif /* CONFIG_MGT5100 */
 	lis	r4, CFG_DEFAULT_MBAR@h
 	lis	r3,	START_REG(CFG_BOOTCS_START)@h
 	ori	r3, r3, START_REG(CFG_BOOTCS_START)@l
@@ -125,14 +122,10 @@ lowboot_reentry:
 #if defined(CFG_DEFAULT_MBAR) && !defined(CFG_RAMBOOT)
 	lis	r3, CFG_MBAR@h
 	ori	r3, r3, CFG_MBAR@l
-#if defined(CONFIG_MPC5200)
 	/* MBAR is mirrored into the MBAR SPR */
 	mtspr	MBAR,r3
 	rlwinm	r3, r3, 16, 16, 31
-#endif
-#if defined(CONFIG_MGT5100)
-	rlwinm	r3, r3, 17, 15, 31
-#endif
+
 	lis	r4, CFG_DEFAULT_MBAR@h
 	stw	r3, 0(r4)
 #endif /* CFG_DEFAULT_MBAR */

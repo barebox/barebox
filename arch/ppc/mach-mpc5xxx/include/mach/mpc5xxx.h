@@ -40,6 +40,8 @@
 /* Exception offsets (PowerPC standard) */
 #define EXC_OFF_SYS_RESET	0x0100
 
+#define CFG_MBAR 0xf0000000
+
 /* useful macros for manipulating CSx_START/STOP */
 #if defined(CONFIG_MGT5100)
 #define START_REG(start)	((start) >> 15)

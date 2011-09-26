@@ -102,9 +102,8 @@ setup_mbar:
 	/*--------------------------------------------------------------*/
 
 	/* set up stack in on-chip SRAM */
-	lis	r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@h
-	ori	r3, r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@l
-	subi	r1, r3, CONFIG_EARLY_INITDATA_SIZE
+	lis	r1, (MPC5XXX_SRAM + MPC5XXX_SRAM_SIZE)@h
+	ori	r1, r1, (MPC5XXX_SRAM + MPC5XXX_SRAM_SIZE)@l
 	li	r0, 0			/* Make room for stack frame header and	*/
 	stwu	r0, -4(r1)		/* clear final stack frame so that	*/
 	stwu	r0, -4(r1)		/* stack backtraces terminate cleanly	*/

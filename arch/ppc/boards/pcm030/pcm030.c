@@ -43,9 +43,18 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 
 static int devices_init (void)
 {
-	add_cfi_flash_device(-1, 0xff000000, 16 * 1024 * 1024, 0);
-	add_mem_device("ram0", 0x0, 64 * 1024 * 1024,
-		       IORESOURCE_MEM_WRITEABLE);
+	unsigned long sdramsize;
+
+	/*
+	 * Flash can be 16MB or 32MB, setup for the last 32MB no matter
+	 * what we find later.
+	 */
+	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0001dd00);
+	add_cfi_flash_device(-1, 0xfe000000, 32 * 1024 * 1024, 0);
+
+	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
+	barebox_add_memory_bank("ram0", 0x0, sdramsize);
+
 	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0,
 			   IORESOURCE_MEM, &fec_info);
 
@@ -109,18 +118,20 @@ static void sdram_start (int hi_addr)
 	__asm__ volatile ("sync");
 }
 
-/*
- * ATTENTION: Although partially referenced initdram does NOT make real use
- *            use of CFG_SDRAM_BASE. The code does not work if CFG_SDRAM_BASE
- *            is something else than 0x00000000.
- */
-
-long int initdram (int board_type)
+void initdram (int board_type)
 {
 	ulong dramsize = 0;
-	ulong dramsize2 = 0;
 
 	ulong test1, test2;
+
+	/* Setup pin multiplexing */
+
+	/* PSC6=UART, PSC3=UART ; Ether=100MBit with MD */
+	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = 0x00558c10;
+	*(vu_long *)MPC5XXX_CS_BURST = 0x00000000;
+	*(vu_long *)MPC5XXX_CS_DEADCYCLE = 0x33333333;
+
+	mpc5200_setup_bus_clocks(1, 4);
 
 	if (get_pc() > SZ_128M) {
 		/* setup SDRAM chip selects */
@@ -141,9 +152,9 @@ long int initdram (int board_type)
 
 		/* find RAM size using SDRAM CS0 only */
 		sdram_start(0);
-		test1 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
+		test1 = get_ram_size((ulong *)0, 0x10000000);
 		sdram_start(1);
-		test2 = get_ram_size((ulong *)CFG_SDRAM_BASE, 0x10000000);
+		test2 = get_ram_size((ulong *)0, 0x10000000);
 		if (test1 > test2) {
 			sdram_start(0);
 			dramsize = test1;
@@ -163,24 +174,6 @@ long int initdram (int board_type)
 			*(vu_long *)MPC5XXX_SDRAM_CS0CFG = 0; /* disabled */
 		}
 	}
-
-	/* retrieve size of memory connected to SDRAM CS0 */
-	dramsize = *(vu_long *)MPC5XXX_SDRAM_CS0CFG & 0xFF;
-	if (dramsize >= 0x13) {
-		dramsize = (1 << (dramsize - 0x13)) << 20;
-	} else {
-		dramsize = 0;
-	}
-
-	/* retrieve size of memory connected to SDRAM CS1 */
-	dramsize2 = *(vu_long *)MPC5XXX_SDRAM_CS1CFG & 0xFF;
-	if (dramsize2 >= 0x13) {
-		dramsize2 = (1 << (dramsize2 - 0x13)) << 20;
-	} else {
-		dramsize2 = 0;
-	}
-
-	return dramsize + dramsize2;
 }
 
 #if defined(CONFIG_OF_FLAT_TREE) && defined(CONFIG_OF_BOARD_SETUP)

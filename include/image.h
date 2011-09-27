@@ -344,6 +344,7 @@ void	print_image_hdr (image_header_t *hdr);
  */
 struct image_handle *map_image(const char *filename, int verify);
 void unmap_image(struct image_handle *handle);
+struct image_handle_data* gen_image_handle_data(void* data, ulong len);
 
 /*
  * Relocate an image to load_address by uncompressing

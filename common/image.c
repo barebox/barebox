@@ -27,6 +27,10 @@
 #include <common.h>
 #include <image.h>
 #include <rtc.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <malloc.h>
+#include <fs.h>
 #else
 #include <time.h>
 #endif
@@ -309,3 +313,120 @@ void image_print_contents(const image_header_t *hdr, void *data)
 		}
 	}
 }
+
+#ifdef __BAREBOX__
+struct image_handle *map_image(const char *filename, int verify)
+{
+	int fd;
+	uint32_t checksum, len;
+	struct image_handle *handle;
+	image_header_t *header;
+	int type;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		printf("could not open: %s\n", errno_str());
+		return NULL;
+	}
+
+	handle = xzalloc(sizeof(struct image_handle));
+	header = &handle->header;
+
+	if (read(fd, header, image_get_header_size()) < 0) {
+		printf("could not read: %s\n", errno_str());
+		goto err_out;
+	}
+
+	if (image_get_magic(header) != IH_MAGIC) {
+		puts ("Bad Magic Number\n");
+		goto err_out;
+	}
+
+	checksum = image_get_hcrc(header);
+	header->ih_hcrc = 0;
+
+	if (crc32 (0, (uchar *)header, image_get_header_size()) != checksum) {
+		puts ("Bad Header Checksum\n");
+		goto err_out;
+	}
+	len  = image_get_size(header);
+
+	handle->data = memmap(fd, PROT_READ);
+	if (handle->data == (void *)-1) {
+		handle->data = xmalloc(len);
+		handle->flags = IH_MALLOC;
+		if (read(fd, handle->data, len) < 0) {
+			printf("could not read: %s\n", errno_str());
+			goto err_out;
+		}
+	} else {
+		handle->data = (void *)((unsigned long)handle->data +
+						       image_get_header_size());
+	}
+
+	type = image_get_type(header);
+	if (type == IH_TYPE_MULTI) {
+		struct image_handle_data *data_entries;
+		int i;
+		ulong img_data;
+		ulong count = image_multi_count(handle->data);
+
+		data_entries = xzalloc(sizeof(struct image_handle_data) * count);
+
+		for (i = 0; i < count; i++) {
+			image_multi_getimg(handle->data, i, &img_data,
+					   &data_entries[i].len);
+
+			data_entries[i].data = (void*)img_data;
+		}
+		handle->data_entries = data_entries;
+		handle->nb_data_entries = count;
+	} else {
+		handle->data_entries = gen_image_handle_data(handle->data, len);
+		handle->nb_data_entries = 1;
+	}
+
+	if (verify) {
+		puts ("   Verifying Checksum ... ");
+		if (crc32 (0, handle->data, len) != image_get_dcrc(header)) {
+			printf ("Bad Data CRC\n");
+			goto err_out;
+		}
+		puts ("OK\n");
+	}
+
+	image_print_contents(header, handle->data);
+
+	close(fd);
+
+	return handle;
+err_out:
+	close(fd);
+	if (handle->flags & IH_MALLOC)
+		free(handle->data);
+	free(handle);
+	return NULL;
+}
+EXPORT_SYMBOL(map_image);
+
+void unmap_image(struct image_handle *handle)
+{
+	if (handle->flags & IH_MALLOC)
+		free(handle->data);
+	free(handle->data_entries);
+	free(handle);
+}
+EXPORT_SYMBOL(unmap_image);
+
+struct image_handle_data * gen_image_handle_data(void* data, ulong len)
+{
+	struct image_handle_data *iha;
+
+	iha = xzalloc(sizeof(struct image_handle_data));
+	iha->data = data;
+	iha->len = len;
+
+	return iha;
+}
+EXPORT_SYMBOL(gen_image_handle_data);
+#endif

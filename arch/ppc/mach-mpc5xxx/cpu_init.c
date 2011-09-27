@@ -144,21 +144,6 @@ int cpu_init(void)
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |= (1 << 15);
 	*(vu_long *)(MPC5XXX_XLBARB + 0x70) = 0 | 0x1d;
 
-# if defined(CFG_IPBSPEED_133)
-	/* Motorola reports IPB should better run at 133 MHz. */
-	*(vu_long *)MPC5XXX_ADDECR |= 1;
-	/* pci_clk_sel = 0x02, ipb_clk_sel = 0x00; */
-	addecr = *(vu_long *)MPC5XXX_CDM_CFG;
-	addecr &= ~0x103;
-#  if defined(CFG_PCISPEED_66)
-	/* pci_clk_sel = 0x01 -> IPB_CLK/2 */
-	addecr |= 0x01;
-#  else
-	/* pci_clk_sel = 0x02 -> XLB_CLK/4 = IPB_CLK/4 */
-	addecr |= 0x02;
-#  endif /* CFG_PCISPEED_66 */
-	*(vu_long *)MPC5XXX_CDM_CFG = addecr;
-# endif	/* CFG_IPBSPEED_133 */
 	/* Configure the XLB Arbiter */
 	*(vu_long *)MPC5XXX_XLBARB_MPRIEN = 0xff;
 	*(vu_long *)MPC5XXX_XLBARB_MPRIVAL = 0x11111111;

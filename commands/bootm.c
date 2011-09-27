@@ -203,7 +203,7 @@ struct image_handle *map_image(const char *filename, int verify)
 		puts ("OK\n");
 	}
 
-	image_print_contents(header);
+	image_print_contents(header, handle->data);
 
 	close(fd);
 

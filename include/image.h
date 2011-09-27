@@ -320,13 +320,13 @@ static inline void image_set_name(image_header_t *hdr, const char *name)
 	strncpy(image_get_name(hdr), name, IH_NMLEN);
 }
 
-ulong image_multi_count(const image_header_t *hdr);
-void image_multi_getimg(const image_header_t *hdr, ulong idx,
-			ulong *data, ulong *len);
+ulong image_multi_count(void *data);
+void image_multi_getimg(void *data, ulong idx,
+			ulong *img_data, ulong *len);
 
 void image_print_size(uint32_t size);
 
-void image_print_contents(const void *ptr);
+void image_print_contents(const image_header_t *hdr, void *data);
 
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);

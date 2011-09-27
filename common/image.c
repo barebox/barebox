@@ -154,14 +154,14 @@ const char *image_get_comp_name(uint8_t comp)
  * returns:
  *     number of components
  */
-ulong image_multi_count(const image_header_t *hdr)
+ulong image_multi_count(void *data)
 {
 	ulong i, count = 0;
 	uint32_t *size;
 
 	/* get start of the image payload, which in case of multi
 	 * component images that points to a table of component sizes */
-	size = (uint32_t *)image_get_data (hdr);
+	size = (uint32_t *)data;
 
 	/* count non empty slots */
 	for (i = 0; size[i]; ++i)
@@ -187,23 +187,23 @@ ulong image_multi_count(const image_header_t *hdr)
  *     data address and size of the component, if idx is valid
  *     0 in data and len, if idx is out of range
  */
-void image_multi_getimg(const image_header_t *hdr, ulong idx,
-			ulong *data, ulong *len)
+void image_multi_getimg(void *data, ulong idx,
+			ulong *img_data, ulong *len)
 {
 	int i;
 	uint32_t *size;
-	ulong offset, count, img_data;
+	ulong offset, count, tmp_img_data;
 
 	/* get number of component */
-	count = image_multi_count(hdr);
+	count = image_multi_count(data);
 
 	/* get start of the image payload, which in case of multi
 	 * component images that points to a table of component sizes */
-	size = (uint32_t *)image_get_data(hdr);
+	size = (uint32_t *)data;
 
 	/* get address of the proper component data start, which means
 	 * skipping sizes table (add 1 for last, null entry) */
-	img_data = image_get_data(hdr) + (count + 1) * sizeof (uint32_t);
+	tmp_img_data = (ulong)data + (count + 1) * sizeof (uint32_t);
 
 	if (idx < count) {
 		*len = uimage_to_cpu(size[idx]);
@@ -216,10 +216,10 @@ void image_multi_getimg(const image_header_t *hdr, ulong idx,
 		}
 
 		/* calculate idx-th component data address */
-		*data = img_data + offset;
+		*img_data = tmp_img_data + offset;
 	} else {
 		*len = 0;
-		*data = 0;
+		*img_data = 0;
 	}
 }
 
@@ -262,9 +262,8 @@ void image_print_size(uint32_t size)
 #endif
 }
 
-void image_print_contents(const void *ptr)
+void image_print_contents(const image_header_t *hdr, void *data)
 {
-	const image_header_t *hdr = (const image_header_t *)ptr;
 	const char *p;
 	int type;
 
@@ -289,12 +288,12 @@ void image_print_contents(const void *ptr)
 	type = image_get_type(hdr);
 	if (type == IH_TYPE_MULTI || type == IH_TYPE_SCRIPT) {
 		int i;
-		ulong data, len;
-		ulong count = image_multi_count(hdr);
+		ulong img_data, len;
+		ulong count = image_multi_count(data);
 
 		printf ("%sContents:\n", p);
 		for (i = 0; i < count; i++) {
-			image_multi_getimg(hdr, i, &data, &len);
+			image_multi_getimg(data, i, &img_data, &len);
 
 			printf("%s   Image %d: ", p, i);
 			image_print_size(len);
@@ -305,7 +304,7 @@ void image_print_contents(const void *ptr)
 				 * if planning to do something with
 				 * multiple files
 				 */
-				printf("%s    Offset = 0x%08lx\n", p, data);
+				printf("%s    Offset = 0x%08lx\n", p, img_data);
 			}
 		}
 	}

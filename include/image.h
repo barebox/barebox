@@ -188,9 +188,16 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
+struct image_handle_data {
+	void *data;
+	ulong len;
+};
+
 struct image_handle {
 	image_header_t	header;
 	void *data;
+	struct image_handle_data *data_entries;
+	int nb_data_entries;
 #define IH_MALLOC	1
 	int flags;
 };

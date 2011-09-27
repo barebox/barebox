@@ -36,6 +36,8 @@
 #include <partition.h>
 #include <memory.h>
 #include <sizes.h>
+#include <linux/stat.h>
+#include <fs.h>
 
 static struct mpc5xxx_fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -44,12 +46,14 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 static int devices_init (void)
 {
 	unsigned long sdramsize;
+	struct stat s;
+	int ret;
 
 	/*
 	 * Flash can be 16MB or 32MB, setup for the last 32MB no matter
 	 * what we find later.
 	 */
-	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0001dd00);
+	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0008fd00);
 	add_cfi_flash_device(-1, 0xfe000000, 32 * 1024 * 1024, 0);
 
 	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
@@ -58,8 +62,12 @@ static int devices_init (void)
 	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0,
 			   IORESOURCE_MEM, &fec_info);
 
-	devfs_add_partition("nor0", 0x00f00000, 0x40000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x00f60000, 0x20000, PARTITION_FIXED, "env0");
+	ret = stat("/dev/nor0", &s);
+	if (ret)
+		return 0;
+
+	devfs_add_partition("nor0", s.st_size - SZ_1M, SZ_512K, PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", s.st_size - SZ_512K, SZ_512K, PARTITION_FIXED, "env0");
 
 	return 0;
 }

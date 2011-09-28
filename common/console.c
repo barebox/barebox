@@ -29,7 +29,6 @@
 #include <console.h>
 #include <driver.h>
 #include <fs.h>
-#include <reloc.h>
 #include <init.h>
 #include <clock.h>
 #include <kfifo.h>
@@ -42,10 +41,9 @@ LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
 
 #define CONSOLE_UNINITIALIZED	0
-#define CONSOLE_INIT_EARLY	1
-#define CONSOLE_INIT_FULL	2
+#define CONSOLE_INIT_FULL	1
 
-static int __early_initdata initialized = 0;
+static int initialized = 0;
 
 static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
@@ -163,10 +161,8 @@ int console_register(struct console_device *newcdev)
 		console_output_buffer = NULL;
 	}
 
-#ifndef CONFIG_HAS_EARLY_INIT
 	if (first)
 		barebox_banner();
-#endif
 
 	return 0;
 }
@@ -250,25 +246,15 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-#ifdef CONFIG_HAS_EARLY_INIT
-static void __early_initdata *early_console_base;
-#endif
-
 void console_putc(unsigned int ch, char c)
 {
 	struct console_device *cdev;
-	int init = INITDATA(initialized);
+	int init = initialized;
 
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
 		kfifo_putc(console_output_buffer, c);
 		return;
-
-#ifdef CONFIG_HAS_EARLY_INIT
-	case CONSOLE_INIT_EARLY:
-		early_console_putc(INITDATA(early_console_base), c);
-		return;
-#endif
 
 	case CONSOLE_INIT_FULL:
 		for_each_console(cdev) {
@@ -410,19 +396,3 @@ int ctrlc (void)
 }
 EXPORT_SYMBOL(ctrlc);
 #endif /* ARCH_HAS_CTRC */
-
-#ifdef CONFIG_HAS_EARLY_INIT
-
-void early_console_start(const char *name, int baudrate)
-{
-	void *base = get_early_console_base(name);
-
-	if (base) {
-		early_console_init(base, baudrate);
-		INITDATA(initialized) = CONSOLE_INIT_EARLY;
-		INITDATA(early_console_base) = base;
-		barebox_banner();
-	}
-}
-
-#endif

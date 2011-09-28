@@ -94,7 +94,7 @@ void __noreturn hang (void);
 void __noreturn panic(const char *fmt, ...);
 
 /* */
-long int initdram (int);
+void initdram (int);
 char *size_human_readable(ulong size);
 
 /* common/main.c */

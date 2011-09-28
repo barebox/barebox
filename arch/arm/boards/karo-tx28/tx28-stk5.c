@@ -20,7 +20,6 @@
 #include <mci.h>
 #include <fec.h>
 #include <sizes.h>
-#include <reloc.h>
 #include <io.h>
 #include <asm/sections.h>
 #include <mach/imx-regs.h>

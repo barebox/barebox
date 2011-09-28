@@ -1,5 +1,4 @@
 #include <common.h>
-#include <reloc.h>
 #include <generated/utsrelease.h>
 
 const char version_string[] =
@@ -7,7 +6,7 @@ const char version_string[] =
 
 void barebox_banner (void)
 {
-	printf (RELOC("\n\n%s\n\n"), RELOC_VAR(version_string));
-	printf(RELOC("Board: " CONFIG_BOARDINFO "\n"));
+	printf("\n\n%s\n\n", version_string);
+	printf("Board: " CONFIG_BOARDINFO "\n");
 }
 

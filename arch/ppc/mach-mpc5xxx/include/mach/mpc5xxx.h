@@ -40,6 +40,8 @@
 /* Exception offsets (PowerPC standard) */
 #define EXC_OFF_SYS_RESET	0x0100
 
+#define CFG_MBAR 0xf0000000
+
 /* useful macros for manipulating CSx_START/STOP */
 #if defined(CONFIG_MGT5100)
 #define START_REG(start)	((start) >> 15)
@@ -778,6 +780,16 @@ struct mpc5xxx_mscan {
 
 /* function prototypes */
 void loadtask(int basetask, int tasks);
+
+/* retrieve configured sdram size connected to a chipselect */
+unsigned long mpc5200_get_sdram_size(unsigned int cs);
+
+/* configure a local plus bus chip select */
+#define MPC5200_BOOTCS 8
+void mpc5200_setup_cs(int cs, unsigned long start, unsigned long size, u32 cfg);
+
+/* configure bus speeds. Both dividers are relative to xlb clock */
+int mpc5200_setup_bus_clocks(unsigned int ipbdiv, unsigned long pcidiv);
 
 #endif /* __ASSEMBLY__ */
 

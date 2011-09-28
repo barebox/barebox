@@ -7,15 +7,6 @@ config ARCH_TEXT_BASE
 	default 0x00000000 if RELOCATABLE
 	default 0x01000000 if MACH_PHYCORE_MPC5200B_TINY
 
-config MPC5XXX_EARLY_CONSOLE
-	bool
-	depends on ARCH_MPC5200
-	default y
-
-config HAS_EARLY_INIT
-	bool
-	default y
-
 config PPC
 	bool
 	select HAVE_CONFIGURABLE_TEXT_BASE

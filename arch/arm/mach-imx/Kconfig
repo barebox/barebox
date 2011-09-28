@@ -497,6 +497,12 @@ config IMX_IIM
 	  Device driver for the IC Identification Module (IIM) fusebox. Use the 
 	  regular md/mw commands to program and read the fusebox.
 
+	  Fuses are grouped in "rows", 8 bits per row. When using md/mw commands,
+	  employ the -b switch and consider the region to be specifying the "Fuse
+	  Row Index" rather than "Fuse Row Offset" (which is FRI * 4). You should
+	  consult the documentation for your chip for more elaborate description,
+	  including the eFuse map, e.g. see AN3682 for i.MX25.
+
 config IMX_IIM_FUSE_BLOW
 	bool "IIM fuses blow support"
 	depends on IMX_IIM
@@ -506,6 +512,10 @@ config IMX_IIM_FUSE_BLOW
 
 	  Warning: blown fuses can not be unblown. Using this option may damage
 	  your CPU, or make it unbootalbe. Use with care.
+
+	  Before being actually able to blow the fuses, you need to explicitely
+	  enable it:
+	  	 imx_iim0.permanent_write_enable=1
 
 endmenu
 

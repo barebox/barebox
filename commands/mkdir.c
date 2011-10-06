@@ -45,10 +45,13 @@ static int do_mkdir(struct command *cmdtp, int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	while (optind < argc) {
-		if (parent)
+		if (parent) {
 			ret = make_directory(argv[optind]);
-		else
+			if (ret == -EEXIST)
+				ret = 0;
+		} else {
 			ret = mkdir(argv[optind], 0);
+		}
 		if (ret) {
 			printf("could not create %s: %s\n", argv[optind], errno_str());
 			return 1;

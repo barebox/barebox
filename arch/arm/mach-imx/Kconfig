@@ -401,7 +401,6 @@ choice
 
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
-	select MACH_HAS_LOWLEVEL_INIT
 
 endchoice
 

@@ -252,6 +252,12 @@ config CMD_SHA256SUM
 	select SHA256
 	prompt "sha256sum"
 
+config CMD_SHA224SUM
+	tristate
+	select CMD_DIGEST
+	select SHA224
+	prompt "sha224sum"
+
 config CMD_MTEST
 	tristate
 	prompt "mtest"

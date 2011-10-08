@@ -116,6 +116,26 @@ BAREBOX_CMD_END
 
 #endif /* CMD_CMD_SHA1SUM */
 
+#ifdef CONFIG_CMD_SHA224SUM
+
+static int do_sha224(struct command *cmdtp, int argc, char *argv[])
+{
+	return do_digest("sha224", argc, argv);
+}
+
+BAREBOX_CMD_HELP_START(sha224sum)
+BAREBOX_CMD_HELP_USAGE("sha224sum [[FILE] [AREA]]...\n")
+BAREBOX_CMD_HELP_SHORT("Calculate a sha224 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(sha224sum)
+	.cmd		= do_sha224,
+	.usage		= "sha224 checksum calculation",
+	BAREBOX_CMD_HELP(cmd_sha224sum_help)
+BAREBOX_CMD_END
+
+#endif /* CMD_CMD_SHA224SUM */
+
 #ifdef CONFIG_CMD_SHA256SUM
 
 static int do_sha256(struct command *cmdtp, int argc, char *argv[])

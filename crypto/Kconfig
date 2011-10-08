@@ -15,6 +15,9 @@ config MD5
 config SHA1
 	bool "SHA1"
 
+config SHA224
+	bool "SHA224"
+
 config SHA256
 	bool "SHA256"
 

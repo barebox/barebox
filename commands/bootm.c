@@ -181,6 +181,8 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 	handle = xzalloc(sizeof(struct image_handle));
 	header = &handle->header;
 	handle->data_entries = gen_image_handle_data(iha->data, iha->len);
+	handle->nb_data_entries = 1;
+	header->ih_size = cpu_to_uimage(iha->len);
 	handle->data = handle->data_entries[0].data;
 
 	return handle;

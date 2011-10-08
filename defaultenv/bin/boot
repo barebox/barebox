@@ -115,7 +115,7 @@ fi
 echo "booting kernel of type $kernelimage_type from $kdev"
 
 if [ x$kernelimage_type = xuimage ]; then
-	bootm $kdev
+	bootm $bootm_opt $kdev
 elif [ x$kernelimage_type = xzimage ]; then
 	bootz $kdev
 elif [ x$kernelimage_type = xraw ]; then

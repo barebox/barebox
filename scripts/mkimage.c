@@ -34,7 +34,7 @@
 char *cmdname;
 
 #include "../include/zlib.h"
-#include "../lib/crc32.c"
+#include "../crypto/crc32.c"
 
 //extern unsigned long crc32 (unsigned long crc, const char *buf, unsigned int len);
 

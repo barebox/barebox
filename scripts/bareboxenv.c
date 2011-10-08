@@ -117,7 +117,7 @@ char *concat_subpath_file(const char *path, const char *f)
 
 #include "../lib/recursive_action.c"
 #include "../include/envfs.h"
-#include "../lib/crc32.c"
+#include "../crypto/crc32.c"
 #include "../lib/make_directory.c"
 #include "../include/environment.h"
 #include "../common/environment.c"

@@ -1,0 +1,21 @@
+config CRC32
+	bool
+
+config CRC16
+	bool
+
+menuconfig DIGEST
+	bool "Digest                        "
+
+if DIGEST
+
+config MD5
+	bool "MD5"
+
+config SHA1
+	bool "SHA1"
+
+config SHA256
+	bool "SHA256"
+
+endif

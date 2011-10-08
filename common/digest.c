@@ -23,6 +23,9 @@
 #include <common.h>
 #include <digest.h>
 #include <malloc.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <linux/stat.h>
 #include <errno.h>
 #include <module.h>
 #include <linux/err.h>
@@ -75,3 +78,101 @@ struct digest* digest_get_by_name(char* name)
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(digest_get_by_name);
+
+int digest_file_window(struct digest *d, char *filename,
+		       unsigned char *hash,
+		       ulong start, ulong size)
+{
+	ulong len = 0;
+	int fd, now, ret = 0;
+	unsigned char *buf;
+	int flags;
+
+	d->init(d);
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		perror(filename);
+		return fd;
+	}
+
+	buf = memmap(fd, PROT_READ);
+	if (buf == (void *)-1) {
+		buf = xmalloc(4096);
+		flags = 1;
+	}
+
+	if (start > 0) {
+		if (flags) {
+			ret = lseek(fd, start, SEEK_SET);
+			if (ret == -1) {
+				perror("lseek");
+				goto out;
+			}
+		} else {
+			buf += start;
+		}
+	}
+
+	while (size) {
+		now = min((ulong)4096, size);
+		if (flags) {
+			now = read(fd, buf, now);
+			if (now < 0) {
+				ret = now;
+				perror("read");
+				goto out_free;
+			}
+			if (!now)
+				break;
+		}
+
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out_free;
+		}
+
+		d->update(d, buf, now);
+		size -= now;
+		len += now;
+	}
+
+	d->final(d, hash);
+
+out_free:
+	if (flags)
+		free(buf);
+out:
+	close(fd);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(digest_file_window);
+
+int digest_file(struct digest *d, char *filename,
+		       unsigned char *hash)
+{
+	struct stat st;
+	int ret;
+
+	ret = stat(filename, &st);
+
+	if (ret < 0)
+		return ret;
+
+	return digest_file_window(d, filename, hash, 0, st.st_size);
+}
+EXPORT_SYMBOL_GPL(digest_file);
+
+int digest_file_by_name(char *algo, char *filename,
+		       unsigned char *hash)
+{
+	struct digest *d;
+
+	d = digest_get_by_name(algo);
+	if (!d)
+		return -EIO;
+
+	return digest_file(d, filename, hash);
+}
+EXPORT_SYMBOL_GPL(digest_file_by_name);

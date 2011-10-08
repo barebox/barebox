@@ -29,77 +29,24 @@
 #include <malloc.h>
 #include <digest.h>
 
-static int file_digest(struct digest *d, char *filename,
-		       ulong start, ulong size)
-{
-	ulong len = 0;
-	int fd, now, i, ret = 0;
-	unsigned char *buf;
-
-	d->init(d);
-
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		perror(filename);
-		return fd;
-	}
-
-	if (start > 0) {
-		ret = lseek(fd, start, SEEK_SET);
-		if (ret == -1) {
-			perror("lseek");
-			goto out;
-		}
-	}
-
-	buf = xmalloc(4096);
-
-	while (size) {
-		now = min((ulong)4096, size);
-		now = read(fd, buf, now);
-		if (now < 0) {
-			ret = now;
-			perror("read");
-			goto out_free;
-		}
-		if (!now)
-			break;
-
-		if (ctrlc()) {
-			ret = -EINTR;
-			goto out_free;
-		}
-
-		d->update(d, buf, now);
-		size -= now;
-		len += now;
-	}
-
-	d->final(d, buf);
-
-	for (i = 0; i < d->length; i++)
-		printf("%02x", buf[i]);
-
-	printf("  %s\t0x%08lx ... 0x%08lx\n", filename, start, start + len);
-
-out_free:
-	free(buf);
-out:
-	close(fd);
-
-	return ret;
-}
-
 static int do_digest(char *algorithm, int argc, char *argv[])
 {
 	struct digest *d;
 	int ret = 0;
+	int i;
+	unsigned char *hash;
 
 	d = digest_get_by_name(algorithm);
 	BUG_ON(!d);
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
+
+	hash = calloc(d->length, sizeof(unsigned char));
+	if (!hash) {
+		perror("calloc");
+		return COMMAND_ERROR_USAGE;
+	}
 
 	argv++;
 	while (*argv) {
@@ -113,11 +60,18 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 				argv++;
 		}
 
-		if (file_digest(d, filename, start, size) < 0)
+		if (digest_file_window(d, filename, hash, start, size) < 0)
 			ret = 1;
+
+		for (i = 0; i < d->length; i++)
+			printf("%02x", hash[i]);
+
+		printf("  %s\t0x%08lx ... 0x%08lx\n", filename, start, start + size);
 
 		argv++;
 	}
+
+	free(hash);
 
 	return ret;
 }

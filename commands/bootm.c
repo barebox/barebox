@@ -274,10 +274,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 			return 0;
 		default:
-			if (!handler_parse_options(&data, opt, optarg))
-				continue;
-
-			return 1;
+			break;
 		}
 	}
 
@@ -295,6 +292,21 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
+	}
+
+	optind = 0;
+
+	while((opt = getopt(argc, argv, options)) > 0) {
+		switch(opt) {
+		case 'h':
+		case 'n':
+			break;
+		default:
+			if (!handler_parse_options(&data, opt, optarg))
+				continue;
+
+			return 1;
+		}
 	}
 
 	/*

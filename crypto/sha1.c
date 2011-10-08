@@ -291,45 +291,6 @@ static void sha1_finish (sha1_context * ctx, uint8_t output[20])
 	PUT_UINT32_BE (ctx->state[4], output, 16);
 }
 
-/*
- * Output = HMAC-SHA-1( input buffer, hmac key )
- */
-void sha1_hmac (uint8_t *key, uint32_t keylen,
-		uint8_t *input, uint32_t ilen, uint8_t output[20])
-{
-	uint32_t i;
-	sha1_context ctx;
-	uint8_t k_ipad[64];
-	uint8_t k_opad[64];
-	uint8_t tmpbuf[20];
-
-	memset (k_ipad, 0x36, 64);
-	memset (k_opad, 0x5C, 64);
-
-	for (i = 0; i < keylen; i++) {
-		if (i >= 64)
-			break;
-
-		k_ipad[i] ^= key[i];
-		k_opad[i] ^= key[i];
-	}
-
-	sha1_starts (&ctx);
-	sha1_update (&ctx, k_ipad, 64);
-	sha1_update (&ctx, input, ilen);
-	sha1_finish (&ctx, tmpbuf);
-
-	sha1_starts (&ctx);
-	sha1_update (&ctx, k_opad, 64);
-	sha1_update (&ctx, tmpbuf, 20);
-	sha1_finish (&ctx, output);
-
-	memset (k_ipad, 0, 64);
-	memset (k_opad, 0, 64);
-	memset (tmpbuf, 0, 20);
-	memset (&ctx, 0, sizeof (sha1_context));
-}
-
 struct sha1 {
 	sha1_context context;
 	struct digest d;

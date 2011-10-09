@@ -24,7 +24,7 @@
 #include <common.h>
 #include <linux/clk.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/gpio.h>
 #include <gpio.h>
 

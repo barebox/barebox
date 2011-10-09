@@ -73,7 +73,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 /*---------------------------------------------------------------
  .

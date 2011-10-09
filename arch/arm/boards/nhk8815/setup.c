@@ -26,7 +26,7 @@
 #include <nand.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include <mach/hardware.h>
 #include <mach/board.h>

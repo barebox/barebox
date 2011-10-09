@@ -44,7 +44,7 @@
 
 #include <linux/err.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <i2c/i2c.h>
 #include <mach/generic.h>
 #include <mach/clock.h>
@@ -314,19 +314,21 @@ static int i2c_imx_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	void __iomem *base = i2c_imx->base;
 	int i, result;
 
-	dev_dbg(adapter->dev,
-		"<%s> write slave address: addr=0x%02x\n",
-		__func__, msgs->addr << 1);
+	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
+		dev_dbg(adapter->dev,
+			"<%s> write slave address: addr=0x%02x\n",
+			__func__, msgs->addr << 1);
 
-	/* write slave address */
-	writeb(msgs->addr << 1, base + IMX_I2C_I2DR);
+		/* write slave address */
+		writeb(msgs->addr << 1, base + IMX_I2C_I2DR);
 
-	result = i2c_imx_trx_complete(adapter);
-	if (result)
-		return result;
-	result = i2c_imx_acked(adapter);
-	if (result)
-		return result;
+		result = i2c_imx_trx_complete(adapter);
+		if (result)
+			return result;
+		result = i2c_imx_acked(adapter);
+		if (result)
+			return result;
+	}
 
 	/* write data */
 	for (i = 0; i < msgs->len; i++) {
@@ -352,22 +354,24 @@ static int i2c_imx_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	int i, result;
 	unsigned int temp;
 
-	dev_dbg(adapter->dev,
-		"<%s> write slave address: addr=0x%02x\n",
-		__func__, (msgs->addr << 1) | 0x01);
-
 	/* clear IIF */
 	writeb(0x0, base + IMX_I2C_I2SR);
 
-	/* write slave address */
-	writeb((msgs->addr << 1) | 0x01, base + IMX_I2C_I2DR);
+	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
+		dev_dbg(adapter->dev,
+			"<%s> write slave address: addr=0x%02x\n",
+			__func__, (msgs->addr << 1) | 0x01);
 
-	result = i2c_imx_trx_complete(adapter);
-	if (result)
-		return result;
-	result = i2c_imx_acked(adapter);
-	if (result)
-		return result;
+		/* write slave address */
+		writeb((msgs->addr << 1) | 0x01, base + IMX_I2C_I2DR);
+
+		result = i2c_imx_trx_complete(adapter);
+		if (result)
+			return result;
+		result = i2c_imx_acked(adapter);
+		if (result)
+			return result;
+	}
 
 	/* setup bus to read data */
 	temp = readb(base + IMX_I2C_I2CR);
@@ -428,7 +432,7 @@ static int i2c_imx_xfer(struct i2c_adapter *adapter,
 
 	/* read/write data */
 	for (i = 0; i < num; i++) {
-		if (i) {
+		if (i && !(msgs[i].flags & I2C_M_DATA_ONLY)) {
 			temp = readb(base + IMX_I2C_I2CR);
 			temp |= I2CR_RSTA;
 			writeb(temp, base + IMX_I2C_I2CR);

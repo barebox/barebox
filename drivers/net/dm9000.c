@@ -50,7 +50,7 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <xfuncs.h>
 #include <dm9000.h>
 #include <errno.h>

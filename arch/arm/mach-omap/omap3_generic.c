@@ -36,7 +36,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sdrc.h>
@@ -59,8 +59,9 @@
  */
 void __noreturn reset_cpu(unsigned long addr)
 {
-	/* FIXME: Enable WDT and cause reset */
-	hang();
+	writel(PRM_RSTCTRL_RESET, PRM_REG(RSTCTRL));
+
+	while (1);
 }
 EXPORT_SYMBOL(reset_cpu);
 
@@ -177,7 +178,26 @@ u32 get_sdr_cs_size(u32 offset)
 	size *= 2 * (1024 * 1024);	/* find size in MB */
 	return size;
 }
+EXPORT_SYMBOL(get_sdr_cs_size);
+/**
+ * @brief base address of chip select 1 (cs0 is defined at 0x80000000)
+ *
+ * @return return the CS1 base address.
+ */
+u32 get_sdr_cs1_base(void)
+{
+	u32 base;
+	u32 cs_cfg;
 
+	cs_cfg = readl(SDRC_REG(CS_CFG));
+	/* get ram size field */
+	base = (cs_cfg & 0x0000000F) << 2; /* get CS1STARTHIGH */
+	base = base | ((cs_cfg & 0x00000300) >> 8); /* get CS1STARTLOW */
+	base = base << 25;
+	base += 0x80000000;
+	return base;
+}
+EXPORT_SYMBOL(get_sdr_cs1_base);
 /**
  * @brief Get the initial SYSBOOT value
  *

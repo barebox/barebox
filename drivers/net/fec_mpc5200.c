@@ -697,9 +697,17 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	return 0;
 }
 
+static void mpc5xxx_fec_remove(struct device_d *dev)
+{
+	struct eth_device *edev = dev->type_data;
+
+	mpc5xxx_fec_halt(edev);
+}
+
 static struct driver_d mpc5xxx_driver = {
         .name  = "fec_mpc5xxx",
         .probe = mpc5xxx_fec_probe,
+	.remove = mpc5xxx_fec_remove,
 };
 
 static int mpc5xxx_fec_register(void)

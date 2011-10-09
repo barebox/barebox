@@ -5,6 +5,7 @@
 #include <sizes.h>
 #include <asm/memory.h>
 #include <asm/system.h>
+#include <memory.h>
 
 static unsigned long *ttb;
 
@@ -76,28 +77,28 @@ static u32 *arm_create_pte(unsigned long virt)
 	return table;
 }
 
+static u32 *find_pte(unsigned long adr)
+{
+	u32 *table;
+
+	if ((ttb[adr >> 20] & PMD_TYPE_MASK) != PMD_TYPE_TABLE)
+		BUG();
+
+	/* find the coarse page table base address */
+	table = (u32 *)(ttb[adr >> 20] & ~0x3ff);
+
+	/* find second level descriptor */
+	return &table[(adr >> PAGE_SHIFT) & 0xff];
+}
+
 static void remap_range(void *_start, size_t size, uint32_t flags)
 {
-	u32 pteentry;
-	struct arm_memory *mem;
 	unsigned long start = (unsigned long)_start;
 	u32 *p;
 	int numentries, i;
 
-	for_each_sdram_bank(mem) {
-		if (start >= mem->start && start < mem->start + mem->size)
-			goto found;
-	}
-
-	BUG();
-	return;
-
-found:
-	pteentry = (start - mem->start) >> PAGE_SHIFT;
-
 	numentries = size >> PAGE_SHIFT;
-
-	p = mem->ptes + pteentry;
+	p = find_pte(start);
 
 	for (i = 0; i < numentries; i++) {
 		p[i] &= ~PTE_MASK;
@@ -114,38 +115,39 @@ found:
  * remap the memory bank described by mem cachable and
  * bufferable
  */
-static int arm_mmu_remap_sdram(struct arm_memory *mem)
+static int arm_mmu_remap_sdram(struct memory_bank *bank)
 {
-	unsigned long phys = (unsigned long)mem->start;
+	unsigned long phys = (unsigned long)bank->start;
 	unsigned long ttb_start = phys >> 20;
-	unsigned long ttb_end = (phys + mem->size) >> 20;
-	unsigned long num_ptes = mem->size >> 10;
+	unsigned long ttb_end = (phys + bank->size) >> 20;
+	unsigned long num_ptes = bank->size >> 10;
 	int i, pte;
+	u32 *ptes;
 
 	debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
-			phys, mem->size);
+			phys, bank->size);
 
 	/*
 	 * We replace each 1MiB section in this range with second level page
 	 * tables, therefore we must have 1Mib aligment here.
 	 */
-	if ((phys & (SZ_1M - 1)) || (mem->size & (SZ_1M - 1)))
+	if ((phys & (SZ_1M - 1)) || (bank->size & (SZ_1M - 1)))
 		return -EINVAL;
 
-	mem->ptes = memalign(0x400, num_ptes * sizeof(u32));
+	ptes = memalign(0x400, num_ptes * sizeof(u32));
 
 	debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
-			mem->ptes, ttb_start, ttb_end);
+			ptes, ttb_start, ttb_end);
 
 	for (i = 0; i < num_ptes; i++) {
-		mem->ptes[i] = (phys + i * 4096) | PTE_TYPE_SMALL |
+		ptes[i] = (phys + i * 4096) | PTE_TYPE_SMALL |
 			PTE_FLAGS_CACHED;
 	}
 
 	pte = 0;
 
 	for (i = ttb_start; i < ttb_end; i++) {
-		ttb[i] = (unsigned long)(&mem->ptes[pte]) | PMD_TYPE_TABLE |
+		ttb[i] = (unsigned long)(&ptes[pte]) | PMD_TYPE_TABLE |
 			(0 << 4);
 		pte += 256;
 	}
@@ -209,7 +211,7 @@ static void vectors_init(void)
  */
 static int mmu_init(void)
 {
-	struct arm_memory *mem;
+	struct memory_bank *bank;
 	int i;
 
 	ttb = memalign(0x10000, 0x4000);
@@ -234,8 +236,8 @@ static int mmu_init(void)
 	 * This is to speed up the generation of 2nd level page tables
 	 * below
 	 */
-	for_each_sdram_bank(mem)
-		create_section(mem->start, mem->start, mem->size >> 20,
+	for_each_memory_bank(bank)
+		create_section(bank->start, bank->start, bank->size >> 20,
 				PMD_SECT_DEF_CACHED);
 
 	asm volatile (
@@ -249,8 +251,8 @@ static int mmu_init(void)
 	 * Now that we have the MMU and caches on remap sdram again using
 	 * page tables
 	 */
-	for_each_sdram_bank(mem)
-		arm_mmu_remap_sdram(mem);
+	for_each_memory_bank(bank)
+		arm_mmu_remap_sdram(bank);
 
 	return 0;
 }

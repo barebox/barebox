@@ -20,7 +20,7 @@
 #define   __MACH_DEBUG_LL_H__
 
 #include <linux/amba/serial.h>
-#include <asm/io.h>
+#include <io.h>
 
 static inline void putc(char c)
 {

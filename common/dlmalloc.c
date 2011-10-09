@@ -2,7 +2,7 @@
 #include <config.h>
 #include <malloc.h>
 #include <string.h>
-#include <mem_malloc.h>
+#include <memory.h>
 
 #include <stdio.h>
 #include <module.h>

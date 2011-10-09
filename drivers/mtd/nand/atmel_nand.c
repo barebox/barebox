@@ -31,7 +31,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <mach/board.h>
 
 #include <errno.h>
@@ -399,13 +399,13 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	if (host->board->rdy_pin)
 		nand_chip->dev_ready = atmel_nand_device_ready;
 
-	nand_chip->ecc.mode = pdata->ecc_mode;
+	nand_chip->ecc.mode = NAND_ECC_SOFT;
 
 	if (pdata->ecc_mode == NAND_ECC_HW) {
-		if (!pdata->ecc_base)
-			return -ENODEV;
+		host->ecc = dev_request_mem_region(dev, 1);
 
-		host->ecc = pdata->ecc_base;
+		if (!host->ecc)
+			return -ENODEV;
 
 		nand_chip->ecc.mode = NAND_ECC_HW;
 		nand_chip->ecc.calculate = atmel_nand_calculate;

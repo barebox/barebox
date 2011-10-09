@@ -22,13 +22,20 @@
 #define __ASM_ARCH_BOARD_H
 
 #include <net.h>
+#include <spi/spi.h>
 #include <linux/mtd/mtd.h>
+
+ /* USB Host */
+struct at91_usbh_data {
+	u8		ports;		/* number of ports on root hub */
+	u8		vbus_pin[2];	/* port power-control pin */
+};
+extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
 
  /* NAND / SmartMedia */
 struct atmel_nand_data {
-	void __iomem	*ecc_base;
 	u8		enable_pin;	/* chip enable */
 	u8		det_pin;	/* card detect */
 	u8		rdy_pin;	/* ready/busy */
@@ -75,4 +82,12 @@ struct atmel_mci_platform_data {
 };
 
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);
+
+/* SPI Master platform data */
+struct at91_spi_platform_data {
+	int *chipselect;	/* array of gpio_pins */
+	int num_chipselect;	/* chipselect array entry count */
+};
+
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata);
 #endif

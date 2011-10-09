@@ -4,7 +4,7 @@ int init_board_data(bd_t *bd)
 {
 	cpu_init_board_data(bd);
 
-	bd->bi_memstart  = CFG_SDRAM_BASE;	/* start of  DRAM memory	*/
+	bd->bi_memstart  = 0;	/* start of  DRAM memory	*/
 //	bd->bi_memsize   = gd->ram_size;	/* size  of  DRAM memory in bytes */ /* FIXME */
 
 #ifdef CONFIG_IP860

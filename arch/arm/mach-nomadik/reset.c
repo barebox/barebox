@@ -18,7 +18,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/hardware.h>
 
 void __noreturn reset_cpu(unsigned long addr)

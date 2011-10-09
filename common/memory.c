@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <memory.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -68,4 +69,21 @@ void *sbrk(ptrdiff_t increment)
 		memset(old, 0, increment);
 
 	return old;
+}
+
+LIST_HEAD(memory_banks);
+
+void barebox_add_memory_bank(const char *name, resource_size_t start,
+				    resource_size_t size)
+{
+	struct memory_bank *bank = xzalloc(sizeof(*bank));
+	struct device_d *dev;
+
+	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
+
+	bank->dev = dev;
+	bank->start = start;
+	bank->size = size;
+
+	list_add_tail(&bank->list, &memory_banks);
 }

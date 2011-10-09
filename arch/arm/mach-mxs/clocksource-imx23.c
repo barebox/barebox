@@ -23,7 +23,7 @@
 #include <notifier.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define TIMROTCTRL 0x00
 #define TIMCTRL1 0x40

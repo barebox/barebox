@@ -17,7 +17,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 #include <usb/ulpi.h>
 

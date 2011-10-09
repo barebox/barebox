@@ -42,6 +42,15 @@ config HAVE_NOSHELL
 
 menu "General Settings              "
 
+config LOCALVERSION
+	string "Local version - append to the version string"
+	help
+	  Append an extra string to the end of your version string.
+	  The string you set here will be appended after the contents of
+	  any files with a filename matching localversion* in your
+	  object and source tree, in that order.  Your total string can
+	  be a maximum of 64 characters.
+
 config LOCALVERSION_AUTO
 	bool "Automatically append version information to the version string"
 	default y
@@ -388,23 +397,6 @@ config CONSOLE_ACTIVATE_ALL
 	help
 	  Enabling this options activates all consoles on startup, so
 	  you will get output and a prompt on all consoles simultaneously.
-
-config EARLY_CONSOLE_PORT
-	string
-	depends on HAS_EARLY_INIT
-	prompt "Console device for early output"
-	help
-	  Choose the device on which you want to have early output printed
-	  to. This is only used during startup when no device information
-	  is available.
-
-config EARLY_CONSOLE_BAUDRATE
-	int
-	default 115200
-	depends on HAS_EARLY_INIT
-	prompt "Early console baudrate"
-	help
-	  Choose the baudrate for your early console.
 
 config OF_FLAT_TREE
 	bool

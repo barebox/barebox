@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  */
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/iomux-v3.h>
 #include <mach/imx-regs.h>
 

@@ -24,7 +24,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/generic.h>
 #include <mach/clock.h>

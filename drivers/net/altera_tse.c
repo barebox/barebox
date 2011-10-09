@@ -31,7 +31,7 @@
 #include <clock.h>
 #include <linux/mii.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <asm/dma-mapping.h>
 
 #include "altera_tse.h"

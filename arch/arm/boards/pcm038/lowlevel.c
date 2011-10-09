@@ -25,7 +25,7 @@
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
 #include <asm/system.h>

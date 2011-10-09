@@ -31,7 +31,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <asm/cpu.h>
 #include <asm-generic/memory_layout.h>
 

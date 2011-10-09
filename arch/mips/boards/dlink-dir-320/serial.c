@@ -24,7 +24,7 @@
 #include <init.h>
 #include <ns16550.h>
 #include <mach/hardware.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/common.h>
 
 static struct NS16550_plat serial_plat = {

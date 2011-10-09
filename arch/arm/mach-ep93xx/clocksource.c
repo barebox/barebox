@@ -23,7 +23,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/ep93xx-regs.h>
 
 #define TIMER_CLKSEL		(1 << 3)

@@ -26,7 +26,7 @@
 #include <init.h>
 #include <driver.h>
 #include <mach/clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define DRIVER_NAME "imx-mmc"
 

@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <malloc.h>
 
-#include <asm/io.h>
+#include <io.h>
 
 #include <mach/iim.h>
 
@@ -51,8 +51,8 @@ static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
 		return -EINVAL;
 	}
 
-	if (row > 0x3ff) {
-		printf("%s: invalid row offset\n", __func__);
+	if (row > 255) {
+		printf("%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -61,8 +61,8 @@ static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
 	writeb(0xfe, reg_base + IIM_ERR);
 
 	/* upper and lower address halves */
-	writeb((bank << 3) | (row >> 7), reg_base + IIM_UA);
-	writeb((row << 1) & 0xf8, reg_base + IIM_LA);
+	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
+	writeb((row << 3) & 0xf8, reg_base + IIM_LA);
 
 	/* start fuse sensing */
 	writeb(0x08, reg_base + IIM_FCTL);
@@ -100,7 +100,7 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 			int row_val;
 
 			row_val = do_fuse_sense(priv->base,
-				priv->bank, (offset + i) * 4);
+						priv->bank, offset + i);
 			if (row_val < 0)
 				return row_val;
 			((u8 *)buf)[i] = (u8)row_val;
@@ -125,8 +125,8 @@ static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
 		return -EINVAL;
 	}
 
-	if (row > 0x3ff) {
-		printf("%s: invalid row offset\n", __func__);
+	if (row > 255) {
+		printf("%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -138,14 +138,14 @@ static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
 	writeb(0xaa, reg_base + IIM_PREG_P);
 
 	/* upper half address register */
-	writeb((bank << 3) | (row >> 7), reg_base + IIM_UA);
+	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
 
 	for (bit = 0; bit < 8; bit++) {
 		if (((value >> bit) & 1) == 0)
 			continue;
 
 		/* lower half address register */
-		writeb(((row << 1) | bit), reg_base + IIM_LA);
+		writeb(((row << 3) | bit), reg_base + IIM_LA);
 
 		/* start fuse programing */
 		writeb(0x71, reg_base + IIM_FCTL);
@@ -193,7 +193,7 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 			int ret;
 
 			ret = do_fuse_blow(priv->base, priv->bank,
-					(offset + i) * 4, ((u8 *)buf)[i]);
+					   offset + i, ((u8 *)buf)[i]);
 			if (ret < 0)
 				return ret;
 		}

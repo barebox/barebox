@@ -22,7 +22,7 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
-#include <asm/io.h>
+#include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

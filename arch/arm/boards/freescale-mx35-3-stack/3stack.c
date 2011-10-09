@@ -37,7 +37,7 @@
 #include <partition.h>
 
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <generated/mach-types.h>
 
 #include <mach/gpio.h>

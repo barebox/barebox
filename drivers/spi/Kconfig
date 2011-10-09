@@ -14,6 +14,11 @@ config DRIVER_SPI_IMX_0_0
 	depends on ARCH_IMX27
 	default y
 
+config DRIVER_SPI_IMX_0_7
+	bool
+	depends on ARCH_IMX25
+	default y
+
 config DRIVER_SPI_IMX_2_3
 	bool
 	depends on ARCH_IMX51 || ARCH_IMX53
@@ -22,6 +27,11 @@ config DRIVER_SPI_IMX_2_3
 config DRIVER_SPI_ALTERA
 	bool "Altera SPI Master driver"
 	depends on NIOS2
+	depends on SPI
+
+config DRIVER_SPI_ATMEL
+	bool "Atmel (AT91) SPI Master driver"
+	depends on ARCH_AT91
 	depends on SPI
 
 endmenu

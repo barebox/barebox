@@ -37,7 +37,7 @@
 #include <fcntl.h>
 #include <nand.h>
 #include <command.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
 #include <mach/imxfb.h>

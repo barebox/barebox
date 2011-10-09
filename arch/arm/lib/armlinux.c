@@ -35,13 +35,13 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <memory.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
 #include <asm/armlinux.h>
 #include <asm/system.h>
-#include <asm/memory.h>
 
 static struct tag *params;
 static int armlinux_architecture = 0;
@@ -66,14 +66,14 @@ static void setup_start_tag(void)
 
 static void setup_memory_tags(void)
 {
-	struct arm_memory *mem;
+	struct memory_bank *bank;
 
-	for_each_sdram_bank(mem) {
+	for_each_memory_bank(bank) {
 		params->hdr.tag = ATAG_MEM;
 		params->hdr.size = tag_size(tag_mem32);
 
-		params->u.mem.start = mem->dev->resource[0].start;
-		params->u.mem.size = mem->dev->resource[0].size;
+		params->u.mem.start = bank->start;
+		params->u.mem.size = bank->size;
 
 		params = tag_next(params);
 	}
@@ -186,7 +186,14 @@ void armlinux_set_bootparams(void *params)
 
 void armlinux_set_architecture(int architecture)
 {
+	char *arch_number = asprintf("%d", architecture);
+
 	armlinux_architecture = architecture;
+
+	setenv("arch_number", arch_number);
+	export("arch_number");
+
+	kfree(arch_number);
 }
 
 void armlinux_set_revision(unsigned int rev)

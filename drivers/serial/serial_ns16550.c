@@ -41,7 +41,7 @@
 #include <init.h>
 #include <errno.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 
 #include "serial_ns16550.h"
 #include <ns16550.h>

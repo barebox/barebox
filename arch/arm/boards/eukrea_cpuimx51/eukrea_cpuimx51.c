@@ -34,7 +34,7 @@
 #include <nand.h>
 #include <spi/spi.h>
 #include <mfd/mc13892.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <mach/imx-nand.h>
 #include <mach/spi.h>

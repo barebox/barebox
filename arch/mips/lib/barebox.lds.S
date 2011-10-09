@@ -64,10 +64,6 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS }
 	__usymtab_end = .;
 
-	__early_init_data_begin = .;
-	.early_init_data : { *(.early_init_data) }
-	__early_init_data_end = .;
-
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }

@@ -27,7 +27,7 @@
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 
 #define NFC_V3_FLASH_CMD		(host->regs_axi + 0x00)
@@ -1034,9 +1034,6 @@ static int __init imxnd_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	host->data_buf = (uint8_t *)(host + 1);
-	host->base = dev_request_mem_region(dev, 0);
-
-	host->main_area0 = host->base;
 
 	if (nfc_is_v1() || nfc_is_v21()) {
 		host->preset = preset_v1_v2;
@@ -1049,21 +1046,32 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	if (nfc_is_v21()) {
+		host->base = dev_request_mem_region(dev, 0);
+		host->main_area0 = host->base;
 		host->regs = host->base + 0x1e00;
 		host->spare0 = host->base + 0x1000;
 		host->spare_len = 64;
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
 	} else if (nfc_is_v1()) {
+		host->base = dev_request_mem_region(dev, 0);
+		host->main_area0 = host->base;
 		host->regs = host->base + 0xe00;
 		host->spare0 = host->base + 0x800;
 		host->spare_len = 16;
 		oob_smallpage = &nandv1_hw_eccoob_smallpage;
 		oob_largepage = &nandv1_hw_eccoob_largepage;
 	} else if (nfc_is_v3_2()) {
-#ifdef CONFIG_ARCH_IMX51
-		host->regs_ip = (void *)MX51_NFC_BASE_ADDR;
-#endif
+		host->regs_ip = dev_request_mem_region(dev, 0);
+		host->base = dev_request_mem_region(dev, 1);
+		host->main_area0 = host->base;
+
+		if (!host->regs_ip) {
+			dev_err(dev, "no second mem region\n");
+			err = -ENODEV;
+			goto escan;
+		}
+
 		host->regs_axi = host->base + 0x1e00;
 		host->spare0 = host->base + 0x1000;
 		host->spare_len = 64;
@@ -1083,6 +1091,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	this = &host->nand;
 	mtd = &host->mtd;
 	mtd->priv = this;
+	mtd->dev = dev;
 
 	/* 50 us command delay time */
 	this->chip_delay = 5;

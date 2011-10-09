@@ -32,7 +32,7 @@
 #include <malloc.h>
 #include <mci.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <mach/clock.h>
 #include <mach/generic.h>

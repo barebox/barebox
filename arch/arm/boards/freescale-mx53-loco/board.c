@@ -36,7 +36,7 @@
 #include <mach/iim.h>
 
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 
 static struct fec_platform_data fec_info = {

@@ -188,9 +188,16 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
+struct image_handle_data {
+	void *data;
+	ulong len;
+};
+
 struct image_handle {
 	image_header_t	header;
 	void *data;
+	struct image_handle_data *data_entries;
+	int nb_data_entries;
 #define IH_MALLOC	1
 	int flags;
 };
@@ -320,13 +327,13 @@ static inline void image_set_name(image_header_t *hdr, const char *name)
 	strncpy(image_get_name(hdr), name, IH_NMLEN);
 }
 
-ulong image_multi_count(const image_header_t *hdr);
-void image_multi_getimg(const image_header_t *hdr, ulong idx,
-			ulong *data, ulong *len);
+ulong image_multi_count(void *data);
+void image_multi_getimg(void *data, ulong idx,
+			ulong *img_data, ulong *len);
 
 void image_print_size(uint32_t size);
 
-void image_print_contents(const void *ptr);
+void image_print_contents(const image_header_t *hdr, void *data);
 
 /* commamds/bootm.c */
 void	print_image_hdr (image_header_t *hdr);
@@ -337,6 +344,7 @@ void	print_image_hdr (image_header_t *hdr);
  */
 struct image_handle *map_image(const char *filename, int verify);
 void unmap_image(struct image_handle *handle);
+struct image_handle_data* gen_image_handle_data(void* data, ulong len);
 
 /*
  * Relocate an image to load_address by uncompressing

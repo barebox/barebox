@@ -21,7 +21,7 @@
 #include <init.h>
 #include <gpio.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 
 #define HW_PINCTRL_CTRL 0x000

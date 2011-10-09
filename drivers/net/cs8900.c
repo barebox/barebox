@@ -27,7 +27,7 @@
 #include <net.h>
 #include <malloc.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 
 /* I/O ports for I/O Space operation */

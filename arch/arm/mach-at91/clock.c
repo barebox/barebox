@@ -530,11 +530,12 @@ static void at91_upll_usbfs_clock_init(unsigned long main_clock)
 	/* Now set uhpck values */
 	uhpck.parent = &utmi_clk;
 	uhpck.pmc_mask = AT91SAM926x_PMC_UHP;
-	uhpck.rate_hz = utmi_clk.parent->rate_hz;
+	uhpck.rate_hz = utmi_clk.rate_hz;
 	uhpck.rate_hz /= 1 + ((at91_sys_read(AT91_PMC_USB) & AT91_PMC_OHCIUSBDIV) >> 8);
 }
 
 static int pll_overclock = 0;
+static u32 cpu_freq = 0;
 
 int at91_clock_init(unsigned long main_clock)
 {
@@ -622,6 +623,8 @@ int at91_clock_init(unsigned long main_clock)
 		mck.rate_hz = freq / (1 << ((mckr & AT91_PMC_MDIV) >> 8));      /* mdiv */
 	}
 
+	cpu_freq = freq;
+
 	/* Register the PMC's standard clocks */
 	for (i = 0; i < ARRAY_SIZE(standard_pmc_clocks); i++)
 		at91_clk_add(standard_pmc_clocks[i]);
@@ -649,8 +652,8 @@ static int at91_clock_display(void)
 	if (pll_overclock)
 		pr_info("Clocks: PLLA overclocked, %ld MHz\n", plla.rate_hz / 1000000);
 
-	printf("Clocks: CPU %lu MHz, master %u MHz, main %u.%03u MHz\n",
-		mck.parent->rate_hz / 1000000, (unsigned) mck.rate_hz / 1000000,
+	printf("Clocks: CPU %u MHz, master %u MHz, main %u.%03u MHz\n",
+		cpu_freq / 1000000, (unsigned) mck.rate_hz / 1000000,
 		(unsigned) main_clk.rate_hz / 1000000,
 		((unsigned) main_clk.rate_hz % 1000000) / 1000);
 

@@ -1,6 +1,6 @@
 #include <common.h>
 #include <mach/imx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/clock.h>
 #include <init.h>
 
@@ -85,6 +85,11 @@ unsigned long imx_get_i2cclk(void)
 unsigned long imx_get_mmcclk(void)
 {
 	return imx_get_perclk(3);
+}
+
+unsigned long imx_get_cspiclk(void)
+{
+	return imx_get_ipgclk();
 }
 
 void imx_dump_clocks(void)

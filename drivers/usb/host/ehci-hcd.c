@@ -24,7 +24,7 @@
 #include <common.h>
 #include <asm/byteorder.h>
 #include <usb/usb.h>
-#include <asm/io.h>
+#include <io.h>
 #include <malloc.h>
 #include <driver.h>
 #include <init.h>
@@ -298,7 +298,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t c, toggle;
 	uint32_t cmd;
 	int ret = 0;
-	uint64_t start;
+	uint64_t start, timeout_val;
 	static struct QH __qh __attribute__((aligned(32)));
 	static struct qTD __td[3] __attribute__((aligned(32)));
 
@@ -415,13 +415,14 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	/* Wait for TDs to be processed. */
+	timeout_val = usb_pipebulk(pipe) ? (SECOND << 2) : (SECOND >> 2);
 	start = get_time_ns();
 	vtd = td;
 	do {
 		/* Invalidate dcache */
 		ehci_invalidate_dcache(ehci->qh_list);
 		token = hc32_to_cpu(vtd->qt_token);
-		if (is_timeout(start, SECOND >> 2)) {
+		if (is_timeout(start, timeout_val)) {
 			/* Disable async schedule. */
 			cmd = ehci_readl(&ehci->hcor->or_usbcmd);
 			cmd &= ~CMD_ASE;
@@ -850,7 +851,7 @@ static int ehci_init(struct usb_host *host)
 
 static int
 submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
-		int length)
+		int length, int timeout)
 {
 
 	if (usb_pipetype(pipe) != PIPE_BULK) {
@@ -862,7 +863,7 @@ submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 static int
 submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
-		   int length, struct devrequest *setup)
+		   int length, struct devrequest *setup, int timeout)
 {
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
@@ -922,10 +923,7 @@ static int ehci_probe(struct device_d *dev)
 	host->submit_bulk_msg = submit_bulk_msg;
 
 	if (ehci->flags & EHCI_HAS_TT) {
-		/* Set to host mode */
-		reg = ehci_readl(ehci->hcor + USBMODE);
-		reg |= USBMODE_CM_HC;
-		writel(reg, ehci->hcor + USBMODE);
+		ehci_reset(ehci);
 	}
 
 	usb_register_host(host);

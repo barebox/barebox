@@ -25,7 +25,7 @@
 #include <sizes.h>
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>

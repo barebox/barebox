@@ -66,76 +66,32 @@
  * Exception vectors
  */
 	.text
+	/*
+	 * Second stage loader entry. When entered here we assume that spr 311
+	 * is set to the current MBAR address.
+	 */
+	mfspr	r4, MBAR
+	b setup_mbar
 	. = EXC_OFF_SYS_RESET
 	.globl	_start
 _start:
-	li	r21, BOOTFLAG_COLD	/* Normal Power-On		*/
-	nop
-	b	boot_cold
+	/*
+	 * Reset entry. When entered here we assume that MBAR is at reset default
+	 * 0x80000000.
+	 */
+	lis	r4, 0x80000000@h
+	ori	r4, r4, 0x80000000@l
 
-	. = EXC_OFF_SYS_RESET + 0x10
-
-	.globl	_start_warm
-_start_warm:
-	li	r21, BOOTFLAG_WARM	/* Software reboot		*/
-	b	boot_warm
-
-boot_cold:
-boot_warm:
+setup_mbar:
+	/* r4 == current MBAR */
 	mfmsr	r5			/* save msr contents		*/
 
-	/* Move CSBoot and adjust instruction pointer                   */
-	/*--------------------------------------------------------------*/
-
-#if defined(CFG_LOWBOOT)
-# if defined(CFG_RAMBOOT)
-#  error CFG_LOWBOOT is incompatible with CFG_RAMBOOT
-# endif /* CFG_RAMBOOT */
-# if defined(CONFIG_MGT5100)
-#  error CFG_LOWBOOT is incompatible with MGT5100
-# endif /* CONFIG_MGT5100 */
-	lis	r4, CFG_DEFAULT_MBAR@h
-	lis	r3,	START_REG(CFG_BOOTCS_START)@h
-	ori	r3, r3, START_REG(CFG_BOOTCS_START)@l
-	stw	r3, 0x4(r4)		/* CS0 start */
-	lis	r3,	STOP_REG(CFG_BOOTCS_START, CFG_BOOTCS_SIZE)@h
-	ori	r3, r3, STOP_REG(CFG_BOOTCS_START, CFG_BOOTCS_SIZE)@l
-	stw	r3, 0x8(r4)		/* CS0 stop */
-	lis	r3,     0x02010000@h
-	ori	r3, r3, 0x02010000@l
-	stw	r3, 0x54(r4)		/* CS0 and Boot enable */
-
-	lis     r3,	lowboot_reentry@h	/* jump from bootlow address space (0x0000xxxx) */
-	ori     r3, r3, lowboot_reentry@l	/* to the address space the linker used */
-	mtlr	r3
-	blr
-
-lowboot_reentry:
-	lis	r3,	START_REG(CFG_BOOTCS_START)@h
-	ori	r3, r3, START_REG(CFG_BOOTCS_START)@l
-	stw	r3, 0x4c(r4)		/* Boot start */
-	lis	r3,	STOP_REG(CFG_BOOTCS_START, CFG_BOOTCS_SIZE)@h
-	ori	r3, r3, STOP_REG(CFG_BOOTCS_START, CFG_BOOTCS_SIZE)@l
-	stw	r3, 0x50(r4)		/* Boot stop */
-	lis	r3,     0x02000001@h
-	ori	r3, r3, 0x02000001@l
-	stw	r3, 0x54(r4)		/* Boot enable, CS0 disable */
-#endif	/* CFG_LOWBOOT */
-
-#if defined(CFG_DEFAULT_MBAR) && !defined(CFG_RAMBOOT)
-	lis	r3, CFG_MBAR@h
-	ori	r3, r3, CFG_MBAR@l
-#if defined(CONFIG_MPC5200)
-	/* MBAR is mirrored into the MBAR SPR */
-	mtspr	MBAR,r3
+	/* Switch MBAR to 0xf0000000 */
+	lis	r3, 0xf0000000@h
+	ori	r3, r3, 0xf0000000@l
+	mtspr	MBAR, r3
 	rlwinm	r3, r3, 16, 16, 31
-#endif
-#if defined(CONFIG_MGT5100)
-	rlwinm	r3, r3, 17, 15, 31
-#endif
-	lis	r4, CFG_DEFAULT_MBAR@h
 	stw	r3, 0(r4)
-#endif /* CFG_DEFAULT_MBAR */
 
 	/* Initialise the MPC5xxx processor core			*/
 	/*--------------------------------------------------------------*/
@@ -146,9 +102,8 @@ lowboot_reentry:
 	/*--------------------------------------------------------------*/
 
 	/* set up stack in on-chip SRAM */
-	lis	r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@h
-	ori	r3, r3, (CFG_INIT_RAM_ADDR + CFG_INIT_RAM_SIZE)@l
-	subi	r1, r3, CONFIG_EARLY_INITDATA_SIZE
+	lis	r1, (MPC5XXX_SRAM + MPC5XXX_SRAM_SIZE)@h
+	ori	r1, r1, (MPC5XXX_SRAM + MPC5XXX_SRAM_SIZE)@l
 	li	r0, 0			/* Make room for stack frame header and	*/
 	stwu	r0, -4(r1)		/* clear final stack frame so that	*/
 	stwu	r0, -4(r1)		/* stack backtraces terminate cleanly	*/
@@ -807,21 +762,6 @@ trap_reloc:
 	add	r0, r0, r3		/*  ... += dest_addr		*/
 	stw	r0, 4(r7)
 
-	blr
-
-	.globl reloc_offset
-reloc_offset:
-	mfspr	r4,  LR
-	bl	pc
-pc:
-	mfspr	r3,  LR
-	mtspr   LR, r4
-	addi	r4, r3, (_text_base - pc)
-	subi	r3, r3, (pc - _start)
-	lwz	r4, 0(r4)
-
-	sub	r3, r3, r4
-	subi	r3, r3, 0x100
 	blr
 
 .globl _text_base

@@ -32,7 +32,7 @@
 
 #include <init.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 
 /** base address of the PIT in a standard PC */
 #define PIT 0x40

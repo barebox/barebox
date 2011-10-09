@@ -24,7 +24,7 @@
 
 #include <common.h>
 #include <mach/ep93xx-regs.h>
-#include <asm/io.h>
+#include <io.h>
 
 #define SMC_BCR6_VALUE	(2 << SMC_BCR_IDCY_SHIFT | 5 << SMC_BCR_WST1_SHIFT | \
 				SMC_BCR_BLE | 2 << SMC_BCR_WST2_SHIFT | \

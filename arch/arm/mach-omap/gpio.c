@@ -37,7 +37,7 @@
  */
 #include <common.h>
 #include <mach/gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <errno.h>
 
 #ifdef CONFIG_ARCH_OMAP3

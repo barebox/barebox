@@ -23,10 +23,11 @@
 #include <driver.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
-#include <asm/io.h>
+#include <io.h>
 #include <gpio.h>
 #include <mach/spi.h>
 #include <mach/generic.h>
+#include <mach/clock.h>
 
 #define CSPI_0_0_RXDATA		0x00
 #define CSPI_0_0_TXDATA		0x04
@@ -64,6 +65,22 @@
 #define CSPI_0_0_PERIOD_32KHZ		(1 << 15)
 
 #define CSPI_0_0_TEST_LBC		(1 << 14)
+
+#define CSPI_0_7_RXDATA			0x00
+#define CSPI_0_7_TXDATA			0x04
+#define CSPI_0_7_CTRL			0x08
+#define CSPI_0_7_CTRL_ENABLE		(1 << 0)
+#define CSPI_0_7_CTRL_MASTER		(1 << 1)
+#define CSPI_0_7_CTRL_XCH		(1 << 2)
+#define CSPI_0_7_CTRL_POL		(1 << 4)
+#define CSPI_0_7_CTRL_PHA		(1 << 5)
+#define CSPI_0_7_CTRL_SSCTL		(1 << 6)
+#define CSPI_0_7_CTRL_SSPOL		(1 << 7)
+#define CSPI_0_7_CTRL_CS_SHIFT		12
+#define CSPI_0_7_CTRL_DR_SHIFT		16
+#define CSPI_0_7_CTRL_BL_SHIFT		20
+#define CSPI_0_7_STAT			0x14
+#define CSPI_0_7_STAT_RR		(1 << 3)
 
 #define CSPI_2_3_RXDATA		0x00
 #define CSPI_2_3_TXDATA		0x04
@@ -206,6 +223,89 @@ static void cspi_0_0_init(struct imx_spi *imx)
 }
 #endif
 
+#ifdef CONFIG_DRIVER_SPI_IMX_0_7
+static unsigned int cspi_0_7_xchg_single(struct imx_spi *imx, unsigned int data)
+{
+	void __iomem *base = imx->regs;
+
+	unsigned int cfg_reg = readl(base + CSPI_0_7_CTRL);
+
+	writel(data, base + CSPI_0_7_TXDATA);
+
+	cfg_reg |= CSPI_0_7_CTRL_XCH;
+
+	writel(cfg_reg, base + CSPI_0_7_CTRL);
+
+	while (!(readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR))
+		;
+
+	return readl(base + CSPI_0_7_RXDATA);
+}
+
+/* MX1, MX31, MX35, MX51 CSPI */
+static unsigned int spi_imx_clkdiv_2(unsigned int fin,
+		unsigned int fspi)
+{
+	int i, div = 4;
+
+	for (i = 0; i < 7; i++) {
+		if (fspi * div >= fin)
+			return i;
+		div <<= 1;
+	}
+
+	return 7;
+}
+
+static void cspi_0_7_chipselect(struct spi_device *spi, int is_active)
+{
+	struct spi_master *master = spi->master;
+	struct imx_spi *imx = container_of(master, struct imx_spi, master);
+	void __iomem *base = imx->regs;
+	unsigned int cs = 0;
+	int gpio = imx->cs_array[spi->chip_select];
+	unsigned int reg = CSPI_0_7_CTRL_ENABLE | CSPI_0_7_CTRL_MASTER;
+
+	if (spi->mode & SPI_CS_HIGH)
+		cs = 1;
+
+	if (!is_active) {
+		if (gpio >= 0)
+			gpio_set_value(gpio, !cs);
+		return;
+	}
+
+	reg |= spi_imx_clkdiv_2(imx_get_cspiclk(), spi->max_speed_hz) <<
+		CSPI_0_7_CTRL_DR_SHIFT;
+
+	reg |= (spi->bits_per_word - 1) << CSPI_0_7_CTRL_BL_SHIFT;
+	reg |= CSPI_0_7_CTRL_SSCTL;
+
+	if (spi->mode & SPI_CPHA)
+		reg |= CSPI_0_7_CTRL_PHA;
+	if (spi->mode & SPI_CPOL)
+		reg |= CSPI_0_7_CTRL_POL;
+	if (spi->mode & SPI_CS_HIGH)
+		reg |= CSPI_0_7_CTRL_SSPOL;
+	if (gpio < 0)
+		reg |= (gpio + 32) << CSPI_0_7_CTRL_CS_SHIFT;
+
+	writel(reg, base + CSPI_0_7_CTRL);
+
+	if (gpio >= 0)
+		gpio_set_value(gpio, cs);
+}
+
+static void cspi_0_7_init(struct imx_spi *imx)
+{
+	void __iomem *base = imx->regs;
+
+	/* drain receive buffer */
+	while (readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR)
+		readl(base + CSPI_0_7_RXDATA);
+}
+#endif
+
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
 static unsigned int cspi_2_3_xchg_single(struct imx_spi *imx, unsigned int data)
 {
@@ -310,23 +410,56 @@ static void cspi_2_3_init(struct imx_spi *imx)
 }
 #endif
 
+static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
+{
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	unsigned i;
+
+	if (spi->bits_per_word <= 8) {
+		const u8	*tx_buf = t->tx_buf;
+		u8		*rx_buf = t->rx_buf;
+		u8		rx_val;
+
+		for (i = 0; i < t->len; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	} else if (spi->bits_per_word <= 16) {
+		const u16	*tx_buf = t->tx_buf;
+		u16		*rx_buf = t->rx_buf;
+		u16		rx_val;
+
+		for (i = 0; i < t->len >> 1; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	} else if (spi->bits_per_word <= 32) {
+		const u32	*tx_buf = t->tx_buf;
+		u32		*rx_buf = t->rx_buf;
+		u32		rx_val;
+
+		for (i = 0; i < t->len >> 2; i++) {
+			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			if (rx_buf)
+				rx_buf[i] = rx_val;
+		}
+	}
+}
+
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
-	struct spi_master *master = spi->master;
-	struct imx_spi *imx = container_of(master, struct imx_spi, master);
-	struct spi_transfer	*t = NULL;
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	struct spi_transfer *t = NULL;
 
 	imx->chipselect(spi, 1);
 
-	list_for_each_entry (t, &mesg->transfers, transfer_list) {
-		const u32 *txbuf = t->tx_buf;
-		u32 *rxbuf = t->rx_buf;
-		int i = 0;
+	mesg->actual_length = 0;
 
-		while(i < t->len >> 2) {
-			rxbuf[i] = imx->xchg_single(imx, txbuf[i]);
-			i++;
-		}
+	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+		imx_spi_do_transfer(spi, t);
+		mesg->actual_length += t->len;
 	}
 
 	imx->chipselect(spi, 0);
@@ -340,6 +473,13 @@ static struct spi_imx_devtype_data spi_imx_devtype_data[] = {
 		.chipselect = cspi_0_0_chipselect,
 		.xchg_single = cspi_0_0_xchg_single,
 		.init = cspi_0_0_init,
+	},
+#endif
+#ifdef CONFIG_DRIVER_SPI_IMX_0_7
+	[SPI_IMX_VER_0_7] = {
+		.chipselect = cspi_0_7_chipselect,
+		.xchg_single = cspi_0_7_xchg_single,
+		.init = cspi_0_7_init,
 	},
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
@@ -371,6 +511,10 @@ static int imx_spi_probe(struct device_d *dev)
 #ifdef CONFIG_DRIVER_SPI_IMX_0_0
 	if (cpu_is_mx27())
 		version = SPI_IMX_VER_0_0;
+#endif
+#ifdef CONFIG_DRIVER_SPI_IMX_0_7
+	if (cpu_is_mx25())
+		version = SPI_IMX_VER_0_7;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
 	if (cpu_is_mx51() || cpu_is_mx53())

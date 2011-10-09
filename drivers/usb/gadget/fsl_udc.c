@@ -5,7 +5,7 @@
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 #include <usb/fsl_usb2.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/byteorder.h>
 #include <asm/mmu.h>
 

@@ -25,7 +25,7 @@
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/blackfin.h>
 
 #define UART_IER_ERBFI		0x01

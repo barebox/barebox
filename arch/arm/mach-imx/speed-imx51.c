@@ -1,5 +1,5 @@
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm-generic/div64.h>
 #include <mach/imx51-regs.h>
 #include <mach/clock-imx51_53.h>
@@ -152,6 +152,11 @@ unsigned long imx_get_gptclk(void)
 }
 
 unsigned long imx_get_fecclk(void)
+{
+	return imx_get_ipgclk();
+}
+
+unsigned long imx_get_i2cclk(void)
 {
 	return imx_get_ipgclk();
 }

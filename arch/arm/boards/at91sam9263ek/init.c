@@ -29,7 +29,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
@@ -44,8 +44,6 @@ static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
 /*	.det_pin	= ... not connected */
-	.ecc_base	= (void __iomem *)(AT91_BASE_SYS + AT91_ECC0),
-	.ecc_mode	= NAND_ECC_HW,
 	.rdy_pin	= AT91_PIN_PA22,
 	.enable_pin	= AT91_PIN_PD15,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)

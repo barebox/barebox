@@ -41,33 +41,42 @@ struct device_d *add_generic_device(const char* devname, int id, const char *res
 		resource_size_t start, resource_size_t size, unsigned int flags,
 		void *pdata)
 {
+	struct resource *res;
+
+	res = xzalloc(sizeof(struct resource));
+	if (resname)
+		res[0].name = xstrdup(resname);
+	res[0].start = start;
+	res[0].size = size;
+	res[0].flags = flags;
+
+	return add_generic_device_res(devname, id, res, 1, pdata);
+}
+EXPORT_SYMBOL(add_generic_device);
+
+struct device_d *add_generic_device_res(const char* devname, int id,
+		struct resource *res, int nb, void *pdata)
+{
 	struct device_d *dev;
 
 	dev = alloc_device(devname, id, pdata);
-	dev->resource = xzalloc(sizeof(struct resource));
-	dev->num_resources = 1;
-	if (resname)
-		dev->resource[0].name = xstrdup(resname);
-	dev->resource[0].start = start;
-	dev->resource[0].size = size;
-	dev->resource[0].flags = flags;
+	dev->resource = res;
+	dev->num_resources = nb;
 
 	register_device(dev);
 
 	return dev;
 }
-EXPORT_SYMBOL(add_generic_device);
+EXPORT_SYMBOL(add_generic_device_res);
 
 #ifdef CONFIG_DRIVER_NET_DM9000
 struct device_d *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata)
 {
-	struct device_d *dev;
+	struct resource *res;
 	resource_size_t size;
 
-	dev = alloc_device("dm9000", id, pdata);
-	dev->resource = xzalloc(sizeof(struct resource) * 2);
-	dev->num_resources = 2;
+	res = xzalloc(sizeof(struct resource) * 2);
 
 	switch (flags) {
 	case IORESOURCE_MEM_32BIT:
@@ -84,16 +93,14 @@ struct device_d *add_dm9000_device(int id, resource_size_t base,
 		return NULL;
 	}
 
-	dev->resource[0].start = base;
-	dev->resource[0].size = size;
-	dev->resource[0].flags = IORESOURCE_MEM | flags;
-	dev->resource[1].start = data;
-	dev->resource[1].size = size;
-	dev->resource[1].flags = IORESOURCE_MEM | flags;
+	res[0].start = base;
+	res[0].size = size;
+	res[0].flags = IORESOURCE_MEM | flags;
+	res[1].start = data;
+	res[1].size = size;
+	res[1].flags = IORESOURCE_MEM | flags;
 
-	register_device(dev);
-
-	return dev;
+	return add_generic_device_res("dm9000", id, res, 2, pdata);
 }
 EXPORT_SYMBOL(add_dm9000_device);
 #endif
@@ -102,34 +109,15 @@ EXPORT_SYMBOL(add_dm9000_device);
 struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 		resource_size_t hcor, void *pdata)
 {
-	struct device_d *dev;
+	struct resource *res;
 
-	dev = alloc_device("ehci", id, pdata);
-	dev->resource = xzalloc(sizeof(struct resource) * 2);
-	dev->num_resources = 2;
-	dev->resource[0].start = hccr;
-	dev->resource[0].flags = IORESOURCE_MEM;
-	dev->resource[1].start = hcor;
-	dev->resource[1].flags = IORESOURCE_MEM;
+	res = xzalloc(sizeof(struct resource) * 2);
+	res[0].start = hccr;
+	res[0].flags = IORESOURCE_MEM;
+	res[1].start = hcor;
+	res[1].flags = IORESOURCE_MEM;
 
-	register_device(dev);
-
-	return dev;
+	return add_generic_device_res("ehci", id, res, 2, pdata);
 }
 EXPORT_SYMBOL(add_usb_ehci_device);
-#endif
-
-#ifdef CONFIG_ARM
-#include <asm/armlinux.h>
-
-struct device_d *arm_add_mem_device(const char* name, resource_size_t start,
-				    resource_size_t size)
-{
-	struct device_d *dev;
-
-	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
-	armlinux_add_dram(dev);
-
-	return dev;
-}
 #endif

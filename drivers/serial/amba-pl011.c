@@ -31,7 +31,7 @@
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
 #include <linux/err.h>

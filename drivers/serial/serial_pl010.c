@@ -32,7 +32,7 @@
 #include <common.h>
 #include <init.h>
 #include <malloc.h>
-#include <asm/io.h>
+#include <io.h>
 #include "serial_pl010.h"
 
 static int pl010_setbaudrate(struct console_device *cdev, int baudrate)

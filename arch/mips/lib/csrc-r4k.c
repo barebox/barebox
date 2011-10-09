@@ -25,7 +25,7 @@
 
 #include <init.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mipsregs.h>
 
 static uint64_t c0_hpt_read(void)

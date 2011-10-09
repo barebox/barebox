@@ -11,7 +11,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/hardware.h>
 #include <mach/mtu.h>
 #include <mach/timex.h>

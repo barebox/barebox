@@ -39,7 +39,7 @@
 
 #include <common.h>
 #include <asm/processor.h>
-#include <asm/io.h>
+#include <io.h>
 #include <command.h>
 #include <mach/sdma.h>
 #include <asm/bitops.h>

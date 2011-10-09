@@ -10,6 +10,8 @@
 #ifndef __ASM_X86_IO_H
 #define __ASM_X86_IO_H
 
+#include <asm/byteorder.h>
+
 static inline void outb(unsigned char value, int port)
 {
 	asm volatile("outb %b0, %w1" : : "a"(value), "Nd"(port));

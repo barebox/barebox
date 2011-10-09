@@ -16,7 +16,7 @@
 
 #include <common.h>
 #include <fb.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imxfb.h>
 #include <driver.h>
 #include <malloc.h>

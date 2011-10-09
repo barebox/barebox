@@ -19,7 +19,6 @@
 
 #include <common.h>
 #include <led.h>
-#include <reloc.h>
 
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
 {

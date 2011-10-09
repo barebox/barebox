@@ -30,7 +30,7 @@
  */
 #ifndef __ASM_ARCH_OMAP_SYSLIB_H_
 #define __ASM_ARCH_OMAP_SYSLIB_H_
-#include <asm/io.h>
+#include <io.h>
 
 /** System Independent functions */
 

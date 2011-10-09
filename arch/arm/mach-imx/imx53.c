@@ -17,7 +17,7 @@
 
 #include <init.h>
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <sizes.h>
 #include <mach/imx53-regs.h>
 

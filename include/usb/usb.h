@@ -205,9 +205,9 @@ struct usb_host {
 	int (*init)(struct usb_host *);
 	int (*exit)(struct usb_host *);
 	int (*submit_bulk_msg)(struct usb_device *dev, unsigned long pipe,
-			void *buffer, int transfer_len);
+			void *buffer, int transfer_len, int timeout);
 	int (*submit_control_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
-			int transfer_len, struct devrequest *setup);
+			int transfer_len, struct devrequest *setup, int timeout);
 	int (*submit_int_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);
@@ -480,6 +480,13 @@ struct usb_device_id {
 #define USB_DEVICE_ID_MATCH_VENDOR          0x0001
 #define USB_DEVICE_ID_MATCH_DEVICE \
 		(USB_DEVICE_ID_MATCH_VENDOR | USB_DEVICE_ID_MATCH_PRODUCT)
+#define USB_DEVICE_ID_MATCH_INT_CLASS       0x0080
+#define USB_DEVICE_ID_MATCH_INT_SUBCLASS    0x0100
+#define USB_DEVICE_ID_MATCH_INT_PROTOCOL    0x0200
+#define USB_DEVICE_ID_MATCH_INT_INFO \
+		(USB_DEVICE_ID_MATCH_INT_CLASS | \
+		USB_DEVICE_ID_MATCH_INT_SUBCLASS | \
+		USB_DEVICE_ID_MATCH_INT_PROTOCOL)
 
 /**
  * USB_DEVICE - macro used to describe a specific usb device
@@ -493,6 +500,21 @@ struct usb_device_id {
 	.match_flags = USB_DEVICE_ID_MATCH_DEVICE, \
 	.idVendor = (vend), \
 	.idProduct = (prod)
+
+/**
+ * USB_INTERFACE_INFO - macro used to describe a class of usb interfaces
+ * @cl: bInterfaceClass value
+ * @sc: bInterfaceSubClass value
+ * @pr: bInterfaceProtocol value
+ *
+ * This macro is used to create a struct usb_device_id that matches a
+ * specific class of interfaces.
+ */
+#define USB_INTERFACE_INFO(cl, sc, pr) \
+	.match_flags = USB_DEVICE_ID_MATCH_INT_INFO, \
+	.bInterfaceClass = (cl), \
+	.bInterfaceSubClass = (sc), \
+	.bInterfaceProtocol = (pr)
 
 #define USB_CTRL_SET_TIMEOUT   5000
 #define USB_CTRL_GET_TIMEOUT   5000

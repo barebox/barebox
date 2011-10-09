@@ -21,7 +21,7 @@
  * MA 02111-1307 USA
  */
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>

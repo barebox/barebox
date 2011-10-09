@@ -25,7 +25,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include "pll_cfg.h"
 #include "early_udelay.h"
 

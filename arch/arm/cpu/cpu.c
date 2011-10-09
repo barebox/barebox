@@ -90,19 +90,6 @@ void arch_shutdown(void)
 #endif
 }
 
-LIST_HEAD(memory_list);
-
-void armlinux_add_dram(struct device_d *dev)
-{
-	struct arm_memory *mem = xzalloc(sizeof(*mem));
-
-	mem->dev = dev;
-	mem->start = dev->resource[0].start;
-	mem->size = dev->resource[0].size;
-
-	list_add_tail(&mem->list, &memory_list);
-}
-
 /**
  * @page arm_boot_preparation Linux Preparation on ARM
  *

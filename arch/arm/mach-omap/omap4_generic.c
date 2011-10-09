@@ -1,7 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <mach/silicon.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>

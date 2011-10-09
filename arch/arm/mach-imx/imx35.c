@@ -18,7 +18,7 @@
 #include <common.h>
 #include <sizes.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
 #include <mach/generic.h>

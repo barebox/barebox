@@ -35,7 +35,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include <asm/io.h>
+#include <io.h>
 #include <asm/hardware/arm_timer.h>
 #include <asm/armlinux.h>
 

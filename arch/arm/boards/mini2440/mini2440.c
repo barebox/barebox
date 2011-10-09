@@ -36,7 +36,7 @@
 #include <mci.h>
 #include <fb.h>
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/gpio.h>
 #include <mach/s3c24x0-iomap.h>
 #include <mach/s3c24x0-nand.h>

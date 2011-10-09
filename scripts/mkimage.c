@@ -255,7 +255,8 @@ NXTARG:		;
 		}
 
 		/* for multi-file images we need the data part, too */
-		image_print_contents((image_header_t *)ptr);
+		image_print_contents((image_header_t *)ptr,
+				     (void*)image_get_data((image_header_t *)ptr));
 
 		(void) munmap((void *)ptr, sbuf.st_size);
 		(void) close (ifd);
@@ -381,7 +382,7 @@ NXTARG:		;
 
 	image_set_hcrc(hdr, checksum);
 
-	image_print_contents(hdr);
+	image_print_contents(hdr, (void*)image_get_data(hdr));
 
 	(void) munmap((void *)ptr, sbuf.st_size);
 

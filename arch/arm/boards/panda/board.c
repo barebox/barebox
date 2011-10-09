@@ -3,7 +3,7 @@
 #include <init.h>
 #include <fs.h>
 #include <driver.h>
-#include <asm/io.h>
+#include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <linux/stat.h>

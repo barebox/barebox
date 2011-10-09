@@ -20,9 +20,10 @@
 #include <errno.h>
 #include <clock.h>
 #include <gpio.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/board.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 
 #include "at91_mci.h"
 
@@ -461,9 +462,9 @@ static int mci_probe(struct device_d *hw_dev)
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");
-	if (host->clk == NULL) {
+	if (IS_ERR(host->clk)) {
 		dev_err(hw_dev, "no mci_clk\n");
-		return -EINVAL;
+		return PTR_ERR(host->clk);
 	}
 
 	clk_rate = clk_get_rate(host->clk);

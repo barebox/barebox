@@ -28,7 +28,7 @@
 #include <fec.h>
 
 #include <asm/mmu.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/generic.h>
 #include <mach/imx-regs.h>
 #include <clock.h>

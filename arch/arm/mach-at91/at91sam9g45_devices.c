@@ -26,6 +26,31 @@ void at91_add_device_sdram(u32 size)
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_6, size);
 }
 
+/* --------------------------------------------------------------------
+ *  USB Host (OHCI)
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_USB_OHCI)
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+{
+	int i;
+
+	if (!data)
+		return;
+
+	/* Enable VBus control for UHP ports */
+	for (i = 0; i < data->ports; i++) {
+		if (data->vbus_pin[i])
+			at91_set_gpio_output(data->vbus_pin[i], 0);
+	}
+
+	add_generic_device("at91_ohci", -1, NULL, AT91SAM9G45_OHCI_BASE, 1024 * 1024,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
+#endif
+
 #if defined(CONFIG_DRIVER_NET_MACB)
 void at91_add_device_eth(struct at91_ether_platform_data *data)
 {
@@ -63,15 +88,25 @@ void at91_add_device_eth(struct at91_ether_platform_data *data) {}
 #endif
 
 #if defined(CONFIG_NAND_ATMEL)
+static struct resource nand_resources[] = {
+	[0] = {
+		.start	= AT91_CHIPSELECT_3,
+		.size	= SZ_256M,
+		.flags	= IORESOURCE_MEM,
+	},
+	[1] = {
+		.start	= AT91_BASE_SYS + AT91_ECC,
+		.size	= 512,
+		.flags	= IORESOURCE_MEM,
+	}
+};
+
 void at91_add_device_nand(struct atmel_nand_data *data)
 {
 	unsigned long csa;
 
 	if (!data)
 		return;
-
-	data->ecc_base = (void __iomem *)(AT91_BASE_SYS + AT91_ECC);
-	data->ecc_mode = NAND_ECC_HW;
 
 	csa = at91_sys_read(AT91_MATRIX_EBICSA);
 	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_SMARTMEDIA);
@@ -88,8 +123,8 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
 
-	add_generic_device("atmel_nand", -1, NULL, AT91_CHIPSELECT_3, 0x10,
-			   IORESOURCE_MEM, data);
+	add_generic_device_res("atmel_nand", -1, nand_resources,
+			       ARRAY_SIZE(nand_resources), data);
 }
 #else
 void at91_add_device_nand(struct atmel_nand_data *data) {}
@@ -256,3 +291,44 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
 #endif
 
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+/* SPI */
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
+{
+	int i;
+	int cs_pin;
+	resource_size_t start;
+
+	for (i = 0; i < pdata->num_chipselect; i++) {
+		cs_pin = pdata->chipselect[i];
+
+		/* enable chip-select pin */
+		if (cs_pin > 0)
+			at91_set_gpio_output(cs_pin, 1);
+	}
+
+	/* Configure SPI bus(es) */
+	if (spi_id == 0) {
+		start = AT91SAM9G45_BASE_SPI0;
+		at91_set_A_periph(AT91_PIN_PB0, 0);	/* SPI0_MISO */
+		at91_set_A_periph(AT91_PIN_PB1, 0);	/* SPI0_MOSI */
+		at91_set_A_periph(AT91_PIN_PB2, 0);	/* SPI0_SPCK */
+
+		add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+	}
+
+	else if (spi_id == 1) {
+		start = AT91SAM9G45_BASE_SPI1;
+		at91_set_A_periph(AT91_PIN_PB14, 0);	/* SPI1_MISO */
+		at91_set_A_periph(AT91_PIN_PB15, 0);	/* SPI1_MOSI */
+		at91_set_A_periph(AT91_PIN_PB16, 0);	/* SPI1_SPCK */
+
+		add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+	}
+}
+
+#else
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
+#endif

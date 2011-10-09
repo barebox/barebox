@@ -33,7 +33,7 @@
 #include <common.h>
 #include <clock.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/silicon.h>
 #include <mach/clocks.h>
 #include <mach/timers.h>

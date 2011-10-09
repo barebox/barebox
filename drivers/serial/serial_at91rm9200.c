@@ -30,7 +30,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/hardware.h>
 
 #if !defined(CONFIG_DBGU) && !defined(CONFIG_USART0) && !defined(CONFIG_USART1)

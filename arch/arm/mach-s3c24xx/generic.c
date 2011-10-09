@@ -26,7 +26,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/s3c24x0-iomap.h>
 
 /**

@@ -37,7 +37,7 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 #include <mach/io.h>
-#include <asm/io.h>
+#include <io.h>
 
 uint64_t at91sam9_clocksource_read(void)
 {

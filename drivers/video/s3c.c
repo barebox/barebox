@@ -29,7 +29,7 @@
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/gpio.h>
 #include <mach/s3c24xx-generic.h>
 #include <mach/fb.h>

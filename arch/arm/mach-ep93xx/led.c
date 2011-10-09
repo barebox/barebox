@@ -21,7 +21,7 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/ep93xx-regs.h>
 
 #define GREEN_LED_POS		0x01

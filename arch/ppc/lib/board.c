@@ -26,10 +26,9 @@
 #include <watchdog.h>
 #include <command.h>
 #include <malloc.h>
-#include <mem_malloc.h>
+#include <memory.h>
 #include <init.h>
 #include <net.h>
-#include <reloc.h>
 #include <asm-generic/memory_layout.h>
 
 /************************************************************************
@@ -47,8 +46,6 @@ void board_init_r (ulong end_of_ram)
 	unsigned long malloc_end;
 
 	asm ("sync ; isync");
-
-	_text_base += reloc_offset();
 
 	/*
 	 * FIXME: 128k stack size. Is this enough? should

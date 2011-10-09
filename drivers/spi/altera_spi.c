@@ -22,7 +22,7 @@
 #include <init.h>
 #include <driver.h>
 #include <spi/spi.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/spi.h>
 #include <asm/nios2-io.h>
 

@@ -606,6 +606,10 @@
 #define MX5_PLL_DP_MFD_665	(96 - 1)
 #define MX5_PLL_DP_MFN_665	89
 
+#define MX5_PLL_DP_OP_600	((6 << 4) + ((1 - 1)  << 0))
+#define MX5_PLL_DP_MFD_600	(4 - 1)
+#define MX5_PLL_DP_MFN_600	1
+
 #define MX5_PLL_DP_OP_532	((5 << 4) + ((1 - 1)  << 0))
 #define MX5_PLL_DP_MFD_532	(24 - 1)
 #define MX5_PLL_DP_MFN_532	13

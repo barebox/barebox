@@ -35,7 +35,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <miidev.h>
-#include <asm/io.h>
+#include <io.h>
 #include <linux/types.h>
 #include <mach/ep93xx-regs.h>
 #include "ep93xx.h"

@@ -9,6 +9,7 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
+#include <memory.h>
 
 struct zimage_header {
 	u32	unused[9];
@@ -26,7 +27,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	void *zimage;
 	u32 end;
 	int usemap = 0;
-	struct arm_memory *mem = list_first_entry(&memory_list, struct arm_memory, list);
+	struct memory_bank *bank = list_first_entry(&memory_banks, struct memory_bank, list);
 
 	if (argc != 2) {
 		barebox_cmd_usage(cmdtp);
@@ -44,8 +45,8 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	 * the first 128MB of SDRAM.
 	 */
 	zimage = memmap(fd, PROT_READ);
-	if (zimage && (unsigned long)zimage  >= mem->start &&
-			(unsigned long)zimage < mem->start + SZ_128M) {
+	if (zimage && (unsigned long)zimage  >= bank->start &&
+			(unsigned long)zimage < bank->start + SZ_128M) {
 		usemap = 1;
 		header = zimage;
 	}
@@ -78,11 +79,11 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 		end = swab32(end);
 
 	if (!usemap) {
-		if (mem->size <= SZ_128M) {
+		if (bank->size <= SZ_128M) {
 			zimage = xmalloc(end);
 		} else {
-			zimage = (void *)mem->start + SZ_8M;
-			if (mem->start + SZ_8M + end >= MALLOC_BASE) {
+			zimage = (void *)bank->start + SZ_8M;
+			if (bank->start + SZ_8M + end >= MALLOC_BASE) {
 				printf("won't overwrite malloc space with image\n");
 				goto err_out1;
 			}

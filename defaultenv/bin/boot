@@ -2,6 +2,10 @@
 
 . /env/config
 
+if [ x$kernel_loc = xnet ]; then
+	kernel_loc=tftp
+fi
+
 if [ x$1 = xnand ]; then
 	rootfs_loc=nand
 	kernel_loc=nand
@@ -14,6 +18,9 @@ elif [ x$1 = xnfs ]; then
 elif [ x$1 = xtftp ]; then
 	rootfs_loc=net
 	kernel_loc=tftp
+elif [ x$1 = xdisk ]; then
+	rootfs_loc=disk
+	kernel_loc=disk
 fi
 
 if [ x$ip = xdhcp ]; then
@@ -21,12 +28,14 @@ if [ x$ip = xdhcp ]; then
 elif [ x$ip = xnone ]; then
 	bootargs="$bootargs ip=none"
 else
-	bootargs="$bootargs ip=$eth0.ipaddr::$eth0.gateway:$eth0.netmask:::"
+	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask::eth0:"
 fi
 
 
 if [ x$rootfs_loc = xnet ]; then
 	bootargs="$bootargs root=/dev/nfs nfsroot=$nfsroot,v3,tcp noinitrd"
+elif [ x$rootfs_loc = xdisk ]; then
+	bootargs="$bootargs root=/dev/$rootfs_part_linux_dev rootfstype=$rootfs_type noinitrd rootwait"
 elif [ x$rootfs_loc = xinitrd ]; then
 	bootargs="$bootargs root=/dev/ram0 rdinit=/sbin/init"
 else
@@ -74,7 +83,7 @@ if [ ! -e /dev/ram0.kernel ]; then
 	addpart /dev/ram0 8M@8M(kernel)
 fi
 
-if [ x$kernel_loc = xnfs ] || [ x$kernel_loc = xtftp ]; then
+if [ x$kernel_loc = xnfs -o x$kernel_loc = xtftp ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
@@ -96,8 +105,10 @@ elif [ x$kernel_loc = xnor ]; then
 	kdev="/dev/nor0.kernel"
 elif [ x$kernel_loc = xnand ]; then
 	kdev="/dev/nand0.kernel.bb"
+elif [ x$kernel_loc = xdisk ]; then
+	kdev="/dev/$kernel_part"
 else
-	echo "error: set kernel_loc to one of 'nfs', 'tftp', 'nand' or 'nor'"
+	echo "error: set kernel_loc to one of 'tftp', 'nfs', 'nand', 'nor' or 'disk'"
 	exit 1
 fi
 

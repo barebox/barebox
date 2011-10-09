@@ -19,7 +19,7 @@
 #include <common.h>
 #include <sizes.h>
 #include <environment.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/imx51-regs.h>
 
 #include "gpio.h"

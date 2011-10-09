@@ -20,7 +20,7 @@
 #include <common.h>
 #include <errno.h>
 #include <init.h>
-#include <asm/io.h>
+#include <io.h>
 #include <mach/ep93xx-regs.h>
 
 #define EP93XX_GPIO_NUM_PORTS	8

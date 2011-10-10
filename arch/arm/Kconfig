@@ -26,7 +26,7 @@ config ARM_LINUX
 	default y
 	depends on CMD_BOOTZ || CMD_BOOTU || CMD_BOOTM
 
-menu "System Type"
+menu "System Type                   "
 
 choice
 	prompt "ARM system type"

@@ -24,6 +24,8 @@
 #ifndef __ASM_NIOS2_IO_H_
 #define __ASM_NIOS2_IO_H_
 
+#include <asm/byteorder.h>
+
 #define __raw_writeb(v, a)       (*(volatile unsigned char  *)(a) = (v))
 #define __raw_writew(v, a)       (*(volatile unsigned short *)(a) = (v))
 #define __raw_writel(v, a)       (*(volatile unsigned int   *)(a) = (v))

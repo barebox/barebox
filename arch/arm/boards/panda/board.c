@@ -170,22 +170,3 @@ static int panda_env_init(void)
 }
 late_initcall(panda_env_init);
 #endif
-
-
-#ifdef CONFIG_SHELL_NONE
-int run_shell(void)
-{
-	int (*func)(void);
-
-	func = omap_xload_boot_mmc();
-	if (!func) {
-		printf("booting failed\n");
-		while (1);
-	}
-
-	shutdown_barebox();
-	func();
-
-	while (1);
-}
-#endif

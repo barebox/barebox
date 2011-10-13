@@ -53,6 +53,27 @@ static inline struct device_d *imx53_add_mmc2(void *pdata)
 
 static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pdata)
 {
-	return imx_add_nand((void *)MX53_NFC_AXI_BASE_ADDR, pdata);
-}
+	struct resource res[] = {
+		{
+			.start = MX53_NFC_BASE_ADDR,
+			.size = SZ_4K,
+			.flags = IORESOURCE_MEM,
+		}, {
+			.start = MX53_NFC_AXI_BASE_ADDR,
+			.size = SZ_4K,
+			.flags = IORESOURCE_MEM,
+		},
+	};
+	struct device_d *dev = xzalloc(sizeof(*dev));
 
+	dev->resource = xzalloc(sizeof(struct resource) * ARRAY_SIZE(res));
+	memcpy(dev->resource, res, sizeof(struct resource) * ARRAY_SIZE(res));
+	dev->num_resources = ARRAY_SIZE(res);
+	strcpy(dev->name, "imx_nand");
+	dev->id = -1;
+	dev->platform_data = pdata;
+
+	register_device(dev);
+
+	return dev;
+}

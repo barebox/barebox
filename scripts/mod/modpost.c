@@ -1300,7 +1300,7 @@ static void read_symbols(char *modname)
  * following helper, then compare to the file on disk and
  * only update the later if anything changed */
 
-void __attribute__((format(printf, 2, 3))) buf_printf(struct buffer *buf,
+void __attribute__((format(__printf__, 2, 3))) buf_printf(struct buffer *buf,
 						      const char *fmt, ...)
 {
 	char tmp[SZ];

@@ -265,6 +265,12 @@ int add_mtd_device(struct mtd_info *mtd)
 
 	sprintf(str, "%u", mtd->size);
 	dev_add_param_fixed(&mtd->class_dev, "size", str);
+	sprintf(str, "%u", mtd->erasesize);
+	dev_add_param_fixed(&mtd->class_dev, "erasesize", str);
+	sprintf(str, "%u", mtd->writesize);
+	dev_add_param_fixed(&mtd->class_dev, "writesize", str);
+	sprintf(str, "%u", mtd->oobsize);
+	dev_add_param_fixed(&mtd->class_dev, "oobsize", str);
 
 	devfs_create(&mtd->cdev);
 

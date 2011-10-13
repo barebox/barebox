@@ -8,7 +8,6 @@ else
 CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
 
-CPPFLAGS += -P
 CFLAGS := -Wall
 NOSTDINC_FLAGS :=
 

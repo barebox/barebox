@@ -57,7 +57,7 @@ config NAND_READ_OOB
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"
-	depends on ARCH_IMX21 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX25 || ARCH_IMX51
+	depends on ARCH_IMX
 
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"

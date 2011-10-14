@@ -53,7 +53,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 
 	if (!usemap) {
 		header = &__header;
-		ret = read(fd, header, sizeof(header));
+		ret = read(fd, header, sizeof(*header));
 		if (ret < sizeof(*header)) {
 			printf("could not read %s\n", argv[1]);
 			goto err_out;

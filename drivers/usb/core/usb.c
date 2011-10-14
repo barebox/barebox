@@ -208,6 +208,16 @@ static int usb_parse_config(struct usb_device *dev, unsigned char *buffer, int c
 			     &buffer[index])->bInterfaceNumber != curr_if_num) {
 				/* this is a new interface, copy new desc */
 				ifno = dev->config.no_of_if;
+				/* if ifno > USB_MAXINTERFACES, then
+				 * next memcpy() will corrupt dev->config
+				 */
+				if (ifno > USB_MAXINTERFACES) {
+					printf("ifno = %d > "
+						"USB_MAXINTERFACES = %d !\n",
+						ifno,
+						USB_MAXINTERFACES);
+					break;
+				}
 				dev->config.no_of_if++;
 				memcpy(&dev->config.if_desc[ifno],
 					&buffer[index], buffer[index]);

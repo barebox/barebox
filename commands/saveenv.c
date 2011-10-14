@@ -109,7 +109,7 @@ BAREBOX_CMD_END
  * @page saveenv_command
 
 <p>\<envfs> is usually a block in flash but can be any other file. If
-ommitted, \<directory> defaults to /env and \<envfs> defaults to
+omitted, \<directory> defaults to /env and \<envfs> defaults to
 /dev/env0. Note that envfs can only handle files, directories are being
 skipped silently.</p>
 

@@ -1192,7 +1192,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 	/* reset the card */
 	rc = mci_go_idle(mci_dev);
 	if (rc) {
-		pr_warn("Cannot reset the SD/MMC card\n");
+		pr_warning("Cannot reset the SD/MMC card\n");
 		goto on_error;
 	}
 

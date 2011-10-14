@@ -569,7 +569,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.f_min = 400000;
 
 	pdata = (struct omap_hsmmc_platform_data *)dev->platform_data;
-	if (pdata->f_max)
+	if (pdata && pdata->f_max)
 		hsmmc->mci.f_max = pdata->f_max;
 	else
 		hsmmc->mci.f_max = 52000000;

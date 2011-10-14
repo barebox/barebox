@@ -36,6 +36,7 @@
 		CSCR_MCU_SEL | /* 26 MHz reference */ \
 		CSCR_ARM_DIV(0) | /* CPU runs at MPLL/3 clock */ \
 		CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
+		CSCR_FPM_EN | \
 		CSCR_SPEN |		\
 		CSCR_MPEN)
 
@@ -51,6 +52,7 @@
 		CSCR_ARM_SRC_MPLL | /* use main MPLL clock */ \
 		CSCR_ARM_DIV(0) | /* CPU run at full MPLL clock */ \
 		CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
+		CSCR_FPM_EN | /* do not disable it! */ \
 		CSCR_SPEN |		\
 		CSCR_MPEN)
 

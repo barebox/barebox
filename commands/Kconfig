@@ -278,6 +278,7 @@ config CMD_FLASH
 config CMD_UBI
 	tristate
 	default y if UBI
+	depends on UBI
 	prompt "ubimkvol, ubirmvol, ubiattach"
 
 endmenu

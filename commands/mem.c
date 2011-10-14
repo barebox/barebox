@@ -221,7 +221,7 @@ static const __maybe_unused char cmd_md_help[] =
 "\n"
 "Memory regions:\n"
 "Memory regions can be specified in two different forms: start+size\n"
-"or start-end, If <start> is ommitted it defaults to 0. If end is ommited it\n"
+"or start-end, If <start> is omitted it defaults to 0. If end is omitted it\n"
 "defaults to the end of the device, except for interactive commands like md\n"
 "and mw for which it defaults to 0x100.\n"
 "Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.\n"

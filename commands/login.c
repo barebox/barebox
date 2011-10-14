@@ -71,9 +71,9 @@ static int do_login(struct command *cmdtp, int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_login_help[] =
-"Usage: login [[-t timeout] <command>]\n"
-"If a timeout is specified and expired the command will be executed\n"
-"by default boot\n"
+"Usage: login [-t timeout [<command>]]\n"
+"If a timeout is specified and expired the command will be executed;\n"
+"\"boot\" by default\n"
 ;
 
 BAREBOX_CMD_START(login)

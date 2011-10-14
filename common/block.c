@@ -179,7 +179,7 @@ static void *block_get(struct block_device *blk, int block)
 }
 
 static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
-		unsigned long offset, unsigned long flags)
+		loff_t offset, unsigned long flags)
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;
@@ -256,7 +256,7 @@ static int block_put(struct block_device *blk, const void *buf, int block)
 }
 
 static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
-		unsigned long offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;

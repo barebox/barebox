@@ -428,7 +428,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return insize;
 }
 
-static off_t ramfs_lseek(struct device_d *dev, FILE *f, off_t pos)
+static loff_t ramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	f->pos = pos;
 	return f->pos;

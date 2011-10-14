@@ -112,7 +112,7 @@ int twlcore_set_bits(struct twlcore *twlcore, u16 reg, u8 mask, u8 val)
 EXPORT_SYMBOL(twlcore_set_bits);
 
 static ssize_t twl_read(struct cdev *cdev, void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct twlcore *priv = to_twlcore(cdev);
 	u8 *buf = _buf;
@@ -131,7 +131,7 @@ static ssize_t twl_read(struct cdev *cdev, void *_buf, size_t count,
 }
 
 static ssize_t twl_write(struct cdev *cdev, const void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct twlcore *twlcore = to_twlcore(cdev);
 	const u8 *buf = _buf;

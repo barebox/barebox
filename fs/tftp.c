@@ -569,7 +569,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static off_t tftp_lseek(struct device_d *dev, FILE *f, off_t pos)
+static loff_t tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	/* not implemented in tftp protocol */
 	return -ENOSYS;

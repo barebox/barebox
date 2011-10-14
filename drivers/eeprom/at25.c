@@ -67,7 +67,7 @@ struct at25_data {
 static ssize_t at25_ee_read(struct cdev *cdev,
 			    void *buf,
 			    size_t count,
-			    ulong offset,
+			    loff_t offset,
 			    ulong flags)
 {
 	u8			command[EE_MAXADDRLEN + 1];
@@ -117,7 +117,7 @@ static ssize_t at25_ee_read(struct cdev *cdev,
 	 */
 	status = spi_sync(at25->spi, &m);
 	dev_dbg(at25->cdev.dev,
-		"read %d bytes at %lu --> %d\n",
+		"read %d bytes at %llu --> %d\n",
 		count, offset, (int) status);
 
 	return status ? status : count;
@@ -126,7 +126,7 @@ static ssize_t at25_ee_read(struct cdev *cdev,
 static ssize_t at25_ee_write(struct cdev *cdev,
 			     const void *buf,
 			     size_t count,
-			     ulong off,
+			     loff_t off,
 			     ulong flags)
 {
 	ssize_t			status = 0;
@@ -232,7 +232,7 @@ static ssize_t at25_ee_write(struct cdev *cdev,
 	return written ? written : status;
 }
 
-static off_t at25_ee_lseek(struct cdev *cdev, off_t off)
+static loff_t at25_ee_lseek(struct cdev *cdev, loff_t off)
 {
 	return off;
 }

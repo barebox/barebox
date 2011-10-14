@@ -12,7 +12,7 @@ struct ubi_volume_cdev_priv {
 };
 
 static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
-		unsigned long offset, unsigned long flags)
+		loff_t offset, unsigned long flags)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 	struct ubi_volume *vol = priv->vol;
@@ -23,7 +23,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 	loff_t offp = offset;
 	int usable_leb_size = vol->usable_leb_size;
 
-	printf("%s: %d @ 0x%08lx\n", __func__, size, offset);
+	printf("%s: %d @ 0x%08llx\n", __func__, size, offset);
 
 	len = size > usable_leb_size ? usable_leb_size : size;
 
@@ -56,7 +56,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 }
 
 static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
-		size_t size, unsigned long offset, unsigned long flags)
+		size_t size, loff_t offset, unsigned long flags)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 	struct ubi_volume *vol = priv->vol;
@@ -121,7 +121,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 	return 0;
 }
 
-static off_t ubi_volume_cdev_lseek(struct cdev *cdev, off_t ofs)
+static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 

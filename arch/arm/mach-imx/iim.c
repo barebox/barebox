@@ -84,7 +84,7 @@ static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
 }
 
 static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	ulong size, i;
 	struct iim_priv *priv = cdev->priv;
@@ -94,7 +94,7 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	if ((sense_param = dev_get_param(cdev->dev, "explicit_sense_enable")))
 		explicit_sense = simple_strtoul(sense_param, NULL, 0);
 
-	size = min((ulong)count, priv->banksize - offset);
+	size = min((loff_t)count, priv->banksize - offset);
 	if (explicit_sense) {
 		for (i = 0; i < size; i++) {
 			int row_val;
@@ -176,7 +176,7 @@ out:
 #endif /* CONFIG_IMX_IIM_FUSE_BLOW */
 
 static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	ulong size, i;
 	struct iim_priv *priv = cdev->priv;
@@ -186,7 +186,7 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 	if ((write_param = dev_get_param(cdev->dev, "permanent_write_enable")))
 		blow_enable = simple_strtoul(write_param, NULL, 0);
 
-	size = min((ulong)count, priv->banksize - offset);
+	size = min((loff_t)count, priv->banksize - offset);
 #ifdef CONFIG_IMX_IIM_FUSE_BLOW
 	if (blow_enable) {
 		for (i = 0; i < size; i++) {

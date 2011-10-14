@@ -458,7 +458,7 @@ flash_sect_t find_sector (struct flash_info *info, ulong addr)
 	return sector;
 }
 
-static int __cfi_erase(struct cdev *cdev, size_t count, unsigned long offset,
+static int __cfi_erase(struct cdev *cdev, size_t count, loff_t offset,
 		int verbose)
 {
         struct flash_info *finfo = (struct flash_info *)cdev->priv;
@@ -493,7 +493,7 @@ out:
         return ret;
 }
 
-static int cfi_erase(struct cdev *cdev, size_t count, unsigned long offset)
+static int cfi_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	return __cfi_erase(cdev, count, offset, 1);
 }
@@ -630,7 +630,7 @@ static int flash_real_protect (struct flash_info *info, long sector, int prot)
 	return retcode;
 }
 
-static int cfi_protect(struct cdev *cdev, size_t count, unsigned long offset, int prot)
+static int cfi_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 {
 	struct flash_info *finfo = (struct flash_info *)cdev->priv;
 	unsigned long start, end;
@@ -653,7 +653,7 @@ out:
 	return ret;
 }
 
-static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, unsigned long offset, ulong flags)
+static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
         struct flash_info *finfo = (struct flash_info *)cdev->priv;
         int ret;

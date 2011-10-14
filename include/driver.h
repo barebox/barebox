@@ -301,8 +301,8 @@ struct cdev;
 int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
 
 /* These are used by drivers which work with direct memory accesses */
-ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int mem_memmap(struct cdev *cdev, void **map, int flags);
 
 /* Use this if you have nothing to do in your drivers probe function */
@@ -316,7 +316,7 @@ void devices_shutdown(void);
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline off_t dev_lseek_default(struct cdev *cdev, off_t ofs)
+static inline loff_t dev_lseek_default(struct cdev *cdev, loff_t ofs)
 {
 	return ofs;
 }
@@ -373,18 +373,18 @@ extern struct bus_type platform_bus;
 
 struct file_operations {
 	/*! Called in response of reading from this device. Required */
-	ssize_t (*read)(struct cdev*, void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*read)(struct cdev*, void* buf, size_t count, loff_t offset, ulong flags);
 
 	/*! Called in response of write to this device. Required */
-	ssize_t (*write)(struct cdev*, const void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*write)(struct cdev*, const void* buf, size_t count, loff_t offset, ulong flags);
 
 	int (*ioctl)(struct cdev*, int, void *);
-	off_t (*lseek)(struct cdev*, off_t);
+	loff_t (*lseek)(struct cdev*, loff_t);
 	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
 	int (*flush)(struct cdev*);
-	int (*erase)(struct cdev*, size_t count, unsigned long offset);
-	int (*protect)(struct cdev*, size_t count, unsigned long offset, int prot);
+	int (*erase)(struct cdev*, size_t count, loff_t offset);
+	int (*protect)(struct cdev*, size_t count, loff_t offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);
 };
 

@@ -52,7 +52,7 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 	return cdev_write(cdev, buf, size, f->pos, f->flags);
 }
 
-static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
+static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->inode;
 	off_t ret = -1;
@@ -66,7 +66,7 @@ static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 	return ret - cdev->offset;
 }
 
-static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
+static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, loff_t offset)
 {
 	struct cdev *cdev = f->inode;
 
@@ -79,7 +79,7 @@ static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned lo
 	return cdev->ops->erase(cdev, count, offset + cdev->offset);
 }
 
-static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, unsigned long offset, int prot)
+static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, loff_t offset, int prot)
 {
 	struct cdev *cdev = f->inode;
 

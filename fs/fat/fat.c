@@ -49,7 +49,7 @@ DRESULT disk_read(FATFS *fat, BYTE *buf, DWORD sector, BYTE count)
 
 	debug("%s: sector: %ld count: %d\n", __func__, sector, count);
 
-	ret = cdev_read(priv->cdev, buf, count << 9, sector * 512, 0);
+	ret = cdev_read(priv->cdev, buf, count << 9, (loff_t)sector * 512, 0);
 	if (ret != count << 9)
 		return ret;
 
@@ -64,7 +64,7 @@ DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 	debug("%s: buf: %p sector: %ld count: %d\n",
 			__func__, buf, sector, count);
 
-	ret = cdev_write(priv->cdev, buf, count << 9, sector * 512, 0);
+	ret = cdev_write(priv->cdev, buf, count << 9, (loff_t)sector * 512, 0);
 	if (ret != count << 9)
 		return ret;
 
@@ -271,7 +271,7 @@ static int fat_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static off_t fat_lseek(struct device_d *dev, FILE *f, off_t pos)
+static loff_t fat_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	FIL *f_file = f->inode;
 	int ret;

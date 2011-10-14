@@ -180,7 +180,7 @@ int miidev_print_status(struct mii_device *mdev)
 	return 0;
 }
 
-static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)
 {
 	int i = count;
 	uint16_t *buf = _buf;
@@ -196,7 +196,7 @@ static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, ulong of
 	return count;
 }
 
-static ssize_t miidev_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t miidev_write(struct cdev *cdev, const void *_buf, size_t count, loff_t offset, ulong flags)
 {
 	int i = count;
 	const uint16_t *buf = _buf;

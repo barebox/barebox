@@ -624,7 +624,7 @@ static int mem_init(void)
 
 device_initcall(mem_init);
 
-static ssize_t zero_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t zero_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
 	memset(buf, 0, count);
 	return count;

@@ -38,11 +38,12 @@ static struct mtd_info *to_mtd(struct cdev *cdev)
 }
 
 static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
-			     ulong offset, ulong flags)
+			     loff_t _offset, ulong flags)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
 	struct mtd_oob_ops ops;
 	int ret;
+	unsigned long offset = _offset;
 
 	if (count < mtd->oobsize)
 		return -EINVAL;

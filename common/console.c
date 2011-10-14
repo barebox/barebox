@@ -292,24 +292,30 @@ int fputc(int fd, char c)
 }
 EXPORT_SYMBOL(fputc);
 
-void console_puts(unsigned int ch, const char *str)
+int console_puts(unsigned int ch, const char *str)
 {
 	const char *s = str;
+	int n = 0;
+
 	while (*s) {
-		if (*s == '\n')
+		if (*s == '\n') {
 			console_putc(ch, '\r');
+			n++;
+		}
 		console_putc(ch, *s);
+		n++;
 		s++;
 	}
+	return n;
 }
 EXPORT_SYMBOL(console_puts);
 
 int fputs(int fd, const char *s)
 {
 	if (fd == 1)
-		puts(s);
+		return puts(s);
 	else if (fd == 2)
-		eputs(s);
+		return eputs(s);
 	else
 		return write(fd, s, strlen(s));
 	return 0;

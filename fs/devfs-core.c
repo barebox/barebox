@@ -123,15 +123,15 @@ int cdev_flush(struct cdev *cdev)
 static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 {
 	int ret = 0;
-	size_t offset;
+	loff_t offset, *_buf = buf;
 	struct mtd_info_user *user = buf;
 
 	switch (request) {
 	case MEMSETBADBLOCK:
 	case MEMGETBADBLOCK:
-		offset = (off_t)buf;
+		offset = *_buf;
 		offset += cdev->offset;
-		ret = cdev->ops->ioctl(cdev, request, (void *)offset);
+		ret = cdev->ops->ioctl(cdev, request, &offset);
 		break;
 	case MEMGETINFO:
 		if (cdev->mtd) {

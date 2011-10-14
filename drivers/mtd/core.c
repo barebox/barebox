@@ -123,16 +123,17 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	struct mtd_ecc_stats *ecc = buf;
 #endif
 	struct region_info_user *reg = buf;
+	off_t *offset = buf;
 
 	switch (request) {
 	case MEMGETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMGETBADBLOCK: 0x%08lx\n", (off_t)buf);
-		ret = mtd->block_isbad(mtd, (off_t)buf);
+		ret = mtd->block_isbad(mtd, *offset);
 		break;
 #ifdef CONFIG_MTD_WRITE
 	case MEMSETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08lx\n", (off_t)buf);
-		ret = mtd->block_markbad(mtd, (off_t)buf);
+		ret = mtd->block_markbad(mtd, *offset);
 		break;
 #endif
 	case MEMGETINFO:

@@ -27,15 +27,15 @@
 #include <linux/ctype.h>
 
 /*
- * Like simple_strtoul() but handles an optional G, M, K or k
+ * Like simple_strtoull() but handles an optional G, M, K or k
  * suffix for Gigabyte, Megabyte or Kilobyte
  */
-unsigned long strtoul_suffix(const char *str, char **endp, int base)
+unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 {
-	unsigned long val;
+	unsigned long long val;
 	char *end;
 
-	val = simple_strtoul(str, &end, base);
+	val = simple_strtoull(str, &end, base);
 
 	switch (*end) {
 	case 'G':
@@ -54,6 +54,12 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base)
 		*endp = (char *)end;
 
 	return val;
+}
+EXPORT_SYMBOL(strtoull_suffix);
+
+unsigned long strtoul_suffix(const char *str, char **endp, int base)
+{
+	return strtoull_suffix(str, endp, base);
 }
 EXPORT_SYMBOL(strtoul_suffix);
 

@@ -160,6 +160,7 @@ int parse_area_spec(const char *str, ulong *start, ulong *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
+unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 
 void start_barebox(void);
 void shutdown_barebox(void);

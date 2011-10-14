@@ -83,6 +83,7 @@ unsigned long long simple_strtoull (const char *cp, char **endp, unsigned int ba
 		*endp = (char *) cp;
 	return result;
 }
+EXPORT_SYMBOL(simple_strtoll);
 
 /* we use this so that we can do without the ctype library */
 #define is_digit(c)	((c) >= '0' && (c) <= '9')

@@ -293,9 +293,11 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	struct stat s;
 	unsigned int m;
 
+	errno = 0;
+
 	if (stat(path, &s)) {
 		if (flags & S_UB_DOES_NOT_EXIST)
-			return 0;
+			goto out;
 		errno = -ENOENT;
 		goto out;
 	}
@@ -306,7 +308,7 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	}
 
 	if (flags == S_UB_EXISTS)
-		return 0;
+		goto out;
 
 	m = s.st_mode;
 
@@ -325,7 +327,6 @@ static int path_check_prereq(const char *path, unsigned int flags)
 		goto out;
 	}
 
-	errno = 0;
 out:
 	return errno;
 }

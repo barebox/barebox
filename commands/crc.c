@@ -84,8 +84,8 @@ out:
 
 static int do_crc(int argc, char *argv[])
 {
-	ulong start = 0, size = ~0, total = 0;
-	ulong crc = 0, vcrc = 0;
+	loff_t start = 0, size = ~0;
+	ulong crc = 0, vcrc = 0, total = 0;
 	char *filename = "/dev/mem";
 #ifdef CONFIG_CMD_CRC_CMP
 	char *vfilename = NULL;

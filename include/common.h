@@ -156,7 +156,7 @@ struct memarea_info {
         unsigned long flags;
 };
 
-int parse_area_spec(const char *str, ulong *start, ulong *size);
+int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);

@@ -51,7 +51,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	argv++;
 	while (*argv) {
 		char *filename = "/dev/mem";
-		ulong start = 0, size = ~0;
+		loff_t start = 0, size = ~0;
 
 		/* arguments are either file, file+area or area */
 		if (parse_area_spec(*argv, &start, &size)) {
@@ -66,7 +66,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		for (i = 0; i < d->length; i++)
 			printf("%02x", hash[i]);
 
-		printf("  %s\t0x%08lx ... 0x%08lx\n", filename, start, start + size);
+		printf("  %s\t0x%08llx ... 0x%08llx\n", filename, start, start + size);
 
 		argv++;
 	}

@@ -163,7 +163,7 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 
 static int do_mem_md(int argc, char *argv[])
 {
-	ulong	start = 0, size = 0x100;
+	loff_t	start = 0, size = 0x100;
 	int	r, now;
 	int	ret = 0;
 	int fd;
@@ -187,7 +187,7 @@ static int do_mem_md(int argc, char *argv[])
 		return 1;
 
 	do {
-		now = min(size, RW_BUF_SIZE);
+		now = min(size, (loff_t)RW_BUF_SIZE);
 		r = read(fd, rw_buf, now);
 		if (r < 0) {
 			perror("read");

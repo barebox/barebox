@@ -347,8 +347,9 @@ int chdir(const char *pathname)
 
 	strcpy(cwd, p);
 
-	free(p);
 out:
+	free(p);
+
 	return errno;
 }
 EXPORT_SYMBOL(chdir);

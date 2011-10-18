@@ -52,7 +52,7 @@ struct stat {
 	unsigned short st_gid;
 	unsigned short st_rdev;
 	unsigned short __pad2;
-	unsigned long  st_size;
+	loff_t  st_size;
 	unsigned long  st_blksize;
 	unsigned long  st_blocks;
 	unsigned long  st_atime;

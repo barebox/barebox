@@ -35,7 +35,7 @@ static void ls_one(const char *path, struct stat *s)
 	unsigned int namelen = strlen(path);
 
 	mkmodestr(s->st_mode, modestr);
-	printf("%s %10lu %*.*s\n", modestr, s->st_size, namelen, namelen, path);
+	printf("%s %10llu %*.*s\n", modestr, s->st_size, namelen, namelen, path);
 }
 
 int ls(const char *path, ulong flags)

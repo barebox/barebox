@@ -229,7 +229,7 @@ int run_shell(void);
 #define PAGE_SIZE	4096
 #define PAGE_SHIFT	12
 
-int memory_display(char *addr, ulong offs, ulong nbytes, int size);
+int memory_display(char *addr, loff_t offs, ulong nbytes, int size);
 
 extern const char version_string[];
 #ifdef CONFIG_BANNER

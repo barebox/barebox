@@ -55,7 +55,7 @@ static char *DEVMEM = "/dev/mem";
  */
 #define DISP_LINE_LEN	16
 
-int memory_display(char *addr, ulong offs, ulong nbytes, int size)
+int memory_display(char *addr, loff_t offs, ulong nbytes, int size)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -72,7 +72,7 @@ int memory_display(char *addr, ulong offs, ulong nbytes, int size)
 		u_char	*ucp = (u_char *)linebuf;
 		uint	count = 52;
 
-		printf("%08lx:", offs);
+		printf("%08llx:", offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
 		for (i = 0; i < linebytes; i += size) {

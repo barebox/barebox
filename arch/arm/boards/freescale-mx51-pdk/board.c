@@ -252,6 +252,7 @@ static int f3s_devices_init(void)
 	imx51_iim_register_fec_ethaddr();
 	imx51_add_fec(&fec_info);
 	imx51_add_mmc0(NULL);
+	imx51_add_mmc1(NULL);
 
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);

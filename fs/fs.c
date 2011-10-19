@@ -296,8 +296,10 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	errno = 0;
 
 	if (stat(path, &s)) {
-		if (flags & S_UB_DOES_NOT_EXIST)
+		if (flags & S_UB_DOES_NOT_EXIST) {
+			errno = 0;
 			goto out;
+		}
 		errno = -ENOENT;
 		goto out;
 	}
@@ -307,8 +309,10 @@ static int path_check_prereq(const char *path, unsigned int flags)
 		goto out;
 	}
 
-	if (flags == S_UB_EXISTS)
+	if (flags == S_UB_EXISTS) {
+		errno = 0;
 		goto out;
+	}
 
 	m = s.st_mode;
 

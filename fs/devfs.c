@@ -55,7 +55,7 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->inode;
-	off_t ret = -1;
+	loff_t ret = -1;
 
 	if (cdev->ops->lseek)
 		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
@@ -100,7 +100,7 @@ static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 	ret = cdev->ops->memmap(cdev, map, flags);
 
 	if (!ret)
-		*map = (void *)((unsigned long)*map + cdev->offset);
+		*map = (void *)((unsigned long)*map + (unsigned long)cdev->offset);
 
 	return ret;
 }

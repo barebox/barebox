@@ -697,7 +697,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fildes];
-	off_t pos;
+	loff_t pos;
 	int ret;
 
 	if (check_fd(fildes))

@@ -96,7 +96,7 @@ void cdev_close(struct cdev *cdev)
 		cdev->ops->close(cdev);
 }
 
-ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
 	if (!cdev->ops->read)
 		return -ENOSYS;
@@ -104,7 +104,7 @@ ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulon
 	return cdev->ops->read(cdev, buf, count, cdev->offset +offset, flags);
 }
 
-ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
 	if (!cdev->ops->write)
 		return -ENOSYS;
@@ -165,10 +165,11 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 	case MEMGETREGIONINFO:
 		if (cdev->mtd) {
 			struct region_info_user *reg = buf;
+			int erasesize_shift = ffs(cdev->mtd->erasesize) - 1;
 
 			reg->offset = cdev->offset;
 			reg->erasesize = cdev->mtd->erasesize;
-			reg->numblocks = cdev->size/reg->erasesize;
+			reg->numblocks = cdev->size >> erasesize_shift;
 			reg->regionindex = cdev->mtd->index;
 		}
 	break;
@@ -191,7 +192,7 @@ int cdev_ioctl(struct cdev *cdev, int request, void *buf)
 	return cdev->ops->ioctl(cdev, request, buf);
 }
 
-int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset)
+int cdev_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	if (!cdev->ops->erase)
 		return -ENOSYS;

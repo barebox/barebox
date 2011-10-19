@@ -338,7 +338,7 @@ static struct file_operations block_ops = {
 
 int blockdevice_register(struct block_device *blk)
 {
-	size_t size = blk->num_blocks * BLOCKSIZE(blk);
+	loff_t size = (loff_t)blk->num_blocks * BLOCKSIZE(blk);
 	int ret;
 	int i;
 

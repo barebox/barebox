@@ -395,8 +395,8 @@ struct cdev {
 	struct list_head list;
 	struct list_head devices_list;
 	char *name;
-	unsigned long offset;
-	size_t size;
+	loff_t offset;
+	loff_t size;
 	unsigned int flags;
 	int open;
 	struct mtd_info *mtd;
@@ -409,10 +409,10 @@ struct cdev *cdev_by_name(const char *filename);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 void cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
-ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
-int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
+int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)

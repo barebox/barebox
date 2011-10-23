@@ -42,13 +42,12 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 	unsigned char *buf = passwd;
 	int pos = 0;
 	unsigned char ch;
-	uint64_t start, second;
+	uint64_t start;
 
 	if (!passwd)
 		return -EINVAL;
 
 	start = get_time_ns();
-	second = start;
 
 	do {
 		if (tstc()) {

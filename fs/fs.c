@@ -293,9 +293,13 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	struct stat s;
 	unsigned int m;
 
+	errno = 0;
+
 	if (stat(path, &s)) {
-		if (flags & S_UB_DOES_NOT_EXIST)
-			return 0;
+		if (flags & S_UB_DOES_NOT_EXIST) {
+			errno = 0;
+			goto out;
+		}
 		errno = -ENOENT;
 		goto out;
 	}
@@ -305,8 +309,10 @@ static int path_check_prereq(const char *path, unsigned int flags)
 		goto out;
 	}
 
-	if (flags == S_UB_EXISTS)
-		return 0;
+	if (flags == S_UB_EXISTS) {
+		errno = 0;
+		goto out;
+	}
 
 	m = s.st_mode;
 
@@ -325,7 +331,6 @@ static int path_check_prereq(const char *path, unsigned int flags)
 		goto out;
 	}
 
-	errno = 0;
 out:
 	return errno;
 }
@@ -346,8 +351,9 @@ int chdir(const char *pathname)
 
 	strcpy(cwd, p);
 
-	free(p);
 out:
+	free(p);
+
 	return errno;
 }
 EXPORT_SYMBOL(chdir);

@@ -825,7 +825,7 @@ prepare prepare-all: prepare0
 # Leave this as default for preprocessing barebox.lds.S, which is now
 # done in arch/$(ARCH)/kernel/Makefile
 
-export CPPFLAGS_barebox.lds += -P -C -U$(ARCH)
+export CPPFLAGS_barebox.lds += -C -U$(ARCH)
 
 # FIXME: The asm symlink changes when $(ARCH) changes. That's
 # hard to detect, but I suppose "make mrproper" is a good idea

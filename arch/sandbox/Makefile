@@ -10,7 +10,6 @@ lds-y   := $(BOARD)/barebox.lds
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -P
 CFLAGS += -Dmalloc=barebox_malloc \
 		-Dfree=barebox_free -Drealloc=barebox_realloc \
 		-Dread=barebox_read -Dwrite=barebox_write \

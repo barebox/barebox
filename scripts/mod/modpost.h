@@ -94,7 +94,7 @@ struct buffer {
 	int size;
 };
 
-void __attribute__((format(printf, 2, 3)))
+void __attribute__((format(__printf__, 2, 3)))
 buf_printf(struct buffer *buf, const char *fmt, ...);
 
 void

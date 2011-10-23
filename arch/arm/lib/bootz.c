@@ -53,7 +53,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 
 	if (!usemap) {
 		header = &__header;
-		ret = read(fd, header, sizeof(header));
+		ret = read(fd, header, sizeof(*header));
 		if (ret < sizeof(*header)) {
 			printf("could not read %s\n", argv[1]);
 			goto err_out;
@@ -89,10 +89,10 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 			}
 		}
 
-		memcpy(zimage, &header, sizeof(header));
+		memcpy(zimage, header, sizeof(*header));
 
-		ret = read(fd, zimage + sizeof(header), end - sizeof(header));
-		if (ret < end - sizeof(header)) {
+		ret = read(fd, zimage + sizeof(*header), end - sizeof(*header));
+		if (ret < end - sizeof(*header)) {
 			printf("could not read %s\n", argv[1]);
 			goto err_out1;
 		}

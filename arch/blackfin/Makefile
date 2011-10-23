@@ -7,7 +7,7 @@ cpu-$(CONFIG_BF561)		:= bf561
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE) -P
+CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 CFLAGS += -D__blackfin__
 # -Ttext $(TEXT_BASE)
 KALLSYMS         += --symbol-prefix=_

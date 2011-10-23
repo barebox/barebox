@@ -9,7 +9,7 @@
  */
 
 /* serial stuff */
-void	serial_printf(const char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
+void	serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 
 /* stdin */
 int	tstc(void);
@@ -30,12 +30,12 @@ static inline void putchar(char c)
 	console_putc(CONSOLE_STDOUT, c);
 }
 
-int	printf(const char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
+int	printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 int	vprintf(const char *fmt, va_list args);
-int	sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(printf, 2, 3)));
-int	snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(printf, 3, 4)));
+int	sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int	snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
 int	vsprintf(char *buf, const char *fmt, va_list args);
-char	*asprintf(const char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
+char	*asprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 char	*vasprintf(const char *fmt, va_list ap);
 int	vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
@@ -54,7 +54,7 @@ int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 #define stderr		2
 #define MAX_FILES	128
 
-void	fprintf(int file, const char *fmt, ...) __attribute__ ((format(printf, 2, 3)));
+void	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
 int	fputs(int file, const char *s);
 int	fputc(int file, const char c);
 int	ftstc(int file);

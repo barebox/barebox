@@ -987,21 +987,17 @@ static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
 		return -EINVAL;
 	}
 
-	while (sector_count) {
-		/* size of the block number field in the MMC/SD command is 32 bit only */
-		if (sector_start > MAX_BUFFER_NUMBER) {
-			pr_debug("Cannot handle block number %llu. Too large!\n",
-				sector_start);
-			return -EINVAL;
-		}
-		rc = mci_block_write(mci_dev, buffer, sector_start);
-		if (rc != 0) {
-			pr_debug("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
-			return rc;
-		}
-		sector_count--;
-		buffer += mci->write_bl_len;
-		sector_start++;
+	/* size of the block number field in the MMC/SD command is 32 bit only */
+	if (sector_start > MAX_BUFFER_NUMBER) {
+		pr_debug("Cannot handle block number %llu. Too large!\n",
+			sector_start);
+		return -EINVAL;
+	}
+
+	rc = mci_block_write(mci_dev, buffer, sector_start, sector_count);
+	if (rc != 0) {
+		pr_debug("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
+		return rc;
 	}
 
 	return 0;
@@ -1035,21 +1031,16 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 		return -EINVAL;
 	}
 
-	while (sector_count) {
-		int now = min(sector_count, 32U);
-		if (sector_start > MAX_BUFFER_NUMBER) {
-			pr_err("Cannot handle block number %u. Too large!\n",
-				(unsigned)sector_start);
-			return -EINVAL;
-		}
-		rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, now);
-		if (rc != 0) {
-			pr_debug("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
-			return rc;
-		}
-		sector_count -= now;
-		buffer += mci->read_bl_len * now;
-		sector_start += now;
+	if (sector_start > MAX_BUFFER_NUMBER) {
+		pr_err("Cannot handle block number %u. Too large!\n",
+			(unsigned)sector_start);
+		return -EINVAL;
+	}
+
+	rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, sector_count);
+	if (rc != 0) {
+		pr_debug("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
+		return rc;
 	}
 
 	return 0;

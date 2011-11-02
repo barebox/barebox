@@ -85,15 +85,10 @@ int mx53_init_lowlevel(void)
 	u32 r;
 
 	/* ARM errata ID #468414 */
-        __asm__ __volatile__("mrc 15, 0, %0, c1, c0, 1":"=r"(r));
+	__asm__ __volatile__("mrc 15, 0, %0, c1, c0, 1":"=r"(r));
 	r |= (1 << 5);    /* enable L1NEON bit */
+	r &= ~(1 << 1);   /* explicitly disable L2 cache */
 	__asm__ __volatile__("mcr 15, 0, %0, c1, c0, 1" : : "r"(r));
-
-	/* explicitly disable L2 cache */
-        __asm__ __volatile__("mrc 15, 0, %0, c1, c0, 1":"=r"(r));
-	r &= ~(1 << 1);
-	__asm__ __volatile__("mcr 15, 0, %0, c1, c0, 1" : : "r"(r));
-
 
         /* reconfigure L2 cache aux control reg */
 	r = 0xc0 |		/* tag RAM */
@@ -103,6 +98,10 @@ int mx53_init_lowlevel(void)
 		(1 << 22);	/* disable write allocate */
 
 	__asm__ __volatile__("mcr 15, 1, %0, c9, c0, 2" : : "r"(r));
+
+	__asm__ __volatile__("mrc 15, 0, %0, c1, c0, 1":"=r"(r));
+	r |= 1 << 1; 	/* enable L2 cache */
+	__asm__ __volatile__("mcr 15, 0, %0, c1, c0, 1" : : "r"(r));
 
 	/*
 	 * AIPS setup - Only setup MPROTx registers.

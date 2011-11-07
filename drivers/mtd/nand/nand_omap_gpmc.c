@@ -337,6 +337,66 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 	return 0;
 }
 
+static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
+			     uint8_t *read_ecc, uint8_t *calc_ecc)
+{
+	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
+	int i, j, eccsize, eccflag, count;
+	unsigned int err_loc[8];
+	int blocks = 0;
+	int select_4_8;
+
+	if (oinfo->ecc_mode == OMAP_ECC_BCH4_CODE_HW) {
+		eccsize = 7;
+		select_4_8 = 0;
+	} else {
+		eccsize = 13;
+		select_4_8 = 1;
+	}
+
+	if (nand->ecc.size  == 2048)
+		blocks = 4;
+	else
+		blocks = 1;
+
+	omap_calculate_ecc(mtd, dat, calc_ecc);
+
+	for (i = 0; i < blocks; i++) {
+		/* check if any ecc error */
+		eccflag = 0;
+		for (j = 0; (j < eccsize) && (eccflag == 0); j++) {
+			if (calc_ecc[j] != 0)
+				eccflag = 1;
+		}
+
+		if (eccflag == 1) {
+			eccflag = 0;
+			for (j = 0; (j < eccsize) &&
+					(eccflag == 0); j++)
+				if (read_ecc[j] != 0xFF)
+					eccflag = 1;
+		}
+
+		count = 0;
+		if (eccflag == 1)
+			count = decode_bch(select_4_8, calc_ecc, err_loc);
+
+		for (j = 0; j < count; j++) {
+			if (err_loc[j] < 4096)
+				dat[err_loc[j] >> 3] ^=
+						1 << (err_loc[j] & 7);
+			/* else, not interested to correct ecc */
+		}
+
+		calc_ecc = calc_ecc + eccsize;
+		read_ecc = read_ecc + eccsize;
+		dat += 512;
+	}
+
+	return 0;
+}
+
 /**
  * @brief Compares the ecc read from nand spare area with ECC
  * registers values and corrects one bit error if it has occured
@@ -359,11 +419,6 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	unsigned char bit;
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int ecc_type = OMAP_ECC_BCH8_CODE_HW;
-	int i, j, eccsize, eccflag, count;
-	unsigned int err_loc[8];
-	int blocks = 0;
-	int select_4_8;
 
 	debug("mtd=%x dat=%x read_ecc=%x calc_ecc=%x", (unsigned int)mtd,
 		  (unsigned int)dat, (unsigned int)read_ecc,
@@ -403,55 +458,10 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 			}
 		}
 		break;
+	case OMAP_ECC_BCH4_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
-		eccsize = 13;
-		select_4_8 = 1;
-		/* fall through */
-	case OMAP_ECC_BCH4_CODE_HW:
-
-		if (nand->ecc.size  == 2048)
-			blocks = 4;
-		else
-			blocks = 1;
-
-		if (ecc_type == OMAP_ECC_BCH4_CODE_HW) {
-			eccsize = 7;
-			select_4_8 = 0;
-		}
-
-		omap_calculate_ecc(mtd, dat, calc_ecc);
-		for (i = 0; i < blockCnt; i++) {
-			/* check if any ecc error */
-			eccflag = 0;
-			for (j = 0; (j < eccsize) && (eccflag == 0); j++)
-				if (calc_ecc[j] != 0)
-					eccflag = 1;
-
-			if (eccflag == 1) {
-				eccflag = 0;
-				for (j = 0; (j < eccsize) &&
-						(eccflag == 0); j++)
-					if (read_ecc[j] != 0xFF)
-						eccflag = 1;
-			}
-
-			count = 0;
-			if (eccflag == 1)
-				count = decode_bch(select_4_8, calc_ecc, err_loc);
-
-			for (j = 0; j < count; j++) {
-				if (err_loc[j] < 4096)
-					dat[err_loc[j] >> 3] ^=
-							1 << (err_loc[j] & 7);
-				/* else, not interested to correct ecc */
-			}
-
-			calc_ecc = calc_ecc + eccsize;
-			read_ecc = read_ecc + eccsize;
-			dat += 512;
-		}
-		break;
+		return omap_correct_bch(mtd, dat, read_ecc, calc_ecc);
 	default:
 		return -EINVAL;
 	}

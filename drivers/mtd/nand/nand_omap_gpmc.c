@@ -377,8 +377,11 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 		}
 
 		count = 0;
-		if (eccflag == 1)
+		if (eccflag == 1) {
 			count = decode_bch(select_4_8, calc_ecc, err_loc);
+			if (count < 0)
+				return count;
+		}
 
 		for (j = 0; j < count; j++) {
 			if (err_loc[j] < 4096)

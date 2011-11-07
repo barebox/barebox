@@ -397,6 +397,50 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 	return 0;
 }
 
+static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,
+			     uint8_t *read_ecc, uint8_t *calc_ecc)
+{
+	unsigned int orig_ecc, new_ecc, res, hm;
+	unsigned short parity_bits, byte;
+	unsigned char bit;
+	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
+
+	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
+			read_ecc[2] == 0xff && calc_ecc[0] == 0x0 &&
+			calc_ecc[1] == 0x0 && calc_ecc[0] == 0x0)
+		return 0;
+
+	/* Regenerate the orginal ECC */
+	orig_ecc = gen_true_ecc(read_ecc);
+	new_ecc = gen_true_ecc(calc_ecc);
+	/* Get the XOR of real ecc */
+	res = orig_ecc ^ new_ecc;
+	if (res) {
+		/* Get the hamming width */
+		hm = hweight32(res);
+		/* Single bit errors can be corrected! */
+		if (hm == oinfo->ecc_parity_pairs) {
+			/* Correctable data! */
+			parity_bits = res >> 16;
+			bit = (parity_bits & 0x7);
+			byte = (parity_bits >> 3) & 0x1FF;
+			/* Flip the bit to correct */
+			dat[byte] ^= (0x1 << bit);
+		} else if (hm == 1) {
+			printf("Ecc is wrong\n");
+			/* ECC itself is corrupted */
+			return 2;
+		} else {
+			printf("bad compare! failed\n");
+			/* detected 2 bit error */
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 /**
  * @brief Compares the ecc read from nand spare area with ECC
  * registers values and corrects one bit error if it has occured
@@ -414,9 +458,6 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 			     uint8_t *read_ecc, uint8_t *calc_ecc)
 {
-	unsigned int orig_ecc, new_ecc, res, hm;
-	unsigned short parity_bits, byte;
-	unsigned char bit;
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
@@ -426,38 +467,7 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
-		if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
-				read_ecc[2] == 0xff && calc_ecc[0] == 0x0 &&
-				calc_ecc[1] == 0x0 && calc_ecc[0] == 0x0)
-			break;
-
-		/* Regenerate the orginal ECC */
-		orig_ecc = gen_true_ecc(read_ecc);
-		new_ecc = gen_true_ecc(calc_ecc);
-		/* Get the XOR of real ecc */
-		res = orig_ecc ^ new_ecc;
-		if (res) {
-			/* Get the hamming width */
-			hm = hweight32(res);
-			/* Single bit errors can be corrected! */
-			if (hm == oinfo->ecc_parity_pairs) {
-				/* Correctable data! */
-				parity_bits = res >> 16;
-				bit = (parity_bits & 0x7);
-				byte = (parity_bits >> 3) & 0x1FF;
-				/* Flip the bit to correct */
-				dat[byte] ^= (0x1 << bit);
-			} else if (hm == 1) {
-				printf("Ecc is wrong\n");
-				/* ECC itself is corrupted */
-				return 2;
-			} else {
-				printf("bad compare! failed\n");
-				/* detected 2 bit error */
-				return -1;
-			}
-		}
-		break;
+		return omap_correct_hamming(mtd, dat, read_ecc, calc_ecc);
 	case OMAP_ECC_BCH4_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:

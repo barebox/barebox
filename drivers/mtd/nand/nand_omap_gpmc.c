@@ -360,8 +360,6 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 	else
 		blocks = 1;
 
-	omap_calculate_ecc(mtd, dat, calc_ecc);
-
 	for (i = 0; i < blocks; i++) {
 		/* check if any ecc error */
 		eccflag = 0;
@@ -471,6 +469,12 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	case OMAP_ECC_BCH4_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
+		/*
+		 * The nand layer already called omap_calculate_ecc,
+		 * but before it has read the oob data. Do it again,
+		 * this time with oob data.
+		 */
+		omap_calculate_ecc(mtd, dat, calc_ecc);
 		return omap_correct_bch(mtd, dat, read_ecc, calc_ecc);
 	default:
 		return -EINVAL;

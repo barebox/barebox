@@ -362,18 +362,12 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	int ecc_type = OMAP_ECC_BCH8_CODE_HW;
 	int i, j, eccsize, eccflag, count;
 	unsigned int err_loc[8];
-	int blockCnt = 0;
+	int blocks = 0;
 	int select_4_8;
 
 	debug("mtd=%x dat=%x read_ecc=%x calc_ecc=%x", (unsigned int)mtd,
 		  (unsigned int)dat, (unsigned int)read_ecc,
 		  (unsigned int)calc_ecc);
-
-	if ((nand->ecc.mode == NAND_ECC_HW) &&
-			(nand->ecc.size  == 2048))
-		blockCnt = 4;
-	else
-		blockCnt = 1;
 
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
@@ -415,6 +409,12 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 		select_4_8 = 1;
 		/* fall through */
 	case OMAP_ECC_BCH4_CODE_HW:
+
+		if (nand->ecc.size  == 2048)
+			blocks = 4;
+		else
+			blocks = 1;
+
 		if (ecc_type == OMAP_ECC_BCH4_CODE_HW) {
 			eccsize = 7;
 			select_4_8 = 0;

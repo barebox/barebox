@@ -765,9 +765,6 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 
 	oinfo->ecc_mode = mode;
 
-	if (nand->buffers)
-		kfree(nand->buffers);
-
 	/* second phase scan */
 	if (nand_scan_tail(minfo))
 		return -ENXIO;
@@ -896,6 +893,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	/* Dont do a bbt scan at the start */
 	nand->options |= NAND_SKIP_BBTSCAN;
+
+	nand->options |= NAND_OWN_BUFFERS;
+	nand->buffers = xzalloc(sizeof(*nand->buffers));
 
 	/* State my controller */
 	nand->controller = &oinfo->controller;

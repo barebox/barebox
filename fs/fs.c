@@ -503,6 +503,10 @@ int read(int fd, void *buf, size_t count)
 
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
+
+	if (!count)
+		return 0;
+
 	errno = fsdrv->read(dev, f, buf, count);
 
 	if (errno > 0)

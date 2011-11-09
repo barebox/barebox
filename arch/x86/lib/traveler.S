@@ -72,6 +72,7 @@ real_to_prot:
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
 	DATA32 ljmp $__BOOT_CS, $return_to_flatmode
+	.size real_to_prot, .-real_to_prot
 
 /* ----------------------------------------------------------------------- */
 	.section .boot.text.return_to_flatmode, "ax"
@@ -102,8 +103,7 @@ return_to_flatmode:
 	/* flag we returned happy here */
 	xorl %eax, %eax
 	ret
-
-	.size real_to_prot, .-real_to_prot
+	.size return_to_flatmode, .-return_to_flatmode
 
 /* ------------------------------------------------------------------------ */
 
@@ -140,13 +140,16 @@ prot_to_real:
 
 	/* at last, also limit the code segment to 16 bit */
 	ljmp $__REAL_CS, $return_to_realmode
+	.size prot_to_real, .-prot_to_real
 
 /* ----------------------------------------------------------------------- */
 
 	.section .boot.text.return_to_realmode, "ax"
-return_to_realmode:
+	.globl return_to_realmode
+	.type return_to_realmode, @function
 	.code16
 
+return_to_realmode:
 	/* disable protected mode */
 	movl %cr0, %eax
 	andl $(~0x00000001), %eax
@@ -176,5 +179,5 @@ enter_realmode:
 	/* return on realmode stack! */
 	DATA32 ret
 
-	.size prot_to_real, .-prot_to_real
+	.size return_to_realmode, .-return_to_realmode
 

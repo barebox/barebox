@@ -205,6 +205,7 @@ static int disk_probe(struct device_d *dev)
 	atablk->blk.num_blocks = dev->resource[0].size / SECTOR_SIZE;
 	atablk->blk.ops = &ataops;
 	atablk->blk.blockbits = 9;
+	atablk->blk.dev = dev;
 	atablk->dev = dev;
 	atablk->intf = intf;
 	blockdevice_register(&atablk->blk);

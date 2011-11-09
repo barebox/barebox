@@ -76,6 +76,20 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 
+#define GPMC_ECC_CONFIG_ECCENABLE		(1 << 0)
+#define GPMC_ECC_CONFIG_ECCCS(x)		(((x) & 0x7) << 1)
+#define GPMC_ECC_CONFIG_ECCTOPSECTOR(x)		(((x) & 0x7) << 4)
+#define GPMC_ECC_CONFIG_ECC16B			(1 << 7)
+#define GPMC_ECC_CONFIG_ECCWRAPMODE(x)		(((x) & 0xf) << 8)
+#define GPMC_ECC_CONFIG_ECCBCHTSEL(x)		(((x) & 0x3) << 12)
+#define GPMC_ECC_CONFIG_ECCALGORITHM		(1 << 16)
+
+#define GPMC_ECC_CONTROL_ECCPOINTER(x)		((x) & 0xf)
+#define GPMC_ECC_CONTROL_ECCCLEAR		(1 << 8)
+
+#define GPMC_ECC_SIZE_CONFIG_ECCSIZE0(x)	((x) << 12)
+#define GPMC_ECC_SIZE_CONFIG_ECCSIZE1(x)	((x) << 22)
+
 int decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
 
 static char *ecc_mode_strings[] = {
@@ -180,14 +194,13 @@ static int omap_dev_ready(struct mtd_info *mtd)
 	uint64_t start = get_time_ns();
 	unsigned long comp;
 
-	debug("mtd=%x", (unsigned int)mtd);
 	/* What do we mean by assert and de-assert? */
 	comp = (oinfo->wait_pol == NAND_WAITPOL_HIGH) ?
 	    oinfo->wait_mon_mask : 0x0;
 	while (1) {
 		/* Breakout condition */
 		if (is_timeout(start, oinfo->timeout)) {
-			debug("timedout\n");
+			debug("%s timedout\n", __func__);
 			return -ETIMEDOUT;
 		}
 		/* if the wait is released, we are good to go */
@@ -212,7 +225,8 @@ static void gpmc_nand_wp(struct gpmc_nand_info *oinfo, int mode)
 {
 	unsigned long config = readl(oinfo->gpmc_base + GPMC_CFG);
 
-	debug("mode=%x", mode);
+	debug("%s: mode=%x\n", __func__, mode);
+
 	if (mode)
 		config &= ~(NAND_WP_BIT);	/* WP is ON */
 	else
@@ -237,8 +251,7 @@ static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	debug("mtd=%x nand=%x cmd=%x ctrl = %x", (unsigned int)mtd, nand,
-		  cmd, ctrl);
+
 	switch (ctrl) {
 	case NAND_CTRL_CHANGE | NAND_CTRL_CLE:
 		nand->IO_ADDR_W = oinfo->gpmc_command;
@@ -271,14 +284,15 @@ static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
  */
 static unsigned int gen_true_ecc(u8 *ecc_buf)
 {
-	debug("ecc_buf=%x 1, 2 3 = %x %x %x", (unsigned int)ecc_buf,
+	debug("%s: eccbuf:  0x%02x 0x%02x 0x%02x\n", __func__,
 		  ecc_buf[0], ecc_buf[1], ecc_buf[2]);
+
 	return ecc_buf[0] | (ecc_buf[1] << 16) | ((ecc_buf[2] & 0xF0) << 20) |
 	    ((ecc_buf[2] & 0x0F) << 8);
 }
 
-static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
-			      uint8_t *ecc_code)
+static int __omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
+			      uint8_t *ecc_code, int sblock)
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
@@ -299,7 +313,7 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 			 * Reading HW ECC_BCH_Results
 			 * 0x240-0x24C, 0x250-0x25C, 0x260-0x26C, 0x270-0x27C
 			 */
-			reg =  GPMC_ECC_BCH_RESULT_0 + (0x10 * i);
+			reg =  GPMC_ECC_BCH_RESULT_0 + (0x10 * (i + sblock));
 			val1 = readl(oinfo->gpmc_base + reg);
 			val2 = readl(oinfo->gpmc_base + reg + 4);
 			if (ecc_size == 8) {
@@ -337,6 +351,117 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 	return 0;
 }
 
+static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
+			      uint8_t *ecc_code)
+{
+	return __omap_calculate_ecc(mtd, dat, ecc_code, 0);
+}
+
+static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
+			     uint8_t *read_ecc, uint8_t *calc_ecc)
+{
+	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
+	int i, j, eccsize, eccflag, count;
+	unsigned int err_loc[8];
+	int blocks = 0;
+	int select_4_8;
+
+	if (oinfo->ecc_mode == OMAP_ECC_BCH4_CODE_HW) {
+		eccsize = 7;
+		select_4_8 = 0;
+	} else {
+		eccsize = 13;
+		select_4_8 = 1;
+	}
+
+	if (nand->ecc.size  == 2048)
+		blocks = 4;
+	else
+		blocks = 1;
+
+	for (i = 0; i < blocks; i++) {
+		/* check if any ecc error */
+		eccflag = 0;
+		for (j = 0; (j < eccsize) && (eccflag == 0); j++) {
+			if (calc_ecc[j] != 0)
+				eccflag = 1;
+		}
+
+		if (eccflag == 1) {
+			eccflag = 0;
+			for (j = 0; (j < eccsize) &&
+					(eccflag == 0); j++)
+				if (read_ecc[j] != 0xFF)
+					eccflag = 1;
+		}
+
+		count = 0;
+		if (eccflag == 1) {
+			count = decode_bch(select_4_8, calc_ecc, err_loc);
+			if (count < 0)
+				return count;
+		}
+
+		for (j = 0; j < count; j++) {
+			if (err_loc[j] < 4096)
+				dat[err_loc[j] >> 3] ^=
+						1 << (err_loc[j] & 7);
+			/* else, not interested to correct ecc */
+		}
+
+		calc_ecc = calc_ecc + eccsize;
+		read_ecc = read_ecc + eccsize;
+		dat += 512;
+	}
+
+	return 0;
+}
+
+static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,
+			     uint8_t *read_ecc, uint8_t *calc_ecc)
+{
+	unsigned int orig_ecc, new_ecc, res, hm;
+	unsigned short parity_bits, byte;
+	unsigned char bit;
+	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
+
+	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
+			read_ecc[2] == 0xff && calc_ecc[0] == 0x0 &&
+			calc_ecc[1] == 0x0 && calc_ecc[0] == 0x0)
+		return 0;
+
+	/* Regenerate the orginal ECC */
+	orig_ecc = gen_true_ecc(read_ecc);
+	new_ecc = gen_true_ecc(calc_ecc);
+	/* Get the XOR of real ecc */
+	res = orig_ecc ^ new_ecc;
+	if (res) {
+		/* Get the hamming width */
+		hm = hweight32(res);
+		/* Single bit errors can be corrected! */
+		if (hm == oinfo->ecc_parity_pairs) {
+			/* Correctable data! */
+			parity_bits = res >> 16;
+			bit = (parity_bits & 0x7);
+			byte = (parity_bits >> 3) & 0x1FF;
+			/* Flip the bit to correct */
+			dat[byte] ^= (0x1 << bit);
+		} else if (hm == 1) {
+			printf("Ecc is wrong\n");
+			/* ECC itself is corrupted */
+			return 2;
+		} else {
+			printf("bad compare! failed\n");
+			/* detected 2 bit error */
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 /**
  * @brief Compares the ecc read from nand spare area with ECC
  * registers values and corrects one bit error if it has occured
@@ -354,104 +479,24 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 			     uint8_t *read_ecc, uint8_t *calc_ecc)
 {
-	unsigned int orig_ecc, new_ecc, res, hm;
-	unsigned short parity_bits, byte;
-	unsigned char bit;
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int ecc_type = OMAP_ECC_BCH8_CODE_HW;
-	int i, j, eccsize, eccflag, count;
-	unsigned int err_loc[8];
-	int blockCnt = 0;
-	int select_4_8;
 
-	debug("mtd=%x dat=%x read_ecc=%x calc_ecc=%x", (unsigned int)mtd,
-		  (unsigned int)dat, (unsigned int)read_ecc,
-		  (unsigned int)calc_ecc);
-
-	if ((nand->ecc.mode == NAND_ECC_HW) &&
-			(nand->ecc.size  == 2048))
-		blockCnt = 4;
-	else
-		blockCnt = 1;
+	debug("%s\n", __func__);
 
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
-		if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
-				read_ecc[2] == 0xff && calc_ecc[0] == 0x0 &&
-				calc_ecc[1] == 0x0 && calc_ecc[0] == 0x0)
-			break;
-
-		/* Regenerate the orginal ECC */
-		orig_ecc = gen_true_ecc(read_ecc);
-		new_ecc = gen_true_ecc(calc_ecc);
-		/* Get the XOR of real ecc */
-		res = orig_ecc ^ new_ecc;
-		if (res) {
-			/* Get the hamming width */
-			hm = hweight32(res);
-			/* Single bit errors can be corrected! */
-			if (hm == oinfo->ecc_parity_pairs) {
-				/* Correctable data! */
-				parity_bits = res >> 16;
-				bit = (parity_bits & 0x7);
-				byte = (parity_bits >> 3) & 0x1FF;
-				/* Flip the bit to correct */
-				dat[byte] ^= (0x1 << bit);
-			} else if (hm == 1) {
-				printf("Ecc is wrong\n");
-				/* ECC itself is corrupted */
-				return 2;
-			} else {
-				printf("bad compare! failed\n");
-				/* detected 2 bit error */
-				return -1;
-			}
-		}
-		break;
+		return omap_correct_hamming(mtd, dat, read_ecc, calc_ecc);
+	case OMAP_ECC_BCH4_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
-		eccsize = 13;
-		select_4_8 = 1;
-		/* fall through */
-	case OMAP_ECC_BCH4_CODE_HW:
-		if (ecc_type == OMAP_ECC_BCH4_CODE_HW) {
-			eccsize = 7;
-			select_4_8 = 0;
-		}
-
-		omap_calculate_ecc(mtd, dat, calc_ecc);
-		for (i = 0; i < blockCnt; i++) {
-			/* check if any ecc error */
-			eccflag = 0;
-			for (j = 0; (j < eccsize) && (eccflag == 0); j++)
-				if (calc_ecc[j] != 0)
-					eccflag = 1;
-
-			if (eccflag == 1) {
-				eccflag = 0;
-				for (j = 0; (j < eccsize) &&
-						(eccflag == 0); j++)
-					if (read_ecc[j] != 0xFF)
-						eccflag = 1;
-			}
-
-			count = 0;
-			if (eccflag == 1)
-				count = decode_bch(select_4_8, calc_ecc, err_loc);
-
-			for (j = 0; j < count; j++) {
-				if (err_loc[j] < 4096)
-					dat[err_loc[j] >> 3] ^=
-							1 << (err_loc[j] & 7);
-				/* else, not interested to correct ecc */
-			}
-
-			calc_ecc = calc_ecc + eccsize;
-			read_ecc = read_ecc + eccsize;
-			dat += 512;
-		}
-		break;
+		/*
+		 * The nand layer already called omap_calculate_ecc,
+		 * but before it has read the oob data. Do it again,
+		 * this time with oob data.
+		 */
+		__omap_calculate_ecc(mtd, dat, calc_ecc, 0);
+		return omap_correct_bch(mtd, dat, read_ecc, calc_ecc);
 	default:
 		return -EINVAL;
 	}
@@ -465,7 +510,7 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	unsigned int bch_mod = 0, bch_wrapmode = 0, eccsize1 = 0, eccsize0 = 0;
 	unsigned int ecc_conf_val = 0, ecc_size_conf_val = 0;
-	int dev_width = nand->options & NAND_BUSWIDTH_16 ? 1 : 0;
+	int dev_width = nand->options & NAND_BUSWIDTH_16 ? GPMC_ECC_CONFIG_ECC16B : 0;
 	int ecc_size = nand->ecc.size;
 	int cs = 0;
 
@@ -502,24 +547,129 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 
 	/* clear ecc and enable bits */
 	if (oinfo->ecc_mode == OMAP_ECC_HAMMING_CODE_HW_ROMCODE) {
-		writel(0x00000101, oinfo->gpmc_base + GPMC_ECC_CONTROL);
-		/* Size 0 = 0xFF, Size1 is 0xFF - both are 512 bytes
+		writel(GPMC_ECC_CONTROL_ECCCLEAR |
+				GPMC_ECC_CONTROL_ECCPOINTER(1),
+				oinfo->gpmc_base + GPMC_ECC_CONTROL);
+
+		/*
+		 * Size 0 = 0xFF, Size1 is 0xFF - both are 512 bytes
 		 * tell all regs to generate size0 sized regs
 		 * we just have a single ECC engine for all CS
 		 */
-		ecc_size_conf_val = 0x3FCFF000;
-		ecc_conf_val = (dev_width << 7) | (cs << 1) | (0x1);
+		ecc_size_conf_val = GPMC_ECC_SIZE_CONFIG_ECCSIZE1(0xff) |
+			GPMC_ECC_SIZE_CONFIG_ECCSIZE0(0xff);
+		ecc_conf_val = dev_width | GPMC_ECC_CONFIG_ECCCS(cs) |
+			GPMC_ECC_CONFIG_ECCENABLE;
 	} else {
-		writel(0x1, oinfo->gpmc_base + GPMC_ECC_CONTROL);
-		ecc_size_conf_val = (eccsize1 << 22) | (eccsize0 << 12);
-		ecc_conf_val = ((0x01 << 16) | (bch_mod << 12)
-			| (bch_wrapmode << 8) | (dev_width << 7)
-			| (0x03 << 4) | (cs << 1) | (0x1));
+		writel(GPMC_ECC_CONTROL_ECCPOINTER(1),
+				oinfo->gpmc_base + GPMC_ECC_CONTROL);
+
+		ecc_size_conf_val = GPMC_ECC_SIZE_CONFIG_ECCSIZE1(eccsize1) |
+			GPMC_ECC_SIZE_CONFIG_ECCSIZE0(eccsize0);
+
+		ecc_conf_val = (GPMC_ECC_CONFIG_ECCALGORITHM |
+				GPMC_ECC_CONFIG_ECCBCHTSEL(bch_mod) |
+				GPMC_ECC_CONFIG_ECCWRAPMODE(bch_wrapmode) |
+				dev_width |
+				GPMC_ECC_CONFIG_ECCTOPSECTOR(3) |
+				GPMC_ECC_CONFIG_ECCCS(cs) |
+				GPMC_ECC_CONFIG_ECCENABLE);
 	}
 
 	writel(ecc_size_conf_val, oinfo->gpmc_base + GPMC_ECC_SIZE_CONFIG);
 	writel(ecc_conf_val, oinfo->gpmc_base + GPMC_ECC_CONFIG);
-	writel(0x00000101, oinfo->gpmc_base + GPMC_ECC_CONTROL);
+	writel(GPMC_ECC_CONTROL_ECCCLEAR | GPMC_ECC_CONTROL_ECCPOINTER(1),
+			oinfo->gpmc_base + GPMC_ECC_CONTROL);
+}
+
+static int omap_gpmc_read_buf_manual(struct mtd_info *mtd, struct nand_chip *chip,
+		void *buf, int bytes, int result_reg)
+{
+	struct gpmc_nand_info *oinfo = chip->priv;
+
+	writel(GPMC_ECC_SIZE_CONFIG_ECCSIZE1(0) |
+			GPMC_ECC_SIZE_CONFIG_ECCSIZE0(bytes * 2),
+			oinfo->gpmc_base + GPMC_ECC_SIZE_CONFIG);
+
+	writel(GPMC_ECC_CONTROL_ECCPOINTER(result_reg),
+			oinfo->gpmc_base + GPMC_ECC_CONTROL);
+
+	chip->read_buf(mtd, buf, bytes);
+
+	return bytes;
+}
+
+/*
+ * read a page with the ecc layout used by the OMAP4 romcode. The
+ * romcode expects an unusual ecc layout (f = free, e = ecc):
+ *
+ * 2f, 13e, 1f, 13e, 1f, 13e, 1f, 13e, 7f
+ *
+ * This can't be accomplished with the predefined ecc modes, so
+ * we have to use the manual mode here.
+ *
+ * For the manual mode we can't use the ECC_RESULTx_0 register set
+ * because it would disable ecc generation completeley. Also, the
+ * hardware seems to ignore eccsize1 (which should bypass ecc
+ * generation), so we use the otherwise unused ECC_RESULTx_5 to
+ * generate dummy eccs for the unprotected oob area.
+ */
+static int omap_gpmc_read_page_bch_rom_mode(struct mtd_info *mtd,
+		struct nand_chip *chip, uint8_t *buf)
+{
+	struct gpmc_nand_info *oinfo = chip->priv;
+	int dev_width = chip->options & NAND_BUSWIDTH_16 ? GPMC_ECC_CONFIG_ECC16B : 0;
+	uint8_t *p = buf;
+	uint8_t *ecc_calc = chip->buffers->ecccalc;
+	uint8_t *ecc_code = chip->buffers->ecccode;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	int stat, i;
+
+	writel(GPMC_ECC_SIZE_CONFIG_ECCSIZE1(0) |
+			GPMC_ECC_SIZE_CONFIG_ECCSIZE0(64),
+				oinfo->gpmc_base + GPMC_ECC_SIZE_CONFIG);
+
+	writel(GPMC_ECC_CONTROL_ECCPOINTER(1),
+			oinfo->gpmc_base + GPMC_ECC_CONTROL);
+
+	writel(GPMC_ECC_CONFIG_ECCALGORITHM |
+			GPMC_ECC_CONFIG_ECCBCHTSEL(1) |
+			GPMC_ECC_CONFIG_ECCWRAPMODE(0) |
+			dev_width | GPMC_ECC_CONFIG_ECCTOPSECTOR(3) |
+			GPMC_ECC_CONFIG_ECCCS(0) |
+			GPMC_ECC_CONFIG_ECCENABLE,
+			oinfo->gpmc_base + GPMC_ECC_CONFIG);
+
+	writel(GPMC_ECC_CONTROL_ECCCLEAR |
+			GPMC_ECC_CONTROL_ECCPOINTER(1),
+			oinfo->gpmc_base + GPMC_ECC_CONTROL);
+
+	for (i = 0; i < 32; i++)
+		p += omap_gpmc_read_buf_manual(mtd, chip, p, 64, (i >> 3) + 1);
+
+	p = chip->oob_poi;
+
+	p += omap_gpmc_read_buf_manual(mtd, chip, p, 2, 5);
+
+	for (i = 0; i < 4; i++) {
+		p += omap_gpmc_read_buf_manual(mtd, chip, p, 13, i + 1);
+		p += omap_gpmc_read_buf_manual(mtd, chip, p, 1, 5);
+	}
+
+	p += omap_gpmc_read_buf_manual(mtd, chip, p, 6, 5);
+
+	for (i = 0; i < chip->ecc.total; i++)
+		ecc_code[i] = chip->oob_poi[eccpos[i]];
+
+	__omap_calculate_ecc(mtd, buf, ecc_calc, 1);
+
+	stat = omap_correct_bch(mtd, buf, ecc_code, ecc_calc);
+	if (stat < 0)
+		mtd->ecc_stats.failed++;
+	else
+		mtd->ecc_stats.corrected += stat;
+
+	return 0;
 }
 
 static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
@@ -591,16 +741,9 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 			omap_oobinfo.eccpos[i] = i + offset;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
-		/*
-		 * Contradicting the datasheet the ecc checksum has to start
-		 * at byte 2 in oob. I have no idea how the rom code can
-		 * read this but it does.
-		 */
-		dev_warn(oinfo->pdev, "using rom loader ecc mode. "
-				"You can write properly but not read it back\n");
-
 		oinfo->nand.ecc.bytes    = 4 * 13;
 		oinfo->nand.ecc.size     = 4 * 512;
+		nand->ecc.read_page = omap_gpmc_read_page_bch_rom_mode;
 		omap_oobinfo.oobfree->length = 0;
 		j = 0;
 		for (i = 2; i < 15; i++)
@@ -621,9 +764,6 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 	}
 
 	oinfo->ecc_mode = mode;
-
-	if (nand->buffers)
-		kfree(nand->buffers);
 
 	/* second phase scan */
 	if (nand_scan_tail(minfo))
@@ -710,14 +850,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	oinfo->gpmc_address = (void *)(cs_base + GPMC_CS_NAND_ADDRESS);
 	oinfo->gpmc_data = (void *)(cs_base + GPMC_CS_NAND_DATA);
 	oinfo->timeout = pdata->max_timeout;
-	debug("GPMC Details:\n"
-		"GPMC BASE=%x\n"
-		"CMD=%x\n"
-		"ADDRESS=%x\n"
-		"DATA=%x\n"
-		"CS_BASE=%x\n",
-		oinfo->gpmc_base, oinfo->gpmc_command,
-		oinfo->gpmc_address, oinfo->gpmc_data, cs_base);
+	dev_dbg(pdev, "GPMC base=0x%p cmd=0x%p address=0x%p data=0x%p cs_base=0x%p\n",
+		oinfo->gpmc_base, oinfo->gpmc_command, oinfo->gpmc_address,
+		oinfo->gpmc_data, cs_base);
 
 	/* If we are 16 bit dev, our gpmc config tells us that */
 	if ((readl(cs_base) & 0x3000) == 0x1000) {
@@ -758,6 +893,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	/* Dont do a bbt scan at the start */
 	nand->options |= NAND_SKIP_BBTSCAN;
+
+	nand->options |= NAND_OWN_BUFFERS;
+	nand->buffers = xzalloc(sizeof(*nand->buffers));
 
 	/* State my controller */
 	nand->controller = &oinfo->controller;

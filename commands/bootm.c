@@ -181,6 +181,8 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 	handle = xzalloc(sizeof(struct image_handle));
 	header = &handle->header;
 	handle->data_entries = gen_image_handle_data(iha->data, iha->len);
+	handle->nb_data_entries = 1;
+	header->ih_size = cpu_to_uimage(iha->len);
 	handle->data = handle->data_entries[0].data;
 
 	return handle;
@@ -189,7 +191,18 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 static int initrd_handler_parse_options(struct image_data *data, int opt,
 		char *optarg)
 {
+	uint32_t initrd_start;
+
 	switch(opt) {
+	case 'L':
+		if (!data->initrd) {
+			eprintf("Warning -L ingnored. Specify the initrd first\n");
+			break;
+		}
+		initrd_start = simple_strtoul(optarg, NULL, 0);
+		printf("initrd_start=0x%x\n", initrd_start);
+		data->initrd->header.ih_load = cpu_to_uimage(initrd_start);
+		break;
 	case 'r':
 		printf("use initrd %s\n", optarg);
 		/* check for multi image @<num> */
@@ -202,16 +215,19 @@ static int initrd_handler_parse_options(struct image_data *data, int opt,
 		}
 		if (!data->initrd)
 			return -1;
-		return 0;
+		break;
 	default:
 		return 1;
 	}
+
+	return 0;
 }
 
 static struct image_handler initrd_handler = {
-	.cmdline_options = "r:",
+	.cmdline_options = "r:L:",
 	.cmdline_parse = initrd_handler_parse_options,
-	.help_string = " -r <initrd>    specify an initrd image",
+	.help_string = " -r <initrd>    specify an initrd image\n"
+		       " -L <load addr> specify initrd load address",
 };
 
 static int initrd_register_image_handler(void)
@@ -274,10 +290,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 			return 0;
 		default:
-			if (!handler_parse_options(&data, opt, optarg))
-				continue;
-
-			return 1;
+			break;
 		}
 	}
 
@@ -295,6 +308,21 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
+	}
+
+	optind = 0;
+
+	while((opt = getopt(argc, argv, options)) > 0) {
+		switch(opt) {
+		case 'h':
+		case 'n':
+			break;
+		default:
+			if (!handler_parse_options(&data, opt, optarg))
+				continue;
+
+			return 1;
+		}
 	}
 
 	/*

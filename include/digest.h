@@ -46,4 +46,12 @@ void digest_unregister(struct digest *d);
 
 struct digest* digest_get_by_name(char* name);
 
+int digest_file_window(struct digest *d, char *filename,
+		       unsigned char *hash,
+		       ulong start, ulong size);
+int digest_file(struct digest *d, char *filename,
+		       unsigned char *hash);
+int digest_file_by_name(char *algo, char *filename,
+		       unsigned char *hash);
+
 #endif /* __SH_ST_DEVICES_H__ */

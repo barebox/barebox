@@ -1,5 +1,5 @@
 
-CPPFLAGS += -fno-strict-aliasing
+CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
 
 machine-y := sandbox
 
@@ -37,23 +37,17 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ )
 
 ifeq ($(SUBARCH),x86_64)
-ELF_ARCH   := i386:x86-64
-ELF_FORMAT := elf64-x86-64
 ELF_CLASS := ELFCLASS64
 endif
 ifeq ($(SUBARCH),i386)
-ELF_ARCH   := $(SUBARCH)
-ELF_FORMAT := elf32-$(SUBARCH)
 ELF_CLASS  := ELFCLASS32
 endif
 ifeq ($(SUBARCH),powerpc)
-ELF_ARCH   := powerpc
-ELF_FORMAT := elf32-powerpc
 ELF_CLASS  := ELFCLASS32
 endif
 
 CPPFLAGS += -DELF_CLASS="$(ELF_CLASS)"
-export ELF_FORMAT ELF_ARCH SUBARCH ELF_CLASS
+export ELF_CLASS
 
 archprepare: maketools
 

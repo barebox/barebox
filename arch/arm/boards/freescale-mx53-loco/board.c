@@ -34,6 +34,7 @@
 #include <mach/gpio.h>
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
+#include <mach/imx53.h>
 
 #include <asm/armlinux.h>
 #include <io.h>
@@ -121,6 +122,8 @@ late_initcall(loco_part_init);
 static int loco_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(loco_pads, ARRAY_SIZE(loco_pads));
+
+	mx53_init_lowlevel();
 
 	imx53_add_uart0();
 	return 0;

@@ -36,6 +36,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <memory.h>
+#include <of.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -209,8 +210,16 @@ void armlinux_set_serial(u64 serial)
 void start_linux(void *adr, int swap, struct image_data *data)
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
-
-	setup_tags(data, swap);
+	void *params = NULL;
+#ifdef CONFIG_OFTREE
+	params = of_get_fixed_tree();
+	if (params)
+		printf("booting Linux kernel with devicetree\n");
+#endif
+	if (!params) {
+		setup_tags(data, swap);
+		params = armlinux_bootparams;
+	}
 
 	shutdown_barebox();
 	if (swap) {
@@ -220,5 +229,5 @@ void start_linux(void *adr, int swap, struct image_data *data)
 		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
 	}
 
-	kernel(0, armlinux_architecture, armlinux_bootparams);
+	kernel(0, armlinux_architecture, params);
 }

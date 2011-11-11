@@ -54,7 +54,7 @@ int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 #define stderr		2
 #define MAX_FILES	128
 
-void	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
 int	fputs(int file, const char *s);
 int	fputc(int file, const char c);
 int	ftstc(int file);

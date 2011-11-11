@@ -318,7 +318,6 @@ int fputs(int fd, const char *s)
 		return eputs(s);
 	else
 		return write(fd, s, strlen(s));
-	return 0;
 }
 EXPORT_SYMBOL(fputs);
 
@@ -333,7 +332,7 @@ void console_flush(void)
 }
 EXPORT_SYMBOL(console_flush);
 
-void fprintf (int file, const char *fmt, ...)
+int fprintf(int file, const char *fmt, ...)
 {
 	va_list args;
 	uint i;
@@ -348,7 +347,7 @@ void fprintf (int file, const char *fmt, ...)
 	va_end (args);
 
 	/* Print the string */
-	fputs (file, printbuffer);
+	return fputs(file, printbuffer);
 }
 EXPORT_SYMBOL(fprintf);
 

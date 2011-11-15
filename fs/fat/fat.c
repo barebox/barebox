@@ -354,6 +354,8 @@ static int fat_stat(struct device_d *dev, const char *filename, struct stat *s)
 	FILINFO finfo;
 	int ret;
 
+	memset(&finfo, 0, sizeof(FILINFO));
+
 	ret = f_stat(&priv->fat, filename, &finfo);
 	if (ret)
 		return ret;

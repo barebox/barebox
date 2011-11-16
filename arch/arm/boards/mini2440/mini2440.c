@@ -313,6 +313,8 @@ static int mini2440_devices_init(void)
 			   IORESOURCE_MEM, &mci_data);
 	add_generic_device("s3c_fb", 0, NULL, S3C2410_LCD_BASE, 0,
 			   IORESOURCE_MEM, &s3c24x0_fb_data);
+	add_generic_device("ohci", 0, NULL, S3C2410_USB_HOST_BASE, 0x100,
+			   IORESOURCE_MEM, NULL);
 	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 

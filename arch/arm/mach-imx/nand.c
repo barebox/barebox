@@ -95,7 +95,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 	FMCR = fmcr;
 }
 
-#elif defined CONFIG_ARCH_IMX51
+#elif defined CONFIG_ARCH_IMX51 || defined CONFIG_ARCH_IMX53
 
 void imx_nand_set_layout(int writesize, int datawidth)
 {

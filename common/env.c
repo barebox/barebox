@@ -247,8 +247,7 @@ int export(const char *varname)
 	if (val) {
 		setenv_raw(context->global, varname, val);
 		setenv_raw(context->local, varname, NULL);
-		return 0;
 	}
-	return -1;
+	return 0;
 }
 EXPORT_SYMBOL(export);

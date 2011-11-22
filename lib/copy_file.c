@@ -4,20 +4,23 @@
 #include <errno.h>
 #include <malloc.h>
 #include <libbb.h>
+#include <progress.h>
 
 #define RW_BUF_SIZE	(ulong)4096
 
 /**
  * @param[in] src FIXME
  * @param[out] dst FIXME
+ * @param[in] verbose FIXME
  */
-int copy_file(const char *src, const char *dst)
+int copy_file(const char *src, const char *dst, int verbose)
 {
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
 	int r, w;
 	int ret = 1;
 	void *buf;
+	int total = 0;
 
 	rw_buf = xmalloc(RW_BUF_SIZE);
 
@@ -31,6 +34,15 @@ int copy_file(const char *src, const char *dst)
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
 		goto out;
+	}
+
+	if (verbose) {
+		struct stat statbuf;
+
+		if (stat(src, &statbuf) < 0)
+			statbuf.st_size = 0;
+
+		init_progression_bar(statbuf.st_size);
 	}
 
 	while(1) {
@@ -51,11 +63,18 @@ int copy_file(const char *src, const char *dst)
 			}
 			buf += w;
 			r -= w;
+			total += w;
 		}
+
+		if (verbose)
+			show_progress(total);
 	}
 
 	ret = 0;
 out:
+	if (verbose)
+		putchar('\n');
+
 	free(rw_buf);
 	if (srcfd > 0)
 		close(srcfd);

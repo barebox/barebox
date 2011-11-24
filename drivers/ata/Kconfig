@@ -21,6 +21,7 @@ comment "interface types"
 
 config ATA_BIOS
 	bool "BIOS based"
+	select ATA_DISK
 	depends on X86_BIOS_BRINGUP
 	help
 	  Gain disk drive access via int13 calls to the standard PC-BIOS.

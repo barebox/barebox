@@ -382,7 +382,7 @@ static void serial_putc(struct console_device *cdev, char c)
 	status = usb_ep_queue(in, req);
 
 	while (list_empty(pool))
-		fsl_udc_irq();
+		usb_gadget_poll();
 }
 
 static int serial_tstc(struct console_device *cdev)
@@ -475,7 +475,7 @@ static int do_mycdev(struct command *cmdtp, int argc, char *argv[])
 		printf("%c", i);
 		mdelay(500);
 		for (j = 0; j < 100; j++)
-			fsl_udc_irq();
+			usb_gadget_poll();
 	}
 	return 0;
 }
@@ -522,4 +522,3 @@ printf("%s\n", __func__);
 	gs_free_requests(gser->out, &port->read_pool);
 	gs_free_requests(gser->in, &port->write_pool);
 }
-

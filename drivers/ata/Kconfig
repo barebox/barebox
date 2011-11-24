@@ -20,9 +20,7 @@ config DISK_DRIVE
 	  of devices is using a partition table in the first sector. Say Y here
 	  if you intend to work with disk drives (also CF cards and SD cards).
 
-comment "interface types"
-
-config ATA_BIOS
+config DISK_BIOS
 	bool "BIOS based"
 	select DISK_DRIVE
 	depends on X86_BIOS_BRINGUP
@@ -31,5 +29,7 @@ config ATA_BIOS
 	  The advantage of this driver is, it still uses user's defined boot
 	  media to work on. Disadvantage is: Due to its 16 bit nature it is
 	  slow.
+
+comment "interface types"
 
 endif

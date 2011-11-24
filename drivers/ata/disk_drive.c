@@ -61,7 +61,7 @@ struct partition_entry {
  * @param table partition table
  * @return size in sectors
  */
-#ifdef CONFIG_ATA_BIOS
+#ifdef CONFIG_DISK_BIOS
 static unsigned long disk_guess_size(struct device_d *dev, struct partition_entry *table)
 {
 	int part_order[4] = {0, 1, 2, 3};
@@ -186,14 +186,14 @@ static int disk_probe(struct device_d *dev)
 	 * the drive ordering must not correspond to the Linux drive order,
 	 * use the 'biosdisk' name instead.
 	 */
-#ifdef CONFIG_ATA_BIOS
+#ifdef CONFIG_DISK_BIOS
 	if (strcmp(dev->driver->name, "biosdisk") == 0)
 		atablk->blk.cdev.name = asprintf("biosdisk%d", dev->id);
 	else
 #endif
 		atablk->blk.cdev.name = asprintf("disk%d", dev->id);
 
-#ifdef CONFIG_ATA_BIOS
+#ifdef CONFIG_DISK_BIOS
 	/* On x86, BIOS based disks are coming without a valid .size field */
 	if (dev->resource[0].size == 0) {
 		/* guess the size of this drive if not otherwise given */
@@ -223,7 +223,7 @@ on_error:
 	return rc;
 }
 
-#ifdef CONFIG_ATA_BIOS
+#ifdef CONFIG_DISK_BIOS
 static struct driver_d biosdisk_driver = {
         .name   = "biosdisk",
         .probe  = disk_probe,
@@ -237,7 +237,7 @@ static struct driver_d disk_driver = {
 
 static int disk_init(void)
 {
-#ifdef CONFIG_ATA_BIOS
+#ifdef CONFIG_DISK_BIOS
 	register_driver(&biosdisk_driver);
 #endif
 	register_driver(&disk_driver);

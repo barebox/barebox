@@ -40,6 +40,20 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
+int cdev_find_free_index(const char *basename)
+{
+	int i;
+	char fname[100];
+
+	for (i = 0; i < 1000; i++) {
+		snprintf(fname, sizeof(fname), "%s%d", basename, i);
+		if (cdev_by_name(fname) == NULL)
+			return i;
+	}
+
+	return -EBUSY;	/* all indexes are used */
+}
+
 struct cdev *cdev_open(const char *name, unsigned long flags)
 {
 	struct cdev *cdev = cdev_by_name(name);

@@ -394,6 +394,7 @@ struct cdev {
 
 int devfs_create(struct cdev *);
 int devfs_remove(struct cdev *);
+int cdev_find_free_index(const char *);
 struct cdev *cdev_by_name(const char *filename);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 void cdev_close(struct cdev *cdev);

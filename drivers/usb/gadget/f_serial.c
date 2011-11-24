@@ -16,7 +16,6 @@
 #include "gadget_chips.h"
 #include "u_serial.h"
 
-
 /*
  * This function packages a simple "generic serial" port with no real
  * control mechanisms, just raw data transfer over two bulk endpoints.
@@ -140,6 +139,7 @@ static int gser_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 				gser->hs.in, gser->fs.in);
 		gser->port.out_desc = ep_choose(cdev->gadget,
 				gser->hs.out, gser->fs.out);
+		gserial_connect(&gser->port, gser->port_num);
 	}
 
 	return 0;
@@ -147,7 +147,10 @@ static int gser_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 
 static void gser_disable(struct usb_function *f)
 {
+	struct f_gser		*gser = func_to_gser(f);
+
 	DBG(cdev, "generic ttyGS%d deactivated\n", gser->port_num);
+	gserial_disconnect(&gser->port);
 }
 
 /*-------------------------------------------------------------------------*/

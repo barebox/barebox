@@ -144,7 +144,7 @@ static int atablk_read(struct block_device *blk, void *buf, int block,
 	return atablk->intf->read(atablk->dev, block, num_blocks, buf);
 }
 
-#ifdef CONFIG_ATA_WRITE
+#ifdef CONFIG_DISK_WRITE
 static int atablk_write(struct block_device *blk, const void *buf, int block,
 		int num_blocks)
 {
@@ -156,7 +156,7 @@ static int atablk_write(struct block_device *blk, const void *buf, int block,
 
 static struct block_device_ops ataops = {
 	.read = atablk_read,
-#ifdef CONFIG_ATA_WRITE
+#ifdef CONFIG_DISK_WRITE
 	.write = atablk_write,
 #endif
 };

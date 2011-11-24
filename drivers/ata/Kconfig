@@ -1,27 +1,30 @@
-menuconfig ATA
+menuconfig DISK
 	select BLOCK
-	bool "ATA                           "
+	bool "Disk support                  "
 	help
-	  Add support for ATA types of drives like harddisks and CDROMs.
+	  Add support for disk like drives like harddisks, CDROMs, SD cards and
+	  CF cards.
 
-if ATA
+if DISK
 
-config ATA_WRITE
+config DISK_WRITE
 	select BLOCK_WRITE
-	bool "support writing to ATA drives"
+	bool "support writing to disk drives"
 
 comment "drive types"
 
-config ATA_DISK
-	bool "disk drives"
+config DISK_DRIVE
+	bool "Generic disk drives"
 	help
-	  Add support for regular disk drives
+	  Add support for generic disk drives. Common behaviour for this kind
+	  of devices is using a partition table in the first sector. Say Y here
+	  if you intend to work with disk drives (also CF cards and SD cards).
 
 comment "interface types"
 
 config ATA_BIOS
 	bool "BIOS based"
-	select ATA_DISK
+	select DISK_DRIVE
 	depends on X86_BIOS_BRINGUP
 	help
 	  Gain disk drive access via int13 calls to the standard PC-BIOS.

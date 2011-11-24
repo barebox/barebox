@@ -193,7 +193,7 @@ static int usb_stor_write_10(ccb *srb, struct us_data *us,
  * Disk driver interface
  ***********************************************************************/
 
-#define US_MAX_IO_BLK 32U
+#define US_MAX_IO_BLK 32
 
 enum { io_rd, io_wr };
 

@@ -6,11 +6,11 @@ menuconfig ATA
 
 if ATA
 
-comment "drive types"
-
 config ATA_WRITE
 	select BLOCK_WRITE
 	bool "support writing to ATA drives"
+
+comment "drive types"
 
 config ATA_DISK
 	bool "disk drives"

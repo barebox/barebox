@@ -36,4 +36,6 @@ struct partition_entry {
 	uint32_t partition_size; /*! Start of the partition in LBA notation */
 } __attribute__ ((packed));
 
+extern int parse_partition_table(struct block_device*);
+
 #endif /* DISKS_H */

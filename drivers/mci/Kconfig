@@ -1,7 +1,6 @@
 menuconfig MCI
 	bool "MCI drivers                   "
 	select DISK
-	select DISK_DRIVE
 	help
 	  Add support for MCI drivers, used to handle MMC and SD cards
 

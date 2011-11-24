@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Juergen Beisert, Pengutronix
+ * Copyright (C) 2009...2011 Juergen Beisert, Pengutronix
  *
  * Mostly stolen from the GRUB2 project
  *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
@@ -43,15 +43,13 @@
  * Note: This driver does only support LBA addressing. Currently no CHS!
  */
 
-#include <stdio.h>
-#include <linux/types.h>
+#include <common.h>
 #include <init.h>
-#include <driver.h>
-#include <string.h>
-#include <xfuncs.h>
 #include <asm/syslib.h>
-#include <ata.h>
 #include <errno.h>
+#include <block.h>
+#include <disks.h>
+#include <malloc.h>
 
 /**
  * Sector count handled in one count
@@ -60,9 +58,6 @@
  * Is it's worth to detect Phoenic's restriction?
  */
 #define SECTORS_AT_ONCE 64
-
-/** Size of one sector in bytes */
-#define SECTOR_SIZE 512
 
 /** Command to read sectors from media */
 #define BIOS_READ_CMD 0
@@ -89,9 +84,12 @@ struct DAPS
  * Collection of data we need to know about the connected drive
  */
 struct media_access {
+	struct block_device blk; /**< the main device */
 	int drive_no;	/**< drive number used by the BIOS */
 	int is_cdrom;	/**< drive is a CDROM e.g. no write support */
 };
+
+#define to_media_access(x) container_of((x), struct media_access, blk)
 
 /**
  * Scratch memory for BIOS communication to handle data in chunks of 32 kiB
@@ -146,19 +144,23 @@ static int biosdisk_bios_call(struct media_access *media, int cmd, uint64_t sect
 
 /**
  * Read a chunk of sectors from media
- * @param dev our data we need to do the access
- * @param sector_start Sector's LBA number to start read from
- * @param sector_count Sectors to read
+ * @param blk All info about the block device we need
  * @param buffer Buffer to read into
+ * @param block Sector's LBA number to start read from
+ * @param num_blocks Sector count to read
  * @return 0 on success, anything else on failure
  *
  * This routine expects the buffer has the correct size to store all data!
+ *
+ * @note Due to 'block' is of type 'int' only small disks can be handled!
  */
-static int biosdisk_read(struct device_d *dev, uint64_t sector_start, unsigned sector_count, void *buffer)
+static int biosdisk_read(struct block_device *blk, void *buffer, int block,
+				int num_blocks)
 {
 	int rc;
-	struct ata_interface *intf = dev->platform_data;
-	struct media_access *media = intf->priv;
+	uint64_t sector_start = block;
+	unsigned sector_count = num_blocks;
+	struct media_access *media = to_media_access(blk);
 
 	while (sector_count >= SECTORS_AT_ONCE) {
 		rc = biosdisk_bios_call(media, BIOS_READ_CMD, sector_start, SECTORS_AT_ONCE, scratch_buffer);
@@ -182,19 +184,23 @@ static int biosdisk_read(struct device_d *dev, uint64_t sector_start, unsigned s
 
 /**
  * Write a chunk of sectors to media
- * @param dev our data we need to do the access
- * @param sector_start Sector's LBA number to start write to
- * @param sector_count Sectors to write
+ * @param blk All info about the block device we need
  * @param buffer Buffer to write from
+ * @param block Sector's LBA number to start write to
+ * @param num_blocks Sector count to write
  * @return 0 on success, anything else on failure
  *
  * This routine expects the buffer has the correct size to read all data!
+ *
+ * @note Due to 'block' is of type 'int' only small disks can be handled!
  */
-static int biosdisk_write(struct device_d *dev, uint64_t sector_start, unsigned sector_count, const void *buffer)
+static int __maybe_unused biosdisk_write(struct block_device *blk,
+				const void *buffer, int block, int num_blocks)
 {
 	int rc;
-	struct ata_interface *intf = dev->platform_data;
-	struct media_access *media = intf->priv;
+	uint64_t sector_start = block;
+	unsigned sector_count = num_blocks;
+	struct media_access *media = to_media_access(blk);
 
 	while (sector_count >= SECTORS_AT_ONCE) {
 		__builtin_memcpy(scratch_buffer, buffer, sizeof(scratch_buffer));
@@ -216,6 +222,13 @@ static int biosdisk_write(struct device_d *dev, uint64_t sector_start, unsigned 
 	return rc;
 }
 
+static struct block_device_ops bios_ata = {
+	.read = biosdisk_read,
+#ifdef CONFIG_BLOCK_WRITE
+	.write = biosdisk_write,
+#endif
+};
+
 /**
  * Probe for connected drives and register them
  *
@@ -228,8 +241,6 @@ static int biosdisk_probe(struct device_d *dev)
 {
 	int drive, rc;
 	struct media_access media, *m;
-	struct device_d *drive_dev;
-	struct ata_interface *p;
 
 	for (drive = 0x80; drive < 0x90; drive++) {
 		media.drive_no = drive;
@@ -240,27 +251,32 @@ static int biosdisk_probe(struct device_d *dev)
 
 		printf("BIOSdrive %d seems valid. Registering...\n", media.drive_no);
 
-		drive_dev = xzalloc(sizeof(struct device_d) + sizeof(struct media_access) + sizeof(struct ata_interface));
-		if (drive_dev == NULL) {
-			dev_err(dev, "Out of memory\n");
-			return -1;
+		m = xzalloc(sizeof(struct media_access));
+
+		m->blk.dev = dev;
+		m->blk.ops = &bios_ata;
+		/*
+		 * keep the 'blk.num_blocks' member 0, as we don't know
+		 * the size of this disk yet!
+		 */
+		rc = cdev_find_free_index("disk");
+		if (rc < 0)
+			pr_err("Cannot find a free number for the disk node\n");
+		m->blk.cdev.name = asprintf("disk%d", rc);
+		m->blk.blockbits = SECTOR_SHIFT;
+
+		rc = blockdevice_register(&m->blk);
+		if (rc != 0) {
+			dev_err(dev, "Cannot register BIOSdrive %d\n",
+						media.drive_no);
+			free(m);
+			return rc;
 		}
-		m = (struct media_access*)&drive_dev[1];
-		p = (struct ata_interface*)&m[1];
 
-		m->drive_no = drive;
-		m->is_cdrom = 0;
-
-		p->write = biosdisk_write;
-		p->read = biosdisk_read;
-		p->priv = m;
-
-		strcpy(drive_dev->name, "biosdisk");
-		drive_dev->id = drive - 0x80;
-		drive_dev->resource[0].start = 0;
-		drive_dev->platform_data = p;
-
-		register_device(drive_dev);
+		/* create partitions on demand */
+		rc = parse_partition_table(&m->blk);
+		if (rc != 0)
+			dev_warn(dev, "No partition table found\n");
 	}
 
 	return 0;

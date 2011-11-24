@@ -26,7 +26,8 @@
 #define _STORAGE_USB_H_
 
 #include <usb/usb.h>
-#include <ata.h>
+#include <block.h>
+#include <disks.h>
 #include <scsi.h>
 #include <linux/list.h>
 
@@ -85,10 +86,7 @@ struct us_data {
 /* one us_blk_dev object allocated per LUN */
 struct us_blk_dev {
 	struct us_data		*us;		/* LUN's enclosing dev */
-	struct device_d		dev;		/* intf to generic driver */
-	struct ata_interface	ata_if;		/* intf to "disk" driver */
-	uint64_t		blknum;		/* capacity */
-	unsigned long		blksz;		/* block size */
+	struct block_device	blk;		/* the blockdevice for the dev */
 	unsigned char 		lun;		/* the LUN of this blk dev */
 	struct list_head	list;		/* siblings */
 };

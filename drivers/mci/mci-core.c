@@ -36,7 +36,8 @@
 #include <errno.h>
 #include <asm-generic/div64.h>
 #include <asm/byteorder.h>
-#include <ata.h>
+#include <block.h>
+#include <disks.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -104,10 +105,10 @@ static void *sector_buf;
  * @param mci_dev MCI instance
  * @param src Where to read from to write to the card
  * @param blocknum Block number to write
+ * @param blocks Block count to write
  * @return Transaction status (0 on success)
  */
-#ifdef CONFIG_MCI_WRITE
-static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned blocknum,
+static int mci_block_write(struct device_d *mci_dev, const void *src, int blocknum,
 	int blocks)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
@@ -154,7 +155,6 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
 
 	return ret;
 }
-#endif
 
 /**
  * Read one block of data from the card
@@ -163,7 +163,7 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, unsigned b
  * @param blocknum Block number to read
  * @param blocks number of blocks to read
  */
-static int mci_read_block(struct device_d *mci_dev, void *dst, unsigned blocknum,
+static int mci_read_block(struct device_d *mci_dev, void *dst, int blocknum,
 		int blocks)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
@@ -856,14 +856,14 @@ static int mci_startup(struct device_d *mci_dev)
 	mci_extract_card_capacity_from_csd(mci_dev);
 
 	/* sanitiy? */
-	if (mci->read_bl_len > 512) {
-		mci->read_bl_len = 512;
+	if (mci->read_bl_len > SECTOR_SIZE) {
+		mci->read_bl_len = SECTOR_SIZE;
 		pr_debug("Limiting max. read block size down to %u\n",
 				mci->read_bl_len);
 	}
 
-	if (mci->write_bl_len > 512) {
-		mci->write_bl_len = 512;
+	if (mci->write_bl_len > SECTOR_SIZE) {
+		mci->write_bl_len = SECTOR_SIZE;
 		pr_debug("Limiting max. write block size down to %u\n",
 				mci->read_bl_len);
 	}
@@ -994,73 +994,68 @@ static int sd_send_if_cond(struct device_d *mci_dev)
 	return 0;
 }
 
-/* ------------------ attach to the ATA API --------------------------- */
+/* ------------------ attach to the blocklayer --------------------------- */
 
 /**
  * Write a chunk of sectors to media
- * @param disk_dev Disk device instance
- * @param sector_start Sector's number to start write to
- * @param sector_count Sectors to write
+ * @param blk All info about the block device we need
  * @param buffer Buffer to write from
+ * @param block Sector's number to start write to
+ * @param num_blocks Sector count to write
  * @return 0 on success, anything else on failure
  *
  * This routine expects the buffer has the correct size to read all data!
  */
-#ifdef CONFIG_MCI_WRITE
-static int mci_sd_write(struct device_d *disk_dev, uint64_t sector_start,
-			unsigned sector_count, const void *buffer)
+static int __maybe_unused mci_sd_write(struct block_device *blk,
+				const void *buffer, int block, int num_blocks)
 {
-	struct ata_interface *intf = disk_dev->platform_data;
-	struct device_d *mci_dev = intf->priv;
+	struct device_d *mci_dev = blk->dev;
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s: Write %u block(s), starting at %u\n",
-		__func__, sector_count, (unsigned)sector_start);
+	pr_debug("%s: Write %d block(s), starting at %d\n",
+		__func__, num_blocks, block);
 
-	if (mci->write_bl_len != 512) {
-		pr_debug("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
-				mci->read_bl_len);
+	if (mci->write_bl_len != SECTOR_SIZE) {
+		pr_debug("MMC/SD block size is not %d bytes (its %u bytes instead)\n",
+				SECTOR_SIZE, mci->read_bl_len);
 		return -EINVAL;
 	}
 
 	/* size of the block number field in the MMC/SD command is 32 bit only */
-	if (sector_start > MAX_BUFFER_NUMBER) {
-		pr_debug("Cannot handle block number %llu. Too large!\n",
-			sector_start);
+	if (block > MAX_BUFFER_NUMBER) {
+		pr_debug("Cannot handle block number %d. Too large!\n", block);
 		return -EINVAL;
 	}
 
-	rc = mci_block_write(mci_dev, buffer, sector_start, sector_count);
+	rc = mci_block_write(mci_dev, buffer, block, num_blocks);
 	if (rc != 0) {
-		pr_debug("Writing block %u failed with %d\n", (unsigned)sector_start, rc);
+		pr_debug("Writing block %d failed with %d\n", block, rc);
 		return rc;
 	}
 
 	return 0;
 }
-#endif
 
 /**
- * Read a chunk of sectors from media
- * @param disk_dev Disk device instance
- * @param sector_start Sector's number to start read from
- * @param sector_count Sectors to read
+ * Read a chunk of sectors from the drive
+ * @param blk All info about the block device we need
  * @param buffer Buffer to read into
+ * @param block Sector's LBA number to start read from
+ * @param num_blocks Sector count to read
  * @return 0 on success, anything else on failure
  *
  * This routine expects the buffer has the correct size to store all data!
  */
-static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
-			unsigned sector_count, void *buffer)
+static int mci_sd_read(struct block_device *blk, void *buffer, int block,
+				int num_blocks)
 {
-	struct ata_interface *intf = disk_dev->platform_data;
-	struct device_d *mci_dev = intf->priv;
+	struct device_d *mci_dev = blk->dev;
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int rc;
 
-	pr_debug("%s: Read %u block(s), starting at %u\n",
-		__func__, sector_count, (unsigned)sector_start);
+	pr_debug("%s: Read %d block(s), starting at %d\n",
+		__func__, num_blocks, block);
 
 	if (mci->read_bl_len != 512) {
 		pr_debug("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
@@ -1068,15 +1063,14 @@ static int mci_sd_read(struct device_d *disk_dev, uint64_t sector_start,
 		return -EINVAL;
 	}
 
-	if (sector_start > MAX_BUFFER_NUMBER) {
-		pr_err("Cannot handle block number %u. Too large!\n",
-			(unsigned)sector_start);
+	if (block > MAX_BUFFER_NUMBER) {
+		pr_err("Cannot handle block number %d. Too large!\n", block);
 		return -EINVAL;
 	}
 
-	rc = mci_read_block(mci_dev, buffer, (unsigned)sector_start, sector_count);
+	rc = mci_read_block(mci_dev, buffer, block, num_blocks);
 	if (rc != 0) {
-		pr_debug("Reading block %u failed with %d\n", (unsigned)sector_start, rc);
+		pr_debug("Reading block %d failed with %d\n", block, rc);
 		return rc;
 	}
 
@@ -1215,6 +1209,25 @@ static int mci_check_if_already_initialized(struct device_d *mci_dev)
 	return 0;
 }
 
+static int mci_calc_blk_cnt(uint64_t cap, unsigned shift)
+{
+	unsigned ret = cap >> shift;
+
+	if (ret > 0x7fffffff) {
+		pr_warn("Limiting card size due to 31 bit contraints\n");
+		return 0x7fffffff;
+	}
+
+	return (int)ret;
+}
+
+static struct block_device_ops mci_ops = {
+	.read = mci_sd_read,
+#ifdef CONFIG_BLOCK_WRITE
+	.write = mci_sd_write,
+#endif
+};
+
 /**
  * Probe an MCI card at the given host interface
  * @param mci_dev MCI device instance
@@ -1224,9 +1237,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 {
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_host *host = GET_MCI_PDATA(mci_dev);
-	struct ata_interface *p;
 	int rc;
-	struct device_d *dev;
 
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci_dev);
@@ -1270,16 +1281,29 @@ static int mci_card_probe(struct device_d *mci_dev)
 	 * An MMC/SD card acts like an ordinary disk.
 	 * So, re-use the disk driver to gain access to this media
 	 */
-	p = xzalloc(sizeof(struct ata_interface));
+	mci->blk.dev = mci_dev;
+	mci->blk.ops = &mci_ops;
 
-#ifdef CONFIG_MCI_WRITE
-	p->write = mci_sd_write;
-#endif
-	p->read = mci_sd_read;
-	p->priv = mci_dev;
+	rc = cdev_find_free_index("disk");
+	if (rc == -1)
+		pr_err("Cannot find a free number for the disk node\n");
 
-	dev = add_generic_device("disk", -1, NULL, 0, mci->capacity, IORESOURCE_MEM, p);
-	dev_add_child(&host->dev, dev);
+	mci->blk.cdev.name = asprintf("disk%d", rc);
+	mci->blk.blockbits = SECTOR_SHIFT;
+	mci->blk.num_blocks = mci_calc_blk_cnt(mci->capacity, mci->blk.blockbits);
+
+	rc = blockdevice_register(&mci->blk);
+	if (rc != 0) {
+		dev_err(mci_dev, "Failed to register MCI/SD blockdevice\n");
+		goto on_error;
+	}
+
+	/* create partitions on demand */
+	rc = parse_partition_table(&mci->blk);
+	if (rc != 0) {
+		dev_warn(mci_dev, "No partition table found\n");
+		rc = 0; /* it's not a failure */
+	}
 
 	pr_debug("SD Card successfully added\n");
 
@@ -1410,8 +1434,9 @@ device_initcall(mci_init);
  */
 int mci_register(struct mci_host *host)
 {
-	struct device_d *mci_dev = &host->dev;
+	struct device_d *mci_dev = xzalloc(sizeof(struct device_d));
 
+	mci_dev->id = -1;
 	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = (void*)host;
 	dev_add_child(host->hw_dev, mci_dev);

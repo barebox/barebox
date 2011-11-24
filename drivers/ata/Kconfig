@@ -1,5 +1,7 @@
 menuconfig DISK
 	select BLOCK
+	select PARTITION
+	select PARTITION_DISK
 	bool "Disk support                  "
 	help
 	  Add support for disk like drives like harddisks, CDROMs, SD cards and

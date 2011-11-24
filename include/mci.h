@@ -31,6 +31,7 @@
 #define _MCI_H_
 
 #include <linux/list.h>
+#include <block.h>
 
 /* Firmware revisions for SD cards */
 #define SD_VERSION_SD		0x20000
@@ -212,7 +213,6 @@ struct mci_data {
 /** host information */
 struct mci_host {
 	struct device_d *hw_dev;	/**< the host MCI hardware device */
-	struct device_d dev;		/**< our device */
 	unsigned voltages;
 	unsigned host_caps;	/**< Host's interface capabilities, refer MMC_VDD_* */
 	unsigned f_min;		/**< host interface lower limit */
@@ -230,6 +230,7 @@ struct mci_host {
 
 /** MMC/SD and interface instance information */
 struct mci {
+	struct block_device blk;	/**< the blockdevice for the card */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;

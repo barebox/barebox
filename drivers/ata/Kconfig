@@ -15,16 +15,8 @@ config DISK_WRITE
 
 comment "drive types"
 
-config DISK_DRIVE
-	bool "Generic disk drives"
-	help
-	  Add support for generic disk drives. Common behaviour for this kind
-	  of devices is using a partition table in the first sector. Say Y here
-	  if you intend to work with disk drives (also CF cards and SD cards).
-
 config DISK_BIOS
 	bool "BIOS based"
-	select DISK_DRIVE
 	depends on X86_BIOS_BRINGUP
 	help
 	  Gain disk drive access via int13 calls to the standard PC-BIOS.

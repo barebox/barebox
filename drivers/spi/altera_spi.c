@@ -25,6 +25,9 @@
 #include <io.h>
 #include <asm/spi.h>
 #include <asm/nios2-io.h>
+#include <clock.h>
+
+static void altera_spi_cs_inactive(struct spi_device *spi);
 
 static int altera_spi_setup(struct spi_device *spi)
 {
@@ -48,6 +51,8 @@ static int altera_spi_setup(struct spi_device *spi)
 		dev_err(master->dev, " frequency is too high for %s\n", spi_dev.name);
 		return -1;
 	}
+
+	altera_spi_cs_inactive(spi);
 
 	dev_dbg(master->dev, " mode 0x%08x, bits_per_word: %d, speed: %d\n",
 		spi->mode, spi->bits_per_word, altera_spi->speed);
@@ -167,19 +172,38 @@ static int altera_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	struct altera_spi *altera_spi = container_of(spi->master, struct altera_spi, master);
 	struct nios_spi *nios_spi = altera_spi->regs;
 	struct spi_transfer *t;
+	unsigned int cs_change;
+	const int nsecs = 50;
 
 	altera_spi_cs_active(spi);
+
+	cs_change = 0;
 
 	mesg->actual_length = 0;
 
 	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+
+		if (cs_change) {
+			ndelay(nsecs);
+			altera_spi_cs_inactive(spi);
+			ndelay(nsecs);
+			altera_spi_cs_active(spi);
+		}
+
+		cs_change = t->cs_change;
+
 		mesg->actual_length += altera_spi_do_xfer(spi, t);
+
+		if (cs_change) {
+			altera_spi_cs_active(spi);
+		}
 	}
 
 	/* Wait the end of any pending transfer */
 	while ((readl(&nios_spi->status) & NIOS_SPI_TMT) == 0);
 
-	altera_spi_cs_inactive(spi);
+	if (!cs_change)
+		altera_spi_cs_inactive(spi);
 
 	return 0;
 }
@@ -199,6 +223,7 @@ static int altera_spi_probe(struct device_d *dev)
 	master->setup = altera_spi_setup;
 	master->transfer = altera_spi_transfer;
 	master->num_chipselect = pdata->num_chipselect;
+	master->bus_num = pdata->bus_num;
 
 	altera_spi->regs = dev_request_mem_region(dev, 0);
 	altera_spi->databits = pdata->databits;

@@ -8,6 +8,7 @@ struct spi_altera_master {
 	int	spi_mode;
 	int	databits;
 	int	speed;
+	int	bus_num;
 };
 
 struct altera_spi {

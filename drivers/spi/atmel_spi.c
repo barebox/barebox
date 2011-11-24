@@ -190,6 +190,7 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	struct spi_transfer *t		= NULL;
 	unsigned int bits		= spi->bits_per_word;
 
+	mesg->actual_length = 0;
 	ret = master->setup(spi);
 	if (ret < 0) {
 		dev_dbg(master->dev, "transfer: master setup failed\n");
@@ -210,6 +211,7 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 		u32 tx_val;
 		int i = 0, rx_val;
 
+		mesg->actual_length += t->len;
 		if (bits <= 8) {
 			const u8 *txbuf = t->tx_buf;
 			u8 *rxbuf = t->rx_buf;

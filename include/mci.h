@@ -49,12 +49,19 @@
 
 #define MMC_MODE_HS		0x001
 #define MMC_MODE_HS_52MHz	0x010
+#define MMC_CAP_SPI		0x020
 #define MMC_MODE_4BIT		0x100
 #define MMC_MODE_8BIT		0x200
 
 #define SD_DATA_4BIT		0x00040000
 
 #define IS_SD(x) (x->version & SD_VERSION_SD)
+
+#ifdef CONFIG_MCI_SPI
+#define mmc_host_is_spi(host)	((host)->host_caps & MMC_CAP_SPI)
+#else
+#define mmc_host_is_spi(host)	0
+#endif
 
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
@@ -78,6 +85,8 @@
 #define MMC_CMD_WRITE_SINGLE_BLOCK	24
 #define MMC_CMD_WRITE_MULTIPLE_BLOCK	25
 #define MMC_CMD_APP_CMD			55
+#define MMC_CMD_SPI_READ_OCR		58
+#define MMC_CMD_SPI_CRC_ON_OFF		59
 
 #define SD_CMD_SEND_RELATIVE_ADDR	3
 #define SD_CMD_SWITCH_FUNC		6
@@ -154,6 +163,15 @@
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
+
+#define R1_SPI_IDLE		(1 << 0)
+#define R1_SPI_ERASE_RESET	(1 << 1)
+#define R1_SPI_ILLEGAL_COMMAND	(1 << 2)
+#define R1_SPI_COM_CRC		(1 << 3)
+#define R1_SPI_ERASE_SEQ	(1 << 4)
+#define R1_SPI_ADDRESS		(1 << 5)
+#define R1_SPI_PARAMETER	(1 << 6)
+#define R1_SPI_ERROR		(1 << 7)
 
 /* response types */
 #define MMC_RSP_PRESENT (1 << 0)

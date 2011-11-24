@@ -239,6 +239,7 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 	int timeout = 1000;
 	int err;
 	unsigned voltages;
+	unsigned busy;
 
 	/*
 	 * Most cards do not answer if some reserved bits
@@ -258,7 +259,7 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 		}
 
 		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND,
-			voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0),
+			mmc_host_is_spi(host) ? 0 : (voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0)),
 			MMC_RSP_R3);
 		err = mci_send_cmd(mci_dev, &cmd, NULL);
 		if (err) {
@@ -266,7 +267,13 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 			return err;
 		}
 		udelay(1000);
-	} while ((!(cmd.response[0] & OCR_BUSY)) && timeout--);
+
+		if (mmc_host_is_spi(host))
+			busy = cmd.response[0] & R1_SPI_IDLE;
+		else
+			busy = !(cmd.response[0] & OCR_BUSY);
+
+	} while (busy && timeout--);
 
 	if (timeout <= 0) {
 		pr_debug("SD operation condition set timed out\n");
@@ -275,6 +282,13 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 
 	if (mci->version != SD_VERSION_2)
 		mci->version = SD_VERSION_1_0;
+
+	if (mmc_host_is_spi(host)) { /* read OCR for spi */
+		mci_setup_cmd(&cmd, MMC_CMD_SPI_READ_OCR, 0, MMC_RSP_R3);
+		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		if (err)
+			return err;
+	}
 
 	mci->ocr = cmd.response[0];
 
@@ -474,10 +488,16 @@ static int sd_change_freq(struct device_d *mci_dev)
 	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
+#ifdef CONFIG_MCI_SPI
+	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+#endif
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
 	int timeout;
 	int err;
+
+	if (mmc_host_is_spi(host))
+		return 0;
 
 	pr_debug("Changing transfer frequency\n");
 	mci->card_caps = 0;
@@ -769,10 +789,23 @@ static int mci_startup(struct device_d *mci_dev)
 	struct mci_cmd cmd;
 	int err;
 
+#ifdef CONFIG_MMC_SPI_CRC_ON
+	if (mmc_host_is_spi(host)) { /* enable CRC check for spi */
+
+		mci_setup_cmd(&cmd, MMC_CMD_SPI_CRC_ON_OFF, 1, MMC_RSP_R1);
+		err = mci_send_cmd(mci_dev, &cmd, NULL);
+
+		if (err) {
+			pr_debug("Can't enable CRC check : %d\n", err);
+			return err;
+		}
+	}
+#endif
+
 	pr_debug("Put the Card in Identify Mode\n");
 
 	/* Put the Card in Identify Mode */
-	mci_setup_cmd(&cmd, MMC_CMD_ALL_SEND_CID, 0, MMC_RSP_R2);
+	mci_setup_cmd(&cmd, mmc_host_is_spi(host) ? MMC_CMD_SEND_CID : MMC_CMD_ALL_SEND_CID, 0, MMC_RSP_R2);
 	err = mci_send_cmd(mci_dev, &cmd, NULL);
 	if (err) {
 		pr_debug("Can't bring card into identify mode: %d\n", err);
@@ -789,12 +822,14 @@ static int mci_startup(struct device_d *mci_dev)
 	 * For SD cards, get the Relatvie Address.
 	 * This also puts the cards into Standby State
 	 */
-	pr_debug("Get/Set relative address\n");
-	mci_setup_cmd(&cmd, SD_CMD_SEND_RELATIVE_ADDR, mci->rca << 16, MMC_RSP_R6);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
-	if (err) {
-		pr_debug("Get/Set relative address failed: %d\n", err);
-		return err;
+	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
+		pr_debug("Get/Set relative address\n");
+		mci_setup_cmd(&cmd, SD_CMD_SEND_RELATIVE_ADDR, mci->rca << 16, MMC_RSP_R6);
+		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		if (err) {
+			pr_debug("Get/Set relative address failed: %d\n", err);
+			return err;
+		}
 	}
 
 	if (IS_SD(mci))
@@ -835,13 +870,15 @@ static int mci_startup(struct device_d *mci_dev)
 	pr_debug("Read block length: %u, Write block length: %u\n",
 		mci->read_bl_len, mci->write_bl_len);
 
-	pr_debug("Select the card, and put it into Transfer Mode\n");
-	/* Select the card, and put it into Transfer Mode */
-	mci_setup_cmd(&cmd, MMC_CMD_SELECT_CARD, mci->rca << 16, MMC_RSP_R1b);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
-	if (err) {
-		pr_debug("Putting in transfer mode failed: %d\n", err);
-		return err;
+	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
+		pr_debug("Select the card, and put it into Transfer Mode\n");
+		/* Select the card, and put it into Transfer Mode */
+		mci_setup_cmd(&cmd, MMC_CMD_SELECT_CARD, mci->rca << 16, MMC_RSP_R1b);
+		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		if (err) {
+			pr_debug("Putting in transfer mode failed: %d\n", err);
+			return err;
+		}
 	}
 
 	if (IS_SD(mci))

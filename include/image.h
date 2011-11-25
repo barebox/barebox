@@ -335,9 +335,6 @@ void image_print_size(uint32_t size);
 
 void image_print_contents(const image_header_t *hdr, void *data);
 
-/* commamds/bootm.c */
-void	print_image_hdr (image_header_t *hdr);
-
 /*
  * Load an image into memory. Returns a pointer to the loaded
  * image.

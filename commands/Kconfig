@@ -309,6 +309,12 @@ config CMD_BOOTM_SHOW_TYPE
 	depends on CMD_BOOTM
 	prompt "show image information"
 
+config CMD_IMINFO
+	bool
+	prompt "iminfo"
+	help
+	  Show information about uImages
+
 config CMD_BOOTZ
 	tristate
 	default y

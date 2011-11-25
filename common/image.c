@@ -290,7 +290,7 @@ void image_print_contents(const image_header_t *hdr, void *data)
 	printf ("%sEntry Point:  %08x\n", p, image_get_ep(hdr));
 
 	type = image_get_type(hdr);
-	if (type == IH_TYPE_MULTI || type == IH_TYPE_SCRIPT) {
+	if (data && (type == IH_TYPE_MULTI || type == IH_TYPE_SCRIPT)) {
 		int i;
 		ulong img_data, len;
 		ulong count = image_multi_count(data);

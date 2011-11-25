@@ -24,6 +24,12 @@ config DISK_BIOS
 	  media to work on. Disadvantage is: Due to its 16 bit nature it is
 	  slow.
 
+config DISK_ATA
+	bool "ATA type drives"
+	select DISK_DRIVE
+	help
+	  Support for native ATA/IDE drives
+
 comment "interface types"
 
 endif

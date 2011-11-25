@@ -45,56 +45,9 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-/*
- *  Continue booting an OS image; caller already has:
- *  - copied image header to global variable `header'
- *  - checked header magic number, checksums (both header & image),
- *  - verified image architecture (PPC) and type (KERNEL or MULTI),
- *  - loaded (first part of) image to header load address,
- *  - disabled interrupts.
- */
-typedef void boot_os_Fcn(struct command *cmdtp, int flag,
-			  int	argc, char *argv[],
-			  ulong	addr,		/* of image to boot */
-			  ulong	*len_ptr,	/* multi-file image length table */
-			  int	verify);	/* getenv("verify")[0] != 'n' */
-
 #ifndef CFG_BOOTM_LEN
 #define CFG_BOOTM_LEN	0x800000	/* use 8MByte as default max gunzip size */
 #endif
-
-#ifdef CONFIG_SILENT_CONSOLE
-static void
-fixup_silent_linux ()
-{
-	char buf[256], *start, *end;
-	char *cmdline = getenv ("bootargs");
-
-	/* Only fix cmdline when requested */
-	if (!(gd->flags & GD_FLG_SILENT))
-		return;
-
-	debug ("before silent fix-up: %s\n", cmdline);
-	if (cmdline) {
-		if ((start = strstr (cmdline, "console=")) != NULL) {
-			end = strchr (start, ' ');
-			strncpy (buf, cmdline, (start - cmdline + 8));
-			if (end)
-				strcpy (buf + (start - cmdline + 8), end);
-			else
-				buf[start - cmdline + 8] = '\0';
-		} else {
-			strcpy (buf, cmdline);
-			strcat (buf, " console=");
-		}
-	} else {
-		strcpy (buf, "console=");
-	}
-
-	setenv ("bootargs", buf);
-	debug ("after silent fix-up: %s\n", buf);
-}
-#endif /* CONFIG_SILENT_CONSOLE */
 
 struct image_handle_data* image_handle_data_get_by_num(struct image_handle* handle, int num)
 {

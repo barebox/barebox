@@ -26,6 +26,7 @@ obj-$(CONFIG_CMD_BOOTM) += image.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
+obj-y += filetype.o
 obj-$(CONFIG_MENU) += menu.o
 obj-$(CONFIG_PASSWORD) += password.o
 obj-$(CONFIG_MODULES) += module.o

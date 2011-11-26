@@ -8,6 +8,11 @@ SECTIONS
 	__barebox_initcalls_end = .;
 
 	. = ALIGN(64);
+	__barebox_magicvar_start = .;
+	.barebox_magicvar : { BAREBOX_MAGICVARS }
+	__barebox_magicvar_end = .;
+
+	. = ALIGN(64);
 	__barebox_cmd_start = .;
 	__barebox_cmd : { BAREBOX_CMDS }
 	__barebox_cmd_end = .;

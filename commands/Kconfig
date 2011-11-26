@@ -383,6 +383,20 @@ config CMD_HELP
 	default y
 	prompt "help"
 
+config CMD_MAGICVAR
+	tristate
+	prompt "magicvar"
+	help
+	  barebox has some shell variables with special meanings. This
+	  command shows the available magic variables.
+
+config CMD_MAGICVAR_HELP
+	bool
+	prompt "display description"
+	depends on CMD_MAGICVAR
+	help
+	  Also display a description to the magic variables
+
 config CMD_DEVINFO
 	tristate
 	default y

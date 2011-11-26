@@ -44,36 +44,7 @@ static int do_bootm_linux(struct image_data *data)
 	return -1;
 }
 
-static int image_handle_cmdline_parse(struct image_data *data, int opt,
-		char *optarg)
-{
-	int ret = 1;
-	int no;
-
-	switch (opt) {
-	case 'a':
-		no = simple_strtoul(optarg, NULL, 0);
-		armlinux_set_architecture(no);
-		ret = 0;
-		break;
-	case 'R':
-		no = simple_strtoul(optarg, NULL, 0);
-		armlinux_set_revision(no);
-		ret = 0;
-		break;
-	default:
-		break;
-	}
-
-	return ret;
-}
-
 static struct image_handler handler = {
-	.cmdline_options = "a:R:",
-	.cmdline_parse = image_handle_cmdline_parse,
-	.help_string = " -a <arch>        use architecture number <arch>\n"
-		       " -R <system_rev>  use system revison <system_rev>\n",
-
 	.bootm = do_bootm_linux,
 	.image_type = IH_OS_LINUX,
 };

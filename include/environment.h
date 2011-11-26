@@ -59,6 +59,9 @@ static inline int setenv(const char *var, const char *val)
 }
 #endif
 
+void export_env_ull(const char *name, unsigned long long val);
+unsigned long long getenv_ull(const char *name);
+
 int env_pop_context(void);
 int env_push_context(void);
 

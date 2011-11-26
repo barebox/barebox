@@ -36,6 +36,7 @@
 #include <errno.h>
 #include <memory.h>
 #include <of.h>
+#include <magicvar.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -51,6 +52,10 @@ static int armlinux_architecture;
 static u32 armlinux_system_rev;
 static u64 armlinux_system_serial;
 #endif
+
+BAREBOX_MAGICVAR(armlinux_architecture, "ARM machine ID");
+BAREBOX_MAGICVAR(armlinux_system_rev, "ARM system revision");
+BAREBOX_MAGICVAR(armlinux_system_serial, "ARM system serial");
 
 void armlinux_set_architecture(int architecture)
 {

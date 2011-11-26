@@ -45,11 +45,67 @@
 #include <asm/system.h>
 
 static struct tag *params;
-static int armlinux_architecture = 0;
 static void *armlinux_bootparams = NULL;
 
-static unsigned int system_rev;
-static u64 system_serial;
+#ifndef CONFIG_ENVIRONMENT_VARIABLES
+static int armlinux_architecture;
+static u32 armlinux_system_rev;
+static u64 armlinux_system_serial;
+#endif
+
+void armlinux_set_architecture(int architecture)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	export_env_ull("armlinux_architecture", architecture);
+#else
+	armlinux_architecture = architecture;
+#endif
+}
+
+int armlinux_get_architecture(void)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	return getenv_ull("armlinux_architecture");
+#else
+	return armlinux_architecture;
+#endif
+}
+
+void armlinux_set_revision(unsigned int rev)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	export_env_ull("armlinux_system_rev", rev);
+#else
+	return armlinux_system_rev;
+#endif
+}
+
+unsigned int armlinux_get_revision(void)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	return getenv_ull("armlinux_system_rev");
+#else
+	return armlinux_system_rev;
+#endif
+}
+
+void armlinux_set_serial(u64 serial)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	export_env_ull("armlinux_system_serial", serial);
+#else
+	armlinux_system_serial = serial;
+#endif
+}
+
+u64 armlinux_get_serial(void)
+{
+#ifdef CONFIG_ENVIRONMENT_VARIABLES
+	return getenv_ull("armlinux_system_serial");
+#else
+	return armlinux_system_serial;
+#endif
+}
 
 static void setup_start_tag(void)
 {
@@ -117,6 +173,8 @@ static void setup_commandline_tag(const char *commandline, int swap)
 
 static void setup_revision_tag(void)
 {
+	u32 system_rev = armlinux_get_revision();
+
 	if (system_rev) {
 		params->hdr.tag = ATAG_REVISION;
 		params->hdr.size = tag_size(tag_revision);
@@ -129,6 +187,8 @@ static void setup_revision_tag(void)
 
 static void setup_serial_tag(void)
 {
+	u64 system_serial = armlinux_get_serial();
+
 	if (system_serial) {
 		params->hdr.tag = ATAG_SERIAL;
 		params->hdr.size = tag_size(tag_serialnr);
@@ -176,35 +236,13 @@ static void setup_tags(struct image_data *data, int swap)
 	setup_end_tag();
 
 	printf("commandline: %s\n"
-	       "arch_number: %d\n", commandline, armlinux_architecture);
+	       "arch_number: %d\n", commandline, armlinux_get_architecture());
 
 }
 
 void armlinux_set_bootparams(void *params)
 {
 	armlinux_bootparams = params;
-}
-
-void armlinux_set_architecture(int architecture)
-{
-	char *arch_number = asprintf("%d", architecture);
-
-	armlinux_architecture = architecture;
-
-	setenv("arch_number", arch_number);
-	export("arch_number");
-
-	kfree(arch_number);
-}
-
-void armlinux_set_revision(unsigned int rev)
-{
-	system_rev = rev;
-}
-
-void armlinux_set_serial(u64 serial)
-{
-	system_serial = serial;
 }
 
 void start_linux(void *adr, int swap, struct image_data *data)
@@ -229,5 +267,5 @@ void start_linux(void *adr, int swap, struct image_data *data)
 		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
 	}
 
-	kernel(0, armlinux_architecture, params);
+	kernel(0, armlinux_get_architecture(), params);
 }

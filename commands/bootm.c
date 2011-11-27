@@ -142,55 +142,6 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 	return handle;
 }
 
-static int initrd_handler_parse_options(struct image_data *data, int opt,
-		char *optarg)
-{
-	uint32_t initrd_start;
-
-	switch(opt) {
-	case 'L':
-		if (!data->initrd) {
-			eprintf("Warning -L ingnored. Specify the initrd first\n");
-			break;
-		}
-		initrd_start = simple_strtoul(optarg, NULL, 0);
-		printf("initrd_start=0x%x\n", initrd_start);
-		data->initrd->header.ih_load = cpu_to_uimage(initrd_start);
-		break;
-	case 'r':
-		printf("use initrd %s\n", optarg);
-		/* check for multi image @<num> */
-		if (optarg[0] == '@') {
-			int num = simple_strtol(optarg + 1, NULL, 0);
-
-			data->initrd = get_fake_image_handle(data, num);
-		} else {
-			data->initrd = map_image(optarg, data->verify);
-		}
-		if (!data->initrd)
-			return -1;
-		break;
-	default:
-		return 1;
-	}
-
-	return 0;
-}
-
-static struct image_handler initrd_handler = {
-	.cmdline_options = "r:L:",
-	.cmdline_parse = initrd_handler_parse_options,
-	.help_string = " -r <initrd>    specify an initrd image\n"
-		       " -L <load addr> specify initrd load address",
-};
-
-static int initrd_register_image_handler(void)
-{
-	return register_image_handler(&initrd_handler);
-}
-
-late_initcall(initrd_register_image_handler);
-
 static int handler_parse_options(struct image_data *data, int opt, char *optarg)
 {
 	struct image_handler *handler;
@@ -217,13 +168,14 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	struct image_handle *os_handle, *initrd_handle = NULL;
 	struct image_handler *handler;
 	struct image_data data;
+	u32 initrd_start;
 	char options[53]; /* worst case: whole alphabet with colons */
 
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
 
 	/* Collect options from registered handlers */
-	strcpy(options, "nh");
+	strcpy(options, "nhr:L:");
 	list_for_each_entry(handler, &handler_list, list) {
 		if (handler->cmdline_options)
 			strcat(options, handler->cmdline_options);
@@ -243,6 +195,28 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 			}
 
 			return 0;
+		case 'L':
+			if (!data.initrd) {
+				eprintf("Warning -L ingnored. Specify the initrd first\n");
+				break;
+			}
+			initrd_start = simple_strtoul(optarg, NULL, 0);
+			printf("initrd_start=0x%x\n", initrd_start);
+			data.initrd->header.ih_load = cpu_to_uimage(initrd_start);
+			break;
+		case 'r':
+			printf("use initrd %s\n", optarg);
+			/* check for multi image @<num> */
+			if (optarg[0] == '@') {
+				int num = simple_strtol(optarg + 1, NULL, 0);
+
+				data.initrd = get_fake_image_handle(&data, num);
+			} else {
+				data.initrd = map_image(optarg, data.verify);
+			}
+			if (!data.initrd)
+				return -1;
+			break;
 		default:
 			break;
 		}
@@ -270,6 +244,8 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		switch(opt) {
 		case 'h':
 		case 'n':
+		case 'L':
+		case 'r':
 			break;
 		default:
 			if (!handler_parse_options(&data, opt, optarg))
@@ -311,6 +287,8 @@ BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_USAGE("bootm [-n] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
 BAREBOX_CMD_HELP_OPT  ("-n",  "Do not verify the image (speeds up boot process)\n")
+BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")
+BAREBOX_CMD_HELP_OPT  ("-L <load addr>","specify initrd load address")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bootm)

@@ -122,7 +122,7 @@ int register_image_handler(struct image_handler *handler)
 
 /*
  * generate a image_handle from a multi_image
- * this image_handle can be free by unmap_image
+ * this image_handle can be freed by unmap_image
  */
 static struct image_handle *get_fake_image_handle(struct image_data *data, int num)
 {
@@ -231,7 +231,7 @@ err_out:
 }
 
 BAREBOX_CMD_HELP_START(bootm)
-BAREBOX_CMD_HELP_USAGE("bootm [-n] image\n")
+BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
 BAREBOX_CMD_HELP_OPT  ("-n",  "Do not verify the image (speeds up boot process)\n")
 BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")

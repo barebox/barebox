@@ -40,8 +40,5 @@ core_initcall(altera_mem_malloc_init);
 
 void arch_shutdown(void)
 {
-#ifdef CONFIG_USE_IRQ
-	disable_interrupts();
-#endif
 }
 

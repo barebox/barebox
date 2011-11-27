@@ -331,8 +331,6 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	 * recover from any failures any more...
 	 */
 
-	disable_interrupts();
-
 	puts ("OK\n");
 
 	/* loop through the registered handlers */

@@ -124,14 +124,6 @@ void __attribute__((noreturn)) reset_cpu(unsigned long addr)
 	exit(0);
 }
 
-void enable_interrupts(void)
-{
-}
-
-void disable_interrupt(void)
-{
-}
-
 int linux_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret;

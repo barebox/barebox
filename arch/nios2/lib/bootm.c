@@ -43,10 +43,6 @@ static int do_bootm_linux(struct image_data *idata)
 
 	kernel = (void (*)(int, int, int, const char *))ntohl(os_header->ih_ep);
 
-#ifdef CONFIG_USE_IRQ
-	disable_interrupts();
-#endif
-
 	if (relocate_image(idata->os, (void *)ntohl(os_header->ih_load)))
 		return -1;
 

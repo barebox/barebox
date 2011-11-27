@@ -63,13 +63,6 @@ void board_init_r (ulong end_of_ram)
 	 */
 	trap_init (0);
 
-	/*
-	 * Enable Interrupts
-	 */
-#ifdef CONFIG_USE_IRQ
-	interrupt_init ();
-#endif
-
 	/* Initialization complete - start the monitor */
 
 	start_barebox();

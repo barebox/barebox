@@ -82,16 +82,7 @@ _exception:
 	rdctl   et, ipending
 	beq     et, r0, 0f
 
-#ifdef CONFIG_USE_IRQ
-
-	/* HARDWARE INTERRUPT: Call interrupt handler */
-	movhi   r3, %hi(external_interrupt)
-	ori     r3, r3, %lo(external_interrupt)
-	mov     r4, sp    /* ptr to regs */
-	callr   r3
-#else
         br      _exception_return
-#endif
 
 	/* Return address fixup: execution resumes by re-issue of
 	 * interrupted instruction at ea-4 (ea == r29). Here we do

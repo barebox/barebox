@@ -107,25 +107,6 @@ long	get_ram_size  (volatile long *, long);
 /* $(CPU)/cpu.c */
 void __noreturn reset_cpu(unsigned long addr);
 
-/* $(CPU)/interrupts.c */
-//void	timer_interrupt	   (struct pt_regs *);
-//void	external_interrupt (struct pt_regs *);
-void	irq_install_handler(int, interrupt_handler_t *, void *);
-void	irq_free_handler   (int);
-#ifdef CONFIG_USE_IRQ
-void	enable_interrupts  (void);
-int	disable_interrupts (void);
-#else
-static inline void enable_interrupts(void)
-{
-}
-
-static inline int disable_interrupts(void)
-{
-	return 0;
-}
-#endif
-
 /* lib_$(ARCH)/time.c */
 void	udelay (unsigned long);
 void	mdelay (unsigned long);

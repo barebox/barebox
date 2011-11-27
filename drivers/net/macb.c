@@ -302,18 +302,14 @@ static int macb_phy_read(struct mii_device *mdev, int addr, int reg)
 	unsigned long netctl;
 	unsigned long netstat;
 	unsigned long frame;
-	int iflag;
 	int value;
 	uint64_t start;
 
 	debug("%s\n", __func__);
 
-	iflag = disable_interrupts();
 	netctl = readl(macb->regs + MACB_NCR);
 	netctl |= MACB_BIT(MPE);
 	writel(netctl, macb->regs + MACB_NCR);
-	if (iflag)
-		enable_interrupts();
 
 	frame = (MACB_BF(SOF, 1)
 		 | MACB_BF(RW, 2)
@@ -334,12 +330,9 @@ static int macb_phy_read(struct mii_device *mdev, int addr, int reg)
 	frame = readl(macb->regs + MACB_MAN);
 	value = MACB_BFEXT(DATA, frame);
 
-	iflag = disable_interrupts();
 	netctl = readl(macb->regs + MACB_NCR);
 	netctl &= ~MACB_BIT(MPE);
 	writel(netctl, macb->regs + MACB_NCR);
-	if (iflag)
-		enable_interrupts();
 
 	return value;
 }
@@ -355,12 +348,9 @@ static int macb_phy_write(struct mii_device *mdev, int addr, int reg, int value)
 
 	debug("%s\n", __func__);
 
-	iflag = disable_interrupts();
 	netctl = readl(macb->regs + MACB_NCR);
 	netctl |= MACB_BIT(MPE);
 	writel(netctl, macb->regs + MACB_NCR);
-	if (iflag)
-		enable_interrupts();
 
 	frame = (MACB_BF(SOF, 1)
 		 | MACB_BF(RW, 1)
@@ -374,12 +364,9 @@ static int macb_phy_write(struct mii_device *mdev, int addr, int reg, int value)
 		netstat = readl(macb->regs + MACB_NSR);
 	} while (!(netstat & MACB_BIT(IDLE)));
 
-	iflag = disable_interrupts();
 	netctl = readl(macb->regs + MACB_NCR);
 	netctl &= ~MACB_BIT(MPE);
 	writel(netctl, macb->regs + MACB_NCR);
-	if (iflag)
-		enable_interrupts();
 
 	return 0;
 }

@@ -26,9 +26,6 @@
 
 void __noreturn reset_cpu(ulong ignored)
 {
-#ifdef CONFIG_USE_IRQ
-	disable_interrupts();
-#endif
 	/* indirect call to go beyond 256MB limitation of toolchain */
 	nios2_callr(RESET_ADDR);
 

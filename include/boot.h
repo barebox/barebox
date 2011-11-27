@@ -9,6 +9,7 @@ struct image_data {
 	struct image_handle *initrd;
 	const char *oftree;
 	int verify;
+	unsigned long initrd_address;
 };
 
 struct image_handler {

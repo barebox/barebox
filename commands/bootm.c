@@ -149,11 +149,11 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	struct image_handle *os_handle = NULL;
 	struct image_handler *handler;
 	struct image_data data;
-	u32 initrd_start;
 	int ret = 1;
 
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
+	data.initrd_address = ~0;
 
 	while ((opt = getopt(argc, argv, "nr:L:")) > 0) {
 		switch(opt) {
@@ -161,13 +161,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 			data.verify = 0;
 			break;
 		case 'L':
-			if (!data.initrd) {
-				eprintf("Warning -L ingnored. Specify the initrd first\n");
-				break;
-			}
-			initrd_start = simple_strtoul(optarg, NULL, 0);
-			printf("initrd_start=0x%x\n", initrd_start);
-			data.initrd->header.ih_load = cpu_to_uimage(initrd_start);
+			data.initrd_address = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'r':
 			printf("use initrd %s\n", optarg);
@@ -186,6 +180,9 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 			break;
 		}
 	}
+
+	if (data.initrd && data.initrd_address != ~0)
+		data.initrd->header.ih_load = cpu_to_uimage(data.initrd_address);
 
 	if (optind == argc) {
 		ret = COMMAND_ERROR_USAGE;

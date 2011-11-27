@@ -15,6 +15,7 @@
 #include <net.h>
 #include <libbb.h>
 #include <errno.h>
+#include <magicvar.h>
 #include <linux/err.h>
 
 #define OPT_SIZE 312	/* Minimum DHCP Options size per RFC2131 - results in 576 byte pkt */
@@ -482,3 +483,8 @@ BAREBOX_CMD_START(dhcp)
 	.usage		= "invoke dhcp client to obtain ip/boot params",
 BAREBOX_CMD_END
 
+BAREBOX_MAGICVAR(bootfile, "bootfile returned from DHCP request");
+BAREBOX_MAGICVAR(nameserver, "Nameserver returned from DHCP request");
+BAREBOX_MAGICVAR(hostname, "hostname returned from DHCP request");
+BAREBOX_MAGICVAR(domainname, "domainname returned from DHCP request");
+BAREBOX_MAGICVAR(rootpath, "rootpath returned from DHCP request");

@@ -142,25 +142,6 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 	return handle;
 }
 
-static int handler_parse_options(struct image_data *data, int opt, char *optarg)
-{
-	struct image_handler *handler;
-	int ret;
-
-	list_for_each_entry(handler, &handler_list, list) {
-		if (!handler->cmdline_parse)
-			continue;
-
-		ret = handler->cmdline_parse(data, opt, optarg);
-		if (ret > 0)
-			continue;
-
-		return ret;
-	}
-
-	return -1;
-}
-
 static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 {
 	int	opt;
@@ -169,32 +150,15 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	struct image_handler *handler;
 	struct image_data data;
 	u32 initrd_start;
-	char options[53]; /* worst case: whole alphabet with colons */
 
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
 
-	/* Collect options from registered handlers */
-	strcpy(options, "nhr:L:");
-	list_for_each_entry(handler, &handler_list, list) {
-		if (handler->cmdline_options)
-			strcat(options, handler->cmdline_options);
-	}
-
-	while((opt = getopt(argc, argv, options)) > 0) {
+	while ((opt = getopt(argc, argv, "nr:L:")) > 0) {
 		switch(opt) {
 		case 'n':
 			data.verify = 0;
 			break;
-		case 'h':
-			printf("bootm advanced options:\n");
-
-			list_for_each_entry(handler, &handler_list, list) {
-				if (handler->help_string)
-					printf("%s\n", handler->help_string);
-			}
-
-			return 0;
 		case 'L':
 			if (!data.initrd) {
 				eprintf("Warning -L ingnored. Specify the initrd first\n");
@@ -236,23 +200,6 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
-	}
-
-	optind = 0;
-
-	while((opt = getopt(argc, argv, options)) > 0) {
-		switch(opt) {
-		case 'h':
-		case 'n':
-		case 'L':
-		case 'r':
-			break;
-		default:
-			if (!handler_parse_options(&data, opt, optarg))
-				continue;
-
-			return 1;
-		}
 	}
 
 	/*

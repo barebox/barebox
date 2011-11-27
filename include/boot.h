@@ -14,10 +14,6 @@ struct image_data {
 struct image_handler {
 	struct list_head list;
 
-	char *cmdline_options;
-	int (*cmdline_parse)(struct image_data *data, int opt, char *optarg);
-	char *help_string;
-
 	int image_type;
 	int (*bootm)(struct image_data *data);
 };

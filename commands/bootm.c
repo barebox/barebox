@@ -62,28 +62,28 @@ int relocate_image(struct image_handle *handle, void *load_address)
 	image_header_t *hdr = &handle->header;
 	unsigned long len  = image_get_size(hdr);
 	struct image_handle_data *iha;
-	unsigned long data;
+	void *data;
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
-	uint	unc_len = CFG_BOOTM_LEN;
+	uint	unc_len = BOOTM_LEN;
 #endif
 
 	iha = image_handle_data_get_by_num(handle, 0);
-	data = (unsigned long)(iha->data);
+	data = iha->data;
 
 	switch (image_get_comp(hdr)) {
 	case IH_COMP_NONE:
-		if(image_get_load(hdr) == data) {
+		if (load_address == data) {
 			printf ("   XIP ... ");
 		} else {
-			memmove ((void *) image_get_load(hdr), (uchar *)data, len);
+			memmove(load_address, data, len);
 		}
 		break;
 #ifdef CONFIG_CMD_BOOTM_ZLIB
 	case IH_COMP_GZIP:
 		printf ("   Uncompressing ... ");
 		if (gunzip (load_address, unc_len,
-			    (uchar *)data, &len) != 0)
+			    data, &len) != 0)
 			return -1;
 		break;
 #endif
@@ -96,7 +96,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 		 * at most 2300 KB of memory.
 		 */
 		if (BZ2_bzBuffToBuffDecompress (load_address,
-						&unc_len, (char *)data, len,
+						&unc_len, data, len,
 						MALLOC_SIZE < (4096 * 1024), 0)
 						!= BZ_OK)
 			return -1;

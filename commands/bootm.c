@@ -146,10 +146,11 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 {
 	int	opt;
 	image_header_t *os_header;
-	struct image_handle *os_handle, *initrd_handle = NULL;
+	struct image_handle *os_handle = NULL;
 	struct image_handler *handler;
 	struct image_data data;
 	u32 initrd_start;
+	int ret = 1;
 
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
@@ -179,19 +180,21 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 				data.initrd = map_image(optarg, data.verify);
 			}
 			if (!data.initrd)
-				return -1;
+				goto err_out;
 			break;
 		default:
 			break;
 		}
 	}
 
-	if (optind == argc)
-		return COMMAND_ERROR_USAGE;
+	if (optind == argc) {
+		ret = COMMAND_ERROR_USAGE;
+		goto err_out;
+	}
 
 	os_handle = map_image(argv[optind], data.verify);
 	if (!os_handle)
-		return 1;
+		goto err_out;
 	data.os = os_handle;
 
 	os_header = &os_handle->header;
@@ -225,9 +228,9 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 err_out:
 	if (os_handle)
 		unmap_image(os_handle);
-	if (initrd_handle)
-		unmap_image(initrd_handle);
-	return 1;
+	if (data.initrd)
+		unmap_image(data.initrd);
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(bootm)

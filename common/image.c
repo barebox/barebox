@@ -404,6 +404,7 @@ err_out:
 	close(fd);
 	if (handle->flags & IH_MALLOC)
 		free(handle->data);
+	free(handle->data_entries);
 	free(handle);
 	return NULL;
 }

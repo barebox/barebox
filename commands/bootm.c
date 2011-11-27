@@ -42,6 +42,7 @@
 #include <boot.h>
 #include <rtc.h>
 #include <init.h>
+#include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
 /*
@@ -366,6 +367,8 @@ BAREBOX_CMD_START(bootm)
 	.usage		= "boot an application image",
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
+
+BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
 
 /**
  * @page bootm_command

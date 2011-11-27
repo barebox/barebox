@@ -234,7 +234,7 @@ then
 		CONFIG="./${CONFIG}"
 	fi
 
-	source "${CONFIG}"
+	. "${CONFIG}"
 fi
 
 [ -d "${LOGDIR}" ] || mkdir ${LOGDIR} || exit 1

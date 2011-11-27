@@ -210,6 +210,23 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 
 	puts ("OK\n");
 
+	/*
+	 * FIXME: we do not check at all whether
+	 * - we will write the image to sdram
+	 * - we overwrite ourselves
+	 * - kernel and initrd overlap
+	 */
+	ret = relocate_image(data.os, (void *)image_get_load(os_header));
+	if (ret)
+		goto err_out;
+
+	if (data.initrd) {
+		ret = relocate_image(data.initrd,
+				(void *)image_get_load(&data.initrd->header));
+		if (ret)
+			goto err_out;
+	}
+
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
 		if (image_get_os(os_header) == handler->image_type) {

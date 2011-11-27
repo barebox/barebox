@@ -29,13 +29,6 @@ static int do_bootm_linux(struct image_data *data)
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	if (relocate_image(data->os, (void *)image_get_load(os_header)))
-		return -1;
-
-	if (data->initrd)
-		if (relocate_image(data->initrd, (void *)image_get_load(&data->initrd->header)))
-			return -1;
-
 	/* we assume that the kernel is in place */
 	printf("\nStarting kernel %s...\n\n", data->initrd ? "with initrd " : "");
 

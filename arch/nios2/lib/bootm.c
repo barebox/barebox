@@ -43,9 +43,6 @@ static int do_bootm_linux(struct image_data *idata)
 
 	kernel = (void (*)(int, int, int, const char *))ntohl(os_header->ih_ep);
 
-	if (relocate_image(idata->os, (void *)ntohl(os_header->ih_load)))
-		return -1;
-
 	/* kernel parameters passing
 	 * r4 : NIOS magic
 	 * r5 : initrd start

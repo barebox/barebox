@@ -200,7 +200,7 @@ static void setup_serial_tag(void)
 	}
 }
 
-static void setup_initrd_tag(image_header_t *header)
+static void setup_initrd_tag(unsigned long start, unsigned long size)
 {
 	/* an ATAG_INITRD node tells the kernel where the compressed
 	 * ramdisk can be found. ATAG_RDIMG is a better name, actually.
@@ -208,8 +208,8 @@ static void setup_initrd_tag(image_header_t *header)
 	params->hdr.tag = ATAG_INITRD2;
 	params->hdr.size = tag_size(tag_initrd);
 
-	params->u.initrd.start = image_get_load(header);
-	params->u.initrd.size = image_get_data_size(header);
+	params->u.initrd.start = start;
+	params->u.initrd.size = size;
 
 	params = tag_next(params);
 }
@@ -228,8 +228,8 @@ static void setup_tags(struct image_data *data, int swap)
 	setup_memory_tags();
 	setup_commandline_tag(commandline, swap);
 
-	if (data && data->initrd)
-		setup_initrd_tag (&data->initrd->header);
+	if (data && (data->initrd_size > 0))
+		setup_initrd_tag(data->initrd_address, data->initrd_size);
 
 	setup_revision_tag();
 	setup_serial_tag();

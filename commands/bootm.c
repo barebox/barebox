@@ -181,9 +181,6 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		}
 	}
 
-	if (data.initrd && data.initrd_address != ~0)
-		data.initrd->header.ih_load = cpu_to_uimage(data.initrd_address);
-
 	if (optind == argc) {
 		ret = COMMAND_ERROR_USAGE;
 		goto err_out;
@@ -221,8 +218,12 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		goto err_out;
 
 	if (data.initrd) {
-		ret = relocate_image(data.initrd,
-				(void *)image_get_load(&data.initrd->header));
+		if (data.initrd && data.initrd_address == ~0)
+			data.initrd_address = uimage_to_cpu(data.initrd->header.ih_load);
+
+		data.initrd_size = image_get_data_size(&data.initrd->header);
+
+		ret = relocate_image(data.initrd, (void *)data.initrd_address);
 		if (ret)
 			goto err_out;
 	}

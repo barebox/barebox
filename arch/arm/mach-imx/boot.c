@@ -18,6 +18,7 @@
 #include <common.h>
 #include <environment.h>
 #include <init.h>
+#include <magicvar.h>
 
 #include <io.h>
 #include <mach/imx-regs.h>
@@ -87,5 +88,7 @@ static int imx_25_35_boot_save_loc(void)
 }
 
 coredevice_initcall(imx_25_35_boot_save_loc);
+
+BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
 
 #endif

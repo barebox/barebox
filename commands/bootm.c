@@ -30,7 +30,6 @@
 #include <command.h>
 #include <image.h>
 #include <malloc.h>
-#include <gunzip.h>
 #include <environment.h>
 #include <asm/byteorder.h>
 #include <xfuncs.h>
@@ -42,7 +41,7 @@
 #include <rtc.h>
 #include <init.h>
 #include <magicvar.h>
-#include <bunzip2.h>
+#include <uncompress.h>
 #include <asm-generic/memory_layout.h>
 
 #ifndef CFG_BOOTM_LEN
@@ -55,11 +54,6 @@ struct image_handle_data* image_handle_data_get_by_num(struct image_handle* hand
 		return NULL;
 
 	return &handle->data_entries[num];
-}
-
-static void unzip_error(char *x)
-{
-	puts(x);
 }
 
 int relocate_image(struct image_handle *handle, void *load_address)
@@ -85,30 +79,13 @@ int relocate_image(struct image_handle *handle, void *load_address)
 			memmove(load_address, data, len);
 		}
 		break;
-#ifdef CONFIG_ZLIB
-	case IH_COMP_GZIP:
-		printf ("   Uncompressing ... ");
-
-		ret = gunzip(data, len, NULL, NULL, load_address, NULL,
-				unzip_error);
-		if (ret)
-			return ret;
-		break;
-#endif
-#ifdef CONFIG_BZLIB
-	case IH_COMP_BZIP2:
-		printf ("   Uncompressing ... ");
-
-		ret = bunzip2(data, len, NULL, NULL, load_address, NULL,
-				unzip_error);
-		if (ret)
-			return ret;
-		break;
-#endif
 	default:
-		printf("Unimplemented compression type %d\n",
-		       image_get_comp(hdr));
-		return -1;
+		printf ("   Uncompressing ... ");
+		ret = uncompress(data, len, NULL, NULL, load_address, NULL,
+				uncompress_err_stdout);
+		if (ret)
+			return ret;
+		break;
 	}
 
 	return 0;

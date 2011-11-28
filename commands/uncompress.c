@@ -1,5 +1,5 @@
 /*
- * unlzo.c - uncompress a lzo compressed file
+ * uncompress.c - uncompress a lzo compressed file
  *
  * Copyright (c) 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -25,11 +25,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fs.h>
-#include <lzo.h>
+#include <uncompress.h>
 
-static int do_unlzo(struct command *cmdtp, int argc, char *argv[])
+static int do_uncompress(struct command *cmdtp, int argc, char *argv[])
 {
-	int from, to, ret, retlen;
+	int from, to, ret;
 
 	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
@@ -47,7 +47,8 @@ static int do_unlzo(struct command *cmdtp, int argc, char *argv[])
 		goto exit_close;
 	}
 
-	ret = unlzo(from, to, &retlen);
+	ret = uncompress_fd_to_fd(from, to, uncompress_err_stdout);
+
 	if (ret)
 		printf("failed to decompress\n");
 
@@ -57,13 +58,13 @@ exit_close:
 	return ret;
 }
 
-static const __maybe_unused char cmd_unlzo_help[] =
-"Usage: unlzo <infile> <outfile>\n"
-"Uncompress a lzo compressed file\n";
+static const __maybe_unused char cmd_uncompress_help[] =
+"Usage: uncompress <infile> <outfile>\n"
+"Uncompress a compressed file\n";
 
-BAREBOX_CMD_START(unlzo)
-        .cmd            = do_unlzo,
+BAREBOX_CMD_START(uncompress)
+        .cmd            = do_uncompress,
         .usage          = "lzop <infile> <outfile>",
-        BAREBOX_CMD_HELP(cmd_unlzo_help)
+        BAREBOX_CMD_HELP(cmd_uncompress_help)
 BAREBOX_CMD_END
 

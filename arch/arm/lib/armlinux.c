@@ -27,7 +27,6 @@
 #include <driver.h>
 #include <environment.h>
 #include <image.h>
-#include <zlib.h>
 #include <init.h>
 #include <fs.h>
 #include <linux/list.h>

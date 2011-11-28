@@ -30,7 +30,7 @@
 #include <command.h>
 #include <image.h>
 #include <malloc.h>
-#include <zlib.h>
+#include <gunzip.h>
 #include <environment.h>
 #include <asm/byteorder.h>
 #include <xfuncs.h>
@@ -88,9 +88,11 @@ int relocate_image(struct image_handle *handle, void *load_address)
 #ifdef CONFIG_CMD_BOOTM_ZLIB
 	case IH_COMP_GZIP:
 		printf ("   Uncompressing ... ");
-		if (gunzip (load_address, unc_len,
-			    data, &len) != 0)
-			return -1;
+
+		ret = gunzip(data, len, NULL, NULL, load_address, NULL,
+				unzip_error);
+		if (ret)
+			return ret;
 		break;
 #endif
 #ifdef CONFIG_CMD_BOOTM_BZLIB

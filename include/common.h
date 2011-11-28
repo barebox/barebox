@@ -111,8 +111,6 @@ void __noreturn reset_cpu(unsigned long addr);
 void	udelay (unsigned long);
 void	mdelay (unsigned long);
 
-int gunzip(void *dst, int dstlen, unsigned char *src, unsigned long *lenp);
-
 /* lib_generic/vsprintf.c */
 ulong	simple_strtoul(const char *cp,char **endp,unsigned int base);
 unsigned long long	simple_strtoull(const char *cp,char **endp,unsigned int base);

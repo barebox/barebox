@@ -284,28 +284,3 @@ exit_1:
 exit:
 	return ret;
 }
-
-static int in_fd;
-static int out_fd;
-
-static int unlzo_fill(void *buf, unsigned int len)
-{
-	return read(in_fd, buf, len);
-}
-
-static int unlzo_flush(void *buf, unsigned int len)
-{
-	return write(out_fd, buf, len);
-}
-
-static void unlzo_error(char *s)
-{
-	printf("%s\n", s);
-}
-
-int unlzo(int _in_fd, int _out_fd, int *dest_len)
-{
-	in_fd = _in_fd;
-	out_fd = _out_fd;
-	return decompress_unlzo(NULL, 0, unlzo_fill, unlzo_flush, NULL, NULL, unlzo_error);
-}

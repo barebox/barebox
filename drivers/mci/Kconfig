@@ -81,6 +81,7 @@ config MCI_ATMEL
 
 config MCI_SPI
 	bool "MMC/SD over SPI"
+	depends on SPI
 	help
 	  Some systems access MMC/SD/SDIO cards using a SPI controller
 	  instead of using a "native" MMC/SD/SDIO controller.  This has a

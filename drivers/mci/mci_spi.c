@@ -64,23 +64,6 @@
 #define RTOUT 3000000 /* 1 sec */
 #define WTOUT 3000000 /* 1 sec */
 
-#ifndef CONFIG_MMC_SPI_CRC_ON
-/* Note that while the CRC, in general, is ignored in SPI mode, the very first
- * command must be followed by a valid CRC, since the card is not yet in SPI mode.
- * The CRC byte for a CMD0 command with a zero argument is a constant 0x4A. For
- * simplicity, this CRC byte is always sent with every command.
- */
-
-static inline u8 crc7(u8 crc, const u8 *buffer, size_t len)
-{
-	/* This is the crc7 value for a CMD0 command with a zero argument.
-	 * It'll be left shifted and ored with '1' in mmc_spi_command_send
-	 * to give 0x95 (also known as the CMD0 constant CRC value...)
-	 */
-	return 0x4A;
-}
-#endif
-
 struct mmc_spi_host {
 	struct mci_host	mci;
 	struct spi_device	*spi;
@@ -141,6 +124,14 @@ mmc_spi_writebytes(struct mmc_spi_host *host, unsigned len, void *data)
 	return status;
 }
 
+/*
+ * Note that while the CRC, in general, is ignored in SPI mode, the very first
+ * command must be followed by a valid CRC, since the card is not yet in SPI mode.
+ * The CRC byte for a CMD0 command with a zero argument is a constant 0x4A. For
+ * simplicity, this CRC byte is always sent with every command.
+ */
+#define MMC_SPI_CMD0_CRC	((0x4a << 1) | 0x1)
+
 static int mmc_spi_command_send(struct mmc_spi_host *host, struct mci_cmd *cmd)
 {
 	uint8_t r1;
@@ -153,7 +144,11 @@ static int mmc_spi_command_send(struct mmc_spi_host *host, struct mci_cmd *cmd)
 	command[3] = cmd->cmdarg >> 16;
 	command[4] = cmd->cmdarg >> 8;
 	command[5] = cmd->cmdarg;
+#ifdef CONFIG_MMC_SPI_CRC_ON
 	command[6] = (crc7(0, &command[1], 5) << 1) | 0x01;
+#else
+	command[6] = MMC_SPI_CMD0_CRC;
+#endif
 
 	mmc_spi_writebytes(host, 7, command);
 

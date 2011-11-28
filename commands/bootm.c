@@ -31,7 +31,6 @@
 #include <image.h>
 #include <malloc.h>
 #include <zlib.h>
-#include <bzlib.h>
 #include <environment.h>
 #include <asm/byteorder.h>
 #include <xfuncs.h>
@@ -43,6 +42,7 @@
 #include <rtc.h>
 #include <init.h>
 #include <magicvar.h>
+#include <bunzip2.h>
 #include <asm-generic/memory_layout.h>
 
 #ifndef CFG_BOOTM_LEN
@@ -57,12 +57,18 @@ struct image_handle_data* image_handle_data_get_by_num(struct image_handle* hand
 	return &handle->data_entries[num];
 }
 
+static void unzip_error(char *x)
+{
+	puts(x);
+}
+
 int relocate_image(struct image_handle *handle, void *load_address)
 {
 	image_header_t *hdr = &handle->header;
 	unsigned long len  = image_get_size(hdr);
 	struct image_handle_data *iha;
 	void *data;
+	int ret;
 
 #if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
 	uint	unc_len = BOOTM_LEN;
@@ -90,16 +96,11 @@ int relocate_image(struct image_handle *handle, void *load_address)
 #ifdef CONFIG_CMD_BOOTM_BZLIB
 	case IH_COMP_BZIP2:
 		printf ("   Uncompressing ... ");
-		/*
-		 * If we've got less than 4 MB of malloc() space,
-		 * use slower decompression algorithm which requires
-		 * at most 2300 KB of memory.
-		 */
-		if (BZ2_bzBuffToBuffDecompress (load_address,
-						&unc_len, data, len,
-						MALLOC_SIZE < (4096 * 1024), 0)
-						!= BZ_OK)
-			return -1;
+
+		ret = bunzip2(data, len, NULL, NULL, load_address, NULL,
+				unzip_error);
+		if (ret)
+			return ret;
 		break;
 #endif
 	default:

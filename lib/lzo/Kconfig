@@ -1,4 +1,5 @@
 config LZO_DECOMPRESS
+	bool "include lzo uncompression support"
 	bool
 
 config LZO_COMPRESS

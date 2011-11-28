@@ -1,8 +1,9 @@
+menu "Library routines"
 config ZLIB
-	bool
+	bool "include gzip uncompression support"
 
 config BZLIB
-	bool
+	bool "include bzip2 uncompression support"
 
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
@@ -18,3 +19,4 @@ config FDT
 config OFTREE
 	select FDT
 	bool
+endmenu

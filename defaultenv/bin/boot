@@ -124,6 +124,6 @@ elif [ x$kernelimage_type = xraw ]; then
 	fi
 	bootu /dev/ram0.kernelraw
 elif [ x$kernelimage_type = xraw_lzo ]; then
-	unlzo $kdev /dev/ram0.kernelraw
+	uncompress $kdev /dev/ram0.kernelraw
 	bootu /dev/ram0.kernelraw
 fi

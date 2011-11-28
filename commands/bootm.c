@@ -85,7 +85,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 			memmove(load_address, data, len);
 		}
 		break;
-#ifdef CONFIG_CMD_BOOTM_ZLIB
+#ifdef CONFIG_ZLIB
 	case IH_COMP_GZIP:
 		printf ("   Uncompressing ... ");
 
@@ -95,7 +95,7 @@ int relocate_image(struct image_handle *handle, void *load_address)
 			return ret;
 		break;
 #endif
-#ifdef CONFIG_CMD_BOOTM_BZLIB
+#ifdef CONFIG_BZLIB
 	case IH_COMP_BZIP2:
 		printf ("   Uncompressing ... ");
 

@@ -44,10 +44,6 @@
 #include <uncompress.h>
 #include <asm-generic/memory_layout.h>
 
-#ifndef CFG_BOOTM_LEN
-#define CFG_BOOTM_LEN	0x800000	/* use 8MByte as default max gunzip size */
-#endif
-
 struct image_handle_data* image_handle_data_get_by_num(struct image_handle* handle, int num)
 {
 	if (!handle || num < 0 || num >= handle->nb_data_entries)
@@ -63,10 +59,6 @@ int relocate_image(struct image_handle *handle, void *load_address)
 	struct image_handle_data *iha;
 	void *data;
 	int ret;
-
-#if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
-	uint	unc_len = BOOTM_LEN;
-#endif
 
 	iha = image_handle_data_get_by_num(handle, 0);
 	data = iha->data;

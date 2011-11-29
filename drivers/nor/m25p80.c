@@ -778,10 +778,12 @@ static int m25p_probe(struct device_d *dev)
 		m25p80_ops.write = m25p80_write;
 
 	/* prefer "small sector" erase if possible */
-	if (info->flags & SECT_4K)
+	if (info->flags & SECT_4K) {
 		flash->erase_opcode = OPCODE_BE_4K;
-	else
+		flash->erasesize = 4096;
+	} else {
 		flash->erase_opcode = OPCODE_SE;
+	}
 
 	flash->page_size = info->page_size;
 

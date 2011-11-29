@@ -103,8 +103,6 @@ static int loco_devices_init(void)
 	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
 
-	loco_fec_reset();
-
 	return 0;
 }
 

@@ -67,6 +67,8 @@ int read_key(void)
 				esc[i] = getc();
 				if (esc[i++] == '~')
 					break;
+				if (i == ARRAY_SIZE(esc))
+					return -1;
 			}
 		}
 		esc[i] = 0;

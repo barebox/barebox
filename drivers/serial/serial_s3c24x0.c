@@ -72,6 +72,8 @@ static int s3c24x0_serial_init_port(struct console_device *cdev)
 	writew(0x0245, base + UCON);
 
 #ifdef CONFIG_DRIVER_SERIAL_S3C24X0_AUTOSYNC
+	writeb(0x10, base + UMCON); /* enable auto flow control */
+#else
 	writeb(0x01, base + UMCON); /* RTS up */
 #endif
 

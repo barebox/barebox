@@ -44,6 +44,7 @@ protected_mode_jump:
 
 	/* Transition to 32-bit flat mode */
 	data32  ljmp $__BOOT_CS, $in_pm32
+	.size protected_mode_jump, .-protected_mode_jump
 
 /* ------------------------------------------------------------------------ */
 
@@ -83,5 +84,5 @@ in_pm32:
 
 	jmp uboot_entry
 
-	.size protected_mode_jump, .-protected_mode_jump
+	.size in_pm32, .-in_pm32
 

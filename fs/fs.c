@@ -743,6 +743,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
 	struct device_d *dev, *parent_device = NULL;
+	struct cdev *cdev = NULL;
 	int ret;
 	char *path = normalise_path(_path);
 
@@ -806,6 +807,12 @@ int mount(const char *device, const char *fsname, const char *_path)
 		/* driver didn't accept the device. Bail out */
 		errno = -EINVAL;
 		goto out2;
+	}
+
+	if (!strncmp(device, "/dev/", 5)) {
+		cdev = cdev_by_name(device + 5);
+		if(cdev)
+			parent_device = cdev->dev;
 	}
 
 	if (parent_device)

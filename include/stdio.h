@@ -17,12 +17,12 @@ int	tstc(void);
 /* stdout */
 void	console_putc(unsigned int ch, const char c);
 int	getc(void);
-void	console_puts(unsigned int ch, const char *s);
+int	console_puts(unsigned int ch, const char *s);
 void	console_flush(void);
 
-static inline void puts(const char *s)
+static inline int puts(const char *s)
 {
-	console_puts(CONSOLE_STDOUT, s);
+	return console_puts(CONSOLE_STDOUT, s);
 }
 
 static inline void putchar(char c)
@@ -54,7 +54,7 @@ int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 #define stderr		2
 #define MAX_FILES	128
 
-void	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
 int	fputs(int file, const char *s);
 int	fputc(int file, const char c);
 int	ftstc(int file);

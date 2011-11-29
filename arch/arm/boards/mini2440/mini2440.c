@@ -45,7 +45,8 @@
 #include <mach/fb.h>
 
 static struct s3c24x0_nand_platform_data nand_info = {
-	.nand_timing = CALC_NFCONF_TIMING(A9M2440_TACLS, A9M2440_TWRPH0, A9M2440_TWRPH1),
+	.nand_timing = CALC_NFCONF_TIMING(MINI2440_TACLS, MINI2440_TWRPH0,
+							MINI2440_TWRPH1),
 	.flash_bbt = 1,	/* same as the kernel */
 };
 

@@ -107,7 +107,8 @@ u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 		xfertyp |= XFERTYP_RSPTYP_48_BUSY;
 	else if (cmd->resp_type & MMC_RSP_PRESENT)
 		xfertyp |= XFERTYP_RSPTYP_48;
-	if (cpu_is_mx53() && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+	if ((cpu_is_mx51() || cpu_is_mx53()) &&
+			cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		xfertyp |= SDHCI_CMD_ABORTCMD;
 
 	return XFERTYP_CMD(cmd->cmdidx) | xfertyp;

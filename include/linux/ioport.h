@@ -20,6 +20,9 @@ struct resource {
 	resource_size_t size;
 	const char *name;
 	unsigned long flags;
+	struct resource *parent;
+	struct list_head children;
+	struct list_head sibling;
 };
 
 /*
@@ -110,6 +113,17 @@ static inline unsigned long resource_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_TYPE_BITS;
 }
+
+struct resource *request_iomem_region(const char *name,
+		resource_size_t start, resource_size_t size);
+
+struct resource *request_region(struct resource *parent,
+		const char *name, resource_size_t start,
+		resource_size_t size);
+
+int release_region(struct resource *res);
+
+extern struct resource iomem_resource;
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

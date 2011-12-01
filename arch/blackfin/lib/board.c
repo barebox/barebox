@@ -38,7 +38,7 @@
 int blackfin_mem_malloc_init(void)
 {
 	mem_malloc_init((void *)(MALLOC_BASE),
-			(void *)(MALLOC_BASE + MALLOC_SIZE));
+			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
 	return 0;
 }
 

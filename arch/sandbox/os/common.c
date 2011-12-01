@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 		printf("unable to get malloc space\n");
 		exit(1);
 	}
-	mem_malloc_init(ram, ram + malloc_size);
+	mem_malloc_init(ram, ram + malloc_size - 1);
 
 	while (1) {
 		int option_index = 0;

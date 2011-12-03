@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/select.h>
+#include <sys/wait.h>
 /*
  * ...except the ones needed to connect with barebox
  */
@@ -183,6 +184,27 @@ ssize_t linux_write(int fd, const void *buf, size_t count)
 off_t linux_lseek(int fd, off_t offset)
 {
 	return lseek(fd, offset, SEEK_SET);
+}
+
+int linux_execve(const char * filename, char *const argv[], char *const envp[])
+{
+	pid_t pid, tpid;
+	int execve_status;
+
+	pid = fork();
+
+	if (pid == -1) {
+		perror("linux_execve");
+		return pid;
+	} else if (pid == 0) {
+		exit(execve(filename, argv, envp));
+	} else {
+		do {
+			tpid = wait(&execve_status);
+		} while(tpid != pid);
+
+		return execve_status;
+	}
 }
 
 extern void start_barebox(void);

@@ -1,0 +1,37 @@
+if ARCH_PXA
+
+config ARCH_TEXT_BASE
+	hex
+
+config BOARDINFO
+	string
+
+# ----------------------------------------------------------
+
+config ARCH_PXA2XX
+	bool
+	select CPU_XSCALE
+
+choice
+	prompt "Intel/Marvell PXA Processor"
+
+config ARCH_PXA27X
+	bool "PXA27x"
+	select ARCH_PXA2XX
+
+endchoice
+
+# ----------------------------------------------------------
+
+if ARCH_PXA27X
+
+choice
+	prompt "PXA27x Board Type"
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+endif

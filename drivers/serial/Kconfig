@@ -92,4 +92,8 @@ config DRIVER_SERIAL_S3C24X0_AUTOSYNC
 	  Say Y here if you want to use the auto flow feature of this
 	  UART. RTS and CTS will be handled by the hardware when enabled.
 
+config DRIVER_SERIAL_PXA
+	bool "PXA serial driver"
+	depends on ARCH_PXA
+
 endmenu

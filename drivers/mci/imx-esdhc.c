@@ -485,7 +485,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.send_cmd = esdhc_send_cmd;
 	host->mci.set_ios = esdhc_set_ios;
 	host->mci.init = esdhc_init;
-	host->mci.host_caps = MMC_MODE_4BIT;
 	host->mci.hw_dev = dev;
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;

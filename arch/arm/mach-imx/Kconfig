@@ -20,6 +20,7 @@ config ARCH_TEXT_BASE
 	default 0xa7e00000 if MACH_NESO
 	default 0x97f00000 if MACH_MX51_PDK
 	default 0x7ff00000 if MACH_MX53_LOCO
+	default 0x7ff00000 if MACH_MX53_SMD
 	default 0x87f00000 if MACH_GUF_CUPID
 	default 0x93d00000 if MACH_TX25
 
@@ -40,6 +41,7 @@ config BOARDINFO
 	default "Garz+Fricke Neso" if MACH_NESO
 	default "Freescale i.MX51 PDK" if MACH_FREESCALE_MX51_PDK
 	default "Freescale i.MX53 LOCO" if MACH_FREESCALE_MX53_LOCO
+	default "Freescale i.MX53 SMD" if MACH_FREESCALE_MX53_SMD
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
 	default "Ka-Ro tx25" if MACH_TX25
 
@@ -401,6 +403,9 @@ choice
 
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
+
+config MACH_FREESCALE_MX53_SMD
+	bool "Freescale i.MX53 SMD"
 
 endchoice
 

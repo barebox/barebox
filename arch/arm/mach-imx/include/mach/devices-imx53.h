@@ -31,6 +31,11 @@ static inline struct device_d *imx53_add_uart1(void)
 	return imx_add_uart((void *)MX53_UART2_BASE_ADDR, 1);
 }
 
+static inline struct device_d *imx53_add_uart2(void)
+{
+	return imx_add_uart((void *)MX53_UART3_BASE_ADDR, 2);
+}
+
 static inline struct device_d *imx53_add_fec(struct fec_platform_data *pdata)
 {
 	return imx_add_fec((void *)MX53_FEC_BASE_ADDR, pdata);

@@ -190,11 +190,7 @@ void __iomem *dev_get_mem_region(struct device_d *dev, int num);
 /*
  * exlusively request register base 'num' for a device
  */
-static inline void __iomem *dev_request_mem_region(struct device_d *dev, int num)
-{
-	/* no resource tracking yet */
-	return dev_get_mem_region(dev, num);
-}
+void __iomem *dev_request_mem_region(struct device_d *dev, int num);
 
 /*
  * register a generic device

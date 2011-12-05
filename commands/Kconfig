@@ -215,6 +215,13 @@ config CMD_MEMINFO
 	tristate
 	prompt "meminfo"
 
+config CMD_IOMEM
+	tristate
+	prompt "iomem"
+	help
+	  Show information about iomem usage. Pendant to 'cat /proc/iomem'
+	  under Linux.
+
 config CMD_MEMORY
 	bool
 	default y

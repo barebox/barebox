@@ -25,6 +25,9 @@
 #include <of.h>
 #include <init.h>
 #include <libfdt.h>
+#include <linux/ioport.h>
+#include <asm-generic/memory_layout.h>
+#include <asm/sections.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -49,6 +52,33 @@ void mem_malloc_init(void *start, void *end)
 	malloc_end = (unsigned long)end;
 	malloc_brk = malloc_start;
 }
+
+static int mem_malloc_resource(void)
+{
+	/*
+	 * Normally it's a bug when one of these fails,
+	 * but we have some setups where some of these
+	 * regions are outside of sdram in which case
+	 * the following fails.
+	 */
+	request_sdram_region("malloc space",
+			malloc_start,
+			malloc_end - malloc_start + 1);
+	request_sdram_region("barebox",
+			(unsigned long)&_stext,
+			(unsigned long)&_etext -
+			(unsigned long)&_stext + 1);
+	request_sdram_region("bss",
+			(unsigned long)&__bss_start,
+			(unsigned long)&__bss_stop -
+			(unsigned long)&__bss_start + 1);
+#ifdef STACK_BASE
+	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
+#endif
+
+	return 0;
+}
+coredevice_initcall(mem_malloc_resource);
 
 static void *sbrk_no_zero(ptrdiff_t increment)
 {
@@ -82,6 +112,10 @@ void barebox_add_memory_bank(const char *name, resource_size_t start,
 	struct memory_bank *bank = xzalloc(sizeof(*bank));
 	struct device_d *dev;
 
+	bank->res = request_iomem_region(name, start, size);
+
+	BUG_ON(!bank->res);
+
 	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
 
 	bank->dev = dev;
@@ -89,6 +123,30 @@ void barebox_add_memory_bank(const char *name, resource_size_t start,
 	bank->size = size;
 
 	list_add_tail(&bank->list, &memory_banks);
+}
+
+/*
+ * Request a region from the registered sdram
+ */
+struct resource *request_sdram_region(const char *name, resource_size_t start,
+		resource_size_t size)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		struct resource *res;
+
+		res = request_region(bank->res, name, start, size);
+		if (res)
+			return res;
+	}
+
+	return NULL;
+}
+
+int release_sdram_region(struct resource *res)
+{
+	return release_region(res);
 }
 
 #ifdef CONFIG_OFTREE

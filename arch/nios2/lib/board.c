@@ -31,7 +31,7 @@ int altera_mem_malloc_init(void)
 {
 
 	mem_malloc_init((void *)(NIOS_SOPC_TEXT_BASE - MALLOC_SIZE),
-			(void *)(NIOS_SOPC_TEXT_BASE));
+			(void *)(NIOS_SOPC_TEXT_BASE - 1));
 
 	return 0;
 }

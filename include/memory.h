@@ -13,6 +13,7 @@ struct memory_bank {
 	struct device_d *dev;
 	unsigned long start;
 	unsigned long size;
+	struct resource *res;
 };
 
 extern struct list_head memory_banks;
@@ -21,5 +22,9 @@ void barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size);
 
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
+
+struct resource *request_sdram_region(const char *name, resource_size_t start,
+		resource_size_t size);
+int release_sdram_region(struct resource *res);
 
 #endif

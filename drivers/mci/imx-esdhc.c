@@ -36,6 +36,8 @@
 #include <asm/mmu.h>
 #include <mach/clock.h>
 #include <mach/generic.h>
+#include <mach/esdhc.h>
+#include <gpio.h>
 
 #include "imx-esdhc.h"
 
@@ -392,12 +394,47 @@ static void esdhc_set_ios(struct mci_host *mci, struct device_d *dev,
 
 }
 
+static int esdhc_card_detect(struct fsl_esdhc_host *host)
+{
+	struct fsl_esdhc *regs = host->regs;
+	struct esdhc_platform_data *pdata = host->dev->platform_data;
+	int ret;
+
+	if (!pdata)
+		return 1;
+
+	switch (pdata->cd_type) {
+	case ESDHC_CD_NONE:
+	case ESDHC_CD_PERMANENT:
+		return 1;
+	case ESDHC_CD_CONTROLLER:
+		return !(esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL);
+	case ESDHC_CD_GPIO:
+		ret = gpio_direction_input(pdata->cd_gpio);
+		if (ret)
+			return ret;
+		return gpio_get_value(pdata->cd_gpio) ? 0 : 1;
+	}
+
+	return 0;
+}
+
 static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
 	int timeout = 1000;
 	int ret = 0;
+
+	ret = esdhc_card_detect(host);
+
+	if (ret == 0)
+		return -ENODEV;
+
+	if (ret < 0)
+		return ret;
+
+	ret = 0;
 
 	/* Enable cache snooping */
 	if (host && !host->no_snoop)

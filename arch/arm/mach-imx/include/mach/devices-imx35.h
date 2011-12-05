@@ -41,17 +41,17 @@ static inline struct device_d *imx35_add_fec(struct fec_platform_data *pdata)
 	return imx_add_fec((void *)IMX_FEC_BASE, pdata);
 }
 
-static inline struct device_d *imx35_add_mmc0(void *pdata)
+static inline struct device_d *imx35_add_mmc0(struct esdhc_platform_data *pdata)
 {
 	return imx_add_esdhc((void *)IMX_SDHC1_BASE, 0, pdata);
 }
 
-static inline struct device_d *imx35_add_mmc1(void *pdata)
+static inline struct device_d *imx35_add_mmc1(struct esdhc_platform_data *pdata)
 {
 	return imx_add_esdhc((void *)IMX_SDHC2_BASE, 1, pdata);
 }
 
-static inline struct device_d *imx35_add_mmc2(void *pdata)
+static inline struct device_d *imx35_add_mmc2(struct esdhc_platform_data *pdata)
 {
 	return imx_add_esdhc((void *)IMX_SDHC3_BASE, 2, pdata);
 }

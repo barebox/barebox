@@ -1380,7 +1380,7 @@ static int mci_probe(struct device_d *mci_dev)
 #ifdef CONFIG_MCI_STARTUP
 	/* if enabled, probe the attached card immediately */
 	rc = mci_card_probe(mci_dev);
-	if (rc == -ENODEV) {
+	if (rc) {
 		/*
 		 * If it fails, add the 'probe' parameter to give the user
 		 * a chance to insert a card and try again. Note: This may fail

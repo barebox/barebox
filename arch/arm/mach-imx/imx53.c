@@ -173,6 +173,15 @@ int mx53_init_lowlevel(void)
 	r = readl(ccm + MX5_CCM_CSCDR1);
 	r &= ~0x3f;
 	r |= 0x0a;
+
+	r &= ~MX5_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PRED_MASK;
+	r &= ~MX5_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PODF_MASK;
+	r |= 1 << MX5_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PRED_OFFSET;
+
+	r &= ~MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PRED_MASK;
+	r &= ~MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PODF_MASK;
+	r |= 1 << MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PODF_OFFSET;
+
 	writel(r, ccm + MX5_CCM_CSCDR1);
 
 	/* Restore the default values in the Gate registers */

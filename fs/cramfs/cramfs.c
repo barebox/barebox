@@ -337,7 +337,7 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 		if (priv->curr_base < 0 || priv->curr_base != base) {
 
 			cdev_read(priv->cdev, cramfs_read_buf, 4096, base, 0);
-			priv->curr_block_len = cramfs_uncompress_block(priv->buf,
+			priv->curr_block_len = cramfs_uncompress_block(priv->buf, 4096,
 					cramfs_read_buf, 4096);
 			if (priv->curr_block_len <= 0)
 				break;

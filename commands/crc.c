@@ -108,6 +108,8 @@ static int do_crc(struct command *cmdtp, int argc, char *argv[])
 			verify = 1;
 			vcrc = simple_strtoul(optarg, NULL, 0);
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

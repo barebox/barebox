@@ -72,6 +72,22 @@ static struct pad_desc loco_pads[] = {
 	MX53_PAD_SD1_DATA3__ESDHC1_DAT3,
 	/* SD1_CD */
 	MX53_PAD_EIM_DA13__GPIO3_13,
+
+	/* SD3 */
+	MX53_PAD_PATA_DATA8__ESDHC3_DAT0,
+	MX53_PAD_PATA_DATA9__ESDHC3_DAT1,
+	MX53_PAD_PATA_DATA10__ESDHC3_DAT2,
+	MX53_PAD_PATA_DATA11__ESDHC3_DAT3,
+	MX53_PAD_PATA_DATA0__ESDHC3_DAT4,
+	MX53_PAD_PATA_DATA1__ESDHC3_DAT5,
+	MX53_PAD_PATA_DATA2__ESDHC3_DAT6,
+	MX53_PAD_PATA_DATA3__ESDHC3_DAT7,
+	MX53_PAD_PATA_IORDY__ESDHC3_CLK,
+	MX53_PAD_PATA_RESET_B__ESDHC3_CMD,
+	/* SD3_CD */
+	MX53_PAD_EIM_DA11__GPIO3_11,
+	/* SD3_WP */
+	MX53_PAD_EIM_DA12__GPIO3_12,
 };
 
 static int loco_mem_init(void)
@@ -92,11 +108,29 @@ static void loco_fec_reset(void)
 	gpio_set_value(LOCO_FEC_PHY_RST, 1);
 }
 
+#define LOCO_SD3_CD			IMX_GPIO_NR(3, 11)
+#define LOCO_SD3_WP			IMX_GPIO_NR(3, 12)
+#define LOCO_SD1_CD			IMX_GPIO_NR(3, 13)
+
+static struct esdhc_platform_data loco_sd1_data = {
+	.cd_gpio = LOCO_SD1_CD,
+	.cd_type = ESDHC_CD_GPIO,
+	.wp_type = ESDHC_WP_NONE,
+};
+
+static struct esdhc_platform_data loco_sd3_data = {
+	.cd_gpio = LOCO_SD3_CD,
+	.wp_gpio = LOCO_SD3_WP,
+	.cd_type = ESDHC_CD_GPIO,
+	.wp_type = ESDHC_WP_GPIO,
+};
+
 static int loco_devices_init(void)
 {
 	imx51_iim_register_fec_ethaddr();
 	imx53_add_fec(&fec_info);
-	imx53_add_mmc0(NULL);
+	imx53_add_mmc0(&loco_sd1_data);
+	imx53_add_mmc2(&loco_sd3_data);
 
 	loco_fec_reset();
 

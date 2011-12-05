@@ -43,12 +43,12 @@ static inline struct device_d *imx53_add_mmc0(void *pdata)
 
 static inline struct device_d *imx53_add_mmc1(void *pdata)
 {
-	return imx_add_esdhc((void *)MX53_ESDHC2_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX53_ESDHC2_BASE_ADDR, 1, pdata);
 }
 
 static inline struct device_d *imx53_add_mmc2(void *pdata)
 {
-	return imx_add_esdhc((void *)MX53_ESDHC3_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX53_ESDHC3_BASE_ADDR, 2, pdata);
 }
 
 static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pdata)

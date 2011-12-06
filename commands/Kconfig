@@ -332,12 +332,6 @@ config CMD_BOOTM_OFTREE_UIMAGE
 	  Support using oftree uImages. Without this only raw oftree
 	  blobs can be used.
 
-config CMD_IMINFO
-	bool
-	prompt "iminfo"
-	help
-	  Show information about uImages
-
 config CMD_UIMAGE
 	tristate
 	prompt "uimage"

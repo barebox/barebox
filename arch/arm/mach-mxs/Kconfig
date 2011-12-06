@@ -80,6 +80,14 @@ config MXS_OCOTP
 	  internal view). Don't use register offsets here, the SET, CLR and
 	  TGL registers are not mapped!
 
+config MXS_CMD_BCB
+	depends on NAND_MXS
+	tristate "Nand bcb command"
+	help
+	  To be able to boot from NAND the i.MX23/28 need a Boot Control Block
+	  in flash. This option enabled the 'bcb' command which can be used to
+	  generate this block during runtime.
+
 endmenu
 
 menu "Board specific settings       "

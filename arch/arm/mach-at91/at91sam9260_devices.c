@@ -63,8 +63,13 @@ void at91_add_device_eth(struct at91_ether_platform_data *data)
 		at91_set_B_periph(AT91_PIN_PA25, 0);	/* ERX2 */
 		at91_set_B_periph(AT91_PIN_PA26, 0);	/* ERX3 */
 		at91_set_B_periph(AT91_PIN_PA27, 0);	/* ERXCK */
-		at91_set_B_periph(AT91_PIN_PA23, 0);	/* ETX2 */
-		at91_set_B_periph(AT91_PIN_PA24, 0);	/* ETX3 */
+		if (data->flags & AT91SAM_ETX2_ETX3_ALTERNATIVE) {
+			at91_set_B_periph(AT91_PIN_PA10, 0);	/* ETX2 */
+			at91_set_B_periph(AT91_PIN_PA11, 0);	/* ETX3 */
+		} else {
+			at91_set_B_periph(AT91_PIN_PA23, 0);	/* ETX2 */
+			at91_set_B_periph(AT91_PIN_PA24, 0);	/* ETX3 */
+		}
 		at91_set_B_periph(AT91_PIN_PA22, 0);	/* ETXER */
 	}
 

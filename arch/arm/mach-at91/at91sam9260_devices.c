@@ -261,18 +261,32 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 	/* CLK */
 	at91_set_A_periph(AT91_PIN_PA8, 0);
 
-	/* CMD */
-	at91_set_A_periph(AT91_PIN_PA7, 1);
 
-	/* DAT0, maybe DAT1..DAT3 */
-	at91_set_A_periph(AT91_PIN_PA6, 1);
-	if (data->bus_width == 4) {
-		at91_set_A_periph(AT91_PIN_PA9, 1);
-		at91_set_A_periph(AT91_PIN_PA10, 1);
-		at91_set_A_periph(AT91_PIN_PA11, 1);
+	if (mmc_id == 0) {
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA7, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_A_periph(AT91_PIN_PA6, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA9, 1);
+			at91_set_A_periph(AT91_PIN_PA10, 1);
+			at91_set_A_periph(AT91_PIN_PA11, 1);
+		}
+	} else if (mmc_id == 1) {
+		/* CMD */
+		at91_set_B_periph(AT91_PIN_PA1, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_B_periph(AT91_PIN_PA0, 1);
+		if (data->bus_width == 4) {
+			at91_set_B_periph(AT91_PIN_PA3, 1);
+			at91_set_B_periph(AT91_PIN_PA4, 1);
+			at91_set_B_periph(AT91_PIN_PA5, 1);
+		}
 	}
 
-	dev = add_generic_device("atmel_mci", 0, NULL, AT91SAM9260_BASE_MCI, SZ_16K,
+	dev = add_generic_device("atmel_mci", mmc_id, NULL, AT91SAM9260_BASE_MCI, SZ_16K,
 			   IORESOURCE_MEM, data);
 }
 #else

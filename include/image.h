@@ -188,20 +188,6 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
-struct image_handle_data {
-	void *data;
-	ulong len;
-};
-
-struct image_handle {
-	image_header_t	header;
-	void *data;
-	struct image_handle_data *data_entries;
-	int nb_data_entries;
-#define IH_MALLOC	1
-	int flags;
-};
-
 #if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
 const char *image_get_os_name(uint8_t os);
 const char *image_get_arch_name(uint8_t arch);
@@ -334,20 +320,6 @@ void image_multi_getimg(void *data, ulong idx,
 void image_print_size(uint32_t size);
 
 void image_print_contents(const image_header_t *hdr, void *data);
-
-/*
- * Load an image into memory. Returns a pointer to the loaded
- * image.
- */
-struct image_handle *map_image(const char *filename, int verify);
-void unmap_image(struct image_handle *handle);
-struct image_handle_data* gen_image_handle_data(void* data, ulong len);
-
-/*
- * Relocate an image to load_address by uncompressing
- * or just copying.
- */
-int relocate_image(struct image_handle *handle, void *load_address);
 
 struct uimage_handle_data {
 	size_t offset; /* offset in the image */

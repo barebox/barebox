@@ -349,4 +349,34 @@ struct image_handle_data* gen_image_handle_data(void* data, ulong len);
  */
 int relocate_image(struct image_handle *handle, void *load_address);
 
+struct uimage_handle_data {
+	size_t offset; /* offset in the image */
+	ulong len;
+};
+
+struct uimage_handle *uimage_open(const char *filename);
+void uimage_close(struct uimage_handle *handle);
+int uimage_verify(struct uimage_handle *handle);
+int uimage_load(struct uimage_handle *handle, unsigned int image_no,
+		int(*flush)(void*, unsigned int));
+void uimage_print_contents(struct uimage_handle *handle);
+size_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
+struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
+		int image_no, unsigned long load_address);
+void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
+		size_t *size);
+struct resource *file_to_sdram(const char *filename, unsigned long adr);
+#define MAX_MULTI_IMAGE_COUNT 16
+
+struct uimage_handle {
+	struct image_header header;
+	char *name;
+	struct uimage_handle_data ihd[MAX_MULTI_IMAGE_COUNT];
+	int nb_data_entries;
+	size_t data_offset;
+	int fd;
+};
+
+#define UIMAGE_INVALID_ADDRESS	(~0)
+
 #endif	/* __IMAGE_H__ */

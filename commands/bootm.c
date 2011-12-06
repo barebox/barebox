@@ -121,6 +121,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	struct image_handle *os_handle = NULL;
 	struct image_handler *handler;
 	struct image_data data;
+	const char *initrdname = NULL;
 	int ret = 1;
 
 	memset(&data, 0, sizeof(struct image_data));
@@ -136,17 +137,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 			data.initrd_address = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'r':
-			printf("use initrd %s\n", optarg);
-			/* check for multi image @<num> */
-			if (optarg[0] == '@') {
-				int num = simple_strtol(optarg + 1, NULL, 0);
-
-				data.initrd = get_fake_image_handle(&data, num);
-			} else {
-				data.initrd = map_image(optarg, data.verify);
-			}
-			if (!data.initrd)
-				goto err_out;
+			initrdname = optarg;
 			break;
 		default:
 			break;
@@ -169,6 +160,19 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		printf("Unsupported Architecture 0x%x\n",
 		       image_get_arch(os_header));
 		goto err_out;
+	}
+
+	if (initrdname) {
+		/* check for multi image @<num> */
+		if (initrdname[0] == '@') {
+			int num = simple_strtol(optarg + 1, NULL, 0);
+
+			data.initrd = get_fake_image_handle(&data, num);
+		} else {
+			data.initrd = map_image(optarg, data.verify);
+		}
+		if (!data.initrd)
+			goto err_out;
 	}
 
 	/*

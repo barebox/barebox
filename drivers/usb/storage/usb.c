@@ -96,8 +96,8 @@ static int usb_stor_test_unit_ready(ccb *srb, struct us_data *us)
 	retries = 10;
 	do {
 		US_DEBUGP("SCSI_TST_U_RDY\n");
-		memset(&srb->cmd[0], 0, 6);
-		srb->cmdlen = 6;
+		memset(&srb->cmd[0], 0, 12);
+		srb->cmdlen = 12;
 		srb->cmd[0] = SCSI_TST_U_RDY;
 		srb->datalen = 0;
 		result = us->transport(srb, us);

@@ -172,7 +172,7 @@ SECTIONS
 
 	.barebox_magicvars : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
 		__barebox_magicvar_start = .;
-		.barebox_magicvar : { BAREBOX_MAGICVARS }
+		BAREBOX_MAGICVARS
 		__barebox_magicvar_end = .;
 		. = ALIGN(4);
 	} > barebox

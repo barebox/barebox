@@ -12,5 +12,6 @@
 #define __MACH_CLOCK_H
 
 unsigned long pxa_get_uartclk(void);
+unsigned long pxa_get_mmcclk(void);
 
 #endif	/* !__MACH_CLOCK_H */

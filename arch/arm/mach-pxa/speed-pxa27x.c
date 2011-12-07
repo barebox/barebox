@@ -18,3 +18,8 @@ unsigned long pxa_get_uartclk(void)
 {
 	return 14857000;
 }
+
+unsigned long pxa_get_mmcclk(void)
+{
+	return 19500000;
+}

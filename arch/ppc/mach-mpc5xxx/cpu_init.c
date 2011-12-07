@@ -32,8 +32,6 @@
  */
 int cpu_init(void)
 {
-	unsigned long addecr = (1 << 25); /* Boot_CS */
-
 	/* enable timebase */
 	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |= (1 << 13);
 

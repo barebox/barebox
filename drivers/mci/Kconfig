@@ -27,7 +27,7 @@ config MCI_INFO
 config MCI_WRITE
 	bool "Support writing to MCI cards"
 	default y
-	select ATA_WRITE
+	select DISK_WRITE
 
 comment "--- MCI host drivers ---"
 

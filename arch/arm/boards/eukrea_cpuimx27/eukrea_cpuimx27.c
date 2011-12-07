@@ -217,7 +217,7 @@ static int eukrea_cpuimx27_devices_init(void)
 #endif
 
 	armlinux_set_bootparams((void *)0xa0000100);
-	armlinux_set_architecture(MACH_TYPE_CPUIMX27);
+	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX27);
 
 	return 0;
 }

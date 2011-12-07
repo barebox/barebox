@@ -169,7 +169,7 @@ static int eukrea_cpuimx35_devices_init(void)
 			   IORESOURCE_MEM, &usb_pdata);
 #endif
 	armlinux_set_bootparams((void *)0x80000100);
-	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35);
+	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35SD);
 
 	return 0;
 }

@@ -45,7 +45,7 @@ int vprintf (const char *fmt, va_list args)
 }
 EXPORT_SYMBOL(vprintf);
 
-void fprintf (int file, const char *fmt, ...)
+int fprintf(int file, const char *fmt, ...)
 {
 	va_list args;
 	uint i;
@@ -61,18 +61,25 @@ void fprintf (int file, const char *fmt, ...)
 
 	/* Print the string */
 	fputs(file, printbuffer);
+
+	return i;
 }
 EXPORT_SYMBOL(fprintf);
 
-void console_puts(unsigned int ch, const char *str)
+int console_puts(unsigned int ch, const char *str)
 {
 	const char *s = str;
+	int i = 0;
+
 	while (*s) {
 		console_putc(ch, *s);
 		if (*s == '\n')
 			console_putc(ch, '\r');
 		s++;
+		i++;
 	}
+
+	return i;
 }
 EXPORT_SYMBOL(console_puts);
 

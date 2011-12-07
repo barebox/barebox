@@ -167,4 +167,5 @@ int console_register(struct console_device *newcdev)
 
 int console_unregister(struct console_device *cdev)
 {
+	return -EBUSY;
 }

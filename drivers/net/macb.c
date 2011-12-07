@@ -344,7 +344,6 @@ static int macb_phy_write(struct mii_device *mdev, int addr, int reg, int value)
 	unsigned long netctl;
 	unsigned long netstat;
 	unsigned long frame;
-	int iflag;
 
 	debug("%s\n", __func__);
 

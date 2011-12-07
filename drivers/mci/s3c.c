@@ -176,32 +176,6 @@ static void s3c_finish_request(struct device_d *hw_dev)
 	/* TODO ensure the engines are stopped */
 }
 
-/* TODO GPIO feature is required for this architecture */
-static unsigned gpio_get_value(unsigned val)
-{
-	return 0;
-}
-
-/**
- * Detect if a card is plugged in
- * @param hw_dev Host interface instance
- * @return 0 if a card is plugged in
- *
- * Note: If there is no GPIO registered to detect if a card is present, we
- * assume a card _is_ present.
- */
-static int s3c_mci_card_present(struct device_d *hw_dev)
-{
-	struct s3c_mci_platform_data *pd = GET_HOST_PDATA(hw_dev);
-	int ret;
-
-	if (pd->gpio_detect == 0)
-		return 0;	/* assume the card is present */
-
-	ret = gpio_get_value(pd->gpio_detect) ? 0 : 1;
-	return ret ^ pd->detect_invert;
-}
-
 /**
  * Setup a new clock frequency on this MCI bus
  * @param hw_dev Host interface instance

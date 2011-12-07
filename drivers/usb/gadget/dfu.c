@@ -259,7 +259,7 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 				ret = -EINVAL;
 				goto err_out;
 			}
-			ret = copy_file(DFU_TEMPFILE, dfu_devs[dfualt].dev);
+			ret = copy_file(DFU_TEMPFILE, dfu_devs[dfualt].dev, 0);
 			if (ret) {
 				printf("copy file failed\n");
 				ret = -EINVAL;

@@ -170,7 +170,14 @@ SECTIONS
 		. = ALIGN(4);
 	} > barebox
 
-	.barebox_initcalls : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
+	.barebox_magicvars : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
+		__barebox_magicvar_start = .;
+		.barebox_magicvar : { BAREBOX_MAGICVARS }
+		__barebox_magicvar_end = .;
+		. = ALIGN(4);
+	} > barebox
+
+	.barebox_initcalls : AT ( LOADADDR(.barebox_magicvars) + SIZEOF (.barebox_magicvars) ) {
 		__barebox_initcalls_start = .;
 		INITCALLS
 		__barebox_initcalls_end = .;

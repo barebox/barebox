@@ -1067,7 +1067,7 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	tmp_id = chip->read_byte(mtd);
 
 	if (tmp_manf != *maf_id || tmp_id != dev_id) {
-		printk(KERN_INFO "%s: second ID read did not match "
+		printk(KERN_ERR "%s: second ID read did not match "
 		       "%02x,%02x against %02x,%02x\n", __func__,
 		       *maf_id, dev_id, tmp_manf, tmp_id);
 		return ERR_PTR(-ENODEV);
@@ -1081,8 +1081,10 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 		}
 	}
 
-	if (!type)
+	if (!type) {
+		printk(KERN_ERR "NAND type unknown: %02x,%02x\n", *maf_id, dev_id);
 		return ERR_PTR(-ENODEV);
+	}
 
 	if (!mtd->name)
 		mtd->name = type->name;
@@ -1209,7 +1211,7 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 	type = nand_get_flash_type(mtd, chip, busw, &nand_maf_id);
 
 	if (IS_ERR(type)) {
-		printk(KERN_WARNING "No NAND device found!!!\n");
+		printk(KERN_WARNING "No NAND device found (%ld)!\n", PTR_ERR(type));
 		chip->select_chip(mtd, -1);
 		return PTR_ERR(type);
 	}

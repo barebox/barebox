@@ -31,24 +31,29 @@ static inline struct device_d *imx53_add_uart1(void)
 	return imx_add_uart((void *)MX53_UART2_BASE_ADDR, 1);
 }
 
+static inline struct device_d *imx53_add_uart2(void)
+{
+	return imx_add_uart((void *)MX53_UART3_BASE_ADDR, 2);
+}
+
 static inline struct device_d *imx53_add_fec(struct fec_platform_data *pdata)
 {
 	return imx_add_fec((void *)MX53_FEC_BASE_ADDR, pdata);
 }
 
-static inline struct device_d *imx53_add_mmc0(void *pdata)
+static inline struct device_d *imx53_add_mmc0(struct esdhc_platform_data *pdata)
 {
 	return imx_add_esdhc((void *)MX53_ESDHC1_BASE_ADDR, 0, pdata);
 }
 
-static inline struct device_d *imx53_add_mmc1(void *pdata)
+static inline struct device_d *imx53_add_mmc1(struct esdhc_platform_data *pdata)
 {
-	return imx_add_esdhc((void *)MX53_ESDHC2_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX53_ESDHC2_BASE_ADDR, 1, pdata);
 }
 
-static inline struct device_d *imx53_add_mmc2(void *pdata)
+static inline struct device_d *imx53_add_mmc2(struct esdhc_platform_data *pdata)
 {
-	return imx_add_esdhc((void *)MX53_ESDHC3_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc((void *)MX53_ESDHC3_BASE_ADDR, 2, pdata);
 }
 
 static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pdata)

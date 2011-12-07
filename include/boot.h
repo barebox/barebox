@@ -9,14 +9,12 @@ struct image_data {
 	struct image_handle *initrd;
 	const char *oftree;
 	int verify;
+	unsigned long initrd_address;
+	unsigned long initrd_size;
 };
 
 struct image_handler {
 	struct list_head list;
-
-	char *cmdline_options;
-	int (*cmdline_parse)(struct image_data *data, int opt, char *optarg);
-	char *help_string;
 
 	int image_type;
 	int (*bootm)(struct image_data *data);

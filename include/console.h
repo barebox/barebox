@@ -49,6 +49,7 @@ struct console_device {
 };
 
 int console_register(struct console_device *cdev);
+int console_unregister(struct console_device *cdev);
 
 extern struct list_head console_list;
 #define for_each_console(console) list_for_each_entry(console, &console_list, list)

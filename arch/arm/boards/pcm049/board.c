@@ -112,33 +112,3 @@ static int pcm049_devices_init(void)
 	return 0;
 }
 device_initcall(pcm049_devices_init);
-
-#ifdef CONFIG_SHELL_NONE
-int run_shell(void)
-{
-	int (*func)(void) = NULL;
-
-	switch (omap4_bootsrc()) {
-	case OMAP_BOOTSRC_MMC1:
-		printf("booting from MMC1\n");
-		func = omap_xload_boot_mmc();
-		break;
-	case OMAP_BOOTSRC_UNKNOWN:
-		printf("unknown boot source. Fall back to nand\n");
-	case OMAP_BOOTSRC_NAND:
-		printf("booting from NAND\n");
-		func = omap_xload_boot_nand(SZ_128K, SZ_256K);
-		break;
-	}
-
-	if (!func) {
-		printf("booting failed\n");
-		while (1);
-	}
-
-	shutdown_barebox();
-	func();
-
-	while (1);
-}
-#endif

@@ -10,6 +10,8 @@ ssize_t linux_write(int fd, const void *buf, size_t count);
 off_t linux_lseek(int fildes, off_t offset);
 int linux_tstc(int fd);
 
+int linux_execve(const char * filename, char *const argv[], char *const envp[]);
+
 int barebox_register_console(char *name_template, int stdinfd, int stdoutfd);
 
 struct linux_console_data {

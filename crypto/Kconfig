@@ -4,6 +4,9 @@ config CRC32
 config CRC16
 	bool
 
+config CRC7
+	bool
+
 menuconfig DIGEST
 	bool "Digest                        "
 

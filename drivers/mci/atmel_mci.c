@@ -369,6 +369,8 @@ static void mci_set_ios(struct mci_host *mci, struct device_d *mci_dev,
 		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_1BIT);
 		break;
 	}
+	atmel_mci_writel(host, AT91_MCI_SDCR, atmel_mci_readl(host, AT91_MCI_SDCR)
+		| host->hw_dev->id);
 
 	if (clock) {
 		atmel_set_clk_rate(host, clock);

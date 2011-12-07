@@ -122,6 +122,7 @@
 #include <glob.h>
 #include <getopt.h>
 #include <libbb.h>
+#include <magicvar.h>
 #include <linux/list.h>
 
 /*cmd_boot.c*/
@@ -540,6 +541,8 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 
 	return 0;
 }
+
+BAREBOX_MAGICVAR(OPTARG, "optarg for hush builtin getopt");
 #endif
 
 /* run_pipe_real() starts all the jobs, but doesn't wait for anything
@@ -1719,6 +1722,11 @@ BAREBOX_CMD_START(getopt)
 	.usage		= "getopt <optstring> <var>",
 	BAREBOX_CMD_HELP(cmd_getopt_help)
 BAREBOX_CMD_END
+#endif
+
+BAREBOX_MAGICVAR(PATH, "colon seperated list of pathes to search for executables");
+#ifdef CONFIG_HUSH_FANCY_PROMPT
+BAREBOX_MAGICVAR(PS1, "hush prompt");
 #endif
 
 /**

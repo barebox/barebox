@@ -4,7 +4,6 @@
 #include <driver.h>
 #include <environment.h>
 #include <image.h>
-#include <zlib.h>
 #include <init.h>
 #include <fs.h>
 #include <linux/list.h>
@@ -29,13 +28,6 @@ static int do_bootm_linux(struct image_data *data)
 	debug("## Transferring control to Linux (at address 0x%p) ...\n",
 	       theKernel);
 
-	if (relocate_image(data->os, (void *)image_get_load(os_header)))
-		return -1;
-
-	if (data->initrd)
-		if (relocate_image(data->initrd, (void *)image_get_load(&data->initrd->header)))
-			return -1;
-
 	/* we assume that the kernel is in place */
 	printf("\nStarting kernel %s...\n\n", data->initrd ? "with initrd " : "");
 
@@ -44,36 +36,7 @@ static int do_bootm_linux(struct image_data *data)
 	return -1;
 }
 
-static int image_handle_cmdline_parse(struct image_data *data, int opt,
-		char *optarg)
-{
-	int ret = 1;
-	int no;
-
-	switch (opt) {
-	case 'a':
-		no = simple_strtoul(optarg, NULL, 0);
-		armlinux_set_architecture(no);
-		ret = 0;
-		break;
-	case 'R':
-		no = simple_strtoul(optarg, NULL, 0);
-		armlinux_set_revision(no);
-		ret = 0;
-		break;
-	default:
-		break;
-	}
-
-	return ret;
-}
-
 static struct image_handler handler = {
-	.cmdline_options = "a:R:",
-	.cmdline_parse = image_handle_cmdline_parse,
-	.help_string = " -a <arch>        use architecture number <arch>\n"
-		       " -R <system_rev>  use system revison <system_rev>\n",
-
 	.bootm = do_bootm_linux,
 	.image_type = IH_OS_LINUX,
 };

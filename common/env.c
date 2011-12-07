@@ -251,3 +251,25 @@ int export(const char *varname)
 	return 0;
 }
 EXPORT_SYMBOL(export);
+
+void export_env_ull(const char *name, unsigned long long val)
+{
+	char *valstr = asprintf("%lld", val);
+
+	setenv(name, valstr);
+	export(name);
+
+	kfree(valstr);
+}
+EXPORT_SYMBOL(export_env_ull);
+
+unsigned long long getenv_ull(const char *name)
+{
+	const char *valstr = getenv(name);
+
+	if (!valstr)
+		return 0;
+
+	return simple_strtoull(valstr, NULL, 0);
+}
+EXPORT_SYMBOL(getenv_ull);

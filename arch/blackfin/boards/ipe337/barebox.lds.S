@@ -71,6 +71,10 @@ SECTIONS
 	.barebox_cmd : { BAREBOX_CMDS }
 	___barebox_cmd_end = .;
 
+	__barebox_magicvar_start = .;
+	.barebox_magicvar : { BAREBOX_MAGICVARS }
+	__barebox_magicvar_end = .;
+
 	___barebox_initcalls_start = .;
 	.barebox_initcalls : { INITCALLS }
 	___barebox_initcalls_end = .;

@@ -30,7 +30,7 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-#define CHUNK_SIZE	4096
+#define CHUNK_SIZE	(4096 * 2)
 
 struct ramfs_chunk {
 	char *data;

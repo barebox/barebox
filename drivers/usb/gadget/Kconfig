@@ -14,6 +14,13 @@ config USB_GADGET_DRIVER_ARC
 	prompt "Arc OTG device core"
 	depends on ARCH_IMX
 	select USB_GADGET_DUALSPEED
+
+config USB_GADGET_DRIVER_PXA27X
+	bool
+	prompt "PXA27x gadget driver"
+	depends on ARCH_PXA
+	select USB_GADGET_DUALSPEED
+	select POLLER
 endchoice
 
 choice

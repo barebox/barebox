@@ -1,7 +1,6 @@
 menuconfig MCI
 	bool "MCI drivers                   "
-	select ATA
-	select ATA_DISK
+	select DISK
 	help
 	  Add support for MCI drivers, used to handle MMC and SD cards
 
@@ -28,7 +27,7 @@ config MCI_INFO
 config MCI_WRITE
 	bool "Support writing to MCI cards"
 	default y
-	select ATA_WRITE
+	select DISK_WRITE
 
 comment "--- MCI host drivers ---"
 
@@ -79,5 +78,23 @@ config MCI_ATMEL
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  Atmel AT91.
+
+config MCI_SPI
+	bool "MMC/SD over SPI"
+	depends on SPI
+	help
+	  Some systems access MMC/SD/SDIO cards using a SPI controller
+	  instead of using a "native" MMC/SD/SDIO controller.  This has a
+	  disadvantage of being relatively high overhead, but a compensating
+	  advantage of working on many systems without dedicated MMC/SD/SDIO
+	  controllers.
+
+config MMC_SPI_CRC_ON
+	bool "Enable CRC protection for transfers"
+	select CRC7
+	select CRC16
+	depends on MCI_SPI
+	help
+	  Enable CRC protection for transfers
 
 endif

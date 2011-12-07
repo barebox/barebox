@@ -41,6 +41,10 @@ int lzo1x_decompress_safe(const unsigned char *src, size_t src_len,
 #define LZO_E_INPUT_NOT_CONSUMED	(-8)
 #define LZO_E_NOT_YET_IMPLEMENTED	(-9)
 
-int unlzo(int in_fd, int out_fd, int *dest_len);
+int decompress_unlzo(u8 *input, int in_len,
+		int (*fill) (void *, unsigned int),
+		int (*flush) (void *, unsigned int),
+		u8 *output, int *posp,
+		void (*error) (char *x));
 
 #endif

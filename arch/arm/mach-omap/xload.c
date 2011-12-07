@@ -52,3 +52,44 @@ void *omap_xload_boot_mmc(void)
 
 	return buf;
 }
+
+enum omap_boot_src omap_bootsrc(void)
+{
+#if defined(CONFIG_ARCH_OMAP3)
+	return omap3_bootsrc();
+#elif defined(CONFIG_ARCH_OMAP4)
+	return omap4_bootsrc();
+#endif
+}
+
+/*
+ * Replaces the default shell in xload configuration
+ */
+int run_shell(void)
+{
+	int (*func)(void) = NULL;
+
+	switch (omap_bootsrc())
+	{
+	case OMAP_BOOTSRC_MMC1:
+		printf("booting from MMC1\n");
+		func = omap_xload_boot_mmc();
+		break;
+	case OMAP_BOOTSRC_UNKNOWN:
+		printf("unknown boot source. Fall back to nand\n");
+	case OMAP_BOOTSRC_NAND:
+		printf("booting from NAND\n");
+		func = omap_xload_boot_nand(SZ_128K, SZ_256K);
+		break;
+	}
+
+	if (!func) {
+		printf("booting failed\n");
+		while (1);
+	}
+
+	shutdown_barebox();
+	func();
+
+	while (1);
+}

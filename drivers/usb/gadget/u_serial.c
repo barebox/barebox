@@ -367,12 +367,13 @@ static void serial_putc(struct console_device *cdev, char c)
 	struct gs_port	*port = container_of(cdev,
 					struct gs_port, cdev);
 	struct list_head	*pool = &port->write_pool;
-	struct usb_ep		*in = port->port_usb->in;
+	struct usb_ep		*in;
 	struct usb_request	*req;
 	int status;
 
 	if (list_empty(pool))
 		return;
+	in = port->port_usb->in;
 	req = list_entry(pool->next, struct usb_request, list);
 
 	req->length = 1;
@@ -381,8 +382,8 @@ static void serial_putc(struct console_device *cdev, char c)
 	*(unsigned char *)req->buf = c;
 	status = usb_ep_queue(in, req);
 
-	while (list_empty(pool))
-		fsl_udc_irq();
+	while (status >= 0 && list_empty(pool))
+		status = usb_gadget_poll();
 }
 
 static int serial_tstc(struct console_device *cdev)
@@ -399,7 +400,10 @@ static int serial_getc(struct console_device *cdev)
 					struct gs_port, cdev);
 	unsigned char ch;
 
-	while (kfifo_getc(port->recv_fifo, &ch));
+	if (!port->port_usb)
+		return -EIO;
+	while (kfifo_getc(port->recv_fifo, &ch))
+		usb_gadget_poll();
 
 	return ch;
 }
@@ -420,6 +424,10 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 
 	/* we "know" gserial_cleanup() hasn't been called */
 	port = ports[port_num].port;
+
+	/* In case of multiple activation (ie. multiple SET_INTERFACE) */
+	if (port->port_usb)
+		return 0;
 
 	/* activate the endpoints */
 	status = usb_ep_enable(gser->in, gser->in_desc);
@@ -475,7 +483,7 @@ static int do_mycdev(struct command *cmdtp, int argc, char *argv[])
 		printf("%c", i);
 		mdelay(500);
 		for (j = 0; j < 100; j++)
-			fsl_udc_irq();
+			usb_gadget_poll();
 	}
 	return 0;
 }
@@ -498,7 +506,9 @@ BAREBOX_CMD_END
 void gserial_disconnect(struct gserial *gser)
 {
 	struct gs_port	*port = gser->ioport;
-printf("%s\n", __func__);
+	struct console_device *cdev;
+
+	printf("%s\n", __func__);
 	if (!port)
 		return;
 
@@ -518,8 +528,9 @@ printf("%s\n", __func__);
 	gser->in->driver_data = NULL;
 
 	/* finally, free any unused/unusable I/O buffers */
-
 	gs_free_requests(gser->out, &port->read_pool);
 	gs_free_requests(gser->in, &port->write_pool);
-}
 
+	cdev = &port->cdev;
+	console_unregister(cdev);
+}

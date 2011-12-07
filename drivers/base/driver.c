@@ -214,7 +214,7 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
-void __iomem *dev_get_mem_region(struct device_d *dev, int num)
+static struct resource *dev_get_resource(struct device_d *dev, int num)
 {
 	int i, n = 0;
 
@@ -222,14 +222,39 @@ void __iomem *dev_get_mem_region(struct device_d *dev, int num)
 		struct resource *res = &dev->resource[i];
 		if (resource_type(res) == IORESOURCE_MEM) {
 			if (n == num)
-				return (void __force __iomem *)res->start;
+				return res;
 			n++;
 		}
 	}
 
 	return NULL;
 }
+
+void __iomem *dev_get_mem_region(struct device_d *dev, int num)
+{
+	struct resource *res;
+
+	res = dev_get_resource(dev, num);
+	if (!res)
+		return res;
+
+	return (void __force __iomem *)res->start;
+}
 EXPORT_SYMBOL(dev_get_mem_region);
+
+void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+{
+	struct resource *res;
+
+	res = dev_get_resource(dev, num);
+	if (!res)
+		return NULL;
+
+	res = request_iomem_region(dev_name(dev), res->start, res->size);
+
+	return (void __force __iomem *)res->start;
+}
+EXPORT_SYMBOL(dev_request_mem_region);
 
 int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
 {

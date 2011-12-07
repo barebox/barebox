@@ -1,2 +1,3 @@
 config USB_STORAGE
 	tristate "USB Mass Storage support"
+	select DISK

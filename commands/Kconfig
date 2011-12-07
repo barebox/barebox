@@ -107,6 +107,12 @@ config CMD_TIME
 	  checking for ctrl-c, so the time command can be used with commands
 	  which are interruptible with ctrl-c.
 
+config CMD_LINUX_EXEC
+	bool "linux exec"
+	depends on LINUX
+	help
+	  This command executes a command on the Linux host.
+
 endmenu
 
 menu "file commands                 "
@@ -215,6 +221,13 @@ config CMD_MEMINFO
 	tristate
 	prompt "meminfo"
 
+config CMD_IOMEM
+	tristate
+	prompt "iomem"
+	help
+	  Show information about iomem usage. Pendant to 'cat /proc/iomem'
+	  under Linux.
+
 config CMD_MEMORY
 	bool
 	default y
@@ -292,22 +305,16 @@ config CMD_BOOTM
 	select CRC32
 	prompt "bootm"
 
-config CMD_BOOTM_ZLIB
-	bool
-	depends on CMD_BOOTM
-	select ZLIB
-	prompt "bootm with zlib support"
-
-config CMD_BOOTM_BZLIB
-	bool
-	depends on CMD_BOOTM
-	select BZLIB
-	prompt "bootm with bzlib support"
-
 config CMD_BOOTM_SHOW_TYPE
 	bool
 	depends on CMD_BOOTM
 	prompt "show image information"
+
+config CMD_IMINFO
+	bool
+	prompt "iminfo"
+	help
+	  Show information about uImages
 
 config CMD_BOOTZ
 	tristate
@@ -383,6 +390,20 @@ config CMD_HELP
 	default y
 	prompt "help"
 
+config CMD_MAGICVAR
+	tristate
+	prompt "magicvar"
+	help
+	  barebox has some shell variables with special meanings. This
+	  command shows the available magic variables.
+
+config CMD_MAGICVAR_HELP
+	bool
+	prompt "display description"
+	depends on CMD_MAGICVAR
+	help
+	  Also display a description to the magic variables
+
 config CMD_DEVINFO
 	tristate
 	default y
@@ -414,13 +435,13 @@ config CMD_GPIO
 	  include gpio_set_value, gpio_get_value, gpio_direction_input and
 	  gpio_direction_output commands to control gpios.
 
-config CMD_UNLZO
+config CMD_UNCOMPRESS
 	bool
-	select LZO_DECOMPRESS
-	prompt "unlzo"
+	prompt "uncompress"
 	help
-	  Say yes here to get the unlzo command. lzo is a fast compression
-	  algorithm by Markus Franz Xaver Johannes Oberhumer.
+	  Say yes here to get the uncompress command. uncompress handles
+	  lzo, gzip and bzip2 compressed files depending on the compiled
+	  in compression libraries
 
 config CMD_I2C
 	bool

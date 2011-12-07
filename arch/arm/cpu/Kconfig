@@ -45,6 +45,11 @@ config CPU_V7
 	bool
 	select CPU_32v7
 
+# Xscale PXA25x, PXA27x
+config CPU_XSCALE
+	bool
+	select CPU_32v4T
+
 # Figure out what processor architecture version we should be using.
 # This defines the compiler instruction set which depends on the machine type.
 config CPU_32v4T

@@ -154,19 +154,31 @@ int console_register(struct console_device *newcdev)
 
 	list_add_tail(&newcdev->list, &console_list);
 
-	if (console_output_buffer) {
-		while (kfifo_getc(console_output_buffer, &ch) == 0)
-			console_putc(CONSOLE_STDOUT, ch);
-		kfifo_free(console_output_buffer);
-		console_output_buffer = NULL;
-	}
 
+	while (kfifo_getc(console_output_buffer, &ch) == 0)
+		console_putc(CONSOLE_STDOUT, ch);
 	if (first)
 		barebox_banner();
 
 	return 0;
 }
 EXPORT_SYMBOL(console_register);
+
+int console_unregister(struct console_device *cdev)
+{
+	struct device_d *dev = &cdev->class_dev;
+	int status;
+
+	list_del(&cdev->list);
+	if (list_empty(&console_list))
+		initialized = CONSOLE_UNINITIALIZED;
+
+	status = unregister_device(dev);
+	if (!status)
+		memset(cdev, 0, sizeof(*cdev));
+	return status;
+}
+EXPORT_SYMBOL(console_unregister);
 
 static int getc_raw(void)
 {

@@ -1,12 +1,7 @@
 /*
  * uncompress.c
  *
- * Copyright (C) 1999 Linus Torvalds
- * Copyright (C) 2000-2002 Transmeta Corporation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License (Version 2) as
- * published by the Free Software Foundation.
+ * (C) Copyright 1999 Linus Torvalds
  *
  * cramfs interfaces to the uncompression library. There's really just
  * three entrypoints:
@@ -22,81 +17,63 @@
 
 #include <common.h>
 #include <malloc.h>
-#include <watchdog.h>
-#include <zlib.h>
+#include <linux/kernel.h>
+#include <errno.h>
+#include <linux/zlib.h>
+#include <asm/byteorder.h>
+#include <cramfs/cramfs_fs.h>
 
 static z_stream stream;
-
-#define ZALLOC_ALIGNMENT	16
-
-static void *zalloc (void *x, unsigned items, unsigned size)
-{
-	void *p;
-
-	size *= items;
-	size = (size + ZALLOC_ALIGNMENT - 1) & ~(ZALLOC_ALIGNMENT - 1);
-
-	p = malloc (size);
-
-	return (p);
-}
-
-static void zfree (void *x, void *addr, unsigned nb)
-{
-	free (addr);
-}
+static int initialized;
 
 /* Returns length of decompressed data. */
-int cramfs_uncompress_block (void *dst, void *src, int srclen)
+int cramfs_uncompress_block(void *dst, int dstlen, void *src, int srclen)
 {
 	int err;
-
-	inflateReset (&stream);
 
 	stream.next_in = src;
 	stream.avail_in = srclen;
 
 	stream.next_out = dst;
-	stream.avail_out = 4096 * 2;
+	stream.avail_out = dstlen;
 
-	err = inflate (&stream, Z_FINISH);
+	err = zlib_inflateReset(&stream);
+	if (err != Z_OK) {
+		printk("zlib_inflateReset error %d\n", err);
+		zlib_inflateEnd(&stream);
+		zlib_inflateInit(&stream);
+	}
 
+	err = zlib_inflate(&stream, Z_FINISH);
 	if (err != Z_STREAM_END)
 		goto err;
 	return stream.total_out;
 
-      err:
-	/*printf ("Error %d while decompressing!\n", err); */
-	/*printf ("%p(%d)->%p\n", src, srclen, dst); */
-	return -1;
+err:
+	printk("Error %d while decompressing!\n", err);
+	printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
+	return -EIO;
 }
 
-int cramfs_uncompress_init (void)
+int cramfs_uncompress_init(void)
 {
-	int err;
-
-	stream.zalloc = zalloc;
-	stream.zfree = zfree;
-	stream.next_in = 0;
-	stream.avail_in = 0;
-
-#if defined(CONFIG_HW_WATCHDOG) || defined(CONFIG_WATCHDOG)
-	stream.outcb = (cb_func) WATCHDOG_RESET;
-#else
-	stream.outcb = Z_NULL;
-#endif /* CONFIG_HW_WATCHDOG */
-
-	err = inflateInit (&stream);
-	if (err != Z_OK) {
-		printf ("Error: inflateInit2() returned %d\n", err);
-		return -1;
+	if (!initialized++) {
+		stream.workspace = malloc(zlib_inflate_workspacesize());
+		if ( !stream.workspace ) {
+			initialized = 0;
+			return -ENOMEM;
+		}
+		stream.next_in = NULL;
+		stream.avail_in = 0;
+		zlib_inflateInit(&stream);
 	}
-
 	return 0;
 }
 
-int cramfs_uncompress_exit (void)
+void cramfs_uncompress_exit(void)
 {
-	inflateEnd (&stream);
-	return 0;
+	if (!--initialized) {
+		zlib_inflateEnd(&stream);
+		vfree(stream.workspace);
+	}
 }

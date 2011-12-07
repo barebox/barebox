@@ -30,8 +30,6 @@
 #include <command.h>
 #include <image.h>
 #include <malloc.h>
-#include <zlib.h>
-#include <bzlib.h>
 #include <environment.h>
 #include <asm/byteorder.h>
 #include <xfuncs.h>
@@ -42,58 +40,9 @@
 #include <boot.h>
 #include <rtc.h>
 #include <init.h>
+#include <magicvar.h>
+#include <uncompress.h>
 #include <asm-generic/memory_layout.h>
-
-/*
- *  Continue booting an OS image; caller already has:
- *  - copied image header to global variable `header'
- *  - checked header magic number, checksums (both header & image),
- *  - verified image architecture (PPC) and type (KERNEL or MULTI),
- *  - loaded (first part of) image to header load address,
- *  - disabled interrupts.
- */
-typedef void boot_os_Fcn(struct command *cmdtp, int flag,
-			  int	argc, char *argv[],
-			  ulong	addr,		/* of image to boot */
-			  ulong	*len_ptr,	/* multi-file image length table */
-			  int	verify);	/* getenv("verify")[0] != 'n' */
-
-#ifndef CFG_BOOTM_LEN
-#define CFG_BOOTM_LEN	0x800000	/* use 8MByte as default max gunzip size */
-#endif
-
-#ifdef CONFIG_SILENT_CONSOLE
-static void
-fixup_silent_linux ()
-{
-	char buf[256], *start, *end;
-	char *cmdline = getenv ("bootargs");
-
-	/* Only fix cmdline when requested */
-	if (!(gd->flags & GD_FLG_SILENT))
-		return;
-
-	debug ("before silent fix-up: %s\n", cmdline);
-	if (cmdline) {
-		if ((start = strstr (cmdline, "console=")) != NULL) {
-			end = strchr (start, ' ');
-			strncpy (buf, cmdline, (start - cmdline + 8));
-			if (end)
-				strcpy (buf + (start - cmdline + 8), end);
-			else
-				buf[start - cmdline + 8] = '\0';
-		} else {
-			strcpy (buf, cmdline);
-			strcat (buf, " console=");
-		}
-	} else {
-		strcpy (buf, "console=");
-	}
-
-	setenv ("bootargs", buf);
-	debug ("after silent fix-up: %s\n", buf);
-}
-#endif /* CONFIG_SILENT_CONSOLE */
 
 struct image_handle_data* image_handle_data_get_by_num(struct image_handle* handle, int num)
 {
@@ -108,50 +57,27 @@ int relocate_image(struct image_handle *handle, void *load_address)
 	image_header_t *hdr = &handle->header;
 	unsigned long len  = image_get_size(hdr);
 	struct image_handle_data *iha;
-	unsigned long data;
-
-#if defined CONFIG_CMD_BOOTM_ZLIB || defined CONFIG_CMD_BOOTM_BZLIB
-	uint	unc_len = CFG_BOOTM_LEN;
-#endif
+	void *data;
+	int ret;
 
 	iha = image_handle_data_get_by_num(handle, 0);
-	data = (unsigned long)(iha->data);
+	data = iha->data;
 
 	switch (image_get_comp(hdr)) {
 	case IH_COMP_NONE:
-		if(image_get_load(hdr) == data) {
+		if (load_address == data) {
 			printf ("   XIP ... ");
 		} else {
-			memmove ((void *) image_get_load(hdr), (uchar *)data, len);
+			memmove(load_address, data, len);
 		}
 		break;
-#ifdef CONFIG_CMD_BOOTM_ZLIB
-	case IH_COMP_GZIP:
-		printf ("   Uncompressing ... ");
-		if (gunzip (load_address, unc_len,
-			    (uchar *)data, &len) != 0)
-			return -1;
-		break;
-#endif
-#ifdef CONFIG_CMD_BOOTM_BZLIB
-	case IH_COMP_BZIP2:
-		printf ("   Uncompressing ... ");
-		/*
-		 * If we've got less than 4 MB of malloc() space,
-		 * use slower decompression algorithm which requires
-		 * at most 2300 KB of memory.
-		 */
-		if (BZ2_bzBuffToBuffDecompress (load_address,
-						&unc_len, (char *)data, len,
-						MALLOC_SIZE < (4096 * 1024), 0)
-						!= BZ_OK)
-			return -1;
-		break;
-#endif
 	default:
-		printf("Unimplemented compression type %d\n",
-		       image_get_comp(hdr));
-		return -1;
+		printf ("   Uncompressing ... ");
+		ret = uncompress(data, len, NULL, NULL, load_address, NULL,
+				uncompress_err_stdout);
+		if (ret)
+			return ret;
+		break;
 	}
 
 	return 0;
@@ -168,7 +94,7 @@ int register_image_handler(struct image_handler *handler)
 
 /*
  * generate a image_handle from a multi_image
- * this image_handle can be free by unmap_image
+ * this image_handle can be freed by unmap_image
  */
 static struct image_handle *get_fake_image_handle(struct image_data *data, int num)
 {
@@ -188,118 +114,53 @@ static struct image_handle *get_fake_image_handle(struct image_data *data, int n
 	return handle;
 }
 
-static int initrd_handler_parse_options(struct image_data *data, int opt,
-		char *optarg)
-{
-	uint32_t initrd_start;
-
-	switch(opt) {
-	case 'L':
-		if (!data->initrd) {
-			eprintf("Warning -L ingnored. Specify the initrd first\n");
-			break;
-		}
-		initrd_start = simple_strtoul(optarg, NULL, 0);
-		printf("initrd_start=0x%x\n", initrd_start);
-		data->initrd->header.ih_load = cpu_to_uimage(initrd_start);
-		break;
-	case 'r':
-		printf("use initrd %s\n", optarg);
-		/* check for multi image @<num> */
-		if (optarg[0] == '@') {
-			int num = simple_strtol(optarg + 1, NULL, 0);
-
-			data->initrd = get_fake_image_handle(data, num);
-		} else {
-			data->initrd = map_image(optarg, data->verify);
-		}
-		if (!data->initrd)
-			return -1;
-		break;
-	default:
-		return 1;
-	}
-
-	return 0;
-}
-
-static struct image_handler initrd_handler = {
-	.cmdline_options = "r:L:",
-	.cmdline_parse = initrd_handler_parse_options,
-	.help_string = " -r <initrd>    specify an initrd image\n"
-		       " -L <load addr> specify initrd load address",
-};
-
-static int initrd_register_image_handler(void)
-{
-	return register_image_handler(&initrd_handler);
-}
-
-late_initcall(initrd_register_image_handler);
-
-static int handler_parse_options(struct image_data *data, int opt, char *optarg)
-{
-	struct image_handler *handler;
-	int ret;
-
-	list_for_each_entry(handler, &handler_list, list) {
-		if (!handler->cmdline_parse)
-			continue;
-
-		ret = handler->cmdline_parse(data, opt, optarg);
-		if (ret > 0)
-			continue;
-
-		return ret;
-	}
-
-	return -1;
-}
-
 static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 {
 	int	opt;
 	image_header_t *os_header;
-	struct image_handle *os_handle, *initrd_handle = NULL;
+	struct image_handle *os_handle = NULL;
 	struct image_handler *handler;
 	struct image_data data;
-	char options[53]; /* worst case: whole alphabet with colons */
+	int ret = 1;
 
 	memset(&data, 0, sizeof(struct image_data));
 	data.verify = 1;
+	data.initrd_address = ~0;
 
-	/* Collect options from registered handlers */
-	strcpy(options, "nh");
-	list_for_each_entry(handler, &handler_list, list) {
-		if (handler->cmdline_options)
-			strcat(options, handler->cmdline_options);
-	}
-
-	while((opt = getopt(argc, argv, options)) > 0) {
+	while ((opt = getopt(argc, argv, "nr:L:")) > 0) {
 		switch(opt) {
 		case 'n':
 			data.verify = 0;
 			break;
-		case 'h':
-			printf("bootm advanced options:\n");
+		case 'L':
+			data.initrd_address = simple_strtoul(optarg, NULL, 0);
+			break;
+		case 'r':
+			printf("use initrd %s\n", optarg);
+			/* check for multi image @<num> */
+			if (optarg[0] == '@') {
+				int num = simple_strtol(optarg + 1, NULL, 0);
 
-			list_for_each_entry(handler, &handler_list, list) {
-				if (handler->help_string)
-					printf("%s\n", handler->help_string);
+				data.initrd = get_fake_image_handle(&data, num);
+			} else {
+				data.initrd = map_image(optarg, data.verify);
 			}
-
-			return 0;
+			if (!data.initrd)
+				goto err_out;
+			break;
 		default:
 			break;
 		}
 	}
 
-	if (optind == argc)
-		return COMMAND_ERROR_USAGE;
+	if (optind == argc) {
+		ret = COMMAND_ERROR_USAGE;
+		goto err_out;
+	}
 
 	os_handle = map_image(argv[optind], data.verify);
 	if (!os_handle)
-		return 1;
+		goto err_out;
 	data.os = os_handle;
 
 	os_header = &os_handle->header;
@@ -310,30 +171,34 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 		goto err_out;
 	}
 
-	optind = 0;
-
-	while((opt = getopt(argc, argv, options)) > 0) {
-		switch(opt) {
-		case 'h':
-		case 'n':
-			break;
-		default:
-			if (!handler_parse_options(&data, opt, optarg))
-				continue;
-
-			return 1;
-		}
-	}
-
 	/*
 	 * We have reached the point of no return: we are going to
 	 * overwrite all exception vector code, so we cannot easily
 	 * recover from any failures any more...
 	 */
 
-	disable_interrupts();
-
 	puts ("OK\n");
+
+	/*
+	 * FIXME: we do not check at all whether
+	 * - we will write the image to sdram
+	 * - we overwrite ourselves
+	 * - kernel and initrd overlap
+	 */
+	ret = relocate_image(data.os, (void *)image_get_load(os_header));
+	if (ret)
+		goto err_out;
+
+	if (data.initrd) {
+		if (data.initrd && data.initrd_address == ~0)
+			data.initrd_address = uimage_to_cpu(data.initrd->header.ih_load);
+
+		data.initrd_size = image_get_data_size(&data.initrd->header);
+
+		ret = relocate_image(data.initrd, (void *)data.initrd_address);
+		if (ret)
+			goto err_out;
+	}
 
 	/* loop through the registered handlers */
 	list_for_each_entry(handler, &handler_list, list) {
@@ -350,15 +215,17 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 err_out:
 	if (os_handle)
 		unmap_image(os_handle);
-	if (initrd_handle)
-		unmap_image(initrd_handle);
-	return 1;
+	if (data.initrd)
+		unmap_image(data.initrd);
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(bootm)
-BAREBOX_CMD_HELP_USAGE("bootm [-n] image\n")
+BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
 BAREBOX_CMD_HELP_OPT  ("-n",  "Do not verify the image (speeds up boot process)\n")
+BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")
+BAREBOX_CMD_HELP_OPT  ("-L <load addr>","specify initrd load address")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bootm)
@@ -367,84 +234,7 @@ BAREBOX_CMD_START(bootm)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
 
-/**
- * @page bootm_command
-
-\todo What does bootm do, what kind of image does it boot?
-
- */
-
-#ifdef CONFIG_CMD_IMI
-static int do_iminfo(struct command *cmdtp, int argc, char *argv[])
-{
-	int	arg;
-	ulong	addr;
-	int     rcode=0;
-
-	if (argc < 2) {
-		return image_info (load_addr);
-	}
-
-	for (arg=1; arg <argc; ++arg) {
-		addr = simple_strtoul(argv[arg], NULL, 16);
-		if (image_info (addr) != 0) rcode = 1;
-	}
-	return rcode;
-}
-
-static int image_info (ulong addr)
-{
-	ulong	data, len, checksum;
-	image_header_t *hdr = &header;
-
-	printf ("\n## Checking Image at %08lx ...\n", addr);
-
-	/* Copy header so we can blank CRC field for re-calculation */
-	memmove (&header, (char *)addr, image_get_header_size());
-
-	if (image_get_magic(hdr) != IH_MAGIC) {
-		puts ("   Bad Magic Number\n");
-		return 1;
-	}
-
-	data = (ulong)&header;
-	len  = image_get_header_size();
-
-	checksum = image_get_hcrc(hdr);
-	hdr->ih_hcrc = 0;
-
-	if (crc32 (0, (uchar *)data, len) != checksum) {
-		puts ("   Bad Header Checksum\n");
-		return 1;
-	}
-
-	/* for multi-file images we need the data part, too */
-	print_image_hdr ((image_header_t *)addr);
-
-	data = addr + image_get_header_size();
-	len  = image_get_size(hdr);
-
-	puts ("   Verifying Checksum ... ");
-	if (crc32 (0, (uchar *)data, len) != image_get_dcrc(hdr)) {
-		puts ("   Bad Data CRC\n");
-		return 1;
-	}
-	puts ("OK\n");
-	return 0;
-}
-
-BAREBOX_CMD_HELP_START(iminfo)
-BAREBOX_CMD_HELP_USAGE("iminfo\n")
-BAREBOX_CMD_HELP_SHORT("Print header information for an application image.\n")
-BAREBOX_CMD_HELP_END
-
-BAREBOX_CMD_START(iminfo)
-	.cmd		= do_iminfo,
-	.usage		= "print header information for an application image",
-	BAREBOX_CMD_HELP(cmd_iminfo_help)
-BAREBOX_CMD_END
-
-#endif	/* CONFIG_CMD_IMI */
+BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
 
 #ifdef CONFIG_BZLIB
 void bz_internal_error(int errcode)

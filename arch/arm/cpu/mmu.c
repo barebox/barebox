@@ -9,7 +9,7 @@
 
 static unsigned long *ttb;
 
-static void create_section(unsigned long virt, unsigned long phys, int size_m,
+static void create_sections(unsigned long virt, unsigned long phys, int size_m,
 		unsigned int flags)
 {
 	int i;
@@ -226,7 +226,7 @@ static int mmu_init(void)
 	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
 
 	/* create a flat mapping using 1MiB sections */
-	create_section(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
+	create_sections(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
 			PMD_TYPE_SECT);
 
 	vectors_init();
@@ -237,7 +237,7 @@ static int mmu_init(void)
 	 * below
 	 */
 	for_each_memory_bank(bank)
-		create_section(bank->start, bank->start, bank->size >> 20,
+		create_sections(bank->start, bank->start, bank->size >> 20,
 				PMD_SECT_DEF_CACHED);
 
 	asm volatile (

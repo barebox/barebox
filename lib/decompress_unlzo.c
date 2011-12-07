@@ -106,7 +106,7 @@ static inline int parse_header(u8 *input, int *skip, int in_len)
 	return 1;
 }
 
-static inline int __unlzo(u8 *input, int in_len,
+int decompress_unlzo(u8 *input, int in_len,
 				int (*fill) (void *, unsigned int),
 				int (*flush) (void *, unsigned int),
 				u8 *output, int *posp,
@@ -283,29 +283,4 @@ exit_1:
 		free(out_buf);
 exit:
 	return ret;
-}
-
-static int in_fd;
-static int out_fd;
-
-static int unlzo_fill(void *buf, unsigned int len)
-{
-	return read(in_fd, buf, len);
-}
-
-static int unlzo_flush(void *buf, unsigned int len)
-{
-	return write(out_fd, buf, len);
-}
-
-static void unlzo_error(char *s)
-{
-	printf("%s\n", s);
-}
-
-int unlzo(int _in_fd, int _out_fd, int *dest_len)
-{
-	in_fd = _in_fd;
-	out_fd = _out_fd;
-	return __unlzo(NULL, 0, unlzo_fill, unlzo_flush, NULL, NULL, unlzo_error);
 }

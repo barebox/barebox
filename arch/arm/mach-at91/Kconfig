@@ -20,6 +20,7 @@ config BOARDINFO
 	default "Ronetix PM9261" if MACH_PM9261
 	default "Ronetix PM9263" if MACH_PM9263
 	default "Ronetix PM9G45" if MACH_PM9G45
+	default "Aizo dSS11" if MACH_DSS11
 
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
@@ -174,6 +175,13 @@ config MACH_USB_A9G20
 	help
 	  Select this if you are using a Calao Systems USB-A9G20.
 	  <http://www.calao-systems.com>
+
+config MACH_DSS11
+	bool "aizo dSS11"
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	help
+	  Select this if you are using aizo dSS11
+	  that embeds only one SD/MMC slot.
 
 endchoice
 

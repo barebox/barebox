@@ -96,8 +96,8 @@ static int usb_stor_test_unit_ready(ccb *srb, struct us_data *us)
 	retries = 10;
 	do {
 		US_DEBUGP("SCSI_TST_U_RDY\n");
-		memset(&srb->cmd[0], 0, 6);
-		srb->cmdlen = 6;
+		memset(&srb->cmd[0], 0, 12);
+		srb->cmdlen = 12;
 		srb->cmd[0] = SCSI_TST_U_RDY;
 		srb->datalen = 0;
 		result = us->transport(srb, us);
@@ -193,35 +193,34 @@ static int usb_stor_write_10(ccb *srb, struct us_data *us,
  * Disk driver interface
  ***********************************************************************/
 
-#define US_MAX_IO_BLK 32U
+#define US_MAX_IO_BLK 32
+
+#define to_usb_mass_storage(x) container_of((x), struct us_blk_dev, blk)
 
 enum { io_rd, io_wr };
 
 /* Read / write a chunk of sectors on media */
-static int usb_stor_blk_io(int io_op, struct device_d *disk_dev,
-                           uint64_t sector_start, unsigned sector_count,
-                           void *buffer)
+static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
+			int sector_start, int sector_count, void *buffer)
 {
-	struct ata_interface *pata_if = disk_dev->platform_data;
-	struct us_blk_dev *pblk_dev = (struct us_blk_dev *)pata_if->priv;
+	struct us_blk_dev *pblk_dev = to_usb_mass_storage(disk_dev);
 	struct us_data *us = pblk_dev->us;
 	ccb us_ccb;
-	ushort const sector_size = 512;
 	unsigned sectors_done;
 
 	if (sector_count == 0)
 		return 0;
 
 	/* check for unsupported block size */
-	if (pblk_dev->blksz != sector_size) {
-		US_DEBUGP("%s: unsupported block size %lu\n",
-		          __func__, pblk_dev->blksz);
+	if (pblk_dev->blk.blockbits != SECTOR_SHIFT) {
+		US_DEBUGP("%s: unsupported block shift %d\n",
+		          __func__, pblk_dev->blk.blockbits);
 		return -EINVAL;
 	}
 
 	/* check for invalid sector_start */
-	if (sector_start >= pblk_dev->blknum || sector_start > (ulong)-1) {
-		US_DEBUGP("%s: start sector %llu too large\n",
+	if (sector_start >= pblk_dev->blk.num_blocks || sector_start > (ulong)-1) {
+		US_DEBUGP("%s: start sector %d too large\n",
 		          __func__, sector_start);
 		return -EINVAL;
 	}
@@ -242,21 +241,21 @@ static int usb_stor_blk_io(int io_op, struct device_d *disk_dev,
 		sector_count = INT_MAX;
 		US_DEBUGP("Restricting I/O to %u blocks\n", sector_count);
 	}
-	if (sector_start + sector_count > pblk_dev->blknum) {
-		sector_count = pblk_dev->blknum - sector_start;
+	if (sector_start + sector_count > pblk_dev->blk.num_blocks) {
+		sector_count = pblk_dev->blk.num_blocks - sector_start;
 		US_DEBUGP("Restricting I/O to %u blocks\n", sector_count);
 	}
 
 	/* read / write the requested data */
-	US_DEBUGP("%s %u block(s), starting from %llu\n",
+	US_DEBUGP("%s %u block(s), starting from %d\n",
 	          ((io_op == io_rd) ? "Read" : "Write"),
 	          sector_count, sector_start);
 	sectors_done = 0;
 	while (sector_count > 0) {
 		int result;
-		ushort n = (ushort)min(sector_count, US_MAX_IO_BLK);
-		us_ccb.pdata = buffer + sectors_done * sector_size;
-		us_ccb.datalen = n * (ulong)sector_size;
+		unsigned n = min(sector_count, US_MAX_IO_BLK);
+		us_ccb.pdata = buffer + (sectors_done * SECTOR_SIZE);
+		us_ccb.datalen = n * SECTOR_SIZE;
 		if (io_op == io_rd)
 			result = usb_stor_read_10(&us_ccb, us,
 			                          (ulong)sector_start, n);
@@ -264,7 +263,7 @@ static int usb_stor_blk_io(int io_op, struct device_d *disk_dev,
 			result = usb_stor_write_10(&us_ccb, us,
 			                           (ulong)sector_start, n);
 		if (result != 0) {
-			US_DEBUGP("I/O error at sector %llu\n", sector_start);
+			US_DEBUGP("I/O error at sector %d\n", sector_start);
 			break;
 		}
 		sector_start += n;
@@ -274,33 +273,47 @@ static int usb_stor_blk_io(int io_op, struct device_d *disk_dev,
 
 	usb_disable_asynch(0);
 
-	US_DEBUGP("Successful I/O of %u blocks\n", sectors_done);
+	US_DEBUGP("Successful I/O of %d blocks\n", sectors_done);
 
 	return (sector_count != 0) ? -EIO : 0;
 }
 
 /* Write a chunk of sectors to media */
-static int usb_stor_blk_write(struct device_d *disk_dev, uint64_t sector_start,
-                              unsigned sector_count, const void *buffer)
+static int __maybe_unused usb_stor_blk_write(struct block_device *blk,
+				const void *buffer, int block, int num_blocks)
 {
-	return usb_stor_blk_io(io_wr, disk_dev, sector_start, sector_count,
-	                       (void *)buffer);
+	return usb_stor_blk_io(io_wr, blk, block, num_blocks, (void *)buffer);
 }
 
 /* Read a chunk of sectors from media */
-static int usb_stor_blk_read(struct device_d *disk_dev, uint64_t sector_start,
-                             unsigned sector_count, void *buffer)
+static int usb_stor_blk_read(struct block_device *blk, void *buffer, int block,
+				int num_blocks)
 {
-	return usb_stor_blk_io(io_rd, disk_dev, sector_start, sector_count,
-	                       buffer);
+	return usb_stor_blk_io(io_rd, blk, block, num_blocks, buffer);
 }
 
+static struct block_device_ops usb_mass_storage_ops = {
+	.read = usb_stor_blk_read,
+#ifdef CONFIG_BLOCK_WRITE
+	.write = usb_stor_blk_write,
+#endif
+};
 
 /***********************************************************************
  * Block device routines
  ***********************************************************************/
 
 static unsigned char us_io_buf[512];
+
+static int usb_limit_blk_cnt(unsigned cnt)
+{
+	if (cnt > 0x7fffffff) {
+		pr_warn("Limiting device size due to 31 bit contraints\n");
+		return 0x7fffffff;
+	}
+
+	return (int)cnt;
+}
 
 /* Prepare a disk device */
 static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
@@ -313,7 +326,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	us_ccb.pdata = us_io_buf;
 	us_ccb.lun = pblk_dev->lun;
 
-	pblk_dev->blknum = 0;
+	pblk_dev->blk.num_blocks = 0;
 	usb_disable_asynch(1);
 
 	/* get device info */
@@ -350,11 +363,12 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	}
 	pcap = (unsigned long *)us_ccb.pdata;
 	US_DEBUGP("Read Capacity returns: 0x%lx, 0x%lx\n", pcap[0], pcap[1]);
-	pblk_dev->blknum = be32_to_cpu(pcap[0]);
-	pblk_dev->blksz = be32_to_cpu(pcap[1]);
-	pblk_dev->blknum++;
-	US_DEBUGP("Capacity = 0x%llx, blocksz = 0x%lx\n",
-	          pblk_dev->blknum, pblk_dev->blksz);
+	pblk_dev->blk.num_blocks = usb_limit_blk_cnt(be32_to_cpu(pcap[0]) + 1);
+	if (be32_to_cpu(pcap[1]) != SECTOR_SIZE)
+		pr_warn("Support only %d bytes sectors\n", SECTOR_SIZE);
+	pblk_dev->blk.blockbits = SECTOR_SHIFT;
+	US_DEBUGP("Capacity = 0x%x, blockshift = 0x%x\n",
+	          pblk_dev->blk.num_blocks, pblk_dev->blk.blockbits);
 
 Exit:
 	usb_disable_asynch(0);
@@ -362,39 +376,45 @@ Exit:
 }
 
 /* Create and register a disk device for the specified LUN */
-static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
+static int usb_stor_add_blkdev(struct us_data *us, struct device_d *dev,
+							unsigned char lun)
 {
 	struct us_blk_dev *pblk_dev;
-	struct device_d *pdev;
-	struct ata_interface *pata_if;
 	int result;
 
-	/* allocate blk dev data */
-	pblk_dev = (struct us_blk_dev *)malloc(sizeof(struct us_blk_dev));
-	if (!pblk_dev)
-		return -ENOMEM;
-	memset(pblk_dev, 0, sizeof(struct us_blk_dev));
+	/* allocate a new USB block device */
+	pblk_dev = xzalloc(sizeof(struct us_blk_dev));
 
 	/* initialize blk dev data */
+	pblk_dev->blk.dev = dev;
+	pblk_dev->blk.ops = &usb_mass_storage_ops;
 	pblk_dev->us = us;
 	pblk_dev->lun = lun;
-	pata_if = &pblk_dev->ata_if;
-	pata_if->read = &usb_stor_blk_read;
-	pata_if->write = &usb_stor_blk_write;
-	pata_if->priv = pblk_dev;
-	pdev = &pblk_dev->dev;
-	strcpy(pdev->name, "disk");
-	pdev->platform_data = pata_if;
 
 	/* read some info and get the unit ready */
 	result = usb_stor_init_blkdev(pblk_dev);
 	if (result < 0)
 		goto BadDevice;
 
-	/* register disk device */
-	result = register_device(pdev);
-	if (result < 0)
+	result = cdev_find_free_index("disk");
+	if (result == -1)
+		pr_err("Cannot find a free number for the disk node\n");
+	pr_info("Using index %d for the new disk\n", result);
+
+	pblk_dev->blk.cdev.name = asprintf("disk%d", result);
+	pblk_dev->blk.blockbits = SECTOR_SHIFT;
+
+	result = blockdevice_register(&pblk_dev->blk);
+	if (result != 0) {
+		dev_err(dev, "Failed to register blockdevice\n");
 		goto BadDevice;
+	}
+
+	/* create partitions on demand */
+	result = parse_partition_table(&pblk_dev->blk);
+	if (result != 0)
+		dev_warn(dev, "No partition table found\n");
+
 	list_add_tail(&pblk_dev->list, &us_blkdev_list);
 	US_DEBUGP("USB disk device successfully added\n");
 
@@ -485,7 +505,7 @@ static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 
 	/* register a disk device for each active LUN */
 	for (lun=0; lun<=us->max_lun; lun++) {
-		if (usb_stor_add_blkdev(us, lun) == 0)
+		if (usb_stor_add_blkdev(us, &usbdev->dev, lun) == 0)
 			num_devs++;
 	}
 

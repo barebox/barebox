@@ -164,3 +164,7 @@ int console_register(struct console_device *newcdev)
 	}
 	return 0;
 }
+
+int console_unregister(struct console_device *cdev)
+{
+}

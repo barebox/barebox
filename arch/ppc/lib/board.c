@@ -56,19 +56,12 @@ void board_init_r (ulong end_of_ram)
 	debug("malloc_end: 0x%08x\n", malloc_end);
 	debug("TEXT_BASE after relocation: 0x%08x\n", _text_base);
 
-	mem_malloc_init((void *)(malloc_end - MALLOC_SIZE), (void *)malloc_end);
+	mem_malloc_init((void *)(malloc_end - MALLOC_SIZE), (void *)(malloc_end - 1));
 
 	/*
 	 * Setup trap handlers
 	 */
 	trap_init (0);
-
-	/*
-	 * Enable Interrupts
-	 */
-#ifdef CONFIG_USE_IRQ
-	interrupt_init ();
-#endif
 
 	/* Initialization complete - start the monitor */
 

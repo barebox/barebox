@@ -62,6 +62,10 @@ config ARCH_NOMADIK
 config ARCH_OMAP
 	bool "TI OMAP"
 
+config ARCH_PXA
+	bool "Intel/Marvell PXA based"
+	select GENERIC_GPIO
+
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2412, S3C2413, S3C2440, S3C2442, S3C2443"
 	select CPU_ARM920T
@@ -81,6 +85,7 @@ source arch/arm/mach-mxs/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
+source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-s3c24xx/Kconfig
 source arch/arm/mach-versatile/Kconfig
 

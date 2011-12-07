@@ -1,7 +1,6 @@
 obj-y += bat_rw.o
 obj-y += board.o
 obj-y += extable.o
-obj-$(CONFIG_USE_IRQ) += interrupts.o
 obj-y += kgdb.o
 obj-y += ppcstring.o
 obj-y += ticks.o

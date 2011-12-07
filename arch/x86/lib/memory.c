@@ -54,12 +54,12 @@ static int x86_mem_malloc_init(void)
 	 */
 	if (memory_size >= (15 * 1024 * 1024 + MALLOC_SIZE))
 		mem_malloc_init((void*)(16 * 1024 * 1024),
-				(void*)(16 * 1024 * 1024) + MALLOC_SIZE);
+				(void*)(16 * 1024 * 1024 + MALLOC_SIZE - 1));
 	else
 		return -1;
 #else
 	mem_malloc_init((void *)MALLOC_BASE,
-			(void *)(MALLOC_BASE + MALLOC_SIZE));
+			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
 #endif
 	return 0;
 }

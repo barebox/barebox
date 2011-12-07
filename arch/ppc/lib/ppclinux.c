@@ -200,9 +200,6 @@ static int do_bootm_linux(struct image_data *idata)
 
 	kernel = (void (*)(bd_t *, ulong, ulong, ulong, ulong))image_get_ep(os_header); /* FIXME */
 
-	if (relocate_image(idata->os, (void *)image_get_load(os_header)))
-		return -1;
-
 #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
 	unlock_ram_in_cache();
 #endif

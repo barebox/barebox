@@ -36,19 +36,6 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
 				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ )
 
-ifeq ($(SUBARCH),x86_64)
-ELF_CLASS := ELFCLASS64
-endif
-ifeq ($(SUBARCH),i386)
-ELF_CLASS  := ELFCLASS32
-endif
-ifeq ($(SUBARCH),powerpc)
-ELF_CLASS  := ELFCLASS32
-endif
-
-CPPFLAGS += -DELF_CLASS="$(ELF_CLASS)"
-export ELF_CLASS
-
 archprepare: maketools
 
 PHONY += maketools

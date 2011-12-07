@@ -51,6 +51,7 @@ void at91_add_device_nand(struct atmel_nand_data *data);
 #define AT91SAM_ETHER_MII		(0 << 0)
 #define AT91SAM_ETHER_RMII		(1 << 0)
 #define AT91SAM_ETHER_FORCE_LINK	(1 << 1)
+#define AT91SAM_ETX2_ETX3_ALTERNATIVE	(2 << 0)
 
 struct at91_ether_platform_data {
 	unsigned int flags;

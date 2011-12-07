@@ -27,6 +27,7 @@ if ARCH_PXA27X
 
 choice
 	prompt "PXA27x Board Type"
+	bool
 
 endchoice
 

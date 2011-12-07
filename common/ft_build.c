@@ -591,6 +591,7 @@ void ft_setup(void *blob, bd_t * bd, ulong initrd_start, ulong initrd_end)
 #endif
 }
 
+#if 0
 static int oftree_handler_cmdline_parse(struct image_data *data, int opt,
 		char *optarg)
 {
@@ -616,4 +617,4 @@ static int oftree_register_image_handler(void)
 }
 
 late_initcall(oftree_register_image_handler);
-
+#endif

@@ -8,9 +8,6 @@ menuconfig DRIVER_CFI
 
 if DRIVER_CFI
 
-config HAS_CFI
-	bool
-
 config DRIVER_CFI_INTEL
 	default y
 	depends on DRIVER_CFI

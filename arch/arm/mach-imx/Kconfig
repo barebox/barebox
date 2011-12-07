@@ -182,7 +182,6 @@ config MACH_MX1ADS
 config MACH_SCB9328
 	bool "Synertronixx scb9328"
 	select HAS_DM9000
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Synertronixx scb9328 board
@@ -201,7 +200,6 @@ choice
 
 config MACH_IMX21ADS
 	bool "Freescale i.MX21ADS"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select HAS_CS8900
 	help
@@ -229,7 +227,6 @@ config MACH_EUKREA_CPUIMX25
 
 config MACH_FREESCALE_MX25_3STACK
 	bool "Freescale MX25 3stack"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select I2C
 	select I2C_MC34704
@@ -257,7 +254,6 @@ choice
 
 config MACH_EUKREA_CPUIMX27
 	bool "EUKREA CPUIMX27"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using Eukrea's CPUIMX27 equipped
@@ -265,7 +261,6 @@ config MACH_EUKREA_CPUIMX27
 
 config MACH_IMX27ADS
 	bool "Freescale i.MX27ADS"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Freescale i.MX27ads board equipped
@@ -280,7 +275,6 @@ config MACH_PCA100
 
 config MACH_PCM038
 	bool "phyCORE-i.MX27"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select SPI
 	select DRIVER_SPI_IMX
@@ -339,7 +333,6 @@ config MACH_EUKREA_CPUIMX35
 
 config MACH_FREESCALE_MX35_3STACK
 	bool "Freescale MX35 3stack"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select I2C
 	select I2C_IMX
@@ -351,7 +344,6 @@ config MACH_FREESCALE_MX35_3STACK
 
 config MACH_PCM043
 	bool "phyCORE-i.MX35"
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	select ARCH_HAS_L2X0
 	help

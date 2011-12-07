@@ -163,8 +163,8 @@ offset:
 	p2.h = hi(TEXT_BASE);
 
 	p3 = 0x04;
-	p4.l = __bss_start;
-	p4.h = __bss_start;
+	p4.l = ___bss_start;
+	p4.h = ___bss_start;
 loop1:
 	r1 = [p1 ++ p3];
 	[p2 ++ p3] = r1;
@@ -308,8 +308,8 @@ WAIT_DMA_DONE:
 	W[P1+OFFSET_(MDMA_D0_IRQ_STATUS)] = R0;	/* Write 1 to clear DMA interrupt */
 
 	/* Initialize BSS Section with 0 s */
-	p1.l = __bss_start;
-	p1.h = __bss_start;
+	p1.l = ___bss_start;
+	p1.h = ___bss_start;
 	p2.l = _end;
 	p2.h = _end;
 	r1 = p1;

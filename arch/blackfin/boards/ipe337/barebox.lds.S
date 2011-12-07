@@ -84,9 +84,9 @@ SECTIONS
 	___usymtab_end = .;
 
 	. = ALIGN(4);
-	__bss_start = .;
+	___bss_start = .;
 	.bss : { *(.bss) }
-	__bss_stop = .;
+	___bss_stop = .;
 	_end = .;
 }
 

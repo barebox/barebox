@@ -53,6 +53,7 @@ void mem_malloc_init(void *start, void *end)
 	malloc_brk = malloc_start;
 }
 
+#ifndef __SANDBOX__
 static int mem_malloc_resource(void)
 {
 	/*
@@ -75,10 +76,10 @@ static int mem_malloc_resource(void)
 #ifdef STACK_BASE
 	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
 #endif
-
 	return 0;
 }
 coredevice_initcall(mem_malloc_resource);
+#endif
 
 static void *sbrk_no_zero(ptrdiff_t increment)
 {

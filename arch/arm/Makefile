@@ -39,8 +39,8 @@ ifeq ($(CONFIG_ARM_UNWIND),y)
 CFLAGS_ABI	+=-funwind-tables
 endif
 
-CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
-AFLAGS   += -include asm/unified.h
+CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float
+AFLAGS   += -include asm/unified.h -msoft-float
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.

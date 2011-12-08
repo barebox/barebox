@@ -10,7 +10,7 @@ static int do_time(struct command *cmdtp, int argc, char *argv[])
 	unsigned char *buf;
 	u64 start, end, diff64;
 	unsigned long diff;
-	int len = 0;
+	int len = 1; /* '\0' */
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;

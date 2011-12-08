@@ -84,6 +84,8 @@ int uncompress(unsigned char *inbuf, int len,
 
 	if (inbuf) {
 		ft = file_detect_type(inbuf);
+		uncompress_buf = NULL;
+		uncompress_size = 0;
 	} else {
 		if (!fill)
 			return -EINVAL;
@@ -127,7 +129,6 @@ int uncompress(unsigned char *inbuf, int len,
 			flush, output, pos, error_fn);
 err:
 	free(uncompress_buf);
-	uncompress_size = 0;
 
 	return ret;
 }

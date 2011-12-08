@@ -1,5 +1,7 @@
+#ifndef __BAREBOX__
 #include <assert.h>
 #include <limits.h>
+#endif
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +9,13 @@
 
 #include "tlsf.h"
 #include "tlsfbits.h"
+
+#ifdef __BAREBOX__
+#ifndef _DEBUG
+#define _DEBUG 0
+#endif
+#define tlsf_assert(expr)           ((void) (0))
+#endif
 
 /*
 ** Constants.
@@ -82,6 +91,7 @@ enum tlsf_private
 #define tlsf_static_assert(exp) \
 	typedef char _tlsf_glue(static_assert, __LINE__) [(exp) ? 1 : -1]
 
+#ifndef __BAREBOX__
 /* This code has been tested on 32- and 64-bit (LP/LLP) architectures. */
 tlsf_static_assert(sizeof(int) * CHAR_BIT == 32);
 tlsf_static_assert(sizeof(size_t) * CHAR_BIT >= 32);
@@ -92,6 +102,7 @@ tlsf_static_assert(sizeof(unsigned int) * CHAR_BIT >= SL_INDEX_COUNT);
 
 /* Ensure we've properly tuned our sizes. */
 tlsf_static_assert(ALIGN_SIZE == SMALL_BLOCK_SIZE / SL_INDEX_COUNT);
+#endif
 
 /*
 ** Data structures and associated constants.

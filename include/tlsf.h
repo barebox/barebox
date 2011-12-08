@@ -43,7 +43,7 @@ int tlsf_check_heap(tlsf_pool pool);
 size_t tlsf_block_size(void* ptr);
 
 /* Overhead of per-pool internal structures. */
-size_t tlsf_overhead();
+size_t tlsf_overhead(void);
 
 #if defined(__cplusplus)
 };

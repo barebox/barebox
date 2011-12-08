@@ -13,6 +13,8 @@ obj-$(CONFIG_OFTREE)		+= oftree.o
 
 obj-y += memory.o
 obj-$(CONFIG_MALLOC_DLMALLOC) += dlmalloc.o
+obj-$(CONFIG_MALLOC_TLSF) += tlsf_malloc.o
+obj-$(CONFIG_MALLOC_TLSF) += tlsf.o
 obj-$(CONFIG_MALLOC_DUMMY) += dummy_malloc.o
 obj-y += clock.o
 obj-y += version.o

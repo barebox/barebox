@@ -159,6 +159,9 @@ choice
 config MALLOC_DLMALLOC
 	bool "dlmalloc"
 
+config MALLOC_TLSF
+	bool "tlsf"
+
 config MALLOC_DUMMY
 	bool "dummy malloc"
 	depends on SHELL_NONE

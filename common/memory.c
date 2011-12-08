@@ -47,11 +47,19 @@ unsigned long mem_malloc_end(void)
 	return malloc_end;
 }
 
+#ifdef CONFIG_MALLOC_TLSF
+#include <tlsf.h>
+tlsf_pool tlsf_mem_pool;
+#endif
+
 void mem_malloc_init(void *start, void *end)
 {
 	malloc_start = (unsigned long)start;
 	malloc_end = (unsigned long)end;
 	malloc_brk = malloc_start;
+#ifdef CONFIG_MALLOC_TLSF
+	tlsf_mem_pool = tlsf_create(start, (char *)end - (char *)start);
+#endif
 }
 
 #ifndef __SANDBOX__

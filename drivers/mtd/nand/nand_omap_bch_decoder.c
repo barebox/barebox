@@ -64,6 +64,7 @@ static int chien(unsigned int select_4_8, int err_nums,
 				unsigned int err[], unsigned int *location)
 {
 	int i, count; /* Number of dectected errors */
+	int errorsinecc; /* Number of detected errors in ECC bits */
 	/* Contains accumulation of evaluation at x^i (i:1->8) */
 	unsigned int gammas[8] = {0};
 	unsigned int alpha;
@@ -77,7 +78,8 @@ static int chien(unsigned int select_4_8, int err_nums,
 		gammas[i] = err[i];
 
 	count = 0;
-	for (i = 1; (i <= nn) && (count < err_nums); i++) {
+	errorsinecc = 0;
+	for (i = 1; (i <= nn) && ((count + errorsinecc) < err_nums); i++) {
 
 		/* Result of evaluation at root */
 		elp_sum = 1 ^ gammas[0] ^ gammas[1] ^
@@ -108,11 +110,13 @@ static int chien(unsigned int select_4_8, int err_nums,
 			if (i >= 2 * ecc_bits)
 				location[count++] =
 					kk_shorten - (bit - 2 * ecc_bits) - 1;
+			else
+				errorsinecc++;
 		}
 	}
 
 	/* Failure: No. of detected errors != No. or corrected errors */
-	if (count != err_nums) {
+	if ((count + errorsinecc) != err_nums) {
 		count = -1;
 		printk(KERN_ERR "BCH decoding failed\n");
 	}

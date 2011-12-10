@@ -39,6 +39,8 @@ SECTIONS
 		_stext = .;
 		_text = .;
 		*(.text_entry*)
+		__ll_return = .;
+		*(.text_ll_return*)
 #ifdef CONFIG_ARCH_EP93XX
 		/* the EP93xx expects to find the pattern 'CRUS' at 0x1000 */
 	  . = 0x1000;

@@ -109,7 +109,7 @@ void __naked __bare_init reset(void)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this funtion directly.
  */
-void __naked __bare_init board_init_lowlevel_return(void)
+void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 {
 	uint32_t r, addr;
 
@@ -124,7 +124,7 @@ void __naked __bare_init board_init_lowlevel_return(void)
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
 	/* Get start of binary image */
-	addr -= (uint32_t)&board_init_lowlevel_return - TEXT_BASE;
+	addr -= (uint32_t)&__ll_return - TEXT_BASE;
 
 	/* relocate to link address if necessary */
 	if (addr != TEXT_BASE)

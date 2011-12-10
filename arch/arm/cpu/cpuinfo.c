@@ -47,8 +47,8 @@ static void decode_cache(unsigned long size)
 }
 
 static char *crbits[] = {"M", "A", "C", "W", "P", "D", "L", "B", "S", "R",
-	"F", "Z", "I", "V", "RR", "L4", "", "", "", "", "", "FI", "U", "XP",
-	"VE", "EE", "L2"};
+	"F", "Z", "I", "V", "RR", "L4", "DT", "", "IT", "ST", "", "FI", "U", "XP",
+	"VE", "EE", "L2", "", "TRE", "AFE", "TE"};
 
 static int do_cpuinfo(struct command *cmdtp, int argc, char *argv[])
 {
@@ -170,7 +170,7 @@ static int do_cpuinfo(struct command *cmdtp, int argc, char *argv[])
 	}
 
 	printf("Control register: ");
-	for (i = 0; i < 27; i++)
+	for (i = 0; i < ARRAY_SIZE(crbits); i++)
 		if (cr & (1 << i))
 			printf("%s ", crbits[i]);
 	printf("\n");

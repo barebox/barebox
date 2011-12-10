@@ -36,6 +36,7 @@ void __naked __section(.text_entry) start(void)
 void __naked __section(.text_exceptions) exception_vectors(void)
 {
 	__asm__ __volatile__ (
+		".arm\n"
 		"b reset\n"				/* reset */
 #ifdef CONFIG_ARM_EXCEPTIONS
 		"ldr pc, =undefined_instruction\n"	/* undefined instruction */

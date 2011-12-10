@@ -39,8 +39,15 @@ ifeq ($(CONFIG_ARM_UNWIND),y)
 CFLAGS_ABI	+=-funwind-tables
 endif
 
-CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float
-AFLAGS   += -include asm/unified.h -msoft-float
+ifeq ($(CONFIG_THUMB2_BAREBOX),y)
+AFLAGS_AUTOIT	:=$(call as-option,-Wa$(comma)-mimplicit-it=always,-Wa$(comma)-mauto-it)
+AFLAGS_NOWARN	:=$(call as-option,-Wa$(comma)-mno-warn-deprecated,-Wa$(comma)-W)
+CFLAGS_THUMB2	:=-mthumb $(AFLAGS_AUTOIT) $(AFLAGS_NOWARN)
+AFLAGS_THUMB2	:=$(CFLAGS_THUMB2) -Wa$(comma)-mthumb
+endif
+
+CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
+AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.

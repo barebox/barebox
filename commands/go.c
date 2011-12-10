@@ -62,7 +62,11 @@ static int do_go(struct command *cmdtp, int argc, char *argv[])
 	func = addr;
 
 	shutdown_barebox();
-	func(argc - 1, &argv[1]);
+
+	if (do_execute)
+		do_execute(func, argc - 1, &argv[1]);
+	else
+		func(argc - 1, &argv[1]);
 
 	/*
 	 * The application returned. Since we have shutdown barebox and

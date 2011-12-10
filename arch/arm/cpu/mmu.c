@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sizes.h>
 #include <asm/memory.h>
+#include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <memory.h>
 
@@ -182,7 +183,6 @@ static void vectors_init(void)
 {
 	u32 *exc, *zero = NULL;
 	void *vectors;
-	extern unsigned long exception_vectors;
 	u32 cr;
 
 	cr = get_cr();
@@ -210,7 +210,7 @@ static void vectors_init(void)
 
 	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 	memset(vectors, 0, PAGE_SIZE);
-	memcpy(vectors, &exception_vectors, ARM_VECTORS_SIZE);
+	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
 
 	if (cr & CR_V)
 		exc[256 - 16] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;

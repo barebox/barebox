@@ -23,11 +23,17 @@
 #include <common.h>
 #include <init.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 
-void __naked __section(.text_entry) exception_vectors(void)
+void __naked __section(.text_entry) start(void)
+{
+	barebox_arm_head();
+}
+
+void __naked __section(.text_exceptions) exception_vectors(void)
 {
 	__asm__ __volatile__ (
 		"b reset\n"				/* reset */
@@ -48,12 +54,6 @@ void __naked __section(.text_entry) exception_vectors(void)
 		"1: bne 1b\n"				/* irq (interrupt) */
 		"1: bne 1b\n"				/* fiq (fast interrupt) */
 #endif
-		".word 0x65726162\n"			/* 'bare' */
-		".word 0x00786f62\n"			/* 'box' */
-		".word _text\n"				/* text base. If copied there,
-							 * barebox can skip relocation
-							 */
-		".word _barebox_image_size\n"		/* image size to copy */
 	);
 }
 

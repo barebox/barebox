@@ -46,13 +46,14 @@
 #include <usb/fsl_usb2.h>
 #include <mach/usb.h>
 #include <mach/devices-imx25.h>
+#include <asm/barebox-arm-head.h>
 
 extern unsigned long _stext;
 extern void exception_vectors(void);
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {

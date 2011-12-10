@@ -26,7 +26,6 @@
 #include <asm/ppc_asm.tmpl>
 #include <asm/ppc_defs.h>
 #include <config.h>
-#include <watchdog.h>
 
 /*
  * unsigned long long get_ticks(void);

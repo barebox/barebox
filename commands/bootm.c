@@ -25,7 +25,6 @@
  * Boot support
  */
 #include <common.h>
-#include <watchdog.h>
 #include <driver.h>
 #include <command.h>
 #include <image.h>

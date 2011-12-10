@@ -23,7 +23,6 @@
 
 #include <debug_ll.h>
 #include <common.h>
-#include <watchdog.h>
 #include <command.h>
 #include <malloc.h>
 #include <memory.h>

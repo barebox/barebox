@@ -1,5 +1,4 @@
 #include <common.h>
-#include <watchdog.h>
 
 static char erase_seq[] = "\b \b";		/* erase sequence	*/
 static char   tab_seq[] = "        ";		/* used to expand TABs	*/

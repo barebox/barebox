@@ -338,6 +338,12 @@ config CMD_IMINFO
 	help
 	  Show information about uImages
 
+config CMD_UIMAGE
+	tristate
+	prompt "uimage"
+	help
+	  Show information about uImage and also extract and verify uImages.
+
 config CMD_BOOTZ
 	tristate
 	default y

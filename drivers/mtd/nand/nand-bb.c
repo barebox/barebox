@@ -45,6 +45,7 @@ struct nand_bb {
 	size_t raw_size;
 	size_t size;
 	off_t offset;
+	unsigned long flags;
 	void *writebuf;
 
 	struct cdev cdev;
@@ -171,6 +172,7 @@ static int nand_bb_open(struct cdev *cdev, unsigned long flags)
 	if (bb->open)
 		return -EBUSY;
 
+	bb->flags = flags;
 	bb->open = 1;
 	bb->offset = 0;
 	bb->needs_write = 0;
@@ -211,10 +213,43 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 	return 0;
 }
 
+static off_t nand_bb_lseek(struct cdev *cdev, off_t __offset)
+{
+	struct nand_bb *bb = cdev->priv;
+	unsigned long raw_pos = 0;
+	uint32_t offset = __offset;
+	int ret;
+
+	/* lseek only in readonly mode */
+	if (bb->flags & O_ACCMODE)
+		return -ENOSYS;
+	while (raw_pos < bb->raw_size) {
+		off_t now = min(offset, bb->info.erasesize);
+
+		ret = cdev_ioctl(bb->cdev_parent, MEMGETBADBLOCK, (void *)raw_pos);
+		if (ret < 0)
+			return ret;
+		if (!ret) {
+			offset -= now;
+			raw_pos += now;
+		} else {
+			raw_pos += bb->info.erasesize;
+		}
+
+		if (!offset) {
+			bb->offset = raw_pos;
+			return __offset;
+		}
+	}
+
+	return -EINVAL;
+}
+
 static struct file_operations nand_bb_ops = {
 	.open   = nand_bb_open,
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,
+	.lseek	= nand_bb_lseek,
 #ifdef CONFIG_NAND_WRITE
 	.write 	= nand_bb_write,
 	.erase	= nand_bb_erase,

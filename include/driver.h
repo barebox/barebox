@@ -366,7 +366,7 @@ struct file_operations {
 
 	int (*ioctl)(struct cdev*, int, void *);
 	off_t (*lseek)(struct cdev*, off_t);
-	int (*open)(struct cdev*);
+	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
 	int (*flush)(struct cdev*);
 	int (*erase)(struct cdev*, size_t count, unsigned long offset);

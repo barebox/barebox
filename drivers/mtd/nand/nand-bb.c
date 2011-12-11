@@ -164,7 +164,7 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
 }
 #endif
 
-static int nand_bb_open(struct cdev *cdev)
+static int nand_bb_open(struct cdev *cdev, unsigned long flags)
 {
 	struct nand_bb *bb = cdev->priv;
 

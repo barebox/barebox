@@ -81,7 +81,7 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	return err;
 }
 
-static int ubi_volume_cdev_open(struct cdev *cdev)
+static int ubi_volume_cdev_open(struct cdev *cdev, unsigned long flags)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 

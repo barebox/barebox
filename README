@@ -108,9 +108,9 @@ If everything goes well, the result is a file called barebox:
 
 Barebox usually needs an environment for storing the configuation data.
 You can generate an environment using the example environment contained
-in examples/environment:
+in board/sandbox/env:
 
-  # ./scripts/bareboxenv -s -p 0x10000 examples/environment/ env.bin
+  # ./scripts/bareboxenv -s -p 0x10000 board/sandbox/env/ env.bin
 
 To get some files to play with you can generate a cramfs image:
   # mkcramfs somedir/ cramfs.bin

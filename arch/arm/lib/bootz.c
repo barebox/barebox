@@ -1,6 +1,7 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <of.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <malloc.h>
@@ -25,6 +26,7 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	int fd, ret, swap = 0;
 	struct zimage_header __header, *header;
 	void *zimage;
+	void *oftree = NULL;
 	u32 end;
 	int usemap = 0;
 	struct memory_bank *bank = list_first_entry(&memory_banks, struct memory_bank, list);
@@ -105,8 +107,11 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	}
 
 	printf("loaded zImage from %s with size %d\n", argv[1], end);
+#ifdef CONFIG_OFTREE
+	oftree = of_get_fixed_tree();
+#endif
 
-	start_linux(zimage, swap, NULL);
+	start_linux(zimage, swap, 0, 0, oftree);
 
 	return 0;
 

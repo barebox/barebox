@@ -31,7 +31,8 @@ static int do_bootm_linux(struct image_data *data)
 	/* we assume that the kernel is in place */
 	printf("\nStarting kernel %s...\n\n", data->initrd ? "with initrd " : "");
 
-	start_linux(theKernel, 0, data);
+	start_linux((void *)theKernel, 0, data->initrd_address, data->initrd_size,
+			data->oftree);
 
 	return -1;
 }

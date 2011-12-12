@@ -165,6 +165,22 @@ static struct at91_usbh_data ek_usbh_data = {
 	.ports		= 2,
 };
 
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PB11,
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
+};
+
+static void __init ek_add_device_udc(void)
+{
+	if (machine_is_usb_a9260() || machine_is_usb_a9g20())
+		ek_udc_data.vbus_pin = AT91_PIN_PC5;
+
+	at91_add_device_udc(&ek_udc_data);
+}
+
 static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
@@ -172,6 +188,7 @@ static int usb_a9260_devices_init(void)
 	at91_add_device_eth(&macb_pdata);
 	usb_a9260_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
+	ek_add_device_udc();
 
 #ifdef CONFIG_AT91_HAVE_SRAM_128M
 	at91_add_device_sdram(128 * 1024 * 1024);

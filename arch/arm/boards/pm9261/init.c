@@ -87,7 +87,7 @@ static void pm_add_device_nand(void)
 /*
  * DM9000 ethernet device
  */
-#if defined(CONFIG_DRIVER_NET_DM9000)
+#if defined(CONFIG_DRIVER_NET_DM9K)
 static struct dm9000_platform_data dm9000_data = {
 	.srom		= 1,
 };
@@ -124,7 +124,7 @@ static void __init pm_add_device_dm9000(void)
 }
 #else
 static void __init ek_add_device_dm9000(void) {}
-#endif /* CONFIG_DRIVER_NET_DM9000 */
+#endif /* CONFIG_DRIVER_NET_DM9K */
 
 static int pm9261_mem_init(void)
 {

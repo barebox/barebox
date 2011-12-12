@@ -232,7 +232,7 @@ static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
 				  IORESOURCE_MEM | flags, pdata);
 }
 
-#ifdef CONFIG_DRIVER_NET_DM9000
+#ifdef CONFIG_DRIVER_NET_DM9K
 struct device_d *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata);
 #else

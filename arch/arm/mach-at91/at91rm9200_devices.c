@@ -42,6 +42,27 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
 #endif
 
+/* --------------------------------------------------------------------
+ *  USB Device (Gadget)
+ * -------------------------------------------------------------------- */
+
+#ifdef CONFIG_USB_GADGET_DRIVER_AT91
+void __init at91_add_device_udc(struct at91_udc_data *data)
+{
+	if (data->vbus_pin > 0) {
+		at91_set_gpio_input(data->vbus_pin, 0);
+		at91_set_deglitch(data->vbus_pin, 1);
+	}
+
+	if (data->pullup_pin > 0)
+		at91_set_gpio_output(data->pullup_pin, 0);
+
+	add_generic_device("at91_udc", -1, NULL, AT91RM9200_BASE_UDP, SZ_16K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_udc(struct at91_udc_data *data) {}
+#endif
 
 /* --------------------------------------------------------------------
  *  Ethernet

@@ -51,6 +51,25 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
 #endif
 
+/* --------------------------------------------------------------------
+ *  USB Device (Gadget)
+ * -------------------------------------------------------------------- */
+
+#ifdef CONFIG_USB_GADGET_DRIVER_AT91
+void __init at91_add_device_udc(struct at91_udc_data *data)
+{
+	if (data->vbus_pin > 0) {
+		at91_set_gpio_input(data->vbus_pin, 0);
+		at91_set_deglitch(data->vbus_pin, 1);
+	}
+
+	add_generic_device("at91_udc", -1, NULL, AT91SAM9263_BASE_UDP, SZ_16K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_udc(struct at91_udc_data *data) {}
+#endif
+
 #if defined(CONFIG_DRIVER_NET_MACB)
 void at91_add_device_eth(struct at91_ether_platform_data *data)
 {

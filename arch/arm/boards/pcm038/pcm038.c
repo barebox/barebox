@@ -223,9 +223,9 @@ static int pcm038_devices_init(void)
 	};
 
 	/* configure 16 bit nor flash on cs0 */
-	CS0U = 0x0000CC03;
-	CS0L = 0xa0330D01;
-	CS0A = 0x00220800;
+	CS0U = 0x22C2CF00;
+	CS0L = 0x75000D01;
+	CS0A = 0x00000900;
 
 	/* configure SRAM on cs1 */
 	CS1U = 0x0000d843;

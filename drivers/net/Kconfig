@@ -51,6 +51,11 @@ config DRIVER_NET_DM9000
 	depends on HAS_DM9000
 	select MIIDEV
 
+config DRIVER_NET_DM9K
+	bool "Davicom dm9k[E|A|B] ethernet driver"
+	depends on HAS_DM9000
+	select MIIDEV
+
 config DRIVER_NET_NETX
 	bool "Hilscher Netx ethernet driver"
 	depends on HAS_NETX_ETHER

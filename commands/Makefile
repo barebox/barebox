@@ -39,6 +39,7 @@ obj-$(CONFIG_CMD_PRINTENV)	+= printenv.o
 obj-$(CONFIG_CMD_SAVEENV)	+= saveenv.o
 obj-$(CONFIG_CMD_LOADENV)	+= loadenv.o
 obj-$(CONFIG_CMD_NAND)		+= nand.o
+obj-$(CONFIG_CMD_NANDTEST)	+= nandtest.o
 obj-$(CONFIG_CMD_TRUE)		+= true.o
 obj-$(CONFIG_CMD_FALSE)		+= false.o
 obj-$(CONFIG_CMD_VERSION)	+= version.o

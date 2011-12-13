@@ -25,6 +25,12 @@ config BOARDINFO
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
 
+config AT91SAM9_RESET
+	bool
+
+config AT91SAM9G45_RESET
+	bool
+
 comment "Atmel AT91 System-on-Chip"
 
 choice
@@ -42,29 +48,35 @@ config ARCH_AT91SAM9260
 	bool "AT91SAM9260"
 	select CPU_ARM926T
 	select HAS_MACB
+	select AT91SAM9_RESET
 
 config ARCH_AT91SAM9261
 	bool "AT91SAM9261"
 	select CPU_ARM926T
+	select AT91SAM9_RESET
 
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
 	select CPU_ARM926T
 	select HAS_MACB
+	select AT91SAM9_RESET
 
 config ARCH_AT91SAM9G10
 	bool "AT91SAM9G10"
 	select CPU_ARM926T
+	select AT91SAM9_RESET
 
 config ARCH_AT91SAM9G20
 	bool "AT91SAM9G20"
 	select CPU_ARM926T
 	select HAS_MACB
+	select AT91SAM9_RESET
 
 config ARCH_AT91SAM9G45
 	bool "AT91SAM9G45 or AT91SAM9M10"
 	select CPU_ARM926T
 	select HAS_MACB
+	select AT91SAM9G45_RESET
 
 endchoice
 

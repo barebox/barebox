@@ -34,6 +34,16 @@ extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
 
+ /* USB Device */
+struct at91_udc_data {
+	int	vbus_pin;		/* high == host powering us */
+	u8	vbus_active_low;	/* vbus polarity */
+	u8	vbus_polled;		/* Use polling, not interrupt */
+	int	pullup_pin;		/* active == D+ pulled up */
+	u8	pullup_active_low;	/* true == pullup_pin is active low */
+};
+extern void __init at91_add_device_udc(struct at91_udc_data *data);
+
  /* NAND / SmartMedia */
 struct atmel_nand_data {
 	u8		enable_pin;	/* chip enable */

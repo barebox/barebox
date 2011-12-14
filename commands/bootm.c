@@ -38,6 +38,7 @@
 #include <fs.h>
 #include <errno.h>
 #include <boot.h>
+#include <of.h>
 #include <rtc.h>
 #include <init.h>
 #include <magicvar.h>
@@ -143,6 +144,10 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 			break;
 		}
 	}
+
+#ifdef CONFIG_OFTREE
+	data.oftree = of_get_fixed_tree();
+#endif
 
 	if (optind == argc) {
 		ret = COMMAND_ERROR_USAGE;

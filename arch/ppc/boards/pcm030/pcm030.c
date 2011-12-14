@@ -59,7 +59,7 @@ static int devices_init (void)
 	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
 	barebox_add_memory_bank("ram0", 0x0, sdramsize);
 
-	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0,
+	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0x200,
 			   IORESOURCE_MEM, &fec_info);
 
 	ret = stat("/dev/nor0", &s);
@@ -76,9 +76,9 @@ device_initcall(devices_init);
 
 static int console_init(void)
 {
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 4096,
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 0x200,
 			   IORESOURCE_MEM, NULL);
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 4096,
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 0x200,
 			   IORESOURCE_MEM, NULL);
 	return 0;
 }

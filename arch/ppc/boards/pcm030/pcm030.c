@@ -45,7 +45,6 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 
 static int devices_init (void)
 {
-	unsigned long sdramsize;
 	struct stat s;
 	int ret;
 
@@ -55,9 +54,6 @@ static int devices_init (void)
 	 */
 	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0008fd00);
 	add_cfi_flash_device(-1, 0xfe000000, 32 * 1024 * 1024, 0);
-
-	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
-	barebox_add_memory_bank("ram0", 0x0, sdramsize);
 
 	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0x200,
 			   IORESOURCE_MEM, &fec_info);
@@ -84,6 +80,18 @@ static int console_init(void)
 }
 
 console_initcall(console_init);
+
+static int mem_init(void)
+{
+	unsigned long sdramsize;
+
+	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
+
+	barebox_add_memory_bank("ram0", 0x0, sdramsize);
+
+	return 0;
+}
+mem_initcall(mem_init);
 
 #include "mt46v32m16-75.h"
 

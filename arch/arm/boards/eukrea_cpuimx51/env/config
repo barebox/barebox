@@ -28,7 +28,6 @@ rootfs_type=ubifs
 rootfsimage=$machine/rootfs.$rootfs_type
 
 # kernel
-kernelimage_type=uimage
 kernelimage=$machine/uImage-${machine}.bin
 
 # barebox and it's env

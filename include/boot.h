@@ -7,7 +7,7 @@
 struct image_data {
 	struct image_handle *os;
 	struct image_handle *initrd;
-	const char *oftree;
+	void *oftree;
 	int verify;
 	unsigned long initrd_address;
 	unsigned long initrd_size;

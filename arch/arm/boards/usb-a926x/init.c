@@ -165,6 +165,18 @@ static struct at91_usbh_data ek_usbh_data = {
 	.ports		= 2,
 };
 
+static int usb_a9260_mem_init(void)
+{
+#ifdef CONFIG_AT91_HAVE_SRAM_128M
+	at91_add_device_sdram(128 * 1024 * 1024);
+#else
+	at91_add_device_sdram(64 * 1024 * 1024);
+#endif
+
+	return 0;
+}
+mem_initcall(usb_a9260_mem_init);
+
 static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
@@ -173,11 +185,6 @@ static int usb_a9260_devices_init(void)
 	usb_a9260_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 
-#ifdef CONFIG_AT91_HAVE_SRAM_128M
-	at91_add_device_sdram(128 * 1024 * 1024);
-#else
-	at91_add_device_sdram(64 * 1024 * 1024);
-#endif
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	usb_a9260_set_board_type();
 

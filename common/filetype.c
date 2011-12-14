@@ -36,6 +36,7 @@ static const char *filetype_str[] = {
 	[filetype_jffs2] = "JFFS2 image",
 	[filetype_gzip] = "gzip compressed",
 	[filetype_bzip2] = "bzip2 compressed",
+	[filetype_oftree] = "open firmware flat device tree",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -69,6 +70,8 @@ enum filetype file_detect_type(void *_buf)
 	if (buf8[0] == 'B' && buf8[1] == 'Z' && buf8[2] == 'h' &&
 			buf8[3] > '0' && buf8[3] <= '9')
                 return filetype_bzip2;
+	if (buf[0] == be32_to_cpu(0xd00dfeed))
+		return filetype_oftree;
 
 	return filetype_unknown;
 }

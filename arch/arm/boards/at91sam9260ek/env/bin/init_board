@@ -1,0 +1,23 @@
+#!/bin/sh
+
+#PIOA_31
+gpio_get_value 63
+if [ $? != 0 ]
+then
+	exit
+fi
+
+echo "BP4 pressed detected wait 5s"
+timeout -s -a 5
+gpio_get_value 63
+if [ $? != 0 ]
+then
+	echo "BP4 released, normal boot"
+	exit
+fi
+
+echo ""
+echo "Start DFU Mode"
+echo ""
+
+dfu /dev/self0(barebox)sr,/dev/nand0.kernel.bb(kernel)r,/dev/nand0.root.bb(root)r -P 0x1234 -V 0x4321

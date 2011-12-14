@@ -165,6 +165,40 @@ static void at91sam9260ek_phy_reset(void)
 				     AT91_RSTC_URSTEN);
 }
 
+/*
+ * MCI (SD/MMC)
+ */
+#if defined(CONFIG_MCI_ATMEL)
+static struct atmel_mci_platform_data __initdata ek_mci_data = {
+	.bus_width	= 4,
+};
+
+static void ek_usb_add_device_mci(void)
+{
+	if (machine_is_at91sam9g20ek())
+		ek_mci_data.detect_pin = AT91_PIN_PC9;
+
+	at91_add_device_mci(1, &ek_mci_data);
+}
+#else
+static void ek_usb_add_device_mci(void) {}
+#endif
+
+/*
+ * USB Host port
+ */
+static struct at91_usbh_data __initdata ek_usbh_data = {
+	.ports		= 2,
+};
+
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PC5,
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
+};
+
 static int at91sam9260ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -173,11 +207,23 @@ static int at91sam9260ek_mem_init(void)
 }
 mem_initcall(at91sam9260ek_mem_init);
 
+static void __init ek_add_device_buttons(void)
+{
+	at91_set_gpio_input(AT91_PIN_PA30, 1);	/* btn3 */
+	at91_set_deglitch(AT91_PIN_PA30, 1);
+	at91_set_gpio_input(AT91_PIN_PA31, 1);	/* btn4 */
+	at91_set_deglitch(AT91_PIN_PA31, 1);
+}
+
 static int at91sam9260ek_devices_init(void)
 {
 	ek_add_device_nand();
 	at91sam9260ek_phy_reset();
 	at91_add_device_eth(&macb_pdata);
+	at91_add_device_usbh_ohci(&ek_usbh_data);
+	at91_add_device_udc(&ek_udc_data);
+	ek_usb_add_device_mci();
+	ek_add_device_buttons();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	ek_set_board_type();

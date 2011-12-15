@@ -19,6 +19,7 @@
 #include <mach/imx-regs.h>
 #include <sizes.h>
 #include <init.h>
+#include <io.h>
 
 #include "gpio.h"
 
@@ -38,10 +39,52 @@ void *imx_gpio_base[] = {
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
+/*
+ * Initialize MAX on i.MX27. necessary to give the DMA engine
+ * higher priority to the memory than the CPU. Needed for proper
+ * audio support
+ */
+#define MAX_SLAVE_MPR_OFFSET	0x0	/* Master Priority register */
+#define MAX_SLAVE_AMPR_OFFSET	0x4	/* Alternate Master Priority register */
+#define MAX_SLAVE_PORT0_OFFSET	0x0
+#define MAX_SLAVE_PORT1_OFFSET	0x100
+#define MAX_SLAVE_PORT2_OFFSET	0x200
+#define MAX_MASTER_PRIO(master, prio)	(((prio) << (master) * 4))
+
+#define MASTER_IAHB	0
+#define MASTER_DAHB	1
+#define MASTER_EMMA	2
+#define MASTER_DMA	3
+#define MASTER_SLDC	4
+#define MASTER_CODEC	5
+
+static void imx27_init_max(void)
+{
+	void __iomem *max_base = (void *)IMX_MAX_BASE;
+	u32 val;
+
+	/* 0 is the highest priority */
+	val = MAX_MASTER_PRIO(MASTER_IAHB, 5) |
+		MAX_MASTER_PRIO(MASTER_DAHB, 4) |
+		MAX_MASTER_PRIO(MASTER_EMMA, 1) |
+		MAX_MASTER_PRIO(MASTER_DMA, 2) |
+		MAX_MASTER_PRIO(MASTER_SLDC, 0) |
+		MAX_MASTER_PRIO(MASTER_CODEC, 3);
+
+	writel(val, max_base + MAX_SLAVE_PORT0_OFFSET + MAX_SLAVE_MPR_OFFSET);
+	writel(val, max_base + MAX_SLAVE_PORT1_OFFSET + MAX_SLAVE_MPR_OFFSET);
+	writel(val, max_base + MAX_SLAVE_PORT2_OFFSET + MAX_SLAVE_MPR_OFFSET);
+	writel(val, max_base + MAX_SLAVE_PORT0_OFFSET + MAX_SLAVE_AMPR_OFFSET);
+	writel(val, max_base + MAX_SLAVE_PORT1_OFFSET + MAX_SLAVE_AMPR_OFFSET);
+	writel(val, max_base + MAX_SLAVE_PORT2_OFFSET + MAX_SLAVE_AMPR_OFFSET);
+}
+
 static int imx27_init(void)
 {
 	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
 			IORESOURCE_MEM, NULL);
+
+	imx27_init_max();
 
 	return 0;
 }

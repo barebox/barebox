@@ -33,6 +33,7 @@
 #define IMX_IIM_BASE               (0x28000 + IMX_IO_BASE)
 #define IMX_OTG_BASE               (0x24000 + IMX_IO_BASE)
 #define IMX_FEC_BASE               (0x2b000 + IMX_IO_BASE)
+#define IMX_MAX_BASE               (0x3f000 + IMX_IO_BASE)
 
 #define IMX_NFC_BASE               (0xd8000000)
 #define IMX_ESD_BASE               (0xd8001000)

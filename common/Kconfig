@@ -398,10 +398,6 @@ config CONSOLE_ACTIVATE_ALL
 	  Enabling this options activates all consoles on startup, so
 	  you will get output and a prompt on all consoles simultaneously.
 
-config OF_FLAT_TREE
-	bool
-	prompt "Open Firmware flat device tree support"
-
 config PARTITION
 	bool
 	prompt "Enable Partitions"

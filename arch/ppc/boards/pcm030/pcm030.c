@@ -45,7 +45,6 @@ static struct mpc5xxx_fec_platform_data fec_info = {
 
 static int devices_init (void)
 {
-	unsigned long sdramsize;
 	struct stat s;
 	int ret;
 
@@ -56,10 +55,7 @@ static int devices_init (void)
 	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0008fd00);
 	add_cfi_flash_device(-1, 0xfe000000, 32 * 1024 * 1024, 0);
 
-	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
-	barebox_add_memory_bank("ram0", 0x0, sdramsize);
-
-	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0,
+	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0x200,
 			   IORESOURCE_MEM, &fec_info);
 
 	ret = stat("/dev/nor0", &s);
@@ -76,14 +72,26 @@ device_initcall(devices_init);
 
 static int console_init(void)
 {
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 4096,
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 0x200,
 			   IORESOURCE_MEM, NULL);
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 4096,
+	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 0x200,
 			   IORESOURCE_MEM, NULL);
 	return 0;
 }
 
 console_initcall(console_init);
+
+static int mem_init(void)
+{
+	unsigned long sdramsize;
+
+	sdramsize = mpc5200_get_sdram_size(0) + mpc5200_get_sdram_size(1);
+
+	barebox_add_memory_bank("ram0", 0x0, sdramsize);
+
+	return 0;
+}
+mem_initcall(mem_init);
 
 #include "mt46v32m16-75.h"
 
@@ -183,12 +191,3 @@ void initdram (int board_type)
 		}
 	}
 }
-
-#if defined(CONFIG_OF_FLAT_TREE) && defined(CONFIG_OF_BOARD_SETUP)
-void
-ft_board_setup(void *blob, bd_t *bd)
-{
-	ft_cpu_setup(blob, bd);
-}
-#endif
-

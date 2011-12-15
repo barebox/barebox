@@ -2,7 +2,6 @@
 
 #include <common.h>
 #include <command.h>
-#include <watchdog.h>
 #include <image.h>
 #include <init.h>
 #include <environment.h>

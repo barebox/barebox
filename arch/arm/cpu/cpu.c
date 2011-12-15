@@ -89,37 +89,3 @@ void arch_shutdown(void)
 	);
 #endif
 }
-
-/**
- * @page arm_boot_preparation Linux Preparation on ARM
- *
- * For ARM we never enable data cache so we do not need to disable it again.
- * Linux can be called with instruction cache enabled. As this is the
- * default setting we are running in barebox, there's no special preparation
- * required.
- */
-#ifdef CONFIG_COMMAND
-static int do_icache(struct command *cmdtp, int argc, char *argv[])
-{
-	if (argc == 1) {
-		printf("icache is %sabled\n", icache_status() ? "en" : "dis");
-		return 0;
-	}
-
-	if (simple_strtoul(argv[1], NULL, 0) > 0)
-		icache_enable();
-	else
-		icache_disable();
-
-	return 0;
-}
-
-static const __maybe_unused char cmd_icache_help[] =
-"Usage: icache [0|1]\n";
-
-BAREBOX_CMD_START(icache)
-	.cmd		= do_icache,
-	.usage		= "show/change icache status",
-	BAREBOX_CMD_HELP(cmd_icache_help)
-BAREBOX_CMD_END
-#endif

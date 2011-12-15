@@ -30,7 +30,6 @@ rootfsimage=$machine/rootfs.$rootfs_type
 # kernel
 kernelimage_type=uimage
 kernelimage=$machine/uImage-${machine}.bin
-kernelimage=uImage
 
 # barebox and it's env
 bareboximage=$machine/barebox-${machine}.bin

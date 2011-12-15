@@ -28,6 +28,7 @@
 #include <linux/ioport.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <malloc.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"

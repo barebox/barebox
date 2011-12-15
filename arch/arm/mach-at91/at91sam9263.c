@@ -164,8 +164,8 @@ static struct clk *periph_clocks[] = {
 };
 
 static struct clk_lookup periph_clocks_lookups[] = {
-	CLKDEV_CON_DEV_ID("mci_clk", "at91_mci0", &mmc0_clk),
-	CLKDEV_CON_DEV_ID("mci_clk", "at91_mci1", &mmc1_clk),
+	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci0", &mmc0_clk),
+	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci1", &mmc1_clk),
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi0", &spi0_clk),
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi1", &spi1_clk),
 };

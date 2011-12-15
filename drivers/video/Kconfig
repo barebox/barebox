@@ -40,4 +40,11 @@ config DRIVER_VIDEO_S3C_VERBOSE
 
 endif
 
+config DRIVER_VIDEO_PXA
+	bool "PXA27x framebuffer driver"
+	depends on ARCH_PXA27X
+	help
+	  Add support for the frame buffer device found on the PXA270
+	  CPU.
+
 endif

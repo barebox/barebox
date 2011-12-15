@@ -23,3 +23,27 @@ unsigned long pxa_get_mmcclk(void)
 {
 	return 19500000;
 }
+
+/*
+ * Return the current LCD clock frequency in units of 10kHz as
+ */
+static unsigned int pxa_get_lcdclk_10khz(void)
+{
+	unsigned long ccsr;
+	unsigned int l, L, k, K;
+
+	ccsr = CCSR;
+
+	l = ccsr & 0x1f;
+	k = (l <= 7) ? 1 : (l <= 16) ? 2 : 4;
+
+	L = l * BASE_CLK;
+	K = L / k;
+
+	return (K / 10000);
+}
+
+unsigned long pxa_get_lcdclk(void)
+{
+	return pxa_get_lcdclk_10khz() * 10000;
+}

@@ -13,5 +13,6 @@
 
 unsigned long pxa_get_uartclk(void);
 unsigned long pxa_get_mmcclk(void);
+unsigned long pxa_get_lcdclk(void);
 
 #endif	/* !__MACH_CLOCK_H */

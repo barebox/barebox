@@ -123,6 +123,11 @@ void __bare_init __naked board_init_lowlevel(void)
 	r |= 0x00000003;
 	writel(r, ccm_base + CCM_CGR1);
 
+	/* enable watchdog asap */
+	r = readl(ccm_base + CCM_CGR2);
+	r |= 0x03000000;
+	writel(r, ccm_base + CCM_CGR2);
+
 	r = readl(IMX_L2CC_BASE + L2X0_AUX_CTRL);
 	r |= 0x1000;
 	writel(r, IMX_L2CC_BASE + L2X0_AUX_CTRL);

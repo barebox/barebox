@@ -41,7 +41,7 @@ SECTIONS
 	. = ALIGN(4);
 	.text      :
 	{
-		__stext = .;
+		_stext = .;
 		__text = .;
 		_text = .;
 		*(.text_entry)
@@ -68,7 +68,7 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS }
 	___usymtab_end = .;
 
-	__etext = .; /* End of text and rodata section */
+	_etext = .; /* End of text and rodata section */
 
 	/* INIT DATA sections - "Small" data (see the gcc -G option)
 	 * is always gp-relative. Here we make all init data sections

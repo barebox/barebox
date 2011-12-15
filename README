@@ -2,15 +2,15 @@ Barebox
 -------
 
 Barebox is a bootloader that follows the tradition of Das U-Boot, while
-adapting modern design ideas from the Linux kernel.
+adopting modern design ideas from the Linux kernel.
 
 
 Features
 --------
 
-- A POSIX based file API
+- A POSIX-based file API
   Inside barebox the usual open/close/read/write/lseek functions are used.
-  This makes it familiar to everyone who has programmed under unix systems.
+  This makes it familiar to everyone who has programmed under UNIX systems.
 
 - Usual shell commands like ls/cd/mkdir/echo/cat,...
 
@@ -45,9 +45,9 @@ Features
 - simulation target
   barebox can be compiled to run under Linux. While this is rather useless
   in real world this is a great debugging and development aid. New features
-  can be easily developped and tested on long train journeys and started
-  under gdb. There is a console driver for linux which emulates a serial
-  device and a tap based ethernet driver. Linux files can be mapped to
+  can be easily developed and tested on long train journeys and started
+  under gdb. There is a console driver for Linux which emulates a serial
+  device and a TAP-based Ethernet driver. Linux files can be mapped to
   devices under barebox to emulate storage devices.
 
 - device parameter support
@@ -61,8 +61,8 @@ Features
 
 - getopt
   There is a small getopt implementation. Some commands got really
-  complicated (both in code and in usage) due to the fact that U-Boot only
-  allowed positional parameters.
+  complicated (both in code and in usage) due to the fact that U-Boot
+  allowed only positional parameters.
 
 - editor
   Scripts can be edited with a small editor. This editor has no features
@@ -73,7 +73,7 @@ Building Barebox
 ----------------
 
 Barebox uses the Linux kernel's build system. It consists of two parts:
-the makefile infrastructure (kbuild), plus a configuration system
+the Makefile infrastructure (kbuild), plus a configuration system
 (kconfig). So building barebox is very similar to building the Linux
 kernel.
 
@@ -108,9 +108,9 @@ If everything goes well, the result is a file called barebox:
 
 Barebox usually needs an environment for storing the configuation data.
 You can generate an environment using the example environment contained
-in examples/environment:
+in board/sandbox/env:
 
-  # ./scripts/bareboxenv -s -p 0x10000 examples/environment/ env.bin
+  # ./scripts/bareboxenv -s -p 0x10000 board/sandbox/env/ env.bin
 
 To get some files to play with you can generate a cramfs image:
   # mkcramfs somedir/ cramfs.bin

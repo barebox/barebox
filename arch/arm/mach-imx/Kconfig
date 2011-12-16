@@ -375,7 +375,6 @@ config MACH_FREESCALE_MX51_PDK
 
 config MACH_EUKREA_CPUIMX51SD
 	bool "EUKREA CPUIMX51"
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using Eukrea's CPUIMX51 equipped
 	  with a Freescale i.MX51 Processor

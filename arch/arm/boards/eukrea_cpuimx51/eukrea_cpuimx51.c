@@ -39,6 +39,7 @@
 #include <mach/imx-nand.h>
 #include <mach/spi.h>
 #include <mach/generic.h>
+#include <mach/imx5.h>
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 
@@ -138,6 +139,8 @@ device_initcall(eukrea_cpuimx51_devices_init);
 static int eukrea_cpuimx51_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx51_pads, ARRAY_SIZE(eukrea_cpuimx51_pads));
+
+	imx51_init_lowlevel();
 
 	writel(0, 0x73fa8228);
 	writel(0, 0x73fa822c);

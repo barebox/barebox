@@ -372,7 +372,6 @@ choice
 
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
-	select MACH_HAS_LOWLEVEL_INIT
 
 config MACH_EUKREA_CPUIMX51SD
 	bool "EUKREA CPUIMX51"

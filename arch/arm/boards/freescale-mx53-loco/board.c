@@ -34,7 +34,7 @@
 #include <mach/gpio.h>
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
-#include <mach/imx53.h>
+#include <mach/imx5.h>
 
 #include <asm/armlinux.h>
 #include <io.h>

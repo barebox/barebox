@@ -326,6 +326,7 @@ config CMD_BOOTM_INITRD
 
 config CMD_BOOTM_OFTREE
 	bool
+	depends on CMD_BOOTM
 	select OFTREE
 	prompt "bootm oftree support"
 	help

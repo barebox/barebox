@@ -159,26 +159,10 @@ EXPORT_SYMBOL(register_command);
 struct command *find_cmd (const char *cmd)
 {
 	struct command *cmdtp;
-	struct command *cmdtp_temp = &__barebox_cmd_start;	/*Init value */
-	int len;
-	int n_found = 0;
-	len = strlen (cmd);
 
-	cmdtp = list_entry(&command_list, struct command, list);
-
-	for_each_command(cmdtp) {
-		if (strncmp (cmd, cmdtp->name, len) == 0) {
-			if (len == strlen (cmdtp->name))
-				return cmdtp;		/* full match */
-
-			cmdtp_temp = cmdtp;		/* abbreviated command ? */
-			n_found++;
-		}
-	}
-
-	if (n_found == 1) {			/* exactly one match */
-		return cmdtp_temp;
-	}
+	for_each_command(cmdtp)
+		if (!strcmp(cmd, cmdtp->name))
+			return cmdtp;
 
 	return NULL;	/* not found or ambiguous command */
 }

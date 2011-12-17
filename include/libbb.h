@@ -32,4 +32,7 @@ int process_escape_sequence(const char *source, char *dest, int destlen);
 
 char *simple_itoa(unsigned int i);
 
+int write_full(int fd, void *buf, size_t size);
+int read_full(int fd, void *buf, size_t size);
+
 #endif /* __LIBBB_H */

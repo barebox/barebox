@@ -34,6 +34,7 @@
 #include <asm/byteorder.h>
 #include <asm/cpu.h>
 #include <asm/blackfin.h>
+#include <errno.h>
 #include <init.h>
 #include <boot.h>
 
@@ -44,10 +45,11 @@ static int do_bootm_linux(struct image_data *idata)
 	int (*appl)(char *cmdline);
 	const char *cmdline = getenv("bootargs");
 	char *cmdlinedest = (char *) CMD_LINE_ADDR;
-	struct image_handle *os_handle = idata->os;
-	image_header_t *os_header = &os_handle->header;
 
-	appl = (int (*)(char *))image_get_ep(os_header);
+	if (!idata->os_res)
+		return -EINVAL;
+
+	appl = (void *)(idata->os_address + idata->os_entry);
 	printf("Starting Kernel at 0x%p\n", appl);
 
 	icache_disable();
@@ -63,8 +65,10 @@ static int do_bootm_linux(struct image_data *idata)
 }
 
 static struct image_handler handler = {
+	.name = "Blackfin Linux",
 	.bootm = do_bootm_linux,
-	.image_type = IH_OS_LINUX,
+	.filetype = filetype_uimage,
+	.ih_os = IH_OS_LINUX,
 };
 
 static int bfinlinux_register_image_handler(void)

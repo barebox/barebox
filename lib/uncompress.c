@@ -158,3 +158,11 @@ int uncompress_fd_to_fd(int infd, int outfd,
 	   NULL,
 	   error_fn);
 }
+
+int uncompress_fd_to_buf(int infd, void *output,
+		void(*error_fn)(char *x))
+{
+	uncompress_infd = infd;
+
+	return uncompress(NULL, 0, fill_fd, NULL, output, NULL, error_fn);
+}

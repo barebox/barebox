@@ -3,12 +3,14 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <of.h>
 #include <asm/armlinux.h>
 
 static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 {
 	int fd;
 	void *kernel = NULL;
+	void *oftree = NULL;
 
 	if (argc != 2) {
 		barebox_cmd_usage(cmdtp);
@@ -22,7 +24,11 @@ static int do_bootu(struct command *cmdtp, int argc, char *argv[])
 	if (!kernel)
 		kernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-	start_linux(kernel, 0, NULL);
+#ifdef CONFIG_OFTREE
+	oftree = of_get_fixed_tree();
+#endif
+
+	start_linux(kernel, 0, 0, 0, oftree);
 
 	return 1;
 }

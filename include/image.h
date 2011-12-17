@@ -188,20 +188,6 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
-struct image_handle_data {
-	void *data;
-	ulong len;
-};
-
-struct image_handle {
-	image_header_t	header;
-	void *data;
-	struct image_handle_data *data_entries;
-	int nb_data_entries;
-#define IH_MALLOC	1
-	int flags;
-};
-
 #if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
 const char *image_get_os_name(uint8_t os);
 const char *image_get_arch_name(uint8_t arch);
@@ -232,121 +218,34 @@ static inline const char *image_get_comp_name(uint8_t comp)
 #define uimage_to_cpu(x)		be32_to_cpu(x)
 #define cpu_to_uimage(x)		cpu_to_be32(x)
 
-static inline uint32_t image_get_header_size(void)
-{
-	return sizeof(image_header_t);
-}
+struct uimage_handle_data {
+	size_t offset; /* offset in the image */
+	ulong len;
+};
 
-#define image_get_hdr_u32(x)					\
-static inline uint32_t image_get_##x(const image_header_t *hdr)	\
-{								\
-	return uimage_to_cpu(hdr->ih_##x);			\
-}
+struct uimage_handle *uimage_open(const char *filename);
+void uimage_close(struct uimage_handle *handle);
+int uimage_verify(struct uimage_handle *handle);
+int uimage_load(struct uimage_handle *handle, unsigned int image_no,
+		int(*flush)(void*, unsigned int));
+void uimage_print_contents(struct uimage_handle *handle);
+size_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
+struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
+		int image_no, unsigned long load_address);
+void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
+		size_t *size);
+struct resource *file_to_sdram(const char *filename, unsigned long adr);
+#define MAX_MULTI_IMAGE_COUNT 16
 
-image_get_hdr_u32(magic);	/* image_get_magic */
-image_get_hdr_u32(hcrc);	/* image_get_hcrc */
-image_get_hdr_u32(time);	/* image_get_time */
-image_get_hdr_u32(size);	/* image_get_size */
-image_get_hdr_u32(load);	/* image_get_load */
-image_get_hdr_u32(ep);		/* image_get_ep */
-image_get_hdr_u32(dcrc);	/* image_get_dcrc */
+struct uimage_handle {
+	struct image_header header;
+	char *name;
+	struct uimage_handle_data ihd[MAX_MULTI_IMAGE_COUNT];
+	int nb_data_entries;
+	size_t data_offset;
+	int fd;
+};
 
-#define image_get_hdr_u8(x)					\
-static inline uint8_t image_get_##x(const image_header_t *hdr)	\
-{								\
-	return hdr->ih_##x;					\
-}
-image_get_hdr_u8(os);		/* image_get_os */
-image_get_hdr_u8(arch);		/* image_get_arch */
-image_get_hdr_u8(type);		/* image_get_type */
-image_get_hdr_u8(comp);		/* image_get_comp */
-
-static inline char *image_get_name(const image_header_t *hdr)
-{
-	return (char*)hdr->ih_name;
-}
-
-static inline uint32_t image_get_data_size(const image_header_t *hdr)
-{
-	return image_get_size(hdr);
-}
-
-/**
- * image_get_data - get image payload start address
- * @hdr: image header
- *
- * image_get_data() returns address of the image payload. For single
- * component images it is image data start. For multi component
- * images it points to the null terminated table of sub-images sizes.
- *
- * returns:
- *     image payload data start address
- */
-static inline ulong image_get_data(const image_header_t *hdr)
-{
-	return ((ulong)hdr + image_get_header_size());
-}
-
-static inline uint32_t image_get_image_size(const image_header_t *hdr)
-{
-	return (image_get_size(hdr) + image_get_header_size());
-}
-
-static inline ulong image_get_image_end(const image_header_t *hdr)
-{
-	return ((ulong)hdr + image_get_image_size(hdr));
-}
-
-#define image_set_hdr_u32(x)						\
-static inline void image_set_##x(image_header_t *hdr, uint32_t val)	\
-{									\
-	hdr->ih_##x = cpu_to_uimage(val);				\
-}
-
-image_set_hdr_u32(magic);	/* image_set_magic */
-image_set_hdr_u32(hcrc);	/* image_set_hcrc */
-image_set_hdr_u32(time);	/* image_set_time */
-image_set_hdr_u32(size);	/* image_set_size */
-image_set_hdr_u32(load);	/* image_set_load */
-image_set_hdr_u32(ep);		/* image_set_ep */
-image_set_hdr_u32(dcrc);	/* image_set_dcrc */
-
-#define image_set_hdr_u8(x)						\
-static inline void image_set_##x(image_header_t *hdr, uint8_t val)	\
-{									\
-	hdr->ih_##x = val;						\
-}
-
-image_set_hdr_u8(os);		/* image_set_os */
-image_set_hdr_u8(arch);		/* image_set_arch */
-image_set_hdr_u8(type);		/* image_set_type */
-image_set_hdr_u8(comp);		/* image_set_comp */
-
-static inline void image_set_name(image_header_t *hdr, const char *name)
-{
-	strncpy(image_get_name(hdr), name, IH_NMLEN);
-}
-
-ulong image_multi_count(void *data);
-void image_multi_getimg(void *data, ulong idx,
-			ulong *img_data, ulong *len);
-
-void image_print_size(uint32_t size);
-
-void image_print_contents(const image_header_t *hdr, void *data);
-
-/*
- * Load an image into memory. Returns a pointer to the loaded
- * image.
- */
-struct image_handle *map_image(const char *filename, int verify);
-void unmap_image(struct image_handle *handle);
-struct image_handle_data* gen_image_handle_data(void* data, ulong len);
-
-/*
- * Relocate an image to load_address by uncompressing
- * or just copying.
- */
-int relocate_image(struct image_handle *handle, void *load_address);
+#define UIMAGE_INVALID_ADDRESS	(~0)
 
 #endif	/* __IMAGE_H__ */

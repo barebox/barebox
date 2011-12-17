@@ -5,7 +5,6 @@ kernel=flash
 root=flash
 
 kernel_loc=nor
-kernelimage_type=uimage
 
 # use 'dhcp' todo dhcp in barebox and in kernel
 ip=none

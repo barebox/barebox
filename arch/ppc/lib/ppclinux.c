@@ -10,18 +10,15 @@
 #include <errno.h>
 #include <fs.h>
 
-#ifdef CONFIG_OF_FLAT_TREE
-#include <ft_build.h>
-#endif
-extern bd_t *bd;
-
 static int do_bootm_linux(struct image_data *data)
 {
 	void	(*kernel)(void *, void *, unsigned long,
 			unsigned long, unsigned long);
-	struct image_header *os_header = &data->os->header;
 
-	kernel = (void *)image_get_ep(os_header);
+	if (!data->os_res)
+		return -EINVAL;
+
+	kernel = (void *)(data->os_address + data->os_entry);
 
 	/*
 	 * Linux Kernel Parameters (passing device tree):
@@ -40,8 +37,10 @@ static int do_bootm_linux(struct image_data *data)
 }
 
 static struct image_handler handler = {
+	.name = "PowerPC Linux",
 	.bootm = do_bootm_linux,
-	.image_type = IH_OS_LINUX,
+	.filetype = filetype_uimage,
+	.ih_os = IH_OS_LINUX,
 };
 
 static int ppclinux_register_image_handler(void)
@@ -50,4 +49,3 @@ static int ppclinux_register_image_handler(void)
 }
 
 late_initcall(ppclinux_register_image_handler);
-

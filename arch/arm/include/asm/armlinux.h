@@ -29,6 +29,7 @@ static inline void armlinux_set_serial(u64 serial)
 
 struct image_data;
 
-void start_linux(void *adr, int swap, struct image_data *data);
+void start_linux(void *adr, int swap, unsigned long initrd_address,
+		unsigned long initrd_size, void *oftree);
 
 #endif /* __ARCH_ARMLINUX_H */

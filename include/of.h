@@ -8,6 +8,7 @@ extern struct fdt_header *barebox_fdt;
 int fdt_print(struct fdt_header *working_fdt, const char *pathp);
 
 struct fdt_header *of_get_fixed_tree(void);
+int of_fix_tree(struct fdt_header *fdt);
 int of_register_fixup(int (*fixup)(struct fdt_header *));
 
 int fdt_find_and_setprop(struct fdt_header *fdt, const char *node, const char *prop,

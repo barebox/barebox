@@ -115,6 +115,10 @@
 /** Gives the silicon revision */
 #define OMAP_TAP_BASE		(OMAP_L4_WKUP_BASE + 0xA000)
 #define IDCODE_REG		(OMAP_TAP_BASE + 0x204)
+#define DIE_ID_0		(OMAP_TAP_BASE + 0x218)
+#define DIE_ID_1		(OMAP_TAP_BASE + 0x21c)
+#define DIE_ID_2		(OMAP_TAP_BASE + 0x220)
+#define DIE_ID_3		(OMAP_TAP_BASE + 0x224)
 
 /** Masks to extract information from ID code register */
 #define IDCODE_HAWKEYE_MASK	0x0FFFF000

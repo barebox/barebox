@@ -53,6 +53,11 @@ config NAND_IMX
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX
 
+config NAND_MXS
+	bool
+	prompt "i.MX23/28 NAND driver"
+	depends on MXS_APBH_DMA
+
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"
 	depends on OMAP_GPMC

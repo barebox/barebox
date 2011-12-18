@@ -24,5 +24,6 @@ unsigned imx_set_sspclk(unsigned, unsigned, int);
 unsigned imx_set_ioclk(unsigned);
 unsigned imx_set_lcdifclk(unsigned);
 unsigned imx_get_lcdifclk(void);
+void imx_enable_nandclk(void);
 
 #endif /* MACH_CLOCK_IMX23_H */

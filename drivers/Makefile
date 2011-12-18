@@ -15,3 +15,4 @@ obj-$(CONFIG_LED) += led/
 obj-y	+= eeprom/
 obj-$(CONFIG_PWM) += pwm/
 obj-y	+= input/
+obj-y	+= dma/

@@ -1,0 +1,8 @@
+menu "DMA support"
+
+config MXS_APBH_DMA
+	tristate "MXS APBH DMA ENGINE"
+	depends on ARCH_IMX23 || ARCH_IMX28
+	help
+	Experimental!
+endmenu

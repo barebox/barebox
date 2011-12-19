@@ -179,6 +179,14 @@ static int __init gserial_init(void)
 	/* We *could* export two configs; that'd be much cleaner...
 	 * but neither of these product IDs was defined that way.
 	 */
+
+	/*
+	 * PXA CPU suffer a silicon bug which prevents them from being a
+	 * compound device, forbiding the ACM configurations.
+	 */
+#ifdef CONFIG_ARCH_PXA2XX
+	use_acm = 0;
+#endif
 	if (use_acm) {
 		serial_config_driver.label = "CDC ACM config";
 		serial_config_driver.bConfigurationValue = 2;
@@ -204,4 +212,3 @@ static int __init gserial_init(void)
 }
 
 late_initcall(gserial_init);
-

@@ -41,16 +41,21 @@ config NAND_INFO
 	  Show informational strings about the vendor and nand flash type
 	  during startup
 
+config NAND_READ_OOB
+	bool
+
 config NAND_BBT
 	bool
+	select NAND_READ_OOB
 	default y
 	prompt "support bad block tables"
 	help
 	  Say y here to include support for bad block tables. This speeds
 	  up the process of checking for bad blocks
 
-config NAND_READ_OOB
+config NAND_OOB_DEVICE
 	bool
+	select NAND_READ_OOB
 	default y
 	prompt "create a device for reading the OOB data"
 

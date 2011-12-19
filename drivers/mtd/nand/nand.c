@@ -186,7 +186,7 @@ static struct file_operations nand_ops = {
 	.lseek  = dev_lseek_default,
 };
 
-#ifdef CONFIG_NAND_READ_OOB
+#ifdef CONFIG_NAND_OOB_DEVICE
 static ssize_t nand_read_oob(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
 {
 	struct mtd_info *info = cdev->priv;

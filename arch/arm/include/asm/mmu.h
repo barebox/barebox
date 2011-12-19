@@ -32,6 +32,7 @@ void dma_flush_range(unsigned long, unsigned long);
 void dma_inv_range(unsigned long, unsigned long);
 unsigned long virt_to_phys(void *virt);
 void *phys_to_virt(unsigned long phys);
+void *map_io_sections(unsigned long physaddr, void *start, size_t size);
 
 #else
 static inline void *dma_alloc_coherent(size_t size)
@@ -64,6 +65,11 @@ static inline void dma_flush_range(unsigned long s, unsigned long e)
 
 static inline void dma_inv_range(unsigned long s, unsigned long e)
 {
+}
+
+static inline void *map_io_sections(unsigned long phys, void *start, size_t size)
+{
+	return (void *)phys;
 }
 
 #endif

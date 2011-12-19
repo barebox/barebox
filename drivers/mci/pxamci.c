@@ -161,7 +161,8 @@ static int pxamci_transfer_data(struct pxamci_host *host,
 static void pxamci_start_cmd(struct pxamci_host *host, struct mci_cmd *cmd,
 			     unsigned int cmdat)
 {
-	mci_dbg("cmd=(idx=%d,type=%d)\n", cmd->cmdidx, cmd->resp_type);
+	mci_dbg("cmd=(idx=%d,type=%d,clkrt=%d)\n", cmd->cmdidx, cmd->resp_type,
+		host->clkrt);
 	if (cmd->resp_type & MMC_RSP_BUSY)
 		cmdat |= CMDAT_BUSY;
 
@@ -277,11 +278,14 @@ static void pxamci_set_ios(struct mci_host *mci, struct device_d *dev,
 {
 	struct pxamci_host *host = to_pxamci(mci);
 	unsigned int clk_in = pxa_get_mmcclk();
-	unsigned long fact;
+	int fact;
 
-	mci_dbg("bus_width=%d, clock=%ud\n", bus_width, clock);
-	fact = min_t(int, clock / clk_in, 1);
-	fact = max_t(int, fact, 1 << 6);
+	mci_dbg("bus_width=%d, clock=%u\n", bus_width, clock);
+	if (clock)
+		fact = min_t(int, clk_in / clock, 1 << 6);
+	else
+		fact = 1 << 6;
+	fact = max_t(int, fact, 1);
 
 	/*
 	 * We calculate clkrt here, and will write it on the next command

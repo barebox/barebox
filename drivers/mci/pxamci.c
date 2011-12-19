@@ -123,7 +123,7 @@ static int pxamci_write_data(struct pxamci_host *host, const unsigned char *src,
 
 	if (!ret)
 		for (start = get_time_ns(), ret = -ETIMEDOUT;
-		     ret && !is_timeout(start, 10 * MSECOND);)  {
+		     ret && !is_timeout(start, 100 * MSECOND);)  {
 			stat = mmc_readl(MMC_STAT);
 			stat &= STAT_DATA_TRAN_DONE | STAT_PRG_DONE;
 			if (stat == (STAT_DATA_TRAN_DONE | STAT_PRG_DONE))

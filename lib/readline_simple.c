@@ -63,7 +63,6 @@ int readline (const char *prompt, char *line, int len)
 				return (-2);	/* timed out */
 		}
 #endif
-		WATCHDOG_RESET();		/* Trigger watchdog, if needed */
 
 #ifdef CONFIG_SHOW_ACTIVITY
 		while (!tstc()) {

@@ -74,8 +74,9 @@ static void pxamci_setup_data(struct pxamci_host *host, struct mci_data *data)
 static int pxamci_read_data(struct pxamci_host *host, unsigned char *dst,
 			    unsigned len)
 {
-	int trf_len, ret = 0;
+	int trf_len, trf_len1, trf_len4, ret = 0;
 	uint64_t start;
+	u32 *dst4;
 
 	mci_dbg("dst=%p, len=%u\n", dst, len);
 	while (!ret && len > 0) {
@@ -85,8 +86,13 @@ static int pxamci_read_data(struct pxamci_host *host, unsigned char *dst,
 		     ret && !is_timeout(start, 10 * MSECOND);)
 			if (mmc_readl(MMC_I_REG) & RXFIFO_RD_REQ)
 				ret = 0;
-		for (; !ret && trf_len > 0; trf_len--, len--)
+		trf_len1 = trf_len % 4;
+		trf_len4 = trf_len / 4;
+		for (dst4 = (u32 *)dst; !ret && trf_len4 > 0; trf_len4--)
+			*dst4++ = mmc_readl(MMC_RXFIFO);
+		for (dst = (u8 *)dst4; !ret && trf_len1 > 0; trf_len1--)
 			*dst++ = mmc_readb(MMC_RXFIFO);
+		len -= trf_len;
 	}
 
 	if (!ret)

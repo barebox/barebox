@@ -8,8 +8,9 @@ config MTD_WRITE
 	default y
 	prompt "Support writing to MTD devices"
 
-config MTD_READ_OOB
+config MTD_OOB_DEVICE
 	bool
+	select NAND_READ_OOB
 	default y
 	prompt "Create a device for reading the OOB data"
 

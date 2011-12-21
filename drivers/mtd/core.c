@@ -114,7 +114,7 @@ out:
 }
 #endif
 
-static int mtd_ioctl(struct cdev *cdev, int request, void *buf)
+int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct mtd_info_user *user = buf;
@@ -186,67 +186,6 @@ static struct file_operations mtd_ops = {
 	.lseek  = dev_lseek_default,
 };
 
-#ifdef CONFIG_NAND_OOB_DEVICE
-static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
-			    ulong offset, ulong flags)
-{
-	struct mtd_info *mtd = cdev->priv;
-	struct mtd_oob_ops ops;
-	int ret;
-
-	if (count < mtd->oobsize)
-		return -EINVAL;
-
-	ops.mode = MTD_OOB_RAW;
-	ops.ooboffs = 0;
-	ops.ooblen = mtd->oobsize;
-	ops.oobbuf = buf;
-	ops.datbuf = NULL;
-	ops.len = mtd->oobsize;
-
-	offset /= mtd->oobsize;
-	ret = mtd->read_oob(mtd, offset * mtd->writesize, &ops);
-	if (ret)
-		return ret;
-
-	return mtd->oobsize;
-}
-
-static struct file_operations mtd_ops_oob = {
-	.read   = mtd_read_oob,
-	.ioctl  = mtd_ioctl,
-	.lseek  = dev_lseek_default,
-};
-
-static int mtd_init_oob_cdev(struct mtd_info *mtd, char *devname)
-{
-	mtd->cdev_oob.ops = &mtd_ops_oob;
-	mtd->cdev_oob.size = (mtd->size / mtd->writesize) * mtd->oobsize;
-	mtd->cdev_oob.name = asprintf("%s_oob%d", devname, mtd->class_dev.id);
-	mtd->cdev_oob.priv = mtd;
-	mtd->cdev_oob.dev = &mtd->class_dev;
-	devfs_create(&mtd->cdev_oob);
-
-	return 0;
-}
-
-static void mtd_exit_oob_cdev(struct mtd_info *mtd)
-{
-	free(mtd->cdev_oob.name);
-}
-#else
-
-static int mtd_init_oob_cdev(struct mtd_info *mtd, char *devname)
-{
-	return 0;
-}
-
-static void mtd_exit_oob_cdev(struct mtd_info *mtd)
-{
-	return;
-}
-#endif
-
 int add_mtd_device(struct mtd_info *mtd, char *devname)
 {
 	char str[16];
@@ -276,7 +215,6 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 
 	devfs_create(&mtd->cdev);
 
-	mtd_init_oob_cdev(mtd, devname);
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)
 			hook->add_mtd_device(mtd, devname);
@@ -292,7 +230,6 @@ int del_mtd_device (struct mtd_info *mtd)
 		if (hook->del_mtd_device)
 			hook->del_mtd_device(mtd);
 	unregister_device(&mtd->class_dev);
-	mtd_exit_oob_cdev(mtd);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
 	return 0;

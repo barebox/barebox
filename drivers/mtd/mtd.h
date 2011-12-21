@@ -28,6 +28,7 @@ struct mtddev_hook {
 	int (*add_mtd_device)(struct mtd_info *mtd, char *devname);
 	int (*del_mtd_device)(struct mtd_info *mtd);
 };
+struct cdev;
 
 /**
  * mtdcore_add_hook - add a hook to MTD registration/unregistration
@@ -37,3 +38,5 @@ struct mtddev_hook {
  * mtdraw, ...)
  */
 void mtdcore_add_hook(struct mtddev_hook *hook);
+
+int mtd_ioctl(struct cdev *cdev, int request, void *buf);

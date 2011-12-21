@@ -202,7 +202,6 @@ struct mtd_info {
 	struct device_d class_dev;
 	struct device_d *dev;
 	struct cdev cdev;
-	struct cdev cdev_oob;
 
 	struct param_d param_size;
 	char *size_str;

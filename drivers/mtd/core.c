@@ -26,6 +26,10 @@
 #include <nand.h>
 #include <errno.h>
 
+#include "mtd.h"
+
+static LIST_HEAD(mtd_register_hooks);
+
 static 	ssize_t mtd_read(struct cdev *cdev, void* buf, size_t count,
 			  ulong offset, ulong flags)
 {
@@ -246,6 +250,7 @@ static void mtd_exit_oob_cdev(struct mtd_info *mtd)
 int add_mtd_device(struct mtd_info *mtd, char *devname)
 {
 	char str[16];
+	struct mtddev_hook *hook;
 
 	if (!devname)
 		devname = "mtd";
@@ -272,12 +277,20 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 	devfs_create(&mtd->cdev);
 
 	mtd_init_oob_cdev(mtd, devname);
+	list_for_each_entry(hook, &mtd_register_hooks, hook)
+		if (hook->add_mtd_device)
+			hook->add_mtd_device(mtd, devname);
 
 	return 0;
 }
 
 int del_mtd_device (struct mtd_info *mtd)
 {
+	struct mtddev_hook *hook;
+
+	list_for_each_entry(hook, &mtd_register_hooks, hook)
+		if (hook->del_mtd_device)
+			hook->del_mtd_device(mtd);
 	unregister_device(&mtd->class_dev);
 	mtd_exit_oob_cdev(mtd);
 	free(mtd->param_size.value);
@@ -285,3 +298,7 @@ int del_mtd_device (struct mtd_info *mtd)
 	return 0;
 }
 
+void mtdcore_add_hook(struct mtddev_hook *hook)
+{
+	list_add(&hook->hook, &mtd_register_hooks);
+}

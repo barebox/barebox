@@ -220,7 +220,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	}
 
 	pr_info("Registering %s as whole device\n", mtd->name);
-	add_mtd_device(mtd);
+	add_mtd_device(mtd, "nand");
 
 	return 0;
 

@@ -1006,7 +1006,7 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 		chip->read_word = nand_read_word;
 	if (!chip->block_bad)
 		chip->block_bad = nand_block_bad;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
 	if (!chip->write_buf)
@@ -1168,7 +1168,7 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	if (*maf_id != NAND_MFR_SAMSUNG && !type->pagesize)
 		chip->options &= ~NAND_SAMSUNG_LP_OPTIONS;
 
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	/* Check for AND chips with 4 page planes */
 	if (chip->options & NAND_4PAGE_ARRAY)
 		chip->erase_cmd = multi_erase_cmd;
@@ -1297,7 +1297,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		}
 	}
 
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	if (!chip->write_page)
 		chip->write_page = nand_write_page;
 #endif
@@ -1308,7 +1308,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	 */
 	if (!chip->ecc.read_page_raw)
 		chip->ecc.read_page_raw = nand_read_page_raw;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	if (!chip->ecc.write_page_raw)
 		chip->ecc.write_page_raw = nand_write_page_raw;
 #endif
@@ -1335,7 +1335,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		printk(KERN_WARNING "NAND_ECC_NONE selected by board driver. "
 		       "This is not recommended !!\n");
 		chip->ecc.read_page = nand_read_page_raw;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 		chip->ecc.write_page = nand_write_page_raw;
 		chip->ecc.write_oob = nand_write_oob_std;
 #endif
@@ -1401,7 +1401,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	/* Fill in remaining MTD driver data */
 	mtd->type = MTD_NANDFLASH;
 	mtd->flags = MTD_CAP_NANDFLASH;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	mtd->erase = nand_erase;
 	mtd->write = nand_write;
 	mtd->write_oob = nand_write_oob;
@@ -1413,7 +1413,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->lock = NULL;
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	mtd->block_markbad = nand_block_markbad;
 #endif
 	/* propagate ecc.layout to mtd_info */

@@ -61,7 +61,7 @@ static int nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
  * @chip:	nand chip info structure
  * @buf:	data buffer
  */
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 static void nand_write_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
 				  const uint8_t *buf)
 {
@@ -94,7 +94,7 @@ void nand_init_ecc_hw(struct nand_chip *chip)
 	if (!chip->ecc.read_oob)
 		chip->ecc.read_oob = nand_read_oob_std;
 #endif
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	if (!chip->ecc.write_oob)
 		chip->ecc.write_oob = nand_write_oob_std;
 	if (!chip->ecc.write_page)

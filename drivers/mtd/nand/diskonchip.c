@@ -1358,7 +1358,7 @@ static int __init nftl_scan_bbt(struct mtd_info *mtd)
 	   At least as nand_bbt.c is currently written. */
 	if ((ret = nand_scan_bbt(mtd, NULL)))
 		return ret;
-	add_mtd_device(mtd);
+	add_mtd_device(mtd, "nand");
 #ifdef CONFIG_MTD_PARTITIONS
 	if (!no_autopart)
 		add_mtd_partitions(mtd, parts, numparts);

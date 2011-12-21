@@ -3,6 +3,16 @@ menuconfig MTD
 
 if MTD
 
+config MTD_WRITE
+	bool
+	default y
+	prompt "Support writing to MTD devices"
+
+config MTD_READ_OOB
+	bool
+	default y
+	prompt "Create a device for reading the OOB data"
+
 source "drivers/mtd/nand/Kconfig"
 source "drivers/mtd/ubi/Kconfig"
 

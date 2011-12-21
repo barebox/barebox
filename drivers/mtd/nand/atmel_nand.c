@@ -485,7 +485,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		goto err_scan_tail;
 	}
 
-	add_mtd_device(mtd);
+	add_mtd_device(mtd, "nand");
 
 	if (!res)
 		return res;

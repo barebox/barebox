@@ -8,11 +8,6 @@ menuconfig NAND
 
 if NAND
 
-config NAND_WRITE
-	bool
-	default y
-	prompt "Support writing to Nand"
-
 config NAND_ECC_SOFT
 	bool
 	default y

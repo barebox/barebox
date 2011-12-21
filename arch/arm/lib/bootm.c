@@ -135,6 +135,7 @@ static int do_bootz_linux(struct image_data *data)
 		struct memory_bank *bank = list_first_entry(&memory_banks,
 				struct memory_bank, list);
 		data->os_address = bank->start + SZ_8M;
+		load_address = data->os_address;
 		if (bootm_verbose(data))
 			printf("no os load address, defaulting to 0x%08lx\n",
 				load_address);

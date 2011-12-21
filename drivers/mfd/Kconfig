@@ -16,10 +16,14 @@ config I2C_LP3972
 	depends on I2C
 	bool "LP3972 driver"
 
-config I2C_TWL4030
+config I2C_TWLCORE
 	depends on I2C
-	bool "TWL4030 driver"
+	bool "TWL4030/TWL6030 driver"
 	select GPIO
+
+config I2C_TWL4030
+	depends on I2C_TWLCORE
+	bool "TWL4030 driver"
 
 config DRIVER_SPI_MC13783
 	depends on SPI

@@ -118,10 +118,10 @@ static void twl4030_usb_ldo_init(void)
 	twl4030_reg_write(twl4030, TWL4030_PM_RECEIVER_VUSB1V8_TYPE, 0x00);
 
 	/* disable access to power configuration registers */
-	twl4030_reg_write(twl4030, TWL4030_PM_MASTER_PROTECT_KEY, 0x0 );
+	twl4030_reg_write(twl4030, TWL4030_PM_MASTER_PROTECT_KEY, 0x0);
 
-	twl4030_reg_write(twl4030, TWL4030_BASEADD_LED, 0x33); /* FIXME *need to enable LED to get USB power? */
-
+	/* FIXME *need to enable LED to get USB power? */
+	twl4030_reg_write(twl4030, TWL4030_BASEADD_LED, 0x33);
 }
 
 static void twl4030_phy_power(void)

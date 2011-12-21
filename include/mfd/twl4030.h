@@ -6,12 +6,10 @@
  *
  */
 
-#ifndef __I2C_TWL4030_H
-#define __I2C_TWL4030_H
+#ifndef __I2C_TWL4030_H__
+#define __I2C_TWL4030_H__
 
-#include <common.h>
-#include <i2c/i2c.h>
-#include <linux/err.h>
+#include <mfd/twl-core.h>
 
 /* LED */
 #define TWL4030_LED_LEDEN_LEDAON			(1 << 0)
@@ -76,7 +74,7 @@ enum twl4030_reg {
 	TWL4030_PM_RECEIVER_VAUX2_VSEL_18	= 0x05,
 	TWL4030_PM_RECEIVER_VAUX3_VSEL_28	= 0x03,
 	TWL4030_PM_RECEIVER_VPLL2_VSEL_18	= 0x05,
-	TWL4030_PM_RECEIVER_VDAC_VSEL_18 	= 0x03,
+	TWL4030_PM_RECEIVER_VDAC_VSEL_18	= 0x03,
 	TWL4030_PM_RECEIVER_VMMC1_VSEL_30	= 0x02,
 
 	/*
@@ -448,14 +446,27 @@ enum twl4030_reg {
 };
 
 struct twl4030 {
-	struct cdev		cdev;
-	struct i2c_client	*client;
+	struct twlcore core;
 };
 
 extern struct twl4030 *twl4030_get(void);
 
-extern int twl4030_reg_read(struct twl4030 *twl4030, u16 reg, u8 *val);
-extern int twl4030_reg_write(struct twl4030 *twl4030, u16 reg, u8 val);
-extern int twl4030_set_bits(struct twl4030 *twl4030, enum twl4030_reg reg, u8 mask, u8 val);
+static inline int twl4030_reg_read(struct twl4030 *twl4030,
+		enum twl4030_reg reg, u8 *val)
+{
+	return twlcore_reg_read(&(twl4030->core), reg, val);
+}
 
-#endif /* __I2C_TWL4030_H */
+static inline int twl4030_reg_write(struct twl4030 *twl4030,
+		enum twl4030_reg reg, u8 val)
+{
+	return twlcore_reg_write(&(twl4030->core), reg, val);
+}
+
+static inline int twl4030_set_bits(struct twl4030 *twl4030,
+		enum twl4030_reg reg, u8 mask, u8 val)
+{
+	return twlcore_set_bits(&(twl4030->core), reg, mask, val);
+}
+
+#endif /* __I2C_TWL4030_H__ */

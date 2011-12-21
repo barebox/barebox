@@ -27,6 +27,7 @@
 #include <libgen.h>
 #include <command.h>
 #include <stringlist.h>
+#include <environment.h>
 
 static int file_complete(struct string_list *sl, char *instr)
 {
@@ -55,13 +56,76 @@ static int file_complete(struct string_list *sl, char *instr)
 				strcat(tmp, "/");
 			else
 				strcat(tmp, " ");
-			string_list_add(sl, tmp);
+			string_list_add_sorted(sl, tmp);
 		}
 	}
 
 	closedir(dir);
 
 out:
+	free(path);
+
+	return 0;
+}
+
+static int path_command_complete(struct string_list *sl, char *instr)
+{
+	struct stat s;
+	DIR *dir;
+	struct dirent *d;
+	char tmp[PATH_MAX];
+	char *path, *p, *n;
+
+	p = path = strdup(getenv("PATH"));
+
+	if (!path)
+		return -1;
+
+	while (p) {
+		n = strchr(p, ':');
+		if (n)
+			*n++ = '\0';
+		if (*p == '\0') {
+			p = n;
+			continue;
+		}
+		dir = opendir(p);
+
+		/* We need to check all PATH dirs, so if one failed,
+		 * try next */
+		if (!dir) {
+			p = n;
+			continue;
+		}
+
+		while ((d = readdir(dir))) {
+			if (!strcmp(d->d_name, ".") ||
+					!strcmp(d->d_name, ".."))
+				continue;
+
+			if (!strncmp(instr, d->d_name, strlen(instr))) {
+				strcpy(tmp, d->d_name);
+				if (!stat(tmp, &s) &&
+						S_ISDIR(s.st_mode))
+					continue;
+				else
+					strcat(tmp, " ");
+
+				/* This function is called
+				 * after command_complete,
+				 * so we check if a double
+				 * entry exist */
+				if (string_list_contains
+						(sl, tmp) == 0) {
+					string_list_add_sorted(sl, tmp);
+				}
+			}
+		}
+
+		closedir(dir);
+		p = n;
+	}
+
 	free(path);
 
 	return 0;
@@ -121,8 +185,10 @@ int complete(char *instr, char **outstr)
 		t++;
 		file_complete(&sl, t);
 		instr = t;
-	} else
+	} else {
 		command_complete(&sl, instr);
+		path_command_complete(&sl, instr);
+	}
 
 	pos = strlen(instr);
 

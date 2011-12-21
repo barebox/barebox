@@ -22,7 +22,7 @@
 
 extern void imx_dump_clocks(void);
 
-static int do_clocks(struct command *cmdtp, int argc, char *argv[])
+static int do_clocks(int argc, char *argv[])
 {
 	imx_dump_clocks();
 

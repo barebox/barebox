@@ -322,7 +322,7 @@ static int mem_test(ulong _start, ulong _end, ulong pattern)
 }
 #endif
 
-static int do_mem_mtest(struct command *cmdtp, int argc, char *argv[])
+static int do_mem_mtest(int argc, char *argv[])
 {
 	ulong start, end, pattern = 0;
 

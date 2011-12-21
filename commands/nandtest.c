@@ -186,7 +186,7 @@ static void print_stats(int nr_passes, int length)
 }
 
 /* Main program. */
-static int do_nandtest(struct command *cmdtp, int argc, char *argv[])
+static int do_nandtest(int argc, char *argv[])
 {
 	int opt, length = -1, do_nandtest_dev = -1;
 	off_t flash_offset = 0;

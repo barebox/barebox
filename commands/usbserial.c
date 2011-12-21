@@ -30,7 +30,7 @@
 #include <xfuncs.h>
 #include <usb/usbserial.h>
 
-static int do_usbserial(struct command *cmdtp, int argc, char *argv[])
+static int do_usbserial(int argc, char *argv[])
 {
 	int opt;
 	struct usb_serial_pdata pdata;

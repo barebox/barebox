@@ -2,7 +2,7 @@
 #include <command.h>
 #include <module.h>
 
-static int do_lsmod(struct command *cmdtp, int argc, char *argv[])
+static int do_lsmod(int argc, char *argv[])
 {
 	struct module *mod;
 

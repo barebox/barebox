@@ -40,7 +40,7 @@ static char *trigger_names[] = {
 	[LED_TRIGGER_NET_TXRX] = "net",
 };
 
-static int do_trigger(struct command *cmdtp, int argc, char *argv[])
+static int do_trigger(int argc, char *argv[])
 {
 	struct led *led;
 	int i, opt, ret = 0;

@@ -33,7 +33,7 @@
 #define LOGIN_MODE HIDE
 #endif
 
-static int do_login(struct command *cmdtp, int argc, char *argv[])
+static int do_login(int argc, char *argv[])
 {
 	unsigned char passwd[PASSWD_MAX_LENGTH];
 	int passwd_len, opt;

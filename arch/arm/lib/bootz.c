@@ -21,7 +21,7 @@ struct zimage_header {
 
 #define ZIMAGE_MAGIC 0x016F2818
 
-static int do_bootz(struct command *cmdtp, int argc, char *argv[])
+static int do_bootz(int argc, char *argv[])
 {
 	int fd, ret, swap = 0;
 	struct zimage_header __header, *header;

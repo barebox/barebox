@@ -78,7 +78,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 
 #ifdef CONFIG_CMD_MD5SUM
 
-static int do_md5(struct command *cmdtp, int argc, char *argv[])
+static int do_md5(int argc, char *argv[])
 {
 	return do_digest("md5", argc, argv);
 }
@@ -98,7 +98,7 @@ BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_SHA1SUM
 
-static int do_sha1(struct command *cmdtp, int argc, char *argv[])
+static int do_sha1(int argc, char *argv[])
 {
 	return do_digest("sha1", argc, argv);
 }
@@ -118,7 +118,7 @@ BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_SHA224SUM
 
-static int do_sha224(struct command *cmdtp, int argc, char *argv[])
+static int do_sha224(int argc, char *argv[])
 {
 	return do_digest("sha224", argc, argv);
 }
@@ -138,7 +138,7 @@ BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_SHA256SUM
 
-static int do_sha256(struct command *cmdtp, int argc, char *argv[])
+static int do_sha256(int argc, char *argv[])
 {
 	return do_digest("sha256", argc, argv);
 }

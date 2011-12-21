@@ -2,7 +2,7 @@
 #include <command.h>
 #include <magicvar.h>
 
-static int do_magicvar(struct command *cmdtp, int argc, char *argv[])
+static int do_magicvar(int argc, char *argv[])
 {
 	struct magicvar *m;
 

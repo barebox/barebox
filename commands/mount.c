@@ -30,7 +30,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_mount(struct command *cmdtp, int argc, char *argv[])
+static int do_mount(int argc, char *argv[])
 {
 	int ret = 0;
 	struct mtab_entry *entry;

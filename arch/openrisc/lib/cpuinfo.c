@@ -144,7 +144,7 @@ int checkcpu(void)
 	return 0;
 }
 
-static int do_cpuinfo(struct command *cmdtp, int argc, char *argv[])
+static int do_cpuinfo(int argc, char *argv[])
 {
 	checkcpu();
 	return 0;

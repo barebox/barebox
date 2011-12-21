@@ -36,7 +36,7 @@
 #define NAND_DEL (1 << 1)
 #define NAND_MARKBAD (1 << 2)
 
-static int do_nand(struct command *cmdtp, int argc, char *argv[])
+static int do_nand(int argc, char *argv[])
 {
 	int opt;
 	int command = 0, badblock = 0;

@@ -28,7 +28,7 @@
 #include <getopt.h>
 #include <errno.h>
 
-static int do_led(struct command *cmdtp, int argc, char *argv[])
+static int do_led(int argc, char *argv[])
 {
 	unsigned long value;
 	struct led *led;

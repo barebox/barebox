@@ -6,7 +6,7 @@
 #include <of.h>
 #include <asm/armlinux.h>
 
-static int do_bootu(struct command *cmdtp, int argc, char *argv[])
+static int do_bootu(int argc, char *argv[])
 {
 	int fd;
 	void *kernel = NULL;

@@ -26,7 +26,7 @@
 #include <getopt.h>
 #include <i2c/i2c.h>
 
-static int do_i2c_probe(struct command *cmdtp, int argc, char *argv[])
+static int do_i2c_probe(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter;
 	struct i2c_client client;
@@ -70,7 +70,7 @@ BAREBOX_CMD_START(i2c_probe)
 	BAREBOX_CMD_HELP(cmd_i2c_probe_help)
 BAREBOX_CMD_END
 
-static int do_i2c_write(struct command *cmdtp, int argc, char *argv[])
+static int do_i2c_write(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter = NULL;
 	struct i2c_client client;
@@ -143,7 +143,7 @@ BAREBOX_CMD_START(i2c_write)
 	BAREBOX_CMD_HELP(cmd_i2c_write_help)
 BAREBOX_CMD_END
 
-static int do_i2c_read(struct command *cmdtp, int argc, char *argv[])
+static int do_i2c_read(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter = NULL;
 	struct i2c_client client;

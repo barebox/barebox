@@ -267,7 +267,7 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 	}
 }
 
-static int do_tftpb(struct command *cmdtp, int argc, char *argv[])
+static int do_tftpb(int argc, char *argv[])
 {
 	char *localfile, *remotefile, *file1, *file2;
 	char ip1[16];

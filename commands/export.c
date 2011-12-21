@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <environment.h>
 
-static int do_export(struct command *cmdtp, int argc, char *argv[])
+static int do_export(int argc, char *argv[])
 {
 	int i = 1;
 	char *ptr;

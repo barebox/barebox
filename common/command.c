@@ -40,7 +40,7 @@ EXPORT_SYMBOL(command_list);
 
 #ifdef CONFIG_SHELL_HUSH
 
-static int do_exit(struct command *cmdtp, int argc, char *argv[])
+static int do_exit(int argc, char *argv[])
 {
 	int r;
 
@@ -98,7 +98,7 @@ int execute_command(int argc, char **argv)
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {
 		/* OK - call function to do the command */
-		ret = cmdtp->cmd(cmdtp, argc, argv);
+		ret = cmdtp->cmd(argc, argv);
 		if (ret == COMMAND_ERROR_USAGE) {
 			barebox_cmd_usage(cmdtp);
 			ret = COMMAND_ERROR;

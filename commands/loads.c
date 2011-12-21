@@ -40,7 +40,7 @@ static int save_serial(ulong offset, ulong size);
 static int write_record(char *buf);
 #endif /* CONFIG_CMD_SAVES */
 
-static int do_load_serial(struct command *cmdtp, int argc, char *argv[])
+static int do_load_serial(int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong addr;
@@ -175,7 +175,7 @@ static int read_record(char *buf, ulong len)
 }
 
 #ifdef CONFIG_CMD_SAVES
-static int do_save_serial(struct command *cmdtp, int argc, char *argv[])
+static int do_save_serial(int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong size   = 0;

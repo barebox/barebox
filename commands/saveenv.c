@@ -30,7 +30,7 @@
 #include <fcntl.h>
 #include <environment.h>
 
-static int do_saveenv(struct command *cmdtp, int argc, char *argv[])
+static int do_saveenv(int argc, char *argv[])
 {
 	int ret, fd;
 	char *filename, *dirname;

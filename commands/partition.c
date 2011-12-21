@@ -107,7 +107,7 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 	return ret;
 }
 
-static int do_addpart(struct command * cmdtp, int argc, char *argv[])
+static int do_addpart(int argc, char *argv[])
 {
 	char *devname;
 	char *endp;
@@ -174,7 +174,7 @@ BAREBOX_CMD_START(addpart)
 	BAREBOX_CMD_HELP(cmd_addpart_help)
 BAREBOX_CMD_END
 
-static int do_delpart(struct command * cmdtp, int argc, char *argv[])
+static int do_delpart(int argc, char *argv[])
 {
 	int i, err;
 

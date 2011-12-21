@@ -306,7 +306,7 @@ static int do_menu_entry(struct cmd_menu *cm)
 }
 #endif
 
-static int do_menu(struct command *cmdtp, int argc, char *argv[])
+static int do_menu(int argc, char *argv[])
 {
 	struct cmd_menu cm;
 	int opt;

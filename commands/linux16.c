@@ -147,7 +147,6 @@ struct linux_kernel_header {
 
 /**
  * Load an x86 Linux kernel bzImage and start it
- * @param cmdtp FIXME
  * @param argc parameter count
  * @param argv list of parameter
  *
@@ -155,7 +154,7 @@ struct linux_kernel_header {
  * (setup = 'real mode code' and kernel = 'protected mode code') to their
  * default locations, switches back to real mode and runs the setup code.
  */
-static int do_linux16(struct command *cmdtp, int argc, char *argv[])
+static int do_linux16(int argc, char *argv[])
 {
 	struct linux_kernel_header *lh = NULL;
 	int rc, opt;

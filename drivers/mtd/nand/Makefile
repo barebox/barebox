@@ -1,6 +1,6 @@
 
 # Generic NAND options
-obj-$(CONFIG_NAND)			+= nand.o nand_ecc.o
+obj-$(CONFIG_NAND)			+= nand_ecc.o
 obj-$(CONFIG_NAND_WRITE)		+= nand_write.o
 obj-$(CONFIG_NAND_ECC_SOFT)		+= nand_ecc.o nand_swecc.o
 obj-$(CONFIG_NAND_ECC_HW)		+= nand_hwecc.o

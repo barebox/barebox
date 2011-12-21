@@ -25,6 +25,10 @@ config I2C_TWL4030
 	depends on I2C_TWLCORE
 	bool "TWL4030 driver"
 
+config I2C_TWL6030
+	depends on I2C_TWLCORE
+	bool "TWL6030 driver"
+
 config DRIVER_SPI_MC13783
 	depends on SPI
 	bool "MC13783 a.k.a. PMIC driver"

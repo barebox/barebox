@@ -33,6 +33,12 @@
 
 #include <mach/omap_hsmmc.h>
 
+#if defined(CONFIG_I2C_TWL6030) && \
+	defined(CONFIG_MCI_OMAP_HSMMC) && \
+	defined(CONFIG_ARCH_OMAP4)
+#include <mach/omap4_twl6030_mmc.h>
+#endif
+
 struct hsmmc {
 	unsigned char res1[0x10];
 	unsigned int sysconfig;		/* 0x10 */
@@ -214,6 +220,17 @@ static int mmc_init_setup(struct mci_host *mci, struct device_d *dev)
 	unsigned int reg_val;
 	unsigned int dsor;
 	uint64_t start;
+
+/*
+ * Fix voltage for mmc, if booting from nand.
+ * It's necessary to do this here, because
+ * you need to set up this at probetime.
+ */
+#if defined(CONFIG_I2C_TWL6030) && \
+	defined(CONFIG_MCI_OMAP_HSMMC) && \
+	defined(CONFIG_ARCH_OMAP4)
+	set_up_mmc_voltage_omap4();
+#endif
 
 	writel(readl(&mmc_base->sysconfig) | MMC_SOFTRESET,
 		&mmc_base->sysconfig);

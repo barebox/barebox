@@ -320,7 +320,7 @@ static int imx_serial_probe(struct device_d *dev)
 	struct imx_serial_priv *priv;
 	uint32_t val;
 
-	priv = xmalloc(sizeof(*priv));
+	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
 
 	priv->regs = dev_request_mem_region(dev, 0);

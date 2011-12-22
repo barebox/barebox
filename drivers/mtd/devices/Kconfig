@@ -1,0 +1,16 @@
+menu "Self contained MTD devices"
+	depends on MTD!=n
+
+config MTD_DOCG3
+	bool "M-Systems Disk-On-Chip G3"
+	select BCH
+	select BITREV
+	---help---
+	  This provides an MTD device driver for the M-Systems DiskOnChip
+	  G3 devices.
+
+	  The driver provides access to G3 DiskOnChip, distributed by
+	  M-Systems and now Sandisk. The support is very experimental,
+	  and doesn't give access to any write operations.
+
+endmenu

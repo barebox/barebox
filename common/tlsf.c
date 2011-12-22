@@ -1,20 +1,17 @@
-#ifndef __BAREBOX__
-#include <assert.h>
-#include <limits.h>
-#endif
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/stringify.h>
 
 #include "tlsf.h"
 #include "tlsfbits.h"
 
-#ifdef __BAREBOX__
-#ifndef _DEBUG
-#define _DEBUG 0
-#endif
-#define tlsf_assert(expr)           ((void) (0))
+#ifdef DEBUG
+#define tlsf_assert(expr)	\
+	((expr) ? (void)(0) : printf("%s\n", __stringify(expr)))
+#else
+#define tlsf_assert(expr)	(void)(0)
 #endif
 
 /*
@@ -759,7 +756,7 @@ tlsf_pool tlsf_create(void* mem, size_t bytes)
 	const size_t pool_bytes = align_down(bytes - pool_overhead, ALIGN_SIZE);
 	pool_t* pool = tlsf_cast(pool_t*, mem);
 
-#if _DEBUG
+#ifdef DEBUG
 	/* Verify ffs/fls work properly. */
 	int rv = 0;
 	rv += (tlsf_ffs(0) == -1) ? 0 : 0x1;

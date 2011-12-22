@@ -23,4 +23,7 @@ config OFTREE
 config BCH
        bool
 
+config BITREV
+       bool
+
 endmenu

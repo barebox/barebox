@@ -299,6 +299,8 @@ static unsigned dm9k_read_packet_status(int b_width, void __iomem *port, unsigne
 	case IORESOURCE_MEM_32BIT:
 		rc = dm9k_read_packet_status_32(port, status);
 		break;
+	default:
+		rc = -EINVAL;
 	}
 
 	return rc;

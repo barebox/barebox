@@ -399,7 +399,7 @@ static int atmel_serial_probe(struct device_d *dev)
 	struct atmel_uart_port *uart;
 	struct console_device *cdev;
 
-	uart = xmalloc(sizeof(struct atmel_uart_port));
+	uart = xzalloc(sizeof(struct atmel_uart_port));
 	cdev = &uart->uart;
 	dev->type_data = cdev;
 	cdev->dev = dev;

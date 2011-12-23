@@ -90,7 +90,7 @@ static int altera_serial_jtag_probe(struct device_d *dev) {
 	struct console_device *cdev;
 	struct altera_serial_jtag_priv *priv;
 
-	priv = xmalloc(sizeof(*priv));
+	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
 
 	priv->regs = dev_request_mem_region(dev, 0);

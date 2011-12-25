@@ -24,6 +24,8 @@
 
 #endif /* STATIC */
 
+#include <gunzip.h>
+
 #define GZIP_IOBUF_SIZE (16*1024)
 
 static int  nofill(void *buffer, unsigned int len)

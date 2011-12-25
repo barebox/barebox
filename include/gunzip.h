@@ -1,5 +1,5 @@
-#ifndef INFLATE_H
-#define INFLATE_H
+#ifndef GUNZIP_H
+#define GUNZIP_H
 
 int gunzip(unsigned char *inbuf, int len,
 	   int(*fill)(void*, unsigned int),

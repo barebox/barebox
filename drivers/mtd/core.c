@@ -49,7 +49,7 @@ static 	ssize_t mtd_read(struct cdev *cdev, void* buf, size_t count,
 }
 
 #define NOTALIGNED(x) (x & (mtd->writesize - 1)) != 0
-#define MTDPGALG(x) ((x) & (mtd->writesize - 1))
+#define MTDPGALG(x) ((x) & ~(mtd->writesize - 1))
 
 #ifdef CONFIG_MTD_WRITE
 static int all_ff(const void *buf, int len)

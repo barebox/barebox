@@ -18,12 +18,19 @@
 #include <mach/board.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
+#include <mach/cpu.h>
 
 #include "generic.h"
 
 void at91_add_device_sdram(u32 size)
 {
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
+	if (cpu_is_at91sam9g10())
+		add_mem_device("sram0", AT91SAM9G10_SRAM_BASE,
+			AT91SAM9G10_SRAM_SIZE, IORESOURCE_MEM_WRITEABLE);
+	else
+		add_mem_device("sram0", AT91SAM9261_SRAM_BASE,
+			AT91SAM9261_SRAM_SIZE, IORESOURCE_MEM_WRITEABLE);
 }
 
 /* --------------------------------------------------------------------

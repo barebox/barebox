@@ -211,6 +211,14 @@ static int usb_a9260_mem_init(void)
 }
 mem_initcall(usb_a9260_mem_init);
 
+static void __init ek_add_device_button(void)
+{
+	at91_set_GPIO_periph(AT91_PIN_PB10, 1);	/* user push button, pull up enabled */
+	at91_set_deglitch(AT91_PIN_PB10, 1);
+
+	export_env_ull("dfu_button", AT91_PIN_PB10);
+}
+
 static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
@@ -220,6 +228,7 @@ static int usb_a9260_devices_init(void)
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_device_udc();
 	ek_add_led();
+	ek_add_device_button();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	usb_a9260_set_board_type();

@@ -72,6 +72,7 @@ static struct atmel_nand_data nand_pdata = {
 #else
 	.bus_width_16	= 0,
 #endif
+	.on_flash_bbt	= 1,
 };
 
 static struct sam9_smc_config ek_nand_smc_config = {

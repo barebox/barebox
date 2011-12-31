@@ -57,6 +57,7 @@ static struct atmel_nand_data nand_pdata = {
 /*	.det_pin	= ... not connected */
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
+	.on_flash_bbt	= 1,
 };
 
 static struct sam9_smc_config usb_a9260_nand_smc_config = {

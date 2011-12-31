@@ -128,6 +128,7 @@ struct at91_udc {
 	unsigned			selfpowered:1;
 	unsigned			active_suspend:1;
 	u8				addr;
+	u32				gpio_vbus_val;
 	struct at91_udc_data		board;
 	struct clk			*iclk, *fclk;
 	struct device_d			*dev;

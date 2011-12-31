@@ -1315,6 +1315,19 @@ static struct at91_udc controller = {
 
 static void at91_udc_irq (void *_udc);
 
+static void at91_update_vbus(struct at91_udc *udc, u32 value)
+{
+	if (value == udc->gpio_vbus_val)
+		return;
+
+	if (value)
+		dev_set_param(udc->dev, "vbus", "1");
+	else
+		dev_set_param(udc->dev, "vbus", "0");
+
+	udc->gpio_vbus_val = value;
+}
+
 int usb_gadget_poll(void)
 {
 	struct at91_udc	*udc = &controller;
@@ -1327,10 +1340,10 @@ int usb_gadget_poll(void)
 	value ^= udc->board.vbus_active_low;
 
 	if (!value) {
-		dev_set_param(udc->dev, "vbus", "0");
+		at91_update_vbus(udc, value);
 		return 0;
 	}
-	dev_set_param(udc->dev, "vbus", "1");
+	at91_update_vbus(udc, value);
 
 	value = at91_udp_read(udc, AT91_UDP_ISR) & (~(AT91_UDP_SOFINT));
 	if (value)

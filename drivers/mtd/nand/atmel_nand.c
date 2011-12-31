@@ -148,30 +148,16 @@ static int atmel_nand_device_ready(struct mtd_info *mtd)
  */
 static void atmel_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip *chip = mtd->priv;
 
-	readsb(nand_chip->IO_ADDR_R, buf, len);
-}
-
-static void atmel_read_buf16(struct mtd_info *mtd, u8 *buf, int len)
-{
-	struct nand_chip	*nand_chip = mtd->priv;
-
-	readsw(nand_chip->IO_ADDR_R, buf, len / 2);
+	memcpy_fromio(buf, chip->IO_ADDR_R, len);
 }
 
 static void atmel_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip *chip = mtd->priv;
 
-	writesb(nand_chip->IO_ADDR_W, buf, len);
-}
-
-static void atmel_write_buf16(struct mtd_info *mtd, const u8 *buf, int len)
-{
-	struct nand_chip	*nand_chip = mtd->priv;
-
-	writesw(nand_chip->IO_ADDR_W, buf, len / 2);
+	memcpy_toio(chip->IO_ADDR_W, buf, len);
 }
 
 /*
@@ -417,14 +403,11 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	nand_chip->chip_delay = 20;		/* 20us command delay time */
 
-	if (host->board->bus_width_16) {	/* 16-bit bus width */
+	if (host->board->bus_width_16)		/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;
-		nand_chip->read_buf = atmel_read_buf16;
-		nand_chip->write_buf = atmel_write_buf16;
-	} else {
-		nand_chip->read_buf = atmel_read_buf;
-		nand_chip->write_buf = atmel_write_buf;
-	}
+
+	nand_chip->read_buf = atmel_read_buf;
+	nand_chip->write_buf = atmel_write_buf;
 
 	atmel_nand_enable(host);
 

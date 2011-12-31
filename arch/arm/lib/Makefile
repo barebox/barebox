@@ -5,6 +5,7 @@ obj-$(CONFIG_CMD_BOOTU)	+= bootu.o
 obj-y	+= div0.o
 obj-y	+= findbit.o
 obj-y	+= arm.o
+obj-y	+= io.o
 obj-y	+= io-readsb.o
 obj-y	+= io-readsw-armv4.o
 obj-y	+= io-readsl.o

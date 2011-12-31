@@ -427,6 +427,34 @@ config DEFAULT_ENVIRONMENT
 	  Enabling this option will give you a default environment when
 	  the environment found in the environment sector is invalid
 
+config DEFAULT_ENVIRONMENT_COMPRESSED
+	bool
+	depends on DEFAULT_ENVIRONMENT
+	default y if ZLIB
+	default y if BZLIB
+	default y if LZO_DECOMPRESS
+
+if DEFAULT_ENVIRONMENT_COMPRESSED
+
+choice
+	prompt "compression"
+
+config DEFAULT_ENVIRONMENT_COMPRESSED_GZIP
+	bool "gzip"
+	depends on ZLIB
+
+config DEFAULT_ENVIRONMENT_COMPRESSED_BZIP2
+	bool "bzip2"
+	depends on BZLIB
+
+config DEFAULT_ENVIRONMENT_COMPRESSED_LZO
+	bool "lzo"
+	depends on LZO_DECOMPRESS
+
+endchoice
+
+endif
+
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool
 	depends on DEFAULT_ENVIRONMENT

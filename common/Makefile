@@ -54,5 +54,30 @@ endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 barebox_default_env: $(ENV_FILES)
 	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(DEFAULT_ENVIRONMENT_PATH)
 
-include/generated/barebox_default_env.h: barebox_default_env
+barebox_default_env_comp =
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_GZIP),y)
+barebox_default_env_comp = .gz
+endif
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_BZIP2),y)
+barebox_default_env_comp = .bz2
+endif
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_LZO),y)
+barebox_default_env_comp = .lzo
+endif
+
+barebox_default_env.gz: barebox_default_env
+	$(call if_changed,gzip)
+
+barebox_default_env.bz2: barebox_default_env
+	$(call if_changed,bzip2)
+
+barebox_default_env.lzo: barebox_default_env
+	$(call if_changed,lzo)
+
+include/generated/barebox_default_env.h: barebox_default_env$(barebox_default_env_comp)
 	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@
+	$(Q)echo "const int default_environment_uncompress_size=`stat -c%s barebox_default_env`;" >> $@
+
+CLEAN_FILES += include/generated/barebox_default_env.h barebox_default_env
+CLEAN_FILES += barebox_default_env.gz barebox_default_env.bz2
+CLEAN_FILES += barebox_default_env.lzo

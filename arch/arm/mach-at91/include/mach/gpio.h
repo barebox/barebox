@@ -236,11 +236,7 @@ int at91_set_gpio_value(unsigned pin, int value);
 int at91_get_gpio_value(unsigned pin);
 
 struct at91_gpio_bank {
-	unsigned chipbase;		/* bank's first GPIO number */
 	void __iomem *regbase;		/* base of register bank */
-	struct at91_gpio_bank *next;	/* bank sharing same IRQ/clock/... */
-	unsigned short id;		/* peripheral ID */
-	unsigned long offset;		/* offset from system peripheral base */
 	struct clk *clock;
 };
 

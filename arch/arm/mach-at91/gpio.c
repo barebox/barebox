@@ -235,23 +235,14 @@ EXPORT_SYMBOL(gpio_direction_output);
 
 int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 {
-	unsigned		i;
-	struct at91_gpio_bank	*last;
+	unsigned i;
 
 	gpio = data;
 	gpio_banks = nr_banks;
 
-	for (i = 0, last = NULL; i < nr_banks; i++, last = data, data++) {
-		data->chipbase = PIN_BASE + i * 32;
-		data->regbase = data->offset +
-			(void __iomem *)AT91_BASE_SYS;
-
+	for (i = 0; i < nr_banks; i++, data++) {
 		/* enable PIO controller's clock */
 		clk_enable(data->clock);
-
-		/* AT91SAM9263_ID_PIOCDE groups PIOC, PIOD, PIOE */
-		if (last && last->id == data->id)
-			last->next = data;
 	}
 
 	return 0;

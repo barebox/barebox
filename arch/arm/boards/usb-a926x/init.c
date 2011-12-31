@@ -37,6 +37,7 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <gpio.h>
+#include <led.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
@@ -182,6 +183,22 @@ static void __init ek_add_device_udc(void)
 	at91_add_device_udc(&ek_udc_data);
 }
 
+struct gpio_led led = {
+	.gpio = AT91_PIN_PB21,
+	.led = {
+		.name = "user_led",
+	},
+};
+
+static void __init ek_add_led(void)
+{
+	if (machine_is_usb_a9263())
+		led.active_low = 1;
+
+	at91_set_gpio_output(led.gpio, led.active_low);
+	led_gpio_register(&led);
+}
+
 static int usb_a9260_mem_init(void)
 {
 #ifdef CONFIG_AT91_HAVE_SRAM_128M
@@ -202,6 +219,7 @@ static int usb_a9260_devices_init(void)
 	usb_a9260_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_device_udc();
+	ek_add_led();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	usb_a9260_set_board_type();

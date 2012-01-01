@@ -273,27 +273,22 @@ struct device_d * __init at91_register_uart(unsigned id, unsigned pins)
 		case 0:		/* DBGU */
 			configure_dbgu_pins();
 			start = AT91_BASE_SYS + AT91_DBGU;
-			id = 0;
 			break;
-		case AT91RM9200_ID_US0:
+		case 1:
 			configure_usart0_pins(pins);
 			start = AT91RM9200_BASE_US0;
-			id = 1;
 			break;
-		case AT91RM9200_ID_US1:
+		case 2:
 			configure_usart1_pins(pins);
 			start = AT91RM9200_BASE_US1;
-			id = 2;
 			break;
-		case AT91RM9200_ID_US2:
+		case 3:
 			configure_usart2_pins(pins);
 			start = AT91RM9200_BASE_US2;
-			id = 3;
 			break;
-		case AT91RM9200_ID_US3:
+		case 4:
 			configure_usart3_pins(pins);
 			start = AT91RM9200_BASE_US3;
-			id = 4;
 			break;
 		default:
 			return NULL;

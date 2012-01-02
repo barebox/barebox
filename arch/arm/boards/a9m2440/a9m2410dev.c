@@ -29,6 +29,7 @@
 #include <init.h>
 #include <io.h>
 #include <mach/s3c-iomap.h>
+#include <mach/s3c-busctl.h>
 
 /**
  * Initialize the CPU to be able to work with the a9m2410dev evaluation board
@@ -72,19 +73,19 @@ int a9m2410dev_devices_init(void)
 	writel((readl(MISCCR) & ~0xFFFF) | 0x0140, MISCCR);
 
 	/* ----------- configure the access to the outer space ---------- */
-	reg = readl(BWSCON);
+	reg = readl(S3C_BWSCON);
 
 	/* CS#1 to access the network controller */
 	reg &= ~0xf0;
 	reg |= 0xe0;
-	writel(0x1350, BANKCON1);
+	writel(0x1350, S3C_BANKCON1);
 
 	/* CS#2 to the dual 16550 UART */
 	reg &= ~0xf00;
 	reg |= 0x400;
-	writel(0x0d50, BANKCON2);
+	writel(0x0d50, S3C_BANKCON2);
 
-	writel(reg, BWSCON);
+	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to the network and UART device */
         reg = readl(MISCCR);

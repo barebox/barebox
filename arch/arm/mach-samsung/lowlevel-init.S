@@ -192,7 +192,7 @@ With m = MDIV + 8, p = PDIV + 2 and s = SDIV.
 s3c24x0_sdram_init:
 
 	adr r0, SDRAMDATA	/* get the current relative address of the table */
-	mov r1, #S3C24X0_MEMCTL_BASE
+	mov r1, #S3C_MEMCTL_BASE
 	mov r2, #6		/* we *know* it contains 6 entries */
 
 	ldr r3, [r0], #4	/* write BSWCON first */
@@ -255,7 +255,7 @@ s3c24x0_nand_boot:
  * In the case of NOR boot we are running from the same address space.
  * Detect this case to handle it correctly.
  */
-	mov r1, #S3C24X0_MEMCTL_BASE
+	mov r1, #S3C_MEMCTL_BASE
 	ldr r3, [r1]
 	and r3, r3, #0x6
 	cmp r3, #0x0	/* check for NAND case */

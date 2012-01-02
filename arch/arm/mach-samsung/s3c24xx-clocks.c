@@ -21,6 +21,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-clocks.h>
+#include <mach/s3c-busctl.h>
 
 /**
  * Calculate the current M-PLL clock.
@@ -127,9 +128,11 @@ int s3c24xx_dump_clocks(void)
 	printf("fclk:    %7d kHz\n", s3c_get_fclk() / 1000);
 	printf("hclk:    %7d kHz\n", s3c_get_hclk() / 1000);
 	printf("pclk:    %7d kHz\n", s3c_get_pclk() / 1000);
-	printf("SDRAM1:   CL%d@%dMHz\n", ((readl(BANKCON6) & 0xc) >> 2) + 2, s3c_get_hclk() / 1000000);
-	if ((readl(BANKCON7) & (0x3 << 15)) == (0x3 << 15))
-		printf("SDRAM2:   CL%d@%dMHz\n", ((readl(BANKCON7) & 0xc) >> 2) + 2,
+	printf("SDRAM1:   CL%d@%dMHz\n", ((readl(S3C_BANKCON6) & 0xc) >> 2) + 2,
+						s3c_get_hclk() / 1000000);
+	if ((readl(S3C_BANKCON7) & (0x3 << 15)) == (0x3 << 15))
+		printf("SDRAM2:   CL%d@%dMHz\n",
+			((readl(S3C_BANKCON7) & 0xc) >> 2) + 2,
 			s3c_get_hclk() / 1000000);
 	return 0;
 }

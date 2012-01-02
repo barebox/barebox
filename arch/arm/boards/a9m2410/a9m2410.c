@@ -34,6 +34,8 @@
 #include <io.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-nand.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-busctl.h>
 
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {
@@ -42,38 +44,13 @@ static struct s3c24x0_nand_platform_data nand_info = {
 
 static int a9m2410_mem_init(void)
 {
-	resource_size_t size = 0;
-	uint32_t reg;
+	resource_size_t size;
 
 	/*
-	 * detect the current memory size
 	 * Note: On this card the second SDRAM page is not used
 	 */
-	reg = readl(BANKSIZE);
-
-	switch (reg &= 0x7) {
-	case 0:
-		size = 32 * 1024 * 1024;
-		break;
-	case 1:
-		size = 64 * 1024 * 1024;
-		break;
-	case 2:
-		size = 128 * 1024 * 1024;
-		break;
-	case 4:
-		size = 2 * 1024 * 1024;
-		break;
-	case 5:
-		size = 4 * 1024 * 1024;
-		break;
-	case 6:
-		size = 8 * 1024 * 1024;
-		break;
-	case 7:
-		size = 16 * 1024 * 1024;
-		break;
-	}
+	s3c24xx_disable_second_sdram_bank();
+	size = s3c24xx_get_memory_size();
 
 	/* ---------- configure the GPIOs ------------- */
 	writel(0x007FFFFF, GPACON);
@@ -100,7 +77,7 @@ static int a9m2410_mem_init(void)
 	 */
 	writel(0x40140, MISCCR);
 
-	arm_add_mem_device("ram0", CS6_BASE, size);
+	arm_add_mem_device("ram0", S3C_SDRAM_BASE, size);
 
 	return 0;
 }
@@ -111,19 +88,19 @@ static int a9m2410_devices_init(void)
 	uint32_t reg;
 
 	/* ----------- configure the access to the outer space ---------- */
-	reg = readl(BWSCON);
+	reg = readl(S3C_BWSCON);
 
 	/* CS#1 to access the network controller */
 	reg &= ~0xf0;
 	reg |= 0xe0;
-	writel(0x1350, BANKCON1);
+	writel(0x1350, S3C_BANKCON1);
 
 	/* CS#2 to the dual 16550 UART */
 	reg &= ~0xf00;
 	reg |= 0x400;
-	writel(0x0d50, BANKCON2);
+	writel(0x0d50, S3C_BANKCON2);
 
-	writel(reg, BWSCON);
+	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to the network and UART device */
         reg = readl(MISCCR);
@@ -138,7 +115,7 @@ static int a9m2410_devices_init(void)
 	 * connected to CS line 1 and interrupt line
 	 * GPIO3, data width is 32 bit
 	 */
-	add_generic_device("smc91c111", -1, NULL, CS1_BASE + 0x300, 16,
+	add_generic_device("smc91c111", -1, NULL, S3C_CS1_BASE + 0x300, 16,
 			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
@@ -150,7 +127,7 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
+	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;

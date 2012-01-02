@@ -35,6 +35,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
+#include <mach/s3c-busctl.h>
 
 #include "baseboards.h"
 
@@ -66,12 +67,6 @@ static int a9m2440_check_for_ram(uint32_t addr)
 	return rc;
 }
 
-static void a9m2440_disable_second_sdram_bank(void)
-{
-	writel(readl(BANKCON7) & ~(0x3 << 15),BANKCON7);
-	writel(readl(MISCCR) | (1 << 18), MISCCR); /* disable clock */
-}
-
 static int a9m2440_mem_init(void)
 {
 	/*
@@ -80,30 +75,30 @@ static int a9m2440_mem_init(void)
 	 * So we must check here, if the second bank is populated to get the
 	 * correct RAM size.
 	 */
-	switch (readl(BANKSIZE) & 0x7) {
+	switch (readl(S3C_BANKSIZE) & 0x7) {
 	case 0:
-		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 32 * 1024 * 1024))
-			a9m2440_disable_second_sdram_bank();
+		if (a9m2440_check_for_ram(S3C_SDRAM_BASE + 32 * 1024 * 1024))
+			s3c24xx_disable_second_sdram_bank();
 		break;
 	case 1:
-		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 64 * 1024 * 1024))
-			a9m2440_disable_second_sdram_bank();
+		if (a9m2440_check_for_ram(S3C_SDRAM_BASE + 64 * 1024 * 1024))
+			s3c24xx_disable_second_sdram_bank();
 		break;
 	case 2:
-		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 128 * 1024 * 1024))
-			a9m2440_disable_second_sdram_bank();
+		if (a9m2440_check_for_ram(S3C_SDRAM_BASE + 128 * 1024 * 1024))
+			s3c24xx_disable_second_sdram_bank();
 		break;
 	case 4:
 	case 5:
 	case 6:		/* not supported on this machine */
 		break;
 	default:
-		if (a9m2440_check_for_ram(S3C24X0_SDRAM_BASE + 16 * 1024 * 1024))
-			a9m2440_disable_second_sdram_bank();
+		if (a9m2440_check_for_ram(S3C_SDRAM_BASE + 16 * 1024 * 1024))
+			s3c24xx_disable_second_sdram_bank();
 		break;
 	}
 
-	arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
+	arm_add_mem_device("ram0", S3C_SDRAM_BASE, s3c24xx_get_memory_size());
 
 	return 0;
 }
@@ -114,14 +109,14 @@ static int a9m2440_devices_init(void)
 	uint32_t reg;
 
 	/* ----------- configure the access to the outer space ---------- */
-	reg = readl(BWSCON);
+	reg = readl(S3C_BWSCON);
 
 	/* CS#5 to access the network controller */
 	reg &= ~0x00f00000;
 	reg |=  0x00d00000;	/* 16 bit */
-	writel(0x1f4c, BANKCON5);
+	writel(0x1f4c, S3C_BANKCON5);
 
-	writel(reg, BWSCON);
+	writel(reg, S3C_BWSCON);
 
 #ifdef CONFIG_MACH_A9M2410DEV
 	a9m2410dev_devices_init();
@@ -140,7 +135,7 @@ static int a9m2440_devices_init(void)
 	 * Connected to CS line 5 + A24 and interrupt line EINT9,
 	 * data width is 16 bit
 	 */
-	add_generic_device("cs8900", -1, NULL, CS5_BASE + (1 << 24) + 0x300, 16,
+	add_generic_device("cs8900", -1, NULL, S3C_CS5_BASE + (1 << 24) + 0x300, 16,
 			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
@@ -151,7 +146,7 @@ static int a9m2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
+	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2440);
 
 	return 0;

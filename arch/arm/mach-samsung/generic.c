@@ -27,53 +27,61 @@
 #include <init.h>
 #include <clock.h>
 #include <io.h>
+#include <sizes.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
+#include <mach/s3c-busctl.h>
 
 /**
  * Calculate the amount of connected and available memory
  * @return Memory size in bytes
  */
-uint32_t s3c24x0_get_memory_size(void)
+uint32_t s3c24xx_get_memory_size(void)
 {
 	uint32_t reg, size;
 
 	/*
 	 * detect the current memory size
 	 */
-	reg = readl(BANKSIZE);
+	reg = readl(S3C_BANKSIZE);
 
 	switch (reg & 0x7) {
 	case 0:
-		size = 32 * 1024 * 1024;
+		size = SZ_32M;
 		break;
 	case 1:
-		size = 64 * 1024 * 1024;
+		size = SZ_64M;
 		break;
 	case 2:
-		size = 128 * 1024 * 1024;
+		size = SZ_128M;
 		break;
 	case 4:
-		size = 2 * 1024 * 1024;
+		size = SZ_2M;
 		break;
 	case 5:
-		size = 4 * 1024 * 1024;
+		size = SZ_4M;
 		break;
 	case 6:
-		size = 8 * 1024 * 1024;
+		size = SZ_8M;
 		break;
 	default:
-		size = 16 * 1024 * 1024;
+		size = SZ_16M;
 		break;
 	}
 
 	/*
 	 * Is bank7 also configured for SDRAM usage?
 	 */
-	if ((readl(BANKCON7) & (0x3 << 15)) == (0x3 << 15))
+	if ((readl(S3C_BANKCON7) & (0x3 << 15)) == (0x3 << 15))
 		size <<= 1;	/* also count this bank */
 
 	return size;
+}
+
+void s3c24xx_disable_second_sdram_bank(void)
+{
+	writel(readl(S3C_BANKCON7) & ~(0x3 << 15), S3C_BANKCON7);
+	writel(readl(MISCCR) | (1 << 18), MISCCR); /* disable its clock */
 }
 
 #define S3C_WTCON (S3C_WATCHDOG_BASE)

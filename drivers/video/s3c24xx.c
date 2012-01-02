@@ -227,7 +227,7 @@ static int s3cfb_activate_var(struct fb_info *fb_info)
 	/* ensure video output is _off_ */
 	writel(0x00000000, fbi->base + LCDCON1);
 
-	hclk = s3c24xx_get_hclk() / 1000U;	/* hclk in kHz */
+	hclk = s3c_get_hclk() / 1000U;	/* hclk in kHz */
 	div = hclk / PICOS2KHZ(mode->pixclock);
 	if (div < 3)
 		div  = 3;
@@ -339,7 +339,7 @@ static void s3cfb_info(struct device_d *hw_dev)
 	addr3 = readl(fbi->base + LCDSADDR3);
 
 	printf(" Video hardware info:\n");
-	printf("  Video clock is running at %u Hz\n", s3c24xx_get_hclk() / ((GET_CLKVAL(con1) + 1) * 2));
+	printf("  Video clock is running at %u Hz\n", s3c_get_hclk() / ((GET_CLKVAL(con1) + 1) * 2));
 	printf("  Video memory bank starts at 0x%08X\n", GET_LCDBANK(addr1) << 22);
 	printf("  Video memory bank offset: 0x%08X\n", GET_LCDBASEU(addr1));
 	printf("  Video memory end: 0x%08X\n", GET_LCDBASEU(addr2));

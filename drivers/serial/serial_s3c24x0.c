@@ -48,7 +48,7 @@ static int s3c24x0_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	unsigned val;
 
 	/* value is calculated so : PCLK / (16 * baudrate) -1 */
-	val = s3c24xx_get_pclk() / (16 * baudrate) - 1;
+	val = s3c_get_pclk() / (16 * baudrate) - 1;
 	writew(val, base + UBRDIV);
 
 	return 0;

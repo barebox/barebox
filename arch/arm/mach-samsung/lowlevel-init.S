@@ -77,7 +77,7 @@ routine very early in your board_init_lowlevel routine.
 .globl s3c24x0_pll_init
 s3c24x0_pll_init:
 
-	mov r0, #S3C24X0_CLOCK_POWER_BASE
+	mov r0, #S3C_CLOCK_POWER_BASE
 
 	/* configure internal clock ratio */
 	mov r1, #BOARD_SPECIFIC_CLKDIVN

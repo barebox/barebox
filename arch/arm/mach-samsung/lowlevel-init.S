@@ -29,7 +29,7 @@
 .globl s3c24x0_disable_wd
 s3c24x0_disable_wd:
 
-	ldr r0, =S3C24X0_WATCHDOG_BASE
+	ldr r0, =S3C_WATCHDOG_BASE
 	mov r1, #0x0
 	str r1, [r0]
 	mov pc, lr

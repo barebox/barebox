@@ -76,16 +76,20 @@ uint32_t s3c24x0_get_memory_size(void)
 	return size;
 }
 
+#define S3C_WTCON (S3C_WATCHDOG_BASE)
+#define S3C_WTDAT (S3C_WATCHDOG_BASE + 0x04)
+#define S3C_WTCNT (S3C_WATCHDOG_BASE + 0x08)
+
 void __noreturn reset_cpu(unsigned long addr)
 {
 	/* Disable watchdog */
-	writew(0x0000, WTCON);
+	writew(0x0000, S3C_WTCON);
 
 	/* Initialize watchdog timer count register */
-	writew(0x0001, WTCNT);
+	writew(0x0001, S3C_WTCNT);
 
 	/* Enable watchdog timer; assert reset at timer timeout */
-	writew(0x0021, WTCON);
+	writew(0x0021, S3C_WTCON);
 
 	/* loop forever and wait for reset to happen */
 	while(1)

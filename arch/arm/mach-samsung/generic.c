@@ -76,39 +76,6 @@ uint32_t s3c24x0_get_memory_size(void)
 	return size;
 }
 
-static uint64_t s3c24xx_clocksource_read(void)
-{
-	/* note: its a down counter */
-	return 0xFFFF - readw(TCNTO4);
-}
-
-static struct clocksource cs = {
-	.read	= s3c24xx_clocksource_read,
-	.mask	= CLOCKSOURCE_MASK(16),
-	.shift	= 10,
-};
-
-static int clocksource_init (void)
-{
-	uint32_t p_clk = s3c_get_pclk();
-
-	writel(0x00000000, TCON);	/* stop all timers */
-	writel(0x00ffffff, TCFG0);	/* PCLK / (255 + 1) for timer 4 */
-	writel(0x00030000, TCFG1);	/* /16 */
-
-	writew(0xffff, TCNTB4);		/* reload value is TOP */
-
-	writel(0x00600000, TCON);	/* force a first reload */
-	writel(0x00400000, TCON);
-	writel(0x00500000, TCON);	/* enable timer 4 with auto reload */
-
-	cs.mult = clocksource_hz2mult(p_clk / ((255 + 1) * 16), cs.shift);
-	init_clock(&cs);
-
-	return 0;
-}
-core_initcall(clocksource_init);
-
 void __noreturn reset_cpu(unsigned long addr)
 {
 	/* Disable watchdog */

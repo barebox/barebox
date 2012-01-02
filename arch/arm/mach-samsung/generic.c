@@ -31,6 +31,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 /**
  * Calculate the amount of connected and available memory
@@ -81,7 +82,7 @@ uint32_t s3c24xx_get_memory_size(void)
 void s3c24xx_disable_second_sdram_bank(void)
 {
 	writel(readl(S3C_BANKCON7) & ~(0x3 << 15), S3C_BANKCON7);
-	writel(readl(MISCCR) | (1 << 18), MISCCR); /* disable its clock */
+	writel(readl(S3C_MISCCR) | (1 << 18), S3C_MISCCR); /* disable its clock */
 }
 
 #define S3C_WTCON (S3C_WATCHDOG_BASE)

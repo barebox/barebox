@@ -20,6 +20,7 @@
 #include <io.h>
 #include <mach/s3c-iomap.h>
 #include <mach/gpio.h>
+#include <mach/s3c24xx-gpio.h>
 
 static const unsigned char group_offset[] =
 {
@@ -45,10 +46,10 @@ void gpio_set_value(unsigned gpio, int value)
 
 	offset = group_offset[group];
 
-	reg = readl(GPADAT + offset);
+	reg = readl(S3C_GPADAT + offset);
 	reg &= ~(1 << bit);
 	reg |= (!!value) << bit;
-	writel(reg, GPADAT + offset);
+	writel(reg, S3C_GPADAT + offset);
 }
 
 int gpio_direction_input(unsigned gpio)
@@ -60,9 +61,9 @@ int gpio_direction_input(unsigned gpio)
 
 	offset = group_offset[group];
 
-	reg = readl(GPACON + offset);
+	reg = readl(S3C_GPACON + offset);
 	reg &= ~(0x3 << (bit << 1));
-	writel(reg, GPACON + offset);
+	writel(reg, S3C_GPACON + offset);
 
 	return 0;
 }
@@ -81,14 +82,14 @@ int gpio_direction_output(unsigned gpio, int value)
 	gpio_set_value(gpio,value);
 	/* direction */
 	if (group == 0) {	/* GPA is special */
-		reg = readl(GPACON);
+		reg = readl(S3C_GPACON);
 		reg &= ~(1 << bit);
-		writel(reg, GPACON);
+		writel(reg, S3C_GPACON);
 	} else {
-		reg = readl(GPACON + offset);
+		reg = readl(S3C_GPACON + offset);
 		reg &= ~(0x3 << (bit << 1));
 		reg |= 0x1 << (bit << 1);
-		writel(reg, GPACON + offset);
+		writel(reg, S3C_GPACON + offset);
 	}
 
 	return 0;
@@ -107,7 +108,7 @@ int gpio_get_value(unsigned gpio)
 	offset = group_offset[group];
 
 	/* value */
-	reg = readl(GPADAT + offset);
+	reg = readl(S3C_GPADAT + offset);
 
 	return !!(reg & (1 << bit));
 }
@@ -132,9 +133,9 @@ void s3c_gpio_mode(unsigned gpio_mode)
 			gpio_direction_output(bit, GET_GPIOVAL(gpio_mode));
 			break;
 		default:
-			reg = readl(GPACON);
+			reg = readl(S3C_GPACON);
 			reg |= 1 << bit;
-			writel(reg, GPACON);
+			writel(reg, S3C_GPACON);
 			break;
 		}
 		return;
@@ -143,12 +144,12 @@ void s3c_gpio_mode(unsigned gpio_mode)
 	offset = group_offset[group];
 
 	if (PU_PRESENT(gpio_mode)) {
-		reg = readl(GPACON + offset + 8);
+		reg = readl(S3C_GPACON + offset + 8);
 		if (GET_PU(gpio_mode))
 			reg |= (1 << bit);	/* set means _disabled_ */
 		else
 			reg &= ~(1 << bit);
-		writel(reg, GPACON + offset + 8);
+		writel(reg, S3C_GPACON + offset + 8);
 	}
 
 	switch (func) {
@@ -160,10 +161,10 @@ void s3c_gpio_mode(unsigned gpio_mode)
 		break;
 	case 2: /* function one */
 	case 3: /* function two */
-		reg = readl(GPACON + offset);
+		reg = readl(S3C_GPACON + offset);
 		reg &= ~(0x3 << (bit << 1));
 		reg |= func << (bit << 1);
-		writel(reg, GPACON + offset);
+		writel(reg, S3C_GPACON + offset);
 		break;
 	}
 }

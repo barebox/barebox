@@ -36,6 +36,7 @@
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {
@@ -53,29 +54,29 @@ static int a9m2410_mem_init(void)
 	size = s3c24xx_get_memory_size();
 
 	/* ---------- configure the GPIOs ------------- */
-	writel(0x007FFFFF, GPACON);
-	writel(0x00000000, GPCCON);
-	writel(0x00000000, GPCUP);
-	writel(0x00000000, GPDCON);
-	writel(0x00000000, GPDUP);
-	writel(0xAAAAAAAA, GPECON);
-	writel(0x0000E03F, GPEUP);
-	writel(0x00000000, GPBCON);	/* all inputs */
-	writel(0x00000007, GPBUP);	/* pullup disabled for GPB0..3 */
-	writel(0x00009000, GPFCON);	/* GPF7 CLK_INT#, GPF6 Debug-LED */
-	writel(0x000000FF, GPFUP);
-	writel(readl(GPGDAT) | 0x0010, GPGDAT);	/* switch off LCD backlight */
-	writel(0xFF00A938, GPGCON);	/* switch off USB device */
-	writel(0x0000F000, GPGUP);
-	writel(readl(GPHDAT) | 0x100, GPHDAT);	/* switch BOOTINT/GPIO_ON# to high */
-	writel(0x000007FF, GPHUP);
-	writel(0x0029FAAA, GPHCON);
+	writel(0x007FFFFF, S3C_GPACON);
+	writel(0x00000000, S3C_GPCCON);
+	writel(0x00000000, S3C_GPCUP);
+	writel(0x00000000, S3C_GPDCON);
+	writel(0x00000000, S3C_GPDUP);
+	writel(0xAAAAAAAA, S3C_GPECON);
+	writel(0x0000E03F, S3C_GPEUP);
+	writel(0x00000000, S3C_GPBCON);	/* all inputs */
+	writel(0x00000007, S3C_GPBUP);	/* pullup disabled for GPB0..3 */
+	writel(0x00009000, S3C_GPFCON);	/* GPF7 CLK_INT#, GPF6 Debug-LED */
+	writel(0x000000FF, S3C_GPFUP);
+	writel(readl(S3C_GPGDAT) | 0x0010, S3C_GPGDAT);	/* switch off LCD backlight */
+	writel(0xFF00A938, S3C_GPGCON);	/* switch off USB device */
+	writel(0x0000F000, S3C_GPGUP);
+	writel(readl(S3C_GPHDAT) | 0x100, S3C_GPHDAT);	/* switch BOOTINT/GPIO_ON# to high */
+	writel(0x000007FF, S3C_GPHUP);
+	writel(0x0029FAAA, S3C_GPHCON);
 	/*
 	 * USB port1 normal, USB port0 normal, USB1 pads for device
 	 * PCLK output on CLKOUT0, UPLL CLK output on CLKOUT1,
 	 * 2nd SDRAM bank off (only bank 1 is used)
 	 */
-	writel(0x40140, MISCCR);
+	writel(0x40140, S3C_MISCCR);
 
 	arm_add_mem_device("ram0", S3C_SDRAM_BASE, size);
 
@@ -103,9 +104,9 @@ static int a9m2410_devices_init(void)
 	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to the network and UART device */
-        reg = readl(MISCCR);
+	reg = readl(S3C_MISCCR);
 	reg |= 0x10000;
-	writel(reg, MISCCR);
+	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,

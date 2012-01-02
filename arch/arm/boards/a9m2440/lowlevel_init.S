@@ -4,6 +4,7 @@
 
 #include <config.h>
 #include <mach/s3c-iomap.h>
+#include <mach/s3c24xx-gpio.h>
 
 	.section ".text_bare_init.board_init_lowlevel","ax"
 
@@ -33,7 +34,7 @@ sdram_init:
 	 * configured yet, these pins show external settings, to detect
 	 * the SDRAM size.
 	 */
-	ldr r1, =GPBDAT
+	ldr r1, =S3C_GPBDAT
 	ldr r4, [r1]
 	and r4, r4, #0x3
 

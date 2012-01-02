@@ -36,6 +36,7 @@
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 #include "baseboards.h"
 
@@ -123,9 +124,9 @@ static int a9m2440_devices_init(void)
 #endif
 
 	/* release the reset signal to external devices */
-	reg = readl(MISCCR);
+	reg = readl(S3C_MISCCR);
 	reg |= 0x10000;
-	writel(reg, MISCCR);
+	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,

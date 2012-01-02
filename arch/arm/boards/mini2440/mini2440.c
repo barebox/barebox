@@ -44,6 +44,7 @@
 #include <mach/s3c-mci.h>
 #include <mach/s3c24xx-fb.h>
 #include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(MINI2440_TACLS, MINI2440_TWRPH0,
@@ -292,9 +293,9 @@ static int mini2440_devices_init(void)
 	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to external devices */
-	reg = readl(MISCCR);
+	reg = readl(S3C_MISCCR);
 	reg |= 0x10000;
-	writel(reg, MISCCR);
+	writel(reg, S3C_MISCCR);
 
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);

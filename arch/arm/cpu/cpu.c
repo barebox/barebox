@@ -85,7 +85,7 @@ void arch_shutdown(void)
 		"bl __mmu_cache_off;"
 		:
 		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
 	);
 #endif
 }

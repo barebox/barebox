@@ -24,7 +24,7 @@ static void create_sections(unsigned long virt, unsigned long phys, int size_m,
 		"bl __mmu_cache_flush;"
 		:
 		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
 	);
 }
 
@@ -244,7 +244,7 @@ static int mmu_init(void)
 		"bl __mmu_cache_on;"
 		:
 		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
         );
 
 	/*
@@ -274,7 +274,7 @@ void mmu_disable(void)
 		"bl __mmu_cache_off;"
 		:
 		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "cc", "memory"
+		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
 	);
 }
 

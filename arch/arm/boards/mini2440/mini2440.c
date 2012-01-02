@@ -39,7 +39,7 @@
 #include <io.h>
 #include <mach/gpio.h>
 #include <mach/s3c-iomap.h>
-#include <mach/s3c24x0-nand.h>
+#include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/mci.h>
 #include <mach/fb.h>

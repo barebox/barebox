@@ -32,7 +32,7 @@
 #include <linux/mtd/nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-iomap.h>
-#include <mach/s3c24x0-nand.h>
+#include <mach/s3c24xx-nand.h>
 #include <io.h>
 #include <asm-generic/errno.h>
 
@@ -485,8 +485,8 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		goto on_error;
 	}
 
-	return add_mtd_device(mtd, "nand");
-	
+	return add_mtd_device(mtd);
+
 on_error:
 	free(host);
 	return ret;

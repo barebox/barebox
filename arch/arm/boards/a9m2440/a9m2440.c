@@ -33,7 +33,7 @@
 #include <nand.h>
 #include <io.h>
 #include <mach/s3c-iomap.h>
-#include <mach/s3c24x0-nand.h>
+#include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 
 #include "baseboards.h"

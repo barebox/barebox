@@ -33,7 +33,7 @@
 #include <nand.h>
 #include <io.h>
 #include <mach/s3c-iomap.h>
-#include <mach/s3c24x0-nand.h>
+#include <mach/s3c24xx-nand.h>
 
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {

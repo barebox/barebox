@@ -65,9 +65,9 @@ config NAND_ATMEL
 	prompt "Atmel (AT91SAM9xxx) NAND driver"
 	depends on ARCH_AT91
 
-config NAND_S3C24X0
+config NAND_S3C24XX
 	bool
-	prompt "Samsung S3C24X0 NAND driver"
+	prompt "Samsung S3C24XX NAND driver"
 	depends on ARCH_S3C24xx
 	help
 	  Add support for processor's NAND device controller.

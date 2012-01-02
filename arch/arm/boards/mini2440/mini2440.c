@@ -42,7 +42,7 @@
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-mci.h>
-#include <mach/fb.h>
+#include <mach/s3c24xx-fb.h>
 
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(MINI2440_TACLS, MINI2440_TWRPH0,

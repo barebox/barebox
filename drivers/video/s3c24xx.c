@@ -30,9 +30,9 @@
 #include <malloc.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/gpio.h>
+#include <mach/s3c-gpio.h>
 #include <mach/s3c-generic.h>
-#include <mach/fb.h>
+#include <mach/s3c24xx-fb.h>
 
 #define LCDCON1 0x00
 # define PNRMODE(x) (((x) & 3) << 5)

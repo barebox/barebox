@@ -1,5 +1,5 @@
 /*
- * (c) 2009 Juergen Beisert <j.beisert@saschahauer.de>
+ * (c) 2009...2011 Juergen Beisert <j.beisert@pengutronix.de>
  *
  * Based on code from:
  * (c) 2004 Sascha Hauer <sascha@saschahauer.de>
@@ -41,20 +41,36 @@
 #define URXH 0x24		/* receive */
 #define UBRDIV 0x28		/* baudrate generator */
 
-static int s3c24x0_serial_setbaudrate(struct console_device *cdev, int baudrate)
+static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
+{
+	unsigned reg = readw(base + UCON);
+
+	switch (reg & 0xc00) {
+		case 0x000:
+		case 0x800:
+			return s3c_get_pclk();
+		case 0x400:
+			break;	/* TODO UEXTCLK */
+		case 0xc00:
+			break;	/* TODO FCLK/n */
+	}
+
+	return 0;	/* not nice, but we can't emit an error message! */
+}
+
+static int s3c_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
 	unsigned val;
 
-	/* value is calculated so : PCLK / (16 * baudrate) -1 */
-	val = s3c_get_pclk() / (16 * baudrate) - 1;
+	val = s3c_get_arch_uart_input_clock(base) / (16 * baudrate) - 1;
 	writew(val, base + UBRDIV);
 
 	return 0;
 }
 
-static int s3c24x0_serial_init_port(struct console_device *cdev)
+static int s3c_serial_init_port(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
@@ -71,7 +87,7 @@ static int s3c24x0_serial_init_port(struct console_device *cdev)
 	 */
 	writew(0x0245, base + UCON);
 
-#ifdef CONFIG_DRIVER_SERIAL_S3C24X0_AUTOSYNC
+#ifdef CONFIG_DRIVER_SERIAL_S3C_AUTOSYNC
 	writeb(0x10, base + UMCON); /* enable auto flow control */
 #else
 	writeb(0x01, base + UMCON); /* RTS up */
@@ -80,7 +96,7 @@ static int s3c24x0_serial_init_port(struct console_device *cdev)
 	return 0;
 }
 
-static void s3c24x0_serial_putc(struct console_device *cdev, char c)
+static void s3c_serial_putc(struct console_device *cdev, char c)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
@@ -92,7 +108,7 @@ static void s3c24x0_serial_putc(struct console_device *cdev, char c)
 	writeb(c, base + UTXH);
 }
 
-static int s3c24x0_serial_tstc(struct console_device *cdev)
+static int s3c_serial_tstc(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
@@ -104,7 +120,7 @@ static int s3c24x0_serial_tstc(struct console_device *cdev)
 	return 0;
 }
 
-static int s3c24x0_serial_getc(struct console_device *cdev)
+static int s3c_serial_getc(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
@@ -116,7 +132,7 @@ static int s3c24x0_serial_getc(struct console_device *cdev)
 	return readb(base + URXH);
 }
 
-static void s3c24x0_serial_flush(struct console_device *cdev)
+static void s3c_serial_flush(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
 	void __iomem *base = dev->priv;
@@ -125,7 +141,7 @@ static void s3c24x0_serial_flush(struct console_device *cdev)
 		;
 }
 
-static int s3c24x0_serial_probe(struct device_d *dev)
+static int s3c_serial_probe(struct device_d *dev)
 {
 	struct console_device *cdev;
 
@@ -134,13 +150,13 @@ static int s3c24x0_serial_probe(struct device_d *dev)
 	dev->priv = dev_request_mem_region(dev, 0);
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
-	cdev->tstc = s3c24x0_serial_tstc;
-	cdev->putc = s3c24x0_serial_putc;
-	cdev->getc = s3c24x0_serial_getc;
-	cdev->flush = s3c24x0_serial_flush;
-	cdev->setbrg = s3c24x0_serial_setbaudrate;
+	cdev->tstc = s3c_serial_tstc;
+	cdev->putc = s3c_serial_putc;
+	cdev->getc = s3c_serial_getc;
+	cdev->flush = s3c_serial_flush;
+	cdev->setbrg = s3c_serial_setbaudrate;
 
-	s3c24x0_serial_init_port(cdev);
+	s3c_serial_init_port(cdev);
 
 	/* Enable UART */
 	console_register(cdev);
@@ -148,25 +164,25 @@ static int s3c24x0_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-static void s3c24x0_serial_remove(struct device_d *dev)
+static void s3c_serial_remove(struct device_d *dev)
 {
 	struct console_device *cdev = dev->type_data;
 
-	s3c24x0_serial_flush(cdev);
+	s3c_serial_flush(cdev);
 	free(cdev);
 	dev->type_data = NULL;
 }
 
-static struct driver_d s3c24x0_serial_driver = {
-	.name   = "s3c24x0_serial",
-	.probe  = s3c24x0_serial_probe,
-	.remove = s3c24x0_serial_remove,
+static struct driver_d s3c_serial_driver = {
+	.name   = "s3c_serial",
+	.probe  = s3c_serial_probe,
+	.remove = s3c_serial_remove,
 };
 
-static int s3c24x0_serial_init(void)
+static int s3c_serial_init(void)
 {
-	register_driver(&s3c24x0_serial_driver);
+	register_driver(&s3c_serial_driver);
 	return 0;
 }
 
-console_initcall(s3c24x0_serial_init);
+console_initcall(s3c_serial_init);

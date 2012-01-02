@@ -78,16 +78,16 @@ config DRIVER_SERIAL_PL010
 	help
 	  Enable this to get support for AMBA PL010 based serial devices
 
-config DRIVER_SERIAL_S3C24X0
-	bool "Samsung S3C24X0 serial driver"
+config DRIVER_SERIAL_S3C
+	bool "Samsung S3C serial driver"
 	depends on ARCH_S3C24xx
 	default y
 	help
-	  Say Y here if you want to use the CONS on a S3C24X0 CPU
+	  Say Y here if you want to use the CONS on a Samsung S3C CPU
 
-config DRIVER_SERIAL_S3C24X0_AUTOSYNC
+config DRIVER_SERIAL_S3C_AUTOSYNC
 	bool "Enable auto flow"
-	depends on DRIVER_SERIAL_S3C24X0
+	depends on DRIVER_SERIAL_S3C
 	help
 	  Say Y here if you want to use the auto flow feature of this
 	  UART. RTS and CTS will be handled by the hardware when enabled.

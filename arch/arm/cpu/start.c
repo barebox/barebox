@@ -84,7 +84,16 @@ void __naked __bare_init reset(void)
 	/* disable MMU stuff and caches */
 	r = get_cr();
 	r &= ~(CR_M | CR_C | CR_B | CR_S | CR_R | CR_V);
-	r |= CR_A | CR_I;
+	r |= CR_I;
+
+	if (!(r & CR_U))
+		/* catch unaligned access on architectures which do not
+		 * support unaligned access */
+		r |= CR_A;
+	else
+		r &= ~CR_A;
+
+
 #ifdef __ARMEB__
 	r |= CR_B;
 #endif

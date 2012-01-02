@@ -28,7 +28,7 @@
 #include <driver.h>
 #include <init.h>
 #include <io.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
 
 /**
  * Initialize the CPU to be able to work with the a9m2410dev evaluation board

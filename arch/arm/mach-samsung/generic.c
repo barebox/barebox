@@ -27,7 +27,7 @@
 #include <init.h>
 #include <clock.h>
 #include <io.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
 
 /**
  * Calculate the current M-PLL clock.

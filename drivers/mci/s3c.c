@@ -41,8 +41,8 @@
 #include <clock.h>
 #include <io.h>
 #include <mach/mci.h>
-#include <mach/s3c24xx-generic.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-iomap.h>
 
 #define SDICON 0x0
 # define SDICON_SDRESET (1 << 8)

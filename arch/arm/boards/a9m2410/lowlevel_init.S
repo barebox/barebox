@@ -3,7 +3,7 @@
  */
 
 #include <config.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
 
 	.section ".text_bare_init.board_init_lowlevel","ax"
 

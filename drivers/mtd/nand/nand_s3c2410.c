@@ -30,8 +30,8 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <mach/s3c24xx-generic.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-iomap.h>
 #include <mach/s3c24x0-nand.h>
 #include <io.h>
 #include <asm-generic/errno.h>

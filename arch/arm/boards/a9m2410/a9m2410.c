@@ -32,7 +32,7 @@
 #include <partition.h>
 #include <nand.h>
 #include <io.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
 #include <mach/s3c24x0-nand.h>
 
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},

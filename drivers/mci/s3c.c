@@ -40,7 +40,7 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
-#include <mach/mci.h>
+#include <mach/s3c-mci.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-iomap.h>
 

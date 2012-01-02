@@ -302,6 +302,7 @@
 #define PWM2			(FUNC(0) | PORTF(3, 18))
 
 #define PWM1			(FUNC(0) | PORTF(3, 17))
+#define PWM1_DUART_TX		(FUNC(2) | PORTF(3, 17))
 
 #define PWM0			(FUNC(0) | PORTF(3, 16))
 #define PWM0_I2C1_SCL		(FUNC(1) | PORTF(3, 16))

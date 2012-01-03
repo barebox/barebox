@@ -71,8 +71,29 @@ void *memalign(size_t alignment, size_t bytes)
 }
 EXPORT_SYMBOL(memalign);
 
-#ifdef CONFIG_CMD_MEMINFO
+struct malloc_stats {
+	size_t free;
+	size_t used;
+};
+
+static void malloc_walker(void* ptr, size_t size, int used, void *user)
+{
+	struct malloc_stats *s = user;
+
+	if (used)
+		s->used += size;
+	else
+		s->free += size;
+}
+
 void malloc_stats(void)
 {
+	struct malloc_stats s;
+
+	s.used = 0;
+	s.free = 0;
+
+	tlsf_walk_heap(tlsf_mem_pool, malloc_walker, &s);
+
+	printf("used: %10d\nfree: %10d\n", s.used, s.free);
 }
-#endif /* CONFIG_CMD_MEMINFO */

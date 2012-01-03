@@ -1418,7 +1418,7 @@ static int __init inftl_scan_bbt(struct mtd_info *mtd)
 	   do without it for non-INFTL use, since all it gives us is
 	   autopartitioning, but I want to give it more thought. */
 	if (!numparts) return -EIO;
-	add_mtd_device(mtd);
+	add_mtd_device(mtd, "nand");
 #ifdef CONFIG_MTD_PARTITIONS
 	if (!no_autopart)
 		add_mtd_partitions(mtd, parts, numparts);

@@ -27,6 +27,7 @@
 #include <common.h>
 #include <asm-generic/div64.h>
 #include <clock.h>
+#include <poller.h>
 
 static struct clocksource *current_clock;
 static uint64_t time_ns;
@@ -139,6 +140,9 @@ uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant)
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
+	if (time_offset_ns >= 100 * USECOND)
+		poller_call();
+
 	if ((int64_t)(start_ns + time_offset_ns - get_time_ns()) < 0)
 		return 1;
 	else

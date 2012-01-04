@@ -6,6 +6,7 @@
 #include <usb/gadget.h>
 #include <usb/fsl_usb2.h>
 #include <io.h>
+#include <poller.h>
 #include <asm/byteorder.h>
 #include <asm/mmu.h>
 
@@ -233,6 +234,7 @@ struct usb_dr_device {
 #define  USB_MODE_CTRL_MODE_DEVICE            0x00000002
 #define  USB_MODE_CTRL_MODE_HOST              0x00000003
 #define  USB_MODE_CTRL_MODE_RSV               0x00000001
+#define  USB_MODE_CTRL_MODE_MASK              0x00000003
 #define  USB_MODE_SETUP_LOCK_OFF              0x00000008
 #define  USB_MODE_STREAM_DISABLE              0x00000010
 /* Endpoint Flush Register */
@@ -603,7 +605,8 @@ static void nuke(struct fsl_ep *ep, int status)
 
 static int dr_controller_setup(struct fsl_udc *udc)
 {
-	unsigned int tmp, portctrl;
+	unsigned int tmp, portctrl, ep_num;
+	unsigned int max_no_of_ep;
 	uint64_t to;
 
 	/* Config PHY interface */
@@ -647,6 +650,7 @@ static int dr_controller_setup(struct fsl_udc *udc)
 
 	/* Set the controller as device mode */
 	tmp = readl(&dr_regs->usbmode);
+	tmp &= ~USB_MODE_CTRL_MODE_MASK;	/* clear mode bits */
 	tmp |= USB_MODE_CTRL_MODE_DEVICE;
 	/* Disable Setup Lockout */
 	tmp |= USB_MODE_SETUP_LOCK_OFF;
@@ -659,6 +663,14 @@ static int dr_controller_setup(struct fsl_udc *udc)
 	tmp &= USB_EP_LIST_ADDRESS_MASK;
 	writel(tmp, &dr_regs->endpointlistaddr);
 
+	max_no_of_ep = (0x0000001F & readl(&dr_regs->dccparams));
+	for (ep_num = 1; ep_num < max_no_of_ep; ep_num++) {
+		tmp = readl(&dr_regs->endptctrl[ep_num]);
+		tmp &= ~(EPCTRL_TX_TYPE | EPCTRL_RX_TYPE);
+		tmp |= (EPCTRL_EP_TYPE_BULK << EPCTRL_TX_EP_TYPE_SHIFT)
+		| (EPCTRL_EP_TYPE_BULK << EPCTRL_RX_EP_TYPE_SHIFT);
+		writel(tmp, &dr_regs->endptctrl[ep_num]);
+	}
 	VDBG("vir[qh_base] is %p phy[qh_base] is 0x%8x reg is 0x%8x",
 		udc->ep_qh, (int)tmp,
 		readl(&dr_regs->endpointlistaddr));
@@ -725,12 +737,14 @@ static void dr_ep_setup(unsigned char ep_num, unsigned char dir,
 		if (ep_num)
 			tmp_epctrl |= EPCTRL_TX_DATA_TOGGLE_RST;
 		tmp_epctrl |= EPCTRL_TX_ENABLE;
+		tmp_epctrl &= ~EPCTRL_TX_TYPE;
 		tmp_epctrl |= ((unsigned int)(ep_type)
 				<< EPCTRL_TX_EP_TYPE_SHIFT);
 	} else {
 		if (ep_num)
 			tmp_epctrl |= EPCTRL_RX_DATA_TOGGLE_RST;
 		tmp_epctrl |= EPCTRL_RX_ENABLE;
+		tmp_epctrl &= ~EPCTRL_RX_TYPE;
 		tmp_epctrl |= ((unsigned int)(ep_type)
 				<< EPCTRL_RX_EP_TYPE_SHIFT);
 	}
@@ -887,7 +901,7 @@ static int fsl_ep_enable(struct usb_ep *_ep,
 	case USB_ENDPOINT_XFER_ISOC:
 		/* Calculate transactions needed for high bandwidth iso */
 		mult = (unsigned char)(1 + ((max >> 11) & 0x03));
-		max = max & 0x8ff;	/* bit 0~10 */
+		max = max & 0x7ff;	/* bit 0~10 */
 		/* 3 transactions at most */
 		if (mult > 3)
 			goto en_done;
@@ -924,7 +938,6 @@ static int fsl_ep_enable(struct usb_ep *_ep,
 			(desc->bEndpointAddress & USB_DIR_IN)
 				? "in" : "out", max);
 en_done:
-	printf("%s: %d\n", __func__, retval);
 	return retval;
 }
 
@@ -948,10 +961,13 @@ static int fsl_ep_disable(struct usb_ep *_ep)
 	/* disable ep on controller */
 	ep_num = ep_index(ep);
 	epctrl = readl(&dr_regs->endptctrl[ep_num]);
-	if (ep_is_in(ep))
-		epctrl &= ~EPCTRL_TX_ENABLE;
-	else
-		epctrl &= ~EPCTRL_RX_ENABLE;
+	if (ep_is_in(ep)) {
+		epctrl &= ~(EPCTRL_TX_ENABLE | EPCTRL_TX_TYPE);
+		epctrl |= EPCTRL_EP_TYPE_BULK << EPCTRL_TX_EP_TYPE_SHIFT;
+	} else {
+		epctrl &= ~(EPCTRL_RX_ENABLE | EPCTRL_TX_TYPE);
+		epctrl |= EPCTRL_EP_TYPE_BULK << EPCTRL_RX_EP_TYPE_SHIFT;
+	}
 	writel(epctrl, &dr_regs->endptctrl[ep_num]);
 
 	udc = (struct fsl_udc *)ep->udc;
@@ -1921,7 +1937,7 @@ int usb_gadget_poll(void)
 
 	/* Disable ISR for OTG host mode */
 	if (udc->stopped)
-		return 0;
+		return -EIO;
 
 	irq_src = readl(&dr_regs->usbsts) & readl(&dr_regs->usbintr);
 	/* Clear notification bits */
@@ -1999,7 +2015,7 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 	/* bind udc driver to gadget driver */
 	retval = driver->bind(&udc_controller->gadget);
 	if (retval) {
-		VDBG("bind to %s --> %d", driver->driver.name, retval);
+		VDBG("bind to gadget --> %d", retval);
 		udc_controller->driver = NULL;
 		goto out;
 	}
@@ -2231,6 +2247,15 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 	return 0;
 }
 
+static void fsl_udc_poller(struct poller_struct *poller)
+{
+	usb_gadget_poll();
+}
+
+static struct poller_struct poller = {
+	.func		= fsl_udc_poller
+};
+
 static int fsl_udc_probe(struct device_d *dev)
 {
 	int ret, i;
@@ -2292,6 +2317,8 @@ static int fsl_udc_probe(struct device_d *dev)
 		sprintf(name, "ep%din", i);
 		struct_ep_setup(udc_controller, i * 2 + 1, name, 1);
 	}
+
+	poller_register(&poller);
 
 	return 0;
 err_out:

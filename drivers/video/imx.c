@@ -552,6 +552,11 @@ static int imxfb_probe(struct device_d *dev)
 	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
 		IMX_CCM_BASE + CCM_CGCR1);
 #endif
+	if (!pdata->num_modes) {
+		dev_err(dev, "no modes. bailing out\n");
+		return -EINVAL;
+	}
+
 	mode_list = xzalloc(sizeof(*mode_list) * pdata->num_modes);
 	for (i = 0; i < pdata->num_modes; i++)
 		mode_list[i] = pdata->mode[i].mode;

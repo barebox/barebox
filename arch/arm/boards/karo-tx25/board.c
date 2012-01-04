@@ -239,6 +239,7 @@ static void tx25_fb_enable(int enable)
 
 static struct imx_fb_platform_data tx25_fb_data = {
 	.mode		= &stk5_fb_mode,
+	.num_modes	= 1,
 	.dmacr		= 0x80040060,
 	.enable		= tx25_fb_enable,
 };

@@ -105,6 +105,7 @@ static void neso_fb_enable(int enable)
 
 static struct imx_fb_platform_data neso_fb_data = {
 	.mode	= &imxfb_mode,
+	.num_modes = 1,
 	.pwmr	= 0x00000000,	/* doesn't matter */
 	.lscr1	= 0x00120300,	/* doesn't matter */
 	/* dynamic mode -> using the reset values (as recommended in the datasheet) */

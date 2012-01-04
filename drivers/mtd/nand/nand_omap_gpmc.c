@@ -362,7 +362,7 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int i, j, eccsize, eccflag, count;
+	int i, j, eccsize, eccflag, count, totalcount;
 	unsigned int err_loc[8];
 	int blocks = 0;
 	int select_4_8;
@@ -379,6 +379,8 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 		blocks = 4;
 	else
 		blocks = 1;
+
+	totalcount = 0;
 
 	for (i = 0; i < blocks; i++) {
 		/* check if any ecc error */
@@ -401,6 +403,8 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 			count = decode_bch(select_4_8, calc_ecc, err_loc);
 			if (count < 0)
 				return count;
+			else
+				totalcount += count;
 		}
 
 		for (j = 0; j < count; j++) {
@@ -415,7 +419,7 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 		dat += 512;
 	}
 
-	return 0;
+	return totalcount;
 }
 
 static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,

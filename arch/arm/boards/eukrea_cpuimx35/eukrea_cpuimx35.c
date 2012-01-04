@@ -144,6 +144,9 @@ postmmu_initcall(eukrea_cpuimx35_mmu_init);
 
 static int eukrea_cpuimx35_devices_init(void)
 {
+#ifdef CONFIG_USB_GADGET
+	unsigned int tmp;
+#endif
 	imx35_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");

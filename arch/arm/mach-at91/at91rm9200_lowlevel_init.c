@@ -101,11 +101,11 @@ void __naked __bare_init board_init_lowlevel(void)
 	 */
 
 	/* PIOC_ASR: Configure PIOC as peripheral (D16/D31) */
-	at91_sys_write(AT91_PIOC + PIO_ASR, CONFIG_SYS_PIOC_ASR_VAL);
+	__raw_writel(CONFIG_SYS_PIOC_ASR_VAL, AT91_BASE_PIOC + PIO_ASR);
 	/* PIOC_BSR */
-	at91_sys_write(AT91_PIOC + PIO_BSR, CONFIG_SYS_PIOC_BSR_VAL);
+	__raw_writel(CONFIG_SYS_PIOC_BSR_VAL, AT91_BASE_PIOC + PIO_BSR);
 	/* PIOC_PDR */
-	at91_sys_write(AT91_PIOC + PIO_PDR, CONFIG_SYS_PIOC_PDR_VAL);
+	__raw_writel(CONFIG_SYS_PIOC_PDR_VAL, AT91_BASE_PIOC + PIO_PDR);
 
 	/* EBI_CSA : CS1=SDRAM */
 	at91_sys_write(AT91_EBI_CSA, CONFIG_SYS_EBI_CSA_VAL);

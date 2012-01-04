@@ -30,7 +30,6 @@
 #include <malloc.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/s3c-gpio.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c24xx-fb.h>
 

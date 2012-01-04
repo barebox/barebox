@@ -67,6 +67,7 @@ static int dfualt;
 static int dfufd = -EINVAL;;
 static struct usb_dfu_dev *dfu_devs;
 static int dfu_num_alt;
+static int dfudetach;
 
 /* USB DFU functional descriptor */
 static struct usb_dfu_func_descriptor usb_dfu_func = {
@@ -204,6 +205,9 @@ static int dfu_status(struct usb_function *f, const struct usb_ctrlrequest *ctrl
 	dstat->bStatus = dfu->dfu_status;
 	dstat->bState  = dfu->dfu_state;
 	dstat->iString = 0;
+	dstat->bwPollTimeout[0] = 10;
+	dstat->bwPollTimeout[1] = 0;
+	dstat->bwPollTimeout[2] = 0;
 
 	return sizeof(*dstat);
 }
@@ -425,6 +429,8 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			 * least the Linux USB stack likes to send a number of resets
 			 * in a row :( */
 			dfu->dfu_state = DFU_STATE_dfuMANIFEST_WAIT_RST;
+			value = 0;
+			dfudetach = 1;
 			break;
 		default:
 			dfu->dfu_state = DFU_STATE_dfuERROR;
@@ -690,11 +696,12 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 
 	while (1) {
 		usb_gadget_poll();
-		if (ctrlc())
+		if (ctrlc() || dfudetach)
 			goto out;
 	}
 
 out:
+	dfudetach = 0;
 	usb_composite_unregister(&dfu_driver);
 
 	return 0;

@@ -47,6 +47,7 @@ obj-$(CONFIG_CMD_LSMOD)		+= lsmod.o
 obj-$(CONFIG_CMD_INSMOD)	+= insmod.o
 obj-$(CONFIG_CMD_BMP)		+= bmp.o
 obj-$(CONFIG_USB_GADGET_DFU)	+= dfu.o
+obj-$(CONFIG_USB_GADGET_SERIAL)	+= usbserial.o
 obj-$(CONFIG_CMD_GPIO)		+= gpio.o
 obj-$(CONFIG_CMD_UNCOMPRESS)	+= uncompress.o
 obj-$(CONFIG_CMD_I2C)		+= i2c.o

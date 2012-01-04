@@ -4,6 +4,7 @@
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 #include <usb/composite.h>
+#include <usb/usbserial.h>
 #include <asm/byteorder.h>
 
 #include "u_serial.h"
@@ -52,7 +53,9 @@ static struct usb_gadget_strings *dev_strings[] = {
 };
 
 static int use_acm = 1;
+#ifdef HAVE_OBEX
 static int use_obex = 0;
+#endif
 static unsigned n_ports = 1;
 
 static int serial_bind_config(struct usb_configuration *c)
@@ -63,8 +66,10 @@ static int serial_bind_config(struct usb_configuration *c)
 	for (i = 0; i < n_ports && status == 0; i++) {
 		if (use_acm)
 			status = acm_bind_config(c, i);
+#ifdef HAVE_OBEX
 		else if (use_obex)
 			status = obex_bind_config(c, i);
+#endif
 		else
 			status = gser_bind_config(c, i);
 	}
@@ -100,7 +105,7 @@ static int gs_bind(struct usb_composite_dev *cdev)
 	int			gcnum;
 	struct usb_gadget	*gadget = cdev->gadget;
 	int			status;
-printf("%s\n", __func__);
+
 	status = gserial_setup(cdev->gadget, n_ports);
 	if (status < 0)
 		return status;
@@ -174,7 +179,7 @@ static struct usb_composite_driver gserial_driver = {
 	.bind		= gs_bind,
 };
 
-static int __init gserial_init(void)
+int usb_serial_register(struct usb_serial_pdata *pdata)
 {
 	/* We *could* export two configs; that'd be much cleaner...
 	 * but neither of these product IDs was defined that way.
@@ -187,19 +192,43 @@ static int __init gserial_init(void)
 #ifdef CONFIG_ARCH_PXA2XX
 	use_acm = 0;
 #endif
+	switch (pdata->mode) {
+	case 1:
+#ifdef HAVE_OBEX
+		use_obex = 1;
+#endif
+		use_acm = 0;
+		break;
+	case 2:
+#ifdef HAVE_OBEX
+		use_obex = 1;
+#endif
+		use_acm = 0;
+		break;
+	default:
+#ifdef HAVE_OBEX
+		use_obex = 0;
+#endif
+		use_acm = 1;
+	}
+
 	if (use_acm) {
 		serial_config_driver.label = "CDC ACM config";
 		serial_config_driver.bConfigurationValue = 2;
 		device_desc.bDeviceClass = USB_CLASS_COMM;
 		device_desc.idProduct =
 				cpu_to_le16(GS_CDC_PRODUCT_ID);
-	} else if (use_obex) {
+	}
+#ifdef HAVE_OBEX
+	else if (use_obex) {
 		serial_config_driver.label = "CDC OBEX config";
 		serial_config_driver.bConfigurationValue = 3;
 		device_desc.bDeviceClass = USB_CLASS_COMM;
 		device_desc.idProduct =
 			cpu_to_le16(GS_CDC_OBEX_PRODUCT_ID);
-	} else {
+	}
+#endif
+	else {
 		serial_config_driver.label = "Generic Serial config";
 		serial_config_driver.bConfigurationValue = 1;
 		device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
@@ -207,8 +236,17 @@ static int __init gserial_init(void)
 				cpu_to_le16(GS_PRODUCT_ID);
 	}
 	strings_dev[STRING_DESCRIPTION_IDX].s = serial_config_driver.label;
+	if (pdata->idVendor)
+		device_desc.idVendor = pdata->idVendor;
+	if (pdata->idProduct)
+		device_desc.idProduct = pdata->idProduct;
+	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
+	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
 
 	return usb_composite_register(&gserial_driver);
 }
 
-late_initcall(gserial_init);
+void usb_serial_unregister(void)
+{
+	usb_composite_unregister(&gserial_driver);
+}

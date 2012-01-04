@@ -20,6 +20,7 @@
 #include <common.h>
 #include <usb/cdc.h>
 #include <kfifo.h>
+#include <clock.h>
 
 #include "u_serial.h"
 
@@ -106,8 +107,6 @@ static struct portmaster {
 static unsigned	n_ports;
 
 #define GS_CLOSE_TIMEOUT		15		/* seconds */
-
-
 
 #ifdef VERBOSE_DEBUG
 #define pr_vdebug(fmt, arg...) \
@@ -370,6 +369,7 @@ static void serial_putc(struct console_device *cdev, char c)
 	struct usb_ep		*in;
 	struct usb_request	*req;
 	int status;
+	uint64_t to;
 
 	if (list_empty(pool))
 		return;
@@ -382,8 +382,12 @@ static void serial_putc(struct console_device *cdev, char c)
 	*(unsigned char *)req->buf = c;
 	status = usb_ep_queue(in, req);
 
-	while (status >= 0 && list_empty(pool))
+	to = get_time_ns();
+	while (status >= 0 && list_empty(pool)) {
 		status = usb_gadget_poll();
+		if (is_timeout(to, 300 * MSECOND))
+			break;
+	}
 }
 
 static int serial_tstc(struct console_device *cdev)
@@ -399,11 +403,16 @@ static int serial_getc(struct console_device *cdev)
 	struct gs_port	*port = container_of(cdev,
 					struct gs_port, cdev);
 	unsigned char ch;
+	uint64_t to;
 
 	if (!port->port_usb)
 		return -EIO;
-	while (kfifo_getc(port->recv_fifo, &ch))
+	to = get_time_ns();
+	while (kfifo_getc(port->recv_fifo, &ch)) {
 		usb_gadget_poll();
+		if (is_timeout(to, 300 * MSECOND))
+			break;
+	}
 
 	return ch;
 }
@@ -419,8 +428,6 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	struct gs_port	*port;
 	int		status;
 	struct console_device *cdev;
-
-	printf("%s %p %d\n", __func__, gser, port_num);
 
 	/* we "know" gserial_cleanup() hasn't been called */
 	port = ports[port_num].port;
@@ -451,7 +458,7 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 
 	port->recv_fifo = kfifo_alloc(1024);
 
-	printf("gserial_connect: start ttyGS%d\n", port->port_num);
+	/*printf("gserial_connect: start ttyGS%d\n", port->port_num);*/
 	gs_start_io(port);
 	if (gser->connect)
 		gser->connect(gser);
@@ -508,7 +515,6 @@ void gserial_disconnect(struct gserial *gser)
 	struct gs_port	*port = gser->ioport;
 	struct console_device *cdev;
 
-	printf("%s\n", __func__);
 	if (!port)
 		return;
 

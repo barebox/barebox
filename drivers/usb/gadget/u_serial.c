@@ -420,6 +420,10 @@ static int serial_getc(struct console_device *cdev)
 static void serial_flush(struct console_device *cdev)
 {
 }
+static int serial_setbaudrate(struct console_device *cdev, int baudrate)
+{
+	return 0;
+}
 
 static struct console_device *mycdev;
 
@@ -469,6 +473,7 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	cdev->putc = serial_putc;
 	cdev->getc = serial_getc;
 	cdev->flush = serial_flush;
+	cdev->setbrg = serial_setbaudrate;
 	console_register(cdev);
 	mycdev = cdev;
 

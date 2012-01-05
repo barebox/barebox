@@ -116,17 +116,22 @@ out:
 
 int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 {
+	int ret = 0;
 	struct mtd_info *mtd = cdev->priv;
 	struct mtd_info_user *user = buf;
+	struct mtd_ecc_stats *ecc = buf;
+	struct region_info_user *reg = buf;
 
 	switch (request) {
 	case MEMGETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMGETBADBLOCK: 0x%08lx\n", (off_t)buf);
-		return mtd->block_isbad(mtd, (off_t)buf);
+		ret = mtd->block_isbad(mtd, (off_t)buf);
+		break;
 #ifdef CONFIG_MTD_WRITE
 	case MEMSETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08lx\n", (off_t)buf);
-		return mtd->block_markbad(mtd, (off_t)buf);
+		ret = mtd->block_markbad(mtd, (off_t)buf);
+		break;
 #endif
 	case MEMGETINFO:
 		user->type	= mtd->type;
@@ -138,10 +143,28 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		/* The below fields are obsolete */
 		user->ecctype	= -1;
 		user->eccsize	= 0;
-		return 0;
+		break;
+#if (defined(CONFIG_NAND_ECC_HW) || defined(CONFIG_NAND_ECC_SOFT))
+	case ECCGETSTATS:
+		ecc->corrected = mtd->ecc_stats.corrected;
+		ecc->failed = mtd->ecc_stats.failed;
+		ecc->badblocks = mtd->ecc_stats.badblocks;
+		ecc->bbtblocks = mtd->ecc_stats.bbtblocks;
+		break;
+#endif
+	case MEMGETREGIONINFO:
+		if (cdev->mtd) {
+			reg->offset = cdev->offset;
+			reg->erasesize = cdev->mtd->erasesize;
+			reg->numblocks = cdev->size/reg->erasesize;
+			reg->regionindex = cdev->mtd->index;
+		}
+		break;
+	default:
+		ret = -EINVAL;
 	}
 
-	return 0;
+	return ret;
 }
 
 #ifdef CONFIG_MTD_WRITE

@@ -53,6 +53,7 @@ struct atmel_nand_data {
 	u8		cle;		/* address line number connected to CLE */
 	u8		bus_width_16;	/* buswidth is 16 bit */
 	u8		ecc_mode;	/* NAND_ECC_* */
+	u8		on_flash_bbt;	/* Use flash based bbt */
 };
 
 void at91_add_device_nand(struct atmel_nand_data *data);

@@ -154,6 +154,38 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
 /* --------------------------------------------------------------------
+ *  SPI
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
+{
+	int i;
+	int cs_pin;
+
+	BUG_ON(spi_id > 0);
+
+	for (i = 0; i < pdata->num_chipselect; i++) {
+		cs_pin = pdata->chipselect[i];
+
+		/* enable chip-select pin */
+		if (cs_pin > 0)
+			at91_set_gpio_output(cs_pin, 1);
+	}
+
+	at91_set_A_periph(AT91_PIN_PA0, 0);	/* MISO */
+	at91_set_A_periph(AT91_PIN_PA1, 0);	/* MOSI */
+	at91_set_A_periph(AT91_PIN_PA2, 0);	/* SPCK */
+
+	add_generic_device("atmel_spi", spi_id, NULL, AT91RM9200_BASE_SPI,
+			   SZ_16K, IORESOURCE_MEM, pdata);
+}
+#else
+void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
+#endif
+
+
+/* --------------------------------------------------------------------
  *  UART
  * -------------------------------------------------------------------- */
 

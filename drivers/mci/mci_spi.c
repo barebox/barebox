@@ -387,6 +387,7 @@ static int spi_mci_probe(struct device_d *dev)
 	host->mci.send_cmd = mmc_spi_request;
 	host->mci.set_ios = mmc_spi_set_ios;
 	host->mci.init = mmc_spi_init;
+	host->mci.hw_dev = dev;
 
 	host->dev = dev;
 	host->spi = spi;

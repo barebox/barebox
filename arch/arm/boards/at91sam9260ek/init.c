@@ -212,8 +212,10 @@ static void __init ek_add_device_buttons(void)
 {
 	at91_set_gpio_input(AT91_PIN_PA30, 1);	/* btn3 */
 	at91_set_deglitch(AT91_PIN_PA30, 1);
+	export_env_ull("dfu_button", AT91_PIN_PA30);
 	at91_set_gpio_input(AT91_PIN_PA31, 1);	/* btn4 */
 	at91_set_deglitch(AT91_PIN_PA31, 1);
+	export_env_ull("btn4", AT91_PIN_PA31);
 }
 
 static int at91sam9260ek_devices_init(void)

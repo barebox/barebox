@@ -104,6 +104,7 @@ static struct imx_fb_videomode imxfb_mode = {
 
 static struct imx_fb_platform_data pcm038_fb_data = {
 	.mode	= &imxfb_mode,
+	.num_modes = 1,
 	.pwmr	= 0x00A903FF,
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,

@@ -68,6 +68,7 @@ config ARCH_PXA
 
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2412, S3C2413, S3C2440, S3C2442, S3C2443"
+	select ARCH_SAMSUNG
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
@@ -86,7 +87,7 @@ source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
-source arch/arm/mach-s3c24xx/Kconfig
+source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-versatile/Kconfig
 
 config ARM_ASM_UNIFIED

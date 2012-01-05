@@ -70,6 +70,7 @@ static struct imx_fb_videomode imx_fb_modedata = {
 
 static struct imx_fb_platform_data imx_fb_data = {
 	.mode           = &imx_fb_modedata,
+	.num_modes	= 1,
 	.cmap_greyscale = 0,
 	.cmap_inverse   = 0,
 	.cmap_static    = 0,

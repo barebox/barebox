@@ -202,7 +202,6 @@ struct mtd_info {
 	struct device_d class_dev;
 	struct device_d *dev;
 	struct cdev cdev;
-	struct cdev cdev_oob;
 
 	struct param_d param_size;
 	char *size_str;
@@ -220,7 +219,7 @@ static inline uint32_t mtd_mod_by_eb(uint64_t sz, struct mtd_info *mtd)
 }
 	/* Kernel-side ioctl definitions */
 
-extern int add_mtd_device(struct mtd_info *mtd);
+extern int add_mtd_device(struct mtd_info *mtd, char *devname);
 extern int del_mtd_device (struct mtd_info *mtd);
 
 extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);

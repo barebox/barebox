@@ -3,6 +3,7 @@ config USB_EHCI
 
 config USB_EHCI_OMAP
 	depends on ARCH_OMAP3
+	depends on USB_TWL4030
 	bool "OMAP EHCI driver"
 
 config USB_OHCI

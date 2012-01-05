@@ -81,8 +81,6 @@
 })
 #endif
 
-typedef void (interrupt_handler_t)(void *);
-
 #include <asm/barebox.h> /* boot information for Linux kernel */
 
 /*
@@ -93,8 +91,6 @@ void reginfo(void);
 void __noreturn hang (void);
 void __noreturn panic(const char *fmt, ...);
 
-/* */
-void initdram (int);
 char *size_human_readable(ulong size);
 
 /* common/main.c */
@@ -133,7 +129,6 @@ struct memarea_info {
         unsigned long flags;
 };
 
-int spec_str_to_info(const char *str, struct memarea_info *info);
 int parse_area_spec(const char *str, ulong *start, ulong *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */

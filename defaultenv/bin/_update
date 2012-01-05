@@ -44,7 +44,7 @@ echo
 if [ x$mode = xtftp ]; then
 	tftp $image $part || exit 1
 else
-	cp $image $part || exit 1
+	cp -v $image $part || exit 1
 fi
 
 protect $part

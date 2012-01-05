@@ -3,7 +3,7 @@
  */
 
 #include <config.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
 
 	.section ".text_bare_init.board_init_lowlevel","ax"
 
@@ -17,9 +17,9 @@ board_init_lowlevel:
 	bl s3c24x0_disable_wd
 
 	/* skip everything here if we are already running from SDRAM */
-	cmp pc, #S3C24X0_SDRAM_BASE
+	cmp pc, #S3C_SDRAM_BASE
 	blo 1f
-	cmp pc, #S3C24X0_SDRAM_END
+	cmp pc, #S3C_SDRAM_END
 	bhs 1f
 
 	mov pc, r10

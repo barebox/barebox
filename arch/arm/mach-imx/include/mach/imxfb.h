@@ -63,6 +63,7 @@ struct imx_fb_videomode {
  */
 struct imx_fb_platform_data {
 	struct imx_fb_videomode *mode;
+	u_int			num_modes;
 
 	u_int		cmap_greyscale:1,
 			cmap_inverse:1,

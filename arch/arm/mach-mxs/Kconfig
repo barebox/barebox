@@ -5,11 +5,13 @@ config ARCH_TEXT_BASE
 	default 0x41000000 if MACH_MX23EVK
 	default 0x42000000 if MACH_CHUMBY
 	default 0x47000000 if MACH_TX28
+	default 0x47000000 if MACH_MX28EVK
 
 config BOARDINFO
 	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 	default "Chumby Falconwing" if MACH_CHUMBY
 	default "Karo TX28" if MACH_TX28
+	default "Freescale i.MX28-EVK" if MACH_MX28EVK
 
 comment "Freescale i.MX System-on-Chip"
 
@@ -56,6 +58,11 @@ config MACH_TX28
 	bool "KARO tx28"
 	help
 	  Say Y here if you are using the KARO TX28 CPU module.
+
+config MACH_MX28EVK
+	bool "mx28-evk"
+	help
+	  Say Y here if you are using the Freescale i.MX28-EVK board
 
 endchoice
 

@@ -18,12 +18,24 @@
 #include <mach/at91sam9260_matrix.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
+#include <mach/cpu.h>
 
 #include "generic.h"
 
 void at91_add_device_sdram(u32 size)
 {
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
+	if (cpu_is_at91sam9g20()) {
+		add_mem_device("sram0", AT91SAM9G20_SRAM0_BASE,
+			AT91SAM9G20_SRAM0_SIZE, IORESOURCE_MEM_WRITEABLE);
+		add_mem_device("sram1", AT91SAM9G20_SRAM1_BASE,
+			AT91SAM9G20_SRAM1_SIZE, IORESOURCE_MEM_WRITEABLE);
+	} else {
+		add_mem_device("sram0", AT91SAM9260_SRAM0_BASE,
+			AT91SAM9260_SRAM0_SIZE, IORESOURCE_MEM_WRITEABLE);
+		add_mem_device("sram1", AT91SAM9260_SRAM1_BASE,
+			AT91SAM9260_SRAM1_SIZE, IORESOURCE_MEM_WRITEABLE);
+	}
 }
 
 #if defined(CONFIG_USB_OHCI)
@@ -37,6 +49,25 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 }
 #else
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
+#endif
+
+/* --------------------------------------------------------------------
+ *  USB Device (Gadget)
+ * -------------------------------------------------------------------- */
+
+#ifdef CONFIG_USB_GADGET_DRIVER_AT91
+void __init at91_add_device_udc(struct at91_udc_data *data)
+{
+	if (data->vbus_pin > 0) {
+		at91_set_gpio_input(data->vbus_pin, 0);
+		at91_set_deglitch(data->vbus_pin, 1);
+	}
+
+	add_generic_device("at91_udc", -1, NULL, AT91SAM9260_BASE_UDP, SZ_16K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_udc(struct at91_udc_data *data) {}
 #endif
 
 #if defined(CONFIG_DRIVER_NET_MACB)

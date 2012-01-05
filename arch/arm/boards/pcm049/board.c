@@ -40,6 +40,7 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <mach/xload.h>
+#include <i2c/i2c.h>
 
 static struct NS16550_plat serial_plat = {
 	.clock = 48000000,      /* 48MHz (APLL96/2) */
@@ -86,8 +87,18 @@ static void pcm049_network_init(void)
 			   IORESOURCE_MEM, NULL);
 }
 
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("twl6030", 0x48),
+	},
+};
+
 static int pcm049_devices_init(void)
 {
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	add_generic_device("i2c-omap", -1, NULL, 0x48070000, 0x1000,
+				IORESOURCE_MEM, NULL);
+
 	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 

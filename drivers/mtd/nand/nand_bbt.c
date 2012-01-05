@@ -557,7 +557,7 @@ static int search_read_bbts(struct mtd_info *mtd, uint8_t * buf, struct nand_bbt
  * (Re)write the bad block table
  *
 */
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
 		     struct nand_bbt_descr *td, struct nand_bbt_descr *md,
 		     int chipsel)

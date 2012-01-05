@@ -31,3 +31,5 @@ obj-$(CONFIG_LZO_DECOMPRESS)		+= decompress_unlzo.o
 obj-$(CONFIG_PROCESS_ESCAPE_SEQUENCE)	+= process_escape_sequence.o
 obj-$(CONFIG_FDT)	+= fdt/
 obj-y			+= uncompress.o
+obj-$(CONFIG_BCH)	+= bch.o
+obj-$(CONFIG_BITREV)	+= bitrev.o

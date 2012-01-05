@@ -64,10 +64,35 @@ static void display_meminfo(void)
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include <generated/barebox_default_env.h>
 
+#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
+#include <uncompress.h>
+void *defaultenv;
+#else
+#define defaultenv default_environment
+#endif
+
 static int register_default_env(void)
 {
-	add_mem_device("defaultenv", (unsigned long)default_environment,
-		       sizeof(default_environment),
+#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
+	int ret;
+	void *tmp;
+
+	tmp = xzalloc(default_environment_size);
+	memcpy(tmp, default_environment, default_environment_size);
+
+	defaultenv = xzalloc(default_environment_uncompress_size);
+
+	ret = uncompress(tmp, default_environment_size, NULL, NULL,
+			 defaultenv, NULL, uncompress_err_stdout);
+
+	free(tmp);
+
+	if (ret)
+		return ret;
+#endif
+
+	add_mem_device("defaultenv", (unsigned long)defaultenv,
+		       default_environment_uncompress_size,
 		       IORESOURCE_MEM_WRITEABLE);
 	return 0;
 }

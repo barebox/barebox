@@ -407,7 +407,7 @@ static void acm_disable(struct usb_function *f)
 {
 	struct f_acm	*acm = func_to_acm(f);
 
-	printf("acm ttyGS%d deactivated\n", acm->port_num);
+	VDBG(cdev, "acm ttyGS%d deactivated\n", acm->port_num);
 	gserial_disconnect(&acm->port);
 	usb_ep_disable(acm->notify);
 	acm->notify->driver_data = NULL;
@@ -473,7 +473,7 @@ static int acm_notify_serial_state(struct f_acm *acm)
 	int			status;
 
 	if (acm->notify_req) {
-		printf("acm ttyGS%d serial state %04x\n",
+		VDBG(cdev, "acm ttyGS%d serial state %04x\n",
 				acm->port_num, acm->serial_state);
 		status = acm_cdc_notify(acm, USB_CDC_NOTIFY_SERIAL_STATE,
 				0, &acm->serial_state, sizeof(acm->serial_state));

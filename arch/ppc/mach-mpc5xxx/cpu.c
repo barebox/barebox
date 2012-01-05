@@ -34,11 +34,8 @@
 #include <init.h>
 #include <types.h>
 #include <errno.h>
+#include <of.h>
 #include <mach/clocks.h>
-
-#if defined(CONFIG_OF_FLAT_TREE)
-#include <ft_build.h>
-#endif
 
 int checkcpu (void)
 {
@@ -83,27 +80,26 @@ void __noreturn reset_cpu (unsigned long addr)
 
 /* ------------------------------------------------------------------------- */
 
-#ifdef CONFIG_OF_FLAT_TREE
-void
-ft_cpu_setup(void *blob, bd_t *bd)
+#ifdef CONFIG_OFTREE
+static int of_mpc5200_fixup(struct fdt_header *fdt)
 {
-	u32 *p;
-	int len;
+	char *cpu_path = "/cpus/PowerPC,5200@0";
+	int div = in_8((void*)CFG_MBAR + 0x204) & 0x0020 ? 8 : 4;
 
-	/* Core XLB bus frequency */
-	p = ft_get_prop(blob, "/cpus/" OF_CPU "/bus-frequency", &len);
-	if (p != NULL)
-		*p = cpu_to_be32(get_bus_clock());
-
-	/* SOC peripherals use the IPB bus frequency */
-	p = ft_get_prop(blob, "/" OF_SOC "/bus-frequency", &len);
-	if (p != NULL)
-		*p = cpu_to_be32(get_ipb_clock());
-
-	p = ft_get_prop(blob, "/" OF_SOC "/ethernet@3000/mac-address", &len);
-	if (p != NULL)
-		memcpy(p, bd->bi_enetaddr, 6);
+	do_fixup_by_path_u32(fdt, cpu_path, "timebase-frequency", get_timebase_clock(), 1);
+	do_fixup_by_path_u32(fdt, cpu_path, "bus-frequency", get_bus_clock(), 1);
+	do_fixup_by_path_u32(fdt, cpu_path, "clock-frequency", get_cpu_clock(), 1);
+	do_fixup_by_path_u32(fdt, "/soc5200@f0000000", "bus-frequency", get_ipb_clock(), 1);
+	do_fixup_by_path_u32(fdt, "/soc5200@f0000000", "system-frequency",
+				get_bus_clock() * div, 1);
+	return 0;
 }
+
+static int of_register_mpc5200_fixup(void)
+{
+	return of_register_fixup(of_mpc5200_fixup);
+}
+late_initcall(of_register_mpc5200_fixup);
 #endif
 
 int cpu_init_board_data(bd_t *bd)

@@ -63,7 +63,7 @@ struct cdev *cdev_open(const char *name, unsigned long flags)
 		return NULL;
 
 	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev);
+		ret = cdev->ops->open(cdev, flags);
 		if (ret)
 			return NULL;
 	}

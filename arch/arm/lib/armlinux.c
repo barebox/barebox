@@ -224,7 +224,8 @@ static void setup_end_tag (void)
 	params->hdr.size = 0;
 }
 
-static void setup_tags(struct image_data *data, int swap)
+static void setup_tags(unsigned long initrd_address,
+		unsigned long initrd_size, int swap)
 {
 	const char *commandline = getenv("bootargs");
 
@@ -232,8 +233,8 @@ static void setup_tags(struct image_data *data, int swap)
 	setup_memory_tags();
 	setup_commandline_tag(commandline, swap);
 
-	if (data && (data->initrd_size > 0))
-		setup_initrd_tag(data->initrd_address, data->initrd_size);
+	if (initrd_size)
+		setup_initrd_tag(initrd_address, initrd_size);
 
 	setup_revision_tag();
 	setup_serial_tag();
@@ -249,17 +250,16 @@ void armlinux_set_bootparams(void *params)
 	armlinux_bootparams = params;
 }
 
-void start_linux(void *adr, int swap, struct image_data *data)
+void start_linux(void *adr, int swap, unsigned long initrd_address,
+		unsigned long initrd_size, void *oftree)
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
 	void *params = NULL;
-#ifdef CONFIG_OFTREE
-	params = of_get_fixed_tree();
-	if (params)
+
+	if (oftree) {
 		printf("booting Linux kernel with devicetree\n");
-#endif
-	if (!params) {
-		setup_tags(data, swap);
+	} else {
+		setup_tags(initrd_address, initrd_size, swap);
 		params = armlinux_bootparams;
 	}
 

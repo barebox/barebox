@@ -3,7 +3,8 @@
  */
 
 #include <config.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-iomap.h>
+#include <mach/s3c24xx-gpio.h>
 
 	.section ".text_bare_init.board_init_lowlevel","ax"
 
@@ -33,11 +34,11 @@ sdram_init:
 	 * configured yet, these pins show external settings, to detect
 	 * the SDRAM size.
 	 */
-	ldr r1, =GPBDAT
+	ldr r1, =S3C_GPBDAT
 	ldr r4, [r1]
 	and r4, r4, #0x3
 
-	ldr r1, =S3C24X0_MEMCTL_BASE
+	ldr r1, =S3C_MEMCTL_BASE
 	/* configure both SDRAM areas with 32 bit data bus width */
 	ldr r0, =((0x2 << 24) + (0x2 << 28))
 	str r0, [r1], #0x1c	/* post add register offset for bank6 */
@@ -218,9 +219,9 @@ board_init_lowlevel:
 	bl s3c24x0_disable_wd
 
 	/* skip everything here if we are already running from SDRAM */
-	cmp pc, #S3C24X0_SDRAM_BASE
+	cmp pc, #S3C_SDRAM_BASE
 	blo 1f
-	cmp pc, #S3C24X0_SDRAM_END
+	cmp pc, #S3C_SDRAM_END
 	bhs 1f
 
 	mov pc, r10

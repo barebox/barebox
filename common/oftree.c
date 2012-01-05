@@ -293,20 +293,28 @@ int of_register_fixup(int (*fixup)(struct fdt_header *))
 	return 0;
 }
 
-struct fdt_header *of_get_fixed_tree(void)
+int of_fix_tree(struct fdt_header *fdt)
 {
 	struct of_fixup *of_fixup;
 	int ret;
 
-	if (!barebox_fdt)
-		return NULL;
-
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
-		ret = of_fixup->fixup(barebox_fdt);
+		ret = of_fixup->fixup(fdt);
 		if (ret)
-			return NULL;
+			return ret;
 	}
 
-	return barebox_fdt;
+	return 0;
 }
 
+struct fdt_header *of_get_fixed_tree(void)
+{
+	int ret;
+
+	if (!barebox_fdt)
+		return NULL;
+	ret = of_fix_tree(barebox_fdt);
+	if (ret)
+		return NULL;
+	return barebox_fdt;
+}

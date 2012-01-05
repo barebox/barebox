@@ -69,7 +69,7 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 }
 EXPORT_SYMBOL(add_generic_device_res);
 
-#ifdef CONFIG_DRIVER_NET_DM9000
+#ifdef CONFIG_DRIVER_NET_DM9K
 struct device_d *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata)
 {

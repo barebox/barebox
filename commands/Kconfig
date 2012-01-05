@@ -173,6 +173,13 @@ config CMD_NAND
 	depends on NAND
 	prompt "nand"
 
+config CMD_NANDTEST
+	tristate
+	depends on NAND
+	depends on PARTITION
+	depends on NAND_ECC_HW || NAND_ECC_SOFT
+	prompt "nandtest"
+
 endmenu
 
 menu "console                       "
@@ -310,11 +317,41 @@ config CMD_BOOTM_SHOW_TYPE
 	depends on CMD_BOOTM
 	prompt "show image information"
 
-config CMD_IMINFO
+config CMD_BOOTM_VERBOSE
 	bool
-	prompt "iminfo"
+	prompt "bootm verbose support"
+	depends on CMD_BOOTM
 	help
-	  Show information about uImages
+	  support verbose bootm (-v switch)
+
+config CMD_BOOTM_INITRD
+	bool
+	prompt "bootm initrd support"
+	depends on CMD_BOOTM
+	help
+	  support initrds in bootm
+
+config CMD_BOOTM_OFTREE
+	bool
+	depends on CMD_BOOTM
+	select OFTREE
+	prompt "bootm oftree support"
+	help
+	  say yes here to support passing a flat device tree to the kernel
+
+config CMD_BOOTM_OFTREE_UIMAGE
+	bool
+	prompt "support passing oftree uImages"
+	depends on CMD_BOOTM_OFTREE
+	help
+	  Support using oftree uImages. Without this only raw oftree
+	  blobs can be used.
+
+config CMD_UIMAGE
+	tristate
+	prompt "uimage"
+	help
+	  Show information about uImage and also extract and verify uImages.
 
 config CMD_BOOTZ
 	tristate

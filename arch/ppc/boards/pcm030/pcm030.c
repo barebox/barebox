@@ -191,12 +191,3 @@ void initdram (int board_type)
 		}
 	}
 }
-
-#if defined(CONFIG_OF_FLAT_TREE) && defined(CONFIG_OF_BOARD_SETUP)
-void
-ft_board_setup(void *blob, bd_t *bd)
-{
-	ft_cpu_setup(blob, bd);
-}
-#endif
-

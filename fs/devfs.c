@@ -116,7 +116,7 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 	f->inode = cdev;
 
 	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev);
+		ret = cdev->ops->open(cdev, f->flags);
 		if (ret)
 			return ret;
 	}

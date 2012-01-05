@@ -3,6 +3,24 @@ menuconfig MTD
 
 if MTD
 
+config MTD_WRITE
+	bool
+	default y
+	prompt "Support writing to MTD devices"
+
+config MTD_OOB_DEVICE
+	bool
+	select NAND_READ_OOB if NAND
+	default y
+	prompt "Create a device for reading the OOB data"
+
+config MTD_RAW_DEVICE
+	bool
+	select NAND_READ_OOB if NAND
+	default n
+	prompt "mtdraw device to read/write both data+oob"
+
+source "drivers/mtd/devices/Kconfig"
 source "drivers/mtd/nand/Kconfig"
 source "drivers/mtd/ubi/Kconfig"
 

@@ -111,6 +111,18 @@ static void remap_range(void *_start, size_t size, uint32_t flags)
 	tlb_invalidate();
 }
 
+void *map_io_sections(unsigned long phys, void *_start, size_t size)
+{
+	unsigned long start = (unsigned long)_start, sec;
+
+	phys >>= 20;
+	for (sec = start; sec < start + size; sec += (1 << 20))
+		ttb[sec >> 20] = (phys++ << 20) | PMD_SECT_DEF_UNCACHED;
+
+	tlb_invalidate();
+	return _start;
+}
+
 /*
  * remap the memory bank described by mem cachable and
  * bufferable

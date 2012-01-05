@@ -8,11 +8,6 @@ menuconfig NAND
 
 if NAND
 
-config NAND_WRITE
-	bool
-	default y
-	prompt "Support writing to Nand"
-
 config NAND_ECC_SOFT
 	bool
 	default y
@@ -53,12 +48,6 @@ config NAND_BBT
 	  Say y here to include support for bad block tables. This speeds
 	  up the process of checking for bad blocks
 
-config NAND_OOB_DEVICE
-	bool
-	select NAND_READ_OOB
-	default y
-	prompt "create a device for reading the OOB data"
-
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"
@@ -76,9 +65,9 @@ config NAND_ATMEL
 	prompt "Atmel (AT91SAM9xxx) NAND driver"
 	depends on ARCH_AT91
 
-config NAND_S3C24X0
+config NAND_S3C24XX
 	bool
-	prompt "Samsung S3C24X0 NAND driver"
+	prompt "Samsung S3C24XX NAND driver"
 	depends on ARCH_S3C24xx
 	help
 	  Add support for processor's NAND device controller.

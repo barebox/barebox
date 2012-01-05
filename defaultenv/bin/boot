@@ -72,35 +72,12 @@ if [ -n $mtdparts ]; then
 	bootargs="${bootargs} mtdparts=${mtdparts}"
 fi
 
-if [ ! -e /dev/ram0.kernelraw ]; then
-	# arm raw kernel images are usually located at sdram start + 0x8000
-	addpart /dev/ram0 8M@0x8000(kernelraw)
-fi
-
-if [ ! -e /dev/ram0.kernel ]; then
-	# Here we can safely put the kernel without risking of overwriting it
-	# while extracting
-	addpart /dev/ram0 8M@8M(kernel)
-fi
-
 if [ x$kernel_loc = xnfs -o x$kernel_loc = xtftp ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
-	if [ $kernelimage_type = uimage ]; then
-		netload="/dev/ram0.kernel"
-	elif [ $kernelimage_type = zimage ]; then
-		netload="/dev/ram0.kernel"
-	elif [ $kernelimage_type = raw ]; then
-		netload="/dev/ram0.kernelraw"
-	elif [ $kernelimage_type = raw_lzo ]; then
-		netload="/dev/ram0.kernel"
-	else
-		echo "error: set kernelimage_type to one of 'uimage', 'zimage', 'raw' or 'raw_lzo'"
-		exit 1
-	fi
-	$kernel_loc $kernelimage $netload || exit 1
-	kdev="$netload"
+	kdev=/image
+	$kernel_loc $kernelimage $kdev || exit 1
 elif [ x$kernel_loc = xnor ]; then
 	kdev="/dev/nor0.kernel"
 elif [ x$kernel_loc = xnand ]; then
@@ -112,18 +89,6 @@ else
 	exit 1
 fi
 
-echo "booting kernel of type $kernelimage_type from $kdev"
+echo "booting kernel from $kdev"
 
-if [ x$kernelimage_type = xuimage ]; then
-	bootm $bootm_opt $kdev
-elif [ x$kernelimage_type = xzimage ]; then
-	bootz $kdev
-elif [ x$kernelimage_type = xraw ]; then
-	if [ $kernel_loc != net ]; then
-		cp $kdev /dev/ram0.kernelraw
-	fi
-	bootu /dev/ram0.kernelraw
-elif [ x$kernelimage_type = xraw_lzo ]; then
-	uncompress $kdev /dev/ram0.kernelraw
-	bootu /dev/ram0.kernelraw
-fi
+bootm $bootm_opt $kdev

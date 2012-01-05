@@ -956,7 +956,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	dev_set_param(pdev, "eccmode", ecc_mode_strings[pdata->ecc_mode]);
 
 	/* We are all set to register with the system now! */
-	err = add_mtd_device(minfo);
+	err = add_mtd_device(minfo, "nand");
 	if (err) {
 		dev_dbg(pdev, "device registration failed\n");
 		goto out_release_mem;

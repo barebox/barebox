@@ -31,17 +31,20 @@
 #include <environment.h>
 #include <init.h>
 #include <boot.h>
+#include <errno.h>
 #include <asm/cache.h>
 
 #define NIOS_MAGIC 0x534f494e /* enable command line and initrd passing */
 
 static int do_bootm_linux(struct image_data *idata)
 {
-	image_header_t *os_header = &idata->os->header;
 	void (*kernel)(int, int, int, const char *);
 	const char *commandline = getenv ("bootargs");
 
-	kernel = (void (*)(int, int, int, const char *))ntohl(os_header->ih_ep);
+	if (!idata->os_res)
+		return -EINVAL;
+
+	kernel = (void *)(idata->os_address + idata->os_entry);
 
 	/* kernel parameters passing
 	 * r4 : NIOS magic
@@ -63,8 +66,10 @@ static int do_bootm_linux(struct image_data *idata)
 }
 
 static struct image_handler handler = {
+	.name = "NIOS2 Linux",
 	.bootm = do_bootm_linux,
-	.image_type = IH_OS_LINUX,
+	.filetype = filetype_uimage,
+	.ih_os = IH_OS_LINUX,
 };
 
 int nios2_register_image_handler(void)

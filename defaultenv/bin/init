@@ -21,7 +21,7 @@ if [ -e /dev/nand0 -a -n "$nand_parts" ]; then
 fi
 
 if [ -f /env/bin/init_board ]; then
-	/env/bin/init_board
+	. /env/bin/init_board
 fi
 
 echo

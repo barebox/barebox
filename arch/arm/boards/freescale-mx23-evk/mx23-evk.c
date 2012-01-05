@@ -1,5 +1,6 @@
 /*
  * (C) Copyright 2010 Juergen Beisert - Pengutronix
+ * (C) Copyright 2011 Wolfram Sang - Pengutronix
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,9 +22,28 @@
 #include <init.h>
 #include <gpio.h>
 #include <environment.h>
+#include <mci.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
+#include <mach/clock.h>
+#include <mach/mci.h>
+
+static struct mxs_mci_platform_data mci_pdata = {
+	.caps = MMC_MODE_4BIT,
+	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
+};
+
+static const uint32_t pad_setup[] = {
+	/* SD card interface */
+	SSP1_DATA0 | PULLUP(1),
+	SSP1_DATA1 | PULLUP(1),
+	SSP1_DATA2 | PULLUP(1),
+	SSP1_DATA3 | PULLUP(1),
+	SSP1_SCK,
+	SSP1_CMD | PULLUP(1),
+	SSP1_DETECT | PULLUP(1),
+};
 
 static int mx23_evk_mem_init(void)
 {
@@ -35,8 +55,19 @@ mem_initcall(mx23_evk_mem_init);
 
 static int mx23_evk_devices_init(void)
 {
+	int i;
+
+	/* initizalize gpios */
+	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
+		imx_gpio_mode(pad_setup[i]);
+
 	armlinux_set_bootparams((void*)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX23EVK);
+
+	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
+	imx_set_sspclk(0, 100000000, 1);
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP1_BASE, 0,
+			   IORESOURCE_MEM, &mci_pdata);
 
 	return 0;
 }

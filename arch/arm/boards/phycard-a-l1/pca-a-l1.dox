@@ -1,0 +1,16 @@
+/** @page phycard-a-l1 Phytec's phyCARD-A-L1 (OMAP35xx)
+
+This phyCARD is based on a Texas Instruments OMAP35xx CPU.
+The card is shipped with:
+
+- 256MiB DDR-RAM
+- 256MiB NAND Flash Memory
+- SMSC9221 ethernet controller
+- USB-host interface
+- USB-OTG interface
+- LVDS camera interface
+- LVDS display interface
+- TPS65023 Power-Managmanet IC
+- 4kB I2C EEPROM
+
+*/

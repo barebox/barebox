@@ -68,7 +68,7 @@ int ls(const char *path, ulong flags)
 		if (stat(tmp, &s))
 			goto out;
 		if (flags & LS_COLUMN)
-			string_list_add(&sl, d->d_name);
+			string_list_add_sorted(&sl, d->d_name);
 		else
 			ls_one(d->d_name, &s);
 	}
@@ -156,7 +156,7 @@ static int do_ls(struct command *cmdtp, int argc, char *argv[])
 
 		if (!(s.st_mode & S_IFDIR)) {
 			if (flags & LS_COLUMN)
-				string_list_add(&sl, argv[o]);
+				string_list_add_sorted(&sl, argv[o]);
 			else
 				ls_one(argv[o], &s);
 		}

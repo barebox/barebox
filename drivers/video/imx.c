@@ -303,6 +303,14 @@ static int imxfb_activate_var(struct fb_info *info)
 	unsigned long long tmp;
 	struct imxfb_info *fbi = info->priv;
 	u32 pcr;
+	int i;
+
+	for (i = 0; i < info->num_modes; i++) {
+		if (!strcmp(fbi->mode[i].mode.name, mode->name)) {
+			fbi->pcr = fbi->mode[i].pcr;
+			break;
+		}
+	}
 
 	/* physical screen start address	    */
 	writel(VPW_VPW(mode->xres * info->bits_per_pixel / 8 / 4),
@@ -390,6 +398,7 @@ static struct fb_ops imxfb_ops = {
 	.fb_setcolreg	= imxfb_setcolreg,
 	.fb_enable	= imxfb_enable_controller,
 	.fb_disable	= imxfb_disable_controller,
+	.fb_activate_var = imxfb_activate_var,
 };
 
 #ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
@@ -524,7 +533,8 @@ static int imxfb_probe(struct device_d *dev)
 	struct imxfb_info *fbi;
 	struct fb_info *info;
 	struct imx_fb_platform_data *pdata = dev->platform_data;
-	int ret;
+	struct fb_videomode *mode_list;
+	int ret, i;
 
 	if (!pdata)
 		return -ENODEV;
@@ -542,6 +552,14 @@ static int imxfb_probe(struct device_d *dev)
 	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
 		IMX_CCM_BASE + CCM_CGCR1);
 #endif
+	if (!pdata->num_modes) {
+		dev_err(dev, "no modes. bailing out\n");
+		return -EINVAL;
+	}
+
+	mode_list = xzalloc(sizeof(*mode_list) * pdata->num_modes);
+	for (i = 0; i < pdata->num_modes; i++)
+		mode_list[i] = pdata->mode[i].mode;
 
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
@@ -555,6 +573,8 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->enable = pdata->enable;
 	fbi->dev = dev;
 	info->priv = fbi;
+	info->mode_list = mode_list;
+	info->num_modes = pdata->num_modes;
 	info->mode = &pdata->mode->mode;
 	info->xres = pdata->mode->mode.xres;
 	info->yres = pdata->mode->mode.yres;

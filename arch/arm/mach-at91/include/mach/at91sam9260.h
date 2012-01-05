@@ -87,9 +87,6 @@
 #define AT91_CCFG	(0xffffef10 - AT91_BASE_SYS)
 #define AT91_AIC	(0xfffff000 - AT91_BASE_SYS)
 #define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
-#define AT91_PIOA	(0xfffff400 - AT91_BASE_SYS)
-#define AT91_PIOB	(0xfffff600 - AT91_BASE_SYS)
-#define AT91_PIOC	(0xfffff800 - AT91_BASE_SYS)
 #define AT91_PMC	(0xfffffc00 - AT91_BASE_SYS)
 #define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
 #define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
@@ -97,6 +94,10 @@
 #define AT91_PIT	(0xfffffd30 - AT91_BASE_SYS)
 #define AT91_WDT	(0xfffffd40 - AT91_BASE_SYS)
 #define AT91_GPBR	(0xfffffd50 - AT91_BASE_SYS)
+
+#define AT91_BASE_PIOA	0xfffff400
+#define AT91_BASE_PIOB	0xfffff600
+#define AT91_BASE_PIOC	0xfffff800
 
 #define AT91_USART0	AT91SAM9260_BASE_US0
 #define AT91_USART1	AT91SAM9260_BASE_US1
@@ -125,6 +126,16 @@
 
 #define AT91SAM9XE_FLASH_BASE	0x00200000	/* Internal FLASH base address */
 #define AT91SAM9XE_SRAM_BASE	0x00300000	/* Internal SRAM base address */
+
+#define AT91SAM9G20_ROM_BASE	0x00100000	/* Internal ROM base address */
+#define AT91SAM9G20_ROM_SIZE	SZ_32K		/* Internal ROM size (32Kb) */
+
+#define AT91SAM9G20_SRAM0_BASE	0x00200000	/* Internal SRAM 0 base address */
+#define AT91SAM9G20_SRAM0_SIZE	SZ_16K		/* Internal SRAM 0 size (16Kb) */
+#define AT91SAM9G20_SRAM1_BASE	0x00300000	/* Internal SRAM 1 base address */
+#define AT91SAM9G20_SRAM1_SIZE	SZ_16K		/* Internal SRAM 1 size (16Kb) */
+
+#define AT91SAM9G20_UHP_BASE	0x00500000	/* USB Host controller */
 
 /*
  * Cpu Name

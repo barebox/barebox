@@ -57,26 +57,6 @@
 /* This will be the driver name */
 #define DRIVER_NAME "i2c-omap"
 
-#define OMAP_I2C_REV_REG		0x00
-#define OMAP_I2C_IE_REG			0x04
-#define OMAP_I2C_STAT_REG		0x08
-#define OMAP_I2C_IV_REG			0x0c
-/* For OMAP3 I2C_IV has changed to I2C_WE (wakeup enable) */
-#define OMAP_I2C_WE_REG			0x0c
-#define OMAP_I2C_SYSS_REG		0x10
-#define OMAP_I2C_BUF_REG		0x14
-#define OMAP_I2C_CNT_REG		0x18
-#define OMAP_I2C_DATA_REG		0x1c
-#define OMAP_I2C_SYSC_REG		0x20
-#define OMAP_I2C_CON_REG		0x24
-#define OMAP_I2C_OA_REG			0x28
-#define OMAP_I2C_SA_REG			0x2c
-#define OMAP_I2C_PSC_REG		0x30
-#define OMAP_I2C_SCLL_REG		0x34
-#define OMAP_I2C_SCLH_REG		0x38
-#define OMAP_I2C_SYSTEST_REG		0x3c
-#define OMAP_I2C_BUFSTAT_REG		0x40
-
 /* I2C Interrupt Enable Register (OMAP_I2C_IE): */
 #define OMAP_I2C_IE_XDR		(1 << 14)	/* TX Buffer drain int enable */
 #define OMAP_I2C_IE_RDR		(1 << 13)	/* RX Buffer drain int enable */
@@ -168,6 +148,8 @@
 
 struct omap_i2c_struct {
 	void 			*base;
+	u8			*regs;
+	u8			reg_shift;
 	struct resource		*ioarea;
 	u32			speed;		/* Speed of bus in Khz */
 	u16			cmd_err;
@@ -190,16 +172,90 @@ struct omap_i2c_struct {
 };
 #define to_omap_i2c_struct(a)	container_of(a, struct omap_i2c_struct, adapter)
 
+enum {
+	OMAP_I2C_REV_REG = 0,
+	OMAP_I2C_IE_REG,
+	OMAP_I2C_STAT_REG,
+	OMAP_I2C_IV_REG,
+	OMAP_I2C_WE_REG,
+	OMAP_I2C_SYSS_REG,
+	OMAP_I2C_BUF_REG,
+	OMAP_I2C_CNT_REG,
+	OMAP_I2C_DATA_REG,
+	OMAP_I2C_SYSC_REG,
+	OMAP_I2C_CON_REG,
+	OMAP_I2C_OA_REG,
+	OMAP_I2C_SA_REG,
+	OMAP_I2C_PSC_REG,
+	OMAP_I2C_SCLL_REG,
+	OMAP_I2C_SCLH_REG,
+	OMAP_I2C_SYSTEST_REG,
+	OMAP_I2C_BUFSTAT_REG,
+	OMAP_I2C_REVNB_LO,
+	OMAP_I2C_REVNB_HI,
+	OMAP_I2C_IRQSTATUS_RAW,
+	OMAP_I2C_IRQENABLE_SET,
+	OMAP_I2C_IRQENABLE_CLR,
+};
+
+static const u8 reg_map[] = {
+	[OMAP_I2C_REV_REG] = 0x00,
+	[OMAP_I2C_IE_REG] = 0x01,
+	[OMAP_I2C_STAT_REG] = 0x02,
+	[OMAP_I2C_IV_REG] = 0x03,
+	[OMAP_I2C_WE_REG] = 0x03,
+	[OMAP_I2C_SYSS_REG] = 0x04,
+	[OMAP_I2C_BUF_REG] = 0x05,
+	[OMAP_I2C_CNT_REG] = 0x06,
+	[OMAP_I2C_DATA_REG] = 0x07,
+	[OMAP_I2C_SYSC_REG] = 0x08,
+	[OMAP_I2C_CON_REG] = 0x09,
+	[OMAP_I2C_OA_REG] = 0x0a,
+	[OMAP_I2C_SA_REG] = 0x0b,
+	[OMAP_I2C_PSC_REG] = 0x0c,
+	[OMAP_I2C_SCLL_REG] = 0x0d,
+	[OMAP_I2C_SCLH_REG] = 0x0e,
+	[OMAP_I2C_SYSTEST_REG] = 0x0f,
+	[OMAP_I2C_BUFSTAT_REG] = 0x10,
+};
+
+static const u8 omap4_reg_map[] = {
+	[OMAP_I2C_REV_REG] = 0x04,
+	[OMAP_I2C_IE_REG] = 0x2c,
+	[OMAP_I2C_STAT_REG] = 0x28,
+	[OMAP_I2C_IV_REG] = 0x34,
+	[OMAP_I2C_WE_REG] = 0x34,
+	[OMAP_I2C_SYSS_REG] = 0x90,
+	[OMAP_I2C_BUF_REG] = 0x94,
+	[OMAP_I2C_CNT_REG] = 0x98,
+	[OMAP_I2C_DATA_REG] = 0x9c,
+	[OMAP_I2C_SYSC_REG] = 0x10,
+	[OMAP_I2C_CON_REG] = 0xa4,
+	[OMAP_I2C_OA_REG] = 0xa8,
+	[OMAP_I2C_SA_REG] = 0xac,
+	[OMAP_I2C_PSC_REG] = 0xb0,
+	[OMAP_I2C_SCLL_REG] = 0xb4,
+	[OMAP_I2C_SCLH_REG] = 0xb8,
+	[OMAP_I2C_SYSTEST_REG] = 0xbc,
+	[OMAP_I2C_BUFSTAT_REG] = 0xc0,
+	[OMAP_I2C_REVNB_LO] = 0x00,
+	[OMAP_I2C_REVNB_HI] = 0x04,
+	[OMAP_I2C_IRQSTATUS_RAW] = 0x24,
+	[OMAP_I2C_IRQENABLE_SET] = 0x2c,
+	[OMAP_I2C_IRQENABLE_CLR] = 0x30,
+};
 
 static inline void omap_i2c_write_reg(struct omap_i2c_struct *i2c_omap,
 				      int reg, u16 val)
 {
-	__raw_writew(val, i2c_omap->base + reg);
+	__raw_writew(val, i2c_omap->base +
+			(i2c_omap->regs[reg] << i2c_omap->reg_shift));
 }
 
 static inline u16 omap_i2c_read_reg(struct omap_i2c_struct *i2c_omap, int reg)
 {
-	return __raw_readw(i2c_omap->base + reg);
+	return __raw_readw(i2c_omap->base +
+			(i2c_omap->regs[reg] << i2c_omap->reg_shift));
 }
 
 static void omap_i2c_unidle(struct omap_i2c_struct *i2c_omap)
@@ -228,6 +284,9 @@ static void omap_i2c_idle(struct omap_i2c_struct *i2c_omap)
 	u16 iv;
 
 	i2c_omap->iestate = omap_i2c_read_reg(i2c_omap, OMAP_I2C_IE_REG);
+
+	/* Barebox driver don't need to clear interrupts here */
+
 	/* omap_i2c_write_reg(i2c_omap, OMAP_I2C_IE_REG, 0); */
 	if (i2c_omap->rev < OMAP_I2C_REV_2) {
 		iv = omap_i2c_read_reg(i2c_omap, OMAP_I2C_IV_REG); /* Read clears */
@@ -299,7 +358,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 
 	/* omap1 handling is missing here */
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx()) {
+	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
 
 		/*
 		 * HSI2C controller internal clk rate should be 19.2 Mhz for
@@ -472,7 +531,8 @@ complete:
 					dev->buf_len--;
 					/* Data reg from 2430 is 8 bit wide */
 					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx()) {
+							!cpu_is_omap34xx() &&
+							!cpu_is_omap4xxx()) {
 						if (dev->buf_len) {
 							*dev->buf++ = w >> 8;
 							dev->buf_len--;
@@ -512,7 +572,8 @@ complete:
 					dev->buf_len--;
 					/* Data reg from  2430 is 8 bit wide */
 					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx()) {
+							!cpu_is_omap34xx() &&
+							!cpu_is_omap4xxx()) {
 						if (dev->buf_len) {
 							w |= *dev->buf++ << 8;
 							dev->buf_len--;
@@ -650,7 +711,8 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 	while (ret){
 		ret = omap_i2c_isr(i2c_omap);
 		if (is_timeout(start, MSECOND)) {
-				dev_err(adapter->dev, "timed out on polling for"
+				dev_err(adapter->dev,
+				"timed out on polling for "
 				"open i2c message handling\n");
 				return -ETIMEDOUT;
 			}
@@ -725,6 +787,14 @@ i2c_omap_probe(struct device_d *pdev)
 		goto err_free_mem;
 	}
 
+	if (cpu_is_omap4xxx()) {
+		i2c_omap->regs = (u8 *)omap4_reg_map;
+		i2c_omap->reg_shift = 0;
+	} else {
+		i2c_omap->regs = (u8 *)reg_map;
+		i2c_omap->reg_shift = 2;
+	}
+
 	if (pdev->platform_data != NULL)
 		speed = *(u32 *)pdev->platform_data;
 	else
@@ -738,7 +808,7 @@ i2c_omap_probe(struct device_d *pdev)
 	i2c_omap->rev = omap_i2c_read_reg(i2c_omap, OMAP_I2C_REV_REG) & 0xff;
 	/* i2c_omap->base = OMAP2_I2C_BASE3; */
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx()) {
+	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
 		u16 s;
 
 		/* Set up the fifo size - Get total size */
@@ -750,8 +820,13 @@ i2c_omap_probe(struct device_d *pdev)
 		 * size. This is to ensure that we can handle the status on int
 		 * call back latencies.
 		 */
+
 		i2c_omap->fifo_size = (i2c_omap->fifo_size / 2);
-		i2c_omap->b_hw = 1; /* Enable hardware fixes */
+
+		if (i2c_omap->rev >= OMAP_I2C_REV_ON_4430)
+			i2c_omap->b_hw = 0; /* Disable hardware fixes */
+		else
+			i2c_omap->b_hw = 1; /* Enable hardware fixes */
 	}
 
 	/* reset ASAP, clearing any IRQs */

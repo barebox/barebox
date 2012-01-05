@@ -15,6 +15,13 @@ config USB_GADGET_DRIVER_ARC
 	depends on ARCH_IMX
 	select USB_GADGET_DUALSPEED
 
+config USB_GADGET_DRIVER_AT91
+	bool
+	prompt "at91 gadget driver"
+	depends on ARCH_AT91
+	select USB_GADGET_DUALSPEED
+	select POLLER
+
 config USB_GADGET_DRIVER_PXA27X
 	bool
 	prompt "PXA27x gadget driver"
@@ -23,8 +30,7 @@ config USB_GADGET_DRIVER_PXA27X
 	select POLLER
 endchoice
 
-choice
-	prompt "USB Gadget drivers"
+comment "USB Gadget drivers"
 
 config USB_GADGET_DFU
 	bool
@@ -34,8 +40,6 @@ config USB_GADGET_SERIAL
 	bool
 	depends on EXPERIMENTAL
 	prompt "Serial Gadget"
-
-endchoice
 
 endif
 

@@ -37,6 +37,7 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <gpio.h>
+#include <led.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
@@ -57,6 +58,7 @@ static struct atmel_nand_data nand_pdata = {
 /*	.det_pin	= ... not connected */
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
+	.on_flash_bbt	= 1,
 };
 
 static struct sam9_smc_config usb_a9260_nand_smc_config = {
@@ -165,6 +167,38 @@ static struct at91_usbh_data ek_usbh_data = {
 	.ports		= 2,
 };
 
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PB11,
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
+};
+
+static void __init ek_add_device_udc(void)
+{
+	if (machine_is_usb_a9260() || machine_is_usb_a9g20())
+		ek_udc_data.vbus_pin = AT91_PIN_PC5;
+
+	at91_add_device_udc(&ek_udc_data);
+}
+
+struct gpio_led led = {
+	.gpio = AT91_PIN_PB21,
+	.led = {
+		.name = "user_led",
+	},
+};
+
+static void __init ek_add_led(void)
+{
+	if (machine_is_usb_a9263())
+		led.active_low = 1;
+
+	at91_set_gpio_output(led.gpio, led.active_low);
+	led_gpio_register(&led);
+}
+
 static int usb_a9260_mem_init(void)
 {
 #ifdef CONFIG_AT91_HAVE_SRAM_128M
@@ -177,6 +211,14 @@ static int usb_a9260_mem_init(void)
 }
 mem_initcall(usb_a9260_mem_init);
 
+static void __init ek_add_device_button(void)
+{
+	at91_set_GPIO_periph(AT91_PIN_PB10, 1);	/* user push button, pull up enabled */
+	at91_set_deglitch(AT91_PIN_PB10, 1);
+
+	export_env_ull("dfu_button", AT91_PIN_PB10);
+}
+
 static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
@@ -184,6 +226,9 @@ static int usb_a9260_devices_init(void)
 	at91_add_device_eth(&macb_pdata);
 	usb_a9260_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
+	ek_add_device_udc();
+	ek_add_led();
+	ek_add_device_button();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	usb_a9260_set_board_type();

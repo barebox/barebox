@@ -19,4 +19,11 @@ config FDT
 config OFTREE
 	select FDT
 	bool
+
+config BCH
+       bool
+
+config BITREV
+       bool
+
 endmenu

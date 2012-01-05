@@ -50,6 +50,7 @@ static struct atmel_nand_data nand_pdata = {
 #else
 	.bus_width_16	= 0,
 #endif
+	.on_flash_bbt	= 1,
 };
 
 static struct sam9_smc_config ek_nand_smc_config = {
@@ -87,7 +88,7 @@ static void ek_add_device_nand(void)
 /*
  * DM9000 ethernet device
  */
-#if defined(CONFIG_DRIVER_NET_DM9000)
+#if defined(CONFIG_DRIVER_NET_DM9K)
 static struct dm9000_platform_data dm9000_data = {
 	.srom		= 0,
 };
@@ -130,7 +131,7 @@ static void __init ek_add_device_dm9000(void)
 }
 #else
 static void __init ek_add_device_dm9000(void) {}
-#endif /* CONFIG_DRIVER_NET_DM9000 */
+#endif /* CONFIG_DRIVER_NET_DM9K */
 
 static int at91sam9261ek_mem_init(void)
 {

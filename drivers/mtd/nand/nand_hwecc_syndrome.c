@@ -72,7 +72,7 @@ static int nand_read_page_syndrome(struct mtd_info *mtd, struct nand_chip *chip,
  * The hw generator calculates the error syndrome automatically. Therefor
  * we need a special oob layout and handling.
  */
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 static void nand_write_page_syndrome(struct mtd_info *mtd,
 				    struct nand_chip *chip, const uint8_t *buf)
 {
@@ -155,7 +155,7 @@ static int nand_read_oob_syndrome(struct mtd_info *mtd, struct nand_chip *chip,
  * @chip:	nand chip info structure
  * @page:	page number to write
  */
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 static int nand_write_oob_syndrome(struct mtd_info *mtd,
 				   struct nand_chip *chip, int page)
 {
@@ -216,7 +216,7 @@ void nand_init_ecc_hw_syndrome(struct nand_chip *chip)
 		chip->ecc.read_page = nand_read_page_syndrome;
 	if (!chip->ecc.read_oob)
 		chip->ecc.read_oob = nand_read_oob_syndrome;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	if (!chip->ecc.write_page)
 		chip->ecc.write_page = nand_write_page_syndrome;
 	if (!chip->ecc.write_oob)

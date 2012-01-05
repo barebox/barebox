@@ -38,11 +38,13 @@
 #include <asm/armlinux.h>
 #include <io.h>
 #include <mach/gpio.h>
-#include <mach/s3c24x0-iomap.h>
-#include <mach/s3c24x0-nand.h>
-#include <mach/s3c24xx-generic.h>
-#include <mach/mci.h>
-#include <mach/fb.h>
+#include <mach/s3c-iomap.h>
+#include <mach/s3c24xx-nand.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-mci.h>
+#include <mach/s3c24xx-fb.h>
+#include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 static struct s3c24x0_nand_platform_data nand_info = {
 	.nand_timing = CALC_NFCONF_TIMING(MINI2440_TACLS, MINI2440_TWRPH0,
@@ -266,7 +268,7 @@ static const unsigned pin_usage[] = {
 
 static int mini2440_mem_init(void)
 {
-	arm_add_mem_device("ram0", CS6_BASE, s3c24x0_get_memory_size());
+	arm_add_mem_device("ram0", S3C_SDRAM_BASE, s3c24xx_get_memory_size());
 
 	return 0;
 }
@@ -281,24 +283,24 @@ static int mini2440_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
 		s3c_gpio_mode(pin_usage[i]);
 
-	reg = readl(BWSCON);
+	reg = readl(S3C_BWSCON);
 
 	/* CS#4 to access the network controller */
 	reg &= ~0x000f0000;
 	reg |=  0x000d0000;	/* 16 bit */
-	writel(0x1f4c, BANKCON4);
+	writel(0x1f4c, S3C_BANKCON4);
 
-	writel(reg, BWSCON);
+	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to external devices */
-	reg = readl(MISCCR);
+	reg = readl(S3C_MISCCR);
 	reg |= 0x10000;
-	writel(reg, MISCCR);
+	writel(reg, S3C_MISCCR);
 
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
 
-	add_dm9000_device(0, CS4_BASE + 0x300, CS4_BASE + 0x304,
+	add_dm9000_device(0, S3C_CS4_BASE + 0x300, S3C_CS4_BASE + 0x304,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -316,7 +318,7 @@ static int mini2440_devices_init(void)
 			   IORESOURCE_MEM, &s3c24x0_fb_data);
 	add_generic_device("ohci", 0, NULL, S3C2410_USB_HOST_BASE, 0x100,
 			   IORESOURCE_MEM, NULL);
-	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
+	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
 	return 0;
@@ -342,7 +344,7 @@ static int mini2440_console_init(void)
 	s3c_gpio_mode(GPH2_TXD0);
 	s3c_gpio_mode(GPH3_RXD0);
 
-	add_generic_device("s3c24x0_serial", -1, NULL, UART1_BASE, UART1_SIZE,
+	add_generic_device("s3c_serial", -1, NULL, S3C_UART1_BASE, S3C_UART1_SIZE,
 			   IORESOURCE_MEM, NULL);
 	return 0;
 }

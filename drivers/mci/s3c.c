@@ -40,9 +40,9 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
-#include <mach/mci.h>
-#include <mach/s3c24xx-generic.h>
-#include <mach/s3c24x0-iomap.h>
+#include <mach/s3c-mci.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-iomap.h>
 
 #define SDICON 0x0
 # define SDICON_SDRESET (1 << 8)
@@ -191,7 +191,7 @@ static unsigned s3c_setup_clock_speed(struct device_d *hw_dev, unsigned nc)
 	if (nc == 0)
 		return 0;
 
-	clock = s3c24xx_get_pclk();
+	clock = s3c_get_pclk();
 	/* Calculate the required prescaler value to get the requested frequency */
 	mci_psc = (clock + (nc >> 2)) / nc;
 
@@ -760,8 +760,8 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 	struct s3c_mci_platform_data *pd = hw_dev->platform_data;
 
 	/* TODO replace by the global func: enable the SDI unit clock */
-	writel(readl(S3C24X0_CLOCK_POWER_BASE + 0x0c) | 0x200,
-		S3C24X0_CLOCK_POWER_BASE + 0x0c);
+	writel(readl(S3C_CLOCK_POWER_BASE + 0x0c) | 0x200,
+		S3C_CLOCK_POWER_BASE + 0x0c);
 
 	if (pd == NULL) {
 		pr_err("Missing platform data\n");
@@ -775,8 +775,8 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 	/* feed forward the platform specific values */
 	mci_pdata.voltages = pd->voltages;
 	mci_pdata.host_caps = pd->caps;
-	mci_pdata.f_min = pd->f_min == 0 ? s3c24xx_get_pclk() / 256 : pd->f_min;
-	mci_pdata.f_max = pd->f_max == 0 ? s3c24xx_get_pclk() / 2 : pd->f_max;
+	mci_pdata.f_min = pd->f_min == 0 ? s3c_get_pclk() / 256 : pd->f_min;
+	mci_pdata.f_max = pd->f_max == 0 ? s3c_get_pclk() / 2 : pd->f_max;
 
 	/*
 	 * Start the clock to let the engine and the card finishes its startup

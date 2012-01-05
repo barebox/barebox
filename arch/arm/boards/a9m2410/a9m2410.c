@@ -32,8 +32,11 @@
 #include <partition.h>
 #include <nand.h>
 #include <io.h>
-#include <mach/s3c24x0-iomap.h>
-#include <mach/s3c24x0-nand.h>
+#include <mach/s3c-iomap.h>
+#include <mach/s3c24xx-nand.h>
+#include <mach/s3c-generic.h>
+#include <mach/s3c-busctl.h>
+#include <mach/s3c24xx-gpio.h>
 
 // {"NAND 1MiB 3,3V 8-bit", 0xec, 256, 1, 0x1000, 0},
 static struct s3c24x0_nand_platform_data nand_info = {
@@ -42,65 +45,40 @@ static struct s3c24x0_nand_platform_data nand_info = {
 
 static int a9m2410_mem_init(void)
 {
-	resource_size_t size = 0;
-	uint32_t reg;
+	resource_size_t size;
 
 	/*
-	 * detect the current memory size
 	 * Note: On this card the second SDRAM page is not used
 	 */
-	reg = readl(BANKSIZE);
-
-	switch (reg &= 0x7) {
-	case 0:
-		size = 32 * 1024 * 1024;
-		break;
-	case 1:
-		size = 64 * 1024 * 1024;
-		break;
-	case 2:
-		size = 128 * 1024 * 1024;
-		break;
-	case 4:
-		size = 2 * 1024 * 1024;
-		break;
-	case 5:
-		size = 4 * 1024 * 1024;
-		break;
-	case 6:
-		size = 8 * 1024 * 1024;
-		break;
-	case 7:
-		size = 16 * 1024 * 1024;
-		break;
-	}
+	s3c24xx_disable_second_sdram_bank();
+	size = s3c24xx_get_memory_size();
 
 	/* ---------- configure the GPIOs ------------- */
-	writel(0x007FFFFF, GPACON);
-	writel(0x00000000, GPCCON);
-	writel(0x00000000, GPCUP);
-	writel(0x00000000, GPDCON);
-	writel(0x00000000, GPDUP);
-	writel(0xAAAAAAAA, GPECON);
-	writel(0x0000E03F, GPEUP);
-	writel(0x00000000, GPBCON);	/* all inputs */
-	writel(0x00000007, GPBUP);	/* pullup disabled for GPB0..3 */
-	writel(0x00009000, GPFCON);	/* GPF7 CLK_INT#, GPF6 Debug-LED */
-	writel(0x000000FF, GPFUP);
-	writel(readl(GPGDAT) | 0x0010, GPGDAT);	/* switch off LCD backlight */
-	writel(0xFF00A938, GPGCON);	/* switch off USB device */
-	writel(0x0000F000, GPGUP);
-	writel(readl(GPHDAT) | 0x100, GPHDAT);	/* switch BOOTINT/GPIO_ON# to high */
-	writel(0x000007FF, GPHUP);
-	writel(0x0029FAAA, GPHCON);
+	writel(0x007FFFFF, S3C_GPACON);
+	writel(0x00000000, S3C_GPCCON);
+	writel(0x00000000, S3C_GPCUP);
+	writel(0x00000000, S3C_GPDCON);
+	writel(0x00000000, S3C_GPDUP);
+	writel(0xAAAAAAAA, S3C_GPECON);
+	writel(0x0000E03F, S3C_GPEUP);
+	writel(0x00000000, S3C_GPBCON);	/* all inputs */
+	writel(0x00000007, S3C_GPBUP);	/* pullup disabled for GPB0..3 */
+	writel(0x00009000, S3C_GPFCON);	/* GPF7 CLK_INT#, GPF6 Debug-LED */
+	writel(0x000000FF, S3C_GPFUP);
+	writel(readl(S3C_GPGDAT) | 0x0010, S3C_GPGDAT);	/* switch off LCD backlight */
+	writel(0xFF00A938, S3C_GPGCON);	/* switch off USB device */
+	writel(0x0000F000, S3C_GPGUP);
+	writel(readl(S3C_GPHDAT) | 0x100, S3C_GPHDAT);	/* switch BOOTINT/GPIO_ON# to high */
+	writel(0x000007FF, S3C_GPHUP);
+	writel(0x0029FAAA, S3C_GPHCON);
 	/*
 	 * USB port1 normal, USB port0 normal, USB1 pads for device
 	 * PCLK output on CLKOUT0, UPLL CLK output on CLKOUT1,
 	 * 2nd SDRAM bank off (only bank 1 is used)
 	 */
-	writel(0x40140, MISCCR);
+	writel(0x40140, S3C_MISCCR);
 
-	arm_add_mem_device("ram0", CS6_BASE, size);
+	arm_add_mem_device("ram0", S3C_SDRAM_BASE, size);
 
 	return 0;
 }
@@ -111,24 +89,24 @@ static int a9m2410_devices_init(void)
 	uint32_t reg;
 
 	/* ----------- configure the access to the outer space ---------- */
-	reg = readl(BWSCON);
+	reg = readl(S3C_BWSCON);
 
 	/* CS#1 to access the network controller */
 	reg &= ~0xf0;
 	reg |= 0xe0;
-	writel(0x1350, BANKCON1);
+	writel(0x1350, S3C_BANKCON1);
 
 	/* CS#2 to the dual 16550 UART */
 	reg &= ~0xf00;
 	reg |= 0x400;
-	writel(0x0d50, BANKCON2);
+	writel(0x0d50, S3C_BANKCON2);
 
-	writel(reg, BWSCON);
+	writel(reg, S3C_BWSCON);
 
 	/* release the reset signal to the network and UART device */
-        reg = readl(MISCCR);
+	reg = readl(S3C_MISCCR);
 	reg |= 0x10000;
-	writel(reg, MISCCR);
+	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
 	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
@@ -138,7 +116,7 @@ static int a9m2410_devices_init(void)
 	 * connected to CS line 1 and interrupt line
 	 * GPIO3, data width is 32 bit
 	 */
-	add_generic_device("smc91c111", -1, NULL, CS1_BASE + 0x300, 16,
+	add_generic_device("smc91c111", -1, NULL, S3C_CS1_BASE + 0x300, 16,
 			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
@@ -150,7 +128,7 @@ static int a9m2410_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_set_bootparams((void*)CS6_BASE + 0x100);
+	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;
@@ -167,7 +145,7 @@ void __bare_init nand_boot(void)
 
 static int a9m2410_console_init(void)
 {
-	add_generic_device("s3c24x0_serial", -1, NULL, UART1_BASE, UART1_SIZE,
+	add_generic_device("s3c_serial", -1, NULL, S3C_UART1_BASE, S3C_UART1_SIZE,
 			   IORESOURCE_MEM, NULL);
 	return 0;
 }

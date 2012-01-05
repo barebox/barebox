@@ -34,6 +34,7 @@
 #include <mfd/mc13892.h>
 #include <io.h>
 #include <asm/mmu.h>
+#include <mach/imx5.h>
 #include <mach/imx-nand.h>
 #include <mach/spi.h>
 #include <mach/generic.h>
@@ -264,6 +265,8 @@ late_initcall(f3s_part_init);
 static int f3s_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(f3s_pads, ARRAY_SIZE(f3s_pads));
+
+	imx51_init_lowlevel();
 
 	writel(0, 0x73fa8228);
 	writel(0, 0x73fa822c);

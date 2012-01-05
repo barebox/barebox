@@ -28,7 +28,6 @@
  */
 #include <common.h>
 #include <clock.h>
-#include <watchdog.h>
 #include <command.h>
 #include <environment.h>
 #include <param.h>

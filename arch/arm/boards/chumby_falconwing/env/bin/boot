@@ -26,13 +26,6 @@ elif [ x$rootfs_loc = xinitrd ]; then
 	bootargs="$bootargs root=/dev/ram0 rdinit=/sbin/init"
 fi
 
-if [ x$kernelimage_type = xuimage ]; then
-	bootm /dev/$kernel_part
-elif [ x$kernelimage_type = xzimage ]; then
-	bootz /dev/$kernel_part
-else
-	echo "Booting failed. Correct setup of 'kernelimage_type'?"
-	exit
-fi
+bootm /dev/$kernel_part
 
 echo "Booting failed. Correct setup of 'kernel_part'?"

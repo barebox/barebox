@@ -1,7 +1,6 @@
 obj-$(CONFIG_SHELL_HUSH)	+= hush.o
 obj-$(CONFIG_SHELL_SIMPLE)	+= parser.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
-obj-$(CONFIG_OF_FLAT_TREE)	+= ft_build.o
 obj-$(CONFIG_KALLSYMS)		+= kallsyms.o
 obj-$(CONFIG_ENV_HANDLING)	+= environment.o
 obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o
@@ -14,6 +13,8 @@ obj-$(CONFIG_OFTREE)		+= oftree.o
 
 obj-y += memory.o
 obj-$(CONFIG_MALLOC_DLMALLOC) += dlmalloc.o
+obj-$(CONFIG_MALLOC_TLSF) += tlsf_malloc.o
+obj-$(CONFIG_MALLOC_TLSF) += tlsf.o
 obj-$(CONFIG_MALLOC_DUMMY) += dummy_malloc.o
 obj-y += clock.o
 obj-y += version.o
@@ -23,6 +24,7 @@ obj-$(CONFIG_CONSOLE_SIMPLE) += console_simple.o
 obj-$(CONFIG_DIGEST) += digest.o
 obj-$(CONFIG_ENVIRONMENT_VARIABLES) += env.o
 obj-$(CONFIG_CMD_BOOTM) += image.o
+obj-$(CONFIG_CMD_BOOTM) += uimage.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
@@ -52,5 +54,30 @@ endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 barebox_default_env: $(ENV_FILES)
 	$(Q)$(srctree)/scripts/genenv $(srctree) $(objtree) $(DEFAULT_ENVIRONMENT_PATH)
 
-include/generated/barebox_default_env.h: barebox_default_env
+barebox_default_env_comp =
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_GZIP),y)
+barebox_default_env_comp = .gz
+endif
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_BZIP2),y)
+barebox_default_env_comp = .bz2
+endif
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_LZO),y)
+barebox_default_env_comp = .lzo
+endif
+
+barebox_default_env.gz: barebox_default_env
+	$(call if_changed,gzip)
+
+barebox_default_env.bz2: barebox_default_env
+	$(call if_changed,bzip2)
+
+barebox_default_env.lzo: barebox_default_env
+	$(call if_changed,lzo)
+
+include/generated/barebox_default_env.h: barebox_default_env$(barebox_default_env_comp)
 	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@
+	$(Q)echo "const int default_environment_uncompress_size=`stat -c%s barebox_default_env`;" >> $@
+
+CLEAN_FILES += include/generated/barebox_default_env.h barebox_default_env
+CLEAN_FILES += barebox_default_env.gz barebox_default_env.bz2
+CLEAN_FILES += barebox_default_env.lzo

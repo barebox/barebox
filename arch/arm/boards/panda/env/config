@@ -18,14 +18,9 @@ kernel_loc=tftp
 # can be either 'net', 'nor', 'nand' or 'initrd'
 rootfs_loc=net
 
-# The image type of the kernel. Can be uimage, zimage, raw, or raw_lzo
-kernelimage_type=zimage
 kernelimage=zImage-$machine
-#kernelimage_type=uimage
 #kernelimage=uImage-$machine
-#kernelimage_type=raw
 #kernelimage=Image-$machine
-#kernelimage_type=raw_lzo
 #kernelimage=Image-${machine}.lzo
 
 if [ -n $user ]; then

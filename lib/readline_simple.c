@@ -1,5 +1,4 @@
 #include <common.h>
-#include <watchdog.h>
 
 static char erase_seq[] = "\b \b";		/* erase sequence	*/
 static char   tab_seq[] = "        ";		/* used to expand TABs	*/
@@ -64,7 +63,6 @@ int readline (const char *prompt, char *line, int len)
 				return (-2);	/* timed out */
 		}
 #endif
-		WATCHDOG_RESET();		/* Trigger watchdog, if needed */
 
 #ifdef CONFIG_SHOW_ACTIVITY
 		while (!tstc()) {

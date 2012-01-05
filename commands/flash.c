@@ -56,11 +56,6 @@ static int do_flerase(struct command *cmdtp, int argc, char *argv[])
 
 	size = s.st_size;
 
-	if (!filename) {
-		printf("missing filename\n");
-		return 1;
-	}
-
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
 		printf("open %s: %s", filename, errno_str());
@@ -131,11 +126,6 @@ static int do_protect(struct command *cmdtp, int argc, char *argv[])
 	}
 
 	size = s.st_size;
-
-	if (!filename) {
-		printf("missing filename\n");
-		return 1;
-	}
 
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {

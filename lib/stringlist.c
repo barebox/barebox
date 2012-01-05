@@ -3,6 +3,15 @@
 #include <malloc.h>
 #include <stringlist.h>
 
+static int string_list_compare(struct list_head *a, struct list_head *b)
+{
+	char *astr, *bstr;
+	astr = (char *)list_entry(a, struct string_list, list)->str;
+	bstr = (char *)list_entry(b, struct string_list, list)->str;
+
+	return strcmp(astr, bstr);
+}
+
 int string_list_add(struct string_list *sl, char *str)
 {
 	struct string_list *new;
@@ -12,6 +21,31 @@ int string_list_add(struct string_list *sl, char *str)
 	strcpy(new->str, str);
 
 	list_add_tail(&new->list, &sl->list);
+
+	return 0;
+}
+
+int string_list_add_sorted(struct string_list *sl, char *str)
+{
+	struct string_list *new;
+
+	new = xmalloc(sizeof(struct string_list) + strlen(str) + 1);
+
+	strcpy(new->str, str);
+
+	list_add_sort(&new->list, &sl->list, string_list_compare);
+
+	return 0;
+}
+
+int string_list_contains(struct string_list *sl, char *str)
+{
+	struct string_list *entry;
+
+	list_for_each_entry(entry, &sl->list, list) {
+		if (!strcmp(str, entry->str))
+			return 1;
+	}
 
 	return 0;
 }

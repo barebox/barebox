@@ -57,7 +57,7 @@ static int nand_read_page_swecc(struct mtd_info *mtd, struct nand_chip *chip,
  * @chip:	nand chip info structure
  * @buf:	data buffer
  */
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 static void nand_write_page_swecc(struct mtd_info *mtd, struct nand_chip *chip,
 				  const uint8_t *buf)
 {
@@ -85,7 +85,7 @@ void nand_init_ecc_soft(struct nand_chip *chip)
 	chip->ecc.correct = nand_correct_data;
 	chip->ecc.read_page = nand_read_page_swecc;
 	chip->ecc.read_oob = nand_read_oob_std;
-#ifdef CONFIG_NAND_WRITE
+#ifdef CONFIG_MTD_WRITE
 	chip->ecc.write_page = nand_write_page_swecc;
 	chip->ecc.write_oob = nand_write_oob_std;
 #endif

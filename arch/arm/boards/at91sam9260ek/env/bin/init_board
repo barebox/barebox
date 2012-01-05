@@ -46,4 +46,5 @@ echo ""
 echo "Start DFU Mode"
 echo ""
 
+led ds5 1
 dfu ${dfu_config} -P ${product_id} -V ${vendor_id}

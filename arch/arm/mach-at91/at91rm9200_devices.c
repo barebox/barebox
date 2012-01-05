@@ -158,12 +158,24 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_SPI_ATMEL)
+static const unsigned spi_standard_cs[4] = { AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5, AT91_PIN_PA6 };
+
+static struct at91_spi_platform_data spi_pdata[] = {
+	[0] = {
+		.chipselect = spi_standard_cs,
+		.num_chipselect = ARRAY_SIZE(spi_standard_cs),
+	},
+};
+
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 {
 	int i;
 	int cs_pin;
 
 	BUG_ON(spi_id > 0);
+
+	if (!pdata)
+		pdata = &spi_pdata[spi_id];
 
 	for (i = 0; i < pdata->num_chipselect; i++) {
 		cs_pin = pdata->chipselect[i];

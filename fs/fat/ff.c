@@ -874,7 +874,7 @@ void fit_lfn (
 /*
  * Create numbered name
  */
-#ifdef CONFIG_FS_FAT_LFN
+#if defined(CONFIG_FS_FAT_LFN) && defined(CONFIG_FS_FAT_WRITE)
 static void gen_numname (
 	BYTE *dst,		/* Pointer to generated SFN */
 	const BYTE *src,	/* Pointer to source SFN to be modified */

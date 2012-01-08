@@ -74,6 +74,10 @@ config LOCALVERSION_AUTO
 config BOARDINFO
 	string
 
+config BANNER
+	bool "display banner"
+	default y
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 

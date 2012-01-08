@@ -420,6 +420,7 @@ config CMD_REGINFO
 config CMD_VERSION
 	tristate
 	default y
+	depends on BANNER
 	prompt "version"
 
 config CMD_HELP

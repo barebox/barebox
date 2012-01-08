@@ -1,4 +1,7 @@
 menu "Library routines"
+config PARAMETER
+	bool
+
 config UNCOMPRESS
 	bool
 	select FILETYPE

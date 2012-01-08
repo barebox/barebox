@@ -311,6 +311,7 @@ config CMD_BOOTM
 	default y
 	select CRC32
 	select UNCOMPRESS
+	select FILETYPE
 	prompt "bootm"
 
 config CMD_BOOTM_SHOW_TYPE

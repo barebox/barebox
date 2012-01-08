@@ -1,6 +1,7 @@
 menu "Library routines"
 config UNCOMPRESS
 	bool
+	select FILETYPE
 
 config ZLIB
 	bool "include gzip uncompression support"

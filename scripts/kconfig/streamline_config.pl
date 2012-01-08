@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# Copywrite 2005-2009 - Steven Rostedt
+# Copyright 2005-2009 - Steven Rostedt
 # Licensed under the terms of the GNU GPL License version 2
 #
 #  It's simple enough to figure out how this works.
@@ -8,7 +8,7 @@
 #
 # What it does?
 #
-#   If you have installed a Linux barebox from a distribution
+#   If you have installed a Linux kernel from a distribution
 #   that turns on way too many modules than you need, and
 #   you only want the modules you use, then this program
 #   is perfect for you.
@@ -18,9 +18,9 @@
 #
 # Howto:
 #
-#  1. Boot up the barebox that you want to stream line the config on.
+#  1. Boot up the kernel that you want to stream line the config on.
 #  2. Change directory to the directory holding the source of the
-#       barebox that you just booted.
+#       kernel that you just booted.
 #  3. Copy the configuraton file to this directory as .config
 #  4. Have all your devices that you need modules for connected and
 #      operational (make sure that their corresponding modules are loaded)
@@ -30,7 +30,7 @@
 #  7. copy the config_strip file to .config
 #  8. Run "make oldconfig"
 #
-#  Now your barebox is ready to be built with only the modules that
+#  Now your kernel is ready to be built with only the modules that
 #  are loaded.
 #
 # Here's what I did with my Debian distribution.
@@ -43,6 +43,7 @@
 #    make oldconfig
 #
 use strict;
+use Getopt::Long;
 
 my $config = ".config";
 
@@ -73,17 +74,17 @@ my @searchconfigs = (
 	    "test" => "scripts/extract-ikconfig",
 	},
 	{
-	    "file" => "/lib/modules/$uname/barebox/barebox/configs.ko",
+	    "file" => "/lib/modules/$uname/kernel/kernel/configs.ko",
 	    "exec" => "scripts/extract-ikconfig",
 	    "test" => "scripts/extract-ikconfig",
 	},
 	{
-	    "file" => "barebox/configs.ko",
+	    "file" => "kernel/configs.ko",
 	    "exec" => "scripts/extract-ikconfig",
 	    "test" => "scripts/extract-ikconfig",
 	},
 	{
-	    "file" => "barebox/configs.o",
+	    "file" => "kernel/configs.o",
 	    "exec" => "scripts/extract-ikconfig",
 	    "test" => "scripts/extract-ikconfig",
 	},
@@ -112,10 +113,17 @@ sub find_config {
 
 find_config;
 
+# Parse options
+my $localmodconfig = 0;
+my $localyesconfig = 0;
+
+GetOptions("localmodconfig" => \$localmodconfig,
+	   "localyesconfig" => \$localyesconfig);
+
 # Get the build source and top level Kconfig file (passed in)
 my $ksource = $ARGV[0];
 my $kconfig = $ARGV[1];
-my $lsmod_file = $ARGV[2];
+my $lsmod_file = $ENV{'LSMOD'};
 
 my @makefiles = `find $ksource -name Makefile 2>/dev/null`;
 chomp @makefiles;
@@ -296,7 +304,11 @@ my %modules;
 
 if (defined($lsmod_file)) {
     if ( ! -f $lsmod_file) {
-	die "$lsmod_file not found";
+	if ( -f $ENV{'objtree'}."/".$lsmod_file) {
+	    $lsmod_file = $ENV{'objtree'}."/".$lsmod_file;
+	} else {
+		die "$lsmod_file not found";
+	}
     }
     if ( -x $lsmod_file) {
 	# the file is executable, run it
@@ -421,7 +433,11 @@ while(<CIN>) {
 
     if (/^(CONFIG.*)=(m|y)/) {
 	if (defined($configs{$1})) {
-	    $setconfigs{$1} = $2;
+	    if ($localyesconfig) {
+	        $setconfigs{$1} = 'y';
+	    } else {
+	        $setconfigs{$1} = $2;
+	    }
 	} elsif ($2 eq "m") {
 	    print "# $1 is not set\n";
 	    next;

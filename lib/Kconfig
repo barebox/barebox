@@ -1,9 +1,14 @@
 menu "Library routines"
+config UNCOMPRESS
+	bool
+
 config ZLIB
 	bool "include gzip uncompression support"
+	select UNCOMPRESS
 
 config BZLIB
 	bool "include bzip2 uncompression support"
+	select UNCOMPRESS
 
 config GENERIC_FIND_NEXT_BIT
 	def_bool n

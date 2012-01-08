@@ -310,6 +310,7 @@ config CMD_BOOTM
 	tristate
 	default y
 	select CRC32
+	select UNCOMPRESS
 	prompt "bootm"
 
 config CMD_BOOTM_SHOW_TYPE

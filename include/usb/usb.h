@@ -187,7 +187,7 @@ struct usb_device {
 struct usb_device_id;
 
 struct usb_driver {
-	char	*name;
+	const char	*name;
 	int     (*probe) (struct usb_device *, const struct usb_device_id *);
 	void    (*disconnect)(struct usb_device *);
 

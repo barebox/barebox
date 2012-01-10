@@ -21,6 +21,9 @@ config BOARDINFO
 	default "Ronetix PM9263" if MACH_PM9263
 	default "Ronetix PM9G45" if MACH_PM9G45
 	default "Aizo dSS11" if MACH_DSS11
+	default "Calao TNY-A9260" if MACH_TNY_A9260
+	default "Calao TNY-A9263" if MACH_TNY_A9263
+	default "Calao TNY-A9G20" if MACH_TNY_A9G20
 
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
@@ -112,6 +115,12 @@ config MACH_AT91SAM9260EK
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
 
+config MACH_TNY_A9260
+	bool "CALAO TNY-A9260"
+	help
+	  Select this if you are using a Calao Systems TNY-A9260.
+	  <http://www.calao-systems.com>
+
 config MACH_USB_A9260
 	bool "CALAO USB-A9260"
 	help
@@ -182,6 +191,12 @@ config MACH_AT91SAM9G20EK
 	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit
 	  that embeds only one SD/MMC slot.
 
+config MACH_TNY_A9G20
+	bool "CALAO TNY-A9G20"
+	help
+	  Select this if you are using a Calao Systems TNY-A9G20.
+	  <http://www.calao-systems.com>
+
 config MACH_USB_A9G20
 	bool "CALAO USB-A9G20"
 	help
@@ -223,6 +238,12 @@ config MACH_PM9263
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
+
+config MACH_TNY_A9263
+	bool "CALAO TNY-A9263"
+	help
+	  Select this if you are using a Calao Systems TNY-A9263.
+	  <http://www.calao-systems.com>
 
 config MACH_USB_A9263
 	bool "CALAO USB-A9263"

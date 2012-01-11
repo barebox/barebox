@@ -47,6 +47,8 @@ char *var_name(struct variable_d *);
 #ifdef CONFIG_ENVIRONMENT_VARIABLES
 const char *getenv(const char *);
 int setenv(const char *, const char *);
+void export_env_ull(const char *name, unsigned long long val);
+unsigned long long getenv_ull(const char *name);
 #else
 static inline char *getenv(const char *var)
 {
@@ -57,10 +59,12 @@ static inline int setenv(const char *var, const char *val)
 {
 	return 0;
 }
+static inline void export_env_ull(const char *name, unsigned long long val) {}
+static inline unsigned long long getenv_ull(const char *name)
+{
+	return 0;
+}
 #endif
-
-void export_env_ull(const char *name, unsigned long long val);
-unsigned long long getenv_ull(const char *name);
 
 int env_pop_context(void);
 int env_push_context(void);

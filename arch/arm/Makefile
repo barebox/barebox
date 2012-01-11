@@ -150,12 +150,13 @@ ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
 endif
 
-barebox.bin.ift: barebox.bin
+MLO: barebox.bin
 	@echo "  IFT    " $@
 	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1
+	$(Q)test -e barebox.bin.ift && mv barebox.bin.ift MLO
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_IMAGE := barebox.bin.ift
+KBUILD_IMAGE := MLO
 endif
 
 all: $(KBUILD_IMAGE)

@@ -49,6 +49,7 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
+#include <sizes.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <mach/silicon.h>
@@ -251,6 +252,10 @@ static int omap3evm_init_devices(void)
 	 * WP is made high and WAIT1 active Low
 	 */
 	gpmc_generic_init(0x10);
+#endif
+#ifdef CONFIG_MCI_OMAP_HSMMC
+	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
+				IORESOURCE_MEM, NULL);
 #endif
 	return 0;
 }

@@ -298,7 +298,7 @@ static int beagle_devices_init(void)
 		add_usb_ehci_device(-1, 0x48064700 + 0x100,
 				    0x48064700 + 0x110, &ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
-#ifdef CONFIG_GPMC
+#ifdef CONFIG_OMAP_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif

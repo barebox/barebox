@@ -246,7 +246,7 @@ mem_initcall(omap3evm_mem_init);
 
 static int omap3evm_init_devices(void)
 {
-#ifdef CONFIG_GPMC
+#ifdef CONFIG_OMAP_GPMC
 	/*
 	 * WP is made high and WAIT1 active Low
 	 */

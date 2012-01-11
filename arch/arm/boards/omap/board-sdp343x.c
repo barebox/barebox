@@ -635,7 +635,7 @@ mem_initcall(sdp3430_mem_init);
 
 static int sdp3430_devices_init(void)
 {
-#ifdef CONFIG_GPMC
+#ifdef CONFIG_OMAP_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif

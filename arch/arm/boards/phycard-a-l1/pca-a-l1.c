@@ -286,7 +286,7 @@ static void pcaal1_setup_net_chip(void)
 static int pcaal1_mem_init(void)
 {
 
-#ifdef CONFIG_GPMC
+#ifdef CONFIG_OMAP_GPMC
 	/*
 	 * WP is made high and WAIT1 active Low
 	 */

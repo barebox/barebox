@@ -178,6 +178,7 @@ config CMD_NANDTEST
 	depends on NAND
 	depends on PARTITION
 	depends on NAND_ECC_HW || NAND_ECC_SOFT
+	select PARTITION_NEED_MTD
 	prompt "nandtest"
 
 endmenu

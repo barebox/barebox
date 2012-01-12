@@ -103,15 +103,18 @@ int cdev_flush(struct cdev *cdev)
 
 static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 {
+	int ret = 0;
 	size_t offset;
 	struct mtd_info_user *user = buf;
+	struct region_info_user *reg = buf;
 
 	switch (request) {
 	case MEMSETBADBLOCK:
 	case MEMGETBADBLOCK:
 		offset = (off_t)buf;
 		offset += cdev->offset;
-		return cdev->ops->ioctl(cdev, request, (void *)offset);
+		ret = cdev->ops->ioctl(cdev, request, (void *)offset);
+		break;
 	case MEMGETINFO:
 		if (cdev->mtd) {
 			user->type	= cdev->mtd->type;
@@ -123,14 +126,38 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 			/* The below fields are obsolete */
 			user->ecctype	= -1;
 			user->eccsize	= 0;
-			return 0;
+			break;
 		}
-		if (!cdev->ops->ioctl)
-			return -EINVAL;
-		return cdev->ops->ioctl(cdev, request, buf);
+		if (!cdev->ops->ioctl) {
+			ret = -EINVAL;
+			break;
+		}
+		ret = cdev->ops->ioctl(cdev, request, buf);
+		break;
+#if (defined(CONFIG_NAND_ECC_HW) || defined(CONFIG_NAND_ECC_SOFT))
+	case ECCGETSTATS:
+		if (!cdev->ops->ioctl) {
+			ret = -EINVAL;
+			break;
+		}
+		ret = cdev->ops->ioctl(cdev, request, buf);
+		break;
+#endif
+#ifdef CONFIG_PARTITION
+	case MEMGETREGIONINFO:
+		if (cdev->mtd) {
+			reg->offset = cdev->offset;
+			reg->erasesize = cdev->mtd->erasesize;
+			reg->numblocks = cdev->size/reg->erasesize;
+			reg->regionindex = cdev->mtd->index;
+		}
+	break;
+#endif
 	default:
-		return -EINVAL;
+		ret = -EINVAL;
 	}
+
+	return ret;
 }
 
 int cdev_ioctl(struct cdev *cdev, int request, void *buf)

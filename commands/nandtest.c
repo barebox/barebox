@@ -349,7 +349,7 @@ err:
 
 /* String for usage of nandtest */
 static const __maybe_unused char cmd_nandtest_help[] =
-"Usage: nand [OPTION] <device>\n"
+"Usage: nandtest [OPTION] <device>\n"
 		"  -t,	Really do a nandtest on device.\n"
 		"  -m,	Mark blocks bad if they appear so.\n"
 		"  -s	<seed>,	Supply random seed.\n"

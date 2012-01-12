@@ -290,21 +290,21 @@ mem_initcall(beagle_mem_init);
 static int beagle_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", -1, NULL, 0x4809C000, SZ_4K,
+	add_generic_device("i2c-omap", -1, NULL, OMAP_I2C1_BASE, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
-		add_usb_ehci_device(-1, 0x48064700 + 0x100,
-				    0x48064700 + 0x110, &ehci_pdata);
+		add_usb_ehci_device(-1, OMAP_EHCI_BASE,
+				    OMAP_EHCI_BASE + 0x10, &ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
-#ifdef CONFIG_GPMC
+#ifdef CONFIG_OMAP_GPMC
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
 	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_HAMMING_CODE_HW_ROMCODE);
 
-	add_generic_device("omap-hsmmc", -1, NULL, OMAP_I2C1_BASE, 0,
+	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 
 	armlinux_set_bootparams((void *)0x80000100);

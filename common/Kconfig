@@ -40,6 +40,9 @@ config BLOCK_WRITE
 config HAVE_NOSHELL
 	bool
 
+config FILETYPE
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -73,6 +76,10 @@ config LOCALVERSION_AUTO
 
 config BOARDINFO
 	string
+
+config BANNER
+	bool "display banner"
+	default y
 
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
@@ -251,6 +258,7 @@ choice
 		bool "hush parser"
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
+		select PARAMETER
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
@@ -259,6 +267,7 @@ choice
 		bool "Simple parser"
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
+		select PARAMETER
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 

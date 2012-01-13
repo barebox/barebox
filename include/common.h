@@ -198,7 +198,11 @@ int run_shell(void);
 int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 
 extern const char version_string[];
+#ifdef CONFIG_BANNER
 void barebox_banner(void);
+#else
+static inline void barebox_banner(void) {}
+#endif
 
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 

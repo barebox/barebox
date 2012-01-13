@@ -311,6 +311,8 @@ config CMD_BOOTM
 	tristate
 	default y
 	select CRC32
+	select UNCOMPRESS
+	select FILETYPE
 	prompt "bootm"
 
 config CMD_BOOTM_SHOW_TYPE
@@ -421,6 +423,7 @@ config CMD_REGINFO
 config CMD_VERSION
 	tristate
 	default y
+	depends on BANNER
 	prompt "version"
 
 config CMD_HELP

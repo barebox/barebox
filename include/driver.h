@@ -105,7 +105,7 @@ struct device_d {
 struct driver_d {
 	/*! The name of this driver. Used to match to
 	 * the corresponding device. */
-	char name[MAX_DRIVER_NAME];
+	const char *name;
 
 	struct list_head list;
 

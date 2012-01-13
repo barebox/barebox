@@ -298,18 +298,7 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 	at91_set_A_periph(AT91_PIN_PA8, 0);
 
 
-	if (mmc_id == 0) {
-		/* CMD */
-		at91_set_A_periph(AT91_PIN_PA7, 1);
-
-		/* DAT0, maybe DAT1..DAT3 */
-		at91_set_A_periph(AT91_PIN_PA6, 1);
-		if (data->bus_width == 4) {
-			at91_set_A_periph(AT91_PIN_PA9, 1);
-			at91_set_A_periph(AT91_PIN_PA10, 1);
-			at91_set_A_periph(AT91_PIN_PA11, 1);
-		}
-	} else if (mmc_id == 1) {
+	if (data->slot_b) {
 		/* CMD */
 		at91_set_B_periph(AT91_PIN_PA1, 1);
 
@@ -319,6 +308,17 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 			at91_set_B_periph(AT91_PIN_PA3, 1);
 			at91_set_B_periph(AT91_PIN_PA4, 1);
 			at91_set_B_periph(AT91_PIN_PA5, 1);
+		}
+	} else {
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA7, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_A_periph(AT91_PIN_PA6, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA9, 1);
+			at91_set_A_periph(AT91_PIN_PA10, 1);
+			at91_set_A_periph(AT91_PIN_PA11, 1);
 		}
 	}
 

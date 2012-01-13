@@ -87,6 +87,7 @@ void at91_register_uart(unsigned id, unsigned pins);
 
 /* Multimedia Card Interface */
 struct atmel_mci_platform_data {
+	unsigned slot_b;
 	unsigned bus_width;
 	unsigned host_caps; /* MCI_MODE_* from mci.h */
 	unsigned detect_pin;

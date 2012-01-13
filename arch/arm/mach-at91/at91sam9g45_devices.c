@@ -264,6 +264,7 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 			}
 		}
 	} else {			/* MCI1 */
+		data->slot_b = 1;
 		start = AT91SAM9G45_BASE_MCI1;
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA31, 0);

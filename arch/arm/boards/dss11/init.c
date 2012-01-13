@@ -110,6 +110,7 @@ static void dss11_phy_reset(void)
 }
 
 static struct atmel_mci_platform_data dss11_mci_data = {
+	.slot_b		= 1,
 	.bus_width	= 4,
 	.host_caps	= MMC_MODE_HS,
 };
@@ -131,7 +132,7 @@ static int dss11_devices_init(void)
 	dss11_add_device_nand();
 	dss11_phy_reset();
 	at91_add_device_eth(&macb_pdata);
-	at91_add_device_mci(1, &dss11_mci_data);
+	at91_add_device_mci(0, &dss11_mci_data);
 	at91_add_device_usbh_ohci(&dss11_usbh_data);
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));

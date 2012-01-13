@@ -36,6 +36,7 @@ struct atmel_mci_host {
 	u32			datasize;
 	struct mci_cmd		*cmd;
 	struct mci_data		*data;
+	unsigned		slot_b;
 };
 
 #define to_mci_host(mci)	container_of(mci, struct atmel_mci_host, mci)
@@ -370,7 +371,7 @@ static void mci_set_ios(struct mci_host *mci, struct device_d *mci_dev,
 		break;
 	}
 	atmel_mci_writel(host, AT91_MCI_SDCR, atmel_mci_readl(host, AT91_MCI_SDCR)
-		| host->hw_dev->id);
+		| host->slot_b);
 
 	if (clock) {
 		atmel_set_clk_rate(host, clock);
@@ -459,6 +460,7 @@ static int mci_probe(struct device_d *hw_dev)
 		host->mci.host_caps |= MMC_MODE_4BIT;
 	if (pd->bus_width == 8)
 		host->mci.host_caps |= MMC_MODE_8BIT;
+	host->slot_b = pd->slot_b;
 
 	host->base = dev_request_mem_region(hw_dev, 0);
 	host->hw_dev = hw_dev;

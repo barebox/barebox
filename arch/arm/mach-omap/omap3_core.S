@@ -13,7 +13,6 @@
  * @li Call architecture initialization function a_init
  *
  * arch_init_lowlevel is enabled if CONFIG_ARCH_HAS_LOWLEVEL_INIT is defined
- * cpy_clk_code is called if CONFIG_OMAP3_COPY_CLOCK_SRAM is defined
  */
 /*
  * (C) Copyright 2006-2008
@@ -61,13 +60,6 @@ next:
 	cmp	r0, r2			/* until source end address [r2]    */
 	ble	next			/* loop until equal */
 
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-	/* No need to copy/exec the clock code - DPLL adjust already done
-	 * in Perip/NAND/oneNAND Boot.
-	 * Put dpll adjust code behind vectors. r1 has address to copy to
-	 */
-	bl	cpy_clk_code
-#endif
 	ldr	r1, SRAM_INTVECT	/* build vect addr */
 	/* Read the interrupt vector base address */
 	mrc p15, #0, r0, c12, c0, #0

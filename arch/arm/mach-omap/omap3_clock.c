@@ -47,10 +47,6 @@
 #include <mach/syslib.h>
 
 /* Following functions are exported from omap3_clock_core.S */
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-/* A.K.A go_to_speed */
-static void (*f_lock_pll) (u32, u32, u32, u32);
-#endif
 /* Helper functions */
 static u32 get_osc_clk_speed(void);
 static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel);
@@ -156,9 +152,6 @@ static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel)
 static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
 	struct dpll_param *dp = get_core_dpll_param_34x(cpu_rev);
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-	int p0, p1, p2, p3;
-#endif
 
 	dp += clk_sel;
 
@@ -202,46 +195,8 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
 		wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_CKGEN), LDELAY);
 	} else if (running_in_flash()) {
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-		f_lock_pll = (void *)(OMAP_SRAM_INTVECT +
-					OMAP_SRAM_INTVECT_COPYSIZE);
-
-		/*
-		 * Jump to small relocated code area in SRAM.
-		 */
-		p0 = readl(CM_REG(CLKEN_PLL));
-		sr32((u32) &p0, 0, 3, PLL_FAST_RELOCK_BYPASS);
-
-		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
-		sr32((u32) &p0, 4, 4, dp->fsel);
-
-		p1 = readl(CM_REG(CLKSEL1_PLL));
-
-		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
-		sr32((u32) &p1, 27, 2, dp->m2);
-
-		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
-		sr32((u32) &p1, 16, 11, dp->m);
-
-		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
-		sr32((u32) &p1, 8, 7, dp->n);
-
-		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
-		sr32((u32) &p1, 6, 1, 0);
-
-		p2 = readl(CM_REG(CLKSEL_CORE));
-		sr32((u32) &p2, 8, 4, CORE_SSI_DIV);
-		sr32((u32) &p2, 4, 2, CORE_FUSB_DIV);
-		sr32((u32) &p2, 2, 2, CORE_L4_DIV);
-		sr32((u32) &p2, 0, 2, CORE_L3_DIV);
-
-		p3 = CM_REG(IDLEST_CKGEN);
-
-		(*f_lock_pll) (p0, p1, p2, p3);
-#else
 		/***Oopps.. Wrong .config!! *****/
 		hang();
-#endif
 	}
 }
 
@@ -370,9 +325,6 @@ static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
 static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 {
 	struct dpll_param *dp = get_core_dpll_param_36x(cpu_rev);
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-	int p0, p1, p2, p3;
-#endif
 
 	dp += clk_sel;
 
@@ -409,46 +361,8 @@ static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 		sr32(CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
 		wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_CKGEN), LDELAY);
 	} else if (running_in_flash()) {
-#ifdef CONFIG_OMAP3_COPY_CLOCK_SRAM
-		f_lock_pll = (void *)(OMAP_SRAM_INTVECT +
-					OMAP_SRAM_INTVECT_COPYSIZE);
-
-		/*
-		 * Jump to small relocated code area in SRAM.
-		 */
-		p0 = readl(CM_REG(CLKEN_PLL));
-		sr32((u32) &p0, 0, 3, PLL_FAST_RELOCK_BYPASS);
-
-		/* FREQSEL (CORE_DPLL_FREQSEL): CM_CLKEN_PLL[4:7] */
-		sr32((u32) &p0, 4, 4, dp->fsel);
-
-		p1 = readl(CM_REG(CLKSEL1_PLL));
-
-		/* M2 (CORE_DPLL_CLKOUT_DIV): CM_CLKSEL1_PLL[27:31] */
-		sr32((u32) &p1, 27, 5, dp->m2);
-
-		/* M (CORE_DPLL_MULT): CM_CLKSEL1_PLL[16:26] */
-		sr32((u32) &p1, 16, 11, dp->m);
-
-		/* N (CORE_DPLL_DIV): CM_CLKSEL1_PLL[8:14] */
-		sr32((u32) &p1, 8, 7, dp->n);
-
-		/* Set source CM_96M_FCLK: CM_CLKSEL1_PLL[6] */
-		sr32((u32) &p1, 6, 1, 0);
-
-		p2 = readl(CM_REG(CLKSEL_CORE));
-		sr32((u32) &p2, 8, 4, CORE_SSI_DIV);
-		sr32((u32) &p2, 4, 2, CORE_FUSB_DIV);
-		sr32((u32) &p2, 2, 2, CORE_L4_DIV);
-		sr32((u32) &p2, 0, 2, CORE_L3_DIV);
-
-		p3 = CM_REG(IDLEST_CKGEN);
-
-		(*f_lock_pll) (p0, p1, p2, p3);
-#else
 		/***Oopps.. Wrong .config!! *****/
 		hang();
-#endif
 	}
 }
 
@@ -557,8 +471,7 @@ static void init_iva_dpll_36x(u32 cpu_rev, u32 clk_sel)
 /**
  * @brief Inits clocks for PRCM
  *
- * This is called from SRAM, or Flash (using temp SRAM stack).
- * if CONFIG_OMAP3_COPY_CLOCK_SRAM is defined, @ref go_to_speed
+ * This is called from SRAM
  *
  * @return void
  */

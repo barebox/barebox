@@ -77,14 +77,6 @@ config OMAP3_CLOCK_CONFIG
 	help
 	  Say Y here if you like to have OMAP3 Clock configuration done.
 
-config OMAP3_COPY_CLOCK_SRAM
-	prompt "SRAM copy of Clock code"
-	bool
-	depends on OMAP3_CLOCK_CONFIG
-	default y
-	help
-	  Say Y here if you like to have initial OMAP3 Clock configuration done from SRAM.
-
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool

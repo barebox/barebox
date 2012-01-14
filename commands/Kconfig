@@ -478,6 +478,7 @@ config CMD_GPIO
 
 config CMD_UNCOMPRESS
 	bool
+	select UNCOMPRESS
 	prompt "uncompress"
 	help
 	  Say yes here to get the uncompress command. uncompress handles

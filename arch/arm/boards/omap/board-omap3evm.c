@@ -59,8 +59,8 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <mach/board.h>
 #include <errno.h>
-#include "board.h"
 
 
 /*
@@ -196,7 +196,7 @@ static void mux_config(void)
  *
  * @return void
  */
-void board_init(void)
+void omap3_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 

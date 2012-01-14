@@ -54,7 +54,7 @@ board_init_lowlevel:
         str     lr,	[sp]    /* stash current link register */
 	mov	ip,	lr	/* save link reg across call */
 	/* Do the pin muxes, sdram init etc..board-xxx.c */
-	bl	board_init
+	bl	omap3_board_init
         ldr     lr,	[sp]    /* restore current link register */
         ldr     ip,	[sp]    /* restore save ip */
 	/* back to arch calling code */

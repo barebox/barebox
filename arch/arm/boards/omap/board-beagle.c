@@ -74,7 +74,7 @@
 #include <linux/err.h>
 #include <usb/ehci.h>
 #include <mach/xload.h>
-#include "board.h"
+#include <mach/board.h>
 
 /******************** Board Boot Time *******************/
 
@@ -221,7 +221,7 @@ static void mux_config(void)
  *
  * @return void
  */
-void board_init(void)
+void omap3_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 

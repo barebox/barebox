@@ -30,6 +30,6 @@
 #define __BOARD_OMAP_H_
 
 /** Generic Board initialization called from platform.S */
-void board_init(void);
+void omap3_board_init(void);
 
 #endif         /* __BOARD_OMAP_H_ */

@@ -1275,6 +1275,7 @@ static int usb_hub_probe(struct usb_device *dev, int ifnum)
 
 int usb_driver_register(struct usb_driver *drv)
 {
+	drv->driver.name = drv->name;
 	drv->driver.bus = &usb_bus_type;
 	return register_driver(&drv->driver);
 }

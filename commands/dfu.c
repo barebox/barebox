@@ -169,6 +169,10 @@ BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
 BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string (" CONFIG_BOARDINFO ")\n")
 BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
 BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
+BAREBOX_CMD_HELP_OPT  ("<description>",
+	"device1(name1)[sr],device2(name2)[sr]\n"
+	"'s' means 'safe mode' (download the complete image before flashing) and\n"
+	"'r' that readback of the firmware is allowed.\n")
 BAREBOX_CMD_HELP_END
 
 /**

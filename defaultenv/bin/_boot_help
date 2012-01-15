@@ -1,0 +1,18 @@
+#!/bin/sh
+
+echo "boot: boot [-m <mode>] [-k <kernel_option>] [-r <rootfs_option>] [-i <ip_mode>]"
+echo ""
+echo "options"
+echo " - kernel        nand, nor, nfs, tftp, disk"
+echo " - rootfs        nand, nor, net, disk"
+echo " - ip            dhcp, none, empty"
+echo ""
+echo "mode option"
+echo "   mode       kernel      rootfs"
+echo "   nand       nand        nand"
+echo "   nor        nor         nor"
+echo "   nfs        nfs         net"
+echo "   tftp       fttp        net"
+echo "   disk       disk        disk"
+echo ""
+echo "default mode are used from the /env/config"

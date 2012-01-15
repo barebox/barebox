@@ -419,25 +419,7 @@ static void watchdog_init(void)
  *
  * @return void
  */
-static void setup_auxcr(void)
-{
-	unsigned long i;
-	volatile unsigned int j;
-	/* Save r0, r12 and restore them after usage */
-	__asm__ __volatile__("mov %0, r12":"=r"(j));
-	__asm__ __volatile__("mov %0, r0":"=r"(i));
-
-	/* GP Device ROM code API usage here */
-	/* r12 = AUXCR Write function and r0 value */
-	__asm__ __volatile__("mov r12, #0x3");
-	__asm__ __volatile__("mrc p15, 0, r0, c1, c0, 1");
-	/* Enabling ASA */
-	__asm__ __volatile__("orr r0, r0, #0x10");
-	/* SMI instruction to call ROM Code API */
-	__asm__ __volatile__(".word 0xE1600070");
-	__asm__ __volatile__("mov r0, %0":"=r"(i));
-	__asm__ __volatile__("mov r12, %0":"=r"(j));
-}
+void setup_auxcr(void);
 
 /**
  * @brief Try to unlock the SRAM for general use

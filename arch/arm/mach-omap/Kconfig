@@ -108,7 +108,6 @@ choice
 
 config MACH_OMAP343xSDP
 	bool "Texas Instrument's SDP343x"
-	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
 	depends on ARCH_OMAP3
@@ -117,7 +116,6 @@ config MACH_OMAP343xSDP
 
 config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
-	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
 	select HAS_OMAP_NAND
@@ -127,7 +125,6 @@ config MACH_BEAGLE
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
-	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
 	select HAS_OMAP_NAND

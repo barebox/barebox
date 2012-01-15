@@ -196,15 +196,19 @@ static void mux_config(void)
  *
  * @return void
  */
-void omap3_board_init(void)
+static int omap3_evm_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 
 	mux_config();
+
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)
 		sdrc_init();
+
+	return 0;
 }
+pure_initcall(omap3_evm_board_init);
 
 /*
  * Run-time initialization(s)

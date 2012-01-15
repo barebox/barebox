@@ -77,13 +77,16 @@ static void mux_config(void);
  *
  * @return void
  */
-void omap3_board_init(void)
+static int sdp343x_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 	mux_config();
 	if (!in_sdram)
 		sdrc_init();
+
+	return 0;
 }
+pure_initcall(sdp343x_board_init);
 
 /**
  * @brief Do the SDRC initialization for 128Meg Infenion DDR for CS0

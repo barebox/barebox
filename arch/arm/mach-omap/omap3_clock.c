@@ -143,6 +143,22 @@ static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel)
 		*sys_clkin_sel = 0;
 }
 
+static struct dpll_param core_dpll_param_34x_es1[] = {
+	{ .m = 0x19F, .n = 0x0E, .fsel = 0x03, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x1B2, .n = 0x10, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x19F, .n = 0x17, .fsel = 0x03, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x1B2, .n = 0x21, .fsel = 0x03, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x19F, .n = 0x2F, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
+static struct dpll_param core_dpll_param_34x_es2[] = {
+	{ .m = 0x0A6, .n = 0x05, .fsel = 0x07, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x14C, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x19F, .n = 0x17, .fsel = 0x03, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x0A6, .n = 0x0C, .fsel = 0x07, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x19F, .n = 0x2F, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize CORE DPLL for OMAP34x
  *
@@ -151,7 +167,11 @@ static void get_sys_clkin_sel(u32 osc_clk, u32 *sys_clkin_sel)
  */
 static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_core_dpll_param_34x(cpu_rev);
+	struct dpll_param *dp;
+	if (cpu_rev == OMAP34XX_ES1)
+		dp = core_dpll_param_34x_es1;
+	else
+		dp = core_dpll_param_34x_es2;
 
 	dp += clk_sel;
 
@@ -200,6 +220,15 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 	}
 }
 
+/* PER DPLL values are same for both ES1 and ES2 */
+static struct dpll_param per_dpll_param_34x[] = {
+	{ .m = 0x0D8, .n = 0x05, .fsel = 0x07, .m2 = 0x09, }, /* 12   MHz */
+	{ .m = 0x1B0, .n = 0x0C, .fsel = 0x03, .m2 = 0x09, }, /* 13   MHz */
+	{ .m = 0x0E1, .n = 0x09, .fsel = 0x07, .m2 = 0x09, }, /* 19.2 MHz */
+	{ .m = 0x0D8, .n = 0x0C, .fsel = 0x07, .m2 = 0x09, }, /* 26   MHz */
+	{ .m = 0x0E1, .n = 0x13, .fsel = 0x07, .m2 = 0x09, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize PER DPLL for OMAP34x
  *
@@ -208,7 +237,7 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_per_dpll_param_34x(cpu_rev);
+	struct dpll_param *dp = per_dpll_param_34x;
 
 	dp += clk_sel;
 
@@ -255,6 +284,22 @@ static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
 	wait_on_value((0x1 << 1), 2, CM_REG(IDLEST_CKGEN), LDELAY);
 }
 
+static struct dpll_param mpu_dpll_param_34x_es1[] = {
+	{ .m = 0x0FE, .n = 0x07, .fsel = 0x05, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x17D, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x179, .n = 0x12, .fsel = 0x04, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x17D, .n = 0x19, .fsel = 0x03, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x1FA, .n = 0x32, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
+static struct dpll_param mpu_dpll_param_34x_es2[] = {
+	{.m = 0x0FA, .n = 0x05, .fsel = 0x07, .m2 = 0x01, }, /* 12   MHz */
+	{.m = 0x1F4, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{.m = 0x271, .n = 0x17, .fsel = 0x03, .m2 = 0x01, }, /* 19.2 MHz */
+	{.m = 0x0FA, .n = 0x0C, .fsel = 0x07, .m2 = 0x01, }, /* 26   MHz */
+	{.m = 0x271, .n = 0x2F, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize MPU DPLL for OMAP34x
  *
@@ -266,7 +311,12 @@ static void init_per_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_mpu_dpll_param_34x(cpu_rev);
+	struct dpll_param *dp;
+
+	if (cpu_rev == OMAP34XX_ES1)
+		dp = mpu_dpll_param_34x_es1;
+	else
+		dp = mpu_dpll_param_34x_es2;
 
 	dp += clk_sel;
 
@@ -283,6 +333,22 @@ static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
 	sr32(CM_REG(CLKEN_PLL_MPU), 4, 4, dp->fsel);
 }
 
+static struct dpll_param iva_dpll_param_34x_es1[] = {
+	{ .m = 	0x07D, .n = 0x05, .fsel = 0x07,	.m2 = 0x01, }, /* 12   MHz */
+	{ .m = 	0x0FA, .n = 0x0C, .fsel = 0x03,	.m2 = 0x01, }, /* 13   MHz */
+	{ .m = 	0x082, .n = 0x09, .fsel = 0x07,	.m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 	0x07D, .n = 0x0C, .fsel = 0x07,	.m2 = 0x01, }, /* 26   MHz */
+	{ .m = 	0x13F, .n = 0x30, .fsel = 0x03,	.m2 = 0x01, }, /* 38.4 MHz */
+};
+
+static struct dpll_param iva_dpll_param_34x_es2[] = {
+	{ .m = 0x0B4, .n = 0x05, .fsel = 0x07, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x168, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x0E1, .n = 0x0B, .fsel = 0x06, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x0B4, .n = 0x0C, .fsel = 0x07, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x0E1, .n = 0x17, .fsel = 0x06, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize IVA DPLL for OMAP34x
  *
@@ -291,7 +357,12 @@ static void init_mpu_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_iva_dpll_param_34x(cpu_rev);
+	struct dpll_param *dp;
+
+	if (cpu_rev == OMAP34XX_ES1)
+		dp = iva_dpll_param_34x_es1;
+	else
+		dp = iva_dpll_param_34x_es2;
 
 	dp += clk_sel;
 
@@ -316,6 +387,15 @@ static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
 	wait_on_value((0x1 << 0), 1, CM_REG(IDLEST_PLL_IVA2), LDELAY);
 }
 
+/* FIXME: All values correspond to 26MHz only */
+static struct dpll_param core_dpll_param_36x[] = {
+	{ .m = 0x0C8, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x0C8, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x0C8, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x0C8, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x0C8, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize CORE DPLL for OMAP36x
  *
@@ -324,7 +404,7 @@ static void init_iva_dpll_34x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_core_dpll_param_36x(cpu_rev);
+	struct dpll_param *dp = core_dpll_param_36x;
 
 	dp += clk_sel;
 
@@ -366,6 +446,15 @@ static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 	}
 }
 
+/* FIXME: All values correspond to 26MHz only */
+static struct dpll_param_per_36x per_dpll_param_36x[] = {
+	{ .m = 0x1B0, .n = 0x0C, .m2 = 9, .m3 = 0x10, .m4 = 9, .m5 = 4,	.m6 = 3, .m2div = 1, },  /* 12   MHz */
+	{ .m = 0x1B0, .n = 0x0C, .m2 = 9, .m3 = 0x10, .m4 = 9, .m5 = 4,	.m6 = 3, .m2div = 1, },  /* 13   MHz */
+	{ .m = 0x1B0, .n = 0x0C, .m2 = 9, .m3 = 0x10, .m4 = 9, .m5 = 4,	.m6 = 3, .m2div = 1, },  /* 19.2 MHz */
+	{ .m = 0x1B0, .n = 0x0C, .m2 = 9, .m3 = 0x10, .m4 = 9, .m5 = 4,	.m6 = 3, .m2div = 1, },  /* 26   MHz */
+	{ .m = 0x1B0, .n = 0x0C, .m2 = 9, .m3 = 0x10, .m4 = 9, .m5 = 4,	.m6 = 3, .m2div = 1, },  /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize PER DPLL for OMAP36x
  *
@@ -374,7 +463,7 @@ static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_per_dpll_36x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param_per_36x *dp = get_per_dpll_param_36x(cpu_rev);
+	struct dpll_param_per_36x *dp = per_dpll_param_36x;
 
 	dp += clk_sel;
 
@@ -410,6 +499,15 @@ static void init_per_dpll_36x(u32 cpu_rev, u32 clk_sel)
 	wait_on_value((0x1 << 1), 2, CM_REG(IDLEST_CKGEN), LDELAY);
 }
 
+/* FIXME: All values correspond to 26MHz only */
+static struct dpll_param mpu_dpll_param_36x[] = {
+	{ .m = 0x12C, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x12C, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x12C, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x12C, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x12C, .n = 0x0C, .fsel = 0x00, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize MPU DPLL for OMAP36x
  *
@@ -418,7 +516,7 @@ static void init_per_dpll_36x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_mpu_dpll_36x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_mpu_dpll_param_36x(cpu_rev);
+	struct dpll_param *dp = mpu_dpll_param_36x;
 
 	dp += clk_sel;
 
@@ -435,6 +533,15 @@ static void init_mpu_dpll_36x(u32 cpu_rev, u32 clk_sel)
 	sr32(CM_REG(CLKEN_PLL_MPU), 4, 4, dp->fsel);
 }
 
+/* FIXME: All values correspond to 26MHz only */
+static struct dpll_param iva_dpll_param_36x[] = {
+	{ .m = 0x00A, .n = 0x00, .fsel = 0x00, .m2 = 0x01, }, /* 12   MHz */
+	{ .m = 0x00A, .n = 0x00, .fsel = 0x00, .m2 = 0x01, }, /* 13   MHz */
+	{ .m = 0x00A, .n = 0x00, .fsel = 0x00, .m2 = 0x01, }, /* 19.2 MHz */
+	{ .m = 0x00A, .n = 0x00, .fsel = 0x00, .m2 = 0x01, }, /* 26   MHz */
+	{ .m = 0x00A, .n = 0x00, .fsel = 0x00, .m2 = 0x01, }, /* 38.4 MHz */
+};
+
 /**
  * @brief Initialize IVA DPLL for OMAP36x
  *
@@ -443,7 +550,7 @@ static void init_mpu_dpll_36x(u32 cpu_rev, u32 clk_sel)
  */
 static void init_iva_dpll_36x(u32 cpu_rev, u32 clk_sel)
 {
-	struct dpll_param *dp = get_iva_dpll_param_36x(cpu_rev);
+	struct dpll_param *dp = iva_dpll_param_36x;
 
 	dp += clk_sel;
 

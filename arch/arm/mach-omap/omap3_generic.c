@@ -484,7 +484,7 @@ static void try_unlock_memory(void)
  *
  * @return void
  */
-void a_init(void)
+void omap3_core_init(void)
 {
 	watchdog_init();
 

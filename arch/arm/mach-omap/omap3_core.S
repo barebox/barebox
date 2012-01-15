@@ -69,16 +69,7 @@ next:
 	orr r0, r0, r1
 	/* Store the new vector address */
 	mcr p15, #0, r0, c12, c0, #0
-	/* Setup a temporary stack so that we can call C functions */
-	ldr	sp,	SRAM_STACK
-        str     ip,	[sp]    /* stash old link register */
-        str     lr,	[sp]    /* stash current link register */
-	mov	ip,	lr	/* save link reg across call */
-	bl      a_init          /* Architecture init */
-        ldr     lr,	[sp]    /* restore current link register */
-        ldr     ip,	[sp]    /* restore save ip */
 
-	/* Invalidate all Dcaches */
 #ifndef CONFIG_CPU_V7_DCACHE_SKIP
 	/* If Arch specific ROM code SMI handling does not exist */
 	mrc	p15, 1, r0, c0, c0, 1	/* read clidr */

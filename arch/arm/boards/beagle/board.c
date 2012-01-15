@@ -224,6 +224,8 @@ static int beagle_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 
+	omap3_core_init();
+
 	mux_config();
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)

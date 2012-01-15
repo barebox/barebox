@@ -30,10 +30,8 @@
 #endif
 
 /* If Architecture specific init functions are present */
-#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 #ifndef __ASSEMBLY__
-void a_init(void);
+void omap3_core_init(void);
 #endif /* __ASSEMBLY__ */
-#endif
 
 #endif /* __ASM_ARCH_OMAP_SILICON_H */

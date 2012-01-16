@@ -374,7 +374,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	nand_chip->ecc.mode = NAND_ECC_SOFT;
 
-	if (pdata->ecc_mode == NAND_ECC_HW) {
+	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
+	    pdata->ecc_mode == NAND_ECC_HW) {
 		host->ecc = dev_request_mem_region(dev, 1);
 
 		if (!host->ecc)
@@ -412,7 +413,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		goto err_scan_ident;
 	}
 
-	if (nand_chip->ecc.mode == NAND_ECC_HW) {
+	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
+	    nand_chip->ecc.mode == NAND_ECC_HW) {
 		/* ECC is calculated for the whole page (1 step) */
 		nand_chip->ecc.size = mtd->writesize;
 

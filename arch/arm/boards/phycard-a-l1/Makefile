@@ -18,5 +18,4 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 # MA 02111-1307 USA
 
-obj-$(CONFIG_MACH_DO_LOWLEVEL_INIT) += lowlevel.o
 obj-y += pca-a-l1.o

@@ -532,6 +532,16 @@ quiet_cmd_barebox_version = GEN     .version
 	  expr 0$$(cat .old_version) + 1 >.version;	\
 	fi;						\
 
+# Check size of a file
+quiet_cmd_check_file_size = CHKSIZE $@
+      cmd_check_file_size = set -e;					\
+	size=`stat -c%s $@`;						\
+	max_size=`printf "%d" $2`;					\
+	if [ $$size -gt $$max_size ] ;					\
+	then								\
+		echo "$@ size $$size > of the maximum size $$max_size";	\
+		exit 1 ;						\
+	fi;
 
 # Generate System.map
 quiet_cmd_sysmap = SYSMAP
@@ -659,6 +669,7 @@ OBJCOPYFLAGS_barebox.bin = -O binary
 
 barebox.bin: barebox FORCE
 	$(call if_changed,objcopy)
+	$(call cmd,check_file_size,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
 ifdef CONFIG_X86
 barebox.S: barebox

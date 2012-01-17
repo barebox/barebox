@@ -104,6 +104,13 @@ config TEXT_BASE
 	help
 	  The Address barebox gets linked at.
 
+config BAREBOX_MAX_IMAGE_SIZE
+	prompt "Maximum size of barebox"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of barebox
+
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
 

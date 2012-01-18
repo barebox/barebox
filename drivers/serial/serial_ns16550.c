@@ -139,6 +139,8 @@ static unsigned int ns16550_calc_divisor(struct console_device *cdev,
 static void ns16550_serial_init_port(struct console_device *cdev)
 {
 	unsigned int baud_divisor;
+	struct NS16550_plat *plat = (struct NS16550_plat *)
+	    cdev->dev->platform_data;
 
 	/* Setup the serial port with the defaults first */
 	baud_divisor = ns16550_calc_divisor(cdev, CONFIG_BAUDRATE);
@@ -153,7 +155,12 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
 	ns16550_write(cdev, LCRVAL, lcr);
 	ns16550_write(cdev, MCRVAL, mcr);
-	ns16550_write(cdev, FCRVAL, fcr);
+
+	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
+		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
+	else
+		ns16550_write(cdev, FCRVAL, fcr);
+
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	ns16550_write(cdev, 0x00,  mdr1);
 #endif
@@ -211,6 +218,8 @@ static int ns16550_tstc(struct console_device *cdev)
 static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 {
 	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
+	struct NS16550_plat *plat = (struct NS16550_plat *)
+	    cdev->dev->platform_data;
 
 	ns16550_write(cdev, 0x00, ier);
 	ns16550_write(cdev, LCR_BKSE, lcr);
@@ -218,7 +227,12 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
 	ns16550_write(cdev, LCRVAL, lcr);
 	ns16550_write(cdev, MCRVAL, mcr);
-	ns16550_write(cdev, FCRVAL, fcr);
+
+	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
+		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
+	else
+		ns16550_write(cdev, FCRVAL, fcr);
+
 	return 0;
 }
 

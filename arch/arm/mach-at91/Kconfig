@@ -83,6 +83,16 @@ config ARCH_AT91SAM9G45
 
 endchoice
 
+config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+	hex
+	default 0x1000 if ARCH_AT91SAM9260
+	default 0x270000 if ARCH_AT91SAM9261
+	default 0x12000 if ARCH_AT91SAM9263
+	default 0x4000 if ARCH_AT91SAM9G20
+	default 0x3000 if ARCH_AT91SAM9G10
+	default 0xF000 if ARCH_AT91SAM9G45
+	default 0xffffffff
+
 # ----------------------------------------------------------
 
 if ARCH_AT91RM9200

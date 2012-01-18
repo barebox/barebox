@@ -140,7 +140,9 @@ static inline unsigned int ns16550_calc_divisor(struct console_device *cdev,
 static void ns16550_serial_init_port(struct console_device *cdev)
 {
 	/* initializing the device for the first time */
+	ns16550_write(cdev, 0x00, lcr); /* select ier reg */
 	ns16550_write(cdev, 0x00, ier);
+
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	ns16550_write(cdev, 0x07, mdr1);	/* Disable */
 #endif

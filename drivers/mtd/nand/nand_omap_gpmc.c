@@ -958,7 +958,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	dev_add_param(pdev, "eccmode", omap_gpmc_eccmode_set, NULL, 0);
 	dev_set_param(pdev, "eccmode", ecc_mode_strings[pdata->ecc_mode]);
-	omap_gpmc_eccmode(oinfo, pdata->ecc_mode);
 
 	if (! IS_ENABLED(CONFIG_PARAMETER))
 		omap_gpmc_eccmode(oinfo, pdata->ecc_mode);

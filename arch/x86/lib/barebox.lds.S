@@ -145,13 +145,16 @@ SECTIONS
 		/* do not align here! It may fails with the LOADADDR! */
 		_stext = .;
 		*(.text_entry*)
+		__bare_init_start = .;
 		*(.text_bare_init*)
+		__bare_init_end = .;
 		*(.text*)
 		. = ALIGN(4);
 		*(.rodata*)
 		. = ALIGN(4);
 		_etext = .;			/* End of text and rodata section */
 	} > barebox
+	BAREBOX_BARE_INIT_SIZE
 
 	.data : AT ( LOADADDR(.text) + SIZEOF(.text) ) {
 		*(.data*)

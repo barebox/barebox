@@ -111,6 +111,15 @@ config BAREBOX_MAX_IMAGE_SIZE
 	help
 	  Define the maximum size of barebox
 
+config BAREBOX_MAX_BARE_INIT_SIZE
+	prompt "Maximum bare_init size"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of bare_init
+	  this will allow your bare_init will fit in SRAM as example
+	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
 

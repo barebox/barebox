@@ -34,9 +34,12 @@ SECTIONS
 		*(.text_entry*)
 		_stext = .;
 		_text = .;
+		__bare_init_start = .;
 		*(.text_bare_init*)
+		__bare_init_end = .;
 		*(.text*)
 	}
+	BAREBOX_BARE_INIT_SIZE
 
 	PRE_IMAGE
 

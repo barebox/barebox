@@ -207,7 +207,6 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 	struct NS16550_plat *plat = (struct NS16550_plat *)
 	    cdev->dev->platform_data;
 
-	ns16550_write(cdev, 0x00, ier);
 	ns16550_write(cdev, LCR_BKSE, lcr);
 	ns16550_write(cdev, baud_divisor & 0xff, dll);
 	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);

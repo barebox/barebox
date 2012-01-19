@@ -735,7 +735,7 @@ static void ipu_fb_enable(struct fb_info *info)
 
 	/* Start the clock */
 	reg = readl(IMX_CCM_BASE + CCM_CGR1);
-	reg |= (3 << 22);
+	reg |= (3 << 18);
 	writel(reg, IMX_CCM_BASE + CCM_CGR1);
 
 	/* ipu_idmac.c::ipu_idmac_init() */

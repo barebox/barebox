@@ -20,6 +20,10 @@ config DRIVER_VIDEO_IMX_IPU
 	  Add support for the IPU framebuffer device found on
 	  i.MX31 and i.MX35 CPUs.
 
+config DRIVER_VIDEO_IMX_IPU_OVERLAY
+	bool "i.MX31/35 framebuffer overlay support"
+	depends on DRIVER_VIDEO_IMX_IPU && (ARCH_IMX35 || ARCH_IMX_31)
+
 config DRIVER_VIDEO_STM
 	bool "i.MX23/28 framebuffer driver"
 	depends on ARCH_MXS

@@ -39,6 +39,7 @@ struct ipu_fb_info {
 	void			(*enable)(int enable);
 
 	struct fb_info		info;
+	struct fb_info		overlay;
 	struct device_d		*dev;
 };
 
@@ -465,10 +466,13 @@ static int sdc_init_panel(struct fb_info *info, enum pixel_fmt pixel_fmt)
 	case IPU_PANEL_SHARP_TFT:
 		reg_write(fbi, 0x00FD0102L, SDC_SHARP_CONF_1);
 		reg_write(fbi, 0x00F500F4L, SDC_SHARP_CONF_2);
-		reg_write(fbi, SDC_COM_SHARP | SDC_COM_TFT_COLOR, SDC_COM_CONF);
+		reg = reg_read(fbi, SDC_COM_CONF);
+		reg_write(fbi, reg | SDC_COM_SHARP | SDC_COM_TFT_COLOR,
+							SDC_COM_CONF);
 		break;
 	case IPU_PANEL_TFT:
-		reg_write(fbi, SDC_COM_TFT_COLOR, SDC_COM_CONF);
+		reg = reg_read(fbi, SDC_COM_CONF) & ~SDC_COM_SHARP;
+		reg_write(fbi, reg | SDC_COM_TFT_COLOR, SDC_COM_CONF);
 		break;
 	default:
 		return -EINVAL;
@@ -607,6 +611,7 @@ static void ipu_init_channel_buffer(struct ipu_fb_info *fbi,
 
 	switch (channel) {
 	case IDMAC_SDC_0:
+	case IDMAC_SDC_1:
 		/* In original code only IPU_PIX_FMT_RGB565 was setting burst */
 		params.pp.npb = 16 - 1;
 		break;
@@ -651,6 +656,7 @@ static int ipu_enable_channel(struct ipu_fb_info *fbi, enum ipu_channel channel)
 
 	switch (channel) {
 	case IDMAC_SDC_0:
+	case IDMAC_SDC_1:
 		ipu_channel_set_priority(fbi, channel, 1);
 		break;
 	default:
@@ -701,17 +707,21 @@ static int idmac_tx_submit(struct ipu_fb_info *fbi, enum ipu_channel channel,
 	return ret;
 }
 
-static void sdc_enable_channel(struct ipu_fb_info *fbi, void *fbmem)
+static void sdc_enable_channel(struct ipu_fb_info *fbi, void *fbmem,
+				enum ipu_channel channel)
 {
-	int ret;
+	int ret = 0;
 	u32 reg;
 
-	ret = idmac_tx_submit(fbi, IDMAC_SDC_0, fbmem);
+	ret = idmac_tx_submit(fbi, channel, fbmem);
 
 	/* mx3fb.c::sdc_fb_init() */
 	if (ret >= 0) {
 		reg = reg_read(fbi, SDC_COM_CONF);
-		reg_write(fbi, reg | SDC_COM_BG_EN, SDC_COM_CONF);
+		if (channel == IDMAC_SDC_1)
+			reg_write(fbi, reg | SDC_COM_FG_EN, SDC_COM_CONF);
+		else
+			reg_write(fbi, reg | SDC_COM_BG_EN, SDC_COM_CONF);
 	}
 
 	/*
@@ -743,13 +753,11 @@ static void ipu_fb_enable(struct fb_info *info)
 	/* Service request counter to maximum - shouldn't be needed */
 	reg_write(fbi, 0x00000070, IDMAC_CONF);
 
-
 	/* ipu_idmac.c::ipu_init_channel() */
 
 	/* Enable IPU sub modules */
 	reg = reg_read(fbi, IPU_CONF) | IPU_CONF_SDC_EN | IPU_CONF_DI_EN;
 	reg_write(fbi, reg, IPU_CONF);
-
 
 	/* mx3fb.c::init_fb_chan() */
 
@@ -771,12 +779,11 @@ static void ipu_fb_enable(struct fb_info *info)
 	reg = reg_read(fbi, SDC_COM_CONF);
 	reg_write(fbi, reg | SDC_COM_GLB_A, SDC_COM_CONF);
 
-
 	/* mx3fb.c::sdc_set_color_key() */
 
 	/* Disable colour-keying for background */
 	reg = reg_read(fbi, SDC_COM_CONF) &
-		~(SDC_COM_GWSEL | SDC_COM_KEY_COLOR_G);
+		~(SDC_COM_KEY_COLOR_G);
 	reg_write(fbi, reg, SDC_COM_CONF);
 
 	sdc_init_panel(info, IPU_PIX_FMT_RGB666);
@@ -784,7 +791,7 @@ static void ipu_fb_enable(struct fb_info *info)
 	reg_write(fbi, (mode->left_margin << 16) | mode->upper_margin,
 			SDC_BG_POS);
 
-	sdc_enable_channel(fbi, info->screen_base);
+	sdc_enable_channel(fbi, info->screen_base, IDMAC_SDC_0);
 
 	/*
 	 * Linux driver calls sdc_set_brightness() here again,
@@ -809,6 +816,16 @@ static void ipu_fb_disable(struct fb_info *info)
 
 static int ipu_fb_activate_var(struct fb_info *info)
 {
+#ifdef CONFIG_DRIVER_VIDEO_IMX_IPU_OVERLAY
+	struct ipu_fb_info *fbi = info->priv;
+	struct fb_info *overlay = &fbi->overlay;
+
+	/* overlay also needs to know the new values */
+	overlay->mode = info->mode;
+	overlay->xres = info->xres;
+	overlay->yres = info->yres;
+#endif
+
 	return 0;
 }
 
@@ -851,12 +868,121 @@ static void imxfb_init_info(struct fb_info *info, struct fb_videomode *mode,
 	info->transp = rgb->transp;
 }
 
+#ifdef CONFIG_DRIVER_VIDEO_IMX_IPU_OVERLAY
+
+static void ipu_fb_overlay_enable_controller(struct fb_info *overlay)
+{
+	struct ipu_fb_info *fbi = overlay->priv;
+	struct fb_videomode *mode = overlay->mode;
+	int reg;
+
+	sdc_init_panel(overlay, IPU_PIX_FMT_RGB666);
+
+	reg_write(fbi, (mode->left_margin << 16) | mode->upper_margin,
+							SDC_FG_POS);
+
+	reg = reg_read(fbi, SDC_COM_CONF);
+	reg_write(fbi, reg | SDC_COM_GWSEL, SDC_COM_CONF);
+
+	if (fbi->enable)
+		fbi->enable(1);
+
+	sdc_enable_channel(fbi, overlay->screen_base, IDMAC_SDC_1);
+}
+
+static void ipu_fb_overlay_disable_controller(struct fb_info *overlay)
+{
+	struct ipu_fb_info *fbi = overlay->priv;
+	u32 reg;
+
+	if (fbi->enable)
+		fbi->enable(0);
+
+	/* Disable foreground and set graphic window to background */
+	reg = reg_read(fbi, SDC_COM_CONF);
+	reg &= ~(SDC_COM_FG_EN | SDC_COM_GWSEL);
+	reg_write(fbi, reg, SDC_COM_CONF);
+}
+
+static int ipu_fb_overlay_setcolreg(u_int regno, u_int red, u_int green,
+		u_int blue, u_int trans, struct fb_info *info)
+{
+	return 0;
+}
+
+static struct fb_ops ipu_fb_overlay_ops = {
+	.fb_setcolreg	= ipu_fb_overlay_setcolreg,
+	.fb_enable	= ipu_fb_overlay_enable_controller,
+	.fb_disable	= ipu_fb_overlay_disable_controller,
+};
+
+static int sdc_alpha_set(struct device_d *dev, struct param_d *param,
+			const char *val)
+{
+	struct fb_info *info = dev->priv;
+	struct ipu_fb_info *fbi = info->priv;
+	int alpha;
+	char alphastr[16];
+	unsigned int tmp;
+
+	if (!val)
+		return dev_param_set_generic(dev, param, NULL);
+
+	alpha = simple_strtoul(val, NULL, 0);
+	alpha &= 0xff;
+
+	tmp = reg_read(fbi, SDC_GW_CTRL) & 0x00FFFFFFL;
+	reg_write(fbi, tmp | ((u32) alpha << 24), SDC_GW_CTRL);
+
+	sprintf(alphastr, "%d", alpha);
+
+	dev_param_set_generic(dev, param, alphastr);
+
+	return 0;
+}
+
+static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
+{
+	struct fb_info *overlay;
+	const struct imx_ipu_fb_platform_data *pdata = fbi->dev->platform_data;
+	int ret;
+
+	overlay = &fbi->overlay;
+	overlay->priv = fbi;
+	overlay->fbops = &ipu_fb_overlay_ops;
+
+	imxfb_init_info(overlay, pdata->mode, pdata->bpp);
+
+	if (fb)
+		overlay->screen_base = fb;
+	else
+		overlay->screen_base = xzalloc(overlay->xres * overlay->yres *
+				(overlay->bits_per_pixel >> 3));
+
+	if (!overlay->screen_base)
+		return -ENOMEM;
+
+	sdc_enable_channel(fbi, overlay->screen_base, IDMAC_SDC_1);
+
+	ret = register_framebuffer(&fbi->overlay);
+	if (ret < 0) {
+		dev_err(fbi->dev, "failed to register framebuffer\n");
+		return ret;
+	}
+
+	dev_add_param(&overlay->dev, "alpha", sdc_alpha_set, NULL, 0);
+	dev_set_param(&overlay->dev, "alpha", "0");
+	return 0;
+}
+
+#endif
+
 static int imxfb_probe(struct device_d *dev)
 {
 	struct ipu_fb_info *fbi;
 	struct fb_info *info;
 	const struct imx_ipu_fb_platform_data *pdata = dev->platform_data;
-	int ret;
+	int ret = 0;
 
 	if (!pdata)
 		return -ENODEV;
@@ -888,7 +1014,7 @@ static int imxfb_probe(struct device_d *dev)
 			return -ENOMEM;
 	}
 
-	sdc_enable_channel(fbi, info->screen_base);
+	sdc_enable_channel(fbi, info->screen_base, IDMAC_SDC_0);
 
 	ret = register_framebuffer(&fbi->info);
 	if (ret < 0) {
@@ -896,7 +1022,10 @@ static int imxfb_probe(struct device_d *dev)
 		return ret;
 	}
 
-	return 0;
+#ifdef CONFIG_DRIVER_VIDEO_IMX_IPU_OVERLAY
+	ret = sdc_fb_register_overlay(fbi, pdata->framebuffer_ovl);
+#endif
+	return ret;
 }
 
 static void imxfb_remove(struct device_d *dev)

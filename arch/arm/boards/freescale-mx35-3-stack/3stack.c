@@ -100,6 +100,7 @@ static struct fb_videomode CTP_CLAA070LC0ACW = {
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &CTP_CLAA070LC0ACW,
+	.num_modes	= 1,
 	.bpp		= 16,
 };
 

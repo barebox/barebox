@@ -91,6 +91,7 @@ static void eukrea_cpuimx35_enable_display(int enable)
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &imxfb_mode,
+	.num_modes	= 1,
 	.bpp		= 16,
 	.enable		= eukrea_cpuimx35_enable_display,
 };

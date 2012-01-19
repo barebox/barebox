@@ -92,6 +92,7 @@ static void cupid_fb_enable(int enable)
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &guf_cupid_fb_mode,
+	.num_modes	= 1,
 	.bpp		= 16,
 	.enable		= cupid_fb_enable,
 };

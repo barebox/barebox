@@ -29,6 +29,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
+#include <sizes.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
@@ -94,14 +95,15 @@ static struct fb_videomode pcm043_fb_mode[] = {
 };
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
-	.mode		= pcm043_fb_mode,
-	.num_modes	= ARRAY_SIZE(pcm043_fb_mode),
-	.bpp		= 16,
+	.mode			= pcm043_fb_mode,
+	.num_modes		= ARRAY_SIZE(pcm043_fb_mode),
+	.framebuffer_ovl	= (void *) (IMX_SDRAM_CS0 + SZ_128M - SZ_1M),
+	.bpp			= 16,
 };
 
 static int pcm043_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SZ_128M);
 
 	return 0;
 }

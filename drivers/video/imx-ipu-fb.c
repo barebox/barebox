@@ -807,9 +807,15 @@ static void ipu_fb_disable(struct fb_info *info)
 	reg_write(fbi, reg, SDC_COM_CONF);
 }
 
+static int ipu_fb_activate_var(struct fb_info *info)
+{
+	return 0;
+}
+
 static struct fb_ops imxfb_ops = {
 	.fb_enable = ipu_fb_enable,
 	.fb_disable = ipu_fb_disable,
+	.fb_activate_var = ipu_fb_activate_var,
 };
 
 static void imxfb_init_info(struct fb_info *info, struct fb_videomode *mode,
@@ -860,9 +866,11 @@ static int imxfb_probe(struct device_d *dev)
 
 	fbi->regs = dev_request_mem_region(dev, 0);
 	fbi->dev = dev;
+	fbi->enable = pdata->enable;
 	info->priv = fbi;
 	info->fbops = &imxfb_ops;
-	fbi->enable = pdata->enable;
+	info->num_modes = pdata->num_modes;
+	info->mode_list = pdata->mode;
 
 	imxfb_init_info(info, pdata->mode, pdata->bpp);
 

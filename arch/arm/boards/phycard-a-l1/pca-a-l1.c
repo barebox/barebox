@@ -228,6 +228,8 @@ void omap3_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 
+	omap3_core_init();
+
 	pcaal1_mux_config();
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)

@@ -1473,6 +1473,14 @@ static struct pxa_udc memory = {
 	}
 };
 
+static int pxa27x_udc_poller(struct poller_struct *poller)
+{
+	return usb_gadget_poll();
+}
+static struct poller_struct poller = {
+	.func		= pxa27x_udc_poller
+};
+
 static int __init pxa_udc_probe(struct device_d *dev)
 {
 	struct pxa_udc *udc = &memory;
@@ -1496,6 +1504,8 @@ static int __init pxa_udc_probe(struct device_d *dev)
 	the_controller = udc;
 	udc_init_data(udc);
 	pxa_eps_setup(udc);
+	poller_register(&poller);
+
 	return 0;
 }
 
@@ -1506,18 +1516,9 @@ static struct driver_d udc_driver = {
 	.probe		= pxa_udc_probe,
 };
 
-static int pxa27x_udc_poller(struct poller_struct *poller)
-{
-	return usb_gadget_poll();
-}
-static struct poller_struct poller = {
-	.func		= pxa27x_udc_poller
-};
-
 static int __init pxa27x_udc_init(void)
 {
 	register_driver(&udc_driver);
-	poller_register(&poller);
 	return 0;
 }
 

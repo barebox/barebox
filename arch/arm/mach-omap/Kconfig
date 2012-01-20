@@ -150,7 +150,6 @@ config MACH_PCM049
 
 config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
-	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
 	  help

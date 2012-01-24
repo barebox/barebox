@@ -40,10 +40,10 @@ autoboot_timeout=3
 
 bootargs="console=ttymxc0,115200"
 
-nor_parts="256k(barebox)ro,512k(bareboxenv),2M(kernel),-(root)"
+nor_parts="256k(barebox)ro,512k(bareboxenv),4M(kernel),-(root)"
 rootfs_mtdblock_nor=3
 
-nand_parts="256k(barebox)ro,512k(bareboxenv),2M(kernel),-(root)"
+nand_parts="256k(barebox)ro,512k(bareboxenv),4M(kernel),-(root)"
 rootfs_mtdblock_nand=7
 nand_device=mxc_nand
 

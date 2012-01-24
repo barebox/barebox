@@ -302,10 +302,8 @@ static int fec_init(struct eth_device *dev)
 
 	if (fec->xcv_type == RMII) {
 		if (cpu_is_mx28()) {
-			rcntl |= FEC_R_CNTRL_RMII_MODE;
-				/* the linux driver add these bits, why not we? */
-				/* | FEC_R_CNTRL_FCE | */
-				/* FEC_R_CNTRL_NO_LGTH_CHECK */
+			rcntl |= FEC_R_CNTRL_RMII_MODE | FEC_R_CNTRL_FCE |
+				FEC_R_CNTRL_NO_LGTH_CHECK;
 		} else {
 			/* disable the gasket and wait */
 			writel(0, fec->regs + FEC_MIIGSK_ENR);

@@ -373,6 +373,17 @@ static int fec_open(struct eth_device *edev)
 		ret = miidev_wait_aneg(&fec->miidev);
 		if (ret)
 			return ret;
+
+		ret = miidev_get_status(&fec->miidev);
+		if (ret < 0)
+			return ret;
+
+		if (ret & MIIDEV_STATUS_IS_10MBIT) {
+			u32 rcntl = readl(fec->regs + FEC_R_CNTRL);
+			rcntl |= FEC_R_CNTRL_RMII_10T;
+			writel(rcntl, fec->regs + FEC_R_CNTRL);
+		}
+
 		miidev_print_status(&fec->miidev);
 	}
 

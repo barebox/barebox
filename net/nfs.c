@@ -124,7 +124,7 @@ struct rpc_t {
 	} u;
 };
 
-#define NFS_TIMEOUT 1
+#define NFS_TIMEOUT 15
 
 static unsigned long rpc_id = 0;
 static int nfs_offset = -1;

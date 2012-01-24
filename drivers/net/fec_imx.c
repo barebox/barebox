@@ -22,21 +22,21 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <miidev.h>
 #include <driver.h>
 #include <miidev.h>
 #include <fec.h>
+#include <io.h>
+#include <clock.h>
+#include <xfuncs.h>
 
 #include <asm/mmu.h>
-#include <io.h>
+
 #include <mach/generic.h>
 #include <mach/imx-regs.h>
-#include <clock.h>
 #include <mach/clock.h>
 #ifndef CONFIG_ARCH_MXS
 # include <mach/iim.h>
 #endif
-#include <xfuncs.h>
 
 #include "fec_imx.h"
 

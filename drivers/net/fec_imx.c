@@ -274,6 +274,7 @@ static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 static int fec_init(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
+	u32 rcntl;
 
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
@@ -288,17 +289,9 @@ static int fec_init(struct eth_device *dev)
 	/*
 	 * Set FEC-Lite receive control register(R_CNTRL):
 	 */
-	if (fec->xcv_type == SEVENWIRE) {
-		/*
-		 * Frame length=1518; 7-wire mode
-		 */
-		writel(FEC_R_CNTRL_MAX_FL(1518), fec->regs + FEC_R_CNTRL);
-	} else {
-		/*
-		 * Frame length=1518; MII mode;
-		 */
-		writel(FEC_R_CNTRL_MAX_FL(1518) | FEC_R_CNTRL_MII_MODE,
-			fec->regs + FEC_R_CNTRL);
+	rcntl = FEC_R_CNTRL_MAX_FL(1518);
+	if (fec->xcv_type != SEVENWIRE) {
+		rcntl |= FEC_R_CNTRL_MII_MODE;
 		/*
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
@@ -309,13 +302,10 @@ static int fec_init(struct eth_device *dev)
 
 	if (fec->xcv_type == RMII) {
 		if (cpu_is_mx28()) {
-			/* just another way to enable RMII */
-			uint32_t reg = readl(fec->regs + FEC_R_CNTRL);
-			writel(reg | FEC_R_CNTRL_RMII_MODE
+			rcntl |= FEC_R_CNTRL_RMII_MODE;
 				/* the linux driver add these bits, why not we? */
 				/* | FEC_R_CNTRL_FCE | */
-				/* FEC_R_CNTRL_NO_LGTH_CHECK */,
-				fec->regs + FEC_R_CNTRL);
+				/* FEC_R_CNTRL_NO_LGTH_CHECK */
 		} else {
 			/* disable the gasket and wait */
 			writel(0, fec->regs + FEC_MIIGSK_ENR);
@@ -329,6 +319,7 @@ static int fec_init(struct eth_device *dev)
 			writel(FEC_MIIGSK_ENR_EN, fec->regs + FEC_MIIGSK_ENR);
 		}
 	}
+	writel(rcntl, fec->regs + FEC_R_CNTRL);
 
 	/*
 	 * Set Opcode/Pause Duration Register

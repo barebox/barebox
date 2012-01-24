@@ -63,7 +63,7 @@ else
 	exit 1
 fi
 
-if [ x${mode} != xtftp -a x${mode} != xxmodem ] ; then
+if [ x${mode} != xtftp -a x${mode} != xxmodem -a x${mode} != xnfs ]; then
 	echo "unsupported mode ${mode}."
 	. /env/bin/_update_help
 	exit 1

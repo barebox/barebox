@@ -10,7 +10,7 @@ if [ ! -e "$part" ]; then
 	exit 1
 fi
 
-if [ x$mode = xtftp ]; then
+if [ x$mode = xtftp -o x$mode = xnfs ]; then
 	if [ x$ip = xdhcp ]; then
 		dhcp
 	fi
@@ -20,6 +20,7 @@ if [ x$mode = xtftp ]; then
 		echo "Server did not reply! Update aborted."
 		exit 1
 	fi
+	load=$mode
 fi
 
 if [ x$mode = xxmodem ]; then
@@ -28,6 +29,7 @@ if [ x$mode = xxmodem ]; then
 		echo "loadb failed or cancelled! Update aborted."
 		exit 1
 	fi
+	load="cp -v"
 fi
 
 unprotect $part
@@ -40,11 +42,6 @@ erase $part || exit 1
 echo
 echo "flashing $image to $part"
 echo
-
-if [ x$mode = xtftp ]; then
-	tftp $image $part || exit 1
-else
-	cp -v $image $part || exit 1
-fi
+$load $image $part || exit 1
 
 protect $part

@@ -100,44 +100,63 @@ int miidev_wait_aneg(struct mii_device *mdev)
 	return 0;
 }
 
+int miidev_get_status(struct mii_device *mdev)
+{
+	int ret, status;
+
+	ret = mii_read(mdev, mdev->address, MII_BMSR);
+	if (ret < 0)
+		goto err_out;
+
+	status = ret & BMSR_LSTATUS ? MIIDEV_STATUS_IS_UP : 0;
+
+	ret = mii_read(mdev, mdev->address, MII_BMCR);
+	if (ret < 0)
+		goto err_out;
+
+	if (ret & BMCR_ANENABLE) {
+		ret = mii_read(mdev, mdev->address, MII_LPA);
+		if (ret < 0)
+			goto err_out;
+
+		status |= ret & LPA_DUPLEX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
+		status |= ret & LPA_100 ? MIIDEV_STATUS_IS_100MBIT :
+				MIIDEV_STATUS_IS_10MBIT;
+	} else {
+		status |= ret & BMCR_FULLDPLX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
+		status |= ret & BMCR_SPEED100 ? MIIDEV_STATUS_IS_100MBIT :
+			MIIDEV_STATUS_IS_10MBIT;
+	}
+
+	return status;
+err_out:
+	printf("%s: failed to read (%d)\n", mdev->cdev.name, ret);
+	return ret;
+}
+
 int miidev_print_status(struct mii_device *mdev)
 {
-	int bmsr, bmcr, lpa;
 	char *duplex;
-	int speed;
+	int speed, status;
 
 	if (mdev->flags & MIIDEV_FORCE_LINK) {
 		printf("Forcing link present...\n");
 		return 0;
 	}
 
-	bmsr = mii_read(mdev, mdev->address, MII_BMSR);
-	if (bmsr < 0)
-		goto err_out;
-	bmcr = mii_read(mdev, mdev->address, MII_BMCR);
-	if (bmcr < 0)
-		goto err_out;
-	lpa = mii_read(mdev, mdev->address, MII_LPA);
-	if (lpa < 0)
-		goto err_out;
+	status = miidev_get_status(mdev);
+	if (status < 0)
+		return status;
+
+	duplex = status & MIIDEV_STATUS_IS_FULL_DUPLEX ? "Full" : "Half";
+	speed = status & MIIDEV_STATUS_IS_100MBIT ? 100 : 10;
+
 
 	printf("%s: Link is %s", mdev->cdev.name,
-			bmsr & BMSR_LSTATUS ? "up" : "down");
-
-	if (bmcr & BMCR_ANENABLE) {
-		duplex = lpa & LPA_DUPLEX ? "Full" : "Half";
-		speed = lpa & LPA_100 ? 100 : 10;
-	} else {
-		duplex = bmcr & BMCR_FULLDPLX ? "Full" : "Half";
-		speed = bmcr & BMCR_SPEED100 ? 100 : 10;
-	}
-
+			status & MIIDEV_STATUS_IS_UP ? "up" : "down");
 	printf(" - %d/%s\n", speed, duplex);
 
 	return 0;
-err_out:
-	printf("%s: failed to read\n", mdev->cdev.name);
-	return -1;
 }
 
 static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)

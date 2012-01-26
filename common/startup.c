@@ -124,10 +124,7 @@ void start_barebox (void)
 		PUTS_LL("<<");
 		PUTHEX_LL(*initcall);
 		result = (*initcall)();
-		PUTC_LL('>');
-		if (result)
-			hang();
-		PUTS_LL(">\n");
+		PUTS_LL(">>\n");
 	}
 
 	PUTS_LL("initcalls done\n");

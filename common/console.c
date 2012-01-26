@@ -40,8 +40,9 @@
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
 
-#define CONSOLE_UNINITIALIZED	0
-#define CONSOLE_INIT_FULL	1
+#define CONSOLE_UNINITIALIZED		0
+#define CONSOLE_INITIALIZED_BUFFER	1
+#define CONSOLE_INIT_FULL		2
 
 static int initialized = 0;
 
@@ -109,23 +110,34 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
-static struct kfifo *console_input_buffer;
-static struct kfifo *console_output_buffer;
+#define CONSOLE_BUFFER_SIZE	1024
 
-static int getc_buffer_flush(void)
+static char console_input_buffer[CONSOLE_BUFFER_SIZE];
+static char console_output_buffer[CONSOLE_BUFFER_SIZE];
+
+static struct kfifo __console_input_fifo;
+static struct kfifo __console_output_fifo;
+static struct kfifo *console_input_fifo = &__console_input_fifo;
+static struct kfifo *console_output_fifo = &__console_output_fifo;
+
+static void console_init_early(void)
 {
-	console_input_buffer = kfifo_alloc(1024);
-	console_output_buffer = kfifo_alloc(1024);
-	return 0;
-}
+	kfifo_init(console_input_fifo, console_input_buffer,
+			CONSOLE_BUFFER_SIZE);
+	kfifo_init(console_output_fifo, console_output_buffer,
+			CONSOLE_BUFFER_SIZE);
 
-postcore_initcall(getc_buffer_flush);
+	initialized = CONSOLE_INITIALIZED_BUFFER;
+}
 
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
 	int first = 0;
 	char ch;
+
+	if (initialized == CONSOLE_UNINITIALIZED)
+		console_init_early();
 
 	dev->id = -1;
 	strcpy(dev->name, "cs");
@@ -154,8 +166,7 @@ int console_register(struct console_device *newcdev)
 
 	list_add_tail(&newcdev->list, &console_list);
 
-
-	while (kfifo_getc(console_output_buffer, &ch) == 0)
+	while (kfifo_getc(console_output_fifo, &ch) == 0)
 		console_putc(CONSOLE_STDOUT, ch);
 	if (first)
 		barebox_banner();
@@ -226,16 +237,16 @@ int getc(void)
 	start = get_time_ns();
 	while (1) {
 		if (tstc_raw()) {
-			kfifo_putc(console_input_buffer, getc_raw());
+			kfifo_putc(console_input_fifo, getc_raw());
 
 			start = get_time_ns();
 		}
 		if (is_timeout(start, 100 * USECOND) &&
-				kfifo_len(console_input_buffer))
+				kfifo_len(console_input_fifo))
 			break;
 	}
 
-	kfifo_getc(console_input_buffer, &ch);
+	kfifo_getc(console_input_fifo, &ch);
 	return ch;
 }
 EXPORT_SYMBOL(getc);
@@ -252,7 +263,7 @@ EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
-	return kfifo_len(console_input_buffer) || tstc_raw();
+	return kfifo_len(console_input_fifo) || tstc_raw();
 }
 EXPORT_SYMBOL(tstc);
 
@@ -263,7 +274,11 @@ void console_putc(unsigned int ch, char c)
 
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
-		kfifo_putc(console_output_buffer, c);
+		console_init_early();
+		/* fall through */
+
+	case CONSOLE_INITIALIZED_BUFFER:
+		kfifo_putc(console_output_fifo, c);
 		return;
 
 	case CONSOLE_INIT_FULL:

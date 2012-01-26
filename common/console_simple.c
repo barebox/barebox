@@ -155,13 +155,15 @@ EXPORT_SYMBOL(ctrlc);
 
 int console_register(struct console_device *newcdev)
 {
-	if (!console) {
-		console = newcdev;
-		console_list.prev = console_list.next = &newcdev->list;
-		newcdev->list.prev = newcdev->list.next = &console_list;
+	if (console)
+		return -EBUSY;
 
-		barebox_banner();
-	}
+	console = newcdev;
+	console_list.prev = console_list.next = &newcdev->list;
+	newcdev->list.prev = newcdev->list.next = &console_list;
+
+	barebox_banner();
+
 	return 0;
 }
 

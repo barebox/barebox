@@ -191,8 +191,9 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	}
 
 	if (mtdraw->write_fill == bsz) {
-		ret = mtdraw_blkwrite(mtd, mtdraw->writebuf, mtdraw->write_ofs);
-		retlen += ret;
+		numpage = mtdraw->write_ofs / (mtd->writesize + mtd->oobsize);
+		ret = mtdraw_blkwrite(mtd, mtdraw->writebuf,
+				      mtd->writesize * numpage);
 		mtdraw->write_fill = 0;
 	}
 
@@ -208,6 +209,7 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	if (ret >= 0 && count) {
 		mtdraw->write_ofs = offset - mtdraw->write_fill;
 		mtdraw_fillbuf(mtdraw, buf + retlen, count);
+		retlen += count;
 	}
 
 	if (ret < 0) {

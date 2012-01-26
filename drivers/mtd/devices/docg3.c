@@ -614,7 +614,7 @@ static int doc_block_isbad(struct mtd_info *mtd, loff_t from)
 	return !is_good;
 }
 
-#ifdef MTD_WRITE
+#ifdef CONFIG_MTD_WRITE
 static int doc_guess_autoecc(struct mtd_oob_ops *ops)
 {
 	int autoecc;
@@ -1065,7 +1065,7 @@ static void __init doc_set_driver_info(int chip_id, struct mtd_info *mtd)
 	mtd->read = doc_read;
 	mtd->read_oob = doc_read_oob;
 	mtd->block_isbad = doc_block_isbad;
-#ifdef MTD_WRITE
+#ifdef CONFIG_MTD_WRITE
 	mtd->erase = doc_erase;
 	mtd->write = doc_write;
 	mtd->write_oob = doc_write_oob;

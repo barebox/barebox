@@ -34,19 +34,11 @@
  * Do NOT pass the kfifo to kfifo_free() after use! Simply free the
  * &struct kfifo with free().
  */
-struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size)
+void kfifo_init(struct kfifo *fifo, unsigned char *buffer, unsigned int size)
 {
-	struct kfifo *fifo;
-
-	fifo = malloc(sizeof(struct kfifo));
-	if (!fifo)
-		return NULL;
-
 	fifo->buffer = buffer;
 	fifo->size = size;
 	fifo->in = fifo->out = 0;
-
-	return fifo;
 }
 
 /**
@@ -60,18 +52,21 @@ struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size)
 struct kfifo *kfifo_alloc(unsigned int size)
 {
 	unsigned char *buffer;
-	struct kfifo *ret;
+	struct kfifo *fifo;
 
 	buffer = malloc(size);
 	if (!buffer)
 		return NULL;
 
-	ret = kfifo_init(buffer, size);
-
-	if (!ret)
+	fifo = malloc(sizeof(struct kfifo));
+	if (!fifo) {
 		free(buffer);
+		return NULL;
+	}
 
-	return ret;
+	kfifo_init(fifo, buffer, size);
+
+	return fifo;
 }
 
 /**

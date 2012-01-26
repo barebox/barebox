@@ -27,5 +27,5 @@ extern void __div0(void);
 /* Replacement (=dummy) for GNU/Linux division-by zero handler */
 void __div0 (void)
 {
-	hang();
+	panic("division by zero\n");
 }

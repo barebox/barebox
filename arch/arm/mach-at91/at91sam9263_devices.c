@@ -310,33 +310,58 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 
 	if (mmc_id == 0) {		/* MCI0 */
 		start = AT91SAM9263_BASE_MCI0;
+
 		/* CLK */
 		at91_set_A_periph(AT91_PIN_PA12, 0);
 
-		/* CMD */
-		at91_set_A_periph(AT91_PIN_PA1, 1);
+		if (data->slot_b) {
+			/* CMD */
+			at91_set_A_periph(AT91_PIN_PA16, 1);
 
-		/* DAT0, maybe DAT1..DAT3 and maybe DAT4..DAT7 */
-		at91_set_A_periph(AT91_PIN_PA0, 1);
-		if (data->bus_width == 4) {
-			at91_set_A_periph(AT91_PIN_PA3, 1);
-			at91_set_A_periph(AT91_PIN_PA4, 1);
-			at91_set_A_periph(AT91_PIN_PA5, 1);
+			/* DAT0, maybe DAT1..DAT3 */
+			at91_set_A_periph(AT91_PIN_PA17, 1);
+			if (data->bus_width == 4) {
+				at91_set_A_periph(AT91_PIN_PA18, 1);
+				at91_set_A_periph(AT91_PIN_PA19, 1);
+				at91_set_A_periph(AT91_PIN_PA20, 1);
+			}
+		} else {
+			/* CMD */
+			at91_set_A_periph(AT91_PIN_PA1, 1);
+
+			/* DAT0, maybe DAT1..DAT3 */
+			at91_set_A_periph(AT91_PIN_PA0, 1);
+			if (data->bus_width == 4) {
+				at91_set_A_periph(AT91_PIN_PA3, 1);
+				at91_set_A_periph(AT91_PIN_PA4, 1);
+				at91_set_A_periph(AT91_PIN_PA5, 1);
+			}
 		}
 	} else {			/* MCI1 */
 		start = AT91SAM9263_BASE_MCI1;
-		/* CLK */
-		at91_set_A_periph(AT91_PIN_PA6, 0);
 
-		/* CMD */
-		at91_set_A_periph(AT91_PIN_PA7, 1);
+		if (data->slot_b) {
+			/* CMD */
+			at91_set_A_periph(AT91_PIN_PA21, 1);
 
-		/* DAT0, maybe DAT1..DAT3 */
-		at91_set_A_periph(AT91_PIN_PA8, 1);
-		if (data->bus_width == 4) {
-			at91_set_A_periph(AT91_PIN_PA9, 1);
-			at91_set_A_periph(AT91_PIN_PA10, 1);
-			at91_set_A_periph(AT91_PIN_PA11, 1);
+			/* DAT0, maybe DAT1..DAT3 */
+			at91_set_A_periph(AT91_PIN_PA22, 1);
+			if (data->bus_width == 4) {
+				at91_set_A_periph(AT91_PIN_PA23, 1);
+				at91_set_A_periph(AT91_PIN_PA24, 1);
+				at91_set_A_periph(AT91_PIN_PA25, 1);
+			}
+		} else {
+			/* CMD */
+			at91_set_A_periph(AT91_PIN_PA7, 1);
+
+			/* DAT0, maybe DAT1..DAT3 */
+			at91_set_A_periph(AT91_PIN_PA8, 1);
+			if (data->bus_width == 4) {
+				at91_set_A_periph(AT91_PIN_PA9, 1);
+				at91_set_A_periph(AT91_PIN_PA10, 1);
+				at91_set_A_periph(AT91_PIN_PA11, 1);
+			}
 		}
 	}
 

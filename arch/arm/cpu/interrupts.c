@@ -73,6 +73,11 @@ void show_regs (struct pt_regs *regs)
 #endif
 }
 
+void dump_stack(void)
+{
+	unwind_backtrace(NULL);
+}
+
 static void __noreturn do_exception(struct pt_regs *pt_regs)
 {
 	show_regs(pt_regs);

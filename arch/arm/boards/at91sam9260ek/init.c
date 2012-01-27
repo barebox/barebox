@@ -172,6 +172,7 @@ static void at91sam9260ek_phy_reset(void)
 #if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data __initdata ek_mci_data = {
 	.bus_width	= 4,
+	.slot_b		= 1,
 };
 
 static void ek_usb_add_device_mci(void)
@@ -179,7 +180,7 @@ static void ek_usb_add_device_mci(void)
 	if (machine_is_at91sam9g20ek())
 		ek_mci_data.detect_pin = AT91_PIN_PC9;
 
-	at91_add_device_mci(1, &ek_mci_data);
+	at91_add_device_mci(0, &ek_mci_data);
 }
 #else
 static void ek_usb_add_device_mci(void) {}

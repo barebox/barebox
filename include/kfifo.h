@@ -28,7 +28,7 @@ struct kfifo {
 	unsigned int out;	/* data is extracted from off. (out % size) */
 };
 
-struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size);
+void kfifo_init(struct kfifo *fifo, unsigned char *buffer, unsigned int size);
 struct kfifo *kfifo_alloc(unsigned int size);
 void kfifo_free(struct kfifo *fifo);
 

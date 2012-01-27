@@ -73,10 +73,12 @@ void show_regs (struct pt_regs *regs)
 #endif
 }
 
+#ifdef CONFIG_ARM_UNWIND
 void dump_stack(void)
 {
 	unwind_backtrace(NULL);
 }
+#endif
 
 static void __noreturn do_exception(struct pt_regs *pt_regs)
 {

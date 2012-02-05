@@ -113,7 +113,7 @@ config CMD_ARM_CPUINFO
 	  information about the cp15 registers
 
 config CPU_V7_DCACHE_SKIP
-	bool "Skip DCache Invlidate"
+	bool "Skip DCache Invalidate"
 	depends on CPU_V7
 	default n
 	help

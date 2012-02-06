@@ -142,6 +142,7 @@ config MACH_PANDA
 	bool "Texas Instrument's Panda Board"
 	select HAVE_NOSHELL
 	select MACH_HAS_LOWLEVEL_INIT
+	depends on ARCH_OMAP4
 	help
 	  Say Y here if you are using OMAP4 Panda board
 
@@ -159,6 +160,7 @@ config MACH_PCAAL1
 	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_ALL
 	select HAS_OMAP_NAND
+	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
 

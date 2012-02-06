@@ -1,13 +1,13 @@
 /** @mainpage Barebox
 
-Barebox is a bootloader that initializes a hardware and boots Linux and
+Barebox is a bootloader that initializes hardware and boots Linux and
 maybe other operating systems or bare metal code on a variety of
-processors. It was initialy derived from U-Boot and captures up with
-several of it's ideas, so users being familiar with U-Boot should come
-into production quickly with Barebox.
+processors. It was initially derived from U-Boot and retains several of
+U-Boot's ideas, so users familiar with U-Boot should come into
+production quickly with Barebox.
 
 However, as the Barebox developers are highly addicted to the Linux
-kernel, it's coding style and code quality, we try to stick as closely
+kernel, its coding style and code quality, we try to stick as closely
 as possible to the methodologies and techniques developed in Linux. In
 addition we have a strong background in POSIX, so you'll find several
 good old Unix traditions realized in Barebox as well.
@@ -26,7 +26,7 @@ good old Unix traditions realized in Barebox as well.
 - <b>Environment Filesystem:</b><br>
   In contrast to U-Boot, Barebox doesn't misuse the environment for
   scripting. If you start the bootloader, it gives you a shell and
-  something that looks like a filesystem. In fact it isn't: it is a very
+  something that looks like a filesystem. In fact it isn't; it is a very
   simple ar archive being extracted from flash into a ramdisk with 'loadenv'
   and stored back with 'saveenv'.
 
@@ -41,7 +41,7 @@ good old Unix traditions realized in Barebox as well.
   if they have the same name.
 
 - <b>Clocksource:</b><br>
-  We use the clocksource API knwon from Linux.
+  We use the standard clocksource API from Linux.
 
 - <b>Kconfig/Kbuild:</b><br>
   This gives us parallel builds and removes the need for lots of ifdefs.
@@ -54,7 +54,7 @@ good old Unix traditions realized in Barebox as well.
   to simulate devices.
 
 - <b>Device Parameters:</b><br>
-  There is a parameter model in @a Barebox: each device can specify it's
+  There is a parameter model in @a Barebox: each device can specify its
   own parameters, which do exist for every instance. Parameters can be
   changed on the command line with \<devid\>.\<param\>="...". For
   example, if you want to access the IPv4 address for eth0, this is done

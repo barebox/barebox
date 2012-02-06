@@ -3,12 +3,12 @@
 <i>This section demonstrates the first steps with the 'sandbox'
 platform. </i>
 
-@a barebox usually needs an environment for storing it's configuration.
-You can generate an environment using the example-environment contained
-in arch/sanbox/board/env:
+@a barebox usually needs an environment for storing its configuration.
+You can generate an environment using the example environment contained
+in arch/sandbox/board/env:
 
 @code
-# ./scripts/bareboxenv -s -p 0x10000 arch/sanbox/board/env/ env.bin
+# ./scripts/bareboxenv -s -p 0x10000 arch/sandbox/board/env/ env.bin
 @endcode
 
 To get some files to play with you can generate a cramfs image:

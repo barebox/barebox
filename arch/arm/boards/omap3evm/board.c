@@ -49,6 +49,7 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
+#include <sizes.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <mach/silicon.h>
@@ -58,8 +59,8 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <mach/board.h>
 #include <errno.h>
-#include "board.h"
 
 
 /*
@@ -195,15 +196,21 @@ static void mux_config(void)
  *
  * @return void
  */
-void board_init(void)
+static int omap3_evm_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 
+	omap3_core_init();
+
 	mux_config();
+
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)
 		sdrc_init();
+
+	return 0;
 }
+pure_initcall(omap3_evm_board_init);
 
 /*
  * Run-time initialization(s)
@@ -251,6 +258,10 @@ static int omap3evm_init_devices(void)
 	 * WP is made high and WAIT1 active Low
 	 */
 	gpmc_generic_init(0x10);
+#endif
+#ifdef CONFIG_MCI_OMAP_HSMMC
+	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
+				IORESOURCE_MEM, NULL);
 #endif
 	return 0;
 }

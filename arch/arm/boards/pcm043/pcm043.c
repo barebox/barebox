@@ -29,6 +29,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
+#include <sizes.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
@@ -56,52 +57,53 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt = 1,
 };
 
-#ifdef CONFIG_PCM043_DISPLAY_SHARP
-static struct fb_videomode pcm043_fb_mode = {
-	/* 240x320 @ 60 Hz */
-	.name		= "Sharp-LQ035Q7",
-	.refresh	= 60,
-	.xres		= 240,
-	.yres		= 320,
-	.pixclock	= 185925,
-	.left_margin	= 9,
-	.right_margin	= 16,
-	.upper_margin	= 7,
-	.lower_margin	= 9,
-	.hsync_len	= 1,
-	.vsync_len	= 1,
-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_SHARP_MODE | FB_SYNC_CLK_INVERT | FB_SYNC_CLK_IDLE_EN,
-	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
+static struct fb_videomode pcm043_fb_mode[] = {
+	{
+		/* 240x320 @ 60 Hz */
+		.name		= "TX090",
+		.refresh	= 60,
+		.xres		= 240,
+		.yres		= 320,
+		.pixclock	= 38255,
+		.left_margin	= 144,
+		.right_margin	= 0,
+		.upper_margin	= 7,
+		.lower_margin	= 40,
+		.hsync_len	= 96,
+		.vsync_len	= 1,
+		.sync		= FB_SYNC_VERT_HIGH_ACT | FB_SYNC_OE_ACT_HIGH,
+		.vmode		= FB_VMODE_NONINTERLACED,
+		.flag		= 0,
+	}, {
+		/* 240x320 @ 60 Hz */
+		.name		= "Sharp-LQ035Q7",
+		.refresh	= 60,
+		.xres		= 240,
+		.yres		= 320,
+		.pixclock	= 185925,
+		.left_margin	= 9,
+		.right_margin	= 16,
+		.upper_margin	= 7,
+		.lower_margin	= 9,
+		.hsync_len	= 1,
+		.vsync_len	= 1,
+		.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_SHARP_MODE | \
+				 FB_SYNC_CLK_INVERT | FB_SYNC_CLK_IDLE_EN,
+		.vmode		= FB_VMODE_NONINTERLACED,
+		.flag		= 0,
+	}
 };
-#else
-static struct fb_videomode pcm043_fb_mode = {
-	/* 240x320 @ 60 Hz */
-	.name		= "TX090",
-	.refresh	= 60,
-	.xres		= 240,
-	.yres		= 320,
-	.pixclock	= 38255,
-	.left_margin	= 144,
-	.right_margin	= 0,
-	.upper_margin	= 7,
-	.lower_margin	= 40,
-	.hsync_len	= 96,
-	.vsync_len	= 1,
-	.sync		= FB_SYNC_VERT_HIGH_ACT | FB_SYNC_OE_ACT_HIGH,
-	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
-};
-#endif
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
-	.mode		= &pcm043_fb_mode,
-	.bpp		= 16,
+	.mode			= pcm043_fb_mode,
+	.num_modes		= ARRAY_SIZE(pcm043_fb_mode),
+	.framebuffer_ovl	= (void *) (IMX_SDRAM_CS0 + SZ_128M - SZ_1M),
+	.bpp			= 16,
 };
 
 static int pcm043_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SZ_128M);
 
 	return 0;
 }

@@ -106,7 +106,6 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 	int ret = 0;
 	size_t offset;
 	struct mtd_info_user *user = buf;
-	struct region_info_user *reg = buf;
 
 	switch (request) {
 	case MEMSETBADBLOCK:
@@ -146,6 +145,8 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 #ifdef CONFIG_PARTITION
 	case MEMGETREGIONINFO:
 		if (cdev->mtd) {
+			struct region_info_user *reg = buf;
+
 			reg->offset = cdev->offset;
 			reg->erasesize = cdev->mtd->erasesize;
 			reg->numblocks = cdev->size/reg->erasesize;

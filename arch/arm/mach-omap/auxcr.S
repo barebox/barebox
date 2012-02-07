@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <linux/linkage.h>
+#include <asm/unified.h>
+
+.arm
+ENTRY(setup_auxcr)
+	mov	r12, #0x3
+	mrc	p15, 0, r0, c1, c0, 1
+	orr	r0, r0, #0x10		@ Enable ASA
+	orr	r0, r0, #1 << 5		@ Enable L1NEON
+	.word 0xE1600070		@ SMC
+	mov	r12, #0x2
+	mrc	p15, 1, r0, c9, c0, 2
+	@ Set PLD_FWD bit in L2AUXCR (Cortex-A8 erratum 725233 workaround)
+	orr	r0, r0, #1 << 27
+	.word 0xE1600070		@ SMC
+	bx	lr
+ENDPROC(setup_auxcr)

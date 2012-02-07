@@ -87,9 +87,9 @@ board-$(CONFIG_MACH_MMCCPU)			:= mmccpu
 board-$(CONFIG_MACH_MX1ADS)			:= mx1ads
 board-$(CONFIG_MACH_NOMADIK_8815NHK)		:= nhk8815
 board-$(CONFIG_MACH_NXDB500)			:= netx
-board-$(CONFIG_MACH_OMAP343xSDP)		:= omap
-board-$(CONFIG_MACH_BEAGLE)			:= omap
-board-$(CONFIG_MACH_OMAP3EVM)			:= omap
+board-$(CONFIG_MACH_OMAP343xSDP)		:= omap343xdsp
+board-$(CONFIG_MACH_BEAGLE)			:= beagle
+board-$(CONFIG_MACH_OMAP3EVM)			:= omap3evm
 board-$(CONFIG_MACH_PANDA)			:= panda
 board-$(CONFIG_MACH_PCM049)			:= pcm049
 board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
@@ -111,6 +111,9 @@ board-$(CONFIG_MACH_FREESCALE_MX53_LOCO)	:= freescale-mx53-loco
 board-$(CONFIG_MACH_FREESCALE_MX53_SMD)		:= freescale-mx53-smd
 board-$(CONFIG_MACH_GUF_CUPID)			:= guf-cupid
 board-$(CONFIG_MACH_MINI2440)			:= mini2440
+board-$(CONFIG_MACH_TNY_A9260)			:= tny-a926x
+board-$(CONFIG_MACH_TNY_A9263)			:= tny-a926x
+board-$(CONFIG_MACH_TNY_A9G20)			:= tny-a926x
 board-$(CONFIG_MACH_USB_A9260)			:= usb-a926x
 board-$(CONFIG_MACH_USB_A9263)			:= usb-a926x
 board-$(CONFIG_MACH_USB_A9G20)			:= usb-a926x
@@ -147,12 +150,13 @@ ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
 endif
 
-barebox.bin.ift: barebox.bin
+MLO: barebox.bin
 	@echo "  IFT    " $@
 	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1
+	$(Q)test -e barebox.bin.ift && mv barebox.bin.ift MLO
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_IMAGE := barebox.bin.ift
+KBUILD_IMAGE := MLO
 endif
 
 all: $(KBUILD_IMAGE)

@@ -28,8 +28,8 @@
 #include "board-mx35_3stack.h"
 
 #define CSD0_BASE_ADDR		0x80000000
-#define ESDCTL_BASE_ADDR	0xB8001000
 #define CSD1_BASE_ADDR		0x90000000
+#define ESDCTL_BASE_ADDR	0xB8001000
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -122,9 +122,9 @@ board_init_lowlevel:
 	str	r1, [r0, #CCM_CGR1]
 
 	/* Skip SDRAM initialization if we run from RAM */
-	cmp	pc, #0x80000000
+	cmp	pc, #CSD0_BASE_ADDR
 	bls	1f
-	cmp	pc, #0x90000000
+	cmp	pc, #CSD1_BASE_ADDR
 	bhi	1f
 
 	mov	pc, r10
@@ -138,14 +138,17 @@ board_init_lowlevel:
 	/* ip(r12) has used to save lr register in upper calling */
 	mov	fp, lr
 
+	/* setup bank 0 */
 	mov	r5, #0x00
 	mov	r2, #0x00
 	mov	r1, #CSD0_BASE_ADDR
 	bl	setup_sdram_bank
-	cmp	r3, #0x0
-	orreq	r5, r5, #1
-	eorne	r2, r2, #0x1
-	blne	setup_sdram_bank
+
+	/* setup bank 1 */
+	mov	r5, #0x00
+	mov	r2, #0x00
+	mov	r1, #CSD1_BASE_ADDR
+	bl	setup_sdram_bank
 
 	mov	lr, fp
 

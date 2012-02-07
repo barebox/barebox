@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $at91_udc0.vbus != 1 ]
+then
+	echo "No USB Device cable plugged, normal boot"
+	exit
+fi
+
+autoboot_timeout=16
+echo "enable tty over USB Device, increase the boot delay to ${autoboot_timeout}s"
+usbserial

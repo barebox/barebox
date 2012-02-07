@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <progress.h>
+#include <asm-generic/div64.h>
 
 #define HASHES_PER_LINE	65
 
@@ -38,8 +39,11 @@ void show_progress(int now)
 		return;
 	}
 
-	if (progress_max)
-		now = now * HASHES_PER_LINE / progress_max;
+	if (progress_max) {
+		uint64_t tmp = (int64_t)now * HASHES_PER_LINE;
+		do_div(tmp, progress_max);
+		now = tmp;
+	}
 
 	while (printed < now) {
 		if (!(printed % HASHES_PER_LINE) && printed)

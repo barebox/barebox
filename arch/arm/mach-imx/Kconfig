@@ -405,16 +405,6 @@ endif
 
 menu "Board specific settings       "
 
-if MACH_PCM043
-choice
-	prompt "Display type"
-config PCM043_DISPLAY_SHARP
-	bool "Sharp LQ035Q7"
-config PCM043_DISPLAY_TY090
-	bool "TX090"
-endchoice
-endif
-
 if MACH_PCM037
 choice
 	prompt "SDRAM Bank0"

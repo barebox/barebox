@@ -61,8 +61,8 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
+#include <mach/board.h>
 #include <errno.h>
-#include "board.h"
 
 /******************** Board Boot Time *******************/
 static void sdrc_init(void);
@@ -77,13 +77,19 @@ static void mux_config(void);
  *
  * @return void
  */
-void board_init(void)
+static int sdp343x_board_init(void)
 {
 	int in_sdram = running_in_sdram();
+
+	omap3_core_init();
+
 	mux_config();
 	if (!in_sdram)
 		sdrc_init();
+
+	return 0;
 }
+pure_initcall(sdp343x_board_init);
 
 /**
  * @brief Do the SDRC initialization for 128Meg Infenion DDR for CS0

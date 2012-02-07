@@ -625,6 +625,8 @@ void __noreturn panic(const char *fmt, ...)
 	putchar('\n');
 	va_end(args);
 
+	dump_stack();
+
 	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
 
 #if defined (CONFIG_PANIC_HANG)

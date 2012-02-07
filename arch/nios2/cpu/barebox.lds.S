@@ -44,9 +44,12 @@ SECTIONS
 		_stext = .;
 		__text = .;
 		_text = .;
+		__bare_init_start = .;
 		*(.text_entry)
+		__bare_init_end = .;
 		*(.text)
 	}
+	BAREBOX_BARE_INIT_SIZE
 
 	. = ALIGN(4);
 	.rodata : { *(.rodata) }

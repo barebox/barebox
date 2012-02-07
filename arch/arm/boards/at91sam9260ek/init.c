@@ -201,6 +201,37 @@ static struct at91_udc_data __initdata ek_udc_data = {
 	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
 };
 
+struct gpio_led leds[] = {
+	{
+		.gpio	= AT91_PIN_PA6,
+		.active_low	= 1,
+		.led	= {
+			.name = "ds5",
+		},
+	}, {
+		.gpio	= AT91_PIN_PA9,
+		.led	= {
+			.name = "ds3",
+		},
+	},
+};
+
+static void __init ek_add_led(void)
+{
+	int i;
+
+#ifdef CONFIG_AT91_HAVE_2MMC
+	leds[0].gpio = AT91_PIN_PB8;
+	leds[1].gpio = AT91_PIN_PB9;
+#endif
+
+	for (i = 0; i < ARRAY_SIZE(leds); i++) {
+		at91_set_gpio_output(leds[i].gpio, leds[i].active_low);
+		led_gpio_register(&leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[1].led);
+}
+
 static int at91sam9260ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -213,8 +244,10 @@ static void __init ek_add_device_buttons(void)
 {
 	at91_set_gpio_input(AT91_PIN_PA30, 1);	/* btn3 */
 	at91_set_deglitch(AT91_PIN_PA30, 1);
+	export_env_ull("dfu_button", AT91_PIN_PA30);
 	at91_set_gpio_input(AT91_PIN_PA31, 1);	/* btn4 */
 	at91_set_deglitch(AT91_PIN_PA31, 1);
+	export_env_ull("btn4", AT91_PIN_PA31);
 }
 
 static int at91sam9260ek_devices_init(void)
@@ -226,6 +259,7 @@ static int at91sam9260ek_devices_init(void)
 	at91_add_device_udc(&ek_udc_data);
 	ek_usb_add_device_mci();
 	ek_add_device_buttons();
+	ek_add_led();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	ek_set_board_type();

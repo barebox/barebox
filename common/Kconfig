@@ -40,6 +40,9 @@ config BLOCK_WRITE
 config HAVE_NOSHELL
 	bool
 
+config FILETYPE
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -74,6 +77,10 @@ config LOCALVERSION_AUTO
 config BOARDINFO
 	string
 
+config BANNER
+	bool "display banner"
+	default y
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 
@@ -96,6 +103,22 @@ config TEXT_BASE
 	default ARCH_TEXT_BASE
 	help
 	  The Address barebox gets linked at.
+
+config BAREBOX_MAX_IMAGE_SIZE
+	prompt "Maximum size of barebox"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of barebox
+
+config BAREBOX_MAX_BARE_INIT_SIZE
+	prompt "Maximum bare_init size"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of bare_init
+	  this will allow your bare_init will fit in SRAM as example
+	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
@@ -251,6 +274,7 @@ choice
 		bool "hush parser"
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
+		select PARAMETER
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
@@ -259,6 +283,7 @@ choice
 		bool "Simple parser"
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
+		select PARAMETER
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 

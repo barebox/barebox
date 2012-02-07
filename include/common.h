@@ -119,6 +119,15 @@ uint32_t crc32_no_comp(uint32_t, const void*, unsigned int);
 /* common/console.c */
 int	ctrlc (void);
 
+#ifdef ARCH_HAS_STACK_DUMP
+void dump_stack(void);
+#else
+static inline void dump_stack(void)
+{
+	printf("no stack data available\n");
+}
+#endif
+
 #define MEMAREA_SIZE_SPECIFIED 1
 
 struct memarea_info {
@@ -198,7 +207,11 @@ int run_shell(void);
 int memory_display(char *addr, ulong offs, ulong nbytes, int size);
 
 extern const char version_string[];
+#ifdef CONFIG_BANNER
 void barebox_banner(void);
+#else
+static inline void barebox_banner(void) {}
+#endif
 
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 

@@ -52,6 +52,8 @@ struct NS16550_plat {
 				    unsigned char reg_offset);
 
 	int shift;
+	unsigned int flags;
+#define NS16650_FLAG_DISABLE_FIFO	1
 };
 
 #endif				/* __NS16650_PLATFORM_H_ */

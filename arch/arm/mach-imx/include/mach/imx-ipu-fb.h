@@ -27,7 +27,9 @@
 struct imx_ipu_fb_platform_data {
 	struct fb_videomode	*mode;
 	unsigned char		bpp;
+	u_int			num_modes;
 	void __iomem		*framebuffer;
+	void __iomem		*framebuffer_ovl;
 	/** hook to enable backlight and stuff */
 	void			(*enable)(int enable);
 };

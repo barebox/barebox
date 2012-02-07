@@ -56,17 +56,4 @@ extern struct list_head console_list;
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
-void early_console_putc(void *base, char c);
-void early_console_init(void *base, int baudrate);
-
-void early_console_start(const char *name, int baudrate);
-
-/*
- * Resolve an early console name to a pointer pointing
- * to the consoles base address, usually implemented in
- * board setup file.
- */
-void *get_early_console_base(const char *name);
-
 #endif
-

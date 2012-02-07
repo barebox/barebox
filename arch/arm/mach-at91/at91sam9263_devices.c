@@ -152,6 +152,68 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 void at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
+/* --------------------------------------------------------------------
+ *  SPI
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+static int spi0_standard_cs[4] = { AT91_PIN_PA5, AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PB11 };
+
+static int spi1_standard_cs[4] = { AT91_PIN_PB15, AT91_PIN_PB16, AT91_PIN_PB17, AT91_PIN_PB18 };
+
+static struct at91_spi_platform_data spi_pdata[] = {
+	[0] = {
+		.chipselect = spi0_standard_cs,
+		.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+	},
+	[1] = {
+		.chipselect = spi1_standard_cs,
+		.num_chipselect = ARRAY_SIZE(spi1_standard_cs),
+	},
+};
+
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
+{
+	int i;
+	int cs_pin;
+	resource_size_t start = ~0;
+
+	BUG_ON(spi_id > 1);
+
+	if (!pdata)
+		pdata = &spi_pdata[spi_id];
+
+	for (i = 0; i < pdata->num_chipselect; i++) {
+		cs_pin = pdata->chipselect[i];
+
+		/* enable chip-select pin */
+		if (cs_pin > 0)
+			at91_set_gpio_output(cs_pin, 1);
+	}
+
+	/* Configure SPI bus(es) */
+	switch (spi_id) {
+	case 0:
+		start = AT91SAM9263_BASE_SPI0;
+		at91_set_B_periph(AT91_PIN_PA0, 0);	/* SPI0_MISO */
+		at91_set_B_periph(AT91_PIN_PA1, 0);	/* SPI0_MOSI */
+		at91_set_B_periph(AT91_PIN_PA2, 0);	/* SPI0_SPCK */
+		break;
+	case 1:
+		start = AT91SAM9263_BASE_SPI1;
+		at91_set_A_periph(AT91_PIN_PB12, 0);	/* SPI1_MISO */
+		at91_set_A_periph(AT91_PIN_PB13, 0);	/* SPI1_MOSI */
+		at91_set_A_periph(AT91_PIN_PB14, 0);	/* SPI1_SPCK */
+		break;
+	}
+
+	add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+}
+#else
+void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
+#endif
+
 static inline void configure_dbgu_pins(void)
 {
 	at91_set_A_periph(AT91_PIN_PC30, 0);		/* DRXD */
@@ -309,3 +371,4 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 #else
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
 #endif
+

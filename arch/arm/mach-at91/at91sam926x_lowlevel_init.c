@@ -57,13 +57,13 @@ void __naked __bare_init board_init_lowlevel(void)
 #endif
 
 	/* flash */
-	at91_sys_write(AT91_SMC_MODE(0), CONFIG_SYS_SMC0_MODE0_VAL);
+	at91_sys_write(AT91_SMC_MODE(CONFIG_SYS_SMC_CS), CONFIG_SYS_SMC_MODE_VAL);
 
-	at91_sys_write(AT91_SMC_CYCLE(0), CONFIG_SYS_SMC0_CYCLE0_VAL);
+	at91_sys_write(AT91_SMC_CYCLE(CONFIG_SYS_SMC_CS), CONFIG_SYS_SMC_CYCLE_VAL);
 
-	at91_sys_write(AT91_SMC_PULSE(0), CONFIG_SYS_SMC0_PULSE0_VAL);
+	at91_sys_write(AT91_SMC_PULSE(CONFIG_SYS_SMC_CS), CONFIG_SYS_SMC_PULSE_VAL);
 
-	at91_sys_write(AT91_SMC_SETUP(0), CONFIG_SYS_SMC0_SETUP0_VAL);
+	at91_sys_write(AT91_SMC_SETUP(CONFIG_SYS_SMC_CS), CONFIG_SYS_SMC_SETUP_VAL);
 
 	/*
 	 * PMC Check if the PLL is already initialized

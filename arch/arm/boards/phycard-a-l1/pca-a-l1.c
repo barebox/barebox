@@ -74,8 +74,6 @@
 #include <mach/syslib.h>
 #include <mach/xload.h>
 
-#include "pca-a-l1.h"
-
 #define SMC911X_BASE 0x2c000000
 
 /*
@@ -224,15 +222,20 @@ static void pcaal1_mux_config(void)
  *
  * @return void
  */
-void board_init(void)
+static int pcaal1_board_init(void)
 {
 	int in_sdram = running_in_sdram();
+
+	omap3_core_init();
 
 	pcaal1_mux_config();
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)
 		pcaal1_sdrc_init();
+
+	return 0;
 }
+pure_initcall(pcaal1_board_init);
 
 /*
  * Run-time initialization(s)

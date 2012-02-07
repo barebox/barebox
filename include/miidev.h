@@ -49,6 +49,11 @@ int mii_register(struct mii_device *dev);
 void mii_unregister(struct mii_device *mdev);
 int miidev_restart_aneg(struct mii_device *mdev);
 int miidev_wait_aneg(struct mii_device *mdev);
+int miidev_get_status(struct mii_device *mdev);
+#define MIIDEV_STATUS_IS_UP		(1 << 0)
+#define MIIDEV_STATUS_IS_FULL_DUPLEX	(1 << 1)
+#define MIIDEV_STATUS_IS_10MBIT		(1 << 2)
+#define MIIDEV_STATUS_IS_100MBIT	(1 << 3)
 int miidev_print_status(struct mii_device *mdev);
 
 static int inline mii_write(struct mii_device *dev, int addr, int reg, int value)

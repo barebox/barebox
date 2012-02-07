@@ -74,7 +74,6 @@
 #include <linux/err.h>
 #include <usb/ehci.h>
 #include <mach/xload.h>
-#include "board.h"
 
 /******************** Board Boot Time *******************/
 
@@ -221,15 +220,20 @@ static void mux_config(void)
  *
  * @return void
  */
-void board_init(void)
+static int beagle_board_init(void)
 {
 	int in_sdram = running_in_sdram();
+
+	omap3_core_init();
 
 	mux_config();
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)
 		sdrc_init();
+
+	return 0;
 }
+pure_initcall(beagle_board_init);
 
 /******************** Board Run Time *******************/
 

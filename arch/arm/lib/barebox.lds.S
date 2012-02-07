@@ -44,9 +44,12 @@ SECTIONS
 	  . = 0x1000;
 	  LONG(0x53555243) /* 'CRUS' */
 #endif
+		__bare_init_start = .;
 		*(.text_bare_init*)
+		__bare_init_end = .;
 		*(.text*)
 	}
+	BAREBOX_BARE_INIT_SIZE
 
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }

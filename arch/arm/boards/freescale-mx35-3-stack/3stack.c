@@ -100,6 +100,7 @@ static struct fb_videomode CTP_CLAA070LC0ACW = {
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &CTP_CLAA070LC0ACW,
+	.num_modes	= 1,
 	.bpp		= 16,
 };
 
@@ -130,7 +131,8 @@ static void set_board_rev(int rev)
 
 static int f3s_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 124 * 1024 * 1024);
+	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+	arm_add_mem_device("ram1", IMX_SDRAM_CS1, 128 * 1024 * 1024);
 
 	return 0;
 }

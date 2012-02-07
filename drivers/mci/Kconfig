@@ -69,8 +69,8 @@ config MCI_OMAP_HSMMC
 	bool "OMAP HSMMC"
 	depends on ARCH_OMAP4 || ARCH_OMAP3
 	help
-	  Enable this entry to add support to read and write SD cards on a
-	  OMAP4 based system.
+	  Enable this entry to add support to read and write SD cards on
+	  both OMAP3 and OMAP4 based systems.
 
 config MCI_PXA
 	bool "PXA"

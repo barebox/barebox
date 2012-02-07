@@ -59,7 +59,6 @@
 #include <mach/control.h>
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
-#include <mach/board.h>
 #include <errno.h>
 
 

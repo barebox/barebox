@@ -60,6 +60,7 @@
 #include <mach/omap3-mux.h>
 #include <mach/gpmc.h>
 #include <errno.h>
+#include <generated/mach-types.h>
 
 
 /*
@@ -262,6 +263,9 @@ static int omap3evm_init_devices(void)
 	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
 				IORESOURCE_MEM, NULL);
 #endif
+        armlinux_set_bootparams((void *)0x80000100);
+        armlinux_set_architecture(MACH_TYPE_OMAP3EVM);
+
 	return 0;
 }
 device_initcall(omap3evm_init_devices);

@@ -109,7 +109,6 @@ choice
 config MACH_OMAP343xSDP
 	bool "Texas Instrument's SDP343x"
 	select OMAP_CLOCK_ALL
-	select HAS_OMAP_NAND
 	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using SDP343x platform
@@ -118,7 +117,6 @@ config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
 	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
-	select HAS_OMAP_NAND
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using Beagle Board
@@ -127,7 +125,6 @@ config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
 	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
-	select HAS_OMAP_NAND
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using OMAP3EVM
@@ -152,7 +149,6 @@ config MACH_PCM049
 config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
 	select OMAP_CLOCK_ALL
-	select HAS_OMAP_NAND
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
@@ -184,8 +180,5 @@ config MACH_OMAP_ADVANCED_MUX
 	help
 	  Say Y here if you would like to have complete pin muxing to be
 	  done at boot time
-
-config HAS_OMAP_NAND
-	bool
 
 endmenu

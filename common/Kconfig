@@ -447,6 +447,7 @@ config PARTITION_DISK_DOS
 config DEFAULT_ENVIRONMENT
 	bool
 	default y
+	select CMD_LOADENV
 	prompt "Compile in default environment"
 	help
 	  Enabling this option will give you a default environment when

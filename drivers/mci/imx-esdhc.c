@@ -238,6 +238,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
+	int ret;
 
 	esdhc_write32(&regs->irqstat, -1);
 
@@ -268,8 +269,12 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	esdhc_write32(&regs->xfertyp, xfertyp);
 
 	/* Wait for the command to complete */
-	while (!(esdhc_read32(&regs->irqstat) & IRQSTAT_CC))
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			esdhc_read32(&regs->irqstat) & IRQSTAT_CC);
+	if (ret) {
+		dev_err(host->dev, "timeout 1\n");
+		return -ETIMEDOUT;
+	}
 
 	irqstat = esdhc_read32(&regs->irqstat);
 	esdhc_write32(&regs->irqstat, irqstat);
@@ -321,12 +326,20 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	esdhc_write32(&regs->irqstat, -1);
 
 	/* Wait for the bus to be idle */
-	while ((esdhc_read32(&regs->prsstat) & PRSSTAT_CICHB) ||
-			(esdhc_read32(&regs->prsstat) & PRSSTAT_CIDHB))
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			!(esdhc_read32(&regs->prsstat) &
+				(PRSSTAT_CICHB | PRSSTAT_CIDHB)));
+	if (ret) {
+		dev_err(host->dev, "timeout 2\n");
+		return -ETIMEDOUT;
+	}
 
-	while (esdhc_read32(&regs->prsstat) & PRSSTAT_DLA)
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			!(esdhc_read32(&regs->prsstat) & PRSSTAT_DLA));
+	if (ret) {
+		dev_err(host->dev, "timeout 3\n");
+		return -ETIMEDOUT;
+	}
 
 	return 0;
 }

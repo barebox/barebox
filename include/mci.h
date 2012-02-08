@@ -102,7 +102,6 @@
 #define SD_HIGHSPEED_SUPPORTED	0x00020000
 
 #define MMC_HS_TIMING		0x00000100
-#define MMC_HS_52MHZ		0x2
 
 #define OCR_BUSY		0x80000000
 /** card's response in its OCR if it is a high capacity card */

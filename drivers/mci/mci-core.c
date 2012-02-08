@@ -417,7 +417,7 @@ static int mmc_change_freq(struct device_d *mci_dev)
 	if (ext_csd[212] || ext_csd[213] || ext_csd[214] || ext_csd[215])
 		mci->high_capacity = 1;
 
-	cardtype = ext_csd[196] & 0xf;
+	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
 	err = mci_switch(mci_dev, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
@@ -439,7 +439,7 @@ static int mmc_change_freq(struct device_d *mci_dev)
 		return 0;
 
 	/* High Speed is set, there are two types: 52MHz and 26MHz */
-	if (cardtype & MMC_HS_52MHZ)
+	if (cardtype & EXT_CSD_CARD_TYPE_52)
 		mci->card_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 	else
 		mci->card_caps |= MMC_MODE_HS;

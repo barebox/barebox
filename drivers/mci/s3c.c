@@ -665,12 +665,10 @@ static int mci_request(struct mci_host *host, struct mci_cmd *cmd,
 /**
  * Setup the bus width and IO speed
  * @param host MCI host
- * @param mci_dev MCI device instance
  * @param bus_width New bus width value (1, 4 or 8)
  * @param clock New clock in Hz (can be '0' to disable the clock)
  */
-static void mci_set_ios(struct mci_host *host, struct device_d *mci_dev,
-			struct mci_ios *ios)
+static void mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 {
 	struct s3c_mci_host *host_data = to_s3c_host(host);
 	uint32_t reg;

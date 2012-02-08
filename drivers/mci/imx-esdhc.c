@@ -375,8 +375,7 @@ void set_sysctl(struct mci_host *mci, u32 clock)
 	esdhc_setbits32(&regs->sysctl, clk);
 }
 
-static void esdhc_set_ios(struct mci_host *mci, struct device_d *dev,
-		struct mci_ios *ios)
+static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;

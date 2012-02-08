@@ -273,8 +273,7 @@ static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	return ret;
 }
 
-static void pxamci_set_ios(struct mci_host *mci, struct device_d *dev,
-			   struct mci_ios *ios)
+static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct pxamci_host *host = to_pxamci(mci);
 	unsigned int clk_in = pxa_get_mmcclk();

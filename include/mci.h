@@ -260,7 +260,7 @@ struct mci_host {
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);
 	/** change host interface settings */
-	void (*set_ios)(struct mci_host*, struct device_d*, struct mci_ios *);
+	void (*set_ios)(struct mci_host*, struct mci_ios *);
 	/** handle a command */
 	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
 };

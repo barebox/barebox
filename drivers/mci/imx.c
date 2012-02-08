@@ -441,8 +441,7 @@ static void mxcmci_set_clk_rate(struct mxcmci_host *host, unsigned int clk_ios)
 	writew((prescaler << 4) | divider, &host->base->clk_rate);
 }
 
-static void mxcmci_set_ios(struct mci_host *mci, struct device_d *dev,
-		struct mci_ios *ios)
+static void mxcmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct mxcmci_host *host = to_mxcmci(mci);
 

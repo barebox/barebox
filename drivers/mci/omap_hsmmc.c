@@ -510,8 +510,7 @@ static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	return 0;
 }
 
-static void mmc_set_ios(struct mci_host *mci, struct device_d *dev,
-		struct mci_ios *ios)
+static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct omap_hsmmc *hsmmc = to_hsmmc(mci);
 	struct hsmmc *mmc_base = hsmmc->base;

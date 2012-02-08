@@ -640,8 +640,7 @@ static int mxs_mci_request(struct mci_host *host, struct mci_cmd *cmd,
  *
  * Drivers currently realized values are stored in MCI's platformdata
  */
-static void mxs_mci_set_ios(struct mci_host *host, struct device_d *mci_dev,
-			struct mci_ios *ios)
+static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 {
 	struct mxs_mci_host *mxs_mci = to_mxs_mci(host);
 

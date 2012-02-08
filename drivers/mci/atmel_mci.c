@@ -351,8 +351,7 @@ static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 }
 
 /** change host interface settings */
-static void mci_set_ios(struct mci_host *mci, struct device_d *mci_dev,
-			struct mci_ios *ios)
+static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct atmel_mci_host *host = to_mci_host(mci);
 

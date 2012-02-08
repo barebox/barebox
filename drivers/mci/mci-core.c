@@ -596,7 +596,7 @@ static void mci_set_ios(struct device_d *mci_dev)
 	ios.bus_width = host->bus_width;
 	ios.clock = host->clock;
 
-	host->set_ios(host, mci_dev, &ios);
+	host->set_ios(host, &ios);
 }
 
 /**

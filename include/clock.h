@@ -40,4 +40,23 @@ void mdelay(unsigned long msecs);
 #define MSECOND ((uint64_t)(1000 * 1000))
 #define USECOND ((uint64_t)(1000))
 
+/*
+ * Convenience wrapper to implement a typical polling loop with
+ * timeout. returns 0 if the condition became true within the
+ * timeout or -ETIMEDOUT otherwise
+ */
+#define wait_on_timeout(timeout, condition) \
+({								\
+	int __ret = 0;						\
+	uint64_t __to_start = get_time_ns();			\
+								\
+	while (!(condition)) {					\
+		if (is_timeout(__to_start, (timeout))) {	\
+			__ret = -ETIMEDOUT;			\
+			break;					\
+		}						\
+	}							\
+	__ret;							\
+})
+
 #endif /* CLOCK_H */

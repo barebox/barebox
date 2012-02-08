@@ -44,6 +44,9 @@
 #include <mach/s3c-generic.h>
 #include <mach/s3c-iomap.h>
 
+#define GET_HOST_DATA(x) (x->priv)
+#define GET_MCI_PDATA(x) (x->platform_data)
+
 #define SDICON 0x0
 # define SDICON_SDRESET (1 << 8)
 # define SDICON_MMCCLOCK (1 << 5) /* this is a clock type SD or MMC style WTF? */

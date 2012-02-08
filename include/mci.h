@@ -267,7 +267,9 @@ struct mci_host {
 
 /** MMC/SD and interface instance information */
 struct mci {
+	struct mci_host *host;		/**< the host for this card */
 	struct block_device blk;	/**< the blockdevice for the card */
+	struct device_d *mci_dev;	/**< the device for our disk (mcix) */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;
@@ -287,10 +289,5 @@ struct mci {
 };
 
 int mci_register(struct mci_host*);
-
-#define GET_HOST_DATA(x) (x->priv)
-#define GET_HOST_PDATA(x) (x->platform_data)
-#define GET_MCI_DATA(x) (x->priv)
-#define GET_MCI_PDATA(x) (x->platform_data)
 
 #endif /* _MCI_H_ */

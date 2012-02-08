@@ -330,7 +330,7 @@ return  0;
 }
 
 static void mmc_spi_set_ios(struct mci_host *mci, struct device_d *mci_dev,
-			unsigned bus_width, unsigned clock)
+			struct mci_ios *ios)
 {
 	struct mmc_spi_host	*host = to_spi_host(mci);
 

@@ -442,23 +442,29 @@ static void mxcmci_set_clk_rate(struct mxcmci_host *host, unsigned int clk_ios)
 }
 
 static void mxcmci_set_ios(struct mci_host *mci, struct device_d *dev,
-		unsigned bus_width, unsigned clock)
+		struct mci_ios *ios)
 {
 	struct mxcmci_host *host = to_mxcmci(mci);
 
-	if (bus_width == 4)
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_4:
 		host->cmdat |= CMD_DAT_CONT_BUS_WIDTH_4;
-	else
+		break;
+	case MMC_BUS_WIDTH_1:
 		host->cmdat &= ~CMD_DAT_CONT_BUS_WIDTH_4;
+		break;
+	default:
+		return;
+	}
 
-	if (clock) {
-		mxcmci_set_clk_rate(host, clock);
+	if (ios->clock) {
+		mxcmci_set_clk_rate(host, ios->clock);
 		writew(STR_STP_CLK_START_CLK, &host->base->str_stp_clk);
 	} else {
 		writew(STR_STP_CLK_STOP_CLK, &host->base->str_stp_clk);
 	}
 
-	host->clock = clock;
+	host->clock = ios->clock;
 }
 
 static int mxcmci_init(struct mci_host *mci, struct device_d *dev)

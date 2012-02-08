@@ -511,7 +511,7 @@ static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 }
 
 static void mmc_set_ios(struct mci_host *mci, struct device_d *dev,
-		unsigned bus_width, unsigned clock)
+		struct mci_ios *ios)
 {
 	struct omap_hsmmc *hsmmc = to_hsmmc(mci);
 	struct hsmmc *mmc_base = hsmmc->base;
@@ -519,33 +519,34 @@ static void mmc_set_ios(struct mci_host *mci, struct device_d *dev,
 	uint64_t start;
 
 	/* configue bus width */
-	switch (bus_width) {
-	case 8:
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_8:
 		writel(readl(&mmc_base->con) | DTW_8_BITMODE,
 			&mmc_base->con);
 		break;
 
-	case 4:
+	case MMC_BUS_WIDTH_4:
 		writel(readl(&mmc_base->con) & ~DTW_8_BITMODE,
 			&mmc_base->con);
 		writel(readl(&mmc_base->hctl) | DTW_4_BITMODE,
 			&mmc_base->hctl);
 		break;
 
-	case 1:
-	default:
+	case MMC_BUS_WIDTH_1:
 		writel(readl(&mmc_base->con) & ~DTW_8_BITMODE,
 			&mmc_base->con);
 		writel(readl(&mmc_base->hctl) & ~DTW_4_BITMODE,
 			&mmc_base->hctl);
 		break;
+	default:
+		return;
 	}
 
 	/* configure clock with 96Mhz system clock.
 	 */
-	if (clock != 0) {
-		dsor = (MMC_CLOCK_REFERENCE * 1000000 / clock);
-		if ((MMC_CLOCK_REFERENCE * 1000000) / dsor > clock)
+	if (ios->clock != 0) {
+		dsor = (MMC_CLOCK_REFERENCE * 1000000 / ios->clock);
+		if ((MMC_CLOCK_REFERENCE * 1000000) / dsor > ios->clock)
 			dsor++;
 	}
 

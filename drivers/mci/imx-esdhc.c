@@ -376,21 +376,29 @@ void set_sysctl(struct mci_host *mci, u32 clock)
 }
 
 static void esdhc_set_ios(struct mci_host *mci, struct device_d *dev,
-		unsigned bus_width, unsigned clock)
+		struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
 
 	/* Set the clock speed */
-	set_sysctl(mci, clock);
+	set_sysctl(mci, ios->clock);
 
 	/* Set the bus width */
 	esdhc_clrbits32(&regs->proctl, PROCTL_DTW_4 | PROCTL_DTW_8);
 
-	if (bus_width == 4)
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_4:
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_4);
-	else if (bus_width == 8)
+		break;
+	case MMC_BUS_WIDTH_8:
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_8);
+		break;
+	case MMC_BUS_WIDTH_1:
+		break;
+	default:
+		return;
+	}
 
 }
 

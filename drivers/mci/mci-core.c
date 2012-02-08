@@ -591,8 +591,12 @@ retry_scr:
 static void mci_set_ios(struct device_d *mci_dev)
 {
 	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_ios ios;
 
-	host->set_ios(host, mci_dev, host->bus_width, host->clock);
+	ios.bus_width = host->bus_width;
+	ios.clock = host->clock;
+
+	host->set_ios(host, mci_dev, &ios);
 }
 
 /**
@@ -907,7 +911,7 @@ static int mci_startup(struct device_d *mci_dev)
 				/* TODO continue with 1 bit? */
 				return err;
 			}
-			mci_set_bus_width(mci_dev, 4);
+			mci_set_bus_width(mci_dev, MMC_BUS_WIDTH_4);
 		}
 		/* if possible, speed up the transfer */
 		if (mci->card_caps & MMC_MODE_HS)
@@ -924,7 +928,7 @@ static int mci_startup(struct device_d *mci_dev)
 				pr_debug("Changing MMC bus width failed: %d\n", err);
 				return err;
 			}
-			mci_set_bus_width(mci_dev, 4);
+			mci_set_bus_width(mci_dev, MMC_BUS_WIDTH_4);
 		} else if (mci->card_caps & MMC_MODE_8BIT) {
 			pr_debug("Set MMC bus width to 8 bit\n");
 			/* Set the card to use 8 bit*/
@@ -934,7 +938,7 @@ static int mci_startup(struct device_d *mci_dev)
 				pr_debug("Changing MMC bus width failed: %d\n", err);
 				return err;
 			}
-			mci_set_bus_width(mci_dev, 8);
+			mci_set_bus_width(mci_dev, MMC_BUS_WIDTH_8);
 		}
 		/* if possible, speed up the transfer */
 		if (mci->card_caps & MMC_MODE_HS) {
@@ -1243,7 +1247,7 @@ static int mci_card_probe(struct device_d *mci_dev)
 		return rc;
 	}
 
-	mci_set_bus_width(mci_dev, 1);
+	mci_set_bus_width(mci_dev, MMC_BUS_WIDTH_1);
 	mci_set_clock(mci_dev, 1);	/* set the lowest available clock */
 
 	/* reset the card */

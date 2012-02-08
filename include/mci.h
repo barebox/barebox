@@ -168,6 +168,8 @@
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
+#define EXT_CSD_DDR_BUS_WIDTH_4	5	/* Card is in 4 bit DDR mode */
+#define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
@@ -217,6 +219,34 @@ struct mci_data {
 	unsigned blocksize;	/**< block size in bytes (mostly 512) */
 };
 
+struct mci_ios {
+	unsigned int	clock;			/* clock rate */
+
+	unsigned char	bus_width;		/* data bus width */
+
+#define MMC_BUS_WIDTH_1		0
+#define MMC_BUS_WIDTH_4		2
+#define MMC_BUS_WIDTH_8		3
+
+	unsigned char	timing;			/* timing specification used */
+
+#define MMC_TIMING_LEGACY	0
+#define MMC_TIMING_MMC_HS	1
+#define MMC_TIMING_SD_HS	2
+#define MMC_TIMING_UHS_SDR12	MMC_TIMING_LEGACY
+#define MMC_TIMING_UHS_SDR25	MMC_TIMING_SD_HS
+#define MMC_TIMING_UHS_SDR50	3
+#define MMC_TIMING_UHS_SDR104	4
+#define MMC_TIMING_UHS_DDR50	5
+#define MMC_TIMING_MMC_HS200	6
+
+#define MMC_SDR_MODE		0
+#define MMC_1_2V_DDR_MODE	1
+#define MMC_1_8V_DDR_MODE	2
+#define MMC_1_2V_SDR_MODE	3
+#define MMC_1_8V_SDR_MODE	4
+};
+
 /** host information */
 struct mci_host {
 	struct device_d *hw_dev;	/**< the host MCI hardware device */
@@ -230,7 +260,7 @@ struct mci_host {
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);
 	/** change host interface settings */
-	void (*set_ios)(struct mci_host*, struct device_d*, unsigned, unsigned);
+	void (*set_ios)(struct mci_host*, struct device_d*, struct mci_ios *);
 	/** handle a command */
 	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
 };

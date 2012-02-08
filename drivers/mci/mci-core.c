@@ -753,7 +753,7 @@ static void mci_extract_block_lengths_from_csd(struct device_d *mci_dev)
 		mci->write_bl_len = 1 << ((mci->csd[3] >> 22) & 0xf);
 
 	pr_debug("Max. block length are: Write=%u, Read=%u Bytes\n",
-		mci->read_bl_len, mci->write_bl_len);
+		mci->write_bl_len, mci->read_bl_len);
 }
 
 /**

@@ -414,9 +414,6 @@ static int mmc_change_freq(struct device_d *mci_dev)
 		return err;
 	}
 
-	if (ext_csd[212] || ext_csd[213] || ext_csd[214] || ext_csd[215])
-		mci->high_capacity = 1;
-
 	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
 	err = mci_switch(mci_dev, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);

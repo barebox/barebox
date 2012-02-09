@@ -691,17 +691,14 @@ static void mci_set_ios(struct mci_host *mci_pdata, struct device_d *mci_dev,
 {
 	struct device_d *hw_dev = mci_pdata->hw_dev;
 	struct s3c_mci_host *host_data = GET_HOST_DATA(hw_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
 	uint32_t reg;
 
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_4:
 		host_data->bus_width = 1;
-		host->bus_width = 4;	/* 4 bit is possible */
 		break;
 	case MMC_BUS_WIDTH_1:
 		host_data->bus_width = 0;
-		host->bus_width = 1;	/* 1 bit is possible */
 		break;
 	default:
 		return;
@@ -710,16 +707,16 @@ static void mci_set_ios(struct mci_host *mci_pdata, struct device_d *mci_dev,
 	reg = readl(host_data->base + SDICON);
 	if (ios->clock) {
 		/* setup the IO clock frequency and enable it */
-		host->clock = host_data->clock = s3c_setup_clock_speed(hw_dev, ios->clock);
+		host_data->clock = s3c_setup_clock_speed(hw_dev, ios->clock);
 		reg |= SDICON_CLKEN;	/* enable the clock */
 	} else {
 		reg &= ~SDICON_CLKEN;	/* disable the clock */
-		host->clock = host_data->clock = 0;
+		host_data->clock = 0;
 	}
 	writel(reg, host_data->base + SDICON);
 
 	pr_debug("IO settings: bus width=%d, frequency=%u Hz\n",
-		host->bus_width, host->clock);
+		host_data->bus_width, host_data->clock);
 }
 
 /* ----------------------------------------------------------------------- */

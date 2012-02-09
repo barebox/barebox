@@ -153,17 +153,12 @@
 #define SDIDATA 0x40
 
 struct s3c_mci_host {
+	struct mci_host	host;
 	void __iomem	*base;
 	int		bus_width:2; /* 0 = 1 bit, 1 = 4 bit, 2 = 8 bit */
 	unsigned	clock;	/* current clock in Hz */
 	unsigned	data_size;	/* data transfer in bytes */
 };
-
-/*
- * There is only one host MCI hardware instance available.
- * It makes no sense to dynamically allocate this data
- */
-static struct s3c_mci_host host_data;
 
 /**
  * Finish a request
@@ -743,19 +738,15 @@ static void s3c_info(struct device_d *hw_dev)
 }
 #endif
 
-/*
- * There is only one host MCI hardware instance available.
- * It makes no sense to dynamically allocate this data
- */
-static struct mci_host mci_pdata = {
-	.send_cmd = mci_request,
-	.set_ios = mci_set_ios,
-	.init = mci_reset,
-};
-
 static int s3c_mci_probe(struct device_d *hw_dev)
 {
+	struct s3c_mci_host *s3c_host;
 	struct s3c_mci_platform_data *pd = hw_dev->platform_data;
+
+	s3c_host = xzalloc(sizeof(*s3c_host));
+	s3c_host->host.send_cmd = mci_request;
+	s3c_host->host.set_ios = mci_set_ios;
+	s3c_host->host.init = mci_reset;
 
 	/* TODO replace by the global func: enable the SDI unit clock */
 	writel(readl(S3C_CLOCK_POWER_BASE + 0x0c) | 0x200,
@@ -766,23 +757,23 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 		return -EINVAL;
 	}
 
-	hw_dev->priv = &host_data;
-	host_data.base = dev_request_mem_region(hw_dev, 0);
-	mci_pdata.hw_dev = hw_dev;
+	hw_dev->priv = s3c_host;
+	s3c_host->base = dev_request_mem_region(hw_dev, 0);
+	s3c_host->host.hw_dev = hw_dev;
 
 	/* feed forward the platform specific values */
-	mci_pdata.voltages = pd->voltages;
-	mci_pdata.host_caps = pd->caps;
-	mci_pdata.f_min = pd->f_min == 0 ? s3c_get_pclk() / 256 : pd->f_min;
-	mci_pdata.f_max = pd->f_max == 0 ? s3c_get_pclk() / 2 : pd->f_max;
+	s3c_host->host.voltages = pd->voltages;
+	s3c_host->host.host_caps = pd->caps;
+	s3c_host->host.f_min = pd->f_min == 0 ? s3c_get_pclk() / 256 : pd->f_min;
+	s3c_host->host.f_max = pd->f_max == 0 ? s3c_get_pclk() / 2 : pd->f_max;
 
 	/*
 	 * Start the clock to let the engine and the card finishes its startup
 	 */
-	host_data.clock = s3c_setup_clock_speed(hw_dev, mci_pdata.f_min);
-	writel(SDICON_FIFORESET | SDICON_MMCCLOCK, host_data.base + SDICON);
+	s3c_host->clock = s3c_setup_clock_speed(hw_dev, pd->f_min);
+	writel(SDICON_FIFORESET | SDICON_MMCCLOCK, s3c_host->base + SDICON);
 
-	return mci_register(&mci_pdata);
+	return mci_register(&s3c_host->host);
 }
 
 static struct driver_d s3c_mci_driver = {

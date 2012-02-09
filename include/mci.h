@@ -326,6 +326,7 @@ struct mci {
 	unsigned write_bl_len;
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
+	char *ext_csd;
 };
 
 int mci_register(struct mci_host*);

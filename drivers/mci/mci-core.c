@@ -1241,7 +1241,7 @@ static struct block_device_ops mci_ops = {
 static int mci_card_probe(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	int rc;
+	int rc, disknum;
 
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci->mci_dev);
@@ -1288,9 +1288,9 @@ static int mci_card_probe(struct mci *mci)
 	mci->blk.dev = mci->mci_dev;
 	mci->blk.ops = &mci_ops;
 
-	rc = cdev_find_free_index("disk");
+	disknum = cdev_find_free_index("disk");
 
-	mci->blk.cdev.name = asprintf("disk%d", rc);
+	mci->blk.cdev.name = asprintf("disk%d", disknum);
 	mci->blk.blockbits = SECTOR_SHIFT;
 	mci->blk.num_blocks = mci_calc_blk_cnt(mci->capacity, mci->blk.blockbits);
 
@@ -1299,6 +1299,8 @@ static int mci_card_probe(struct mci *mci)
 		dev_err(mci->mci_dev, "Failed to register MCI/SD blockdevice\n");
 		goto on_error;
 	}
+
+	dev_info(mci->mci_dev, "registered disk%d\n", disknum);
 
 	/* create partitions on demand */
 	rc = parse_partition_table(&mci->blk);
@@ -1381,6 +1383,8 @@ static int mci_probe(struct device_d *mci_dev)
 	mci_dev->priv = mci;
 	mci->mci_dev = mci_dev;
 	mci->host = mci_dev->platform_data;
+
+	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
 #ifdef CONFIG_MCI_STARTUP
 	/* if enabled, probe the attached card immediately */

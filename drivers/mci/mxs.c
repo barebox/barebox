@@ -672,7 +672,7 @@ const unsigned char bus_width[3] = { 1, 4, 8 };
 
 static void mxs_mci_info(struct device_d *hw_dev)
 {
-	struct mxs_mci_host *mxs_mci = GET_HOST_DATA(hw_dev);
+	struct mxs_mci_host *mxs_mci = hw_dev->priv;
 
 	printf(" Interface\n");
 	printf("  Min. bus clock: %u Hz\n", mxs_mci->f_min);

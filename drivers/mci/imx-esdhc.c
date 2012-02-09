@@ -511,6 +511,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	struct mci_host *mci;
 	u32 caps;
 	int ret;
+	struct esdhc_platform_data *pdata = dev->platform_data;
 
 	host = xzalloc(sizeof(*host));
 	mci = &host->mci;
@@ -534,7 +535,10 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (caps & ESDHC_HOSTCAPBLT_VS33)
 		mci->voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	mci->host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
+	if (pdata && pdata->caps)
+		mci->host_caps = pdata->caps;
+	else
+		mci->host_caps = MMC_MODE_4BIT;
 
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
 		mci->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;

@@ -1289,8 +1289,6 @@ static int mci_card_probe(struct mci *mci)
 	mci->blk.ops = &mci_ops;
 
 	rc = cdev_find_free_index("disk");
-	if (rc == -1)
-		pr_err("Cannot find a free number for the disk node\n");
 
 	mci->blk.cdev.name = asprintf("disk%d", rc);
 	mci->blk.blockbits = SECTOR_SHIFT;

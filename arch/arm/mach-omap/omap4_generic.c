@@ -352,6 +352,7 @@ static unsigned int cortex_a9_rev(void)
 
 	unsigned int i;
 
+	/* Read Main ID Register (MIDR) */
 	asm ("mrc p15, 0, %0, c0, c0, 0" : "=r" (i));
 
 	return i;

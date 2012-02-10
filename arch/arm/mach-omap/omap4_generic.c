@@ -9,6 +9,26 @@
 #include <mach/xload.h>
 #include <mach/gpmc.h>
 
+/*
+ *  The following several lines are taken from U-Boot to support
+ * recognizing more revisions of OMAP4 chips.
+ */
+
+#define MIDR_CORTEX_A9_R0P1	0x410FC091
+#define MIDR_CORTEX_A9_R1P2	0x411FC092
+#define MIDR_CORTEX_A9_R1P3	0x411FC093
+#define MIDR_CORTEX_A9_R2P10	0x412FC09A
+
+#define CONTROL_ID_CODE         0x4A002204
+
+#define OMAP4_CONTROL_ID_CODE_ES1_0     0x0B85202F
+#define OMAP4_CONTROL_ID_CODE_ES2_0     0x1B85202F
+#define OMAP4_CONTROL_ID_CODE_ES2_1     0x3B95C02F
+#define OMAP4_CONTROL_ID_CODE_ES2_2     0x4B95C02F
+#define OMAP4_CONTROL_ID_CODE_ES2_3     0x6B95C02F
+#define OMAP4460_CONTROL_ID_CODE_ES1_0  0x0B94E02F
+#define OMAP4460_CONTROL_ID_CODE_ES1_1  0x2B94E02F
+
 void __noreturn reset_cpu(unsigned long addr)
 {
 	writel(PRM_RSTCTRL_RESET, PRM_RSTCTRL);
@@ -362,22 +382,45 @@ static unsigned int cortex_a9_rev(void)
 
 unsigned int omap4_revision(void)
 {
-	unsigned int chip_rev = 0;
 	unsigned int rev = cortex_a9_rev();
 
 	switch(rev) {
-	case 0x410FC091:
+	case MIDR_CORTEX_A9_R0P1:
 		return OMAP4430_ES1_0;
-	case 0x411FC092:
-		chip_rev = (readl(OMAP44XX_CTRL_BASE + 0x204)  >> 28) & 0xF;
-		if (chip_rev == 3)
-			return OMAP4430_ES2_1;
-		else if (chip_rev >= 4)
-			return OMAP4430_ES2_2;
-		else
+	case MIDR_CORTEX_A9_R1P2:
+		switch (readl(CONTROL_ID_CODE)) {
+		case OMAP4_CONTROL_ID_CODE_ES2_0:
 			return OMAP4430_ES2_0;
+			break;
+		case OMAP4_CONTROL_ID_CODE_ES2_1:
+			return OMAP4430_ES2_1;
+			break;
+		case OMAP4_CONTROL_ID_CODE_ES2_2:
+			return OMAP4430_ES2_2;
+			break;
+		default:
+			return OMAP4430_ES2_0;
+			break;
+		}
+		break;
+	case MIDR_CORTEX_A9_R1P3:
+		return OMAP4430_ES2_3;
+		break;
+	case MIDR_CORTEX_A9_R2P10:
+		switch (readl(CONTROL_ID_CODE)) {
+		case OMAP4460_CONTROL_ID_CODE_ES1_1:
+			return OMAP4460_ES1_1;
+			break;
+		case OMAP4460_CONTROL_ID_CODE_ES1_0:
+		default:
+			return OMAP4460_ES1_0;
+			break;
+		}
+		break;
+	default:
+		return OMAP4430_SILICON_ID_INVALID;
+		break;
 	}
-	return OMAP4430_SILICON_ID_INVALID;
 }
 
 /*

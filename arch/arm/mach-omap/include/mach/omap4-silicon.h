@@ -156,6 +156,9 @@ struct s32ktimer {
 #define OMAP4430_ES2_0	2
 #define OMAP4430_ES2_1	3
 #define OMAP4430_ES2_2	4
+#define OMAP4430_ES2_3	5
+#define OMAP4460_ES1_0	6
+#define OMAP4460_ES1_1	7
 
 struct ddr_regs {
 	u32 tim1;

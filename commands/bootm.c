@@ -324,7 +324,7 @@ static int do_bootm(struct command *cmdtp, int argc, char *argv[])
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(&data);
 		if (ret) {
-			printf("loading initrd failed with %s\n",
+			printf("loading os image failed with %s\n",
 					strerror(-ret));
 			goto err_out;
 		}

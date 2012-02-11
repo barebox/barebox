@@ -150,7 +150,6 @@ char *mkmodestr(unsigned long mode, char *str);
  * Note that we only support mounting on directories lying
  * directly in / and of course the root directory itself
  */
-struct mtab_entry *get_mtab_entry_by_path(const char *path);
 const char *fsdev_get_mountpoint(struct fs_device_d *fsdev);
 
 /*

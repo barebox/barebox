@@ -170,7 +170,7 @@ EXPORT_SYMBOL(normalise_path);
 LIST_HEAD(mtab_list);
 static struct mtab_entry *mtab_root;
 
-struct mtab_entry *get_mtab_entry_by_path(const char *_path)
+static struct mtab_entry *get_mtab_entry_by_path(const char *_path)
 {
 	struct mtab_entry *e = NULL;
 	char *path, *tok;

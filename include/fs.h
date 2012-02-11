@@ -146,13 +146,6 @@ int ls(const char *path, ulong flags);
 char *mkmodestr(unsigned long mode, char *str);
 
 /*
- * Information about mounted devices.
- * Note that we only support mounting on directories lying
- * directly in / and of course the root directory itself
- */
-const char *fsdev_get_mountpoint(struct fs_device_d *fsdev);
-
-/*
  * Read a file into memory. Memory is allocated with malloc and must
  * be freed with free() afterwards. This function allocates one
  * byte more than actually needed and sets this to zero, so that

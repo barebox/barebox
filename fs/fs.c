@@ -195,11 +195,6 @@ found:
 	return e;
 }
 
-const char *fsdev_get_mountpoint(struct fs_device_d *fsdev)
-{
-	return fsdev->mtab.path;
-}
-
 static FILE files[MAX_FILES];
 
 static FILE *get_file(void)

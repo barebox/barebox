@@ -808,8 +808,8 @@ int mount(const char *device, const char *fsname, const char *_path)
 	dev = &fsdev->dev;
 
 	/* add mtab entry */
-	entry = &fsdev->mtab; 
-	safe_strncpy(entry->path, path, PATH_MAX);
+	entry = &fsdev->mtab;
+	entry->path = xstrdup(path);
 	entry->dev = dev;
 	entry->parent_device = parent_device;
 
@@ -860,6 +860,7 @@ int umount(const char *pathname)
 		return errno;
 	}
 
+	free(entry->path);
 	list_del(&entry->list);
 	if (entry == mtab_root)
 		mtab_root = NULL;

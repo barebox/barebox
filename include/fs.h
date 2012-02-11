@@ -77,7 +77,7 @@ struct fs_driver_d {
 };
 
 struct mtab_entry {
-	char path[PATH_MAX];
+	char *path;
 	struct device_d *dev;
 	struct device_d *parent_device;
 	struct list_head list;

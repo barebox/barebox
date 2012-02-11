@@ -13,3 +13,4 @@ obj-y	+= clk/
 obj-y	+= mfd/
 obj-$(CONFIG_LED) += led/
 obj-y	+= eeprom/
+obj-y	+= input/

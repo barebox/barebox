@@ -253,7 +253,7 @@ static inline void configure_usart2_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PD6, 0);	/* CTS2 */
 }
 
-void at91_register_uart(unsigned id, unsigned pins)
+struct device_d * __init at91_register_uart(unsigned id, unsigned pins)
 {
 	resource_size_t start;
 
@@ -279,10 +279,10 @@ void at91_register_uart(unsigned id, unsigned pins)
 			id = 3;
 			break;
 		default:
-			return;
+			return NULL;
 	}
 
-	add_generic_device("atmel_usart", id, NULL, start, 4096,
+	return add_generic_device("atmel_usart", id, NULL, start, 4096,
 			   IORESOURCE_MEM, NULL);
 }
 

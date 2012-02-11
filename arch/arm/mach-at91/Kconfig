@@ -93,6 +93,9 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	default 0xF000 if ARCH_AT91SAM9G45
 	default 0xffffffff
 
+config SUPPORT_CALAO_DAB_MMX
+	bool
+
 # ----------------------------------------------------------
 
 if ARCH_AT91RM9200
@@ -133,6 +136,7 @@ config MACH_TNY_A9260
 
 config MACH_USB_A9260
 	bool "CALAO USB-A9260"
+	select SUPPORT_CALAO_DAB_MMX
 	help
 	  Select this if you are using a Calao Systems USB-A9260.
 	  <http://www.calao-systems.com>
@@ -209,6 +213,7 @@ config MACH_TNY_A9G20
 
 config MACH_USB_A9G20
 	bool "CALAO USB-A9G20"
+	select SUPPORT_CALAO_DAB_MMX
 	help
 	  Select this if you are using a Calao Systems USB-A9G20.
 	  <http://www.calao-systems.com>
@@ -327,5 +332,9 @@ config LCD_LG_LB043WQ1
 	  Found on AT91SAM9G45-EKES and AT91SAM9M10-EKES
 
 endchoice
+
+config CALAO_DAB_MMX
+	bool "DAB MMX Daughter Board support"
+	depends on SUPPORT_CALAO_DAB_MMX
 
 endif

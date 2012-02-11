@@ -170,29 +170,18 @@ EXPORT_SYMBOL(normalise_path);
 LIST_HEAD(mtab_list);
 static struct mtab_entry *mtab_root;
 
-static struct mtab_entry *get_mtab_entry_by_path(const char *_path)
+static struct mtab_entry *get_mtab_entry_by_path(const char *path)
 {
 	struct mtab_entry *e = NULL;
-	char *path, *tok;
-
-	if (*_path != '/')
-		return NULL;
-
-	path = strdup(_path);
-
-	tok = strchr(path + 1, '/');
-	if (tok)
-		*tok = 0;
 
 	for_each_mtab_entry(e) {
-		if (!strcmp(path, e->path))
-			goto found;
+		int len = strlen(e->path);
+		if (!strncmp(path, e->path, len) &&
+				(path[len] == '/' || path[len] == 0))
+			return e;
 	}
-	e = mtab_root;
-found:
-	free(path);
 
-	return e;
+	return mtab_root;
 }
 
 static FILE files[MAX_FILES];

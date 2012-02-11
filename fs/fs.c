@@ -167,11 +167,12 @@ char *normalise_path(const char *pathname)
 }
 EXPORT_SYMBOL(normalise_path);
 
-static struct mtab_entry *mtab;
+LIST_HEAD(mtab_list);
+static struct mtab_entry *mtab_root;
 
 struct mtab_entry *get_mtab_entry_by_path(const char *_path)
 {
-	struct mtab_entry *match = NULL, *e = mtab;
+	struct mtab_entry *e = NULL;
 	char *path, *tok;
 
 	if (*_path != '/')
@@ -183,24 +184,15 @@ struct mtab_entry *get_mtab_entry_by_path(const char *_path)
 	if (tok)
 		*tok = 0;
 
-	while (e) {
-		if (!strcmp(path, e->path)) {
-			match = e;
-			break;
-		}
-		e = e->next;
+	for_each_mtab_entry(e) {
+		if (!strcmp(path, e->path))
+			goto found;
 	}
-
+	e = mtab_root;
+found:
 	free(path);
 
-	return match ? match : mtab;
-}
-
-struct mtab_entry *mtab_next_entry(struct mtab_entry *e)
-{
-	if (!e)
-		return mtab;
-	return e->next;
+	return e;
 }
 
 const char *fsdev_get_mountpoint(struct fs_device_d *fsdev)
@@ -248,7 +240,7 @@ static struct device_d *get_fs_device_by_path(char **path)
 	e = get_mtab_entry_by_path(*path);
 	if (!e)
 		return NULL;
-	if (e != mtab)
+	if (e != mtab_root)
 		*path += strlen(e->path);
 
 	dev = e->dev;
@@ -751,11 +743,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	debug("mount: %s on %s type %s\n", device, path, fsname);
 
-	if (get_mtab_entry_by_path(path) != mtab) {
-		errno = -EBUSY;
-		goto out;
-	}
-
 	if (strchr(path + 1, '/')) {
 		printf("mounting allowed on first directory level only\n");
 		errno = -EBUSY;
@@ -774,7 +761,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 		goto out;
 	}
 
-	if (mtab) {
+	if (mtab_root) {
 		if (path_check_prereq(path, S_IFDIR))
 			goto out;
 	} else {
@@ -825,16 +812,12 @@ int mount(const char *device, const char *fsname, const char *_path)
 	safe_strncpy(entry->path, path, PATH_MAX);
 	entry->dev = dev;
 	entry->parent_device = parent_device;
-	entry->next = NULL;
 
-	if (!mtab)
-		mtab = entry;
-	else {
-		struct mtab_entry *e = mtab;
-		while (e->next)
-			e = e->next;
-		e->next = entry;
-	}
+	list_add_tail(&entry->list, &mtab_list);
+
+	if (!mtab_root)
+		mtab_root = entry;
+
 	errno = 0;
 
 	free(path);
@@ -854,27 +837,32 @@ EXPORT_SYMBOL(mount);
 
 int umount(const char *pathname)
 {
-	struct mtab_entry *entry = mtab;
-	struct mtab_entry *last = mtab;
+	struct mtab_entry *entry = NULL, *e;
 	char *p = normalise_path(pathname);
 	struct fs_device_d *fsdev;
 
-	while(entry && strcmp(p, entry->path)) {
-		last = entry;
-		entry = entry->next;
+	for_each_mtab_entry(e) {
+		if (!strcmp(p, e->path)) {
+			entry = e;
+			break;
+		}
 	}
 
 	free(p);
+
+	if (e == mtab_root && !list_is_singular(&mtab_list)) {
+		errno = -EBUSY;
+		return errno;
+	}
 
 	if (!entry) {
 		errno = -EFAULT;
 		return errno;
 	}
 
-	if (entry == mtab)
-		mtab = mtab->next;
-	else
-		last->next = entry->next;
+	list_del(&entry->list);
+	if (entry == mtab_root)
+		mtab_root = NULL;
 
 	unregister_device(entry->dev);
 	fsdev = entry->dev->type_data;
@@ -951,11 +939,11 @@ int stat(const char *filename, struct stat *s)
 		goto out;
 	}
 
-	if (e != mtab && strcmp(f, e->path)) {
+	if (e != mtab_root && strcmp(f, e->path)) {
 		f += strlen(e->path);
 		dev = e->dev;
 	} else
-		dev = mtab->dev;
+		dev = mtab_root->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 

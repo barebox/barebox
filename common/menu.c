@@ -296,7 +296,7 @@ int menu_show(struct menu *m)
 
 	do {
 		if (m->auto_select >= 0)
-			ch = '\n';
+			ch = KEY_ENTER;
 		else
 			ch = getc();
 
@@ -339,8 +339,8 @@ int menu_show(struct menu *m)
 				m->selected->action(m, m->selected);
 			print_menu_entry(m, m->selected, 1);
 			break;
-		case '\n':
-		case '\r':
+		case KEY_ENTER:
+		case KEY_RETURN:
 			clear();
 			gotoXY(1,1);
 			m->selected->action(m, m->selected);

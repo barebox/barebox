@@ -81,6 +81,7 @@ struct us_data {
 
 	/* SCSI interfaces */
 	ccb			*srb;		/* current srb */
+	struct list_head	blk_dev_list;
 };
 
 /* one us_blk_dev object allocated per LUN */

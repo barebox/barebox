@@ -47,11 +47,12 @@ static int imx53_init(void)
 coredevice_initcall(imx53_init);
 
 #define setup_pll_1000(base)	imx5_setup_pll((base), 1000, ((10 << 4) + ((1 - 1) << 0)), (12 - 1), 5)
+#define setup_pll_800(base)	imx5_setup_pll((base), 800, ((8 << 4) + ((1 - 1) << 0)), (3 - 1), 1)
 #define setup_pll_400(base)	imx5_setup_pll((base), 400, ((8 << 4) + ((2 - 1)  << 0)), (3 - 1), 1)
 #define setup_pll_455(base)	imx5_setup_pll((base), 455, ((9 << 4) + ((2 - 1)  << 0)), (48 - 1), 23)
 #define setup_pll_216(base)	imx5_setup_pll((base), 216, ((8 << 4) + ((2 - 1)  << 0)), (1 - 1), 1)
 
-void imx53_init_lowlevel(void)
+void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX53_CCM_BASE_ADDR;
 	u32 r;
@@ -82,7 +83,11 @@ void imx53_init_lowlevel(void)
 	/* Switch ARM to step clock */
 	writel(0x4, ccm + MX5_CCM_CCSR);
 
-	setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
+	if (cpufreq_mhz == 1000)
+		setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
+	else
+		setup_pll_800((void __iomem *)MX53_PLL1_BASE_ADDR);
+
 	setup_pll_400((void __iomem *)MX53_PLL3_BASE_ADDR);
 
         /* Switch peripheral to PLL3 */

@@ -155,7 +155,7 @@ static int loco_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(loco_pads, ARRAY_SIZE(loco_pads));
 
-	imx53_init_lowlevel();
+	imx53_init_lowlevel(1000);
 
 	imx53_add_uart0();
 	return 0;

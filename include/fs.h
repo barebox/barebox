@@ -90,6 +90,7 @@ struct fs_device_d {
 
 	struct fs_driver_d *driver;
 
+	struct cdev *cdev;
 	struct mtab_entry mtab;
 };
 

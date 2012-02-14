@@ -72,8 +72,6 @@ struct fs_driver_d {
 	struct driver_d drv;
 
 	unsigned long flags;
-
-	struct list_head list;
 };
 
 struct mtab_entry {

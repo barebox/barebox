@@ -701,7 +701,6 @@ static LIST_HEAD(fs_driver_list);
 
 int register_fs_driver(struct fs_driver_d *fsdrv)
 {
-	list_add_tail(&fsdrv->list, &fs_driver_list);
 	register_driver(&fsdrv->drv);
 	return 0;
 }
@@ -715,7 +714,6 @@ EXPORT_SYMBOL(register_fs_driver);
  */
 int mount(const char *device, const char *fsname, const char *_path)
 {
-	struct fs_driver_d *fs_drv = NULL, *f;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
 	struct device_d *parent_device = NULL;
@@ -733,18 +731,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 		goto out;
 	}
 
-	list_for_each_entry(f, &fs_driver_list, list) {
-		if (!strcmp(f->drv.name, fsname)) {
-			fs_drv = f;
-			break;
-		}
-	}
-
-	if (!fs_drv) {
-		errno = -EINVAL;
-		goto out;
-	}
-
 	if (mtab_root) {
 		if (path_check_prereq(path, S_IFDIR))
 			goto out;
@@ -757,14 +743,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	}
 
 	fsdev = xzalloc(sizeof(struct fs_device_d));
-	if (!(fs_drv->flags & FS_DRIVER_NO_DEV)) {
-		fsdev->backingstore = strdup(device);
-		if (!device) {
-			printf("need a device for driver %s\n", fsname);
-			errno = -ENODEV;
-			goto out1;
-		}
-	}
+	fsdev->backingstore = xstrdup(device);
 	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
 	fsdev->dev.type_data = fsdev;
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);

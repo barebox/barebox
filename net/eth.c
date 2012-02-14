@@ -244,8 +244,11 @@ int eth_register(struct eth_device *edev)
 
 void eth_unregister(struct eth_device *edev)
 {
-	dev_remove_parameters(&edev->dev);
+	if (edev == eth_current)
+		eth_current = NULL;
 
+	dev_remove_parameters(&edev->dev);
+	unregister_device(&edev->dev);
 	list_del(&edev->list);
 }
 

@@ -759,6 +759,9 @@ static int smsc95xx_bind(struct usbnet *dev)
 static void smsc95xx_unbind(struct usbnet *dev)
 {
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+
+	mii_unregister(&dev->miidev);
+
 	if (pdata) {
 		netif_dbg(dev, ifdown, dev->net, "free pdata\n");
 		free(pdata);

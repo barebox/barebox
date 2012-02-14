@@ -718,7 +718,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	struct fs_driver_d *fs_drv = NULL, *f;
 	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
-	struct device_d *dev, *parent_device = NULL;
+	struct device_d *parent_device = NULL;
 	struct cdev *cdev = NULL;
 	int ret;
 	char *path = normalise_path(_path);
@@ -789,12 +789,10 @@ int mount(const char *device, const char *fsname, const char *_path)
 	if (parent_device)
 		dev_add_child(parent_device, &fsdev->dev);
 
-	dev = &fsdev->dev;
-
 	/* add mtab entry */
 	entry = &fsdev->mtab;
 	entry->path = xstrdup(path);
-	entry->dev = dev;
+	entry->dev = &fsdev->dev;
 	entry->parent_device = parent_device;
 
 	list_add_tail(&entry->list, &mtab_list);

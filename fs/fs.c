@@ -778,13 +778,14 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	debug("mount: %s on %s type %s\n", device, path, fsname);
 
-	if (strchr(path + 1, '/')) {
-		printf("mounting allowed on first directory level only\n");
-		errno = -EBUSY;
-		goto err_free_path;
-	}
-
 	if (mtab_root) {
+		struct mtab_entry *entry;
+		entry = get_mtab_entry_by_path(path);
+		if (entry != mtab_root) {
+			printf("sorry, no nested mounts\n");
+			errno = -EBUSY;
+			goto err_free_path;
+		}
 		if (path_check_prereq(path, S_IFDIR))
 			goto err_free_path;
 	} else {

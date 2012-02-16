@@ -29,9 +29,22 @@ struct pwm_device {
 #define FLAG_REQUESTED	0
 #define FLAG_ENABLED	1
 	struct list_head	node;
+	struct device_d		*dev;
 };
 
 static LIST_HEAD(pwm_list);
+
+static struct pwm_device *dev_to_pwm(struct device_d *dev)
+{
+	struct pwm_device *pwm;
+
+	list_for_each_entry(pwm, &pwm_list, node) {
+		if (pwm->dev == dev)
+			return pwm;
+	}
+
+	return NULL;
+}
 
 static struct pwm_device *_find_pwm(const char *devname)
 {
@@ -45,6 +58,63 @@ static struct pwm_device *_find_pwm(const char *devname)
 	return NULL;
 }
 
+static int set_period_ns(struct device_d *dev, struct param_d *p,
+			 const char *val)
+{
+	struct pwm_device *pwm = dev_to_pwm(dev);
+	int period_ns;
+
+	if (!val)
+		return dev_param_set_generic(dev, p, NULL);
+
+	period_ns = simple_strtoul(val, NULL, 0);
+	pwm_config(pwm, pwm->chip->duty_ns, period_ns);
+	return dev_param_set_generic(dev, p, val);
+}
+
+static int set_duty_ns(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct pwm_device *pwm = dev_to_pwm(dev);
+	int duty_ns;
+
+	if (!val)
+		return dev_param_set_generic(dev, p, NULL);
+
+	duty_ns = simple_strtoul(val, NULL, 0);
+	pwm_config(pwm, duty_ns, pwm->chip->period_ns);
+	return dev_param_set_generic(dev, p, val);
+}
+
+static int set_enable(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct pwm_device *pwm = dev_to_pwm(dev);
+	int enable;
+
+	if (!val)
+		return dev_param_set_generic(dev, p, NULL);
+
+	enable = !!simple_strtoul(val, NULL, 0);
+	if (enable)
+		pwm_enable(pwm);
+	else
+		pwm_disable(pwm);
+	return dev_param_set_generic(dev, p, enable ? "1" : "0");
+}
+
+static int pwm_register_vars(struct device_d *dev)
+{
+	int ret;
+
+	ret = dev_add_param(dev, "duty_ns", set_duty_ns, NULL, 0);
+	if (!ret)
+		ret = dev_add_param(dev, "period_ns", set_period_ns, NULL, 0);
+	if (!ret)
+		ret = dev_add_param(dev, "enable", set_enable, NULL, 0);
+	if (!ret)
+		ret = dev_set_param(dev, "enable", 0);
+	return ret;
+}
+
 /**
  * pwmchip_add() - register a new pwm
  * @chip: the pwm
@@ -52,7 +122,7 @@ static struct pwm_device *_find_pwm(const char *devname)
  * register a new pwm. pwm->devname must be initialized, usually
  * from dev_name(dev) from the hardware driver.
  */
-int pwmchip_add(struct pwm_chip *chip)
+int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
 {
 	struct pwm_device *pwm;
 	int ret = 0;
@@ -62,8 +132,10 @@ int pwmchip_add(struct pwm_chip *chip)
 
 	pwm = xzalloc(sizeof(*pwm));
 	pwm->chip = chip;
+	pwm->dev = dev;
 
 	list_add_tail(&pwm->node, &pwm_list);
+	pwm_register_vars(dev);
 
 	return ret;
 }
@@ -136,6 +208,8 @@ EXPORT_SYMBOL_GPL(pwm_free);
  */
 int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 {
+	pwm->chip->duty_ns = duty_ns;
+	pwm->chip->period_ns = period_ns;
 	return pwm->chip->ops->config(pwm->chip, duty_ns, period_ns);
 }
 EXPORT_SYMBOL_GPL(pwm_config);

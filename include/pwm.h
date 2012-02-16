@@ -2,6 +2,7 @@
 #define __PWM_H
 
 struct pwm_device;
+struct device_d;
 
 /*
  * pwm_request - request a PWM device
@@ -51,13 +52,17 @@ struct pwm_ops {
  * struct pwm_chip - abstract a PWM
  * @devname: unique identifier for this pwm
  * @ops: The callbacks for this PWM
+ * @duty_ns: The duty cycle of the PWM, in nano-seconds
+ * @period_ns: The period of the PWM, in nano-seconds
  */
 struct pwm_chip {
 	const char		*devname;
 	struct pwm_ops		*ops;
+	int			duty_ns;
+	int			period_ns;
 };
 
-int pwmchip_add(struct pwm_chip *chip);
+int pwmchip_add(struct pwm_chip *chip, struct device_d *dev);
 int pwmchip_remove(struct pwm_chip *chip);
 
 #endif /* __PWM_H */

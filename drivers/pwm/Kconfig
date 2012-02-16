@@ -8,5 +8,11 @@ menuconfig PWM
 	  If unsure, say N.
 
 if PWM
+config PWM_PXA
+	bool "PXA PWM Support"
+	default y if ARCH_PXA2XX
+	help
+	  This enables PWM support for Intel/Marvell PXA chips, such
+	  as the PXA25x, PXA27x.
 
 endif

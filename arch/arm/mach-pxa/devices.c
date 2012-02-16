@@ -47,3 +47,8 @@ struct device_d *pxa_add_mmc(void *base, int id, void *pdata)
 {
 	return pxa_add_device("pxa-mmc", id, base, 0x1000, pdata);
 }
+
+struct device_d *pxa_add_pwm(void *base, int id)
+{
+	return pxa_add_device("pxa_pwm", id, base, 0x10, NULL);
+}

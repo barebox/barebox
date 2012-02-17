@@ -72,16 +72,17 @@ struct fs_driver_d {
 	struct driver_d drv;
 
 	unsigned long flags;
-
-	struct list_head list;
 };
 
 struct mtab_entry {
-	char path[PATH_MAX];
-	struct mtab_entry *next;
+	char *path;
 	struct device_d *dev;
 	struct device_d *parent_device;
+	struct list_head list;
 };
+
+extern struct list_head mtab_list;
+#define for_each_mtab_entry(e) list_for_each_entry(e, &mtab_list, list)
 
 struct fs_device_d {
 	char *backingstore; /* the device we are associated with */
@@ -89,6 +90,7 @@ struct fs_device_d {
 
 	struct fs_driver_d *driver;
 
+	struct cdev *cdev;
 	struct mtab_entry mtab;
 };
 
@@ -141,15 +143,6 @@ void *memmap(int fd, int flags);
 int ls(const char *path, ulong flags);
 
 char *mkmodestr(unsigned long mode, char *str);
-
-/*
- * Information about mounted devices.
- * Note that we only support mounting on directories lying
- * directly in / and of course the root directory itself
- */
-struct mtab_entry *get_mtab_entry_by_path(const char *path);
-struct mtab_entry *mtab_next_entry(struct mtab_entry *entry);
-const char *fsdev_get_mountpoint(struct fs_device_d *fsdev);
 
 /*
  * Read a file into memory. Memory is allocated with malloc and must

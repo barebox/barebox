@@ -167,45 +167,21 @@ char *normalise_path(const char *pathname)
 }
 EXPORT_SYMBOL(normalise_path);
 
-static struct mtab_entry *mtab;
+LIST_HEAD(mtab_list);
+static struct mtab_entry *mtab_root;
 
-struct mtab_entry *get_mtab_entry_by_path(const char *_path)
+static struct mtab_entry *get_mtab_entry_by_path(const char *path)
 {
-	struct mtab_entry *match = NULL, *e = mtab;
-	char *path, *tok;
+	struct mtab_entry *e = NULL;
 
-	if (*_path != '/')
-		return NULL;
-
-	path = strdup(_path);
-
-	tok = strchr(path + 1, '/');
-	if (tok)
-		*tok = 0;
-
-	while (e) {
-		if (!strcmp(path, e->path)) {
-			match = e;
-			break;
-		}
-		e = e->next;
+	for_each_mtab_entry(e) {
+		int len = strlen(e->path);
+		if (!strncmp(path, e->path, len) &&
+				(path[len] == '/' || path[len] == 0))
+			return e;
 	}
 
-	free(path);
-
-	return match ? match : mtab;
-}
-
-struct mtab_entry *mtab_next_entry(struct mtab_entry *e)
-{
-	if (!e)
-		return mtab;
-	return e->next;
-}
-
-const char *fsdev_get_mountpoint(struct fs_device_d *fsdev)
-{
-	return fsdev->mtab.path;
+	return mtab_root;
 }
 
 static FILE files[MAX_FILES];
@@ -248,7 +224,7 @@ static struct device_d *get_fs_device_by_path(char **path)
 	e = get_mtab_entry_by_path(*path);
 	if (!e)
 		return NULL;
-	if (e != mtab)
+	if (e != mtab_root)
 		*path += strlen(e->path);
 
 	dev = e->dev;
@@ -721,12 +697,67 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
-static LIST_HEAD(fs_driver_list);
+static int fs_match(struct device_d *dev, struct driver_d *drv)
+{
+	return strcmp(dev->name, drv->name) ? -1 : 0;
+}
+
+static int fs_probe(struct device_d *dev)
+{
+	struct fs_device_d *fsdev = container_of(dev, struct fs_device_d, dev);
+	struct mtab_entry *entry = &fsdev->mtab;
+	int ret;
+
+	ret = dev->driver->probe(dev);
+	if (ret)
+		return ret;
+
+	if (fsdev->cdev) {
+		dev_add_child(fsdev->cdev->dev, &fsdev->dev);
+		entry->parent_device = fsdev->cdev->dev;
+	}
+
+	entry->dev = &fsdev->dev;
+
+	list_add_tail(&entry->list, &mtab_list);
+
+	if (!mtab_root)
+		mtab_root = entry;
+
+	return 0;
+}
+
+static void fs_remove(struct device_d *dev)
+{
+	struct fs_device_d *fsdev = container_of(dev, struct fs_device_d, dev);
+	struct mtab_entry *entry = &fsdev->mtab;
+
+	if (fsdev->dev.driver) {
+		dev->driver->remove(dev);
+		list_del(&entry->list);
+	}
+
+	free(entry->path);
+
+	if (entry == mtab_root)
+		mtab_root = NULL;
+
+	free(fsdev->backingstore);
+	free(fsdev);
+}
+
+struct bus_type fs_bus = {
+	.name = "fs",
+	.match = fs_match,
+	.probe = fs_probe,
+	.remove = fs_remove,
+};
 
 int register_fs_driver(struct fs_driver_d *fsdrv)
 {
-	list_add_tail(&fsdrv->list, &fs_driver_list);
+	fsdrv->drv.bus = &fs_bus;
 	register_driver(&fsdrv->drv);
+
 	return 0;
 }
 EXPORT_SYMBOL(register_fs_driver);
@@ -739,11 +770,7 @@ EXPORT_SYMBOL(register_fs_driver);
  */
 int mount(const char *device, const char *fsname, const char *_path)
 {
-	struct fs_driver_d *fs_drv = NULL, *f;
-	struct mtab_entry *entry;
 	struct fs_device_d *fsdev;
-	struct device_d *dev, *parent_device = NULL;
-	struct cdev *cdev = NULL;
 	int ret;
 	char *path = normalise_path(_path);
 
@@ -751,135 +778,89 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	debug("mount: %s on %s type %s\n", device, path, fsname);
 
-	if (get_mtab_entry_by_path(path) != mtab) {
-		errno = -EBUSY;
-		goto out;
-	}
-
-	if (strchr(path + 1, '/')) {
-		printf("mounting allowed on first directory level only\n");
-		errno = -EBUSY;
-		goto out;
-	}
-
-	list_for_each_entry(f, &fs_driver_list, list) {
-		if (!strcmp(f->drv.name, fsname)) {
-			fs_drv = f;
-			break;
+	if (mtab_root) {
+		struct mtab_entry *entry;
+		entry = get_mtab_entry_by_path(path);
+		if (entry != mtab_root) {
+			printf("sorry, no nested mounts\n");
+			errno = -EBUSY;
+			goto err_free_path;
 		}
-	}
-
-	if (!fs_drv) {
-		errno = -EINVAL;
-		goto out;
-	}
-
-	if (mtab) {
 		if (path_check_prereq(path, S_IFDIR))
-			goto out;
+			goto err_free_path;
 	} else {
 		/* no mtab, so we only allow to mount on '/' */
 		if (*path != '/' || *(path + 1)) {
 			errno = -ENOTDIR;
-			goto out;
+			goto err_free_path;
 		}
 	}
 
 	fsdev = xzalloc(sizeof(struct fs_device_d));
-	if (!(fs_drv->flags & FS_DRIVER_NO_DEV)) {
-		fsdev->backingstore = strdup(device);
-		if (!device) {
-			printf("need a device for driver %s\n", fsname);
-			errno = -ENODEV;
-			goto out1;
-		}
-	}
+	fsdev->backingstore = xstrdup(device);
 	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
 	fsdev->dev.type_data = fsdev;
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
+	fsdev->mtab.path = xstrdup(path);
+	fsdev->dev.bus = &fs_bus;
+
+	if (!strncmp(device, "/dev/", 5))
+		fsdev->cdev = cdev_by_name(device + 5);
 
 	if ((ret = register_device(&fsdev->dev))) {
 		errno = ret;
-		goto out1;
+		goto err_register;
 	}
 
 	if (!fsdev->dev.driver) {
-		/* driver didn't accept the device. Bail out */
+		/*
+		 * Driver didn't accept the device or no driver for this
+		 * device. Bail out
+		 */
 		errno = -EINVAL;
-		goto out2;
+		goto err_no_driver;
 	}
 
-	if (!strncmp(device, "/dev/", 5)) {
-		cdev = cdev_by_name(device + 5);
-		if(cdev)
-			parent_device = cdev->dev;
-	}
-
-	if (parent_device)
-		dev_add_child(parent_device, &fsdev->dev);
-
-	dev = &fsdev->dev;
-
-	/* add mtab entry */
-	entry = &fsdev->mtab; 
-	safe_strncpy(entry->path, path, PATH_MAX);
-	entry->dev = dev;
-	entry->parent_device = parent_device;
-	entry->next = NULL;
-
-	if (!mtab)
-		mtab = entry;
-	else {
-		struct mtab_entry *e = mtab;
-		while (e->next)
-			e = e->next;
-		e->next = entry;
-	}
 	errno = 0;
 
-	free(path);
 	return 0;
 
-out2:
+err_no_driver:
 	unregister_device(&fsdev->dev);
-out1:
-	if (fsdev->backingstore)
-		free(fsdev->backingstore);
-	free(fsdev);
-out:
+err_register:
+	fs_remove(&fsdev->dev);
+err_free_path:
 	free(path);
+
 	return errno;
 }
 EXPORT_SYMBOL(mount);
 
 int umount(const char *pathname)
 {
-	struct mtab_entry *entry = mtab;
-	struct mtab_entry *last = mtab;
+	struct mtab_entry *entry = NULL, *e;
 	char *p = normalise_path(pathname);
-	struct fs_device_d *fsdev;
 
-	while(entry && strcmp(p, entry->path)) {
-		last = entry;
-		entry = entry->next;
+	for_each_mtab_entry(e) {
+		if (!strcmp(p, e->path)) {
+			entry = e;
+			break;
+		}
 	}
 
 	free(p);
+
+	if (e == mtab_root && !list_is_singular(&mtab_list)) {
+		errno = -EBUSY;
+		return errno;
+	}
 
 	if (!entry) {
 		errno = -EFAULT;
 		return errno;
 	}
 
-	if (entry == mtab)
-		mtab = mtab->next;
-	else
-		last->next = entry->next;
-
 	unregister_device(entry->dev);
-	fsdev = entry->dev->type_data;
-	free(fsdev->backingstore);
-	free(fsdev);
 
 	return 0;
 }
@@ -951,11 +932,11 @@ int stat(const char *filename, struct stat *s)
 		goto out;
 	}
 
-	if (e != mtab && strcmp(f, e->path)) {
+	if (e != mtab_root && strcmp(f, e->path)) {
 		f += strlen(e->path);
 		dev = e->dev;
 	} else
-		dev = mtab->dev;
+		dev = mtab_root->dev;
 
 	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
 

@@ -41,6 +41,8 @@
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
+#include <gpio_keys.h>
+#include <readkey.h>
 
 static void usb_a9260_set_board_type(void)
 {
@@ -219,6 +221,101 @@ static void __init ek_add_device_button(void)
 	export_env_ull("dfu_button", AT91_PIN_PB10);
 }
 
+#ifdef CONFIG_CALAO_DAB_MMX
+struct gpio_led dab_mmx_leds[] = {
+	{
+		.gpio = AT91_PIN_PB20,
+		.led = {
+			.name = "user_led1",
+		},
+	}, {
+		.gpio = AT91_PIN_PB21,
+		.led = {
+			.name = "user_led2",
+		},
+	}, {
+		.gpio = AT91_PIN_PB22,
+		.led = {
+			.name = "user_led3",
+		},
+	}, {
+		.gpio = AT91_PIN_PB23,
+		.led = {
+			.name = "user_led4",
+		},
+	}, {
+		.gpio = AT91_PIN_PB24,
+		.led = {
+			.name = "red",
+		},
+	}, {
+		.gpio = AT91_PIN_PB30,
+		.led = {
+			.name = "orange",
+		},
+	}, {
+		.gpio = AT91_PIN_PB31,
+		.led = {
+			.name = "green",
+		},
+	},
+};
+
+#ifdef CONFIG_KEYBOARD_GPIO
+struct gpio_keys_button keys[] = {
+	{
+		.code = KEY_UP,
+		.gpio = AT91_PIN_PB25,
+	}, {
+		.code = KEY_HOME,
+		.gpio = AT91_PIN_PB13,
+	}, {
+		.code = KEY_DOWN,
+		.gpio = AT91_PIN_PA26,
+	}, {
+		.code = KEY_ENTER,
+		.gpio = AT91_PIN_PC9,
+	},
+};
+
+struct gpio_keys_platform_data gk_pdata = {
+	.buttons = keys,
+	.nbuttons = ARRAY_SIZE(keys),
+};
+
+static void usb_a9260_keyboard_device_dab_mmx(void)
+{
+	int i;
+
+	for (i = 0; i < gk_pdata.nbuttons; i++) {
+		/* user push button, pull up enabled */
+		keys[i].active_low = 1;
+		at91_set_GPIO_periph(keys[i].gpio, keys[i].active_low);
+		at91_set_deglitch(keys[i].gpio, 1);
+	}
+
+	add_gpio_keys_device(-1, &gk_pdata);
+}
+#else
+static void usb_a9260_keyboard_device_dab_mmx(void) {}
+#endif
+
+static void usb_a9260_device_dab_mmx(void)
+{
+	int i;
+
+	usb_a9260_keyboard_device_dab_mmx();
+
+	for (i = 0; i < ARRAY_SIZE(dab_mmx_leds); i++) {
+		dab_mmx_leds[i].active_low = 1;
+		at91_set_gpio_output(dab_mmx_leds[i].gpio, dab_mmx_leds[i].active_low);
+		led_gpio_register(&dab_mmx_leds[i]);
+	}
+}
+#else
+static void usb_a9260_device_dab_mmx(void) {}
+#endif
+
 static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
@@ -229,6 +326,7 @@ static int usb_a9260_devices_init(void)
 	ek_add_device_udc();
 	ek_add_led();
 	ek_add_device_button();
+	usb_a9260_device_dab_mmx();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	usb_a9260_set_board_type();
@@ -248,7 +346,17 @@ device_initcall(usb_a9260_devices_init);
 
 static int usb_a9260_console_init(void)
 {
+	struct device_d *dev;
+
 	at91_register_uart(0, 0);
+
+	if (IS_ENABLED(CONFIG_CALAO_DAB_MMX)) {
+		at91_register_uart(2, 0);
+
+		dev = at91_register_uart(4, 0);
+		dev_set_param(dev, "active", "");
+	}
+
 	return 0;
 }
 console_initcall(usb_a9260_console_init);

@@ -260,6 +260,11 @@ static inline struct device_d *add_generic_usb_ehci_device(int id,
 	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
 }
 
+static inline struct device_d *add_gpio_keys_device(int id, void *pdata)
+{
+	return add_generic_device_res("gpio_keys", id, 0, 0, pdata);
+}
+
 /* linear list over all available devices
  */
 extern struct list_head device_list;

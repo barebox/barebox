@@ -722,8 +722,6 @@ static int smsc95xx_reset(struct usbnet *dev)
 	return 0;
 }
 
-static struct usbnet *usbnet_global;
-
 static int smsc95xx_bind(struct usbnet *dev)
 {
 	struct smsc95xx_priv *pdata = NULL;
@@ -761,14 +759,15 @@ static int smsc95xx_bind(struct usbnet *dev)
 static void smsc95xx_unbind(struct usbnet *dev)
 {
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+
+	mii_unregister(&dev->miidev);
+
 	if (pdata) {
 		netif_dbg(dev, ifdown, dev->net, "free pdata\n");
 		free(pdata);
 		pdata = NULL;
 		dev->data[0] = 0;
 	}
-
-	usbnet_global = NULL;
 }
 
 static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)

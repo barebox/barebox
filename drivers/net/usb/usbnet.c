@@ -235,13 +235,11 @@ void usbnet_disconnect(struct usb_device *usbdev)
 	struct eth_device *edev = &undev->edev;
 	struct driver_info *info;
 
-	eth_unregister(edev);
-	unregister_device(&edev->dev);
-
 	info = undev->driver_info;
 	if (info->unbind)
 		info->unbind(undev);
 
+	eth_unregister(edev);
+
 	free(undev);
 }
-

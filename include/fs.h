@@ -77,15 +77,8 @@ struct fs_driver_d {
 #define dev_to_fs_driver(d) container_of(d->driver, struct fs_driver_d, drv)
 #define dev_to_fs_device(d) container_of(d, struct fs_device_d, dev)
 
-struct mtab_entry {
-	char *path;
-	struct device_d *dev;
-	struct device_d *parent_device;
-	struct list_head list;
-};
-
-extern struct list_head mtab_list;
-#define for_each_mtab_entry(e) list_for_each_entry(e, &mtab_list, list)
+extern struct list_head fs_device_list;
+#define for_each_fs_device(f) list_for_each_entry(f, &fs_device_list, list)
 
 struct fs_device_d {
 	char *backingstore; /* the device we are associated with */
@@ -94,7 +87,9 @@ struct fs_device_d {
 	struct fs_driver_d *driver;
 
 	struct cdev *cdev;
-	struct mtab_entry mtab;
+	char *path;
+	struct device_d *parent_device;
+	struct list_head list;
 };
 
 /*

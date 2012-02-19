@@ -216,9 +216,126 @@ static int check_fd(int fd)
 	return 0;
 }
 
+#ifdef CONFIG_FS_AUTOMOUNT
+
+#define AUTOMOUNT_IS_FILE (1 << 0)
+
+struct automount {
+	char *path;
+	char *cmd;
+	struct list_head list;
+	unsigned int flags;
+};
+
+static LIST_HEAD(automount_list);
+
+void automount_remove(const char *_path)
+{
+	char *path = normalise_path(_path);
+	struct automount *am;
+
+	list_for_each_entry(am, &automount_list, list) {
+		if (!strcmp(path, am->path))
+			goto found;
+	}
+
+	return;
+found:
+	list_del(&am->list);
+	free(am->path);
+	free(am->cmd);
+	free(am);
+}
+EXPORT_SYMBOL(automount_remove);
+
+int automount_add(const char *path, const char *cmd)
+{
+	struct automount *am = xzalloc(sizeof(*am));
+	struct stat s;
+	int ret;
+
+	am->path = normalise_path(path);
+	am->cmd = xstrdup(cmd);
+
+	ret = stat(path, &s);
+	if (!ret) {
+		/*
+		 * If it exists it must be a directory
+		 */
+		if (!S_ISDIR(s.st_mode))
+			return -ENOTDIR;
+	} else {
+		am->flags |= AUTOMOUNT_IS_FILE;
+	}
+
+	list_add_tail(&am->list, &automount_list);
+
+	return 0;
+}
+EXPORT_SYMBOL(automount_add);
+
+void automount_print(void)
+{
+	struct automount *am;
+
+	list_for_each_entry(am, &automount_list, list)
+		printf("%-20s %s\n", am->path, am->cmd);
+}
+EXPORT_SYMBOL(automount_print);
+
+static void automount_mount(const char *path, int instat)
+{
+	struct automount *am;
+	int ret;
+
+	list_for_each_entry(am, &automount_list, list) {
+		char *cmd;
+		int len_path = strlen(path);
+		int len_am_path = strlen(am->path);
+
+		/*
+		 * stat is a bit special. We do not want to trigger
+		 * automount when someone calls stat() on the automount
+		 * directory itself.
+		 */
+		if (instat && !(am->flags & AUTOMOUNT_IS_FILE) &&
+				len_path == len_am_path) {
+			continue;
+		}
+
+		if (len_path < len_am_path)
+			continue;
+
+		if (strncmp(path, am->path, len_am_path))
+			continue;
+
+		if (*(path + len_am_path) != 0 && *(path + len_am_path) != '/')
+			continue;
+
+		cmd = asprintf("%s %s", am->cmd, am->path);
+		ret = run_command(cmd, 0);
+		free(cmd);
+
+		if (ret)
+			printf("running automount command '%s' failed\n",
+					am->cmd);
+		else
+			automount_remove(am->path);
+
+		return;
+	}
+}
+#else
+static void automount_mount(const char *path, int instat)
+{
+}
+#endif /* CONFIG_FS_AUTOMOUNT */
+
 static struct fs_device_d *get_fs_device_and_root_path(char **path)
 {
 	struct fs_device_d *fsdev;
+
+	automount_mount(*path, 0);
 
 	fsdev = get_fsdevice_by_path(*path);
 	if (!fsdev)
@@ -916,6 +1033,8 @@ int stat(const char *filename, struct stat *s)
 	struct fs_device_d *fsdev;
 	char *f = normalise_path(filename);
 	char *freep = f;
+
+	automount_mount(f, 1);
 
 	memset(s, 0, sizeof(struct stat));
 

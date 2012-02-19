@@ -160,4 +160,8 @@ char *normalise_path(const char *path);
 /* Register a new filesystem driver */
 int register_fs_driver(struct fs_driver_d *fsdrv);
 
+void automount_remove(const char *_path);
+int automount_add(const char *path, const char *cmd);
+void automount_print(void);
+
 #endif /* __FS_H */

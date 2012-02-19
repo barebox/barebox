@@ -347,7 +347,7 @@ int unlink(const char *pathname)
 	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (!fsdrv->unlink) {
 		errno = -ENOSYS;
@@ -393,7 +393,7 @@ int open(const char *pathname, int flags, ...)
 	if (!dev)
 		goto out;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	f->dev = dev;
 	f->flags = flags;
@@ -455,7 +455,7 @@ int ioctl(int fd, int request, void *buf)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (fsdrv->ioctl)
 		errno = fsdrv->ioctl(dev, f, request, buf);
@@ -475,7 +475,7 @@ int read(int fd, void *buf, size_t count)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
@@ -502,7 +502,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 	if (f->pos + count > f->size) {
 		errno = fsdrv->truncate(dev, f, f->pos + count);
 		if (errno) {
@@ -534,7 +534,7 @@ int flush(int fd)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 	if (fsdrv->flush)
 		errno = fsdrv->flush(dev, f);
 	else
@@ -556,7 +556,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 	errno = 0;
 
 	dev = f->dev;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 	if (!fsdrv->lseek) {
 		errno = -ENOSYS;
 		return -1;
@@ -601,7 +601,7 @@ int erase(int fd, size_t count, unsigned long offset)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
@@ -626,7 +626,7 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (f->pos + count > f->size)
 		count = f->size - f->pos;
@@ -667,7 +667,7 @@ void *memmap(int fd, int flags)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (fsdrv->memmap)
 		errno = fsdrv->memmap(dev, f, &ret, flags);
@@ -689,7 +689,7 @@ int close(int fd)
 
 	dev = f->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 	errno = fsdrv->close(dev, f);
 
 	put_file(f);
@@ -765,8 +765,7 @@ EXPORT_SYMBOL(register_fs_driver);
 /*
  * Mount a device to a directory.
  * We do this by registering a new device on which the filesystem
- * driver will match. The filesystem driver then grabs the infomation
- * it needs from the new devices type_data.
+ * driver will match.
  */
 int mount(const char *device, const char *fsname, const char *_path)
 {
@@ -880,7 +879,7 @@ DIR *opendir(const char *pathname)
 	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	debug("opendir: fsdrv: %p\n",fsdrv);
 
@@ -938,7 +937,7 @@ int stat(const char *filename, struct stat *s)
 	} else
 		dev = mtab_root->dev;
 
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (*f == 0)
 		f = "/";
@@ -963,7 +962,7 @@ int mkdir (const char *pathname, mode_t mode)
 	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (fsdrv->mkdir) {
 		errno = fsdrv->mkdir(dev, p);
@@ -990,7 +989,7 @@ int rmdir (const char *pathname)
 	dev = get_fs_device_by_path(&p);
 	if (!dev)
 		goto out;
-	fsdrv = (struct fs_driver_d *)dev->driver->type_data;
+	fsdrv = dev_to_fs_driver(dev);
 
 	if (fsdrv->rmdir) {
 		errno = fsdrv->rmdir(dev, p);

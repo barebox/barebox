@@ -74,6 +74,8 @@ struct fs_driver_d {
 	unsigned long flags;
 };
 
+#define dev_to_fs_driver(d) container_of(d->driver, struct fs_driver_d, drv)
+
 struct mtab_entry {
 	char *path;
 	struct device_d *dev;

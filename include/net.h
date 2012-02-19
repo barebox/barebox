@@ -415,7 +415,7 @@ static inline int net_udp_bind(struct net_connection *con, int sport)
 	return 0;
 }
 
-static inline unsigned char *net_udp_get_payload(struct net_connection *con)
+static inline void *net_udp_get_payload(struct net_connection *con)
 {
 	return con->packet + sizeof(struct ethernet) + sizeof(struct iphdr) +
 		sizeof(struct udphdr);

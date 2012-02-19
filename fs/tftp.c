@@ -598,7 +598,7 @@ static int tftp_stat(struct device_d *dev, const char *filename, struct stat *s)
 
 static int tftp_probe(struct device_d *dev)
 {
-	struct fs_device_d *fsdev = dev->type_data;
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
 
 	dev->priv = priv;
@@ -633,7 +633,6 @@ static struct fs_driver_d tftp_driver = {
 		.probe  = tftp_probe,
 		.remove = tftp_remove,
 		.name = "tftp",
-		.type_data = &tftp_driver,
 	}
 };
 

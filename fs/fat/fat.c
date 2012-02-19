@@ -373,7 +373,7 @@ static int fat_stat(struct device_d *dev, const char *filename, struct stat *s)
 
 static int fat_probe(struct device_d *dev)
 {
-	struct fs_device_d *fsdev = dev->type_data;
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct fat_priv *priv = xzalloc(sizeof(struct fat_priv));
 	char *backingstore = fsdev->backingstore;
 
@@ -423,7 +423,6 @@ static struct fs_driver_d fat_driver = {
 		.probe  = fat_probe,
 		.remove = fat_remove,
 		.name = "fat",
-		.type_data = &fat_driver,
 	}
 };
 

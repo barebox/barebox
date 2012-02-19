@@ -249,7 +249,6 @@ static struct fs_driver_d devfs_driver = {
 		.probe  = devfs_probe,
 		.remove = devfs_delete,
 		.name = "devfs",
-		.type_data = &devfs_driver,
 	}
 };
 

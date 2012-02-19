@@ -704,7 +704,7 @@ static int fs_match(struct device_d *dev, struct driver_d *drv)
 
 static int fs_probe(struct device_d *dev)
 {
-	struct fs_device_d *fsdev = container_of(dev, struct fs_device_d, dev);
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct mtab_entry *entry = &fsdev->mtab;
 	int ret;
 
@@ -729,7 +729,7 @@ static int fs_probe(struct device_d *dev)
 
 static void fs_remove(struct device_d *dev)
 {
-	struct fs_device_d *fsdev = container_of(dev, struct fs_device_d, dev);
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct mtab_entry *entry = &fsdev->mtab;
 
 	if (fsdev->dev.driver) {
@@ -798,7 +798,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 	fsdev = xzalloc(sizeof(struct fs_device_d));
 	fsdev->backingstore = xstrdup(device);
 	safe_strncpy(fsdev->dev.name, fsname, MAX_DRIVER_NAME);
-	fsdev->dev.type_data = fsdev;
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 	fsdev->mtab.path = xstrdup(path);
 	fsdev->dev.bus = &fs_bus;

@@ -562,7 +562,6 @@ static struct fs_driver_d ramfs_driver = {
 		.probe  = ramfs_probe,
 		.remove = ramfs_remove,
 		.name = "ramfs",
-		.type_data = &ramfs_driver,
 	}
 };
 

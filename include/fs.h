@@ -75,6 +75,7 @@ struct fs_driver_d {
 };
 
 #define dev_to_fs_driver(d) container_of(d->driver, struct fs_driver_d, drv)
+#define dev_to_fs_device(d) container_of(d, struct fs_device_d, dev)
 
 struct mtab_entry {
 	char *path;

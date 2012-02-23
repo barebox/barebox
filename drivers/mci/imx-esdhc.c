@@ -24,7 +24,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-
 #include <config.h>
 #include <common.h>
 #include <driver.h>
@@ -60,7 +59,8 @@ struct fsl_esdhc {
 	u32	autoc12err;
 	u32	hostcapblt;
 	u32	wml;
-	char	reserved1[8];
+	u32	mixctrl;
+	char	reserved1[4];
 	u32	fevt;
 	char	reserved2[168];
 	u32	hostver;
@@ -234,7 +234,7 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 static int
 esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 {
-	u32	xfertyp;
+	u32	xfertyp, mixctrl;
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
@@ -266,6 +266,15 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Send the command */
 	esdhc_write32(&regs->cmdarg, cmd->cmdarg);
+
+	if (cpu_is_mx6()) {
+		/* write lower-half of xfertyp to mixctrl */
+		mixctrl = xfertyp & 0xFFFF;
+		/* Keep the bits 22-25 of the register as is */
+		mixctrl |= (esdhc_read32(&regs->mixctrl) & (0xF << 22));
+		esdhc_write32(&regs->mixctrl, mixctrl);
+	}
+
 	esdhc_write32(&regs->xfertyp, xfertyp);
 
 	/* Wait for the command to complete */

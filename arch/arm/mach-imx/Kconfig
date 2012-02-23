@@ -68,7 +68,7 @@ choice
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
-	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
 
 config ARCH_IMX_EXTERNAL_BOOT
 	bool "support external boot mode"
@@ -164,6 +164,11 @@ config ARCH_IMX53
 	bool "i.MX53"
 	select CPU_V7
 	select ARCH_HAS_FEC_IMX
+
+config ARCH_IMX6
+	bool "i.MX6"
+	select ARCH_HAS_FEC_IMX
+	select CPU_V7
 
 endchoice
 

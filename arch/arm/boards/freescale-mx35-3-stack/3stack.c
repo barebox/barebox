@@ -206,7 +206,7 @@ static int f3s_enable_display(void)
 
 late_initcall(f3s_enable_display);
 
-static struct pad_desc f3s_pads[] = {
+static iomux_v3_cfg_t f3s_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
 	MX35_PAD_FEC_RX_DV__FEC_RX_DV,

@@ -52,7 +52,7 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-static struct pad_desc eukrea_cpuimx51_pads[] = {
+static iomux_v3_cfg_t eukrea_cpuimx51_pads[] = {
 	/* FEC */
 	MX51_PAD_DISP2_DAT1__FEC_RX_ER,
 	MX51_PAD_DISP2_DAT15__FEC_TDATA0,

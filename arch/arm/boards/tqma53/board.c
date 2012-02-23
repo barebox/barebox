@@ -43,7 +43,7 @@ static struct fec_platform_data fec_info = {
 	.xcv_type = RMII,
 };
 
-static struct pad_desc tqma53_pads[] = {
+static iomux_v3_cfg_t tqma53_pads[] = {
 	MX53_PAD_KEY_ROW1__AUDMUX_AUD5_RXD,
 	MX53_PAD_KEY_COL0__AUDMUX_AUD5_TXC,
 	MX53_PAD_KEY_ROW0__AUDMUX_AUD5_TXD,

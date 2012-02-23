@@ -47,7 +47,7 @@ static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
 
-static struct pad_desc f3s_pads[] = {
+static iomux_v3_cfg_t f3s_pads[] = {
 	MX51_PAD_EIM_EB2__FEC_MDIO,
 	MX51_PAD_EIM_EB3__FEC_RDATA1,
 	MX51_PAD_EIM_CS2__FEC_RDATA2,

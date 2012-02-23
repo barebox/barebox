@@ -47,7 +47,7 @@ static struct fec_platform_data fec_info = {
 	.xcv_type = RMII,
 };
 
-static struct pad_desc loco_pads[] = {
+static iomux_v3_cfg_t loco_pads[] = {
 	/* UART1 */
 	MX53_PAD_CSI0_DAT10__UART1_TXD_MUX,
 	MX53_PAD_CSI0_DAT11__UART1_RXD_MUX,

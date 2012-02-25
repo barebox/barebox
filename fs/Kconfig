@@ -16,6 +16,10 @@ config FS_DEVFS
 	default y
 	prompt "devfs support"
 
+config FS_TFTP
+	bool
+	prompt "tftp support"
+
 source fs/fat/Kconfig
 
 config PARTITION_NEED_MTD

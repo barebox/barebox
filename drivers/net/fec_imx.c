@@ -603,7 +603,7 @@ static int fec_probe(struct device_d *dev)
 #endif
 	fec = xzalloc(sizeof(*fec));
 	edev = &fec->edev;
-	dev->type_data = edev;
+	dev->priv = fec;
 	edev->priv = fec;
 	edev->open = fec_open;
 	edev->init = fec_init;
@@ -656,9 +656,9 @@ static int fec_probe(struct device_d *dev)
 
 static void fec_remove(struct device_d *dev)
 {
-	struct eth_device *edev = dev->type_data;
+	struct fec_priv *fec = dev->priv;
 
-	fec_halt(edev);
+	fec_halt(&fec->edev);
 }
 
 /**

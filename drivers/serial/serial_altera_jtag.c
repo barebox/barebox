@@ -94,7 +94,6 @@ static int altera_serial_jtag_probe(struct device_d *dev) {
 	cdev = &priv->cdev;
 
 	priv->regs = dev_request_mem_region(dev, 0);
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = altera_serial_jtag_tstc;

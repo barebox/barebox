@@ -66,7 +66,6 @@ static int linux_console_probe(struct device_d *dev)
 	struct linux_console_data *data = dev->platform_data;
 
 	cdev = xzalloc(sizeof(struct console_device));
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = data->flags;
 	cdev->tstc = linux_console_tstc;

@@ -149,9 +149,8 @@ static int mpc5xxx_serial_tstc (struct console_device *cdev)
 static int mpc5xxx_serial_probe(struct device_d *dev)
 {
 	struct console_device *cdev;
-	
+
 	cdev = xzalloc(sizeof(struct console_device));
-	dev->type_data = cdev;
 	dev->priv = dev_request_mem_region(dev, 0);
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;

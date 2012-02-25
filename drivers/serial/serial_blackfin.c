@@ -116,7 +116,6 @@ static int blackfin_serial_probe(struct device_d *dev)
 	struct console_device *cdev;
 
 	cdev = xzalloc(sizeof(struct console_device));
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = blackfin_serial_tstc;

@@ -166,7 +166,6 @@ static int pl011_probe(struct device_d *dev)
 		return PTR_ERR(uart->clk);
 
 	cdev = &uart->uart;
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl011_tstc;

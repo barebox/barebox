@@ -47,7 +47,7 @@ int getopt(int argc, char *argv[], char *optstring)
 	char *curoptp; /* pointer to the current option in optstring */
 
 	while(1) {
-//		printf("optindex: %d nonopts: %d optind: %d\n", optindex, nonopts, optind);
+		debug("optindex: %d nonopts: %d optind: %d\n", optindex, nonopts, optind);
 
 		/* first put nonopts to the end */
 		while (optind + nonopts < argc && *argv[optind] != '-') {

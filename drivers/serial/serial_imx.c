@@ -322,9 +322,9 @@ static int imx_serial_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
+	dev->priv = priv;
 
 	priv->regs = dev_request_mem_region(dev, 0);
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = imx_serial_tstc;
@@ -350,9 +350,11 @@ static int imx_serial_probe(struct device_d *dev)
 
 static void imx_serial_remove(struct device_d *dev)
 {
-	struct console_device *cdev = dev->type_data;
+	struct imx_serial_priv *priv = dev->priv;
 
-	imx_serial_flush(cdev);
+	imx_serial_flush(&priv->cdev);
+	console_unregister(&priv->cdev);
+	free(priv);
 }
 
 static struct driver_d imx_serial_driver = {

@@ -168,7 +168,7 @@ static int pxa_serial_probe(struct device_d *dev)
 	cdev = &priv->cdev;
 	priv->regs = dev_request_mem_region(dev, 0);
 
-	dev->type_data = cdev;
+	dev->priv = priv
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pxa_serial_tstc;
@@ -184,7 +184,10 @@ static int pxa_serial_probe(struct device_d *dev)
 
 static void pxa_serial_remove(struct device_d *dev)
 {
-	free(dev->type_data);
+	struct pxa_serial_priv *priv = dev->priv;
+
+	console_unregister(&priv->cdev);
+	free(priv);
 }
 
 static struct driver_d pxa_serial_driver = {

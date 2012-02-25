@@ -715,7 +715,6 @@ static int smc911x_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	edev = &priv->edev;
-	dev->type_data = edev;
 	edev->priv = priv;
 
 	edev->init = smc911x_init_dev;

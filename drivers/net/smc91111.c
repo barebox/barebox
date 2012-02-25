@@ -1297,7 +1297,6 @@ static int smc91c111_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) +
 			sizeof(struct smc91c111_priv));
-	dev->type_data = edev;
 	edev->priv = (struct smc91c111_priv *)(edev + 1);
 
 	priv = edev->priv;

@@ -89,7 +89,6 @@ int tap_probe(struct device_d *dev)
 	}
 
 	edev = xmalloc(sizeof(struct eth_device));
-	dev->type_data = edev;
 	edev->priv = priv;
 
 	edev->init = tap_eth_open;

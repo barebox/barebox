@@ -507,8 +507,6 @@ static int tse_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(struct altera_tse_priv));
 	miidev = xzalloc(sizeof(struct mii_device));
 
-	dev->type_data = edev;
-
 	edev->priv = priv;
 
 	edev->init = tse_init_dev;

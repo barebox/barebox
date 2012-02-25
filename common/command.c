@@ -91,8 +91,9 @@ int execute_command(int argc, char **argv)
 {
 	struct command *cmdtp;
 	int ret;
+	struct getopt_context gc;
 
-	getopt_reset();
+	getopt_context_store(&gc);
 
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {
@@ -100,17 +101,20 @@ int execute_command(int argc, char **argv)
 		ret = cmdtp->cmd(cmdtp, argc, argv);
 		if (ret == COMMAND_ERROR_USAGE) {
 			barebox_cmd_usage(cmdtp);
-			return COMMAND_ERROR;
+			ret = COMMAND_ERROR;
 		}
-		return ret;
 	} else {
 #ifdef CONFIG_CMD_HELP
 		printf ("Unknown command '%s' - try 'help'\n", argv[0]);
 #else
 		printf ("Unknown command '%s'\n", argv[0]);
 #endif
-		return -1;	/* give up after bad command */
+		ret = -1;	/* give up after bad command */
 	}
+
+	getopt_context_restore(&gc);
+
+	return ret;
 }
 
 int register_command(struct command *cmd)

@@ -34,12 +34,30 @@ EXPORT_SYMBOL(optarg);
 static int optindex = 1; /* option index in the current argv[] element */
 static int nonopts = 0;  /* number of nonopts found */
 
-void getopt_reset(void)
+void getopt_context_store(struct getopt_context *gc)
 {
+	gc->optind = optind;
+	gc->opterr = opterr;
+	gc->optopt = optopt;
+	gc->optarg = optarg;
+	gc->nonopts = nonopts;
+	gc->optindex = optindex;
+
 	optind = opterr = optindex = 1;
 	nonopts = 0;
 }
-EXPORT_SYMBOL(getopt_reset);
+EXPORT_SYMBOL(getopt_context_store);
+
+void getopt_context_restore(struct getopt_context *gc)
+{
+	optind = gc->optind;
+	opterr = gc->opterr;
+	optopt = gc->optopt;
+	optarg = gc->optarg;
+	nonopts = gc->nonopts;
+	optindex = gc->optindex;
+}
+EXPORT_SYMBOL(getopt_context_restore);
 
 int getopt(int argc, char *argv[], char *optstring)
 {

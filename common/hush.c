@@ -502,9 +502,10 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 {
 	char *optstring, *var;
-	int opt;
+	int opt, ret = 0;
 	char opta[2];
 	struct option *o;
+	struct getopt_context gc;
 
 	if (child->argc != 3)
 		return -2 - 1;
@@ -512,7 +513,7 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 	optstring = child->argv[1];
 	var = child->argv[2];
 
-	getopt_reset();
+	getopt_context_store(&gc);
 
 	if (!ctx->options_parsed) {
 		while((opt = getopt(ctx->global_argc, ctx->global_argv, optstring)) > 0) {
@@ -525,8 +526,10 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 
 	ctx->options_parsed = 1;
 
-	if (list_empty(&ctx->options))
-		return -1;
+	if (list_empty(&ctx->options)) {
+		ret = -1;
+		goto out;
+	}
 
 	o = list_first_entry(&ctx->options, struct option, list);
 
@@ -538,8 +541,10 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 	free(o->optarg);
 	list_del(&o->list);
 	free(o);
+out:
+	getopt_context_restore(&gc);
 
-	return 0;
+	return ret;
 }
 
 BAREBOX_MAGICVAR(OPTARG, "optarg for hush builtin getopt");

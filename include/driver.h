@@ -120,12 +120,6 @@ struct driver_d {
 
 	unsigned long type;
 	struct bus_type *bus;
-
-	/*! This is somewhat redundant with the type data in struct device.
-	 * Currently the filesystem implementation uses this field while
-	 * ethernet drivers use the same field in struct device. Probably
-	 * one of both should be removed. */
-	void *type_data;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */

@@ -48,6 +48,8 @@ struct eth_device {
 	struct list_head list;
 };
 
+#define dev_to_edev(d) container_of(d, struct eth_device, dev)
+
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 

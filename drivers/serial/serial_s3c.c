@@ -41,6 +41,13 @@
 #define URXH 0x24		/* receive */
 #define UBRDIV 0x28		/* baudrate generator */
 
+struct s3c_uart {
+	void __iomem *regs;
+	struct console_device cdev;
+};
+
+#define to_s3c_uart(c)	container_of(c, struct s3c_uart, cdev)
+
 static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
 {
 	unsigned reg = readw(base + UCON);
@@ -60,8 +67,8 @@ static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
 
 static int s3c_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 	unsigned val;
 
 	val = s3c_get_arch_uart_input_clock(base) / (16 * baudrate) - 1;
@@ -72,8 +79,8 @@ static int s3c_serial_setbaudrate(struct console_device *cdev, int baudrate)
 
 static int s3c_serial_init_port(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 
 	/* FIFO enable, Tx/Rx FIFO clear */
 	writeb(0x07, base + UFCON);
@@ -98,8 +105,8 @@ static int s3c_serial_init_port(struct console_device *cdev)
 
 static void s3c_serial_putc(struct console_device *cdev, char c)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 
 	/* Wait for Tx FIFO not full */
 	while (!(readb(base + UTRSTAT) & 0x2))
@@ -110,8 +117,8 @@ static void s3c_serial_putc(struct console_device *cdev, char c)
 
 static int s3c_serial_tstc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 
 	/* If receive fifo is empty, return false */
 	if (readb(base + UTRSTAT) & 0x1)
@@ -122,8 +129,8 @@ static int s3c_serial_tstc(struct console_device *cdev)
 
 static int s3c_serial_getc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 
 	/* wait for a character */
 	while (!(readb(base + UTRSTAT) & 0x1))
@@ -134,8 +141,8 @@ static int s3c_serial_getc(struct console_device *cdev)
 
 static void s3c_serial_flush(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
-	void __iomem *base = dev->priv;
+	struct s3c_uart *priv = to_s3c_uart(cdev);
+	void __iomem *base = priv->regs;
 
 	while (!(readb(base + UTRSTAT) & 0x4))
 		;
@@ -143,11 +150,13 @@ static void s3c_serial_flush(struct console_device *cdev)
 
 static int s3c_serial_probe(struct device_d *dev)
 {
+	struct s3c_uart *priv;
 	struct console_device *cdev;
 
-	cdev = xzalloc(sizeof(struct console_device));
-	dev->type_data = cdev;
-	dev->priv = dev_request_mem_region(dev, 0);
+	priv = xzalloc(sizeof(struct console_device));
+	cdev = &priv->cdev;
+	priv->regs = dev_request_mem_region(dev, 0);
+	dev->priv = priv;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = s3c_serial_tstc;
@@ -166,11 +175,11 @@ static int s3c_serial_probe(struct device_d *dev)
 
 static void s3c_serial_remove(struct device_d *dev)
 {
-	struct console_device *cdev = dev->type_data;
+	struct s3c_uart *priv= dev->priv;
 
-	s3c_serial_flush(cdev);
-	free(cdev);
-	dev->type_data = NULL;
+	s3c_serial_flush(&priv->cdev);
+	console_unregister(&priv->cdev);
+	free(priv);
 }
 
 static struct driver_d s3c_serial_driver = {

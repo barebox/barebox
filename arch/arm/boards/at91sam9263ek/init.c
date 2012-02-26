@@ -32,6 +32,7 @@
 #include <io.h>
 #include <asm/hardware.h>
 #include <nand.h>
+#include <sizes.h>
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
@@ -129,15 +130,19 @@ static int at91sam9263ek_devices_init(void)
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 8 * 1024 * 1024, 0);
 	ek_add_device_mci();
 
-#if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
-#elif defined(CONFIG_NAND_ATMEL)
-	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", 0x80000, 0x20000, PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-#endif
+	if (IS_ENABLED(CONFIG_DRIVER_CFI) && cdev_by_name("nor0")) {
+		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
+		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	} else if (IS_ENABLED(CONFIG_NAND_ATMEL)) {
+		devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
+		dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
+		devfs_add_partition("nand0", SZ_128K, SZ_256K, PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", SZ_256K + SZ_128K, SZ_128K, PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		devfs_add_partition("nand0", SZ_512K, SZ_128K, PARTITION_FIXED, "env_raw1");
+		dev_add_bb_dev("env_raw1", "env1");
+	}
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9263EK);

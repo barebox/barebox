@@ -107,6 +107,36 @@ static void ek_add_device_mci(void)
 static void ek_add_device_mci(void) {}
 #endif
 
+#ifdef CONFIG_LED_GPIO
+struct gpio_led ek_leds[] = {
+	{
+		.gpio		= AT91_PIN_PC29,
+		.active_low	= 1,
+		.led = {
+			.name = "ds2",
+		},
+	}, {
+		.gpio		= AT91_PIN_PB7,
+		.led = {
+			.name = "ds3",
+		},
+	},
+};
+
+static void ek_device_add_leds(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ek_leds); i++) {
+		at91_set_gpio_output(ek_leds[i].gpio, ek_leds[i].active_low);
+		led_gpio_register(&ek_leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &ek_leds[1].led);
+}
+#else
+static void ek_device_add_leds(void) {}
+#endif
+
 static int at91sam9263ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -129,6 +159,7 @@ static int at91sam9263ek_devices_init(void)
 	at91_add_device_eth(&macb_pdata);
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 8 * 1024 * 1024, 0);
 	ek_add_device_mci();
+	ek_device_add_leds();
 
 	if (IS_ENABLED(CONFIG_DRIVER_CFI) && cdev_by_name("nor0")) {
 		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

@@ -137,6 +137,33 @@ static void ek_device_add_leds(void)
 static void ek_device_add_leds(void) {}
 #endif
 
+#if defined(CONFIG_USB_GADGET_DRIVER_AT91)
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PA25,
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
+};
+
+static void ek_add_device_udc(void)
+{
+	at91_add_device_udc(&ek_udc_data);
+}
+#else
+static void ek_add_device_udc(void) {}
+#endif
+
+static void __init ek_add_device_buttons(void)
+{
+	at91_set_gpio_input(AT91_PIN_PC5, 1);
+	at91_set_deglitch(AT91_PIN_PC5, 1);
+	export_env_ull("dfu_button", AT91_PIN_PC5);
+	at91_set_gpio_input(AT91_PIN_PC4, 1);
+	at91_set_deglitch(AT91_PIN_PC4, 1);
+	export_env_ull("right_click", AT91_PIN_PC4);
+}
+
 static int at91sam9263ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -160,6 +187,8 @@ static int at91sam9263ek_devices_init(void)
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 8 * 1024 * 1024, 0);
 	ek_add_device_mci();
 	ek_device_add_leds();
+	ek_add_device_udc();
+	ek_add_device_buttons();
 
 	if (IS_ENABLED(CONFIG_DRIVER_CFI) && cdev_by_name("nor0")) {
 		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

@@ -36,6 +36,9 @@
 #include <mach/iim.h>
 #include <mach/imx5.h>
 
+#include <i2c/i2c.h>
+#include <mfd/mc34708.h>
+
 #include <asm/armlinux.h>
 #include <io.h>
 #include <asm/mmu.h>
@@ -88,6 +91,16 @@ static struct pad_desc loco_pads[] = {
 	MX53_PAD_EIM_DA11__GPIO3_11,
 	/* SD3_WP */
 	MX53_PAD_EIM_DA12__GPIO3_12,
+
+	/* I2C0 */
+	MX53_PAD_CSI0_DAT8__I2C1_SDA,
+	MX53_PAD_CSI0_DAT9__I2C1_SCL,
+};
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("mc34708-i2c", 0x08),
+	},
 };
 
 static int loco_mem_init(void)
@@ -131,6 +144,8 @@ static int loco_devices_init(void)
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(&loco_sd1_data);
 	imx53_add_mmc2(&loco_sd3_data);
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	imx53_add_i2c0(NULL);
 
 	loco_fec_reset();
 

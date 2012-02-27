@@ -77,9 +77,9 @@ static int do_cp(struct command *cmdtp, int argc, char *argv[])
 			char *dst;
 			dst = concat_path_file(argv[argc - 1], basename(argv[i]));
 			ret = copy_file(argv[i], dst, verbose);
+			free(dst);
 			if (ret)
 				goto out;
-			free(dst);
 		} else {
 			ret = copy_file(argv[i], argv[argc - 1], verbose);
 			if (ret)

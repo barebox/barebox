@@ -101,7 +101,7 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 static void *sector_buf;
 
 /**
- * Write one block of data to the card
+ * Write one or several blocks of data to the card
  * @param mci_dev MCI instance
  * @param src Where to read from to write to the card
  * @param blocknum Block number to write
@@ -140,23 +140,17 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	data.flags = MMC_DATA_WRITE;
 
 	ret = mci_send_cmd(mci, &cmd, &data);
-	if (ret)
-		return ret;
 
-	if (blocks > 1) {
-		mci_setup_cmd(&cmd,
-			MMC_CMD_STOP_TRANSMISSION,
-			0, MMC_RSP_R1b);
-			ret = mci_send_cmd(mci, &cmd, NULL);
-			if (ret)
-				return ret;
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_send_cmd(mci, &cmd, NULL);
         }
 
 	return ret;
 }
 
 /**
- * Read one block of data from the card
+ * Read one or several block(s) of data from the card
  * @param mci MCI instance
  * @param dst Where to store the data read from the card
  * @param blocknum Block number to read
@@ -186,15 +180,10 @@ static int mci_read_block(struct mci *mci, void *dst, int blocknum,
 	data.flags = MMC_DATA_READ;
 
 	ret = mci_send_cmd(mci, &cmd, &data);
-	if (ret)
-		return ret;
 
-	if (blocks > 1) {
-		mci_setup_cmd(&cmd,
-			MMC_CMD_STOP_TRANSMISSION,
-			0,
-			MMC_RSP_R1b);
-			ret = mci_send_cmd(mci, &cmd, NULL);
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_send_cmd(mci, &cmd, NULL);
 	}
 	return ret;
 }

@@ -169,6 +169,31 @@ unsigned long imx_get_fecclk(void)
 	return imx_get_ipgclk();
 }
 
+static unsigned long imx_get_ipg_perclk(void)
+{
+	u32 reg;
+
+	reg = ccm_readl(MX5_CCM_CBCDR);
+	if (!(reg & MX5_CCM_CBCDR_PERIPH_CLK_SEL))
+		return pll2_sw_get_rate();
+	reg = ccm_readl(MX5_CCM_CBCMR);
+	switch ((reg & MX5_CCM_CBCMR_PERIPH_CLK_SEL_MASK) >>
+		MX5_CCM_CBCMR_PERIPH_CLK_SEL_OFFSET) {
+	case 0:
+		return pll1_main_get_rate();
+	case 1:
+		return pll3_sw_get_rate();
+	/* case 2:
+		TODO : LP_APM */
+	}
+	return 0;
+}
+
+unsigned long imx_get_i2cclk(void)
+{
+	return imx_get_ipg_perclk();
+}
+
 unsigned long imx_get_mmcclk(void)
 {
 	u32 reg, prediv, podf, rate;
@@ -201,4 +226,5 @@ void imx_dump_clocks(void)
 	printf("ipg:  %ld\n", imx_get_ipgclk());
 	printf("fec:  %ld\n", imx_get_fecclk());
 	printf("gpt:  %ld\n", imx_get_gptclk());
+	printf("i2c:  %ld\n", imx_get_i2cclk());
 }

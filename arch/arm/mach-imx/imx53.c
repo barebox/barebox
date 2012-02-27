@@ -20,7 +20,7 @@
 #include <io.h>
 #include <sizes.h>
 #include <mach/imx5.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx-regs.h>
 #include <mach/clock-imx51_53.h>
 
 #include "gpio.h"
@@ -36,6 +36,51 @@ void *imx_gpio_base[] = {
 };
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
+
+#define SI_REV 0x48
+
+static u32 mx53_silicon_revision;
+static char *mx53_rev_string = "unknown";
+
+int imx_silicon_revision(void)
+{
+	return mx53_silicon_revision;
+}
+
+static int query_silicon_revision(void)
+{
+	void __iomem *rom = MX53_IROM_BASE_ADDR;
+	u32 rev;
+
+	rev = readl(rom + SI_REV);
+	switch (rev) {
+	case 0x10:
+		mx53_silicon_revision = IMX_CHIP_REV_1_0;
+		mx53_rev_string = "1.0";
+		break;
+	case 0x20:
+		mx53_silicon_revision = IMX_CHIP_REV_2_0;
+		mx53_rev_string = "2.0";
+		break;
+	case 0x21:
+		mx53_silicon_revision = IMX_CHIP_REV_2_1;
+		mx53_rev_string = "2.1";
+		break;
+	default:
+		mx53_silicon_revision = 0;
+	}
+
+	return 0;
+}
+core_initcall(query_silicon_revision);
+
+static int imx53_print_silicon_rev(void)
+{
+	printf("detected i.MX53 rev %s\n", mx53_rev_string);
+
+	return 0;
+}
+device_initcall(imx53_print_silicon_rev);
 
 static int imx53_init(void)
 {

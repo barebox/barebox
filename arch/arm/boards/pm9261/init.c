@@ -123,7 +123,7 @@ static void __init pm_add_device_dm9000(void)
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 }
 #else
-static void __init ek_add_device_dm9000(void) {}
+static void __init pm_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9K */
 
 static int pm9261_mem_init(void)

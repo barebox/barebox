@@ -480,20 +480,20 @@ int open(const char *pathname, int flags, ...)
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
-	int exist;
+	int exist_err;
 	struct stat s;
 	char *path = normalise_path(pathname);
 	char *freep = path;
 
-	exist = (stat(path, &s) == 0) ? 1 : 0;
+	exist_err = stat(path, &s);
 
-	if (exist && S_ISDIR(s.st_mode)) {
+	if (!exist_err && S_ISDIR(s.st_mode)) {
 		errno = -EISDIR;
 		goto out1;
 	}
 
-	if (!exist && !(flags & O_CREAT)) {
-		errno = -ENOENT;
+	if (exist_err && !(flags & O_CREAT)) {
+		errno = exist_err;
 		goto out1;
 	}
 
@@ -517,7 +517,7 @@ int open(const char *pathname, int flags, ...)
 		goto out;
 	}
 
-	if (!exist) {
+	if (exist_err) {
 		if (NULL != fsdrv->create)
 			errno = fsdrv->create(&fsdev->dev, path,
 					S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);

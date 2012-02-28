@@ -1,0 +1,5 @@
+#!/bin/sh
+
+autoboot_timeout=3
+
+mtdparts="256k@3456k(barebox)ro,256k(barebox-logo),128k(barebox-env),4M(kernel),-(root)"

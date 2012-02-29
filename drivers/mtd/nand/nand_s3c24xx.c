@@ -606,7 +606,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 #ifdef CONFIG_NAND_S3C24XX_BOOT_DEBUG
 #include <command.h>
 
-static int do_nand_boot_test(struct command *cmdtp, int argc, char *argv[])
+static int do_nand_boot_test(int argc, char *argv[])
 {
 	void *dest;
 	int size;

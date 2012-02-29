@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <environment.h>
 
-static int do_setenv(struct command *cmdtp, int argc, char *argv[])
+static int do_setenv(int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;

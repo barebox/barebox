@@ -351,7 +351,7 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	return 0;
 }
 
-static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
+static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;
 	struct driver_d *drv;

@@ -29,7 +29,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 
-static int do_exec(struct command * cmdtp, int argc, char *argv[])
+static int do_exec(int argc, char *argv[])
 {
 	int i;
 	char *script;

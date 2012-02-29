@@ -23,7 +23,7 @@
 #include <command.h>
 #include <fs.h>
 
-static int do_pwd(struct command *cmdtp, int argc, char *argv[])
+static int do_pwd(int argc, char *argv[])
 {
 	printf("%s\n", getcwd());
 	return 0;

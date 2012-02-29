@@ -118,7 +118,6 @@ struct driver_d {
 	void    (*info) (struct device_d *);
 	void    (*shortinfo) (struct device_d *);
 
-	unsigned long type;
 	struct bus_type *bus;
 };
 

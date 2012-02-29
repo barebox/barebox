@@ -43,7 +43,7 @@ static void print_resources(struct resource *res)
 	__print_resources(res, 0);
 }
 
-static int do_iomem(struct command *cmdtp, int argc, char *argv[])
+static int do_iomem(int argc, char *argv[])
 {
 	print_resources(&iomem_resource);
 

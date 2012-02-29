@@ -668,7 +668,7 @@ static void nfs_start(char *p)
 	nfs_send();
 }
 
-static int do_nfs(struct command *cmdtp, int argc, char *argv[])
+static int do_nfs(int argc, char *argv[])
 {
 	char  *localfile;
 	char  *remotefile;

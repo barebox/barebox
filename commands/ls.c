@@ -111,7 +111,7 @@ out:
 	return 0;
 }
 
-static int do_ls(struct command *cmdtp, int argc, char *argv[])
+static int do_ls(int argc, char *argv[])
 {
 	int ret, opt, o;
 	struct stat s;

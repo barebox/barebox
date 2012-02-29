@@ -35,11 +35,10 @@
 #include <getopt.h>
 
 /**
- * @param[in] cmdtp FIXME
  * @param[in] argc Argument count from command line
  * @param[in] argv List of input arguments
  */
-static int do_cp(struct command *cmdtp, int argc, char *argv[])
+static int do_cp(int argc, char *argv[])
 {
 	int ret = 1;
 	struct stat statbuf;

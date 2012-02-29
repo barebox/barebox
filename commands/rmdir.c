@@ -3,7 +3,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_rmdir(struct command *cmdtp, int argc, char *argv[])
+static int do_rmdir(int argc, char *argv[])
 {
 	int i = 1;
 

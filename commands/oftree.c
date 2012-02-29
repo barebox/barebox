@@ -40,7 +40,7 @@
 #include <getopt.h>
 #include <init.h>
 
-static int do_oftree(struct command *cmdtp, int argc, char *argv[])
+static int do_oftree(int argc, char *argv[])
 {
 	struct fdt_header *fdt;
 	int size;

@@ -24,7 +24,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_umount(struct command *cmdtp, int argc, char *argv[])
+static int do_umount(int argc, char *argv[])
 {
 	int ret = 0;
 

@@ -82,7 +82,7 @@ out:
 	return ret;
 }
 
-static int do_crc(struct command *cmdtp, int argc, char *argv[])
+static int do_crc(int argc, char *argv[])
 {
 	ulong start = 0, size = ~0, total = 0;
 	ulong crc = 0, vcrc = 0;

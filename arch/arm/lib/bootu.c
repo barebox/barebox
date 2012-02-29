@@ -6,16 +6,14 @@
 #include <of.h>
 #include <asm/armlinux.h>
 
-static int do_bootu(struct command *cmdtp, int argc, char *argv[])
+static int do_bootu(int argc, char *argv[])
 {
 	int fd;
 	void *kernel = NULL;
 	void *oftree = NULL;
 
-	if (argc != 2) {
-		barebox_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd > 0)

@@ -252,7 +252,7 @@ static void bootm_image_name_and_no(char *name, int *no)
 	*no = simple_strtoul(at, NULL, 10);
 }
 
-static int do_bootm(struct command *cmdtp, int argc, char *argv[])
+static int do_bootm(int argc, char *argv[])
 {
 	int opt;
 	struct image_handler *handler;

@@ -95,7 +95,7 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
  * s = save mode (download whole image before flashing)
  * r = read back (firmware image can be downloaded back from host)
  */
-static int do_dfu(struct command *cmdtp, int argc, char *argv[])
+static int do_dfu(int argc, char *argv[])
 {
 	int opt, n = 0;
 	struct usb_dfu_pdata pdata;

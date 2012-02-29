@@ -47,7 +47,7 @@ struct command {
 	const char	*name;		/* Command Name			*/
 	const char	**aliases;
 					/* Implementation function	*/
-	int		(*cmd)(struct command *, int, char *[]);
+	int		(*cmd)(int, char *[]);
 	const char	*usage;		/* Usage message	(short)	*/
 
 	struct list_head list;		/* List of commands		*/

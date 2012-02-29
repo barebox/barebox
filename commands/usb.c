@@ -23,7 +23,7 @@
 #include <command.h>
 #include <usb/usb.h>
 
-static int do_usb(struct command *cmdtp, int argc, char *argv[])
+static int do_usb(int argc, char *argv[])
 {
 	usb_rescan();
 

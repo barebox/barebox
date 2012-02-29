@@ -35,11 +35,10 @@
 #define BUFSIZE 1024
 
 /**
- * @param[in] cmdtp FIXME
  * @param[in] argc Argument count from command line
  * @param[in] argv List of input arguments
  */
-static int do_cat(struct command *cmdtp, int argc, char *argv[])
+static int do_cat(int argc, char *argv[])
 {
 	int ret;
 	int fd, i;

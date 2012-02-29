@@ -52,7 +52,7 @@ static void ping_handler(void *ctx, char *pkt, unsigned len)
 	ping_state = PING_STATE_SUCCESS;
 }
 
-static int do_ping(struct command *cmdtp, int argc, char *argv[])
+static int do_ping(int argc, char *argv[])
 {
 	int ret;
 	uint64_t ping_start = 0;

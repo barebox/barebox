@@ -23,7 +23,7 @@
 #include <common.h>
 #include <command.h>
 
-static int do_reginfo(struct command *cmdtp, int argc, char *argv[])
+static int do_reginfo(int argc, char *argv[])
 {
 	reginfo();
 	return 0;

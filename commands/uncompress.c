@@ -27,7 +27,7 @@
 #include <fs.h>
 #include <uncompress.h>
 
-static int do_uncompress(struct command *cmdtp, int argc, char *argv[])
+static int do_uncompress(int argc, char *argv[])
 {
 	int from, to, ret;
 

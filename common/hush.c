@@ -126,7 +126,7 @@
 #include <linux/list.h>
 
 /*cmd_boot.c*/
-extern int do_bootd(struct command *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
+extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
 #define SPECIAL_VAR_SYMBOL 03
 
 
@@ -1657,7 +1657,7 @@ int run_shell(void)
 	return rcode;
 }
 
-static int do_sh(struct command *cmdtp, int argc, char *argv[])
+static int do_sh(int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -1676,7 +1676,7 @@ BAREBOX_CMD_START(sh)
 	BAREBOX_CMD_HELP(cmd_sh_help)
 BAREBOX_CMD_END
 
-static int do_source(struct command *cmdtp, int argc, char *argv[])
+static int do_source(int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -1705,7 +1705,7 @@ BAREBOX_CMD_START(source)
 BAREBOX_CMD_END
 
 #ifdef CONFIG_HUSH_GETOPT
-static int do_getopt(struct command *cmdtp, int argc, char *argv[])
+static int do_getopt(int argc, char *argv[])
 {
 	/*
 	 * This function is never reached. The 'getopt' command is

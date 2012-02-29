@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <libbb.h>
 
-static int do_echo(struct command *cmdtp, int argc, char *argv[])
+static int do_echo(int argc, char *argv[])
 {
 	int i, optind = 1;
 	int fd = stdout, opt, newline = 1;

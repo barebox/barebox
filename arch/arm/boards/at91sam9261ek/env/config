@@ -33,5 +33,4 @@ autoboot_timeout=3
 bootargs="console=ttyS0,115200"
 
 # set a fancy prompt (if support is compiled in)
-PS1="\e[1;32mbarebox@\e[1;31m\h:\w\e[0m "
-
+PS1="\e[1;32mbarebox@\e[1;31m\h:\w\e[0m\n# "

@@ -39,6 +39,8 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <dm9000.h>
+#include <gpio_keys.h>
+#include <readkey.h>
 #include <led.h>
 
 static struct atmel_nand_data nand_pdata = {
@@ -152,11 +154,48 @@ static void ek_add_device_udc(void)
 static void ek_add_device_udc(void) {}
 #endif
 
+#ifdef CONFIG_KEYBOARD_GPIO
+struct gpio_keys_button keys[] = {
+	{
+		.code = KEY_UP,
+		.gpio = AT91_PIN_PA26,
+	}, {
+		.code = KEY_DOWN,
+		.gpio = AT91_PIN_PA25,
+	}, {
+		.code = KEY_ENTER,
+		.gpio = AT91_PIN_PA24,
+	},
+};
+
+struct gpio_keys_platform_data gk_pdata = {
+	.buttons = keys,
+	.nbuttons = ARRAY_SIZE(keys),
+};
+
+static void ek_add_device_keyboard_buttons(void)
+{
+	int i;
+
+	for (i = 0; i < gk_pdata.nbuttons; i++) {
+		/* user push button, pull up enabled */
+		keys[i].active_low = 1;
+		at91_set_GPIO_periph(keys[i].gpio, keys[i].active_low);
+		at91_set_deglitch(keys[i].gpio, 1);
+	}
+
+	add_gpio_keys_device(-1, &gk_pdata);
+}
+#else
+static void ek_add_device_keyboard_buttons(void) {}
+#endif
+
 static void __init ek_add_device_buttons(void)
 {
 	at91_set_gpio_input(AT91_PIN_PA27, 1);
 	at91_set_deglitch(AT91_PIN_PA27, 1);
 	export_env_ull("dfu_button", AT91_PIN_PA27);
+	ek_add_device_keyboard_buttons();
 }
 
 #ifdef CONFIG_LED_GPIO

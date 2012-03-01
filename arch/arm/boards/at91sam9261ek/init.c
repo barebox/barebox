@@ -135,6 +135,30 @@ static void __init ek_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9K */
 
+#if defined(CONFIG_USB_GADGET_DRIVER_AT91)
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PB29,
+	.pullup_pin	= 0,
+};
+
+static void ek_add_device_udc(void)
+{
+	at91_add_device_udc(&ek_udc_data);
+}
+#else
+static void ek_add_device_udc(void) {}
+#endif
+
+static void __init ek_add_device_buttons(void)
+{
+	at91_set_gpio_input(AT91_PIN_PA27, 1);
+	at91_set_deglitch(AT91_PIN_PA27, 1);
+	export_env_ull("dfu_button", AT91_PIN_PA27);
+}
+
 #ifdef CONFIG_LED_GPIO
 struct gpio_led ek_leds[] = {
 	{
@@ -184,6 +208,8 @@ static int at91sam9261ek_devices_init(void)
 
 	ek_add_device_nand();
 	ek_add_device_dm9000();
+	ek_add_device_udc();
+	ek_add_device_buttons();
 	ek_device_add_leds();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");

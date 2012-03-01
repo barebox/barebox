@@ -128,6 +128,42 @@ static void ek_add_device_mci(void)
 static void ek_add_device_mci(void) {}
 #endif
 
+#ifdef CONFIG_LED_GPIO
+struct gpio_led ek_leds[] = {
+	{
+		.gpio		= AT91_PIN_PD30,
+		.led = {
+			.name = "d8",
+		},
+	}, {
+		.active_low	= 1,
+		.gpio		= AT91_PIN_PD0,
+		.led = {
+			.name = "d6",
+		},
+	}, {
+		.active_low	= 1,
+		.gpio		= AT91_PIN_PD31,
+		.led = {
+			.name = "d7",
+		},
+	},
+};
+
+static void ek_device_add_leds(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ek_leds); i++) {
+		at91_set_gpio_output(ek_leds[i].gpio, ek_leds[i].active_low);
+		led_gpio_register(&ek_leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &ek_leds[0].led);
+}
+#else
+static void ek_device_add_leds(void) {}
+#endif
+
 static int at91sam9m10g45ek_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
@@ -141,6 +177,7 @@ static int at91sam9m10g45ek_devices_init(void)
 	ek_add_device_nand();
 	at91_add_device_eth(&macb_pdata);
 	ek_add_device_mci();
+	ek_device_add_leds();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");

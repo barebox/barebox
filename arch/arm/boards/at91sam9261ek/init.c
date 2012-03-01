@@ -39,6 +39,7 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <dm9000.h>
+#include <led.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 22,
@@ -134,6 +135,42 @@ static void __init ek_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9K */
 
+#ifdef CONFIG_LED_GPIO
+struct gpio_led ek_leds[] = {
+	{
+		.gpio		= AT91_PIN_PA23,
+		.led = {
+			.name = "ds1",
+		},
+	}, {
+		.gpio		= AT91_PIN_PA14,
+		.active_low	= 1,
+		.led = {
+			.name = "ds7",
+		},
+	}, {
+		.gpio		= AT91_PIN_PA13,
+		.active_low	= 1,
+		.led = {
+			.name = "ds8",
+		},
+	},
+};
+
+static void ek_device_add_leds(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ek_leds); i++) {
+		at91_set_gpio_output(ek_leds[i].gpio, ek_leds[i].active_low);
+		led_gpio_register(&ek_leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &ek_leds[0].led);
+}
+#else
+static void ek_device_add_leds(void) {}
+#endif
+
 static int at91sam9261ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -147,6 +184,7 @@ static int at91sam9261ek_devices_init(void)
 
 	ek_add_device_nand();
 	ek_add_device_dm9000();
+	ek_device_add_leds();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
 	devfs_add_partition("nand0", SZ_128K, SZ_256K, PARTITION_FIXED, "self_raw");

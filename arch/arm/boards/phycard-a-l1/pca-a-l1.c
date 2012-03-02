@@ -65,14 +65,11 @@
 #include <mach/gpmc_nand.h>
 #include <mach/omap_hsmmc.h>
 #include <mach/xload.h>
-#include <partition.h>
-#include <nand.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
 #include <mach/silicon.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
-#include <mach/xload.h>
 
 #define SMC911X_BASE 0x2c000000
 

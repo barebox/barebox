@@ -50,6 +50,7 @@
 #include <mach/board.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <asm/mmu.h>
 
 #include "macb.h"
 
@@ -118,6 +119,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	macb->tx_ring[0].ctrl = ctrl;
 	macb->tx_ring[0].addr = (ulong)packet;
 	barrier();
+	dma_flush_range((ulong) packet, (ulong)packet + length);
 	writel(MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART), macb->regs + MACB_NCR);
 
 	wait_on_timeout(100 * MSECOND,
@@ -435,9 +437,9 @@ static int macb_probe(struct device_d *dev)
 	macb->miidev.parent = dev;
 	macb->flags = pdata->flags;
 
-	macb->rx_buffer = xmalloc(CFG_MACB_RX_BUFFER_SIZE);
-	macb->rx_ring = xmalloc(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
-	macb->tx_ring = xmalloc(sizeof(struct macb_dma_desc));
+	macb->rx_buffer = dma_alloc_coherent(CFG_MACB_RX_BUFFER_SIZE);
+	macb->rx_ring = dma_alloc_coherent(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
+	macb->tx_ring = dma_alloc_coherent(sizeof(struct macb_dma_desc));
 
 	macb->regs = dev_request_mem_region(dev, 0);
 

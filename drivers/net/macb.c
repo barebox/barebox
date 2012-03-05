@@ -120,6 +120,11 @@ static int macb_send(struct eth_device *edev, void *packet,
 	barrier();
 	writel(MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART), macb->regs + MACB_NCR);
 
+	wait_on_timeout(100 * MSECOND,
+		!(macb->tx_ring[0].ctrl & TXBUF_USED));
+
+	ctrl = macb->tx_ring[0].ctrl;
+
 	if (ctrl & TXBUF_UNDERRUN)
 		printf("TX underrun\n");
 	if (ctrl & TXBUF_EXHAUSTED)

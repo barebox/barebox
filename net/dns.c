@@ -234,7 +234,7 @@ IPaddr_t resolv(char *host)
 	return dns_ip;
 }
 
-static int do_host(struct command *cmdtp, int argc, char *argv[])
+static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
 

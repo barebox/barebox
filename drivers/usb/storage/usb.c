@@ -415,7 +415,7 @@ static int usb_stor_add_blkdev(struct us_data *us, struct device_d *dev,
 	if (result != 0)
 		dev_warn(dev, "No partition table found\n");
 
-	list_add_tail(&pblk_dev->list, &us_blkdev_list);
+	list_add_tail(&pblk_dev->list, &us->blk_dev_list);
 	US_DEBUGP("USB disk device successfully added\n");
 
 	return 0;
@@ -556,6 +556,7 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	us->ifnum = intf->bInterfaceNumber;
 	us->subclass = intf->bInterfaceSubClass;
 	us->protocol = intf->bInterfaceProtocol;
+	INIT_LIST_HEAD(&us->blk_dev_list);
 
 	/* get standard transport and protocol settings */
 	get_transport(us);
@@ -582,30 +583,18 @@ BadDevice:
 /* Handle a USB mass-storage disconnect */
 static void usb_stor_disconnect(struct usb_device *usbdev)
 {
-#if 0
 	struct us_data *us = (struct us_data *)usbdev->drv_data;
 	struct us_blk_dev *bdev, *bdev_tmp;
 
-	US_DEBUGP("Disconnecting USB Mass Storage device %s\n",
-	          usbdev->dev.name);
-
-	/* release all block devices of this mass storage device */
-	list_for_each_entry_safe(bdev, bdev_tmp, &us_blkdev_list, list) {
-		if (bdev->us == us) {
-			US_DEBUGP("Releasing %s\n", bdev->dev.name);
-			list_del(&bdev->list);
-			unregister_device(&bdev->dev);
-			free(bdev);
-		}
+	list_for_each_entry_safe(bdev, bdev_tmp, &us->blk_dev_list, list) {
+		list_del(&bdev->list);
+		blockdevice_unregister(&bdev->blk);
+		free(bdev);
 	}
 
 	/* release device's private data */
 	usbdev->drv_data = 0;
 	free(us);
-#else
-	dev_err(&usbdev->dev, "Disk/partition removal not yet implemented "
-	                      "in the ATA disk driver.");
-#endif
 }
 
 #define USUAL_DEV(use_proto, use_trans, drv_info) \

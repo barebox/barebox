@@ -3,6 +3,10 @@
 
 #define CTL_CH(c)		((c) - 'a' + 1)
 
+/* Ascii keys */
+#define KEY_ENTER		'\n'
+#define KEY_RETURN		'\r'
+
 /* Misc. non-Ascii keys */
 #define KEY_UP			CTL_CH('p')	/* cursor key Up	*/
 #define KEY_DOWN		CTL_CH('n')	/* cursor key Down	*/

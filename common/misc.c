@@ -60,6 +60,7 @@ const char *strerror(int errnum)
 	case	EINTR		: str = "Interrupted system call"; break;
 	case	ENETUNREACH	: str = "Network is unreachable"; break;
 	case	ENETDOWN	: str = "Network is down"; break;
+	case	ETIMEDOUT	: str = "Connection timed out"; break;
 #if 0 /* These are probably not needed */
 	case	ENOTBLK		: str = "Block device required"; break;
 	case	EFBIG		: str = "File too large"; break;
@@ -87,7 +88,6 @@ const char *strerror(int errnum)
 	case	ECONNABORTED	: str = "Software caused connection abort"; break;
 	case	ECONNRESET	: str = "Connection reset by peer"; break;
 	case	ENOBUFS		: str = "No buffer space available"; break;
-	case	ETIMEDOUT	: str = "Connection timed out"; break;
 	case	ECONNREFUSED	: str = "Connection refused"; break;
 	case	EHOSTDOWN	: str = "Host is down"; break;
 	case	EALREADY	: str = "Operation already in progress"; break;
@@ -125,3 +125,6 @@ void perror(const char *s)
 #endif
 }
 EXPORT_SYMBOL(perror);
+
+void (*do_execute)(void *func, int argc, char *argv[]);
+EXPORT_SYMBOL(do_execute);

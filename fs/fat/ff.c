@@ -234,89 +234,38 @@ struct fat_sector {
 	unsigned char data[0];
 };
 
-#ifdef CONFIG_FS_FAT_WRITE
-static int push_fat_sector(FATFS *fs, DWORD sector)
-{
-	struct fat_sector *s;
+/*-----------------------------------------------------------------------*/
+/* Change window offset                                                  */
+/*-----------------------------------------------------------------------*/
 
-	list_for_each_entry(s, &fs->dirtylist, list) {
-		if (s->sector == sector) {
-			memcpy(s->data, fs->win, SS(fs));
-			return 0;
-		}
-	}
-
-	s = xmalloc(sizeof(*s) + SS(fs));
-	memcpy(s->data, fs->win, SS(fs));
-	s->sector = sector;
-	list_add_tail(&s->list, &fs->dirtylist);
-
-	return 0;
-}
-#endif
-
-static int get_fat_sector(FATFS *fs, DWORD sector)
-{
-	struct fat_sector *s;
-
-	list_for_each_entry(s, &fs->dirtylist, list) {
-		if (s->sector == sector) {
-			memcpy(fs->win, s->data, SS(fs));
-			return 0;
-		}
-	}
-
-	return disk_read(fs, fs->win, sector, 1);
-}
-
-#ifdef CONFIG_FS_FAT_WRITE
-static int flush_dirty_fat(FATFS *fs)
-{
-	struct fat_sector *s, *tmp;
-
-	list_for_each_entry_safe(s, tmp, &fs->dirtylist, list) {
-		disk_write(fs, s->data, s->sector, 1);
-		if (s->sector < (fs->fatbase + fs->fsize)) {
-			/* In FAT area */
-			BYTE nf;
-			DWORD wsect = s->sector;
-			/* Reflect the change to all FAT copies */
-			for (nf = fs->n_fats; nf > 1; nf--) {
-				wsect += fs->fsize;
-				disk_write(fs, s->data, wsect, 1);
-			}
-		}
-		list_del(&s->list);
-		free(s);
-	}
-
-	return 0;
-}
-#endif
-
-static int move_window (
-	FATFS *fs,	/* File system object */
+static
+int move_window (
+	FATFS *fs,		/* File system object */
 	DWORD sector	/* Sector number to make appearance in the fs->win[] */
-)			/* Move to zero only writes back dirty window */
+)					/* Move to zero only writes back dirty window */
 {
 	DWORD wsect;
-	int ret;
+
 
 	wsect = fs->winsect;
 	if (wsect != sector) {	/* Changed current window */
 #ifdef CONFIG_FS_FAT_WRITE
-		/* Write back dirty window if needed */
-		if (fs->wflag) {
-			ret = push_fat_sector(fs, wsect);
-			if (ret)
-				return ret;
+		if (fs->wflag) {	/* Write back dirty window if needed */
+			if (disk_write(fs, fs->win, wsect, 1) != RES_OK)
+				return -EIO;
 			fs->wflag = 0;
+			if (wsect < (fs->fatbase + fs->fsize)) {	/* In FAT area */
+				BYTE nf;
+				for (nf = fs->n_fats; nf > 1; nf--) {	/* Reflect the change to all FAT copies */
+					wsect += fs->fsize;
+					disk_write(fs, fs->win, wsect, 1);
+				}
+			}
 		}
 #endif
 		if (sector) {
-			ret = get_fat_sector(fs, sector);
-			if (ret)
-				return ret;
+			if (disk_read(fs, fs->win, sector, 1) != RES_OK)
+				return -EIO;
 			fs->winsect = sector;
 		}
 	}
@@ -2090,8 +2039,6 @@ int f_sync (
 	fp->flag &= ~FA__WRITTEN;
 	fp->fs->wflag = 1;
 	res = sync(fp->fs);
-
-	flush_dirty_fat(fp->fs);
 
 	return res;
 }

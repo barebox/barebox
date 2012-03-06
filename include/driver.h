@@ -118,14 +118,7 @@ struct driver_d {
 	void    (*info) (struct device_d *);
 	void    (*shortinfo) (struct device_d *);
 
-	unsigned long type;
 	struct bus_type *bus;
-
-	/*! This is somewhat redundant with the type data in struct device.
-	 * Currently the filesystem implementation uses this field while
-	 * ethernet drivers use the same field in struct device. Probably
-	 * one of both should be removed. */
-	void *type_data;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */
@@ -258,6 +251,11 @@ static inline struct device_d *add_generic_usb_ehci_device(int id,
 		resource_size_t base, void *pdata)
 {
 	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
+}
+
+static inline struct device_d *add_gpio_keys_device(int id, void *pdata)
+{
+	return add_generic_device_res("gpio_keys", id, 0, 0, pdata);
 }
 
 /* linear list over all available devices

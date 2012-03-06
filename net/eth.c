@@ -147,7 +147,7 @@ int eth_rx(void)
 
 static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
-	struct eth_device *edev = dev->type_data;
+	struct eth_device *edev = dev_to_edev(dev);
 	char ethaddr[sizeof("xx:xx:xx:xx:xx:xx")];
 
 	if (!val)
@@ -168,7 +168,7 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 
 static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
-	struct eth_device *edev = dev->type_data;
+	struct eth_device *edev = dev_to_edev(dev);
 	IPaddr_t ip;
 
 	if (!val)
@@ -205,7 +205,6 @@ int eth_register(struct eth_device *edev)
 
 	register_device(&edev->dev);
 
-	dev->type_data = edev;
 	dev_add_param(dev, "ipaddr", eth_set_ipaddr, NULL, 0);
 	dev_add_param(dev, "ethaddr", eth_set_ethaddr, NULL, 0);
 	dev_add_param(dev, "gateway", eth_set_ipaddr, NULL, 0);
@@ -244,8 +243,11 @@ int eth_register(struct eth_device *edev)
 
 void eth_unregister(struct eth_device *edev)
 {
-	dev_remove_parameters(&edev->dev);
+	if (edev == eth_current)
+		eth_current = NULL;
 
+	dev_remove_parameters(&edev->dev);
+	unregister_device(&edev->dev);
 	list_del(&edev->list);
 }
 

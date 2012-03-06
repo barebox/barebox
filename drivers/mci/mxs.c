@@ -640,27 +640,28 @@ static int mxs_mci_request(struct mci_host *host, struct mci_cmd *cmd,
  *
  * Drivers currently realized values are stored in MCI's platformdata
  */
-static void mxs_mci_set_ios(struct mci_host *host, struct device_d *mci_dev,
-			unsigned bus_width, unsigned clock)
+static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 {
 	struct mxs_mci_host *mxs_mci = to_mxs_mci(host);
 
-	switch (bus_width) {
-	case 8:
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_8:
 		mxs_mci->bus_width = 2;
 		host->bus_width = 8;	/* 8 bit is possible */
 		break;
-	case 4:
+	case MMC_BUS_WIDTH_4:
 		mxs_mci->bus_width = 1;
 		host->bus_width = 4;	/* 4 bit is possible */
 		break;
-	default:
+	case MMC_BUS_WIDTH_1:
 		mxs_mci->bus_width = 0;
 		host->bus_width = 1;	/* 1 bit is possible */
 		break;
+	default:
+		return;
 	}
 
-	mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, clock);
+	mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, ios->clock);
 	pr_debug("IO settings: bus width=%d, frequency=%u Hz\n", host->bus_width,
 			mxs_mci->clock);
 }
@@ -672,7 +673,7 @@ const unsigned char bus_width[3] = { 1, 4, 8 };
 
 static void mxs_mci_info(struct device_d *hw_dev)
 {
-	struct mxs_mci_host *mxs_mci = GET_HOST_DATA(hw_dev);
+	struct mxs_mci_host *mxs_mci = hw_dev->priv;
 
 	printf(" Interface\n");
 	printf("  Min. bus clock: %u Hz\n", mxs_mci->f_min);

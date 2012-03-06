@@ -28,8 +28,10 @@
  * Use puts() instead of printf() to avoid printf buffer overflow
  * for long help messages
  */
-static int do_help(struct command * cmdtp, int argc, char *argv[])
+static int do_help(int argc, char *argv[])
 {
+	struct command *cmdtp;
+
 	if (argc == 1) {	/* show list of commands */
 		for_each_command(cmdtp) {
 			if (!cmdtp->usage)

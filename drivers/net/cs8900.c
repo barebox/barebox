@@ -360,7 +360,7 @@ static const char *yesno_str(int v)
 
 static void cs8900_info(struct device_d *dev)
 {
-	struct eth_device *edev = (struct eth_device *)dev->type_data;
+	struct eth_device *edev = dev_to_edev(dev);
 	struct cs8900_priv *priv = (struct cs8900_priv *)edev->priv;
 	u16 v;
 
@@ -448,7 +448,6 @@ static int cs8900_probe(struct device_d *dev)
 	}
 
 	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
-	dev->type_data = edev;
 	edev->priv = priv;
 
 	edev->init = cs8900_dev_init;

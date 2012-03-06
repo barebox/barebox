@@ -24,7 +24,7 @@
 #include <common.h>
 #include <command.h>
 
-static int do_false(struct command *cmdtp, int argc, char *argv[])
+static int do_false(int argc, char *argv[])
 {
 	return 1;
 }

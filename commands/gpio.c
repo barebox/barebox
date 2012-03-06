@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <gpio.h>
 
-static int do_gpio_get_value(struct command *cmdtp, int argc, char *argv[])
+static int do_gpio_get_value(int argc, char *argv[])
 {
 	int gpio, value;
 
@@ -47,7 +47,7 @@ BAREBOX_CMD_START(gpio_get_value)
 	BAREBOX_CMD_HELP(cmd_gpio_get_value_help)
 BAREBOX_CMD_END
 
-static int do_gpio_set_value(struct command *cmdtp, int argc, char *argv[])
+static int do_gpio_set_value(int argc, char *argv[])
 {
 	int gpio, value;
 
@@ -73,7 +73,7 @@ BAREBOX_CMD_START(gpio_set_value)
 	BAREBOX_CMD_HELP(cmd_gpio_set_value_help)
 BAREBOX_CMD_END
 
-static int do_gpio_direction_input(struct command *cmdtp, int argc, char *argv[])
+static int do_gpio_direction_input(int argc, char *argv[])
 {
 	int gpio, ret;
 
@@ -100,7 +100,7 @@ BAREBOX_CMD_START(gpio_direction_input)
 	BAREBOX_CMD_HELP(cmd_gpio_direction_input_help)
 BAREBOX_CMD_END
 
-static int do_gpio_direction_output(struct command *cmdtp, int argc, char *argv[])
+static int do_gpio_direction_output(int argc, char *argv[])
 {
 	int gpio, value, ret;
 

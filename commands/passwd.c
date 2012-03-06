@@ -33,7 +33,7 @@
 #define PASSWD_MODE HIDE
 #endif
 
-static int do_passwd(struct command *cmdtp, int argc, char *argv[])
+static int do_passwd(int argc, char *argv[])
 {
 	unsigned char passwd2[PASSWD_MAX_LENGTH];
 	unsigned char passwd1[PASSWD_MAX_LENGTH];

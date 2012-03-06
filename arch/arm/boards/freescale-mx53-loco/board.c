@@ -36,6 +36,9 @@
 #include <mach/iim.h>
 #include <mach/imx5.h>
 
+#include <i2c/i2c.h>
+#include <mfd/mc34708.h>
+
 #include <asm/armlinux.h>
 #include <io.h>
 #include <asm/mmu.h>
@@ -88,7 +91,42 @@ static struct pad_desc loco_pads[] = {
 	MX53_PAD_EIM_DA11__GPIO3_11,
 	/* SD3_WP */
 	MX53_PAD_EIM_DA12__GPIO3_12,
+
+	/* I2C0 */
+	MX53_PAD_CSI0_DAT8__I2C1_SDA,
+	MX53_PAD_CSI0_DAT9__I2C1_SCL,
 };
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("mc34708-i2c", 0x08),
+	},
+};
+
+/*
+ * Revision to be passed to kernel. The kernel provided
+ * by freescale relies on this.
+ *
+ * C --> CPU type
+ * S --> Silicon revision
+ * B --> Board rev
+ *
+ * 31    20     16     12    8      4     0
+ *        | Cmaj | Cmin | B  | Smaj | Smin|
+ *
+ * e.g 0x00053120 --> i.MX35, Cpu silicon rev 2.0, Board rev 2
+*/
+static unsigned int loco_system_rev = 0x00053000;
+
+static void set_silicon_rev( int rev)
+{
+	loco_system_rev = loco_system_rev | (rev & 0xFF);
+}
+
+static void set_board_rev(int rev)
+{
+	loco_system_rev =  (loco_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
+}
 
 static int loco_mem_init(void)
 {
@@ -131,8 +169,12 @@ static int loco_devices_init(void)
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(&loco_sd1_data);
 	imx53_add_mmc2(&loco_sd3_data);
+	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+	imx53_add_i2c0(NULL);
 
 	loco_fec_reset();
+
+	set_silicon_rev(imx_silicon_revision());
 
 	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
@@ -155,10 +197,34 @@ static int loco_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(loco_pads, ARRAY_SIZE(loco_pads));
 
-	imx53_init_lowlevel();
+	imx53_init_lowlevel(1000);
 
 	imx53_add_uart0();
 	return 0;
 }
 
 console_initcall(loco_console_init);
+
+static int loco_pmic_init(void)
+{
+	struct mc34708 *mc34708;
+	int rev;
+
+	mc34708 = mc34708_get();
+	if (!mc34708) {
+		/* so we have a DA9053 based board */
+		printf("MCIMX53-START board 1.0\n");
+		armlinux_set_revision(loco_system_rev);
+		return 0;
+	}
+
+	/* get the board revision from fuse */
+	rev = readl(MX53_IIM_BASE_ADDR + 0x878);
+	set_board_rev(rev);
+	printf("MCIMX53-START-R board 1.0 rev %c\n", (rev == 1) ? 'A' : 'B' );
+	armlinux_set_revision(loco_system_rev);
+
+	return 0;
+}
+
+late_initcall(loco_pmic_init);

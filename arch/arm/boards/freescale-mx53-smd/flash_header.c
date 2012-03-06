@@ -16,10 +16,11 @@
 #include <common.h>
 #include <asm/byteorder.h>
 #include <mach/imx-flash-header.h>
+#include <asm/barebox-arm-head.h>
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {

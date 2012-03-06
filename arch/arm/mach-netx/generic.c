@@ -116,7 +116,7 @@ int loadxc(int xcno) {
 	return 0;
 }
 
-int do_loadxc(struct command *cmdtp, int argc, char *argv[])
+int do_loadxc(int argc, char *argv[])
 {
 	int xcno;
 

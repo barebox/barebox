@@ -4,7 +4,7 @@
 #include <asm-generic/div64.h>
 #include <malloc.h>
 
-static int do_time(struct command *cmdtp, int argc, char *argv[])
+static int do_time(int argc, char *argv[])
 {
 	int i;
 	unsigned char *buf;

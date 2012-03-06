@@ -36,7 +36,7 @@
 #include <fcntl.h>
 #include <linux/stat.h>
 
-static int do_flerase(struct command *cmdtp, int argc, char *argv[])
+static int do_flerase(int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;
@@ -103,7 +103,7 @@ devinfo_command for partition handling.
 
  */
 
-static int do_protect(struct command *cmdtp, int argc, char *argv[])
+static int do_protect(int argc, char *argv[])
 {
 	int fd;
 	char *filename = NULL;

@@ -30,7 +30,7 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_cd(struct command *cmdtp, int argc, char *argv[])
+static int do_cd(int argc, char *argv[])
 {
 	int ret;
 

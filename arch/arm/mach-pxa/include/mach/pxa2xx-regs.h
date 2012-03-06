@@ -222,6 +222,11 @@
 #define CCCR_N_MASK	0x0380	/* Run Mode Frequency to Turbo Mode Frequency Multiplier */
 #define CCCR_M_MASK	0x0060	/* Memory Frequency to Run Mode Frequency Multiplier */
 #define CCCR_L_MASK	0x001f	/* Crystal Frequency to Memory Frequency Multiplier */
+#define CCCR_CPDIS	(1 << 31)
+#define CCCR_PPDIS	(1 << 30)
+#define CCCR_LCD26	(1 << 27)
+#define CCCR_PLL_EARLY	(1 << 26)
+#define CCCR_A		(1 << 25)
 
 #define CKEN_AC97CONF   (1 << 31)    /* AC97 Controller Configuration */
 #define CKEN_CAMERA	(1 << 24)	/* Camera Interface Clock Enable */

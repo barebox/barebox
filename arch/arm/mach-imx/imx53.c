@@ -20,7 +20,7 @@
 #include <io.h>
 #include <sizes.h>
 #include <mach/imx5.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx-regs.h>
 #include <mach/clock-imx51_53.h>
 
 #include "gpio.h"
@@ -37,6 +37,51 @@ void *imx_gpio_base[] = {
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
+#define SI_REV 0x48
+
+static u32 mx53_silicon_revision;
+static char *mx53_rev_string = "unknown";
+
+int imx_silicon_revision(void)
+{
+	return mx53_silicon_revision;
+}
+
+static int query_silicon_revision(void)
+{
+	void __iomem *rom = MX53_IROM_BASE_ADDR;
+	u32 rev;
+
+	rev = readl(rom + SI_REV);
+	switch (rev) {
+	case 0x10:
+		mx53_silicon_revision = IMX_CHIP_REV_1_0;
+		mx53_rev_string = "1.0";
+		break;
+	case 0x20:
+		mx53_silicon_revision = IMX_CHIP_REV_2_0;
+		mx53_rev_string = "2.0";
+		break;
+	case 0x21:
+		mx53_silicon_revision = IMX_CHIP_REV_2_1;
+		mx53_rev_string = "2.1";
+		break;
+	default:
+		mx53_silicon_revision = 0;
+	}
+
+	return 0;
+}
+core_initcall(query_silicon_revision);
+
+static int imx53_print_silicon_rev(void)
+{
+	printf("detected i.MX53 rev %s\n", mx53_rev_string);
+
+	return 0;
+}
+device_initcall(imx53_print_silicon_rev);
+
 static int imx53_init(void)
 {
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
@@ -47,11 +92,12 @@ static int imx53_init(void)
 coredevice_initcall(imx53_init);
 
 #define setup_pll_1000(base)	imx5_setup_pll((base), 1000, ((10 << 4) + ((1 - 1) << 0)), (12 - 1), 5)
+#define setup_pll_800(base)	imx5_setup_pll((base), 800, ((8 << 4) + ((1 - 1) << 0)), (3 - 1), 1)
 #define setup_pll_400(base)	imx5_setup_pll((base), 400, ((8 << 4) + ((2 - 1)  << 0)), (3 - 1), 1)
 #define setup_pll_455(base)	imx5_setup_pll((base), 455, ((9 << 4) + ((2 - 1)  << 0)), (48 - 1), 23)
 #define setup_pll_216(base)	imx5_setup_pll((base), 216, ((8 << 4) + ((2 - 1)  << 0)), (1 - 1), 1)
 
-void imx53_init_lowlevel(void)
+void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX53_CCM_BASE_ADDR;
 	u32 r;
@@ -82,7 +128,11 @@ void imx53_init_lowlevel(void)
 	/* Switch ARM to step clock */
 	writel(0x4, ccm + MX5_CCM_CCSR);
 
-	setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
+	if (cpufreq_mhz == 1000)
+		setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
+	else
+		setup_pll_800((void __iomem *)MX53_PLL1_BASE_ADDR);
+
 	setup_pll_400((void __iomem *)MX53_PLL3_BASE_ADDR);
 
         /* Switch peripheral to PLL3 */

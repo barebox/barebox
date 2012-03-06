@@ -137,15 +137,25 @@ EXPORT_SYMBOL(register_device);
 
 int unregister_device(struct device_d *old_dev)
 {
-	debug("unregister_device: %s\n", dev_name(old_dev));
+	struct cdev *cdev, *ct;
+	struct device_d *child, *dt;
 
-	if (!list_empty(&old_dev->children)) {
-		errno = -EBUSY;
-		return errno;
-	}
+	dev_dbg(old_dev, "unregister\n");
 
 	if (old_dev->driver)
 		old_dev->bus->remove(old_dev);
+
+	list_for_each_entry_safe(child, dt, &old_dev->children, sibling) {
+		dev_dbg(old_dev, "unregister child %s\n", dev_name(child));
+		unregister_device(child);
+	}
+
+	list_for_each_entry_safe(cdev, ct, &old_dev->cdevs, devices_list) {
+		if (cdev->flags & DEVFS_IS_PARTITION) {
+			dev_dbg(old_dev, "unregister part %s\n", cdev->name);
+			devfs_del_partition(cdev->name);
+		}
+	}
 
 	list_del(&old_dev->list);
 	list_del(&old_dev->active);
@@ -341,7 +351,7 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	return 0;
 }
 
-static int do_devinfo(struct command *cmdtp, int argc, char *argv[])
+static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;
 	struct driver_d *drv;

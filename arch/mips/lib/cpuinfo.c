@@ -24,7 +24,7 @@
 #include <command.h>
 #include <asm/mipsregs.h>
 
-static int do_cpuinfo(struct command *cmdtp, int argc, char *argv[])
+static int do_cpuinfo(int argc, char *argv[])
 {
 	printf("CP0_PRID = 0x%08x\n", read_c0_prid());
 	printf("CP0_CONFIG = 0x%08x\n", read_c0_config());

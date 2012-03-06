@@ -6,19 +6,35 @@ if [ x$kernel_loc = xnet ]; then
 	kernel_loc=tftp
 fi
 
-if [ x$1 = xnand ]; then
+while getopt "hk:r:i:m:" Option
+do
+if [ ${Option} = k ]; then
+	kernel_loc=${OPTARG}
+elif [ ${Option} = r ]; then
+	rootfs_loc=${OPTARG}
+elif [ ${Option} = i ]; then
+	ip=${OPTARG}
+elif [ ${Option} = m ]; then
+	mode=${OPTARG}
+else
+	. /env/bin/_boot_help
+	exit 0
+fi
+done
+
+if [ x$mode = xnand ]; then
 	rootfs_loc=nand
 	kernel_loc=nand
-elif [ x$1 = xnor ]; then
+elif [ x$mode = xnor ]; then
 	rootfs_loc=nor
 	kernel_loc=nor
-elif [ x$1 = xnfs ]; then
+elif [ x$mode = xnfs ]; then
 	rootfs_loc=net
 	kernel_loc=nfs
-elif [ x$1 = xtftp ]; then
+elif [ x$mode = xtftp ]; then
 	rootfs_loc=net
 	kernel_loc=tftp
-elif [ x$1 = xdisk ]; then
+elif [ x$mode = xdisk ]; then
 	rootfs_loc=disk
 	kernel_loc=disk
 fi

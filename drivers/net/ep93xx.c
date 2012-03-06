@@ -484,7 +484,6 @@ static int ep93xx_eth_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) +
 		sizeof(struct ep93xx_eth_priv));
-	dev->type_data = edev;
 	edev->priv = (struct ep93xx_eth_priv *)(edev + 1);
 
 	priv = edev->priv;

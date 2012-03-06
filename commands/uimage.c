@@ -19,7 +19,7 @@ static int uimage_flush(void *buf, unsigned int len)
 	return ret;
 }
 
-static int do_uimage(struct command *cmdtp, int argc, char *argv[])
+static int do_uimage(int argc, char *argv[])
 {
 	struct uimage_handle *handle;
 	int ret;

@@ -273,16 +273,15 @@ static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	return ret;
 }
 
-static void pxamci_set_ios(struct mci_host *mci, struct device_d *dev,
-			   unsigned bus_width, unsigned clock)
+static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct pxamci_host *host = to_pxamci(mci);
 	unsigned int clk_in = pxa_get_mmcclk();
 	int fact;
 
-	mci_dbg("bus_width=%d, clock=%u\n", bus_width, clock);
-	if (clock)
-		fact = min_t(int, clk_in / clock, 1 << 6);
+	mci_dbg("bus_width=%d, clock=%u\n", ios->bus_width, ios->clock);
+	if (ios->clock)
+		fact = min_t(int, clk_in / ios->clock, 1 << 6);
 	else
 		fact = 1 << 6;
 	fact = max_t(int, fact, 1);
@@ -294,10 +293,17 @@ static void pxamci_set_ios(struct mci_host *mci, struct device_d *dev,
 	/* to handle (19.5MHz, 26MHz) */
 	host->clkrt = fls(fact) - 1;
 
-	if (bus_width == 4)
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_4:
 		host->cmdat |= CMDAT_SD_4DAT;
-	else
+		break;
+	case MMC_BUS_WIDTH_1:
 		host->cmdat &= ~CMDAT_SD_4DAT;
+		break;
+	default:
+		return;
+	}
+
 	host->cmdat |= CMDAT_INIT;
 
 	clk_enable();

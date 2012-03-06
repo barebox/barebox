@@ -44,12 +44,14 @@ EXPORT_SYMBOL(console_list);
 #define CONSOLE_INITIALIZED_BUFFER	1
 #define CONSOLE_INIT_FULL		2
 
+#define to_console_dev(d) container_of(d, struct console_device, class_dev)
+
 static int initialized = 0;
 
 static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
-	struct console_device *cdev = dev->type_data;
+	struct console_device *cdev = to_console_dev(dev);
 	char active[4];
 	unsigned int flag = 0, i = 0;
 
@@ -82,7 +84,7 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
-	struct console_device *cdev = dev->type_data;
+	struct console_device *cdev = to_console_dev(dev);
 	int baudrate;
 	char baudstr[16];
 	unsigned char c;
@@ -141,7 +143,6 @@ int console_register(struct console_device *newcdev)
 
 	dev->id = -1;
 	strcpy(dev->name, "cs");
-	dev->type_data = newcdev;
 	if (newcdev->dev)
 		dev_add_child(newcdev->dev, dev);
 	register_device(dev);

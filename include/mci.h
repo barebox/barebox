@@ -102,7 +102,6 @@
 #define SD_HIGHSPEED_SUPPORTED	0x00020000
 
 #define MMC_HS_TIMING		0x00000100
-#define MMC_HS_52MHZ		0x2
 
 #define OCR_BUSY		0x80000000
 /** card's response in its OCR if it is a high capacity card */
@@ -141,11 +140,51 @@
  * EXT_CSD fields
  */
 
-#define EXT_CSD_BUS_WIDTH	183	/* R/W */
-#define EXT_CSD_HS_TIMING	185	/* R/W */
-#define EXT_CSD_CARD_TYPE	196	/* RO */
-#define EXT_CSD_REV		192	/* RO */
-#define EXT_CSD_SEC_CNT		212	/* RO, 4 bytes */
+#define EXT_CSD_FLUSH_CACHE		32      /* W */
+#define EXT_CSD_CACHE_CTRL		33      /* R/W */
+#define EXT_CSD_POWER_OFF_NOTIFICATION	34	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT		143	/* R/W */
+#define EXT_CSD_PARTITION_ATTRIBUTE	156	/* R/W */
+#define EXT_CSD_PARTITION_SUPPORT	160	/* RO */
+#define EXT_CSD_HPI_MGMT		161	/* R/W */
+#define EXT_CSD_RST_N_FUNCTION		162	/* R/W */
+#define EXT_CSD_SANITIZE_START		165     /* W */
+#define EXT_CSD_WR_REL_PARAM		166	/* RO */
+#define EXT_CSD_BOOT_WP			173	/* R/W */
+#define EXT_CSD_ERASE_GROUP_DEF		175	/* R/W */
+#define EXT_CSD_PART_CONFIG		179	/* R/W */
+#define EXT_CSD_ERASED_MEM_CONT		181	/* RO */
+#define EXT_CSD_BUS_WIDTH		183	/* R/W */
+#define EXT_CSD_HS_TIMING		185	/* R/W */
+#define EXT_CSD_POWER_CLASS		187	/* R/W */
+#define EXT_CSD_REV			192	/* RO */
+#define EXT_CSD_STRUCTURE		194	/* RO */
+#define EXT_CSD_CARD_TYPE		196	/* RO */
+#define EXT_CSD_OUT_OF_INTERRUPT_TIME	198	/* RO */
+#define EXT_CSD_PART_SWITCH_TIME        199     /* RO */
+#define EXT_CSD_PWR_CL_52_195		200	/* RO */
+#define EXT_CSD_PWR_CL_26_195		201	/* RO */
+#define EXT_CSD_PWR_CL_52_360		202	/* RO */
+#define EXT_CSD_PWR_CL_26_360		203	/* RO */
+#define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
+#define EXT_CSD_S_A_TIMEOUT		217	/* RO */
+#define EXT_CSD_REL_WR_SEC_C		222	/* RO */
+#define EXT_CSD_HC_WP_GRP_SIZE		221	/* RO */
+#define EXT_CSD_ERASE_TIMEOUT_MULT	223	/* RO */
+#define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
+#define EXT_CSD_BOOT_MULT		226	/* RO */
+#define EXT_CSD_SEC_TRIM_MULT		229	/* RO */
+#define EXT_CSD_SEC_ERASE_MULT		230	/* RO */
+#define EXT_CSD_SEC_FEATURE_SUPPORT	231	/* RO */
+#define EXT_CSD_TRIM_MULT		232	/* RO */
+#define EXT_CSD_PWR_CL_200_195		236	/* RO */
+#define EXT_CSD_PWR_CL_200_360		237	/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_195	238	/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_360	239	/* RO */
+#define EXT_CSD_POWER_OFF_LONG_TIME	247	/* RO */
+#define EXT_CSD_GENERIC_CMD6_TIME	248	/* RO */
+#define EXT_CSD_CACHE_SIZE		249	/* RO, 4 bytes */
+#define EXT_CSD_HPI_FEATURES		503	/* RO */
 
 /*
  * EXT_CSD field definitions
@@ -155,12 +194,22 @@
 #define EXT_CSD_CMD_SET_SECURE		(1<<1)
 #define EXT_CSD_CMD_SET_CPSECURE	(1<<2)
 
-#define EXT_CSD_CARD_TYPE_26	(1<<0)	/* Card can run at 26MHz */
-#define EXT_CSD_CARD_TYPE_52	(1<<1)	/* Card can run at 52MHz */
+#define EXT_CSD_CARD_TYPE_MASK		0x3f
+#define EXT_CSD_CARD_TYPE_26		(1<<0)	/* Card can run at 26MHz */
+#define EXT_CSD_CARD_TYPE_52		(1<<1)	/* Card can run at 52MHz */
+#define EXT_CSD_CARD_TYPE_DDR_1_8V	(1<<2)	/* Card can run at 52MHz */
+						/* DDR mode @1.8V or 3V I/O */
+#define EXT_CSD_CARD_TYPE_DDR_1_2V	(1<<3)	/* Card can run at 52MHz */
+						/* DDR mode @1.2V I/O */
+#define EXT_CSD_CARD_TYPE_SDR_1_8V	(1<<4)	/* Card can run at 200MHz */
+#define EXT_CSD_CARD_TYPE_SDR_1_2V	(1<<5)	/* Card can run at 200MHz */
+						/* SDR mode @1.2V I/O */
 
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
+#define EXT_CSD_DDR_BUS_WIDTH_4	5	/* Card is in 4 bit DDR mode */
+#define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
@@ -210,6 +259,34 @@ struct mci_data {
 	unsigned blocksize;	/**< block size in bytes (mostly 512) */
 };
 
+struct mci_ios {
+	unsigned int	clock;			/* clock rate */
+
+	unsigned char	bus_width;		/* data bus width */
+
+#define MMC_BUS_WIDTH_1		0
+#define MMC_BUS_WIDTH_4		2
+#define MMC_BUS_WIDTH_8		3
+
+	unsigned char	timing;			/* timing specification used */
+
+#define MMC_TIMING_LEGACY	0
+#define MMC_TIMING_MMC_HS	1
+#define MMC_TIMING_SD_HS	2
+#define MMC_TIMING_UHS_SDR12	MMC_TIMING_LEGACY
+#define MMC_TIMING_UHS_SDR25	MMC_TIMING_SD_HS
+#define MMC_TIMING_UHS_SDR50	3
+#define MMC_TIMING_UHS_SDR104	4
+#define MMC_TIMING_UHS_DDR50	5
+#define MMC_TIMING_MMC_HS200	6
+
+#define MMC_SDR_MODE		0
+#define MMC_1_2V_DDR_MODE	1
+#define MMC_1_8V_DDR_MODE	2
+#define MMC_1_2V_SDR_MODE	3
+#define MMC_1_8V_SDR_MODE	4
+};
+
 /** host information */
 struct mci_host {
 	struct device_d *hw_dev;	/**< the host MCI hardware device */
@@ -223,14 +300,16 @@ struct mci_host {
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);
 	/** change host interface settings */
-	void (*set_ios)(struct mci_host*, struct device_d*, unsigned, unsigned);
+	void (*set_ios)(struct mci_host*, struct mci_ios *);
 	/** handle a command */
 	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
 };
 
 /** MMC/SD and interface instance information */
 struct mci {
+	struct mci_host *host;		/**< the host for this card */
 	struct block_device blk;	/**< the blockdevice for the card */
+	struct device_d *mci_dev;	/**< the device for our disk (mcix) */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;
@@ -247,13 +326,9 @@ struct mci {
 	unsigned write_bl_len;
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
+	char *ext_csd;
 };
 
 int mci_register(struct mci_host*);
-
-#define GET_HOST_DATA(x) (x->priv)
-#define GET_HOST_PDATA(x) (x->platform_data)
-#define GET_MCI_DATA(x) (x->priv)
-#define GET_MCI_PDATA(x) (x->platform_data)
 
 #endif /* _MCI_H_ */

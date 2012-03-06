@@ -333,7 +333,7 @@ core_initcall(eukrea_cpuimx35_core_init);
 #define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
 #define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 
-static int do_cpufreq(struct command *cmdtp, int argc, char *argv[])
+static int do_cpufreq(int argc, char *argv[])
 {
 	unsigned long freq;
 

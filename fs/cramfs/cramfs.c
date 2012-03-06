@@ -423,7 +423,7 @@ static int cramfs_probe(struct device_d *dev)
 	struct fs_device_d *fsdev;
 	struct cramfs_priv *priv;
 
-	fsdev = dev->type_data;
+	fsdev = dev_to_fs_device(dev);
 
 	priv = xmalloc(sizeof(struct cramfs_priv));
 	dev->priv = priv;
@@ -468,7 +468,6 @@ static struct fs_driver_d cramfs_driver = {
 		.probe = cramfs_probe,
 		.remove = cramfs_remove,
 		.name = "cramfs",
-		.type_data = &cramfs_driver,
 	}
 };
 

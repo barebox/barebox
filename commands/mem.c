@@ -161,7 +161,7 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 	return 0;
 }
 
-static int do_mem_md(struct command *cmdtp, int argc, char *argv[])
+static int do_mem_md(int argc, char *argv[])
 {
 	ulong	start = 0, size = 0x100;
 	int	r, now;
@@ -235,7 +235,7 @@ BAREBOX_CMD_START(md)
 	BAREBOX_CMD_HELP(cmd_md_help)
 BAREBOX_CMD_END
 
-static int do_mem_mw(struct command *cmdtp, int argc, char *argv[])
+static int do_mem_mw(int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
@@ -300,7 +300,7 @@ BAREBOX_CMD_START(mw)
 	BAREBOX_CMD_HELP(cmd_mw_help)
 BAREBOX_CMD_END
 
-static int do_mem_cmp(struct command *cmdtp, int argc, char *argv[])
+static int do_mem_cmp(int argc, char *argv[])
 {
 	ulong	addr1, addr2, count = ~0;
 	int	mode  = O_RWSIZE_1;
@@ -409,7 +409,7 @@ BAREBOX_CMD_START(memcmp)
 	BAREBOX_CMD_HELP(cmd_memcmp_help)
 BAREBOX_CMD_END
 
-static int do_mem_cp(struct command *cmdtp, int argc, char *argv[])
+static int do_mem_cp(int argc, char *argv[])
 {
 	ulong count;
 	ulong	dest, src;
@@ -516,7 +516,7 @@ BAREBOX_CMD_START(memcpy)
 	BAREBOX_CMD_HELP(cmd_memcpy_help)
 BAREBOX_CMD_END
 
-static int do_memset(struct command *cmdtp, int argc, char *argv[])
+static int do_memset(int argc, char *argv[])
 {
 	ulong	s, c, n;
 	int     fd;

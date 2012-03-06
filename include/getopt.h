@@ -40,10 +40,20 @@ extern char *optarg;
 
 int getopt(int argc, char *argv[], char *optstring);
 
+struct getopt_context {
+	int opterr;
+	int optind;
+	int optopt;
+	int nonopts;
+	int optindex;
+	char *optarg;
+};
+
 /*
  * We do not start a new process for each getopt() run, so we
- * need this function to reset the static variables.
+ * need this function to save and restore the context.
  */
-void getopt_reset(void);
+void getopt_context_store(struct getopt_context *ctx);
+void getopt_context_restore(struct getopt_context *ctx);
 
 #endif /* __GETOPT_H */

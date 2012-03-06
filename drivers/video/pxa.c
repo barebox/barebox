@@ -538,9 +538,6 @@ static int pxafb_probe(struct device_d *dev)
 		return ret;
 	}
 
-	if (pdata->enable_on_load)
-		info->fbops->fb_enable(info);
-
 	return 0;
 }
 

@@ -61,6 +61,7 @@ config ARCH_NOMADIK
 
 config ARCH_OMAP
 	bool "TI OMAP"
+	select HAS_DEBUG_LL
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
@@ -100,6 +101,18 @@ config AEABI
 	  ARM ABI (aka EABI).
 
 	  To use this you need GCC version 4.0.0 or later.
+
+config THUMB2_BAREBOX
+	select ARM_ASM_UNIFIED
+	depends on CPU_V7
+	bool "Compile barebox in thumb-2 mode (read help)"
+	help
+	  This enables compilation of barebox in thumb-2 mode which generates
+	  ~25% smaller binaries. Arm Assembly code needs some fixups to be able
+	  to work correctly in thumb-2 mode. the barebox core should have these
+	  fixups since most assembly code is derived from the Kernel. However,
+	  your board lowlevel init code may break in thumb-2 mode. You have been
+	  warned.
 
 endmenu
 

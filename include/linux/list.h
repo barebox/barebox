@@ -210,6 +210,15 @@ static inline int list_empty_careful(const struct list_head *head)
 	return (next == head) && (next == head->prev);
 }
 
+/**
+ * list_is_singular - tests whether a list has just one entry.
+ * @head: the list to test.
+ */
+static inline int list_is_singular(const struct list_head *head)
+{
+	return !list_empty(head) && (head->next == head->prev);
+}
+
 static inline void __list_splice(struct list_head *list,
 				 struct list_head *head)
 {
@@ -270,6 +279,17 @@ static inline void list_splice_init(struct list_head *list,
  */
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
+
+/**
+ * list_last_entry - get the last element from a list
+ * @head: the list head to take the element from.
+ * @type: the type of the struct this is embedded in.
+ * @member: the name of the list_struct within the struct.
+ *
+ * Note, that list is expected to be not empty.
+ */
+#define list_last_entry(head, type, member) \
+	list_entry((head)->prev, type, member)
 
 /**
  * list_for_each	-	iterate over a list

@@ -36,6 +36,9 @@ int	cleanup_before_linux(void);
 int	board_init(void);
 int	dram_init (void);
 
+extern char __exceptions_start[], __exceptions_stop[];
+extern char __ll_return[];
+
 void board_init_lowlevel(void);
 void board_init_lowlevel_return(void);
 void arch_init_lowlevel(void);

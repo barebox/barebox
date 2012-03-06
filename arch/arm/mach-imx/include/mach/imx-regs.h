@@ -105,4 +105,9 @@
 
 #define GPIO_GIUS      (1<<16)
 
+/* silicon revisions  */
+#define IMX_CHIP_REV_1_0	0x10
+#define IMX_CHIP_REV_2_0	0x20
+#define IMX_CHIP_REV_2_1	0x21
+
 #endif				/* _IMX_REGS_H */

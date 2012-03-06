@@ -32,6 +32,7 @@ enum cd_types {
  * @cd_gpio:	gpio for card_detect interrupt
  * @wp_type:	type of write_protect method (see wp_types enum above)
  * @cd_type:	type of card_detect method (see cd_types enum above)
+ * @caps:	supported bus width capabilities (MMC_MODE_4BIT | MMC_MODE_8BIT)
  */
 
 struct esdhc_platform_data {
@@ -39,5 +40,6 @@ struct esdhc_platform_data {
 	unsigned int cd_gpio;
 	enum wp_types wp_type;
 	enum cd_types cd_type;
+	unsigned caps;
 };
 #endif /* __ASM_ARCH_IMX_ESDHC_H */

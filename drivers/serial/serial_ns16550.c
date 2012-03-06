@@ -244,7 +244,6 @@ static int ns16550_probe(struct device_d *dev)
 
 	cdev = xzalloc(sizeof(*cdev));
 
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	if (plat->f_caps)
 		cdev->f_caps = plat->f_caps;

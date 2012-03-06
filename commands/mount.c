@@ -30,21 +30,18 @@
 #include <fs.h>
 #include <errno.h>
 
-static int do_mount(struct command *cmdtp, int argc, char *argv[])
+static int do_mount(int argc, char *argv[])
 {
 	int ret = 0;
-	struct mtab_entry *entry = NULL;
+	struct mtab_entry *entry;
 
 	if (argc == 1) {
-		do {
-			entry = mtab_next_entry(entry);
-			if (entry) {
-				printf("%s on %s type %s\n",
-					entry->parent_device ? dev_name(entry->parent_device) : "none",
-					entry->path,
-					entry->dev->name);
-			}
-		} while (entry);
+		for_each_mtab_entry(entry) {
+			printf("%s on %s type %s\n",
+				entry->parent_device ? dev_name(entry->parent_device) : "none",
+				entry->path,
+				entry->dev->name);
+		}
 		return 0;
 	}
 

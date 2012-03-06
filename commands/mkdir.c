@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <getopt.h>
 
-static int do_mkdir(struct command *cmdtp, int argc, char *argv[])
+static int do_mkdir(int argc, char *argv[])
 {
 	int opt, parent = 0, ret;
 

@@ -21,7 +21,7 @@ struct zimage_header {
 
 #define ZIMAGE_MAGIC 0x016F2818
 
-static int do_bootz(struct command *cmdtp, int argc, char *argv[])
+static int do_bootz(int argc, char *argv[])
 {
 	int fd, ret, swap = 0;
 	struct zimage_header __header, *header;
@@ -31,10 +31,8 @@ static int do_bootz(struct command *cmdtp, int argc, char *argv[])
 	int usemap = 0;
 	struct memory_bank *bank = list_first_entry(&memory_banks, struct memory_bank, list);
 
-	if (argc != 2) {
-		barebox_cmd_usage(cmdtp);
-		return 1;
-	}
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd < 0) {

@@ -47,3 +47,8 @@ unsigned long pxa_get_lcdclk(void)
 {
 	return pxa_get_lcdclk_10khz() * 10000;
 }
+
+unsigned long pxa_get_pwmclk(void)
+{
+	return BASE_CLK;
+}

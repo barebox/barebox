@@ -436,7 +436,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 	}
 }
 
-static int do_dhcp(struct command *cmdtp, int argc, char *argv[])
+static int do_dhcp(int argc, char *argv[])
 {
 	int ret;
 

@@ -83,7 +83,7 @@ void at91_add_device_sdram(u32 size);
 #define ATMEL_UART_DCD	0x10
 #define ATMEL_UART_RI	0x20
 
-void at91_register_uart(unsigned id, unsigned pins);
+struct device_d * __init at91_register_uart(unsigned id, unsigned pins);
 
 /* Multimedia Card Interface */
 struct atmel_mci_platform_data {

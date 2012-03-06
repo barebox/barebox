@@ -48,6 +48,8 @@ struct eth_device {
 	struct list_head list;
 };
 
+#define dev_to_edev(d) container_of(d, struct eth_device, dev)
+
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 
@@ -415,7 +417,7 @@ static inline int net_udp_bind(struct net_connection *con, int sport)
 	return 0;
 }
 
-static inline unsigned char *net_udp_get_payload(struct net_connection *con)
+static inline void *net_udp_get_payload(struct net_connection *con)
 {
 	return con->packet + sizeof(struct ethernet) + sizeof(struct iphdr) +
 		sizeof(struct udphdr);

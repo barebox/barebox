@@ -37,10 +37,11 @@ void *omap_xload_boot_mmc(void)
 	int ret;
 	void *buf;
 	int len;
+	const char *diskdev = "disk0.0";
 
-	ret = mount("disk0.0", "fat", "/");
+	ret = mount(diskdev, "fat", "/");
 	if (ret) {
-		printf("mounting sd card failed with %d\n", ret);
+		printf("Unable to mount %s (%d)\n", diskdev, ret);
 		return NULL;
 	}
 

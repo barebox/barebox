@@ -94,6 +94,8 @@ size_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no)
 }
 EXPORT_SYMBOL(uimage_get_size);
 
+static const char uimage_tmp[] = "/.uImage_tmp";
+
 /*
  * open a uimage. This will check the header contents and
  * return a handle to the uImage
@@ -106,11 +108,27 @@ struct uimage_handle *uimage_open(const char *filename)
 	struct image_header *header;
 	int i;
 	int ret;
+	struct stat s;
 
+again:
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
 		printf("could not open: %s\n", errno_str());
 		return NULL;
+	}
+
+	/*
+	 * Hack around tftp fs. We need lseek for uImage support, but
+	 * this cannot be implemented in tftp fs, so we detect this
+	 * by doing a test lseek and copy the file to ram if it fails
+	 */
+	if (IS_BUILTIN(CONFIG_FS_TFTP) && lseek(fd, 0, SEEK_SET)) {
+		close(fd);
+		ret = copy_file(filename, uimage_tmp, 0);
+		if (ret)
+			return NULL;
+		filename = uimage_tmp;
+		goto again;
 	}
 
 	handle = xzalloc(sizeof(struct uimage_handle));
@@ -194,6 +212,8 @@ struct uimage_handle *uimage_open(const char *filename)
 err_out:
 	close(fd);
 	free(handle);
+	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat(uimage_tmp, &s))
+		unlink(uimage_tmp);
 	return NULL;
 }
 EXPORT_SYMBOL(uimage_open);
@@ -203,9 +223,14 @@ EXPORT_SYMBOL(uimage_open);
  */
 void uimage_close(struct uimage_handle *handle)
 {
+	struct stat s;
+
 	close(handle->fd);
 	free(handle->name);
 	free(handle);
+
+	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat("/.uimage_tmp", &s))
+		unlink("/.uimage_tmp");
 }
 EXPORT_SYMBOL(uimage_close);
 

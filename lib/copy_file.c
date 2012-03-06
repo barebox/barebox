@@ -21,6 +21,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 	int ret = 1;
 	void *buf;
 	int total = 0;
+	struct stat statbuf;
 
 	rw_buf = xmalloc(RW_BUF_SIZE);
 
@@ -37,8 +38,6 @@ int copy_file(const char *src, const char *dst, int verbose)
 	}
 
 	if (verbose) {
-		struct stat statbuf;
-
 		if (stat(src, &statbuf) < 0)
 			statbuf.st_size = 0;
 
@@ -67,7 +66,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		}
 
 		if (verbose)
-			show_progress(total);
+			show_progress(statbuf.st_size ? total : total / 16384);
 	}
 
 	ret = 0;

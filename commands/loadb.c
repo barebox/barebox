@@ -686,7 +686,7 @@ static struct console_device *get_current_console(void)
  *
  * @return success or failure
  */
-static int do_load_serial_bin(struct command *cmdtp, int argc, char *argv[])
+static int do_load_serial_bin(int argc, char *argv[])
 {
 	ulong offset = 0;
 	ulong addr;

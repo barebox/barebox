@@ -50,7 +50,7 @@ static char *crbits[] = {"M", "A", "C", "W", "P", "D", "L", "B", "S", "R",
 	"F", "Z", "I", "V", "RR", "L4", "DT", "", "IT", "ST", "", "FI", "U", "XP",
 	"VE", "EE", "L2", "", "TRE", "AFE", "TE"};
 
-static int do_cpuinfo(struct command *cmdtp, int argc, char *argv[])
+static int do_cpuinfo(int argc, char *argv[])
 {
 	unsigned long mainid, cache, cr;
 	char *architecture, *implementer;

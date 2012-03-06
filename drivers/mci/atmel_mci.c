@@ -351,30 +351,31 @@ static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 }
 
 /** change host interface settings */
-static void mci_set_ios(struct mci_host *mci, struct device_d *mci_dev,
-			unsigned bus_width, unsigned clock)
+static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct atmel_mci_host *host = to_mci_host(mci);
 
 	dev_dbg(host->hw_dev, "atmel_mci_set_ios: bus_width=%d clk=%d\n",
-		bus_width, clock);
+		ios->bus_width, ios->clock);
 
-	switch (bus_width) {
-	case 4:
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_4:
 		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_4BIT);
 		break;
-	case 8:
+	case MMC_BUS_WIDTH_8:
 		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_8BIT);
 		break;
-	default:
+	case MMC_BUS_WIDTH_1:
 		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_1BIT);
 		break;
+	default:
+		return;
 	}
 	atmel_mci_writel(host, AT91_MCI_SDCR, atmel_mci_readl(host, AT91_MCI_SDCR)
 		| host->slot_b);
 
-	if (clock) {
-		atmel_set_clk_rate(host, clock);
+	if (ios->clock) {
+		atmel_set_clk_rate(host, ios->clock);
 		atmel_mci_writel(host, AT91_MCI_CR, AT91_MCI_MCIEN
 		);
 	} else {

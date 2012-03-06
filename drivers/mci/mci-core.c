@@ -57,16 +57,16 @@
 
 /**
  * Call the MMC/SD instance driver to run the command on the MMC/SD card
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param cmd The information about the command to run
  * @param data The data according to the command (can be NULL)
  * @return Driver's answer (0 on success)
  */
-static int mci_send_cmd(struct device_d *mci_dev, struct mci_cmd *cmd, struct mci_data *data)
+static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
 {
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 
-	return host->send_cmd(host, cmd, data);
+	return host->send_cmd(mci->host, cmd, data);
 }
 
 /**
@@ -90,28 +90,27 @@ static void mci_setup_cmd(struct mci_cmd *p, unsigned cmd, unsigned arg, unsigne
  * @param len Blocklength in bytes
  * @return Transaction status (0 on success)
  */
-static int mci_set_blocklen(struct device_d *mci_dev, unsigned len)
+static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
 	struct mci_cmd cmd;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
-	return mci_send_cmd(mci_dev, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd, NULL);
 }
 
 static void *sector_buf;
 
 /**
- * Write one block of data to the card
+ * Write one or several blocks of data to the card
  * @param mci_dev MCI instance
  * @param src Where to read from to write to the card
  * @param blocknum Block number to write
  * @param blocks Block count to write
  * @return Transaction status (0 on success)
  */
-static int mci_block_write(struct device_d *mci_dev, const void *src, int blocknum,
+static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	int blocks)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
 	const void *buf;
@@ -140,33 +139,26 @@ static int mci_block_write(struct device_d *mci_dev, const void *src, int blockn
 	data.blocksize = mci->write_bl_len;
 	data.flags = MMC_DATA_WRITE;
 
-	ret = mci_send_cmd(mci_dev, &cmd, &data);
-	if (ret)
-		return ret;
+	ret = mci_send_cmd(mci, &cmd, &data);
 
-	if (blocks > 1) {
-		mci_setup_cmd(&cmd,
-			MMC_CMD_STOP_TRANSMISSION,
-			0, MMC_RSP_R1b);
-			ret = mci_send_cmd(mci_dev, &cmd, NULL);
-			if (ret)
-				return ret;
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_send_cmd(mci, &cmd, NULL);
         }
 
 	return ret;
 }
 
 /**
- * Read one block of data from the card
- * @param mci_dev MCI instance
+ * Read one or several block(s) of data from the card
+ * @param mci MCI instance
  * @param dst Where to store the data read from the card
  * @param blocknum Block number to read
  * @param blocks number of blocks to read
  */
-static int mci_read_block(struct device_d *mci_dev, void *dst, int blocknum,
+static int mci_read_block(struct mci *mci, void *dst, int blocknum,
 		int blocks)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
 	int ret;
@@ -187,26 +179,21 @@ static int mci_read_block(struct device_d *mci_dev, void *dst, int blocknum,
 	data.blocksize = mci->read_bl_len;
 	data.flags = MMC_DATA_READ;
 
-	ret = mci_send_cmd(mci_dev, &cmd, &data);
-	if (ret)
-		return ret;
+	ret = mci_send_cmd(mci, &cmd, &data);
 
-	if (blocks > 1) {
-		mci_setup_cmd(&cmd,
-			MMC_CMD_STOP_TRANSMISSION,
-			0,
-			MMC_RSP_R1b);
-			ret = mci_send_cmd(mci_dev, &cmd, NULL);
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_send_cmd(mci, &cmd, NULL);
 	}
 	return ret;
 }
 
 /**
  * Reset the attached MMC/SD card
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transaction status (0 on success)
  */
-static int mci_go_idle(struct device_d *mci_dev)
+static int mci_go_idle(struct mci *mci)
 {
 	struct mci_cmd cmd;
 	int err;
@@ -214,10 +201,10 @@ static int mci_go_idle(struct device_d *mci_dev)
 	udelay(1000);
 
 	mci_setup_cmd(&cmd, MMC_CMD_GO_IDLE_STATE, 0, MMC_RSP_NONE);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd, NULL);
 
 	if (err) {
-		pr_debug("Activating IDLE state failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Activating IDLE state failed: %d\n", err);
 		return err;
 	}
 
@@ -228,13 +215,12 @@ static int mci_go_idle(struct device_d *mci_dev)
 
 /**
  * FIXME
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transaction status (0 on success)
  */
-static int sd_send_op_cond(struct device_d *mci_dev)
+static int sd_send_op_cond(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 	struct mci_cmd cmd;
 	int timeout = 1000;
 	int err;
@@ -252,18 +238,18 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 
 	do {
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, 0, MMC_RSP_R1);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
-			pr_debug("Preparing SD for operating conditions failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "Preparing SD for operating conditions failed: %d\n", err);
 			return err;
 		}
 
 		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND,
 			mmc_host_is_spi(host) ? 0 : (voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0)),
 			MMC_RSP_R3);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
-			pr_debug("SD operation condition set failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "SD operation condition set failed: %d\n", err);
 			return err;
 		}
 		udelay(1000);
@@ -276,7 +262,7 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 	} while (busy && timeout--);
 
 	if (timeout <= 0) {
-		pr_debug("SD operation condition set timed out\n");
+		dev_dbg(mci->mci_dev, "SD operation condition set timed out\n");
 		return -ENODEV;
 	}
 
@@ -285,7 +271,7 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 
 	if (mmc_host_is_spi(host)) { /* read OCR for spi */
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_READ_OCR, 0, MMC_RSP_R3);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err)
 			return err;
 	}
@@ -300,27 +286,26 @@ static int sd_send_op_cond(struct device_d *mci_dev)
 
 /**
  * Setup the operation conditions to a MultiMediaCard
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transaction status (0 on success)
  */
-static int mmc_send_op_cond(struct device_d *mci_dev)
+static int mmc_send_op_cond(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 	struct mci_cmd cmd;
 	int timeout = 1000;
 	int err;
 
 	/* Some cards seem to need this */
-	mci_go_idle(mci_dev);
+	mci_go_idle(mci);
 
 	do {
 		mci_setup_cmd(&cmd, MMC_CMD_SEND_OP_COND, OCR_HCS |
 				host->voltages, MMC_RSP_R3);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 
 		if (err) {
-			pr_debug("Preparing MMC for operating conditions failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "Preparing MMC for operating conditions failed: %d\n", err);
 			return err;
 		}
 
@@ -328,7 +313,7 @@ static int mmc_send_op_cond(struct device_d *mci_dev)
 	} while (!(cmd.response[0] & OCR_BUSY) && timeout--);
 
 	if (timeout <= 0) {
-		pr_debug("SD operation condition set timed out\n");
+		dev_dbg(mci->mci_dev, "SD operation condition set timed out\n");
 		return -ENODEV;
 	}
 
@@ -343,14 +328,14 @@ static int mmc_send_op_cond(struct device_d *mci_dev)
 
 /**
  * FIXME
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param ext_csd Buffer for a 512 byte sized extended CSD
  * @return Transaction status (0 on success)
  *
  * Note: Only cards newer than Version 1.1 (Physical Layer Spec) support
  * this command
  */
-static int mci_send_ext_csd(struct device_d *mci_dev, char *ext_csd)
+static int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
@@ -363,18 +348,18 @@ static int mci_send_ext_csd(struct device_d *mci_dev, char *ext_csd)
 	data.blocksize = 512;
 	data.flags = MMC_DATA_READ;
 
-	return mci_send_cmd(mci_dev, &cmd, &data);
+	return mci_send_cmd(mci, &cmd, &data);
 }
 
 /**
  * FIXME
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param set FIXME
  * @param index FIXME
  * @param value FIXME
  * @return Transaction status (0 on success)
  */
-static int mci_switch(struct device_d *mci_dev, unsigned set, unsigned index,
+static int mci_switch(struct mci *mci, unsigned set, unsigned index,
 			unsigned value)
 {
 	struct mci_cmd cmd;
@@ -385,21 +370,20 @@ static int mci_switch(struct device_d *mci_dev, unsigned set, unsigned index,
 		(value << 8),
 		 MMC_RSP_R1b);
 
-	return mci_send_cmd(mci_dev, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd, NULL);
 }
 
 /**
  * Change transfer frequency for an MMC card
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transaction status (0 on success)
  */
-static int mmc_change_freq(struct device_d *mci_dev)
+static int mmc_change_freq(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	char *ext_csd = sector_buf;
 	char cardtype;
 	int err;
 
+	mci->ext_csd = xmalloc(512);
 	mci->card_caps = 0;
 
 	/* Only version 4 supports high-speed */
@@ -408,38 +392,35 @@ static int mmc_change_freq(struct device_d *mci_dev)
 
 	mci->card_caps |= MMC_MODE_4BIT;
 
-	err = mci_send_ext_csd(mci_dev, ext_csd);
+	err = mci_send_ext_csd(mci, mci->ext_csd);
 	if (err) {
-		pr_debug("Preparing for frequency setup failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Preparing for frequency setup failed: %d\n", err);
 		return err;
 	}
 
-	if (ext_csd[212] || ext_csd[213] || ext_csd[214] || ext_csd[215])
-		mci->high_capacity = 1;
+	cardtype = mci->ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
-	cardtype = ext_csd[196] & 0xf;
-
-	err = mci_switch(mci_dev, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
+	err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
 	if (err) {
-		pr_debug("MMC frequency changing failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "MMC frequency changing failed: %d\n", err);
 		return err;
 	}
 
 	/* Now check to see that it worked */
-	err = mci_send_ext_csd(mci_dev, ext_csd);
+	err = mci_send_ext_csd(mci, mci->ext_csd);
 
 	if (err) {
-		pr_debug("Verifying frequency change failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Verifying frequency change failed: %d\n", err);
 		return err;
 	}
 
 	/* No high-speed support */
-	if (!ext_csd[185])
+	if (!mci->ext_csd[EXT_CSD_HS_TIMING])
 		return 0;
 
 	/* High Speed is set, there are two types: 52MHz and 26MHz */
-	if (cardtype & MMC_HS_52MHZ)
+	if (cardtype & EXT_CSD_CARD_TYPE_52)
 		mci->card_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 	else
 		mci->card_caps |= MMC_MODE_HS;
@@ -449,14 +430,14 @@ static int mmc_change_freq(struct device_d *mci_dev)
 
 /**
  * FIXME
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param mode FIXME
  * @param group FIXME
  * @param value FIXME
  * @param resp FIXME
  * @return Transaction status (0 on success)
  */
-static int sd_switch(struct device_d *mci_dev, unsigned mode, unsigned group,
+static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 			unsigned value, uint8_t *resp)
 {
 	struct mci_cmd cmd;
@@ -475,21 +456,20 @@ static int sd_switch(struct device_d *mci_dev, unsigned mode, unsigned group,
 	data.blocks = 1;
 	data.flags = MMC_DATA_READ;
 
-	return mci_send_cmd(mci_dev, &cmd, &data);
+	return mci_send_cmd(mci, &cmd, &data);
 }
 
 /**
  * Change transfer frequency for an SD card
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transaction status (0 on success)
  */
-static int sd_change_freq(struct device_d *mci_dev)
+static int sd_change_freq(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	struct mci_cmd cmd;
 	struct mci_data data;
 #ifdef CONFIG_MCI_SPI
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 #endif
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
@@ -499,14 +479,14 @@ static int sd_change_freq(struct device_d *mci_dev)
 	if (mmc_host_is_spi(host))
 		return 0;
 
-	pr_debug("Changing transfer frequency\n");
+	dev_dbg(mci->mci_dev, "Changing transfer frequency\n");
 	mci->card_caps = 0;
 
 	/* Read the SCR to find out if this card supports higher speeds */
 	mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd, NULL);
 	if (err) {
-		pr_debug("Query SD card capabilities failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Query SD card capabilities failed: %d\n", err);
 		return err;
 	}
 
@@ -515,20 +495,20 @@ static int sd_change_freq(struct device_d *mci_dev)
 	timeout = 3;
 
 retry_scr:
-	pr_debug("Trying to read the SCR (try %d of %d)\n", 4 - timeout, 3);
+	dev_dbg(mci->mci_dev, "Trying to read the SCR (try %d of %d)\n", 4 - timeout, 3);
 	data.dest = (char *)scr;
 	data.blocksize = 8;
 	data.blocks = 1;
 	data.flags = MMC_DATA_READ;
 
-	err = mci_send_cmd(mci_dev, &cmd, &data);
+	err = mci_send_cmd(mci, &cmd, &data);
 	if (err) {
-		pr_debug(" Catch error (%d)", err);
+		dev_dbg(mci->mci_dev, " Catch error (%d)", err);
 		if (timeout--) {
-			pr_debug("-- retrying\n");
+			dev_dbg(mci->mci_dev, "-- retrying\n");
 			goto retry_scr;
 		}
-		pr_debug("-- giving up\n");
+		dev_dbg(mci->mci_dev, "-- giving up\n");
 		return err;
 	}
 
@@ -556,10 +536,10 @@ retry_scr:
 
 	timeout = 4;
 	while (timeout--) {
-		err = sd_switch(mci_dev, SD_SWITCH_CHECK, 0, 1,
+		err = sd_switch(mci, SD_SWITCH_CHECK, 0, 1,
 				(uint8_t*)switch_status);
 		if (err) {
-			pr_debug("Checking SD transfer switch frequency feature failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "Checking SD transfer switch frequency feature failed: %d\n", err);
 			return err;
 		}
 
@@ -575,9 +555,9 @@ retry_scr:
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
 		return 0;
 
-	err = sd_switch(mci_dev, SD_SWITCH_SWITCH, 0, 1, (uint8_t*)switch_status);
+	err = sd_switch(mci, SD_SWITCH_SWITCH, 0, 1, (uint8_t*)switch_status);
 	if (err) {
-		pr_debug("Switching SD transfer frequency failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Switching SD transfer frequency failed: %d\n", err);
 		return err;
 	}
 
@@ -589,23 +569,27 @@ retry_scr:
 
 /**
  * Setup host's interface bus width and transfer frequency
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  */
-static void mci_set_ios(struct device_d *mci_dev)
+static void mci_set_ios(struct mci *mci)
 {
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
+	struct mci_ios ios;
 
-	host->set_ios(host, mci_dev, host->bus_width, host->clock);
+	ios.bus_width = host->bus_width;
+	ios.clock = host->clock;
+
+	host->set_ios(host, &ios);
 }
 
 /**
  * Setup host's interface transfer frequency
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param clock New clock in Hz to set
  */
-static void mci_set_clock(struct device_d *mci_dev, unsigned clock)
+static void mci_set_clock(struct mci *mci, unsigned clock)
 {
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 
 	/* check against any given limits */
 	if (clock > host->f_max)
@@ -615,30 +599,29 @@ static void mci_set_clock(struct device_d *mci_dev, unsigned clock)
 		clock = host->f_min;
 
 	host->clock = clock;	/* the new target frequency */
-	mci_set_ios(mci_dev);
+	mci_set_ios(mci);
 }
 
 /**
  * Setup host's interface bus width
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @param width New interface bit width (1, 4 or 8)
  */
-static void mci_set_bus_width(struct device_d *mci_dev, unsigned width)
+static void mci_set_bus_width(struct mci *mci, unsigned width)
 {
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 
 	host->bus_width = width;	/* the new target bus width */
-	mci_set_ios(mci_dev);
+	mci_set_ios(mci);
 }
 
 /**
  * Extract card's version from its CSD
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return 0 on success
  */
-static void mci_detect_version_from_csd(struct device_d *mci_dev)
+static void mci_detect_version_from_csd(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	int version;
 	char *vstr;
 
@@ -713,37 +696,34 @@ static const unsigned char tran_speed_time[] = {
 
 /**
  * Extract max. transfer speed from the CSD
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  *
  * Encoded in bit 103:96 (103: reserved, 102:99: time, 98:96 unit)
  */
-static void mci_extract_max_tran_speed_from_csd(struct device_d *mci_dev)
+static void mci_extract_max_tran_speed_from_csd(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	unsigned unit, time;
 
 	unit = tran_speed_unit[(mci->csd[0] & 0x7)];
 	time = tran_speed_time[((mci->csd[0] >> 3) & 0xf)];
 	if ((unit == 0) || (time == 0)) {
-		pr_debug("Unsupported 'TRAN_SPEED' unit/time value."
+		dev_dbg(mci->mci_dev, "Unsupported 'TRAN_SPEED' unit/time value."
 				" Can't calculate card's max. transfer speed\n");
 		return;
 	}
 
 	mci->tran_speed = time * unit;
-	pr_debug("Transfer speed: %u\n", mci->tran_speed);
+	dev_dbg(mci->mci_dev, "Transfer speed: %u\n", mci->tran_speed);
 }
 
 /**
  * Extract max read and write block length from the CSD
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  *
  * Encoded in bit 83:80 (read) and 25:22 (write)
  */
-static void mci_extract_block_lengths_from_csd(struct device_d *mci_dev)
+static void mci_extract_block_lengths_from_csd(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-
 	mci->read_bl_len = 1 << ((mci->csd[1] >> 16) & 0xf);
 
 	if (IS_SD(mci))
@@ -751,17 +731,16 @@ static void mci_extract_block_lengths_from_csd(struct device_d *mci_dev)
 	else
 		mci->write_bl_len = 1 << ((mci->csd[3] >> 22) & 0xf);
 
-	pr_debug("Max. block length are: Write=%u, Read=%u Bytes\n",
-		mci->read_bl_len, mci->write_bl_len);
+	dev_dbg(mci->mci_dev, "Max. block length are: Write=%u, Read=%u Bytes\n",
+		mci->write_bl_len, mci->read_bl_len);
 }
 
 /**
  * Extract card's capacitiy from the CSD
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  */
-static void mci_extract_card_capacity_from_csd(struct device_d *mci_dev)
+static void mci_extract_card_capacity_from_csd(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
 	uint64_t csize, cmult;
 
 	if (mci->high_capacity) {
@@ -774,18 +753,168 @@ static void mci_extract_card_capacity_from_csd(struct device_d *mci_dev)
 
 	mci->capacity = (csize + 1) << (cmult + 2);
 	mci->capacity *= mci->read_bl_len;
-	pr_debug("Capacity: %u MiB\n", (unsigned)mci->capacity >> 20);
+	dev_dbg(mci->mci_dev, "Capacity: %u MiB\n", (unsigned)mci->capacity >> 20);
+}
+
+static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
+{
+	u8 *bw_ext_csd;
+	int err;
+
+	if (bus_width == MMC_BUS_WIDTH_1)
+		return 0;
+
+	bw_ext_csd = xmalloc(512);
+	err = mci_send_ext_csd(mci, bw_ext_csd);
+	if (err) {
+		dev_info(mci->mci_dev, "mci_send_ext_csd failed with %d\n", err);
+		if (bus_width != MMC_BUS_WIDTH_1)
+			err = -EINVAL;
+		goto out;
+	}
+
+	if (bus_width == MMC_BUS_WIDTH_1)
+		goto out;
+	/* only compare read only fields */
+	err = (mci->ext_csd[EXT_CSD_PARTITION_SUPPORT] ==
+			bw_ext_csd[EXT_CSD_PARTITION_SUPPORT]) &&
+		(mci->ext_csd[EXT_CSD_ERASED_MEM_CONT] ==
+			bw_ext_csd[EXT_CSD_ERASED_MEM_CONT]) &&
+		(mci->ext_csd[EXT_CSD_REV] ==
+			bw_ext_csd[EXT_CSD_REV]) &&
+		(mci->ext_csd[EXT_CSD_STRUCTURE] ==
+			bw_ext_csd[EXT_CSD_STRUCTURE]) &&
+		(mci->ext_csd[EXT_CSD_CARD_TYPE] ==
+			bw_ext_csd[EXT_CSD_CARD_TYPE]) &&
+		(mci->ext_csd[EXT_CSD_S_A_TIMEOUT] ==
+			bw_ext_csd[EXT_CSD_S_A_TIMEOUT]) &&
+		(mci->ext_csd[EXT_CSD_HC_WP_GRP_SIZE] ==
+			bw_ext_csd[EXT_CSD_HC_WP_GRP_SIZE]) &&
+		(mci->ext_csd[EXT_CSD_ERASE_TIMEOUT_MULT] ==
+			bw_ext_csd[EXT_CSD_ERASE_TIMEOUT_MULT]) &&
+		(mci->ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] ==
+			bw_ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE]) &&
+		(mci->ext_csd[EXT_CSD_SEC_TRIM_MULT] ==
+			bw_ext_csd[EXT_CSD_SEC_TRIM_MULT]) &&
+		(mci->ext_csd[EXT_CSD_SEC_ERASE_MULT] ==
+			bw_ext_csd[EXT_CSD_SEC_ERASE_MULT]) &&
+		(mci->ext_csd[EXT_CSD_SEC_FEATURE_SUPPORT] ==
+			bw_ext_csd[EXT_CSD_SEC_FEATURE_SUPPORT]) &&
+		(mci->ext_csd[EXT_CSD_TRIM_MULT] ==
+			bw_ext_csd[EXT_CSD_TRIM_MULT]) &&
+		(mci->ext_csd[EXT_CSD_SEC_CNT + 0] ==
+			bw_ext_csd[EXT_CSD_SEC_CNT + 0]) &&
+		(mci->ext_csd[EXT_CSD_SEC_CNT + 1] ==
+			bw_ext_csd[EXT_CSD_SEC_CNT + 1]) &&
+		(mci->ext_csd[EXT_CSD_SEC_CNT + 2] ==
+			bw_ext_csd[EXT_CSD_SEC_CNT + 2]) &&
+		(mci->ext_csd[EXT_CSD_SEC_CNT + 3] ==
+			bw_ext_csd[EXT_CSD_SEC_CNT + 3]) ?
+				0 : -EINVAL;
+
+out:
+	free(bw_ext_csd);
+	return err;
+}
+
+static int mci_startup_sd(struct mci *mci)
+{
+	struct mci_cmd cmd;
+	int err;
+
+	if (mci->card_caps & MMC_MODE_4BIT) {
+		dev_dbg(mci->mci_dev, "Prepare for bus width change\n");
+		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
+		err = mci_send_cmd(mci, &cmd, NULL);
+		if (err) {
+			dev_dbg(mci->mci_dev, "Preparing SD for bus width change failed: %d\n", err);
+			return err;
+		}
+
+		dev_dbg(mci->mci_dev, "Set SD bus width to 4 bit\n");
+		mci_setup_cmd(&cmd, SD_CMD_APP_SET_BUS_WIDTH, 2, MMC_RSP_R1);
+		err = mci_send_cmd(mci, &cmd, NULL);
+		if (err) {
+			dev_dbg(mci->mci_dev, "Changing SD bus width failed: %d\n", err);
+			/* TODO continue with 1 bit? */
+			return err;
+		}
+		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
+	}
+	/* if possible, speed up the transfer */
+	if (mci->card_caps & MMC_MODE_HS)
+		mci_set_clock(mci, 50000000);
+	else
+		mci_set_clock(mci, 25000000);
+
+	return 0;
+}
+
+static int mci_startup_mmc(struct mci *mci)
+{
+	struct mci_host *host = mci->host;
+	int err;
+	int idx = 0;
+	static unsigned ext_csd_bits[] = {
+		EXT_CSD_BUS_WIDTH_4,
+		EXT_CSD_BUS_WIDTH_8,
+	};
+	static unsigned bus_widths[] = {
+		MMC_BUS_WIDTH_4,
+		MMC_BUS_WIDTH_8,
+	};
+
+	/* if possible, speed up the transfer */
+	if (mci->card_caps & MMC_MODE_HS) {
+		if (mci->card_caps & MMC_MODE_HS_52MHz)
+			mci_set_clock(mci, 52000000);
+		else
+			mci_set_clock(mci, 26000000);
+	} else
+		mci_set_clock(mci, 20000000);
+
+	/*
+	 * Unlike SD, MMC cards dont have a configuration register to notify
+	 * supported bus width. So bus test command should be run to identify
+	 * the supported bus width or compare the ext csd values of current
+	 * bus width and ext csd values of 1 bit mode read earlier.
+	 */
+	if (host->host_caps & MMC_MODE_8BIT)
+		idx = 1;
+
+	for (; idx >= 0; idx--) {
+
+		/*
+		 * Host is capable of 8bit transfer, then switch
+		 * the device to work in 8bit transfer mode. If the
+		 * mmc switch command returns error then switch to
+		 * 4bit transfer mode. On success set the corresponding
+		 * bus width on the host.
+		 */
+		err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
+				 EXT_CSD_BUS_WIDTH,
+				 ext_csd_bits[idx]);
+		if (err)
+			continue;
+
+		mci_set_bus_width(mci, bus_widths[idx]);
+
+		err = mmc_compare_ext_csds(mci, bus_widths[idx]);
+		if (!err)
+			break;
+	}
+
+	return 0;
 }
 
 /**
  * Scan the given host interfaces and detect connected MMC/SD cards
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return 0 on success, negative value else
  */
-static int mci_startup(struct device_d *mci_dev)
+static int mci_startup(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 	struct mci_cmd cmd;
 	int err;
 
@@ -793,28 +922,28 @@ static int mci_startup(struct device_d *mci_dev)
 	if (mmc_host_is_spi(host)) { /* enable CRC check for spi */
 
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_CRC_ON_OFF, 1, MMC_RSP_R1);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 
 		if (err) {
-			pr_debug("Can't enable CRC check : %d\n", err);
+			dev_dbg(mci->mci_dev, "Can't enable CRC check : %d\n", err);
 			return err;
 		}
 	}
 #endif
 
-	pr_debug("Put the Card in Identify Mode\n");
+	dev_dbg(mci->mci_dev, "Put the Card in Identify Mode\n");
 
 	/* Put the Card in Identify Mode */
 	mci_setup_cmd(&cmd, mmc_host_is_spi(host) ? MMC_CMD_SEND_CID : MMC_CMD_ALL_SEND_CID, 0, MMC_RSP_R2);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd, NULL);
 	if (err) {
-		pr_debug("Can't bring card into identify mode: %d\n", err);
+		dev_dbg(mci->mci_dev, "Can't bring card into identify mode: %d\n", err);
 		return err;
 	}
 
 	memcpy(mci->cid, cmd.response, 16);
 
-	pr_debug("Card's identification data is: %08X-%08X-%08X-%08X\n",
+	dev_dbg(mci->mci_dev, "Card's identification data is: %08X-%08X-%08X-%08X\n",
 		mci->cid[0], mci->cid[1], mci->cid[2], mci->cid[3]);
 
 	/*
@@ -823,11 +952,11 @@ static int mci_startup(struct device_d *mci_dev)
 	 * This also puts the cards into Standby State
 	 */
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
-		pr_debug("Get/Set relative address\n");
+		dev_dbg(mci->mci_dev, "Get/Set relative address\n");
 		mci_setup_cmd(&cmd, SD_CMD_SEND_RELATIVE_ADDR, mci->rca << 16, MMC_RSP_R6);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
-			pr_debug("Get/Set relative address failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "Get/Set relative address failed: %d\n", err);
 			return err;
 		}
 	}
@@ -835,56 +964,56 @@ static int mci_startup(struct device_d *mci_dev)
 	if (IS_SD(mci))
 		mci->rca = (cmd.response[0] >> 16) & 0xffff;
 
-	pr_debug("Get card's specific data\n");
+	dev_dbg(mci->mci_dev, "Get card's specific data\n");
 	/* Get the Card-Specific Data */
 	mci_setup_cmd(&cmd, MMC_CMD_SEND_CSD, mci->rca << 16, MMC_RSP_R2);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd, NULL);
 	if (err) {
-		pr_debug("Getting card's specific data failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Getting card's specific data failed: %d\n", err);
 		return err;
 	}
 
 	/* CSD is of 128 bit */
 	memcpy(mci->csd, cmd.response, 16);
 
-	pr_debug("Card's specific data is: %08X-%08X-%08X-%08X\n",
+	dev_dbg(mci->mci_dev, "Card's specific data is: %08X-%08X-%08X-%08X\n",
 		mci->csd[0], mci->csd[1], mci->csd[2], mci->csd[3]);
 
-	mci_detect_version_from_csd(mci_dev);
-	mci_extract_max_tran_speed_from_csd(mci_dev);
-	mci_extract_block_lengths_from_csd(mci_dev);
-	mci_extract_card_capacity_from_csd(mci_dev);
+	mci_detect_version_from_csd(mci);
+	mci_extract_max_tran_speed_from_csd(mci);
+	mci_extract_block_lengths_from_csd(mci);
+	mci_extract_card_capacity_from_csd(mci);
 
 	/* sanitiy? */
 	if (mci->read_bl_len > SECTOR_SIZE) {
 		mci->read_bl_len = SECTOR_SIZE;
-		pr_debug("Limiting max. read block size down to %u\n",
+		dev_dbg(mci->mci_dev, "Limiting max. read block size down to %u\n",
 				mci->read_bl_len);
 	}
 
 	if (mci->write_bl_len > SECTOR_SIZE) {
 		mci->write_bl_len = SECTOR_SIZE;
-		pr_debug("Limiting max. write block size down to %u\n",
+		dev_dbg(mci->mci_dev, "Limiting max. write block size down to %u\n",
 				mci->read_bl_len);
 	}
-	pr_debug("Read block length: %u, Write block length: %u\n",
+	dev_dbg(mci->mci_dev, "Read block length: %u, Write block length: %u\n",
 		mci->read_bl_len, mci->write_bl_len);
 
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
-		pr_debug("Select the card, and put it into Transfer Mode\n");
+		dev_dbg(mci->mci_dev, "Select the card, and put it into Transfer Mode\n");
 		/* Select the card, and put it into Transfer Mode */
 		mci_setup_cmd(&cmd, MMC_CMD_SELECT_CARD, mci->rca << 16, MMC_RSP_R1b);
-		err = mci_send_cmd(mci_dev, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
-			pr_debug("Putting in transfer mode failed: %d\n", err);
+			dev_dbg(mci->mci_dev, "Putting in transfer mode failed: %d\n", err);
 			return err;
 		}
 	}
 
 	if (IS_SD(mci))
-		err = sd_change_freq(mci_dev);
+		err = sd_change_freq(mci);
 	else
-		err = mmc_change_freq(mci_dev);
+		err = mmc_change_freq(mci);
 
 	if (err)
 		return err;
@@ -892,72 +1021,23 @@ static int mci_startup(struct device_d *mci_dev)
 	/* Restrict card's capabilities by what the host can do */
 	mci->card_caps &= host->host_caps;
 
-	if (IS_SD(mci)) {
-		if (mci->card_caps & MMC_MODE_4BIT) {
-			pr_debug("Prepare for bus width change\n");
-			mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
-			err = mci_send_cmd(mci_dev, &cmd, NULL);
-			if (err) {
-				pr_debug("Preparing SD for bus width change failed: %d\n", err);
-				return err;
-			}
+	if (IS_SD(mci))
+		err = mci_startup_sd(mci);
+	else
+		err = mci_startup_mmc(mci);
 
-			pr_debug("Set SD bus width to 4 bit\n");
-			mci_setup_cmd(&cmd, SD_CMD_APP_SET_BUS_WIDTH, 2, MMC_RSP_R1);
-			err = mci_send_cmd(mci_dev, &cmd, NULL);
-			if (err) {
-				pr_debug("Changing SD bus width failed: %d\n", err);
-				/* TODO continue with 1 bit? */
-				return err;
-			}
-			mci_set_bus_width(mci_dev, 4);
-		}
-		/* if possible, speed up the transfer */
-		if (mci->card_caps & MMC_MODE_HS)
-			mci_set_clock(mci_dev, 50000000);
-		else
-			mci_set_clock(mci_dev, 25000000);
-	} else {
-		if (mci->card_caps & MMC_MODE_4BIT) {
-			pr_debug("Set MMC bus width to 4 bit\n");
-			/* Set the card to use 4 bit*/
-			err = mci_switch(mci_dev, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_4);
-			if (err) {
-				pr_debug("Changing MMC bus width failed: %d\n", err);
-				return err;
-			}
-			mci_set_bus_width(mci_dev, 4);
-		} else if (mci->card_caps & MMC_MODE_8BIT) {
-			pr_debug("Set MMC bus width to 8 bit\n");
-			/* Set the card to use 8 bit*/
-			err = mci_switch(mci_dev, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_8);
-			if (err) {
-				pr_debug("Changing MMC bus width failed: %d\n", err);
-				return err;
-			}
-			mci_set_bus_width(mci_dev, 8);
-		}
-		/* if possible, speed up the transfer */
-		if (mci->card_caps & MMC_MODE_HS) {
-			if (mci->card_caps & MMC_MODE_HS_52MHz)
-				mci_set_clock(mci_dev, 52000000);
-			else
-				mci_set_clock(mci_dev, 26000000);
-		} else
-			mci_set_clock(mci_dev, 20000000);
-	}
+	if (err)
+		return err;
 
 	/* we setup the blocklength only one times for all accesses to this media  */
-	err = mci_set_blocklen(mci_dev, mci->read_bl_len);
+	err = mci_set_blocklen(mci, mci->read_bl_len);
 
 	return err;
 }
 
 /**
  * Detect a SD 2.0 card and enable its features
- * @param mci_dev MCI instance
+ * @param mci MCI instance
  * @return Transfer status (0 on success)
  *
  * By issuing the CMD8 command SDHC/SDXC cards realize that the host supports
@@ -966,10 +1046,9 @@ static int mci_startup(struct device_d *mci_dev)
  *
  * If this CMD8 command will end with a timeout it is a MultiMediaCard only.
  */
-static int sd_send_if_cond(struct device_d *mci_dev)
+static int sd_send_if_cond(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
+	struct mci_host *host = mci->host;
 	struct mci_cmd cmd;
 	int err;
 
@@ -977,17 +1056,17 @@ static int sd_send_if_cond(struct device_d *mci_dev)
 	/* We set the bit if the host supports voltages between 2.7 and 3.6 V */
 		((host->voltages & 0x00ff8000) != 0) << 8 | 0xaa,
 		MMC_RSP_R7);
-	err = mci_send_cmd(mci_dev, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd, NULL);
 	if (err) {
-		pr_debug("Query interface conditions failed: %d\n", err);
+		dev_dbg(mci->mci_dev, "Query interface conditions failed: %d\n", err);
 		return err;
 	}
 
 	if ((cmd.response[0] & 0xff) != 0xaa) {
-		pr_debug("Card cannot work with hosts supply voltages\n");
+		dev_dbg(mci->mci_dev, "Card cannot work with hosts supply voltages\n");
 		return -EINVAL;
 	} else {
-		pr_debug("SD Card Rev. 2.00 or later detected\n");
+		dev_dbg(mci->mci_dev, "SD Card Rev. 2.00 or later detected\n");
 		mci->version = SD_VERSION_2;
 	}
 
@@ -1009,28 +1088,27 @@ static int sd_send_if_cond(struct device_d *mci_dev)
 static int __maybe_unused mci_sd_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
-	struct device_d *mci_dev = blk->dev;
-	struct mci *mci = GET_MCI_DATA(mci_dev);
+	struct mci *mci = container_of(blk, struct mci, blk);
 	int rc;
 
-	pr_debug("%s: Write %d block(s), starting at %d\n",
+	dev_dbg(mci->mci_dev, "%s: Write %d block(s), starting at %d\n",
 		__func__, num_blocks, block);
 
 	if (mci->write_bl_len != SECTOR_SIZE) {
-		pr_debug("MMC/SD block size is not %d bytes (its %u bytes instead)\n",
+		dev_dbg(mci->mci_dev, "MMC/SD block size is not %d bytes (its %u bytes instead)\n",
 				SECTOR_SIZE, mci->read_bl_len);
 		return -EINVAL;
 	}
 
 	/* size of the block number field in the MMC/SD command is 32 bit only */
 	if (block > MAX_BUFFER_NUMBER) {
-		pr_debug("Cannot handle block number %d. Too large!\n", block);
+		dev_dbg(mci->mci_dev, "Cannot handle block number %d. Too large!\n", block);
 		return -EINVAL;
 	}
 
-	rc = mci_block_write(mci_dev, buffer, block, num_blocks);
+	rc = mci_block_write(mci, buffer, block, num_blocks);
 	if (rc != 0) {
-		pr_debug("Writing block %d failed with %d\n", block, rc);
+		dev_dbg(mci->mci_dev, "Writing block %d failed with %d\n", block, rc);
 		return rc;
 	}
 
@@ -1050,15 +1128,14 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 				int num_blocks)
 {
-	struct device_d *mci_dev = blk->dev;
-	struct mci *mci = GET_MCI_DATA(mci_dev);
+	struct mci *mci = container_of(blk, struct mci, blk);
 	int rc;
 
-	pr_debug("%s: Read %d block(s), starting at %d\n",
+	dev_dbg(mci->mci_dev, "%s: Read %d block(s), starting at %d\n",
 		__func__, num_blocks, block);
 
 	if (mci->read_bl_len != 512) {
-		pr_debug("MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
+		dev_dbg(mci->mci_dev, "MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
 				mci->read_bl_len);
 		return -EINVAL;
 	}
@@ -1068,9 +1145,9 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 		return -EINVAL;
 	}
 
-	rc = mci_read_block(mci_dev, buffer, block, num_blocks);
+	rc = mci_read_block(mci, buffer, block, num_blocks);
 	if (rc != 0) {
-		pr_debug("Reading block %d failed with %d\n", block, rc);
+		dev_dbg(mci->mci_dev, "Reading block %d failed with %d\n", block, rc);
 		return rc;
 	}
 
@@ -1149,11 +1226,11 @@ static unsigned extract_mtd_year(struct mci *mci)
 
 /**
  * Output some valuable information when the user runs 'devinfo' on an MCI device
- * @param mci_dev MCI device instance
+ * @param mci MCI device instance
  */
 static void mci_info(struct device_d *mci_dev)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
+	struct mci *mci = mci_dev->priv;
 
 	if (mci->ready_for_use == 0) {
 		printf(" No information available:\n  MCI card not probed yet\n");
@@ -1192,17 +1269,15 @@ static void mci_info(struct device_d *mci_dev)
 
 /**
  * Check if the MCI card is already probed
- * @param mci_dev MCI device instance
+ * @param mci MCI device instance
  * @return 0 when not probed yet, -EPERM if already probed
  *
  * @a barebox cannot really cope with hot plugging. So, probing an attached
  * MCI card is a one time only job. If its already done, there is no way to
  * return.
  */
-static int mci_check_if_already_initialized(struct device_d *mci_dev)
+static int mci_check_if_already_initialized(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-
 	if (mci->ready_for_use != 0)
 		return -EPERM;
 
@@ -1230,87 +1305,86 @@ static struct block_device_ops mci_ops = {
 
 /**
  * Probe an MCI card at the given host interface
- * @param mci_dev MCI device instance
+ * @param mci MCI device instance
  * @return 0 on success, negative values else
  */
-static int mci_card_probe(struct device_d *mci_dev)
+static int mci_card_probe(struct mci *mci)
 {
-	struct mci *mci = GET_MCI_DATA(mci_dev);
-	struct mci_host *host = GET_MCI_PDATA(mci_dev);
-	int rc;
+	struct mci_host *host = mci->host;
+	int rc, disknum;
 
 	/* start with a host interface reset */
-	rc = (host->init)(host, mci_dev);
+	rc = (host->init)(host, mci->mci_dev);
 	if (rc) {
 		pr_err("Cannot reset the SD/MMC interface\n");
 		return rc;
 	}
 
-	mci_set_bus_width(mci_dev, 1);
-	mci_set_clock(mci_dev, 1);	/* set the lowest available clock */
+	mci_set_bus_width(mci, MMC_BUS_WIDTH_1);
+	mci_set_clock(mci, 1);	/* set the lowest available clock */
 
 	/* reset the card */
-	rc = mci_go_idle(mci_dev);
+	rc = mci_go_idle(mci);
 	if (rc) {
 		pr_warning("Cannot reset the SD/MMC card\n");
 		goto on_error;
 	}
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
-	rc = sd_send_if_cond(mci_dev);
-	rc = sd_send_op_cond(mci_dev);
+	rc = sd_send_if_cond(mci);
+	rc = sd_send_op_cond(mci);
 	if (rc && rc == -ETIMEDOUT) {
 		/* If the command timed out, we check for an MMC card */
-		pr_debug("Card seems to be a MultiMediaCard\n");
-		rc = mmc_send_op_cond(mci_dev);
+		dev_dbg(mci->mci_dev, "Card seems to be a MultiMediaCard\n");
+		rc = mmc_send_op_cond(mci);
 	}
 
 	if (rc)
 		goto on_error;
 
-	rc = mci_startup(mci_dev);
+	rc = mci_startup(mci);
 	if (rc) {
-		pr_debug("Card's startup fails with %d\n", rc);
+		dev_dbg(mci->mci_dev, "Card's startup fails with %d\n", rc);
 		goto on_error;
 	}
 
-	pr_debug("Card is up and running now, registering as a disk\n");
+	dev_dbg(mci->mci_dev, "Card is up and running now, registering as a disk\n");
 	mci->ready_for_use = 1;	/* TODO now or later? */
 
 	/*
 	 * An MMC/SD card acts like an ordinary disk.
 	 * So, re-use the disk driver to gain access to this media
 	 */
-	mci->blk.dev = mci_dev;
+	mci->blk.dev = mci->mci_dev;
 	mci->blk.ops = &mci_ops;
 
-	rc = cdev_find_free_index("disk");
-	if (rc == -1)
-		pr_err("Cannot find a free number for the disk node\n");
+	disknum = cdev_find_free_index("disk");
 
-	mci->blk.cdev.name = asprintf("disk%d", rc);
+	mci->blk.cdev.name = asprintf("disk%d", disknum);
 	mci->blk.blockbits = SECTOR_SHIFT;
 	mci->blk.num_blocks = mci_calc_blk_cnt(mci->capacity, mci->blk.blockbits);
 
 	rc = blockdevice_register(&mci->blk);
 	if (rc != 0) {
-		dev_err(mci_dev, "Failed to register MCI/SD blockdevice\n");
+		dev_err(mci->mci_dev, "Failed to register MCI/SD blockdevice\n");
 		goto on_error;
 	}
+
+	dev_info(mci->mci_dev, "registered disk%d\n", disknum);
 
 	/* create partitions on demand */
 	rc = parse_partition_table(&mci->blk);
 	if (rc != 0) {
-		dev_warn(mci_dev, "No partition table found\n");
+		dev_warn(mci->mci_dev, "No partition table found\n");
 		rc = 0; /* it's not a failure */
 	}
 
-	pr_debug("SD Card successfully added\n");
+	dev_dbg(mci->mci_dev, "SD Card successfully added\n");
 
 on_error:
 	if (rc != 0) {
 		host->clock = 0;	/* disable the MCI clock */
-		mci_set_ios(mci_dev);
+		mci_set_ios(mci);
 	}
 
 	return rc;
@@ -1326,15 +1400,16 @@ on_error:
 static int mci_set_probe(struct device_d *mci_dev, struct param_d *param,
 				const char *val)
 {
+	struct mci *mci = mci_dev->priv;
 	int rc, probe;
 
-	rc = mci_check_if_already_initialized(mci_dev);
+	rc = mci_check_if_already_initialized(mci);
 	if (rc != 0)
 		return rc;
 
 	probe = simple_strtoul(val, NULL, 0);
 	if (probe != 0) {
-		rc = mci_card_probe(mci_dev);
+		rc = mci_card_probe(mci);
 		if (rc != 0)
 			return rc;
 	}
@@ -1376,10 +1451,14 @@ static int mci_probe(struct device_d *mci_dev)
 
 	mci = xzalloc(sizeof(struct mci));
 	mci_dev->priv = mci;
+	mci->mci_dev = mci_dev;
+	mci->host = mci_dev->platform_data;
+
+	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
 #ifdef CONFIG_MCI_STARTUP
 	/* if enabled, probe the attached card immediately */
-	rc = mci_card_probe(mci_dev);
+	rc = mci_card_probe(mci);
 	if (rc) {
 		/*
 		 * If it fails, add the 'probe' parameter to give the user
@@ -1389,7 +1468,7 @@ static int mci_probe(struct device_d *mci_dev)
 		 */
 		rc = add_mci_parameter(mci_dev);
 		if (rc != 0) {
-			pr_debug("Failed to add 'probe' parameter to the MCI device\n");
+			dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
 			goto on_error;
 		}
 	}
@@ -1399,7 +1478,7 @@ static int mci_probe(struct device_d *mci_dev)
 	/* add params on demand */
 	rc = add_mci_parameter(mci_dev);
 	if (rc != 0) {
-		pr_debug("Failed to add 'probe' parameter to the MCI device\n");
+		dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto on_error;
 	}
 #endif
@@ -1438,7 +1517,7 @@ int mci_register(struct mci_host *host)
 
 	mci_dev->id = -1;
 	strcpy(mci_dev->name, mci_driver.name);
-	mci_dev->platform_data = (void*)host;
+	mci_dev->platform_data = host;
 	dev_add_child(host->hw_dev, mci_dev);
 
 	return register_device(mci_dev);

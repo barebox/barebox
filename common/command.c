@@ -40,7 +40,7 @@ EXPORT_SYMBOL(command_list);
 
 #ifdef CONFIG_SHELL_HUSH
 
-static int do_exit(struct command *cmdtp, int argc, char *argv[])
+static int do_exit(int argc, char *argv[])
 {
 	int r;
 
@@ -91,26 +91,30 @@ int execute_command(int argc, char **argv)
 {
 	struct command *cmdtp;
 	int ret;
+	struct getopt_context gc;
 
-	getopt_reset();
+	getopt_context_store(&gc);
 
 	/* Look up command in command table */
 	if ((cmdtp = find_cmd(argv[0]))) {
 		/* OK - call function to do the command */
-		ret = cmdtp->cmd(cmdtp, argc, argv);
+		ret = cmdtp->cmd(argc, argv);
 		if (ret == COMMAND_ERROR_USAGE) {
 			barebox_cmd_usage(cmdtp);
-			return COMMAND_ERROR;
+			ret = COMMAND_ERROR;
 		}
-		return ret;
 	} else {
 #ifdef CONFIG_CMD_HELP
 		printf ("Unknown command '%s' - try 'help'\n", argv[0]);
 #else
 		printf ("Unknown command '%s'\n", argv[0]);
 #endif
-		return -1;	/* give up after bad command */
+		ret = -1;	/* give up after bad command */
 	}
+
+	getopt_context_restore(&gc);
+
+	return ret;
 }
 
 int register_command(struct command *cmd)
@@ -155,26 +159,10 @@ EXPORT_SYMBOL(register_command);
 struct command *find_cmd (const char *cmd)
 {
 	struct command *cmdtp;
-	struct command *cmdtp_temp = &__barebox_cmd_start;	/*Init value */
-	int len;
-	int n_found = 0;
-	len = strlen (cmd);
 
-	cmdtp = list_entry(&command_list, struct command, list);
-
-	for_each_command(cmdtp) {
-		if (strncmp (cmd, cmdtp->name, len) == 0) {
-			if (len == strlen (cmdtp->name))
-				return cmdtp;		/* full match */
-
-			cmdtp_temp = cmdtp;		/* abbreviated command ? */
-			n_found++;
-		}
-	}
-
-	if (n_found == 1) {			/* exactly one match */
-		return cmdtp_temp;
-	}
+	for_each_command(cmdtp)
+		if (!strcmp(cmd, cmdtp->name))
+			return cmdtp;
 
 	return NULL;	/* not found or ambiguous command */
 }

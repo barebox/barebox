@@ -126,7 +126,7 @@
 #include <linux/list.h>
 
 /*cmd_boot.c*/
-extern int do_bootd(struct command *cmdtp, int flag, int argc, char *argv[]);      /* do_bootd */
+extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
 #define SPECIAL_VAR_SYMBOL 03
 
 
@@ -502,9 +502,10 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 {
 	char *optstring, *var;
-	int opt;
+	int opt, ret = 0;
 	char opta[2];
 	struct option *o;
+	struct getopt_context gc;
 
 	if (child->argc != 3)
 		return -2 - 1;
@@ -512,7 +513,7 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 	optstring = child->argv[1];
 	var = child->argv[2];
 
-	getopt_reset();
+	getopt_context_store(&gc);
 
 	if (!ctx->options_parsed) {
 		while((opt = getopt(ctx->global_argc, ctx->global_argv, optstring)) > 0) {
@@ -525,8 +526,10 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 
 	ctx->options_parsed = 1;
 
-	if (list_empty(&ctx->options))
-		return -1;
+	if (list_empty(&ctx->options)) {
+		ret = -1;
+		goto out;
+	}
 
 	o = list_first_entry(&ctx->options, struct option, list);
 
@@ -538,8 +541,10 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 	free(o->optarg);
 	list_del(&o->list);
 	free(o);
+out:
+	getopt_context_restore(&gc);
 
-	return 0;
+	return ret;
 }
 
 BAREBOX_MAGICVAR(OPTARG, "optarg for hush builtin getopt");
@@ -1652,7 +1657,7 @@ int run_shell(void)
 	return rcode;
 }
 
-static int do_sh(struct command *cmdtp, int argc, char *argv[])
+static int do_sh(int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -1671,7 +1676,7 @@ BAREBOX_CMD_START(sh)
 	BAREBOX_CMD_HELP(cmd_sh_help)
 BAREBOX_CMD_END
 
-static int do_source(struct command *cmdtp, int argc, char *argv[])
+static int do_source(int argc, char *argv[])
 {
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -1700,7 +1705,7 @@ BAREBOX_CMD_START(source)
 BAREBOX_CMD_END
 
 #ifdef CONFIG_HUSH_GETOPT
-static int do_getopt(struct command *cmdtp, int argc, char *argv[])
+static int do_getopt(int argc, char *argv[])
 {
 	/*
 	 * This function is never reached. The 'getopt' command is

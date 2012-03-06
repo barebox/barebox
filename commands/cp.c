@@ -35,11 +35,10 @@
 #include <getopt.h>
 
 /**
- * @param[in] cmdtp FIXME
  * @param[in] argc Argument count from command line
  * @param[in] argv List of input arguments
  */
-static int do_cp(struct command *cmdtp, int argc, char *argv[])
+static int do_cp(int argc, char *argv[])
 {
 	int ret = 1;
 	struct stat statbuf;
@@ -77,9 +76,9 @@ static int do_cp(struct command *cmdtp, int argc, char *argv[])
 			char *dst;
 			dst = concat_path_file(argv[argc - 1], basename(argv[i]));
 			ret = copy_file(argv[i], dst, verbose);
+			free(dst);
 			if (ret)
 				goto out;
-			free(dst);
 		} else {
 			ret = copy_file(argv[i], argv[argc - 1], verbose);
 			if (ret)

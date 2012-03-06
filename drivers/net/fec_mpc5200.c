@@ -657,14 +657,14 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
-        struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
-        struct eth_device *edev;
+	struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
+	struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
 
-        edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
-        dev->type_data = edev;
+	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
 	fec = (mpc5xxx_fec_priv *)xmalloc(sizeof(*fec));
-        edev->priv = fec;
+	dev->priv = edev;
+	edev->priv = fec;
 	edev->open = mpc5xxx_fec_open;
 	edev->init = mpc5xxx_fec_init;
 	edev->send = mpc5xxx_fec_send;
@@ -699,7 +699,7 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 
 static void mpc5xxx_fec_remove(struct device_d *dev)
 {
-	struct eth_device *edev = dev->type_data;
+	struct eth_device *edev = dev->priv;
 
 	mpc5xxx_fec_halt(edev);
 }

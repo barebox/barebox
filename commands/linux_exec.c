@@ -22,7 +22,7 @@
 #include <command.h>
 #include <mach/linux.h>
 
-static int do_linux_exec(struct command *cmdtp, int argc, char *argv[])
+static int do_linux_exec(int argc, char *argv[])
 {
 	int ret;
 	char **newargv;

@@ -4,7 +4,7 @@
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 
-static int do_clko(struct command *cmdtp, int argc, char *argv[])
+static int do_clko(int argc, char *argv[])
 {
 	int opt, div = 0, src = -2, ret;
 

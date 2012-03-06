@@ -11,7 +11,7 @@
 #include <mtd/ubi-user.h>
 #include <ubi-media.h>
 
-static int do_ubimkvol(struct command *cmdtp, int argc, char *argv[])
+static int do_ubimkvol(int argc, char *argv[])
 {
 	struct ubi_mkvol_req req;
 	int fd, ret;
@@ -56,7 +56,7 @@ BAREBOX_CMD_START(ubimkvol)
 BAREBOX_CMD_END
 
 
-static int do_ubiattach(struct command *cmdtp, int argc, char *argv[])
+static int do_ubiattach(int argc, char *argv[])
 {
 	struct mtd_info_user user;
 	int fd, ret;
@@ -92,7 +92,7 @@ BAREBOX_CMD_START(ubiattach)
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
 BAREBOX_CMD_END
 
-static int do_ubirmvol(struct command *cmdtp, int argc, char *argv[])
+static int do_ubirmvol(int argc, char *argv[])
 {
 	struct ubi_mkvol_req req;
 	int fd, ret;

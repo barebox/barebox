@@ -64,7 +64,6 @@ struct pxafb_videomode {
 struct pxafb_platform_data {
 	struct pxafb_videomode	*mode;
 	unsigned int		lcd_conn;
-	int			enable_on_load;
 
 	/** force a memory area to be used, else NULL for dynamic allocation */
 	void			*framebuffer;

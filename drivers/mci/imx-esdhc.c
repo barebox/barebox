@@ -238,6 +238,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
+	int ret;
 
 	esdhc_write32(&regs->irqstat, -1);
 
@@ -268,8 +269,12 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	esdhc_write32(&regs->xfertyp, xfertyp);
 
 	/* Wait for the command to complete */
-	while (!(esdhc_read32(&regs->irqstat) & IRQSTAT_CC))
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			esdhc_read32(&regs->irqstat) & IRQSTAT_CC);
+	if (ret) {
+		dev_err(host->dev, "timeout 1\n");
+		return -ETIMEDOUT;
+	}
 
 	irqstat = esdhc_read32(&regs->irqstat);
 	esdhc_write32(&regs->irqstat, irqstat);
@@ -321,12 +326,20 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	esdhc_write32(&regs->irqstat, -1);
 
 	/* Wait for the bus to be idle */
-	while ((esdhc_read32(&regs->prsstat) & PRSSTAT_CICHB) ||
-			(esdhc_read32(&regs->prsstat) & PRSSTAT_CIDHB))
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			!(esdhc_read32(&regs->prsstat) &
+				(PRSSTAT_CICHB | PRSSTAT_CIDHB)));
+	if (ret) {
+		dev_err(host->dev, "timeout 2\n");
+		return -ETIMEDOUT;
+	}
 
-	while (esdhc_read32(&regs->prsstat) & PRSSTAT_DLA)
-		;
+	ret = wait_on_timeout(100 * MSECOND,
+			!(esdhc_read32(&regs->prsstat) & PRSSTAT_DLA));
+	if (ret) {
+		dev_err(host->dev, "timeout 3\n");
+		return -ETIMEDOUT;
+	}
 
 	return 0;
 }
@@ -375,22 +388,29 @@ void set_sysctl(struct mci_host *mci, u32 clock)
 	esdhc_setbits32(&regs->sysctl, clk);
 }
 
-static void esdhc_set_ios(struct mci_host *mci, struct device_d *dev,
-		unsigned bus_width, unsigned clock)
+static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc *regs = host->regs;
 
 	/* Set the clock speed */
-	set_sysctl(mci, clock);
+	set_sysctl(mci, ios->clock);
 
 	/* Set the bus width */
 	esdhc_clrbits32(&regs->proctl, PROCTL_DTW_4 | PROCTL_DTW_8);
 
-	if (bus_width == 4)
+	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_4:
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_4);
-	else if (bus_width == 8)
+		break;
+	case MMC_BUS_WIDTH_8:
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_8);
+		break;
+	case MMC_BUS_WIDTH_1:
+		break;
+	default:
+		return;
+	}
 
 }
 
@@ -491,6 +511,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	struct mci_host *mci;
 	u32 caps;
 	int ret;
+	struct esdhc_platform_data *pdata = dev->platform_data;
 
 	host = xzalloc(sizeof(*host));
 	mci = &host->mci;
@@ -514,7 +535,10 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (caps & ESDHC_HOSTCAPBLT_VS33)
 		mci->voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	mci->host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
+	if (pdata && pdata->caps)
+		mci->host_caps = pdata->caps;
+	else
+		mci->host_caps = MMC_MODE_4BIT;
 
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
 		mci->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;

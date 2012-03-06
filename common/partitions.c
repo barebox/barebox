@@ -163,7 +163,7 @@ static int register_one_partition(struct block_device *blk,
 	return devfs_add_partition(blk->cdev.name,
 				part->first_sec * SECTOR_SIZE,
 				part->size * SECTOR_SIZE,
-				DEVFS_PARTITION_FIXED, partition_name);
+				0, partition_name);
 }
 
 /**

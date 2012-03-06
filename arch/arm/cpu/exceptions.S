@@ -106,6 +106,7 @@ _STACK_START:
  * exception handlers
  */
 	.section ".text","ax"
+	.arm
 
 	.align  5
 .globl undefined_instruction

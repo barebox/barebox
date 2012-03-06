@@ -31,6 +31,7 @@
 #include <notifier.h>
 #include <gpio.h>
 #include <io.h>
+#include <malloc.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 
@@ -159,7 +160,7 @@ static int stm_serial_probe(struct device_d *dev)
 	cdev->setbrg = stm_serial_setbaudrate;
 	cdev->dev = dev;
 
-	dev->type_data = cdev;
+	dev->priv = priv;
 	priv->base = dev_request_mem_region(dev, 0);
 
 	stm_serial_init_port(priv);
@@ -177,9 +178,11 @@ static int stm_serial_probe(struct device_d *dev)
 
 static void stm_serial_remove(struct device_d *dev)
 {
-	struct console_device *cdev = dev->type_data;
+	struct stm_priv *priv = dev->priv;
 
-	stm_serial_flush(cdev);
+	stm_serial_flush(&priv->cdev);
+	console_unregister(&priv->cdev);
+	free(priv);
 }
 
 static struct driver_d stm_serial_driver = {

@@ -135,7 +135,6 @@ static int arm_dcc_probe(struct device_d *dev)
 	struct console_device *cdev;
 
 	cdev = &arm_dcc_dev;
-	dev->type_data = cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = arm_dcc_tstc;

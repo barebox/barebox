@@ -24,10 +24,10 @@
 	.syntax unified
 #endif
 
-#ifdef CONFIG_THUMB2_KERNEL
+#ifdef CONFIG_THUMB2_BAREBOX
 
 #if __GNUC__ < 4
-#error Thumb-2 kernel requires gcc >= 4
+#error Thumb-2 barebox requires gcc >= 4
 #endif
 
 /* The CPSR bit describing the instruction set (Thumb) */
@@ -40,7 +40,7 @@
 #endif
 #define BSYM(sym)	sym + 1
 
-#else	/* !CONFIG_THUMB2_KERNEL */
+#else	/* !CONFIG_THUMB2_BAREBOX */
 
 /* The CPSR bit describing the instruction set (ARM) */
 #define PSR_ISETSTATE	0
@@ -52,7 +52,7 @@
 #endif
 #define BSYM(sym)	sym
 
-#endif	/* CONFIG_THUMB2_KERNEL */
+#endif	/* CONFIG_THUMB2_BAREBOX */
 
 #ifndef CONFIG_ARM_ASM_UNIFIED
 

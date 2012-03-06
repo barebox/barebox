@@ -23,37 +23,38 @@
 #include <common.h>
 #include <init.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 
-void __naked __section(.text_entry) exception_vectors(void)
+void __naked __section(.text_entry) start(void)
+{
+	barebox_arm_head();
+}
+
+void __naked __section(.text_exceptions) exception_vectors(void)
 {
 	__asm__ __volatile__ (
+		".arm\n"
 		"b reset\n"				/* reset */
 #ifdef CONFIG_ARM_EXCEPTIONS
 		"ldr pc, =undefined_instruction\n"	/* undefined instruction */
 		"ldr pc, =software_interrupt\n"		/* software interrupt (SWI) */
 		"ldr pc, =prefetch_abort\n"		/* prefetch abort */
 		"ldr pc, =data_abort\n"			/* data abort */
-		"1: bne 1b\n"				/* (reserved) */
+		"1: b 1b\n"				/* (reserved) */
 		"ldr pc, =irq\n"			/* irq (interrupt) */
 		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
 #else
-		"1: bne 1b\n"				/* undefined instruction */
-		"1: bne 1b\n"				/* software interrupt (SWI) */
-		"1: bne 1b\n"				/* prefetch abort */
-		"1: bne 1b\n"				/* data abort */
-		"1: bne 1b\n"				/* (reserved) */
-		"1: bne 1b\n"				/* irq (interrupt) */
-		"1: bne 1b\n"				/* fiq (fast interrupt) */
+		"1: b 1b\n"				/* undefined instruction */
+		"1: b 1b\n"				/* software interrupt (SWI) */
+		"1: b 1b\n"				/* prefetch abort */
+		"1: b 1b\n"				/* data abort */
+		"1: b 1b\n"				/* (reserved) */
+		"1: b 1b\n"				/* irq (interrupt) */
+		"1: b 1b\n"				/* fiq (fast interrupt) */
 #endif
-		".word 0x65726162\n"			/* 'bare' */
-		".word 0x00786f62\n"			/* 'box' */
-		".word _text\n"				/* text base. If copied there,
-							 * barebox can skip relocation
-							 */
-		".word _barebox_image_size\n"		/* image size to copy */
 	);
 }
 
@@ -109,7 +110,7 @@ void __naked __bare_init reset(void)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this funtion directly.
  */
-void __naked __bare_init board_init_lowlevel_return(void)
+void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 {
 	uint32_t r, addr;
 
@@ -124,7 +125,7 @@ void __naked __bare_init board_init_lowlevel_return(void)
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
 	/* Get start of binary image */
-	addr -= (uint32_t)&board_init_lowlevel_return - TEXT_BASE;
+	addr -= (uint32_t)&__ll_return - TEXT_BASE;
 
 	/* relocate to link address if necessary */
 	if (addr != TEXT_BASE)

@@ -26,6 +26,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <command.h>
 #include <cache.h>
 #include <asm/mmu.h>
@@ -89,3 +90,29 @@ void arch_shutdown(void)
 	);
 #endif
 }
+
+#ifdef CONFIG_THUMB2_BAREBOX
+static void thumb2_execute(void *func, int argc, char *argv[])
+{
+	/*
+	 * Switch back to arm mode before executing external
+	 * programs.
+	 */
+	__asm__ __volatile__ (
+		"mov r0, #0\n"
+		"mov r1, %0\n"
+		"mov r2, %1\n"
+		"bx %2\n"
+		:
+		: "r" (argc - 1), "r" (&argv[1]), "r" (func)
+		: "r0", "r1", "r2"
+	);
+}
+
+static int execute_init(void)
+{
+	do_execute = thumb2_execute;
+	return 0;
+}
+postcore_initcall(execute_init);
+#endif

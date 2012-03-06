@@ -1,12 +1,13 @@
 #include <common.h>
 #include <mach/imx-flash-header.h>
 #include <mach/imx-regs.h>
+#include <asm/barebox-arm-head.h>
 
 extern void exception_vectors(void);
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {

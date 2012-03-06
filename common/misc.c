@@ -125,3 +125,6 @@ void perror(const char *s)
 #endif
 }
 EXPORT_SYMBOL(perror);
+
+void (*do_execute)(void *func, int argc, char *argv[]);
+EXPORT_SYMBOL(do_execute);

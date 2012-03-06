@@ -26,7 +26,7 @@
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(exception_vectors)
+ENTRY(start)
 SECTIONS
 {
 	. = TEXT_BASE;
@@ -39,6 +39,8 @@ SECTIONS
 		_stext = .;
 		_text = .;
 		*(.text_entry*)
+		__ll_return = .;
+		*(.text_ll_return*)
 #ifdef CONFIG_ARCH_EP93XX
 		/* the EP93xx expects to find the pattern 'CRUS' at 0x1000 */
 	  . = 0x1000;
@@ -47,6 +49,9 @@ SECTIONS
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;
+		__exceptions_start = .;
+		KEEP(*(.text_exceptions*))
+		__exceptions_stop = .;
 		*(.text*)
 	}
 	BAREBOX_BARE_INIT_SIZE

@@ -146,6 +146,12 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base);
 void start_barebox(void);
 void shutdown_barebox(void);
 
+/*
+ * architectures which have special calling conventions for
+ * executing programs should set this. Used by the 'go' command
+ */
+extern void (*do_execute)(void *func, int argc, char *argv[]);
+
 void arch_shutdown(void);
 
 int run_shell(void);

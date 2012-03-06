@@ -255,6 +255,7 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
 	void *params = NULL;
+	int architecture;
 
 	if (oftree) {
 		printf("booting Linux kernel with devicetree\n");
@@ -272,5 +273,19 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
 	}
 
-	kernel(0, armlinux_get_architecture(), params);
+	architecture = armlinux_get_architecture();
+
+#ifdef CONFIG_THUMB2_BAREBOX
+	__asm__ __volatile__ (
+		"mov r0, #0\n"
+		"mov r1, %0\n"
+		"mov r2, %1\n"
+		"bx %2\n"
+		:
+		: "r" (architecture), "r" (params), "r" (kernel)
+		: "r0", "r1", "r2"
+	);
+#else
+	kernel(0, architecture, params);
+#endif
 }

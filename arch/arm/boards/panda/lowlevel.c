@@ -44,37 +44,6 @@ static const struct ddr_regs ddr_regs_400_mhz_2cs = {
 	.mr2		= 0x4
 };
 
-#define I2C_SLAVE 0x12
-
-static int noinline scale_vcores(void)
-{
-	unsigned int rev = omap4_revision();
-
-	/* For VC bypass only VCOREx_CGF_FORCE  is necessary and
-	 * VCOREx_CFG_VOLTAGE  changes can be discarded
-	 */
-	writel(0, OMAP44XX_PRM_VC_CFG_I2C_MODE);
-	writel(0x6026, OMAP44XX_PRM_VC_CFG_I2C_CLK);
-
-	/* set VCORE1 force VSEL */
-	omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
-
-	/* FIXME: set VCORE2 force VSEL, Check the reset value */
-	omap4_power_i2c_send((0x295B << 8) | I2C_SLAVE);
-
-	/* set VCORE3 force VSEL */
-	switch (rev) {
-	case OMAP4430_ES2_0:
-		omap4_power_i2c_send((0x2961 << 8) | I2C_SLAVE);
-		break;
-	case OMAP4430_ES2_1:
-		omap4_power_i2c_send((0x2A61 << 8) | I2C_SLAVE);
-		break;
-	}
-
-	return 0;
-}
-
 static void noinline panda_init_lowlevel(void)
 {
 	struct dpll_param core = OMAP4_CORE_DPLL_PARAM_38M4_DDR400;
@@ -101,7 +70,7 @@ static void noinline panda_init_lowlevel(void)
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	scale_vcores();
+	omap4_scale_vcores();
 
 	board_init_lowlevel_return();
 }

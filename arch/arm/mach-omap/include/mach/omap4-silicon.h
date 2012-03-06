@@ -175,5 +175,6 @@ struct dpll_param;
 void omap4_ddr_init(const struct ddr_regs *, const struct dpll_param *);
 void omap4_power_i2c_send(u32);
 unsigned int omap4_revision(void);
+noinline int omap4_scale_vcores(void);
 
 #endif

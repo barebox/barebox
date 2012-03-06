@@ -235,20 +235,11 @@ static const struct pad_conf_entry wkup_padconf_array[] = {
 	{PAD1_SYS_BOOT7, (IEN | M3)},					/* gpio_wk10 */
 };
 
-static void do_set_mux(u32 base, struct pad_conf_entry const *array, int size)
-{
-	int i;
-	struct pad_conf_entry *pad = (struct pad_conf_entry *) array;
-
-	for (i = 0; i < size; i++, pad++)
-		writew(pad->val, base + pad->offset);
-}
-
 void set_muxconf_regs(void)
 {
-	do_set_mux(OMAP44XX_CONTROL_PADCONF_CORE, core_padconf_array,
+	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_CORE, core_padconf_array,
 			ARRAY_SIZE(core_padconf_array));
 
-	do_set_mux(OMAP44XX_CONTROL_PADCONF_WKUP, wkup_padconf_array,
+	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_WKUP, wkup_padconf_array,
 			ARRAY_SIZE(wkup_padconf_array));
 }

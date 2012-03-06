@@ -341,4 +341,6 @@ struct pad_conf_entry {
 #define CONTROL_SPARE_R		0x0618
 #define CONTROL_SPARE_R_C0		0x061C
 
+void omap4_do_set_mux(u32 base, struct pad_conf_entry const *array, int size);
+
 #endif /* _MUX_OMAP4_H_ */

@@ -3,6 +3,7 @@
 #include <mach/silicon.h>
 #include <io.h>
 #include <mach/omap4-silicon.h>
+#include <mach/omap4-mux.h>
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>
@@ -449,4 +450,13 @@ noinline int omap4_scale_vcores(void)
 	}
 
 	return 0;
+}
+
+void omap4_do_set_mux(u32 base, struct pad_conf_entry const *array, int size)
+{
+	int i;
+	struct pad_conf_entry *pad = (struct pad_conf_entry *) array;
+
+	for (i = 0; i < size; i++, pad++)
+		writew(pad->val, base + pad->offset);
 }

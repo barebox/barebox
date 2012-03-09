@@ -30,6 +30,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm-generic/memory_layout.h>
+#include <asm-generic/sections.h>
 
 #include "pll.h"
 
@@ -44,7 +45,7 @@ static void __bare_init __naked insdram(void)
 	r = STACK_BASE + STACK_SIZE - 12;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 
 	board_init_lowlevel_return();
 }

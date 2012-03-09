@@ -26,6 +26,7 @@
 #include <fec.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
@@ -327,7 +328,7 @@ console_initcall(pca100_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif
 

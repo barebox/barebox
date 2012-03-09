@@ -247,6 +247,17 @@ static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 }
 #endif
 
+#ifdef CONFIG_DRIVER_NET_KS8851_MLL
+struct device_d *add_ks8851_device(int id, resource_size_t addr,
+		resource_size_t addr_cmd, int flags, void *pdata);
+#else
+static inline struct device_d *add_ks8851_device(int id, resource_size_t addr,
+		resource_size_t addr_cmd, int flags, void *pdata)
+{
+	return NULL;
+}
+#endif
+
 static inline struct device_d *add_generic_usb_ehci_device(int id,
 		resource_size_t base, void *pdata)
 {

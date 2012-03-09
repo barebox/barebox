@@ -100,6 +100,13 @@ config TSE_USE_DEDICATED_DESC_MEM
 	  reserved with a malloc but directly mapped to the memory
 	  address (defined in config.h)
 
+config DRIVER_NET_KS8851_MLL
+	bool "ks8851 mll ethernet driver"
+	select MIIDEV
+	help
+	  This option enables support for the Micrel KS8851 MLL
+	  ethernet chip.
+
 source "drivers/net/usb/Kconfig"
 
 endmenu

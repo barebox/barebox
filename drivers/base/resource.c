@@ -121,3 +121,36 @@ struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 }
 EXPORT_SYMBOL(add_usb_ehci_device);
 #endif
+
+#ifdef CONFIG_DRIVER_NET_KS8851_MLL
+struct device_d *add_ks8851_device(int id, resource_size_t addr,
+		resource_size_t addr_cmd, int flags, void *pdata)
+{
+	struct resource *res;
+	resource_size_t size;
+
+	switch (flags) {
+	case IORESOURCE_MEM_16BIT:
+		size = 2;
+		break;
+	case IORESOURCE_MEM_8BIT:
+		size = 1;
+		break;
+	default:
+		printf("ks8851: memory width flag missing\n");
+		return NULL;
+	}
+
+	res = xzalloc(sizeof(struct resource) * 2);
+
+	res[0].start = addr;
+	res[0].size = size;
+	res[0].flags = IORESOURCE_MEM | flags;
+	res[1].start = addr_cmd;
+	res[1].size = size;
+	res[1].flags = IORESOURCE_MEM | flags;
+
+	return add_generic_device_res("ks8851_mll", id, res, 2, pdata);
+}
+EXPORT_SYMBOL(add_ks8851_device);
+#endif

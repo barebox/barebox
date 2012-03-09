@@ -19,14 +19,9 @@ rootfs_loc=net
 rootfs_type=ubifs
 rootfsimage=root.$rootfs_type
 
-# The image type of the kernel. Can be uimage, zimage, raw, or raw_lzo
-#kernelimage_type=zimage
 #kernelimage=zImage
-kernelimage_type=uimage
 kernelimage=uImage
-#kernelimage_type=raw
 #kernelimage=Image
-#kernelimage_type=raw_lzo
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand

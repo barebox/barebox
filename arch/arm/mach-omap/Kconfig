@@ -103,6 +103,8 @@ config BOARDINFO
 	default "Texas Instrument's Panda" if MACH_PANDA
 	default "Phytec phyCORE pcm049" if MACH_PCM049
 	default "Phytec phyCARD-A-L1" if MACH_PCAAL1
+	default "Phytec phyCARD-A-XL2" if MACH_PCAAXL2
+
 choice
 	prompt "Select OMAP board"
 
@@ -152,6 +154,14 @@ config MACH_PCAAL1
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
+
+config MACH_PCAAXL2
+	bool "Phytec phyCARD XL2"
+	select HAVE_NOSHELL
+	select MACH_HAS_LOWLEVEL_INIT
+	depends on ARCH_OMAP4
+	help
+	  Say Y here if you are using a phyCARD-A-XL1 PCA-A-XL1
 
 endchoice
 

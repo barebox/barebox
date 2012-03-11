@@ -21,6 +21,7 @@
 #include <driver.h>
 #include <errno.h>
 #include <malloc.h>
+#include <clock.h>
 #include <io.h>
 #include <linux/kernel.h>
 #include <linux/mtd/mtd.h>
@@ -780,9 +781,9 @@ static int doc_get_op_status(struct docg3 *docg3)
 static int doc_write_erase_wait_status(struct docg3 *docg3)
 {
 	int status, ret = 0;
+	uint64_t start = get_time_ns();
 
-	if (!doc_is_ready(docg3))
-		mdelay(3000);
+	while (!is_timeout(start, 3000 * MSECOND) && !doc_is_ready(docg3));
 	if (!doc_is_ready(docg3)) {
 		doc_dbg("Timeout reached and the chip is still not ready\n");
 		ret = -EAGAIN;

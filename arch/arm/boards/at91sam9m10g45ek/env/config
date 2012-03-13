@@ -3,6 +3,7 @@
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
+dhcp_vendor_id=barebox-at91sam9m10g45ek
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d

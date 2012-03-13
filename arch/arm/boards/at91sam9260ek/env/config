@@ -4,6 +4,13 @@
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
 
+if [ x$armlinux_architecture = x1099 ]
+then
+	dhcp_vendor_id=barebox-at91sam9260ek
+else
+	dhcp_vendor_id=barebox-at91sam9g20ek
+fi
+
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
 #eth0.netmask=a.b.c.d

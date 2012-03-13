@@ -39,7 +39,7 @@ elif [ x$mode = xdisk ]; then
 	kernel_loc=disk
 fi
 
-if [ x$ip = xdhcp ]; then
+if [ x$ip = xdhcp -o x$ip = "xdhcp-barebox" ]; then
 	if [ x$kernel_loc = xnfs -o x$kernel_loc = xtftp ]; then
 		dhcp
 		if [ x$rootpath != x ]; then
@@ -49,6 +49,9 @@ if [ x$ip = xdhcp ]; then
 			kernelimage=$bootfile
 		fi
 	fi
+fi
+
+if [ x$ip = xdhcp -o ]; then
 	bootargs="$bootargs ip=dhcp"
 elif [ x$ip = xnone ]; then
 	bootargs="$bootargs ip=none"

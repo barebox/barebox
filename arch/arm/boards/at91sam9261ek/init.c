@@ -30,6 +30,7 @@
 #include <io.h>
 #include <asm/hardware.h>
 #include <nand.h>
+#include <sizes.h>
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
@@ -38,6 +39,9 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
 #include <dm9000.h>
+#include <gpio_keys.h>
+#include <readkey.h>
+#include <led.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 22,
@@ -133,6 +137,103 @@ static void __init ek_add_device_dm9000(void)
 static void __init ek_add_device_dm9000(void) {}
 #endif /* CONFIG_DRIVER_NET_DM9K */
 
+#if defined(CONFIG_USB_GADGET_DRIVER_AT91)
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PB29,
+	.pullup_pin	= 0,
+};
+
+static void ek_add_device_udc(void)
+{
+	at91_add_device_udc(&ek_udc_data);
+}
+#else
+static void ek_add_device_udc(void) {}
+#endif
+
+#ifdef CONFIG_KEYBOARD_GPIO
+struct gpio_keys_button keys[] = {
+	{
+		.code = KEY_UP,
+		.gpio = AT91_PIN_PA26,
+	}, {
+		.code = KEY_DOWN,
+		.gpio = AT91_PIN_PA25,
+	}, {
+		.code = KEY_ENTER,
+		.gpio = AT91_PIN_PA24,
+	},
+};
+
+struct gpio_keys_platform_data gk_pdata = {
+	.buttons = keys,
+	.nbuttons = ARRAY_SIZE(keys),
+};
+
+static void ek_add_device_keyboard_buttons(void)
+{
+	int i;
+
+	for (i = 0; i < gk_pdata.nbuttons; i++) {
+		/* user push button, pull up enabled */
+		keys[i].active_low = 1;
+		at91_set_GPIO_periph(keys[i].gpio, keys[i].active_low);
+		at91_set_deglitch(keys[i].gpio, 1);
+	}
+
+	add_gpio_keys_device(-1, &gk_pdata);
+}
+#else
+static void ek_add_device_keyboard_buttons(void) {}
+#endif
+
+static void __init ek_add_device_buttons(void)
+{
+	at91_set_gpio_input(AT91_PIN_PA27, 1);
+	at91_set_deglitch(AT91_PIN_PA27, 1);
+	export_env_ull("dfu_button", AT91_PIN_PA27);
+	ek_add_device_keyboard_buttons();
+}
+
+#ifdef CONFIG_LED_GPIO
+struct gpio_led ek_leds[] = {
+	{
+		.gpio		= AT91_PIN_PA23,
+		.led = {
+			.name = "ds1",
+		},
+	}, {
+		.gpio		= AT91_PIN_PA14,
+		.active_low	= 1,
+		.led = {
+			.name = "ds7",
+		},
+	}, {
+		.gpio		= AT91_PIN_PA13,
+		.active_low	= 1,
+		.led = {
+			.name = "ds8",
+		},
+	},
+};
+
+static void ek_device_add_leds(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ek_leds); i++) {
+		at91_set_gpio_output(ek_leds[i].gpio, ek_leds[i].active_low);
+		led_gpio_register(&ek_leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &ek_leds[0].led);
+}
+#else
+static void ek_device_add_leds(void) {}
+#endif
+
 static int at91sam9261ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -146,11 +247,17 @@ static int at91sam9261ek_devices_init(void)
 
 	ek_add_device_nand();
 	ek_add_device_dm9000();
+	ek_add_device_udc();
+	ek_add_device_buttons();
+	ek_device_add_leds();
 
-	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
+	devfs_add_partition("nand0", SZ_128K, SZ_256K, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", SZ_256K + SZ_128K, SZ_128K, PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+	devfs_add_partition("nand0", SZ_512K, SZ_128K, PARTITION_FIXED, "env_raw1");
+	dev_add_bb_dev("env_raw1", "env1");
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	if (machine_is_at91sam9g10ek())

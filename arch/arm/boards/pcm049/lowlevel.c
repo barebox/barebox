@@ -30,23 +30,22 @@
 
 void set_muxconf_regs(void);
 
-/* Erstmal 200Mhz... */
-static const struct ddr_regs ddr_regs_mt42L64M64_3_200_mhz = {
-	.tim1		= 0x0aa8d4e3,
-	.tim2		= 0x202e0b92,
-	.tim3		= 0x009da2b3,
-	.phy_ctrl_1	= 0x849FF404, /* mostly from elpida */
-	.ref_ctrl	= 0x0000030c, /* from elpida 200MHz! */
-	.config_init	= 0x80000eb1,
-	.config_final	= 0x80000eb1,
-	.zq_config	= 0x500b3215, /* mostly from elpida */
-	.mr1		= 0x23,	      /* from elpida 200MHz! */
-	.mr2		= 0x1	      /* from elpida 200MHz! */
+static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
+	.tim1		= 0x0EEB0662,
+	.tim2		= 0x20370DD2,
+	.tim3		= 0x00BFC33F,
+	.phy_ctrl_1	= 0x849FF408,
+	.ref_ctrl	= 0x00000618,
+	.config_init	= 0x80001AB1,
+	.config_final	= 0x80001AB1,
+	.zq_config	= 0xd0093215,
+	.mr1		= 0x83,
+	.mr2		= 0x4
 };
 
 static void noinline pcm049_init_lowlevel(void)
 {
-	struct dpll_param core = OMAP4_CORE_DPLL_PARAM_19M2_DDR200;
+	struct dpll_param core = OMAP4_CORE_DPLL_PARAM_19M2_DDR400;
 	struct dpll_param mpu = OMAP4_MPU_DPLL_PARAM_19M2_MPU1000;
 	struct dpll_param iva = OMAP4_IVA_DPLL_PARAM_19M2;
 	struct dpll_param per = OMAP4_PER_DPLL_PARAM_19M2;
@@ -55,7 +54,7 @@ static void noinline pcm049_init_lowlevel(void)
 
 	set_muxconf_regs();
 
-	omap4_ddr_init(&ddr_regs_mt42L64M64_3_200_mhz, &core);
+	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
 	omap4_scale_vcores();

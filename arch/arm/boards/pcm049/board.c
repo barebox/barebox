@@ -106,7 +106,8 @@ static int pcm049_devices_init(void)
 
 	pcm049_network_init();
 
-	gpmc_generic_nand_devices_init(0, 8, OMAP_ECC_BCH8_CODE_HW);
+	gpmc_generic_nand_devices_init(0, 8,
+			OMAP_ECC_BCH8_CODE_HW, &omap4_nand_cfg);
 
 #ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "xload_raw");

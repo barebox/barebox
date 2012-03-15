@@ -332,7 +332,7 @@ static int pcaal1_late_init(void)
 {
 	struct device_d *nand;
 
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_SOFT);
+	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_SOFT, &omap3_nand_cfg);
 
 	nand = get_device_by_name("nand0");
 

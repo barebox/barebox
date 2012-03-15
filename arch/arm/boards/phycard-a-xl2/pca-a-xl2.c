@@ -95,7 +95,6 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
-
 static struct omap_hsmmc_platform_data mmc_device = {
 	.f_max = 26000000,
 };
@@ -125,7 +124,8 @@ static int pcaaxl2_devices_init(void)
 
 	pcaaxl2_network_init();
 
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_BCH8_CODE_HW);
+	gpmc_generic_nand_devices_init(0, 16,
+			OMAP_ECC_BCH8_CODE_HW, &omap4_nand_cfg);
 
 #ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, SZ_128K,

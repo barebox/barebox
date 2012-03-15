@@ -78,6 +78,10 @@ struct gpmc_nand_platform_data {
 #define NAND_WAITPOL_HIGH       (1 << 0)
 #define NAND_WAITPOL_MASK       (1 << 0)
 
-int gpmc_generic_nand_devices_init(int cs, int width, enum gpmc_ecc_mode);
+int gpmc_generic_nand_devices_init(int cs, int width,
+			enum gpmc_ecc_mode, struct gpmc_config *nand_cfg);
+
+extern struct gpmc_config omap3_nand_cfg;
+extern struct gpmc_config omap4_nand_cfg;
 
 #endif				/* __ASM_OMAP_NAND_GPMC_H */

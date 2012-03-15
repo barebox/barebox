@@ -7,6 +7,7 @@
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>
+#include <mach/gpmc.h>
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -460,3 +461,18 @@ void omap4_do_set_mux(u32 base, struct pad_conf_entry const *array, int size)
 	for (i = 0; i < size; i++, pad++)
 		writew(pad->val, base + pad->offset);
 }
+
+/* GPMC timing for OMAP4 nand device */
+const struct gpmc_config omap4_nand_cfg = {
+	.cfg = {
+		0x00000800,	/* CONF1 */
+		0x00050500,	/* CONF2 */
+		0x00040400,	/* CONF3 */
+		0x03000300,	/* CONF4 */
+		0x00050808,	/* CONF5 */
+		0x00000000,	/* CONF6 */
+	},
+	/* GPMC address map as small as possible */
+	.base = 0x28000000,
+	.size = GPMC_SIZE_16M,
+};

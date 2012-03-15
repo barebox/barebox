@@ -4,7 +4,6 @@
  *
  * FileName: arch/arm/boards/omap/devices-gpmc-nand.c
  *
- * GPMC NAND Devices such as those from Micron, Samsung are listed here
  */
 /*
  * (C) Copyright 2006-2008
@@ -39,35 +38,12 @@
 
 #define GPMC_CONF1_VALx8	0x00000800
 #define GPMC_CONF1_VALx16	0x00001800
-/* Set up the generic params */
-
-/** GPMC timing for our nand device */
-static struct gpmc_config nand_cfg = {
-	.cfg = {
-		0,		/*CONF1 */
-		0x00141400,	/*CONF2 */
-		0x00141400,	/*CONF3 */
-		0x0F010F01,	/*CONF4 */
-		0x010C1414,	/*CONF5 */
-#ifdef CONFIG_ARCH_OMAP3
-		/* Additional bits in OMAP3 */
-		0x1F040000 |
-#endif
-		0x00000A80,	/*CONF6 */
-		},
-
-	/* Nand: dont care about base address */
-	.base = 0x28000000,
-	/* GPMC address map as small as possible */
-	.size = GPMC_SIZE_16M,
-};
 
 /** NAND platform specific settings settings */
 static struct gpmc_nand_platform_data nand_plat = {
 	.cs = 0,
 	.max_timeout = MSECOND,
 	.wait_mon_pin = 0,
-	.priv = (void *)&nand_cfg,
 };
 
 /**
@@ -76,20 +52,21 @@ static struct gpmc_nand_platform_data nand_plat = {
  * @return success/fail based on device funtion
  */
 int gpmc_generic_nand_devices_init(int cs, int width,
-		enum gpmc_ecc_mode eccmode)
+		enum gpmc_ecc_mode eccmode, struct gpmc_config *nand_cfg)
 {
 	nand_plat.cs = cs;
 
 	if (width == 16)
-		nand_cfg.cfg[0] = GPMC_CONF1_VALx16;
+		nand_cfg->cfg[0] = GPMC_CONF1_VALx16;
 	else
-		nand_cfg.cfg[0] = GPMC_CONF1_VALx8;
+		nand_cfg->cfg[0] = GPMC_CONF1_VALx8;
 
 	nand_plat.device_width = width;
 	nand_plat.ecc_mode = eccmode;
+	nand_plat.priv = nand_cfg;
 
 	/* Configure GPMC CS before register */
-	gpmc_cs_config(nand_plat.cs, &nand_cfg);
+	gpmc_cs_config(nand_plat.cs, nand_cfg);
 
 	add_generic_device("gpmc_nand", -1, NULL, OMAP_GPMC_BASE, 1024 * 4,
 			   IORESOURCE_MEM, &nand_plat);

@@ -40,11 +40,12 @@ autoboot_timeout=3
 
 bootargs="console=ttymxc0,115200"
 
-nor_parts="256k(barebox)ro,128k(bareboxenv),2M(kernel),-(root)"
+nor_parts="512k(barebox)ro,128k(bareboxenv),2M(kernel),-(root)"
 rootfs_mtdblock_nor=3
 
-nand_parts="256k(barebox)ro,128k(bareboxenv),2M(kernel),-(root)"
+nand_parts="512k(barebox)ro,128k(bareboxenv),2M(kernel),-(root)"
 rootfs_mtdblock_nand=7
+nand_device="mxc_nand"
 
 # set a fancy prompt (if support is compiled in)
 PS1="\e[1;32mbarebox@\e[1;31m\h:\w\e[0m "

@@ -270,14 +270,4 @@ void imx51_init_lowlevel(void)
 	while (readl(ccm + MX5_CCM_CDHIPR));
 
 	writel(0x0, ccm + MX5_CCM_CCDR);
-
-	writel(0x1, 0x73fa8074);
-
-	r = readl(0x73f88000);
-	r |= 0x40;
-	writel(r, 0x73f88000);
-
-	r = readl(0x73f88004);
-	r |= 0x40;
-	writel(r, 0x73f88004);
 }

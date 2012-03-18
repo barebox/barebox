@@ -130,94 +130,94 @@ static void babbage_power_init(void)
 	}
 
 	/* Write needed to Power Gate 2 register */
-	mc13892_reg_read(mc13892, 34, &val);
+	mc13892_reg_read(mc13892, MC13892_REG_POWER_MISC, &val);
 	val &= ~0x10000;
-	mc13892_reg_write(mc13892, 34, val);
+	mc13892_reg_write(mc13892, MC13892_REG_POWER_MISC, val);
 
 	/* Write needed to update Charger 0 */
-	mc13892_reg_write(mc13892, 48, 0x0023807F);
+	mc13892_reg_write(mc13892, MC13892_REG_CHARGE, 0x0023807F);
 
 	/* power up the system first */
-	mc13892_reg_write(mc13892, 34, 0x00200000);
+	mc13892_reg_write(mc13892, MC13892_REG_POWER_MISC, 0x00200000);
 
 	if (imx_silicon_revision() < MX51_CHIP_REV_3_0) {
 		/* Set core voltage to 1.1V */
-		mc13892_reg_read(mc13892, 24, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_0, &val);
 		val &= ~0x1f;
 		val |= 0x14;
-		mc13892_reg_write(mc13892, 24, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_0, val);
 
 		/* Setup VCC (SW2) to 1.25 */
-		mc13892_reg_read(mc13892, 25, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_1, &val);
 		val &= ~0x1f;
 		val |= 0x1a;
-		mc13892_reg_write(mc13892, 25, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.25 */
-		mc13892_reg_read(mc13892, 26, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_2, &val);
 		val &= ~0x1f;
 		val |= 0x1a;
-		mc13892_reg_write(mc13892, 26, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_2, val);
 		udelay(50);
 		/* Raise the core frequency to 800MHz */
 		writel(0x0, MX51_CCM_BASE_ADDR + MX51_CCM_CACRR);
 	} else {
 		/* Setup VCC (SW2) to 1.225 */
-		mc13892_reg_read(mc13892, 25, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_1, &val);
 		val &= ~0x1f;
 		val |= 0x19;
-		mc13892_reg_write(mc13892, 25, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.2 */
-		mc13892_reg_read(mc13892, 26, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_2, &val);
 		val &= ~0x1f;
 		val |= 0x18;
-		mc13892_reg_write(mc13892, 26, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_2, val);
 	}
 
 	if (mc13892_get_revision(mc13892) < MC13892_REVISION_2_0) {
 		/* Set switchers in PWM mode for Atlas 2.0 and lower */
 		/* Setup the switcher mode for SW1 & SW2*/
-		mc13892_reg_read(mc13892, 28, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_4, &val);
 		val &= ~0x3c0f;
 		val |= 0x1405;
-		mc13892_reg_write(mc13892, 28, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
-		mc13892_reg_read(mc13892, 29, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_5, &val);
 		val &= ~0xf0f;
 		val |= 0x505;
-		mc13892_reg_write(mc13892, 29, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_5, val);
 	} else {
 		/* Set switchers in Auto in NORMAL mode & STANDBY mode for Atlas 2.0a */
 		/* Setup the switcher mode for SW1 & SW2*/
-		mc13892_reg_read(mc13892, 28, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_4, &val);
 		val &= ~0x3c0f;
 		val |= 0x2008;
-		mc13892_reg_write(mc13892, 28, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
-		mc13892_reg_read(mc13892, 29, &val);
+		mc13892_reg_read(mc13892, MC13892_REG_SW_5, &val);
 		val &= ~0xf0f;
 		val |= 0x808;
-		mc13892_reg_write(mc13892, 29, val);
+		mc13892_reg_write(mc13892, MC13892_REG_SW_5, val);
 	}
 
 	/* Set VDIG to 1.65V, VGEN3 to 1.8V, VCAM to 2.5V */
-	mc13892_reg_read(mc13892, 30, &val);
+	mc13892_reg_read(mc13892, MC13892_REG_SETTING_0, &val);
 	val &= ~0x34030;
 	val |= 0x10020;
-	mc13892_reg_write(mc13892, 30, val);
+	mc13892_reg_write(mc13892, MC13892_REG_SETTING_0, val);
 
 	/* Set VVIDEO to 2.775V, VAUDIO to 3V, VSD to 3.15V */
-	mc13892_reg_read(mc13892, 31, &val);
+	mc13892_reg_read(mc13892, MC13892_REG_SETTING_1, &val);
 	val &= ~0x1FC;
 	val |= 0x1F4;
-	mc13892_reg_write(mc13892, 31, val);
+	mc13892_reg_write(mc13892, MC13892_REG_SETTING_1, val);
 
 	/* Configure VGEN3 and VCAM regulators to use external PNP */
 	val = 0x208;
-	mc13892_reg_write(mc13892, 33, val);
+	mc13892_reg_write(mc13892, MC13892_REG_MODE_1, val);
 	udelay(200);
 #define GPIO_LAN8700_RESET	(1 * 32 + 14)
 
@@ -226,7 +226,7 @@ static void babbage_power_init(void)
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
 	val = 0x49249;
-	mc13892_reg_write(mc13892, 33, val);
+	mc13892_reg_write(mc13892, MC13892_REG_MODE_1, val);
 
 	udelay(500);
 

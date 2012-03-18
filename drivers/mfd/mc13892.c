@@ -237,7 +237,7 @@ static int mc13893_query_revision(struct mc13892 *mc13892)
 	char *revstr;
 	int rev, i;
 
-	mc13892_reg_read(mc13892, 7, &rev_id);
+	mc13892_reg_read(mc13892, MC13892_REG_IDENTIFICATION, &rev_id);
 
 	for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
 		if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)

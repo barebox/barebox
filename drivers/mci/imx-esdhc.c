@@ -548,8 +548,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.init = esdhc_init;
 	host->mci.hw_dev = dev;
 
-	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
-
 	host->mci.f_min = imx_get_mmcclk() >> 12;
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;

@@ -240,7 +240,7 @@ static int tqma53_devices_init(void)
 	mdelay(1);
 	gpio_set_value(GPIO_FEC_NRESET, 1);
 
-	imx51_iim_register_fec_ethaddr();
+	imx53_iim_register_fec_ethaddr();
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc1(&tqma53_sd2_data);
 	imx53_add_mmc2(&tqma53_sd3_data);

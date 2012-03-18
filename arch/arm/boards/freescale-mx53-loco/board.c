@@ -165,7 +165,7 @@ static struct esdhc_platform_data loco_sd3_data = {
 
 static int loco_devices_init(void)
 {
-	imx51_iim_register_fec_ethaddr();
+	imx53_iim_register_fec_ethaddr();
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(&loco_sd1_data);
 	imx53_add_mmc2(&loco_sd3_data);

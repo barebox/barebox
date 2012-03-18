@@ -48,7 +48,7 @@ static inline struct device_d *imx27_add_nand(struct imx_nand_platform_data *pda
 
 static inline struct device_d *imx27_add_fb(struct imx_fb_platform_data *pdata)
 {
-	return imx_add_fb((void *)0x10021000, pdata);
+	return imx_add_fb((void *)IMX_FB_BASE, pdata);
 }
 
 static inline struct device_d *imx27_add_fec(struct fec_platform_data *pdata)

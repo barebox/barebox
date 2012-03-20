@@ -22,17 +22,35 @@
 #include <common.h>
 #include <command.h>
 #include <usb/usb.h>
+#include <getopt.h>
+
+static int scanned;
 
 static int do_usb(int argc, char *argv[])
 {
-	usb_rescan();
+	int opt;
+
+	while ((opt = getopt(argc, argv, "f")) > 0) {
+		switch (opt) {
+		case 'f':
+			scanned = 0;
+			break;
+		}
+	}
+
+	if (!scanned) {
+		usb_rescan();
+		scanned = 1;
+	}
 
 	return 0;
 }
 
-static const __maybe_unused char cmd_usb_help[] =
-"Usage: usb\n"
-"(re-)detect USB devices\n";
+BAREBOX_CMD_HELP_START(usb)
+BAREBOX_CMD_HELP_USAGE("usb [-f]\n")
+BAREBOX_CMD_HELP_SHORT("Scan for USB devices.\n")
+BAREBOX_CMD_HELP_OPT("-f", "force. Rescan if if if have scanned once\n")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,

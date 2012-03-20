@@ -1,6 +1,9 @@
 
 menu "Filesystem support            "
 
+config FS_AUTOMOUNT
+	bool
+
 config FS_CRAMFS
 	bool
 	select ZLIB

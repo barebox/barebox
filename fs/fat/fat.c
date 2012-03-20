@@ -376,6 +376,7 @@ static int fat_probe(struct device_d *dev)
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct fat_priv *priv = xzalloc(sizeof(struct fat_priv));
 	char *backingstore = fsdev->backingstore;
+	int ret;
 
 	dev->priv = priv;
 
@@ -383,13 +384,24 @@ static int fat_probe(struct device_d *dev)
 		backingstore += 5;
 
 	priv->cdev = cdev_open(backingstore, O_RDWR);
-	if (!priv->cdev)
-		return -EINVAL;
+	if (!priv->cdev) {
+		ret = -ENOENT;
+		goto err_open;
+	}
 
 	priv->fat.userdata = priv;
-	f_mount(&priv->fat);
+	ret = f_mount(&priv->fat);
+	if (ret)
+		goto err_mount;
 
 	return 0;
+
+err_mount:
+	cdev_close(priv->cdev);
+err_open:
+	free(priv);
+
+	return ret;
 }
 
 static void fat_remove(struct device_d *dev)

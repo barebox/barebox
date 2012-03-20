@@ -33,14 +33,14 @@
 static int do_mount(int argc, char *argv[])
 {
 	int ret = 0;
-	struct mtab_entry *entry;
+	struct fs_device_d *fsdev;
 
 	if (argc == 1) {
-		for_each_mtab_entry(entry) {
+		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",
-				entry->parent_device ? dev_name(entry->parent_device) : "none",
-				entry->path,
-				entry->dev->name);
+				fsdev->parent_device ? dev_name(fsdev->parent_device) : "none",
+				fsdev->path,
+				fsdev->dev.name);
 		}
 		return 0;
 	}

@@ -1699,9 +1699,7 @@ int f_mount (
 {
 	fs->fs_type = 0; /* Clear new fs object */
 
-	chk_mounted(fs, 0);
-
-	return 0;
+	return chk_mounted(fs, 0);
 }
 
 /*

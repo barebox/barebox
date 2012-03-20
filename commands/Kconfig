@@ -181,6 +181,16 @@ config CMD_NANDTEST
 	select PARTITION_NEED_MTD
 	prompt "nandtest"
 
+config CMD_AUTOMOUNT
+	tristate
+	select FS_AUTOMOUNT
+	prompt "automount"
+	help
+	  automount allows it to automatically execute a script when a certain
+	  directory is accessed for the first time. The script should then make
+	  this directory available (discover USB devices, bring network interface
+	  up and finally mount the filesystem).
+
 endmenu
 
 menu "console                       "

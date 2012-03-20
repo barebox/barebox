@@ -1678,10 +1678,25 @@ BAREBOX_CMD_END
 
 static int do_source(int argc, char *argv[])
 {
+	char *path;
+	int ret;
+
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	return source_script(argv[1], argc - 1, argv + 1);
+	if (strchr(argv[1], '/')) {
+		path = xstrdup(argv[1]);
+	} else {
+		path = find_execable(argv[1]);
+		if (!path)
+			return 1;
+	}
+
+	ret = source_script(path, argc - 1, argv + 1);
+
+	free(path);
+
+	return ret;
 }
 
 static const char *source_aliases[] = { ".", NULL};

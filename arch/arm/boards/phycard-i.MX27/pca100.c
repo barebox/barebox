@@ -293,7 +293,7 @@ static int pca100_devices_init(void)
 
 	imx27_add_nand(&nand_info);
 	imx27_add_fec(&fec_info);
-	imx27_add_mmc0(NULL);
+	imx27_add_mmc1(NULL);
 	imx27_add_fb(&pca100_fb_data);
 
 	PCCR1 |= PCCR1_PERCLK2_EN;

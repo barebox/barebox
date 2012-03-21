@@ -31,18 +31,25 @@
 int miidev_restart_aneg(struct mii_device *mdev)
 {
 	int status, timeout;
+	uint64_t start;
 
-	/*
-	 * Reset PHY, then delay 300ns
-	 */
 	status = mii_write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
 	if (status)
 		return status;
 
+	start = get_time_ns();
+	do {
+		status = mii_read(mdev, mdev->address, MII_BMCR);
+		if (status < 0)
+			return status;
+
+		if (is_timeout(start, SECOND))
+			return -ETIMEDOUT;
+
+	} while (status & BMCR_RESET);
+
 	if (mdev->flags & MIIDEV_FORCE_LINK)
 		return 0;
-
-	udelay(1000);
 
 	if (mdev->flags & MIIDEV_FORCE_10) {
 		printf("Forcing 10 Mbps ethernet link... ");

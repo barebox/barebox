@@ -77,6 +77,21 @@ static void pm_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
+#if defined(CONFIG_MCI_ATMEL)
+static struct atmel_mci_platform_data __initdata mci_data = {
+	.bus_width	= 4,
+	.wp_pin		= 0,
+	.detect_pin	= AT91_PIN_PD6,
+};
+
+static void pm9g45_add_device_mci(void)
+{
+	at91_add_device_mci(0, &mci_data);
+}
+#else
+static void pm9g45_add_device_mci(void) {}
+#endif
+
 static struct at91_ether_platform_data macb_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
@@ -104,6 +119,7 @@ mem_initcall(pm9g45_mem_init);
 static int pm9g45_devices_init(void)
 {
 	pm_add_device_nand();
+	pm9g45_add_device_mci();
 	pm9g45_phy_init();
 	at91_add_device_eth(&macb_pdata);
 

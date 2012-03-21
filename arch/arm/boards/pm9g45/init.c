@@ -92,6 +92,23 @@ static void pm9g45_add_device_mci(void)
 static void pm9g45_add_device_mci(void) {}
 #endif
 
+/*
+ * USB OHCI Host port
+ */
+#ifdef CONFIG_USB_OHCI_AT91
+static struct at91_usbh_data  __initdata usbh_data = {
+	.ports		= 2,
+	.vbus_pin	= { AT91_PIN_PD0,  0x0 },
+};
+
+static void __init pm9g45_add_device_usbh(void)
+{
+	at91_add_device_usbh_ohci(&usbh_data);
+}
+#else
+static void __init pm9g45_add_device_usbh(void) {}
+#endif
+
 static struct at91_ether_platform_data macb_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
@@ -122,6 +139,7 @@ static int pm9g45_devices_init(void)
 	pm9g45_add_device_mci();
 	pm9g45_phy_init();
 	at91_add_device_eth(&macb_pdata);
+	pm9g45_add_device_usbh();
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");

@@ -30,13 +30,14 @@
 
 int miidev_restart_aneg(struct mii_device *mdev)
 {
-	uint16_t status;
-	int timeout;
+	int status, timeout;
 
 	/*
 	 * Reset PHY, then delay 300ns
 	 */
-	mii_write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
+	status = mii_write(mdev, mdev->address, MII_BMCR, BMCR_RESET);
+	if (status)
+		return status;
 
 	if (mdev->flags & MIIDEV_FORCE_LINK)
 		return 0;
@@ -45,8 +46,14 @@ int miidev_restart_aneg(struct mii_device *mdev)
 
 	if (mdev->flags & MIIDEV_FORCE_10) {
 		printf("Forcing 10 Mbps ethernet link... ");
+
 		status = mii_read(mdev, mdev->address, MII_BMSR);
-		mii_write(mdev, mdev->address, MII_BMCR, BMCR_FULLDPLX | BMCR_CTST);
+		if (status < 0)
+			return status;
+
+		status = mii_write(mdev, mdev->address, MII_BMCR, BMCR_FULLDPLX | BMCR_CTST);
+		if (status)
+			return status;
 
 		timeout = 20;
 		do {	/* wait for link status to go down */
@@ -56,6 +63,8 @@ int miidev_restart_aneg(struct mii_device *mdev)
 				break;
 			}
 			status = mii_read(mdev, mdev->address, MII_BMSR);
+			if (status < 0)
+				return status;
 		} while (status & BMSR_LSTATUS);
 
 	} else {	/* MII100 */
@@ -63,10 +72,18 @@ int miidev_restart_aneg(struct mii_device *mdev)
 		 * Set the auto-negotiation advertisement register bits
 		 */
 		status = mii_read(mdev, mdev->address, MII_ADVERTISE);
-		status |= ADVERTISE_ALL;
-		mii_write(mdev, mdev->address, MII_ADVERTISE, status);
+		if (status < 0)
+			return status;
 
-		mii_write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
+		status |= ADVERTISE_ALL;
+
+		status = mii_write(mdev, mdev->address, MII_ADVERTISE, status);
+		if (status)
+			return status;
+
+		status = mii_write(mdev, mdev->address, MII_BMCR, BMCR_ANENABLE | BMCR_ANRESTART);
+		if (status)
+			return status;
 	}
 
 	return 0;

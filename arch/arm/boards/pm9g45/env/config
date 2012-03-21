@@ -11,9 +11,9 @@ ip=dhcp
 #eth0.serverip=a.b.c.d
 
 # can be either 'nfs', 'tftp' or 'nand'
-kernel_loc=tftp
+kernel_loc=nand
 # can be either 'net', 'nand' or 'initrd'
-rootfs_loc=net
+rootfs_loc=nand
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
@@ -25,8 +25,8 @@ kernelimage=uImage
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand
-nand_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
-rootfs_mtdblock_nand=3
+nand_parts="128k(bootstrap)ro,256k(barebox)ro,1664k(bareboxenv),3M(kernel),-(root)"
+rootfs_mtdblock_nand=4
 
 autoboot_timeout=3
 

@@ -91,27 +91,22 @@ int miidev_restart_aneg(struct mii_device *mdev)
 
 int miidev_wait_aneg(struct mii_device *mdev)
 {
-	uint64_t start;
 	int status;
+	uint64_t start = get_time_ns();
 
 	if (mdev->flags & MIIDEV_FORCE_LINK)
 		return 0;
 
-	/*
-	 * Wait for AN completion
-	 */
-	start = get_time_ns();
 	do {
+		status = mii_read(mdev, mdev->address, MII_BMSR);
+		if (status < 0)
+			return status;
+
 		if (is_timeout(start, 5 * SECOND)) {
 			printf("%s: Autonegotiation timeout\n", mdev->cdev.name);
-			return -1;
+			return -ETIMEDOUT;
 		}
 
-		status = mii_read(mdev, mdev->address, MII_BMSR);
-		if (status < 0) {
-			printf("%s: Autonegotiation failed. status: 0x%04x\n", mdev->cdev.name, status);
-			return -1;
-		}
 	} while (!(status & BMSR_LSTATUS));
 
 	return 0;

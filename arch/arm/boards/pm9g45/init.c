@@ -82,6 +82,17 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
+static void pm9g45_phy_init(void)
+{
+	/*
+	 * PD2 enables the 50MHz oscillator for Ethernet PHY
+	 * 1 - enable
+	 * 0 - disable
+	 */
+	at91_set_gpio_output(AT91_PIN_PD2, 1);
+	at91_set_gpio_value(AT91_PIN_PD2, 1);
+}
+
 static int pm9g45_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
@@ -93,6 +104,7 @@ mem_initcall(pm9g45_mem_init);
 static int pm9g45_devices_init(void)
 {
 	pm_add_device_nand();
+	pm9g45_phy_init();
 	at91_add_device_eth(&macb_pdata);
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");

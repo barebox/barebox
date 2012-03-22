@@ -1473,9 +1473,9 @@ static struct pxa_udc memory = {
 	}
 };
 
-static int pxa27x_udc_poller(struct poller_struct *poller)
+static void pxa27x_udc_poller(struct poller_struct *poller)
 {
-	return usb_gadget_poll();
+	usb_gadget_poll();
 }
 static struct poller_struct poller = {
 	.func		= pxa27x_udc_poller

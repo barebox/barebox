@@ -1,0 +1,50 @@
+/**
+@page tx51 KARO's TX51 CPU module
+
+@section tx51_cpu_card The CPU module
+
+http://www.karo-electronics.de/
+
+This CPU card is based on a Freescale i.MX51 CPU. The card is shipped with:
+
+- 128 MiB synchronous dynamic RAM (DDR2 type), 200 MHz support
+- 128 MiB NAND K9F1G08U0A (3.3V type)
+- DS1339 RTC
+- LAN8700 Phy
+
+@section tx51_baseboards Supported baseboards
+
+Supported baseboards are:
+- KARO's Starterkit 5 (currently only SD1, FEC implemented but non-working)
+
+@section tx28_stk5_howto How to get barebox for 'KARO's Starterkit 5'
+
+Using the default configuration:
+
+@verbatim
+make ARCH=arm tx51tk5_defconfig
+@endverbatim
+
+Build the binary image:
+
+@verbatim
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+@endverbatim
+
+@note replace the arm-linux-gnueabi with your ARM v7 cross compiler.
+
+@note To use the result, you also need the following resources from Freescale:
+- the 'bootlets' archive
+- the 'elftosb2' encryption tool
+- in the case you want to start @b barebox from an attached SD card the
+  'sdimage' tool from Freescale's 'uuc' archive.
+
+@section tx28_mlayout Memory layout when barebox is running:
+
+- 0x90000000 start of SDRAM
+- 0x90000100 start of kernel's boot parameters
+  - below malloc area: stack area
+  - below barebox: malloc area
+- 0x97f00000 start of @b barebox
+
+*/

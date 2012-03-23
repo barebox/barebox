@@ -238,11 +238,8 @@ void imx51_init_lowlevel(void)
 	/* Set the platform clock dividers */
 	writel(0x00000124, MX51_ARM_BASE_ADDR + 0x14);
 
-	/* Run TO 3.0 at Full speed, for other TO's wait till we increase VDDGP */
-	if (imx_silicon_revision() == MX51_CHIP_REV_3_0)
-		writel(0x0, ccm + MX5_CCM_CACRR);
-	else
-		writel(0x1, ccm + MX5_CCM_CACRR);
+	/* Run at Full speed */
+	writel(0x0, ccm + MX5_CCM_CACRR);
 
 	/* Switch ARM back to PLL 1 */
 	writel(0x0, ccm + MX5_CCM_CCSR);

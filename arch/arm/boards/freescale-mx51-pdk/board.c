@@ -30,6 +30,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>
+#include <notifier.h>
 #include <spi/spi.h>
 #include <mfd/mc13892.h>
 #include <io.h>
@@ -245,6 +246,10 @@ static int f3s_devices_init(void)
 
 	babbage_power_init();
 
+	console_flush();
+	imx51_init_lowlevel();
+	clock_notifier_call_chain();
+
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
@@ -265,8 +270,6 @@ late_initcall(f3s_part_init);
 static int f3s_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(f3s_pads, ARRAY_SIZE(f3s_pads));
-
-	imx51_init_lowlevel();
 
 	writel(0, 0x73fa8228);
 	writel(0, 0x73fa822c);

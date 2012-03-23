@@ -97,7 +97,7 @@ struct imx_flash_header_v2 __flash_header_section flash_header = {
 	.self			= APP_DEST + 0x400,
 
 	.boot_data.start	= APP_DEST,
-	.boot_data.size		= 0x40000,
+	.boot_data.size		= DCD_BAREBOX_SIZE,
 
 	.dcd.header.tag		= DCD_HEADER_TAG,
 	.dcd.header.length	= cpu_to_be16(sizeof(struct imx_dcd) + sizeof(dcd_entry)),

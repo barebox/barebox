@@ -70,5 +70,5 @@ struct imx_flash_header __flash_header_section flash_header = {
 	.dcd_block_len		= sizeof(dcd_entry),
 };
 
-unsigned long __image_len_section barebox_len = 0x40000;
+unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
 

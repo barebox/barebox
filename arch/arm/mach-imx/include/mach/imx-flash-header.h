@@ -1,6 +1,8 @@
 #ifndef __MACH_FLASH_HEADER_H
 #define __MACH_FLASH_HEADER_H
 
+#include <asm-generic/sections.h>
+
 #define __flash_header_start		__section(.flash_header_start)
 
 #if defined(CONFIG_ARCH_IMX_INTERNAL_BOOT_NOR)
@@ -86,6 +88,14 @@ struct imx_flash_header {
 
 #define DCD_COMMAND_WRITE_TAG	0xcc
 #define DCD_COMMAND_WRITE_PARAM	0x04
+
+/*
+ * At least on i.MX5 the ROM copies only full blocks. Unfortunately
+ * it does not round up to the next full block, we have to do it
+ * ourselves. Use 4095 which should be enough for the largest NAND
+ * pages.
+ */
+#define DCD_BAREBOX_SIZE	(barebox_image_size + 4095)
 
 struct imx_ivt_header {
 	uint8_t tag;

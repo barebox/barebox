@@ -45,7 +45,6 @@
 #include <mach/devices-imx25.h>
 #include <asm/barebox-arm-head.h>
 
-extern unsigned long _stext;
 extern void exception_vectors(void);
 
 void __naked __flash_header_start go(void)
@@ -107,9 +106,7 @@ struct imx_flash_header __flash_header_section flash_header = {
 	.dcd_block_len		= sizeof(dcd_entry),
 };
 
-extern unsigned long __bss_start;
-
-unsigned long __image_len_section barebox_len = 0x40000;
+unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= RMII,

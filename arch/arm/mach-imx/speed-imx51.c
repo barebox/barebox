@@ -115,7 +115,15 @@ unsigned long imx_get_uartclk(void)
 	u32 reg, prediv, podf;
 	unsigned long parent_rate;
 
-	parent_rate = pll2_sw_get_rate();
+	reg = ccm_readl(MX5_CCM_CSCMR1);
+	reg &= MX5_CCM_CSCMR1_UART_CLK_SEL_MASK;
+	reg >>= MX5_CCM_CSCMR1_UART_CLK_SEL_OFFSET;
+
+	parent_rate = get_rate_select(reg,
+			pll1_main_get_rate,
+			pll2_sw_get_rate,
+			pll3_sw_get_rate,
+			NULL);
 
 	reg = ccm_readl(MX5_CCM_CSCDR1);
 	prediv = ((reg & MX5_CCM_CSCDR1_UART_CLK_PRED_MASK) >>

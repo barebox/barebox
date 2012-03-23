@@ -194,11 +194,6 @@ unsigned long imx_get_i2cclk(void)
 	return imx_get_ipg_perclk();
 }
 
-unsigned long imx_get_i2cclk(void)
-{
-       return imx_get_ipgclk();
-}
-
 unsigned long imx_get_mmcclk(void)
 {
 	u32 reg, prediv, podf, rate;

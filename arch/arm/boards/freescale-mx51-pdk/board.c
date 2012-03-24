@@ -159,9 +159,6 @@ static void babbage_power_init(void)
 		val &= ~0x1f;
 		val |= 0x1a;
 		mc13892_reg_write(mc13892, MC13892_REG_SW_2, val);
-		udelay(50);
-		/* Raise the core frequency to 800MHz */
-		writel(0x0, MX51_CCM_BASE_ADDR + MX51_CCM_CACRR);
 	} else {
 		/* Setup VCC (SW2) to 1.225 */
 		mc13892_reg_read(mc13892, MC13892_REG_SW_1, &val);

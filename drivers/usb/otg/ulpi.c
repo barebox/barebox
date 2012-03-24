@@ -161,3 +161,27 @@ int ulpi_init(void __iomem *view)
 	return -1;
 }
 EXPORT_SYMBOL(ulpi_init);
+
+int ulpi_set_vbus(void __iomem *view, int on)
+{
+	int ret;
+
+	if (on) {
+		ret = ulpi_set(DRV_VBUS_EXT |		/* enable external Vbus */
+				DRV_VBUS |		/* enable internal Vbus */
+				USE_EXT_VBUS_IND |	/* use external indicator */
+				CHRG_VBUS,		/* charge Vbus */
+				ULPI_OTGCTL, view);
+	} else {
+		ret = ulpi_clear(DRV_VBUS_EXT |		/* disable external Vbus */
+				DRV_VBUS,		/* disable internal Vbus */
+				ULPI_OTGCTL, view);
+
+		ret |= ulpi_set(USE_EXT_VBUS_IND |	/* use external indicator */
+				DISCHRG_VBUS,		/* discharge Vbus */
+				ULPI_OTGCTL, view);
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL(ulpi_set_vbus);

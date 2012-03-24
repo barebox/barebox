@@ -4,7 +4,7 @@
 int ulpi_set(u8 bits, int reg, void __iomem *view);
 int ulpi_clear(u8 bits, int reg, void __iomem *view);
 int ulpi_read(int reg, void __iomem *view);
-int ulpi_init(void __iomem *view);
+int ulpi_probe(void __iomem *view);
 int ulpi_set_vbus(void __iomem *view, int on);
 
 /* ULPI register addresses */

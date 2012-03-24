@@ -134,7 +134,7 @@ static struct ulpi_info ulpi_ids[] = {
 	ULPI_INFO(ULPI_ID(0x0424, 0x0006), "SMSC USB331x"),
 };
 
-int ulpi_init(void __iomem *view)
+int ulpi_probe(void __iomem *view)
 {
 	int i, vid, pid, ret;
 	uint32_t ulpi_id = 0;
@@ -160,7 +160,7 @@ int ulpi_init(void __iomem *view)
 
 	return -1;
 }
-EXPORT_SYMBOL(ulpi_init);
+EXPORT_SYMBOL(ulpi_probe);
 
 int ulpi_set_vbus(void __iomem *view, int on)
 {

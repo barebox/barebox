@@ -4,6 +4,7 @@
 int ulpi_set(u8 bits, int reg, void __iomem *view);
 int ulpi_clear(u8 bits, int reg, void __iomem *view);
 int ulpi_read(int reg, void __iomem *view);
+int ulpi_init(void __iomem *view);
 
 /* ULPI register addresses */
 #define ULPI_VID_LOW		0x00	/* Vendor ID low */

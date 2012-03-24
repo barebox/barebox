@@ -116,3 +116,48 @@ int ulpi_clear(u8 bits, int reg, void __iomem *view)
 }
 EXPORT_SYMBOL(ulpi_clear);
 
+struct ulpi_info {
+	uint32_t	id;
+	char		*name;
+};
+
+#define ULPI_ID(vendor, product) (((vendor) << 16) | (product))
+#define ULPI_INFO(_id, _name)		\
+	{				\
+		.id	= (_id),	\
+		.name	= (_name),	\
+	}
+
+/* ULPI hardcoded IDs, used for probing */
+static struct ulpi_info ulpi_ids[] = {
+	ULPI_INFO(ULPI_ID(0x04cc, 0x1504), "NXP ISP1504"),
+	ULPI_INFO(ULPI_ID(0x0424, 0x0006), "SMSC USB331x"),
+};
+
+int ulpi_init(void __iomem *view)
+{
+	int i, vid, pid, ret;
+	uint32_t ulpi_id = 0;
+
+	for (i = 0; i < 4; i++) {
+		ret = ulpi_read(ULPI_PID_HIGH - i, view);
+		if (ret < 0)
+			return ret;
+		ulpi_id = (ulpi_id << 8) | ret;
+	}
+	vid = ulpi_id & 0xffff;
+	pid = ulpi_id >> 16;
+
+	for (i = 0; i < ARRAY_SIZE(ulpi_ids); i++) {
+		if (ulpi_ids[i].id == ULPI_ID(vid, pid)) {
+			pr_info("Found %s ULPI transceiver (0x%04x:0x%04x).\n",
+			ulpi_ids[i].name, vid, pid);
+			return 0;
+		}
+	}
+
+	pr_err("No ULPI found.\n");
+
+	return -1;
+}
+EXPORT_SYMBOL(ulpi_init);

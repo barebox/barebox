@@ -160,7 +160,6 @@ int ulpi_probe(void __iomem *view)
 
 	return -1;
 }
-EXPORT_SYMBOL(ulpi_probe);
 
 int ulpi_set_vbus(void __iomem *view, int on)
 {
@@ -184,4 +183,12 @@ int ulpi_set_vbus(void __iomem *view, int on)
 
 	return ret;
 }
-EXPORT_SYMBOL(ulpi_set_vbus);
+
+int ulpi_setup(void __iomem *view, int on)
+{
+	if (ulpi_probe(view))
+		return -1;
+
+	return ulpi_set_vbus(view, on);
+}
+EXPORT_SYMBOL(ulpi_setup);

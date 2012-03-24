@@ -39,7 +39,7 @@
 #include <mach/imxfb.h>
 #include <gpio.h>
 #include <asm/mmu.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
@@ -140,9 +140,9 @@ static void pca100_usb_register(void)
 
 	mdelay(10);
 
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x170), 1);
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif

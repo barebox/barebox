@@ -41,7 +41,7 @@
 #include <mach/imxfb.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
@@ -127,7 +127,7 @@ static void pcm038_usbh_init(void)
 
 	mdelay(10);
 
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 }
 #endif
 

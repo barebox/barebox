@@ -33,7 +33,6 @@
 #include <fcntl.h>
 #include <nand.h>
 #include <spi/spi.h>
-#include <mfd/mc13892.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <mach/imx-nand.h>

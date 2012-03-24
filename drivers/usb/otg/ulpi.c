@@ -87,7 +87,7 @@ int ulpi_set(u8 bits, int reg, void __iomem *view)
 	}
 
 	writel((ULPIVW_RUN | ULPIVW_WRITE |
-		      ((reg + ISP1504_REG_SET) << ULPIVW_ADDR_SHIFT) |
+		      ((reg + ULPI_REG_SET) << ULPIVW_ADDR_SHIFT) |
 		      ((bits & ULPIVW_WDATA_MASK) << ULPIVW_WDATA_SHIFT)),
 		     view);
 
@@ -104,7 +104,7 @@ int ulpi_clear(u8 bits, int reg, void __iomem *view)
 	int ret;
 
 	writel((ULPIVW_RUN | ULPIVW_WRITE |
-		      ((reg + ISP1504_REG_CLEAR) << ULPIVW_ADDR_SHIFT) |
+		      ((reg + ULPI_REG_CLEAR) << ULPIVW_ADDR_SHIFT) |
 		      ((bits & ULPIVW_WDATA_MASK) << ULPIVW_WDATA_SHIFT)),
 		     view);
 

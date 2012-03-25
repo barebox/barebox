@@ -14,6 +14,7 @@ config USB_GADGET_DRIVER_ARC
 	prompt "Arc OTG device core"
 	depends on ARCH_IMX
 	select USB_GADGET_DUALSPEED
+	select POLLER
 
 config USB_GADGET_DRIVER_AT91
 	bool

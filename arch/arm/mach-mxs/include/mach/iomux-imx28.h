@@ -296,7 +296,7 @@
 #define LCD_RESET_GPIO		(FUNC(3) | PORTF(3, 30))
 #define PWM4			(FUNC(0) | PORTF(3, 29))
 #define PWM4_GPIO		(FUNC(3) | PORTF(3, 29))
-#define PWM3			(FUNC(0) | PORTF(3 28))
+#define PWM3			(FUNC(0) | PORTF(3, 28))
 #define PWM3_GPIO		(FUNC(3) | PORTF(3, 28))
 
 #define PWM2			(FUNC(0) | PORTF(3, 18))

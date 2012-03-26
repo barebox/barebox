@@ -205,7 +205,7 @@ IPaddr_t resolv(char *host)
 
 	dns_state = STATE_INIT;
 
-	ip = getenv_ip("nameserver");
+	ip = getenv_ip_dns("nameserver", 0);
 	if (!ip)
 		return 0;
 

@@ -127,7 +127,7 @@ int string_to_ip(const char *s, IPaddr_t *ip)
 	return 0;
 }
 
-IPaddr_t getenv_ip(const char *name)
+IPaddr_t getenv_ip_dns(const char *name, int dns)
 {
 	IPaddr_t ip;
 	const char *var = getenv(name);
@@ -135,10 +135,13 @@ IPaddr_t getenv_ip(const char *name)
 	if (!var)
 		return 0;
 
-	if (string_to_ip(var, &ip))
+	if (!string_to_ip(var, &ip))
+		return ip;
+
+	if (!dns)
 		return 0;
 
-	return ip;
+	return resolv((char*)var);
 }
 
 int setenv_ip(const char *name, IPaddr_t ip)

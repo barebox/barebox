@@ -128,6 +128,12 @@ void imx_gpio_mode(uint32_t m)
 				(GET_PULLUP(m) == 1 ? BIT_SET : BIT_CLR));
 	}
 
+	if (BK_PRESENT(m)) {
+		reg_offset = calc_pullup_reg(gpio_pin);
+		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
+				(GET_BITKEEPER(m) == 1 ? BIT_SET : BIT_CLR));
+	}
+
 	if (GET_FUNC(m) == IS_GPIO) {
 		if (GET_GPIODIR(m) == 1) {
 			/* first set the output value */

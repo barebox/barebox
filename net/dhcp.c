@@ -234,12 +234,17 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 }
 
 #define DHCP_VENDOR_ID		60
+#define DHCP_CLIENT_ID		61
 
 struct dhcp_param dhcp_params[] = {
 	{
 		.option = DHCP_VENDOR_ID,
 		.handle = dhcp_set_string_options,
 		.barebox_var_name = "dhcp_vendor_id",
+	}, {
+		.option = DHCP_CLIENT_ID,
+		.handle = dhcp_set_string_options,
+		.barebox_var_name = "dhcp_client_id",
 	}
 };
 
@@ -595,10 +600,13 @@ static int do_dhcp(int argc, char *argv[])
 
 	dhcp_reset_env();
 
-	while((opt = getopt(argc, argv, "v:")) > 0) {
+	while((opt = getopt(argc, argv, "v:c:")) > 0) {
 		switch(opt) {
 		case 'v':
 			dhcp_set_param_data(DHCP_VENDOR_ID, optarg);
+			break;
+		case 'c':
+			dhcp_set_param_data(DHCP_CLIENT_ID, optarg);
 			break;
 		}
 	}

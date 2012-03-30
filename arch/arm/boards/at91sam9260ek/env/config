@@ -2,7 +2,7 @@
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
-ip=dhcp
+ip=dhcp-barebox
 
 if [ x$armlinux_architecture = x1099 ]
 then

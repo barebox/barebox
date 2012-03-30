@@ -513,10 +513,26 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 	}
 }
 
+static void dhcp_reset_env(void)
+{
+	struct dhcp_opt *opt;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
+		opt = &dhcp_options[i];
+		if (!opt->barebox_var_name)
+			continue;
+
+		setenv(opt->barebox_var_name,"");
+	}
+}
+
 static int do_dhcp(int argc, char *argv[])
 {
 	int ret, opt;
 	char *vendor_id = (char*)getenv("dhcp_vendor_id");
+
+	dhcp_reset_env();
 
 	while((opt = getopt(argc, argv, "v:")) > 0) {
 		switch(opt) {

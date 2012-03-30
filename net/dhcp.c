@@ -235,6 +235,7 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 
 #define DHCP_VENDOR_ID		60
 #define DHCP_CLIENT_ID		61
+#define DHCP_CLIENT_UUID	97
 
 struct dhcp_param dhcp_params[] = {
 	{
@@ -245,6 +246,10 @@ struct dhcp_param dhcp_params[] = {
 		.option = DHCP_CLIENT_ID,
 		.handle = dhcp_set_string_options,
 		.barebox_var_name = "dhcp_client_id",
+	}, {
+		.option = DHCP_CLIENT_UUID,
+		.handle = dhcp_set_string_options,
+		.barebox_var_name = "dhcp_client_uuid",
 	}
 };
 
@@ -600,13 +605,16 @@ static int do_dhcp(int argc, char *argv[])
 
 	dhcp_reset_env();
 
-	while((opt = getopt(argc, argv, "v:c:")) > 0) {
+	while((opt = getopt(argc, argv, "v:c:u:")) > 0) {
 		switch(opt) {
 		case 'v':
 			dhcp_set_param_data(DHCP_VENDOR_ID, optarg);
 			break;
 		case 'c':
 			dhcp_set_param_data(DHCP_CLIENT_ID, optarg);
+			break;
+		case 'u':
+			dhcp_set_param_data(DHCP_CLIENT_UUID, optarg);
 			break;
 		}
 	}
@@ -659,6 +667,10 @@ BAREBOX_CMD_HELP_OPT  ("-v <vendor_id>",
 BAREBOX_CMD_HELP_OPT  ("-c <client_id>",
 "DHCP Client ID (code 61) submitted in DHCP requests. It can\n"
 "be used in the DHCP server's configuration to select options\n"
+"(e.g. bootfile or server) which are valid for barebox clients only.\n")
+BAREBOX_CMD_HELP_OPT  ("-u <client_uuid>",
+"DHCP Client UUID (code 97) submitted in DHCP requests. It can\n"
+"be used in the DHCP server's configuration to select options\n"
 "(e.g. bootfile or server) which are valid for barebox clients only.\n");
 BAREBOX_CMD_HELP_END
 
@@ -674,5 +686,6 @@ BAREBOX_MAGICVAR(hostname, "hostname returned from DHCP request");
 BAREBOX_MAGICVAR(domainname, "domainname returned from DHCP request");
 BAREBOX_MAGICVAR(rootpath, "rootpath returned from DHCP request");
 BAREBOX_MAGICVAR(dhcp_vendor_id, "vendor id to send to the DHCP server");
+BAREBOX_MAGICVAR(dhcp_client_uuid, "cliend uuid to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_client_id, "cliend id to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_tftp_server_name, "TFTP server Name returned from DHCP request");

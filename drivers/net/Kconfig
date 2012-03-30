@@ -59,6 +59,7 @@ config DRIVER_NET_NETX
 config DRIVER_NET_AT91_ETHER
 	bool "at91 ethernet driver"
 	depends on HAS_AT91_ETHER
+	select MIIDEV
 
 config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"

@@ -131,7 +131,7 @@ static int dss11_devices_init(void)
 {
 	dss11_add_device_nand();
 	dss11_phy_reset();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	at91_add_device_mci(0, &dss11_mci_data);
 	at91_add_device_usbh_ohci(&dss11_usbh_data);
 

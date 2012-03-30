@@ -138,7 +138,7 @@ static int pm9g45_devices_init(void)
 	pm_add_device_nand();
 	pm9g45_add_device_mci();
 	pm9g45_phy_init();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	pm9g45_add_device_usbh();
 
 	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");

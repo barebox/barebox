@@ -175,7 +175,7 @@ mem_initcall(at91sam9m10g45ek_mem_init);
 static int at91sam9m10g45ek_devices_init(void)
 {
 	ek_add_device_nand();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	ek_add_device_mci();
 	ek_device_add_leds();
 

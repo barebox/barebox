@@ -70,7 +70,7 @@ struct at91_ether_platform_data {
 	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 
-void at91_add_device_eth(struct at91_ether_platform_data *data);
+void at91_add_device_eth(int id, struct at91_ether_platform_data *data);
 
 /* SDRAM */
 void at91_add_device_sdram(u32 size);

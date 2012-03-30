@@ -254,7 +254,7 @@ static int at91sam9260ek_devices_init(void)
 {
 	ek_add_device_nand();
 	at91sam9260ek_phy_reset();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	at91_add_device_udc(&ek_udc_data);
 	ek_usb_add_device_mci();

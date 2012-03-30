@@ -114,7 +114,7 @@ static int at91rm9200ek_devices_init(void)
 	 */
 	at91_set_gpio_output(AT91_PIN_PA23, 1);
 
-	at91_add_device_eth(&ether_pdata);
+	at91_add_device_eth(0, &ether_pdata);
 
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 	/* USB Host */

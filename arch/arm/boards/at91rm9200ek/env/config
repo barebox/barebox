@@ -25,7 +25,7 @@ kernelimage=uImage
 #kernelimage=Image
 #kernelimage=Image.lzo
 
-nor_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
+nor_parts="256k(barebox)ro,64k(bareboxenv),3M(kernel),-(root)"
 rootfs_mtdblock_nor=3
 
 autoboot_timeout=3

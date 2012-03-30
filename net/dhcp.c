@@ -75,6 +75,7 @@ static dhcp_state_t dhcp_state;
 static uint32_t dhcp_leasetime;
 static IPaddr_t net_dhcp_server_ip;
 static uint64_t dhcp_start;
+static char dhcp_tftpname[256];
 
 struct dhcp_opt {
 	unsigned char option;
@@ -114,10 +115,14 @@ static void env_ip_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
 static void env_str_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
 {
 	char str[256];
+	char *tmp = str;
 
-	memcpy(str, popt, optlen);
-	str[optlen] = 0;
-	setenv(opt->barebox_var_name, str);
+	if (opt->data)
+		tmp = opt->data;
+
+	memcpy(tmp, popt, optlen);
+	tmp[optlen] = 0;
+	setenv(opt->barebox_var_name, tmp);
 }
 
 static void copy_uint32_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
@@ -187,6 +192,11 @@ struct dhcp_opt dhcp_options[] = {
 		.handle = copy_ip_handle,
 		.data = &net_dhcp_server_ip,
 		.optional = true,
+	}, {
+		.option = 66,
+		.handle = env_str_handle,
+		.barebox_var_name = "dhcp_tftp_server_name",
+		.data = dhcp_tftpname,
 	}, {
 		.option = 67,
 		.handle = bootfile_vendorex_handle,
@@ -396,6 +406,9 @@ static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
 
 		popt += oplen + 2;	/* Process next option */
 	}
+
+	if (dhcp_tftpname[0] != 0)
+		net_set_serverip(resolv(dhcp_tftpname));
 }
 
 static int dhcp_message_type(unsigned char *popt)
@@ -601,3 +614,4 @@ BAREBOX_MAGICVAR(hostname, "hostname returned from DHCP request");
 BAREBOX_MAGICVAR(domainname, "domainname returned from DHCP request");
 BAREBOX_MAGICVAR(rootpath, "rootpath returned from DHCP request");
 BAREBOX_MAGICVAR(dhcp_vendor_id, "vendor id to send to the DHCP server");
+BAREBOX_MAGICVAR(dhcp_tftp_server_name, "TFTP server Name returned from DHCP request");

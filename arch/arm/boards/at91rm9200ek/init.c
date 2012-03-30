@@ -47,6 +47,10 @@ static int at91rm9200ek_mem_init(void)
 }
 mem_initcall(at91rm9200ek_mem_init);
 
+static struct at91_usbh_data ek_usbh_data = {
+	.ports		= 2,
+};
+
 static int at91rm9200ek_devices_init(void)
 {
 	/*
@@ -58,6 +62,8 @@ static int at91rm9200ek_devices_init(void)
 	at91_add_device_eth(&ether_pdata);
 
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
+	/* USB Host */
+	at91_add_device_usbh_ohci(&ek_usbh_data);
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

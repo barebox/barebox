@@ -88,6 +88,24 @@ static void ek_device_add_leds(void)
 static void ek_device_add_leds(void) {}
 #endif
 
+#if defined(CONFIG_USB_GADGET_DRIVER_AT91)
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PD4,
+	.pullup_pin	= AT91_PIN_PD5,
+};
+
+static void ek_add_device_udc(void)
+{
+	at91_add_device_udc(&ek_udc_data);
+	at91_set_multi_drive(ek_udc_data.pullup_pin, 1);	/* pullup_pin is connected to reset */
+}
+#else
+static void ek_add_device_udc(void) {}
+#endif
+
 static int at91rm9200ek_devices_init(void)
 {
 	/*
@@ -102,6 +120,7 @@ static int at91rm9200ek_devices_init(void)
 	/* USB Host */
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_device_add_leds();
+	ek_add_device_udc();
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");

@@ -27,10 +27,10 @@
 #include "gpio.h"
 
 void *imx_gpio_base[] = {
-	(void *)0x73f84000,
-	(void *)0x73f88000,
-	(void *)0x73f8c000,
-	(void *)0x73f90000,
+	(void *)MX51_GPIO1_BASE_ADDR,
+	(void *)MX51_GPIO2_BASE_ADDR,
+	(void *)MX51_GPIO3_BASE_ADDR,
+	(void *)MX51_GPIO4_BASE_ADDR,
 };
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;

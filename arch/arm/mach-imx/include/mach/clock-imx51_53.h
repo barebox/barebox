@@ -584,45 +584,6 @@
 #define MX5_SRPGC_EMI_PUPSCR	(MX5_SRPGC_EMI_BASE + 0x4)
 #define MX5_SRPGC_EMI_PDNSCR	(MX5_SRPGC_EMI_BASE + 0x8)
 
-
-/* Assuming 24MHz input clock with doubler ON */
-/*                            MFI         PDF */
-#define MX5_PLL_DP_OP_1000	((10 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_1000	(12 - 1)
-#define MX5_PLL_DP_MFN_1000	5
-
-#define MX5_PLL_DP_OP_850	((8 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_850	(48 - 1)
-#define MX5_PLL_DP_MFN_850	41
-
-#define MX5_PLL_DP_OP_800	((8 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_800	(3 - 1)
-#define MX5_PLL_DP_MFN_800	1
-
-#define MX5_PLL_DP_OP_700	((7 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_700	(24 - 1)
-#define MX5_PLL_DP_MFN_700	7
-
-#define MX5_PLL_DP_OP_665	((6 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_665	(96 - 1)
-#define MX5_PLL_DP_MFN_665	89
-
-#define MX5_PLL_DP_OP_600	((6 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_600	(4 - 1)
-#define MX5_PLL_DP_MFN_600	1
-
-#define MX5_PLL_DP_OP_532	((5 << 4) + ((1 - 1)  << 0))
-#define MX5_PLL_DP_MFD_532	(24 - 1)
-#define MX5_PLL_DP_MFN_532	13
-
-#define MX5_PLL_DP_OP_400	((8 << 4) + ((2 - 1)  << 0))
-#define MX5_PLL_DP_MFD_400	(3 - 1)
-#define MX5_PLL_DP_MFN_400	1
-
-#define MX5_PLL_DP_OP_216	((6 << 4) + ((3 - 1)  << 0))
-#define MX5_PLL_DP_MFD_216	(4 - 1)
-#define MX5_PLL_DP_MFN_216	3
-
 #endif				/* __ARCH_ARM_MACH_MX51_CRM_REGS_H__ */
 
 

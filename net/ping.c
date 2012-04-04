@@ -88,7 +88,8 @@ static int do_ping(int argc, char *argv[])
 
 		net_poll();
 
-		if (is_timeout(ping_start, 10 * SECOND)) {
+		if (is_timeout(ping_start, SECOND)) {
+			/* No answer, send another packet */
 			ping_start = get_time_ns();
 			ret = ping_send();
 			if (ret)

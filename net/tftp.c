@@ -39,6 +39,7 @@ static unsigned int	tftp_last_block;	/* last packet sequence number received */
 static int		tftp_state;
 static uint64_t		tftp_timer_start;
 static int		tftp_err;
+static unsigned		tftp_retries;
 
 #define STATE_RRQ	1
 #define STATE_WRQ	2
@@ -106,6 +107,7 @@ static int tftp_send(void)
 		}
 
 		tftp_last_block = tftp_block;
+		tftp_retries = 0;
 		s = (uint16_t *)pkt;
 		*s++ = htons(TFTP_DATA);
 		*s++ = htons(tftp_block);
@@ -231,6 +233,7 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 			break;
 
 		tftp_last_block = tftp_block;
+		tftp_retries = 0;
 
 		if (!(tftp_block % 10))
 			tftp_size++;
@@ -278,6 +281,7 @@ static int do_tftpb(int argc, char *argv[])
 	do_tftp_push(0);
 	tftp_last_block = 0;
 	tftp_size = 0;
+	tftp_retries = 0;
 
 	while((opt = getopt(argc, argv, "p")) > 0) {
 		switch(opt) {
@@ -348,6 +352,12 @@ static int do_tftpb(int argc, char *argv[])
 			tftp_err = tftp_send();
 			if (tftp_err)
 				goto out_unreg;
+			tftp_retries++;
+		}
+
+		if (tftp_retries > PKT_NUM_RETRIES) {
+			tftp_err = -ETIMEDOUT;
+			break;
 		}
 	}
 out_unreg:

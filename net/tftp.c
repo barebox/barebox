@@ -345,7 +345,9 @@ static int do_tftpb(int argc, char *argv[])
 		net_poll();
 		if (is_timeout(tftp_timer_start, SECOND)) {
 			show_progress(-1);
-			tftp_send();
+			tftp_err = tftp_send();
+			if (tftp_err)
+				goto out_unreg;
 		}
 	}
 out_unreg:

@@ -223,6 +223,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	uint64_t arp_start;
 	static char *arp_packet;
 	struct ethernet *et;
+	unsigned retries = 0;
 
 	if (!arp_packet) {
 		arp_packet = net_alloc_packet();
@@ -277,7 +278,11 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 			printf("T ");
 			arp_start = get_time_ns();
 			eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+			retries++;
 		}
+
+		if (retries > PKT_NUM_RETRIES)
+			return -ETIMEDOUT;
 
 		net_poll();
 	}

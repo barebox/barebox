@@ -21,6 +21,8 @@
 #include <led.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
+/* How often do we retry to send packages */
+#define PKT_NUM_RETRIES 4
 
 /* The number of receive packet buffers */
 #define PKTBUFSRX	4

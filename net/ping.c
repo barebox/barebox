@@ -56,6 +56,7 @@ static int do_ping(int argc, char *argv[])
 {
 	int ret;
 	uint64_t ping_start;
+	unsigned retries = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -94,6 +95,12 @@ static int do_ping(int argc, char *argv[])
 			ret = ping_send();
 			if (ret)
 				goto out_unreg;
+			retries++;
+		}
+
+		if (retries > PKT_NUM_RETRIES) {
+			ret = -ETIMEDOUT;
+			goto out_unreg;
 		}
 	}
 

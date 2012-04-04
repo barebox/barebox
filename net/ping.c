@@ -55,7 +55,7 @@ static void ping_handler(void *ctx, char *pkt, unsigned len)
 static int do_ping(int argc, char *argv[])
 {
 	int ret;
-	uint64_t ping_start = 0;
+	uint64_t ping_start;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;

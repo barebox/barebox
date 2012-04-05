@@ -68,7 +68,7 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 		return retcode;
 
 	/* reduce the number of loops by the width of the port	*/
-	cnt = len >> (info->portwidth - 1);
+	cnt = len / width;
 
 	flash_write_cmd(info, sector, 0, (u32)cnt - 1);
 	while (cnt-- > 0) {

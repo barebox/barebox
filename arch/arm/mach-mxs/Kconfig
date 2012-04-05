@@ -68,6 +68,20 @@ endchoice
 
 endif
 
+menu "i.MX specific settings        "
+
+config MXS_OCOTP
+	tristate "OCOTP device"
+	help
+	  Device driver for the On-Chip One Time Programmable (OCOTP). Use the
+	  regular md/mw commands to read and write (if write is supported).
+
+	  Note that the OCOTP words are grouped consecutively (allocation
+	  internal view). Don't use register offsets here, the SET, CLR and
+	  TGL registers are not mapped!
+
+endmenu
+
 menu "Board specific settings       "
 
 if MACH_TX28

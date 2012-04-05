@@ -21,11 +21,13 @@
 #include <fec.h>
 #include <sizes.h>
 #include <io.h>
+#include <net.h>
 #include <asm/sections.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
+#include <mach/ocotp.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT,
@@ -345,6 +347,22 @@ static int register_persistent_environment(void)
 					DEVFS_PARTITION_FIXED, "env0");
 }
 
+void tx28_get_ethaddr(void)
+{
+	u32 buf[2];	/* to make use of cpu_to_be32 */
+	u32 ethaddr[2];
+	int ret;
+
+	ret = mxs_ocotp_read(buf, 8, 0);
+	if (ret != 8)
+		return;
+
+	ethaddr[0] = cpu_to_be32(buf[0]);
+	ethaddr[1] = cpu_to_be32(buf[1]);
+
+	eth_register_ethaddr(0, (char *)ethaddr);
+}
+
 void base_board_init(void)
 {
 	int i, ret;
@@ -368,6 +386,11 @@ void base_board_init(void)
 
 	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
 			   IORESOURCE_MEM, &tx28_fb_pdata);
+
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0,
+			   IORESOURCE_MEM, NULL);
+
+	tx28_get_ethaddr();
 
 	imx_enable_enetclk();
 	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0,

@@ -1260,7 +1260,7 @@ static void pxa27x_change_configuration(struct pxa_udc *udc, int config)
 	udc->driver->setup(&udc->gadget, &req);
 }
 
-static void pxa27x_change_interface(struct pxa_udc *udc, int iface, int alt)
+static void __maybe_unused pxa27x_change_interface(struct pxa_udc *udc, int iface, int alt)
 {
 	struct usb_ctrlrequest  req;
 

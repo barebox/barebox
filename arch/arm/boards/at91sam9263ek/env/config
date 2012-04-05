@@ -2,7 +2,8 @@
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
-ip=dhcp
+ip=dhcp-barebox
+dhcp_vendor_id=barebox-at91sam9263ek
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
@@ -25,10 +26,10 @@ kernelimage=uImage
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand
-nand_parts="256k(barebox)ro,128k(bareboxenv),1536k(kernel),-(root)"
-rootfs_mtdblock_nand=3
+nand_parts="128k(at91bootstrap),256k(barebox)ro,128k(bareboxenv),128k(bareboxenv2),4M(kernel),120M(rootfs),-(data)"
+rootfs_mtdblock_nand=5
 
-nor_parts="256k(barebox),64k(bareboxenv),1536k(kernel),-(root)"
+nor_parts="256k(barebox),64k(bareboxenv),4M(kernel),-(root)"
 
 autoboot_timeout=3
 

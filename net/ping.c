@@ -55,7 +55,8 @@ static void ping_handler(void *ctx, char *pkt, unsigned len)
 static int do_ping(int argc, char *argv[])
 {
 	int ret;
-	uint64_t ping_start = 0;
+	uint64_t ping_start;
+	unsigned retries = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -88,11 +89,18 @@ static int do_ping(int argc, char *argv[])
 
 		net_poll();
 
-		if (is_timeout(ping_start, 10 * SECOND)) {
+		if (is_timeout(ping_start, SECOND)) {
+			/* No answer, send another packet */
 			ping_start = get_time_ns();
 			ret = ping_send();
 			if (ret)
 				goto out_unreg;
+			retries++;
+		}
+
+		if (retries > PKT_NUM_RETRIES) {
+			ret = -ETIMEDOUT;
+			goto out_unreg;
 		}
 	}
 

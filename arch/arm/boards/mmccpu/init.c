@@ -60,7 +60,7 @@ static int mmccpu_devices_init(void)
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
 	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 
 	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self0");

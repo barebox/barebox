@@ -41,7 +41,7 @@
 #include <mach/imxfb.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
@@ -127,7 +127,7 @@ static void pcm038_usbh_init(void)
 
 	mdelay(10);
 
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 }
 #endif
 
@@ -224,19 +224,13 @@ static int pcm038_devices_init(void)
 	};
 
 	/* configure 16 bit nor flash on cs0 */
-	CS0U = 0x22C2CF00;
-	CS0L = 0x75000D01;
-	CS0A = 0x00000900;
+	imx27_setup_weimcs(0, 0x22C2CF00, 0x75000D01, 0x00000900);
 
 	/* configure SRAM on cs1 */
-	CS1U = 0x0000d843;
-	CS1L = 0x22252521;
-	CS1A = 0x22220a00;
+	imx27_setup_weimcs(1, 0x0000d843, 0x22252521, 0x22220a00);
 
 	/* configure SJA1000 on cs4 */
-	CS4U = 0x0000DCF6;
-	CS4L = 0x444A0301;
-	CS4A = 0x44443302;
+	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)

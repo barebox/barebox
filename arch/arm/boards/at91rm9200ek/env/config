@@ -2,7 +2,8 @@
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
-ip=dhcp
+ip=dhcp-barebox
+dhcp_vendor_id=barebox-at91rm9200ek
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
@@ -11,7 +12,7 @@ ip=dhcp
 #eth0.serverip=a.b.c.d
 
 # can be either 'nfs', 'tftp' or 'nor'
-kernel_loc=tftp
+kernel_loc=nfs
 # can be either 'net', 'nor' or 'initrd'
 rootfs_loc=net
 
@@ -24,7 +25,7 @@ kernelimage=uImage
 #kernelimage=Image
 #kernelimage=Image.lzo
 
-nor_parts="256k(barebox)ro,64k(bareboxenv),1536k(kernel),-(root)"
+nor_parts="256k(barebox)ro,64k(bareboxenv),3M(kernel),-(root)"
 rootfs_mtdblock_nor=3
 
 autoboot_timeout=3

@@ -230,6 +230,12 @@ int at91_set_multi_drive(unsigned pin, int is_on);
  */
 int at91_set_gpio_value(unsigned pin, int value);
 
+extern int at91_set_C_periph(unsigned pin, int use_pullup);
+extern int at91_set_D_periph(unsigned pin, int use_pullup);
+extern int at91_set_debounce(unsigned pin, int is_on, int div);
+extern int at91_set_pulldown(unsigned pin, int is_on);
+extern int at91_disable_schmitt_trig(unsigned pin);
+
 /*
  * read the pin's value (works even if it's not muxed as a gpio).
  */

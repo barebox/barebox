@@ -40,16 +40,19 @@
 #include <fs.h>
 #include <linux/stat.h>
 #include <libgen.h>
+#include <getopt.h>
 
 #define SIZE_REMAINING ((ulong)-1)
 
+#define PART_ADD_DEVNAME (1 << 0)
+
 static int mtd_part_do_parse_one(char *devname, const char *partstr,
 				 char **endp, unsigned long *offset,
-				 off_t devsize, size_t *retsize)
+				 off_t devsize, size_t *retsize, unsigned int pflags)
 {
 	ulong size;
 	char *end;
-	char buf[PATH_MAX];
+	char buf[PATH_MAX] = {};
 	unsigned long flags = 0;
 	int ret;
 
@@ -78,7 +81,8 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 			return -EINVAL;
 		}
 
-		sprintf(buf, "%s.", devname);
+		if (pflags & PART_ADD_DEVNAME)
+			sprintf(buf, "%s.", devname);
 		memcpy(buf + strlen(buf), partstr, end - partstr);
 
 		end++;
@@ -114,24 +118,35 @@ static int do_addpart(int argc, char *argv[])
 	unsigned long offset = 0;
 	off_t devsize;
 	struct stat s;
+	int opt;
+	unsigned int flags = PART_ADD_DEVNAME;
 
-	if (argc != 3)
+	while ((opt = getopt(argc, argv, "n")) > 0) {
+		switch (opt) {
+		case 'n':
+			flags &= ~PART_ADD_DEVNAME;
+			break;
+		}
+	}
+
+	if (argc != optind + 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (stat(argv[1], &s)) {
+	if (stat(argv[optind], &s)) {
 		perror("addpart");
 		return 1;
 	}
 	devsize = s.st_size;
 
-	devname = basename(argv[1]);
+	devname = basename(argv[optind]);
 
-	endp = argv[2];
+	endp = argv[optind + 1];
 
 	while (1) {
 		size_t size = 0;
 
-		if (mtd_part_do_parse_one(devname, endp, &endp, &offset, devsize, &size))
+		if (mtd_part_do_parse_one(devname, endp, &endp, &offset,
+					devsize, &size, flags))
 			return 1;
 
 		offset += size;
@@ -152,6 +167,8 @@ static int do_addpart(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(addpart)
 BAREBOX_CMD_HELP_USAGE("addpart <device> <part_desc>\n")
 BAREBOX_CMD_HELP_SHORT("Add a partition description to a device.\n")
+BAREBOX_CMD_HELP_OPT  ("-n", "no prefix. Do not prepend the device name as prefix before the partition name\n")
+BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
 BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
 BAREBOX_CMD_HELP_OPT  ("<part_desc>", "size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n")
 BAREBOX_CMD_HELP_END

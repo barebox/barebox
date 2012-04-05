@@ -48,7 +48,7 @@ static inline struct device_d *imx27_add_nand(struct imx_nand_platform_data *pda
 
 static inline struct device_d *imx27_add_fb(struct imx_fb_platform_data *pdata)
 {
-	return imx_add_fb((void *)0x10021000, pdata);
+	return imx_add_fb((void *)IMX_FB_BASE, pdata);
 }
 
 static inline struct device_d *imx27_add_fec(struct fec_platform_data *pdata)
@@ -58,7 +58,15 @@ static inline struct device_d *imx27_add_fec(struct fec_platform_data *pdata)
 
 static inline struct device_d *imx27_add_mmc0(void *pdata)
 {
-	return imx_add_mmc((void *)0x10014000, 0, pdata);
+	return imx_add_mmc((void *)IMX_SDHC1_BASE, 0, pdata);
 }
 
+static inline struct device_d *imx27_add_mmc1(void *pdata)
+{
+	return imx_add_mmc((void *)IMX_SDHC2_BASE, 1, pdata);
+}
 
+static inline struct device_d *imx27_add_mmc2(void *pdata)
+{
+	return imx_add_mmc((void *)IMX_SDHC3_BASE, 2, pdata);
+}

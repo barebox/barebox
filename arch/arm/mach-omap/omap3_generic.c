@@ -499,3 +499,19 @@ enum omap_boot_src omap3_bootsrc(void)
 		return OMAP_BOOTSRC_MMC1;
 	return OMAP_BOOTSRC_UNKNOWN;
 }
+
+/* GPMC timing for OMAP3 nand device */
+const struct gpmc_config omap3_nand_cfg = {
+	.cfg = {
+		0x00000000,	/* CONF1 */
+		0x00141400,	/* CONF2 */
+		0x00141400,	/* CONF3 */
+		0x0F010F01,	/* CONF4 */
+		0x010C1414,	/* CONF5 */
+		0x1F040000 |
+		0x00000A80,	/* CONF6 */
+	},
+	/* GPMC address map as small as possible */
+	.base = 0x28000000,
+	.size = GPMC_SIZE_16M,
+};

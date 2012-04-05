@@ -27,6 +27,7 @@
 #include <environment.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <io.h>
 #include <mach/gpio.h>
 #include <partition.h>
@@ -203,7 +204,7 @@ console_initcall(mx21ads_console_init);
 void __bare_init nand_boot(void)
 {
 	PCCR0 |= PCCR0_NFC_EN;
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif
 

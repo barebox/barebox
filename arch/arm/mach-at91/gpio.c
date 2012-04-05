@@ -26,10 +26,19 @@
 #include <errno.h>
 #include <io.h>
 #include <mach/gpio.h>
+#include <mach/io.h>
+#include <mach/cpu.h>
 #include <gpio.h>
 
 static int gpio_banks;
+static int cpu_has_pio3;
 static struct at91_gpio_bank *gpio;
+
+/*
+ * Functionnality can change with newer chips
+ */
+
+
 
 static inline void __iomem *pin_to_controller(unsigned pin)
 {
@@ -77,7 +86,14 @@ int at91_set_A_periph(unsigned pin, int use_pullup)
 
 	__raw_writel(mask, pio + PIO_IDR);
 	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
-	__raw_writel(mask, pio + PIO_ASR);
+	if (cpu_has_pio3) {
+		__raw_writel(__raw_readl(pio + PIO_ABCDSR1) & ~mask,
+							pio + PIO_ABCDSR1);
+		__raw_writel(__raw_readl(pio + PIO_ABCDSR2) & ~mask,
+							pio + PIO_ABCDSR2);
+	} else {
+		__raw_writel(mask, pio + PIO_ASR);
+	}
 	__raw_writel(mask, pio + PIO_PDR);
 	return 0;
 }
@@ -96,11 +112,58 @@ int at91_set_B_periph(unsigned pin, int use_pullup)
 
 	__raw_writel(mask, pio + PIO_IDR);
 	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
-	__raw_writel(mask, pio + PIO_BSR);
+	if (cpu_has_pio3) {
+		__raw_writel(__raw_readl(pio + PIO_ABCDSR1) | mask,
+							pio + PIO_ABCDSR1);
+		__raw_writel(__raw_readl(pio + PIO_ABCDSR2) & ~mask,
+							pio + PIO_ABCDSR2);
+	} else {
+		__raw_writel(mask, pio + PIO_BSR);
+	}
 	__raw_writel(mask, pio + PIO_PDR);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_B_periph);
+
+/*
+ * mux the pin to the "C" internal peripheral role.
+ */
+int at91_set_C_periph(unsigned pin, int use_pullup)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio || !cpu_has_pio3)
+		return -EINVAL;
+
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) & ~mask, pio + PIO_ABCDSR1);
+	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) | mask, pio + PIO_ABCDSR2);
+	__raw_writel(mask, pio + PIO_PDR);
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_C_periph);
+
+/*
+ * mux the pin to the "C" internal peripheral role.
+ */
+int at91_set_D_periph(unsigned pin, int use_pullup)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio || !cpu_has_pio3)
+		return -EINVAL;
+
+	__raw_writel(mask, pio + PIO_IDR);
+	__raw_writel(mask, pio + (use_pullup ? PIO_PUER : PIO_PUDR));
+	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) | mask, pio + PIO_ABCDSR1);
+	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) | mask, pio + PIO_ABCDSR2);
+	__raw_writel(mask, pio + PIO_PDR);
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_D_periph);
 
 /*
  * mux the pin to the gpio controller (instead of "A" or "B" peripheral), and
@@ -153,10 +216,35 @@ int at91_set_deglitch(unsigned pin, int is_on)
 
 	if (!pio)
 		return -EINVAL;
+
+	if (cpu_has_pio3 && is_on)
+		__raw_writel(mask, pio + PIO_IFSCDR);
 	__raw_writel(mask, pio + (is_on ? PIO_IFER : PIO_IFDR));
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_deglitch);
+
+/*
+ * enable/disable the debounce filter;
+ */
+int at91_set_debounce(unsigned pin, int is_on, int div)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio || !cpu_has_pio3)
+		return -EINVAL;
+
+	if (is_on) {
+		__raw_writel(mask, pio + PIO_IFSCER);
+		__raw_writel(div & PIO_SCDR_DIV, pio + PIO_SCDR);
+		__raw_writel(mask, pio + PIO_IFER);
+	} else {
+		__raw_writel(mask, pio + PIO_IFDR);
+	}
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_debounce);
 
 /*
  * enable/disable the multi-driver; This is only valid for output and
@@ -174,6 +262,41 @@ int at91_set_multi_drive(unsigned pin, int is_on)
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_multi_drive);
+
+/*
+ * enable/disable the pull-down.
+ * If pull-up already enabled while calling the function, we disable it.
+ */
+int at91_set_pulldown(unsigned pin, int is_on)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio || !cpu_has_pio3)
+		return -EINVAL;
+
+	/* Disable pull-up anyway */
+	__raw_writel(mask, pio + PIO_PUDR);
+	__raw_writel(mask, pio + (is_on ? PIO_PPDER : PIO_PPDDR));
+	return 0;
+}
+EXPORT_SYMBOL(at91_set_pulldown);
+
+/*
+ * disable Schmitt trigger
+ */
+int at91_disable_schmitt_trig(unsigned pin)
+{
+	void __iomem	*pio = pin_to_controller(pin);
+	unsigned	mask = pin_to_mask(pin);
+
+	if (!pio || !cpu_has_pio3)
+		return -EINVAL;
+
+	__raw_writel(__raw_readl(pio + PIO_SCHMITT) | mask, pio + PIO_SCHMITT);
+	return 0;
+}
+EXPORT_SYMBOL(at91_disable_schmitt_trig);
 
 /*
  * assuming the pin is muxed as a gpio output, set its value.
@@ -244,6 +367,8 @@ int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 		/* enable PIO controller's clock */
 		clk_enable(data->clock);
 	}
+
+	cpu_has_pio3 = cpu_is_at91sam9x5();
 
 	return 0;
 }

@@ -32,6 +32,7 @@
 #include <io.h>
 #include <asm/hardware.h>
 #include <nand.h>
+#include <sizes.h>
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
@@ -106,6 +107,63 @@ static void ek_add_device_mci(void)
 static void ek_add_device_mci(void) {}
 #endif
 
+#ifdef CONFIG_LED_GPIO
+struct gpio_led ek_leds[] = {
+	{
+		.gpio		= AT91_PIN_PC29,
+		.active_low	= 1,
+		.led = {
+			.name = "ds2",
+		},
+	}, {
+		.gpio		= AT91_PIN_PB7,
+		.led = {
+			.name = "ds3",
+		},
+	},
+};
+
+static void ek_device_add_leds(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ek_leds); i++) {
+		at91_set_gpio_output(ek_leds[i].gpio, ek_leds[i].active_low);
+		led_gpio_register(&ek_leds[i]);
+	}
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &ek_leds[1].led);
+}
+#else
+static void ek_device_add_leds(void) {}
+#endif
+
+#if defined(CONFIG_USB_GADGET_DRIVER_AT91)
+/*
+ * USB Device port
+ */
+static struct at91_udc_data __initdata ek_udc_data = {
+	.vbus_pin	= AT91_PIN_PA25,
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
+};
+
+static void ek_add_device_udc(void)
+{
+	at91_add_device_udc(&ek_udc_data);
+}
+#else
+static void ek_add_device_udc(void) {}
+#endif
+
+static void __init ek_add_device_buttons(void)
+{
+	at91_set_gpio_input(AT91_PIN_PC5, 1);
+	at91_set_deglitch(AT91_PIN_PC5, 1);
+	export_env_ull("dfu_button", AT91_PIN_PC5);
+	at91_set_gpio_input(AT91_PIN_PC4, 1);
+	at91_set_deglitch(AT91_PIN_PC4, 1);
+	export_env_ull("right_click", AT91_PIN_PC4);
+}
+
 static int at91sam9263ek_mem_init(void)
 {
 	at91_add_device_sdram(64 * 1024 * 1024);
@@ -125,19 +183,26 @@ static int at91sam9263ek_devices_init(void)
 	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
 	ek_add_device_nand();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 8 * 1024 * 1024, 0);
 	ek_add_device_mci();
+	ek_device_add_leds();
+	ek_add_device_udc();
+	ek_add_device_buttons();
 
-#if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
-#elif defined(CONFIG_NAND_ATMEL)
-	devfs_add_partition("nand0", 0x00000, 0x80000, PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", 0x80000, 0x20000, PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-#endif
+	if (IS_ENABLED(CONFIG_DRIVER_CFI) && cdev_by_name("nor0")) {
+		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
+		devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	} else if (IS_ENABLED(CONFIG_NAND_ATMEL)) {
+		devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
+		dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
+		devfs_add_partition("nand0", SZ_128K, SZ_256K, PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", SZ_256K + SZ_128K, SZ_128K, PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		devfs_add_partition("nand0", SZ_512K, SZ_128K, PARTITION_FIXED, "env_raw1");
+		dev_add_bb_dev("env_raw1", "env1");
+	}
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9263EK);

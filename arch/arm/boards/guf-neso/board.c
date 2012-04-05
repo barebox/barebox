@@ -30,7 +30,7 @@
 #include <nand.h>
 #include <command.h>
 #include <spi/spi.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 
 #include <io.h>
 #include <asm/mmu.h>
@@ -133,7 +133,7 @@ static void neso_usbh_init(void)
 
 	gpio_set_value(USBH2_PHY_CS_GPIO, 0);
 	mdelay(10);
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 }
 #endif
 

@@ -27,10 +27,10 @@
 #include "gpio.h"
 
 void *imx_gpio_base[] = {
-	(void *)0x73f84000,
-	(void *)0x73f88000,
-	(void *)0x73f8c000,
-	(void *)0x73f90000,
+	(void *)MX51_GPIO1_BASE_ADDR,
+	(void *)MX51_GPIO2_BASE_ADDR,
+	(void *)MX51_GPIO3_BASE_ADDR,
+	(void *)MX51_GPIO4_BASE_ADDR,
 };
 
 int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
@@ -179,12 +179,12 @@ static int imx51_boot_save_loc(void)
 
 coredevice_initcall(imx51_boot_save_loc);
 
-#define setup_pll_1000(base)	imx5_setup_pll((base), 1000, ((10 << 4) + ((1 - 1) << 0)), (12 - 1), 5)
-#define setup_pll_800(base)	imx5_setup_pll((base), 800, ((8 << 4) + ((1 - 1)  << 0)), (3 - 1), 1)
-#define setup_pll_665(base)	imx5_setup_pll((base), 665, ((6 << 4) + ((1 - 1)  << 0)), (96 - 1), 89)
-#define setup_pll_400(base)	imx5_setup_pll((base), 400, ((8 << 4) + ((2 - 1)  << 0)), (3 - 1), 1)
-#define setup_pll_455(base)	imx5_setup_pll((base), 455, ((9 << 4) + ((2 - 1)  << 0)), (48 - 1), 23)
-#define setup_pll_216(base)	imx5_setup_pll((base), 216, ((6 << 4) + ((3 - 1)  << 0)), (4 - 1), 3)
+#define setup_pll_800(base)	imx5_setup_pll((base), 800,  (( 8 << 4) + ((1 - 1) << 0)), ( 3 - 1),  1)
+#define setup_pll_665(base)	imx5_setup_pll((base), 665,  (( 6 << 4) + ((1 - 1) << 0)), (96 - 1), 89)
+#define setup_pll_600(base)	imx5_setup_pll((base), 600,  (( 6 << 4) + ((1 - 1) << 0)), ( 4 - 1),  1)
+#define setup_pll_400(base)	imx5_setup_pll((base), 400,  (( 8 << 4) + ((2 - 1) << 0)), ( 3 - 1),  1)
+#define setup_pll_455(base)	imx5_setup_pll((base), 455,  (( 9 << 4) + ((2 - 1) << 0)), (48 - 1), 23)
+#define setup_pll_216(base)	imx5_setup_pll((base), 216,  (( 6 << 4) + ((3 - 1) << 0)), ( 4 - 1),  3)
 
 void imx51_init_lowlevel(void)
 {
@@ -238,11 +238,8 @@ void imx51_init_lowlevel(void)
 	/* Set the platform clock dividers */
 	writel(0x00000124, MX51_ARM_BASE_ADDR + 0x14);
 
-	/* Run TO 3.0 at Full speed, for other TO's wait till we increase VDDGP */
-	if (imx_silicon_revision() == MX51_CHIP_REV_3_0)
-		writel(0x0, ccm + MX5_CCM_CACRR);
-	else
-		writel(0x1, ccm + MX5_CCM_CACRR);
+	/* Run at Full speed */
+	writel(0x0, ccm + MX5_CCM_CACRR);
 
 	/* Switch ARM back to PLL 1 */
 	writel(0x0, ccm + MX5_CCM_CCSR);
@@ -270,14 +267,4 @@ void imx51_init_lowlevel(void)
 	while (readl(ccm + MX5_CCM_CDHIPR));
 
 	writel(0x0, ccm + MX5_CCM_CCDR);
-
-	writel(0x1, 0x73fa8074);
-
-	r = readl(0x73f88000);
-	r |= 0x40;
-	writel(r, 0x73f88000);
-
-	r = readl(0x73f88004);
-	r |= 0x40;
-	writel(r, 0x73f88004);
 }

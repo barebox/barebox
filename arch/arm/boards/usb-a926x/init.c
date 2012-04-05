@@ -320,7 +320,7 @@ static int usb_a9260_devices_init(void)
 {
 	usb_a9260_add_device_nand();
 	usb_a9260_phy_reset();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 	usb_a9260_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_device_udc();

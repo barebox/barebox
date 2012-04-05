@@ -4,20 +4,21 @@
 int ulpi_set(u8 bits, int reg, void __iomem *view);
 int ulpi_clear(u8 bits, int reg, void __iomem *view);
 int ulpi_read(int reg, void __iomem *view);
+int ulpi_setup(void __iomem *view, int on);
 
-/* ISP 1504 register addresses */
-#define ISP1504_VID_LOW		0x00	/* Vendor ID low */
-#define ISP1504_VID_HIGH	0x01	/* Vendor ID high */
-#define ISP1504_PID_LOW		0x02	/* Product ID low */
-#define ISP1504_PID_HIGH	0x03	/* Product ID high */
-#define ISP1504_ITFCTL		0x07	/* Interface Control */
-#define ISP1504_OTGCTL		0x0A	/* OTG Control */
+/* ULPI register addresses */
+#define ULPI_VID_LOW		0x00	/* Vendor ID low */
+#define ULPI_VID_HIGH		0x01	/* Vendor ID high */
+#define ULPI_PID_LOW		0x02	/* Product ID low */
+#define ULPI_PID_HIGH		0x03	/* Product ID high */
+#define ULPI_ITFCTL		0x07	/* Interface Control */
+#define ULPI_OTGCTL		0x0A	/* OTG Control */
 
 /* add to above register address to access Set/Clear functions */
-#define ISP1504_REG_SET		0x01
-#define ISP1504_REG_CLEAR	0x02
+#define ULPI_REG_SET		0x01
+#define ULPI_REG_CLEAR		0x02
 
-/* 1504 OTG Control Register bits */
+/* ULPI OTG Control Register bits */
 #define USE_EXT_VBUS_IND	(1 << 7)	/* Use ext. Vbus indicator */
 #define DRV_VBUS_EXT		(1 << 6)	/* Drive Vbus external */
 #define DRV_VBUS		(1 << 5)	/* Drive Vbus */

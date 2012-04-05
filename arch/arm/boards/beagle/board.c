@@ -306,7 +306,8 @@ static int beagle_devices_init(void)
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_HAMMING_CODE_HW_ROMCODE);
+	gpmc_generic_nand_devices_init(0, 16,
+			OMAP_ECC_HAMMING_CODE_HW_ROMCODE, &omap3_nand_cfg);
 
 	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, NULL);

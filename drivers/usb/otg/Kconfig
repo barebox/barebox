@@ -1,9 +1,7 @@
 config USB_ULPI
-	bool
-
-config USB_ISP1504
-	select USB_ULPI
-	bool "ISP1504 Tranceiver support"
+	bool "ULPI Tranceiver support"
+	help
+	  Support for tranceivers that conforms ULPI specification.
 
 config USB_TWL4030
 	bool "TWL4030 Tranceiver support"

@@ -27,10 +27,11 @@
 #include <driver.h>
 #include <fs.h>
 #include <environment.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx31.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <mach/gpio.h>
 #include <io.h>
 #include <asm/mmu.h>
@@ -92,7 +93,7 @@ static void pcm037_usb_init(void)
 	imx_iomux_mode(MX31_PIN_USBOTG_STP__USBOTG_STP);
 
 	mdelay(50);
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x170), 1);
 
 	/* Host 2 */
 	tmp = readl(IOMUXC_BASE + 0x8);
@@ -137,7 +138,7 @@ static void pcm037_usb_init(void)
 	writel(tmp, IMX_OTG_BASE + 0x584);
 
 	mdelay(50);
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 
 	/* Set to Host mode */
 	tmp = readl(IMX_OTG_BASE + 0x1a8);
@@ -245,6 +246,6 @@ console_initcall(imx31_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif

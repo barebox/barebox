@@ -87,7 +87,7 @@ int ulpi_set(u8 bits, int reg, void __iomem *view)
 	}
 
 	writel((ULPIVW_RUN | ULPIVW_WRITE |
-		      ((reg + ISP1504_REG_SET) << ULPIVW_ADDR_SHIFT) |
+		      ((reg + ULPI_REG_SET) << ULPIVW_ADDR_SHIFT) |
 		      ((bits & ULPIVW_WDATA_MASK) << ULPIVW_WDATA_SHIFT)),
 		     view);
 
@@ -104,7 +104,7 @@ int ulpi_clear(u8 bits, int reg, void __iomem *view)
 	int ret;
 
 	writel((ULPIVW_RUN | ULPIVW_WRITE |
-		      ((reg + ISP1504_REG_CLEAR) << ULPIVW_ADDR_SHIFT) |
+		      ((reg + ULPI_REG_CLEAR) << ULPIVW_ADDR_SHIFT) |
 		      ((bits & ULPIVW_WDATA_MASK) << ULPIVW_WDATA_SHIFT)),
 		     view);
 
@@ -116,3 +116,79 @@ int ulpi_clear(u8 bits, int reg, void __iomem *view)
 }
 EXPORT_SYMBOL(ulpi_clear);
 
+struct ulpi_info {
+	uint32_t	id;
+	char		*name;
+};
+
+#define ULPI_ID(vendor, product) (((vendor) << 16) | (product))
+#define ULPI_INFO(_id, _name)		\
+	{				\
+		.id	= (_id),	\
+		.name	= (_name),	\
+	}
+
+/* ULPI hardcoded IDs, used for probing */
+static struct ulpi_info ulpi_ids[] = {
+	ULPI_INFO(ULPI_ID(0x04cc, 0x1504), "NXP ISP150x"),
+	ULPI_INFO(ULPI_ID(0x0424, 0x0006), "SMSC USB331x"),
+};
+
+int ulpi_probe(void __iomem *view)
+{
+	int i, vid, pid, ret;
+	uint32_t ulpi_id = 0;
+
+	for (i = 0; i < 4; i++) {
+		ret = ulpi_read(ULPI_PID_HIGH - i, view);
+		if (ret < 0)
+			return ret;
+		ulpi_id = (ulpi_id << 8) | ret;
+	}
+	vid = ulpi_id & 0xffff;
+	pid = ulpi_id >> 16;
+
+	for (i = 0; i < ARRAY_SIZE(ulpi_ids); i++) {
+		if (ulpi_ids[i].id == ULPI_ID(vid, pid)) {
+			pr_info("Found %s ULPI transceiver (0x%04x:0x%04x).\n",
+			ulpi_ids[i].name, vid, pid);
+			return 0;
+		}
+	}
+
+	pr_err("No ULPI found.\n");
+
+	return -1;
+}
+
+int ulpi_set_vbus(void __iomem *view, int on)
+{
+	int ret;
+
+	if (on) {
+		ret = ulpi_set(DRV_VBUS_EXT |		/* enable external Vbus */
+				DRV_VBUS |		/* enable internal Vbus */
+				USE_EXT_VBUS_IND |	/* use external indicator */
+				CHRG_VBUS,		/* charge Vbus */
+				ULPI_OTGCTL, view);
+	} else {
+		ret = ulpi_clear(DRV_VBUS_EXT |		/* disable external Vbus */
+				DRV_VBUS,		/* disable internal Vbus */
+				ULPI_OTGCTL, view);
+
+		ret |= ulpi_set(USE_EXT_VBUS_IND |	/* use external indicator */
+				DISCHRG_VBUS,		/* discharge Vbus */
+				ULPI_OTGCTL, view);
+	}
+
+	return ret;
+}
+
+int ulpi_setup(void __iomem *view, int on)
+{
+	if (ulpi_probe(view))
+		return -1;
+
+	return ulpi_set_vbus(view, on);
+}
+EXPORT_SYMBOL(ulpi_setup);

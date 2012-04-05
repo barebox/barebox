@@ -86,9 +86,34 @@ static int imx_25_35_boot_save_loc(void)
 
 	return 0;
 }
-
 coredevice_initcall(imx_25_35_boot_save_loc);
 
 BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
+#endif
 
+#if defined(CONFIG_ARCH_IMX27)
+static int imx_27_boot_save_loc(void)
+{
+	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
+	case GPCR_BOOT_UART_USB:
+		setenv("barebox_loc", "serial");
+		break;
+	case GPCR_BOOT_8BIT_NAND_2k:
+	case GPCR_BOOT_16BIT_NAND_2k:
+	case GPCR_BOOT_16BIT_NAND_512:
+	case GPCR_BOOT_8BIT_NAND_512:
+		setenv("barebox_loc", "nand");
+		break;
+	default:
+		setenv("barebox_loc", "nor");
+		break;
+	}
+
+	export("barebox_loc");
+
+	return 0;
+}
+coredevice_initcall(imx_27_boot_save_loc);
+
+BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
 #endif

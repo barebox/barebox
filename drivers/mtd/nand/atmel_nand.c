@@ -407,6 +407,12 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		}
 	}
 
+	if (host->board->on_flash_bbt) {
+		printk(KERN_INFO "atmel_nand: Use On Flash BBT\n");
+		nand_chip->options |= NAND_USE_FLASH_BBT;
+	}
+
+
 	/* first scan to find the device and get the page size */
 	if (nand_scan_ident(mtd, 1)) {
 		res = -ENXIO;

@@ -26,6 +26,7 @@
 #include <fec.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
@@ -38,7 +39,7 @@
 #include <mach/imxfb.h>
 #include <gpio.h>
 #include <asm/mmu.h>
-#include <usb/isp1504.h>
+#include <usb/ulpi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
@@ -139,9 +140,9 @@ static void pca100_usb_register(void)
 
 	mdelay(10);
 
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x170), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x170), 1);
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
-	isp1504_set_vbus_power((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
 	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif
@@ -292,7 +293,7 @@ static int pca100_devices_init(void)
 
 	imx27_add_nand(&nand_info);
 	imx27_add_fec(&fec_info);
-	imx27_add_mmc0(NULL);
+	imx27_add_mmc1(NULL);
 	imx27_add_fb(&pca100_fb_data);
 
 	PCCR1 |= PCCR1_PERCLK2_EN;
@@ -327,7 +328,7 @@ console_initcall(pca100_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif
 

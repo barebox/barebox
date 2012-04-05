@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2009-2012 Jean-Christophe PLAGNIOL-VILLARD <plagnio@jcrosoft.com>
+ *
  * (C) Copyright 2003
  * Author : Hamid Ikdoumi (Atmel)
  *
@@ -21,325 +23,354 @@
  * MA 02111-1307 USA
  */
 
-#include <at91rm9200_net.h>
-#include <init.h>
+#include <common.h>
 #include <net.h>
-#include <miidev.h>
+#include <clock.h>
 #include <malloc.h>
 #include <driver.h>
+#include <xfuncs.h>
+#include <init.h>
+#include <miidev.h>
+#include <asm/io.h>
+#include <mach/hardware.h>
+#include <mach/at91rm9200_emac.h>
+#include <mach/board.h>
+#include <generated/mach-types.h>
+#include <linux/clk.h>
+#include <linux/mii.h>
+#include <errno.h>
+#include <asm/mmu.h>
 
-/* ----- Ethernet Buffer definitions ----- */
+#include "at91_ether.h"
 
-typedef struct {
-	unsigned long addr, size;
-} rbf_t;
+#define SPEED_100 1
+#define DUPLEX_FULL 1
 
-#define RBF_ADDR      0xfffffffc
-#define RBF_OWNER     (1<<0)
-#define RBF_WRAP      (1<<1)
-#define RBF_BROADCAST (1<<31)
-#define RBF_MULTICAST (1<<30)
-#define RBF_UNICAST   (1<<29)
-#define RBF_EXTERNAL  (1<<28)
-#define RBF_UNKOWN    (1<<27)
-#define RBF_SIZE      0x07ff
-#define RBF_LOCAL4    (1<<26)
-#define RBF_LOCAL3    (1<<25)
-#define RBF_LOCAL2    (1<<24)
-#define RBF_LOCAL1    (1<<23)
+struct ether_device {
+	struct eth_device netdev;
+	struct mii_device miidev;
+	struct rbf_t *rbfp;
+	struct rbf_t *rbfdt;
+	unsigned char *rbf_framebuf;
+};
+#define to_ether(_nd) container_of(_nd, struct ether_device, netdev)
 
-#define RBF_FRAMEMAX 64
-#define RBF_FRAMELEN 0x600
-
-/* alignment as per Errata #11 (64 bytes) is insufficient! */
-rbf_t rbfdt[RBF_FRAMEMAX] __attribute((aligned(512)));
-rbf_t *rbfp;
-
-unsigned char rbf_framebuf[RBF_FRAMEMAX][RBF_FRAMELEN] __attribute((aligned(4)));
-
-/* structure to interface the PHY */
-AT91S_PhyOps PhyOps;
-
-AT91PS_EMAC p_mac;
-
-/*********** EMAC Phy layer Management functions *************************/
 /*
- * Name:
- *	at91rm9200_EmacEnableMDIO
- * Description:
- *	Enables the MDIO bit in MAC control register
- * Arguments:
- *	p_mac - pointer to struct AT91S_EMAC
- * Return value:
- *	none
+ * Enable the MDIO bit in MAC control register
+ * When not called from an interrupt-handler, access to the PHY must be
+ *  protected by a spinlock.
  */
-void at91rm9200_EmacEnableMDIO (AT91PS_EMAC p_mac)
+static void enable_mdi(void)
 {
-	/* Mac CTRL reg set for MDIO enable */
-	p_mac->EMAC_CTL |= AT91C_EMAC_MPE;	/* Management port enable */
+	unsigned long ctl;
+
+	ctl = at91_emac_read(AT91_EMAC_CTL);
+	at91_emac_write(AT91_EMAC_CTL, ctl | AT91_EMAC_MPE);	/* enable management port */
 }
 
 /*
- * Name:
- *	at91rm9200_EmacDisableMDIO
- * Description:
- *	Disables the MDIO bit in MAC control register
- * Arguments:
- *	p_mac - pointer to struct AT91S_EMAC
- * Return value:
- *	none
+ * Disable the MDIO bit in the MAC control register
  */
-void at91rm9200_EmacDisableMDIO (AT91PS_EMAC p_mac)
+static void disable_mdi(void)
 {
-	/* Mac CTRL reg set for MDIO disable */
-	p_mac->EMAC_CTL &= ~AT91C_EMAC_MPE;	/* Management port disable */
-}
+	unsigned long ctl;
 
+	ctl = at91_emac_read(AT91_EMAC_CTL);
+	at91_emac_write(AT91_EMAC_CTL, ctl & ~AT91_EMAC_MPE);	/* disable management port */
+}
 
 /*
- * Name:
- *	at91rm9200_EmacReadPhy
- * Description:
- *	Reads data from the PHY register
- * Arguments:
- *	dev - pointer to struct net_device
- *	RegisterAddress - unsigned char
- * 	pInput - pointer to value read from register
- * Return value:
- *	TRUE - if data read successfully
+ * Wait until the PHY operation is complete.
  */
-UCHAR at91rm9200_EmacReadPhy (AT91PS_EMAC p_mac,
-				     unsigned char RegisterAddress,
-				     unsigned short *pInput)
+static inline int at91_phy_wait(void)
 {
-	p_mac->EMAC_MAN = (AT91C_EMAC_HIGH & ~AT91C_EMAC_LOW) |
-			  (AT91C_EMAC_RW_R) |
-			  (RegisterAddress << 18) |
-			  (AT91C_EMAC_CODE_802_3);
+	uint64_t start;
 
-	udelay (10000);
+	start = get_time_ns();
 
-	*pInput = (unsigned short) p_mac->EMAC_MAN;
+	do {
+		if (is_timeout(start, 2 * MSECOND)) {
+			puts("at91_ether: MIO timeout\n");
+			return -1;
+		}
+	} while (!(at91_emac_read(AT91_EMAC_SR) & AT91_EMAC_SR_IDLE));
 
-	return TRUE;
+	return 0;
 }
 
-
-/*
- * Name:
- *	at91rm9200_EmacWritePhy
- * Description:
- *	Writes data to the PHY register
- * Arguments:
- *	dev - pointer to struct net_device
- *	RegisterAddress - unsigned char
- * 	pOutput - pointer to value to be written in the register
- * Return value:
- *	TRUE - if data read successfully
- */
-UCHAR at91rm9200_EmacWritePhy (AT91PS_EMAC p_mac,
-				      unsigned char RegisterAddress,
-				      unsigned short *pOutput)
+static int at91_ether_mii_read(struct mii_device *dev, int addr, int reg)
 {
-	p_mac->EMAC_MAN = (AT91C_EMAC_HIGH & ~AT91C_EMAC_LOW) |
-			AT91C_EMAC_CODE_802_3 | AT91C_EMAC_RW_W |
-			(RegisterAddress << 18) | *pOutput;
+	int value;
 
-	udelay (10000);
+	enable_mdi();
 
-	return TRUE;
+	at91_emac_write(AT91_EMAC_MAN, AT91_EMAC_MAN_802_3 | AT91_EMAC_RW_R
+		| ((addr & 0x1f) << 23) | (reg << 18));
+
+	/* Wait until IDLE bit in Network Status register is cleared */
+	value = at91_phy_wait();
+	if (value < 0)
+		goto out;
+
+	value = at91_emac_read(AT91_EMAC_MAN) & AT91_EMAC_DATA;
+
+out:
+	disable_mdi();
+
+	return value;
 }
 
-static int at91rm9200_eth_open (struct eth_device *edev)
+static int at91_ether_mii_write(struct mii_device *dev, int addr, int reg, int val)
 {
 	int ret;
 
-	at91rm9200_GetPhyInterface (& PhyOps);
+	enable_mdi();
+	at91_emac_write(AT91_EMAC_MAN, AT91_EMAC_MAN_802_3 | AT91_EMAC_RW_W
+		| ((addr & 0x1f) << 23) | (reg << 18) | (val & AT91_EMAC_DATA));
 
-	if (!PhyOps.IsPhyConnected (p_mac))
-		printf ("PHY not connected!!\n\r");
+	/* Wait until IDLE bit in Network Status register is cleared */
+	ret = at91_phy_wait();
 
-	/* MII management start from here */
-	if (!(p_mac->EMAC_SR & AT91C_EMAC_LINK)) {
-		if (!(ret = PhyOps.Init (p_mac))) {
-			printf ("MAC: error during MII initialization\n");
-			return 0;
-		}
+	disable_mdi();
+
+	return ret;
+}
+
+static void update_linkspeed(struct mii_device *dev, int speed, int duplex)
+{
+	unsigned int mac_cfg;
+
+	/* Update the MAC */
+	mac_cfg = at91_emac_read(AT91_EMAC_CFG) & ~(AT91_EMAC_SPD | AT91_EMAC_FD);
+	if (speed == SPEED_100) {
+		if (duplex == DUPLEX_FULL)	/* 100 Full Duplex */
+			mac_cfg |= AT91_EMAC_SPD | AT91_EMAC_FD;
+		else					/* 100 Half Duplex */
+			mac_cfg |= AT91_EMAC_SPD;
 	} else {
-		printf ("No link\n\r");
-		return 0;
+		if (duplex == DUPLEX_FULL)	/* 10 Full Duplex */
+			mac_cfg |= AT91_EMAC_FD;
+		else {}					/* 10 Half Duplex */
 	}
+	at91_emac_write(AT91_EMAC_CFG, mac_cfg);
+}
+
+static int at91_ether_open(struct eth_device *edev)
+{
+	int i;
+	unsigned long ctl;
+	struct ether_device *etdev = to_ether(edev);
+	unsigned char *rbf_framebuf = etdev->rbf_framebuf;
+
+	miidev_wait_aneg(&etdev->miidev);
+	miidev_print_status(&etdev->miidev);
+
+	update_linkspeed(&etdev->miidev, SPEED_100, DUPLEX_FULL);
+
+	/* Clear internal statistics */
+	ctl = at91_emac_read(AT91_EMAC_CTL);
+	at91_emac_write(AT91_EMAC_CTL, ctl | AT91_EMAC_CSR);
+
+	/* Init Ethernet buffers */
+	etdev->rbfp = etdev->rbfdt;
+	for (i = 0; i < MAX_RX_DESCR; i++) {
+		etdev->rbfp[i].addr = (unsigned long)rbf_framebuf;
+		etdev->rbfp[i].size = 0;
+		rbf_framebuf += MAX_RBUFF_SZ;
+	}
+	etdev->rbfp[i - 1].addr |= RBF_WRAP;
+
+	/* Program address of descriptor list in Rx Buffer Queue register */
+	at91_emac_write(AT91_EMAC_RBQP, (unsigned long) etdev->rbfdt);
+
+	ctl = at91_emac_read(AT91_EMAC_RSR);
+	ctl &= ~(AT91_EMAC_RSR_OVR | AT91_EMAC_RSR_REC | AT91_EMAC_RSR_BNA);
+	at91_emac_write(AT91_EMAC_RSR, ctl);
+
+	ctl = at91_emac_read(AT91_EMAC_CFG);
+	ctl |= AT91_EMAC_CAF | AT91_EMAC_NBC;
+	at91_emac_write(AT91_EMAC_CFG, ctl);
+
+	/* Enable Receive and Transmit */
+	ctl = at91_emac_read(AT91_EMAC_CTL);
+	ctl |= AT91_EMAC_RE | AT91_EMAC_TE;
+	at91_emac_write(AT91_EMAC_CTL, ctl);
+
 	return 0;
 }
 
-static int at91rm9200_eth_send (struct eth_device *edev, volatile void *packet, int length)
+static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 {
-	while (!(p_mac->EMAC_TSR & AT91C_EMAC_BNQ));
-	p_mac->EMAC_TAR = (long) packet;
-	p_mac->EMAC_TCR = length;
-	while (p_mac->EMAC_TCR & 0x7ff);
-	p_mac->EMAC_TSR |= AT91C_EMAC_COMP;
+	while (!(at91_emac_read(AT91_EMAC_TSR) & AT91_EMAC_TSR_BNQ));
+
+	dma_flush_range((ulong) packet, (ulong)packet + length);
+	/* Set address of the data in the Transmit Address register */
+	at91_emac_write(AT91_EMAC_TAR, (unsigned long) packet);
+	/* Set length of the packet in the Transmit Control register */
+	at91_emac_write(AT91_EMAC_TCR, length);
+
+	while (at91_emac_read(AT91_EMAC_TCR) & 0x7ff);
+
+	at91_emac_write(AT91_EMAC_TSR,
+		at91_emac_read(AT91_EMAC_TSR) | AT91_EMAC_TSR_COMP);
+
 	return 0;
 }
 
-static int at91rm9200_eth_rx (struct eth_device *edev)
+static int at91_ether_rx(struct eth_device *edev)
 {
+	struct ether_device *etdev = to_ether(edev);
 	int size;
+	struct rbf_t *rbfp = etdev->rbfp;
 
 	if (!(rbfp->addr & RBF_OWNER))
 		return 0;
 
 	size = rbfp->size & RBF_SIZE;
-	net_receive((volatile uchar *) (rbfp->addr & RBF_ADDR), size);
+
+	net_receive((unsigned char *)(rbfp->addr & RBF_ADDR), size);
 
 	rbfp->addr &= ~RBF_OWNER;
 	if (rbfp->addr & RBF_WRAP)
-		rbfp = &rbfdt[0];
+		etdev->rbfp = etdev->rbfdt;
 	else
-		rbfp++;
+		etdev->rbfp++;
 
-	p_mac->EMAC_RSR |= AT91C_EMAC_REC;
+	at91_emac_write(AT91_EMAC_RSR,
+		at91_emac_read(AT91_EMAC_RSR) | AT91_EMAC_RSR_REC);
 
 	return size;
 }
 
-static void at91rm9200_eth_halt (struct eth_device *edev)
+static void at91_ether_halt (struct eth_device *edev)
 {
-};
+	unsigned long ctl;
 
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-int  at91rm9200_miidev_read(char *devname, unsigned char addr,
-		unsigned char reg, unsigned short * value)
-{
-	at91rm9200_EmacEnableMDIO (p_mac);
-	at91rm9200_EmacReadPhy (p_mac, reg, value);
-	at91rm9200_EmacDisableMDIO (p_mac);
-	return 0;
+	/* Disable Receiver and Transmitter */
+	ctl = at91_emac_read(AT91_EMAC_CTL);
+	ctl &= ~(AT91_EMAC_TE | AT91_EMAC_RE);
+	at91_emac_write(AT91_EMAC_CTL, ctl);
 }
 
-int  at91rm9200_miidev_write(char *devname, unsigned char addr,
-		unsigned char reg, unsigned short value)
-{
-	at91rm9200_EmacEnableMDIO (p_mac);
-	at91rm9200_EmacWritePhy (p_mac, reg, &value);
-	at91rm9200_EmacDisableMDIO (p_mac);
-	return 0;
-}
-
-#endif	/* defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII) */
-
-int at91rm9200_miidev_initialize(void)
-{
-#if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
-	mii_register("at91rm9200phy", at91rm9200_miidev_read, at91rm9200_miidev_write);
-#endif
-	return 0;
-}
-
-static int at91rm9200_get_ethaddr(struct eth_device *eth, unsigned char *adr)
+static int at91_ether_get_ethaddr(struct eth_device *eth, unsigned char *adr)
 {
 	/* We have no eeprom */
 	return -1;
 }
 
-static int at91rm9200_set_ethaddr(struct eth_device *eth, unsigned char *adr)
+static int at91_ether_set_ethaddr(struct eth_device *eth, unsigned char *adr)
 {
 	int i;
 
-	p_mac->EMAC_SA2L = (adr[3] << 24) | (adr[2] << 16)
-			 | (adr[1] <<  8) | (adr[0]);
-	p_mac->EMAC_SA2H = (adr[5] <<  8) | (adr[4]);
+	/* The CSB337 originally used a version of the MicroMonitor bootloader
+	 * which saved Ethernet addresses in the "wrong" order.  Operating
+	 * systems (like Linux) know this, and apply a workaround.  Replicate
+	 * that MicroMonitor behavior so we avoid needing to make such OS code
+	 * care about which bootloader was used.
+	 */
+	if (machine_is_csb337()) {
+		at91_emac_write(AT91_EMAC_SA2H,
+				   (adr[0] <<  8) | (adr[1]));
+		at91_emac_write(AT91_EMAC_SA2L,
+				   (adr[2] << 24) | (adr[3] << 16)
+				 | (adr[4] <<  8) | (adr[5]));
+	} else {
+		at91_emac_write(AT91_EMAC_SA2L,
+				   (adr[3] << 24) | (adr[2] << 16)
+				 | (adr[1] <<  8) | (adr[0]));
+		at91_emac_write(AT91_EMAC_SA2H,
+				   (adr[5] <<  8) | (adr[4]));
+	}
 
-#if 1
 	for (i = 0; i < 5; i++)
-		printf ("%02x:", adr[i]);
-	printf ("%02x\n", adr[5]);
-#endif
-	return -0;
+		debug ("%02x:", adr[i]);
+	debug ("%02x\n", adr[5]);
+
+	return 0;
 }
 
-static int at91rm9200_eth_init (struct device_d *dev)
+static int at91_ether_init(struct eth_device *edev)
 {
+	return 0;
+}
+
+static int at91_ether_probe(struct device_d *dev)
+{
+	unsigned int mac_cfg;
+	struct ether_device *ether_dev;
 	struct eth_device *edev;
-	int i;
+	struct mii_device *miidev;
+	unsigned long ether_hz;
+	struct clk *pclk;
+	struct at91_ether_platform_data *pdata;
 
-	edev = xmalloc(sizeof(struct eth_device));
-	dev->priv = edev;
-
-	edev->open = at91rm9200_eth_open;
-	edev->send = at91rm9200_eth_send;
-	edev->recv = at91rm9200_eth_rx;
-	edev->halt = at91rm9200_eth_halt;
-	edev->get_ethaddr = at91rm9200_get_ethaddr;
-	edev->set_ethaddr = at91rm9200_set_ethaddr;
-	edev->parent = dev;
-
-	p_mac = AT91C_BASE_EMAC;
-
-	/* PIO Disable Register */
-	*AT91C_PIOA_PDR = AT91C_PA16_EMDIO | AT91C_PA15_EMDC | AT91C_PA14_ERXER |
-			  AT91C_PA13_ERX1 | AT91C_PA12_ERX0 | AT91C_PA11_ECRS_ECRSDV |
-			  AT91C_PA10_ETX1 | AT91C_PA9_ETX0 | AT91C_PA8_ETXEN |
-			  AT91C_PA7_ETXCK_EREFCK;
-
-#ifdef CONFIG_AT91C_USE_RMII
-	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK;
-	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK;
-#else
-	*AT91C_PIOB_PDR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL | AT91C_PB17_ERXDV |
-			  AT91C_PB16_ERX3 | AT91C_PB15_ERX2 | AT91C_PB14_ETXER |
-			  AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
-
-	/* Select B Register */
-	*AT91C_PIOB_BSR = AT91C_PB19_ERXCK | AT91C_PB18_ECOL |
-			  AT91C_PB17_ERXDV | AT91C_PB16_ERX3 | AT91C_PB15_ERX2 |
-			  AT91C_PB14_ETXER | AT91C_PB13_ETX3 | AT91C_PB12_ETX2;
-#endif
-
-	*AT91C_PMC_PCER = 1 << AT91C_ID_EMAC;	/* Peripheral Clock Enable Register */
-
-	p_mac->EMAC_CFG |= AT91C_EMAC_CSR;	/* Clear statistics */
-
-	/* Init Ehternet buffers */
-	for (i = 0; i < RBF_FRAMEMAX; i++) {
-		rbfdt[i].addr = (unsigned long)rbf_framebuf[i];
-		rbfdt[i].size = 0;
+	if (!dev->platform_data) {
+		printf("at91_ether: no platform_data\n");
+		return -ENODEV;
 	}
-	rbfdt[RBF_FRAMEMAX - 1].addr |= RBF_WRAP;
-	rbfp = &rbfdt[0];
 
-	p_mac->EMAC_RBQP = (long) (&rbfdt[0]);
-	p_mac->EMAC_RSR &= ~(AT91C_EMAC_RSR_OVR | AT91C_EMAC_REC | AT91C_EMAC_BNA);
+	pdata = dev->platform_data;
 
-	p_mac->EMAC_CFG = (p_mac->EMAC_CFG | AT91C_EMAC_CAF | AT91C_EMAC_NBC)
-			& ~AT91C_EMAC_CLK;
+	ether_dev = xzalloc(sizeof(struct ether_device));
 
-#ifdef CONFIG_AT91C_USE_RMII
-	p_mac->EMAC_CFG |= AT91C_EMAC_RMII;
-#endif
+	edev = &ether_dev->netdev;
+	miidev = &ether_dev->miidev;
+	edev->priv = ether_dev;
 
-#if (AT91C_MASTER_CLOCK > 40000000)
-	/* MDIO clock must not exceed 2.5 MHz, so enable MCK divider */
-	p_mac->EMAC_CFG |= AT91C_EMAC_CLK_HCLK_64;
-#endif
+	edev->init = at91_ether_init;
+	edev->open = at91_ether_open;
+	edev->send = at91_ether_send;
+	edev->recv = at91_ether_rx;
+	edev->halt = at91_ether_halt;
+	edev->get_ethaddr = at91_ether_get_ethaddr;
+	edev->set_ethaddr = at91_ether_set_ethaddr;
+	ether_dev->rbf_framebuf = dma_alloc_coherent(MAX_RX_DESCR * MAX_RBUFF_SZ);
+	ether_dev->rbfdt = dma_alloc_coherent(sizeof(struct rbf_t) * MAX_RX_DESCR);
 
-	p_mac->EMAC_CTL |= AT91C_EMAC_TE | AT91C_EMAC_RE;
+	miidev->address = pdata->phy_addr;
+	miidev->read = at91_ether_mii_read;
+	miidev->write = at91_ether_mii_write;
+	miidev->edev = edev;
 
+	/* Sanitize the clocks */
+	mac_cfg = at91_emac_read(AT91_EMAC_CFG);
+
+	pclk = clk_get(dev, "ether_clk");
+	clk_enable(pclk);
+	ether_hz = clk_get_rate(pclk);
+	if (ether_hz > 40000000) {
+		/* MDIO clock must not exceed 2.5 MHz, so enable MCK divider */
+		mac_cfg |= AT91_EMAC_CLK_DIV64;
+	} else {
+		mac_cfg &= ~AT91_EMAC_CLK;
+	}
+
+	mac_cfg |= AT91_EMAC_CLK_DIV32 | AT91_EMAC_BIG;
+
+	if (pdata->flags & AT91SAM_ETHER_RMII)
+		mac_cfg |= AT91_EMAC_RMII;
+
+	at91_emac_write(AT91_EMAC_CFG, mac_cfg);
+
+	mii_register(miidev);
 	eth_register(edev);
 
 	return 0;
 }
 
-static struct driver_d at91_eth_driver = {
-        .name  = "at91_eth",
-        .probe = at91rm9200_eth_init,
-};
-
-static int at91_eth_init(void)
+static void at91_ether_remove(struct device_d *dev)
 {
-        register_driver(&at91_eth_driver);
-        return 0;
 }
 
-device_initcall(at91_eth_init);
+static struct driver_d at91_ether_driver = {
+	.name = "at91_ether",
+	.probe = at91_ether_probe,
+	.remove = at91_ether_remove,
+};
 
+static int at91_ether_driver_init(void)
+{
+	register_driver(&at91_ether_driver);
+	return 0;
+}
+device_initcall(at91_ether_driver_init);

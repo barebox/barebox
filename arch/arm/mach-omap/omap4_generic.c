@@ -3,9 +3,11 @@
 #include <mach/silicon.h>
 #include <io.h>
 #include <mach/omap4-silicon.h>
+#include <mach/omap4-mux.h>
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>
+#include <mach/gpmc.h>
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -419,3 +421,58 @@ enum omap_boot_src omap4_bootsrc(void)
 		return OMAP_BOOTSRC_NAND;
 	return OMAP_BOOTSRC_UNKNOWN;
 }
+
+#define I2C_SLAVE 0x12
+
+noinline int omap4_scale_vcores(void)
+{
+	unsigned int rev = omap4_revision();
+
+	/* For VC bypass only VCOREx_CGF_FORCE  is necessary and
+	 * VCOREx_CFG_VOLTAGE  changes can be discarded
+	 */
+	writel(0, OMAP44XX_PRM_VC_CFG_I2C_MODE);
+	writel(0x6026, OMAP44XX_PRM_VC_CFG_I2C_CLK);
+
+	/* set VCORE1 force VSEL */
+	omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
+
+	/* FIXME: set VCORE2 force VSEL, Check the reset value */
+	omap4_power_i2c_send((0x295B << 8) | I2C_SLAVE);
+
+	/* set VCORE3 force VSEL */
+	switch (rev) {
+	case OMAP4430_ES2_0:
+		omap4_power_i2c_send((0x2961 << 8) | I2C_SLAVE);
+		break;
+	case OMAP4430_ES2_1:
+		omap4_power_i2c_send((0x2A61 << 8) | I2C_SLAVE);
+		break;
+	}
+
+	return 0;
+}
+
+void omap4_do_set_mux(u32 base, struct pad_conf_entry const *array, int size)
+{
+	int i;
+	struct pad_conf_entry *pad = (struct pad_conf_entry *) array;
+
+	for (i = 0; i < size; i++, pad++)
+		writew(pad->val, base + pad->offset);
+}
+
+/* GPMC timing for OMAP4 nand device */
+const struct gpmc_config omap4_nand_cfg = {
+	.cfg = {
+		0x00000800,	/* CONF1 */
+		0x00050500,	/* CONF2 */
+		0x00040400,	/* CONF3 */
+		0x03000300,	/* CONF4 */
+		0x00050808,	/* CONF5 */
+		0x00000000,	/* CONF6 */
+	},
+	/* GPMC address map as small as possible */
+	.base = 0x28000000,
+	.size = GPMC_SIZE_16M,
+};

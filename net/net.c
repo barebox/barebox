@@ -127,7 +127,7 @@ int string_to_ip(const char *s, IPaddr_t *ip)
 	return 0;
 }
 
-IPaddr_t getenv_ip(const char *name)
+IPaddr_t getenv_ip_dns(const char *name, int dns)
 {
 	IPaddr_t ip;
 	const char *var = getenv(name);
@@ -135,10 +135,13 @@ IPaddr_t getenv_ip(const char *name)
 	if (!var)
 		return 0;
 
-	if (string_to_ip(var, &ip))
+	if (!string_to_ip(var, &ip))
+		return ip;
+
+	if (!dns)
 		return 0;
 
-	return ip;
+	return resolv((char*)var);
 }
 
 int setenv_ip(const char *name, IPaddr_t ip)
@@ -220,6 +223,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	uint64_t arp_start;
 	static char *arp_packet;
 	struct ethernet *et;
+	unsigned retries = 0;
 
 	if (!arp_packet) {
 		arp_packet = net_alloc_packet();
@@ -274,7 +278,11 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 			printf("T ");
 			arp_start = get_time_ns();
 			eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+			retries++;
 		}
+
+		if (retries > PKT_NUM_RETRIES)
+			return -ETIMEDOUT;
 
 		net_poll();
 	}

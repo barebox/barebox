@@ -27,6 +27,7 @@
 #include <environment.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <mach/gpio.h>
 #include <io.h>
 #include <partition.h>
@@ -167,7 +168,7 @@ console_initcall(tx25_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif
 

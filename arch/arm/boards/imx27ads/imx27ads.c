@@ -42,15 +42,11 @@ static struct fec_platform_data fec_info = {
 static int imx27ads_timing_init(void)
 {
 	/* configure cpld on cs4 */
-	CS4U = 0x0000DCF6;
-	CS4L = 0x444A4541;
-	CS4A = 0x44443302;
+	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A4541, 0x44443302);
 
 	/* configure synchronous mode for
 	 * 16 bit nor flash on cs0 */
-	CS0U = 0x0000CC03;
-	CS0L = 0xa0330D01;
-	CS0A = 0x00220800;
+	imx27_setup_weimcs(0, 0x0000CC03, 0xa0330D01, 0x00220800);
 
 	writew(0x00f0, 0xc0000000);
 	writew(0x00aa, 0xc0000aaa);
@@ -59,9 +55,7 @@ static int imx27ads_timing_init(void)
 	writew(0x66ca, 0xc0000aaa);
 	writew(0x00f0, 0xc0000000);
 
-	CS0U = 0x23524E80;
-	CS0L = 0x10000D03;
-	CS0A = 0x00720900;
+	imx27_setup_weimcs(0, 0x23524E80, 0x10000D03, 0x00720900);
 
 	/* Select FEC data through data path */
 	writew(0x0020, IMX_CS4_BASE + 0x10);

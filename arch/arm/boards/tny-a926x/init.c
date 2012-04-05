@@ -156,7 +156,7 @@ static void tny_a9260_phy_reset(void)
 static void __init ek_add_device_macb(void)
 {
 	tny_a9260_phy_reset();
-	at91_add_device_eth(&macb_pdata);
+	at91_add_device_eth(0, &macb_pdata);
 }
 #else
 static void __init ek_add_device_macb(void) {}

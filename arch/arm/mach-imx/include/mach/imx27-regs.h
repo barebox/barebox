@@ -19,12 +19,15 @@
 #define IMX_SPI1_BASE              (0x0e000 + IMX_IO_BASE)
 #define IMX_SPI2_BASE              (0x0f000 + IMX_IO_BASE)
 #define IMX_I2C1_BASE              (0x12000 + IMX_IO_BASE)
+#define IMX_SDHC1_BASE             (0x13000 + IMX_IO_BASE)
+#define IMX_SDHC2_BASE             (0x14000 + IMX_IO_BASE)
 #define IMX_GPIO_BASE              (0x15000 + IMX_IO_BASE)
 #define IMX_TIM4_BASE              (0x19000 + IMX_IO_BASE)
 #define IMX_TIM5_BASE              (0x1a000 + IMX_IO_BASE)
 #define IMX_UART5_BASE             (0x1b000 + IMX_IO_BASE)
 #define IMX_UART6_BASE             (0x1c000 + IMX_IO_BASE)
 #define IMX_I2C2_BASE              (0x1d000 + IMX_IO_BASE)
+#define IMX_SDHC3_BASE             (0x1e000 + IMX_IO_BASE)
 #define IMX_TIM6_BASE              (0x1f000 + IMX_IO_BASE)
 #define IMX_AIPI2_BASE             (0x20000 + IMX_IO_BASE)
 #define IMX_FB_BASE                (0x21000 + IMX_IO_BASE)
@@ -63,24 +66,9 @@
 #define GPCR_BOOT_8BIT_NAND_512		7
 
 /* Chip Select Registers */
-#define CS0U __REG(IMX_WEIM_BASE + 0x00) /* Chip Select 0 Upper Register    */
-#define CS0L __REG(IMX_WEIM_BASE + 0x04) /* Chip Select 0 Lower Register    */
-#define CS0A __REG(IMX_WEIM_BASE + 0x08) /* Chip Select 0 Addition Register */
-#define CS1U __REG(IMX_WEIM_BASE + 0x10) /* Chip Select 1 Upper Register    */
-#define CS1L __REG(IMX_WEIM_BASE + 0x14) /* Chip Select 1 Lower Register    */
-#define CS1A __REG(IMX_WEIM_BASE + 0x18) /* Chip Select 1 Addition Register */
-#define CS2U __REG(IMX_WEIM_BASE + 0x20) /* Chip Select 2 Upper Register    */
-#define CS2L __REG(IMX_WEIM_BASE + 0x24) /* Chip Select 2 Lower Register    */
-#define CS2A __REG(IMX_WEIM_BASE + 0x28) /* Chip Select 2 Addition Register */
-#define CS3U __REG(IMX_WEIM_BASE + 0x30) /* Chip Select 3 Upper Register    */
-#define CS3L __REG(IMX_WEIM_BASE + 0x34) /* Chip Select 3 Lower Register    */
-#define CS3A __REG(IMX_WEIM_BASE + 0x38) /* Chip Select 3 Addition Register */
-#define CS4U __REG(IMX_WEIM_BASE + 0x40) /* Chip Select 4 Upper Register    */
-#define CS4L __REG(IMX_WEIM_BASE + 0x44) /* Chip Select 4 Lower Register    */
-#define CS4A __REG(IMX_WEIM_BASE + 0x48) /* Chip Select 4 Addition Register */
-#define CS5U __REG(IMX_WEIM_BASE + 0x50) /* Chip Select 5 Upper Register    */
-#define CS5L __REG(IMX_WEIM_BASE + 0x54) /* Chip Select 5 Lower Register    */
-#define CS5A __REG(IMX_WEIM_BASE + 0x58) /* Chip Select 5 Addition Register */
+#define CSxU(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x00) /* Chip Select x Upper Register    */
+#define CSxL(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x04) /* Chip Select x Lower Register    */
+#define CSxA(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x08) /* Chip Select x Addition Register */
 #define EIM  __REG(IMX_WEIM_BASE + 0x60) /* WEIM Configuration Register     */
 
 #include "esdctl.h"
@@ -251,5 +239,12 @@
 #define IMX_CS3_BASE	0xD2000000
 #define IMX_CS4_BASE	0xD4000000
 #define IMX_CS5_BASE	0xD6000000
+
+static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned addional)
+{
+	CSxU(cs) = upper;
+	CSxL(cs) = lower;
+	CSxA(cs) = addional;
+}
 
 #endif /* _IMX27_REGS_H */

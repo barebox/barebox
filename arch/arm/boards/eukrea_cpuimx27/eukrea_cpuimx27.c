@@ -30,6 +30,7 @@
 #include <notifier.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <generated/mach-types.h>
 #include <mach/pmic.h>
 #include <partition.h>
@@ -184,9 +185,7 @@ static int eukrea_cpuimx27_devices_init(void)
 	};
 
 	/* configure 16 bit nor flash on cs0 */
-	CS0U = 0x00008F03;
-	CS0L = 0xA0330D01;
-	CS0A = 0x002208C0;
+	imx27_setup_weimcs(0, 0x00008F03, 0xA0330D01, 0x002208C0);
 
 	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -232,9 +231,7 @@ static int eukrea_cpuimx27_console_init(void)
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
-	CS3U = 0x0000D603;
-	CS3L = 0x0D1D0D01;
-	CS3A = 0x00D20000;
+	imx27_setup_weimcs(3, 0x0000D603, 0x0D1D0D01, 0x00D20000);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	add_ns16550_device(-1, IMX_CS3_BASE + QUART_OFFSET, 0xf,
 			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
@@ -268,7 +265,7 @@ late_initcall(eukrea_cpuimx27_late_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, 256 * 1024);
+	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
 }
 #endif
 

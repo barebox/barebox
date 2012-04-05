@@ -68,12 +68,12 @@ mem_initcall(pcm049_mem_init);
 
 static struct gpmc_config net_cfg = {
 	.cfg = {
-		0x00001000,	/* CONF1 */
-		0x001e1e01,	/* CONF2 */
-		0x00080300,	/* CONF3 */
-		0x1c091c09,	/* CONF4 */
-		0x04181f1f,	/* CONF5 */
-		0x00000FCF,	/* CONF6 */
+		0xc1001000,	/* CONF1 */
+		0x00070700,	/* CONF2 */
+		0x00000000,	/* CONF3 */
+		0x07000700,	/* CONF4 */
+		0x09060909,	/* CONF5 */
+		0x000003c2,	/* CONF6 */
 	},
 	.base = 0x2C000000,
 	.size = GPMC_SIZE_16M,
@@ -106,7 +106,8 @@ static int pcm049_devices_init(void)
 
 	pcm049_network_init();
 
-	gpmc_generic_nand_devices_init(0, 8, OMAP_ECC_BCH8_CODE_HW);
+	gpmc_generic_nand_devices_init(0, 8,
+			OMAP_ECC_BCH8_CODE_HW, &omap4_nand_cfg);
 
 #ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "xload_raw");

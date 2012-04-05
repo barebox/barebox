@@ -21,6 +21,8 @@
 #include <led.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
+/* How often do we retry to send packages */
+#define PKT_NUM_RETRIES 4
 
 /* The number of receive packet buffers */
 #define PKTBUFSRX	4
@@ -277,7 +279,11 @@ char *ip_to_string (IPaddr_t x, char *s);
 /* Convert a string to ip address */
 int string_to_ip(const char *s, IPaddr_t *ip);
 
-IPaddr_t getenv_ip(const char *name);
+IPaddr_t getenv_ip_dns(const char *name, int dns);
+static inline IPaddr_t getenv_ip(const char *name)
+{
+	return getenv_ip_dns(name, 0);
+}
 int setenv_ip(const char *name, IPaddr_t ip);
 
 int string_to_ethaddr(const char *str, char *enetaddr);

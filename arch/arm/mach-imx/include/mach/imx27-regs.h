@@ -240,11 +240,13 @@
 #define IMX_CS4_BASE	0xD4000000
 #define IMX_CS5_BASE	0xD6000000
 
+#ifndef __ASSEMBLY__
 static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned addional)
 {
 	CSxU(cs) = upper;
 	CSxL(cs) = lower;
 	CSxA(cs) = addional;
 }
+#endif /* __ASSEMBLY__ */
 
 #endif /* _IMX27_REGS_H */

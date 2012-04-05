@@ -296,9 +296,9 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
 
 #if defined(CONFIG_DRIVER_SPI_ATMEL)
 /* SPI */
-static const unsigned spi0_standard_cs[4] = { AT91_PIN_PB3, AT91_PIN_PB18, AT91_PIN_PB19, AT91_PIN_PD27 };
+static unsigned spi0_standard_cs[4] = { AT91_PIN_PB3, AT91_PIN_PB18, AT91_PIN_PB19, AT91_PIN_PD27 };
 
-static const unsigned spi1_standard_cs[4] = { AT91_PIN_PB17, AT91_PIN_PD28, AT91_PIN_PD18, AT91_PIN_PD19 };
+static unsigned spi1_standard_cs[4] = { AT91_PIN_PB17, AT91_PIN_PD28, AT91_PIN_PD18, AT91_PIN_PD19 };
 
 static struct at91_spi_platform_data spi_pdata[] = {
 	[0] = {

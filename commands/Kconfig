@@ -222,8 +222,7 @@ config CMD_LOADB
 
 config CMD_LOADY
 	select CRC16
-	depends on EXPERIMENTAL
-	bool
+	tristate
 	prompt "loady"
 
 config CMD_LOADS

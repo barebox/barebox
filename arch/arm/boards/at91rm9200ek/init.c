@@ -28,6 +28,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <sizes.h>
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
@@ -116,7 +117,7 @@ static int at91rm9200ek_devices_init(void)
 
 	at91_add_device_eth(0, &ether_pdata);
 
-	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
+	add_cfi_flash_device(0, AT91_CHIPSELECT_0, SZ_8M, 0);
 	/* USB Host */
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_device_add_leds();

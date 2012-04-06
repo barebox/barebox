@@ -37,7 +37,7 @@ config DRIVER_VIDEO_S3C24XX
 	help
 	  Add support for the S3C244x LCD controller.
 
-if DRIVER_VIDEO_S3C
+if DRIVER_VIDEO_S3C24XX
 
 config DRIVER_VIDEO_S3C_VERBOSE
 	bool "S3C244x verbose framebuffer info"

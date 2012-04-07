@@ -24,11 +24,15 @@ if [ -f /env/bin/init_board ]; then
 	. /env/bin/init_board
 fi
 
-echo
-echo -n "Hit any key to stop autoboot: "
-timeout -a $autoboot_timeout
-if [ $? != 0 ]; then
-	exit
-fi
+if [ -f /env/bin/boot_board ]; then
+	. /env/bin/boot_board
+else
+	echo
+	echo -n "Hit any key to stop autoboot: "
+	timeout -a $autoboot_timeout
+	if [ $? != 0 ]; then
+		exit
+	fi
 
-boot
+	boot
+fi

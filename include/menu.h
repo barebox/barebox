@@ -61,6 +61,9 @@ struct menu {
 
 	int nb_entries;
 	int width;
+	char *display_buffer;
+	int display_buffer_size;
+
 	struct menu_entry *selected;
 	void *priv;
 };

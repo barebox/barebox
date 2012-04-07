@@ -31,6 +31,7 @@
 #include <readkey.h>
 #include <clock.h>
 #include <linux/err.h>
+#include <libbb.h>
 
 static LIST_HEAD(menus);
 
@@ -52,6 +53,7 @@ void menu_free(struct menu *m)
 	free(m->name);
 	free(m->display);
 	free(m->auto_display);
+	free(m->display_buffer);
 
 	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
@@ -162,8 +164,6 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 			     int selected)
 {
 	gotoXY(me->num + 1, 3);
-	if (selected)
-		printf("\e[7m");
 
 	if (me->type == MENU_ENTRY_BOX) {
 		if (me->box_state)
@@ -174,10 +174,15 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 		puts("   ");
 	}
 
-	printf(" %d: %-*s", me->num, m->width, me->display);
+	process_escape_sequence(me->display, m->display_buffer,
+				m->display_buffer_size);
+	printf(" %d: ", me->num);
+	if (selected)
+		puts("\e[7m");
+	puts(m->display_buffer);
 
 	if (selected)
-		printf("\e[m");
+		puts("\e[m");
 }
 
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me)
@@ -231,7 +236,9 @@ static void print_menu(struct menu *m)
 	clear();
 	gotoXY(1, 2);
 	if(m->display) {
-		puts(m->display);
+		process_escape_sequence(m->display, m->display_buffer,
+					m->display_buffer_size);
+		puts(m->display_buffer);
 	} else {
 		puts("Menu : ");
 		puts(m->name);
@@ -250,6 +257,34 @@ static void print_menu(struct menu *m)
 	print_menu_entry(m, m->selected, 1);
 }
 
+static int menu_alloc_display_buffer(struct menu *m)
+{
+	int min_size;
+
+	if (m->display)
+		min_size = max((int)strlen(m->display), m->width);
+	else
+		min_size = m->width;
+
+
+	if (m->display_buffer) {
+		if (m->display_buffer_size >= min_size)
+			return 0;
+		m->display_buffer = realloc(m->display_buffer, min_size * sizeof(char));
+	} else {
+		m->display_buffer = calloc(min_size, sizeof(char));
+	}
+
+	if (!m->display_buffer) {
+		perror("display_buffer");
+		return -ENOMEM;
+	}
+
+	m->display_buffer_size = min_size;
+
+	return 0;
+}
+
 int menu_show(struct menu *m)
 {
 	int ch;
@@ -257,9 +292,14 @@ int menu_show(struct menu *m)
 	int countdown;
 	int auto_display_len = 16;
 	uint64_t start, second;
+	int ret;
 
 	if(!m || list_empty(&m->entries))
 		return -EINVAL;
+
+	ret = menu_alloc_display_buffer(m);
+	if (ret)
+		return ret;
 
 	print_menu(m);
 

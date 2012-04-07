@@ -1,0 +1,37 @@
+#!/bin/sh
+
+. /env/config
+
+while getopt "k:r:i:m:" Option
+do
+if [ ${Option} = k ]; then
+	kernel_loc=${OPTARG}
+elif [ ${Option} = r ]; then
+	rootfs_loc=${OPTARG}
+elif [ ${Option} = i ]; then
+	ip=${OPTARG}
+elif [ ${Option} = m ]; then
+	mode=${OPTARG}
+else
+fi
+done
+
+boot_opt=
+
+if [ x$mode != x ]; then
+	boot_opt="-m ${mode}"
+else
+	if [ x$kernel_loc != x ]; then
+		boot_opt="-k ${kernel_loc}"
+	fi
+	if [ x$kernel_loc != x ]; then
+		boot_opt="-r ${rootfs_loc}"
+	fi
+fi
+
+boot ${boot_opt} -i ${ip}
+
+echo -n "boot error: Hit any key to return to the menu: "
+timeout -a 3
+menu -s -m boot
+exit 1

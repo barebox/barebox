@@ -135,7 +135,7 @@ static int pcm038_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
 
-	add_mem_device("ram0", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
+	add_mem_device("ram1", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
 				   IORESOURCE_MEM_WRITEABLE);
 	return 0;
 }

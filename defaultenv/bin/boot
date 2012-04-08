@@ -50,6 +50,9 @@ if [ x$ip = xdhcp -o x$ip = "xdhcp-barebox" ]; then
 		if [ x$bootfile != x ]; then
 			kernelimage=$bootfile
 		fi
+		if [ x$dhcp_oftree_file != x ]; then
+			oftreeimage=$dhcp_oftree_file
+		fi
 	fi
 fi
 

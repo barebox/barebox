@@ -201,6 +201,10 @@ struct dhcp_opt dhcp_options[] = {
 		.option = 67,
 		.handle = bootfile_vendorex_handle,
 		.barebox_var_name = "bootfile",
+	}, {
+		.option = 224,
+		.handle = env_str_handle,
+		.barebox_var_name = "dhcp_oftree_file",
 	},
 };
 
@@ -702,3 +706,4 @@ BAREBOX_MAGICVAR(dhcp_client_uuid, "cliend uuid to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_client_id, "cliend id to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_user_class, "user class to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_tftp_server_name, "TFTP server Name returned from DHCP request");
+BAREBOX_MAGICVAR(dhcp_oftree_file, "OF tree returned from DHCP request (option 224)");

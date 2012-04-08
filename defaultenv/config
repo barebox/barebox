@@ -21,6 +21,8 @@ dhcp_vendor_id=barebox
 kernel_loc=tftp
 # can be either 'net', 'nand', 'nor', 'disk' or 'initrd'
 rootfs_loc=net
+# can be either 'tftp', 'nfs', 'nand', 'nor', 'disk' or none
+oftree_loc=tftp
 
 # for flash based rootfs: 'jffs2' or 'ubifs'
 # in case of disk any regular filesystem like 'ext2', 'ext3', 'reiserfs'

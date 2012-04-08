@@ -6,12 +6,14 @@ if [ x$kernel_loc = xnet ]; then
 	kernel_loc=tftp
 fi
 
-while getopt "hk:r:i:m:" Option
+while getopt "hk:r:i:m:o:" Option
 do
 if [ ${Option} = k ]; then
 	kernel_loc=${OPTARG}
 elif [ ${Option} = r ]; then
 	rootfs_loc=${OPTARG}
+elif [ ${Option} = o ]; then
+	oftree_loc=${OPTARG}
 elif [ ${Option} = i ]; then
 	ip=${OPTARG}
 elif [ ${Option} = m ]; then
@@ -113,6 +115,19 @@ else
 	echo "error: set kernel_loc to one of 'tftp', 'nfs', 'nand', 'nor' or 'disk'"
 	exit 1
 fi
+
+if [ x$oftree_loc = xnfs -o x$oftree_loc = xtftp ]; then
+	odev=/oftree
+	$oftree_loc $oftreeimage $odev || exit 1
+elif [ x$oftree_loc = xnor ]; then
+	odev="/dev/nor0.oftree"
+elif [ x$oftree_loc = xnand ]; then
+	odev="/dev/nand0.oftree.bb"
+elif [ x$oftree_loc = xdisk ]; then
+	odev="/dev/$oftree_part"
+fi
+
+[ x$odev = x ] || bootm_opt="$bootm_opt -o $odev"
 
 echo "booting kernel from $kdev"
 

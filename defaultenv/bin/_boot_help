@@ -1,9 +1,10 @@
 #!/bin/sh
 
-echo "boot: boot [-m <mode>] [-k <kernel_option>] [-r <rootfs_option>] [-i <ip_mode>]"
+echo "boot: boot [-m <mode>] [-k <kernel_option>] [-r <rootfs_option>] [-i <ip_mode>] [-o <oftree_option]"
 echo ""
 echo "options"
 echo " - kernel        nand, nor, nfs, tftp, disk"
+echo " - oftree        nand, nor, nfs, tftp, disk or empty"
 echo " - rootfs        nand, nor, net, disk"
 echo " - ip            dhcp, dhcp-barebox none, empty"
 echo ""

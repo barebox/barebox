@@ -95,7 +95,7 @@ enum mc13xxx_mode {
 	MC13XXX_MODE_SPI,
 };
 
-struct mc13892 {
+struct mc13xxx {
 	struct cdev		cdev;
 	struct i2c_client	*client;
 	struct spi_device	*spi;
@@ -103,15 +103,15 @@ struct mc13892 {
 	int			revision;
 };
 
-extern struct mc13892 *mc13892_get(void);
+extern struct mc13xxx *mc13xxx_get(void);
 
-extern int mc13892_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val);
-extern int mc13892_reg_write(struct mc13892 *mc13892, u8 reg, u32 val);
-extern int mc13892_set_bits(struct mc13892 *mc13892, u8 reg, u32 mask, u32 val);
+extern int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val);
+extern int mc13xxx_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val);
+extern int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u32 val);
 
-static inline int mc13892_get_revision(struct mc13892 *mc13892)
+static inline int mc13xxx_get_revision(struct mc13xxx *mc13xxx)
 {
-	return mc13892->revision;
+	return mc13xxx->revision;
 }
 
 #endif /* __MFD_MC13XXX_H */

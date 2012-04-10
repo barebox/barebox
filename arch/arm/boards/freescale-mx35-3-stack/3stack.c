@@ -353,33 +353,33 @@ static int f3s_core_init(void)
 
 core_initcall(f3s_core_init);
 
-static int f3s_get_rev(struct mc13892 *mc13892)
+static int f3s_get_rev(struct mc13xxx *mc13xxx)
 {
 	u32 rev;
 	int err;
 
-	err = mc13892_reg_read(mc13892, MC13892_REG_IDENTIFICATION, &rev);
+	err = mc13xxx_reg_read(mc13xxx, MC13892_REG_IDENTIFICATION, &rev);
 	if (err)
 		return err;
 
-	dev_info(&mc13892->client->dev, "revision: 0x%x\n", rev);
+	dev_info(&mc13xxx->client->dev, "revision: 0x%x\n", rev);
 	if (rev == 0x00ffffff)
 		return -ENODEV;
 
 	return ((rev >> 6) & 0x7) ? MX35PDK_BOARD_REV_2 : MX35PDK_BOARD_REV_1;
 }
 
-static int f3s_pmic_init_v2(struct mc13892 *mc13892)
+static int f3s_pmic_init_v2(struct mc13xxx *mc13xxx)
 {
 	int err = 0;
 
 	/* COMPARE pin (GPIO1_5) as output and set high */
 	gpio_direction_output( 32*0 + 5 , 1);
 
-	err |= mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x03, 0x03);
-	err |= mc13892_set_bits(mc13892, MC13892_REG_MODE_0, 0x01, 0x01);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_SETTING_0, 0x03, 0x03);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_MODE_0, 0x01, 0x01);
 	if (err)
-		dev_err(&mc13892->client->dev,
+		dev_err(&mc13xxx->client->dev,
 			"Init sequence failed, the system might not be working!\n");
 
 	return err;
@@ -404,22 +404,22 @@ static int f3s_pmic_init_all(struct mc9sdz60 *mc9sdz60)
 
 static int f3s_pmic_init(void)
 {
-	struct mc13892 *mc13892;
+	struct mc13xxx *mc13xxx;
 	struct mc9sdz60 *mc9sdz60;
 	int rev;
 
-	mc13892 = mc13892_get();
-	if (!mc13892) {
-		printf("FAILED to get mc13xxx handle!\n");
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx) {
+		printf("FAILED to get PMIC handle!\n");
 		return 0;
 	}
 
-	rev = f3s_get_rev(mc13892);
+	rev = f3s_get_rev(mc13xxx);
 	switch (rev) {
 	case MX35PDK_BOARD_REV_1:
 		break;
 	case MX35PDK_BOARD_REV_2:
-		f3s_pmic_init_v2(mc13892);
+		f3s_pmic_init_v2(mc13xxx);
 		break;
 	default:
 		printf("FAILED to identify board revision!\n");

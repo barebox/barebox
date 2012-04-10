@@ -32,18 +32,18 @@
 
 #define DRIVERNAME		"mc13xxx"
 
-#define to_mc13892(a)		container_of(a, struct mc13892, cdev)
+#define to_mc13xxx(a)		container_of(a, struct mc13xxx, cdev)
 
-static struct mc13892 *mc_dev;
+static struct mc13xxx *mc_dev;
 
-struct mc13892 *mc13892_get(void)
+struct mc13xxx *mc13xxx_get(void)
 {
 	if (!mc_dev)
 		return NULL;
 
 	return mc_dev;
 }
-EXPORT_SYMBOL(mc13892_get);
+EXPORT_SYMBOL(mc13xxx_get);
 
 #ifdef CONFIG_SPI
 static int spi_rw(struct spi_device *spi, void * buf, size_t len)
@@ -70,42 +70,42 @@ static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 #define MXC_PMIC_REG_NUM(reg)	(((reg) & 0x3f) << 25)
 #define MXC_PMIC_WRITE		(1 << 31)
 
-static int mc13892_spi_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
+static int mc13xxx_spi_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val)
 {
 	uint32_t buf;
 
 	buf = MXC_PMIC_REG_NUM(reg);
 
-	spi_rw(mc13892->spi, &buf, 4);
+	spi_rw(mc13xxx->spi, &buf, 4);
 
 	*val = buf;
 
 	return 0;
 }
 
-static int mc13892_spi_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
+static int mc13xxx_spi_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val)
 {
 	uint32_t buf = MXC_PMIC_REG_NUM(reg) | MXC_PMIC_WRITE | (val & 0xffffff);
 
-	spi_rw(mc13892->spi, &buf, 4);
+	spi_rw(mc13xxx->spi, &buf, 4);
 
 	return 0;
 }
 #endif
 
 #ifdef CONFIG_I2C
-static int mc13892_i2c_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
+static int mc13xxx_i2c_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val)
 {
 	u8 buf[3];
 	int ret;
 
-	ret = i2c_read_reg(mc13892->client, reg, buf, 3);
+	ret = i2c_read_reg(mc13xxx->client, reg, buf, 3);
 	*val = buf[0] << 16 | buf[1] << 8 | buf[2] << 0;
 
 	return ret == 3 ? 0 : ret;
 }
 
-static int mc13892_i2c_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
+static int mc13xxx_i2c_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val)
 {
 	u8 buf[] = {
 		val >> 16,
@@ -114,58 +114,58 @@ static int mc13892_i2c_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 	};
 	int ret;
 
-	ret = i2c_write_reg(mc13892->client, reg, buf, 3);
+	ret = i2c_write_reg(mc13xxx->client, reg, buf, 3);
 
 	return ret == 3 ? 0 : ret;
 }
 #endif
 
-int mc13892_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
+int mc13xxx_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val)
 {
 #ifdef CONFIG_I2C
 	if (mc13xxx->mode == MC13XXX_MODE_I2C)
-		return mc13892_i2c_reg_write(mc13892, reg, val);
+		return mc13xxx_i2c_reg_write(mc13xxx, reg, val);
 #endif
 #ifdef CONFIG_SPI
 	if (mc13xxx->mode == MC13XXX_MODE_SPI)
-		return mc13892_spi_reg_write(mc13892, reg, val);
+		return mc13xxx_spi_reg_write(mc13xxx, reg, val);
 #endif
 	return -EINVAL;
 }
-EXPORT_SYMBOL(mc13892_reg_write);
+EXPORT_SYMBOL(mc13xxx_reg_write);
 
-int mc13892_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
+int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val)
 {
 #ifdef CONFIG_I2C
 	if (mc13xxx->mode == MC13XXX_MODE_I2C)
-		return mc13892_i2c_reg_read(mc13892, reg, val);
+		return mc13xxx_i2c_reg_read(mc13xxx, reg, val);
 #endif
 #ifdef CONFIG_SPI
 	if (mc13xxx->mode == MC13XXX_MODE_SPI)
-		return mc13892_spi_reg_read(mc13892, reg, val);
+		return mc13xxx_spi_reg_read(mc13xxx, reg, val);
 #endif
 	return -EINVAL;
 }
-EXPORT_SYMBOL(mc13892_reg_read);
+EXPORT_SYMBOL(mc13xxx_reg_read);
 
-int mc13892_set_bits(struct mc13892 *mc13892, u8 reg, u32 mask, u32 val)
+int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u32 val)
 {
 	u32 tmp;
 	int err;
 
-	err = mc13892_reg_read(mc13892, reg, &tmp);
+	err = mc13xxx_reg_read(mc13xxx, reg, &tmp);
 	tmp = (tmp & ~mask) | val;
 
 	if (!err)
-		err = mc13892_reg_write(mc13892, reg, tmp);
+		err = mc13xxx_reg_write(mc13xxx, reg, tmp);
 
 	return err;
 }
-EXPORT_SYMBOL(mc13892_set_bits);
+EXPORT_SYMBOL(mc13xxx_set_bits);
 
 static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
 {
-	struct mc13892 *priv = to_mc13892(cdev);
+	struct mc13xxx *priv = to_mc13xxx(cdev);
 	u32 *buf = _buf;
 	size_t i = count >> 2;
 	int err;
@@ -173,7 +173,7 @@ static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset
 	offset >>= 2;
 
 	while (i) {
-		err = mc13892_reg_read(priv, offset, buf);
+		err = mc13xxx_reg_read(priv, offset, buf);
 		if (err)
 			return (ssize_t)err;
 		buf++;
@@ -186,7 +186,7 @@ static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset
 
 static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
 {
-	struct mc13892 *mc13892 = to_mc13892(cdev);
+	struct mc13xxx *mc13xxx = to_mc13xxx(cdev);
 	const u32 *buf = _buf;
 	size_t i = count >> 2;
 	int err;
@@ -194,7 +194,7 @@ static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, ulong
 	offset >>= 2;
 
 	while (i) {
-		err = mc13892_reg_write(mc13892, offset, *buf);
+		err = mc13xxx_reg_write(mc13xxx, offset, *buf);
 		if (err)
 			return (ssize_t)err;
 		buf++;
@@ -231,13 +231,13 @@ static struct mc13892_rev mc13892_revisions[] = {
 	{ 0x1d, MC13892_REVISION_3_5, "3.5" },
 };
 
-static int mc13893_query_revision(struct mc13892 *mc13892)
+static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 {
 	unsigned int rev_id;
 	char *revstr;
 	int rev, i;
 
-	mc13892_reg_read(mc13892, MC13892_REG_IDENTIFICATION, &rev_id);
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_IDENTIFICATION, &rev_id);
 
 	for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
 		if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
@@ -259,7 +259,7 @@ static int mc13893_query_revision(struct mc13892 *mc13892)
 	dev_info(mc_dev->cdev.dev, "PMIC ID: 0x%08x [Rev: %s]\n",
 			rev_id, revstr);
 
-	mc13892->revision = rev;
+	mc13xxx->revision = rev;
 
 	return rev;
 }
@@ -271,7 +271,7 @@ static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 	if (mc_dev)
 		return -EBUSY;
 
-	mc_dev = xzalloc(sizeof(struct mc13892));
+	mc_dev = xzalloc(sizeof(struct mc13xxx));
 	mc_dev->mode = mode;
 	mc_dev->cdev.name = DRIVERNAME;
 	if (mode == MC13XXX_MODE_I2C) {
@@ -286,7 +286,7 @@ static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 	mc_dev->cdev.dev = dev;
 	mc_dev->cdev.ops = &mc_fops;
 
-	rev = mc13893_query_revision(mc_dev);
+	rev = mc13xxx_query_revision(mc_dev);
 	if (rev < 0) {
 		free(mc_dev);
 		return -EINVAL;

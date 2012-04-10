@@ -57,6 +57,9 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 	int retcode;
 	void *src = (void*)cp;
 	void *dst = (void *)dest;
+	/* reduce width due to possible alignment problems */
+	const unsigned long ptr = (unsigned long)dest | (unsigned long)cp | info->portwidth;
+	const int width = ptr & -ptr;
 
 	sector = find_sector (info, dest);
 	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
@@ -68,22 +71,27 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 		return retcode;
 
 	/* reduce the number of loops by the width of the port	*/
-	cnt = len >> (info->portwidth - 1);
+	cnt = len / width;
 
-	flash_write_cmd(info, sector, 0, (u32)cnt - 1);
+	flash_write_cmd(info, sector, 0, cnt - 1);
 	while (cnt-- > 0) {
-		if (bankwidth_is_1(info)) {
+		switch (width) {
+		case 1:
 			flash_write8(flash_read8(src), dst);
 			src += 1, dst += 1;
-		} else if (bankwidth_is_2(info)) {
+			break;
+		case 2:
 			flash_write16(flash_read16(src), dst);
 			src += 2, dst += 2;
-		} else if (bankwidth_is_4(info)) {
+			break;
+		case 4:
 			flash_write32(flash_read32(src), dst);
 			src += 4, dst += 4;
-		} else if (bankwidth_is_8(info)) {
+			break;
+		case 8:
 			flash_write64(flash_read64(src), dst);
 			src += 8, dst += 8;
+			break;
 		}
 	}
 

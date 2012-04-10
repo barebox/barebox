@@ -17,19 +17,21 @@ ip=dhcp-barebox
 kernel_loc=nand
 # can be either 'net', 'nor', 'nand' or 'initrd'
 rootfs_loc=nand
+# can be either 'nfs', 'tftp', 'nor', 'nand' or empty
+oftree_loc=nand
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
 rootfsimage=root.$rootfs_type
 
-#kernelimage=zImage
-kernelimage=uImage
+kernelimage=zImage
+#kernelimage=uImage
 #kernelimage=Image
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand
-nand_parts="128k(at91bootstrap),256k(barebox)ro,128k(bareboxenv),128k(bareboxenv2),4M(kernel),120M(rootfs),-(data)"
-rootfs_mtdblock_nand=5
+nand_parts="128k(at91bootstrap),256k(barebox)ro,128k(bareboxenv),128k(bareboxenv2),128k(oftree),4M(kernel),120M(rootfs),-(data)"
+rootfs_mtdblock_nand=6
 
 autoboot_timeout=3
 

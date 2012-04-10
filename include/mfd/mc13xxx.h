@@ -92,16 +92,16 @@ enum mc13892_revision {
 	MC13892_REVISION_3_5,
 };
 
-enum mc13892_mode {
-	MC13892_MODE_I2C,
-	MC13892_MODE_SPI,
+enum mc13xxx_mode {
+	MC13XXX_MODE_I2C,
+	MC13XXX_MODE_SPI,
 };
 
 struct mc13892 {
 	struct cdev		cdev;
 	struct i2c_client	*client;
 	struct spi_device	*spi;
-	enum mc13892_mode	mode;
+	enum mc13xxx_mode	mode;
 	enum mc13892_revision	revision;
 };
 

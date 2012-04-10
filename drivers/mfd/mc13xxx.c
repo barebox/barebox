@@ -123,11 +123,11 @@ static int mc13892_i2c_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 int mc13892_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 {
 #ifdef CONFIG_I2C
-	if (mc13892->mode == MC13892_MODE_I2C)
+	if (mc13xxx->mode == MC13XXX_MODE_I2C)
 		return mc13892_i2c_reg_write(mc13892, reg, val);
 #endif
 #ifdef CONFIG_SPI
-	if (mc13892->mode == MC13892_MODE_SPI)
+	if (mc13xxx->mode == MC13XXX_MODE_SPI)
 		return mc13892_spi_reg_write(mc13892, reg, val);
 #endif
 	return -EINVAL;
@@ -137,11 +137,11 @@ EXPORT_SYMBOL(mc13892_reg_write);
 int mc13892_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
 {
 #ifdef CONFIG_I2C
-	if (mc13892->mode == MC13892_MODE_I2C)
+	if (mc13xxx->mode == MC13XXX_MODE_I2C)
 		return mc13892_i2c_reg_read(mc13892, reg, val);
 #endif
 #ifdef CONFIG_SPI
-	if (mc13892->mode == MC13892_MODE_SPI)
+	if (mc13xxx->mode == MC13XXX_MODE_SPI)
 		return mc13892_spi_reg_read(mc13892, reg, val);
 #endif
 	return -EINVAL;
@@ -264,7 +264,7 @@ static int mc13893_query_revision(struct mc13892 *mc13892)
 	return rev;
 }
 
-static int mc_probe(struct device_d *dev, enum mc13892_mode mode)
+static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 {
 	int rev;
 
@@ -274,10 +274,10 @@ static int mc_probe(struct device_d *dev, enum mc13892_mode mode)
 	mc_dev = xzalloc(sizeof(struct mc13892));
 	mc_dev->mode = mode;
 	mc_dev->cdev.name = DRIVERNAME;
-	if (mode == MC13892_MODE_I2C) {
+	if (mode == MC13XXX_MODE_I2C) {
 		mc_dev->client = to_i2c_client(dev);
 	}
-	if (mode == MC13892_MODE_SPI) {
+	if (mode == MC13XXX_MODE_SPI) {
 		mc_dev->spi = dev->type_data;
 		mc_dev->spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
 		mc_dev->spi->bits_per_word = 32;
@@ -299,12 +299,12 @@ static int mc_probe(struct device_d *dev, enum mc13892_mode mode)
 
 static int mc_i2c_probe(struct device_d *dev)
 {
-	return mc_probe(dev, MC13892_MODE_I2C);
+	return mc_probe(dev, MC13XXX_MODE_I2C);
 }
 
 static int mc_spi_probe(struct device_d *dev)
 {
-	return mc_probe(dev, MC13892_MODE_SPI);
+	return mc_probe(dev, MC13XXX_MODE_SPI);
 }
 
 static struct driver_d mc_i2c_driver = {

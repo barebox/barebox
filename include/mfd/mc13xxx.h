@@ -132,6 +132,24 @@
 #define MC13892_REVISION_3_3		10
 #define MC13892_REVISION_3_5		11
 
+#define MC13783_SWX_VOLTAGE(x)		((x) & 0x3f)
+#define MC13783_SWX_VOLTAGE_DVS(x)	(((x) & 0x3f) << 6)
+#define MC13783_SWX_VOLTAGE_STANDBY(x)	(((x) & 0x3f) << 12)
+#define MC13783_SWX_VOLTAGE_1_450	0x16
+
+#define MC13783_SWX_MODE_OFF		0
+#define MC13783_SWX_MODE_NO_PULSE_SKIP	1
+#define MC13783_SWX_MODE_PULSE_SKIP	2
+#define MC13783_SWX_MODE_LOW_POWER_PFM	3
+
+#define MC13783_SW1A_MODE(x)		(((x) & 0x3) << 0)
+#define MC13783_SW1A_MODE_STANDBY(x)	(((x) & 0x3) << 2)
+#define MC13783_SW1B_MODE(x)		(((x) & 0x3) << 10)
+#define MC13783_SW1B_MODE_STANDBY(x)	(((x) & 0x3) << 12)
+#define MC13783_SW1A_SOFTSTART		(1 << 9)
+#define MC13783_SW1B_SOFTSTART		(1 << 17)
+#define MC13783_SW_PLL_FACTOR(x)	(((x) - 28) << 19)
+
 enum mc13xxx_mode {
 	MC13XXX_MODE_I2C,
 	MC13XXX_MODE_SPI,

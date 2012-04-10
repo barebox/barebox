@@ -241,6 +241,16 @@ static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 
 	/* Determine chip type by decode ICID bits */
 	switch ((rev_id >> 6) & 0x7) {
+	case 2:
+		chipname = "MC13783";
+		rev = (((rev_id & 0x18) >> 3) << 4) | (rev_id & 0x7);
+		/* Ver 0.2 is actually 3.2a. Report as 3.2 */
+		if (rev == 0x02) {
+			rev = 0x32;
+			revstr = "3.2a";
+		} else
+			revstr = asprintf("%d.%d", rev / 0x10, rev % 10);
+		break;
 	case 7:
 		chipname = "MC13892";
 		for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)

@@ -6,4 +6,3 @@ obj-$(CONFIG_I2C_LP3972) += lp3972.o
 obj-$(CONFIG_I2C_TWLCORE) += twl-core.o
 obj-$(CONFIG_I2C_TWL4030) += twl4030.o
 obj-$(CONFIG_I2C_TWL6030) += twl6030.o
-obj-$(CONFIG_DRIVER_SPI_MC13783) += mc13783.o

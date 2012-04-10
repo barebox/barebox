@@ -32,7 +32,6 @@
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <generated/mach-types.h>
-#include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>

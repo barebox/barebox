@@ -48,7 +48,6 @@
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
-#include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <i2c/i2c.h>

@@ -338,7 +338,7 @@ config MACH_FREESCALE_MX35_3STACK
 	select MACH_HAS_LOWLEVEL_INIT
 	select I2C
 	select I2C_IMX
-	select I2C_MC13892
+	select MFD_MC13XXX
 	select I2C_MC9SDZ60
 	help
 	  Say Y here if you are using the Freescale MX35 3stack board equipped

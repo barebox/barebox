@@ -52,7 +52,7 @@
 #include <mach/devices-imx35.h>
 
 #include <i2c/i2c.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 #include <mfd/mc9sdz60.h>
 
 

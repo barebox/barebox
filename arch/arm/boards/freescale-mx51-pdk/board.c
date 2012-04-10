@@ -32,7 +32,7 @@
 #include <nand.h>
 #include <notifier.h>
 #include <spi/spi.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <mach/imx5.h>

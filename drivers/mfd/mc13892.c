@@ -28,7 +28,7 @@
 #include <malloc.h>
 
 #include <i2c/i2c.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 
 #define DRIVERNAME		"mc13892"
 

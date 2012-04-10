@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __ASM_ARCH_MC13892_H
-#define __ASM_ARCH_MC13892_H
+#ifndef __MFD_MC13XXX_H
+#define __MFD_MC13XXX_H
 
 enum mc13892_reg {
 	MC13892_REG_INT_STATUS0		= 0x00,
@@ -118,4 +118,4 @@ static inline enum mc13892_revision mc13892_get_revision(struct mc13892 *mc13892
 	return mc13892->revision;
 }
 
-#endif /* __ASM_ARCH_MC13892_H */
+#endif /* __MFD_MC13XXX_H */

@@ -234,30 +234,39 @@ static struct mc13892_rev mc13892_revisions[] = {
 static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 {
 	unsigned int rev_id;
-	char *revstr;
+	char *chipname, *revstr;
 	int rev, i;
 
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_IDENTIFICATION, &rev_id);
 
-	for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
-		if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
-			break;
+	/* Determine chip type by decode ICID bits */
+	switch ((rev_id >> 6) & 0x7) {
+	case 7:
+		chipname = "MC13892";
+		for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
+			if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
+				break;
 
-	if (i == ARRAY_SIZE(mc13892_revisions))
-		return -EINVAL;
+		if (i == ARRAY_SIZE(mc13892_revisions))
+			return -EINVAL;
 
-	rev = mc13892_revisions[i].rev;
-	revstr = mc13892_revisions[i].revstr;
+		rev = mc13892_revisions[i].rev;
+		revstr = mc13892_revisions[i].revstr;
 
-	if (rev == MC13892_REVISION_2_0) {
-		if ((rev_id >> 9) & 0x3) {
-			rev = MC13892_REVISION_2_0a;
-			revstr = "2.0a";
+		if (rev == MC13892_REVISION_2_0) {
+			if ((rev_id >> 9) & 0x3) {
+				rev = MC13892_REVISION_2_0a;
+				revstr = "2.0a";
+			}
 		}
+		break;
+	default:
+		dev_info(mc_dev->cdev.dev, "No PMIC detected.\n");
+		return -EINVAL;
 	}
 
-	dev_info(mc_dev->cdev.dev, "PMIC ID: 0x%08x [Rev: %s]\n",
-			rev_id, revstr);
+	dev_info(mc_dev->cdev.dev, "Found %s ID: 0x%06x [Rev: %s]\n",
+			chipname, rev_id, revstr);
 
 	mc13xxx->revision = rev;
 

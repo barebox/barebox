@@ -237,7 +237,7 @@ static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 	char *chipname, *revstr;
 	int rev, i;
 
-	mc13xxx_reg_read(mc13xxx, MC13892_REG_IDENTIFICATION, &rev_id);
+	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
 
 	/* Determine chip type by decode ICID bits */
 	switch ((rev_id >> 6) & 0x7) {

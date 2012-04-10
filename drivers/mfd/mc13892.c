@@ -70,7 +70,7 @@ static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 #define MXC_PMIC_REG_NUM(reg)	(((reg) & 0x3f) << 25)
 #define MXC_PMIC_WRITE		(1 << 31)
 
-static int mc13892_spi_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
+static int mc13892_spi_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
 {
 	uint32_t buf;
 
@@ -83,7 +83,7 @@ static int mc13892_spi_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u
 	return 0;
 }
 
-static int mc13892_spi_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
+static int mc13892_spi_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 {
 	uint32_t buf = MXC_PMIC_REG_NUM(reg) | MXC_PMIC_WRITE | (val & 0xffffff);
 
@@ -94,7 +94,7 @@ static int mc13892_spi_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, 
 #endif
 
 #ifdef CONFIG_I2C
-static int mc13892_i2c_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
+static int mc13892_i2c_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
 {
 	u8 buf[3];
 	int ret;
@@ -105,7 +105,7 @@ static int mc13892_i2c_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u
 	return ret == 3 ? 0 : ret;
 }
 
-static int mc13892_i2c_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
+static int mc13892_i2c_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 {
 	u8 buf[] = {
 		val >> 16,
@@ -120,7 +120,7 @@ static int mc13892_i2c_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, 
 }
 #endif
 
-int mc13892_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
+int mc13892_reg_write(struct mc13892 *mc13892, u8 reg, u32 val)
 {
 #ifdef CONFIG_I2C
 	if (mc13892->mode == MC13892_MODE_I2C)
@@ -134,7 +134,7 @@ int mc13892_reg_write(struct mc13892 *mc13892, enum mc13892_reg reg, u32 val)
 }
 EXPORT_SYMBOL(mc13892_reg_write);
 
-int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
+int mc13892_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val)
 {
 #ifdef CONFIG_I2C
 	if (mc13892->mode == MC13892_MODE_I2C)
@@ -148,7 +148,7 @@ int mc13892_reg_read(struct mc13892 *mc13892, enum mc13892_reg reg, u32 *val)
 }
 EXPORT_SYMBOL(mc13892_reg_read);
 
-int mc13892_set_bits(struct mc13892 *mc13892, enum mc13892_reg reg, u32 mask, u32 val)
+int mc13892_set_bits(struct mc13892 *mc13892, u8 reg, u32 mask, u32 val)
 {
 	u32 tmp;
 	int err;

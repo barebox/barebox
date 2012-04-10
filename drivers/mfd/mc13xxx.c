@@ -212,9 +212,9 @@ static struct file_operations mc_fops = {
 };
 
 struct mc13892_rev {
-	u16 rev_id;
-	enum mc13892_revision rev;
-	char *revstr;
+	u16	rev_id;
+	int	rev;
+	char	*revstr;
 };
 
 static struct mc13892_rev mc13892_revisions[] = {

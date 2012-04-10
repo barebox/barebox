@@ -77,20 +77,18 @@
 #define MC13892_REG_TEST3		0x3e
 #define MC13892_REG_TEST4		0x3f
 
-enum mc13892_revision {
-	MC13892_REVISION_1_0,
-	MC13892_REVISION_1_1,
-	MC13892_REVISION_1_2,
-	MC13892_REVISION_2_0,
-	MC13892_REVISION_2_0a,
-	MC13892_REVISION_2_1,
-	MC13892_REVISION_3_0,
-	MC13892_REVISION_3_1,
-	MC13892_REVISION_3_2,
-	MC13892_REVISION_3_2a,
-	MC13892_REVISION_3_3,
-	MC13892_REVISION_3_5,
-};
+#define MC13892_REVISION_1_0		0
+#define MC13892_REVISION_1_1		1
+#define MC13892_REVISION_1_2		2
+#define MC13892_REVISION_2_0		3
+#define MC13892_REVISION_2_0a		4
+#define MC13892_REVISION_2_1		5
+#define MC13892_REVISION_3_0		6
+#define MC13892_REVISION_3_1		7
+#define MC13892_REVISION_3_2		8
+#define MC13892_REVISION_3_2a		9
+#define MC13892_REVISION_3_3		10
+#define MC13892_REVISION_3_5		11
 
 enum mc13xxx_mode {
 	MC13XXX_MODE_I2C,
@@ -102,7 +100,7 @@ struct mc13892 {
 	struct i2c_client	*client;
 	struct spi_device	*spi;
 	enum mc13xxx_mode	mode;
-	enum mc13892_revision	revision;
+	int			revision;
 };
 
 extern struct mc13892 *mc13892_get(void);
@@ -111,7 +109,7 @@ extern int mc13892_reg_read(struct mc13892 *mc13892, u8 reg, u32 *val);
 extern int mc13892_reg_write(struct mc13892 *mc13892, u8 reg, u32 val);
 extern int mc13892_set_bits(struct mc13892 *mc13892, u8 reg, u32 mask, u32 val);
 
-static inline enum mc13892_revision mc13892_get_revision(struct mc13892 *mc13892)
+static inline int mc13892_get_revision(struct mc13892 *mc13892)
 {
 	return mc13892->revision;
 }

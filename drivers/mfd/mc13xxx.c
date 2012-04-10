@@ -24,10 +24,10 @@
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
-#include <spi/spi.h>
 #include <malloc.h>
 
 #include <i2c/i2c.h>
+#include <spi/spi.h>
 #include <mfd/mc13xxx.h>
 
 #define DRIVERNAME		"mc13xxx"

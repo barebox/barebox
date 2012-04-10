@@ -72,7 +72,7 @@ struct imx_nand_platform_data nand_info = {
 
 static struct i2c_board_info i2c_devices[] = {
 	{
-		I2C_BOARD_INFO("mc13892-i2c", 0x08),
+		I2C_BOARD_INFO("mc13xxx-i2c", 0x08),
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},
@@ -410,7 +410,7 @@ static int f3s_pmic_init(void)
 
 	mc13892 = mc13892_get();
 	if (!mc13892) {
-		printf("FAILED to get mc13892 handle!\n");
+		printf("FAILED to get mc13xxx handle!\n");
 		return 0;
 	}
 

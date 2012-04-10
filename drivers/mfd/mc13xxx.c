@@ -30,7 +30,7 @@
 #include <i2c/i2c.h>
 #include <mfd/mc13xxx.h>
 
-#define DRIVERNAME		"mc13892"
+#define DRIVERNAME		"mc13xxx"
 
 #define to_mc13892(a)		container_of(a, struct mc13892, cdev)
 
@@ -308,12 +308,12 @@ static int mc_spi_probe(struct device_d *dev)
 }
 
 static struct driver_d mc_i2c_driver = {
-	.name  = "mc13892-i2c",
+	.name  = "mc13xxx-i2c",
 	.probe = mc_i2c_probe,
 };
 
 static struct driver_d mc_spi_driver = {
-	.name  = "mc13892-spi",
+	.name  = "mc13xxx-spi",
 	.probe = mc_spi_probe,
 };
 

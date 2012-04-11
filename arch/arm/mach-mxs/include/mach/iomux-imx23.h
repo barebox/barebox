@@ -63,9 +63,13 @@
 
 /* control pad's pull up / bit keeper feature */
 #define PE (1 << 10)
+#define BK (1 << 11)	/* FIXME useful to distinguish? */
 #define PE_PRESENT(x) (!!((x) & PE))
+#define BK_PRESENT(x) (!!((x) & BK))
 #define PULLUP(x) ((x) << 13)
+#define BITKEEPER(x) ((x) << 14)
 #define GET_PULLUP(x) (!!((x) & (1 << 13)))
+#define GET_BITKEEPER(x) (!!((x) & BITKEEPER(1)))
 
 /* control pad's voltage feature */
 #define VE (1 << 14)

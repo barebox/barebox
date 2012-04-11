@@ -1260,7 +1260,7 @@ static void pxa27x_change_configuration(struct pxa_udc *udc, int config)
 	udc->driver->setup(&udc->gadget, &req);
 }
 
-static void pxa27x_change_interface(struct pxa_udc *udc, int iface, int alt)
+static void __maybe_unused pxa27x_change_interface(struct pxa_udc *udc, int iface, int alt)
 {
 	struct usb_ctrlrequest  req;
 
@@ -1473,9 +1473,9 @@ static struct pxa_udc memory = {
 	}
 };
 
-static int pxa27x_udc_poller(struct poller_struct *poller)
+static void pxa27x_udc_poller(struct poller_struct *poller)
 {
-	return usb_gadget_poll();
+	usb_gadget_poll();
 }
 static struct poller_struct poller = {
 	.func		= pxa27x_udc_poller

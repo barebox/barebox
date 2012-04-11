@@ -144,6 +144,7 @@ SECTIONS
 	.text : AT ( LOADADDR(.bootstrapping) + SIZEOF(.bootstrapping) ) {
 		/* do not align here! It may fails with the LOADADDR! */
 		_stext = .;
+		_text = .;
 		*(.text_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)

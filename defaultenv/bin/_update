@@ -11,7 +11,7 @@ if [ ! -e "$part" ]; then
 fi
 
 if [ x$mode = xtftp -o x$mode = xnfs ]; then
-	if [ x$ip = xdhcp ]; then
+	if [ x$ip = xdhcp -o x$ip = "xdhcp-barebox" ]; then
 		dhcp
 	fi
 

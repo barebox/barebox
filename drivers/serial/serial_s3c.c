@@ -153,7 +153,7 @@ static int s3c_serial_probe(struct device_d *dev)
 	struct s3c_uart *priv;
 	struct console_device *cdev;
 
-	priv = xzalloc(sizeof(struct console_device));
+	priv = xzalloc(sizeof(struct s3c_uart));
 	cdev = &priv->cdev;
 	priv->regs = dev_request_mem_region(dev, 0);
 	dev->priv = priv;

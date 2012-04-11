@@ -4,7 +4,7 @@ if MACH_MINI2440
 config MINI2440_VIDEO
 	bool
 	select VIDEO
-	select DRIVER_VIDEO_S3C
+	select DRIVER_VIDEO_S3C24XX
 
 config MINI2440_VIDEO_N35
 	bool "Support N35 display (240x320)"

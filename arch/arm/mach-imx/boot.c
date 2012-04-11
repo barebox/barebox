@@ -87,8 +87,6 @@ static int imx_25_35_boot_save_loc(void)
 	return 0;
 }
 coredevice_initcall(imx_25_35_boot_save_loc);
-
-BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
 #endif
 
 #if defined(CONFIG_ARCH_IMX27)
@@ -114,6 +112,6 @@ static int imx_27_boot_save_loc(void)
 	return 0;
 }
 coredevice_initcall(imx_27_boot_save_loc);
+#endif
 
 BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
-#endif

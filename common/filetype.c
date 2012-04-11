@@ -37,6 +37,7 @@ static const char *filetype_str[] = {
 	[filetype_gzip] = "gzip compressed",
 	[filetype_bzip2] = "bzip2 compressed",
 	[filetype_oftree] = "open firmware flat device tree",
+	[filetype_aimage] = "Android boot image",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -72,6 +73,8 @@ enum filetype file_detect_type(void *_buf)
                 return filetype_bzip2;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
+	if (strncmp(buf8, "ANDROID!", 8) == 0)
+		return filetype_aimage;
 
 	return filetype_unknown;
 }

@@ -359,6 +359,13 @@ config CMD_BOOTM_OFTREE_UIMAGE
 	  Support using oftree uImages. Without this only raw oftree
 	  blobs can be used.
 
+config CMD_BOOTM_AIMAGE
+	bool
+	prompt "bootm Android image support"
+	depends on CMD_BOOTM && ARM
+	help
+	  Support using Android Images.
+
 config CMD_UIMAGE
 	tristate
 	prompt "uimage"

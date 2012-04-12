@@ -154,10 +154,15 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 
 	writel(0x00016154, ccm + MX5_CCM_CBCMR);
 
-	/* change uart clk parent to pll2 */
 	r = readl(ccm + MX5_CCM_CSCMR1);
-	r &= ~(3 << 24);
-	r |= (1 << 24);
+
+	/* change uart clk parent to pll2 */
+	r &= ~MX5_CCM_CSCMR1_UART_CLK_SEL_MASK;
+	r |= 1 << MX5_CCM_CSCMR1_UART_CLK_SEL_OFFSET;
+
+	/* USB phy clock from osc */
+	r &= ~(1 << MX5_CCM_CSCMR1_USB_PHY_CLK_SEL_OFFSET);
+
 	writel(r, ccm + MX5_CCM_CSCMR1);
 
 	/* make sure change is effective */
@@ -186,6 +191,12 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	r &= ~MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PRED_MASK;
 	r &= ~MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PODF_MASK;
 	r |= 1 << MX5_CCM_CSCDR1_ESDHC3_MX53_CLK_PODF_OFFSET;
+
+	r &= ~MX5_CCM_CSCDR1_USBOH3_CLK_PRED_MASK;
+	r &= ~MX5_CCM_CSCDR1_USBOH3_CLK_PODF_MASK;
+
+	r |= 3 << MX5_CCM_CSCDR1_USBOH3_CLK_PRED_OFFSET;
+	r |= 1 << MX5_CCM_CSCDR1_USBOH3_CLK_PODF_OFFSET;
 
 	writel(r, ccm + MX5_CCM_CSCDR1);
 

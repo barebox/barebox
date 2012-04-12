@@ -186,7 +186,7 @@ coredevice_initcall(imx51_boot_save_loc);
 #define setup_pll_455(base)	imx5_setup_pll((base), 455,  (( 9 << 4) + ((2 - 1) << 0)), (48 - 1), 23)
 #define setup_pll_216(base)	imx5_setup_pll((base), 216,  (( 6 << 4) + ((3 - 1) << 0)), ( 4 - 1),  3)
 
-void imx51_init_lowlevel(void)
+void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX51_CCM_BASE_ADDR;
 	u32 r;
@@ -220,7 +220,16 @@ void imx51_init_lowlevel(void)
 	/* Switch ARM to step clock */
 	writel(0x4, ccm + MX5_CCM_CCSR);
 
-	setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
+	switch (cpufreq_mhz) {
+	case 600:
+		setup_pll_600((void __iomem *)MX51_PLL1_BASE_ADDR);
+		break;
+	default:
+		/* Default maximum 800MHz */
+		setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
+		break;
+	}
+
 	setup_pll_665((void __iomem *)MX51_PLL3_BASE_ADDR);
 
 	/* Switch peripheral to PLL 3 */

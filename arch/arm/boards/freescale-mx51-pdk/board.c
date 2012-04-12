@@ -244,7 +244,7 @@ static int f3s_devices_init(void)
 	babbage_power_init();
 
 	console_flush();
-	imx51_init_lowlevel();
+	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
 
 	armlinux_set_bootparams((void *)0x90000100);

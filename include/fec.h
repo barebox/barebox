@@ -33,6 +33,7 @@ typedef enum {
 	MII10,
 	MII100,
 	RMII,
+	RGMII,
 } xceiver_type;
 
 /*

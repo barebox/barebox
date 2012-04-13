@@ -14,6 +14,7 @@
 #include <sizes.h>
 #include <libbb.h>
 #include <magicvar.h>
+#include <libfdt.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -124,6 +125,70 @@ struct zimage_header {
 
 #define ZIMAGE_MAGIC 0x016F2818
 
+static int do_bootz_linux_fdt(int fd, struct image_data *data)
+{
+	struct fdt_header __header, *header;
+	struct resource *r = data->os_res;
+	struct resource *of_res = data->os_res;
+	void *oftree;
+	int ret;
+
+	u32 end;
+
+	header = &__header;
+	ret = read(fd, header, sizeof(*header));
+	if (ret < sizeof(*header))
+		return ret;
+
+	if (file_detect_type(header) != filetype_oftree)
+		return -ENXIO;
+
+	end = be32_to_cpu(header->totalsize);
+
+	if (IS_BUILTIN(CONFIG_OFTREE)) {
+		oftree = malloc(end + 0x8000);
+		if (!oftree) {
+			perror("zImage: oftree malloc");
+			return -ENOMEM;
+		}
+	} else {
+
+		of_res = request_sdram_region("oftree", r->start + r->size, end);
+		if (!of_res) {
+			perror("zImage: oftree request_sdram_region");
+			return -ENOMEM;
+		}
+
+		oftree = (void*)of_res->start;
+	}
+
+	memcpy(oftree, header, sizeof(*header));
+
+	end -= sizeof(*header);
+
+	ret = read_full(fd, oftree + sizeof(*header), end);
+	if (ret < 0)
+		return ret;
+	if (ret < end) {
+		printf("premature end of image\n");
+		return -EIO;
+	}
+
+	if (IS_BUILTIN(CONFIG_OFTREE)) {
+		fdt_open_into(oftree, oftree, end + 0x8000);
+
+		ret = of_fix_tree(oftree);
+		if (ret)
+			return ret;
+
+		data->oftree = oftree;
+	}
+
+	pr_info("zImage: concatenated oftree detected\n");
+
+	return 0;
+}
+
 static int do_bootz_linux(struct image_data *data)
 {
 	int fd, ret, swap = 0;
@@ -196,6 +261,10 @@ static int do_bootz_linux(struct image_data *data)
 		for (ptr = zimage; ptr < zimage + end; ptr += 4)
 			*(u32 *)ptr = swab32(*(u32 *)ptr);
 	}
+
+	ret = do_bootz_linux_fdt(fd, data);
+	if (ret && ret != -ENXIO)
+		return ret;
 
 	return __do_bootm_linux(data, swap);
 

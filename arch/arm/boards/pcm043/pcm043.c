@@ -178,7 +178,7 @@ static int imx35_devices_init(void)
 
 device_initcall(imx35_devices_init);
 
-static struct pad_desc pcm043_pads[] = {
+static iomux_v3_cfg_t pcm043_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
 	MX35_PAD_FEC_RX_DV__FEC_RX_DV,

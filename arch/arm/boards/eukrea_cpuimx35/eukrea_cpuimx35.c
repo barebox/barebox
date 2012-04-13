@@ -179,7 +179,7 @@ static int eukrea_cpuimx35_devices_init(void)
 
 device_initcall(eukrea_cpuimx35_devices_init);
 
-static struct pad_desc eukrea_cpuimx35_pads[] = {
+static iomux_v3_cfg_t eukrea_cpuimx35_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
 	MX35_PAD_FEC_RX_DV__FEC_RX_DV,

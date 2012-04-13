@@ -75,12 +75,6 @@ void __naked __bare_init reset(void)
 #ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 	arch_init_lowlevel();
 #endif
-	__asm__ __volatile__ (
-		"bl __mmu_cache_flush;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
 
 	/* disable MMU stuff and caches */
 	r = get_cr();

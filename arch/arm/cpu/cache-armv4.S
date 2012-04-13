@@ -42,7 +42,6 @@ ENTRY(__mmu_cache_off)
 		mov	pc, lr
 ENDPROC(__mmu_cache_off)
 
-__BARE_INIT
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r6, c0, c0	@ get processor ID
 		mov	r2, #64*1024		@ default: 32K dcache size (*2)

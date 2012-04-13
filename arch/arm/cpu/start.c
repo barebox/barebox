@@ -135,6 +135,9 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
+	/* flush I-cache before jumping to the copied binary */
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+
 	/* call start_barebox with its absolute address */
 	r = (unsigned int)&start_barebox;
 	__asm__ __volatile__("mov pc, %0" : : "r"(r));

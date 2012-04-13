@@ -154,9 +154,14 @@ static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
 	int ret;
 	size_t size;
 
+	if (bootm_verbose(data))
+		printf("Loading oftree from '%s'\n", oftree);
+
 	ft = file_name_detect_type(oftree);
-	if ((int)ft < 0)
+	if ((int)ft < 0) {
+		printf("failed to open %s: %s\n", oftree, strerror(-(int)ft));
 		return ft;
+	}
 
 	if (ft == filetype_uimage) {
 #ifdef CONFIG_CMD_BOOTM_OFTREE_UIMAGE
@@ -195,9 +200,6 @@ static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
 		printf("%s is not a oftree but %s\n", oftree,
 				file_type_to_string(ft));
 	}
-
-	if (bootm_verbose(data))
-		printf("Loading oftree from '%s'\n", oftree);
 
 	fdt = xrealloc(fdt, size + 0x8000);
 	fdt_open_into(fdt, fdt, size + 0x8000);

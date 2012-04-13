@@ -357,7 +357,7 @@ static int f3s_get_rev(struct mc13xxx *mc13xxx)
 	u32 rev;
 	int err;
 
-	err = mc13xxx_reg_read(mc13xxx, MC13892_REG_IDENTIFICATION, &rev);
+	err = mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev);
 	if (err)
 		return err;
 

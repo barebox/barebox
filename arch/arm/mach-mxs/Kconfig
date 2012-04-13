@@ -91,6 +91,7 @@ choice
 
 config MACH_TX28STK5
 	bool "TX28-stk5"
+	select MXS_OCOTP
 	help
 	  Select this entry if you are running the TX28 CPU module on the
 	  KARO TX28 Starterkit5.

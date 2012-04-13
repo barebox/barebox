@@ -23,7 +23,7 @@ subdir-	+= basic kconfig setupmbr
 quiet_cmd_csingle	= CC      $@
       cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(CFLAGS) -o $@ $<
 
-always                           += bareboxenv-target
+obj-$(CONFIG_BAREBOXENV_TARGET)	+= bareboxenv-target
 
 scripts/bareboxenv-target: scripts/bareboxenv.c FORCE
 	$(call if_changed_dep,csingle)

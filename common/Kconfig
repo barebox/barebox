@@ -506,6 +506,13 @@ config DEFAULT_ENVIRONMENT_PATH
 	  Relative pathes will be relative to the barebox Toplevel dir, but absolute
 	  pathes are fine aswell.
 
+config BAREBOXENV_TARGET
+	bool
+	prompt "build bareboxenv tool for target"
+	help
+	  'bareboxenv' is a tool to access the barebox environment from a running Linux
+	  system. Say yes here to build it for the target.
+
 config POLLER
 	bool "generic polling infrastructure"
 

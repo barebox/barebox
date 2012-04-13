@@ -43,6 +43,7 @@ struct mii_device {
 
 	struct eth_device *edev;
 	struct cdev cdev;
+	struct list_head list;
 };
 
 int mii_register(struct mii_device *dev);
@@ -65,4 +66,8 @@ static int inline mii_read(struct mii_device *dev, int addr, int reg)
 {
 	return dev->read(dev, addr, reg);
 }
+
+struct mii_device *mii_open(const char *name);
+void mii_close(struct mii_device *mdev);
+
 #endif /* __MIIDEV_H__ */

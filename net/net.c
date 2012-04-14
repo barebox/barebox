@@ -378,7 +378,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
-	con->packet = xmemalign(32, PKTSIZE);
+	con->packet = net_alloc_packet();
 	con->priv = ctx;
 	memset(con->packet, 0, PKTSIZE);
 
@@ -673,7 +673,7 @@ static int net_init(void)
 	int i;
 
 	for (i = 0; i < PKTBUFSRX; i++)
-		NetRxPackets[i] =  xmemalign(32, PKTSIZE);
+		NetRxPackets[i] = net_alloc_packet();
 
 	return 0;
 }

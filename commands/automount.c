@@ -40,10 +40,10 @@ static int do_automount(int argc, char *argv[])
 		}
 	}
 
-	if (argc != 3)
+	if (optind + 2 != argc)
 		return COMMAND_ERROR_USAGE;
 
-	ret = automount_add(argv[1], argv[2]);
+	ret = automount_add(argv[optind], argv[optind + 1]);
 	if (ret)
 		printf("adding automountpoint failed: %s\n",
 				strerror(-ret));

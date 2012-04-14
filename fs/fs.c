@@ -31,6 +31,8 @@
 #include <init.h>
 #include <module.h>
 #include <libbb.h>
+#include <magicvar.h>
+#include <environment.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -289,7 +291,6 @@ static void automount_mount(const char *path, int instat)
 	int ret;
 
 	list_for_each_entry(am, &automount_list, list) {
-		char *cmd;
 		int len_path = strlen(path);
 		int len_am_path = strlen(am->path);
 
@@ -312,9 +313,10 @@ static void automount_mount(const char *path, int instat)
 		if (*(path + len_am_path) != 0 && *(path + len_am_path) != '/')
 			continue;
 
-		cmd = asprintf("%s %s", am->cmd, am->path);
-		ret = run_command(cmd, 0);
-		free(cmd);
+		setenv("automount_path", am->path);
+		export("automount_path");
+		ret = run_command(am->cmd, 0);
+		setenv("automount_path", NULL);
 
 		if (ret)
 			printf("running automount command '%s' failed\n",
@@ -325,6 +327,9 @@ static void automount_mount(const char *path, int instat)
 		return;
 	}
 }
+
+BAREBOX_MAGICVAR(automount_path, "mountpath passed to automount scripts");
+
 #else
 static void automount_mount(const char *path, int instat)
 {

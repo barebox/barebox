@@ -259,6 +259,8 @@ int automount_add(const char *path, const char *cmd)
 	am->path = normalise_path(path);
 	am->cmd = xstrdup(cmd);
 
+	automount_remove(am->path);
+
 	ret = stat(path, &s);
 	if (!ret) {
 		/*

@@ -36,35 +36,6 @@
 #include <errno.h>
 #include <libbb.h>
 
-#ifdef CONFIG_NET_RARP
-extern void RarpRequest(void);
-
-static int do_rarpb(int argc, char *argv[])
-{
-	int size;
-
-	if (NetLoopInit(RARP) < 0)
-		return 1;
-
-	NetOurIP = 0;
-	RarpRequest();		/* Basically same as BOOTP */
-
-	if ((size = NetLoop()) < 0)
-		return 1;
-
-	/* NetLoop ok, update environment */
-	netboot_update_env();
-
-	return 0;
-}
-
-BAREBOX_CMD_START(rarpboot)
-	.cmd		= do_rarpb,
-	.usage		= "boot image via network using rarp/tftp protocol",
-	BAREBOX_CMD_HELP("[loadAddress] [bootfilename]\n")
-BAREBOX_CMD_END
-#endif /* CONFIG_NET_RARP */
-
 static int do_ethact(int argc, char *argv[])
 {
 	struct eth_device *edev;

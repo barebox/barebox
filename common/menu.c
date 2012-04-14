@@ -174,12 +174,17 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 		puts("   ");
 	}
 
-	process_escape_sequence(me->display, m->display_buffer,
-				m->display_buffer_size);
+	if (IS_ENABLED(CONFIG_SHELL_HUSH))
+		process_escape_sequence(me->display, m->display_buffer,
+					m->display_buffer_size);
+
 	printf(" %d: ", me->num);
 	if (selected)
 		puts("\e[7m");
-	puts(m->display_buffer);
+	if (IS_ENABLED(CONFIG_SHELL_HUSH))
+		puts(m->display_buffer);
+	else
+		puts(me->display);
 
 	if (selected)
 		puts("\e[m");
@@ -236,9 +241,13 @@ static void print_menu(struct menu *m)
 	clear();
 	gotoXY(1, 2);
 	if(m->display) {
-		process_escape_sequence(m->display, m->display_buffer,
-					m->display_buffer_size);
-		puts(m->display_buffer);
+		if (IS_ENABLED(CONFIG_SHELL_HUSH)) {
+			process_escape_sequence(m->display, m->display_buffer,
+						m->display_buffer_size);
+			puts(m->display_buffer);
+		} else {
+			puts(m->display);
+		}
 	} else {
 		puts("Menu : ");
 		puts(m->name);

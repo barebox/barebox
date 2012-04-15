@@ -85,8 +85,10 @@ uint16_t net_checksum(unsigned char *ptr, int len)
 	return xsum & 0xffff;
 }
 
-char *ip_to_string (IPaddr_t x, char *s)
+char *ip_to_string (IPaddr_t x)
 {
+	static char s[sizeof("xxx.xxx.xxx.xxx")];
+
 	x = ntohl (x);
 	sprintf (s, "%d.%d.%d.%d",
 		 (int) ((x >> 24) & 0xff),
@@ -146,9 +148,9 @@ IPaddr_t getenv_ip_dns(const char *name, int dns)
 
 int setenv_ip(const char *name, IPaddr_t ip)
 {
-	char str[sizeof("xxx.xxx.xxx.xxx")];
+	const char *str;
 
-	ip_to_string(ip, str);
+	str = ip_to_string(ip);
 
 	setenv(name, str);
 
@@ -157,11 +159,7 @@ int setenv_ip(const char *name, IPaddr_t ip)
 
 void print_IPaddr (IPaddr_t x)
 {
-	char tmp[16];
-
-	ip_to_string (x, tmp);
-
-	puts (tmp);
+	puts(ip_to_string(x));
 }
 
 int string_to_ethaddr(const char *str, char *enetaddr)

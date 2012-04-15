@@ -274,7 +274,7 @@ static inline void net_copy_uint32(uint32_t *to, uint32_t *from)
 }
 
 /* Convert an IP address to a string */
-char *ip_to_string (IPaddr_t x, char *s);
+char *ip_to_string (IPaddr_t x);
 
 /* Convert a string to ip address */
 int string_to_ip(const char *s, IPaddr_t *ip);

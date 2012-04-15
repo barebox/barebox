@@ -102,16 +102,6 @@ static int of_register_mpc5200_fixup(void)
 late_initcall(of_register_mpc5200_fixup);
 #endif
 
-int cpu_init_board_data(bd_t *bd)
-{
-	bd->bi_intfreq = get_cpu_clock();	/* Internal Freq, in Hz */
-	bd->bi_busfreq = get_bus_clock();	/* Bus Freq,      in Hz */
-	bd->bi_mbar_base = CFG_MBAR;		/* base of internal registers */
-	bd->bi_ipbfreq = get_ipb_clock();
-	bd->bi_pcifreq = get_pci_clock();
-	return 0;
-}
-
 unsigned long mpc5200_get_sdram_size(unsigned int cs)
 {
 	unsigned long size;

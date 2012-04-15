@@ -666,12 +666,21 @@ out:
 	return ret;
 }
 
+static struct device_d net_device = {
+	.name = "net",
+	.id = DEVICE_ID_SINGLE,
+};
+
 static int net_init(void)
 {
 	int i;
 
 	for (i = 0; i < PKTBUFSRX; i++)
 		NetRxPackets[i] =  xmemalign(32, PKTSIZE);
+
+	register_device(&net_device);
+	dev_add_param(&net_device, "nameserver", NULL, NULL, 0);
+	dev_add_param(&net_device, "domainname", NULL, NULL, 0);
 
 	return 0;
 }

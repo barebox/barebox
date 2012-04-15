@@ -126,6 +126,11 @@ struct driver_d {
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
 
+/* dynamically assign the next free id */
+#define DEVICE_ID_DYNAMIC	-1
+/* do not use an id (only one device available */
+#define DEVICE_ID_SINGLE	-2
+
 /* Register devices and drivers.
  */
 int register_driver(struct driver_d *);

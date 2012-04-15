@@ -1,6 +1,6 @@
 #!/bin/sh
 
-machine=panda
+hostname=panda
 user=
 
 # use 'dhcp' to do dhcp in barebox and in kernel
@@ -18,14 +18,14 @@ kernel_loc=tftp
 # can be either 'net', 'nor', 'nand' or 'initrd'
 rootfs_loc=net
 
-kernelimage=zImage-$machine
-#kernelimage=uImage-$machine
-#kernelimage=Image-$machine
-#kernelimage=Image-${machine}.lzo
+kernelimage=zImage-$hostname
+#kernelimage=uImage-$hostname
+#kernelimage=Image-$hostname
+#kernelimage=Image-${hostname}.lzo
 
 if [ -n $user ]; then
 	kernelimage="$user"-"$kernelimage"
-	nfsroot="$eth0.serverip:/home/$user/nfsroot/$machine"
+	nfsroot="$eth0.serverip:/home/$user/nfsroot/$hostname"
 	rootfsimage="$user"-"$rootfsimage"
 else
 	nfsroot="$eth0.serverip:/path/to/nfs/root"

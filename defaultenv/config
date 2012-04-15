@@ -1,6 +1,6 @@
 #!/bin/sh
 
-machine=FIXME
+hostname=FIXME
 #user=
 
 # Enter MAC address here if not retrieved automatically
@@ -29,25 +29,25 @@ oftree_loc=tftp
 rootfs_type=ubifs
 # where is the rootfs in case of 'rootfs_loc=disk' (linux name)
 rootfs_part_linux_dev=mmcblk0p4
-rootfsimage=rootfs-${machine}.$rootfs_type
+rootfsimage=rootfs-${hostname}.$rootfs_type
 
 # where is the kernel image in case of 'kernel_loc=disk'
 kernel_part=disk0.2
 
-kernelimage=zImage-$machine
-#kernelimage=uImage-$machine
-#kernelimage=Image-$machine
-#kernelimage=Image-$machine.lzo
+kernelimage=zImage-$hostname
+#kernelimage=uImage-$hostname
+#kernelimage=Image-$hostname
+#kernelimage=Image-$hostname.lzo
 
-bareboximage=barebox-${machine}.bin
-bareboxenvimage=barebox-${machine}.bin
+bareboximage=barebox-${hostname}.bin
+bareboxenvimage=barebox-${hostname}.bin
 
 if [ -n $user ]; then
 	bareboximage="$user"-"$bareboximage"
 	bareboxenvimage="$user"-"$bareboxenvimage"
 	kernelimage="$user"-"$kernelimage"
 	rootfsimage="$user"-"$rootfsimage"
-	nfsroot="/home/$user/nfsroot/$machine"
+	nfsroot="/home/$user/nfsroot/$hostname"
 else
 	nfsroot="/path/to/nfs/root"
 fi

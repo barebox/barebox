@@ -531,6 +531,7 @@ quiet_cmd_barebox_version = GEN     .version
 	  mv .version .old_version;			\
 	  expr 0$$(cat .old_version) + 1 >.version;	\
 	fi;						\
+	$(MAKE) $(build)=common
 
 # Check size of a file
 quiet_cmd_check_file_size = CHKSIZE $@

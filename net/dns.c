@@ -77,7 +77,7 @@ static int dns_send(char *name)
 	header->nauth    = 0;
 	header->nother   = 0;
 
-	domain = getenv("domainname");
+	domain = getenv("net.domainname");
 
 	if (!strchr(name, '.') && domain && *domain)
 		fullname = asprintf(".%s.%s.", name, domain);
@@ -205,11 +205,11 @@ IPaddr_t resolv(char *host)
 
 	dns_state = STATE_INIT;
 
-	ip = getenv_ip_dns("nameserver", 0);
+	ip = getenv_ip("net.nameserver");
 	if (!ip)
 		return 0;
 
-	debug("resolving host %s via nameserver %s\n", host, getenv("nameserver"));
+	debug("resolving host %s via nameserver %s\n", host, ip_to_string(ip));
 
 	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))

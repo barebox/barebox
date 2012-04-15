@@ -279,11 +279,7 @@ char *ip_to_string (IPaddr_t x);
 /* Convert a string to ip address */
 int string_to_ip(const char *s, IPaddr_t *ip);
 
-IPaddr_t getenv_ip_dns(const char *name, int dns);
-static inline IPaddr_t getenv_ip(const char *name)
-{
-	return getenv_ip_dns(name, 0);
-}
+IPaddr_t getenv_ip(const char *name);
 int setenv_ip(const char *name, IPaddr_t ip);
 
 int string_to_ethaddr(const char *str, char *enetaddr);

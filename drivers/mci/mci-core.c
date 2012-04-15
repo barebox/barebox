@@ -1515,7 +1515,7 @@ int mci_register(struct mci_host *host)
 {
 	struct device_d *mci_dev = xzalloc(sizeof(struct device_d));
 
-	mci_dev->id = -1;
+	mci_dev->id = DEVICE_ID_DYNAMIC;
 	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = host;
 	dev_add_child(host->hw_dev, mci_dev);

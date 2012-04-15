@@ -54,8 +54,8 @@ static int vpb_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
 
-	add_generic_device("smc91c111", -1, NULL, VERSATILE_ETH_BASE, 64 * 1024,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, VERSATILE_ETH_BASE,
+			64 * 1024, IORESOURCE_MEM, NULL);
 
 	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
 	armlinux_set_bootparams((void *)(0x00000100));

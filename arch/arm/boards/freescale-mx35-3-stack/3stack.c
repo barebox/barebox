@@ -181,7 +181,7 @@ static int f3s_devices_init(void)
 	imx35_add_i2c0(NULL);
 
 	imx35_add_fec(&fec_info);
-	add_generic_device("smc911x", -1, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
 			IORESOURCE_MEM, NULL);
 
 	imx35_add_mmc0(NULL);

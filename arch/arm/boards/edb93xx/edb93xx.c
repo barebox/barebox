@@ -72,7 +72,8 @@ static int ep93xx_devices_init(void)
 	 * Up to 32MiB NOR type flash, connected to
 	 * CS line 6, data width is 16 bit
 	 */
-	add_generic_device("ep93xx_eth", -1, NULL, 0, 0, IORESOURCE_MEM, NULL);
+	add_generic_device("ep93xx_eth", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM,
+			NULL);
 
 	armlinux_set_bootparams((void *)CONFIG_EP93XX_SDRAM_BANK0_BASE + 0x100);
 
@@ -101,7 +102,7 @@ static int edb93xx_console_init(void)
 	writel(0xAA, &syscon->sysswlock);
 	writel(value, &syscon->devicecfg);
 
-	add_generic_device("pl010_serial", -1, NULL, UART1_BASE, 4096,
+	add_generic_device("pl010_serial", DEVICE_ID_DYNAMIC, NULL, UART1_BASE, 4096,
 			   IORESOURCE_MEM, NULL);
 
 	return 0;

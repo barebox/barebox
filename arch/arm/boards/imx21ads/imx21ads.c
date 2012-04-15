@@ -168,7 +168,7 @@ static int mx21ads_devices_init(void)
 
 	add_cfi_flash_device(-1, 0xC8000000, 32 * 1024 * 1024, 0);
 	imx21_add_nand(&nand_info);
-	add_generic_device("cs8900", -1, NULL,	IMX_CS1_BASE, 0x1000,
+	add_generic_device("cs8900", DEVICE_ID_DYNAMIC, NULL, IMX_CS1_BASE, 0x1000,
 			IORESOURCE_MEM, NULL);
 	imx21_add_fb(&imx_fb_data);
 

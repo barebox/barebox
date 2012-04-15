@@ -297,8 +297,8 @@ static int mini2440_devices_init(void)
 	reg |= 0x10000;
 	writel(reg, S3C_MISCCR);
 
-	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
-			   IORESOURCE_MEM, &nand_info);
+	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE,
+			0, IORESOURCE_MEM, &nand_info);
 
 	add_dm9000_device(0, S3C_CS4_BASE + 0x300, S3C_CS4_BASE + 0x304,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
@@ -344,8 +344,8 @@ static int mini2440_console_init(void)
 	s3c_gpio_mode(GPH2_TXD0);
 	s3c_gpio_mode(GPH3_RXD0);
 
-	add_generic_device("s3c_serial", -1, NULL, S3C_UART1_BASE, S3C_UART1_SIZE,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
+			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
 	return 0;
 }
 

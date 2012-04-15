@@ -154,11 +154,11 @@ static int pcm027_devices_init(void)
 {
 	void *cfi_iospace;
 
-	add_generic_device("smc91c111", -1, NULL, 0x14000300, 16,
+	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, 0x14000300, 16,
 			IORESOURCE_MEM, NULL);
 
 	cfi_iospace = map_io_sections(0x0, (void *)0xe0000000, SZ_32M);
-	add_cfi_flash_device(-1, (unsigned long)cfi_iospace, SZ_32M, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_iospace, SZ_32M, 0);
 
 	pxa_add_fb((void *)0x44000000, &fb_pdata);
 

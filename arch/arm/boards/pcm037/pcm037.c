@@ -188,7 +188,7 @@ static int imx31_devices_init(void)
 	 * Up to 32MiB NOR type flash, connected to
 	 * CS line 0, data width is 16 bit
 	 */
-	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	/*
 	 * Create partitions that should be
@@ -212,13 +212,13 @@ static int imx31_devices_init(void)
 	 * connected to CS line 1 and interrupt line
 	 * GPIO3, data width is 16 bit
 	 */
-	add_generic_device("smc911x", -1, NULL,	IMX_CS1_BASE, IMX_CS1_RANGE,
-			IORESOURCE_MEM, NULL);
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	IMX_CS1_BASE,
+			IMX_CS1_RANGE, IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_USB
 	pcm037_usb_init();
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 #endif
 
 	armlinux_set_bootparams((void *)0x80000100);

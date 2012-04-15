@@ -51,7 +51,8 @@ static int devices_init(void)
 	/* extended memory only */
 	add_mem_device("ram0", 0x0, bios_get_memsize() << 10,
 		       IORESOURCE_MEM_WRITEABLE);
-	add_generic_device("biosdrive", -1, NULL, 0, 0, IORESOURCE_MEM, NULL);
+	add_generic_device("biosdrive", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM,
+			NULL);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {
 		rc = devfs_add_partition("biosdisk0",

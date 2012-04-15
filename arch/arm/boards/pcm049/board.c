@@ -50,7 +50,8 @@ static struct NS16550_plat serial_plat = {
 static int pcm049_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT, &serial_plat);
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP44XX_UART3_BASE, 1024,
+			IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }
@@ -83,7 +84,7 @@ static void pcm049_network_init(void)
 {
 	gpmc_cs_config(5, &net_cfg);
 
-	add_generic_device("smc911x", -1, NULL, 0x2C000000, 0x4000,
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x2C000000, 0x4000,
 			   IORESOURCE_MEM, NULL);
 }
 
@@ -96,10 +97,10 @@ static struct i2c_board_info i2c_devices[] = {
 static int pcm049_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", -1, NULL, 0x48070000, 0x1000,
+	add_generic_device("i2c-omap", DEVICE_ID_DYNAMIC, NULL, 0x48070000, 0x1000,
 				IORESOURCE_MEM, NULL);
 
-	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 
 	gpmc_generic_init(0x10);

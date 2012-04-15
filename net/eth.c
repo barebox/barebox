@@ -198,7 +198,7 @@ int eth_register(struct eth_device *edev)
 	}
 
 	strcpy(edev->dev.name, "eth");
-	edev->dev.id = -1;
+	edev->dev.id = DEVICE_ID_DYNAMIC;
 
 	if (edev->parent)
 		dev_add_child(edev->parent, &edev->dev);

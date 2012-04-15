@@ -211,7 +211,7 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 static inline struct device_d *add_mem_device(const char *name, resource_size_t start,
 		resource_size_t size, unsigned int flags)
 {
-	return add_generic_device("mem", -1, name, start, size,
+	return add_generic_device("mem", DEVICE_ID_DYNAMIC, name, start, size,
 				  IORESOURCE_MEM | flags, NULL);
 }
 

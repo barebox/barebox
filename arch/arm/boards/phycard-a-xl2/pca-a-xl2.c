@@ -109,7 +109,7 @@ static int pcaaxl2_devices_init(void)
 	u32 value;
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", -1, NULL, 0x48070000, 0x1000,
+	add_generic_device("i2c-omap", DEVICE_ID_DYNAMIC, NULL, 0x48070000, 0x1000,
 				IORESOURCE_MEM, NULL);
 
 	value = readl(OMAP4_CONTROL_PBIASLITE);
@@ -117,7 +117,7 @@ static int pcaaxl2_devices_init(void)
 	value |= (OMAP4_MMC1_PBIASLITE_PWRDNZ |	OMAP4_MMC1_PWRDNZ);
 	writel(value, OMAP4_CONTROL_PBIASLITE);
 
-	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, &mmc_device);
 
 	gpmc_generic_init(0x10);

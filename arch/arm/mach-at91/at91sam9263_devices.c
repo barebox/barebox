@@ -48,8 +48,8 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 			at91_set_gpio_output(data->vbus_pin[i], 0);
 	}
 
-	add_generic_device("at91_ohci", -1, NULL, AT91SAM9263_UHP_BASE, 1024 * 1024,
-			   IORESOURCE_MEM, data);
+	add_generic_device("at91_ohci", DEVICE_ID_DYNAMIC, NULL, AT91SAM9263_UHP_BASE,
+			1024 * 1024, IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
@@ -67,7 +67,7 @@ void __init at91_add_device_udc(struct at91_udc_data *data)
 		at91_set_deglitch(data->vbus_pin, 1);
 	}
 
-	add_generic_device("at91_udc", -1, NULL, AT91SAM9263_BASE_UDP, SZ_16K,
+	add_generic_device("at91_udc", DEVICE_ID_DYNAMIC, NULL, AT91SAM9263_BASE_UDP, SZ_16K,
 			   IORESOURCE_MEM, data);
 }
 #else
@@ -145,7 +145,7 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (data->det_pin)
 		at91_set_gpio_input(data->det_pin, 1);
 
-	add_generic_device_res("atmel_nand", -1, nand_resources,
+	add_generic_device_res("atmel_nand", DEVICE_ID_DYNAMIC, nand_resources,
 			       ARRAY_SIZE(nand_resources), data);
 }
 #else

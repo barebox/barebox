@@ -27,9 +27,9 @@
 
 static int do_automount(int argc, char *argv[])
 {
-	int opt, ret;
+	int opt, ret, make_dir = 0;
 
-	while ((opt = getopt(argc, argv, "lr:")) > 0) {
+	while ((opt = getopt(argc, argv, "lr:d")) > 0) {
 		switch (opt) {
 		case 'l':
 			automount_print();
@@ -37,11 +37,20 @@ static int do_automount(int argc, char *argv[])
 		case 'r':
 			automount_remove(optarg);
 			return 0;
+		case 'd':
+			make_dir = 1;
+			break;
 		}
 	}
 
 	if (optind + 2 != argc)
 		return COMMAND_ERROR_USAGE;
+
+	if (make_dir) {
+		ret = make_directory(argv[optind]);
+		if (ret)
+			return ret;
+	}
 
 	ret = automount_add(argv[optind], argv[optind + 1]);
 	if (ret)

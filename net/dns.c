@@ -97,7 +97,7 @@ static int dns_send(char *name)
 		dotptr = s;
 	} while (*(dotptr + 1));
 	*dotptr = 0;
-//memory_display(fullname, 0, strlen(fullname), 1);
+
 	strcpy(header->data, fullname);
 
 	p = header->data + strlen(fullname);

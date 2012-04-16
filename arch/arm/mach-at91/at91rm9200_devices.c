@@ -38,8 +38,8 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 	if (!data)
 		return;
 
-	add_generic_device("at91_ohci", -1, NULL, AT91RM9200_UHP_BASE, 1024 * 1024,
-			   IORESOURCE_MEM, data);
+	add_generic_device("at91_ohci", DEVICE_ID_DYNAMIC, NULL, AT91RM9200_UHP_BASE,
+			1024 * 1024, IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
@@ -60,8 +60,8 @@ void __init at91_add_device_udc(struct at91_udc_data *data)
 	if (data->pullup_pin > 0)
 		at91_set_gpio_output(data->pullup_pin, 0);
 
-	add_generic_device("at91_udc", -1, NULL, AT91RM9200_BASE_UDP, SZ_16K,
-			   IORESOURCE_MEM, data);
+	add_generic_device("at91_udc", DEVICE_ID_DYNAMIC, NULL, AT91RM9200_BASE_UDP,
+			SZ_16K, IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_udc(struct at91_udc_data *data) {}

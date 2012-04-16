@@ -246,7 +246,7 @@ static struct driver_d miidev_drv = {
 int mii_register(struct mii_device *mdev)
 {
 	mdev->dev.priv = mdev;
-	mdev->dev.id = -1;
+	mdev->dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(mdev->dev.name, "miidev");
 	if (mdev->parent)
 		dev_add_child(mdev->parent, &mdev->dev);

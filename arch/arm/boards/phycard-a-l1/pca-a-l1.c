@@ -311,13 +311,13 @@ struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 static int pcaal1_init_devices(void)
 {
 #ifdef CONFIG_MCI_OMAP_HSMMC
-	add_generic_device("omap-hsmmc", -1, NULL, OMAP_MMC1_BASE, SZ_4K,
+	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);
 #endif
 
 #ifdef CONFIG_DRIVER_NET_SMC911X
 	pcaal1_setup_net_chip();
-	add_generic_device("smc911x", -1, NULL, SMC911X_BASE, SZ_4K,
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, SMC911X_BASE, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 #endif
 

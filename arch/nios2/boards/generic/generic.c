@@ -25,7 +25,7 @@ static struct resource mac_resources[] = {
 };
 
 static struct device_d mac_dev = {
-	.id            = -1,
+	.id            = DEVICE_ID_DYNAMIC,
 	.name          = "altera_tse",
 	.num_resources = ARRAY_SIZE(mac_resources),
 	.resource      = mac_resources,
@@ -53,8 +53,8 @@ device_initcall(generic_devices_init);
 
 static int altera_console_init(void)
 {
-	add_generic_device("altera_serial", -1, NULL, NIOS_SOPC_UART_BASE, 0x20,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("altera_serial", DEVICE_ID_DYNAMIC, NULL,
+			NIOS_SOPC_UART_BASE, 0x20, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

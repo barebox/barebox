@@ -126,6 +126,11 @@ struct driver_d {
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
 
+/* dynamically assign the next free id */
+#define DEVICE_ID_DYNAMIC	-1
+/* do not use an id (only one device available */
+#define DEVICE_ID_SINGLE	-2
+
 /* Register devices and drivers.
  */
 int register_driver(struct driver_d *);
@@ -206,7 +211,7 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 static inline struct device_d *add_mem_device(const char *name, resource_size_t start,
 		resource_size_t size, unsigned int flags)
 {
-	return add_generic_device("mem", -1, name, start, size,
+	return add_generic_device("mem", DEVICE_ID_DYNAMIC, name, start, size,
 				  IORESOURCE_MEM | flags, NULL);
 }
 

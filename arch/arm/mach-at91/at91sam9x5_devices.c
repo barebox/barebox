@@ -47,8 +47,8 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 			at91_set_gpio_output(data->vbus_pin[i], 0);
 	}
 
-	add_generic_device("at91_ohci", -1, NULL, AT91SAM9X5_OHCI_BASE, SZ_1M,
-			   IORESOURCE_MEM, data);
+	add_generic_device("at91_ohci", DEVICE_ID_DYNAMIC, NULL, AT91SAM9X5_OHCI_BASE,
+			SZ_1M, IORESOURCE_MEM, data);
 }
 #else
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}

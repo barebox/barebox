@@ -170,7 +170,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 6,
 		.handle = env_ip_handle,
-		.barebox_var_name = "nameserver",
+		.barebox_var_name = "net.nameserver",
 	}, {
 		.option = 12,
 		.handle = env_str_handle,
@@ -178,7 +178,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 15,
 		.handle = env_str_handle,
-		.barebox_var_name = "domainname",
+		.barebox_var_name = "net.domainname",
 	}, {
 		.option = 17,
 		.handle = env_str_handle,
@@ -697,9 +697,7 @@ BAREBOX_CMD_START(dhcp)
 BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootfile, "bootfile returned from DHCP request");
-BAREBOX_MAGICVAR(nameserver, "Nameserver returned from DHCP request");
 BAREBOX_MAGICVAR(hostname, "hostname returned from DHCP request");
-BAREBOX_MAGICVAR(domainname, "domainname returned from DHCP request");
 BAREBOX_MAGICVAR(rootpath, "rootpath returned from DHCP request");
 BAREBOX_MAGICVAR(dhcp_vendor_id, "vendor id to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_client_uuid, "cliend uuid to send to the DHCP server");

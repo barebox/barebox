@@ -253,9 +253,9 @@ static int eukrea_cpuimx25_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx25_usb_init();
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 #endif
-	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_OTG_BASE, 0x200,
 			   IORESOURCE_MEM, &usb_pdata);
 
 	armlinux_set_bootparams((void *)0x80000100);

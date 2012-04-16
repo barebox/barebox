@@ -190,7 +190,6 @@ static void pxamci_start_cmd(struct pxamci_host *host, struct mci_cmd *cmd,
 	mmc_writel(cmd->cmdidx, MMC_CMD);
 	mmc_writel(cmd->cmdarg >> 16, MMC_ARGH);
 	mmc_writel(cmd->cmdarg & 0xffff, MMC_ARGL);
-	mmc_writel(host->clkrt, MMC_CLKRT);
 	pxamci_start_clock(host);
 	mmc_writel(cmdat, MMC_CMDAT);
 }
@@ -260,8 +259,6 @@ static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	unsigned int cmdat;
 	int ret;
 
-	pxamci_stop_clock(host);
-
 	cmdat = host->cmdat;
 	host->cmdat &= ~CMDAT_INIT;
 
@@ -311,8 +308,9 @@ static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	host->cmdat |= CMDAT_INIT;
 
-	clk_enable();
 	pxamci_set_power(host, 1);
+	pxamci_stop_clock(host);
+	mmc_writel(host->clkrt, MMC_CLKRT);
 }
 
 static int pxamci_init(struct mci_host *mci, struct device_d *dev)
@@ -329,6 +327,7 @@ static int pxamci_probe(struct device_d *dev)
 	struct pxamci_host *host;
 	int gpio_power = -1;
 
+	clk_enable();
 	host = xzalloc(sizeof(*host));
 	host->base = dev_request_mem_region(dev, 0);
 

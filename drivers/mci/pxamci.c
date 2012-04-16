@@ -25,6 +25,10 @@
 
 #define DRIVER_NAME	"pxa-mmc"
 
+#define RX_TIMEOUT (100 * MSECOND)
+#define TX_TIMEOUT (250 * MSECOND)
+#define CMD_TIMEOUT (100 * MSECOND)
+
 static void clk_enable(void)
 {
 	CKEN |= CKEN_MMC;
@@ -54,7 +58,7 @@ static void pxamci_stop_clock(struct pxamci_host *host)
 	stat = mmc_readl(MMC_STAT);
 	if (stat & STAT_CLK_EN)
 		writel(STOP_CLOCK, host->base + MMC_STRPCL);
-	while (!is_timeout(start, 10 * MSECOND) && stat & STAT_CLK_EN)
+	while (!is_timeout(start, CMD_TIMEOUT) && stat & STAT_CLK_EN)
 		stat = mmc_readl(MMC_STAT);
 
 	if (stat & STAT_CLK_EN)
@@ -63,12 +67,12 @@ static void pxamci_stop_clock(struct pxamci_host *host)
 
 static void pxamci_setup_data(struct pxamci_host *host, struct mci_data *data)
 {
-	static const unsigned int timeout = 100000000; /* 10ms */
+	static const unsigned int timeout_ns = 1000 * MSECOND; /* 1000 ms */
 
 	mci_dbg("nbblocks=%d, blocksize=%d\n", data->blocks, data->blocksize);
 	mmc_writel(data->blocks, MMC_NOB);
 	mmc_writel(data->blocksize, MMC_BLKLEN);
-	mmc_writel((timeout + 255) / 256, MMC_RDTO);
+	mmc_writel(DIV_ROUND_UP(timeout_ns, 13128), MMC_RDTO);
 }
 
 static int pxamci_read_data(struct pxamci_host *host, unsigned char *dst,
@@ -83,9 +87,10 @@ static int pxamci_read_data(struct pxamci_host *host, unsigned char *dst,
 		trf_len = min_t(int, len, MMC_FIFO_LENGTH);
 
 		for (start = get_time_ns(), ret = -ETIMEDOUT;
-		     ret && !is_timeout(start, 10 * MSECOND);)
+		     ret && !is_timeout(start, RX_TIMEOUT);)
 			if (mmc_readl(MMC_I_REG) & RXFIFO_RD_REQ)
 				ret = 0;
+
 		trf_len1 = trf_len % 4;
 		trf_len4 = trf_len / 4;
 		for (dst4 = (u32 *)dst; !ret && trf_len4 > 0; trf_len4--)
@@ -97,7 +102,7 @@ static int pxamci_read_data(struct pxamci_host *host, unsigned char *dst,
 
 	if (!ret)
 		for (start = get_time_ns(), ret = -ETIMEDOUT;
-		     ret && !is_timeout(start, 10 * MSECOND);)
+		     ret && !is_timeout(start, RX_TIMEOUT);)
 			if (mmc_readl(MMC_STAT) & STAT_DATA_TRAN_DONE)
 				ret = 0;
 	mci_dbg("ret=%d, remain=%d, stat=%x, mmc_i_reg=%x\n",
@@ -118,7 +123,7 @@ static int pxamci_write_data(struct pxamci_host *host, const unsigned char *src,
 		partial = trf_len < MMC_FIFO_LENGTH;
 
 		for (start = get_time_ns(), ret = -ETIMEDOUT;
-		     ret && !is_timeout(start, 10 * MSECOND);)
+		     ret && !is_timeout(start, TX_TIMEOUT);)
 			if (mmc_readl(MMC_I_REG) & TXFIFO_WR_REQ)
 				ret = 0;
 		for (; !ret && trf_len > 0; trf_len--, len--)
@@ -129,7 +134,7 @@ static int pxamci_write_data(struct pxamci_host *host, const unsigned char *src,
 
 	if (!ret)
 		for (start = get_time_ns(), ret = -ETIMEDOUT;
-		     ret && !is_timeout(start, 100 * MSECOND);)  {
+		     ret && !is_timeout(start, TX_TIMEOUT);)  {
 			stat = mmc_readl(MMC_STAT);
 			stat &= STAT_DATA_TRAN_DONE | STAT_PRG_DONE;
 			if (stat == (STAT_DATA_TRAN_DONE | STAT_PRG_DONE))
@@ -236,7 +241,7 @@ static int pxamci_mmccmd(struct pxamci_host *host, struct mci_cmd *cmd,
 
 	pxamci_start_cmd(host, cmd, cmddat);
 	for (start = get_time_ns(), ret = -ETIMEDOUT;
-	     ret && !is_timeout(start, 10 * MSECOND);)
+	     ret && !is_timeout(start, CMD_TIMEOUT);)
 		if (mmc_readl(MMC_STAT) & STAT_END_CMD_RES)
 			ret = 0;
 

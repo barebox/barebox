@@ -188,6 +188,9 @@ static void pxamci_start_cmd(struct pxamci_host *host, struct mci_cmd *cmd,
 		break;
 	}
 
+	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+		cmdat |= CMDAT_STOP_TRAN;
+
 	mmc_writel(cmd->cmdidx, MMC_CMD);
 	mmc_writel(cmd->cmdarg >> 16, MMC_ARGH);
 	mmc_writel(cmd->cmdarg & 0xffff, MMC_ARGL);

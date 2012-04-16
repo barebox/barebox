@@ -239,13 +239,17 @@ static int pxamci_cmd_response(struct pxamci_host *host, struct mci_cmd *cmd)
 static int pxamci_mmccmd(struct pxamci_host *host, struct mci_cmd *cmd,
 			 struct mci_data *data, unsigned int cmddat)
 {
-	int ret = 0;
+	int ret = 0, stat_mask;
 	uint64_t start;
 
 	pxamci_start_cmd(host, cmd, cmddat);
+
+	stat_mask = STAT_END_CMD_RES;
+	if (cmd->resp_type & MMC_RSP_BUSY)
+		stat_mask |= STAT_PRG_DONE;
 	for (start = get_time_ns(), ret = -ETIMEDOUT;
 	     ret && !is_timeout(start, CMD_TIMEOUT);)
-		if (mmc_readl(MMC_STAT) & STAT_END_CMD_RES)
+		if ((mmc_readl(MMC_STAT) & stat_mask) == stat_mask)
 			ret = 0;
 
 	if (!ret && data)

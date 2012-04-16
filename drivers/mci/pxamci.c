@@ -42,6 +42,7 @@ static int pxamci_set_power(struct pxamci_host *host, int on)
 			       !!on ^ host->pdata->gpio_power_invert);
 	else if (host->pdata && host->pdata->setpower)
 		host->pdata->setpower(&host->mci, on);
+	mdelay(250);
 	return 0;
 }
 

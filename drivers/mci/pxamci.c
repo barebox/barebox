@@ -163,18 +163,19 @@ static int pxamci_transfer_data(struct pxamci_host *host,
 	return ret;
 }
 
+#define MMC_RSP_MASK (MMC_RSP_PRESENT | MMC_RSP_136 | MMC_RSP_CRC | \
+		      MMC_RSP_BUSY | MMC_RSP_OPCODE)
 static void pxamci_start_cmd(struct pxamci_host *host, struct mci_cmd *cmd,
 			     unsigned int cmdat)
 {
 	mci_dbg("cmd=(idx=%d,type=%d,clkrt=%d)\n", cmd->cmdidx, cmd->resp_type,
 		host->clkrt);
-	if (cmd->resp_type & MMC_RSP_BUSY)
-		cmdat |= CMDAT_BUSY;
 
-	switch (cmd->resp_type) {
+	switch (cmd->resp_type & MMC_RSP_MASK) {
 	/* r1, r1b, r6, r7 */
-	case MMC_RSP_R1:
 	case MMC_RSP_R1b:
+		cmdat |= CMDAT_BUSY;
+	case MMC_RSP_R1:
 		cmdat |= CMDAT_RESP_SHORT;
 		break;
 	case MMC_RSP_R2:

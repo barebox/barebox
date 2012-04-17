@@ -169,7 +169,6 @@ BAREBOX_CMD_HELP_USAGE("addpart <device> <part_desc>\n")
 BAREBOX_CMD_HELP_SHORT("Add a partition description to a device.\n")
 BAREBOX_CMD_HELP_OPT  ("-n", "no prefix. Do not prepend the device name as prefix before the partition name\n")
 BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
-BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
 BAREBOX_CMD_HELP_OPT  ("<part_desc>", "size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n")
 BAREBOX_CMD_HELP_END
 

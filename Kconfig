@@ -2,7 +2,7 @@
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "Linux/$ARCH $KERNELVERSION Barebox Configuration"
+mainmenu "Barebox/$ARCH $KERNELVERSION Configuration"
 
 config SRCARCH
 	string

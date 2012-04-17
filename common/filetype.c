@@ -86,10 +86,10 @@ enum filetype file_name_detect_type(const char *filename)
 	if (fd < 0)
 		return fd;
 
-	buf = xmalloc(512);
+	buf = xzalloc(512);
 
 	ret = read(fd, buf, 512);
-	if (ret != 512)
+	if (ret < 0)
 		goto err_out;
 
 	type = file_detect_type(buf);

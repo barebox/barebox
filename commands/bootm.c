@@ -202,10 +202,9 @@ static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
 	}
 
 	fdt = xrealloc(fdt, size + 0x8000);
-	fdt_open_into(fdt, fdt, size + 0x8000);
-
-	if (!fdt) {
-		printf("unable to read %s\n", oftree);
+	ret = fdt_open_into(fdt, fdt, size + 0x8000);
+	if (ret) {
+		printf("unable to parse %s\n", oftree);
 		return -ENODEV;
 	}
 

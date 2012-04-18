@@ -124,6 +124,8 @@
 #include <libbb.h>
 #include <magicvar.h>
 #include <linux/list.h>
+#include <binfmt.h>
+#include <init.h>
 
 /*cmd_boot.c*/
 extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
@@ -572,8 +574,6 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	int nextin;
 	struct child_prog *child;
 	char *p;
-	char *path;
-	int ret;
 # if __GNUC__
 	/* Avoid longjmp clobbering */
 	(void) &i;
@@ -642,16 +642,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		if (!strcmp(child->argv[i], "getopt"))
 			return builtin_getopt(ctx, child);
 #endif
-		if (strchr(child->argv[i], '/')) {
-			return execute_script(child->argv[i], child->argc-i, &child->argv[i]);
-		}
-		if ((path = find_execable(child->argv[i]))) {
-			ret = execute_script(path, child->argc-i, &child->argv[i]);
-			free(path);
-			return ret;
-		}
-
-		return execute_command(child->argc - i, &child->argv[i]);
+		return execute_binfmt(child->argc - i, &child->argv[i]);
 	}
 	return -1;
 }
@@ -1748,6 +1739,22 @@ BAREBOX_MAGICVAR(PATH, "colon seperated list of pathes to search for executables
 #ifdef CONFIG_HUSH_FANCY_PROMPT
 BAREBOX_MAGICVAR(PS1, "hush prompt");
 #endif
+
+static int binfmt_sh_excute(struct binfmt_hook *b, char *file, int argc, char **argv)
+{
+	return execute_script(file, argc, argv);
+}
+
+static struct binfmt_hook binfmt_sh_hook = {
+	.type = filetype_sh,
+	.hook = binfmt_sh_excute,
+};
+
+static int binfmt_sh_init(void)
+{
+	return binfmt_register(&binfmt_sh_hook);
+}
+fs_initcall(binfmt_sh_init);
 
 /**
  * @file

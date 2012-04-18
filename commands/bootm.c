@@ -46,6 +46,7 @@
 #include <uncompress.h>
 #include <memory.h>
 #include <filetype.h>
+#include <binfmt.h>
 #include <asm-generic/memory_layout.h>
 
 static LIST_HEAD(handler_list);
@@ -456,6 +457,17 @@ BAREBOX_CMD_START(bootm)
 BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
+
+static struct binfmt_hook binfmt_uimage_hook = {
+	.type = filetype_uimage,
+	.exec = "bootm",
+};
+
+static int binfmt_uimage_init(void)
+{
+	return binfmt_register(&binfmt_uimage_hook);
+}
+fs_initcall(binfmt_uimage_init);
 
 /**
  * @file

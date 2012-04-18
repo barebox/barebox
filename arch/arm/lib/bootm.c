@@ -15,6 +15,7 @@
 #include <libbb.h>
 #include <magicvar.h>
 #include <libfdt.h>
+#include <binfmt.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -447,14 +448,33 @@ BAREBOX_MAGICVAR(aimage_noverwrite_bootargs, "Disable overwrite of the bootargs 
 BAREBOX_MAGICVAR(aimage_noverwrite_tags, "Disable overwrite of the tags addr with the one present in aimage");
 #endif
 
+static struct binfmt_hook binfmt_aimage_hook = {
+	.type = filetype_aimage,
+	.exec = "bootm",
+};
+
+static struct binfmt_hook binfmt_arm_zimage_hook = {
+	.type = filetype_arm_zimage,
+	.exec = "bootm",
+};
+
+static struct binfmt_hook binfmt_barebox_hook = {
+	.type = filetype_arm_barebox,
+	.exec = "bootm",
+};
+
 static int armlinux_register_image_handler(void)
 {
 	register_image_handler(&barebox_handler);
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);
 	register_image_handler(&zimage_handler);
-	if (IS_BUILTIN(CONFIG_CMD_BOOTM_AIMAGE))
+	if (IS_BUILTIN(CONFIG_CMD_BOOTM_AIMAGE)) {
 		register_image_handler(&aimage_handler);
+		binfmt_register(&binfmt_aimage_hook);
+	}
+	binfmt_register(&binfmt_arm_zimage_hook);
+	binfmt_register(&binfmt_barebox_hook);
 
 	return 0;
 }

@@ -134,4 +134,8 @@ fi
 
 echo "booting kernel from $kdev"
 
+#try to execute the file
+# it does not work as example for /dev as the file is not executable
+$kdev $bootm_opt
+# fall back on bootm
 bootm $bootm_opt $kdev

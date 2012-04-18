@@ -1,3 +1,4 @@
+obj-$(CONFIG_BINFMT)		+= binfmt.o
 obj-$(CONFIG_SHELL_HUSH)	+= hush.o
 obj-$(CONFIG_SHELL_SIMPLE)	+= parser.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o

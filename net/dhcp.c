@@ -681,7 +681,7 @@ BAREBOX_CMD_HELP_START(dhcp)
 BAREBOX_CMD_HELP_USAGE("dhcp [OPTIONS]\n")
 BAREBOX_CMD_HELP_SHORT("Invoke dhcp client to obtain ip/boot params.\n")
 BAREBOX_CMD_HELP_OPT  ("-H <hostname>",
-"Hostname to send to the DHCP server\n");
+"Hostname to send to the DHCP server\n")
 BAREBOX_CMD_HELP_OPT  ("-v <vendor_id>",
 "DHCP Vendor ID (code 60) submitted in DHCP requests. It can\n"
 "be used in the DHCP server's configuration to select options\n"

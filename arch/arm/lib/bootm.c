@@ -239,6 +239,8 @@ static int do_bootz_linux(struct image_data *data)
 
 	data->os_res = request_sdram_region("zimage", load_address, end);
 	if (!data->os_res) {
+		pr_err("bootm/zImage: failed to request memory at 0x%lx to 0x%lx (%d).\n",
+		       load_address, load_address + end, end);
 		ret = -ENOMEM;
 		goto err_out;
 	}

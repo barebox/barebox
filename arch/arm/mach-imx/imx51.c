@@ -20,8 +20,8 @@
 #include <sizes.h>
 #include <environment.h>
 #include <io.h>
-#include <mach/imx51-regs.h>
 #include <mach/imx5.h>
+#include <mach/imx-regs.h>
 #include <mach/clock-imx51_53.h>
 
 #include "gpio.h"
@@ -53,19 +53,19 @@ static int query_silicon_revision(void)
 	rev = readl(rom + SI_REV);
 	switch (rev) {
 	case 0x1:
-		mx51_silicon_revision = MX51_CHIP_REV_1_0;
+		mx51_silicon_revision = IMX_CHIP_REV_1_0;
 		mx51_rev_string = "1.0";
 		break;
 	case 0x2:
-		mx51_silicon_revision = MX51_CHIP_REV_1_1;
+		mx51_silicon_revision = IMX_CHIP_REV_1_1;
 		mx51_rev_string = "1.1";
 		break;
 	case 0x10:
-		mx51_silicon_revision = MX51_CHIP_REV_2_0;
+		mx51_silicon_revision = IMX_CHIP_REV_2_0;
 		mx51_rev_string = "2.0";
 		break;
 	case 0x20:
-		mx51_silicon_revision = MX51_CHIP_REV_3_0;
+		mx51_silicon_revision = IMX_CHIP_REV_3_0;
 		mx51_rev_string = "3.0";
 		break;
 	default:
@@ -194,7 +194,7 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 	imx5_init_lowlevel();
 
 	/* disable write combine for TO 2 and lower revs */
-	if (imx_silicon_revision() < MX51_CHIP_REV_3_0) {
+	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
 		__asm__ __volatile__("mrc 15, 1, %0, c9, c0, 1":"=r"(r));
 		r |= (1 << 25);
 		__asm__ __volatile__("mcr 15, 1, %0, c9, c0, 1" : : "r"(r));

@@ -141,7 +141,7 @@ static void babbage_power_init(void)
 	/* power up the system first */
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, 0x00200000);
 
-	if (imx_silicon_revision() < MX51_CHIP_REV_3_0) {
+	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
 		/* Set core voltage to 1.1V */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
 		val &= ~0x1f;

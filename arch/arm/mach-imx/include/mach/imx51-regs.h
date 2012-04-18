@@ -130,17 +130,4 @@
 #define MX51_CS4_BASE_ADDR		0xCC000000
 #define MX51_CS5_BASE_ADDR		0xCE000000
 
-/* silicon revisions specific to i.MX51 */
-#define MX51_CHIP_REV_1_0	0x10
-#define MX51_CHIP_REV_1_1	0x11
-#define MX51_CHIP_REV_1_2	0x12
-#define MX51_CHIP_REV_1_3	0x13
-#define MX51_CHIP_REV_2_0	0x20
-#define MX51_CHIP_REV_2_1	0x21
-#define MX51_CHIP_REV_2_2	0x22
-#define MX51_CHIP_REV_2_3	0x23
-#define MX51_CHIP_REV_3_0	0x30
-#define MX51_CHIP_REV_3_1	0x31
-#define MX51_CHIP_REV_3_2	0x32
-
 #endif /* __MACH_IMX51_REGS_H */

@@ -150,7 +150,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
 {
 	enum filetype ft;
-	struct fdt_header *fdt;
+	struct fdt_header *fdt, *fixfdt;
 	int ret;
 	size_t size;
 
@@ -201,21 +201,25 @@ static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
 				file_type_to_string(ft));
 	}
 
-	fdt = xrealloc(fdt, size + 0x8000);
-	ret = fdt_open_into(fdt, fdt, size + 0x8000);
+	fixfdt = xmemalign(4096, size + 0x8000);
+	memcpy(fixfdt, fdt, size);
+
+	free(fdt);
+
+	ret = fdt_open_into(fixfdt, fixfdt, size + 0x8000);
 	if (ret) {
 		printf("unable to parse %s\n", oftree);
 		return -ENODEV;
 	}
 
-	ret = of_fix_tree(fdt);
+	ret = of_fix_tree(fixfdt);
 	if (ret)
 		return ret;
 
 	if (bootm_verbose(data) > 1)
-		fdt_print(fdt, "/");
+		fdt_print(fixfdt, "/");
 
-	data->oftree = fdt;
+	data->oftree = fixfdt;
 
 	return ret;
 }

@@ -64,10 +64,16 @@ static void platform_ide_setup_port(void *reg_base, void *alt_base,
 	ioaddr->status_addr = reg_base + (IDE_REG_STATUS << shift);
 	ioaddr->command_addr = reg_base + (IDE_REG_CMD << shift);
 
-	ioaddr->altstatus_addr = alt_base + (IDE_REG_ALT_STATUS << shift);
-	ioaddr->ctl_addr = alt_base + (IDE_REG_DEV_CTL << shift);
+	if (alt_base) {
+		ioaddr->altstatus_addr = alt_base + (IDE_REG_ALT_STATUS << shift);
+		ioaddr->ctl_addr = alt_base + (IDE_REG_DEV_CTL << shift);
 
-	ioaddr->alt_dev_addr = alt_base + (IDE_REG_DRV_ADDR << shift);
+		ioaddr->alt_dev_addr = alt_base + (IDE_REG_DRV_ADDR << shift);
+	} else {
+		ioaddr->altstatus_addr = ioaddr->status_addr;
+		ioaddr->ctl_addr = ioaddr->status_addr;
+		/* ioaddr->alt_dev_addr not used in driver */
+	}
 }
 
 static int platform_ide_probe(struct device_d *dev)

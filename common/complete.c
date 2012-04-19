@@ -26,7 +26,7 @@
 #include <command.h>
 #include <environment.h>
 
-static int file_complete(struct string_list *sl, char *instr)
+static int file_complete(struct string_list *sl, char *instr, int exec)
 {
 	char *path = strdup(instr);
 	struct stat s;
@@ -46,15 +46,20 @@ static int file_complete(struct string_list *sl, char *instr)
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
-		if (!strncmp(base, d->d_name, strlen(base))) {
-			strcpy(tmp, instr);
-			strcat(tmp, d->d_name + strlen(base));
-			if (!stat(tmp, &s) && S_ISDIR(s.st_mode))
-				strcat(tmp, "/");
-			else
-				strcat(tmp, " ");
-			string_list_add_sorted(sl, tmp);
+		if (strncmp(base, d->d_name, strlen(base)))
+			continue;
+
+		strcpy(tmp, instr);
+		strcat(tmp, d->d_name + strlen(base));
+		if (!stat(tmp, &s) && S_ISDIR(s.st_mode)) {
+			strcat(tmp, "/");
+		} else {
+			if (exec && !S_ISREG(s.st_mode))
+				continue;
+			strcat(tmp, " ");
 		}
+
+		string_list_add_sorted(sl, tmp);
 	}
 
 	closedir(dir);
@@ -316,9 +321,12 @@ int complete(char *instr, char **outstr)
 	instr = cmd_complete_lookup(&sl, t);
 	if (!instr) {
 		instr = t;
-		if ((t = strrchr(t, ' '))) {
+		if (t && (t[0] == '/' || !strncmp(t, "./", 2))) {
+			file_complete(&sl, t, 1);
+			instr = t;
+		} else if ((t = strrchr(t, ' '))) {
 			t++;
-			file_complete(&sl, t);
+			file_complete(&sl, t, 0);
 			instr = t;
 		} else {
 			command_complete(&sl, instr);

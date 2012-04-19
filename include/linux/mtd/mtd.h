@@ -257,6 +257,8 @@ static inline void mtd_erase_callback(struct erase_info *instr)
 }
 #endif
 
+int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
+int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs);
 

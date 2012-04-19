@@ -95,6 +95,20 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 
 	return 0;
 }
+
+static ssize_t mtd_op_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+{
+	struct mtd_info *mtd = cdev->priv;
+
+	if (!mtd->unlock || !mtd->lock)
+		return -ENOSYS;
+
+	if (prot)
+		return mtd_lock(mtd, offset, count);
+	else
+		return mtd_unlock(mtd, offset, count);
+}
+
 #endif /* CONFIG_MTD_WRITE */
 
 int mtd_ioctl(struct cdev *cdev, int request, void *buf)
@@ -161,6 +175,28 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	return ret;
 }
 
+int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
+{
+	if (!mtd->lock)
+		return -EOPNOTSUPP;
+	if (ofs < 0 || ofs > mtd->size || len > mtd->size - ofs)
+		return -EINVAL;
+	if (!len)
+		return 0;
+	return mtd->lock(mtd, ofs, len);
+}
+
+int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
+{
+	if (!mtd->unlock)
+		return -EOPNOTSUPP;
+	if (ofs < 0 || ofs > mtd->size || len > mtd->size - ofs)
+		return -EINVAL;
+	if (!len)
+		return 0;
+	return mtd->unlock(mtd, ofs, len);
+}
+
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
 	if (!mtd->block_isbad)
@@ -206,6 +242,7 @@ static struct file_operations mtd_ops = {
 #ifdef CONFIG_MTD_WRITE
 	.write  = mtd_op_write,
 	.erase  = mtd_op_erase,
+	.protect = mtd_op_protect,
 #endif
 	.ioctl  = mtd_ioctl,
 	.lseek  = dev_lseek_default,

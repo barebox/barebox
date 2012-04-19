@@ -3,7 +3,6 @@ obj-$(CONFIG_ARM_AMBA) += amba/
 obj-y	+= net/
 obj-y	+= serial/
 obj-y	+= mtd/
-obj-y	+= nor/
 obj-y	+= usb/
 obj-$(CONFIG_DISK) += ata/
 obj-$(CONFIG_SPI) += spi/

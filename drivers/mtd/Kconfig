@@ -21,6 +21,7 @@ config MTD_RAW_DEVICE
 	prompt "mtdraw device to read/write both data+oob"
 
 source "drivers/mtd/devices/Kconfig"
+source "drivers/mtd/nor/Kconfig"
 source "drivers/mtd/nand/Kconfig"
 source "drivers/mtd/ubi/Kconfig"
 

@@ -454,10 +454,8 @@ flash_sect_t find_sector (struct flash_info *info, ulong addr)
 	return sector;
 }
 
-static int __cfi_erase(struct cdev *cdev, size_t count, loff_t offset,
-		int verbose)
+static int cfi_erase(struct flash_info *finfo, size_t count, loff_t offset)
 {
-        struct flash_info *finfo = (struct flash_info *)cdev->priv;
         unsigned long start, end;
         int i, ret = 0;
 
@@ -466,9 +464,6 @@ static int __cfi_erase(struct cdev *cdev, size_t count, loff_t offset,
         start = find_sector(finfo, (unsigned long)finfo->base + offset);
         end   = find_sector(finfo, (unsigned long)finfo->base + offset +
 			count - 1);
-
-	if (verbose)
-		init_progression_bar(end - start);
 
         for (i = start; i <= end; i++) {
                 ret = finfo->cfi_cmd_set->flash_erase_one(finfo, i);
@@ -479,19 +474,9 @@ static int __cfi_erase(struct cdev *cdev, size_t count, loff_t offset,
 			ret = -EINTR;
 			goto out;
 		}
-
-		if (verbose)
-			show_progress(i - start);
         }
 out:
-	if (verbose)
-	        putchar('\n');
         return ret;
-}
-
-static int cfi_erase(struct cdev *cdev, size_t count, loff_t offset)
-{
-	return __cfi_erase(cdev, count, offset, 1);
 }
 
 /*
@@ -626,18 +611,13 @@ static int flash_real_protect (struct flash_info *info, long sector, int prot)
 	return retcode;
 }
 
-static int cfi_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+static int cfi_mtd_protect(struct flash_info *finfo, loff_t offset, size_t len, int prot)
 {
-	struct flash_info *finfo = (struct flash_info *)cdev->priv;
 	unsigned long start, end;
 	int i, ret = 0;
-	const char *action = (prot? "protect" : "unprotect");
-
-	printf("%s: %s 0x%p (size %zu)\n", __func__,
-	       action, finfo->base + offset, count);
 
 	start = find_sector(finfo, (unsigned long)finfo->base + offset);
-	end   = find_sector(finfo, (unsigned long)finfo->base + offset + count - 1);
+	end   = find_sector(finfo, (unsigned long)finfo->base + offset + len - 1);
 
 	for (i = start; i <= end; i++) {
 		ret = flash_real_protect (finfo, i, prot);
@@ -645,20 +625,21 @@ static int cfi_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 			goto out;
 	}
 out:
-	putchar('\n');
 	return ret;
 }
 
-static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
+static int cfi_mtd_lock(struct mtd_info *mtd, loff_t offset, size_t len)
 {
-        struct flash_info *finfo = (struct flash_info *)cdev->priv;
-        int ret;
+	struct flash_info *finfo = container_of(mtd, struct flash_info, mtd);
 
-	debug("cfi_write: buf=0x%p addr=0x%p count=0x%08zx\n",
-			buf, finfo->base + offset, count);
+	return cfi_mtd_protect(finfo, offset, len, 1);
+}
 
-	ret = write_buff(finfo, buf, (unsigned long)finfo->base + offset, count);
-	return ret == 0 ? count : -1;
+static int cfi_mtd_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
+{
+	struct flash_info *finfo = container_of(mtd, struct flash_info, mtd);
+
+	return cfi_mtd_protect(finfo, offset, len, 0);
 }
 
 static void cfi_info (struct device_d* dev)
@@ -908,15 +889,6 @@ int flash_isset(struct flash_info *info, flash_sect_t sect,
 	return retval;
 }
 
-struct file_operations cfi_ops = {
-	.read    = mem_read,
-	.write   = cfi_write,
-	.lseek  = dev_lseek_default,
-	.erase   = cfi_erase,
-	.protect = cfi_protect,
-	.memmap  = generic_memmap_ro,
-};
-
 static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
 		size_t *retlen, u_char *buf)
 {
@@ -943,10 +915,9 @@ static int cfi_mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
 static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
-	struct cdev *cdev = &info->cdev;
 	int ret;
 
-	ret = __cfi_erase(cdev, instr->len, instr->addr, 0);
+	ret = cfi_erase(info, instr->len, instr->addr);
 
 	if (ret) {
 		instr->state = MTD_ERASE_FAILED;
@@ -966,21 +937,23 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->read = cfi_mtd_read;
 	mtd->write = cfi_mtd_write;
 	mtd->erase = cfi_mtd_erase;
+	mtd->lock = cfi_mtd_lock;
+	mtd->unlock = cfi_mtd_unlock;
 	mtd->size = info->size;
-	mtd->name = info->cdev.name;
 	mtd->erasesize = info->eraseregions[1].erasesize; /* FIXME */
 	mtd->writesize = 1;
 	mtd->subpage_sft = 0;
 	mtd->eraseregions = info->eraseregions;
 	mtd->numeraseregions = info->numeraseregions;
 	mtd->flags = MTD_CAP_NORFLASH;
-	info->cdev.mtd = mtd;
+	mtd->type = MTD_NORFLASH;
+
+	add_mtd_device(mtd, "nor");
 }
 
 static int cfi_probe (struct device_d *dev)
 {
 	struct flash_info *info = xzalloc(sizeof(*info));
-	int cfinum;
 
 	dev->priv = (void *)info;
 
@@ -999,24 +972,7 @@ static int cfi_probe (struct device_d *dev)
 	dev_info(dev, "found cfi flash at %p, size %ld\n",
 			info->base, info->size);
 
-	if (dev->id < 0)
-		cfinum = cdev_find_free_index("nor");
-	else
-		cfinum = dev->id;
-
-	info->cdev.name = asprintf("nor%d", cfinum);
-	info->cdev.size = info->size;
-	info->cdev.dev = dev;
-	info->cdev.ops = &cfi_ops;
-	info->cdev.priv = info;
-
-	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD))
-		cfi_init_mtd(info);
-
-	devfs_create(&info->cdev);
-
-	if (dev->device_node)
-		of_parse_partitions(info->cdev.name, dev->device_node);
+	cfi_init_mtd(info);
 
 	return 0;
 }

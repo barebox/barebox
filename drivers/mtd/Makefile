@@ -1,4 +1,5 @@
 obj-$(CONFIG_NAND)			+= nand/
+obj-$(CONFIG_DRIVER_CFI)		+= nor/
 obj-$(CONFIG_UBI)			+= ubi/
 obj-y					+= devices/
 obj-$(CONFIG_PARTITION_NEED_MTD)	+= partition.o

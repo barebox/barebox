@@ -16,9 +16,8 @@ int string_list_add(struct string_list *sl, char *str)
 {
 	struct string_list *new;
 
-	new = xmalloc(sizeof(struct string_list) + strlen(str) + 1);
-
-	strcpy(new->str, str);
+	new = xmalloc(sizeof(*new));
+	new->str = xstrdup(str);
 
 	list_add_tail(&new->list, &sl->list);
 
@@ -29,9 +28,8 @@ int string_list_add_sorted(struct string_list *sl, char *str)
 {
 	struct string_list *new;
 
-	new = xmalloc(sizeof(struct string_list) + strlen(str) + 1);
-
-	strcpy(new->str, str);
+	new = xmalloc(sizeof(*new));
+	new->str = xstrdup(str);
 
 	list_add_sort(&new->list, &sl->list, string_list_compare);
 

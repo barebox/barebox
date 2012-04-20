@@ -9,12 +9,6 @@
 #include <libgen.h>
 #include <getopt.h>
 
-#define NETX_IDENTIFICATION   0x5854454E /* Valid signature 'N' 'E' 'T' 'X' */
-
-#define MAGICCOOKIE_8BIT      0xF8BEAF08  /* Cookie used for  8Bit Flashes */
-#define MAGICCOOKIE_16BIT     0xF8BEAF16  /* Cookie used for 16Bit Flashes */
-#define MAGICCOOKIE_32BIT     0xF8BEAF32  /* Cookie used for 32Bit Flashes */
-
 struct netx_block_normal {
 	uint32_t sdram_general_ctrl;	/* SDRam General control value */
 	uint32_t sdram_timing_ctrl;	/* SDRam Timing control register value */
@@ -31,6 +25,9 @@ struct netx_block_expbus {
 
 struct netx_bootblock {
 	uint32_t cookie;     /* Cookie identifying bus width and valid bootblock */
+# define MAGICCOOKIE_8BIT      0xF8BEAF08  /* Cookie used for  8Bit Flashes */
+# define MAGICCOOKIE_16BIT     0xF8BEAF16  /* Cookie used for 16Bit Flashes */
+# define MAGICCOOKIE_32BIT     0xF8BEAF32  /* Cookie used for 32Bit Flashes */
 
 	union {
 		uint32_t mem_ctrl;        /* Parallel/Serial Flash Mode for setting up timing parameters */
@@ -43,6 +40,7 @@ struct netx_bootblock {
 	uint32_t appl_size;         /* size of application in DWORDs */
 	uint32_t appl_start_addr;    /* Relocation address of application */
 	uint32_t signature;        /* Bootblock signature ('NETX') */
+# define NETX_IDENTIFICATION   0x5854454E /* Valid signature 'N' 'E' 'T' 'X' */
 
 	union {
 		struct netx_block_normal normal;
@@ -50,7 +48,12 @@ struct netx_bootblock {
 	} config;
 
 	uint32_t misc_asic_ctrl;            /* ASIC CTRL register value */
-	uint32_t reserved[2];
+	uint32_t UserParameter;	/* Serial number or user parameter */
+	uint32_t SourceType;	/* 1 = parallel falsh at the SRAM bus */
+# define ST_PFLASH 1
+# define ST_SFLASH 2
+# define ST_SEEPROM 3
+
 	uint32_t boot_checksum;            /* Bootblock checksum (complement of DWORD sum over bootblock) */
 };
 
@@ -179,6 +182,7 @@ int main(int argc, char *argv[])
 	nb->signature = NETX_IDENTIFICATION;
 	nb->config.normal.sdram_general_ctrl = sdramctrl;
 	nb->config.normal.sdram_timing_ctrl = sdramtimctrl;
+	nb->SourceType = ST_PFLASH;
 
 	ofs = sizeof(struct netx_bootblock);
 	bytes = barebox_size;

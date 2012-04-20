@@ -63,7 +63,7 @@ static int xc_patch(int xcno, void *patch, int count)
 static void memset32(void *s, int c, int n)
 {
 	int i;
-	unsigned int *t = s;
+	u32 *t = s;
 
 	for (i = 0; i < (n >> 2); i++)
 		*t++ = 0;
@@ -72,8 +72,8 @@ static void memset32(void *s, int c, int n)
 static void memcpy32(void *trg, void *src, int size)
 {
 	int i;
-	unsigned int *t = trg;
-	unsigned int *s = src;
+	u32 *t = trg;
+	u32 *s = src;
 	for (i = 0; i < (size >> 2); i++)
 		*t++ = *s++;
 }

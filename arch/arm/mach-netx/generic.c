@@ -33,11 +33,11 @@ struct fw_header {
 
 static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
 {
-	if( adr >= NETX_PA_XMAC(xcno) &&
+	if (adr >= NETX_PA_XMAC(xcno) &&
 	    adr + size < NETX_PA_XMAC(xcno) + XMAC_MEM_SIZE)
 		return 0;
 
-	if( adr >= NETX_PA_XPEC(xcno) &&
+	if (adr >= NETX_PA_XPEC(xcno) &&
 	    adr + size < NETX_PA_XPEC(xcno) + XPEC_MEM_SIZE)
 		return 0;
 
@@ -49,12 +49,11 @@ static int xc_patch(int xcno, void *patch, int count)
 {
 	unsigned int adr, val, *p = patch;
 
-/*	printf("%s: patch: %p size: %d\n",__FUNCTION__,patch,count); */
 	int i;
-	for(i=0; i<count; i++) {
+	for (i = 0; i < count; i++) {
 		adr = *p++;
 		val = *p++;
-		if( xc_check_ptr(xcno, adr, 1) < 0)
+		if (xc_check_ptr(xcno, adr, 1) < 0)
 			return -1;
 		*(volatile unsigned int *)adr = val;
 	}
@@ -66,7 +65,7 @@ static void memset32(void *s, int c, int n)
 	int i;
 	unsigned int *t = s;
 
-	for(i=0; i<(n>>2); i++)
+	for (i = 0; i < (n >> 2); i++)
 		*t++ = 0;
 }
 
@@ -75,11 +74,12 @@ static void memcpy32(void *trg, void *src, int size)
 	int i;
 	unsigned int *t = trg;
 	unsigned int *s = src;
-	for(i=0; i<(size>>2); i++)
+	for (i = 0; i < (size >> 2); i++)
 		*t++ = *s++;
 }
 
-int loadxc(int xcno) {
+int loadxc(int xcno)
+{
 	/* stop xmac / xpec */
 	XMAC_REG(xcno, XMAC_RPU_HOLD_PC) = RPU_HOLD_PC;
 	XMAC_REG(xcno, XMAC_TPU_HOLD_PC) = TPU_HOLD_PC;
@@ -92,7 +92,7 @@ int loadxc(int xcno) {
 	memset32((void*)NETX_PA_XMAC(xcno), 0, 0x800);
 
 	/* can't use barebox memcpy here, we need 32bit accesses */
-	if(xcno == 0) {
+	if (xcno == 0) {
 		memcpy32((void*)(NETX_PA_XMAC(xcno) + XMAC_RPU_PROGRAM_START), rpu_eth0, sizeof(rpu_eth0));
 		memcpy32((void*)(NETX_PA_XMAC(xcno) + XMAC_TPU_PROGRAM_START), tpu_eth0, sizeof(tpu_eth0));
 		memcpy32((void*)NETX_PA_XPEC(xcno) + XPEC_RAM_START, xpec_eth0_mac, sizeof(xpec_eth0_mac));

@@ -218,7 +218,8 @@ int main(int argc, char *argv[])
 		checksum += *ptr++;
 	nb->boot_checksum = -1 * checksum;
 
-	fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR |
+			S_IRGRP | S_IWGRP | S_IROTH);
 	if(fd < 0) {
 		perror("open");
 		exit(1);

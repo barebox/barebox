@@ -183,6 +183,10 @@ int dev_add_param(struct device_d *dev, const char *name,
 {
 	struct param_d *param;
 
+	param = get_param_by_name(dev, name);
+	if (param)
+		return -EEXIST;
+
 	param = __dev_add_param(dev, name, set, get, flags);
 
 	return param ? 0 : -EINVAL;

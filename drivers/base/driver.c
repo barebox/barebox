@@ -401,7 +401,7 @@ static int do_devinfo(int argc, char *argv[])
 				"no parameters available" : "Parameters:");
 
 		list_for_each_entry(param, &dev->parameters, list)
-			printf("%16s = %s\n", param->name, param->value);
+			printf("%16s = %s\n", param->name, dev_get_param(dev, param->name));
 	}
 
 	return 0;

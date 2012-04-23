@@ -133,14 +133,14 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 	return 0;
 }
 
-static char *param_get_generic(struct device_d *dev, struct param_d *p)
+static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 {
 	return p->value;
 }
 
-static struct param_d *__dev_add_param(struct device_d *dev, char *name,
+static struct param_d *__dev_add_param(struct device_d *dev, const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		char *(*get)(struct device_d *dev, struct param_d *p),
+		const char *(*get)(struct device_d *dev, struct param_d *p),
 		unsigned long flags)
 {
 	struct param_d *param;
@@ -176,9 +176,9 @@ static struct param_d *__dev_add_param(struct device_d *dev, char *name,
  * expect the parameter value to be a string which can be freed with free(). Do
  * not use static arrays when using the generic functions.
  */
-int dev_add_param(struct device_d *dev, char *name,
+int dev_add_param(struct device_d *dev, const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		char *(*get)(struct device_d *dev, struct param_d *param),
+		const char *(*get)(struct device_d *dev, struct param_d *param),
 		unsigned long flags)
 {
 	struct param_d *param;

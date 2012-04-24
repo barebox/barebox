@@ -133,7 +133,7 @@ stack_setup:
 	addiu	sp, -16
 
 	la	v0, start_barebox
-        jal     v0
+	jal     v0
 	 nop
 
 	/* No return */

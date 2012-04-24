@@ -104,6 +104,9 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 config SUPPORT_CALAO_DAB_MMX
 	bool
 
+config SUPPORT_CALAO_MOB_TNY_MD2
+	bool
+
 # ----------------------------------------------------------
 
 if ARCH_AT91RM9200
@@ -138,6 +141,7 @@ config MACH_AT91SAM9260EK
 
 config MACH_TNY_A9260
 	bool "CALAO TNY-A9260"
+	select SUPPORT_CALAO_MOB_TNY_MD2
 	help
 	  Select this if you are using a Calao Systems TNY-A9260.
 	  <http://www.calao-systems.com>
@@ -214,6 +218,7 @@ config MACH_AT91SAM9G20EK
 	  that embeds only one SD/MMC slot.
 
 config MACH_TNY_A9G20
+	select SUPPORT_CALAO_MOB_TNY_MD2
 	bool "CALAO TNY-A9G20"
 	help
 	  Select this if you are using a Calao Systems TNY-A9G20.
@@ -264,6 +269,7 @@ config MACH_PM9263
 
 config MACH_TNY_A9263
 	bool "CALAO TNY-A9263"
+	select SUPPORT_CALAO_MOB_TNY_MD2
 	help
 	  Select this if you are using a Calao Systems TNY-A9263.
 	  <http://www.calao-systems.com>
@@ -361,5 +367,9 @@ endchoice
 config CALAO_DAB_MMX
 	bool "DAB MMX Daughter Board support"
 	depends on SUPPORT_CALAO_DAB_MMX
+
+config CALAO_MOB_TNY_MD2
+	bool "MOB TNY MD2 Motherboard Daughter Board support"
+	depends on SUPPORT_CALAO_MOB_TNY_MD2
 
 endif

@@ -132,6 +132,7 @@ board-$(CONFIG_MACH_VERSATILEPB)		:= versatile
 board-$(CONFIG_MACH_TX25)			:= karo-tx25
 board-$(CONFIG_MACH_TQMA53)			:= tqma53
 board-$(CONFIG_MACH_TX51)			:= karo-tx51
+board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

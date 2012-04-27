@@ -20,6 +20,11 @@
 #ifndef __ASM_ARCH_NETX_REGS_H
 #define __ASM_ARCH_NETX_REGS_H
 
+#define NETX_SDRAM_BASE 0x80000000
+#define NETX_CS0_BASE 0xc0000000
+#define NETX_CS1_BASE 0xc8000000
+#define NETX_CS2_BASE 0xd0000000
+
 #define NETX_IO_PHYS 0x00100000
 #define io_p2v(x) (x)
 #define __REG(base,ofs)       (*((volatile unsigned long *)(io_p2v(base) + ofs)))

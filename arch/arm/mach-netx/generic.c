@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <io.h>
 #include <mach/netx-regs.h>
 #include "eth_firmware.h"
 
@@ -45,18 +46,17 @@ static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
 	return -1;
 }
 
-static int xc_patch(int xcno, const void *patch, int count)
+static int xc_patch(int xcno, const u32 *patch, int count)
 {
 	unsigned int adr, val;
-	const unsigned int *p = patch;
 
 	int i;
 	for (i = 0; i < count; i++) {
-		adr = *p++;
-		val = *p++;
+		adr = *patch++;
+		val = *patch++;
 		if (xc_check_ptr(xcno, adr, 1) < 0)
 			return -1;
-		*(volatile unsigned int *)adr = val;
+		writel(val, adr);
 	}
 	return 0;
 }

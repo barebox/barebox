@@ -45,9 +45,10 @@ static int xc_check_ptr(int xcno, unsigned long adr, unsigned int size)
 	return -1;
 }
 
-static int xc_patch(int xcno, void *patch, int count)
+static int xc_patch(int xcno, const void *patch, int count)
 {
-	unsigned int adr, val, *p = patch;
+	unsigned int adr, val;
+	const unsigned int *p = patch;
 
 	int i;
 	for (i = 0; i < count; i++) {
@@ -69,11 +70,11 @@ static void memset32(void *s, int c, int n)
 		*t++ = 0;
 }
 
-static void memcpy32(void *trg, void *src, int size)
+static void memcpy32(void *trg, const void *src, int size)
 {
 	int i;
 	u32 *t = trg;
-	u32 *s = src;
+	const u32 *s = src;
 	for (i = 0; i < (size >> 2); i++)
 		*t++ = *s++;
 }

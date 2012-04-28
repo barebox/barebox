@@ -1002,7 +1002,8 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
-		.tmp_kallsyms* barebox_default_env* barebox.ldr Doxyfile.version
+		.tmp_kallsyms* barebox_default_env* barebox.ldr \
+		Doxyfile.version barebox.srec
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

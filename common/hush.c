@@ -962,11 +962,6 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 	} else if (glob_needed(dest->data)) {
 		gr = glob(dest->data, flags, NULL, pglob);
 		debug("glob returned %d\n",gr);
-		if (gr == GLOB_NOMATCH) {
-			/* quote removal, or more accurately, backslash removal */
-			gr = fake_glob(dest->data, flags, NULL, pglob);
-			debug("globhack returned %d\n",gr);
-		}
 	} else {
 		gr = fake_glob(dest->data, flags, NULL, pglob);
 		debug("globhack returned %d\n",gr);
@@ -1172,7 +1167,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 {
 	struct child_prog *child = ctx->child;
 	glob_t *glob_target;
-	int gr, flags = 0;
+	int gr, flags = GLOB_NOCHECK;
 
 	debug("%s: %s %p\n", __func__, dest->data, child);
 	if (dest->length == 0 && !dest->nonnull) {

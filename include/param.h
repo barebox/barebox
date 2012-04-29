@@ -14,7 +14,6 @@ struct param_d {
 	int (*set)(struct device_d *, struct param_d *param, const char *val);
 	unsigned int flags;
 	char *name;
-	struct param_d *next;
 	char *value;
 	struct list_head list;
 };

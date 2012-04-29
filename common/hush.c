@@ -497,7 +497,8 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 }
 
 #ifdef CONFIG_HUSH_GETOPT
-static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
+static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
+		int argc, char *argv[])
 {
 	char *optstring, *var;
 	int opt, ret = 0;
@@ -505,11 +506,11 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child)
 	struct option *o;
 	struct getopt_context gc;
 
-	if (child->argc != 3)
+	if (argc != 3)
 		return -2 - 1;
 
-	optstring = child->argv[1];
-	var = child->argv[2];
+	optstring = argv[1];
+	var = argv[2];
 
 	getopt_context_store(&gc);
 
@@ -546,6 +547,12 @@ out:
 }
 
 BAREBOX_MAGICVAR(OPTARG, "optarg for hush builtin getopt");
+#else
+static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
+		int argc, char *argv[])
+{
+	return -1;
+}
 #endif
 
 static void remove_quotes_in_str(char *src)
@@ -601,6 +608,57 @@ static void remove_quotes(int argc, char *argv[])
 		remove_quotes_in_str(argv[i]);
 }
 
+static int fake_glob(const char *src, int flags,
+		int (*errfunc) (const char *epath, int eerrno),
+		glob_t *pglob)
+{
+	int pathc;
+
+	if (!(flags & GLOB_APPEND)) {
+		globfree(pglob);
+		pglob->gl_pathv = NULL;
+		pglob->gl_pathc = 0;
+		pglob->gl_offs = 0;
+	}
+	pathc = ++pglob->gl_pathc;
+	pglob->gl_pathv = xrealloc(pglob->gl_pathv, (pathc + 1) * sizeof(*pglob->gl_pathv));
+	pglob->gl_pathv[pathc - 1] = xstrdup(src);
+	pglob->gl_pathv[pathc] = NULL;
+
+	return 0;
+}
+
+#ifdef CONFIG_GLOB
+static int do_glob(const char *src, int flags,
+		int (*errfunc) (const char *epath, int eerrno),
+		glob_t *pglob)
+{
+	return glob(src, flags, errfunc, pglob);
+}
+#else
+static int do_glob(const char *src, int flags,
+		int (*errfunc) (const char *epath, int eerrno),
+		glob_t *pglob)
+{
+	return fake_glob(src, flags, errfunc, pglob);
+}
+#endif
+
+static void do_glob_in_argv(glob_t *globbuf, int argc, char **argv)
+{
+	int i;
+	int flags;
+
+	globbuf->gl_offs = 0;
+	flags = GLOB_DOOFFS | GLOB_NOCHECK;
+
+	for (i = 0; i < argc; i++) {
+		int ret;
+		ret = do_glob(argv[i], flags, NULL, globbuf);
+		flags |= GLOB_APPEND;
+	}
+}
+
 /* run_pipe_real() starts all the jobs, but doesn't wait for anything
  * to finish.  See checkjobs().
  *
@@ -623,6 +681,8 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	int nextin;
 	struct child_prog *child;
 	char *p;
+	glob_t globbuf = {};
+	int ret;
 # if __GNUC__
 	/* Avoid longjmp clobbering */
 	(void) &i;
@@ -706,13 +766,18 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		return last_return_code;
 	}
 
-	remove_quotes(child->argc - i, &child->argv[i]);
+	do_glob_in_argv(&globbuf, child->argc - i, &child->argv[i]);
 
-#ifdef CONFIG_HUSH_GETOPT
-	if (!strcmp(child->argv[i], "getopt"))
-		return builtin_getopt(ctx, child);
-#endif
-	return execute_binfmt(child->argc - i, &child->argv[i]);
+	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
+
+	if (!strcmp(globbuf.gl_pathv[0], "getopt"))
+		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
+	else
+		ret = execute_binfmt(globbuf.gl_pathc, globbuf.gl_pathv);
+
+	globfree(&globbuf);
+
+	return ret;
 }
 
 static int run_list_real(struct p_context *ctx, struct pipe *pi)
@@ -911,41 +976,7 @@ static int free_pipe_list(struct pipe *head, int indent)
 	return rcode;
 }
 
-static int fake_glob(const char *src, int flags,
-		int (*errfunc) (const char *epath, int eerrno),
-		glob_t *pglob)
-{
-	int pathc;
-
-	if (!(flags & GLOB_APPEND)) {
-		globfree(pglob);
-		pglob->gl_pathv = NULL;
-		pglob->gl_pathc = 0;
-		pglob->gl_offs = 0;
-	}
-	pathc = ++pglob->gl_pathc;
-	pglob->gl_pathv = xrealloc(pglob->gl_pathv, (pathc + 1) * sizeof(*pglob->gl_pathv));
-	pglob->gl_pathv[pathc - 1] = xstrdup(src);
-	pglob->gl_pathv[pathc] = NULL;
-
-	return 0;
-}
-
-/* XXX broken if the last character is '\\', check that before calling */
-static int glob_needed(const char *s)
-{
-#ifdef CONFIG_GLOB
-	for (; *s; s++) {
-		if (*s == '\\')
-			s++;
-		if (strchr("*[?",*s))
-			return 1;
-	}
-#endif
-	return 0;
-}
-
-static int xglob(o_string *dest, int flags, glob_t *pglob)
+static int xglob(o_string *dest, int flags, glob_t *pglob, int glob_needed)
 {
 	int gr;
 
@@ -959,8 +990,8 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 		} else {
 			return 0;
 		}
-	} else if (glob_needed(dest->data)) {
-		gr = glob(dest->data, flags, NULL, pglob);
+	} else if (glob_needed) {
+		gr = do_glob(dest->data, flags, NULL, pglob);
 		debug("glob returned %d\n",gr);
 	} else {
 		gr = fake_glob(dest->data, flags, NULL, pglob);
@@ -1188,7 +1219,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 	if (child->argv)
 		flags |= GLOB_APPEND;
 
-	gr = xglob(dest, flags, glob_target);
+	gr = xglob(dest, flags, glob_target, ctx->w == RES_IN ? 1 : 0);
 	if (gr)
 		return 1;
 

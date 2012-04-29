@@ -5,6 +5,7 @@
 #include <filetype.h>
 #include <of.h>
 #include <linux/list.h>
+#include <environment.h>
 
 struct image_data {
 	/* simplest case. barebox has already loaded the os here */
@@ -68,6 +69,21 @@ static inline int bootm_verbose(struct image_data *data)
 static inline int bootm_verbose(struct image_data *data)
 {
 	return 0;
+}
+#endif
+
+#ifdef CONFIG_FLEXIBLE_BOOTARGS
+const char *linux_bootargs_get(void);
+int linux_bootargs_overwrite(const char *bootargs);
+#else
+static inline const char *linux_bootargs_get(void)
+{
+	return getenv("bootargs");
+}
+
+static inline int linux_bootargs_overwrite(const char *bootargs)
+{
+	return setenv("bootargs", bootargs);
 }
 #endif
 

@@ -35,6 +35,7 @@ obj-y += resource.o
 obj-$(CONFIG_MENU) += menu.o
 obj-$(CONFIG_PASSWORD) += password.o
 obj-$(CONFIG_MODULES) += module.o
+obj-$(CONFIG_FLEXIBLE_BOOTARGS) += bootargs.o
 extra-$(CONFIG_MODULES) += module.lds
 
 ifdef CONFIG_DEFAULT_ENVIRONMENT

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+while getopt "m:" opt; do
+	if [ ${opt} = m ]; then
+		mtd=${OPTARG}
+	fi
+done
+
+global.linux.bootargs.root="root=$mtd rootfstype=jffs2"

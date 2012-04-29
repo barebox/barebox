@@ -1,0 +1,13 @@
+#!/bin/sh
+
+ubiroot=root
+
+while getopt "m:r:" opt; do
+	if [ ${opt} = r ]; then
+		ubiroot=${OPTARG}
+	elif [ ${opt} = m ]; then
+		mtd=${OPTARG}
+	fi
+done
+
+global.linux.bootargs.root="root=ubi0:$ubiroot ubi.mtd=$mtd rootfstype=ubifs"

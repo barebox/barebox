@@ -1,0 +1,20 @@
+#!/bin/sh
+
+export menu_exit=false
+
+while true; do
+	menu -a -m init_entries_edit -d "\e[1;36mEdit init entries\e[0m"
+
+	menu -e -a -m init_entries_edit -R -c "true" -d ">> Reset board to let changes here take effect <<"
+
+	init-entries-collect
+
+	menu -e -a -m init_entries_edit -c "menu_exit=true" -d "back"
+
+	menu -s -m init_entries_edit
+	menu -r -m init_entries_edit
+
+	if [ $menu_exit = true ]; then
+		exit
+	fi
+done

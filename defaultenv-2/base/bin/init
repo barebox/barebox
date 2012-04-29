@@ -1,0 +1,46 @@
+#!/bin/sh
+
+export PATH=/env/bin
+
+global hostname=generic
+global user=none
+global tftp.server
+global tftp.path=/mnt/tftp-dhcp
+global autoboot_timeout=3
+global boot.default=net
+global allow_color=true
+global linux.bootargs.base
+global linux.bootargs.ip
+global linux.bootargs.root
+global editcmd=sedit
+
+/env/init/general
+
+if [ -e /env/menu ]; then
+	echo -e -n "\nHit m for menu or any other key to stop autoboot: "
+else
+	echo -e -n "\nHit any key to stop autoboot: "
+fi
+
+timeout -a $global.autoboot_timeout -v key
+autoboot="$?"
+
+if [ "${key}" = "q" ]; then
+	exit
+fi
+
+for i in /env/init/*; do
+	. $i
+done
+
+if [ "$autoboot" = 0 ]; then
+	boot
+fi
+
+if [ -e /env/menu ]; then
+	if [ "${key}" != "m" ]; then
+		echo -e "\ntype exit to get to the menu"
+		sh
+	fi
+	/env/menu/mainmenu
+fi

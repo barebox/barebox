@@ -1,0 +1,21 @@
+#!/bin/sh
+
+name=
+
+readline "Name of the new entry: " name
+
+if [ -z "$name" ]; then
+	exit 1
+fi
+
+if [ -e "/env/boot/$name" ]; then
+	echo "entry $name already exists"
+	readline "<enter>" unused
+	exit 1
+fi
+
+cp /env/data/boot-template /env/boot/$name
+
+edit /env/boot/$name
+
+boot-menu-show rebuild

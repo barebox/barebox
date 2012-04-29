@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "kernel + initrd via tftp"
+	exit
+fi
+
+global.bootm.image="${global.tftp.path}/${global.user}-linux-${global.hostname}"
+global.bootm.initrd="${global.tftp.path}/initramfs"
+bootargs-root-initrd
+#global.bootm.oftree=<path to oftree>
+
+global.linux.bootargs.root="root=/dev/ram0"
+
+#bootargs-root-nfs -n "<path on server>" -s <serverip>
+#bootargs-root-ubi -r <volume> -m <mtdname>

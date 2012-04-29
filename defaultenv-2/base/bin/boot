@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ $# = 0 ]; then
+	scr="$global.boot.default"
+else
+	scr="$1"
+fi
+
+if [ -n "$scr" ]; then
+	if [ ! -f /env/boot/$scr ]; then
+		echo -e "/env/boot/$scr does not exist.\nValid choices:"
+		ls /env/boot
+		exit
+	fi
+	/env/boot/$scr
+fi
+
+bootm

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "general config settings"
+	exit
+fi
+
+# user (used for network filenames)
+global.user=sha
+
+# timeout in seconds before the default boot entry is started
+global.autoboot_timeout=3
+
+# default boot entry (one of /env/boot/*)
+global.boot.default=net
+
+# default tftp path
+global.tftp.path=/mnt/tftp-dhcp

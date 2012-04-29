@@ -1,0 +1,11 @@
+#!/bin/sh
+
+rdinit="/sbin/init"
+
+while getopt "i:" opt; do
+	if [ ${opt} = i ]; then
+		rdinit=${OPTARG}
+	fi
+done
+
+global.linux.bootargs.root="root=/dev/ram0 rdinit=${rdinit}"

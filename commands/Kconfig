@@ -113,6 +113,13 @@ config CMD_LINUX_EXEC
 	help
 	  This command executes a command on the Linux host.
 
+config CMD_GLOBAL
+	select GLOBALVAR
+	tristate
+	prompt "global"
+	help
+	  The global command allows to create global variables
+
 endmenu
 
 menu "file commands                 "

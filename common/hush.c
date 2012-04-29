@@ -1814,7 +1814,7 @@ int run_shell(void)
 static int do_sh(int argc, char *argv[])
 {
 	if (argc < 2)
-		return COMMAND_ERROR_USAGE;
+		return run_shell();
 
 	return execute_script(argv[1], argc - 1, argv + 1);
 }

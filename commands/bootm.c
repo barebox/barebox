@@ -51,18 +51,6 @@
 
 static LIST_HEAD(handler_list);
 
-#ifdef CONFIG_CMD_BOOTM_INITRD
-static inline int bootm_initrd(struct image_data *data)
-{
-	return data->initrd ? 1 : 0;
-}
-#else
-static inline int bootm_initrd(struct image_data *data)
-{
-	return 0;
-}
-#endif
-
 int register_image_handler(struct image_handler *handler)
 {
 	list_add_tail(&handler->list, &handler_list);
@@ -258,6 +246,14 @@ static void bootm_image_name_and_no(char *name, int *no)
 	*no = simple_strtoul(at, NULL, 10);
 }
 
+#define BOOTM_OPTS_COMMON "ca:e:vo:f"
+
+#ifdef CONFIG_CMD_BOOTM_INITRD
+#define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
+#else
+#define BOOTM_OPTS BOOTM_OPTS_COMMON
+#endif
+
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;
@@ -275,7 +271,7 @@ static int do_bootm(int argc, char *argv[])
 	data.verify = 0;
 	data.verbose = 0;
 
-	while ((opt = getopt(argc, argv, "cL:r:a:e:vo:f")) > 0) {
+	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {
 		case 'c':
 			data.verify = 1;
@@ -336,7 +332,7 @@ static int do_bootm(int argc, char *argv[])
 		}
 	}
 
-	if (bootm_initrd(&data)) {
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data.initrd_file) {
 		bootm_image_name_and_no(data.initrd_file, &data.initrd_num);
 
 		initrd_type = file_name_detect_type(data.initrd_file);

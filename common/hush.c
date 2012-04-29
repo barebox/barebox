@@ -596,14 +596,16 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	nextin = 0;
 
-	/* Check if this is a simple builtin (not part of a pipe).
-	 * Builtins within pipes have to fork anyway, and are handled in
-	 * pseudo_exec.  "echo foo | read bar" doesn't work on bash, either.
+	/*
+	 * We do not support pipes in barebox, so pi->num_progs can't
+	 * be bigger than 1. pi->num_progs == 0 is already catched in
+	 * the caller, so everything else than 1 is a bug.
 	 */
-	if (pi->num_progs == 1)
-		child = &pi->progs[0];
+	BUG_ON(pi->num_progs != 1);
 
-	if (pi->num_progs == 1 && child->group) {
+	child = &pi->progs[0];
+
+	if (child->group) {
 		int rcode;
 
 		debug("non-subshell grouping\n");
@@ -612,7 +614,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		return rcode;
 	}
 
-	if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
+	if (pi->progs[0].argv != NULL) {
 
 		for (i = 0; is_assignment(child->argv[i]); i++)
 			{ /* nothing */ }

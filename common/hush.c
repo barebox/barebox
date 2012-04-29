@@ -270,7 +270,6 @@ static void syntax_err(void) {
 static int b_check_space(o_string *o, int len);
 static int b_addchr(o_string *o, int ch);
 static void b_reset(o_string *o);
-static int b_addqchr(o_string *o, int ch, int quote);
 /*  in_str manipulations: */
 static int static_get(struct in_str *i);
 static int static_peek(struct in_str *i);
@@ -354,22 +353,6 @@ static void b_free(o_string *o)
 	free(o->data);
 	o->data = NULL;
 	o->maxlen = 0;
-}
-
-/* My analysis of quoting semantics tells me that state information
- * is associated with a destination, not a source.
- */
-static int b_addqchr(o_string *o, int ch, int quote)
-{
-	if (quote && strchr("*?[",ch)) {
-		int rc;
-
-		rc = b_addchr(o, '\\');
-		if (rc)
-			return rc;
-	}
-
-	return b_addchr(o, ch);
 }
 
 static int b_adduint(o_string *o, unsigned int i)
@@ -565,6 +548,59 @@ out:
 BAREBOX_MAGICVAR(OPTARG, "optarg for hush builtin getopt");
 #endif
 
+static void remove_quotes_in_str(char *src)
+{
+	char *trg = src;
+
+	while (*src) {
+		if (*src == '\'') {
+			src++;
+			while (*src != '\'')
+				*trg++ = *src++;
+			src++;
+			continue;
+		}
+
+		/* drop quotes */
+		if (*src == '"') {
+			src++;
+			continue;
+		}
+
+		/* replace \" with " */
+		if (*src == '\\' && *(src + 1) == '"') {
+			*trg++ = '"';
+			src += 2;
+			continue;
+		}
+
+		/* replace \' with ' */
+		if (*src == '\\' && *(src + 1) == '\'') {
+			*trg++ = '\'';
+			src += 2;
+			continue;
+		}
+
+		/* replace \\ with \ */
+		if (*src == '\\' && *(src + 1) == '\\') {
+			*trg++ = '\\';
+			src += 2;
+			continue;
+		}
+
+		*trg++ = *src++;
+	}
+	*trg = 0;
+}
+
+static void remove_quotes(int argc, char *argv[])
+{
+	int i;
+
+	for (i = 0; i < argc; i++)
+		remove_quotes_in_str(argv[i]);
+}
+
 /* run_pipe_real() starts all the jobs, but doesn't wait for anything
  * to finish.  See checkjobs().
  *
@@ -669,6 +705,8 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 		return last_return_code;
 	}
+
+	remove_quotes(child->argc - i, &child->argv[i]);
 
 #ifdef CONFIG_HUSH_GETOPT
 	if (!strcmp(child->argv[i], "getopt"))
@@ -1006,6 +1044,8 @@ static int set_local_var(const char *s, int flg_export)
 		return -1;
 	}
 	*value++ = 0;
+
+	remove_quotes_in_str(value);
 
 	ret = setenv(name, value);
 	free(name);
@@ -1347,7 +1387,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 			b_addchr(dest, SPECIAL_VAR_SYMBOL);
 			break;
 		default:
-			b_addqchr(dest,'$',dest->quote);
+			b_addchr(dest, '$');
 		}
 	}
 	/* Eat the character if the flag was set.  If the compiler
@@ -1387,7 +1427,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				dest->quote, ctx->stack == NULL ? '*' : '.');
 
 		if (m == 0 || ((m == 1 || m == 2) && dest->quote)) {
-			b_addqchr(dest, ch, dest->quote);
+			b_addchr(dest, ch);
 			continue;
 		}
 
@@ -1416,7 +1456,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 					b_getch(input);
 				}
 			} else {
-				b_addqchr(dest, ch, dest->quote);
+				b_addchr(dest, ch);
 			}
 			break;
 		case '\\':
@@ -1424,8 +1464,8 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				syntax();
 				return 1;
 			}
-			b_addqchr(dest, '\\', dest->quote);
-			b_addqchr(dest, b_getch(input), dest->quote);
+			b_addchr(dest, '\\');
+			b_addchr(dest, b_getch(input));
 			break;
 		case '$':
 			if (handle_dollar(dest, ctx, input)!=0)
@@ -1433,11 +1473,13 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			break;
 		case '\'':
 			dest->nonnull = 1;
-			while (ch = b_getch(input), ch!=EOF && ch != '\'') {
+			b_addchr(dest, '\'');
+			while (ch = b_getch(input), ch != EOF && ch != '\'') {
 				if (input->__promptme == 0)
 					return 1;
 				b_addchr(dest,ch);
 			}
+			b_addchr(dest, '\'');
 			if (ch == EOF) {
 				syntax();
 				return 1;
@@ -1445,6 +1487,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			break;
 		case '"':
 			dest->nonnull = 1;
+			b_addchr(dest, '"');
 			dest->quote = !dest->quote;
 			break;
 		case ';':

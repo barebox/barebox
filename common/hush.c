@@ -911,26 +911,11 @@ static int free_pipe_list(struct pipe *head, int indent)
 	return rcode;
 }
 
-/* The API for glob is arguably broken.  This routine pushes a non-matching
- * string into the output structure, removing non-backslashed backslashes.
- * If someone can prove me wrong, by performing this function within the
- * original glob(3) api, feel free to rewrite this routine into oblivion.
- * Return code (0 vs. GLOB_NOSPACE) matches glob(3).
- * XXX broken if the last character is '\\', check that before calling.
- */
-static int globhack(const char *src, int flags, glob_t *pglob)
+static int fake_glob(const char *src, int flags,
+		int (*errfunc) (const char *epath, int eerrno),
+		glob_t *pglob)
 {
-	int cnt = 0, pathc;
-	const char *s;
-	char *dest;
-
-	for (cnt = 1, s = src; s && *s; s++) {
-		if (*s == '\\' && strchr("*[?", *(s + 1)))
-			s++;
-		cnt++;
-	}
-
-	dest = xmalloc(cnt);
+	int pathc;
 
 	if (!(flags & GLOB_APPEND)) {
 		globfree(pglob);
@@ -940,16 +925,8 @@ static int globhack(const char *src, int flags, glob_t *pglob)
 	}
 	pathc = ++pglob->gl_pathc;
 	pglob->gl_pathv = xrealloc(pglob->gl_pathv, (pathc + 1) * sizeof(*pglob->gl_pathv));
-	pglob->gl_pathv[pathc - 1] = dest;
+	pglob->gl_pathv[pathc - 1] = xstrdup(src);
 	pglob->gl_pathv[pathc] = NULL;
-
-	for (s = src; s && *s; s++, dest++) {
-		if (*s == '\\' && strchr("*[?", *(s + 1)))
-			s++;
-		*dest = *s;
-	}
-
-	*dest = '\0';
 
 	return 0;
 }
@@ -977,7 +954,7 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 	if (dest->length == 0) {
 		if (dest->nonnull) {
 			/* bash man page calls this an "explicit" null */
-			gr = globhack(dest->data, flags, pglob);
+			gr = fake_glob(dest->data, flags, NULL, pglob);
 			debug("globhack returned %d\n",gr);
 		} else {
 			return 0;
@@ -987,11 +964,11 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 		debug("glob returned %d\n",gr);
 		if (gr == GLOB_NOMATCH) {
 			/* quote removal, or more accurately, backslash removal */
-			gr = globhack(dest->data, flags, pglob);
+			gr = fake_glob(dest->data, flags, NULL, pglob);
 			debug("globhack returned %d\n",gr);
 		}
 	} else {
-		gr = globhack(dest->data, flags, pglob);
+		gr = fake_glob(dest->data, flags, NULL, pglob);
 		debug("globhack returned %d\n",gr);
 	}
 	if (gr != 0) { /* GLOB_ABORTED ? */

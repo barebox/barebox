@@ -614,67 +614,67 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		return rcode;
 	}
 
-	if (pi->progs[0].argv != NULL) {
+	if (!pi->progs[0].argv)
+		return -1;
 
-		for (i = 0; is_assignment(child->argv[i]); i++)
-			{ /* nothing */ }
+	for (i = 0; is_assignment(child->argv[i]); i++)
+		{ /* nothing */ }
 
-		if (i != 0 && child->argv[i] == NULL) {
-			/* assignments, but no command: set the local environment */
-			for (i = 0; child->argv[i] != NULL; i++) {
+	if (i != 0 && child->argv[i] == NULL) {
+		/* assignments, but no command: set the local environment */
+		for (i = 0; child->argv[i] != NULL; i++) {
 
-				/* Ok, this case is tricky.  We have to decide if this is a
-				 * local variable, or an already exported variable.  If it is
-				 * already exported, we have to export the new value.  If it is
-				 * not exported, we need only set this as a local variable.
-				 * This junk is all to decide whether or not to export this
-				 * variable. */
-				int export_me = 0;
-				char *name, *value;
+			/* Ok, this case is tricky.  We have to decide if this is a
+			 * local variable, or an already exported variable.  If it is
+			 * already exported, we have to export the new value.  If it is
+			 * not exported, we need only set this as a local variable.
+			 * This junk is all to decide whether or not to export this
+			 * variable. */
+			int export_me = 0;
+			char *name, *value;
 
-				name = xstrdup(child->argv[i]);
-				debug("Local environment set: %s\n", name);
-				value = strchr(name, '=');
+			name = xstrdup(child->argv[i]);
+			debug("Local environment set: %s\n", name);
+			value = strchr(name, '=');
 
-				if (value)
-					*value = 0;
+			if (value)
+				*value = 0;
 
-				free(name);
-				p = insert_var_value(child->argv[i]);
-				set_local_var(p, export_me);
-
-				if (p != child->argv[i])
-					free(p);
-			}
-			return EXIT_SUCCESS;   /* don't worry about errors in set_local_var() yet */
-		}
-		for (i = 0; is_assignment(child->argv[i]); i++) {
+			free(name);
 			p = insert_var_value(child->argv[i]);
-			set_local_var(p, 0);
+			set_local_var(p, export_me);
 
-			if (p != child->argv[i]) {
-				child->sp--;
+			if (p != child->argv[i])
 				free(p);
-			}
 		}
-		if (child->sp) {
-			char * str = NULL;
-			struct p_context ctx1;
-
-			str = make_string((child->argv + i));
-			parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
-			release_context(&ctx1);
-			free(str);
-
-			return last_return_code;
-		}
-#ifdef CONFIG_HUSH_GETOPT
-		if (!strcmp(child->argv[i], "getopt"))
-			return builtin_getopt(ctx, child);
-#endif
-		return execute_binfmt(child->argc - i, &child->argv[i]);
+		return EXIT_SUCCESS;   /* don't worry about errors in set_local_var() yet */
 	}
-	return -1;
+	for (i = 0; is_assignment(child->argv[i]); i++) {
+		p = insert_var_value(child->argv[i]);
+		set_local_var(p, 0);
+
+		if (p != child->argv[i]) {
+			child->sp--;
+			free(p);
+		}
+	}
+	if (child->sp) {
+		char * str = NULL;
+		struct p_context ctx1;
+
+		str = make_string((child->argv + i));
+		parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+		release_context(&ctx1);
+		free(str);
+
+		return last_return_code;
+	}
+
+#ifdef CONFIG_HUSH_GETOPT
+	if (!strcmp(child->argv[i], "getopt"))
+		return builtin_getopt(ctx, child);
+#endif
+	return execute_binfmt(child->argc - i, &child->argv[i]);
 }
 
 static int run_list_real(struct p_context *ctx, struct pipe *pi)
@@ -1234,13 +1234,9 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
 	struct pipe *new_p;
 
 	done_command(ctx);  /* implicit closure of previous command */
-<<<<<<< HEAD
 
 	debug("%s: type %d\n", __func__, type);
 
-=======
-	debug("%s: type %d\n", __func__, type);
->>>>>>> f5c1f0c... hush use func
 	ctx->pipe->followup = type;
 	ctx->pipe->r_mode = ctx->w;
 

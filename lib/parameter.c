@@ -135,7 +135,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 
 static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 {
-	return p->value;
+	return p->value ? p->value : "";
 }
 
 static struct param_d *__dev_add_param(struct device_d *dev, const char *name,

@@ -610,7 +610,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		rcode = run_list_real(ctx, child->group);
 
 		return rcode;
-	} else if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
+	}
+
+	if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
 
 		for (i = 0; is_assignment(child->argv[i]); i++)
 			{ /* nothing */ }

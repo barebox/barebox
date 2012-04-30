@@ -41,14 +41,14 @@ typedef enum {
 struct cmd_menu {
 	char		*menu;
 	menu_action	action;
+	char		*description;
+	int		auto_select;
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
 	int		entry;
 	int		re_entrant;
-	char		*description;
 	char		*command;
 	char		*submenu;
 	int		num;
-	int		auto_select;
 	menu_entry_type	type;
 	int		box_state;
 #endif
@@ -58,7 +58,7 @@ struct cmd_menu {
 #define OPTS		"m:earlc:d:RsSn:u:A:b:B:"
 #define	is_entry(x)	((x)->entry)
 #else
-#define OPTS		"m:ls"
+#define OPTS		"m:lsA:d:"
 #define	is_entry(x)	(0)
 #endif
 
@@ -334,6 +334,12 @@ static int do_menu(int argc, char *argv[])
 		case 's':
 			cm.action = action_show;
 			break;
+		case 'A':
+			cm.auto_select = simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'd':
+			cm.description = optarg;
+			break;
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
 		case 'e':
 			cm.entry = 1;
@@ -350,9 +356,6 @@ static int do_menu(int argc, char *argv[])
 		case 'u':
 			cm.submenu = optarg;
 			break;
-		case 'd':
-			cm.description = optarg;
-			break;
 		case 'R':
 			cm.re_entrant = 1;
 			break;
@@ -362,8 +365,6 @@ static int do_menu(int argc, char *argv[])
 		case 'n':
 			cm.num = simple_strtoul(optarg, NULL, 10);
 			break;
-		case 'A':
-			cm.auto_select = simple_strtoul(optarg, NULL, 10);
 		case 'b':
 			cm.type = MENU_ENTRY_BOX;
 			cm.box_state = simple_strtoul(optarg, NULL, 10);

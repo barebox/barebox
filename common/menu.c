@@ -252,7 +252,7 @@ static void print_menu(struct menu *m)
 
 int menu_show(struct menu *m)
 {
-	int ch;
+	int ch, ch_previous = 0;
 	int escape = 0;
 	int countdown;
 	int auto_display_len = 16;
@@ -296,7 +296,7 @@ int menu_show(struct menu *m)
 
 	do {
 		if (m->auto_select >= 0)
-			ch = KEY_ENTER;
+			ch = KEY_RETURN;
 		else
 			ch = getc();
 
@@ -340,7 +340,11 @@ int menu_show(struct menu *m)
 			print_menu_entry(m, m->selected, 1);
 			break;
 		case KEY_ENTER:
+			if (ch_previous == KEY_RETURN)
+				break;
 		case KEY_RETURN:
+			if (ch_previous == KEY_ENTER)
+				break;
 			clear();
 			gotoXY(1,1);
 			m->selected->action(m, m->selected);
@@ -351,6 +355,7 @@ int menu_show(struct menu *m)
 		default:
 			break;
 		}
+		ch_previous = ch;
 	} while(1);
 
 	return 0;

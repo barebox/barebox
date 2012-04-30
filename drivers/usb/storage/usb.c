@@ -621,7 +621,6 @@ static struct usb_driver usb_storage_driver = {
 
 static int __init usb_stor_init(void)
 {
-	usb_storage_driver.name = usb_storage_driver.driver.name;
 	return usb_driver_register(&usb_storage_driver);
 }
 device_initcall(usb_stor_init);

@@ -33,6 +33,13 @@ extern tlsf_pool tlsf_mem_pool;
 
 void *malloc(size_t bytes)
 {
+	/*
+	 * tlsf_malloc returns NULL for zero bytes, we instead want
+	 * to have a valid pointer.
+	 */
+	if (!bytes)
+		bytes = 1;
+
 	return tlsf_malloc(tlsf_mem_pool, bytes);
 }
 EXPORT_SYMBOL(malloc);

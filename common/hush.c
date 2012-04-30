@@ -1274,7 +1274,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	 * found.  When recursing, quote state is passed in via dest->quote. */
 
 	debug("parse_stream, end_trigger=%d\n",end_trigger);
-	while ((ch=b_getch(input))!=EOF) {
+	while ((ch = b_getch(input)) != EOF) {
 		m = map[ch];
 		if (input->__promptme == 0)
 			return 1;
@@ -1298,80 +1298,83 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			if (end_trigger != '\0' && ch=='\n')
 				done_pipe(ctx,PIPE_SEQ);
 		}
+
 		if (ch == end_trigger && !dest->quote && ctx->w==RES_NONE) {
 			debug("leaving parse_stream (triggered)\n");
 			return 0;
 		}
-		if (m != 2) {
-			switch (ch) {
-			case '#':
-				if (dest->length == 0 && !dest->quote) {
-					while (ch = b_peek(input), ch != EOF && ch!='\n') {
-						b_getch(input);
-					}
-				} else {
-					b_addqchr(dest, ch, dest->quote);
-				}
-				break;
-			case '\\':
-				if (next == EOF) {
-					syntax();
-					return 1;
-				}
-				b_addqchr(dest, '\\', dest->quote);
-				b_addqchr(dest, b_getch(input), dest->quote);
-				break;
-			case '$':
-				if (handle_dollar(dest, ctx, input)!=0)
-					return 1;
-				break;
-			case '\'':
-				dest->nonnull = 1;
-				while (ch = b_getch(input), ch!=EOF && ch != '\'') {
-					if (input->__promptme == 0)
-						return 1;
-					b_addchr(dest,ch);
-				}
-				if (ch == EOF) {
-					syntax();
-					return 1;
-				}
-				break;
-			case '"':
-				dest->nonnull = 1;
-				dest->quote = !dest->quote;
-				break;
-			case ';':
-				done_word(dest, ctx);
-				done_pipe(ctx, PIPE_SEQ);
-				break;
-			case '&':
-				done_word(dest, ctx);
-				if (next == '&') {
+
+		if (m == 2)
+			continue;
+
+		switch (ch) {
+		case '#':
+			if (dest->length == 0 && !dest->quote) {
+				while (ch = b_peek(input), ch != EOF && ch!='\n') {
 					b_getch(input);
-					done_pipe(ctx, PIPE_AND);
-				} else {
-					syntax_err();
-					return 1;
 				}
-				break;
-			case '|':
-				done_word(dest, ctx);
-				if (next == '|') {
-					b_getch(input);
-					done_pipe(ctx, PIPE_OR);
-				} else {
-					/* we could pick up a file descriptor choice here
-					 * with redirect_opt_num(), but bash doesn't do it.
-					 * "echo foo 2| cat" yields "foo 2". */
-					syntax_err();
-					return 1;
-				}
-				break;
-			default:
-				syntax();   /* this is really an internal logic error */
+			} else {
+				b_addqchr(dest, ch, dest->quote);
+			}
+			break;
+		case '\\':
+			if (next == EOF) {
+				syntax();
 				return 1;
 			}
+			b_addqchr(dest, '\\', dest->quote);
+			b_addqchr(dest, b_getch(input), dest->quote);
+			break;
+		case '$':
+			if (handle_dollar(dest, ctx, input)!=0)
+				return 1;
+			break;
+		case '\'':
+			dest->nonnull = 1;
+			while (ch = b_getch(input), ch!=EOF && ch != '\'') {
+				if (input->__promptme == 0)
+					return 1;
+				b_addchr(dest,ch);
+			}
+			if (ch == EOF) {
+				syntax();
+				return 1;
+			}
+			break;
+		case '"':
+			dest->nonnull = 1;
+			dest->quote = !dest->quote;
+			break;
+		case ';':
+			done_word(dest, ctx);
+			done_pipe(ctx, PIPE_SEQ);
+			break;
+		case '&':
+			done_word(dest, ctx);
+			if (next == '&') {
+				b_getch(input);
+				done_pipe(ctx, PIPE_AND);
+			} else {
+				syntax_err();
+				return 1;
+			}
+			break;
+		case '|':
+			done_word(dest, ctx);
+			if (next == '|') {
+				b_getch(input);
+				done_pipe(ctx, PIPE_OR);
+			} else {
+				/* we could pick up a file descriptor choice here
+				 * with redirect_opt_num(), but bash doesn't do it.
+				 * "echo foo 2| cat" yields "foo 2". */
+				syntax_err();
+				return 1;
+			}
+			break;
+		default:
+			syntax();   /* this is really an internal logic error */
+			return 1;
 		}
 	}
 

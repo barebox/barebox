@@ -209,7 +209,7 @@ int glob(const char *pattern, int flags,
 
 		if (pglob->gl_pathc == oldcount) {
 			/* No matches.  */
-#ifdef CONFIG_GLOB_NOCHECK
+
 			if (flags & GLOB_NOCHECK) {
 				size_t len = strlen(pattern) + 1;
 				char *patcopy = (char *)xmalloc(len);
@@ -232,9 +232,7 @@ int glob(const char *pattern, int flags,
 				pglob->gl_pathv[pglob->gl_pathc++] = patcopy;
 				pglob->gl_pathv[pglob->gl_pathc] = NULL;
 				pglob->gl_flags = flags;
-			} else
-#endif
-			{
+			} else {
 				status = GLOB_NOMATCH;
 				goto out;
 			}
@@ -367,7 +365,7 @@ static int glob_in_dir(const char *pattern, const char *directory,
 				break;
 		}
 	}
-#ifdef CONFIG_GLOB_NOCHECK
+
 	if (nfound == 0 && (flags & GLOB_NOCHECK)) {
 		size_t len = strlen(pattern);
 		nfound = 1;
@@ -378,7 +376,7 @@ static int glob_in_dir(const char *pattern, const char *directory,
 		memcpy(names->name, pattern, len);
 		names->name[len] = '\0';
 	}
-#endif
+
 	pglob->gl_pathv
 	    = (char **)xrealloc(pglob->gl_pathv,
 			       (pglob->gl_pathc +

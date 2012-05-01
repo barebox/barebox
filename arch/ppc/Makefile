@@ -1,16 +1,15 @@
 
-CPPFLAGS += -ffixed-r14 	\
+CPPFLAGS += -ffixed-r14 -m32 	\
 	-meabi -D __PPC__ -D CONFIG_PPC \
-	-fno-strict-aliasing
+	-fno-strict-aliasing -mno-spe -mspe=no
 
 ifdef CONFIG_RELOCATABLE
 CPPFLAGS += -fPIC -mrelocatable
 endif
 
 
-machine-$(CONFIG_ARCH_MPC5200)			:= mpc5200
 board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= pcm030
-cpu-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
+machine-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -21,7 +20,7 @@ ifndef CONFIG_MODULES
 CPPFLAGS += -fdata-sections -ffunction-sections
 endif
 
-machdirs := $(patsubst %,arch/ppc/mach-%/,$(cpu-y))
+machdirs := $(patsubst %,arch/ppc/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)
 CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
@@ -40,13 +39,19 @@ else
 BOARD  :=
 endif
 
+ifneq ($(machine-y),)
+MACH  := arch/ppc/mach-$(machine-y)/
+else
+MACH  :=
+endif
+
 ifneq ($(cpu-y),)
-CPU  := arch/ppc/mach-$(cpu-y)/
+CPU  := arch/ppc/cpu-$(cpu-y)/
 else
 CPU  :=
 endif
 
-common-y += $(BOARD) $(CPU)
+common-y += $(BOARD) $(CPU) $(MACH)
 common-y += arch/ppc/lib/
 
 lds-y += $(BOARD)/barebox.lds

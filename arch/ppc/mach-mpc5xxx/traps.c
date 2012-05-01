@@ -41,11 +41,7 @@
 int (*debugger_exception_handler)(struct pt_regs *) = 0;
 #endif
 
-/* Returns 0 if exception not found and fixup otherwise.  */
-extern unsigned long search_exception_table(unsigned long);
-
-/* THIS NEEDS CHANGING to use the board info structure.
-*/
+/* THIS NEEDS CHANGING to use the board info structure.  */
 #define END_OF_MEM	0x02000000
 
 /*

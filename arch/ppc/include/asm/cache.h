@@ -6,16 +6,13 @@
 
 #include <asm/processor.h>
 
-/* bytes per L1 cache line */
-#if !defined(CONFIG_8xx) || defined(CONFIG_8260)
-#if defined(CONFIG_PPC64BRIDGE)
-#define L1_CACHE_BYTES	128
-#else
-#define	L1_CACHE_BYTES  32
-#endif /* PPC64 */
-#else
-#define	L1_CACHE_BYTES	16
-#endif /* !8xx || 8260 */
+/* bytes per L1 cache line. CPU dependent */
+#define L1_CACHE_SHIFT	5
+#define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
+
+#ifndef CACHELINE_SIZE
+#define CACHELINE_SIZE	L1_CACHE_BYTES
+#endif
 
 #define	L1_CACHE_ALIGN(x)       (((x)+(L1_CACHE_BYTES-1))&~(L1_CACHE_BYTES-1))
 #define	L1_CACHE_PAGES		8

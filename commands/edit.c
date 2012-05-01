@@ -355,37 +355,26 @@ static void merge_line(struct line *line)
 	refresh(1);
 }
 
-/* not a good idea on slow serial lines */
-/* #define GETWINSIZE */
+#define ESC "\033"
 
-#ifdef GETWINSIZE
-static void getwinsize(void) {
-	int y, yy = 25, xx = 80, i, n, r;
+static void getwinsize(void)
+{
+	int i = 0, r;
 	char buf[100];
 	char *endp;
 
-	for (y = 25; y < 320; y++) {
-		pos(y, y);
-		printf("%c[6n", 27);
-		i = 0;
-		while ((r = getc()) != 'R') {
-			buf[i] = r;
-			i++;
-		}
-		n = simple_strtoul(buf + 2, &endp, 10);
-		if (n == y + 1)
-			yy = y + 1;
-		n = simple_strtoul(endp + 1, NULL, 10);
-		if (n == y + 1)
-			xx = y + 1;
+	printf(ESC "7" ESC "[r" ESC "[999;999H" ESC "[6n");
+
+	while ((r = getc()) != 'R') {
+		buf[i] = r;
+		i++;
 	}
-	pos(0,0);
-	screenheight = yy;
-	screenwidth = xx;
-	printf("%d %d\n", xx, yy);
-	mdelay(1000);
+
+	screenheight = simple_strtoul(buf + 2, &endp, 10);
+	screenwidth = simple_strtoul(endp + 1, NULL, 10);
+
+	pos(0, 0);
 }
-#endif
 
 static int do_edit(int argc, char *argv[])
 {
@@ -397,17 +386,18 @@ static int do_edit(int argc, char *argv[])
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
+	screenwidth = 80;
+	screenheight = 25;
+
 	/* check if we are called as "sedit" instead of "edit" */
-	if (*argv[0] == 's')
+	if (*argv[0] == 's') {
 		smartscroll = 1;
+		getwinsize();
+	}
 
 	buffer = NULL;
 	if(edit_read_file(argv[1]))
 		return 1;
-
-#ifdef GETWINSIZE
-	getwinsize();
-#endif
 
 	cursx  = 0;
 	cursy  = 0;

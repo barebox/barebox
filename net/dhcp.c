@@ -651,6 +651,7 @@ static int do_dhcp(int argc, char *argv[])
 
 	net_set_ip(0);
 
+	dhcp_start = get_time_ns();
 	ret = bootp_request(); /* Basically same as BOOTP */
 	if (ret)
 		goto out1;

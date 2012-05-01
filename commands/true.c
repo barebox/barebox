@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 
 static int do_true(int argc, char *argv[])
 {
@@ -32,5 +33,6 @@ static int do_true(int argc, char *argv[])
 BAREBOX_CMD_START(true)
 	.cmd		= do_true,
 	.usage		= "do nothing, successfully",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 

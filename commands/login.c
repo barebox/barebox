@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <password.h>
 #include <getopt.h>
 
@@ -80,4 +81,5 @@ BAREBOX_CMD_START(login)
 	.cmd		= do_login,
 	.usage		= "login",
 	BAREBOX_CMD_HELP(cmd_login_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

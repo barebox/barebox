@@ -1,6 +1,7 @@
 #include <common.h>
 #include <xfuncs.h>
 #include <malloc.h>
+#include <errno.h>
 #include <stringlist.h>
 
 static int string_list_compare(struct list_head *a, struct list_head *b)
@@ -16,9 +17,31 @@ int string_list_add(struct string_list *sl, char *str)
 {
 	struct string_list *new;
 
-	new = xmalloc(sizeof(struct string_list) + strlen(str) + 1);
+	new = xmalloc(sizeof(*new));
+	new->str = xstrdup(str);
 
-	strcpy(new->str, str);
+	list_add_tail(&new->list, &sl->list);
+
+	return 0;
+}
+
+int string_list_add_asprintf(struct string_list *sl, const char *fmt, ...)
+{
+	struct string_list *new;
+	va_list args;
+
+	new = xmalloc(sizeof(*new));
+
+	va_start(args, fmt);
+
+	new->str = vasprintf(fmt, args);
+
+	va_end(args);
+
+	if (!new->str) {
+		free(new);
+		return -ENOMEM;
+	}
 
 	list_add_tail(&new->list, &sl->list);
 
@@ -29,9 +52,8 @@ int string_list_add_sorted(struct string_list *sl, char *str)
 {
 	struct string_list *new;
 
-	new = xmalloc(sizeof(struct string_list) + strlen(str) + 1);
-
-	strcpy(new->str, str);
+	new = xmalloc(sizeof(*new));
+	new->str = xstrdup(str);
 
 	list_add_sort(&new->list, &sl->list, string_list_compare);
 

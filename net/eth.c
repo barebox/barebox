@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <driver.h>
 #include <init.h>
 #include <net.h>
@@ -108,6 +109,26 @@ struct eth_device *eth_get_byname(char *ethname)
 	}
 	return NULL;
 }
+
+#ifdef CONFIG_AUTO_COMPLETE
+int eth_complete(struct string_list *sl, char *instr)
+{
+	struct eth_device *edev;
+	const char *devname;
+	int len;
+
+	len = strlen(instr);
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		devname = dev_name(&edev->dev);
+		if (strncmp(instr, devname, len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", devname);
+	}
+	return COMPLETE_CONTNINUE;
+}
+#endif
 
 int eth_send(void *packet, int length)
 {

@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <password.h>
 #include <errno.h>
 
@@ -95,4 +96,5 @@ BAREBOX_CMD_START(passwd)
 	.cmd		= do_passwd,
 	.usage		= "passwd",
 	BAREBOX_CMD_HELP(cmd_passwd_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

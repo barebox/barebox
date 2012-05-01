@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 
 extern void imx_dump_clocks(void);
 
@@ -32,4 +33,5 @@ static int do_clocks(int argc, char *argv[])
 BAREBOX_CMD_START(dump_clocks)
 	.cmd		= do_clocks,
 	.usage		= "show clock frequencies",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

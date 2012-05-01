@@ -40,6 +40,8 @@ extern struct list_head command_list;
 
 #define for_each_command(cmd)	list_for_each_entry(cmd, &command_list, list)
 
+struct string_list;
+
 /*
  * Monitor Command Table
  */
@@ -48,6 +50,7 @@ struct command {
 	const char	**aliases;
 					/* Implementation function	*/
 	int		(*cmd)(int, char *[]);
+	int		(*complete)(struct string_list *sl, char *instr);
 	const char	*usage;		/* Usage message	(short)	*/
 
 	struct list_head list;		/* List of commands		*/
@@ -88,6 +91,11 @@ const struct command __barebox_cmd_##_name						\
 
 #define BAREBOX_CMD_END					\
 };
+#ifdef CONFIG_AUTO_COMPLETE
+#define BAREBOX_CMD_COMPLETE(_cpt) .complete = _cpt,
+#else
+#define BAREBOX_CMD_COMPLETE(_cpt)
+#endif
 
 #define BAREBOX_CMD_HELP_START(_name) \
 static const __maybe_unused char cmd_##_name##_help[] =

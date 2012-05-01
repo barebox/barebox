@@ -28,6 +28,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <environment.h>
 #include <driver.h>
 #include <net.h>
@@ -96,5 +97,6 @@ BAREBOX_CMD_START(ethact)
 	.cmd		= do_ethact,
 	.usage		= "set current ethernet device",
 	BAREBOX_CMD_HELP(cmd_ethact_help)
+	BAREBOX_CMD_COMPLETE(eth_complete)
 BAREBOX_CMD_END
 

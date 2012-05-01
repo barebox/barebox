@@ -20,6 +20,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include <common.h>
+#include <complete.h>
 #include <driver.h>
 #include <errno.h>
 #include <malloc.h>
@@ -28,6 +29,24 @@
 #include <linux/mtd/mtd.h>
 
 LIST_HEAD(cdev_list);
+
+#ifdef CONFIG_AUTO_COMPLETE
+int devfs_partition_complete(struct string_list *sl, char *instr)
+{
+	struct cdev *cdev;
+	int len;
+
+	len = strlen(instr);
+
+	list_for_each_entry(cdev, &cdev_list, list) {
+		if (cdev->flags & DEVFS_IS_PARTITION &&
+		    !strncmp(instr, cdev->name, len)) {
+			string_list_add_asprintf(sl, "%s ", cdev->name);
+		}
+	}
+	return COMPLETE_CONTINUE;
+}
+#endif
 
 struct cdev *cdev_by_name(const char *filename)
 {

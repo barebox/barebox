@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <environment.h>
 #include <clock.h>
 #include <net.h>
@@ -705,6 +706,7 @@ BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
 	.usage		= "invoke dhcp client to obtain ip/boot params",
 	BAREBOX_CMD_HELP(cmd_dhcp_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootfile, "bootfile returned from DHCP request");

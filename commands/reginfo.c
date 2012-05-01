@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 
 static int do_reginfo(int argc, char *argv[])
 {
@@ -32,4 +33,5 @@ static int do_reginfo(int argc, char *argv[])
 BAREBOX_CMD_START(reginfo)
 	.cmd		= do_reginfo,
 	.usage		= "print register information",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

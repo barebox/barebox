@@ -24,6 +24,7 @@
 #include <asm-generic/div64.h>
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <mach/clock.h>
 
 /*
@@ -80,5 +81,6 @@ static int do_clocks(int argc, char *argv[])
 BAREBOX_CMD_START(dump_clocks)
 	.cmd		= do_clocks,
 	.usage		= "show clock frequencies",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 

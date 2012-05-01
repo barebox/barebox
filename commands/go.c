@@ -25,6 +25,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <linux/ctype.h>
@@ -91,4 +92,5 @@ BAREBOX_CMD_START(go)
 	.cmd		= do_go,
 	.usage		= "start application at address or file",
 	BAREBOX_CMD_HELP(cmd_go_help)
+	BAREBOX_CMD_COMPLETE(cammand_var_complete)
 BAREBOX_CMD_END

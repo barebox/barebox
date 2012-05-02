@@ -166,6 +166,48 @@ extern __inline__ int ffz(unsigned int x)
 	return __ilog2(x & -x);
 }
 
+/*
+ * fls: find last (most-significant) bit set.
+ * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
+ */
+static inline int fls(unsigned int x)
+{
+	int lz;
+
+	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
+	return 32 - lz;
+}
+
+/*
+ * fls64 - find last set bit in a 64-bit word
+ * @x: the word to search
+ *
+ * This is defined in a similar way as the libc and compiler builtin
+ * ffsll, but returns the position of the most significant set bit.
+ *
+ * fls64(value) returns 0 if value is 0 or the position of the last
+ * set bit if value is nonzero. The last (most significant) bit is
+ * at position 64.
+ */
+
+static inline int fls64(__u64 x)
+{
+	__u32 h = x >> 32;
+	if (h)
+		return fls(h) + 32;
+	return fls(x);
+}
+
+static inline int __ilog2_u64(u64 n)
+{
+	return fls64(n) - 1;
+}
+
+static inline int ffs64(u64 x)
+{
+	return __ilog2_u64(x & -x) + 1ull;
+}
+
 #ifdef __KERNEL__
 
 /*

@@ -126,7 +126,7 @@ int eth_complete(struct string_list *sl, char *instr)
 
 		string_list_add_asprintf(sl, "%s ", devname);
 	}
-	return COMPLETE_CONTNINUE;
+	return COMPLETE_CONTINUE;
 }
 #endif
 

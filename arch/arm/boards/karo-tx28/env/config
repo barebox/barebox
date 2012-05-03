@@ -1,7 +1,7 @@
 #
 #
 
-machine=tx28
+hostname=tx28
 baseboard=tx28stk5
 
 # use 'dhcp' to do dhcp in barebox and in kernel
@@ -22,16 +22,16 @@ rootfs_loc=net
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
-rootfsimage=root-$machine.$rootfs_type
+rootfsimage=root-$hostname.$rootfs_type
 
-kernelimage=zImage-$machine
-#kernelimage=uImage-$machine
-#kernelimage=Image-$machine
-#kernelimage=Image-$machine.lzo
+kernelimage=zImage-$hostname
+#kernelimage=uImage-$hostname
+#kernelimage=Image-$hostname
+#kernelimage=Image-$hostname.lzo
 
 if [ -n $user ]; then
 	kernelimage="$user"-"$kernelimage"
-	nfsroot="$eth0.serverip:/home/$user/nfsroot/$machine"
+	nfsroot="$eth0.serverip:/home/$user/nfsroot/$hostname"
 	rootfsimage="$user"-"$rootfsimage"
 else
 	nfsroot="$eth0.serverip:/path/to/nfs/root"

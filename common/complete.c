@@ -20,16 +20,13 @@
 #include <common.h>
 #include <complete.h>
 #include <xfuncs.h>
-#include <linux/list.h>
-#include <malloc.h>
 #include <fs.h>
 #include <linux/stat.h>
 #include <libgen.h>
 #include <command.h>
-#include <stringlist.h>
 #include <environment.h>
 
-static int file_complete(struct string_list *sl, char *instr)
+static int file_complete(struct string_list *sl, char *instr, int exec)
 {
 	char *path = strdup(instr);
 	struct stat s;
@@ -49,15 +46,20 @@ static int file_complete(struct string_list *sl, char *instr)
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
-		if (!strncmp(base, d->d_name, strlen(base))) {
-			strcpy(tmp, instr);
-			strcat(tmp, d->d_name + strlen(base));
-			if (!stat(tmp, &s) && S_ISDIR(s.st_mode))
-				strcat(tmp, "/");
-			else
-				strcat(tmp, " ");
-			string_list_add_sorted(sl, tmp);
+		if (strncmp(base, d->d_name, strlen(base)))
+			continue;
+
+		strcpy(tmp, instr);
+		strcat(tmp, d->d_name + strlen(base));
+		if (!stat(tmp, &s) && S_ISDIR(s.st_mode)) {
+			strcat(tmp, "/");
+		} else {
+			if (exec && !S_ISREG(s.st_mode))
+				continue;
+			strcat(tmp, " ");
 		}
+
+		string_list_add_sorted(sl, tmp);
 	}
 
 	closedir(dir);
@@ -131,17 +133,128 @@ static int path_command_complete(struct string_list *sl, char *instr)
 	return 0;
 }
 
-static int command_complete(struct string_list *sl, char *instr)
+int command_complete(struct string_list *sl, char *instr)
 {
 	struct command *cmdtp;
-	char cmd[128];
+
+	if (!instr)
+		instr = "";
 
 	for_each_command(cmdtp) {
-		if (!strncmp(instr, cmdtp->name, strlen(instr))) {
-			strcpy(cmd, cmdtp->name);
-			cmd[strlen(cmdtp->name)] = ' ';
-			cmd[strlen(cmdtp->name) + 1] = 0;
-			string_list_add(sl, cmd);
+		if (strncmp(instr, cmdtp->name, strlen(instr)))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", cmdtp->name);
+	}
+
+	return 0;
+}
+
+int device_complete(struct string_list *sl, char *instr)
+{
+	struct device_d *dev;
+	int len;
+
+	if (!instr)
+		instr = "";
+
+	len = strlen(instr);
+
+	for_each_device(dev) {
+		if (strncmp(instr, dev_name(dev), len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", dev_name(dev));
+	}
+
+	return COMPLETE_CONTINUE;
+}
+
+static int device_param_complete(char *begin, struct device_d *dev,
+				 struct string_list *sl, char *instr)
+{
+	struct param_d *param;
+	int len;
+
+	if (!instr)
+		instr = "";
+
+	len = strlen(instr);
+
+	list_for_each_entry(param, &dev->parameters, list) {
+		if (strncmp(instr, param->name, len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s%s.%s%c",
+			begin ? begin : "", dev_name(dev), param->name,
+			begin ? ' ' : '=');
+	}
+
+	return 0;
+}
+
+int empty_complete(struct string_list *sl, char *instr)
+{
+	return COMPLETE_END;
+}
+
+int cammand_var_complete(struct string_list *sl, char *instr)
+{
+	return COMPLETE_CONTINUE;
+}
+
+static int env_param_complete(struct string_list *sl, char *instr, int eval)
+{
+	struct device_d *dev;
+	struct variable_d *var;
+	struct env_context *c, *current_c;
+	char *instr_param;
+	int len;
+	char end = '=';
+	char *begin = "";
+
+	if (!instr)
+		instr = "";
+
+	if (eval) {
+		begin = "$";
+		end = ' ';
+	}
+
+	instr_param = strrchr(instr, '.');
+	len = strlen(instr);
+
+	current_c = get_current_context();
+	for(var = current_c->local->next; var; var = var->next) {
+		if (strncmp(instr, var_name(var), len))
+			continue;
+		string_list_add_asprintf(sl, "%s%s%c",
+			begin, var_name(var), end);
+	}
+
+	for (c = get_current_context(); c; c = c->parent) {
+		for (var = c->global->next; var; var = var->next) {
+			if (strncmp(instr, var_name(var), len))
+				continue;
+			string_list_add_asprintf(sl, "%s%s%c",
+				begin, var_name(var), end);
+		}
+	}
+
+	if (instr_param) {
+		len = (instr_param - instr);
+		instr_param++;
+	} else {
+		len = strlen(instr);
+		instr_param = "";
+	}
+
+	for_each_device(dev) {
+		if (!strncmp(instr, dev_name(dev), len)) {
+			if (eval)
+				device_param_complete("$", dev, sl, instr_param);
+			else
+				device_param_complete(NULL, dev, sl, instr_param);
 		}
 	}
 
@@ -153,6 +266,32 @@ static int tab_pressed = 0;
 void complete_reset(void)
 {
 	tab_pressed = 0;
+}
+
+static char* cmd_complete_lookup(struct string_list *sl, char *instr)
+{
+	struct command *cmdtp;
+	int len;
+	int ret = 1;
+	char *res = NULL;
+
+	for_each_command(cmdtp) {
+		len = strlen(cmdtp->name);
+		if (!strncmp(instr, cmdtp->name, len) && instr[len] == ' ') {
+			instr += len + 1;
+			if (cmdtp->complete) {
+				ret = cmdtp->complete(sl, instr);
+				res = instr;
+			}
+			goto end;
+		}
+	}
+
+end:
+	if (ret == COMPLETE_CONTINUE && *instr == '$')
+		env_param_complete(sl, instr + 1, 1);
+
+	return res;
 }
 
 int complete(char *instr, char **outstr)
@@ -178,16 +317,24 @@ int complete(char *instr, char **outstr)
 	while (*t == ' ')
 		t++;
 
-	instr = t;
-
 	/* get the completion possibilities */
-	if ((t = strrchr(t, ' '))) {
-		t++;
-		file_complete(&sl, t);
+	instr = cmd_complete_lookup(&sl, t);
+	if (!instr) {
 		instr = t;
-	} else {
-		command_complete(&sl, instr);
-		path_command_complete(&sl, instr);
+		if (t && (t[0] == '/' || !strncmp(t, "./", 2))) {
+			file_complete(&sl, t, 1);
+			instr = t;
+		} else if ((t = strrchr(t, ' '))) {
+			t++;
+			file_complete(&sl, t, 0);
+			instr = t;
+		} else {
+			command_complete(&sl, instr);
+			path_command_complete(&sl, instr);
+			env_param_complete(&sl, instr, 0);
+		}
+		if (*instr == '$')
+			env_param_complete(&sl, instr + 1, 1);
 	}
 
 	pos = strlen(instr);

@@ -174,6 +174,7 @@ static int netconsole_init(void)
 {
 	struct nc_priv *priv;
 	struct console_device *cdev;
+	int ret;
 
 	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
@@ -185,7 +186,12 @@ static int netconsole_init(void)
 
 	priv->fifo = kfifo_alloc(1024);
 
-	console_register(cdev);
+	ret = console_register(cdev);
+	if (ret) {
+		printf("netconsole: registering failed with %s\n", strerror(-ret));
+		kfree(priv);
+		return ret;
+	}
 
 	dev_add_param(&cdev->class_dev, "ip", nc_remoteip_set, NULL, 0);
 	dev_add_param(&cdev->class_dev, "port", nc_port_set, NULL, 0);

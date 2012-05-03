@@ -274,7 +274,7 @@ static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
 static int fec_init(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
-	u32 rcntl;
+	u32 rcntl, xwmrk;
 
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
@@ -317,13 +317,25 @@ static int fec_init(struct eth_device *dev)
 			writel(FEC_MIIGSK_ENR_EN, fec->regs + FEC_MIIGSK_ENR);
 		}
 	}
+
+	if (fec->xcv_type == RGMII)
+		rcntl |= 1 << 6;
+
 	writel(rcntl, fec->regs + FEC_R_CNTRL);
 
 	/*
 	 * Set Opcode/Pause Duration Register
 	 */
 	writel(0x00010020, fec->regs + FEC_OP_PAUSE);
-	writel(0x2, fec->regs + FEC_X_WMRK);
+
+	xwmrk = 0x2;
+
+	/* set ENET tx at store and forward mode */
+	if (cpu_is_mx6())
+		xwmrk |= 1 << 8;
+
+	writel(xwmrk, fec->regs + FEC_X_WMRK);
+
 	/*
 	 * Set multicast address filter
 	 */
@@ -349,6 +361,7 @@ static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
 	int ret;
+	u32 ecr;
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -363,7 +376,13 @@ static int fec_open(struct eth_device *edev)
 	/*
 	 * Enable FEC-Lite controller
 	 */
-	writel(FEC_ECNTRL_ETHER_EN, fec->regs + FEC_ECNTRL);
+	ecr = FEC_ECNTRL_ETHER_EN;
+
+	/* Enable Swap to support little-endian device */
+	if (cpu_is_mx6())
+		ecr |= 0x100;
+
+	writel(ecr, fec->regs + FEC_ECNTRL);
 	/*
 	 * Enable SmartDMA receive task
 	 */

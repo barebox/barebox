@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <environment.h>
 #include <clock.h>
 #include <net.h>
@@ -170,7 +171,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 6,
 		.handle = env_ip_handle,
-		.barebox_var_name = "nameserver",
+		.barebox_var_name = "net.nameserver",
 	}, {
 		.option = 12,
 		.handle = env_str_handle,
@@ -178,7 +179,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 15,
 		.handle = env_str_handle,
-		.barebox_var_name = "domainname",
+		.barebox_var_name = "net.domainname",
 	}, {
 		.option = 17,
 		.handle = env_str_handle,
@@ -201,6 +202,10 @@ struct dhcp_opt dhcp_options[] = {
 		.option = 67,
 		.handle = bootfile_vendorex_handle,
 		.barebox_var_name = "bootfile",
+	}, {
+		.option = 224,
+		.handle = env_str_handle,
+		.barebox_var_name = "dhcp_oftree_file",
 	},
 };
 
@@ -233,6 +238,7 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 	return str_len + 2;
 }
 
+#define DHCP_HOSTNAME		12
 #define DHCP_VENDOR_ID		60
 #define DHCP_CLIENT_ID		61
 #define DHCP_USER_CLASS		77
@@ -240,6 +246,10 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 
 struct dhcp_param dhcp_params[] = {
 	{
+		.option = DHCP_HOSTNAME,
+		.handle = dhcp_set_string_options,
+		.barebox_var_name = "hostname",
+	}, {
 		.option = DHCP_VENDOR_ID,
 		.handle = dhcp_set_string_options,
 		.barebox_var_name = "dhcp_vendor_id",
@@ -610,8 +620,11 @@ static int do_dhcp(int argc, char *argv[])
 
 	dhcp_reset_env();
 
-	while((opt = getopt(argc, argv, "v:c:u:U:")) > 0) {
+	while((opt = getopt(argc, argv, "H:v:c:u:U:")) > 0) {
 		switch(opt) {
+		case 'H':
+			dhcp_set_param_data(DHCP_HOSTNAME, optarg);
+			break;
 		case 'v':
 			dhcp_set_param_data(DHCP_VENDOR_ID, optarg);
 			break;
@@ -639,6 +652,7 @@ static int do_dhcp(int argc, char *argv[])
 
 	net_set_ip(0);
 
+	dhcp_start = get_time_ns();
 	ret = bootp_request(); /* Basically same as BOOTP */
 	if (ret)
 		goto out1;
@@ -668,6 +682,8 @@ out:
 BAREBOX_CMD_HELP_START(dhcp)
 BAREBOX_CMD_HELP_USAGE("dhcp [OPTIONS]\n")
 BAREBOX_CMD_HELP_SHORT("Invoke dhcp client to obtain ip/boot params.\n")
+BAREBOX_CMD_HELP_OPT  ("-H <hostname>",
+"Hostname to send to the DHCP server\n")
 BAREBOX_CMD_HELP_OPT  ("-v <vendor_id>",
 "DHCP Vendor ID (code 60) submitted in DHCP requests. It can\n"
 "be used in the DHCP server's configuration to select options\n"
@@ -690,15 +706,15 @@ BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
 	.usage		= "invoke dhcp client to obtain ip/boot params",
 	BAREBOX_CMD_HELP(cmd_dhcp_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootfile, "bootfile returned from DHCP request");
-BAREBOX_MAGICVAR(nameserver, "Nameserver returned from DHCP request");
-BAREBOX_MAGICVAR(hostname, "hostname returned from DHCP request");
-BAREBOX_MAGICVAR(domainname, "domainname returned from DHCP request");
+BAREBOX_MAGICVAR(hostname, "hostname to send or returned from DHCP request");
 BAREBOX_MAGICVAR(rootpath, "rootpath returned from DHCP request");
 BAREBOX_MAGICVAR(dhcp_vendor_id, "vendor id to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_client_uuid, "cliend uuid to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_client_id, "cliend id to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_user_class, "user class to send to the DHCP server");
 BAREBOX_MAGICVAR(dhcp_tftp_server_name, "TFTP server Name returned from DHCP request");
+BAREBOX_MAGICVAR(dhcp_oftree_file, "OF tree returned from DHCP request (option 224)");

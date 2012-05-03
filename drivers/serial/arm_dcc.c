@@ -154,7 +154,7 @@ static struct driver_d arm_dcc_driver = {
 };
 
 static struct device_d arm_dcc_device = {
-	.id	= -1,
+	.id	= DEVICE_ID_DYNAMIC,
 	.name	= "arm_dcc",
 };
 

@@ -125,7 +125,7 @@ void pci_mpc5xxx_init (struct pci_controller *hose)
 
 	/* Set cache line size */
 	*(vu_long *)MPC5XXX_PCI_CFG = (*(vu_long *)MPC5XXX_PCI_CFG & ~0xff) |
-		(CONFIG_CACHELINE_SIZE / 4);
+		(CACHELINE_SIZE / 4);
 
 	/* Map MBAR to PCI space */
 	*(vu_long *)MPC5XXX_PCI_BAR0 = CFG_MBAR;

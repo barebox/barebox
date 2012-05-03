@@ -14,9 +14,6 @@ uint	get_svr	      (void);
 
 void	trap_init     (ulong);
 
-int cpu_init_board_data(bd_t *bd);
-int init_board_data(bd_t *bd);
-
 static inline unsigned long get_pc(void)
 {
 	unsigned long pc;
@@ -34,4 +31,5 @@ static inline unsigned long get_pc(void)
 	return pc;
 }
 
+extern unsigned long search_exception_table(unsigned long);
 #endif /* __ASM_COMMON_H */

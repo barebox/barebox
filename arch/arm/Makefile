@@ -104,6 +104,7 @@ board-$(CONFIG_MACH_PCM049)			:= pcm049
 board-$(CONFIG_MACH_PCA100)			:= phycard-i.MX27
 board-$(CONFIG_MACH_PCAAL1)			:= phycard-a-l1
 board-$(CONFIG_MACH_PCAAXL2)			:= phycard-a-xl2
+board-$(CONFIG_MACH_PCM027)			:= pcm027
 board-$(CONFIG_MACH_PCM037)			:= pcm037
 board-$(CONFIG_MACH_PCM038)			:= pcm038
 board-$(CONFIG_MACH_PCM043)			:= pcm043
@@ -130,6 +131,8 @@ board-$(CONFIG_MACH_USB_A9G20)			:= usb-a926x
 board-$(CONFIG_MACH_VERSATILEPB)		:= versatile
 board-$(CONFIG_MACH_TX25)			:= karo-tx25
 board-$(CONFIG_MACH_TQMA53)			:= tqma53
+board-$(CONFIG_MACH_TX51)			:= karo-tx51
+board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

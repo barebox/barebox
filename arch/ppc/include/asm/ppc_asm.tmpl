@@ -28,8 +28,7 @@
 #ifndef	__PPC_ASM_TMPL__
 #define __PPC_ASM_TMPL__
 
-/***************************************************************************
- *
+/*
  * These definitions simplify the ugly declarations necessary for GOT
  * definitions.
  *
@@ -58,10 +57,7 @@
 
 #define GOT(NAME)		.L_ ## NAME (r14)
 
-
-/***************************************************************************
- * Register names
- */
+/* Register names */
 #define	r0	0
 #define	r1	1
 #define	r2	2
@@ -95,99 +91,18 @@
 #define	r30	30
 #define	r31	31
 
-
-#if defined(CONFIG_8xx) || defined(CONFIG_MPC824X)
-
-/* Some special registers */
-
-#define ICR	148	/* Interrupt Cause Register (37-44) */
-#define DER	149
-#define COUNTA	150	/* Breakpoint Counter	    (37-44) */
-#define COUNTB	151	/* Breakpoint Counter	    (37-44) */
-#define LCTRL1	156	/* Load/Store Support	    (37-40) */
-#define LCTRL2	157	/* Load/Store Support	    (37-41) */
-#define ICTRL	158
-
-#endif	/* CONFIG_8xx, CONFIG_MPC824X */
-
-
-#if  defined(CONFIG_5xx)
-/* Some special purpose registers */
-#define DER	149		/* Debug Enable Register	    	*/
-#define COUNTA	150		/* Breakpoint Counter	    	 	*/
-#define COUNTB	151		/* Breakpoint Counter	    	 	*/
-#define LCTRL1	156		/* Load/Store Support	    	 	*/
-#define LCTRL2	157		/* Load/Store Support	    	 	*/
-#define ICTRL	158		/* I-Bus Support Control Register	*/
-#define EID	81
-#endif	/* CONFIG_5xx */
-
-#if defined(CONFIG_8xx)
-
-/* Registers in the processor's internal memory map that we use.
-*/
-#define SYPCR	0x00000004
-#define BR0	0x00000100
-#define OR0	0x00000104
-#define BR1	0x00000108
-#define OR1	0x0000010c
-#define BR2	0x00000110
-#define OR2	0x00000114
-#define BR3	0x00000118
-#define OR3	0x0000011c
-#define BR4	0x00000120
-#define OR4	0x00000124
-
-#define MAR	0x00000164
-#define MCR	0x00000168
-#define MAMR	0x00000170
-#define MBMR	0x00000174
-#define MSTAT	0x00000178
-#define MPTPR	0x0000017a
-#define MDR	0x0000017c
-
-#define TBSCR	0x00000200
-#define TBREFF0	0x00000204
-
-#define PLPRCR	0x00000284
-
-#elif defined(CONFIG_8260)
-
-#define HID2		1011
-
-#define HID0_IFEM	(1<<7)
-
-#define HID0_ICE_BITPOS	16
-#define HID0_DCE_BITPOS	17
-
-#define IM_REGBASE	0x10000
-#define IM_SYPCR	(IM_REGBASE+0x0004)
-#define IM_SWSR		(IM_REGBASE+0x000e)
-#define IM_BR0		(IM_REGBASE+0x0100)
-#define IM_OR0		(IM_REGBASE+0x0104)
-#define IM_BR1		(IM_REGBASE+0x0108)
-#define IM_OR1		(IM_REGBASE+0x010c)
-#define IM_BR2		(IM_REGBASE+0x0110)
-#define IM_OR2		(IM_REGBASE+0x0114)
-#define IM_MPTPR	(IM_REGBASE+0x0184)
-#define IM_PSDMR	(IM_REGBASE+0x0190)
-#define IM_PSRT		(IM_REGBASE+0x019c)
-#define IM_IMMR		(IM_REGBASE+0x01a8)
-#define IM_SCCR		(IM_REGBASE+0x0c80)
-
-#elif defined(CONFIG_MPC5xxx) || defined(CONFIG_MPC8220)
-
-#define HID0_ICE_BITPOS	16
-#define HID0_DCE_BITPOS	17
-
-#endif
-
 #define curptr r2
 
 #define SYNC \
 	sync; \
 	isync
 
+#if defined(CONFIG_MPC5xxx) || defined(CONFIG_MPC8220)
+
+#define HID0_ICE_BITPOS 16
+#define HID0_DCE_BITPOS 17
+
+#endif
 /*
  * Macros for storing registers into and loading registers from
  * exception frames.
@@ -217,7 +132,7 @@
  * We assume sprg3 has the physical address of the current
  * task's thread_struct.
  */
-#define EXCEPTION_PROLOG	\
+#define EXCEPTION_PROLOG(reg1, reg2)	\
 	mtspr	SPRG0,r20;	\
 	mtspr	SPRG1,r21;	\
 	mfcr	r20;		\
@@ -235,8 +150,10 @@
 	stw	r22,_CTR(r21);	\
 	mfspr	r20,XER;	\
 	stw	r20,_XER(r21);	\
-	mfspr	r22,SRR0;	\
-	mfspr	r23,SRR1;	\
+	mfspr	r20, DAR_DEAR;	\
+	stw	r20,_DAR(r21);	\
+	mfspr	r22,reg1;	\
+	mfspr	r23,reg2;	\
 	stw	r0,GPR0(r21);	\
 	stw	r1,GPR1(r21);	\
 	stw	r2,GPR2(r21);	\
@@ -249,74 +166,49 @@
  */
 
 /*
- * Critical exception entry code.  This is just like the other exception
- * code except that it uses SRR2 and SRR3 instead of SRR0 and SRR1.
- */
-#define CRITICAL_EXCEPTION_PROLOG       \
-	mtspr   SPRG0,r20;      \
-	mtspr   SPRG1,r21;      \
-	mfcr    r20;            \
-	subi    r21,r1,INT_FRAME_SIZE+STACK_UNDERHEAD;  /* alloc exc. frame */\
-	stw     r20,_CCR(r21);          /* save registers */ \
-	stw     r22,GPR22(r21); \
-	stw     r23,GPR23(r21); \
-	mfspr   r20,SPRG0;      \
-	stw     r20,GPR20(r21); \
-	mfspr   r22,SPRG1;      \
-	stw     r22,GPR21(r21); \
-	mflr    r20;            \
-	stw     r20,_LINK(r21); \
-	mfctr   r22;            \
-	stw     r22,_CTR(r21);  \
-	mfspr   r20,XER;        \
-	stw     r20,_XER(r21);  \
-	mfspr   r22,990;        /* SRR2 */      \
-	mfspr   r23,991;        /* SRR3 */      \
-	stw     r0,GPR0(r21);   \
-	stw     r1,GPR1(r21);   \
-	stw     r2,GPR2(r21);   \
-	stw     r1,0(r21);      \
-	mr      r1,r21;                 /* set new kernel sp */ \
-	SAVE_4GPRS(3, r21);
-/*
- * Note: code which follows this uses cr0.eq (set if from kernel),
- * r21, r22 (SRR2), and r23 (SRR3).
- */
-
-/*
  * Exception vectors.
  *
  * The data words for `hdlr' and `int_return' are initialized with
  * OFFSET values only; they must be relocated first before they can
  * be used!
  */
-#define STD_EXCEPTION(n, label, hdlr)			\
-	. = n;						\
-label:							\
-	EXCEPTION_PROLOG;				\
-	lwz	r3,GOT(transfer_to_handler);		\
-	mtlr	r3;					\
-	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
-	li	r20,MSR_KERNEL;				\
+#define COPY_EE(d, s)		rlwimi d,s,0,16,16
+#define NOCOPY(d, s)
+#define EXC_XFER_TEMPLATE(label, hdlr, msr, copyee)	\
+	bl	1f;					\
+1:	mflr    r20;					\
+	lwz	r20,(.L_ ## label)-1b+8(r20);		\
+	mtlr	r20;					\
+	li	r20,msr;				\
+	copyee(r20,r23);				\
 	rlwimi	r20,r23,0,25,25;			\
-	blrl	; 					\
+	blrl;						\
 .L_ ## label :						\
-	.long	hdlr - _start + EXC_OFF_SYS_RESET;	\
-	.long	int_return - _start + EXC_OFF_SYS_RESET
+	.long	hdlr - _start + _START_OFFSET;		\
+	.long	int_return - _start + _START_OFFSET;	\
+	.long	transfer_to_handler - _start + _START_OFFSET
 
+#define STD_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(SRR0, SRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr, MSR_KERNEL, NOCOPY)	\
 
-#define CRIT_EXCEPTION(n, label, hdlr)                  \
-	. = n;                                          \
-label:                                                  \
-	CRITICAL_EXCEPTION_PROLOG;                      \
-	lwz     r3,GOT(transfer_to_handler);            \
-	mtlr    r3;                                     \
-	addi    r3,r1,STACK_FRAME_OVERHEAD;             \
-	li      r20,(MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)); \
-	rlwimi  r20,r23,0,25,25;                        \
-	blrl    ;                                       \
-.L_ ## label :                                          \
-	.long   hdlr - _start + EXC_OFF_SYS_RESET;      \
-	.long   crit_return - _start + EXC_OFF_SYS_RESET
+#define CRIT_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(CSRR0, CSRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr,				\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
+
+#define MCK_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(MCSRR0, MCSRR1);			\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr,				\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
 
 #endif	/* __PPC_ASM_TMPL__ */

@@ -13,6 +13,9 @@
 #include <errno.h>
 #include <sizes.h>
 #include <libbb.h>
+#include <magicvar.h>
+#include <libfdt.h>
+#include <binfmt.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -123,6 +126,70 @@ struct zimage_header {
 
 #define ZIMAGE_MAGIC 0x016F2818
 
+static int do_bootz_linux_fdt(int fd, struct image_data *data)
+{
+	struct fdt_header __header, *header;
+	struct resource *r = data->os_res;
+	struct resource *of_res = data->os_res;
+	void *oftree;
+	int ret;
+
+	u32 end;
+
+	header = &__header;
+	ret = read(fd, header, sizeof(*header));
+	if (ret < sizeof(*header))
+		return ret;
+
+	if (file_detect_type(header) != filetype_oftree)
+		return -ENXIO;
+
+	end = be32_to_cpu(header->totalsize);
+
+	if (IS_BUILTIN(CONFIG_OFTREE)) {
+		oftree = malloc(end + 0x8000);
+		if (!oftree) {
+			perror("zImage: oftree malloc");
+			return -ENOMEM;
+		}
+	} else {
+
+		of_res = request_sdram_region("oftree", r->start + r->size, end);
+		if (!of_res) {
+			perror("zImage: oftree request_sdram_region");
+			return -ENOMEM;
+		}
+
+		oftree = (void*)of_res->start;
+	}
+
+	memcpy(oftree, header, sizeof(*header));
+
+	end -= sizeof(*header);
+
+	ret = read_full(fd, oftree + sizeof(*header), end);
+	if (ret < 0)
+		return ret;
+	if (ret < end) {
+		printf("premature end of image\n");
+		return -EIO;
+	}
+
+	if (IS_BUILTIN(CONFIG_OFTREE)) {
+		fdt_open_into(oftree, oftree, end + 0x8000);
+
+		ret = of_fix_tree(oftree);
+		if (ret)
+			return ret;
+
+		data->oftree = oftree;
+	}
+
+	pr_info("zImage: concatenated oftree detected\n");
+
+	return 0;
+}
+
 static int do_bootz_linux(struct image_data *data)
 {
 	int fd, ret, swap = 0;
@@ -173,6 +240,8 @@ static int do_bootz_linux(struct image_data *data)
 
 	data->os_res = request_sdram_region("zimage", load_address, end);
 	if (!data->os_res) {
+		pr_err("bootm/zImage: failed to request memory at 0x%lx to 0x%lx (%d).\n",
+		       load_address, load_address + end, end);
 		ret = -ENOMEM;
 		goto err_out;
 	}
@@ -195,6 +264,10 @@ static int do_bootz_linux(struct image_data *data)
 		for (ptr = zimage; ptr < zimage + end; ptr += 4)
 			*(u32 *)ptr = swab32(*(u32 *)ptr);
 	}
+
+	ret = do_bootz_linux_fdt(fd, data);
+	if (ret && ret != -ENXIO)
+		return ret;
 
 	return __do_bootm_linux(data, swap);
 
@@ -231,12 +304,177 @@ static struct image_handler barebox_handler = {
 	.filetype = filetype_arm_barebox,
 };
 
+#include <aimage.h>
+
+static int aimage_load_resource(int fd, struct resource *r, void* buf, int ps)
+{
+	int ret;
+	void *image = (void *)r->start;
+	unsigned to_read = ps - r->size % ps;
+
+	ret = read_full(fd, image, r->size);
+	if (ret < 0)
+		return ret;
+
+	ret = read_full(fd, buf, to_read);
+	if (ret < 0)
+		printf("could not read dummy %d\n", to_read);
+
+	return ret;
+}
+
+static int do_bootm_aimage(struct image_data *data)
+{
+	struct resource *snd_stage_res;
+	int fd, ret;
+	struct android_header __header, *header;
+	void *buf;
+	int to_read;
+	struct android_header_comp *cmp;
+
+	fd = open(data->os_file, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+
+	header = &__header;
+	ret = read(fd, header, sizeof(*header));
+	if (ret < sizeof(*header)) {
+		printf("could not read %s\n", data->os_file);
+		goto err_out;
+	}
+
+	printf("Android Image for '%s'\n", header->name);
+
+	/*
+	 * As on tftp we do not support lseek and we will just have to seek
+	 * for the size of a page - 1 max just buffer instead to read to dummy
+	 * data
+	 */
+	buf = xmalloc(header->page_size);
+
+	to_read = header->page_size - sizeof(*header);
+	ret = read_full(fd, buf, to_read);
+	if (ret < 0) {
+		printf("could not read dummy %d from %s\n", to_read, data->os_file);
+		goto err_out;
+	}
+
+	cmp = &header->kernel;
+	data->os_res = request_sdram_region("akernel", cmp->load_addr, cmp->size);
+	if (!data->os_res) {
+		ret = -ENOMEM;
+		goto err_out;
+	}
+
+	ret = aimage_load_resource(fd, data->os_res, buf, header->page_size);
+	if (ret < 0) {
+		perror("could not read kernel");
+		goto err_out;
+	}
+
+	/*
+	 * fastboot always expect a ramdisk
+	 * in barebox we can be less restrictive
+	 */
+	cmp = &header->ramdisk;
+	if (cmp->size) {
+		data->initrd_res = request_sdram_region("ainitrd", cmp->load_addr, cmp->size);
+		if (!data->initrd_res) {
+			ret = -ENOMEM;
+			goto err_out;
+		}
+
+		ret = aimage_load_resource(fd, data->initrd_res, buf, header->page_size);
+		if (ret < 0) {
+			perror("could not read initrd");
+			goto err_out;
+		}
+	}
+
+	if (!getenv("aimage_noverwrite_bootargs"))
+		setenv("bootargs", header->cmdline);
+
+	if (!getenv("aimage_noverwrite_tags"))
+		armlinux_set_bootparams((void*)header->tags_addr);
+
+	if (data->oftree) {
+		ret = of_fix_tree(data->oftree);
+		if (ret)
+			goto err_out;
+	}
+
+	cmp = &header->second_stage;
+	if (cmp->size) {
+		void (*second)(void);
+
+		snd_stage_res = request_sdram_region("asecond", cmp->load_addr, cmp->size);
+		if (!snd_stage_res) {
+			ret = -ENOMEM;
+			goto err_out;
+		}
+
+		ret = aimage_load_resource(fd, snd_stage_res, buf, header->page_size);
+		if (ret < 0) {
+			perror("could not read initrd");
+			goto err_out;
+		}
+
+		second = (void*)snd_stage_res->start;
+		shutdown_barebox();
+
+		second();
+
+		reset_cpu(0);
+	}
+
+	return __do_bootm_linux(data, 0);
+
+err_out:
+	close(fd);
+
+	return ret;
+}
+
+static struct image_handler aimage_handler = {
+	.name = "ARM Android Image",
+	.bootm = do_bootm_aimage,
+	.filetype = filetype_aimage,
+};
+
+#ifdef CONFIG_CMD_BOOTM_AIMAGE
+BAREBOX_MAGICVAR(aimage_noverwrite_bootargs, "Disable overwrite of the bootargs with the one present in aimage");
+BAREBOX_MAGICVAR(aimage_noverwrite_tags, "Disable overwrite of the tags addr with the one present in aimage");
+#endif
+
+static struct binfmt_hook binfmt_aimage_hook = {
+	.type = filetype_aimage,
+	.exec = "bootm",
+};
+
+static struct binfmt_hook binfmt_arm_zimage_hook = {
+	.type = filetype_arm_zimage,
+	.exec = "bootm",
+};
+
+static struct binfmt_hook binfmt_barebox_hook = {
+	.type = filetype_arm_barebox,
+	.exec = "bootm",
+};
+
 static int armlinux_register_image_handler(void)
 {
 	register_image_handler(&barebox_handler);
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);
 	register_image_handler(&zimage_handler);
+	if (IS_BUILTIN(CONFIG_CMD_BOOTM_AIMAGE)) {
+		register_image_handler(&aimage_handler);
+		binfmt_register(&binfmt_aimage_hook);
+	}
+	binfmt_register(&binfmt_arm_zimage_hook);
+	binfmt_register(&binfmt_barebox_hook);
 
 	return 0;
 }

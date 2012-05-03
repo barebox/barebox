@@ -129,15 +129,15 @@ static int a9m2440_devices_init(void)
 	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
+	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE, 0,
 			   IORESOURCE_MEM, &nand_info);
 	/*
 	 * cs8900 network controller onboard
 	 * Connected to CS line 5 + A24 and interrupt line EINT9,
 	 * data width is 16 bit
 	 */
-	add_generic_device("cs8900", -1, NULL, S3C_CS5_BASE + (1 << 24) + 0x300, 16,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("cs8900", DEVICE_ID_DYNAMIC, NULL,
+			S3C_CS5_BASE + (1 << 24) + 0x300, 16, IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -164,8 +164,8 @@ void __bare_init nand_boot(void)
 
 static int a9m2440_console_init(void)
 {
-	add_generic_device("s3c_serial", -1, NULL, S3C_UART1_BASE, S3C_UART1_SIZE,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
+			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
 	return 0;
 }
 

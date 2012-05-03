@@ -36,6 +36,11 @@ elif [ x${type} = xbarebox ]; then
 	if [ -z ${image} ]; then
 		image=barebox.bin
 	fi
+elif [ x${type} = xoftree ]; then
+	image=$oftreeimage
+	if [ -z ${image} ]; then
+		image=oftree.bin
+	fi
 elif [ x${type} = xbareboxenv ]; then
 	image=$bareboxenvimage
 	if [ -z ${image} ]; then

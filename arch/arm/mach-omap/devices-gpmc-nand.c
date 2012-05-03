@@ -68,8 +68,8 @@ int gpmc_generic_nand_devices_init(int cs, int width,
 	/* Configure GPMC CS before register */
 	gpmc_cs_config(nand_plat.cs, nand_cfg);
 
-	add_generic_device("gpmc_nand", -1, NULL, OMAP_GPMC_BASE, 1024 * 4,
-			   IORESOURCE_MEM, &nand_plat);
+	add_generic_device("gpmc_nand", DEVICE_ID_DYNAMIC, NULL, OMAP_GPMC_BASE,
+			1024 * 4, IORESOURCE_MEM, &nand_plat);
 
 	return 0;
 }

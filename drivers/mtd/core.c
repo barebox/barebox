@@ -219,7 +219,7 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 	if (!devname)
 		devname = "mtd";
 	strcpy(mtd->class_dev.name, devname);
-	mtd->class_dev.id = -1;
+	mtd->class_dev.id = DEVICE_ID_DYNAMIC;
 	register_device(&mtd->class_dev);
 
 	mtd->cdev.ops = &mtd_ops;

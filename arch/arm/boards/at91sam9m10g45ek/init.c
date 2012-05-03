@@ -41,6 +41,8 @@
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
+#include <gpio_keys.h>
+#include <readkey.h>
 
 /*
  * board revision encoding
@@ -164,6 +166,54 @@ static void ek_device_add_leds(void)
 static void ek_device_add_leds(void) {}
 #endif
 
+#ifdef CONFIG_KEYBOARD_GPIO
+struct gpio_keys_button keys[] = {
+	{
+		.code = KEY_HOME,
+		.gpio = AT91_PIN_PB6,
+	}, {
+		.code = KEY_RETURN,
+		.gpio = AT91_PIN_PB7,
+	}, {
+		.code = KEY_LEFT,
+		.gpio = AT91_PIN_PB14,
+	}, {
+		.code = KEY_RIGHT,
+		.gpio = AT91_PIN_PB15,
+	}, {
+		.code = KEY_UP,
+		.gpio = AT91_PIN_PB16,
+	}, {
+		.code = KEY_DOWN,
+		.gpio = AT91_PIN_PB17,
+	}, {
+		.code = KEY_RETURN,
+		.gpio = AT91_PIN_PB18,
+	},
+};
+
+struct gpio_keys_platform_data gk_pdata = {
+	.buttons = keys,
+	.nbuttons = ARRAY_SIZE(keys),
+};
+
+static void ek_device_add_keyboard(void)
+{
+	int i;
+
+	for (i = 0; i < gk_pdata.nbuttons; i++) {
+		/* user push button, pull up enabled */
+		keys[i].active_low = 1;
+		at91_set_GPIO_periph(keys[i].gpio, keys[i].active_low);
+		at91_set_deglitch(keys[i].gpio, 1);
+	}
+
+	add_gpio_keys_device(-1, &gk_pdata);
+}
+#else
+static void ek_device_add_keyboard(void) {}
+#endif
+
 static int at91sam9m10g45ek_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
@@ -178,6 +228,7 @@ static int at91sam9m10g45ek_devices_init(void)
 	at91_add_device_eth(0, &macb_pdata);
 	ek_add_device_mci();
 	ek_device_add_leds();
+	ek_device_add_keyboard();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");

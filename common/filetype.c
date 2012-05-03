@@ -37,6 +37,8 @@ static const char *filetype_str[] = {
 	[filetype_gzip] = "gzip compressed",
 	[filetype_bzip2] = "bzip2 compressed",
 	[filetype_oftree] = "open firmware flat device tree",
+	[filetype_aimage] = "Android boot image",
+	[filetype_sh] = "Bourne Shell",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -52,6 +54,8 @@ enum filetype file_detect_type(void *_buf)
 	u32 *buf = _buf;
 	u8 *buf8 = _buf;
 
+	if (strncmp(buf8, "#!/bin/sh", 9) == 0)
+		return filetype_sh;
 	if (buf[8] == 0x65726162 && buf[9] == 0x00786f62)
 		return filetype_arm_barebox;
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
@@ -72,6 +76,8 @@ enum filetype file_detect_type(void *_buf)
                 return filetype_bzip2;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
+	if (strncmp(buf8, "ANDROID!", 8) == 0)
+		return filetype_aimage;
 
 	return filetype_unknown;
 }

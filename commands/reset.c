@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 
 static int cmd_reset(int argc, char *argv[])
 {
@@ -34,4 +35,5 @@ static int cmd_reset(int argc, char *argv[])
 BAREBOX_CMD_START(reset)
 	.cmd		= cmd_reset,
 	.usage		= "Perform RESET of the CPU",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

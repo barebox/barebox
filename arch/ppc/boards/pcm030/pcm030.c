@@ -53,9 +53,9 @@ static int devices_init (void)
 	 * what we find later.
 	 */
 	mpc5200_setup_cs(MPC5200_BOOTCS, 0xfe000000, SZ_32M, 0x0008fd00);
-	add_cfi_flash_device(-1, 0xfe000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xfe000000, 32 * 1024 * 1024, 0);
 
-	add_generic_device("fec_mpc5xxx", -1, NULL, MPC5XXX_FEC, 0x200,
+	add_generic_device("fec_mpc5xxx", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_FEC, 0x200,
 			   IORESOURCE_MEM, &fec_info);
 
 	ret = stat("/dev/nor0", &s);
@@ -72,9 +72,9 @@ device_initcall(devices_init);
 
 static int console_init(void)
 {
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC3, 0x200,
+	add_generic_device("mpc5xxx_serial", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_PSC3, 0x200,
 			   IORESOURCE_MEM, NULL);
-	add_generic_device("mpc5xxx_serial", -1, NULL, MPC5XXX_PSC6, 0x200,
+	add_generic_device("mpc5xxx_serial", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_PSC6, 0x200,
 			   IORESOURCE_MEM, NULL);
 	return 0;
 }

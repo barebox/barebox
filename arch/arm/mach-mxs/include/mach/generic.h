@@ -28,3 +28,13 @@
 #else
 # define cpu_is_mx28()	(0)
 #endif
+
+#define cpu_is_mx1()	(0)
+#define cpu_is_mx21()	(0)
+#define cpu_is_mx25()	(0)
+#define cpu_is_mx27()	(0)
+#define cpu_is_mx31()	(0)
+#define cpu_is_mx35()	(0)
+#define cpu_is_mx51()	(0)
+#define cpu_is_mx53()	(0)
+#define cpu_is_mx6()	(0)

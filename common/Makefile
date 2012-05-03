@@ -1,3 +1,4 @@
+obj-$(CONFIG_BINFMT)		+= binfmt.o
 obj-$(CONFIG_SHELL_HUSH)	+= hush.o
 obj-$(CONFIG_SHELL_SIMPLE)	+= parser.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
@@ -81,3 +82,20 @@ include/generated/barebox_default_env.h: barebox_default_env$(barebox_default_en
 CLEAN_FILES += include/generated/barebox_default_env.h barebox_default_env
 CLEAN_FILES += barebox_default_env.gz barebox_default_env.bz2
 CLEAN_FILES += barebox_default_env.lzo
+
+# dependencies on generated files need to be listed explicitly
+$(obj)/version.o: include/generated/compile.h
+
+# compile.h changes depending on hostname, generation number, etc,
+# so we regenerate it always.
+# mkcompile_h will make sure to only update the
+# actual file if its content has changed.
+
+       chk_compile.h = :
+ quiet_chk_compile.h = echo '  CHK     $@'
+silent_chk_compile.h = :
+include/generated/compile.h: FORCE
+	@$($(quiet)chk_compile.h)
+	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
+	"$(UTS_MACHINE)" "$(CC) $(KBUILD_CFLAGS)"
+

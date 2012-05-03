@@ -64,7 +64,7 @@ static int tx25_mem_init(void)
 }
 mem_initcall(tx25_mem_init);
 
-static struct pad_desc karo_tx25_padsd_fec[] = {
+static iomux_v3_cfg_t karo_tx25_padsd_fec[] = {
 	MX25_PAD_D11__GPIO_4_9,		/* FEC PHY power on pin */
 	MX25_PAD_D13__GPIO_4_7,		/* FEC reset */
 	MX25_PAD_FEC_MDC__FEC_MDC,
@@ -131,7 +131,7 @@ static int tx25_devices_init(void)
 
 device_initcall(tx25_devices_init);
 
-static struct pad_desc tx25_pads[] = {
+static iomux_v3_cfg_t tx25_pads[] = {
 	MX25_PAD_D12__GPIO_4_8,
 	MX25_PAD_D10__GPIO_4_10,
 	MX25_PAD_NF_CE0__NF_CE0,
@@ -172,7 +172,7 @@ void __bare_init nand_boot(void)
 }
 #endif
 
-static struct pad_desc tx25_lcdc_gpios[] = {
+static iomux_v3_cfg_t tx25_lcdc_gpios[] = {
 	MX25_PAD_A18__GPIO_2_4,		/* LCD Reset (active LOW) */
 	MX25_PAD_PWM__GPIO_1_26,	/* LCD Backlight brightness 0: full 1: off */
 	MX25_PAD_A19__GPIO_2_5,		/* LCD Power Enable 0: off 1: on */

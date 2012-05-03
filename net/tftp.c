@@ -273,7 +273,6 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 static int do_tftpb(int argc, char *argv[])
 {
 	char *localfile, *remotefile, *file1, *file2;
-	char ip1[16];
 	int opt;
 	struct stat s;
 	unsigned long flags;
@@ -328,7 +327,7 @@ static int do_tftpb(int argc, char *argv[])
 
 	printf("TFTP %s server %s ('%s' -> '%s')\n",
 			tftp_push ? "to" : "from",
-			ip_to_string(net_get_serverip(), ip1),
+			ip_to_string(net_get_serverip()),
 			file1, file2);
 
 	init_progression_bar(tftp_push ? s.st_size : 0);

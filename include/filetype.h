@@ -15,6 +15,8 @@ enum filetype {
 	filetype_gzip,
 	filetype_bzip2,
 	filetype_oftree,
+	filetype_aimage,
+	filetype_sh,
 };
 
 const char *file_type_to_string(enum filetype f);

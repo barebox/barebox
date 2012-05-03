@@ -39,6 +39,7 @@
 
 /* Exception offsets (PowerPC standard) */
 #define EXC_OFF_SYS_RESET	0x0100
+#define _START_OFFSET		EXC_OFF_SYS_RESET
 
 #define CFG_MBAR 0xf0000000
 

@@ -43,6 +43,10 @@ config HAVE_NOSHELL
 config FILETYPE
 	bool
 
+config BINFMT
+	bool
+	select FILETYPE
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -275,6 +279,7 @@ choice
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
 		select PARAMETER
+		select BINFMT
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
@@ -505,6 +510,13 @@ config DEFAULT_ENVIRONMENT_PATH
 	  Space separated list of pathes the default environment will be taken from.
 	  Relative pathes will be relative to the barebox Toplevel dir, but absolute
 	  pathes are fine aswell.
+
+config BAREBOXENV_TARGET
+	bool
+	prompt "build bareboxenv tool for target"
+	help
+	  'bareboxenv' is a tool to access the barebox environment from a running Linux
+	  system. Say yes here to build it for the target.
 
 config POLLER
 	bool "generic polling infrastructure"

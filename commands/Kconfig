@@ -222,8 +222,7 @@ config CMD_LOADB
 
 config CMD_LOADY
 	select CRC16
-	depends on EXPERIMENTAL
-	bool
+	tristate
 	prompt "loady"
 
 config CMD_LOADS
@@ -359,6 +358,13 @@ config CMD_BOOTM_OFTREE_UIMAGE
 	help
 	  Support using oftree uImages. Without this only raw oftree
 	  blobs can be used.
+
+config CMD_BOOTM_AIMAGE
+	bool
+	prompt "bootm Android image support"
+	depends on CMD_BOOTM && ARM
+	help
+	  Support using Android Images.
 
 config CMD_UIMAGE
 	tristate

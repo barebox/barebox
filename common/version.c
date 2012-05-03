@@ -1,8 +1,10 @@
 #include <common.h>
+#include <generated/compile.h>
 #include <generated/utsrelease.h>
 
 const char version_string[] =
-	"barebox " UTS_RELEASE " (" __DATE__ " - " __TIME__ ")";
+	"barebox " UTS_RELEASE " " UTS_VERSION "\n";
+
 
 void barebox_banner (void)
 {

@@ -603,7 +603,7 @@ static int tftp_probe(struct device_d *dev)
 
 	dev->priv = priv;
 
-	string_to_ip(fsdev->backingstore, &priv->server);
+	priv->server = resolv(fsdev->backingstore);
 
 	return 0;
 }

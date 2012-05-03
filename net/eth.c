@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <driver.h>
 #include <init.h>
 #include <net.h>
@@ -108,6 +109,26 @@ struct eth_device *eth_get_byname(char *ethname)
 	}
 	return NULL;
 }
+
+#ifdef CONFIG_AUTO_COMPLETE
+int eth_complete(struct string_list *sl, char *instr)
+{
+	struct eth_device *edev;
+	const char *devname;
+	int len;
+
+	len = strlen(instr);
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		devname = dev_name(&edev->dev);
+		if (strncmp(instr, devname, len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", devname);
+	}
+	return COMPLETE_CONTINUE;
+}
+#endif
 
 int eth_send(void *packet, int length)
 {
@@ -198,7 +219,7 @@ int eth_register(struct eth_device *edev)
 	}
 
 	strcpy(edev->dev.name, "eth");
-	edev->dev.id = -1;
+	edev->dev.id = DEVICE_ID_DYNAMIC;
 
 	if (edev->parent)
 		dev_add_child(edev->parent, &edev->dev);
@@ -228,7 +249,7 @@ int eth_register(struct eth_device *edev)
 	if (found) {
 		ethaddr_to_string(ethaddr, ethaddr_str);
 		if (is_valid_ether_addr(ethaddr)) {
-			dev_info(dev, "got MAC address from EEPROM: %s\n", ethaddr_str);
+			dev_info(dev, "got preset MAC address: %s\n", ethaddr_str);
 			dev_set_param(dev, "ethaddr", ethaddr_str);
 		}
 	}

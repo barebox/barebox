@@ -47,7 +47,7 @@ static struct fec_platform_data fec_info = {
 	.xcv_type = RMII,
 };
 
-static struct pad_desc loco_pads[] = {
+static iomux_v3_cfg_t loco_pads[] = {
 	/* UART1 */
 	MX53_PAD_CSI0_DAT10__UART1_TXD_MUX,
 	MX53_PAD_CSI0_DAT11__UART1_RXD_MUX,
@@ -95,6 +95,8 @@ static struct pad_desc loco_pads[] = {
 	/* I2C0 */
 	MX53_PAD_CSI0_DAT8__I2C1_SDA,
 	MX53_PAD_CSI0_DAT9__I2C1_SCL,
+
+	MX53_PAD_PATA_DA_2__GPIO7_8,
 };
 
 static struct i2c_board_info i2c_devices[] = {
@@ -149,6 +151,7 @@ static void loco_fec_reset(void)
 #define LOCO_SD3_CD			IMX_GPIO_NR(3, 11)
 #define LOCO_SD3_WP			IMX_GPIO_NR(3, 12)
 #define LOCO_SD1_CD			IMX_GPIO_NR(3, 13)
+#define MX53_LOCO_USB_PWREN		IMX_GPIO_NR(7, 8)
 
 static struct esdhc_platform_data loco_sd1_data = {
 	.cd_gpio = LOCO_SD1_CD,
@@ -163,14 +166,28 @@ static struct esdhc_platform_data loco_sd3_data = {
 	.wp_type = ESDHC_WP_GPIO,
 };
 
+static void loco_ehci_init(void)
+{
+	/* USB PWR enable */
+	gpio_direction_output(MX53_LOCO_USB_PWREN, 0);
+	gpio_set_value(MX53_LOCO_USB_PWREN, 1);
+
+	writel(0, MX53_OTG_BASE_ADDR + 0x384); /* setup portsc */
+	add_generic_usb_ehci_device(1, MX53_OTG_BASE_ADDR + 0x200, NULL);
+}
+
 static int loco_devices_init(void)
 {
+
 	imx53_iim_register_fec_ethaddr();
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(&loco_sd1_data);
 	imx53_add_mmc2(&loco_sd3_data);
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx53_add_i2c0(NULL);
+
+	if (IS_ENABLED(CONFIG_USB_EHCI))
+		loco_ehci_init();
 
 	loco_fec_reset();
 

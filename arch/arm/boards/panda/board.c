@@ -38,8 +38,8 @@ static struct NS16550_plat serial_plat = {
 static int panda_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP44XX_UART3_BASE, 1024,
+			IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }
@@ -133,7 +133,7 @@ static int panda_devices_init(void)
 		sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);
 	}
 
-	add_generic_device("omap-hsmmc", -1, NULL, 0x4809C100, SZ_4K,
+	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, 0x4809C100, SZ_4K,
 			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();
 

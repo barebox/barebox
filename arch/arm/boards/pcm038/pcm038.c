@@ -28,7 +28,6 @@
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/pmic.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -45,6 +44,7 @@
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
+#include <mfd/mc13xxx.h>
 
 #include "pll.h"
 
@@ -62,7 +62,7 @@ static struct spi_imx_master pcm038_spi_0_data = {
 
 static struct spi_board_info pcm038_spi_board_info[] = {
 	{
-		.name = "mc13783",
+		.name = "mc13xxx-spi",
 		.max_speed_hz = 3000000,
 		.bus_num = 0,
 		.chip_select = 0,
@@ -306,6 +306,35 @@ static int pcm038_console_init(void)
 
 console_initcall(pcm038_console_init);
 
+#ifdef CONFIG_MFD_MC13XXX
+static int pmic_power(void)
+{
+	struct mc13xxx *mc13xxx;
+
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx)
+		return -ENODEV;
+
+	mc13xxx_reg_write(mc13xxx, MC13783_REG_SWITCHERS(0),
+		MC13783_SWX_VOLTAGE(MC13783_SWX_VOLTAGE_1_450) |
+		MC13783_SWX_VOLTAGE_DVS(MC13783_SWX_VOLTAGE_1_450) |
+		MC13783_SWX_VOLTAGE_STANDBY(MC13783_SWX_VOLTAGE_1_450));
+
+	mc13xxx_reg_write(mc13xxx, MC13783_REG_SWITCHERS(4),
+		MC13783_SW1A_MODE(MC13783_SWX_MODE_NO_PULSE_SKIP) |
+		MC13783_SW1A_MODE_STANDBY(MC13783_SWX_MODE_NO_PULSE_SKIP) |
+		MC13783_SW1A_SOFTSTART |
+		MC13783_SW1B_MODE(MC13783_SWX_MODE_NO_PULSE_SKIP) |
+		MC13783_SW1B_MODE_STANDBY(MC13783_SWX_MODE_NO_PULSE_SKIP) |
+		MC13783_SW1B_SOFTSTART |
+		MC13783_SW_PLL_FACTOR(32));
+
+	return 0;
+}
+#else
+# define pmic_power()	(1)
+#endif
+
 /**
  * The spctl0 register is a beast: Seems you can read it
  * only one times without writing it again.
@@ -326,15 +355,13 @@ static inline uint32_t get_pll_spctl10(void)
 static int pcm038_power_init(void)
 {
 	uint32_t spctl0;
-	int ret;
 
 	spctl0 = get_pll_spctl10();
 
 	/* PLL registers already set to their final values? */
 	if (spctl0 == SPCTL0_VAL && MPCTL0 == MPCTL0_VAL) {
 		console_flush();
-		ret = pmic_power();
-		if (ret == 0) {
+		if (!pmic_power()) {
 			/* wait for required power level to run the CPU at 400 MHz */
 			udelay(100000);
 			CSCR = CSCR_VAL_FINAL;

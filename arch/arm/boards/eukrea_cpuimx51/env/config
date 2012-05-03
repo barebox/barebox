@@ -6,7 +6,7 @@ otg_mode="device"
 # ex : 640x480M-16@60 800x600M-24@60 1024x768M-16@60
 video="CMO-QVGA"
 
-machine=eukrea-cpuimx51
+hostname=eukrea-cpuimx51
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
@@ -25,16 +25,16 @@ rootfs_loc=nand
 
 # rootfs
 rootfs_type=ubifs
-rootfsimage=$machine/rootfs.$rootfs_type
+rootfsimage=$hostname/rootfs.$rootfs_type
 
 # kernel
-kernelimage=$machine/uImage-${machine}.bin
+kernelimage=$hostname/uImage-${hostname}.bin
 
 # barebox and it's env
-bareboximage=$machine/barebox-${machine}.bin
-bareboxenvimage=$machine/bareboxenv-${machine}.bin
+bareboximage=$hostname/barebox-${hostname}.bin
+bareboxenvimage=$hostname/bareboxenv-${hostname}.bin
 
-nfsroot="$eth0.serverip:/srv/nfs/$machine"
+nfsroot="$eth0.serverip:/srv/nfs/$hostname"
 
 autoboot_timeout=1
 
@@ -49,7 +49,7 @@ bootargs="console=ttymxc0,115200 otg_mode=$otg_mode video=$video screen_type=$sc
 nand_parts="256k(barebox)ro,128k(bareboxenv),3M(kernel),-(root)"
 rootfs_mtdblock_nand=3
 nand_device="mxc_nand"
-ubiroot="$machine-rootfs"
+ubiroot="$hostname-rootfs"
 device_type="nand"
 
 # set a fancy prompt (if support is compiled in)

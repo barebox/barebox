@@ -77,10 +77,7 @@ static int netx_serial_init_port(struct console_device *cdev)
 
 	/* disable uart */
 	writel(0, base + UART_CR);
-
-	writel(LINE_CR_8BIT | LINE_CR_FEN, base + UART_LINE_CR);
-
-	writel(DRV_ENABLE_TX | DRV_ENABLE_RTS, base + UART_DRV_ENABLE);
+	writel(BRM_CR_BAUD_RATE_MODE, base + UART_BRM_CR);
 
 	/* set baud rate */
 	divisor = 115200 * 4096;
@@ -88,9 +85,11 @@ static int netx_serial_init_port(struct console_device *cdev)
 	divisor *= 256;
 	divisor /= 100000;
 
-	writel((divisor >> 8) & 0xff, base + UART_BAUDDIV_MSB);
 	writel(divisor & 0xff, base + UART_BAUDDIV_LSB);
-	writel(BRM_CR_BAUD_RATE_MODE, base + UART_BRM_CR);
+	writel((divisor >> 8) & 0xff, base + UART_BAUDDIV_MSB);
+	writel(DRV_ENABLE_TX | DRV_ENABLE_RTS, base + UART_DRV_ENABLE);
+
+	writel(LINE_CR_8BIT | LINE_CR_FEN, base + UART_LINE_CR);
 
 	/* Finally, enable the UART */
 	writel(CR_UARTEN, base + UART_CR);

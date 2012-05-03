@@ -52,7 +52,7 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-static struct pad_desc eukrea_cpuimx51_pads[] = {
+static iomux_v3_cfg_t eukrea_cpuimx51_pads[] = {
 	/* FEC */
 	MX51_PAD_DISP2_DAT1__FEC_RX_ER,
 	MX51_PAD_DISP2_DAT15__FEC_TDATA0,
@@ -139,7 +139,7 @@ static int eukrea_cpuimx51_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx51_pads, ARRAY_SIZE(eukrea_cpuimx51_pads));
 
-	imx51_init_lowlevel();
+	imx51_init_lowlevel(800);
 
 	writel(0, 0x73fa8228);
 	writel(0, 0x73fa822c);

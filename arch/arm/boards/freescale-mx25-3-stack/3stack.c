@@ -243,7 +243,7 @@ static int imx25_devices_init(void)
 
 device_initcall(imx25_devices_init);
 
-static struct pad_desc imx25_pads[] = {
+static iomux_v3_cfg_t imx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,
 	MX25_PAD_FEC_MDIO__FEC_MDIO,
 	MX25_PAD_FEC_RDATA0__FEC_RDATA0,

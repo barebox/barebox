@@ -1,12 +1,13 @@
 #!/bin/sh
 
-machine=loco
+hostname=loco
 eth0.serverip=
 user=
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
+dhcp_vendor_id=barebox-mx53-loco
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d
@@ -21,16 +22,16 @@ rootfs_loc=net
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
-rootfsimage=root-$machine.$rootfs_type
+rootfsimage=root-$hostname.$rootfs_type
 
-kernelimage=zImage-$machine
-#kernelimage=uImage-$machine
-#kernelimage=Image-$machine
-#kernelimage=Image-$machine.lzo
+kernelimage=zImage-$hostname
+#kernelimage=uImage-$hostname
+#kernelimage=Image-$hostname
+#kernelimage=Image-$hostname.lzo
 
 if [ -n $user ]; then
 	kernelimage="$user"-"$kernelimage"
-	nfsroot="$eth0.serverip:/home/$user/nfsroot/$machine"
+	nfsroot="$eth0.serverip:/home/$user/nfsroot/$hostname"
 	rootfsimage="$user"-"$rootfsimage"
 else
 	nfsroot="$eth0.serverip:/path/to/nfs/root"

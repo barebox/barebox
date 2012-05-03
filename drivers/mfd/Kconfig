@@ -1,8 +1,8 @@
 menu MFD
 
-config I2C_MC13892
+config MFD_MC13XXX
 	depends on I2C || SPI
-	bool "MC13892 a.k.a. PMIC driver"
+	bool "MC13XXX a.k.a. PMIC driver (MC13783, MC13892)"
 
 config I2C_MC34704
 	depends on I2C
@@ -33,9 +33,5 @@ config I2C_TWL6030
 	depends on I2C
 	select I2C_TWLCORE
 	bool "TWL6030 driver"
-
-config DRIVER_SPI_MC13783
-	depends on SPI
-	bool "MC13783 a.k.a. PMIC driver"
 
 endmenu

@@ -46,13 +46,12 @@
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
-#include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/generic.h>
 #include <mach/devices-imx35.h>
 
 #include <i2c/i2c.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 #include <mfd/mc9sdz60.h>
 
 
@@ -72,7 +71,7 @@ struct imx_nand_platform_data nand_info = {
 
 static struct i2c_board_info i2c_devices[] = {
 	{
-		I2C_BOARD_INFO("mc13892-i2c", 0x08),
+		I2C_BOARD_INFO("mc13xxx-i2c", 0x08),
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},
@@ -182,7 +181,7 @@ static int f3s_devices_init(void)
 	imx35_add_i2c0(NULL);
 
 	imx35_add_fec(&fec_info);
-	add_generic_device("smc911x", -1, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	IMX_CS5_BASE, IMX_CS5_RANGE,
 			IORESOURCE_MEM, NULL);
 
 	imx35_add_mmc0(NULL);
@@ -207,7 +206,7 @@ static int f3s_enable_display(void)
 
 late_initcall(f3s_enable_display);
 
-static struct pad_desc f3s_pads[] = {
+static iomux_v3_cfg_t f3s_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
 	MX35_PAD_FEC_RX_DV__FEC_RX_DV,
@@ -353,33 +352,33 @@ static int f3s_core_init(void)
 
 core_initcall(f3s_core_init);
 
-static int f3s_get_rev(struct mc13892 *mc13892)
+static int f3s_get_rev(struct mc13xxx *mc13xxx)
 {
 	u32 rev;
 	int err;
 
-	err = mc13892_reg_read(mc13892, MC13892_REG_IDENTIFICATION, &rev);
+	err = mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev);
 	if (err)
 		return err;
 
-	dev_info(&mc13892->client->dev, "revision: 0x%x\n", rev);
+	dev_info(&mc13xxx->client->dev, "revision: 0x%x\n", rev);
 	if (rev == 0x00ffffff)
 		return -ENODEV;
 
 	return ((rev >> 6) & 0x7) ? MX35PDK_BOARD_REV_2 : MX35PDK_BOARD_REV_1;
 }
 
-static int f3s_pmic_init_v2(struct mc13892 *mc13892)
+static int f3s_pmic_init_v2(struct mc13xxx *mc13xxx)
 {
 	int err = 0;
 
 	/* COMPARE pin (GPIO1_5) as output and set high */
 	gpio_direction_output( 32*0 + 5 , 1);
 
-	err |= mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x03, 0x03);
-	err |= mc13892_set_bits(mc13892, MC13892_REG_MODE_0, 0x01, 0x01);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_SETTING_0, 0x03, 0x03);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_MODE_0, 0x01, 0x01);
 	if (err)
-		dev_err(&mc13892->client->dev,
+		dev_err(&mc13xxx->client->dev,
 			"Init sequence failed, the system might not be working!\n");
 
 	return err;
@@ -404,22 +403,22 @@ static int f3s_pmic_init_all(struct mc9sdz60 *mc9sdz60)
 
 static int f3s_pmic_init(void)
 {
-	struct mc13892 *mc13892;
+	struct mc13xxx *mc13xxx;
 	struct mc9sdz60 *mc9sdz60;
 	int rev;
 
-	mc13892 = mc13892_get();
-	if (!mc13892) {
-		printf("FAILED to get mc13892 handle!\n");
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx) {
+		printf("FAILED to get PMIC handle!\n");
 		return 0;
 	}
 
-	rev = f3s_get_rev(mc13892);
+	rev = f3s_get_rev(mc13xxx);
 	switch (rev) {
 	case MX35PDK_BOARD_REV_1:
 		break;
 	case MX35PDK_BOARD_REV_2:
-		f3s_pmic_init_v2(mc13892);
+		f3s_pmic_init_v2(mc13xxx);
 		break;
 	default:
 		printf("FAILED to identify board revision!\n");

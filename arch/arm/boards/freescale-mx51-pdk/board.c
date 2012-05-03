@@ -32,7 +32,7 @@
 #include <nand.h>
 #include <notifier.h>
 #include <spi/spi.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <mach/imx5.h>
@@ -47,7 +47,7 @@ static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
 
-static struct pad_desc f3s_pads[] = {
+static iomux_v3_cfg_t f3s_pads[] = {
 	MX51_PAD_EIM_EB2__FEC_MDIO,
 	MX51_PAD_EIM_EB3__FEC_RDATA1,
 	MX51_PAD_EIM_CS2__FEC_RDATA2,
@@ -56,7 +56,7 @@ static struct pad_desc f3s_pads[] = {
 	MX51_PAD_EIM_CS5__FEC_CRS,
 	MX51_PAD_NANDF_RB2__FEC_COL,
 	MX51_PAD_NANDF_RB3__FEC_RX_CLK,
-	MX51_PAD_NANDF_RB7__FEC_TX_ER,
+	MX51_PAD_NANDF_CS2__FEC_TX_ER,
 	MX51_PAD_NANDF_CS3__FEC_MDC,
 	MX51_PAD_NANDF_CS4__FEC_TDATA1,
 	MX51_PAD_NANDF_CS5__FEC_TDATA2,
@@ -64,13 +64,13 @@ static struct pad_desc f3s_pads[] = {
 	MX51_PAD_NANDF_CS7__FEC_TX_EN,
 	MX51_PAD_NANDF_RDY_INT__FEC_TX_CLK,
 	MX51_PAD_NANDF_D11__FEC_RX_DV,
-	MX51_PAD_NANDF_RB6__FEC_RDATA0,
+	MX51_PAD_NANDF_D9__FEC_RDATA0,
 	MX51_PAD_NANDF_D8__FEC_TDATA0,
-	MX51_PAD_CSPI1_SS0__CSPI1_SS0,
-	MX51_PAD_CSPI1_MOSI__CSPI1_MOSI,
-	MX51_PAD_CSPI1_MISO__CSPI1_MISO,
-	MX51_PAD_CSPI1_RDY__CSPI1_RDY,
-	MX51_PAD_CSPI1_SCLK__CSPI1_SCLK,
+	MX51_PAD_CSPI1_SS0__GPIO4_24,
+	MX51_PAD_CSPI1_MOSI__ECSPI1_MOSI,
+	MX51_PAD_CSPI1_MISO__ECSPI1_MISO,
+	MX51_PAD_CSPI1_RDY__ECSPI1_RDY,
+	MX51_PAD_CSPI1_SCLK__ECSPI1_SCLK,
 	MX51_PAD_EIM_A20__GPIO2_14, /* LAN8700 reset pin */
 	IOMUX_PAD(0x60C, 0x21C, 3, 0x0, 0, 0x85), /* FIXME: needed? */
 	/* SD 1 */
@@ -110,7 +110,7 @@ static struct spi_imx_master spi_0_data = {
 
 static const struct spi_board_info mx51_babbage_spi_board_info[] = {
 	{
-		.name = "mc13892-spi",
+		.name = "mc13xxx-spi",
 		.max_speed_hz = 300000,
 		.bus_num = 0,
 		.chip_select = 0,
@@ -121,101 +121,101 @@ static const struct spi_board_info mx51_babbage_spi_board_info[] = {
 
 static void babbage_power_init(void)
 {
-	struct mc13892 *mc13892;
+	struct mc13xxx *mc13xxx;
 	u32 val;
 
-	mc13892 = mc13892_get();
-	if (!mc13892) {
-		printf("could not get mc13892\n");
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx) {
+		printf("could not get PMIC\n");
 		return;
 	}
 
 	/* Write needed to Power Gate 2 register */
-	mc13892_reg_read(mc13892, MC13892_REG_POWER_MISC, &val);
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_MISC, &val);
 	val &= ~0x10000;
-	mc13892_reg_write(mc13892, MC13892_REG_POWER_MISC, val);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
 
 	/* Write needed to update Charger 0 */
-	mc13892_reg_write(mc13892, MC13892_REG_CHARGE, 0x0023807F);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_CHARGE, 0x0023807F);
 
 	/* power up the system first */
-	mc13892_reg_write(mc13892, MC13892_REG_POWER_MISC, 0x00200000);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, 0x00200000);
 
-	if (imx_silicon_revision() < MX51_CHIP_REV_3_0) {
+	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
 		/* Set core voltage to 1.1V */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_0, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
 		val &= ~0x1f;
 		val |= 0x14;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_0, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_0, val);
 
 		/* Setup VCC (SW2) to 1.25 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_1, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
 		val &= ~0x1f;
 		val |= 0x1a;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_1, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.25 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_2, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
 		val &= ~0x1f;
 		val |= 0x1a;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_2, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
 	} else {
 		/* Setup VCC (SW2) to 1.225 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_1, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
 		val &= ~0x1f;
 		val |= 0x19;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_1, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.2 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_2, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
 		val &= ~0x1f;
 		val |= 0x18;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_2, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
 	}
 
-	if (mc13892_get_revision(mc13892) < MC13892_REVISION_2_0) {
+	if (mc13xxx->revision < MC13892_REVISION_2_0) {
 		/* Set switchers in PWM mode for Atlas 2.0 and lower */
 		/* Setup the switcher mode for SW1 & SW2*/
-		mc13892_reg_read(mc13892, MC13892_REG_SW_4, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
 		val &= ~0x3c0f;
 		val |= 0x1405;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_4, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_5, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
 		val &= ~0xf0f;
 		val |= 0x505;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_5, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 	} else {
 		/* Set switchers in Auto in NORMAL mode & STANDBY mode for Atlas 2.0a */
 		/* Setup the switcher mode for SW1 & SW2*/
-		mc13892_reg_read(mc13892, MC13892_REG_SW_4, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
 		val &= ~0x3c0f;
 		val |= 0x2008;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_4, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
-		mc13892_reg_read(mc13892, MC13892_REG_SW_5, &val);
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
 		val &= ~0xf0f;
 		val |= 0x808;
-		mc13892_reg_write(mc13892, MC13892_REG_SW_5, val);
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 	}
 
 	/* Set VDIG to 1.65V, VGEN3 to 1.8V, VCAM to 2.5V */
-	mc13892_reg_read(mc13892, MC13892_REG_SETTING_0, &val);
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_0, &val);
 	val &= ~0x34030;
 	val |= 0x10020;
-	mc13892_reg_write(mc13892, MC13892_REG_SETTING_0, val);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_0, val);
 
 	/* Set VVIDEO to 2.775V, VAUDIO to 3V, VSD to 3.15V */
-	mc13892_reg_read(mc13892, MC13892_REG_SETTING_1, &val);
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_1, &val);
 	val &= ~0x1FC;
 	val |= 0x1F4;
-	mc13892_reg_write(mc13892, MC13892_REG_SETTING_1, val);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_1, val);
 
 	/* Configure VGEN3 and VCAM regulators to use external PNP */
 	val = 0x208;
-	mc13892_reg_write(mc13892, MC13892_REG_MODE_1, val);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 	udelay(200);
 #define GPIO_LAN8700_RESET	(1 * 32 + 14)
 
@@ -224,7 +224,7 @@ static void babbage_power_init(void)
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
 	val = 0x49249;
-	mc13892_reg_write(mc13892, MC13892_REG_MODE_1, val);
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 
 	udelay(500);
 
@@ -244,7 +244,7 @@ static int f3s_devices_init(void)
 	babbage_power_init();
 
 	console_flush();
-	imx51_init_lowlevel();
+	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
 
 	armlinux_set_bootparams((void *)0x90000100);

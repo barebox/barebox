@@ -1,6 +1,6 @@
 #!/bin/sh
 
-machine=tqma53
+hostname=tqma53
 serverip=
 user=
 
@@ -21,13 +21,13 @@ rootfs_loc=net
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
-rootfsimage=root-$machine.$rootfs_type
+rootfsimage=root-$hostname.$rootfs_type
 
-kernelimage=zImage-$machine
+kernelimage=zImage-$hostname
 
 if [ -n $user ]; then
 	kernelimage="$user"-"$kernelimage"
-	nfsroot="$serverip:/home/$user/nfsroot/$machine"
+	nfsroot="$serverip:/home/$user/nfsroot/$hostname"
 	rootfsimage="$user"-"$rootfsimage"
 else
 	nfsroot="$serverip:/path/to/nfs/root"

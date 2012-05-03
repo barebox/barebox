@@ -27,28 +27,6 @@
 #include <mach/clocks.h>
 #include <asm/common.h>
 
-/* ------------------------------------------------------------------------- */
-
-static int init_timebase (void)
-{
-#if defined(CONFIG_5xx) || defined(CONFIG_8xx)
-	volatile immap_t *immap = (immap_t *) CFG_IMMR;
-
-	/* unlock */
-	immap->im_sitk.sitk_tbk = KAPWR_KEY;
-#endif
-
-	/* reset */
-	asm ("li 3,0 ; mttbu 3 ; mttbl 3 ;");
-
-#if defined(CONFIG_5xx) || defined(CONFIG_8xx)
-	/* enable */
-	immap->im_sit.sit_tbscr |= TBSCR_TBE;
-#endif
-	return (0);
-}
-/* ------------------------------------------------------------------------- */
-
 uint64_t ppc_clocksource_read(void)
 {
 	return get_ticks();
@@ -60,9 +38,10 @@ static struct clocksource cs = {
 	.shift	= 15,
 };
 
-static int clocksource_init (void)
+static int clocksource_init(void)
 {
-	init_timebase();
+	/* reset time base */
+	asm ("li 3,0 ; mttbu 3 ; mttbl 3 ;");
 
 	cs.mult = clocksource_hz2mult(get_timebase_clock(), cs.shift);
 

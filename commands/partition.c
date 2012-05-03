@@ -32,6 +32,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <driver.h>
 #include <malloc.h>
 #include <partition.h>
@@ -225,5 +226,6 @@ BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
 	.usage = "delete partition(s)",
 	BAREBOX_CMD_HELP(cmd_delpart_help)
+	BAREBOX_CMD_COMPLETE(devfs_partition_complete)
 BAREBOX_CMD_END
 

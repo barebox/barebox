@@ -1,6 +1,6 @@
 #!/bin/sh
 
-machine=mx28-evk
+hostname=mx28-evk
 #user=
 
 # use 'dhcp' to do dhcp in barebox and in kernel
@@ -24,21 +24,21 @@ rootfs_loc=net
 rootfs_type=ext2
 # where is the rootfs in case of 'rootfs_loc=disk' (linux name)
 rootfs_part_linux_dev=mmcblk0p4
-rootfsimage=rootfs-${machine}.$rootfs_type
+rootfsimage=rootfs-${hostname}.$rootfs_type
 
 # where is the kernel image in case of 'kernel_loc=disk'
 kernel_part=disk0.2
 
-kernelimage=zImage-$machine
-bareboximage=barebox-${machine}.bin
-bareboxenvimage=barebox-${machine}.bin
+kernelimage=zImage-$hostname
+bareboximage=barebox-${hostname}.bin
+bareboxenvimage=barebox-${hostname}.bin
 
 if [ -n $user ]; then
 	bareboximage="$user"-"$bareboximage"
 	bareboxenvimage="$user"-"$bareboxenvimage"
 	kernelimage="$user"-"$kernelimage"
 	rootfsimage="$user"-"$rootfsimage"
-	nfsroot="/home/$user/nfsroot/$machine"
+	nfsroot="/home/$user/nfsroot/$hostname"
 else
 	nfsroot="/path/to/nfs/root"
 fi

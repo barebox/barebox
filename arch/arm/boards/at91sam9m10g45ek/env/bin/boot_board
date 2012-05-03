@@ -1,0 +1,51 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+. /env/config
+
+menu -r -m boot
+menu -a -m boot -d "\e[1;36mWelcome on Barebox Boot Sequence\e[0m"
+menu -e -a -m boot -c 'menu_boot'			-d "boot (default)             "
+menu -e -a -m boot -c 'menu_boot -m nand'		-d "boot from nand             "
+menu -e -a -m boot -c 'menu_boot -k nfs -r net'		-d "boot from nfs (kernel nfs) "
+menu -e -a -m boot -c 'menu_boot -k tftp -r net'	-d "boot from nfs (kernel tftp)"
+menu -e -a -m boot -c 'clear'			-d "\e[2;33mshell                      \e[0m"
+menu -e -a -m boot -u update				-d "update                     "
+menu -e -a -m boot -c reset			-d "\e[1;31mreset                      \e[0m"
+
+# Submenu Update
+menu -r -m update
+menu -a -m update -d "\e[1;36mUpdate\e[0m"
+menu -e -a -m update -u update_barebox	-d "\e[2;33mbarebox\e[0m"
+menu -e -a -m update -u update_kernel		-d "kernel"
+menu -e -a -m update -u update_rootfs		-d "rootfs"
+menu -e -a -m update -c 'true'			-d "back  "
+
+# submenu update barebox
+menu -r -m update_barebox
+menu -a -m update_barebox -d "\e[2;33mBarebox Update Methode\e[0m"
+menu -e -a -m update_barebox -c 'update -t barebox -d nand -m tftp -c; echo ; timeout -a 3'	-d "tftp  "
+menu -e -a -m update_barebox -c 'update -t barebox -d nand -m xmodem -c; echo ; timeout -a 3'	-d "xmodem"
+menu -e -a -m update_barebox -c 'update -t barebox -d nand -m nfs -c; echo ; timeout -a 3'	-d "nfs   "
+menu -e -a -m update_barebox -c 'true'								-d "back  "
+
+# submenu update kernel
+menu -r -m update_kernel
+menu -a -m update_kernel -d "\e[1;36mKernel Update Methode\e[0m"
+menu -e -a -m update_kernel -c 'update -t kernel -d nand -m tftp -c; echo ; timeout -a 3'	-d "tftp  "
+menu -e -a -m update_kernel -c 'update -t kernel -d nand -m xmodem -c; echo ; timeout -a 3'	-d "xmodem"
+menu -e -a -m update_kernel -c 'update -t kernel -d nand -m nfs -c; echo ; timeout -a 3'	-d "nfs   "
+menu -e -a -m update_kernel -c 'true'								-d "back  "
+
+# submenu update barebox
+menu -r -m update_rootfs
+menu -a -m update_rootfs -d "\e[1;36mRootfs Update Methode\e[0m"
+menu -e -a -m update_rootfs -c 'update -t rootfs -d nand -m tftp -c; echo ; timeout -a 3'	-d "tftp  "
+menu -e -a -m update_rootfs -c 'update -t rootfs -d nand -m xmodem -c; echo ; timeout -a 3'	-d "xmodem"
+menu -e -a -m update_rootfs -c 'update -t rootfs -d nand -m nfs -c; echo ; timeout -a 3'	-d "nfs   "
+menu -e -a -m update_rootfs -c 'true'								-d "back  "
+
+menu -s -m boot -A $autoboot_timeout
+exit 1

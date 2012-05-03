@@ -130,7 +130,7 @@ static int netx_miidev_read(struct mii_device *mdev, int phy_addr, int reg)
 	value = MIIMU_REG >> 16;
 
 	debug("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n", __func__,
-	      addr, reg, value);
+	      phy_addr, reg, value);
 
 	return value;
 }
@@ -139,7 +139,7 @@ static int netx_miidev_write(struct mii_device *mdev, int phy_addr,
 	int reg, int val)
 {
 	debug("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n",__func__,
-	      addr, reg, val);
+	      phy_addr, reg, val);
 
 	MIIMU_REG = MIIMU_SNRDY | MIIMU_PREAMBLE | MIIMU_PHYADDR(phy_addr) |
 	            MIIMU_REGADDR(reg) | MIIMU_PHY_NRES | MIIMU_OPMODE_WRITE |

@@ -21,6 +21,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <usb/usb.h>
 #include <getopt.h>
 
@@ -56,4 +57,5 @@ BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,
 	.usage		= "(re-)detect USB devices",
 	BAREBOX_CMD_HELP(cmd_usb_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

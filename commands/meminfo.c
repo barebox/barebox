@@ -21,6 +21,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <complete.h>
 #include <malloc.h>
 
 static int do_meminfo(int argc, char *argv[])
@@ -33,4 +34,5 @@ static int do_meminfo(int argc, char *argv[])
 BAREBOX_CMD_START(meminfo)
 	.cmd		= do_meminfo,
 	.usage		= "print info about memory usage",
+	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

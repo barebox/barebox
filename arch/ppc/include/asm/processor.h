@@ -217,6 +217,7 @@
 #define   HID0_DPM	(1<<20)
 #define   HID0_ICE	(1<<HID0_ICE_SHIFT)	/* Instruction Cache Enable */
 #define   HID0_DCE	(1<<HID0_DCE_SHIFT)	/* Data Cache Enable */
+#define   HID0_TBEN	(1<<14)		/* Time Base Enable */
 #define   HID0_ILOCK	(1<<13)		/* Instruction Cache Lock */
 #define   HID0_DLOCK	(1<<HID0_DLOCK_SHIFT)	/* Data Cache Lock */
 #define   HID0_ICFI	(1<<11)		/* Instr. Cache Flash Invalidate */
@@ -231,6 +232,10 @@
 #define   HID0_BHTE	(1<<2)		/* Branch History Table Enable */
 #define   HID0_BTCD	(1<<1)		/* Branch target cache disable */
 #define SPRN_HID1	0x3F1	/* Hardware Implementation Register 1 */
+#define   HID1_RFXE     (1<<17)		/* Read Fault Exception Enable */
+#define   HID1_ASTME    (1<<13)		/* Address bus streaming mode */
+#define   HID1_ABE      (1<<12)		/* Address broadcast enable */
+#define   HID1_MBDD     (1<<6)		/* optimized sync instruction */
 #define SPRN_IABR	0x3F2	/* Instruction Address Breakpoint Register */
 #ifndef CONFIG_BOOKE
 #define SPRN_IAC1	0x3F4	/* Instruction Address Compare 1 */
@@ -410,13 +415,20 @@
 #define SPRN_IVOR15	0x19f	/* Interrupt Vector Offset Register 15 */
 
 /* e500 definitions */
+#define SPRN_L1CFG0     0x203   /* L1 Cache Configuration Register 0 */
 #define SPRN_L1CSR0     0x3f2   /* L1 Cache Control and Status Register 0 */
+#define   L1CSR0_CPE            0x00010000      /* Data Cache Parity Enable */
+#define   L1CSR0_DCLFR          0x00000100      /* D-Cache Lock Flash Reset */
 #define   L1CSR0_DCFI           0x00000002      /* Data Cache Flash Invalidate */
 #define   L1CSR0_DCE            0x00000001      /* Data Cache Enable */
 #define SPRN_L1CSR1     0x3f3   /* L1 Cache Control and Status Register 1 */
+#define   L1CSR1_CPE           0x00010000       /* I-Cache Parity Enable */
+#define   L1CSR1_ICLFR          0x00000100      /* I-Cache Lock Flash Reset */
 #define   L1CSR1_ICFI           0x00000002      /* Instruction Cache Flash Invalidate */
 #define   L1CSR1_ICE            0x00000001      /* Instruction Cache Enable */
 
+#define SPRN_TLB0CFG   0x2B0   /* TLB 0 Config Register */
+#define SPRN_TLB1CFG   0x2B1   /* TLB 1 Config Register */
 #define SPRN_MMUCSR0	0x3f4	/* MMU control and status register 0 */
 #define SPRN_MAS0       0x270   /* MMU Assist Register 0 */
 #define SPRN_MAS1       0x271   /* MMU Assist Register 1 */
@@ -436,11 +448,17 @@
 #define SPRN_MCSRR0     0x23a   /* Machine Check Save and Restore Register 0 */
 #define SPRN_MCSRR1     0x23b   /* Machine Check Save and Restore Register 1 */
 #define SPRN_BUCSR	0x3f5	/* Branch Control and Status Register */
+#define   BUCSR_STAC_EN 0x01000000      /* Segment target addr cache enable */
+#define   BUCSR_LS_EN   0x00400000      /* Link stack enable */
+#define   BUCSR_BBFI    0x00000200      /* Branch buffer flash invalidate */
+#define   BUCSR_BPEN    0x00000001      /* Branch prediction enable */
+#define   BUCSR_ENABLE (BUCSR_STAC_EN|BUCSR_LS_EN|BUCSR_BBFI|BUCSR_BPEN)
 #define SPRN_BBEAR      0x201   /* Branch Buffer Entry Address Register */
 #define SPRN_BBTAR      0x202   /* Branch Buffer Target Address Register */
 #define SPRN_PID1       0x279   /* Process ID Register 1 */
 #define SPRN_PID2       0x27a   /* Process ID Register 2 */
 #define SPRN_MCSR	0x23c	/* Machine Check Syndrome register */
+#define SPRN_MCAR	0x23d	/* Machine Check Address register */
 #define ESR_ST          0x00800000      /* Store Operation */
 
 #if defined(CONFIG_MPC86xx)
@@ -586,6 +604,7 @@
 #define MCSRR1	SPRN_MCSRR1
 #define L1CSR0 	SPRN_L1CSR0
 #define L1CSR1	SPRN_L1CSR1
+#define L1CFG0 SPRN_L1CFG0
 #define MCSR	SPRN_MCSR
 #define MMUCSR0	SPRN_MMUCSR0
 #define BUCSR	SPRN_BUCSR
@@ -600,7 +619,13 @@
 #define MAS5	SPRN_MAS5
 #define MAS6	SPRN_MAS6
 #define MAS7	SPRN_MAS7
+#define MAS8	SPRN_MAS8
 
+#if defined(CONFIG_MPC85xx)
+#define DAR_DEAR DEAR
+#else
+#define DAR_DEAR DAR
+#endif
 /* Device Control Registers */
 
 #define DCRN_BEAR	0x090	/* Bus Error Address Register */
@@ -818,6 +843,8 @@
 #define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
 #define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
 
+/* Some parts define SVR[0:23] as the SOC version */
+#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFFFFF)	/* SOC Version fields */
 
 /*
  * SVR_VER() Version Values
@@ -830,6 +857,10 @@
 #define SVR_8548	0x8031
 #define SVR_8548_E	0x8039
 #define SVR_8641	0x8090
+#define SVR_P2020	0x80E200
+#define SVR_P2020_E	0x80EA00
+
+#define SVR_Unknown	0xFFFFFF
 
 
 /* I am just adding a single entry for 8260 boards.  I think we may be
@@ -924,6 +955,19 @@ n:
 #define SR15	15
 
 #ifndef __ASSEMBLY__
+
+struct cpu_type {
+	char name[15];
+	u32 soc_ver;
+	u32 num_cores;
+};
+
+struct cpu_type *identify_cpu(u32 ver);
+
+#if defined(CONFIG_MPC85xx)
+#define CPU_TYPE_ENTRY(n, v, nc) \
+	{ .name = #n, .soc_ver = SVR_##v, .num_cores = (nc), }
+#endif
 #ifndef CONFIG_MACH_SPECIFIC
 extern int _machine;
 extern int have_of;

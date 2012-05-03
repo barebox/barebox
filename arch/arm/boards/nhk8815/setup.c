@@ -69,7 +69,7 @@ static struct resource nhk8815_nand_resources[] = {
 };
 
 static struct device_d nhk8815_nand_device = {
-	.id		= -1,
+	.id		= DEVICE_ID_DYNAMIC,
 	.name		= "nomadik_nand",
 	.num_resources	= ARRAY_SIZE(nhk8815_nand_resources),
 	.resource	= nhk8815_nand_resources,
@@ -95,7 +95,7 @@ static int nhk8815_devices_init(void)
 	writel(0x0000305b, FSMC_BCR(1));
 	writel(0x00033f33, FSMC_BTR(1));
 
-	add_generic_device("smc91c111", -1, NULL, 0x34000300, 16,
+	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, 0x34000300, 16,
 			   IORESOURCE_MEM, NULL);
 
 	register_device(&nhk8815_nand_device);

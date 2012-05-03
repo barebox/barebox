@@ -85,8 +85,10 @@ uint16_t net_checksum(unsigned char *ptr, int len)
 	return xsum & 0xffff;
 }
 
-char *ip_to_string (IPaddr_t x, char *s)
+char *ip_to_string (IPaddr_t x)
 {
+	static char s[sizeof("xxx.xxx.xxx.xxx")];
+
 	x = ntohl (x);
 	sprintf (s, "%d.%d.%d.%d",
 		 (int) ((x >> 24) & 0xff),
@@ -127,7 +129,7 @@ int string_to_ip(const char *s, IPaddr_t *ip)
 	return 0;
 }
 
-IPaddr_t getenv_ip_dns(const char *name, int dns)
+IPaddr_t getenv_ip(const char *name)
 {
 	IPaddr_t ip;
 	const char *var = getenv(name);
@@ -138,17 +140,14 @@ IPaddr_t getenv_ip_dns(const char *name, int dns)
 	if (!string_to_ip(var, &ip))
 		return ip;
 
-	if (!dns)
-		return 0;
-
 	return resolv((char*)var);
 }
 
 int setenv_ip(const char *name, IPaddr_t ip)
 {
-	char str[sizeof("xxx.xxx.xxx.xxx")];
+	const char *str;
 
-	ip_to_string(ip, str);
+	str = ip_to_string(ip);
 
 	setenv(name, str);
 
@@ -157,11 +156,7 @@ int setenv_ip(const char *name, IPaddr_t ip)
 
 void print_IPaddr (IPaddr_t x)
 {
-	char tmp[16];
-
-	ip_to_string (x, tmp);
-
-	puts (tmp);
+	puts(ip_to_string(x));
 }
 
 int string_to_ethaddr(const char *str, char *enetaddr)
@@ -378,7 +373,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
-	con->packet = xmemalign(32, PKTSIZE);
+	con->packet = net_alloc_packet();
 	con->priv = ctx;
 	memset(con->packet, 0, PKTSIZE);
 
@@ -668,12 +663,21 @@ out:
 	return ret;
 }
 
+static struct device_d net_device = {
+	.name = "net",
+	.id = DEVICE_ID_SINGLE,
+};
+
 static int net_init(void)
 {
 	int i;
 
 	for (i = 0; i < PKTBUFSRX; i++)
-		NetRxPackets[i] =  xmemalign(32, PKTSIZE);
+		NetRxPackets[i] = net_alloc_packet();
+
+	register_device(&net_device);
+	dev_add_param(&net_device, "nameserver", NULL, NULL, 0);
+	dev_add_param(&net_device, "domainname", NULL, NULL, 0);
 
 	return 0;
 }

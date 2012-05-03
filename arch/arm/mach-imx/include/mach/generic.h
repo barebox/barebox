@@ -3,9 +3,6 @@ int imx_silicon_revision(void);
 #define IMX27_CHIP_REVISION_1_0   0
 #define IMX27_CHIP_REVISION_2_0   1
 
-#define IMX35_CHIP_REVISION_1_0   0x10
-#define IMX35_CHIP_REVISION_2_0   0x20
-
 u64 imx_uid(void);
 
 
@@ -55,6 +52,12 @@ u64 imx_uid(void);
 #define cpu_is_mx53()	(1)
 #else
 #define cpu_is_mx53()	(0)
+#endif
+
+#ifdef CONFIG_ARCH_IMX6
+#define cpu_is_mx6()	(1)
+#else
+#define cpu_is_mx6()	(0)
 #endif
 
 #define cpu_is_mx23()	(0)

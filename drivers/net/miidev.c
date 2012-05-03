@@ -28,6 +28,8 @@
 #include <net.h>
 #include <malloc.h>
 
+static LIST_HEAD(miidev_list);
+
 int miidev_restart_aneg(struct mii_device *mdev)
 {
 	int status, timeout;
@@ -226,6 +228,7 @@ static int miidev_probe(struct device_d *dev)
 	mdev->cdev.priv = mdev;
 	mdev->cdev.dev = dev;
 	devfs_create(&mdev->cdev);
+	list_add_tail(&mdev->list, &miidev_list);
 	return 0;
 }
 
@@ -233,8 +236,25 @@ static void miidev_remove(struct device_d *dev)
 {
 	struct mii_device *mdev = dev->priv;
 
+	list_del(&mdev->list);
+
 	free(mdev->cdev.name);
 	devfs_remove(&mdev->cdev);
+}
+
+struct mii_device *mii_open(const char *name)
+{
+	struct mii_device *mdev;
+
+	list_for_each_entry(mdev, &miidev_list, list) {
+		if (!strcmp(name, mdev->cdev.name))
+			return mdev;
+	}
+	return NULL;
+}
+
+void mii_close(struct mii_device *mdev)
+{
 }
 
 static struct driver_d miidev_drv = {
@@ -246,7 +266,7 @@ static struct driver_d miidev_drv = {
 int mii_register(struct mii_device *mdev)
 {
 	mdev->dev.priv = mdev;
-	mdev->dev.id = -1;
+	mdev->dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(mdev->dev.name, "miidev");
 	if (mdev->parent)
 		dev_add_child(mdev->parent, &mdev->dev);

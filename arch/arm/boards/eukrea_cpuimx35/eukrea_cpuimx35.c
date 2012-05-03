@@ -48,7 +48,6 @@
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
-#include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <i2c/i2c.h>
@@ -163,13 +162,13 @@ static int eukrea_cpuimx35_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx35_usb_init();
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 #endif
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	tmp = readl(IMX_OTG_BASE + 0x608);
 	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
-	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_OTG_BASE, 0x200,
 			   IORESOURCE_MEM, &usb_pdata);
 #endif
 	armlinux_set_bootparams((void *)0x80000100);
@@ -180,7 +179,7 @@ static int eukrea_cpuimx35_devices_init(void)
 
 device_initcall(eukrea_cpuimx35_devices_init);
 
-static struct pad_desc eukrea_cpuimx35_pads[] = {
+static iomux_v3_cfg_t eukrea_cpuimx35_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
 	MX35_PAD_FEC_RX_DV__FEC_RX_DV,

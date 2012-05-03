@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <linux/list.h>
+#include <complete.h>
 
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);
@@ -103,7 +104,7 @@ int register_device(struct device_d *new_device)
 {
 	struct driver_d *drv;
 
-	if (new_device->id < 0) {
+	if (new_device->id == DEVICE_ID_DYNAMIC) {
 		new_device->id = get_free_deviceid(new_device->name);
 	} else {
 		if (get_device_by_name_id(new_device->name, new_device->id)) {
@@ -302,7 +303,10 @@ const char *dev_id(const struct device_d *dev)
 {
 	static char buf[MAX_DRIVER_NAME + 16];
 
-	snprintf(buf, sizeof(buf), FORMAT_DRIVER_NAME_ID, dev->name, dev->id);
+	if (dev->id != DEVICE_ID_SINGLE)
+		snprintf(buf, sizeof(buf), FORMAT_DRIVER_NAME_ID, dev->name, dev->id);
+	else
+		snprintf(buf, sizeof(buf), "%s", dev->name);
 
 	return buf;
 }
@@ -398,7 +402,7 @@ static int do_devinfo(int argc, char *argv[])
 				"no parameters available" : "Parameters:");
 
 		list_for_each_entry(param, &dev->parameters, list)
-			printf("%16s = %s\n", param->name, param->value);
+			printf("%16s = %s\n", param->name, dev_get_param(dev, param->name));
 	}
 
 	return 0;
@@ -440,6 +444,7 @@ BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
 	.usage		= "Show information about devices and drivers.",
 	BAREBOX_CMD_HELP(cmd_devinfo_help)
+	BAREBOX_CMD_COMPLETE(device_complete)
 BAREBOX_CMD_END
 #endif
 

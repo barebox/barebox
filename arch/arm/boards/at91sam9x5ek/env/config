@@ -15,6 +15,8 @@ dhcp_vendor_id=barebox-at91sam9x5ek
 kernel_loc=nfs
 # can be either 'net', 'nor', 'nand' or 'initrd'
 rootfs_loc=net
+# can be either 'nfs', 'tftp', 'nand' or empty
+oftree_loc=nfs
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
@@ -27,8 +29,8 @@ kernelimage=zImage
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand
-nand_parts="256k(at91bootstrap),384k(barebox)ro,128k(bareboxenv),128k(bareboxenv2),1152k(free),6M(kernel),120M(rootfs),-(data)"
-rootfs_mtdblock_nand=5
+nand_parts="128k(at91bootstrap),256k(barebox)ro,128k(bareboxenv),128k(bareboxenv2),128k(oftree),1M(free),4M(kernel),120M(rootfs),-(data)"
+rootfs_mtdblock_nand=7
 
 autoboot_timeout=3
 

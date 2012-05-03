@@ -109,15 +109,15 @@ static int a9m2410_devices_init(void)
 	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	add_generic_device("s3c24x0_nand", -1, NULL, S3C24X0_NAND_BASE, 0,
-			   IORESOURCE_MEM, &nand_info);
+	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE,
+			0, IORESOURCE_MEM, &nand_info);
 	/*
 	 * SMSC 91C111 network controller on the baseboard
 	 * connected to CS line 1 and interrupt line
 	 * GPIO3, data width is 32 bit
 	 */
-	add_generic_device("smc91c111", -1, NULL, S3C_CS1_BASE + 0x300, 16,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, S3C_CS1_BASE + 0x300,
+			16, IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
@@ -145,8 +145,8 @@ void __bare_init nand_boot(void)
 
 static int a9m2410_console_init(void)
 {
-	add_generic_device("s3c_serial", -1, NULL, S3C_UART1_BASE, S3C_UART1_SIZE,
-			   IORESOURCE_MEM, NULL);
+	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
+			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
 	return 0;
 }
 

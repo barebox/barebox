@@ -37,7 +37,8 @@ int imx_silicon_revision()
 {
 	uint32_t reg;
 	reg = readl(IMX_IIM_BASE + IIM_SREV);
-	reg += IMX35_CHIP_REVISION_1_0;
+	/* 0×00 = TO 1.0, First silicon */
+	reg += IMX_CHIP_REV_1_0;
 
 	return (reg & 0xFF);
 }

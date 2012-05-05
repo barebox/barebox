@@ -24,8 +24,7 @@ static inline void barebox_arm_head(void)
 		"1: b 1b\n"
 		"1: b 1b\n"
 #endif
-		".word 0x65726162\n"			/* 'bare' */
-		".word 0x00786f62\n"			/* 'box' */
+		".asciz \"barebox\"\n"
 		".word _text\n"				/* text base. If copied there,
 							 * barebox can skip relocation
 							 */

@@ -8,4 +8,5 @@ obj-y += misc.o
 obj-$(CONFIG_CMD_BOOTM) += ppclinux.o
 obj-$(CONFIG_MODULES) += module.o
 obj-y += crtsavres.o
+obj-y += reloc.o
 

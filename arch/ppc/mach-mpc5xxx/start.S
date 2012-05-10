@@ -726,20 +726,6 @@ trap_init:
 	mtlr	r4			/* restore link register    */
 	blr
 
-	/*
-	 * Function: relocate entries for one exception vector
-	 */
-trap_reloc:
-	lwz	r0, 0(r7)		/* hdlr ...			*/
-	add	r0, r0, r3		/*  ... += dest_addr		*/
-	stw	r0, 0(r7)
-
-	lwz	r0, 4(r7)		/* int_return ...		*/
-	add	r0, r0, r3		/*  ... += dest_addr		*/
-	stw	r0, 4(r7)
-
-	blr
-
 .globl _text_base
 _text_base:
 	.long TEXT_BASE

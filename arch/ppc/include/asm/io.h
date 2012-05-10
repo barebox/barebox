@@ -105,6 +105,34 @@ extern void _outsl_ns(volatile u32 *port, const void *buf, int nl);
 #define iobarrier_w()  eieio()
 
 /*
+ * Non ordered and non-swapping "raw" accessors
+ */
+static inline unsigned char __raw_readb(const volatile void __iomem *addr)
+{
+	return *(volatile unsigned char __force *)(addr);
+}
+static inline unsigned short __raw_readw(const volatile void __iomem *addr)
+{
+	return *(volatile unsigned short __force *)(addr);
+}
+static inline unsigned int __raw_readl(const volatile void __iomem *addr)
+{
+	return *(volatile unsigned int __force *)(addr);
+}
+static inline void __raw_writeb(unsigned char v, volatile void __iomem *addr)
+{
+	*(volatile unsigned char __force *)(addr) = v;
+}
+static inline void __raw_writew(unsigned short v, volatile void __iomem *addr)
+{
+	*(volatile unsigned short __force *)(addr) = v;
+}
+static inline void __raw_writel(unsigned int v, volatile void __iomem *addr)
+{
+	*(volatile unsigned int __force *)(addr) = v;
+}
+
+/*
  * 8, 16 and 32 bit, big and little endian I/O operations, with barrier.
  */
 extern inline int in_8(volatile u8 *addr)

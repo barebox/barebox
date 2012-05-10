@@ -25,6 +25,8 @@
 #include <asm/mipsregs.h>
 #include <asm/asm.h>
 #include <asm-generic/memory_layout.h>
+#include <generated/compile.h>
+#include <generated/utsrelease.h>
 
 	/*
 	 * ADR macro instruction (inspired by ARM)
@@ -52,6 +54,16 @@ _pc:	addiu	\rd, ra, \label - _pc		# label is assumed to be
 	.align 4
 
 EXPORT(_start)
+
+	b	__start
+	 nop
+
+	.org	0x10
+	.ascii	"barebox " UTS_RELEASE " " UTS_VERSION
+	.byte	0
+
+	.align 4
+__start:
 	/* disable watchpoints */
 	mtc0	zero, CP0_WATCHLO
 	mtc0	zero, CP0_WATCHHI

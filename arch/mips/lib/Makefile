@@ -6,3 +6,4 @@ obj-y += ashrdi3.o
 obj-y += memory.o
 
 obj-$(CONFIG_CMD_MIPS_CPUINFO) += cpuinfo.o
+obj-$(CONFIG_CMD_BOOTM)	+= bootm.o

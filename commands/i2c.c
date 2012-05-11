@@ -170,7 +170,7 @@ static int do_i2c_read(int argc, char *argv[])
 		}
 	}
 
-	if ((addr < 0) || (reg < 0) || (count == 0) || (addr > 0x7F))
+	if ((addr < 0) || (reg < 0) || (count < 1) || (addr > 0x7F))
 		return COMMAND_ERROR_USAGE;
 
 	adapter = i2c_get_adapter(bus);

@@ -1,7 +1,9 @@
 #!/bin/sh
 
 hostname=FIXME
-#user=
+if [ -z "$user" ]; then
+#	user=
+fi
 
 # Enter MAC address here if not retrieved automatically
 #eth0.ethaddr=de:ad:be:ef:00:00

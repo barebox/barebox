@@ -24,17 +24,8 @@
 #ifndef __INCLUDE_ARCH_DEBUG_LL_H__
 #define   __INCLUDE_ARCH_DEBUG_LL_H__
 
-#include <io.h>
 #include <mach/hardware.h>
 
-#define rbr		0
-#define lsr		5
-#define LSR_THRE	0x20	/* Xmit holding register empty */
-
-static __inline__ void putc(char ch)
-{
-	while (!(__raw_readb(DEBUG_LL_UART_ADDR + lsr) & LSR_THRE));
-	__raw_writeb(ch, DEBUG_LL_UART_ADDR + rbr);
-}
+#include <debug_ll_ns16550.h>
 
 #endif  /* __INCLUDE_ARCH_DEBUG_LL_H__ */

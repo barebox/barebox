@@ -310,7 +310,13 @@ config GLOB
 	depends on SHELL_HUSH
 	help
 	  If you want to use wildcards like * or ? say y here.
-	
+
+config GLOB_SORT
+	select QSORT
+	bool
+	prompt "glob sort support"
+	depends on GLOB
+
 config PROMPT_HUSH_PS2
 	string
 	depends on SHELL_HUSH

@@ -149,8 +149,8 @@ device_initcall(smd_devices_init);
 
 static int smd_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("disk0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("disk0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

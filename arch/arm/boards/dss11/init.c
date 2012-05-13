@@ -138,11 +138,11 @@ static int dss11_devices_init(void)
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_DSS11);
 
-	devfs_add_partition("nand0", 0x00000, 0x20000, PARTITION_FIXED, "bootstrap");
+	devfs_add_partition("nand0", 0x00000, 0x20000, DEVFS_PARTITION_FIXED, "bootstrap");
 	dev_add_bb_dev("bootstrap", "bootstrap.bb");
-	devfs_add_partition("nand0", 0x20000, 0x40000, PARTITION_FIXED, "barebox");
+	devfs_add_partition("nand0", 0x20000, 0x40000, DEVFS_PARTITION_FIXED, "barebox");
 	dev_add_bb_dev("barebox", "barebox.bb");
-	devfs_add_partition("nand0", 0x60000, 0x40000, PARTITION_FIXED, "barebox-env");
+	devfs_add_partition("nand0", 0x60000, 0x40000, DEVFS_PARTITION_FIXED, "barebox-env");
 	dev_add_bb_dev("barebox-env", "env0");
 
 	return 0;

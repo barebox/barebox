@@ -62,8 +62,8 @@ static int devices_init (void)
 	if (ret)
 		return 0;
 
-	devfs_add_partition("nor0", s.st_size - SZ_1M, SZ_512K, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", s.st_size - SZ_512K, SZ_512K, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", s.st_size - SZ_1M, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", s.st_size - SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

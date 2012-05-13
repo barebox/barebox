@@ -34,8 +34,8 @@ static int malta_devices_init(void)
 {
 	add_cfi_flash_device(0, 0x1e000000, SZ_4M, 0);
 
-	devfs_add_partition("nor0", 0x0, SZ_512K, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", SZ_512K, SZ_64K, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x0, SZ_512K, DEVFS_PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", SZ_512K, SZ_64K, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

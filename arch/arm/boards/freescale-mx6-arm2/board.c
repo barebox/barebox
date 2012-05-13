@@ -152,8 +152,8 @@ static int arm2_devices_init(void)
 	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3837);
 
-	devfs_add_partition("disk0", 0, SZ_1M, PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_1M + SZ_1M, SZ_512K, PARTITION_FIXED, "env0");
+	devfs_add_partition("disk0", 0, SZ_1M, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("disk0", SZ_1M + SZ_1M, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

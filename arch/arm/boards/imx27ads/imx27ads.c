@@ -111,8 +111,8 @@ static int mx27ads_devices_init(void)
 	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
 
 	imx27_add_fec(&fec_info);
-	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x20000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x20000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
 	armlinux_set_bootparams((void *)0xa0000100);

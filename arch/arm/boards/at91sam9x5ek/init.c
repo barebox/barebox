@@ -144,13 +144,13 @@ static int at91sam9x5ek_devices_init(void)
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);
 
-	devfs_add_partition("nand0", 0x00000, SZ_256K, PARTITION_FIXED, "at91bootstrap_raw");
+	devfs_add_partition("nand0", 0x00000, SZ_256K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
-	devfs_add_partition("nand0", SZ_256K, SZ_256K + SZ_128K, PARTITION_FIXED, "self_raw");
+	devfs_add_partition("nand0", SZ_256K, SZ_256K + SZ_128K, DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", SZ_512K + SZ_128K, SZ_128K, PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", SZ_512K + SZ_128K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-	devfs_add_partition("nand0", SZ_512K + SZ_256K, SZ_128K, PARTITION_FIXED, "env_raw1");
+	devfs_add_partition("nand0", SZ_512K + SZ_256K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
 
 	return 0;

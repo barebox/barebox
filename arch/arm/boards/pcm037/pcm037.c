@@ -194,8 +194,8 @@ static int imx31_devices_init(void)
 	 * Create partitions that should be
 	 * not touched by any regular user
 	 */
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");	/* ourself */
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");	/* environment */
+	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");	/* ourself */
+	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");	/* environment */
 
 	protect_file("/dev/env0", 1);
 

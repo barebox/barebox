@@ -141,10 +141,10 @@ static int a9m2440_devices_init(void)
 
 #ifdef CONFIG_NAND
 	/* ----------- add some vital partitions -------- */
-	devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 
-	devfs_add_partition("nand0", 0x40000, 0x20000, PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);

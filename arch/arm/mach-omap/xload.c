@@ -14,7 +14,7 @@ void *omap_xload_boot_nand(int offset, int size)
 	void *to = xmalloc(size);
 	struct cdev *cdev;
 
-	devfs_add_partition("nand0", offset, size, PARTITION_FIXED, "x");
+	devfs_add_partition("nand0", offset, size, DEVFS_PARTITION_FIXED, "x");
 	dev_add_bb_dev("x", "bbx");
 
 	cdev = cdev_open("bbx", O_RDONLY);

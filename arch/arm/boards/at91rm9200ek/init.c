@@ -124,8 +124,8 @@ static int at91rm9200ek_devices_init(void)
 	ek_add_device_udc();
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 #endif
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));

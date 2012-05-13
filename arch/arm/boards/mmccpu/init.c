@@ -63,8 +63,8 @@ static int mmccpu_devices_init(void)
 	at91_add_device_eth(0, &macb_pdata);
 	add_cfi_flash_device(0, AT91_CHIPSELECT_0, 0, 0);
 
-	devfs_add_partition("nor0", 0x00000, 256 * 1024, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x40000, 128 * 1024, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 256 * 1024, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 128 * 1024, DEVFS_PARTITION_FIXED, "env0");
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_MMCCPU);

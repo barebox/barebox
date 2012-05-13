@@ -294,6 +294,14 @@ config MACH_PCM038
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor
 
+config MACH_PCM970_BASEBOARD
+	bool "PHYTEC PCM970 development board"
+	depends on MACH_PCM038
+	default y
+	help
+	  This adds board specific devices that can be found on Phytec's
+	  PCM970 evaluation board.
+
 config MACH_NESO
 	bool "Garz+Fricke Neso"
 	select MACH_HAS_LOWLEVEL_INIT

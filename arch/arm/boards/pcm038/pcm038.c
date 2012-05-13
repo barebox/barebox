@@ -287,9 +287,6 @@ static int pcm038_devices_init(void)
 	/* configure SRAM on cs1 */
 	imx27_setup_weimcs(1, 0x0000d843, 0x22252521, 0x22220a00);
 
-	/* configure SJA1000 on cs4 */
-	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
-
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);

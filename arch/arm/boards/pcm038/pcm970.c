@@ -1,0 +1,30 @@
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+#include <io.h>
+#include <init.h>
+#include <mach/imx-regs.h>
+
+static int pcm970_init(void)
+{
+	/* Configure SJA1000 on cs4 */
+	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
+
+	return 0;
+}
+
+late_initcall(pcm970_init);

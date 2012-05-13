@@ -30,15 +30,12 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
-#include <fcntl.h>
 #include <nand.h>
-#include <command.h>
 #include <spi/spi.h>
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
 #include <mach/imxfb.h>
-#include <asm/mmu.h>
 #include <i2c/i2c.h>
 #include <usb/ulpi.h>
 #include <mach/spi.h>

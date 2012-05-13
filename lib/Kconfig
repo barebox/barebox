@@ -35,4 +35,7 @@ config BCH
 config BITREV
        bool
 
+config QSORT
+	bool
+
 endmenu

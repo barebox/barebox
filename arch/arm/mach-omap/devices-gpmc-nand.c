@@ -49,7 +49,7 @@ static struct gpmc_nand_platform_data nand_plat = {
 /**
  * @brief gpmc_generic_nand_devices_init - init generic nand device
  *
- * @return success/fail based on device funtion
+ * @return success/fail based on device function
  */
 int gpmc_generic_nand_devices_init(int cs, int width,
 		enum gpmc_ecc_mode eccmode, struct gpmc_config *nand_cfg)

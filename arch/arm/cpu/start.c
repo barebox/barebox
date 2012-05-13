@@ -108,7 +108,7 @@ void __naked __bare_init reset(void)
 
 /*
  * Board code can jump here by either returning from board_init_lowlevel
- * or by calling this funtion directly.
+ * or by calling this function directly.
  */
 void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 {

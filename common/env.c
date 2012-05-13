@@ -219,7 +219,7 @@ int setenv(const char *_name, const char *value)
 		else
 			ret = -ENODEV;
 
-		errno = ret;
+		errno = -ret;
 
 		if (ret < 0)
 			perror("set parameter");

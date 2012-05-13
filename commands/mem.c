@@ -122,7 +122,7 @@ static int open_and_lseek(const char *filename, int mode, off_t pos)
 		return fd;
 
 	ret = lseek(fd, pos, SEEK_SET);
-	if (ret == -1) {
+	if (ret < 0) {
 		perror("lseek");
 		close(fd);
 		return ret;
@@ -170,7 +170,6 @@ static int do_mem_md(int argc, char *argv[])
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 
-	errno = 0;
 	if (mem_parse_options(argc, argv, "bwls:", &mode, &filename, NULL) < 0)
 		return 1;
 
@@ -207,7 +206,7 @@ static int do_mem_md(int argc, char *argv[])
 out:
 	close(fd);
 
-	return errno;
+	return ret ? 1 : 0;
 }
 
 static const __maybe_unused char cmd_md_help[] =
@@ -243,8 +242,6 @@ static int do_mem_mw(int argc, char *argv[])
 	int mode = O_RWSIZE_4;
 	ulong adr;
 
-	errno = 0;
-
 	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename) < 0)
 		return 1;
 
@@ -279,12 +276,13 @@ static int do_mem_mw(int argc, char *argv[])
 			perror("write");
 			break;
 		}
+		ret = 0;
 		optind++;
 	}
 
 	close(fd);
 
-	return errno;
+	return ret ? 1 : 0;
 }
 
 static const __maybe_unused char cmd_mw_help[] =

@@ -49,7 +49,7 @@ int ls(const char *path, ulong flags)
 	string_list_init(&sl);
 
 	if (stat(path, &s))
-		return errno;
+		return -errno;
 
 	if (flags & LS_SHOWARG && s.st_mode & S_IFDIR)
 		printf("%s:\n", path);
@@ -61,7 +61,7 @@ int ls(const char *path, ulong flags)
 
 	dir = opendir(path);
 	if (!dir)
-		return errno;
+		return -errno;
 
 	while ((d = readdir(dir))) {
 		sprintf(tmp, "%s/%s", path, d->d_name);
@@ -85,7 +85,7 @@ int ls(const char *path, ulong flags)
 
 	dir = opendir(path);
 	if (!dir) {
-		errno = -ENOENT;
+		errno = ENOENT;
 		return -ENOENT;
 	}
 

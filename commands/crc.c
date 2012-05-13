@@ -48,7 +48,7 @@ static int file_crc(char* filename, ulong start, ulong size, ulong *crc,
 
 	if (start > 0) {
 		ret = lseek(fd, start, SEEK_SET);
-		if (ret == -1) {
+		if (ret < 0) {
 			perror("lseek");
 			goto out;
 		}

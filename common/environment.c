@@ -187,7 +187,7 @@ int envfs_load(char *filename, char *dir)
 	ret = read(envfd, &super, sizeof(struct envfs_super));
 	if ( ret < sizeof(struct envfs_super)) {
 		perror("read");
-		ret = errno;
+		ret = -errno;
 		goto out;
 	}
 
@@ -210,7 +210,7 @@ int envfs_load(char *filename, char *dir)
 	ret = read(envfd, buf, size);
 	if (ret < size) {
 		perror("read");
-		ret = errno;
+		ret = -errno;
 		goto out;
 	}
 
@@ -256,7 +256,7 @@ int envfs_load(char *filename, char *dir)
 				inode_size);
 		if (ret < inode_size) {
 			perror("write");
-			ret = errno;
+			ret = -errno;
 			close(fd);
 			goto out;
 		}

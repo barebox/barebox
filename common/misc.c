@@ -112,7 +112,7 @@ EXPORT_SYMBOL(strerror);
 
 const char *errno_str(void)
 {
-	return strerror(-errno);
+	return strerror(errno);
 }
 EXPORT_SYMBOL(errno_str);
 

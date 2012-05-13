@@ -23,6 +23,10 @@ config FS_TFTP
 	bool
 	prompt "tftp support"
 
+config FS_NFS
+	bool
+	prompt "nfs support"
+
 source fs/fat/Kconfig
 
 config PARTITION_NEED_MTD

@@ -36,7 +36,7 @@ barebox.netx
 barebox.map
 System.map
 Module.symvers
-barebox_default_env
+barebox_default_env*
 
 #
 # Generated include files

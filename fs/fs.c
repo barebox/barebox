@@ -1077,6 +1077,9 @@ struct dirent *readdir(DIR *dir)
 {
 	struct dirent *ent;
 
+	if (!dir)
+		return NULL;
+
 	ent = dir->fsdrv->readdir(dir->dev, dir);
 
 	if (!ent)

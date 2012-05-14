@@ -39,7 +39,7 @@
 static int do_bootm_linux(struct image_data *idata)
 {
 	void (*kernel)(int, int, int, const char *);
-	const char *commandline = getenv ("bootargs");
+	const char *commandline = linux_bootargs_get();
 
 	if (!idata->os_res)
 		return -EINVAL;

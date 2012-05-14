@@ -43,7 +43,7 @@
 static int do_bootm_linux(struct image_data *idata)
 {
 	int (*appl)(char *cmdline);
-	const char *cmdline = getenv("bootargs");
+	const char *cmdline = linux_bootargs_get();
 	char *cmdlinedest = (char *) CMD_LINE_ADDR;
 
 	if (!idata->os_res)

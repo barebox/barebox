@@ -394,7 +394,7 @@ static int do_bootm_aimage(struct image_data *data)
 	}
 
 	if (!getenv("aimage_noverwrite_bootargs"))
-		setenv("bootargs", header->cmdline);
+		linux_bootargs_overwrite(header->cmdline);
 
 	if (!getenv("aimage_noverwrite_tags"))
 		armlinux_set_bootparams((void*)header->tags_addr);
@@ -432,6 +432,7 @@ static int do_bootm_aimage(struct image_data *data)
 	return __do_bootm_linux(data, 0);
 
 err_out:
+	linux_bootargs_overwrite(NULL);
 	close(fd);
 
 	return ret;

@@ -227,7 +227,7 @@ static void setup_end_tag (void)
 static void setup_tags(unsigned long initrd_address,
 		unsigned long initrd_size, int swap)
 {
-	const char *commandline = getenv("bootargs");
+	const char *commandline = linux_bootargs_get();
 
 	setup_start_tag();
 	setup_memory_tags();

@@ -47,6 +47,9 @@ config BINFMT
 	bool
 	select FILETYPE
 
+config GLOBALVAR
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -493,6 +496,7 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	select HUSH_GETOPT
 	select CMD_CRC
 	select CMD_CRC_CMP
+	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW
 	prompt "Default environment generic"
 	help
 	  With this option barebox will use the generic default
@@ -501,6 +505,9 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	  will be added to the default environment. This should
 	  at least contain a /env/config file.
 	  This will be able to overwrite the files from defaultenv.
+
+config HAVE_DEFAULT_ENVIRONMENT_NEW
+	bool
 
 config DEFAULT_ENVIRONMENT_PATH
 	string

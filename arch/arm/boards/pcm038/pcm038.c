@@ -37,7 +37,6 @@
 #include <mach/imx-pll.h>
 #include <mach/imxfb.h>
 #include <i2c/i2c.h>
-#include <usb/ulpi.h>
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
@@ -106,27 +105,6 @@ static struct imx_fb_platform_data pcm038_fb_data = {
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,
 };
-
-#ifdef CONFIG_USB
-static void pcm038_usbh_init(void)
-{
-	uint32_t temp;
-
-	temp = readl(IMX_OTG_BASE + 0x600);
-	temp &= ~((3 << 21) | 1);
-	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
-	writel(temp, IMX_OTG_BASE + 0x600);
-
-	temp = readl(IMX_OTG_BASE + 0x584);
-	temp &= ~(3 << 30);
-	temp |= 2 << 30;
-	writel(temp, IMX_OTG_BASE + 0x584);
-
-	mdelay(10);
-
-	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
-}
-#endif
 
 /**
  * The spctl0 register is a beast: Seems you can read it
@@ -260,19 +238,6 @@ static int pcm038_devices_init(void)
 		PA29_PF_VSYNC,
 		PA30_PF_CONTRAST,
 		PA31_PF_OE_ACD,
-		/* USB host 2 */
-		PA0_PF_USBH2_CLK,
-		PA1_PF_USBH2_DIR,
-		PA2_PF_USBH2_DATA7,
-		PA3_PF_USBH2_NXT,
-		PA4_PF_USBH2_STP,
-		PD19_AF_USBH2_DATA4,
-		PD20_AF_USBH2_DATA3,
-		PD21_AF_USBH2_DATA6,
-		PD22_AF_USBH2_DATA0,
-		PD23_AF_USBH2_DATA2,
-		PD24_AF_USBH2_DATA1,
-		PD26_AF_USBH2_DATA5,
 		/* I2C1 */
 		PD17_PF_I2C_DATA | GPIO_PUEN,
 		PD18_PF_I2C_CLK,
@@ -309,11 +274,6 @@ static int pcm038_devices_init(void)
 	PCCR0 |= PCCR0_I2C1_EN | PCCR0_I2C2_EN;
 	imx27_add_i2c0(NULL);
 	imx27_add_i2c1(NULL);
-
-#ifdef CONFIG_USB
-	pcm038_usbh_init();
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
-#endif
 
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock

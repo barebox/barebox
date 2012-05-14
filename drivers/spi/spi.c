@@ -78,6 +78,8 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->bits_per_word = chip->bits_per_word ? chip->bits_per_word : 8;
 	proxy->dev.platform_data = chip->platform_data;
 	strcpy(proxy->dev.name, chip->name);
+	/* allocate a free id for this chip */
+	proxy->dev.id = DEVICE_ID_DYNAMIC;
 	proxy->dev.type_data = proxy;
 	dev_add_child(master->dev, &proxy->dev);
 

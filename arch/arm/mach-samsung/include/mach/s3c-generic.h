@@ -30,5 +30,9 @@ uint32_t s3c_get_fclk(void);
 uint32_t s3c_get_hclk(void);
 uint32_t s3c_get_pclk(void);
 uint32_t s3c_get_uclk(void);
+
+unsigned s3c_get_uart_clk(unsigned src);
+
 uint32_t s3c24xx_get_memory_size(void);
+
 void s3c24xx_disable_second_sdram_bank(void);

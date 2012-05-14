@@ -859,6 +859,8 @@ static void td_fill(struct ohci *ohci, unsigned int info,
 
 	td->hwNextTD = virt_to_phys((void *)m32_swap((unsigned long)td_pt));
 
+	dma_flush_range((unsigned long)data, (unsigned long)(data + len));
+
 	/* append to queue */
 	td->ed->hwTailP = td->hwNextTD;
 }
@@ -1554,6 +1556,8 @@ int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	dev->status = stat;
 	dev->act_len = urb->actual_length;
+
+	dma_inv_range((unsigned long)buffer, (unsigned long)(buffer + transfer_len));
 
 	pkt_print(urb, dev, pipe, buffer, transfer_len,
 		  setup, "RET(ctlr)", usb_pipein(pipe));

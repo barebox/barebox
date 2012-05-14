@@ -22,6 +22,7 @@
 #include <common.h>
 #include <boot.h>
 #include <malloc.h>
+#include <magicvar.h>
 #include <globalvar.h>
 #include <environment.h>
 
@@ -77,3 +78,6 @@ int linux_bootargs_overwrite(const char *bootargs)
 
 	return 0;
 }
+
+BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_, global.linux.bootargs.*, "Linux bootargs variables");
+BAREBOX_MAGICVAR_NAMED(global_linux_mtdparts_, global.linux.mtdparts.*, "Linux mtdparts variables");

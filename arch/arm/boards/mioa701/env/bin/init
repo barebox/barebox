@@ -31,5 +31,5 @@ if [ $? != 0 ]; then
 fi
 
 echo "Booting linux kernel on docg3 chip ..."
-bootargs="$bootargs mtdparts=mtd0:$mtdparts root=/dev/mtd4"
+bootargs="$bootargs mtdparts=docg3.0:$mtdparts ubi.mtd=4 rootfstype=ubifs root=ubi0:linux_root ro"
 bootm /dev/mtd0.kernel

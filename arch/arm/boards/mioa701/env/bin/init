@@ -22,12 +22,17 @@ if [ $? = 0 ]; then
 fi
 
 echo "No custom environment found"
-echo -n "Hit any key to stop autoboot: "
-timeout -a $autoboot_timeout
-if [ $? != 0 ]; then
-	echo
-	echo "Welcome to barebox console"
-	exit
+
+gpio_get_value 22
+is_usb_connected=$?
+if [ $is_usb_connected != 0 ]; then
+	echo -n "Hit any key to stop autoboot: "
+	timeout -a $autoboot_timeout
+	if [ $? != 0 ]; then
+		echo
+		echo "Welcome to barebox console"
+		exit
+	fi
 fi
 
 echo "Booting linux kernel on docg3 chip ..."

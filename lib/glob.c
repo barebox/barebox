@@ -22,6 +22,7 @@ Cambridge, MA 02139, USA.  */
 #include <malloc.h>
 #include <xfuncs.h>
 #include <fnmatch.h>
+#include <qsort.h>
 #define _GNU_SOURCE
 #include <glob.h>
 
@@ -75,12 +76,10 @@ int glob_pattern_p(const char *pattern, int quote)
 
 #ifdef CONFIG_GLOB_SORT
 /* Do a collated comparison of A and B.  */
-static int collated_compare(a, b)
-const __ptr_t a;
-const __ptr_t b;
+static int collated_compare(const void *a, const void *b)
 {
-	const char *const s1 = *(const char *const *)a;
-	const char *const s2 = *(const char *const *)b;
+	const char *s1 = a;
+	const char *s2 = b;
 
 	if (s1 == s2)
 		return 0;
@@ -266,7 +265,7 @@ int glob(const char *pattern, int flags,
 		/* Sort the vector.  */
 		qsort((__ptr_t) & pglob->gl_pathv[oldcount],
 		      pglob->gl_pathc - oldcount,
-		      sizeof(char *), (__compar_fn_t) collated_compare);
+		      sizeof(char *), collated_compare);
 #endif
 	status = 0;
 out:

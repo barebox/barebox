@@ -1590,6 +1590,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 
 		if (rcode != 1 && ctx->old_flag != 0) {
 			syntax();
+			return 1;
 		}
 		if (rcode != 1 && ctx->old_flag == 0) {
 			done_word(&temp, ctx);
@@ -1614,8 +1615,9 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			inp->__promptme = 1;
 			temp.nonnull = 0;
 			temp.quote = 0;
-			inp->p = NULL;
-			free_pipe_list(ctx->list_head, 0);
+			free_pipe_list(ctx->list_head,0);
+			b_free(&temp);
+			return 1;
 		}
 		b_free(&temp);
 	} while (rcode != -1 && !(flag & FLAG_EXIT_FROM_LOOP));   /* loop on syntax errors, return on EOF */

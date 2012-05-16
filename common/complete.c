@@ -272,7 +272,7 @@ static char* cmd_complete_lookup(struct string_list *sl, char *instr)
 {
 	struct command *cmdtp;
 	int len;
-	int ret = 1;
+	int ret = COMPLETE_END;
 	char *res = NULL;
 
 	for_each_command(cmdtp) {

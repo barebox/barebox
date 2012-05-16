@@ -58,7 +58,7 @@ void mem_malloc_init(void *start, void *end)
 	malloc_end = (unsigned long)end;
 	malloc_brk = malloc_start;
 #ifdef CONFIG_MALLOC_TLSF
-	tlsf_mem_pool = tlsf_create(start, (char *)end - (char *)start);
+	tlsf_mem_pool = tlsf_create(start, end - start + 1);
 #endif
 }
 

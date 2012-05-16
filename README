@@ -56,7 +56,7 @@ Features
   'eth0.ip=192.168.0.7' or 'echo $eth0.ip'
 
 - initcalls
-  hooks in the startup process can be archieved with *_initcall() directives
+  hooks in the startup process can be achieved with *_initcall() directives
   in each file.
 
 - getopt
@@ -95,7 +95,7 @@ This command starts a menu box and lets you select all the different
 options available for your architecture. Once the configuration was
 finished (you can simulate this by using the standard demo config file
 with 'make sandbox_defconfig'), there is a .config file in the toplevel
-directory of the sourcode.
+directory of the source code.
 
 Once barebox is configured, we can start the compilation
 
@@ -106,7 +106,7 @@ If everything goes well, the result is a file called barebox:
   # ls -l barebox
     -rwxr-xr-x 1 rsc ptx 114073 Jun 26 22:34 barebox
 
-Barebox usually needs an environment for storing the configuation data.
+Barebox usually needs an environment for storing the configuration data.
 You can generate an environment using the example environment contained
 in board/sandbox/env:
 

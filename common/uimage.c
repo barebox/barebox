@@ -404,8 +404,12 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 			res = NULL;
 			goto out;
 		}
-		if (now < BUFSIZ)
+
+		if (now < BUFSIZ) {
+			release_sdram_region(res);
+			res = request_sdram_region("image", adr, ofs + now);
 			goto out;
+		}
 
 		release_sdram_region(res);
 

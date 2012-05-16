@@ -210,7 +210,7 @@ static inline void tx51_fec_init(void)
 	gpio_set_value(TX51_FEC_PHY_PWR, 1);
 
 	/*
-	 * Wait some time to let the phy activate the internal regulator 
+	 * Wait some time to let the phy activate the internal regulator
 	 */
 	mdelay(10);
 

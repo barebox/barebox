@@ -121,42 +121,10 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr	= 0,
 };
 
-static void tny_a9260_phy_reset(void)
-{
-	unsigned long rstc;
-	struct clk *clk = clk_get(NULL, "macb_clk");
-
-	clk_enable(clk);
-
-	at91_set_gpio_input(AT91_PIN_PA14, 0);
-	at91_set_gpio_input(AT91_PIN_PA15, 0);
-	at91_set_gpio_input(AT91_PIN_PA17, 0);
-	at91_set_gpio_input(AT91_PIN_PA25, 0);
-	at91_set_gpio_input(AT91_PIN_PA26, 0);
-	at91_set_gpio_input(AT91_PIN_PA28, 0);
-
-	rstc = at91_sys_read(AT91_RSTC_MR) & AT91_RSTC_ERSTL;
-
-	/* Need to reset PHY -> 500ms reset */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (AT91_RSTC_ERSTL & (0x0d << 8)) |
-				     AT91_RSTC_URSTEN);
-
-	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
-
-	/* Wait for end hardware reset */
-	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL));
-
-	/* Restore NRST value */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (rstc) |
-				     AT91_RSTC_URSTEN);
-}
-
 static void __init ek_add_device_macb(void)
 {
-	tny_a9260_phy_reset();
-	at91_add_device_eth(0, &macb_pdata);
+	if (IS_ENABLED(CONFIG_CALAO_MOB_TNY_MD2))
+		at91_add_device_eth(0, &macb_pdata);
 }
 #else
 static void __init ek_add_device_macb(void) {}
@@ -240,6 +208,8 @@ device_initcall(tny_a9260_devices_init);
 static int tny_a9260_console_init(void)
 {
 	at91_register_uart(0, 0);
+	if (IS_ENABLED(CONFIG_CALAO_MOB_TNY_MD2))
+		at91_register_uart(2, ATMEL_UART_CTS | ATMEL_UART_RTS);
 	return 0;
 }
 console_initcall(tny_a9260_console_init);

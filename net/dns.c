@@ -197,6 +197,7 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 IPaddr_t resolv(char *host)
 {
 	IPaddr_t ip;
+	const char *ns;
 
 	if (!string_to_ip(host, &ip))
 		return ip;
@@ -205,8 +206,14 @@ IPaddr_t resolv(char *host)
 
 	dns_state = STATE_INIT;
 
-	ip = getenv_ip("net.nameserver");
-	if (!ip)
+	ns = getenv("net.nameserver");
+	if (!ns || !*ns) {
+		printk("%s: no nameserver specified in $net.nameserver\n",
+				__func__);
+		return 0;
+	}
+
+	if (string_to_ip(ns, &ip))
 		return 0;
 
 	debug("resolving host %s via nameserver %s\n", host, ip_to_string(ip));

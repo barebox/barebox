@@ -38,9 +38,6 @@ static struct mc13xxx *mc_dev;
 
 struct mc13xxx *mc13xxx_get(void)
 {
-	if (!mc_dev)
-		return NULL;
-
 	return mc_dev;
 }
 EXPORT_SYMBOL(mc13xxx_get);
@@ -308,6 +305,7 @@ static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 	rev = mc13xxx_query_revision(mc_dev);
 	if (rev < 0) {
 		free(mc_dev);
+		mc_dev = NULL;
 		return -EINVAL;
 	}
 

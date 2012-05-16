@@ -145,6 +145,10 @@ struct spi_imx_devtype_data {
 
 static int imx_spi_setup(struct spi_device *spi)
 {
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+
+	imx->chipselect(spi, 0);
+
 	debug("%s mode 0x%08x bits_per_word: %d speed: %d\n",
 			__FUNCTION__, spi->mode, spi->bits_per_word,
 			spi->max_speed_hz);

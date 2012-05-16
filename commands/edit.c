@@ -62,7 +62,7 @@ static int scrcol = 0;		/* the first column on screen */
 
 static void pos(int x, int y)
 {
-	printf("%c[%d;%dH", 27, y + 1, x + 1);
+	printf("%c[%d;%dH", 27, y + 2, x + 1);
 }
 
 static char *screenline(char *line, int *pos)
@@ -409,6 +409,17 @@ static int do_edit(int argc, char *argv[])
 	lastscrcol = 0;
 
 	printf("%c[2J", 27);
+
+	pos(0, -1);
+
+	printf("%c[7m %-25s <ctrl-d>: Save and quit <ctrl-c>: quit %c[0m",
+			27, argv[1], 27);
+	printf("%c[2;%dr", 27, screenheight);
+
+	screenheight--; /* status line */
+
+	pos(0, 0);
+
 	refresh(1);
 
 	while (1) {
@@ -416,7 +427,7 @@ static int do_edit(int argc, char *argv[])
 
 		if (textx > curlen)
 			textx = curlen;
-		if (textx < 0)
+		if (textx < 1)
 			textx = 0;
 
 		screenline(curline->data, &linepos);
@@ -531,7 +542,7 @@ static int do_edit(int argc, char *argv[])
 	}
 out:
 	free_buffer();
-	printf("%c[2J", 27);
+	printf("%c[2J%c[r", 27, 27);
 	printf("\n");
 	return 0;
 }

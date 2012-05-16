@@ -233,10 +233,6 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
-	imx51_iim_register_fec_ethaddr();
-	imx51_add_fec(&fec_info);
-	imx51_add_mmc0(NULL);
-
 	spi_register_board_info(mx51_babbage_spi_board_info,
 			ARRAY_SIZE(mx51_babbage_spi_board_info));
 	imx51_add_spi0(&spi_0_data);
@@ -246,6 +242,10 @@ static int f3s_devices_init(void)
 	console_flush();
 	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
+
+	imx51_iim_register_fec_ethaddr();
+	imx51_add_fec(&fec_info);
+	imx51_add_mmc0(NULL);
 
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);

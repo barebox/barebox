@@ -4,4 +4,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0800000
 
+config CPU_JZ4755
+	bool
+
 endif

@@ -259,8 +259,6 @@ static int pcm038_devices_init(void)
 	PCCR0 |= PCCR0_CSPI1_EN;
 	PCCR1 |= PCCR1_PERCLK2_EN;
 
-	gpio_direction_output(GPIO_PORTD | 28, 0);
-
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 

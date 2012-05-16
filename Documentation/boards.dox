@@ -51,6 +51,7 @@ MIPS type:
 
 @li @subpage dlink_dir_320
 @li @subpage qemu_malta
+@li @subpage rzx50
 
 */
 

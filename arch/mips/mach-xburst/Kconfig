@@ -7,4 +7,15 @@ config ARCH_TEXT_BASE
 config CPU_JZ4755
 	bool
 
+choice
+	prompt "Board type"
+
+config BOARD_RZX50
+	bool "Ritmix RZX-50"
+	select CPU_JZ4755
+
+endchoice
+
+source arch/mips/boards/rzx50/Kconfig
+
 endif

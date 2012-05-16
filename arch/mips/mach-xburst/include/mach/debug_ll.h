@@ -24,6 +24,10 @@
 /** @file
  *  This File contains declaration for early output support
  */
-#include <debug_ll_common.h>
+#ifdef CONFIG_BOARD_RZX50
+#include <mach/debug_ll_jz4755.h>
+#endif
+
+#include <debug_ll_ns16550.h>
 
 #endif  /* __MACH_XBURST_DEBUG_LL__ */

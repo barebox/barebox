@@ -1,0 +1,18 @@
+#ifndef __ASM_ARCH_CLOCKS_H
+#define __ASM_ARCH_CLOCKS_H
+
+#include <mach/config_mpc85xx.h>
+
+struct sys_info {
+	unsigned long freqProcessor[MAX_CPUS];
+	unsigned long freqSystemBus;
+	unsigned long freqDDRBus;
+	unsigned long freqLocalBus;
+};
+
+#define NSEC_PER_SEC	1000000000L
+
+unsigned long fsl_get_bus_freq(ulong dummy);
+unsigned long fsl_get_timebase_clock(void);
+void fsl_get_sys_info(struct sys_info *sysInfo);
+#endif /* __ASM_ARCH_CLOCKS_H */

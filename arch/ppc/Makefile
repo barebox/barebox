@@ -12,6 +12,7 @@ CPPFLAGS += -Wa,-me500x2 -msoft-float -mno-string
 endif
 
 board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= pcm030
+board-$(CONFIG_P2020RDB)			:= freescale-p2020rdb
 
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 machine-$(CONFIG_ARCH_MPC85XX)			:= mpc85xx

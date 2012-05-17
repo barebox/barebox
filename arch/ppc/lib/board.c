@@ -46,6 +46,10 @@ void board_init_r (ulong end_of_ram)
 
 	asm ("sync ; isync");
 
+#ifdef CONFIG_MPC85xx
+	_text_base = end_of_ram;
+#endif
+
 	/*
 	 * FIXME: 128k stack size. Is this enough? should
 	 *        it be configurable?

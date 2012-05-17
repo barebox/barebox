@@ -22,6 +22,7 @@ config FS_DEVFS
 config FS_TFTP
 	bool
 	prompt "tftp support"
+	depends on NET_TFTP
 
 source fs/fat/Kconfig
 

@@ -4,17 +4,17 @@
 
 static inline struct device_d *imx51_add_spi0(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)MX51_CSPI1_BASE_ADDR, 0, pdata);
+	return imx_add_spi((void *)MX51_ECSPI1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx51_add_spi1(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)MX51_CSPI2_BASE_ADDR, 1, pdata);
+	return imx_add_spi((void *)MX51_ECSPI2_BASE_ADDR, 1, pdata);
 }
 
-static inline struct device_d *imx51_add_spi2(struct spi_imx_master *pdata)
+static inline struct device_d *imx51_add_cspi(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)MX51_CSPI3_BASE_ADDR, 2, pdata);
+	return imx_add_spi((void *)MX51_CSPI_BASE_ADDR, 2, pdata);
 }
 
 static inline struct device_d *imx51_add_i2c0(struct i2c_platform_data *pdata)

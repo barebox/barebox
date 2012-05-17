@@ -57,6 +57,11 @@ static inline struct device_d *imx51_add_mmc1(struct esdhc_platform_data *pdata)
 	return imx_add_esdhc((void *)MX51_MMC_SDHC2_BASE_ADDR, 1, pdata);
 }
 
+static inline struct device_d *imx51_add_mmc2(struct esdhc_platform_data *pdata)
+{
+	return imx_add_esdhc((void *)MX51_MMC_SDHC3_BASE_ADDR, 2, pdata);
+}
+
 static inline struct device_d *imx51_add_nand(struct imx_nand_platform_data *pdata)
 {
 	struct resource res[] = {

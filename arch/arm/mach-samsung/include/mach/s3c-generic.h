@@ -37,3 +37,7 @@ unsigned s3c_get_uart_clk(unsigned src);
 uint32_t s3c24xx_get_memory_size(void);
 void s3c24xx_disable_second_sdram_bank(void);
 #endif
+
+#ifdef CONFIG_ARCH_S5PCxx
+void s5p_init_pll(void);
+#endif

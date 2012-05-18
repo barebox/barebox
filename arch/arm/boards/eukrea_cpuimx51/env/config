@@ -2,9 +2,11 @@
 
 # otg port mode : can be 'host' or 'device'
 otg_mode="device"
-# video mode : can be 'CMO-QVGA' or any modefb mode
+# video mode : can be 'CMO-QVGA' or 'URT-WVGA' or any modefb mode
 # ex : 640x480M-16@60 800x600M-24@60 1024x768M-16@60
 video="CMO-QVGA"
+# screen type : can be 'tft' or 'dvi'
+screen_type="tft"
 
 hostname=eukrea-cpuimx51
 
@@ -37,12 +39,6 @@ bareboxenvimage=$hostname/bareboxenv-${hostname}.bin
 nfsroot="$eth0.serverip:/srv/nfs/$hostname"
 
 autoboot_timeout=1
-
-if [ x$video = xCMO-QVGA ]; then
-        screen_type="tft"
-else
-        screen_type="dvi"
-fi
 
 bootargs="console=ttymxc0,115200 otg_mode=$otg_mode video=$video screen_type=$screen_type"
 

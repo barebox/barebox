@@ -64,8 +64,13 @@ void eth_halt(void);			/* stop SCC			*/
  * board code for boards which store their MAC address at some unusual
  * place.
  */
+#if !defined(CONFIG_NET)
+static inline void eth_register_ethaddr(int ethid, const char *ethaddr)
+{
+}
+#else
 void eth_register_ethaddr(int ethid, const char *ethaddr);
-
+#endif
 /*
  *	Ethernet header
  */

@@ -732,13 +732,13 @@ off_t lseek(int fildes, off_t offset, int whence)
 		goto out;
 	}
 
-	ret = fsdrv->lseek(dev, f, pos);
+	return fsdrv->lseek(dev, f, pos);
 
 out:
 	if (ret)
 		errno = -ret;
 
-	return ret;
+	return -1;
 }
 EXPORT_SYMBOL(lseek);
 

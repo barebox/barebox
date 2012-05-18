@@ -122,10 +122,10 @@ static int open_and_lseek(const char *filename, int mode, off_t pos)
 		return fd;
 
 	ret = lseek(fd, pos, SEEK_SET);
-	if (ret < 0) {
+	if (ret == -1) {
 		perror("lseek");
 		close(fd);
-		return ret;
+		return -errno;
 	}
 
 	return fd;

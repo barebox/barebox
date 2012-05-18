@@ -87,7 +87,7 @@ unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= RMII,
-	.phy_addr	= 1,
+	.phy_addr	= 0,
 };
 
 struct imx_nand_platform_data nand_info = {

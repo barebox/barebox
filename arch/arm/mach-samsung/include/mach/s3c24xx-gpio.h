@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __MACH_S3C24XX_GPIO_H
-# define __MACH_S3C24XX_GPIO_H
+#ifndef __MACH_GPIO_S3C24X0_H
+# define __MACH_GPIO_S3C24X0_H
 
 #define S3C_GPACON (S3C_GPIO_BASE)
 #define S3C_GPADAT (S3C_GPIO_BASE + 0x04)
@@ -74,4 +74,4 @@
 # define S3C_DSC1 (S3C_GPIO_BASE + 0xc8)
 #endif
 
-#endif /* __MACH_S3C24XX_GPIO_H */
+#endif /* __MACH_GPIO_S3C24X0_H */

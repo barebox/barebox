@@ -164,6 +164,13 @@ ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
 endif
 
+barebox.s5p: barebox.bin
+	$(Q)scripts/s5p_cksum barebox.bin barebox.s5p
+
+ifeq ($(CONFIG_ARCH_S5PCxx),y)
+KBUILD_IMAGE := barebox.s5p
+endif
+
 MLO: barebox.bin
 	@echo "  IFT    " $@
 	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1

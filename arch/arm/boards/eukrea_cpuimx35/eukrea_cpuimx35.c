@@ -57,7 +57,7 @@
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
-	.phy_addr	= 0x1F,
+	.phy_addr	= 0,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -142,49 +142,6 @@ static int eukrea_cpuimx35_mmu_init(void)
 }
 postmmu_initcall(eukrea_cpuimx35_mmu_init);
 
-static int eukrea_cpuimx35_devices_init(void)
-{
-#ifdef CONFIG_USB_GADGET
-	unsigned int tmp;
-#endif
-	imx35_add_nand(&nand_info);
-
-	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-
-	imx35_add_fec(&fec_info);
-	imx35_add_fb(&ipu_fb_data);
-
-	imx35_add_i2c0(NULL);
-	imx35_add_mmc0(NULL);
-
-	/* led default off */
-	gpio_direction_output(32 * 2 + 29, 1);
-
-	/* Switch : input */
-	gpio_direction_input(32 * 2 + 25);
-
-#ifdef CONFIG_USB
-	imx35_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
-#endif
-#ifdef CONFIG_USB_GADGET
-	/* Workaround ENGcm09152 */
-	tmp = readl(IMX_OTG_BASE + 0x608);
-	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
-	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_OTG_BASE, 0x200,
-			   IORESOURCE_MEM, &usb_pdata);
-#endif
-	armlinux_set_bootparams((void *)0x80000100);
-	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35SD);
-
-	return 0;
-}
-
-device_initcall(eukrea_cpuimx35_devices_init);
-
 static iomux_v3_cfg_t eukrea_cpuimx35_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,
 	MX35_PAD_FEC_RX_CLK__FEC_RX_CLK,
@@ -229,16 +186,59 @@ static iomux_v3_cfg_t eukrea_cpuimx35_pads[] = {
 	MX35_PAD_LD19__GPIO3_25,
 };
 
-static int eukrea_cpuimx35_console_init(void)
+static int eukrea_cpuimx35_devices_init(void)
 {
+#ifdef CONFIG_USB_GADGET
+	unsigned int tmp;
+#endif
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx35_pads,
 		ARRAY_SIZE(eukrea_cpuimx35_pads));
+
+	imx35_add_nand(&nand_info);
+
+	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
+	dev_add_bb_dev("self_raw", "self0");
+	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
+	dev_add_bb_dev("env_raw", "env0");
+
+	imx35_add_fec(&fec_info);
+	imx35_add_fb(&ipu_fb_data);
+
+	imx35_add_i2c0(NULL);
+	imx35_add_mmc0(NULL);
+
+	/* led default off */
+	gpio_direction_output(32 * 2 + 29, 1);
+
+	/* Switch : input */
+	gpio_direction_input(32 * 2 + 25);
 
 	/* screen default on to prevent flicker */
 	gpio_direction_output(4, 0);
 	/* backlight default off */
 	gpio_direction_output(1, 0);
 
+#ifdef CONFIG_USB
+	imx35_usb_init();
+	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+#endif
+#ifdef CONFIG_USB_GADGET
+	/* Workaround ENGcm09152 */
+	tmp = readl(IMX_OTG_BASE + 0x608);
+	writel(tmp | (1 << 23), IMX_OTG_BASE + 0x608);
+	add_generic_device("fsl-udc", -1, NULL, IMX_OTG_BASE, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
+#endif
+	armlinux_set_bootparams((void *)0x80000100);
+	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35SD);
+
+	return 0;
+}
+
+device_initcall(eukrea_cpuimx35_devices_init);
+
+static int eukrea_cpuimx35_console_init(void)
+{
 	imx35_add_uart0();
 	return 0;
 }

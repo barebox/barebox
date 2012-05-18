@@ -28,7 +28,7 @@ board_init_lowlevel:
 
 	bl s3c24x0_sdram_init
 
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 	mov lr, r10		/* restore the link register */
 /* up to here we are running from the internal SRAM area */
 	b s3c24x0_nand_boot	/* does return directly to our caller into SDRAM */

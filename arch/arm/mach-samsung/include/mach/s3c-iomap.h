@@ -54,7 +54,7 @@
  * if we are booting from NAND, its internal SRAM occures at
  * a different address than without this feature
  */
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 # define NFC_RAM_AREA 0x00000000
 #else
 # define NFC_RAM_AREA 0x40000000

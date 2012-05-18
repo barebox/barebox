@@ -326,7 +326,7 @@ static int mini2440_devices_init(void)
 
 device_initcall(mini2440_devices_init);
 
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 void __bare_init nand_boot(void)
 {
 	s3c24x0_nand_load_image((void *)TEXT_BASE, 256 * 1024, 0);

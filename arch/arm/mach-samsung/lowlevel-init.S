@@ -70,7 +70,7 @@ routine very early in your board_init_lowlevel routine.
  * Note: Do not use "r10" here in this code
  */
 
-#ifdef CONFIG_S3C24XX_PLL_INIT
+#ifdef CONFIG_S3C_PLL_INIT
 
 	.section ".text_bare_init.s3c24x0_pll_init","ax"
 
@@ -146,7 +146,7 @@ shared with all other system on chip components. Most of the time this
 configuration is to slow for the CPU and to fast for the other components.
 
 PLL reprogramming can be done in the machine specific manner very early when
-the CONFIG_S3C24XX_PLL_INIT and CONFIG_MACH_HAS_LOWLEVEL_INIT symbols are
+the CONFIG_S3C_PLL_INIT and CONFIG_MACH_HAS_LOWLEVEL_INIT symbols are
 defined. The board must provide a board_init_lowlevel() assembler function in
 this case and calling the s3c24x0_pll_init() assembler function.
 
@@ -184,7 +184,7 @@ With m = MDIV + 8, p = PDIV + 2 and s = SDIV.
 
 /* ----------------------------------------------------------------------- */
 
-#ifdef CONFIG_S3C24XX_SDRAM_INIT
+#ifdef CONFIG_S3C_SDRAM_INIT
 
 	.section ".text_bare_init.s3c24x0_sdram_init","ax"
 
@@ -225,7 +225,7 @@ SDRAMDATA:
 The SDRAM controller is very simple and its initialisation requires only a
 few steps. barebox provides a generic routine to do this step.
 
-Enable CONFIG_S3C24XX_SDRAM_INIT and CONFIG_MACH_HAS_LOWLEVEL_INIT to be able
+Enable CONFIG_S3C_SDRAM_INIT and CONFIG_MACH_HAS_LOWLEVEL_INIT to be able
 to call the generic s3c24x0_sdram_init() assembler function from within the
 machine specific board_init_lowlevel() assembler function.
 
@@ -245,7 +245,7 @@ Define in the machine specific config.h the following list of symbols:
 
 /* ----------------------------------------------------------------------- */
 
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 
 	.section ".text_bare_init.s3c24x0_nand_boot","ax"
 
@@ -284,7 +284,7 @@ s3c24x0_nand_boot:
 @page dev_s3c24xx_nandboot_handling Booting from NAND
 
 To be able to boot from NAND memory only, enable the S3C24x0 NAND driver. Also
-enable CONFIG_S3C24XX_NAND_BOOT and CONFIG_MACH_HAS_LOWLEVEL_INIT to be
+enable CONFIG_S3C_NAND_BOOT and CONFIG_MACH_HAS_LOWLEVEL_INIT to be
 able to call the s3c24x0_nand_boot() assembler routine from within the
 machine specific board_init_lowlevel() assembler function.
 

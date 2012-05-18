@@ -22,3 +22,6 @@
 #ifdef CONFIG_ARCH_S3C24xx
 # include <mach/s3c24xx-iomap.h>
 #endif
+#ifdef CONFIG_ARCH_S5PCxx
+# include <mach/s5pcxx-iomap.h>
+#endif

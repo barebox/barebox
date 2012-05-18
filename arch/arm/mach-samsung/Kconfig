@@ -14,6 +14,10 @@ config BOARDINFO
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Digi A9M2410" if MACH_A9M2410
 
+config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+	hex
+	default 0x1ff0 if ARCH_S5PCxx
+
 if ARCH_S3C24xx
 
 config CPU_S3C2410
@@ -79,6 +83,24 @@ source arch/arm/boards/mini2440/Kconfig
 endmenu
 
 endif
+
+if ARCH_S5PCxx
+
+config CPU_S5PC110
+	bool
+
+config CPU_S5PV210
+	bool
+
+choice
+
+	prompt "S5PCxx board type"
+
+
+endchoice
+
+endif
+
 
 menu "S3C Features              "
 

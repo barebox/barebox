@@ -160,6 +160,12 @@ static int eukrea_cpuimx35_devices_init(void)
 	imx35_add_i2c0(NULL);
 	imx35_add_mmc0(NULL);
 
+	/* led default off */
+	gpio_direction_output(32 * 2 + 29, 1);
+
+	/* Switch : input */
+	gpio_direction_input(32 * 2 + 25);
+
 #ifdef CONFIG_USB
 	imx35_usb_init();
 	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
@@ -219,6 +225,8 @@ static iomux_v3_cfg_t eukrea_cpuimx35_pads[] = {
 	MX35_PAD_SD1_DATA1__ESDHC1_DAT1,
 	MX35_PAD_SD1_DATA2__ESDHC1_DAT2,
 	MX35_PAD_SD1_DATA3__ESDHC1_DAT3,
+
+	MX35_PAD_LD19__GPIO3_25,
 };
 
 static int eukrea_cpuimx35_console_init(void)
@@ -230,8 +238,6 @@ static int eukrea_cpuimx35_console_init(void)
 	gpio_direction_output(4, 0);
 	/* backlight default off */
 	gpio_direction_output(1, 0);
-	/* led default off */
-	gpio_direction_output(32 * 2 + 29, 1);
 
 	imx35_add_uart0();
 	return 0;

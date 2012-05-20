@@ -41,6 +41,17 @@
 #define IMX_NFC_BASE               (0xd8000000)
 #define IMX_ESD_BASE               (0xd8001000)
 #define IMX_WEIM_BASE              (0xd8002000)
+#define IMX_M3IF_BASE		(0xd8003000)
+#define IMX_PCMCIA_CTL_BASE	(0xd8004000)
+
+#define PCMCIA_PIPR		(IMX_PCMCIA_CTL_BASE + 0x00)
+#define PCMCIA_PSCR		(IMX_PCMCIA_CTL_BASE + 0x04)
+#define PCMCIA_PER		(IMX_PCMCIA_CTL_BASE + 0x08)
+#define PCMCIA_PBR(x)		(IMX_PCMCIA_CTL_BASE + 0x0c + ((x) << 2))
+#define PCMCIA_POR(x)		(IMX_PCMCIA_CTL_BASE + 0x28 + ((x) << 2))
+#define PCMCIA_POFR(x)		(IMX_PCMCIA_CTL_BASE + 0x44 + ((x) << 2))
+#define PCMCIA_PGCR		(IMX_PCMCIA_CTL_BASE + 0x60)
+#define PCMCIA_PGSR		(IMX_PCMCIA_CTL_BASE + 0x64)
 
 /* AIPI */
 #define AIPI1_PSR0	__REG(IMX_AIPI1_BASE + 0x00)
@@ -239,6 +250,8 @@
 #define IMX_CS3_BASE	0xD2000000
 #define IMX_CS4_BASE	0xD4000000
 #define IMX_CS5_BASE	0xD6000000
+
+#define IMX_PCMCIA_MEM_BASE	(0xdc000000)
 
 #ifndef __ASSEMBLY__
 static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned addional)

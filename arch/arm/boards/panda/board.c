@@ -78,6 +78,7 @@ static void panda_ehci_init(void)
 	gpio_set_value(hub_nreset, 1);
 	val = readl(0x4a009358);
 	val |= (1 << 24);
+	val |= 0x2;
 	writel(val, 0x4a009358);
 	writel(0x7, 0x4a008180);
 	mdelay(10);

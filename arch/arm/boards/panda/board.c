@@ -21,6 +21,8 @@
 #include <environment.h>
 #include <mach/xload.h>
 #include <i2c/i2c.h>
+#include <gpio.h>
+#include <led.h>
 
 static int board_revision;
 
@@ -112,6 +114,22 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
+struct gpio_led panda_leds[] = {
+	{
+		.gpio = 7,
+		.led = {
+			.name = "heartbeat",
+		},
+	},
+};
+
+static void panda_led_init(void)
+{
+	gpio_direction_output(7, 0);
+	led_gpio_register(&panda_leds[0]);
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &panda_leds[0].led);
+}
+
 static int panda_devices_init(void)
 {
 	panda_boardrev_init();
@@ -150,6 +168,7 @@ static int panda_devices_init(void)
 			   IORESOURCE_MEM, NULL);
 	panda_ehci_init();
 
+	panda_led_init();
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP4_PANDA);
 

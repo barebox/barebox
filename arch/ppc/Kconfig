@@ -12,9 +12,12 @@ choice
 config ARCH_MPC5XXX
 	bool "Freescale MPC5xxx"
 
+config ARCH_MPC85XX
+	bool "Freescale MPC85xx"
 endchoice
 
 source arch/ppc/mach-mpc5xxx/Kconfig
+source arch/ppc/mach-mpc85xx/Kconfig
 source common/Kconfig
 source commands/Kconfig
 source net/Kconfig

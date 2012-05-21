@@ -495,8 +495,24 @@ endchoice
 
 endif
 
+config HAVE_DEFAULT_ENVIRONMENT_NEW
+	bool
+
+config DEFAULT_ENVIRONMENT_GENERIC_NEW
+	bool
+	depends on DEFAULT_ENVIRONMENT
+	depends on SHELL_HUSH
+	select HUSH_GETOPT
+	select GLOB
+	select GLOB_SORT
+	select CMD_GLOBAL
+	select CMD_AUTOMOUNT
+	select FLEXIBLE_BOOTARGS
+	prompt "Generic environment template"
+
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool
+	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
 	select HUSH_GETOPT
@@ -511,9 +527,6 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	  will be added to the default environment. This should
 	  at least contain a /env/config file.
 	  This will be able to overwrite the files from defaultenv.
-
-config HAVE_DEFAULT_ENVIRONMENT_NEW
-	bool
 
 config DEFAULT_ENVIRONMENT_PATH
 	string

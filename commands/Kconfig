@@ -329,6 +329,7 @@ config CMD_BOOTM
 	select CRC32
 	select UNCOMPRESS
 	select FILETYPE
+	select GLOBALVAR
 	prompt "bootm"
 
 config CMD_BOOTM_SHOW_TYPE

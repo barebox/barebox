@@ -1,0 +1,49 @@
+#!/bin/sh
+
+mkdir -p /tmp/mtdparts
+
+parts=
+device=
+kernelname=
+bbdev=
+
+while getopt "p:d:k:b" opt; do
+        if [ ${opt} = p ]; then
+                parts=${OPTARG}
+        elif [ ${opt} = d ]; then
+                device=${OPTARG}
+        elif [ ${opt} = k ]; then
+                kernelname=${OPTARG}
+	elif [ ${opt} = b ]; then
+		bbdev=true
+        fi
+done
+
+if [ -z "${device}" ]; then
+	echo "$0: no device given"
+	exit
+fi
+
+if [ -z "${parts}" ]; then
+	echo "$0: no partitions given"
+	exit
+fi
+
+if [ -e /tmp/mtdparts/${device} ]; then
+	if [ -n "/dev/${device}.*.bb" ]; then
+		nand -d /dev/${device}.*.bb
+	fi
+	delpart /dev/${device}.*
+fi
+
+addpart -n /dev/${device} "$parts" || exit
+mkdir -p /tmp/mtdparts/${device}
+
+if [ -n "${bbdev}" ]; then
+	nand -a /dev/${device}.*
+fi
+
+if [ -n ${kernelname} ]; then
+	global linux.mtdparts.${device}
+	global.linux.mtdparts.${device}="${kernelname}:${parts}"
+fi

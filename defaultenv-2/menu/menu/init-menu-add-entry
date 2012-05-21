@@ -1,0 +1,3 @@
+#!/bin/sh
+
+menu -e -a -m init_entries_edit -c "$global.editcmd /env/init/$1" -d "\e[1;32m$2\e[0m"

@@ -42,6 +42,13 @@ ifdef CONFIG_DEFAULT_ENVIRONMENT
 $(obj)/startup.o: include/generated/barebox_default_env.h
 $(obj)/env.o: include/generated/barebox_default_env.h
 
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW),y)
+DEFAULT_ENVIRONMENT_PATH = "defaultenv-2/base"
+ifeq ($(CONFIG_CMD_MENU_MANAGEMENT),y)
+DEFAULT_ENVIRONMENT_PATH += "defaultenv-2/menu"
+endif
+endif
+
 ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC),y)
 DEFAULT_ENVIRONMENT_PATH = "defaultenv"
 endif

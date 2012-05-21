@@ -1,0 +1,15 @@
+#!/bin/sh
+
+while getopt "n:s:" opt; do
+	if [ ${opt} = n ]; then
+		nfsroot=${OPTARG}
+	elif [ ${opt} = s ]; then
+		serverip=${OPTARG}
+	fi
+done
+
+if [ -n ${serverip} ]; then
+	nfsroot="$serverip:$nfsroot"
+fi
+
+global.linux.bootargs.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"

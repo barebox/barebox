@@ -1,0 +1,20 @@
+#!/bin/sh
+
+export menu_exit=false
+
+while true; do
+	menu -a -m boot_entries_edit -d "\e[1;36mEdit boot entries\e[0m"
+
+	boot-entries-collect
+
+	menu -e -a -m boot_entries_edit -c "boot-menu-new-boot-entry" -d "Add a new entry"
+	menu -e -a -m boot_entries_edit -c "boot-entries-remove" -d "Remove an entry"
+	menu -e -a -m boot_entries_edit -c "menu_exit=true" -d "back"
+
+	menu -s -m boot_entries_edit
+	menu -r -m boot_entries_edit
+
+	if [ $menu_exit = true ]; then
+		exit
+	fi
+done

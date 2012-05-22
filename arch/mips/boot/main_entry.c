@@ -24,6 +24,7 @@
 #include <common.h>
 #include <string.h>
 #include <asm/sections.h>
+#include <asm/cpu-features.h>
 
 extern void start_barebox(void);
 
@@ -38,6 +39,14 @@ void main_entry(void)
 {
 	/* clear the BSS first */
 	memset(__bss_start, 0x00, __bss_stop - __bss_start);
+
+	cpu_probe();
+
+	if (cpu_has_4k_cache) {
+		extern void r4k_cache_init(void);
+
+		r4k_cache_init();
+	}
 
 	start_barebox();
 }

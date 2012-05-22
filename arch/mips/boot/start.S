@@ -79,7 +79,7 @@ __start:
 
 	la	a1, _start	/* link (RAM) _start address */
 
-	beq	a0, a1, clear_bss
+	beq	a0, a1, stack_setup
 	 nop
 
 	la	t0, _start
@@ -104,16 +104,6 @@ copy_loop:
 	subu		t3, a0, a2
 	blez		t3, copy_loop
 	addi		a1, LONGSIZE * 4
-
-clear_bss:
-	la	t0, __bss_start
-	sw	zero, (t0)
-	la	t1, _end - 4
-1:
-	addiu	t0, LONGSIZE
-	sw	zero, (t0)
-	bne	t0, t1, 1b
-	 nop
 
 	/*
 	 * Dominic Sweetman, See MIPS Run, Morgan Kaufmann, 2nd edition, 2006
@@ -144,7 +134,7 @@ stack_setup:
 	/* reserve four 32-bit argument slots */
 	addiu	sp, -16
 
-	la	v0, start_barebox
+	la	v0, main_entry
 	jal     v0
 	 nop
 

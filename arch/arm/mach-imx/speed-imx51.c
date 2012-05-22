@@ -98,9 +98,9 @@ static unsigned long get_rate_select(int select,
 {
 	switch (select) {
 	case 0:
-		return get_rate1() ? get_rate1() : 0;
+		return get_rate1 ? get_rate1() : 0;
 	case 1:
-		return get_rate2() ? get_rate2() : 0;
+		return get_rate2 ? get_rate2() : 0;
 	case 2:
 		return get_rate3 ? get_rate3() : 0;
 	case 3:

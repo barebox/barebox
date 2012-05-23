@@ -1612,7 +1612,6 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			}
 			if (inp->__promptme == 0)
 				printf("<INTERRUPT>\n");
-			inp->__promptme = 1;
 			temp.nonnull = 0;
 			temp.quote = 0;
 			free_pipe_list(ctx->list_head,0);
@@ -1807,9 +1806,12 @@ int run_shell(void)
 	struct in_str input;
 	struct p_context ctx;
 
-	setup_file_in_str(&input);
-	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
-	release_context(&ctx);
+	do {
+		setup_file_in_str(&input);
+		rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
+		release_context(&ctx);
+	} while (!input.__promptme);
+
 	return rcode;
 }
 

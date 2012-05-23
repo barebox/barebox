@@ -1,5 +1,5 @@
 /*
- * i.MX23/28 USBPHY setup
+ * i.MX23 USBPHY setup
  *
  * Copyright 2011 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
  *
@@ -49,7 +49,7 @@
 #define SET	0x4
 #define CLR	0x8
 
-int imx_usb_phy_enable(void)
+int imx23_usb_phy_enable(void)
 {
 	u32 reg;
 
@@ -89,4 +89,3 @@ int imx_usb_phy_enable(void)
 
 	return 0;
 }
-

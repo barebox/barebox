@@ -316,7 +316,7 @@ static void falconwing_init_usb(void)
 	/* bring USB hub out of reset */
 	gpio_direction_output(GPIO_USB_HUB_RESET, 1);
 
-	imx_usb_phy_enable();
+	imx23_usb_phy_enable();
 
 	add_generic_usb_ehci_device(-1, IMX_USB_BASE, NULL);
 }

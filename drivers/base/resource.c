@@ -113,8 +113,10 @@ struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 
 	res = xzalloc(sizeof(struct resource) * 2);
 	res[0].start = hccr;
+	res[0].size = 0x40;
 	res[0].flags = IORESOURCE_MEM;
 	res[1].start = hcor;
+	res[1].size = 0xc0;
 	res[1].flags = IORESOURCE_MEM;
 
 	return add_generic_device_res("ehci", id, res, 2, pdata);

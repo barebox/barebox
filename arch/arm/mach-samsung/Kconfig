@@ -92,12 +92,12 @@ config CPU_S5PC110
 config CPU_S5PV210
 	bool
 
-choice
-
-	prompt "S5PCxx board type"
-
-
-endchoice
+#choice
+#
+#	prompt "S5PCxx board type"
+#
+#
+#endchoice
 
 endif
 

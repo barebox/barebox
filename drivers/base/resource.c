@@ -47,7 +47,7 @@ struct device_d *add_generic_device(const char* devname, int id, const char *res
 	if (resname)
 		res[0].name = xstrdup(resname);
 	res[0].start = start;
-	res[0].size = size;
+	res[0].end = start + size - 1;
 	res[0].flags = flags;
 
 	return add_generic_device_res(devname, id, res, 1, pdata);
@@ -94,10 +94,10 @@ struct device_d *add_dm9000_device(int id, resource_size_t base,
 	}
 
 	res[0].start = base;
-	res[0].size = size;
+	res[0].end = base + size - 1;
 	res[0].flags = IORESOURCE_MEM | flags;
 	res[1].start = data;
-	res[1].size = size;
+	res[1].end = data + size - 1;
 	res[1].flags = IORESOURCE_MEM | flags;
 
 	return add_generic_device_res("dm9000", id, res, 2, pdata);
@@ -113,10 +113,10 @@ struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 
 	res = xzalloc(sizeof(struct resource) * 2);
 	res[0].start = hccr;
-	res[0].size = 0x40;
+	res[0].end = hccr + 0x40 - 1;
 	res[0].flags = IORESOURCE_MEM;
 	res[1].start = hcor;
-	res[1].size = 0xc0;
+	res[1].end = hcor + 0xc0 - 1;
 	res[1].flags = IORESOURCE_MEM;
 
 	return add_generic_device_res("ehci", id, res, 2, pdata);
@@ -146,10 +146,10 @@ struct device_d *add_ks8851_device(int id, resource_size_t addr,
 	res = xzalloc(sizeof(struct resource) * 2);
 
 	res[0].start = addr;
-	res[0].size = size;
+	res[0].end = addr + size - 1;
 	res[0].flags = IORESOURCE_MEM | flags;
 	res[1].start = addr_cmd;
-	res[1].size = size;
+	res[1].end = addr_cmd + size - 1;
 	res[1].flags = IORESOURCE_MEM | flags;
 
 	return add_generic_device_res("ks8851_mll", id, res, 2, pdata);

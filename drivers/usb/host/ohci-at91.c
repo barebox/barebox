@@ -64,7 +64,7 @@ static int at91_ohci_probe(struct device_d *dev)
 	writel(0, &regs->control);
 
 	add_generic_device("ohci", DEVICE_ID_DYNAMIC, NULL, dev->resource[0].start,
-			   dev->resource[0].size, IORESOURCE_MEM, NULL);
+			   resource_size(&dev->resource[0]), IORESOURCE_MEM, NULL);
 
 	return 0;
 }

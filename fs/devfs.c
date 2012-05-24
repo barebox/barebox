@@ -166,7 +166,7 @@ static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	if (f->dev->num_resources < 1)
 		return -ENOSPC;
-	if (size > f->dev->resource[0].size)
+	if (size > resource_size(&f->dev->resource[0]))
 		return -ENOSPC;
 	return 0;
 }

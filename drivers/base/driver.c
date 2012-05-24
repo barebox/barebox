@@ -261,7 +261,7 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 	if (!res)
 		return NULL;
 
-	res = request_iomem_region(dev_name(dev), res->start, res->size);
+	res = request_iomem_region(dev_name(dev), res->start, res->end);
 	if (!res)
 		return NULL;
 
@@ -392,7 +392,7 @@ static int do_devinfo(int argc, char *argv[])
 				printf("name  : %s\n", res->name);
 			printf("start : " PRINTF_CONVERSION_RESOURCE "\nsize  : "
 					PRINTF_CONVERSION_RESOURCE "\n",
-			       res->start, res->size);
+			       res->start, resource_size(res));
 		}
 
 		printf("driver: %s\n\n", dev->driver ?

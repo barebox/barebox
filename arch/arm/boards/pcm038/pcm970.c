@@ -55,7 +55,7 @@ static void pcm970_usbh2_init(void)
 static struct resource pcm970_ide_resources[] = {
 	{
 		.start	= IMX_PCMCIA_MEM_BASE,
-		.size	= SZ_1K,
+		.end	= IMX_PCMCIA_MEM_BASE + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 };

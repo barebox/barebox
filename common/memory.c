@@ -122,7 +122,7 @@ void barebox_add_memory_bank(const char *name, resource_size_t start,
 	struct memory_bank *bank = xzalloc(sizeof(*bank));
 	struct device_d *dev;
 
-	bank->res = request_iomem_region(name, start, size);
+	bank->res = request_iomem_region(name, start, start + size - 1);
 
 	BUG_ON(!bank->res);
 
@@ -146,7 +146,7 @@ struct resource *request_sdram_region(const char *name, resource_size_t start,
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
-		res = request_region(bank->res, name, start, size);
+		res = request_region(bank->res, name, start, start + size - 1);
 		if (res)
 			return res;
 	}

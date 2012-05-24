@@ -383,8 +383,7 @@ static int do_bootm(int argc, char *argv[])
 		if (data.os_res)
 			printf("OS image is at 0x%08x-0x%08x\n",
 					data.os_res->start,
-					data.os_res->start +
-					data.os_res->size - 1);
+					data.os_res->end);
 		else
 			printf("OS image not yet relocated\n");
 
@@ -399,8 +398,7 @@ static int do_bootm(int argc, char *argv[])
 			if (data.initrd_res)
 				printf("initrd is at 0x%08x-0x%08x\n",
 					data.initrd_res->start,
-					data.initrd_res->start +
-					data.initrd_res->size - 1);
+					data.initrd_res->end);
 			else
 				printf("initrd image not yet relocated\n");
 		}

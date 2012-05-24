@@ -42,16 +42,20 @@ static int init_resource(struct resource *res, const char *name)
  */
 struct resource *request_region(struct resource *parent,
 		const char *name, resource_size_t start,
-		resource_size_t size)
+		resource_size_t end)
 {
 	struct resource *r, *new;
 
+	if (end < start) {
+		debug("%s: request region 0x%08x:0x%08x: end < start\n",
+				__func__, start, end);
+		return NULL;
+	}
+
 	/* outside parent resource? */
-	if (start < parent->start ||
-			start + size > parent->start + parent->size) {
+	if (start < parent->start || end > parent->end) {
 		debug("%s: 0x%08x:0x%08x outside parent resource 0x%08x:0x%08x\n",
-				__func__, start, size, parent->start,
-				parent->size);
+				__func__, start, end, parent->start, parent->end);
 		return NULL;
 	}
 
@@ -60,22 +64,22 @@ struct resource *request_region(struct resource *parent,
 	 * us searching for conflicts here.
 	 */
 	list_for_each_entry(r, &parent->children, sibling) {
-		if (start + size <= r->start)
+		if (end < r->start)
 			goto ok;
-		if (start >= r->start + r->size)
+		if (start > r->end)
 			continue;
 		debug("%s: 0x%08x:0x%08x conflicts with 0x%08x:0x%08x\n",
-				__func__, start, size, r->start, r->size);
+				__func__, start, end, r->start, r->end);
 		return NULL;
 	}
 
 ok:
-	debug("%s ok: 0x%08x 0x%08x\n", __func__, start, size);
+	debug("%s ok: 0x%08x:0x%08x\n", __func__, start, end);
 
 	new = xzalloc(sizeof(*new));
 	init_resource(new, name);
 	new->start = start;
-	new->size = size;
+	new->end = end;
 	new->parent = parent;
 	list_add_tail(&new->sibling, &r->sibling);
 
@@ -100,16 +104,16 @@ int release_region(struct resource *res)
 /* The root resource for the whole io space */
 struct resource iomem_resource = {
 	.start = 0,
-	.size = ~0,
+	.end = 0xffffffff,
 };
 
 /*
  * request a region inside the io space
  */
 struct resource *request_iomem_region(const char *name,
-		resource_size_t start, resource_size_t size)
+		resource_size_t start, resource_size_t end)
 {
-	return request_region(&iomem_resource, name, start, size);
+	return request_region(&iomem_resource, name, start, end);
 }
 
 static int iomem_init(void)

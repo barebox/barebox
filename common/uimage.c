@@ -354,9 +354,9 @@ static struct resource *uimage_resource;
 
 static int uimage_sdram_flush(void *buf, unsigned int len)
 {
-	if (uimage_size + len > uimage_resource->size) {
-		resource_size_t start = uimage_resource->start;
-		resource_size_t size = uimage_resource->size + len;
+	if (uimage_size + len > resource_size(uimage_resource)) {
+		resource_size_t start = resource_size(uimage_resource);
+		resource_size_t size = resource_size(uimage_resource) + len;
 		release_sdram_region(uimage_resource);
 
 		uimage_resource = request_sdram_region("uimage",

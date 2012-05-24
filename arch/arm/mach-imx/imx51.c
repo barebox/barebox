@@ -269,7 +269,7 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0xffffffff, ccm + MX5_CCM_CCGR6);
 
 	/* Use PLL 2 for UART's, get 66.5MHz from it */
-	writel(0xA5A2A020, ccm + MX5_CCM_CSCMR1);
+	writel(0xA591A020, ccm + MX5_CCM_CSCMR1);
 	writel(0x00C30321, ccm + MX5_CCM_CSCDR1);
 
 	/* make sure divider effective */

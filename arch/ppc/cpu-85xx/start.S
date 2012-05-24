@@ -872,9 +872,9 @@ calc_source:
 	mtspr	IVPR,r10
 
 	/*
- 	 * We are done. Do not return, instead branch to second part of board
- 	 * initialization, now running from RAM.
- 	 */
+	 * We are done. Do not return, instead branch to second part of board
+	 * initialization, now running from RAM.
+	 */
 
 	addi	r0,r10,in_ram - _start + _START_OFFSET
 	mtlr	r0

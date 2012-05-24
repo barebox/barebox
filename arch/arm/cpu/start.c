@@ -75,12 +75,6 @@ void __naked __bare_init reset(void)
 #ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
 	arch_init_lowlevel();
 #endif
-	__asm__ __volatile__ (
-		"bl __mmu_cache_flush;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
 
 	/* disable MMU stuff and caches */
 	r = get_cr();
@@ -134,6 +128,9 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
+
+	/* flush I-cache before jumping to the copied binary */
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
 
 	/* call start_barebox with its absolute address */
 	r = (unsigned int)&start_barebox;

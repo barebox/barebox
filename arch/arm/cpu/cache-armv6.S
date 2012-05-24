@@ -44,7 +44,6 @@ ENTRY(__mmu_cache_off)
 #endif
 		mov	pc, lr
 
-__BARE_INIT
 ENTRY(__mmu_cache_flush)
 		mov	r1, #0
 		mcr	p15, 0, r1, c7, c14, 0	@ clean+invalidate D

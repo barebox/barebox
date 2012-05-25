@@ -25,6 +25,7 @@ config BOARDINFO
 	default "Calao TNY-A9260" if MACH_TNY_A9260
 	default "Calao TNY-A9263" if MACH_TNY_A9263
 	default "Calao TNY-A9G20" if MACH_TNY_A9G20
+	default "Calao QIL-A9260" if MACH_QIL_A9260
 
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
@@ -138,6 +139,12 @@ config MACH_AT91SAM9260EK
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
+
+config MACH_QIL_A9260
+	bool "CALAO QIL-A9260 board"
+	help
+	  Select this if you are using a Calao Systems QIL-A9260 Board.
+	  <http://www.calao-systems.com>
 
 config MACH_TNY_A9260
 	bool "CALAO TNY-A9260"
@@ -344,7 +351,7 @@ config AT91_HAVE_2MMC
 
 config AT91_HAVE_SRAM_128M
 	bool "Have 128 of ram"
-	depends on MACH_USB_A9G20 || MACH_USB_A9263
+	depends on MACH_USB_A9G20 || MACH_USB_A9263 || MACH_QIL_A9260
 	help
 	  Select this if you board have 128 MiB of Ram (as USB_A9G20 C11)
 
@@ -371,5 +378,9 @@ config CALAO_DAB_MMX
 config CALAO_MOB_TNY_MD2
 	bool "MOB TNY MD2 Motherboard Daughter Board support"
 	depends on SUPPORT_CALAO_MOB_TNY_MD2
+
+config CALAO_MB_QIL_A9260
+	bool "MB-QIL A9260  Motherboard Board support"
+	depends on MACH_QIL_A9260
 
 endif

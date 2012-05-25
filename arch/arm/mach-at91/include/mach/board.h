@@ -21,6 +21,8 @@
 #ifndef __ASM_ARCH_BOARD_H
 #define __ASM_ARCH_BOARD_H
 
+#include <mach/hardware.h>
+#include <sizes.h>
 #include <net.h>
 #include <spi/spi.h>
 #include <linux/mtd/mtd.h>
@@ -83,7 +85,59 @@ void at91_add_device_sdram(u32 size);
 #define ATMEL_UART_DCD	0x10
 #define ATMEL_UART_RI	0x20
 
-struct device_d * __init at91_register_uart(unsigned id, unsigned pins);
+resource_size_t __init at91_configure_dbgu(void);
+resource_size_t __init at91_configure_usart0(unsigned pins);
+resource_size_t __init at91_configure_usart1(unsigned pins);
+resource_size_t __init at91_configure_usart2(unsigned pins);
+resource_size_t __init at91_configure_usart3(unsigned pins);
+resource_size_t __init at91_configure_usart4(unsigned pins);
+resource_size_t __init at91_configure_usart5(unsigned pins);
+
+#if defined(CONFIG_DRIVER_SERIAL_ATMEL)
+static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
+{
+	resource_size_t start;
+	resource_size_t size = SZ_16K;
+
+	if (id >= AT91_NB_USART)
+		return NULL;
+
+	switch (id) {
+		case 0:		/* DBGU */
+			start = at91_configure_dbgu();
+			size = 512;
+			break;
+		case 1:
+			start = at91_configure_usart0(pins);
+			break;
+		case 2:
+			start = at91_configure_usart1(pins);
+			break;
+		case 3:
+			start = at91_configure_usart2(pins);
+			break;
+		case 4:
+			start = at91_configure_usart3(pins);
+			break;
+		case 5:
+			start = at91_configure_usart4(pins);
+			break;
+		case 6:
+			start = at91_configure_usart5(pins);
+			break;
+		default:
+			return NULL;
+	}
+
+	return add_generic_device("atmel_usart", id, NULL, start, size,
+			   IORESOURCE_MEM, NULL);
+}
+#else
+static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
+{
+	return NULL;
+}
+#endif
 
 /* Multimedia Card Interface */
 struct atmel_mci_platform_data {

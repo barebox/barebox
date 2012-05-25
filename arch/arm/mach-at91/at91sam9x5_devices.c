@@ -174,13 +174,15 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_SERIAL_ATMEL)
-static inline void configure_dbgu_pins(void)
+resource_size_t __init at91_configure_dbgu(void)
 {
 	at91_set_A_periph(AT91_PIN_PA9, 0);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA10, 1);		/* DTXD */
+
+	return AT91_BASE_SYS + AT91_DBGU;
 }
 
-static inline void configure_usart0_pins(unsigned pins)
+resource_size_t __init at91_configure_usart0(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PA0, 1);		/* TXD0 */
 	at91_set_A_periph(AT91_PIN_PA1, 0);		/* RXD0 */
@@ -189,9 +191,11 @@ static inline void configure_usart0_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PA2, 0);	/* RTS0 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_A_periph(AT91_PIN_PA3, 0);	/* CTS0 */
+
+	return AT91SAM9X5_BASE_USART0;
 }
 
-static inline void configure_usart1_pins(unsigned pins)
+resource_size_t __init at91_configure_usart1(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PA5, 1);		/* TXD1 */
 	at91_set_A_periph(AT91_PIN_PA6, 0);		/* RXD1 */
@@ -200,9 +204,11 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_C_periph(AT91_PIN_PC27, 0);	/* RTS1 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_C_periph(AT91_PIN_PC28, 0);	/* CTS1 */
+
+	return AT91SAM9X5_BASE_USART1;
 }
 
-static inline void configure_usart2_pins(unsigned pins)
+resource_size_t __init at91_configure_usart2(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PA7, 1);		/* TXD2 */
 	at91_set_A_periph(AT91_PIN_PA8, 0);		/* RXD2 */
@@ -211,9 +217,11 @@ static inline void configure_usart2_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PB0, 0);	/* RTS2 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PB1, 0);	/* CTS2 */
+
+	return AT91SAM9X5_BASE_USART2;
 }
 
-static inline void configure_usart3_pins(unsigned pins)
+resource_size_t __init at91_configure_usart3(unsigned pins)
 {
 	at91_set_B_periph(AT91_PIN_PC22, 1);		/* TXD3 */
 	at91_set_B_periph(AT91_PIN_PC23, 0);		/* RXD3 */
@@ -222,49 +230,7 @@ static inline void configure_usart3_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PC24, 0);	/* RTS3 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PC25, 0);	/* CTS3 */
-}
 
-struct device_d * __init at91_register_uart(unsigned id, unsigned pins)
-{
-	resource_size_t start;
-	resource_size_t size = SZ_16K;
-
-	switch (id) {
-		case 0:		/* DBGU */
-			configure_dbgu_pins();
-			size = 512;
-			start = AT91_BASE_SYS + AT91_DBGU;
-			break;
-		case AT91SAM9X5_ID_USART0:
-			configure_usart0_pins(pins);
-			start = AT91SAM9X5_BASE_USART0;
-			id = 1;
-			break;
-		case AT91SAM9X5_ID_USART1:
-			configure_usart1_pins(pins);
-			start = AT91SAM9X5_BASE_USART1;
-			id = 2;
-			break;
-		case AT91SAM9X5_ID_USART2:
-			configure_usart2_pins(pins);
-			start = AT91SAM9X5_BASE_USART2;
-			id = 3;
-			break;
-		case AT91SAM9X5_ID_USART3:
-			configure_usart3_pins(pins);
-			start = AT91SAM9X5_BASE_USART3;
-			id = 4;
-			break;
-		default:
-			return NULL;
-	}
-
-	return add_generic_device("atmel_usart", id, NULL, start, size,
-			   IORESOURCE_MEM, NULL);
-}
-#else
-struct device_d * __init at91_register_uart(unsigned id, unsigned pins)
-{
-	return NULL;
+	return AT91SAM9X5_BASE_USART3;
 }
 #endif

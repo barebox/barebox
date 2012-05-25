@@ -214,13 +214,15 @@ void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
 #endif
 
-static inline void configure_dbgu_pins(void)
+resource_size_t __init at91_configure_dbgu(void)
 {
 	at91_set_A_periph(AT91_PIN_PC30, 0);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PC31, 1);		/* DTXD */
+
+	return AT91_BASE_SYS + AT91_DBGU;
 }
 
-static inline void configure_usart0_pins(unsigned pins)
+resource_size_t __init at91_configure_usart0(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PA26, 1);		/* TXD0 */
 	at91_set_A_periph(AT91_PIN_PA27, 0);		/* RXD0 */
@@ -229,9 +231,11 @@ static inline void configure_usart0_pins(unsigned pins)
 		at91_set_A_periph(AT91_PIN_PA28, 0);	/* RTS0 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_A_periph(AT91_PIN_PA29, 0);	/* CTS0 */
+
+	return AT91SAM9263_BASE_US0;
 }
 
-static inline void configure_usart1_pins(unsigned pins)
+resource_size_t __init at91_configure_usart1(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PD0, 1);		/* TXD1 */
 	at91_set_A_periph(AT91_PIN_PD1, 0);		/* RXD1 */
@@ -240,9 +244,11 @@ static inline void configure_usart1_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PD7, 0);	/* RTS1 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PD8, 0);	/* CTS1 */
+
+	return AT91SAM9263_BASE_US1;
 }
 
-static inline void configure_usart2_pins(unsigned pins)
+resource_size_t __init at91_configure_usart2(unsigned pins)
 {
 	at91_set_A_periph(AT91_PIN_PD2, 1);		/* TXD2 */
 	at91_set_A_periph(AT91_PIN_PD3, 0);		/* RXD2 */
@@ -251,35 +257,8 @@ static inline void configure_usart2_pins(unsigned pins)
 		at91_set_B_periph(AT91_PIN_PD5, 0);	/* RTS2 */
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PD6, 0);	/* CTS2 */
-}
 
-struct device_d * __init at91_register_uart(unsigned id, unsigned pins)
-{
-	resource_size_t start;
-
-	switch (id) {
-		case 0:		/* DBGU */
-			configure_dbgu_pins();
-			start = AT91_BASE_SYS + AT91_DBGU;
-			break;
-		case 1:
-			configure_usart0_pins(pins);
-			start = AT91SAM9263_BASE_US0;
-			break;
-		case 2:
-			configure_usart1_pins(pins);
-			start = AT91SAM9263_BASE_US1;
-			break;
-		case 3:
-			configure_usart2_pins(pins);
-			start = AT91SAM9263_BASE_US2;
-			break;
-		default:
-			return NULL;
-	}
-
-	return add_generic_device("atmel_usart", id, NULL, start, 4096,
-			   IORESOURCE_MEM, NULL);
+	return AT91SAM9263_BASE_US2;
 }
 
 #if defined(CONFIG_MCI_ATMEL)

@@ -37,6 +37,7 @@ ARM type:
 @li @subpage edb9315a
 @li @subpage board_cupid
 @li @subpage phycard-a-l1
+@li @subpage toshiba-ac100
 
 Blackfin type:
 

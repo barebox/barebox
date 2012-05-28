@@ -1,0 +1,37 @@
+/** @page toshiba-ac100 Toshiba AC100
+
+Toshiba AC100 is a Tegra2-based netbook.
+
+The netbook has
+@li NVidia Tegra 250 SoC;
+@li 512 MiB DDR2 RAM;
+@li 8 GiB internal e-MMC Flash Memory (some models have 32 GiB);
+@li RS232 serial interface (LV-TTL levels on the board!);
+@li SD card slot;
+@li 2xUSB interface (miniUSB-B and USB-A connectors);
+@li 10" LCD display (1024x600);
+@li HDMI-interface;
+@li touchpad and keyboard connected via I2C; the ENE KB926QF keyboard controller is used;
+@li web camera;
+@li some models have 3G-modem.
+
+U-Boot master branch is working on AC100, but there's no support for the keyboard or the display.
+
+barebox-toshiba-ac100 mini-howto:
+
+1. Connect to the netbook's UART (see http://pecourt.ovh.org/wiki-tegra/doku.php?id=hardware);
+
+2. Start U-Boot loader. See http://ac100.grandou.net/uboot and http://ac100.grandou.net/swarren_brain_dump for details.
+
+3. If you use U-Boot with turned on display support, then switch to serial console:
+@verbatim
+    Tegra2 (ac100) # setenv stdout serial
+@endverbatim
+
+4. Upload barebox.bin via Ymodem and start it:
+@verbatim
+    Tegra2 (ac100) # loady 0x01f00000
+    Tegra2 (ac100) # go 0x01f00000
+@endverbatim
+
+*/

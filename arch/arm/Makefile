@@ -61,6 +61,7 @@ machine-$(CONFIG_ARCH_OMAP)		:= omap
 machine-$(CONFIG_ARCH_PXA)		:= pxa
 machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
 machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
+machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 
 # Board directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.

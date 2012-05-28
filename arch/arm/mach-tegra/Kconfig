@@ -1,0 +1,7 @@
+if ARCH_TEGRA
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x31fc0000
+
+endif

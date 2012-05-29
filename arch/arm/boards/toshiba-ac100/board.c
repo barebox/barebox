@@ -24,6 +24,8 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <sizes.h>
+#include <usb/ehci.h>
+#include <mach/iomap.h>
 
 static int ac100_mem_init(void)
 {
@@ -32,3 +34,16 @@ static int ac100_mem_init(void)
 	return 0;
 }
 mem_initcall(ac100_mem_init);
+
+static struct ehci_platform_data ehci_pdata = {
+	.flags = EHCI_HAS_TT,
+};
+
+static int ac100_devices_init(void)
+{
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, TEGRA_USB3_BASE,
+			&ehci_pdata);
+
+	return 0;
+}
+device_initcall(ac100_devices_init);

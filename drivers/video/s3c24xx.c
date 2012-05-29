@@ -193,7 +193,6 @@ static void s3cfb_disable_controller(struct fb_info *fb_info)
 /**
  * Prepare the video hardware for a specified video mode
  * @param fb_info Framebuffer information
- * @param mode The video mode description to initialize
  * @return 0 on success
  */
 static int s3cfb_activate_var(struct fb_info *fb_info)

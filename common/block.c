@@ -245,7 +245,7 @@ static int block_put(struct block_device *blk, const void *buf, int block)
 
 	data = block_get(blk, block);
 	if (IS_ERR(data))
-		BUG();
+		return PTR_ERR(data);
 
 	memcpy(data, buf, 1 << blk->blockbits);
 

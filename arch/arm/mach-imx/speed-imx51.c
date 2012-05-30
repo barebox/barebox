@@ -199,6 +199,28 @@ unsigned long imx_get_mmcclk(void)
 	return rate / (prediv * podf);
 }
 
+unsigned long imx_get_usbclk(void)
+{
+	u32 reg, prediv, podf, rate;
+
+	reg = ccm_readl(MX5_CCM_CSCMR1);
+	reg &= MX5_CCM_CSCMR1_USBOH3_CLK_SEL_MASK;
+	reg >>= MX5_CCM_CSCMR1_USBOH3_CLK_SEL_OFFSET;
+	rate = get_rate_select(reg,
+			pll1_main_get_rate,
+			pll2_sw_get_rate,
+			pll3_sw_get_rate,
+			lp_apm_get_rate);
+
+	reg = ccm_readl(MX5_CCM_CSCDR1);
+	prediv = ((reg & MX5_CCM_CSCDR1_USBOH3_CLK_PRED_MASK) >>
+			MX5_CCM_CSCDR1_USBOH3_CLK_PRED_OFFSET) + 1;
+	podf = ((reg & MX5_CCM_CSCDR1_USBOH3_CLK_PODF_MASK) >>
+			MX5_CCM_CSCDR1_USBOH3_CLK_PODF_OFFSET) + 1;
+
+	return rate / (prediv * podf);
+}
+
 void imx_dump_clocks(void)
 {
 	printf("pll1:   %ld\n", pll1_main_get_rate());
@@ -209,4 +231,5 @@ void imx_dump_clocks(void)
 	printf("ipg:    %ld\n", imx_get_ipgclk());
 	printf("fec:    %ld\n", imx_get_fecclk());
 	printf("gpt:    %ld\n", imx_get_gptclk());
+	printf("usb:    %ld\n", imx_get_usbclk());
 }

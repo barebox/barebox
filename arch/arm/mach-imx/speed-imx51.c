@@ -24,6 +24,14 @@ static unsigned long fpm_get_rate(void)
 	return ckil_get_rate() * 512;
 }
 
+static unsigned long lp_apm_get_rate(void)
+{
+	if (ccm_readl(MX5_CCM_CCSR) & MX5_CCM_CCSR_LP_APM_SEL)
+		return fpm_get_rate();
+	else
+		return osc_get_rate();
+}
+
 static unsigned long pll_get_rate(void __iomem *pllbase)
 {
 	long mfi, mfn, mfd, pdf, ref_clk, mfn_abs;
@@ -123,7 +131,7 @@ unsigned long imx_get_uartclk(void)
 			pll1_main_get_rate,
 			pll2_sw_get_rate,
 			pll3_sw_get_rate,
-			NULL);
+			lp_apm_get_rate);
 
 	reg = ccm_readl(MX5_CCM_CSCDR1);
 	prediv = ((reg & MX5_CCM_CSCDR1_UART_CLK_PRED_MASK) >>
@@ -180,7 +188,7 @@ unsigned long imx_get_mmcclk(void)
 			pll1_main_get_rate,
 			pll2_sw_get_rate,
 			pll3_sw_get_rate,
-			NULL);
+			lp_apm_get_rate);
 
 	reg = ccm_readl(MX5_CCM_CSCDR1);
 	prediv = ((reg & MX5_CCM_CSCDR1_ESDHC1_MSHC1_CLK_PRED_MASK) >>
@@ -193,11 +201,12 @@ unsigned long imx_get_mmcclk(void)
 
 void imx_dump_clocks(void)
 {
-	printf("pll1: %ld\n", pll1_main_get_rate());
-	printf("pll2: %ld\n", pll2_sw_get_rate());
-	printf("pll3: %ld\n", pll3_sw_get_rate());
-	printf("uart: %ld\n", imx_get_uartclk());
-	printf("ipg:  %ld\n", imx_get_ipgclk());
-	printf("fec:  %ld\n", imx_get_fecclk());
-	printf("gpt:  %ld\n", imx_get_gptclk());
+	printf("pll1:   %ld\n", pll1_main_get_rate());
+	printf("pll2:   %ld\n", pll2_sw_get_rate());
+	printf("pll3:   %ld\n", pll3_sw_get_rate());
+	printf("lp_apm: %ld\n", lp_apm_get_rate());
+	printf("uart:   %ld\n", imx_get_uartclk());
+	printf("ipg:    %ld\n", imx_get_ipgclk());
+	printf("fec:    %ld\n", imx_get_fecclk());
+	printf("gpt:    %ld\n", imx_get_gptclk());
 }

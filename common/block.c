@@ -136,7 +136,7 @@ static int block_cache(struct block_device *blk, int block)
 	chunk = get_chunk(blk);
 	chunk->block_start = block & ~blk->blkmask;
 
-	debug("%s: %d to %d %s\n", __func__, chunk->block_start,
+	debug("%s: %d to %d\n", __func__, chunk->block_start,
 			chunk->num);
 
 	num_blocks = min(blk->rdbufsize, blk->num_blocks - chunk->block_start);

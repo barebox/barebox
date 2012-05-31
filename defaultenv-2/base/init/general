@@ -15,4 +15,4 @@ global.autoboot_timeout=3
 global.boot.default=net
 
 # default tftp path
-global.tftp.path=/mnt/tftp-dhcp
+global.tftp.path=/mnt/tftp

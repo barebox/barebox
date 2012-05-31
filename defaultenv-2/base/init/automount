@@ -5,21 +5,16 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-# automount server returned from dhcp server
+# automount tftp server based on $eth0.serverip
 
-mkdir -p /mnt/tftp-dhcp
-automount /mnt/tftp-dhcp 'ifup eth0 && mount $eth0.serverip tftp /mnt/tftp-dhcp'
+mkdir -p /mnt/tftp
+automount /mnt/tftp 'ifup eth0 && mount $eth0.serverip tftp /mnt/tftp'
 
 # automount nfs server example
 
 #nfshost=somehost
 #mkdir -p /mnt/${nfshost}
 #automount /mnt/$nfshost "ifup eth0 && mount ${nfshost}:/tftpboot nfs /mnt/${nfshost}"
-
-# static tftp server example
-
-#mkdir -p /mnt/tftp
-#automount -d /mnt/tftp 'ifup eth0 && mount $serverip tftp /mnt/tftp'
 
 # FAT on usb disk example
 

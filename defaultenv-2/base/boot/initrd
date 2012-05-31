@@ -5,8 +5,9 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-global.bootm.image="${global.tftp.path}/${global.user}-linux-${global.hostname}"
-global.bootm.initrd="${global.tftp.path}/initramfs"
+path="/mnt/tftp"
+global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
+global.bootm.initrd="${path}/initramfs"
 bootargs-root-initrd
 #global.bootm.oftree=<path to oftree>
 

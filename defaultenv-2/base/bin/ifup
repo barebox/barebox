@@ -53,7 +53,12 @@ if [ "$ip" = static ]; then
 	${interface}.gateway=$gateway
 elif [ "$ip" = dhcp ]; then
 	dhcp
-	exit $?
+	ret=$?
+	if [ $ret = 0 -a -n "$serverip" ]; then
+		${interface}.serverip=$serverip
+	fi
+
+	exit $ret
 fi
 
 echo -o /tmp/network/$interface up

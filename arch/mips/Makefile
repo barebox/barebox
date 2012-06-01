@@ -96,6 +96,8 @@ else
 MACH  :=
 endif
 
+CPPFLAGS += -I$(BOARD)/include
+
 common-y += $(BOARD) $(MACH)
 common-y += arch/mips/lib/
 common-y += arch/mips/boot/

@@ -18,12 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __INCLUDE_DEBUG_LL_JZ4755_H__
-#define __INCLUDE_DEBUG_LL_JZ4755_H__
+#ifndef __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
+#define __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
 
 #include <mach/jz4750d_regs.h>
 
 #define DEBUG_LL_UART_ADDR	UART1_BASE
 #define DEBUG_LL_UART_SHIFT	2
 
-#endif  /* __INCLUDE_DEBUG_LL_JZ4755_H__ */
+#endif  /* __INCLUDE_RZX50_BOARD_DEBUG_LL_H__ */

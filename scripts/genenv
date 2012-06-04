@@ -8,7 +8,7 @@ objtree=$2
 cd $1 || exit 1
 shift 2
 
-tempdir=$(mktemp -d)
+tempdir=$(mktemp -d tmp.XXXXXX)
 
 for i in $*; do
 	cp -r $i/* $tempdir

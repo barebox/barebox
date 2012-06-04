@@ -34,6 +34,8 @@
 #include <getopt.h>
 #include <libgen.h>
 
+#include "compiler.h"
+
 #define debug(...)
 
 void *xmalloc(size_t size)

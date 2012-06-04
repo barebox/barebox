@@ -1,7 +1,9 @@
 #ifndef _ENVFS_H
 #define _ENVFS_H
 
+#ifdef __BAREBOX__
 #include <asm/byteorder.h>
+#endif
 
 #define ENVFS_MAGIC		    0x798fba79	/* some random number */
 #define ENVFS_INODE_MAGIC	0x67a8c78d

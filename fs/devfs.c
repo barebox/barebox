@@ -73,6 +73,9 @@ static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned lo
 	if (!cdev->ops->erase)
 		return -ENOSYS;
 
+	if (count + offset > cdev->size)
+		count = cdev->size - offset;
+
 	return cdev->ops->erase(cdev, count, offset + cdev->offset);
 }
 

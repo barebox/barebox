@@ -604,7 +604,7 @@ static int strrcmp(const char *s, const char *sub)
  * Whitelist to allow certain references to pass with no warning.
  *
  * Pattern 0:
- *   Do not warn if funtion/data are marked with __init_refok/__initdata_refok.
+ *   Do not warn if function/data are marked with __init_refok/__initdata_refok.
  *   The pattern is identified by:
  *   fromsec = .text.init.refok | .data.init.refok
  *

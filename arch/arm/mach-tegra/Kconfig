@@ -1,0 +1,19 @@
+if ARCH_TEGRA
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x31fc0000
+
+choice
+	prompt "Tegra Board Type"
+
+config MACH_TOSHIBA_AC100
+	bool "Toshiba AC100"
+	help
+	  Say Y here if you are using Toshiba AC100 smartbook.
+
+endchoice
+
+source arch/arm/boards/toshiba-ac100/Kconfig
+
+endif

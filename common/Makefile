@@ -29,16 +29,25 @@ obj-$(CONFIG_CMD_BOOTM) += uimage.o
 obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
+obj-$(CONFIG_GLOBALVAR) += globalvar.o
 obj-$(CONFIG_FILETYPE) += filetype.o
 obj-y += resource.o
 obj-$(CONFIG_MENU) += menu.o
 obj-$(CONFIG_PASSWORD) += password.o
 obj-$(CONFIG_MODULES) += module.o
+obj-$(CONFIG_FLEXIBLE_BOOTARGS) += bootargs.o
 extra-$(CONFIG_MODULES) += module.lds
 
 ifdef CONFIG_DEFAULT_ENVIRONMENT
 $(obj)/startup.o: include/generated/barebox_default_env.h
 $(obj)/env.o: include/generated/barebox_default_env.h
+
+ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW),y)
+DEFAULT_ENVIRONMENT_PATH = "defaultenv-2/base"
+ifeq ($(CONFIG_CMD_MENU_MANAGEMENT),y)
+DEFAULT_ENVIRONMENT_PATH += "defaultenv-2/menu"
+endif
+endif
 
 ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC),y)
 DEFAULT_ENVIRONMENT_PATH = "defaultenv"

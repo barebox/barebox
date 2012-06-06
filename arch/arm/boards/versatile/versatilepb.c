@@ -51,8 +51,8 @@ mem_initcall(vpb_mem_init);
 static int vpb_devices_init(void)
 {
 	add_cfi_flash_device(-1, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, VERSATILE_ETH_BASE,
 			64 * 1024, IORESOURCE_MEM, NULL);

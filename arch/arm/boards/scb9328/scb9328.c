@@ -92,8 +92,8 @@ static int scb9328_devices_init(void)
 	add_dm9000_device(-1, 0x16000000, 0x16000004,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
 	armlinux_set_bootparams((void *)0x08000100);

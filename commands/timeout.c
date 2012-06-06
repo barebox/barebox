@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <clock.h>
+#include <environment.h>
 
 #define TIMEOUT_RETURN	(1 << 0)
 #define TIMEOUT_CTRLC	(1 << 1)
@@ -35,9 +36,11 @@ static int do_timeout(int argc, char *argv[])
 {
 	int timeout = 3, ret = 1;
 	int flags = 0, opt, countdown;
+	int key = 0;
 	uint64_t start, second;
+	const char *varname = NULL;
 
-	while((opt = getopt(argc, argv, "t:crsa")) > 0) {
+	while((opt = getopt(argc, argv, "t:crsav:")) > 0) {
 		switch(opt) {
 		case 'r':
 			flags |= TIMEOUT_RETURN;
@@ -50,6 +53,9 @@ static int do_timeout(int argc, char *argv[])
 			break;
 		case 's':
 			flags |= TIMEOUT_SILENT;
+			break;
+		case 'v':
+			varname = optarg;
 			break;
 		default:
 			return 1;
@@ -71,13 +77,14 @@ static int do_timeout(int argc, char *argv[])
 
 	do {
 		if (tstc()) {
-			int key = getc();
+			key = getc();
 			if (flags & TIMEOUT_CTRLC && key == 3)
 				goto  out;
 			if (flags & TIMEOUT_ANYKEY)
 				goto out;
 			if (flags & TIMEOUT_RETURN && key == '\n')
 				goto out;
+			key = 0;
 		}
 		if (!(flags & TIMEOUT_SILENT) && is_timeout(second, SECOND)) {
 			printf("\b\b%2d", countdown--);
@@ -87,6 +94,11 @@ static int do_timeout(int argc, char *argv[])
 
 	ret = 0;
 out:
+	if (varname && key) {
+		char str[2] = { };
+		str[0] = key;
+		setenv(varname, str);
+	}
 	if (!(flags & TIMEOUT_SILENT))
 		printf("\n");
 

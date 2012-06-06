@@ -38,7 +38,7 @@
 
 #define USB_MAX_DEVICE			32
 #define USB_MAXCONFIG			8
-#define USB_MAXINTERFACES		8
+#define USB_MAXINTERFACES		16
 #define USB_MAXENDPOINTS		16
 #define USB_MAXCHILDREN			8	/* This is arbitrary */
 #define USB_MAX_HUB			16

@@ -54,7 +54,7 @@ const char *dev_get_param(struct device_d *dev, const char *name)
 	struct param_d *param = get_param_by_name(dev, name);
 
 	if (!param) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return NULL;
 	}
 
@@ -87,26 +87,30 @@ int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
 int dev_set_param(struct device_d *dev, const char *name, const char *val)
 {
 	struct param_d *param;
+	int ret;
 
 	if (!dev) {
-		errno = -ENODEV;
+		errno = ENODEV;
 		return -ENODEV;
 	}
 
 	param = get_param_by_name(dev, name);
 
 	if (!param) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -EINVAL;
 	}
 
 	if (param->flags & PARAM_FLAG_RO) {
-		errno = -EACCES;
+		errno = EACCES;
 		return -EACCES;
 	}
 
-	errno = param->set(dev, param, val);
-	return errno;
+	ret = param->set(dev, param, val);
+	if (ret)
+		errno = -ret;
+
+	return ret;
 }
 
 /**
@@ -135,7 +139,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 
 static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 {
-	return p->value;
+	return p->value ? p->value : "";
 }
 
 static struct param_d *__dev_add_param(struct device_d *dev, const char *name,

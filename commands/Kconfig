@@ -113,6 +113,13 @@ config CMD_LINUX_EXEC
 	help
 	  This command executes a command on the Linux host.
 
+config CMD_GLOBAL
+	select GLOBALVAR
+	tristate
+	prompt "global"
+	help
+	  The global command allows to create global variables
+
 endmenu
 
 menu "file commands                 "
@@ -322,6 +329,7 @@ config CMD_BOOTM
 	select CRC32
 	select UNCOMPRESS
 	select FILETYPE
+	select GLOBALVAR
 	prompt "bootm"
 
 config CMD_BOOTM_SHOW_TYPE
@@ -388,6 +396,18 @@ config CMD_BOOTU
 	help
 	   compile in the 'bootu' command to start raw (uncompressed)
 	   Linux images
+
+config FLEXIBLE_BOOTARGS
+	bool
+	prompt "flexible Linux bootargs generation"
+	depends on CMD_GLOBAL
+	help
+	  Select this to get a more flexible bootargs generation. With this
+	  option the bootargs are concatenated together from global variables
+	  beginning with 'global.linux.bootargs.' and 'global.linux.mtdparts.'
+	  This allows for more flexible scripting since with it it's possible
+	  to replace parts of the bootargs string without reconstructing it
+	  completely
 
 config CMD_LINUX16
 	tristate

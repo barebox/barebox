@@ -66,6 +66,9 @@ board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
 board-$(CONFIG_BOARD_DLINK_DIR320)	:= dlink-dir-320
 
+machine-$(CONFIG_MACH_MIPS_XBURST)	:= xburst
+board-$(CONFIG_BOARD_RZX50)	:= rzx50
+
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)
@@ -92,6 +95,8 @@ MACH  := arch/mips/mach-$(machine-y)/
 else
 MACH  :=
 endif
+
+CPPFLAGS += -I$(BOARD)/include
 
 common-y += $(BOARD) $(MACH)
 common-y += arch/mips/lib/

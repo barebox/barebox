@@ -1,0 +1,18 @@
+#!/bin/sh
+
+export menu_exit=false
+
+while true; do
+	menu -a -m boot_entries_remove -d "\e[1;36mRemove Boot entry\e[0m"
+
+	boot-entries-collect
+
+	menu -e -a -m boot_entries_remove -c "menu_exit=true" -d "back"
+
+	menu -s -m boot_entries_remove
+	menu -r -m boot_entries_remove
+
+	if [ $menu_exit = true ]; then
+		exit
+	fi
+done

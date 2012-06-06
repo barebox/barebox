@@ -200,8 +200,8 @@ static int eukrea_cpuimx27_devices_init(void)
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx27_add_i2c0(NULL);
 
-	devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x40000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 	envdev = "NOR";
 

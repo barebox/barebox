@@ -27,6 +27,6 @@
 #ifndef _ASM_MIPS_BITOPS_H_
 #define _ASM_MIPS_BITOPS_H_
 
-/* nothing special yet */
+#include <asm-generic/bitops/__ffs.h>
 
 #endif /* _ASM_MIPS_BITOPS_H_ */

@@ -162,7 +162,7 @@ static int do_linux16(int argc, char *argv[])
 	unsigned real_mode_size;
 	int vid_mode = NORMAL_VGA;
 	size_t image_size;
-	const char *cmdline = getenv("bootargs");
+	const char *cmdline = linux_bootargs_get();
 	const char *kernel_file;
 
 	while((opt = getopt(argc, argv, "v:")) > 0) {

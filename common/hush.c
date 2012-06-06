@@ -757,13 +757,14 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	if (child->sp) {
 		char * str = NULL;
 		struct p_context ctx1;
+		int rcode;
 
 		str = make_string((child->argv + i));
-		parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
+		rcode = parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
 		release_context(&ctx1);
 		free(str);
 
-		return last_return_code;
+		return rcode;
 	}
 
 	do_glob_in_argv(&globbuf, child->argc - i, &child->argv[i]);
@@ -1603,7 +1604,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			}
 			if (code < -1) {	/* exit */
 				b_free(&temp);
-				return -code - 2;
+				return code;
 			}
 		} else {
 			if (ctx->old_flag != 0) {
@@ -1612,7 +1613,6 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			}
 			if (inp->__promptme == 0)
 				printf("<INTERRUPT>\n");
-			inp->__promptme = 1;
 			temp.nonnull = 0;
 			temp.quote = 0;
 			free_pipe_list(ctx->list_head,0);
@@ -1643,11 +1643,12 @@ static int parse_string_outer(struct p_context *ctx, const char *s, int flag)
 		setup_string_in_str(&input, p);
 		rcode = parse_stream_outer(ctx, &input, flag);
 		free(p);
-		return rcode;
 	} else {
 		setup_string_in_str(&input, s);
-		return parse_stream_outer(ctx, &input, flag);
+		rcode = parse_stream_outer(ctx, &input, flag);
 	}
+
+	return rcode;
 }
 
 static char *insert_var_value(char *inp)
@@ -1794,6 +1795,8 @@ static int source_script(const char *path, int argc, char *argv[])
 	}
 
 	ret = parse_string_outer(&ctx, script, FLAG_PARSE_SEMICOLON);
+	if (ret < -1)
+		ret = -ret - 2;
 
 	release_context(&ctx);
 	free(script);
@@ -1807,9 +1810,14 @@ int run_shell(void)
 	struct in_str input;
 	struct p_context ctx;
 
-	setup_file_in_str(&input);
-	rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
-	release_context(&ctx);
+	do {
+		setup_file_in_str(&input);
+		rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
+		if (rcode < -1)
+			rcode = -rcode - 2;
+		release_context(&ctx);
+	} while (!input.__promptme);
+
 	return rcode;
 }
 

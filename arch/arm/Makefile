@@ -61,6 +61,7 @@ machine-$(CONFIG_ARCH_OMAP)		:= omap
 machine-$(CONFIG_ARCH_PXA)		:= pxa
 machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
 machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
+machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 
 # Board directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
@@ -134,6 +135,7 @@ board-$(CONFIG_MACH_TX25)			:= karo-tx25
 board-$(CONFIG_MACH_TQMA53)			:= tqma53
 board-$(CONFIG_MACH_TX51)			:= karo-tx51
 board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
+board-$(CONFIG_MACH_TOSHIBA_AC100)		:= toshiba-ac100
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
@@ -163,6 +165,13 @@ barebox.netx: barebox.bin
 
 ifeq ($(machine-y),netx)
 KBUILD_IMAGE := barebox.netx
+endif
+
+barebox.s5p: barebox.bin
+	$(Q)scripts/s5p_cksum barebox.bin barebox.s5p
+
+ifeq ($(CONFIG_ARCH_S5PCxx),y)
+KBUILD_IMAGE := barebox.s5p
 endif
 
 MLO: barebox.bin

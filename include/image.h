@@ -31,8 +31,8 @@
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
-#include <linux/types.h>
 #ifdef __BAREBOX__
+#include <linux/types.h>
 #include <asm/byteorder.h>
 #include <stdio.h>
 #include <string.h>

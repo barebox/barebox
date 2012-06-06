@@ -97,7 +97,7 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 	partstr = end;
 
 	if (*partstr == 'r' && *(partstr + 1) == 'o') {
-		flags |= PARTITION_READONLY;
+		flags |= DEVFS_PARTITION_READONLY;
 		end = (char *)(partstr + 2);
 	}
 

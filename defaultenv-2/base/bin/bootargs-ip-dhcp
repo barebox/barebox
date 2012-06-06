@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Do dhcp in Linux
+
+global.linux.bootargs.ip="ip=dhcp"

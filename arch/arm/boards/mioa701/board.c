@@ -261,8 +261,17 @@ static int mioa701_coredevice_init(void)
 	/* route pins */
 	pxa2xx_mfp_config(ARRAY_AND_SIZE(mioa701_pin_config));
 
-	CCCR = CCCR_A | 0x20110;
-	cclk = 0x02;
+	/*
+	 * Put the board in superspeed (520 MHz) to speed-up logo/OS loading.
+	 * This requires to command the Maxim 1586 to upgrade core voltage to
+	 * 1.475 V, on the power I2C bus (device 0x14).
+	 */
+	CCCR = CCCR_A | 0x20290;
+	PCFR = PCFR_GPR_EN | PCFR_FVC | PCFR_DC_EN | PCFR_PI2C_EN | PCFR_OPDE;
+	PCMD(0) = PCMD_LC | 0x1f;
+	PVCR = 0x14;
+
+	cclk = 0x0b;
 	asm volatile("mcr p14, 0, %0, c6, c0, 0 @ set CCLK"
 	  : : "r" (cclk) : "cc");
 

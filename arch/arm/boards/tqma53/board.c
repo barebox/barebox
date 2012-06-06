@@ -254,8 +254,8 @@ device_initcall(tqma53_devices_init);
 
 static int tqma53_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, SZ_1M, PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_1M, SZ_1M, PARTITION_FIXED, "env0");
+	devfs_add_partition("disk0", 0x00000, SZ_1M, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("disk0", SZ_1M, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

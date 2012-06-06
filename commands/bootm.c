@@ -47,6 +47,8 @@
 #include <memory.h>
 #include <filetype.h>
 #include <binfmt.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
 static LIST_HEAD(handler_list);
@@ -136,7 +138,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 }
 
 #ifdef CONFIG_OFTREE
-static int bootm_open_oftree(struct image_data *data, char *oftree, int num)
+static int bootm_open_oftree(struct image_data *data, const char *oftree, int num)
 {
 	enum filetype ft;
 	struct fdt_header *fdt, *fixfdt;
@@ -231,19 +233,25 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	return NULL;
 }
 
-static void bootm_image_name_and_no(char *name, int *no)
+static char *bootm_image_name_and_no(const char *name, int *no)
 {
-	char *at;
+	char *at, *ret;
+
+	if (!name || !*name)
+		return NULL;
 
 	*no = 0;
 
-	at = strchr(name, '@');
+	ret = xstrdup(name);
+	at = strchr(ret, '@');
 	if (!at)
-		return;
+		return ret;
 
 	*at++ = 0;
 
 	*no = simple_strtoul(at, NULL, 10);
+
+	return ret;
 }
 
 #define BOOTM_OPTS_COMMON "ca:e:vo:f"
@@ -261,7 +269,7 @@ static int do_bootm(int argc, char *argv[])
 	struct image_data data;
 	int ret = 1;
 	enum filetype os_type, initrd_type = filetype_unknown;
-	char *oftree = NULL;
+	const char *oftree = NULL, *initrd_file = NULL, *os_file = NULL;
 	int fallback = 0;
 
 	memset(&data, 0, sizeof(struct image_data));
@@ -270,6 +278,11 @@ static int do_bootm(int argc, char *argv[])
 	data.os_address = UIMAGE_SOME_ADDRESS;
 	data.verify = 0;
 	data.verbose = 0;
+
+	oftree = getenv("global.bootm.oftree");
+	os_file = getenv("global.bootm.image");
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		initrd_file = getenv("global.bootm.initrd");
 
 	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {
@@ -281,7 +294,7 @@ static int do_bootm(int argc, char *argv[])
 			data.initrd_address = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'r':
-			data.initrd_file = optarg;
+			initrd_file = optarg;
 			break;
 #endif
 		case 'a':
@@ -304,12 +317,21 @@ static int do_bootm(int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc)
-		return COMMAND_ERROR_USAGE;
+	if (optind != argc)
+		os_file = argv[optind];
 
-	data.os_file = argv[optind];
+	if (!os_file || !*os_file) {
+		printf("no boot image given\n");
+		goto err_out;
+	}
 
-	bootm_image_name_and_no(data.os_file, &data.os_num);
+	if (initrd_file && !*initrd_file)
+		initrd_file = NULL;
+
+	if (oftree && !*oftree)
+		oftree = NULL;
+
+	data.os_file = bootm_image_name_and_no(os_file, &data.os_num);
 
 	os_type = file_name_detect_type(data.os_file);
 	if ((int)os_type < 0) {
@@ -332,8 +354,8 @@ static int do_bootm(int argc, char *argv[])
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data.initrd_file) {
-		bootm_image_name_and_no(data.initrd_file, &data.initrd_num);
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && initrd_file) {
+		data.initrd_file = bootm_image_name_and_no(initrd_file, &data.initrd_num);
 
 		initrd_type = file_name_detect_type(data.initrd_file);
 		if ((int)initrd_type < 0) {
@@ -388,7 +410,7 @@ static int do_bootm(int argc, char *argv[])
 	if (oftree) {
 		int oftree_num;
 
-		bootm_image_name_and_no(oftree, &oftree_num);
+		oftree = bootm_image_name_and_no(oftree, &oftree_num);
 
 		ret = bootm_open_oftree(&data, oftree, oftree_num);
 		if (ret)
@@ -417,6 +439,8 @@ static int do_bootm(int argc, char *argv[])
 	printf("handler failed with %s\n", strerror(-ret));
 
 err_out:
+	free(data.initrd_file);
+	free(data.os_file);
 	if (data.os_res)
 		release_sdram_region(data.os_res);
 	if (data.initrd_res)
@@ -427,6 +451,18 @@ err_out:
 		uimage_close(data.os);
 	return 1;
 }
+
+static int bootm_init(void)
+{
+
+	globalvar_add_simple("bootm.image");
+	globalvar_add_simple("bootm.oftree");
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		globalvar_add_simple("bootm.initrd");
+
+	return 0;
+}
+late_initcall(bootm_init);
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
@@ -453,6 +489,8 @@ BAREBOX_CMD_START(bootm)
 BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

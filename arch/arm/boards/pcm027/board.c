@@ -165,8 +165,8 @@ static int pcm027_devices_init(void)
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM027);
 
-	devfs_add_partition("nor0", 0x00000, SZ_512K, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", SZ_512K, SZ_256K, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", SZ_512K, SZ_256K, DEVFS_PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
 	return 0;

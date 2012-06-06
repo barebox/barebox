@@ -2,6 +2,8 @@
 
 # otg port mode : can be 'host' or 'device'
 otg_mode="device"
+# video : can be CMO-QVGA, URT-WVGA, DVI-VGA or DVI-SVGA
+video="CMO-QVGA"
 
 hostname=eukrea-cpuimx25
 
@@ -35,7 +37,7 @@ nfsroot="$eth0.serverip:/srv/nfs/$hostname"
 
 autoboot_timeout=1
 
-bootargs="console=ttymxc0,115200 otg_mode=$otg_mode"
+bootargs="console=ttymxc0,115200 otg_mode=$otg_mode video=imxfb:$video"
 
 nand_parts="256k(barebox)ro,128k(bareboxenv),3M(kernel),-(root)"
 rootfs_mtdblock_nand=3

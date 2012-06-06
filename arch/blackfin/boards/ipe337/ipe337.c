@@ -19,8 +19,8 @@ static int ipe337_devices_init(void) {
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x24000000, 4096,
 			   IORESOURCE_MEM, NULL);
 
-	devfs_add_partition("nor0", 0x00000, 0x20000, PARTITION_FIXED, "self0");
-	devfs_add_partition("nor0", 0x20000, 0x20000, PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, 0x20000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("nor0", 0x20000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	protect_file("/dev/env0", 1);
 

@@ -1135,7 +1135,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	this->ecc.layout = oob_smallpage;
 
-	/* NAND bus width determines access funtions used by upper layer */
+	/* NAND bus width determines access functions used by upper layer */
 	if (pdata->width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
 		this->ecc.layout = &nandv1_hw_eccoob_smallpage;

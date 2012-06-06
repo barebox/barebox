@@ -12,6 +12,7 @@ int make_directory(const char *dir)
 	char *s = strdup(dir);
 	char *path = s;
 	char c;
+	int ret = 0;
 
 	do {
 		c = 0;
@@ -33,12 +34,10 @@ int make_directory(const char *dir)
 
 			/* If we failed for any other reason than the directory
 			 * already exists, output a diagnostic and return -1.*/
-#ifdef __BAREBOX__
-			if (errno != -EEXIST)
-#else
-			if (errno != EEXIST)
-#endif
+			if (errno != EEXIST) {
+				ret = -errno;
 				break;
+			}
 		}
 		if (!c)
 			goto out;
@@ -50,7 +49,9 @@ int make_directory(const char *dir)
 
 out:
 	free(path);
-	return errno;
+	if (ret)
+		errno = -ret;
+	return ret;
 }
 #ifdef __BAREBOX__
 EXPORT_SYMBOL(make_directory);

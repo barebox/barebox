@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <init.h>
+#include <boot.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -257,7 +258,7 @@ static int of_fixup_bootargs(struct fdt_header *fdt)
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	str = getenv("bootargs");
+	str = linux_bootargs_get();
 	if (str) {
 		err = fdt_setprop(fdt, nodeoffset,
 				"bootargs", str, strlen(str)+1);

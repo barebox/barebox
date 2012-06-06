@@ -858,7 +858,7 @@ static int ehci_probe(struct device_d *dev)
 	uint32_t reg;
 	struct ehci_platform_data *pdata = dev->platform_data;
 
-	ehci = xmalloc(sizeof(struct ehci_priv));
+	ehci = xzalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
 	dev->priv = ehci;
 

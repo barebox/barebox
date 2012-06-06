@@ -162,15 +162,15 @@ static int f3s_devices_init(void)
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */
-		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
+		devfs_add_partition("nand0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
 		break;
 
 	case 0x00:		/* NOR is the source */
-		devfs_add_partition("nor0", 0x00000, 0x40000, PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", 0x40000, 0x80000, PARTITION_FIXED, "env0");
+		devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("nor0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env0");
 		protect_file("/dev/env0", 1);
 		break;
 	}

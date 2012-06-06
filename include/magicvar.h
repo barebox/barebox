@@ -18,14 +18,18 @@ extern struct magicvar __barebox_magicvar_end;
 #endif
 
 #ifdef CONFIG_CMD_MAGICVAR
-#define BAREBOX_MAGICVAR(_name, _description)			\
+#define BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)			\
 extern const struct magicvar __barebox_magicvar_##_name;	\
 const struct magicvar __barebox_magicvar_##_name		\
         __attribute__ ((unused,section (".barebox_magicvar_" __stringify(_name)))) = {	\
-        .name	= #_name,					\
+        .name	= #_varname,					\
 	.description = MAGICVAR_DESCRIPTION(_description),	\
 };
+
+#define BAREBOX_MAGICVAR(_name, _description)			\
+	BAREBOX_MAGICVAR_NAMED(_name, _name, _description)
 #else
+#define BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)
 #define BAREBOX_MAGICVAR(_name, _description)
 #endif
 

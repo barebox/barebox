@@ -87,7 +87,7 @@ unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
 
 static struct fec_platform_data fec_info = {
 	.xcv_type	= RMII,
-	.phy_addr	= 1,
+	.phy_addr	= 0,
 };
 
 struct imx_nand_platform_data nand_info = {
@@ -216,6 +216,8 @@ static iomux_v3_cfg_t eukrea_cpuimx25_pads[] = {
 	MX25_PAD_SD1_DATA3__SD1_DATA3,
 	/* LED */
 	MX25_PAD_POWER_FAIL__GPIO_3_19,
+	/* SWITCH */
+	MX25_PAD_VSTBY_ACK__GPIO_3_18,
 };
 
 static int eukrea_cpuimx25_devices_init(void)
@@ -232,11 +234,11 @@ static int eukrea_cpuimx25_devices_init(void)
 	imx25_add_nand(&nand_info);
 
 	devfs_add_partition("nand0", 0x00000, 0x40000,
-		PARTITION_FIXED, "self_raw");
+		DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 
 	devfs_add_partition("nand0", 0x40000, 0x20000,
-		PARTITION_FIXED, "env_raw");
+		DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
 	/* enable LCD */
@@ -245,6 +247,9 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	/* LED : default OFF */
 	gpio_direction_output(2 * 32 + 19, 1);
+
+	/* Switch : input */
+	gpio_direction_input(2 * 32 + 18);
 
 	imx25_add_fb(&eukrea_cpuimx25_fb_data);
 
@@ -255,8 +260,12 @@ static int eukrea_cpuimx25_devices_init(void)
 	imx25_usb_init();
 	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 #endif
+#ifdef CONFIG_USB_GADGET
+	/* Workaround ENGcm09152 */
+	writel(readl(IMX_OTG_BASE + 0x608) | (1 << 23), IMX_OTG_BASE + 0x608);
 	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_OTG_BASE, 0x200,
 			   IORESOURCE_MEM, &usb_pdata);
+#endif
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25SD);

@@ -30,7 +30,17 @@
 #include <linux/mtd/mtd.h>
 
 typedef unsigned long flash_sect_t;
+
+#if   defined(CONFIG_DRIVER_CFI_BANK_WIDTH_8)
 typedef u64 cfiword_t;
+#elif defined(CONFIG_DRIVER_CFI_BANK_WIDTH_4)
+typedef u32 cfiword_t;
+#elif defined(CONFIG_DRIVER_CFI_BANK_WIDTH_2)
+typedef u16 cfiword_t;
+#else
+typedef u8 cfiword_t;
+#endif
+
 struct cfi_cmd_set;
 
 /*-----------------------------------------------------------------------

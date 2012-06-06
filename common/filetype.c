@@ -78,6 +78,8 @@ enum filetype file_detect_type(void *_buf)
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)
 		return filetype_aimage;
+	if (strncmp(buf8 + 0x10, "barebox", 7) == 0)
+		return filetype_mips_barebox;
 
 	return filetype_unknown;
 }

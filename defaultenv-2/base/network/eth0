@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# ip setting (static/dhcp)
+ip=dhcp
+
+# static setup used if ip=static
+ipaddr=
+netmask=
+gateway=
+serverip=
+
+# MAC address if needed
+#ethaddr=xx:xx:xx:xx:xx:xx
+
+# put code to discover eth0 (i.e. 'usb') to /env/network/eth0-discover

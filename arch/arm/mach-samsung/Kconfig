@@ -14,6 +14,10 @@ config BOARDINFO
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Digi A9M2410" if MACH_A9M2410
 
+config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+	hex
+	default 0x1ff0 if ARCH_S5PCxx
+
 if ARCH_S3C24xx
 
 config CPU_S3C2410
@@ -30,8 +34,8 @@ config MACH_A9M2410
 	bool "Digi A9M2410"
 	select CPU_S3C2410
 	select MACH_HAS_LOWLEVEL_INIT
-	select S3C24XX_PLL_INIT
-	select S3C24XX_SDRAM_INIT
+	select S3C_PLL_INIT
+	select S3C_SDRAM_INIT
 	help
 	  Say Y here if you are using Digi's Connect Core 9M equipped
 	  with a Samsung S3C2410 Processor
@@ -40,7 +44,7 @@ config MACH_A9M2440
 	bool "Digi A9M2440"
 	select CPU_S3C2440
 	select MACH_HAS_LOWLEVEL_INIT
-	select S3C24XX_PLL_INIT
+	select S3C_PLL_INIT
 	help
 	  Say Y here if you are using Digi's Connect Core 9M equipped
 	  with a Samsung S3C2440 Processor
@@ -50,8 +54,8 @@ config MACH_MINI2440
 	select CPU_S3C2440
 	select MACH_HAS_LOWLEVEL_INIT
 	select MACH_DO_LOWLEVEL_INIT
-	select S3C24XX_PLL_INIT
-	select S3C24XX_SDRAM_INIT
+	select S3C_PLL_INIT
+	select S3C_SDRAM_INIT
 	select HAS_DM9000
 	help
 	  Say Y here if you are using Mini 2440 dev board equipped
@@ -78,29 +82,49 @@ source arch/arm/boards/mini2440/Kconfig
 
 endmenu
 
-menu "S3C24X0 Features              "
+endif
 
-config S3C24XX_LOW_LEVEL_INIT
+if ARCH_S5PCxx
+
+config CPU_S5PC110
 	bool
 
-config S3C24XX_PLL_INIT
+config CPU_S5PV210
+	bool
+
+#choice
+#
+#	prompt "S5PCxx board type"
+#
+#
+#endchoice
+
+endif
+
+
+menu "S3C Features              "
+
+config S3C_LOWLEVEL_INIT
+	bool
+
+config S3C_PLL_INIT
 	bool
 	prompt "Reconfigure PLL"
-	select S3C24XX_LOW_LEVEL_INIT
+	select S3C_LOWLEVEL_INIT
 	help
 	  This adds generic code to reconfigure the internal PLL very early
 	  after reset.
 
-config S3C24XX_SDRAM_INIT
+config S3C_SDRAM_INIT
 	bool
 	prompt "Initialize SDRAM"
-	select S3C24XX_LOW_LEVEL_INIT
+	select S3C_LOWLEVEL_INIT
 	help
 	  This adds generic code to configure the SDRAM controller after reset.
 	  The initialisation will be skipped if the code is already running
 	  from SDRAM.
 
-config S3C24XX_NAND_BOOT
+config S3C_NAND_BOOT
 	bool
 	prompt "Booting from NAND"
 	select MTD
@@ -111,7 +135,5 @@ config S3C24XX_NAND_BOOT
 	  skipped if the code is running from NOR or already from SDRAM.
 
 endmenu
-
-endif
 
 endif

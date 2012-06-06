@@ -47,6 +47,9 @@ config BINFMT
 	bool
 	select FILETYPE
 
+config GLOBALVAR
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -307,7 +310,13 @@ config GLOB
 	depends on SHELL_HUSH
 	help
 	  If you want to use wildcards like * or ? say y here.
-	
+
+config GLOB_SORT
+	select QSORT
+	bool
+	prompt "glob sort support"
+	depends on GLOB
+
 config PROMPT_HUSH_PS2
 	string
 	depends on SHELL_HUSH
@@ -342,6 +351,7 @@ config AUTO_COMPLETE
 config MENU
 	bool
 	prompt "Menu Framework"
+	depends on PROCESS_ESCAPE_SEQUENCE
 	help
 	   a menu framework that allow us to create list menu to simplify
 	   barebox and make it more user-frendly
@@ -486,13 +496,30 @@ endchoice
 
 endif
 
+config HAVE_DEFAULT_ENVIRONMENT_NEW
+	bool
+
+config DEFAULT_ENVIRONMENT_GENERIC_NEW
+	bool
+	depends on DEFAULT_ENVIRONMENT
+	depends on SHELL_HUSH
+	select HUSH_GETOPT
+	select GLOB
+	select GLOB_SORT
+	select CMD_GLOBAL
+	select CMD_AUTOMOUNT
+	select FLEXIBLE_BOOTARGS
+	prompt "Generic environment template"
+
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool
+	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
 	select HUSH_GETOPT
 	select CMD_CRC
 	select CMD_CRC_CMP
+	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW
 	prompt "Default environment generic"
 	help
 	  With this option barebox will use the generic default

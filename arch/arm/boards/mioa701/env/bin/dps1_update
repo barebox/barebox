@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Page+OOB specific partitions
+addpart /dev/mtdraw0 67584@202752(dps1)
+uncompress /env/data/dps1.raw.gz /dps1.raw
+
+if [ -r /dps1.raw ]; then
+	dps1_unlock
+	erase /dev/mtdraw0.dps1
+	cp -v /dps1.raw /dev/mtdraw0.dps1
+	dps1_unlock
+fi

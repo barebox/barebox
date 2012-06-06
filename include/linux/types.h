@@ -144,8 +144,10 @@ typedef __u32 __bitwise __wsum;
 
 #ifdef CONFIG_PHYS_ADDR_T_64BIT
 typedef u64 phys_addr_t;
+typedef u64 phys_size_t;
 #else
 typedef u32 phys_addr_t;
+typedef u32 phys_size_t;
 #endif
 
 typedef phys_addr_t resource_size_t;

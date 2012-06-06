@@ -73,9 +73,20 @@ config ARCH_S3C24xx
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
+config ARCH_S5PCxx
+	bool "Samsung S5PC110, S5PV210"
+	select ARCH_SAMSUNG
+	select CPU_V7
+	select GENERIC_GPIO
+
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select CPU_ARM926T
+
+config ARCH_TEGRA
+	bool "Nvidia Tegra-based boards"
+	select CPU_ARM926T
+	select HAS_DEBUG_LL
 
 endchoice
 
@@ -90,6 +101,7 @@ source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-versatile/Kconfig
+source arch/arm/mach-tegra/Kconfig
 
 config ARM_ASM_UNIFIED
 	bool

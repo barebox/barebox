@@ -1,0 +1,13 @@
+#!/bin/sh
+
+cd /env/boot
+
+./$global.boot.default menu
+
+for i in *; do
+	if [ "$i" != "$global.boot.default" ]; then
+		./$i menu
+	fi
+done
+
+cd /

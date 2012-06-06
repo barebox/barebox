@@ -118,6 +118,23 @@ uint32_t s3c24_get_uclk(void)
 }
 
 /**
+ * Return correct UART frequency based on the UCON register
+ */
+unsigned s3c_get_uart_clk(unsigned src)
+{
+	switch (src & 3) {
+	case 0:
+	case 2:
+		return s3c_get_pclk();
+	case 1:
+		return 0; /* TODO UEXTCLK */
+	case 3:
+		return 0; /* TODO FCLK/n */
+	}
+	return 0; /* not reached, to make compiler happy */
+}
+
+/**
  * Show the user the current clock settings
  */
 int s3c24xx_dump_clocks(void)

@@ -36,7 +36,7 @@
 #include <io.h>
 #include <asm-generic/errno.h>
 
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 # define __nand_boot_init __bare_init
 # ifndef BOARD_DEFAULT_NAND_TIMING
 #  define BOARD_DEFAULT_NAND_TIMING 0x0737
@@ -49,7 +49,7 @@
  * Define this symbol for testing purpose. It will add a command to read an
  * image from the NAND like it the boot strap code will do.
  */
-#define CONFIG_NAND_S3C24XX_BOOT_DEBUG
+#define CONFIG_NAND_S3C_BOOT_DEBUG
 
 /* NAND controller's register */
 
@@ -497,7 +497,7 @@ static struct driver_d s3c24x0_nand_driver = {
 	.probe = s3c24x0_nand_probe,
 };
 
-#ifdef CONFIG_S3C24XX_NAND_BOOT
+#ifdef CONFIG_S3C_NAND_BOOT
 
 static void __nand_boot_init wait_for_completion(void __iomem *host)
 {
@@ -603,7 +603,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 	disable_nand_controller(host);
 }
 
-#ifdef CONFIG_NAND_S3C24XX_BOOT_DEBUG
+#ifdef CONFIG_NAND_S3C_BOOT_DEBUG
 #include <command.h>
 
 static int do_nand_boot_test(int argc, char *argv[])
@@ -636,7 +636,7 @@ BAREBOX_CMD_START(nand_boot_test)
 BAREBOX_CMD_END
 #endif
 
-#endif /* CONFIG_S3C24XX_NAND_BOOT */
+#endif /* CONFIG_S3C_NAND_BOOT */
 
 /*
  * Main initialization routine

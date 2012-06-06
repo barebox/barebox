@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "Automountpoints"
+	exit
+fi
+
+# automount server returned from dhcp server
+
+mkdir -p /mnt/tftp-dhcp
+automount /mnt/tftp-dhcp 'ifup eth0 && mount $eth0.serverip tftp /mnt/tftp-dhcp'
+
+# automount nfs server example
+
+#nfshost=somehost
+#mkdir -p /mnt/${nfshost}
+#automount /mnt/$nfshost "ifup eth0 && mount ${nfshost}:/tftpboot nfs /mnt/${nfshost}"
+
+# static tftp server example
+
+#mkdir -p /mnt/tftp
+#automount -d /mnt/tftp 'ifup eth0 && mount $serverip tftp /mnt/tftp'
+
+# FAT on usb disk example
+
+#mkdir -p /mnt/fat
+#automount -d /mnt/fat 'usb && [ -e /dev/disk0.0 ] && mount /dev/disk0.0 fat /mnt/fat'

@@ -48,6 +48,10 @@ struct ramfs_inode {
 
 	ulong size;
 	struct ramfs_chunk *data;
+
+	/* Points to recently used chunk */
+	int recent_chunk;
+	struct ramfs_chunk *recent_chunkp;
 };
 
 struct ramfs_priv {
@@ -297,6 +301,35 @@ static int ramfs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
+static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node, int chunk)
+{
+	struct ramfs_chunk *data;
+	int left = chunk;
+
+	if (chunk == 0)
+		return node->data;
+
+	if (node->recent_chunk == chunk)
+		return node->recent_chunkp;
+
+	if (node->recent_chunk < chunk && node->recent_chunk != 0) {
+		/* Start at last known chunk */
+		data = node->recent_chunkp;
+		left -= node->recent_chunk;
+	} else {
+		/* Start at first chunk */
+		data = node->data;
+	}
+
+	while (left--)
+		data = data->next;
+
+	node->recent_chunkp = data;
+	node->recent_chunk = chunk;
+
+	return data;
+}
+
 static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
 	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
@@ -311,11 +344,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	debug("%s: reading from chunk %d\n", __FUNCTION__, chunk);
 
 	/* Position ourself in stream */
-	data = node->data;
-	while (chunk) {
-		data = data->next;
-		chunk--;
-	}
+	data = ramfs_find_chunk(node, chunk);
 	ofs = f->pos % CHUNK_SIZE;
 
 	/* Read till end of current chunk */
@@ -364,11 +393,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	debug("%s: writing to chunk %d\n", __FUNCTION__, chunk);
 
 	/* Position ourself in stream */
-	data = node->data;
-	while (chunk) {
-		data = data->next;
-		chunk--;
-	}
+	data = ramfs_find_chunk(node, chunk);
 	ofs = f->pos % CHUNK_SIZE;
 
 	/* Write till end of current chunk */
@@ -429,6 +454,8 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 			ramfs_put_chunk(data);
 			data = tmp;
 		}
+		if (node->recent_chunk > newchunks)
+			node->recent_chunk = 0;
 	}
 
 	if (newchunks > oldchunks) {

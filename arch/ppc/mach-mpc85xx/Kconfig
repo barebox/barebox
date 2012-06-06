@@ -1,0 +1,41 @@
+if ARCH_MPC85XX
+
+config TEXT_BASE
+	hex
+	default 0xeff80000 if P2020RDB
+
+config BOARDINFO
+	default "P2020_RDB" if P2020RDB
+
+config MPC85xx
+	bool
+	default y if P2020RDB
+
+choice
+	prompt "Select your board"
+
+config P2020RDB
+	bool "P2020RDB"
+	help
+	Say Y here if you are using the Freescale P2020RDB
+
+endchoice
+endif
+
+if P2020RDB
+config P2020
+	bool
+	default y
+
+config BOOKE
+	bool
+	default y
+
+config E500
+	bool
+	default y
+
+config FSL_ELBC
+	bool
+	default y
+endif

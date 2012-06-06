@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2011 Juergen Beisert, Pengutronix
+ * See file CREDITS for list of people who contributed to this
+ * project.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -10,22 +11,22 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ *
  */
 
 #ifndef __MACH_S3C_CLOCKS_H
-# define __MACH_S3C_CLOCKS_H
+#define __MACH_S3C_CLOCKS_H
 
 #ifdef CONFIG_ARCH_S3C24xx
-# define S3C_LOCKTIME (S3C_CLOCK_POWER_BASE)
-# define S3C_MPLLCON (S3C_CLOCK_POWER_BASE + 0x4)
-# define S3C_UPLLCON (S3C_CLOCK_POWER_BASE + 0x8)
-# define S3C_CLKCON (S3C_CLOCK_POWER_BASE + 0xc)
-# define S3C_CLKSLOW (S3C_CLOCK_POWER_BASE + 0x10)
-# define S3C_CLKDIVN (S3C_CLOCK_POWER_BASE + 0x14)
-
-# define S3C_MPLLCON_GET_MDIV(x) ((((x) >> 12) & 0xff) + 8)
-# define S3C_MPLLCON_GET_PDIV(x) ((((x) >> 4) & 0x3f) + 2)
-# define S3C_MPLLCON_GET_SDIV(x) ((x) & 0x3)
+# include <mach/s3c24xx-clocks.h>
+#endif
+#ifdef CONFIG_ARCH_S5PCxx
+# include <mach/s5pcxx-clocks.h>
 #endif
 
 #endif /* __MACH_S3C_CLOCKS_H */

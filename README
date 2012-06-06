@@ -110,7 +110,7 @@ Barebox usually needs an environment for storing the configuration data.
 You can generate an environment using the example environment contained
 in board/sandbox/env:
 
-  # ./scripts/bareboxenv -s -p 0x10000 board/sandbox/env/ env.bin
+  # ./scripts/bareboxenv -s -p 0x10000 arch/sandbox/board/env env.bin
 
 To get some files to play with you can generate a cramfs image:
   # mkcramfs somedir/ cramfs.bin

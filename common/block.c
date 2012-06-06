@@ -136,7 +136,7 @@ static int block_cache(struct block_device *blk, int block)
 	chunk = get_chunk(blk);
 	chunk->block_start = block & ~blk->blkmask;
 
-	debug("%s: %d to %d %s\n", __func__, chunk->block_start,
+	debug("%s: %d to %d\n", __func__, chunk->block_start,
 			chunk->num);
 
 	num_blocks = min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
@@ -161,7 +161,7 @@ static void *block_get(struct block_device *blk, int block)
 	int ret;
 
 	if (block >= blk->num_blocks)
-		return NULL;
+		return ERR_PTR(-ENXIO);
 
 	outdata = block_get_cached(blk, block);
 	if (outdata)
@@ -169,7 +169,7 @@ static void *block_get(struct block_device *blk, int block)
 
 	ret = block_cache(blk, block);
 	if (ret)
-		return NULL;
+		return ERR_PTR(ret);
 
 	outdata = block_get_cached(blk, block);
 	if (!outdata)
@@ -191,8 +191,8 @@ static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
 		size_t now = BLOCKSIZE(blk) - (offset & mask);
 		void *iobuf = block_get(blk, block);
 
-		if (!iobuf)
-			return -EIO;
+		if (IS_ERR(iobuf))
+			return PTR_ERR(iobuf);
 
 		now = min(count, now);
 
@@ -207,8 +207,8 @@ static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
 	while (blocks) {
 		void *iobuf = block_get(blk, block);
 
-		if (!iobuf)
-			return -EIO;
+		if (IS_ERR(iobuf))
+			return PTR_ERR(iobuf);
 
 		memcpy(buf, iobuf, BLOCKSIZE(blk));
 		buf += BLOCKSIZE(blk);
@@ -220,8 +220,8 @@ static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
 	if (count) {
 		void *iobuf = block_get(blk, block);
 
-		if (!iobuf)
-			return -EIO;
+		if (IS_ERR(iobuf))
+			return PTR_ERR(iobuf);
 
 		memcpy(buf, iobuf, count);
 	}
@@ -244,8 +244,8 @@ static int block_put(struct block_device *blk, const void *buf, int block)
 		return -EINVAL;
 
 	data = block_get(blk, block);
-	if (!data)
-		BUG();
+	if (IS_ERR(data))
+		return PTR_ERR(data);
 
 	memcpy(data, buf, 1 << blk->blockbits);
 
@@ -270,8 +270,8 @@ static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
 
 		now = min(count, now);
 
-		if (!iobuf)
-			return -EIO;
+		if (IS_ERR(iobuf))
+			return PTR_ERR(iobuf);
 
 		memcpy(iobuf + (offset & mask), buf, now);
 		ret = block_put(blk, iobuf, block);
@@ -299,8 +299,8 @@ static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
 	if (count) {
 		void *iobuf = block_get(blk, block);
 
-		if (!iobuf)
-			return -EIO;
+		if (IS_ERR(iobuf))
+			return PTR_ERR(iobuf);
 
 		memcpy(iobuf, buf, count);
 		ret = block_put(blk, iobuf, block);

@@ -22,6 +22,7 @@
 #define   __INCLUDE_ARCH_HARDWARE_H__
 
 #define DEBUG_LL_UART_ADDR	0xb00003f8
+#define DEBUG_LL_UART_SHIFT	0
 
 /*
  * Reset register.

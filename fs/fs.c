@@ -751,14 +751,13 @@ int erase(int fd, size_t count, unsigned long offset)
 
 	if (check_fd(fd))
 		return -errno;
+	if (offset >= f->size)
+		return 0;
+	if (count > f->size - offset)
+		count = f->size - offset;
 
 	dev = f->dev;
-
 	fsdrv = dev_to_fs_driver(dev);
-
-	if (f->pos + count > f->size)
-		count = f->size - f->pos;
-
 	if (fsdrv->erase)
 		ret = fsdrv->erase(dev, f, count, offset);
 	else
@@ -780,14 +779,13 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 
 	if (check_fd(fd))
 		return -errno;
+	if (offset >= f->size)
+		return 0;
+	if (count > f->size - offset)
+		count = f->size - offset;
 
 	dev = f->dev;
-
 	fsdrv = dev_to_fs_driver(dev);
-
-	if (f->pos + count > f->size)
-		count = f->size - f->pos;
-
 	if (fsdrv->protect)
 		ret = fsdrv->protect(dev, f, count, offset, prot);
 	else

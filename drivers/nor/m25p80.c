@@ -232,6 +232,8 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, unsigned long offse
 	/* "sector"-at-a-time erase */
 	} else {
 		while (len) {
+			if (ctrlc())
+				return -EINTR;
 			if (erase_sector(flash, addr))
 				return -EIO;
 

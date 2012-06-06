@@ -235,6 +235,8 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, unsigned long offse
 			if (erase_sector(flash, addr))
 				return -EIO;
 
+			if (len <= flash->erasesize)
+				break;
 			addr += flash->erasesize;
 			len -= flash->erasesize;
 			show_progress(progress++);

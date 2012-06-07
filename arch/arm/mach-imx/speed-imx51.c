@@ -1,6 +1,7 @@
 #include <common.h>
 #include <io.h>
 #include <asm-generic/div64.h>
+#include <asm-generic/errno.h>
 #include <mach/imx51-regs.h>
 #include <mach/clock-imx51_53.h>
 

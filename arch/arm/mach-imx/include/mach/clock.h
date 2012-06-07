@@ -31,8 +31,8 @@ ulong imx_get_i2cclk(void);
 ulong imx_get_mmcclk(void);
 ulong imx_get_cspiclk(void);
 
-int imx_clko_set_div(int div);
-void imx_clko_set_src(int src);
+int imx_clko_set_div(int num, int div);
+void imx_clko_set_src(int num, int src);
 
 void imx_dump_clocks(void);
 

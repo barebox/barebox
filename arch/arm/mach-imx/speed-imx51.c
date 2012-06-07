@@ -10,6 +10,11 @@ static u32 ccm_readl(u32 ofs)
 	return readl(MX51_CCM_BASE_ADDR + ofs);
 }
 
+static void ccm_writel(u32 val, u32 ofs)
+{
+	writel(val, MX51_CCM_BASE_ADDR + ofs);
+}
+
 static unsigned long ckil_get_rate(void)
 {
 	return 32768;
@@ -220,6 +225,70 @@ unsigned long imx_get_usbclk(void)
 			MX5_CCM_CSCDR1_USBOH3_CLK_PODF_OFFSET) + 1;
 
 	return rate / (prediv * podf);
+}
+
+/*
+ * Set the divider of the CLKO pin. Returns
+ * the new divider (which may be smaller
+ * than the desired one)
+ */
+int imx_clko_set_div(int num, int div)
+{
+	u32 ccosr = ccm_readl(MX5_CCM_CCOSR);
+
+	div--;
+
+	switch (num) {
+	case 1:
+		div &= 0x7;
+		ccosr &= ~(0x7 << 4);
+		ccosr |= div << 4;
+		ccm_writel(ccosr, MX5_CCM_CCOSR);
+		break;
+	case 2:
+		div &= 0x7;
+		ccosr &= ~(0x7 << 21);
+		ccosr |= div << 21;
+		ccm_writel(ccosr, MX5_CCM_CCOSR);
+		break;
+	default:
+		return -ENODEV;
+	}
+
+	return div + 1;
+}
+
+/*
+ * Set the clock source for the CLKO pin
+ */
+void imx_clko_set_src(int num, int src)
+{
+	u32 ccosr = ccm_readl(MX5_CCM_CCOSR);
+
+	switch (num) {
+	case 1:
+		if (src < 0) {
+			ccosr &= ~(1 << 7);
+			break;
+		}
+		ccosr &= ~0xf;
+		ccosr |= src & 0xf;
+		ccosr |= 1 << 7;
+		break;
+	case 2:
+		if (src < 0) {
+			ccosr &= ~(1 << 24);
+			break;
+		}
+		ccosr &= ~(0x1f << 16);
+		ccosr |= (src & 0x1f) << 16;
+		ccosr |= 1 << 24;
+		break;
+	default:
+		return;
+	}
+
+	ccm_writel(ccosr, MX5_CCM_CCOSR);
 }
 
 void imx_dump_clocks(void)

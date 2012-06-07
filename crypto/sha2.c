@@ -313,6 +313,7 @@ static int digest_sha224_init(struct digest *d)
 
 static struct sha2 m224 = {
 	.d = {
+		.name = "sha224",
 		.init = digest_sha224_init,
 		.update = digest_sha2_update,
 		.final = digest_sha2_final,

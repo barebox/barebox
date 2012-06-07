@@ -86,7 +86,7 @@ int digest_file_window(struct digest *d, char *filename,
 	ulong len = 0;
 	int fd, now, ret = 0;
 	unsigned char *buf;
-	int flags;
+	int flags = 0;
 
 	d->init(d);
 

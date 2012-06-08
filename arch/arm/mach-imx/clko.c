@@ -14,7 +14,7 @@ static int do_clko(int argc, char *argv[])
 			div = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 's':
-			src = simple_strtoul(optarg, NULL, 0);
+			src = simple_strtol(optarg, NULL, 0);
 			break;
 		}
 	}

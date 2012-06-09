@@ -49,3 +49,58 @@ static int zero_init(void)
 }
 
 device_initcall(zero_init);
+
+static ssize_t full_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+{
+	memset(buf, 0xff, count);
+	return count;
+}
+
+static struct file_operations fullops = {
+	.read  = full_read,
+	.lseek = dev_lseek_default,
+};
+
+static int full_init(void)
+{
+	struct cdev *cdev;
+
+	cdev = xzalloc(sizeof (*cdev));
+
+	cdev->name = "full";
+	cdev->size = ~0;
+	cdev->ops = &fullops;
+
+	devfs_create(cdev);
+
+	return 0;
+}
+
+device_initcall(full_init);
+
+static ssize_t null_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+{
+	return count;
+}
+
+static struct file_operations nullops = {
+	.write = null_write,
+	.lseek = dev_lseek_default,
+};
+
+static int null_init(void)
+{
+	struct cdev *cdev;
+
+	cdev = xzalloc(sizeof (*cdev));
+
+	cdev->name = "null";
+	cdev->size = 0;
+	cdev->ops = &nullops;
+
+	devfs_create(cdev);
+
+	return 0;
+}
+
+device_initcall(null_init);

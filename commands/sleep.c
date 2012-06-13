@@ -47,5 +47,5 @@ static int do_sleep(int argc, char *argv[])
 BAREBOX_CMD_START(sleep)
 	.cmd		= do_sleep,
 	.usage		= "delay execution for n seconds",
-	BAREBOX_CMD_COMPLETE(cammand_var_complete)
+	BAREBOX_CMD_COMPLETE(command_var_complete)
 BAREBOX_CMD_END

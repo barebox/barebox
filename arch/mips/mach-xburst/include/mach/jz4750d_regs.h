@@ -15,6 +15,7 @@
 
 #define TCU_BASE        0xb0002000
 #define WDT_BASE        0xb0002000
+#define RTC_BASE        0xb0003000
 #define UART1_BASE      0xb0031000
 
 /*************************************************************************
@@ -76,5 +77,35 @@
 #define WDT_TCSR_PCK_EN		(1 << 0)
 
 #define WDT_TCER_TCEN		(1 << 0)
+
+/*************************************************************************
+ * RTC
+ *************************************************************************/
+#define RTC_RCR		(RTC_BASE + 0x00) /* RTC Control Register */
+#define RTC_RSR		(RTC_BASE + 0x04) /* RTC Second Register */
+#define RTC_RSAR	(RTC_BASE + 0x08) /* RTC Second Alarm Register */
+#define RTC_RGR		(RTC_BASE + 0x0c) /* RTC Regulator Register */
+
+#define RTC_HCR		(RTC_BASE + 0x20) /* Hibernate Control Register */
+#define RTC_HWFCR	(RTC_BASE + 0x24) /* Hibernate Wakeup Filter Counter Reg */
+#define RTC_HRCR	(RTC_BASE + 0x28) /* Hibernate Reset Counter Register */
+#define RTC_HWCR	(RTC_BASE + 0x2c) /* Hibernate Wakeup Control Register */
+#define RTC_HWRSR	(RTC_BASE + 0x30) /* Hibernate Wakeup Status Register */
+#define RTC_HSPR	(RTC_BASE + 0x34) /* Hibernate Scratch Pattern Register */
+
+/* RTC Control Register */
+#define RTC_RCR_WRDY_BIT 7
+#define RTC_RCR_WRDY	(1 << 7)  /* Write Ready Flag */
+#define RTC_RCR_1HZ_BIT	6
+#define RTC_RCR_1HZ	(1 << RTC_RCR_1HZ_BIT)  /* 1Hz Flag */
+#define RTC_RCR_1HZIE	(1 << 5)  /* 1Hz Interrupt Enable */
+#define RTC_RCR_AF_BIT	4
+#define RTC_RCR_AF	(1 << RTC_RCR_AF_BIT)  /* Alarm Flag */
+#define RTC_RCR_AIE	(1 << 3)  /* Alarm Interrupt Enable */
+#define RTC_RCR_AE	(1 << 2)  /* Alarm Enable */
+#define RTC_RCR_RTCE	(1 << 0)  /* RTC Enable */
+
+/* Hibernate Control Register */
+#define RTC_HCR_PD		(1 << 0)  /* Power Down */
 
 #endif /* __JZ4750D_REGS_H__ */

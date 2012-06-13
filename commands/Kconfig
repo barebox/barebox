@@ -6,6 +6,10 @@ config COMMAND_SUPPORT
 	depends on !SHELL_NONE
 	default y
 
+config HAS_POWEROFF
+	bool
+	default n
+
 if COMMAND_SUPPORT
 
 menu "commands                      "
@@ -421,6 +425,11 @@ config CMD_LINUX16
 config CMD_RESET
 	tristate
 	prompt "reset"
+
+config CMD_POWEROFF
+	tristate
+	depends on HAS_POWEROFF
+	prompt "poweroff"
 
 config CMD_GO
 	tristate

@@ -81,6 +81,17 @@ config MXS_OCOTP
 	  internal view). Don't use register offsets here, the SET, CLR and
 	  TGL registers are not mapped!
 
+config MXS_OCOTP_WRITABLE
+	bool "OCOTP write support"
+	depends on MXS_OCOTP
+	help
+	  Enable this option to add writing to OCOTP.
+	  Warning: blown bits can not be unblown. Use with care.
+
+	  Before being actually able to blow the bits, you need to explicitely
+	  enable writing:
+		 ocotp0.permanent_write_enable=1
+
 endmenu
 
 menu "Board specific settings       "

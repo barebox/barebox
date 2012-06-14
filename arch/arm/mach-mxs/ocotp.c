@@ -39,13 +39,24 @@ struct ocotp_priv {
 	void __iomem *base;
 };
 
+static int mxs_ocotp_wait_busy(struct ocotp_priv *priv)
+{
+	uint64_t start = get_time_ns();
+
+	/* check both BUSY and ERROR cleared */
+	while (readl(priv->base) & (BM_OCOTP_CTRL_BUSY | BM_OCOTP_CTRL_ERROR))
+		if (is_timeout(start, MSECOND))
+			return -ETIMEDOUT;
+
+	return 0;
+}
+
 static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 		ulong offset, ulong flags)
 {
 	struct ocotp_priv *priv = cdev->priv;
 	void __iomem *base = priv->base;
 	size_t size = min((ulong)count, cdev->size - offset);
-	uint64_t start;
 	int i;
 
 	/*
@@ -56,11 +67,8 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	/* try to clear ERROR bit */
 	writel(BM_OCOTP_CTRL_ERROR, base + BIT_CLR);
 
-	/* check both BUSY and ERROR cleared */
-	start = get_time_ns();
-	while (readl(base) & (BM_OCOTP_CTRL_BUSY | BM_OCOTP_CTRL_ERROR))
-		if (is_timeout(start, MSECOND))
-			return -ETIMEDOUT;
+	if (mxs_ocotp_wait_busy(priv))
+		return -ETIMEDOUT;
 
 	/* open OCOTP banks for read */
 	writel(BM_OCOTP_CTRL_RD_BANK_OPEN, base + BIT_SET);
@@ -69,10 +77,8 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	udelay(1);
 
 	/* poll BUSY bit becoming cleared */
-	start = get_time_ns();
-	while (readl(base) & BM_OCOTP_CTRL_BUSY)
-		if (is_timeout(start, MSECOND))
-			return -ETIMEDOUT;
+	if (mxs_ocotp_wait_busy(priv))
+		return -ETIMEDOUT;
 
 	for (i = 0; i < size; i++)
 		/* When reading bytewise, we need to hop over the SET/CLR/TGL regs */

@@ -1,0 +1,7 @@
+/** @page ccxmx51 Digi ConnectCore board
+
+This boards is based on a Freescale i.MX51 CPU. The board is shipped with:
+- Up to 8 GB NAND Flash.
+- Up to 512 MB DDR2 RAM.
+
+*/

@@ -191,6 +191,27 @@ unsigned imx_get_hclk(void)
 	return rate * 1000;
 }
 
+unsigned imx_set_hclk(unsigned nc)
+{
+	unsigned root_rate = imx_get_armclk();
+	unsigned reg, div;
+
+	div = DIV_ROUND_UP(root_rate, nc);
+	if ((div == 0) || (div >= 32))
+		return 0;
+
+	if ((root_rate < nc) && (root_rate == 64000000))
+		div = 3;
+
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & ~0x3f;
+	writel(reg | div, IMX_CCM_BASE + HW_CLKCTRL_HBUS);
+
+	while (readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & (1 << 31))
+		;
+
+	return imx_get_hclk();
+}
+
 /*
  * Source of UART, debug UART, audio, PWM, dri, timer, digctl
  */

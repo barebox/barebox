@@ -18,6 +18,7 @@ unsigned imx_get_emiclk(void);
 unsigned imx_get_ioclk(unsigned);
 unsigned imx_get_armclk(void);
 unsigned imx_get_hclk(void);
+unsigned imx_set_hclk(unsigned);
 unsigned imx_get_xclk(void);
 unsigned imx_get_sspclk(unsigned);
 unsigned imx_set_sspclk(unsigned, unsigned, int);

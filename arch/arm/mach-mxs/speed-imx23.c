@@ -184,9 +184,10 @@ unsigned imx_get_hclk(void)
 
 	if (readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x20) {
 		rate *= readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f;
-		rate >>= 5U; /* / 32 */
+		rate = DIV_ROUND_UP(rate, 32);
 	} else
-		rate /= readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f;
+		rate = DIV_ROUND_UP(rate,
+			readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f);
 	return rate * 1000;
 }
 

@@ -28,11 +28,12 @@
 
 #define DRIVERNAME "ocotp"
 
-#define OCOTP_WORD_OFFSET		0x20
+#define OCOTP_CTRL			0x0
+#  define OCOTP_CTRL_BUSY		(1 << 8)
+#  define OCOTP_CTRL_ERROR		(1 << 9)
+#  define OCOTP_CTRL_RD_BANK_OPEN	(1 << 12)
 
-#define BM_OCOTP_CTRL_BUSY		(1 << 8)
-#define BM_OCOTP_CTRL_ERROR		(1 << 9)
-#define BM_OCOTP_CTRL_RD_BANK_OPEN	(1 << 12)
+#define OCOTP_WORD_OFFSET		0x20
 
 struct ocotp_priv {
 	struct cdev cdev;
@@ -44,7 +45,7 @@ static int mxs_ocotp_wait_busy(struct ocotp_priv *priv)
 	uint64_t start = get_time_ns();
 
 	/* check both BUSY and ERROR cleared */
-	while (readl(priv->base) & (BM_OCOTP_CTRL_BUSY | BM_OCOTP_CTRL_ERROR))
+	while (readl(priv->base + OCOTP_CTRL) & (OCOTP_CTRL_BUSY | OCOTP_CTRL_ERROR))
 		if (is_timeout(start, MSECOND))
 			return -ETIMEDOUT;
 
@@ -65,13 +66,13 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	 */
 
 	/* try to clear ERROR bit */
-	writel(BM_OCOTP_CTRL_ERROR, base + BIT_CLR);
+	writel(OCOTP_CTRL_ERROR, base + OCOTP_CTRL + BIT_CLR);
 
 	if (mxs_ocotp_wait_busy(priv))
 		return -ETIMEDOUT;
 
 	/* open OCOTP banks for read */
-	writel(BM_OCOTP_CTRL_RD_BANK_OPEN, base + BIT_SET);
+	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_SET);
 
 	/* approximately wait 32 hclk cycles */
 	udelay(1);
@@ -86,7 +87,7 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 				(((i + offset) & 0xfc) << 2) + ((i + offset) & 3));
 
 	/* close banks for power saving */
-	writel(BM_OCOTP_CTRL_RD_BANK_OPEN, base + BIT_CLR);
+	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_CLR);
 
 	return size;
 }

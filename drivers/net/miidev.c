@@ -123,7 +123,7 @@ int miidev_wait_aneg(struct mii_device *mdev)
 
 int miidev_get_status(struct mii_device *mdev)
 {
-	int ret, status;
+	int ret, status, adv, lpa;
 
 	ret = mii_read(mdev, mdev->address, MII_BMSR);
 	if (ret < 0)
@@ -136,13 +136,16 @@ int miidev_get_status(struct mii_device *mdev)
 		goto err_out;
 
 	if (ret & BMCR_ANENABLE) {
-		ret = mii_read(mdev, mdev->address, MII_LPA);
-		if (ret < 0)
+		lpa = mii_read(mdev, mdev->address, MII_LPA);
+		if (lpa < 0)
 			goto err_out;
-
-		status |= ret & LPA_DUPLEX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
-		status |= ret & LPA_100 ? MIIDEV_STATUS_IS_100MBIT :
-				MIIDEV_STATUS_IS_10MBIT;
+		adv = mii_read(mdev, mdev->address, MII_ADVERTISE);
+		if (adv < 0)
+			goto err_out;
+		lpa &= adv;
+		status |= lpa & LPA_DUPLEX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
+		status |= lpa & LPA_100 ? MIIDEV_STATUS_IS_100MBIT :
+			MIIDEV_STATUS_IS_10MBIT;
 	} else {
 		status |= ret & BMCR_FULLDPLX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
 		status |= ret & BMCR_SPEED100 ? MIIDEV_STATUS_IS_100MBIT :

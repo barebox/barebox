@@ -224,6 +224,14 @@ static struct file_operations miidev_ops = {
 static int miidev_probe(struct device_d *dev)
 {
 	struct mii_device *mdev = dev->priv;
+	int val;
+
+	val = mii_read(mdev, mdev->address, MII_PHYSID1);
+	if (val < 0 || val == 0xffff)
+		goto err_out;
+	val = mii_read(mdev, mdev->address, MII_PHYSID2);
+	if (val < 0 || val == 0xffff)
+		goto err_out;
 
 	mdev->cdev.name = asprintf("phy%d", dev->id);
 	mdev->cdev.size = 64;
@@ -233,6 +241,10 @@ static int miidev_probe(struct device_d *dev)
 	devfs_create(&mdev->cdev);
 	list_add_tail(&mdev->list, &miidev_list);
 	return 0;
+
+err_out:
+	dev_err(dev, "cannot read PHY registers (addr %d)\n", mdev->address);
+	return -ENODEV;
 }
 
 static void miidev_remove(struct device_d *dev)

@@ -204,11 +204,11 @@ static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, ulong of
 	uint16_t *buf = _buf;
 	struct mii_device *mdev = cdev->priv;
 
-	while (i > 1) {
-		*buf = mii_read(mdev, mdev->address, offset);
+	while (i > 0) {
+		*buf = mii_read(mdev, mdev->address, offset / 2);
 		buf++;
 		i -= 2;
-		offset++;
+		offset += 2;
 	}
 
 	return count;
@@ -220,11 +220,11 @@ static ssize_t miidev_write(struct cdev *cdev, const void *_buf, size_t count, u
 	const uint16_t *buf = _buf;
 	struct mii_device *mdev = cdev->priv;
 
-	while (i > 1) {
-		mii_write(mdev, mdev->address, offset, *buf);
+	while (i > 0) {
+		mii_write(mdev, mdev->address, offset / 2, *buf);
 		buf++;
 		i -= 2;
-		offset++;
+		offset += 2;
 	}
 
 	return count;

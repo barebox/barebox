@@ -31,6 +31,8 @@
 #define MIIDEV_FORCE_10		(1 << 0)
 #define MIIDEV_FORCE_LINK	(1 << 1)
 
+#define MIIDEV_CAPABLE_1000M	(1 << 0)
+
 struct mii_device {
 	struct device_d dev;
 	struct device_d *parent;
@@ -40,6 +42,7 @@ struct mii_device {
 	int	(*write) (struct mii_device *dev, int addr, int reg, int value);
 
 	int flags;
+	int capabilities;
 
 	struct eth_device *edev;
 	struct cdev cdev;
@@ -55,6 +58,7 @@ int miidev_get_status(struct mii_device *mdev);
 #define MIIDEV_STATUS_IS_FULL_DUPLEX	(1 << 1)
 #define MIIDEV_STATUS_IS_10MBIT		(1 << 2)
 #define MIIDEV_STATUS_IS_100MBIT	(1 << 3)
+#define MIIDEV_STATUS_IS_1000MBIT	(1 << 4)
 int miidev_print_status(struct mii_device *mdev);
 
 static int inline mii_write(struct mii_device *dev, int addr, int reg, int value)

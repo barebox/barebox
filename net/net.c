@@ -159,7 +159,7 @@ void print_IPaddr (IPaddr_t x)
 	puts(ip_to_string(x));
 }
 
-int string_to_ethaddr(const char *str, char *enetaddr)
+int string_to_ethaddr(const char *str, u8 enetaddr[6])
 {
 	int reg;
 	char *e;
@@ -181,7 +181,7 @@ int string_to_ethaddr(const char *str, char *enetaddr)
 	return 0;
 }
 
-void ethaddr_to_string(const unsigned char *enetaddr, char *str)
+void ethaddr_to_string(const u8 enetaddr[6], char *str)
 {
 	sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X",
 		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],

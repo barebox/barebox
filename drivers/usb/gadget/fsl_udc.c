@@ -1,5 +1,6 @@
 #include <common.h>
 #include <errno.h>
+#include <dma.h>
 #include <init.h>
 #include <clock.h>
 #include <usb/ch9.h>
@@ -8,7 +9,6 @@
 #include <io.h>
 #include <poller.h>
 #include <asm/byteorder.h>
-#include <asm/mmu.h>
 
 /* ### define USB registers here
  */
@@ -2109,7 +2109,8 @@ static int struct_udc_setup(struct fsl_udc *udc,
 	udc->status_req = container_of(fsl_alloc_request(NULL),
 			struct fsl_req, req);
 	/* allocate a small amount of memory to get valid address */
-	udc->status_req->req.buf = xmalloc(8);
+	udc->status_req->req.buf = dma_alloc(8);
+	udc->status_req->req.length = 8;
 	udc->resume_state = USB_STATE_NOTATTACHED;
 	udc->usb_state = USB_STATE_POWERED;
 	udc->ep0_dir = 0;

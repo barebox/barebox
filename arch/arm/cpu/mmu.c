@@ -299,11 +299,9 @@ void *dma_alloc_coherent(size_t size)
 	size = PAGE_ALIGN(size);
 	ret = xmemalign(4096, size);
 
-#ifdef CONFIG_MMU
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
 	remap_range(ret, size, PTE_FLAGS_UNCACHED);
-#endif
 
 	return ret;
 }
@@ -320,9 +318,7 @@ void *phys_to_virt(unsigned long phys)
 
 void dma_free_coherent(void *mem, size_t size)
 {
-#ifdef CONFIG_MMU
 	remap_range(mem, size, PTE_FLAGS_CACHED);
-#endif
 
 	free(mem);
 }

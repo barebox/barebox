@@ -52,6 +52,7 @@
 #include <asm/byteorder.h>
 #include <xfuncs.h>
 #include <init.h>
+#include <dma.h>
 
 #include <usb/usb.h>
 
@@ -67,7 +68,6 @@
 
 static int dev_index;
 static int asynch_allowed;
-static struct devrequest setup_packet;
 
 static int usb_hub_probe(struct usb_device *dev, int ifnum);
 static int hub_port_reset(struct usb_device *dev, int port,
@@ -454,6 +454,7 @@ static struct usb_device *usb_alloc_new_device(void)
 	usbdev->devnum = dev_index + 1;
 	usbdev->maxchild = 0;
 	usbdev->dev.bus = &usb_bus_type;
+	usbdev->setup_packet = dma_alloc(sizeof(*usbdev->setup_packet));
 
 	dev_index++;
 
@@ -471,6 +472,7 @@ void usb_rescan(void)
 		unregister_device(&dev->dev);
 		if (dev->hub)
 			free(dev->hub);
+		dma_free(dev->setup_packet);
 		free(dev);
 	}
 
@@ -532,6 +534,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 {
 	struct usb_host *host = dev->host;
 	int ret;
+	struct devrequest *setup_packet = dev->setup_packet;
 
 	if ((timeout == 0) && (!asynch_allowed)) {
 		/* request for a asynch control pipe is not allowed */
@@ -539,17 +542,18 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	}
 
 	/* set setup command */
-	setup_packet.requesttype = requesttype;
-	setup_packet.request = request;
-	setup_packet.value = cpu_to_le16(value);
-	setup_packet.index = cpu_to_le16(index);
-	setup_packet.length = cpu_to_le16(size);
+	setup_packet->requesttype = requesttype;
+	setup_packet->request = request;
+	setup_packet->value = cpu_to_le16(value);
+	setup_packet->index = cpu_to_le16(index);
+	setup_packet->length = cpu_to_le16(size);
 	USB_PRINTF("usb_control_msg: request: 0x%X, requesttype: 0x%X, " \
 		   "value 0x%X index 0x%X length 0x%X\n",
 		   request, requesttype, value, index, size);
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
-	ret = host->submit_control_msg(dev, pipe, data, size, &setup_packet, timeout);
+	ret = host->submit_control_msg(dev, pipe, data, size, setup_packet,
+			timeout);
 	if (ret)
 		return ret;
 

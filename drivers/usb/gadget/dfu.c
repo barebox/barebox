@@ -40,6 +40,7 @@
  * - make 'dnstate' attached to 'struct usb_device_instance'
  */
 
+#include <dma.h>
 #include <asm/byteorder.h>
 #include <usb/composite.h>
 #include <linux/types.h>
@@ -183,7 +184,7 @@ dfu_unbind(struct usb_configuration *c, struct usb_function *f)
 	if (gadget_is_dualspeed(c->cdev->gadget))
 		free(f->hs_descriptors);
 
-	free(dfu->dnreq->buf);
+	dma_free(dfu->dnreq->buf);
 	usb_ep_free_request(c->cdev->gadget->ep0, dfu->dnreq);
 	free(dfu);
 }
@@ -602,7 +603,7 @@ static int dfu_bind_config(struct usb_configuration *c)
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
 	if (!dfu->dnreq)
 		printf("usb_ep_alloc_request failed\n");
-	dfu->dnreq->buf = xmalloc(CONFIG_USBD_DFU_XFER_SIZE);
+	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;
 

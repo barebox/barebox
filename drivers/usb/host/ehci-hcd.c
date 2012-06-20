@@ -148,9 +148,6 @@ static void cache_qh(struct ehci_priv *ehci, int flush)
 {
 	int i;
 
-	flush_invalidate(ehci->qh_list, sizeof(struct QH) * NUM_QH, flush);
-	flush_invalidate(ehci->td, sizeof(struct qTD) * NUM_TD, flush);
-
 	for (i = 0; i < NUM_TD; i ++)
 		cache_qtd(&ehci->td[i], flush);
 }
@@ -878,8 +875,8 @@ static int ehci_probe(struct device_d *dev)
 	ehci->hccr = dev_request_mem_region(dev, 0);
 	ehci->hcor = dev_request_mem_region(dev, 1);
 
-	ehci->qh_list = xmemalign(32, sizeof(struct QH) * NUM_QH);
-	ehci->td = xmemalign(32, sizeof(struct qTD) * NUM_TD);
+	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
+	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;

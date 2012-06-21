@@ -293,11 +293,11 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	    (dev->portnr << 23) |
 	    (dev->parent->devnum << 16) | (0 << 8) | (0 << 0);
 	qh->qh_endpt2 = cpu_to_hc32(endpt);
-	qh->qh_overlay.qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	qh->qh_overlay.qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	qh->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	qh->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 
 	td = NULL;
-	tdp = &qh->qh_overlay.qt_next;
+	tdp = &qh->qt_next;
 
 	toggle =
 	    usb_gettoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe));
@@ -391,7 +391,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 			ehci_writel(&ehci->hcor->or_usbcmd, cmd);
 
 			ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, 0, 100 * 1000);
-			ehci_writel(&qh->qh_overlay.qt_token, 0);
+			ehci_writel(&qh->qt_token, 0);
 			return -ETIMEDOUT;
 		}
 	} while (token & 0x80);
@@ -410,7 +410,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 
-	token = hc32_to_cpu(qh->qh_overlay.qt_token);
+	token = hc32_to_cpu(qh->qt_token);
 	if (!(token & 0x80)) {
 		debug("TOKEN=0x%08x\n", token);
 		switch (token & 0xfc) {
@@ -448,10 +448,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 fail:
 	printf("fail1\n");
-	td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
+	td = (void *)hc32_to_cpu(qh->qt_next);
 	while (td != (void *)QT_NEXT_TERMINATE) {
-		qh->qh_overlay.qt_next = td->qt_next;
-		td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
+		qh->qt_next = td->qt_next;
+		td = (void *)hc32_to_cpu(qh->qt_next);
 	}
 	return -1;
 }
@@ -767,9 +767,9 @@ static int ehci_init(struct usb_host *host)
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));
 	ehci->qh_list->qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_token = cpu_to_hc32(0x40);
+	ehci->qh_list->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list->qt_token = cpu_to_hc32(0x40);
 
 	/* Set async. queue head pointer. */
 	ehci_writel(&ehci->hcor->or_asynclistaddr, (uint32_t)ehci->qh_list);

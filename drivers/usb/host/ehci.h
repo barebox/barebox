@@ -179,7 +179,11 @@ struct QH {
 	uint32_t qh_endpt1;
 	uint32_t qh_endpt2;
 	uint32_t qh_curtd;
-	struct qTD qh_overlay;
+	 /* qtd overlay (hardware parts of a struct qTD) */
+	uint32_t qt_next;
+	uint32_t qt_altnext;
+	uint32_t qt_token;
+	uint32_t qt_buffer[5];
 	/*
 	 * Add dummy fill value to make the size of this struct
 	 * aligned to 32 bytes

@@ -31,6 +31,7 @@
 #include <block.h>
 #include <asm/unaligned.h>
 #include <disks.h>
+#include <dma.h>
 
 struct partition {
 	uint64_t first_sec;
@@ -102,7 +103,7 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 	struct partition pentry;
 	int i, rc;
 
-	buffer = xmalloc(SECTOR_SIZE);
+	buffer = dma_alloc(SECTOR_SIZE);
 
 	/* read in the MBR to get the partition table */
 	rc = blk->ops->read(blk, buffer, 0, 1);
@@ -142,7 +143,7 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 	}
 
 on_error:
-	free(buffer);
+	dma_free(buffer);
 }
 
 /**

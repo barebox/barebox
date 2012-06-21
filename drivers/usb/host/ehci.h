@@ -166,7 +166,9 @@ struct qTD {
 	uint32_t qt_altnext;
 	uint32_t qt_token;
 	uint32_t qt_buffer[5];
-};
+	unsigned long qtd_dma;
+	size_t length;
+} __attribute__ ((aligned (32)));
 
 /* Queue Head (QH). */
 struct QH {

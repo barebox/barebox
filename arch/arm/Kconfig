@@ -135,7 +135,15 @@ config CMD_ARM_CPUINFO
 	default y
 	help
 	  Say yes here to get a cpuinfo command to show some
-	  information about the cp15 registers
+	  CPU information using the cp15 registers
+
+config CMD_ARM_MMUINFO
+	bool "mmuinfo command"
+	depends on CPU_V7
+	default n
+	help
+	  Say yes here to get a mmuinfo command to show some
+	  MMU and cache information using the cp15 registers
 
 config CPU_V7_DCACHE_SKIP
 	bool "Skip DCache Invalidate"

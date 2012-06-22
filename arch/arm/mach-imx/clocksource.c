@@ -38,7 +38,7 @@
 #include <io.h>
 
 #define GPT(x) __REG(IMX_TIM1_BASE + (x))
-#define timer_base (IMX_TIM1_BASE)
+#define timer_base IOMEM(IMX_TIM1_BASE)
 
 static uint64_t imx_clocksource_read(void)
 {
@@ -120,15 +120,17 @@ core_initcall(clocksource_init);
  */
 void __noreturn reset_cpu (unsigned long addr)
 {
+	void __iomem *wdt = IOMEM(IMX_WDT_BASE);
+
 	/* Disable watchdog and set Time-Out field to 0 */
-	writew(0x0, IMX_WDT_BASE + WDOG_WCR);
+	writew(0x0, wdt + WDOG_WCR);
 
 	/* Write Service Sequence */
-	writew(0x5555, IMX_WDT_BASE + WDOG_WSR);
-	writew(0xaaaa, IMX_WDT_BASE + WDOG_WSR);
+	writew(0x5555, wdt + WDOG_WSR);
+	writew(0xaaaa, wdt + WDOG_WSR);
 
 	/* Enable watchdog */
-	writew(WDOG_WCR_WDE, IMX_WDT_BASE + WDOG_WCR);
+	writew(WDOG_WCR_WDE, wdt + WDOG_WCR);
 
 	while (1);
 	/*NOTREACHED*/

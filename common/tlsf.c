@@ -367,7 +367,7 @@ static block_header_t* search_suitable_block(pool_t* pool, int* fli, int* sli)
 		if (!fl_map)
 		{
 			/* No free blocks available, memory has been exhausted. */
-			return 0;
+			return NULL;
 		}
 
 		fl = tlsf_ffs(fl_map);
@@ -563,7 +563,7 @@ static block_header_t* block_trim_free_leading(pool_t* pool, block_header_t* blo
 static block_header_t* block_locate_free(pool_t* pool, size_t size)
 {
 	int fl = 0, sl = 0;
-	block_header_t* block = 0;
+	block_header_t* block = NULL;
 
 	if (size)
 	{
@@ -582,7 +582,7 @@ static block_header_t* block_locate_free(pool_t* pool, size_t size)
 
 static void* block_prepare_used(pool_t* pool, block_header_t* block, size_t size)
 {
-	void* p = 0;
+	void* p = NULL;
 	if (block)
 	{
 		block_trim_free(pool, block, size);
@@ -737,7 +737,7 @@ size_t tlsf_block_size(void* ptr)
 ** tlsf_create, equal to the size of a pool_t plus overhead of the initial
 ** free block and the sentinel block.
 */
-size_t tlsf_overhead()
+size_t tlsf_overhead(void)
 {
 	const size_t pool_overhead = sizeof(pool_t) + 2 * block_header_overhead;
 	return pool_overhead;
@@ -790,7 +790,7 @@ tlsf_pool tlsf_create(void* mem, size_t bytes)
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
 #endif
-		return 0;
+		return NULL;
 	}
 
 	/* Construct a valid pool object. */
@@ -915,7 +915,7 @@ void tlsf_free(tlsf_pool tlsf, void* ptr)
 void* tlsf_realloc(tlsf_pool tlsf, void* ptr, size_t size)
 {
 	pool_t* pool = tlsf_cast(pool_t*, tlsf);
-	void* p = 0;
+	void* p = NULL;
 
 	/* Zero-size requests are treated as free. */
 	if (ptr && size == 0)

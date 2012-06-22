@@ -183,7 +183,7 @@ static inline const char *dev_name(const struct device_d *dev)
 /*
  * get register base 'num' for a device
  */
-void __iomem *dev_get_mem_region(struct device_d *dev, int num);
+void *dev_get_mem_region(struct device_d *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device

@@ -241,15 +241,15 @@ static struct resource *dev_get_resource(struct device_d *dev, int num)
 	return NULL;
 }
 
-void __iomem *dev_get_mem_region(struct device_d *dev, int num)
+void *dev_get_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;
 
 	res = dev_get_resource(dev, num);
 	if (!res)
-		return res;
+		return NULL;
 
-	return (void __force __iomem *)res->start;
+	return (void __force *)res->start;
 }
 EXPORT_SYMBOL(dev_get_mem_region);
 

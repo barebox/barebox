@@ -2,6 +2,7 @@
 #include <io.h>
 #include <asm-generic/div64.h>
 #include <mach/imx-regs.h>
+#include <mach/clock.h>
 #include "mach/clock-imx51_53.h"
 
 static u32 ccm_readl(u32 ofs)
@@ -139,7 +140,7 @@ unsigned long imx_get_uartclk(void)
 	return parent_rate / (prediv * podf);
 }
 
-static unsigned long imx_get_ahbclk(void)
+unsigned long imx_get_ahbclk(void)
 {
 	u32 reg, div;
 

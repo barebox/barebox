@@ -84,7 +84,7 @@ unsigned long imx_get_ahbclk(void)
 	return fref / aad->ahb;
 }
 
-static unsigned long imx_get_ipgclk(void)
+unsigned long imx_get_ipgclk(void)
 {
 	ulong clk = imx_get_ahbclk();
 

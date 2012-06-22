@@ -691,7 +691,7 @@ static int smc911x_probe(struct device_d *dev)
 	struct smc911x_priv *priv;
 	uint32_t val;
 	int i;
-	void *base;
+	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
 

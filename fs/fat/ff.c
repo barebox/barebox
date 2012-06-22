@@ -1043,7 +1043,7 @@ int dir_register (	/* 0:Successful, FR_DENIED:No free entry or too many SFN coll
 
 	if (sn[NS] & NS_LOSS) {
 		/* When LFN is out of 8.3 format, generate a numbered name */
-		fn[NS] = 0; dj->lfn = 0; /* Find only SFN */
+		fn[NS] = 0; dj->lfn = NULL; /* Find only SFN */
 		for (n = 1; n < 100; n++) {
 			gen_numname(fn, sn, lfn, n); /* Generate a numbered name */
 			res = dir_find(dj); /* Check if the name collides with existing SFN */
@@ -1496,7 +1496,7 @@ int follow_path (	/* 0(0): successful, !=0: error code */
 	if ((UINT)*path < ' ') {
 		/* Nul path means the start directory itself */
 		res = dir_sdi(dj, 0);
-		dj->dir = 0;
+		dj->dir = NULL;
 		return res;
 	}
 
@@ -1718,7 +1718,7 @@ int f_open (
 	DEF_NAMEBUF;
 
 
-	fp->fs = 0;		/* Clear file object */
+	fp->fs = NULL;		/* Clear file object */
 
 #ifdef CONFIG_FS_FAT_WRITE
 	mode &= FA_READ | FA_WRITE | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_CREATE_NEW;
@@ -2059,7 +2059,7 @@ int f_close (
 	/* Flush cached data */
 	res = f_sync(fp);
 	if (res == 0)
-		fp->fs = 0;	/* Discard file object */
+		fp->fs = NULL;	/* Discard file object */
 	return res;
 #endif
 }
@@ -2308,7 +2308,7 @@ int f_getfree (
 	} else {
 		clst = fatfs->n_fatent;
 		sect = fatfs->fatbase;
-		i = 0; p = 0;
+		i = 0; p = NULL;
 		do {
 			if (!i) {
 				res = move_window(fatfs, sect++);

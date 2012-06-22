@@ -70,7 +70,7 @@ struct fsl_esdhc {
 
 struct fsl_esdhc_host {
 	struct mci_host		mci;
-	struct fsl_esdhc	*regs;
+	struct fsl_esdhc __iomem	*regs;
 	u32			no_snoop;
 	unsigned long		cur_clock;
 	struct device_d		*dev;
@@ -81,7 +81,7 @@ struct fsl_esdhc_host {
 #define  SDHCI_CMD_ABORTCMD (0xC0 << 16)
 
 /* Return the XFERTYP flags for a given command and data packet */
-u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
+static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 xfertyp = 0;
 
@@ -185,7 +185,7 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 #ifndef CONFIG_MCI_IMX_ESDHC_PIO
 	u32 wml_value;
 
@@ -237,7 +237,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	u32	xfertyp, mixctrl;
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 	int ret;
 
 	esdhc_write32(&regs->irqstat, -1);
@@ -353,11 +353,11 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	return 0;
 }
 
-void set_sysctl(struct mci_host *mci, u32 clock)
+static void set_sysctl(struct mci_host *mci, u32 clock)
 {
 	int div, pre_div;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 	int sdhc_clk = imx_get_mmcclk();
 	u32 clk;
 
@@ -400,7 +400,7 @@ void set_sysctl(struct mci_host *mci, u32 clock)
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 
 	/* Set the clock speed */
 	set_sysctl(mci, ios->clock);
@@ -425,7 +425,7 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 static int esdhc_card_detect(struct fsl_esdhc_host *host)
 {
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 	struct esdhc_platform_data *pdata = host->dev->platform_data;
 	int ret;
 
@@ -451,7 +451,7 @@ static int esdhc_card_detect(struct fsl_esdhc_host *host)
 static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct fsl_esdhc *regs = host->regs;
+	struct fsl_esdhc __iomem *regs = host->regs;
 	int timeout = 1000;
 	int ret = 0;
 
@@ -493,7 +493,7 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	return ret;
 }
 
-static int esdhc_reset(struct fsl_esdhc *regs)
+static int esdhc_reset(struct fsl_esdhc __iomem *regs)
 {
 	uint64_t start;
 

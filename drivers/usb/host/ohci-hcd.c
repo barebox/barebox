@@ -415,7 +415,7 @@ static void ohci_dump(struct ohci *controller, int verbose)
 
 /* get a transfer request */
 
-int sohci_submit_job(struct urb_priv *urb, struct devrequest *setup)
+static int sohci_submit_job(struct urb_priv *urb, struct devrequest *setup)
 {
 	struct ed *ed;
 	int i, size = 0;
@@ -498,7 +498,7 @@ int sohci_submit_job(struct urb_priv *urb, struct devrequest *setup)
 static inline int sohci_return_job(struct ohci *hc, struct urb_priv *urb)
 {
 #ifdef ENBALE_PIPE_INTERRUPT
-	struct ohci_regs *regs = hc->regs;
+	struct ohci_regs __iomem *regs = hc->regs;
 #endif
 
 	switch (usb_pipetype(urb->pipe)) {
@@ -848,7 +848,7 @@ static void td_fill(struct ohci *ohci, unsigned int info,
 	}
 #endif
 	if (!len)
-		data = 0;
+		data = NULL;
 
 	td->hwINFO = m32_swap(info);
 	td->hwCBP = virt_to_phys((void *)m32_swap((unsigned long)data));
@@ -894,7 +894,7 @@ static void td_submit_job(struct usb_device *dev, unsigned long pipe,
 	if (data_len)
 		data = buffer;
 	else
-		data = 0;
+		data = NULL;
 
 	switch (usb_pipetype(pipe)) {
 	case PIPE_BULK:
@@ -1214,32 +1214,6 @@ static inline void wr_rh_portstat(struct ohci *ohci, int wIndex, __u32 value)
 	writel(value, &ohci->regs->roothub.portstatus[wIndex-1]);
 }
 
-/* request to virtual root hub */
-
-int rh_check_port_status(struct ohci *controller)
-{
-	__u32 temp, ndp, i;
-	int res;
-
-	res = -1;
-	temp = roothub_a(controller);
-	ndp = (temp & RH_A_NDP);
-#ifdef CONFIG_AT91C_PQFP_UHPBUG
-	ndp = (ndp == 2) ? 1 : 0;
-#endif
-	for (i = 0; i < ndp; i++) {
-		temp = roothub_portstatus(controller, i);
-		/* check for a device disconnect */
-		if (((temp & (RH_PS_PESC | RH_PS_CSC)) ==
-			(RH_PS_PESC | RH_PS_CSC)) &&
-			((temp & RH_PS_CCS) == 0)) {
-			res = i;
-			break;
-		}
-	}
-	return res;
-}
-
 static int ohci_submit_rh_msg(struct usb_device *dev, unsigned long pipe,
 		void *buffer, int transfer_len, struct devrequest *cmd)
 {
@@ -1502,7 +1476,7 @@ static int ohci_submit_rh_msg(struct usb_device *dev, unsigned long pipe,
 
 /* common code for handling submit messages - used for all but root hub */
 /* accesses. */
-int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+static int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		int transfer_len, struct devrequest *setup, int interval,
 		int timeout)
 {
@@ -1721,7 +1695,7 @@ static int hc_start(struct ohci *ohci)
 
 static int hc_interrupt(struct ohci *ohci)
 {
-	struct ohci_regs *regs = ohci->regs;
+	struct ohci_regs __iomem *regs = ohci->regs;
 	int ints;
 	int stat = 0;
 
@@ -1840,7 +1814,7 @@ static int ohci_probe(struct device_d *dev)
 
 	usb_register_host(host);
 
-	ohci->regs = (void *)dev->resource[0].start;
+	ohci->regs = dev_request_mem_region(dev, 0);
 
 	return 0;
 }

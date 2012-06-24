@@ -393,6 +393,15 @@ int menu_show(struct menu *m)
 				return m->selected->num;
 			else
 				print_menu(m);
+			break;
+		case KEY_HOME:
+			m->selected = list_first_entry(&m->entries, struct menu_entry, list);
+			repaint = 1;
+			break;
+		case KEY_END:
+			m->selected = list_last_entry(&m->entries, struct menu_entry, list);
+			repaint = 1;
+			break;
 		default:
 			break;
 		}

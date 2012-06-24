@@ -297,7 +297,6 @@ static int menu_alloc_display_buffer(struct menu *m)
 int menu_show(struct menu *m)
 {
 	int ch, ch_previous = 0;
-	int escape = 0;
 	int countdown;
 	int auto_display_len = 16;
 	uint64_t start, second;
@@ -347,19 +346,12 @@ int menu_show(struct menu *m)
 		if (m->auto_select >= 0)
 			ch = KEY_RETURN;
 		else
-			ch = getc();
+			ch = read_key();
 
 		m->auto_select = -1;
 
-		switch(ch) {
-		case 0x1b:
-			escape = 1;
-			break;
-		case '[':
-			if (escape)
-				break;
-		case 'A': /* up */
-			escape = 0;
+		switch (ch) {
+		case KEY_UP:
 			print_menu_entry(m, m->selected, 0);
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);
@@ -369,8 +361,7 @@ int menu_show(struct menu *m)
 			}
 			print_menu_entry(m, m->selected, 1);
 			break;
-		case 'B': /* down */
-			escape = 0;
+		case KEY_DOWN:
 			print_menu_entry(m, m->selected, 0);
 			m->selected = list_entry(m->selected->list.next, struct menu_entry,
 						 list);

@@ -205,6 +205,13 @@ config CMD_BASENAME
 	  Strip directory and suffix from filenames and store the result in a
 	  environment variable
 
+config CMD_DIRNAME
+	tristate
+	prompt "dirname"
+	help
+	  Strip last component of file name and store the result in a
+	  environment variable
+
 endmenu
 
 menu "console                       "

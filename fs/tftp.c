@@ -336,6 +336,7 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 
 		if (len < priv->blocksize) {
 			tftp_send(priv);
+			priv->err = 0;
 			priv->state = STATE_DONE;
 		}
 
@@ -423,7 +424,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 			goto out2;
 	}
 
-	if (priv->state == STATE_DONE) {
+	if (priv->state == STATE_DONE && priv->err) {
 		ret = priv->err;
 		goto out2;
 	}

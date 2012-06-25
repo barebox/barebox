@@ -8,6 +8,7 @@ obj-y += smulsi3_highpart.o
 obj-y += umodsi3.o
 obj-y += lshrdi3.o
 obj-y += ashldi3.o
+obj-y += ashrdi3.o
 obj-y += divsi3.o
 obj-y += modsi3.o
 obj-y += cpu.o

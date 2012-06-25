@@ -27,6 +27,11 @@
 #ifndef _ASM_X86_BITOPS_H_
 #define _ASM_X86_BITOPS_H_
 
-/* nothing special yet */
+#define BITS_PER_LONG 32
+
+#include <asm-generic/bitops/__fls.h>
+#include <asm-generic/bitops/__ffs.h>
+#include <asm-generic/bitops/fls.h>
+#include <asm-generic/bitops/ffs.h>
 
 #endif /* _ASM_X86_BITOPS_H_ */

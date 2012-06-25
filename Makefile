@@ -540,7 +540,7 @@ quiet_cmd_check_file_size = CHKSIZE $@
 	max_size=`printf "%d" $2`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\
-		echo "$@ size $$size > of the maximum size $$max_size";	\
+		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\
 		exit 1 ;						\
 	fi;
 

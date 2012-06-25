@@ -7,6 +7,13 @@
  * 64 bit
  */
 #define INTERNAL_SIZE_T unsigned long
+
+/*
+ * This is a Kconfig variable in the Kernel, but we want to detect
+ * this during compile time, so we set it here.
+ */
+#define CONFIG_PHYS_ADDR_T_64BIT
+
 #endif
 
 typedef unsigned short umode_t;

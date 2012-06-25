@@ -30,7 +30,8 @@ static void __print_resources(struct resource *res, int indent)
 	for (i = 0; i < indent; i++)
 		printf("  ");
 
-	printf("0x%08x - 0x%08x (size 0x%08x) %s\n", res->start,
+	printf(PRINTF_CONVERSION_RESOURCE " - " PRINTF_CONVERSION_RESOURCE
+			" (size " PRINTF_CONVERSION_RESOURCE ") %s\n", res->start,
 			res->start + res->size - 1,
 			res->size, res->name);
 

@@ -388,7 +388,8 @@ static int do_devinfo(int argc, char *argv[])
 			printf("num   : %d\n", i);
 			if (res->name)
 				printf("name  : %s\n", res->name);
-			printf("start : 0x%08x\nsize  : 0x%08x\n",
+			printf("start : " PRINTF_CONVERSION_RESOURCE "\nsize  : "
+					PRINTF_CONVERSION_RESOURCE "\n",
 			       res->start, res->size);
 		}
 

@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <malloc.h>
+#include <boot.h>
 #include <asm/syslib.h>
 
 /** FIXME */

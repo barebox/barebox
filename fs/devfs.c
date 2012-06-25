@@ -49,6 +49,9 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 {
 	struct cdev *cdev = f->inode;
 
+	if (cdev->flags & DEVFS_PARTITION_READONLY)
+		return -EPERM;
+
 	return cdev_write(cdev, buf, size, f->pos, f->flags);
 }
 
@@ -69,6 +72,9 @@ static off_t devfs_lseek(struct device_d *_dev, FILE *f, off_t pos)
 static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, unsigned long offset)
 {
 	struct cdev *cdev = f->inode;
+
+	if (cdev->flags & DEVFS_PARTITION_READONLY)
+		return -EPERM;
 
 	if (!cdev->ops->erase)
 		return -ENOSYS;

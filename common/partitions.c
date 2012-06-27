@@ -119,7 +119,7 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 	table = (struct partition_entry *)&buffer[446];
 
 	/* valid for x86 BIOS based disks only */
-	if (blk->num_blocks == 0)
+	if (IS_ENABLED(CONFIG_DISK_BIOS) && blk->num_blocks == 0)
 		blk->num_blocks = disk_guess_size(blk->dev, table);
 
 	for (i = 0; i < 4; i++) {

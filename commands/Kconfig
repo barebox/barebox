@@ -552,6 +552,25 @@ config CMD_USB
 	help
 	  The usb command allows to rescan for USB devices.
 
+menuconfig CMD_WD
+	bool
+	depends on WATCHDOG
+	prompt "wd command                    "
+	help
+	  The 'wd' command which allows to start, stop and trigger the onboard
+	  watchdog.
+
+if CMD_WD
+
+config CMD_WD_DEFAULT_TIMOUT
+	int
+	prompt "default timeout"
+	help
+	  Define the default timeout value in [seconds] if the first call of
+	  'wd' is done without a timeout value (which means the watchdog gets
+	  enabled and re-triggered with the default timeout value).
+endif
+
 endmenu
 
 endif

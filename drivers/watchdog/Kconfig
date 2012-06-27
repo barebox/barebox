@@ -1,0 +1,9 @@
+menuconfig WATCHDOG
+	bool "Watchdog support              "
+	help
+	  Many platforms support a watchdog to keep track of a working machine.
+	  This framework provides routines to handle these watchdogs.
+
+if WATCHDOG
+
+endif

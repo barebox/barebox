@@ -262,6 +262,8 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 		return NULL;
 
 	res = request_iomem_region(dev_name(dev), res->start, res->size);
+	if (!res)
+		return NULL;
 
 	return (void __force __iomem *)res->start;
 }

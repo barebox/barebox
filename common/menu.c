@@ -53,7 +53,6 @@ void menu_free(struct menu *m)
 	free(m->name);
 	free(m->display);
 	free(m->auto_display);
-	free(m->display_buffer);
 
 	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
@@ -87,14 +86,8 @@ EXPORT_SYMBOL(menu_remove);
 
 int menu_add_entry(struct menu *m, struct menu_entry *me)
 {
-	int len;
-
 	if (!m || !me || !me->display)
 		return -EINVAL;
-
-	len = strlen(me->display);
-
-	m->width = max(len, m->width);
 
 	m->nb_entries++;
 	me->num = m->nb_entries;
@@ -160,6 +153,18 @@ void menu_entry_free(struct menu_entry *me)
 }
 EXPORT_SYMBOL(menu_entry_free);
 
+static void __print_entry(const char *str)
+{
+	static char outstr[256];
+
+	if (IS_ENABLED(CONFIG_SHELL_HUSH)) {
+		process_escape_sequence(str, outstr, 256);
+		puts(outstr);
+	} else {
+		puts(str);
+	}
+}
+
 static void print_menu_entry(struct menu *m, struct menu_entry *me,
 			     int selected)
 {
@@ -174,17 +179,11 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 		puts("   ");
 	}
 
-	if (IS_ENABLED(CONFIG_SHELL_HUSH))
-		process_escape_sequence(me->display, m->display_buffer,
-					m->display_buffer_size);
-
 	printf(" %d: ", me->num);
 	if (selected)
 		puts("\e[7m");
-	if (IS_ENABLED(CONFIG_SHELL_HUSH))
-		puts(m->display_buffer);
-	else
-		puts(me->display);
+
+	__print_entry(me->display);
 
 	if (selected)
 		puts("\e[m");
@@ -241,13 +240,7 @@ static void print_menu(struct menu *m)
 	clear();
 	gotoXY(1, 2);
 	if(m->display) {
-		if (IS_ENABLED(CONFIG_SHELL_HUSH)) {
-			process_escape_sequence(m->display, m->display_buffer,
-						m->display_buffer_size);
-			puts(m->display_buffer);
-		} else {
-			puts(m->display);
-		}
+		__print_entry(m->display);
 	} else {
 		puts("Menu : ");
 		puts(m->name);
@@ -266,34 +259,6 @@ static void print_menu(struct menu *m)
 	print_menu_entry(m, m->selected, 1);
 }
 
-static int menu_alloc_display_buffer(struct menu *m)
-{
-	int min_size;
-
-	if (m->display)
-		min_size = max((int)strlen(m->display), m->width);
-	else
-		min_size = m->width;
-
-
-	if (m->display_buffer) {
-		if (m->display_buffer_size >= min_size)
-			return 0;
-		m->display_buffer = realloc(m->display_buffer, min_size * sizeof(char));
-	} else {
-		m->display_buffer = calloc(min_size, sizeof(char));
-	}
-
-	if (!m->display_buffer) {
-		perror("display_buffer");
-		return -ENOMEM;
-	}
-
-	m->display_buffer_size = min_size;
-
-	return 0;
-}
-
 int menu_show(struct menu *m)
 {
 	int ch, ch_previous = 0;
@@ -301,14 +266,9 @@ int menu_show(struct menu *m)
 	int countdown;
 	int auto_display_len = 16;
 	uint64_t start, second;
-	int ret;
 
 	if(!m || list_empty(&m->entries))
 		return -EINVAL;
-
-	ret = menu_alloc_display_buffer(m);
-	if (ret)
-		return ret;
 
 	print_menu(m);
 

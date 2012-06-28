@@ -3,4 +3,6 @@
 
 #include <linux/types.h>
 
+#define NSEC_PER_SEC	1000000000L
+
 #endif

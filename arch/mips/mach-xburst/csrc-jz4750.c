@@ -28,7 +28,7 @@
 #include <io.h>
 #include <mach/jz4750d_regs.h>
 
-#define JZ_TIMER_CLOCK 40000
+#define JZ_TIMER_CLOCK 24000000
 
 static uint64_t jz4750_cs_read(void)
 {

@@ -1,6 +1,7 @@
 bareboxenv
 bin2c
-mkimage
-kallsyms
 gen_netx_image
+kallsyms
+mkimage
+mkublheader
 omap_signGP

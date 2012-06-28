@@ -268,7 +268,10 @@ static __inline__ int find_next_zero_bit(void *addr, int size, int offset)
 	return result + ffz(tmp);
 }
 
+#include <asm-generic/bitops/__ffs.h>
+#include <asm-generic/bitops/__fls.h>
 #include <asm-generic/bitops/ffs.h>
+#include <asm-generic/bitops/fls.h>
 #include <asm-generic/bitops/hweight.h>
 
 static __inline__ int ext2_set_bit(int nr, volatile void *addr)

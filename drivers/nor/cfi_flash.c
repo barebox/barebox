@@ -82,9 +82,9 @@ static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
 		return;
 	}
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#ifdef __BIG_ENDIAN
 	*cword = (*cword << 8) | c;
-#else
+#elif defined __LITTLE_ENDIAN
 
 	if (bankwidth_is_2(info))
 		*cword = (*cword >> 8) | (u16)c << 8;
@@ -92,6 +92,8 @@ static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
 		*cword = (*cword >> 8) | (u32)c << 24;
 	else if (bankwidth_is_8(info))
 		*cword = (*cword >> 8) | (u64)c << 56;
+#else
+#error "could not determine byte order"
 #endif
 }
 
@@ -167,7 +169,7 @@ static void flash_printqry (struct cfi_qry *qry)
 uchar flash_read_uchar (struct flash_info *info, uint offset)
 {
 	uchar *cp = flash_make_addr(info, 0, offset);
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined __LITTLE_ENDIAN
 	return flash_read8(cp);
 #else
 	return flash_read8(cp + info->portwidth - 1);
@@ -195,7 +197,7 @@ static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint o
 		debug ("addr[%x] = 0x%x\n", x, flash_read8(addr + x));
 	}
 #endif
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined __LITTLE_ENDIAN
 	retval = ((flash_read8(addr) << 16) |
 		  (flash_read8(addr + info->portwidth) << 24) |
 		  (flash_read8(addr + 2 * info->portwidth)) |

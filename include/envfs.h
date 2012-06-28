@@ -34,11 +34,25 @@ struct envfs_super {
 	uint32_t sb_crc;		/* crc for the superblock */
 };
 
-#ifndef __BYTE_ORDER
-#error "No byte order defined in __BYTE_ORDER"
+#ifdef __BAREBOX__
+#  ifdef __LITTLE_ENDIAN
+#    define ENVFS_ORDER_LITTLE
+#  elif defined __BIG_ENDIAN
+#    define ENVFS_ORDER_BIG
+#  else
+#    error "could not determine byte order"
+#  endif
+#else
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#    define ENVFS_ORDER_LITTLE
+#  elif __BYTE_ORDER == __BIG_ENDIAN
+#    define ENVFS_ORDER_BIG
+#  else
+#    error "could not determine byte order"
+#  endif
 #endif
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#ifdef ENVFS_ORDER_LITTLE
 #define ENVFS_16(x)	(x)
 #define ENVFS_24(x)	(x)
 #define ENVFS_32(x)	(x)
@@ -46,7 +60,7 @@ struct envfs_super {
 #define ENVFS_GET_OFFSET(x)	((x)->offset)
 #define ENVFS_SET_OFFSET(x,y)	((x)->offset = (y))
 #define ENVFS_SET_NAMELEN(x,y) ((x)->namelen = (y))
-#elif __BYTE_ORDER == __BIG_ENDIAN
+#elif defined ENVFS_ORDER_BIG
 #ifdef __KERNEL__
 #define ENVFS_16(x)	swab16(x)
 #define ENVFS_24(x)	((swab32(x)) >> 8)

@@ -109,6 +109,7 @@ config NAND_IMX_BOOT
 
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool
+	depends on !ARCH_IMX1
 	prompt "Support Starting barebox from NAND"
 	depends on ARCH_IMX_EXTERNAL_BOOT
 

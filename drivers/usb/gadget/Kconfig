@@ -1,5 +1,10 @@
 menuconfig USB_GADGET
+	depends on USB_HAVE_GADGET_DRIVER
 	bool "USB gadget support            "
+
+config USB_HAVE_GADGET_DRIVER
+	bool
+	default y if ARCH_IMX || ARCH_AT91 || ARCH_PXA
 
 if USB_GADGET
 

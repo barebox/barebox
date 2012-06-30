@@ -1,5 +1,5 @@
 /*
- * uncompress.c - uncompress a lzo compressed file
+ * uncompress.c - uncompress a compressed file
  *
  * Copyright (c) 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -64,7 +64,7 @@ static const __maybe_unused char cmd_uncompress_help[] =
 
 BAREBOX_CMD_START(uncompress)
         .cmd            = do_uncompress,
-        .usage          = "lzop <infile> <outfile>",
+        .usage          = "uncompress a compressed file",
         BAREBOX_CMD_HELP(cmd_uncompress_help)
 BAREBOX_CMD_END
 

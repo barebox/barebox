@@ -17,6 +17,7 @@
 #include <common.h>
 #include <errno.h>
 #include <init.h>
+#include <gpio.h>
 #include <clock.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>

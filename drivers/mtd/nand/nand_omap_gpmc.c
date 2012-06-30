@@ -90,7 +90,7 @@
 #define GPMC_ECC_SIZE_CONFIG_ECCSIZE0(x)	((x) << 12)
 #define GPMC_ECC_SIZE_CONFIG_ECCSIZE1(x)	((x) << 22)
 
-int decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
+int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
 
 static char *ecc_mode_strings[] = {
 	"software",
@@ -400,7 +400,7 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 
 		count = 0;
 		if (eccflag == 1) {
-			count = decode_bch(select_4_8, calc_ecc, err_loc);
+			count = omap_gpmc_decode_bch(select_4_8, calc_ecc, err_loc);
 			if (count < 0)
 				return count;
 			else

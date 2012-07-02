@@ -33,6 +33,7 @@
 #include <libbb.h>
 #include <magicvar.h>
 #include <environment.h>
+#include <libgen.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -427,6 +428,25 @@ out:
 	return ret;
 }
 
+static int parent_check_directory(const char *path)
+{
+	struct stat s;
+	int ret;
+	char *dir = dirname(xstrdup(path));
+
+	ret = stat(dir, &s);
+
+	free(dir);
+
+	if (ret)
+		return -ENOENT;
+
+	if (!S_ISDIR(s.st_mode))
+		return -ENOTDIR;
+
+	return 0;
+}
+
 const char *getcwd(void)
 {
 	return cwd;
@@ -513,6 +533,12 @@ int open(const char *pathname, int flags, ...)
 	if (exist_err && !(flags & O_CREAT)) {
 		ret = exist_err;
 		goto out1;
+	}
+
+	if (exist_err) {
+		ret = parent_check_directory(path);
+		if (ret)
+			goto out1;
 	}
 
 	f = get_file();
@@ -1152,6 +1178,10 @@ int mkdir (const char *pathname, mode_t mode)
 	char *p = normalise_path(pathname);
 	char *freep = p;
 	int ret;
+
+	ret = parent_check_directory(p);
+	if (ret)
+		goto out;
 
 	ret = path_check_prereq(pathname, S_UB_DOES_NOT_EXIST);
 	if (ret)

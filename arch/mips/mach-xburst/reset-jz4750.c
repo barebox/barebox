@@ -29,6 +29,19 @@
 
 #define JZ_EXTAL 24000000
 
+static void __noreturn jz4750d_halt(void)
+{
+	while (1) {
+		__asm__(".set push;\n"
+			".set mips3;\n"
+			"wait;\n"
+			".set pop;\n"
+		);
+	}
+
+	unreachable();
+}
+
 void __noreturn reset_cpu(ulong addr)
 {
 	__raw_writew(WDT_TCSR_PRESCALE4 | WDT_TCSR_EXT_EN, (u16 *)WDT_TCSR);
@@ -44,3 +57,18 @@ void __noreturn reset_cpu(ulong addr)
 	unreachable();
 }
 EXPORT_SYMBOL(reset_cpu);
+
+void __noreturn poweroff()
+{
+	u32 ctrl;
+
+	shutdown_barebox();
+
+	do {
+		ctrl = readl((u32 *)RTC_RCR);
+	} while (!(ctrl & RTC_RCR_WRDY));
+
+	writel(RTC_HCR_PD, (u32 *)RTC_HCR);
+	jz4750d_halt();
+}
+EXPORT_SYMBOL(poweroff);

@@ -12,6 +12,7 @@ choice
 
 config BOARD_RZX50
 	bool "Ritmix RZX-50"
+	select HAS_POWEROFF
 	select CPU_JZ4755
 
 endchoice

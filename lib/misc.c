@@ -27,15 +27,15 @@
 #include <linux/ctype.h>
 
 /*
- * Like simple_strtoul() but handles an optional G, M, K or k
+ * Like simple_strtoull() but handles an optional G, M, K or k
  * suffix for Gigabyte, Megabyte or Kilobyte
  */
-unsigned long strtoul_suffix(const char *str, char **endp, int base)
+unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 {
-	unsigned long val;
+	unsigned long long val;
 	char *end;
 
-	val = simple_strtoul(str, &end, base);
+	val = simple_strtoull(str, &end, base);
 
 	switch (*end) {
 	case 'G':
@@ -55,6 +55,12 @@ unsigned long strtoul_suffix(const char *str, char **endp, int base)
 
 	return val;
 }
+EXPORT_SYMBOL(strtoull_suffix);
+
+unsigned long strtoul_suffix(const char *str, char **endp, int base)
+{
+	return strtoull_suffix(str, endp, base);
+}
 EXPORT_SYMBOL(strtoul_suffix);
 
 /*
@@ -69,15 +75,15 @@ EXPORT_SYMBOL(strtoul_suffix);
  * 0x1000        -> start = 0x1000, size = ~0
  * 1M+1k         -> start = 0x100000, size = 0x400
  */
-int parse_area_spec(const char *str, ulong *start, ulong *size)
+int parse_area_spec(const char *str, loff_t *start, loff_t *size)
 {
 	char *endp;
-	ulong end;
+	loff_t end;
 
 	if (!isdigit(*str))
 		return -1;
 
-	*start = strtoul_suffix(str, &endp, 0);
+	*start = strtoull_suffix(str, &endp, 0);
 
 	str = endp;
 
@@ -89,7 +95,7 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 
 	if (*str == '-') {
 		/* beginning and end given */
-		end = strtoul_suffix(str + 1, NULL, 0);
+		end = strtoull_suffix(str + 1, NULL, 0);
 		if (end < *start) {
 			printf("end < start\n");
 			return -1;
@@ -100,7 +106,7 @@ int parse_area_spec(const char *str, ulong *start, ulong *size)
 
 	if (*str == '+') {
 		/* beginning and size given */
-		*size = strtoul_suffix(str + 1, NULL, 0);
+		*size = strtoull_suffix(str + 1, NULL, 0);
 		return 0;
 	}
 

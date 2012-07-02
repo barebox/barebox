@@ -43,23 +43,6 @@ struct partition_desc {
 };
 
 /**
- * Reject values which cannot be used in Barebox
- * @param val Value to be check
- * @return 0 if value can be used in Barebox, -EINVAL if not
- *
- * @note this routine can be removed when Barebox uses file offsets larger
- * than 32 bit
- */
-static int check_offset_value(uint64_t val)
-{
-#if 1	/* until Barebox can handle 64 bit offsets */
-	if (val > (__INT_MAX__ / SECTOR_SIZE))
-		return -EINVAL;
-#endif
-	return 0;
-}
-
-/**
  * Guess the size of the disk, based on the partition table entries
  * @param dev device to create partitions for
  * @param table partition table
@@ -75,12 +58,6 @@ static int disk_guess_size(struct device_d *dev, struct partition_entry *table)
 			size += get_unaligned(&table[i].partition_start) - size;
 			size += get_unaligned(&table[i].partition_size);
 		}
-	}
-	/* limit disk sector counts we can't handle due to 32 bit limits */
-	if (check_offset_value(size) != 0) {
-		dev_warn(dev, "Warning: Sector count limited due to 31 bit"
-				"contraints\n");
-		size = __INT_MAX__ / SECTOR_SIZE;
 	}
 
 	return (int)size;
@@ -125,12 +102,6 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 	for (i = 0; i < 4; i++) {
 		pentry.first_sec = get_unaligned(&table[i].partition_start);
 		pentry.size = get_unaligned(&table[i].partition_size);
-
-		/* do we have to ignore this partition due to limitations? */
-		if (check_offset_value(pentry.first_sec) != 0)
-			continue;
-		if (check_offset_value(pentry.size) != 0)
-			continue;
 
 		if (pentry.first_sec != 0) {
 			pd->parts[pd->used_entries].first_sec = pentry.first_sec;

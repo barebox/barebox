@@ -116,12 +116,13 @@ err:
 }
 
 static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
-			    ulong offset, ulong flags)
+			    loff_t _offset, ulong flags)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
 	ssize_t retlen = 0, ret = 1, toread;
 	ulong numpage;
 	int skip;
+	unsigned long offset = _offset;
 
 	numpage = offset / (mtd->writesize + mtd->oobsize);
 	skip = offset % (mtd->writesize + mtd->oobsize);
@@ -167,13 +168,14 @@ static void mtdraw_fillbuf(struct mtdraw *mtdraw, const void *src, int nbbytes)
 }
 
 static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
-			    ulong offset, ulong flags)
+			    loff_t _offset, ulong flags)
 {
 	struct mtdraw *mtdraw = to_mtdraw(cdev);
 	struct mtd_info *mtd = to_mtd(cdev);
 	int bsz = mtd->writesize + mtd->oobsize;
 	ulong numpage;
 	size_t retlen = 0, tofill;
+	unsigned long offset = _offset;
 	int ret = 0;
 
 	if (mtdraw->write_fill &&
@@ -220,10 +222,11 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	}
 }
 
-static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, ulong offset)
+static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
 	struct erase_info erase;
+	unsigned long offset = _offset;
 	int ret;
 
 	offset = offset / (mtd->writesize + mtd->oobsize) * mtd->writesize;

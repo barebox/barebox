@@ -301,8 +301,8 @@ struct cdev;
 int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
 
 /* These are used by drivers which work with direct memory accesses */
-ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int mem_memmap(struct cdev *cdev, void **map, int flags);
 
 /* Use this if you have nothing to do in your drivers probe function */
@@ -316,7 +316,7 @@ void devices_shutdown(void);
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline off_t dev_lseek_default(struct cdev *cdev, off_t ofs)
+static inline loff_t dev_lseek_default(struct cdev *cdev, loff_t ofs)
 {
 	return ofs;
 }
@@ -373,18 +373,18 @@ extern struct bus_type platform_bus;
 
 struct file_operations {
 	/*! Called in response of reading from this device. Required */
-	ssize_t (*read)(struct cdev*, void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*read)(struct cdev*, void* buf, size_t count, loff_t offset, ulong flags);
 
 	/*! Called in response of write to this device. Required */
-	ssize_t (*write)(struct cdev*, const void* buf, size_t count, ulong offset, ulong flags);
+	ssize_t (*write)(struct cdev*, const void* buf, size_t count, loff_t offset, ulong flags);
 
 	int (*ioctl)(struct cdev*, int, void *);
-	off_t (*lseek)(struct cdev*, off_t);
+	loff_t (*lseek)(struct cdev*, loff_t);
 	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
 	int (*flush)(struct cdev*);
-	int (*erase)(struct cdev*, size_t count, unsigned long offset);
-	int (*protect)(struct cdev*, size_t count, unsigned long offset, int prot);
+	int (*erase)(struct cdev*, size_t count, loff_t offset);
+	int (*protect)(struct cdev*, size_t count, loff_t offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);
 };
 
@@ -395,8 +395,8 @@ struct cdev {
 	struct list_head list;
 	struct list_head devices_list;
 	char *name;
-	unsigned long offset;
-	size_t size;
+	loff_t offset;
+	loff_t size;
 	unsigned int flags;
 	int open;
 	struct mtd_info *mtd;
@@ -409,16 +409,16 @@ struct cdev *cdev_by_name(const char *filename);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 void cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
-ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags);
-ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags);
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
-int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset);
+int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 
 #define DEVFS_PARTITION_FIXED		(1 << 0)
 #define DEVFS_PARTITION_READONLY	(1 << 1)
 #define DEVFS_IS_PARTITION		(1 << 2)
 
-int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
+int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
 

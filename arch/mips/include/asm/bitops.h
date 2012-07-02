@@ -28,5 +28,8 @@
 #define _ASM_MIPS_BITOPS_H_
 
 #include <asm-generic/bitops/__ffs.h>
+#include <asm-generic/bitops/__fls.h>
+#include <asm-generic/bitops/ffs.h>
+#include <asm-generic/bitops/fls.h>
 
 #endif /* _ASM_MIPS_BITOPS_H_ */

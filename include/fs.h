@@ -23,8 +23,8 @@ typedef struct dir {
 
 typedef struct filep {
 	struct device_d *dev; /* The device this FILE belongs to              */
-	ulong pos;            /* current position in stream                   */
-	ulong size;           /* The size of this inode                       */
+	loff_t pos;            /* current position in stream                   */
+	loff_t size;           /* The size of this inode                       */
 	ulong flags;          /* the O_* flags from open                      */
 
 	void *inode;         /* private to the filesystem driver              */
@@ -54,7 +54,7 @@ struct fs_driver_d {
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
 	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
 	int (*flush)(struct device_d *dev, FILE *f);
-	off_t (*lseek)(struct device_d *dev, FILE *f, off_t pos);
+	loff_t (*lseek)(struct device_d *dev, FILE *f, loff_t pos);
 
 	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
 	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
@@ -63,9 +63,9 @@ struct fs_driver_d {
 
 	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
 	int (*erase)(struct device_d *dev, FILE *f, size_t count,
-			unsigned long offset);
+			loff_t offset);
 	int (*protect)(struct device_d *dev, FILE *f, size_t count,
-			unsigned long offset, int prot);
+			loff_t offset, int prot);
 
 	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
 
@@ -109,7 +109,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 #define SEEK_CUR	2
 #define SEEK_END	3
 
-off_t lseek(int fildes, off_t offset, int whence);
+loff_t lseek(int fildes, loff_t offset, int whence);
 int mkdir (const char *pathname, mode_t mode);
 
 /* Create a directory and its parents */

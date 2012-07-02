@@ -231,7 +231,7 @@ static void __maybe_unused ata_dump_id(uint16_t *id)
  */
 static void ata_fix_endianess(uint16_t *buf, unsigned wds)
 {
-#if __BYTE_ORDER == __BIG_ENDIAN
+#ifdef __BIG_ENDIAN
 	unsigned u;
 
 	for (u = 0; u < wds; u++)

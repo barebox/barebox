@@ -270,12 +270,14 @@ void usb_rescan(void);
 		((x_ & 0xFF000000UL) >> 24)); \
 	})
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#ifdef __LITTLE_ENDIAN
 # define swap_16(x) (x)
 # define swap_32(x) (x)
-#else
+#elif defined BIG_ENDIAN
 # define swap_16(x) __swap_16(x)
 # define swap_32(x) __swap_32(x)
+#else
+#error "could not determine byte order"
 #endif
 
 /*

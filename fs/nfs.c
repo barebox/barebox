@@ -805,7 +805,7 @@ static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 	return outsize;
 }
 
-static off_t nfs_lseek(struct device_d *dev, FILE *file, off_t pos)
+static loff_t nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct file_priv *priv = file->inode;
 

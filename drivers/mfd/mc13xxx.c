@@ -160,7 +160,7 @@ int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u32 val)
 }
 EXPORT_SYMBOL(mc13xxx_set_bits);
 
-static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)
 {
 	struct mc13xxx *priv = to_mc13xxx(cdev);
 	u32 *buf = _buf;
@@ -181,7 +181,7 @@ static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, ulong offset
 	return count;
 }
 
-static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, loff_t offset, ulong flags)
 {
 	struct mc13xxx *mc13xxx = to_mc13xxx(cdev);
 	const u32 *buf = _buf;

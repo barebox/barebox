@@ -8,7 +8,7 @@ struct partition {
 
 	int flags;
 
-        unsigned long offset;
+        loff_t offset;
 
         struct device_d *physdev;
         struct device_d device;

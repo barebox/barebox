@@ -58,7 +58,7 @@ static u32 lp_read_reg(struct lp_priv *lp, int reg)
 	return buf;
 }
 
-static ssize_t lp_read(struct cdev *cdev, void *_buf, size_t count, ulong offset, ulong flags)
+static ssize_t lp_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)
 {
 	struct lp_priv *priv = to_lp_priv(cdev);
 	int i = count;

@@ -78,13 +78,6 @@
  *
  */
 
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN	1234
-#endif
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN	4321
-#endif
-
 #if defined(__KERNEL__)
 /*
  * inside the kernel, we can use nicknames;

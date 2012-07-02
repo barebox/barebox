@@ -40,11 +40,11 @@ struct ocotp_priv {
 };
 
 static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct ocotp_priv *priv = cdev->priv;
 	void __iomem *base = priv->base;
-	size_t size = min((ulong)count, cdev->size - offset);
+	size_t size = min((loff_t)count, cdev->size - offset);
 	uint64_t start;
 	int i;
 

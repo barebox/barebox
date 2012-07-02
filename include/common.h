@@ -34,6 +34,24 @@
 #include <linux/stddef.h>
 #include <asm/common.h>
 
+/*
+ * sanity check. The Linux Kernel defines only one of __LITTLE_ENDIAN and
+ * __BIG_ENDIAN. Endianess can then be tested with #ifdef __xx_ENDIAN. Userspace
+ * always defined both __LITTLE_ENDIAN and __BIG_ENDIAN and byteorder can then
+ * be tested with #if __BYTE_ORDER == __xx_ENDIAN.
+ *
+ * As we tend to use a lot of Kernel code in barebox we use the kernel way of
+ * determing the byte order. Make sure here that architecture code properly
+ * defines it.
+ */
+#include <asm/byteorder.h>
+#if defined __LITTLE_ENDIAN && defined __BIG_ENDIAN
+#error "both __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
+#endif
+#if !defined __LITTLE_ENDIAN && !defined __BIG_ENDIAN
+#error "None of __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
+#endif
+
 #define pr_info(fmt, arg...)	printf(fmt, ##arg)
 #define pr_notice(fmt, arg...)	printf(fmt, ##arg)
 #define pr_err(fmt, arg...)	printf(fmt, ##arg)
@@ -138,10 +156,11 @@ struct memarea_info {
         unsigned long flags;
 };
 
-int parse_area_spec(const char *str, ulong *start, ulong *size);
+int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
+unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 
 void start_barebox(void);
 void shutdown_barebox(void);
@@ -210,7 +229,7 @@ int run_shell(void);
 #define PAGE_SIZE	4096
 #define PAGE_SHIFT	12
 
-int memory_display(char *addr, ulong offs, ulong nbytes, int size);
+int memory_display(char *addr, loff_t offs, ulong nbytes, int size);
 
 extern const char version_string[];
 #ifdef CONFIG_BANNER

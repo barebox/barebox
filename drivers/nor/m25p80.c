@@ -194,13 +194,14 @@ static int erase_sector(struct m25p *flash, u32 offset)
  * Erase an address range on the flash chip.  The address range may extend
  * one or more erase sectors.  Return an error is there is a problem erasing.
  */
-static ssize_t m25p80_erase(struct cdev *cdev, size_t count, unsigned long offset)
+static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct m25p *flash = cdev->priv;
 	u32 addr, len;
 	u32 start_sector;
 	u32 end_sector;
 	u32 progress = 0;
+	int eraseshift = ffs(flash->erasesize) - 1;
 
 	dev_dbg(&flash->spi->dev, "%s %s 0x%llx, len %lld\n",
 		__func__, "at", (long long)offset, (long long)count);
@@ -212,8 +213,8 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, unsigned long offse
 	addr = offset;
 	len = count;
 
-	start_sector = offset / flash->erasesize;
-	end_sector = (offset + count - 1) / flash->erasesize;
+	start_sector = offset >> eraseshift;
+	end_sector = (offset + count - 1) >> eraseshift;
 	init_progression_bar(end_sector - start_sector + 1);
 
 	/* whole-chip erase? */
@@ -250,7 +251,8 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, unsigned long offse
 	return 0;
 }
 
-ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
+		ulong flags)
 {
 	struct m25p *flash = cdev->priv;
 	struct spi_transfer t[2];
@@ -302,7 +304,8 @@ ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ul
 	return retlen;
 }
 
-ssize_t m25p80_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t m25p80_write(struct cdev *cdev, const void *buf, size_t count,
+		loff_t offset, ulong flags)
 {
 	struct m25p *flash = cdev->priv;
 	struct spi_transfer t[2];
@@ -381,7 +384,8 @@ ssize_t m25p80_write(struct cdev *cdev, const void *buf, size_t count, ulong off
 	return retlen;
 }
 #ifdef CONFIG_MTD_SST25L
-ssize_t sst_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t sst_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset,
+		ulong flags)
 {
 	struct m25p *flash = cdev->priv;
 	struct spi_transfer t[2];

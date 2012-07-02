@@ -41,7 +41,7 @@ static int do_flerase(int argc, char *argv[])
 	int fd;
 	char *filename = NULL;
 	struct stat s;
-	unsigned long start = 0, size = ~0;
+	loff_t start = 0, size = ~0;
 	int ret = 0;
 
 	if (argc == 1)
@@ -109,7 +109,7 @@ static int do_protect(int argc, char *argv[])
 	char *filename = NULL;
 	struct stat s;
 	int prot = 1;
-	unsigned long start = 0, size = ~0;
+	loff_t start = 0, size = ~0;
 	int ret = 0, err;
 
 	if (argc == 1)

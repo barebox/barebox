@@ -96,7 +96,7 @@ void cdev_close(struct cdev *cdev)
 		cdev->ops->close(cdev);
 }
 
-ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
 	if (!cdev->ops->read)
 		return -ENOSYS;
@@ -104,7 +104,7 @@ ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulon
 	return cdev->ops->read(cdev, buf, count, cdev->offset +offset, flags);
 }
 
-ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
 	if (!cdev->ops->write)
 		return -ENOSYS;
@@ -123,15 +123,15 @@ int cdev_flush(struct cdev *cdev)
 static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 {
 	int ret = 0;
-	size_t offset;
+	loff_t offset, *_buf = buf;
 	struct mtd_info_user *user = buf;
 
 	switch (request) {
 	case MEMSETBADBLOCK:
 	case MEMGETBADBLOCK:
-		offset = (off_t)buf;
+		offset = *_buf;
 		offset += cdev->offset;
-		ret = cdev->ops->ioctl(cdev, request, (void *)offset);
+		ret = cdev->ops->ioctl(cdev, request, &offset);
 		break;
 	case MEMGETINFO:
 		if (cdev->mtd) {
@@ -165,10 +165,11 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 	case MEMGETREGIONINFO:
 		if (cdev->mtd) {
 			struct region_info_user *reg = buf;
+			int erasesize_shift = ffs(cdev->mtd->erasesize) - 1;
 
 			reg->offset = cdev->offset;
 			reg->erasesize = cdev->mtd->erasesize;
-			reg->numblocks = cdev->size/reg->erasesize;
+			reg->numblocks = cdev->size >> erasesize_shift;
 			reg->regionindex = cdev->mtd->index;
 		}
 	break;
@@ -191,7 +192,7 @@ int cdev_ioctl(struct cdev *cdev, int request, void *buf)
 	return cdev->ops->ioctl(cdev, request, buf);
 }
 
-int cdev_erase(struct cdev *cdev, size_t count, unsigned long offset)
+int cdev_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	if (!cdev->ops->erase)
 		return -ENOSYS;
@@ -226,7 +227,7 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
-int devfs_add_partition(const char *devname, unsigned long offset, size_t size,
+int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name)
 {
 	struct cdev *cdev, *new;

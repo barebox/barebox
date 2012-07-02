@@ -34,7 +34,7 @@ struct hf_priv {
 	struct hf_platform_data *pdata;
 };
 
-static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
 	struct hf_platform_data *hf = cdev->priv;
 	int fd = hf->fd;
@@ -45,7 +45,7 @@ static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, ulong offset,
 	return linux_read(fd, buf, count);
 }
 
-static ssize_t hf_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+static ssize_t hf_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
 	struct hf_platform_data *hf = cdev->priv;
 	int fd = hf->fd;

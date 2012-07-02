@@ -42,9 +42,9 @@ struct nand_bb {
 
 	struct mtd_info_user info;
 
-	size_t raw_size;
-	size_t size;
-	off_t offset;
+	loff_t raw_size;
+	loff_t size;
+	loff_t offset;
 	unsigned long flags;
 	void *writebuf;
 
@@ -54,7 +54,7 @@ struct nand_bb {
 };
 
 static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
-	unsigned long offset, ulong flags)
+	loff_t offset, ulong flags)
 {
 	struct nand_bb *bb = cdev->priv;
 	struct cdev *parent = bb->cdev_parent;
@@ -63,18 +63,18 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	debug("%s %d %d\n", __func__, offset, count);
 
 	while(count) {
-		ret = cdev_ioctl(parent, MEMGETBADBLOCK, (void *)bb->offset);
+		ret = cdev_ioctl(parent, MEMGETBADBLOCK, &bb->offset);
 		if (ret < 0)
 			return ret;
 
 		if (ret) {
-			printf("skipping bad block at 0x%08lx\n", bb->offset);
+			printf("skipping bad block at 0x%08llx\n", bb->offset);
 			bb->offset += bb->info.erasesize;
 			continue;
 		}
 
 		now = min(count, (size_t)(bb->info.erasesize -
-				(bb->offset % bb->info.erasesize)));
+				((size_t)bb->offset % bb->info.erasesize)));
 		ret = cdev_read(parent, buf, now, bb->offset, 0);
 		if (ret < 0)
 			return ret;
@@ -96,10 +96,10 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 	int ret, now;
 	struct cdev *parent = bb->cdev_parent;
 	void *buf = bb->writebuf;
-	int cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
+	off_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
 	while (count) {
-		ret = cdev_ioctl(parent, MEMGETBADBLOCK, (void *)cur_ofs);
+		ret = cdev_ioctl(parent, MEMGETBADBLOCK, &cur_ofs);
 		if (ret < 0)
 			return ret;
 
@@ -123,12 +123,12 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 }
 
 static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
-	unsigned long offset, ulong flags)
+	loff_t offset, ulong flags)
 {
 	struct nand_bb *bb = cdev->priv;
 	int bytes = count, now, wroffs, ret;
 
-	debug("%s offset: 0x%08x count: 0x%08x\n", __func__, offset, count);
+	debug("%s offset: 0x%08llx count: 0x%08x\n", __func__, offset, count);
 
 	while (count) {
 		wroffs = bb->offset % BB_WRITEBUF_SIZE;
@@ -152,7 +152,7 @@ static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
 	return bytes;
 }
 
-static int nand_bb_erase(struct cdev *cdev, size_t count, unsigned long offset)
+static int nand_bb_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct nand_bb *bb = cdev->priv;
 
@@ -197,11 +197,11 @@ static int nand_bb_close(struct cdev *cdev)
 
 static int nand_bb_calc_size(struct nand_bb *bb)
 {
-	ulong pos = 0;
+	loff_t pos = 0;
 	int ret;
 
 	while (pos < bb->raw_size) {
-		ret = cdev_ioctl(bb->cdev_parent, MEMGETBADBLOCK, (void *)pos);
+		ret = cdev_ioctl(bb->cdev_parent, MEMGETBADBLOCK, &pos);
 		if (ret < 0)
 			return ret;
 		if (!ret)
@@ -213,7 +213,7 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 	return 0;
 }
 
-static off_t nand_bb_lseek(struct cdev *cdev, off_t __offset)
+static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
 {
 	struct nand_bb *bb = cdev->priv;
 	unsigned long raw_pos = 0;

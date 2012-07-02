@@ -622,32 +622,3 @@ static int mem_init(void)
 }
 
 device_initcall(mem_init);
-
-static ssize_t zero_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
-{
-	memset(buf, 0, count);
-	return count;
-}
-
-static struct file_operations zeroops = {
-	.read  = zero_read,
-	.lseek = dev_lseek_default,
-};
-
-static int zero_init(void)
-{
-	struct cdev *cdev;
-
-	cdev = xzalloc(sizeof (*cdev));
-
-	cdev->name = "zero";
-	cdev->size = ~0;
-	cdev->ops = &zeroops;
-
-	devfs_create(cdev);
-
-	return 0;
-}
-
-device_initcall(zero_init);
-

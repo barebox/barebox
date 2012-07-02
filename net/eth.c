@@ -100,11 +100,9 @@ struct eth_device * eth_get_current(void)
 struct eth_device *eth_get_byname(char *ethname)
 {
 	struct eth_device *edev;
-	char name[MAX_DRIVER_NAME];
 
 	list_for_each_entry(edev, &netdev_list, list) {
-		sprintf(name, "%s%d", edev->dev.name, edev->dev.id);
-		if (!strcmp(ethname, name))
+		if (!strcmp(ethname, dev_name(&edev->dev)))
 			return edev;
 	}
 	return NULL;

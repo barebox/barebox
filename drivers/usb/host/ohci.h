@@ -408,7 +408,7 @@ struct ohci {
 	int disabled;			/* e.g. got a UE, we're hung */
 	unsigned long flags;		/* for HC bugs */
 
-	struct ohci_regs *regs; /* OHCI controller's memory */
+	struct ohci_regs __iomem *regs; /* OHCI controller's memory */
 
 	int ohci_int_load[32];	 /* load of the 32 Interrupt Chains (for load balancing)*/
 	struct ed *ed_rm_list[2];	 /* lists of all endpoints to be removed */

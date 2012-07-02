@@ -2,11 +2,12 @@
 #include <io.h>
 #include <asm-generic/div64.h>
 #include <mach/imx51-regs.h>
+#include <mach/clock.h>
 #include <mach/clock-imx51_53.h>
 
 static u32 ccm_readl(u32 ofs)
 {
-	return readl(MX51_CCM_BASE_ADDR + ofs);
+	return readl(IOMEM(MX51_CCM_BASE_ADDR) + ofs);
 }
 
 static unsigned long ckil_get_rate(void)
@@ -142,7 +143,7 @@ unsigned long imx_get_uartclk(void)
 	return parent_rate / (prediv * podf);
 }
 
-static unsigned long imx_get_ahbclk(void)
+unsigned long imx_get_ahbclk(void)
 {
 	u32 reg, div;
 

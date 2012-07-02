@@ -135,7 +135,6 @@ struct kmem_cache { int i; };
 #define GFP_KERNEL			0
 #define GFP_NOFS			1
 
-#define __user
 #define __init
 #define __exit
 

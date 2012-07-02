@@ -30,6 +30,8 @@ ulong imx_get_lcdclk(void);
 ulong imx_get_i2cclk(void);
 ulong imx_get_mmcclk(void);
 ulong imx_get_cspiclk(void);
+ulong imx_get_ipgclk(void);
+ulong imx_get_usbclk(void);
 
 int imx_clko_set_div(int div);
 void imx_clko_set_src(int src);

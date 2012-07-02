@@ -1,0 +1,15 @@
+menuconfig WATCHDOG
+	bool "Watchdog support              "
+	help
+	  Many platforms support a watchdog to keep track of a working machine.
+	  This framework provides routines to handle these watchdogs.
+
+if WATCHDOG
+
+config WATCHDOG_MXS28
+	bool "i.MX28"
+	depends on ARCH_IMX28
+	help
+	  Add support for watchdog management for the i.MX28 SoC.
+
+endif

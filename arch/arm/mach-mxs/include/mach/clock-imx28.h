@@ -27,6 +27,7 @@ unsigned imx_set_lcdifclk(unsigned);
 unsigned imx_get_lcdifclk(void);
 unsigned imx_get_fecclk(void);
 void imx_enable_enetclk(void);
+void imx_enable_nandclk(void);
 
 #endif /* MACH_CLOCK_IMX28_H */
 

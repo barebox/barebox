@@ -48,6 +48,8 @@
 # define GET_SSP_DIV(x) ((x) & CLKCTRL_SSP_DIV_MASK)
 # define SET_SSP_DIV(x) ((x) & CLKCTRL_SSP_DIV_MASK)
 #define HW_CLKCTRL_GPMI 0x0d0
+# define CLKCTRL_GPMI_CLKGATE (1 << 31)
+# define CLKCTRL_GPMI_DIV_MASK 0x3ff
 /* note: no set/clear register! */
 #define HW_CLKCTRL_SPDIF 0x0e0
 /* note: no set/clear register! */
@@ -396,6 +398,23 @@ void imx_enable_enetclk(void)
 	writel(SET_CLKCTRL_ENET_DIV(1) | SET_CLKCTRL_ENET_SEL(0) |
 		CLKCTRL_ENET_CLK_OUT_EN, /* FIXME may be platform specific */
 		IMX_CCM_BASE + HW_CLKCTRL_ENET);
+}
+
+void imx_enable_nandclk(void)
+{
+	uint32_t reg;
+
+	/* Clear bypass bit; refman says clear, but fsl-code does set. Hooray! */
+	writel(CLKCTRL_CLKSEQ_BYPASS_GPMI,
+		IMX_CCM_BASE + HW_CLKCTRL_CLKSEQ + BIT_SET);
+
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_GPMI) & ~CLKCTRL_GPMI_CLKGATE;
+	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_GPMI);
+	udelay(1000);
+	/* Initialize DIV to 1 */
+	reg &= ~CLKCTRL_GPMI_DIV_MASK;
+	reg |= 1;
+	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_GPMI);
 }
 
 void imx_dump_clocks(void)

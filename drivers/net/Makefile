@@ -13,3 +13,4 @@ obj-$(CONFIG_MIIDEV)			+= miidev.o
 obj-$(CONFIG_NET_USB)			+= usb/
 obj-$(CONFIG_DRIVER_NET_TSE)		+= altera_tse.o
 obj-$(CONFIG_DRIVER_NET_KS8851_MLL)	+= ks8851_mll.o
+obj-$(CONFIG_DRIVER_NET_DESIGNWARE)	+= designware.o

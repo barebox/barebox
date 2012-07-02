@@ -1,0 +1,436 @@
+/*
+ * (C) Copyright 2010
+ * Vipin Kumar, ST Micoelectronics, vipin.kumar@st.com.
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+/*
+ * Designware ethernet IP driver for u-boot
+ */
+
+#include <common.h>
+#include <init.h>
+#include <io.h>
+#include <net.h>
+#include <miidev.h>
+#include <asm/mmu.h>
+#include <net/designware.h>
+#include "designware.h"
+
+
+struct dw_eth_dev {
+	struct eth_device netdev;
+	struct mii_device miidev;
+
+	void (*fix_mac_speed)(int speed);
+	u8 macaddr[6];
+	u32 tx_currdescnum;
+	u32 rx_currdescnum;
+
+	struct dmamacdescr *tx_mac_descrtable;
+	struct dmamacdescr *rx_mac_descrtable;
+
+	u8 *txbuffs;
+	u8 *rxbuffs;
+
+	struct eth_mac_regs *mac_regs_p;
+	struct eth_dma_regs *dma_regs_p;
+};
+
+/* Speed specific definitions */
+#define SPEED_10M		1
+#define SPEED_100M		2
+#define SPEED_1000M		3
+
+/* Duplex mode specific definitions */
+#define HALF_DUPLEX		1
+#define FULL_DUPLEX		2
+
+
+static int dwc_ether_mii_read(struct mii_device *dev, int addr, int reg)
+{
+	struct dw_eth_dev *priv = dev->edev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	u64 start;
+	u32 miiaddr;
+
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+		  ((reg << MIIREGSHIFT) & MII_REGMSK);
+
+	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
+
+	start = get_time_ns();
+	while (readl(&mac_p->miiaddr) & MII_BUSY) {
+		if (is_timeout(start, 10 * MSECOND)) {
+			dev_err(&priv->netdev.dev, "MDIO timeout\n");
+			return -EIO;
+		}
+	}
+	return readl(&mac_p->miidata) & 0xffff;
+}
+
+static int dwc_ether_mii_write(struct mii_device *dev, int addr, int reg, int val)
+{
+	struct dw_eth_dev *priv = dev->edev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	u64 start;
+	u32 miiaddr;
+
+	writel(val, &mac_p->miidata);
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+		  ((reg << MIIREGSHIFT) & MII_REGMSK) | MII_WRITE;
+
+	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
+
+	start = get_time_ns();
+	while (readl(&mac_p->miiaddr) & MII_BUSY) {
+		if (is_timeout(start, 10 * MSECOND)) {
+			dev_err(&priv->netdev.dev, "MDIO timeout\n");
+			return -EIO;
+		}
+	}
+
+	/* Needed as a fix for ST-Phy */
+	dwc_ether_mii_read(dev, addr, reg);
+	return 0;
+}
+
+
+static int mac_reset(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	u64 start;
+
+	writel(DMAMAC_SRST, &dma_p->busmode);
+	writel(MII_PORTSELECT, &mac_p->conf);
+
+	start = get_time_ns();
+	while (readl(&dma_p->busmode) & DMAMAC_SRST) {
+		if (is_timeout(start, 10 * MSECOND)) {
+			dev_err(&priv->netdev.dev, "MAC reset timeout\n");
+			return -EIO;
+		}
+	}
+	return 0;
+}
+
+static void tx_descs_init(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	struct dmamacdescr *desc_table_p = &priv->tx_mac_descrtable[0];
+	char *txbuffs = &priv->txbuffs[0];
+	struct dmamacdescr *desc_p;
+	u32 idx;
+
+	for (idx = 0; idx < CONFIG_TX_DESCR_NUM; idx++) {
+		desc_p = &desc_table_p[idx];
+		desc_p->dmamac_addr = &txbuffs[idx * CONFIG_ETH_BUFSIZE];
+		desc_p->dmamac_next = &desc_table_p[idx + 1];
+
+#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
+		desc_p->txrx_status &= ~(DESC_TXSTS_TXINT | DESC_TXSTS_TXLAST |
+				DESC_TXSTS_TXFIRST | DESC_TXSTS_TXCRCDIS | \
+				DESC_TXSTS_TXCHECKINSCTRL | \
+				DESC_TXSTS_TXRINGEND | DESC_TXSTS_TXPADDIS);
+
+		desc_p->txrx_status |= DESC_TXSTS_TXCHAIN;
+		desc_p->dmamac_cntl = 0;
+		desc_p->txrx_status &= ~(DESC_TXSTS_MSK | DESC_TXSTS_OWNBYDMA);
+#else
+		desc_p->dmamac_cntl = DESC_TXCTRL_TXCHAIN;
+		desc_p->txrx_status = 0;
+#endif
+	}
+
+	/* Correcting the last pointer of the chain */
+	desc_p->dmamac_next = &desc_table_p[0];
+
+	writel((ulong)&desc_table_p[0], &dma_p->txdesclistaddr);
+}
+
+static void rx_descs_init(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	struct dmamacdescr *desc_table_p = &priv->rx_mac_descrtable[0];
+	char *rxbuffs = &priv->rxbuffs[0];
+	struct dmamacdescr *desc_p;
+	u32 idx;
+
+	for (idx = 0; idx < CONFIG_RX_DESCR_NUM; idx++) {
+		desc_p = &desc_table_p[idx];
+		desc_p->dmamac_addr = &rxbuffs[idx * CONFIG_ETH_BUFSIZE];
+		desc_p->dmamac_next = &desc_table_p[idx + 1];
+
+		desc_p->dmamac_cntl =
+			(MAC_MAX_FRAME_SZ & DESC_RXCTRL_SIZE1MASK) | \
+				      DESC_RXCTRL_RXCHAIN;
+
+		dma_inv_range((unsigned long)desc_p->dmamac_addr,
+			      (unsigned long)desc_p->dmamac_addr + CONFIG_ETH_BUFSIZE);
+		desc_p->txrx_status = DESC_RXSTS_OWNBYDMA;
+	}
+
+	/* Correcting the last pointer of the chain */
+	desc_p->dmamac_next = &desc_table_p[0];
+
+	writel((ulong)&desc_table_p[0], &dma_p->rxdesclistaddr);
+}
+
+static void descs_init(struct eth_device *dev)
+{
+	tx_descs_init(dev);
+	rx_descs_init(dev);
+}
+
+static int dwc_ether_init(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+
+	if (mac_reset(dev) < 0)
+		return -1;
+
+	/* HW MAC address is lost during MAC reset */
+	dev->set_ethaddr(dev, priv->macaddr);
+
+	writel(FIXEDBURST | PRIORXTX_41 | BURST_16, &dma_p->busmode);
+	writel(FLUSHTXFIFO | readl(&dma_p->opmode), &dma_p->opmode);
+	writel(STOREFORWARD | TXSECONDFRAME, &dma_p->opmode);
+	writel(FRAMEBURSTENABLE | DISABLERXOWN, &mac_p->conf);
+	return 0;
+}
+
+static int dwc_ether_open(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	u32 conf;
+	int link, speed;
+
+	miidev_wait_aneg(&priv->miidev);
+	miidev_print_status(&priv->miidev);
+	link = miidev_get_status(&priv->miidev);
+
+	if (priv->fix_mac_speed) {
+		speed = link & MIIDEV_STATUS_IS_1000MBIT ? 1000 :
+			(link & MIIDEV_STATUS_IS_100MBIT ? 100 : 10);
+		priv->fix_mac_speed(speed);
+	}
+
+	conf = readl(&mac_p->conf);
+	if (link & MIIDEV_STATUS_IS_FULL_DUPLEX)
+		conf |= FULLDPLXMODE;
+	else
+		conf &= ~FULLDPLXMODE;
+	if (link & MIIDEV_STATUS_IS_1000MBIT)
+		conf &= ~MII_PORTSELECT;
+	else
+		conf |= MII_PORTSELECT;
+	writel(conf, &mac_p->conf);
+
+	descs_init(dev);
+
+	/*
+	 * Start/Enable xfer at dma as well as mac level
+	 */
+	writel(readl(&dma_p->opmode) | RXSTART, &dma_p->opmode);
+	writel(readl(&dma_p->opmode) | TXSTART, &dma_p->opmode);
+	writel(readl(&mac_p->conf) | RXENABLE | TXENABLE, &mac_p->conf);
+	return 0;
+}
+
+static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	u32 desc_num = priv->tx_currdescnum;
+	struct dmamacdescr *desc_p = &priv->tx_mac_descrtable[desc_num];
+
+	/* Check if the descriptor is owned by CPU */
+	if (desc_p->txrx_status & DESC_TXSTS_OWNBYDMA) {
+		dev_err(&dev->dev, "CPU not owner of tx frame\n");
+		return -1;
+	}
+
+	memcpy((void *)desc_p->dmamac_addr, packet, length);
+	dma_flush_range((unsigned long)desc_p->dmamac_addr,
+			(unsigned long)desc_p->dmamac_addr + length);
+
+#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
+	desc_p->txrx_status |= DESC_TXSTS_TXFIRST | DESC_TXSTS_TXLAST;
+	desc_p->dmamac_cntl |= (length << DESC_TXCTRL_SIZE1SHFT) & \
+			       DESC_TXCTRL_SIZE1MASK;
+
+	desc_p->txrx_status &= ~(DESC_TXSTS_MSK);
+	desc_p->txrx_status |= DESC_TXSTS_OWNBYDMA;
+#else
+	desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) & \
+			       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST | \
+			       DESC_TXCTRL_TXFIRST;
+
+	desc_p->txrx_status = DESC_TXSTS_OWNBYDMA;
+#endif
+
+	/* Test the wrap-around condition. */
+	if (++desc_num >= CONFIG_TX_DESCR_NUM)
+		desc_num = 0;
+
+	priv->tx_currdescnum = desc_num;
+
+	/* Start the transmission */
+	writel(POLL_DATA, &dma_p->txpolldemand);
+	return 0;
+}
+
+static int dwc_ether_rx(struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+	u32 desc_num = priv->rx_currdescnum;
+	struct dmamacdescr *desc_p = &priv->rx_mac_descrtable[desc_num];
+
+	u32 status = desc_p->txrx_status;
+	int length = 0;
+
+	/* Check  if the owner is the CPU */
+	if (status & DESC_RXSTS_OWNBYDMA)
+		return 0;
+
+	length = (status & DESC_RXSTS_FRMLENMSK) >> \
+		 DESC_RXSTS_FRMLENSHFT;
+
+	net_receive(desc_p->dmamac_addr, length);
+
+	/*
+	 * Make the current descriptor valid again and go to
+	 * the next one
+	 */
+	dma_inv_range((unsigned long)desc_p->dmamac_addr,
+		      (unsigned long)desc_p->dmamac_addr + length);
+	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
+
+	/* Test the wrap-around condition. */
+	if (++desc_num >= CONFIG_RX_DESCR_NUM)
+		desc_num = 0;
+
+	priv->rx_currdescnum = desc_num;
+
+	return length;
+}
+
+static void dwc_ether_halt (struct eth_device *dev)
+{
+	struct dw_eth_dev *priv = dev->priv;
+
+	mac_reset(dev);
+	priv->tx_currdescnum = priv->rx_currdescnum = 0;
+}
+
+static int dwc_ether_get_ethaddr(struct eth_device *dev, u8 adr[6])
+{
+	/* we have no EEPROM */
+	return -1;
+}
+
+static int dwc_ether_set_ethaddr(struct eth_device *dev, u8 adr[6])
+{
+	struct dw_eth_dev *priv = dev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
+	u32 macid_lo, macid_hi;
+
+	macid_lo = adr[0] + (adr[1] << 8) + \
+		   (adr[2] << 16) + (adr[3] << 24);
+	macid_hi = adr[4] + (adr[5] << 8);
+	writel(macid_hi, &mac_p->macaddr0hi);
+	writel(macid_lo, &mac_p->macaddr0lo);
+	memcpy(priv->macaddr, adr, 6);
+	return 0;
+}
+
+static int dwc_ether_probe(struct device_d *dev)
+{
+	struct dw_eth_dev *priv;
+	struct eth_device *edev;
+	struct mii_device *miidev;
+	void __iomem *base;
+	struct dwc_ether_platform_data *pdata = dev->platform_data;
+
+	if (!pdata) {
+		printf("dwc_ether: no platform_data\n");
+		return -ENODEV;
+	}
+
+	priv = xzalloc(sizeof(struct dw_eth_dev));
+
+	base = dev_request_mem_region(dev, 0);
+	priv->mac_regs_p = base;
+	dev_info(dev, "MAC version %08x\n", readl(&priv->mac_regs_p->version));
+	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;
+	priv->tx_mac_descrtable = dma_alloc_coherent(
+		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr));
+	priv->rx_mac_descrtable = dma_alloc_coherent(
+		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr));
+	priv->txbuffs = malloc(TX_TOTAL_BUFSIZE);
+	priv->rxbuffs = malloc(RX_TOTAL_BUFSIZE);
+	priv->fix_mac_speed = pdata->fix_mac_speed;
+
+	edev = &priv->netdev;
+	miidev = &priv->miidev;
+	edev->priv = priv;
+
+	edev->init = dwc_ether_init;
+	edev->open = dwc_ether_open;
+	edev->send = dwc_ether_send;
+	edev->recv = dwc_ether_rx;
+	edev->halt = dwc_ether_halt;
+	edev->get_ethaddr = dwc_ether_get_ethaddr;
+	edev->set_ethaddr = dwc_ether_set_ethaddr;
+
+	miidev->address = pdata->phy_addr;
+	miidev->read = dwc_ether_mii_read;
+	miidev->write = dwc_ether_mii_write;
+	miidev->edev = edev;
+
+	mii_register(miidev);
+	eth_register(edev);
+	return 0;
+}
+
+static void dwc_ether_remove(struct device_d *dev)
+{
+}
+
+static struct driver_d dwc_ether_driver = {
+	.name = "designware_eth",
+	.probe = dwc_ether_probe,
+	.remove = dwc_ether_remove,
+};
+
+static int dwc_ether_driver_init(void)
+{
+	register_driver(&dwc_ether_driver);
+	return 0;
+}
+device_initcall(dwc_ether_driver_init);

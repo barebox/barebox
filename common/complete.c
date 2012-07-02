@@ -221,7 +221,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		end = ' ';
 	}
 
-	instr_param = strrchr(instr, '.');
+	instr_param = strchr(instr, '.');
 	len = strlen(instr);
 
 	current_c = get_current_context();

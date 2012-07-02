@@ -262,7 +262,6 @@ static void print_menu(struct menu *m)
 int menu_show(struct menu *m)
 {
 	int ch, ch_previous = 0;
-	int escape = 0;
 	int countdown;
 	int auto_display_len = 16;
 	uint64_t start, second;
@@ -304,41 +303,34 @@ int menu_show(struct menu *m)
 	gotoXY(m->selected->num + 1, 3);
 
 	do {
+		struct menu_entry *old_selected = m->selected;
+		int repaint = 0;
+
 		if (m->auto_select >= 0)
 			ch = KEY_RETURN;
 		else
-			ch = getc();
+			ch = read_key();
 
 		m->auto_select = -1;
 
-		switch(ch) {
-		case 0x1b:
-			escape = 1;
-			break;
-		case '[':
-			if (escape)
-				break;
-		case 'A': /* up */
-			escape = 0;
-			print_menu_entry(m, m->selected, 0);
+		switch (ch) {
+		case KEY_UP:
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);
 			if (&(m->selected->list) == &(m->entries)) {
 				m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 							 list);
 			}
-			print_menu_entry(m, m->selected, 1);
+			repaint = 1;
 			break;
-		case 'B': /* down */
-			escape = 0;
-			print_menu_entry(m, m->selected, 0);
+		case KEY_DOWN:
 			m->selected = list_entry(m->selected->list.next, struct menu_entry,
 						 list);
 			if (&(m->selected->list) == &(m->entries)) {
 				m->selected = list_entry(m->selected->list.next, struct menu_entry,
 							 list);
 			}
-			print_menu_entry(m, m->selected, 1);
+			repaint = 1;
 			break;
 		case ' ':
 			if (m->selected->type != MENU_ENTRY_BOX)
@@ -346,7 +338,7 @@ int menu_show(struct menu *m)
 			m->selected->box_state = !m->selected->box_state;
 			if (m->selected->action)
 				m->selected->action(m, m->selected);
-			print_menu_entry(m, m->selected, 1);
+			repaint = 1;
 			break;
 		case KEY_ENTER:
 			if (ch_previous == KEY_RETURN)
@@ -361,9 +353,24 @@ int menu_show(struct menu *m)
 				return m->selected->num;
 			else
 				print_menu(m);
+			break;
+		case KEY_HOME:
+			m->selected = list_first_entry(&m->entries, struct menu_entry, list);
+			repaint = 1;
+			break;
+		case KEY_END:
+			m->selected = list_last_entry(&m->entries, struct menu_entry, list);
+			repaint = 1;
+			break;
 		default:
 			break;
 		}
+
+		if (repaint) {
+			print_menu_entry(m, old_selected, 0);
+			print_menu_entry(m, m->selected, 1);
+		}
+
 		ch_previous = ch;
 	} while(1);
 

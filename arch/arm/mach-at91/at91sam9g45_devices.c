@@ -93,12 +93,12 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data) {}
 static struct resource nand_resources[] = {
 	[0] = {
 		.start	= AT91_CHIPSELECT_3,
-		.size	= SZ_256M,
+		.end	= AT91_CHIPSELECT_3 + SZ_256M - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
 		.start	= AT91_BASE_SYS + AT91_ECC,
-		.size	= 512,
+		.end	= AT91_BASE_SYS + AT91_ECC + 512 - 1,
 		.flags	= IORESOURCE_MEM,
 	}
 };

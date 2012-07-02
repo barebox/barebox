@@ -1282,7 +1282,7 @@ ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulon
 		return -1;
 	dev = cdev->dev;
 
-	size = min((loff_t)count, dev->resource[0].size - offset);
+	size = min((loff_t)count, resource_size(&dev->resource[0]) - offset);
 	memcpy_sz(buf, dev_get_mem_region(dev, 0) + offset, size, flags & O_RWSIZE_MASK);
 	return size;
 }
@@ -1297,7 +1297,7 @@ ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offse
 		return -1;
 	dev = cdev->dev;
 
-	size = min((loff_t)count, dev->resource[0].size - offset);
+	size = min((loff_t)count, resource_size(&dev->resource[0]) - offset);
 	memcpy_sz(dev_get_mem_region(dev, 0) + offset, buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }

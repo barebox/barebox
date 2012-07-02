@@ -167,7 +167,7 @@ int eth_rx(void)
 static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
 	struct eth_device *edev = dev_to_edev(dev);
-	char ethaddr[sizeof("xx:xx:xx:xx:xx:xx")];
+	u8 ethaddr[6];
 
 	if (!val)
 		return dev_param_set_generic(dev, param, NULL);

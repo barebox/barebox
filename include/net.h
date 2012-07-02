@@ -38,8 +38,8 @@ struct eth_device {
 	int  (*send) (struct eth_device*, void *packet, int length);
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
-	int  (*get_ethaddr) (struct eth_device*, unsigned char *adr);
-	int  (*set_ethaddr) (struct eth_device*, unsigned char *adr);
+	int  (*get_ethaddr) (struct eth_device*, u8 adr[6]);
+	int  (*set_ethaddr) (struct eth_device*, u8 adr[6]);
 
 	struct eth_device *next;
 	void *priv;
@@ -287,8 +287,8 @@ int string_to_ip(const char *s, IPaddr_t *ip);
 IPaddr_t getenv_ip(const char *name);
 int setenv_ip(const char *name, IPaddr_t ip);
 
-int string_to_ethaddr(const char *str, char *enetaddr);
-void ethaddr_to_string(const unsigned char *enetaddr, char *str);
+int string_to_ethaddr(const char *str, u8 enetaddr[6]);
+void ethaddr_to_string(const u8 enetaddr[6], char *str);
 
 #ifdef CONFIG_NET_RESOLV
 IPaddr_t resolv(char *host);

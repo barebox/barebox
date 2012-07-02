@@ -123,7 +123,7 @@ int miidev_wait_aneg(struct mii_device *mdev)
 
 int miidev_get_status(struct mii_device *mdev)
 {
-	int ret, status;
+	int ret, status, adv, lpa;
 
 	ret = mii_read(mdev, mdev->address, MII_BMSR);
 	if (ret < 0)
@@ -136,13 +136,31 @@ int miidev_get_status(struct mii_device *mdev)
 		goto err_out;
 
 	if (ret & BMCR_ANENABLE) {
-		ret = mii_read(mdev, mdev->address, MII_LPA);
-		if (ret < 0)
+		if (mdev->capabilities & MIIDEV_CAPABLE_1000M) {
+			lpa = mii_read(mdev, mdev->address, MII_STAT1000);
+			if (lpa < 0)
+				goto err_out;
+			adv = mii_read(mdev, mdev->address, MII_CTRL1000);
+			if (adv < 0)
+				goto err_out;
+			lpa &= adv << 2;
+			if (lpa & (LPA_1000FULL | LPA_1000HALF)) {
+				if (lpa & LPA_1000FULL)
+				       status |= MIIDEV_STATUS_IS_FULL_DUPLEX;
+				status |= MIIDEV_STATUS_IS_1000MBIT;
+				return status;
+			}
+		}
+		lpa = mii_read(mdev, mdev->address, MII_LPA);
+		if (lpa < 0)
 			goto err_out;
-
-		status |= ret & LPA_DUPLEX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
-		status |= ret & LPA_100 ? MIIDEV_STATUS_IS_100MBIT :
-				MIIDEV_STATUS_IS_10MBIT;
+		adv = mii_read(mdev, mdev->address, MII_ADVERTISE);
+		if (adv < 0)
+			goto err_out;
+		lpa &= adv;
+		status |= lpa & LPA_DUPLEX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
+		status |= lpa & LPA_100 ? MIIDEV_STATUS_IS_100MBIT :
+			MIIDEV_STATUS_IS_10MBIT;
 	} else {
 		status |= ret & BMCR_FULLDPLX ? MIIDEV_STATUS_IS_FULL_DUPLEX : 0;
 		status |= ret & BMCR_SPEED100 ? MIIDEV_STATUS_IS_100MBIT :
@@ -170,8 +188,8 @@ int miidev_print_status(struct mii_device *mdev)
 		return status;
 
 	duplex = status & MIIDEV_STATUS_IS_FULL_DUPLEX ? "Full" : "Half";
-	speed = status & MIIDEV_STATUS_IS_100MBIT ? 100 : 10;
-
+	speed = status & MIIDEV_STATUS_IS_1000MBIT ? 1000 :
+		(status & MIIDEV_STATUS_IS_100MBIT ? 100 : 10);
 
 	printf("%s: Link is %s", mdev->cdev.name,
 			status & MIIDEV_STATUS_IS_UP ? "up" : "down");
@@ -186,11 +204,11 @@ static ssize_t miidev_read(struct cdev *cdev, void *_buf, size_t count, loff_t o
 	uint16_t *buf = _buf;
 	struct mii_device *mdev = cdev->priv;
 
-	while (i > 1) {
-		*buf = mii_read(mdev, mdev->address, offset);
+	while (i > 0) {
+		*buf = mii_read(mdev, mdev->address, offset / 2);
 		buf++;
 		i -= 2;
-		offset++;
+		offset += 2;
 	}
 
 	return count;
@@ -202,11 +220,11 @@ static ssize_t miidev_write(struct cdev *cdev, const void *_buf, size_t count, l
 	const uint16_t *buf = _buf;
 	struct mii_device *mdev = cdev->priv;
 
-	while (i > 1) {
-		mii_write(mdev, mdev->address, offset, *buf);
+	while (i > 0) {
+		mii_write(mdev, mdev->address, offset / 2, *buf);
 		buf++;
 		i -= 2;
-		offset++;
+		offset += 2;
 	}
 
 	return count;
@@ -221,7 +239,27 @@ static struct file_operations miidev_ops = {
 static int miidev_probe(struct device_d *dev)
 {
 	struct mii_device *mdev = dev->priv;
+	int val;
+	int caps = 0;
 
+	val = mii_read(mdev, mdev->address, MII_PHYSID1);
+	if (val < 0 || val == 0xffff)
+		goto err_out;
+	val = mii_read(mdev, mdev->address, MII_PHYSID2);
+	if (val < 0 || val == 0xffff)
+		goto err_out;
+	val = mii_read(mdev, mdev->address, MII_BMSR);
+	if (val < 0)
+		goto err_out;
+	if (val & BMSR_ESTATEN) {
+		val = mii_read(mdev, mdev->address, MII_ESTATUS);
+		if (val < 0)
+			goto err_out;
+		if (val & (ESTATUS_1000_TFULL | ESTATUS_1000_THALF))
+			caps = MIIDEV_CAPABLE_1000M;
+	}
+
+	mdev->capabilities = caps;
 	mdev->cdev.name = asprintf("phy%d", dev->id);
 	mdev->cdev.size = 64;
 	mdev->cdev.ops = &miidev_ops;
@@ -230,6 +268,10 @@ static int miidev_probe(struct device_d *dev)
 	devfs_create(&mdev->cdev);
 	list_add_tail(&mdev->list, &miidev_list);
 	return 0;
+
+err_out:
+	dev_err(dev, "cannot read PHY registers (addr %d)\n", mdev->address);
+	return -ENODEV;
 }
 
 static void miidev_remove(struct device_d *dev)

@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <errno.h>
+#include <dma.h>
 #include <usb/composite.h>
 #include <asm/byteorder.h>
 
@@ -867,7 +868,7 @@ composite_unbind(struct usb_gadget *gadget)
 		composite->unbind(cdev);
 
 	if (cdev->req) {
-		kfree(cdev->req->buf);
+		dma_free(cdev->req->buf);
 		usb_ep_free_request(gadget->ep0, cdev->req);
 	}
 	kfree(cdev);
@@ -911,7 +912,7 @@ static int __init composite_bind(struct usb_gadget *gadget)
 	cdev->req = usb_ep_alloc_request(gadget->ep0);
 	if (!cdev->req)
 		goto fail;
-	cdev->req->buf = malloc(USB_BUFSIZ);
+	cdev->req->buf = dma_alloc(USB_BUFSIZ);
 	if (!cdev->req->buf)
 		goto fail;
 	cdev->req->complete = composite_setup_complete;

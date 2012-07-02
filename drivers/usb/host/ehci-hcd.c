@@ -120,63 +120,6 @@ static struct descriptor {
 
 #define ehci_is_TDI()	(ehci->flags & EHCI_HAS_TT)
 
-#ifdef CONFIG_MMU
-/*
- * Routines to handle (flush/invalidate) the dcache for the QH and qTD
- * structures and data buffers. This is needed on platforms using this
- * EHCI support with dcache enabled.
- */
-static void flush_invalidate(void *addr, int size, int flush)
-{
-	if (flush) {
-		dma_flush_range((unsigned long)addr, (unsigned long)(addr + size));
-	} else {
-		dma_inv_range((unsigned long)addr, (unsigned long)(addr + size));
-	}
-}
-
-static void cache_qtd(struct qTD *qtd, int flush)
-{
-	u32 *ptr = (u32 *)qtd->qt_buffer[0];
-	int len = (qtd->qt_token & 0x7fff0000) >> 16;
-
-	if (ptr && len)
-		flush_invalidate(ptr, len, flush);
-}
-
-static void cache_qh(struct ehci_priv *ehci, int flush)
-{
-	int i;
-
-	flush_invalidate(ehci->qh_list, sizeof(struct QH) * NUM_QH, flush);
-	flush_invalidate(ehci->td, sizeof(struct qTD) * NUM_TD, flush);
-
-	for (i = 0; i < NUM_TD; i ++)
-		cache_qtd(&ehci->td[i], flush);
-}
-
-static inline void ehci_flush_dcache(struct ehci_priv *ehci)
-{
-	cache_qh(ehci, 1);
-}
-
-static inline void ehci_invalidate_dcache(struct ehci_priv *ehci)
-{
-	cache_qh(ehci, 0);
-}
-#else /* CONFIG_MMU */
-/*
- *
- */
-static inline void ehci_flush_dcache(struct ehci_priv *ehci)
-{
-}
-
-static inline void ehci_invalidate_dcache(struct ehci_priv *ehci)
-{
-}
-#endif /* CONFIG_MMU */
-
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {
 	uint32_t result;
@@ -231,6 +174,9 @@ static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
 	int idx;
 
 	addr = (uint32_t) buf;
+	td->qtd_dma = addr;
+	td->length = sz;
+
 	idx = 0;
 	while (idx < 5) {
 		td->qt_buffer[idx] = cpu_to_hc32(addr);
@@ -264,7 +210,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t endpt, token, usbsts;
 	uint32_t c, toggle;
 	uint32_t cmd;
-	int ret = 0;
+	int ret = 0, i;
 	uint64_t start, timeout_val;
 
 	debug("dev=%p, pipe=%lx, buffer=%p, length=%d, req=%p\n", dev, pipe,
@@ -296,11 +242,11 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	    (dev->portnr << 23) |
 	    (dev->parent->devnum << 16) | (0 << 8) | (0 << 0);
 	qh->qh_endpt2 = cpu_to_hc32(endpt);
-	qh->qh_overlay.qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	qh->qh_overlay.qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	qh->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	qh->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 
 	td = NULL;
-	tdp = &qh->qh_overlay.qt_next;
+	tdp = &qh->qt_next;
 
 	toggle =
 	    usb_gettoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe));
@@ -363,7 +309,14 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t) qh | QH_LINK_TYPE_QH);
 
 	/* Flush dcache */
-	ehci_flush_dcache(ehci);
+	if (IS_ENABLED(CONFIG_MMU)) {
+		for (i = 0; i < NUM_TD; i ++) {
+			struct qTD *qtd = &ehci->td[i];
+			if (!qtd->qtd_dma)
+				continue;
+			dma_flush_range(qtd->qtd_dma, qtd->qtd_dma + qtd->length);
+		}
+	}
 
 	usbsts = ehci_readl(&ehci->hcor->or_usbsts);
 	ehci_writel(&ehci->hcor->or_usbsts, (usbsts & 0x3f));
@@ -384,8 +337,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	start = get_time_ns();
 	vtd = td;
 	do {
-		/* Invalidate dcache */
-		ehci_invalidate_dcache(ehci);
 		token = hc32_to_cpu(vtd->qt_token);
 		if (is_timeout(start, timeout_val)) {
 			/* Disable async schedule. */
@@ -394,10 +345,19 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 			ehci_writel(&ehci->hcor->or_usbcmd, cmd);
 
 			ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, 0, 100 * 1000);
-			ehci_writel(&qh->qh_overlay.qt_token, 0);
+			ehci_writel(&qh->qt_token, 0);
 			return -ETIMEDOUT;
 		}
 	} while (token & 0x80);
+
+	if (IS_ENABLED(CONFIG_MMU)) {
+		for (i = 0; i < NUM_TD; i ++) {
+			struct qTD *qtd = &ehci->td[i];
+			if (!qtd->qtd_dma)
+				continue;
+			dma_inv_range(qtd->qtd_dma, qtd->qtd_dma + qtd->length);
+		}
+	}
 
 	/* Disable async schedule. */
 	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
@@ -413,7 +373,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 
-	token = hc32_to_cpu(qh->qh_overlay.qt_token);
+	token = hc32_to_cpu(qh->qt_token);
 	if (!(token & 0x80)) {
 		debug("TOKEN=0x%08x\n", token);
 		switch (token & 0xfc) {
@@ -451,10 +411,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 fail:
 	printf("fail1\n");
-	td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
+	td = (void *)hc32_to_cpu(qh->qt_next);
 	while (td != (void *)QT_NEXT_TERMINATE) {
-		qh->qh_overlay.qt_next = td->qt_next;
-		td = (void *)hc32_to_cpu(qh->qh_overlay.qt_next);
+		qh->qt_next = td->qt_next;
+		td = (void *)hc32_to_cpu(qh->qt_next);
 	}
 	return -1;
 }
@@ -770,9 +730,9 @@ static int ehci_init(struct usb_host *host)
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));
 	ehci->qh_list->qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qh_overlay.qt_token = cpu_to_hc32(0x40);
+	ehci->qh_list->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list->qt_token = cpu_to_hc32(0x40);
 
 	/* Set async. queue head pointer. */
 	ehci_writel(&ehci->hcor->or_asynclistaddr, (uint32_t)ehci->qh_list);
@@ -878,8 +838,8 @@ static int ehci_probe(struct device_d *dev)
 	ehci->hccr = dev_request_mem_region(dev, 0);
 	ehci->hcor = dev_request_mem_region(dev, 1);
 
-	ehci->qh_list = xmemalign(32, sizeof(struct QH) * NUM_QH);
-	ehci->td = xmemalign(32, sizeof(struct qTD) * NUM_TD);
+	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
+	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
 
 	host->init = ehci_init;
 	host->submit_int_msg = submit_int_msg;

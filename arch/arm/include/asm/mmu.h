@@ -1,9 +1,12 @@
 #ifndef __ASM_MMU_H
 #define __ASM_MMU_H
 
-#include <asm/pgtable.h>
-#include <malloc.h>
+#include <common.h>
 #include <errno.h>
+#include <malloc.h>
+#include <xfuncs.h>
+
+#include <asm/pgtable.h>
 
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
@@ -21,6 +24,12 @@ static inline void arm_create_section(unsigned long virt, unsigned long phys, in
 
 static inline void setup_dma_coherent(unsigned long offset)
 {
+}
+
+#define dma_alloc dma_alloc
+static inline void *dma_alloc(size_t size)
+{
+	return xmemalign(64, ALIGN(size, 64));
 }
 
 #ifdef CONFIG_MMU

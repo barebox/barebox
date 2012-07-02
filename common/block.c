@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <linux/err.h>
 #include <linux/list.h>
+#include <dma.h>
 
 #define BLOCKSIZE(blk)	(1 << blk->blockbits)
 
@@ -357,7 +358,7 @@ int blockdevice_register(struct block_device *blk)
 
 	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
-		chunk->data = xmalloc(BUFSIZE);
+		chunk->data = dma_alloc(BUFSIZE);
 		chunk->num = i;
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 	}
@@ -376,12 +377,12 @@ int blockdevice_unregister(struct block_device *blk)
 	writebuffer_flush(blk);
 
 	list_for_each_entry_safe(chunk, tmp, &blk->buffered_blocks, list) {
-		free(chunk->data);
+		dma_free(chunk->data);
 		free(chunk);
 	}
 
 	list_for_each_entry_safe(chunk, tmp, &blk->idle_blocks, list) {
-		free(chunk->data);
+		dma_free(chunk->data);
 		free(chunk);
 	}
 

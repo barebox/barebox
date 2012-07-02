@@ -159,8 +159,9 @@ struct usb_device {
 	int epmaxpacketout[16];		/* OUTput endpoint specific maximums */
 
 	int configno;			/* selected config number */
-	struct usb_device_descriptor descriptor; /* Device Descriptor */
+	struct usb_device_descriptor *descriptor; /* Device Descriptor */
 	struct usb_config_descriptor config; /* config descriptor */
+	struct devrequest *setup_packet;
 
 	int have_langid;		/* whether string_langid is valid yet */
 	int string_langid;		/* language ID for strings */

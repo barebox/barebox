@@ -26,6 +26,7 @@
 #include <clock.h>
 #include <scsi.h>
 #include <errno.h>
+#include <dma.h>
 
 #undef USB_STOR_DEBUG
 
@@ -65,8 +66,8 @@ int usb_stor_Bulk_clear_endpt_stall(struct us_data *us, unsigned int pipe)
 /* Determine what the maximum LUN supported is */
 int usb_stor_Bulk_max_lun(struct us_data *us)
 {
-	int len;
-	unsigned char iobuf[1];
+	int len, ret = 0;
+	unsigned char *iobuf = dma_alloc(1);
 
 	/* issue the command */
 	iobuf[0] = 0;
@@ -81,7 +82,9 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 
 	/* if we have a successful request, return the result */
 	if (len > 0)
-		return (int)iobuf[0];
+		ret = iobuf[0];
+
+	dma_free(iobuf);
 
 	/*
 	 * Some devices don't like GetMaxLUN.  They may STALL the control
@@ -90,7 +93,7 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 	 * ways.  In these cases the best approach is to use the default
 	 * value: only one LUN.
 	 */
-	return 0;
+	return ret;
 }
 
 int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)

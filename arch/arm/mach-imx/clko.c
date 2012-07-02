@@ -6,15 +6,18 @@
 
 static int do_clko(int argc, char *argv[])
 {
-	int opt, div = 0, src = -2, ret;
+	int opt, div = 0, src = -2, num = 1, ret;
 
-	while((opt = getopt(argc, argv, "d:s:")) > 0) {
+	while((opt = getopt(argc, argv, "n:d:s:")) > 0) {
 		switch(opt) {
+		case 'n':
+			num = simple_strtoul(optarg, NULL, 0);
+			break;
 		case 'd':
 			div = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 's':
-			src = simple_strtoul(optarg, NULL, 0);
+			src = simple_strtol(optarg, NULL, 0);
 			break;
 		}
 	}
@@ -23,17 +26,19 @@ static int do_clko(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (src == -1) {
-		imx_clko_set_src(-1);
+		imx_clko_set_src(num, -1);
 		return 0;
 	}
 
 	if (src != -2)
-		imx_clko_set_src(src);
+		imx_clko_set_src(num, src);
 
 	if (div != 0) {
-		ret = imx_clko_set_div(div);
-		if (ret != div)
-			printf("limited divider to %d\n", ret);
+		ret = imx_clko_set_div(num, div);
+		if (ret < 0)
+			printf("CLKO-line %i not supported.\n", num);
+		else if (ret != div)
+			printf("Divider limited to %d.\n", ret);
 	}
 
 	return 0;
@@ -42,7 +47,8 @@ static int do_clko(int argc, char *argv[])
 static __maybe_unused char cmd_clko_help[] =
 "Usage: clko [OPTION]...\n"
 "Route different signals to the i.MX clko pin\n"
-"  -d  <div>	Divider\n"
+"  -n  <num>    Number of CLKO-line (Default 1)\n"
+"  -d  <div>    Divider\n"
 "  -s  <source> Clock select. See Ref. Manual for valid sources. Use -1\n"
 "               for disabling clock output\n";
 

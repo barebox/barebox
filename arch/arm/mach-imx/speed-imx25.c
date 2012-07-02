@@ -1,4 +1,5 @@
 #include <common.h>
+#include <asm-generic/errno.h>
 #include <mach/imx-regs.h>
 #include <io.h>
 #include <mach/clock.h>
@@ -111,9 +112,12 @@ void imx_dump_clocks(void)
  * the new divider (which may be smaller
  * than the desired one)
  */
-int imx_clko_set_div(int div)
+int imx_clko_set_div(int num, int div)
 {
 	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+
+	if (num != 1)
+		return -ENODEV;
 
 	div -= 1;
 	div &= 0x3f;
@@ -129,9 +133,12 @@ int imx_clko_set_div(int div)
 /*
  * Set the clock source for the CLKO pin
  */
-void imx_clko_set_src(int src)
+void imx_clko_set_src(int num, int src)
 {
 	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+
+	if (num != 1)
+		return;
 
 	if (src < 0) {
 		mcr &= ~(1 << 30);

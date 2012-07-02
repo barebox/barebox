@@ -20,19 +20,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/imx-regs.h>
-
-#define POWER_CTRL			(IMX_POWER_BASE + 0x0)
-#define POWER_CTRL_CLKGATE		0x40000000
-
-#define POWER_STS			(IMX_POWER_BASE + 0xc0)
-#define POWER_STS_VBUSVALID		0x00000002
-#define POWER_STS_BVALID		0x00000004
-#define POWER_STS_AVALID		0x00000008
-
-#define POWER_DEBUG			(IMX_POWER_BASE + 0x110)
-#define POWER_DEBUG_BVALIDPIOLOCK	0x00000002
-#define POWER_DEBUG_AVALIDPIOLOCK	0x00000004
-#define POWER_DEBUG_VBUSVALIDPIOLOCK	0x00000008
+#include <mach/power.h>
 
 #define USBPHY_PWD			(IMX_USBPHY_BASE + 0x0)
 
@@ -51,21 +39,7 @@
 
 int imx_usb_phy_enable(void)
 {
-	u32 reg;
-
-	/*
-	 * Set these bits so that we can force the OTG bits high
-	 * so the ARC core operates properly
-	 */
-	writel(POWER_CTRL_CLKGATE, POWER_CTRL + CLR);
-
-	writel(POWER_DEBUG_VBUSVALIDPIOLOCK |
-			   POWER_DEBUG_AVALIDPIOLOCK |
-			   POWER_DEBUG_BVALIDPIOLOCK, POWER_DEBUG + SET);
-
-	reg = readl(POWER_STS);
-	reg |= POWER_STS_BVALID | POWER_STS_AVALID | POWER_STS_VBUSVALID;
-	writel(reg, POWER_STS);
+	imx_power_prepare_usbphy();
 
 	/* Reset USBPHY module */
 	writel(USBPHY_CTRL_SFTRST, USBPHY_CTRL + SET);

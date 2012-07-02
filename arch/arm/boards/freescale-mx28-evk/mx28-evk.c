@@ -22,16 +22,17 @@
 #include <init.h>
 #include <mci.h>
 #include <io.h>
+#include <net.h>
 
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-imx28.h>
 #include <mach/mci.h>
+#include <mach/fb.h>
+#include <mach/ocotp.h>
 
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
-
-#include <mach/fb.h>
 
 #include <generated/mach-types.h>
 
@@ -118,6 +119,27 @@ static struct mxs_mci_platform_data mci_pdata = {
 };
 
 /* fec */
+static void mx28_evk_get_ethaddr(void)
+{
+	u8 mac_ocotp[3], mac[6];
+	int ret;
+
+	ret = mxs_ocotp_read(mac_ocotp, 3, 0);
+	if (ret != 3) {
+		pr_err("Reading MAC from OCOTP failed!\n");
+		return;
+	}
+
+	mac[0] = 0x00;
+	mac[1] = 0x04;
+	mac[2] = 0x9f;
+	mac[3] = mac_ocotp[2];
+	mac[4] = mac_ocotp[1];
+	mac[5] = mac_ocotp[0];
+
+	eth_register_ethaddr(0, mac);
+}
+
 static void __init mx28_evk_fec_reset(void)
 {
 	mdelay(1);
@@ -207,6 +229,10 @@ static int mx28_evk_devices_init(void)
 
 	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
 			   IORESOURCE_MEM, &mx28_evk_fb_pdata);
+
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0,
+			IORESOURCE_MEM, NULL);
+	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
 	imx_enable_enetclk();
 	mx28_evk_fec_reset();

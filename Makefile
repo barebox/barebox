@@ -540,7 +540,7 @@ quiet_cmd_check_file_size = CHKSIZE $@
 	max_size=`printf "%d" $2`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\
-		echo "$@ size $$size > of the maximum size $$max_size";	\
+		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\
 		exit 1 ;						\
 	fi;
 
@@ -1003,6 +1003,7 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
 		.tmp_kallsyms* barebox_default_env* barebox.ldr \
+		scripts/bareboxenv-target \
 		Doxyfile.version barebox.srec barebox.s5p
 
 # Directories & files removed with 'make mrproper'

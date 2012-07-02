@@ -65,3 +65,4 @@ cscope.*
 *.patch
 scripts/gen_netx_image
 scripts/s5p_cksum
+scripts/bareboxenv-target

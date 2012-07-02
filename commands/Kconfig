@@ -25,6 +25,10 @@ config CMD_SLEEP
 	tristate
 	prompt "sleep"
 
+config CMD_MSLEEP
+	tristate
+	prompt "msleep"
+
 config CMD_SAVEENV
 	tristate
 	select ENV_HANDLING

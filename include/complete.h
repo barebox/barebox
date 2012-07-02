@@ -15,7 +15,7 @@ int command_complete(struct string_list *sl, char *instr);
 int device_complete(struct string_list *sl, char *instr);
 int empty_complete(struct string_list *sl, char *instr);
 int eth_complete(struct string_list *sl, char *instr);
-int cammand_var_complete(struct string_list *sl, char *instr);
+int command_var_complete(struct string_list *sl, char *instr);
 int devfs_partition_complete(struct string_list *sl, char *instr);
 
 #endif /* __COMPLETE_ */

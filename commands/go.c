@@ -92,5 +92,5 @@ BAREBOX_CMD_START(go)
 	.cmd		= do_go,
 	.usage		= "start application at address or file",
 	BAREBOX_CMD_HELP(cmd_go_help)
-	BAREBOX_CMD_COMPLETE(cammand_var_complete)
+	BAREBOX_CMD_COMPLETE(command_var_complete)
 BAREBOX_CMD_END

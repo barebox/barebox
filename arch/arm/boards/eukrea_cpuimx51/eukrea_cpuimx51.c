@@ -53,6 +53,11 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static iomux_v3_cfg_t eukrea_cpuimx51_pads[] = {
+	/* UART1 */
+	MX51_PAD_UART1_RXD__UART1_RXD,
+	MX51_PAD_UART1_TXD__UART1_TXD,
+	MX51_PAD_UART1_RTS__UART1_RTS,
+	MX51_PAD_UART1_CTS__UART1_CTS,
 	/* FEC */
 	MX51_PAD_DISP2_DAT1__FEC_RX_ER,
 	MX51_PAD_DISP2_DAT15__FEC_TDATA0,
@@ -141,12 +146,8 @@ static int eukrea_cpuimx51_console_init(void)
 
 	imx51_init_lowlevel(800);
 
-	writel(0, 0x73fa8228);
-	writel(0, 0x73fa822c);
-	writel(0, 0x73fa8230);
-	writel(0, 0x73fa8234);
-
 	imx51_add_uart0();
+
 	return 0;
 }
 

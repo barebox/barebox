@@ -28,7 +28,7 @@
 #include <io.h>
 #include <mach/jz4750d_regs.h>
 
-#define JZ_TIMER_CLOCK 40000
+#define JZ_TIMER_CLOCK 24000000
 
 static uint64_t jz4750_cs_read(void)
 {
@@ -38,12 +38,13 @@ static uint64_t jz4750_cs_read(void)
 static struct clocksource jz4750_cs = {
 	.read	= jz4750_cs_read,
 	.mask   = CLOCKSOURCE_MASK(32),
-	.shift  = 10,
 };
 
 static int clocksource_init(void)
 {
-	jz4750_cs.mult = clocksource_hz2mult(JZ_TIMER_CLOCK, jz4750_cs.shift);
+	clocks_calc_mult_shift(&jz4750_cs.mult, &jz4750_cs.shift,
+		JZ_TIMER_CLOCK, NSEC_PER_SEC, 10);
+
 	init_clock(&jz4750_cs);
 
 	__raw_writel(TCU_OSTCSR_PRESCALE1 | TCU_OSTCSR_EXT_EN,

@@ -10,8 +10,6 @@ struct sys_info {
 	unsigned long freqLocalBus;
 };
 
-#define NSEC_PER_SEC	1000000000L
-
 unsigned long fsl_get_bus_freq(ulong dummy);
 unsigned long fsl_get_timebase_clock(void);
 void fsl_get_sys_info(struct sys_info *sysInfo);

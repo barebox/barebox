@@ -51,9 +51,17 @@ if [ "$ip" = static ]; then
 	${interface}.netmask=$netmask
 	${interface}.serverip=$serverip
 	${interface}.gateway=$gateway
+	ret=0
 elif [ "$ip" = dhcp ]; then
 	dhcp
-	exit $?
+	ret=$?
+	if [ $ret = 0 -a -n "$serverip" ]; then
+		${interface}.serverip=$serverip
+	fi
 fi
 
-echo -o /tmp/network/$interface up
+if [ $ret = 0 ]; then
+	echo -o /tmp/network/$interface up
+fi
+
+exit $ret

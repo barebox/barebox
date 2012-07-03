@@ -393,7 +393,7 @@ choice
 	prompt "i.MX51 Board Type"
 
 config MACH_FREESCALE_MX51_PDK
-	select DEFAULT_ENVIRONMENT_GENERIC_NEW
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	bool "Freescale i.MX51 PDK"
 
 config MACH_EUKREA_CPUIMX51SD

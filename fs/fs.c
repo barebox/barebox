@@ -643,7 +643,7 @@ int read(int fd, void *buf, size_t count)
 
 	fsdrv = dev_to_fs_driver(dev);
 
-	if (f->pos + count > f->size)
+	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
 		count = f->size - f->pos;
 
 	if (!count)
@@ -672,7 +672,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
-	if (f->pos + count > f->size) {
+	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
 		ret = fsdrv->truncate(dev, f, f->pos + count);
 		if (ret) {
 			if (ret != -ENOSPC)
@@ -740,12 +740,12 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 
 	switch (whence) {
 	case SEEK_SET:
-		if (offset > f->size)
+		if (f->size != FILE_SIZE_STREAM && offset > f->size)
 			goto out;
 		pos = offset;
 		break;
 	case SEEK_CUR:
-		if (offset + f->pos > f->size)
+		if (f->size != FILE_SIZE_STREAM && offset + f->pos > f->size)
 			goto out;
 		pos = f->pos + offset;
 		break;

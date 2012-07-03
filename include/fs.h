@@ -24,6 +24,7 @@ typedef struct dir {
 typedef struct filep {
 	struct device_d *dev; /* The device this FILE belongs to              */
 	loff_t pos;            /* current position in stream                   */
+#define FILE_SIZE_STREAM	((loff_t) -1)
 	loff_t size;           /* The size of this inode                       */
 	ulong flags;          /* the O_* flags from open                      */
 

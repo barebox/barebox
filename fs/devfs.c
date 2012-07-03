@@ -121,7 +121,8 @@ static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 	if (!cdev)
 		return -ENOENT;
 
-	f->size = cdev->size;
+	f->size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
+			FILE_SIZE_STREAM : cdev->size;
 	f->inode = cdev;
 
 	if (cdev->ops->open) {

@@ -40,7 +40,7 @@ static int zero_init(void)
 	cdev = xzalloc(sizeof (*cdev));
 
 	cdev->name = "zero";
-	cdev->size = ~0;
+	cdev->flags = DEVFS_IS_CHARACTER_DEV;
 	cdev->ops = &zeroops;
 
 	devfs_create(cdev);
@@ -68,7 +68,7 @@ static int full_init(void)
 	cdev = xzalloc(sizeof (*cdev));
 
 	cdev->name = "full";
-	cdev->size = ~0;
+	cdev->flags = DEVFS_IS_CHARACTER_DEV;
 	cdev->ops = &fullops;
 
 	devfs_create(cdev);
@@ -95,7 +95,7 @@ static int null_init(void)
 	cdev = xzalloc(sizeof (*cdev));
 
 	cdev->name = "null";
-	cdev->size = 0;
+	cdev->flags = DEVFS_IS_CHARACTER_DEV;
 	cdev->ops = &nullops;
 
 	devfs_create(cdev);

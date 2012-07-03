@@ -147,7 +147,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	if ((phys & (SZ_1M - 1)) || (bank->size & (SZ_1M - 1)))
 		return -EINVAL;
 
-	ptes = memalign(0x400, num_ptes * sizeof(u32));
+	ptes = memalign(PAGE_SIZE, num_ptes * sizeof(u32));
 
 	debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
 			ptes, ttb_start, ttb_end);
@@ -164,6 +164,9 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 			(0 << 4);
 		pte += 256;
 	}
+
+	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
+	dma_flush_range((unsigned long)ptes, num_ptes * sizeof(u32));
 
 	tlb_invalidate();
 

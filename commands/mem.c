@@ -180,6 +180,8 @@ static int do_mem_md(int argc, char *argv[])
 		}
 		if (size == ~0)
 			size = 0x100;
+	} else {
+		return COMMAND_ERROR_USAGE;
 	}
 
 	fd = open_and_lseek(filename, mode | O_RDONLY, start);

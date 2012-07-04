@@ -6,12 +6,14 @@ config ARCH_TEXT_BASE
 	default 0x42000000 if MACH_CHUMBY
 	default 0x47000000 if MACH_TX28
 	default 0x47000000 if MACH_MX28EVK
+	default 0x47000000 if MACH_CFA10036
 
 config BOARDINFO
 	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 	default "Chumby Falconwing" if MACH_CHUMBY
 	default "Karo TX28" if MACH_TX28
 	default "Freescale i.MX28-EVK" if MACH_MX28EVK
+	default "Crystalfontz CFA-10036" if MACH_CFA10036
 
 comment "Freescale i.MX System-on-Chip"
 
@@ -64,6 +66,12 @@ config MACH_MX28EVK
 	select MXS_OCOTP
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
+
+config MACH_CFA10036
+	bool "cfa-10036"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	help
+	  Say Y here if you are using the Crystalfontz CFA-10036 module
 
 endchoice
 

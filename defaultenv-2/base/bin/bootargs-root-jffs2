@@ -1,9 +1,21 @@
 #!/bin/sh
 
-while getopt "m:" opt; do
+mtd=
+
+usage="$0 [OPTIONS]\n -m <mtd>"
+
+while getopt "m:h" opt; do
 	if [ ${opt} = m ]; then
 		mtd=${OPTARG}
+	elif [ ${opt} = h ]; then
+		echo -e "$usage"
+		exit 0
 	fi
 done
+
+if [ -z "$mtd" ]; then
+	echo -e "$usage"
+	exit 1
+fi
 
 global.linux.bootargs.root="root=$mtd rootfstype=jffs2"

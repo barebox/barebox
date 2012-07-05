@@ -51,7 +51,7 @@ int mc9sdz60_reg_read(struct mc9sdz60 *mc9sdz60, enum mc9sdz60_reg reg, u8 *val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(mc9sdz60_reg_read)
+EXPORT_SYMBOL(mc9sdz60_reg_read);
 
 int mc9sdz60_reg_write(struct mc9sdz60 *mc9sdz60, enum mc9sdz60_reg reg, u8 val)
 {
@@ -61,7 +61,7 @@ int mc9sdz60_reg_write(struct mc9sdz60 *mc9sdz60, enum mc9sdz60_reg reg, u8 val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(mc9sdz60_reg_write)
+EXPORT_SYMBOL(mc9sdz60_reg_write);
 
 int mc9sdz60_set_bits(struct mc9sdz60 *mc9sdz60, enum mc9sdz60_reg reg, u8 mask, u8 val)
 {

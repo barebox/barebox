@@ -38,11 +38,11 @@ static int do_exec(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	for (i=1; i<argc; ++i) {
-		script = read_file(argv[i]);
+		script = read_file(argv[i], NULL);
 		if (!script)
 			return 1;
 
-		if (run_command (script, flag) == -1)
+		if (run_command (script, 0) == -1)
 			goto out;
 		free(script);
 	}

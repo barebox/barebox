@@ -17,6 +17,7 @@
 #include <mach/board.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
+#include <mach/at91rm9200_mc.h>
 #include <sizes.h>
 
 #include "generic.h"

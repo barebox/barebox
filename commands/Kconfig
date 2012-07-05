@@ -349,6 +349,7 @@ config CMD_BOOTM
 	tristate
 	default y
 	select CRC32
+	select UIMAGE
 	select UNCOMPRESS
 	select FILETYPE
 	select GLOBALVAR
@@ -397,6 +398,7 @@ config CMD_BOOTM_AIMAGE
 	  Support using Android Images.
 
 config CMD_UIMAGE
+	select UIMAGE
 	tristate
 	prompt "uimage"
 	help

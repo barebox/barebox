@@ -47,6 +47,9 @@ config BINFMT
 	bool
 	select FILETYPE
 
+config UIMAGE
+	bool
+
 config GLOBALVAR
 	bool
 

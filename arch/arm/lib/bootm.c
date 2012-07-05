@@ -399,7 +399,7 @@ static int do_bootm_aimage(struct image_data *data)
 	if (!getenv("aimage_noverwrite_tags"))
 		armlinux_set_bootparams((void*)header->tags_addr);
 
-	if (data->oftree) {
+	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree) {
 		ret = of_fix_tree(data->oftree);
 		if (ret)
 			goto err_out;

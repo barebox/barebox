@@ -106,6 +106,7 @@ struct imx_nand_host {
 	void			(*send_addr)(struct imx_nand_host *, uint16_t);
 	void			(*send_page)(struct imx_nand_host *, unsigned int);
 	void			(*send_read_id)(struct imx_nand_host *);
+	void			(*send_read_param)(struct imx_nand_host *);
 	uint16_t		(*get_dev_status)(struct imx_nand_host *);
 	int			(*check_int)(struct imx_nand_host *);
 };
@@ -151,6 +152,31 @@ static struct nand_ecclayout nandv2_hw_eccoob_largepage = {
 		{.offset = 16, .length = 7},
 		{.offset = 32, .length = 7},
 		{.offset = 48, .length = 7}
+	}
+};
+
+/* OOB description for 4096 byte pages with 128 byte OOB */
+static struct nand_ecclayout nandv2_hw_eccoob_4k = {
+	.eccbytes = 8 * 9,
+	.eccpos = {
+		7,  8,  9, 10, 11, 12, 13, 14, 15,
+		23, 24, 25, 26, 27, 28, 29, 30, 31,
+		39, 40, 41, 42, 43, 44, 45, 46, 47,
+		55, 56, 57, 58, 59, 60, 61, 62, 63,
+		71, 72, 73, 74, 75, 76, 77, 78, 79,
+		87, 88, 89, 90, 91, 92, 93, 94, 95,
+		103, 104, 105, 106, 107, 108, 109, 110, 111,
+		119, 120, 121, 122, 123, 124, 125, 126, 127,
+	},
+	.oobfree = {
+		{.offset = 2, .length = 4},
+		{.offset = 16, .length = 7},
+		{.offset = 32, .length = 7},
+		{.offset = 48, .length = 7},
+		{.offset = 64, .length = 7},
+		{.offset = 80, .length = 7},
+		{.offset = 96, .length = 7},
+		{.offset = 112, .length = 7},
 	}
 };
 
@@ -335,6 +361,16 @@ static void send_read_id_v3(struct imx_nand_host *host)
 	memcpy(host->data_buf, host->main_area0, 16);
 }
 
+static void send_read_param_v3(struct imx_nand_host *host)
+{
+	/* Read ID into main buffer */
+	writel(NFC_OUTPUT, NFC_V3_LAUNCH);
+
+	wait_op_done(host);
+
+	memcpy(host->data_buf, host->main_area0, 1024);
+}
+
 static void send_read_id_v1_v2(struct imx_nand_host *host)
 {
 	struct nand_chip *this = &host->nand;
@@ -363,6 +399,34 @@ static void send_read_id_v1_v2(struct imx_nand_host *host)
 	memcpy32(host->data_buf, host->main_area0, 16);
 }
 
+/* FIXME : to check on real HW */
+static void send_read_param_v1_v2(struct imx_nand_host *host)
+{
+	struct nand_chip *this = &host->nand;
+
+	/* NANDFC buffer 0 is used for device ID output */
+	writew(0x0, host->regs + NFC_V1_V2_BUF_ADDR);
+
+	writew(NFC_OUTPUT, host->regs + NFC_V1_V2_CONFIG2);
+
+	/* Wait for operation to complete */
+	wait_op_done(host);
+
+	if (this->options & NAND_BUSWIDTH_16) {
+		volatile u16 *mainbuf = host->main_area0;
+
+		/*
+		 * Pack the every-other-byte result for 16-bit ID reads
+		 * into every-byte as the generic code expects and various
+		 * chips implement.
+		 */
+
+		mainbuf[0] = (mainbuf[0] & 0xff) | ((mainbuf[1] & 0xff) << 8);
+		mainbuf[1] = (mainbuf[2] & 0xff) | ((mainbuf[3] & 0xff) << 8);
+		mainbuf[2] = (mainbuf[4] & 0xff) | ((mainbuf[5] & 0xff) << 8);
+	}
+	memcpy32(host->data_buf, host->main_area0, 1024);
+}
 /*
  * This function requests the NANDFC to perform a read of the
  * NAND device status and returns the current status.
@@ -579,6 +643,10 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 
 	n = min(n, len);
 
+	/* handle the read param special case */
+	if ((mtd->writesize == 0) && (len != 0))
+		n = len;
+
 	memcpy(buf, host->data_buf + col, n);
 
 	host->buf_start += n;
@@ -677,8 +745,11 @@ static void mxc_do_addr_cycle(struct mtd_info *mtd, int column, int page_addr)
 		 * layers perform a read/write buf operation,
 		 * we will used the saved column adress to index into
 		 * the full page.
+		 *
+		 * The colum address must be sent to the flash in
+		 * order to get the ONFI header (0x20)
 		 */
-		host->send_addr(host, 0);
+		host->send_addr(host, column);
 		if (host->pagesize_2k)
 			/* another col addr cycle for 2k page */
 			host->send_addr(host, 0);
@@ -790,9 +861,11 @@ static void preset_v3(struct mtd_info *mtd)
 
 	writel(0, NFC_V3_IPC);
 
+	/* if the flash has a 224 oob, the NFC must be configured to 218 */
 	config2 = NFC_V3_CONFIG2_ONE_CYCLE |
 		NFC_V3_CONFIG2_2CMD_PHASES |
-		NFC_V3_CONFIG2_SPAS(mtd->oobsize >> 1) |
+		NFC_V3_CONFIG2_SPAS(((mtd->oobsize > 218) ?
+			218 : mtd->oobsize) >> 1) |
 		NFC_V3_CONFIG2_ST_CMD(0x70) |
 		NFC_V3_CONFIG2_NUM_ADDR_PHASE0;
 
@@ -944,8 +1017,15 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	case NAND_CMD_READID:
 		host->send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
-		host->buf_start = 0;
 		host->send_read_id(host);
+		host->buf_start = 0;
+		break;
+
+	case NAND_CMD_PARAM:
+		host->send_cmd(host, command);
+		mxc_do_addr_cycle(mtd, column, page_addr);
+		host->send_read_param(host);
+		host->buf_start = 0;
 		break;
 
 	case NAND_CMD_ERASE1:
@@ -1024,7 +1104,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	struct mtd_info *mtd;
 	struct imx_nand_platform_data *pdata = dev->platform_data;
 	struct imx_nand_host *host;
-	struct nand_ecclayout *oob_smallpage, *oob_largepage;
+	struct nand_ecclayout *oob_smallpage, *oob_largepage, *oob_4kpage;
 	int err = 0;
 
 #ifdef CONFIG_ARCH_IMX27
@@ -1047,6 +1127,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->send_addr = send_addr_v1_v2;
 		host->send_page = send_page_v1_v2;
 		host->send_read_id = send_read_id_v1_v2;
+		host->send_read_param = send_read_param_v1_v2; /* FIXME : to check */
 		host->get_dev_status = get_dev_status_v1_v2;
 		host->check_int = check_int_v1_v2;
 	}
@@ -1059,6 +1140,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->spare_len = 64;
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
+		oob_4kpage = &nandv2_hw_eccoob_4k; /* FIXME : to check */
 	} else if (nfc_is_v1()) {
 		host->base = dev_request_mem_region(dev, 0);
 		host->main_area0 = host->base;
@@ -1067,6 +1149,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->spare_len = 16;
 		oob_smallpage = &nandv1_hw_eccoob_smallpage;
 		oob_largepage = &nandv1_hw_eccoob_largepage;
+		oob_4kpage = &nandv1_hw_eccoob_smallpage; /* FIXME : to check  */
 	} else if (nfc_is_v3_2()) {
 		host->regs_ip = dev_request_mem_region(dev, 0);
 		host->base = dev_request_mem_region(dev, 1);
@@ -1086,10 +1169,12 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->send_addr = send_addr_v3;
 		host->send_page = send_page_v3;
 		host->send_read_id = send_read_id_v3;
+		host->send_read_param = send_read_param_v3;
 		host->get_dev_status = get_dev_status_v3;
 		host->check_int = check_int_v3;
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
+		oob_4kpage = &nandv2_hw_eccoob_4k;
 	}
 
 	host->dev = dev;
@@ -1161,7 +1246,10 @@ static int __init imxnd_probe(struct device_d *dev)
 	imx_nand_set_layout(mtd->writesize, pdata->width == 2 ? 16 : 8);
 
 	if (mtd->writesize >= 2048) {
-		this->ecc.layout = oob_largepage;
+		if (mtd->writesize == 2048)
+			this->ecc.layout = oob_largepage;
+		else
+			this->ecc.layout = oob_4kpage;
 		host->pagesize_2k = 1;
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(64), host->regs + NFC_V2_SPAS);

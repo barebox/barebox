@@ -26,7 +26,6 @@
 #include <command.h>
 #include <linux/list.h>
 #include <errno.h>
-#include <asm/gpio.h>
 #include <led.h>
 #include <poller.h>
 #include <clock.h>

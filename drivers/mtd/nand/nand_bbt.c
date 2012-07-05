@@ -254,6 +254,7 @@ static int scan_read_raw(struct mtd_info *mtd, uint8_t *buf, loff_t offs,
 /*
  * Scan write data with oob to flash
  */
+#ifdef CONFIG_MTD_WRITE
 static int scan_write_bbt(struct mtd_info *mtd, loff_t offs, size_t len,
 			  uint8_t *buf, uint8_t *oob)
 {
@@ -268,6 +269,7 @@ static int scan_write_bbt(struct mtd_info *mtd, loff_t offs, size_t len,
 
 	return mtd->write_oob(mtd, offs, &ops);
 }
+#endif
 
 /**
  * read_abs_bbts - [GENERIC] Read the bad block table(s) for all chips starting at a given page

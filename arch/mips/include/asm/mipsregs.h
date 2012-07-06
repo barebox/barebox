@@ -102,11 +102,6 @@
 #define CP0_S3_SRSMAP	  $12	/* MIPSR2 */
 
 /*
- *  TX39 Series
- */
-#define CP0_TX39_CACHE	$7
-
-/*
  * Coprocessor 1 (FPU) register names
  */
 #define CP1_REVISION   $0
@@ -387,27 +382,6 @@
 #define R5K_CONF_SE		(_ULCAST_(1) << 12)
 #define R5K_CONF_SS		(_ULCAST_(3) << 20)
 
-/* Bits specific to the RM7000.  */
-#define RM7K_CONF_SE		(_ULCAST_(1) <<  3)
-#define RM7K_CONF_TE		(_ULCAST_(1) << 12)
-#define RM7K_CONF_CLK		(_ULCAST_(1) << 16)
-#define RM7K_CONF_TC		(_ULCAST_(1) << 17)
-#define RM7K_CONF_SI		(_ULCAST_(3) << 20)
-#define RM7K_CONF_SC		(_ULCAST_(1) << 31)
-
-/* Bits specific to the R10000.  */
-#define R10K_CONF_DN		(_ULCAST_(3) <<  3)
-#define R10K_CONF_CT		(_ULCAST_(1) <<  5)
-#define R10K_CONF_PE		(_ULCAST_(1) <<  6)
-#define R10K_CONF_PM		(_ULCAST_(3) <<  7)
-#define R10K_CONF_EC		(_ULCAST_(15)<<  9)
-#define R10K_CONF_SB		(_ULCAST_(1) << 13)
-#define R10K_CONF_SK		(_ULCAST_(1) << 14)
-#define R10K_CONF_SS		(_ULCAST_(7) << 16)
-#define R10K_CONF_SC		(_ULCAST_(7) << 19)
-#define R10K_CONF_DC		(_ULCAST_(7) << 26)
-#define R10K_CONF_IC		(_ULCAST_(7) << 29)
-
 /* Bits specific to the R30xx.  */
 #define R30XX_CONF_FDM		(_ULCAST_(1) << 19)
 #define R30XX_CONF_REV		(_ULCAST_(1) << 22)
@@ -418,12 +392,6 @@
 #define R30XX_CONF_DBR		(_ULCAST_(1) << 29)
 #define R30XX_CONF_SB		(_ULCAST_(1) << 30)
 #define R30XX_CONF_LOCK		(_ULCAST_(1) << 31)
-
-/* Bits specific to the TX49.  */
-#define TX49_CONF_DC		(_ULCAST_(1) << 16)
-#define TX49_CONF_IC		(_ULCAST_(1) << 17)  /* conflict with CONF_SC */
-#define TX49_CONF_HALT		(_ULCAST_(1) << 18)
-#define TX49_CONF_CWFON		(_ULCAST_(1) << 27)
 
 /* Bits specific to the MIPS32/64 PRA.  */
 #define MIPS_CONF_MT		(_ULCAST_(7) <<  7)

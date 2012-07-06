@@ -23,12 +23,21 @@
 #include <types.h>
 #include <driver.h>
 #include <init.h>
+#include <memory.h>
 #include <ns16550.h>
 #include <mach/hardware.h>
 #include <io.h>
 #include <partition.h>
 #include <sizes.h>
 #include <asm/common.h>
+
+static int malta_mem_init(void)
+{
+	barebox_add_memory_bank("ram0", 0xa0000000, SZ_256M);
+
+	return 0;
+}
+mem_initcall(malta_mem_init);
 
 static int malta_devices_init(void)
 {

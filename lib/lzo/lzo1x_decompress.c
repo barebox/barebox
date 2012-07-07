@@ -23,7 +23,7 @@
 #define COPY4(dst, src)	\
 		put_unaligned(get_unaligned((const u32 *)(src)), (u32 *)(dst))
 
-int lzo1x_decompress_safe(const unsigned char *in, size_t in_len,
+STATIC int lzo1x_decompress_safe(const unsigned char *in, size_t in_len,
 			unsigned char *out, size_t *out_len)
 {
 	const unsigned char * const ip_end = in + in_len;

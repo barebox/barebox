@@ -33,10 +33,15 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/types.h>
-#include <lzo.h>
 #include <errno.h>
 #include <fs.h>
 #include <xfuncs.h>
+
+#ifdef STATIC
+#include "lzo/lzo1x_decompress.c"
+#endif
+
+#include <lzo.h>
 
 #include <linux/compiler.h>
 #include <asm/unaligned.h>
@@ -106,7 +111,7 @@ static inline int parse_header(u8 *input, int *skip, int in_len)
 	return 1;
 }
 
-int decompress_unlzo(u8 *input, int in_len,
+STATIC int decompress_unlzo(u8 *input, int in_len,
 				int (*fill) (void *, unsigned int),
 				int (*flush) (void *, unsigned int),
 				u8 *output, int *posp,

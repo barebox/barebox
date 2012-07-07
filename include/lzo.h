@@ -19,12 +19,16 @@
 
 #define lzo1x_worst_compress(x) ((x) + ((x) / 16) + 64 + 3)
 
+#ifndef STATIC
+#define STATIC
+#endif
+
 /* This requires 'workmem' of size LZO1X_1_MEM_COMPRESS */
 int lzo1x_1_compress(const unsigned char *src, size_t src_len,
 			unsigned char *dst, size_t *dst_len, void *wrkmem);
 
 /* safe decompression with overrun testing */
-int lzo1x_decompress_safe(const unsigned char *src, size_t src_len,
+STATIC int lzo1x_decompress_safe(const unsigned char *src, size_t src_len,
 			unsigned char *dst, size_t *dst_len);
 
 /*
@@ -41,7 +45,7 @@ int lzo1x_decompress_safe(const unsigned char *src, size_t src_len,
 #define LZO_E_INPUT_NOT_CONSUMED	(-8)
 #define LZO_E_NOT_YET_IMPLEMENTED	(-9)
 
-int decompress_unlzo(u8 *input, int in_len,
+STATIC int decompress_unlzo(u8 *input, int in_len,
 		int (*fill) (void *, unsigned int),
 		int (*flush) (void *, unsigned int),
 		u8 *output, int *posp,

@@ -146,7 +146,7 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	DCD(MX6_IOMUXC_BASE_ADDR + 0x01c, 0x007f007f),
 };
 
-#define APP_DEST	CONFIG_TEXT_BASE
+#define APP_DEST	0x10000000
 
 struct imx_flash_header_v2 __flash_header_section flash_header = {
 	.header.tag		= IVT_HEADER_TAG,

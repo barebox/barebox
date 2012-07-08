@@ -80,9 +80,6 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
-	. = ALIGN(4);
-	.got : { *(.got*) }
-
 	. = .;
 	__barebox_cmd_start = .;
 	.barebox_cmd : { BAREBOX_CMDS }

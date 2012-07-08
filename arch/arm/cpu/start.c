@@ -81,13 +81,11 @@ void __naked __bare_init reset(void)
 	r &= ~(CR_M | CR_C | CR_B | CR_S | CR_R | CR_V);
 	r |= CR_I;
 
-	if (!(r & CR_U))
-		/* catch unaligned access on architectures which do not
-		 * support unaligned access */
-		r |= CR_A;
-	else
-		r &= ~CR_A;
-
+#if __LINUX_ARM_ARCH__ >= 6
+	r |= CR_U;
+#else
+	r |= CR_A;
+#endif
 
 #ifdef __ARMEB__
 	r |= CR_B;

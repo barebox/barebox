@@ -49,8 +49,6 @@
 #include <mach/devices-imx25.h>
 #include <asm/barebox-arm-head.h>
 
-extern void exception_vectors(void);
-
 void __naked __flash_header_start go(void)
 {
 	barebox_arm_head();
@@ -72,7 +70,7 @@ struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {
 };
 
 struct imx_flash_header __flash_header_section flash_header = {
-	.app_code_jump_vector	= DEST_BASE + ((unsigned int)&exception_vectors - TEXT_BASE),
+	.app_code_jump_vector	= DEST_BASE + 0x1000,
 	.app_code_barker	= APP_CODE_BARKER,
 	.app_code_csf		= 0,
 	.dcd_ptr_ptr		= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd),

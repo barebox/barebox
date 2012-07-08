@@ -15,12 +15,13 @@
 
 #include <common.h>
 #include <asm/byteorder.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/imx-flash-header.h>
 #include <mach/imx6-regs.h>
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 #define DCD(a, v) { .addr = cpu_to_be32(a), .val = cpu_to_be32(v), }

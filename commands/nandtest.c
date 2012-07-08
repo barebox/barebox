@@ -307,11 +307,11 @@ static int do_nandtest(int argc, char *argv[])
 		for (test_ofs = flash_offset;
 				test_ofs < flash_offset+length;
 				test_ofs += meminfo.erasesize) {
-
+			loff_t __test_ofs = test_ofs;
 			srand(seed);
 			seed = rand();
 
-			if (ioctl(fd, MEMGETBADBLOCK, (void *)test_ofs)) {
+			if (ioctl(fd, MEMGETBADBLOCK, &__test_ofs)) {
 				printf("\rBad block at 0x%08x\n",
 						(unsigned)(test_ofs +
 							memregion.offset));

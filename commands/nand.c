@@ -79,6 +79,7 @@ static int do_nand(int argc, char *argv[])
 	if (command & NAND_MARKBAD) {
 		if (optind < argc) {
 			int ret = 0, fd;
+			loff_t __badblock = badblock;
 
 			printf("marking block at 0x%08x on %s as bad\n", badblock, argv[optind]);
 
@@ -88,7 +89,7 @@ static int do_nand(int argc, char *argv[])
 				return 1;
 			}
 
-			ret = ioctl(fd, MEMSETBADBLOCK, (void *)badblock);
+			ret = ioctl(fd, MEMSETBADBLOCK, &__badblock);
 			if (ret)
 				perror("ioctl");
 

@@ -216,7 +216,7 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
 {
 	struct nand_bb *bb = cdev->priv;
-	unsigned long raw_pos = 0;
+	loff_t raw_pos = 0;
 	uint32_t offset = __offset;
 	int ret;
 
@@ -226,7 +226,7 @@ static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
 	while (raw_pos < bb->raw_size) {
 		off_t now = min(offset, bb->info.erasesize);
 
-		ret = cdev_ioctl(bb->cdev_parent, MEMGETBADBLOCK, (void *)raw_pos);
+		ret = cdev_ioctl(bb->cdev_parent, MEMGETBADBLOCK, &raw_pos);
 		if (ret < 0)
 			return ret;
 		if (!ret) {

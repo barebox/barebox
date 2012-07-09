@@ -3,6 +3,7 @@
 
 #define CACHE_DLINESIZE 32
 
+.section .text.__mmu_cache_on
 ENTRY(__mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU
@@ -30,6 +31,7 @@ __common_mmu_cache_on:
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back to
 		sub	pc, lr, r0, lsr #32	@ properly flush pipeline
 
+.section .text.__mmu_cache_off
 ENTRY(__mmu_cache_off)
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r0, c1, c0
@@ -42,6 +44,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, lr
 ENDPROC(__mmu_cache_off)
 
+.section .text.__mmu_cache_flush
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r6, c0, c0	@ get processor ID
 		mov	r2, #64*1024		@ default: 32K dcache size (*2)
@@ -74,7 +77,6 @@ no_cache_id:
 		mov	pc, lr
 ENDPROC(__mmu_cache_flush)
 
-.section ".text.text"
 /*
  *	dma_inv_range(start, end)
  *
@@ -88,6 +90,7 @@ ENDPROC(__mmu_cache_flush)
  *
  * (same as v4wb)
  */
+.section .text.__dma_inv_range
 ENTRY(__dma_inv_range)
 	tst	r0, #CACHE_DLINESIZE - 1
 	bic	r0, r0, #CACHE_DLINESIZE - 1
@@ -111,6 +114,7 @@ ENTRY(__dma_inv_range)
  *
  * (same as v4wb)
  */
+.section .text.__dma_clean_range
 ENTRY(__dma_clean_range)
 	bic	r0, r0, #CACHE_DLINESIZE - 1
 1:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
@@ -128,6 +132,7 @@ ENTRY(__dma_clean_range)
  *	- start	- virtual start address
  *	- end	- virtual end address
  */
+.section .text.__dma_flush_range
 ENTRY(__dma_flush_range)
 	bic	r0, r0, #CACHE_DLINESIZE - 1
 1:	mcr	p15, 0, r0, c7, c14, 1		@ clean+invalidate D entry

@@ -131,7 +131,7 @@ void imx_gpio_mode(uint32_t m)
 	if (BK_PRESENT(m)) {
 		reg_offset = calc_pullup_reg(gpio_pin);
 		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
-				(GET_BITKEEPER(m) == 1 ? BIT_SET : BIT_CLR));
+				(GET_BITKEEPER(m) == 1 ? BIT_CLR : BIT_SET));
 	}
 
 	if (GET_FUNC(m) == IS_GPIO) {

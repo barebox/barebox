@@ -60,7 +60,7 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	struct cdev *parent = bb->cdev_parent;
 	int ret, bytes = 0, now;
 
-	debug("%s %d %d\n", __func__, offset, count);
+	debug("%s 0x%08llx %d\n", __func__, offset, count);
 
 	while(count) {
 		ret = cdev_ioctl(parent, MEMGETBADBLOCK, &bb->offset);
@@ -96,7 +96,7 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 	int ret, now;
 	struct cdev *parent = bb->cdev_parent;
 	void *buf = bb->writebuf;
-	off_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
+	loff_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
 	while (count) {
 		ret = cdev_ioctl(parent, MEMGETBADBLOCK, &cur_ofs);
@@ -104,7 +104,7 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 			return ret;
 
 		if (ret) {
-			debug("skipping bad block at 0x%08x\n", cur_ofs);
+			debug("skipping bad block at 0x%08llx\n", cur_ofs);
 			bb->offset += bb->info.erasesize;
 			cur_ofs += bb->info.erasesize;
 			continue;

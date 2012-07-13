@@ -32,6 +32,7 @@
 #include <partition.h>
 #include <nand.h>
 #include <io.h>
+#include <mach/devices-s3c24xx.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
@@ -109,8 +110,7 @@ static int a9m2410_devices_init(void)
 	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE,
-			0, IORESOURCE_MEM, &nand_info);
+	s3c24xx_add_nand(&nand_info);
 	/*
 	 * SMSC 91C111 network controller on the baseboard
 	 * connected to CS line 1 and interrupt line
@@ -145,8 +145,7 @@ void __bare_init nand_boot(void)
 
 static int a9m2410_console_init(void)
 {
-	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
-			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
+	s3c24xx_add_uart1();
 	return 0;
 }
 

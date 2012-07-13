@@ -39,6 +39,7 @@
 #include <io.h>
 #include <mach/gpio.h>
 #include <mach/s3c-iomap.h>
+#include <mach/devices-s3c24xx.h>
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-mci.h>
@@ -297,8 +298,7 @@ static int mini2440_devices_init(void)
 	reg |= 0x10000;
 	writel(reg, S3C_MISCCR);
 
-	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE,
-			0, IORESOURCE_MEM, &nand_info);
+	s3c24xx_add_nand(&nand_info);
 
 	add_dm9000_device(0, S3C_CS4_BASE + 0x300, S3C_CS4_BASE + 0x304,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
@@ -312,12 +312,9 @@ static int mini2440_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 #endif
-	add_generic_device("s3c_mci", 0, NULL, S3C2410_SDI_BASE, 0,
-			   IORESOURCE_MEM, &mci_data);
-	add_generic_device("s3c_fb", 0, NULL, S3C2410_LCD_BASE, 0,
-			   IORESOURCE_MEM, &s3c24x0_fb_data);
-	add_generic_device("ohci", 0, NULL, S3C2410_USB_HOST_BASE, 0x100,
-			   IORESOURCE_MEM, NULL);
+	s3c24xx_add_mci(&mci_data);
+	s3c24xx_add_fb(&s3c24x0_fb_data);
+	s3c24xx_add_ohci();
 	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
@@ -344,8 +341,7 @@ static int mini2440_console_init(void)
 	s3c_gpio_mode(GPH2_TXD0);
 	s3c_gpio_mode(GPH3_RXD0);
 
-	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
-			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
+	s3c24xx_add_uart1();
 	return 0;
 }
 

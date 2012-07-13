@@ -18,6 +18,9 @@
  *
  */
 
+#ifndef MACH_S3C24XX_NAND_H
+# define MACH_S3C24XX_NAND_H
+
 #ifdef CONFIG_S3C_NAND_BOOT
 extern void s3c24x0_nand_load_image(void*, int, int);
 #endif
@@ -52,3 +55,5 @@ struct s3c24x0_nand_platform_data {
  * @file
  * @brief Basic declaration to use the s3c24x0 NAND driver
  */
+
+#endif /* MACH_S3C24XX_NAND_H */

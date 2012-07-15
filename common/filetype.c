@@ -39,6 +39,7 @@ static const char *filetype_str[] = {
 	[filetype_oftree] = "open firmware flat device tree",
 	[filetype_aimage] = "Android boot image",
 	[filetype_sh] = "Bourne Shell",
+	[filetype_mips_barebox] = "MIPS barebox image",
 };
 
 const char *file_type_to_string(enum filetype f)

@@ -30,6 +30,7 @@ obj-y += startup.o
 obj-y += misc.o
 obj-y += memsize.o
 obj-$(CONFIG_GLOBALVAR) += globalvar.o
+obj-$(CONFIG_RESET_SOURCE) += reset_source.o
 obj-$(CONFIG_FILETYPE) += filetype.o
 obj-y += resource.o
 obj-$(CONFIG_MENU) += menu.o

@@ -107,6 +107,7 @@
 #define OMAP_EHCI_BASE         (OMAP_L4_CORE_BASE + 0x64800)
 
 /** Interrupt Vector base address */
+#define OMAP_SRAM_BASE		0x40200000
 #define OMAP_SRAM_INTVECT	0x4020F800
 #define OMAP_SRAM_INTVECT_COPYSIZE	0x64
 /** Temporary stack for us to use C calls in low_level_init */

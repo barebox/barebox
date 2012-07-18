@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <watchdog.h>
+#include <reset_source.h>
 
 #define MXS_RTC_CTRL 0x0
 #define MXS_RTC_SET_ADDR 0x4
@@ -73,6 +74,27 @@ static int imx28_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
+static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
+{
+	u32 reg;
+
+	reg = readl(p->regs + MXS_RTC_PERSISTENT0);
+	if (reg & MXS_RTC_PERSISTENT0_EXT_RST) {
+		writel(MXS_RTC_PERSISTENT0_EXT_RST,
+			p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
+		set_reset_source(RESET_POR);
+		return;
+	}
+	if (reg & MXS_RTC_PERSISTENT0_THM_RST) {
+		writel(MXS_RTC_PERSISTENT0_THM_RST,
+			p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
+		set_reset_source(RESET_RST);
+		return;
+	}
+
+	set_reset_source(RESET_RST);
+}
+
 static int imx28_wd_probe(struct device_d *dev)
 {
 	struct imx28_wd *priv;
@@ -93,6 +115,9 @@ static int imx28_wd_probe(struct device_d *dev)
 	rc = watchdog_register(&priv->wd);
 	if (rc != 0)
 		goto on_error;
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		imx28_detect_reset_source(priv);
 
 	dev->priv = priv;
 	return 0;

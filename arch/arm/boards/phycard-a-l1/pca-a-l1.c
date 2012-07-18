@@ -393,6 +393,7 @@ struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 
 static int pcaal1_init_devices(void)
 {
+	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_BCH8_CODE_HW, &omap3_nand_cfg);
 #ifdef CONFIG_MCI_OMAP_HSMMC
 	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);
@@ -413,12 +414,7 @@ device_initcall(pcaal1_init_devices);
 
 static int pcaal1_late_init(void)
 {
-	struct device_d *nand;
-
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_SOFT, &omap3_nand_cfg);
-
-	nand = get_device_by_name("nand0");
-
+#ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "x-loader");
 	dev_add_bb_dev("self_raw", "x_loader0");
 
@@ -427,7 +423,7 @@ static int pcaal1_late_init(void)
 
 	devfs_add_partition("nand0", 0x260000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
+#endif
 	return 0;
 }
 late_initcall(pcaal1_late_init);

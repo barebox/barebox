@@ -117,7 +117,6 @@ static struct spi_imx_master spi_0_data = {
 static const struct spi_board_info mx51_babbage_spi_board_info[] = {
 	{
 		.name = "mc13xxx-spi",
-		.max_speed_hz = 300000,
 		.bus_num = 0,
 		.chip_select = 0,
 	},

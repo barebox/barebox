@@ -297,6 +297,7 @@ static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 		mc_dev->spi = dev->type_data;
 		mc_dev->spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
 		mc_dev->spi->bits_per_word = 32;
+		mc_dev->spi->max_speed_hz = 20000000;
 	}
 	mc_dev->cdev.size = 256;
 	mc_dev->cdev.dev = dev;

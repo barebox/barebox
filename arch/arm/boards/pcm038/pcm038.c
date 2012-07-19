@@ -40,6 +40,7 @@
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
+#include <mach/iim.h>
 #include <mfd/mc13xxx.h>
 
 #include "pll.h"
@@ -196,6 +197,7 @@ mem_initcall(pcm038_mem_init);
 static int pcm038_devices_init(void)
 {
 	int i;
+	u64 uid = 0;
 	char *envdev;
 
 	unsigned int mode[] = {
@@ -319,6 +321,8 @@ static int pcm038_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
+	if (imx_iim_read(1, 1, &uid, 6) == 6)
+		armlinux_set_serial(uid);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
 

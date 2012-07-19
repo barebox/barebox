@@ -147,6 +147,22 @@ static int pcm038_power_init(void)
 				MC13783_SW1B_SOFTSTART |
 				MC13783_SW_PLL_FACTOR(32));
 
+			/* Setup VMMC voltage */
+			if (IS_ENABLED(CONFIG_MCI_IMX)) {
+				u32 val;
+
+				mc13xxx_reg_read(mc13xxx, MC13783_REG_REG_SETTING(1), &val);
+				/* VMMC1 = 3.00 V */
+				val &= ~(7 << 6);
+				val |= 6 << 6;
+				mc13xxx_reg_write(mc13xxx, MC13783_REG_REG_SETTING(1), val);
+
+				mc13xxx_reg_read(mc13xxx, MC13783_REG_REG_MODE(1), &val);
+				/* Enable VMMC1 */
+				val |= 1 << 18;
+				mc13xxx_reg_write(mc13xxx, MC13783_REG_REG_MODE(1), val);
+			}
+
 			/* wait for required power level to run the CPU at 400 MHz */
 			udelay(100000);
 			CSCR = CSCR_VAL_FINAL;

@@ -23,6 +23,7 @@
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/gpio.h>
+#include <mach/devices-imx27.h>
 #include <usb/ulpi.h>
 
 #define GPIO_IDE_POWER	(GPIO_PORTE + 18)
@@ -148,6 +149,26 @@ static void pcm970_ide_init(void)
 }
 #endif
 
+static void pcm970_mmc_init(void)
+{
+	uint32_t i;
+	unsigned int mode[] = {
+		/* SD2 */
+		PB4_PF_SD2_D0,
+		PB5_PF_SD2_D1,
+		PB6_PF_SD2_D2,
+		PB7_PF_SD2_D3,
+		PB8_PF_SD2_CMD,
+		PB9_PF_SD2_CLK,
+	};
+
+	for (i = 0; i < ARRAY_SIZE(mode); i++)
+		imx_gpio_mode(mode[i]);
+
+	PCCR0 |= PCCR0_SDHC2_EN;
+	imx27_add_mmc1(NULL);
+}
+
 static int pcm970_init(void)
 {
 	int i;
@@ -180,6 +201,9 @@ static int pcm970_init(void)
 #ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 	pcm970_ide_init();
 #endif
+
+	if (IS_ENABLED(CONFIG_MCI_IMX))
+		pcm970_mmc_init();
 
 	return 0;
 }

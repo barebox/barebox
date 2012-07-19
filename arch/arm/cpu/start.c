@@ -33,31 +33,6 @@ void __naked __section(.text_entry) start(void)
 	barebox_arm_head();
 }
 
-void __naked __section(.text_exceptions) exception_vectors(void)
-{
-	__asm__ __volatile__ (
-		".arm\n"
-		"b reset\n"				/* reset */
-#ifdef CONFIG_ARM_EXCEPTIONS
-		"ldr pc, =undefined_instruction\n"	/* undefined instruction */
-		"ldr pc, =software_interrupt\n"		/* software interrupt (SWI) */
-		"ldr pc, =prefetch_abort\n"		/* prefetch abort */
-		"ldr pc, =data_abort\n"			/* data abort */
-		"1: b 1b\n"				/* (reserved) */
-		"ldr pc, =irq\n"			/* irq (interrupt) */
-		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
-#else
-		"1: b 1b\n"				/* undefined instruction */
-		"1: b 1b\n"				/* software interrupt (SWI) */
-		"1: b 1b\n"				/* prefetch abort */
-		"1: b 1b\n"				/* data abort */
-		"1: b 1b\n"				/* (reserved) */
-		"1: b 1b\n"				/* irq (interrupt) */
-		"1: b 1b\n"				/* fiq (fast interrupt) */
-#endif
-	);
-}
-
 /*
  * The actual reset vector. This code is position independent and usually
  * does not run at the address it's linked at.

@@ -32,7 +32,6 @@
 #include <fcntl.h>
 #include <nand.h>
 #include <spi/spi.h>
-#include <mfd/mc13xxx.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <mach/imx5.h>

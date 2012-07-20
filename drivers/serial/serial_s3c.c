@@ -63,7 +63,6 @@ static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
 	return s3c_get_uart_clk(UCON_GET_CLK_SRC(reg));
 }
 
-#ifdef S3C_UART_HAS_UBRDIVSLOT
 /*
  * This table takes the fractional value of the baud divisor and gives
  * the recommended setting for the UDIVSLOT register. Refer the datasheet
@@ -73,7 +72,6 @@ static const uint16_t udivslot_table[] __maybe_unused = {
 	0x0000, 0x0080, 0x0808, 0x0888, 0x2222, 0x4924, 0x4A52, 0x54AA,
 	0x5555, 0xD555, 0xD5D5, 0xDDD5, 0xDDDD, 0xDFDD, 0xDFDF, 0xFFDF,
 };
-#endif
 
 static int s3c_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {

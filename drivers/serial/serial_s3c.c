@@ -42,12 +42,8 @@
 #define UTXH 0x20		/* transmitt */
 #define URXH 0x24		/* receive */
 #define UBRDIV 0x28		/* baudrate generator */
-#ifdef S3C_UART_HAS_UBRDIVSLOT
-# define UBRDIVSLOT 0x2c	/* baudrate slot generator */
-#endif
-#ifdef S3C_UART_HAS_UINTM
-# define UINTM 0x38		/* interrupt mask register */
-#endif
+#define UBRDIVSLOT 0x2c		/* baudrate slot generator */
+#define UINTM 0x38		/* interrupt mask register */
 
 #ifndef S3C_UART_CLKSEL
 /* Use pclk */

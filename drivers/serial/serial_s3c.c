@@ -115,11 +115,10 @@ static int s3c_serial_init_port(struct console_device *cdev)
 	writeb(0xf, base + UINTM);
 #endif
 
-#ifdef CONFIG_DRIVER_SERIAL_S3C_AUTOSYNC
-	writeb(0x10, base + UMCON); /* enable auto flow control */
-#else
-	writeb(0x01, base + UMCON); /* RTS up */
-#endif
+	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_AUTOSYNC))
+		writeb(0x10, base + UMCON); /* enable auto flow control */
+	else
+		writeb(0x01, base + UMCON); /* RTS up */
 
 	return 0;
 }

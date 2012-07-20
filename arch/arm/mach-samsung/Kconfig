@@ -80,7 +80,7 @@ config MACH_A9M2410DEV
 
 endchoice
 
-source arch/arm/boards/mini2440/Kconfig
+source arch/arm/boards/friendlyarm-mini2440/Kconfig
 
 endmenu
 

@@ -263,7 +263,7 @@ static int ns16550_probe(struct device_d *dev)
  * @brief Driver registration structure
  */
 static struct driver_d ns16550_serial_driver = {
-	.name = "serial_ns16550",
+	.name = "ns16550_serial",
 	.probe = ns16550_probe,
 };
 

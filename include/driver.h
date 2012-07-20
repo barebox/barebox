@@ -226,7 +226,7 @@ struct NS16550_plat;
 static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
 		resource_size_t size, int flags, struct NS16550_plat *pdata)
 {
-	return add_generic_device("serial_ns16550", id, NULL, start, size,
+	return add_generic_device("ns16550_serial", id, NULL, start, size,
 				  IORESOURCE_MEM | flags, pdata);
 }
 

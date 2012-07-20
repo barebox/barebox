@@ -22,13 +22,14 @@
  *                          ^^^^____ Bit offset
  *                        ^^________ Function
  *                       ^__________ Drive strength feature present
- *                      ^___________ Pull up / bit keeper present
+ *                      ^___________ Pull up present
  *                    ^^____________ Drive strength setting
  *                   ^______________ Pull up / bit keeper setting
  *                  ^_______________ Voltage select present
  *                 ^________________ Voltage selection
  *             ^____________________ direction if enabled as GPIO (1 = output)
  *            ^_____________________ initial output value if enabled as GPIO and configured as output
+ *           ^______________________ Bit keeper present
  */
 #ifndef __ASM_MACH_IOMUX_H
 #define __ASM_MACH_IOMUX_H
@@ -63,7 +64,7 @@
 
 /* control pad's pull up / bit keeper feature */
 #define PE (1 << 10)
-#define BK (1 << 11)	/* FIXME useful to distinguish? */
+#define BK (1 << 21)
 #define PE_PRESENT(x) (!!((x) & PE))
 #define BK_PRESENT(x) (!!((x) & BK))
 #define PULLUP(x) ((x) << 13)

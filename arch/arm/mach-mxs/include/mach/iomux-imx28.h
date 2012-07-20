@@ -16,7 +16,7 @@
  *                         ^^^______ Register Number
  *                       ^^_________ Function
  *                      ^___________ Drive strength feature present
- *                     ^____________ Pull up / bit keeper present
+ *                     ^____________ Pull up present
  *                   ^^_____________ Drive strength setting
  *                  ^_______________ Pull up / bit keeper setting
  *                 ^________________ Voltage select present
@@ -24,6 +24,7 @@
  *            ^_____________________ direction if enabled as GPIO (1 = output)
  *           ^______________________ initial output value if enabled as GPIO
  *                                   and configured as output
+ *          ^_______________________ Bit keeper present
  */
 #ifndef __MACH_IOMUX_IMX28_H
 #define __MACH_IOMUX_IMX28_H
@@ -57,7 +58,7 @@
 
 /* control pad's pull up / bit keeper feature */
 #define PE (1 << 11)
-#define BK (1 << 11)	/* FIXME useful to distinguish? */
+#define BK (1 << 22)
 #define PE_PRESENT(x) (!!((x) & PE))
 #define BK_PRESENT(x) (!!((x) & BK))
 #define PULLUP(x) ((x) << 14)

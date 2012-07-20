@@ -31,6 +31,8 @@
 /* Note: Offsets are for little endian access */
 #define ULCON 0x00		/* line control */
 #define UCON 0x04		/* UART control */
+# define UCON_SET_CLK_SRC(x) (((x) & 0x03) << 10)
+# define UCON_GET_CLK_SRC(x) (((x) >> 10) & 0x03)
 #define UFCON 0x08		/* FIFO control */
 #define UMCON 0x0c		/* modem control */
 #define UTRSTAT 0x10		/* Rx/Tx status */
@@ -62,8 +64,7 @@ struct s3c_uart {
 static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
 {
 	unsigned reg = readw(base + UCON);
-	reg = (reg >> 10) & 0x3;
-	return s3c_get_uart_clk(reg);
+	return s3c_get_uart_clk(UCON_GET_CLK_SRC(reg));
 }
 
 #ifdef S3C_UART_HAS_UBRDIVSLOT
@@ -108,7 +109,8 @@ static int s3c_serial_init_port(struct console_device *cdev)
 
 	/* tx=level,rx=edge,disable timeout int.,enable rx error int.,
 	 * normal, interrupt or polling, no pre-divider */
-	writew(0x0245 | ((S3C_UART_CLKSEL) << 10), base + UCON);
+	writew(0x0245 | UCON_SET_CLK_SRC(S3C_UART_CLKSEL),
+						base + UCON);
 
 #ifdef S3C_UART_HAS_UINTM
 	/* 'interrupt or polling mode' for both directions */

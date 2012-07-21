@@ -126,7 +126,6 @@ static inline uint32_t get_pll_spctl10(void)
  */
 static int pcm038_power_init(void)
 {
-#ifdef CONFIG_MFD_MC13XXX
 	uint32_t spctl0 = get_pll_spctl10();
 	struct mc13xxx *mc13xxx = mc13xxx_get();
 
@@ -176,7 +175,6 @@ static int pcm038_power_init(void)
 			printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
 		}
 	}
-#endif
 
 	/* clock gating enable */
 	GPCR = 0x00050f08;

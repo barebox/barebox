@@ -134,6 +134,9 @@ choice
 config IMAGE_COMPRESSION_LZO
 	bool "lzo"
 
+config IMAGE_COMPRESSION_GZIP
+	bool "gzip"
+
 endchoice
 
 endif
@@ -521,6 +524,7 @@ config DEFAULT_ENVIRONMENT_COMPRESSED
 	bool
 	depends on DEFAULT_ENVIRONMENT
 	depends on !IMAGE_COMPRESSION_LZO
+	depends on !IMAGE_COMPRESSION_GZIP
 	default y if ZLIB
 	default y if BZLIB
 	default y if LZO_DECOMPRESS

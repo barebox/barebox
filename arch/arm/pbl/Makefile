@@ -1,4 +1,5 @@
 
+suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
 suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)	= lzo
 
 OBJCOPYFLAGS_zbarebox.bin = -O binary

@@ -23,10 +23,14 @@
 
 #include <common.h>
 #include <init.h>
+#include <sizes.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+
+unsigned long free_mem_ptr;
+unsigned long free_mem_end_ptr;
 
 void __naked __section(.text_head_entry) pbl_start(void)
 {
@@ -45,6 +49,10 @@ extern void *input_data_end;
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	void (*barebox)(void);
+
+	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
+	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;
+	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
 	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
 		barebox = (void *)(TEXT_BASE + 1);

@@ -102,9 +102,13 @@ static int s3c_serial_init_port(struct console_device *cdev)
 	/* Normal,No parity,1 stop,8 bit */
 	writeb(0x03, base + ULCON);
 
-	/* tx=level,rx=edge,disable timeout int.,enable rx error int.,
-	 * normal, interrupt or polling, no pre-divider */
-	writew(0x0245 | UCON_SET_CLK_SRC(S3C_UART_CLKSEL),
+	/*
+	 * S3C2440 SoC:
+	 *  - no clock divider
+	 * all SoCs:
+	 *  - enable receive and transmit mode
+	 */
+	writew(0x0005 | UCON_SET_CLK_SRC(S3C_UART_CLKSEL),
 						base + UCON);
 
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_IMPROVED))

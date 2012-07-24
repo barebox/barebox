@@ -1,7 +1,7 @@
 #include <common.h>
-#include <mach/syslib.h>
 #include <io.h>
-#include <mach/omap4-clock.h>
+#include <mach/syslib.h>
+#include <mach/clocks.h>
 
 #define LDELAY	12000000
 

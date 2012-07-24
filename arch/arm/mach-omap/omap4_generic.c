@@ -1,10 +1,9 @@
 #include <common.h>
 #include <init.h>
-#include <mach/silicon.h>
 #include <io.h>
-#include <mach/omap4-silicon.h>
+#include <mach/clocks.h>
+#include <mach/silicon.h>
 #include <mach/omap4-mux.h>
-#include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>
 #include <mach/gpmc.h>

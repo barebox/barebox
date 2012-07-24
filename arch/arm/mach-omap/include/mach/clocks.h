@@ -44,5 +44,8 @@
 #ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-clock.h>
 #endif
+#ifdef CONFIG_ARCH_OMAP4
+#include <mach/omap4-clock.h>
+#endif
 
 #endif /* __OMAP_CLOCKS_H_ */

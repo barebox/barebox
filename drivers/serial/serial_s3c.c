@@ -79,10 +79,11 @@ static int s3c_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	void __iomem *base = priv->regs;
 	unsigned val;
 
-#ifdef S3C_UART_HAS_UBRDIVSLOT
-	val = s3c_get_arch_uart_input_clock(base) / baudrate;
-	writew(udivslot_table[val & 15], base + UBRDIVSLOT);
-#endif
+	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_IMPROVED)) {
+		val = s3c_get_arch_uart_input_clock(base) / baudrate;
+		writew(udivslot_table[val & 15], base + UBRDIVSLOT);
+	}
+
 	val = s3c_get_arch_uart_input_clock(base) / (16 * baudrate) - 1;
 	writew(val, base + UBRDIV);
 
@@ -106,10 +107,9 @@ static int s3c_serial_init_port(struct console_device *cdev)
 	writew(0x0245 | UCON_SET_CLK_SRC(S3C_UART_CLKSEL),
 						base + UCON);
 
-#ifdef S3C_UART_HAS_UINTM
-	/* 'interrupt or polling mode' for both directions */
-	writeb(0xf, base + UINTM);
-#endif
+	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_IMPROVED))
+		/* 'interrupt or polling mode' for both directions */
+		writeb(0xf, base + UINTM);
 
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_AUTOSYNC))
 		writeb(0x10, base + UMCON); /* enable auto flow control */

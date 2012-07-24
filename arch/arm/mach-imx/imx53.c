@@ -18,6 +18,7 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
+#include <notifier.h>
 #include <sizes.h>
 #include <mach/imx5.h>
 #include <mach/imx-regs.h>
@@ -210,5 +211,6 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0xffffffff, ccm + MX5_CCM_CCGR6);
 	writel(0xffffffff, ccm + MX53_CCM_CCGR7);
 
+	clock_notifier_call_chain();
 	writel(0, ccm + MX5_CCM_CCDR);
 }

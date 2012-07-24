@@ -45,17 +45,23 @@
 #define UBRDIVSLOT 0x2c		/* baudrate slot generator */
 #define UINTM 0x38		/* interrupt mask register */
 
-#ifndef S3C_UART_CLKSEL
-/* Use pclk */
-# define S3C_UART_CLKSEL 0
-#endif
-
 struct s3c_uart {
 	void __iomem *regs;
 	struct console_device cdev;
 };
 
 #define to_s3c_uart(c)	container_of(c, struct s3c_uart, cdev)
+
+/* each architecture has a preferred reference clock for its UARTs */
+static unsigned s3c_select_arch_input_clock(void)
+{
+	/* S3C24xx: 0=2=PCLK, 1=UEXTCLK, 3=FCLK/n */
+	if (IS_ENABLED(CONFIG_ARCH_S3C24xx))
+		return 0;	/* use the internal PCLK */
+	/* S5PCxx: 0=PCLK, 1=SCLK_UART */
+	if (IS_ENABLED(CONFIG_ARCH_S5PCxx))
+		return 0;	/* use the internal PCLK */
+}
 
 static unsigned s3c_get_arch_uart_input_clock(void __iomem *base)
 {
@@ -108,7 +114,7 @@ static int s3c_serial_init_port(struct console_device *cdev)
 	 * all SoCs:
 	 *  - enable receive and transmit mode
 	 */
-	writew(0x0005 | UCON_SET_CLK_SRC(S3C_UART_CLKSEL),
+	writew(0x0005 | UCON_SET_CLK_SRC(s3c_select_arch_input_clock()),
 						base + UCON);
 
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_S3C_IMPROVED))

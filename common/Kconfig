@@ -50,6 +50,9 @@ config BINFMT
 config GLOBALVAR
 	bool
 
+config STDDEV
+	bool
+
 menu "General Settings              "
 
 config LOCALVERSION
@@ -283,6 +286,7 @@ choice
 		select COMMAND_SUPPORT
 		select PARAMETER
 		select BINFMT
+		select STDDEV
 		help
 		  Enable hush support. This is the most advanced shell available
 		  for barebox.
@@ -292,6 +296,7 @@ choice
 		select ENVIRONMENT_VARIABLES
 		select COMMAND_SUPPORT
 		select PARAMETER
+		select STDDEV
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 

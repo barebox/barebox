@@ -4,7 +4,7 @@
 
 const char version_string[] =
 	"barebox " UTS_RELEASE " " UTS_VERSION "\n";
-
+EXPORT_SYMBOL(version_string);
 
 void barebox_banner (void)
 {

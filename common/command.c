@@ -166,6 +166,7 @@ struct command *find_cmd (const char *cmd)
 
 	return NULL;	/* not found or ambiguous command */
 }
+EXPORT_SYMBOL(find_cmd);
 
 /*
  * Put all commands into a linked list. Without module support we could use

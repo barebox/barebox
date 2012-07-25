@@ -481,6 +481,7 @@ barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
+pbl-common-y	:= $(patsubst %/, %/built-in-pbl.o, $(common-y))
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 
 # Build barebox
@@ -510,6 +511,8 @@ common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 # System.map is generated to document addresses of all kernel symbols
 
 barebox-common := $(common-y)
+barebox-pbl-common := $(pbl-common-y)
+export barebox-pbl-common
 barebox-all    := $(barebox-common)
 barebox-lds    := $(lds-y)
 
@@ -714,7 +717,7 @@ barebox.srec: barebox
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(barebox-head) $(barebox-common) ) $(barebox-lds): $(barebox-dirs) ;
+$(sort $(barebox-head) $(barebox-common) ) $(barebox-lds) $(barebox-pbl-common): $(barebox-dirs) ;
 
 # Handle descending into subdirectories listed in $(barebox-dirs)
 # Preset locale variables to speed up the build process. Limit locale

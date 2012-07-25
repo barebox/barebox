@@ -14,6 +14,7 @@ obj-y :=
 obj-m :=
 lib-y :=
 lib-m :=
+pbl-y :=
 always :=
 targets :=
 subdir-y :=
@@ -97,13 +98,19 @@ ifneq ($(strip $(lib-y) $(lib-m) $(lib-n) $(lib-)),)
 lib-target := $(obj)/lib.a
 endif
 
-ifneq ($(strip $(obj-y) $(obj-m) $(obj-n) $(obj-) $(lib-target)),)
+ifneq ($(strip $(obj-y) $(obj-m) $(obj-n) $(obj-) $(lib-target) $(pbl-y)),)
 builtin-target := $(obj)/built-in.o
+endif
+
+ifeq ($(CONFIG_PBL_IMAGE), y)
+ifneq ($(strip $(pbl-y) $(builtin-target)),)
+pbl-target := $(obj)/built-in-pbl.o
+endif
 endif
 
 # We keep a list of all modules in $(MODVERDIR)
 
-__build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(extra-y)) \
+__build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(pbl-target) $(extra-y)) \
 	 $(if $(KBUILD_MODULES),$(obj-m)) \
 	 $(subdir-ym) $(always)
 	@:
@@ -177,9 +184,11 @@ cmd_cc_symtypes_c	   = \
 # (See cmd_cc_o_c + relevant part of rule_cc_o_c)
 
 quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
+quiet_cmd_pbl_cc_o_c = PBLCC   $@
 
 ifndef CONFIG_MODVERSIONS
 cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
+cmd_pbl_cc_o_c = $(CC) -D__PBL__ $(c_flags) -c -o $@ $<
 
 else
 # When module versioning is enabled the following steps are executed:
@@ -220,7 +229,21 @@ define rule_cc_o_c
 	mv -f $(dot-target).tmp $(dot-target).cmd
 endef
 
+define rule_pbl_cc_o_c
+	$(call echo-cmd,checksrc) $(cmd_checksrc)			  \
+	$(call echo-cmd,pbl_cc_o_c) $(cmd_pbl_cc_o_c);			  \
+	$(cmd_modversions)						  \
+	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,pbl_cc__o_c)' >    \
+	                                              $(dot-target).tmp;  \
+	rm -f $(depfile);						  \
+	mv -f $(dot-target).tmp $(dot-target).cmd
+endef
+
 # Built-in and composite module parts
+
+pbl-%.o: %.c
+	$(call cmd,force_checksrc)
+	$(call if_changed_rule,pbl_cc_o_c)
 
 %.o: %.c FORCE
 	$(call cmd,force_checksrc)
@@ -258,10 +281,16 @@ cmd_as_s_S       = $(CPP) $(a_flags)   -o $@ $<
 quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
 cmd_as_o_S       = $(CC) $(a_flags) -c -o $@ $<
 
+quiet_cmd_pbl_as_o_S = PBLAS   $@
+cmd_pbl_as_o_S       = $(CC) -D__PBL__ $(a_flags) -c -o $@ $<
+
+pbl-%.o: %.S
+	$(call if_changed_dep,pbl_as_o_S)
+
 %.o: %.S FORCE
 	$(call if_changed_dep,as_o_S)
 
-targets += $(real-objs-y) $(real-objs-m) $(lib-y)
+targets += $(real-objs-y) $(real-objs-m) $(lib-y) $(pbl-y)
 targets += $(extra-y) $(MAKECMDGOALS) $(always)
 
 # Linker scripts preprocessor (.lds.S -> .lds)
@@ -293,6 +322,19 @@ $(builtin-target): $(obj-y) FORCE
 
 targets += $(builtin-target)
 endif # builtin-target
+
+ifdef pbl-target
+quiet_cmd_pbl_link_o_target = PBLLD   $@
+# If the list of objects to link is empty, just create an empty built-in-pbl.o
+cmd_pbl_link_o_target = $(if $(strip $(pbl-y)),\
+		      $(LD) $(ld_flags) -r -o $@ $(filter $(pbl-y), $^),\
+		      rm -f $@; $(AR) rcs $@)
+
+$(pbl-target): $(pbl-y) FORCE
+	$(call if_changed,pbl_link_o_target)
+
+targets += $(pbl-target)
+endif # pbl-target
 
 #
 # Rule to compile a set of .o files into one .a file

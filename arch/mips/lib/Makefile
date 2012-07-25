@@ -5,6 +5,8 @@ obj-y += ashldi3.o
 obj-y += ashrdi3.o
 obj-y += memory.o
 obj-y += cpu-probe.o
+obj-y += traps.o
+obj-y += genex.o
 
 obj-$(CONFIG_CPU_MIPS32) += c-r4k.o
 obj-$(CONFIG_CPU_MIPS64) += c-r4k.o

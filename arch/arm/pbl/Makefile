@@ -1,7 +1,14 @@
 
-OBJCOPYFLAGS_zbarebox.bin = -O binary
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)	= lzo
 
-targets := zbarebox.lds zbarebox zbarebox.bin zbarebox.S
+OBJCOPYFLAGS_zbarebox.bin = -O binary
+piggy_o := piggy.$(suffix_y).o
+
+targets := zbarebox.lds zbarebox zbarebox.bin zbarebox.S \
+	   $(piggy_o) piggy.$(suffix_y)
+
+# Make sure files are removed during clean
+extra-y       += piggy.gzip piggy.lzo piggy.lzma piggy.xzkern
 
 $(obj)/zbarebox.bin:	$(obj)/zbarebox FORCE
 	$(call if_changed,objcopy)
@@ -12,7 +19,7 @@ $(obj)/zbarebox.S: $(obj)/zbarebox FORCE
 	$(call if_changed,disasm)
 
 LDFLAGS_zbarebox	:= -Map zbarebox.map
-zbarebox-common := $(barebox-pbl-common)
+zbarebox-common := $(barebox-pbl-common) $(obj)/$(piggy_o)
 zbarebox-lds := $(obj)/zbarebox.lds
 
 quiet_cmd_zbarebox__ ?= LD      $@
@@ -23,3 +30,8 @@ quiet_cmd_zbarebox__ ?= LD      $@
 
 $(obj)/zbarebox: $(zbarebox-lds) $(zbarebox-common) FORCE
 	$(call if_changed,zbarebox__)
+
+$(obj)/piggy.$(suffix_y): $(obj)/../../../barebox.bin FORCE
+	$(call if_changed,$(suffix_y))
+
+$(obj)/$(piggy_o): $(obj)/piggy.$(suffix_y) FORCE

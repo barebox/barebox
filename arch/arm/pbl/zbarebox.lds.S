@@ -46,6 +46,10 @@ SECTIONS
 		__bare_init_end = .;
 		*(.text*)
 	}
+
+	/* Discard unwind if enable in barebox */
+	/DISCARD/ : { *(.ARM.ex*) }
+
 	BAREBOX_BARE_INIT_SIZE
 
 	. = ALIGN(4);

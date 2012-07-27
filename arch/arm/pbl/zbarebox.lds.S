@@ -1,6 +1,5 @@
 /*
- * (C) Copyright 2000-2004
- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ * (C) Copyright 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -23,31 +22,28 @@
  */
 
 #include <asm-generic/barebox.lds.h>
+#include <asm-generic/memory_layout.h>
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(start)
+ENTRY(pbl_start)
 SECTIONS
 {
-	. = TEXT_BASE;
+	. = HEAD_TEXT_BASE;
 
-#ifndef CONFIG_PBL_IMAGE
 	PRE_IMAGE
-#endif
+
 	. = ALIGN(4);
 	.text      :
 	{
 		_stext = .;
 		_text = .;
-		*(.text_entry*)
+		*(.text_head_entry*)
 		__ll_return = .;
 		*(.text_ll_return*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;
-		__exceptions_start = .;
-		KEEP(*(.text_exceptions*))
-		__exceptions_stop = .;
 		*(.text*)
 	}
 	BAREBOX_BARE_INIT_SIZE
@@ -55,48 +51,23 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
-#ifdef CONFIG_ARM_UNWIND
-	/*
-	 * Stack unwinding tables
-	 */
-	. = ALIGN(8);
-	.ARM.unwind_idx : {
-		__start_unwind_idx = .;
-		*(.ARM.exidx*)
-		__stop_unwind_idx = .;
-	}
-	.ARM.unwind_tab : {
-		__start_unwind_tab = .;
-		*(.ARM.extab*)
-		__stop_unwind_tab = .;
-	}
-#endif
 	_etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(4);
 	.data : { *(.data*) }
-
-	. = .;
-	__barebox_cmd_start = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	__barebox_cmd_end = .;
-
-	__barebox_magicvar_start = .;
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	__barebox_magicvar_end = .;
-
-	__barebox_initcalls_start = .;
-	.barebox_initcalls : { INITCALLS }
-	__barebox_initcalls_end = .;
-
-	__usymtab_start = .;
-	__usymtab : { BAREBOX_SYMS }
-	__usymtab_end = .;
 
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }
 	__bss_stop = .;
 	_end = .;
-	_barebox_image_size = __bss_start - TEXT_BASE;
+
+	. = ALIGN(4);
+	__piggydata_start = .;
+	.piggydata : {
+		*(.piggydata)
+	}
+	__piggydata_end = .;
+
+	_barebox_image_size = __piggydata_end - HEAD_TEXT_BASE;
 }

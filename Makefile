@@ -474,6 +474,8 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # this default value
 export KBUILD_IMAGE ?= barebox
 
+common-$(CONFIG_PBL_IMAGE)	+= pbl/
+
 barebox-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
 barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
@@ -520,7 +522,7 @@ barebox-lds    := $(lds-y)
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_barebox__ ?= LD      $@
       cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
-      -T $(barebox-lds) $(barebox-head)                         \
+      -T $(barebox-lds)                         \
       --start-group $(barebox-common) --end-group                  \
       $(filter-out $(barebox-lds) $(barebox-common) FORCE ,$^)
 
@@ -674,7 +676,9 @@ OBJCOPYFLAGS_barebox.bin = -O binary
 
 barebox.bin: barebox FORCE
 	$(call if_changed,objcopy)
+ifndef CONFIG_PBL_IMAGE
 	$(call cmd,check_file_size,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
+endif
 
 ifdef CONFIG_X86
 barebox.S: barebox

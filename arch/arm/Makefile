@@ -197,6 +197,13 @@ ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_IMAGE := barebox.ubl
 endif
 
+pbl := arch/arm/pbl
+zbarebox.S zbarebox.bin zbarebox: barebox.bin
+	$(Q)$(MAKE) $(build)=$(pbl) $(pbl)/$@
+
+archclean:
+	$(MAKE) $(clean)=$(pbl)
+
 all: $(KBUILD_IMAGE)
 
 archprepare: maketools

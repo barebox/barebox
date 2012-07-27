@@ -1,7 +1,8 @@
 /*
- * start-arm.c
+ * start-pbl.c
  *
- * Copyright (c) 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ * Copyright (c) 2010-2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ * Copyright (c) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -27,28 +28,13 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 
-#ifdef CONFIG_PBL_IMAGE
-/*
- * First function in the pbl image. We get here from
- * the pbl.
- */
-void __naked __section(.text_entry) start(void)
-{
-	u32 r;
-
-	/* Setup the stack */
-	r = STACK_BASE + STACK_SIZE - 16;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
-
-	start_barebox();
-}
-#else
-
-void __naked __section(.text_entry) start(void)
+void __naked __section(.text_head_entry) pbl_start(void)
 {
 	barebox_arm_head();
+}
+
+void barebox_pbl(uint32_t offset)
+{
 }
 
 /*
@@ -83,8 +69,12 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* flush I-cache before jumping to the copied binary */
 	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
 
-	/* call start_barebox with its absolute address */
-	r = (unsigned int)&start_barebox;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+	r = (unsigned int)&barebox_pbl;
+	/* call barebox_uncompress with its absolute address */
+	__asm__ __volatile__(
+		"mov r0, %1\n"
+		"mov pc, %0\n"
+		:
+		: "r"(r), "r"(offset),
+		: "r0");
 }
-#endif

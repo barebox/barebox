@@ -4,6 +4,7 @@ config ARM
 	select HAS_MODULES
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select HAVE_CONFIGURABLE_TEXT_BASE
+	select HAVE_PBL_IMAGE
 	default y
 
 config ARM_AMBA

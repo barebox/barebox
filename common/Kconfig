@@ -101,6 +101,36 @@ config ENVIRONMENT_VARIABLES
 
 menu "memory layout                 "
 
+config HAVE_PBL_IMAGE
+	bool
+
+config HAVE_IMAGE_COMPRESSION
+	bool
+
+config PBL_IMAGE
+	bool "Pre-Bootloader image"
+	depends on HAVE_PBL_IMAGE
+
+if PBL_IMAGE
+
+config IMAGE_COMPRESSION
+	bool "Compressed image"
+	depends on HAVE_IMAGE_COMPRESSION
+
+if IMAGE_COMPRESSION
+
+choice
+	prompt "Compression"
+
+config IMAGE_COMPRESSION_LZO
+	bool "lzo"
+
+endchoice
+
+endif
+
+endif
+
 config MMU
 	bool "Enable MMU"
 	help

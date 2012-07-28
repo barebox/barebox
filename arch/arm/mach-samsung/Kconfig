@@ -6,11 +6,13 @@ if ARCH_SAMSUNG
 config ARCH_TEXT_BASE
 	hex
 	default 0x31fc0000 if MACH_MINI2440
+	default 0x57fc0000 if MACH_MINI6410
 	default 0x31fc0000 if MACH_A9M2440
 	default 0x31fc0000 if MACH_A9M2410
 
 config BOARDINFO
 	default "Mini 2440"    if MACH_MINI2440
+	default "Mini 6410"    if MACH_MINI6410
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Digi A9M2410" if MACH_A9M2410
 
@@ -90,6 +92,20 @@ if ARCH_S3C64xx
 
 config CPU_S3C6410
 	bool
+
+choice
+
+	prompt "S3C64xx Board Type"
+
+config MACH_MINI6410
+	bool "Mini 6410"
+	select CPU_S3C6410
+	select HAS_DM9000
+	help
+	  Say Y here if you are using FriendlyARM Mini6410 board equipped
+	  with a Samsung S3C6410 Processor
+
+endchoice
 
 endif
 

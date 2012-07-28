@@ -1,0 +1,56 @@
+#!/bin/sh
+
+machine=tiny6410
+eth0.serverip=a.b.c.d.e
+user=
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+# use 'none' if you want to skip kernel ip autoconfiguration
+ip=dhcp
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d.e
+#eth0.netmask=a.b.c.d.e
+#eth0.gateway=a.b.c.d.e
+eth0.ethaddr=08:90:90:90:90:90
+
+# can be either 'nfs', 'tftp' or 'nand'
+kernel_loc=tftp
+# can be either 'net', 'nand' or 'initrd'
+rootfs_loc=net
+
+# can be either 'jffs2' or 'ubifs'
+rootfs_type=ubifs
+rootfsimage=root-${machine}.${rootfs_type}
+
+# The image type of the kernel. Can be uimage, zimage, raw, or raw_lzo
+kernelimage_type=zimage
+kernelimage=zImage-${machine}
+#kernelimage_type=uimage
+#kernelimage=uImage-$machine
+#kernelimage_type=raw
+#kernelimage=Image-$machine
+#kernelimage_type=raw_lzo
+#kernelimage=Image-$machine.lzo
+
+if [ -n $user ]; then
+	kernelimage="${user}"-"${kernelimage}"
+	nfsroot="${eth0.serverip}:/home/${user}/nfsroot/${machine}"
+	rootfsimage="${user}"-"${rootfsimage}"
+else
+	nfsroot="${eth0.serverip}:/path/to/nfs/root"
+fi
+
+autoboot_timeout=3
+
+#
+# "tiny6410" kernel parameter
+# 0 .. 9 = screen type
+# i = touchscreen with propritary FriendlyARM protocol
+# Note: can be "tiny6410= " if nothing of these components are connected
+#
+bootargs="console=ttySAC0,115200 tiny6410=0"
+
+nand_device="nand"
+nand_parts="256k(barebox),128k(bareboxenv),1536k(kernel),-(root)"
+rootfs_mtdblock_nand=3

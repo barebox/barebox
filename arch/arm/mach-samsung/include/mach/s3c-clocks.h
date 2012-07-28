@@ -25,6 +25,9 @@
 #ifdef CONFIG_ARCH_S3C24xx
 # include <mach/s3c24xx-clocks.h>
 #endif
+#ifdef CONFIG_ARCH_S3C64xx
+# include <mach/s3c64xx-clocks.h>
+#endif
 #ifdef CONFIG_ARCH_S5PCxx
 # include <mach/s5pcxx-clocks.h>
 #endif

@@ -41,3 +41,20 @@ void s3c24xx_disable_second_sdram_bank(void);
 #ifdef CONFIG_ARCH_S5PCxx
 void s5p_init_pll(void);
 #endif
+
+#ifdef CONFIG_ARCH_S3C64xx
+unsigned s3c_set_epllclk(unsigned, unsigned, unsigned, unsigned);
+uint32_t s3c_get_epllclk(void);
+unsigned s3c_get_hsmmc_clk(int);
+void s3c_set_hsmmc_clk(int, int, unsigned);
+unsigned s3c6410_get_memory_size(void);
+struct s3c6410_chipselect {
+	unsigned adr_setup_t; /* in [ns] */
+	unsigned access_setup_t; /* in [ns] */
+	unsigned access_t; /* in [ns] */
+	unsigned cs_hold_t; /* in [ns] */
+	unsigned adr_hold_t; /* in [ns] */
+	unsigned char width; /* 8 or 16 */
+};
+int s3c6410_setup_chipselect(int, const struct s3c6410_chipselect*);
+#endif

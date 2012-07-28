@@ -79,6 +79,12 @@ config ARCH_S5PCxx
 	select CPU_V7
 	select GENERIC_GPIO
 
+config ARCH_S3C64xx
+	bool "Samsung S3C64xx"
+	select ARCH_SAMSUNG
+	select CPU_V6
+	select GENERIC_GPIO
+
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select CPU_ARM926T

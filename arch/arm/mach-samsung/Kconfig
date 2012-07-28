@@ -17,6 +17,8 @@ config BOARDINFO
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	hex
 	default 0x1ff0 if ARCH_S5PCxx
+# TODO
+	default 0x2000 if ARCH_S3C64xx
 
 if ARCH_S3C24xx
 
@@ -81,6 +83,13 @@ endchoice
 source arch/arm/boards/mini2440/Kconfig
 
 endmenu
+
+endif
+
+if ARCH_S3C64xx
+
+config CPU_S3C6410
+	bool
 
 endif
 

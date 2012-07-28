@@ -16,6 +16,9 @@
 #ifdef CONFIG_ARCH_S3C24xx
 # include <mach/iomux-s3c24x0.h>
 #endif
+#ifdef CONFIG_ARCH_S3C64xx
+# include <mach/iomux-s3c64xx.h>
+#endif
 #ifdef CONFIG_ARCH_S5PCxx
 # include <mach/iomux-s5pcxx.h>
 #endif

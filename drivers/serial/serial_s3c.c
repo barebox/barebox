@@ -58,6 +58,9 @@ static unsigned s3c_select_arch_input_clock(void)
 	/* S3C24xx: 0=2=PCLK, 1=UEXTCLK, 3=FCLK/n */
 	if (IS_ENABLED(CONFIG_ARCH_S3C24xx))
 		return 0;	/* use the internal PCLK */
+	/* S3C64xx: 0=2=PCLK, 1=UCLK0, 3=UCLK1 */
+	if (IS_ENABLED(CONFIG_ARCH_S3C64xx))
+		return 3;	/* use the internal UCLK1 */
 	/* S5PCxx: 0=PCLK, 1=SCLK_UART */
 	if (IS_ENABLED(CONFIG_ARCH_S5PCxx))
 		return 0;	/* use the internal PCLK */

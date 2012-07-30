@@ -84,7 +84,7 @@ config DRIVER_SERIAL_S3C_IMPROVED
 config DRIVER_SERIAL_S3C
 	bool "Samsung S3C serial driver"
 	depends on ARCH_SAMSUNG
-	select DRIVER_SERIAL_S3C_IMPROVED if (CPU_S5PC110 || CPU_S5PV210)
+	select DRIVER_SERIAL_S3C_IMPROVED if (CPU_S5PC110 || CPU_S5PV210 || CPU_S3C6410)
 	default y
 	help
 	  Say Y here if you want to use the CONS on a Samsung S3C CPU

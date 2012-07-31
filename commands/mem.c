@@ -170,6 +170,9 @@ static int do_mem_md(int argc, char *argv[])
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
+
 	if (mem_parse_options(argc, argv, "bwls:", &mode, &filename, NULL) < 0)
 		return 1;
 
@@ -180,8 +183,6 @@ static int do_mem_md(int argc, char *argv[])
 		}
 		if (size == ~0)
 			size = 0x100;
-	} else {
-		return COMMAND_ERROR_USAGE;
 	}
 
 	fd = open_and_lseek(filename, mode | O_RDONLY, start);

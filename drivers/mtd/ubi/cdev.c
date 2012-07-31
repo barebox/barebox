@@ -8,7 +8,7 @@
 struct ubi_volume_cdev_priv {
 	struct ubi_device *ubi;
 	struct ubi_volume *vol;
-	int updating;
+	int written;
 };
 
 static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
@@ -63,13 +63,12 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	struct ubi_device *ubi = priv->ubi;
 	int err;
 
-	if (!priv->updating) {
-		err = ubi_start_update(ubi, vol, 16*1024*1024);
+	if (!priv->written) {
+		err = ubi_start_update(ubi, vol, vol->used_bytes);
 		if (err < 0) {
 			printf("Cannot start volume update\n");
 			return err;
 		}
-		priv->updating = 1;
 	}
 
 	err = ubi_more_update_data(ubi, vol, buf, size);
@@ -78,6 +77,8 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 		return err;
 	}
 
+	priv->written += size;
+
 	return size;
 }
 
@@ -85,7 +86,7 @@ static int ubi_volume_cdev_open(struct cdev *cdev, unsigned long flags)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
-	priv->updating = 0;
+	priv->written = 0;
 
 	return 0;
 }
@@ -97,7 +98,25 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 	struct ubi_device *ubi = priv->ubi;
 	int err;
 
-	if (priv->updating) {
+	if (priv->written) {
+		int remaining = vol->usable_leb_size -
+				(priv->written % vol->usable_leb_size);
+
+		if (remaining) {
+			void *buf = xzalloc(remaining);
+
+			memset(buf, 0xff, remaining);
+
+			err = ubi_more_update_data(ubi, vol, buf, remaining);
+
+			free(buf);
+
+			if (err < 0) {
+				printf("Couldnt or partially wrote data \n");
+				return err;
+			}
+		}
+
 		err = ubi_finish_update(ubi, vol);
 		if (err)
 			return err;
@@ -126,7 +145,7 @@ static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
 	/* We can only update ubi volumes sequentially */
-	if (priv->updating)
+	if (priv->written)
 		return -EINVAL;
 
 	return ofs;

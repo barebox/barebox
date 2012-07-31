@@ -205,8 +205,9 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 	if (offset + count > flash->size)
 		return -EINVAL;
 
-	addr = offset;
-	len = count;
+	/* Align start and len to erase blocks */
+	addr = offset & ~(flash->erasesize - 1);
+	len = ALIGN(offset + count, flash->erasesize) - addr;
 
 	/* whole-chip erase? */
 	if (len == flash->size) {

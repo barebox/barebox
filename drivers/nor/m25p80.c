@@ -168,7 +168,7 @@ static int m25p_cmdsz(struct m25p *flash)
  *
  * Returns 0 if successful, non-zero otherwise.
  */
-static int erase_sector(struct m25p *flash, u32 offset)
+static int erase_sector(struct m25p *flash, u32 offset, u32 command)
 {
 	dev_dbg(&flash->spi->dev, "%s %dKiB at 0x%08x\n",
 		__func__, flash->erasesize / 1024, offset);
@@ -181,7 +181,7 @@ static int erase_sector(struct m25p *flash, u32 offset)
 	write_enable(flash);
 
 	/* Set up command buffer. */
-	flash->command[0] = flash->erase_opcode;
+	flash->command[0] = command;
 	m25p_addr2cmd(flash, offset, flash->command);
 
 	spi_write(flash->spi, flash->command, m25p_cmdsz(flash));
@@ -216,22 +216,45 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 		return 0;
 	}
 
-	/* REVISIT in some cases we could speed up erasing large regions
-	 * by using OPCODE_SE instead of OPCODE_BE_4K.  We may have set up
-	 * to use "small sector erase", but that's not always optimal.
-	 */
+	if (flash->erase_opcode_4k) {
+		while (len && (addr & (flash->sector_size - 1))) {
+			if (ctrlc())
+				return -EINTR;
+			if (erase_sector(flash, addr, flash->erase_opcode_4k))
+				return -EIO;
+			addr += flash->erasesize;
+			len -= flash->erasesize;
+		}
 
-	/* "sector"-at-a-time erase */
-	while (len) {
-		if (ctrlc())
-			return -EINTR;
-		if (erase_sector(flash, addr))
-			return -EIO;
+		while (len >= flash->sector_size) {
+			if (ctrlc())
+				return -EINTR;
+			if (erase_sector(flash, addr, flash->erase_opcode))
+				return -EIO;
+			addr += flash->sector_size;
+			len -= flash->sector_size;
+		}
 
-		if (len <= flash->erasesize)
-			break;
-		addr += flash->erasesize;
-		len -= flash->erasesize;
+		while (len) {
+			if (ctrlc())
+				return -EINTR;
+			if (erase_sector(flash, addr, flash->erase_opcode_4k))
+				return -EIO;
+			addr += flash->erasesize;
+			len -= flash->erasesize;
+		}
+	} else {
+		while (len) {
+			if (ctrlc())
+				return -EINTR;
+			if (erase_sector(flash, addr, flash->erase_opcode))
+				return -EIO;
+
+			if (len <= flash->erasesize)
+				break;
+			addr += flash->erasesize;
+			len -= flash->erasesize;
+		}
 	}
 
 	return 0;
@@ -753,6 +776,7 @@ static int m25p_probe(struct device_d *dev)
 	flash->info = info;
 	flash->size = info->sector_size * info->n_sectors;
 	flash->erasesize = info->sector_size;
+	flash->sector_size = info->sector_size;
 	flash->cdev.size = info->sector_size * info->n_sectors;
 	flash->cdev.dev = dev;
 	flash->cdev.ops = &m25p80_ops;
@@ -773,7 +797,8 @@ static int m25p_probe(struct device_d *dev)
 
 	/* prefer "small sector" erase if possible */
 	if (info->flags & SECT_4K) {
-		flash->erase_opcode = OPCODE_BE_4K;
+		flash->erase_opcode_4k = OPCODE_BE_4K;
+		flash->erase_opcode = OPCODE_SE;
 		flash->erasesize = 4096;
 	} else {
 		flash->erase_opcode = OPCODE_SE;

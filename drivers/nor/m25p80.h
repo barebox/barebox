@@ -58,9 +58,11 @@ struct m25p {
 	struct cdev		cdev;
 	char			*name;
 	u32			erasesize;
+	u32			sector_size;
 	u16			page_size;
 	u16			addr_width;
 	u8			erase_opcode;
+	u8			erase_opcode_4k;
 	u8			*command;
 	u32			size;
 };

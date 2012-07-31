@@ -101,6 +101,16 @@ config ARCH_IMX_INTERNAL_BOOT_NOR
 config ARCH_IMX_INTERNAL_BOOT_ONENAND
 	bool "OneNAND"
 
+config ARCH_IMX_INTERNAL_BOOT_SERIAL
+	bool "Serial (read help)"
+	help
+	  Normally the first instruction of the barebox image contains a jump
+	  to the real start of the image which means that you can start it by
+	  jumping to the load address. With serial boot images this is not
+	  possible because the first instruction is occupied by a magic for the
+	  ROM boot code. You can still start this image as a second stage loader,
+	  but you have to add 0x400 to the entry point.
+
 endchoice
 
 config NAND_IMX_BOOT

@@ -228,6 +228,11 @@ unsigned long imx_get_usbclk(void)
 	return rate / (prediv * podf);
 }
 
+unsigned long imx_get_cspiclk(void)
+{
+	return 166000000; /* FIXME: bogus value */
+}
+
 /*
  * Set the divider of the CLKO pin. Returns
  * the new divider (which may be smaller

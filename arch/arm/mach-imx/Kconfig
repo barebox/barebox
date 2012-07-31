@@ -27,6 +27,7 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_TX51
 	default 0x4fc00000 if MACH_MX6Q_ARM2
 	default 0x97f00000 if MACH_CCMX51
+	default 0x4fc00000 if MACH_SABRELITE
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -52,6 +53,7 @@ config BOARDINFO
 	default "Ka-Ro tx51" if MACH_TX51
 	default "Freescale i.MX6q armadillo2" if MACH_MX6Q_ARM2
 	default "ConnectCore i.MX51" if MACH_CCMX51
+	default "Sabre Lite" if MACH_SABRELITE
 
 choice
 	prompt "Select boot mode"
@@ -474,6 +476,9 @@ choice
 
 config MACH_MX6Q_ARM2
 	bool "Freescale i.MX6q Armadillo2"
+
+config MACH_SABRELITE
+	bool "Freescale i.MX6 Sabre Lite"
 
 endchoice
 

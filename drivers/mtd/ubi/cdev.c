@@ -78,7 +78,7 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 		return err;
 	}
 
-	return err;
+	return size;
 }
 
 static int ubi_volume_cdev_open(struct cdev *cdev, unsigned long flags)

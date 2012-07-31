@@ -197,9 +197,6 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct m25p *flash = cdev->priv;
 	u32 addr, len;
-	u32 start_sector;
-	u32 end_sector;
-	int eraseshift = ffs(flash->erasesize) - 1;
 
 	dev_dbg(&flash->spi->dev, "%s %s 0x%llx, len %lld\n",
 		__func__, "at", (long long)offset, (long long)count);
@@ -210,9 +207,6 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 
 	addr = offset;
 	len = count;
-
-	start_sector = offset >> eraseshift;
-	end_sector = (offset + count - 1) >> eraseshift;
 
 	/* whole-chip erase? */
 	if (len == flash->size) {

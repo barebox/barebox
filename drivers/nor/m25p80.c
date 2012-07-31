@@ -210,9 +210,10 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 
 	/* whole-chip erase? */
 	if (len == flash->size) {
-
 		if (erase_chip(flash))
 			return -EIO;
+		return 0;
+	}
 
 	/* REVISIT in some cases we could speed up erasing large regions
 	 * by using OPCODE_SE instead of OPCODE_BE_4K.  We may have set up
@@ -220,18 +221,16 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 	 */
 
 	/* "sector"-at-a-time erase */
-	} else {
-		while (len) {
-			if (ctrlc())
-				return -EINTR;
-			if (erase_sector(flash, addr))
-				return -EIO;
+	while (len) {
+		if (ctrlc())
+			return -EINTR;
+		if (erase_sector(flash, addr))
+			return -EIO;
 
-			if (len <= flash->erasesize)
-				break;
-			addr += flash->erasesize;
-			len -= flash->erasesize;
-		}
+		if (len <= flash->erasesize)
+			break;
+		addr += flash->erasesize;
+		len -= flash->erasesize;
 	}
 
 	return 0;

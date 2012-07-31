@@ -267,6 +267,7 @@ ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 	struct spi_transfer t[2];
 	struct spi_message m;
 	ssize_t retlen;
+	int fast_read = 0;
 
 	/* sanity checks */
 	if (!count)
@@ -274,6 +275,9 @@ ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 
 	if (offset + count > flash->size)
 		return -EINVAL;
+
+	if (flash->spi->max_speed_hz >= 25000000)
+		fast_read = 1;
 
 	spi_message_init(&m);
 	memset(t, 0, (sizeof t));
@@ -283,7 +287,7 @@ ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 	 * Should add 1 byte DUMMY_BYTE.
 	 */
 	t[0].tx_buf = flash->command;
-	t[0].len = m25p_cmdsz(flash) + FAST_READ_DUMMY_BYTE;
+	t[0].len = m25p_cmdsz(flash) + fast_read;
 	spi_message_add_tail(&t[0], &m);
 
 	t[1].rx_buf = buf;
@@ -303,12 +307,12 @@ ssize_t m25p80_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 	 */
 
 	/* Set up the write data buffer. */
-	flash->command[0] = OPCODE_READ;
+	flash->command[0] = fast_read ? OPCODE_FAST_READ : OPCODE_NORM_READ;
 	m25p_addr2cmd(flash, offset, flash->command);
 
 	spi_sync(flash->spi, &m);
 
-	retlen = m.actual_length - m25p_cmdsz(flash) - FAST_READ_DUMMY_BYTE;
+	retlen = m.actual_length - m25p_cmdsz(flash) - fast_read;
 
 	return retlen;
 }
@@ -756,7 +760,7 @@ static int m25p_probe(struct device_d *dev)
 	}
 
 	flash = xzalloc(sizeof *flash);
-	flash->command = xmalloc(MAX_CMD_SIZE + FAST_READ_DUMMY_BYTE);
+	flash->command = xmalloc(MAX_CMD_SIZE);
 
 	flash->spi = spi;
 	dev->priv = (void *)flash;

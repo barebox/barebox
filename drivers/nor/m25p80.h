@@ -34,15 +34,7 @@
 
 /* Define max times to check status register before we give up. */
 #define	MAX_READY_WAIT		40	/* M25P16 specs 40s max chip erase */
-#define MAX_CMD_SIZE		5
-
-#ifdef CONFIG_M25PXX_USE_FAST_READ
-#define OPCODE_READ		OPCODE_FAST_READ
-#define FAST_READ_DUMMY_BYTE	1
-#else
-#define OPCODE_READ		OPCODE_NORM_READ
-#define FAST_READ_DUMMY_BYTE	0
-#endif
+#define MAX_CMD_SIZE		6
 
 #define SPI_NAME_SIZE   32
 

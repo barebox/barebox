@@ -28,7 +28,6 @@
 #include <linux/err.h>
 #include <clock.h>
 #include <linux/mtd/mtd.h>
-#include <progress.h>
 #include "m25p80.h"
 
 /****************************************************************************/
@@ -200,7 +199,6 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 	u32 addr, len;
 	u32 start_sector;
 	u32 end_sector;
-	u32 progress = 0;
 	int eraseshift = ffs(flash->erasesize) - 1;
 
 	dev_dbg(&flash->spi->dev, "%s %s 0x%llx, len %lld\n",
@@ -215,15 +213,12 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 
 	start_sector = offset >> eraseshift;
 	end_sector = (offset + count - 1) >> eraseshift;
-	init_progression_bar(end_sector - start_sector + 1);
 
 	/* whole-chip erase? */
 	if (len == flash->size) {
 
-		show_progress(start_sector);
 		if (erase_chip(flash))
 			return -EIO;
-		show_progress(end_sector);
 
 	/* REVISIT in some cases we could speed up erasing large regions
 	 * by using OPCODE_SE instead of OPCODE_BE_4K.  We may have set up
@@ -238,15 +233,12 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 			if (erase_sector(flash, addr))
 				return -EIO;
 
-			show_progress(++progress);
 			if (len <= flash->erasesize)
 				break;
 			addr += flash->erasesize;
 			len -= flash->erasesize;
 		}
 	}
-
-	printf("\n");
 
 	return 0;
 }

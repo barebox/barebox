@@ -61,9 +61,9 @@
 #define untochar(x)	((int) (((x) - SPACE) & 0xff))
 #define DEF_FILE	"image.bin"
 
-#ifdef CONFIG_CMD_LOADB
-
 static int ofd;			/* output file descriptor */
+
+#ifdef CONFIG_CMD_LOADB
 
 /* Size of my buffer to write to o/p file */
 #define MAX_WRITE_BUFFER 4096	/* Write size to o/p file */

@@ -17,10 +17,12 @@
 #include <common.h>
 #include <errno.h>
 #include <init.h>
+#include <gpio.h>
 #include <clock.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 #include <poller.h>
+#include <gpio.h>
 
 #include <linux/list.h>
 #include <linux/clk.h>
@@ -32,7 +34,6 @@
 #include <mach/io.h>
 #include <mach/board.h>
 #include <mach/cpu.h>
-#include <mach/gpio.h>
 #include <mach/at91sam9261_matrix.h>
 
 #include "at91_udc.h"

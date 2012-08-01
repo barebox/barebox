@@ -47,6 +47,11 @@ config BINFMT
 	bool
 	select FILETYPE
 
+config UIMAGE
+	select UNCOMPRESS
+	select CRC32
+	bool
+
 config GLOBALVAR
 	bool
 

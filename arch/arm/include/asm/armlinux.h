@@ -3,8 +3,7 @@
 
 #include <asm/memory.h>
 
-#if defined CONFIG_CMD_BOOTM || defined CONFIG_CMD_BOOTZ || \
-	defined CONFIG_CMD_BOOTU
+#if defined CONFIG_ARM_LINUX
 void armlinux_set_bootparams(void *params);
 void armlinux_set_architecture(int architecture);
 void armlinux_set_revision(unsigned int);

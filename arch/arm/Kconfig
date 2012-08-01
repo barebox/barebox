@@ -60,12 +60,14 @@ config ARCH_S3C24xx
 	select ARCH_SAMSUNG
 	select CPU_ARM920T
 	select GENERIC_GPIO
-
-config ARCH_S5PCxx
-	bool "Samsung S5PC110, S5PV210"
-	select ARCH_SAMSUNG
-	select CPU_V7
-	select GENERIC_GPIO
+#
+# Currently no board support
+#
+#config ARCH_S5PCxx
+#	bool "Samsung S5PC110, S5PV210"
+#	select ARCH_SAMSUNG
+#	select CPU_V7
+#	select GENERIC_GPIO
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"

@@ -248,15 +248,6 @@ struct at91_gpio_bank {
 
 extern int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks);
 
-static inline int gpio_request(unsigned gpio, const char *label)
-{
-	return 0;
-}
-
-static inline void gpio_free(unsigned gpio)
-{
-}
-
 extern int gpio_direction_input(unsigned gpio);
 extern int gpio_direction_output(unsigned gpio, int value);
 #define gpio_get_value at91_get_gpio_value

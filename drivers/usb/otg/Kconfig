@@ -1,7 +1,8 @@
 config USB_ULPI
-	bool "ULPI Tranceiver support"
+	bool "ULPI Transceiver support"
 	help
-	  Support for tranceivers that conforms ULPI specification.
+	  Support for transceivers that conforms ULPI specification.
 
 config USB_TWL4030
-	bool "TWL4030 Tranceiver support"
+	depends on I2C_TWL4030
+	bool "TWL4030 Transceiver support"

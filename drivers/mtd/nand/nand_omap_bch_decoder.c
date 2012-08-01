@@ -366,7 +366,7 @@ static void syndrome(unsigned int select_4_8,
  * Number of errors that can be corrected: 4- or 8-bits
  * Length of information bit: kk = nn - rr
  */
-int decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc)
+int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc)
 {
 	int no_of_err;
 	unsigned int syn[16] = {0,};	/* 16 Syndromes */

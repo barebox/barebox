@@ -6,7 +6,6 @@ config ARCH_TEXT_BASE
 	default 0xa0000000 if MACH_EUKREA_CPUIMX27
 	default 0x87f00000 if MACH_EUKREA_CPUIMX35
 	default 0x97f00000 if MACH_EUKREA_CPUIMX51SD
-	default 0x08f00000 if MACH_MX1ADS
 	default 0xc0000000 if MACH_IMX21ADS
 	default 0xa0000000 if MACH_IMX27ADS
 	default 0x83f00000 if MACH_FREESCALE_MX25_3STACK && FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
@@ -110,6 +109,7 @@ config NAND_IMX_BOOT
 
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool
+	depends on !ARCH_IMX1
 	prompt "Support Starting barebox from NAND"
 	depends on ARCH_IMX_EXTERNAL_BOOT
 
@@ -185,12 +185,6 @@ if ARCH_IMX1
 choice
 
 	prompt "i.MX1 Board Type"
-
-config MACH_MX1ADS
-	bool "mx1ads"
-	select HAS_CS8900
-	help
-	  Say Y here if you are using the Motorola MX1ADS board
 
 config MACH_SCB9328
 	bool "Synertronixx scb9328"

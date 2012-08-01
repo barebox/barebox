@@ -17,6 +17,7 @@
 #include <mach/board.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
+#include <mach/at91rm9200_mc.h>
 #include <sizes.h>
 
 #include "generic.h"
@@ -158,7 +159,7 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_SPI_ATMEL)
-static const unsigned spi_standard_cs[4] = { AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5, AT91_PIN_PA6 };
+static unsigned spi_standard_cs[4] = { AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5, AT91_PIN_PA6 };
 
 static struct at91_spi_platform_data spi_pdata[] = {
 	[0] = {

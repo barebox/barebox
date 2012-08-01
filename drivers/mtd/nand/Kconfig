@@ -105,38 +105,6 @@ config MTD_NAND_MUSEUM_IDS
 config MTD_NAND_IDS
 	tristate
 
-config MTD_NAND_DISKONCHIP
-	tristate "DiskOnChip 2000, Millennium and Millennium Plus"
-	depends on EXPERIMENTAL && BROKEN
-	help
-	  This is a reimplementation of M-Systems DiskOnChip 2000,
-	  Millennium and Millennium Plus as a standard NAND device driver,
-	  as opposed to the earlier self-contained MTD device drivers.
-	  This should enable, among other things, proper JFFS2 operation on
-	  these devices.
-
-config MTD_NAND_DISKONCHIP_BBTWRITE
-	bool "Allow BBT writes on DiskOnChip Millennium and 2000TSOP"
-	depends on MTD_NAND_DISKONCHIP
-	help
-	  On DiskOnChip devices shipped with the INFTL filesystem (Millennium
-	  and 2000 TSOP/Alon), Linux reserves some space at the end of the
-	  device for the Bad Block Table (BBT).  If you have existing INFTL
-	  data on your device (created by non-Linux tools such as M-Systems'
-	  DOS drivers), your data might overlap the area Linux wants to use for
-	  the BBT.  If this is a concern for you, leave this option disabled and
-	  Linux will not write BBT data into this area.
-	  The downside of leaving this option disabled is that if bad blocks
-	  are detected by Linux, they will not be recorded in the BBT, which
-	  could cause future problems.
-	  Once you enable this option, new filesystems (INFTL or others, created
-	  in Linux or other operating systems) will not use the reserved area.
-	  The only reason not to enable this option is to prevent damage to
-	  preexisting filesystems.
-	  Even if you leave this disabled, you can enable BBT writes at module
-	  load time (assuming you build diskonchip as a module) with the module
-	  parameter "inftl_bbt_write=1".
-
 config MTD_NAND_NOMADIK
 	tristate "ST Nomadik 8815 NAND support"
 	depends on ARCH_NOMADIK

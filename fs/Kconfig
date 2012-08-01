@@ -25,6 +25,7 @@ config FS_TFTP
 	depends on NET
 
 config FS_NFS
+	depends on NET
 	bool
 	prompt "nfs support"
 

@@ -1,5 +1,10 @@
 menuconfig USB_GADGET
+	depends on USB_HAVE_GADGET_DRIVER
 	bool "USB gadget support            "
+
+config USB_HAVE_GADGET_DRIVER
+	bool
+	default y if ARCH_IMX || ARCH_MXS || ARCH_AT91 || ARCH_PXA
 
 if USB_GADGET
 
@@ -12,7 +17,7 @@ choice
 config USB_GADGET_DRIVER_ARC
 	bool
 	prompt "Arc OTG device core"
-	depends on ARCH_IMX
+	depends on ARCH_IMX || ARCH_MXS
 	select USB_GADGET_DUALSPEED
 	select POLLER
 

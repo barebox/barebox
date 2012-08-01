@@ -186,6 +186,15 @@ ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
 KBUILD_IMAGE := MLO
 endif
 
+barebox.ubl: barebox.bin
+	@echo "  UBL    " $@
+	$(Q)scripts/mkublheader barebox.bin > barebox.ubl
+	$(Q)cat barebox.bin >> barebox.ubl
+
+ifeq ($(CONFIG_ARCH_DAVINCI),y)
+KBUILD_IMAGE := barebox.ubl
+endif
+
 all: $(KBUILD_IMAGE)
 
 archprepare: maketools

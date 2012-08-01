@@ -26,6 +26,7 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_TX51
 	default 0x4fc00000 if MACH_MX6Q_ARM2
 	default 0x97f00000 if MACH_CCMX51
+	default 0x4fc00000 if MACH_SABRELITE
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -51,6 +52,7 @@ config BOARDINFO
 	default "Ka-Ro tx51" if MACH_TX51
 	default "Freescale i.MX6q armadillo2" if MACH_MX6Q_ARM2
 	default "ConnectCore i.MX51" if MACH_CCMX51
+	default "Sabre Lite" if MACH_SABRELITE
 
 choice
 	prompt "Select boot mode"
@@ -99,6 +101,16 @@ config ARCH_IMX_INTERNAL_BOOT_NOR
 
 config ARCH_IMX_INTERNAL_BOOT_ONENAND
 	bool "OneNAND"
+
+config ARCH_IMX_INTERNAL_BOOT_SERIAL
+	bool "Serial (read help)"
+	help
+	  Normally the first instruction of the barebox image contains a jump
+	  to the real start of the image which means that you can start it by
+	  jumping to the load address. With serial boot images this is not
+	  possible because the first instruction is occupied by a magic for the
+	  ROM boot code. You can still start this image as a second stage loader,
+	  but you have to add 0x400 to the entry point.
 
 endchoice
 
@@ -458,6 +470,9 @@ choice
 
 config MACH_MX6Q_ARM2
 	bool "Freescale i.MX6q Armadillo2"
+
+config MACH_SABRELITE
+	bool "Freescale i.MX6 Sabre Lite"
 
 endchoice
 

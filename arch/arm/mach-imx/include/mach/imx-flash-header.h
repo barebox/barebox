@@ -15,6 +15,11 @@
 	#define __dcd_entry_section		__section(.dcd_entry_0x0100)
 	#define __image_len_section		__section(.image_len_0x0100)
 	#define FLASH_HEADER_OFFSET 0x0100
+#elif defined(CONFIG_ARCH_IMX_INTERNAL_BOOT_SERIAL)
+	#define __flash_header_section		__section(.flash_header_0x0)
+	#define __dcd_entry_section		__section(.dcd_entry_0x0)
+	#define __image_len_section		__section(.image_len_0x0)
+	#define FLASH_HEADER_OFFSET 0x0
 #else
 	#define __flash_header_section		__section(.flash_header_0x0400)
 	#define __dcd_entry_section		__section(.dcd_entry_0x0400)
@@ -33,6 +38,10 @@
 #define __flash_header_0x0400	__section(.flash_header_0x0400)
 #define __dcd_entry_0x0400	__section(.dcd_entry_0x0400)
 #define __image_len_0x0400	__section(.image_len_0x0400)
+
+#define __flash_header_0x0	__section(.flash_header_0x0)
+#define __dcd_entry_0x0		__section(.dcd_entry_0x0)
+#define __image_len_0x0		__section(.image_len_0x0)
 
 /*
  * NOR is not automatically copied anywhere by the boot ROM

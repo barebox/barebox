@@ -374,7 +374,7 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 
 	if (!is_active) {
 		if (gpio >= 0)
-			gpio_set_value(gpio, !gpio_cs);
+			gpio_direction_output(gpio, !gpio_cs);
 		return;
 	}
 
@@ -384,7 +384,7 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 	ctrl |= CSPI_2_3_CTRL_MODE(cs);
 
 	/* set clock speed */
-	ctrl |= cspi_2_3_clkdiv(166000000, spi->max_speed_hz);
+	ctrl |= cspi_2_3_clkdiv(imx_get_cspiclk(), spi->max_speed_hz);
 
 	/* set chip select to use */
 	ctrl |= CSPI_2_3_CTRL_CS(cs);
@@ -521,7 +521,7 @@ static int imx_spi_probe(struct device_d *dev)
 		version = SPI_IMX_VER_0_7;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
-	if (cpu_is_mx51() || cpu_is_mx53())
+	if (cpu_is_mx51() || cpu_is_mx53() || cpu_is_mx6())
 		version = SPI_IMX_VER_2_3;
 #endif
 	imx->chipselect = spi_imx_devtype_data[version].chipselect;

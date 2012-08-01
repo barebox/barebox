@@ -332,6 +332,11 @@ u32 imx_get_fecclk(void)
 	return __get_ipg_clk();
 }
 
+u32 imx_get_cspiclk(void)
+{
+	return __get_cspi_clk();
+}
+
 void imx_dump_clocks(void)
 {
 	u32 freq;

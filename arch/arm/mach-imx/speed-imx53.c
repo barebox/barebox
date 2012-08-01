@@ -217,6 +217,11 @@ unsigned long imx_get_mmcclk(void)
 	return rate / (prediv * podf);
 }
 
+unsigned long imx_get_cspiclk(void)
+{
+	return 166000000; /* FIXME: bogus value */
+}
+
 void imx_dump_clocks(void)
 {
 	printf("pll1: %ld\n", pll1_main_get_rate());

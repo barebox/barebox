@@ -1,6 +1,16 @@
 
 #ifdef CONFIG_ARCH_IMX_INTERNAL_BOOT
 
+#ifdef CONFIG_ARCH_IMX_INTERNAL_BOOT_SERIAL
+#define PRE_IMAGE \
+	.pre_image : {					\
+		KEEP(*(.flash_header_0x0*))		\
+		KEEP(*(.dcd_entry_0x0*))		\
+		KEEP(*(.image_len_0x0*))		\
+		. = 0x400;				\
+	}
+#else
+
 #define PRE_IMAGE \
 	.pre_image : {					\
 		KEEP(*(.flash_header_start*))		\
@@ -19,4 +29,4 @@
 		. = 0x2000;				\
 	}
 #endif
-
+#endif

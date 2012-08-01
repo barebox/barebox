@@ -24,6 +24,8 @@
  * MA 02111-1307 USA
  */
 
+#include <common.h>
+
 uint32_t s3c_get_mpllclk(void);
 uint32_t s3c_get_upllclk(void);
 uint32_t s3c_get_fclk(void);
@@ -40,4 +42,8 @@ void s3c24xx_disable_second_sdram_bank(void);
 
 #ifdef CONFIG_ARCH_S5PCxx
 void s5p_init_pll(void);
+void s5p_init_dram_bank_lpddr(phys_addr_t base, uint32_t mc0, uint32_t mc1, int bus16);
+void s5p_init_dram_bank_lpddr2(phys_addr_t base, uint32_t mc0, uint32_t mc1, int bus16);
+void s5p_init_dram_bank_ddr2(phys_addr_t base, uint32_t mc0, uint32_t mc1, int bus16);
+uint32_t s5p_get_memory_size(void);
 #endif

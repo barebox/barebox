@@ -123,7 +123,7 @@ board-$(CONFIG_MACH_FREESCALE_MX51_PDK)		:= freescale-mx51-pdk
 board-$(CONFIG_MACH_FREESCALE_MX53_LOCO)	:= freescale-mx53-loco
 board-$(CONFIG_MACH_FREESCALE_MX53_SMD)		:= freescale-mx53-smd
 board-$(CONFIG_MACH_GUF_CUPID)			:= guf-cupid
-board-$(CONFIG_MACH_MINI2440)			:= mini2440
+board-$(CONFIG_MACH_MINI2440)			:= friendlyarm-mini2440
 board-$(CONFIG_MACH_QIL_A9260)			:= qil-a9260
 board-$(CONFIG_MACH_TNY_A9260)			:= tny-a926x
 board-$(CONFIG_MACH_TNY_A9263)			:= tny-a926x
@@ -138,6 +138,7 @@ board-$(CONFIG_MACH_TX51)			:= karo-tx51
 board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
 board-$(CONFIG_MACH_TOSHIBA_AC100)		:= toshiba-ac100
 board-$(CONFIG_MACH_CCMX51)			:= ccxmx51
+board-$(CONFIG_MACH_TINY210)			:= friendlyarm-tiny210
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

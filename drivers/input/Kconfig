@@ -16,4 +16,17 @@ config KEYBOARD_GPIO
 	  setup logic must also provide a platform device,
 	  with configuration data saying which GPIOs are used.
 
+config KEYBOARD_IMX_KEYPAD
+	bool "IMX Keypad"
+	depends on ARCH_IMX
+	select POLLER
+	help
+	  This driver implements support for buttons connected
+	  to the IMX keypad matrix.
+
+	  Say Y here if your device has buttons connected
+	  to the IMX keypad matrix.  Your board-specific
+	  setup logic must also provide a 'matrix_keymap_data' structure,
+	  defining the used keys.
+
 endmenu

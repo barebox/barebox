@@ -52,3 +52,8 @@ struct device_d *imx_add_esdhc(void *base, int id, struct esdhc_platform_data *p
 {
 	return imx_add_device("imx-esdhc", id, base, 0x1000, pdata);
 }
+
+struct device_d *imx_add_kpp(void *base, struct matrix_keymap_data *pdata)
+{
+       return imx_add_device("imx-kpp", -1, base, 0x1000, pdata);
+}

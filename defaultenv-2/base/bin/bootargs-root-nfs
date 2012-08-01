@@ -1,10 +1,15 @@
 #!/bin/sh
 
-while getopt "n:s:" opt; do
+usage="$0 [OPTIONS]\n -n <nfspath>\n -s <serverip>"
+
+while getopt "n:s:h" opt; do
 	if [ ${opt} = n ]; then
 		nfsroot=${OPTARG}
 	elif [ ${opt} = s ]; then
 		serverip=${OPTARG}
+	elif [ ${opt} = h ]; then
+		echo -e "$usage"
+		exit 0
 	fi
 done
 

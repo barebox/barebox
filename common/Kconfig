@@ -508,6 +508,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select GLOB_SORT
 	select CMD_GLOBAL
 	select CMD_AUTOMOUNT
+	select CMD_BASENAME
 	select FLEXIBLE_BOOTARGS
 	prompt "Generic environment template"
 

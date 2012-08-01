@@ -521,6 +521,8 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
 			o->optarg = xstrdup(optarg);
 			list_add_tail(&o->list, &ctx->options);
 		}
+		ctx->global_argv += optind - 1;
+		ctx->global_argc -= optind - 1;
 	}
 
 	ctx->options_parsed = 1;
@@ -1899,7 +1901,8 @@ static const __maybe_unused char cmd_getopt_help[] =
 "hush option parser. <optstring> is a string with valid options. Add\n"
 "a colon to an options if this option has a required argument or two\n"
 "colons for an optional argument. The current option is saved in <var>,\n"
-"arguments are saved in OPTARG.\n";
+"arguments are saved in OPTARG. After this command additional nonopts\n"
+"can be accessed starting from $1\n";
 
 BAREBOX_CMD_START(getopt)
 	.cmd		= do_getopt,

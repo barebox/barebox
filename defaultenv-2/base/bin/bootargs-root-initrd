@@ -2,9 +2,14 @@
 
 rdinit="/sbin/init"
 
-while getopt "i:" opt; do
+usage="$0 [OPTIONS]\n -i <rdinitpath> (/sbin/init)"
+
+while getopt "i:h" opt; do
 	if [ ${opt} = i ]; then
 		rdinit=${OPTARG}
+	elif [ ${opt} = h ]; then
+		echo -e "$usage"
+		exit 0
 	fi
 done
 

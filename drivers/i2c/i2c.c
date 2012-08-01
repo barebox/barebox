@@ -250,6 +250,7 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client = xzalloc(sizeof *client);
 	strcpy(client->dev.name, chip->type);
 	client->dev.type_data = client;
+	client->dev.platform_data = chip->platform_data;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 

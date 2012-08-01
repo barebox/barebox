@@ -208,7 +208,6 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds
+lds-y	:= arch/arm/lib/barebox.lds
 
 CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds

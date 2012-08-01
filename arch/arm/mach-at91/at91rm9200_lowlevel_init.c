@@ -20,24 +20,6 @@ void static inline access_sdram(void)
 	writel(0x00000000, AT91_SDRAM_BASE);
 }
 
-void __naked __bare_init arch_init_lowlevel(void)
-{
-	/*
-	 * relocate exception table
-	 */
-	__asm__ __volatile__ (
-"	ldr	r0, =exception_vectors\n"
-"	ldr	r1, =0x0\n"
-"	mov	r2, #16\n"
-"loopev:\n"
-"	subs	r2, r2, #1\n"
-"	ldr	r3, [r0], #4\n"
-"	str	r3, [r1], #4\n"
-"	bne	loopev\n"
-"	mov	pc, lr\n"
-);
-}
-
 void __naked __bare_init board_init_lowlevel(void)
 {
 	u32 r;

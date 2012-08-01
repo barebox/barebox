@@ -3,8 +3,6 @@
 #include <mach/imx-regs.h>
 #include <asm/barebox-arm-head.h>
 
-extern void exception_vectors(void);
-
 void __naked __flash_header_start go(void)
 {
 	barebox_arm_head();

@@ -28,6 +28,7 @@
 #include <environment.h>
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
+#include <asm/barebox-arm.h>
 #include <asm-generic/sections.h>
 #include <mach/gpio.h>
 #include <io.h>
@@ -48,8 +49,6 @@
 #include <mach/usb.h>
 #include <mach/devices-imx25.h>
 #include <asm/barebox-arm-head.h>
-
-extern void exception_vectors(void);
 
 void __naked __flash_header_start go(void)
 {
@@ -72,7 +71,7 @@ struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {
 };
 
 struct imx_flash_header __flash_header_section flash_header = {
-	.app_code_jump_vector	= DEST_BASE + ((unsigned int)&exception_vectors - TEXT_BASE),
+	.app_code_jump_vector	= DEST_BASE + 0x1000,
 	.app_code_barker	= APP_CODE_BARKER,
 	.app_code_csf		= 0,
 	.dcd_ptr_ptr		= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd),
@@ -286,7 +285,7 @@ console_initcall(eukrea_cpuimx25_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
+	imx_nand_load_image(_text, barebox_image_size);
 }
 #endif
 

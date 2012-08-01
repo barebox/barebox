@@ -109,37 +109,28 @@ _STACK_START:
 	.arm
 
 	.align  5
-.globl undefined_instruction
 undefined_instruction:
 	get_bad_stack
 	bad_save_user_regs
 	bl 	do_undefined_instruction
 
 	.align	5
-.globl software_interrupt
 software_interrupt:
 	get_bad_stack
 	bad_save_user_regs
 	bl 	do_software_interrupt
 
 	.align	5
-.globl prefetch_abort
 prefetch_abort:
 	get_bad_stack
 	bad_save_user_regs
 	bl 	do_prefetch_abort
 
 	.align	5
-.globl data_abort
 data_abort:
 	get_bad_stack
 	bad_save_user_regs
 	bl 	do_data_abort
-
-	.align	5
-
-.globl irq
-.globl fiq
 
 	.align	5
 irq:
@@ -153,3 +144,22 @@ fiq:
 	bad_save_user_regs
 	bl 	do_fiq
 
+.section .text_exceptions
+1:	b 1b				/* reset */
+#ifdef CONFIG_ARM_EXCEPTIONS
+	ldr pc, =undefined_instruction	/* undefined instruction */
+	ldr pc, =software_interrupt	/* software interrupt (SWI) */
+	ldr pc, =prefetch_abort		/* prefetch abort */
+	ldr pc, =data_abort		/* data abort */
+1:	b 1b				/* (reserved) */
+	ldr pc, =irq			/* irq (interrupt) */
+	ldr pc, =fiq			/* fiq (fast interrupt) */
+#else
+1:	b 1b				/* undefined instruction */
+1:	b 1b				/* software interrupt (SWI) */
+1:	b 1b				/* prefetch abort */
+1:	b 1b				/* data abort */
+1:	b 1b				/* (reserved) */
+1:	b 1b				/* irq (interrupt) */
+1:	b 1b				/* fiq (fast interrupt) */
+#endif

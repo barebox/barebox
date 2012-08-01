@@ -42,7 +42,7 @@ static void __bare_init __naked insdram(void)
 	r = STACK_BASE + STACK_SIZE - 12;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
-	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
+	imx_nand_load_image(_text, barebox_image_size);
 
 	board_init_lowlevel_return();
 }
@@ -154,7 +154,7 @@ void __bare_init __naked board_init_lowlevel(void)
 		board_init_lowlevel_return();
 
 	src = (unsigned int *)IMX_NFC_BASE;
-	trg = (unsigned int *)TEXT_BASE;
+	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */
 	for (i = 0; i < 0x800 / sizeof(int); i++)

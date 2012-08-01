@@ -22,6 +22,8 @@
 #endif
 		.endm
 
+.section .text.__raw_writesw
+
 .Loutsw_align:	movs	ip, r1, lsl #31
 		bne	.Loutsw_noalign
 

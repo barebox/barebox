@@ -1,6 +1,7 @@
 #include <linux/linkage.h>
 #include <init.h>
 
+.section .text.__mmu_cache_on
 ENTRY(__mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU
@@ -30,6 +31,7 @@ ENTRY(__mmu_cache_on)
 		mov	pc, r12
 ENDPROC(__mmu_cache_on)
 
+.section .text.__mmu_cache_off
 ENTRY(__mmu_cache_off)
 		mrc	p15, 0, r0, c1, c0
 #ifdef CONFIG_MMU
@@ -50,6 +52,7 @@ ENTRY(__mmu_cache_off)
 		mov	pc, r12
 ENDPROC(__mmu_cache_off)
 
+.section .text.__mmu_cache_flush
 ENTRY(__mmu_cache_flush)
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
 		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)
@@ -110,7 +113,6 @@ iflush:
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
 		mov	pc, lr
 ENDPROC(__mmu_cache_flush)
-.section ".text.text"
 
 /*
  * cache_line_size - get the cache line size from the CSIDR register
@@ -134,6 +136,7 @@ ENDPROC(__mmu_cache_flush)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
+.section .text.__dma_inv_range
 ENTRY(__dma_inv_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
@@ -158,6 +161,7 @@ ENDPROC(__dma_inv_range)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
+.section .text.__dma_clean_range
 ENTRY(__dma_clean_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
@@ -176,6 +180,7 @@ ENDPROC(__dma_clean_range)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
+.section .text.__dma_flush_range
 ENTRY(__dma_flush_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
@@ -188,4 +193,3 @@ ENTRY(__dma_flush_range)
 	dsb
 	mov	pc, lr
 ENDPROC(__dma_flush_range)
-

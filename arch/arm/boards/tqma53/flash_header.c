@@ -15,11 +15,12 @@
 
 #include <common.h>
 #include <asm/byteorder.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/imx-flash-header.h>
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
@@ -84,7 +85,7 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	{ .addr = cpu_to_be32(0x63fd901C), .val = cpu_to_be32(0x00000000), },
 };
 
-#define APP_DEST	CONFIG_TEXT_BASE
+#define APP_DEST	0x70000000
 
 struct imx_flash_header_v2 __flash_header_section flash_header = {
 	.header.tag		= IVT_HEADER_TAG,

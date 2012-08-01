@@ -1,15 +1,3 @@
-#
-#
-#
-config BOARD_LINKER_SCRIPT
-	bool
-	default n
-
-config GENERIC_LINKER_SCRIPT
-	bool
-	default y
-	depends on !BOARD_LINKER_SCRIPT
-
 config ARM
 	bool
 	select HAS_KALLSYMS

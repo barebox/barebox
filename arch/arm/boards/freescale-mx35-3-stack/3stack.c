@@ -38,6 +38,7 @@
 
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
+#include <asm/barebox-arm.h>
 #include <io.h>
 #include <generated/mach-types.h>
 
@@ -450,6 +451,7 @@ void __bare_init nand_boot(void)
 	 * The driver is able to detect NAND's pagesize by CPU internal
 	 * fuses or external pull ups. But not the blocksize...
 	 */
-	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
+	imx_nand_load_image(_text, barebox_image_size);
+	board_init_lowlevel_return();
 }
 #endif

@@ -18,6 +18,7 @@
  */
 
 #include <config.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/imx-regs.h>
 
 	.section ".text_bare_init","ax"
@@ -121,7 +122,7 @@ board_init_lowlevel:
 	str	r1, [r0]
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	ldr	sp, =TEXT_BASE - 4	/* Setup a temporary stack in SDRAM */
+	ldr	sp, =STACK_BASE + STACK_SIZE - 12	/* Setup a temporary stack in SDRAM */
 
 	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM        */
 	ldr	r2, =IMX_NFC_BASE + 0x800	/* end of NFC SRAM          */
@@ -133,7 +134,7 @@ board_init_lowlevel:
 	bhi	ret
 
 	/* Move ourselves out of NFC SRAM */
-	ldr	r1, =TEXT_BASE
+	ldr	r1, =_text
 
 copy_loop:
 	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
@@ -143,10 +144,7 @@ copy_loop:
 
 	ldr	pc, =1f			/* Jump to SDRAM                    */
 1:
-	bl	nand_boot		/* Load barebox from NAND Flash     */
-
-	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
-	sub	r10, r10, r1		/* adjust return address from NFC   */
+	b	nand_boot		/* Load barebox from NAND Flash     */
 					/* SRAM to SDRAM                    */
 #endif /* CONFIG_NAND_IMX_BOOT */
 

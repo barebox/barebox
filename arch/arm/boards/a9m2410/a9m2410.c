@@ -29,6 +29,7 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <asm-generic/sections.h>
 #include <partition.h>
 #include <nand.h>
 #include <io.h>
@@ -139,7 +140,7 @@ device_initcall(a9m2410_devices_init);
 #ifdef CONFIG_S3C_NAND_BOOT
 void __bare_init nand_boot(void)
 {
-	s3c24x0_nand_load_image((void *)TEXT_BASE, 256 * 1024, 0);
+	s3c24x0_nand_load_image(_text, 256 * 1024, 0);
 }
 #endif
 

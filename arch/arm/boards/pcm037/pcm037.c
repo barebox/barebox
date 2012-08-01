@@ -37,6 +37,7 @@
 #include <asm/mmu.h>
 #include <partition.h>
 #include <generated/mach-types.h>
+#include <asm/barebox-arm.h>
 #include <mach/imx-nand.h>
 #include <mach/devices-imx31.h>
 
@@ -246,6 +247,7 @@ console_initcall(imx31_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	imx_nand_load_image((void *)TEXT_BASE, barebox_image_size);
+	imx_nand_load_image(_text, barebox_image_size);
+	board_init_lowlevel_return();
 }
 #endif

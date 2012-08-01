@@ -39,7 +39,7 @@ struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {
     { .ptr_type = 4, .addr = 0x83fd9014, .val = 0x00000000, },
 };
 
-#define APP_DEST	CONFIG_ARCH_TEXT_BASE
+#define APP_DEST	0x90000000
 
 struct imx_flash_header __flash_header_section flash_header = {
 	.app_code_jump_vector	= APP_DEST + 0x1000,

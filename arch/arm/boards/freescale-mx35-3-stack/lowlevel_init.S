@@ -25,6 +25,7 @@
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>
+#include <asm-generic/memory_layout.h>
 #include "board-mx35_3stack.h"
 
 #define CSD0_BASE_ADDR		0x80000000
@@ -156,7 +157,7 @@ board_init_lowlevel:
 	str	r3, [r0, #0x30]
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	ldr	sp, =TEXT_BASE - 4		/* Setup a temporary stack in SDRAM */
+	ldr	sp, =STACK_BASE + STACK_SIZE - 12		/* Setup a temporary stack in SDRAM */
 
 	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM */
 	ldr	r2, =IMX_NFC_BASE + 0x800	/* end of NFC SRAM */
@@ -168,7 +169,7 @@ board_init_lowlevel:
 	bhs	ret
 
 	/* Move ourselves out of NFC SRAM */
-	ldr r1, =TEXT_BASE
+	ldr r1, =_text
 
 copy_loop:
 	ldmia	r0!, {r3-r9}			/* copy from source address [r0] */
@@ -178,11 +179,7 @@ copy_loop:
 
 	ldr	pc, =1f				/* Jump to SDRAM */
 1:
-	bl	nand_boot			/* Load barebox from NAND Flash */
-
-	/* rebase the return address */
-	ldr	r1, =IMX_NFC_BASE - TEXT_BASE
-	sub	r10, r10, r1			/* adjust return address from NFC SRAM */
+	b	nand_boot			/* Load barebox from NAND Flash */
 ret:
 #endif /* CONFIG_NAND_IMX_BOOT */
 

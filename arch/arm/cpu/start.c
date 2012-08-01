@@ -33,31 +33,6 @@ void __naked __section(.text_entry) start(void)
 	barebox_arm_head();
 }
 
-void __naked __section(.text_exceptions) exception_vectors(void)
-{
-	__asm__ __volatile__ (
-		".arm\n"
-		"b reset\n"				/* reset */
-#ifdef CONFIG_ARM_EXCEPTIONS
-		"ldr pc, =undefined_instruction\n"	/* undefined instruction */
-		"ldr pc, =software_interrupt\n"		/* software interrupt (SWI) */
-		"ldr pc, =prefetch_abort\n"		/* prefetch abort */
-		"ldr pc, =data_abort\n"			/* data abort */
-		"1: b 1b\n"				/* (reserved) */
-		"ldr pc, =irq\n"			/* irq (interrupt) */
-		"ldr pc, =fiq\n"			/* fiq (fast interrupt) */
-#else
-		"1: b 1b\n"				/* undefined instruction */
-		"1: b 1b\n"				/* software interrupt (SWI) */
-		"1: b 1b\n"				/* prefetch abort */
-		"1: b 1b\n"				/* data abort */
-		"1: b 1b\n"				/* (reserved) */
-		"1: b 1b\n"				/* irq (interrupt) */
-		"1: b 1b\n"				/* fiq (fast interrupt) */
-#endif
-	);
-}
-
 /*
  * The actual reset vector. This code is position independent and usually
  * does not run at the address it's linked at.
@@ -104,7 +79,7 @@ void __naked __bare_init reset(void)
  */
 void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 {
-	uint32_t r, addr;
+	uint32_t r, addr, offset;
 
 	/*
 	 * Get runtime address of this function. Do not
@@ -116,13 +91,13 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
-	/* Get start of binary image */
-	addr -= (uint32_t)&__ll_return - TEXT_BASE;
+	/* Get offset between linked address and runtime address */
+	offset = (uint32_t)__ll_return - addr;
 
 	/* relocate to link address if necessary */
-	if (addr != TEXT_BASE)
-		memcpy((void *)TEXT_BASE, (void *)addr,
-				(unsigned int)&__bss_start - TEXT_BASE);
+	if (offset)
+		memcpy((void *)_text, (void *)(_text - offset),
+				__bss_start - _text);
 
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);

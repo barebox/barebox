@@ -77,7 +77,7 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00000000), },
 };
 
-#define APP_DEST	CONFIG_TEXT_BASE
+#define APP_DEST	0x70000000
 
 struct imx_flash_header_v2 __flash_header_section flash_header = {
 	.header.tag		= IVT_HEADER_TAG,

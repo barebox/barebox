@@ -7,7 +7,30 @@ src := $(obj)
 PHONY := __build
 __build:
 
-# Read .config if it exist, otherwise ignore
+# Init all relevant variables used in kbuild files so
+# 1) they have correct type
+# 2) they do not inherit any value from the environment
+obj-y :=
+obj-m :=
+lib-y :=
+lib-m :=
+always :=
+targets :=
+subdir-y :=
+subdir-m :=
+EXTRA_AFLAGS   :=
+EXTRA_CFLAGS   :=
+EXTRA_CPPFLAGS :=
+EXTRA_LDFLAGS  :=
+asflags-y  :=
+ccflags-y  :=
+cppflags-y :=
+ldflags-y  :=
+
+subdir-asflags-y :=
+subdir-ccflags-y :=
+
+# Read auto.conf if it exists, otherwise ignore
 -include include/config/auto.conf
 
 include scripts/Kbuild.include

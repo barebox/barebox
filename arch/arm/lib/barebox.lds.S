@@ -41,11 +41,6 @@ SECTIONS
 		*(.text_entry*)
 		__ll_return = .;
 		*(.text_ll_return*)
-#ifdef CONFIG_ARCH_EP93XX
-		/* the EP93xx expects to find the pattern 'CRUS' at 0x1000 */
-	  . = 0x1000;
-	  LONG(0x53555243) /* 'CRUS' */
-#endif
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;
@@ -79,9 +74,6 @@ SECTIONS
 
 	. = ALIGN(4);
 	.data : { *(.data*) }
-
-	. = ALIGN(4);
-	.got : { *(.got*) }
 
 	. = .;
 	__barebox_cmd_start = .;

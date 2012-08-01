@@ -73,9 +73,81 @@
 
 #define SMC911X_BASE 0x2c000000
 
+/* Slower full frequency range default timings for x32 operation */
+#define SDP_SDRC_SHARING	0x00000100
+/* Diabling power down mode using CKE pin */
+#define SDP_SDRC_POWER_POP	0x00000081
+/* rkw - need to find of 90/72 degree recommendation for speed like before. */
+#define SDP_SDRC_DLLAB_CTRL ((DLL_ENADLL << 3) | \
+	(DLL_LOCKDLL << 2) | (DLL_DLLPHASE_90 << 1))
+
+/* used to create an array of memory configuartions. */
+struct sdrc_config {
+	u32	cs_cfg;
+	u32	mcfg;
+	u32	mr;
+	u32	actim_ctrla;
+	u32	actim_ctrlb;
+	u32	rfr_ctrl;
+} const sdrc_config[] = {
+/* max cs_size for autodetection, common timing */
+/* 2x256MByte, 14 Rows, 10 Columns , RBC (BAL=2) */
+{ 0x00000004, 0x03590099, 0x00000032, 0x9A9DB4C6, 0x00011216, 0x0004e201},
+/* MT46H32M32LF 2x128MByte, 13 Rows, 10 Columns */
+{ 0x00000001, 0x02584099, 0x00000032, 0x9A9DB4C6, 0x00011216, 0x0004e201},
+/* MT46H64M32LF 1x256MByte, 14 Rows, 10 Columns */
+{ 0x00000002, 0x03588099, 0x00000032, 0x629DB4C6, 0x00011113, 0x0004e201},
+/* MT64H128M32L2 2x256MByte, 14 Rows, 10 Columns */
+{ 0x00000002, 0x03588099, 0x00000032, 0x629DB4C6, 0x00011113, 0x0004e201},
+};
+
 /*
  * Boot-time initialization(s)
  */
+
+/*********************************************************************
+ * init_sdram_ddr() - Init DDR controller.
+ *********************************************************************/
+void init_sdram_ddr(void)
+{
+	/* reset sdrc controller */
+	writel(SOFTRESET, SDRC_REG(SYSCONFIG));
+	wait_on_value(1<<0, 1<<0, SDRC_REG(STATUS), 12000000);
+	writel(0, SDRC_REG(SYSCONFIG));
+
+	/* setup sdrc to ball mux */
+	writel(SDP_SDRC_SHARING, SDRC_REG(SHARING));
+	writel(SDP_SDRC_POWER_POP, SDRC_REG(POWER));
+
+	/* set up dll */
+	writel(SDP_SDRC_DLLAB_CTRL, SDRC_REG(DLLA_CTRL));
+	sdelay(0x2000);	/* give time to lock */
+
+}
+/*********************************************************************
+ * config_sdram_ddr() - Init DDR on dev board.
+ *********************************************************************/
+void config_sdram_ddr(u8 cs, u8 cfg)
+{
+
+	writel(sdrc_config[cfg].mcfg, SDRC_REG(MCFG_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].actim_ctrla, SDRC_REG(ACTIM_CTRLA_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].actim_ctrlb, SDRC_REG(ACTIM_CTRLB_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].rfr_ctrl, SDRC_REG(RFR_CTRL_0) + (0x30 * cs));
+
+	writel(CMD_NOP, SDRC_REG(MANUAL_0) + (0x30 * cs));
+
+	sdelay(5000);
+
+	writel(CMD_PRECHARGE, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
+
+	/* set mr0 */
+	writel(sdrc_config[cfg].mr, SDRC_REG(MR_0) + (0x30 * cs));
+
+	sdelay(2000);
+}
 
 /**
  * @brief Initialize the SDRC module
@@ -85,49 +157,55 @@
  */
 static void pcaal1_sdrc_init(void)
 {
-	/* SDRAM software reset */
-	/* No idle ack and RESET enable */
-	writel(0x1A, SDRC_REG(SYSCONFIG));
-	sdelay(100);
-	/* No idle ack and RESET disable */
-	writel(0x18, SDRC_REG(SYSCONFIG));
+	u32 test0, test1;
+	char cfg;
 
-	/* SDRC Sharing register */
-	/* 32-bit SDRAM on data lane [31:0] - CS0 */
-	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	init_sdram_ddr();
 
-	/* ----- SDRC Registers Configuration --------- */
-	/* SDRC_MCFG0 register */
-	writel(0x03588099, SDRC_REG(MCFG_0));
+	config_sdram_ddr(0, 0); /* 256MByte at CS0 */
+	config_sdram_ddr(1, 0); /* 256MByte at CS1 */
 
-	/* SDRC_RFR_CTRL0 register */
-	writel(0x0004e201, SDRC_REG(RFR_CTRL_0));
+	test0 = get_ram_size((long *) 0x80000000, SZ_256M);
+	test1 = get_ram_size((long *) 0xA0000000, SZ_256M);
 
-	/* SDRC_ACTIM_CTRLA0 register */
-	writel(0x629DB4C6, SDRC_REG(ACTIM_CTRLA_0));
+	/* mask out lower nible, its not tested with
+	in common/memsize.c */
+	test1 &= 0xfffffff0;
 
-	/* SDRC_ACTIM_CTRLB0 register */
-	writel(0x00011113, SDRC_REG(ACTIM_CTRLB_0));
+	if ((test1 > 0) && (test1 != test0))
+		hang();
 
-	/* Disble Power Down of CKE due to 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	cfg = -1; /* illegal configuration found */
 
-	/* SDRC_MANUAL command register */
-	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
-	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
-	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
-	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	if (test1 == 0) {
+		init_sdram_ddr();
+		writel((sdrc_config[(uchar) cfg].mcfg & 0xfffc00ff), SDRC_REG(MCFG_1));
 
-	/* SDRC MR0 register Burst length=4 */
-	writel(0x00000032, SDRC_REG(MR_0));
+		/* 1 x 256MByte */
+		if (test0 == SZ_256M)
+			cfg = 2;
 
-	/* SDRC DLLA control register */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+		if (cfg != -1) {
+			config_sdram_ddr(0, cfg);
+			writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+		}
+		return;
+	}
+
+	/* reinit both cs with correct size */
+	/* 2 x 128MByte */
+	if (test0 == SZ_128M)
+		cfg = 1;
+	/* 2 x 256MByte */
+	if (test0 == SZ_256M)
+		cfg = 3;
+
+	if (cfg != -1) {
+		init_sdram_ddr();
+		writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+		config_sdram_ddr(0, cfg);
+		config_sdram_ddr(1, cfg);
+	}
 }
 
 /**
@@ -292,11 +370,16 @@ static int pcaal1_mem_init(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
+	add_mem_device("sram0", OMAP_SRAM_BASE, 60 * SZ_1K,
+				   IORESOURCE_MEM_WRITEABLE);
 
 	arm_add_mem_device("ram0", OMAP_SDRC_CS0, get_sdr_cs_size(SDRC_CS0_OSET));
+	printf("found %s at SDCS0\n", size_human_readable(get_sdr_cs_size(SDRC_CS0_OSET)));
 
-	if ((get_sdr_cs_size(SDRC_CS1_OSET) != 0) && (get_sdr_cs1_base() != OMAP_SDRC_CS0))
+	if ((get_sdr_cs_size(SDRC_CS1_OSET) != 0) && (get_sdr_cs1_base() != OMAP_SDRC_CS0)) {
 		arm_add_mem_device("ram1", get_sdr_cs1_base(), get_sdr_cs_size(SDRC_CS1_OSET));
+		printf("found %s at SDCS1\n", size_human_readable(get_sdr_cs_size(SDRC_CS1_OSET)));
+	}
 
 	return 0;
 }
@@ -310,6 +393,7 @@ struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 
 static int pcaal1_init_devices(void)
 {
+	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_BCH8_CODE_HW, &omap3_nand_cfg);
 #ifdef CONFIG_MCI_OMAP_HSMMC
 	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);
@@ -330,12 +414,7 @@ device_initcall(pcaal1_init_devices);
 
 static int pcaal1_late_init(void)
 {
-	struct device_d *nand;
-
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_SOFT, &omap3_nand_cfg);
-
-	nand = get_device_by_name("nand0");
-
+#ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "x-loader");
 	dev_add_bb_dev("self_raw", "x_loader0");
 
@@ -344,7 +423,7 @@ static int pcaal1_late_init(void)
 
 	devfs_add_partition("nand0", 0x260000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
-
+#endif
 	return 0;
 }
 late_initcall(pcaal1_late_init);

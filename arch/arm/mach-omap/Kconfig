@@ -151,6 +151,7 @@ config MACH_PCM049
 config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
 	select OMAP_CLOCK_ALL
+	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1

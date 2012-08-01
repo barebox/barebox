@@ -28,6 +28,7 @@
  * MA 02111-1307 USA
  */
 #include <common.h>
+#include <clock.h>
 #include <init.h>
 #include <io.h>
 #include <mach/silicon.h>
@@ -48,13 +49,22 @@
  */
 void gpmc_generic_init(unsigned int cfg)
 {
+	uint64_t start;
 	unsigned int reg = GPMC_REG(CONFIG7_0);
 	char x = 0;
 
 	debug("gpmccfg=%x\n", cfg);
 	/* Generic Configurations */
+	/* reset gpmc */
+	start = get_time_ns();
 	/* No idle, L3 clock free running */
-	writel(0x10, GPMC_REG(SYS_CONFIG));
+	writel(0x12, GPMC_REG(SYS_CONFIG));
+	while (!readl(GPMC_REG(SYS_STATUS)))
+		if (is_timeout(start, MSECOND)) {
+			printf("timeout on gpmc reset\n");
+			break;
+		}
+
 	/* No Timeout */
 	writel(0x00, GPMC_REG(TIMEOUT_CONTROL));
 	/* No IRQs */

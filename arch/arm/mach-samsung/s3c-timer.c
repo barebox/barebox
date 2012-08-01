@@ -37,11 +37,19 @@
 #define S3C_TCNTB4 (S3C_TIMER_BASE + 0x3c)
 #define S3C_TCNTO4 (S3C_TIMER_BASE + 0x40)
 
-#define TIMER_WIDTH 16
-#define TIMER_SHIFT 10
-#define PRE_MUX 3
-#define PRE_MUX_ADD 1
+#ifdef CONFIG_ARCH_S3C24xx
+# define TIMER_WIDTH 16
+# define TIMER_SHIFT 10
+# define PRE_MUX 3
+# define PRE_MUX_ADD 1
 static const uint32_t max = 0x0000ffff;
+#else /* for S3C64xx and S5Pxx */
+# define TIMER_WIDTH 32
+# define TIMER_SHIFT 10
+# define PRE_MUX 4
+# define PRE_MUX_ADD 0
+static const uint32_t max = ~0;
+#endif
 
 static void s3c_init_t4_clk_source(void)
 {

@@ -1,0 +1,19 @@
+if MACH_TINY6410
+
+choice
+	prompt "FriendlyARM Tiny6410 baseboard"
+	help
+	  Since the Tiny6410 is a CPU card only, it requires a basebord to make
+	  it work. Select here the baseboard Barebox should expect and
+	  configure.
+
+config MACH_TINY6410_FA
+	bool
+	select HAS_DM9000
+	prompt "FA development platform"
+	help
+	  FriendlyARM's Tiny6410 evaluation board.
+
+endchoice
+
+endif

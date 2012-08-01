@@ -40,6 +40,7 @@
 #include <mach/spi.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
+#include <mach/iim.h>
 #include <mfd/mc13xxx.h>
 
 #include "pll.h"
@@ -124,7 +125,6 @@ static inline uint32_t get_pll_spctl10(void)
  */
 static int pcm038_power_init(void)
 {
-#ifdef CONFIG_MFD_MC13XXX
 	uint32_t spctl0 = get_pll_spctl10();
 	struct mc13xxx *mc13xxx = mc13xxx_get();
 
@@ -146,6 +146,22 @@ static int pcm038_power_init(void)
 				MC13783_SW1B_SOFTSTART |
 				MC13783_SW_PLL_FACTOR(32));
 
+			/* Setup VMMC voltage */
+			if (IS_ENABLED(CONFIG_MCI_IMX)) {
+				u32 val;
+
+				mc13xxx_reg_read(mc13xxx, MC13783_REG_REG_SETTING(1), &val);
+				/* VMMC1 = 3.00 V */
+				val &= ~(7 << 6);
+				val |= 6 << 6;
+				mc13xxx_reg_write(mc13xxx, MC13783_REG_REG_SETTING(1), val);
+
+				mc13xxx_reg_read(mc13xxx, MC13783_REG_REG_MODE(1), &val);
+				/* Enable VMMC1 */
+				val |= 1 << 18;
+				mc13xxx_reg_write(mc13xxx, MC13783_REG_REG_MODE(1), val);
+			}
+
 			/* wait for required power level to run the CPU at 400 MHz */
 			udelay(100000);
 			CSCR = CSCR_VAL_FINAL;
@@ -158,7 +174,6 @@ static int pcm038_power_init(void)
 			printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
 		}
 	}
-#endif
 
 	/* clock gating enable */
 	GPCR = 0x00050f08;
@@ -179,6 +194,7 @@ mem_initcall(pcm038_mem_init);
 static int pcm038_devices_init(void)
 {
 	int i;
+	u64 uid = 0;
 	char *envdev;
 
 	unsigned int mode[] = {
@@ -237,6 +253,19 @@ static int pcm038_devices_init(void)
 		PA29_PF_VSYNC,
 		PA30_PF_CONTRAST,
 		PA31_PF_OE_ACD,
+		/* OTG host */
+		PC7_PF_USBOTG_DATA5,
+		PC8_PF_USBOTG_DATA6,
+		PC9_PF_USBOTG_DATA0,
+		PC10_PF_USBOTG_DATA2,
+		PC11_PF_USBOTG_DATA1,
+		PC12_PF_USBOTG_DATA4,
+		PC13_PF_USBOTG_DATA3,
+		PE0_PF_USBOTG_NXT,
+		PE1_PF_USBOTG_STP,
+		PE2_PF_USBOTG_DIR,
+		PE24_PF_USBOTG_CLK,
+		PE25_PF_USBOTG_DATA7,
 		/* I2C1 */
 		PD17_PF_I2C_DATA | GPIO_PUEN,
 		PD18_PF_I2C_CLK,
@@ -302,6 +331,8 @@ static int pcm038_devices_init(void)
 
 	printf("Using environment in %s Flash\n", envdev);
 
+	if (imx_iim_read(1, 1, &uid, 6) == 6)
+		armlinux_set_serial(uid);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);
 

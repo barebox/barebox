@@ -1,0 +1,12 @@
+#!/bin/sh
+
+while getopt "m:r:" opt; do
+	if [ ${opt} = m ]; then
+		part=${OPTARG}
+	fi
+	if [ ${opt} = r ]; then
+		type=${OPTARG}
+	fi
+done
+
+global.linux.bootargs.root="root=/dev/$part rootfstype=ext$type rootwait"

@@ -1,4 +1,4 @@
-obj-y				+= stddev.o
+obj-$(CONFIG_STDDEV)		+= stddev.o
 obj-$(CONFIG_CMD_BOOTM)		+= bootm.o
 obj-$(CONFIG_CMD_UIMAGE)	+= uimage.o
 obj-$(CONFIG_CMD_LINUX16)	+= linux16.o

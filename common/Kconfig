@@ -559,6 +559,14 @@ config BAREBOXENV_TARGET
 config POLLER
 	bool "generic polling infrastructure"
 
+config RESET_SOURCE
+	bool "detect Reset cause"
+	depends on GLOBALVAR
+	help
+	  Provide a global variable at runtine which reflects the possible cause
+	  of the reset and why the bootloader is currently running. It can be
+	  useful for any kind of system recovery or repair.
+
 endmenu
 
 menu "Debugging                     "

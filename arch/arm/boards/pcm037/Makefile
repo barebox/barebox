@@ -21,4 +21,5 @@
 #
 
 obj-y += lowlevel_init.o
+pbl-y += lowlevel_init.o
 obj-y += pcm037.o

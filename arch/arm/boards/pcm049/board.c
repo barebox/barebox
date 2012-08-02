@@ -94,6 +94,13 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
+static struct gpmc_nand_platform_data nand_plat = {
+	.wait_mon_pin = 1,
+	.device_width = 8,
+	.ecc_mode = OMAP_ECC_BCH8_CODE_HW,
+	.nand_cfg = &omap4_nand_cfg,
+};
+
 static int pcm049_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
@@ -107,8 +114,7 @@ static int pcm049_devices_init(void)
 
 	pcm049_network_init();
 
-	gpmc_generic_nand_devices_init(0, 8,
-			OMAP_ECC_BCH8_CODE_HW, &omap4_nand_cfg);
+	omap_add_gpmc_nand_device(&nand_plat);
 
 #ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "xload_raw");

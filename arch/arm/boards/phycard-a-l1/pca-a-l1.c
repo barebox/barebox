@@ -391,9 +391,16 @@ struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 };
 #endif
 
+static struct gpmc_nand_platform_data nand_plat = {
+	.device_width = 16,
+	.ecc_mode = OMAP_ECC_BCH8_CODE_HW,
+	.nand_cfg = &omap3_nand_cfg,
+};
+
 static int pcaal1_init_devices(void)
 {
-	gpmc_generic_nand_devices_init(0, 16, OMAP_ECC_BCH8_CODE_HW, &omap3_nand_cfg);
+	omap_add_gpmc_nand_device(&nand_plat);
+
 #ifdef CONFIG_MCI_OMAP_HSMMC
 	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);

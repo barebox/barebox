@@ -61,12 +61,11 @@ struct gpmc_nand_platform_data {
 
 	/* if you like a custom oob use this. */
 	struct nand_ecclayout *oob;
-	/** platform specific private data */
-	void *priv;
+	/** gpmc config for nand */
+	struct gpmc_config *nand_cfg;
 };
 
-int gpmc_generic_nand_devices_init(int cs, int width,
-			enum gpmc_ecc_mode, struct gpmc_config *nand_cfg);
+int omap_add_gpmc_nand_device(struct gpmc_nand_platform_data *pdata);
 
 extern struct gpmc_config omap3_nand_cfg;
 extern struct gpmc_config omap4_nand_cfg;

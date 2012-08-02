@@ -169,6 +169,8 @@ typedef enum {
 #define NAND_NO_READRDY		0x00000100
 /* Chip does not allow subpage writes */
 #define NAND_NO_SUBPAGE_WRITE	0x00000200
+/* Buswitdh shal be autodetected */
+#define NAND_BUSWIDTH_AUTO	0x00080000
 
 
 /* Options valid for Samsung large page devices */
@@ -451,6 +453,7 @@ struct nand_chip {
 	int		(*errstat)(struct mtd_info *mtd, struct nand_chip *this, int state, int status, int page);
 	int		(*write_page)(struct mtd_info *mtd, struct nand_chip *chip,
 				      const uint8_t *buf, int page, int cached, int raw);
+	int		(*set_buswidth)(struct mtd_info *mtd, struct nand_chip *this, int buswidth);
 
 	int		chip_delay;
 	unsigned int	options;

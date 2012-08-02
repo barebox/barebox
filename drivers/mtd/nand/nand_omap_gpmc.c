@@ -112,6 +112,7 @@ struct gpmc_nand_info {
 	unsigned inuse:1;
 	unsigned char ecc_parity_pairs;
 	enum gpmc_ecc_mode ecc_mode;
+	void *cs_base;
 };
 
 /* Typical BOOTROM oob layouts-requires hwecc **/
@@ -583,6 +584,101 @@ static int omap_gpmc_read_buf_manual(struct mtd_info *mtd, struct nand_chip *chi
 	return bytes;
 }
 
+/**
+ * omap_read_buf_pref - read data from NAND controller into buffer
+ * @mtd: MTD device structure
+ * @buf: buffer to store date
+ * @len: number of bytes to read
+ */
+static void omap_read_buf_pref(struct mtd_info *mtd, u_char *buf, int len)
+{
+	struct gpmc_nand_info *info = container_of(mtd,
+						struct gpmc_nand_info, minfo);
+	u32 r_count = 0;
+	u32 *p = (u32 *)buf;
+
+	/* take care of subpage reads */
+	if (len % 4) {
+		if (info->nand.options & NAND_BUSWIDTH_16)
+			readsw(info->cs_base, buf, (len % 4) / 2);
+		else
+			readsb(info->cs_base, buf, len % 4);
+		p = (u32 *) (buf + len % 4);
+		len -= len % 4;
+	}
+
+	/* configure and start prefetch transfer */
+	gpmc_prefetch_enable(info->gpmc_cs,
+			PREFETCH_FIFOTHRESHOLD_MAX, 0x0, len, 0x0);
+
+	do {
+		r_count = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		r_count = GPMC_PREFETCH_STATUS_FIFO_CNT(r_count);
+		r_count = r_count >> 2;
+		readsl(info->cs_base, p, r_count);
+		p += r_count;
+		len -= r_count << 2;
+	} while (len);
+
+	/* disable and stop the PFPW engine */
+	gpmc_prefetch_reset(info->gpmc_cs);
+}
+
+/**
+ * omap_write_buf_pref - write buffer to NAND controller
+ * @mtd: MTD device structure
+ * @buf: data buffer
+ * @len: number of bytes to write
+ */
+static void omap_write_buf_pref(struct mtd_info *mtd,
+					const u_char *buf, int len)
+{
+	struct gpmc_nand_info *info = container_of(mtd,
+						struct gpmc_nand_info, minfo);
+	u32 w_count = 0;
+	u_char *buf1 = (u_char *)buf;
+	u32 *p32 = (u32 *)buf;
+	uint64_t start;
+
+	/* take care of subpage writes */
+	while (len % 4 != 0) {
+		writeb(*buf, info->nand.IO_ADDR_W);
+		buf1++;
+		p32 = (u32 *)buf1;
+		len--;
+	}
+
+	/*  configure and start prefetch transfer */
+	gpmc_prefetch_enable(info->gpmc_cs,
+			PREFETCH_FIFOTHRESHOLD_MAX, 0x0, len, 0x1);
+
+	while (len >= 0) {
+		w_count = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		w_count = GPMC_PREFETCH_STATUS_FIFO_CNT(w_count);
+		w_count = w_count >> 2;
+		writesl(info->cs_base, p32, w_count);
+		p32 += w_count;
+		len -= w_count << 2;
+	}
+
+	/* wait for data to flushed-out before reset the prefetch */
+	start = get_time_ns();
+	while (1) {
+		u32 regval, status;
+		regval = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		status = GPMC_PREFETCH_STATUS_COUNT(regval);
+		if (!status)
+			break;
+		if (is_timeout(start, 100 * MSECOND)) {
+			dev_err(mtd->dev, "prefetch flush timed out\n");
+			break;
+		}
+	}
+
+	/* disable and stop the PFPW engine */
+	gpmc_prefetch_reset(info->gpmc_cs);
+}
+
 /*
  * read a page with the ecc layout used by the OMAP4 romcode. The
  * romcode expects an unusual ecc layout (f = free, e = ecc):
@@ -833,6 +929,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	oinfo->gpmc_command = (void *)(cs_base + GPMC_CS_NAND_COMMAND);
 	oinfo->gpmc_address = (void *)(cs_base + GPMC_CS_NAND_ADDRESS);
 	oinfo->gpmc_data = (void *)(cs_base + GPMC_CS_NAND_DATA);
+	oinfo->cs_base = (void *)pdata->nand_cfg->base;
 	dev_dbg(pdev, "GPMC base=0x%p cmd=0x%p address=0x%p data=0x%p cs_base=0x%p\n",
 		oinfo->gpmc_base, oinfo->gpmc_command, oinfo->gpmc_address,
 		oinfo->gpmc_data, cs_base);
@@ -932,6 +1029,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		err = -EINVAL;
 		goto out_release_mem;
 	}
+
+	nand->read_buf   = omap_read_buf_pref;
+	nand->write_buf  = omap_write_buf_pref;
 
 	nand->options |= NAND_SKIP_BBTSCAN;
 

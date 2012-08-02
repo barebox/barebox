@@ -51,9 +51,10 @@
 #define GPMC_TIMEOUT_CONTROL	(0x40)
 #define GPMC_CFG		(0x50)
 #define GPMC_STATUS		(0x54)
-#define GPMC_PREFETCH_CONFIG_1	(0x1E0)
-#define GPMC_PREFETCH_CONFIG_2	(0x1E4)
-#define GPMC_PREFETCH_CTRL	(0x1EC)
+#define GPMC_PREFETCH_CONFIG1	(0x1E0)
+#define GPMC_PREFETCH_CONFIG2	(0x1E4)
+#define GPMC_PREFETCH_CONTROL	(0x1EC)
+#define GPMC_PREFETCH_STATUS	(0x1f0)
 #define GPMC_ECC_CONFIG		(0x1F4)
 #define GPMC_ECC_CONTROL	(0x1F8)
 #define GPMC_ECC_SIZE_CONFIG	(0x1FC)
@@ -137,6 +138,15 @@
 #define GPMC_SIZE_64M		0x0C
 #define GPMC_SIZE_32M		0x0E
 #define GPMC_SIZE_16M		0x0F
+
+#define PREFETCH_FIFOTHRESHOLD_MAX	0x40
+#define PREFETCH_FIFOTHRESHOLD(val)	((val) << 8)
+#define GPMC_PREFETCH_STATUS_FIFO_CNT(val)	((val >> 24) & 0x7F)
+#define GPMC_PREFETCH_STATUS_COUNT(val)	(val & 0x00003fff)
+
+int gpmc_prefetch_enable(int cs, int fifo_th, int dma_mode,
+				unsigned int u32_count, int is_write);
+int gpmc_prefetch_reset(int cs);
 
 #define NAND_WP_BIT		0x00000010
 

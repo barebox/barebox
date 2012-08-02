@@ -22,11 +22,7 @@
  * static struct gpmc_nand_platform_data nand_plat = {
  *	.cs = give the chip select of the device
  *	.device_width = what is the width of the device 8 or 16?
- *	.max_timeout = delay desired for operation
  *	.wait_mon_pin = do you use wait monitoring? if so wait pin
- *	.plat_options = platform options.
- *		NAND_HWECC_ENABLE/DISABLE - hw ecc enable/disable
- *		NAND_WAITPOL_LOW/HIGH - wait pin polarity
  *	.oob = if you would like to replace oob with a custom OOB.
  *	.nand_setup  = if you would like a special setup function to be called
  *	.priv = any params you'd like to save(e.g. like nand_setup to use)
@@ -112,10 +108,8 @@ struct gpmc_nand_info {
 	void *gpmc_address;
 	void *gpmc_data;
 	void __iomem *gpmc_base;
-	unsigned char wait_mon_mask;
-	uint64_t timeout;
+	u32 wait_mon_mask;
 	unsigned inuse:1;
-	unsigned wait_pol:1;
 	unsigned char ecc_parity_pairs;
 	enum gpmc_ecc_mode ecc_mode;
 };
@@ -191,25 +185,11 @@ static int omap_dev_ready(struct mtd_info *mtd)
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	uint64_t start = get_time_ns();
-	unsigned long comp;
 
-	/* What do we mean by assert and de-assert? */
-	comp = (oinfo->wait_pol == NAND_WAITPOL_HIGH) ?
-	    oinfo->wait_mon_mask : 0x0;
-	while (1) {
-		/* Breakout condition */
-		if (is_timeout(start, oinfo->timeout)) {
-			debug("%s timedout\n", __func__);
-			return -ETIMEDOUT;
-		}
-		/* if the wait is released, we are good to go */
-		if (comp ==
-		    (readl(oinfo->gpmc_base + GPMC_STATUS) &&
-		     oinfo->wait_mon_mask))
-			break;
-	}
-	return 0;
+	if (readl(oinfo->gpmc_base + GPMC_STATUS) & oinfo->wait_mon_mask)
+		return 1;
+	else
+		return 0;
 }
 
 /**
@@ -853,7 +833,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	oinfo->gpmc_command = (void *)(cs_base + GPMC_CS_NAND_COMMAND);
 	oinfo->gpmc_address = (void *)(cs_base + GPMC_CS_NAND_ADDRESS);
 	oinfo->gpmc_data = (void *)(cs_base + GPMC_CS_NAND_DATA);
-	oinfo->timeout = pdata->max_timeout;
 	dev_dbg(pdev, "GPMC base=0x%p cmd=0x%p address=0x%p data=0x%p cs_base=0x%p\n",
 		oinfo->gpmc_base, oinfo->gpmc_command, oinfo->gpmc_address,
 		oinfo->gpmc_data, cs_base);
@@ -879,11 +858,11 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		err = -EINVAL;
 		goto out_release_mem;
 	}
+
 	if (pdata->wait_mon_pin) {
 		/* Set up the wait monitoring mask
 		 * This is GPMC_STATUS reg relevant */
 		oinfo->wait_mon_mask = (0x1 << (pdata->wait_mon_pin - 1)) << 8;
-		oinfo->wait_pol = (pdata->plat_options & NAND_WAITPOL_MASK);
 		nand->dev_ready = omap_dev_ready;
 		nand->chip_delay = 0;
 	} else {

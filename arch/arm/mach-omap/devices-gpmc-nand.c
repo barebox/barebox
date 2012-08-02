@@ -41,8 +41,6 @@
 
 /** NAND platform specific settings settings */
 static struct gpmc_nand_platform_data nand_plat = {
-	.cs = 0,
-	.max_timeout = MSECOND,
 	.wait_mon_pin = 0,
 };
 

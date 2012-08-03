@@ -31,7 +31,7 @@ void qsort(void  *base,
 		return;
 
 	/* check for overflow */
-	if (nel <= ((size_t)(-1)) / width)
+	if (nel > ((size_t)(-1)) / width)
 		return;
 
 	wgap = 0;

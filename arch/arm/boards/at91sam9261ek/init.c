@@ -236,7 +236,7 @@ static void ek_device_add_leds(void) {}
 
 static int at91sam9261ek_mem_init(void)
 {
-	at91_add_device_sdram(64 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }

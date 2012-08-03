@@ -33,8 +33,33 @@ void __naked __section(.text_head_entry) pbl_start(void)
 	barebox_arm_head();
 }
 
-void barebox_pbl(uint32_t offset)
+extern void *input_data;
+extern void *input_data_end;
+
+#define STATIC static
+
+#ifdef CONFIG_IMAGE_COMPRESSION_LZO
+#include "../../../lib/decompress_unlzo.c"
+#endif
+
+static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
+	void (*barebox)(void);
+
+	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
+		barebox = (void *)(TEXT_BASE + 1);
+	else
+		barebox = (void *)TEXT_BASE;
+
+	decompress((void *)compressed_start,
+			len,
+			NULL, NULL,
+			(void *)TEXT_BASE, NULL, NULL);
+
+	/* flush I-cache before jumping to the uncompressed binary */
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+
+	barebox();
 }
 
 /*
@@ -44,6 +69,7 @@ void barebox_pbl(uint32_t offset)
 void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 {
 	uint32_t r, addr, offset;
+	uint32_t pg_start, pg_end, pg_len;
 
 	/*
 	 * Get runtime address of this function. Do not
@@ -58,6 +84,30 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* Get offset between linked address and runtime address */
 	offset = (uint32_t)__ll_return - addr;
 
+	pg_start = (uint32_t)&input_data - offset;
+	pg_end = (uint32_t)&input_data_end - offset;
+	pg_len = pg_end - pg_start;
+
+	if (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY))
+		goto copy_piggy_link;
+
+	/*
+	 * Check if the piggydata binary will be overwritten
+	 * by the uncompressed binary or by the pbl relocation
+	 */
+	if (!offset ||
+	    !((pg_start >= TEXT_BASE && pg_start < TEXT_BASE + pg_len * 4) ||
+	      ((uint32_t)_text >= pg_start && (uint32_t)_text <= pg_end)))
+		goto copy_link;
+
+copy_piggy_link:
+	/*
+	 * copy piggydata binary to its link address
+	 */
+	memcpy(&input_data, (void *)pg_start, pg_len);
+	pg_start = (uint32_t)&input_data;
+
+copy_link:
 	/* relocate to link address if necessary */
 	if (offset)
 		memcpy((void *)_text, (void *)(_text - offset),
@@ -69,12 +119,13 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* flush I-cache before jumping to the copied binary */
 	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
 
-	r = (unsigned int)&barebox_pbl;
+	r = (unsigned int)&barebox_uncompress;
 	/* call barebox_uncompress with its absolute address */
 	__asm__ __volatile__(
 		"mov r0, %1\n"
+		"mov r1, %2\n"
 		"mov pc, %0\n"
 		:
-		: "r"(r), "r"(offset),
-		: "r0");
+		: "r"(r), "r"(pg_start), "r"(pg_len)
+		: "r0", "r1");
 }

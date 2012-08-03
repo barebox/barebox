@@ -83,5 +83,33 @@
 #define			AT91_SDRAMC_MD_SDRAM		0
 #define			AT91_SDRAMC_MD_LOW_POWER_SDRAM	1
 
+#ifndef __ASSEMBLY__
+#include <mach/io.h>
+static inline u32 at91_get_sdram_size(void)
+{
+	u32 val;
+	u32 size;
+
+	val = at91_sys_read(AT91_SDRAMC_CR);
+
+	/* Formula:
+	 * size = bank << (col + row + 1);
+	 * if (bandwidth == 32 bits)
+	 *	size <<= 1;
+	 */
+	size = 1;
+	/* COL */
+	size += (val & AT91_SDRAMC_NC) + 8;
+	/* ROW */
+	size += ((val & AT91_SDRAMC_NR) >> 2) + 11;
+	/* BANK */
+	size = ((val & AT91_SDRAMC_NB) ? 4 : 2) << size;
+	/* bandwidth */
+	if (!(val & AT91_SDRAMC_DBW))
+		size <<= 1;
+
+	return size;
+}
+#endif
 
 #endif

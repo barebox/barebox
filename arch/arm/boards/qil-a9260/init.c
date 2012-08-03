@@ -192,11 +192,17 @@ device_initcall(qil_a9260_devices_init);
 static int qil_a9260_console_init(void)
 {
 	at91_register_uart(0, 0);
+	at91_set_A_periph(AT91_PIN_PB14, 1);    /* Enable pull-up on DRXD */
+
 	at91_register_uart(1, ATMEL_UART_CTS | ATMEL_UART_RTS
 			   | ATMEL_UART_DTR | ATMEL_UART_DSR | ATMEL_UART_DCD
 			   | ATMEL_UART_RI);
+
 	at91_register_uart(2, ATMEL_UART_CTS | ATMEL_UART_RTS);
+	at91_set_A_periph(AT91_PIN_PB7, 1);	/* Enable pull-up on RXD1 */
+
 	at91_register_uart(3, ATMEL_UART_CTS | ATMEL_UART_RTS);
+	at91_set_A_periph(AT91_PIN_PB9, 1);	/* Enable pull-up on RXD2 */
 
 	return 0;
 }

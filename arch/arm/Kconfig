@@ -23,6 +23,7 @@ config ARCH_AT91
 	bool "Atmel AT91"
 	select GENERIC_GPIO
 	select CLKDEV_LOOKUP
+	select HAS_DEBUG_LL
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

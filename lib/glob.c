@@ -78,8 +78,8 @@ int glob_pattern_p(const char *pattern, int quote)
 /* Do a collated comparison of A and B.  */
 static int collated_compare(const void *a, const void *b)
 {
-	const char *s1 = a;
-	const char *s2 = b;
+	const char *const s1 = *(const char *const *)a;
+	const char *const s2 = *(const char *const *)b;
 
 	if (s1 == s2)
 		return 0;

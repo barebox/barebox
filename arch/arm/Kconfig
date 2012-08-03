@@ -27,6 +27,7 @@ config ARCH_AT91
 	select GENERIC_GPIO
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

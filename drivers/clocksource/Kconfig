@@ -1,3 +1,7 @@
 config ARM_SMP_TWD
 	bool
 	depends on ARM && CPU_V7
+
+config CLOCKSOURCE_NOMADIK
+	bool
+	depends on ARM

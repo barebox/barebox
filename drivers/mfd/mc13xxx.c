@@ -32,6 +32,21 @@
 
 #define DRIVERNAME		"mc13xxx"
 
+enum mc13xxx_mode {
+	MC13XXX_MODE_I2C,
+	MC13XXX_MODE_SPI,
+};
+
+struct mc13xxx {
+	struct cdev			cdev;
+	union {
+		struct i2c_client	*client;
+		struct spi_device	*spi;
+	};
+	enum mc13xxx_mode		mode;
+	int				revision;
+};
+
 #define to_mc13xxx(a)		container_of(a, struct mc13xxx, cdev)
 
 static struct mc13xxx *mc_dev;

@@ -307,7 +307,7 @@ static int ccxmx51_power_init(void)
 		mc13xxx_reg_write(mc13xxx_dev, MC13892_REG_SW_2, val);
 	}
 
-	if (mc13xxx_dev->revision <= MC13892_REVISION_2_0) {
+	if (mc13xxx_revision(mc13xxx_dev) <= MC13892_REVISION_2_0) {
 		/* Set switchers in PWM mode for Atlas 2.0 and lower */
 		/* Setup the switcher mode for SW1 & SW2*/
 		mc13xxx_reg_read(mc13xxx_dev, MC13892_REG_SW_4, &val);

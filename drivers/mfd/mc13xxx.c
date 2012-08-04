@@ -42,6 +42,12 @@ struct mc13xxx *mc13xxx_get(void)
 }
 EXPORT_SYMBOL(mc13xxx_get);
 
+int mc13xxx_revision(struct mc13xxx *mc13xxx)
+{
+	return mc13xxx->revision;
+}
+EXPORT_SYMBOL(mc13xxx_revision);
+
 #ifdef CONFIG_SPI
 static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 {

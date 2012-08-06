@@ -141,6 +141,7 @@ board-$(CONFIG_MACH_TOSHIBA_AC100)		:= toshiba-ac100
 board-$(CONFIG_MACH_CCMX51)			:= ccxmx51
 board-$(CONFIG_MACH_TINY210)			:= friendlyarm-tiny210
 board-$(CONFIG_MACH_SABRELITE)			:= freescale-mx6-sabrelite
+board-$(CONFIG_MACH_TX53)			:= karo-tx53
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

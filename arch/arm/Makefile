@@ -161,7 +161,7 @@ LDFLAGS_barebox += -static --gc-sections
 endif
 
 barebox.netx: barebox.bin
-	$(Q)scripts/gen_netx_image -i barebox.bin -o barebox.netx		\
+	$(Q)scripts/gen_netx_image -i $< -o barebox.netx		\
 		--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
 		--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
 		--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
@@ -173,7 +173,7 @@ KBUILD_IMAGE := barebox.netx
 endif
 
 barebox.s5p: barebox.bin
-	$(Q)scripts/s5p_cksum barebox.bin barebox.s5p
+	$(Q)scripts/s5p_cksum $< barebox.s5p
 
 ifeq ($(CONFIG_ARCH_S5PCxx),y)
 KBUILD_IMAGE := barebox.s5p
@@ -181,8 +181,8 @@ endif
 
 MLO: barebox.bin
 	@echo "  IFT    " $@
-	$(Q)scripts/omap_signGP barebox.bin $(TEXT_BASE) 1
-	$(Q)test -e barebox.bin.ift && mv barebox.bin.ift MLO
+	$(Q)scripts/omap_signGP $< $(TEXT_BASE) 1
+	$(Q)test -e $<.ift && mv $<.ift MLO
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
 KBUILD_IMAGE := MLO
@@ -190,8 +190,8 @@ endif
 
 barebox.ubl: barebox.bin
 	@echo "  UBL    " $@
-	$(Q)scripts/mkublheader barebox.bin > barebox.ubl
-	$(Q)cat barebox.bin >> barebox.ubl
+	$(Q)scripts/mkublheader $< > barebox.ubl
+	$(Q)cat $< >> barebox.ubl
 
 ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_IMAGE := barebox.ubl

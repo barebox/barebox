@@ -22,3 +22,4 @@
 
 obj-y += lowlevel.o
 obj-y += eukrea_cpuimx25.o
+obj-$(CONFIG_ARCH_IMX_INTERNAL_BOOT) += flash_header.o

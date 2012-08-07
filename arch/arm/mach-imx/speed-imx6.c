@@ -332,6 +332,11 @@ u32 imx_get_fecclk(void)
 	return __get_ipg_clk();
 }
 
+u32 imx_get_i2cclk(void)
+{
+	return __get_ipg_per_clk();
+}
+
 u32 imx_get_cspiclk(void)
 {
 	return __get_cspi_clk();
@@ -351,6 +356,7 @@ void imx_dump_clocks(void)
 	printf("mx6q pll8: %d\n", freq);
 	printf("mcu main:  %d\n", __get_mcu_main_clk());
 	printf("periph:    %d\n", __get_periph_clk());
+	printf("i2c:	   %d\n", __get_ipg_per_clk());
 	printf("ipg:       %d\n", __get_ipg_clk());
 	printf("ipg per:   %d\n", __get_ipg_per_clk());
 	printf("cspi:      %d\n", __get_cspi_clk());

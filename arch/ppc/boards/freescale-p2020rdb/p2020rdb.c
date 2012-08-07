@@ -35,6 +35,7 @@
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
 #include <mach/clocks.h>
+#include <mach/gianfar.h>
 #include <mach/early_udelay.h>
 
 #define VSC7385_RST_SET		0x00080000
@@ -61,9 +62,22 @@
 #define SYSCLK_50	50000000
 #define SYSCLK_100	100000000
 
+/* Ethernet. Use eTSEC3 */
+static struct gfar_info_struct gfar_info[] = {
+	{
+		.phyaddr = 1,
+		.tbiana = 0,
+		.tbicr = 0,
+	},
+};
+
+
 static int devices_init(void)
 {
 	add_cfi_flash_device(-1, CFG_FLASH_BASE, 16 << 20, 0);
+
+	/* eTSEC3 */
+	fsl_eth_init(3, &gfar_info[0]);
 
 	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
 			    "self0");

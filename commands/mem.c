@@ -566,14 +566,13 @@ out:
 }
 
 static const __maybe_unused char cmd_memset_help[] =
-"Usage: memset [OPTIONS] <src> <c> <n>\n"
+"Usage: memset [OPTIONS] <addr> <c> <n>\n"
 "\n"
 "options:\n"
 "  -b, -w, -l   use byte, halfword, or word accesses\n"
-"  -s <file>    source file (default /dev/mem)\n"
 "  -d <file>    destination file (default /dev/mem)\n"
 "\n"
-"Fill the first n bytes of area with byte c\n";
+"Fill the first <n> bytes at offset <addr> with byte <c>\n";
 
 BAREBOX_CMD_START(memset)
 	.cmd		= do_memset,

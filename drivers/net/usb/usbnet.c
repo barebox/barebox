@@ -4,6 +4,7 @@
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <malloc.h>
+#include <linux/phy.h>
 
 static inline int usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd)
 {
@@ -160,8 +161,6 @@ static int usbnet_init(struct eth_device *edev)
                 return ret;
         }
 
-	miidev_restart_aneg(&dev->miidev);
-
 	return 0;
 }
 
@@ -171,12 +170,8 @@ static int usbnet_open(struct eth_device *edev)
 
 	dev_dbg(&edev->dev, "%s\n",__func__);
 
-	if (miidev_wait_aneg(&dev->miidev))
-		return -1;
-
-	miidev_print_status(&dev->miidev);
-
-	return 0;
+	return phy_device_connect(edev, &dev->miibus, dev->phy_addr, NULL,
+				0, PHY_INTERFACE_MODE_NA);
 }
 
 static void usbnet_halt(struct eth_device *edev)

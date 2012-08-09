@@ -1,6 +1,5 @@
 /*
- * (C) Copyright 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
- * (C) Copyright 2007 Pengutronix, Juergen Beisert <j.beisert@pengutronix.de>
+ * Copyright (c) 2009 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,37 +15,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ *
  */
 
-/**
- * @file
- * @brief Shared structures and constants between i.MX27's and MPC52xx's FEC
- */
-#ifndef __INCLUDE_NETWORK_FEC_H
-#define __INCLUDE_NETWORK_FEC_H
-
+#include <common.h>
 #include <linux/phy.h>
+#include <init.h>
 
-/*
- * Supported phy types on this platform
- */
-typedef enum {
-	SEVENWIRE,
-	MII10,
-	MII100,
-	RMII,
-	RGMII,
-} xceiver_type;
-
-/*
- * Define the phy connected externally for FEC drivers
- * (like MPC52xx and i.MX27)
- */
-struct fec_platform_data {
-        xceiver_type	xcv_type;
-	int		phy_addr;
-	void 		(*phy_init)(struct phy_device *dev);
+static struct phy_driver generic_phy = {
+	.drv.name = "Generic PHY",
+	.phy_id = PHY_ANY_UID,
+	.phy_id_mask = PHY_ANY_UID,
+	.features = 0,
 };
 
-#endif /* __INCLUDE_NETWORK_FEC_H */
-
+static int generic_phy_register(void)
+{
+	return phy_driver_register(&generic_phy);
+}
+device_initcall(generic_phy_register);

@@ -30,7 +30,6 @@
 #include <driver.h>
 #include <xfuncs.h>
 #include <init.h>
-#include <miidev.h>
 #include <asm/io.h>
 #include <mach/hardware.h>
 #include <mach/at91rm9200_emac.h>
@@ -40,18 +39,18 @@
 #include <linux/mii.h>
 #include <errno.h>
 #include <asm/mmu.h>
+#include <linux/phy.h>
 
 #include "at91_ether.h"
 
-#define SPEED_100 1
-#define DUPLEX_FULL 1
-
 struct ether_device {
 	struct eth_device netdev;
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	struct rbf_t *rbfp;
 	struct rbf_t *rbfdt;
 	unsigned char *rbf_framebuf;
+	int phy_addr;
+	phy_interface_t interface;
 };
 #define to_ether(_nd) container_of(_nd, struct ether_device, netdev)
 
@@ -98,7 +97,7 @@ static inline int at91_phy_wait(void)
 	return 0;
 }
 
-static int at91_ether_mii_read(struct mii_device *dev, int addr, int reg)
+static int at91_ether_mii_read(struct mii_bus *dev, int addr, int reg)
 {
 	int value;
 
@@ -120,7 +119,7 @@ out:
 	return value;
 }
 
-static int at91_ether_mii_write(struct mii_device *dev, int addr, int reg, int val)
+static int at91_ether_mii_write(struct mii_bus *dev, int addr, int reg, u16 val)
 {
 	int ret;
 
@@ -136,19 +135,19 @@ static int at91_ether_mii_write(struct mii_device *dev, int addr, int reg, int v
 	return ret;
 }
 
-static void update_linkspeed(struct mii_device *dev, int speed, int duplex)
+static void update_linkspeed(struct eth_device *edev)
 {
 	unsigned int mac_cfg;
 
 	/* Update the MAC */
 	mac_cfg = at91_emac_read(AT91_EMAC_CFG) & ~(AT91_EMAC_SPD | AT91_EMAC_FD);
-	if (speed == SPEED_100) {
-		if (duplex == DUPLEX_FULL)	/* 100 Full Duplex */
+	if (edev->phydev->speed == SPEED_100) {
+		if (edev->phydev->duplex)
 			mac_cfg |= AT91_EMAC_SPD | AT91_EMAC_FD;
 		else					/* 100 Half Duplex */
 			mac_cfg |= AT91_EMAC_SPD;
 	} else {
-		if (duplex == DUPLEX_FULL)	/* 10 Full Duplex */
+		if (edev->phydev->duplex)
 			mac_cfg |= AT91_EMAC_FD;
 		else {}					/* 10 Half Duplex */
 	}
@@ -161,11 +160,12 @@ static int at91_ether_open(struct eth_device *edev)
 	unsigned long ctl;
 	struct ether_device *etdev = to_ether(edev);
 	unsigned char *rbf_framebuf = etdev->rbf_framebuf;
+	int ret;
 
-	miidev_wait_aneg(&etdev->miidev);
-	miidev_print_status(&etdev->miidev);
-
-	update_linkspeed(&etdev->miidev, SPEED_100, DUPLEX_FULL);
+	ret = phy_device_connect(edev, &etdev->miibus, etdev->phy_addr,
+				 update_linkspeed, 0, etdev->interface);
+	if (ret)
+		return ret;
 
 	/* Clear internal statistics */
 	ctl = at91_emac_read(AT91_EMAC_CTL);
@@ -299,7 +299,7 @@ static int at91_ether_probe(struct device_d *dev)
 	unsigned int mac_cfg;
 	struct ether_device *ether_dev;
 	struct eth_device *edev;
-	struct mii_device *miidev;
+	struct mii_bus *miibus;
 	unsigned long ether_hz;
 	struct clk *pclk;
 	struct at91_ether_platform_data *pdata;
@@ -314,7 +314,7 @@ static int at91_ether_probe(struct device_d *dev)
 	ether_dev = xzalloc(sizeof(struct ether_device));
 
 	edev = &ether_dev->netdev;
-	miidev = &ether_dev->miidev;
+	miibus = &ether_dev->miibus;
 	edev->priv = ether_dev;
 
 	edev->init = at91_ether_init;
@@ -327,10 +327,9 @@ static int at91_ether_probe(struct device_d *dev)
 	ether_dev->rbf_framebuf = dma_alloc_coherent(MAX_RX_DESCR * MAX_RBUFF_SZ);
 	ether_dev->rbfdt = dma_alloc_coherent(sizeof(struct rbf_t) * MAX_RX_DESCR);
 
-	miidev->address = pdata->phy_addr;
-	miidev->read = at91_ether_mii_read;
-	miidev->write = at91_ether_mii_write;
-	miidev->edev = edev;
+	ether_dev->phy_addr = pdata->phy_addr;
+	miibus->read = at91_ether_mii_read;
+	miibus->write = at91_ether_mii_write;
 
 	/* Sanitize the clocks */
 	mac_cfg = at91_emac_read(AT91_EMAC_CFG);
@@ -347,12 +346,16 @@ static int at91_ether_probe(struct device_d *dev)
 
 	mac_cfg |= AT91_EMAC_CLK_DIV32 | AT91_EMAC_BIG;
 
-	if (pdata->flags & AT91SAM_ETHER_RMII)
+	if (pdata->flags & AT91SAM_ETHER_RMII) {
+		ether_dev->interface = PHY_INTERFACE_MODE_RGMII;
 		mac_cfg |= AT91_EMAC_RMII;
+	} else {
+		ether_dev->interface = PHY_INTERFACE_MODE_MII;
+	}
 
 	at91_emac_write(AT91_EMAC_CFG, mac_cfg);
 
-	mii_register(miidev);
+	mdiobus_register(miibus);
 	eth_register(edev);
 
 	return 0;

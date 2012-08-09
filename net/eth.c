@@ -27,7 +27,7 @@
 #include <driver.h>
 #include <init.h>
 #include <net.h>
-#include <miidev.h>
+#include <linux/phy.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -139,7 +139,11 @@ int eth_send(void *packet, int length)
 		ret = eth_current->open(eth_current);
 		if (ret)
 			return ret;
-		eth_current->active = 1;
+
+		if (eth_current->phydev)
+			eth_current->active = eth_current->phydev->link;
+		else
+			eth_current->active = 1;
 	}
 
 	led_trigger_network(LED_TRIGGER_NET_TX);

@@ -17,10 +17,10 @@
 #include <net.h>
 #include <init.h>
 #include <driver.h>
-#include <miidev.h>
 #include <command.h>
 #include <errno.h>
 #include <asm/io.h>
+#include <linux/phy.h>
 #include "gianfar.h"
 
 /* 2 seems to be the minimum number of TX descriptors to make it work. */
@@ -80,22 +80,16 @@ static void gfar_init_registers(void __iomem *regs)
 static void gfar_adjust_link(struct eth_device *edev)
 {
 	struct gfar_private *priv = edev->priv;
-	struct device_d *mdev = priv->miidev.parent;
 	void __iomem *regs = priv->regs;
 	u32 ecntrl, maccfg2;
 	uint32_t status;
 
-	status = miidev_get_status(&priv->miidev);
+	priv->link = edev->phydev->link;
+	priv->duplexity =edev->phydev->duplex;
 
-	priv->link = status & MIIDEV_STATUS_IS_UP;
-	if (status & MIIDEV_STATUS_IS_FULL_DUPLEX)
-		priv->duplexity = 1;
-	else
-		priv->duplexity = 0;
-
-	if (status & MIIDEV_STATUS_IS_1000MBIT)
+	if (edev->phydev->speed == SPEED_1000)
 		priv->speed = 1000;
-	else if (status & MIIDEV_STATUS_IS_100MBIT)
+	if (edev->phydev->speed == SPEED_100)
 		priv->speed = 100;
 	else
 		priv->speed = 10;
@@ -128,18 +122,18 @@ static void gfar_adjust_link(struct eth_device *edev)
 				ecntrl |= GFAR_ECNTRL_R100;
 			break;
 		default:
-			dev_info(mdev, "Speed is unknown\n");
+			dev_info(&edev->dev, "Speed is unknown\n");
 			break;
 		}
 
 		out_be32(regs + GFAR_ECNTRL_OFFSET, ecntrl);
 		out_be32(regs + GFAR_MACCFG2_OFFSET, maccfg2);
 
-		dev_info(mdev, "Speed: %d, %s duplex\n", priv->speed,
+		dev_info(&edev->dev, "Speed: %d, %s duplex\n", priv->speed,
 		       (priv->duplexity) ? "full" : "half");
 
 	} else {
-		dev_info(mdev, "No link.\n");
+		dev_info(&edev->dev, "No link.\n");
 	}
 }
 
@@ -184,8 +178,6 @@ static int gfar_init(struct eth_device *edev)
 
 	gfar_init_registers(regs);
 
-	miidev_restart_aneg(&priv->miidev);
-
 	return  0;
 }
 
@@ -194,6 +186,12 @@ static int gfar_open(struct eth_device *edev)
 	int ix;
 	struct gfar_private *priv = edev->priv;
 	void __iomem *regs = priv->regs;
+	int ret;
+
+	ret = phy_device_connect(edev, &priv->miibus, priv->phyaddr,
+				 gfar_adjust_link, 0, PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	/* Point to the buffer descriptors */
 	out_be32(regs + GFAR_TBASE0_OFFSET, (unsigned int)priv->txbd);
@@ -214,9 +212,6 @@ static int gfar_open(struct eth_device *edev)
 		priv->txbd[ix].bufPtr = 0;
 	}
 	priv->txbd[TX_BUF_CNT - 1].status |= TXBD_WRAP;
-
-	miidev_wait_aneg(&priv->miidev);
-	gfar_adjust_link(edev);
 
 	/* Enable Transmit and Receive */
 	setbits_be32(regs + GFAR_MACCFG1_OFFSET, GFAR_MACCFG1_RX_EN |
@@ -437,11 +432,10 @@ static int gfar_recv(struct eth_device *edev)
 }
 
 /* Read a MII PHY register. */
-static int gfar_miiphy_read(struct mii_device *mdev, int addr, int reg)
+static int gfar_miiphy_read(struct mii_bus *bus, int addr, int reg)
 {
-	struct eth_device *edev = mdev->edev;
-	struct device_d *dev = edev->parent;
-	struct gfar_private *priv = edev->priv;
+	struct device_d *dev = bus->parent;
+	struct gfar_private *priv = bus->priv;
 	int ret;
 
 	ret = gfar_local_mdio_read(priv->phyregs, addr, reg);
@@ -452,12 +446,11 @@ static int gfar_miiphy_read(struct mii_device *mdev, int addr, int reg)
 }
 
 /* Write a MII PHY register.  */
-static int gfar_miiphy_write(struct mii_device *mdev, int addr, int reg,
-				int value)
+static int gfar_miiphy_write(struct mii_bus *bus, int addr, int reg,
+				u16 value)
 {
-	struct eth_device *edev = mdev->edev;
-	struct device_d *dev = edev->parent;
-	struct gfar_private *priv = edev->priv;
+	struct device_d *dev = bus->parent;
+	struct gfar_private *priv = bus->priv;
 	unsigned short val = value;
 	int ret;
 
@@ -520,16 +513,14 @@ static int gfar_probe(struct device_d *dev)
 	udelay(2);
 	clrbits_be32(priv->regs + GFAR_MACCFG1_OFFSET, GFAR_MACCFG1_SOFT_RESET);
 
-	priv->miidev.read = gfar_miiphy_read;
-	priv->miidev.write = gfar_miiphy_write;
-	priv->miidev.address = priv->phyaddr;
-	priv->miidev.flags = 0;
-	priv->miidev.edev = edev;
-	priv->miidev.parent = dev;
+	priv->miibus.read = gfar_miiphy_read;
+	priv->miibus.write = gfar_miiphy_write;
+	priv->miibus.priv = priv;
+	priv->miibus.parent = dev;
 
 	gfar_init_phy(edev);
 
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 
 	return eth_register(edev);
 }

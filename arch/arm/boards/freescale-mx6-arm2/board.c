@@ -26,7 +26,7 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
-#include <miidev.h>
+#include <linux/phy.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
@@ -104,50 +104,39 @@ static int arm2_mem_init(void)
 }
 mem_initcall(arm2_mem_init);
 
-static struct fec_platform_data fec_info = {
-	.xcv_type = RGMII,
-	.phy_addr = 0,
-};
-
-static int mx6_rgmii_rework(void)
+static void mx6_rgmii_rework(struct phy_device *dev)
 {
-	struct mii_device *mdev;
 	u16 val;
 
-	mdev = mii_open("phy0");
-	if (!mdev) {
-		printf("unable to open phy0\n");
-		return -ENODEV;
-	}
-
 	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
-	mii_write(mdev, mdev->address, 0xd, 0x7);
-	mii_write(mdev, mdev->address, 0xe, 0x8016);
-	mii_write(mdev, mdev->address, 0xd, 0x4007);
+	phy_write(dev, 0xd, 0x7);
+	phy_write(dev, 0xe, 0x8016);
+	phy_write(dev, 0xd, 0x4007);
 
-	val = mii_read(mdev, mdev->address, 0xe);
+	val = phy_read(dev, 0xe);
 	val &= 0xffe3;
 	val |= 0x18;
-	mii_write(mdev, mdev->address, 0xe, val);
+	phy_write(dev, 0xe, val);
 
 	/* introduce tx clock delay */
-	mii_write(mdev, mdev->address, 0x1d, 0x5);
+	phy_write(dev, 0x1d, 0x5);
 
-	val = mii_read(mdev, mdev->address, 0x1e);
+	val = phy_read(dev, 0x1e);
 	val |= 0x0100;
-	mii_write(mdev, mdev->address, 0x1e, val);
-
-	mii_close(mdev);
-
-	return 0;
+	phy_write(dev, 0x1e, val);
 }
+
+static struct fec_platform_data fec_info = {
+	.xcv_type = RGMII,
+	.phy_init = mx6_rgmii_rework,
+	.phy_addr = 0,
+};
 
 static int arm2_devices_init(void)
 {
 	imx6_add_mmc3(NULL);
 
 	imx6_add_fec(&fec_info);
-	mx6_rgmii_rework();
 
 	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3837);

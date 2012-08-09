@@ -137,7 +137,11 @@ struct fec_priv {
 	int rbd_index;				/* next receive BD to read   */
 	struct buffer_descriptor __iomem *tbd_base;	/* TBD ring                  */
 	int tbd_index;				/* next transmit BD to write */
-	struct mii_device miidev;
+	int phy_addr;
+	phy_interface_t interface;
+	u32 phy_flags;
+	struct mii_bus miibus;
+	void (*phy_init)(struct phy_device *dev);
 };
 
 /**

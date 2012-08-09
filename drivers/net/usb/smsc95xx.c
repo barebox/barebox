@@ -27,7 +27,7 @@
 #include <malloc.h>
 #include <asm/byteorder.h>
 #include <errno.h>
-#include <miidev.h>
+#include <linux/phy.h>
 #include "smsc95xx.h"
 
 #define SMSC_CHIPNAME			"smsc95xx"
@@ -123,10 +123,9 @@ static int smsc95xx_phy_wait_not_busy(struct usbnet *dev)
 	return -EIO;
 }
 
-static int smsc95xx_mdio_read(struct mii_device *mdev, int phy_id, int idx)
+static int smsc95xx_mdio_read(struct mii_bus *bus, int phy_id, int idx)
 {
-	struct eth_device *eth = mdev->edev;
-	struct usbnet *dev = eth->priv;
+	struct usbnet *dev = bus->priv;
 	u32 val, addr;
 
 	/* confirm MII not busy */
@@ -149,11 +148,10 @@ static int smsc95xx_mdio_read(struct mii_device *mdev, int phy_id, int idx)
 	return val & 0xffff;
 }
 
-static int smsc95xx_mdio_write(struct mii_device *mdev, int phy_id, int idx,
-		int regval)
+static int smsc95xx_mdio_write(struct mii_bus *bus, int phy_id, int idx,
+		u16 regval)
 {
-	struct eth_device *eth = mdev->edev;
-	struct usbnet *dev = eth->priv;
+	struct usbnet *dev = bus->priv;
 	u32 val, addr;
 
 	/* confirm MII not busy */
@@ -439,20 +437,19 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
 	uint16_t val, bmcr;
 
 	/* Initialize MII structure */
-	dev->miidev.read = smsc95xx_mdio_read;
-	dev->miidev.write = smsc95xx_mdio_write;
-	dev->miidev.address = 1; /* FIXME: asix_get_phy_addr(dev); */
-	dev->miidev.flags = 0;
-	dev->miidev.edev = &dev->edev;
-	dev->miidev.parent = &dev->udev->dev;
-//	dev->miidev.name = dev->edev.name;
+	dev->miibus.read = smsc95xx_mdio_read;
+	dev->miibus.write = smsc95xx_mdio_write;
+	dev->phy_addr = 1; /* FIXME: asix_get_phy_addr(dev); */
+	dev->miibus.priv = dev;
+	dev->miibus.parent = &dev->udev->dev;
+//	dev->miibus.name = dev->edev.name;
 
 	/* reset phy and wait for reset to complete */
-	smsc95xx_mdio_write(&dev->miidev, phy_id, MII_BMCR, BMCR_RESET);
+	smsc95xx_mdio_write(&dev->miibus, phy_id, MII_BMCR, BMCR_RESET);
 
 	do {
 		udelay(10 * 1000);
-		bmcr = smsc95xx_mdio_read(&dev->miidev, phy_id, MII_BMCR);
+		bmcr = smsc95xx_mdio_read(&dev->miibus, phy_id, MII_BMCR);
 		timeout++;
 	} while ((bmcr & MII_BMCR) && (timeout < 100));
 
@@ -461,14 +458,14 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
 		return -EIO;
 	}
 
-	smsc95xx_mdio_write(&dev->miidev, phy_id, MII_ADVERTISE,
+	smsc95xx_mdio_write(&dev->miibus, phy_id, MII_ADVERTISE,
 		ADVERTISE_ALL | ADVERTISE_CSMA | ADVERTISE_PAUSE_CAP |
 		ADVERTISE_PAUSE_ASYM);
 
 	/* read to clear */
-	val = smsc95xx_mdio_read(&dev->miidev, phy_id, PHY_INT_SRC);
+	val = smsc95xx_mdio_read(&dev->miibus, phy_id, PHY_INT_SRC);
 
-	smsc95xx_mdio_write(&dev->miidev, phy_id, PHY_INT_MASK,
+	smsc95xx_mdio_write(&dev->miibus, phy_id, PHY_INT_MASK,
 		PHY_INT_MASK_DEFAULT_);
 
 	netif_dbg(dev, ifup, dev->net, "phy initialised successfully\n");
@@ -751,7 +748,7 @@ static int smsc95xx_bind(struct usbnet *dev)
 
 	dev->edev.get_ethaddr = smsc95xx_get_ethaddr;
 	dev->edev.set_ethaddr = smsc95xx_set_ethaddr;
-	mii_register(&dev->miidev);
+	mdiobus_register(&dev->miibus);
 
 	return 0;
 }
@@ -760,7 +757,7 @@ static void smsc95xx_unbind(struct usbnet *dev)
 {
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 
-	mii_unregister(&dev->miidev);
+	mdiobus_unregister(&dev->miibus);
 
 	if (pdata) {
 		netif_dbg(dev, ifdown, dev->net, "free pdata\n");

@@ -29,15 +29,15 @@
 #include <init.h>
 #include <io.h>
 #include <net.h>
-#include <miidev.h>
 #include <asm/mmu.h>
 #include <net/designware.h>
+#include <linux/phy.h>
 #include "designware.h"
 
 
 struct dw_eth_dev {
 	struct eth_device netdev;
-	struct mii_device miidev;
+	struct mii_bus miibus;
 
 	void (*fix_mac_speed)(int speed);
 	u8 macaddr[6];
@@ -52,6 +52,7 @@ struct dw_eth_dev {
 
 	struct eth_mac_regs *mac_regs_p;
 	struct eth_dma_regs *dma_regs_p;
+	int phy_addr;
 };
 
 /* Speed specific definitions */
@@ -64,9 +65,9 @@ struct dw_eth_dev {
 #define FULL_DUPLEX		2
 
 
-static int dwc_ether_mii_read(struct mii_device *dev, int addr, int reg)
+static int dwc_ether_mii_read(struct mii_bus *dev, int addr, int reg)
 {
-	struct dw_eth_dev *priv = dev->edev->priv;
+	struct dw_eth_dev *priv = dev->priv;
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	u64 start;
 	u32 miiaddr;
@@ -86,9 +87,9 @@ static int dwc_ether_mii_read(struct mii_device *dev, int addr, int reg)
 	return readl(&mac_p->miidata) & 0xffff;
 }
 
-static int dwc_ether_mii_write(struct mii_device *dev, int addr, int reg, int val)
+static int dwc_ether_mii_write(struct mii_bus *dev, int addr, int reg, u16 val)
 {
-	struct dw_eth_dev *priv = dev->edev->priv;
+	struct dw_eth_dev *priv = dev->priv;
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	u64 start;
 	u32 miiaddr;
@@ -222,34 +223,37 @@ static int dwc_ether_init(struct eth_device *dev)
 	return 0;
 }
 
+static void dwc_update_linkspeed(struct eth_device *edev)
+{
+	struct dw_eth_dev *priv = edev->priv;
+	u32 conf;
+
+	if (priv->fix_mac_speed)
+		priv->fix_mac_speed(edev->phydev->speed);
+
+	conf = readl(&mac_p->conf);
+	if (edev->phydev->duplex)
+		conf |= FULLDPLXMODE;
+	else
+		conf &= ~FULLDPLXMODE;
+	if (edev->phydev->speed == SPEED_1000)
+		conf &= ~MII_PORTSELECT;
+	else
+		conf |= MII_PORTSELECT;
+	writel(conf, &mac_p->conf);
+}
+
 static int dwc_ether_open(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
-	u32 conf;
-	int link, speed;
+	int ret;
 
-	miidev_wait_aneg(&priv->miidev);
-	miidev_print_status(&priv->miidev);
-	link = miidev_get_status(&priv->miidev);
-
-	if (priv->fix_mac_speed) {
-		speed = link & MIIDEV_STATUS_IS_1000MBIT ? 1000 :
-			(link & MIIDEV_STATUS_IS_100MBIT ? 100 : 10);
-		priv->fix_mac_speed(speed);
-	}
-
-	conf = readl(&mac_p->conf);
-	if (link & MIIDEV_STATUS_IS_FULL_DUPLEX)
-		conf |= FULLDPLXMODE;
-	else
-		conf &= ~FULLDPLXMODE;
-	if (link & MIIDEV_STATUS_IS_1000MBIT)
-		conf &= ~MII_PORTSELECT;
-	else
-		conf |= MII_PORTSELECT;
-	writel(conf, &mac_p->conf);
+	ret = phy_device_connect(dev, &priv->miibus, priv->phy_addr,
+				 0, PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	descs_init(dev);
 
@@ -373,7 +377,7 @@ static int dwc_ether_probe(struct device_d *dev)
 {
 	struct dw_eth_dev *priv;
 	struct eth_device *edev;
-	struct mii_device *miidev;
+	struct mii_bus *miibus;
 	void __iomem *base;
 	struct dwc_ether_platform_data *pdata = dev->platform_data;
 
@@ -397,7 +401,7 @@ static int dwc_ether_probe(struct device_d *dev)
 	priv->fix_mac_speed = pdata->fix_mac_speed;
 
 	edev = &priv->netdev;
-	miidev = &priv->miidev;
+	miibus = &priv->miibus;
 	edev->priv = priv;
 
 	edev->init = dwc_ether_init;
@@ -408,12 +412,12 @@ static int dwc_ether_probe(struct device_d *dev)
 	edev->get_ethaddr = dwc_ether_get_ethaddr;
 	edev->set_ethaddr = dwc_ether_set_ethaddr;
 
-	miidev->address = pdata->phy_addr;
-	miidev->read = dwc_ether_mii_read;
-	miidev->write = dwc_ether_mii_write;
-	miidev->edev = edev;
+	priv->phy_addr = pdata->phy_addr;
+	miibus->read = dwc_ether_mii_read;
+	miibus->write = dwc_ether_mii_write;
+	miibus->priv = priv;
 
-	mii_register(miidev);
+	mdiobus_register(miibus);
 	eth_register(edev);
 	return 0;
 }

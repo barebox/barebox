@@ -30,7 +30,6 @@
 
 #include <command.h>
 #include <net.h>
-#include <miidev.h>
 #include <malloc.h>
 #include <init.h>
 #include <xfuncs.h>
@@ -38,12 +37,13 @@
 #include <clock.h>
 #include <io.h>
 #include <smc911x.h>
+#include <linux/phy.h>
 
 #include "smc911x.h"
 
 struct smc911x_priv {
 	struct eth_device edev;
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	void __iomem *base;
 
 	int shift;
@@ -198,9 +198,9 @@ static int smc911x_set_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int smc911x_phy_read(struct mii_device *mdev, int phy_addr, int reg)
+static int smc911x_phy_read(struct mii_bus *bus, int phy_addr, int reg)
 {
-	struct eth_device *edev = mdev->edev;
+	struct eth_device *edev = bus->priv;
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
@@ -212,10 +212,10 @@ static int smc911x_phy_read(struct mii_device *mdev, int phy_addr, int reg)
 	return smc911x_get_mac_csr(edev, MII_DATA);
 }
 
-static int smc911x_phy_write(struct mii_device *mdev, int phy_addr,
-	int reg, int val)
+static int smc911x_phy_write(struct mii_bus *bus, int phy_addr,
+	int reg, u16 val)
 {
-	struct eth_device *edev = mdev->edev;
+	struct eth_device *edev = bus->priv;
 
 	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
 
@@ -308,9 +308,12 @@ static void smc911x_enable(struct eth_device *edev)
 static int smc911x_eth_open(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
+	int ret;
 
-	miidev_wait_aneg(&priv->miidev);
-	miidev_print_status(&priv->miidev);
+	ret = phy_device_connect(edev, &priv->miibus, 1, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	/* Turn on Tx + Rx */
 	smc911x_enable(edev);
@@ -405,12 +408,8 @@ static int smc911x_eth_rx(struct eth_device *edev)
 
 static int smc911x_init_dev(struct eth_device *edev)
 {
-	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
-
 	smc911x_set_mac_csr(edev, MAC_CR, MAC_CR_TXEN | MAC_CR_RXEN |
 			MAC_CR_HBDIS);
-
-	miidev_restart_aneg(&priv->miidev);
 
 	return 0;
 }
@@ -536,17 +535,15 @@ static int smc911x_probe(struct device_d *dev)
 	edev->set_ethaddr = smc911x_set_ethaddr;
 	edev->parent = dev;
 
-	priv->miidev.read = smc911x_phy_read;
-	priv->miidev.write = smc911x_phy_write;
-	priv->miidev.address = 1;
-	priv->miidev.flags = 0;
-	priv->miidev.edev = edev;
-	priv->miidev.parent = dev;
+	priv->miibus.read = smc911x_phy_read;
+	priv->miibus.write = smc911x_phy_write;
+	priv->miibus.priv = edev;
+	priv->miibus.parent = dev;
 
 	smc911x_reset(edev);
 	smc911x_phy_reset(edev);
 
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
         return 0;

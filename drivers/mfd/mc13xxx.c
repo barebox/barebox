@@ -252,7 +252,7 @@ static struct mc13892_rev mc13892_revisions[] = {
 static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 {
 	unsigned int rev_id;
-	char *chipname, *revstr;
+	char *chipname, revstr[5];
 	int rev, i;
 
 	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
@@ -265,9 +265,9 @@ static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 		/* Ver 0.2 is actually 3.2a. Report as 3.2 */
 		if (rev == 0x02) {
 			rev = 0x32;
-			revstr = "3.2a";
+			strcpy(revstr, "3.2a");
 		} else
-			revstr = asprintf("%d.%d", rev / 0x10, rev % 10);
+			sprintf(revstr, "%d.%d", rev / 0x10, rev % 10);
 		break;
 	case 7:
 		chipname = "MC13892";
@@ -279,12 +279,12 @@ static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 			return -EINVAL;
 
 		rev = mc13892_revisions[i].rev;
-		revstr = mc13892_revisions[i].revstr;
+		strcpy(revstr, mc13892_revisions[i].revstr);
 
 		if (rev == MC13892_REVISION_2_0) {
 			if ((rev_id >> 9) & 0x3) {
 				rev = MC13892_REVISION_2_0a;
-				revstr = "2.0a";
+				strcpy(revstr, "2.0a");
 			}
 		}
 		break;

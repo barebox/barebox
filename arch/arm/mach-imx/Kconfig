@@ -446,6 +446,7 @@ choice
 	prompt "i.MX53 Board Type"
 
 config MACH_FREESCALE_MX53_LOCO
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	bool "Freescale i.MX53 LOCO"
 
 config MACH_FREESCALE_MX53_SMD

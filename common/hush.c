@@ -785,12 +785,17 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
 
-	if (!strcmp(globbuf.gl_pathv[0], "getopt"))
+	if (!strcmp(globbuf.gl_pathv[0], "getopt")) {
 		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
-	else if (!strcmp(globbuf.gl_pathv[0], "exit"))
+	} else if (!strcmp(globbuf.gl_pathv[0], "exit")) {
 		ret = builtin_exit(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
-	else
+	} else {
 		ret = execute_binfmt(globbuf.gl_pathc, globbuf.gl_pathv);
+		if (ret < 0) {
+			printf("%s: %s\n", globbuf.gl_pathv[0], strerror(-ret));
+			ret = 127;
+		}
+	}
 
 	globfree(&globbuf);
 

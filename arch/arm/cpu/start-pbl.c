@@ -28,6 +28,9 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <asm/pgtable.h>
+
+#include "mmu.h"
 
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
@@ -50,13 +53,78 @@ extern void *input_data_end;
 #include "../../../../lib/decompress_inflate.c"
 #endif
 
+static unsigned long *ttb;
+
+static void create_sections(unsigned long addr, int size, unsigned int flags)
+{
+	int i;
+
+	addr >>= 20;
+	size >>= 20;
+
+	for (i = size; i > 0; i--, addr++)
+		ttb[addr] = (addr << 20) | flags;
+}
+
+static void map_cachable(unsigned long start, unsigned long size)
+{
+	start &= ~(SZ_1M - 1);
+	size = (size + (SZ_1M - 1)) & ~(SZ_1M - 1);
+
+	create_sections(start, size, PMD_SECT_AP_WRITE |
+			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);
+}
+
+static void mmu_enable(unsigned long compressed_start, unsigned int len)
+{
+	int i;
+
+	/* Set the ttb register */
+	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
+
+	/* Set the Domain Access Control Register */
+	i = 0x3;
+	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
+
+	create_sections(0, 4096, PMD_SECT_AP_WRITE |
+			PMD_SECT_AP_READ | PMD_TYPE_SECT);
+	/*
+	 * Setup all regions we need cacheable, namely:
+	 * - the stack
+	 * - the decompressor code
+	 * - the compressed image
+	 * - the uncompressed image
+	 * - the early malloc space
+	 */
+	map_cachable(STACK_BASE, STACK_SIZE);
+	map_cachable((unsigned long)&_text,
+			(unsigned long)&_end - (unsigned long)&_text);
+	map_cachable((unsigned long)compressed_start, len);
+	map_cachable(TEXT_BASE, len * 4);
+	map_cachable(free_mem_ptr, free_mem_end_ptr - free_mem_ptr);
+
+	__mmu_cache_on();
+}
+
+static void mmu_disable(void)
+{
+	__mmu_cache_flush();
+	__mmu_cache_off();
+}
+
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	void (*barebox)(void);
+	int use_mmu = IS_ENABLED(CONFIG_MMU);
 
 	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
 	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
+
+	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
+
+	if (use_mmu)
+		mmu_enable((unsigned long)compressed_start, len);
 
 	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
 		barebox = (void *)(TEXT_BASE + 1);
@@ -67,6 +135,9 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 			len,
 			NULL, NULL,
 			(void *)TEXT_BASE, NULL, NULL);
+
+	if (use_mmu)
+		mmu_disable();
 
 	/* flush I-cache before jumping to the uncompressed binary */
 	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));

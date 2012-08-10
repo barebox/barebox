@@ -557,6 +557,18 @@ static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
 }
 #endif
 
+static int builtin_exit(struct p_context *ctx, struct child_prog *child,
+		int argc, char *argv[])
+{
+	int r;
+
+	r = last_return_code;
+	if (argc > 1)
+		r = simple_strtoul(argv[1], NULL, 0);
+
+	return -r - 2;
+}
+
 static void remove_quotes_in_str(char *src)
 {
 	char *trg = src;
@@ -775,6 +787,8 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	if (!strcmp(globbuf.gl_pathv[0], "getopt"))
 		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
+	else if (!strcmp(globbuf.gl_pathv[0], "exit"))
+		ret = builtin_exit(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
 	else
 		ret = execute_binfmt(globbuf.gl_pathc, globbuf.gl_pathv);
 
@@ -1885,16 +1899,28 @@ BAREBOX_CMD_START(source)
 	BAREBOX_CMD_HELP(cmd_source_help)
 BAREBOX_CMD_END
 
-#ifdef CONFIG_HUSH_GETOPT
-static int do_getopt(int argc, char *argv[])
+static int do_dummy_command(int argc, char *argv[])
 {
 	/*
-	 * This function is never reached. The 'getopt' command is
-	 * only here to provide a help text for the getopt builtin.
+	 * This function is never reached. These commands are only here to
+	 * provide help texts for the builtins.
 	 */
 	return 0;
 }
 
+static const __maybe_unused char cmd_exit_help[] =
+"Usage: exit [n]\n"
+"\n"
+"exit script with a status of n. If n is omitted, the exit status is that\n"
+"of the last command executed\n";
+
+BAREBOX_CMD_START(exit)
+	.cmd		= do_dummy_command,
+	.usage		= "exit script",
+	BAREBOX_CMD_HELP(cmd_exit_help)
+BAREBOX_CMD_END
+
+#ifdef CONFIG_HUSH_GETOPT
 static const __maybe_unused char cmd_getopt_help[] =
 "Usage: getopt <optstring> <var>\n"
 "\n"
@@ -1905,7 +1931,7 @@ static const __maybe_unused char cmd_getopt_help[] =
 "can be accessed starting from $1\n";
 
 BAREBOX_CMD_START(getopt)
-	.cmd		= do_getopt,
+	.cmd		= do_dummy_command,
 	.usage		= "getopt <optstring> <var>",
 	BAREBOX_CMD_HELP(cmd_getopt_help)
 BAREBOX_CMD_END

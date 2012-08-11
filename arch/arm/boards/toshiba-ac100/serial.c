@@ -35,7 +35,7 @@ static struct NS16550_plat serial_plat = {
 static int ac100_serial_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, TEGRA_UARTA_BASE, 8 << serial_plat.shift,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, TEGRA_UARTA_BASE, 8 << serial_plat.shift,
 			IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;

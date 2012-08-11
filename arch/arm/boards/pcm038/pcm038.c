@@ -292,7 +292,7 @@ static int pcm038_devices_init(void)
 
 	pcm038_power_init();
 
-	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC0000000, 32 * 1024 * 1024, 0);
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&pcm038_fb_data);
 

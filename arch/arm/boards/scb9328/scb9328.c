@@ -88,8 +88,8 @@ static int scb9328_devices_init(void)
 	CS5U = 0x00008400;
 	CS5L = 0x00000D03;
 
-	add_cfi_flash_device(-1, 0x10000000, 16 * 1024 * 1024, 0);
-	add_dm9000_device(-1, 0x16000000, 0x16000004,
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0x10000000, 16 * 1024 * 1024, 0);
+	add_dm9000_device(DEVICE_ID_DYNAMIC, 0x16000000, 0x16000004,
 			  IORESOURCE_MEM_16BIT, &dm9000_data);
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");

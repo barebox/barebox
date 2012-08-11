@@ -141,9 +141,9 @@ static void pca100_usb_register(void)
 	mdelay(10);
 
 	ulpi_setup((void *)(IMX_OTG_BASE + 0x170), 1);
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE, NULL);
 	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
-	add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif
 

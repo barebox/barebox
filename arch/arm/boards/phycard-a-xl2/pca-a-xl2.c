@@ -51,7 +51,7 @@ static struct NS16550_plat serial_plat = {
 static int pcaaxl2_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP44XX_UART3_BASE, 1024,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP44XX_UART3_BASE, 1024,
 		IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
@@ -85,7 +85,7 @@ static void pcaaxl2_network_init(void)
 {
 	gpmc_cs_config(5, &net_cfg);
 
-	add_ks8851_device(-1, net_cfg.base, net_cfg.base + 2,
+	add_ks8851_device(DEVICE_ID_DYNAMIC, net_cfg.base, net_cfg.base + 2,
 				IORESOURCE_MEM_16BIT, NULL);
 }
 

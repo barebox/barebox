@@ -294,7 +294,7 @@ static void usb_a9260_keyboard_device_dab_mmx(void)
 		at91_set_deglitch(keys[i].gpio, 1);
 	}
 
-	add_gpio_keys_device(-1, &gk_pdata);
+	add_gpio_keys_device(DEVICE_ID_DYNAMIC, &gk_pdata);
 }
 #else
 static void usb_a9260_keyboard_device_dab_mmx(void) {}

@@ -191,9 +191,9 @@ static int eukrea_cpuimx27_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC0000000, 32 * 1024 * 1024, 0);
 #ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB
-	add_cfi_flash_device(-1, 0xC2000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC2000000, 32 * 1024 * 1024, 0);
 #endif
 	imx27_add_nand(&nand_info);
 
@@ -227,13 +227,13 @@ device_initcall(eukrea_cpuimx27_devices_init);
 static int eukrea_cpuimx27_console_init(void)
 {
 #ifdef CONFIG_DRIVER_SERIAL_IMX
-	imx_add_uart((void *)IMX_UART1_BASE, -1);
+	imx_add_uart((void *)IMX_UART1_BASE, DEVICE_ID_DYNAMIC);
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
 	imx27_setup_weimcs(3, 0x0000D603, 0x0D1D0D01, 0x00D20000);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-	add_ns16550_device(-1, IMX_CS3_BASE + QUART_OFFSET, 0xf,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, IMX_CS3_BASE + QUART_OFFSET, 0xf,
 			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
 #endif
 	return 0;

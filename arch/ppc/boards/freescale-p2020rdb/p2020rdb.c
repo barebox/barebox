@@ -63,7 +63,7 @@
 
 static int devices_init(void)
 {
-	add_cfi_flash_device(-1, CFG_FLASH_BASE, 16 << 20, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, CFG_FLASH_BASE, 16 << 20, 0);
 
 	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
 			    "self0");
@@ -81,7 +81,7 @@ static int p2020_console_init(void)
 {
 	serial_plat.clock = fsl_get_bus_freq(0);
 
-	add_ns16550_device(-1, 0xffe04500, 16, IORESOURCE_MEM_8BIT,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, 0xffe04500, 16, IORESOURCE_MEM_8BIT,
 			   &serial_plat);
 	return 0;
 }

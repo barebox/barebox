@@ -148,7 +148,7 @@ static int imx35_devices_init(void)
 	 * Up to 32MiB NOR type flash, connected to
 	 * CS line 0, data width is 16 bit
 	 */
-	add_cfi_flash_device(-1, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
 
 	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
 		switch ( (reg >> 25) & 0x3) {

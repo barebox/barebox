@@ -254,6 +254,7 @@ MAKEFLAGS += --include-dir=$(srctree)
 
 # We need some generic definitions.
 include $(srctree)/scripts/Kbuild.include
+include $(srctree)/scripts/Makefile.lib
 
 # Make variables (CC, etc...)
 
@@ -703,9 +704,6 @@ endif
 	@echo " * Init Calls content" >> barebox.S
 	$(Q)$(OBJDUMP) -j .barebox_initcalls -d barebox >> barebox.S
 else
-quiet_cmd_disasm = DISASM  $@
-      cmd_disasm = $(OBJDUMP) -d $< > $@
-
 barebox.S: barebox FORCE
 	$(call if_changed,disasm)
 endif

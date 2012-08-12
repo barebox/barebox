@@ -3,6 +3,7 @@
 
 .section .text.__mmu_cache_on
 ENTRY(__mmu_cache_on)
+		stmfd	sp!, {r11, lr}
 		mov	r12, lr
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r11, c0, c1, 4	@ read ID_MMFR0
@@ -28,7 +29,7 @@ ENTRY(__mmu_cache_on)
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back
 		mov	r0, #0
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
-		mov	pc, r12
+		ldmfd	sp!, {r11, pc}
 ENDPROC(__mmu_cache_on)
 
 .section .text.__mmu_cache_off
@@ -54,6 +55,7 @@ ENDPROC(__mmu_cache_off)
 
 .section .text.__mmu_cache_flush
 ENTRY(__mmu_cache_flush)
+		stmfd	sp!, {r10, lr}
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
 		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)
 		mov	r10, #0
@@ -111,7 +113,7 @@ iflush:
 		mcr	p15, 0, r10, c7, c5, 0	@ invalidate I+BTB
 		mcr	p15, 0, r10, c7, c10, 4	@ DSB
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
-		mov	pc, lr
+		ldmfd	sp!, {r10, pc}
 ENDPROC(__mmu_cache_flush)
 
 /*

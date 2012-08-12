@@ -46,6 +46,7 @@ ENDPROC(__mmu_cache_off)
 
 .section .text.__mmu_cache_flush
 ENTRY(__mmu_cache_flush)
+		stmfd	sp!, {r6, r11, lr}
 		mrc	p15, 0, r6, c0, c0	@ get processor ID
 		mov	r2, #64*1024		@ default: 32K dcache size (*2)
 		mov	r11, #32		@ default: 32 byte line size
@@ -74,7 +75,7 @@ no_cache_id:
 		mcr	p15, 0, r1, c7, c5, 0	@ flush I cache
 		mcr	p15, 0, r1, c7, c6, 0	@ flush D cache
 		mcr	p15, 0, r1, c7, c10, 4	@ drain WB
-		mov	pc, lr
+		ldmfd	sp!, {r6, r11, pc}
 ENDPROC(__mmu_cache_flush)
 
 /*

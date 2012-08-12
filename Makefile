@@ -437,12 +437,6 @@ else
 include/config/auto.conf: ;
 endif # $(dot-config)
 
-# The all: target is the default when no target is given on the
-# command line.
-# This allow a user to issue only 'make' to build a kernel
-# Defaults barebox but it is usually overridden in the arch makefile
-all: barebox.bin
-
 include $(srctree)/arch/$(ARCH)/Makefile
 
 ifdef CONFIG_DEBUG_INFO
@@ -473,7 +467,12 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # set in the environment
 # Also any assignments in arch/$(ARCH)/Makefile take precedence over
 # this default value
-export KBUILD_IMAGE ?= barebox
+export KBUILD_IMAGE ?= barebox.bin
+
+barebox-flash-image: $(KBUILD_IMAGE)
+	$(call if_changed,ln)
+
+all: barebox-flash-image
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
 
@@ -1009,7 +1008,7 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
 		.tmp_kallsyms* barebox_default_env* barebox.ldr \
-		scripts/bareboxenv-target \
+		scripts/bareboxenv-target barebox-flash-image \
 		Doxyfile.version barebox.srec barebox.s5p
 
 # Directories & files removed with 'make mrproper'

@@ -208,8 +208,6 @@ zbarebox.S zbarebox.bin zbarebox: barebox.bin
 archclean:
 	$(MAKE) $(clean)=$(pbl)
 
-all: $(KBUILD_IMAGE)
-
 archprepare: maketools
 maketools:
 	$(Q)$(MAKE) $(build)=arch/arm/tools include/generated/mach-types.h

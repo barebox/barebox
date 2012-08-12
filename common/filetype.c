@@ -22,6 +22,7 @@
 #include <common.h>
 #include <filetype.h>
 #include <asm/byteorder.h>
+#include <asm/unaligned.h>
 #include <fcntl.h>
 #include <fs.h>
 #include <malloc.h>
@@ -40,6 +41,7 @@ static const char *filetype_str[] = {
 	[filetype_aimage] = "Android boot image",
 	[filetype_sh] = "Bourne Shell",
 	[filetype_mips_barebox] = "MIPS barebox image",
+	[filetype_fat] = "FAT filesytem",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -48,6 +50,22 @@ const char *file_type_to_string(enum filetype f)
 		return filetype_str[f];
 
 	return NULL;
+}
+
+static int is_fat(u8 *buf)
+{
+	if (get_unaligned_le16(&buf[510]) != 0xAA55)
+		return 0;
+
+	/* FAT */
+	if ((get_unaligned_le32(&buf[54]) & 0xFFFFFF) == 0x544146)
+		return 1;
+
+	/* FAT32 */
+	if ((get_unaligned_le32(&buf[82]) & 0xFFFFFF) == 0x544146)
+		return 1;
+
+	return 0;
 }
 
 enum filetype file_detect_type(void *_buf)
@@ -81,6 +99,8 @@ enum filetype file_detect_type(void *_buf)
 		return filetype_aimage;
 	if (strncmp(buf8 + 0x10, "barebox", 7) == 0)
 		return filetype_mips_barebox;
+	if (is_fat(buf8))
+		return filetype_fat;
 
 	return filetype_unknown;
 }

@@ -8,7 +8,7 @@
 mci0.probe=1
 if [ $mci0.probe = 1 ]; then
 	mkdir /sdcard
-	mount /dev/disk0.0 fat /sdcard
+	mount /dev/disk0.0 /sdcard
 	if [ -f /sdcard/barebox.env ]; then
 		loadenv /sdcard/barebox.env /env.sd
 		/env.sd/bin/init

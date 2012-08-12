@@ -29,11 +29,14 @@
 #include <command.h>
 #include <fs.h>
 #include <errno.h>
+#include <getopt.h>
 
 static int do_mount(int argc, char *argv[])
 {
+	int opt;
 	int ret = 0;
 	struct fs_device_d *fsdev;
+	char *type = NULL;
 
 	if (argc == 1) {
 		for_each_fs_device(fsdev) {
@@ -45,10 +48,18 @@ static int do_mount(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc != 4)
+	while ((opt = getopt(argc, argv, "t:")) > 0) {
+		switch (opt) {
+		case 't':
+			type = optarg;
+			break;
+		}
+	}
+
+	if (argc < optind + 2)
 		return COMMAND_ERROR_USAGE;
 
-	if ((ret = mount(argv[1], argv[2], argv[3]))) {
+	if ((ret = mount(argv[optind], type, argv[optind + 1]))) {
 		perror("mount");
 		return 1;
 	}
@@ -56,8 +67,9 @@ static int do_mount(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(mount)
-BAREBOX_CMD_HELP_USAGE("mount [<device> <fstype> <mountpoint>]\n")
+BAREBOX_CMD_HELP_USAGE("mount [[-t <fstype] <device> <mountpoint>]\n")
 BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
+BAREBOX_CMD_HELP_SHORT("If no fstpye is specified detected it.\n")
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
 BAREBOX_CMD_HELP_END
 

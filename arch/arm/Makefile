@@ -160,7 +160,16 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += -static --gc-sections
 endif
 
-barebox.netx: barebox.bin
+ifdef CONFIG_IMAGE_COMPRESSION
+KBUILD_BINARY := arch/arm/pbl/zbarebox.bin
+KBUILD_TARGET := zbarebox.bin
+$(KBUILD_BINARY): $(KBUILD_TARGET)
+else
+KBUILD_BINARY := barebox.bin
+KBUILD_TARGET := barebox.bin
+endif
+
+barebox.netx: $(KBUILD_BINARY)
 	$(Q)scripts/gen_netx_image -i $< -o barebox.netx		\
 		--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
 		--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
@@ -169,36 +178,38 @@ barebox.netx: barebox.bin
 		--cookie=$(CONFIG_NETX_COOKIE);
 
 ifeq ($(machine-y),netx)
-KBUILD_IMAGE := barebox.netx
+KBUILD_TARGET := barebox.netx
+KBUILD_BINARY := $(KBUILD_TARGET)
 endif
 
-barebox.s5p: barebox.bin
+barebox.s5p: $(KBUILD_BINARY)
 	$(Q)scripts/s5p_cksum $< barebox.s5p
 
 ifeq ($(CONFIG_ARCH_S5PCxx),y)
-KBUILD_IMAGE := barebox.s5p
+KBUILD_TARGET := barebox.s5p
+KBUILD_BINARY := $(KBUILD_TARGET)
 endif
 
-MLO: barebox.bin
-	@echo "  IFT    " $@
-	$(Q)scripts/omap_signGP $< $(TEXT_BASE) 1
-	$(Q)test -e $<.ift && mv $<.ift MLO
+quiet_cmd_mlo ?= IFT     $@
+	cmd_mlo ?= scripts/omap_signGP $< $(TEXT_BASE) 1; \
+		     test -e $<.ift && mv $<.ift MLO
+
+MLO: $(KBUILD_BINARY)
+	$(call if_changed,mlo)
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_IMAGE := MLO
+KBUILD_TARGET := MLO
+KBUILD_BINARY := $(KBUILD_TARGET)
 endif
 
-barebox.ubl: barebox.bin
+barebox.ubl: $(KBUILD_BINARY)
 	@echo "  UBL    " $@
 	$(Q)scripts/mkublheader $< > barebox.ubl
 	$(Q)cat $< >> barebox.ubl
 
 ifeq ($(CONFIG_ARCH_DAVINCI),y)
-KBUILD_IMAGE := barebox.ubl
-endif
-
-ifdef CONFIG_IMAGE_COMPRESSION
-KBUILD_IMAGE := zbarebox.bin
+KBUILD_TARGET := barebox.ubl
+KBUILD_BINARY := $(KBUILD_TARGET)
 endif
 
 pbl := arch/arm/pbl
@@ -207,6 +218,8 @@ zbarebox.S zbarebox.bin zbarebox: barebox.bin
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)
+
+KBUILD_IMAGE := $(KBUILD_BINARY)
 
 archprepare: maketools
 maketools:
@@ -231,4 +244,4 @@ common-y += arch/arm/lib/ arch/arm/cpu/
 
 lds-y	:= arch/arm/lib/barebox.lds
 
-CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds
+CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds barebox-flash-image

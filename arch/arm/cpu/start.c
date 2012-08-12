@@ -26,6 +26,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <asm/cache.h>
 
 #ifdef CONFIG_PBL_IMAGE
 /*
@@ -80,8 +81,7 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
-	/* flush I-cache before jumping to the copied binary */
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+	flush_icache();
 
 	/* call start_barebox with its absolute address */
 	r = (unsigned int)&start_barebox;

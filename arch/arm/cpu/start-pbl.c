@@ -29,6 +29,7 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/pgtable.h>
+#include <asm/cache.h>
 
 #include "mmu.h"
 
@@ -139,8 +140,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	if (use_mmu)
 		mmu_disable();
 
-	/* flush I-cache before jumping to the uncompressed binary */
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+	flush_icache();
 
 	barebox();
 }
@@ -199,8 +199,7 @@ copy_link:
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
-	/* flush I-cache before jumping to the copied binary */
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+	flush_icache();
 
 	r = (unsigned int)&barebox_uncompress;
 	/* call barebox_uncompress with its absolute address */

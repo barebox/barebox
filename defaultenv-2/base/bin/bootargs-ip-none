@@ -2,4 +2,4 @@
 
 # disable ip setup in Linux
 
-global.linux.bootargs.ip="ip=none"
+global.linux.bootargs.dyn.ip="ip=none"

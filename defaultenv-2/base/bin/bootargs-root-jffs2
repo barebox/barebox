@@ -18,4 +18,4 @@ if [ -z "$mtd" ]; then
 	exit 1
 fi
 
-global.linux.bootargs.root="root=$mtd rootfstype=jffs2"
+global.linux.bootargs.dyn.root="root=$mtd rootfstype=jffs2"

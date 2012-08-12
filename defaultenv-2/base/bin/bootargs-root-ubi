@@ -21,4 +21,4 @@ if [ -z "$mtd" ]; then
 	exit 1
 fi
 
-global.linux.bootargs.root="root=ubi0:$ubiroot ubi.mtd=$mtd rootfstype=ubifs"
+global.linux.bootargs.dyn.root="root=ubi0:$ubiroot ubi.mtd=$mtd rootfstype=ubifs"

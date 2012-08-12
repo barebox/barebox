@@ -11,7 +11,7 @@ global.bootm.initrd="${path}/initramfs"
 bootargs-root-initrd
 #global.bootm.oftree=<path to oftree>
 
-global.linux.bootargs.root="root=/dev/ram0"
+global.linux.bootargs.dyn.root="root=/dev/ram0"
 
 #bootargs-root-nfs -n "<path on server>" -s <serverip>
 #bootargs-root-ubi -r <volume> -m <mtdname>

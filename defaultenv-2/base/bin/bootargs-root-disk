@@ -23,4 +23,4 @@ if [ -z "${fstype}" ]; then
 	exit 1
 fi
 
-global.linux.bootargs.root="root=/dev/$part rootfstype=$fstype rootwait"
+global.linux.bootargs.dyn.root="root=/dev/$part rootfstype=$fstype rootwait"

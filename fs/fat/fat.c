@@ -430,6 +430,7 @@ static struct fs_driver_d fat_driver = {
 	.write     = fat_write,
 	.truncate  = fat_truncate,
 #endif
+	.type = filetype_fat,
 	.flags     = 0,
 	.drv = {
 		.probe  = fat_probe,

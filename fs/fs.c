@@ -954,6 +954,28 @@ int register_fs_driver(struct fs_driver_d *fsdrv)
 }
 EXPORT_SYMBOL(register_fs_driver);
 
+static const char *detect_fs(const char *filename)
+{
+	enum filetype type = file_name_detect_type(filename);
+	struct driver_d *drv;
+	struct fs_driver_d *fdrv;
+
+	if (type == filetype_unknown)
+		return NULL;
+
+	for_each_driver(drv) {
+		if (drv->bus != &fs_bus)
+			continue;
+
+		fdrv = drv_to_fs_driver(drv);
+
+		if (type == fdrv->type)
+			return drv->name;
+	}
+
+	return NULL;
+}
+
 /*
  * Mount a device to a directory.
  * We do this by registering a new device on which the filesystem
@@ -984,6 +1006,12 @@ int mount(const char *device, const char *fsname, const char *_path)
 			goto err_free_path;
 		}
 	}
+
+	if (!fsname)
+		fsname = detect_fs(device);
+
+	if (!fsname)
+		return -ENOENT;
 
 	fsdev = xzalloc(sizeof(struct fs_device_d));
 	fsdev->backingstore = xstrdup(device);
@@ -1222,7 +1250,7 @@ int rmdir (const char *pathname)
 
 	fsdev = get_fs_device_and_root_path(&p);
 	if (!fsdev) {
-		ret = -ENOENT;
+		ret = -ENODEV;
 		goto out;
 	}
 	fsdrv = fsdev->driver;

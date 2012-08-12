@@ -2,6 +2,7 @@
 #define __FS_H
 
 #include <driver.h>
+#include <filetype.h>
 
 #define PATH_MAX       1024        /* include/linux/limits.h */
 
@@ -72,6 +73,8 @@ struct fs_driver_d {
 
 	struct driver_d drv;
 
+	enum filetype type;
+
 	unsigned long flags;
 };
 
@@ -92,6 +95,8 @@ struct fs_device_d {
 	struct device_d *parent_device;
 	struct list_head list;
 };
+
+#define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
 
 /*
  * standard posix file functions

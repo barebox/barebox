@@ -1,6 +1,11 @@
 
 menu "Filesystem support            "
 
+config FS
+	bool
+	default y
+	select FILETYPE
+
 config FS_AUTOMOUNT
 	bool
 

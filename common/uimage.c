@@ -334,7 +334,8 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 	if (ret < 0)
 		return ret;
 
-	if (hdr->ih_comp == IH_COMP_NONE)
+	/* if ramdisk U-Boot expect to ignore the compression type */
+	if (hdr->ih_comp == IH_COMP_NONE || hdr->ih_type == IH_TYPE_RAMDISK)
 		uncompress_fn = uncompress_copy;
 	else
 		uncompress_fn = uncompress;

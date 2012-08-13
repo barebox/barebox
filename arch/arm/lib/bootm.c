@@ -58,7 +58,9 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 	kernel = data->os_res->start + data->os_entry;
 
-	if (data->initrd_file && data->initrd_address == UIMAGE_INVALID_ADDRESS) {
+	initrd_start = data->initrd_address;
+
+	if (data->initrd_file && initrd_start == UIMAGE_INVALID_ADDRESS) {
 		initrd_start = data->os_res->start + SZ_8M;
 
 		if (bootm_verbose(data)) {

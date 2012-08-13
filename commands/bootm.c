@@ -126,14 +126,6 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 	if (data->initrd_address == UIMAGE_SOME_ADDRESS)
 		data->initrd_address = data->initrd->header.ih_load;
 
-	if (data->initrd_address != UIMAGE_INVALID_ADDRESS) {
-		data->initrd_res = uimage_load_to_sdram(data->initrd,
-				data->initrd_num,
-				data->initrd_address);
-		if (!data->initrd_res)
-			return -ENOMEM;
-	}
-
 	return 0;
 }
 

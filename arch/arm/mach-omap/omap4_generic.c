@@ -29,6 +29,10 @@
 #define OMAP4460_CONTROL_ID_CODE_ES1_0  0x0B94E02F
 #define OMAP4460_CONTROL_ID_CODE_ES1_1  0x2B94E02F
 
+/* EMIF_L3_CONFIG register value */
+#define EMIF_L3_CONFIG_VAL_SYS_10_LL_0		0x0A0000FF
+#define EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0	0x0A300000
+
 void __noreturn reset_cpu(unsigned long addr)
 {
 	writel(PRM_RSTCTRL_RESET, PRM_RSTCTRL);
@@ -272,8 +276,7 @@ static void reset_phy(unsigned int base)
 void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 		const struct dpll_param *core)
 {
-	unsigned int rev;
-	rev = omap4_revision();
+	unsigned int rev = omap4_revision();
 
 	if (rev == OMAP4430_ES2_0) {
 		writel(0x9e9e9e9e, 0x4A100638);
@@ -295,6 +298,13 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 
 	writel(0x00000000, OMAP44XX_DMM_BASE + DMM_LISA_MAP_2);
 	writel(0xFF020100, OMAP44XX_DMM_BASE + DMM_LISA_MAP_3);
+
+	if (rev >= OMAP4460_ES1_0) {
+		writel(0x80640300, OMAP44XX_MA_BASE + DMM_LISA_MAP_0);
+
+		writel(0x00000000, OMAP44XX_MA_BASE + DMM_LISA_MAP_2);
+		writel(0xFF020100, OMAP44XX_MA_BASE + DMM_LISA_MAP_3);
+	}
 
 	/* DDR needs to be initialised @ 19.2 MHz
 	 * So put core DPLL in bypass mode
@@ -337,6 +347,13 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	//while ((readl(CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
 	writel(0x80000000, OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL);
 	writel(0x80000000, OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL);
+
+	if (rev >= OMAP4460_ES1_0) {
+		writel(EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0,
+				OMAP44XX_EMIF1_BASE + EMIF_L3_CONFIG);
+		writel(EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0,
+				OMAP44XX_EMIF2_BASE + EMIF_L3_CONFIG);
+	}
 
 	/*
 	 * DMM : DMM_LISA_MAP_0(Section_0)

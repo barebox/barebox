@@ -101,6 +101,10 @@
 #define DMM_LISA_MAP_SYS_SIZE_MASK	(7 << 20)
 #define DMM_LISA_MAP_SYS_SIZE_SHIFT	20
 #define DMM_LISA_MAP_SYS_ADDR_MASK	(0xFF << 24)
+
+/* Memory Adapter (4460 onwards) */
+#define OMAP44XX_MA_BASE		0x482AF000
+
 /*
  * Hardware Register Details
  */

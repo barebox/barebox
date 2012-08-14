@@ -60,6 +60,13 @@
 #define OMAP44XX_PRM_VC_VAL_BYPASS	(OMAP44XX_WAKEUP_L4_IO_BASE + 0x7ba0)
 #define OMAP44XX_PRM_VC_CFG_I2C_MODE	(OMAP44XX_WAKEUP_L4_IO_BASE + 0x7ba8)
 #define OMAP44XX_PRM_VC_CFG_I2C_CLK	(OMAP44XX_WAKEUP_L4_IO_BASE + 0x7bac)
+#define OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT		0x1000000
+#define OMAP44XX_PRM_VC_VAL_BYPASS_SLAVEADDR_SHIFT	0
+#define OMAP44XX_PRM_VC_VAL_BYPASS_SLAVEADDR_MASK	0x7F
+#define OMAP44XX_PRM_VC_VAL_BYPASS_REGADDR_SHIFT	8
+#define OMAP44XX_PRM_VC_VAL_BYPASS_REGADDR_MASK		0xFF
+#define OMAP44XX_PRM_VC_VAL_BYPASS_DATA_SHIFT		16
+#define OMAP44XX_PRM_VC_VAL_BYPASS_DATA_MASK		0xFF
 
 /* IRQ */
 #define OMAP44XX_PRM_IRQSTATUS_MPU_A9	(OMAP44XX_WAKEUP_L4_IO_BASE + 0x6010)
@@ -178,6 +185,6 @@ struct dpll_param;
 void omap4_ddr_init(const struct ddr_regs *, const struct dpll_param *);
 void omap4_power_i2c_send(u32);
 unsigned int omap4_revision(void);
-noinline int omap4_scale_vcores(void);
+noinline int omap4_scale_vcores(unsigned vsel0_pin);
 
 #endif

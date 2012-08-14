@@ -7,6 +7,7 @@
 #include <mach/syslib.h>
 #include <mach/xload.h>
 #include <mach/gpmc.h>
+#include <mach/gpio.h>
 
 /*
  *  The following several lines are taken from U-Boot to support
@@ -468,7 +469,7 @@ enum omap_boot_src omap4_bootsrc(void)
 
 #define I2C_SLAVE 0x12
 
-noinline int omap4_scale_vcores(void)
+noinline int omap4_scale_vcores(unsigned vsel0_pin)
 {
 	unsigned int rev = omap4_revision();
 
@@ -478,8 +479,41 @@ noinline int omap4_scale_vcores(void)
 	writel(0, OMAP44XX_PRM_VC_CFG_I2C_MODE);
 	writel(0x6026, OMAP44XX_PRM_VC_CFG_I2C_CLK);
 
+	/* TPS - supplies vdd_mpu on 4460 */
+	if (rev >= OMAP4460_ES1_0) {
+		/*
+		 * Setup SET1 and SET0 with right values so that kernel
+		 * can use either of them based on its needs.
+		 */
+		omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET0, 1430);
+		omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET1, 1430);
+
+		/*
+		 * Select SET1 in TPS62361:
+		 * VSEL1 is grounded on board. So the following selects
+		 * VSEL1 = 0 and VSEL0 = 1
+		 */
+		gpio_direction_output(vsel0_pin, 0);
+		gpio_set_value(vsel0_pin, 1);
+	}
+
 	/* set VCORE1 force VSEL */
-	omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
+	/*
+	 * 4430 : supplies vdd_mpu
+	 * Setting a high voltage for Nitro mode as smart reflex is not enabled.
+	 * We use the maximum possible value in the AVS range because the next
+	 * higher voltage in the discrete range (code >= 0b111010) is way too
+	 * high
+	 *
+	 * 4460 : supplies vdd_core
+	 *
+	 */
+	if (rev < OMAP4460_ES1_0)
+		/* 0x55: i2c addr, 3A: ~ 1430 mvolts*/
+		omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
+	else
+		/* 0x55: i2c addr, 28: ~ 1200 mvolts*/
+		omap4_power_i2c_send((0x2855 << 8) | I2C_SLAVE);
 
 	/* FIXME: set VCORE2 force VSEL, Check the reset value */
 	omap4_power_i2c_send((0x295B << 8) | I2C_SLAVE);
@@ -492,6 +526,7 @@ noinline int omap4_scale_vcores(void)
 	case OMAP4430_ES2_1:
 		omap4_power_i2c_send((0x2A61 << 8) | I2C_SLAVE);
 		break;
+	/* > OMAP4460_ES1_0 : VCORE3 not connected */
 	}
 
 	return 0;

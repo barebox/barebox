@@ -271,6 +271,20 @@
 #define PLL_FAST_RELOCK_BYPASS	6 /* CORE */
 #define PLL_LOCK		7 /* MPU, IVA, CORE & PER */
 
+/* TPS */
+#define TPS62361_I2C_SLAVE_ADDR		0x60
+#define TPS62361_REG_ADDR_SET0		0x0
+#define TPS62361_REG_ADDR_SET1		0x1
+#define TPS62361_REG_ADDR_SET2		0x2
+#define TPS62361_REG_ADDR_SET3		0x3
+#define TPS62361_REG_ADDR_CTRL		0x4
+#define TPS62361_REG_ADDR_TEMP		0x5
+#define TPS62361_REG_ADDR_RMP_CTRL	0x6
+#define TPS62361_REG_ADDR_CHIP_ID	0x8
+#define TPS62361_REG_ADDR_CHIP_ID_2	0x9
+
+#define TPS62361_BASE_VOLT_MV	500
+
 /* Used to index into DPLL parameter tables */
 struct dpll_param {
 	unsigned int m;
@@ -317,4 +331,5 @@ void omap4_configure_core_dpll_no_lock(const struct dpll_param *param);
 void omap4_lock_core_dpll(void);
 void omap4_lock_core_dpll_shadow(const struct dpll_param *param);
 void omap4_enable_all_clocks(void);
+void omap4_do_scale_tps62361(u32 reg, u32 volt_mv);
 

@@ -28,6 +28,8 @@
 #include <mach/syslib.h>
 #include <asm/barebox-arm.h>
 
+#define TPS62361_VSEL0_GPIO    182
+
 void set_muxconf_regs(void);
 
 static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
@@ -57,7 +59,7 @@ static void noinline pcm049_init_lowlevel(void)
 	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	omap4_scale_vcores();
+	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
 
 	writel(CM_SYS_CLKSEL_19M2, CM_SYS_CLKSEL);
 

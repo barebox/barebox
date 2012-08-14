@@ -1,6 +1,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/syslib.h>
+#include <mach/silicon.h>
 #include <mach/clocks.h>
 
 #define LDELAY	12000000
@@ -378,3 +379,21 @@ void omap4_enable_all_clocks(void)
 	sr32(CM_L3INIT_USBPHY_CLKCTRL, 0, 32, 0x301);
 }
 
+void omap4_do_scale_tps62361(u32 reg, u32 volt_mv)
+{
+	u32 temp, step;
+
+	step = volt_mv - TPS62361_BASE_VOLT_MV;
+	step /= 10;
+
+	temp = TPS62361_I2C_SLAVE_ADDR |
+	    (reg << OMAP44XX_PRM_VC_VAL_BYPASS_REGADDR_SHIFT) |
+	    (step << OMAP44XX_PRM_VC_VAL_BYPASS_DATA_SHIFT) |
+	    OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT;
+	debug("do_scale_tps62361: volt - %d step - 0x%x\n", volt_mv, step);
+
+	writel(temp, OMAP44XX_PRM_VC_VAL_BYPASS);
+	if (!wait_on_value(OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT, 0,
+				OMAP44XX_PRM_VC_VAL_BYPASS, LDELAY))
+		puts("Scaling voltage failed for vdd_mpu from TPS\n");
+}

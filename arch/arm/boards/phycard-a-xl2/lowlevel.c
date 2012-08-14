@@ -48,7 +48,8 @@ static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 static noinline void pcaaxl2_init_lowlevel(void)
 {
 	struct dpll_param core = OMAP4_CORE_DPLL_PARAM_19M2_DDR400;
-	struct dpll_param mpu = OMAP4_MPU_DPLL_PARAM_19M2_MPU1000;
+	struct dpll_param mpu44xx = OMAP4_MPU_DPLL_PARAM_19M2_MPU1000;
+	struct dpll_param mpu4460 = OMAP4_MPU_DPLL_PARAM_19M2_MPU920;
 	struct dpll_param iva = OMAP4_IVA_DPLL_PARAM_19M2;
 	struct dpll_param per = OMAP4_PER_DPLL_PARAM_19M2;
 	struct dpll_param abe = OMAP4_ABE_DPLL_PARAM_19M2;
@@ -64,7 +65,11 @@ static noinline void pcaaxl2_init_lowlevel(void)
 	writel(CM_SYS_CLKSEL_19M2, CM_SYS_CLKSEL);
 
 	/* Configure all DPLL's at 100% OPP */
-	omap4_configure_mpu_dpll(&mpu);
+	if (omap4_revision() < OMAP4460_ES1_0)
+		omap4_configure_mpu_dpll(&mpu44xx);
+	else
+		omap4_configure_mpu_dpll(&mpu4460);
+
 	omap4_configure_iva_dpll(&iva);
 	omap4_configure_per_dpll(&per);
 	omap4_configure_abe_dpll(&abe);

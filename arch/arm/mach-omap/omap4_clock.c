@@ -14,6 +14,10 @@ void omap4_configure_mpu_dpll(const struct dpll_param *dpll_param)
 
 	sr32(CM_AUTOIDLE_DPLL_MPU, 0, 3, 0x0); /* Disable DPLL autoidle */
 
+	/* Errata ID: i700, clear CM_CLKSEL_DPLL_MPU[22] : DCC_EN */
+	if (omap4_revision() >= OMAP4460_ES1_0)
+		sr32(CM_CLKSEL_DPLL_MPU, 0, 22, 0);
+
 	/* Set M,N,M2 values */
 	sr32(CM_CLKSEL_DPLL_MPU, 8, 11, dpll_param->m);
 	sr32(CM_CLKSEL_DPLL_MPU, 0, 6, dpll_param->n);
@@ -198,6 +202,27 @@ void omap4_lock_core_dpll_shadow(const struct dpll_param *param)
 	wait_on_value((1 << 0), 1, CM_IDLEST_DPLL_CORE, LDELAY);
 }
 
+void omap4_enable_gpio_clocks(void)
+{
+	sr32(CM_L4PER_GPIO2_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO2_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO3_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO3_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO4_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO4_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO5_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO5_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO6_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO6_CLKCTRL, LDELAY);
+}
+
+void omap4_enable_gpio1_wup_clocks(void)
+{
+	/* WKUP clocks */
+	sr32(CM_WKUP_GPIO1_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_GPIO1_CLKCTRL, LDELAY);
+}
+
 void omap4_enable_all_clocks(void)
 {
 	/* Enable Ducati clocks */
@@ -255,16 +280,7 @@ void omap4_enable_all_clocks(void)
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_DMTIMER9_CLKCTRL, LDELAY);
 
 	/* GPIO clocks */
-	sr32(CM_L4PER_GPIO2_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO2_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO3_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO3_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO4_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO4_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO5_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO5_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO6_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO6_CLKCTRL, LDELAY);
+	omap4_enable_gpio_clocks();
 
 	sr32(CM_L4PER_HDQ1W_CLKCTRL, 0, 32, 0x2);
 
@@ -314,8 +330,7 @@ void omap4_enable_all_clocks(void)
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_UART4_CLKCTRL, LDELAY);
 
 	/* WKUP clocks */
-	sr32(CM_WKUP_GPIO1_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_GPIO1_CLKCTRL, LDELAY);
+	omap4_enable_gpio1_wup_clocks();
 	sr32(CM_WKUP_TIMER1_CLKCTRL, 0, 32, 0x01000002);
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_TIMER1_CLKCTRL, LDELAY);
 

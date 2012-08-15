@@ -2,6 +2,7 @@
 
 # ip setting (static/dhcp)
 ip=dhcp
+global.dhcp.vendor_id=barebox-${global.hostname}
 
 # static setup used if ip=static
 ipaddr=

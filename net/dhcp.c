@@ -110,6 +110,7 @@ struct dhcp_opt {
 	unsigned char option;
 	/* request automatically the option when creating the DHCP request */
 	bool optional;
+	bool copy_only_if_valid;
 	const char *barebox_var_name;
 	const char *barebox_dhcp_global;
 	void (*handle)(struct dhcp_opt *opt, unsigned char *data, int tlen);
@@ -152,6 +153,9 @@ static void env_str_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen
 
 	memcpy(tmp, popt, optlen);
 	tmp[optlen] = 0;
+
+	if (opt->copy_only_if_valid && !strlen(tmp))
+		return;
 
 	if (opt->barebox_var_name)
 		setenv(opt->barebox_var_name, tmp);
@@ -208,6 +212,7 @@ struct dhcp_opt dhcp_options[] = {
 		.barebox_var_name = "net.nameserver",
 	}, {
 		.option = 12,
+		.copy_only_if_valid = 1,
 		.handle = env_str_handle,
 		.barebox_var_name = "global.hostname",
 	}, {
@@ -647,7 +652,7 @@ static void dhcp_reset_env(void)
 
 	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
 		opt = &dhcp_options[i];
-		if (!opt->barebox_var_name)
+		if (!opt->barebox_var_name || opt->copy_only_if_valid)
 			continue;
 
 		setenv(opt->barebox_var_name,"");

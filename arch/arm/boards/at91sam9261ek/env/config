@@ -6,9 +6,9 @@ ip=dhcp-barebox
 
 if [ x$armlinux_architecture = x848 ]
 then
-	dhcp_vendor_id=barebox-at91sam9261ek
+	global.dhcp.vendor_id=barebox-at91sam9261ek
 else
-	dhcp_vendor_id=barebox-at91sam9g10ek
+	global.dhcp.vendor_id=barebox-at91sam9g10ek
 fi
 
 # or set your networking parameters here

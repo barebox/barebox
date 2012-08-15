@@ -44,14 +44,14 @@ fi
 if [ x$ip = xdhcp -o x$ip = "xdhcp-barebox" ]; then
 	if [ x$kernel_loc = xnfs -o x$kernel_loc = xtftp ]; then
 		dhcp
-		if [ x$rootpath != x ]; then
-			nfsroot=$rootpath
+		if [ x${global.dhcp.rootpath} != x ]; then
+			nfsroot=${global.dhcp.rootpath}
 		fi
-		if [ x$bootfile != x ]; then
-			kernelimage=$bootfile
+		if [ x${global.dhcp.bootfile} != x ]; then
+			kernelimage=${global.dhcp.bootfile}
 		fi
-		if [ x$dhcp_oftree_file != x ]; then
-			oftreeimage=$dhcp_oftree_file
+		if [ x$global.dhcp.oftree_file} != x ]; then
+			oftreeimage=${global.dhcp.oftree_file}
 		fi
 	fi
 fi

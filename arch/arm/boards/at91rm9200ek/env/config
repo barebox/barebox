@@ -3,7 +3,7 @@
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp-barebox
-dhcp_vendor_id=barebox-at91rm9200ek
+global.dhcp.vendor_id=barebox-at91rm9200ek
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d

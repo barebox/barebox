@@ -7,7 +7,7 @@ user=
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
-dhcp_vendor_id=barebox-mx53-loco
+global.dhcp.vendor_id=barebox-mx53-loco
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d

@@ -24,20 +24,38 @@
 #include <command.h>
 #include <libgen.h>
 #include <environment.h>
+#include <fs.h>
+#include <getopt.h>
 
 static int do_dirname(int argc, char *argv[])
 {
-	if (argc != 3)
+	int opt;
+	int path_fs = 0;
+	int len = 0;
+
+	while ((opt = getopt(argc, argv, "V")) > 0) {
+		switch (opt) {
+		case 'V':
+			path_fs = 1;
+			break;
+		}
+	}
+
+	if (argc < optind + 2)
 		return COMMAND_ERROR_USAGE;
 
-	setenv(argv[2], dirname(argv[1]));
+	if (path_fs)
+		len = strlen(get_mounted_path(argv[optind]));
+
+	setenv(argv[optind + 1], dirname(argv[optind]) + len);
 
 	return 0;
 }
 
 BAREBOX_CMD_HELP_START(dirname)
-BAREBOX_CMD_HELP_USAGE("dirname NAME DIRNAME\n")
+BAREBOX_CMD_HELP_USAGE("dirname [-V] NAME DIRNAME\n")
 BAREBOX_CMD_HELP_SHORT("strip last componext of NAME and store into $DIRNAME\n")
+BAREBOX_CMD_HELP_SHORT("-V return the path relative to the mountpoint.\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dirname)

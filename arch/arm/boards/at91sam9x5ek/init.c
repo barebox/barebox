@@ -157,7 +157,6 @@ static int at91sam9x5ek_console_init(void)
 {
 	at91_register_uart(0, 0);
 	at91_register_uart(1, 0);
-	at91_register_uart(2, 0);
 	return 0;
 }
 console_initcall(at91sam9x5ek_console_init);

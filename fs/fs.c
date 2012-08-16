@@ -890,6 +890,43 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
+int readlink(const char *pathname, char *buf, size_t bufsiz)
+{
+	struct fs_driver_d *fsdrv;
+	struct fs_device_d *fsdev;
+	char *p = normalise_path(pathname);
+	char *freep = p;
+	int ret;
+
+	ret = path_check_prereq(pathname, S_IFLNK);
+	if (ret)
+		goto out;
+
+	fsdev = get_fs_device_and_root_path(&p);
+	if (!fsdev) {
+		ret = -ENODEV;
+		goto out;
+	}
+	fsdrv = fsdev->driver;
+
+	if (fsdrv->readlink)
+		ret = fsdrv->readlink(&fsdev->dev, p, buf, bufsiz);
+	else
+		ret = -ENOSYS;
+
+	if (ret)
+		goto out;
+
+out:
+	free(freep);
+
+	if (ret)
+		errno = -ret;
+
+	return ret;
+}
+EXPORT_SYMBOL(readlink);
+
 static int fs_match(struct device_d *dev, struct driver_d *drv)
 {
 	return strcmp(dev->name, drv->name) ? -1 : 0;

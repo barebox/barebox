@@ -35,6 +35,7 @@
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/amba/bus.h>
 
 /*
  * We wrap our port structure around the generic console_device.
@@ -118,10 +119,7 @@ static int pl011_tstc(struct console_device *cdev)
 
 int pl011_init_port (struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
-
-	uart->base = dev_request_mem_region(dev, 0);
 
 	/*
 	 ** First, disable everything.
@@ -154,19 +152,20 @@ int pl011_init_port (struct console_device *cdev)
 	return 0;
 }
 
-static int pl011_probe(struct device_d *dev)
+static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct amba_uart_port *uart;
 	struct console_device *cdev;
 
 	uart = xzalloc(sizeof(struct amba_uart_port));
-	uart->clk = clk_get(dev, NULL);
+	uart->clk = clk_get(&dev->dev, NULL);
+	uart->base = amba_get_mem_region(dev);
 
 	if (IS_ERR(uart->clk))
 		return PTR_ERR(uart->clk);
 
 	cdev = &uart->uart;
-	cdev->dev = dev;
+	cdev->dev = &dev->dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl011_tstc;
 	cdev->putc = pl011_putc;
@@ -182,14 +181,29 @@ static int pl011_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d pl011_driver = {
-	.name = "uart-pl011",
-	.probe = pl011_probe,
+static struct amba_id pl011_ids[] = {
+	{
+		.id	= 0x00041011,
+		.mask	= 0x000fffff,
+	},
+	{
+		.id	= 0x00380802,
+		.mask	= 0x00ffffff,
+	},
+	{ 0, 0 },
+};
+
+struct amba_driver pl011_driver = {
+	.drv = {
+		.name = "uart-pl011",
+	},
+	.probe		= pl011_probe,
+	.id_table	= pl011_ids,
 };
 
 static int pl011_init(void)
 {
-	register_driver(&pl011_driver);
+	amba_driver_register(&pl011_driver);
 	return 0;
 }
 

@@ -34,6 +34,7 @@
 #include <linux/clkdev.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/amba/bus.h>
 
 #include <io.h>
 #include <asm/hardware/arm_timer.h>
@@ -50,6 +51,8 @@ void versatile_add_sdram(u32 size)
 struct clk {
 	unsigned long rate;
 };
+
+static struct clk ref_clk_dummy;
 
 static struct clk ref_clk_24 = {
 	.rate = 24000000,
@@ -145,6 +148,7 @@ static int vpb_clocksource_init(void)
 core_initcall(vpb_clocksource_init);
 
 static struct clk_lookup clocks_lookups[] = {
+	CLKDEV_CON_ID("apb_pclk", &ref_clk_dummy),
 	CLKDEV_DEV_ID("uart-pl0110", &ref_clk_24),
 	CLKDEV_DEV_ID("uart-pl0111", &ref_clk_24),
 	CLKDEV_DEV_ID("uart-pl0112", &ref_clk_24),
@@ -179,8 +183,7 @@ void versatile_register_uart(unsigned id)
 	default:
 		return;
 	}
-	add_generic_device("uart-pl011", id, NULL, start, 4096,
-			   IORESOURCE_MEM, NULL);
+	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
 }
 
 void __noreturn reset_cpu (unsigned long ignored)

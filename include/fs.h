@@ -168,6 +168,8 @@ void *read_file(const char *filename, size_t *size);
 char *normalise_path(const char *path);
 char *normalise_link(const char *pathname, const char* symlink);
 
+char *get_mounted_path(const char *path);
+
 /* Register a new filesystem driver */
 int register_fs_driver(struct fs_driver_d *fsdrv);
 

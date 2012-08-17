@@ -243,6 +243,15 @@ static struct fs_device_d *get_fsdevice_by_path(const char *path)
 	return fs_dev_root;
 }
 
+char *get_mounted_path(const char *path)
+{
+	struct fs_device_d *fdev;
+
+	fdev = get_fsdevice_by_path(path);
+
+	return fdev->path;
+}
+
 static FILE files[MAX_FILES];
 
 static FILE *get_file(void)

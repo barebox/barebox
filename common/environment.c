@@ -125,6 +125,8 @@ int envfs_save(char *filename, char *dirname)
 
 	super = (struct envfs_super *)buf;
 	super->magic = ENVFS_32(ENVFS_MAGIC);
+	super->major = ENVFS_MAJOR;
+	super->minor = ENVFS_MINOR;
 	super->size = ENVFS_32(size);
 
 	/* second pass: copy files to buffer */

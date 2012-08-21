@@ -50,6 +50,8 @@ struct fs_driver_d {
 	/* Truncate a file to given size */
 	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
 
+	int (*symlink)(struct device_d *dev, const char *pathname,
+		       const char *newpath);
 	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
 			size_t size);
 
@@ -131,6 +133,7 @@ DIR *opendir(const char *pathname);
 struct dirent *readdir(DIR *dir);
 int closedir(DIR *dir);
 
+int symlink(const char *pathname, const char *newpath);
 int readlink(const char *path, char *buf, size_t bufsiz);
 
 int mount (const char *device, const char *fsname, const char *path);

@@ -927,6 +927,57 @@ out:
 }
 EXPORT_SYMBOL(readlink);
 
+int symlink(const char *pathname, const char *newpath)
+{
+	struct fs_driver_d *fsdrv;
+	struct fs_device_d *fsdev;
+	char *p;
+	char *freep = normalise_path(pathname);
+	int ret;
+	struct stat s;
+
+	if (!freep)
+		return -ENOMEM;
+
+	if (!stat(freep, &s) && S_ISDIR(s.st_mode)) {
+		ret = -ENOSYS;
+		goto out;
+	}
+
+	free(freep);
+	freep = p = normalise_path(newpath);
+
+	if (!p)
+		return -ENOMEM;
+
+	ret = lstat(p, &s);
+	if (!ret) {
+		ret = -EEXIST;
+		goto out;
+	}
+
+	fsdev = get_fs_device_and_root_path(&p);
+	if (!fsdev) {
+		ret = -ENODEV;
+		goto out;
+	}
+	fsdrv = fsdev->driver;
+
+	if (fsdrv->symlink) {
+		ret = fsdrv->symlink(&fsdev->dev, pathname, p);
+	} else {
+		ret = -EPERM;
+	}
+
+out:
+	free(freep);
+	if (ret)
+		errno = -ret;
+
+	return ret;
+}
+EXPORT_SYMBOL(symlink);
+
 static int fs_match(struct device_d *dev, struct driver_d *drv)
 {
 	return strcmp(dev->name, drv->name) ? -1 : 0;

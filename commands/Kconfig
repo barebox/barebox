@@ -57,6 +57,10 @@ config CMD_READLINE
 	tristate
 	prompt "readline"
 
+config CMD_LN
+	tristate
+	prompt "ln"
+
 config CMD_TRUE
 	tristate
 	default y

@@ -5,23 +5,29 @@
 #include <asm/byteorder.h>
 #endif
 
-#define ENVFS_MAJOR		0
-#define ENVFS_MINOR		1
+#define ENVFS_MAJOR		1
+#define ENVFS_MINOR		0
 
 #define ENVFS_MAGIC		    0x798fba79	/* some random number */
 #define ENVFS_INODE_MAGIC	0x67a8c78d
+#define ENVFS_INODE_END_MAGIC	0x68a8c78d
 #define ENVFS_END_MAGIC		0x6a87d6cd
 #define ENVFS_SIGNATURE	"barebox envfs"
 
 struct envfs_inode {
 	uint32_t magic;	/* ENVFS_INODE_MAGIC */
 	uint32_t size;	/* data size in bytes  */
-	uint32_t namelen; /* The length of the filename _including_ a trailing 0 */
+	uint32_t headerlen; /* The length of the filename _including_ a trailing 0 */
 	char data[0];	/* The filename (zero terminated) + padding to 4 byte boundary
 			 * followed by the data for this inode.
 			 * The next inode follows after the data + padding to 4 byte
 			 * boundary.
 			 */
+};
+
+struct envfs_inode_end {
+	uint32_t magic;	/* ENVFS_INODE_END_MAGIC */
+	uint32_t mode;	/* file mode */
 };
 
 /*

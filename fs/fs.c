@@ -609,13 +609,20 @@ int open(const char *pathname, int flags, ...)
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
-	int exist_err;
+	int exist_err = 0;
 	struct stat s;
-	char *path = normalise_path(pathname);
-	char *freep = path;
+	char *path;
+	char *freep;
 	int ret;
 
-	exist_err = lstat(path, &s);
+	path = realfile(pathname, &s);
+
+	if (IS_ERR(path)) {
+		exist_err = PTR_ERR(path);
+		path = normalise_path(pathname);
+	}
+
+	freep = path;
 
 	if (!exist_err && S_ISDIR(s.st_mode)) {
 		ret = -EISDIR;

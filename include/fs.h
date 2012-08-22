@@ -107,10 +107,7 @@ int unlink(const char *pathname);
 int close(int fd);
 int flush(int fd);
 int lstat(const char *filename, struct stat *s);
-static inline int stat(const char *filename, struct stat *s)
-{
-	return lstat(filename, s);
-}
+int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
 int ioctl(int fd, int request, void *buf);
 ssize_t write(int fd, const void *buf, size_t count);
@@ -169,6 +166,7 @@ void *read_file(const char *filename, size_t *size);
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */
 char *normalise_path(const char *path);
+char *normalise_link(const char *pathname, const char* symlink);
 
 /* Register a new filesystem driver */
 int register_fs_driver(struct fs_driver_d *fsdrv);

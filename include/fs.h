@@ -104,7 +104,11 @@ int creat(const char *pathname, mode_t mode);
 int unlink(const char *pathname);
 int close(int fd);
 int flush(int fd);
-int stat(const char *filename, struct stat *s);
+int lstat(const char *filename, struct stat *s);
+static inline int stat(const char *filename, struct stat *s)
+{
+	return lstat(filename, s);
+}
 int read(int fd, void *buf, size_t count);
 int ioctl(int fd, int request, void *buf);
 ssize_t write(int fd, const void *buf, size_t count);

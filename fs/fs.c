@@ -392,7 +392,7 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	unsigned int m;
 	int ret = 0;
 
-	if (stat(path, &s)) {
+	if (lstat(path, &s)) {
 		if (flags & S_UB_DOES_NOT_EXIST)
 			goto out;
 		ret = -ENOENT;
@@ -434,7 +434,7 @@ static int parent_check_directory(const char *path)
 	int ret;
 	char *dir = dirname(xstrdup(path));
 
-	ret = stat(dir, &s);
+	ret = lstat(dir, &s);
 
 	free(dir);
 
@@ -523,7 +523,7 @@ int open(const char *pathname, int flags, ...)
 	char *freep = path;
 	int ret;
 
-	exist_err = stat(path, &s);
+	exist_err = lstat(path, &s);
 
 	if (!exist_err && S_ISDIR(s.st_mode)) {
 		ret = -EISDIR;
@@ -1167,7 +1167,7 @@ int closedir(DIR *dir)
 }
 EXPORT_SYMBOL(closedir);
 
-int stat(const char *filename, struct stat *s)
+int lstat(const char *filename, struct stat *s)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
@@ -1206,7 +1206,7 @@ out:
 
 	return ret;
 }
-EXPORT_SYMBOL(stat);
+EXPORT_SYMBOL(lstat);
 
 int mkdir (const char *pathname, mode_t mode)
 {

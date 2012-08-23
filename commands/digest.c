@@ -60,13 +60,15 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 				argv++;
 		}
 
-		if (digest_file_window(d, filename, hash, start, size) < 0)
+		if (digest_file_window(d, filename, hash, start, size) < 0) {
 			ret = 1;
+		} else {
+			for (i = 0; i < d->length; i++)
+				printf("%02x", hash[i]);
 
-		for (i = 0; i < d->length; i++)
-			printf("%02x", hash[i]);
-
-		printf("  %s\t0x%08llx ... 0x%08llx\n", filename, start, start + size);
+			printf("  %s\t0x%08llx ... 0x%08llx\n",
+				filename, start, start + size);
+		}
 
 		argv++;
 	}

@@ -46,6 +46,16 @@ char *globalvar_get_match(const char *match, const char *seperator)
 	return val;
 }
 
+void globalvar_set_match(const char *match, const char *val)
+{
+	struct param_d *param;
+
+	list_for_each_entry(param, &global_device.parameters, list) {
+		if (!strncmp(match, param->name, strlen(match)))
+			dev_set_param(&global_device, param->name, val);
+	}
+}
+
 /*
  * globalvar_add_simple
  *

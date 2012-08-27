@@ -96,7 +96,6 @@ static struct i2c_board_info i2c_devices[] = {
 
 static struct gpmc_nand_platform_data nand_plat = {
 	.wait_mon_pin = 1,
-	.device_width = 8,
 	.ecc_mode = OMAP_ECC_BCH8_CODE_HW,
 	.nand_cfg = &omap4_nand_cfg,
 };

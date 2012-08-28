@@ -90,7 +90,7 @@ static struct sam9_smc_config usb_a9g20_nand_smc_config = {
 	.ncs_read_pulse		= 4,
 	.nrd_pulse		= 4,
 	.ncs_write_pulse	= 4,
-	.nwe_pulse		= 2,
+	.nwe_pulse		= 4,
 
 	.read_cycle		= 7,
 	.write_cycle		= 7,

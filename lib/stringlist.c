@@ -87,8 +87,8 @@ void string_list_print_by_column(struct string_list *sl)
 		return;
 
 	num = 80 / (len + 1);
-	if (len == 0)
-		len = 1;
+	if (num == 0)
+		num = 1;
 
 	i = 0;
 	list_for_each_entry(entry, &sl->list, list) {

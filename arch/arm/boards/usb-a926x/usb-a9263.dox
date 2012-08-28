@@ -1,0 +1,30 @@
+/**
+@page usb-a9263 Calao-systems USB-A9263
+
+@section usb-a9263 The CPU card
+
+http://www.calao-systems.com
+
+This CPU card is based on an Atmel AT91SAM9263 CPU. The card is shipped with:
+
+- 64MiB or 128MiB SDRAM (3.3V)
+- 256MiB NAND type Flash Memory (3.3V)
+- Ethernet 10/100M
+- USB Host port 2.0 (FS)
+- USB device port (FS)
+- Top expansion connector for expansion boards (GPS, WIFI/BT, GPRS, 3G, ZigBee, MBUS, ...)
+- Bottom expansion connector for development boards
+
+@section usb-db-boards Supported daughter boards
+
+Supported daughter boards are:
+- DAB-GPI2-CXX
+- DAB-GPS
+- DAB-GPRS
+- DAB-HSDPA
+- DAB-WLAN-BT
+- DAB-ZIGBEE
+- DAB-MBUS
+- DAB-KNX-RF
+
+*/

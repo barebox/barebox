@@ -257,6 +257,9 @@ static ssize_t m25p80_erase(struct cdev *cdev, size_t count, loff_t offset)
 		}
 	}
 
+	if (wait_till_ready(flash))
+		return -ETIMEDOUT;
+
 	return 0;
 }
 
@@ -683,7 +686,6 @@ static const struct spi_device_id *jedec_probe(struct spi_device *spi)
 
 	return NULL;
 }
-
 
 static struct file_operations m25p80_ops = {
 	.read   = m25p80_read,

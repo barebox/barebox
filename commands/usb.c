@@ -50,7 +50,7 @@ static int do_usb(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(usb)
 BAREBOX_CMD_HELP_USAGE("usb [-f]\n")
 BAREBOX_CMD_HELP_SHORT("Scan for USB devices.\n")
-BAREBOX_CMD_HELP_OPT("-f", "force. Rescan if if if have scanned once\n")
+BAREBOX_CMD_HELP_OPT("-f", "force. Rescan although scanned already\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usb)

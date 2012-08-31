@@ -5,8 +5,8 @@
 menu "I2C Hardware Bus support"
 
 config I2C_IMX
-	bool "i.MX I2C Master driver"
-	depends on ARCH_IMX && !ARCH_IMX1
+	bool "MPC85xx/i.MX I2C Master driver"
+	depends on (ARCH_IMX && !ARCH_IMX1) || ARCH_MPC85XX
 
 config I2C_OMAP
 	bool "OMAP I2C Master driver"

@@ -129,4 +129,7 @@
 #define		MPC85xx_DEVDISR_TB1	0x00001000
 #define MPC85xx_GUTS_RSTCR_OFFSET	0xb0
 
+#define I2C1_BASE_ADDR		(CFG_IMMR + 0x3000)
+#define I2C2_BASE_ADDR		(CFG_IMMR + 0x3100)
+
 #endif /*__IMMAP_85xx__*/

@@ -236,7 +236,7 @@ static struct mx28_fcb *create_fcb(struct mtd_info *mtd, void *buf, unsigned fw1
 	fcb->fw1_start_page = fw1_start_block / mtd->writesize;
 	fcb->fw1_sectors = DIV_ROUND_UP(fw_size, mtd->writesize);
 
-	if (fw2_start_block != 0 && fw2_start_block < mtd->size / mtd->erasesize) {
+	if (fw2_start_block) {
 		fcb->fw2_start_page = fw2_start_block / mtd->writesize;
 		fcb->fw2_sectors = fcb->fw1_sectors;
 	}

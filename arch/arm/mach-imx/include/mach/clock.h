@@ -27,7 +27,7 @@ ulong imx_get_fecclk(void);
 ulong imx_get_gptclk(void);
 ulong imx_get_uartclk(void);
 ulong imx_get_lcdclk(void);
-ulong imx_get_i2cclk(void);
+ulong fsl_get_i2cclk(void);
 ulong imx_get_mmcclk(void);
 ulong imx_get_cspiclk(void);
 ulong imx_get_ipgclk(void);

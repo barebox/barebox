@@ -190,7 +190,7 @@ static unsigned long imx_get_ipg_perclk(void)
 	return 0;
 }
 
-unsigned long imx_get_i2cclk(void)
+unsigned long fsl_get_i2cclk(void)
 {
 	return imx_get_ipg_perclk();
 }
@@ -232,5 +232,5 @@ void imx_dump_clocks(void)
 	printf("ipg:  %ld\n", imx_get_ipgclk());
 	printf("fec:  %ld\n", imx_get_fecclk());
 	printf("gpt:  %ld\n", imx_get_gptclk());
-	printf("i2c:  %ld\n", imx_get_i2cclk());
+	printf("i2c:  %ld\n", fsl_get_i2cclk());
 }

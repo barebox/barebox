@@ -187,7 +187,7 @@ ulong imx_get_fecclk(void)
 	return imx_get_ipgclk();
 }
 
-ulong imx_get_i2cclk(void)
+ulong fsl_get_i2cclk(void)
 {
 	return imx_get_ipg_perclk();
 }

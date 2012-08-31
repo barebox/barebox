@@ -25,7 +25,7 @@
 #include <common.h>
 #include <clock.h>
 #include <init.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 
 uint64_t ppc_clocksource_read(void)
 {

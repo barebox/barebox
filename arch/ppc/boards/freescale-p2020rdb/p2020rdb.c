@@ -34,7 +34,7 @@
 #include <mach/mpc85xx.h>
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 #include <mach/early_udelay.h>
 
 #define VSC7385_RST_SET		0x00080000

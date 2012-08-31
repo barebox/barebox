@@ -30,7 +30,7 @@
 
 #include <common.h>
 #include <asm/processor.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 #include <mach/immap_85xx.h>
 #include <mach/mpc85xx.h>
 

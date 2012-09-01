@@ -37,15 +37,16 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <smc911x.h>
 
-
-#define AS CONFIG_DRIVER_NET_SMC911X_ADDRESS_SHIFT
 #include "smc911x.h"
 
 struct smc911x_priv {
 	struct eth_device edev;
 	struct mii_device miidev;
 	void __iomem *base;
+
+	int shift;
 
 	u32 (*reg_read)(struct smc911x_priv *priv, u32 reg);
 	void (*reg_write)(struct smc911x_priv *priv, u32 reg, u32 val);
@@ -71,6 +72,8 @@ static const struct chip_id chip_ids[] =  {
 
 #define DRIVERNAME "smc911x"
 
+#define __smc_shift(priv, reg) ((reg) << ((priv)->shift))
+
 static inline u32 smc911x_reg_read(struct smc911x_priv *priv, u32 reg)
 {
 	return priv->reg_read(priv, reg);
@@ -85,6 +88,22 @@ static inline u32 __smc911x_reg_readw(struct smc911x_priv *priv, u32 reg)
 static inline u32 __smc911x_reg_readl(struct smc911x_priv *priv, u32 reg)
 {
 	return readl(priv->base + reg);
+}
+
+static inline u32
+__smc911x_reg_readw_shift(struct smc911x_priv *priv, u32 reg)
+{
+	return (readw(priv->base +
+			__smc_shift(priv, reg)) & 0xFFFF) |
+		((readw(priv->base +
+		__smc_shift(priv, reg + 2)) & 0xFFFF) << 16);
+
+}
+
+static inline u32
+__smc911x_reg_readl_shift(struct smc911x_priv *priv, u32 reg)
+{
+	return readl(priv->base + __smc_shift(priv, reg));
 }
 
 static inline void smc911x_reg_write(struct smc911x_priv *priv, u32 reg,
@@ -104,6 +123,21 @@ static inline void __smc911x_reg_writel(struct smc911x_priv *priv, u32 reg,
 					u32 val)
 {
 	writel(val, priv->base + reg);
+}
+
+static inline void
+__smc911x_reg_writew_shift(struct smc911x_priv *priv, u32 reg, u32 val)
+{
+	writew(val & 0xFFFF,
+		priv->base + __smc_shift(priv, reg));
+	writew((val >> 16) & 0xFFFF,
+		priv->base + __smc_shift(priv, reg + 2));
+}
+
+static inline void
+__smc911x_reg_writel_shift(struct smc911x_priv *priv, u32 reg, u32 val)
+{
+	writel(val, priv->base + __smc_shift(priv, reg));
 }
 
 static int smc911x_mac_wait_busy(struct smc911x_priv *priv)
@@ -404,6 +438,7 @@ static int smc911x_probe(struct device_d *dev)
 	struct smc911x_priv *priv;
 	uint32_t val;
 	int i, is_32bit;
+	struct smc911x_plat *pdata = dev->platform_data;
 
 	priv = xzalloc(sizeof(*priv));
 	is_32bit = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
@@ -413,12 +448,25 @@ static int smc911x_probe(struct device_d *dev)
 		is_32bit = is_32bit == IORESOURCE_MEM_32BIT;
 	priv->base = dev_request_mem_region(dev, 0);
 
+	if (pdata && pdata->shift)
+		priv->shift = pdata->shift;
+
 	if (is_32bit) {
-		priv->reg_read = __smc911x_reg_readl;
-		priv->reg_write = __smc911x_reg_writel;
+		if (pdata->shift) {
+			priv->reg_read = __smc911x_reg_readl_shift;
+			priv->reg_write = __smc911x_reg_writel_shift;
+		} else {
+			priv->reg_read = __smc911x_reg_readl;
+			priv->reg_write = __smc911x_reg_writel;
+		}
 	} else {
-		priv->reg_read = __smc911x_reg_readw;
-		priv->reg_write = __smc911x_reg_writew;
+		if (pdata->shift) {
+			priv->reg_read = __smc911x_reg_readw_shift;
+			priv->reg_write = __smc911x_reg_writew_shift;
+		} else {
+			priv->reg_read = __smc911x_reg_readw;
+			priv->reg_write = __smc911x_reg_writew;
+		}
 	}
 
 	val = smc911x_reg_read(priv, BYTE_TEST);

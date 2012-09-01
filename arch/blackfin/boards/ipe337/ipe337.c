@@ -4,6 +4,11 @@
 #include <asm/cpu/cdefBF561.h>
 #include <partition.h>
 #include <fs.h>
+#include <smc911x.h>
+
+struct smc911x_plat smcplat = {
+	.shift = 1,
+};
 
 static int ipe337_devices_init(void) {
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0x20000000, 32 * 1024 * 1024, 0);
@@ -17,7 +22,7 @@ static int ipe337_devices_init(void) {
 	*pFIO0_FLAG_S = (1<<12);
 
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x24000000, 4096,
-			   IORESOURCE_MEM, NULL);
+			   IORESOURCE_MEM, &smcplat);
 
 	devfs_add_partition("nor0", 0x00000, 0x20000, DEVFS_PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x20000, 0x20000, DEVFS_PARTITION_FIXED, "env0");

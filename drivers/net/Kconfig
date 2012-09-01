@@ -36,12 +36,6 @@ config DRIVER_NET_SMC911X
 	  This option enables support for the SMSC LAN9[12]1[567]
 	  ethernet chip.
 
-config DRIVER_NET_SMC911X_ADDRESS_SHIFT
-	int
-	depends on DRIVER_NET_SMC911X
-	default 1 if MACH_IPE337
-	default 0
-
 config DRIVER_NET_SMC91111
 	bool "smc91111 ethernet driver"
 	select MIIDEV

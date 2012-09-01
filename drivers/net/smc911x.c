@@ -47,27 +47,10 @@ struct smc911x_priv {
 	void __iomem *base;
 
 	int shift;
+	int generation;
 
 	u32 (*reg_read)(struct smc911x_priv *priv, u32 reg);
 	void (*reg_write)(struct smc911x_priv *priv, u32 reg, u32 val);
-};
-
-struct chip_id {
-	u16 id;
-	char *name;
-};
-
-static const struct chip_id chip_ids[] =  {
-	{ CHIP_9115, "LAN9115" },
-	{ CHIP_9116, "LAN9116" },
-	{ CHIP_9117, "LAN9117" },
-	{ CHIP_9118, "LAN9118" },
-	{ CHIP_9215, "LAN9215" },
-	{ CHIP_9216, "LAN9216" },
-	{ CHIP_9217, "LAN9217" },
-	{ CHIP_9218, "LAN9218" },
-	{ CHIP_9221, "LAN9221" },
-	{ 0, NULL },
 };
 
 #define DRIVERNAME "smc911x"
@@ -437,7 +420,7 @@ static int smc911x_probe(struct device_d *dev)
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
 	uint32_t val;
-	int i, is_32bit;
+	int is_32bit;
 	struct smc911x_plat *pdata = dev->platform_data;
 
 	priv = xzalloc(sizeof(*priv));
@@ -495,16 +478,41 @@ static int smc911x_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	val = smc911x_reg_read(priv, ID_REV) >> 16;
-	for(i = 0; chip_ids[i].id != 0; i++) {
-		if (chip_ids[i].id == val) break;
-	}
-	if (!chip_ids[i].id) {
-		dev_err(dev, "Unknown chip ID %04x\n", val);
+	val = smc911x_reg_read(priv, ID_REV);
+	switch (val & 0xFFFF0000) {
+	case 0x01180000:
+	case 0x01170000:
+	case 0x01160000:
+	case 0x01150000:
+	case 0x218A0000:
+		/* LAN911[5678] family */
+		priv->generation = val & 0x0000FFFF;
+		break;
+
+	case 0x118A0000:
+	case 0x117A0000:
+	case 0x116A0000:
+	case 0x115A0000:
+		/* LAN921[5678] family */
+		priv->generation = 3;
+		break;
+
+	case 0x92100000:
+	case 0x92110000:
+	case 0x92200000:
+	case 0x92210000:
+		/* LAN9210/LAN9211/LAN9220/LAN9221 */
+		priv->generation = 4;
+		break;
+
+	default:
+		dev_err(dev, "LAN911x not identified, idrev: 0x%08X\n",
+			  val);
 		return -ENODEV;
 	}
 
-	dev_info(dev, "detected %s controller\n", chip_ids[i].name);
+	dev_info(dev, "LAN911x identified, idrev: 0x%08X, generation: %d\n",
+		   val, priv->generation);
 
 	edev = &priv->edev;
 	edev->priv = priv;

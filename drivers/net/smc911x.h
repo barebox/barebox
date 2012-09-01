@@ -340,16 +340,3 @@
 #define WUCSR_MPR			0x00000020
 #define WUCSR_WAKE_EN			0x00000004
 #define WUCSR_MPEN			0x00000002
-
-/* Chip ID values */
-#define CHIP_9115	0x115
-#define CHIP_9116	0x116
-#define CHIP_9117	0x117
-#define CHIP_9118	0x118
-#define CHIP_9215	0x115a
-#define CHIP_9216	0x116a
-#define CHIP_9217	0x117a
-#define CHIP_9218	0x118a
-#define CHIP_9221	0x9221
-
-

@@ -76,7 +76,13 @@ static inline u32 smc911x_reg_read(struct smc911x_priv *priv, u32 reg)
 	return priv->reg_read(priv, reg);
 }
 
-static inline u32 __smc911x_reg_read(struct smc911x_priv *priv, u32 reg)
+static inline u32 __smc911x_reg_readw(struct smc911x_priv *priv, u32 reg)
+{
+	return ((readw(priv->base + reg) & 0xFFFF) |
+		((readw(priv->base + reg + 2) & 0xFFFF) << 16));
+}
+
+static inline u32 __smc911x_reg_readl(struct smc911x_priv *priv, u32 reg)
 {
 	return readl(priv->base + reg);
 }
@@ -87,7 +93,14 @@ static inline void smc911x_reg_write(struct smc911x_priv *priv, u32 reg,
 	priv->reg_write(priv, reg, val);
 }
 
-static inline void __smc911x_reg_write(struct smc911x_priv *priv, u32 reg,
+static inline void __smc911x_reg_writew(struct smc911x_priv *priv, u32 reg,
+					u32 val)
+{
+	writew(val & 0xFFFF, priv->base + reg);
+	writew((val >> 16) & 0xFFFF, priv->base + reg + 2);
+}
+
+static inline void __smc911x_reg_writel(struct smc911x_priv *priv, u32 reg,
 					u32 val)
 {
 	writel(val, priv->base + reg);
@@ -390,12 +403,23 @@ static int smc911x_probe(struct device_d *dev)
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
 	uint32_t val;
-	int i;
+	int i, is_32bit;
 
 	priv = xzalloc(sizeof(*priv));
+	is_32bit = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	if (!is_32bit)
+		is_32bit = 1;
+	else
+		is_32bit = is_32bit == IORESOURCE_MEM_32BIT;
 	priv->base = dev_request_mem_region(dev, 0);
-	priv->reg_read = __smc911x_reg_read;
-	priv->reg_write = __smc911x_reg_write;
+
+	if (is_32bit) {
+		priv->reg_read = __smc911x_reg_readl;
+		priv->reg_write = __smc911x_reg_writel;
+	} else {
+		priv->reg_read = __smc911x_reg_readw;
+		priv->reg_write = __smc911x_reg_writew;
+	}
 
 	val = smc911x_reg_read(priv, BYTE_TEST);
 	if(val != 0x87654321) {

@@ -26,6 +26,8 @@
  * of the Lan911x memory space
  */
 
+#define WORD_SWAP		0x98
+
 #define RX_DATA_FIFO		 0x00
 
 #define TX_DATA_FIFO		 0x20

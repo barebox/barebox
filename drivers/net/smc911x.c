@@ -470,9 +470,28 @@ static int smc911x_probe(struct device_d *dev)
 	}
 
 	val = smc911x_reg_read(priv, BYTE_TEST);
-	if(val != 0x87654321) {
+	if (val == 0x43218765) {
+		dev_dbg(dev, "BYTE_TEST looks swapped, "
+			   "applying WORD_SWAP");
+		smc911x_reg_write(priv, WORD_SWAP, 0xffffffff);
+
+		/* 1 dummy read of BYTE_TEST is needed after a write to
+		 * WORD_SWAP before its contents are valid */
+		val = smc911x_reg_read(priv, BYTE_TEST);
+
+		val = smc911x_reg_read(priv, BYTE_TEST);
+	}
+
+	if (val != 0x87654321) {
 		dev_err(dev, "no smc911x found on 0x%p (byte_test=0x%08x)\n",
 			priv->base, val);
+		if (((val >> 16) & 0xFFFF) == (val & 0xFFFF)) {
+			/*
+			 * This may mean the chip is set
+			 * for 32 bit while the bus is reading 16 bit
+			 */
+			dev_err(dev, "top 16 bits equal to bottom 16 bits\n");
+		}
 		return -ENODEV;
 	}
 

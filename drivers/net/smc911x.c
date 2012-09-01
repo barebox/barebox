@@ -420,7 +420,7 @@ static int smc911x_probe(struct device_d *dev)
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
 	uint32_t val;
-	int is_32bit;
+	int is_32bit, ret;
 	struct smc911x_plat *pdata = dev->platform_data;
 
 	priv = xzalloc(sizeof(*priv));
@@ -450,6 +450,16 @@ static int smc911x_probe(struct device_d *dev)
 			priv->reg_read = __smc911x_reg_readw;
 			priv->reg_write = __smc911x_reg_writew;
 		}
+	}
+
+	/*
+	 * poll the READY bit in PMT_CTRL. Any other access to the device is
+	 * forbidden while this bit isn't set. Try for 100ms
+	 */
+	ret = wait_on_timeout(100 * MSECOND, smc911x_reg_read(priv, PMT_CTRL) & PMT_CTRL_READY);
+	if (!ret) {
+		dev_err(dev, "Device not READY in 100ms aborting\n");
+		return -ENODEV;
 	}
 
 	val = smc911x_reg_read(priv, BYTE_TEST);

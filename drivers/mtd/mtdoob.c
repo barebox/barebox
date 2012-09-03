@@ -69,7 +69,7 @@ static struct file_operations mtd_ops_oob = {
 	.lseek  = dev_lseek_default,
 };
 
-static int add_mtdoob_device(struct mtd_info *mtd, char *devname)
+static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
 {
 	struct mtdoob *mtdoob;
 
@@ -80,13 +80,26 @@ static int add_mtdoob_device(struct mtd_info *mtd, char *devname)
 	mtdoob->cdev.priv = mtdoob;
 	mtdoob->cdev.dev = &mtd->class_dev;
 	mtdoob->mtd = mtd;
+	*priv = mtdoob;
 	devfs_create(&mtdoob->cdev);
+
+	return 0;
+}
+
+static int del_mtdoob_device(struct mtd_info *mtd, void **priv)
+{
+	struct mtdoob *mtdoob;
+
+	mtdoob = *priv;
+	devfs_remove(&mtdoob->cdev);
+	free(mtdoob);
 
 	return 0;
 }
 
 static struct mtddev_hook mtdoob_hook = {
 	.add_mtd_device = add_mtdoob_device,
+	.del_mtd_device = del_mtdoob_device,
 };
 
 static int __init register_mtdoob(void)

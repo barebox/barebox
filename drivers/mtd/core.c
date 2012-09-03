@@ -248,7 +248,7 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)
-			hook->add_mtd_device(mtd, devname);
+			hook->add_mtd_device(mtd, devname, &hook->priv);
 
 	return 0;
 }
@@ -259,7 +259,9 @@ int del_mtd_device (struct mtd_info *mtd)
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->del_mtd_device)
-			hook->del_mtd_device(mtd);
+			hook->del_mtd_device(mtd, &hook->priv);
+
+	devfs_remove(&mtd->cdev);
 	unregister_device(&mtd->class_dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);

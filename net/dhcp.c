@@ -175,7 +175,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 12,
 		.handle = env_str_handle,
-		.barebox_var_name = "hostname",
+		.barebox_var_name = "global.hostname",
 	}, {
 		.option = 15,
 		.handle = env_str_handle,
@@ -248,7 +248,7 @@ struct dhcp_param dhcp_params[] = {
 	{
 		.option = DHCP_HOSTNAME,
 		.handle = dhcp_set_string_options,
-		.barebox_var_name = "hostname",
+		.barebox_var_name = "global.hostname",
 	}, {
 		.option = DHCP_VENDOR_ID,
 		.handle = dhcp_set_string_options,

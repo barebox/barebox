@@ -137,7 +137,7 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 		retlen += ret;
 	}
 	if (ret < 0)
-		printf("err %d\n", ret);
+		printf("err %lu\n", ret);
 	else
 		ret = retlen;
 	return ret;
@@ -222,7 +222,7 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	}
 }
 
-static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
+static int mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
 	struct erase_info erase;

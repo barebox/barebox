@@ -79,7 +79,7 @@ static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 		return -EINVAL;
 	}
 
-	dev_dbg(cdev->dev, "write: 0x%08lx 0x%08x\n", offset, count);
+	dev_dbg(cdev->dev, "write: 0x%08lx 0x%08lx\n", offset, count);
 	while (count) {
 		now = count > mtd->writesize ? mtd->writesize : count;
 
@@ -100,7 +100,7 @@ static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 				ret = mtd->write(mtd, offset, now, &retlen,
 						  buf);
 			dev_dbg(cdev->dev,
-				"offset: 0x%08lx now: 0x%08x retlen: 0x%08x\n",
+				"offset: 0x%08lx now: 0x%08lx retlen: 0x%08lx\n",
 				offset, now, retlen);
 		}
 		if (ret)
@@ -174,7 +174,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 }
 
 #ifdef CONFIG_MTD_WRITE
-static ssize_t mtd_erase(struct cdev *cdev, size_t count, loff_t offset)
+static int mtd_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;

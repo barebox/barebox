@@ -3,6 +3,8 @@
 PATH=/env/bin
 export PATH
 
+global hostname
+
 . /env/config
 if [ -e /dev/nor0 -a -n "$nor_parts" ]; then
 	addpart /dev/nor0 $nor_parts

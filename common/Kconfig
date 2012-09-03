@@ -575,6 +575,7 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	select CMD_CRC
 	select CMD_CRC_CMP
 	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW
+	select CMD_GLOBAL
 	prompt "Default environment generic"
 	help
 	  With this option barebox will use the generic default

@@ -63,7 +63,7 @@ static struct resource nhk8815_nand_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	}, {
 		.start	= NAND_IO_DATA,
-		.end	= NAND_IO_CMD + 0xfff,
+		.end	= NAND_IO_DATA + 0xfff,
 		.flags	= IORESOURCE_MEM,
 	}
 };

@@ -32,6 +32,7 @@ config ARCH_EP93XX
 config ARCH_IMX
 	bool "Freescale iMX-based"
 	select GENERIC_GPIO
+	select GPIOLIB
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"

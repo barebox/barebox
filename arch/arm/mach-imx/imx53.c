@@ -24,20 +24,6 @@
 #include <mach/imx-regs.h>
 #include <mach/clock-imx51_53.h>
 
-#include "gpio.h"
-
-void *imx_gpio_base[] = {
-	(void *)MX53_GPIO1_BASE_ADDR,
-	(void *)MX53_GPIO2_BASE_ADDR,
-	(void *)MX53_GPIO3_BASE_ADDR,
-	(void *)MX53_GPIO4_BASE_ADDR,
-	(void *)MX53_GPIO5_BASE_ADDR,
-	(void *)MX53_GPIO6_BASE_ADDR,
-	(void *)MX53_GPIO7_BASE_ADDR,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
 #define SI_REV 0x48
 
 static u32 mx53_silicon_revision;
@@ -88,6 +74,13 @@ static int imx53_init(void)
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
+	add_generic_device("imx-gpio", 0, NULL, MX53_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, MX53_GPIO2_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, MX53_GPIO3_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, MX53_GPIO4_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 4, NULL, MX53_GPIO5_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 5, NULL, MX53_GPIO6_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 6, NULL, MX53_GPIO7_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	return 0;
 }
 coredevice_initcall(imx53_init);

@@ -18,5 +18,6 @@ source "drivers/input/Kconfig"
 source "drivers/watchdog/Kconfig"
 source "drivers/pwm/Kconfig"
 source "drivers/dma/Kconfig"
+source "drivers/gpio/Kconfig"
 
 endmenu

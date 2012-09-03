@@ -271,33 +271,29 @@ err_out:
 
 static void print_usage(const char*);
 
+static struct option long_options[] = {
+	{"help",   0, 0, 'h'},
+	{"malloc", 1, 0, 'm'},
+	{"image",  1, 0, 'i'},
+	{"env",    1, 0, 'e'},
+	{"stdout", 1, 0, 'O'},
+	{"stdin",  1, 0, 'I'},
+	{0, 0, 0, 0},
+};
+
+static const char optstring[] = "hm:i:e:O:I:";
+
 int main(int argc, char *argv[])
 {
 	void *ram;
 	int opt, ret, fd;
 	int malloc_size = 8 * 1024 * 1024;
 	char str[6];
-	int fdno = 0, envno = 0;
-
-	ram = malloc(malloc_size);
-	if (!ram) {
-		printf("unable to get malloc space\n");
-		exit(1);
-	}
-	mem_malloc_init(ram, ram + malloc_size - 1);
+	int fdno = 0, envno = 0, option_index = 0;
 
 	while (1) {
-		int option_index = 0;
-		static struct option long_options[] = {
-			{"help",   0, 0, 'h'},
-			{"image",  1, 0, 'i'},
-			{"env",    1, 0, 'e'},
-			{"stdout", 1, 0, 'O'},
-			{"stdin",  1, 0, 'I'},
-			{0, 0, 0, 0},
-		};
-
-		opt = getopt_long(argc, argv, "hi:e:O:I:",
+		option_index = 0;
+		opt = getopt_long(argc, argv, optstring,
 			long_options, &option_index);
 
 		if (opt == -1)
@@ -307,18 +303,7 @@ int main(int argc, char *argv[])
 		case 'h':
 			print_usage(basename(argv[0]));
 			exit(0);
-		case 'i':
-			sprintf(str, "fd%d", fdno);
-			ret = add_image(optarg, str);
-			if (ret)
-				exit(1);
-			fdno++;
-			break;
 		case 'm':
-			/* This option is broken. add_image needs malloc, so
-			 * mem_alloc_init() has to be called before option
-			 * parsing
-			 */
 			malloc_size = strtoul(optarg, NULL, 0);
 			break;
 		case 'e':
@@ -351,6 +336,47 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	ram = malloc(malloc_size);
+	if (!ram) {
+		printf("unable to get malloc space\n");
+		exit(1);
+	}
+	mem_malloc_init(ram, ram + malloc_size - 1);
+
+	/* reset getopt */
+	optind = 1;
+
+	while (1) {
+		option_index = 0;
+		opt = getopt_long(argc, argv, optstring,
+			long_options, &option_index);
+
+		if (opt == -1)
+			break;
+
+		switch (opt) {
+		case 'h':
+			break;
+		case 'm':
+			break;
+		case 'i':
+			sprintf(str, "fd%d", fdno);
+			ret = add_image(optarg, str);
+			if (ret)
+				exit(1);
+			fdno++;
+			break;
+		case 'e':
+			break;
+		case 'O':
+			break;
+		case 'I':
+			break;
+		default:
+			exit(1);
+		}
+	}
+
 	barebox_register_console("console", fileno(stdin), fileno(stdout));
 
 	rawmode();
@@ -371,6 +397,7 @@ static void print_usage(const char *prgname)
 "Usage: %s [OPTIONS]\n"
 "Start barebox.\n\n"
 "Options:\n\n"
+"  -m, "
 "  -i, --image=<file>   Map an image file to barebox. This option can be given\n"
 "                       multiple times. The files will show up as\n"
 "                       /dev/fd0 ... /dev/fdx under barebox.\n"

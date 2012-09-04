@@ -362,7 +362,6 @@ static int f3s_get_rev(struct mc13xxx *mc13xxx)
 	if (err)
 		return err;
 
-	dev_info(&mc13xxx->client->dev, "revision: 0x%x\n", rev);
 	if (rev == 0x00ffffff)
 		return -ENODEV;
 
@@ -379,8 +378,7 @@ static int f3s_pmic_init_v2(struct mc13xxx *mc13xxx)
 	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_SETTING_0, 0x03, 0x03);
 	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_MODE_0, 0x01, 0x01);
 	if (err)
-		dev_err(&mc13xxx->client->dev,
-			"Init sequence failed, the system might not be working!\n");
+		printf("mc13892 Init sequence failed, the system might not be working!\n");
 
 	return err;
 }

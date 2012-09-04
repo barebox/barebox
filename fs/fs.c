@@ -1253,6 +1253,12 @@ int rmdir (const char *pathname)
 	char *freep = p;
 	int ret;
 
+	ret = path_check_prereq(pathname, S_IFLNK);
+	if (!ret) {
+		ret = -ENOTDIR;
+		goto out;
+	}
+
 	ret = path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY);
 	if (ret)
 		goto out;

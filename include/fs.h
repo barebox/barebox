@@ -50,6 +50,11 @@ struct fs_driver_d {
 	/* Truncate a file to given size */
 	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
 
+	int (*symlink)(struct device_d *dev, const char *pathname,
+		       const char *newpath);
+	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
+			size_t size);
+
 	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
@@ -101,6 +106,7 @@ int creat(const char *pathname, mode_t mode);
 int unlink(const char *pathname);
 int close(int fd);
 int flush(int fd);
+int lstat(const char *filename, struct stat *s);
 int stat(const char *filename, struct stat *s);
 int read(int fd, void *buf, size_t count);
 int ioctl(int fd, int request, void *buf);
@@ -123,6 +129,9 @@ int chdir(const char *pathname);
 DIR *opendir(const char *pathname);
 struct dirent *readdir(DIR *dir);
 int closedir(DIR *dir);
+
+int symlink(const char *pathname, const char *newpath);
+int readlink(const char *path, char *buf, size_t bufsiz);
 
 int mount (const char *device, const char *fsname, const char *path);
 int umount(const char *pathname);
@@ -157,6 +166,9 @@ void *read_file(const char *filename, size_t *size);
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */
 char *normalise_path(const char *path);
+char *normalise_link(const char *pathname, const char* symlink);
+
+char *get_mounted_path(const char *path);
 
 /* Register a new filesystem driver */
 int register_fs_driver(struct fs_driver_d *fsdrv);

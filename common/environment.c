@@ -53,7 +53,21 @@ int file_size_action(const char *filename, struct stat *statbuf,
 
 	data->writep += sizeof(struct envfs_inode);
 	data->writep += PAD4(strlen(filename) + 1 - strlen(data->base));
-	data->writep += PAD4(statbuf->st_size);
+	data->writep += sizeof(struct envfs_inode_end);
+	if (S_ISLNK(statbuf->st_mode)) {
+		char path[PATH_MAX];
+
+		memset(path, 0, PATH_MAX);
+
+		if (readlink(filename, path, PATH_MAX - 1) < 0) {
+			perror("read");
+			return 0;
+		}
+		data->writep += PAD4(strlen(path) + 1);
+	} else {
+		data->writep += PAD4(statbuf->st_size);
+	}
+
 	return 1;
 }
 
@@ -62,34 +76,60 @@ int file_save_action(const char *filename, struct stat *statbuf,
 {
 	struct action_data *data = userdata;
 	struct envfs_inode *inode;
+	struct envfs_inode_end *inode_end;
 	int fd;
 	int namelen = strlen(filename) + 1 - strlen(data->base);
 
-	debug("handling file %s size %ld namelen %d\n", filename + strlen(data->base),
-		statbuf->st_size, namelen);
-
 	inode = (struct envfs_inode*)data->writep;
 	inode->magic = ENVFS_32(ENVFS_INODE_MAGIC);
-	inode->namelen = ENVFS_32(namelen);
-	inode->size = ENVFS_32(statbuf->st_size);
+	inode->headerlen = ENVFS_32(PAD4(namelen + sizeof(struct envfs_inode_end)));
 	data->writep += sizeof(struct envfs_inode);
 
 	strcpy(data->writep, filename + strlen(data->base));
 	data->writep += PAD4(namelen);
+	inode_end = (struct envfs_inode_end*)data->writep;
+	data->writep += sizeof(struct envfs_inode_end);
+	inode_end->magic = ENVFS_32(ENVFS_INODE_END_MAGIC);
+	inode_end->mode = ENVFS_32(S_IRWXU | S_IRWXG | S_IRWXO);
 
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		printf("Open %s %s\n", filename, errno_str());
-		goto out;
+	if (S_ISLNK(statbuf->st_mode)) {
+		char path[PATH_MAX];
+		int len;
+
+		memset(path, 0, PATH_MAX);
+
+		if (readlink(filename, path, PATH_MAX - 1) < 0) {
+			perror("read");
+			goto out;
+		}
+		len = strlen(path) + 1;
+
+		inode_end->mode |= ENVFS_32(S_IFLNK);
+
+		memcpy(data->writep, path, len);
+		inode->size = ENVFS_32(len);
+		data->writep += PAD4(len);
+		debug("handling symlink %s size %ld namelen %d headerlen %d\n", filename + strlen(data->base),
+			len, namelen, ENVFS_32(inode->headerlen));
+	} else {
+		debug("handling file %s size %ld namelen %d headerlen %d\n", filename + strlen(data->base),
+			statbuf->st_size, namelen, ENVFS_32(inode->headerlen));
+
+		inode->size = ENVFS_32(statbuf->st_size);
+		fd = open(filename, O_RDONLY);
+		if (fd < 0) {
+			printf("Open %s %s\n", filename, errno_str());
+			goto out;
+		}
+
+		if (read(fd, data->writep, statbuf->st_size) < statbuf->st_size) {
+			perror("read");
+			goto out;
+		}
+		close(fd);
+
+		data->writep += PAD4(statbuf->st_size);
 	}
-
-	if (read(fd, data->writep, statbuf->st_size) < statbuf->st_size) {
-		perror("read");
-		goto out;
-	}
-	close(fd);
-
-	data->writep += PAD4(statbuf->st_size);
 
 out:
 	return 1;
@@ -125,6 +165,8 @@ int envfs_save(char *filename, char *dirname)
 
 	super = (struct envfs_super *)buf;
 	super->magic = ENVFS_32(ENVFS_MAGIC);
+	super->major = ENVFS_MAJOR;
+	super->minor = ENVFS_MINOR;
 	super->size = ENVFS_32(size);
 
 	/* second pass: copy files to buffer */
@@ -174,8 +216,13 @@ int envfs_load(char *filename, char *dir)
 	int envfd;
 	int fd, ret = 0;
 	char *str, *tmp;
-	int namelen_full;
+	int headerlen_full;
 	unsigned long size;
+	/* for envfs < 1.0 */
+	struct envfs_inode_end inode_end_dummy;
+
+	inode_end_dummy.mode = ENVFS_32(S_IRWXU | S_IRWXG | S_IRWXO);
+	inode_end_dummy.magic = ENVFS_32(ENVFS_INODE_END_MAGIC);
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
@@ -221,11 +268,18 @@ int envfs_load(char *filename, char *dir)
 		goto out;
 	}
 
+	if (super.major < ENVFS_MAJOR)
+		printf("envfs version %d.%d loaded into %d.%d\n",
+			super.major, super.minor,
+			ENVFS_MAJOR, ENVFS_MINOR);
+
 	while (size) {
 		struct envfs_inode *inode;
-		uint32_t inode_size, inode_namelen;
+		struct envfs_inode_end *inode_end;
+		uint32_t inode_size, inode_headerlen, namelen;
 
 		inode = (struct envfs_inode *)buf;
+		buf += sizeof(struct envfs_inode);
 
 		if (ENVFS_32(inode->magic) != ENVFS_INODE_MAGIC) {
 			printf("envfs: wrong magic on %s\n", filename);
@@ -233,38 +287,58 @@ int envfs_load(char *filename, char *dir)
 			goto out;
 		}
 		inode_size = ENVFS_32(inode->size);
-		inode_namelen = ENVFS_32(inode->namelen);
+		inode_headerlen = ENVFS_32(inode->headerlen);
+		namelen = strlen(inode->data) + 1;
+		if (super.major < 1)
+			inode_end = &inode_end_dummy;
+		else
+			inode_end = (struct envfs_inode_end *)(buf + PAD4(namelen));
 
-		debug("loading %s size %d namelen %d\n", inode->data,
-			inode_size, inode_namelen);
+		debug("loading %s size %d namelen %d headerlen %d\n", inode->data,
+			inode_size, namelen, inode_headerlen);
 
 		str = concat_path_file(dir, inode->data);
 		tmp = strdup(str);
 		make_directory(dirname(tmp));
 		free(tmp);
 
-		fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		free(str);
-		if (fd < 0) {
-			printf("Open %s\n", errno_str());
-			ret = fd;
+		headerlen_full = PAD4(inode_headerlen);
+		buf += headerlen_full;
+
+		if (ENVFS_32(inode_end->magic) != ENVFS_INODE_END_MAGIC) {
+			printf("envfs: wrong inode_end_magic on %s\n", filename);
+			ret = -EIO;
 			goto out;
 		}
 
-		namelen_full = PAD4(inode_namelen);
-		ret = write(fd, buf + namelen_full + sizeof(struct envfs_inode),
-				inode_size);
-		if (ret < inode_size) {
-			perror("write");
-			ret = -errno;
+		if (S_ISLNK(ENVFS_32(inode_end->mode))) {
+			debug("symlink: %s -> %s\n", str, (char*)buf);
+			if (symlink((char*)buf, str) < 0) {
+				printf("symlink: %s -> %s :", str, (char*)buf);
+				perror("");
+			}
+			free(str);
+		} else {
+			fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			free(str);
+			if (fd < 0) {
+				printf("Open %s\n", errno_str());
+				ret = fd;
+				goto out;
+			}
+
+			ret = write(fd, buf, inode_size);
+			if (ret < inode_size) {
+				perror("write");
+				ret = -errno;
+				close(fd);
+				goto out;
+			}
 			close(fd);
-			goto out;
 		}
-		close(fd);
 
-		buf += PAD4(inode_namelen) + PAD4(inode_size) +
-				sizeof(struct envfs_inode);
-		size -= PAD4(inode_namelen) + PAD4(inode_size) +
+		buf += PAD4(inode_size);
+		size -= headerlen_full + PAD4(inode_size) +
 				sizeof(struct envfs_inode);
 	}
 

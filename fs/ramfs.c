@@ -42,6 +42,7 @@ struct ramfs_inode {
 	struct ramfs_inode *parent;
 	struct ramfs_inode *next;
 	struct ramfs_inode *child;
+	char *symlink;
 	ulong mode;
 
 	struct handle_d *handle;
@@ -176,6 +177,7 @@ static void ramfs_put_inode(struct ramfs_inode *node)
 		data = tmp;
 	}
 
+	free(node->symlink);
 	free(node->name);
 	free(node);
 }
@@ -212,18 +214,38 @@ static struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const ch
 
 /* ---------------------------------------------------------------*/
 
-static int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
+static int __ramfs_create(struct device_d *dev, const char *pathname,
+			  mode_t mode, const char *symlink)
 {
 	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node;
 	char *file;
+	char *__symlink = NULL;
 
 	node = rlookup_parent(priv, pathname, &file);
-	if (node) {
-		node_insert(node, file, mode);
-		return 0;
+	if (!node)
+		return -ENOENT;
+
+	if (symlink) {
+		__symlink = strdup(symlink);
+		if (!__symlink)
+			return -ENOMEM;
 	}
-	return -ENOENT;
+
+	node = node_insert(node, file, mode);
+	if (!node) {
+		free(__symlink);
+		return -ENOMEM;
+	}
+
+	node->symlink = __symlink;
+
+	return 0;
+}
+
+static int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
+{
+	return __ramfs_create(dev, pathname, mode, NULL);
 }
 
 static int ramfs_unlink(struct device_d *dev, const char *pathname)
@@ -532,8 +554,33 @@ static int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s
 	if (!node)
 		return -ENOENT;
 
-	s->st_size = node->size;
+	s->st_size = node->symlink ? strlen(node->symlink) : node->size;
 	s->st_mode = node->mode;
+
+	return 0;
+}
+
+static int ramfs_symlink(struct device_d *dev, const char *pathname,
+		       const char *newpath)
+{
+	mode_t mode = S_IFLNK | S_IRWXU | S_IRWXG | S_IRWXO;
+
+	return __ramfs_create(dev, newpath, mode, pathname);
+}
+
+static int ramfs_readlink(struct device_d *dev, const char *pathname,
+			char *buf, size_t bufsiz)
+{
+	struct ramfs_priv *priv = dev->priv;
+	struct ramfs_inode *node = rlookup(priv, pathname);
+	int len;
+
+	if (!node || !node->symlink)
+		return -ENOENT;
+
+	len = min(bufsiz, strlen(node->symlink));
+
+	memcpy(buf, node->symlink, len);
 
 	return 0;
 }
@@ -584,6 +631,8 @@ static struct fs_driver_d ramfs_driver = {
 	.readdir   = ramfs_readdir,
 	.closedir  = ramfs_closedir,
 	.stat      = ramfs_stat,
+	.symlink   = ramfs_symlink,
+	.readlink  = ramfs_readlink,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = ramfs_probe,

@@ -54,14 +54,19 @@ int recursive_action(const char *fileName,
 		const unsigned depth)
 {
 	struct stat statbuf;
+	unsigned follow;
 	int status;
 	DIR *dir;
 	struct dirent *next;
 
 	if (!fileAction) fileAction = true_action;
 	if (!dirAction) dirAction = true_action;
-	status = stat(fileName, &statbuf);
 
+	follow = ACTION_FOLLOWLINKS;
+	if (depth == 0)
+		follow = ACTION_FOLLOWLINKS;
+	follow &= flags;
+	status = (follow ? stat : lstat)(fileName, &statbuf);
 	if (status < 0) {
 #ifdef DEBUG_RECURS_ACTION
 		bb_error_msg("status=%d followLinks=%d TRUE=%d",

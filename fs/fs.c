@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <linux/stat.h>
+#include <linux/err.h>
 #include <fcntl.h>
 #include <xfuncs.h>
 #include <init.h>
@@ -111,6 +112,61 @@ static int init_cwd(void)
 
 postcore_initcall(init_cwd);
 
+char *normalise_link(const char *pathname, const char *symlink)
+{
+	const char *buf = symlink;
+	char *path_free, *path;
+	char *absolute_path;
+	int point = 0;
+	int dir = 1;
+	int len;
+
+	if (symlink[0] == '/')
+		return strdup(symlink);
+
+	while (*buf == '.' || *buf == '/') {
+		if (*buf == '.') {
+			point++;
+		} else if (*buf == '/') {
+			point = 0;
+			dir++;
+		}
+		if (point > 2) {
+			buf -= 2;
+			break;
+		}
+		buf++;
+	}
+
+	path = path_free = strdup(pathname);
+	if (!path)
+		return NULL;
+
+	while(dir) {
+		path = dirname(path);
+		dir--;
+	}
+
+	len = strlen(buf) + strlen(path) + 1;
+	if (buf[0] != '/')
+		len++;
+
+	absolute_path = calloc(sizeof(char), len);
+
+	if (!absolute_path)
+		goto out;
+
+	strcat(absolute_path, path);
+	if (buf[0] != '/')
+		strcat(absolute_path, "/");
+	strcat(absolute_path, buf);
+
+out:
+	free(path_free);
+
+	return absolute_path;
+}
+
 char *normalise_path(const char *pathname)
 {
 	char *path = xzalloc(strlen(pathname) + strlen(cwd) + 2);
@@ -185,6 +241,15 @@ static struct fs_device_d *get_fsdevice_by_path(const char *path)
 	}
 
 	return fs_dev_root;
+}
+
+char *get_mounted_path(const char *path)
+{
+	struct fs_device_d *fdev;
+
+	fdev = get_fsdevice_by_path(path);
+
+	return fdev->path;
 }
 
 static FILE files[MAX_FILES];
@@ -392,7 +457,7 @@ static int path_check_prereq(const char *path, unsigned int flags)
 	unsigned int m;
 	int ret = 0;
 
-	if (stat(path, &s)) {
+	if (lstat(path, &s)) {
 		if (flags & S_UB_DOES_NOT_EXIST)
 			goto out;
 		ret = -ENOENT;
@@ -434,7 +499,7 @@ static int parent_check_directory(const char *path)
 	int ret;
 	char *dir = dirname(xstrdup(path));
 
-	ret = stat(dir, &s);
+	ret = lstat(dir, &s);
 
 	free(dir);
 
@@ -512,18 +577,61 @@ out:
 }
 EXPORT_SYMBOL(unlink);
 
+static char *realfile(const char *pathname, struct stat *s)
+{
+	char *path = normalise_path(pathname);
+	int ret;
+
+	ret = lstat(path, s);
+	if (ret)
+		goto out;
+
+	if (S_ISLNK(s->st_mode)) {
+		char tmp[PATH_MAX];
+		char *new_path;
+
+		memset(tmp, 0, PATH_MAX);
+
+		ret = readlink(path, tmp, PATH_MAX - 1);
+		if (ret < 0)
+			goto out;
+
+		new_path = normalise_link(path, tmp);
+		free(path);
+		if (!new_path)
+			return ERR_PTR(-ENOMEM);
+		path = new_path;
+
+		ret = lstat(path, s);
+	}
+
+	if (!ret)
+		return path;
+
+out:
+	free(path);
+	return ERR_PTR(ret);
+}
+
 int open(const char *pathname, int flags, ...)
 {
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
-	int exist_err;
+	int exist_err = 0;
 	struct stat s;
-	char *path = normalise_path(pathname);
-	char *freep = path;
+	char *path;
+	char *freep;
 	int ret;
 
-	exist_err = stat(path, &s);
+	path = realfile(pathname, &s);
+
+	if (IS_ERR(path)) {
+		exist_err = PTR_ERR(path);
+		path = normalise_path(pathname);
+	}
+
+	freep = path;
 
 	if (!exist_err && S_ISDIR(s.st_mode)) {
 		ret = -EISDIR;
@@ -890,6 +998,94 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
+int readlink(const char *pathname, char *buf, size_t bufsiz)
+{
+	struct fs_driver_d *fsdrv;
+	struct fs_device_d *fsdev;
+	char *p = normalise_path(pathname);
+	char *freep = p;
+	int ret;
+
+	ret = path_check_prereq(pathname, S_IFLNK);
+	if (ret)
+		goto out;
+
+	fsdev = get_fs_device_and_root_path(&p);
+	if (!fsdev) {
+		ret = -ENODEV;
+		goto out;
+	}
+	fsdrv = fsdev->driver;
+
+	if (fsdrv->readlink)
+		ret = fsdrv->readlink(&fsdev->dev, p, buf, bufsiz);
+	else
+		ret = -ENOSYS;
+
+	if (ret)
+		goto out;
+
+out:
+	free(freep);
+
+	if (ret)
+		errno = -ret;
+
+	return ret;
+}
+EXPORT_SYMBOL(readlink);
+
+int symlink(const char *pathname, const char *newpath)
+{
+	struct fs_driver_d *fsdrv;
+	struct fs_device_d *fsdev;
+	char *p;
+	char *freep = normalise_path(pathname);
+	int ret;
+	struct stat s;
+
+	if (!freep)
+		return -ENOMEM;
+
+	if (!stat(freep, &s) && S_ISDIR(s.st_mode)) {
+		ret = -ENOSYS;
+		goto out;
+	}
+
+	free(freep);
+	freep = p = normalise_path(newpath);
+
+	if (!p)
+		return -ENOMEM;
+
+	ret = lstat(p, &s);
+	if (!ret) {
+		ret = -EEXIST;
+		goto out;
+	}
+
+	fsdev = get_fs_device_and_root_path(&p);
+	if (!fsdev) {
+		ret = -ENODEV;
+		goto out;
+	}
+	fsdrv = fsdev->driver;
+
+	if (fsdrv->symlink) {
+		ret = fsdrv->symlink(&fsdev->dev, pathname, p);
+	} else {
+		ret = -EPERM;
+	}
+
+out:
+	free(freep);
+	if (ret)
+		errno = -ret;
+
+	return ret;
+}
+EXPORT_SYMBOL(symlink);
+
 static int fs_match(struct device_d *dev, struct driver_d *drv)
 {
 	return strcmp(dev->name, drv->name) ? -1 : 0;
@@ -1132,6 +1328,19 @@ EXPORT_SYMBOL(closedir);
 
 int stat(const char *filename, struct stat *s)
 {
+	char *f;
+
+	f = realfile(filename, s);
+	if (IS_ERR(f))
+		return PTR_ERR(f);
+
+	free(f);
+	return 0;
+}
+EXPORT_SYMBOL(stat);
+
+int lstat(const char *filename, struct stat *s)
+{
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
@@ -1169,7 +1378,7 @@ out:
 
 	return ret;
 }
-EXPORT_SYMBOL(stat);
+EXPORT_SYMBOL(lstat);
 
 int mkdir (const char *pathname, mode_t mode)
 {
@@ -1215,6 +1424,12 @@ int rmdir (const char *pathname)
 	char *p = normalise_path(pathname);
 	char *freep = p;
 	int ret;
+
+	ret = path_check_prereq(pathname, S_IFLNK);
+	if (!ret) {
+		ret = -ENOTDIR;
+		goto out;
+	}
 
 	ret = path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY);
 	if (ret)

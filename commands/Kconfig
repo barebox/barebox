@@ -416,7 +416,6 @@ config CMD_UIMAGE
 
 config CMD_BOOTZ
 	tristate
-	default y
 	depends on ARM
 	prompt "bootz"
 	help

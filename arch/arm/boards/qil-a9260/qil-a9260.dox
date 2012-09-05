@@ -1,0 +1,22 @@
+/**
+@page qil-a9260 Calao-systems QIL-A9260
+
+@section qil-a9260 The CPU module
+
+http://www.calao-systems.com
+
+This CPU module is based on an Atmel AT91SAM9260 CPU. The card is shipped with:
+
+- 64MiB or 128MiB SDRAM (3.3V)
+- 256MiB NAND type Flash Memory (3.3V)
+- 64Kib SPI EEPROM
+- RMII 10/100 ethernet PHY
+- Real Time Clock
+- micro SD socket
+
+@section mob-qil-a9xxx Supported development board
+
+Supported development board is:
+- MOB-QIL-A9xxx
+
+*/

@@ -38,6 +38,11 @@ ARM type:
 @li @subpage board_cupid
 @li @subpage phycard-a-l1
 @li @subpage toshiba-ac100
+@li @subpage qil-a9260
+@li @subpage tny-a9g20-lpw
+@li @subpage tny-a9263
+@li @subpage usb-a9g20-lpw
+@li @subpage usb-a9263
 
 Blackfin type:
 

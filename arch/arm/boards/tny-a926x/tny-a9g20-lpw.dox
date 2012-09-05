@@ -1,0 +1,37 @@
+/**
+@page tny-a9g20-lpw Calao-systems TNY-A9G20-LPW
+
+@section tny-a9g20-lpw The CPU module
+
+http://www.calao-systems.com
+
+This CPU module is based on an Atmel AT91SAM9G20 CPU. The module is shipped with:
+
+- 64MiB Low Power SDRAM (1.8V)
+- 256MiB NAND type Flash Memory (1.8V)
+- Real Time Clock (I2C)
+- Micro SD socket
+- USB device port
+- JTAG connector
+- Top expansion connector for daughter boards (GPS, WIFI/BT, GPRS, 3G, ZigBee, MBUS, ...)
+- Bottom expansion connector for development boards
+
+@section mob-tny-a9xxx-md2 Supported development board
+
+Supported development board is:
+- MOB-TNY-A9xxx-MD2
+
+@section tny-db-boards Supported daughter boards
+
+Supported daughter boards are:
+- DAB-GPI2-CXX
+- DAB-GPS
+- DAB-GPRS
+- DAB-HSDPA
+- DAB-WLAN-BT
+- DAB-ZIGBEE
+- DAB-MBUS
+- DAB-KNX-RF
+
+
+*/

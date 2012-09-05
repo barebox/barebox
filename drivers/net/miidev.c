@@ -116,7 +116,7 @@ int miidev_wait_aneg(struct mii_device *mdev)
 			return -ETIMEDOUT;
 		}
 
-	} while (!(status & BMSR_LSTATUS));
+	} while (!(status & BMSR_ANEGCOMPLETE));
 
 	return 0;
 }

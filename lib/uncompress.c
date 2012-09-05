@@ -80,8 +80,6 @@ int uncompress(unsigned char *inbuf, int len,
 	int ret;
 	char *err;
 
-	BUG_ON(uncompress_size);
-
 	if (inbuf) {
 		ft = file_detect_type(inbuf);
 		uncompress_buf = NULL;

@@ -33,4 +33,8 @@ config I2C_TWL6030
 	select I2C_TWLCORE
 	bool "TWL6030 driver"
 
+config I2C_STMPE
+	depends on I2C
+	bool "STMPE-i2c driver"
+
 endmenu

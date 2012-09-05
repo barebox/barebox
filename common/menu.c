@@ -314,6 +314,23 @@ int menu_show(struct menu *m)
 		m->auto_select = -1;
 
 		switch (ch) {
+		case '0' ... '9': {
+			struct menu_entry *me;
+			int num = ch - '0';
+			int next_num = m->selected->num + 10;
+			if (!num)
+				num = 10;
+
+			if (ch_previous == ch && next_num <= m->nb_entries)
+				num = next_num;
+
+			me = menu_entry_get_by_num(m, num);
+			if (me) {
+				m->selected = me;
+				repaint = 1;
+			}
+			break;
+		}
 		case KEY_UP:
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);

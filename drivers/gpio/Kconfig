@@ -1,2 +1,13 @@
 config GPIOLIB
 	bool
+
+if GPIOLIB
+
+menu "GPIO                          "
+
+config GPIO_STMPE
+	depends on I2C_STMPE
+	bool "STMPE GPIO Expander"
+endmenu
+
+endif

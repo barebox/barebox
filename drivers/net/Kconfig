@@ -124,6 +124,11 @@ config DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR
 	depends on DRIVER_NET_DESIGNWARE
 	default n
 
+config DRIVER_NET_GIANFAR
+	bool "Gianfar Ethernet"
+	depends on ARCH_MPC85XX
+	select MIIDEV
+
 source "drivers/net/usb/Kconfig"
 
 endmenu

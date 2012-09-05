@@ -948,7 +948,8 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 		usb_set_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
 		USB_HUB_PRINTF("port %d returns %lX\n", i + 1, dev->status);
 	}
-	mdelay(20);
+	/* power on is encoded in 2ms increments -> times 2 for the actual delay */
+	mdelay(hub->desc.bPwrOn2PwrGood*2);
 }
 
 #define MAX_TRIES 5

@@ -1000,7 +1000,7 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 
 	if (!chip->select_chip)
 		chip->select_chip = nand_select_chip;
-	if (!chip->read_byte)
+	if (!chip->read_byte || chip->read_byte == nand_read_byte)
 		chip->read_byte = busw ? nand_read_byte16 : nand_read_byte;
 	if (!chip->read_word)
 		chip->read_word = nand_read_word;
@@ -1009,12 +1009,12 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 #ifdef CONFIG_MTD_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
-	if (!chip->write_buf)
+	if (!chip->write_buf || chip->write_buf == nand_write_buf)
 		chip->write_buf = busw ? nand_write_buf16 : nand_write_buf;
 #endif
-	if (!chip->read_buf)
+	if (!chip->read_buf || chip->read_buf == nand_read_buf)
 		chip->read_buf = busw ? nand_read_buf16 : nand_read_buf;
-	if (!chip->verify_buf)
+	if (!chip->verify_buf || chip->verify_buf == nand_verify_buf)
 		chip->verify_buf = busw ? nand_verify_buf16 : nand_verify_buf;
 #ifdef CONFIG_NAND_BBT
 	if (!chip->scan_bbt)
@@ -1258,6 +1258,13 @@ ident_done:
 			break;
 	}
 
+	if (chip->options & NAND_BUSWIDTH_AUTO) {
+		chip->options |= busw;
+		nand_set_defaults(chip, busw);
+		if (chip->set_buswidth)
+			chip->set_buswidth(mtd, chip, busw);
+	}
+
 	/*
 	 * Check, if buswidth is correct. Hardware drivers should set
 	 * chip correct !
@@ -1325,6 +1332,11 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 	int i, busw, nand_maf_id;
 	struct nand_chip *chip = mtd->priv;
 	struct nand_flash_dev *type;
+
+	if (chip->options & NAND_BUSWIDTH_AUTO && !chip->set_buswidth) {
+		printk(KERN_ERR "buswidth detection but no buswidth callback\n");
+		return -EINVAL;
+	}
 
 	/* Get buswidth to select the correct functions */
 	busw = chip->options & NAND_BUSWIDTH_16;

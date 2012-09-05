@@ -39,37 +39,23 @@
 #define GPMC_CONF1_VALx8	0x00000800
 #define GPMC_CONF1_VALx16	0x00001800
 
-/** NAND platform specific settings settings */
-static struct gpmc_nand_platform_data nand_plat = {
-	.cs = 0,
-	.max_timeout = MSECOND,
-	.wait_mon_pin = 0,
-};
-
 /**
  * @brief gpmc_generic_nand_devices_init - init generic nand device
  *
  * @return success/fail based on device function
  */
-int gpmc_generic_nand_devices_init(int cs, int width,
-		enum gpmc_ecc_mode eccmode, struct gpmc_config *nand_cfg)
+int omap_add_gpmc_nand_device(struct gpmc_nand_platform_data *pdata)
 {
-	nand_plat.cs = cs;
-
-	if (width == 16)
-		nand_cfg->cfg[0] = GPMC_CONF1_VALx16;
+	if (pdata->device_width == 16)
+		pdata->nand_cfg->cfg[0] = GPMC_CONF1_VALx16;
 	else
-		nand_cfg->cfg[0] = GPMC_CONF1_VALx8;
-
-	nand_plat.device_width = width;
-	nand_plat.ecc_mode = eccmode;
-	nand_plat.priv = nand_cfg;
+		pdata->nand_cfg->cfg[0] = GPMC_CONF1_VALx8;
 
 	/* Configure GPMC CS before register */
-	gpmc_cs_config(nand_plat.cs, nand_cfg);
+	gpmc_cs_config(pdata->cs, pdata->nand_cfg);
 
 	add_generic_device("gpmc_nand", DEVICE_ID_DYNAMIC, NULL, OMAP_GPMC_BASE,
-			1024 * 4, IORESOURCE_MEM, &nand_plat);
+			1024 * 4, IORESOURCE_MEM, pdata);
 
 	return 0;
 }

@@ -50,10 +50,6 @@ struct gpmc_nand_platform_data {
 	/** If there are any special setups you'd want to do */
 	int (*nand_setup) (struct gpmc_nand_platform_data *);
 
-	/** set up if we want H/w ECC here and other
-	 * platform specific configs here
-	 */
-	unsigned short plat_options;
 	/** ecc mode to use */
 	enum gpmc_ecc_mode ecc_mode;
 	/** setup any special options */
@@ -62,24 +58,14 @@ struct gpmc_nand_platform_data {
 	char device_width;
 	/** Set this to WAITx+1, so GPMC WAIT0 will be 1 and so on. */
 	char wait_mon_pin;
-	/** Set this to the max timeout for the device */
-	uint64_t max_timeout;
 
 	/* if you like a custom oob use this. */
 	struct nand_ecclayout *oob;
-	/** platform specific private data */
-	void *priv;
+	/** gpmc config for nand */
+	struct gpmc_config *nand_cfg;
 };
 
-/** Platform specific options definitions */
-/** plat_options: Wait montioring pin low */
-#define NAND_WAITPOL_LOW        (0 << 0)
-/** plat_options: Wait montioring pin high */
-#define NAND_WAITPOL_HIGH       (1 << 0)
-#define NAND_WAITPOL_MASK       (1 << 0)
-
-int gpmc_generic_nand_devices_init(int cs, int width,
-			enum gpmc_ecc_mode, struct gpmc_config *nand_cfg);
+int omap_add_gpmc_nand_device(struct gpmc_nand_platform_data *pdata);
 
 extern struct gpmc_config omap3_nand_cfg;
 extern struct gpmc_config omap4_nand_cfg;

@@ -7,6 +7,7 @@
 #include <mach/syslib.h>
 #include <mach/xload.h>
 #include <mach/gpmc.h>
+#include <mach/gpio.h>
 
 /*
  *  The following several lines are taken from U-Boot to support
@@ -27,6 +28,10 @@
 #define OMAP4_CONTROL_ID_CODE_ES2_3     0x6B95C02F
 #define OMAP4460_CONTROL_ID_CODE_ES1_0  0x0B94E02F
 #define OMAP4460_CONTROL_ID_CODE_ES1_1  0x2B94E02F
+
+/* EMIF_L3_CONFIG register value */
+#define EMIF_L3_CONFIG_VAL_SYS_10_LL_0		0x0A0000FF
+#define EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0	0x0A300000
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -263,14 +268,15 @@ int omap4_emif_config(unsigned int base, const struct ddr_regs *ddr_regs)
 
 static void reset_phy(unsigned int base)
 {
-	*(volatile int*)(base + IODFT_TLGC) |= (1 << 10);
+	unsigned int val = readl(base + IODFT_TLGC);
+	val |= (1 << 10);
+	writel(val, base + IODFT_TLGC);
 }
 
 void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 		const struct dpll_param *core)
 {
-	unsigned int rev;
-	rev = omap4_revision();
+	unsigned int rev = omap4_revision();
 
 	if (rev == OMAP4430_ES2_0) {
 		writel(0x9e9e9e9e, 0x4A100638);
@@ -290,8 +296,15 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	/* Both EMIFs 128 byte interleaved */
 	writel(0x80640300, OMAP44XX_DMM_BASE + DMM_LISA_MAP_0);
 
-	*(volatile int*)(OMAP44XX_DMM_BASE + DMM_LISA_MAP_2) = 0x00000000;
-	*(volatile int*)(OMAP44XX_DMM_BASE + DMM_LISA_MAP_3) = 0xFF020100;
+	writel(0x00000000, OMAP44XX_DMM_BASE + DMM_LISA_MAP_2);
+	writel(0xFF020100, OMAP44XX_DMM_BASE + DMM_LISA_MAP_3);
+
+	if (rev >= OMAP4460_ES1_0) {
+		writel(0x80640300, OMAP44XX_MA_BASE + DMM_LISA_MAP_0);
+
+		writel(0x00000000, OMAP44XX_MA_BASE + DMM_LISA_MAP_2);
+		writel(0xFF020100, OMAP44XX_MA_BASE + DMM_LISA_MAP_3);
+	}
 
 	/* DDR needs to be initialised @ 19.2 MHz
 	 * So put core DPLL in bypass mode
@@ -301,10 +314,10 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 
 	/* No IDLE: BUG in SDC */
 	sr32(CM_MEMIF_CLKSTCTRL, 0, 32, 0x2);
-	while(((*(volatile int*)CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
+	while ((readl(CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
 
-	*(volatile int*)(OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL) = 0x0;
-	*(volatile int*)(OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL) = 0x0;
+	writel(0x0, OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL);
+	writel(0x0, OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL);
 
 	omap4_emif_config(OMAP44XX_EMIF1_BASE, ddr_regs);
 	omap4_emif_config(OMAP44XX_EMIF2_BASE, ddr_regs);
@@ -313,13 +326,13 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	omap4_lock_core_dpll_shadow(core);
 
 	/* Set DLL_OVERRIDE = 0 */
-	*(volatile int*)CM_DLL_CTRL = 0x0;
+	writel(0x0, CM_DLL_CTRL);
 
 	delay(200);
 
 	/* Check for DDR PHY ready for EMIF1 & EMIF2 */
-	while((((*(volatile int*)(OMAP44XX_EMIF1_BASE + EMIF_STATUS))&(0x04)) != 0x04) \
-	|| (((*(volatile int*)(OMAP44XX_EMIF2_BASE + EMIF_STATUS))&(0x04)) != 0x04));
+	while (((readl(OMAP44XX_EMIF1_BASE + EMIF_STATUS) & 0x04) != 0x04) \
+		|| ((readl(OMAP44XX_EMIF2_BASE + EMIF_STATUS) & 0x04) != 0x04));
 
 	/* Reprogram the DDR PYHY Control register */
 	/* PHY control values */
@@ -331,9 +344,16 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 
 	/* No IDLE: BUG in SDC */
 	//sr32(CM_MEMIF_CLKSTCTRL, 0, 32, 0x2);
-	//while(((*(volatile int*)CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
-	*(volatile int*)(OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL) = 0x80000000;
-	*(volatile int*)(OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL) = 0x80000000;
+	//while ((readl(CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
+	writel(0x80000000, OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL);
+	writel(0x80000000, OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL);
+
+	if (rev >= OMAP4460_ES1_0) {
+		writel(EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0,
+				OMAP44XX_EMIF1_BASE + EMIF_L3_CONFIG);
+		writel(EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0,
+				OMAP44XX_EMIF2_BASE + EMIF_L3_CONFIG);
+	}
 
 	/*
 	 * DMM : DMM_LISA_MAP_0(Section_0)
@@ -347,8 +367,8 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	reset_phy(OMAP44XX_EMIF1_BASE);
 	reset_phy(OMAP44XX_EMIF2_BASE);
 
-	*((volatile int *)0x80000000) = 0;
-	*((volatile int *)0x80000080) = 0;
+	writel(0, 0x80000000);
+	writel(0, 0x80000080);
 }
 
 void omap4_power_i2c_send(u32 r)
@@ -466,7 +486,7 @@ enum omap_boot_src omap4_bootsrc(void)
 
 #define I2C_SLAVE 0x12
 
-noinline int omap4_scale_vcores(void)
+noinline int omap4_scale_vcores(unsigned vsel0_pin)
 {
 	unsigned int rev = omap4_revision();
 
@@ -476,8 +496,41 @@ noinline int omap4_scale_vcores(void)
 	writel(0, OMAP44XX_PRM_VC_CFG_I2C_MODE);
 	writel(0x6026, OMAP44XX_PRM_VC_CFG_I2C_CLK);
 
+	/* TPS - supplies vdd_mpu on 4460 */
+	if (rev >= OMAP4460_ES1_0) {
+		/*
+		 * Setup SET1 and SET0 with right values so that kernel
+		 * can use either of them based on its needs.
+		 */
+		omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET0, 1430);
+		omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET1, 1430);
+
+		/*
+		 * Select SET1 in TPS62361:
+		 * VSEL1 is grounded on board. So the following selects
+		 * VSEL1 = 0 and VSEL0 = 1
+		 */
+		gpio_direction_output(vsel0_pin, 0);
+		gpio_set_value(vsel0_pin, 1);
+	}
+
 	/* set VCORE1 force VSEL */
-	omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
+	/*
+	 * 4430 : supplies vdd_mpu
+	 * Setting a high voltage for Nitro mode as smart reflex is not enabled.
+	 * We use the maximum possible value in the AVS range because the next
+	 * higher voltage in the discrete range (code >= 0b111010) is way too
+	 * high
+	 *
+	 * 4460 : supplies vdd_core
+	 *
+	 */
+	if (rev < OMAP4460_ES1_0)
+		/* 0x55: i2c addr, 3A: ~ 1430 mvolts*/
+		omap4_power_i2c_send((0x3A55 << 8) | I2C_SLAVE);
+	else
+		/* 0x55: i2c addr, 28: ~ 1200 mvolts*/
+		omap4_power_i2c_send((0x2855 << 8) | I2C_SLAVE);
 
 	/* FIXME: set VCORE2 force VSEL, Check the reset value */
 	omap4_power_i2c_send((0x295B << 8) | I2C_SLAVE);
@@ -490,6 +543,7 @@ noinline int omap4_scale_vcores(void)
 	case OMAP4430_ES2_1:
 		omap4_power_i2c_send((0x2A61 << 8) | I2C_SLAVE);
 		break;
+	/* > OMAP4460_ES1_0 : VCORE3 not connected */
 	}
 
 	return 0;

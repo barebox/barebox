@@ -3,6 +3,7 @@
 #include <io.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
+#include <mach/omap4-clock.h>
 
 static const struct pad_conf_entry core_padconf_array[] = {
 	{GPMC_AD0, (IEN | PTD | DIS | M0)},				/* gpmc_ad0 */
@@ -242,4 +243,11 @@ void set_muxconf_regs(void)
 
 	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_WKUP, wkup_padconf_array,
 			ARRAY_SIZE(wkup_padconf_array));
+
+	/* gpio_wk7 is used for controlling TPS on 4460 */
+	if (omap4_revision() >= OMAP4460_ES1_0) {
+		writew(M3, OMAP44XX_CONTROL_PADCONF_WKUP + PAD1_FREF_CLK4_REQ);
+		/* Enable GPIO-1 clocks before TPS initialization */
+		omap4_enable_gpio1_wup_clocks();
+	}
 }

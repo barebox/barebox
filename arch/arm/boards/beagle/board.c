@@ -283,6 +283,12 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
+static struct gpmc_nand_platform_data nand_plat = {
+	.device_width = 16,
+	.ecc_mode = OMAP_ECC_HAMMING_CODE_HW_ROMCODE,
+	.nand_cfg = &omap3_nand_cfg,
+};
+
 static int beagle_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
@@ -306,8 +312,7 @@ static int beagle_devices_init(void)
 	/* WP is made high and WAIT1 active Low */
 	gpmc_generic_init(0x10);
 #endif
-	gpmc_generic_nand_devices_init(0, 16,
-			OMAP_ECC_HAMMING_CODE_HW_ROMCODE, &omap3_nand_cfg);
+	omap_add_gpmc_nand_device(&nand_plat);
 
 	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
 			   IORESOURCE_MEM, NULL);

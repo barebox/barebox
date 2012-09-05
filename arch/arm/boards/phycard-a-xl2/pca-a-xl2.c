@@ -104,6 +104,12 @@ static struct omap_hsmmc_platform_data mmc_device = {
 #define OMAP4_MMC1_PBIASLITE_PWRDNZ		(1<<22)
 #define OMAP4_MMC1_PWRDNZ			(1<<26)
 
+static struct gpmc_nand_platform_data nand_plat = {
+	.device_width = 16,
+	.ecc_mode = OMAP_ECC_BCH8_CODE_HW,
+	.nand_cfg = &omap4_nand_cfg,
+};
+
 static int pcaaxl2_devices_init(void)
 {
 	u32 value;
@@ -124,8 +130,7 @@ static int pcaaxl2_devices_init(void)
 
 	pcaaxl2_network_init();
 
-	gpmc_generic_nand_devices_init(0, 16,
-			OMAP_ECC_BCH8_CODE_HW, &omap4_nand_cfg);
+	omap_add_gpmc_nand_device(&nand_plat);
 
 #ifdef CONFIG_PARTITION
 	devfs_add_partition("nand0", 0x00000, SZ_128K,

@@ -22,11 +22,7 @@
  * static struct gpmc_nand_platform_data nand_plat = {
  *	.cs = give the chip select of the device
  *	.device_width = what is the width of the device 8 or 16?
- *	.max_timeout = delay desired for operation
  *	.wait_mon_pin = do you use wait monitoring? if so wait pin
- *	.plat_options = platform options.
- *		NAND_HWECC_ENABLE/DISABLE - hw ecc enable/disable
- *		NAND_WAITPOL_LOW/HIGH - wait pin polarity
  *	.oob = if you would like to replace oob with a custom OOB.
  *	.nand_setup  = if you would like a special setup function to be called
  *	.priv = any params you'd like to save(e.g. like nand_setup to use)
@@ -112,12 +108,11 @@ struct gpmc_nand_info {
 	void *gpmc_address;
 	void *gpmc_data;
 	void __iomem *gpmc_base;
-	unsigned char wait_mon_mask;
-	uint64_t timeout;
+	u32 wait_mon_mask;
 	unsigned inuse:1;
-	unsigned wait_pol:1;
 	unsigned char ecc_parity_pairs;
 	enum gpmc_ecc_mode ecc_mode;
+	void *cs_base;
 };
 
 /* Typical BOOTROM oob layouts-requires hwecc **/
@@ -191,25 +186,11 @@ static int omap_dev_ready(struct mtd_info *mtd)
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	uint64_t start = get_time_ns();
-	unsigned long comp;
 
-	/* What do we mean by assert and de-assert? */
-	comp = (oinfo->wait_pol == NAND_WAITPOL_HIGH) ?
-	    oinfo->wait_mon_mask : 0x0;
-	while (1) {
-		/* Breakout condition */
-		if (is_timeout(start, oinfo->timeout)) {
-			debug("%s timedout\n", __func__);
-			return -ETIMEDOUT;
-		}
-		/* if the wait is released, we are good to go */
-		if (comp ==
-		    (readl(oinfo->gpmc_base + GPMC_STATUS) &&
-		     oinfo->wait_mon_mask))
-			break;
-	}
-	return 0;
+	if (readl(oinfo->gpmc_base + GPMC_STATUS) & oinfo->wait_mon_mask)
+		return 1;
+	else
+		return 0;
 }
 
 /**
@@ -603,6 +584,101 @@ static int omap_gpmc_read_buf_manual(struct mtd_info *mtd, struct nand_chip *chi
 	return bytes;
 }
 
+/**
+ * omap_read_buf_pref - read data from NAND controller into buffer
+ * @mtd: MTD device structure
+ * @buf: buffer to store date
+ * @len: number of bytes to read
+ */
+static void omap_read_buf_pref(struct mtd_info *mtd, u_char *buf, int len)
+{
+	struct gpmc_nand_info *info = container_of(mtd,
+						struct gpmc_nand_info, minfo);
+	u32 r_count = 0;
+	u32 *p = (u32 *)buf;
+
+	/* take care of subpage reads */
+	if (len % 4) {
+		if (info->nand.options & NAND_BUSWIDTH_16)
+			readsw(info->cs_base, buf, (len % 4) / 2);
+		else
+			readsb(info->cs_base, buf, len % 4);
+		p = (u32 *) (buf + len % 4);
+		len -= len % 4;
+	}
+
+	/* configure and start prefetch transfer */
+	gpmc_prefetch_enable(info->gpmc_cs,
+			PREFETCH_FIFOTHRESHOLD_MAX, 0x0, len, 0x0);
+
+	do {
+		r_count = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		r_count = GPMC_PREFETCH_STATUS_FIFO_CNT(r_count);
+		r_count = r_count >> 2;
+		readsl(info->cs_base, p, r_count);
+		p += r_count;
+		len -= r_count << 2;
+	} while (len);
+
+	/* disable and stop the PFPW engine */
+	gpmc_prefetch_reset(info->gpmc_cs);
+}
+
+/**
+ * omap_write_buf_pref - write buffer to NAND controller
+ * @mtd: MTD device structure
+ * @buf: data buffer
+ * @len: number of bytes to write
+ */
+static void omap_write_buf_pref(struct mtd_info *mtd,
+					const u_char *buf, int len)
+{
+	struct gpmc_nand_info *info = container_of(mtd,
+						struct gpmc_nand_info, minfo);
+	u32 w_count = 0;
+	u_char *buf1 = (u_char *)buf;
+	u32 *p32 = (u32 *)buf;
+	uint64_t start;
+
+	/* take care of subpage writes */
+	while (len % 4 != 0) {
+		writeb(*buf, info->nand.IO_ADDR_W);
+		buf1++;
+		p32 = (u32 *)buf1;
+		len--;
+	}
+
+	/*  configure and start prefetch transfer */
+	gpmc_prefetch_enable(info->gpmc_cs,
+			PREFETCH_FIFOTHRESHOLD_MAX, 0x0, len, 0x1);
+
+	while (len >= 0) {
+		w_count = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		w_count = GPMC_PREFETCH_STATUS_FIFO_CNT(w_count);
+		w_count = w_count >> 2;
+		writesl(info->cs_base, p32, w_count);
+		p32 += w_count;
+		len -= w_count << 2;
+	}
+
+	/* wait for data to flushed-out before reset the prefetch */
+	start = get_time_ns();
+	while (1) {
+		u32 regval, status;
+		regval = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
+		status = GPMC_PREFETCH_STATUS_COUNT(regval);
+		if (!status)
+			break;
+		if (is_timeout(start, 100 * MSECOND)) {
+			dev_err(mtd->dev, "prefetch flush timed out\n");
+			break;
+		}
+	}
+
+	/* disable and stop the PFPW engine */
+	gpmc_prefetch_reset(info->gpmc_cs);
+}
+
 /*
  * read a page with the ecc layout used by the OMAP4 romcode. The
  * romcode expects an unusual ecc layout (f = free, e = ecc):
@@ -803,6 +879,20 @@ static int omap_gpmc_eccmode_set(struct device_d *dev, struct param_d *param, co
 	return omap_gpmc_eccmode(oinfo, i);
 }
 
+static int gpmc_set_buswidth(struct mtd_info *mtd, struct nand_chip *chip, int buswidth)
+{
+	struct gpmc_nand_info *oinfo = chip->priv;
+
+	if (buswidth == NAND_BUSWIDTH_16)
+		oinfo->pdata->nand_cfg->cfg[0] |= 0x00001000;
+	else
+		oinfo->pdata->nand_cfg->cfg[0] &= ~0x00001000;
+
+	gpmc_cs_config(oinfo->pdata->cs, oinfo->pdata->nand_cfg);
+
+	return 0;
+}
+
 /**
  * @brief nand device probe.
  *
@@ -853,15 +943,23 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	oinfo->gpmc_command = (void *)(cs_base + GPMC_CS_NAND_COMMAND);
 	oinfo->gpmc_address = (void *)(cs_base + GPMC_CS_NAND_ADDRESS);
 	oinfo->gpmc_data = (void *)(cs_base + GPMC_CS_NAND_DATA);
-	oinfo->timeout = pdata->max_timeout;
+	oinfo->cs_base = (void *)pdata->nand_cfg->base;
 	dev_dbg(pdev, "GPMC base=0x%p cmd=0x%p address=0x%p data=0x%p cs_base=0x%p\n",
 		oinfo->gpmc_base, oinfo->gpmc_command, oinfo->gpmc_address,
 		oinfo->gpmc_data, cs_base);
 
-	/* If we are 16 bit dev, our gpmc config tells us that */
-	if ((readl(cs_base) & 0x3000) == 0x1000) {
-		dev_dbg(pdev, "16 bit dev\n");
+	switch (pdata->device_width) {
+	case 0:
+		printk("probe buswidth\n");
+		nand->options |= NAND_BUSWIDTH_AUTO;
+		break;
+	case 8:
+		break;
+	case 16:
 		nand->options |= NAND_BUSWIDTH_16;
+		break;
+	default:
+		return -EINVAL;
 	}
 
 	/* Same data register for in and out */
@@ -879,11 +977,11 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		err = -EINVAL;
 		goto out_release_mem;
 	}
+
 	if (pdata->wait_mon_pin) {
 		/* Set up the wait monitoring mask
 		 * This is GPMC_STATUS reg relevant */
 		oinfo->wait_mon_mask = (0x1 << (pdata->wait_mon_pin - 1)) << 8;
-		oinfo->wait_pol = (pdata->plat_options & NAND_WAITPOL_MASK);
 		nand->dev_ready = omap_dev_ready;
 		nand->chip_delay = 0;
 	} else {
@@ -900,6 +998,8 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	nand->options |= NAND_OWN_BUFFERS;
 	nand->buffers = xzalloc(sizeof(*nand->buffers));
+
+	nand->set_buswidth = gpmc_set_buswidth;
 
 	/* State my controller */
 	nand->controller = &oinfo->controller;
@@ -928,18 +1028,12 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		goto out_release_mem;
 	}
 
-	switch (pdata->device_width) {
-	case 8:
-		lsp = &ecc_sp_x8;
-		llp = &ecc_lp_x8;
-		break;
-	case 16:
+	if (nand->options & NAND_BUSWIDTH_16) {
 		lsp = &ecc_sp_x16;
 		llp = &ecc_lp_x16;
-		break;
-	default:
-		err = -EINVAL;
-		goto out_release_mem;
+	} else {
+		lsp = &ecc_sp_x8;
+		llp = &ecc_lp_x8;
 	}
 
 	switch (minfo->writesize) {
@@ -953,6 +1047,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		err = -EINVAL;
 		goto out_release_mem;
 	}
+
+	nand->read_buf   = omap_read_buf_pref;
+	nand->write_buf  = omap_write_buf_pref;
 
 	nand->options |= NAND_SKIP_BBTSCAN;
 

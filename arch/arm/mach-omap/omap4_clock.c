@@ -1,6 +1,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/syslib.h>
+#include <mach/silicon.h>
 #include <mach/clocks.h>
 
 #define LDELAY	12000000
@@ -12,6 +13,10 @@ void omap4_configure_mpu_dpll(const struct dpll_param *dpll_param)
 	wait_on_value((1 << 0), 0, CM_IDLEST_DPLL_MPU, LDELAY);
 
 	sr32(CM_AUTOIDLE_DPLL_MPU, 0, 3, 0x0); /* Disable DPLL autoidle */
+
+	/* Errata ID: i700, clear CM_CLKSEL_DPLL_MPU[22] : DCC_EN */
+	if (omap4_revision() >= OMAP4460_ES1_0)
+		sr32(CM_CLKSEL_DPLL_MPU, 0, 22, 0);
 
 	/* Set M,N,M2 values */
 	sr32(CM_CLKSEL_DPLL_MPU, 8, 11, dpll_param->m);
@@ -197,6 +202,27 @@ void omap4_lock_core_dpll_shadow(const struct dpll_param *param)
 	wait_on_value((1 << 0), 1, CM_IDLEST_DPLL_CORE, LDELAY);
 }
 
+void omap4_enable_gpio_clocks(void)
+{
+	sr32(CM_L4PER_GPIO2_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO2_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO3_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO3_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO4_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO4_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO5_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO5_CLKCTRL, LDELAY);
+	sr32(CM_L4PER_GPIO6_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO6_CLKCTRL, LDELAY);
+}
+
+void omap4_enable_gpio1_wup_clocks(void)
+{
+	/* WKUP clocks */
+	sr32(CM_WKUP_GPIO1_CLKCTRL, 0, 32, 0x1);
+	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_GPIO1_CLKCTRL, LDELAY);
+}
+
 void omap4_enable_all_clocks(void)
 {
 	/* Enable Ducati clocks */
@@ -254,16 +280,7 @@ void omap4_enable_all_clocks(void)
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_DMTIMER9_CLKCTRL, LDELAY);
 
 	/* GPIO clocks */
-	sr32(CM_L4PER_GPIO2_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO2_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO3_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO3_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO4_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO4_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO5_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO5_CLKCTRL, LDELAY);
-	sr32(CM_L4PER_GPIO6_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_GPIO6_CLKCTRL, LDELAY);
+	omap4_enable_gpio_clocks();
 
 	sr32(CM_L4PER_HDQ1W_CLKCTRL, 0, 32, 0x2);
 
@@ -313,8 +330,7 @@ void omap4_enable_all_clocks(void)
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_L4PER_UART4_CLKCTRL, LDELAY);
 
 	/* WKUP clocks */
-	sr32(CM_WKUP_GPIO1_CLKCTRL, 0, 32, 0x1);
-	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_GPIO1_CLKCTRL, LDELAY);
+	omap4_enable_gpio1_wup_clocks();
 	sr32(CM_WKUP_TIMER1_CLKCTRL, 0, 32, 0x01000002);
 	wait_on_value((1 << 17)|(1 << 16), 0, CM_WKUP_TIMER1_CLKCTRL, LDELAY);
 
@@ -378,3 +394,21 @@ void omap4_enable_all_clocks(void)
 	sr32(CM_L3INIT_USBPHY_CLKCTRL, 0, 32, 0x301);
 }
 
+void omap4_do_scale_tps62361(u32 reg, u32 volt_mv)
+{
+	u32 temp, step;
+
+	step = volt_mv - TPS62361_BASE_VOLT_MV;
+	step /= 10;
+
+	temp = TPS62361_I2C_SLAVE_ADDR |
+	    (reg << OMAP44XX_PRM_VC_VAL_BYPASS_REGADDR_SHIFT) |
+	    (step << OMAP44XX_PRM_VC_VAL_BYPASS_DATA_SHIFT) |
+	    OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT;
+	debug("do_scale_tps62361: volt - %d step - 0x%x\n", volt_mv, step);
+
+	writel(temp, OMAP44XX_PRM_VC_VAL_BYPASS);
+	if (!wait_on_value(OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT, 0,
+				OMAP44XX_PRM_VC_VAL_BYPASS, LDELAY))
+		puts("Scaling voltage failed for vdd_mpu from TPS\n");
+}

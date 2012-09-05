@@ -77,6 +77,23 @@ static iomux_v3_cfg_t sabrelite_pads[] = {
 	MX6Q_PAD_EIM_D17__ECSPI1_MISO,
 	MX6Q_PAD_EIM_D18__ECSPI1_MOSI,
 	MX6Q_PAD_EIM_D19__GPIO_3_19,	/* CS1 */
+
+	/* I2C0 */
+	MX6Q_PAD_EIM_D21__I2C1_SCL,
+	MX6Q_PAD_EIM_D28__I2C1_SDA,
+
+	/* I2C1 */
+	MX6Q_PAD_KEY_COL3__I2C2_SCL,
+	MX6Q_PAD_KEY_ROW3__I2C2_SDA,
+
+	/* I2C2 */
+	MX6Q_PAD_GPIO_5__I2C3_SCL,
+	MX6Q_PAD_GPIO_16__I2C3_SDA,
+
+	/* USB */
+	MX6Q_PAD_GPIO_17__GPIO_7_12,
+	MX6Q_PAD_EIM_D22__GPIO_3_22,
+	MX6Q_PAD_EIM_D30__USBOH3_USBH1_OC,
 };
 
 static iomux_v3_cfg_t sabrelite_enet_pads[] = {
@@ -227,6 +244,19 @@ static struct esdhc_platform_data sabrelite_sd4_data = {
 	.wp_type = ESDHC_WP_NONE,
 };
 
+static void sabrelite_ehci_init(void)
+{
+	imx6_usb_phy1_disable_oc();
+	imx6_usb_phy1_enable();
+
+	/* hub reset */
+	gpio_direction_output(204, 0);
+	udelay(2000);
+	gpio_set_value(204, 1);
+
+	add_generic_usb_ehci_device(1, MX6_USBOH3_USB_BASE_ADDR + 0x200, NULL);
+}
+
 static int sabrelite_devices_init(void)
 {
 	imx6_add_mmc2(&sabrelite_sd3_data);
@@ -236,6 +266,8 @@ static int sabrelite_devices_init(void)
 	imx6_iim_register_fec_ethaddr();
 	imx6_add_fec(&fec_info);
 	mx6_rgmii_rework();
+
+	sabrelite_ehci_init();
 
 	spi_register_board_info(sabrelite_spi_board_info,
 			ARRAY_SIZE(sabrelite_spi_board_info));

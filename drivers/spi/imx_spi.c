@@ -517,7 +517,7 @@ static int imx_spi_probe(struct device_d *dev)
 		version = SPI_IMX_VER_0_0;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_0_7
-	if (cpu_is_mx25())
+	if (cpu_is_mx25() || cpu_is_mx35())
 		version = SPI_IMX_VER_0_7;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3

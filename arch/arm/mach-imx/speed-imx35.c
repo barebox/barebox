@@ -192,6 +192,11 @@ ulong fsl_get_i2cclk(void)
 	return imx_get_ipg_perclk();
 }
 
+unsigned long imx_get_cspiclk(void)
+{
+	return imx_get_ipgclk();
+}
+
 void imx_dump_clocks(void)
 {
 	printf("mpll:    %10ld Hz\n", imx_get_mpllclk());

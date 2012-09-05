@@ -137,7 +137,7 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 		retlen += ret;
 	}
 	if (ret < 0)
-		printf("err %d\n", ret);
+		printf("err %lu\n", ret);
 	else
 		ret = retlen;
 	return ret;
@@ -222,7 +222,7 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	}
 }
 
-static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
+static int mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
 	struct erase_info erase;
@@ -275,7 +275,7 @@ static const struct file_operations mtd_raw_fops = {
 	.lseek		= dev_lseek_default,
 };
 
-static int add_mtdraw_device(struct mtd_info *mtd, char *devname)
+static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
 {
 	struct mtdraw *mtdraw;
 
@@ -290,13 +290,26 @@ static int add_mtdraw_device(struct mtd_info *mtd, char *devname)
 	mtdraw->cdev.priv = mtdraw;
 	mtdraw->cdev.dev = &mtd->class_dev;
 	mtdraw->cdev.mtd = mtd;
+	*priv = mtdraw;
 	devfs_create(&mtdraw->cdev);
+
+	return 0;
+}
+
+static int del_mtdraw_device(struct mtd_info *mtd, void **priv)
+{
+	struct mtdraw *mtdraw;
+
+	mtdraw = *priv;
+	devfs_remove(&mtdraw->cdev);
+	free(mtdraw);
 
 	return 0;
 }
 
 static struct mtddev_hook mtdraw_hook = {
 	.add_mtd_device = add_mtdraw_device,
+	.del_mtd_device = del_mtdraw_device,
 };
 
 static int __init register_mtdraw(void)

@@ -31,8 +31,9 @@ SECTIONS
 {
 	. = TEXT_BASE;
 
+#ifndef CONFIG_PBL_IMAGE
 	PRE_IMAGE
-
+#endif
 	. = ALIGN(4);
 	.text      :
 	{

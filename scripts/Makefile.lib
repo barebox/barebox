@@ -21,6 +21,17 @@ lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 # o if we encounter foo/ in $(obj-m), remove it from $(obj-m)
 #   and add the directory to the list of dirs to descend into: $(subdir-m)
 
+# for non dirs add pbl- prefix to the target
+# so we recompile the source with custom flags and custom quiet
+__pbl-y		:= $(notdir $(pbl-y))
+pbl-y		:= $(patsubst %.o,pbl-%.o,$(__pbl-y))
+# add subdir from $(obj-y) too so we do not need to have the dir define in
+# both $(obj-y) and $(pbl-y)
+__pbl-y		:= $(filter-out $(pbl-y), $(filter %/, $(obj-y)))
+pbl-y		+= $(__pbl-y)
+
+pbl-y		:= $(sort $(patsubst %/, %/built-in-pbl.o, $(pbl-y)))
+
 __subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
 subdir-y	+= $(__subdir-y)
 __subdir-m	:= $(patsubst %/,%,$(filter %/, $(obj-m)))
@@ -46,7 +57,9 @@ multi-objs   := $(multi-objs-y) $(multi-objs-m)
 
 # $(subdir-obj-y) is the list of objects in $(obj-y) which do not live
 # in the local directory
+__subdir-obj-y := $(foreach o,$(pbl-y),$(if $(filter-out $(o),$(notdir $(o))),$(o)))
 subdir-obj-y := $(foreach o,$(obj-y),$(if $(filter-out $(o),$(notdir $(o))),$(o)))
+subdir-obj-y += $(__subdir-obj-y)
 
 # $(obj-dirs) is a list of directories that contain object files
 obj-dirs := $(dir $(multi-objs) $(subdir-obj-y))
@@ -63,6 +76,7 @@ targets		:= $(addprefix $(obj)/,$(targets))
 obj-y		:= $(addprefix $(obj)/,$(obj-y))
 obj-m		:= $(addprefix $(obj)/,$(obj-m))
 lib-y		:= $(addprefix $(obj)/,$(lib-y))
+pbl-y		:= $(addprefix $(obj)/,$(pbl-y))
 subdir-obj-y	:= $(addprefix $(obj)/,$(subdir-obj-y))
 real-objs-y	:= $(addprefix $(obj)/,$(real-objs-y))
 real-objs-m	:= $(addprefix $(obj)/,$(real-objs-m))
@@ -228,3 +242,9 @@ quiet_cmd_xzmisc = XZMISC  $@
 cmd_xzmisc = (cat $(filter-out FORCE,$^) | \
 	xz --check=crc32 --lzma2=dict=1MiB) > $@ || \
 	(rm -f $@ ; false)
+
+quiet_cmd_disasm = DISASM  $@
+cmd_disasm = $(OBJDUMP) -d $< > $@
+
+quiet_cmd_ln = LN      $@
+cmd_ln = ln -sf $< $@

@@ -603,6 +603,16 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 	disable_nand_controller(host);
 }
 
+#include <asm-generic/sections.h>
+
+void __nand_boot_init nand_boot(void)
+{
+	void *dest = _text;
+	int size = barebox_image_size;
+	int page = 0;
+
+	s3c24x0_nand_load_image(dest, size, page);
+}
 #ifdef CONFIG_NAND_S3C_BOOT_DEBUG
 #include <command.h>
 

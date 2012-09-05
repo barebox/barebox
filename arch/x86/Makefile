@@ -14,11 +14,6 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_uboot += -static --gc-sections
 endif
 
-all: $(KBUILD_IMAGE)
-
-
-
-
 machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)

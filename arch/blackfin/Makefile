@@ -13,7 +13,7 @@ CFLAGS += -D__blackfin__
 KALLSYMS         += --symbol-prefix=_
 
 ifndef CONFIG_BFIN_BOOT_BYPASS
-all: barebox.ldr
+KBUILD_IMAGE := barebox.ldr
 endif
 
 archprepare: maketools

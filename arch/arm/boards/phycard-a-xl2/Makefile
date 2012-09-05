@@ -18,3 +18,4 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 # MA 02111-1307 USA
 obj-y += pca-a-xl2.o mux.o lowlevel.o
+pbl-y += mux.o lowlevel.o

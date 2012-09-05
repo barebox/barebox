@@ -82,8 +82,6 @@ incdir-y := $(machine-y)
 endif
 INCDIR   := arch-$(incdir-y)
 
-all: $(KBUILD_IMAGE)
-
 ifneq ($(board-y),)
 BOARD := arch/mips/boards/$(board-y)/
 else

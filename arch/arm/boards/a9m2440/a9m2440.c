@@ -156,13 +156,6 @@ static int a9m2440_devices_init(void)
 
 device_initcall(a9m2440_devices_init);
 
-#ifdef CONFIG_S3C_NAND_BOOT
-void __bare_init nand_boot(void)
-{
-	s3c24x0_nand_load_image(_text, 256 * 1024, 0);
-}
-#endif
-
 static int a9m2440_console_init(void)
 {
 	s3c24xx_add_uart1();

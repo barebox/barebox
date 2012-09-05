@@ -101,6 +101,48 @@ config ENVIRONMENT_VARIABLES
 
 menu "memory layout                 "
 
+config HAVE_PBL_IMAGE
+	bool
+
+config HAVE_IMAGE_COMPRESSION
+	bool
+
+config PBL_IMAGE
+	bool "Pre-Bootloader image"
+	depends on HAVE_PBL_IMAGE
+
+config PBL_FORCE_PIGGYDATA_COPY
+	bool
+	help
+	  In some case we need to copy the PIGGYDATA as the link address
+	  as example we run from SRAM and shutdown the SDRAM/DDR for
+	  reconfiguration but most of the time we just need to copy the
+	  executable code.
+
+if PBL_IMAGE
+
+config IMAGE_COMPRESSION
+	bool
+	depends on HAVE_IMAGE_COMPRESSION
+	default y
+
+if IMAGE_COMPRESSION
+
+choice
+	prompt "Compression"
+
+config IMAGE_COMPRESSION_LZO
+	bool "lzo"
+
+config IMAGE_COMPRESSION_GZIP
+	bool "gzip"
+
+endchoice
+
+endif
+
+endif
+
 config MMU
 	bool "Enable MMU"
 	help
@@ -481,6 +523,8 @@ config DEFAULT_ENVIRONMENT
 config DEFAULT_ENVIRONMENT_COMPRESSED
 	bool
 	depends on DEFAULT_ENVIRONMENT
+	depends on !IMAGE_COMPRESSION_LZO
+	depends on !IMAGE_COMPRESSION_GZIP
 	default y if ZLIB
 	default y if BZLIB
 	default y if LZO_DECOMPRESS

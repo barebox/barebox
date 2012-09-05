@@ -8,6 +8,8 @@
 #include <asm/system.h>
 #include <memory.h>
 
+#include "mmu.h"
+
 static unsigned long *ttb;
 
 static void create_sections(unsigned long virt, unsigned long phys, int size_m,
@@ -21,12 +23,7 @@ static void create_sections(unsigned long virt, unsigned long phys, int size_m,
 	for (i = size_m; i > 0; i--, virt++, phys++)
 		ttb[virt] = (phys << 20) | flags;
 
-	asm volatile (
-		"bl __mmu_cache_flush;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
+	__mmu_cache_flush();
 }
 
 /*
@@ -255,12 +252,7 @@ static int mmu_init(void)
 		create_sections(bank->start, bank->start, bank->size >> 20,
 				PMD_SECT_DEF_CACHED);
 
-	asm volatile (
-		"bl __mmu_cache_on;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-        );
+	__mmu_cache_on();
 
 	/*
 	 * Now that we have the MMU and caches on remap sdram again using
@@ -284,13 +276,8 @@ void mmu_disable(void)
 	if (outer_cache.disable)
 		outer_cache.disable();
 
-	asm volatile (
-		"bl __mmu_cache_flush;"
-		"bl __mmu_cache_off;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
+	__mmu_cache_flush();
+	__mmu_cache_off();
 }
 
 #define PAGE_ALIGN(s) ((s) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);

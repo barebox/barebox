@@ -24,53 +24,32 @@
 #include <init.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <asm/system.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <asm/cache.h>
+
+#ifdef CONFIG_PBL_IMAGE
+/*
+ * First function in the pbl image. We get here from
+ * the pbl.
+ */
+void __naked __section(.text_entry) start(void)
+{
+	u32 r;
+
+	/* Setup the stack */
+	r = STACK_BASE + STACK_SIZE - 16;
+	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	/* clear bss */
+	memset(__bss_start, 0, __bss_stop - __bss_start);
+
+	start_barebox();
+}
+#else
 
 void __naked __section(.text_entry) start(void)
 {
 	barebox_arm_head();
-}
-
-/*
- * The actual reset vector. This code is position independent and usually
- * does not run at the address it's linked at.
- */
-void __naked __bare_init reset(void)
-{
-	uint32_t r;
-
-	/* set the cpu to SVC32 mode */
-	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
-	r &= ~0x1f;
-	r |= 0xd3;
-	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
-
-#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
-	arch_init_lowlevel();
-#endif
-
-	/* disable MMU stuff and caches */
-	r = get_cr();
-	r &= ~(CR_M | CR_C | CR_B | CR_S | CR_R | CR_V);
-	r |= CR_I;
-
-#if __LINUX_ARM_ARCH__ >= 6
-	r |= CR_U;
-#else
-	r |= CR_A;
-#endif
-
-#ifdef __ARMEB__
-	r |= CR_B;
-#endif
-	set_cr(r);
-
-#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
-	board_init_lowlevel();
-#endif
-	board_init_lowlevel_return();
 }
 
 /*
@@ -102,11 +81,10 @@ void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
-	/* flush I-cache before jumping to the copied binary */
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+	flush_icache();
 
 	/* call start_barebox with its absolute address */
 	r = (unsigned int)&start_barebox;
 	__asm__ __volatile__("mov pc, %0" : : "r"(r));
 }
-
+#endif

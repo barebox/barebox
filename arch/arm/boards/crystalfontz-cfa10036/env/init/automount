@@ -6,4 +6,4 @@ if [ "$1" = menu ]; then
 fi
 
 mkdir -p /mnt/disk0.1
-automount -d /mnt/disk0.1 '[ -e /dev/disk0.1 ] && mount /dev/disk0.1 fat /mnt/disk0.1'
+automount -d /mnt/disk0.1 '[ -e /dev/disk0.1 ] && mount /dev/disk0.1 /mnt/disk0.1'

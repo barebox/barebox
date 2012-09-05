@@ -4,7 +4,7 @@ echo "copying barebox to nand..."
 mci0.probe=1
 mkdir mnt
 
-mount /dev/disk0.0 fat /mnt
+mount /dev/disk0.0 /mnt
 if [ $? != 0 ]; then
 	echo "failed to mount mmc card"
 	exit 1

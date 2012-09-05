@@ -90,7 +90,7 @@ static struct sam9_smc_config usb_a9g20_nand_smc_config = {
 	.ncs_read_pulse		= 4,
 	.nrd_pulse		= 4,
 	.ncs_write_pulse	= 4,
-	.nwe_pulse		= 2,
+	.nwe_pulse		= 4,
 
 	.read_cycle		= 7,
 	.write_cycle		= 7,
@@ -203,11 +203,7 @@ static void __init ek_add_led(void)
 
 static int usb_a9260_mem_init(void)
 {
-#ifdef CONFIG_AT91_HAVE_SRAM_128M
-	at91_add_device_sdram(128 * 1024 * 1024);
-#else
-	at91_add_device_sdram(64 * 1024 * 1024);
-#endif
+	at91_add_device_sdram(0);
 
 	return 0;
 }

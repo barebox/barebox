@@ -14,6 +14,9 @@ config ARM_LINUX
 	default y
 	depends on CMD_BOOTZ || CMD_BOOTU || CMD_BOOTM
 
+config HAVE_MACH_ARM_HEAD
+	bool
+
 menu "System Type                   "
 
 choice
@@ -23,6 +26,8 @@ config ARCH_AT91
 	bool "Atmel AT91"
 	select GENERIC_GPIO
 	select CLKDEV_LOOKUP
+	select HAS_DEBUG_LL
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

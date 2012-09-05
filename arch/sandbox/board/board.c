@@ -29,7 +29,7 @@
 
 static struct device_d tap_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
-        .name     = "tap",
+	.name     = "tap",
 };
 
 static int devices_init(void)

@@ -52,20 +52,7 @@ config ARCH_OMAP4
 
 endchoice
 
-### Generic Clock configurations to be enabled by Mach - invisible to enable.
-config OMAP_CLOCK_UART
-	bool
-config OMAP_CLOCK_UART2
-	bool
-config OMAP_CLOCK_UART3
-	bool
-config OMAP_CLOCK_I2C
-	bool
-
 # Blind enable all possible clocks.. think twice before you do this.
-config OMAP_CLOCK_ALL
-	bool
-
 config OMAP_CLOCK_SOURCE_S32K
 	bool
 
@@ -110,14 +97,12 @@ choice
 
 config MACH_OMAP343xSDP
 	bool "Texas Instrument's SDP343x"
-	select OMAP_CLOCK_ALL
 	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using SDP343x platform
 
 config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
-	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	  help
@@ -125,7 +110,6 @@ config MACH_BEAGLE
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
-	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	  help
@@ -150,7 +134,6 @@ config MACH_PCM049
 
 config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
-	select OMAP_CLOCK_ALL
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	  help

@@ -179,7 +179,7 @@ unsigned long imx_get_fecclk(void)
 	return imx_get_ipgclk();
 }
 
-unsigned long imx_get_i2cclk(void)
+unsigned long fsl_get_i2cclk(void)
 {
 	return imx_get_ipgclk();
 }

@@ -30,7 +30,7 @@
 
 #include <common.h>
 #include <asm/processor.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 #include <mach/immap_85xx.h>
 #include <mach/mpc85xx.h>
 
@@ -101,4 +101,13 @@ unsigned long fsl_get_timebase_clock(void)
 	fsl_get_sys_info(&sysinfo);
 
 	return (sysinfo.freqSystemBus + 4UL)/8UL;
+}
+
+unsigned long fsl_get_i2c_freq(void)
+{
+	struct sys_info sysinfo;
+
+	fsl_get_sys_info(&sysinfo);
+
+	return sysinfo.freqSystemBus / 2;
 }

@@ -20,7 +20,7 @@ struct device_d *imx_add_spi(void *base, int id, struct spi_imx_master *pdata)
 
 struct device_d *imx_add_i2c(void *base, int id, struct i2c_platform_data *pdata)
 {
-	return imx_add_device("i2c-imx", id, base, 0x1000, pdata);
+	return imx_add_device("i2c-fsl", id, base, 0x1000, pdata);
 }
 
 struct device_d *imx_add_uart(void *base, int id)

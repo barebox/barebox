@@ -155,7 +155,7 @@ ulong imx_get_lcdclk(void)
 	return imx_get_perclk3();
 }
 
-ulong imx_get_i2cclk(void)
+ulong fsl_get_i2cclk(void)
 {
 	return imx_get_ipgclk();
 }

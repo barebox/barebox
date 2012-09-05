@@ -78,7 +78,7 @@ unsigned long imx_get_lcdclk(void)
 	return imx_get_perclk(7);
 }
 
-unsigned long imx_get_i2cclk(void)
+unsigned long fsl_get_i2cclk(void)
 {
 	return imx_get_perclk(6);
 }

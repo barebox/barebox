@@ -38,26 +38,6 @@
 LIST_HEAD(command_list);
 EXPORT_SYMBOL(command_list);
 
-#ifdef CONFIG_SHELL_HUSH
-
-static int do_exit(int argc, char *argv[])
-{
-	int r;
-
-	r = 0;
-	if (argc > 1)
-		r = simple_strtoul(argv[1], NULL, 0);
-
-	return -r - 2;
-}
-
-BAREBOX_CMD_START(exit)
-	.cmd		= do_exit,
-	.usage		= "exit script",
-BAREBOX_CMD_END
-
-#endif
-
 void barebox_cmd_usage(struct command *cmdtp)
 {
 #ifdef	CONFIG_LONGHELP

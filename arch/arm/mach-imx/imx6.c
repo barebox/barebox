@@ -21,20 +21,6 @@
 #include <sizes.h>
 #include <mach/imx6-regs.h>
 
-#include "gpio.h"
-
-void *imx_gpio_base[] = {
-	(void *)MX6_GPIO1_BASE_ADDR,
-	(void *)MX6_GPIO2_BASE_ADDR,
-	(void *)MX6_GPIO3_BASE_ADDR,
-	(void *)MX6_GPIO4_BASE_ADDR,
-	(void *)MX6_GPIO5_BASE_ADDR,
-	(void *)MX6_GPIO6_BASE_ADDR,
-	(void *)MX6_GPIO7_BASE_ADDR,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
 void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
@@ -69,3 +55,17 @@ void imx6_init_lowlevel(void)
 	writel(0xffffffff, 0x020c407c);
 	writel(0xffffffff, 0x020c4080);
 }
+
+static int imx6_init(void)
+{
+	add_generic_device("imx-gpio", 0, NULL, MX6_GPIO1_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, MX6_GPIO2_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, MX6_GPIO3_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, MX6_GPIO4_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 4, NULL, MX6_GPIO5_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 5, NULL, MX6_GPIO6_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 6, NULL, MX6_GPIO7_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+coredevice_initcall(imx6_init);

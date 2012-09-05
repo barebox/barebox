@@ -16,16 +16,15 @@
  */
 
 #include <common.h>
+#include <init.h>
 
-#include "gpio.h"
+static int imx1_init(void)
+{
+	add_generic_device("imx-gpio", 0, NULL, 0x0021c000, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, 0x0021c100, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, 0x0021c200, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, 0x0021c300, 0x100, IORESOURCE_MEM, NULL);
 
-void *imx_gpio_base[] = {
-	(void *)0x0021c000,
-	(void *)0x0021c100,
-	(void *)0x0021c200,
-	(void *)0x0021c300,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
-
+	return 0;
+}
+coredevice_initcall(imx1_init);

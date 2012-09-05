@@ -22,17 +22,6 @@
 #include <io.h>
 #include <sizes.h>
 
-#include "gpio.h"
-
-void *imx_gpio_base[] = {
-	(void *)0x53fcc000,
-	(void *)0x53fd0000,
-	(void *)0x53fa4000,
-	(void *)0x53f9c000,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
 u64 imx_uid(void)
 {
 	u64 uid = 0;
@@ -59,6 +48,10 @@ static int imx25_init(void)
 	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
 			IORESOURCE_MEM, &imx25_iim_pdata);
 
+	add_generic_device("imx-gpio", 0, NULL, 0x53fcc000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, 0x53fd0000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, 0x53fa4000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, 0x53f9c000, 0x1000, IORESOURCE_MEM, NULL);
 	return 0;
 }
 coredevice_initcall(imx25_init);

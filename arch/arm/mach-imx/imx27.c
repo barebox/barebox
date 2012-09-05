@@ -21,23 +21,10 @@
 #include <init.h>
 #include <io.h>
 
-#include "gpio.h"
-
 int imx_silicon_revision(void)
 {
 	return CID >> 28;
 }
-
-void *imx_gpio_base[] = {
-	(void *)0x10015000,
-	(void *)0x10015100,
-	(void *)0x10015200,
-	(void *)0x10015300,
-	(void *)0x10015400,
-	(void *)0x10015500,
-};
-
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
 
 /*
  * Initialize MAX on i.MX27. necessary to give the DMA engine
@@ -86,6 +73,12 @@ static int imx27_init(void)
 
 	imx27_init_max();
 
+	add_generic_device("imx-gpio", 0, NULL, 0x10015000, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, 0x10015100, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, 0x10015200, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, 0x10015300, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 4, NULL, 0x10015400, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 5, NULL, 0x10015500, 0x100, IORESOURCE_MEM, NULL);
 	return 0;
 }
 coredevice_initcall(imx27_init);

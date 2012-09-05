@@ -18,8 +18,6 @@
 #include <common.h>
 #include <mach/imx-regs.h>
 
-#include "gpio.h"
-
 int imx_silicon_revision(void)
 {
 	// Known values:
@@ -28,14 +26,15 @@ int imx_silicon_revision(void)
 	return CID;
 }
 
-void *imx_gpio_base[] = {
-	(void *)0x10015000,
-	(void *)0x10015100,
-	(void *)0x10015200,
-	(void *)0x10015300,
-	(void *)0x10015400,
-	(void *)0x10015500,
-};
+static int imx21_init(void)
+{
+	add_generic_device("imx-gpio", 0, NULL, 0x10015000, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, 0x10015100, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, 0x10015200, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, 0x10015300, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 4, NULL, 0x10015400, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 5, NULL, 0x10015500, 0x100, IORESOURCE_MEM, NULL);
 
-int imx_gpio_count = ARRAY_SIZE(imx_gpio_base) * 32;
-
+	return 0;
+}
+coredevice_initcall(imx21_init);

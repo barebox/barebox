@@ -125,5 +125,12 @@ config DRIVER_NET_GIANFAR
 
 source "drivers/net/usb/Kconfig"
 
+config DRIVER_NET_MICREL
+	depends on SPI
+	bool "Micrel KSZ8864RMN Ethernet Switch driver"
+	help
+	  This option enables support for enabling the Micrel
+	  KSZ8864RMN Ethernet Switch over SPI.
+
 endmenu
 

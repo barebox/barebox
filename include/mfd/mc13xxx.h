@@ -150,21 +150,11 @@
 #define MC13783_SW1B_SOFTSTART		(1 << 17)
 #define MC13783_SW_PLL_FACTOR(x)	(((x) - 28) << 19)
 
-enum mc13xxx_mode {
-	MC13XXX_MODE_I2C,
-	MC13XXX_MODE_SPI,
-};
-
-struct mc13xxx {
-	struct cdev		cdev;
-	struct i2c_client	*client;
-	struct spi_device	*spi;
-	enum mc13xxx_mode	mode;
-	int			revision;
-};
+struct mc13xxx;
 
 #ifdef CONFIG_MFD_MC13XXX
 extern struct mc13xxx *mc13xxx_get(void);
+extern int mc13xxx_revision(struct mc13xxx *mc13xxx);
 extern int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val);
 extern int mc13xxx_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val);
 extern int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u32 val);
@@ -172,6 +162,11 @@ extern int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u32 val);
 static inline struct mc13xxx *mc13xxx_get(void)
 {
 	return NULL;
+}
+
+static inline int mc13xxx_revision(struct mc13xxx *mc13xxx)
+{
+	return -ENODEV;
 }
 
 static inline int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val)

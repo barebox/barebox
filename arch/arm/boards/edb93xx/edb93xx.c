@@ -57,7 +57,7 @@ mem_initcall(ep93xx_mem_init);
 
 static int ep93xx_devices_init(void)
 {
-	add_cfi_flash_device(-1, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0x60000000, EDB93XX_CFI_FLASH_SIZE, 0);
 
 	/*
 	 * Create partitions that should be

@@ -253,7 +253,7 @@ static struct NS16550_plat serial_plat = {
 static int beagle_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
 			   &serial_plat);
 
 	return 0;

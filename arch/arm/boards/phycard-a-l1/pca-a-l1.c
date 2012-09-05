@@ -327,7 +327,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int pcaal1_init_console(void)
 {
-	add_ns16550_device(-1, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
 			   &serial_plat);
 
 	return 0;

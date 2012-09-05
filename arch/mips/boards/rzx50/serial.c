@@ -58,7 +58,7 @@ static struct NS16550_plat serial_plat = {
 static int rzx50_console_init(void)
 {
 	/* Register the serial port */
-	add_ns16550_device(-1, UART1_BASE, 8 << JZ4750D_UART_SHIFT,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, UART1_BASE, 8 << JZ4750D_UART_SHIFT,
 			IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;

@@ -318,7 +318,7 @@ static void falconwing_init_usb(void)
 
 	imx23_usb_phy_enable();
 
-	add_generic_usb_ehci_device(-1, IMX_USB_BASE, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_USB_BASE, NULL);
 }
 
 static int falconwing_devices_init(void)

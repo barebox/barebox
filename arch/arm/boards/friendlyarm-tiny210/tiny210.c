@@ -86,7 +86,7 @@ static int tiny210_console_init(void)
 	s3c_gpio_mode(GPA02_NCTS0 | ENABLE_PU);
 	s3c_gpio_mode(GPA03_NRTS0);
 
-	add_generic_device("s3c_serial", -1, NULL,
+	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL,
 			   S3C_UART1_BASE, S3C_UART1_SIZE,
 			   IORESOURCE_MEM, NULL);
 	return 0;

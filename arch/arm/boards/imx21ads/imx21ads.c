@@ -167,7 +167,7 @@ static int mx21ads_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	add_cfi_flash_device(-1, 0xC8000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC8000000, 32 * 1024 * 1024, 0);
 	imx21_add_nand(&nand_info);
 	add_generic_device("cs8900", DEVICE_ID_DYNAMIC, NULL, IMX_CS1_BASE, 0x1000,
 			IORESOURCE_MEM, NULL);

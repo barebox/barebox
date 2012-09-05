@@ -159,7 +159,7 @@ static int f3s_devices_init(void)
 	 * This platform supports NOR and NAND
 	 */
 	imx35_add_nand(&nand_info);
-	add_cfi_flash_device(-1, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */

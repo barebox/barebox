@@ -48,7 +48,7 @@ static void pcm970_usbh2_init(void)
 	mdelay(10);
 
 	if (!ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1))
-		add_generic_usb_ehci_device(-1, IMX_OTG_BASE + 0x400, NULL);
+		add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
 }
 #endif
 
@@ -73,7 +73,7 @@ static struct ide_port_info pcm970_ide_pdata = {
 };
 
 static struct device_d pcm970_ide_device = {
-	.id		= -1,
+	.id		= DEVICE_ID_DYNAMIC,
 	.name		= "ide_intf",
 	.num_resources	= ARRAY_SIZE(pcm970_ide_resources),
 	.resource	= pcm970_ide_resources,

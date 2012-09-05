@@ -121,7 +121,7 @@ static int mioa701_devices_init(void)
 
 	pxa_add_pwm((void *)0x40b00000, 0);
 	pxa_add_fb((void *)0x44000000, &mioa701_pxafb_info);
-	pxa_add_mmc((void *)0x41100000, -1, &mioa701_mmc_info);
+	pxa_add_mmc((void *)0x41100000, DEVICE_ID_DYNAMIC, &mioa701_mmc_info);
 	docg3_iospace = map_io_sections(0x0, (void *)0xe0000000, 0x2000);
 	add_generic_device("docg3", DEVICE_ID_DYNAMIC, NULL, (ulong) docg3_iospace,
 			0x2000, IORESOURCE_MEM, NULL);

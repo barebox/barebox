@@ -47,7 +47,7 @@ static int netx_mem_init(void)
 mem_initcall(netx_mem_init);
 
 static int netx_devices_init(void) {
-	add_cfi_flash_device(-1, 0xC0000000, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC0000000, 32 * 1024 * 1024, 0);
 
 	add_generic_device("netx-eth", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM,
 			&eth0_data);

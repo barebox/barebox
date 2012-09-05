@@ -648,6 +648,9 @@ static const struct spi_device_id m25p_ids[] = {
 	{ "cat25c09", CAT25_INFO( 128, 8, 32, 2) },
 	{ "cat25c17", CAT25_INFO( 256, 8, 32, 2) },
 	{ "cat25128", CAT25_INFO(2048, 8, 64, 2) },
+
+	/* Micron */
+	{ "n25q128", INFO(0x20ba18, 0, 64 * 1024, 256, 0) },
 	{ },
 };
 

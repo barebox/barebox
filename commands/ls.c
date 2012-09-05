@@ -29,13 +29,24 @@
 #include <getopt.h>
 #include <stringlist.h>
 
-static void ls_one(const char *path, struct stat *s)
+static void ls_one(const char *path, const char* fullname, struct stat *s)
 {
 	char modestr[11];
 	unsigned int namelen = strlen(path);
 
 	mkmodestr(s->st_mode, modestr);
-	printf("%s %10llu %*.*s\n", modestr, s->st_size, namelen, namelen, path);
+	printf("%s %10llu %*.*s", modestr, s->st_size, namelen, namelen, path);
+
+	if (S_ISLNK(s->st_mode)) {
+		char realname[PATH_MAX];
+
+		memset(realname, 0, PATH_MAX);
+
+		if (readlink(fullname, realname, PATH_MAX - 1) >= 0)
+			printf(" -> %s", realname);
+	}
+
+	puts("\n");
 }
 
 int ls(const char *path, ulong flags)
@@ -48,14 +59,14 @@ int ls(const char *path, ulong flags)
 
 	string_list_init(&sl);
 
-	if (stat(path, &s))
+	if (lstat(path, &s))
 		return -errno;
 
 	if (flags & LS_SHOWARG && s.st_mode & S_IFDIR)
 		printf("%s:\n", path);
 
 	if (!(s.st_mode & S_IFDIR)) {
-		ls_one(path, &s);
+		ls_one(path, path, &s);
 		return 0;
 	}
 
@@ -65,12 +76,12 @@ int ls(const char *path, ulong flags)
 
 	while ((d = readdir(dir))) {
 		sprintf(tmp, "%s/%s", path, d->d_name);
-		if (stat(tmp, &s))
+		if (lstat(tmp, &s))
 			goto out;
 		if (flags & LS_COLUMN)
 			string_list_add_sorted(&sl, d->d_name);
 		else
-			ls_one(d->d_name, &s);
+			ls_one(d->d_name, tmp, &s);
 	}
 
 	closedir(dir);
@@ -97,7 +108,7 @@ int ls(const char *path, ulong flags)
 			continue;
 		sprintf(tmp, "%s/%s", path, d->d_name);
 
-		if (stat(tmp, &s))
+		if (lstat(tmp, &s))
 			goto out;
 		if (s.st_mode & S_IFDIR) {
 			char *norm = normalise_path(tmp);
@@ -146,7 +157,7 @@ static int do_ls(int argc, char *argv[])
 
 	/* first pass: all files */
 	while (o < argc) {
-		ret = stat(argv[o], &s);
+		ret = lstat(argv[o], &s);
 		if (ret) {
 			printf("%s: %s: %s\n", argv[0],
 					argv[o], errno_str());
@@ -158,7 +169,7 @@ static int do_ls(int argc, char *argv[])
 			if (flags & LS_COLUMN)
 				string_list_add_sorted(&sl, argv[o]);
 			else
-				ls_one(argv[o], &s);
+				ls_one(argv[o], argv[o], &s);
 		}
 
 		o++;
@@ -173,7 +184,7 @@ static int do_ls(int argc, char *argv[])
 
 	/* second pass: directories */
 	while (o < argc) {
-		ret = stat(argv[o], &s);
+		ret = lstat(argv[o], &s);
 		if (ret) {
 			o++;
 			continue;

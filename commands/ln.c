@@ -1,7 +1,7 @@
 /*
- * dirname.c - strip directory and suffix from filenames
+ * ln.c - make links between files
  *
- * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ * Copyright (c) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -25,41 +25,27 @@
 #include <libgen.h>
 #include <environment.h>
 #include <fs.h>
-#include <getopt.h>
+#include <errno.h>
 
-static int do_dirname(int argc, char *argv[])
+static int do_ln(int argc, char *argv[])
 {
-	int opt;
-	int path_fs = 0;
-	int len = 0;
-
-	while ((opt = getopt(argc, argv, "V")) > 0) {
-		switch (opt) {
-		case 'V':
-			path_fs = 1;
-			break;
-		}
-	}
-
-	if (argc < optind + 2)
+	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
 
-	if (path_fs)
-		len = strlen(get_mounted_path(argv[optind]));
-
-	setenv(argv[optind + 1], dirname(argv[optind]) + len);
-
+	if (symlink(argv[1], argv[2]) < 0) {
+		perror("ln");
+		return 1;
+	}
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(dirname)
-BAREBOX_CMD_HELP_USAGE("dirname [-V] NAME DIRNAME\n")
-BAREBOX_CMD_HELP_SHORT("strip last componext of NAME and store into $DIRNAME\n")
-BAREBOX_CMD_HELP_SHORT("-V return the path relative to the mountpoint.\n")
+BAREBOX_CMD_HELP_START(ln)
+BAREBOX_CMD_HELP_USAGE("ln SRC DEST\n")
+BAREBOX_CMD_HELP_SHORT("symlink - make a new name for a file\n")
 BAREBOX_CMD_HELP_END
 
-BAREBOX_CMD_START(dirname)
-	.cmd		= do_dirname,
-	.usage		= "strip last component from file name",
-	BAREBOX_CMD_HELP(cmd_dirname_help)
+BAREBOX_CMD_START(ln)
+	.cmd		= do_ln,
+	.usage		= "symlink - make a new name for a file",
+	BAREBOX_CMD_HELP(cmd_ln_help)
 BAREBOX_CMD_END

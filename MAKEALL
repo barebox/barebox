@@ -264,3 +264,4 @@ then
 else
 	do_build_target ${ARCH} $1
 fi
+exit $nb_errors

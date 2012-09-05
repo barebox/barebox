@@ -73,7 +73,7 @@ char* last_char_is(const char *s, int c)
 
 enum {
 	ACTION_RECURSE     = (1 << 0),
-	/* ACTION_FOLLOWLINKS = (1 << 1), - unused */
+	ACTION_FOLLOWLINKS = (1 << 1),
 	ACTION_DEPTHFIRST  = (1 << 2),
 	/*ACTION_REVERSE   = (1 << 3), - unused */
 };

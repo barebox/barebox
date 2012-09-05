@@ -43,6 +43,7 @@ typedef enum {
 	OPT_DIRECTORY,
 	OPT_FILE,
 	OPT_EXISTS,
+	OPT_SYMBOLIC_LINK,
 	OPT_MAX,
 } test_opts;
 
@@ -62,6 +63,7 @@ static char *test_options[] = {
 	[OPT_FILE]			= "-f",
 	[OPT_DIRECTORY]			= "-d",
 	[OPT_EXISTS]			= "-e",
+	[OPT_SYMBOLIC_LINK]		= "-L",
 };
 
 static int parse_opt(const char *opt)
@@ -140,9 +142,10 @@ static int do_test(int argc, char *argv[])
 		case OPT_FILE:
 		case OPT_DIRECTORY:
 		case OPT_EXISTS:
+		case OPT_SYMBOLIC_LINK:
 			adv = 2;
 			if (ap[1] && *ap[1] != ']' && strlen(ap[1])) {
-				expr = stat(ap[1], &statbuf);
+				expr = (opt == OPT_SYMBOLIC_LINK ? lstat : stat)(ap[1], &statbuf);
 				if (expr < 0) {
 					expr = 0;
 					break;
@@ -157,6 +160,10 @@ static int do_test(int argc, char *argv[])
 					break;
 				}
 				if (opt == OPT_DIRECTORY && S_ISDIR(statbuf.st_mode)) {
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_SYMBOLIC_LINK && S_ISLNK(statbuf.st_mode)) {
 					expr = 1;
 					break;
 				}
@@ -224,7 +231,7 @@ static const char *test_aliases[] = { "[", NULL};
 
 static const __maybe_unused char cmd_test_help[] =
 "Usage: test [OPTIONS]\n"
-"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e, -f\n"
+"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e, -f, -L\n"
 "see 'man test' on your PC for more information.\n";
 
 static const __maybe_unused char cmd_test_usage[] = "minimal test like /bin/sh";

@@ -605,34 +605,6 @@ static int nfs_read_req(struct file_priv *priv, int offset, int readlen)
 	return 0;
 }
 
-#if 0
-static int nfs_readlink_reply(unsigned char *pkt, unsigned len)
-{
-	uint32_t *data;
-	char *path;
-	int rlen;
-//	int ret;
-
-	data = (uint32_t *)(pkt + sizeof(struct rpc_reply));
-
-	data++;
-
-	rlen = ntohl(net_read_uint32(data)); /* new path length */
-
-	data++;
-	path = (char *)data;
-
-	if (*path != '/') {
-		strcat(nfs_path, "/");
-		strncat(nfs_path, path, rlen);
-	} else {
-		memcpy(nfs_path, path, rlen);
-		nfs_path[rlen] = 0;
-	}
-	return 0;
-}
-#endif
-
 static void nfs_handler(void *ctx, char *packet, unsigned len)
 {
 	char *pkt = net_eth_to_udp_payload(packet);
@@ -740,6 +712,63 @@ static struct file_priv *nfs_do_stat(struct device_d *dev, const char *filename,
 	}
 
 	return priv;
+}
+
+static int nfs_readlink_req(struct file_priv *priv, char* buf, size_t size)
+{
+	uint32_t data[1024];
+	uint32_t *p;
+	int len;
+	int ret;
+	char *path;
+	uint32_t *filedata;
+
+	p = &(data[0]);
+	p = rpc_add_credentials(p);
+
+	memcpy(p, priv->filefh, NFS_FHSIZE);
+	p += (NFS_FHSIZE / 4);
+
+	len = p - &(data[0]);
+
+	ret = rpc_req(priv->npriv, PROG_NFS, NFS_READLINK, data, len);
+	if (ret)
+		return ret;
+
+	filedata = nfs_packet + sizeof(struct rpc_reply);
+	filedata++;
+
+	len = ntohl(net_read_uint32(filedata)); /* new path length */
+	filedata++;
+
+	path = (char *)filedata;
+
+	if (len > size)
+		len = size;
+
+	memcpy(buf, path, len);
+
+	return 0;
+}
+
+static int nfs_readlink(struct device_d *dev, const char *filename,
+			char *realname, size_t size)
+{
+	struct file_priv *priv;
+	int ret;
+	struct stat s;
+
+	priv = nfs_do_stat(dev, filename, &s);
+	if (IS_ERR(priv))
+		return PTR_ERR(priv);
+
+	ret = nfs_readlink_req(priv, realname, size);
+	if (ret) {
+		nfs_do_close(priv);
+		return ret;
+	}
+
+	return 0;
 }
 
 static int nfs_open(struct device_d *dev, FILE *file, const char *filename)
@@ -1039,6 +1068,7 @@ static struct fs_driver_d nfs_driver = {
 	.rmdir     = nfs_rmdir,
 	.write     = nfs_write,
 	.truncate  = nfs_truncate,
+	.readlink  = nfs_readlink,
 	.flags     = 0,
 	.drv = {
 		.probe  = nfs_probe,

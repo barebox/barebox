@@ -33,33 +33,14 @@
 #include <init.h>
 #include <command.h>
 #include <malloc.h>
-#include <memory.h>
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>
 #include <environment.h>
-#include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
-
-static void display_meminfo(void)
-{
-	ulong mstart = mem_malloc_start();
-	ulong mend   = mem_malloc_end();
-	ulong msize  = mend - mstart + 1;
-
-	debug("barebox code: 0x%p -> 0x%p\n", _stext, _etext);
-	debug("bss segment:  0x%p -> 0x%p\n", __bss_start, __bss_stop);
-	printf("Malloc space: 0x%08lx -> 0x%08lx (size %s)\n",
-		mstart, mend, size_human_readable(msize));
-#ifdef CONFIG_ARM
-	printf("Stack space : 0x%08x -> 0x%08x (size %s)\n",
-		STACK_BASE, STACK_BASE + STACK_SIZE,
-		size_human_readable(STACK_SIZE));
-#endif
-}
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include <generated/barebox_default_env.h>
@@ -127,8 +108,6 @@ void start_barebox (void)
 	}
 
 	debug("initcalls done\n");
-
-	display_meminfo();
 
 #ifdef CONFIG_ENV_HANDLING
 	if (envfs_load(default_environment_path, "/env")) {

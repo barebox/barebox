@@ -96,6 +96,10 @@ config BANNER
 	bool "display banner"
 	default y
 
+config MEMINFO
+	bool "display memory info"
+	default y
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 

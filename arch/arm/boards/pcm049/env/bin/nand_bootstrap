@@ -1,4 +1,4 @@
-
+#!/bin/sh
 echo "copying barebox to nand..."
 
 mci0.probe=1

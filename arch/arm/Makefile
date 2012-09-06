@@ -202,10 +202,13 @@ KBUILD_TARGET := MLO
 KBUILD_IMAGE := MLO
 endif
 
-barebox.ubl: $(KBUILD_BINARY)
-	@echo "  UBL    " $@
-	$(Q)scripts/mkublheader $< > barebox.ubl
-	$(Q)cat $< >> barebox.ubl
+quiet_cmd_davinci_ubl_image = UBL-IMG $@
+      cmd_davinci_ubl_image = set -e; \
+	 scripts/mkublheader $< > $@; \
+	 cat $< >> $@
+
+barebox.ubl: $(KBUILD_BINARY) FORCE
+	$(call if_changed,davinci_ubl_image)
 
 ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_TARGET := barebox.ubl

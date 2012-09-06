@@ -39,8 +39,6 @@ SECTIONS
 		_stext = .;
 		_text = .;
 		*(.text_head_entry*)
-		__ll_return = .;
-		*(.text_ll_return*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;

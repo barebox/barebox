@@ -131,6 +131,14 @@ int miidev_get_status(struct mii_device *mdev)
 
 	status = ret & BMSR_LSTATUS ? MIIDEV_STATUS_IS_UP : 0;
 
+	if (ret & BMSR_ESTATEN) {
+		ret = mii_read(mdev, mdev->address, MII_ESTATUS);
+		if (ret < 0)
+			goto err_out;
+		if (ret & (ESTATUS_1000_TFULL | ESTATUS_1000_THALF))
+			mdev->capabilities = MIIDEV_CAPABLE_1000M;
+	}
+
 	ret = mii_read(mdev, mdev->address, MII_BMCR);
 	if (ret < 0)
 		goto err_out;
@@ -239,27 +247,8 @@ static struct file_operations miidev_ops = {
 static int miidev_probe(struct device_d *dev)
 {
 	struct mii_device *mdev = dev->priv;
-	int val;
-	int caps = 0;
 
-	val = mii_read(mdev, mdev->address, MII_PHYSID1);
-	if (val < 0 || val == 0xffff)
-		goto err_out;
-	val = mii_read(mdev, mdev->address, MII_PHYSID2);
-	if (val < 0 || val == 0xffff)
-		goto err_out;
-	val = mii_read(mdev, mdev->address, MII_BMSR);
-	if (val < 0)
-		goto err_out;
-	if (val & BMSR_ESTATEN) {
-		val = mii_read(mdev, mdev->address, MII_ESTATUS);
-		if (val < 0)
-			goto err_out;
-		if (val & (ESTATUS_1000_TFULL | ESTATUS_1000_THALF))
-			caps = MIIDEV_CAPABLE_1000M;
-	}
-
-	mdev->capabilities = caps;
+	mdev->capabilities = 0;
 	mdev->cdev.name = asprintf("phy%d", dev->id);
 	mdev->cdev.size = 64;
 	mdev->cdev.ops = &miidev_ops;
@@ -268,10 +257,6 @@ static int miidev_probe(struct device_d *dev)
 	devfs_create(&mdev->cdev);
 	list_add_tail(&mdev->list, &miidev_list);
 	return 0;
-
-err_out:
-	dev_err(dev, "cannot read PHY registers (addr %d)\n", mdev->address);
-	return -ENODEV;
 }
 
 static void miidev_remove(struct device_d *dev)

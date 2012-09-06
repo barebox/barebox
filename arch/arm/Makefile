@@ -179,7 +179,7 @@ barebox.netx: $(KBUILD_BINARY)
 
 ifeq ($(machine-y),netx)
 KBUILD_TARGET := barebox.netx
-KBUILD_BINARY := $(KBUILD_TARGET)
+KBUILD_IMAGE := barebox.netx
 endif
 
 barebox.s5p: $(KBUILD_BINARY)
@@ -187,7 +187,7 @@ barebox.s5p: $(KBUILD_BINARY)
 
 ifeq ($(CONFIG_ARCH_S5PCxx),y)
 KBUILD_TARGET := barebox.s5p
-KBUILD_BINARY := $(KBUILD_TARGET)
+KBUILD_IMAGE := barebox.s5p
 endif
 
 quiet_cmd_mlo ?= IFT     $@
@@ -199,7 +199,7 @@ MLO: $(KBUILD_BINARY)
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
 KBUILD_TARGET := MLO
-KBUILD_BINARY := $(KBUILD_TARGET)
+KBUILD_IMAGE := MLO
 endif
 
 barebox.ubl: $(KBUILD_BINARY)
@@ -209,7 +209,7 @@ barebox.ubl: $(KBUILD_BINARY)
 
 ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_TARGET := barebox.ubl
-KBUILD_BINARY := $(KBUILD_TARGET)
+KBUILD_IMAGE := barebox.ubl
 endif
 
 pbl := arch/arm/pbl
@@ -219,7 +219,7 @@ zbarebox.S zbarebox.bin zbarebox: barebox.bin
 archclean:
 	$(MAKE) $(clean)=$(pbl)
 
-KBUILD_IMAGE := $(KBUILD_BINARY)
+KBUILD_IMAGE ?= $(KBUILD_BINARY)
 
 archprepare: maketools
 maketools:

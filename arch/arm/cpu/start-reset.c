@@ -29,6 +29,9 @@
 /*
  * The actual reset vector. This code is position independent and usually
  * does not run at the address it's linked at.
+ *
+ * This is either executed in the pbl image (if enabled) or in the regular
+ * image.
  */
 void __naked __bare_init reset(void)
 {

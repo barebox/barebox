@@ -30,7 +30,7 @@
 
 #ifdef CONFIG_PBL_IMAGE
 /*
- * First function in the pbl image. We get here from
+ * First function in the uncompressed image. We get here from
  * the pbl.
  */
 void __naked __section(.text_entry) start(void)
@@ -47,6 +47,9 @@ void __naked __section(.text_entry) start(void)
 }
 #else
 
+/*
+ * First function in the image without pbl support
+ */
 void __naked __section(.text_entry) start(void)
 {
 	barebox_arm_head();

@@ -36,6 +36,9 @@
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
+/*
+ * First instructions in the pbl image
+ */
 void __naked __section(.text_head_entry) pbl_start(void)
 {
 	barebox_arm_head();

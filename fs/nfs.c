@@ -819,7 +819,11 @@ static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 		insize -= now;
 
 		if (insize) {
-			now = 1024;
+			/* do not use min as insize is a size_t */
+			if (insize < 1024)
+				now = insize;
+			else
+				now = 1024;
 
 			if (pos + now > file->size)
 				now = file->size - pos;

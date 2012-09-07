@@ -79,7 +79,7 @@ static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 		return -EINVAL;
 	}
 
-	dev_dbg(cdev->dev, "write: 0x%08lx 0x%08lx\n", offset, count);
+	dev_dbg(cdev->dev, "write: offset: 0x%08lx count: 0x%zx\n", offset, count);
 	while (count) {
 		now = count > mtd->writesize ? mtd->writesize : count;
 
@@ -100,7 +100,7 @@ static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 				ret = mtd->write(mtd, offset, now, &retlen,
 						  buf);
 			dev_dbg(cdev->dev,
-				"offset: 0x%08lx now: 0x%08lx retlen: 0x%08lx\n",
+				"offset: 0x%08lx now: 0x%zx retlen: 0x%zx\n",
 				offset, now, retlen);
 		}
 		if (ret)

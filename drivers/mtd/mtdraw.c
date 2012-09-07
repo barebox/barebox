@@ -137,7 +137,7 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 		retlen += ret;
 	}
 	if (ret < 0)
-		printf("err %lu\n", ret);
+		printf("err %zd\n", ret);
 	else
 		ret = retlen;
 	return ret;

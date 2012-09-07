@@ -456,7 +456,7 @@ static int smc911x_probe(struct device_d *dev)
 	 * poll the READY bit in PMT_CTRL. Any other access to the device is
 	 * forbidden while this bit isn't set. Try for 100ms
 	 */
-	ret = wait_on_timeout(100 * MSECOND, smc911x_reg_read(priv, PMT_CTRL) & PMT_CTRL_READY);
+	ret = wait_on_timeout(100 * MSECOND, !smc911x_reg_read(priv, PMT_CTRL) & PMT_CTRL_READY);
 	if (!ret) {
 		dev_err(dev, "Device not READY in 100ms aborting\n");
 		return -ENODEV;

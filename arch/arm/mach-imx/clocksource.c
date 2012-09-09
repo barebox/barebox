@@ -134,6 +134,18 @@ static int imx_gpt_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx_gpt_dt_ids[] = {
+	{
+		.compatible = "fsl,imx1-gpt",
+		.data = (unsigned long)&regs_imx1,
+	}, {
+		.compatible = "fsl,imx31-gpt",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct platform_device_id imx_gpt_ids[] = {
 	{
 		.name = "imx1-gpt",
@@ -149,6 +161,7 @@ static struct platform_device_id imx_gpt_ids[] = {
 static struct driver_d imx_gpt_driver = {
 	.name = "imx-gpt",
 	.probe = imx_gpt_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_gpt_dt_ids),
 	.id_table = imx_gpt_ids,
 };
 

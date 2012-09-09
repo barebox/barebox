@@ -136,7 +136,13 @@ static int imx_gpio_probe(struct device_d *dev)
 	imxgpio = xzalloc(sizeof(*imxgpio));
 	imxgpio->base = dev_request_mem_region(dev, 0);
 	imxgpio->chip.ops = &imx_gpio_ops;
-	imxgpio->chip.base = -1;
+	if (dev->id < 0) {
+		imxgpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+		if (imxgpio->chip.base < 0)
+			return imxgpio->chip.base;
+	} else {
+		imxgpio->chip.base = dev->id * 32;
+	}
 	imxgpio->chip.ngpio = 32;
 	imxgpio->chip.dev = dev;
 	imxgpio->regs = regs;
@@ -146,6 +152,36 @@ static int imx_gpio_probe(struct device_d *dev)
 
 	return 0;
 }
+
+static __maybe_unused struct of_device_id imx_gpio_dt_ids[] = {
+	{
+		.compatible = "fsl,imx1-gpio",
+		.data = (unsigned long)&regs_imx1,
+	}, {
+		.compatible = "fsl,imx21-gpio",
+		.data = (unsigned long)&regs_imx1,
+	}, {
+		.compatible = "fsl,imx27-gpio",
+		.data = (unsigned long)&regs_imx1,
+	}, {
+		.compatible = "fsl,imx31-gpio",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		.compatible = "fsl,imx35-gpio",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		.compatible = "fsl,imx51-gpio",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		.compatible = "fsl,imx53-gpio",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		.compatible = "fsl,imx6q-gpio",
+		.data = (unsigned long)&regs_imx31,
+	}, {
+		/* sentinel */
+	}
+};
 
 static struct platform_device_id imx_gpio_ids[] = {
 	{
@@ -162,6 +198,7 @@ static struct platform_device_id imx_gpio_ids[] = {
 static struct driver_d imx_gpio_driver = {
 	.name = "imx-gpio",
 	.probe = imx_gpio_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_gpio_dt_ids),
 	.id_table = imx_gpio_ids,
 };
 

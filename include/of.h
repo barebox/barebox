@@ -109,9 +109,18 @@ int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
 
 #ifdef CONFIG_OFDEVICE
+int of_parse_partitions(const char *cdevname,
+			    struct device_node *node);
+
 struct device_node *of_get_root_node(void);
 int of_alias_get_id(struct device_node *np, const char *stem);
 #else
+static inline int of_parse_partitions(const char *cdevname,
+					  struct device_node *node)
+{
+	return -EINVAL;
+}
+
 static inline struct device_node *of_get_root_node(void)
 {
 	return NULL;

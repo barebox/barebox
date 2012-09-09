@@ -982,6 +982,7 @@ static void cfi_init_mtd(struct flash_info *info)
 static int cfi_probe (struct device_d *dev)
 {
 	struct flash_info *info = xzalloc(sizeof(*info));
+	int cfinum;
 
 	dev->priv = (void *)info;
 
@@ -1000,7 +1001,12 @@ static int cfi_probe (struct device_d *dev)
 	dev_info(dev, "found cfi flash at %p, size %ld\n",
 			info->base, info->size);
 
-	info->cdev.name = asprintf("nor%d", dev->id);
+	if (dev->id < 0)
+		cfinum = cdev_find_free_index("nor");
+	else
+		cfinum = dev->id;
+
+	info->cdev.name = asprintf("nor%d", cfinum);
 	info->cdev.size = info->size;
 	info->cdev.dev = dev;
 	info->cdev.ops = &cfi_ops;
@@ -1011,19 +1017,30 @@ static int cfi_probe (struct device_d *dev)
 #endif
 	devfs_create(&info->cdev);
 
+	if (dev->device_node)
+		of_parse_partitions(info->cdev.name, dev->device_node);
+
 	return 0;
 }
 
+static __maybe_unused struct of_device_id cfi_dt_ids[] = {
+	{
+		.compatible = "cfi-flash",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d cfi_driver = {
-        .name    = "cfi_flash",
-        .probe   = cfi_probe,
-        .info    = cfi_info,
+	.name    = "cfi_flash",
+	.probe   = cfi_probe,
+	.info    = cfi_info,
+	.of_compatible = DRV_OF_COMPAT(cfi_dt_ids),
 };
 
 static int cfi_init(void)
 {
-        return register_driver(&cfi_driver);
+	return register_driver(&cfi_driver);
 }
 
 device_initcall(cfi_init);
-

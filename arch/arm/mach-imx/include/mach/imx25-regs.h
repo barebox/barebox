@@ -108,33 +108,6 @@
 #define CSCR_A(x)     (WEIM_BASE + 8 + (x) * 0x10)
 
 /*
- * Definitions for the clocksource driver
- *
- * These defines are using the i.MX1/27 notation
- * to reuse the clocksource code for these CPUs
- * on the i.MX35
- */
-/* Part 1: Registers */
-#define GPT_TCTL   0x00
-#define GPT_TPRER  0x04
-#define GPT_TCMP   0x10
-#define GPT_TCR    0x1c
-#define GPT_TCN    0x24
-#define GPT_TSTAT  0x08
-
-/* Part 2: Bitfields */
-#define TCTL_SWR       (1<<15) /* Software reset */
-#define TCTL_FRR       (1<<9)  /* Freerun / restart */
-#define TCTL_CAP       (3<<6)  /* Capture Edge */
-#define TCTL_OM        (1<<5)  /* output mode */
-#define TCTL_IRQEN     (1<<4)  /* interrupt enable */
-#define TCTL_CLKSOURCE (6)     /* Clock source bit position */
-#define TCTL_TEN       (1)     /* Timer enable */
-#define TPRER_PRES     (0xff)  /* Prescale */
-#define TSTAT_CAPT     (1<<1)  /* Capture event */
-#define TSTAT_COMP     (1)     /* Compare event */
-
-/*
  * Watchdog Registers
  */
 #define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */

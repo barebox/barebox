@@ -28,6 +28,7 @@ int imx_silicon_revision(void)
 
 static int imx21_init(void)
 {
+	add_generic_device("imx1-gpt", 0, NULL, 0x10003000, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 0, NULL, 0x10015000, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 1, NULL, 0x10015100, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 2, NULL, 0x10015200, 0x100, IORESOURCE_MEM, NULL);

@@ -207,27 +207,4 @@
 #define PD31_PF_TMR2OUT      ( GPIO_PORTD | GPIO_PF | 31 )
 #define PD31_BIN_SPI2_TXD    ( GPIO_PORTD | GPIO_BIN | 31 )
 
-/*
- * Definitions for the clocksource driver
- */
-/* Part 1: Registers */
-# define GPT_TCTL   0x00
-# define GPT_TPRER  0x04
-# define GPT_TCMP   0x08
-# define GPT_TCR    0x0c
-# define GPT_TCN    0x10
-# define GPT_TSTAT  0x14
-
-/* Part 2: Bitfields */
-#define TCTL_SWR       (1<<15) /* Software reset */
-#define TCTL_FRR       (1<<8)  /* Freerun / restart */
-#define TCTL_CAP       (3<<6)  /* Capture Edge */
-#define TCTL_OM        (1<<5)  /* output mode */
-#define TCTL_IRQEN     (1<<4)  /* interrupt enable */
-#define TCTL_CLKSOURCE (1)     /* Clock source bit position */
-#define TCTL_TEN       (1)     /* Timer enable */
-#define TPRER_PRES     (0xff)  /* Prescale */
-#define TSTAT_CAPT     (1<<1)  /* Capture event */
-#define TSTAT_COMP     (1)     /* Compare event */
-
 #endif /* _IMX1_REGS_H */

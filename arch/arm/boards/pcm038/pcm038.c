@@ -281,9 +281,6 @@ static int pcm038_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	PCCR0 |= PCCR0_CSPI1_EN;
-	PCCR1 |= PCCR1_PERCLK2_EN;
-
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 
@@ -293,7 +290,6 @@ static int pcm038_devices_init(void)
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&pcm038_fb_data);
 
-	PCCR0 |= PCCR0_I2C1_EN | PCCR0_I2C2_EN;
 	imx27_add_i2c0(NULL);
 	imx27_add_i2c1(NULL);
 

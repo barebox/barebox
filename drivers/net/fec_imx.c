@@ -628,9 +628,7 @@ static int fec_probe(struct device_d *dev)
 	struct fec_priv *fec;
 	void *base;
 	int ret;
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 |= PCCR0_FEC_EN;
-#endif
+
 	fec = xzalloc(sizeof(*fec));
 	edev = &fec->edev;
 	dev->priv = fec;

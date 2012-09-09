@@ -108,18 +108,6 @@ static int imx_gpt_probe(struct device_d *dev)
 	/* setup GP Timer 1 */
 	writel(TCTL_SWR, timer_base + GPT_TCTL);
 
-#ifdef CONFIG_ARCH_IMX21
-	PCCR1 |= PCCR1_GPT1_EN;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 |= PCCR0_GPT1_EN;
-	PCCR1 |= PCCR1_PERCLK1_EN;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 19),
-		IMX_CCM_BASE + CCM_CGCR1);
-#endif
-
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
 

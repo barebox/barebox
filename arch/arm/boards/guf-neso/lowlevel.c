@@ -35,8 +35,6 @@ static void __bare_init __naked insdram(void)
 {
 	uint32_t r;
 
-	PCCR1 |= PCCR1_NFC_BAUDEN;
-
 	/* setup a stack to be able to call imx_nand_load_image() */
 	r = STACK_BASE + STACK_SIZE - 12;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));

@@ -60,6 +60,11 @@
 struct filep;
 struct bus_type;
 
+struct platform_device_id {
+	const char *name;
+	unsigned long driver_data;
+};
+
 /** @brief Describes a particular device present in the system */
 struct device_d {
 	/*! This member (and 'type' described below) is used to match with a
@@ -99,6 +104,8 @@ struct device_d {
 	struct list_head parameters;
 
 	struct list_head cdevs;
+
+	struct platform_device_id *id_entry;
 };
 
 /** @brief Describes a driver present in the system */
@@ -119,6 +126,8 @@ struct driver_d {
 	void    (*shortinfo) (struct device_d *);
 
 	struct bus_type *bus;
+
+	struct platform_device_id *id_table;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */

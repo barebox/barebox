@@ -333,9 +333,9 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 
 /* debugging and troubleshooting/diagnostic helpers. */
 
-#define dev_printf(dev, format, arg...)	\
-	printf("%s@%s: " format , (dev)->name , \
-	       dev_name(dev) , ## arg)
+int dev_printf(const struct device_d *dev, const char *format, ...)
+	__attribute__ ((format(__printf__, 2, 3)));
+
 
 #define dev_emerg(dev, format, arg...)		\
 	dev_printf((dev) , format , ## arg)

@@ -49,7 +49,7 @@ static struct driver_d twl_driver = {
 
 static int twl_init(void)
 {
-	register_driver(&twl_driver);
+	i2c_register_driver(&twl_driver);
 	return 0;
 }
 

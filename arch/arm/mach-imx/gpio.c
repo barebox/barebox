@@ -30,28 +30,28 @@
 #include <gpio.h>
 #include <init.h>
 
-#if defined CONFIG_ARCH_IMX1 || defined CONFIG_ARCH_IMX21 || defined CONFIG_ARCH_IMX27
-#define GPIO_DR		0x1c
-#define GPIO_GDIR	0x00
-#define GPIO_PSR	0x24
-#define GPIO_ICR1	0x28
-#define GPIO_ICR2	0x2C
-#define GPIO_IMR	0x30
-#define GPIO_ISR	0x34
-#else
-#define GPIO_DR		0x00
-#define GPIO_GDIR	0x04
-#define GPIO_PSR	0x08
-#define GPIO_ICR1	0x0C
-#define GPIO_ICR2	0x10
-#define GPIO_IMR	0x14
-#define GPIO_ISR	0x18
-#define GPIO_ISR	0x18
-#endif
-
 struct imx_gpio_chip {
 	void __iomem *base;
 	struct gpio_chip chip;
+	struct imx_gpio_regs *regs;
+};
+
+struct imx_gpio_regs {
+	unsigned int dr;
+	unsigned int gdir;
+	unsigned int psr;
+};
+
+static struct imx_gpio_regs regs_imx1 = {
+	.dr = 0x1c,
+	.gdir = 0x00,
+	.psr = 0x24,
+};
+
+static struct imx_gpio_regs regs_imx31 = {
+	.dr = 0x00,
+	.gdir = 0x04,
+	.psr = 0x08,
 };
 
 static void imx_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
@@ -63,14 +63,14 @@ static void imx_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 	if (!base)
 		return;
 
-	val = readl(base + GPIO_DR);
+	val = readl(base + imxgpio->regs->dr);
 
 	if (value)
 		val |= 1 << gpio;
 	else
 		val &= ~(1 << gpio);
 
-	writel(val, base + GPIO_DR);
+	writel(val, base + imxgpio->regs->dr);
 }
 
 static int imx_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
@@ -82,9 +82,9 @@ static int imx_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
 	if (!base)
 		return -EINVAL;
 
-	val = readl(base + GPIO_GDIR);
+	val = readl(base + imxgpio->regs->gdir);
 	val &= ~(1 << gpio);
-	writel(val, base + GPIO_GDIR);
+	writel(val, base + imxgpio->regs->gdir);
 
 	return 0;
 }
@@ -98,9 +98,9 @@ static int imx_gpio_direction_output(struct gpio_chip *chip, unsigned gpio, int 
 
 	gpio_set_value(gpio + chip->base, value);
 
-	val = readl(base + GPIO_GDIR);
+	val = readl(base + imxgpio->regs->gdir);
 	val |= 1 << gpio;
-	writel(val, base + GPIO_GDIR);
+	writel(val, base + imxgpio->regs->gdir);
 
 	return 0;
 }
@@ -111,7 +111,7 @@ static int imx_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
 	void __iomem *base = imxgpio->base;
 	u32 val;
 
-	val = readl(base + GPIO_PSR);
+	val = readl(base + imxgpio->regs->psr);
 
 	return val & (1 << gpio) ? 1 : 0;
 }
@@ -126,6 +126,12 @@ static struct gpio_ops imx_gpio_ops = {
 static int imx_gpio_probe(struct device_d *dev)
 {
 	struct imx_gpio_chip *imxgpio;
+	struct imx_gpio_regs *regs;
+	int ret;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&regs);
+	if (ret)
+		return ret;
 
 	imxgpio = xzalloc(sizeof(*imxgpio));
 	imxgpio->base = dev_request_mem_region(dev, 0);
@@ -133,6 +139,7 @@ static int imx_gpio_probe(struct device_d *dev)
 	imxgpio->chip.base = -1;
 	imxgpio->chip.ngpio = 32;
 	imxgpio->chip.dev = dev;
+	imxgpio->regs = regs;
 	gpiochip_add(&imxgpio->chip);
 
 	dev_info(dev, "probed gpiochip%d with base %d\n", dev->id, imxgpio->chip.base);
@@ -140,9 +147,22 @@ static int imx_gpio_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct platform_device_id imx_gpio_ids[] = {
+	{
+		.name = "imx1-gpio",
+		.driver_data = (unsigned long)&regs_imx1,
+	}, {
+		.name = "imx31-gpio",
+		.driver_data = (unsigned long)&regs_imx31,
+	}, {
+		/* sentinel */
+	},
+};
+
 static struct driver_d imx_gpio_driver = {
 	.name = "imx-gpio",
 	.probe = imx_gpio_probe,
+	.id_table = imx_gpio_ids,
 };
 
 static int imx_gpio_add(void)

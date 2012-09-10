@@ -32,15 +32,15 @@ int fsl_eth_init(int num, struct gfar_info_struct *gf)
 	res = xzalloc(3 * sizeof(struct resource));
 	/* TSEC interface registers */
 	res[0].start = GFAR_BASE_ADDR + ((num - 1) * 0x1000);
-	res[0].end = res[0].start + 0x1000;
+	res[0].end = res[0].start + 0x1000 - 1;
 	res[0].flags = IORESOURCE_MEM;
 	/* External PHY access always through eTSEC1 */
 	res[1].start = MDIO_BASE_ADDR;
-	res[1].end = res[1].start + 0x1000;
+	res[1].end = res[1].start + 0x1000 - 1;
 	res[1].flags = IORESOURCE_MEM;
 	/* Access to TBI/RTBI interface. */
 	res[2].start = MDIO_BASE_ADDR + ((num - 1) * 0x1000);
-	res[2].end = res[2].start + 0x1000;
+	res[2].end = res[2].start + 0x1000 - 1;
 	res[2].flags = IORESOURCE_MEM;
 
 	add_generic_device_res("gfar", DEVICE_ID_DYNAMIC, res, 3, gf);

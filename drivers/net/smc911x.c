@@ -435,7 +435,7 @@ static int smc911x_probe(struct device_d *dev)
 		priv->shift = pdata->shift;
 
 	if (is_32bit) {
-		if (pdata->shift) {
+		if (priv->shift) {
 			priv->reg_read = __smc911x_reg_readl_shift;
 			priv->reg_write = __smc911x_reg_writel_shift;
 		} else {
@@ -443,7 +443,7 @@ static int smc911x_probe(struct device_d *dev)
 			priv->reg_write = __smc911x_reg_writel;
 		}
 	} else {
-		if (pdata->shift) {
+		if (priv->shift) {
 			priv->reg_read = __smc911x_reg_readw_shift;
 			priv->reg_write = __smc911x_reg_writew_shift;
 		} else {

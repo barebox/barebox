@@ -376,7 +376,7 @@ void base_board_init(void)
 	/* run the SSP unit clock at 100 MHz */
 	imx_set_sspclk(0, 100000000, 1);
 
-	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0,
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0x2000,
 			   IORESOURCE_MEM, &mci_pdata);
 
 	if (tx28_fb_pdata.fixed_screen < (void *)&_end) {
@@ -384,16 +384,16 @@ void base_board_init(void)
 		tx28_fb_pdata.fixed_screen = NULL;
 	}
 
-	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
+	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 0x2000,
 			   IORESOURCE_MEM, &tx28_fb_pdata);
 
-	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0,
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
 
 	tx28_get_ethaddr();
 
 	imx_enable_enetclk();
-	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0,
+	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 
 	ret = register_persistent_environment();
@@ -404,9 +404,9 @@ void base_board_init(void)
 
 static int tx28kit_console_init(void)
 {
-	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
-	
+
 	return 0;
 }
 

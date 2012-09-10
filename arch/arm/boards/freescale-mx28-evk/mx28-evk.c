@@ -224,19 +224,19 @@ static int mx28_evk_devices_init(void)
 	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX28EVK);
 
-	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0,
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0x2000,
 			   IORESOURCE_MEM, &mci_pdata);
 
-	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
+	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 0x2000,
 			   IORESOURCE_MEM, &mx28_evk_fb_pdata);
 
-	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0,
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000,
 			IORESOURCE_MEM, NULL);
 	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
 	imx_enable_enetclk();
 	mx28_evk_fec_reset();
-	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0,
+	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 
 	return 0;
@@ -245,7 +245,7 @@ device_initcall(mx28_evk_devices_init);
 
 static int mx28_evk_console_init(void)
 {
-	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
+	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
 
 	return 0;

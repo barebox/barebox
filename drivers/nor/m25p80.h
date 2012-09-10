@@ -46,7 +46,7 @@ struct spi_device_id {
 struct m25p {
 	struct spi_device	*spi;
 	struct flash_info	*info;
-	struct mtd_info	mtd;
+	struct mtd_info		mtd;
 	struct cdev		cdev;
 	char			*name;
 	u32			erasesize;

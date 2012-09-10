@@ -917,7 +917,6 @@ struct file_operations cfi_ops = {
 	.memmap  = generic_memmap_ro,
 };
 
-#ifdef CONFIG_PARTITION_NEED_MTD
 static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
 		size_t *retlen, u_char *buf)
 {
@@ -977,7 +976,6 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->flags = MTD_CAP_NORFLASH;
 	info->cdev.mtd = mtd;
 }
-#endif
 
 static int cfi_probe (struct device_d *dev)
 {
@@ -1006,9 +1004,9 @@ static int cfi_probe (struct device_d *dev)
 	info->cdev.ops = &cfi_ops;
 	info->cdev.priv = info;
 
-#ifdef CONFIG_PARTITION_NEED_MTD
-	cfi_init_mtd(info);
-#endif
+	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD))
+		cfi_init_mtd(info);
+
 	devfs_create(&info->cdev);
 
 	return 0;

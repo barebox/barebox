@@ -75,9 +75,7 @@ struct flash_info {
 	ulong	addr_unlock2;		/* unlock address 2 for AMD flash roms	*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct cdev cdev;
-#ifdef CONFIG_PARTITION_NEED_MTD
 	struct mtd_info mtd;
-#endif
 	int numeraseregions;
 	struct mtd_erase_region_info *eraseregions;
 	void *base;

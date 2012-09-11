@@ -25,6 +25,7 @@
 #include <mach/hardware.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <linux/amba/bus.h>
 
 #include "clock.h"
 
@@ -32,12 +33,15 @@ static struct clk st8815_clk_48 = {
        .rate = 48 * 1000 * 1000,
 };
 
+static struct clk st8815_dummy;
+
 void st8815_add_device_sdram(u32 size)
 {
 	arm_add_mem_device("ram0", 0x00000000, size);
 }
 
 static struct clk_lookup clocks_lookups[] = {
+	CLKDEV_CON_ID("apb_pclk", &st8815_dummy),
 	CLKDEV_DEV_ID("uart-pl0110", &st8815_clk_48),
 	CLKDEV_DEV_ID("uart-pl0111", &st8815_clk_48),
 };
@@ -53,7 +57,6 @@ postcore_initcall(st8815_clkdev_init);
 void st8815_register_uart(unsigned id)
 {
 	resource_size_t start;
-	struct device_d *dev;
 
 	switch (id) {
 	case 0:
@@ -63,7 +66,5 @@ void st8815_register_uart(unsigned id)
 		start = NOMADIK_UART1_BASE;
 		break;
 	}
-	dev = add_generic_device("uart-pl011", id, NULL, start, 4096,
-			   IORESOURCE_MEM, NULL);
-	nmdk_clk_create(&st8815_clk_48, dev_name(dev));
+	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
 }

@@ -319,15 +319,6 @@ config CMD_SHA224SUM
 	select SHA224
 	prompt "sha224sum"
 
-config CMD_MTEST
-	tristate
-	prompt "mtest"
-
-config CMD_MTEST_ALTERNATIVE
-	bool
-	depends on CMD_MTEST
-	prompt "alternative mtest implementation"
-
 endmenu
 
 menu "flash                         "
@@ -473,6 +464,15 @@ config CMD_NANDTEST
 	depends on NAND_ECC_HW || NAND_ECC_SOFT
 	select PARTITION_NEED_MTD
 	prompt "nandtest"
+
+config CMD_MTEST
+	tristate
+	prompt "mtest"
+
+config CMD_MTEST_ALTERNATIVE
+	bool
+	depends on CMD_MTEST
+	prompt "alternative mtest implementation"
 
 endmenu
 

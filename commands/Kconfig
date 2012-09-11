@@ -192,14 +192,6 @@ config CMD_NAND
 	depends on NAND
 	prompt "nand"
 
-config CMD_NANDTEST
-	tristate
-	depends on NAND
-	depends on PARTITION
-	depends on NAND_ECC_HW || NAND_ECC_SOFT
-	select PARTITION_NEED_MTD
-	prompt "nandtest"
-
 config CMD_AUTOMOUNT
 	tristate
 	select FS_AUTOMOUNT
@@ -473,6 +465,14 @@ config CMD_OFTREE
 endmenu
 
 menu "testing                       "
+
+config CMD_NANDTEST
+	tristate
+	depends on NAND
+	depends on PARTITION
+	depends on NAND_ECC_HW || NAND_ECC_SOFT
+	select PARTITION_NEED_MTD
+	prompt "nandtest"
 
 endmenu
 

@@ -5,6 +5,7 @@ enum omap_boot_src {
 	OMAP_BOOTSRC_UNKNOWN,
 	OMAP_BOOTSRC_MMC1,
 	OMAP_BOOTSRC_NAND,
+	OMAP_BOOTSRC_SPI1,
 };
 
 enum omap_boot_src omap3_bootsrc(void);

@@ -103,6 +103,42 @@ static void *omap_xload_boot_mmc(void)
 	return buf;
 }
 
+static void *omap_xload_boot_spi(int offset)
+{
+	int ret;
+	int size;
+	void *to, *header;
+	struct cdev *cdev;
+
+	devfs_add_partition("m25p0", offset, SZ_1M, DEVFS_PARTITION_FIXED, "x");
+
+	header = read_image_head("x");
+	if (header == NULL)
+		return NULL;
+
+	size = get_image_size(header);
+	if (!size) {
+		printf("failed to get image size\n");
+		return NULL;
+	}
+
+	to = xmalloc(size);
+
+	cdev = cdev_open("x", O_RDONLY);
+	if (!cdev) {
+		printf("failed to open spi flash\n");
+		return NULL;
+	}
+
+	ret = cdev_read(cdev, to, size, 0, 0);
+	if (ret != size) {
+		printf("failed to read from spi flash\n");
+		return NULL;
+	}
+
+	return to;
+}
+
 enum omap_boot_src omap_bootsrc(void)
 {
 #if defined(CONFIG_ARCH_OMAP3)
@@ -130,6 +166,10 @@ int run_shell(void)
 	case OMAP_BOOTSRC_NAND:
 		printf("booting from NAND\n");
 		func = omap_xload_boot_nand(SZ_128K);
+		break;
+	case OMAP_BOOTSRC_SPI1:
+		printf("booting from SPI1\n");
+		func = omap_xload_boot_spi(SZ_128K);
 		break;
 	}
 

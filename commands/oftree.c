@@ -48,7 +48,8 @@ static int do_oftree(int argc, char *argv[])
 	char *file = NULL;
 	const char *node = "/";
 	int dump = 0;
-	int parse = 0;
+	int probe = 0;
+	int ret;
 
 	while ((opt = getopt(argc, argv, "dpfn:")) > 0) {
 		switch (opt) {
@@ -56,7 +57,12 @@ static int do_oftree(int argc, char *argv[])
 			dump = 1;
 			break;
 		case 'p':
-			parse = 1;
+			if (IS_ENABLED(CONFIG_CMD_OFTREE_PROBE)) {
+				probe = 1;
+			} else {
+				printf("oftree device probe support disabled\n");
+				return COMMAND_ERROR_USAGE;
+			}
 			break;
 		case 'f':
 			free(barebox_fdt);
@@ -71,7 +77,7 @@ static int do_oftree(int argc, char *argv[])
 	if (optind < argc)
 		file = argv[optind];
 
-	if (!dump && !parse)
+	if (!dump && !probe)
 		return COMMAND_ERROR_USAGE;
 
 	if (dump) {
@@ -95,7 +101,7 @@ static int do_oftree(int argc, char *argv[])
 		return 0;
 	}
 
-	if (parse) {
+	if (probe) {
 		if (!file)
 			return COMMAND_ERROR_USAGE;
 
@@ -105,17 +111,13 @@ static int do_oftree(int argc, char *argv[])
 			return 1;
 		}
 
-		fdt = xrealloc(fdt, size + 0x8000);
-		fdt_open_into(fdt, fdt, size + 0x8000);
-		if (!fdt) {
-			printf("unable to read %s\n", file);
+		ret = of_parse_dtb(fdt);
+		if (ret) {
+			printf("parse oftree: %s\n", strerror(-ret));
 			return 1;
 		}
 
-		if (barebox_fdt)
-			free(barebox_fdt);
-
-		barebox_fdt = fdt;
+		of_probe();
 	}
 
 	return 0;
@@ -123,7 +125,7 @@ static int do_oftree(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(oftree)
 BAREBOX_CMD_HELP_USAGE("oftree [OPTIONS]\n")
-BAREBOX_CMD_HELP_OPT  ("-p <FILE>",  "parse and store oftree from <file>\n")
+BAREBOX_CMD_HELP_OPT  ("-p <FILE>",  "probe devices in oftree from <file>\n")
 BAREBOX_CMD_HELP_OPT  ("-d [FILE]",  "dump oftree from [FILE] or the parsed tree if no file is given\n")
 BAREBOX_CMD_HELP_OPT  ("-f",  "free stored oftree\n")
 BAREBOX_CMD_HELP_END

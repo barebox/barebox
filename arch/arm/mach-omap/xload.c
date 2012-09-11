@@ -9,7 +9,7 @@
 #include <sizes.h>
 #include <filetype.h>
 
-void *read_image_head(const char *name)
+static void *read_image_head(const char *name)
 {
 	void *header = xmalloc(ARM_HEAD_SIZE);
 	struct cdev *cdev;
@@ -32,7 +32,7 @@ void *read_image_head(const char *name)
 	return header;
 }
 
-unsigned int get_image_size(void *head)
+static unsigned int get_image_size(void *head)
 {
 	unsigned int ret = 0;
 	unsigned int *psize = head + ARM_HEAD_SIZE_OFFSET;
@@ -44,7 +44,7 @@ unsigned int get_image_size(void *head)
 	return ret;
 }
 
-void *omap_xload_boot_nand(int offset)
+static void *omap_xload_boot_nand(int offset)
 {
 	int ret;
 	int size;
@@ -81,7 +81,7 @@ void *omap_xload_boot_nand(int offset)
 	return to;
 }
 
-void *omap_xload_boot_mmc(void)
+static void *omap_xload_boot_mmc(void)
 {
 	int ret;
 	void *buf;

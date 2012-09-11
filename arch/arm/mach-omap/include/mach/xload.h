@@ -1,9 +1,6 @@
 #ifndef _MACH_XLOAD_H
 #define _MACH_XLOAD_H
 
-void *omap_xload_boot_nand(int offset);
-void *omap_xload_boot_mmc(void);
-
 enum omap_boot_src {
 	OMAP_BOOTSRC_UNKNOWN,
 	OMAP_BOOTSRC_MMC1,

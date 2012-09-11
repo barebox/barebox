@@ -306,6 +306,8 @@ int main(int argc, char *argv[])
 		case 'm':
 			malloc_size = strtoul(optarg, NULL, 0);
 			break;
+		case 'i':
+			break;
 		case 'e':
 			sprintf(str, "env%d", envno);
 			ret = add_image(optarg, str);
@@ -343,7 +345,11 @@ int main(int argc, char *argv[])
 	}
 	mem_malloc_init(ram, ram + malloc_size - 1);
 
-	/* reset getopt */
+	/*
+	 * Reset getopt.
+	 * We need to run a second getopt to count -i parameters.
+	 * This is for /dev/fd# devices.
+	 */
 	optind = 1;
 
 	while (1) {

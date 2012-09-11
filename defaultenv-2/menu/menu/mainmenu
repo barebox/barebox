@@ -3,9 +3,7 @@
 savepath=$PATH
 export menupath=$PATH:/env/menu
 
-if [ ${global.allow_color} = "true" ]; then
-	. /env/data/ansi-colors
-fi
+. /env/data/ansi-colors
 
 while true; do
 	export PATH=${menupath}

@@ -376,6 +376,16 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	return 0;
 }
 
+int dev_get_drvdata(struct device_d *dev, unsigned long *data)
+{
+	if (dev->id_entry) {
+		*data = dev->id_entry->driver_data;
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
 static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;

@@ -62,6 +62,12 @@ config LODEPNG
 	help
 	  This PNG library supports most PNG formats.
 
+config PICOPNG
+	bool "picoPNG"
+	help
+	  This PNG library only supports RGBA PNG8 but is much smaller
+	  in binary size than lodepng.
+
 endchoice
 
 endif

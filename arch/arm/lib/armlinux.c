@@ -264,6 +264,7 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		setup_tags(initrd_address, initrd_size, swap);
 		params = armlinux_bootparams;
 	}
+	architecture = armlinux_get_architecture();
 
 	shutdown_barebox();
 	if (swap) {
@@ -272,8 +273,6 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		reg ^= CR_B; /* swap big-endian flag */
 		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
 	}
-
-	architecture = armlinux_get_architecture();
 
 #ifdef CONFIG_THUMB2_BAREBOX
 	__asm__ __volatile__ (

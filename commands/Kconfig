@@ -535,10 +535,10 @@ config CMD_LSMOD
 	depends on MODULES
 	prompt "lsmod"
 
-config CMD_BMP
+config CMD_SPLASH
 	bool
 	depends on VIDEO
-	prompt "bmp"
+	prompt "splash"
 	help
 	  show bmp files on framebuffer devices
 

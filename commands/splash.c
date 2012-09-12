@@ -30,7 +30,7 @@ static inline void set_pixel(struct fb_info *info, void *adr, int r, int g, int 
 	}
 }
 
-static int do_bmp(int argc, char *argv[])
+static int do_splash(int argc, char *argv[])
 {
 	int ret, opt, fd;
 	char *fbdev = "/dev/fb0";
@@ -194,8 +194,8 @@ failed_memmap:
 	return 1;
 }
 
-BAREBOX_CMD_HELP_START(bmp)
-BAREBOX_CMD_HELP_USAGE("bmp [OPTIONS] FILE\n")
+BAREBOX_CMD_HELP_START(splash)
+BAREBOX_CMD_HELP_USAGE("splash [OPTIONS] FILE\n")
 BAREBOX_CMD_HELP_SHORT("Show the bitmap FILE on the framebuffer.\n")
 BAREBOX_CMD_HELP_OPT  ("-f <fb>",   "framebuffer device (/dev/fb0)\n")
 BAREBOX_CMD_HELP_OPT  ("-x <xofs>", "x offset (default center)\n")
@@ -214,8 +214,8 @@ color depth.
 
  */
 
-BAREBOX_CMD_START(bmp)
-	.cmd		= do_bmp,
+BAREBOX_CMD_START(splash)
+	.cmd		= do_splash,
 	.usage		= "show a bmp image",
-	BAREBOX_CMD_HELP(cmd_bmp_help)
+	BAREBOX_CMD_HELP(cmd_splash_help)
 BAREBOX_CMD_END

@@ -18,7 +18,6 @@ available in @a Barebox:
 @li @subpage _name
 @li @subpage addpart_command
 @li @subpage alternate
-@li @subpage bmp_command
 @li @subpage bootm_command
 @li @subpage bootu
 @li @subpage bootz
@@ -95,6 +94,7 @@ available in @a Barebox:
 @li @subpage sh
 @li @subpage sleep
 @li @subpage source
+@li @subpage splash_command
 @li @subpage test
 @li @subpage timeout
 @li @subpage true

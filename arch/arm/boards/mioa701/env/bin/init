@@ -12,7 +12,7 @@ led keyboard 0
 sdcard_override
 
 fb0.enable=1
-bmp /dev/mtd0.barebox-logo
+splash /dev/mtd0.barebox-logo
 
 mtd_env_override
 if [ $? = 0 ]; then

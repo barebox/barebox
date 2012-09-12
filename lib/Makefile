@@ -34,5 +34,5 @@ obj-$(CONFIG_UNCOMPRESS)	+= uncompress.o
 obj-$(CONFIG_BCH)	+= bch.o
 obj-$(CONFIG_BITREV)	+= bitrev.o
 obj-$(CONFIG_QSORT)	+= qsort.o
-obj-$(CONFIG_BMP)	+= bmp.o graphic_utils.o
-obj-$(CONFIG_IMAGE_RENDERER)	+= image_renderer.o
+obj-$(CONFIG_BMP)	+= bmp.o
+obj-$(CONFIG_IMAGE_RENDERER)	+= image_renderer.o graphic_utils.o

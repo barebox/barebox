@@ -7,7 +7,7 @@
 #include <getopt.h>
 #include <fcntl.h>
 #include <fb.h>
-#include <bmp_layout.h>
+#include <image_renderer.h>
 
 static int do_splash(int argc, char *argv[])
 {
@@ -15,7 +15,7 @@ static int do_splash(int argc, char *argv[])
 	char *fbdev = "/dev/fb0";
 	void *fb;
 	struct fb_info info;
-	char *bmpfile;
+	char *image_file;
 	int startx = -1, starty = -1;
 	int xres, yres;
 	int offscreen = 0;
@@ -40,7 +40,7 @@ static int do_splash(int argc, char *argv[])
 		printf("no filename given\n");
 		return 1;
 	}
-	bmpfile = argv[optind];
+	image_file = argv[optind];
 
 	fd = open(fbdev, O_RDWR);
 	if (fd < 0) {
@@ -75,8 +75,8 @@ static int do_splash(int argc, char *argv[])
 			memcpy(offscreenbuf, fb, fbsize);
 	}
 
-	if (bmp_render_file(&info, bmpfile, fb, startx, starty, xres, yres,
-			    offscreenbuf) < 0)
+	if (image_renderer_file(&info, image_file, fb, startx, starty,
+				offscreenbuf) < 0)
 		ret = 1;
 
 	if (offscreenbuf)

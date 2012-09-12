@@ -45,5 +45,6 @@ config IMAGE_RENDERER
 
 config BMP
 	bool
+	depends on IMAGE_RENDERER
 
 endmenu

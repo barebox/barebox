@@ -43,8 +43,29 @@ config IMAGE_RENDERER
 	depends on VIDEO
 	select FILETYPE
 
+if IMAGE_RENDERER
+
 config BMP
-	bool
-	depends on IMAGE_RENDERER
+	bool "bmp"
+
+config PNG
+	bool "png"
+	select ZLIB
+
+if PNG
+
+choice
+	prompt "PNG Lib"
+
+config LODEPNG
+	bool "lodePNG"
+	help
+	  This PNG library supports most PNG formats.
+
+endchoice
+
+endif
+
+endif
 
 endmenu

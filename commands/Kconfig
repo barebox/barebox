@@ -539,7 +539,6 @@ config CMD_SPLASH
 	bool
 	depends on VIDEO
 	select IMAGE_RENDERER
-	select BMP
 	prompt "splash"
 	help
 	  show bmp files on framebuffer devices

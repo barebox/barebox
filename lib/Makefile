@@ -36,3 +36,5 @@ obj-$(CONFIG_BITREV)	+= bitrev.o
 obj-$(CONFIG_QSORT)	+= qsort.o
 obj-$(CONFIG_BMP)	+= bmp.o
 obj-$(CONFIG_IMAGE_RENDERER)	+= image_renderer.o graphic_utils.o
+obj-$(CONFIG_PNG)	+= png.o
+obj-$(CONFIG_LODEPNG)	+= png_lode.o lodepng.o

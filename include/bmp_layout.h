@@ -74,4 +74,15 @@ struct bmp_image {
 #define BMP_BI_RLE8	1
 #define BMP_BI_RLE4	2
 
+#ifdef CONFIG_BMP
+int bmp_render_file(struct fb_info *info, const char* bmpfile, void* fb,
+		    int startx, int starty, int xres, int yres, void* offscreenbuf);
+#else
+static inline int bmp_render_file(struct fb_info *info, const char* bmpfile, void* fb,
+		    int startx, int starty, int xres, int yres, void* offscreenbuf)
+{
+	return -ENOSYS;
+}
+#endif
+
 #endif							/* _BMP_H_ */

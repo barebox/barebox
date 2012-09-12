@@ -538,6 +538,7 @@ config CMD_LSMOD
 config CMD_SPLASH
 	bool
 	depends on VIDEO
+	select BMP
 	prompt "splash"
 	help
 	  show bmp files on framebuffer devices

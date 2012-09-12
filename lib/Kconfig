@@ -38,4 +38,7 @@ config BITREV
 config QSORT
 	bool
 
+config BMP
+	bool
+
 endmenu

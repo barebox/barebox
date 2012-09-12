@@ -20,6 +20,7 @@ enum filetype {
 	filetype_mips_barebox,
 	filetype_fat,
 	filetype_bmp,
+	filetype_png,
 };
 
 const char *file_type_to_string(enum filetype f);

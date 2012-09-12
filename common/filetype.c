@@ -43,6 +43,7 @@ static const char *filetype_str[] = {
 	[filetype_mips_barebox] = "MIPS barebox image",
 	[filetype_fat] = "FAT filesytem",
 	[filetype_bmp] = "BMP image",
+	[filetype_png] = "PNG image",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -72,6 +73,7 @@ static int is_fat(u8 *buf)
 enum filetype file_detect_type(void *_buf)
 {
 	u32 *buf = _buf;
+	u64 *buf64 = _buf;
 	u8 *buf8 = _buf;
 
 	if (strncmp(buf8, "#!/bin/sh", 9) == 0)
@@ -104,6 +106,8 @@ enum filetype file_detect_type(void *_buf)
 		return filetype_fat;
 	if (strncmp(buf8, "BM", 2) == 0)
 		return filetype_bmp;
+	if (buf64[0] == le64_to_cpu(0x0a1a0a0d474e5089ull))
+		return filetype_png;
 
 	return filetype_unknown;
 }

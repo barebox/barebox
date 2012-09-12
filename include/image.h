@@ -85,6 +85,9 @@
 #define IH_ARCH_BLACKFIN	16	/* Blackfin	*/
 #define IH_ARCH_AVR32		17	/* AVR32	*/
 #define IH_ARCH_LINUX		18	/* Linux	*/
+#define IH_ARCH_SANDBOX		19	/* Sandbox architecture (test only) */
+#define IH_ARCH_NDS32		20	/* ANDES Technology - NDS32  */
+#define IH_ARCH_OPENRISC	21	/* OpenRISC 1000  */
 
 #if defined(__PPC__)
 #define IH_ARCH IH_ARCH_PPC
@@ -102,6 +105,8 @@
 #define IH_ARCH IH_ARCH_MICROBLAZE
 #elif defined(__nios2__)
 #define IH_ARCH IH_ARCH_NIOS2
+#elif defined(__OR1K__)
+#define IH_ARCH IH_ARCH_OPENRISC
 #elif defined(__blackfin__)
 #define IH_ARCH IH_ARCH_BLACKFIN
 #elif defined(__avr32__)

@@ -61,6 +61,8 @@ static table_entry_t arch_name[] = {
 	{ IH_ARCH_SPARC64,	"sparc64",	"SPARC 64 Bit",	},
 	{ IH_ARCH_BLACKFIN,	"blackfin",	"Blackfin",	},
 	{ IH_ARCH_AVR32,	"avr32",	"AVR32",	},
+	{ IH_ARCH_NDS32,	"nds32",	"NDS32",	},
+	{ IH_ARCH_OPENRISC,	"or1k",		"OpenRISC 1000",},
 	{ -1,			"",		"",		},
 };
 

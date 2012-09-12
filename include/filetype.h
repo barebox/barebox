@@ -19,6 +19,7 @@ enum filetype {
 	filetype_sh,
 	filetype_mips_barebox,
 	filetype_fat,
+	filetype_bmp,
 };
 
 const char *file_type_to_string(enum filetype f);

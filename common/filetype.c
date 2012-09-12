@@ -42,6 +42,7 @@ static const char *filetype_str[] = {
 	[filetype_sh] = "Bourne Shell",
 	[filetype_mips_barebox] = "MIPS barebox image",
 	[filetype_fat] = "FAT filesytem",
+	[filetype_bmp] = "BMP image",
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -101,6 +102,8 @@ enum filetype file_detect_type(void *_buf)
 		return filetype_mips_barebox;
 	if (is_fat(buf8))
 		return filetype_fat;
+	if (strncmp(buf8, "BM", 2) == 0)
+		return filetype_bmp;
 
 	return filetype_unknown;
 }

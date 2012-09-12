@@ -38,6 +38,11 @@ config BITREV
 config QSORT
 	bool
 
+config IMAGE_RENDERER
+	bool
+	depends on VIDEO
+	select FILETYPE
+
 config BMP
 	bool
 

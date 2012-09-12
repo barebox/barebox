@@ -5,26 +5,7 @@
 #include <fb.h>
 #include <bmp_layout.h>
 #include <asm/byteorder.h>
-
-static inline void set_pixel(struct fb_info *info, void *adr, int r, int g, int b)
-{
-	u32 px;
-
-	px = (r >> (8 - info->red.length)) << info->red.offset |
-		(g >> (8 - info->green.length)) << info->green.offset |
-		(b >> (8 - info->blue.length)) << info->blue.offset;
-
-	switch (info->bits_per_pixel) {
-	case 8:
-		break;
-	case 16:
-		*(u16 *)adr = px;
-		break;
-	case 32:
-		*(u32 *)adr = px;
-		break;
-	}
-}
+#include <graphic_utils.h>
 
 int bmp_render_file(struct fb_info *info, const char* bmpfile, void* fb,
 		    int startx, int starty, int xres, int yres, void* offscreenbuf)
@@ -88,7 +69,7 @@ int bmp_render_file(struct fb_info *info, const char* bmpfile, void* fb,
 
 				pixel = *image;
 
-				set_pixel(info, adr, color_table[pixel].red,
+				set_rgb_pixel(info, adr, color_table[pixel].red,
 						color_table[pixel].green,
 						color_table[pixel].blue);
 				adr += info->bits_per_pixel >> 3;
@@ -110,7 +91,7 @@ int bmp_render_file(struct fb_info *info, const char* bmpfile, void* fb,
 
 				pixel = image;
 
-				set_pixel(info, adr, pixel[2], pixel[1],
+				set_rgb_pixel(info, adr, pixel[2], pixel[1],
 						pixel[0]);
 				adr += info->bits_per_pixel >> 3;
 

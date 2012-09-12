@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <fb.h>
 #include <image_renderer.h>
+#include <graphic_utils.h>
 
 static int do_splash(int argc, char *argv[])
 {
@@ -19,12 +20,18 @@ static int do_splash(int argc, char *argv[])
 	int startx = -1, starty = -1;
 	int xres, yres;
 	int offscreen = 0;
+	u32 bg_color = 0x00000000;
+	bool do_bg = false;
 	void *offscreenbuf = NULL;
 
-	while((opt = getopt(argc, argv, "f:x:y:o")) > 0) {
+	while((opt = getopt(argc, argv, "f:x:y:ob:")) > 0) {
 		switch(opt) {
 		case 'f':
 			fbdev = optarg;
+			break;
+		case 'b':
+			bg_color = simple_strtoul(optarg, NULL, 0);
+			do_bg = true;
 			break;
 		case 'x':
 			startx = simple_strtoul(optarg, NULL, 0);
@@ -71,8 +78,14 @@ static int do_splash(int argc, char *argv[])
 
 		fbsize = xres * yres * (info.bits_per_pixel >> 3);
 		offscreenbuf = malloc(fbsize);
-		if (offscreenbuf)
-			memcpy(offscreenbuf, fb, fbsize);
+		if (offscreenbuf) {
+			if (do_bg)
+				memset_pixel(&info, offscreenbuf, bg_color, xres * yres);
+			else
+				memcpy(offscreenbuf, fb, fbsize);
+		}
+	} else if (do_bg) {
+		memset_pixel(&info, fb, bg_color, xres * yres);
 	}
 
 	if (image_renderer_file(&info, image_file, fb, startx, starty,
@@ -98,6 +111,7 @@ BAREBOX_CMD_HELP_SHORT("Show the bitmap FILE on the framebuffer.\n")
 BAREBOX_CMD_HELP_OPT  ("-f <fb>",   "framebuffer device (/dev/fb0)\n")
 BAREBOX_CMD_HELP_OPT  ("-x <xofs>", "x offset (default center)\n")
 BAREBOX_CMD_HELP_OPT  ("-y <yofs>", "y offset (default center)\n")
+BAREBOX_CMD_HELP_OPT  ("-b <color>", "background color in 0xttrrggbb\n")
 BAREBOX_CMD_HELP_OPT  ("-o",        "render offscreen\n")
 BAREBOX_CMD_HELP_END
 

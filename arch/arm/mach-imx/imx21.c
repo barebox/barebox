@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <mach/imx-regs.h>
 
 int imx_silicon_revision(void)

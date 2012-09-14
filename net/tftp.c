@@ -354,7 +354,8 @@ static int do_tftpb(int argc, char *argv[])
 			tftp_retries++;
 		}
 
-		if (tftp_retries > PKT_NUM_RETRIES) {
+		/* Wait for two TIMEOUT periods and add some */
+		if (tftp_retries > 2 * TIMEOUT + 1) {
 			tftp_err = -ETIMEDOUT;
 			break;
 		}

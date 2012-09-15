@@ -128,7 +128,8 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 	skip = offset % (mtd->writesize + mtd->oobsize);
 
 	while (ret > 0 && count > 0) {
-		toread = min_t(int, count, mtd->writesize + mtd->oobsize);
+		toread = min_t(int, toread,
+				mtd->writesize + mtd->oobsize - skip);
 		ret = mtdraw_read_unaligned(mtd, buf, toread,
 					    skip, numpage++ * mtd->writesize);
 		buf += ret;

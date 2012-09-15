@@ -40,6 +40,7 @@
 #include <mach/gpio.h>
 #include <spi/spi.h>
 #include <mach/spi.h>
+#include <mach/usb.h>
 
 #define SABRELITE_SD3_WP	IMX_GPIO_NR(7, 1)
 #define SABRELITE_SD3_CD	IMX_GPIO_NR(7, 0)

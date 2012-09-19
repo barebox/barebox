@@ -109,7 +109,7 @@ static struct driver_d gpio_keys_driver = {
 
 static int gpio_keys_init(void)
 {
-	register_driver(&gpio_keys_driver);
+	platform_driver_register(&gpio_keys_driver);
 	return 0;
 }
 device_initcall(gpio_keys_init);

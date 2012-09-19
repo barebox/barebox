@@ -279,7 +279,7 @@ static struct driver_d netx_eth_driver = {
 
 static int netx_eth_init(void)
 {
-        register_driver(&netx_eth_driver);
+        platform_driver_register(&netx_eth_driver);
         return 0;
 }
 

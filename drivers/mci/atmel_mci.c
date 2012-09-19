@@ -494,7 +494,7 @@ static struct driver_d atmel_mci_driver = {
 
 static int atmel_mci_init_driver(void)
 {
-	register_driver(&atmel_mci_driver);
+	platform_driver_register(&atmel_mci_driver);
 	return 0;
 }
 

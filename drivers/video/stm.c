@@ -519,7 +519,7 @@ static struct driver_d stmfb_driver = {
 
 static int stmfb_init(void)
 {
-	return register_driver(&stmfb_driver);
+	return platform_driver_register(&stmfb_driver);
 }
 
 device_initcall(stmfb_init);

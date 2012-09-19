@@ -876,7 +876,7 @@ static struct driver_d ks8851_driver = {
 
 static int ks8851_init(void)
 {
-	register_driver(&ks8851_driver);
+	platform_driver_register(&ks8851_driver);
 	return 0;
 }
 

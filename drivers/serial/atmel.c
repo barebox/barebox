@@ -421,7 +421,7 @@ static struct driver_d atmel_serial_driver = {
 
 static int atmel_serial_init(void)
 {
-	register_driver(&atmel_serial_driver);
+	platform_driver_register(&atmel_serial_driver);
 	return 0;
 }
 

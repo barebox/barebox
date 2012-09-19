@@ -111,27 +111,16 @@ int register_device(struct device_d *new_device)
 
 	debug ("register_device: %s\n", dev_name(new_device));
 
-	if (!new_device->bus)
-		new_device->bus = &platform_bus;
-
-	if (new_device->bus == &platform_bus && new_device->resource) {
-		struct device_d *dev;
-
-		bus_for_each_device(new_device->bus, dev) {
-			if (!dev->resource)
-				continue;
-			if (dev->resource->start == new_device->resource->start) {
-				return -EBUSY;
-			}
-		}
-	}
-
 	list_add_tail(&new_device->list, &device_list);
-	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
+
+	if (!new_device->bus)
+		return 0;
+
+	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 
 	bus_for_each_driver(new_device->bus, drv) {
 		if (!match(drv, new_device))
@@ -213,10 +202,7 @@ int register_driver(struct driver_d *drv)
 
 	debug("register_driver: %s\n", drv->name);
 
-	if (!drv->bus) {
-//		pr_err("driver %s has no bus type associated. Needs fixup\n", drv->name);
-		drv->bus = &platform_bus;
-	}
+	BUG_ON(!drv->bus);
 
 	list_add_tail(&drv->list, &driver_list);
 	list_add_tail(&drv->bus_list, &drv->bus->driver_list);

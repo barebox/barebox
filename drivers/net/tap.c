@@ -112,7 +112,7 @@ static struct driver_d tap_driver = {
 
 static int tap_init(void)
 {
-        register_driver(&tap_driver);
+        platform_driver_register(&tap_driver);
         return 0;
 }
 

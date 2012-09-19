@@ -409,7 +409,7 @@ static struct driver_d s3cfb_driver = {
 
 static int s3cfb_init(void)
 {
-	return register_driver(&s3cfb_driver);
+	return platform_driver_register(&s3cfb_driver);
 }
 
 device_initcall(s3cfb_init);

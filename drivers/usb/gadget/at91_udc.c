@@ -1533,7 +1533,7 @@ static struct driver_d at91_udc_driver = {
 
 static int at91_udc_init(void)
 {
-	register_driver(&at91_udc_driver);
+	platform_driver_register(&at91_udc_driver);
 	return 0;
 }
 device_initcall(at91_udc_init);

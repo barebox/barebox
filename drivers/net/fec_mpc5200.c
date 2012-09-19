@@ -720,7 +720,7 @@ static struct driver_d mpc5xxx_driver = {
 
 static int mpc5xxx_fec_register(void)
 {
-        register_driver(&mpc5xxx_driver);
+        platform_driver_register(&mpc5xxx_driver);
         return 0;
 }
 

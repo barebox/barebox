@@ -1034,7 +1034,7 @@ static struct driver_d cfi_driver = {
 
 static int cfi_init(void)
 {
-	return register_driver(&cfi_driver);
+	return platform_driver_register(&cfi_driver);
 }
 
 device_initcall(cfi_init);

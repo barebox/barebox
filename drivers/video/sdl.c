@@ -96,6 +96,6 @@ static struct driver_d sdlfb_driver = {
 
 static int sdlfb_init(void)
 {
-	return register_driver(&sdlfb_driver);
+	return platform_driver_register(&sdlfb_driver);
 }
 device_initcall(sdlfb_init);

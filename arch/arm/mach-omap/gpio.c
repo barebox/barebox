@@ -151,7 +151,6 @@ static struct driver_d omap_gpio_driver = {
 
 static int omap_gpio_add(void)
 {
-	register_driver(&omap_gpio_driver);
-	return 0;
+	return platform_driver_register(&omap_gpio_driver);
 }
 coredevice_initcall(omap_gpio_add);

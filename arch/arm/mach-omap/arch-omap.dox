@@ -85,7 +85,7 @@ static struct device_d my_little_device = {
  };
 static int my_board_devices_init(void) {
 	/* Do Blah Blah Blah */
-	return register_device(&my_little_device);
+	return platform_device_register(&my_little_device);
 }
 
 device_initcall(my_board_devices_init);

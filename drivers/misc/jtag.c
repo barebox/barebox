@@ -381,7 +381,7 @@ static struct driver_d jtag_driver = {
 
 static int jtag_module_init(void)
 {
-	return register_driver(&jtag_driver);
+	return platform_driver_register(&jtag_driver);
 }
 
 device_initcall(jtag_module_init);

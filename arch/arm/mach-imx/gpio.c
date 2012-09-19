@@ -201,7 +201,7 @@ static struct driver_d imx_gpio_driver = {
 
 static int imx_gpio_add(void)
 {
-	register_driver(&imx_gpio_driver);
+	platform_driver_register(&imx_gpio_driver);
 	return 0;
 }
 coredevice_initcall(imx_gpio_add);

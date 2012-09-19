@@ -548,7 +548,7 @@ static struct driver_d pxafb_driver = {
 
 static int pxafb_init(void)
 {
-	return register_driver(&pxafb_driver);
+	return platform_driver_register(&pxafb_driver);
 }
 
 device_initcall(pxafb_init);

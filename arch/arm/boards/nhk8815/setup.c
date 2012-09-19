@@ -94,7 +94,7 @@ static int nhk8815_devices_init(void)
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, 0x34000300, 16,
 			   IORESOURCE_MEM, NULL);
 
-	register_device(&nhk8815_nand_device);
+	platform_device_register(&nhk8815_nand_device);
 
 	armlinux_set_architecture(MACH_TYPE_NOMADIK);
 	armlinux_set_bootparams((void *)(0x00000100));

@@ -92,7 +92,7 @@ static struct driver_d hf_drv = {
 
 static int hf_init(void)
 {
-	return register_driver(&hf_drv);
+	return platform_driver_register(&hf_drv);
 }
 
 device_initcall(hf_init);

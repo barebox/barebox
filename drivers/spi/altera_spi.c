@@ -242,7 +242,7 @@ static struct driver_d altera_spi_driver = {
 
 static int altera_spi_driver_init(void)
 {
-	return register_driver(&altera_spi_driver);
+	return platform_driver_register(&altera_spi_driver);
 }
 
 device_initcall(altera_spi_driver_init);

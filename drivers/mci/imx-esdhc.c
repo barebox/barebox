@@ -583,7 +583,7 @@ static struct driver_d fsl_esdhc_driver = {
 
 static int fsl_esdhc_init_driver(void)
 {
-	register_driver(&fsl_esdhc_driver);
+	platform_driver_register(&fsl_esdhc_driver);
 	return 0;
 }
 

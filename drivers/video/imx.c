@@ -614,7 +614,7 @@ static struct driver_d imxfb_driver = {
 
 static int imxfb_init(void)
 {
-	return register_driver(&imxfb_driver);
+	return platform_driver_register(&imxfb_driver);
 }
 
 device_initcall(imxfb_init);

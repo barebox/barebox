@@ -484,7 +484,7 @@ static struct driver_d atmel_nand_driver = {
 
 static int __init atmel_nand_init(void)
 {
-	return register_driver(&atmel_nand_driver);
+	return platform_driver_register(&atmel_nand_driver);
 }
 
 device_initcall(atmel_nand_init);

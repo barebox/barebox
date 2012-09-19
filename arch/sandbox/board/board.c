@@ -44,7 +44,7 @@ static struct device_d sdl_device = {
 
 static int devices_init(void)
 {
-	register_device(&tap_device);
+	platform_device_register(&tap_device);
 
 	if (sdl_xres)
 		mode.xres = sdl_xres;
@@ -52,7 +52,7 @@ static int devices_init(void)
 	if (sdl_yres)
 		mode.yres = sdl_yres;
 
-	register_device(&sdl_device);
+	platform_device_register(&sdl_device);
 
 	return 0;
 }

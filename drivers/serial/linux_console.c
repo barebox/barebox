@@ -81,7 +81,7 @@ static struct driver_d linux_console_driver = {
 
 static int console_init(void)
 {
-	return register_driver(&linux_console_driver);
+	return platform_driver_register(&linux_console_driver);
 }
 
 console_initcall(console_init);

@@ -864,7 +864,7 @@ static struct driver_d omap_i2c_driver = {
 /* I2C may be needed to bring up other drivers */
 static int __init omap_i2c_init_driver(void)
 {
-	return register_driver(&omap_i2c_driver);
+	return platform_driver_register(&omap_i2c_driver);
 }
 device_initcall(omap_i2c_init_driver);
 

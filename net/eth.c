@@ -261,7 +261,7 @@ int eth_register(struct eth_device *edev)
 	if (edev->parent)
 		dev_add_child(edev->parent, &edev->dev);
 
-	register_device(&edev->dev);
+	platform_device_register(&edev->dev);
 
 	dev_add_param(dev, "ipaddr", eth_set_ipaddr, NULL, 0);
 	dev_add_param(dev, "ethaddr", eth_set_ethaddr, NULL, 0);

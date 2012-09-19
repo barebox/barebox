@@ -770,7 +770,7 @@ static struct driver_d s3c_mci_driver = {
 
 static int s3c_mci_init_driver(void)
 {
-        register_driver(&s3c_mci_driver);
+        platform_driver_register(&s3c_mci_driver);
         return 0;
 }
 

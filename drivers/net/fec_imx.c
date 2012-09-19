@@ -702,8 +702,8 @@ static struct driver_d fec_driver = {
 
 static int fec_register(void)
 {
-        register_driver(&fec_driver);
-        return 0;
+	platform_driver_register(&fec_driver);
+	return 0;
 }
 
 device_initcall(fec_register);

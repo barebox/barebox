@@ -518,7 +518,7 @@ static struct driver_d mxcmci_driver = {
 
 static int mxcmci_init_driver(void)
 {
-        register_driver(&mxcmci_driver);
+        platform_driver_register(&mxcmci_driver);
         return 0;
 }
 

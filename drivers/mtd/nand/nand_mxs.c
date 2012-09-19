@@ -1248,7 +1248,7 @@ static struct driver_d mxs_nand_driver = {
 
 static int __init mxs_nand_init(void)
 {
-	return register_driver(&mxs_nand_driver);
+	return platform_driver_register(&mxs_nand_driver);
 }
 
 device_initcall(mxs_nand_init);

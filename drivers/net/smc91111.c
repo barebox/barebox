@@ -1322,7 +1322,7 @@ static struct driver_d smc91c111_driver = {
 
 static int smc91c111_init(void)
 {
-        register_driver(&smc91c111_driver);
+        platform_driver_register(&smc91c111_driver);
         return 0;
 }
 

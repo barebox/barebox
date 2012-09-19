@@ -1822,7 +1822,7 @@ static struct driver_d ohci_driver = {
 
 static int ohcil_init(void)
 {
-	register_driver(&ohci_driver);
+	platform_driver_register(&ohci_driver);
 	return 0;
 }
 

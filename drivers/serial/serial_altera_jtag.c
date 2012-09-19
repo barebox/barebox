@@ -109,7 +109,7 @@ static struct driver_d altera_serial_jtag_driver = {
 
 static int altera_serial_jtag_init(void)
 {
-	return register_driver(&altera_serial_jtag_driver);
+	return platform_driver_register(&altera_serial_jtag_driver);
 }
 
 console_initcall(altera_serial_jtag_init);

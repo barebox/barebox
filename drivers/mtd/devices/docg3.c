@@ -1201,7 +1201,7 @@ static struct driver_d  g3_driver = {
 
 static int __init docg3_init(void)
 {
-	return register_driver(&g3_driver);
+	return platform_driver_register(&g3_driver);
 }
 
 device_initcall(docg3_init);

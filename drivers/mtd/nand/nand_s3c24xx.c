@@ -651,7 +651,7 @@ BAREBOX_CMD_END
  */
 static int __init s3c24x0_nand_init(void)
 {
-	return register_driver(&s3c24x0_nand_driver);
+	return platform_driver_register(&s3c24x0_nand_driver);
 }
 
 device_initcall(s3c24x0_nand_init);

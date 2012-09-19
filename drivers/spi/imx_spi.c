@@ -584,7 +584,7 @@ static struct driver_d imx_spi_driver = {
 
 static int imx_spi_init(void)
 {
-	register_driver(&imx_spi_driver);
+	platform_driver_register(&imx_spi_driver);
 	return 0;
 }
 

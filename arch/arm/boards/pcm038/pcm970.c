@@ -141,7 +141,7 @@ static void pcm970_ide_init(void)
 	/* Make PCMCIA bank0 valid */
 	writel(readl(PCMCIA_POR(0)) | (1 << 29), PCMCIA_POR(0));
 
-	register_device(&pcm970_ide_device);
+	platform_device_register(&pcm970_ide_device);
 }
 #endif
 

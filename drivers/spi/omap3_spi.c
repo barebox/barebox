@@ -393,7 +393,7 @@ static struct driver_d omap3_spi_driver = {
 
 static int omap3_spi_init(void)
 {
-	return register_driver(&omap3_spi_driver);
+	return platform_driver_register(&omap3_spi_driver);
 }
 
 device_initcall(omap3_spi_init);

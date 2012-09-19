@@ -142,7 +142,7 @@ static struct driver_d imx28_wd_driver = {
 
 static int imx28_wd_init(void)
 {
-	register_driver(&imx28_wd_driver);
+	platform_driver_register(&imx28_wd_driver);
 	return 0;
 }
 

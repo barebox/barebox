@@ -1497,7 +1497,7 @@ static struct driver_d mci_driver = {
 static int mci_init(void)
 {
 	sector_buf = xmemalign(32, 512);
-	return register_driver(&mci_driver);
+	return platform_driver_register(&mci_driver);
 }
 
 device_initcall(mci_init);
@@ -1516,5 +1516,5 @@ int mci_register(struct mci_host *host)
 	mci_dev->platform_data = host;
 	dev_add_child(host->hw_dev, mci_dev);
 
-	return register_device(mci_dev);
+	return platform_device_register(mci_dev);
 }

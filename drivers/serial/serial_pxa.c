@@ -198,7 +198,7 @@ static struct driver_d pxa_serial_driver = {
 
 static int pxa_serial_init(void)
 {
-	return register_driver(&pxa_serial_driver);
+	return platform_driver_register(&pxa_serial_driver);
 }
 
 console_initcall(pxa_serial_init);

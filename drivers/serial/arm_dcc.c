@@ -157,8 +157,8 @@ static struct device_d arm_dcc_device = {
 
 static int arm_dcc_init(void)
 {
-	register_device(&arm_dcc_device);
-	register_driver(&arm_dcc_driver);
+	platform_device_register(&arm_dcc_device);
+	platform_driver_register(&arm_dcc_driver);
 	return 0;
 }
 

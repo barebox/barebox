@@ -1036,7 +1036,7 @@ static struct driver_d imx3fb_driver = {
 
 static int imx3fb_init(void)
 {
-	return register_driver(&imx3fb_driver);
+	return platform_driver_register(&imx3fb_driver);
 }
 
 device_initcall(imx3fb_init);

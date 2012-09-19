@@ -763,7 +763,7 @@ static struct driver_d mxs_mci_driver = {
 
 static int mxs_mci_init_driver(void)
 {
-        register_driver(&mxs_mci_driver);
+        platform_driver_register(&mxs_mci_driver);
         return 0;
 }
 

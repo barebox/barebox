@@ -868,7 +868,7 @@ static struct driver_d ehci_driver = {
 
 static int ehcil_init(void)
 {
-	register_driver(&ehci_driver);
+	platform_driver_register(&ehci_driver);
 	return 0;
 }
 

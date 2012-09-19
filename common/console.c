@@ -141,7 +141,7 @@ int console_register(struct console_device *newcdev)
 	strcpy(dev->name, "cs");
 	if (newcdev->dev)
 		dev_add_child(newcdev->dev, dev);
-	register_device(dev);
+	platform_device_register(dev);
 
 	if (newcdev->setbrg) {
 		dev_add_param(dev, "baudrate", console_baudrate_set, NULL, 0);

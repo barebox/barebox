@@ -552,7 +552,7 @@ static struct driver_d smc911x_driver = {
 
 static int smc911x_init(void)
 {
-        register_driver(&smc911x_driver);
+        platform_driver_register(&smc911x_driver);
         return 0;
 }
 

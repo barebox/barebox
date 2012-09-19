@@ -375,7 +375,7 @@ static struct driver_d imx_serial_driver = {
 
 static int imx_serial_init(void)
 {
-	register_driver(&imx_serial_driver);
+	platform_driver_register(&imx_serial_driver);
 	return 0;
 }
 

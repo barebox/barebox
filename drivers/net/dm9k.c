@@ -783,7 +783,7 @@ static struct driver_d dm9k_driver = {
 
 static int dm9k_init(void)
 {
-	register_driver(&dm9k_driver);
+	platform_driver_register(&dm9k_driver);
 	return 0;
 }
 

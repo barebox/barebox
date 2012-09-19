@@ -2333,7 +2333,7 @@ static struct driver_d fsl_udc_driver = {
 
 static int fsl_udc_init(void)
 {
-	register_driver(&fsl_udc_driver);
+	platform_driver_register(&fsl_udc_driver);
 	return 0;
 }
 

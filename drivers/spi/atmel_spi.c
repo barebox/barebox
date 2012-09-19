@@ -312,7 +312,7 @@ static struct driver_d atmel_spi_driver = {
 
 static int atmel_spi_init(void)
 {
-	register_driver(&atmel_spi_driver);
+	platform_driver_register(&atmel_spi_driver);
 	return 0;
 }
 

@@ -471,7 +471,7 @@ static struct driver_d cs8900_driver = {
 
 static int cs8900_init(void)
 {
-	register_driver(&cs8900_driver);
+	platform_driver_register(&cs8900_driver);
 	return 0;
 }
 

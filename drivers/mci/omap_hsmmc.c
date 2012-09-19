@@ -599,7 +599,7 @@ static struct driver_d omap_mmc_driver = {
 
 static int omap_mmc_init_driver(void)
 {
-        register_driver(&omap_mmc_driver);
+        platform_driver_register(&omap_mmc_driver);
         return 0;
 }
 

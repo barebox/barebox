@@ -295,7 +295,7 @@ static struct driver_d imx_iim_driver = {
 
 static int imx_iim_init(void)
 {
-	register_driver(&imx_iim_driver);
+	platform_driver_register(&imx_iim_driver);
 
 	return 0;
 }

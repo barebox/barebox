@@ -381,7 +381,7 @@ static struct driver_d pxamci_driver = {
 
 static int __init pxamci_init_driver(void)
 {
-	register_driver(&pxamci_driver);
+	platform_driver_register(&pxamci_driver);
 	return 0;
 }
 

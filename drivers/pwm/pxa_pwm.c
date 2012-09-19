@@ -150,7 +150,7 @@ static struct driver_d pxa_pwm_driver = {
 static int __init pxa_pwm_init_driver(void)
 {
 	CKEN &= ~CKEN_PWM0 & ~CKEN_PWM1;
-	register_driver(&pxa_pwm_driver);
+	platform_driver_register(&pxa_pwm_driver);
 	return 0;
 }
 

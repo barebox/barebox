@@ -1288,7 +1288,7 @@ static struct driver_d imx_nand_driver = {
  */
 static int __init imx_nand_init(void)
 {
-	return register_driver(&imx_nand_driver);
+	return platform_driver_register(&imx_nand_driver);
 }
 
 device_initcall(imx_nand_init);

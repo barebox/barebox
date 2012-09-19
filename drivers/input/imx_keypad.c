@@ -457,7 +457,7 @@ static struct driver_d imx_keypad_driver = {
 
 static int imx_keypad_init(void)
 {
-	register_driver(&imx_keypad_driver);
+	platform_driver_register(&imx_keypad_driver);
 	return 0;
 }
 device_initcall(imx_keypad_init);

@@ -532,7 +532,7 @@ static struct driver_d gfar_eth_driver = {
 
 static int gfar_eth_init(void)
 {
-	register_driver(&gfar_eth_driver);
+	platform_driver_register(&gfar_eth_driver);
 	return 0;
 }
 

@@ -237,7 +237,7 @@ static struct driver_d nomadik_nand_driver = {
 static int __init nand_nomadik_init(void)
 {
 	pr_info("Nomadik NAND driver\n");
-	return register_driver(&nomadik_nand_driver);
+	return platform_driver_register(&nomadik_nand_driver);
 }
 
 device_initcall(nand_nomadik_init);

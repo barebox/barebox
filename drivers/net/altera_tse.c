@@ -560,7 +560,7 @@ static struct driver_d altera_tse_driver = {
 
 static int tse_init(void)
 {
-	register_driver(&altera_tse_driver);
+	platform_driver_register(&altera_tse_driver);
 	return 0;
 }
 

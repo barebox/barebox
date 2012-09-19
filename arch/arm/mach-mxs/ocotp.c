@@ -232,7 +232,7 @@ static struct driver_d mxs_ocotp_driver = {
 
 static int mxs_ocotp_init(void)
 {
-	register_driver(&mxs_ocotp_driver);
+	platform_driver_register(&mxs_ocotp_driver);
 
 	return 0;
 }

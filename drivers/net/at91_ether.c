@@ -369,7 +369,7 @@ static struct driver_d at91_ether_driver = {
 
 static int at91_ether_driver_init(void)
 {
-	register_driver(&at91_ether_driver);
+	platform_driver_register(&at91_ether_driver);
 	return 0;
 }
 device_initcall(at91_ether_driver_init);

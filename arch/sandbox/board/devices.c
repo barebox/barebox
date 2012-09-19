@@ -25,7 +25,7 @@ static int sandbox_device_init(void)
 		/* reset the list_head before registering for real */
 		dev->list.prev = NULL;
 		dev->list.next = NULL;
-		register_device(dev);
+		platform_device_register(dev);
 	}
 
 	return 0;

@@ -163,7 +163,7 @@ static struct driver_d imx_gpt_driver = {
 
 static int imx_gpt_init(void)
 {
-	return register_driver(&imx_gpt_driver);
+	return platform_driver_register(&imx_gpt_driver);
 }
 coredevice_initcall(imx_gpt_init);
 

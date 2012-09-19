@@ -55,6 +55,32 @@ static void platform_remove(struct device_d *dev)
 	dev->driver->remove(dev);
 }
 
+int platform_driver_register(struct driver_d *drv)
+{
+	drv->bus = &platform_bus;
+
+	return register_driver(drv);
+}
+
+int platform_device_register(struct device_d *new_device)
+{
+	new_device->bus = &platform_bus;
+
+	if (new_device->resource) {
+		struct device_d *dev;
+
+		bus_for_each_device(new_device->bus, dev) {
+			if (!dev->resource)
+				continue;
+			if (dev->resource->start == new_device->resource->start) {
+				return -EBUSY;
+			}
+		}
+	}
+
+	return register_device(new_device);
+}
+
 struct bus_type platform_bus = {
 	.name = "platform",
 	.match = platform_match,

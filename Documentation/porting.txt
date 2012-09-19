@@ -40,7 +40,7 @@ extra-y += barebox.lds
 
 	static int scb9328_console_init(void)
 	{
-		register_device(&scb9328_serial_device);
+		platform_device_register(&scb9328_serial_device);
 		return 0;
 	}
 

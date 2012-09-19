@@ -295,7 +295,7 @@ static int biosdisk_init(void)
 		return -EIO;
 	}
 
-	register_driver(&biosdisk_driver);
+	platform_driver_register(&biosdisk_driver);
 	return 0;
 }
 

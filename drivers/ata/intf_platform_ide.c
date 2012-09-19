@@ -111,7 +111,7 @@ static struct driver_d platform_ide_driver = {
 
 static int platform_ide_init(void)
 {
-	return register_driver(&platform_ide_driver);
+	return platform_driver_register(&platform_ide_driver);
 }
 
 device_initcall(platform_ide_init);

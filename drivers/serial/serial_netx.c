@@ -158,7 +158,7 @@ static struct driver_d netx_serial_driver = {
 
 static int netx_serial_init(void)
 {
-	register_driver(&netx_serial_driver);
+	platform_driver_register(&netx_serial_driver);
 	return 0;
 }
 

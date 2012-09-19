@@ -169,7 +169,7 @@ static struct driver_d mpc5xxx_serial_driver = {
 
 static int mpc5xxx_serial_register(void)
 {
-	register_driver(&mpc5xxx_serial_driver);
+	platform_driver_register(&mpc5xxx_serial_driver);
 	return 0;
 }
 

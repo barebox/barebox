@@ -494,7 +494,7 @@ static struct driver_d macb_driver = {
 static int macb_driver_init(void)
 {
 	debug("%s\n", __func__);
-	register_driver(&macb_driver);
+	platform_driver_register(&macb_driver);
 	return 0;
 }
 

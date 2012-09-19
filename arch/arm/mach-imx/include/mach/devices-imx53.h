@@ -78,7 +78,7 @@ static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pda
 	dev->id = DEVICE_ID_DYNAMIC;
 	dev->platform_data = pdata;
 
-	register_device(dev);
+	platform_device_register(dev);
 
 	return dev;
 }

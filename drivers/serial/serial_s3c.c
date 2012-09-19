@@ -216,7 +216,7 @@ static struct driver_d s3c_serial_driver = {
 
 static int s3c_serial_init(void)
 {
-	register_driver(&s3c_serial_driver);
+	platform_driver_register(&s3c_serial_driver);
 	return 0;
 }
 

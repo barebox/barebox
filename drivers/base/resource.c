@@ -59,7 +59,7 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 	dev->resource = res;
 	dev->num_resources = nb;
 
-	register_device(dev);
+	platform_device_register(dev);
 
 	return dev;
 }

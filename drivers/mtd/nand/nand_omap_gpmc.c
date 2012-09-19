@@ -1084,7 +1084,7 @@ static struct driver_d gpmc_nand_driver = {
 
 static int gpmc_nand_init(void)
 {
-	return register_driver(&gpmc_nand_driver);
+	return platform_driver_register(&gpmc_nand_driver);
 }
 
 device_initcall(gpmc_nand_init);

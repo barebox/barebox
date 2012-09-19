@@ -614,7 +614,7 @@ static int mem_init(void)
 	}
 
 	add_mem_device("mem", 0, ~0, IORESOURCE_MEM_WRITEABLE);
-	register_driver(&mem_drv);
+	platform_driver_register(&mem_drv);
 
 	return 0;
 }

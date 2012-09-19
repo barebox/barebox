@@ -160,7 +160,7 @@ static struct driver_d pl010_driver = {
 
 static int pl010_init(void)
 {
-	register_driver(&pl010_driver);
+	platform_driver_register(&pl010_driver);
 
 	return 0;
 }

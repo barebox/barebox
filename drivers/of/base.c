@@ -604,7 +604,7 @@ static struct device_d *add_of_device(struct device_node *node)
 
 	debug("register device 0x%08x\n", node->resource[0].start);
 
-	register_device(dev);
+	platform_device_register(dev);
 
 	free(name);
 

@@ -266,11 +266,11 @@ static struct driver_d ns16550_serial_driver = {
 /**
  * @brief driver initialization function
  *
- * @return result of register_driver
+ * @return result of platform_driver_register
  */
 static int ns16550_serial_init(void)
 {
-	return register_driver(&ns16550_serial_driver);
+	return platform_driver_register(&ns16550_serial_driver);
 }
 
 console_initcall(ns16550_serial_init);

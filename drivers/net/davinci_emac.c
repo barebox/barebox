@@ -611,7 +611,7 @@ static struct driver_d davinci_emac_driver = {
 
 static int davinci_emac_register(void)
 {
-	register_driver(&davinci_emac_driver);
+	platform_driver_register(&davinci_emac_driver);
 	return 0;
 }
 

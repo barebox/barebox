@@ -88,7 +88,7 @@ static struct driver_d at91_ohci_driver = {
 
 static int at91_ohci_init(void)
 {
-	register_driver(&at91_ohci_driver);
+	platform_driver_register(&at91_ohci_driver);
 	return 0;
 }
 device_initcall(at91_ohci_init);

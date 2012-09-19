@@ -434,7 +434,7 @@ static struct driver_d dwc_ether_driver = {
 
 static int dwc_ether_driver_init(void)
 {
-	register_driver(&dwc_ether_driver);
+	platform_driver_register(&dwc_ether_driver);
 	return 0;
 }
 device_initcall(dwc_ether_driver_init);

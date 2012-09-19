@@ -401,6 +401,9 @@ extern struct list_head bus_list;
 
 extern struct bus_type platform_bus;
 
+int platform_driver_register(struct driver_d *drv);
+int platform_device_register(struct device_d *new_device);
+
 struct file_operations {
 	/*! Called in response of reading from this device. Required */
 	ssize_t (*read)(struct cdev*, void* buf, size_t count, loff_t offset, ulong flags);

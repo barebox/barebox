@@ -156,6 +156,6 @@ static struct driver_d stmpe_gpio_driver = {
 
 static int stmpe_gpio_add(void)
 {
-	return register_driver(&stmpe_gpio_driver);
+	return platform_driver_register(&stmpe_gpio_driver);
 }
 coredevice_initcall(stmpe_gpio_add);

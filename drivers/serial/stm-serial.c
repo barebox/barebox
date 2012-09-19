@@ -190,7 +190,7 @@ static struct driver_d stm_serial_driver = {
 
 static int stm_serial_init(void)
 {
-	register_driver(&stm_serial_driver);
+	platform_driver_register(&stm_serial_driver);
 	return 0;
 }
 

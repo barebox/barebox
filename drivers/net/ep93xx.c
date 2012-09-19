@@ -666,7 +666,7 @@ static struct driver_d ep93xx_eth_driver = {
 
 static int ep93xx_eth_init(void)
 {
-	register_driver(&ep93xx_eth_driver);
+	platform_driver_register(&ep93xx_eth_driver);
 	return 0;
 }
 

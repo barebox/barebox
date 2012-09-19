@@ -1515,7 +1515,7 @@ static struct driver_d udc_driver = {
 
 static int __init pxa27x_udc_init(void)
 {
-	register_driver(&udc_driver);
+	platform_driver_register(&udc_driver);
 	return 0;
 }
 

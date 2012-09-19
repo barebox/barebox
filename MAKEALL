@@ -96,8 +96,10 @@ do_build_target() {
 	mkdir -p "${LOGDIR}/${target}"
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
-	cross_compile=`eval echo '$CROSS_COMPILE_'${target}`
-	cross_compile_set=`eval echo '${CROSS_COMPILE_'${target}'+set}'`
+	tmp=`echo "${target}" | tr - _`
+
+	cross_compile=`eval echo '$CROSS_COMPILE_'${tmp}`
+	cross_compile_set=`eval echo '${CROSS_COMPILE_'${tmp}'+set}'`
 	if [ "${cross_compile_set}" = "" ]
 	then
 		cross_compile=`eval echo '$CROSS_COMPILE_'${arch}`

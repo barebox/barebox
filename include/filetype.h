@@ -19,10 +19,12 @@ enum filetype {
 	filetype_sh,
 	filetype_mips_barebox,
 	filetype_fat,
+	filetype_mbr,
 };
 
 const char *file_type_to_string(enum filetype f);
 enum filetype file_detect_type(void *_buf);
 enum filetype file_name_detect_type(const char *filename);
+enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 
 #endif /* __FILE_TYPE_H */

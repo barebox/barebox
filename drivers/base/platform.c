@@ -22,6 +22,7 @@
 #include <common.h>
 #include <driver.h>
 #include <errno.h>
+#include <init.h>
 
 static int platform_match(struct device_d *dev, struct driver_d *drv)
 {
@@ -64,15 +65,8 @@ struct bus_type platform_bus = {
 	.remove = platform_remove,
 };
 
-#if 0
-LIST_HEAD(bus_list);
-EXPORT_SYMBOL(bus_list);
-
-int bus_register(struct bus_type *bus)
+static int plarform_init(void)
 {
-	list_add_tail(&bus->list, &bus_list);
-
-	return 0;
+	return bus_register(&platform_bus);
 }
-#endif
-
+pure_initcall(plarform_init);

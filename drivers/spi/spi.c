@@ -295,3 +295,9 @@ struct bus_type spi_bus = {
 	.probe = spi_probe,
 	.remove = spi_remove,
 };
+
+static int spi_bus_init(void)
+{
+	return bus_register(&spi_bus);
+}
+pure_initcall(spi_bus_init);

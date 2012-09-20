@@ -383,6 +383,14 @@ struct bus_type {
 	struct list_head list;
 };
 
+int bus_register(struct bus_type *bus);
+
+extern struct list_head bus_list;
+
+/* Iterate over all buses
+ */
+#define for_each_bus(bus) list_for_each_entry(bus, &bus_list, list)
+
 extern struct bus_type platform_bus;
 
 struct file_operations {

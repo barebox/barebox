@@ -1141,6 +1141,12 @@ struct bus_type fs_bus = {
 	.remove = fs_remove,
 };
 
+static int fs_bus_init(void)
+{
+	return bus_register(&fs_bus);
+}
+pure_initcall(fs_bus_init);
+
 int register_fs_driver(struct fs_driver_d *fsdrv)
 {
 	fsdrv->drv.bus = &fs_bus;

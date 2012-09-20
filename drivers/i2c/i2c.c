@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <init.h>
 
 #include <i2c/i2c.h>
 
@@ -395,3 +396,9 @@ struct bus_type i2c_bus = {
 	.probe = i2c_probe,
 	.remove = i2c_remove,
 };
+
+static int i2c_bus_init(void)
+{
+	return bus_register(&i2c_bus);
+}
+pure_initcall(i2c_bus_init);

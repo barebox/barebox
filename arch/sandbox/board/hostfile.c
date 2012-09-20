@@ -102,7 +102,22 @@ device_initcall(hf_init);
 
 int barebox_register_filedev(struct hf_platform_data *hf)
 {
-	return !add_generic_device("hostfile", DEVICE_ID_DYNAMIC, NULL, hf->base, hf->size,
-			   IORESOURCE_MEM, hf);
+	struct device_d *dev;
+	struct resource *res;
+
+	dev = xzalloc(sizeof(*dev));
+	strcpy(dev->name, "hostfile");
+	dev->id = DEVICE_ID_DYNAMIC;
+	dev->platform_data = hf;
+
+	res = xzalloc(sizeof(struct resource));
+	res[0].start = hf->base;
+	res[0].end = hf->base + hf->size - 1;
+	res[0].flags = IORESOURCE_MEM;
+
+	dev->resource = res;
+	dev->num_resources = 1;
+
+	return sandbox_add_device(dev);
 }
 

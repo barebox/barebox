@@ -47,6 +47,6 @@ int barebox_register_console(char *name, int stdinfd, int stdoutfd)
 	data->stdoutfd = stdoutfd;
 	data->stdinfd  = stdinfd;
 
-	return register_device(dev);
+	return sandbox_add_device(dev);
 }
 

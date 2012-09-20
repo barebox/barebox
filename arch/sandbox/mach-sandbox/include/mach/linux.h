@@ -1,6 +1,9 @@
 #ifndef __ASM_ARCH_LINUX_H
 #define __ASM_ARCH_LINUX_H
 
+struct device_d;
+
+int sandbox_add_device(struct device_d *dev);
 int linux_register_device(const char *name, void *start, void *end);
 int tap_alloc(char *dev);
 uint64_t linux_get_time(void);

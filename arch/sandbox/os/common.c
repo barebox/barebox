@@ -355,10 +355,6 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (opt) {
-		case 'h':
-			break;
-		case 'm':
-			break;
 		case 'i':
 			sprintf(str, "fd%d", fdno);
 			ret = add_image(optarg, str);
@@ -366,14 +362,8 @@ int main(int argc, char *argv[])
 				exit(1);
 			fdno++;
 			break;
-		case 'e':
-			break;
-		case 'O':
-			break;
-		case 'I':
-			break;
 		default:
-			exit(1);
+			break;
 		}
 	}
 

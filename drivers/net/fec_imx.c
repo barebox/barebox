@@ -24,6 +24,8 @@
 #include <clock.h>
 #include <xfuncs.h>
 #include <linux/phy.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 #include <asm/mmu.h>
 
@@ -43,6 +45,19 @@ struct fec_frame {
 	uint8_t head[16];	/* MAC header(6 + 6 + 2) + 2(aligned) */
 };
 
+#ifdef CONFIG_COMMON_CLK
+static inline unsigned long fec_clk_get_rate(struct fec_priv *fec)
+{
+	return clk_get_rate(fec->clk);
+}
+#else
+static inline unsigned long fec_clk_get_rate(struct fec_priv *fec)
+{
+	return imx_get_fecclk();
+}
+#endif
+
+
 /*
  * MII-interface related functions
  */
@@ -54,7 +69,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
 
-	writel(((imx_get_fecclk() >> 20) / 5) << 1,
+	writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 	/*
 	 * reading from any PHY's register is done by properly
@@ -97,7 +112,7 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
 
-	writel(((imx_get_fecclk() >> 20) / 5) << 1,
+	writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
@@ -290,7 +305,7 @@ static int fec_init(struct eth_device *dev)
 		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 		 * and do not drop the Preamble.
 		 */
-		writel(((imx_get_fecclk() >> 20) / 5) << 1,
+		writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
 				fec->regs + FEC_MII_SPEED);
 	}
 
@@ -612,6 +627,7 @@ static int fec_probe(struct device_d *dev)
         struct eth_device *edev;
 	struct fec_priv *fec;
 	void *base;
+	int ret;
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
@@ -627,6 +643,14 @@ static int fec_probe(struct device_d *dev)
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
 	edev->parent = dev;
+
+	if (IS_ENABLED(CONFIG_COMMON_CLK)) {
+		fec->clk = clk_get(dev, NULL);
+		if (IS_ERR(fec->clk)) {
+			ret = PTR_ERR(fec->clk);
+			goto err_free;
+		}
+	}
 
 	fec->regs = dev_request_mem_region(dev, 0);
 
@@ -682,6 +706,10 @@ static int fec_probe(struct device_d *dev)
 
 	eth_register(edev);
 	return 0;
+
+err_free:
+	free(fec);
+	return ret;
 }
 
 static void fec_remove(struct device_d *dev)

@@ -85,8 +85,6 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
 	dev->driver = drv;
 
-	if (dev->bus != drv->bus)
-		goto err_out;
 	if (dev->bus->match(dev, drv))
 		goto err_out;
 	if (dev->bus->probe(dev))
@@ -122,7 +120,7 @@ int register_device(struct device_d *new_device)
 	if (new_device->bus == &platform_bus && new_device->resource) {
 		struct device_d *dev;
 
-		for_each_device(dev) {
+		bus_for_each_device(new_device->bus, dev) {
 			if (!dev->resource)
 				continue;
 			if (dev->resource->start == new_device->resource->start) {
@@ -132,12 +130,13 @@ int register_device(struct device_d *new_device)
 	}
 
 	list_add_tail(&new_device->list, &device_list);
+	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
 
-	for_each_driver(drv) {
+	bus_for_each_driver(new_device->bus, drv) {
 		if (!match(drv, new_device))
 			break;
 	}
@@ -169,6 +168,7 @@ int unregister_device(struct device_d *old_dev)
 	}
 
 	list_del(&old_dev->list);
+	list_del(&old_dev->bus_list);
 	list_del(&old_dev->active);
 
 	/* remove device from parents child list */
@@ -222,13 +222,14 @@ int register_driver(struct driver_d *drv)
 	}
 
 	list_add_tail(&drv->list, &driver_list);
+	list_add_tail(&drv->bus_list, &drv->bus->driver_list);
 
 	if (!drv->info)
 		drv->info = noinfo;
 	if (!drv->shortinfo)
 		drv->shortinfo = noshortinfo;
 
-	for_each_device(dev)
+	bus_for_each_device(drv->bus, dev)
 		match(drv, dev);
 
 	return 0;

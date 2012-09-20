@@ -28,6 +28,9 @@ int bus_register(struct bus_type *bus)
 	if (get_bus_by_name(bus->name))
 		return -EEXIST;
 
+	INIT_LIST_HEAD(&bus->device_list);
+	INIT_LIST_HEAD(&bus->driver_list);
+
 	list_add_tail(&bus->list, &bus_list);
 
 	return 0;

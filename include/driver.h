@@ -92,6 +92,7 @@ struct device_d {
 	struct driver_d *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
+	struct list_head bus_list; /* our bus            */
 	struct list_head children; /* our children            */
 	struct list_head sibling;
 	struct list_head active;   /* The list of all devices which have a driver */
@@ -119,6 +120,7 @@ struct driver_d {
 	const char *name;
 
 	struct list_head list;
+	struct list_head bus_list; /* our bus            */
 
 	/*! Called if an instance of a device is found */
 	int     (*probe) (struct device_d *);
@@ -381,6 +383,8 @@ struct bus_type {
 	void (*remove)(struct device_d *dev);
 
 	struct list_head list;
+	struct list_head device_list;
+	struct list_head driver_list;
 };
 
 int bus_register(struct bus_type *bus);
@@ -390,6 +394,14 @@ extern struct list_head bus_list;
 /* Iterate over all buses
  */
 #define for_each_bus(bus) list_for_each_entry(bus, &bus_list, list)
+
+/* Iterate over all devices of a bus
+ */
+#define bus_for_each_device(bus, dev) list_for_each_entry(dev, &bus->device_list, bus_list)
+
+/* Iterate over all drivers of a bus
+ */
+#define bus_for_each_driver(bus, drv) list_for_each_entry(drv, &bus->driver_list, bus_list)
 
 extern struct bus_type platform_bus;
 

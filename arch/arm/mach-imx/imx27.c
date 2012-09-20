@@ -78,6 +78,7 @@ static int imx27_init(void)
 
 	imx27_init_max();
 
+	add_generic_device("imx27-ccm", 0, NULL, MX27_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpt", 0, NULL, MX27_GPT1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 0, NULL, MX27_GPIO1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 1, NULL, MX27_GPIO2_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
@@ -85,6 +86,7 @@ static int imx27_init(void)
 	add_generic_device("imx1-gpio", 3, NULL, MX27_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 4, NULL, MX27_GPIO5_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 5, NULL, MX27_GPIO6_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+
 	return 0;
 }
-console_initcall(imx27_init);
+postcore_initcall(imx27_init);

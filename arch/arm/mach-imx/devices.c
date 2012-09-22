@@ -23,9 +23,14 @@ struct device_d *imx_add_i2c(void *base, int id, struct i2c_platform_data *pdata
 	return imx_add_device("i2c-fsl", id, base, 0x1000, pdata);
 }
 
-struct device_d *imx_add_uart(void *base, int id)
+struct device_d *imx_add_uart_imx1(void *base, int id)
 {
-	return imx_add_device("imx_serial", id, base, 0x1000, NULL);
+	return imx_add_device("imx1-uart", id, base, 0x1000, NULL);
+}
+
+struct device_d *imx_add_uart_imx21(void *base, int id)
+{
+	return imx_add_device("imx21-uart", id, base, 0x1000, NULL);
 }
 
 struct device_d *imx_add_nand(void *base, struct imx_nand_platform_data *pdata)

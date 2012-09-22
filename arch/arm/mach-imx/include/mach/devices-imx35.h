@@ -28,17 +28,17 @@ static inline struct device_d *imx35_add_spi(struct spi_imx_master *pdata)
 
 static inline struct device_d *imx35_add_uart0(void)
 {
-	return imx_add_uart((void *)MX35_UART1_BASE_ADDR, 0);
+	return imx_add_uart_imx21((void *)MX35_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx35_add_uart1(void)
 {
-	return imx_add_uart((void *)MX35_UART2_BASE_ADDR, 1);
+	return imx_add_uart_imx21((void *)MX35_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx35_add_uart2(void)
 {
-	return imx_add_uart((void *)MX35_UART3_BASE_ADDR, 2);
+	return imx_add_uart_imx21((void *)MX35_UART3_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx35_add_nand(struct imx_nand_platform_data *pdata)

@@ -29,17 +29,17 @@ static inline struct device_d *imx51_add_i2c1(struct i2c_platform_data *pdata)
 
 static inline struct device_d *imx51_add_uart0(void)
 {
-	return imx_add_uart((void *)MX51_UART1_BASE_ADDR, 0);
+	return imx_add_uart_imx21((void *)MX51_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx51_add_uart1(void)
 {
-	return imx_add_uart((void *)MX51_UART2_BASE_ADDR, 1);
+	return imx_add_uart_imx21((void *)MX51_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx51_add_uart2(void)
 {
-	return imx_add_uart((void *)MX51_UART3_BASE_ADDR, 2);
+	return imx_add_uart_imx21((void *)MX51_UART3_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx51_add_fec(struct fec_platform_data *pdata)

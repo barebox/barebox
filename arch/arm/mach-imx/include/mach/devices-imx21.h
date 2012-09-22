@@ -3,22 +3,22 @@
 
 static inline struct device_d *imx21_add_uart0(void)
 {
-	return imx_add_uart((void *)MX21_UART1_BASE_ADDR, 0);
+	return imx_add_uart_imx21((void *)MX21_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx21_add_uart1(void)
 {
-	return imx_add_uart((void *)MX21_UART2_BASE_ADDR, 1);
+	return imx_add_uart_imx21((void *)MX21_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx21_add_uart2(void)
 {
-	return imx_add_uart((void *)MX21_UART2_BASE_ADDR, 2);
+	return imx_add_uart_imx21((void *)MX21_UART2_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx21_add_uart3(void)
 {
-	return imx_add_uart((void *)MX21_UART2_BASE_ADDR, 3);
+	return imx_add_uart_imx21((void *)MX21_UART2_BASE_ADDR, 3);
 }
 
 static inline struct device_d *imx21_add_nand(struct imx_nand_platform_data *pdata)

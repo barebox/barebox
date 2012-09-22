@@ -29,6 +29,8 @@
 #include <init.h>
 #include <clock.h>
 #include <errno.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <notifier.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
@@ -45,6 +47,8 @@
 #define IMX1_TCTL_CLKSOURCE_IPG		(1 << 1)	/* Clock source bit position */
 #define IMX31_TCTL_CLKSOURCE_IPG	(1 << 6)	/* Clock source bit position */
 #define TCTL_TEN			(1 << 0)	/* Timer enable */
+
+static struct clk *clk_gpt;
 
 struct imx_gpt_regs {
 	unsigned int tcn;
@@ -77,7 +81,7 @@ static struct clocksource cs = {
 
 static int imx_clocksource_clock_change(struct notifier_block *nb, unsigned long event, void *data)
 {
-	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
+	cs.mult = clocksource_hz2mult(clk_get_rate(clk_gpt), cs.shift);
 	return 0;
 }
 
@@ -89,6 +93,7 @@ static int imx_gpt_probe(struct device_d *dev)
 {
 	int i;
 	int ret;
+	unsigned long rate;
 
 	/* one timer is enough */
 	if (timer_base)
@@ -118,10 +123,18 @@ static int imx_gpt_probe(struct device_d *dev)
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
 
+	clk_gpt = clk_get(dev, NULL);
+	if (IS_ERR(clk_gpt)) {
+		rate = 20000000;
+		dev_err(dev, "failed to get clock\n");
+	} else {
+		rate = clk_get_rate(clk_gpt);
+	}
+
 	writel(0, timer_base + GPT_TPRER);
 	writel(regs->tctl_val, timer_base + GPT_TCTL);
 
-	cs.mult = clocksource_hz2mult(imx_get_gptclk(), cs.shift);
+	cs.mult = clocksource_hz2mult(rate, cs.shift);
 
 	init_clock(&cs);
 

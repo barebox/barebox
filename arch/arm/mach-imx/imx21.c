@@ -25,14 +25,14 @@ int imx_silicon_revision(void)
 
 static int imx21_init(void)
 {
-	add_generic_device("imx1-gpt", 0, NULL, 0x10003000, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 0, NULL, 0x10015000, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 1, NULL, 0x10015100, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 2, NULL, 0x10015200, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 3, NULL, 0x10015300, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 4, NULL, 0x10015400, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 5, NULL, 0x10015500, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpt", 0, NULL, MX21_GPT1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 0, NULL, MX21_GPIO1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, MX21_GPIO2_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, MX21_GPIO3_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 3, NULL, MX21_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 4, NULL, MX21_GPIO5_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 5, NULL, MX21_GPIO6_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
-coredevice_initcall(imx21_init);
+postcore_initcall(imx21_init);

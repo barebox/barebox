@@ -46,13 +46,12 @@ reset:
 
 	common_reset r0
 
-	writel(IPU_CONF_DI_EN, IPU_CONF)
-	writel(0x074B0BF5, IMX_CCM_BASE + CCM_CCMR)
+	writel(0x074B0BF5, MX31_CCM_BASE_ADDR + CCM_CCMR)
 
 	DELAY 0x40000
 
-	writel(0x074B0BF5 | CCMR_MPE, IMX_CCM_BASE + CCM_CCMR)
-	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, IMX_CCM_BASE + CCM_CCMR)
+	writel(0x074B0BF5 | CCMR_MPE, MX31_CCM_BASE_ADDR + CCM_CCMR)
+	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, MX31_CCM_BASE_ADDR + CCM_CCMR)
 
 	writel(PDR0_CSI_PODF(0xff1) | \
 		PDR0_PER_PODF(7) | \
@@ -61,10 +60,10 @@ reset:
 		PDR0_IPG_PODF(1) | \
 		PDR0_MAX_PODF(3) | \
 		PDR0_MCU_PODF(0), \
-		IMX_CCM_BASE + CCM_PDR0)
+		MX31_CCM_BASE_ADDR + CCM_PDR0)
 
-	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), IMX_CCM_BASE + CCM_MPCTL)
-	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), IMX_CCM_BASE + CCM_SPCTL)
+	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), MX31_CCM_BASE_ADDR + CCM_MPCTL)
+	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), MX31_CCM_BASE_ADDR + CCM_SPCTL)
 
 	/* Configure IOMUXC
 	 * Clears 0x43fa_c26c - 0x43fa_c2dc with 0, except 0x43fa_c278 (untouched), 0x43fa_c27c (set to 0x1000) and 0x43fa_c280 (untouched)
@@ -100,15 +99,15 @@ clear_iomux:
 	writel(0x00000004, ESDMISC)
 	writel(0x006ac73a, ESDCFG0)
 	writel(0x90100000 | ROWS0, ESDCTL0)
-	writel(0x12344321, IMX_SDRAM_CS0 + 0xf00)
+	writel(0x12344321, MX31_CSD0_BASE_ADDR + 0xf00)
 	writel(0xa0100000 | ROWS0, ESDCTL0)
-	writel(0x12344321, IMX_SDRAM_CS0)
-	writel(0x12344321, IMX_SDRAM_CS0)
+	writel(0x12344321, MX31_CSD0_BASE_ADDR)
+	writel(0x12344321, MX31_CSD0_BASE_ADDR)
 	writel(0xb0100000 | ROWS0, ESDCTL0)
-	writeb(0xda, IMX_SDRAM_CS0 + 0x33) 
-	writeb(0xff, IMX_SDRAM_CS0 + 0x01000000)
+	writeb(0xda, MX31_CSD0_BASE_ADDR + 0x33)
+	writeb(0xff, MX31_CSD0_BASE_ADDR + 0x01000000)
 	writel(0x80226080 | ROWS0, ESDCTL0)
-	writel(0xDEADBEEF, IMX_SDRAM_CS0)
+	writel(0xDEADBEEF, MX31_CSD0_BASE_ADDR)
 	writel(0x0000000c, ESDMISC)
 
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
@@ -119,23 +118,23 @@ clear_iomux:
 #endif
 	writel(0x006ac73a, ESDCFG1)
 	writel(0x90100000 | ROWS1, ESDCTL1)
-	writel(0x12344321, IMX_SDRAM_CS1 + 0xf00)
+	writel(0x12344321, MX31_CSD1_BASE_ADDR + 0xf00)
 	writel(0xa0100000 | ROWS1, ESDCTL1)
-	writel(0x12344321, IMX_SDRAM_CS1)
-	writel(0x12344321, IMX_SDRAM_CS1)
+	writel(0x12344321, MX31_CSD1_BASE_ADDR)
+	writel(0x12344321, MX31_CSD1_BASE_ADDR)
 	writel(0xb0100000 | ROWS1, ESDCTL1)
-	writeb(0xda, IMX_SDRAM_CS1 + 0x33) 
-	writeb(0xff, IMX_SDRAM_CS1 + 0x01000000)
+	writeb(0xda, MX31_CSD1_BASE_ADDR + 0x33)
+	writeb(0xff, MX31_CSD1_BASE_ADDR + 0x01000000)
 	writel(0x80226080 | ROWS1, ESDCTL1)
-	writel(0xDEADBEEF, IMX_SDRAM_CS1)
+	writel(0xDEADBEEF, MX31_CSD1_BASE_ADDR)
 	writel(0x0000000c, ESDMISC)
 #endif
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =0x80f00000		/* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
-	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
+	ldr	r0, =MX31_NFC_BASE_ADDR		/* start of NFC SRAM                */
+	ldr	r2, =MX31_NFC_BASE_ADDR + 0x1000	/* end of NFC SRAM                  */
 
 	/* skip NAND boot if not running from NFC space */
 	cmp	pc, r0

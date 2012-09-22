@@ -21,12 +21,12 @@ ulong imx_get_mpl_dpdgck_clk(void)
 {
 	ulong infreq;
 
-	if ((readl(IMX_CCM_BASE + CCM_CCMR) & CCMR_PRCS_MASK) == CCMR_FPM)
+	if ((readl(MX31_CCM_BASE_ADDR + CCM_CCMR) & CCMR_PRCS_MASK) == CCMR_FPM)
 		infreq = CONFIG_MX31_CLK32 * 1024;
 	else
 		infreq = CONFIG_MX31_HCLK_FREQ;
 
-	return imx_decode_pll(readl(IMX_CCM_BASE + CCM_MPCTL), infreq);
+	return imx_decode_pll(readl(MX31_CCM_BASE_ADDR + CCM_MPCTL), infreq);
 }
 
 ulong imx_get_mcu_main_clk(void)
@@ -43,7 +43,7 @@ ulong imx_get_mcu_main_clk(void)
  */
 ulong imx_get_lcdclk(void)
 {
-	ulong hsp_podf = (readl(IMX_CCM_BASE + CCM_PDR0) >> 11) & 0x03;
+	ulong hsp_podf = (readl(MX31_CCM_BASE_ADDR + CCM_PDR0) >> 11) & 0x03;
 	ulong base_clk = imx_get_mcu_main_clk();
 
 	return base_clk / (hsp_podf + 1);
@@ -52,7 +52,7 @@ ulong imx_get_lcdclk(void)
 ulong imx_get_perclk1(void)
 {
 	u32 freq = imx_get_mcu_main_clk();
-	u32 pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	u32 pdr0 = readl(MX31_CCM_BASE_ADDR + CCM_PDR0);
 
 	freq /= ((pdr0 >> 3) & 0x7) + 1;
 	freq /= ((pdr0 >> 6) & 0x3) + 1;

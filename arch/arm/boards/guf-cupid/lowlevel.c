@@ -48,10 +48,10 @@ static void __bare_init __naked insdram(void)
 	uint32_t r;
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(IMX_CCM_BASE + CCM_PDR4);
+	r = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
 	r &= ~(0xf << 28);
 	r |= 0x1 << 28;
-	writel(r, IMX_CCM_BASE + CCM_PDR4);
+	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
 	r = STACK_BASE + STACK_SIZE - 12;
@@ -66,7 +66,7 @@ static void __bare_init __naked insdram(void)
 static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_addr)
 {
 	volatile int loop;
-	void *r9 = (void *)IMX_SDRAM_CS0;
+	void *r9 = (void *)MX35_CSD0_BASE_ADDR;
 	u32 r11 = 0xda; /* dummy constant */
 	u32 r1, r0;
 
@@ -249,7 +249,7 @@ void __bare_init __naked reset(void)
 
 #define	WDOG_WMCR 0x8
 	/* silence reset WDOG */
-	writew(0, IMX_WDOG_BASE + WDOG_WMCR);
+	writew(0, MX35_WDOG_BASE_ADDR + WDOG_WMCR);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r0 = get_pc();
@@ -299,27 +299,27 @@ void __bare_init __naked reset(void)
 	/* Configure clocks */
 
 	/* setup cpu/bus clocks */
-	writel(0x003f4208, IMX_CCM_BASE + CCM_CCMR);
+	writel(0x003f4208, MX35_CCM_BASE_ADDR + CCM_CCMR);
 
 	/* configure MPLL */
-	writel(MPCTL_PARAM_532, IMX_CCM_BASE + CCM_MPCTL);
+	writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
 
 	/* configure PPLL */
-	writel(PPCTL_PARAM_300, IMX_CCM_BASE + CCM_PPCTL);
+	writel(PPCTL_PARAM_300, MX35_CCM_BASE_ADDR + CCM_PPCTL);
 
 	/* configure core dividers */
 	r0 = PDR0_CCM_PER_AHB(1) | PDR0_HSP_PODF(2);
 
-	writel(r0, IMX_CCM_BASE + CCM_PDR0);
+	writel(r0, MX35_CCM_BASE_ADDR + CCM_PDR0);
 
 	/* configure clock-gates */
-	r0 = readl(IMX_CCM_BASE + CCM_CGR0);
+	r0 = readl(MX35_CCM_BASE_ADDR + CCM_CGR0);
 	r0 |= 0x00300000;
-	writel(r0, IMX_CCM_BASE + CCM_CGR0);
+	writel(r0, MX35_CCM_BASE_ADDR + CCM_CGR0);
 
-	r0 = readl(IMX_CCM_BASE + CCM_CGR1);
+	r0 = readl(MX35_CCM_BASE_ADDR + CCM_CGR1);
 	r0 |= 0x00000c03;
-	writel(r0, IMX_CCM_BASE + CCM_CGR1);
+	writel(r0, MX35_CCM_BASE_ADDR + CCM_CGR1);
 
 	/* Configure SDRAM */
 	/* Try 32-Bit 256 MB DDR memory */
@@ -329,10 +329,10 @@ void __bare_init __naked reset(void)
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r0 = get_pc();
-	if (r0 < IMX_NFC_BASE || r0 > IMX_NFC_BASE + 0x800)
+	if (r0 < MX35_NFC_BASE_ADDR || r0 > MX35_NFC_BASE_ADDR + 0x800)
 		board_init_lowlevel_return();
 
-	src = (unsigned int *)IMX_NFC_BASE;
+	src = (unsigned int *)MX35_NFC_BASE_ADDR;
 	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */

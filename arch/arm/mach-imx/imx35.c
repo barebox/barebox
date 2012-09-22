@@ -22,7 +22,7 @@
 int imx_silicon_revision()
 {
 	uint32_t reg;
-	reg = readl(IMX_IIM_BASE + IIM_SREV);
+	reg = readl(MX35_IIM_BASE_ADDR + IIM_SREV);
 	/* 0×00 = TO 1.0, First silicon */
 	reg += IMX_CHIP_REV_1_0;
 
@@ -41,7 +41,7 @@ int imx_silicon_revision()
 
 static int imx35_l2_fix(void)
 {
-	writel(0x515, IMX_CLKCTL_BASE + L2_MEM_VAL);
+	writel(0x515, MX35_CLKCTL_BASE_ADDR + L2_MEM_VAL);
 
 	return 0;
 }
@@ -49,13 +49,13 @@ core_initcall(imx35_l2_fix);
 
 static int imx35_init(void)
 {
-	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
+	add_generic_device("imx_iim", 0, NULL, MX35_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
-	add_generic_device("imx31-gpt", 0, NULL, 0x53f90000, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 0, NULL, 0x53fcc000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 1, NULL, 0x53fd0000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 2, NULL, 0x53fa4000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpt", 0, NULL, MX35_GPT1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 0, NULL, MX35_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 1, NULL, MX35_GPIO2_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx-gpio", 2, NULL, MX35_GPIO3_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

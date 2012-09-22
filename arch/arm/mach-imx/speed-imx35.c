@@ -21,13 +21,13 @@
 
 unsigned long imx_get_mpllclk(void)
 {
-	ulong mpctl = readl(IMX_CCM_BASE + CCM_MPCTL);
+	ulong mpctl = readl(MX35_CCM_BASE_ADDR + CCM_MPCTL);
 	return imx_decode_pll(mpctl, CONFIG_MX35_HCLK_FREQ);
 }
 
 static unsigned long imx_get_ppllclk(void)
 {
-	ulong ppctl = readl(IMX_CCM_BASE + CCM_PPCTL);
+	ulong ppctl = readl(MX35_CCM_BASE_ADDR + CCM_PPCTL);
 	return imx_decode_pll(ppctl, CONFIG_MX35_HCLK_FREQ);
 }
 
@@ -56,7 +56,7 @@ static struct arm_ahb_div clk_consumer[] = {
 
 static unsigned long imx_get_armclk(void)
 {
-	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	unsigned long pdr0 = readl(MX35_CCM_BASE_ADDR + CCM_PDR0);
 	struct arm_ahb_div *aad;
 	unsigned long fref = imx_get_mpllclk();
 
@@ -70,7 +70,7 @@ static unsigned long imx_get_armclk(void)
 
 unsigned long imx_get_ahbclk(void)
 {
-	unsigned long pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
+	unsigned long pdr0 = readl(MX35_CCM_BASE_ADDR + CCM_PDR0);
 	struct arm_ahb_div *aad;
 	unsigned long fref = imx_get_mpllclk();
 
@@ -100,8 +100,8 @@ static unsigned long get_6_div(unsigned long in)
 
 static unsigned long imx_get_ipg_perclk(void)
 {
-	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
-	ulong pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
+	ulong pdr0 = readl(MX35_CCM_BASE_ADDR + CCM_PDR0);
+	ulong pdr4 = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
 	ulong div;
 	ulong fref;
 
@@ -129,7 +129,7 @@ unsigned long imx_get_gptclk(void)
  */
 unsigned long imx_get_lcdclk(void)
 {
-	unsigned long hsp_podf = (readl(IMX_CCM_BASE + CCM_PDR0) >> 20) & 0x03;
+	unsigned long hsp_podf = (readl(MX35_CCM_BASE_ADDR + CCM_PDR0) >> 20) & 0x03;
 	unsigned long base_clk = imx_get_armclk();
 
 	if (base_clk > 400 * 1000 * 1000) {
@@ -156,8 +156,8 @@ unsigned long imx_get_lcdclk(void)
 
 unsigned long imx_get_uartclk(void)
 {
-	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
-	unsigned long pdr4 = readl(IMX_CCM_BASE + CCM_PDR4);
+	unsigned long pdr3 = readl(MX35_CCM_BASE_ADDR + CCM_PDR3);
+	unsigned long pdr4 = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
 	unsigned long div = get_3_3_div(pdr4 >> 10);
 
 	if (pdr3 & (1 << 14))
@@ -169,7 +169,7 @@ unsigned long imx_get_uartclk(void)
 /* mmc0 clk only */
 unsigned long imx_get_mmcclk(void)
 {
-	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
+	unsigned long pdr3 = readl(MX35_CCM_BASE_ADDR + CCM_PDR3);
 	unsigned long div = get_6_div(pdr3);
 
 	if (pdr3 & (1 << 6))
@@ -213,7 +213,7 @@ void imx_dump_clocks(void)
  */
 int imx_clko_set_div(int num, int div)
 {
-	unsigned long cosr = readl(IMX_CCM_BASE + CCM_COSR);
+	unsigned long cosr = readl(MX35_CCM_BASE_ADDR + CCM_COSR);
 
 	if (num != 1)
 		return -ENODEV;
@@ -224,7 +224,7 @@ int imx_clko_set_div(int num, int div)
 	cosr &= ~(0x3f << 10);
 	cosr |= div << 10;
 
-	writel(cosr, IMX_CCM_BASE + CCM_COSR);
+	writel(cosr, MX35_CCM_BASE_ADDR + CCM_COSR);
 
 	return div + 1;
 }
@@ -234,14 +234,14 @@ int imx_clko_set_div(int num, int div)
  */
 void imx_clko_set_src(int num, int src)
 {
-	unsigned long cosr = readl(IMX_CCM_BASE + CCM_COSR);
+	unsigned long cosr = readl(MX35_CCM_BASE_ADDR + CCM_COSR);
 
 	if (num != 1)
 		return;
 
 	if (src < 0) {
 		cosr &= ~(1 << 5);
-		writel(cosr, IMX_CCM_BASE + CCM_COSR);
+		writel(cosr, MX35_CCM_BASE_ADDR + CCM_COSR);
 		return;
 	}
 
@@ -250,6 +250,6 @@ void imx_clko_set_src(int num, int src)
 	cosr &= ~(1 << 6);
 	cosr |= src & 0x1f;
 
-	writel(cosr, IMX_CCM_BASE + CCM_COSR);
+	writel(cosr, MX35_CCM_BASE_ADDR + CCM_COSR);
 }
 

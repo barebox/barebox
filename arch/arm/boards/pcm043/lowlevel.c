@@ -46,10 +46,10 @@ static void __bare_init __naked insdram(void)
 	uint32_t r;
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(IMX_CCM_BASE + CCM_PDR4);
+	r = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
 	r &= ~(0xf << 28);
 	r |= 0x1 << 28;
-	writel(r, IMX_CCM_BASE + CCM_PDR4);
+	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
 	r = STACK_BASE + STACK_SIZE - 12;
@@ -64,8 +64,8 @@ static void __bare_init __naked insdram(void)
 void __bare_init __naked reset(void)
 {
 	uint32_t r, s;
-	unsigned long ccm_base = IMX_CCM_BASE;
-	unsigned long iomuxc_base = IMX_IOMUXC_BASE;
+	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
+	unsigned long iomuxc_base = MX35_IOMUXC_BASE_ADDR;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
@@ -118,7 +118,7 @@ void __bare_init __naked reset(void)
 	writel(PPCTL_PARAM_300, ccm_base + CCM_PPCTL);
 
 	/* Check silicon revision and use 532MHz if >=2.1 */
-	r = readl(IMX_IIM_BASE + 0x24);
+	r = readl(MX35_IIM_BASE_ADDR + 0x24);
 	if (r >= IMX35_CHIP_REVISION_2_1)
 		writel(CCM_PDR0_532, ccm_base + CCM_PDR0);
 	else
@@ -133,9 +133,9 @@ void __bare_init __naked reset(void)
 	r |= 0x00000003;
 	writel(r, ccm_base + CCM_CGR1);
 
-	r = readl(IMX_L2CC_BASE + L2X0_AUX_CTRL);
+	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 	r |= 0x1000;
-	writel(r, IMX_L2CC_BASE + L2X0_AUX_CTRL);
+	writel(r, MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -161,7 +161,7 @@ void __bare_init __naked reset(void)
 	/* select Precharge-All mode */
 	writel(0x92220000, ESDCTL0);
 	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS0 + 0x400);
+	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
 
 	/* select Load-Mode-Register mode */
 	writel(0xB8001000, ESDCTL0);
@@ -177,13 +177,13 @@ void __bare_init __naked reset(void)
 	/* select Precharge-All mode */
 	writel(0x92220000, ESDCTL0);
 	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS0 + 0x400);
+	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
 
 	/* select Manual-Refresh mode */
 	writel(0xA2220000, ESDCTL0);
 	/* Manual-Refresh 2 times */
-	writel(0x87654321, IMX_SDRAM_CS0);
-	writel(0x87654321, IMX_SDRAM_CS0);
+	writel(0x87654321, MX35_CSD0_BASE_ADDR);
+	writel(0x87654321, MX35_CSD0_BASE_ADDR);
 
 	/* select Load-Mode-Register mode */
 	writel(0xB2220000, ESDCTL0);
@@ -208,10 +208,10 @@ void __bare_init __naked reset(void)
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
+	if (r < MX35_NFC_BASE_ADDR || r > MX35_NFC_BASE_ADDR + 0x800)
 		board_init_lowlevel_return();
 
-	src = (unsigned int *)IMX_NFC_BASE;
+	src = (unsigned int *)MX35_NFC_BASE_ADDR;
 	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */

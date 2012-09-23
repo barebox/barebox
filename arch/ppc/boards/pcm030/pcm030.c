@@ -30,8 +30,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <mach/mpc5xxx.h>
-#include <mach/fec.h>
+#include <fec.h>
 #include <types.h>
 #include <partition.h>
 #include <memory.h>
@@ -39,7 +38,7 @@
 #include <linux/stat.h>
 #include <fs.h>
 
-static struct mpc5xxx_fec_platform_data fec_info = {
+static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 };
 

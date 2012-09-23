@@ -10,11 +10,11 @@
 #include <mach/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
+#include <fec.h>
 #include <init.h>
 #include <miidev.h>
 #include <driver.h>
 #include <mach/sdma.h>
-#include <mach/fec.h>
 #include <mach/clocks.h>
 #include <miidev.h>
 #include "fec_mpc5200.h"
@@ -657,7 +657,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
-	struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
+	struct fec_platform_data *pdata = dev->platform_data;
 	struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
 

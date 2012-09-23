@@ -23,6 +23,7 @@
 #include <io.h>
 #include <fec.h>
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>

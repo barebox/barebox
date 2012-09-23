@@ -37,6 +37,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
+#include <mach/weim.h>
 #include <mach/imxfb.h>
 #include <ns16550.h>
 #include <asm/mmu.h>

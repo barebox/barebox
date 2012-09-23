@@ -278,14 +278,4 @@
 #define ESDCFG_TWTR		(1 << 20)
 #define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
 
-#ifndef __ASSEMBLY__
-#include <io.h>
-static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned additional)
-{
-	writel(upper, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
-	writel(lower, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
-	writel(additional, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
-}
-#endif /* __ASSEMBLY__ */
-
 #endif /* _IMX27_REGS_H */

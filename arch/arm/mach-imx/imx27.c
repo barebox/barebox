@@ -13,6 +13,7 @@
 
 #include <common.h>
 #include <mach/imx-regs.h>
+#include <mach/weim.h>
 #include <sizes.h>
 #include <init.h>
 #include <io.h>
@@ -20,6 +21,14 @@
 int imx_silicon_revision(void)
 {
 	return CID >> 28;
+}
+
+void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
+		unsigned additional)
+{
+	writel(upper, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
 }
 
 /*

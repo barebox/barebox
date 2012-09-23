@@ -119,18 +119,18 @@ static void imx25_usb_init(void)
 	unsigned int tmp;
 
 	/* Host 2 */
-	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x600);
 	tmp &= ~(3 << 21);
 	tmp |= (2 << 21) | (1 << 4) | (1 << 5);
-	writel(tmp, IMX_OTG_BASE + 0x600);
+	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x600);
 
-	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x584);
 	tmp |= 3 << 30;
-	writel(tmp, IMX_OTG_BASE + 0x584);
+	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x584);
 
 	/* Set to Host mode */
-	tmp = readl(IMX_OTG_BASE + 0x5a8);
-	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x5a8);
+	writel(tmp | 0x3, MX25_USB_OTG_BASE_ADDR + 0x5a8);
 }
 #endif
 
@@ -195,7 +195,7 @@ static int imx25_mem_init(void)
 #else
 #error "Unsupported SDRAM type"
 #endif
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM_SIZE);
+	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, SDRAM_SIZE);
 	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
 
 	return 0;
@@ -209,13 +209,13 @@ static int imx25_devices_init(void)
 	 * the CPLD has to be initialized.
 	 */
 	imx25_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX25_USB_OTG_BASE_ADDR + 0x400, NULL);
 #endif
 
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);
@@ -298,7 +298,7 @@ void __bare_init nand_boot(void)
 
 static int imx25_core_setup(void)
 {
-	writel(0x01010103, IMX_CCM_BASE + CCM_PCDR2);
+	writel(0x01010103, MX25_CCM_BASE_ADDR + CCM_PCDR2);
 	return 0;
 
 }

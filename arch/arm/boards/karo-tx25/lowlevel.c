@@ -122,12 +122,12 @@ void __bare_init __naked reset(void)
 	writel(0x1, 0xb8003000);
 
 	/* configure ARM clk */
-	writel(0x20034000, IMX_CCM_BASE + CCM_CCTL);
+	writel(0x20034000, MX25_CCM_BASE_ADDR + CCM_CCTL);
 
 	/* enable all the clocks */
-	writel(0x1fffffff, IMX_CCM_BASE + CCM_CGCR0);
-	writel(0xffffffff, IMX_CCM_BASE + CCM_CGCR1);
-	writel(0x000fdfff, IMX_CCM_BASE + CCM_CGCR2);
+	writel(0x1fffffff, MX25_CCM_BASE_ADDR + CCM_CGCR0);
+	writel(0xffffffff, MX25_CCM_BASE_ADDR + CCM_CGCR1);
+	writel(0x000fdfff, MX25_CCM_BASE_ADDR + CCM_CGCR2);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -135,7 +135,7 @@ void __bare_init __naked reset(void)
 		board_init_lowlevel_return();
 
 	/* set to 3.3v SDRAM */
-	writel(0x800, IMX_IOMUXC_BASE + 0x454);
+	writel(0x800, MX25_IOMUXC_BASE_ADDR + 0x454);
 
 	writel(ESDMISC_RST, ESDMISC);
 
@@ -153,10 +153,10 @@ void __bare_init __naked reset(void)
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
+	if (r < MX25_NFC_BASE_ADDR || r > MX25_NFC_BASE_ADDR + 0x800)
 		board_init_lowlevel_return();
 
-	src = (unsigned int *)IMX_NFC_BASE;
+	src = (unsigned int *)MX25_NFC_BASE_ADDR;
 	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */

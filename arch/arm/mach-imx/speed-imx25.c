@@ -7,13 +7,13 @@
 
 unsigned long imx_get_mpllclk(void)
 {
-	ulong mpctl = readl(IMX_CCM_BASE + CCM_MPCTL);
+	ulong mpctl = readl(MX25_CCM_BASE_ADDR + CCM_MPCTL);
 	return imx_decode_pll(mpctl, CONFIG_MX25_HCLK_FREQ);
 }
 
 unsigned long imx_get_upllclk(void)
 {
-	ulong ppctl = readl(IMX_CCM_BASE + CCM_UPCTL);
+	ulong ppctl = readl(MX25_CCM_BASE_ADDR + CCM_UPCTL);
 	return imx_decode_pll(ppctl, CONFIG_MX25_HCLK_FREQ);
 }
 
@@ -21,7 +21,7 @@ unsigned long imx_get_armclk(void)
 {
 	unsigned long rate, cctl;
 
-	cctl = readl(IMX_CCM_BASE + CCM_CCTL);
+	cctl = readl(MX25_CCM_BASE_ADDR + CCM_CCTL);
 	rate = imx_get_mpllclk();
 
 	if (cctl & (1 << 14)) {
@@ -34,7 +34,7 @@ unsigned long imx_get_armclk(void)
 
 unsigned long imx_get_ahbclk(void)
 {
-	ulong cctl = readl(IMX_CCM_BASE + CCM_CCTL);
+	ulong cctl = readl(MX25_CCM_BASE_ADDR + CCM_CCTL);
 	return imx_get_armclk() / (((cctl >> 28) & 0x3) + 1);
 }
 
@@ -52,10 +52,10 @@ unsigned long imx_get_perclk(int per)
 {
 	ulong ofs = (per & 0x3) * 8;
 	ulong reg = per & ~0x3;
-	ulong val = (readl(IMX_CCM_BASE + CCM_PCDR0 + reg) >> ofs) & 0x3f;
+	ulong val = (readl(MX25_CCM_BASE_ADDR + CCM_PCDR0 + reg) >> ofs) & 0x3f;
 	ulong fref;
 
-	if (readl(IMX_CCM_BASE + 0x64) & (1 << per))
+	if (readl(MX25_CCM_BASE_ADDR + 0x64) & (1 << per))
 		fref = imx_get_upllclk();
 	else
 		fref = imx_get_ahbclk();
@@ -114,7 +114,7 @@ void imx_dump_clocks(void)
  */
 int imx_clko_set_div(int num, int div)
 {
-	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+	unsigned long mcr = readl(MX25_CCM_BASE_ADDR + 0x64);
 
 	if (num != 1)
 		return -ENODEV;
@@ -125,7 +125,7 @@ int imx_clko_set_div(int num, int div)
 	mcr &= ~(0x3f << 24);
 	mcr |= div << 24;
 
-	writel(mcr, IMX_CCM_BASE + 0x64);
+	writel(mcr, MX25_CCM_BASE_ADDR + 0x64);
 
 	return div + 1;
 }
@@ -135,14 +135,14 @@ int imx_clko_set_div(int num, int div)
  */
 void imx_clko_set_src(int num, int src)
 {
-	unsigned long mcr = readl(IMX_CCM_BASE + 0x64);
+	unsigned long mcr = readl(MX25_CCM_BASE_ADDR + 0x64);
 
 	if (num != 1)
 		return;
 
 	if (src < 0) {
 		mcr &= ~(1 << 30);
-		writel(mcr, IMX_CCM_BASE + 0x64);
+		writel(mcr, MX25_CCM_BASE_ADDR + 0x64);
 		return;
 	}
 
@@ -150,6 +150,6 @@ void imx_clko_set_src(int num, int src)
 	mcr &= ~(0xf << 20);
 	mcr |= (src & 0xf) << 20;
 
-	writel(mcr, IMX_CCM_BASE + 0x64);
+	writel(mcr, MX25_CCM_BASE_ADDR + 0x64);
 }
 

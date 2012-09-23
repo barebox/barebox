@@ -52,8 +52,8 @@ struct imx_nand_platform_data nand_info = {
 
 static int tx25_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 32 * 1024 * 1024);
-	arm_add_mem_device("ram0", IMX_SDRAM_CS1, 32 * 1024 * 1024);
+	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, 32 * 1024 * 1024);
+	arm_add_mem_device("ram0", MX25_CSD1_BASE_ADDR, 32 * 1024 * 1024);
 	add_mem_device("ram0", 0x78000000, 128 * 1024,
 				   IORESOURCE_MEM_WRITEABLE);
 
@@ -108,7 +108,7 @@ static int tx25_devices_init(void)
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);

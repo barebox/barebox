@@ -57,20 +57,20 @@ void __bare_init __naked reset(void)
 	common_reset();
 
 	/* restart the MPLL and wait until it's stable */
-	writel(readl(IMX_CCM_BASE + CCM_CCTL) | (1 << 27),
-						IMX_CCM_BASE + CCM_CCTL);
-	while (readl(IMX_CCM_BASE + CCM_CCTL) & (1 << 27)) {};
+	writel(readl(MX25_CCM_BASE_ADDR + CCM_CCTL) | (1 << 27),
+						MX25_CCM_BASE_ADDR + CCM_CCTL);
+	while (readl(MX25_CCM_BASE_ADDR + CCM_CCTL) & (1 << 27)) {};
 
 	/* Configure dividers and ARM clock source
 	 * 	ARM @ 400 MHz
 	 * 	AHB @ 133 MHz
 	 */
-	writel(0x20034000, IMX_CCM_BASE + CCM_CCTL);
+	writel(0x20034000, MX25_CCM_BASE_ADDR + CCM_CCTL);
 
 	/* Enable UART1 / FEC / */
-/*	writel(0x1FFFFFFF, IMX_CCM_BASE + CCM_CGCR0);
-	writel(0xFFFFFFFF, IMX_CCM_BASE + CCM_CGCR1);
-	writel(0x000FDFFF, IMX_CCM_BASE + CCM_CGCR2);*/
+/*	writel(0x1FFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR0);
+	writel(0xFFFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR1);
+	writel(0x000FDFFF, MX25_CCM_BASE_ADDR + CCM_CGCR2);*/
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -118,10 +118,10 @@ void __bare_init __naked reset(void)
 	writel(0x1, 0xb8003000);
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(IMX_CCM_BASE + CCM_PCDR2);
+	r = readl(MX25_CCM_BASE_ADDR + CCM_PCDR2);
 	r &= ~0xf;
 	r |= 0x1;
-	writel(r, IMX_CCM_BASE + CCM_PCDR2);
+	writel(r, MX25_CCM_BASE_ADDR + CCM_PCDR2);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -137,22 +137,22 @@ void __bare_init __naked reset(void)
 
 	writel(0x0029572B, ESDCFG0);
 	writel(0x92210000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x400);
+	writeb(0xda, MX25_CSD0_BASE_ADDR + 0x400);
 	writel(0xA2210000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0);
-	writeb(0xda, IMX_SDRAM_CS0);
+	writeb(0xda, MX25_CSD0_BASE_ADDR);
+	writeb(0xda, MX25_CSD0_BASE_ADDR);
 	writel(0xB2210000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x33);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x1000000);
+	writeb(0xda, MX25_CSD0_BASE_ADDR + 0x33);
+	writeb(0xda, MX25_CSD0_BASE_ADDR + 0x1000000);
 	writel(0x82216080, ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
+	if (r < MX25_NFC_BASE_ADDR || r > MX25_NFC_BASE_ADDR + 0x800)
 		board_init_lowlevel_return();
 
-	src = (unsigned int *)IMX_NFC_BASE;
+	src = (unsigned int *)MX25_NFC_BASE_ADDR;
 	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */

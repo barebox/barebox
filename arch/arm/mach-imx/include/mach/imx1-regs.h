@@ -86,21 +86,6 @@
 
 #define CSCR_MPLL_RESTART (1<<21)
 
-/* Chip Select Registers */
-#define CS0U __REG(MX1_EIM_BASE_ADDR)        /* Chip Select 0 Upper Register */
-#define CS0L __REG(MX1_EIM_BASE_ADDR + 0x4)  /* Chip Select 0 Lower Register */
-#define CS1U __REG(MX1_EIM_BASE_ADDR + 0x8)  /* Chip Select 1 Upper Register */
-#define CS1L __REG(MX1_EIM_BASE_ADDR + 0xc)  /* Chip Select 1 Lower Register */
-#define CS2U __REG(MX1_EIM_BASE_ADDR + 0x10) /* Chip Select 2 Upper Register */
-#define CS2L __REG(MX1_EIM_BASE_ADDR + 0x14) /* Chip Select 2 Lower Register */
-#define CS3U __REG(MX1_EIM_BASE_ADDR + 0x18) /* Chip Select 3 Upper Register */
-#define CS3L __REG(MX1_EIM_BASE_ADDR + 0x1c) /* Chip Select 3 Lower Register */
-#define CS4U __REG(MX1_EIM_BASE_ADDR + 0x20) /* Chip Select 4 Upper Register */
-#define CS4L __REG(MX1_EIM_BASE_ADDR + 0x24) /* Chip Select 4 Lower Register */
-#define CS5U __REG(MX1_EIM_BASE_ADDR + 0x28) /* Chip Select 5 Upper Register */
-#define CS5L __REG(MX1_EIM_BASE_ADDR + 0x2c) /* Chip Select 5 Lower Register */
-#define EIM  __REG(MX1_EIM_BASE_ADDR + 0x30) /* EIM Configuration Register */
-
 /* assignements for GPIO alternate/primary functions */
 
 /* FIXME: This list is not completed. The correct directions are

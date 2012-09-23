@@ -6,4 +6,6 @@ void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 
 void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower);
 
+void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower);
+
 #endif /* __MACH_WEIM_H */

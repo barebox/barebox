@@ -108,22 +108,6 @@
 #define SDRST  __REG(MX21_X_MEMC_BASE_ADDR + 0x18) /* SDRAM Reset Register */
 #define SDMISC __REG(MX21_X_MEMC_BASE_ADDR + 0x14) /* SDRAM Miscellaneous Register */
 
-
-/* Chip Select Registers */
-#define CS0U __REG(MX21_EIM_BASE_ADDR + 0x00) /* Chip Select 0 Upper Register    */
-#define CS0L __REG(MX21_EIM_BASE_ADDR + 0x04) /* Chip Select 0 Lower Register    */
-#define CS1U __REG(MX21_EIM_BASE_ADDR + 0x08) /* Chip Select 1 Upper Register    */
-#define CS1L __REG(MX21_EIM_BASE_ADDR + 0x0C) /* Chip Select 1 Lower Register    */
-#define CS2U __REG(MX21_EIM_BASE_ADDR + 0x10) /* Chip Select 2 Upper Register    */
-#define CS2L __REG(MX21_EIM_BASE_ADDR + 0x14) /* Chip Select 2 Lower Register    */
-#define CS3U __REG(MX21_EIM_BASE_ADDR + 0x18) /* Chip Select 3 Upper Register    */
-#define CS3L __REG(MX21_EIM_BASE_ADDR + 0x1C) /* Chip Select 3 Lower Register    */
-#define CS4U __REG(MX21_EIM_BASE_ADDR + 0x20) /* Chip Select 4 Upper Register    */
-#define CS4L __REG(MX21_EIM_BASE_ADDR + 0x24) /* Chip Select 4 Lower Register    */
-#define CS5U __REG(MX21_EIM_BASE_ADDR + 0x28) /* Chip Select 5 Upper Register    */
-#define CS5L __REG(MX21_EIM_BASE_ADDR + 0x2C) /* Chip Select 5 Lower Register    */
-#define EIM  __REG(MX21_EIM_BASE_ADDR + 0x30) /* EIM Configuration Register      */
-
 /* PLL registers */
 #define CSCR		__REG(MX21_CCM_BASE_ADDR + 0x00) /* Clock Source Control Register       */
 #define MPCTL0		__REG(MX21_CCM_BASE_ADDR + 0x04) /* MCU PLL Control Register 0          */

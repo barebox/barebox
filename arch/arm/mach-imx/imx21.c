@@ -13,7 +13,15 @@
 
 #include <common.h>
 #include <init.h>
+#include <io.h>
 #include <mach/imx-regs.h>
+#include <mach/weim.h>
+
+void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
+{
+	writel(upper, MX21_EIM_BASE_ADDR + cs * 8);
+	writel(lower, MX21_EIM_BASE_ADDR + 4 + cs * 8);
+}
 
 int imx_silicon_revision(void)
 {

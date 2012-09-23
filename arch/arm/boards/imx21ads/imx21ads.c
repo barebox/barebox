@@ -27,6 +27,7 @@
 #include <asm/barebox-arm.h>
 #include <io.h>
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -83,26 +84,16 @@ static int imx21ads_timing_init(void)
 
 	/* Configure External Interface Module */
 	/* CS0: burst flash */
-	CS0U = 0x00003E00;
-	CS0L = 0x00000E01;
+	imx21_setup_eimcs(0, 0x00003E00, 0x00000E01);
 
 	/* CS1: Ethernet controller, external UART, memory-mapped I/O (16-bit) */
-	CS1U = 0x00002000;
-	CS1L = 0x11118501;
+	imx21_setup_eimcs(1, 0x00002000, 0x11118501);
 
-	/* CS2: disable (not available, since CSD0 in use) */
-	CS2U = 0x0;
-	CS2L = 0x0;
-
-	/* CS3: disable */
-	CS3U = 0x0;
-	CS3L = 0x0;
-	/* CS4: disable */
-	CS4U = 0x0;
-	CS4L = 0x0;
-	/* CS5: disable */
-	CS5U = 0x0;
-	CS5L = 0x0;
+	/* CS2-CS5: disable */
+	imx21_setup_eimcs(2, 0x0, 0x0);
+	imx21_setup_eimcs(3, 0x0, 0x0);
+	imx21_setup_eimcs(4, 0x0, 0x0);
+	imx21_setup_eimcs(5, 0x0, 0x0);
 
 	temp = PCDR0;
 	temp &= ~0xF000;

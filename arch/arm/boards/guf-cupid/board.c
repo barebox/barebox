@@ -36,6 +36,7 @@
 #include <fec.h>
 #include <fb.h>
 #include <asm/mmu.h>
+#include <mach/weim.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
@@ -301,9 +302,8 @@ static int cupid_core_setup(void)
 	writel(0x0, MX35_MAX_BASE_ADDR + 0xc00);	/* for M4 */
 	writel(0x0, MX35_MAX_BASE_ADDR + 0xd00);	/* for M5 */
 
-	writel(0x0000DCF6, CSCR_U(0)); /* CS0: NOR Flash */
-	writel(0x444A4541, CSCR_L(0));
-	writel(0x44443302, CSCR_A(0));
+	/* CS0: NOR Flash */
+	imx35_setup_weimcs(0, 0x0000DCF6, 0x444A4541, 0x44443302);
 
 	/*
 	 * M3IF Control Register (M3IFCTL)

@@ -39,6 +39,7 @@
 #include <generated/mach-types.h>
 
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
@@ -140,9 +141,7 @@ static int f3s_devices_init(void)
 	uint32_t reg;
 
 	/* CS0: Nor Flash */
-	writel(0x0000cf03, CSCR_U(0));
-	writel(0x10000d03, CSCR_L(0));
-	writel(0x00720900, CSCR_A(0));
+	imx35_setup_weimcs(0, 0x0000cf03, 0x10000d03, 0x00720900);
 
 	reg = readl(MX35_CCM_BASE_ADDR + CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
@@ -278,9 +277,8 @@ static int f3s_core_init(void)
 {
 	u32 reg;
 
-	writel(0x0000D843, CSCR_U(5)); /* CS5: smc9117 */
-	writel(0x22252521, CSCR_L(5));
-	writel(0x22220A00, CSCR_A(5));
+	/* CS5: smc9117 */
+	imx35_setup_weimcs(5, 0x0000D843, 0x22252521, 0x22220A00);
 
 	/* enable clock for I2C1 and FEC */
 	reg = readl(MX35_CCM_BASE_ADDR + CCM_CGR1);

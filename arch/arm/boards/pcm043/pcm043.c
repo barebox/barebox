@@ -38,6 +38,7 @@
 #include <fb.h>
 #include <led.h>
 #include <asm/mmu.h>
+#include <mach/weim.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
@@ -122,9 +123,7 @@ static int imx35_devices_init(void)
 	uint32_t reg;
 
 	/* CS0: Nor Flash */
-	writel(0x22C0CF00, CSCR_U(0));
-	writel(0x75000D01, CSCR_L(0));
-	writel(0x00000900, CSCR_A(0));
+	imx35_setup_weimcs(5, 0x22C0CF00, 0x75000D01, 0x00000900);
 
 	led_gpio_register(&led0);
 

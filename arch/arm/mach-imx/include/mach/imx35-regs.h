@@ -173,9 +173,4 @@
 #define PDR0_AUTO_CON		(1 << 0)
 #define PDR0_PER_SEL		(1 << 26)
 
-#define WEIM_BASE 0xb8002000
-#define CSCR_U(x)     (WEIM_BASE + (x) * 0x10)
-#define CSCR_L(x)     (WEIM_BASE + 4 + (x) * 0x10)
-#define CSCR_A(x)     (WEIM_BASE + 8 + (x) * 0x10)
-
 #endif /* __ASM_ARCH_MX35_REGS_H */

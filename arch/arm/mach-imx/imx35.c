@@ -15,9 +15,18 @@
 #include <sizes.h>
 #include <init.h>
 #include <io.h>
+#include <mach/weim.h>
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
 #include <mach/generic.h>
+
+void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
+		unsigned additional)
+{
+	writel(upper, MX35_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX35_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX35_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
+}
 
 int imx_silicon_revision()
 {

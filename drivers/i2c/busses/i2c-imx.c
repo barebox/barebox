@@ -37,7 +37,7 @@
 #include <malloc.h>
 #include <types.h>
 #include <xfuncs.h>
-
+#include <linux/clk.h>
 #include <linux/err.h>
 
 #include <io.h>
@@ -101,6 +101,7 @@ static u16 i2c_clk_div[50][2] = {
 
 struct fsl_i2c_struct {
 	void __iomem		*base;
+	struct clk		*clk;
 	struct i2c_adapter	adapter;
 	unsigned int 		disable_delay;
 	int			stopped;
@@ -108,6 +109,19 @@ struct fsl_i2c_struct {
 	unsigned int		dfsrr;  /* FSL_I2C_DFSRR */
 };
 #define to_fsl_i2c_struct(a)	container_of(a, struct fsl_i2c_struct, adapter)
+
+#ifdef CONFIG_COMMON_CLK
+static inline unsigned long i2c_fsl_clk_get_rate(struct fsl_i2c_struct *i2c_fsl)
+{
+	return clk_get_rate(i2c_fsl->clk);
+}
+
+#else
+static inline unsigned long i2c_fsl_clk_get_rate(struct fsl_i2c_struct *i2c_fsl)
+{
+	return fsl_get_i2cclk();
+}
+#endif
 
 #ifdef CONFIG_I2C_DEBUG
 static void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
@@ -344,7 +358,7 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 	int i;
 
 	/* Divider value calculation */
-	i2c_clk_rate = fsl_get_i2cclk();
+	i2c_clk_rate = i2c_fsl_clk_get_rate(i2c_fsl);
 	div = (i2c_clk_rate + rate - 1) / rate;
 	if (div < i2c_clk_div[0][0])
 		i = 0;
@@ -535,6 +549,11 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 
 	i2c_fsl = kzalloc(sizeof(struct fsl_i2c_struct), GFP_KERNEL);
 
+#ifdef CONFIG_COMMON_CLK
+	i2c_fsl->clk = clk_get(pdev, NULL);
+	if (IS_ERR(i2c_fsl->clk))
+		return PTR_ERR(i2c_fsl->clk);
+#endif
 	/* Setup i2c_fsl driver structure */
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
 	i2c_fsl->adapter.nr = pdev->id;

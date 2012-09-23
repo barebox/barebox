@@ -21,13 +21,6 @@
 
 #include <sizes.h>
 
-/*
- * sanity check
- */
-#ifndef _IMX_REGS_H
-# error "Please do not include directly. Use imx-regs.h instead."
-#endif
-
 #define MX31_AIPS1_BASE_ADDR		0x43f00000
 #define MX31_AIPS1_SIZE			SZ_1M
 #define MX31_MAX_BASE_ADDR			(MX31_AIPS1_BASE_ADDR + 0x04000)

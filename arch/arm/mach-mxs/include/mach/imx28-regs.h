@@ -13,13 +13,6 @@
 #ifndef __ASM_ARCH_MX28_REGS_H
 #define __ASM_ARCH_MX28_REGS_H
 
-/*
- * sanity check
- */
-#ifndef _IMX_REGS_H
-# error "Please do not include directly. Use imx-regs.h instead."
-#endif
-
 #define IMX_SRAM_BASE		0x00000000
 #define IMX_MEMORY_BASE		0x40000000
 

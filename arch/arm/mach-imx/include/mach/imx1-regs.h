@@ -1,10 +1,6 @@
 #ifndef _IMX1_REGS_H
 #define _IMX1_REGS_H
 
-#ifndef _IMX_REGS_H
-#error "Please do not include directly"
-#endif
-
 #define MX1_IO_BASE_ADDR	0x00200000
 #define MX1_IO_SIZE		SZ_1M
 

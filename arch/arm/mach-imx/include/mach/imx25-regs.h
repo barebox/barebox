@@ -19,13 +19,6 @@
 #ifndef __ASM_ARCH_MX25_REGS_H
 #define __ASM_ARCH_MX25_REGS_H
 
-/*
- * sanity check
- */
-#ifndef _IMX_REGS_H
-# error "Please do not include directly. Use imx-regs.h instead."
-#endif
-
 #define MX25_AIPS1_BASE_ADDR		0x43f00000
 #define MX25_AIPS1_SIZE			SZ_1M
 #define MX25_AIPS2_BASE_ADDR		0x53f00000

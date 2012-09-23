@@ -21,13 +21,6 @@
 
 #include <sizes.h>
 
-/*
- * sanity check
- */
-#ifndef _IMX_REGS_H
-# error "Please do not include directly. Use imx-regs.h instead."
-#endif
-
 #define MX35_IRAM_BASE_ADDR		0x10000000	/* internal ram */
 #define MX35_IRAM_SIZE			SZ_128K
 

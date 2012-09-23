@@ -1,10 +1,6 @@
 #ifndef _IMX21_REGS_H
 #define _IMX21_REGS_H
 
-#ifndef _IMX_REGS_H
-#error "Please do not include directly"
-#endif
-
 #define MX21_AIPI_BASE_ADDR		0x10000000
 #define MX21_AIPI_SIZE			SZ_1M
 #define MX21_DMA_BASE_ADDR			(MX21_AIPI_BASE_ADDR + 0x01000)

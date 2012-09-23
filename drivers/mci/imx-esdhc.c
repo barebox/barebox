@@ -28,6 +28,8 @@
 #include <mci.h>
 #include <clock.h>
 #include <io.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <asm/mmu.h>
 #include <mach/clock.h>
 #include <mach/generic.h>
@@ -70,6 +72,7 @@ struct fsl_esdhc_host {
 	u32			no_snoop;
 	unsigned long		cur_clock;
 	struct device_d		*dev;
+	struct clk		*clk;
 };
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
@@ -354,7 +357,7 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 	int div, pre_div;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc __iomem *regs = host->regs;
-	int sdhc_clk = imx_get_mmcclk();
+	int sdhc_clk = clk_get_rate(host->clk);
 	u32 clk;
 
 	if (clock < mci->f_min)
@@ -516,10 +519,15 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	struct mci_host *mci;
 	u32 caps;
 	int ret;
+	unsigned long rate;
 	struct esdhc_platform_data *pdata = dev->platform_data;
 
 	host = xzalloc(sizeof(*host));
 	mci = &host->mci;
+
+	host->clk = clk_get(dev, NULL);
+	if (IS_ERR(host->clk))
+		return PTR_ERR(host->clk);
 
 	host->dev = dev;
 	host->regs = dev_request_mem_region(dev, 0);
@@ -553,10 +561,11 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.init = esdhc_init;
 	host->mci.hw_dev = dev;
 
-	host->mci.f_min = imx_get_mmcclk() >> 12;
+	rate = clk_get_rate(host->clk);
+	host->mci.f_min = rate >> 12;
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;
-	host->mci.f_max = imx_get_mmcclk();
+	host->mci.f_max = rate;
 
 	mci_register(&host->mci);
 

@@ -175,14 +175,6 @@
 #include "esdctl.h"
 
 /*
- * Chip Select Registers
- */
-#define WEIM_BASE	0xb8002000
-#define CSCR_U(x)	(WEIM_BASE + (x) * 0x10)
-#define CSCR_L(x)	(WEIM_BASE + 4 + (x) * 0x10)
-#define CSCR_A(x)	(WEIM_BASE + 8 + (x) * 0x10)
-
-/*
  * ???????????
  */
 #define IOMUXC_GPR	(IOMUXC_BASE + 0x8)

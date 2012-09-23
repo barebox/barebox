@@ -29,6 +29,7 @@
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <partition.h>
@@ -165,21 +166,14 @@ postmmu_initcall(pcm037_mmu_init);
 
 static int imx31_devices_init(void)
 {
-	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
-	__REG(CSCR_L(0)) = 0x10000d03;
-	__REG(CSCR_A(0)) = 0x00720900;
-
-	__REG(CSCR_U(1)) = 0x0000df06; /* CS1: Network Controller */
-	__REG(CSCR_L(1)) = 0x444a4541;
-	__REG(CSCR_A(1)) = 0x44443302;
-
-	__REG(CSCR_U(4)) = 0x0000d843; /* CS4: SRAM */
-	__REG(CSCR_L(4)) = 0x22252521;
-	__REG(CSCR_A(4)) = 0x22220a00;
-
-	__REG(CSCR_U(5)) = 0x0000DCF6; /* CS5: SJA1000 */
-	__REG(CSCR_L(5)) = 0x444A0301;
-	__REG(CSCR_A(5)) = 0x44443302;
+	/* CS0: Nor Flash */
+	imx31_setup_weimcs(0, 0x0000cf03, 0x10000d03, 0x00720900);
+	/* CS1: Network Controller */
+	imx31_setup_weimcs(1, 0x0000df06, 0x444a4541, 0x44443302);
+	/* CS4: SRAM */
+	imx31_setup_weimcs(4, 0x0000d843, 0x22252521, 0x22220a00);
+	/* CS5: SJA1000 */
+	imx31_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
 
 	/*
 	 * Up to 32MiB NOR type flash, connected to

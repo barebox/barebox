@@ -14,7 +14,17 @@
 #include <common.h>
 #include <init.h>
 #include <sizes.h>
+#include <io.h>
 #include <mach/imx-regs.h>
+#include <mach/weim.h>
+
+void imx31_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
+		unsigned additional)
+{
+	writel(upper, MX31_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX31_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX31_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
+}
 
 static int imx31_init(void)
 {

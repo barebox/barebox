@@ -96,8 +96,8 @@ reset:
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =0xa0f00000		/* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
-	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
+	ldr	r0, =MX27_NFC_BASE_ADDR		/* start of NFC SRAM                */
+	ldr	r2, =MX27_NFC_BASE_ADDR + 0x1000	/* end of NFC SRAM                  */
 
 	/* skip NAND boot if not running from NFC space */
 	cmp	pc, r0

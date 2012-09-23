@@ -54,10 +54,10 @@ static int imx27ads_timing_init(void)
 	imx27_setup_weimcs(0, 0x23524E80, 0x10000D03, 0x00720900);
 
 	/* Select FEC data through data path */
-	writew(0x0020, IMX_CS4_BASE + 0x10);
+	writew(0x0020, MX27_CS4_BASE_ADDR + 0x10);
 
 	/* Enable CPLD FEC data path */
-	writew(0x0010, IMX_CS4_BASE + 0x14);
+	writew(0x0010, MX27_CS4_BASE_ADDR + 0x14);
 
 	return 0;
 }

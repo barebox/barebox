@@ -5,66 +5,133 @@
 #error "Please do not include directly"
 #endif
 
-#define IMX_IO_BASE		0x10000000
+#define MX27_AIPI_BASE_ADDR		0x10000000
+#define MX27_AIPI_SIZE			SZ_1M
+#define MX27_DMA_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x01000)
+#define MX27_WDOG_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x02000)
+#define MX27_GPT1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x03000)
+#define MX27_GPT2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x04000)
+#define MX27_GPT3_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x05000)
+#define MX27_PWM_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x06000)
+#define MX27_RTC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x07000)
+#define MX27_KPP_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x08000)
+#define MX27_OWIRE_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x09000)
+#define MX27_UART1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0a000)
+#define MX27_UART2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0b000)
+#define MX27_UART3_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0c000)
+#define MX27_UART4_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0d000)
+#define MX27_CSPI1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0e000)
+#define MX27_CSPI2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x0f000)
+#define MX27_SSI1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x10000)
+#define MX27_SSI2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x11000)
+#define MX27_I2C1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x12000)
+#define MX27_SDHC1_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x13000)
+#define MX27_SDHC2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x14000)
+#define MX27_GPIO_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x15000)
+#define MX27_GPIO1_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x000)
+#define MX27_GPIO2_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x100)
+#define MX27_GPIO3_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x200)
+#define MX27_GPIO4_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x300)
+#define MX27_GPIO5_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x400)
+#define MX27_GPIO6_BASE_ADDR			(MX27_GPIO_BASE_ADDR + 0x500)
+#define MX27_AUDMUX_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x16000)
+#define MX27_CSPI3_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x17000)
+#define MX27_MSHC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x18000)
+#define MX27_GPT4_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x19000)
+#define MX27_GPT5_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1a000)
+#define MX27_UART5_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1b000)
+#define MX27_UART6_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1c000)
+#define MX27_I2C2_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1d000)
+#define MX27_SDHC3_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1e000)
+#define MX27_GPT6_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x1f000)
+#define MX27_LCDC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x21000)
+#define MX27_SLCDC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x22000)
+#define MX27_VPU_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x23000)
+#define MX27_USB_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x24000)
+#define MX27_USB_OTG_BASE_ADDR			(MX27_USB_BASE_ADDR + 0x0000)
+#define MX27_USB_HS1_BASE_ADDR			(MX27_USB_BASE_ADDR + 0x0200)
+#define MX27_USB_HS2_BASE_ADDR			(MX27_USB_BASE_ADDR + 0x0400)
+#define MX27_SAHARA_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x25000)
+#define MX27_EMMAPP_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x26000)
+#define MX27_EMMAPRP_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x26400)
+#define MX27_CCM_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x27000)
+#define MX27_SYSCTRL_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x27800)
+#define MX27_IIM_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x28000)
+#define MX27_RTIC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x2a000)
+#define MX27_FEC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x2b000)
+#define MX27_SCC_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x2c000)
+#define MX27_ETB_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x3b000)
+#define MX27_ETB_RAM_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x3c000)
+#define MX27_JAM_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x3e000)
+#define MX27_MAX_BASE_ADDR			(MX27_AIPI_BASE_ADDR + 0x3f000)
 
-#define IMX_AIPI1_BASE             (0x00000 + IMX_IO_BASE)
-#define IMX_WDT_BASE               (0x02000 + IMX_IO_BASE)
-#define IMX_TIM1_BASE              (0x03000 + IMX_IO_BASE)
-#define IMX_TIM2_BASE              (0x04000 + IMX_IO_BASE)
-#define IMX_TIM3_BASE              (0x05000 + IMX_IO_BASE)
-#define IMX_UART1_BASE             (0x0a000 + IMX_IO_BASE)
-#define IMX_UART2_BASE             (0x0b000 + IMX_IO_BASE)
-#define IMX_UART3_BASE             (0x0c000 + IMX_IO_BASE)
-#define IMX_UART4_BASE             (0x0d000 + IMX_IO_BASE)
-#define IMX_SPI1_BASE              (0x0e000 + IMX_IO_BASE)
-#define IMX_SPI2_BASE              (0x0f000 + IMX_IO_BASE)
-#define IMX_I2C1_BASE              (0x12000 + IMX_IO_BASE)
-#define IMX_SDHC1_BASE             (0x13000 + IMX_IO_BASE)
-#define IMX_SDHC2_BASE             (0x14000 + IMX_IO_BASE)
-#define IMX_GPIO_BASE              (0x15000 + IMX_IO_BASE)
-#define IMX_TIM4_BASE              (0x19000 + IMX_IO_BASE)
-#define IMX_TIM5_BASE              (0x1a000 + IMX_IO_BASE)
-#define IMX_UART5_BASE             (0x1b000 + IMX_IO_BASE)
-#define IMX_UART6_BASE             (0x1c000 + IMX_IO_BASE)
-#define IMX_I2C2_BASE              (0x1d000 + IMX_IO_BASE)
-#define IMX_SDHC3_BASE             (0x1e000 + IMX_IO_BASE)
-#define IMX_TIM6_BASE              (0x1f000 + IMX_IO_BASE)
-#define IMX_AIPI2_BASE             (0x20000 + IMX_IO_BASE)
-#define IMX_FB_BASE                (0x21000 + IMX_IO_BASE)
-#define IMX_PLL_BASE               (0x27000 + IMX_IO_BASE)
-#define IMX_SYSTEM_CTL_BASE        (0x27800 + IMX_IO_BASE)
-#define IMX_IIM_BASE               (0x28000 + IMX_IO_BASE)
-#define IMX_OTG_BASE               (0x24000 + IMX_IO_BASE)
-#define IMX_FEC_BASE               (0x2b000 + IMX_IO_BASE)
-#define IMX_MAX_BASE               (0x3f000 + IMX_IO_BASE)
+#define MX27_AVIC_BASE_ADDR		0x10040000
 
-#define IMX_NFC_BASE               (0xd8000000)
-#define IMX_ESD_BASE               (0xd8001000)
-#define IMX_WEIM_BASE              (0xd8002000)
-#define IMX_M3IF_BASE		(0xd8003000)
-#define IMX_PCMCIA_CTL_BASE	(0xd8004000)
+/* ROM patch */
+#define MX27_ROMP_BASE_ADDR		0x10041000
 
-#define PCMCIA_PIPR		(IMX_PCMCIA_CTL_BASE + 0x00)
-#define PCMCIA_PSCR		(IMX_PCMCIA_CTL_BASE + 0x04)
-#define PCMCIA_PER		(IMX_PCMCIA_CTL_BASE + 0x08)
-#define PCMCIA_PBR(x)		(IMX_PCMCIA_CTL_BASE + 0x0c + ((x) << 2))
-#define PCMCIA_POR(x)		(IMX_PCMCIA_CTL_BASE + 0x28 + ((x) << 2))
-#define PCMCIA_POFR(x)		(IMX_PCMCIA_CTL_BASE + 0x44 + ((x) << 2))
-#define PCMCIA_PGCR		(IMX_PCMCIA_CTL_BASE + 0x60)
-#define PCMCIA_PGSR		(IMX_PCMCIA_CTL_BASE + 0x64)
+#define MX27_SAHB1_BASE_ADDR		0x80000000
+#define MX27_SAHB1_SIZE			SZ_1M
+#define MX27_CSI_BASE_ADDR			(MX27_SAHB1_BASE_ADDR + 0x0000)
+#define MX27_ATA_BASE_ADDR			(MX27_SAHB1_BASE_ADDR + 0x1000)
+
+/* Memory regions and CS */
+#define MX27_CSD0_BASE_ADDR		0xa0000000
+#define MX27_CSD1_BASE_ADDR		0xb0000000
+
+#define MX27_CS0_BASE_ADDR		0xc0000000
+#define MX27_CS1_BASE_ADDR		0xc8000000
+#define MX27_CS2_BASE_ADDR		0xd0000000
+#define MX27_CS3_BASE_ADDR		0xd2000000
+#define MX27_CS4_BASE_ADDR		0xd4000000
+#define MX27_CS5_BASE_ADDR		0xd6000000
+
+/* NAND, SDRAM, WEIM, M3IF, EMI controllers */
+#define MX27_X_MEMC_BASE_ADDR		0xd8000000
+#define MX27_X_MEMC_SIZE		SZ_1M
+#define MX27_NFC_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR)
+#define MX27_SDRAMC_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x1000)
+#define MX27_WEIM_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x2000)
+#define MX27_M3IF_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x3000)
+#define MX27_PCMCIA_CTL_BASE_ADDR	(MX27_X_MEMC_BASE_ADDR + 0x4000)
+
+#define MX27_WEIM_CSCRx_BASE_ADDR(cs)	(MX27_WEIM_BASE_ADDR + (cs) * 0x10)
+#define MX27_WEIM_CSCRxU(cs)		(MX27_WEIM_CSCRx_BASE_ADDR(cs))
+#define MX27_WEIM_CSCRxL(cs)		(MX27_WEIM_CSCRx_BASE_ADDR(cs) + 0x4)
+#define MX27_WEIM_CSCRxA(cs)		(MX27_WEIM_CSCRx_BASE_ADDR(cs) + 0x8)
+
+#define MX27_PCMCIA_MEM_BASE_ADDR	0xdc000000
+
+/* IRAM */
+#define MX27_IRAM_BASE_ADDR		0xffff4c00	/* internal ram */
+
+/* FIXME: get rid of these */
+#define IMX_GPIO_BASE		MX27_GPIO_BASE_ADDR
+#define IMX_NFC_BASE		MX27_NFC_BASE_ADDR
+#define IMX_WDT_BASE		MX27_WDOG_BASE_ADDR
+#define IMX_ESD_BASE		MX27_SDRAMC_BASE_ADDR
+
+#define PCMCIA_PIPR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x00)
+#define PCMCIA_PSCR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x04)
+#define PCMCIA_PER		(MX27_PCMCIA_CTL_BASE_ADDR + 0x08)
+#define PCMCIA_PBR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x0c + ((x) << 2))
+#define PCMCIA_POR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x28 + ((x) << 2))
+#define PCMCIA_POFR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x44 + ((x) << 2))
+#define PCMCIA_PGCR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x60)
+#define PCMCIA_PGSR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x64)
 
 /* AIPI */
-#define AIPI1_PSR0	__REG(IMX_AIPI1_BASE + 0x00)
-#define AIPI1_PSR1	__REG(IMX_AIPI1_BASE + 0x04)
-#define AIPI2_PSR0	__REG(IMX_AIPI2_BASE + 0x00)
-#define AIPI2_PSR1	__REG(IMX_AIPI2_BASE + 0x04)
+#define AIPI1_PSR0	__REG(MX27_AIPI_BASE_ADDR + 0x00)
+#define AIPI1_PSR1	__REG(MX27_AIPI_BASE_ADDR + 0x04)
+#define AIPI2_PSR0	__REG(MX27_AIPI_BASE_ADDR + 0x20000 + 0x00)
+#define AIPI2_PSR1	__REG(MX27_AIPI_BASE_ADDR + 0x20000 + 0x04)
 
 /* System Control */
-#define CID     __REG(IMX_SYSTEM_CTL_BASE + 0x0)		/* Chip ID Register */
-#define FMCR    __REG(IMX_SYSTEM_CTL_BASE + 0x14)		/* Function Multeplexing Control Register */
-#define GPCR	__REG(IMX_SYSTEM_CTL_BASE + 0x18)		/* Global Peripheral Control Register */
-#define WBCR	__REG(IMX_SYSTEM_CTL_BASE + 0x1C)		/* Well Bias Control Register */
-#define DSCR(x)	__REG(IMX_SYSTEM_CTL_BASE + 0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
+#define CID     __REG(MX27_SYSCTRL_BASE_ADDR + 0x0)		/* Chip ID Register */
+#define FMCR    __REG(MX27_SYSCTRL_BASE_ADDR + 0x14)		/* Function Multeplexing Control Register */
+#define GPCR	__REG(MX27_SYSCTRL_BASE_ADDR + 0x18)		/* Global Peripheral Control Register */
+#define WBCR	__REG(MX27_SYSCTRL_BASE_ADDR + 0x1C)		/* Well Bias Control Register */
+#define DSCR(x)	__REG(MX27_SYSCTRL_BASE_ADDR + 0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
 
 #define GPCR_BOOT_SHIFT			16
 #define GPCR_BOOT_MASK			(0xf << GPCR_BOOT_SHIFT)
@@ -76,26 +143,20 @@
 #define GPCR_BOOT_32BIT_CS0		6
 #define GPCR_BOOT_8BIT_NAND_512		7
 
-/* Chip Select Registers */
-#define CSxU(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x00) /* Chip Select x Upper Register    */
-#define CSxL(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x04) /* Chip Select x Lower Register    */
-#define CSxA(x) __REG(IMX_WEIM_BASE + (cs * 0x10) + 0x08) /* Chip Select x Addition Register */
-#define EIM  __REG(IMX_WEIM_BASE + 0x60) /* WEIM Configuration Register     */
-
 #include "esdctl.h"
 
 /* PLL registers */
-#define CSCR		__REG(IMX_PLL_BASE + 0x00) /* Clock Source Control Register       */
-#define MPCTL0		__REG(IMX_PLL_BASE + 0x04) /* MCU PLL Control Register 0          */
-#define MPCTL1		__REG(IMX_PLL_BASE + 0x08) /* MCU PLL Control Register 1          */
-#define SPCTL0		__REG(IMX_PLL_BASE + 0x0c) /* System PLL Control Register 0       */
-#define SPCTL1		__REG(IMX_PLL_BASE + 0x10) /* System PLL Control Register 1       */
-#define OSC26MCTL	__REG(IMX_PLL_BASE + 0x14) /* Oscillator 26M Register             */
-#define PCDR0		__REG(IMX_PLL_BASE + 0x18) /* Peripheral Clock Divider Register 0 */
-#define PCDR1		__REG(IMX_PLL_BASE + 0x1c) /* Peripheral Clock Divider Register 1 */
-#define PCCR0		__REG(IMX_PLL_BASE + 0x20) /* Peripheral Clock Control Register 0 */
-#define PCCR1		__REG(IMX_PLL_BASE + 0x24) /* Peripheral Clock Control Register 1 */
-#define CCSR		__REG(IMX_PLL_BASE + 0x28) /* Clock Control Status Register       */
+#define CSCR		__REG(MX27_CCM_BASE_ADDR + 0x00) /* Clock Source Control Register       */
+#define MPCTL0		__REG(MX27_CCM_BASE_ADDR + 0x04) /* MCU PLL Control Register 0          */
+#define MPCTL1		__REG(MX27_CCM_BASE_ADDR + 0x08) /* MCU PLL Control Register 1          */
+#define SPCTL0		__REG(MX27_CCM_BASE_ADDR + 0x0c) /* System PLL Control Register 0       */
+#define SPCTL1		__REG(MX27_CCM_BASE_ADDR + 0x10) /* System PLL Control Register 1       */
+#define OSC26MCTL	__REG(MX27_CCM_BASE_ADDR + 0x14) /* Oscillator 26M Register             */
+#define PCDR0		__REG(MX27_CCM_BASE_ADDR + 0x18) /* Peripheral Clock Divider Register 0 */
+#define PCDR1		__REG(MX27_CCM_BASE_ADDR + 0x1c) /* Peripheral Clock Divider Register 1 */
+#define PCCR0		__REG(MX27_CCM_BASE_ADDR + 0x20) /* Peripheral Clock Control Register 0 */
+#define PCCR1		__REG(MX27_CCM_BASE_ADDR + 0x24) /* Peripheral Clock Control Register 1 */
+#define CCSR		__REG(MX27_CCM_BASE_ADDR + 0x28) /* Clock Control Status Register       */
 
 #define CSCR_MPEN		(1 << 0)
 #define CSCR_SPEN		(1 << 1)
@@ -221,21 +282,13 @@
 #define ESDCFG_TWTR		(1 << 20)
 #define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
 
-#define IMX_CS0_BASE	0xC0000000
-#define IMX_CS1_BASE	0xC8000000
-#define IMX_CS2_BASE	0xD0000000
-#define IMX_CS3_BASE	0xD2000000
-#define IMX_CS4_BASE	0xD4000000
-#define IMX_CS5_BASE	0xD6000000
-
-#define IMX_PCMCIA_MEM_BASE	(0xdc000000)
-
 #ifndef __ASSEMBLY__
-static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned addional)
+#include <io.h>
+static inline void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower, unsigned additional)
 {
-	CSxU(cs) = upper;
-	CSxL(cs) = lower;
-	CSxA(cs) = addional;
+	writel(upper, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX27_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
 }
 #endif /* __ASSEMBLY__ */
 

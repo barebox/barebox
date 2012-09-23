@@ -31,28 +31,28 @@ static void pcm970_usbh2_init(void)
 {
 	uint32_t temp;
 
-	temp = readl(IMX_OTG_BASE + 0x600);
+	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
 	temp &= ~((3 << 21) | 1);
 	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
-	writel(temp, IMX_OTG_BASE + 0x600);
+	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x600);
 
-	temp = readl(IMX_OTG_BASE + 0x584);
+	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x584);
 	temp &= ~(3 << 30);
 	temp |= 2 << 30;
-	writel(temp, IMX_OTG_BASE + 0x584);
+	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x584);
 
 	mdelay(10);
 
-	if (!ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1))
-		add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
+	if (!ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1))
+		add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
 }
 #endif
 
 #ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 static struct resource pcm970_ide_resources[] = {
 	{
-		.start	= IMX_PCMCIA_MEM_BASE,
-		.end	= IMX_PCMCIA_MEM_BASE + SZ_1K - 1,
+		.start	= MX27_PCMCIA_MEM_BASE_ADDR,
+		.end	= MX27_PCMCIA_MEM_BASE_ADDR + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 };

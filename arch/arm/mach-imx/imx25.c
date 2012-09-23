@@ -16,7 +16,16 @@
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
 #include <io.h>
+#include <mach/weim.h>
 #include <sizes.h>
+
+void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
+		unsigned additional)
+{
+	writel(upper, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
+}
 
 /* IIM fuse definitions */
 #define IIM_BANK0_BASE	(MX25_IIM_BASE_ADDR + 0x800)

@@ -137,11 +137,7 @@
 #define MX25_CSD1_BASE_ADDR  0x90000000
 
 #define MX25_ESDCTL_BASE_ADDR	0xb8001000
-
-#define WEIM_BASE 0xb8002000
-#define CSCR_U(x)     (WEIM_BASE + (x) * 0x10)
-#define CSCR_L(x)     (WEIM_BASE + 4 + (x) * 0x10)
-#define CSCR_A(x)     (WEIM_BASE + 8 + (x) * 0x10)
+#define MX25_WEIM_BASE_ADDR	0xb8002000
 
 /*
  * Watchdog Registers

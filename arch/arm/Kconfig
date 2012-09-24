@@ -58,6 +58,7 @@ config ARCH_NOMADIK
 config ARCH_OMAP
 	bool "TI OMAP"
 	select HAS_DEBUG_LL
+	select GPIOLIB
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"

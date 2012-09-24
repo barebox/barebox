@@ -36,11 +36,10 @@
  * published by the Free Software Foundation.
  */
 #include <common.h>
-#include <mach/gpio.h>
 #include <io.h>
 #include <errno.h>
-
-#ifdef CONFIG_ARCH_OMAP3
+#include <gpio.h>
+#include <init.h>
 
 #define OMAP_GPIO_OE		0x0034
 #define OMAP_GPIO_DATAIN	0x0038
@@ -48,129 +47,115 @@
 #define OMAP_GPIO_CLEARDATAOUT	0x0090
 #define OMAP_GPIO_SETDATAOUT	0x0094
 
-static void __iomem *gpio_bank[] = {
-	(void *)0x48310000,
-	(void *)0x49050000,
-	(void *)0x49052000,
-	(void *)0x49054000,
-	(void *)0x49056000,
-	(void *)0x49058000,
+struct omap_gpio_chip {
+	void __iomem *base;
+	struct gpio_chip chip;
 };
-#endif
 
-#ifdef CONFIG_ARCH_OMAP4
-
-#define OMAP_GPIO_OE		0x0134
-#define OMAP_GPIO_DATAIN	0x0138
-#define OMAP_GPIO_DATAOUT	0x013c
-#define OMAP_GPIO_CLEARDATAOUT	0x0190
-#define OMAP_GPIO_SETDATAOUT	0x0194
-
-static void __iomem *gpio_bank[] = {
-	(void *)0x4a310000,
-	(void *)0x48055000,
-	(void *)0x48057000,
-	(void *)0x48059000,
-	(void *)0x4805b000,
-	(void *)0x4805d000,
-};
-#endif
-
-static inline void __iomem *get_gpio_base(int gpio)
-{
-	return gpio_bank[gpio >> 5];
-}
-
-static inline int get_gpio_index(int gpio)
+static inline int omap_get_gpio_index(int gpio)
 {
 	return gpio & 0x1f;
 }
 
-static inline int gpio_valid(int gpio)
+static void omap_gpio_set_value(struct gpio_chip *chip,
+					unsigned gpio, int value)
 {
-	if (gpio < 0)
-		return -1;
-	if (gpio / 32 < ARRAY_SIZE(gpio_bank))
-		return 0;
-	return -1;
-}
-
-static int check_gpio(int gpio)
-{
-	if (gpio_valid(gpio) < 0) {
-		printf("ERROR : check_gpio: invalid GPIO %d\n", gpio);
-		return -1;
-	}
-	return 0;
-}
-
-void gpio_set_value(unsigned gpio, int value)
-{
-	void __iomem *reg;
+	struct omap_gpio_chip *omapgpio =
+			container_of(chip, struct omap_gpio_chip, chip);
+	void __iomem *base = omapgpio->base;
 	u32 l = 0;
 
-	if (check_gpio(gpio) < 0)
-		return;
-
-	reg = get_gpio_base(gpio);
-
 	if (value)
-		reg += OMAP_GPIO_SETDATAOUT;
+		base += OMAP_GPIO_SETDATAOUT;
 	else
-		reg += OMAP_GPIO_CLEARDATAOUT;
-	l = 1 << get_gpio_index(gpio);
+		base += OMAP_GPIO_CLEARDATAOUT;
 
-	__raw_writel(l, reg);
+	l = 1 << omap_get_gpio_index(gpio);
+
+	writel(l, base);
 }
 
-int gpio_direction_input(unsigned gpio)
+static int omap_gpio_direction_input(struct gpio_chip *chip,
+					unsigned gpio)
 {
-	void __iomem *reg;
+	struct omap_gpio_chip *omapgpio =
+			container_of(chip, struct omap_gpio_chip, chip);
+	void __iomem *base = omapgpio->base;
 	u32 val;
 
-	if (check_gpio(gpio) < 0)
-		return -EINVAL;
+	base += OMAP_GPIO_OE;
 
-	reg = get_gpio_base(gpio);
-
-	reg += OMAP_GPIO_OE;
-
-	val = __raw_readl(reg);
-	val |= 1 << get_gpio_index(gpio);
-	__raw_writel(val, reg);
+	val = readl(base);
+	val |= 1 << omap_get_gpio_index(gpio);
+	writel(val, base);
 
 	return 0;
 }
 
-int gpio_direction_output(unsigned gpio, int value)
+static int omap_gpio_direction_output(struct gpio_chip *chip,
+					unsigned gpio, int value)
 {
-	void __iomem *reg;
+	struct omap_gpio_chip *omapgpio =
+			container_of(chip, struct omap_gpio_chip, chip);
+	void __iomem *base = omapgpio->base;
 	u32 val;
 
-	if (check_gpio(gpio) < 0)
-		return -EINVAL;
-	reg = get_gpio_base(gpio);
+	omap_gpio_set_value(chip, gpio, value);
 
-	gpio_set_value(gpio, value);
+	base += OMAP_GPIO_OE;
 
-	reg += OMAP_GPIO_OE;
-
-	val = __raw_readl(reg);
-	val &= ~(1 << get_gpio_index(gpio));
-	__raw_writel(val, reg);
+	val = readl(base);
+	val &= ~(1 << omap_get_gpio_index(gpio));
+	writel(val, base);
 
 	return 0;
 }
 
-int gpio_get_value(unsigned gpio)
+static int omap_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
 {
-	void __iomem *reg;
+	struct omap_gpio_chip *omapgpio =
+			container_of(chip, struct omap_gpio_chip, chip);
+	void __iomem *base = omapgpio->base;
 
-	if (check_gpio(gpio) < 0)
-		return -EINVAL;
-	reg = get_gpio_base(gpio);
+	base  += OMAP_GPIO_DATAIN;
 
-	reg += OMAP_GPIO_DATAIN;
+	return (readl(base) & (1 << omap_get_gpio_index(gpio))) != 0;
 
-	return (__raw_readl(reg) & (1 << get_gpio_index(gpio))) != 0;
 }
+
+static struct gpio_ops omap_gpio_ops = {
+	.direction_input = omap_gpio_direction_input,
+	.direction_output = omap_gpio_direction_output,
+	.get = omap_gpio_get_value,
+	.set = omap_gpio_set_value,
+};
+
+static int omap_gpio_probe(struct device_d *dev)
+{
+	struct omap_gpio_chip *omapgpio;
+
+	omapgpio = xzalloc(sizeof(*omapgpio));
+	omapgpio->base = dev_request_mem_region(dev, 0);
+	omapgpio->chip.ops = &omap_gpio_ops;
+	omapgpio->chip.base = -1;
+	omapgpio->chip.ngpio = 32;
+	omapgpio->chip.dev = dev;
+	gpiochip_add(&omapgpio->chip);
+
+	dev_info(dev, "probed gpiochip%d with base %d\n",
+				dev->id, omapgpio->chip.base);
+
+	return 0;
+}
+
+static struct driver_d omap_gpio_driver = {
+	.name = "omap-gpio",
+	.probe = omap_gpio_probe,
+};
+
+static int omap_gpio_add(void)
+{
+	register_driver(&omap_gpio_driver);
+	return 0;
+}
+coredevice_initcall(omap_gpio_add);

@@ -40,10 +40,6 @@ void __naked __bare_init reset(void)
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 
-#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
-	arch_init_lowlevel();
-#endif
-
 	/* disable MMU stuff and caches */
 	r = get_cr();
 	r &= ~(CR_M | CR_C | CR_B | CR_S | CR_R | CR_V);

@@ -110,8 +110,6 @@
 #define OMAP_SRAM_BASE		0x40200000
 #define OMAP_SRAM_INTVECT	0x4020F800
 #define OMAP_SRAM_INTVECT_COPYSIZE	0x64
-/** Temporary stack for us to use C calls in low_level_init */
-#define OMAP_SRAM_STACK		0x4020FFFC
 
 /** Gives the silicon revision */
 #define OMAP_TAP_BASE		(OMAP_L4_WKUP_BASE + 0xA000)

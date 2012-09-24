@@ -95,6 +95,4 @@ finished_inval:
 	mov	pc,	lr
 ENDPROC(arch_init_lowlevel)
 
-SRAM_STACK:
-	.word	OMAP_SRAM_STACK
 #endif /* CONFIG_ARCH_HAS_LOWLEVEL_INIT */

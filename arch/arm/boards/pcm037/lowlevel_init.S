@@ -23,6 +23,7 @@
 
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
+#include <asm/barebox-arm-head.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -44,10 +45,11 @@
 
 	.section ".text_bare_init","ax"
 
-.globl board_init_lowlevel
-board_init_lowlevel:
+.globl reset
+reset:
 
-	mov r10, lr
+	common_reset r0
+
 	writel(IPU_CONF_DI_EN, IPU_CONF)
 	writel(0x074B0BF5, IMX_CCM_BASE + CCM_CCMR)
 
@@ -91,7 +93,7 @@ clear_iomux:
 	cmp	pc, #0x90000000
 	bhs	1f
 
-	mov	pc, r10
+	b	board_init_lowlevel_return
 1:
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
@@ -160,5 +162,5 @@ copy_loop:
 ret:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
-	mov	pc, r10
+	b	board_init_lowlevel_return
 

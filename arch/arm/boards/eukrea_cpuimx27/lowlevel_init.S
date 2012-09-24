@@ -1,6 +1,7 @@
 #include <config.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx-regs.h>
+#include <asm/barebox-arm-head.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -60,10 +61,10 @@
 
 	.section ".text_bare_init","ax"
 
-.globl board_init_lowlevel
-board_init_lowlevel:
+.globl reset
+reset:
 
-	mov	r10, lr
+	common_reset r0
 
 	/* ahb lite ip interface */
 	writel(0x20040304, AIPI1_PSR0)
@@ -103,7 +104,7 @@ board_init_lowlevel:
 	cmp	pc, #0xc0000000
 	bhi	1f
 
-	mov	pc,r10
+	b	board_init_lowlevel_return
 1:
 	sdram_init
 
@@ -135,4 +136,4 @@ copy_loop:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	mov	pc,r10
+	b	board_init_lowlevel_return

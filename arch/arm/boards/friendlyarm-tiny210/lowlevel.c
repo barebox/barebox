@@ -24,6 +24,7 @@
 #include <init.h>
 #include <io.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/sections.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-clocks.h>
@@ -49,9 +50,11 @@ int __bare_init s5p_irom_load_mmc(void *dest, uint32_t start_block, uint16_t blo
 }
 
 
-void __bare_init board_init_lowlevel(void)
+void __bare_init reset(void)
 {
 	uint32_t r;
+
+	common_reset();
 
 #ifdef CONFIG_S3C_PLL_INIT
 	s5p_init_pll();

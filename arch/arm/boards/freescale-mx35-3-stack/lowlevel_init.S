@@ -26,6 +26,8 @@
 #include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>
 #include <asm-generic/memory_layout.h>
+#include <asm/barebox-arm-head.h>
+
 #include "board-mx35_3stack.h"
 
 #define CSD0_BASE_ADDR		0x80000000
@@ -58,9 +60,9 @@ MPCTL_PARAM_532_W:	.word	MPCTL_PARAM_532
 PPCTL_PARAM_W:		.word	PPCTL_PARAM_300
 CCM_BASE_ADDR_W:	.word	IMX_CCM_BASE
 
-.globl board_init_lowlevel
-board_init_lowlevel:
-	mov	r10, lr
+.globl reset
+reset:
+	common_reset r0
 
 	mrc	15, 0, r1, c1, c0, 0
 
@@ -128,7 +130,7 @@ board_init_lowlevel:
 	cmp	pc, #CSD1_BASE_ADDR
 	bhi	1f
 
-	mov	pc, r10
+	b	board_init_lowlevel_return
 
 1:
 	ldr	r0, =ESDCTL_BASE_ADDR
@@ -183,7 +185,7 @@ copy_loop:
 ret:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
-	mov	pc, r10
+	b	board_init_lowlevel_return
 
 /*
  * r0: ESDCTL control base, r1: sdram slot base

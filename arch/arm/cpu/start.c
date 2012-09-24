@@ -53,6 +53,18 @@ void __naked __section(.text_entry) start(void)
 }
 
 /*
+ * The actual reset vector. This code is position independent and usually
+ * does not run at the address it's linked at.
+ */
+#ifndef CONFIG_MACH_DO_LOWLEVEL_INIT
+void __naked __bare_init reset(void)
+{
+	common_reset();
+	board_init_lowlevel_return();
+}
+#endif
+
+/*
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this function directly.
  */

@@ -25,7 +25,6 @@
 #include <gpio.h>
 #include <mach/spi.h>
 #include <mach/generic.h>
-#include <mach/clock.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 

@@ -16,7 +16,6 @@
 
 #include <common.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>

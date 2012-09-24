@@ -26,7 +26,6 @@
 #include <linux/err.h>
 #include <mach/imx-regs.h>
 #include <asm-generic/div64.h>
-#include <mach/clock.h>
 
 #define LCDC_SSA	0x00
 

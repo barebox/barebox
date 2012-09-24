@@ -33,7 +33,6 @@
 #include <linux/err.h>
 #include <notifier.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <io.h>
 
 /* Part 1: Registers */

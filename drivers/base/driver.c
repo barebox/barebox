@@ -423,8 +423,11 @@ static int do_devinfo(int argc, char *argv[])
 			       res->start, resource_size(res));
 		}
 
-		printf("driver: %s\n\n", dev->driver ?
+		printf("driver: %s\n", dev->driver ?
 				dev->driver->name : "none");
+
+		printf("bus: %s\n\n", dev->bus ?
+				dev->bus->name : "none");
 
 		if (dev->driver)
 			dev->driver->info(dev);

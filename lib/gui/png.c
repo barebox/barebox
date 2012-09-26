@@ -63,7 +63,7 @@ static int png_renderer(struct fb_info *info, struct image *img, void* fb,
 
 	buf = offscreenbuf ? offscreenbuf : fb;
 
-	rgba_blend(info, img->data, buf, height, width, startx, starty, true);
+	rgba_blend(info, img, buf, height, width, startx, starty, true);
 
 	if (offscreenbuf) {
 		int fbsize;

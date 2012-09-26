@@ -157,13 +157,14 @@ void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 	set_pixel(info, adr, px);
 }
 
-void rgba_blend(struct fb_info *info, void *image, void* buf, int height,
+void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 	int width, int startx, int starty, bool is_rgba)
 {
 	unsigned char *adr;
 	int x, y;
 	int xres;
 	int img_byte_per_pixel = 3;
+	void *image;
 
 	if (is_rgba)
 		img_byte_per_pixel++;
@@ -173,11 +174,11 @@ void rgba_blend(struct fb_info *info, void *image, void* buf, int height,
 	for (y = 0; y < height; y++) {
 		adr = buf + ((y + starty) * xres + startx) *
 				(info->bits_per_pixel >> 3);
+		image = img->data + (y * img->width *img_byte_per_pixel);
 
 		for (x = 0; x < width; x++) {
-			char *pixel;
+			uint8_t *pixel = image;
 
-			pixel = image;
 			if (is_rgba)
 				set_rgba_pixel(info, adr, pixel[0], pixel[1],
 						pixel[2], pixel[3]);

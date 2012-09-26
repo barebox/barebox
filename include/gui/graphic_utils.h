@@ -17,6 +17,7 @@ void set_pixel(struct fb_info *info, void *adr, u32 px);
 void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b);
 void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a);
 void memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size);
-int fb_open(const char * fbdev, struct screen *sc);
+int fb_open(const char * fbdev, struct screen *sc, bool offscreen);
+void fb_close(struct screen *sc);
 
 #endif /* __GRAPHIC_UTILS_H__ */

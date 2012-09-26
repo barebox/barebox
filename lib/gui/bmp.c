@@ -37,7 +37,7 @@ void bmp_close(struct image *img)
 static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 {
 	struct bmp_image *bmp = img->data;
-	int bits_per_pixel, fbsize;
+	int bits_per_pixel;
 	void *adr, *buf;
 	char *image;
 	int width = s->width;
@@ -69,7 +69,6 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 	buf = gui_screen_redering_buffer(sc);
 
 	bits_per_pixel = img->bits_per_pixel;
-	fbsize = sc->s.width * sc->s.height * (sc->info.bits_per_pixel >> 3);
 
 	if (bits_per_pixel == 8) {
 		int x, y;
@@ -119,7 +118,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 		printf("bmp: illegal bits per pixel value: %d\n", bits_per_pixel);
 
 	if (sc->offscreenbuf)
-		memcpy(sc->fb, sc->offscreenbuf, fbsize);
+		memcpy(sc->fb, sc->offscreenbuf, sc->fbsize);
 
 	return img->height;
 }

@@ -17,12 +17,14 @@ struct surface {
 };
 
 struct screen {
+	int fd;
 	struct fb_info info;
 
 	struct surface s;
 
 	void *fb;
 	void *offscreenbuf;
+	int fbsize;
 };
 
 static inline void* gui_screen_redering_buffer(struct screen *sc)

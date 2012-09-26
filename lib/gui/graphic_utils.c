@@ -1,6 +1,11 @@
 #include <common.h>
 #include <fb.h>
 #include <gui/graphic_utils.h>
+#include <linux/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <fs.h>
+#include <malloc.h>
 
 static u32 get_pixel(struct fb_info *info, u32 color)
 {
@@ -189,4 +194,51 @@ void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 			image += img_byte_per_pixel;
 		}
 	}
+}
+
+int fb_open(const char * fbdev, struct screen *sc, bool offscreen)
+{
+	int ret;
+
+	sc->fd = open(fbdev, O_RDWR);
+	if (sc->fd < 0)
+		return sc->fd;
+
+	sc->fb = memmap(sc->fd, PROT_READ | PROT_WRITE);
+	if (sc->fb == (void *)-1) {
+		ret = -ENOMEM;
+		goto failed_memmap;
+	}
+
+	ret = ioctl(sc->fd, FBIOGET_SCREENINFO, &sc->info);
+	if (ret) {
+		goto failed_memmap;
+	}
+
+	sc->s.x = 0;
+	sc->s.y = 0;
+	sc->s.width = sc->info.xres;
+	sc->s.height = sc->info.yres;
+	sc->fbsize = sc->s.x * sc->s.x * (sc->info.bits_per_pixel >> 3);
+
+	if (offscreen) {
+		/* Don't fail if malloc fails, just continue rendering directly
+		 * on the framebuffer
+		 */
+		sc->offscreenbuf = malloc(sc->fbsize);
+	}
+
+	return sc->fd;
+
+failed_memmap:
+	sc->fb = NULL;
+	close(sc->fd);
+
+	return ret;
+}
+
+void fb_close(struct screen *sc)
+{
+	free(sc->offscreenbuf);
+	close(sc->fd);
 }

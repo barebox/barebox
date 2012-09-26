@@ -1,11 +1,8 @@
 #include <common.h>
 #include <command.h>
-#include <fs.h>
-#include <linux/stat.h>
 #include <errno.h>
 #include <malloc.h>
 #include <getopt.h>
-#include <fcntl.h>
 #include <fb.h>
 #include <gui/image_renderer.h>
 #include <gui/graphic_utils.h>
@@ -52,39 +49,18 @@ static int do_splash(int argc, char *argv[])
 	}
 	image_file = argv[optind];
 
-	fd = open(fbdev, O_RDWR);
+	fd = fb_open(fbdev, &sc, offscreen);
 	if (fd < 0) {
-		perror("open");
+		perror("fd_open");
 		return 1;
 	}
 
-	sc.fb = memmap(fd, PROT_READ | PROT_WRITE);
-	if (sc.fb == (void *)-1) {
-		perror("memmap");
-		goto failed_memmap;
-	}
-
-	ret = ioctl(fd, FBIOGET_SCREENINFO, &info);
-	if (ret) {
-		perror("ioctl");
-		goto failed_memmap;
-	}
-
-	if (offscreen) {
-		int fbsize;
-		/* Don't fail if malloc fails, just continue rendering directly
-		 * on the framebuffer
-		 */
-
-		fbsize = sc.s.x * sc.s.x * (sc.info.bits_per_pixel >> 3);
-		sc.offscreenbuf = malloc(fbsize);
-		if (sc.offscreenbuf) {
-			if (do_bg)
-				memset_pixel(&info, sc.offscreenbuf, bg_color,
-						sc.s.width * sc.s.height);
-			else
-				memcpy(sc.offscreenbuf, sc.fb, fbsize);
-		}
+	if (sc.offscreenbuf) {
+		if (do_bg)
+			memset_pixel(&info, sc.offscreenbuf, bg_color,
+					sc.s.width * sc.s.height);
+		else
+			memcpy(sc.offscreenbuf, sc.fb, sc.fbsize);
 	} else if (do_bg) {
 		memset_pixel(&info, sc.fb, bg_color, sc.s.width * sc.s.height);
 	}
@@ -92,17 +68,9 @@ static int do_splash(int argc, char *argv[])
 	if (image_renderer_file(&sc, &s, image_file) < 0)
 		ret = 1;
 
-	if (sc.offscreenbuf)
-		free(sc.offscreenbuf);
-
-	close(fd);
+	fb_close(&sc);
 
 	return ret;
-
-failed_memmap:
-	close(fd);
-
-	return 1;
 }
 
 BAREBOX_CMD_HELP_START(splash)

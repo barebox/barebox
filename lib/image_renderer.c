@@ -29,7 +29,7 @@ static struct image_renderer *get_renderer(void* buf)
 struct image *image_renderer_open(const char* file)
 {
 	void *data;
-	int size;
+	size_t size;
 	struct image_renderer *ir;
 	struct image *img;
 	int ret;

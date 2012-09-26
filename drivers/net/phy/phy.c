@@ -29,6 +29,30 @@
 
 static int genphy_config_init(struct phy_device *phydev);
 
+int phy_update_status(struct phy_device *dev)
+{
+	struct phy_driver *drv = to_phy_driver(dev->dev.driver);
+	struct eth_device *edev = dev->attached_dev;
+	int ret;
+	int oldspeed = dev->speed, oldduplex = dev->duplex;
+
+	ret = drv->read_status(dev);
+	if (ret)
+		return ret;
+
+	if (dev->speed == oldspeed && dev->duplex == oldduplex)
+		return 0;
+
+	if (dev->adjust_link)
+		dev->adjust_link(edev);
+
+	if (dev->link)
+		printf("%dMbps %s duplex link detected\n", dev->speed,
+			dev->duplex ? "full" : "half");
+
+	return 0;
+}
+
 struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 {
 	struct phy_device *dev;
@@ -172,16 +196,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 
 	drv->config_aneg(dev);
 
-	ret = drv->read_status(dev);
-	if (ret < 0)
-		return ret;
-
-	if (dev->link)
-		printf("%dMbps %s duplex link detected\n", dev->speed,
-			dev->duplex ? "full" : "half");
-
-	if (adjust_link)
-		adjust_link(edev);
+	dev->adjust_link = adjust_link;
 
 	return 0;
 

@@ -164,6 +164,7 @@ struct phy_device {
 	void *priv;
 
 	struct eth_device *attached_dev;
+	void (*adjust_link)(struct eth_device *dev);
 
 	struct cdev cdev;
 };
@@ -252,6 +253,8 @@ static inline int phy_write(struct phy_device *phydev, u32 regnum, u16 val)
 int phy_device_connect(struct eth_device *dev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface);
+
+int phy_update_status(struct phy_device *phydev);
 
 /* Generic PHY support and helper functions */
 int genphy_restart_aneg(struct phy_device *phydev);

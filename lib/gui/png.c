@@ -4,8 +4,8 @@
 #include <fb.h>
 #include <asm/byteorder.h>
 #include <init.h>
-#include <image_renderer.h>
-#include <graphic_utils.h>
+#include <gui/image_renderer.h>
+#include <gui/graphic_utils.h>
 #include <linux/zlib.h>
 
 #include "png.h"

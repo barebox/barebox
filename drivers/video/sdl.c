@@ -11,7 +11,7 @@
 #include <mach/linux.h>
 #include <fb.h>
 #include <errno.h>
-#include <graphic_utils.h>
+#include <gui/graphic_utils.h>
 
 static void sdlfb_enable(struct fb_info *info)
 {

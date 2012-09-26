@@ -1,6 +1,6 @@
 #include <common.h>
 #include <fb.h>
-#include <graphic_utils.h>
+#include <gui/graphic_utils.h>
 
 static u32 get_pixel(struct fb_info *info, u32 color)
 {

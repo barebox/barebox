@@ -4,9 +4,9 @@
 #include <fb.h>
 #include "bmp_layout.h"
 #include <asm/byteorder.h>
-#include <graphic_utils.h>
+#include <gui/graphic_utils.h>
 #include <init.h>
-#include <image_renderer.h>
+#include <gui/image_renderer.h>
 
 struct image *bmp_open(char *inbuf, int insize)
 {

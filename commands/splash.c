@@ -7,8 +7,8 @@
 #include <getopt.h>
 #include <fcntl.h>
 #include <fb.h>
-#include <image_renderer.h>
-#include <graphic_utils.h>
+#include <gui/image_renderer.h>
+#include <gui/graphic_utils.h>
 
 static int do_splash(int argc, char *argv[])
 {

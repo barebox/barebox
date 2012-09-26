@@ -4,23 +4,24 @@
 #include <fb.h>
 #include <asm/byteorder.h>
 #include <init.h>
-#include <image_renderer.h>
-#include <graphic_utils.h>
+#include <gui/image_renderer.h>
+#include <gui/graphic_utils.h>
 #include <linux/zlib.h>
 
-#include "picopng.h"
+#include "lodepng.h"
 #include "png.h"
 
-unsigned picopng_zlib_decompress(unsigned char* out, size_t outsize,
-				 const unsigned char* in, size_t insize)
+unsigned lodepng_custom_zlib_decompress(unsigned char** out, size_t* outsize,
+					const unsigned char* in, size_t insize,
+					const LodePNGDecompressSettings* settings)
 {
 	int err;
 
 	png_stream.next_in = in;
 	png_stream.avail_in = insize;
 
-	png_stream.next_out = out;
-	png_stream.avail_out = outsize;
+	png_stream.next_out = *out;
+	png_stream.avail_out = *outsize;
 
 	err = zlib_inflateReset(&png_stream);
 	if (err != Z_OK) {
@@ -36,15 +37,17 @@ unsigned picopng_zlib_decompress(unsigned char* out, size_t outsize,
 
 err:
 	printk("Error %d while decompressing!\n", err);
-	printk("%p(%zd)->%p(%zd)\n", in, insize, out, outsize);
+	printk("%p(%zd)->%p(%zd)\n", in, insize, *out, *outsize);
 	return -EIO;
 }
 
 struct image *png_open(char *inbuf, int insize)
 {
-	PNG_info_t *png_info;
+	LodePNGState state;
 	int ret;
+	unsigned error;
 	struct image *img = calloc(1, sizeof(struct image));
+	unsigned char *png;
 
 	if (!img)
 		return ERR_PTR(-ENOMEM);
@@ -53,27 +56,29 @@ struct image *png_open(char *inbuf, int insize)
 	if (ret)
 		goto err;
 
-	/* rgba */
-	png_info = PNG_decode(inbuf, insize);
+	lodepng_state_init(&state);
 
-	if(PNG_error) {
-		printf("error %u:\n", PNG_error);
+	state.info_raw.colortype = LCT_RGBA;
+	state.info_raw.bitdepth = 8;
+
+	error = lodepng_decode(&png, &img->width, &img->height, &state, inbuf, insize);
+
+	if(error) {
+		printf("error %u: %s\n", error, lodepng_error_text(error));
 		ret = -EINVAL;
 		goto err;
 	}
 
-	img->width = png_info->width;
-	img->height = png_info->height;
 	img->bits_per_pixel = 4 << 3;
-	img->data = png_info->image->data;
+	img->data = png;
 
 	pr_debug("png: %d x %d data@0x%p\n", img->width, img->height, img->data);
 
-	png_alloc_free_all();
+	lodepng_state_cleanup(&state);
 
 	return img;
 err:
-	png_alloc_free_all();
+	free(png);
 	free(img);
 	return ERR_PTR(ret);
 }
@@ -81,5 +86,5 @@ err:
 void png_close(struct image *img)
 {
 	free(img->data);
-	png_alloc_free_all();
+	png_uncompress_exit();
 }

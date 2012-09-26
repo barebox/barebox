@@ -6,7 +6,7 @@
 
 #include <common.h>
 #include <fb.h>
-#include <image_renderer.h>
+#include <gui/image_renderer.h>
 #include <errno.h>
 #include <fs.h>
 #include <malloc.h>

@@ -12,14 +12,7 @@
 #include <errno.h>
 #include <linux/err.h>
 #include <fb.h>
-
-struct image {
-	void *data;
-	struct image_renderer *ir;
-	int height;
-	int width;
-	int bits_per_pixel;
-};
+#include <gui/image.h>
 
 struct image_renderer {
 	enum filetype type;

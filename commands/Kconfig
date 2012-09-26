@@ -494,6 +494,21 @@ config CMD_MTEST_ALTERNATIVE
 
 endmenu
 
+menu "video command                  "
+
+if VIDEO
+
+config CMD_SPLASH
+	bool
+	select IMAGE_RENDERER
+	prompt "splash"
+	help
+	  show bmp files on framebuffer devices
+
+endif
+
+endmenu
+
 config CMD_TIMEOUT
 	tristate
 	prompt "timeout"
@@ -556,14 +571,6 @@ config CMD_LSMOD
 	bool
 	depends on MODULES
 	prompt "lsmod"
-
-config CMD_SPLASH
-	bool
-	depends on VIDEO
-	select IMAGE_RENDERER
-	prompt "splash"
-	help
-	  show bmp files on framebuffer devices
 
 config CMD_GPIO
 	bool

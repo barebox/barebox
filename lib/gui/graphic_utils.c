@@ -242,3 +242,11 @@ void fb_close(struct screen *sc)
 	free(sc->offscreenbuf);
 	close(sc->fd);
 }
+
+void screen_blit(struct screen *sc)
+{
+	if (!sc->offscreenbuf)
+		return;
+
+	memcpy(sc->fb, sc->offscreenbuf, sc->fbsize);
+}

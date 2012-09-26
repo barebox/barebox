@@ -69,9 +69,6 @@ static int png_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 	rgba_blend(&sc->info, img, buf, height, width, startx, starty, true);
 
-	if (sc->offscreenbuf)
-		memcpy(sc->fb, sc->offscreenbuf, sc->fbsize);
-
 	return img->height;
 }
 

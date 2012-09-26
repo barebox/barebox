@@ -117,9 +117,6 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 	} else
 		printf("bmp: illegal bits per pixel value: %d\n", bits_per_pixel);
 
-	if (sc->offscreenbuf)
-		memcpy(sc->fb, sc->offscreenbuf, sc->fbsize);
-
 	return img->height;
 }
 

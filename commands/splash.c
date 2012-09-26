@@ -68,6 +68,8 @@ static int do_splash(int argc, char *argv[])
 	if (image_renderer_file(&sc, &s, image_file) < 0)
 		ret = 1;
 
+	screen_blit(&sc);
+
 	fb_close(&sc);
 
 	return ret;

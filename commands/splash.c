@@ -12,17 +12,20 @@
 
 static int do_splash(int argc, char *argv[])
 {
+	struct surface s;
+	struct screen sc;
 	int ret, opt, fd;
 	char *fbdev = "/dev/fb0";
-	void *fb;
 	struct fb_info info;
 	char *image_file;
-	int startx = -1, starty = -1;
-	int xres, yres;
 	int offscreen = 0;
 	u32 bg_color = 0x00000000;
 	bool do_bg = false;
-	void *offscreenbuf = NULL;
+
+	s.x = -1;
+	s.y = -1;
+	s.width = -1;
+	s.height = -1;
 
 	while((opt = getopt(argc, argv, "f:x:y:ob:")) > 0) {
 		switch(opt) {
@@ -34,10 +37,10 @@ static int do_splash(int argc, char *argv[])
 			do_bg = true;
 			break;
 		case 'x':
-			startx = simple_strtoul(optarg, NULL, 0);
+			s.x = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'y':
-			starty = simple_strtoul(optarg, NULL, 0);
+			s.y = simple_strtoul(optarg, NULL, 0);
 		case 'o':
 			offscreen = 1;
 		}
@@ -55,8 +58,8 @@ static int do_splash(int argc, char *argv[])
 		return 1;
 	}
 
-	fb = memmap(fd, PROT_READ | PROT_WRITE);
-	if (fb == (void *)-1) {
+	sc.fb = memmap(fd, PROT_READ | PROT_WRITE);
+	if (sc.fb == (void *)-1) {
 		perror("memmap");
 		goto failed_memmap;
 	}
@@ -67,33 +70,30 @@ static int do_splash(int argc, char *argv[])
 		goto failed_memmap;
 	}
 
-	xres = info.xres;
-	yres = info.yres;
-
 	if (offscreen) {
 		int fbsize;
 		/* Don't fail if malloc fails, just continue rendering directly
 		 * on the framebuffer
 		 */
 
-		fbsize = xres * yres * (info.bits_per_pixel >> 3);
-		offscreenbuf = malloc(fbsize);
-		if (offscreenbuf) {
+		fbsize = sc.s.x * sc.s.x * (sc.info.bits_per_pixel >> 3);
+		sc.offscreenbuf = malloc(fbsize);
+		if (sc.offscreenbuf) {
 			if (do_bg)
-				memset_pixel(&info, offscreenbuf, bg_color, xres * yres);
+				memset_pixel(&info, sc.offscreenbuf, bg_color,
+						sc.s.width * sc.s.height);
 			else
-				memcpy(offscreenbuf, fb, fbsize);
+				memcpy(sc.offscreenbuf, sc.fb, fbsize);
 		}
 	} else if (do_bg) {
-		memset_pixel(&info, fb, bg_color, xres * yres);
+		memset_pixel(&info, sc.fb, bg_color, sc.s.width * sc.s.height);
 	}
 
-	if (image_renderer_file(&info, image_file, fb, startx, starty,
-				offscreenbuf) < 0)
+	if (image_renderer_file(&sc, &s, image_file) < 0)
 		ret = 1;
 
-	if (offscreenbuf)
-		free(offscreenbuf);
+	if (sc.offscreenbuf)
+		free(sc.offscreenbuf);
 
 	close(fd);
 

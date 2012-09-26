@@ -36,40 +36,44 @@ void png_uncompress_exit(void)
 	}
 }
 
-static int png_renderer(struct fb_info *info, struct image *img, void* fb,
-		int startx, int starty, void* offscreenbuf)
+static int png_renderer(struct screen *sc, struct surface *s, struct image *img)
 {
-	int width, height;
 	void *buf;
-	int xres, yres;
+	int width = s->width;
+	int height = s->height;
+	int startx = s->x;
+	int starty = s->y;
 
-	xres = info->xres;
-	yres = info->yres;
+	if (s->width < 0)
+		width = img->width;
+
+	if (s->height < 0)
+		height = img->height;
 
 	if (startx < 0) {
-		startx = (xres - img->width) / 2;
+		startx = (sc->s.width - width) / 2;
 		if (startx < 0)
 			startx = 0;
 	}
 
 	if (starty < 0) {
-		starty = (yres - img->height) / 2;
+		starty = (sc->s.height - height) / 2;
 		if (starty < 0)
 			starty = 0;
 	}
 
-	width = min(img->width, xres - startx);
-	height = min(img->height, yres - starty);
+	width = min(width, sc->s.width - startx);
+	height = min(height, sc->s.height - starty);
 
-	buf = offscreenbuf ? offscreenbuf : fb;
+	buf = gui_screen_redering_buffer(sc);
 
-	rgba_blend(info, img, buf, height, width, startx, starty, true);
+	rgba_blend(&sc->info, img, buf, height, width, startx, starty, true);
 
-	if (offscreenbuf) {
+	if (sc->offscreenbuf) {
 		int fbsize;
 
-		fbsize = xres * yres * (info->bits_per_pixel >> 3);
-		memcpy(fb, offscreenbuf, fbsize);
+		fbsize = sc->s.width * sc->s.height * (sc->info.bits_per_pixel >> 3);
+		memcpy(sc->fb, sc->offscreenbuf, fbsize);
 	}
 
 	return img->height;

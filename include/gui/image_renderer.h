@@ -13,13 +13,13 @@
 #include <linux/err.h>
 #include <fb.h>
 #include <gui/image.h>
+#include <gui/gui.h>
 
 struct image_renderer {
 	enum filetype type;
 	struct image *(*open)(char *data, int size);
 	void (*close)(struct image *img);
-	int (*renderer)(struct fb_info *info, struct image *img, void* fb,
-		int startx, int starty, void* offscreenbuf);
+	int (*renderer)(struct screen *sc, struct surface *s, struct image *img);
 
 	/*
 	 * do not free the data read from the file
@@ -34,8 +34,7 @@ struct image_renderer {
 int image_renderer_register(struct image_renderer *ir);
 void image_render_unregister(struct image_renderer *ir);
 
-int image_renderer_image(struct fb_info *info, struct image *img, void* fb,
-	    int startx, int starty, void* offscreenbuf);
+int image_renderer_image(struct screen *sc, struct surface *s, struct image *img);
 
 struct image *image_renderer_open(const char* file);
 void image_renderer_close(struct image *img);
@@ -54,12 +53,10 @@ static inline struct image *image_renderer_open(const char* file)
 
 static inline void image_renderer_close(struct image *img) {}
 
-int image_renderer_image(struct fb_info *info, struct image *img, void* fb,
-	    int startx, int starty, void* offscreenbuf);
+int image_renderer_image(struct surface *s, struct image *img);
 #endif
 
-static inline int image_renderer_file(struct fb_info *info, const char* file, void* fb,
-		    int startx, int starty, void* offscreenbuf)
+static inline int image_renderer_file(struct screen *sc, struct surface *s, const char* file)
 {
 	struct image* img = image_renderer_open(file);
 	int ret;
@@ -67,8 +64,7 @@ static inline int image_renderer_file(struct fb_info *info, const char* file, vo
 	if (IS_ERR(img))
 		return PTR_ERR(img);
 
-	ret = image_renderer_image(info, img, fb, startx, starty,
-				offscreenbuf);
+	ret = image_renderer_image(sc, s, img);
 
 	image_renderer_close(img);
 

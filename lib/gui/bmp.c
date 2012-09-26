@@ -34,38 +34,42 @@ void bmp_close(struct image *img)
 	free(img->data);
 }
 
-static int bmp_renderer(struct fb_info *info, struct image *img, void* fb,
-		int startx, int starty, void* offscreenbuf)
+static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 {
 	struct bmp_image *bmp = img->data;
-	int width, height;
 	int bits_per_pixel, fbsize;
 	void *adr, *buf;
 	char *image;
-	int xres, yres;
+	int width = s->width;
+	int height = s->height;
+	int startx = s->x;
+	int starty = s->y;
 
-	xres = info->xres;
-	yres = info->yres;
+	if (s->width < 0)
+		width = img->width;
+
+	if (s->height < 0)
+		height = img->height;
 
 	if (startx < 0) {
-		startx = (xres - img->width) / 2;
+		startx = (sc->s.width - width) / 2;
 		if (startx < 0)
 			startx = 0;
 	}
 
 	if (starty < 0) {
-		starty = (yres - img->height) / 2;
+		starty = (sc->s.height - height) / 2;
 		if (starty < 0)
 			starty = 0;
 	}
 
-	width = min(img->width, xres - startx);
-	height = min(img->height, yres - starty);
+	width = min(width, sc->s.width - startx);
+	height = min(height, sc->s.height - starty);
+
+	buf = gui_screen_redering_buffer(sc);
 
 	bits_per_pixel = img->bits_per_pixel;
-	fbsize = xres * yres * (info->bits_per_pixel >> 3);
-
-	buf = offscreenbuf ? offscreenbuf : fb;
+	fbsize = sc->s.width * sc->s.height * (sc->info.bits_per_pixel >> 3);
 
 	if (bits_per_pixel == 8) {
 		int x, y;
@@ -75,17 +79,17 @@ static int bmp_renderer(struct fb_info *info, struct image *img, void* fb,
 			image = (char *)bmp +
 					le32_to_cpu(bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
-			adr = buf + ((y + starty) * xres + startx) *
-					(info->bits_per_pixel >> 3);
+			adr = buf + ((y + starty) * sc->s.width + startx) *
+					(sc->info.bits_per_pixel >> 3);
 			for (x = 0; x < width; x++) {
 				int pixel;
 
 				pixel = *image;
 
-				set_rgb_pixel(info, adr, color_table[pixel].red,
+				set_rgb_pixel(&sc->info, adr, color_table[pixel].red,
 						color_table[pixel].green,
 						color_table[pixel].blue);
-				adr += info->bits_per_pixel >> 3;
+				adr += sc->info.bits_per_pixel >> 3;
 
 				image += bits_per_pixel >> 3;
 			}
@@ -97,16 +101,16 @@ static int bmp_renderer(struct fb_info *info, struct image *img, void* fb,
 			image = (char *)bmp +
 					le32_to_cpu(bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
-			adr = buf + ((y + starty) * xres + startx) *
-					(info->bits_per_pixel >> 3);
+			adr = buf + ((y + starty) * sc->s.width + startx) *
+					(sc->info.bits_per_pixel >> 3);
 			for (x = 0; x < width; x++) {
 				char *pixel;
 
 				pixel = image;
 
-				set_rgb_pixel(info, adr, pixel[2], pixel[1],
+				set_rgb_pixel(&sc->info, adr, pixel[2], pixel[1],
 						pixel[0]);
-				adr += info->bits_per_pixel >> 3;
+				adr += sc->info.bits_per_pixel >> 3;
 
 				image += bits_per_pixel >> 3;
 			}
@@ -114,8 +118,8 @@ static int bmp_renderer(struct fb_info *info, struct image *img, void* fb,
 	} else
 		printf("bmp: illegal bits per pixel value: %d\n", bits_per_pixel);
 
-	if (offscreenbuf)
-		memcpy(fb, offscreenbuf, fbsize);
+	if (sc->offscreenbuf)
+		memcpy(sc->fb, sc->offscreenbuf, fbsize);
 
 	return img->height;
 }

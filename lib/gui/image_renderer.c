@@ -71,10 +71,9 @@ void image_renderer_close(struct image *img)
 	free(img);
 }
 
-int image_renderer_image(struct fb_info *info, struct image *img, void* fb,
-	    int startx, int starty, void* offscreenbuf)
+int image_renderer_image(struct screen *sc, struct surface *s, struct image *img)
 {
-	return img->ir->renderer(info, img, fb, startx, starty, offscreenbuf);
+	return img->ir->renderer(sc, s, img);
 }
 
 int image_renderer_register(struct image_renderer *ir)

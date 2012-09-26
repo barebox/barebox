@@ -168,7 +168,7 @@ static void scan_boardinfo(struct spi_master *master)
 		unsigned		n;
 
 		for (n = bi->n_board_info; n > 0; n--, chip++) {
-			printf("%s %d %d\n", __FUNCTION__, chip->bus_num, master->bus_num);
+			debug("%s %d %d\n", __FUNCTION__, chip->bus_num, master->bus_num);
 			if (chip->bus_num != master->bus_num)
 				continue;
 			/* NOTE: this relies on spi_new_device to

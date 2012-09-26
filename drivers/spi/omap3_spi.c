@@ -327,10 +327,10 @@ static int omap3_spi_setup(struct spi_device *spi)
 {
 	struct spi_master *master = spi->master;
 
-	if (((master->bus_num == 0) && (spi->chip_select > 3)) ||
-			((master->bus_num == 1) && (spi->chip_select > 1)) ||
+	if (((master->bus_num == 1) && (spi->chip_select > 3)) ||
 			((master->bus_num == 2) && (spi->chip_select > 1)) ||
-			((master->bus_num == 3) && (spi->chip_select > 0))) {
+			((master->bus_num == 3) && (spi->chip_select > 1)) ||
+			((master->bus_num == 4) && (spi->chip_select > 0))) {
 		printf("SPI error: unsupported chip select %i \
 			on bus %i\n", spi->chip_select, master->bus_num);
 		return -EINVAL;
@@ -363,10 +363,10 @@ static int omap3_spi_probe(struct device_d *dev)
 	/*
 	 * OMAP3 McSPI (MultiChannel SPI) has 4 busses (modules)
 	 * with different number of chip selects (CS, channels):
-	 * McSPI1 has 4 CS (bus 0, cs 0 - 3)
-	 * McSPI2 has 2 CS (bus 1, cs 0 - 1)
-	 * McSPI3 has 2 CS (bus 2, cs 0 - 1)
-	 * McSPI4 has 1 CS (bus 3, cs 0)
+	 * McSPI1 has 4 CS (bus 1, cs 0 - 3)
+	 * McSPI2 has 2 CS (bus 2, cs 0 - 1)
+	 * McSPI3 has 2 CS (bus 3, cs 0 - 1)
+	 * McSPI4 has 1 CS (bus 4, cs 0)
 	 *
 	 * The board code has to make sure that it does not use
 	 * invalid buses or chip selects.

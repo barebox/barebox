@@ -1,22 +1,27 @@
 #!/bin/bash
 
 # Generate the default environment file from a list of directories
-# usage: genenv <basedir> <objdir> <dir>...
+# usage: genenv <basedir> <objdir> <target> <dir>...
 # where <basedir> is the base directory for relative pathes in <dir>
 # where <objdir> is the base directory for relative pathes for result
+# and <target> is the resulting binary environment
 objtree=$2
-cd $1 || exit 1
-shift 2
+basedir=$1
+target=$3
+shift 3
 
-tempdir=$(mktemp -d tmp.XXXXXX)
+tempdir="$objtree/.barebox_default_env"
 
+mkdir -p "$tempdir"
+
+(cd $basedir
 for i in $*; do
 	cp -r $i/* $tempdir
 done
+)
 
 find $tempdir -name '.svn' -o -name '*~' | xargs --no-run-if-empty rm -r
 
-$objtree/scripts/bareboxenv -s $tempdir $objtree/barebox_default_env
+$objtree/scripts/bareboxenv -s $tempdir $target
 
 rm -r $tempdir
-

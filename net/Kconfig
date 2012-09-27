@@ -15,14 +15,6 @@ config NET_PING
 	bool
 	prompt "ping support"
 
-config NET_TFTP
-	bool
-	prompt "tftp support"
-
-config NET_TFTP_PUSH
-	bool
-	prompt "tftp push support"
-
 config NET_NETCONSOLE
 	bool
 	prompt "network console support"

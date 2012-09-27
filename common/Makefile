@@ -89,10 +89,6 @@ include/generated/barebox_default_env.h: barebox_default_env$(barebox_default_en
 	$(Q)cat $< | $(objtree)/scripts/bin2c default_environment > $@
 	$(Q)echo "const int default_environment_uncompress_size=`stat -c%s barebox_default_env`;" >> $@
 
-CLEAN_FILES += include/generated/barebox_default_env.h barebox_default_env
-CLEAN_FILES += barebox_default_env.gz barebox_default_env.bz2
-CLEAN_FILES += barebox_default_env.lzo
-
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h
 

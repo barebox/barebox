@@ -133,7 +133,8 @@ void usage(char *prgname)
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"
 		"  -l        load (environment sector -> directory)\n"
-		"  -p <size> pad output file to given size\n",
+		"  -p <size> pad output file to given size\n"
+		"  -v        verbose\n",
 		prgname);
 }
 
@@ -142,8 +143,9 @@ int main(int argc, char *argv[])
 	int opt;
 	int save = 0, load = 0, pad = 0, fd;
 	char *filename = NULL, *dirname = NULL;
+	int verbose = 0;
 
-	while((opt = getopt(argc, argv, "slp:")) != -1) {
+	while((opt = getopt(argc, argv, "slp:v")) != -1) {
 		switch (opt) {
 		case 's':
 			save = 1;
@@ -153,6 +155,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			pad = strtoul(optarg, NULL, 0);
+			break;
+		case 'v':
+			verbose = 1;
 			break;
 		}
 	}
@@ -187,11 +192,13 @@ int main(int argc, char *argv[])
 	}
 
 	if (load) {
-		printf("loading env from file %s to %s\n", filename, dirname);
+		if (verbose)
+			printf("loading env from file %s to %s\n", filename, dirname);
 		envfs_load(filename, dirname);
 	}
 	if (save) {
-		printf("saving contents of %s to file %s\n", dirname, filename);
+		if (verbose)
+			printf("saving contents of %s to file %s\n", dirname, filename);
 		envfs_save(filename, dirname);
 	}
 	exit(0);

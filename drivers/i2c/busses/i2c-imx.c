@@ -110,19 +110,6 @@ struct fsl_i2c_struct {
 };
 #define to_fsl_i2c_struct(a)	container_of(a, struct fsl_i2c_struct, adapter)
 
-#ifdef CONFIG_COMMON_CLK
-static inline unsigned long i2c_fsl_clk_get_rate(struct fsl_i2c_struct *i2c_fsl)
-{
-	return clk_get_rate(i2c_fsl->clk);
-}
-
-#else
-static inline unsigned long i2c_fsl_clk_get_rate(struct fsl_i2c_struct *i2c_fsl)
-{
-	return fsl_get_i2cclk();
-}
-#endif
-
 #ifdef CONFIG_I2C_DEBUG
 static void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
 {
@@ -358,7 +345,7 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 	int i;
 
 	/* Divider value calculation */
-	i2c_clk_rate = i2c_fsl_clk_get_rate(i2c_fsl);
+	i2c_clk_rate = clk_get_rate(i2c_fsl->clk);
 	div = (i2c_clk_rate + rate - 1) / rate;
 	if (div < i2c_clk_div[0][0])
 		i = 0;

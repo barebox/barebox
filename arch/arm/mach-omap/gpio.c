@@ -142,7 +142,7 @@ static int omap_gpio_probe(struct device_d *dev)
 	omapgpio->chip.dev = dev;
 	gpiochip_add(&omapgpio->chip);
 
-	dev_info(dev, "probed gpiochip%d with base %d\n",
+	dev_dbg(dev, "probed gpiochip%d with base %d\n",
 				dev->id, omapgpio->chip.base);
 
 	return 0;

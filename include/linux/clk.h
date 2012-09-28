@@ -188,6 +188,8 @@ struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div);
 struct clk *clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents);
+struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
+		u8 shift);
 
 int clk_register(struct clk *clk);
 

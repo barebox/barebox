@@ -212,6 +212,17 @@ KBUILD_TARGET := barebox.ubl
 KBUILD_BINARY := $(KBUILD_TARGET)
 endif
 
+quiet_cmd_am35xx_spi_image = SPI-IMG $@
+      cmd_am35xx_spi_image = scripts/mk-am35xx-spi-image $< > $@
+
+barebox.spi: $(KBUILD_BINARY) FORCE
+	$(call if_changed,am35xx_spi_image)
+
+ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
+KBUILD_TARGET := barebox.spi
+KBUILD_IMAGE := barebox.spi
+endif
+
 pbl := arch/arm/pbl
 zbarebox.S zbarebox.bin zbarebox: barebox.bin
 	$(Q)$(MAKE) $(build)=$(pbl) $(pbl)/$@

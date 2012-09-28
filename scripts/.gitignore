@@ -2,6 +2,7 @@ bareboxenv
 bin2c
 gen_netx_image
 kallsyms
+mk-am35xx-spi-image
 mkimage
 mkublheader
 omap_signGP

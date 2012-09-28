@@ -335,7 +335,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	esdhc_write32(&regs->irqstat, -1);
 
 	/* Wait for the bus to be idle */
-	ret = wait_on_timeout(100 * MSECOND,
+	ret = wait_on_timeout(SECOND,
 			!(esdhc_read32(&regs->prsstat) &
 				(PRSSTAT_CICHB | PRSSTAT_CIDHB)));
 	if (ret) {

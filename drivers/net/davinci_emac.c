@@ -122,64 +122,51 @@ static void davinci_eth_mdio_enable(struct davinci_emac_priv *priv)
 	while (readl(priv->adap_mdio + EMAC_MDIO_CONTROL) & MDIO_CONTROL_IDLE);
 }
 
-/* Read a PHY register via MDIO inteface. Returns 1 on success, 0 otherwise */
-static int davinci_eth_phy_read(struct davinci_emac_priv *priv, uint8_t phy_addr, uint8_t reg_num, uint16_t *data)
+static int davinci_miibus_read(struct mii_bus *bus, int addr, int reg)
 {
-	int	tmp;
+	struct davinci_emac_priv *priv = bus->priv;
+	uint16_t value;
+	int tmp;
 
 	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
 
 	writel(MDIO_USERACCESS0_GO |
 		MDIO_USERACCESS0_WRITE_READ |
-		((reg_num & 0x1f) << 21) |
-		((phy_addr & 0x1f) << 16),
+		((reg & 0x1f) << 21) |
+		((addr & 0x1f) << 16),
 		priv->adap_mdio + EMAC_MDIO_USERACCESS0);
 
 	/* Wait for command to complete */
 	while ((tmp = readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0)) & MDIO_USERACCESS0_GO);
 
 	if (tmp & MDIO_USERACCESS0_ACK) {
-		*data = tmp & 0xffff;
-		dev_dbg(priv->dev, "emac_phy_read: addr=0x%02x reg=0x%02x data=0x%04x\n",
-			   phy_addr, reg_num, *data);
-		return 1;
+		value = tmp & 0xffff;
+		dev_dbg(priv->dev, "davinci_miibus_read: addr=0x%02x reg=0x%02x value=0x%04x\n",
+			   addr, reg, value);
+		return value;
 	}
 
-	*data = -1;
-	return 0;
+	return -1;
 }
 
-/* Write to a PHY register via MDIO inteface. Blocks until operation is complete. */
-static int davinci_eth_phy_write(struct davinci_emac_priv *priv, uint8_t phy_addr, uint8_t reg_num, uint16_t data)
+static int davinci_miibus_write(struct mii_bus *bus, int addr, int reg, u16 value)
 {
+	struct davinci_emac_priv *priv = bus->priv;
 	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
 
-	dev_dbg(priv->dev, "emac_phy_write: addr=0x%02x reg=0x%02x data=0x%04x\n",
-		   phy_addr, reg_num, data);
+	dev_dbg(priv->dev, "davinci_miibus_write: addr=0x%02x reg=0x%02x value=0x%04x\n",
+		   addr, reg, value);
 	writel(MDIO_USERACCESS0_GO |
 				MDIO_USERACCESS0_WRITE_WRITE |
-				((reg_num & 0x1f) << 21) |
-				((phy_addr & 0x1f) << 16) |
-				(data & 0xffff),
+				((reg & 0x1f) << 21) |
+				((addr & 0x1f) << 16) |
+				(value & 0xffff),
 		priv->adap_mdio + EMAC_MDIO_USERACCESS0);
 
 	/* Wait for command to complete */
 	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
 
-	return 1;
-}
-
-static int davinci_miibus_read(struct mii_bus *bus, int addr, int reg)
-{
-	struct davinci_emac_priv *priv = bus->priv;
-	uint16_t value = 0;
-	return davinci_eth_phy_read(priv, addr, reg, &value) ? value : -1;
-}
-
-static int davinci_miibus_write(struct mii_bus *bus, int addr, int reg, u16 value)
-{
-	struct davinci_emac_priv *priv = (struct davinci_emac_priv *)bus->priv;
-	return davinci_eth_phy_write(priv, addr, reg, value) ? 0 : -1;
+	return 0;
 }
 
 static int davinci_emac_get_ethaddr(struct eth_device *edev, unsigned char *adr)

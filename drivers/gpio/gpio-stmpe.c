@@ -145,7 +145,7 @@ static int stmpe_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
-	dev_info(dev, "probed stmpe gpiochip%d with base %d\n", dev->id, stmpegpio->chip.base);
+	dev_dbg(dev, "probed stmpe gpiochip%d with base %d\n", dev->id, stmpegpio->chip.base);
 	return 0;
 }
 

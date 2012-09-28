@@ -148,7 +148,7 @@ static int imx_gpio_probe(struct device_d *dev)
 	imxgpio->regs = regs;
 	gpiochip_add(&imxgpio->chip);
 
-	dev_info(dev, "probed gpiochip%d with base %d\n", dev->id, imxgpio->chip.base);
+	dev_dbg(dev, "probed gpiochip%d with base %d\n", dev->id, imxgpio->chip.base);
 
 	return 0;
 }

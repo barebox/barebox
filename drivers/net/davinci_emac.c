@@ -410,7 +410,7 @@ static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 {
 	struct davinci_emac_priv *priv = (struct davinci_emac_priv *)edev->priv;
 	uint64_t start;
-	int ret_status = -1;
+	int ret_status;
 
 	dev_dbg(priv->dev, "+ emac_send (length %d)\n", length);
 
@@ -437,7 +437,7 @@ static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 		if (readl(priv->adap_emac + EMAC_TXINTSTATRAW) & 0x01) {
 			/* Acknowledge the TX descriptor */
 			writel(BD_TO_HW(priv->emac_tx_desc), priv->adap_emac + EMAC_TX0CP);
-			ret_status = length;
+			ret_status = 0;
 			break;
 		}
 		if (is_timeout(start, 100 * MSECOND)) {

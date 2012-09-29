@@ -19,6 +19,12 @@ static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
 	return clk_mux(name, reg, shift, width, parents, num_parents);
 }
 
+static inline struct clk *imx_clk_gate(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate(name, parent, reg, shift);
+}
+
 struct clk *imx_clk_pllv1(const char *name, const char *parent,
 		void __iomem *base);
 

@@ -98,10 +98,10 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[per1], MX21_UART4_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per2], MX21_CSPI1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per2], MX21_CSPI2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per2], MX21_CSPI3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_I2C_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC2_BASE_ADDR, NULL);
-	clkdev_add_physbase(clks[per3], MX21_CSPI3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per3], MX21_LCDC_BASE_ADDR, NULL);
 
 	return 0;

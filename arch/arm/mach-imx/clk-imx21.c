@@ -47,7 +47,7 @@
 
 enum imx21_clks {
 	ckil, ckih, fpm, mpll_sel, spll_sel, mpll, spll, fclk, hclk, ipg, per1,
-	per2, per3, per4, usb_div, nfc_div, clk_max
+	per2, per3, per4, usb_div, nfc_div, lcdc_per_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -98,6 +98,7 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clks[per4] = imx_clk_divider("per4", "mpll", base + CCM_PCDR1, 24, 6);
 	clks[usb_div] = imx_clk_divider("usb_div", "spll", base + CCM_CSCR, 26, 3);
 	clks[nfc_div] = imx_clk_divider("nfc_div", "ipg", base + CCM_PCDR0, 12, 4);
+	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3", base + CCM_PCCR0, 18);
 
 	clkdev_add_physbase(clks[per1], MX21_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1], MX21_GPT2_BASE_ADDR, NULL);
@@ -112,7 +113,7 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg], MX21_I2C_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC2_BASE_ADDR, NULL);
-	clkdev_add_physbase(clks[per3], MX21_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_per_gate], MX21_LCDC_BASE_ADDR, NULL);
 
 	return 0;
 }

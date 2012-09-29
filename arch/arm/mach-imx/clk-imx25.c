@@ -55,7 +55,7 @@ enum mx25_clks {
 	per7_sel, per8_sel, per9_sel, per10_sel, per11_sel, per12_sel,
 	per13_sel, per14_sel, per15_sel, per0, per1, per2, per3, per4, per5,
 	per6, per7, per8, per9, per10, per11, per12, per13, per14, per15,
-	clk_max
+	lcdc_per_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -132,6 +132,7 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clks[per13] = imx_clk_divider("per13", "per13_sel", base + CCM_PCDR3, 8, 6);
 	clks[per14] = imx_clk_divider("per14", "per14_sel", base + CCM_PCDR3, 16, 6);
 	clks[per15] = imx_clk_divider("per15", "per15_sel", base + CCM_PCDR3, 24, 6);
+	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per7", base + CCM_CGCR0, 7);
 
 	clkdev_add_physbase(clks[per15], MX25_UART1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per15], MX25_UART2_BASE_ADDR, NULL);
@@ -148,6 +149,7 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg], MX25_CSPI3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per3], MX25_ESDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per4], MX25_ESDHC2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_per_gate], MX25_LCDC_BASE_ADDR, NULL);
 
 	return 0;
 }

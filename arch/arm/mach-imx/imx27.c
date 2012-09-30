@@ -14,6 +14,7 @@
 #include <common.h>
 #include <mach/imx27-regs.h>
 #include <mach/weim.h>
+#include <mach/iomux-v1.h>
 #include <sizes.h>
 #include <mach/revision.h>
 #include <init.h>
@@ -97,6 +98,8 @@ static void imx27_init_max(void)
 static int imx27_init(void)
 {
 	imx27_silicon_revision();
+
+	imx_iomuxv1_init((void *)MX27_GPIO1_BASE_ADDR);
 
 	add_generic_device("imx_iim", 0, NULL, MX27_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);

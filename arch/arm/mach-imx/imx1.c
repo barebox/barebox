@@ -16,6 +16,7 @@
 #include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/weim.h>
+#include <mach/iomux-v1.h>
 
 void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 {
@@ -25,6 +26,8 @@ void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 
 static int imx1_init(void)
 {
+	imx_iomuxv1_init((void *)MX1_GPIO1_BASE_ADDR);
+
 	add_generic_device("imx1-ccm", 0, NULL, MX1_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpt", 0, NULL, MX1_TIM1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 0, NULL, MX1_GPIO1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);

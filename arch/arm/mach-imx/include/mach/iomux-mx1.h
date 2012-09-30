@@ -1,6 +1,8 @@
 #ifndef __MACH_IOMUX_MX1_H
 #define __MACH_IOMUX_MX1_H
 
+#include <mach/iomux-v1.h>
+
 /*
  * FIXME: This list is not completed. The correct directions are
  * missing on some (many) pins

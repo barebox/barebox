@@ -80,7 +80,7 @@ void armlinux_set_revision(unsigned int rev)
 #ifdef CONFIG_ENVIRONMENT_VARIABLES
 	export_env_ull("armlinux_system_rev", rev);
 #else
-	return armlinux_system_rev;
+	armlinux_system_rev = rev;
 #endif
 }
 

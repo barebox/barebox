@@ -11,6 +11,7 @@ obj-$(CONFIG_I2C) += i2c/
 obj-$(CONFIG_MCI) += mci/
 obj-$(CONFIG_VIDEO) += video/
 obj-y	+= clk/
+obj-y	+= clocksource/
 obj-y	+= mfd/
 obj-$(CONFIG_LED) += led/
 obj-y	+= eeprom/

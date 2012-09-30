@@ -37,6 +37,7 @@
 #include <mach/generic.h>
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
+#include <mach/revision.h>
 #include <mach/iim.h>
 
 static struct fec_platform_data fec_info = {

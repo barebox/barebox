@@ -12,28 +12,38 @@
  */
 
 #include <common.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/weim.h>
 #include <sizes.h>
+#include <mach/revision.h>
 #include <init.h>
 #include <io.h>
 
-int imx_silicon_revision(void)
+static int imx27_silicon_revision(void)
 {
 	uint32_t val;
+	int rev;
 
 	val = readl(MX27_SYSCTRL_BASE_ADDR);
 
 	switch (val >> 28) {
 	case 0:
-		return IMX_CHIP_REV_1_0;
+		rev = IMX_CHIP_REV_1_0;
+		break;
 	case 1:
-		return IMX_CHIP_REV_2_0;
+		rev = IMX_CHIP_REV_2_0;
+		break;
 	case 2:
-		return IMX_CHIP_REV_2_1;
+		rev = IMX_CHIP_REV_2_1;
+		break;
 	default:
-		return IMX_CHIP_REV_UNKNOWN;
+		rev = IMX_CHIP_REV_UNKNOWN;
+		break;
 	}
+
+	imx_set_silicon_revision(rev);
+
+	return 0;
 }
 
 void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
@@ -86,6 +96,8 @@ static void imx27_init_max(void)
 
 static int imx27_init(void)
 {
+	imx27_silicon_revision();
+
 	add_generic_device("imx_iim", 0, NULL, MX27_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 

@@ -18,21 +18,17 @@
 #include <io.h>
 #include <mach/imx5.h>
 #include <mach/imx-regs.h>
+#include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 
 #define SI_REV 0x48
 
-static u32 mx51_silicon_revision;
 static char *mx51_rev_string = "unknown";
 
-int imx_silicon_revision(void)
-{
-	return mx51_silicon_revision;
-}
-
-static int query_silicon_revision(void)
+static int imx51_silicon_revision(void)
 {
 	void __iomem *rom = MX51_IROM_BASE_ADDR;
+	u32 mx51_silicon_revision;
 	u32 rev;
 
 	rev = readl(rom + SI_REV);
@@ -57,9 +53,10 @@ static int query_silicon_revision(void)
 		mx51_silicon_revision = 0;
 	}
 
+	imx_set_silicon_revision(mx51_silicon_revision);
+
 	return 0;
 }
-core_initcall(query_silicon_revision);
 
 static int imx51_print_silicon_rev(void)
 {
@@ -71,6 +68,8 @@ device_initcall(imx51_print_silicon_rev);
 
 static int imx51_init(void)
 {
+	imx51_silicon_revision();
+
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 

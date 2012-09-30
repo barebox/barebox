@@ -45,6 +45,7 @@
 #include <mach/iim.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/imx5.h>
+#include <mach/revision.h>
 
 #include "ccxmx51.h"
 

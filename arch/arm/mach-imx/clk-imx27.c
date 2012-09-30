@@ -7,7 +7,7 @@
 #include <linux/err.h>
 #include <mach/imx27-regs.h>
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
+#include <mach/revision.h>
 
 #include "clk.h"
 

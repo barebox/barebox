@@ -18,6 +18,7 @@
 #include <mach/weim.h>
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
+#include <mach/revision.h>
 #include <mach/generic.h>
 
 void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
@@ -28,14 +29,14 @@ void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 	writel(additional, MX35_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
 }
 
-int imx_silicon_revision()
+static void imx35_silicon_revision(void)
 {
 	uint32_t reg;
 	reg = readl(MX35_IIM_BASE_ADDR + IIM_SREV);
 	/* 0×00 = TO 1.0, First silicon */
 	reg += IMX_CHIP_REV_1_0;
 
-	return (reg & 0xFF);
+	imx_set_silicon_revision(reg & 0xFF);
 }
 
 /*
@@ -58,6 +59,8 @@ core_initcall(imx35_l2_fix);
 
 static int imx35_init(void)
 {
+	imx35_silicon_revision();
+
 	add_generic_device("imx_iim", 0, NULL, MX35_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 

@@ -1,6 +1,4 @@
 
-int imx_silicon_revision(void);
-
 u64 imx_uid(void);
 
 

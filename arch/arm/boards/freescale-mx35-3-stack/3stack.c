@@ -47,6 +47,7 @@
 #include <mach/imx-ipu-fb.h>
 #include <mach/generic.h>
 #include <mach/devices-imx35.h>
+#include <mach/revision.h>
 
 #include <i2c/i2c.h>
 #include <mfd/mc13xxx.h>

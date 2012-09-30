@@ -238,7 +238,7 @@ static int mmc_init_setup(struct mci_host *mci, struct device_d *dev)
 	start = get_time_ns();
 	while ((readl(&mmc_base->sysstatus) & RESETDONE) == 0) {
 		if (is_timeout(start, SECOND)) {
-			dev_dbg(hsmmc->dev, "timedout waiting for cc2!\n");
+			dev_dbg(hsmmc->dev, "timeout waiting for reset done\n");
 			return -ETIMEDOUT;
 		}
 	}

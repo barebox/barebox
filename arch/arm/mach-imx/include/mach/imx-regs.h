@@ -115,5 +115,6 @@
 #define IMX_CHIP_REV_3_0	0x30
 #define IMX_CHIP_REV_3_1	0x31
 #define IMX_CHIP_REV_3_2	0x32
+#define IMX_CHIP_REV_UNKNOWN	0xff
 
 #endif				/* _IMX_REGS_H */

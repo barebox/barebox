@@ -7,6 +7,7 @@
 #include <linux/err.h>
 #include <mach/imx27-regs.h>
 #include <mach/generic.h>
+#include <mach/imx-regs.h>
 
 #include "clk.h"
 
@@ -92,7 +93,7 @@ static int imx27_ccm_probe(struct device_d *dev)
 	clks[spll] = imx_clk_pllv1("spll", "ckih", base + CCM_SPCTL0);
 	clks[mpll_main2] = imx_clk_fixed_factor("mpll_main2", "mpll", 2, 3);
 
-	if (imx_silicon_revision() >= IMX27_CHIP_REVISION_2_0) {
+	if (imx_silicon_revision() >= IMX_CHIP_REV_2_0) {
 		clks[ahb] = imx_clk_divider("ahb", "mpll_main2", base + CCM_CSCR, 8, 2);
 		clks[ipg] = imx_clk_fixed_factor("ipg", "ahb", 1, 2);
 	} else {
@@ -110,7 +111,7 @@ static int imx27_ccm_probe(struct device_d *dev)
 			ARRAY_SIZE(cpu_sel_clks));
 	clks[clko_sel] = imx_clk_mux("clko_sel", base + CCM_CCSR, 0, 5, clko_sel_clks,
 			ARRAY_SIZE(clko_sel_clks));
-	if (imx_silicon_revision() >= IMX27_CHIP_REVISION_2_0)
+	if (imx_silicon_revision() >= IMX_CHIP_REV_2_0)
 		clks[cpu_div] = imx_clk_divider("cpu_div", "cpu_sel", base + CCM_CSCR, 12, 2);
 	else
 		clks[cpu_div] = imx_clk_divider("cpu_div", "cpu_sel", base + CCM_CSCR, 13, 3);

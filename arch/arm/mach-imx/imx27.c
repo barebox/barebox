@@ -20,7 +20,20 @@
 
 int imx_silicon_revision(void)
 {
-	return CID >> 28;
+	uint32_t val;
+
+	val = readl(MX27_SYSCTRL_BASE_ADDR);
+
+	switch (val >> 28) {
+	case 0:
+		return IMX_CHIP_REV_1_0;
+	case 1:
+		return IMX_CHIP_REV_2_0;
+	case 2:
+		return IMX_CHIP_REV_2_1;
+	default:
+		return IMX_CHIP_REV_UNKNOWN;
+	}
 }
 
 void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,

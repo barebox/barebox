@@ -99,7 +99,10 @@ static iomux_v3_cfg_t tx53_pads[] = {
 
 static int tx53_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	if (IS_ENABLED(CONFIG_TX53_REV_1011))
+		arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	else
+		arm_add_mem_device("ram0", 0x70000000, SZ_512M);
 
 	return 0;
 }
@@ -232,7 +235,8 @@ static int tx53_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(tx53_pads, ARRAY_SIZE(tx53_pads));
 
-	imx53_init_lowlevel(1000);
+	if (!IS_ENABLED(CONFIG_TX53_REV_XX30))
+		imx53_init_lowlevel(1000);
 
 	imx53_add_uart0();
 	return 0;

@@ -39,6 +39,7 @@
 #include <mach/devices-imx27.h>
 #include <mach/iim.h>
 #include <mfd/mc13xxx.h>
+#include <mach/generic.h>
 
 #include "pll.h"
 
@@ -302,11 +303,8 @@ static int pcm038_devices_init(void)
 	 */
 	imx27_add_fec(&fec_info);
 
-	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
-	case GPCR_BOOT_8BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_512:
-	case GPCR_BOOT_8BIT_NAND_512:
+	switch (imx_bootsource()) {
+	case bootsource_nand:
 		devfs_add_partition("nand0", 0x00000, 0x80000,
 					DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");

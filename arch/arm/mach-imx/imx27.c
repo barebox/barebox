@@ -17,6 +17,7 @@
 #include <mach/iomux-v1.h>
 #include <sizes.h>
 #include <mach/revision.h>
+#include <mach/generic.h>
 #include <init.h>
 #include <io.h>
 
@@ -98,6 +99,7 @@ static void imx27_init_max(void)
 static int imx27_init(void)
 {
 	imx27_silicon_revision();
+	imx_27_boot_save_loc((void *)MX27_SYSCTRL_BASE_ADDR);
 
 	imx_iomuxv1_init((void *)MX27_GPIO1_BASE_ADDR);
 

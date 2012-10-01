@@ -17,9 +17,64 @@
 #include <magicvar.h>
 
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/generic.h>
 
-#if defined(CONFIG_ARCH_IMX25) || defined(CONFIG_ARCH_IMX35)
+static const char *bootsource_str[] = {
+	[bootsource_unknown] = "unknown",
+	[bootsource_nand] = "nand",
+	[bootsource_nor] = "nor",
+	[bootsource_mmc] = "mmc",
+	[bootsource_i2c] = "i2c",
+	[bootsource_spi] = "spi",
+	[bootsource_serial] = "serial",
+	[bootsource_onenand] = "onenand",
+};
+
+static enum imx_bootsource bootsource;
+
+void imx_set_bootsource(enum imx_bootsource src)
+{
+	if (src >= ARRAY_SIZE(bootsource_str))
+		src = bootsource_unknown;
+
+	bootsource = src;
+
+	setenv("barebox_loc", bootsource_str[src]);
+	export("barebox_loc");
+}
+
+enum imx_bootsource imx_bootsource(void)
+{
+	return bootsource;
+}
+
+BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
+
+/* [CTRL][TYPE] */
+static const enum imx_bootsource locations[4][4] = {
+	{ /* CTRL = WEIM */
+		bootsource_nor,
+		bootsource_unknown,
+		bootsource_onenand,
+		bootsource_unknown,
+	}, { /* CTRL == NAND */
+		bootsource_nand,
+		bootsource_nand,
+		bootsource_nand,
+		bootsource_nand,
+	}, { /* CTRL == ATA, (imx35 only) */
+		bootsource_unknown,
+		bootsource_unknown, /* might be p-ata */
+		bootsource_unknown,
+		bootsource_unknown,
+	}, { /* CTRL == expansion */
+		bootsource_mmc, /* note imx25 could also be: movinand, ce-ata */
+		bootsource_unknown,
+		bootsource_i2c,
+		bootsource_spi,
+	}
+};
+
 /*
  * Saves the boot source media into the $barebox_loc enviroment variable
  *
@@ -38,43 +93,14 @@
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-static int imx_25_35_boot_save_loc(void)
+int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 {
 	const char *bareboxloc = NULL;
-	uint32_t reg;
-	unsigned int ctrl, type;
+	enum imx_bootsource src;
 
-	/* [CTRL][TYPE] */
-	const char *const locations[4][4] = {
-		{ /* CTRL = WEIM */
-			"nor",
-			NULL,
-			"onenand",
-			NULL,
-		}, { /* CTRL == NAND */
-			"nand",
-			"nand",
-			"nand",
-			"nand",
-		}, { /* CTRL == ATA, (imx35 only) */
-			NULL,
-			NULL, /* might be p-ata */
-			NULL,
-			NULL,
-		}, { /* CTRL == expansion */
-			"mmc", /* note imx25 could also be: movinand, ce-ata */
-			NULL,
-			"i2c",
-			"spi",
-		}
-	};
+	src = locations[ctrl][type];
 
-	reg = readl(IMX_CCM_BASE + CCM_RCSR);
-	ctrl = (reg >> CCM_RCSR_MEM_CTRL_SHIFT) & 0x3;
-	type = (reg >> CCM_RCSR_MEM_TYPE_SHIFT) & 0x3;
-
-	bareboxloc = locations[ctrl][type];
-
+	imx_set_bootsource(src);
 	if (bareboxloc) {
 		setenv("barebox_loc", bareboxloc);
 		export("barebox_loc");
@@ -82,32 +108,78 @@ static int imx_25_35_boot_save_loc(void)
 
 	return 0;
 }
-coredevice_initcall(imx_25_35_boot_save_loc);
-#endif
 
-#if defined(CONFIG_ARCH_IMX27)
-static int imx_27_boot_save_loc(void)
+#define IMX27_SYSCTRL_GPCR	0x18
+#define IMX27_GPCR_BOOT_SHIFT			16
+#define IMX27_GPCR_BOOT_MASK			(0xf << IMX27_GPCR_BOOT_SHIFT)
+#define IMX27_GPCR_BOOT_UART_USB		0
+#define IMX27_GPCR_BOOT_8BIT_NAND_2k		2
+#define IMX27_GPCR_BOOT_16BIT_NAND_2k		3
+#define IMX27_GPCR_BOOT_16BIT_NAND_512		4
+#define IMX27_GPCR_BOOT_16BIT_CS0		5
+#define IMX27_GPCR_BOOT_32BIT_CS0		6
+#define IMX27_GPCR_BOOT_8BIT_NAND_512		7
+
+void imx_27_boot_save_loc(void __iomem *sysctrl_base)
 {
-	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
-	case GPCR_BOOT_UART_USB:
-		setenv("barebox_loc", "serial");
+	enum imx_bootsource src;
+	uint32_t val;
+
+	val = readl(sysctrl_base + IMX27_SYSCTRL_GPCR);
+	val &= IMX27_GPCR_BOOT_MASK;
+	val >>= IMX27_GPCR_BOOT_SHIFT;
+
+	switch (val) {
+	case IMX27_GPCR_BOOT_UART_USB:
+		src = bootsource_serial;
 		break;
-	case GPCR_BOOT_8BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_512:
-	case GPCR_BOOT_8BIT_NAND_512:
-		setenv("barebox_loc", "nand");
+	case IMX27_GPCR_BOOT_8BIT_NAND_2k:
+	case IMX27_GPCR_BOOT_16BIT_NAND_2k:
+	case IMX27_GPCR_BOOT_16BIT_NAND_512:
+	case IMX27_GPCR_BOOT_8BIT_NAND_512:
+		src = bootsource_nand;
 		break;
 	default:
-		setenv("barebox_loc", "nor");
+		src = bootsource_nor;
 		break;
 	}
 
-	export("barebox_loc");
+	imx_set_bootsource(src);
+}
+
+#define IMX51_SRC_SBMR			0x4
+#define IMX51_SBMR_BT_MEM_TYPE_SHIFT	7
+#define IMX51_SBMR_BT_MEM_CTL_SHIFT	0
+#define IMX51_SBMR_BMOD_SHIFT		14
+
+int imx51_boot_save_loc(void __iomem *src_base)
+{
+	enum imx_bootsource src = bootsource_unknown;
+	uint32_t reg;
+	unsigned int ctrl, type;
+
+	reg = readl(src_base + IMX51_SRC_SBMR);
+
+	switch ((reg >> IMX51_SBMR_BMOD_SHIFT) & 0x3) {
+	case 0:
+	case 2:
+		/* internal boot */
+		ctrl = (reg >> IMX51_SBMR_BT_MEM_CTL_SHIFT) & 0x3;
+		type = (reg >> IMX51_SBMR_BT_MEM_TYPE_SHIFT) & 0x3;
+
+		src = locations[ctrl][type];
+		break;
+	case 1:
+		/* reserved */
+		src = bootsource_unknown;
+		break;
+	case 3:
+		src = bootsource_serial;
+		break;
+
+	}
+
+	imx_set_bootsource(src);
 
 	return 0;
 }
-coredevice_initcall(imx_27_boot_save_loc);
-#endif
-
-BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");

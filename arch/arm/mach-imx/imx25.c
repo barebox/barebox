@@ -17,6 +17,7 @@
 #include <mach/iim.h>
 #include <io.h>
 #include <mach/weim.h>
+#include <mach/generic.h>
 #include <sizes.h>
 
 void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
@@ -58,6 +59,12 @@ static struct imx_iim_platform_data imx25_iim_pdata = {
 
 static int imx25_init(void)
 {
+	uint32_t val;
+
+	val = readl(MX25_CCM_BASE_ADDR + CCM_RCSR);
+	imx_25_35_boot_save_loc((val >> CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+			(val >> CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+
 	add_generic_device("imx_iim", 0, NULL, MX25_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, &imx25_iim_pdata);
 

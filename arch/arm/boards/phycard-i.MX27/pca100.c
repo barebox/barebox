@@ -324,11 +324,3 @@ static int pca100_console_init(void)
 }
 
 console_initcall(pca100_console_init);
-
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	imx_nand_load_image(_text, barebox_image_size);
-}
-#endif
-

@@ -116,7 +116,10 @@ copy_loop:
 
 	ldr	pc, =1f			/* Jump to SDRAM                    */
 1:
-	b	nand_boot		/* Load barebox from NAND Flash      */
+	ldr	r0,=_text
+	ldr	r1,=_barebox_image_size
+	bl	imx_nand_load_image
+	b	board_init_lowlevel_return
 
 #endif /* CONFIG_NAND_IMX_BOOT */
 

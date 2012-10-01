@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <dm9000.h>
 #include <led.h>
+#include <mach/iomux-mx1.h>
 #include <mach/devices-imx1.h>
 
 static struct dm9000_platform_data dm9000_data = {

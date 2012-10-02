@@ -71,14 +71,13 @@ extern void *input_data_end;
 
 static unsigned long *ttb;
 
-static void create_sections(unsigned long addr, int size, unsigned int flags)
+static void create_sections(unsigned long addr, int size_m, unsigned int flags)
 {
 	int i;
 
 	addr >>= 20;
-	size >>= 20;
 
-	for (i = size; i > 0; i--, addr++)
+	for (i = size_m; i > 0; i--, addr++)
 		ttb[addr] = (addr << 20) | flags;
 }
 
@@ -87,7 +86,7 @@ static void map_cachable(unsigned long start, unsigned long size)
 	start &= ~(SZ_1M - 1);
 	size = (size + (SZ_1M - 1)) & ~(SZ_1M - 1);
 
-	create_sections(start, size, PMD_SECT_AP_WRITE |
+	create_sections(start, size >> 20, PMD_SECT_AP_WRITE |
 			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);
 }
 

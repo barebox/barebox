@@ -128,6 +128,11 @@ static void mmu_disable(void)
 	__mmu_cache_off();
 }
 
+void noinline errorfn(char *error)
+{
+	while (1);
+}
+
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	void (*barebox)(void);
@@ -154,7 +159,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	decompress((void *)compressed_start,
 			len,
 			NULL, NULL,
-			(void *)TEXT_BASE, NULL, NULL);
+			(void *)TEXT_BASE, NULL, errorfn);
 
 	if (use_mmu)
 		mmu_disable();

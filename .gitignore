@@ -35,6 +35,7 @@ barebox.srec
 barebox.netx
 barebox.s5p
 barebox.ubl
+barebox.uimage
 barebox.map
 System.map
 Module.symvers

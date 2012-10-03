@@ -1,4 +1,3 @@
-/* vi: set sw=8 ts=8: */
 /*
  * Utility routines.
  *

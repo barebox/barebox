@@ -11,7 +11,11 @@ shift 2
 tempdir=$(mktemp -d tmp.XXXXXX)
 
 for i in $*; do
-	cp -r $i/* $tempdir
+	if [ -d $i ]; then
+		cp -r $i/* $tempdir
+	else
+		cp -a $i $tempdir
+	fi
 done
 
 find $tempdir -name '.svn' -o -name '*~' | xargs --no-run-if-empty rm -r

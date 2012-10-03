@@ -1,0 +1,134 @@
+#include <common.h>
+#include <errno.h>
+#include <malloc.h>
+#include <fb.h>
+#include "bmp_layout.h"
+#include <asm/byteorder.h>
+#include <graphic_utils.h>
+#include <init.h>
+#include <image_renderer.h>
+
+struct image *bmp_open(char *inbuf, int insize)
+{
+	struct image *img = calloc(1, sizeof(struct image));
+	struct bmp_image *bmp = (struct bmp_image*)inbuf;
+
+	if (!img) {
+		free(bmp);
+		return ERR_PTR(-ENOMEM);
+	}
+
+	img->data = inbuf;
+	img->height = le32_to_cpu(bmp->header.height);;
+	img->width = le32_to_cpu(bmp->header.width);;
+	img->bits_per_pixel = le16_to_cpu(bmp->header.bit_count);
+
+	pr_debug("bmp: %d x %d  x %d data@0x%p\n", img->width, img->height,
+		 img->bit_per_pixel, img->data);
+
+	return img;
+}
+
+void bmp_close(struct image *img)
+{
+	free(img->data);
+}
+
+static int bmp_renderer(struct fb_info *info, struct image *img, void* fb,
+		int startx, int starty, void* offscreenbuf)
+{
+	struct bmp_image *bmp = img->data;
+	int width, height;
+	int bits_per_pixel, fbsize;
+	void *adr, *buf;
+	char *image;
+	int xres, yres;
+
+	xres = info->xres;
+	yres = info->yres;
+
+	if (startx < 0) {
+		startx = (xres - img->width) / 2;
+		if (startx < 0)
+			startx = 0;
+	}
+
+	if (starty < 0) {
+		starty = (yres - img->height) / 2;
+		if (starty < 0)
+			starty = 0;
+	}
+
+	width = min(img->width, xres - startx);
+	height = min(img->height, yres - starty);
+
+	bits_per_pixel = img->bits_per_pixel;
+	fbsize = xres * yres * (info->bits_per_pixel >> 3);
+
+	buf = offscreenbuf ? offscreenbuf : fb;
+
+	if (bits_per_pixel == 8) {
+		int x, y;
+		struct bmp_color_table_entry *color_table = bmp->color_table;
+
+		for (y = 0; y < height; y++) {
+			image = (char *)bmp +
+					le32_to_cpu(bmp->header.data_offset);
+			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
+			adr = buf + ((y + starty) * xres + startx) *
+					(info->bits_per_pixel >> 3);
+			for (x = 0; x < width; x++) {
+				int pixel;
+
+				pixel = *image;
+
+				set_rgb_pixel(info, adr, color_table[pixel].red,
+						color_table[pixel].green,
+						color_table[pixel].blue);
+				adr += info->bits_per_pixel >> 3;
+
+				image += bits_per_pixel >> 3;
+			}
+		}
+	} else if (bits_per_pixel == 24) {
+		int x, y;
+
+		for (y = 0; y < height; y++) {
+			image = (char *)bmp +
+					le32_to_cpu(bmp->header.data_offset);
+			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
+			adr = buf + ((y + starty) * xres + startx) *
+					(info->bits_per_pixel >> 3);
+			for (x = 0; x < width; x++) {
+				char *pixel;
+
+				pixel = image;
+
+				set_rgb_pixel(info, adr, pixel[2], pixel[1],
+						pixel[0]);
+				adr += info->bits_per_pixel >> 3;
+
+				image += bits_per_pixel >> 3;
+			}
+		}
+	} else
+		printf("bmp: illegal bits per pixel value: %d\n", bits_per_pixel);
+
+	if (offscreenbuf)
+		memcpy(fb, offscreenbuf, fbsize);
+
+	return img->height;
+}
+
+static struct image_renderer bmp = {
+	.type = filetype_bmp,
+	.open = bmp_open,
+	.close = bmp_close,
+	.renderer = bmp_renderer,
+};
+
+static int bmp_init(void)
+{
+	return image_renderer_register(&bmp);
+}
+fs_initcall(bmp_init);

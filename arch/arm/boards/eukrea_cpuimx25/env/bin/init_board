@@ -1,11 +1,11 @@
 #!/bin/sh
 
 if [ -f /env/logo.bmp ]; then
-	bmp /env/logo.bmp
+	splash /env/logo.bmp
 	fb0.enable=1
 elif [ -f /env/logo.bmp.lzo ]; then
 	uncompress /env/logo.bmp.lzo /logo.bmp
-	bmp /logo.bmp
+	splash /logo.bmp
 	fb0.enable=1
 fi
 

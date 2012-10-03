@@ -38,4 +38,40 @@ config BITREV
 config QSORT
 	bool
 
+config IMAGE_RENDERER
+	bool
+	depends on VIDEO
+	select FILETYPE
+
+if IMAGE_RENDERER
+
+config BMP
+	bool "bmp"
+
+config PNG
+	bool "png"
+	select ZLIB
+
+if PNG
+
+choice
+	prompt "PNG Lib"
+
+config LODEPNG
+	bool "lodePNG"
+	help
+	  This PNG library supports most PNG formats.
+
+config PICOPNG
+	bool "picoPNG"
+	help
+	  This PNG library only supports RGBA PNG8 but is much smaller
+	  in binary size than lodepng.
+
+endchoice
+
+endif
+
+endif
+
 endmenu

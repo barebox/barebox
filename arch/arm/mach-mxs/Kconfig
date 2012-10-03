@@ -4,6 +4,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x41000000 if MACH_MX23EVK
 	default 0x42000000 if MACH_CHUMBY
+	default 0x42000000 if MACH_IMX233_OLINUXINO
 	default 0x47000000 if MACH_TX28
 	default 0x47000000 if MACH_MX28EVK
 	default 0x47000000 if MACH_CFA10036
@@ -11,6 +12,7 @@ config ARCH_TEXT_BASE
 config BOARDINFO
 	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 	default "Chumby Falconwing" if MACH_CHUMBY
+	default "Olimex.ltd imx233-olinuxino" if MACH_IMX233_OLINUXINO
 	default "Karo TX28" if MACH_TX28
 	default "Freescale i.MX28-EVK" if MACH_MX28EVK
 	default "Crystalfontz CFA-10036" if MACH_CFA10036
@@ -46,6 +48,11 @@ config MACH_CHUMBY
 	help
 	  Say Y here if you are using the "chumby one" aka falconwing from
 	  Chumby Industries
+
+config MACH_IMX233_OLINUXINO
+	bool "Olimex.ltd imx223-olinuxino"
+	help
+	  Say Y here if you are using the imx233-olinuxino
 
 endchoice
 

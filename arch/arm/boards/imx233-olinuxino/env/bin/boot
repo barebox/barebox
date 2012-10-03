@@ -1,0 +1,32 @@
+#!/bin/sh
+
+. /env/config
+
+if [ x$1 = xdisk ]; then
+	rootfs_loc=disk
+	kernel_loc=disk
+elif [ x$1 = xnet ]; then
+	rootfs_loc=net
+	kernel_loc=net
+fi
+
+if [ x$ip = xdhcp ]; then
+	bootargs="$bootargs ip=dhcp"
+elif [ x$ip = xnone ]; then
+	bootargs="$bootargs ip=none"
+else
+	bootargs="$bootargs ip=$eth0.ipaddr::$eth0.gateway:$eth0.netmask:::"
+fi
+
+if [ x$rootfs_loc = xdisk ]; then
+	bootargs="$bootargs noinitrd rootfstype=$rootfs_type root=/dev/$rootfs_part"
+elif [ x$rootfs_loc = xnet ]; then
+	bootargs="$bootargs root=/dev/nfs nfsroot=$nfsroot,v3,tcp noinitrd"
+elif [ x$rootfs_loc = xinitrd ]; then
+	bootargs="$bootargs root=/dev/ram0 rdinit=/sbin/init"
+fi
+
+
+bootm -o $oftree_loc/imx23-olinuxino.dtb /dev/$kernel_part
+
+echo "Booting failed. Correct setup of 'kernel_part'?"

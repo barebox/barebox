@@ -208,23 +208,8 @@ copy_piggy_link:
 	pg_start = (uint32_t)&input_data;
 
 copy_link:
-	/* relocate to link address if necessary */
-	if (offset)
-		memcpy((void *)_text, (void *)(_text - offset),
-				__bss_start - _text);
 
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
+	setup_c();
 
-	flush_icache();
-
-	r = (unsigned int)&barebox_uncompress;
-	/* call barebox_uncompress with its absolute address */
-	__asm__ __volatile__(
-		"mov r0, %1\n"
-		"mov r1, %2\n"
-		"mov pc, %0\n"
-		:
-		: "r"(r), "r"(pg_start), "r"(pg_len)
-		: "r0", "r1");
+	barebox_uncompress((void *)pg_start, pg_len);
 }

@@ -37,8 +37,8 @@ void __naked __section(.text_entry) start(void)
 	/* Setup the stack */
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
+
+	setup_c();
 
 	start_barebox();
 }
@@ -70,27 +70,14 @@ void __naked __bare_init reset(void)
  */
 void __naked board_init_lowlevel_return(void)
 {
-	uint32_t r, offset;
+	uint32_t r;
 
 	/* Setup the stack */
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
+	setup_c();
 
-	/* relocate to link address if necessary */
-	if (offset)
-		memcpy((void *)_text, (void *)(_text - offset),
-				__bss_start - _text);
-
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
-
-	flush_icache();
-
-	/* call start_barebox with its absolute address */
-	r = (unsigned int)&start_barebox;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+	start_barebox();
 }
 #endif

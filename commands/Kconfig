@@ -222,6 +222,14 @@ config CMD_READLINK
 	help
 	  read value of a symbolic link
 
+config CMD_TFTP
+	depends on FS_TFTP
+	tristate
+	prompt "tftp"
+	help
+	  barebox can mount tftp as a filesystem. This command is only needed to
+	  preserve backward compatibility to the old tftp command.
+
 endmenu
 
 menu "console                       "

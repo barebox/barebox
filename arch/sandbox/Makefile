@@ -9,8 +9,7 @@ lds-y   := $(BOARD)/barebox.lds
 
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
-
-CFLAGS += -Dmalloc=barebox_malloc \
+CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dfree=barebox_free -Drealloc=barebox_realloc \
 		-Dread=barebox_read -Dwrite=barebox_write \
 		-Dopen=barebox_open -Dclose=barebox_close \
@@ -40,9 +39,10 @@ archprepare: maketools
 
 PHONY += maketools
 
+SDL_LIBS-$(CONFIG_DRIVER_VIDEO_SDL) := $(shell pkg-config sdl --libs)
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
-	-lrt -lpthread
+	-lrt -lpthread $(SDL_LIBS-y)
 
 common-y += $(BOARD) arch/sandbox/os/
 

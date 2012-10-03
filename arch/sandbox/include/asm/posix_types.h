@@ -15,9 +15,23 @@ typedef int		__kernel_pid_t;
 typedef unsigned short	__kernel_ipc_pid_t;
 typedef unsigned short	__kernel_uid_t;
 typedef unsigned short	__kernel_gid_t;
+/*
+ * Most 32 bit architectures use "unsigned int" size_t,
+ * and all 64 bit architectures use "unsigned long" size_t.
+ *
+ * TODO: It's not clean to use __x86_64__ here. It's better
+ * to check on __BITS_PER_LONG here. But this is wrong set in
+ * arch/sandbox/include/asm/types.h.
+ */
+#ifdef __x86_64__
 typedef unsigned long	__kernel_size_t;
 typedef long		__kernel_ssize_t;
+typedef long		__kernel_ptrdiff_t;
+#else
+typedef unsigned int	__kernel_size_t;
+typedef int		__kernel_ssize_t;
 typedef int		__kernel_ptrdiff_t;
+#endif
 typedef long		__kernel_time_t;
 typedef long		__kernel_suseconds_t;
 typedef long		__kernel_clock_t;

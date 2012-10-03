@@ -23,15 +23,36 @@
 #include <mach/linux.h>
 #include <init.h>
 #include <errno.h>
+#include <fb.h>
+
+struct fb_videomode mode = {
+	.name = "sdl",	/* optional */
+	.xres = 640,
+	.yres = 480,
+};
 
 static struct device_d tap_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "tap",
 };
 
+static struct device_d sdl_device = {
+	.id	  = DEVICE_ID_DYNAMIC,
+	.name     = "sdlfb",
+	.platform_data = &mode,
+};
+
 static int devices_init(void)
 {
 	register_device(&tap_device);
+
+	if (sdl_xres)
+		mode.xres = sdl_xres;
+
+	if (sdl_yres)
+		mode.yres = sdl_yres;
+
+	register_device(&sdl_device);
 
 	return 0;
 }

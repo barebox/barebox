@@ -44,6 +44,10 @@ config DRIVER_VIDEO_S3C_VERBOSE
 
 endif
 
+config DRIVER_VIDEO_SDL
+	bool "SDL framebuffer driver"
+	depends on SANDBOX
+
 config DRIVER_VIDEO_PXA
 	bool "PXA27x framebuffer driver"
 	depends on ARCH_PXA27X

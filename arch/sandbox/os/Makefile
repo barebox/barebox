@@ -13,3 +13,5 @@ NOSTDINC_FLAGS :=
 
 obj-y = common.o tap.o
 
+CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)
+obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o

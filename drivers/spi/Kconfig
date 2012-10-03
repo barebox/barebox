@@ -34,4 +34,10 @@ config DRIVER_SPI_ATMEL
 	depends on ARCH_AT91
 	depends on SPI
 
+
+config DRIVER_SPI_OMAP3
+	bool "OMAP3 McSPI Master driver"
+	depends on ARCH_OMAP3
+	depends on SPI
+
 endmenu

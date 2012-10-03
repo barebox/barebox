@@ -192,14 +192,6 @@ config CMD_NAND
 	depends on NAND
 	prompt "nand"
 
-config CMD_NANDTEST
-	tristate
-	depends on NAND
-	depends on PARTITION
-	depends on NAND_ECC_HW || NAND_ECC_SOFT
-	select PARTITION_NEED_MTD
-	prompt "nandtest"
-
 config CMD_AUTOMOUNT
 	tristate
 	select FS_AUTOMOUNT
@@ -326,15 +318,6 @@ config CMD_SHA224SUM
 	select CMD_DIGEST
 	select SHA224
 	prompt "sha224sum"
-
-config CMD_MTEST
-	tristate
-	prompt "mtest"
-
-config CMD_MTEST_ALTERNATIVE
-	bool
-	depends on CMD_MTEST
-	prompt "alternative mtest implementation"
 
 endmenu
 
@@ -479,6 +462,27 @@ config CMD_OFTREE_PROBE
 	prompt "oftree probe support"
 	help
 	  This enables the -p option to probe devices from the devicetree
+
+endmenu
+
+menu "testing                       "
+
+config CMD_NANDTEST
+	tristate
+	depends on NAND
+	depends on PARTITION
+	depends on NAND_ECC_HW || NAND_ECC_SOFT
+	select PARTITION_NEED_MTD
+	prompt "nandtest"
+
+config CMD_MTEST
+	tristate
+	prompt "mtest"
+
+config CMD_MTEST_ALTERNATIVE
+	bool
+	depends on CMD_MTEST
+	prompt "alternative mtest implementation"
 
 endmenu
 

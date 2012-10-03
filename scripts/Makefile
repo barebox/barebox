@@ -9,7 +9,7 @@ hostprogs-y                      += bin2c
 hostprogs-y                      += mkimage
 hostprogs-y                      += bareboxenv
 hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
-hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP
+hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am35xx-spi-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 

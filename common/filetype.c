@@ -102,7 +102,7 @@ enum filetype file_detect_type(void *_buf)
 
 	if (strncmp(buf8, "#!/bin/sh", 9) == 0)
 		return filetype_sh;
-	if (buf[8] == 0x65726162 && buf[9] == 0x00786f62)
+	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
 		return filetype_arm_zimage;

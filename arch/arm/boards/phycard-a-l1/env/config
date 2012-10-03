@@ -70,7 +70,7 @@ bootargs="$bootargs omapdss.def_disp=pd050vl1"
 #bootargs="$bootargs omapdss.def_disp=pd104slf"
 #bootargs="$bootargs omapdss.def_disp=pm070wl4"
 
-nand_parts="512k(x-loader)ro,1920k(barebox),128k(bareboxenv),4M(kernel),-(root)"
+nand_parts="128k(x-loader)ro,512k(barebox),128k(bareboxenv),4M(kernel),-(root)"
 nand_device=omap2-nand.0
 rootfs_mtdblock_nand=4
 

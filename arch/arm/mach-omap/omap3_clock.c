@@ -674,18 +674,6 @@ static void per_clocks_enable(void)
 	/* Enable the ICLK for 32K Sync Timer as its used in udelay */
 	sr32(CM_REG(ICLKEN_WKUP), 2, 1, 0x1);
 
-#ifdef CONFIG_OMAP_CLOCK_UART
-	/* Enable UART1 clocks */
-	sr32(CM_REG(FCLKEN1_CORE), 13, 1, 0x1);
-	sr32(CM_REG(ICLKEN1_CORE), 13, 1, 0x1);
-#endif
-#ifdef CONFIG_OMAP_CLOCK_I2C
-	/* Turn on all 3 I2C clocks */
-	sr32(CM_REG(FCLKEN1_CORE), 15, 3, 0x7);
-	sr32(CM_REG(ICLKEN1_CORE), 15, 3, 0x7);	/* I2C1,2,3 = on */
-#endif
-
-#ifdef CONFIG_OMAP_CLOCK_ALL
 #define FCK_IVA2_ON	0x00000001
 #define FCK_CORE1_ON	0x03fffe29
 #define ICK_CORE1_ON	0x3ffffffb
@@ -710,7 +698,7 @@ static void per_clocks_enable(void)
 	sr32(CM_REG(ICLKEN_CAM), 0, 32, ICK_CAM_ON);
 	sr32(CM_REG(FCLKEN_PER), 0, 32, FCK_PER_ON);
 	sr32(CM_REG(ICLKEN_PER), 0, 32, ICK_PER_ON);
-#endif
+
 	/* Settle down my friend */
 	sdelay(1000);
 }

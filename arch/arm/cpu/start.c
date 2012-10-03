@@ -24,32 +24,19 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
+#include <memory.h>
 
-#ifdef CONFIG_PBL_IMAGE
 /*
  * First function in the uncompressed image. We get here from
  * the pbl.
  */
 void __naked __section(.text_entry) start(void)
 {
-	u32 r;
-
-	/* Setup the stack */
-	r = STACK_BASE + STACK_SIZE - 16;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
-
-	setup_c();
-
-	start_barebox();
-}
+#ifdef CONFIG_PBL_IMAGE
+	board_init_lowlevel_return();
 #else
-
-/*
- * First function in the image without pbl support
- */
-void __naked __section(.text_entry) start(void)
-{
 	barebox_arm_head();
+#endif
 }
 
 /*
@@ -80,4 +67,3 @@ void __naked board_init_lowlevel_return(void)
 
 	start_barebox();
 }
-#endif

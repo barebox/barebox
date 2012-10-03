@@ -33,6 +33,10 @@ while getopt "vdhl" opt; do
 	fi
 done
 
+# clear linux.bootargs.dyn.* and bootm.*
+global -r linux.bootargs.dyn.
+global -r bootm.
+
 if [ $# = 0 ]; then
 	scr="$global.boot.default"
 else

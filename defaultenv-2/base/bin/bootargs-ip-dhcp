@@ -2,4 +2,4 @@
 
 # Do dhcp in Linux
 
-global.linux.bootargs.ip="ip=dhcp"
+global.linux.bootargs.dyn.ip="ip=dhcp"

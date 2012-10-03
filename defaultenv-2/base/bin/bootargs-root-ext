@@ -9,4 +9,4 @@ while getopt "m:r:" opt; do
 	fi
 done
 
-global.linux.bootargs.root="root=/dev/$part rootfstype=ext$type rootwait"
+global.linux.bootargs.dyn.root="root=/dev/$part rootfstype=ext$type rootwait"

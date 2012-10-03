@@ -5,7 +5,7 @@
 . /env/network/eth0
 
 if [ $ip = dhcp ]; then
-	global.linux.bootargs.ip="ip=dhcp"
+	global.linux.bootargs.dyn.ip="ip=dhcp"
 else
-	global.linux.bootargs.ip="ip=$ipaddr:$serverip:$gateway:$netmask::eth0:"
+	global.linux.bootargs.dyn.ip="ip=$ipaddr:$serverip:$gateway:$netmask::eth0:"
 fi

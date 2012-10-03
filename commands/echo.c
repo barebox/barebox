@@ -33,10 +33,9 @@ static int do_echo(int argc, char *argv[])
 	int fd = stdout, opt, newline = 1;
 	char *file = NULL;
 	int oflags = O_WRONLY | O_CREAT;
-#ifdef CONFIG_CMD_ECHO_E
 	char str[CONFIG_CBSIZE];
 	int process_escape = 0;
-#endif
+
 	/* We can't use getopt() here because we want to
 	 * echo all things we don't understand.
 	 */
@@ -66,11 +65,9 @@ static int do_echo(int argc, char *argv[])
 				goto no_optarg_out;
 			optind++;
 			break;
-#ifdef CONFIG_CMD_ECHO_E
 		case 'e':
-			process_escape = 1;
+			process_escape = IS_ENABLED(CONFIG_CMD_ECHO_E);
 			break;
-#endif
 		default:
 			goto exit_parse;
 		}
@@ -89,13 +86,12 @@ exit_parse:
 	for (i = optind; i < argc; i++) {
 		if (i > optind)
 			fputc(fd, ' ');
-#ifdef CONFIG_CMD_ECHO_E
 		if (process_escape) {
 			process_escape_sequence(argv[i], str, CONFIG_CBSIZE);
 			fputs(fd, str);
-		} else
-#endif
+		} else {
 			fputs(fd, argv[i]);
+		}
 	}
 
 	if (newline)

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-hostname=pcm049
+global.hostname=pcm049
 eth0.serverip=
 user=
 
@@ -21,16 +21,16 @@ rootfs_loc=net
 
 # can be either 'jffs2' or 'ubifs'
 rootfs_type=ubifs
-rootfsimage=root-${hostname}.$rootfs_type
+rootfsimage=root-${global.hostname}.$rootfs_type
 
-kernelimage=zImage-$hostname
-#kernelimage=uImage-$hostname
-#kernelimage=Image-$hostname
-#kernelimage=Image-${hostname}.lzo
+kernelimage=zImage-${global.hostname}
+#kernelimage=uImage-${global.hostname}
+#kernelimage=Image-${global.hostname}
+#kernelimage=Image-${global.hostname}.lzo
 
 if [ -n $user ]; then
 	kernelimage="$user"-"$kernelimage"
-	nfsroot="$eth0.serverip:/home/$user/nfsroot/$hostname"
+	nfsroot="$eth0.serverip:/home/$user/nfsroot/${global.hostname}"
 	rootfsimage="$user"-"$rootfsimage"
 else
 	nfsroot="$eth0.serverip:/path/to/nfs/root"

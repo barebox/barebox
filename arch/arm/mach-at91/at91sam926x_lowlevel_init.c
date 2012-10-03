@@ -8,6 +8,7 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_pio.h>
@@ -33,10 +34,12 @@ static void inline pmc_check_mckrdy(void)
 	} while (!(r & AT91_PMC_MCKRDY));
 }
 
-void __naked __bare_init board_init_lowlevel(void)
+void __naked __bare_init reset(void)
 {
 	u32 r;
 	int i;
+
+	common_reset();
 
 	at91_sys_write(AT91_WDT_MR, CONFIG_SYS_WDTC_WDMR_VAL);
 

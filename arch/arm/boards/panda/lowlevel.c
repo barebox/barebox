@@ -23,6 +23,7 @@
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 
 #define TPS62361_VSEL0_GPIO    7
 
@@ -73,15 +74,17 @@ static void noinline panda_init_lowlevel(void)
 	board_init_lowlevel_return();
 }
 
-void board_init_lowlevel(void)
+void reset(void)
 {
 	u32 r;
+
+	common_reset();
 
 	if (get_pc() > 0x80000000)
 		return;
 
 	r = 0x4030d000;
-        __asm__ __volatile__("mov sp, %0" : : "r"(r));
+	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
 	panda_init_lowlevel();
 }

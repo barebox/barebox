@@ -25,6 +25,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/system.h>
 #include <asm-generic/sections.h>
 #include <asm-generic/memory_layout.h>
@@ -48,13 +49,16 @@ static void __bare_init __naked insdram(void)
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-void __bare_init __naked board_init_lowlevel(void)
+void __bare_init __naked reset(void)
 {
 	uint32_t r;
 	int i;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 #endif
+
+	common_reset();
+
 	/* ahb lite ip interface */
 	AIPI1_PSR0 = 0x20040304;
 	AIPI1_PSR1 = 0xDFFBFCFB;

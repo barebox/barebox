@@ -25,6 +25,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm-generic/sections.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
@@ -178,7 +179,7 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 #define UNALIGNED_ACCESS_ENABLE
 #define LOW_INT_LATENCY_ENABLE
 
-void __bare_init __naked board_init_lowlevel(void)
+void __bare_init __naked reset(void)
 {
 	u32 r0, r1;
 	void *iomuxc_base = (void *)IMX_IOMUXC_BASE;
@@ -187,8 +188,10 @@ void __bare_init __naked board_init_lowlevel(void)
 	unsigned int *trg, *src;
 #endif
 
+	common_reset();
+
 	r0 = 0x10000000 + 128 * 1024 - 16;
-        __asm__ __volatile__("mov sp, %0" : : "r"(r0));
+	__asm__ __volatile__("mov sp, %0" : : "r"(r0));
 
 	/*
 	 *       ARM1136 init

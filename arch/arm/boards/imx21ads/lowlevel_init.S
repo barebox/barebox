@@ -16,14 +16,14 @@
 #include <config.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx-regs.h>
+#include <asm/barebox-arm-head.h>
 
 	.section ".text_bare_init","ax"
 
-.globl board_init_lowlevel
-board_init_lowlevel:
+.globl reset
+reset:
 
-/* Save lr, because it is overwritten by the calls to mem_delay. */
-	mov	r10, lr
+	common_reset r0
 
 /*
  * Initialize the AHB-Lite IP Interface (AIPI) module (to enable access to
@@ -75,7 +75,7 @@ board_init_lowlevel:
 	cmp	pc, #0xc8000000
 	bhi	1f
 
-	mov	pc, r10
+	b	board_init_lowlevel_return
 1:
 
 	/* Precharge */
@@ -145,7 +145,7 @@ copy_loop:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	mov	pc, r10
+	b	board_init_lowlevel_return
 
 /*
  *  spin for a while.  we need to wait at least 200 usecs.

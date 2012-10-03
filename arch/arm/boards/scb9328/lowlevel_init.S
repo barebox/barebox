@@ -13,6 +13,7 @@
  */
 
 #include <mach/imx-regs.h>
+#include <asm/barebox-arm-head.h>
 
 #define CPU200
 
@@ -75,10 +76,10 @@
 	ldr		r1,	=val;	\
 	str		r1,   [r0];
 
-.globl board_init_lowlevel
-board_init_lowlevel:
+.globl reset
+reset:
 
-	mov	r10, lr
+	common_reset r0
 
 	/* Change PERCLK1DIV to 14 ie 14+1 */
 	writel(CFG_PCDR_VAL, PCDR)
@@ -150,7 +151,7 @@ board_init_lowlevel:
 	cmp	pc, #0x09000000
 	bhi	1f
 
-	mov	pc,r10
+	b board_init_lowlevel_return
 
 1:
 
@@ -175,4 +176,4 @@ board_init_lowlevel:
 	writel(0x0, 0x08223000) /* CAS Latency 2, issue Mode Register Command, Burst Length = 8 */
 	writel(0x810a8200, SDCTL0) /* Set to Normal Mode CAS 2 */
 
-	mov	pc,r10
+	b board_init_lowlevel_return

@@ -36,8 +36,10 @@
 #include <mach/silicon.h>
 #include <mach/wdt.h>
 #include <mach/clocks.h>
+#include <asm/barebox-arm-head.h>
 
-ENTRY(board_init_lowlevel)
+#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
+ENTRY(reset)
 	/* Invalidate all Dcaches */
 #ifndef CONFIG_CPU_V7_DCACHE_SKIP
 	/* If Arch specific ROM code SMI handling does not exist */
@@ -86,5 +88,6 @@ finished_inval:
 	isb
 #endif /* CONFIG_CPU_V7_DCACHE_SKIP */
 	/* back to arch calling code */
-	mov	pc,	lr
-ENDPROC(board_init_lowlevel)
+	b board_init_lowlevel_return
+ENDPROC(reset)
+#endif

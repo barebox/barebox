@@ -44,6 +44,18 @@ void __naked __section(.text_head_entry) pbl_start(void)
 	barebox_arm_head();
 }
 
+/*
+ * The actual reset vector. This code is position independent and usually
+ * does not run at the address it's linked at.
+ */
+#ifndef CONFIG_MACH_DO_LOWLEVEL_INIT
+void __naked __bare_init reset(void)
+{
+	common_reset();
+	board_init_lowlevel_return();
+}
+#endif
+
 extern void *input_data;
 extern void *input_data_end;
 

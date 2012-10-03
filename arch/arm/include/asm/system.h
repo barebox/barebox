@@ -56,6 +56,7 @@
 #define CR_AFE  (1 << 29)	/* Access flag enable			*/
 #define CR_TE   (1 << 30)	/* Thumb exception enable		*/
 
+#ifndef __ASSEMBLY__
 static inline unsigned int get_cr(void)
 {
 	unsigned int val;
@@ -69,4 +70,7 @@ static inline void set_cr(unsigned int val)
 	  : : "r" (val) : "cc");
 	isb();
 }
+
+#endif
+
 #endif /* __ASM_ARM_SYSTEM_H */

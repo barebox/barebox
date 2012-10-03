@@ -4,15 +4,15 @@
 
 #include <config.h>
 #include <mach/s3c-iomap.h>
+#include <asm/barebox-arm-head.h>
 
-	.section ".text_bare_init.board_init_lowlevel","ax"
+	.section ".text_bare_init.reset","ax"
 
 /* ------------------------------------------------------------------------ */
 
-.globl board_init_lowlevel
-board_init_lowlevel:
-
-	mov r10, lr		/* save the link register */
+.globl reset
+reset:
+	common_reset r0
 
 	bl s3c24x0_disable_wd
 
@@ -22,7 +22,7 @@ board_init_lowlevel:
 	cmp pc, #S3C_SDRAM_END
 	bhs 1f
 
-	mov pc, r10
+	b board_init_lowlevel_return
 
 /* we are running from NOR or NAND/SRAM memory. Do further initialisation */
 1:
@@ -31,9 +31,7 @@ board_init_lowlevel:
 	bl s3c24x0_sdram_init
 
 #ifdef CONFIG_S3C_NAND_BOOT
-	mov lr, r10		/* restore the link register */
 /* up to here we are running from the internal SRAM area */
-	b s3c24x0_nand_boot	/* does return directly to our caller into SDRAM */
-#else
-	mov pc, r10
+	bl s3c24x0_nand_boot
 #endif
+	b board_init_lowlevel_return

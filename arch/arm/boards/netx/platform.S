@@ -17,6 +17,9 @@
  *
  */
 
-.globl board_init_lowlevel
-board_init_lowlevel:
-	mov	pc, lr
+#include <asm/barebox-arm-head.h>
+
+.globl reset
+reset:
+	common_reset r0
+	b board_init_lowlevel_return

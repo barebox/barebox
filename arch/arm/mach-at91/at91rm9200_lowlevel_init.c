@@ -7,6 +7,7 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/hardware.h>
 #include <mach/at91rm9200.h>
 #include <mach/at91rm9200_mc.h>
@@ -20,10 +21,12 @@ void static inline access_sdram(void)
 	writel(0x00000000, AT91_SDRAM_BASE);
 }
 
-void __naked __bare_init board_init_lowlevel(void)
+void __naked __bare_init reset(void)
 {
 	u32 r;
 	int i;
+
+	common_reset();
 
 	/*
 	 * PMC Check if the PLL is already initialized

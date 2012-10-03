@@ -23,6 +23,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/system.h>
 #include <asm-generic/sections.h>
 #include <asm-generic/memory_layout.h>
@@ -66,12 +67,14 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 	writel(esdctl, esdctlreg);
 }
 
-void __bare_init __naked board_init_lowlevel(void)
+void __bare_init __naked reset(void)
 {
 	uint32_t r;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 #endif
+
+	common_reset();
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,

@@ -25,6 +25,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm-generic/sections.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
@@ -44,7 +45,7 @@ static void __bare_init __naked insdram(void)
 }
 #endif
 
-void __bare_init __naked board_init_lowlevel(void)
+void __bare_init __naked reset(void)
 {
 	uint32_t r;
 #ifdef CONFIG_NAND_IMX_BOOT
@@ -52,6 +53,8 @@ void __bare_init __naked board_init_lowlevel(void)
 	int i;
 #endif
 	register uint32_t loops = 0x20000;
+
+	common_reset();
 
 	/* restart the MPLL and wait until it's stable */
 	writel(readl(IMX_CCM_BASE + CCM_CCTL) | (1 << 27),

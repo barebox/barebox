@@ -21,6 +21,7 @@
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
+#include <asm/barebox-arm-head.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -48,9 +49,9 @@ MPCTL_PARAM_532_W:      .word   MPCTL_PARAM_532
 PPCTL_PARAM_W:    	.word   PPCTL_PARAM_300
 CCM_BASE_ADDR_W:        .word   IMX_CCM_BASE
 
-.globl board_init_lowlevel
-board_init_lowlevel:
-	mov     r10, lr
+.globl reset
+reset:
+	common_reset r0
 
 #define MX25_CCM_MCR	0x64
 
@@ -76,7 +77,7 @@ board_init_lowlevel:
 	cmp	pc, #0x90000000
 	bhi	1f
 
-	mov	pc, lr
+	b	board_init_lowlevel_return
 
 1:
 	ldr r0, ESDCTL_BASE_W
@@ -124,7 +125,7 @@ copy_loop:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	mov pc, r10
+	b	board_init_lowlevel_return
 
 /*
  * r0: control base, r1: ram bank base

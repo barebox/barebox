@@ -25,6 +25,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <asm-generic/sections.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
@@ -55,7 +56,7 @@ static void __bare_init __naked insdram(void)
 }
 #endif
 
-void __bare_init __naked board_init_lowlevel(void)
+void __bare_init __naked reset(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = IMX_CCM_BASE;
@@ -64,6 +65,8 @@ void __bare_init __naked board_init_lowlevel(void)
 	int i;
 #endif
 	register uint32_t loops = 0x20000;
+
+	common_reset();
 
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */

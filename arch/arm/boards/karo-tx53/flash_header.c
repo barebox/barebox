@@ -1,0 +1,147 @@
+/*
+ * Copyright (C) 2011 Marc Kleine-Budde <mkl@pengutronix.de>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
+
+#include <common.h>
+#include <asm/byteorder.h>
+#include <mach/imx-flash-header.h>
+#include <asm/barebox-arm-head.h>
+
+void __naked __flash_header_start go(void)
+{
+	barebox_arm_head();
+}
+
+/*
+ * FIXME: These are the dcd values for a Ka-Ro TX53 1011 which
+ *        is not in production. It has 1GB DDR2 memory.
+ */
+struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
+	{ .addr = cpu_to_be32(0x53fd406c), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd4070), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd4074), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd4078), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd407c), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd4080), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fd4088), .val = cpu_to_be32(0xffffffff), },
+	{ .addr = cpu_to_be32(0x53fa8174), .val = cpu_to_be32(0x00000011), },
+	{ .addr = cpu_to_be32(0x63fd800c), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8554), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8560), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8594), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8584), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8558), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa8568), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa8590), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa857c), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa8564), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa8580), .val = cpu_to_be32(0x00200040), },
+	{ .addr = cpu_to_be32(0x53fa8570), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8578), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa872c), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8728), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa871c), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8718), .val = cpu_to_be32(0x00200000), },
+	{ .addr = cpu_to_be32(0x53fa8574), .val = cpu_to_be32(0x00280000), },
+	{ .addr = cpu_to_be32(0x53fa8588), .val = cpu_to_be32(0x00280000), },
+	{ .addr = cpu_to_be32(0x53fa86f0), .val = cpu_to_be32(0x00280000), },
+	{ .addr = cpu_to_be32(0x53fa8720), .val = cpu_to_be32(0x00280000), },
+	{ .addr = cpu_to_be32(0x53fa86fc), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa86f4), .val = cpu_to_be32(0x00000200), },
+	{ .addr = cpu_to_be32(0x53fa8714), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8724), .val = cpu_to_be32(0x06000000), },
+	{ .addr = cpu_to_be32(0x63fd9088), .val = cpu_to_be32(0x36353b38), },
+	{ .addr = cpu_to_be32(0x63fd9090), .val = cpu_to_be32(0x49434942), },
+	{ .addr = cpu_to_be32(0x63fd90f8), .val = cpu_to_be32(0x00000800), },
+	{ .addr = cpu_to_be32(0x63fd907c), .val = cpu_to_be32(0x01350138), },
+	{ .addr = cpu_to_be32(0x63fd9080), .val = cpu_to_be32(0x01380139), },
+	{ .addr = cpu_to_be32(0x63fd9018), .val = cpu_to_be32(0x00001710), },
+	{ .addr = cpu_to_be32(0x63fd9000), .val = cpu_to_be32(0x84110000), },
+	{ .addr = cpu_to_be32(0x63fd900c), .val = cpu_to_be32(0x4d5122d2), },
+	{ .addr = cpu_to_be32(0x63fd9010), .val = cpu_to_be32(0xb6f18a22), },
+	{ .addr = cpu_to_be32(0x63fd9014), .val = cpu_to_be32(0x00c700db), },
+	{ .addr = cpu_to_be32(0x63fd902c), .val = cpu_to_be32(0x000026d2), },
+	{ .addr = cpu_to_be32(0x63fd9030), .val = cpu_to_be32(0x009f000e), },
+	{ .addr = cpu_to_be32(0x63fd9008), .val = cpu_to_be32(0x12272000), },
+	{ .addr = cpu_to_be32(0x63fd9004), .val = cpu_to_be32(0x00030012), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x04008010), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00008020), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00008020), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x0a528030), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x03868031), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00068031), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00008032), },
+	{ .addr = cpu_to_be32(0x63fd9020), .val = cpu_to_be32(0x00005800), },
+	{ .addr = cpu_to_be32(0x63fd9058), .val = cpu_to_be32(0x00033332), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00448031), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x04008018), },
+	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x63fd9040), .val = cpu_to_be32(0x04b80003), },
+	{ .addr = cpu_to_be32(0x53fa8004), .val = cpu_to_be32(0x00194005), },
+	{ .addr = cpu_to_be32(0x53fa819c), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81a0), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81a4), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81a8), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81ac), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81b0), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81b4), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81b8), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81dc), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa81e0), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8228), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa822c), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8230), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8234), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa8238), .val = cpu_to_be32(0x00000000), },
+	{ .addr = cpu_to_be32(0x53fa84ec), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa84f0), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa84f4), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa84f8), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa84fc), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa8500), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa8504), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa8508), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa852c), .val = cpu_to_be32(0x00000004), },
+	{ .addr = cpu_to_be32(0x53fa8530), .val = cpu_to_be32(0x00000004), },
+	{ .addr = cpu_to_be32(0x53fa85a0), .val = cpu_to_be32(0x00000004), },
+	{ .addr = cpu_to_be32(0x53fa85a4), .val = cpu_to_be32(0x00000004), },
+	{ .addr = cpu_to_be32(0x53fa85a8), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa85ac), .val = cpu_to_be32(0x000000e4), },
+	{ .addr = cpu_to_be32(0x53fa85b0), .val = cpu_to_be32(0x00000004), },
+};
+
+#define APP_DEST	0x70000000
+
+struct imx_flash_header_v2 __flash_header_section flash_header = {
+	.header.tag		= IVT_HEADER_TAG,
+	.header.length		= cpu_to_be16(32),
+	.header.version		= IVT_VERSION,
+
+	.entry			= APP_DEST + 0x1000,
+	.dcd_ptr		= APP_DEST + 0x400 + offsetof(struct imx_flash_header_v2, dcd),
+	.boot_data_ptr		= APP_DEST + 0x400 + offsetof(struct imx_flash_header_v2, boot_data),
+	.self			= APP_DEST + 0x400,
+
+	.boot_data.start	= APP_DEST,
+	.boot_data.size		= DCD_BAREBOX_SIZE,
+
+	.dcd.header.tag		= DCD_HEADER_TAG,
+	.dcd.header.length	= cpu_to_be16(sizeof(struct imx_dcd) + sizeof(dcd_entry)),
+	.dcd.header.version	= DCD_VERSION,
+
+	.dcd.command.tag	= DCD_COMMAND_WRITE_TAG,
+	.dcd.command.length	= cpu_to_be16(sizeof(struct imx_dcd_command) + sizeof(dcd_entry)),
+	.dcd.command.param	= DCD_COMMAND_WRITE_PARAM,
+};

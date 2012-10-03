@@ -462,12 +462,18 @@ CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 # disable pointer signed / unsigned warnings in gcc 4.0
 CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 
-# Default kernel image to build when no specific target is given.
-# KBUILD_IMAGE may be overruled on the command line or
-# set in the environment
-# Also any assignments in arch/$(ARCH)/Makefile take precedence over
-# this default value
+# KBUILD_IMAGE: Default barebox image to build
+# Depending on the architecture, this can be either compressed or not.
+# It will also include any necessary headers to be bootable.
 export KBUILD_IMAGE ?= barebox.bin
+# KBUILD_BINARY: Raw barebox binary
+# This variable is set in case the architecture prepends a header and
+# points to a binary that can be loaded directly into RAM and executed.
+export KBUILD_BINARY ?= barebox.bin
+# KBUILD_IMAGE and _BINARY may be overruled on the command line or
+# set in the environment.
+# Also any assignments in arch/$(ARCH)/Makefile take precedence over
+# the default value.
 
 barebox-flash-image: $(KBUILD_IMAGE)
 	$(call if_changed,ln)

@@ -2,7 +2,7 @@
 #include <init.h>
 #include <memory.h>
 #include <asm-generic/memory_layout.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 
 static int display_meminfo(void)
 {

@@ -32,7 +32,7 @@
 #include <mci.h>
 #include <fb.h>
 #include <asm/armlinux.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <io.h>
 #include <mach/gpio.h>
 #include <mach/s3c-iomap.h>

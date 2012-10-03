@@ -1,7 +1,7 @@
 #ifndef __MACH_FLASH_HEADER_H
 #define __MACH_FLASH_HEADER_H
 
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 
 #define __flash_header_start		__section(.flash_header_start)
 

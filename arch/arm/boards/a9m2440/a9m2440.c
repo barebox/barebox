@@ -24,7 +24,7 @@
 #include <driver.h>
 #include <init.h>
 #include <asm/armlinux.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <nand.h>

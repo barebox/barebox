@@ -27,7 +27,7 @@
 #include <mach/imx31-regs.h>
 #include <mach/iomux-mx31.h>
 #include <asm/armlinux.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <mach/gpio.h>
 #include <mach/weim.h>
 #include <io.h>

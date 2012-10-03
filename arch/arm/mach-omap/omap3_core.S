@@ -12,7 +12,6 @@
  * functions.
  * @li Call architecture initialization function a_init
  *
- * arch_init_lowlevel is enabled if CONFIG_ARCH_HAS_LOWLEVEL_INIT is defined
  */
 /*
  * (C) Copyright 2006-2008
@@ -38,8 +37,7 @@
 #include <mach/wdt.h>
 #include <mach/clocks.h>
 
-#ifdef CONFIG_ARCH_HAS_LOWLEVEL_INIT
-ENTRY(arch_init_lowlevel)
+ENTRY(board_init_lowlevel)
 	/* Invalidate all Dcaches */
 #ifndef CONFIG_CPU_V7_DCACHE_SKIP
 	/* If Arch specific ROM code SMI handling does not exist */
@@ -89,8 +87,4 @@ finished_inval:
 #endif /* CONFIG_CPU_V7_DCACHE_SKIP */
 	/* back to arch calling code */
 	mov	pc,	lr
-ENDPROC(arch_init_lowlevel)
-
-SRAM_STACK:
-	.word	OMAP_SRAM_STACK
-#endif /* CONFIG_ARCH_HAS_LOWLEVEL_INIT */
+ENDPROC(board_init_lowlevel)

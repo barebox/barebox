@@ -36,7 +36,6 @@ extern char __exceptions_start[], __exceptions_stop[];
 
 void board_init_lowlevel(void);
 void board_init_lowlevel_return(void);
-void arch_init_lowlevel(void);
 uint32_t get_runtime_offset(void);
 
 #endif	/* _BAREBOX_ARM_H_ */

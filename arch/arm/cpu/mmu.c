@@ -247,6 +247,8 @@ static void vectors_init(void)
 		exc = arm_create_pte(0x0);
 	}
 
+	arm_fixup_vectors();
+
 	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);

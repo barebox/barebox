@@ -42,4 +42,12 @@ uint32_t get_runtime_offset(void);
 void setup_c(void);
 void __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize, uint32_t boarddata);
 
+#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
+void arm_fixup_vectors(void);
+#else
+static inline void arm_fixup_vectors(void)
+{
+}
+#endif
+
 #endif	/* _BAREBOX_ARM_H_ */

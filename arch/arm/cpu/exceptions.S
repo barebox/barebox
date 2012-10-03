@@ -1,4 +1,5 @@
 #include <config.h>
+#include <linux/linkage.h>
 #include <asm-generic/memory_layout.h>
 
 /*
@@ -137,16 +138,58 @@ fiq:
 	bad_save_user_regs
 	bl 	do_fiq
 
+#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
+/*
+ * With relocatable binary support the runtime exception vectors do not match
+ * the addresses in the binary. We have to fix them up during runtime
+ */
+ENTRY(arm_fixup_vectors)
+	ldr	r0, =undefined_instruction
+	ldr	r1, =_undefined_instruction
+	str	r0, [r1]
+	ldr	r0, =software_interrupt
+	ldr	r1, =_software_interrupt
+	str	r0, [r1]
+	ldr	r0, =prefetch_abort
+	ldr	r1, =_prefetch_abort
+	str	r0, [r1]
+	ldr	r0, =data_abort
+	ldr	r1, =_data_abort
+	str	r0, [r1]
+	ldr	r0, =irq
+	ldr	r1, =_irq
+	str	r0, [r1]
+	ldr	r0, =fiq
+	ldr	r1, =_fiq
+	str	r0, [r1]
+	bx	lr
+ENDPROC(arm_fixup_vectors)
+#endif
+
 .section .text_exceptions
+.globl extable
+extable:
 1:	b 1b				/* barebox_arm_reset_vector */
 #ifdef CONFIG_ARM_EXCEPTIONS
-	ldr pc, =undefined_instruction	/* undefined instruction */
-	ldr pc, =software_interrupt	/* software interrupt (SWI) */
-	ldr pc, =prefetch_abort		/* prefetch abort */
-	ldr pc, =data_abort		/* data abort */
+	ldr pc, _undefined_instruction	/* undefined instruction */
+	ldr pc, _software_interrupt	/* software interrupt (SWI) */
+	ldr pc, _prefetch_abort		/* prefetch abort */
+	ldr pc, _data_abort		/* data abort */
 1:	b 1b				/* (reserved) */
-	ldr pc, =irq			/* irq (interrupt) */
-	ldr pc, =fiq			/* fiq (fast interrupt) */
+	ldr pc, _irq			/* irq (interrupt) */
+	ldr pc, _fiq			/* fiq (fast interrupt) */
+.globl _undefined_instruction
+_undefined_instruction: .word undefined_instruction
+.globl _software_interrupt
+_software_interrupt: .word software_interrupt
+.globl _prefetch_abort
+_prefetch_abort: .word prefetch_abort
+.globl _data_abort
+_data_abort: .word data_abort
+.globl _irq
+_irq: .word irq
+.globl _fiq
+_fiq: .word fiq
 #else
 1:	b 1b				/* undefined instruction */
 1:	b 1b				/* software interrupt (SWI) */

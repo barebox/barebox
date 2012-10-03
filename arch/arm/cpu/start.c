@@ -30,7 +30,7 @@
 
 #ifdef CONFIG_PBL_IMAGE
 /*
- * First function in the pbl image. We get here from
+ * First function in the uncompressed image. We get here from
  * the pbl.
  */
 void __naked __section(.text_entry) start(void)
@@ -47,6 +47,9 @@ void __naked __section(.text_entry) start(void)
 }
 #else
 
+/*
+ * First function in the image without pbl support
+ */
 void __naked __section(.text_entry) start(void)
 {
 	barebox_arm_head();
@@ -56,22 +59,16 @@ void __naked __section(.text_entry) start(void)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this function directly.
  */
-void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
+void __naked board_init_lowlevel_return(void)
 {
-	uint32_t r, addr, offset;
-
-	/*
-	 * Get runtime address of this function. Do not
-	 * put any code above this.
-	 */
-	__asm__ __volatile__("1: adr %0, 1b":"=r"(addr));
+	uint32_t r, offset;
 
 	/* Setup the stack */
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
 	/* Get offset between linked address and runtime address */
-	offset = (uint32_t)__ll_return - addr;
+	offset = get_runtime_offset();
 
 	/* relocate to link address if necessary */
 	if (offset)

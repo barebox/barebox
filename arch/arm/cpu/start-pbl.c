@@ -36,6 +36,9 @@
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
+/*
+ * First instructions in the pbl image
+ */
 void __naked __section(.text_head_entry) pbl_start(void)
 {
 	barebox_arm_head();
@@ -153,23 +156,17 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this function directly.
  */
-void __naked __section(.text_ll_return) board_init_lowlevel_return(void)
+void __naked board_init_lowlevel_return(void)
 {
-	uint32_t r, addr, offset;
+	uint32_t r, offset;
 	uint32_t pg_start, pg_end, pg_len;
-
-	/*
-	 * Get runtime address of this function. Do not
-	 * put any code above this.
-	 */
-	__asm__ __volatile__("1: adr %0, 1b":"=r"(addr));
 
 	/* Setup the stack */
 	r = STACK_BASE + STACK_SIZE - 16;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));
 
 	/* Get offset between linked address and runtime address */
-	offset = (uint32_t)__ll_return - addr;
+	offset = get_runtime_offset();
 
 	pg_start = (uint32_t)&input_data - offset;
 	pg_end = (uint32_t)&input_data_end - offset;

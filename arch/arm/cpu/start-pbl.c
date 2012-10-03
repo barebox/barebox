@@ -116,7 +116,11 @@ static void mmu_disable(void)
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	void (*barebox)(void);
-	int use_mmu = IS_ENABLED(CONFIG_MMU);
+	/*
+	 * remap_cached currently does not work rendering the feature
+	 * of enabling the MMU in the PBL useless. disable for now.
+	 */
+	int use_mmu = 0;
 
 	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
 	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;

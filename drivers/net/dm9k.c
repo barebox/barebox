@@ -26,12 +26,12 @@
 #include <init.h>
 #include <common.h>
 #include <driver.h>
-#include <miidev.h>
 #include <net.h>
 #include <io.h>
 #include <xfuncs.h>
 #include <dm9000.h>
 #include <errno.h>
+#include <linux/phy.h>
 
 #define DM9K_ID		0x90000A46
 #define CHIPR_DM9000A	0x19
@@ -160,7 +160,7 @@
 struct dm9k {
 	void __iomem *iobase;
 	void __iomem *iodata;
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	int buswidth;
 	int srom;
 	uint8_t pckt[2048];
@@ -353,12 +353,11 @@ static void dm9k_wd(int b_width, void __iomem *port, const void *src, int length
 
 /* ----------------- end of data move functions -------------------------- */
 
-static int dm9k_phy_read(struct mii_device *mdev, int addr, int reg)
+static int dm9k_phy_read(struct mii_bus *bus, int addr, int reg)
 {
 	unsigned val;
-	struct eth_device *edev = mdev->edev;
-	struct device_d *dev = edev->parent;
-	struct dm9k *priv = edev->priv;
+	struct dm9k *priv = bus->priv;
+	struct device_d *dev = &bus->dev;
 
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);
@@ -374,11 +373,10 @@ static int dm9k_phy_read(struct mii_device *mdev, int addr, int reg)
 	return val;
 }
 
-static int dm9k_phy_write(struct mii_device *mdev, int addr, int reg, int val)
+static int dm9k_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 {
-	struct eth_device *edev = mdev->edev;
-	struct device_d *dev = edev->parent;
-	struct dm9k *priv = edev->priv;
+	struct dm9k *priv = bus->priv;
+	struct device_d *dev = &bus->dev;
 
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);
@@ -397,7 +395,7 @@ static int dm9k_phy_write(struct mii_device *mdev, int addr, int reg, int val)
 
 static int dm9k_check_id(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 	u32 id;
 	char c;
 
@@ -461,7 +459,7 @@ static void dm9k_enable(struct dm9k *priv)
 
 static void dm9k_reset(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s\n", __func__);
 	dm9k_iow(priv, DM9K_NCR, NCR_RST);
@@ -472,9 +470,8 @@ static int dm9k_eth_open(struct eth_device *edev)
 {
 	struct dm9k *priv = (struct dm9k *)edev->priv;
 
-	miidev_wait_aneg(&priv->miidev);
-	miidev_print_status(&priv->miidev);
-	return 0;
+	return phy_device_connect(edev, &priv->miibus, 0, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
 }
 
 static void dm9k_write_length(struct dm9k *priv, unsigned length)
@@ -485,7 +482,7 @@ static void dm9k_write_length(struct dm9k *priv, unsigned length)
 
 static int dm9k_wait_for_trans_end(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 	static const uint64_t toffs = 1 * SECOND;
 	uint8_t status;
 	uint64_t start = get_time_ns();
@@ -511,7 +508,7 @@ static int dm9k_wait_for_trans_end(struct dm9k *priv)
 static int dm9k_eth_send(struct eth_device *edev, void *packet, int length)
 {
 	struct dm9k *priv = (struct dm9k *)edev->priv;
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s: %d bytes\n", __func__, length);
 
@@ -537,7 +534,7 @@ static int dm9k_eth_send(struct eth_device *edev, void *packet, int length)
 static int dm9k_check_for_rx_packet(struct dm9k *priv)
 {
 	uint8_t status;
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 
 	status = dm9k_ior(priv, DM9K_ISR);
 	if (!(status & ISR_PR))
@@ -550,7 +547,7 @@ static int dm9k_check_for_rx_packet(struct dm9k *priv)
 
 static int dm9k_validate_entry(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miidev.parent;
+	struct device_d *dev = priv->miibus.parent;
 
 	uint8_t p_stat;
 	/*
@@ -696,9 +693,6 @@ static int dm9k_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 
 static int dm9k_init_dev(struct eth_device *edev)
 {
-	struct dm9k *priv = (struct dm9k *)edev->priv;
-
-	miidev_restart_aneg(&priv->miidev);
 	return 0;
 }
 
@@ -740,12 +734,10 @@ static int dm9k_probe(struct device_d *dev)
 	edev->get_ethaddr = dm9k_get_ethaddr;
 	edev->parent = dev;
 
-	priv->miidev.read = dm9k_phy_read;
-	priv->miidev.write = dm9k_phy_write;
-	priv->miidev.address = 0;
-	priv->miidev.flags = 0;
-	priv->miidev.edev = edev;
-	priv->miidev.parent = dev;
+	priv->miibus.read = dm9k_phy_read;
+	priv->miibus.write = dm9k_phy_write;
+	priv->miibus.priv = priv;
+	priv->miibus.parent = dev;
 
 	/* RESET device */
 	dm9k_reset(priv);
@@ -778,7 +770,7 @@ static int dm9k_probe(struct device_d *dev)
 
 	dm9k_enable(priv);
 
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
 	return 0;

@@ -292,7 +292,8 @@ struct altera_tse_priv {
 	void __iomem *sgdma_tx_regs;
 	void __iomem *rx_desc;
 	void __iomem *tx_desc;
-	struct mii_device *miidev;
+	int phy_addr;
+	struct mii_bus *miibus;
 };
 
 #endif /* _ALTERA_TSE_H_ */

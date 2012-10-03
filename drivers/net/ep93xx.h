@@ -141,7 +141,7 @@ struct ep93xx_eth_priv {
 	struct tx_descriptor_queue	tx_dq;
 	struct tx_status_queue		tx_sq;
 
-	struct mii_device miidev;
+	struct mii_bus miibus;
 };
 
 #endif

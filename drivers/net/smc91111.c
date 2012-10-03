@@ -67,13 +67,13 @@
 
 #include <command.h>
 #include <net.h>
-#include <miidev.h>
 #include <malloc.h>
 #include <init.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <linux/phy.h>
 
 /*---------------------------------------------------------------
  .
@@ -451,7 +451,7 @@ struct accessors {
 };
 
 struct smc91c111_priv {
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	struct accessors a;
 	void __iomem *base;
 };
@@ -621,11 +621,10 @@ static void smc_wait_mmu_release_complete(struct smc91c111_priv *priv)
 	}
 }
 
-static int smc91c111_phy_write(struct mii_device *mdev, int phyaddr,
-	int phyreg, int phydata)
+static int smc91c111_phy_write(struct mii_bus *bus, int phyaddr,
+	int phyreg, u16 phydata)
 {
-	struct eth_device *edev = mdev->edev;
-	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+	struct smc91c111_priv *priv = (struct smc91c111_priv *)bus->priv;
 	int oldBank;
 	int i;
 	unsigned mask;
@@ -723,10 +722,9 @@ static int smc91c111_phy_write(struct mii_device *mdev, int phyaddr,
 	return 0;
 }
 
-static int smc91c111_phy_read(struct mii_device *mdev, int phyaddr, int phyreg)
+static int smc91c111_phy_read(struct mii_bus *bus, int phyaddr, int phyreg)
 {
-	struct eth_device *edev = mdev->edev;
-	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+	struct smc91c111_priv *priv = (struct smc91c111_priv *)bus->priv;
 	int oldBank;
 	int i;
 	unsigned char mask;
@@ -892,12 +890,15 @@ static void smc91c111_enable(struct eth_device *edev)
 static int smc91c111_eth_open(struct eth_device *edev)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+
+	/* Configure the Receive/Phy Control register */
+	SMC_SELECT_BANK(priv, 0);
+	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
+
 	smc91c111_enable(edev);
 
-	miidev_wait_aneg(&priv->miidev);
-	miidev_print_status(&priv->miidev);
-
-	return 0;
+	return phy_device_connect(edev, &priv->miibus, 0, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
 }
 
 static int smc91c111_eth_send(struct eth_device *edev, void *packet,
@@ -1279,14 +1280,6 @@ static void print_packet( unsigned char * buf, int length )
 
 static int smc91c111_init_dev(struct eth_device *edev)
 {
-	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
-
-	/* Configure the Receive/Phy Control register */
-	SMC_SELECT_BANK(priv, 0);
-	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
-
-	miidev_restart_aneg(&priv->miidev);
-
 	return 0;
 }
 
@@ -1312,17 +1305,15 @@ static int smc91c111_probe(struct device_d *dev)
 	edev->set_ethaddr = smc91c111_set_ethaddr;
 	edev->parent = dev;
 
-	priv->miidev.read = smc91c111_phy_read;
-	priv->miidev.write = smc91c111_phy_write;
-	priv->miidev.address = 0;
-	priv->miidev.flags = 0;
-	priv->miidev.edev = edev;
-	priv->miidev.parent = dev;
+	priv->miibus.read = smc91c111_phy_read;
+	priv->miibus.write = smc91c111_phy_write;
+	priv->miibus.priv = priv;
+	priv->miibus.parent = dev;
 	priv->base = dev_request_mem_region(dev, 0);
 
 	smc91c111_reset(edev);
 
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
 	return 0;

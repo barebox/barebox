@@ -44,13 +44,13 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>
-#include <miidev.h>
 #include <errno.h>
 #include <io.h>
 #include <mach/board.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/mmu.h>
+#include <linux/phy.h>
 
 #include "macb.h"
 
@@ -97,12 +97,16 @@ struct macb_device {
 	struct macb_dma_desc	*rx_ring;
 	struct macb_dma_desc	*tx_ring;
 
+	int			phy_addr;
+
 	const struct device	*dev;
 	struct eth_device	netdev;
 
-	struct mii_device	miidev;
+	phy_interface_t		interface;
 
-	unsigned int		flags;
+	struct mii_bus	miibus;
+
+	unsigned int		phy_flags;
 };
 
 static int macb_send(struct eth_device *edev, void *packet,
@@ -214,26 +218,32 @@ static int macb_recv(struct eth_device *edev)
 	return 0;
 }
 
+static void macb_adjust_link(struct eth_device *edev)
+{
+	struct macb_device *macb = edev->priv;
+	u32 reg;
+
+	reg = readl(macb->regs + MACB_NCFGR);
+	reg &= ~(MACB_BIT(SPD) | MACB_BIT(FD));
+
+	if (edev->phydev->duplex)
+		reg |= MACB_BIT(FD);
+	if (edev->phydev->speed == SPEED_100)
+		reg |= MACB_BIT(SPD);
+
+	writel(reg, macb->regs + MACB_NCFGR);
+}
+
 static int macb_open(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
-	int duplex = 1, speed = 1;
-	u32 ncfgr;
 
 	debug("%s\n", __func__);
 
-	miidev_wait_aneg(&macb->miidev);
-	miidev_print_status(&macb->miidev);
-
-	ncfgr = readl(macb->regs + MACB_NCFGR);
-	ncfgr &= ~(MACB_BIT(SPD) | MACB_BIT(FD));
-	if (speed)
-		ncfgr |= MACB_BIT(SPD);
-	if (duplex)
-		ncfgr |= MACB_BIT(FD);
-	writel(ncfgr, macb->regs + MACB_NCFGR);
-
-	return 0;
+	/* Obtain the PHY's address/id */
+	return phy_device_connect(edev, &macb->miibus, macb->phy_addr,
+			       macb_adjust_link, macb->phy_flags,
+			       macb->interface);
 }
 
 static int macb_init(struct eth_device *edev)
@@ -267,7 +277,7 @@ static int macb_init(struct eth_device *edev)
 	writel((ulong)macb->rx_ring, macb->regs + MACB_RBQP);
 	writel((ulong)macb->tx_ring, macb->regs + MACB_TBQP);
 
-	if (macb->flags & AT91SAM_ETHER_RMII)
+	if (macb->interface == PHY_INTERFACE_MODE_RMII)
 		val |= MACB_BIT(RMII);
 	else
 		val &= ~MACB_BIT(RMII);
@@ -301,10 +311,9 @@ static void macb_halt(struct eth_device *edev)
 	writel(MACB_BIT(CLRSTAT), macb->regs + MACB_NCR);
 }
 
-static int macb_phy_read(struct mii_device *mdev, int addr, int reg)
+static int macb_phy_read(struct mii_bus *bus, int addr, int reg)
 {
-	struct eth_device *edev = mdev->edev;
-	struct macb_device *macb = edev->priv;
+	struct macb_device *macb = bus->priv;
 
 	unsigned long netctl;
 	unsigned long netstat;
@@ -344,10 +353,9 @@ static int macb_phy_read(struct mii_device *mdev, int addr, int reg)
 	return value;
 }
 
-static int macb_phy_write(struct mii_device *mdev, int addr, int reg, int value)
+static int macb_phy_write(struct mii_bus *bus, int addr, int reg, u16 value)
 {
-	struct eth_device *edev = mdev->edev;
-	struct macb_device *macb = edev->priv;
+	struct macb_device *macb = bus->priv;
 	unsigned long netctl;
 	unsigned long netstat;
 	unsigned long frame;
@@ -428,14 +436,19 @@ static int macb_probe(struct device_d *dev)
 	edev->set_ethaddr = macb_set_ethaddr;
 	edev->parent = dev;
 
-	macb->miidev.read = macb_phy_read;
-	macb->miidev.write = macb_phy_write;
-	macb->miidev.address = pdata->phy_addr;
-	macb->miidev.flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
-		MIIDEV_FORCE_LINK : 0;
-	macb->miidev.edev = edev;
-	macb->miidev.parent = dev;
-	macb->flags = pdata->flags;
+	macb->miibus.read = macb_phy_read;
+	macb->miibus.write = macb_phy_write;
+	macb->phy_addr = pdata->phy_addr;
+	macb->miibus.priv = macb;
+	macb->miibus.parent = dev;
+
+	if (pdata->flags & AT91SAM_ETHER_RMII)
+		macb->interface = PHY_INTERFACE_MODE_RMII;
+	else
+		macb->interface = PHY_INTERFACE_MODE_MII;
+
+	macb->phy_flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
+					PHYLIB_FORCE_LINK : 0;
 
 	macb->rx_buffer = dma_alloc_coherent(CFG_MACB_RX_BUFFER_SIZE);
 	macb->rx_ring = dma_alloc_coherent(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
@@ -470,7 +483,7 @@ static int macb_probe(struct device_d *dev)
 
 	writel(ncfgr, macb->regs + MACB_NCFGR);
 
-	mii_register(&macb->miidev);
+	mdiobus_register(&macb->miibus);
 	eth_register(edev);
 
 	return 0;

@@ -219,6 +219,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	static char *arp_packet;
 	struct ethernet *et;
 	unsigned retries = 0;
+	int ret;
 
 	if (!arp_packet) {
 		arp_packet = net_alloc_packet();
@@ -262,7 +263,9 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 
 	arp_ether = ether;
 
-	eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+	ret = eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+	if (ret)
+		return ret;
 	arp_start = get_time_ns();
 
 	while (arp_wait_ip) {
@@ -272,7 +275,9 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 		if (is_timeout(arp_start, 3 * SECOND)) {
 			printf("T ");
 			arp_start = get_time_ns();
-			eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+			ret = eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+			if (ret)
+				return ret;
 			retries++;
 		}
 
@@ -454,9 +459,7 @@ static int net_ip_send(struct net_connection *con, int len)
 	con->ip->check = 0;
 	con->ip->check = ~net_checksum((unsigned char *)con->ip, sizeof(struct iphdr));
 
-	eth_send(con->packet, ETHER_HDR_SIZE + sizeof(struct iphdr) + len);
-
-	return 0;
+	return eth_send(con->packet, ETHER_HDR_SIZE + sizeof(struct iphdr) + len);
 }
 
 int net_udp_send(struct net_connection *con, int len)
@@ -480,6 +483,7 @@ static int net_answer_arp(unsigned char *pkt, int len)
 	struct arprequest *arp = (struct arprequest *)(pkt + ETHER_HDR_SIZE);
 	struct ethernet *et = (struct ethernet *)pkt;
 	unsigned char *packet;
+	int ret;
 
 	debug("%s\n", __func__);
 
@@ -497,10 +501,10 @@ static int net_answer_arp(unsigned char *pkt, int len)
 	if (!packet)
 		return 0;
 	memcpy(packet, pkt, ETHER_HDR_SIZE + ARP_HDR_SIZE);
-	eth_send(packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+	ret = eth_send(packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	free(packet);
 
-	return 0;
+	return ret;
 }
 
 static void net_bad_packet(unsigned char *pkt, int len)

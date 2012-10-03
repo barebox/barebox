@@ -1,0 +1,17 @@
+#
+# PHY Layer Configuration
+#
+
+menu "phylib                       "
+
+if PHYLIB
+
+comment "MII PHY device drivers"
+
+config GENERIC_PHY
+	bool "Drivers for the Generic PHYs"
+	default y
+
+endif
+
+endmenu

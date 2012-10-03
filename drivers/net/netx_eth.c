@@ -2,13 +2,13 @@
 #include <command.h>
 #include <net.h>
 #include <io.h>
-#include <miidev.h>
 #include <mach/netx-xc.h>
 #include <mach/netx-eth.h>
 #include <mach/netx-regs.h>
 #include <xfuncs.h>
 #include <init.h>
 #include <driver.h>
+#include <linux/phy.h>
 
 #define ETH_MAC_LOCAL_CONFIG 0x1560
 #define ETH_MAC_4321         0x1564
@@ -47,7 +47,7 @@
 #define CON_FIFO_PORT_LO(xcno)  (6 + ((xcno) << 3))    /* Index of the FIFO where sent Data packages are confirmed */
 
 struct netx_eth_priv {
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	int xcno;
 };
 
@@ -118,7 +118,7 @@ static int netx_eth_rx (struct eth_device *edev)
 	return 0;
 }
 
-static int netx_miidev_read(struct mii_device *mdev, int phy_addr, int reg)
+static int netx_miibus_read(struct mii_bus *bus, int phy_addr, int reg)
 {
 	int value;
 
@@ -135,8 +135,8 @@ static int netx_miidev_read(struct mii_device *mdev, int phy_addr, int reg)
 	return value;
 }
 
-static int netx_miidev_write(struct mii_device *mdev, int phy_addr,
-	int reg, int val)
+static int netx_miibus_write(struct mii_bus *bus, int phy_addr,
+	int reg, u16 val)
 {
 	debug("%s: addr: 0x%02x reg: 0x%02x val: 0x%04x\n",__func__,
 	      phy_addr, reg, val);
@@ -189,13 +189,15 @@ static int netx_eth_init_dev(struct eth_device *edev)
 	for (i = 2; i <= 18; i++)
 		PFIFO_REG( PFIFO_BASE(EMPTY_PTR_FIFO(xcno)) ) = FIFO_PTR_FRAMENO(i) | FIFO_PTR_SEGMENT(xcno);
 
-	miidev_restart_aneg(&priv->miidev);
 	return 0;
 }
 
 static int netx_eth_open(struct eth_device *edev)
 {
-	return 0;
+	struct netx_eth_priv *priv = (struct netx_eth_priv *)edev->priv;
+
+	return phy_device_connect(edev, &priv->miibus, 0, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
 }
 
 static void netx_eth_halt (struct eth_device *edev)
@@ -259,14 +261,12 @@ static int netx_eth_probe(struct device_d *dev)
 	edev->set_ethaddr = netx_eth_set_ethaddr;
 	edev->parent = dev;
 
-	priv->miidev.read = netx_miidev_read;
-	priv->miidev.write = netx_miidev_write;
-	priv->miidev.address = 0;
-	priv->miidev.flags = 0;
-	priv->miidev.parent = dev;
+	priv->miibus.read = netx_miibus_read;
+	priv->miibus.write = netx_miibus_write;
+	priv->miibus.parent = dev;
 
 	netx_eth_init_phy();
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
         return 0;

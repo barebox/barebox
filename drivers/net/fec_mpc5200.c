@@ -10,13 +10,12 @@
 #include <mach/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
+#include <fec.h>
 #include <init.h>
-#include <miidev.h>
 #include <driver.h>
 #include <mach/sdma.h>
-#include <mach/fec.h>
 #include <mach/clocks.h>
-#include <miidev.h>
+#include <linux/phy.h>
 #include "fec_mpc5200.h"
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
@@ -31,10 +30,9 @@ typedef struct {
 /*
  * MII-interface related functions
  */
-static int fec5xxx_miidev_read(struct mii_device *mdev, int phyAddr, int regAddr)
+static int fec5xxx_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 {
-	struct eth_device *edev = mdev->edev;
-	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)bus->priv;
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
@@ -70,11 +68,10 @@ static int fec5xxx_miidev_read(struct mii_device *mdev, int phyAddr, int regAddr
 	return fec->eth->mii_data;
 }
 
-static int fec5xxx_miidev_write(struct mii_device *mdev, int phyAddr,
-	int regAddr, int data)
+static int fec5xxx_miibus_write(struct mii_bus *bus, int phyAddr,
+	int regAddr, u16 data)
 {
-	struct eth_device *edev = mdev->edev;
-	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)edev->priv;
+	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)bus->priv;
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
@@ -381,9 +378,6 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 
 	debug("mpc5xxx_fec_init... Done \n");
 
-	if (fec->xcv_type != SEVENWIRE)
-		miidev_restart_aneg(&fec->miidev);
-
 	return 0;
 }
 
@@ -413,8 +407,8 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		miidev_wait_aneg(&fec->miidev);
-		miidev_print_status(&fec->miidev);
+		return phy_device_connect(edev, &fec->miibus, CONFIG_PHY_ADDR,
+				 NULL, fec->phy_flags, fec->interface);
 	}
 
 	return 0;
@@ -556,7 +550,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	if (fec->xcv_type != SEVENWIRE) {
 		uint16_t phyStatus;
-		phyStatus = fec5xxx_miidev_read(&fec->miidev, 0, 0x1);
+		phyStatus = fec5xxx_miibus_read(&fec->miibus, 0, 0x1);
 	}
 
 	/*
@@ -657,7 +651,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
-	struct mpc5xxx_fec_platform_data *pdata = (struct mpc5xxx_fec_platform_data *)dev->platform_data;
+	struct fec_platform_data *pdata = dev->platform_data;
 	struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
 
@@ -683,14 +677,28 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	loadtask(0, 2);
 
 	if (fec->xcv_type != SEVENWIRE) {
-		fec->miidev.read = fec5xxx_miidev_read;
-		fec->miidev.write = fec5xxx_miidev_write;
-		fec->miidev.address = CONFIG_PHY_ADDR;
-		fec->miidev.flags = pdata->xcv_type == MII10 ? MIIDEV_FORCE_10 : 0;
-		fec->miidev.edev = edev;
-		fec->miidev.parent = dev;
+		fec->miibus.read = fec5xxx_miibus_read;
+		fec->miibus.write = fec5xxx_miibus_write;
+		switch (pdata->xcv_type) {
+		case RMII:
+			fec->interface = PHY_INTERFACE_MODE_RMII;
+			break;
+		case RGMII:
+			fec->interface = PHY_INTERFACE_MODE_RGMII;
+			break;
+		case MII10:
+			fec->phy_flags = PHYLIB_FORCE_10;
+		case MII100:
+			fec->interface = PHY_INTERFACE_MODE_MII;
+			break;
+		case SEVENWIRE:
+			fec->interface = PHY_INTERFACE_MODE_NA;
+			break;
+		}
+		fec->miibus.priv = fec;
+		fec->miibus.parent = dev;
 
-		mii_register(&fec->miidev);
+		mdiobus_register(&fec->miibus);
 	}
 
 	eth_register(edev);

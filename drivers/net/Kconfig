@@ -19,11 +19,13 @@ config HAS_DESIGNWARE_ETH
 config ARCH_HAS_FEC_IMX
 	bool
 
-config MIIDEV
+config PHYLIB
 	bool
 
 menu "Network drivers               "
 	depends on NET
+
+source "drivers/net/phy/Kconfig"
 
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
@@ -31,52 +33,57 @@ config DRIVER_NET_CS8900
 
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
-	select MIIDEV
+	select PHYLIB
 	help
 	  This option enables support for the SMSC LAN9[12]1[567]
 	  ethernet chip.
 
 config DRIVER_NET_SMC91111
 	bool "smc91111 ethernet driver"
-	select MIIDEV
+	select PHYLIB
 	help
 	  This option enables support for the SMSC LAN91C111
 	  ethernet chip.
 
+config DRIVER_NET_DAVINCI_EMAC
+	bool "TI Davinci/OMAP EMAC ethernet driver"
+	depends on ARCH_DAVINCI || ARCH_OMAP3
+	select PHYLIB
+
 config DRIVER_NET_DM9K
 	bool "Davicom dm9k[E|A|B] ethernet driver"
 	depends on HAS_DM9000
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_NETX
 	bool "Hilscher Netx ethernet driver"
 	depends on HAS_NETX_ETHER
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_AT91_ETHER
 	bool "at91 ethernet driver"
 	depends on HAS_AT91_ETHER
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_MPC5200
 	bool "MPC5200 Ethernet driver"
 	depends on ARCH_MPC5200
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_FEC_IMX
 	bool "i.MX FEC Ethernet driver"
 	depends on ARCH_HAS_FEC_IMX
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_EP93XX
 	bool "EP93xx Ethernet driver"
 	depends on ARCH_EP93XX
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
 	depends on HAS_MACB
-	select MIIDEV
+	select PHYLIB
 
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
@@ -85,7 +92,7 @@ config DRIVER_NET_TAP
 config DRIVER_NET_TSE
 	depends on NIOS2
 	bool "Altera TSE ethernet driver"
-	select MIIDEV
+	select PHYLIB
 	help
 	  This option enables support for the Altera TSE MAC.
 
@@ -100,14 +107,14 @@ config TSE_USE_DEDICATED_DESC_MEM
 
 config DRIVER_NET_KS8851_MLL
 	bool "ks8851 mll ethernet driver"
-	select MIIDEV
+	select PHYLIB
 	help
 	  This option enables support for the Micrel KS8851 MLL
 	  ethernet chip.
 
 config DRIVER_NET_DESIGNWARE
 	bool "Designware Universal MAC ethernet driver"
-	select MIIDEV
+	select PHYLIB
 	depends on HAS_DESIGNWARE_ETH
 	help
 	  This option enables support for the Synopsys
@@ -121,7 +128,7 @@ config DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR
 config DRIVER_NET_GIANFAR
 	bool "Gianfar Ethernet"
 	depends on ARCH_MPC85XX
-	select MIIDEV
+	select PHYLIB
 
 source "drivers/net/usb/Kconfig"
 

@@ -269,7 +269,7 @@ struct gfar_private {
 	void __iomem *phyregs;
 	void __iomem *phyregs_sgmii;
 	struct phy_info *phyinfo;
-	struct mii_device miidev;
+	struct mii_bus miibus;
 	volatile struct txbd8 *txbd;
 	volatile struct rxbd8 *rxbd;
 	uint txidx;

@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <clock.h>
 #include <led.h>
+#include <linux/phy.h>
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
 /* How often do we retry to send packages */
@@ -44,6 +45,9 @@ struct eth_device {
 	struct eth_device *next;
 	void *priv;
 
+	/* phy device may attach itself for hardware timestamping */
+	struct phy_device *phydev;
+
 	struct device_d dev;
 	struct device_d *parent;
 
@@ -55,10 +59,8 @@ struct eth_device {
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 
-int eth_open(void);			/* open the device		*/
 int eth_send(void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
-void eth_halt(void);			/* stop SCC			*/
 
 /* associate a MAC address to a ethernet device. Should be called by
  * board code for boards which store their MAC address at some unusual

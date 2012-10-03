@@ -26,10 +26,10 @@
 
 #include <common.h>
 #include <net.h>
-#include <miidev.h>
 #include <init.h>
 #include <clock.h>
 #include <linux/mii.h>
+#include <linux/phy.h>
 
 #include <io.h>
 #include <asm/dma-mapping.h>
@@ -247,10 +247,9 @@ static int tse_set_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int tse_phy_read(struct mii_device *mdev, int phy_addr, int reg)
+static int tse_phy_read(struct mii_bus *bus, int phy_addr, int reg)
 {
-	struct eth_device *edev = mdev->edev;
-	struct altera_tse_priv *priv = edev->priv;
+	struct altera_tse_priv *priv = bus->priv;
 	struct alt_tse_mac *mac_dev = priv->tse_regs;
 	uint32_t *mdio_regs;
 
@@ -261,10 +260,9 @@ static int tse_phy_read(struct mii_device *mdev, int phy_addr, int reg)
 	return readl(&mdio_regs[reg]) & 0xFFFF;
 }
 
-static int tse_phy_write(struct mii_device *mdev, int phy_addr, int reg, int val)
+static int tse_phy_write(struct mii_bus *bus, int phy_addr, int reg, u16 val)
 {
-	struct eth_device *edev = mdev->edev;
-	struct altera_tse_priv *priv = edev->priv;
+	struct altera_tse_priv *priv = bus->priv;
 	struct alt_tse_mac *mac_dev = priv->tse_regs;
 	uint32_t *mdio_regs;
 
@@ -347,9 +345,12 @@ static void tse_reset(struct eth_device *edev)
 static int tse_eth_open(struct eth_device *edev)
 {
 	struct altera_tse_priv *priv = edev->priv;
+	int ret;
 
-	miidev_wait_aneg(priv->miidev);
-	miidev_print_status(priv->miidev);
+	ret = phy_device_connect(edev, priv->miibus, priv->phy_addr, NULL, 0,
+				 PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	return 0;
 }
@@ -488,15 +489,13 @@ static int tse_init_dev(struct eth_device *edev)
 	/* enable MAC */
 	writel(ALTERA_TSE_CMD_TX_ENA_MSK | ALTERA_TSE_CMD_RX_ENA_MSK, &mac_dev->command_config);
 
-	miidev_restart_aneg(priv->miidev);
-
 	return 0;
 }
 
 static int tse_probe(struct device_d *dev)
 {
 	struct altera_tse_priv *priv;
-	struct mii_device *miidev;
+	struct mii_bus *miibus;
 	struct eth_device *edev;
 	struct alt_sgdma_descriptor *rx_desc;
 	struct alt_sgdma_descriptor *tx_desc;
@@ -505,7 +504,7 @@ static int tse_probe(struct device_d *dev)
 #endif
 	edev = xzalloc(sizeof(struct eth_device));
 	priv = xzalloc(sizeof(struct altera_tse_priv));
-	miidev = xzalloc(sizeof(struct mii_device));
+	miibus = xzalloc(sizeof(struct mii_bus));
 
 	edev->priv = priv;
 
@@ -527,7 +526,7 @@ static int tse_probe(struct device_d *dev)
 
 	if (!tx_desc) {
 		free(edev);
-		free(miidev);
+		free(miibus);
 		return 0;
 	}
 #endif
@@ -541,22 +540,19 @@ static int tse_probe(struct device_d *dev)
 	priv->rx_desc = rx_desc;
 	priv->tx_desc = tx_desc;
 
-	priv->miidev = miidev;
+	priv->miibus = miibus;
 
-	miidev->read = tse_phy_read;
-	miidev->write = tse_phy_write;
-	miidev->flags = 0;
-	miidev->edev = edev;
-	miidev->parent = dev;
+	miibus->read = tse_phy_read;
+	miibus->write = tse_phy_write;
+	miibus->priv = priv;
+	miibus->parent = dev;
 
 	if (dev->platform_data != NULL)
-		miidev->address = *((int8_t *)(dev->platform_data));
-	else {
-		printf("No PHY address specified.\n");
-		return -ENODEV;
-	}
+		priv->phy_addr = *((int8_t *)(dev->platform_data));
+	else
+		priv->phy_addr = -1;
 
-	mii_register(miidev);
+	mdiobus_register(miibus);
 
 	return eth_register(edev);
 }

@@ -5,11 +5,11 @@ menuconfig NET_USB
 if NET_USB
 
 config NET_USB_ASIX
-	select MIIDEV
+	select PHYLIB
 	bool "Asix compatible"
 
 config NET_USB_SMSC95XX
-	select MIIDEV
+	select PHYLIB
 	bool "SMSC95xx"
 
 endif

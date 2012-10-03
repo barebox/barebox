@@ -1,7 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <net.h>
-#include <miidev.h>
+#include <linux/phy.h>
 #include <usb/usb.h>
 #include <usb/usbnet.h>
 #include <errno.h>
@@ -231,10 +231,9 @@ static inline int asix_set_hw_mii(struct usbnet *dev)
 	return ret;
 }
 
-static int asix_mdio_read(struct mii_device *mdev, int phy_id, int loc)
+static int asix_mdio_read(struct mii_bus *bus, int phy_id, int loc)
 {
-	struct eth_device *eth = mdev->edev;
-	struct usbnet *dev = eth->priv;
+	struct usbnet *dev = bus->priv;
 	__le16 res;
 
 	asix_set_sw_mii(dev);
@@ -248,10 +247,9 @@ static int asix_mdio_read(struct mii_device *mdev, int phy_id, int loc)
 	return le16_to_cpu(res);
 }
 
-static int asix_mdio_write(struct mii_device *mdev, int phy_id, int loc, int val)
+static int asix_mdio_write(struct mii_bus *bus, int phy_id, int loc, u16 val)
 {
-	struct eth_device *eth = mdev->edev;
-	struct usbnet *dev = eth->priv;
+	struct usbnet *dev = bus->priv;
 	__le16 res = cpu_to_le16(val);
 
 	dev_dbg(&dev->edev.dev, "asix_mdio_write() phy_id=0x%02x, loc=0x%02x, val=0x%04x",
@@ -469,14 +467,13 @@ static int asix_tx_fixup(struct usbnet *dev,
 
 static int asix_init_mii(struct usbnet *dev)
 {
-	dev->miidev.read = asix_mdio_read;
-	dev->miidev.write = asix_mdio_write;
-	dev->miidev.address = asix_get_phy_addr(dev);
-	dev->miidev.flags = 0;
-	dev->miidev.edev = &dev->edev;
-	dev->miidev.parent = &dev->udev->dev;
+	dev->miibus.read = asix_mdio_read;
+	dev->miibus.write = asix_mdio_write;
+	dev->phy_addr = asix_get_phy_addr(dev);
+	dev->miibus.priv = dev;
+	dev->miibus.parent = &dev->udev->dev;
 
-	return mii_register(&dev->miidev);
+	return mdiobus_register(&dev->miibus);
 }
 
 static int ax88172_link_reset(struct usbnet *dev)
@@ -631,7 +628,7 @@ out:
 
 static void asix_unbind(struct usbnet *dev)
 {
-	mii_unregister(&dev->miidev);
+	mdiobus_unregister(&dev->miibus);
 }
 
 static struct driver_info ax8817x_info = {

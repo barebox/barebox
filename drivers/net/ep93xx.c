@@ -34,17 +34,17 @@
 #include <command.h>
 #include <init.h>
 #include <malloc.h>
-#include <miidev.h>
 #include <io.h>
 #include <linux/types.h>
 #include <mach/ep93xx-regs.h>
+#include <linux/phy.h>
 #include "ep93xx.h"
 
 #define EP93XX_MAX_PKT_SIZE    1536
 
-static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg);
-static int ep93xx_phy_write(struct mii_device *mdev, int phy_addr, int phy_reg,
-			    int value);
+static int ep93xx_phy_read(struct mii_bus *bus, int phy_addr, int phy_reg);
+static int ep93xx_phy_write(struct mii_bus *bus, int phy_addr, int phy_reg,
+			    u16 value);
 
 static inline struct ep93xx_eth_priv *ep93xx_get_priv(struct eth_device *edev)
 {
@@ -199,8 +199,14 @@ static int ep93xx_eth_open(struct eth_device *edev)
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	struct mac_regs *regs = ep93xx_get_regs(edev);
 	int i;
+	int ret;
 
 	pr_debug("+ep93xx_eth_open\n");
+
+	ret = phy_device_connect(edev, &priv->miibus, 0, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	ep93xx_eth_reset(edev);
 
@@ -498,11 +504,10 @@ static int ep93xx_eth_probe(struct device_d *dev)
 	edev->set_ethaddr = ep93xx_eth_set_ethaddr;
 	edev->parent = dev;
 
-	priv->miidev.read = ep93xx_phy_read;
-	priv->miidev.write = ep93xx_phy_write;
-	priv->miidev.address = 0;
-	priv->miidev.flags = 0;
-	priv->miidev.parent = dev;
+	priv->miibus.read = ep93xx_phy_read;
+	priv->miibus.write = ep93xx_phy_write;
+	priv->miibus.parent = dev;
+	priv->miibus.priv = edev;
 
 	priv->tx_dq.base = calloc(NUMTXDESC,
 				sizeof(struct tx_descriptor));
@@ -532,7 +537,7 @@ static int ep93xx_eth_probe(struct device_d *dev)
 		goto eth_probe_failed_3;
 	}
 
-	mii_register(&priv->miidev);
+	mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
 	ret = 0;
@@ -575,9 +580,9 @@ eth_probe_done:
 /**
  * Read a 16-bit value from an MII register.
  */
-static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg)
+static int ep93xx_phy_read(struct mii_bus *bus, int phy_addr, int phy_reg)
 {
-	struct mac_regs *regs = ep93xx_get_regs(mdev->edev);
+	struct mac_regs *regs = ep93xx_get_regs(bus->priv);
 	int value = -1;
 	uint32_t self_ctl;
 
@@ -618,10 +623,10 @@ static int ep93xx_phy_read(struct mii_device *mdev, int phy_addr, int phy_reg)
 /**
  * Write a 16-bit value to an MII register.
  */
-static int ep93xx_phy_write(struct mii_device *mdev, int phy_addr,
-			int phy_reg, int value)
+static int ep93xx_phy_write(struct mii_bus *bus, int phy_addr,
+			int phy_reg, u16 value)
 {
-	struct mac_regs *regs = ep93xx_get_regs(mdev->edev);
+	struct mac_regs *regs = ep93xx_get_regs(bus->priv);
 	uint32_t self_ctl;
 
 	pr_debug("+ep93xx_phy_write\n");

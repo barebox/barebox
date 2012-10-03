@@ -26,13 +26,13 @@
 
 #include <command.h>
 #include <net.h>
-#include <miidev.h>
 #include <malloc.h>
 #include <init.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <linux/phy.h>
 
 #define MAX_RECV_FRAMES			32
 #define MAX_BUF_SIZE			2048
@@ -372,7 +372,7 @@
 
 struct ks_net {
 	struct eth_device	edev;
-	struct mii_device	miidev;
+	struct mii_bus	miibus;
 	void __iomem		*hw_addr;
 	void __iomem		*hw_addr_cmd;
 	struct platform_device	*pdev;
@@ -536,10 +536,9 @@ static int ks_phy_reg(int reg)
  * caller. The mii-tool that the driver was tested with takes any -ve error
  * as real PHY capabilities, thus displaying incorrect data to the user.
  */
-static int ks_phy_read(struct mii_device *mdev, int addr, int reg)
+static int ks_phy_read(struct mii_bus *bus, int addr, int reg)
 {
-	struct eth_device *edev = mdev->edev;
-	struct ks_net *priv = (struct ks_net *)edev->priv;
+	struct ks_net *priv = (struct ks_net *)bus->priv;
 	int ksreg;
 	int result;
 
@@ -552,10 +551,9 @@ static int ks_phy_read(struct mii_device *mdev, int addr, int reg)
 	return result;
 }
 
-static int ks_phy_write(struct mii_device *mdev, int addr, int reg, int val)
+static int ks_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 {
-	struct eth_device *edev = mdev->edev;
-	struct ks_net *priv = (struct ks_net *)edev->priv;
+	struct ks_net *priv = (struct ks_net *)bus->priv;
 	int ksreg;
 
 	ksreg = ks_phy_reg(reg);
@@ -783,11 +781,14 @@ static int ks8851_eth_open(struct eth_device *edev)
 {
 	struct ks_net *priv = (struct ks_net *)edev->priv;
 	struct device_d *dev = &edev->dev;
+	int ret;
 
 	ks_enable_qmu(priv);
 
-	miidev_wait_aneg(&priv->miidev);
-	miidev_print_status(&priv->miidev);
+	ret = phy_device_connect(edev, &priv->miibus, 1, NULL,
+				 0, PHY_INTERFACE_MODE_NA);
+	if (ret)
+		return ret;
 
 	dev_dbg(dev, "eth_open\n");
 
@@ -796,9 +797,6 @@ static int ks8851_eth_open(struct eth_device *edev)
 
 static int ks8851_init_dev(struct eth_device *edev)
 {
-	struct ks_net *priv = (struct ks_net *)edev->priv;
-
-	miidev_restart_aneg(&priv->miidev);
 	return 0;
 }
 
@@ -842,12 +840,10 @@ static int ks8851_probe(struct device_d *dev)
 	edev->parent = dev;
 
 	/* setup mii state */
-	ks->miidev.read = ks_phy_read;
-	ks->miidev.write = ks_phy_write;
-	ks->miidev.address = 1;
-	ks->miidev.flags = 0;
-	ks->miidev.edev = edev;
-	ks->miidev.parent = dev;
+	ks->miibus.read = ks_phy_read;
+	ks->miibus.write = ks_phy_write;
+	ks->miibus.priv = ks;
+	ks->miibus.parent = dev;
 
 	/* simple check for a valid chip being connected to the bus */
 
@@ -868,7 +864,7 @@ static int ks8851_probe(struct device_d *dev)
 	ks_soft_reset(ks, GRR_GSR);
 	ks_setup(ks);
 
-	mii_register(&ks->miidev);
+	mdiobus_register(&ks->miibus);
 	eth_register(edev);
 	dev_dbg(dev, "%s MARL 0x%04x MARM 0x%04x MARH 0x%04x\n", __func__,
 		ks_rdreg16(ks, KS_MARL), ks_rdreg16(ks, KS_MARM),

@@ -188,26 +188,14 @@ void __naked board_init_lowlevel_return(void)
 	pg_end = (uint32_t)&input_data_end - offset;
 	pg_len = pg_end - pg_start;
 
-	if (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY))
-		goto copy_piggy_link;
-
-	/*
-	 * Check if the piggydata binary will be overwritten
-	 * by the uncompressed binary or by the pbl relocation
-	 */
-	if (!offset ||
-	    !((pg_start >= TEXT_BASE && pg_start < TEXT_BASE + pg_len * 4) ||
-	      ((uint32_t)_text >= pg_start && (uint32_t)_text <= pg_end)))
-		goto copy_link;
-
-copy_piggy_link:
-	/*
-	 * copy piggydata binary to its link address
-	 */
-	memcpy(&input_data, (void *)pg_start, pg_len);
-	pg_start = (uint32_t)&input_data;
-
-copy_link:
+	if (offset && (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY) ||
+				region_overlap(pg_start, pg_len, TEXT_BASE, pg_len * 4))) {
+		/*
+		 * copy piggydata binary to its link address
+		 */
+		memcpy(&input_data, (void *)pg_start, pg_len);
+		pg_start = (uint32_t)&input_data;
+	}
 
 	setup_c();
 

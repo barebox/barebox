@@ -78,10 +78,11 @@ static int imx51_init(void)
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
-	add_generic_device("imx-gpio", 0, NULL, 0x73f84000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx-gpio", 1, NULL, 0x73f88000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx-gpio", 2, NULL, 0x73f8c000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx-gpio", 3, NULL, 0x73f90000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpt", 0, NULL, 0x73fa0000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 0, NULL, 0x73f84000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 1, NULL, 0x73f88000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 2, NULL, 0x73f8c000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 3, NULL, 0x73f90000, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

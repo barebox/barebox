@@ -336,31 +336,51 @@ static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id mc13892_dt_ids[] = {
+	{
+		.compatible = "fsl,mc13892",
+	}, {
+		.compatible = "fsl,mc13783",
+	}, {
+		/* sentinel */
+	}
+};
+
+#ifdef CONFIG_I2C
 static int mc_i2c_probe(struct device_d *dev)
 {
 	return mc_probe(dev, MC13XXX_MODE_I2C);
 }
 
+static struct driver_d mc_i2c_driver = {
+	.name  = "mc13xxx-i2c",
+	.probe = mc_i2c_probe,
+	.of_compatible = DRV_OF_COMPAT(mc13892_dt_ids),
+};
+
+static int mc_i2c_init(void)
+{
+	return i2c_register_driver(&mc_i2c_driver);
+}
+device_initcall(mc_i2c_init);
+#endif
+
+#ifdef CONFIG_SPI
 static int mc_spi_probe(struct device_d *dev)
 {
 	return mc_probe(dev, MC13XXX_MODE_SPI);
 }
 
-static struct driver_d mc_i2c_driver = {
-	.name  = "mc13xxx-i2c",
-	.probe = mc_i2c_probe,
-};
-
 static struct driver_d mc_spi_driver = {
 	.name  = "mc13xxx-spi",
 	.probe = mc_spi_probe,
+	.of_compatible = DRV_OF_COMPAT(mc13892_dt_ids),
 };
 
-static int mc_init(void)
+static int mc_spi_init(void)
 {
-        register_driver(&mc_i2c_driver);
-        register_driver(&mc_spi_driver);
-        return 0;
+	return spi_register_driver(&mc_spi_driver);
 }
 
-device_initcall(mc_init);
+device_initcall(mc_spi_init);
+#endif

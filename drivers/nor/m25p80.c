@@ -838,7 +838,7 @@ static struct driver_d epcs_flash_driver = {
 
 static int epcs_init(void)
 {
-	register_driver(&epcs_flash_driver);
+	spi_register_driver(&epcs_flash_driver);
 	return 0;
 }
 

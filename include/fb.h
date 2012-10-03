@@ -110,5 +110,7 @@ int register_framebuffer(struct fb_info *info);
 #define	FBIO_ENABLE		_IO('F', 2)
 #define	FBIO_DISABLE		_IO('F', 3)
 
+extern struct bus_type fb_bus;
+
 #endif /* __FB_H */
 

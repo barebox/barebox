@@ -25,6 +25,7 @@
 
 #include <linux/list.h>
 #include <linux/ioport.h>
+#include <of.h>
 
 #define MAX_DRIVER_NAME		32
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
@@ -60,6 +61,11 @@
 struct filep;
 struct bus_type;
 
+struct platform_device_id {
+	const char *name;
+	unsigned long driver_data;
+};
+
 /** @brief Describes a particular device present in the system */
 struct device_d {
 	/*! This member (and 'type' described below) is used to match with a
@@ -86,6 +92,7 @@ struct device_d {
 	struct driver_d *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
+	struct list_head bus_list; /* our bus            */
 	struct list_head children; /* our children            */
 	struct list_head sibling;
 	struct list_head active;   /* The list of all devices which have a driver */
@@ -99,6 +106,11 @@ struct device_d {
 	struct list_head parameters;
 
 	struct list_head cdevs;
+
+	struct platform_device_id *id_entry;
+	struct device_node *device_node;
+
+	struct of_device_id *of_id_entry;
 };
 
 /** @brief Describes a driver present in the system */
@@ -108,6 +120,7 @@ struct driver_d {
 	const char *name;
 
 	struct list_head list;
+	struct list_head bus_list; /* our bus            */
 
 	/*! Called if an instance of a device is found */
 	int     (*probe) (struct device_d *);
@@ -119,6 +132,9 @@ struct driver_d {
 	void    (*shortinfo) (struct device_d *);
 
 	struct bus_type *bus;
+
+	struct platform_device_id *id_table;
+	struct of_device_id *of_compatible;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */
@@ -333,9 +349,9 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 
 /* debugging and troubleshooting/diagnostic helpers. */
 
-#define dev_printf(dev, format, arg...)	\
-	printf("%s@%s: " format , (dev)->name , \
-	       dev_name(dev) , ## arg)
+int dev_printf(const struct device_d *dev, const char *format, ...)
+	__attribute__ ((format(__printf__, 2, 3)));
+
 
 #define dev_emerg(dev, format, arg...)		\
 	dev_printf((dev) , format , ## arg)
@@ -367,7 +383,25 @@ struct bus_type {
 	void (*remove)(struct device_d *dev);
 
 	struct list_head list;
+	struct list_head device_list;
+	struct list_head driver_list;
 };
+
+int bus_register(struct bus_type *bus);
+
+extern struct list_head bus_list;
+
+/* Iterate over all buses
+ */
+#define for_each_bus(bus) list_for_each_entry(bus, &bus_list, list)
+
+/* Iterate over all devices of a bus
+ */
+#define bus_for_each_device(bus, dev) list_for_each_entry(dev, &bus->device_list, bus_list)
+
+/* Iterate over all drivers of a bus
+ */
+#define bus_for_each_driver(bus, drv) list_for_each_entry(drv, &bus->driver_list, bus_list)
 
 extern struct bus_type platform_bus;
 
@@ -422,6 +456,11 @@ int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
+
+#define DRV_OF_COMPAT(compat) \
+	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL
+
+int dev_get_drvdata(struct device_d *dev, unsigned long *data);
 
 #endif /* DRIVER_H */
 

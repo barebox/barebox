@@ -85,8 +85,6 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
 	dev->driver = drv;
 
-	if (dev->bus != drv->bus)
-		goto err_out;
 	if (dev->bus->match(dev, drv))
 		goto err_out;
 	if (dev->bus->probe(dev))
@@ -116,18 +114,29 @@ int register_device(struct device_d *new_device)
 
 	debug ("register_device: %s\n", dev_name(new_device));
 
-	if (!new_device->bus) {
-//		dev_err(new_device, "no bus type associated. Needs fixup\n");
+	if (!new_device->bus)
 		new_device->bus = &platform_bus;
+
+	if (new_device->bus == &platform_bus && new_device->resource) {
+		struct device_d *dev;
+
+		bus_for_each_device(new_device->bus, dev) {
+			if (!dev->resource)
+				continue;
+			if (dev->resource->start == new_device->resource->start) {
+				return -EBUSY;
+			}
+		}
 	}
 
 	list_add_tail(&new_device->list, &device_list);
+	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
 
-	for_each_driver(drv) {
+	bus_for_each_driver(new_device->bus, drv) {
 		if (!match(drv, new_device))
 			break;
 	}
@@ -159,6 +168,7 @@ int unregister_device(struct device_d *old_dev)
 	}
 
 	list_del(&old_dev->list);
+	list_del(&old_dev->bus_list);
 	list_del(&old_dev->active);
 
 	/* remove device from parents child list */
@@ -212,13 +222,14 @@ int register_driver(struct driver_d *drv)
 	}
 
 	list_add_tail(&drv->list, &driver_list);
+	list_add_tail(&drv->bus_list, &drv->bus->driver_list);
 
 	if (!drv->info)
 		drv->info = noinfo;
 	if (!drv->shortinfo)
 		drv->shortinfo = noshortinfo;
 
-	for_each_device(dev)
+	bus_for_each_device(drv->bus, dev)
 		match(drv, dev);
 
 	return 0;
@@ -313,6 +324,25 @@ const char *dev_id(const struct device_d *dev)
 	return buf;
 }
 
+int dev_printf(const struct device_d *dev, const char *format, ...)
+{
+	va_list args;
+	int ret = 0;
+
+	if (dev->driver && dev->driver->name)
+		ret += printf("%s ", dev->driver->name);
+
+	ret += printf("%s: ", dev_name(dev));
+
+	va_start(args, format);
+
+	ret += vprintf(format, args);
+
+	va_end(args);
+
+	return ret;
+}
+
 void devices_shutdown(void)
 {
 	struct device_d *dev;
@@ -355,6 +385,21 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	}
 
 	return 0;
+}
+
+int dev_get_drvdata(struct device_d *dev, unsigned long *data)
+{
+	if (dev->of_id_entry) {
+		*data = dev->of_id_entry->data;
+		return 0;
+	}
+
+	if (dev->id_entry) {
+		*data = dev->id_entry->driver_data;
+		return 0;
+	}
+
+	return -ENODEV;
 }
 
 static int do_devinfo(int argc, char *argv[])
@@ -406,6 +451,12 @@ static int do_devinfo(int argc, char *argv[])
 
 		list_for_each_entry(param, &dev->parameters, list)
 			printf("%16s = %s\n", param->name, dev_get_param(dev, param->name));
+#ifdef CONFIG_OFDEVICE
+		if (dev->device_node) {
+			printf("\ndevice node: %s\n", dev->device_node->full_name);
+			of_print_nodes(dev->device_node, 0);
+		}
+#endif
 	}
 
 	return 0;

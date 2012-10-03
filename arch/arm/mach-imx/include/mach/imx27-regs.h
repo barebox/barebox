@@ -221,29 +221,6 @@
 #define ESDCFG_TWTR		(1 << 20)
 #define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
 
-/*
- * Definitions for the clocksource driver
- */
-/* Part 1: Registers */
-# define GPT_TCTL   0x00
-# define GPT_TPRER  0x04
-# define GPT_TCMP   0x08
-# define GPT_TCR    0x0c
-# define GPT_TCN    0x10
-# define GPT_TSTAT  0x14
-
-/* Part 2: Bitfields */
-#define TCTL_SWR       (1<<15) /* Software reset */
-#define TCTL_FRR       (1<<8)  /* Freerun / restart */
-#define TCTL_CAP       (3<<6)  /* Capture Edge */
-#define TCTL_OM        (1<<5)  /* output mode */
-#define TCTL_IRQEN     (1<<4)  /* interrupt enable */
-#define TCTL_CLKSOURCE (1)     /* Clock source bit position */
-#define TCTL_TEN       (1)     /* Timer enable */
-#define TPRER_PRES     (0xff)  /* Prescale */
-#define TSTAT_CAPT     (1<<1)  /* Capture event */
-#define TSTAT_COMP     (1)     /* Compare event */
-
 #define IMX_CS0_BASE	0xC0000000
 #define IMX_CS1_BASE	0xC8000000
 #define IMX_CS2_BASE	0xD0000000

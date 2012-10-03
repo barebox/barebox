@@ -1422,3 +1422,8 @@ struct bus_type usb_bus_type = {
 	.remove	= usb_remove,
 };
 
+static int usb_bus_init(void)
+{
+	return bus_register(&usb_bus_type);
+}
+pure_initcall(usb_bus_init);

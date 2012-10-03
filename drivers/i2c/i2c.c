@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <init.h>
 
 #include <i2c/i2c.h>
 
@@ -251,6 +252,7 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	strcpy(client->dev.name, chip->type);
 	client->dev.type_data = client;
 	client->dev.platform_data = chip->platform_data;
+	client->dev.bus = &i2c_bus;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
@@ -372,3 +374,31 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	return 0;
 }
 EXPORT_SYMBOL(i2c_add_numbered_adapter);
+
+static int i2c_match(struct device_d *dev, struct driver_d *drv)
+{
+	return strcmp(dev->name, drv->name) ? -1 : 0;
+}
+
+static int i2c_probe(struct device_d *dev)
+{
+	return dev->driver->probe(dev);
+}
+
+static void i2c_remove(struct device_d *dev)
+{
+	dev->driver->remove(dev);
+}
+
+struct bus_type i2c_bus = {
+	.name = "i2c",
+	.match = i2c_match,
+	.probe = i2c_probe,
+	.remove = i2c_remove,
+};
+
+static int i2c_bus_init(void)
+{
+	return bus_register(&i2c_bus);
+}
+pure_initcall(i2c_bus_init);

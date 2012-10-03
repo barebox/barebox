@@ -1,4 +1,5 @@
 obj-y	+= base/
+obj-$(CONFIG_ARM_AMBA) += amba/
 obj-y	+= net/
 obj-y	+= serial/
 obj-y	+= mtd/

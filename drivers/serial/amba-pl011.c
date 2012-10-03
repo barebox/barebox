@@ -35,6 +35,7 @@
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/amba/bus.h>
 
 /*
  * We wrap our port structure around the generic console_device.
@@ -44,6 +45,23 @@ struct amba_uart_port {
 	struct console_device	uart;		/* uart */
 	struct clk		*clk;		/* uart clock */
 	u32			uartclk;
+	struct vendor_data	*vendor;
+};
+
+/* There is by now at least one vendor with differing details, so handle it */
+struct vendor_data {
+	unsigned int		lcrh_tx;
+	unsigned int		lcrh_rx;
+};
+
+static struct vendor_data vendor_arm = {
+	.lcrh_tx		= UART011_LCRH,
+	.lcrh_rx		= UART011_LCRH,
+};
+
+static struct vendor_data vendor_st = {
+	.lcrh_tx		= ST_UART011_LCRH_TX,
+	.lcrh_rx		= ST_UART011_LCRH_RX,
 };
 
 static inline struct amba_uart_port *
@@ -116,12 +134,26 @@ static int pl011_tstc(struct console_device *cdev)
 	return !(readl(uart->base + UART01x_FR) & UART01x_FR_RXFE);
 }
 
+static void pl011_rlcr(struct amba_uart_port *uart, u32 lcr)
+{
+	struct vendor_data	*vendor = uart->vendor;
+
+	writew(lcr, uart->base + vendor->lcrh_rx);
+	if (vendor->lcrh_tx != vendor->lcrh_rx) {
+		int i;
+		/*
+		 * Wait 10 PCLKs before writing LCRH_TX register,
+		 * to get this delay write read only register 10 times
+		 */
+		for (i = 0; i < 10; ++i)
+			writew(0xff, uart->base + UART011_MIS);
+		writew(lcr, uart->base +  vendor->lcrh_tx);
+	}
+}
+
 int pl011_init_port (struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
-
-	uart->base = dev_request_mem_region(dev, 0);
 
 	/*
 	 ** First, disable everything.
@@ -142,8 +174,7 @@ int pl011_init_port (struct console_device *cdev)
 	/*
 	 ** Set the UART to be 8 bits, 1 stop bit, no parity, fifo enabled.
 	 */
-	writel((UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN),
-	       uart->base + UART011_LCRH);
+	pl011_rlcr(uart, UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN);
 
 	/*
 	 ** Finally, enable the UART
@@ -154,19 +185,21 @@ int pl011_init_port (struct console_device *cdev)
 	return 0;
 }
 
-static int pl011_probe(struct device_d *dev)
+static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct amba_uart_port *uart;
 	struct console_device *cdev;
 
 	uart = xzalloc(sizeof(struct amba_uart_port));
-	uart->clk = clk_get(dev, NULL);
+	uart->clk = clk_get(&dev->dev, NULL);
+	uart->base = amba_get_mem_region(dev);
+	uart->vendor = (void*)id->data;
 
 	if (IS_ERR(uart->clk))
 		return PTR_ERR(uart->clk);
 
 	cdev = &uart->uart;
-	cdev->dev = dev;
+	cdev->dev = &dev->dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl011_tstc;
 	cdev->putc = pl011_putc;
@@ -182,14 +215,31 @@ static int pl011_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d pl011_driver = {
-	.name = "uart-pl011",
-	.probe = pl011_probe,
+static struct amba_id pl011_ids[] = {
+	{
+		.id	= 0x00041011,
+		.mask	= 0x000fffff,
+		.data	= &vendor_arm,
+	},
+	{
+		.id	= 0x00380802,
+		.mask	= 0x00ffffff,
+		.data	= &vendor_st,
+	},
+	{ 0, 0 },
+};
+
+struct amba_driver pl011_driver = {
+	.drv = {
+		.name = "uart-pl011",
+	},
+	.probe		= pl011_probe,
+	.id_table	= pl011_ids,
 };
 
 static int pl011_init(void)
 {
-	register_driver(&pl011_driver);
+	amba_driver_register(&pl011_driver);
 	return 0;
 }
 

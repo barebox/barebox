@@ -648,6 +648,9 @@ static const struct spi_device_id m25p_ids[] = {
 	{ "cat25c09", CAT25_INFO( 128, 8, 32, 2) },
 	{ "cat25c17", CAT25_INFO( 256, 8, 32, 2) },
 	{ "cat25128", CAT25_INFO(2048, 8, 64, 2) },
+
+	/* Micron */
+	{ "n25q128", INFO(0x20ba18, 0, 64 * 1024, 256, 0) },
 	{ },
 };
 
@@ -693,6 +696,74 @@ static struct file_operations m25p80_ops = {
 	.erase  = m25p80_erase,
 	.lseek  = dev_lseek_default,
 };
+
+static int m25p_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
+		size_t *retlen, u_char *buf)
+{
+	struct m25p *flash = container_of(mtd, struct m25p, mtd);
+	ssize_t ret;
+
+	ret = flash->cdev.ops->read(&flash->cdev, buf, len, from, 0);
+	if (ret < 0) {
+		*retlen = 0;
+		return ret;
+	}
+
+	*retlen = ret;
+	return 0;
+}
+
+static int m25p_mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+		size_t *retlen, const u_char *buf)
+{
+	struct m25p *flash = container_of(mtd, struct m25p, mtd);
+	ssize_t ret;
+
+	ret = flash->cdev.ops->write(&flash->cdev, buf, len, to, 0);
+	if (ret < 0) {
+		*retlen = 0;
+		return ret;
+	}
+
+	*retlen = ret;
+	return 0;
+}
+
+static int m25p_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+{
+	struct m25p *flash = container_of(mtd, struct m25p, mtd);
+	ssize_t ret;
+
+	ret = flash->cdev.ops->erase(&flash->cdev, instr->len, instr->addr);
+
+	if (ret) {
+		instr->state = MTD_ERASE_FAILED;
+		return -EIO;
+	}
+
+	instr->state = MTD_ERASE_DONE;
+	mtd_erase_callback(instr);
+
+	return 0;
+}
+
+static void m25p_init_mtd(struct m25p *flash)
+{
+	struct mtd_info *mtd = &flash->mtd;
+
+	mtd->read = m25p_mtd_read;
+	mtd->write = m25p_mtd_write;
+	mtd->erase = m25p_mtd_erase;
+	mtd->size = flash->size;
+	mtd->name = flash->cdev.name;
+	mtd->erasesize = flash->erasesize;
+	mtd->writesize = 1;
+	mtd->subpage_sft = 0;
+	mtd->eraseregions = NULL;
+	mtd->numeraseregions = 0;
+	mtd->flags = MTD_CAP_NORFLASH;
+	flash->cdev.mtd = mtd;
+}
 
 /*
  * board specific setup should have ensured the SPI clock used here
@@ -824,6 +895,9 @@ static int m25p_probe(struct device_d *dev)
 	}
 
 	dev_info(dev, "%s (%lld Kbytes)\n", id->name, (long long)flash->size >> 10);
+
+	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD))
+		m25p_init_mtd(flash);
 
 	devfs_create(&flash->cdev);
 

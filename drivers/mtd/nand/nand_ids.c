@@ -118,6 +118,36 @@ struct nand_flash_dev nand_flash_ids[] = {
 	{__NANDSTR("NAND 2GiB 1,8V 16-bit"),	0xB5, 0, 2048, 0, LP_OPTIONS16},
 	{__NANDSTR("NAND 2GiB 3,3V 16-bit"),	0xC5, 0, 2048, 0, LP_OPTIONS16},
 
+	/* 32 Gigabit */
+	{__NANDSTR("NAND 4GiB 1,8V 8-bit"),	0xA7, 0, 4096, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 4GiB 3,3V 8-bit"),	0xD7, 0, 4096, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 4GiB 1,8V 16-bit"),	0xB7, 0, 4096, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 4GiB 3,3V 16-bit"),	0xC7, 0, 4096, 0, LP_OPTIONS16},
+
+	/* 64 Gigabit */
+	{__NANDSTR("NAND 8GiB 1,8V 8-bit"),	0xAE, 0, 8192, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 8GiB 3,3V 8-bit"),	0xDE, 0, 8192, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 8GiB 1,8V 16-bit"),	0xBE, 0, 8192, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 8GiB 3,3V 16-bit"),	0xCE, 0, 8192, 0, LP_OPTIONS16},
+
+	/* 128 Gigabit */
+	{__NANDSTR("NAND 16GiB 1,8V 8-bit"),	0x1A, 0, 16384, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 16GiB 3,3V 8-bit"),	0x3A, 0, 16384, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 16GiB 1,8V 16-bit"),	0x2A, 0, 16384, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 16GiB 3,3V 16-bit"),	0x4A, 0, 16384, 0, LP_OPTIONS16},
+
+	/* 256 Gigabit */
+	{__NANDSTR("NAND 32GiB 1,8V 8-bit"),	0x1C, 0, 32768, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 32GiB 3,3V 8-bit"),	0x3C, 0, 32768, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 32GiB 1,8V 16-bit"),	0x2C, 0, 32768, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 32GiB 3,3V 16-bit"),	0x4C, 0, 32768, 0, LP_OPTIONS16},
+
+	/* 512 Gigabit */
+	{__NANDSTR("NAND 64GiB 1,8V 8-bit"),	0x1E, 0, 65536, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 64GiB 3,3V 8-bit"),	0x3E, 0, 65536, 0, LP_OPTIONS},
+	{__NANDSTR("NAND 64GiB 1,8V 16-bit"),	0x2E, 0, 65536, 0, LP_OPTIONS16},
+	{__NANDSTR("NAND 64GiB 3,3V 16-bit"),	0x4E, 0, 65536, 0, LP_OPTIONS16},
+
 	/*
 	 * Renesas AND 1 Gigabit. Those chips do not support extended id and
 	 * have a strange page/block layout !  The chosen minimum erasesize is

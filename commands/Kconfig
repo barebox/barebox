@@ -57,6 +57,13 @@ config CMD_READLINE
 	tristate
 	prompt "readline"
 
+config CMD_LET
+	tristate
+	prompt "let"
+	help
+	  the 'let' command is used for arithmetics. It works like the corresponding
+	  Unix shell command.
+
 config CMD_TRUE
 	tristate
 	default y

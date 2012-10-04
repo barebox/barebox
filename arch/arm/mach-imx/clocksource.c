@@ -43,8 +43,9 @@
 #define TCTL_SWR			(1 << 15)	/* Software reset */
 #define IMX1_TCTL_FRR			(1 << 8)	/* Freerun / restart */
 #define IMX31_TCTL_FRR			(1 << 9)	/* Freerun / restart */
-#define IMX1_TCTL_CLKSOURCE_IPG		(1 << 1)	/* Clock source bit position */
+#define IMX1_TCTL_CLKSOURCE_PER		(1 << 1)	/* Clock source bit position */
 #define IMX31_TCTL_CLKSOURCE_IPG	(1 << 6)	/* Clock source bit position */
+#define IMX31_TCTL_CLKSOURCE_PER	(2 << 6)	/* Clock source bit position */
 #define TCTL_TEN			(1 << 0)	/* Timer enable */
 
 static struct clk *clk_gpt;
@@ -56,12 +57,12 @@ struct imx_gpt_regs {
 
 static struct imx_gpt_regs regs_imx1 = {
 	.tcn = 0x10,
-	.tctl_val = IMX1_TCTL_FRR | IMX1_TCTL_CLKSOURCE_IPG | TCTL_TEN,
+	.tctl_val = IMX1_TCTL_FRR | IMX1_TCTL_CLKSOURCE_PER | TCTL_TEN,
 };
 
 static struct imx_gpt_regs regs_imx31 = {
 	.tcn = 0x24,
-	.tctl_val = IMX31_TCTL_FRR | IMX31_TCTL_CLKSOURCE_IPG | TCTL_TEN,
+	.tctl_val = IMX31_TCTL_FRR | IMX31_TCTL_CLKSOURCE_PER | TCTL_TEN,
 };
 
 static struct imx_gpt_regs *regs;

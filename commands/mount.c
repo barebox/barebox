@@ -66,7 +66,7 @@ static int do_mount(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(mount)
 BAREBOX_CMD_HELP_USAGE("mount [[-t <fstype] <device> <mountpoint>]\n")
 BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
-BAREBOX_CMD_HELP_SHORT("If no fstpye is specified detected it.\n")
+BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automatically.\n")
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
 BAREBOX_CMD_HELP_END
 

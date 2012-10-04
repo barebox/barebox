@@ -19,6 +19,7 @@ struct device_d;
 
 struct clk_lookup {
 	struct list_head	node;
+	unsigned long		physbase;
 	const char		*dev_id;
 	const char		*con_id;
 	struct clk		*clk;
@@ -32,6 +33,8 @@ void clkdev_drop(struct clk_lookup *cl);
 
 void clkdev_add_table(struct clk_lookup *, size_t);
 int clk_add_alias(const char *, const char *, char *, struct device_d *);
+
+int clkdev_add_physbase(struct clk *clk, unsigned long base, const char *id);
 
 #define CLKDEV_DEV_ID(_id, _clk)			\
 	{						\

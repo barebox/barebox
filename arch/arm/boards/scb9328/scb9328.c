@@ -22,6 +22,7 @@
 #include <mach/imx-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <io.h>
 #include <partition.h>
 #include <fs.h>
@@ -70,19 +71,11 @@ static int scb9328_devices_init(void)
 /* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
 	FMCR = 0x1;
 
-	CS0U = 0x000F2000;
-	CS0L = 0x11110d01;
-
-	CS1U = 0x000F0a00;
-	CS1L = 0x11110601;
-	CS2U = 0x0;
-	CS2L = 0x0;
-	CS3U = 0x000FFFFF;
-	CS3L = 0x00000303;
-	CS4U = 0x000F0a00;
-	CS4L = 0x11110301;
-	CS5U = 0x00008400;
-	CS5L = 0x00000D03;
+	imx1_setup_eimcs(0, 0x000F2000, 0x11110d01);
+	imx1_setup_eimcs(1, 0x000F0a00, 0x11110601);
+	imx1_setup_eimcs(3, 0x000FFFFF, 0x00000303);
+	imx1_setup_eimcs(4, 0x000F0a00, 0x11110301);
+	imx1_setup_eimcs(5, 0x00008400, 0x00000D03);
 
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0x10000000, 16 * 1024 * 1024, 0);
 	add_dm9000_device(DEVICE_ID_DYNAMIC, 0x16000000, 0x16000004,

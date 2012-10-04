@@ -31,6 +31,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
+#include <mach/weim.h>
 #include <mach/imxfb.h>
 #include <i2c/i2c.h>
 #include <mach/spi.h>

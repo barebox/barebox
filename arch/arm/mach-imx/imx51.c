@@ -74,15 +74,16 @@ static int imx51_init(void)
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
-	add_generic_device("imx31-gpt", 0, NULL, 0x73fa0000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 0, NULL, 0x73f84000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 1, NULL, 0x73f88000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 2, NULL, 0x73f8c000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 3, NULL, 0x73f90000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx51-ccm", 0, NULL, MX51_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpt", 0, NULL, MX51_GPT1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 0, NULL, MX51_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 1, NULL, MX51_GPIO2_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 2, NULL, MX51_GPIO3_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 3, NULL, MX51_GPIO4_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
-coredevice_initcall(imx51_init);
+postcore_initcall(imx51_init);
 
 /*
  * Saves the boot source media into the $barebox_loc enviroment variable

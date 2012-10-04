@@ -37,6 +37,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
+#include <mach/weim.h>
 #include <mach/imxfb.h>
 #include <ns16550.h>
 #include <asm/mmu.h>
@@ -223,13 +224,13 @@ device_initcall(eukrea_cpuimx27_devices_init);
 static int eukrea_cpuimx27_console_init(void)
 {
 #ifdef CONFIG_DRIVER_SERIAL_IMX
-	imx_add_uart((void *)IMX_UART1_BASE, DEVICE_ID_DYNAMIC);
+	imx27_add_uart0();
 #endif
 	/* configure 8 bit UART on cs3 */
 	FMCR &= ~0x2;
 	imx27_setup_weimcs(3, 0x0000D603, 0x0D1D0D01, 0x00D20000);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-	add_ns16550_device(DEVICE_ID_DYNAMIC, IMX_CS3_BASE + QUART_OFFSET, 0xf,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, MX27_CS3_BASE_ADDR + QUART_OFFSET, 0xf,
 			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
 #endif
 	return 0;

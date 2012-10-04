@@ -22,9 +22,10 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <mach/imx-regs.h>
 #include <asm-generic/div64.h>
-#include <mach/clock.h>
 
 #define LCDC_SSA	0x00
 
@@ -138,6 +139,7 @@ struct imxfb_rgb {
 
 struct imxfb_info {
 	void __iomem		*regs;
+	struct clk		*clk;
 
 	u_int			pcr;
 	u_int			pwmr;
@@ -341,7 +343,7 @@ static int imxfb_activate_var(struct fb_info *info)
 	writel(readl(fbi->regs + LCDC_CPOS) & ~(CPOS_CC0 | CPOS_CC1),
 		fbi->regs + LCDC_CPOS);
 
-	lcd_clk = imx_get_lcdclk();
+	lcd_clk = clk_get_rate(fbi->clk);
 
 	tmp = mode->pixclock * (unsigned long long)lcd_clk;
 
@@ -563,6 +565,10 @@ static int imxfb_probe(struct device_d *dev)
 
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
+
+	fbi->clk = clk_get(dev, NULL);
+	if (IS_ERR(fbi->clk))
+		return PTR_ERR(fbi->clk);
 
 	fbi->mode = pdata->mode;
 	fbi->regs = dev_request_mem_region(dev, 0);

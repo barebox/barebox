@@ -25,6 +25,8 @@
 #include <clock.h>
 #include <init.h>
 #include <driver.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <mach/clock.h>
 #include <io.h>
 
@@ -103,6 +105,7 @@ struct mxcmci_regs {
 struct mxcmci_host {
 	struct mci_host		mci;
 	struct mxcmci_regs	*base;
+	struct clk		*clk;
 	int			irq;
 	int			detect_irq;
 	int			dma;
@@ -415,7 +418,7 @@ static void mxcmci_set_clk_rate(struct mxcmci_host *host, unsigned int clk_ios)
 {
 	unsigned int divider;
 	int prescaler = 0;
-	unsigned long clk_in = imx_get_mmcclk();
+	unsigned long clk_in = clk_get_rate(host->clk);
 
 	while (prescaler <= 0x800) {
 		for (divider = 1; divider <= 0xF; divider++) {
@@ -490,8 +493,13 @@ static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
 static int mxcmci_probe(struct device_d *dev)
 {
 	struct mxcmci_host *host;
+	unsigned long rate;
 
 	host = xzalloc(sizeof(*host));
+
+	host->clk = clk_get(dev, NULL);
+	if (IS_ERR(host->clk))
+		return PTR_ERR(host->clk);
 
 	host->mci.send_cmd = mxcmci_request;
 	host->mci.set_ios = mxcmci_set_ios;
@@ -503,8 +511,9 @@ static int mxcmci_probe(struct device_d *dev)
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	host->mci.f_min = imx_get_mmcclk() >> 7;
-	host->mci.f_max = imx_get_mmcclk() >> 1;
+	rate = clk_get_rate(host->clk);
+	host->mci.f_min = rate >> 7;
+	host->mci.f_max = rate >> 1;
 
 	mci_register(&host->mci);
 

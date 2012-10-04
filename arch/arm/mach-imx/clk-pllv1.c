@@ -1,10 +1,4 @@
 /*
- *
- * (c) 2004 Sascha Hauer <sascha@saschahauer.de>
- *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -16,25 +10,33 @@
  * GNU General Public License for more details.
  *
  */
-
-#include <asm-generic/div64.h>
 #include <common.h>
-#include <command.h>
-#include <complete.h>
-#include <mach/clock.h>
+#include <init.h>
+#include <driver.h>
+#include <linux/clk.h>
+#include <io.h>
+#include <linux/clkdev.h>
+#include <linux/err.h>
+#include <malloc.h>
+#include <asm-generic/div64.h>
 
-/*
- *  get the system pll clock in Hz
- *
- *                  mfi + mfn / (mfd +1)
- *  f = 2 * f_ref * --------------------
- *                        pd + 1
- */
-unsigned int imx_decode_pll(unsigned int reg_val, unsigned int freq)
+#include "clk.h"
+
+struct clk_pllv1 {
+	struct clk clk;
+	void __iomem *reg;
+	const char *parent;
+};
+
+static unsigned long clk_pllv1_recalc_rate(struct clk *clk,
+		unsigned long parent_rate)
 {
+	struct clk_pllv1 *pll = container_of(clk, struct clk_pllv1, clk);
 	unsigned long long ll;
 	int mfn_abs;
 	unsigned int mfi, mfn, mfd, pd;
+	u32 reg_val = readl(pll->reg);
+	unsigned long freq = parent_rate;
 
 	mfi = (reg_val >> 10) & 0xf;
 	mfn = reg_val & 0x3ff;
@@ -65,18 +67,28 @@ unsigned int imx_decode_pll(unsigned int reg_val, unsigned int freq)
 	return ll;
 }
 
-extern void imx_dump_clocks(void);
+struct clk_ops clk_pllv1_ops = {
+	.recalc_rate = clk_pllv1_recalc_rate,
+};
 
-static int do_clocks(int argc, char *argv[])
+struct clk *imx_clk_pllv1(const char *name, const char *parent,
+		void __iomem *base)
 {
-	imx_dump_clocks();
+	struct clk_pllv1 *pll = xzalloc(sizeof(*pll));
+	int ret;
 
-	return 0;
+	pll->parent = parent;
+	pll->reg = base;
+	pll->clk.ops = &clk_pllv1_ops;
+	pll->clk.name = name;
+	pll->clk.parent_names = &pll->parent;
+	pll->clk.num_parents = 1;
+
+	ret = clk_register(&pll->clk);
+	if (ret) {
+		free(pll);
+		return ERR_PTR(ret);
+	}
+
+	return &pll->clk;
 }
-
-BAREBOX_CMD_START(dump_clocks)
-	.cmd		= do_clocks,
-	.usage		= "show clock frequencies",
-	BAREBOX_CMD_COMPLETE(empty_complete)
-BAREBOX_CMD_END
-

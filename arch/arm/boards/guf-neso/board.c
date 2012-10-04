@@ -115,21 +115,21 @@ static void neso_usbh_init(void)
 {
 	uint32_t temp;
 
-	temp = readl(IMX_OTG_BASE + 0x600);
+	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
 	temp &= ~((3 << 21) | 1);
 	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20) | (1<<11);
-	writel(temp, IMX_OTG_BASE + 0x600);
+	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x600);
 
-	temp = readl(IMX_OTG_BASE + 0x584);
+	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x584);
 	temp &= ~(3 << 30);
 	temp |= 2 << 30;
-	writel(temp, IMX_OTG_BASE + 0x584);
+	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x584);
 
 	mdelay(10);
 
 	gpio_set_value(USBH2_PHY_CS_GPIO, 0);
 	mdelay(10);
-	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1);
 }
 #endif
 
@@ -276,7 +276,7 @@ static int neso_devices_init(void)
 
 #ifdef CONFIG_USB
 	neso_usbh_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
 #endif
 
 	imx27_add_fec(&fec_info);

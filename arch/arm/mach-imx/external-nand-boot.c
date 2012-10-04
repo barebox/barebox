@@ -122,7 +122,7 @@ static int __maybe_unused is_pagesize_2k(void)
 		return 0;
 #endif
 #ifdef CONFIG_ARCH_IMX27
-	if (readl(IMX_SYSTEM_CTL_BASE + 0x14) & (1 << 5))
+	if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
 		return 1;
 	else
 		return 0;

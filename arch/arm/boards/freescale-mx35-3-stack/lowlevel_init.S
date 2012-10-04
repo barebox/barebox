@@ -54,7 +54,7 @@ CCM_PDR0_W:		.word	0x00001000
 MPCTL_PARAM_399_W:	.word	MPCTL_PARAM_399
 MPCTL_PARAM_532_W:	.word	MPCTL_PARAM_532
 PPCTL_PARAM_W:		.word	PPCTL_PARAM_300
-CCM_BASE_ADDR_W:	.word	IMX_CCM_BASE
+CCM_BASE_ADDR_W:	.word	MX35_CCM_BASE_ADDR
 
 .globl reset
 reset:
@@ -157,8 +157,8 @@ reset:
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =STACK_BASE + STACK_SIZE - 12		/* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM */
-	ldr	r2, =IMX_NFC_BASE + 0x800	/* end of NFC SRAM */
+	ldr	r0, =MX35_NFC_BASE_ADDR		/* start of NFC SRAM */
+	ldr	r2, =MX35_NFC_BASE_ADDR + 0x800	/* end of NFC SRAM */
 
 	/* skip NAND boot if not running from NFC space */
 	cmp	pc, r0

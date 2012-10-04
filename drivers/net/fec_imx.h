@@ -138,6 +138,7 @@ struct fec_priv {
 	u32 phy_flags;
 	struct mii_bus miibus;
 	void (*phy_init)(struct phy_device *dev);
+	struct clk *clk;
 };
 
 /**

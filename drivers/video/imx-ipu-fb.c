@@ -27,10 +27,12 @@
 #include <errno.h>
 #include <asm-generic/div64.h>
 #include <mach/imx-ipu-fb.h>
-#include <mach/clock.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 struct ipu_fb_info {
 	void __iomem		*regs;
+	struct clk		*clk;
 
 	void			(*enable)(int enable);
 
@@ -480,7 +482,7 @@ static int sdc_init_panel(struct fb_info *info, enum pixel_fmt pixel_fmt)
 	 * i.MX31 it (HSP_CLK) is <= 178MHz. Currently 128.267MHz
 	 */
 	pixel_clk = PICOS2KHZ(mode->pixclock) * 1000UL;
-	div = imx_get_lcdclk() * 16 / pixel_clk;
+	div = clk_get_rate(fbi->clk) * 16 / pixel_clk;
 
 	if (div < 0x40) {	/* Divider less than 4 */
 		dev_dbg(&info->dev,
@@ -985,6 +987,10 @@ static int imxfb_probe(struct device_d *dev)
 
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
+
+	fbi->clk = clk_get(dev, NULL);
+	if (IS_ERR(fbi->clk))
+		return PTR_ERR(fbi->clk);
 
 	fbi->regs = dev_request_mem_region(dev, 0);
 	fbi->dev = dev;

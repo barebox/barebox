@@ -41,10 +41,10 @@ static void __bare_init __naked insdram(void)
 	uint32_t r;
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(IMX_CCM_BASE + CCM_PDR4);
+	r = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
 	r &= ~(0xf << 28);
 	r |= 0x1 << 28;
-	writel(r, IMX_CCM_BASE + CCM_PDR4);
+	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
 	r = STACK_BASE + STACK_SIZE - 12;
@@ -59,7 +59,7 @@ static void __bare_init __naked insdram(void)
 void __bare_init __naked reset(void)
 {
 	uint32_t r, s;
-	unsigned long ccm_base = IMX_CCM_BASE;
+	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
@@ -128,9 +128,9 @@ void __bare_init __naked reset(void)
 	r |= 0x03000000;
 	writel(r, ccm_base + CCM_CGR2);
 
-	r = readl(IMX_L2CC_BASE + L2X0_AUX_CTRL);
+	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 	r |= 0x1000;
-	writel(r, IMX_L2CC_BASE + L2X0_AUX_CTRL);
+	writel(r, MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -146,22 +146,22 @@ void __bare_init __naked reset(void)
 
 	writel(0x0009572B, ESDCFG0);
 	writel(0x92220000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x400);
+	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x400);
 	writel(0xA2220000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0);
-	writeb(0xda, IMX_SDRAM_CS0);
+	writeb(0xda, MX35_CSD0_BASE_ADDR);
+	writeb(0xda, MX35_CSD0_BASE_ADDR);
 	writel(0xB2220000, ESDCTL0);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x33);
-	writeb(0xda, IMX_SDRAM_CS0 + 0x2000000);
+	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x33);
+	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x2000000);
 	writel(0x82228080, ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
-	if (r < IMX_NFC_BASE || r > IMX_NFC_BASE + 0x800)
+	if (r < MX35_NFC_BASE_ADDR || r > MX35_NFC_BASE_ADDR + 0x800)
 		board_init_lowlevel_return();
 
-	src = (unsigned int *)IMX_NFC_BASE;
+	src = (unsigned int *)MX35_NFC_BASE_ADDR;
 	trg = (unsigned int *)_text;
 
 	/* Move ourselves out of NFC SRAM */

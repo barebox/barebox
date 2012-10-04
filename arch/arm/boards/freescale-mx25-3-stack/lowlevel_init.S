@@ -47,7 +47,7 @@ CCM_PDR0_W:             .word   0x00801000
 MPCTL_PARAM_399_W:      .word   MPCTL_PARAM_399
 MPCTL_PARAM_532_W:      .word   MPCTL_PARAM_532
 PPCTL_PARAM_W:    	.word   PPCTL_PARAM_300
-CCM_BASE_ADDR_W:        .word   IMX_CCM_BASE
+CCM_BASE_ADDR_W:        .word   MX25_CCM_BASE_ADDR
 
 .globl reset
 reset:
@@ -66,10 +66,10 @@ reset:
 	str r1, [r0, #MX25_CCM_MCR]
 
 	/* enable all the clocks */
-	writel(0x1FFFFFFF, IMX_CCM_BASE + CCM_CGCR0)
-	writel(0xFFFFFFFF, IMX_CCM_BASE + CCM_CGCR1)
-	writel(0x000FDFFF, IMX_CCM_BASE + CCM_CGCR2)
-	writel(0x0000FEFF, IMX_CCM_BASE + MX25_CCM_MCR)
+	writel(0x1FFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR0)
+	writel(0xFFFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR1)
+	writel(0x000FDFFF, MX25_CCM_BASE_ADDR + CCM_CGCR2)
+	writel(0x0000FEFF, MX25_CCM_BASE_ADDR + MX25_CCM_MCR)
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000
@@ -87,7 +87,7 @@ reset:
 
 	mov r12, #0x00
 	mov r2, #0x1	/* mDDR */
-	mov r1, #IMX_SDRAM_CS0
+	mov r1, #MX25_CSD0_BASE_ADDR
 	bl setup_sdram_bank
 //	cmp r3, #0x0
 //	orreq r12, r12, #1
@@ -100,8 +100,8 @@ reset:
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =STACK_BASE + STACK_SIZE - 12 /* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =IMX_NFC_BASE		/* start of NFC SRAM                */
-	ldr	r2, =IMX_NFC_BASE + 0x1000	/* end of NFC SRAM                  */
+	ldr	r0, =MX25_NFC_BASE_ADDR		/* start of NFC SRAM                */
+	ldr	r2, =MX25_NFC_BASE_ADDR + 0x1000	/* end of NFC SRAM                  */
 
 	/* skip NAND boot if not running from NFC space */
 	cmp	pc, r0
@@ -148,7 +148,7 @@ setup_sdram_bank:
 	tst r2, #0x1
 	ldreq r3, [r4, #0x0]
 	ldrne r3, [r4, #0x4]
-	cmp r1, #IMX_SDRAM_CS1
+	cmp r1, #MX25_CSD1_BASE_ADDR
 	strlo r3, [r0, #0x4]
 	strhs r3, [r0, #0xC]
 
@@ -162,7 +162,7 @@ setup_sdram_bank:
 	tst r2, #0x1
 	bne skip_set_mode
 
-	cmp r1, #IMX_SDRAM_CS1
+	cmp r1, #MX25_CSD1_BASE_ADDR
 	ldr r3, ESDCTL_0xB2220000
 	strlo r3, [r0, #0x0]
 	strhs r3, [r0, #0x8]
@@ -184,7 +184,7 @@ setup_sdram_bank:
 	strb r3, [r1, r4]
 
 skip_set_mode:
-	cmp r1, #IMX_SDRAM_CS1
+	cmp r1, #MX25_CSD1_BASE_ADDR
 	ldr r3, ESDCTL_0xA2220000
 	strlo r3, [r0, #0x0]
 	strhs r3, [r0, #0x8]
@@ -208,7 +208,7 @@ skip_set_mode:
 	ldrne r4, [r4, #0x4]
 	strb r3, [r1, r4]
 
-	cmp r1, #IMX_SDRAM_CS1
+	cmp r1, #MX25_CSD1_BASE_ADDR
 	ldr r3, ESDCTL_0x82226080
 	strlo r3, [r0, #0x0]
 	strhs r3, [r0, #0x8]
@@ -243,5 +243,5 @@ ESDCTL_0x82226080:	.word	0x82216080
 ESDCTL_CONFIG:		.word	0x007FFC3F
 			.word	0x007FFC3F
 ESDCTL_DELAY5:		.word	0x00F49F00
-ESDCTL_BASE_W:		.word	IMX_ESD_BASE
+ESDCTL_BASE_W:		.word	MX25_ESDCTL_BASE_ADDR
 

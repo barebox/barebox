@@ -155,4 +155,46 @@ struct clk *clk_get_sys(const char *dev_id, const char *con_id);
 int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
 			struct device_d *dev);
 
+#ifdef CONFIG_COMMON_CLK
+struct clk_ops {
+	int		(*enable)(struct clk *clk);
+	void		(*disable)(struct clk *clk);
+	int		(*is_enabled)(struct clk *clk);
+	unsigned long	(*recalc_rate)(struct clk *clk,
+					unsigned long parent_rate);
+	long		(*round_rate)(struct clk *clk, unsigned long,
+					unsigned long *);
+	int		(*set_parent)(struct clk *clk, u8 index);
+	int		(*get_parent)(struct clk *clk);
+	int		(*set_rate)(struct clk *clk, unsigned long,
+				    unsigned long);
+};
+
+struct clk {
+	const struct clk_ops *ops;
+	int enable_count;
+	struct list_head list;
+	const char *name;
+	const char **parent_names;
+	int num_parents;
+
+	struct clk **parents;
+};
+
+struct clk *clk_fixed(const char *name, int rate);
+struct clk *clk_divider(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width);
+struct clk *clk_fixed_factor(const char *name,
+		const char *parent, unsigned int mult, unsigned int div);
+struct clk *clk_mux(const char *name, void __iomem *reg,
+		u8 shift, u8 width, const char **parents, u8 num_parents);
+
+int clk_register(struct clk *clk);
+
+struct clk *clk_lookup(const char *name);
+
+void clk_dump(int verbose);
+
+#endif
+
 #endif

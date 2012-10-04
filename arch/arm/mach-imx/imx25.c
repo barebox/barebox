@@ -16,7 +16,24 @@
 #include <mach/imx-regs.h>
 #include <mach/iim.h>
 #include <io.h>
+#include <mach/weim.h>
 #include <sizes.h>
+
+void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
+		unsigned additional)
+{
+	writel(upper, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
+	writel(lower, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
+	writel(additional, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
+}
+
+/* IIM fuse definitions */
+#define IIM_BANK0_BASE	(MX25_IIM_BASE_ADDR + 0x800)
+#define IIM_BANK1_BASE	(MX25_IIM_BASE_ADDR + 0xc00)
+#define IIM_BANK2_BASE	(MX25_IIM_BASE_ADDR + 0x1000)
+
+#define IIM_UID		(IIM_BANK0_BASE + 0x20)
+#define IIM_MAC_ADDR	(IIM_BANK0_BASE + 0x68)
 
 u64 imx_uid(void)
 {
@@ -41,15 +58,16 @@ static struct imx_iim_platform_data imx25_iim_pdata = {
 
 static int imx25_init(void)
 {
-	add_generic_device("imx_iim", 0, NULL, IMX_IIM_BASE, SZ_4K,
+	add_generic_device("imx_iim", 0, NULL, MX25_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, &imx25_iim_pdata);
 
-	add_generic_device("imx31-gpt", 0, NULL, 0x53f90000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 0, NULL, 0x53fcc000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 1, NULL, 0x53fd0000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 2, NULL, 0x53fa4000, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx31-gpio", 3, NULL, 0x53f9c000, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx25-ccm", 0, NULL, MX25_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpt", 0, NULL, MX25_GPT1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 0, NULL, MX25_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 1, NULL, MX25_GPIO2_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 2, NULL, MX25_GPIO3_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx31-gpio", 3, NULL, MX25_GPIO4_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
-coredevice_initcall(imx25_init);
+postcore_initcall(imx25_init);

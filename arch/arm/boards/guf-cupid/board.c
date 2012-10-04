@@ -36,6 +36,7 @@
 #include <fec.h>
 #include <fb.h>
 #include <asm/mmu.h>
+#include <mach/weim.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
@@ -95,7 +96,7 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 
 static int cupid_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 128 * 1024 * 1024);
+	arm_add_mem_device("ram0", MX35_CSD0_BASE_ADDR, 128 * 1024 * 1024);
 
 	return 0;
 }
@@ -116,7 +117,7 @@ static int cupid_devices_init(void)
 	gpio_direction_output(GPIO_LCD_ENABLE, 0);
 	gpio_direction_output(GPIO_LCD_BACKLIGHT, 0);
 
-	reg = readl(IMX_CCM_BASE + CCM_RCSR);
+	reg = readl(MX35_CCM_BASE_ADDR + CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
 	if (reg & 0x20000000)
 		nand_info.width = 2;    /* 16 bit */
@@ -250,60 +251,59 @@ static int cupid_core_setup(void)
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
 	 * not forced to user-mode.
 	 */
-	writel(0x77777777, IMX_AIPS1_BASE);
-	writel(0x77777777, IMX_AIPS1_BASE + 0x4);
-	writel(0x77777777, IMX_AIPS2_BASE);
-	writel(0x77777777, IMX_AIPS2_BASE + 0x4);
+	writel(0x77777777, MX35_AIPS1_BASE_ADDR);
+	writel(0x77777777, MX35_AIPS1_BASE_ADDR + 0x4);
+	writel(0x77777777, MX35_AIPS2_BASE_ADDR);
+	writel(0x77777777, MX35_AIPS2_BASE_ADDR + 0x4);
 
 	/*
 	 * Clear the on and off peripheral modules Supervisor Protect bit
 	 * for SDMA to access them. Did not change the AIPS control registers
 	 * (offset 0x20) access type
 	 */
-	writel(0x0, IMX_AIPS1_BASE + 0x40);
-	writel(0x0, IMX_AIPS1_BASE + 0x44);
-	writel(0x0, IMX_AIPS1_BASE + 0x48);
-	writel(0x0, IMX_AIPS1_BASE + 0x4C);
-	tmp = readl(IMX_AIPS1_BASE + 0x50);
+	writel(0x0, MX35_AIPS1_BASE_ADDR + 0x40);
+	writel(0x0, MX35_AIPS1_BASE_ADDR + 0x44);
+	writel(0x0, MX35_AIPS1_BASE_ADDR + 0x48);
+	writel(0x0, MX35_AIPS1_BASE_ADDR + 0x4C);
+	tmp = readl(MX35_AIPS1_BASE_ADDR + 0x50);
 	tmp &= 0x00FFFFFF;
-	writel(tmp, IMX_AIPS1_BASE + 0x50);
+	writel(tmp, MX35_AIPS1_BASE_ADDR + 0x50);
 
-	writel(0x0, IMX_AIPS2_BASE + 0x40);
-	writel(0x0, IMX_AIPS2_BASE + 0x44);
-	writel(0x0, IMX_AIPS2_BASE + 0x48);
-	writel(0x0, IMX_AIPS2_BASE + 0x4C);
-	tmp = readl(IMX_AIPS2_BASE + 0x50);
+	writel(0x0, MX35_AIPS2_BASE_ADDR + 0x40);
+	writel(0x0, MX35_AIPS2_BASE_ADDR + 0x44);
+	writel(0x0, MX35_AIPS2_BASE_ADDR + 0x48);
+	writel(0x0, MX35_AIPS2_BASE_ADDR + 0x4C);
+	tmp = readl(MX35_AIPS2_BASE_ADDR + 0x50);
 	tmp &= 0x00FFFFFF;
-	writel(tmp, IMX_AIPS2_BASE + 0x50);
+	writel(tmp, MX35_AIPS2_BASE_ADDR + 0x50);
 
 	/* MAX (Multi-Layer AHB Crossbar Switch) setup */
 
 	/* MPR - priority is M4 > M2 > M3 > M5 > M0 > M1 */
 #define MAX_PARAM1 0x00302154
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x0);   /* for S0 */
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x100); /* for S1 */
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x200); /* for S2 */
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x300); /* for S3 */
-	writel(MAX_PARAM1, IMX_MAX_BASE + 0x400); /* for S4 */
+	writel(MAX_PARAM1, MX35_MAX_BASE_ADDR + 0x0);   /* for S0 */
+	writel(MAX_PARAM1, MX35_MAX_BASE_ADDR + 0x100); /* for S1 */
+	writel(MAX_PARAM1, MX35_MAX_BASE_ADDR + 0x200); /* for S2 */
+	writel(MAX_PARAM1, MX35_MAX_BASE_ADDR + 0x300); /* for S3 */
+	writel(MAX_PARAM1, MX35_MAX_BASE_ADDR + 0x400); /* for S4 */
 
 	/* SGPCR - always park on last master */
-	writel(0x10, IMX_MAX_BASE + 0x10);	/* for S0 */
-	writel(0x10, IMX_MAX_BASE + 0x110);	/* for S1 */
-	writel(0x10, IMX_MAX_BASE + 0x210);	/* for S2 */
-	writel(0x10, IMX_MAX_BASE + 0x310);	/* for S3 */
-	writel(0x10, IMX_MAX_BASE + 0x410);	/* for S4 */
+	writel(0x10, MX35_MAX_BASE_ADDR + 0x10);	/* for S0 */
+	writel(0x10, MX35_MAX_BASE_ADDR + 0x110);	/* for S1 */
+	writel(0x10, MX35_MAX_BASE_ADDR + 0x210);	/* for S2 */
+	writel(0x10, MX35_MAX_BASE_ADDR + 0x310);	/* for S3 */
+	writel(0x10, MX35_MAX_BASE_ADDR + 0x410);	/* for S4 */
 
 	/* MGPCR - restore default values */
-	writel(0x0, IMX_MAX_BASE + 0x800);	/* for M0 */
-	writel(0x0, IMX_MAX_BASE + 0x900);	/* for M1 */
-	writel(0x0, IMX_MAX_BASE + 0xa00);	/* for M2 */
-	writel(0x0, IMX_MAX_BASE + 0xb00);	/* for M3 */
-	writel(0x0, IMX_MAX_BASE + 0xc00);	/* for M4 */
-	writel(0x0, IMX_MAX_BASE + 0xd00);	/* for M5 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0x800);	/* for M0 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0x900);	/* for M1 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0xa00);	/* for M2 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0xb00);	/* for M3 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0xc00);	/* for M4 */
+	writel(0x0, MX35_MAX_BASE_ADDR + 0xd00);	/* for M5 */
 
-	writel(0x0000DCF6, CSCR_U(0)); /* CS0: NOR Flash */
-	writel(0x444A4541, CSCR_L(0));
-	writel(0x44443302, CSCR_A(0));
+	/* CS0: NOR Flash */
+	imx35_setup_weimcs(0, 0x0000DCF6, 0x444A4541, 0x44443302);
 
 	/*
 	 * M3IF Control Register (M3IFCTL)
@@ -318,7 +318,7 @@ static int cupid_core_setup(void)
 	 *                                                       ------------
 	 *                                                        0x00000040
 	 */
-	writel(0x40, IMX_M3IF_BASE);
+	writel(0x40, MX35_M3IF_BASE_ADDR);
 
 	return 0;
 }
@@ -339,10 +339,10 @@ static int do_cpufreq(int argc, char *argv[])
 
 	switch (freq) {
 	case 399:
-		writel(MPCTL_PARAM_399, IMX_CCM_BASE + CCM_MPCTL);
+		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + CCM_MPCTL);
 		break;
 	case 532:
-		writel(MPCTL_PARAM_532, IMX_CCM_BASE + CCM_MPCTL);
+		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
 		break;
 	default:
 		return COMMAND_ERROR_USAGE;

@@ -15,13 +15,6 @@
 #ifndef __ASM_ARCH_MX23_REGS_H
 #define __ASM_ARCH_MX23_REGS_H
 
-/*
- * sanity check
- */
-#ifndef _IMX_REGS_H
-# error "Please do not include directly. Use imx-regs.h instead."
-#endif
-
 #define IMX_MEMORY_BASE		0x40000000
 #define MXS_APBH_BASE		0x80004000
 #define MXS_BCH_BASE		0x8000a000

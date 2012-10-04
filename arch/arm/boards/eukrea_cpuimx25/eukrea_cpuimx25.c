@@ -93,21 +93,21 @@ static void imx25_usb_init(void)
 	unsigned int tmp;
 
 	/* Host 1 */
-	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x600);
 	tmp &= ~(MX35_H1_SIC_MASK | MX35_H1_PM_BIT | MX35_H1_TLL_BIT |
 		MX35_H1_USBTE_BIT | MX35_H1_IPPUE_DOWN_BIT | MX35_H1_IPPUE_UP_BIT);
 	tmp |= (MXC_EHCI_INTERFACE_SINGLE_UNI) << MX35_H1_SIC_SHIFT;
 	tmp |= MX35_H1_USBTE_BIT;
 	tmp |= MX35_H1_IPPUE_DOWN_BIT;
-	writel(tmp, IMX_OTG_BASE + 0x600);
+	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x600);
 
-	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x584);
 	tmp |= 3 << 30;
-	writel(tmp, IMX_OTG_BASE + 0x584);
+	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x584);
 
 	/* Set to Host mode */
-	tmp = readl(IMX_OTG_BASE + 0x5a8);
-	writel(tmp | 0x3, IMX_OTG_BASE + 0x5a8);
+	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x5a8);
+	writel(tmp | 0x3, MX25_USB_OTG_BASE_ADDR + 0x5a8);
 }
 
 #endif
@@ -119,7 +119,7 @@ static struct fsl_usb2_platform_data usb_pdata = {
 
 static int eukrea_cpuimx25_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, 64 * 1024 * 1024);
+	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, 64 * 1024 * 1024);
 
 	return 0;
 }
@@ -219,12 +219,12 @@ static int eukrea_cpuimx25_devices_init(void)
 
 #ifdef CONFIG_USB
 	imx25_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX25_USB_OTG_BASE_ADDR + 0x400, NULL);
 #endif
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
-	writel(readl(IMX_OTG_BASE + 0x608) | (1 << 23), IMX_OTG_BASE + 0x608);
-	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_OTG_BASE, 0x200,
+	writel(readl(MX25_USB_OTG_BASE_ADDR + 0x608) | (1 << 23), MX25_USB_OTG_BASE_ADDR + 0x608);
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, MX25_USB_OTG_BASE_ADDR, 0x200,
 			   IORESOURCE_MEM, &usb_pdata);
 #endif
 
@@ -253,13 +253,13 @@ void __bare_init nand_boot(void)
 
 static int eukrea_cpuimx25_core_init(void) {
 	/* enable UART1, FEC, SDHC, USB & I2C clock */
-	writel(readl(IMX_CCM_BASE + CCM_CGCR0) | (1 << 6) | (1 << 23)
+	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR0) | (1 << 6) | (1 << 23)
 		| (1 << 15) | (1 << 21) | (1 << 3) | (1 << 28),
-		IMX_CCM_BASE + CCM_CGCR0);
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 23) | (1 << 15)
-		| (1 << 13), IMX_CCM_BASE + CCM_CGCR1);
-	writel(readl(IMX_CCM_BASE + CCM_CGCR2) | (1 << 14),
-		IMX_CCM_BASE + CCM_CGCR2);
+		MX25_CCM_BASE_ADDR + CCM_CGCR0);
+	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR1) | (1 << 23) | (1 << 15)
+		| (1 << 13), MX25_CCM_BASE_ADDR + CCM_CGCR1);
+	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR2) | (1 << 14),
+		MX25_CCM_BASE_ADDR + CCM_CGCR2);
 
 	return 0;
 }

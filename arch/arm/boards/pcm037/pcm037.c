@@ -29,6 +29,7 @@
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <mach/gpio.h>
+#include <mach/weim.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <partition.h>
@@ -66,15 +67,15 @@ static void pcm037_usb_init(void)
 	writel(tmp, 0x53f80000);
 
 	/* Host 1 */
-	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x600);
 	tmp &= ~((3 << 21) | 1);
 	tmp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
-	writel(tmp, IMX_OTG_BASE + 0x600);
+	writel(tmp, MX31_USB_OTG_BASE_ADDR + 0x600);
 
-	tmp = readl(IMX_OTG_BASE + 0x184);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x184);
 	tmp &= ~(3 << 30);
 	tmp |= 2 << 30;
-	writel(tmp, IMX_OTG_BASE + 0x184);
+	writel(tmp, MX31_USB_OTG_BASE_ADDR + 0x184);
 
 	imx_iomux_mode(MX31_PIN_USBOTG_DATA0__USBOTG_DATA0);
 	imx_iomux_mode(MX31_PIN_USBOTG_DATA1__USBOTG_DATA1);
@@ -90,10 +91,10 @@ static void pcm037_usb_init(void)
 	imx_iomux_mode(MX31_PIN_USBOTG_STP__USBOTG_STP);
 
 	mdelay(50);
-	ulpi_setup((void *)(IMX_OTG_BASE + 0x170), 1);
+	ulpi_setup((void *)(MX31_USB_OTG_BASE_ADDR + 0x170), 1);
 
 	/* Host 2 */
-	tmp = readl(IOMUXC_BASE + 0x8);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x8);
 	tmp |= 1 << 11;
 	writel(tmp, IOMUXC_BASE + 0x8);
 
@@ -124,31 +125,31 @@ static void pcm037_usb_init(void)
 	imx_iomux_set_pad(MX31_PIN_SRXD3, H2_PAD_CFG);	/* USBH2_DATA6 */
 	imx_iomux_set_pad(MX31_PIN_STXD3, H2_PAD_CFG);	/* USBH2_DATA7 */
 
-	tmp = readl(IMX_OTG_BASE + 0x600);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x600);
 	tmp &= ~((3 << 21) | 1);
 	tmp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
-	writel(tmp, IMX_OTG_BASE + 0x600);
+	writel(tmp, MX31_USB_OTG_BASE_ADDR + 0x600);
 
-	tmp = readl(IMX_OTG_BASE + 0x584);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x584);
 	tmp &= ~(3 << 30);
 	tmp |= 2 << 30;
-	writel(tmp, IMX_OTG_BASE + 0x584);
+	writel(tmp, MX31_USB_OTG_BASE_ADDR + 0x584);
 
 	mdelay(50);
-	ulpi_setup((void *)(IMX_OTG_BASE + 0x570), 1);
+	ulpi_setup((void *)(MX31_USB_OTG_BASE_ADDR + 0x570), 1);
 
 	/* Set to Host mode */
-	tmp = readl(IMX_OTG_BASE + 0x1a8);
-	writel(tmp | 0x3, IMX_OTG_BASE + 0x1a8);
+	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x1a8);
+	writel(tmp | 0x3, MX31_USB_OTG_BASE_ADDR + 0x1a8);
 
 }
 #endif
 
 static int pcm037_mem_init(void)
 {
-	arm_add_mem_device("ram0", IMX_SDRAM_CS0, SDRAM0 * 1024 * 1024);
+	arm_add_mem_device("ram0", MX31_CSD0_BASE_ADDR, SDRAM0 * 1024 * 1024);
 #ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	arm_add_mem_device("ram1", IMX_SDRAM_CS1, SDRAM1 * 1024 * 1024);
+	arm_add_mem_device("ram1", MX31_CSD1_BASE_ADDR, SDRAM1 * 1024 * 1024);
 #endif
 
 	return 0;
@@ -165,27 +166,20 @@ postmmu_initcall(pcm037_mmu_init);
 
 static int imx31_devices_init(void)
 {
-	__REG(CSCR_U(0)) = 0x0000cf03; /* CS0: Nor Flash */
-	__REG(CSCR_L(0)) = 0x10000d03;
-	__REG(CSCR_A(0)) = 0x00720900;
-
-	__REG(CSCR_U(1)) = 0x0000df06; /* CS1: Network Controller */
-	__REG(CSCR_L(1)) = 0x444a4541;
-	__REG(CSCR_A(1)) = 0x44443302;
-
-	__REG(CSCR_U(4)) = 0x0000d843; /* CS4: SRAM */
-	__REG(CSCR_L(4)) = 0x22252521;
-	__REG(CSCR_A(4)) = 0x22220a00;
-
-	__REG(CSCR_U(5)) = 0x0000DCF6; /* CS5: SJA1000 */
-	__REG(CSCR_L(5)) = 0x444A0301;
-	__REG(CSCR_A(5)) = 0x44443302;
+	/* CS0: Nor Flash */
+	imx31_setup_weimcs(0, 0x0000cf03, 0x10000d03, 0x00720900);
+	/* CS1: Network Controller */
+	imx31_setup_weimcs(1, 0x0000df06, 0x444a4541, 0x44443302);
+	/* CS4: SRAM */
+	imx31_setup_weimcs(4, 0x0000d843, 0x22252521, 0x22220a00);
+	/* CS5: SJA1000 */
+	imx31_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
 
 	/*
 	 * Up to 32MiB NOR type flash, connected to
 	 * CS line 0, data width is 16 bit
 	 */
-	add_cfi_flash_device(DEVICE_ID_DYNAMIC, IMX_CS0_BASE, 32 * 1024 * 1024, 0);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, MX31_CS0_BASE_ADDR, 32 * 1024 * 1024, 0);
 
 	/*
 	 * Create partitions that should be
@@ -200,7 +194,7 @@ static int imx31_devices_init(void)
 	 * up to 2MiB static RAM type memory, connected
 	 * to CS4, data width is 16 bit
 	 */
-	add_mem_device("sram0", IMX_CS4_BASE, IMX_CS4_RANGE, /* area size */
+	add_mem_device("sram0", MX31_CS4_BASE_ADDR, MX31_CS4_SIZE, /* area size */
 				   IORESOURCE_MEM_WRITEABLE);
 	imx31_add_nand(&nand_info);
 
@@ -209,13 +203,13 @@ static int imx31_devices_init(void)
 	 * connected to CS line 1 and interrupt line
 	 * GPIO3, data width is 16 bit
 	 */
-	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	IMX_CS1_BASE,
-			IMX_CS1_RANGE, IORESOURCE_MEM, NULL);
+	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	MX31_CS1_BASE_ADDR,
+			MX31_CS1_SIZE, IORESOURCE_MEM, NULL);
 
 #ifdef CONFIG_USB
 	pcm037_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE, NULL);
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_OTG_BASE + 0x400, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX31_USB_OTG_BASE_ADDR, NULL);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX31_USB_HS2_BASE_ADDR, NULL);
 #endif
 
 	armlinux_set_bootparams((void *)0x80000100);

@@ -13,15 +13,25 @@
 
 #include <common.h>
 #include <init.h>
+#include <io.h>
+#include <mach/imx-regs.h>
+#include <mach/weim.h>
+
+void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
+{
+	writel(upper, MX1_EIM_BASE_ADDR + cs * 8);
+	writel(lower, MX1_EIM_BASE_ADDR + 4 + cs * 8);
+}
 
 static int imx1_init(void)
 {
-	add_generic_device("imx1-gpt", 0, NULL, 0x00202000, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 0, NULL, 0x0021c000, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 1, NULL, 0x0021c100, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 2, NULL, 0x0021c200, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-gpio", 3, NULL, 0x0021c300, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-ccm", 0, NULL, MX1_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpt", 0, NULL, MX1_TIM1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpio", 0, NULL, MX1_GPIO1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpio", 1, NULL, MX1_GPIO2_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpio", 2, NULL, MX1_GPIO3_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx1-gpio", 3, NULL, MX1_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
-coredevice_initcall(imx1_init);
+postcore_initcall(imx1_init);

@@ -613,6 +613,14 @@ config CMD_USB
 	help
 	  The usb command allows to rescan for USB devices.
 
+config CMD_CLK
+	tristate
+	depends on COMMON_CLK
+	prompt "clock manipulation commands"
+	help
+	  Say yes here to get clk_set_rate, clk_set_parent and clk_dump
+	  commands to manipulate clocks on your system.
+
 menuconfig CMD_WD
 	bool
 	depends on WATCHDOG

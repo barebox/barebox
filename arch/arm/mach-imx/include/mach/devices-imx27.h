@@ -3,70 +3,70 @@
 
 static inline struct device_d *imx27_add_spi0(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)IMX_SPI1_BASE, 0, pdata);
+	return imx_add_spi((void *)MX27_CSPI1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx27_add_spi1(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)IMX_SPI2_BASE, 1, pdata);
+	return imx_add_spi((void *)MX27_CSPI2_BASE_ADDR, 1, pdata);
 }
 
 static inline struct device_d *imx27_add_i2c0(struct i2c_platform_data *pdata)
 {
-	return imx_add_i2c((void *)IMX_I2C1_BASE, 0, pdata);
+	return imx_add_i2c((void *)MX27_I2C1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx27_add_i2c1(struct i2c_platform_data *pdata)
 {
-	return imx_add_i2c((void *)IMX_I2C2_BASE, 1, pdata);
+	return imx_add_i2c((void *)MX27_I2C2_BASE_ADDR, 1, pdata);
 }
 
 static inline struct device_d *imx27_add_uart0(void)
 {
-	return imx_add_uart((void *)IMX_UART1_BASE, 0);
+	return imx_add_uart((void *)MX27_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx27_add_uart1(void)
 {
-	return imx_add_uart((void *)IMX_UART2_BASE, 1);
+	return imx_add_uart((void *)MX27_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx27_add_uart2(void)
 {
-	return imx_add_uart((void *)IMX_UART3_BASE, 2);
+	return imx_add_uart((void *)MX27_UART3_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx27_add_uart3(void)
 {
-	return imx_add_uart((void *)IMX_UART4_BASE, 3);
+	return imx_add_uart((void *)MX27_UART4_BASE_ADDR, 3);
 }
 
 static inline struct device_d *imx27_add_nand(struct imx_nand_platform_data *pdata)
 {
-	return imx_add_nand((void *)IMX_NFC_BASE, pdata);
+	return imx_add_nand((void *)MX27_NFC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx27_add_fb(struct imx_fb_platform_data *pdata)
 {
-	return imx_add_fb((void *)IMX_FB_BASE, pdata);
+	return imx_add_fb((void *)MX27_LCDC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx27_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)IMX_FEC_BASE, pdata);
+	return imx_add_fec((void *)MX27_FEC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx27_add_mmc0(void *pdata)
 {
-	return imx_add_mmc((void *)IMX_SDHC1_BASE, 0, pdata);
+	return imx_add_mmc((void *)MX27_SDHC1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx27_add_mmc1(void *pdata)
 {
-	return imx_add_mmc((void *)IMX_SDHC2_BASE, 1, pdata);
+	return imx_add_mmc((void *)MX27_SDHC2_BASE_ADDR, 1, pdata);
 }
 
 static inline struct device_d *imx27_add_mmc2(void *pdata)
 {
-	return imx_add_mmc((void *)IMX_SDHC3_BASE, 2, pdata);
+	return imx_add_mmc((void *)MX27_SDHC3_BASE_ADDR, 2, pdata);
 }

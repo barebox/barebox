@@ -241,10 +241,8 @@ struct bus_type mdio_bus_type = {
 };
 EXPORT_SYMBOL(mdio_bus_type);
 
-#if 0
 static int mdio_bus_init(void)
 {
 	return bus_register(&mdio_bus_type);
 }
 pure_initcall(mdio_bus_init);
-#endif

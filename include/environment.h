@@ -60,6 +60,12 @@ static inline unsigned long long getenv_ull(const char *name)
 {
 	return 0;
 }
+
+static inline int export(const char *var)
+{
+	return -EINVAL;
+}
+
 #endif
 
 int env_pop_context(void);

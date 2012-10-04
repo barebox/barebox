@@ -226,6 +226,7 @@ static int dwc_ether_init(struct eth_device *dev)
 static void dwc_update_linkspeed(struct eth_device *edev)
 {
 	struct dw_eth_dev *priv = edev->priv;
+	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	u32 conf;
 
 	if (priv->fix_mac_speed)
@@ -251,7 +252,7 @@ static int dwc_ether_open(struct eth_device *dev)
 	int ret;
 
 	ret = phy_device_connect(dev, &priv->miibus, priv->phy_addr,
-				 0, PHY_INTERFACE_MODE_NA);
+				 dwc_update_linkspeed, 0, PHY_INTERFACE_MODE_NA);
 	if (ret)
 		return ret;
 

@@ -373,6 +373,15 @@ static int dwc_ether_set_ethaddr(struct eth_device *dev, u8 adr[6])
 	return 0;
 }
 
+static void dwc_version(struct device_d *dev, u32 hwid)
+{
+	u32 uid = ((hwid & 0x0000ff00) >> 8);
+	u32 synid = (hwid & 0x000000ff);
+
+	dev_info(dev, "user ID: 0x%x, Synopsys ID: 0x%x\n",
+		uid, synid);
+}
+
 static int dwc_ether_probe(struct device_d *dev)
 {
 	struct dw_eth_dev *priv;
@@ -390,7 +399,7 @@ static int dwc_ether_probe(struct device_d *dev)
 
 	base = dev_request_mem_region(dev, 0);
 	priv->mac_regs_p = base;
-	dev_info(dev, "MAC version %08x\n", readl(&priv->mac_regs_p->version));
+	dwc_version(dev, readl(&priv->mac_regs_p->version));
 	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;
 	priv->tx_mac_descrtable = dma_alloc_coherent(
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr));

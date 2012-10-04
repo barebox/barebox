@@ -9,6 +9,7 @@
 #include <linux/clk.h>
 #include <linux/amba/bus.h>
 #include <io.h>
+#include <init.h>
 
 #define to_amba_driver(d)	container_of(d, struct amba_driver, drv)
 
@@ -208,3 +209,9 @@ struct amba_device *amba_device_alloc(const char *name, int id, resource_size_t 
 	return dev;
 }
 
+
+static int amba_bus_init(void)
+{
+	return bus_register(&amba_bustype);
+}
+pure_initcall(amba_bus_init);

@@ -89,6 +89,7 @@ config ARCH_S3C64xx
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select CPU_ARM926T
+	select GPIOLIB
 
 config ARCH_TEGRA
 	bool "Nvidia Tegra-based boards"

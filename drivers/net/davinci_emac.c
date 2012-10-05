@@ -387,8 +387,8 @@ static void davinci_emac_halt(struct eth_device *edev)
 }
 
 /*
- * This function sends a single packet on the network and returns
- * positive number (number of bytes transmitted) or negative for error
+ * This function sends a single packet on the network
+ * and returns 0 on successful transmit or negative for error
  */
 static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 {

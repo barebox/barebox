@@ -1,5 +1,6 @@
 config GPIOLIB
 	bool
+	select GENERIC_GPIO
 
 if GPIOLIB
 

@@ -70,6 +70,16 @@ static int imx21_ccm_probe(struct device_d *dev)
 
 	base = dev_request_mem_region(dev, 0);
 
+	writel((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) |
+			(1 << 9) | (1 << 10) | (1 << 11) | (1 << 12) |
+			(1 << 13) | (1 << 14) | (1 << 19) | (1 << 22) |
+			(1 << 24) | (1 << 26) |	(1 << 30),
+			base + CCM_PCCR0);
+
+	writel((1 << 23) | (1 << 24) | (1 << 25) | (1 << 26) | (1 << 27) |
+			(1 << 28) | (1 << 29) | (1 << 30) | (1 << 31),
+			base + CCM_PCCR1);
+
 	clks[ckil] = clk_fixed("ckil", lref);
 	clks[ckih] = clk_fixed("ckih", href);
 	clks[fpm] = imx_clk_fixed_factor("fpm", "ckil", 512, 1);

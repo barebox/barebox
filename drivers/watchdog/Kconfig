@@ -1,3 +1,7 @@
+
+config WATCHDOG_IMX_RESET_SOURCE
+	bool
+
 menuconfig WATCHDOG
 	bool "Watchdog support              "
 	help
@@ -17,5 +21,4 @@ config WATCHDOG_IMX
 	depends on ARCH_IMX
 	help
 	  Add support for watchdog found on Freescale i.MX SoCs.
-
 endif

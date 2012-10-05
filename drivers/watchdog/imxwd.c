@@ -103,6 +103,18 @@ static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return priv->set_timeout(priv, timeout);
 }
 
+static struct imx_wd *reset_wd;
+
+void __noreturn reset_cpu(unsigned long addr)
+{
+	if (reset_wd)
+		reset_wd->set_timeout(reset_wd, -1);
+
+	mdelay(1000);
+
+	hang();
+}
+
 static int imx_wd_probe(struct device_d *dev)
 {
 	struct imx_wd *priv;
@@ -119,16 +131,22 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
 	priv->dev = dev;
 
-	ret = watchdog_register(&priv->wd);
-	if (ret)
-		goto on_error;
+	if (!reset_wd)
+		reset_wd = priv;
+
+	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
+		ret = watchdog_register(&priv->wd);
+		if (ret)
+			goto on_error;
+	}
 
 	dev->priv = priv;
 
 	return 0;
 
 on_error:
-	free(priv);
+	if (reset_wd && reset_wd != priv)
+		free(priv);
 	return ret;
 }
 
@@ -136,8 +154,11 @@ static void imx_wd_remove(struct device_d *dev)
 {
 	struct imx_wd *priv = dev->priv;
 
-	watchdog_deregister(&priv->wd);
-	free(priv);
+	if (IS_ENABLED(CONFIG_WATCHDOG_IMX))
+		watchdog_deregister(&priv->wd);
+
+	if (reset_wd && reset_wd != priv)
+		free(priv);
 }
 
 static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {

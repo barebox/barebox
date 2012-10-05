@@ -29,6 +29,10 @@ static struct clk st8815_clk_48 = {
        .rate = 48 * 1000 * 1000,
 };
 
+static struct clk st8815_clk_2_4 = {
+       .rate = 2400000,
+};
+
 static struct clk st8815_dummy;
 
 void st8815_add_device_sdram(u32 size)
@@ -38,6 +42,7 @@ void st8815_add_device_sdram(u32 size)
 
 static struct clk_lookup clocks_lookups[] = {
 	CLKDEV_CON_ID("apb_pclk", &st8815_dummy),
+	CLKDEV_CON_ID("nomadik_mtu", &st8815_clk_2_4),
 	CLKDEV_DEV_ID("uart-pl0110", &st8815_clk_48),
 	CLKDEV_DEV_ID("uart-pl0111", &st8815_clk_48),
 };

@@ -61,7 +61,7 @@ void __bare_init reset(void)
 #endif
 
 	if (get_pc() < 0xD0000000) /* Are we running from iRAM? */
-		return; /* No, we don't. */
+		board_init_lowlevel_return(); /* No, we don't. */
 
 	s5p_init_dram_bank_ddr2(S5P_DMC0_BASE, 0x20E00323, 0, 0);
 

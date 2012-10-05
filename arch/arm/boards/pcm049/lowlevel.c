@@ -91,7 +91,7 @@ void reset(void)
 	common_reset();
 
 	if (get_pc() > 0x80000000)
-		return;
+		board_init_lowlevel_return();
 
 	r = 0x4030d000;
 	__asm__ __volatile__("mov sp, %0" : : "r"(r));

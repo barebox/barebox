@@ -12,4 +12,10 @@ config WATCHDOG_MXS28
 	help
 	  Add support for watchdog management for the i.MX28 SoC.
 
+config WATCHDOG_IMX
+	bool "i.MX watchdog"
+	depends on ARCH_IMX
+	help
+	  Add support for watchdog found on Freescale i.MX SoCs.
+
 endif

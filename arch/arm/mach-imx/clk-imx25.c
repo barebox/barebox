@@ -76,9 +76,19 @@ static int imx25_ccm_probe(struct device_d *dev)
 
 	base = dev_request_mem_region(dev, 0);
 
-	writel(0x10e88578, base + CCM_CGCR0);
-	writel(0x0478e1e0, base + CCM_CGCR0);
-	writel(0x0007c400, base + CCM_CGCR0);
+	writel((1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 8) | (1 << 9) |
+			(1 << 10) | (1 << 15) |	(1 << 19) | (1 << 21) | (1 << 22) |
+			(1 << 23) | (1 << 24) | (1 << 28),
+			base + CCM_CGCR0);
+
+	writel((1 << 5) | (1 << 6) | (1 << 7) | (1 << 8) | (1 << 13) | (1 << 14) |
+			(1 << 15) | (1 << 19) | (1 << 20) | (1 << 21) | (1 << 22) |
+			(1 << 26) | (1 << 29) | (1 << 31),
+			base + CCM_CGCR1);
+
+	writel((1 << 0) | (1 << 1) | (1 << 2) | (1 << 10) | (1 << 13) | (1 << 14) |
+			(1 << 15) | (1 << 16) | (1 << 17) | (1 << 18),
+			base + CCM_CGCR2);
 
 	clks[dummy] = clk_fixed("dummy", 0);
 	clks[osc] = clk_fixed("osc", 24000000);

@@ -196,3 +196,13 @@ void __noreturn reset_cpu (unsigned long ignored)
 	while(1);
 }
 EXPORT_SYMBOL(reset_cpu);
+
+static int versatile_init(void)
+{
+	amba_apb_device_add(NULL, "pl061_gpio", 0, 0x101e4000, 4096, NULL, 0);
+	amba_apb_device_add(NULL, "pl061_gpio", 1, 0x101e5000, 4096, NULL, 0);
+	amba_apb_device_add(NULL, "pl061_gpio", 2, 0x101e6000, 4096, NULL, 0);
+	amba_apb_device_add(NULL, "pl061_gpio", 3, 0x101e7000, 4096, NULL, 0);
+	return 0;
+}
+coredevice_initcall(versatile_init);

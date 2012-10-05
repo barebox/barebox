@@ -142,9 +142,18 @@ static int imx27_ccm_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx27_ccm_dt_ids[] = {
+	{
+		.compatible = "fsl,imx27-ccm",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx27_ccm_driver = {
 	.probe	= imx27_ccm_probe,
 	.name	= "imx27-ccm",
+	.of_compatible = DRV_OF_COMPAT(imx27_ccm_dt_ids),
 };
 
 static int imx27_ccm_init(void)

@@ -114,6 +114,7 @@ int of_parse_partitions(const char *cdevname,
 
 struct device_node *of_get_root_node(void);
 int of_alias_get_id(struct device_node *np, const char *stem);
+int of_device_is_stdout_path(struct device_d *dev);
 #else
 static inline int of_parse_partitions(const char *cdevname,
 					  struct device_node *node)
@@ -129,6 +130,11 @@ static inline struct device_node *of_get_root_node(void)
 static inline int of_alias_get_id(struct device_node *np, const char *stem)
 {
 	return -ENOENT;
+}
+
+static inline int of_device_is_stdout_path(struct device_d *dev)
+{
+	return 0;
 }
 #endif
 

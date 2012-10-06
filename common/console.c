@@ -164,6 +164,9 @@ int console_register(struct console_device *newcdev)
 		activate = 1;
 	}
 
+	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev))
+		activate = 1;
+
 	list_add_tail(&newcdev->list, &console_list);
 
 	if (activate)

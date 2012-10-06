@@ -711,10 +711,14 @@ static void __of_probe(struct device_node *node)
 		__of_probe(n);
 }
 
+struct device_node *of_chosen;
+
 int of_probe(void)
 {
 	if(!root_node)
 		return -ENODEV;
+
+	of_chosen = of_find_node_by_path("/chosen");
 
 	__of_probe(root_node);
 
@@ -797,6 +801,25 @@ int of_parse_dtb(struct fdt_header *fdt)
 		}
 		nodeoffset = nextoffset;
 	}
+
+	return 0;
+}
+
+int of_device_is_stdout_path(struct device_d *dev)
+{
+	struct device_node *dn;
+	const char *name;
+
+	name = of_get_property(of_chosen, "linux,stdout-path", NULL);
+	if (name == NULL)
+		return 0;
+	dn = of_find_node_by_path(name);
+
+	if (!dn)
+		return 0;
+
+	if (dn == dev->device_node)
+		return 1;
 
 	return 0;
 }

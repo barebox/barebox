@@ -101,6 +101,8 @@ int release_region(struct resource *res)
 struct resource iomem_resource = {
 	.start = 0,
 	.end = 0xffffffff,
+	.name = "iomem",
+	.children = LIST_HEAD_INIT(iomem_resource.children),
 };
 
 /*
@@ -111,11 +113,3 @@ struct resource *request_iomem_region(const char *name,
 {
 	return request_region(&iomem_resource, name, start, end);
 }
-
-static int iomem_init(void)
-{
-	init_resource(&iomem_resource, "iomem");
-
-	return 0;
-}
-postcore_initcall(iomem_init);

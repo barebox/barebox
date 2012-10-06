@@ -44,6 +44,16 @@ EXPORT_SYMBOL(console_list);
 
 static int initialized = 0;
 
+#define CONSOLE_BUFFER_SIZE	1024
+
+static char console_input_buffer[CONSOLE_BUFFER_SIZE];
+static char console_output_buffer[CONSOLE_BUFFER_SIZE];
+
+static struct kfifo __console_input_fifo;
+static struct kfifo __console_output_fifo;
+static struct kfifo *console_input_fifo = &__console_input_fifo;
+static struct kfifo *console_output_fifo = &__console_output_fifo;
+
 static int console_std_set(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
@@ -73,6 +83,14 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	cdev->f_active = flag;
 
 	dev_param_set_generic(dev, param, active);
+
+	if (initialized < CONSOLE_INIT_FULL) {
+		char ch;
+		initialized = CONSOLE_INIT_FULL;
+		barebox_banner();
+		while (kfifo_getc(console_output_fifo, &ch) == 0)
+			console_putc(CONSOLE_STDOUT, ch);
+	}
 
 	return 0;
 }
@@ -108,16 +126,6 @@ static int console_baudrate_set(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
-#define CONSOLE_BUFFER_SIZE	1024
-
-static char console_input_buffer[CONSOLE_BUFFER_SIZE];
-static char console_output_buffer[CONSOLE_BUFFER_SIZE];
-
-static struct kfifo __console_input_fifo;
-static struct kfifo __console_output_fifo;
-static struct kfifo *console_input_fifo = &__console_input_fifo;
-static struct kfifo *console_output_fifo = &__console_output_fifo;
-
 static void console_init_early(void)
 {
 	kfifo_init(console_input_fifo, console_input_buffer,
@@ -131,8 +139,7 @@ static void console_init_early(void)
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
-	int first = 0;
-	char ch;
+	int activate = 0;
 
 	if (initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
@@ -150,23 +157,17 @@ int console_register(struct console_device *newcdev)
 
 	dev_add_param(dev, "active", console_std_set, NULL, 0);
 
-	initialized = CONSOLE_INIT_FULL;
-#ifdef CONFIG_CONSOLE_ACTIVATE_ALL
-	dev_set_param(dev, "active", "ioe");
-#endif
-#ifdef CONFIG_CONSOLE_ACTIVATE_FIRST
-	if (list_empty(&console_list)) {
-		first = 1;
-		dev_set_param(dev, "active", "ioe");
+	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
+		if (list_empty(&console_list))
+			activate = 1;
+	} else if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_ALL)) {
+		activate = 1;
 	}
-#endif
 
 	list_add_tail(&newcdev->list, &console_list);
 
-	while (kfifo_getc(console_output_fifo, &ch) == 0)
-		console_putc(CONSOLE_STDOUT, ch);
-	if (first)
-		barebox_banner();
+	if (activate)
+		dev_set_param(dev, "active", "ioe");
 
 	return 0;
 }

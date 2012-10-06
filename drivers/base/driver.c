@@ -77,6 +77,8 @@ int get_free_deviceid(const char *name_template)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
+	int ret;
+
 	if (dev->driver)
 		return -1;
 
@@ -84,8 +86,11 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
 	if (dev->bus->match(dev, drv))
 		goto err_out;
-	if (dev->bus->probe(dev))
+	ret = dev->bus->probe(dev);
+	if (ret) {
+		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 		goto err_out;
+	}
 
 	list_add(&dev->active, &active);
 

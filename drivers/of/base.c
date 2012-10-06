@@ -23,6 +23,7 @@
 #include <libfdt.h>
 #include <malloc.h>
 #include <init.h>
+#include <memory.h>
 #include <linux/ctype.h>
 
 /**
@@ -612,9 +613,51 @@ static struct device_d *add_of_device(struct device_node *node)
 }
 EXPORT_SYMBOL(add_of_device);
 
+u64 dt_mem_next_cell(int s, const __be32 **cellp)
+{
+	const __be32 *p = *cellp;
+
+	*cellp = p + s;
+	return of_read_number(p, s);
+}
+
+static int of_add_memory(struct device_node *node)
+{
+	int na, nc;
+	const __be32 *reg, *endp;
+	int len, r = 0;
+	static char str[6];
+
+	of_bus_count_cells(node, &na, &nc);
+
+	reg = of_get_property(node, "reg", &len);
+	if (!reg)
+		return 0;
+
+	endp = reg + (len / sizeof(__be32));
+
+	while ((endp - reg) >= (na + nc)) {
+		u64 base, size;
+
+		base = dt_mem_next_cell(na, &reg);
+		size = dt_mem_next_cell(nc, &reg);
+
+		if (size == 0)
+			continue;
+
+		sprintf(str, "ram%d", r);
+
+                barebox_add_memory_bank(str, base, size);
+
+		r++;
+        }
+
+	return 0;
+}
+
 static int add_of_device_resource(struct device_node *node)
 {
-	struct property *reg;
+	struct property *reg, *type;
 	u64 address, size;
 	struct resource *res;
 	struct device_d *dev;
@@ -626,6 +669,10 @@ static int add_of_device_resource(struct device_node *node)
 		node->phandle = phandle;
 		list_add_tail(&node->phandles, &phandle_list);
 	}
+
+	type = of_find_property(node, "device_type");
+	if (type)
+		return of_add_memory(node);
 
 	reg = of_find_property(node, "reg");
 	if (!reg)

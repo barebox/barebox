@@ -23,8 +23,6 @@
 
 #define SI_REV 0x48
 
-static char *mx53_rev_string = "unknown";
-
 static int imx53_silicon_revision(void)
 {
 	void __iomem *rom = MX53_IROM_BASE_ADDR;
@@ -35,32 +33,21 @@ static int imx53_silicon_revision(void)
 	switch (rev) {
 	case 0x10:
 		mx53_silicon_revision = IMX_CHIP_REV_1_0;
-		mx53_rev_string = "1.0";
 		break;
 	case 0x20:
 		mx53_silicon_revision = IMX_CHIP_REV_2_0;
-		mx53_rev_string = "2.0";
 		break;
 	case 0x21:
 		mx53_silicon_revision = IMX_CHIP_REV_2_1;
-		mx53_rev_string = "2.1";
 		break;
 	default:
 		mx53_silicon_revision = 0;
 	}
 
-	imx_set_silicon_revision(mx53_silicon_revision);
+	imx_set_silicon_revision("i.MX53", mx53_silicon_revision);
 
 	return 0;
 }
-
-static int imx53_print_silicon_rev(void)
-{
-	printf("detected i.MX53 rev %s\n", mx53_rev_string);
-
-	return 0;
-}
-device_initcall(imx53_print_silicon_rev);
 
 static int imx53_init(void)
 {

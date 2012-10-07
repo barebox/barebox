@@ -17,6 +17,6 @@
 
 int imx_silicon_revision(void);
 
-void imx_set_silicon_revision(int revision);
+void imx_set_silicon_revision(const char *soc, int revision);
 
 #endif /* __MACH_REVISION_H__ */

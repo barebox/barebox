@@ -36,7 +36,7 @@ static void imx35_silicon_revision(void)
 	/* 0×00 = TO 1.0, First silicon */
 	reg += IMX_CHIP_REV_1_0;
 
-	imx_set_silicon_revision(reg & 0xFF);
+	imx_set_silicon_revision("i.MX35", reg & 0xFF);
 }
 
 /*

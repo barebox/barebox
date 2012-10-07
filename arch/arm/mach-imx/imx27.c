@@ -43,7 +43,7 @@ static int imx27_silicon_revision(void)
 		break;
 	}
 
-	imx_set_silicon_revision(rev);
+	imx_set_silicon_revision("i.MX27", rev);
 
 	return 0;
 }

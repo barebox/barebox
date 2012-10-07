@@ -37,6 +37,11 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
 
+	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
+		unsigned long barebox_base = arm_barebox_image_place(endmem);
+		relocate_to_adr(barebox_base);
+	}
+
 	setup_c();
 
 	arm_stack_top = endmem;

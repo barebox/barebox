@@ -35,6 +35,10 @@ __ld_var_base:
 .endm
 
 ld_var_entry _text
+ld_var_entry __rel_dyn_start
+ld_var_entry __rel_dyn_end
+ld_var_entry __dynsym_start
+ld_var_entry __dynsym_end
 ld_var_entry _barebox_image_size
 ld_var_entry __bss_start
 ld_var_entry __bss_stop

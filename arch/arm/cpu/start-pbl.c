@@ -55,8 +55,12 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	uint32_t pg_start, pg_end, pg_len;
 	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
 	uint32_t endmem = membase + memsize;
+	unsigned long barebox_base;
 
 	endmem -= STACK_SIZE; /* stack */
+
+	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
+		relocate_to_current_adr();
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
@@ -65,8 +69,13 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	pg_end = (uint32_t)&input_data_end - offset;
 	pg_len = pg_end - pg_start;
 
+	if (IS_ENABLED(CONFIG_RELOCATABLE))
+		barebox_base = arm_barebox_image_place(membase + memsize);
+	else
+		barebox_base = TEXT_BASE;
+
 	if (offset && (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY) ||
-				region_overlap(pg_start, pg_len, TEXT_BASE, pg_len * 4))) {
+				region_overlap(pg_start, pg_len, barebox_base, pg_len * 4))) {
 		/*
 		 * copy piggydata binary to its link address
 		 */
@@ -86,14 +95,15 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	free_mem_ptr = endmem;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
-	pbl_barebox_uncompress((void*)TEXT_BASE, (void *)pg_start, pg_len);
+	pbl_barebox_uncompress((void*)barebox_base, (void *)pg_start, pg_len);
 
+	arm_early_mmu_cache_flush();
 	flush_icache();
 
 	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
-		barebox = (void *)(TEXT_BASE + 1);
+		barebox = (void *)(barebox_base + 1);
 	else
-		barebox = (void *)TEXT_BASE;
+		barebox = (void *)barebox_base;
 
 	barebox(membase, memsize, boarddata);
 }

@@ -21,3 +21,6 @@ pbl-$(CONFIG_CPU_32v7) += cache-armv7.o
 obj-$(CONFIG_CACHE_L2X0) += cache-l2x0.o
 
 pbl-y += start-pbl.o setupc.o
+
+obj-y += common.o
+pbl-y += common.o

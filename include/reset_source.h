@@ -22,6 +22,12 @@ enum reset_src_type {
 	RESET_JTAG,	/* JTAG reset */
 };
 
+#ifdef CONFIG_RESET_SOURCE
 void set_reset_source(enum reset_src_type);
+#else
+static inline void set_reset_source(enum reset_src_type unused)
+{
+}
+#endif
 
 #endif /* __INCLUDE_RESET_SOURCE_H */

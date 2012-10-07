@@ -39,6 +39,27 @@ static int twl_probe(struct device_d *dev)
 
 	devfs_create(&(twl_dev->core.cdev));
 
+	if (IS_ENABLED(CONFIG_DEBUG)) {
+		u8 i, jtag_rev, eprom_rev;
+		int r;
+		u64 dieid;
+
+		r = twl6030_reg_read(twl_dev, TWL6030_JTAG_JTAGVERNUM,
+			&jtag_rev);
+		r |= twl6030_reg_read(twl_dev, TWL6030_JTAG_EPROM_REV,
+			&eprom_rev);
+		for (i = 0; i < 8; i++)
+			r |= twl6030_reg_read(twl_dev, TWL6030_DIEID_0+i,
+				((u8 *)(&dieid))+i);
+		if (r)
+			dev_dbg(dev, "TWL6030 Error reading ID\n");
+		else
+			dev_dbg(dev, "TWL6030 JTAG REV: 0x%02X, "
+				"EPROM REV: 0x%02X, "
+				"DIE ID: 0x%016llX\n",
+				(unsigned)jtag_rev, (unsigned)eprom_rev, dieid);
+	}
+
 	return 0;
 }
 

@@ -42,6 +42,15 @@ struct imx_wd {
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
 #define IMX21_WDOG_WCR_WDA	(1 << 5)
 
+/* valid for i.MX25, i.MX27, i.MX31, i.MX35, i.MX51 */
+#define WSTR_WARMSTART	(1 << 0)
+/* valid for i.MX25, i.MX27, i.MX31, i.MX35, i.MX51 */
+#define WSTR_WDOG	(1 << 1)
+/* valid for i.MX27, i.MX31, always '0' on i.MX25, i.MX35, i.MX51 */
+#define WSTR_HARDRESET	(1 << 3)
+/* valid for i.MX27, i.MX31, always '0' on i.MX25, i.MX35, i.MX51 */
+#define WSTR_COLDSTART	(1 << 4)
+
 static int imx1_watchdog_set_timeout(struct imx_wd *priv, int timeout)
 {
 	u16 val;
@@ -115,6 +124,28 @@ void __noreturn reset_cpu(unsigned long addr)
 	hang();
 }
 
+static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
+{
+	u16 val = readw(priv->base + IMX21_WDOG_WSTR);
+
+	if (val & WSTR_COLDSTART) {
+		set_reset_source(RESET_POR);
+		return;
+	}
+
+	if (val & (WSTR_HARDRESET | WSTR_WARMSTART)) {
+		set_reset_source(RESET_RST);
+		return;
+	}
+
+	if (val & WSTR_WDOG) {
+		set_reset_source(RESET_WDG);
+		return;
+	}
+
+	/* else keep the default 'unknown' state */
+}
+
 static int imx_wd_probe(struct device_d *dev)
 {
 	struct imx_wd *priv;
@@ -139,6 +170,9 @@ static int imx_wd_probe(struct device_d *dev)
 		if (ret)
 			goto on_error;
 	}
+
+	if (fn != imx1_watchdog_set_timeout)
+		imx_watchdog_detect_reset_source(priv);
 
 	dev->priv = priv;
 

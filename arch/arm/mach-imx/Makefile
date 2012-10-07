@@ -1,5 +1,4 @@
 obj-y += clocksource.o gpio.o
-obj-$(CONFIG_RESET_SOURCE) += reset_source.o
 obj-$(CONFIG_ARCH_IMX1)  += imx1.o  iomux-v1.o clk-imx1.o
 obj-$(CONFIG_ARCH_IMX25) += imx25.o iomux-v3.o clk-imx25.o
 obj-$(CONFIG_ARCH_IMX21) += imx21.o iomux-v1.o clk-imx21.o

@@ -490,6 +490,36 @@ struct device_node *of_find_node_by_path(const char *path)
 }
 EXPORT_SYMBOL(of_find_node_by_path);
 
+/**
+ * of_property_read_string - Find and read a string from a property
+ * @np:		device node from which the property value is to be read.
+ * @propname:	name of the property to be searched.
+ * @out_string:	pointer to null terminated return string, modified only if
+ *		return value is 0.
+ *
+ * Search for a property in a device tree node and retrieve a null
+ * terminated string value (pointer to data, not a copy). Returns 0 on
+ * success, -EINVAL if the property does not exist, -ENODATA if property
+ * does not have a value, and -EILSEQ if the string is not null-terminated
+ * within the length of the property data.
+ *
+ * The out_string pointer is modified only if a valid string can be decoded.
+ */
+int of_property_read_string(struct device_node *np, const char *propname,
+				const char **out_string)
+{
+	struct property *prop = of_find_property(np, propname);
+	if (!prop)
+		return -EINVAL;
+	if (!prop->value)
+		return -ENODATA;
+	if (strnlen(prop->value, prop->length) >= prop->length)
+		return -EILSEQ;
+	*out_string = prop->value;
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_property_read_string);
+
 struct device_node *of_get_root_node(void)
 {
 	return root_node;
@@ -758,10 +788,19 @@ static void __of_probe(struct device_node *node)
 		__of_probe(n);
 }
 
+const char *of_model;
+
+const char *of_get_model(void)
+{
+	return of_model;
+}
+
 int of_probe(void)
 {
 	if(!root_node)
 		return -ENODEV;
+
+	of_property_read_string(root_node, "model", &of_model);
 
 	__of_probe(root_node);
 

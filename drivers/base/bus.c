@@ -11,7 +11,7 @@
 LIST_HEAD(bus_list);
 EXPORT_SYMBOL(bus_list);
 
-struct bus_type *get_bus_by_name(const char *name)
+static struct bus_type *get_bus_by_name(const char *name)
 {
 	struct bus_type *bus;
 

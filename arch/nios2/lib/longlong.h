@@ -11,7 +11,7 @@
  * useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
-
+ */
 /* You have to define the following before including this file:
 
    UWtype -- An unsigned type, default type for operations (typically a "word")

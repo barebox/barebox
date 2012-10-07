@@ -37,9 +37,6 @@
 #define MODE_SVC	0x13
 #define I_BIT		0x80
 
-_STACK_START:
-	.word STACK_BASE + STACK_SIZE - 4
-
 /*
  * use bad_save_user_regs for abort/prefetch/undef/swi ...
  * use irq_save_user_regs / irq_restore_user_regs for IRQ/FIQ handling
@@ -48,8 +45,7 @@ _STACK_START:
 	.macro	bad_save_user_regs
 	sub	sp, sp, #S_FRAME_SIZE
 	stmia	sp, {r0 - r12}			@ Calling r0-r12
-	ldr	r2, _STACK_START
-	sub	r2, r2, #(8)  @ set base 2 words into abort stack
+	ldr	r2, =abort_stack
 	ldmia	r2, {r2 - r3}			@ get pc, cpsr
 	add	r0, sp, #S_FRAME_SIZE		@ restore sp_SVC
 
@@ -80,9 +76,7 @@ _STACK_START:
 	.endm
 
 	.macro get_bad_stack
-	ldr	r13, _STACK_START
-	sub	r13, r13, #(8) @ reserved a couple spots in abort stack
-
+	ldr	r13, =abort_stack
 	str	lr, [r13]			@ save caller lr / spsr
 	mrs	lr, spsr
 	str     lr, [r13, #4]
@@ -163,3 +157,8 @@ fiq:
 1:	b 1b				/* irq (interrupt) */
 1:	b 1b				/* fiq (fast interrupt) */
 #endif
+
+.section .data
+.align 4
+abort_stack:
+.space 8

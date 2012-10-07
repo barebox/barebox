@@ -59,11 +59,6 @@
 #define MX1_AVIC_BASE_ADDR		(0x23000 + MX1_IO_BASE_ADDR)
 #define MX1_CSI_BASE_ADDR		(0x24000 + MX1_IO_BASE_ADDR)
 
-/* FIXME: get rid of these */
-#define IMX_TIM1_BASE	MX1_CCM_BASE_ADDR
-#define IMX_WDT_BASE	MX1_WDT_BASE_ADDR
-#define IMX_GPIO_BASE	MX1_GPIO_BASE_ADDR
-
 /* SYSCTRL Registers */
 #define SIDR   __REG(MX1_SCM_BASE_ADDR + 0x4) /* Silicon ID Register		    */
 #define FMCR   __REG(MX1_SCM_BASE_ADDR + 0x8) /* Function Multiplex Control Register */

@@ -76,13 +76,6 @@
 #define MX25_USB_HS_BASE_ADDR			(MX25_USB_BASE_ADDR + 0x0400)
 #define MX25_CSI_BASE_ADDR		0x53ff8000
 
-/* FIXME: Get rid of these */
-#define IMX_TIM1_BASE		MX25_GPT1_BASE_ADDR
-#define IMX_IOMUXC_BASE		MX25_IOMUXC_BASE_ADDR
-#define IMX_WDT_BASE		MX25_WDOG_BASE_ADDR
-#define IMX_CCM_BASE		MX25_CCM_BASE_ADDR
-#define IMX_ESD_BASE		MX25_ESDCTL_BASE_ADDR
-
 /*
  * Clock Controller Module (CCM)
  */
@@ -138,15 +131,5 @@
 
 #define MX25_ESDCTL_BASE_ADDR	0xb8001000
 #define MX25_WEIM_BASE_ADDR	0xb8002000
-
-/*
- * Watchdog Registers
- */
-#define WCR  __REG16(IMX_WDT_BASE + 0x00) /* Watchdog Control Register */
-#define WSR  __REG16(IMX_WDT_BASE + 0x02) /* Watchdog Service Register */
-#define WSTR __REG16(IMX_WDT_BASE + 0x04) /* Watchdog Status Register  */
-
-/* important definition of some bits of WCR */
-#define WCR_WDE 0x04
 
 #endif /* __ASM_ARCH_MX25_REGS_H */

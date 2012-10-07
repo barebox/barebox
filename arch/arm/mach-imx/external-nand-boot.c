@@ -116,7 +116,7 @@ static void __bare_init __memcpy32(void *trg, const void *src, int size)
 static int __maybe_unused is_pagesize_2k(void)
 {
 #ifdef CONFIG_ARCH_IMX21
-	if (readl(IMX_SYSTEM_CTL_BASE + 0x14) & (1 << 5))
+	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
 		return 1;
 	else
 		return 0;

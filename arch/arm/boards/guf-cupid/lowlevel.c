@@ -187,7 +187,7 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 void __bare_init __naked reset(void)
 {
 	u32 r0, r1;
-	void *iomuxc_base = (void *)IMX_IOMUXC_BASE;
+	void *iomuxc_base = (void *)MX35_IOMUXC_BASE_ADDR;
 	int i;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;

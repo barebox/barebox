@@ -139,6 +139,24 @@ static void *omap_xload_boot_spi(int offset)
 	return to;
 }
 
+static void *omap4_xload_boot_usb(void){
+	int ret;
+	void *buf;
+	int len;
+
+	ret = mount("omap4_usbboot", "omap4_usbbootfs", "/");
+	if (ret) {
+		printf("Unable to mount omap4_usbbootfs (%d)\n", ret);
+		return NULL;
+	}
+
+	buf = read_file("/barebox.bin", &len);
+	if (!buf)
+		printf("could not read barebox.bin from omap4_usbbootfs\n");
+
+	return buf;
+}
+
 enum omap_boot_src omap_bootsrc(void)
 {
 #if defined(CONFIG_ARCH_OMAP3)
@@ -161,6 +179,14 @@ int run_shell(void)
 		printf("booting from MMC1\n");
 		func = omap_xload_boot_mmc();
 		break;
+	case OMAP_BOOTSRC_USB1:
+		if (IS_ENABLED(CONFIG_FS_OMAP4_USBBOOT)) {
+			printf("booting from USB1\n");
+			func = omap4_xload_boot_usb();
+			break;
+		} else {
+			printf("booting from usb1 not enabled\n");
+		}
 	case OMAP_BOOTSRC_UNKNOWN:
 		printf("unknown boot source. Fall back to nand\n");
 	case OMAP_BOOTSRC_NAND:

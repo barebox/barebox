@@ -481,6 +481,8 @@ enum omap_boot_src omap4_bootsrc(void)
 		return OMAP_BOOTSRC_MMC1;
 	if (bootsrc & (1 << 3))
 		return OMAP_BOOTSRC_NAND;
+	if (bootsrc & (1<<20))
+		return OMAP_BOOTSRC_USB1;
 	return OMAP_BOOTSRC_UNKNOWN;
 }
 

@@ -20,6 +20,7 @@
 #include <mach/imx-regs.h>
 #include <mach/imx-pll.h>
 #include <asm/barebox-arm-head.h>
+#include <mach/esdctl.h>
 
 #define writel(val, reg) \
 	ldr		r0,	=reg;	\
@@ -46,24 +47,30 @@ reset:
 
 	common_reset r0
 
-	writel(0x074B0BF5, MX31_CCM_BASE_ADDR + CCM_CCMR)
+	writel(0x074B0BF5, MX31_CCM_BASE_ADDR + MX31_CCM_CCMR)
 
 	DELAY 0x40000
 
-	writel(0x074B0BF5 | CCMR_MPE, MX31_CCM_BASE_ADDR + CCM_CCMR)
-	writel((0x074B0BF5 | CCMR_MPE) & ~CCMR_MDS, MX31_CCM_BASE_ADDR + CCM_CCMR)
+	writel(0x074B0BF5 | MX31_CCMR_MPE, MX31_CCM_BASE_ADDR +
+			MX31_CCM_CCMR)
+	writel((0x074B0BF5 | MX31_CCMR_MPE) & ~MX31_CCMR_MDS,
+			MX31_CCM_BASE_ADDR + MX31_CCM_CCMR)
 
-	writel(PDR0_CSI_PODF(0xff1) | \
-		PDR0_PER_PODF(7) | \
-		PDR0_HSP_PODF(3) | \
-		PDR0_NFC_PODF(5) | \
-		PDR0_IPG_PODF(1) | \
-		PDR0_MAX_PODF(3) | \
-		PDR0_MCU_PODF(0), \
-		MX31_CCM_BASE_ADDR + CCM_PDR0)
+	writel(MX31_PDR0_CSI_PODF(0xff1) | \
+		MX31_PDR0_PER_PODF(7) | \
+		MX31_PDR0_HSP_PODF(3) | \
+		MX31_PDR0_NFC_PODF(5) | \
+		MX31_PDR0_IPG_PODF(1) | \
+		MX31_PDR0_MAX_PODF(3) | \
+		MX31_PDR0_MCU_PODF(0), \
+		MX31_CCM_BASE_ADDR + MX31_CCM_PDR0)
 
-	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) | IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd), MX31_CCM_BASE_ADDR + CCM_MPCTL)
-	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) | IMX_PLL_MFN(1), MX31_CCM_BASE_ADDR + CCM_SPCTL)
+	writel(IMX_PLL_PD(0) | IMX_PLL_MFD(0xe) |
+			IMX_PLL_MFI(9) | IMX_PLL_MFN(0xd),
+			MX31_CCM_BASE_ADDR + MX31_CCM_MPCTL)
+	writel(IMX_PLL_PD(1) | IMX_PLL_MFD(0x43) | IMX_PLL_MFI(12) |
+			IMX_PLL_MFN(1), MX31_CCM_BASE_ADDR +
+			MX31_CCM_SPCTL)
 
 	/* Configure IOMUXC
 	 * Clears 0x43fa_c26c - 0x43fa_c2dc with 0, except 0x43fa_c278 (untouched), 0x43fa_c27c (set to 0x1000) and 0x43fa_c280 (untouched)

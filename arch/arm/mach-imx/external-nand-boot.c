@@ -128,7 +128,7 @@ static int __maybe_unused is_pagesize_2k(void)
 		return 0;
 #endif
 #ifdef CONFIG_ARCH_IMX31
-	if (readl(IMX_CCM_BASE + CCM_RCSR) & RCSR_NFMS)
+	if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
 		return 1;
 	else
 		return 0;

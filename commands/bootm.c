@@ -70,6 +70,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 		if (ret) {
 			printf("Checking data crc failed with %s\n",
 					strerror(-ret));
+			uimage_close(data->os);
 			return ret;
 		}
 	}
@@ -79,6 +80,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (data->os->header.ih_arch != IH_ARCH) {
 		printf("Unsupported Architecture 0x%x\n",
 		       data->os->header.ih_arch);
+		uimage_close(data->os);
 		return -EINVAL;
 	}
 
@@ -88,8 +90,10 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (data->os_address != UIMAGE_INVALID_ADDRESS) {
 		data->os_res = uimage_load_to_sdram(data->os, 0,
 				data->os_address);
-		if (!data->os_res)
+		if (!data->os_res) {
+			uimage_close(data->os);
 			return -ENOMEM;
+		}
 	}
 
 	return 0;

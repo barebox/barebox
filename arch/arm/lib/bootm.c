@@ -269,8 +269,9 @@ static int do_bootz_linux(struct image_data *data)
 
 	ret = do_bootz_linux_fdt(fd, data);
 	if (ret && ret != -ENXIO)
-		return ret;
+		goto err_out;
 
+	close(fd);
 	return __do_bootm_linux(data, swap);
 
 err_out:
@@ -431,6 +432,7 @@ static int do_bootm_aimage(struct image_data *data)
 		reset_cpu(0);
 	}
 
+	close(fd);
 	return __do_bootm_linux(data, 0);
 
 err_out:

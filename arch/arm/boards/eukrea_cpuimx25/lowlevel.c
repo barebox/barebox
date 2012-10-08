@@ -57,15 +57,15 @@ void __bare_init __naked reset(void)
 	common_reset();
 
 	/* restart the MPLL and wait until it's stable */
-	writel(readl(MX25_CCM_BASE_ADDR + CCM_CCTL) | (1 << 27),
-						MX25_CCM_BASE_ADDR + CCM_CCTL);
-	while (readl(MX25_CCM_BASE_ADDR + CCM_CCTL) & (1 << 27)) {};
+	writel(readl(MX25_CCM_BASE_ADDR + MX25_CCM_CCTL) | (1 << 27),
+			MX25_CCM_BASE_ADDR + MX25_CCM_CCTL);
+	while (readl(MX25_CCM_BASE_ADDR + MX25_CCM_CCTL) & (1 << 27)) {};
 
 	/* Configure dividers and ARM clock source
 	 * 	ARM @ 400 MHz
 	 * 	AHB @ 133 MHz
 	 */
-	writel(0x20034000, MX25_CCM_BASE_ADDR + CCM_CCTL);
+	writel(0x20034000, MX25_CCM_BASE_ADDR + MX25_CCM_CCTL);
 
 	/* Enable UART1 / FEC / */
 /*	writel(0x1FFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR0);
@@ -118,10 +118,10 @@ void __bare_init __naked reset(void)
 	writel(0x1, 0xb8003000);
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(MX25_CCM_BASE_ADDR + CCM_PCDR2);
+	r = readl(MX25_CCM_BASE_ADDR + MX25_CCM_PCDR2);
 	r &= ~0xf;
 	r |= 0x1;
-	writel(r, MX25_CCM_BASE_ADDR + CCM_PCDR2);
+	writel(r, MX25_CCM_BASE_ADDR + MX25_CCM_PCDR2);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();

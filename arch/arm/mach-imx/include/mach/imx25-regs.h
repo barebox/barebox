@@ -86,36 +86,36 @@
 /*
  * Clock Controller Module (CCM)
  */
-#define CCM_MPCTL	0x00
-#define CCM_UPCTL	0x04
-#define CCM_CCTL	0x08
-#define CCM_CGCR0	0x0C
-#define CCM_CGCR1	0x10
-#define CCM_CGCR2	0x14
-#define CCM_PCDR0	0x18
-#define CCM_PCDR1	0x1C
-#define CCM_PCDR2	0x20
-#define CCM_PCDR3	0x24
-#define CCM_RCSR	0x28
-#define CCM_CRDR	0x2C
-#define CCM_DCVR0	0x30
-#define CCM_DCVR1	0x34
-#define CCM_DCVR2	0x38
-#define CCM_DCVR3	0x3c
-#define CCM_LTR0	0x40
-#define CCM_LTR1	0x44
-#define CCM_LTR2	0x48
-#define CCM_LTR3	0x4c
+#define MX25_CCM_MPCTL	0x00
+#define MX25_CCM_UPCTL	0x04
+#define MX25_CCM_CCTL	0x08
+#define MX25_CCM_CGCR0	0x0C
+#define MX25_CCM_CGCR1	0x10
+#define MX25_CCM_CGCR2	0x14
+#define MX25_CCM_PCDR0	0x18
+#define MX25_CCM_PCDR1	0x1C
+#define MX25_CCM_PCDR2	0x20
+#define MX25_CCM_PCDR3	0x24
+#define MX25_CCM_RCSR	0x28
+#define MX25_CCM_CRDR	0x2C
+#define MX25_CCM_DCVR0	0x30
+#define MX25_CCM_DCVR1	0x34
+#define MX25_CCM_DCVR2	0x38
+#define MX25_CCM_DCVR3	0x3c
+#define MX25_CCM_LTR0	0x40
+#define MX25_CCM_LTR1	0x44
+#define MX25_CCM_LTR2	0x48
+#define MX25_CCM_LTR3	0x4c
 
-#define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
-#define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
-#define PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)
-#define PDR0_HSP_PODF(x)	(((x) & 0x3) << 20)
-#define PDR0_AUTO_CON		(1 << 0)
-#define PDR0_PER_SEL		(1 << 26)
+#define MX25_PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
+#define MX25_PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
+#define MX25_PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)
+#define MX25_PDR0_HSP_PODF(x)		(((x) & 0x3) << 20)
+#define MX25_PDR0_AUTO_CON		(1 << 0)
+#define MX25_PDR0_PER_SEL		(1 << 26)
 
-#define CCM_RCSR_MEM_CTRL_SHIFT		30
-#define CCM_RCSR_MEM_TYPE_SHIFT		28
+#define MX25_CCM_RCSR_MEM_CTRL_SHIFT		30
+#define MX25_CCM_RCSR_MEM_TYPE_SHIFT		28
 
 /*
  * Adresses and ranges of the external chip select lines

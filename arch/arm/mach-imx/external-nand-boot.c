@@ -121,6 +121,12 @@ static int __maybe_unused is_pagesize_2k(void)
 	else
 		return 0;
 #endif
+#if defined(CONFIG_ARCH_IMX25)
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
+		return 1;
+	else
+		return 0;
+#endif
 #ifdef CONFIG_ARCH_IMX27
 	if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
 		return 1;
@@ -133,7 +139,7 @@ static int __maybe_unused is_pagesize_2k(void)
 	else
 		return 0;
 #endif
-#if defined(CONFIG_ARCH_IMX35) || defined(CONFIG_ARCH_IMX25)
+#if defined(CONFIG_ARCH_IMX35)
 	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 8))
 		return 1;
 	else

@@ -66,9 +66,9 @@ reset:
 	str r1, [r0, #MX25_CCM_MCR]
 
 	/* enable all the clocks */
-	writel(0x1FFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR0)
-	writel(0xFFFFFFFF, MX25_CCM_BASE_ADDR + CCM_CGCR1)
-	writel(0x000FDFFF, MX25_CCM_BASE_ADDR + CCM_CGCR2)
+	writel(0x1FFFFFFF, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR0)
+	writel(0xFFFFFFFF, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR1)
+	writel(0x000FDFFF, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR2)
 	writel(0x0000FEFF, MX25_CCM_BASE_ADDR + MX25_CCM_MCR)
 
 	/* Skip SDRAM initialization if we run from RAM */

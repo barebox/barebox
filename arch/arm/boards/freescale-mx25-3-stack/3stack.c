@@ -215,7 +215,7 @@ static int imx25_devices_init(void)
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);
@@ -298,7 +298,7 @@ void __bare_init nand_boot(void)
 
 static int imx25_core_setup(void)
 {
-	writel(0x01010103, MX25_CCM_BASE_ADDR + CCM_PCDR2);
+	writel(0x01010103, MX25_CCM_BASE_ADDR + MX25_CCM_PCDR2);
 	return 0;
 
 }

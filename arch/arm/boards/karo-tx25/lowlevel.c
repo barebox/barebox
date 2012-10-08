@@ -122,12 +122,12 @@ void __bare_init __naked reset(void)
 	writel(0x1, 0xb8003000);
 
 	/* configure ARM clk */
-	writel(0x20034000, MX25_CCM_BASE_ADDR + CCM_CCTL);
+	writel(0x20034000, MX25_CCM_BASE_ADDR + MX25_CCM_CCTL);
 
 	/* enable all the clocks */
-	writel(0x1fffffff, MX25_CCM_BASE_ADDR + CCM_CGCR0);
-	writel(0xffffffff, MX25_CCM_BASE_ADDR + CCM_CGCR1);
-	writel(0x000fdfff, MX25_CCM_BASE_ADDR + CCM_CGCR2);
+	writel(0x1fffffff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR0);
+	writel(0xffffffff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR1);
+	writel(0x000fdfff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR2);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();

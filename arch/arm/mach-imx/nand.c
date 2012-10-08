@@ -105,7 +105,7 @@ void imx_nand_set_layout(int writesize, int datawidth)
 #ifdef CONFIG_ARCH_IMX25
 	if (cpu_is_mx25())
 		imx25_35_nand_set_layout((void *)MX25_CCM_BASE_ADDR +
-				CCM_RCSR, writesize, datawidth);
+				MX25_CCM_RCSR, writesize, datawidth);
 #endif
 #ifdef CONFIG_ARCH_IMX35
 	if (cpu_is_mx35())

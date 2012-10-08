@@ -1,0 +1,27 @@
+-------------- omap4_usb_booting --------------
+
+omap4 processors have support for booting from the usb port. To be able to fully
+use this feature you will need to enable the following:
+    OMAP4_USBBOOT
+        This CONFIG_ option adds the required infrastructure.
+    DRIVER_SERIAL_OMAP4_USBBOOT
+        This adds console support over the same usb port used for booting.
+    FS_OMAP4_USBBOOT
+        This adds filesystem support over the same usb port used for booting.
+
+To send the bootloader to the processor, execute the utility omap4_usbboot which
+can be found in the scripts subdirectory.
+omap4_usbboot takes two parameters:
+    the bootloader image
+    a directory name which will be the root for the guest system
+Once omap4_usbboot is running it will wait for enumeration of the omap4 cpu on
+the host usb subsystem. Then power on or reset the cpu with the correct sys_boot
+or SAR memory configuration.
+
+If everything works, barebox's first stage will boot and afterwards it will load
+the second stage found at "/barebox.bin".
+Barebox's second stage will still have access to the usb filesystem, so an
+initrd and a zImage can be loaded.
+
+Overall this procedure frees the developer of continously be changing the SD
+card or other boot media from host to target.

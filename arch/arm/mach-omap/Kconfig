@@ -82,6 +82,15 @@ config ARCH_TEXT_BASE
 	default 0x80e80000 if MACH_OMAP343xSDP
 	default 0x80e80000 if MACH_BEAGLE
 
+config OMAP4_USBBOOT
+	bool "enable booting from USB"
+	default n
+	depends on ARCH_OMAP4 && !MMU
+	help
+	  Say Y here if you want to be able to boot an OMAP4 cpu from USB.
+	  You need the utility program omap4_usbboot to boot from USB.
+	  Please read oamp4_usb_booting.txt for more information.
+
 config BOARDINFO
 	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
 	default "Texas Instrument's Beagle" if MACH_BEAGLE

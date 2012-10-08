@@ -13,6 +13,10 @@ hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am35xx-spi-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 
+HOSTLOADLIBES_omap4_usbboot = -lpthread
+omap4_usbboot-objs               := usb_linux.o omap4_usbboot.o
+hostprogs-$(CONFIG_OMAP4_USBBOOT)+= omap4_usbboot
+
 always		:= $(hostprogs-y) $(hostprogs-m)
 
 subdir-y                     += mod

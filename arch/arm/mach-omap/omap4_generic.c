@@ -8,6 +8,7 @@
 #include <mach/xload.h>
 #include <mach/gpmc.h>
 #include <mach/gpio.h>
+#include <mach/omap4_rom_usb.h>
 
 /*
  *  The following several lines are taken from U-Boot to support
@@ -459,13 +460,21 @@ late_initcall(watchdog_init);
 
 static int omap_vector_init(void)
 {
-	__asm__ __volatile__ (
-		"mov    r0, #0;"
-		"mcr    p15, #0, r0, c12, c0, #0;"
-		:
-		:
-		: "r0"
-	);
+	/*
+	 * omap4 usbboot interfaces with the omap4 ROM to reuse the USB port
+	 * used for booting.
+	 * The ROM code uses interrupts for the transfers, so do not modify the
+	 * interrupt vectors in this case.
+	 */
+	if (omap4_bootsrc() != OMAP_BOOTSRC_USB1) {
+		__asm__ __volatile__ (
+			"mov    r0, #0;"
+			"mcr    p15, #0, r0, c12, c0, #0;"
+			:
+			:
+			: "r0"
+		);
+	}
 
 	return 0;
 }

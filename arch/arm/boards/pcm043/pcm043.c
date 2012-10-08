@@ -127,7 +127,7 @@ static int imx35_devices_init(void)
 
 	led_gpio_register(&led0);
 
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_RCSR);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
 	if (reg & 0x20000000)
 		nand_info.width = 2;    /* 16 bit */
@@ -308,10 +308,10 @@ static int do_cpufreq(int argc, char *argv[])
 
 	switch (freq) {
 	case 399:
-		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	case 532:
-		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	default:
 		return COMMAND_ERROR_USAGE;

@@ -41,10 +41,10 @@ static void __bare_init __naked insdram(void)
 	uint32_t r;
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
+	r = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 	r &= ~(0xf << 28);
 	r |= 0x1 << 28;
-	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
+	writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
 	r = STACK_BASE + STACK_SIZE - 12;
@@ -106,27 +106,27 @@ void __bare_init __naked reset(void)
 	 * End of ARM1136 init
 	 */
 
-	writel(0x003F4208, ccm_base + CCM_CCMR);
+	writel(0x003F4208, ccm_base + MX35_CCM_CCMR);
 
 	/* Set MPLL , arm clock and ahb clock*/
-	writel(MPCTL_PARAM_532, ccm_base + CCM_MPCTL);
+	writel(MPCTL_PARAM_532, ccm_base + MX35_CCM_MPCTL);
 
-	writel(PPCTL_PARAM_300, ccm_base + CCM_PPCTL);
-	writel(0x00001000, ccm_base + CCM_PDR0);
+	writel(PPCTL_PARAM_300, ccm_base + MX35_CCM_PPCTL);
+	writel(0x00001000, ccm_base + MX35_CCM_PDR0);
 
-	r = readl(ccm_base + CCM_CGR0);
+	r = readl(ccm_base + MX35_CCM_CGR0);
 	r |= 0x00300000;
-	writel(r, ccm_base + CCM_CGR0);
+	writel(r, ccm_base + MX35_CCM_CGR0);
 
-	r = readl(ccm_base + CCM_CGR1);
+	r = readl(ccm_base + MX35_CCM_CGR1);
 	r |= 0x00030C00;
 	r |= 0x00000003;
-	writel(r, ccm_base + CCM_CGR1);
+	writel(r, ccm_base + MX35_CCM_CGR1);
 
 	/* enable watchdog asap */
-	r = readl(ccm_base + CCM_CGR2);
+	r = readl(ccm_base + MX35_CCM_CGR2);
 	r |= 0x03000000;
-	writel(r, ccm_base + CCM_CGR2);
+	writel(r, ccm_base + MX35_CCM_CGR2);
 
 	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 	r |= 0x1000;

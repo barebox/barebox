@@ -304,27 +304,27 @@ void __bare_init __naked reset(void)
 	/* Configure clocks */
 
 	/* setup cpu/bus clocks */
-	writel(0x003f4208, MX35_CCM_BASE_ADDR + CCM_CCMR);
+	writel(0x003f4208, MX35_CCM_BASE_ADDR + MX35_CCM_CCMR);
 
 	/* configure MPLL */
-	writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+	writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 
 	/* configure PPLL */
-	writel(PPCTL_PARAM_300, MX35_CCM_BASE_ADDR + CCM_PPCTL);
+	writel(PPCTL_PARAM_300, MX35_CCM_BASE_ADDR + MX35_CCM_PPCTL);
 
 	/* configure core dividers */
-	r0 = PDR0_CCM_PER_AHB(1) | PDR0_HSP_PODF(2);
+	r0 = MX35_PDR0_CCM_PER_AHB(1) | MX35_PDR0_HSP_PODF(2);
 
-	writel(r0, MX35_CCM_BASE_ADDR + CCM_PDR0);
+	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR0);
 
 	/* configure clock-gates */
-	r0 = readl(MX35_CCM_BASE_ADDR + CCM_CGR0);
+	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 	r0 |= 0x00300000;
-	writel(r0, MX35_CCM_BASE_ADDR + CCM_CGR0);
+	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 
-	r0 = readl(MX35_CCM_BASE_ADDR + CCM_CGR1);
+	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	r0 |= 0x00000c03;
-	writel(r0, MX35_CCM_BASE_ADDR + CCM_CGR1);
+	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 
 	/* Configure SDRAM */
 	/* Try 32-Bit 256 MB DDR memory */

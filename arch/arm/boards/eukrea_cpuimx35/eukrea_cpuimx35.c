@@ -246,14 +246,14 @@ static int eukrea_cpuimx35_core_init(void)
 	u32 reg;
 
 	/* enable clock for I2C1, SDHC1, USB and FEC */
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_CGR1);
-	reg |= 0x3 << CCM_CGR1_FEC_SHIFT;
-	reg |= 0x3 << CCM_CGR1_SDHC1_SHIFT;
-	reg |= 0x3 << CCM_CGR1_I2C1_SHIFT,
-	reg = writel(reg, MX35_CCM_BASE_ADDR + CCM_CGR1);
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_CGR2);
-	reg |= 0x3 << CCM_CGR2_USB_SHIFT;
-	reg = writel(reg, MX35_CCM_BASE_ADDR + CCM_CGR2);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
+	reg |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	reg |= 0x3 << MX35_CCM_CGR1_SDHC1_SHIFT;
+	reg |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT,
+	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR2);
+	reg |= 0x3 << MX35_CCM_CGR2_USB_SHIFT;
+	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR2);
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.*/
 	/*
@@ -345,10 +345,10 @@ static int do_cpufreq(int argc, char *argv[])
 
 	switch (freq) {
 	case 399:
-		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	case 532:
-		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	default:
 		return COMMAND_ERROR_USAGE;

@@ -141,36 +141,36 @@
 /*
  * Clock Controller Module (CCM)
  */
-#define CCM_CCMR	0x00
-#define CCM_PDR0	0x04
-#define CCM_PDR1	0x08
-#define CCM_PDR2	0x0C
-#define CCM_PDR3	0x10
-#define CCM_PDR4	0x14
-#define CCM_RCSR	0x18
-#define CCM_MPCTL	0x1C
-#define CCM_PPCTL	0x20
-#define CCM_ACMR	0x24
-#define CCM_COSR	0x28
-#define CCM_CGR0	0x2C
-#define CCM_CGR1	0x30
-#define CCM_CGR2	0x34
-#define CCM_CGR3	0x38
+#define MX35_CCM_CCMR	0x00
+#define MX35_CCM_PDR0	0x04
+#define MX35_CCM_PDR1	0x08
+#define MX35_CCM_PDR2	0x0C
+#define MX35_CCM_PDR3	0x10
+#define MX35_CCM_PDR4	0x14
+#define MX35_CCM_RCSR	0x18
+#define MX35_CCM_MPCTL	0x1C
+#define MX35_CCM_PPCTL	0x20
+#define MX35_CCM_ACMR	0x24
+#define MX35_CCM_COSR	0x28
+#define MX35_CCM_CGR0	0x2C
+#define MX35_CCM_CGR1	0x30
+#define MX35_CCM_CGR2	0x34
+#define MX35_CCM_CGR3	0x38
 
-#define CCM_CGR0_CSPI1_SHIFT	10
-#define CCM_CGR1_FEC_SHIFT	0
-#define CCM_CGR1_I2C1_SHIFT	10
-#define CCM_CGR1_SDHC1_SHIFT	26
-#define CCM_CGR2_USB_SHIFT	22
+#define MX35_CCM_CGR0_CSPI1_SHIFT	10
+#define MX35_CCM_CGR1_FEC_SHIFT	0
+#define MX35_CCM_CGR1_I2C1_SHIFT	10
+#define MX35_CCM_CGR1_SDHC1_SHIFT	26
+#define MX35_CCM_CGR2_USB_SHIFT	22
 
-#define CCM_RCSR_MEM_CTRL_SHIFT		25
-#define CCM_RCSR_MEM_TYPE_SHIFT		23
+#define MX35_CCM_RCSR_MEM_CTRL_SHIFT		25
+#define MX35_CCM_RCSR_MEM_TYPE_SHIFT		23
 
-#define PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
-#define PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
-#define PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)
-#define PDR0_HSP_PODF(x)	(((x) & 0x3) << 20)
-#define PDR0_AUTO_CON		(1 << 0)
-#define PDR0_PER_SEL		(1 << 26)
+#define MX35_PDR0_AUTO_MUX_DIV(x)	(((x) & 0x7) << 9)
+#define MX35_PDR0_CCM_PER_AHB(x)	(((x) & 0x7) << 12)
+#define MX35_PDR0_CON_MUX_DIV(x)	(((x) & 0xf) << 16)
+#define MX35_PDR0_HSP_PODF(x)		(((x) & 0x3) << 20)
+#define MX35_PDR0_AUTO_CON		(1 << 0)
+#define MX35_PDR0_PER_SEL		(1 << 26)
 
 #endif /* __ASM_ARCH_MX35_REGS_H */

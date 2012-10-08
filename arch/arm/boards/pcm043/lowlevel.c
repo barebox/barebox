@@ -111,28 +111,28 @@ void __bare_init __naked reset(void)
 	 * End of ARM1136 init
 	 */
 
-	writel(0x003F4208, ccm_base + CCM_CCMR);
+	writel(0x003F4208, ccm_base + MX35_CCM_CCMR);
 
 	/* Set MPLL , arm clock and ahb clock*/
-	writel(MPCTL_PARAM_532, ccm_base + CCM_MPCTL);
+	writel(MPCTL_PARAM_532, ccm_base + MX35_CCM_MPCTL);
 
-	writel(PPCTL_PARAM_300, ccm_base + CCM_PPCTL);
+	writel(PPCTL_PARAM_300, ccm_base + MX35_CCM_PPCTL);
 
 	/* Check silicon revision and use 532MHz if >=2.1 */
 	r = readl(MX35_IIM_BASE_ADDR + 0x24);
 	if (r >= IMX35_CHIP_REVISION_2_1)
-		writel(CCM_PDR0_532, ccm_base + CCM_PDR0);
+		writel(CCM_PDR0_532, ccm_base + MX35_CCM_PDR0);
 	else
-		writel(CCM_PDR0_399, ccm_base + CCM_PDR0);
+		writel(CCM_PDR0_399, ccm_base + MX35_CCM_PDR0);
 
-	r = readl(ccm_base + CCM_CGR0);
+	r = readl(ccm_base + MX35_CCM_CGR0);
 	r |= 0x00300000;
-	writel(r, ccm_base + CCM_CGR0);
+	writel(r, ccm_base + MX35_CCM_CGR0);
 
-	r = readl(ccm_base + CCM_CGR1);
+	r = readl(ccm_base + MX35_CCM_CGR1);
 	r |= 0x00000C00;
 	r |= 0x00000003;
-	writel(r, ccm_base + CCM_CGR1);
+	writel(r, ccm_base + MX35_CCM_CGR1);
 
 	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
 	r |= 0x1000;

@@ -1,0 +1,5 @@
+mkdir /usb
+mount -t omap4_usbbootfs omap4_usbboot /usb
+. /env/config
+. /usb/boot/config
+bootm -r /usb/boot/initrd /usb/boot/zImage

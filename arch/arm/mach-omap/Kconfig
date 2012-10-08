@@ -92,6 +92,7 @@ config OMAP4_USBBOOT
 	  Please read oamp4_usb_booting.txt for more information.
 
 config BOARDINFO
+	default "Archos G9" if MACH_ARCHOSG9
 	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
 	default "Texas Instrument's Beagle" if MACH_BEAGLE
 	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
@@ -132,6 +133,14 @@ config MACH_PANDA
 	depends on ARCH_OMAP4
 	help
 	  Say Y here if you are using OMAP4 Panda board
+
+config MACH_ARCHOSG9
+	bool "Archos G9 tablets"
+	select HAVE_NOSHELL
+	select MACH_HAS_LOWLEVEL_INIT
+	depends on ARCH_OMAP4
+	help
+	  Say Y here if you are using OMAP4-based Archos G9 tablet
 
 config MACH_PCM049
 	bool "Phytec phyCORE pcm049"

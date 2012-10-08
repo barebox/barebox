@@ -105,4 +105,11 @@ config DRIVER_SERIAL_PXA
 	bool "PXA serial driver"
 	depends on ARCH_PXA
 
+config DRIVER_SERIAL_OMAP4_USBBOOT
+	bool "serial driver over omap4 usb"
+	default n
+	depends on OMAP4_USBBOOT
+	help
+	  Enable this to get console support over the usb bus used to boot an OMAP4
+
 endmenu

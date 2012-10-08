@@ -212,28 +212,28 @@ static const struct pad_conf_entry core_padconf_array[] = {
 };
 
 static const struct pad_conf_entry wkup_padconf_array[] = {
-	{PAD0_SIM_IO, (SAFE_MODE)},					/* tbd */
-	{PAD1_SIM_CLK, (SAFE_MODE)},					/* nc */
-	{PAD0_SIM_RESET, (SAFE_MODE)},					/* nc */
-	{PAD1_SIM_CD, (SAFE_MODE)},					/* nc */
-	{PAD0_SIM_PWRCTRL, (SAFE_MODE)},				/* nc */
-	{PAD1_SR_SCL, (PTU | IEN | M0)},				/* sr_scl */
-	{PAD0_SR_SDA, (PTU | IEN | M0)},				/* sr_sda */
-	{PAD1_FREF_XTAL_IN, (M0)},					/* # */
-	{PAD0_FREF_SLICER_IN, (SAFE_MODE)},				/* nc */
-	{PAD1_FREF_CLK_IOREQ, (SAFE_MODE)},				/* nc */
-	{PAD0_FREF_CLK0_OUT, (M2)},					/* sys_drm_msecure */
-	{PAD1_FREF_CLK3_REQ, (SAFE_MODE)},				/* nc */
-	{PAD0_FREF_CLK3_OUT, (M0)},					/* fref_clk3_out */
-	{PAD1_FREF_CLK4_REQ, (IEN | M3)},				/* gpio_wk7 */
-	{PAD0_FREF_CLK4_OUT, (M0)},					/* fref_clk4_out */
-	{PAD1_SYS_32K, (IEN | M0)},					/* sys_32k */
-	{PAD0_SYS_NRESPWRON, (M0)},					/* sys_nrespwron */
-	{PAD1_SYS_NRESWARM, (M0)},					/* sys_nreswarm */
-	{PAD0_SYS_PWR_REQ, (PTU | M0)},					/* sys_pwr_req */
-	{PAD1_SYS_PWRON_RESET, (M0)},					/* sys_pwron_reset_out */
-	{PAD0_SYS_BOOT6, (M0)},						/* sys_boot6 */
-	{PAD1_SYS_BOOT7, (M0)},						/* sys_boot7 */
+	{GPIO_WK0, (SAFE_MODE)},		/* tbd */
+	{GPIO_WK1, (SAFE_MODE)},		/* nc */
+	{GPIO_WK2, (SAFE_MODE)},		/* nc */
+	{GPIO_WK3, (SAFE_MODE)},		/* nc */
+	{GPIO_WK4, (SAFE_MODE)},		/* nc */
+	{SR_SCL, (PTU | IEN | M0)},		/* sr_scl */
+	{SR_SDA, (PTU | IEN | M0)},		/* sr_sda */
+	{FREF_XTAL_IN, (M0)},			/* # */
+	{FREF_SLICER_IN, (SAFE_MODE)},		/* nc */
+	{FREF_CLK_IOREQ, (SAFE_MODE)},		/* nc */
+	{FREF_CLK0_OUT, (M2)},			/* sys_drm_msecure */
+	{FREF_CLK3_REQ, (SAFE_MODE)},		/* nc */
+	{FREF_CLK3_OUT, (M0)},			/* fref_clk3_out */
+	{FREF_CLK4_REQ, (IEN | M3)},		/* gpio_wk7 */
+	{FREF_CLK4_OUT, (M0)},			/* fref_clk4_out */
+	{SYS_32K, (IEN | M0)},			/* sys_32k */
+	{SYS_NRESPWRON, (M0)},			/* sys_nrespwron */
+	{SYS_NRESWARM, (M0)},			/* sys_nreswarm */
+	{SYS_PWR_REQ, (PTU | M0)},		/* sys_pwr_req */
+	{SYS_PWRON_RESET_OUT, (M0)},		/* sys_pwron_reset_out */
+	{SYS_BOOT6, (M0)},			/* sys_boot6 */
+	{SYS_BOOT7, (M0)},			/* sys_boot7 */
 };
 
 void set_muxconf_regs(void)
@@ -246,7 +246,7 @@ void set_muxconf_regs(void)
 
 	/* gpio_wk7 is used for controlling TPS on 4460 */
 	if (omap4_revision() >= OMAP4460_ES1_0) {
-		writew(M3, OMAP44XX_CONTROL_PADCONF_WKUP + PAD1_FREF_CLK4_REQ);
+		writew(M3, OMAP44XX_CONTROL_PADCONF_WKUP + FREF_CLK4_REQ);
 		/* Enable GPIO-1 clocks before TPS initialization */
 		omap4_enable_gpio1_wup_clocks();
 	}

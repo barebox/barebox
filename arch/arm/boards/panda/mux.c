@@ -212,31 +212,31 @@ static const struct pad_conf_entry core_padconf_array[] = {
 };
 
 static const struct pad_conf_entry wkup_padconf_array[] = {
-	{ PAD0_SIM_IO, IEN | M0  /* sim_io */ },
-	{ PAD1_SIM_CLK, M0  /* sim_clk */ },
-	{ PAD0_SIM_RESET, M0  /* sim_reset */ },
-	{ PAD1_SIM_CD, PTU | IEN | M0  /* sim_cd */ },
-	{ PAD0_SIM_PWRCTRL, M0  /* sim_pwrctrl */ },
-	{ PAD1_SR_SCL, PTU | IEN | M0  /* sr_scl */ },
-	{ PAD0_SR_SDA, PTU | IEN | M0  /* sr_sda */ },
-	{ PAD1_FREF_XTAL_IN, M0  /* # */ },
-	{ PAD0_FREF_SLICER_IN, M0  /* fref_slicer_in */ },
-	{ PAD1_FREF_CLK_IOREQ, M0  /* fref_clk_ioreq */ },
-	{ PAD0_FREF_CLK0_OUT, M2  /* sys_drm_msecure */ },
-	{ PAD1_FREF_CLK3_REQ, PTU | IEN | M0  /* # */ },
-	{ PAD0_FREF_CLK3_OUT, M0  /* fref_clk3_out */ },
-	{ PAD1_FREF_CLK4_REQ, PTU | IEN | M0  /* # */ },
-	{ PAD0_FREF_CLK4_OUT, M0  /* # */ },
-	{ PAD1_SYS_32K, IEN | M0  /* sys_32k */ },
-	{ PAD0_SYS_NRESPWRON,  M0  /* sys_nrespwron */ },
-	{ PAD1_SYS_NRESWARM, M0  /* sys_nreswarm */ },
-	{ PAD0_SYS_PWR_REQ, PTU | M0  /* sys_pwr_req */ },
-	{ PAD1_SYS_PWRON_RESET, M3  /* gpio_wk29 */ },
-	{ PAD0_SYS_BOOT6, IEN | M3  /* gpio_wk9 */ },
-	{ PAD1_SYS_BOOT7, IEN | M3  /* gpio_wk10 */ },
-	{ PAD1_FREF_CLK3_REQ, M3 /* gpio_wk30 */ },
-	{ PAD1_FREF_CLK4_REQ, M3 /* gpio_wk7 */ },
-	{ PAD0_FREF_CLK4_OUT, M3 /* gpio_wk8 */ },
+	{ GPIO_WK0, IEN | M0  /* sim_io */ },
+	{ GPIO_WK1, M0  /* sim_clk */ },
+	{ GPIO_WK2, M0  /* sim_reset */ },
+	{ GPIO_WK3, PTU | IEN | M0  /* sim_cd */ },
+	{ GPIO_WK4, M0  /* sim_pwrctrl */ },
+	{ SR_SCL, PTU | IEN | M0  /* sr_scl */ },
+	{ SR_SDA, PTU | IEN | M0  /* sr_sda */ },
+	{ FREF_XTAL_IN, M0  /* # */ },
+	{ FREF_SLICER_IN, M0  /* fref_slicer_in */ },
+	{ FREF_CLK_IOREQ, M0  /* fref_clk_ioreq */ },
+	{ FREF_CLK0_OUT, M2  /* sys_drm_msecure */ },
+	{ FREF_CLK3_REQ, PTU | IEN | M0  /* # */ },
+	{ FREF_CLK3_OUT, M0  /* fref_clk3_out */ },
+	{ FREF_CLK4_REQ, PTU | IEN | M0  /* # */ },
+	{ FREF_CLK4_OUT, M0  /* # */ },
+	{ SYS_32K, IEN | M0  /* sys_32k */ },
+	{ SYS_NRESPWRON,  M0  /* sys_nrespwron */ },
+	{ SYS_NRESWARM, M0  /* sys_nreswarm */ },
+	{ SYS_PWR_REQ, PTU | M0  /* sys_pwr_req */ },
+	{ SYS_PWRON_RESET_OUT, M3  /* gpio_wk29 */ },
+	{ SYS_BOOT6, IEN | M3  /* gpio_wk9 */ },
+	{ SYS_BOOT7, IEN | M3  /* gpio_wk10 */ },
+	{ FREF_CLK3_REQ, M3 /* gpio_wk30 */ },
+	{ FREF_CLK4_REQ, M3 /* gpio_wk7 */ },
+	{ FREF_CLK4_OUT, M3 /* gpio_wk8 */ },
 };
 
 void set_muxconf_regs(void)
@@ -249,7 +249,7 @@ void set_muxconf_regs(void)
 
 	/* gpio_wk7 is used for controlling TPS on 4460 */
 	if (omap4_revision() >= OMAP4460_ES1_0) {
-		writew(M3, OMAP44XX_CONTROL_PADCONF_WKUP + PAD1_FREF_CLK4_REQ);
+		writew(M3, OMAP44XX_CONTROL_PADCONF_WKUP + FREF_CLK4_REQ);
 		/* Enable GPIO-1 clocks before TPS initialization */
 		omap4_enable_gpio1_wup_clocks();
 	}

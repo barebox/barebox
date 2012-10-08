@@ -29,6 +29,11 @@ config FS_TFTP
 	prompt "tftp support"
 	depends on NET
 
+config FS_OMAP4_USBBOOT
+	bool
+	prompt "Filesystem over usb boot"
+	depends on OMAP4_USBBOOT
+
 config FS_NFS
 	depends on NET
 	bool

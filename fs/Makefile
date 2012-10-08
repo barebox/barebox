@@ -5,4 +5,5 @@ obj-$(CONFIG_FS_DEVFS)	+= devfs.o
 obj-$(CONFIG_FS_FAT)	+= fat/
 obj-y	+= fs.o
 obj-$(CONFIG_FS_TFTP)	+= tftp.o
+obj-$(CONFIG_FS_OMAP4_USBBOOT)	+= omap4_usbbootfs.o
 obj-$(CONFIG_FS_NFS)	+= nfs.o

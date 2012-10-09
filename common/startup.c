@@ -39,7 +39,7 @@ extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
-#include <generated/barebox_default_env.h>
+#include "barebox_default_env.h"
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
 #include <uncompress.h>

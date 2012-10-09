@@ -475,7 +475,7 @@ export KBUILD_BINARY ?= barebox.bin
 # Also any assignments in arch/$(ARCH)/Makefile take precedence over
 # the default value.
 
-barebox-flash-image: $(KBUILD_IMAGE)
+barebox-flash-image: $(KBUILD_IMAGE) FORCE
 	$(call if_changed,ln)
 
 all: barebox-flash-image

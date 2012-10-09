@@ -133,7 +133,7 @@ static int omap_gpio_probe(struct device_d *dev)
 	omapgpio = xzalloc(sizeof(*omapgpio));
 	omapgpio->base = dev_request_mem_region(dev, 0);
 	omapgpio->chip.ops = &omap_gpio_ops;
-	omapgpio->chip.base = -1;
+	omapgpio->chip.base = dev->id * 32;
 	omapgpio->chip.ngpio = 32;
 	omapgpio->chip.dev = dev;
 	gpiochip_add(&omapgpio->chip);

@@ -484,11 +484,27 @@ enum omap_boot_src omap4_bootsrc(void)
 	return OMAP_BOOTSRC_UNKNOWN;
 }
 
+#define GPIO_MASK 0x1f
+
+static void __iomem *omap4_get_gpio_base(unsigned gpio)
+{
+	void __iomem *base;
+
+	if (gpio < 32)
+		base = (void *)0x4a310000;
+	else
+		base = (void *)(0x48053000 + ((gpio & ~GPIO_MASK) << 8));
+
+	return base;
+}
+
 #define I2C_SLAVE 0x12
 
 noinline int omap4_scale_vcores(unsigned vsel0_pin)
 {
+	void __iomem *base;
 	unsigned int rev = omap4_revision();
+	u32 val = 0;
 
 	/* For VC bypass only VCOREx_CGF_FORCE  is necessary and
 	 * VCOREx_CFG_VOLTAGE  changes can be discarded
@@ -510,8 +526,17 @@ noinline int omap4_scale_vcores(unsigned vsel0_pin)
 		 * VSEL1 is grounded on board. So the following selects
 		 * VSEL1 = 0 and VSEL0 = 1
 		 */
-		gpio_direction_output(vsel0_pin, 0);
-		gpio_set_value(vsel0_pin, 1);
+		base = omap4_get_gpio_base(vsel0_pin);
+
+		val = 1 << (vsel0_pin & GPIO_MASK);
+		writel(val, base + 0x190);
+
+		val =  readl(base + 0x134);
+		val &= (1 << (vsel0_pin & GPIO_MASK));
+		writel(val, base + 0x134);
+
+		val = 1 << (vsel0_pin & GPIO_MASK);
+		writel(val, base + 0x194);
 	}
 
 	/* set VCORE1 force VSEL */

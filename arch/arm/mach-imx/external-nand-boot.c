@@ -169,7 +169,21 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 		blocksize = 16 * 1024;
 	}
 
-	base = (void __iomem *)IMX_NFC_BASE;
+#ifdef CONFIG_ARCH_IMX21
+	base = (void __iomem *)MX21_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX25
+	base = (void __iomem *)MX25_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX27
+	base = (void __iomem *)MX27_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX31
+	base = (void __iomem *)MX31_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX35
+	base = (void __iomem *)MX35_NFC_BASE_ADDR;
+#endif
 	if (nfc_is_v21()) {
 		regs = base + 0x1e00;
 		spare0 = base + 0x1000;

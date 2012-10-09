@@ -32,9 +32,45 @@ void imx_set_silicon_revision(const char *soc, int revision)
 			revision & 0xf);
 }
 
+unsigned int __imx_cpu_type;
+
+static int imx_soc_from_dt(void)
+{
+	if (of_machine_is_compatible("fsl,imx1"))
+		return IMX_CPU_IMX1;
+	if (of_machine_is_compatible("fsl,imx21"))
+		return IMX_CPU_IMX21;
+	if (of_machine_is_compatible("fsl,imx25"))
+		return IMX_CPU_IMX25;
+	if (of_machine_is_compatible("fsl,imx27"))
+		return IMX_CPU_IMX27;
+	if (of_machine_is_compatible("fsl,imx31"))
+		return IMX_CPU_IMX31;
+	if (of_machine_is_compatible("fsl,imx35"))
+		return IMX_CPU_IMX35;
+	if (of_machine_is_compatible("fsl,imx51"))
+		return IMX_CPU_IMX51;
+	if (of_machine_is_compatible("fsl,imx53"))
+		return IMX_CPU_IMX53;
+	if (of_machine_is_compatible("fsl,imx6q"))
+		return IMX_CPU_IMX6;
+	if (of_machine_is_compatible("fsl,imx6dl"))
+		return IMX_CPU_IMX6;
+
+	return 0;
+}
+
 static int imx_init(void)
 {
 	int ret;
+	struct device_node *root;
+
+	root = of_get_root_node();
+	if (root) {
+		__imx_cpu_type = imx_soc_from_dt();
+		if (!__imx_cpu_type)
+			hang();
+	}
 
 	if (cpu_is_mx1())
 		ret = imx1_init();
@@ -57,7 +93,7 @@ static int imx_init(void)
 	else
 		return -EINVAL;
 
-	if (of_get_root_node())
+	if (root)
 		return ret;
 
 	if (cpu_is_mx1())

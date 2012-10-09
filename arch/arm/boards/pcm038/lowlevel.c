@@ -76,7 +76,8 @@ void __bare_init __naked reset(void)
 	/*
 	 * DDR on CSD0
 	 */
-	writel(0x00000008, ESDMISC); /* Enable DDR SDRAM operation */
+	/* Enable DDR SDRAM operation */
+	writel(0x00000008, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
 	DSCR(3) = 0x55555555; /* Set the driving strength   */
 	DSCR(5) = 0x55555555;
@@ -84,22 +85,28 @@ void __bare_init __naked reset(void)
 	DSCR(7) = 0x00005005;
 	DSCR(8) = 0x15555555;
 
-	writel(0x00000004, ESDMISC); /* Initial reset */
-	writel(0x006ac73a, ESDCFG0);
+	/* Initial reset */
+	writel(0x00000004, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	writel(0x006ac73a, MX27_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0); /* precharge CSD0 all banks */
+	/* precharge CSD0 all banks */
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writel(0x00000000, 0xA0000F00);	/* CSD0 precharge address (A10 = 1) */
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH, ESDCTL0);
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	for (i = 0; i < 8; i++)
 		writel(0, 0xa0000f00);
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE, ESDCTL0);
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	writeb(0xda, 0xa0000033);
 	writeb(0xff, 0xa1000000);
 	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 |
-			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL, ESDCTL0);
+			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */

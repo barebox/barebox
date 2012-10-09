@@ -66,6 +66,7 @@ void __bare_init __naked reset(void)
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
 	unsigned long iomuxc_base = MX35_IOMUXC_BASE_ADDR;
+	unsigned long esdctl_base = MX35_ESDCTL_BASE_ADDR;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
 	int i;
@@ -154,17 +155,17 @@ void __bare_init __naked reset(void)
 	writel(r, iomuxc_base + 0x7a4);
 
 	/* MDDR init, enable mDDR*/
-	writel(0x00000304, ESDMISC); /* was 0x00000004 */
+	writel(0x00000304, esdctl_base + IMX_ESDMISC); /* was 0x00000004 */
 
 	/* set timing paramters */
-	writel(0x0025541F, ESDCFG0);
+	writel(0x0025541F, esdctl_base + IMX_ESDCFG0);
 	/* select Precharge-All mode */
-	writel(0x92220000, ESDCTL0);
+	writel(0x92220000, esdctl_base + IMX_ESDCTL0);
 	/* Precharge-All */
 	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
 
 	/* select Load-Mode-Register mode */
-	writel(0xB8001000, ESDCTL0);
+	writel(0xB8001000, esdctl_base + IMX_ESDCTL0);
 	/* Load reg EMR2 */
 	writeb(0xda, 0x84000000);
 	/* Load reg EMR3 */
@@ -175,18 +176,18 @@ void __bare_init __naked reset(void)
 	writeb(0xda, 0x80000333);
 
 	/* select Precharge-All mode */
-	writel(0x92220000, ESDCTL0);
+	writel(0x92220000, esdctl_base + IMX_ESDCTL0);
 	/* Precharge-All */
 	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
 
 	/* select Manual-Refresh mode */
-	writel(0xA2220000, ESDCTL0);
+	writel(0xA2220000, esdctl_base + IMX_ESDCTL0);
 	/* Manual-Refresh 2 times */
 	writel(0x87654321, MX35_CSD0_BASE_ADDR);
 	writel(0x87654321, MX35_CSD0_BASE_ADDR);
 
 	/* select Load-Mode-Register mode */
-	writel(0xB2220000, ESDCTL0);
+	writel(0xB2220000, esdctl_base + IMX_ESDCTL0);
 	/* Load reg MR -- CL3, BL8, end DLL reset */
 	writeb(0xda, 0x80000233);
 	/* Load reg EMR1 -- OCD default */
@@ -198,12 +199,12 @@ void __bare_init __naked reset(void)
 	 * DSIZ32-bit, BL8, COL10-bit, ROW13-bit
 	 * disable PWT & PRCT
 	 * disable Auto-Refresh */
-	writel(0x82220080, ESDCTL0);
+	writel(0x82220080, esdctl_base + IMX_ESDCTL0);
 
 	/* enable Auto-Refresh */
-	writel(0x82228080, ESDCTL0);
+	writel(0x82228080, esdctl_base + IMX_ESDCTL0);
 	/* enable Auto-Refresh */
-	writel(0x00002000, ESDCTL1);
+	writel(0x00002000, esdctl_base + IMX_ESDCTL1);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */

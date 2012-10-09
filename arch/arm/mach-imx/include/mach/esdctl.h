@@ -1,10 +1,10 @@
 
 /* SDRAM Controller registers */
-#define ESDCTL0 (IMX_ESD_BASE + 0x00) /* Enhanced SDRAM Control Register 0       */
-#define ESDCFG0 (IMX_ESD_BASE + 0x04) /* Enhanced SDRAM Configuration Register 0 */
-#define ESDCTL1 (IMX_ESD_BASE + 0x08) /* Enhanced SDRAM Control Register 1       */
-#define ESDCFG1 (IMX_ESD_BASE + 0x0C) /* Enhanced SDRAM Configuration Register 1 */
-#define ESDMISC (IMX_ESD_BASE + 0x10) /* Enhanced SDRAM Miscellanious Register   */
+#define IMX_ESDCTL0 0x00 /* Enhanced SDRAM Control Register 0       */
+#define IMX_ESDCFG0 0x04 /* Enhanced SDRAM Configuration Register 0 */
+#define IMX_ESDCTL1 0x08 /* Enhanced SDRAM Control Register 1       */
+#define IMX_ESDCFG1 0x0C /* Enhanced SDRAM Configuration Register 1 */
+#define IMX_ESDMISC 0x10 /* Enhanced SDRAM Miscellanious Register   */
 
 #define ESDCTL0_SDE				(1 << 31)
 #define ESDCTL0_SMODE_NORMAL			(0 << 28)

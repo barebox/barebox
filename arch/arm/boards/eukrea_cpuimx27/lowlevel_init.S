@@ -22,7 +22,8 @@
 	/*
 	 * DDR on CSD0
 	 */
-	writel(0x0000000C, ESDMISC) /* Enable DDR SDRAM operation */
+	/* Enable DDR SDRAM operation */
+	writel(0x0000000C, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC)
 
 	writel(0x55555555, DSCR(3)) /* Set the driving strength   */
 	writel(0x55555555, DSCR(5))
@@ -30,12 +31,16 @@
 	writel(0x00005005, DSCR(7))
 	writel(0x15555555, DSCR(8))
 
-	writel(0x00000004, ESDMISC) /* Initial reset */
-	writel(CFG0, ESDCFG0)
-	
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0) /* precharge CSD0 all banks */
+	/* Initial reset */
+	writel(0x00000004, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC)
+	writel(CFG0, MX27_ESDCTL_BASE_ADDR + IMX_ESDCFG0)
+
+	/* precharge CSD0 all banks */
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0)
 	writel(0x00000000, 0xA0000F00)	/* CSD0 precharge address (A10 = 1) */
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH, ESDCTL0)
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0)
 
 	ldr	r0, =0xa0000f00
 	mov	r1, #0
@@ -45,7 +50,8 @@
 	subs	r2, #1
 	bne	1b
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE, ESDCTL0)
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0)
 	ldr		r0, =0xA0000033
 	mov		r1, #0xda
 	strb		r1, [r0]
@@ -56,7 +62,9 @@
 #endif
 	mov		r1, #0xff
 	strb		r1, [r0]
-	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 | ESDCTL0_BL | ESDCTL0_SMODE_NORMAL, ESDCTL0)
+	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 |
+			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0)
 .endm
 
 	.section ".text_bare_init","ax"

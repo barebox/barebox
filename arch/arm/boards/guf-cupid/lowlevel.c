@@ -71,15 +71,15 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 	u32 r1, r0;
 
 	/* disable second SDRAM region to save power */
-	r1 = readl(ESDCTL1);
+	r1 = readl(MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL1);
 	r1 &= ~ESDCTL0_SDE;
-	writel(r1, ESDCTL1);
+	writel(r1, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL1);
 
 	mode |= ESDMISC_RST | ESDMISC_MDDR_DL_RST;
-	writel(mode, ESDMISC);
+	writel(mode, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
 	mode &= ~(ESDMISC_RST | ESDMISC_MDDR_DL_RST);
-	writel(mode, ESDMISC);
+	writel(mode, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
 	/* wait for esdctl reset */
 	for (loop = 0; loop < 0x20000; loop++);
@@ -90,16 +90,18 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 		ESDCFGx_tRRD_2 | ESDCFGx_tCAS_3 |
 		ESDCFGx_tRCD_3 | ESDCFGx_tRC_20;
 
-	writel(r1, ESDCFG0);
+	writel(r1, MX35_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
 
 	/* enable SDRAM controller */
-	writel(memsize | ESDCTL0_SMODE_NORMAL, ESDCTL0);
+	writel(memsize | ESDCTL0_SMODE_NORMAL,
+			MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	/* Micron Datasheet Initialization Step 3: Wait 200us before first command */
 	for (loop = 0; loop < 1000; loop++);
 
 	/* Micron Datasheet Initialization Step 4: PRE CHARGE ALL */
-	writel(memsize | ESDCTL0_SMODE_PRECHARGE, ESDCTL0);
+	writel(memsize | ESDCTL0_SMODE_PRECHARGE,
+			MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(r11, sdram_addr);
 
 	/* Micron Datasheet Initialization Step 5: NOP for tRP (at least 22.5ns)
@@ -109,7 +111,8 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 	/* Micron Datasheet Initialization Step 6: 2 AUTO REFRESH and tRFC NOP
 	 * (at least 140ns)
 	 */
-	writel(memsize | ESDCTL0_SMODE_AUTO_REFRESH, ESDCTL0);
+	writel(memsize | ESDCTL0_SMODE_AUTO_REFRESH,
+			MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(r11, r9); /* AUTO REFRESH #1 */
 
 	for (loop = 0; loop < 3; loop++); /* ~140ns delay at 532MHz */
@@ -119,7 +122,8 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 	for (loop = 0; loop < 3; loop++); /* ~140ns delay at 532MHz */
 
 	/* Micron Datasheet Initialization Step 7: LOAD MODE REGISTER */
-	writel(memsize | ESDCTL0_SMODE_LOAD_MODE, ESDCTL0);
+	writel(memsize | ESDCTL0_SMODE_LOAD_MODE,
+			MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(r11, r9 + (SDRAM_MODE_BL_8 | SDRAM_MODE_BSEQ | SDRAM_MODE_CL_3));
 
 	/* Micron Datasheet Initialization Step 8: tMRD = 2 tCK NOP
@@ -134,7 +138,8 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 	 */
 
 	/* Now configure SDRAM-Controller and check that it works */
-	writel(memsize | ESDCTL0_BL | ESDCTL0_REF4, ESDCTL0);
+	writel(memsize | ESDCTL0_BL | ESDCTL0_REF4,
+			MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	/* Freescale asks for first access to be a write to properly
 	 * initialize DQS pin-state and keepers
@@ -156,10 +161,10 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 
 	/* if both value are identical, we don't have 14 rows. assume 13 instead */
 	if (readl(r9) == readl(r9 + (1 << 25))) {
-		r0 = readl(ESDCTL0);
+		r0 = readl(MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 		r0 &= ~ESDCTL0_ROW_MASK;
 		r0 |= ESDCTL0_ROW13;
-		writel(r0, ESDCTL0);
+		writel(r0, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	}
 
 	/* So far we asssumed that we have 10 columns, verify this */
@@ -168,10 +173,10 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 
 	/* if both value are identical, we don't have 10 cols. assume 9 instead */
 	if (readl(r9) == readl(r9 + (1 << 11))) {
-		r0 = readl(ESDCTL0);
+		r0 = readl(MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 		r0 &= ~ESDCTL0_COL_MASK;
 		r0 |= ESDCTL0_COL9;
-		writel(r0, ESDCTL0);
+		writel(r0, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	}
 }
 

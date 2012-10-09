@@ -138,22 +138,22 @@ void __bare_init __naked reset(void)
 		board_init_lowlevel_return();
 
 	/* Init Mobile DDR */
-	writel(0x0000000E, ESDMISC);
-	writel(0x00000004, ESDMISC);
+	writel(0x0000000E, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	writel(0x00000004, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 	__asm__ volatile ("1:\n"
 			"subs %0, %1, #1\n"
 			"bne 1b":"=r" (loops):"0" (loops));
 
-	writel(0x0009572B, ESDCFG0);
-	writel(0x92220000, ESDCTL0);
+	writel(0x0009572B, MX35_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
+	writel(0x92220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x400);
-	writel(0xA2220000, ESDCTL0);
+	writel(0xA2220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(0xda, MX35_CSD0_BASE_ADDR);
 	writeb(0xda, MX35_CSD0_BASE_ADDR);
-	writel(0xB2220000, ESDCTL0);
+	writel(0xB2220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x33);
 	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x2000000);
-	writel(0x82228080, ESDCTL0);
+	writel(0x82228080, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */

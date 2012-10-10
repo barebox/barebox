@@ -45,7 +45,7 @@ fi
 
 if [ -n "$scr" ]; then
 	if [ ! -f /env/boot/$scr ]; then
-		echo -e "/env/boot/$scr does not exist.Valid choices:\n$sources"
+		echo -e "/env/boot/$scr does not exist. Valid choices:\n$sources"
 		exit
 	fi
 	/env/boot/$scr

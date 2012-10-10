@@ -82,13 +82,13 @@ reset:
 	common_reset r0
 
 	/* Change PERCLK1DIV to 14 ie 14+1 */
-	writel(CFG_PCDR_VAL, PCDR)
+	writel(CFG_PCDR_VAL, MX1_CCM_BASE_ADDR + MX1_PCDR)
 
 	/* set MCU PLL Control Register 0 */
-	writel(CFG_MPCTL0_VAL, MPCTL0)
+	writel(CFG_MPCTL0_VAL, MX1_CCM_BASE_ADDR + MX1_MPCTL0)
 
 	/* set mpll restart bit */
-	ldr		r0, =CSCR
+	ldr		r0, =MX1_CCM_BASE_ADDR + MX1_CSCR
 	ldr		r1, [r0]
 	orr		r1,r1,#(1<<21)
 	str		r1, [r0]
@@ -104,10 +104,10 @@ reset:
 	bne		1b
 
 	/* set System PLL Control Register 0 */
-	writel(CFG_SPCTL0_VAL, SPCTL0)
+	writel(CFG_SPCTL0_VAL, MX1_CCM_BASE_ADDR + MX1_SPCTL0)
 
 	/* set spll restart bit */
-	ldr		r0, =CSCR
+	ldr		r0, =MX1_CCM_BASE_ADDR + MX1_CSCR
 	ldr		r1, [r0]
 	orr		r1,r1,#(1<<22)
 	str		r1, [r0]
@@ -122,7 +122,7 @@ reset:
 	subs	r2,r2,#1
 	bne		1b
 
-	writel(CFG_CSCR_VAL, CSCR)
+	writel(CFG_CSCR_VAL, MX1_CCM_BASE_ADDR + MX1_CSCR)
 
 /* I have now read the ARM920 DataSheet back-to-Back, and have stumbled upon
  *this.....
@@ -157,9 +157,12 @@ reset:
 
 /* SDRAM Setup */
 
-	writel(0x910a8200, SDCTL0) /* Precharge cmd, CAS = 2 */
-	writel(0x0, 0x08200000) /* Issue Precharge all Command */
-	writel(0xa10a8200, SDCTL0) /* Autorefresh cmd, CAS = 2 */
+	/* Precharge cmd, CAS = 2 */
+	writel(0x910a8200, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
+	/* Issue Precharge all Command */
+	writel(0x0, 0x08200000)
+	/* Autorefresh cmd, CAS = 2 */
+	writel(0xa10a8200, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
 
 	ldr		r0, =0x08000000
 	ldr		r1, =0x0 /* Issue AutoRefresh Command */
@@ -172,8 +175,10 @@ reset:
 	str		r1,   [r0]
 	str		r1,   [r0]
 
-	writel(0xb10a8300, SDCTL0)
-	writel(0x0, 0x08223000) /* CAS Latency 2, issue Mode Register Command, Burst Length = 8 */
-	writel(0x810a8200, SDCTL0) /* Set to Normal Mode CAS 2 */
+	writel(0xb10a8300, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
+	/* CAS Latency 2, issue Mode Register Command, Burst Length = 8 */
+	writel(0x0, 0x08223000)
+	/* Set to Normal Mode CAS 2 */
+	writel(0x810a8200, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
 
 	b board_init_lowlevel_return

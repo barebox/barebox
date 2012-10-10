@@ -69,8 +69,8 @@ static int scb9328_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);
 
-/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
-	FMCR = 0x1;
+	/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
+	writel(0x1, MX1_SCM_BASE_ADDR + MX1_FMCR);
 
 	imx1_setup_eimcs(0, 0x000F2000, 0x11110d01);
 	imx1_setup_eimcs(1, 0x000F0a00, 0x11110601);

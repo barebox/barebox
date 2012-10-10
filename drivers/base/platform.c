@@ -66,18 +66,6 @@ int platform_device_register(struct device_d *new_device)
 {
 	new_device->bus = &platform_bus;
 
-	if (new_device->resource) {
-		struct device_d *dev;
-
-		bus_for_each_device(new_device->bus, dev) {
-			if (!dev->resource)
-				continue;
-			if (dev->resource->start == new_device->resource->start) {
-				return -EBUSY;
-			}
-		}
-	}
-
 	return register_device(new_device);
 }
 

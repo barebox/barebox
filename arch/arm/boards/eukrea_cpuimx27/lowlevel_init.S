@@ -1,6 +1,7 @@
 #include <config.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx-regs.h>
+#include <mach/esdctl.h>
 #include <asm/barebox-arm-head.h>
 
 #define writel(val, reg) \
@@ -9,10 +10,10 @@
 	str		r1,   [r0];
 
 #if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
-#define ROWS0	ESDCTL_ROW14
+#define ROWS0	ESDCTL0_ROW14
 #define CFG0	0x0029572D
 #elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
-#define ROWS0	ESDCTL_ROW13
+#define ROWS0	ESDCTL0_ROW13
 #define CFG0	0x00095728
 #endif
 

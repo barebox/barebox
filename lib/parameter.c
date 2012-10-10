@@ -224,6 +224,7 @@ void dev_remove_parameters(struct device_d *dev)
 	list_for_each_entry_safe(p, n, &dev->parameters, list) {
 		p->set(dev, p, NULL);
 		list_del(&p->list);
+		free(p->name);
 		free(p);
 	}
 }

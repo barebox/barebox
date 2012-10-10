@@ -118,13 +118,13 @@ reset:
 	common_reset r0
 
 	/* ahb lite ip interface */
-	writel(0x20040304, AIPI1_PSR0)
-	writel(0xDFFBFCFB, AIPI1_PSR1)
-	writel(0x00000000, AIPI2_PSR0)
-	writel(0xFFFFFFFF, AIPI2_PSR1)
+	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0)
+	writel(0xDFFBFCFB, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR1)
+	writel(0x00000000, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR0)
+	writel(0xFFFFFFFF, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR1)
 
 	/* disable mpll/spll */
-	ldr r0, =CSCR
+	ldr r0, =MX27_CCM_BASE_ADDR + MX27_CSCR
 	ldr r1, [r0]
 	bic r1, r1, #0x03
 	str r1, [r0]
@@ -136,15 +136,16 @@ reset:
 	 *        with 1.2 V core voltage! Find out if this is
 	 *        documented somewhere.
 	 */
-	writel(0x00191403, MPCTL0)	/* MPLL = 199.5*2 MHz               */
-	writel(0x040C2403, SPCTL0)	/* SPLL = FIXME (needs review)      */
+	writel(0x00191403, MX27_CCM_BASE_ADDR + MX27_MPCTL0)	/* MPLL = 199.5*2 MHz               */
+	writel(0x040C2403, MX27_CCM_BASE_ADDR + MX27_SPCTL0)	/* SPLL = FIXME (needs review)      */
 
 	/*
 	 * ARM clock = (399 MHz / 2) / (ARM divider = 1) = 200 MHz
 	 * AHB clock = (399 MHz / 3) / (AHB divider = 2) = 66.5 MHz
 	 * System clock (HCLK) = 133 MHz
 	 */
-	writel(0x33F30307 | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART, CSCR)
+	writel(0x33F30307 | MX27_CSCR_MPLL_RESTART | MX27_CSCR_SPLL_RESTART,
+			MX27_CCM_BASE_ADDR + MX27_CSCR)
 
 	/* add some delay here */
 	mov r1, #0x1000
@@ -152,13 +153,14 @@ reset:
 	bne 1b
 
 	/* clock gating enable */
-	writel(0x00050f08, GPCR)
+	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR)
 
 	/* peripheral clock divider */
-	writel(0x23C8F403, PCDR0)	/* FIXME                            */
-	writel(0x09030913, PCDR1)	/* PERDIV1=08 @133 MHz              */
-					/* PERDIV1=04 @266 MHz              *
-					 * /
+	/* FIXME                            */
+	writel(0x23C8F403, MX27_CCM_BASE_ADDR + MX27_PCDR0)
+	/* PERDIV1=08 @133 MHz              */
+	/* PERDIV1=04 @266 MHz              */
+	writel(0x09030913, MX27_CCM_BASE_ADDR + MX27_PCDR1)
 	/* skip sdram initialization if we run from ram */
 	cmp	pc, #0xa0000000
 	bls	1f

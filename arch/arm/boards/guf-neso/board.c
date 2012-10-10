@@ -320,10 +320,10 @@ static int neso_pll(void)
 	pllfunc();
 
 	/* clock gating enable */
-	GPCR = 0x00050f08;
+	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
 
-	PCDR0 = 0x130410c3;
-	PCDR1 = 0x09030911;
+	writel(0x130410c3, MX27_CCM_BASE_ADDR + MX27_PCDR0);
+	writel(0x09030911, MX27_CCM_BASE_ADDR + MX27_PCDR1);
 
 	/* Clocks have changed. Notify clients */
 	clock_notifier_call_chain();

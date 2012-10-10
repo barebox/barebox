@@ -58,10 +58,10 @@ void __bare_init __naked reset(void)
 	common_reset();
 
 	/* ahb lite ip interface */
-	AIPI1_PSR0 = 0x20040304;
-	AIPI1_PSR1 = 0xDFFBFCFB;
-	AIPI2_PSR0 = 0x00000000;
-	AIPI2_PSR1 = 0xFFFFFFFF;
+	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0);
+	writel(0xDFFBFCFB, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR1);
+	writel(0x00000000, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR0);
+	writel(0xFFFFFFFF, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR1);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -69,9 +69,10 @@ void __bare_init __naked reset(void)
 		board_init_lowlevel_return();
 
 	/* re-program the PLL prior(!) starting the SDRAM controller */
-	MPCTL0 = MPCTL0_VAL;
-	SPCTL0 = SPCTL0_VAL;
-	CSCR = CSCR_VAL | CSCR_UPDATE_DIS | CSCR_MPLL_RESTART | CSCR_SPLL_RESTART;
+	writel(MPCTL0_VAL, MX27_CCM_BASE_ADDR + MX27_MPCTL0);
+	writel(SPCTL0_VAL, MX27_CCM_BASE_ADDR + MX27_SPCTL0);
+	writel(CSCR_VAL | MX27_CSCR_UPDATE_DIS | MX27_CSCR_MPLL_RESTART |
+		MX27_CSCR_SPLL_RESTART, MX27_CCM_BASE_ADDR + MX27_CSCR);
 
 	/*
 	 * DDR on CSD0
@@ -79,11 +80,12 @@ void __bare_init __naked reset(void)
 	/* Enable DDR SDRAM operation */
 	writel(0x00000008, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
-	DSCR(3) = 0x55555555; /* Set the driving strength   */
-	DSCR(5) = 0x55555555;
-	DSCR(6) = 0x55555555;
-	DSCR(7) = 0x00005005;
-	DSCR(8) = 0x15555555;
+	/* Set the driving strength   */
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(3));
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(5));
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(6));
+	writel(0x00005005, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(7));
+	writel(0x15555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(8));
 
 	/* Initial reset */
 	writel(0x00000004, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);

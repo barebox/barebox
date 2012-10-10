@@ -95,10 +95,10 @@ static int imx21ads_timing_init(void)
 	imx21_setup_eimcs(4, 0x0, 0x0);
 	imx21_setup_eimcs(5, 0x0, 0x0);
 
-	temp = PCDR0;
+	temp = readl(MX21_CCM_BASE_ADDR + MX21_PCDR0);
 	temp &= ~0xF000;
 	temp |= 0xA000;  /* Set NFC divider; 0xA yields 24.18MHz */
-	PCDR0 = temp;
+	writel(temp, MX21_CCM_BASE_ADDR + MX21_PCDR0);
 
 	return 0;
 }

@@ -30,6 +30,8 @@ int dev_add_param(struct device_d *dev, const char *name,
 
 int dev_add_param_fixed(struct device_d *dev, char *name, char *value);
 
+void dev_remove_param(struct device_d *dev, char *name);
+
 void dev_remove_parameters(struct device_d *dev);
 
 int dev_param_set_generic(struct device_d *dev, struct param_d *p,
@@ -66,6 +68,8 @@ static inline int dev_add_param_fixed(struct device_d *dev, char *name, char *va
 {
 	return 0;
 }
+
+static inline void dev_remove_param(struct device_d *dev, char *name) {}
 
 static inline void dev_remove_parameters(struct device_d *dev) {}
 

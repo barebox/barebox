@@ -17,7 +17,11 @@
 #include <linux/mtd/nand.h>
 #include <mach/imx-nand.h>
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
+#include <mach/imx21-regs.h>
+#include <mach/imx25-regs.h>
+#include <mach/imx27-regs.h>
+#include <mach/imx31-regs.h>
+#include <mach/imx35-regs.h>
 
 static void __bare_init noinline imx_nandboot_wait_op_done(void *regs)
 {

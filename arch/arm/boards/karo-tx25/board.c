@@ -21,7 +21,7 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <asm/barebox-arm.h>

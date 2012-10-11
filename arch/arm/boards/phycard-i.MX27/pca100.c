@@ -18,7 +18,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <fec.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>

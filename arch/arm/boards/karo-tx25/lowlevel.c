@@ -18,7 +18,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <mach/esdctl.h>
 #include <io.h>
 #include <mach/imx-nand.h>

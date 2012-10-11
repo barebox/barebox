@@ -15,7 +15,7 @@
 #include <init.h>
 #include <sizes.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/imx31-regs.h>
 #include <mach/weim.h>
 
 void imx31_setup_weimcs(size_t cs, unsigned upper, unsigned lower,

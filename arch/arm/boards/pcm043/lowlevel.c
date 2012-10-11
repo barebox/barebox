@@ -18,7 +18,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>

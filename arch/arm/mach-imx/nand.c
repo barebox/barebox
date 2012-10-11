@@ -13,7 +13,10 @@
 
 #include <common.h>
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
+#include <mach/imx21-regs.h>
+#include <mach/imx25-regs.h>
+#include <mach/imx27-regs.h>
+#include <mach/imx35-regs.h>
 #include <io.h>
 
 #define RCSR_NFC_FMS		(1 << 8)

@@ -16,7 +16,7 @@
 #include <init.h>
 #include <io.h>
 #include <mach/weim.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/iim.h>
 #include <mach/revision.h>
 #include <mach/generic.h>

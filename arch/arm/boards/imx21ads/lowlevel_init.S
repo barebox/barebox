@@ -15,7 +15,7 @@
 
 #include <config.h>
 #include <asm-generic/memory_layout.h>
-#include <mach/imx-regs.h>
+#include <mach/imx21-regs.h>
 #include <asm/barebox-arm-head.h>
 
 	.section ".text_bare_init","ax"

@@ -35,7 +35,7 @@
 
 #include <mach/gpio.h>
 #include <mach/spi.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>

@@ -13,7 +13,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <mach/iim.h>
 #include <io.h>
 #include <mach/weim.h>

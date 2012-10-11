@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  */
 
-#include <mach/imx-regs.h>
+#include <mach/imx1-regs.h>
 #include <asm/barebox-arm-head.h>
 
 #define CPU200

@@ -16,7 +16,7 @@
 #include <init.h>
 #include <sizes.h>
 #include <platform_ide.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/weim.h>
 #include <mach/gpio.h>

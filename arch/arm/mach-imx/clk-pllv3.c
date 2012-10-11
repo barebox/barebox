@@ -17,7 +17,6 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
 #include <malloc.h>
 #include <clock.h>
 #include <asm-generic/div64.h>

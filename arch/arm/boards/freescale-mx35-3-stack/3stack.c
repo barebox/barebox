@@ -41,7 +41,7 @@
 #include <mach/gpio.h>
 #include <mach/weim.h>
 #include <mach/imx-nand.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
 #include <mach/imx-ipu-fb.h>

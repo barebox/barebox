@@ -17,7 +17,7 @@
 #include <notifier.h>
 #include <sizes.h>
 #include <mach/imx5.h>
-#include <mach/imx-regs.h>
+#include <mach/imx53-regs.h>
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 

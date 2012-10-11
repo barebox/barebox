@@ -24,7 +24,6 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
 #include <asm-generic/div64.h>
 
 #define LCDC_SSA	0x00

@@ -19,7 +19,7 @@
 #include <init.h>
 #include <environment.h>
 #include <generated/mach-types.h>
-#include <mach/imx-regs.h>
+#include <mach/imx1-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
 #include <mach/weim.h>

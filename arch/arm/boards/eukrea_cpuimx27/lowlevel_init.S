@@ -1,6 +1,6 @@
 #include <config.h>
 #include <asm-generic/memory_layout.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/esdctl.h>
 #include <asm/barebox-arm-head.h>
 

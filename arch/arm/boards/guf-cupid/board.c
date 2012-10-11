@@ -25,7 +25,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
 #include <io.h>

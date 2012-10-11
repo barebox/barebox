@@ -1,5 +1,5 @@
 #include <config.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/imx-pll.h>
 #include <linux/linkage.h>
 

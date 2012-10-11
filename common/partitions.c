@@ -52,8 +52,8 @@ static int disk_guess_size(struct device_d *dev, struct partition_entry *table)
 
 	for (i = 0; i < 4; i++) {
 		if (table[i].partition_start != 0) {
-			size += get_unaligned(&table[i].partition_start) - size;
-			size += get_unaligned(&table[i].partition_size);
+			size += get_unaligned_le32(&table[i].partition_start) - size;
+			size += get_unaligned_le32(&table[i].partition_size);
 		}
 	}
 
@@ -97,8 +97,8 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 		blk->num_blocks = disk_guess_size(blk->dev, table);
 
 	for (i = 0; i < 4; i++) {
-		pentry.first_sec = get_unaligned(&table[i].partition_start);
-		pentry.size = get_unaligned(&table[i].partition_size);
+		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);
+		pentry.size = get_unaligned_le32(&table[i].partition_size);
 
 		if (pentry.first_sec != 0) {
 			pd->parts[pd->used_entries].first_sec = pentry.first_sec;

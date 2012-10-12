@@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_IMX31) += imx31.o iomux-v2.o clk-imx31.o
 obj-$(CONFIG_ARCH_IMX35) += imx35.o iomux-v3.o clk-imx35.o
 obj-$(CONFIG_ARCH_IMX51) += imx51.o iomux-v3.o imx5.o clk-imx5.o
 obj-$(CONFIG_ARCH_IMX53) += imx53.o iomux-v3.o imx5.o clk-imx5.o
+pbl-$(CONFIG_ARCH_IMX53) += imx53.o imx5.o
 obj-$(CONFIG_ARCH_IMX6) += imx6.o iomux-v3.o usb-imx6.o clk-imx6.o
 obj-$(CONFIG_IMX_IIM)	+= iim.o
 obj-$(CONFIG_NAND_IMX) += nand.o

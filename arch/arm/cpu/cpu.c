@@ -30,6 +30,7 @@
 #include <asm/memory.h>
 #include <asm/system_info.h>
 #include <asm/cputype.h>
+#include <asm/cache.h>
 
 /**
  * Enable processor's instruction cache
@@ -74,19 +75,9 @@ int icache_status(void)
 void arch_shutdown(void)
 {
 #ifdef CONFIG_MMU
-	/* nearly the same as below, but this could also disable
-	 * second level cache.
-	 */
 	mmu_disable();
-#else
-	asm volatile (
-		"bl __mmu_cache_flush;"
-		"bl __mmu_cache_off;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
 #endif
+	flush_icache();
 }
 
 #ifdef CONFIG_THUMB2_BAREBOX

@@ -311,11 +311,6 @@ int main(int argc, char *argv[])
 		case 'i':
 			break;
 		case 'e':
-			sprintf(str, "env%d", envno);
-			ret = add_image(optarg, str);
-			if (ret)
-				exit(1);
-			envno++;
 			break;
 		case 'O':
 			fd = open(optarg, O_WRONLY);
@@ -375,6 +370,13 @@ int main(int argc, char *argv[])
 			if (ret)
 				exit(1);
 			fdno++;
+			break;
+		case 'e':
+			sprintf(str, "env%d", envno);
+			ret = add_image(optarg, str);
+			if (ret)
+				exit(1);
+			envno++;
 			break;
 		default:
 			break;

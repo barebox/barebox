@@ -52,8 +52,7 @@ static void __bare_init __naked insdram(void)
 	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
-	r = STACK_BASE + STACK_SIZE - 12;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
 	imx_nand_load_image(_text, barebox_image_size);
 

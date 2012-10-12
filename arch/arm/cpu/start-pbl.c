@@ -178,8 +178,7 @@ void __naked board_init_lowlevel_return(void)
 	uint32_t pg_start, pg_end, pg_len;
 
 	/* Setup the stack */
-	r = STACK_BASE + STACK_SIZE - 16;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();

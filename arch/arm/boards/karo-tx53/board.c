@@ -224,8 +224,25 @@ device_initcall(tx53_devices_init);
 
 static int tx53_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+	const char *envdev;
+
+	switch (imx_bootsource()) {
+	case bootsource_mmc:
+		devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+		envdev = "MMC";
+		break;
+	case bootsource_nand:
+	default:
+		devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", 0x80000, 0x100000, DEVFS_PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		envdev = "NAND";
+		break;
+	}
+
+	printf("Using environment in %s\n", envdev);
 
 	return 0;
 }

@@ -403,7 +403,7 @@ static void print_usage(const char *prgname)
 "Usage: %s [OPTIONS]\n"
 "Start barebox.\n\n"
 "Options:\n\n"
-"  -m, "
+"  -m, --malloc=<size>	Start sandbox with a specified malloc-space size in bytes.\n"
 "  -i, --image=<file>   Map an image file to barebox. This option can be given\n"
 "                       multiple times. The files will show up as\n"
 "                       /dev/fd0 ... /dev/fdx under barebox.\n"

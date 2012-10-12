@@ -436,6 +436,10 @@ static void print_usage(const char *prgname)
  *
  * Options can be:
  *
+ * -m, --malloc=\<size\>
+ *
+ * Start sandbox with a specified malloc-space \<size\> in bytes.
+ *
  * -i \<file\>
  *
  * Map a \<file\> to barebox. This option can be given multiple times. The \<file\>s

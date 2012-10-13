@@ -68,12 +68,9 @@ static noinline void archosg9_init_lowlevel(void)
 
 void __naked __bare_init reset(void)
 {
-	u32 r;
-
 	common_reset();
 
-	r = 0x4030D000;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	arm_setup_stack(0x4030d000);
 
 	archosg9_init_lowlevel();
 }

@@ -143,6 +143,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		user->flags	= mtd->flags;
 		user->size	= mtd->size;
 		user->erasesize	= mtd->erasesize;
+		user->writesize	= mtd->writesize;
 		user->oobsize	= mtd->oobsize;
 		user->mtd	= mtd;
 		/* The below fields are obsolete */

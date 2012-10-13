@@ -65,7 +65,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(automount)
 	.cmd		= do_automount,
-	.usage		= "automount [OPTIONS] <PATH> <cmd>\n",
+	.usage		= "automount [OPTIONS] <PATH> <cmd>",
 	BAREBOX_CMD_HELP(cmd_automount_help)
 BAREBOX_CMD_END
 

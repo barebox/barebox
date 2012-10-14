@@ -19,7 +19,7 @@ struct mtd_partition;
  * rarely powers of two; and partitions should be sector-aligned.
  */
 struct flash_platform_data {
-	const char		*name;
+	char		*name;
 	struct mtd_partition	*parts;
 	unsigned int		nr_parts;
 	char			*type;

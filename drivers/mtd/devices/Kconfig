@@ -1,6 +1,24 @@
 menu "Self contained MTD devices"
 	depends on MTD!=n
 
+config MTD_DATAFLASH
+	tristate "Support for AT45xxx DataFlash"
+	depends on SPI
+	help
+	  This enables access to AT45xxx DataFlash chips, using SPI.
+	  Sometimes DataFlash chips are packaged inside MMC-format
+	  cards; at this writing, the MMC stack won't handle those.
+
+config MTD_DATAFLASH_WRITE_VERIFY
+	bool "Verify DataFlash page writes"
+	depends on MTD_DATAFLASH
+	help
+	  This adds an extra check when data is written to the flash.
+	  It may help if you are verifying chip setup (timings etc) on
+	  your board.  There is a rare possibility that even though the
+	  device thinks the write was successful, a bit could have been
+	  flipped accidentally due to device wear or something else.
+
 config MTD_DOCG3
 	bool "M-Systems Disk-On-Chip G3"
 	select BCH

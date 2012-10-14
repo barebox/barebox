@@ -36,6 +36,10 @@ static void program_mode_registers(void);
 void sdram_cfg(void)
 {
 	struct sdram_regs *sdram = (struct sdram_regs *)SDRAM_BASE;
+	unsigned long pc = get_pc();
+
+	if (pc < CONFIG_EP93XX_SDRAM_BANK3_BASE + CONFIG_EP93XX_SDRAM_BANK3_SIZE)
+		return;
 
 	writel(SDRAM_DEVCFG_VAL, &sdram->SDRAM_DEVCFG_REG);
 

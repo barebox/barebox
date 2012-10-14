@@ -20,6 +20,7 @@
  *
  */
 
+#include <sizes.h>
 #include <mach/ep93xx-regs.h>
 #include <asm/barebox-arm-head.h>
 
@@ -52,4 +53,12 @@ reset:
 	orr r0, r0, #0xc0000000
 	mcr p15, 0, r0, c1, c0, 0
 
-	b board_init_lowlevel_return
+	/*
+	 * FIXME: This is suitable for the edb9301, the
+	 * only ep93xx board we have in our defconfigs.
+	 * Other boards need different values here.
+	 */
+	mov	r0, #0x05000000
+	mov	r1, #SZ_8M
+	mov	r2, #0
+	b	barebox_arm_entry

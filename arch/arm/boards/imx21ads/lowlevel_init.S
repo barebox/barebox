@@ -14,6 +14,7 @@
  */
 
 #include <config.h>
+#include <sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx21-regs.h>
 #include <asm/barebox-arm-head.h>
@@ -75,7 +76,7 @@ reset:
 	cmp	pc, #0xc8000000
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	ret
 1:
 
 	/* Precharge */
@@ -125,7 +126,10 @@ reset:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	b	board_init_lowlevel_return
+	mov	r0, #0xc0000000
+	mov	r1, #SZ_64M
+	mov	r2, #0
+	b	barebox_arm_entry
 
 /*
  *  spin for a while.  we need to wait at least 200 usecs.

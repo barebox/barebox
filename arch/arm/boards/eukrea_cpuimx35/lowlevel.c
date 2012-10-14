@@ -110,7 +110,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0x90000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	/* Init Mobile DDR */
 	writel(0x0000000E, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
@@ -141,7 +141,7 @@ void __bare_init __naked reset(void)
 	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
 
 	imx35_barebox_boot_nand_external();
-#else
-	board_init_lowlevel_return();
 #endif
+out:
+	imx35_barebox_entry(0);
 }

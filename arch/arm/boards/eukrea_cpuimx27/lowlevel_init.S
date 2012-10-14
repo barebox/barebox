@@ -119,7 +119,7 @@ reset:
 	cmp	pc, #0xc0000000
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	imx27_barebox_entry
 1:
 	sdram_init
 
@@ -131,4 +131,4 @@ reset:
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	b	board_init_lowlevel_return
+	b	imx27_barebox_entry

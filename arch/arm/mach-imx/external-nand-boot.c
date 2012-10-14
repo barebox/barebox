@@ -18,6 +18,7 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx-nand.h>
+#include <mach/esdctl.h>
 #include <mach/generic.h>
 #include <mach/imx21-regs.h>
 #include <mach/imx25-regs.h>
@@ -312,7 +313,7 @@ void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
 	imx_barebox_boot_nand_external(nfc_base);
 	jump_sdram(nfc_base - (unsigned long)_text);
 	imx_nand_load_image((void *)_text, barebox_image_size);
-	board_init_lowlevel_return();
+	imx21_barebox_entry(0);
 }
 #endif
 
@@ -324,7 +325,7 @@ void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
 	imx_barebox_boot_nand_external(nfc_base);
 	jump_sdram(nfc_base - (unsigned long)_text);
 	imx_nand_load_image((void *)_text, barebox_image_size);
-	board_init_lowlevel_return();
+	imx25_barebox_entry(0);
 }
 #endif
 
@@ -336,7 +337,7 @@ void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
 	imx_barebox_boot_nand_external(nfc_base);
 	jump_sdram(nfc_base - (unsigned long)_text);
 	imx_nand_load_image((void *)_text, barebox_image_size);
-	board_init_lowlevel_return();
+	imx27_barebox_entry(0);
 }
 #endif
 
@@ -348,7 +349,7 @@ void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
 	imx_barebox_boot_nand_external(nfc_base);
 	jump_sdram(nfc_base - (unsigned long)_text);
 	imx_nand_load_image((void *)_text, barebox_image_size);
-	board_init_lowlevel_return();
+	imx31_barebox_entry(0);
 }
 #endif
 
@@ -360,7 +361,7 @@ void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
 	imx_barebox_boot_nand_external(nfc_base);
 	jump_sdram(nfc_base - (unsigned long)_text);
 	imx_nand_load_image((void *)_text, barebox_image_size);
-	board_init_lowlevel_return();
+	imx35_barebox_entry(0);
 }
 #endif
 

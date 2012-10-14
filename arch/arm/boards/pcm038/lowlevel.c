@@ -49,7 +49,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0xa0000000 && r < 0xb0000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	/* re-program the PLL prior(!) starting the SDRAM controller */
 	writel(MPCTL0_VAL, MX27_CCM_BASE_ADDR + MX27_MPCTL0);
@@ -99,6 +99,8 @@ void __bare_init __naked reset(void)
 
 	imx27_barebox_boot_nand_external();
 #else
-	board_init_lowlevel_return();
+	imx27_barebox_entry(0);
 #endif
+out:
+	imx27_barebox_entry(0);
 }

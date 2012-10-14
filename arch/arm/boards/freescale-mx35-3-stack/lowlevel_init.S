@@ -126,7 +126,7 @@ reset:
 	cmp	pc, #CSD1_BASE_ADDR
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	imx35_barebox_entry
 
 1:
 	ldr	r0, =ESDCTL_BASE_ADDR
@@ -161,7 +161,7 @@ reset:
 	b	imx35_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 
-	b	board_init_lowlevel_return
+	b	imx35_barebox_entry
 
 /*
  * r0: ESDCTL control base, r1: sdram slot base

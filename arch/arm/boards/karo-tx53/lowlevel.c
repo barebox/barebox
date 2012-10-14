@@ -2,8 +2,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
-
-#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
+#include <mach/esdctl.h>
 
 void __naked reset(void)
 {
@@ -17,6 +16,5 @@ void __naked reset(void)
 	if (IS_ENABLED(CONFIG_TX53_REV_XX30))
 		imx53_init_lowlevel(800);
 
-	board_init_lowlevel_return();
+	imx53_barebox_entry(0);
 }
-#endif

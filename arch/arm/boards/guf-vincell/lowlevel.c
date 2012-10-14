@@ -5,6 +5,7 @@
 #include <mach/imx5.h>
 #include <mach/iomux-v3.h>
 #include <mach/esdctl-v4.h>
+#include <mach/esdctl.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <io.h>
@@ -131,7 +132,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x70000000 && r < 0xf0000000)
-		board_init_lowlevel_return();
+		imx51_barebox_entry(0);
 
 	/* Setup a preliminary stack */
 	r = 0xf8000000 + 0x60000 - 16;
@@ -145,5 +146,5 @@ void __bare_init __naked reset(void)
 
 	imx_esdctlv4_init();
 
-	board_init_lowlevel_return();
+	imx51_barebox_entry(0);
 }

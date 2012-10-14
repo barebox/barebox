@@ -1,7 +1,8 @@
 #include <common.h>
 #include <io.h>
-#include <init.h>
 #include <sizes.h>
+#include <asm/barebox-arm-head.h>
+#include <asm/barebox-arm.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
 #include <mach/control.h>
@@ -543,4 +544,14 @@ static int sdp343x_board_init(void)
 
 	return 0;
 }
-pure_initcall(sdp343x_board_init);
+
+void __naked reset(void)
+{
+	omap3_invalidate_dcache();
+
+	common_reset();
+
+	sdp343x_board_init();
+
+	barebox_arm_entry(0x80000000, SZ_128M, 0);
+}

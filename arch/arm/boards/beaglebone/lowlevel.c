@@ -1,6 +1,8 @@
 #include <init.h>
 #include <sizes.h>
 #include <io.h>
+#include <asm/barebox-arm-head.h>
+#include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
 #include <mach/sdrc.h>
@@ -245,4 +247,12 @@ static int beaglebone_board_init(void)
 
 	return 0;
 }
-pure_initcall(beaglebone_board_init);
+
+void __naked reset(void)
+{
+	common_reset();
+
+	beaglebone_board_init();
+
+	barebox_arm_entry(0x80000000, SZ_256M, 0);
+}

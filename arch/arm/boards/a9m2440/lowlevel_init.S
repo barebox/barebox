@@ -225,7 +225,7 @@ reset:
 	cmp pc, #S3C_SDRAM_END
 	bhs 1f
 
-	mov pc, r10
+	b board_init_lowlevel_return
 
 /* we are running from NOR or NAND/SRAM memory. Do further initialisation */
 1:

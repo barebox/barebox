@@ -425,6 +425,7 @@ static int dwc_ether_probe(struct device_d *dev)
 	miibus = &priv->miibus;
 	edev->priv = priv;
 
+	edev->parent = dev;
 	edev->init = dwc_ether_init;
 	edev->open = dwc_ether_open;
 	edev->send = dwc_ether_send;
@@ -435,6 +436,7 @@ static int dwc_ether_probe(struct device_d *dev)
 
 	priv->phy_addr = pdata->phy_addr;
 	priv->interface = pdata->interface;
+	miibus->parent = dev;
 	miibus->read = dwc_ether_mii_read;
 	miibus->write = dwc_ether_mii_write;
 	miibus->priv = priv;

@@ -16,10 +16,13 @@
  * GNU General Public License for more details.
  *
  */
-
+#include <sizes.h>
 #include <asm/barebox-arm-head.h>
 
 .globl reset
 reset:
 	common_reset r0
-	b board_init_lowlevel_return
+	mov	r0, #0x80000000
+	mov	r1, #SZ_64M
+	mov	r2, #0
+	b	barebox_arm_entry

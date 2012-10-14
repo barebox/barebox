@@ -241,6 +241,16 @@ static void dwc_update_linkspeed(struct eth_device *edev)
 		conf &= ~MII_PORTSELECT;
 	else
 		conf |= MII_PORTSELECT;
+
+	if ((edev->phydev->interface != PHY_INTERFACE_MODE_MII) &&
+		(edev->phydev->interface != PHY_INTERFACE_MODE_GMII)) {
+
+		if (edev->phydev->speed == 100)
+			conf |= FES_100;
+		else
+			conf &= ~FES_100;
+	}
+
 	writel(conf, &mac_p->conf);
 }
 

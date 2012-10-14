@@ -53,6 +53,7 @@ struct dw_eth_dev {
 	struct eth_mac_regs *mac_regs_p;
 	struct eth_dma_regs *dma_regs_p;
 	int phy_addr;
+	phy_interface_t interface;
 };
 
 /* Speed specific definitions */
@@ -262,7 +263,7 @@ static int dwc_ether_open(struct eth_device *dev)
 	int ret;
 
 	ret = phy_device_connect(dev, &priv->miibus, priv->phy_addr,
-				 dwc_update_linkspeed, 0, PHY_INTERFACE_MODE_NA);
+				 dwc_update_linkspeed, 0, priv->interface);
 	if (ret)
 		return ret;
 
@@ -433,6 +434,7 @@ static int dwc_ether_probe(struct device_d *dev)
 	edev->set_ethaddr = dwc_ether_set_ethaddr;
 
 	priv->phy_addr = pdata->phy_addr;
+	priv->interface = pdata->interface;
 	miibus->read = dwc_ether_mii_read;
 	miibus->write = dwc_ether_mii_write;
 	miibus->priv = priv;

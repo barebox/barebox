@@ -23,6 +23,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <sizes.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/sections.h>
@@ -61,7 +62,8 @@ void __bare_init reset(void)
 #endif
 
 	if (get_pc() < 0xD0000000) /* Are we running from iRAM? */
-		board_init_lowlevel_return(); /* No, we don't. */
+		/* No, we don't. */
+		barebox_arm_entry(S3C_SDRAM_BASE, SZ_64M, 0);
 
 	s5p_init_dram_bank_ddr2(S5P_DMC0_BASE, 0x20E00323, 0, 0);
 

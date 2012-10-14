@@ -24,6 +24,7 @@
  */
 
 #include <config.h>
+#include <sizes.h>
 #include <mach/pxa-regs.h>
 #include <mach/regs-ost.h>
 #include <mach/regs-intc.h>
@@ -452,5 +453,7 @@ initclks:
 	/* -------------------------------------------------------------------- */
 
 endlowlevel_init:
-	b board_init_lowlevel_return
-
+	mov	r0, #0xa0000000
+	mov	r1, #SZ_64M
+	mov	r2, #0
+	b	barebox_arm_entry

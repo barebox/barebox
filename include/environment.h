@@ -26,14 +26,15 @@
  * Managment of a environment variable
  */
 struct variable_d {
-	struct variable_d *next;	/**< List management */
-	char data[0];			/**< variable length data */
+	struct list_head list;
+	char *name;
+	char *data;
 };
 
 struct env_context {
-	struct env_context *parent;	/**< FIXME */
-	struct variable_d *local;	/**< FIXME */
-	struct variable_d *global;	/**< FIXME */
+	struct env_context *parent;
+	struct list_head local;
+	struct list_head global;
 };
 
 struct env_context *get_current_context(void);

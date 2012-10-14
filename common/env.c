@@ -30,23 +30,36 @@
 #include <init.h>
 #include <environment.h>
 
-#define VARIABLE_D_SIZE(name, value) (sizeof(struct variable_d) + strlen(name) + strlen(value) + 2)
+static struct env_context root = {
+	.local = LIST_HEAD_INIT(root.local),
+	.global = LIST_HEAD_INIT(root.global),
+};
 
-static struct env_context *context;
+static struct env_context *context = &root;
 
 /**
  * Remove a list of environment variables
  * @param[in] v Variable anchor to remove
  */
-static void free_variables(struct variable_d *v)
+static void free_context(struct env_context *c)
 {
-	struct variable_d *next;
+	struct variable_d *v, *tmp;
 
-	while (v) {
-		next = v->next;
+	list_for_each_entry_safe(v, tmp, &c->local, list) {
+		free(v->name);
+		free(v->data);
+		list_del(&v->list);
 		free(v);
-		v = next;
 	}
+
+	list_for_each_entry_safe(v, tmp, &c->global, list) {
+		free(v->name);
+		free(v->data);
+		list_del(&v->list);
+		free(v);
+	}
+
+	free(c);
 }
 
 /** Read back current context */
@@ -58,19 +71,14 @@ EXPORT_SYMBOL(get_current_context);
 
 
 /**
- * FIXME
+ * Create a new variable context and put it on the stack
  */
 int env_push_context(void)
 {
 	struct env_context *c = xzalloc(sizeof(struct env_context));
 
-	c->local = xzalloc(VARIABLE_D_SIZE("", ""));
-	c->global = xzalloc(VARIABLE_D_SIZE("", ""));
-
-	if (!context) {
-		context = c;
-		return 0;
-	}
+	INIT_LIST_HEAD(&c->local);
+	INIT_LIST_HEAD(&c->global);
 
 	c->parent = context;
 	context = c;
@@ -78,10 +86,8 @@ int env_push_context(void)
 	return 0;
 }
 
-postcore_initcall(env_push_context);
-
 /**
- * FIXME
+ * free current variable context and restore the previous one
  */
 int env_pop_context(void)
 {
@@ -89,9 +95,7 @@ int env_pop_context(void)
 
 	if (context->parent) {
 		c = context->parent;
-		free_variables(context->local);
-		free_variables(context->global);
-		free(context);
+		free_context(context);
 		context = c;
 		return 0;
 	}
@@ -105,7 +109,7 @@ int env_pop_context(void)
  */
 char *var_val(struct variable_d *var)
 {
-	return &var->data[strlen(var->data) + 1];
+	return var->data;
 }
 
 /**
@@ -115,16 +119,18 @@ char *var_val(struct variable_d *var)
  */
 char *var_name(struct variable_d *var)
 {
-	return var->data;
+	return var->name;
 }
 
-static const char *getenv_raw(struct variable_d *var, const char *name)
+static const char *getenv_raw(struct list_head *l, const char *name)
 {
-	while (var) {
-		if (!strcmp(var_name(var), name))
-			return var_val(var);
-		var = var->next;
+	struct variable_d *v;
+
+	list_for_each_entry(v, l, list) {
+		if (!strcmp(var_name(v), name))
+			return var_val(v);
 	}
+
 	return NULL;
 }
 
@@ -150,12 +156,12 @@ const char *getenv (const char *name)
 
 	c = context;
 
-	val = getenv_raw(c->local, name);
+	val = getenv_raw(&c->local, name);
 	if (val)
 		return val;
 
 	while (c) {
-		val = getenv_raw(c->global, name);
+		val = getenv_raw(&c->global, name);
 		if (val)
 			return val;
 		c = c->parent;
@@ -164,34 +170,35 @@ const char *getenv (const char *name)
 }
 EXPORT_SYMBOL(getenv);
 
-static int setenv_raw(struct variable_d *var, const char *name, const char *value)
+static int setenv_raw(struct list_head *l, const char *name, const char *value)
 {
-	struct variable_d *newvar = NULL;
+	struct variable_d *v;
 
-	if (value) {
-		newvar = xzalloc(VARIABLE_D_SIZE(name, value));
-		strcpy(&newvar->data[0], name);
-		strcpy(&newvar->data[strlen(name) + 1], value);
-	}
-
-	while (var->next) {
-		if (!strcmp(var->next->data, name)) {
+	list_for_each_entry(v, l, list) {
+		if (!strcmp(v->name, name)) {
 			if (value) {
-				newvar->next = var->next->next;
-				free(var->next);
-				var->next = newvar;
+				free(v->data);
+				v->data = xstrdup(value);
+
 				return 0;
 			} else {
-				struct variable_d *tmp;
-				tmp = var->next;
-				var->next = var->next->next;
-				free(tmp);
+				list_del(&v->list);
+				free(v->name);
+				free(v->data);
+				free(v);
+
 				return 0;
 			}
 		}
-		var = var->next;
 	}
-	var->next = newvar;
+
+	if (value) {
+		v = xzalloc(sizeof(*v));
+		v->name = xstrdup(name);
+		v->data = xstrdup(value);
+		list_add_tail(&v->list, l);
+	}
+
 	return 0;
 }
 
@@ -199,8 +206,8 @@ int setenv(const char *_name, const char *value)
 {
 	char *name = strdup(_name);
 	char *par;
-	struct variable_d *var;
 	int ret = 0;
+	struct list_head *list;
 
 	if (value && !*value)
 		value = NULL;
@@ -224,12 +231,12 @@ int setenv(const char *_name, const char *value)
 		goto out;
 	}
 
-	if (getenv_raw(context->global, name))
-		var = context->global;
+	if (getenv_raw(&context->global, name))
+		list = &context->global;
 	else
-		var = context->local;
+		list = &context->local;
 
-	ret = setenv_raw(var, name, value);
+	ret = setenv_raw(list, name, value);
 out:
 	free(name);
 
@@ -239,11 +246,11 @@ EXPORT_SYMBOL(setenv);
 
 int export(const char *varname)
 {
-	const char *val = getenv_raw(context->local, varname);
+	const char *val = getenv_raw(&context->local, varname);
 
 	if (val) {
-		setenv_raw(context->global, varname, val);
-		setenv_raw(context->local, varname, NULL);
+		setenv_raw(&context->global, varname, val);
+		setenv_raw(&context->local, varname, NULL);
 	}
 	return 0;
 }

@@ -63,3 +63,16 @@ void __naked board_init_lowlevel_return(void)
 
 	start_barebox();
 }
+
+/*
+ * Main ARM entry point in the uncompressed image. Call this with the memory
+ * region you can spare for barebox. This doesn't necessarily have to be the
+ * full SDRAM. The currently running binary can be inside or outside of this
+ * region. TEXT_BASE can be inside or outside of this region. boarddata will
+ * be preserved and can be accessed later with barebox_arm_boarddata().
+ */
+void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
+                uint32_t boarddata)
+{
+	board_init_lowlevel_return();
+}

@@ -21,6 +21,9 @@
 
 #include <sizes.h>
 
+#define MX31_IRAM_BASE_ADDR		0x1fffc000
+#define MX31_IRAM_SIZE			0x00004000
+
 #define MX31_AIPS1_BASE_ADDR		0x43f00000
 #define MX31_AIPS1_SIZE			SZ_1M
 #define MX31_MAX_BASE_ADDR			(MX31_AIPS1_BASE_ADDR + 0x04000)

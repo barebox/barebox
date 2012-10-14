@@ -76,6 +76,9 @@
 #define MX25_USB_HS_BASE_ADDR			(MX25_USB_BASE_ADDR + 0x0400)
 #define MX25_CSI_BASE_ADDR		0x53ff8000
 
+#define MX25_IRAM_BASE_ADDR		0x78000000	/* internal ram */
+#define MX25_IRAM_SIZE			SZ_128K
+
 /*
  * Clock Controller Module (CCM)
  */

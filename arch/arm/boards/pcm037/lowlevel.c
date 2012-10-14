@@ -127,7 +127,7 @@ void __bare_init __naked reset(void)
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* setup a stack to be able to call imx31_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
 
 	imx31_barebox_boot_nand_external();
 #else

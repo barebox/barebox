@@ -314,7 +314,7 @@ void __bare_init __naked reset(void)
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
 	/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
 
 	imx35_barebox_boot_nand_external();
 #else

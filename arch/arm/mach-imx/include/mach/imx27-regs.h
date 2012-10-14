@@ -100,6 +100,7 @@
 
 /* IRAM */
 #define MX27_IRAM_BASE_ADDR		0xffff4c00	/* internal ram */
+#define MX27_IRAM_SIZE			0x0000b400
 
 /* PCMCIA (base: MX27_PCMCIA_CTL_BASE_ADDR) */
 #define MX27_PCMCIA_PIPR	0x00

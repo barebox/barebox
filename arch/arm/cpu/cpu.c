@@ -31,6 +31,7 @@
 #include <asm/system_info.h>
 #include <asm/cputype.h>
 #include <asm/cache.h>
+#include <asm/ptrace.h>
 
 /**
  * Enable processor's instruction cache
@@ -74,10 +75,20 @@ int icache_status(void)
  */
 void arch_shutdown(void)
 {
+	uint32_t r;
+
 #ifdef CONFIG_MMU
 	mmu_disable();
 #endif
 	flush_icache();
+	/*
+	 * barebox normally does not use interrupts, but some functionalities
+	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
+	 * disabled before exiting.
+	 */
+	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
+	r |= PSR_I_BIT;
+	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 }
 
 #ifdef CONFIG_THUMB2_BAREBOX

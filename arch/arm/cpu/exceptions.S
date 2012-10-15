@@ -35,7 +35,6 @@
 #define S_R0		0
 
 #define MODE_SVC	0x13
-#define I_BIT		0x80
 
 /*
  * use bad_save_user_regs for abort/prefetch/undef/swi ...

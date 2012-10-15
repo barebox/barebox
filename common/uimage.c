@@ -373,7 +373,7 @@ static int uimage_sdram_flush(void *buf, unsigned int len)
 	return len;
 }
 
-#define BUFSIZ	(PAGE_SIZE * 2)
+#define BUFSIZ	(PAGE_SIZE * 32)
 
 struct resource *file_to_sdram(const char *filename, unsigned long adr)
 {

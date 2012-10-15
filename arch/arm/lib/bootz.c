@@ -30,6 +30,7 @@ static int do_bootz(int argc, char *argv[])
 	u32 end;
 	int usemap = 0;
 	struct memory_bank *bank = list_first_entry(&memory_banks, struct memory_bank, list);
+	struct resource *res = NULL;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
@@ -83,8 +84,10 @@ static int do_bootz(int argc, char *argv[])
 			zimage = xmalloc(end);
 		} else {
 			zimage = (void *)bank->start + SZ_8M;
-			if (bank->start + SZ_8M + end >= MALLOC_BASE) {
-				printf("won't overwrite malloc space with image\n");
+			res = request_sdram_region("zimage",
+					bank->start + SZ_8M, end);
+			if (!res) {
+				printf("can't request region for kernel\n");
 				goto err_out1;
 			}
 		}
@@ -94,7 +97,7 @@ static int do_bootz(int argc, char *argv[])
 		ret = read(fd, zimage + sizeof(*header), end - sizeof(*header));
 		if (ret < end - sizeof(*header)) {
 			printf("could not read %s\n", argv[1]);
-			goto err_out1;
+			goto err_out2;
 		}
 	}
 
@@ -113,6 +116,9 @@ static int do_bootz(int argc, char *argv[])
 
 	return 0;
 
+err_out2:
+	if (res)
+		release_sdram_region(res);
 err_out1:
 	free(zimage);
 err_out:

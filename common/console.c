@@ -32,6 +32,7 @@
 #include <poller.h>
 #include <linux/list.h>
 #include <linux/stringify.h>
+#include <debug_ll.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -280,6 +281,7 @@ void console_putc(unsigned int ch, char c)
 
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
+		PUTC_LL(c);
 		return;
 
 	case CONSOLE_INIT_FULL:

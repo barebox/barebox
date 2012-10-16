@@ -5,7 +5,7 @@
 #include <ns16550.h>
 
 static struct NS16550_plat serial_plat = {
-	.clock = 50000000,      /* 48MHz (APLL96/2) */
+	.clock = OPENRISC_SOPC_UART_FREQ,
 	.shift = 0,
 };
 

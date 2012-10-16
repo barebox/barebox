@@ -190,6 +190,18 @@ void __naked __noreturn board_init_lowlevel_return(void)
  * full SDRAM. The currently running binary can be inside or outside of this
  * region. TEXT_BASE can be inside or outside of this region. boarddata will
  * be preserved and can be accessed later with barebox_arm_boarddata().
+ *
+ * -> membase + memsize
+ *   ARM_RESERVE_MEM_SIZE    - reserved for board usage. Will not be touched
+ *                             by barebox
+ *   STACK_SIZE              - stack
+ *   16KiB, aligned to 16KiB - First level page table if early MMU support
+ *                             is enabled
+ *   128KiB                  - early memory space
+ * -> maximum end of barebox binary
+ *
+ * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
+ * be fine.
  */
 void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)

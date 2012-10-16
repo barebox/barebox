@@ -49,6 +49,8 @@ void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 	writel(lower, MX1_EIM_BASE_ADDR + 4 + cs * 8);
 }
 
+#include <mach/esdctl.h>
+
 static int imx1_init(void)
 {
 	imx_iomuxv1_init((void *)MX1_GPIO1_BASE_ADDR);

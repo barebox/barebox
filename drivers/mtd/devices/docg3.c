@@ -1172,6 +1172,7 @@ static int __init docg3_probe(struct device_d *dev)
 				continue;
 		}
 		docg3_floors[floor] = mtd;
+		mtd->parent = dev;
 		ret = add_mtd_device(mtd, NULL);
 		if (ret)
 			goto err_probe;

@@ -408,7 +408,7 @@ static int do_devinfo(int argc, char *argv[])
 
 		printf("\ndrivers:\n");
 		for_each_driver(drv)
-			printf("%10s\n",drv->name);
+			printf("%s\n",drv->name);
 	} else {
 		dev = get_device_by_name(argv[1]);
 

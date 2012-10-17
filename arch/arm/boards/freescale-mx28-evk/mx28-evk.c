@@ -236,7 +236,7 @@ static int mx28_evk_devices_init(void)
 
 	imx_enable_enetclk();
 	mx28_evk_fec_reset();
-	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0x4000,
+	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 
 	return 0;

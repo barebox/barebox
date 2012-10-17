@@ -38,20 +38,6 @@
 #define UBIR	0xa4	/* BRM Incremental Register */
 #define UBMR	0xa8	/* BRM Modulator Register */
 #define UBRC	0xac	/* Baud Rate Count Register */
-#ifdef CONFIG_ARCH_IMX1
-#define BIPR1	0xb0	/* Incremental Preset Register 1 */
-#define BIPR2	0xb4	/* Incremental Preset Register 2 */
-#define BIPR3	0xb8	/* Incremental Preset Register 3 */
-#define BIPR4	0xbc	/* Incremental Preset Register 4 */
-#define BMPR1	0xc0	/* BRM Modulator Register 1 */
-#define BMPR2	0xc4	/* BRM Modulator Register 2 */
-#define BMPR3	0xc8	/* BRM Modulator Register 3 */
-#define BMPR4	0xcc	/* BRM Modulator Register 4 */
-#define UTS	0xd0	/* UART Test Register */
-#else
-#define ONEMS	0xb0 /* One Millisecond register */
-#define UTS	0xb4 /* UART Test Register */
-#endif
 
 /* UART Control Register Bit Fields.*/
 #define  URXD_CHARRDY    (1<<15)
@@ -148,23 +134,29 @@
 /*
  * create default values for different platforms
  */
-#ifdef CONFIG_ARCH_IMX1
-# define	UCR1_VAL (UCR1_UARTCLKEN)
-# define	UCR3_VAL 0
-# define	UCR4_VAL (UCR4_CTSTL_32 | UCR4_REF16)
-#endif
-#if defined CONFIG_ARCH_IMX21 || defined CONFIG_ARCH_IMX27
-# define	UCR1_VAL (UCR1_UARTCLKEN)
-# define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
-# define	UCR4_VAL UCR4_CTSTL_32
-#endif
-#if defined CONFIG_ARCH_IMX31 || defined CONFIG_ARCH_IMX35 || \
-	defined CONFIG_ARCH_IMX25 || defined CONFIG_ARCH_IMX51 || \
-	defined CONFIG_ARCH_IMX53 || defined CONFIG_ARCH_IMX6
-# define	UCR1_VAL (0)
-# define	UCR3_VAL (0x700 | UCR3_RXDMUXSEL)
-# define	UCR4_VAL UCR4_CTSTL_32
-#endif
+struct imx_serial_devtype_data {
+	u32 ucr1_val;
+	u32 ucr3_val;
+	u32 ucr4_val;
+	u32 uts;
+	u32 onems;
+};
+
+struct imx_serial_devtype_data imx1_data = {
+	.ucr1_val = UCR1_UARTCLKEN,
+	.ucr3_val = 0,
+	.ucr4_val = UCR4_CTSTL_32 | UCR4_REF16,
+	.uts = 0xd0,
+	.onems = 0,
+};
+
+struct imx_serial_devtype_data imx21_data = {
+	.ucr1_val = 0,
+	.ucr3_val = 0x700 | UCR3_RXDMUXSEL,
+	.ucr4_val = UCR4_CTSTL_32,
+	.uts = 0xb4,
+	.onems = 0xb0,
+};
 
 struct imx_serial_priv {
 	struct console_device cdev;
@@ -172,6 +164,7 @@ struct imx_serial_priv {
 	struct notifier_block notify;
 	void __iomem *regs;
 	struct clk *clk;
+	struct imx_serial_devtype_data *devtype;
 };
 
 static int imx_serial_reffreq(struct imx_serial_priv *priv)
@@ -196,23 +189,23 @@ static int imx_serial_init_port(struct console_device *cdev)
 	void __iomem *regs = priv->regs;
 	uint32_t val;
 
-	writel(UCR1_VAL, regs + UCR1);
+	writel(priv->devtype->ucr1_val, regs + UCR1);
 	writel(UCR2_WS | UCR2_IRTS, regs + UCR2);
-	writel(UCR3_VAL, regs + UCR3);
-	writel(UCR4_VAL, regs + UCR4);
+	writel(priv->devtype->ucr3_val, regs + UCR3);
+	writel(priv->devtype->ucr4_val, regs + UCR4);
 	writel(0x0000002B, regs + UESC);
 	writel(0, regs + UTIM);
 	writel(0, regs + UBIR);
 	writel(0, regs + UBMR);
-	writel(0, regs + UTS);
+	writel(0, regs + priv->devtype->uts);
 
 
 	/* Configure FIFOs */
 	writel(0xa81, regs + UFCR);
 
-#ifdef ONEMS
-	writel(imx_serial_reffreq(priv) / 1000, regs + ONEMS);
-#endif
+
+	if (priv->devtype->onems)
+		writel(imx_serial_reffreq(priv) / 1000, regs + priv->devtype->onems);
 
 	/* Enable FIFOs */
 	val = readl(regs + UCR2);
@@ -240,7 +233,7 @@ static void imx_serial_putc(struct console_device *cdev, char c)
 					struct imx_serial_priv, cdev);
 
 	/* Wait for Tx FIFO not full */
-	while (readl(priv->regs + UTS) & UTS_TXFULL);
+	while (readl(priv->regs + priv->devtype->uts) & UTS_TXFULL);
 
         writel(c, priv->regs + URTX0);
 }
@@ -251,7 +244,7 @@ static int imx_serial_tstc(struct console_device *cdev)
 					struct imx_serial_priv, cdev);
 
 	/* If receive fifo is empty, return false */
-	if (readl(priv->regs + UTS) & UTS_RXEMPTY)
+	if (readl(priv->regs + priv->devtype->uts) & UTS_RXEMPTY)
 		return 0;
 	return 1;
 }
@@ -262,7 +255,7 @@ static int imx_serial_getc(struct console_device *cdev)
 					struct imx_serial_priv, cdev);
 	unsigned char ch;
 
-	while (readl(priv->regs + UTS) & UTS_RXEMPTY);
+	while (readl(priv->regs + priv->devtype->uts) & UTS_RXEMPTY);
 
 	ch = readl(priv->regs + URXD0);
 
@@ -318,9 +311,15 @@ static int imx_serial_probe(struct device_d *dev)
 	struct console_device *cdev;
 	struct imx_serial_priv *priv;
 	uint32_t val;
+	struct imx_serial_devtype_data *devtype;
 	int ret;
 
+	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	if (ret)
+		return ret;
+
 	priv = xzalloc(sizeof(*priv));
+	priv->devtype = devtype;
 	cdev = &priv->cdev;
 	dev->priv = priv;
 
@@ -371,13 +370,25 @@ static void imx_serial_remove(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-uart",
-		.data = 0,
+		.data = (unsigned long)&imx1_data,
 	}, {
 		.compatible = "fsl,imx21-uart",
-		.data = 1,
+		.data = (unsigned long)&imx21_data,
 	}, {
 		/* sentinel */
 	}
+};
+
+static struct platform_device_id imx_serial_ids[] = {
+	{
+		.name = "imx1-uart",
+		.driver_data = (unsigned long)&imx1_data,
+	}, {
+		.name = "imx21-uart",
+		.driver_data = (unsigned long)&imx21_data,
+	}, {
+		/* sentinel */
+	},
 };
 
 static struct driver_d imx_serial_driver = {
@@ -385,6 +396,7 @@ static struct driver_d imx_serial_driver = {
 	.probe  = imx_serial_probe,
 	.remove = imx_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(imx_serial_dt_ids),
+	.id_table = imx_serial_ids,
 };
 
 static int imx_serial_init(void)

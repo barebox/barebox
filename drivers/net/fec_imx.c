@@ -310,7 +310,7 @@ static int fec_init(struct eth_device *dev)
 	}
 
 	if (fec->xcv_type == RMII) {
-		if (cpu_is_mx28()) {
+		if (fec_is_imx28(fec)) {
 			rcntl |= FEC_R_CNTRL_RMII_MODE | FEC_R_CNTRL_FCE |
 				FEC_R_CNTRL_NO_LGTH_CHECK;
 		} else {
@@ -340,7 +340,7 @@ static int fec_init(struct eth_device *dev)
 	xwmrk = 0x2;
 
 	/* set ENET tx at store and forward mode */
-	if (cpu_is_mx6())
+	if (fec_is_imx6(fec))
 		xwmrk |= 1 << 8;
 
 	writel(xwmrk, fec->regs + FEC_X_WMRK);
@@ -407,7 +407,7 @@ static int fec_open(struct eth_device *edev)
 	ecr = FEC_ECNTRL_ETHER_EN;
 
 	/* Enable Swap to support little-endian device */
-	if (cpu_is_mx6())
+	if (fec_is_imx6(fec))
 		ecr |= 0x100;
 
 	writel(ecr, fec->regs + FEC_ECNTRL);
@@ -481,7 +481,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	 * Note: We are always using the first buffer for transmission,
 	 * the second will be empty and only used to stop the DMA engine
 	 */
-	if (cpu_is_mx28())
+	if (fec_is_imx28(fec))
 		eth_data = imx28_fix_endianess_wr(eth_data, (data_length + 3) >> 2);
 
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
@@ -548,7 +548,7 @@ static int fec_recv(struct eth_device *dev)
 		printf("some error: 0x%08x\n", ievent);
 		return 0;
 	}
-	if (!cpu_is_mx28()) {
+	if (!fec_is_imx28(fec)) {
 		if (ievent & FEC_IEVENT_HBERR) {
 			/* Heartbeat error */
 			writel(readl(fec->regs + FEC_X_CNTRL) | 0x1,
@@ -574,7 +574,7 @@ static int fec_recv(struct eth_device *dev)
 		if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
 			((readw(&rbd->data_length) - 4) > 14)) {
 
-			if (cpu_is_mx28())
+			if (fec_is_imx28(fec))
 				imx28_fix_endianess_rd(
 					phys_to_virt(readl(&rbd->data_pointer)),
 					(readw(&rbd->data_length) + 3) >> 2);
@@ -628,10 +628,17 @@ static int fec_probe(struct device_d *dev)
 	struct fec_priv *fec;
 	void *base;
 	int ret;
+	enum fec_type type;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&type);
+	if (ret)
+		return ret;
+
 #ifdef CONFIG_ARCH_IMX27
 	PCCR0 |= PCCR0_FEC_EN;
 #endif
 	fec = xzalloc(sizeof(*fec));
+	fec->type = type;
 	edev = &fec->edev;
 	dev->priv = fec;
 	edev->priv = fec;
@@ -675,14 +682,19 @@ static int fec_probe(struct device_d *dev)
 
 	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
-	fec->xcv_type = pdata->xcv_type;
+	if (pdata) {
+		fec->xcv_type = pdata->xcv_type;
+		fec->phy_init = pdata->phy_init;
+		fec->phy_addr = pdata->phy_addr;
+	} else {
+		fec->xcv_type = MII100;
+		fec->phy_addr = -1;
+	}
 
 	if (fec->xcv_type != SEVENWIRE) {
-		fec->phy_init = pdata->phy_init;
 		fec->miibus.read = fec_miibus_read;
 		fec->miibus.write = fec_miibus_write;
-		fec->phy_addr = pdata->phy_addr;
-		switch (pdata->xcv_type) {
+		switch (fec->xcv_type) {
 		case RMII:
 			fec->interface = PHY_INTERFACE_MODE_RMII;
 			break;
@@ -719,13 +731,45 @@ static void fec_remove(struct device_d *dev)
 	fec_halt(&fec->edev);
 }
 
+static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
+	{
+		.compatible = "fsl,imx27-fec",
+		.data = FEC_TYPE_IMX27,
+	}, {
+		.compatible = "fsl,imx28-fec",
+		.data = FEC_TYPE_IMX28,
+	}, {
+		.compatible = "fsl,imx6q-fec",
+		.data = FEC_TYPE_IMX6,
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct platform_device_id imx_fec_ids[] = {
+	{
+		.name = "imx27-fec",
+		.driver_data = (unsigned long)FEC_TYPE_IMX27,
+	}, {
+		.name = "imx28-fec",
+		.driver_data = (unsigned long)FEC_TYPE_IMX28,
+	}, {
+		.name = "imx6-fec",
+		.driver_data = (unsigned long)FEC_TYPE_IMX6,
+	}, {
+		/* sentinel */
+	},
+};
+
 /**
  * Driver description for registering
  */
 static struct driver_d fec_driver = {
-        .name   = "fec_imx",
-        .probe  = fec_probe,
+	.name   = "fec_imx",
+	.probe  = fec_probe,
 	.remove = fec_remove,
+	.of_compatible = DRV_OF_COMPAT(imx_fec_dt_ids),
+	.id_table = imx_fec_ids,
 };
 
 static int fec_register(void)

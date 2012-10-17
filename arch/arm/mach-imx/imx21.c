@@ -41,6 +41,7 @@ static int imx21_init(void)
 	add_generic_device("imx-gpio", 3, NULL, MX21_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 4, NULL, MX21_GPIO5_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 5, NULL, MX21_GPIO6_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx21-wdt", 0, NULL, MX21_WDOG_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

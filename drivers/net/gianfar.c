@@ -82,7 +82,6 @@ static void gfar_adjust_link(struct eth_device *edev)
 	struct gfar_private *priv = edev->priv;
 	void __iomem *regs = priv->regs;
 	u32 ecntrl, maccfg2;
-	uint32_t status;
 
 	priv->link = edev->phydev->link;
 	priv->duplexity =edev->phydev->duplex;

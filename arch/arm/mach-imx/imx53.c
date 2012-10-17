@@ -18,58 +18,45 @@
 #include <sizes.h>
 #include <mach/imx5.h>
 #include <mach/imx-regs.h>
+#include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 
 #define SI_REV 0x48
 
-static u32 mx53_silicon_revision;
-static char *mx53_rev_string = "unknown";
-
-int imx_silicon_revision(void)
-{
-	return mx53_silicon_revision;
-}
-
-static int query_silicon_revision(void)
+static int imx53_silicon_revision(void)
 {
 	void __iomem *rom = MX53_IROM_BASE_ADDR;
 	u32 rev;
+	u32 mx53_silicon_revision;
 
 	rev = readl(rom + SI_REV);
 	switch (rev) {
 	case 0x10:
 		mx53_silicon_revision = IMX_CHIP_REV_1_0;
-		mx53_rev_string = "1.0";
 		break;
 	case 0x20:
 		mx53_silicon_revision = IMX_CHIP_REV_2_0;
-		mx53_rev_string = "2.0";
 		break;
 	case 0x21:
 		mx53_silicon_revision = IMX_CHIP_REV_2_1;
-		mx53_rev_string = "2.1";
 		break;
 	default:
 		mx53_silicon_revision = 0;
 	}
 
-	return 0;
-}
-core_initcall(query_silicon_revision);
-
-static int imx53_print_silicon_rev(void)
-{
-	printf("detected i.MX53 rev %s\n", mx53_rev_string);
+	imx_set_silicon_revision("i.MX53", mx53_silicon_revision);
 
 	return 0;
 }
-device_initcall(imx53_print_silicon_rev);
 
 static int imx53_init(void)
 {
+	imx53_silicon_revision();
+
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
+	add_generic_device("imx-iomuxv3", 0, NULL, MX53_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx53-ccm", 0, NULL, MX53_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, 0X53fa0000, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 0, NULL, MX53_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);

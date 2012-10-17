@@ -35,6 +35,7 @@
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
+#include <mach/revision.h>
 
 #include <i2c/i2c.h>
 #include <mfd/mc34708.h>

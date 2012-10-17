@@ -13,5 +13,5 @@ obj-$(CONFIG_NAND_IMX) += nand.o
 obj-$(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND) += external-nand-boot.o
 pbl-$(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND) += external-nand-boot.o
 obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-pfd.o
-obj-y += devices.o
+obj-y += devices.o imx.o
 obj-y += boot.o

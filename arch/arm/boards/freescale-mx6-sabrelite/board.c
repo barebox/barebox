@@ -200,7 +200,7 @@ static inline int imx6_iim_register_fec_ethaddr(void)
 	return 0;
 }
 
-static int sabrelite_spi_cs[] = {GPIO_PORTC + 19};
+static int sabrelite_spi_cs[] = {IMX_GPIO_NR(3, 19)};
 
 static struct spi_imx_master sabrelite_spi_0_data = {
 	.chipselect = sabrelite_spi_cs,

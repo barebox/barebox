@@ -15,6 +15,7 @@
 #ifndef __MACH_IOMUX_MX27_H__
 #define __MACH_IOMUX_MX27_H__
 
+#include <mach/iomux-v1.h>
 #include <mach/iomux-mx2x.h>
 
 /* Primary GPIO pin functions */

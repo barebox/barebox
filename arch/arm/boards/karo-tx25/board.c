@@ -75,8 +75,8 @@ static iomux_v3_cfg_t karo_tx25_padsd_fec[] = {
 	MX25_PAD_FEC_TX_CLK__FEC_TX_CLK,
 };
 
-#define TX25_FEC_PWR_GPIO	(GPIO_PORTD | 9)
-#define TX25_FEC_RST_GPIO	(GPIO_PORTD | 7)
+#define TX25_FEC_PWR_GPIO	IMX_GPIO_NR(4, 9)
+#define TX25_FEC_RST_GPIO	IMX_GPIO_NR(4, 7)
 
 static void noinline gpio_fec_active(void)
 {
@@ -217,9 +217,9 @@ static struct imx_fb_videomode stk5_fb_mode = {
 	.pcr	= PCR_TFT | PCR_COLOR | PCR_FLMPOL | PCR_LPPOL | PCR_SCLK_SEL,
 };
 
-#define STK5_LCD_BACKLIGHT_GPIO		(GPIO_PORTA | 26)
-#define STK5_LCD_RESET_GPIO		(GPIO_PORTB | 4)
-#define STK5_LCD_POWER_GPIO		(GPIO_PORTB | 5)
+#define STK5_LCD_BACKLIGHT_GPIO		IMX_GPIO_NR(1, 26)
+#define STK5_LCD_RESET_GPIO		IMX_GPIO_NR(2, 4)
+#define STK5_LCD_POWER_GPIO		IMX_GPIO_NR(2, 5)
 
 static void tx25_fb_enable(int enable)
 {

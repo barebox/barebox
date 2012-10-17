@@ -16,6 +16,7 @@
 #include <io.h>
 #include <mach/imx-regs.h>
 #include <mach/weim.h>
+#include <mach/iomux-v1.h>
 
 void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 {
@@ -23,16 +24,10 @@ void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 	writel(lower, MX21_EIM_BASE_ADDR + 4 + cs * 8);
 }
 
-int imx_silicon_revision(void)
-{
-	// Known values:
-	//   0x101D101D : mask set ID 0M55B
-	//   0x201D101D : mask set ID 1M55B or M55B
-	return CID;
-}
-
 static int imx21_init(void)
 {
+	imx_iomuxv1_init((void *)MX21_GPIO1_BASE_ADDR);
+
 	add_generic_device("imx21-ccm", 0, NULL, MX21_CCM_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpt", 0, NULL, MX21_GPT1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 0, NULL, MX21_GPIO1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);

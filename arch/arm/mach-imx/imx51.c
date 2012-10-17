@@ -18,62 +18,50 @@
 #include <io.h>
 #include <mach/imx5.h>
 #include <mach/imx-regs.h>
+#include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
+#include <mach/generic.h>
 
 #define SI_REV 0x48
 
-static u32 mx51_silicon_revision;
-static char *mx51_rev_string = "unknown";
-
-int imx_silicon_revision(void)
-{
-	return mx51_silicon_revision;
-}
-
-static int query_silicon_revision(void)
+static int imx51_silicon_revision(void)
 {
 	void __iomem *rom = MX51_IROM_BASE_ADDR;
+	u32 mx51_silicon_revision;
 	u32 rev;
 
 	rev = readl(rom + SI_REV);
 	switch (rev) {
 	case 0x1:
 		mx51_silicon_revision = IMX_CHIP_REV_1_0;
-		mx51_rev_string = "1.0";
 		break;
 	case 0x2:
 		mx51_silicon_revision = IMX_CHIP_REV_1_1;
-		mx51_rev_string = "1.1";
 		break;
 	case 0x10:
 		mx51_silicon_revision = IMX_CHIP_REV_2_0;
-		mx51_rev_string = "2.0";
 		break;
 	case 0x20:
 		mx51_silicon_revision = IMX_CHIP_REV_3_0;
-		mx51_rev_string = "3.0";
 		break;
 	default:
 		mx51_silicon_revision = 0;
 	}
 
-	return 0;
-}
-core_initcall(query_silicon_revision);
-
-static int imx51_print_silicon_rev(void)
-{
-	printf("detected i.MX51 rev %s\n", mx51_rev_string);
+	imx_set_silicon_revision("i.MX51", mx51_silicon_revision);
 
 	return 0;
 }
-device_initcall(imx51_print_silicon_rev);
 
 static int imx51_init(void)
 {
+	imx51_silicon_revision();
+	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
+
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
+	add_generic_device("imx-iomuxv3", 0, NULL, MX51_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx51-ccm", 0, NULL, MX51_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, MX51_GPT1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 0, NULL, MX51_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
@@ -104,73 +92,6 @@ postcore_initcall(imx51_init);
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-
-#define SRC_SBMR	0x4
-#define SBMR_BT_MEM_TYPE_SHIFT	7
-#define SBMR_BT_MEM_CTL_SHIFT	0
-#define SBMR_BMOD_SHIFT		14
-
-static int imx51_boot_save_loc(void)
-{
-	const char *bareboxloc = NULL;
-	uint32_t reg;
-	unsigned int ctrl, type;
-
-	/* [CTRL][TYPE] */
-	const char *const locations[4][4] = {
-		{ /* CTRL = WEIM */
-			"nor",
-			NULL,
-			"onenand",
-			NULL,
-		}, { /* CTRL == NAND */
-			"nand",
-			"nand",
-			"nand",
-			"nand",
-		}, { /* CTRL == reserved */
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-		}, { /* CTRL == expansion */
-			"mmc",
-			NULL,
-			"i2c",
-			"spi",
-		}
-	};
-
-	reg = readl(MX51_SRC_BASE_ADDR + SRC_SBMR);
-
-	switch ((reg >> SBMR_BMOD_SHIFT) & 0x3) {
-	case 0:
-	case 2:
-		/* internal boot */
-		ctrl = (reg >> SBMR_BT_MEM_CTL_SHIFT) & 0x3;
-		type = (reg >> SBMR_BT_MEM_TYPE_SHIFT) & 0x3;
-
-		bareboxloc = locations[ctrl][type];
-		break;
-	case 1:
-		/* reserved */
-		bareboxloc = "unknown";
-		break;
-	case 3:
-		bareboxloc = "serial";
-		break;
-
-	}
-
-	if (bareboxloc) {
-		setenv("barebox_loc", bareboxloc);
-		export("barebox_loc");
-	}
-
-	return 0;
-}
-
-coredevice_initcall(imx51_boot_save_loc);
 
 #define setup_pll_800(base)	imx5_setup_pll((base), 800,  (( 8 << 4) + ((1 - 1) << 0)), ( 3 - 1),  1)
 #define setup_pll_665(base)	imx5_setup_pll((base), 665,  (( 6 << 4) + ((1 - 1) << 0)), (96 - 1), 89)

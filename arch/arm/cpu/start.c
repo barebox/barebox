@@ -24,32 +24,19 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
+#include <memory.h>
 
-#ifdef CONFIG_PBL_IMAGE
 /*
  * First function in the uncompressed image. We get here from
  * the pbl.
  */
 void __naked __section(.text_entry) start(void)
 {
-	u32 r;
-
-	/* Setup the stack */
-	r = STACK_BASE + STACK_SIZE - 16;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
-
-	start_barebox();
-}
+#ifdef CONFIG_PBL_IMAGE
+	board_init_lowlevel_return();
 #else
-
-/*
- * First function in the image without pbl support
- */
-void __naked __section(.text_entry) start(void)
-{
 	barebox_arm_head();
+#endif
 }
 
 /*
@@ -70,25 +57,9 @@ void __naked __bare_init reset(void)
  */
 void __naked board_init_lowlevel_return(void)
 {
-	uint32_t r, offset;
-
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
 
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
+	setup_c();
 
-	/* relocate to link address if necessary */
-	if (offset)
-		memcpy((void *)_text, (void *)(_text - offset),
-				__bss_start - _text);
-
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
-
-	flush_icache();
-
-	/* call start_barebox with its absolute address */
-	r = (unsigned int)&start_barebox;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+	start_barebox();
 }
-#endif

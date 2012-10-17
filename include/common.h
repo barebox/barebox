@@ -256,4 +256,17 @@ static inline void barebox_banner(void) {}
 		(__x < 0) ? -__x : __x;         \
 	})
 
+/*
+ * Check if two regions overlap. returns true if they do, false otherwise
+ */
+static inline bool region_overlap(unsigned long starta, unsigned long lena,
+		unsigned long startb, unsigned long lenb)
+{
+	if (starta + lena <= startb)
+		return 0;
+	if (startb + lenb <= starta)
+		return 0;
+	return 1;
+}
+
 #endif	/* __COMMON_H_ */

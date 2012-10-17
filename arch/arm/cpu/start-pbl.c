@@ -174,7 +174,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
  */
 void __naked board_init_lowlevel_return(void)
 {
-	uint32_t r, offset;
+	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
 
 	/* Setup the stack */
@@ -187,43 +187,16 @@ void __naked board_init_lowlevel_return(void)
 	pg_end = (uint32_t)&input_data_end - offset;
 	pg_len = pg_end - pg_start;
 
-	if (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY))
-		goto copy_piggy_link;
+	if (offset && (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY) ||
+				region_overlap(pg_start, pg_len, TEXT_BASE, pg_len * 4))) {
+		/*
+		 * copy piggydata binary to its link address
+		 */
+		memcpy(&input_data, (void *)pg_start, pg_len);
+		pg_start = (uint32_t)&input_data;
+	}
 
-	/*
-	 * Check if the piggydata binary will be overwritten
-	 * by the uncompressed binary or by the pbl relocation
-	 */
-	if (!offset ||
-	    !((pg_start >= TEXT_BASE && pg_start < TEXT_BASE + pg_len * 4) ||
-	      ((uint32_t)_text >= pg_start && (uint32_t)_text <= pg_end)))
-		goto copy_link;
+	setup_c();
 
-copy_piggy_link:
-	/*
-	 * copy piggydata binary to its link address
-	 */
-	memcpy(&input_data, (void *)pg_start, pg_len);
-	pg_start = (uint32_t)&input_data;
-
-copy_link:
-	/* relocate to link address if necessary */
-	if (offset)
-		memcpy((void *)_text, (void *)(_text - offset),
-				__bss_start - _text);
-
-	/* clear bss */
-	memset(__bss_start, 0, __bss_stop - __bss_start);
-
-	flush_icache();
-
-	r = (unsigned int)&barebox_uncompress;
-	/* call barebox_uncompress with its absolute address */
-	__asm__ __volatile__(
-		"mov r0, %1\n"
-		"mov r1, %2\n"
-		"mov pc, %0\n"
-		:
-		: "r"(r), "r"(pg_start), "r"(pg_len)
-		: "r0", "r1");
+	barebox_uncompress((void *)pg_start, pg_len);
 }

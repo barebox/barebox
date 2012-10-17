@@ -50,14 +50,17 @@ static struct nomadik_nand_platform_data nhk8815_nand_data = {
 
 static struct resource nhk8815_nand_resources[] = {
 	{
+		.name	= "nand_addr",
 		.start	= NAND_IO_ADDR,
 		.end	= NAND_IO_ADDR + 0xfff,
 		.flags	= IORESOURCE_MEM,
 	}, {
+		.name	= "nand_cmd",
 		.start	= NAND_IO_CMD,
 		.end	= NAND_IO_CMD + 0xfff,
 		.flags	= IORESOURCE_MEM,
 	}, {
+		.name	= "nand_data",
 		.start	= NAND_IO_DATA,
 		.end	= NAND_IO_DATA + 0xfff,
 		.flags	= IORESOURCE_MEM,

@@ -20,6 +20,7 @@
 #include <mach/imx53-regs.h>
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
+#include <mach/generic.h>
 
 #define SI_REV 0x48
 
@@ -52,6 +53,7 @@ static int imx53_silicon_revision(void)
 static int imx53_init(void)
 {
 	imx53_silicon_revision();
+	imx53_boot_save_loc((void *)MX53_SRC_BASE_ADDR);
 
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
@@ -191,6 +193,8 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0xffffffff, ccm + MX5_CCM_CCGR6);
 	writel(0xffffffff, ccm + MX53_CCM_CCGR7);
 
-	clock_notifier_call_chain();
+	if (!IS_ENABLED(__PBL__))
+		clock_notifier_call_chain();
+
 	writel(0, ccm + MX5_CCM_CCDR);
 }

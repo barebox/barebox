@@ -28,6 +28,7 @@ static const char *bootsource_str[] = {
 	[bootsource_spi] = "spi",
 	[bootsource_serial] = "serial",
 	[bootsource_onenand] = "onenand",
+	[bootsource_hd] = "harddisk",
 };
 
 static enum imx_bootsource bootsource;
@@ -178,6 +179,40 @@ int imx51_boot_save_loc(void __iomem *src_base)
 		break;
 
 	}
+
+	imx_set_bootsource(src);
+
+	return 0;
+}
+
+#define IMX53_SRC_SBMR	0x4
+int imx53_boot_save_loc(void __iomem *src_base)
+{
+	enum imx_bootsource src = bootsource_unknown;
+	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR) & 0xff;
+
+	switch (cfg1 >> 4) {
+	case 2:
+		src = bootsource_hd;
+		break;
+	case 3:
+		if (cfg1 & (1 << 3))
+			src = bootsource_spi;
+		else
+			src = bootsource_i2c;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		src = bootsource_mmc;
+		break;
+	default:
+		break;
+	}
+
+	if (cfg1 & (1 << 7))
+		src = bootsource_nand;
 
 	imx_set_bootsource(src);
 

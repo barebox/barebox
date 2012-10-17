@@ -99,7 +99,10 @@ static iomux_v3_cfg_t tx53_pads[] = {
 
 static int tx53_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	if (IS_ENABLED(CONFIG_TX53_REV_1011))
+		arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	else
+		arm_add_mem_device("ram0", 0x70000000, SZ_512M);
 
 	return 0;
 }
@@ -221,8 +224,25 @@ device_initcall(tx53_devices_init);
 
 static int tx53_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+	const char *envdev;
+
+	switch (imx_bootsource()) {
+	case bootsource_mmc:
+		devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+		envdev = "MMC";
+		break;
+	case bootsource_nand:
+	default:
+		devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", 0x80000, 0x100000, DEVFS_PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		envdev = "NAND";
+		break;
+	}
+
+	printf("Using environment in %s\n", envdev);
 
 	return 0;
 }
@@ -232,7 +252,8 @@ static int tx53_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(tx53_pads, ARRAY_SIZE(tx53_pads));
 
-	imx53_init_lowlevel(1000);
+	if (!IS_ENABLED(CONFIG_TX53_REV_XX30))
+		imx53_init_lowlevel(1000);
 
 	imx53_add_uart0();
 	return 0;

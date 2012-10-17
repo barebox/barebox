@@ -252,6 +252,52 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_get_mem_region);
 
+struct resource *dev_get_resource_by_name(struct device_d *dev,
+					  const char *name)
+{
+	int i;
+
+	for (i = 0; i < dev->num_resources; i++) {
+		struct resource *res = &dev->resource[i];
+		if (resource_type(res) != IORESOURCE_MEM)
+			continue;
+		if (!res->name)
+			continue;
+		if (!strcmp(name, res->name))
+			return res;
+	}
+
+	return NULL;
+}
+
+void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
+{
+	struct resource *res;
+
+	res = dev_get_resource_by_name(dev, name);
+	if (!res)
+		return NULL;
+
+	return (void __force *)res->start;
+}
+EXPORT_SYMBOL(dev_get_mem_region_by_name);
+
+void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
+{
+	struct resource *res;
+
+	res = dev_get_resource_by_name(dev, name);
+	if (!res)
+		return NULL;
+
+	res = request_iomem_region(dev_name(dev), res->start, res->end);
+	if (!res)
+		return NULL;
+
+	return (void __force __iomem *)res->start;
+}
+EXPORT_SYMBOL(dev_request_mem_region_by_name);
+
 void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;

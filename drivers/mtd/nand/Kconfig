@@ -70,6 +70,14 @@ config NAND_ATMEL
 	prompt "Atmel (AT91SAM9xxx) NAND driver"
 	depends on ARCH_AT91
 
+config NAND_ATMEL_PMECC
+	bool
+	prompt "PMECC support"
+	depends on NAND_ATMEL
+	select NAND_ECC_HW
+	help
+	 Support for PMECC present on the SoC sam9x5 and sam9n12
+
 config NAND_S3C24XX
 	bool
 	prompt "Samsung S3C24XX NAND driver"

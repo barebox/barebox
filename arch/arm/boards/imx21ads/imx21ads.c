@@ -193,7 +193,6 @@ console_initcall(mx21ads_console_init);
 #ifdef CONFIG_NAND_IMX_BOOT
 void __bare_init nand_boot(void)
 {
-	PCCR0 |= PCCR0_NFC_EN;
 	imx_nand_load_image(_text, barebox_image_size);
 	board_init_lowlevel_return();
 }

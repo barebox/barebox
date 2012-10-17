@@ -1107,12 +1107,6 @@ static int __init imxnd_probe(struct device_d *dev)
 	struct nand_ecclayout *oob_smallpage, *oob_largepage, *oob_4kpage;
 	int err = 0;
 
-#ifdef CONFIG_ARCH_IMX27
-	PCCR1 |= PCCR1_NFC_BAUDEN;
-#endif
-#ifdef CONFIG_ARCH_IMX21
-	PCCR0 |= PCCR0_NFC_EN;
-#endif
 	/* Allocate memory for MTD device structure and private data */
 	host = kzalloc(sizeof(struct imx_nand_host) + NAND_MAX_PAGESIZE +
 			NAND_MAX_OOBSIZE, GFP_KERNEL);

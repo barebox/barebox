@@ -634,9 +634,6 @@ static int fec_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 |= PCCR0_FEC_EN;
-#endif
 	fec = xzalloc(sizeof(*fec));
 	fec->type = type;
 	edev = &fec->edev;

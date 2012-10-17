@@ -250,18 +250,3 @@ void __bare_init nand_boot(void)
 	imx_nand_load_image(_text, barebox_image_size);
 }
 #endif
-
-static int eukrea_cpuimx25_core_init(void) {
-	/* enable UART1, FEC, SDHC, USB & I2C clock */
-	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR0) | (1 << 6) | (1 << 23)
-		| (1 << 15) | (1 << 21) | (1 << 3) | (1 << 28),
-		MX25_CCM_BASE_ADDR + CCM_CGCR0);
-	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR1) | (1 << 23) | (1 << 15)
-		| (1 << 13), MX25_CCM_BASE_ADDR + CCM_CGCR1);
-	writel(readl(MX25_CCM_BASE_ADDR + CCM_CGCR2) | (1 << 14),
-		MX25_CCM_BASE_ADDR + CCM_CGCR2);
-
-	return 0;
-}
-
-core_initcall(eukrea_cpuimx25_core_init);

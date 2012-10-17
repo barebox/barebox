@@ -162,7 +162,6 @@ static void pcm970_mmc_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	PCCR0 |= PCCR0_SDHC2_EN;
 	imx27_add_mmc1(NULL);
 }
 

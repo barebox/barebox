@@ -279,8 +279,6 @@ static int pca100_devices_init(void)
 		PD18_PF_I2C_CLK,
 	};
 
-	PCCR0 |= PCCR0_SDHC2_EN;
-
 	pca100_usb_init();
 
 	/* initizalize gpios */
@@ -291,8 +289,6 @@ static int pca100_devices_init(void)
 	imx27_add_fec(&fec_info);
 	imx27_add_mmc1(NULL);
 	imx27_add_fb(&pca100_fb_data);
-
-	PCCR1 |= PCCR1_PERCLK2_EN;
 
 #ifdef CONFIG_USB
 	pca100_usb_register();

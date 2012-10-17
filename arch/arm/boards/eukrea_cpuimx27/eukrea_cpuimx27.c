@@ -194,7 +194,6 @@ static int eukrea_cpuimx27_devices_init(void)
 #endif
 	imx27_add_nand(&nand_info);
 
-	PCCR0 |= PCCR0_I2C1_EN;
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx27_add_i2c0(NULL);
 

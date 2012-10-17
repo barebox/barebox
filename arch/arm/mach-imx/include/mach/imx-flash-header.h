@@ -120,7 +120,9 @@ struct imx_dcd_command {
 
 struct imx_dcd {
 	struct imx_ivt_header header;
+#ifndef IMX_INTERNAL_NAND_BBU
 	struct imx_dcd_command command;
+#endif
 };
 
 struct imx_boot_data {

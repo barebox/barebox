@@ -76,3 +76,4 @@ obj-$(CONFIG_CMD_READLINK)	+= readlink.o
 obj-$(CONFIG_CMD_LN)		+= ln.o
 obj-$(CONFIG_CMD_CLK)		+= clk.o
 obj-$(CONFIG_CMD_TFTP)		+= tftp.o
+obj-$(CONFIG_CMD_BAREBOX_UPDATE)+= barebox-update.o

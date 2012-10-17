@@ -21,7 +21,7 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <asm/barebox-arm.h>
@@ -108,7 +108,7 @@ static int tx25_devices_init(void)
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);

@@ -26,7 +26,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
-#include <mach/imx-regs.h>
 #include <io.h>
 #include <errno.h>
 

@@ -22,35 +22,35 @@
 /* define the PLL setting we want to run the system  */
 
 /* main clock divider settings immediately after reset (at 1.25 V core supply) */
-#define CSCR_VAL (CSCR_USB_DIV(3) |	\
-		CSCR_SD_CNT(3) |	\
-		CSCR_MSHC_SEL |		\
-		CSCR_H264_SEL |		\
-		CSCR_SSI1_SEL |		\
-		CSCR_SSI2_SEL |		\
-		CSCR_SP_SEL | /* 26 MHz reference */ \
-		CSCR_MCU_SEL | /* 26 MHz reference */ \
-		CSCR_ARM_DIV(0) | /* CPU runs at MPLL/3 clock */ \
-		CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
-		CSCR_FPM_EN | \
-		CSCR_SPEN |		\
-		CSCR_MPEN)
+#define CSCR_VAL (MX27_CSCR_USB_DIV(3) |	\
+		MX27_CSCR_SD_CNT(3) |	\
+		MX27_CSCR_MSHC_SEL |		\
+		MX27_CSCR_H264_SEL |		\
+		MX27_CSCR_SSI1_SEL |		\
+		MX27_CSCR_SSI2_SEL |		\
+		MX27_CSCR_SP_SEL | /* 26 MHz reference */ \
+		MX27_CSCR_MCU_SEL | /* 26 MHz reference */ \
+		MX27_CSCR_ARM_DIV(0) | /* CPU runs at MPLL/3 clock */ \
+		MX27_CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
+		MX27_CSCR_FPM_EN | \
+		MX27_CSCR_SPEN |		\
+		MX27_CSCR_MPEN)
 
 /* main clock divider settings after core voltage increases to 1.45 V */
-#define CSCR_VAL_FINAL (CSCR_USB_DIV(3) |	\
-		CSCR_SD_CNT(3) |	\
-		CSCR_MSHC_SEL |		\
-		CSCR_H264_SEL |		\
-		CSCR_SSI1_SEL |		\
-		CSCR_SSI2_SEL |		\
-		CSCR_SP_SEL | /* 26 MHz reference */ \
-		CSCR_MCU_SEL | /* 26 MHz reference */ \
-		CSCR_ARM_SRC_MPLL | /* use main MPLL clock */ \
-		CSCR_ARM_DIV(0) | /* CPU run at full MPLL clock */ \
-		CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
-		CSCR_FPM_EN | /* do not disable it! */ \
-		CSCR_SPEN |		\
-		CSCR_MPEN)
+#define CSCR_VAL_FINAL (MX27_CSCR_USB_DIV(3) |	\
+		MX27_CSCR_SD_CNT(3) |	\
+		MX27_CSCR_MSHC_SEL |		\
+		MX27_CSCR_H264_SEL |		\
+		MX27_CSCR_SSI1_SEL |		\
+		MX27_CSCR_SSI2_SEL |		\
+		MX27_CSCR_SP_SEL | /* 26 MHz reference */ \
+		MX27_CSCR_MCU_SEL | /* 26 MHz reference */ \
+		MX27_CSCR_ARM_SRC_MPLL | /* use main MPLL clock */ \
+		MX27_CSCR_ARM_DIV(0) | /* CPU run at full MPLL clock */ \
+		MX27_CSCR_AHB_DIV(1) | /* AHB runs at MPLL/6 clock */ \
+		MX27_CSCR_FPM_EN | /* do not disable it! */ \
+		MX27_CSCR_SPEN |		\
+		MX27_CSCR_MPEN)
 
 /* MPLL should provide a 399 MHz clock from the 26 MHz reference */
 #define MPCTL0_VAL (IMX_PLL_PD(0) |	\

@@ -17,7 +17,7 @@
  *
  */
 
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>
@@ -98,27 +98,27 @@ reset:
 	ldr	r0, CCM_BASE_ADDR_W
 
 	ldr	r2, CCM_CCMR_W
-	str	r2, [r0, #CCM_CCMR]
+	str	r2, [r0, #MX35_CCM_CCMR]
 
 	ldr	r3, MPCTL_PARAM_532_W		/* consumer path*/
 
 	/* Set MPLL, arm clock and ahb clock */
-	str	r3, [r0, #CCM_MPCTL]
+	str	r3, [r0, #MX35_CCM_MPCTL]
 
 	ldr	r1, PPCTL_PARAM_W
-	str	r1, [r0, #CCM_PPCTL]
+	str	r1, [r0, #MX35_CCM_PPCTL]
 
 	ldr	r1, CCM_PDR0_W
-	str	r1, [r0, #CCM_PDR0]
+	str	r1, [r0, #MX35_CCM_PDR0]
 
-	ldr	r1, [r0, #CCM_CGR0]
+	ldr	r1, [r0, #MX35_CCM_CGR0]
 	orr	r1, r1, #0x00300000
-	str	r1, [r0, #CCM_CGR0]
+	str	r1, [r0, #MX35_CCM_CGR0]
 
-	ldr	r1, [r0, #CCM_CGR1]
+	ldr	r1, [r0, #MX35_CCM_CGR1]
 	orr	r1, r1, #0x00000C00
 	orr	r1, r1, #0x00000003
-	str	r1, [r0, #CCM_CGR1]
+	str	r1, [r0, #MX35_CCM_CGR1]
 
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #CSD0_BASE_ADDR
@@ -140,13 +140,13 @@ reset:
 	/* setup bank 0 */
 	mov	r5, #0x00
 	mov	r2, #0x00
-	mov	r1, #CSD0_BASE_ADDR
+	mov	r1, #MX35_CSD0_BASE_ADDR
 	bl	setup_sdram_bank
 
 	/* setup bank 1 */
 	mov	r5, #0x00
 	mov	r2, #0x00
-	mov	r1, #CSD1_BASE_ADDR
+	mov	r1, #MX35_CSD1_BASE_ADDR
 	bl	setup_sdram_bank
 
 	mov	lr, fp

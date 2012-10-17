@@ -23,7 +23,7 @@
  */
 #include <common.h>
 #include <mach/imx-flash-header.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <asm/barebox-arm-head.h>
 
 void __naked __flash_header_start go(void)

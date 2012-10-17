@@ -18,7 +18,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <fec.h>
 #include <notifier.h>
 #include <mach/gpio.h>
@@ -112,8 +112,8 @@ static inline uint32_t get_pll_spctl10(void)
 {
 	uint32_t reg;
 
-	reg = SPCTL0;
-	SPCTL0 = reg;
+	reg = readl(MX27_CCM_BASE_ADDR + MX27_SPCTL0);
+	writel(reg, MX27_CCM_BASE_ADDR + MX27_SPCTL0);
 
 	return reg;
 }
@@ -127,7 +127,8 @@ static int pcm038_power_init(void)
 	struct mc13xxx *mc13xxx = mc13xxx_get();
 
 	/* PLL registers already set to their final values? */
-	if (spctl0 == SPCTL0_VAL && MPCTL0 == MPCTL0_VAL) {
+	if (spctl0 == SPCTL0_VAL &&
+	    readl(MX27_CCM_BASE_ADDR + MX27_MPCTL0) == MPCTL0_VAL) {
 		console_flush();
 		if (mc13xxx) {
 			mc13xxx_reg_write(mc13xxx, MC13783_REG_SWITCHERS(0),
@@ -162,9 +163,9 @@ static int pcm038_power_init(void)
 
 			/* wait for required power level to run the CPU at 400 MHz */
 			udelay(100000);
-			CSCR = CSCR_VAL_FINAL;
-			PCDR0 = 0x130410c3;
-			PCDR1 = 0x09030911;
+			writel(CSCR_VAL_FINAL, MX27_CCM_BASE_ADDR + MX27_CSCR);
+			writel(0x130410c3, MX27_CCM_BASE_ADDR + MX27_PCDR0);
+			writel(0x09030911, MX27_CCM_BASE_ADDR + MX27_PCDR1);
 
 			/* Clocks have changed. Notify clients */
 			clock_notifier_call_chain();
@@ -174,7 +175,7 @@ static int pcm038_power_init(void)
 	}
 
 	/* clock gating enable */
-	GPCR = 0x00050f08;
+	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
 
 	return 0;
 }

@@ -59,31 +59,25 @@
 #define MX1_AVIC_BASE_ADDR		(0x23000 + MX1_IO_BASE_ADDR)
 #define MX1_CSI_BASE_ADDR		(0x24000 + MX1_IO_BASE_ADDR)
 
-/* FIXME: get rid of these */
-#define IMX_TIM1_BASE	MX1_CCM_BASE_ADDR
-#define IMX_WDT_BASE	MX1_WDT_BASE_ADDR
-#define IMX_GPIO_BASE	MX1_GPIO_BASE_ADDR
+/* SYSCTRL Registers (base MX1_SCM_BASE_ADDR) */
+#define MX1_SIDR   0x4 /* Silicon ID Register		    */
+#define MX1_FMCR   0x8 /* Function Multiplex Control Register */
+#define MX1_GPCR   0xC /* Function Multiplex Control Register */
 
-/* SYSCTRL Registers */
-#define SIDR   __REG(MX1_SCM_BASE_ADDR + 0x4) /* Silicon ID Register		    */
-#define FMCR   __REG(MX1_SCM_BASE_ADDR + 0x8) /* Function Multiplex Control Register */
-#define GPCR   __REG(MX1_SCM_BASE_ADDR + 0xC) /* Function Multiplex Control Register */
+/* SDRAM controller registers (base MX1_SDRAMC_BASE_ADDR) */
+#define MX1_SDCTL0 0x0	/* SDRAM 0 Control Register */
+#define MX1_SDCTL1 0x4	/* SDRAM 1 Control Register */
+#define MX1_SDMISC 0x14	/* Miscellaneous Register */
+#define MX1_SDRST  0x18	/* SDRAM Reset Register */
 
-/* SDRAM controller registers */
+/* PLL registers (base MX1_CCM_BASE_ADDR) */
+#define MX1_CSCR   0x0	/* Clock Source Control Register */
+#define MX1_MPCTL0 0x4	/* MCU PLL Control Register 0 */
+#define MX1_MPCTL1 0x8	/* MCU PLL and System Clock Register 1 */
+#define MX1_SPCTL0 0xc	/* System PLL Control Register 0 */
+#define MX1_SPCTL1 0x10	/* System PLL Control Register 1 */
+#define MX1_PCDR   0x20	/* Peripheral Clock Divider Register */
 
-#define SDCTL0 __REG(MX1_SDRAMC_BASE_ADDR)        /* SDRAM 0 Control Register */
-#define SDCTL1 __REG(MX1_SDRAMC_BASE_ADDR + 0x4)  /* SDRAM 1 Control Register */
-#define SDMISC __REG(MX1_SDRAMC_BASE_ADDR + 0x14) /* Miscellaneous Register */
-#define SDRST  __REG(MX1_SDRAMC_BASE_ADDR + 0x18) /* SDRAM Reset Register */
-
-/* PLL registers */
-#define CSCR   __REG(MX1_CCM_BASE_ADDR)        /* Clock Source Control Register */
-#define MPCTL0 __REG(MX1_CCM_BASE_ADDR + 0x4)  /* MCU PLL Control Register 0 */
-#define MPCTL1 __REG(MX1_CCM_BASE_ADDR + 0x8)  /* MCU PLL and System Clock Register 1 */
-#define SPCTL0 __REG(MX1_CCM_BASE_ADDR + 0xc)  /* System PLL Control Register 0 */
-#define SPCTL1 __REG(MX1_CCM_BASE_ADDR + 0x10) /* System PLL Control Register 1 */
-#define PCDR   __REG(MX1_CCM_BASE_ADDR + 0x20) /* Peripheral Clock Divider Register */
-
-#define CSCR_MPLL_RESTART (1<<21)
+#define MX1_CSCR_MPLL_RESTART (1<<21)
 
 #endif /* _IMX1_REGS_H */

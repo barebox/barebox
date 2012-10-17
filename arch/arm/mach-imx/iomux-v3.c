@@ -18,7 +18,6 @@
 #include <init.h>
 #include <io.h>
 #include <mach/iomux-v3.h>
-#include <mach/imx-regs.h>
 
 static void __iomem *base;
 

@@ -86,7 +86,7 @@
 #define MX27_X_MEMC_BASE_ADDR		0xd8000000
 #define MX27_X_MEMC_SIZE		SZ_1M
 #define MX27_NFC_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR)
-#define MX27_SDRAMC_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x1000)
+#define MX27_ESDCTL_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x1000)
 #define MX27_WEIM_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x2000)
 #define MX27_M3IF_BASE_ADDR		(MX27_X_MEMC_BASE_ADDR + 0x3000)
 #define MX27_PCMCIA_CTL_BASE_ADDR	(MX27_X_MEMC_BASE_ADDR + 0x4000)
@@ -101,171 +101,65 @@
 /* IRAM */
 #define MX27_IRAM_BASE_ADDR		0xffff4c00	/* internal ram */
 
-/* FIXME: get rid of these */
-#define IMX_GPIO_BASE		MX27_GPIO_BASE_ADDR
-#define IMX_NFC_BASE		MX27_NFC_BASE_ADDR
-#define IMX_WDT_BASE		MX27_WDOG_BASE_ADDR
-#define IMX_ESD_BASE		MX27_SDRAMC_BASE_ADDR
+/* PCMCIA (base: MX27_PCMCIA_CTL_BASE_ADDR) */
+#define MX27_PCMCIA_PIPR	0x00
+#define MX27_PCMCIA_PSCR	0x04
+#define MX27_PCMCIA_PER		0x08
+#define MX27_PCMCIA_PBR(x)	(0x0c + ((x) << 2))
+#define MX27_PCMCIA_POR(x)	(0x28 + ((x) << 2))
+#define MX27_PCMCIA_POFR(x)	(0x44 + ((x) << 2))
+#define MX27_PCMCIA_PGCR	0x60
+#define MX27_PCMCIA_PGSR	0x64
 
-#define PCMCIA_PIPR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x00)
-#define PCMCIA_PSCR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x04)
-#define PCMCIA_PER		(MX27_PCMCIA_CTL_BASE_ADDR + 0x08)
-#define PCMCIA_PBR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x0c + ((x) << 2))
-#define PCMCIA_POR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x28 + ((x) << 2))
-#define PCMCIA_POFR(x)		(MX27_PCMCIA_CTL_BASE_ADDR + 0x44 + ((x) << 2))
-#define PCMCIA_PGCR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x60)
-#define PCMCIA_PGSR		(MX27_PCMCIA_CTL_BASE_ADDR + 0x64)
+/* AIPI (base: MX27_AIPI_BASE_ADDR) */
+#define MX27_AIPI1_PSR0	0x00
+#define MX27_AIPI1_PSR1	0x04
+#define MX27_AIPI2_PSR0	(0x20000 + 0x00)
+#define MX27_AIPI2_PSR1	(0x20000 + 0x04)
 
-/* AIPI */
-#define AIPI1_PSR0	__REG(MX27_AIPI_BASE_ADDR + 0x00)
-#define AIPI1_PSR1	__REG(MX27_AIPI_BASE_ADDR + 0x04)
-#define AIPI2_PSR0	__REG(MX27_AIPI_BASE_ADDR + 0x20000 + 0x00)
-#define AIPI2_PSR1	__REG(MX27_AIPI_BASE_ADDR + 0x20000 + 0x04)
-
-/* System Control */
-#define CID     __REG(MX27_SYSCTRL_BASE_ADDR + 0x0)		/* Chip ID Register */
-#define FMCR    __REG(MX27_SYSCTRL_BASE_ADDR + 0x14)		/* Function Multeplexing Control Register */
-#define GPCR	__REG(MX27_SYSCTRL_BASE_ADDR + 0x18)		/* Global Peripheral Control Register */
-#define WBCR	__REG(MX27_SYSCTRL_BASE_ADDR + 0x1C)		/* Well Bias Control Register */
-#define DSCR(x)	__REG(MX27_SYSCTRL_BASE_ADDR + 0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
+/* System Control (base: MX27_SYSCTRL_BASE_ADDR) */
+#define MX27_CID	0x0	/* Chip ID Register */
+#define MX27_FMCR	0x14	/* Function Multeplexing Control Register */
+#define MX27_GPCR	0x18	/* Global Peripheral Control Register */
+#define MX27_WBCR	0x1C	/* Well Bias Control Register */
+#define MX27_DSCR(x)	(0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
 
 #include "esdctl.h"
 
-/* PLL registers */
-#define CSCR		__REG(MX27_CCM_BASE_ADDR + 0x00) /* Clock Source Control Register       */
-#define MPCTL0		__REG(MX27_CCM_BASE_ADDR + 0x04) /* MCU PLL Control Register 0          */
-#define MPCTL1		__REG(MX27_CCM_BASE_ADDR + 0x08) /* MCU PLL Control Register 1          */
-#define SPCTL0		__REG(MX27_CCM_BASE_ADDR + 0x0c) /* System PLL Control Register 0       */
-#define SPCTL1		__REG(MX27_CCM_BASE_ADDR + 0x10) /* System PLL Control Register 1       */
-#define OSC26MCTL	__REG(MX27_CCM_BASE_ADDR + 0x14) /* Oscillator 26M Register             */
-#define PCDR0		__REG(MX27_CCM_BASE_ADDR + 0x18) /* Peripheral Clock Divider Register 0 */
-#define PCDR1		__REG(MX27_CCM_BASE_ADDR + 0x1c) /* Peripheral Clock Divider Register 1 */
-#define PCCR0		__REG(MX27_CCM_BASE_ADDR + 0x20) /* Peripheral Clock Control Register 0 */
-#define PCCR1		__REG(MX27_CCM_BASE_ADDR + 0x24) /* Peripheral Clock Control Register 1 */
-#define CCSR		__REG(MX27_CCM_BASE_ADDR + 0x28) /* Clock Control Status Register       */
+/* PLL registers (base: MX27_CCM_BASE_ADDR) */
+#define MX27_CSCR	0x00 /* Clock Source Control Register       */
+#define MX27_MPCTL0	0x04 /* MCU PLL Control Register 0          */
+#define MX27_MPCTL1	0x08 /* MCU PLL Control Register 1          */
+#define MX27_SPCTL0	0x0c /* System PLL Control Register 0       */
+#define MX27_SPCTL1	0x10 /* System PLL Control Register 1       */
+#define MX27_OSC26MCTL	0x14 /* Oscillator 26M Register             */
+#define MX27_PCDR0	0x18 /* Peripheral Clock Divider Register 0 */
+#define MX27_PCDR1	0x1c /* Peripheral Clock Divider Register 1 */
+#define MX27_PCCR0	0x20 /* Peripheral Clock Control Register 0 */
+#define MX27_PCCR1	0x24 /* Peripheral Clock Control Register 1 */
+#define MX27_CCSR	0x28 /* Clock Control Status Register       */
 
-#define CSCR_MPEN		(1 << 0)
-#define CSCR_SPEN		(1 << 1)
-#define CSCR_FPM_EN		(1 << 2)
-#define CSCR_OSC26M_DIS		(1 << 3)
-#define CSCR_OSC26M_DIV1P5	(1 << 4)
-#define CSCR_AHB_DIV(d)		(((d) & 0x3) << 8)
-#define CSCR_ARM_DIV(d)		(((d) & 0x3) << 12)
-#define CSCR_ARM_SRC_MPLL	(1 << 15)
-#define CSCR_MCU_SEL		(1 << 16)
-#define CSCR_SP_SEL		(1 << 17)
-#define CSCR_MPLL_RESTART	(1 << 18)
-#define CSCR_SPLL_RESTART	(1 << 19)
-#define CSCR_MSHC_SEL		(1 << 20)
-#define CSCR_H264_SEL		(1 << 21)
-#define CSCR_SSI1_SEL		(1 << 22)
-#define CSCR_SSI2_SEL		(1 << 23)
-#define CSCR_SD_CNT(d)		(((d) & 0x3) << 24)
-#define CSCR_USB_DIV(d)		(((d) & 0x7) << 28)
-#define CSCR_UPDATE_DIS		(1 << 31)
+#define MX27_CSCR_MPEN		(1 << 0)
+#define MX27_CSCR_SPEN		(1 << 1)
+#define MX27_CSCR_FPM_EN	(1 << 2)
+#define MX27_CSCR_OSC26M_DIS	(1 << 3)
+#define MX27_CSCR_OSC26M_DIV1P5	(1 << 4)
+#define MX27_CSCR_AHB_DIV(d)	(((d) & 0x3) << 8)
+#define MX27_CSCR_ARM_DIV(d)	(((d) & 0x3) << 12)
+#define MX27_CSCR_ARM_SRC_MPLL	(1 << 15)
+#define MX27_CSCR_MCU_SEL	(1 << 16)
+#define MX27_CSCR_SP_SEL	(1 << 17)
+#define MX27_CSCR_MPLL_RESTART	(1 << 18)
+#define MX27_CSCR_SPLL_RESTART	(1 << 19)
+#define MX27_CSCR_MSHC_SEL	(1 << 20)
+#define MX27_CSCR_H264_SEL	(1 << 21)
+#define MX27_CSCR_SSI1_SEL	(1 << 22)
+#define MX27_CSCR_SSI2_SEL	(1 << 23)
+#define MX27_CSCR_SD_CNT(d)	(((d) & 0x3) << 24)
+#define MX27_CSCR_USB_DIV(d)	(((d) & 0x7) << 28)
+#define MX27_CSCR_UPDATE_DIS	(1 << 31)
 
-#define MPCTL1_BRMO		(1 << 6)
-#define MPCTL1_LF		(1 << 15)
-
-#define PCCR0_SSI2_EN	(1 << 0)
-#define PCCR0_SSI1_EN	(1 << 1)
-#define PCCR0_SLCDC_EN	(1 << 2)
-#define PCCR0_SDHC3_EN	(1 << 3)
-#define PCCR0_SDHC2_EN	(1 << 4)
-#define PCCR0_SDHC1_EN	(1 << 5)
-#define PCCR0_SDC_EN	(1 << 6)
-#define PCCR0_SAHARA_EN	(1 << 7)
-#define PCCR0_RTIC_EN	(1 << 8)
-#define PCCR0_RTC_EN	(1 << 9)
-#define PCCR0_PWM_EN	(1 << 11)
-#define PCCR0_OWIRE_EN	(1 << 12)
-#define PCCR0_MSHC_EN	(1 << 13)
-#define PCCR0_LCDC_EN	(1 << 14)
-#define PCCR0_KPP_EN	(1 << 15)
-#define PCCR0_IIM_EN	(1 << 16)
-#define PCCR0_I2C2_EN	(1 << 17)
-#define PCCR0_I2C1_EN	(1 << 18)
-#define PCCR0_GPT6_EN	(1 << 19)
-#define PCCR0_GPT5_EN	(1 << 20)
-#define PCCR0_GPT4_EN	(1 << 21)
-#define PCCR0_GPT3_EN	(1 << 22)
-#define PCCR0_GPT2_EN	(1 << 23)
-#define PCCR0_GPT1_EN	(1 << 24)
-#define PCCR0_GPIO_EN	(1 << 25)
-#define PCCR0_FEC_EN	(1 << 26)
-#define PCCR0_EMMA_EN	(1 << 27)
-#define PCCR0_DMA_EN	(1 << 28)
-#define PCCR0_CSPI3_EN	(1 << 29)
-#define PCCR0_CSPI2_EN	(1 << 30)
-#define PCCR0_CSPI1_EN	(1 << 31)
-
-#define PCCR1_MSHC_BAUDEN	(1 << 2)
-#define PCCR1_NFC_BAUDEN	(1 << 3)
-#define PCCR1_SSI2_BAUDEN	(1 << 4)
-#define PCCR1_SSI1_BAUDEN	(1 << 5)
-#define PCCR1_H264_BAUDEN	(1 << 6)
-#define PCCR1_PERCLK4_EN	(1 << 7)
-#define PCCR1_PERCLK3_EN	(1 << 8)
-#define PCCR1_PERCLK2_EN	(1 << 9)
-#define PCCR1_PERCLK1_EN	(1 << 10)
-#define PCCR1_HCLK_USB		(1 << 11)
-#define PCCR1_HCLK_SLCDC	(1 << 12)
-#define PCCR1_HCLK_SAHARA	(1 << 13)
-#define PCCR1_HCLK_RTIC		(1 << 14)
-#define PCCR1_HCLK_LCDC		(1 << 15)
-#define PCCR1_HCLK_H264		(1 << 16)
-#define PCCR1_HCLK_FEC		(1 << 17)
-#define PCCR1_HCLK_EMMA		(1 << 18)
-#define PCCR1_HCLK_EMI		(1 << 19)
-#define PCCR1_HCLK_DMA		(1 << 20)
-#define PCCR1_HCLK_CSI		(1 << 21)
-#define PCCR1_HCLK_BROM		(1 << 22)
-#define PCCR1_HCLK_ATA		(1 << 23)
-#define PCCR1_WDT_EN		(1 << 24)
-#define PCCR1_USB_EN		(1 << 25)
-#define PCCR1_UART6_EN		(1 << 26)
-#define PCCR1_UART5_EN		(1 << 27)
-#define PCCR1_UART4_EN		(1 << 28)
-#define PCCR1_UART3_EN		(1 << 29)
-#define PCCR1_UART2_EN		(1 << 30)
-#define PCCR1_UART1_EN		(1 << 31)
-
-#define CCSR_32K_SR		(1 << 15)
-
-/* SDRAM Controller registers bitfields */
-#define ESDCTL_PRCT(x)		(((x) & 3f) << 0)
-#define ESDCTL_BL		(1 << 7)
-#define ESDCTL_FP		(1 << 8)
-#define ESDCTL_PWDT(x)		(((x) & 3) << 10)
-#define ESDCTL_SREFR(x)		(((x) & 7) << 13)
-#define ESDCTL_DSIZ_16_UPPER	(0 << 16)
-#define ESDCTL_DSIZ_16_LOWER	(0 << 16)
-#define ESDCTL_DSIZ_32		(0 << 16)
-#define ESDCTL_COL8		(0 << 20)
-#define ESDCTL_COL9		(1 << 20)
-#define ESDCTL_COL10		(2 << 20)
-#define ESDCTL_ROW11		(0 << 24)
-#define ESDCTL_ROW12		(1 << 24)
-#define ESDCTL_ROW13		(2 << 24)
-#define ESDCTL_ROW14		(3 << 24)
-#define ESDCTL_ROW15		(4 << 24)
-#define ESDCTL_SP		(1 << 27)
-#define ESDCTL_SMODE_NORMAL	(0 << 28)
-#define ESDCTL_SMODE_PRECHAGRE	(1 << 28)
-#define ESDCTL_SMODE_AUTO_REF	(2 << 28)
-#define ESDCTL_SMODE_LOAD_MODE	(3 << 28)
-#define ESDCTL_SMODE_MAN_REF	(4 << 28)
-#define ESDCTL_SDE		(1 << 31)
-
-#define ESDCFG_TRC(x)		(((x) & 0xf) << 0)
-#define ESDCFG_TRCD(x)		(((x) & 0x7) << 4)
-#define ESDCFG_TCAS(x)		(((x) & 0x3) << 8)
-#define ESDCFG_TRRD(x)		(((x) & 0x3) << 10)
-#define ESDCFG_TRAS(x)		(((x) & 0x7) << 12)
-#define ESDCFG_TWR		(1 << 15)
-#define ESDCFG_TMRD(x)		(((x) & 0x3) << 16)
-#define ESDCFG_TRP(x)		(((x) & 0x3) << 18)
-#define ESDCFG_TWTR		(1 << 20)
-#define ESDCFG_TXP(x)		(((x) & 0x3) << 21)
+#define MX27_MPCTL1_BRMO	(1 << 6)
+#define MX27_MPCTL1_LF		(1 << 15)
 
 #endif /* _IMX27_REGS_H */

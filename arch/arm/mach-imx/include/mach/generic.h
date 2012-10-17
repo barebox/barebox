@@ -19,6 +19,10 @@ int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type);
 void imx_27_boot_save_loc(void __iomem *sysctrl_base);
 int imx51_boot_save_loc(void __iomem *src_base);
 
+/* There's a off-by-one betweem the gpio bank number and the gpiochip */
+/* range e.g. GPIO_1_5 is gpio 5 under linux */
+#define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
+
 #ifdef CONFIG_ARCH_IMX1
 #define cpu_is_mx1()	(1)
 #else

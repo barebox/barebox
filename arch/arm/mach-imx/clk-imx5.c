@@ -13,7 +13,8 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
+#include <mach/imx51-regs.h>
+#include <mach/imx53-regs.h>
 
 #include "clk.h"
 

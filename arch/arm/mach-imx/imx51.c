@@ -17,7 +17,7 @@
 #include <environment.h>
 #include <io.h>
 #include <mach/imx5.h>
-#include <mach/imx-regs.h>
+#include <mach/imx51-regs.h>
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>

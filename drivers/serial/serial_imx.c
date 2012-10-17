@@ -15,7 +15,6 @@
  */
 
 #include <common.h>
-#include <mach/imx-regs.h>
 #include <driver.h>
 #include <init.h>
 #include <malloc.h>

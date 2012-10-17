@@ -30,7 +30,6 @@
 #include <asm/mmu.h>
 
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
 #include <mach/clock.h>
 #ifndef CONFIG_ARCH_MXS
 # include <mach/iim.h>

@@ -35,7 +35,7 @@
 
 #include <mach/gpio.h>
 #include <mach/spi.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
@@ -320,10 +320,10 @@ static int neso_pll(void)
 	pllfunc();
 
 	/* clock gating enable */
-	GPCR = 0x00050f08;
+	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
 
-	PCDR0 = 0x130410c3;
-	PCDR1 = 0x09030911;
+	writel(0x130410c3, MX27_CCM_BASE_ADDR + MX27_PCDR0);
+	writel(0x09030911, MX27_CCM_BASE_ADDR + MX27_PCDR1);
 
 	/* Clocks have changed. Notify clients */
 	clock_notifier_call_chain();

@@ -21,7 +21,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <fec.h>
 #include <notifier.h>
 #include <mach/gpio.h>
@@ -222,11 +222,16 @@ device_initcall(eukrea_cpuimx27_devices_init);
 
 static int eukrea_cpuimx27_console_init(void)
 {
+	uint32_t val;
+
 #ifdef CONFIG_DRIVER_SERIAL_IMX
 	imx27_add_uart0();
 #endif
 	/* configure 8 bit UART on cs3 */
-	FMCR &= ~0x2;
+	val = readl(MX27_SYSCTRL_BASE_ADDR + MX27_FMCR);
+	val &= ~0x2;
+	writel(val, MX27_SYSCTRL_BASE_ADDR + MX27_FMCR);
+
 	imx27_setup_weimcs(3, 0x0000D603, 0x0D1D0D01, 0x00D20000);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	add_ns16550_device(DEVICE_ID_DYNAMIC, MX27_CS3_BASE_ADDR + QUART_OFFSET, 0xf,

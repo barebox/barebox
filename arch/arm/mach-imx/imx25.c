@@ -13,7 +13,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <mach/iim.h>
 #include <io.h>
 #include <mach/weim.h>
@@ -61,9 +61,9 @@ static int imx25_init(void)
 {
 	uint32_t val;
 
-	val = readl(MX25_CCM_BASE_ADDR + CCM_RCSR);
-	imx_25_35_boot_save_loc((val >> CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
-			(val >> CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+	val = readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR);
+	imx_25_35_boot_save_loc((val >> MX25_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+			(val >> MX25_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
 
 	add_generic_device("imx_iim", 0, NULL, MX25_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, &imx25_iim_pdata);

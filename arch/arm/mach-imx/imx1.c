@@ -14,7 +14,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/imx1-regs.h>
 #include <mach/weim.h>
 #include <mach/iomux-v1.h>
 #include <reset_source.h>

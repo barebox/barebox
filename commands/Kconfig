@@ -57,10 +57,6 @@ config CMD_READLINE
 	tristate
 	prompt "readline"
 
-config CMD_LN
-	tristate
-	prompt "ln"
-
 config CMD_TRUE
 	tristate
 	default y
@@ -215,6 +211,10 @@ config CMD_DIRNAME
 	help
 	  Strip last component of file name and store the result in a
 	  environment variable
+
+config CMD_LN
+	tristate
+	prompt "ln"
 
 config CMD_READLINK
 	tristate

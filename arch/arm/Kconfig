@@ -31,6 +31,15 @@ config ARCH_AT91
 	select HAS_DEBUG_LL
 	select HAVE_MACH_ARM_HEAD
 
+config ARCH_BCM2835
+	bool "Broadcom BCM2835 boards"
+	select GPIOLIB
+	select CPU_ARM1176
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select CLOCKSOURCE_BCM2835
+	select ARM_AMBA
+
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
@@ -99,6 +108,7 @@ endchoice
 
 source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
+source arch/arm/mach-bcm2835/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-mxs/Kconfig

@@ -532,7 +532,7 @@ noinline int omap4_scale_vcores(unsigned vsel0_pin)
 		writel(val, base + 0x190);
 
 		val =  readl(base + 0x134);
-		val &= (1 << (vsel0_pin & GPIO_MASK));
+		val &= ~(1 << (vsel0_pin & GPIO_MASK));
 		writel(val, base + 0x134);
 
 		val = 1 << (vsel0_pin & GPIO_MASK);

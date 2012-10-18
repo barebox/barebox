@@ -620,6 +620,17 @@ config CMD_USB
 	help
 	  The usb command allows to rescan for USB devices.
 
+config CMD_MIITOOL
+	tristate
+	depends on PHYLIB
+	prompt "miitool"
+	help
+	  The miitool command allows to view media-independent interface status.
+	  The default short output reports the negotiated link speed and
+	  link status for selected MII. The '-v' option displays more
+	  detailed MII status information, such as MII capabilities,
+	  current advertising mode, and link partner capabilities.
+
 config CMD_CLK
 	tristate
 	depends on COMMON_CLK

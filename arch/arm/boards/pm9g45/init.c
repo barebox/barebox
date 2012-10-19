@@ -43,6 +43,7 @@ static struct atmel_nand_data nand_pdata = {
 	.rdy_pin	= AT91_PIN_PD3,
 	.enable_pin	= AT91_PIN_PC14,
 	.bus_width_16	= 0,
+	.on_flash_bbt	= 1,
 };
 
 static struct sam9_smc_config pm_nand_smc_config = {
@@ -137,9 +138,11 @@ static int pm9g45_devices_init(void)
 	at91_add_device_eth(0, &macb_pdata);
 	pm9g45_add_device_usbh();
 
-	devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self_raw");
+	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
+	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
+	devfs_add_partition("nand0", SZ_128K, SZ_256K, DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", 0x40000, 0x40000, DEVFS_PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", SZ_256K + SZ_128K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_6 + 0x100));

@@ -136,6 +136,7 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 			user->flags	= cdev->mtd->flags;
 			user->size	= cdev->mtd->size;
 			user->erasesize	= cdev->mtd->erasesize;
+			user->writesize	= cdev->mtd->writesize;
 			user->oobsize	= cdev->mtd->oobsize;
 			user->mtd	= cdev->mtd;
 			/* The below fields are obsolete */

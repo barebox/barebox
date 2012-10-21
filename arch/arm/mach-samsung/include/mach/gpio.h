@@ -23,10 +23,8 @@
 # include <mach/iomux-s5pcxx.h>
 #endif
 
-void gpio_set_value(unsigned, int);
-int gpio_direction_input(unsigned);
-int gpio_direction_output(unsigned, int);
-int gpio_get_value(unsigned);
+#include <asm-generic/gpio.h>
+
 void s3c_gpio_mode(unsigned);
 
 #endif /* __ASM_MACH_GPIO_H */

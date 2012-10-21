@@ -566,7 +566,6 @@ do {									\
 #define __read_64bit_c0_split(source, sel)				\
 ({									\
 	unsigned long long __val;					\
-	unsigned long __flags;						\
 									\
 	if (sel == 0)							\
 		__asm__ __volatile__(					\
@@ -592,8 +591,6 @@ do {									\
 
 #define __write_64bit_c0_split(source, sel, val)			\
 do {									\
-	unsigned long __flags;						\
-									\
 	if (sel == 0)							\
 		__asm__ __volatile__(					\
 			".set\tmips64\n\t"				\

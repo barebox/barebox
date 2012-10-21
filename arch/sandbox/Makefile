@@ -39,10 +39,13 @@ archprepare: maketools
 
 PHONY += maketools
 
-SDL_LIBS-$(CONFIG_DRIVER_VIDEO_SDL) := $(shell pkg-config sdl --libs)
+ifeq ($(CONFIG_DRIVER_VIDEO_SDL),y)
+SDL_LIBS := $(shell pkg-config sdl --libs)
+endif
+
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
-	-lrt -lpthread $(SDL_LIBS-y)
+	-lrt -lpthread $(SDL_LIBS)
 
 common-y += $(BOARD) arch/sandbox/os/
 

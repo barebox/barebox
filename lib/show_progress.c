@@ -20,6 +20,7 @@
 #include <common.h>
 #include <progress.h>
 #include <asm-generic/div64.h>
+#include <linux/stringify.h>
 
 #define HASHES_PER_LINE	65
 
@@ -56,7 +57,7 @@ void init_progression_bar(int max)
 	progress_max = max;
 	spin = 0;
 	if (progress_max)
-		printf("\t[%65s]\r\t[", "");
+		printf("\t[%"__stringify(HASHES_PER_LINE)"s]\r\t[", "");
 	else
 		printf("\t");
 }

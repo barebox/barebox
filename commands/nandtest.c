@@ -198,7 +198,6 @@ static int do_nandtest(int argc, char *argv[])
 	int opt, do_nandtest_dev = -1;
 	off_t flash_offset = 0, test_ofs, length = 0;
 	unsigned int nr_iterations = 1, iter;
-	int i;
 	int ret = -1;
 	unsigned char *wbuf, *rbuf;
 
@@ -328,9 +327,7 @@ static int do_nandtest(int argc, char *argv[])
 				continue;
 			}
 
-			for (i = 0; i < meminfo.erasesize; i++)
-				wbuf[i] = rand();
-
+			get_random_bytes(wbuf, meminfo.erasesize);
 			ret = erase_and_write(test_ofs, wbuf,
 					rbuf, length);
 			if (ret < 0)

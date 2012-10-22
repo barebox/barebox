@@ -282,6 +282,13 @@ static int do_nandtest(int argc, char *argv[])
 	printf("Erasesize: 0x%08x\n", meminfo.erasesize);
 	printf("Starting nandtest...\n");
 
+	if (!IS_ALIGNED(meminfo.erasesize, meminfo.writesize)) {
+		printf("Erasesize 0x%08x is not a multiple "
+				"of writesize 0x%08x.\n"
+				"Please check driver implementation\n",
+				meminfo.erasesize, meminfo.writesize);
+		goto err;
+	}
 	if (!IS_ALIGNED(flash_offset, meminfo.erasesize)) {
 		printf("Offset 0x%08llx not multiple of erase size 0x%08x\n",
 			flash_offset, meminfo.erasesize);

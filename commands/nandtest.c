@@ -96,7 +96,8 @@ static ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset)
 static int erase_and_write(off_t ofs, unsigned char *data, unsigned char *rbuf)
 {
 	struct erase_info_user er;
-	int i, ret;
+	unsigned int i;
+	int ret;
 
 	printf("\r0x%08x: erasing... ", (unsigned)(ofs + memregion.offset));
 
@@ -111,43 +112,50 @@ static int erase_and_write(off_t ofs, unsigned char *data, unsigned char *rbuf)
 		return ret;
 	}
 
-	printf("\r0x%08x: writing...", (unsigned)(ofs + memregion.offset));
+	for (i = 0; i < meminfo.erasesize;
+			i += meminfo.writesize) {
+		printf("\r0x%08x: writing...", (unsigned)
+				(ofs + i + memregion.offset));
 
-	/* Write data to given offset */
-	pwrite(fd, data, meminfo.erasesize, ofs);
+		/* Write data to given offset */
+		pwrite(fd, data + i, meminfo.writesize, ofs + i);
 
-	printf("\r0x%08x: reading...", (unsigned)(ofs + memregion.offset));
+		printf("\r0x%08x: reading...", (unsigned)
+				(ofs + i + memregion.offset));
 
-	/* Read data from offset */
-	pread(fd, rbuf, meminfo.erasesize, ofs);
+		/* Read data from offset */
+		pread(fd, rbuf + i, meminfo.writesize, ofs + i);
 
-	ret = ioctl(fd, ECCGETSTATS, &newstats);
-	if (ret < 0) {
-		perror("ECCGETSTATS");
-		return ret;
-	}
-
-	if (newstats.corrected > oldstats.corrected) {
-		printf("\n %d bit(s) ECC corrected at 0x%08x\n",
-				newstats.corrected - oldstats.corrected,
-				(unsigned)(ofs + memregion.offset));
-		if ((newstats.corrected-oldstats.corrected) >= MAX_ECC_BITS) {
-			/* Increment ECC stats that are over MAX_ECC_BITS */
-			ecc_stats_over++;
-		} else {
-			/* Increment ECC stat value */
-			ecc_stats[(newstats.corrected-oldstats.corrected)-1]++;
+		ret = ioctl(fd, ECCGETSTATS, &newstats);
+		if (ret < 0) {
+			perror("ECCGETSTATS");
+			return ret;
 		}
-		/* Set oldstats to newstats */
-		oldstats.corrected = newstats.corrected;
-	}
-	if (newstats.failed > oldstats.failed) {
-		printf("\nECC failed at 0x%08x\n",
-				(unsigned)(ofs + memregion.offset));
-		oldstats.failed = newstats.failed;
-		ecc_failed_cnt++;
-	}
 
+		if (newstats.corrected > oldstats.corrected) {
+			printf("\n %d bit(s) ECC corrected at page 0x%08x\n",
+					newstats.corrected - oldstats.corrected,
+					(unsigned)(ofs + memregion.offset + i));
+			if ((newstats.corrected-oldstats.corrected) >=
+					MAX_ECC_BITS) {
+				/* Increment ECC stats that
+				 * are over MAX_ECC_BITS */
+				ecc_stats_over++;
+			} else {
+				/* Increment ECC stat value */
+				ecc_stats[(newstats.corrected-
+						oldstats.corrected)-1]++;
+			}
+			/* Set oldstats to newstats */
+			oldstats.corrected = newstats.corrected;
+		}
+		if (newstats.failed > oldstats.failed) {
+			printf("\nECC failed at page 0x%08x\n",
+					(unsigned)(ofs + memregion.offset + i));
+			oldstats.failed = newstats.failed;
+			ecc_failed_cnt++;
+		}
+	}
 	printf("\r0x%08x: checking...", (unsigned)(ofs + memregion.offset));
 
 	/* Compared written data with read data.

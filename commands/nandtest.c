@@ -195,9 +195,8 @@ static void print_stats(int nr_passes, int length)
 /* Main program. */
 static int do_nandtest(int argc, char *argv[])
 {
-	int opt, length = -1, do_nandtest_dev = -1;
-	off_t flash_offset = 0;
-	off_t test_ofs;
+	int opt, do_nandtest_dev = -1;
+	off_t flash_offset = 0, test_ofs, length = 0;
 	unsigned int nr_iterations = 1, iter;
 	int i;
 	int ret = -1;
@@ -272,7 +271,7 @@ static int do_nandtest(int argc, char *argv[])
 		goto err;
 	}
 
-	if (length == -1) {
+	if (!length) {
 		length = meminfo.size;
 		length -= flash_offset;
 	}
@@ -292,13 +291,13 @@ static int do_nandtest(int argc, char *argv[])
 	}
 	if (length % meminfo.erasesize) {
 		printf("Length 0x%08x not multiple of erase size 0x%08x\n",
-			length, meminfo.erasesize);
+			(unsigned)length, meminfo.erasesize);
 		goto err;
 	}
 	if (length + flash_offset > meminfo.size) {
 		printf("Length 0x%08x + offset 0x%08x exceeds "
-				"device size 0x%08x\n",
-			length, (unsigned)flash_offset, meminfo.size);
+				"device size 0x%08x\n", (unsigned)length,
+				(unsigned)flash_offset, meminfo.size);
 		goto err;
 	}
 

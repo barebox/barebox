@@ -144,8 +144,8 @@ static int erase_and_write(off_t ofs, unsigned char *data,
 				ecc_stats_over++;
 			} else {
 				/* Increment ECC stat value */
-				ecc_stats[(newstats.corrected-
-						oldstats.corrected)-1]++;
+				ecc_stats[(newstats.corrected -
+						oldstats.corrected) - 1]++;
 			}
 			/* Set oldstats to newstats */
 			oldstats.corrected = newstats.corrected;
@@ -179,13 +179,13 @@ static int erase_and_write(off_t ofs, unsigned char *data,
 /* Print stats of nandtest. */
 static void print_stats(int nr_passes, int length)
 {
-	int i;
+	unsigned int i;
 	printf("-------- Summary --------\n");
 	printf("Tested blocks		: %d\n", (length/meminfo.erasesize)
 			* nr_passes);
 
 	for (i = 0; i < MAX_ECC_BITS; i++)
-		printf("ECC %d bit error(s)	: %d\n", i+1, ecc_stats[i]);
+		printf("ECC %d bit error(s)	: %d\n", i + 1, ecc_stats[i]);
 
 	printf("ECC >%d bit error(s)	: %d\n", MAX_ECC_BITS, ecc_stats_over);
 	printf("ECC corrections failed	: %d\n", ecc_failed_cnt);
@@ -195,10 +195,9 @@ static void print_stats(int nr_passes, int length)
 /* Main program. */
 static int do_nandtest(int argc, char *argv[])
 {
-	int opt, do_nandtest_dev = -1;
+	int opt, do_nandtest_dev = -1, ret = -1;
 	off_t flash_offset = 0, test_ofs, length = 0;
 	unsigned int nr_iterations = 1, iter;
-	int ret = -1;
 	unsigned char *wbuf, *rbuf;
 
 	ecc_failed_cnt = 0;
@@ -276,10 +275,10 @@ static int do_nandtest(int argc, char *argv[])
 	}
 
 	printf("Flash offset: 0x%08x\n",
-			(unsigned)(flash_offset+memregion.offset));
+			(unsigned)(flash_offset + memregion.offset));
 	printf("Length: 0x%08x\n", (unsigned)length);
 	printf("End address: 0x%08x\n",
-			(unsigned)(flash_offset+length+memregion.offset));
+			(unsigned)(flash_offset + length + memregion.offset));
 	printf("Erasesize: 0x%08x\n", (unsigned)(meminfo.erasesize));
 	printf("Starting nandtest...\n");
 
@@ -311,14 +310,13 @@ static int do_nandtest(int argc, char *argv[])
 	for (iter = 0; iter < nr_iterations; iter++) {
 		init_progression_bar(length);
 		for (test_ofs = flash_offset;
-				test_ofs < flash_offset+length;
+				test_ofs < flash_offset + length;
 				test_ofs += meminfo.erasesize) {
-			loff_t __test_ofs = test_ofs;
 			show_progress(test_ofs);
 			srand(seed);
 			seed = rand();
 
-			if (ioctl(fd, MEMGETBADBLOCK, &__test_ofs)) {
+			if (ioctl(fd, MEMGETBADBLOCK, &test_ofs)) {
 				printf("\nBad block at 0x%08x\n",
 						(unsigned)(test_ofs +
 							memregion.offset));
@@ -334,7 +332,7 @@ static int do_nandtest(int argc, char *argv[])
 				goto err2;
 		}
 		show_progress(test_ofs);
-		printf("\nFinished pass %d successfully\n", iter+1);
+		printf("\nFinished pass %d successfully\n", iter + 1);
 	}
 
 	print_stats(nr_iterations, length);
@@ -359,12 +357,12 @@ err:
 /* String for usage of nandtest */
 static const __maybe_unused char cmd_nandtest_help[] =
 "Usage: nandtest [OPTION] <device>\n"
-		"  -t,	Really do a nandtest on device.\n"
-		"  -m,	Mark blocks bad if they appear so.\n"
-		"  -s	<seed>,	Supply random seed.\n"
-		"  -i	<iterations>, Number of iterations.\n"
-		"  -o	<offset>, Start offset on flash.\n"
-		"  -l	<length>, Length of flash to test.\n";
+		"  -t,  Really do a nandtest on device.\n"
+		"  -m,  Mark blocks bad if they appear so.\n"
+		"  -s   <seed>, Supply random seed.\n"
+		"  -i   <iterations>, Number of iterations.\n"
+		"  -o   <offset>, Start offset on flash.\n"
+		"  -l   <length>, Length of flash to test.\n";
 
 BAREBOX_CMD_START(nandtest)
 	.cmd		= do_nandtest,

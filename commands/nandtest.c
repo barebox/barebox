@@ -198,7 +198,7 @@ static int do_nandtest(int argc, char *argv[])
 	int opt, length = -1, do_nandtest_dev = -1;
 	off_t flash_offset = 0;
 	off_t test_ofs;
-	unsigned int nr_passes = 1, pass;
+	unsigned int nr_iterations = 1, iter;
 	int i;
 	int ret = -1;
 	unsigned char *wbuf, *rbuf;
@@ -210,7 +210,7 @@ static int do_nandtest(int argc, char *argv[])
 
 	memset(ecc_stats, 0, MAX_ECC_BITS);
 
-	while ((opt = getopt(argc, argv, "ms:p:o:l:t")) > 0) {
+	while ((opt = getopt(argc, argv, "ms:i:o:l:t")) > 0) {
 		switch (opt) {
 		case 'm':
 			markbad = 1;
@@ -218,8 +218,8 @@ static int do_nandtest(int argc, char *argv[])
 		case 's':
 			seed = simple_strtoul(optarg, NULL, 0);
 			break;
-		case 'p':
-			nr_passes = simple_strtoul(optarg, NULL, 0);
+		case 'i':
+			nr_iterations = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'o':
 			flash_offset = simple_strtoul(optarg, NULL, 0);
@@ -310,7 +310,7 @@ static int do_nandtest(int argc, char *argv[])
 	}
 	rbuf = wbuf + meminfo.erasesize;
 
-	for (pass = 0; pass < nr_passes; pass++) {
+	for (iter = 0; iter < nr_iterations; iter++) {
 		init_progression_bar(length);
 		for (test_ofs = flash_offset;
 				test_ofs < flash_offset+length;
@@ -338,10 +338,10 @@ static int do_nandtest(int argc, char *argv[])
 				goto err2;
 		}
 		show_progress(test_ofs);
-		printf("\nFinished pass %d successfully\n", pass+1);
+		printf("\nFinished pass %d successfully\n", iter+1);
 	}
 
-	print_stats(nr_passes, length);
+	print_stats(nr_iterations, length);
 
 	ret = close(fd);
 	if (ret < 0) {
@@ -366,7 +366,7 @@ static const __maybe_unused char cmd_nandtest_help[] =
 		"  -t,	Really do a nandtest on device.\n"
 		"  -m,	Mark blocks bad if they appear so.\n"
 		"  -s	<seed>,	Supply random seed.\n"
-		"  -p	<passes>, Number of passes.\n"
+		"  -i	<iterations>, Number of iterations.\n"
 		"  -o	<offset>, Start offset on flash.\n"
 		"  -l	<length>, Length of flash to test.\n";
 

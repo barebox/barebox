@@ -80,6 +80,7 @@ struct file_priv {
 	struct kfifo *fifo;
 	void *buf;
 	int blocksize;
+	int block_requested;
 };
 
 struct tftp_priv {
@@ -152,11 +153,14 @@ static int tftp_send(struct file_priv *priv)
 		break;
 
 	case STATE_RDATA:
+		if (priv->block == priv->block_requested)
+			return 0;
 	case STATE_OACK:
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		*s++ = htons(TFTP_ACK);
 		*s++ = htons(priv->block);
+		priv->block_requested = priv->block;
 		pkt = (unsigned char *)s;
 		len = pkt - xp;
 		break;
@@ -199,6 +203,7 @@ static int tftp_poll(struct file_priv *priv)
 	if (is_timeout(priv->resend_timeout, TFTP_RESEND_TIMEOUT)) {
 		printf("T ");
 		priv->resend_timeout = get_time_ns();
+		priv->block_requested = -1;
 		return TFTP_ERR_RESEND;
 	}
 
@@ -392,6 +397,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->err = -EINVAL;
 	priv->filename = filename;
 	priv->blocksize = TFTP_BLOCK_SIZE;
+	priv->block_requested = -1;
 
 	priv->fifo = kfifo_alloc(4096);
 	if (!priv->fifo) {

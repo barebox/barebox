@@ -62,6 +62,7 @@
 #define STATE_DONE	8
 
 #define TFTP_BLOCK_SIZE		512	/* default TFTP block size */
+#define TFTP_FIFO_SIZE		4096
 
 #define TFTP_ERR_RESEND	1
 
@@ -399,7 +400,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->blocksize = TFTP_BLOCK_SIZE;
 	priv->block_requested = -1;
 
-	priv->fifo = kfifo_alloc(4096);
+	priv->fifo = kfifo_alloc(TFTP_FIFO_SIZE);
 	if (!priv->fifo) {
 		ret = -ENOMEM;
 		goto out;
@@ -558,6 +559,9 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 			outsize += now;
 			buf += now;
 			insize -= now;
+		}
+
+		if (TFTP_FIFO_SIZE - kfifo_len(priv->fifo) >= priv->blocksize) {
 			tftp_send(priv);
 			tftp_timer_reset(priv);
 		}

@@ -50,6 +50,26 @@ static inline struct device_d *imx6_add_spi0(struct spi_imx_master *pdata)
 	return imx_add_spi((void *)MX6_ECSPI1_BASE_ADDR, 0, pdata);
 }
 
+static inline struct device_d *imx6_add_spi1(struct spi_imx_master *pdata)
+{
+	return imx_add_spi((void *)MX6_ECSPI2_BASE_ADDR, 1, pdata);
+}
+
+static inline struct device_d *imx6_add_spi2(struct spi_imx_master *pdata)
+{
+	return imx_add_spi((void *)MX6_ECSPI3_BASE_ADDR, 2, pdata);
+}
+
+static inline struct device_d *imx6_add_spi3(struct spi_imx_master *pdata)
+{
+	return imx_add_spi((void *)MX6_ECSPI4_BASE_ADDR, 3, pdata);
+}
+
+static inline struct device_d *imx6_add_spi4(struct spi_imx_master *pdata)
+{
+	return imx_add_spi((void *)MX6_ECSPI5_BASE_ADDR, 4, pdata);
+}
+
 static inline struct device_d *imx6_add_i2c0(struct i2c_platform_data *pdata)
 {
 	return imx_add_i2c((void *)MX6_I2C1_BASE_ADDR, 0, pdata);

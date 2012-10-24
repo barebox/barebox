@@ -136,6 +136,9 @@ ifeq ($(skip-makefile),)
 PHONY += all
 _all: all
 
+# CDPATH can have sideeffects; disable, since we do know where we want to cd to
+export CDPATH=
+
 srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
 objtree		:= $(CURDIR)
 src		:= $(srctree)

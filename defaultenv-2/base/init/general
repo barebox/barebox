@@ -6,7 +6,7 @@ if [ "$1" = menu ]; then
 fi
 
 # user (used for network filenames)
-global.user=sha
+global.user=none
 
 # timeout in seconds before the default boot entry is started
 global.autoboot_timeout=3

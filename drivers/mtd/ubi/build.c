@@ -701,7 +701,7 @@ static int autoresize(struct ubi_device *ubi, int vol_id)
  *
  * This function attaches MTD device @mtd_dev to UBI and assign @ubi_num number
  * to the newly created UBI device, unless @ubi_num is %UBI_DEV_NUM_AUTO, in
- * which case this function finds a vacant device nubert and assings it
+ * which case this function finds a vacant device number and assigns it
  * automatically. Returns the new UBI device number in case of success and a
  * negative error code in case of failure.
  *

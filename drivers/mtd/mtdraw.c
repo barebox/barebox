@@ -258,11 +258,11 @@ static int mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
 }
 #else
 static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
-			    ulong offset, ulong flags)
+			    loff_t offset, ulong flags)
 {
 	return 0;
 }
-static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, ulong offset)
+static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	return 0;
 }

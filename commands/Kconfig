@@ -640,6 +640,7 @@ if CMD_WD
 
 config CMD_WD_DEFAULT_TIMOUT
 	int
+	default 0
 	prompt "default timeout"
 	help
 	  Define the default timeout value in [seconds] if the first call of

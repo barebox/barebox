@@ -105,6 +105,9 @@ struct property *of_find_property(const struct device_node *node, const char *na
 {
 	struct property *p;
 
+	if (!node)
+		return NULL;
+
 	list_for_each_entry(p, &node->properties, list)
 		if (!strcmp(p->name, name))
 			return p;

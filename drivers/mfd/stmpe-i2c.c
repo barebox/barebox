@@ -35,7 +35,7 @@ int stmpe_reg_read(struct stmpe *stmpe, u32 reg, u8 *val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(stmpe_reg_read)
+EXPORT_SYMBOL(stmpe_reg_read);
 
 int stmpe_reg_write(struct stmpe *stmpe, u32 reg, u8 val)
 {
@@ -45,7 +45,7 @@ int stmpe_reg_write(struct stmpe *stmpe, u32 reg, u8 val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(stmpe_reg_write)
+EXPORT_SYMBOL(stmpe_reg_write);
 
 int stmpe_set_bits(struct stmpe *stmpe, u32 reg, u8 mask, u8 val)
 {

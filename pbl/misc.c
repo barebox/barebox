@@ -4,6 +4,11 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 
+void __noreturn hang(void)
+{
+	while (1);
+}
+
 void __noreturn panic(const char *fmt, ...)
 {
 	while(1);

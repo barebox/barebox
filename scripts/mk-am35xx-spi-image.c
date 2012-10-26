@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	if (pos > 0x100000) {
-		printf("error: image should be smaller than 1 MiB\n");
+		fprintf(stderr, "error: image should be smaller than 1 MiB\n");
 		exit(EXIT_FAILURE);
 	}
 

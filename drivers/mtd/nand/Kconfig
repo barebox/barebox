@@ -55,6 +55,7 @@ config NAND_IMX
 
 config NAND_MXS
 	bool
+	select NAND_BBT
 	prompt "i.MX23/28 NAND driver"
 	depends on MXS_APBH_DMA
 

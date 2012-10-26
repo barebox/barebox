@@ -21,14 +21,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <fs.h>
+#include <common.h>
 #include <errno.h>
-//#include <linux/list.h>
 #include <jtag.h>
 #include <gpio.h>
 #include <driver.h>
 #include <malloc.h>
-#include <common.h>
 #include <init.h>
 #include <ioctl.h>
 

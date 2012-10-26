@@ -11,6 +11,7 @@ if MISC_DEVICES
 
 config JTAG
 	tristate "JTAG Bitbang driver"
+	depends on GENERIC_GPIO
 	help
 	  Controls JTAG chains connected to I/O pins
 

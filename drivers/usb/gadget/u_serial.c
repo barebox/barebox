@@ -74,9 +74,9 @@
  * next layer of buffering.  For TX that's a circular buffer; for RX
  * consider it a NOP.  A third layer is provided by the TTY code.
  */
-#define QUEUE_SIZE		16
+#define QUEUE_SIZE		128
 #define WRITE_BUF_SIZE		8192		/* TX only */
-
+#define RECV_FIFO_SIZE		(1024 * 8)
 /*
  * The port structure holds info for each port, one for each minor number
  * (and thus for each /dev/ node).
@@ -92,7 +92,7 @@ struct gs_port {
 	u8			port_num;
 
 	struct list_head	read_pool;
-	unsigned		n_read;
+	unsigned		read_nb_queued;
 
 	struct list_head	write_pool;
 
@@ -123,7 +123,9 @@ static unsigned gs_start_rx(struct gs_port *port)
 	struct usb_ep		*out = port->port_usb->out;
 	unsigned		started = 0;
 
-	while (!list_empty(pool)) {
+	while (!list_empty(pool) &&
+	       ((out->maxpacket * (port->read_nb_queued + 1) +
+		kfifo_len(port->recv_fifo)) < RECV_FIFO_SIZE)) {
 		struct usb_request	*req;
 		int			status;
 
@@ -134,6 +136,7 @@ static unsigned gs_start_rx(struct gs_port *port)
 		/* drop lock while we call out; the controller driver
 		 * may need to call us back (e.g. for disconnect)
 		 */
+		port->read_nb_queued++;
 		status = usb_ep_queue(out, req);
 
 		if (status) {
@@ -161,8 +164,9 @@ static void gs_read_complete(struct usb_ep *ep, struct usb_request *req)
 		return;
 
 	kfifo_put(port->recv_fifo, req->buf, req->actual);
-
 	list_add_tail(&req->list, &port->read_pool);
+	port->read_nb_queued--;
+
 	gs_start_rx(port);
 }
 
@@ -276,7 +280,7 @@ static int gs_start_io(struct gs_port *port)
 	}
 
 	/* queue read requests */
-	port->n_read = 0;
+	port->read_nb_queued = 0;
 	started = gs_start_rx(port);
 
 	/* unblock any pending writes into our circular buffer */
@@ -396,6 +400,7 @@ static int serial_tstc(struct console_device *cdev)
 	struct gs_port	*port = container_of(cdev,
 					struct gs_port, cdev);
 
+	gs_start_rx(port);
 	return (kfifo_len(port->recv_fifo) == 0) ? 0 : 1;
 }
 
@@ -412,10 +417,14 @@ static int serial_getc(struct console_device *cdev)
 	while (kfifo_getc(port->recv_fifo, &ch)) {
 		usb_gadget_poll();
 		if (is_timeout(to, 300 * MSECOND))
-			break;
+			goto timeout;
 	}
 
+	gs_start_rx(port);
 	return ch;
+timeout:
+	gs_start_rx(port);
+	return -ETIMEDOUT;
 }
 
 static void serial_flush(struct console_device *cdev)
@@ -461,7 +470,7 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	 */
 	gser->port_line_coding = port->port_line_coding;
 
-	port->recv_fifo = kfifo_alloc(1024);
+	port->recv_fifo = kfifo_alloc(RECV_FIFO_SIZE);
 
 	/*printf("gserial_connect: start ttyGS%d\n", port->port_num);*/
 	gs_start_io(port);

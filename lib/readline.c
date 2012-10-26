@@ -328,6 +328,16 @@ int readline(const char *prompt, char *buf, int len)
 			REFRESH_TO_EOL();
 			continue;
 		}
+		case CTL_CH('w'):
+			while ((num >= 1) && (buf[num - 1] == ' ')) {
+				DO_BACKSPACE();
+			}
+
+			while ((num >= 1) && (buf[num - 1] != ' ')) {
+				DO_BACKSPACE();
+			}
+
+			break;
 		default:
 			if (isascii(ichar) && isprint(ichar))
 				cread_add_char(ichar, insert, &num, &eol_num, buf, len);

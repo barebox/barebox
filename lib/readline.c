@@ -353,4 +353,3 @@ int readline(const char *prompt, char *buf, int len)
 
 	return rc < 0 ? rc : len;
 }
-

@@ -95,10 +95,6 @@ int main(int argc, char *argv[])
 		perror("ftello");
 		exit(EXIT_FAILURE);
 	}
-	if (pos % 4) {
-		printf("error: image size must be a multiple of 4 bytes\n");
-		exit(EXIT_FAILURE);
-	}
 	if (pos > 0x100000) {
 		printf("error: image should be smaller than 1 MiB\n");
 		exit(EXIT_FAILURE);
@@ -108,6 +104,8 @@ int main(int argc, char *argv[])
 		perror("fseeko");
 		exit(EXIT_FAILURE);
 	}
+
+	pos = (pos + 3) & ~3;
 
 	/* image size */
 	temp = htobe32((uint32_t)pos);
@@ -121,7 +119,7 @@ int main(int argc, char *argv[])
 		size = fread(&temp, 1, sizeof(uint32_t), input);
 		if (!size)
 			break;
-		if (size != 4) {
+		if (size < 4 && !feof(input)) {
 			perror("fread");
 			exit(EXIT_FAILURE);
 		}

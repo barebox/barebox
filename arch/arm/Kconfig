@@ -121,6 +121,7 @@ config AEABI
 
 config THUMB2_BAREBOX
 	select ARM_ASM_UNIFIED
+	select AEABI
 	depends on CPU_V7
 	bool "Compile barebox in thumb-2 mode (read help)"
 	help

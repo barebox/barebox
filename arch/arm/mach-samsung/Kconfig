@@ -175,6 +175,7 @@ config S3C_SDRAM_INIT
 config S3C_NAND_BOOT
 	bool
 	prompt "Booting from NAND"
+	depends on ARCH_S3C24xx
 	select MTD
 	select NAND
 	select NAND_S3C24XX

@@ -1175,6 +1175,9 @@ static int __init imxnd_probe(struct device_d *dev)
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
 		oob_4kpage = &nandv2_hw_eccoob_4k;
+	} else {
+		err = -EINVAL;
+		goto escan;
 	}
 
 	host->dev = dev;

@@ -88,6 +88,9 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	if (initialized < CONSOLE_INIT_FULL) {
 		char ch;
 		initialized = CONSOLE_INIT_FULL;
+		PUTS_LL("Switch to console [");
+		PUTS_LL(dev_name(dev));
+		PUTS_LL("]\n");
 		barebox_banner();
 		while (kfifo_getc(console_output_fifo, &ch) == 0)
 			console_putc(CONSOLE_STDOUT, ch);

@@ -1,0 +1,7 @@
+#
+# 1-wire bus master configuration
+#
+
+menu "1-wire Bus Masters"
+
+endmenu

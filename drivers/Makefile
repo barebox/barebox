@@ -21,3 +21,4 @@ obj-y	+= dma/
 obj-y  += watchdog/
 obj-y	+= gpio/
 obj-$(CONFIG_OFDEVICE) += of/
+obj-$(CONFIG_W1) += w1/

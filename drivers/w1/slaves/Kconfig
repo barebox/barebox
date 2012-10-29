@@ -1,0 +1,7 @@
+#
+# 1-wire slaves configuration
+#
+
+menu "1-wire Slaves"
+
+endmenu

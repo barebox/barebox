@@ -109,6 +109,23 @@ static const uint32_t mx28evk_pads[] = {
 	LCD_RESET_GPIO | VE_3_3V | GPIO_OUT | GPIO_VALUE(0),
 	/* backlight  */
 	PWM2_GPIO | VE_3_3V | STRENGTH(S4MA) | SE | VE,
+
+	/* GPMI-NAND (blocks mmc1 for now) */
+	GPMI_D0 | VE_3_3V,
+	GPMI_D1 | VE_3_3V,
+	GPMI_D2 | VE_3_3V,
+	GPMI_D3 | VE_3_3V,
+	GPMI_D4 | VE_3_3V,
+	GPMI_D5 | VE_3_3V,
+	GPMI_D6 | VE_3_3V,
+	GPMI_D7 | VE_3_3V,
+	GPMI_READY0 | VE_3_3V,	/* external PU */
+	GPMI_CE0N | VE_3_3V, 	/* external PU */
+	GPMI_RDN | VE_3_3V,
+	GPMI_WRN | VE_3_3V,
+	GPMI_ALE | VE_3_3V,
+	GPMI_CLE | VE_3_3V,
+	GPMI_RESETN,		/* act as WP, external PU */
 };
 
 static struct mxs_mci_platform_data mci_pdata = {
@@ -238,6 +255,9 @@ static int mx28_evk_devices_init(void)
 	mx28_evk_fec_reset();
 	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
+
+	add_generic_device("mxs_nand", 0, NULL, MXS_GPMI_BASE, 0x2000,
+			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

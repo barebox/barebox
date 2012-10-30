@@ -24,30 +24,43 @@
 #include <malloc.h>
 #include <errno.h>
 
-static const char *filetype_str[] = {
-	[filetype_unknown] = "unknown",
-	[filetype_arm_zimage] = "arm Linux zImage",
-	[filetype_lzo_compressed] = "lzo compressed",
-	[filetype_arm_barebox] = "arm barebox image",
-	[filetype_uimage] = "U-Boot uImage",
-	[filetype_ubi] = "UBI image",
-	[filetype_jffs2] = "JFFS2 image",
-	[filetype_gzip] = "gzip compressed",
-	[filetype_bzip2] = "bzip2 compressed",
-	[filetype_oftree] = "open firmware flat device tree",
-	[filetype_aimage] = "Android boot image",
-	[filetype_sh] = "Bourne Shell",
-	[filetype_mips_barebox] = "MIPS barebox image",
-	[filetype_fat] = "FAT filesytem",
-	[filetype_mbr] = "MBR sector",
-	[filetype_bmp] = "BMP image",
-	[filetype_png] = "PNG image",
+struct filetype_str {
+	const char *name;	/* human readable filetype */
+	const char *shortname;	/* short string without spaces for shell scripts */
+};
+
+static const struct filetype_str filetype_str[] = {
+	[filetype_unknown] = { "unknown", "unkown" },
+	[filetype_arm_zimage] = { "arm Linux zImage", "arm-zimage" },
+	[filetype_lzo_compressed] = { "lzo compressed", "lzo" },
+	[filetype_arm_barebox] = { "arm barebox image", "arm-barebox" },
+	[filetype_uimage] = { "U-Boot uImage", "u-boot" },
+	[filetype_ubi] = { "UBI image", "ubi" },
+	[filetype_jffs2] = { "JFFS2 image", "jffs2" },
+	[filetype_gzip] = { "gzip compressed", "gzip" },
+	[filetype_bzip2] = { "bzip2 compressed", "bzip2" },
+	[filetype_oftree] = { "open firmware flat device tree", "dtb" },
+	[filetype_aimage] = { "Android boot image", "android" },
+	[filetype_sh] = { "Bourne Shell", "sh" },
+	[filetype_mips_barebox] = { "MIPS barebox image", "mips-barebox" },
+	[filetype_fat] = { "FAT filesytem", "fat" },
+	[filetype_mbr] = { "MBR sector", "mbr" },
+	[filetype_bmp] = { "BMP image", "bmp" },
+	[filetype_png] = { "PNG image", "png" },
 };
 
 const char *file_type_to_string(enum filetype f)
 {
 	if (f < ARRAY_SIZE(filetype_str))
-		return filetype_str[f];
+		return filetype_str[f].name;
+
+	return NULL;
+}
+
+const char *file_type_to_short_string(enum filetype f)
+{
+	if (f < ARRAY_SIZE(filetype_str))
+		return filetype_str[f].shortname;
 
 	return NULL;
 }

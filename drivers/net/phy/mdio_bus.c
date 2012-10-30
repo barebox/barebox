@@ -101,6 +101,9 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 {
 	struct phy_device *phydev;
 
+	if (bus->phy_map[addr])
+		return bus->phy_map[addr];
+
 	phydev = get_phy_device(bus, addr);
 	if (IS_ERR(phydev) || phydev == NULL)
 		return phydev;

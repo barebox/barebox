@@ -269,7 +269,8 @@ int eth_register(struct eth_device *edev)
 	dev_add_param(dev, "netmask", eth_set_ipaddr, NULL, 0);
 	dev_add_param(dev, "serverip", eth_set_ipaddr, NULL, 0);
 
-	edev->init(edev);
+	if (edev->init)
+		edev->init(edev);
 
 	list_add_tail(&edev->list, &netdev_list);
 

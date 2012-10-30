@@ -644,7 +644,6 @@ static int fec_probe(struct device_d *dev)
 	dev->priv = fec;
 	edev->priv = fec;
 	edev->open = fec_open;
-	edev->init = fec_init;
 	edev->send = fec_send;
 	edev->recv = fec_recv;
 	edev->halt = fec_halt;
@@ -684,6 +683,8 @@ static int fec_probe(struct device_d *dev)
 	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
 	fec->xcv_type = pdata->xcv_type;
+
+	fec_init(edev);
 
 	if (fec->xcv_type != SEVENWIRE) {
 		fec->phy_init = pdata->phy_init;

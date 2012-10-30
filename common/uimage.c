@@ -225,8 +225,8 @@ void uimage_close(struct uimage_handle *handle)
 	free(handle->name);
 	free(handle);
 
-	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat("/.uimage_tmp", &s))
-		unlink("/.uimage_tmp");
+	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat(uimage_tmp, &s))
+		unlink(uimage_tmp);
 }
 EXPORT_SYMBOL(uimage_close);
 

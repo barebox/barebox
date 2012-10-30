@@ -37,6 +37,7 @@
 #include <mach/sam9_smc.h>
 #include <dm9000.h>
 #include <linux/w1-gpio.h>
+#include <w1_mac_address.h>
 
 struct w1_gpio_platform_data w1_pdata = {
 	.pin = AT91_PIN_PA7,
@@ -120,6 +121,7 @@ static struct sam9_smc_config __initdata dm9000_smc_config = {
 
 static void __init pm_add_device_dm9000(void)
 {
+	w1_local_mac_address_register(0, "ron", "w1-1-0");
 	/* Configure chip-select 2 (DM9000) */
 	sam9_smc_configure(2, &dm9000_smc_config);
 

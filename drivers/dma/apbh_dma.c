@@ -555,7 +555,9 @@ int mxs_dma_init(void)
 	int ret, channel;
 	u32 val, reg;
 
-	mxs_reset_block(apbh_regs, 0);
+	ret = mxs_reset_block(apbh_regs, 0);
+	if (ret)
+		return ret;
 
 	/* HACK: Get CPUID and determine APBH version */
 	val = readl(0x8001c310) >> 16;

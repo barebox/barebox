@@ -154,7 +154,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 
 	if (!edev->phydev) {
 		if (addr >= 0) {
-			dev = bus->phy_map[addr];
+			dev = mdiobus_scan(bus, addr);
 			if (!dev) {
 				ret = -EIO;
 				goto fail;
@@ -169,7 +169,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				goto fail;
 		} else {
 			for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-				dev = bus->phy_map[i];
+				dev = mdiobus_scan(bus, i);
 				if (!dev || dev->attached_dev)
 					continue;
 

@@ -40,6 +40,8 @@
 #include <readkey.h>
 #include <linux/w1-gpio.h>
 
+#include "hw_version.h"
+
 struct w1_gpio_platform_data w1_pdata = {
 	.pin = AT91_PIN_PB18,
 	.is_open_drain = 0,
@@ -141,6 +143,8 @@ static void ek_add_device_w1(void)
 	at91_set_gpio_input(w1_pdata.pin, 0);
 	at91_set_multi_drive(w1_pdata.pin, 1);
 	add_generic_device_res("w1-gpio", DEVICE_ID_SINGLE, NULL, 0, &w1_pdata);
+
+	at91sam9x5ek_devices_detect_hw();
 }
 
 static int at91sam9x5ek_devices_init(void)

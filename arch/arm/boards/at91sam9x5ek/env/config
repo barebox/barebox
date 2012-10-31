@@ -4,6 +4,7 @@
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp-barebox
 global.dhcp.vendor_id=barebox-at91sam9x5ek
+global.dhcp.client_id="${at91sam9x5cm.board}-${at91sam9x5cm.vendor}"
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d

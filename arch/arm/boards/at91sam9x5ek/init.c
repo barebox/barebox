@@ -38,6 +38,12 @@
 #include <mach/at91_rstc.h>
 #include <gpio_keys.h>
 #include <readkey.h>
+#include <linux/w1-gpio.h>
+
+struct w1_gpio_platform_data w1_pdata = {
+	.pin = AT91_PIN_PB18,
+	.is_open_drain = 0,
+};
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -130,8 +136,16 @@ static int at91sam9x5ek_mem_init(void)
 }
 mem_initcall(at91sam9x5ek_mem_init);
 
+static void ek_add_device_w1(void)
+{
+	at91_set_gpio_input(w1_pdata.pin, 0);
+	at91_set_multi_drive(w1_pdata.pin, 1);
+	add_generic_device_res("w1-gpio", DEVICE_ID_SINGLE, NULL, 0, &w1_pdata);
+}
+
 static int at91sam9x5ek_devices_init(void)
 {
+	ek_add_device_w1();
 	ek_add_device_nand();
 	at91_add_device_eth(0, &macb_pdata);
 	at91_add_device_usbh_ohci(&ek_usbh_data);

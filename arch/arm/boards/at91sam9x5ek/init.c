@@ -40,6 +40,7 @@
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <linux/w1-gpio.h>
+#include <w1_mac_address.h>
 
 #include "hw_version.h"
 
@@ -105,6 +106,14 @@ static struct at91_ether_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 
+static void ek_add_device_eth(void)
+{
+	if (w1_local_mac_address_register(0, "tml", "w1-2d-0"))
+		w1_local_mac_address_register(0, "tml", "w1-23-0");
+
+	at91_add_device_eth(0, &macb_pdata);
+}
+
 /*
  * USB Host port
  */
@@ -160,7 +169,7 @@ static int at91sam9x5ek_devices_init(void)
 {
 	ek_add_device_w1();
 	ek_add_device_nand();
-	at91_add_device_eth(0, &macb_pdata);
+	ek_add_device_eth();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_led();
 

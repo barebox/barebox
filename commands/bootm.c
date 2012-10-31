@@ -49,6 +49,11 @@
 
 static LIST_HEAD(handler_list);
 
+/*
+ * Additional oftree size for the fixed tree
+ */
+#define OFTREE_SIZE_INCREASE	0x8000
+
 int register_image_handler(struct image_handler *handler)
 {
 	list_add_tail(&handler->list, &handler_list);
@@ -184,12 +189,14 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 				file_type_to_string(ft));
 	}
 
-	fixfdt = xmemalign(4096, size + 0x8000);
+	fixfdt = xmemalign(4096, size + OFTREE_SIZE_INCREASE);
 	memcpy(fixfdt, fdt, size);
+
+
+	ret = fdt_open_into(fdt, fixfdt, size + OFTREE_SIZE_INCREASE);
 
 	free(fdt);
 
-	ret = fdt_open_into(fixfdt, fixfdt, size + 0x8000);
 	if (ret) {
 		printf("unable to parse %s\n", oftree);
 		return -ENODEV;

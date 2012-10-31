@@ -410,5 +410,5 @@ void omap4_do_scale_tps62361(u32 reg, u32 volt_mv)
 	writel(temp, OMAP44XX_PRM_VC_VAL_BYPASS);
 	if (!wait_on_value(OMAP44XX_PRM_VC_VAL_BYPASS_VALID_BIT, 0,
 				OMAP44XX_PRM_VC_VAL_BYPASS, LDELAY))
-		puts("Scaling voltage failed for vdd_mpu from TPS\n");
+		debug("Scaling voltage failed for vdd_mpu from TPS\n");
 }

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# The beagle board supports a network adapter on USB
+
+usb

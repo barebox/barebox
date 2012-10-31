@@ -103,6 +103,7 @@ config MACH_OMAP343xSDP
 config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
 	select HAVE_NOSHELL
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP3
 	  help
 	  Say Y here if you are using Beagle Board

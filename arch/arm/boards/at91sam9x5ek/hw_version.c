@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <libbb.h>
 #include <asm/armlinux.h>
+#include <of.h>
+#include <libfdt.h>
 
 #include "hw_version.h"
 
@@ -228,6 +230,33 @@ static void at91sam9x5ek_devices_detect_one(const char *name)
 	dev_add_param_fixed(dev, "revision_id", str);
 }
 
+#define NODE_NAME_LEN  128
+
+static int cm_cogent_fixup(struct fdt_header *fdt)
+{
+	int off, ret;
+	char node_name[NODE_NAME_LEN];
+
+	off = fdt_node_offset_by_compatible(fdt, -1, "atmel,hsmci");
+
+	while (off != -FDT_ERR_NOTFOUND) {
+		off = fdt_subnode_offset(fdt, off, "slot");
+		fdt_get_path(fdt, off, node_name, NODE_NAME_LEN);
+		ret = fdt_setprop(fdt, off, "broken-cd", NULL, 0);
+		if (ret < 0) {
+			pr_err("error %d while adding broken-cd property to node %s\n",
+				ret, node_name);
+			return ret;
+		} else {
+			pr_debug("add broken-cd property to node %s\n", node_name);
+		}
+
+		off = fdt_node_offset_by_compatible(fdt, off, "atmel,hsmci");
+	}
+
+	return 0;
+}
+
 void at91sam9x5ek_devices_detect_hw(void)
 {
 	at91sam9x5ek_devices_detect_one("/dev/ds24310");
@@ -237,4 +266,7 @@ void at91sam9x5ek_devices_detect_hw(void)
 	pr_info("sn: 0x%x, rev: 0x%x\n", sn, rev);
 	armlinux_set_revision(rev);
 	armlinux_set_serial(sn);
+
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
+		of_register_fixup(cm_cogent_fixup);
 }

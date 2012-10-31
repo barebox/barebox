@@ -36,6 +36,7 @@
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
+#include <mach/at91sam9x5_matrix.h>
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <linux/w1-gpio.h>
@@ -87,6 +88,14 @@ static void ek_add_device_nand(void)
 
 	/* configure chip-select 3 (NAND) */
 	sam9_smc_configure(3, &cm_nand_smc_config);
+
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT)) {
+		unsigned long csa;
+
+		csa = at91_sys_read(AT91_MATRIX_EBICSA);
+		csa |= AT91_MATRIX_EBI_VDDIOMSEL_1_8V;
+		at91_sys_write(AT91_MATRIX_EBICSA, csa);
+	}
 
 	at91_add_device_nand(&nand_pdata);
 }

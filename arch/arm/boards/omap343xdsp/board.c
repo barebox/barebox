@@ -76,7 +76,8 @@ static int sdp343x_board_init(void)
 {
 	int in_sdram = running_in_sdram();
 
-	omap3_core_init();
+	if (!in_sdram)
+		omap3_core_init();
 
 	mux_config();
 	if (!in_sdram)

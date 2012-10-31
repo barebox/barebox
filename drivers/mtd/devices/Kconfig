@@ -19,6 +19,33 @@ config MTD_DATAFLASH_WRITE_VERIFY
 	  device thinks the write was successful, a bit could have been
 	  flipped accidentally due to device wear or something else.
 
+config MTD_M25P80
+	tristate "Support most SPI Flash chips (AT26DF, M25P, W25X, ...)"
+	depends on SPI
+	help
+	  This enables access to most modern SPI flash chips, used for
+	  program and data storage.   Series supported include Atmel AT26DF,
+	  Spansion S25SL, SST 25VF, ST M25P, and Winbond W25X.  Other chips
+	  are supported as well.  See the driver source for the current list,
+	  or to add other chips.
+
+	  Note that the original DataFlash chips (AT45 series, not AT26DF),
+	  need an entirely different driver.
+
+	  Set up your spi devices with the right board-specific platform data,
+	  if you want to specify device partitioning or to use a device which
+	  doesn't support the JEDEC ID instruction.
+
+config MTD_SST25L
+	tristate "Support SST25L (non JEDEC) SPI Flash chips"
+	depends on MTD_M25P80
+	help
+	  This enables access to the non JEDEC SST25L SPI flash chips, used
+	  for program and data storage.
+
+	  Set up your spi devices with the right board-specific platform data,
+	  if you want to specify device partitioning.
+
 config MTD_DOCG3
 	bool "M-Systems Disk-On-Chip G3"
 	select BCH

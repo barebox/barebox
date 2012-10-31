@@ -209,7 +209,7 @@ static struct spi_imx_master sabrelite_spi_0_data = {
 
 static const struct spi_board_info sabrelite_spi_board_info[] = {
 	{
-		.name = "m25p",
+		.name = "m25p80",
 		.max_speed_hz = 40000000,
 		.bus_num = 0,
 		.chip_select = 0,

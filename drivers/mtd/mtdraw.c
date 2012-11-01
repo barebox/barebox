@@ -241,7 +241,7 @@ static int mtdraw_erase(struct cdev *cdev, size_t count, loff_t _offset)
 	while (count > 0) {
 		debug("erase %d %d\n", erase.addr, erase.len);
 
-		ret = mtd->block_isbad(mtd, erase.addr);
+		ret = mtd_block_isbad(mtd, erase.addr);
 		if (ret > 0) {
 			printf("Skipping bad block at 0x%08x\n", erase.addr);
 		} else {

@@ -251,6 +251,8 @@ static inline void mtd_erase_callback(struct erase_info *instr)
 }
 #endif
 
+int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
+
 /*
  * Debugging macro and defines
  */

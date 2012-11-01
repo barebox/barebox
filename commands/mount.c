@@ -33,7 +33,8 @@ static int do_mount(int argc, char *argv[])
 	int opt;
 	int ret = 0;
 	struct fs_device_d *fsdev;
-	char *type = NULL;
+	const char *type = NULL;
+	const char *mountpoint, *dev;
 
 	if (argc == 1) {
 		for_each_fs_device(fsdev) {
@@ -56,7 +57,19 @@ static int do_mount(int argc, char *argv[])
 	if (argc < optind + 2)
 		return COMMAND_ERROR_USAGE;
 
-	if ((ret = mount(argv[optind], type, argv[optind + 1]))) {
+	dev = argv[optind];
+
+	if (argc == optind + 3) {
+		/*
+		 * Old behaviour: mount <dev> <type> <mountpoint>
+		 */
+		type = argv[optind + 1];
+		mountpoint = argv[optind + 2];
+	} else {
+		mountpoint = argv[optind + 1];
+	}
+
+	if ((ret = mount(dev, type, mountpoint))) {
 		perror("mount");
 		return 1;
 	}

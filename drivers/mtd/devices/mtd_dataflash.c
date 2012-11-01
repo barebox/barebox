@@ -161,6 +161,8 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	spi_message_init(&msg);
 
+	memset(&x, 0, sizeof(x));
+
 	x.tx_buf = command = priv->command;
 	x.len = 4;
 	spi_message_add_tail(&x, &msg);
@@ -246,6 +248,8 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
 
 	spi_message_init(&msg);
 
+	memset(&x[0], 0, sizeof(struct spi_transfer) * 2);
+
 	x[0].tx_buf = command;
 	x[0].len = 8;
 	spi_message_add_tail(&x[0], &msg);
@@ -301,6 +305,8 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
 		dev_name(&spi->dev), (unsigned)to, (unsigned)(to + len));
 
 	spi_message_init(&msg);
+
+	memset(&x[0], 0, sizeof(struct spi_transfer) * 2);
 
 	x[0].tx_buf = command = priv->command;
 	x[0].len = 4;

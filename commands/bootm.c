@@ -141,6 +141,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 	struct fdt_header *fdt, *fixfdt;
 	int ret;
 	size_t size;
+	unsigned int align;
 
 	if (bootm_verbose(data))
 		printf("Loading oftree from '%s'\n", oftree);
@@ -189,7 +190,14 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 				file_type_to_string(ft));
 	}
 
-	fixfdt = xmemalign(4096, size + OFTREE_SIZE_INCREASE);
+	/*
+	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
+	 * for mapping the devicetree, so we are not allowed to cross
+	 * 1MiB boundaries.
+	 */
+	align = 1 << fls(size + OFTREE_SIZE_INCREASE - 1);
+
+	fixfdt = xmemalign(align, size + OFTREE_SIZE_INCREASE);
 	memcpy(fixfdt, fdt, size);
 
 

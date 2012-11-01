@@ -1,5 +1,0 @@
-#!/bin/sh
-
-# disable ip setup in Linux
-
-global.linux.bootargs.dyn.ip="ip=none"

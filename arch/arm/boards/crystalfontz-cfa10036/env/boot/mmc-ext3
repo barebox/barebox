@@ -7,4 +7,4 @@ fi
 
 global.bootm.image="/mnt/disk0.1/zImage-cfa10036"
 global.bootm.oftree="/mnt/disk0.1/oftree-cfa10036"
-bootargs-root-ext -r 3 -m mmcblk0p3
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p3 rootfstype=ext3 rootwait"

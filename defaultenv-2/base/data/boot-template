@@ -11,6 +11,4 @@ global.bootm.image=<path to image>
 
 #bootargs-ip
 
-#bootargs-root-nfs -n "<path on server>" -s <serverip>
-#bootargs-root-jffs2 -m <mtdname>
-#bootargs-root-ubi -r <volume> -m <mtdname>
+global.linux.bootargs.dyn.root="root=<rootfs here>"

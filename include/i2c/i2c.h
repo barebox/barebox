@@ -66,7 +66,7 @@ struct i2c_msg {
  *
  */
 struct i2c_adapter {
-	struct device_d		*dev;	/* ptr to device */
+	struct device_d		dev;	/* ptr to device */
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 	struct list_head	list;

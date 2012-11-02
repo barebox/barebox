@@ -80,7 +80,7 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 	 */
 
 	for (ret = 0; ret < num; ret++) {
-		dev_dbg(adap->dev, "master_xfer[%d] %c, addr=0x%02x, "
+		dev_dbg(&adap->dev, "master_xfer[%d] %c, addr=0x%02x, "
 			"len=%d\n", ret, (msgs[ret].flags & I2C_M_RD)
 			? 'R' : 'W', msgs[ret].addr, msgs[ret].len);
 	}
@@ -256,6 +256,9 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
+	client->dev.parent = &adapter->dev;
+	dev_add_child(client->dev.parent, &client->dev);
+
 	status = register_device(&client->dev);
 
 #if 0
@@ -363,8 +366,20 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
+	int ret;
+
 	if (i2c_get_adapter(adapter->nr))
 		return -EBUSY;
+
+	adapter->dev.id = adapter->nr;
+	strcpy(adapter->dev.name, "i2c");
+
+	if (adapter->dev.parent)
+		dev_add_child(adapter->dev.parent, &adapter->dev);
+
+	ret = register_device(&adapter->dev);
+	if (ret)
+		return ret;
 
 	list_add_tail(&adapter->list, &adapter_list);
 

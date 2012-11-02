@@ -154,7 +154,7 @@ static int i2c_fsl_bus_busy(struct i2c_adapter *adapter, int for_busy)
 		if (!for_busy && !(temp & I2SR_IBB))
 			break;
 		if (is_timeout(start, 500 * MSECOND)) {
-			dev_err(adapter->dev,
+			dev_err(&adapter->dev,
 				 "<%s> timeout waiting for I2C bus %s\n",
 				 __func__,for_busy ? "busy" : "not busy");
 			return -EIO;
@@ -177,7 +177,7 @@ static int i2c_fsl_trx_complete(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_err(adapter->dev, "<%s> TXR timeout\n", __func__);
+			dev_err(&adapter->dev, "<%s> TXR timeout\n", __func__);
 			return -EIO;
 		}
 	}
@@ -199,7 +199,7 @@ static int i2c_fsl_acked(struct i2c_adapter *adapter)
 			break;
 
 		if (is_timeout(start, MSECOND)) {
-			dev_dbg(adapter->dev, "<%s> No ACK\n", __func__);
+			dev_dbg(&adapter->dev, "<%s> No ACK\n", __func__);
 			return -EIO;
 		}
 	}
@@ -296,7 +296,7 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 	 * Translate to dfsr = 5 * Frequency / 100,000,000
 	 */
 	dfsr = (5 * (i2c_clk / 1000)) / 100000;
-	dev_dbg(i2c_fsl->adapter.dev,
+	dev_dbg(&i2c_fsl->adapter.dev,
 		"<%s> requested speed:%d, i2c_clk:%d\n", __func__,
 		rate, i2c_clk);
 	if (!dfsr)
@@ -315,12 +315,12 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 				bin_ga = (ga & 0x3) | ((ga & 0x4) << 3);
 				fdr = bin_gb | bin_ga;
 				rate = i2c_clk / est_div;
-				dev_dbg(i2c_fsl->adapter.dev,
+				dev_dbg(&i2c_fsl->adapter.dev,
 					"FDR:0x%.2x, div:%ld, ga:0x%x, gb:0x%x,"
 					" a:%d, b:%d, speed:%d\n", fdr, est_div,
 					ga, gb, a, b, rate);
 				/* Condition 2 not accounted for */
-				dev_dbg(i2c_fsl->adapter.dev,
+				dev_dbg(&i2c_fsl->adapter.dev,
 					"Tr <= %d ns\n", (b - 3 * dfsr) *
 					1000000 / (i2c_clk / 1000));
 			}
@@ -330,9 +330,9 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 		if (a == 24)
 			a += 4;
 	}
-	dev_dbg(i2c_fsl->adapter.dev,
+	dev_dbg(&i2c_fsl->adapter.dev,
 		"divider:%d, est_div:%ld, DFSR:%d\n", divider, est_div, dfsr);
-	dev_dbg(i2c_fsl->adapter.dev, "FDR:0x%.2x, speed:%d\n", fdr, rate);
+	dev_dbg(&i2c_fsl->adapter.dev, "FDR:0x%.2x, speed:%d\n", fdr, rate);
 	i2c_fsl->ifdr = fdr;
 	i2c_fsl->dfsrr = dfsr;
 }
@@ -368,9 +368,9 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 		(500000U * i2c_clk_div[i][0] + (i2c_clk_rate / 2) - 1) /
 		(i2c_clk_rate / 2);
 
-	dev_dbg(i2c_fsl->adapter.dev, "<%s> I2C_CLK=%d, REQ DIV=%d\n",
+	dev_dbg(&i2c_fsl->adapter.dev, "<%s> I2C_CLK=%d, REQ DIV=%d\n",
 		__func__, i2c_clk_rate, div);
-	dev_dbg(i2c_fsl->adapter.dev, "<%s> IFDR[IC]=0x%x, REAL DIV=%d\n",
+	dev_dbg(&i2c_fsl->adapter.dev, "<%s> IFDR[IC]=0x%x, REAL DIV=%d\n",
 		__func__, i2c_clk_div[i][1], i2c_clk_div[i][0]);
 }
 #endif
@@ -382,7 +382,7 @@ static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	int i, result;
 
 	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
-		dev_dbg(adapter->dev,
+		dev_dbg(&adapter->dev,
 			"<%s> write slave address: addr=0x%02x\n",
 			__func__, msgs->addr << 1);
 
@@ -399,7 +399,7 @@ static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 
 	/* write data */
 	for (i = 0; i < msgs->len; i++) {
-		dev_dbg(adapter->dev,
+		dev_dbg(&adapter->dev,
 			"<%s> write byte: B%d=0x%02X\n",
 			__func__, i, msgs->buf[i]);
 		writeb(msgs->buf[i], base + FSL_I2C_I2DR);
@@ -425,7 +425,7 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	writeb(0x0, base + FSL_I2C_I2SR);
 
 	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
-		dev_dbg(adapter->dev,
+		dev_dbg(&adapter->dev,
 			"<%s> write slave address: addr=0x%02x\n",
 			__func__, (msgs->addr << 1) | 0x01);
 
@@ -478,7 +478,7 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 		}
 		msgs->buf[i] = readb(base + FSL_I2C_I2DR);
 
-		dev_dbg(adapter->dev, "<%s> read byte: B%d=0x%02X\n",
+		dev_dbg(&adapter->dev, "<%s> read byte: B%d=0x%02X\n",
 			__func__, i, msgs->buf[i]);
 	}
 	return 0;
@@ -544,7 +544,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	/* Setup i2c_fsl driver structure */
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
 	i2c_fsl->adapter.nr = pdev->id;
-	i2c_fsl->adapter.dev = pdev;
+	i2c_fsl->adapter.dev.parent = pdev;
 	i2c_fsl->base = dev_request_mem_region(pdev, 0);
 	i2c_fsl->dfsrr = -1;
 

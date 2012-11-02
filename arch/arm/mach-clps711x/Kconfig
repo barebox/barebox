@@ -1,0 +1,8 @@
+if ARCH_CLPS711X
+
+choice
+	prompt "Cirrus Logic EP711x/EP721x/EP731x Board Type"
+
+endchoice
+
+endif

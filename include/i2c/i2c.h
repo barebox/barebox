@@ -70,6 +70,8 @@ struct i2c_adapter {
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 	struct list_head	list;
+	int			retries;
+	void 			*algo_data;
 };
 
 

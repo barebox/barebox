@@ -30,4 +30,12 @@ config KEYBOARD_IMX_KEYPAD
 	  setup logic must also provide a 'matrix_keymap_data' structure,
 	  defining the used keys.
 
+config KEYBOARD_QT1070
+	tristate "Atmel AT42QT1070 Touch Sensor Chip"
+	depends on I2C
+	select POLLER
+	help
+	  Say Y here if you want to use Atmel AT42QT1070 QTouch
+	  Sensor chip as input device.
+
 endmenu

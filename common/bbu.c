@@ -71,13 +71,13 @@ int bbu_confirm(struct bbu_data *data)
 	return -EINTR;
 }
 
-static struct bbu_handler *bbu_find_handler(const char *name, unsigned long flags)
+static struct bbu_handler *bbu_find_handler(const char *name)
 {
 	struct bbu_handler *handler;
 
 	list_for_each_entry(handler, &bbu_image_handlers, list) {
 		if (!name) {
-			if (flags & BBU_HANDLER_FLAG_DEFAULT)
+			if (handler->flags & BBU_HANDLER_FLAG_DEFAULT)
 				return handler;
 			continue;
 		}
@@ -97,9 +97,12 @@ int barebox_update(struct bbu_data *data)
 	struct bbu_handler *handler;
 	int ret;
 
-	handler = bbu_find_handler(data->handler_name, data->flags);
+	handler = bbu_find_handler(data->handler_name);
 	if (!handler)
 		return -ENODEV;
+
+	if (!data->handler_name)
+		data->handler_name = handler->name;
 
 	if (!data->devicefile)
 		data->devicefile = handler->devicefile;
@@ -137,11 +140,11 @@ void bbu_handlers_list(void)
  */
 int bbu_register_handler(struct bbu_handler *handler)
 {
-	if (bbu_find_handler(handler->name, 0))
+	if (bbu_find_handler(handler->name))
 		return -EBUSY;
 
 	if (handler->flags & BBU_HANDLER_FLAG_DEFAULT &&
-			bbu_find_handler(NULL, BBU_HANDLER_FLAG_DEFAULT))
+			bbu_find_handler(NULL))
 		return -EBUSY;
 
 	list_add_tail(&handler->list, &bbu_image_handlers);

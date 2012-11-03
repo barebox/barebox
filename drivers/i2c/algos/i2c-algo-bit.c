@@ -390,6 +390,22 @@ static int sendbytes(struct i2c_adapter *i2c_adap, struct i2c_msg *msg)
 	return wrcount;
 }
 
+static int acknak(struct i2c_adapter *i2c_adap, int is_ack)
+{
+	struct i2c_algo_bit_data *adap = i2c_adap->algo_data;
+
+	/* assert: sda is high */
+	if (is_ack)		/* send ack */
+		setsda(adap, 0);
+	udelay((adap->udelay + 1) / 2);
+	if (sclhi(adap) < 0) {	/* timeout */
+		dev_err(&i2c_adap->dev, "readbytes: ack/nak timeout\n");
+		return -ETIMEDOUT;
+	}
+	scllo(adap);
+	return 0;
+}
+
 static int readbytes(struct i2c_adapter *i2c_adap, struct i2c_msg *msg)
 {
 	int inval;
@@ -414,6 +430,10 @@ static int readbytes(struct i2c_adapter *i2c_adap, struct i2c_msg *msg)
 			(flags & I2C_M_NO_RD_ACK)
 				? "(no ack/nak)"
 				: (count ? "A" : "NA"));
+
+		inval = acknak(i2c_adap, count);
+		if (inval < 0)
+			return inval;
 	}
 	return rdcount;
 }

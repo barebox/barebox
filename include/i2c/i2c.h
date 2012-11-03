@@ -129,6 +129,14 @@ static inline int i2c_register_board_info(int busnum,
 extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
 struct i2c_adapter *i2c_get_adapter(int busnum);
 
+/* For devices that use several addresses, use i2c_new_dummy() to make
+ * client handles for the extra addresses.
+ */
+extern struct i2c_client *
+i2c_new_dummy(struct i2c_adapter *adap, u16 address);
+
+
+
 extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 extern int i2c_master_send(struct i2c_client *client, const char *buf, int count);
 extern int i2c_master_recv(struct i2c_client *client, char *buf, int count);

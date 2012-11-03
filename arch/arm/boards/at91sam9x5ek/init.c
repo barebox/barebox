@@ -122,6 +122,8 @@ static struct i2c_board_info i2c_devices[] = {
 	{
 		.platform_data = &qt1070_pdata,
 		I2C_BOARD_INFO("qt1070", 0x1b),
+	}, {
+		I2C_BOARD_INFO("24c512", 0x51)
 	},
 };
 

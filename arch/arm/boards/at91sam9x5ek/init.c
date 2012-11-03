@@ -41,6 +41,7 @@
 #include <readkey.h>
 #include <linux/w1-gpio.h>
 #include <w1_mac_address.h>
+#include <spi/spi.h>
 
 #include "hw_version.h"
 
@@ -134,6 +135,41 @@ static void ek_add_device_i2c(void)
 	at91_add_device_i2c(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 }
 
+static const struct spi_board_info ek_cm_cogent_spi_devices[] = {
+	{
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static const struct spi_board_info ek_spi_devices[] = {
+	{
+		.name		= "m25p80",
+		.chip_select	= 0,
+		.max_speed_hz	= 30 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static unsigned spi0_standard_cs[] = { AT91_PIN_PA14};
+static struct at91_spi_platform_data spi_pdata = {
+	.chipselect = spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static void ek_add_device_spi(void)
+{
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
+		spi_register_board_info(ek_cm_cogent_spi_devices,
+				ARRAY_SIZE(ek_cm_cogent_spi_devices));
+	else
+		spi_register_board_info(ek_spi_devices,
+				ARRAY_SIZE(ek_spi_devices));
+	at91_add_device_spi(0, &spi_pdata);
+}
+
 /*
  * USB Host port
  */
@@ -190,6 +226,7 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_w1();
 	ek_add_device_nand();
 	ek_add_device_eth();
+	ek_add_device_spi();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_led();
 	ek_add_device_i2c();

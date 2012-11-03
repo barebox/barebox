@@ -115,6 +115,25 @@ static void ek_add_device_eth(void)
 	at91_add_device_eth(0, &macb_pdata);
 }
 
+/*
+ * MCI (SD/MMC)
+ */
+/* mci0 detect_pin is revision dependent */
+static struct atmel_mci_platform_data mci0_data = {
+	.bus_width	= 4,
+	.detect_pin	= AT91_PIN_PD15,
+	.wp_pin		= 0,
+};
+
+static void ek_add_device_mci(void)
+{
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
+		mci0_data.detect_pin = 0;
+
+	/* MMC0 */
+	at91_add_device_mci(0, &mci0_data);
+}
+
 struct qt1070_platform_data qt1070_pdata = {
 	.irq_pin	= AT91_PIN_PA7,
 };
@@ -227,6 +246,7 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_nand();
 	ek_add_device_eth();
 	ek_add_device_spi();
+	ek_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_led();
 	ek_add_device_i2c();

@@ -25,8 +25,18 @@ static struct bus_type *get_bus_by_name(const char *name)
 
 int bus_register(struct bus_type *bus)
 {
+	int ret;
+
 	if (get_bus_by_name(bus->name))
 		return -EEXIST;
+
+	strcpy(bus->dev.name, bus->name);
+	bus->dev.id = DEVICE_ID_SINGLE;
+
+	ret = register_device(&bus->dev);
+	if (ret)
+		return ret;
+
 
 	INIT_LIST_HEAD(&bus->device_list);
 	INIT_LIST_HEAD(&bus->driver_list);

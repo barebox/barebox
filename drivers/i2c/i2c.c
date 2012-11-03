@@ -420,7 +420,22 @@ EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
 static int i2c_match(struct device_d *dev, struct driver_d *drv)
 {
-	return strcmp(dev->name, drv->name) ? -1 : 0;
+	if (!strcmp(dev->name, drv->name))
+		return 0;
+
+	if (drv->id_table) {
+		struct platform_device_id *id = drv->id_table;
+
+		while (id->name) {
+			if (!strcmp(id->name, dev->name)) {
+				dev->id_entry = id;
+				return 0;
+			}
+			id++;
+		}
+	}
+
+	return -1;
 }
 
 static int i2c_probe(struct device_d *dev)

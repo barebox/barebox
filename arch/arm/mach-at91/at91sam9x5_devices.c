@@ -123,6 +123,68 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 void at91_add_device_eth(int id, struct at91_ether_platform_data *data) {}
 #endif
 
+#if defined(CONFIG_MCI_ATMEL)
+/* Consider only one slot : slot 0 */
+void __init at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
+{
+	resource_size_t start = ~0;
+
+	if (!data)
+		return;
+
+	/* Must have at least one usable slot */
+	if (!data->bus_width)
+		return;
+
+	/* input/irq */
+	if (data->detect_pin) {
+		at91_set_gpio_input(data->detect_pin, 1);
+		at91_set_deglitch(data->detect_pin, 1);
+	}
+	if (data->wp_pin)
+		at91_set_gpio_input(data->wp_pin, 1);
+
+	if (mmc_id == 0) {		/* MCI0 */
+		start = AT91SAM9X5_BASE_MCI0;
+
+		/* CLK */
+		at91_set_A_periph(AT91_PIN_PA17, 0);
+
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA16, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_A_periph(AT91_PIN_PA15, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA18, 1);
+			at91_set_A_periph(AT91_PIN_PA19, 1);
+			at91_set_A_periph(AT91_PIN_PA20, 1);
+		}
+	} else {			/* MCI1 */
+		start = AT91SAM9X5_BASE_MCI1;
+
+		/* CLK */
+		at91_set_B_periph(AT91_PIN_PA13, 0);
+
+		/* CMD */
+		at91_set_B_periph(AT91_PIN_PA12, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_B_periph(AT91_PIN_PA11, 1);
+		if (data->bus_width == 4) {
+			at91_set_B_periph(AT91_PIN_PA2, 1);
+			at91_set_B_periph(AT91_PIN_PA3, 1);
+			at91_set_B_periph(AT91_PIN_PA4, 1);
+		}
+	}
+
+	add_generic_device("atmel_mci", mmc_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
+#endif
+
 /* --------------------------------------------------------------------
  *  NAND / SmartMedia
  * -------------------------------------------------------------------- */

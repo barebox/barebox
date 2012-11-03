@@ -37,7 +37,7 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 #include <mach/at91sam9x5_matrix.h>
-#include <gpio_keys.h>
+#include <input/qt1070.h>
 #include <readkey.h>
 #include <linux/w1-gpio.h>
 #include <w1_mac_address.h>
@@ -114,6 +114,24 @@ static void ek_add_device_eth(void)
 	at91_add_device_eth(0, &macb_pdata);
 }
 
+struct qt1070_platform_data qt1070_pdata = {
+	.irq_pin	= AT91_PIN_PA7,
+};
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		.platform_data = &qt1070_pdata,
+		I2C_BOARD_INFO("qt1070", 0x1b),
+	},
+};
+
+static void ek_add_device_i2c(void)
+{
+	at91_set_gpio_input(qt1070_pdata.irq_pin, 0);
+	at91_set_deglitch(qt1070_pdata.irq_pin, 1);
+	at91_add_device_i2c(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+}
+
 /*
  * USB Host port
  */
@@ -172,6 +190,7 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_eth();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_led();
+	ek_add_device_i2c();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

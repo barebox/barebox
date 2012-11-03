@@ -408,11 +408,11 @@ extern struct list_head bus_list;
 
 /* Iterate over all devices of a bus
  */
-#define bus_for_each_device(bus, dev) list_for_each_entry(dev, &bus->device_list, bus_list)
+#define bus_for_each_device(bus, dev) list_for_each_entry(dev, &(bus)->device_list, bus_list)
 
 /* Iterate over all drivers of a bus
  */
-#define bus_for_each_driver(bus, drv) list_for_each_entry(drv, &bus->driver_list, bus_list)
+#define bus_for_each_driver(bus, drv) list_for_each_entry(drv, &(bus)->driver_list, bus_list)
 
 extern struct bus_type platform_bus;
 

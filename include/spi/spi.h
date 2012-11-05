@@ -432,6 +432,8 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 extern struct bus_type spi_bus;
 
+struct spi_master *spi_get_master(int bus);
+
 static inline int spi_register_driver(struct driver_d *drv)
 {
 	drv->bus = &spi_bus;

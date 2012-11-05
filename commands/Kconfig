@@ -597,6 +597,12 @@ config CMD_I2C
 	  include i2c_probe, i2c_read and i2c_write commands to communicate
 	  on i2c bus.
 
+config CMD_SPI
+	bool
+	depends on SPI
+	prompt "spi command"
+	help
+
 config CMD_LED
 	bool
 	depends on LED

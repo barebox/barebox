@@ -265,6 +265,7 @@ static int atmel_spi_probe(struct device_d *dev)
 
 	master = &as->master;
 	master->dev = dev;
+	master->bus_num = dev->id;
 
 	as->clk = clk_get(dev, "spi_clk");
 	if (IS_ERR(as->clk)) {

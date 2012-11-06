@@ -322,11 +322,6 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	struct spi_transfer *t		= NULL;
 
 	mesg->actual_length = 0;
-	ret = master->setup(spi);
-	if (ret < 0) {
-		dev_dbg(master->dev, "transfer: master setup failed\n");
-		return ret;
-	}
 
 	dev_dbg(master->dev, "  csr0: %08x\n", spi_readl(as, CSR0));
 

@@ -87,6 +87,20 @@ static int atmel_spi_setup(struct spi_device *spi)
 	unsigned int		bits = spi->bits_per_word;
 	unsigned long		bus_hz;
 
+	if (spi->chip_select > spi->master->num_chipselect) {
+		dev_dbg(&spi->dev,
+				"setup: invalid chipselect %u (%u defined)\n",
+				spi->chip_select, spi->master->num_chipselect);
+		return -EINVAL;
+	}
+
+	if (bits < 8 || bits > 16) {
+		dev_dbg(&spi->dev,
+				"setup: invalid bits_per_word %u (8 to 16)\n",
+				bits);
+		return -EINVAL;
+	}
+
 	if (spi->controller_data) {
 		csr = (u32)spi->controller_data;
 		spi_writel(as, CSR0, csr);

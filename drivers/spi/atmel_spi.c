@@ -178,13 +178,54 @@ static int atmel_spi_xchg(struct atmel_spi *as, u32 tx_val)
 	return spi_readl(as, RDR) & 0xffff;
 }
 
+static int atmel_spi_do_xfer(struct spi_device *spi, struct atmel_spi *as,
+			     struct spi_transfer *t)
+{
+	unsigned int bits = spi->bits_per_word;
+	u32 tx_val;
+	int i = 0, rx_val;
+
+	if (bits <= 8) {
+		const u8 *txbuf = t->tx_buf;
+		u8 *rxbuf = t->rx_buf;
+
+		while (i < t->len) {
+			tx_val = txbuf ? txbuf[i] : 0;
+
+			rx_val = atmel_spi_xchg(as, tx_val);
+			if (rx_val < 0)
+				return rx_val;
+
+			if (rxbuf)
+				rxbuf[i] = rx_val;
+			i++;
+		}
+	} else if (bits <= 16) {
+		const u16 *txbuf = t->tx_buf;
+		u16 *rxbuf = t->rx_buf;
+
+		while (i < t->len >> 1) {
+			tx_val = txbuf ? txbuf[i] : 0;
+
+			rx_val = atmel_spi_xchg(as, tx_val);
+			if (rx_val < 0)
+				return rx_val;
+
+			if (rxbuf)
+				rxbuf[i] = rx_val;
+			i++;
+		}
+	}
+
+	return t->len;
+}
+
 static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
 	int ret;
 	struct spi_master *master	= spi->master;
 	struct atmel_spi *as		= to_atmel_spi(master);
 	struct spi_transfer *t		= NULL;
-	unsigned int bits		= spi->bits_per_word;
 
 	mesg->actual_length = 0;
 	ret = master->setup(spi);
@@ -203,47 +244,15 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	}
 #endif
 	atmel_spi_chipselect(spi, as, 1);
+
 	list_for_each_entry(t, &mesg->transfers, transfer_list) {
-		u32 tx_val;
-		int i = 0, rx_val;
 
-		mesg->actual_length += t->len;
-		if (bits <= 8) {
-			const u8 *txbuf = t->tx_buf;
-			u8 *rxbuf = t->rx_buf;
-
-			while (i < t->len) {
-				tx_val = txbuf ? txbuf[i] : 0;
-
-				rx_val = atmel_spi_xchg(as, tx_val);
-				if (rx_val < 0) {
-					ret = rx_val;
-					goto out;
-				}
-
-				if (rxbuf)
-					rxbuf[i] = rx_val;
-				i++;
-			}
-		} else if (bits <= 16) {
-			const u16 *txbuf = t->tx_buf;
-			u16 *rxbuf = t->rx_buf;
-
-			while (i < t->len >> 1) {
-				tx_val = txbuf ? txbuf[i] : 0;
-
-				rx_val = atmel_spi_xchg(as, tx_val);
-				if (rx_val < 0) {
-					ret = rx_val;
-					goto out;
-				}
-
-				if (rxbuf)
-					rxbuf[i] = rx_val;
-				i++;
-			}
-		}
+		ret = atmel_spi_do_xfer(spi, as, t);
+		if (ret < 0)
+			goto out;
+		mesg->actual_length += ret;
 	}
+
 out:
 	atmel_spi_chipselect(spi, as, 0);
 	return ret;

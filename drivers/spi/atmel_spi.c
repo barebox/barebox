@@ -66,6 +66,18 @@ static inline bool atmel_spi_is_v2(void)
 	return !cpu_is_at91rm9200();
 }
 
+static void atmel_spi_chipselect(struct spi_device *spi, struct atmel_spi *as, int on)
+{
+	struct spi_master *master = &as->master;
+	int cs_pin;
+	int val = ((spi->mode & SPI_CS_HIGH) != 0) == on;
+
+	BUG_ON(spi->chip_select >= master->num_chipselect);
+	cs_pin = as->cs_pins[spi->chip_select];
+
+	gpio_direction_output(cs_pin, val);
+}
+
 static int atmel_spi_setup(struct spi_device *spi)
 {
 	struct spi_master	*master = spi->master;
@@ -78,7 +90,7 @@ static int atmel_spi_setup(struct spi_device *spi)
 	if (spi->controller_data) {
 		csr = (u32)spi->controller_data;
 		spi_writel(as, CSR0, csr);
-		return 0;
+		goto out;
 	}
 
 	dev_dbg(master->dev, "%s mode 0x%08x bits_per_word: %d speed: %d\n",
@@ -140,19 +152,10 @@ static int atmel_spi_setup(struct spi_device *spi)
 	if (bits > 0)
 		spi->controller_data = (void *)csr;
 
+out:
+	atmel_spi_chipselect(spi, as, 0);
+
 	return 0;
-}
-
-static void atmel_spi_chipselect(struct spi_device *spi, struct atmel_spi *as, int on)
-{
-	struct spi_master *master = &as->master;
-	int cs_pin;
-	int val = ((spi->mode & SPI_CS_HIGH) != 0) == on;
-
-	BUG_ON(spi->chip_select >= master->num_chipselect);
-	cs_pin = as->cs_pins[spi->chip_select];
-
-	gpio_direction_output(cs_pin, val);
 }
 
 static int atmel_spi_xchg(struct atmel_spi *as, u32 tx_val)

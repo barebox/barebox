@@ -320,6 +320,7 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	struct spi_master *master	= spi->master;
 	struct atmel_spi *as		= to_atmel_spi(master);
 	struct spi_transfer *t		= NULL;
+	unsigned int cs_change;
 
 	mesg->actual_length = 0;
 
@@ -335,15 +336,34 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 
 	cs_activate(as, spi);
 
+	cs_change = 0;
+
 	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+
+		if (cs_change) {
+			udelay(1);
+			cs_deactivate(as, spi);
+			udelay(1);
+			cs_activate(as, spi);
+		}
+
+		cs_change = t->cs_change;
 
 		ret = atmel_spi_do_xfer(spi, as, t);
 		if (ret < 0)
-			goto out;
+			goto err;
 		mesg->actual_length += ret;
+
+		if (cs_change)
+			cs_activate(as, spi);
 	}
 
-out:
+	if (!cs_change)
+		cs_deactivate(as, spi);
+
+	return 0;
+
+err:
 	cs_deactivate(as, spi);
 	return ret;
 }

@@ -1,7 +1,0 @@
-config UBI
-	bool "UBI support"
-	select PARTITION_NEED_MTD
-	select CRC32
-	help
-	  This enables support for UBI (unsorted block images)
-

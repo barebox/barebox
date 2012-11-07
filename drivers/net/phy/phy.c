@@ -169,6 +169,10 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				goto fail;
 		} else {
 			for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
+				/* skip masked out PHY addresses */
+				if (bus->phy_mask & (1 << i))
+					continue;
+
 				dev = mdiobus_scan(bus, i);
 				if (!dev || dev->attached_dev)
 					continue;

@@ -77,6 +77,28 @@ static int console_change_speed(struct console_device *cdev, int baudrate)
 	return current_baudrate;
 }
 
+static struct console_device *get_named_console(const char *cname)
+{
+	struct console_device *cdev;
+	const char *target;
+
+	/*
+	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
+	 * same output console
+	 */
+	for_each_console(cdev) {
+		target = dev_id(&cdev->class_dev);
+		if (strlen(target) != strlen(cname))
+			continue;
+		printf("RJK: looking for %s in console name %s\n",
+		       cname, target);
+		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT))
+		    && !strcmp(cname, target))
+			return cdev;
+	}
+	return NULL;
+}
+
 /**
  * @brief provide the loady(Y-Modem or Y-Modem/G) support
  *
@@ -89,9 +111,10 @@ static int do_loady(int argc, char *argv[])
 {
 	int is_ymodemg = 0, rc = 0, opt, rcode = 0;
 	int load_baudrate = 0, current_baudrate;
+	char *cname = NULL;
 	struct console_device *cdev = NULL;
 
-	while ((opt = getopt(argc, argv, "b:g")) > 0) {
+	while ((opt = getopt(argc, argv, "b:t:g")) > 0) {
 		switch (opt) {
 		case 'b':
 			load_baudrate = (int)simple_strtoul(optarg, NULL, 10);
@@ -99,15 +122,22 @@ static int do_loady(int argc, char *argv[])
 		case 'g':
 			is_ymodemg = 1;
 			break;
+		case 't':
+			cname = optarg;
+			break;
 		default:
 			perror(argv[0]);
 			return 1;
 		}
 	}
 
-	cdev = get_current_console();
-	if (NULL == cdev) {
-		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
+	if (cname)
+		cdev = get_named_console(cname);
+	else
+		cdev = get_current_console();
+	if (!cdev) {
+		printf("%s:No console device %s with STDIN and STDOUT\n",
+		       argv[0], cname ? cname : "default");
 		return -ENODEV;
 	}
 
@@ -143,7 +173,7 @@ static int do_loadx(int argc, char *argv[])
 	ulong offset = 0;
 	int load_baudrate = 0, current_baudrate, ofd, opt, rcode = 0;
 	int open_mode = O_WRONLY;
-	char *output_file = NULL;
+	char *output_file = NULL, *cname = NULL;
 	struct console_device *cdev = NULL;
 
 	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
@@ -160,20 +190,27 @@ static int do_loadx(int argc, char *argv[])
 		case 'c':
 			open_mode |= O_CREAT;
 			break;
+		case 't':
+			cname = optarg;
+			break;
 		default:
 			perror(argv[0]);
 			return 1;
 		}
 	}
 
-	cdev = get_current_console();
-	if (NULL == cdev) {
-		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
+	if (cname)
+		cdev = get_named_console(cname);
+	else
+		cdev = get_current_console();
+	if (!cdev) {
+		printf("%s:No console device %s with STDIN and STDOUT\n",
+		       argv[0], cname ? cname : "default");
 		return -ENODEV;
 	}
 
 	/* Load Defaults */
-	if (NULL == output_file)
+	if (!output_file)
 		output_file = DEF_FILE;
 
 	/* File should exist */
@@ -211,26 +248,24 @@ static const __maybe_unused char cmd_loadx_help[] =
 	"[OPTIONS]\n"
 	"  -f file   - where to download to - defaults to " DEF_FILE "\n"
 	"  -o offset - what offset to download - defaults to 0\n"
-	"  -b baud   - baudrate at which to download - defaults to "
-	"console baudrate\n"
+	"  -t name   - console device name to use - defaults to current console\n"
+	"  -b baud   - baudrate at which to download - defaults to console baudrate\n"
 	"  -c        - Create file if it is not present - default disabled";
 
-#ifdef CONFIG_CMD_LOADB
+#ifdef CONFIG_CMD_LOADY
 BAREBOX_CMD_START(loadx)
 	.cmd = do_loadx,
 	.usage = "Load binary file over serial line (X-Modem)",
 BAREBOX_CMD_HELP(cmd_loadx_help)
 BAREBOX_CMD_END
-#endif
 
 static const __maybe_unused char cmd_loady_help[] =
 	"[OPTIONS]\n"
 	"  -y        - use Y-Modem/G (only for lossless tty as USB)\n"
-	"  -b baud   - baudrate at which to download - defaults to "
-	"console baudrate\n";
+	"  -t name   - console device name to use - defaults to current console\n"
+	"  -b baud   - baudrate at which to download - defaults to console baudrate\n";
 
-#ifdef CONFIG_CMD_LOADY
-BAREBOX_CMD_START(loady2)
+BAREBOX_CMD_START(loady)
 	.cmd = do_loady,
 	.usage = "Load binary file over serial line (Y-Modem or Y-Modem/G)",
 BAREBOX_CMD_HELP(cmd_loady_help)

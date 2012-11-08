@@ -38,6 +38,9 @@ config BITREV
 config QSORT
 	bool
 
+config XYMODEM
+	bool
+
 source lib/gui/Kconfig
 
 endmenu

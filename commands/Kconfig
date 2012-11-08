@@ -261,6 +261,7 @@ config CMD_LOADB
 
 config CMD_LOADY
 	select CRC16
+	select XYMODEM
 	tristate
 	prompt "loady"
 

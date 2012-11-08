@@ -76,7 +76,7 @@ static int do_ubiattach(int argc, char *argv[])
 		goto err;
 	}
 
-	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0);
+	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0, 20);
 	if (ret < 0)
 		printf("failed to attach: %s\n", strerror(-ret));
 	else

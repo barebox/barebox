@@ -237,6 +237,11 @@ static inline int mtd_write_oob(struct mtd_info *mtd, loff_t to,
 	return mtd->write_oob(mtd, to, ops);
 }
 
+static inline int mtd_can_have_bb(const struct mtd_info *mtd)
+{
+	return !!mtd->block_isbad;
+}
+
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	do_div(sz, mtd->erasesize);

@@ -401,13 +401,13 @@ config CMD_FLASH
 
 config CMD_UBI
 	tristate
-	default y if UBI
-	depends on UBI
+	default y if MTD_UBI
+	depends on MTD_UBI
 	prompt "ubimkvol, ubirmvol, ubiattach"
 
 config CMD_UBIFORMAT
 	tristate
-	depends on UBI
+	depends on MTD_UBI
 	select LIBMTD
 	select LIBSCAN
 	select LIBUBIGEN

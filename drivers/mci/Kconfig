@@ -88,6 +88,7 @@ config MCI_ATMEL
 
 config MCI_SPI
 	bool "MMC/SD over SPI"
+	select CRC7
 	depends on SPI
 	help
 	  Some systems access MMC/SD/SDIO cards using a SPI controller
@@ -98,7 +99,6 @@ config MCI_SPI
 
 config MMC_SPI_CRC_ON
 	bool "Enable CRC protection for transfers"
-	select CRC7
 	select CRC16
 	depends on MCI_SPI
 	help

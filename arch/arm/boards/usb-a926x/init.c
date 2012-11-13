@@ -31,6 +31,7 @@
 #include <linux/clk.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
+#include <mach/at91sam9_sdramc.h>
 #include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <led.h>
@@ -158,14 +159,38 @@ static const struct spi_board_info usb_a9263_spi_devices[] = {
 	}
 };
 
+static const struct spi_board_info usb_a9g20_spi_devices[] = {
+	{
+		.name		= "spi_mci",
+		.chip_select	= 0,
+		.max_speed_hz	= 25 * 1000 * 1000,
+		.bus_num	= 1,
+	}
+};
+
+static unsigned spi0_standard_cs_a9263[] = { AT91_PIN_PA5 };
+static struct at91_spi_platform_data spi_a9263_pdata = {
+	.chipselect = spi0_standard_cs_a9263,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs_a9263),
+};
+
+static unsigned spi0_standard_cs_a9g20[] = { AT91_PIN_PB3 };
+static struct at91_spi_platform_data spi_a9g20_pdata = {
+	.chipselect = spi0_standard_cs_a9g20,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs_a9g20),
+};
+
 static void usb_a9260_add_spi(void)
 {
-	if (!machine_is_usb_a9263())
-		return;
-
-	spi_register_board_info(usb_a9263_spi_devices,
-			ARRAY_SIZE(usb_a9263_spi_devices));
-	at91_add_device_spi(0, NULL);
+	if (machine_is_usb_a9263()) {
+		spi_register_board_info(usb_a9263_spi_devices,
+				ARRAY_SIZE(usb_a9263_spi_devices));
+		at91_add_device_spi(0, &spi_a9263_pdata);
+	} else if (machine_is_usb_a9g20() && at91_is_low_power_sdram()) {
+		spi_register_board_info(usb_a9g20_spi_devices,
+				ARRAY_SIZE(usb_a9g20_spi_devices));
+		at91_add_device_spi(1, &spi_a9g20_pdata);
+	}
 }
 
 #if defined(CONFIG_MCI_ATMEL)

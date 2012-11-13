@@ -366,12 +366,23 @@ static int spi_mci_probe(struct device_d *dev)
 	struct spi_device	*spi = (struct spi_device *)dev->type_data;
 	struct mmc_spi_host	*host;
 	void			*ones;
+	int			status;
 
 	host = xzalloc(sizeof(*host));
 	host->mci.send_cmd = mmc_spi_request;
 	host->mci.set_ios = mmc_spi_set_ios;
 	host->mci.init = mmc_spi_init;
 	host->mci.hw_dev = dev;
+
+	/* MMC and SD specs only seem to care that sampling is on the
+	 * rising edge ... meaning SPI modes 0 or 3.  So either SPI mode
+	 * should be legit.  We'll use mode 0 since the steady state is 0,
+	 * which is appropriate for hotplugging, unless the platform data
+	 * specify mode 3 (if hardware is not compatible to mode 0).
+	 */
+	if (spi->mode != SPI_MODE_3)
+		spi->mode = SPI_MODE_0;
+	spi->bits_per_word = 8;
 
 	host->dev = dev;
 	host->spi = spi;

@@ -110,6 +110,11 @@ static inline u32 at91_get_sdram_size(void)
 
 	return size;
 }
+
+static inline bool at91_is_low_power_sdram(void)
+{
+	return at91_sys_read(AT91_SDRAMC_MDR) & AT91_SDRAMC_MD_LOW_POWER_SDRAM;
+}
 #endif
 
 #endif

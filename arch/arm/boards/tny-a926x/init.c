@@ -31,6 +31,7 @@
 #include <linux/clk.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
+#include <mach/at91sam9_sdramc.h>
 #include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
@@ -151,10 +152,25 @@ static struct spi_board_info tny_a9g20_spi_devices[] = {
 	},
 };
 
+static struct spi_board_info tny_a9g20_lpw_spi_devices[] = {
+	{
+		.name = "spi_mci",
+		.max_speed_hz = 25 * 1000 * 1000,
+		.bus_num = 1,
+		.chip_select = 0,
+	},
+};
+
 static int spi0_standard_cs[] = { AT91_PIN_PC11 };
-struct at91_spi_platform_data spi_pdata = {
+struct at91_spi_platform_data spi0_pdata = {
 	.chipselect = spi0_standard_cs,
 	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static int spi1_standard_cs[] = { AT91_PIN_PC3 };
+struct at91_spi_platform_data spi1_pdata = {
+	.chipselect = spi1_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi1_standard_cs),
 };
 
 static void __init ek_add_device_udc(void)
@@ -163,6 +179,22 @@ static void __init ek_add_device_udc(void)
 		ek_udc_data.vbus_pin = AT91_PIN_PC5;
 
 	at91_add_device_udc(&ek_udc_data);
+}
+
+static void __init ek_add_device_spi(void)
+{
+	if (machine_is_tny_a9263())
+		return;
+
+	if (machine_is_tny_a9g20() && at91_is_low_power_sdram()) {
+		spi_register_board_info(tny_a9g20_lpw_spi_devices,
+			ARRAY_SIZE(tny_a9g20_lpw_spi_devices));
+		at91_add_device_spi(1, &spi1_pdata);
+	} else {
+		spi_register_board_info(tny_a9g20_spi_devices,
+			ARRAY_SIZE(tny_a9g20_spi_devices));
+		at91_add_device_spi(0, &spi0_pdata);
+	}
 }
 
 static int tny_a9260_mem_init(void)
@@ -178,15 +210,10 @@ static int tny_a9260_devices_init(void)
 	tny_a9260_add_device_nand();
 	ek_add_device_macb();
 	ek_add_device_udc();
+	ek_add_device_spi();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	tny_a9260_set_board_type();
-
-	if (machine_is_tny_a9260() || machine_is_tny_a9g20()) {
-		spi_register_board_info(tny_a9g20_spi_devices,
-			ARRAY_SIZE(tny_a9g20_spi_devices));
-		at91_add_device_spi(0, &spi_pdata);
-	}
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");

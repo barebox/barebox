@@ -26,11 +26,22 @@
 #
 tags
 TAGS
-barebox*
 cross_arch
 cross_compile
+barebox
+barebox.S
+barebox.bin
+barebox.srec
+barebox.netx
+barebox.s5p
+barebox.spi
+barebox.ubl
+barebox.uimage
+barebox.map
+barebox-flash-image
 System.map
 Module.symvers
+barebox_default_env*
 
 #
 # Generated include files

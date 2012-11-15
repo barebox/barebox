@@ -581,3 +581,15 @@ int phy_driver_register(struct phy_driver *phydrv)
 
 	return register_driver(&phydrv->drv);
 }
+ 
+int phy_drivers_register(struct phy_driver *new_driver, int n)
+{
+	int i, ret = 0;
+
+	for (i = 0; i < n; i++) {
+		ret = phy_driver_register(new_driver + i);
+		if (ret)
+			return ret;
+	}
+	return ret;
+}

@@ -3,6 +3,7 @@ menuconfig I2C
 
 if I2C
 
+source drivers/i2c/algos/Kconfig
 source drivers/i2c/busses/Kconfig
 
 endif

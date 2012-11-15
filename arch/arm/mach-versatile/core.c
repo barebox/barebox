@@ -26,6 +26,7 @@
 #include <init.h>
 #include <clock.h>
 #include <debug_ll.h>
+#include <sizes.h>
 
 #include <linux/clkdev.h>
 #include <linux/clk.h>
@@ -180,6 +181,12 @@ void versatile_register_uart(unsigned id)
 		return;
 	}
 	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
+}
+
+void versatile_register_i2c(void)
+{
+	add_generic_device("versatile-i2c", DEVICE_ID_DYNAMIC, NULL,
+			VERSATILE_I2C_BASE, SZ_4K, IORESOURCE_MEM, NULL);
 }
 
 void __noreturn reset_cpu (unsigned long ignored)

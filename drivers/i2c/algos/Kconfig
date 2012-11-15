@@ -1,0 +1,6 @@
+#
+# I2C algorithm drivers configuration
+#
+
+config I2C_ALGOBIT
+	bool

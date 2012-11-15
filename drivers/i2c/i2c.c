@@ -80,7 +80,7 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 	 */
 
 	for (ret = 0; ret < num; ret++) {
-		dev_dbg(adap->dev, "master_xfer[%d] %c, addr=0x%02x, "
+		dev_dbg(&adap->dev, "master_xfer[%d] %c, addr=0x%02x, "
 			"len=%d\n", ret, (msgs[ret].flags & I2C_M_RD)
 			? 'R' : 'W', msgs[ret].addr, msgs[ret].len);
 	}
@@ -256,6 +256,9 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
+	client->dev.parent = &adapter->dev;
+	dev_add_child(client->dev.parent, &client->dev);
+
 	status = register_device(&client->dev);
 
 #if 0
@@ -277,6 +280,34 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 #endif
 }
 EXPORT_SYMBOL(i2c_new_device);
+
+/**
+ * i2c_new_dummy - return a new i2c device bound to a dummy driver
+ * @adapter: the adapter managing the device
+ * @address: seven bit address to be used
+ * Context: can sleep
+ *
+ * This returns an I2C client bound to the "dummy" driver, intended for use
+ * with devices that consume multiple addresses.  Examples of such chips
+ * include various EEPROMS (like 24c04 and 24c08 models).
+ *
+ * These dummy devices have two main uses.  First, most I2C and SMBus calls
+ * except i2c_transfer() need a client handle; the dummy will be that handle.
+ * And second, this prevents the specified address from being bound to a
+ * different driver.
+ *
+ * This returns the new i2c client, which should be saved for later use with
+ * i2c_unregister_device(); or NULL to indicate an error.
+ */
+struct i2c_client *i2c_new_dummy(struct i2c_adapter *adapter, u16 address)
+{
+	struct i2c_board_info info = {
+		I2C_BOARD_INFO("dummy", address),
+	};
+
+	return i2c_new_device(adapter, &info);
+}
+EXPORT_SYMBOL_GPL(i2c_new_dummy);
 
 /**
  * i2c_register_board_info - register I2C devices for a given board
@@ -363,8 +394,20 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
+	int ret;
+
 	if (i2c_get_adapter(adapter->nr))
 		return -EBUSY;
+
+	adapter->dev.id = adapter->nr;
+	strcpy(adapter->dev.name, "i2c");
+
+	if (adapter->dev.parent)
+		dev_add_child(adapter->dev.parent, &adapter->dev);
+
+	ret = register_device(&adapter->dev);
+	if (ret)
+		return ret;
 
 	list_add_tail(&adapter->list, &adapter_list);
 
@@ -377,7 +420,22 @@ EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
 static int i2c_match(struct device_d *dev, struct driver_d *drv)
 {
-	return strcmp(dev->name, drv->name) ? -1 : 0;
+	if (!strcmp(dev->name, drv->name))
+		return 0;
+
+	if (drv->id_table) {
+		struct platform_device_id *id = drv->id_table;
+
+		while (id->name) {
+			if (!strcmp(id->name, dev->name)) {
+				dev->id_entry = id;
+				return 0;
+			}
+			id++;
+		}
+	}
+
+	return -1;
 }
 
 static int i2c_probe(struct device_d *dev)

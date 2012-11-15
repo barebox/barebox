@@ -318,7 +318,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 		while (!(omap_i2c_read_reg(i2c_omap, OMAP_I2C_SYSS_REG) &
 			 SYSS_RESETDONE_MASK)) {
 			if (is_timeout(start, MSECOND)) {
-				dev_warn(i2c_omap->adapter.dev, "timeout waiting "
+				dev_warn(&i2c_omap->adapter.dev, "timeout waiting "
 						"for controller reset\n");
 				return -ETIMEDOUT;
 			}
@@ -453,7 +453,7 @@ static int omap_i2c_wait_for_bb(struct i2c_adapter *adapter)
 	start = get_time_ns();
 	while (omap_i2c_read_reg(i2c_omap, OMAP_I2C_STAT_REG) & OMAP_I2C_STAT_BB) {
 		if (is_timeout(start, MSECOND)) {
-			dev_warn(adapter->dev, "timeout waiting for bus ready\n");
+			dev_warn(&adapter->dev, "timeout waiting for bus ready\n");
 			return -ETIMEDOUT;
 		}
 	}
@@ -476,9 +476,9 @@ omap_i2c_isr(struct omap_i2c_struct *dev)
 
 	bits = omap_i2c_read_reg(dev, OMAP_I2C_IE_REG);
 	while ((stat = (omap_i2c_read_reg(dev, OMAP_I2C_STAT_REG))) & bits) {
-		dev_dbg(dev->adapter.dev, "IRQ (ISR = 0x%04x)\n", stat);
+		dev_dbg(&dev->adapter.dev, "IRQ (ISR = 0x%04x)\n", stat);
 		if (count++ == 100) {
-			dev_warn(dev->adapter.dev, "Too much work in one IRQ\n");
+			dev_warn(&dev->adapter.dev, "Too much work in one IRQ\n");
 			break;
 		}
 
@@ -499,7 +499,7 @@ complete:
 					   OMAP_I2C_CON_STP);
 		}
 		if (stat & OMAP_I2C_STAT_AL) {
-			dev_err(dev->adapter.dev, "Arbitration lost\n");
+			dev_err(&dev->adapter.dev, "Arbitration lost\n");
 			err |= OMAP_I2C_STAT_AL;
 		}
 		if (stat & (OMAP_I2C_STAT_ARDY | OMAP_I2C_STAT_NACK |
@@ -536,11 +536,11 @@ complete:
 					}
 				} else {
 					if (stat & OMAP_I2C_STAT_RRDY)
-						dev_err(dev->adapter.dev,
+						dev_err(&dev->adapter.dev,
 							"RRDY IRQ while no data"
 								" requested\n");
 					if (stat & OMAP_I2C_STAT_RDR)
-						dev_err(dev->adapter.dev,
+						dev_err(&dev->adapter.dev,
 							"RDR IRQ while no data"
 								" requested\n");
 					break;
@@ -577,11 +577,11 @@ complete:
 					}
 				} else {
 					if (stat & OMAP_I2C_STAT_XRDY)
-						dev_err(dev->adapter.dev,
+						dev_err(&dev->adapter.dev,
 							"XRDY IRQ while no "
 							"data to send\n");
 					if (stat & OMAP_I2C_STAT_XDR)
-						dev_err(dev->adapter.dev,
+						dev_err(&dev->adapter.dev,
 							"XDR IRQ while no "
 							"data to send\n");
 					break;
@@ -613,11 +613,11 @@ complete:
 			continue;
 		}
 		if (stat & OMAP_I2C_STAT_ROVR) {
-			dev_err(dev->adapter.dev, "Receive overrun\n");
+			dev_err(&dev->adapter.dev, "Receive overrun\n");
 			dev->cmd_err |= OMAP_I2C_STAT_ROVR;
 		}
 		if (stat & OMAP_I2C_STAT_XUDF) {
-			dev_err(dev->adapter.dev, "Transmit underflow\n");
+			dev_err(&dev->adapter.dev, "Transmit underflow\n");
 			dev->cmd_err |= OMAP_I2C_STAT_XUDF;
 		}
 	}
@@ -639,7 +639,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 	int ret = 0;
 
 
-	dev_dbg(adapter->dev, "addr: 0x%04x, len: %d, flags: 0x%x, stop: %d\n",
+	dev_dbg(&adapter->dev, "addr: 0x%04x, len: %d, flags: 0x%x, stop: %d\n",
 		msg->addr, msg->len, msg->flags, stop);
 
 	if (msg->len == 0)
@@ -687,7 +687,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 
 			/* Let the user know if i2c is in a bad state */
 			if (is_timeout(start, MSECOND)) {
-				dev_err(adapter->dev, "controller timed out "
+				dev_err(&adapter->dev, "controller timed out "
 				"waiting for start condition to finish\n");
 				return -ETIMEDOUT;
 			}
@@ -707,7 +707,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 	while (ret){
 		ret = omap_i2c_isr(i2c_omap);
 		if (is_timeout(start, MSECOND)) {
-				dev_err(adapter->dev,
+				dev_err(&adapter->dev,
 				"timed out on polling for "
 				"open i2c message handling\n");
 				return -ETIMEDOUT;
@@ -835,7 +835,7 @@ i2c_omap_probe(struct device_d *pdev)
 
 	i2c_omap->adapter.master_xfer	= omap_i2c_xfer,
 	i2c_omap->adapter.nr = pdev->id;
-	i2c_omap->adapter.dev = pdev;
+	i2c_omap->adapter.dev.parent = pdev;
 
 	/* i2c device drivers may be active on return from add_adapter() */
 	r = i2c_add_numbered_adapter(&i2c_omap->adapter);

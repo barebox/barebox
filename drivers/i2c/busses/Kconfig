@@ -4,6 +4,14 @@
 
 menu "I2C Hardware Bus support"
 
+config I2C_GPIO
+	tristate "GPIO-based bitbanging I2C"
+	depends on GENERIC_GPIO
+	select I2C_ALGOBIT
+	help
+	  This is a very simple bitbanging I2C driver utilizing the
+	  arch-neutral GPIO API to control the SCL and SDA lines.
+
 config I2C_IMX
 	bool "MPC85xx/i.MX I2C Master driver"
 	depends on (ARCH_IMX && !ARCH_IMX1) || ARCH_MPC85XX
@@ -11,5 +19,13 @@ config I2C_IMX
 config I2C_OMAP
 	bool "OMAP I2C Master driver"
 	depends on ARCH_OMAP
+
+config I2C_VERSATILE
+	tristate "ARM Versatile/Realview I2C bus support"
+	depends on ARCH_VERSATILE
+	select I2C_ALGOBIT
+	help
+	  Say yes if you want to support the I2C serial bus on ARMs Versatile
+	  range of platforms.
 
 endmenu

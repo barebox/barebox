@@ -749,7 +749,7 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 
 	mci->capacity = (csize + 1) << (cmult + 2);
 	mci->capacity *= mci->read_bl_len;
-	dev_dbg(mci->mci_dev, "Capacity: %u MiB\n", (unsigned)mci->capacity >> 20);
+	dev_dbg(mci->mci_dev, "Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 }
 
 static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)

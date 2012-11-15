@@ -31,6 +31,9 @@ config BOARDINFO
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
 
+config HAVE_AT91_DATAFLASH_CARD
+	bool
+
 config AT91SAM9_RESET
 	bool
 
@@ -119,6 +122,7 @@ choice
 config MACH_AT91RM9200EK
 	bool "Atmel AT91RM9200-EK Evaluation Kit"
 	help
+	select HAVE_AT91_DATAFLASH_CARD
 	  Select this if you are using Atmel's AT91RM9200-EK Evaluation Kit.
 	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3507>
 
@@ -333,6 +337,12 @@ endif
 # ----------------------------------------------------------
 
 comment "AT91 Board Options"
+
+config MTD_AT91_DATAFLASH_CARD
+	bool "Enable DataFlash Card support"
+	depends on HAVE_AT91_DATAFLASH_CARD
+	help
+	  Enable support for the DataFlash card.
 
 config MTD_NAND_ATMEL_BUSWIDTH_16
 	bool "Enable 16-bit data bus interface to NAND flash"

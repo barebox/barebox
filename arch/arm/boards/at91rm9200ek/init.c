@@ -30,6 +30,7 @@
 #include <mach/board.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
+#include <spi/spi.h>
 
 static struct at91_ether_platform_data ether_pdata = {
 	.flags = AT91SAM_ETHER_RMII,
@@ -103,6 +104,53 @@ static void ek_add_device_udc(void)
 static void ek_add_device_udc(void) {}
 #endif
 
+static struct spi_board_info ek_dataflash_spi_devices[] = {
+	{	/* DataFlash chip */
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+	},
+#ifdef CONFIG_MTD_AT91_DATAFLASH_CARD
+	{	/* DataFlash card */
+		.name		= "mtd_dataflash",
+		.chip_select	= 1,
+		.max_speed_hz	= 15 * 1000 * 1000,
+	},
+#endif
+};
+
+static struct spi_board_info ek_mmc_spi_devices[] = {
+#if !defined(CONFIG_MTD_DATAFLASH)
+	{
+		.name		= "spi_mci",
+		.chip_select	= 0,
+		.max_speed_hz	= 20 * 1000 * 1000,
+	},
+#endif
+#if !defined(CONFIG_MTD_AT91_DATAFLASH_CARD)
+	{
+		.name		= "spi_mci",
+		.chip_select	= 1,
+		.max_speed_hz	= 20 * 1000 * 1000,
+	},
+#endif
+};
+
+static unsigned spi0_standard_cs[] = { AT91_PIN_PA3, AT91_PIN_PA6 };
+static struct at91_spi_platform_data spi_pdata = {
+	.chipselect = spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static void ek_add_device_spi(void)
+{
+	/* select mci0 as spi */
+	at91_set_gpio_output(AT91_PIN_PB22, 0);
+	spi_register_board_info(ek_dataflash_spi_devices, ARRAY_SIZE(ek_dataflash_spi_devices));
+	spi_register_board_info(ek_mmc_spi_devices, ARRAY_SIZE(ek_mmc_spi_devices));
+	at91_add_device_spi(0, &spi_pdata);
+}
+
 static int at91rm9200ek_devices_init(void)
 {
 	/*
@@ -118,6 +166,7 @@ static int at91rm9200ek_devices_init(void)
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_device_add_leds();
 	ek_add_device_udc();
+	ek_add_device_spi();
 
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");

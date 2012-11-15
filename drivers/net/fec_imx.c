@@ -370,26 +370,6 @@ static void fec_update_linkspeed(struct eth_device *edev)
 	}
 }
 
-static int fec_phy_connect(struct eth_device *edev)
-{
-	struct fec_priv *fec = (struct fec_priv *)edev->priv;
-	int ret;
-
-	if (fec->xcv_type == SEVENWIRE)
-		return 0;
-
-	ret = phy_device_connect(edev, &fec->miibus, fec->phy_addr,
-			 fec_update_linkspeed, fec->phy_flags,
-			 fec->interface);
-	if (ret)
-		return ret;
-
-	if (fec->phy_init)
-		fec->phy_init(edev->phydev);
-
-	return 0;
-}
-
 /**
  * Start the FEC engine
  * @param[in] edev Our device to handle
@@ -397,7 +377,19 @@ static int fec_phy_connect(struct eth_device *edev)
 static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
+	int ret;
 	u32 ecr;
+
+	if (fec->xcv_type != SEVENWIRE) {
+		ret = phy_device_connect(edev, &fec->miibus, fec->phy_addr,
+					 fec_update_linkspeed, fec->phy_flags,
+					 fec->interface);
+		if (ret)
+			return ret;
+
+		if (fec->phy_init)
+			fec->phy_init(edev->phydev);
+	}
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -713,18 +705,9 @@ static int fec_probe(struct device_d *dev)
 		mdiobus_register(&fec->miibus);
 	}
 
-	ret = eth_register(edev);
-	if (ret)
-		goto err_free;
-
-	ret = fec_phy_connect(edev);
-	if (ret)
-		goto err_unregister;
-
+	eth_register(edev);
 	return 0;
 
-err_unregister:
-	eth_unregister(edev);
 err_free:
 	free(fec);
 	return ret;

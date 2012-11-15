@@ -14,4 +14,9 @@ config GENERIC_PHY
 
 endif
 
+config SMSC_PHY
+	bool "Drivers for SMSC PHYs"
+	---help---
+	  Currently supports the LAN83C185, LAN8187 and LAN8700 PHYs
+
 endmenu

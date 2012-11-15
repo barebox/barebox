@@ -180,6 +180,7 @@ static int loco_devices_init(void)
 {
 
 	imx53_iim_register_fec_ethaddr();
+	loco_fec_reset();
 	imx53_add_fec(&fec_info);
 	imx53_add_mmc0(&loco_sd1_data);
 	imx53_add_mmc2(&loco_sd3_data);
@@ -188,8 +189,6 @@ static int loco_devices_init(void)
 
 	if (IS_ENABLED(CONFIG_USB_EHCI))
 		loco_ehci_init();
-
-	loco_fec_reset();
 
 	set_silicon_rev(imx_silicon_revision());
 

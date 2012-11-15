@@ -13,7 +13,6 @@
  */
 
 DCD_NAME_XX30[] = {
-	DCD_WR_CMD(0x21c),
 	DCD_ITEM(0x53fd4068, 0xffcc0fff),
 	DCD_ITEM(0x53fd406c, 0x000fffc3),
 	DCD_ITEM(0x53fd4070, 0x033c0000),

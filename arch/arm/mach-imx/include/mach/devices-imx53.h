@@ -82,3 +82,8 @@ static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pda
 
 	return dev;
 }
+
+static inline struct device_d *imx53_add_kpp(struct matrix_keymap_data *pdata)
+{
+	return imx_add_kpp((void *)MX53_KPP_BASE_ADDR, pdata);
+}

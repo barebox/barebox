@@ -3,6 +3,8 @@
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
 
+#ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
+
 void __naked reset(void)
 {
 	common_reset();
@@ -17,3 +19,4 @@ void __naked reset(void)
 
 	board_init_lowlevel_return();
 }
+#endif

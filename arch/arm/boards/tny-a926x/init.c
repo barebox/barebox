@@ -114,7 +114,7 @@ static void tny_a9260_add_device_nand(void)
 
 #ifdef CONFIG_DRIVER_NET_MACB
 static struct at91_ether_platform_data macb_pdata = {
-	.flags		= AT91SAM_ETHER_RMII,
+	.is_rmii	= 1,
 	.phy_addr	= -1,
 };
 

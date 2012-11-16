@@ -91,7 +91,7 @@ void __init at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 	at91_set_A_periph(AT91_PIN_PA8, 0);	/* ETXEN */
 	at91_set_A_periph(AT91_PIN_PA7, 0);	/* ETXCK_EREFCK */
 
-	if (!(data->flags & AT91SAM_ETHER_RMII)) {
+	if (!data->is_rmii) {
 		at91_set_B_periph(AT91_PIN_PB19, 0);	/* ERXCK */
 		at91_set_B_periph(AT91_PIN_PB18, 0);	/* ECOL */
 		at91_set_B_periph(AT91_PIN_PB17, 0);	/* ERXDV */

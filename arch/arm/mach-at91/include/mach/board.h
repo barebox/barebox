@@ -63,14 +63,13 @@ struct atmel_nand_data {
 void at91_add_device_nand(struct atmel_nand_data *data);
 
  /* Ethernet (EMAC & MACB) */
-#define AT91SAM_ETHER_MII		(0 << 0)
-#define AT91SAM_ETHER_RMII		(1 << 0)
-#define AT91SAM_ETHER_FORCE_LINK	(1 << 1)
-#define AT91SAM_ETX2_ETX3_ALTERNATIVE	(1 << 2)
+#define AT91SAM_ETX2_ETX3_ALTERNATIVE	(1 << 0)
 
 struct at91_ether_platform_data {
+	unsigned int phy_flags;
 	unsigned int flags;
 	int phy_addr;
+	int is_rmii;
 	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 

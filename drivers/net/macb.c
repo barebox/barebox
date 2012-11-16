@@ -439,13 +439,12 @@ static int macb_probe(struct device_d *dev)
 	macb->miibus.priv = macb;
 	macb->miibus.parent = dev;
 
-	if (pdata->flags & AT91SAM_ETHER_RMII)
+	if (pdata->is_rmii)
 		macb->interface = PHY_INTERFACE_MODE_RMII;
 	else
 		macb->interface = PHY_INTERFACE_MODE_MII;
 
-	macb->phy_flags = pdata->flags & AT91SAM_ETHER_FORCE_LINK ?
-					PHYLIB_FORCE_LINK : 0;
+	macb->phy_flags = pdata->phy_flags;
 
 	macb->rx_buffer = dma_alloc_coherent(CFG_MACB_RX_BUFFER_SIZE);
 	macb->rx_ring = dma_alloc_coherent(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));

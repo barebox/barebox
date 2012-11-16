@@ -230,6 +230,11 @@ config CMD_TFTP
 	  barebox can mount tftp as a filesystem. This command is only needed to
 	  preserve backward compatibility to the old tftp command.
 
+config CMD_FILETYPE
+	tristate
+	select FILETYPE
+	prompt "filetype"
+
 endmenu
 
 menu "console                       "

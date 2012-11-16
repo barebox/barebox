@@ -39,6 +39,7 @@
 #include <asm/barebox-arm-head.h>
 
 #ifdef CONFIG_MACH_DO_LOWLEVEL_INIT
+.section .text.__reset
 ENTRY(reset)
 	/* Invalidate all Dcaches */
 #ifndef CONFIG_CPU_V7_DCACHE_SKIP

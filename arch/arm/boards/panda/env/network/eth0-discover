@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Panda has a network adapter on USB
+
+usb

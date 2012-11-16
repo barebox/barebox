@@ -11,6 +11,10 @@ config LED_GPIO_RGB
 	bool "gpio rgb LED support"
 	depends on LED_GPIO
 
+config LED_GPIO_BICOLOR
+	bool "gpio bicolor LED support"
+	depends on LED_GPIO
+
 config LED_TRIGGERS
 	select POLLER
 	bool "LED triggers support"

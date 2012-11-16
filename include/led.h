@@ -65,6 +65,12 @@ struct gpio_led {
 	struct led led;
 };
 
+struct gpio_bicolor_led {
+	int gpio_c0, gpio_c1;
+	bool active_low;
+	struct led led;
+};
+
 struct gpio_rgb_led {
 	int gpio_r, gpio_g, gpio_b;
 	bool active_low;
@@ -81,6 +87,20 @@ static inline int led_gpio_register(struct gpio_led *led)
 }
 
 static inline void led_gpio_unregister(struct gpio_led *led)
+{
+}
+#endif
+
+#ifdef CONFIG_LED_GPIO_BICOLOR
+int led_gpio_bicolor_register(struct gpio_bicolor_led *led);
+void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led);
+#else
+static inline int led_gpio_bicolor_register(struct gpio_bicolor_led *led)
+{
+	return -ENOSYS;
+}
+
+static inline void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led)
 {
 }
 #endif

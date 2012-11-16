@@ -30,7 +30,7 @@
 			     ch += (ch >= 10) ? 'a' - 10 : '0';\
 			     PUTC_LL (ch); }})
 
-static __inline__ void PUTS_LL(char * str)
+static __inline__ void PUTS_LL(const char * str)
 {
 	while (*str) {
 		if (*str == '\n') {

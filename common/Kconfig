@@ -468,17 +468,19 @@ config CONSOLE_FULL
 	prompt "Enable full console support"
 	help
 	  This option enables full console support capable of
-	  handling multiple consoles.
+	  handling multiple consoles. Also the full console support
+	  is able to store the output which comes before a console
+	  is registered in a circular buffer which will be printed
+	  once the first console is registered. Recommended for most
+	  usecases.
 
-config CONSOLE_SIMPLE
-	bool
-	default y
-	depends on !CONSOLE_FULL
+choice
+	prompt "Console activation strategy"
+	depends on CONSOLE_FULL
+	default CONSOLE_ACTIVATE_FIRST
 
 config CONSOLE_ACTIVATE_FIRST
-	depends on CONSOLE_FULL
 	bool
-	default y
 	prompt "activate first console on startup"
 	help
 	  Normally on startup all consoles are disabled, so you won't
@@ -486,13 +488,28 @@ config CONSOLE_ACTIVATE_FIRST
 	  enables the first console.
 
 config CONSOLE_ACTIVATE_ALL
-	depends on CONSOLE_FULL
-	depends on !CONSOLE_ACTIVATE_FIRST
 	bool
 	prompt "activate all consoles on startup"
 	help
 	  Enabling this options activates all consoles on startup, so
 	  you will get output and a prompt on all consoles simultaneously.
+	  Only the first registered console will have the full startup
+	  log though.
+
+config CONSOLE_ACTIVATE_NONE
+	prompt "leave all consoles disabled"
+	bool
+	help
+	  Leave all consoles disabled on startup. Board code or environment
+	  is responsible for enabling a console. Otherwise you'll get a working
+	  barebox, you just won't see anything.
+
+endchoice
+
+config CONSOLE_SIMPLE
+	bool
+	default y
+	depends on !CONSOLE_FULL
 
 config PARTITION
 	bool

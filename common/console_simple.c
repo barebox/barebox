@@ -2,6 +2,7 @@
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
+#include <debug_ll.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -85,8 +86,10 @@ EXPORT_SYMBOL(console_puts);
 
 void console_putc(unsigned int ch, char c)
 {
-	if (!console)
+	if (!console) {
+		PUTC_LL(c);
 		return;
+	}
 
 	console->putc(console, c);
 	if (c == '\n')

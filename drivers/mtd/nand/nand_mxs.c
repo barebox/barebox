@@ -1039,9 +1039,13 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	struct mxs_nand_info *nand_info = nand->priv;
 	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
 	uint32_t tmp;
+	int ret;
 
 	/* Reset BCH. Don't use SFTRST on MX23 due to Errata #2847 */
-	mxs_reset_block(bch_regs + BCH_CTRL, nand_info->version == GPMI_VERSION_TYPE_MX23);
+	ret = mxs_reset_block(bch_regs + BCH_CTRL,
+				nand_info->version == GPMI_VERSION_TYPE_MX23);
+	if (ret)
+		return ret;
 
 	/* Configure layout 0 */
 	tmp = (mxs_nand_ecc_chunk_cnt(mtd->writesize) - 1)
@@ -1124,7 +1128,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = (void *)MXS_GPMI_BASE;
-	int i = 0;
+	int i = 0, ret;
 	u32 val;
 
 	info->desc = malloc(sizeof(struct mxs_dma_desc *) *
@@ -1145,7 +1149,9 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	imx_enable_nandclk();
 
 	/* Reset the GPMI block. */
-	mxs_reset_block(gpmi_regs + GPMI_CTRL0, 0);
+	ret = mxs_reset_block(gpmi_regs + GPMI_CTRL0, 0);
+	if (ret)
+		return ret;
 
 	/*
 	 * Choose NAND mode, set IRQ polarity, disable write protection and

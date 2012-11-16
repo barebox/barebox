@@ -40,6 +40,11 @@ config ARCH_BCM2835
 	select CLOCKSOURCE_BCM2835
 	select ARM_AMBA
 
+config ARCH_CLPS711X
+	bool "Cirrus Logic EP711x/EP721x/EP731x"
+	select CLKDEV_LOOKUP
+	select CPU_32v4T
+
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
@@ -109,6 +114,7 @@ endchoice
 source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-bcm2835/Kconfig
+source arch/arm/mach-clps711x/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-mxs/Kconfig

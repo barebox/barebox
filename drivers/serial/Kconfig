@@ -43,6 +43,11 @@ config DRIVER_SERIAL_BLACKFIN
 	default y
 	bool "Blackfin serial driver"
 
+config DRIVER_SERIAL_CLPS711X
+	depends on ARCH_CLPS711X
+	default y
+	bool "CLPS711X serial driver"
+
 config DRIVER_SERIAL_ALTERA
 	depends on NIOS2
 	default y

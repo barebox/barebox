@@ -222,6 +222,7 @@ static int sd_send_op_cond(struct mci *mci)
 	int err;
 	unsigned voltages;
 	unsigned busy;
+	unsigned arg;
 
 	/*
 	 * Most cards do not answer if some reserved bits
@@ -240,9 +241,12 @@ static int sd_send_op_cond(struct mci *mci)
 			return err;
 		}
 
-		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND,
-			mmc_host_is_spi(host) ? 0 : (voltages | (mci->version == SD_VERSION_2 ? OCR_HCS : 0)),
-			MMC_RSP_R3);
+		arg = mmc_host_is_spi(host) ? 0 : voltages;
+
+		if (mci->version == SD_VERSION_2)
+			arg |= OCR_HCS;
+
+		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND, arg, MMC_RSP_R3);
 		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
 			dev_dbg(mci->mci_dev, "SD operation condition set failed: %d\n", err);

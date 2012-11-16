@@ -121,14 +121,6 @@ mmc_spi_writebytes(struct mmc_spi_host *host, unsigned len, void *data)
 	return status;
 }
 
-/*
- * Note that while the CRC, in general, is ignored in SPI mode, the very first
- * command must be followed by a valid CRC, since the card is not yet in SPI mode.
- * The CRC byte for a CMD0 command with a zero argument is a constant 0x4A. For
- * simplicity, this CRC byte is always sent with every command.
- */
-#define MMC_SPI_CMD0_CRC	((0x4a << 1) | 0x1)
-
 static int mmc_spi_command_send(struct mmc_spi_host *host, struct mci_cmd *cmd)
 {
 	uint8_t r1;
@@ -141,11 +133,7 @@ static int mmc_spi_command_send(struct mmc_spi_host *host, struct mci_cmd *cmd)
 	command[3] = cmd->cmdarg >> 16;
 	command[4] = cmd->cmdarg >> 8;
 	command[5] = cmd->cmdarg;
-#ifdef CONFIG_MMC_SPI_CRC_ON
 	command[6] = (crc7(0, &command[1], 5) << 1) | 0x01;
-#else
-	command[6] = MMC_SPI_CMD0_CRC;
-#endif
 
 	mmc_spi_writebytes(host, 7, command);
 
@@ -330,7 +318,15 @@ static void mmc_spi_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct mmc_spi_host	*host = to_spi_host(mci);
 
-	spi_setup(host->spi);
+	if (host->spi->max_speed_hz != ios->clock && ios->clock != 0) {
+		int		status;
+
+		host->spi->max_speed_hz = ios->clock;
+		status = spi_setup(host->spi);
+		dev_dbg(&host->spi->dev,
+			"mmc_spi:  clock to %d Hz, %d\n",
+			host->spi->max_speed_hz, status);
+	}
 }
 
 static int mmc_spi_init(struct mci_host *mci, struct device_d *mci_dev)
@@ -378,12 +374,42 @@ static int spi_mci_probe(struct device_d *dev)
 	struct spi_device	*spi = (struct spi_device *)dev->type_data;
 	struct mmc_spi_host	*host;
 	void			*ones;
+	int			status;
 
 	host = xzalloc(sizeof(*host));
 	host->mci.send_cmd = mmc_spi_request;
 	host->mci.set_ios = mmc_spi_set_ios;
 	host->mci.init = mmc_spi_init;
 	host->mci.hw_dev = dev;
+
+	/* MMC and SD specs only seem to care that sampling is on the
+	 * rising edge ... meaning SPI modes 0 or 3.  So either SPI mode
+	 * should be legit.  We'll use mode 0 since the steady state is 0,
+	 * which is appropriate for hotplugging, unless the platform data
+	 * specify mode 3 (if hardware is not compatible to mode 0).
+	 */
+	if (spi->mode != SPI_MODE_3)
+		spi->mode = SPI_MODE_0;
+	spi->bits_per_word = 8;
+
+	status = spi_setup(spi);
+	if (status < 0) {
+		dev_dbg(&spi->dev, "needs SPI mode %02x, %d KHz; %d\n",
+				spi->mode, spi->max_speed_hz / 1000,
+				status);
+		return status;
+	}
+
+	/* SPI doesn't need the lowspeed device identification thing for
+	 * MMC or SD cards, since it never comes up in open drain mode.
+	 * That's good; some SPI masters can't handle very low speeds!
+	 *
+	 * However, low speed SDIO cards need not handle over 400 KHz;
+	 * that's the only reason not to use a few MHz for f_min (until
+	 * the upper layer reads the target frequency from the CSD).
+	 */
+	host->mci.f_min = 400000;
+	host->mci.f_max = spi->max_speed_hz;
 
 	host->dev = dev;
 	host->spi = spi;

@@ -23,6 +23,7 @@
 #include <libfdt.h>
 #include <malloc.h>
 #include <init.h>
+#include <memory.h>
 #include <linux/ctype.h>
 
 /**
@@ -492,6 +493,36 @@ struct device_node *of_find_node_by_path(const char *path)
 }
 EXPORT_SYMBOL(of_find_node_by_path);
 
+/**
+ * of_property_read_string - Find and read a string from a property
+ * @np:		device node from which the property value is to be read.
+ * @propname:	name of the property to be searched.
+ * @out_string:	pointer to null terminated return string, modified only if
+ *		return value is 0.
+ *
+ * Search for a property in a device tree node and retrieve a null
+ * terminated string value (pointer to data, not a copy). Returns 0 on
+ * success, -EINVAL if the property does not exist, -ENODATA if property
+ * does not have a value, and -EILSEQ if the string is not null-terminated
+ * within the length of the property data.
+ *
+ * The out_string pointer is modified only if a valid string can be decoded.
+ */
+int of_property_read_string(struct device_node *np, const char *propname,
+				const char **out_string)
+{
+	struct property *prop = of_find_property(np, propname);
+	if (!prop)
+		return -EINVAL;
+	if (!prop->value)
+		return -ENODATA;
+	if (strnlen(prop->value, prop->length) >= prop->length)
+		return -EILSEQ;
+	*out_string = prop->value;
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_property_read_string);
+
 struct device_node *of_get_root_node(void)
 {
 	return root_node;
@@ -615,9 +646,51 @@ static struct device_d *add_of_device(struct device_node *node)
 }
 EXPORT_SYMBOL(add_of_device);
 
+u64 dt_mem_next_cell(int s, const __be32 **cellp)
+{
+	const __be32 *p = *cellp;
+
+	*cellp = p + s;
+	return of_read_number(p, s);
+}
+
+static int of_add_memory(struct device_node *node)
+{
+	int na, nc;
+	const __be32 *reg, *endp;
+	int len, r = 0;
+	static char str[6];
+
+	of_bus_count_cells(node, &na, &nc);
+
+	reg = of_get_property(node, "reg", &len);
+	if (!reg)
+		return 0;
+
+	endp = reg + (len / sizeof(__be32));
+
+	while ((endp - reg) >= (na + nc)) {
+		u64 base, size;
+
+		base = dt_mem_next_cell(na, &reg);
+		size = dt_mem_next_cell(nc, &reg);
+
+		if (size == 0)
+			continue;
+
+		sprintf(str, "ram%d", r);
+
+                barebox_add_memory_bank(str, base, size);
+
+		r++;
+        }
+
+	return 0;
+}
+
 static int add_of_device_resource(struct device_node *node)
 {
-	struct property *reg;
+	struct property *reg, *type;
 	u64 address, size;
 	struct resource *res;
 	struct device_d *dev;
@@ -629,6 +702,10 @@ static int add_of_device_resource(struct device_node *node)
 		node->phandle = phandle;
 		list_add_tail(&node->phandles, &phandle_list);
 	}
+
+	type = of_find_property(node, "device_type");
+	if (type)
+		return of_add_memory(node);
 
 	reg = of_find_property(node, "reg");
 	if (!reg)
@@ -715,6 +792,12 @@ static void __of_probe(struct device_node *node)
 }
 
 struct device_node *of_chosen;
+const char *of_model;
+
+const char *of_get_model(void)
+{
+	return of_model;
+}
 
 int of_probe(void)
 {
@@ -722,6 +805,7 @@ int of_probe(void)
 		return -ENODEV;
 
 	of_chosen = of_find_node_by_path("/chosen");
+	of_property_read_string(root_node, "model", &of_model);
 
 	__of_probe(root_node);
 

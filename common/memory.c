@@ -113,15 +113,15 @@ void *sbrk(ptrdiff_t increment)
 
 LIST_HEAD(memory_banks);
 
-void barebox_add_memory_bank(const char *name, resource_size_t start,
+int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size)
 {
 	struct memory_bank *bank = xzalloc(sizeof(*bank));
 	struct device_d *dev;
 
 	bank->res = request_iomem_region(name, start, start + size - 1);
-
-	BUG_ON(!bank->res);
+	if (!bank->res)
+		return -EBUSY;
 
 	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
 
@@ -130,6 +130,8 @@ void barebox_add_memory_bank(const char *name, resource_size_t start,
 	bank->size = size;
 
 	list_add_tail(&bank->list, &memory_banks);
+
+	return 0;
 }
 
 /*

@@ -18,7 +18,7 @@ struct memory_bank {
 
 extern struct list_head memory_banks;
 
-void barebox_add_memory_bank(const char *name, resource_size_t start,
+int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size);
 
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)

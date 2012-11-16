@@ -31,7 +31,6 @@
  */
 #include <common.h>
 #include <command.h>
-#include <xyzModem.h>
 #include <console.h>
 #include <errno.h>
 #include <environment.h>
@@ -58,8 +57,6 @@
 #define DEF_FILE	"image.bin"
 
 static int ofd;			/* output file descriptor */
-
-#ifdef CONFIG_CMD_LOADB
 
 /* Size of my buffer to write to o/p file */
 #define MAX_WRITE_BUFFER 4096	/* Write size to o/p file */
@@ -593,66 +590,6 @@ err_quit:
 	return size;
 }
 
-#endif				/* CONFIG_CMD_LOADB */
-
-#ifdef CONFIG_CMD_LOADY
-/**
- * @brief getcxmodem
- *
- * @return if character avaiable, return the same, else return -1
- */
-static int getcxmodem(void)
-{
-	if (tstc())
-		return (getc());
-	return -1;
-}
-
-/**
- * @brief  LoadY over ymodem protocol
- *
- * @return download size
- */
-static ulong load_serial_ymodem(void)
-{
-	int size;
-	char buf[32];
-	int err;
-	int res, wr;
-	connection_info_t info;
-	char ymodemBuf[1024];
-	ulong addr = 0;
-
-	size = 0;
-	info.mode = xyzModem_ymodem;
-	res = xyzModem_stream_open(&info, &err);
-	if (!res) {
-		while ((res = xyzModem_stream_read(ymodemBuf, 1024, &err)) >
-				0) {
-			size += res;
-			addr += res;
-			wr = write(ofd, ymodemBuf, res);
-			if (res != wr) {
-				perror("ymodem");
-				break;
-			}
-
-		}
-	} else {
-		printf("%s\n", xyzModem_error(err));
-	}
-
-	xyzModem_stream_close(&err);
-	xyzModem_stream_terminate(false, &getcxmodem);
-
-	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	sprintf(buf, "%X", size);
-	setenv("filesize", buf);
-
-	return res;
-}
-#endif
-
 /**
  * @brief returns current used console device
  *
@@ -754,27 +691,16 @@ static int do_load_serial_bin(int argc, char *argv[])
 				break;
 		}
 	}
-#ifdef CONFIG_CMD_LOADY
-	if (strcmp(argv[0], "loady") == 0) {
-		printf("## Ready for binary (ymodem) download "
-		       "to 0x%08lX offset on %s device at %d bps...\n", offset,
-		       output_file, load_baudrate);
-		addr = load_serial_ymodem();
-	}
-#endif
-#ifdef CONFIG_CMD_LOADB
-	if (strcmp(argv[0], "loadb") == 0) {
 
-		printf("## Ready for binary (kermit) download "
-		       "to 0x%08lX offset on %s device at %d bps...\n", offset,
-		       output_file, load_baudrate);
-		addr = load_serial_bin();
-		if (addr == 0) {
-			printf("## Binary (kermit) download aborted\n");
-			rcode = 1;
-		}
+	printf("## Ready for binary (kermit) download "
+	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
+	       output_file, load_baudrate);
+	addr = load_serial_bin();
+	if (addr == 0) {
+		printf("## Binary (kermit) download aborted\n");
+		rcode = 1;
 	}
-#endif
+
 	if (load_baudrate != current_baudrate) {
 		printf("## Switch baudrate to %d bps and press ESC ...\n",
 		       current_baudrate);
@@ -799,18 +725,8 @@ static const __maybe_unused char cmd_loadb_help[] =
     "  -b baud   - baudrate at which to download - defaults to "
     "console baudrate\n"
     "  -c        - Create file if it is not present - default disabled";
-#ifdef CONFIG_CMD_LOADB
 BAREBOX_CMD_START(loadb)
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (kermit mode)",
 	BAREBOX_CMD_HELP(cmd_loadb_help)
 BAREBOX_CMD_END
-#endif
-#ifdef CONFIG_CMD_LOADY
-BAREBOX_CMD_START(loady)
-	.cmd = do_load_serial_bin,
-	.usage = "Load binary file over serial line (ymodem mode)",
-	BAREBOX_CMD_HELP(cmd_loadb_help)
-BAREBOX_CMD_END
-#endif
-

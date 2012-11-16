@@ -25,7 +25,6 @@
 #include <environment.h>
 #include <s_record.h>
 #include <net.h>
-#include <xyzModem.h>
 
 static ulong load_serial(ulong offset);
 static int read_record(char *buf, ulong len);

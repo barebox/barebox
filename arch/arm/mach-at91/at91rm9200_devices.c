@@ -210,7 +210,12 @@ void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 		cs_pin = pdata->chipselect[i];
 
 		/* enable chip-select pin */
-		if (cs_pin > 0)
+		if (!gpio_is_valid(cs_pin))
+			continue;
+
+		if (cs_pin == AT91_PIN_PA3)
+			at91_set_A_periph(cs_pin, 0);
+		else
 			at91_set_gpio_output(cs_pin, 1);
 	}
 

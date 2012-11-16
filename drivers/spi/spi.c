@@ -219,6 +219,18 @@ int spi_register_master(struct spi_master *master)
 }
 EXPORT_SYMBOL(spi_register_master);
 
+struct spi_master *spi_get_master(int bus)
+{
+	struct spi_master* m;
+
+	list_for_each_entry(m, &spi_master_list, list) {
+		if (m->bus_num == bus)
+			return m;
+	}
+
+	return NULL;
+}
+
 int spi_sync(struct spi_device *spi, struct spi_message *message)
 {
 	return spi->master->transfer(spi, message);

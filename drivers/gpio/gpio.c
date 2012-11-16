@@ -4,16 +4,7 @@
 
 static LIST_HEAD(chip_list);
 
-#define ARCH_NR_GPIOS 256
-
 static struct gpio_chip *gpio_desc[ARCH_NR_GPIOS];
-
-static int gpio_is_valid(unsigned gpio)
-{
-	if (gpio < ARCH_NR_GPIOS)
-		return 1;
-	return 0;
-}
 
 void gpio_set_value(unsigned gpio, int value)
 {

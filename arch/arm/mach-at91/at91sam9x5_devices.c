@@ -198,9 +198,19 @@ static struct resource nand_resources[] = {
 	},
 	[1] = {
 		.start	= AT91_BASE_SYS + AT91_PMECC,
-		.end	= AT91_BASE_SYS + AT91_PMECC + 512 - 1,
+		.end	= AT91_BASE_SYS + AT91_PMECC + 0x600 - 1,
 		.flags	= IORESOURCE_MEM,
-	}
+	},
+	[2] = {
+		.start	= AT91_BASE_SYS + AT91_PMERRLOC,
+		.end	= AT91_BASE_SYS + AT91_PMERRLOC + 0x200 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	[3] = {
+		.start	= AT91SAM9X5_ROM_BASE,
+		.end	= AT91SAM9X5_ROM_BASE + AT91SAM9X5_ROM_SIZE - 1,
+		.flags	= IORESOURCE_MEM,
+	},
 };
 
 void __init at91_add_device_nand(struct atmel_nand_data *data)
@@ -212,6 +222,8 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 
 	csa = at91_sys_read(AT91_MATRIX_EBICSA);
 	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_NANDFLASH);
+
+	data->pmecc_lookup_table_offset = 0x8000;
 
 	/* enable pin */
 	if (data->enable_pin)

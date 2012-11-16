@@ -197,6 +197,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	nand = &host->nand;
 	mtd->priv = nand;
 	nand->priv = host;
+	mtd->parent = dev;
 
 	nand->IO_ADDR_W = nand->IO_ADDR_R = dev_request_mem_region_by_name(dev, "nand_data");
 	nand->cmd_ctrl = nomadik_cmd_ctrl;

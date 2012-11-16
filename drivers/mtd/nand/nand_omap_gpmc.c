@@ -670,7 +670,7 @@ static void omap_write_buf_pref(struct mtd_info *mtd,
 		if (!status)
 			break;
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_err(mtd->dev, "prefetch flush timed out\n");
+			dev_err(info->pdev, "prefetch flush timed out\n");
 			break;
 		}
 	}
@@ -929,6 +929,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	minfo = &oinfo->minfo;
 	minfo->priv = (void *)nand;
+	minfo->parent = pdev;
 
 	if (pdata->cs >= GPMC_NUM_CS) {
 		dev_dbg(pdev, "Invalid CS!\n");

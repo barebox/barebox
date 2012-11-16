@@ -71,7 +71,7 @@ static int mtd_part_block_isbad(struct mtd_info *mtd, loff_t ofs)
 	if (ofs >= mtd->size)
 		return -EINVAL;
 	ofs += part->offset;
-	return part->master->block_isbad(part->master, ofs);
+	return mtd_block_isbad(part->master, ofs);
 }
 
 static int mtd_part_block_markbad(struct mtd_info *mtd, loff_t ofs)

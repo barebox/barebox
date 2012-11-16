@@ -30,6 +30,15 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
+int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
+{
+	if (!mtd->block_isbad)
+		return 0;
+	if (ofs < 0 || ofs > mtd->size)
+		return -EINVAL;
+	return mtd->block_isbad(mtd, ofs);
+}
+
 static 	ssize_t mtd_read(struct cdev *cdev, void* buf, size_t count,
 			  loff_t _offset, ulong flags)
 {
@@ -130,7 +139,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	switch (request) {
 	case MEMGETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMGETBADBLOCK: 0x%08llx\n", *offset);
-		ret = mtd->block_isbad(mtd, *offset);
+		ret = mtd_block_isbad(mtd, *offset);
 		break;
 #ifdef CONFIG_MTD_WRITE
 	case MEMSETBADBLOCK:
@@ -189,7 +198,7 @@ static int mtd_erase(struct cdev *cdev, size_t count, loff_t offset)
 	while (count > 0) {
 		dev_dbg(cdev->dev, "erase %d %d\n", erase.addr, erase.len);
 
-		ret = mtd->block_isbad(mtd, erase.addr);
+		ret = mtd_block_isbad(mtd, erase.addr);
 		if (ret > 0) {
 			printf("Skipping bad block at 0x%08x\n", erase.addr);
 		} else {
@@ -225,7 +234,11 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 		devname = "mtd";
 	strcpy(mtd->class_dev.name, devname);
 	mtd->class_dev.id = DEVICE_ID_DYNAMIC;
-	platform_device_register(&mtd->class_dev);
+	if (mtd->parent) {
+		mtd->class_dev.parent = mtd->parent;
+		dev_add_child(mtd->class_dev.parent, &mtd->class_dev);
+	}
+	register_device(&mtd->class_dev);
 
 	mtd->cdev.ops = &mtd_ops;
 	mtd->cdev.size = mtd->size;

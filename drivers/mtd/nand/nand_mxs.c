@@ -1201,6 +1201,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand = &nand_info->nand_chip;
 	mtd = &nand_info->mtd;
 	mtd->priv = nand;
+	mtd->parent = dev;
 
 	nand->priv = nand_info;
 	nand->options |= NAND_NO_SUBPAGE_WRITE;

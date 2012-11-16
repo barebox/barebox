@@ -39,6 +39,7 @@
 #include <mach/at91_rstc.h>
 #include <gpio_keys.h>
 #include <readkey.h>
+#include <spi/spi.h>
 
 static void usb_a9260_set_board_type(void)
 {
@@ -146,6 +147,25 @@ static void usb_a9260_phy_reset(void)
 	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
 				     (rstc) |
 				     AT91_RSTC_URSTEN);
+}
+
+static const struct spi_board_info usb_a9263_spi_devices[] = {
+	{
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static void usb_a9260_add_spi(void)
+{
+	if (!machine_is_usb_a9263())
+		return;
+
+	spi_register_board_info(usb_a9263_spi_devices,
+			ARRAY_SIZE(usb_a9263_spi_devices));
+	at91_add_device_spi(0, NULL);
 }
 
 #if defined(CONFIG_MCI_ATMEL)
@@ -314,6 +334,7 @@ static int usb_a9260_devices_init(void)
 	usb_a9260_phy_reset();
 	at91_add_device_eth(0, &macb_pdata);
 	usb_a9260_add_device_mci();
+	usb_a9260_add_spi();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_device_udc();
 	ek_add_led();

@@ -200,7 +200,7 @@ struct mtd_info {
 	void (*put_device) (struct mtd_info *mtd);
 
 	struct device_d class_dev;
-	struct device_d *dev;
+	struct device_d *parent;
 	struct cdev cdev;
 
 	struct param_d param_size;
@@ -250,6 +250,8 @@ static inline void mtd_erase_callback(struct erase_info *instr)
 		instr->callback(instr);
 }
 #endif
+
+int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 
 /*
  * Debugging macro and defines

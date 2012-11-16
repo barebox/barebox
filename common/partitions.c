@@ -28,6 +28,7 @@
 #include <asm/unaligned.h>
 #include <disks.h>
 #include <dma.h>
+#include <filetype.h>
 
 struct partition {
 	uint64_t first_sec;
@@ -85,7 +86,7 @@ static void __maybe_unused try_dos_partition(struct block_device *blk,
 		goto on_error;
 	}
 
-	if ((buffer[510] != 0x55) || (buffer[511] != 0xAA)) {
+	if (is_fat_or_mbr(buffer, NULL) != filetype_mbr) {
 		dev_info(blk->dev, "No partition table found\n");
 		goto on_error;
 	}

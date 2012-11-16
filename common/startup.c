@@ -100,7 +100,9 @@ void start_barebox (void)
 			initcall < __barebox_initcalls_end; initcall++) {
 		debug("initcall-> %pS\n", *initcall);
 		result = (*initcall)();
-		debug("initcall<- %pS (%d)\n", *initcall, result);
+		if (result)
+			pr_err("initcall %pS failed: %s\n", *initcall,
+					strerror(-result));
 	}
 
 	debug("initcalls done\n");

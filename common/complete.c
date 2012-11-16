@@ -208,7 +208,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
 	struct device_d *dev;
 	struct variable_d *var;
-	struct env_context *c, *current_c;
+	struct env_context *c;
 	char *instr_param;
 	int len;
 	char end = '=';
@@ -225,21 +225,23 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 	instr_param = strchr(instr, '.');
 	len = strlen(instr);
 
-	current_c = get_current_context();
-	for(var = current_c->local->next; var; var = var->next) {
+	c = get_current_context();
+	list_for_each_entry(var, &c->local, list) {
 		if (strncmp(instr, var_name(var), len))
 			continue;
 		string_list_add_asprintf(sl, "%s%s%c",
 			begin, var_name(var), end);
 	}
 
-	for (c = get_current_context(); c; c = c->parent) {
-		for (var = c->global->next; var; var = var->next) {
+	c = get_current_context();
+	while (c) {
+		list_for_each_entry(var, &c->global, list) {
 			if (strncmp(instr, var_name(var), len))
 				continue;
 			string_list_add_asprintf(sl, "%s%s%c",
 				begin, var_name(var), end);
 		}
+		c = c->parent;
 	}
 
 	if (instr_param) {

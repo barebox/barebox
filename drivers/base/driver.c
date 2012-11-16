@@ -77,6 +77,8 @@ int get_free_deviceid(const char *name_template)
 
 static int match(struct driver_d *drv, struct device_d *dev)
 {
+	int ret;
+
 	if (dev->driver)
 		return -1;
 
@@ -84,8 +86,11 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
 	if (dev->bus->match(dev, drv))
 		goto err_out;
-	if (dev->bus->probe(dev))
+	ret = dev->bus->probe(dev);
+	if (ret) {
+		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 		goto err_out;
+	}
 
 	list_add(&dev->active, &active);
 
@@ -247,6 +252,52 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_get_mem_region);
 
+struct resource *dev_get_resource_by_name(struct device_d *dev,
+					  const char *name)
+{
+	int i;
+
+	for (i = 0; i < dev->num_resources; i++) {
+		struct resource *res = &dev->resource[i];
+		if (resource_type(res) != IORESOURCE_MEM)
+			continue;
+		if (!res->name)
+			continue;
+		if (!strcmp(name, res->name))
+			return res;
+	}
+
+	return NULL;
+}
+
+void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
+{
+	struct resource *res;
+
+	res = dev_get_resource_by_name(dev, name);
+	if (!res)
+		return NULL;
+
+	return (void __force *)res->start;
+}
+EXPORT_SYMBOL(dev_get_mem_region_by_name);
+
+void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
+{
+	struct resource *res;
+
+	res = dev_get_resource_by_name(dev, name);
+	if (!res)
+		return NULL;
+
+	res = request_iomem_region(dev_name(dev), res->start, res->end);
+	if (!res)
+		return NULL;
+
+	return (void __force __iomem *)res->start;
+}
+EXPORT_SYMBOL(dev_request_mem_region_by_name);
+
 void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;
@@ -403,7 +454,7 @@ static int do_devinfo(int argc, char *argv[])
 
 		printf("\ndrivers:\n");
 		for_each_driver(drv)
-			printf("%10s\n",drv->name);
+			printf("%s\n",drv->name);
 	} else {
 		dev = get_device_by_name(argv[1]);
 

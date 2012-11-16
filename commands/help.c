@@ -28,12 +28,17 @@
 static int do_help(int argc, char *argv[])
 {
 	struct command *cmdtp;
+	int max_length = 0;
 
 	if (argc == 1) {	/* show list of commands */
+		for_each_command(cmdtp)
+			if(strlen(cmdtp->name) > max_length)
+				max_length = strlen(cmdtp->name);
+
 		for_each_command(cmdtp) {
 			if (!cmdtp->usage)
 				continue;
-			printf("%10s - %s\n", cmdtp->name, cmdtp->usage);
+			printf("%*s - %s\n", max_length, cmdtp->name, cmdtp->usage);
 		}
 		return 0;
 	}

@@ -27,8 +27,8 @@
 
 static int do_printenv(int argc, char *argv[])
 {
-	struct variable_d *var;
-	struct env_context *c, *current_c;
+	struct variable_d *v;
+	struct env_context *c;
 
 	if (argc == 2) {
 		const char *val = getenv(argv[1]);
@@ -40,22 +40,16 @@ static int do_printenv(int argc, char *argv[])
 		return 1;
 	}
 
-	current_c = get_current_context();
-	var = current_c->local->next;
+	c = get_current_context();
 	printf("locals:\n");
-	while (var) {
-		printf("%s=%s\n", var_name(var), var_val(var));
-		var = var->next;
-	}
+	list_for_each_entry(v, &c->local, list)
+		printf("%s=%s\n", var_name(v), var_val(v));
 
 	printf("globals:\n");
 	c = get_current_context();
-	while(c) {
-		var = c->global->next;
-		while (var) {
-			printf("%s=%s\n", var_name(var), var_val(var));
-			var = var->next;
-		}
+	while (c) {
+		list_for_each_entry(v, &c->global, list)
+			printf("%s=%s\n", var_name(v), var_val(v));
 		c = c->parent;
 	}
 

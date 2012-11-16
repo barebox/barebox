@@ -897,7 +897,7 @@ endef
 # directory for generated filesas used by some architectures.
 define create-symlink
 	if [ ! -L include/asm ]; then					\
-			echo '  SYMLINK $@ -> include/asm-$(SRCARCH)';	\
+			$(kecho) '  SYMLINK $@ -> include/asm-$(SRCARCH)';	\
 			if [ ! -d include/asm-$(SRCARCH) ]; then	\
 				mkdir -p include/asm-$(SRCARCH);	\
 			fi;						\
@@ -910,11 +910,11 @@ include/asm:
 	$(Q)$(create-symlink)
 
 include/config.h: include/config/auto.conf
-	@echo '  SYMLINK $@ -> $(BOARD)/config.h'
+	$(Q)$(kecho) '  SYMLINK $@ -> $(BOARD)/config.h'
 ifneq ($(KBUILD_SRC),)
 	$(Q)ln -fsn $(srctree)/$(BOARD)/config.h $@
 else
-	@ln -fsn ../$(BOARD)/config.h $@
+	$(Q)ln -fsn ../$(BOARD)/config.h $@
 endif
 
 # Generate some files

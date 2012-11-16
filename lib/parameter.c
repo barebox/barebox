@@ -213,6 +213,24 @@ int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
 }
 
 /**
+ * dev_remove_param - remove a parameter from a device and free its
+ * memory
+ * @param dev	The device
+ * @param name	The name of the parameter
+ */
+void dev_remove_param(struct device_d *dev, char *name)
+{
+	struct param_d *p = get_param_by_name(dev, name);
+
+	if (p) {
+		p->set(dev, p, NULL);
+		list_del(&p->list);
+		free(p->name);
+		free(p);
+	}
+}
+
+/**
  * dev_remove_parameters - remove all parameters from a device and free their
  * memory
  * @param dev	The device

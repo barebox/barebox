@@ -1,8 +1,8 @@
 #include <linux/linkage.h>
 #include <init.h>
 
-.section .text.__mmu_cache_on
-ENTRY(__mmu_cache_on)
+.section .text.v7_mmu_cache_on
+ENTRY(v7_mmu_cache_on)
 		stmfd	sp!, {r11, lr}
 		mov	r12, lr
 #ifdef CONFIG_MMU
@@ -30,10 +30,10 @@ ENTRY(__mmu_cache_on)
 		mov	r0, #0
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
 		ldmfd	sp!, {r11, pc}
-ENDPROC(__mmu_cache_on)
+ENDPROC(v7_mmu_cache_on)
 
-.section .text.__mmu_cache_off
-ENTRY(__mmu_cache_off)
+.section .text.v7_mmu_cache_off
+ENTRY(v7_mmu_cache_off)
 		mrc	p15, 0, r0, c1, c0
 #ifdef CONFIG_MMU
 		bic	r0, r0, #0x000d
@@ -42,7 +42,7 @@ ENTRY(__mmu_cache_off)
 #endif
 		mcr	p15, 0, r0, c1, c0	@ turn MMU and cache off
 		mov	r12, lr
-		bl	__mmu_cache_flush
+		bl	v7_mmu_cache_flush
 		mov	r0, #0
 #ifdef CONFIG_MMU
 		mcr	p15, 0, r0, c8, c7, 0	@ invalidate whole TLB
@@ -51,10 +51,10 @@ ENTRY(__mmu_cache_off)
 		mcr	p15, 0, r0, c7, c10, 4	@ DSB
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
 		mov	pc, r12
-ENDPROC(__mmu_cache_off)
+ENDPROC(v7_mmu_cache_off)
 
-.section .text.__mmu_cache_flush
-ENTRY(__mmu_cache_flush)
+.section .text.v7_mmu_cache_flush
+ENTRY(v7_mmu_cache_flush)
 		stmfd	sp!, {r10, lr}
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
 		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)
@@ -114,7 +114,7 @@ iflush:
 		mcr	p15, 0, r10, c7, c10, 4	@ DSB
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
 		ldmfd	sp!, {r10, pc}
-ENDPROC(__mmu_cache_flush)
+ENDPROC(v7_mmu_cache_flush)
 
 /*
  * cache_line_size - get the cache line size from the CSIDR register
@@ -138,8 +138,8 @@ ENDPROC(__mmu_cache_flush)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_inv_range
-ENTRY(__dma_inv_range)
+.section .text.v7_dma_inv_range
+ENTRY(v7_dma_inv_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	tst	r0, r3
@@ -156,15 +156,15 @@ ENTRY(__dma_inv_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(__dma_inv_range)
+ENDPROC(v7_dma_inv_range)
 
 /*
  *	v7_dma_clean_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_clean_range
-ENTRY(__dma_clean_range)
+.section .text.v7_dma_clean_range
+ENTRY(v7_dma_clean_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	bic	r0, r0, r3
@@ -175,15 +175,15 @@ ENTRY(__dma_clean_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(__dma_clean_range)
+ENDPROC(v7_dma_clean_range)
 
 /*
  *	v7_dma_flush_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_flush_range
-ENTRY(__dma_flush_range)
+.section .text.v7_dma_flush_range
+ENTRY(v7_dma_flush_range)
 	dcache_line_size r2, r3
 	sub	r3, r2, #1
 	bic	r0, r0, r3
@@ -194,4 +194,4 @@ ENTRY(__dma_flush_range)
 	blo	1b
 	dsb
 	mov	pc, lr
-ENDPROC(__dma_flush_range)
+ENDPROC(v7_dma_flush_range)

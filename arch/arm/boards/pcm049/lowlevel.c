@@ -86,16 +86,12 @@ static void noinline pcm049_init_lowlevel(void)
 
 void reset(void)
 {
-	u32 r;
-
 	common_reset();
 
 	if (get_pc() > 0x80000000)
 		board_init_lowlevel_return();
 
-	r = 0x4030d000;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	arm_setup_stack(0x4030d000);
 
 	pcm049_init_lowlevel();
 }
-

@@ -28,6 +28,10 @@
 #include <asm/mmu.h>
 #include <asm/system.h>
 #include <asm/memory.h>
+#include <asm/system_info.h>
+#include <asm/cputype.h>
+#include <asm/cache.h>
+#include <asm/ptrace.h>
 
 /**
  * Enable processor's instruction cache
@@ -71,20 +75,20 @@ int icache_status(void)
  */
 void arch_shutdown(void)
 {
+	uint32_t r;
+
 #ifdef CONFIG_MMU
-	/* nearly the same as below, but this could also disable
-	 * second level cache.
-	 */
 	mmu_disable();
-#else
-	asm volatile (
-		"bl __mmu_cache_flush;"
-		"bl __mmu_cache_off;"
-		:
-		:
-		: "r0", "r1", "r2", "r3", "r6", "r10", "r12", "lr", "cc", "memory"
-	);
 #endif
+	flush_icache();
+	/*
+	 * barebox normally does not use interrupts, but some functionalities
+	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
+	 * disabled before exiting.
+	 */
+	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
+	r |= PSR_I_BIT;
+	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 }
 
 #ifdef CONFIG_THUMB2_BAREBOX
@@ -111,4 +115,49 @@ static int execute_init(void)
 	return 0;
 }
 postcore_initcall(execute_init);
+#endif
+
+#ifdef ARM_MULTIARCH
+static int __get_cpu_architecture(void)
+{
+	int cpu_arch;
+
+	if ((read_cpuid_id() & 0x0008f000) == 0) {
+		cpu_arch = CPU_ARCH_UNKNOWN;
+	} else if ((read_cpuid_id() & 0x0008f000) == 0x00007000) {
+		cpu_arch = (read_cpuid_id() & (1 << 23)) ? CPU_ARCH_ARMv4T : CPU_ARCH_ARMv3;
+	} else if ((read_cpuid_id() & 0x00080000) == 0x00000000) {
+		cpu_arch = (read_cpuid_id() >> 16) & 7;
+		if (cpu_arch)
+			cpu_arch += CPU_ARCH_ARMv3;
+	} else if ((read_cpuid_id() & 0x000f0000) == 0x000f0000) {
+		unsigned int mmfr0;
+
+		/* Revised CPUID format. Read the Memory Model Feature
+		 * Register 0 and check for VMSAv7 or PMSAv7 */
+		asm("mrc	p15, 0, %0, c0, c1, 4"
+		    : "=r" (mmfr0));
+		if ((mmfr0 & 0x0000000f) >= 0x00000003 ||
+		    (mmfr0 & 0x000000f0) >= 0x00000030)
+			cpu_arch = CPU_ARCH_ARMv7;
+		else if ((mmfr0 & 0x0000000f) == 0x00000002 ||
+			 (mmfr0 & 0x000000f0) == 0x00000020)
+			cpu_arch = CPU_ARCH_ARMv6;
+		else
+			cpu_arch = CPU_ARCH_UNKNOWN;
+	} else
+		cpu_arch = CPU_ARCH_UNKNOWN;
+
+	return cpu_arch;
+}
+
+int __cpu_architecture;
+
+int __pure cpu_architecture(void)
+{
+	if(__cpu_architecture == CPU_ARCH_UNKNOWN)
+		__cpu_architecture = __get_cpu_architecture();
+
+	return __cpu_architecture;
+}
 #endif

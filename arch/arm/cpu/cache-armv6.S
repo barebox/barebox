@@ -5,8 +5,8 @@
 #define CACHE_LINE_SIZE		32
 #define D_CACHE_LINE_SIZE	32
 
-.section .text.__mmu_cache_on
-ENTRY(__mmu_cache_on)
+.section .text.v6_mmu_cache_on
+ENTRY(v6_mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU
 		mov	r0, #0
@@ -23,7 +23,7 @@ ENTRY(__mmu_cache_on)
 		mcr	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
 		mov	pc, r12
-ENDPROC(__mmu_cache_on)
+ENDPROC(v6_mmu_cache_on)
 
 __common_mmu_cache_on:
 		orr	r0, r0, #0x000d		@ Write buffer, mmu
@@ -34,8 +34,8 @@ __common_mmu_cache_on:
 		sub	pc, lr, r0, lsr #32	@ properly flush pipeline
 
 
-.section .text.__mmu_cache_off
-ENTRY(__mmu_cache_off)
+.section .text.v6_mmu_cache_off
+ENTRY(v6_mmu_cache_off)
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r0, c1, c0
 		bic	r0, r0, #0x000d
@@ -46,15 +46,15 @@ ENTRY(__mmu_cache_off)
 #endif
 		mov	pc, lr
 
-.section .text.__mmu_cache_flush
-ENTRY(__mmu_cache_flush)
+.section .text.v6_mmu_cache_flush
+ENTRY(v6_mmu_cache_flush)
 		mov	r1, #0
 		mcr	p15, 0, r1, c7, c14, 0	@ clean+invalidate D
 		mcr	p15, 0, r1, c7, c5, 0	@ invalidate I+BTB
 		mcr	p15, 0, r1, c7, c15, 0	@ clean+invalidate unified
 		mcr	p15, 0, r1, c7, c10, 4	@ drain WB
 		mov	pc, lr
-ENDPROC(__mmu_cache_flush)
+ENDPROC(v6_mmu_cache_flush)
 
 /*
  *	v6_dma_inv_range(start,end)
@@ -66,8 +66,8 @@ ENDPROC(__mmu_cache_flush)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_inv_range
-ENTRY(__dma_inv_range)
+.section .text.v6_dma_inv_range
+ENTRY(v6_dma_inv_range)
 	tst	r0, #D_CACHE_LINE_SIZE - 1
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 #ifdef HARVARD_CACHE
@@ -94,15 +94,15 @@ ENTRY(__dma_inv_range)
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
 	mov	pc, lr
-ENDPROC(__dma_inv_range)
+ENDPROC(v6_dma_inv_range)
 
 /*
  *	v6_dma_clean_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_clean_range
-ENTRY(__dma_clean_range)
+.section .text.v6_dma_clean_range
+ENTRY(v6_dma_clean_range)
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 1:
 #ifdef HARVARD_CACHE
@@ -116,15 +116,15 @@ ENTRY(__dma_clean_range)
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
 	mov	pc, lr
-ENDPROC(__dma_clean_range)
+ENDPROC(v6_dma_clean_range)
 
 /*
  *	v6_dma_flush_range(start,end)
  *	- start   - virtual start address of region
  *	- end     - virtual end address of region
  */
-.section .text.__dma_flush_range
-ENTRY(__dma_flush_range)
+.section .text.v6_dma_flush_range
+ENTRY(v6_dma_flush_range)
 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
 1:
 #ifdef HARVARD_CACHE
@@ -138,4 +138,4 @@ ENTRY(__dma_flush_range)
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
 	mov	pc, lr
-ENDPROC(__dma_flush_range)
+ENDPROC(v6_dma_flush_range)

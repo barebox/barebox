@@ -6,7 +6,9 @@
 #include <asm/memory.h>
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
+#include <asm/cache.h>
 #include <memory.h>
+#include <asm/system_info.h>
 
 #include "mmu.h"
 
@@ -43,13 +45,15 @@ static inline void tlb_invalidate(void)
 	);
 }
 
-#ifdef CONFIG_CPU_V7
-#define PTE_FLAGS_CACHED (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
-#define PTE_FLAGS_UNCACHED (0)
-#else
-#define PTE_FLAGS_CACHED (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
-#define PTE_FLAGS_UNCACHED PTE_SMALL_AP_UNO_SRW
-#endif
+extern int arm_architecture;
+
+#define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_UNCACHED_V7 (0)
+#define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
+
+static uint32_t PTE_FLAGS_CACHED;
+static uint32_t PTE_FLAGS_UNCACHED;
 
 #define PTE_MASK ((1 << 12) - 1)
 
@@ -225,6 +229,16 @@ static int mmu_init(void)
 {
 	struct memory_bank *bank;
 	int i;
+
+	arm_set_cache_functions();
+
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		PTE_FLAGS_CACHED = PTE_FLAGS_CACHED_V7;
+		PTE_FLAGS_UNCACHED = PTE_FLAGS_UNCACHED_V7;
+	} else {
+		PTE_FLAGS_CACHED = PTE_FLAGS_CACHED_V4;
+		PTE_FLAGS_UNCACHED = PTE_FLAGS_UNCACHED_V4;
+	}
 
 	ttb = memalign(0x10000, 0x4000);
 

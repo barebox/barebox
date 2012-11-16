@@ -16,4 +16,9 @@ static inline unsigned long get_pc(void)
 	return pc;
 }
 
+static inline void arm_setup_stack(unsigned long top)
+{
+	__asm__ __volatile__("mov sp, %0" : : "r"(top));
+}
+
 #endif /* __ASM_ARM_COMMON_H */

@@ -3,8 +3,8 @@
 
 #define CACHE_DLINESIZE 32
 
-.section .text.__mmu_cache_on
-ENTRY(__mmu_cache_on)
+.section .text.v5_mmu_cache_on
+ENTRY(v5_mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU
 		mov	r0, #0
@@ -21,7 +21,7 @@ ENTRY(__mmu_cache_on)
 		mcr	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
 		mov	pc, r12
-ENDPROC(__mmu_cache_on)
+ENDPROC(v5_mmu_cache_on)
 
 __common_mmu_cache_on:
 		orr	r0, r0, #0x000d		@ Write buffer, mmu
@@ -31,8 +31,8 @@ __common_mmu_cache_on:
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back to
 		sub	pc, lr, r0, lsr #32	@ properly flush pipeline
 
-.section .text.__mmu_cache_off
-ENTRY(__mmu_cache_off)
+.section .text.v5_mmu_cache_off
+ENTRY(v5_mmu_cache_off)
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r0, c1, c0
 		bic	r0, r0, #0x000d
@@ -42,16 +42,16 @@ ENTRY(__mmu_cache_off)
 		mcr	p15, 0, r0, c8, c7	@ invalidate whole TLB v4
 #endif
 		mov	pc, lr
-ENDPROC(__mmu_cache_off)
+ENDPROC(v5_mmu_cache_off)
 
-.section .text.__mmu_cache_flush
-ENTRY(__mmu_cache_flush)
+.section .text.v5_mmu_cache_flush
+ENTRY(v5_mmu_cache_flush)
 1:		mrc	p15, 0, r15, c7, c14, 3	@ test,clean,invalidate D cache
 		bne	1b
 		mcr	p15, 0, r0, c7, c5, 0	@ flush I cache
 		mcr	p15, 0, r0, c7, c10, 4	@ drain WB
 		mov	pc, lr
-ENDPROC(__mmu_cache_flush)
+ENDPROC(v5_mmu_cache_flush)
 
 /*
  *	dma_inv_range(start, end)
@@ -66,8 +66,8 @@ ENDPROC(__mmu_cache_flush)
  *
  * (same as v4wb)
  */
-.section .text.__dma_inv_range
-ENTRY(__dma_inv_range)
+.section .text.v5_dma_inv_range
+ENTRY(v5_dma_inv_range)
 	tst	r0, #CACHE_DLINESIZE - 1
 	bic	r0, r0, #CACHE_DLINESIZE - 1
 	mcrne	p15, 0, r0, c7, c10, 1		@ clean D entry
@@ -90,8 +90,8 @@ ENTRY(__dma_inv_range)
  *
  * (same as v4wb)
  */
-.section .text.__dma_clean_range
-ENTRY(__dma_clean_range)
+.section .text.v5_dma_clean_range
+ENTRY(v5_dma_clean_range)
 	bic	r0, r0, #CACHE_DLINESIZE - 1
 1:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
 	add	r0, r0, #CACHE_DLINESIZE
@@ -108,8 +108,8 @@ ENTRY(__dma_clean_range)
  *	- start	- virtual start address
  *	- end	- virtual end address
  */
-.section .text.__dma_flush_range
-ENTRY(__dma_flush_range)
+.section .text.v5_dma_flush_range
+ENTRY(v5_dma_flush_range)
 	bic	r0, r0, #CACHE_DLINESIZE - 1
 1:	mcr	p15, 0, r0, c7, c14, 1		@ clean+invalidate D entry
 	add	r0, r0, #CACHE_DLINESIZE

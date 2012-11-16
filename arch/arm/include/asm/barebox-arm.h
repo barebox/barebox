@@ -38,4 +38,6 @@ void board_init_lowlevel(void);
 void board_init_lowlevel_return(void);
 uint32_t get_runtime_offset(void);
 
+void setup_c(void);
+
 #endif	/* _BAREBOX_ARM_H_ */

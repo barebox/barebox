@@ -137,6 +137,18 @@ static char* hist_next(void)
 	}					\
 }
 
+#define DO_BACKSPACE()						\
+		wlen = eol_num - num;				\
+		num--;						\
+		memmove(buf + num, buf + num + 1, wlen);	\
+		getcmd_putch(CTL_BACKSPACE);			\
+		putnstr(buf + num, wlen);			\
+		getcmd_putch(' ');				\
+		do {						\
+			getcmd_putch(CTL_BACKSPACE);		\
+		} while (wlen--);				\
+		eol_num--;
+
 static void cread_add_char(char ichar, int insert, unsigned long *num,
 	       unsigned long *eol_num, char *buf, unsigned long len)
 {
@@ -273,16 +285,7 @@ int readline(const char *prompt, char *buf, int len)
 		case KEY_DEL7:
 		case 8:
 			if (num) {
-				wlen = eol_num - num;
-				num--;
-				memmove(buf + num, buf + num + 1, wlen);
-				getcmd_putch(CTL_BACKSPACE);
-				putnstr(buf + num, wlen);
-				getcmd_putch(' ');
-				do {
-					getcmd_putch(CTL_BACKSPACE);
-				} while (wlen--);
-				eol_num--;
+				DO_BACKSPACE();
 			}
 			break;
 		case KEY_DEL:
@@ -325,6 +328,16 @@ int readline(const char *prompt, char *buf, int len)
 			REFRESH_TO_EOL();
 			continue;
 		}
+		case CTL_CH('w'):
+			while ((num >= 1) && (buf[num - 1] == ' ')) {
+				DO_BACKSPACE();
+			}
+
+			while ((num >= 1) && (buf[num - 1] != ' ')) {
+				DO_BACKSPACE();
+			}
+
+			break;
 		default:
 			if (isascii(ichar) && isprint(ichar))
 				cread_add_char(ichar, insert, &num, &eol_num, buf, len);
@@ -340,4 +353,3 @@ int readline(const char *prompt, char *buf, int len)
 
 	return rc < 0 ? rc : len;
 }
-

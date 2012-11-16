@@ -715,12 +715,13 @@ int ioctl(int fd, int request, void *buf)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -738,12 +739,13 @@ int read(int fd, void *buf, size_t count)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -768,12 +770,13 @@ ssize_t write(int fd, const void *buf, size_t count)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -803,12 +806,13 @@ int flush(int fd)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -827,13 +831,14 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fildes];
+	FILE *f;
 	loff_t pos;
 	int ret;
 
 	if (check_fd(fildes))
 		return -1;
 
+	f = &files[fildes];
 	dev = f->dev;
 	fsdrv = dev_to_fs_driver(dev);
 	if (!fsdrv->lseek) {
@@ -877,11 +882,12 @@ int erase(int fd, size_t count, unsigned long offset)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
+	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
 	if (count > f->size - offset)
@@ -905,11 +911,12 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
+	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
 	if (count > f->size - offset)
@@ -948,13 +955,14 @@ void *memmap(int fd, int flags)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	void *retp = (void *)-1;
 	int ret;
 
 	if (check_fd(fd))
 		return retp;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -975,12 +983,13 @@ int close(int fd)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f = &files[fd];
+	FILE *f;
 	int ret;
 
 	if (check_fd(fd))
 		return -errno;
 
+	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);

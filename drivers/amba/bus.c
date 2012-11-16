@@ -157,6 +157,13 @@ int amba_device_add(struct amba_device *dev)
 	if (ret)
 		goto err_release;
 
+	if (IS_ENABLED(CONFIG_PARAMETER)) {
+		char str[16];
+
+		sprintf(str, "0x%08x", dev->periphid);
+		dev_add_param_fixed(&dev->dev, "periphid", str);
+	}
+
 		return ret;
  err_release:
 	release_region(res);

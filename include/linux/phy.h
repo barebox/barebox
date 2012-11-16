@@ -226,6 +226,7 @@ struct phy_driver {
 #define PHY_ANY_UID 0xffffffff
 
 int phy_driver_register(struct phy_driver *drv);
+int phy_drivers_register(struct phy_driver *new_driver, int n);
 struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 

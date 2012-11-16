@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2010 Juergen Beisert - Pengutronix
+ * Copyright (C) 2009 Carlo Caione <carlo@carlocaione.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -13,20 +13,10 @@
  *
  */
 
-#ifndef __ASM_MACH_GPIO_H
-#define __ASM_MACH_GPIO_H
+#ifndef __BCM2835_CORE_H__
+#define __BCM2835_CORE_H__
 
-#include <types.h>
+void bcm2835_register_uart(void);
+void bcm2835_add_device_sdram(u32 size);
 
-#if defined CONFIG_ARCH_IMX23
-# include <mach/iomux-imx23.h>
 #endif
-#if defined CONFIG_ARCH_IMX28
-# include <mach/iomux-imx28.h>
-#endif
-
-#include <asm-generic/gpio.h>
-
-void imx_gpio_mode(uint32_t);
-
-#endif /* __ASM_MACH_GPIO_H */

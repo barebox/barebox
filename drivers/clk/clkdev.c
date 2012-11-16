@@ -178,6 +178,27 @@ struct clk_lookup *clkdev_alloc(struct clk *clk, const char *con_id,
 }
 EXPORT_SYMBOL(clkdev_alloc);
 
+int clk_register_clkdev(struct clk *clk, const char *con_id,
+	const char *dev_fmt, ...)
+{
+	struct clk_lookup *cl;
+	va_list ap;
+
+	if (IS_ERR(clk))
+                return PTR_ERR(clk);
+
+	va_start(ap, dev_fmt);
+	cl = clkdev_alloc(clk, con_id, dev_fmt, ap);
+	va_end(ap);
+
+	if (!cl)
+		return -ENOMEM;
+
+	clkdev_add(cl);
+
+	return 0;
+}
+
 int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
 	struct device_d *dev)
 {

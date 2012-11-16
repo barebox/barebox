@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# pass barebox ip settings for eth0 to Linux
-
-ifup eth0
-
-global.linux.bootargs.dyn.ip="ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask::eth0:"

@@ -36,7 +36,7 @@
  */
 int mdiobus_register(struct mii_bus *bus)
 {
-	int i, err;
+	int err;
 
 	if (NULL == bus ||
 			NULL == bus->read ||
@@ -59,29 +59,8 @@ int mdiobus_register(struct mii_bus *bus)
 	if (bus->reset)
 		bus->reset(bus);
 
-	for (i = 0; i < PHY_MAX_ADDR; i++) {
-		if ((bus->phy_mask & (1 << i)) == 0) {
-			struct phy_device *phydev;
-
-			phydev = mdiobus_scan(bus, i);
-			if (IS_ERR(phydev)) {
-				err = PTR_ERR(phydev);
-				goto error;
-			}
-		}
-	}
-
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 	return 0;
-
-error:
-	while (--i >= 0) {
-		if (bus->phy_map[i]) {
-			kfree(bus->phy_map[i]);
-			bus->phy_map[i] = NULL;
-		}
-	}
-	return err;
 }
 EXPORT_SYMBOL(mdiobus_register);
 
@@ -100,6 +79,9 @@ EXPORT_SYMBOL(mdiobus_unregister);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 {
 	struct phy_device *phydev;
+
+	if (bus->phy_map[addr])
+		return bus->phy_map[addr];
 
 	phydev = get_phy_device(bus, addr);
 	if (IS_ERR(phydev) || phydev == NULL)

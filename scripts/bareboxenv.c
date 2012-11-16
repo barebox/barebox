@@ -124,8 +124,8 @@ char *concat_subpath_file(const char *path, const char *f)
 void usage(char *prgname)
 {
 	printf( "Usage : %s [OPTION] DIRECTORY FILE\n"
-		"Load an barebox environment sector into a directory or\n"
-		"save a directory into an barebox environment sector\n"
+		"Load a barebox environment sector into a directory or\n"
+		"save a directory into a barebox environment sector\n"
 		"\n"
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"

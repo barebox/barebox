@@ -193,6 +193,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	sprintf(str, "%d", dev->addr);
 	dev_add_param_fixed(&dev->dev, "phy_addr", str);
 
+	sprintf(str, "0x%08x", dev->phy_id);
+	dev_add_param_fixed(&dev->dev, "phy_id", str);
+
 	dev->cdev.name = asprintf("phy%d", _dev->id);
 	dev->cdev.size = 64;
 	dev->cdev.ops = &phydev_ops;

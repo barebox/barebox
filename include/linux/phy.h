@@ -60,7 +60,8 @@ typedef enum {
 #define MII_BUS_ID_SIZE	(20 - 3)
 
 #define PHYLIB_FORCE_10		(1 << 0)
-#define PHYLIB_FORCE_LINK	(1 << 1)
+#define PHYLIB_FORCE_100	(1 << 1)
+#define PHYLIB_FORCE_LINK	(1 << 2)
 
 #define PHYLIB_CAPABLE_1000M	(1 << 0)
 

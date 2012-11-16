@@ -175,6 +175,10 @@ static int mdio_bus_probe(struct device_d *_dev)
 			dev->speed = SPEED_10;
 			dev->duplex = DUPLEX_FULL;
 			dev->autoneg = !AUTONEG_ENABLE;
+		} else if (dev->dev_flags & PHYLIB_FORCE_100) {
+			dev->speed = SPEED_100;
+			dev->duplex = DUPLEX_FULL;
+			dev->autoneg = !AUTONEG_ENABLE;
 		}
 	}
 

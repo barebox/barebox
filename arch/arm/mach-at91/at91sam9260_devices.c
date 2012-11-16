@@ -20,6 +20,7 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/cpu.h>
+#include <i2c/i2c-gpio.h>
 
 #include "generic.h"
 
@@ -152,6 +153,37 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 }
 #else
 void at91_add_device_nand(struct atmel_nand_data *data) {}
+#endif
+
+/* --------------------------------------------------------------------
+ *  TWI (i2c)
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_I2C_GPIO)
+static struct i2c_gpio_platform_data pdata_i2c = {
+	.sda_pin		= AT91_PIN_PA23,
+	.sda_is_open_drain	= 1,
+	.scl_pin		= AT91_PIN_PA24,
+	.scl_is_open_drain	= 1,
+	.udelay			= 5,		/* ~100 kHz */
+};
+
+void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices)
+{
+	struct i2c_gpio_platform_data *pdata = &pdata_i2c;
+
+	i2c_register_board_info(0, devices, nr_devices);
+
+	at91_set_GPIO_periph(pdata->sda_pin, 1);		/* TWD (SDA) */
+	at91_set_multi_drive(pdata->sda_pin, 1);
+
+	at91_set_GPIO_periph(pdata->scl_pin, 1);		/* TWCK (SCL) */
+	at91_set_multi_drive(pdata->scl_pin, 1);
+
+	add_generic_device_res("i2c-gpio", 0, NULL, 0, pdata);
+}
+#else
+void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices) {}
 #endif
 
 /* --------------------------------------------------------------------

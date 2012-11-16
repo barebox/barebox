@@ -36,8 +36,19 @@
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
-#include <gpio_keys.h>
+#include <mach/at91sam9x5_matrix.h>
+#include <input/qt1070.h>
 #include <readkey.h>
+#include <linux/w1-gpio.h>
+#include <w1_mac_address.h>
+#include <spi/spi.h>
+
+#include "hw_version.h"
+
+struct w1_gpio_platform_data w1_pdata = {
+	.pin = AT91_PIN_PB18,
+	.is_open_drain = 0,
+};
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -80,6 +91,14 @@ static void ek_add_device_nand(void)
 	/* configure chip-select 3 (NAND) */
 	sam9_smc_configure(3, &cm_nand_smc_config);
 
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT)) {
+		unsigned long csa;
+
+		csa = at91_sys_read(AT91_MATRIX_EBICSA);
+		csa |= AT91_MATRIX_EBI_VDDIOMSEL_1_8V;
+		at91_sys_write(AT91_MATRIX_EBICSA, csa);
+	}
+
 	at91_add_device_nand(&nand_pdata);
 }
 
@@ -87,6 +106,88 @@ static struct at91_ether_platform_data macb_pdata = {
 	.flags    = AT91SAM_ETHER_RMII,
 	.phy_addr = 0,
 };
+
+static void ek_add_device_eth(void)
+{
+	if (w1_local_mac_address_register(0, "tml", "w1-2d-0"))
+		w1_local_mac_address_register(0, "tml", "w1-23-0");
+
+	at91_add_device_eth(0, &macb_pdata);
+}
+
+/*
+ * MCI (SD/MMC)
+ */
+/* mci0 detect_pin is revision dependent */
+static struct atmel_mci_platform_data mci0_data = {
+	.bus_width	= 4,
+	.detect_pin	= AT91_PIN_PD15,
+	.wp_pin		= 0,
+};
+
+static void ek_add_device_mci(void)
+{
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
+		mci0_data.detect_pin = 0;
+
+	/* MMC0 */
+	at91_add_device_mci(0, &mci0_data);
+}
+
+struct qt1070_platform_data qt1070_pdata = {
+	.irq_pin	= AT91_PIN_PA7,
+};
+
+static struct i2c_board_info i2c_devices[] = {
+	{
+		.platform_data = &qt1070_pdata,
+		I2C_BOARD_INFO("qt1070", 0x1b),
+	}, {
+		I2C_BOARD_INFO("24c512", 0x51)
+	},
+};
+
+static void ek_add_device_i2c(void)
+{
+	at91_set_gpio_input(qt1070_pdata.irq_pin, 0);
+	at91_set_deglitch(qt1070_pdata.irq_pin, 1);
+	at91_add_device_i2c(0, i2c_devices, ARRAY_SIZE(i2c_devices));
+}
+
+static const struct spi_board_info ek_cm_cogent_spi_devices[] = {
+	{
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static const struct spi_board_info ek_spi_devices[] = {
+	{
+		.name		= "m25p80",
+		.chip_select	= 0,
+		.max_speed_hz	= 30 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static unsigned spi0_standard_cs[] = { AT91_PIN_PA14};
+static struct at91_spi_platform_data spi_pdata = {
+	.chipselect = spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static void ek_add_device_spi(void)
+{
+	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
+		spi_register_board_info(ek_cm_cogent_spi_devices,
+				ARRAY_SIZE(ek_cm_cogent_spi_devices));
+	else
+		spi_register_board_info(ek_spi_devices,
+				ARRAY_SIZE(ek_spi_devices));
+	at91_add_device_spi(0, &spi_pdata);
+}
 
 /*
  * USB Host port
@@ -130,12 +231,25 @@ static int at91sam9x5ek_mem_init(void)
 }
 mem_initcall(at91sam9x5ek_mem_init);
 
+static void ek_add_device_w1(void)
+{
+	at91_set_gpio_input(w1_pdata.pin, 0);
+	at91_set_multi_drive(w1_pdata.pin, 1);
+	add_generic_device_res("w1-gpio", DEVICE_ID_SINGLE, NULL, 0, &w1_pdata);
+
+	at91sam9x5ek_devices_detect_hw();
+}
+
 static int at91sam9x5ek_devices_init(void)
 {
+	ek_add_device_w1();
 	ek_add_device_nand();
-	at91_add_device_eth(0, &macb_pdata);
+	ek_add_device_eth();
+	ek_add_device_spi();
+	ek_add_device_mci();
 	at91_add_device_usbh_ohci(&ek_usbh_data);
 	ek_add_led();
+	ek_add_device_i2c();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

@@ -32,6 +32,7 @@ void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from, uint
 uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant);
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns);
+int is_timeout_non_interruptible(uint64_t start_ns, uint64_t time_offset_ns);
 
 // void udelay(unsigned long usecs);
 

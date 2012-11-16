@@ -19,6 +19,7 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/cpu.h>
+#include <i2c/i2c-gpio.h>
 
 #include "generic.h"
 
@@ -122,6 +123,68 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 void at91_add_device_eth(int id, struct at91_ether_platform_data *data) {}
 #endif
 
+#if defined(CONFIG_MCI_ATMEL)
+/* Consider only one slot : slot 0 */
+void __init at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
+{
+	resource_size_t start = ~0;
+
+	if (!data)
+		return;
+
+	/* Must have at least one usable slot */
+	if (!data->bus_width)
+		return;
+
+	/* input/irq */
+	if (data->detect_pin) {
+		at91_set_gpio_input(data->detect_pin, 1);
+		at91_set_deglitch(data->detect_pin, 1);
+	}
+	if (data->wp_pin)
+		at91_set_gpio_input(data->wp_pin, 1);
+
+	if (mmc_id == 0) {		/* MCI0 */
+		start = AT91SAM9X5_BASE_MCI0;
+
+		/* CLK */
+		at91_set_A_periph(AT91_PIN_PA17, 0);
+
+		/* CMD */
+		at91_set_A_periph(AT91_PIN_PA16, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_A_periph(AT91_PIN_PA15, 1);
+		if (data->bus_width == 4) {
+			at91_set_A_periph(AT91_PIN_PA18, 1);
+			at91_set_A_periph(AT91_PIN_PA19, 1);
+			at91_set_A_periph(AT91_PIN_PA20, 1);
+		}
+	} else {			/* MCI1 */
+		start = AT91SAM9X5_BASE_MCI1;
+
+		/* CLK */
+		at91_set_B_periph(AT91_PIN_PA13, 0);
+
+		/* CMD */
+		at91_set_B_periph(AT91_PIN_PA12, 1);
+
+		/* DAT0, maybe DAT1..DAT3 */
+		at91_set_B_periph(AT91_PIN_PA11, 1);
+		if (data->bus_width == 4) {
+			at91_set_B_periph(AT91_PIN_PA2, 1);
+			at91_set_B_periph(AT91_PIN_PA3, 1);
+			at91_set_B_periph(AT91_PIN_PA4, 1);
+		}
+	}
+
+	add_generic_device("atmel_mci", mmc_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data) {}
+#endif
+
 /* --------------------------------------------------------------------
  *  NAND / SmartMedia
  * -------------------------------------------------------------------- */
@@ -167,6 +230,125 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 }
 #else
 void __init at91_add_device_nand(struct atmel_nand_data *data) {}
+#endif
+
+#if defined(CONFIG_I2C_GPIO)
+static struct i2c_gpio_platform_data pdata_i2c0 = {
+	.sda_pin		= AT91_PIN_PA30,
+	.sda_is_open_drain	= 1,
+	.scl_pin		= AT91_PIN_PA31,
+	.scl_is_open_drain	= 1,
+	.udelay			= 5,		/* ~100 kHz */
+};
+
+static struct i2c_gpio_platform_data pdata_i2c1 = {
+	.sda_pin		= AT91_PIN_PC0,
+	.sda_is_open_drain	= 1,
+	.scl_pin		= AT91_PIN_PC1,
+	.scl_is_open_drain	= 1,
+	.udelay			= 5,		/* ~100 kHz */
+};
+
+static struct i2c_gpio_platform_data pdata_i2c2 = {
+	.sda_pin		= AT91_PIN_PB4,
+	.sda_is_open_drain	= 1,
+	.scl_pin		= AT91_PIN_PB5,
+	.scl_is_open_drain	= 1,
+	.udelay			= 5,		/* ~100 kHz */
+};
+
+void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices)
+{
+	struct i2c_gpio_platform_data *pdata;
+
+	i2c_register_board_info(i2c_id, devices, nr_devices);
+
+	switch (i2c_id) {
+	case 0:
+		pdata = &pdata_i2c0;
+		break;
+	case 1:
+		pdata = &pdata_i2c1;
+		break;
+	case 2:
+		pdata = &pdata_i2c2;
+		break;
+	default:
+		return;
+	}
+
+	at91_set_GPIO_periph(pdata->sda_pin, 1);		/* TWD (SDA) */
+	at91_set_multi_drive(pdata->sda_pin, 1);
+
+	at91_set_GPIO_periph(pdata->scl_pin, 1);		/* TWCK (SCL) */
+	at91_set_multi_drive(pdata->scl_pin, 1);
+
+	add_generic_device_res("i2c-gpio", i2c_id, NULL, 0, pdata);
+}
+#else
+void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices) {}
+#endif
+
+/* --------------------------------------------------------------------
+ *  SPI
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+static unsigned spi0_standard_cs[4] = { AT91_PIN_PA14, AT91_PIN_PA7, AT91_PIN_PA1, AT91_PIN_PB3 };
+
+static unsigned spi1_standard_cs[4] = { AT91_PIN_PA8, AT91_PIN_PA0, AT91_PIN_PA31, AT91_PIN_PA30 };
+
+static struct at91_spi_platform_data spi_pdata[] = {
+	[0] = {
+		.chipselect = spi0_standard_cs,
+		.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+	},
+	[1] = {
+		.chipselect = spi1_standard_cs,
+		.num_chipselect = ARRAY_SIZE(spi1_standard_cs),
+	},
+};
+
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
+{
+	int i;
+	int cs_pin;
+	resource_size_t start = ~0;
+
+	BUG_ON(spi_id > 1);
+
+	if (!pdata)
+		pdata = &spi_pdata[spi_id];
+
+	for (i = 0; i < pdata->num_chipselect; i++) {
+		cs_pin = pdata->chipselect[i];
+
+		/* enable chip-select pin */
+		if (cs_pin > 0)
+			at91_set_gpio_output(cs_pin, 1);
+	}
+
+	/* Configure SPI bus(es) */
+	switch (spi_id) {
+	case 0:
+		start = AT91SAM9X5_BASE_SPI0;
+		at91_set_A_periph(AT91_PIN_PA11, 0);	/* SPI0_MISO */
+		at91_set_A_periph(AT91_PIN_PA12, 0);	/* SPI0_MOSI */
+		at91_set_A_periph(AT91_PIN_PA13, 0);	/* SPI0_SPCK */
+		break;
+	case 1:
+		start = AT91SAM9X5_BASE_SPI1;
+		at91_set_B_periph(AT91_PIN_PA21, 0);	/* SPI1_MISO */
+		at91_set_B_periph(AT91_PIN_PA22, 0);	/* SPI1_MOSI */
+		at91_set_B_periph(AT91_PIN_PA23, 0);	/* SPI1_SPCK */
+		break;
+	}
+
+	add_generic_device("atmel_spi", spi_id, NULL, start, SZ_16K,
+			   IORESOURCE_MEM, pdata);
+}
+#else
+void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
 #endif
 
 /* --------------------------------------------------------------------

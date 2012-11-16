@@ -1,0 +1,14 @@
+#
+# 1-wire bus master configuration
+#
+
+menu "1-wire Bus Masters"
+
+config W1_MASTER_GPIO
+	bool "GPIO 1-wire busmaster"
+	depends on GENERIC_GPIO
+	help
+	  Say Y here if you want to communicate with your 1-wire devices using
+	  GPIO pins. This driver uses the GPIO API to control the wire.
+
+endmenu

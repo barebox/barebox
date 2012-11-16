@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Jean-Christophe PLAGNIOL-VILLARD <plagnio@jcrosoft.com>
+ * Copyright (C) 2009-2012 Jean-Christophe PLAGNIOL-VILLARD <plagnio@jcrosoft.com>
  *
  * Copyright (C) 2007 Sascha Hauer, Pengutronix
  *
@@ -35,6 +35,13 @@
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/sam9_smc.h>
+#include <linux/w1-gpio.h>
+#include <w1_mac_address.h>
+
+struct w1_gpio_platform_data w1_pdata = {
+	.pin = AT91_PIN_PA31,
+	.is_open_drain = 0,
+};
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -122,6 +129,13 @@ static void pm9g45_phy_init(void)
 	at91_set_gpio_value(AT91_PIN_PD2, 1);
 }
 
+static void pm9g45_add_device_eth(void)
+{
+	w1_local_mac_address_register(0, "ron", "w1-1-0");
+	pm9g45_phy_init();
+	at91_add_device_eth(0, &macb_pdata);
+}
+
 static int pm9g45_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
@@ -132,10 +146,12 @@ mem_initcall(pm9g45_mem_init);
 
 static int pm9g45_devices_init(void)
 {
+	at91_set_gpio_input(w1_pdata.pin, 0);
+	add_generic_device_res("w1-gpio", DEVICE_ID_SINGLE, NULL, 0, &w1_pdata);
+
 	pm_add_device_nand();
 	pm9g45_add_device_mci();
-	pm9g45_phy_init();
-	at91_add_device_eth(0, &macb_pdata);
+	pm9g45_add_device_eth();
 	pm9g45_add_device_usbh();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");

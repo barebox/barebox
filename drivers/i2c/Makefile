@@ -1,1 +1,1 @@
-obj-$(CONFIG_I2C) += i2c.o busses/
+obj-$(CONFIG_I2C) += i2c.o busses/ algos/

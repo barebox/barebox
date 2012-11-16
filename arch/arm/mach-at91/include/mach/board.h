@@ -21,6 +21,7 @@
 #include <mach/hardware.h>
 #include <sizes.h>
 #include <net.h>
+#include <i2c/i2c.h>
 #include <spi/spi.h>
 #include <linux/mtd/mtd.h>
 
@@ -70,6 +71,8 @@ struct at91_ether_platform_data {
 };
 
 void at91_add_device_eth(int id, struct at91_ether_platform_data *data);
+
+void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices);
 
 /* SDRAM */
 void at91_add_device_sdram(u32 size);

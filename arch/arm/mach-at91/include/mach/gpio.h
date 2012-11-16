@@ -22,6 +22,17 @@
 
 /* these pin numbers double as IRQ numbers, like AT91xxx_ID_* values */
 
+#define ARCH_NR_GPIOS 256
+
+static inline int gpio_is_valid(int gpio)
+{
+	if (gpio < 1)
+		return 0;
+	if (gpio < ARCH_NR_GPIOS)
+		return 1;
+	return 0;
+}
+
 #define	AT91_PIN_PA0	(PIN_BASE + 0x00 + 0)
 #define	AT91_PIN_PA1	(PIN_BASE + 0x00 + 1)
 #define	AT91_PIN_PA2	(PIN_BASE + 0x00 + 2)

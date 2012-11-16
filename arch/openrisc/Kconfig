@@ -1,6 +1,7 @@
 config OPENRISC
 	bool
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	default y
 
 # not used
@@ -9,7 +10,7 @@ config ARCH_TEXT_BASE
 	default 0x00000000
 
 config BOARDINFO
-	default "Openrisc simulator" if GENERIC
+	default "or1k" if GENERIC
 
 choice
 	prompt "Select your board"

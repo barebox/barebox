@@ -16,8 +16,9 @@
 #include <init.h>
 #include <io.h>
 #include <mach/weim.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/iim.h>
+#include <mach/revision.h>
 #include <mach/generic.h>
 
 void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
@@ -28,14 +29,14 @@ void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 	writel(additional, MX35_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
 }
 
-int imx_silicon_revision()
+static void imx35_silicon_revision(void)
 {
 	uint32_t reg;
 	reg = readl(MX35_IIM_BASE_ADDR + IIM_SREV);
 	/* 0×00 = TO 1.0, First silicon */
 	reg += IMX_CHIP_REV_1_0;
 
-	return (reg & 0xFF);
+	imx_set_silicon_revision("i.MX35", reg & 0xFF);
 }
 
 /*
@@ -58,14 +59,24 @@ core_initcall(imx35_l2_fix);
 
 static int imx35_init(void)
 {
+	uint32_t val;
+
+	imx35_silicon_revision();
+
+	val = readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR);
+	imx_25_35_boot_save_loc((val >> MX35_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+			(val >> MX35_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+
 	add_generic_device("imx_iim", 0, NULL, MX35_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
+	add_generic_device("imx-iomuxv3", 0, NULL, MX35_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx35-ccm", 0, NULL, MX35_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, MX35_GPT1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 0, NULL, MX35_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 1, NULL, MX35_GPIO2_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx-gpio", 2, NULL, MX35_GPIO3_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx21-wdt", 0, NULL, MX35_WDOG_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

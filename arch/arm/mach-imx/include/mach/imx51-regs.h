@@ -1,10 +1,6 @@
 #ifndef __MACH_IMX51_REGS_H
 #define __MACH_IMX51_REGS_H
 
-#define IMX_TIM1_BASE			0x73fa0000
-#define IMX_WDT_BASE			0x73f98000
-#define IMX_IOMUXC_BASE			0x73fa8000
-
 /* WEIM registers */
 #define WEIM_CSxGCR1(n)	(((n) * 0x18) + 0x00)
 #define WEIM_CSxGCR2(n)	(((n) * 0x18) + 0x04)

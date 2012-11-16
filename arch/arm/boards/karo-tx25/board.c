@@ -21,7 +21,7 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <asm/barebox-arm.h>
@@ -75,8 +75,8 @@ static iomux_v3_cfg_t karo_tx25_padsd_fec[] = {
 	MX25_PAD_FEC_TX_CLK__FEC_TX_CLK,
 };
 
-#define TX25_FEC_PWR_GPIO	(GPIO_PORTD | 9)
-#define TX25_FEC_RST_GPIO	(GPIO_PORTD | 7)
+#define TX25_FEC_PWR_GPIO	IMX_GPIO_NR(4, 9)
+#define TX25_FEC_RST_GPIO	IMX_GPIO_NR(4, 7)
 
 static void noinline gpio_fec_active(void)
 {
@@ -108,7 +108,7 @@ static int tx25_devices_init(void)
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);
@@ -217,9 +217,9 @@ static struct imx_fb_videomode stk5_fb_mode = {
 	.pcr	= PCR_TFT | PCR_COLOR | PCR_FLMPOL | PCR_LPPOL | PCR_SCLK_SEL,
 };
 
-#define STK5_LCD_BACKLIGHT_GPIO		(GPIO_PORTA | 26)
-#define STK5_LCD_RESET_GPIO		(GPIO_PORTB | 4)
-#define STK5_LCD_POWER_GPIO		(GPIO_PORTB | 5)
+#define STK5_LCD_BACKLIGHT_GPIO		IMX_GPIO_NR(1, 26)
+#define STK5_LCD_RESET_GPIO		IMX_GPIO_NR(2, 4)
+#define STK5_LCD_POWER_GPIO		IMX_GPIO_NR(2, 5)
 
 static void tx25_fb_enable(int enable)
 {

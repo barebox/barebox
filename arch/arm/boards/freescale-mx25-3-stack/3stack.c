@@ -21,7 +21,7 @@
 #include <init.h>
 #include <driver.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm-generic/sections.h>
 #include <asm/barebox-arm.h>
@@ -167,8 +167,8 @@ static int imx25_3ds_fec_init(void)
 	 * FEC_RESET_B: gpio2[3] is ALT 5 mode of pin A17
 	 * FEC_ENABLE_B: gpio4[8] is ALT 5 mode of pin D12
 	 */
-	writel(0x8, IMX_IOMUXC_BASE + 0x0238); /* open drain */
-	writel(0x0, IMX_IOMUXC_BASE + 0x028C); /* cmos, no pu/pd */
+	writel(0x8, MX25_IOMUXC_BASE_ADDR + 0x0238); /* open drain */
+	writel(0x0, MX25_IOMUXC_BASE_ADDR + 0x028C); /* cmos, no pu/pd */
 
 #define FEC_ENABLE_GPIO		35
 #define FEC_RESET_B_GPIO	104
@@ -215,7 +215,7 @@ static int imx25_devices_init(void)
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
 
-	if (readl(MX25_CCM_BASE_ADDR + CCM_RCSR) & (1 << 14))
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;
 
 	imx25_add_nand(&nand_info);
@@ -298,7 +298,7 @@ void __bare_init nand_boot(void)
 
 static int imx25_core_setup(void)
 {
-	writel(0x01010103, MX25_CCM_BASE_ADDR + CCM_PCDR2);
+	writel(0x01010103, MX25_CCM_BASE_ADDR + MX25_CCM_PCDR2);
 	return 0;
 
 }

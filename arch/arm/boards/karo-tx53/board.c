@@ -25,7 +25,7 @@
 
 #include <generated/mach-types.h>
 
-#include <mach/imx-regs.h>
+#include <mach/imx53-regs.h>
 #include <mach/iomux-mx53.h>
 #include <mach/devices-imx53.h>
 #include <mach/generic.h>
@@ -33,6 +33,8 @@
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
+#include <mach/imx-flash-header.h>
+#include <mach/bbu.h>
 
 #include <asm/armlinux.h>
 #include <io.h>
@@ -99,7 +101,10 @@ static iomux_v3_cfg_t tx53_pads[] = {
 
 static int tx53_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	if (IS_ENABLED(CONFIG_TX53_REV_1011))
+		arm_add_mem_device("ram0", 0x70000000, SZ_1G);
+	else
+		arm_add_mem_device("ram0", 0x70000000, SZ_512M);
 
 	return 0;
 }
@@ -203,6 +208,14 @@ static inline void tx53_fec_init(void)
 			ARRAY_SIZE(tx53_fec_pads));
 }
 
+#define DCD_NAME_1011 static struct imx_dcd_v2_entry dcd_entry_1011
+
+#include "dcd-data-1011.h"
+
+#define DCD_NAME_XX30 static u32 dcd_entry_xx30
+
+#include "dcd-data-xx30.h"
+
 static int tx53_devices_init(void)
 {
 	imx53_iim_register_fec_ethaddr();
@@ -214,6 +227,14 @@ static int tx53_devices_init(void)
 	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_TX53);
 
+	/* rev xx30 can boot from nand or USB */
+	imx53_bbu_internal_nand_register_handler("nand-xx30",
+		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30, sizeof(dcd_entry_xx30), SZ_512K);
+
+	/* rev 1011 can boot from MMC/SD, other bootsource currently unknown */
+	imx53_bbu_internal_mmc_register_handler("mmc-1011", "/dev/disk0",
+		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011));
+
 	return 0;
 }
 
@@ -221,8 +242,25 @@ device_initcall(tx53_devices_init);
 
 static int tx53_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+	const char *envdev;
+
+	switch (imx_bootsource()) {
+	case bootsource_mmc:
+		devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
+		envdev = "MMC";
+		break;
+	case bootsource_nand:
+	default:
+		devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", 0x80000, 0x100000, DEVFS_PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		envdev = "NAND";
+		break;
+	}
+
+	printf("Using environment in %s\n", envdev);
 
 	return 0;
 }
@@ -232,7 +270,8 @@ static int tx53_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(tx53_pads, ARRAY_SIZE(tx53_pads));
 
-	imx53_init_lowlevel(1000);
+	if (!IS_ENABLED(CONFIG_TX53_REV_XX30))
+		imx53_init_lowlevel(1000);
 
 	imx53_add_uart0();
 	return 0;

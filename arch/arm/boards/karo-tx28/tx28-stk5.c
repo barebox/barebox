@@ -393,7 +393,7 @@ void base_board_init(void)
 	tx28_get_ethaddr();
 
 	imx_enable_enetclk();
-	add_generic_device("fec_imx", 0, NULL, IMX_FEC0_BASE, 0x4000,
+	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 
 	ret = register_persistent_environment();

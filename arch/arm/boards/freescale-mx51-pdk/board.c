@@ -17,7 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx51-regs.h>
 #include <fec.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
@@ -25,6 +25,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <mach/bbu.h>
 #include <nand.h>
 #include <notifier.h>
 #include <spi/spi.h>
@@ -37,7 +38,9 @@
 #include <mach/generic.h>
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
+#include <mach/revision.h>
 #include <mach/iim.h>
+#include <mach/imx-flash-header.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -234,6 +237,10 @@ static void babbage_power_init(void)
 	mdelay(50);
 }
 
+#define DCD_NAME static struct imx_dcd_entry dcd_entry
+
+#include "dcd-data.h"
+
 static int f3s_devices_init(void)
 {
 	spi_register_board_info(mx51_babbage_spi_board_info,
@@ -253,6 +260,9 @@ static int f3s_devices_init(void)
 
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
+
+	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
+		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry));
 
 	return 0;
 }

@@ -30,7 +30,7 @@
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
 
-#include <mach/imx-regs.h>
+#include <mach/imx53-regs.h>
 #include <mach/iomux-mx53.h>
 #include <mach/devices-imx53.h>
 #include <mach/generic.h>

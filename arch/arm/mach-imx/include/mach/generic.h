@@ -1,10 +1,29 @@
 
-int imx_silicon_revision(void);
-#define IMX27_CHIP_REVISION_1_0   0
-#define IMX27_CHIP_REVISION_2_0   1
-
 u64 imx_uid(void);
 
+enum imx_bootsource {
+	bootsource_unknown,
+	bootsource_nand,
+	bootsource_nor,
+	bootsource_mmc,
+	bootsource_i2c,
+	bootsource_spi,
+	bootsource_serial,
+	bootsource_onenand,
+	bootsource_hd,
+};
+
+enum imx_bootsource imx_bootsource(void);
+void imx_set_bootsource(enum imx_bootsource src);
+
+int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type);
+void imx_27_boot_save_loc(void __iomem *sysctrl_base);
+int imx51_boot_save_loc(void __iomem *src_base);
+int imx53_boot_save_loc(void __iomem *src_base);
+
+/* There's a off-by-one betweem the gpio bank number and the gpiochip */
+/* range e.g. GPIO_1_5 is gpio 5 under linux */
+#define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
 
 #ifdef CONFIG_ARCH_IMX1
 #define cpu_is_mx1()	(1)

@@ -20,7 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <fb.h>
 #include <mach/imxfb.h>
 #include <malloc.h>
@@ -742,9 +742,9 @@ static void ipu_fb_enable(struct fb_info *info)
 	/* ipu_idmac.c::ipu_probe() */
 
 	/* Start the clock */
-	reg = readl(IMX_CCM_BASE + CCM_CGR1);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	reg |= (3 << 18);
-	writel(reg, IMX_CCM_BASE + CCM_CGR1);
+	writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 
 	/* ipu_idmac.c::ipu_idmac_init() */
 

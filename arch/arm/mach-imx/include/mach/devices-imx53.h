@@ -23,22 +23,22 @@ static inline struct device_d *imx53_add_i2c1(struct i2c_platform_data *pdata)
 
 static inline struct device_d *imx53_add_uart0(void)
 {
-	return imx_add_uart((void *)MX53_UART1_BASE_ADDR, 0);
+	return imx_add_uart_imx21((void *)MX53_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx53_add_uart1(void)
 {
-	return imx_add_uart((void *)MX53_UART2_BASE_ADDR, 1);
+	return imx_add_uart_imx21((void *)MX53_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx53_add_uart2(void)
 {
-	return imx_add_uart((void *)MX53_UART3_BASE_ADDR, 2);
+	return imx_add_uart_imx21((void *)MX53_UART3_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx53_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)MX53_FEC_BASE_ADDR, pdata);
+	return imx_add_fec_imx27((void *)MX53_FEC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx53_add_mmc0(struct esdhc_platform_data *pdata)

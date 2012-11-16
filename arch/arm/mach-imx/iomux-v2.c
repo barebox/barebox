@@ -16,19 +16,22 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <init.h>
 #include <mach/iomux-mx31.h>
 
 /*
  * IOMUX register (base) addresses
  */
-#define IOMUXINT_OBS1	(IOMUXC_BASE + 0x000)
-#define IOMUXINT_OBS2	(IOMUXC_BASE + 0x004)
-#define IOMUXGPR	(IOMUXC_BASE + 0x008)
-#define IOMUXSW_MUX_CTL	(IOMUXC_BASE + 0x00C)
-#define IOMUXSW_PAD_CTL	(IOMUXC_BASE + 0x154)
+#define IOMUXINT_OBS1	0x000
+#define IOMUXINT_OBS2	0x004
+#define IOMUXGPR	0x008
+#define IOMUXSW_MUX_CTL	0x00C
+#define IOMUXSW_PAD_CTL	0x154
 
 #define IOMUX_REG_MASK (IOMUX_PADNUM_MASK & ~0x3)
+
+static void __iomem *base;
+
 /*
  * set the mode for a IOMUX pin.
  */
@@ -37,7 +40,10 @@ int imx_iomux_mode(unsigned int pin_mode)
 	u32 field, l, mode, ret = 0;
 	void __iomem *reg;
 
-	reg = (void *)(IOMUXSW_MUX_CTL + (pin_mode & IOMUX_REG_MASK));
+	if (!base)
+		return -EINVAL;
+
+	reg = base + IOMUXSW_MUX_CTL + (pin_mode & IOMUX_REG_MASK);
 	field = pin_mode & 0x3;
 	mode = (pin_mode & IOMUX_MODE_MASK) >> IOMUX_MODE_SHIFT;
 
@@ -61,8 +67,11 @@ void imx_iomux_set_pad(enum iomux_pins pin, u32 config)
 	u32 field, l;
 	void __iomem *reg;
 
+	if (!base)
+		return;
+
 	pin &= IOMUX_PADNUM_MASK;
-	reg = (void *)(IOMUXSW_PAD_CTL + (pin + 2) / 3 * 4);
+	reg = base + IOMUXSW_PAD_CTL + (pin + 2) / 3 * 4;
 	field = (pin + 2) % 3;
 
 	pr_debug("%s: reg offset = 0x%x, field = %d\n",
@@ -83,14 +92,51 @@ void imx_iomux_set_gpr(enum iomux_gp_func gp, int en)
 {
 	u32 l;
 
-	l = readl(IOMUXGPR);
+	if (!base)
+		return;
+
+	l = readl(base + IOMUXGPR);
 	if (en)
 		l |= gp;
 	else
 		l &= ~gp;
 
-	writel(l, IOMUXGPR);
+	writel(l, base + IOMUXGPR);
 }
 EXPORT_SYMBOL(mxc_iomux_set_gpr);
 
+static int imx_iomux_probe(struct device_d *dev)
+{
+	base = dev_request_mem_region(dev, 0);
 
+	return 0;
+}
+
+static __maybe_unused struct of_device_id imx_iomux_dt_ids[] = {
+	{
+		.compatible = "fsl,imx31-iomux",
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct platform_device_id imx_iomux_ids[] = {
+	{
+		.name = "imx31-iomux",
+	}, {
+		/* sentinel */
+	},
+};
+
+static struct driver_d imx_iomux_driver = {
+	.name = "imx-iomuxv2",
+	.probe = imx_iomux_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_iomux_dt_ids),
+	.id_table = imx_iomux_ids,
+};
+
+static int imx_iomux_init(void)
+{
+	return platform_driver_register(&imx_iomux_driver);
+}
+postcore_initcall(imx_iomux_init);

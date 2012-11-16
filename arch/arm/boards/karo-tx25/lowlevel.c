@@ -18,7 +18,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx25-regs.h>
 #include <mach/esdctl.h>
 #include <io.h>
 #include <mach/imx-nand.h>
@@ -45,8 +45,8 @@ static void __bare_init __naked insdram(void)
 static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 		uint32_t esdcfg)
 {
-	uint32_t esdctlreg = ESDCTL0;
-	uint32_t esdcfgreg = ESDCFG0;
+	uint32_t esdctlreg = MX25_ESDCTL_BASE_ADDR + IMX_ESDCTL0;
+	uint32_t esdcfgreg = MX25_ESDCTL_BASE_ADDR + IMX_ESDCFG0;
 
 	if (base == 0x90000000) {
 		esdctlreg += 8;
@@ -121,12 +121,12 @@ void __bare_init __naked reset(void)
 	writel(0x1, 0xb8003000);
 
 	/* configure ARM clk */
-	writel(0x20034000, MX25_CCM_BASE_ADDR + CCM_CCTL);
+	writel(0x20034000, MX25_CCM_BASE_ADDR + MX25_CCM_CCTL);
 
 	/* enable all the clocks */
-	writel(0x1fffffff, MX25_CCM_BASE_ADDR + CCM_CGCR0);
-	writel(0xffffffff, MX25_CCM_BASE_ADDR + CCM_CGCR1);
-	writel(0x000fdfff, MX25_CCM_BASE_ADDR + CCM_CGCR2);
+	writel(0x1fffffff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR0);
+	writel(0xffffffff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR1);
+	writel(0x000fdfff, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR2);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -136,9 +136,9 @@ void __bare_init __naked reset(void)
 	/* set to 3.3v SDRAM */
 	writel(0x800, MX25_IOMUXC_BASE_ADDR + 0x454);
 
-	writel(ESDMISC_RST, ESDMISC);
+	writel(ESDMISC_RST, MX25_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
-	while (!(readl(ESDMISC) & (1 << 31)));
+	while (!(readl(MX25_ESDCTL_BASE_ADDR + IMX_ESDMISC) & (1 << 31)));
 
 #define ESDCTLVAL	(ESDCTL0_ROW13 | ESDCTL0_COL9 |	ESDCTL0_DSIZ_15_0 | \
 			 ESDCTL0_REF4 | ESDCTL0_PWDT_PRECHARGE_PWDN | ESDCTL0_BL)

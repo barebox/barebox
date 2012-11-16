@@ -18,7 +18,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/imx-pll.h>
 #include <mach/esdctl.h>
 #include <asm/cache-l2x0.h>
@@ -33,8 +33,6 @@
 #ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
-	PCCR1 |= PCCR1_NFC_BAUDEN;
-
 	/* setup a stack to be able to call imx_nand_load_image() */
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
@@ -57,10 +55,10 @@ void __bare_init __naked reset(void)
 	common_reset();
 
 	/* ahb lite ip interface */
-	AIPI1_PSR0 = 0x20040304;
-	AIPI1_PSR1 = 0xDFFBFCFB;
-	AIPI2_PSR0 = 0x00000000;
-	AIPI2_PSR1 = 0xFFFFFFFF;
+	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0);
+	writel(0xDFFBFCFB, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR1);
+	writel(0x00000000, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR0);
+	writel(0xFFFFFFFF, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR1);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
@@ -70,30 +68,38 @@ void __bare_init __naked reset(void)
 	/*
 	 * DDR on CSD0
 	 */
-	writel(0x00000008, ESDMISC); /* Enable DDR SDRAM operation */
+	/* Enable DDR SDRAM operation */
+	writel(0x00000008, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
-	DSCR(3) = 0x55555555; /* Set the driving strength   */
-	DSCR(5) = 0x55555555;
-	DSCR(6) = 0x55555555;
-	DSCR(7) = 0x00005005;
-	DSCR(8) = 0x15555555;
+	/* Set the driving strength   */
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(3));
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(5));
+	writel(0x55555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(6));
+	writel(0x00005005, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(7));
+	writel(0x15555555, MX27_SYSCTRL_BASE_ADDR + MX27_DSCR(8));
 
-	writel(0x00000004, ESDMISC); /* Initial reset */
-	writel(0x006ac73a, ESDCFG0);
+	/* Initial reset */
+	writel(0x00000004, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	writel(0x006ac73a, MX27_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE, ESDCTL0); /* precharge CSD0 all banks */
+	/* precharge CSD0 all banks */
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writel(0x00000000, 0xA0000F00);	/* CSD0 precharge address (A10 = 1) */
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH, ESDCTL0);
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	for (i = 0; i < 8; i++)
 		writel(0, 0xa0000f00);
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE, ESDCTL0);
+	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	writeb(0xda, 0xa0000033);
 	writeb(0xff, 0xa1000000);
 	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 |
-			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL, ESDCTL0);
+			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
+			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */

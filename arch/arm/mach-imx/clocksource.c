@@ -32,7 +32,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <notifier.h>
-#include <mach/imx-regs.h>
 #include <io.h>
 
 /* Part 1: Registers */
@@ -108,18 +107,6 @@ static int imx_gpt_probe(struct device_d *dev)
 	/* setup GP Timer 1 */
 	writel(TCTL_SWR, timer_base + GPT_TCTL);
 
-#ifdef CONFIG_ARCH_IMX21
-	PCCR1 |= PCCR1_GPT1_EN;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 |= PCCR0_GPT1_EN;
-	PCCR1 |= PCCR1_PERCLK1_EN;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 19),
-		IMX_CCM_BASE + CCM_CGCR1);
-#endif
-
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
 
@@ -179,40 +166,3 @@ static int imx_gpt_init(void)
 	return platform_driver_register(&imx_gpt_driver);
 }
 coredevice_initcall(imx_gpt_init);
-
-/*
- * Watchdog Registers
- */
-#ifdef CONFIG_ARCH_IMX1
-#define WDOG_WCR	0x00 /* Watchdog Control Register */
-#define WDOG_WSR	0x04 /* Watchdog Service Register */
-#define WDOG_WSTR	0x08 /* Watchdog Status Register  */
-#define WDOG_WCR_WDE	(1 << 0)
-#else
-#define WDOG_WCR	0x00 /* Watchdog Control Register */
-#define WDOG_WSR	0x02 /* Watchdog Service Register */
-#define WDOG_WSTR	0x04 /* Watchdog Status Register  */
-#define WDOG_WCR_WDE	(1 << 2)
-#endif
-
-/*
- * Reset the cpu by setting up the watchdog timer and let it time out
- */
-void __noreturn reset_cpu (unsigned long addr)
-{
-	void __iomem *wdt = IOMEM(IMX_WDT_BASE);
-
-	/* Disable watchdog and set Time-Out field to 0 */
-	writew(0x0, wdt + WDOG_WCR);
-
-	/* Write Service Sequence */
-	writew(0x5555, wdt + WDOG_WSR);
-	writew(0xaaaa, wdt + WDOG_WSR);
-
-	/* Enable watchdog */
-	writew(WDOG_WCR_WDE, wdt + WDOG_WCR);
-
-	while (1);
-	/*NOTREACHED*/
-}
-EXPORT_SYMBOL(reset_cpu);

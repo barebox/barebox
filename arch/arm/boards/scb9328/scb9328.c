@@ -19,7 +19,7 @@
 #include <init.h>
 #include <environment.h>
 #include <generated/mach-types.h>
-#include <mach/imx-regs.h>
+#include <mach/imx1-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
 #include <mach/weim.h>
@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <dm9000.h>
 #include <led.h>
+#include <mach/iomux-mx1.h>
 #include <mach/devices-imx1.h>
 
 static struct dm9000_platform_data dm9000_data = {
@@ -68,8 +69,8 @@ static int scb9328_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);
 
-/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
-	FMCR = 0x1;
+	/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
+	writel(0x1, MX1_SCM_BASE_ADDR + MX1_FMCR);
 
 	imx1_setup_eimcs(0, 0x000F2000, 0x11110d01);
 	imx1_setup_eimcs(1, 0x000F0a00, 0x11110601);

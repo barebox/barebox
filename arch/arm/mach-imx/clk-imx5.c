@@ -13,7 +13,8 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
+#include <mach/imx51-regs.h>
+#include <mach/imx53-regs.h>
 
 #include "clk.h"
 
@@ -233,9 +234,18 @@ static int imx51_ccm_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx51_ccm_dt_ids[] = {
+	{
+		.compatible = "fsl,imx51-ccm",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx51_ccm_driver = {
 	.probe	= imx51_ccm_probe,
 	.name	= "imx51-ccm",
+	.of_compatible = DRV_OF_COMPAT(imx51_ccm_dt_ids),
 };
 
 static int imx51_ccm_init(void)
@@ -285,9 +295,18 @@ static int imx53_ccm_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx53_ccm_dt_ids[] = {
+	{
+		.compatible = "fsl,imx53-ccm",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx53_ccm_driver = {
 	.probe	= imx53_ccm_probe,
 	.name	= "imx53-ccm",
+	.of_compatible = DRV_OF_COMPAT(imx53_ccm_dt_ids),
 };
 
 static int imx53_ccm_init(void)

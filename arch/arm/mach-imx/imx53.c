@@ -17,59 +17,48 @@
 #include <notifier.h>
 #include <sizes.h>
 #include <mach/imx5.h>
-#include <mach/imx-regs.h>
+#include <mach/imx53-regs.h>
+#include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
+#include <mach/generic.h>
 
 #define SI_REV 0x48
 
-static u32 mx53_silicon_revision;
-static char *mx53_rev_string = "unknown";
-
-int imx_silicon_revision(void)
-{
-	return mx53_silicon_revision;
-}
-
-static int query_silicon_revision(void)
+static int imx53_silicon_revision(void)
 {
 	void __iomem *rom = MX53_IROM_BASE_ADDR;
 	u32 rev;
+	u32 mx53_silicon_revision;
 
 	rev = readl(rom + SI_REV);
 	switch (rev) {
 	case 0x10:
 		mx53_silicon_revision = IMX_CHIP_REV_1_0;
-		mx53_rev_string = "1.0";
 		break;
 	case 0x20:
 		mx53_silicon_revision = IMX_CHIP_REV_2_0;
-		mx53_rev_string = "2.0";
 		break;
 	case 0x21:
 		mx53_silicon_revision = IMX_CHIP_REV_2_1;
-		mx53_rev_string = "2.1";
 		break;
 	default:
 		mx53_silicon_revision = 0;
 	}
 
-	return 0;
-}
-core_initcall(query_silicon_revision);
-
-static int imx53_print_silicon_rev(void)
-{
-	printf("detected i.MX53 rev %s\n", mx53_rev_string);
+	imx_set_silicon_revision("i.MX53", mx53_silicon_revision);
 
 	return 0;
 }
-device_initcall(imx53_print_silicon_rev);
 
 static int imx53_init(void)
 {
+	imx53_silicon_revision();
+	imx53_boot_save_loc((void *)MX53_SRC_BASE_ADDR);
+
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
+	add_generic_device("imx-iomuxv3", 0, NULL, MX53_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx53-ccm", 0, NULL, MX53_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, 0X53fa0000, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 0, NULL, MX53_GPIO1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
@@ -79,6 +68,7 @@ static int imx53_init(void)
 	add_generic_device("imx31-gpio", 4, NULL, MX53_GPIO5_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 5, NULL, MX53_GPIO6_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 6, NULL, MX53_GPIO7_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx21-wdt", 0, NULL, MX53_WDOG1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
@@ -203,6 +193,8 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0xffffffff, ccm + MX5_CCM_CCGR6);
 	writel(0xffffffff, ccm + MX53_CCM_CCGR7);
 
-	clock_notifier_call_chain();
+	if (!IS_ENABLED(__PBL__))
+		clock_notifier_call_chain();
+
 	writel(0, ccm + MX5_CCM_CCDR);
 }

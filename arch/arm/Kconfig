@@ -56,6 +56,7 @@ config ARCH_IMX
 	select GPIOLIB
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
+	select WATCHDOG_IMX_RESET_SOURCE
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"

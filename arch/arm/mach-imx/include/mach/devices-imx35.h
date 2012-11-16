@@ -28,17 +28,17 @@ static inline struct device_d *imx35_add_spi(struct spi_imx_master *pdata)
 
 static inline struct device_d *imx35_add_uart0(void)
 {
-	return imx_add_uart((void *)MX35_UART1_BASE_ADDR, 0);
+	return imx_add_uart_imx21((void *)MX35_UART1_BASE_ADDR, 0);
 }
 
 static inline struct device_d *imx35_add_uart1(void)
 {
-	return imx_add_uart((void *)MX35_UART2_BASE_ADDR, 1);
+	return imx_add_uart_imx21((void *)MX35_UART2_BASE_ADDR, 1);
 }
 
 static inline struct device_d *imx35_add_uart2(void)
 {
-	return imx_add_uart((void *)MX35_UART3_BASE_ADDR, 2);
+	return imx_add_uart_imx21((void *)MX35_UART3_BASE_ADDR, 2);
 }
 
 static inline struct device_d *imx35_add_nand(struct imx_nand_platform_data *pdata)
@@ -53,7 +53,7 @@ static inline struct device_d *imx35_add_fb(struct imx_ipu_fb_platform_data *pda
 
 static inline struct device_d *imx35_add_fec(struct fec_platform_data *pdata)
 {
-	return imx_add_fec((void *)MX35_FEC_BASE_ADDR, pdata);
+	return imx_add_fec_imx27((void *)MX35_FEC_BASE_ADDR, pdata);
 }
 
 static inline struct device_d *imx35_add_mmc0(struct esdhc_platform_data *pdata)

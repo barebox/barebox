@@ -17,7 +17,11 @@
 #include <linux/mtd/nand.h>
 #include <mach/imx-nand.h>
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
+#include <mach/imx21-regs.h>
+#include <mach/imx25-regs.h>
+#include <mach/imx27-regs.h>
+#include <mach/imx31-regs.h>
+#include <mach/imx35-regs.h>
 
 static void __bare_init noinline imx_nandboot_wait_op_done(void *regs)
 {
@@ -116,7 +120,13 @@ static void __bare_init __memcpy32(void *trg, const void *src, int size)
 static int __maybe_unused is_pagesize_2k(void)
 {
 #ifdef CONFIG_ARCH_IMX21
-	if (readl(IMX_SYSTEM_CTL_BASE + 0x14) & (1 << 5))
+	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
+		return 1;
+	else
+		return 0;
+#endif
+#if defined(CONFIG_ARCH_IMX25)
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
 		return 1;
 	else
 		return 0;
@@ -128,13 +138,13 @@ static int __maybe_unused is_pagesize_2k(void)
 		return 0;
 #endif
 #ifdef CONFIG_ARCH_IMX31
-	if (readl(IMX_CCM_BASE + CCM_RCSR) & RCSR_NFMS)
+	if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
 		return 1;
 	else
 		return 0;
 #endif
-#if defined(CONFIG_ARCH_IMX35) || defined(CONFIG_ARCH_IMX25)
-	if (readl(IMX_CCM_BASE + CCM_RCSR) & (1 << 8))
+#if defined(CONFIG_ARCH_IMX35)
+	if (readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR) & (1 << 8))
 		return 1;
 	else
 		return 0;
@@ -163,7 +173,21 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 		blocksize = 16 * 1024;
 	}
 
-	base = (void __iomem *)IMX_NFC_BASE;
+#ifdef CONFIG_ARCH_IMX21
+	base = (void __iomem *)MX21_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX25
+	base = (void __iomem *)MX25_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX27
+	base = (void __iomem *)MX27_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX31
+	base = (void __iomem *)MX31_NFC_BASE_ADDR;
+#endif
+#ifdef CONFIG_ARCH_IMX35
+	base = (void __iomem *)MX35_NFC_BASE_ADDR;
+#endif
 	if (nfc_is_v21()) {
 		regs = base + 0x1e00;
 		spare0 = base + 0x1000;

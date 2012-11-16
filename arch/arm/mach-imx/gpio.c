@@ -23,7 +23,6 @@
 #include <common.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/imx-regs.h>
 #include <gpio.h>
 #include <init.h>
 

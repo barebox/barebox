@@ -16,7 +16,7 @@
 #include <init.h>
 #include <sizes.h>
 #include <platform_ide.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/weim.h>
 #include <mach/gpio.h>
@@ -112,35 +112,38 @@ static void pcm970_ide_init(void)
 	mdelay(10);
 
 	/* Reset PCMCIA Status Change Register */
-	writel(0x00000fff, PCMCIA_PSCR);
+	writel(0x00000fff, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PSCR);
 	mdelay(10);
 
 	/* Check PCMCIA Input Pins Register for Card Detect & Power */
-	if ((readl(PCMCIA_PIPR) & ((1 << 8) | (3 << 3))) != (1 << 8)) {
+	if ((readl(MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PIPR) &
+				((1 << 8) | (3 << 3))) != (1 << 8)) {
 		printf("CompactFlash card not found. Driver not enabled.\n");
 		return;
 	}
 
 	/* Disable all interrupts */
-	writel(0, PCMCIA_PER);
+	writel(0, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PER);
 
 	/* Disable all PCMCIA banks */
 	for (i = 0; i < 5; i++)
-		writel(0, PCMCIA_POR(i));
+		writel(0, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(i));
 
 	/* Not use internal PCOE */
-	writel(0, PCMCIA_PGCR);
+	writel(0, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PGCR);
 
 	/* Setup PCMCIA bank0 for Common memory mode */
-	writel(0, PCMCIA_PBR(0));
-	writel(0, PCMCIA_POFR(0));
-	writel((0 << 25) | (17 << 17) | (4 << 11) | (3 << 5) | 0xf, PCMCIA_POR(0));
+	writel(0, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PBR(0));
+	writel(0, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POFR(0));
+	writel((0 << 25) | (17 << 17) | (4 << 11) | (3 << 5) | 0xf,
+			MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(0));
 
 	/* Clear PCMCIA General Status Register */
-	writel(0x0000001f, PCMCIA_PGSR);
+	writel(0x0000001f, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PGSR);
 
 	/* Make PCMCIA bank0 valid */
-	writel(readl(PCMCIA_POR(0)) | (1 << 29), PCMCIA_POR(0));
+	writel(readl(MX27_PCMCIA_POR(0)) | (1 << 29),
+			MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(0));
 
 	platform_device_register(&pcm970_ide_device);
 }
@@ -162,7 +165,6 @@ static void pcm970_mmc_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	PCCR0 |= PCCR0_SDHC2_EN;
 	imx27_add_mmc1(NULL);
 }
 

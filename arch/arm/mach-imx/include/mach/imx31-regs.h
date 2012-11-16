@@ -130,105 +130,61 @@
 
 #define MX31_PCMCIA_MEM_BASE_ADDR	0xbc000000
 
-/* FIXME: Get rid of these */
-#define IMX_TIM1_BASE	MX31_GPT1_BASE_ADDR
-#define IMX_WDT_BASE	MX31_WDOG_BASE_ADDR
-#define IMX_ESD_BASE	MX31_ESDCTL_BASE_ADDR
-#define IMX_NFC_BASE	MX31_NFC_BASE_ADDR
-#define IOMUXC_BASE	MX31_IOMUXC_BASE_ADDR
-
 /*
  * Clock Controller Module (CCM)
  */
-#define CCM_CCMR	0x00
-#define CCM_PDR0	0x04
-#define CCM_PDR1	0x08
-#define CCM_RCSR	0x0c
-#define CCM_MPCTL	0x10
-#define CCM_UPCTL	0x14
-#define CCM_SPCTL	0x18
-#define CCM_COSR	0x1C
+#define MX31_CCM_CCMR	0x00
+#define MX31_CCM_PDR0	0x04
+#define MX31_CCM_PDR1	0x08
+#define MX31_CCM_RCSR	0x0c
+#define MX31_CCM_MPCTL	0x10
+#define MX31_CCM_UPCTL	0x14
+#define MX31_CCM_SPCTL	0x18
+#define MX31_CCM_COSR	0x1C
 
-/*
- * ?????????????
- */
-#define CCMR_MDS	(1 << 7)
-#define CCMR_SBYCS	(1 << 4)
-#define CCMR_MPE	(1 << 3)
-#define CCMR_PRCS_MASK	(3 << 1)
-#define CCMR_FPM	(1 << 1)
-#define CCMR_CKIH	(2 << 1)
+#define MX31_CCMR_MDS	(1 << 7)
+#define MX31_CCMR_SBYCS	(1 << 4)
+#define MX31_CCMR_MPE	(1 << 3)
+#define MX31_CCMR_PRCS_MASK	(3 << 1)
+#define MX31_CCMR_FPM	(1 << 1)
+#define MX31_CCMR_CKIH	(2 << 1)
 
-#define RCSR_NFMS	(1 << 30)
+#define MX31_RCSR_NFMS	(1 << 30)
 
-/*
- * ?????????????
- */
-#define PDR0_CSI_PODF(x)	(((x) & 0x1ff) << 23)
-#define PDR0_PER_PODF(x)	(((x) & 0x1f) << 16)
-#define PDR0_HSP_PODF(x)	(((x) & 0x7) << 11)
-#define PDR0_NFC_PODF(x)	(((x) & 0x7) << 8)
-#define PDR0_IPG_PODF(x)	(((x) & 0x3) << 6)
-#define PDR0_MAX_PODF(x)	(((x) & 0x7) << 3)
-#define PDR0_MCU_PODF(x)	((x) & 0x7)
+#define MX31_PDR0_CSI_PODF(x)	(((x) & 0x1ff) << 23)
+#define MX31_PDR0_PER_PODF(x)	(((x) & 0x1f) << 16)
+#define MX31_PDR0_HSP_PODF(x)	(((x) & 0x7) << 11)
+#define MX31_PDR0_NFC_PODF(x)	(((x) & 0x7) << 8)
+#define MX31_PDR0_IPG_PODF(x)	(((x) & 0x3) << 6)
+#define MX31_PDR0_MAX_PODF(x)	(((x) & 0x7) << 3)
+#define MX31_PDR0_MCU_PODF(x)	((x) & 0x7)
 
-#include "esdctl.h"
-
-/*
- * ???????????
- */
-#define IOMUXC_GPR	(IOMUXC_BASE + 0x8)
-#define IOMUXC_SW_MUX_CTL(x)	(IOMUXC_BASE + 0xc + (x) * 4)
-#define IOMUXC_SW_PAD_CTL(x)	(IOMUXC_BASE + 0x154 + (x) * 4)
+#define MX31_IOMUXC_GPR	(IOMUXC_BASE + 0x8)
+#define MX31_IOMUXC_SW_MUX_CTL(x)	(IOMUXC_BASE + 0xc + (x) * 4)
+#define MX31_IOMUXC_SW_PAD_CTL(x)	(IOMUXC_BASE + 0x154 + (x) * 4)
 
 /*
  * Signal Multiplexing (IOMUX)
  */
 
 /* bits in the SW_MUX_CTL registers */
-#define MUX_CTL_OUT_GPIO_DR	(0 << 4)
-#define MUX_CTL_OUT_FUNC	(1 << 4)
-#define MUX_CTL_OUT_ALT1	(2 << 4)
-#define MUX_CTL_OUT_ALT2	(3 << 4)
-#define MUX_CTL_OUT_ALT3	(4 << 4)
-#define MUX_CTL_OUT_ALT4	(5 << 4)
-#define MUX_CTL_OUT_ALT5	(6 << 4)
-#define MUX_CTL_OUT_ALT6	(7 << 4)
-#define MUX_CTL_IN_NONE		(0 << 0)
-#define MUX_CTL_IN_GPIO		(1 << 0)
-#define MUX_CTL_IN_FUNC		(2 << 0)
-#define MUX_CTL_IN_ALT1		(4 << 0)
-#define MUX_CTL_IN_ALT2		(8 << 0)
+#define MX31_MUX_CTL_OUT_GPIO_DR	(0 << 4)
+#define MX31_MUX_CTL_OUT_FUNC		(1 << 4)
+#define MX31_MUX_CTL_OUT_ALT1		(2 << 4)
+#define MX31_MUX_CTL_OUT_ALT2		(3 << 4)
+#define MX31_MUX_CTL_OUT_ALT3		(4 << 4)
+#define MX31_MUX_CTL_OUT_ALT4		(5 << 4)
+#define MX31_MUX_CTL_OUT_ALT5		(6 << 4)
+#define MX31_MUX_CTL_OUT_ALT6		(7 << 4)
+#define MX31_MUX_CTL_IN_NONE		(0 << 0)
+#define MX31_MUX_CTL_IN_GPIO		(1 << 0)
+#define MX31_MUX_CTL_IN_FUNC		(2 << 0)
+#define MX31_MUX_CTL_IN_ALT1		(4 << 0)
+#define MX31_MUX_CTL_IN_ALT2		(8 << 0)
 
-#define MUX_CTL_FUNC		(MUX_CTL_OUT_FUNC | MUX_CTL_IN_FUNC)
-#define MUX_CTL_ALT1		(MUX_CTL_OUT_ALT1 | MUX_CTL_IN_ALT1)
-#define MUX_CTL_ALT2		(MUX_CTL_OUT_ALT2 | MUX_CTL_IN_ALT2)
-#define MUX_CTL_GPIO		(MUX_CTL_OUT_GPIO_DR | MUX_CTL_IN_GPIO)
-
-/* Register offsets based on IOMUXC_BASE */
-/* 0x00 .. 0x7b */
-#define MUX_CTL_RTS1		0x7c
-#define MUX_CTL_CTS1		0x7d
-#define MUX_CTL_DTR_DCE1	0x7e
-#define MUX_CTL_DSR_DCE1	0x7f
-#define MUX_CTL_CSPI2_SCLK	0x80
-#define MUX_CTL_CSPI2_SPI_RDY	0x81
-#define MUX_CTL_RXD1		0x82
-#define MUX_CTL_TXD1		0x83
-#define MUX_CTL_CSPI2_MISO	0x84
-/* 0x85 .. 0x8a */
-#define MUX_CTL_CSPI2_MOSI	0x8b
-
-/* The modes a specific pin can be in
- * these macros can be used in mx31_gpio_mux() and have the form
- * MUX_[contact name]__[pin function]
- */
-#define MUX_RXD1_UART1_RXD_MUX	((MUX_CTL_FUNC << 8) | MUX_CTL_RXD1)
-#define MUX_TXD1_UART1_TXD_MUX	((MUX_CTL_FUNC << 8) | MUX_CTL_TXD1)
-#define MUX_RTS1_UART1_RTS_B	((MUX_CTL_FUNC << 8) | MUX_CTL_RTS1)
-#define MUX_RTS1_UART1_CTS_B	((MUX_CTL_FUNC << 8) | MUX_CTL_CTS1)
-
-#define MUX_CSPI2_MOSI_I2C2_SCL ((MUX_CTL_ALT1 << 8) | MUX_CTL_CSPI2_MOSI)
-#define MUX_CSPI2_MISO_I2C2_SCL ((MUX_CTL_ALT1 << 8) | MUX_CTL_CSPI2_MISO)
+#define MX31_MUX_CTL_FUNC	(MX31_MUX_CTL_OUT_FUNC | MX31_MUX_CTL_IN_FUNC)
+#define MX31_MUX_CTL_ALT1	(MX31_MUX_CTL_OUT_ALT1 | MX31_MUX_CTL_IN_ALT1)
+#define MX31_MUX_CTL_ALT2	(MX31_MUX_CTL_OUT_ALT2 | MX31_MUX_CTL_IN_ALT2)
+#define MX31_MUX_CTL_GPIO	(MX31_MUX_CTL_OUT_GPIO_DR | MX31_MUX_CTL_IN_GPIO)
 
 #endif /* __ASM_ARCH_MX31_REGS_H */

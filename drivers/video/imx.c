@@ -24,7 +24,6 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
 #include <asm-generic/div64.h>
 
 #define LCDC_SSA	0x00
@@ -252,19 +251,9 @@ static void imxfb_enable_controller(struct fb_info *info)
 	struct imxfb_info *fbi = info->priv;
 
 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
-#ifdef CONFIG_ARCH_IMX21
-	PCCR0 |= PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 |= PCCR0_LCDC_EN;
-	PCCR1 |= PCCR1_HCLK_LCDC;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	writel(readl(IMX_CCM_BASE + CCM_CGCR0) | (1 << 24) | (1 << 7),
-		IMX_CCM_BASE + CCM_CGCR0);
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) | (1 << 29),
-		IMX_CCM_BASE + CCM_CGCR1);
-#endif
+
+	clk_enable(fbi->clk);
+
 	if (fbi->enable)
 		fbi->enable(1);
 }
@@ -277,19 +266,8 @@ static void imxfb_disable_controller(struct fb_info *info)
 		fbi->enable(0);
 
 	writel(0, fbi->regs + LCDC_RMCR);
-#ifdef CONFIG_ARCH_IMX21
-	PCCR0 &= ~(PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN);
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 &= ~PCCR0_LCDC_EN;
-	PCCR1 &= ~PCCR1_HCLK_LCDC;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	writel(readl(IMX_CCM_BASE + CCM_CGCR0) & ~((1 << 24) | (1 << 7)),
-		IMX_CCM_BASE + CCM_CGCR0);
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
-		IMX_CCM_BASE + CCM_CGCR1);
-#endif
+
+	clk_disable(fbi->clk);
 }
 
 /*
@@ -541,19 +519,6 @@ static int imxfb_probe(struct device_d *dev)
 	if (!pdata)
 		return -ENODEV;
 
-#ifdef CONFIG_ARCH_IMX21
-	PCCR0 &= ~(PCCR0_PERCLK3_EN | PCCR0_HCLK_LCDC_EN);
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	PCCR0 &= ~PCCR0_LCDC_EN;
-	PCCR1 &= ~PCCR1_HCLK_LCDC;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	writel(readl(IMX_CCM_BASE + CCM_CGCR0) & ~((1 << 24) | (1 << 7)),
-		IMX_CCM_BASE + CCM_CGCR0);
-	writel(readl(IMX_CCM_BASE + CCM_CGCR1) & ~(1 << 29),
-		IMX_CCM_BASE + CCM_CGCR1);
-#endif
 	if (!pdata->num_modes) {
 		dev_err(dev, "no modes. bailing out\n");
 		return -EINVAL;

@@ -7,6 +7,7 @@
 #include <linux/err.h>
 #include <mach/imx27-regs.h>
 #include <mach/generic.h>
+#include <mach/revision.h>
 
 #include "clk.h"
 
@@ -26,10 +27,73 @@
 #define CCM_PMCOUNT		0x30
 #define CCM_WKGDCTL		0x34
 
+#define PCCR0_SSI2_EN	(1 << 0)
+#define PCCR0_SSI1_EN	(1 << 1)
+#define PCCR0_SLCDC_EN	(1 << 2)
+#define PCCR0_SDHC3_EN	(1 << 3)
+#define PCCR0_SDHC2_EN	(1 << 4)
+#define PCCR0_SDHC1_EN	(1 << 5)
+#define PCCR0_SDC_EN	(1 << 6)
+#define PCCR0_SAHARA_EN	(1 << 7)
+#define PCCR0_RTIC_EN	(1 << 8)
+#define PCCR0_RTC_EN	(1 << 9)
+#define PCCR0_PWM_EN	(1 << 11)
+#define PCCR0_OWIRE_EN	(1 << 12)
+#define PCCR0_MSHC_EN	(1 << 13)
+#define PCCR0_LCDC_EN	(1 << 14)
+#define PCCR0_KPP_EN	(1 << 15)
+#define PCCR0_IIM_EN	(1 << 16)
+#define PCCR0_I2C2_EN	(1 << 17)
+#define PCCR0_I2C1_EN	(1 << 18)
+#define PCCR0_GPT6_EN	(1 << 19)
+#define PCCR0_GPT5_EN	(1 << 20)
+#define PCCR0_GPT4_EN	(1 << 21)
+#define PCCR0_GPT3_EN	(1 << 22)
+#define PCCR0_GPT2_EN	(1 << 23)
+#define PCCR0_GPT1_EN	(1 << 24)
+#define PCCR0_GPIO_EN	(1 << 25)
+#define PCCR0_FEC_EN	(1 << 26)
+#define PCCR0_EMMA_EN	(1 << 27)
+#define PCCR0_DMA_EN	(1 << 28)
+#define PCCR0_CSPI3_EN	(1 << 29)
+#define PCCR0_CSPI2_EN	(1 << 30)
+#define PCCR0_CSPI1_EN	(1 << 31)
+
+#define PCCR1_MSHC_BAUDEN	(1 << 2)
+#define PCCR1_NFC_BAUDEN	(1 << 3)
+#define PCCR1_SSI2_BAUDEN	(1 << 4)
+#define PCCR1_SSI1_BAUDEN	(1 << 5)
+#define PCCR1_H264_BAUDEN	(1 << 6)
+#define PCCR1_PERCLK4_EN	(1 << 7)
+#define PCCR1_PERCLK3_EN	(1 << 8)
+#define PCCR1_PERCLK2_EN	(1 << 9)
+#define PCCR1_PERCLK1_EN	(1 << 10)
+#define PCCR1_HCLK_USB		(1 << 11)
+#define PCCR1_HCLK_SLCDC	(1 << 12)
+#define PCCR1_HCLK_SAHARA	(1 << 13)
+#define PCCR1_HCLK_RTIC		(1 << 14)
+#define PCCR1_HCLK_LCDC		(1 << 15)
+#define PCCR1_HCLK_H264		(1 << 16)
+#define PCCR1_HCLK_FEC		(1 << 17)
+#define PCCR1_HCLK_EMMA		(1 << 18)
+#define PCCR1_HCLK_EMI		(1 << 19)
+#define PCCR1_HCLK_DMA		(1 << 20)
+#define PCCR1_HCLK_CSI		(1 << 21)
+#define PCCR1_HCLK_BROM		(1 << 22)
+#define PCCR1_HCLK_ATA		(1 << 23)
+#define PCCR1_WDT_EN		(1 << 24)
+#define PCCR1_USB_EN		(1 << 25)
+#define PCCR1_UART6_EN		(1 << 26)
+#define PCCR1_UART5_EN		(1 << 27)
+#define PCCR1_UART4_EN		(1 << 28)
+#define PCCR1_UART3_EN		(1 << 29)
+#define PCCR1_UART2_EN		(1 << 30)
+#define PCCR1_UART1_EN		(1 << 31)
+
 enum mx27_clks {
 	dummy, ckih, ckil, mpll, spll, mpll_main2, ahb, ipg, nfc_div, per1_div,
 	per2_div, per3_div, per4_div, usb_div, cpu_sel,	clko_sel, cpu_div, clko_div,
-	clko_en, clk_max
+	clko_en, lcdc_per_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -72,18 +136,18 @@ static int imx27_ccm_probe(struct device_d *dev)
 	base = dev_request_mem_region(dev, 0);
 
 	writel(PCCR0_SDHC3_EN | PCCR0_SDHC2_EN | PCCR0_SDHC1_EN |
-			PCCR0_PWM_EN | PCCR0_KPP_EN | PCCR0_IIM_EN | PCCR0_I2C2_EN |
-			PCCR0_I2C1_EN | PCCR0_GPT6_EN | PCCR0_GPT5_EN | PCCR0_GPT4_EN |
-			PCCR0_GPT3_EN | PCCR0_GPT2_EN | PCCR0_GPT1_EN | PCCR0_GPIO_EN |
-			PCCR0_FEC_EN | PCCR0_CSPI3_EN | PCCR0_CSPI2_EN | PCCR0_CSPI1_EN,
+			PCCR0_PWM_EN | PCCR0_KPP_EN | PCCR0_LCDC_EN | PCCR0_IIM_EN |
+			PCCR0_I2C2_EN | PCCR0_I2C1_EN | PCCR0_GPT6_EN | PCCR0_GPT5_EN |
+			PCCR0_GPT4_EN | PCCR0_GPT3_EN | PCCR0_GPT2_EN | PCCR0_GPT1_EN |
+			PCCR0_GPIO_EN | PCCR0_FEC_EN | PCCR0_CSPI3_EN | PCCR0_CSPI2_EN |
+			PCCR0_CSPI1_EN,
 			base + CCM_PCCR0);
 
-	writel(PCCR1_NFC_BAUDEN | PCCR1_PERCLK4_EN | PCCR1_PERCLK3_EN |
-		       PCCR1_PERCLK2_EN | PCCR1_PERCLK1_EN | PCCR1_HCLK_USB |
-		       PCCR1_HCLK_FEC | PCCR1_HCLK_EMI | PCCR1_WDT_EN | PCCR1_USB_EN |
-		       PCCR1_UART6_EN | PCCR1_UART5_EN | PCCR1_UART4_EN |
-		       PCCR1_UART3_EN | PCCR1_UART2_EN | PCCR1_UART1_EN,
-		       base + CCM_PCCR1);
+	writel(PCCR1_NFC_BAUDEN | PCCR1_PERCLK4_EN | PCCR1_PERCLK2_EN | PCCR1_PERCLK1_EN |
+			PCCR1_HCLK_USB | PCCR1_HCLK_LCDC | PCCR1_HCLK_FEC | PCCR1_HCLK_EMI |
+			PCCR1_WDT_EN | PCCR1_USB_EN | PCCR1_UART6_EN | PCCR1_UART5_EN |
+			PCCR1_UART4_EN | PCCR1_UART3_EN | PCCR1_UART2_EN | PCCR1_UART1_EN,
+			base + CCM_PCCR1);
 
 	clks[dummy] = clk_fixed("dummy", 0);
 	clks[ckih] = clk_fixed("ckih", 26000000);
@@ -92,7 +156,7 @@ static int imx27_ccm_probe(struct device_d *dev)
 	clks[spll] = imx_clk_pllv1("spll", "ckih", base + CCM_SPCTL0);
 	clks[mpll_main2] = imx_clk_fixed_factor("mpll_main2", "mpll", 2, 3);
 
-	if (imx_silicon_revision() >= IMX27_CHIP_REVISION_2_0) {
+	if (imx_silicon_revision() >= IMX_CHIP_REV_2_0) {
 		clks[ahb] = imx_clk_divider("ahb", "mpll_main2", base + CCM_CSCR, 8, 2);
 		clks[ipg] = imx_clk_fixed_factor("ipg", "ahb", 1, 2);
 	} else {
@@ -110,11 +174,12 @@ static int imx27_ccm_probe(struct device_d *dev)
 			ARRAY_SIZE(cpu_sel_clks));
 	clks[clko_sel] = imx_clk_mux("clko_sel", base + CCM_CCSR, 0, 5, clko_sel_clks,
 			ARRAY_SIZE(clko_sel_clks));
-	if (imx_silicon_revision() >= IMX27_CHIP_REVISION_2_0)
+	if (imx_silicon_revision() >= IMX_CHIP_REV_2_0)
 		clks[cpu_div] = imx_clk_divider("cpu_div", "cpu_sel", base + CCM_CSCR, 12, 2);
 	else
 		clks[cpu_div] = imx_clk_divider("cpu_div", "cpu_sel", base + CCM_CSCR, 13, 3);
 	clks[clko_div] = imx_clk_divider("clko_div", "clko_sel", base + CCM_PCDR0, 22, 3);
+	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3_div", base + CCM_PCCR1, 7);
 
 	clkdev_add_physbase(clks[per1_div], MX27_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1_div], MX27_GPT2_BASE_ADDR, NULL);
@@ -136,15 +201,24 @@ static int imx27_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[per2_div], MX27_SDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per2_div], MX27_SDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per2_div], MX27_SDHC3_BASE_ADDR, NULL);
-	clkdev_add_physbase(clks[per3_div], MX27_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_per_gate], MX27_LCDC_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX27_FEC_BASE_ADDR, NULL);
 
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx27_ccm_dt_ids[] = {
+	{
+		.compatible = "fsl,imx27-ccm",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx27_ccm_driver = {
 	.probe	= imx27_ccm_probe,
 	.name	= "imx27-ccm",
+	.of_compatible = DRV_OF_COMPAT(imx27_ccm_dt_ids),
 };
 
 static int imx27_ccm_init(void)

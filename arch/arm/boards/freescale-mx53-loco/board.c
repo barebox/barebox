@@ -27,7 +27,7 @@
 
 #include <generated/mach-types.h>
 
-#include <mach/imx-regs.h>
+#include <mach/imx53-regs.h>
 #include <mach/iomux-mx53.h>
 #include <mach/devices-imx53.h>
 #include <mach/generic.h>
@@ -35,6 +35,9 @@
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
+#include <mach/revision.h>
+#include <mach/bbu.h>
+#include <mach/imx-flash-header.h>
 
 #include <i2c/i2c.h>
 #include <mfd/mc34708.h>
@@ -176,6 +179,10 @@ static void loco_ehci_init(void)
 	add_generic_usb_ehci_device(1, MX53_OTG_BASE_ADDR + 0x200, NULL);
 }
 
+#define DCD_NAME static struct imx_dcd_v2_entry dcd_entry
+
+#include "dcd-data.h"
+
 static int loco_devices_init(void)
 {
 
@@ -194,6 +201,9 @@ static int loco_devices_init(void)
 
 	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
+
+	imx53_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
+		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry));
 
 	return 0;
 }

@@ -12,15 +12,40 @@
  */
 
 #include <common.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/weim.h>
+#include <mach/iomux-v1.h>
 #include <sizes.h>
+#include <mach/revision.h>
+#include <mach/generic.h>
 #include <init.h>
 #include <io.h>
 
-int imx_silicon_revision(void)
+static int imx27_silicon_revision(void)
 {
-	return CID >> 28;
+	uint32_t val;
+	int rev;
+
+	val = readl(MX27_SYSCTRL_BASE_ADDR);
+
+	switch (val >> 28) {
+	case 0:
+		rev = IMX_CHIP_REV_1_0;
+		break;
+	case 1:
+		rev = IMX_CHIP_REV_2_0;
+		break;
+	case 2:
+		rev = IMX_CHIP_REV_2_1;
+		break;
+	default:
+		rev = IMX_CHIP_REV_UNKNOWN;
+		break;
+	}
+
+	imx_set_silicon_revision("i.MX27", rev);
+
+	return 0;
 }
 
 void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
@@ -73,6 +98,11 @@ static void imx27_init_max(void)
 
 static int imx27_init(void)
 {
+	imx27_silicon_revision();
+	imx_27_boot_save_loc((void *)MX27_SYSCTRL_BASE_ADDR);
+
+	imx_iomuxv1_init((void *)MX27_GPIO1_BASE_ADDR);
+
 	add_generic_device("imx_iim", 0, NULL, MX27_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
@@ -86,6 +116,7 @@ static int imx27_init(void)
 	add_generic_device("imx1-gpio", 3, NULL, MX27_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 4, NULL, MX27_GPIO5_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 5, NULL, MX27_GPIO6_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx21-wdt", 0, NULL, MX27_WDOG_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

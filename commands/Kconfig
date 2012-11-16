@@ -514,6 +514,11 @@ endif
 
 endmenu
 
+config CMD_BAREBOX_UPDATE
+	tristate
+	select BAREBOX_UPDATE
+	prompt "barebox-update"
+
 config CMD_TIMEOUT
 	tristate
 	prompt "timeout"

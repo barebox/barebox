@@ -18,7 +18,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx-regs.h>
+#include <mach/imx27-regs.h>
 #include <fec.h>
 #include <notifier.h>
 #include <mach/gpio.h>
@@ -39,6 +39,7 @@
 #include <mach/devices-imx27.h>
 #include <mach/iim.h>
 #include <mfd/mc13xxx.h>
+#include <mach/generic.h>
 
 #include "pll.h"
 
@@ -111,8 +112,8 @@ static inline uint32_t get_pll_spctl10(void)
 {
 	uint32_t reg;
 
-	reg = SPCTL0;
-	SPCTL0 = reg;
+	reg = readl(MX27_CCM_BASE_ADDR + MX27_SPCTL0);
+	writel(reg, MX27_CCM_BASE_ADDR + MX27_SPCTL0);
 
 	return reg;
 }
@@ -126,7 +127,8 @@ static int pcm038_power_init(void)
 	struct mc13xxx *mc13xxx = mc13xxx_get();
 
 	/* PLL registers already set to their final values? */
-	if (spctl0 == SPCTL0_VAL && MPCTL0 == MPCTL0_VAL) {
+	if (spctl0 == SPCTL0_VAL &&
+	    readl(MX27_CCM_BASE_ADDR + MX27_MPCTL0) == MPCTL0_VAL) {
 		console_flush();
 		if (mc13xxx) {
 			mc13xxx_reg_write(mc13xxx, MC13783_REG_SWITCHERS(0),
@@ -161,9 +163,9 @@ static int pcm038_power_init(void)
 
 			/* wait for required power level to run the CPU at 400 MHz */
 			udelay(100000);
-			CSCR = CSCR_VAL_FINAL;
-			PCDR0 = 0x130410c3;
-			PCDR1 = 0x09030911;
+			writel(CSCR_VAL_FINAL, MX27_CCM_BASE_ADDR + MX27_CSCR);
+			writel(0x130410c3, MX27_CCM_BASE_ADDR + MX27_PCDR0);
+			writel(0x09030911, MX27_CCM_BASE_ADDR + MX27_PCDR1);
 
 			/* Clocks have changed. Notify clients */
 			clock_notifier_call_chain();
@@ -173,7 +175,7 @@ static int pcm038_power_init(void)
 	}
 
 	/* clock gating enable */
-	GPCR = 0x00050f08;
+	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
 
 	return 0;
 }
@@ -281,9 +283,6 @@ static int pcm038_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	PCCR0 |= PCCR0_CSPI1_EN;
-	PCCR1 |= PCCR1_PERCLK2_EN;
-
 	spi_register_board_info(pcm038_spi_board_info, ARRAY_SIZE(pcm038_spi_board_info));
 	imx27_add_spi0(&pcm038_spi_0_data);
 
@@ -293,7 +292,6 @@ static int pcm038_devices_init(void)
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&pcm038_fb_data);
 
-	PCCR0 |= PCCR0_I2C1_EN | PCCR0_I2C2_EN;
 	imx27_add_i2c0(NULL);
 	imx27_add_i2c1(NULL);
 
@@ -302,11 +300,8 @@ static int pcm038_devices_init(void)
 	 */
 	imx27_add_fec(&fec_info);
 
-	switch ((GPCR & GPCR_BOOT_MASK) >> GPCR_BOOT_SHIFT) {
-	case GPCR_BOOT_8BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_2k:
-	case GPCR_BOOT_16BIT_NAND_512:
-	case GPCR_BOOT_8BIT_NAND_512:
+	switch (imx_bootsource()) {
+	case bootsource_nand:
 		devfs_add_partition("nand0", 0x00000, 0x80000,
 					DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");

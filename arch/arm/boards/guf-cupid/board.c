@@ -25,7 +25,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
 #include <mach/gpio.h>
 #include <io.h>
@@ -117,7 +117,7 @@ static int cupid_devices_init(void)
 	gpio_direction_output(GPIO_LCD_ENABLE, 0);
 	gpio_direction_output(GPIO_LCD_BACKLIGHT, 0);
 
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_RCSR);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
 	if (reg & 0x20000000)
 		nand_info.width = 2;    /* 16 bit */
@@ -339,10 +339,10 @@ static int do_cpufreq(int argc, char *argv[])
 
 	switch (freq) {
 	case 399:
-		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_399, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	case 532:
-		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + CCM_MPCTL);
+		writel(MPCTL_PARAM_532, MX35_CCM_BASE_ADDR + MX35_CCM_MPCTL);
 		break;
 	default:
 		return COMMAND_ERROR_USAGE;

@@ -15,7 +15,7 @@
 
 #include <config.h>
 #include <asm-generic/memory_layout.h>
-#include <mach/imx-regs.h>
+#include <mach/imx21-regs.h>
 #include <asm/barebox-arm-head.h>
 
 	.section ".text_bare_init","ax"
@@ -30,17 +30,17 @@ reset:
  * on chip peripherals) as described in section 7.2 of rev3 of the i.MX21
  * reference manual.
  */
-	ldr	r0, =AIPI1_PSR0
+	ldr	r0, =MX21_AIPI_BASE_ADDR + MX21_AIPI1_PSR0
 	ldr	r1, =0x00040304
 	str	r1, [r0]
-	ldr	r0, =AIPI1_PSR1
+	ldr	r0, =MX21_AIPI_BASE_ADDR + MX21_AIPI1_PSR1
 	ldr     r1, =0xfffbfcfb
 	str	r1, [r0]
 
-	ldr	r0, =AIPI2_PSR0
+	ldr	r0, =MX21_AIPI_BASE_ADDR + MX21_AIPI2_PSR0
 	ldr	r1, =0x3ffc0000
 	str	r1, [r0]
-	ldr	r0, =AIPI2_PSR1
+	ldr	r0, =MX21_AIPI_BASE_ADDR + MX21_AIPI2_PSR1
 	ldr     r1, =0xffffffff
 	str	r1, [r0]
 
@@ -48,11 +48,11 @@ reset:
  * Configure CPU core clock (266MHz), peripheral clock (133MHz) and enable
  * the clock to peripherals.
  */
-	ldr	r0, =CSCR
+	ldr	r0, =MX21_CCM_BASE_ADDR + MX21_CSCR
 	ldr	r1, =0x17180607
 	str	r1, [r0]
 
-	ldr	r0, =PCCR1
+	ldr	r0, =MX21_CCM_BASE_ADDR + MX21_PCCR1
 	ldr	r1, =0x0e000000
 	str	r1, [r0]
 
@@ -65,7 +65,7 @@ reset:
 	 * CSD1 not required, because the MX21ADS board only contains 64Mbyte.
 	 * CS3 can therefore be made available.
 	 */
-	ldr	r0, =FMCR
+	ldr	r0, =MX21_SYSCTRL_BASE_ADDR + MX21_FMCR
 	ldr	r1, =0xffffffc9
 	str	r1, [r0]
 
@@ -79,7 +79,7 @@ reset:
 1:
 
 	/* Precharge */
-	ldr	r0, =SDCTL0
+	ldr	r0, =MX21_X_MEMC_BASE_ADDR + MX21_SDCTL0
 	ldr	r1, =0x92120300
 	str	r1, [r0]
 	ldr	r2, =0xc0200000
@@ -113,7 +113,7 @@ reset:
 	str	r1, [r0]
 
 	/* Set NFC_CLK to 24MHz */
-	ldr	r0, =PCDR0
+	ldr	r0, =MX21_CCM_BASE_ADDR + MX21_PCDR0
 	ldr	r1, =0x6419a007
 	str	r1, [r0]
 

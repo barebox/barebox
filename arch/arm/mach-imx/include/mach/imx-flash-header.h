@@ -120,7 +120,9 @@ struct imx_dcd_command {
 
 struct imx_dcd {
 	struct imx_ivt_header header;
+#ifndef IMX_INTERNAL_NAND_BBU
 	struct imx_dcd_command command;
+#endif
 };
 
 struct imx_boot_data {
@@ -143,5 +145,38 @@ struct imx_flash_header_v2 {
 	struct imx_boot_data boot_data;
 	struct imx_dcd dcd;
 };
+
+/*
+ * A variant of the standard barebox header in the i.MX FCB
+ * format. Needed for i.MX53 NAND boot
+ */
+static inline void barebox_arm_imx_fcb_head(void)
+{
+	__asm__ __volatile__ (
+		".arm\n"
+		"	b 1f\n"
+		".word 0x20424346\n" /* FCB */
+		".word 0x1\n"
+#ifdef CONFIG_THUMB2_BAREBOX
+		"1:	adr r9, 1f + 1\n"
+		"	bx r9\n"
+		".thumb\n"
+		"1:\n"
+		"bl	reset\n"
+#else
+		"1:	b reset\n"
+		".word 0x0\n"
+		".word 0x0\n"
+#endif
+		".word 0x0\n"
+		".word 0x0\n"
+
+		".asciz \"barebox\"\n"
+		".word _text\n"				/* text base. If copied there,
+							 * barebox can skip relocation
+							 */
+		".word _barebox_image_size\n"		/* image size to copy */
+	);
+}
 
 #endif /* __MACH_FLASH_HEADER_H */

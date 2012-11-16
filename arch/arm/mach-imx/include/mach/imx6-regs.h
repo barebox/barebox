@@ -1,18 +1,12 @@
 #ifndef __MACH_IMX6_REGS_H
 #define __MACH_IMX6_REGS_H
 
-#define IMX_TIM1_BASE	0x02098000
-#define IMX_WDT_BASE	0x020bc000
-#define IMX_IOMUXC_BASE 0x020e0000
-
 #define MX6_AIPS1_ARB_BASE_ADDR		0x02000000
 #define MX6_AIPS2_ARB_BASE_ADDR		0x02100000
 
 /* Defines for Blocks connected via AIPS (SkyBlue) */
 #define MX6_ATZ1_BASE_ADDR              MX6_AIPS1_ARB_BASE_ADDR
 #define MX6_ATZ2_BASE_ADDR              MX6_AIPS2_ARB_BASE_ADDR
-
-#define IPU_CTRL_BASE_ADDR	0x02400000
 
 /* slots 0,7 of SDMA reserved, therefore left unused in IPMUX3 */
 #define MX6_SPDIF_BASE_ADDR             (MX6_ATZ1_BASE_ADDR + 0x04000)

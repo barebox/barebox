@@ -41,12 +41,13 @@
 #include <mach/gpio.h>
 #include <mach/weim.h>
 #include <mach/imx-nand.h>
-#include <mach/imx-regs.h>
+#include <mach/imx35-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/generic.h>
 #include <mach/devices-imx35.h>
+#include <mach/revision.h>
 
 #include <i2c/i2c.h>
 #include <mfd/mc13xxx.h>
@@ -143,7 +144,7 @@ static int f3s_devices_init(void)
 	/* CS0: Nor Flash */
 	imx35_setup_weimcs(0, 0x0000cf03, 0x10000d03, 0x00720900);
 
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_RCSR);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR);
 	/* some fuses provide us vital information about connected hardware */
 	if (reg & 0x20000000)
 		nand_info.width = 2;	/* 16 bit */
@@ -281,10 +282,10 @@ static int f3s_core_init(void)
 	imx35_setup_weimcs(5, 0x0000D843, 0x22252521, 0x22220A00);
 
 	/* enable clock for I2C1 and FEC */
-	reg = readl(MX35_CCM_BASE_ADDR + CCM_CGR1);
-	reg |= 0x3 << CCM_CGR1_FEC_SHIFT;
-	reg |= 0x3 << CCM_CGR1_I2C1_SHIFT;
-	reg = writel(reg, MX35_CCM_BASE_ADDR + CCM_CGR1);
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
+	reg |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	reg |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
+	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.*/
 	/*

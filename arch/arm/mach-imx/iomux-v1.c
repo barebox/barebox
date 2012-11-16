@@ -1,5 +1,6 @@
 #include <common.h>
-#include <mach/imx-regs.h>
+#include <io.h>
+#include <mach/iomux-v1.h>
 
 /*
  *  GPIO Module and I/O Multiplexer
@@ -8,23 +9,25 @@
  *  i.MX1 and i.MXL: 0 <= x <= 3
  *  i.MX27         : 0 <= x <= 5
  */
-#define DDIR(x)    __REG2(IMX_GPIO_BASE + 0x00, ((x) & 7) << 8)
-#define OCR1(x)    __REG2(IMX_GPIO_BASE + 0x04, ((x) & 7) << 8)
-#define OCR2(x)    __REG2(IMX_GPIO_BASE + 0x08, ((x) & 7) << 8)
-#define ICONFA1(x) __REG2(IMX_GPIO_BASE + 0x0c, ((x) & 7) << 8)
-#define ICONFA2(x) __REG2(IMX_GPIO_BASE + 0x10, ((x) & 7) << 8)
-#define ICONFB1(x) __REG2(IMX_GPIO_BASE + 0x14, ((x) & 7) << 8)
-#define ICONFB2(x) __REG2(IMX_GPIO_BASE + 0x18, ((x) & 7) << 8)
-#define DR(x)      __REG2(IMX_GPIO_BASE + 0x1c, ((x) & 7) << 8)
-#define GIUS(x)    __REG2(IMX_GPIO_BASE + 0x20, ((x) & 7) << 8)
-#define SSR(x)     __REG2(IMX_GPIO_BASE + 0x24, ((x) & 7) << 8)
-#define ICR1(x)    __REG2(IMX_GPIO_BASE + 0x28, ((x) & 7) << 8)
-#define ICR2(x)    __REG2(IMX_GPIO_BASE + 0x2c, ((x) & 7) << 8)
-#define IMR(x)     __REG2(IMX_GPIO_BASE + 0x30, ((x) & 7) << 8)
-#define ISR(x)     __REG2(IMX_GPIO_BASE + 0x34, ((x) & 7) << 8)
-#define GPR(x)     __REG2(IMX_GPIO_BASE + 0x38, ((x) & 7) << 8)
-#define SWR(x)     __REG2(IMX_GPIO_BASE + 0x3c, ((x) & 7) << 8)
-#define PUEN(x)    __REG2(IMX_GPIO_BASE + 0x40, ((x) & 7) << 8)
+#define DDIR    0x00
+#define OCR1    0x04
+#define OCR2    0x08
+#define ICONFA1 0x0c
+#define ICONFA2 0x10
+#define ICONFB1 0x14
+#define ICONFB2 0x18
+#define DR      0x1c
+#define GIUS    0x20
+#define SSR     0x24
+#define ICR1    0x28
+#define ICR2    0x2c
+#define IMR     0x30
+#define ISR     0x34
+#define GPR     0x38
+#define SWR     0x3c
+#define PUEN    0x40
+
+static void __iomem *iomuxv1_base;
 
 void imx_gpio_mode(int gpio_mode)
 {
@@ -33,55 +36,81 @@ void imx_gpio_mode(int gpio_mode)
 	unsigned int ocr = (gpio_mode & GPIO_OCR_MASK) >> GPIO_OCR_SHIFT;
 	unsigned int aout = (gpio_mode & GPIO_AOUT_MASK) >> GPIO_AOUT_SHIFT;
 	unsigned int bout = (gpio_mode & GPIO_BOUT_MASK) >> GPIO_BOUT_SHIFT;
-	unsigned int tmp;
+	void __iomem *portbase = iomuxv1_base + port * 0x100;
+	uint32_t val;
+
+	if (!iomuxv1_base)
+		return;
 
 	/* Pullup enable */
-	if(gpio_mode & GPIO_PUEN)
-		PUEN(port) |= (1 << pin);
+	val = readl(portbase + PUEN);
+	if (gpio_mode & GPIO_PUEN)
+		val |= (1 << pin);
 	else
-		PUEN(port) &= ~(1 << pin);
+		val &= ~(1 << pin);
+	writel(val, portbase + PUEN);
 
 	/* Data direction */
-	if(gpio_mode & GPIO_OUT)
-		DDIR(port) |= 1 << pin;
+	val = readl(portbase + DDIR);
+	if (gpio_mode & GPIO_OUT)
+		val |= 1 << pin;
 	else
-		DDIR(port) &= ~(1 << pin);
+		val &= ~(1 << pin);
+	writel(val, portbase + DDIR);
 
 	/* Primary / alternate function */
-	if(gpio_mode & GPIO_AF)
-		GPR(port) |= (1 << pin);
+	val = readl(portbase + GPR);
+	if (gpio_mode & GPIO_AF)
+		val |= (1 << pin);
 	else
-		GPR(port) &= ~(1 << pin);
+		val &= ~(1 << pin);
+	writel(val, portbase + GPR);
 
 	/* use as gpio? */
-	if(!(gpio_mode & (GPIO_PF | GPIO_AF)))
-		GIUS(port) |= (1 << pin);
+	val = readl(portbase + GIUS);
+	if (!(gpio_mode & (GPIO_PF | GPIO_AF)))
+		val |= (1 << pin);
 	else
-		GIUS(port) &= ~(1 << pin);
+		val &= ~(1 << pin);
+	writel(val, portbase + GIUS);
 
 	/* Output / input configuration */
 	if (pin < 16) {
-		tmp = OCR1(port);
-		tmp &= ~(3 << (pin * 2));
-		tmp |= (ocr << (pin * 2));
-		OCR1(port) = tmp;
+		val = readl(portbase + OCR1);
+		val &= ~(3 << (pin * 2));
+		val |= (ocr << (pin * 2));
+		writel(val, portbase + OCR1);
 
-		ICONFA1(port) &= ~(3 << (pin * 2));
-		ICONFA1(port) |= aout << (pin * 2);
-		ICONFB1(port) &= ~(3 << (pin * 2));
-		ICONFB1(port) |= bout << (pin * 2);
+		val = readl(portbase + ICONFA1);
+		val &= ~(3 << (pin * 2));
+		val |= aout << (pin * 2);
+		writel(val, portbase + ICONFA1);
+
+		val = readl(portbase + ICONFB1);
+		val &= ~(3 << (pin * 2));
+		val |= bout << (pin * 2);
+		writel(val, portbase + ICONFB1);
 	} else {
 		pin -= 16;
 
-		tmp = OCR2(port);
-		tmp &= ~(3 << (pin * 2));
-		tmp |= (ocr << (pin * 2));
-		OCR2(port) = tmp;
+		val = readl(portbase + OCR2);
+		val &= ~(3 << (pin * 2));
+		val |= (ocr << (pin * 2));
+		writel(val, portbase + OCR2);
 
-		ICONFA2(port) &= ~(3 << (pin * 2));
-		ICONFA2(port) |= aout << (pin * 2);
-		ICONFB2(port) &= ~(3 << (pin * 2));
-		ICONFB2(port) |= bout << (pin * 2);
+		val = readl(portbase + ICONFA2);
+		val &= ~(3 << (pin * 2));
+		val |= aout << (pin * 2);
+		writel(val, portbase + ICONFA2);
+
+		val = readl(portbase + ICONFB2);
+		val &= ~(3 << (pin * 2));
+		val |= bout << (pin * 2);
+		writel(val, portbase + ICONFB2);
 	}
 }
 
+void imx_iomuxv1_init(void __iomem *base)
+{
+	iomuxv1_base = base;
+}

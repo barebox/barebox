@@ -66,7 +66,7 @@ extern void *input_data_end;
 #endif
 
 #ifdef CONFIG_IMAGE_COMPRESSION_GZIP
-#include "../../../../lib/decompress_inflate.c"
+#include "../../../lib/decompress_inflate.c"
 #endif
 
 static unsigned long *ttb;

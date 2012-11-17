@@ -127,7 +127,7 @@ static void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void noinline errorfn(char *error)
+static void noinline errorfn(char *error)
 {
 	while (1);
 }

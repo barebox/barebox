@@ -9,7 +9,7 @@ targets := zbarebox.lds zbarebox zbarebox.bin zbarebox.S \
 	   $(piggy_o) piggy.$(suffix_y)
 
 # Make sure files are removed during clean
-extra-y       += piggy.gzip piggy.lzo piggy.lzma piggy.xzkern
+extra-y       += piggy.gzip piggy.lzo piggy.lzma piggy.xzkern zbarebox.map
 
 $(obj)/zbarebox.bin:	$(obj)/zbarebox FORCE
 	$(call if_changed,objcopy)

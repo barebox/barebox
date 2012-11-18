@@ -36,7 +36,7 @@ static const __maybe_unused char cmd_bootu_help[] =
 
 BAREBOX_CMD_START(bootu)
 	.cmd            = do_bootu,
-	.usage          = "bootu - start a raw linux image",
+	.usage          = "start a raw linux image",
 	BAREBOX_CMD_HELP(cmd_bootu_help)
 BAREBOX_CMD_END
 

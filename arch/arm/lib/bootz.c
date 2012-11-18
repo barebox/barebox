@@ -133,7 +133,7 @@ static const __maybe_unused char cmd_bootz_help[] =
 
 BAREBOX_CMD_START(bootz)
 	.cmd            = do_bootz,
-	.usage          = "bootz - start a zImage",
+	.usage          = "start a zImage",
 	BAREBOX_CMD_HELP(cmd_bootz_help)
 BAREBOX_CMD_END
 

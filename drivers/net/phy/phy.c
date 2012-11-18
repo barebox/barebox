@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <init.h>
 #include <net.h>
 #include <malloc.h>
 #include <linux/phy.h>
@@ -27,6 +28,7 @@
 
 #define PHY_AN_TIMEOUT	10
 
+static struct phy_driver genphy_driver;
 static int genphy_config_init(struct phy_device *phydev);
 
 int phy_update_status(struct phy_device *dev)
@@ -142,6 +144,21 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 	return dev;
 }
 
+static int phy_register_device(struct phy_device* dev)
+{
+	int ret;
+
+	ret = register_device(&dev->dev);
+	if (ret)
+		return ret;
+
+	if (dev->dev.driver)
+		return 0;
+
+	dev->dev.driver = &genphy_driver.drv;
+	return device_probe(&dev->dev);
+}
+
 /* Automatically gets and returns the PHY device */
 int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
@@ -164,7 +181,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 			dev->interface = interface;
 			dev->dev_flags = flags;
 
-			ret = register_device(&dev->dev);
+			ret = phy_register_device(dev);
 			if (ret)
 				goto fail;
 		} else {
@@ -181,7 +198,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				dev->interface = interface;
 				dev->dev_flags = flags;
 
-				ret = register_device(&dev->dev);
+				ret = phy_register_device(dev);
 				if (ret)
 					goto fail;
 
@@ -597,3 +614,16 @@ int phy_drivers_register(struct phy_driver *new_driver, int n)
 	}
 	return ret;
 }
+
+static struct phy_driver genphy_driver = {
+	.drv.name = "Generic PHY",
+	.phy_id = PHY_ANY_UID,
+	.phy_id_mask = PHY_ANY_UID,
+	.features = 0,
+};
+
+static int generic_phy_register(void)
+{
+	return phy_driver_register(&genphy_driver);
+}
+device_initcall(generic_phy_register);

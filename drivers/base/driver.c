@@ -75,6 +75,21 @@ int get_free_deviceid(const char *name_template)
 	};
 }
 
+int device_probe(struct device_d *dev)
+{
+	int ret;
+
+	ret = dev->bus->probe(dev);
+	if (ret) {
+		dev_err(dev, "probe failed: %s\n", strerror(-ret));
+		return ret;
+	}
+
+	list_add(&dev->active, &active);
+
+	return 0;
+}
+
 static int match(struct driver_d *drv, struct device_d *dev)
 {
 	int ret;
@@ -86,13 +101,9 @@ static int match(struct driver_d *drv, struct device_d *dev)
 
 	if (dev->bus->match(dev, drv))
 		goto err_out;
-	ret = dev->bus->probe(dev);
-	if (ret) {
-		dev_err(dev, "probe failed: %s\n", strerror(-ret));
+	ret = device_probe(dev);
+	if (ret)
 		goto err_out;
-	}
-
-	list_add(&dev->active, &active);
 
 	return 0;
 err_out:

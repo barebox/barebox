@@ -148,6 +148,11 @@ struct driver_d {
 int register_driver(struct driver_d *);
 int register_device(struct device_d *);
 
+/* manualy probe a device
+ * the driver need to be specified
+ */
+int device_probe(struct device_d *dev);
+
 /* Unregister a device. This function can fail, e.g. when the device
  * has children.
  */

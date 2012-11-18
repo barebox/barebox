@@ -153,6 +153,7 @@ static int mdio_bus_probe(struct device_d *_dev)
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
 
+	int ret;
 	char str[16];
 
 	dev->attached_dev->phydev = dev;
@@ -160,14 +161,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev_add_child(dev->dev.parent, _dev);
 
 	if (drv->probe) {
-		int ret;
-
 		ret = drv->probe(dev);
-		if (ret) {
-			dev->attached_dev->phydev = NULL;
-			dev->attached_dev = NULL;
-			return ret;
-		}
+		if (ret)
+			goto err;
 	}
 
 	if (dev->dev_flags) {
@@ -188,7 +184,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev->supported = drv->features;
 	dev->advertising = drv->features;
 
-	drv->config_init(dev);
+	ret = phy_init_hw(dev);
+	if (ret)
+		goto err;
 
 	/* Sanitize settings based on PHY capabilities */
 	if ((dev->supported & SUPPORTED_Autoneg) == 0)
@@ -208,6 +206,11 @@ static int mdio_bus_probe(struct device_d *_dev)
 	devfs_create(&dev->cdev);
 
 	return 0;
+
+err:
+	dev->attached_dev->phydev = NULL;
+	dev->attached_dev = NULL;
+	return ret;
 }
 
 static void mdio_bus_remove(struct device_d *_dev)

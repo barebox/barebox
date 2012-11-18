@@ -75,7 +75,7 @@ static int imx51_init(void)
 postcore_initcall(imx51_init);
 
 /*
- * Saves the boot source media into the $barebox_loc enviroment variable
+ * Saves the boot source media into the $barebox_loc environment variable
  *
  * This information is useful for barebox init scripts as we can then easily
  * use a kernel image stored on the same media that we launch barebox with

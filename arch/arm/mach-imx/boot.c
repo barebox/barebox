@@ -77,7 +77,7 @@ static const enum imx_bootsource locations[4][4] = {
 };
 
 /*
- * Saves the boot source media into the $barebox_loc enviroment variable
+ * Saves the boot source media into the $barebox_loc environment variable
  *
  * This information is useful for barebox init scripts as we can then easily
  * use a kernel image stored on the same media that we launch barebox with

@@ -8,6 +8,11 @@ if PHYLIB
 
 comment "MII PHY device drivers"
 
+config MICREL_PHY
+	bool "Driver for Micrel PHYs"
+	---help---
+	  Supports the KSZ9021, VSC8201, KS8001 PHYs.
+
 config SMSC_PHY
 	bool "Drivers for SMSC PHYs"
 	---help---

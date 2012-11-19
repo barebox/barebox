@@ -65,15 +65,15 @@ choice
 	  used to setup SDRAM. The internal ROM code then initializes SDRAM
 	  using the register/value table, loads the whole barebox image to
 	  SDRAM and starts it. The internal boot mode is available on newer
-	  i.MX processors (i.MX25, i.MX35, i.MX51 and i.MX53). and supports
-	  booting from NOR, NAND, MMC/SD and serial ROMs.
-	  The external boot mode only supports booting from NAND and NOR. With
+	  i.MX processors (i.MX25, i.MX35, i.MX51, i.MX53 and i.MX6), and
+	  supports booting from NOR, NAND, MMC/SD and serial ROMs.
+	  The external boot mode supports booting only from NAND and NOR. With
 	  NOR flash the image is just started in NOR flash. With NAND flash
 	  the NAND controller loads the first 2kbyte from NAND into the NAND
 	  controllers internal SRAM where it is then started. It's the
 	  responsibility of these 2kbyte to load the rest of the boot image.
 	  The external boot mode is supported on older i.MX processors (i.MX1,
-	  i.MX21, i.MX25, i.MX27, i.MX21, i.MX35).
+	  i.MX21, i.MX25, i.MX27, i.MX31, i.MX35).
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"

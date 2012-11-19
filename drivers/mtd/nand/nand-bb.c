@@ -314,6 +314,7 @@ int dev_remove_bb_dev(const char *name)
 		if (!strcmp(bb->cdev.name, name)) {
 			devfs_remove(&bb->cdev);
 			cdev_close(bb->cdev_parent);
+			list_del_init(&bb->list);
 			free(bb);
 			return 0;
 		}

@@ -48,10 +48,10 @@ static void __bare_init __naked insdram(void)
 	uint32_t r;
 
 	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(MX35_CCM_BASE_ADDR + CCM_PDR4);
+	r = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 	r &= ~(0xf << 28);
 	r |= 0x1 << 28;
-	writel(r, MX35_CCM_BASE_ADDR + CCM_PDR4);
+	writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
 	/* setup a stack to be able to call imx_nand_load_image() */
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);

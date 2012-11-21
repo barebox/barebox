@@ -19,6 +19,10 @@ static int do_splash(int argc, char *argv[])
 	u32 bg_color = 0x00000000;
 	bool do_bg = false;
 
+	memset(&s, 0, sizeof(s));
+	memset(&sc, 0, sizeof(sc));
+	memset(&info, 0, sizeof(info));
+
 	s.x = -1;
 	s.y = -1;
 	s.width = -1;

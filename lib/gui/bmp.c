@@ -125,6 +125,7 @@ static struct image_renderer bmp = {
 	.open = bmp_open,
 	.close = bmp_close,
 	.renderer = bmp_renderer,
+	.keep_file_data = 1,
 };
 
 static int bmp_init(void)

@@ -42,6 +42,7 @@ config BOARDINFO
 	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
 	default "Atmel at91sam9n12-ek" if MACH_AT91SAM9N12EK
 	default "Atmel at91sam9x5-ek" if MACH_AT91SAM9X5EK
+	default "Atmel sama5d3x-ek" if MACH_SAMA5D3XEK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Calao USB-A9260" if MACH_USB_A9260
 	default "Calao USB-A9263" if MACH_USB_A9263
@@ -448,6 +449,22 @@ config MACH_AT91SAM9N12EK
 	bool "Atmel AT91SAM9N12 Evaluation Kit"
 	help
 	  Select this if you are using Atmel's AT91SAM9N12-EK Evaluation Kit.
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_SAMA5D3
+
+choice
+	prompt "SAMA5D3 Board Type"
+
+config MACH_SAMA5D3XEK
+	bool "Atmel SAMA5D3X Evaluation Kit"
+	help
+	  Select this if you are using Atmel's SAMA5D3X-EK Evaluation Kit.
 
 endchoice
 

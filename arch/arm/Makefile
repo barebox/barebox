@@ -80,6 +80,7 @@ board-$(CONFIG_MACH_AT91SAM9N12EK)		:= at91sam9n12ek
 board-$(CONFIG_MACH_AT91SAM9X5EK)		:= at91sam9x5ek
 board-$(CONFIG_MACH_AT91SAM9M10IHD)		:= at91sam9m10ihd
 board-$(CONFIG_MACH_AT91SAM9M10G45EK)		:= at91sam9m10g45ek
+board-$(CONFIG_MACH_SAMA5D3XEK)			:= sama5d3xek
 board-$(CONFIG_MACH_CLEP7212)			:= clep7212
 board-$(CONFIG_MACH_DSS11)			:= dss11
 board-$(CONFIG_MACH_EDB9301)			:= edb93xx

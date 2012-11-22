@@ -1,0 +1,15 @@
+
+config USB_IMX_CHIPIDEA
+	bool "i.MX USB support (read help)"
+	depends on ARCH_IMX
+	help
+	  The Freescale i.MX SoCs have a variant of the chipidea ci13xxx for
+	  USB support. Traditionally in barebox this is supported through the
+	  EHCI driver for USB host and the ARC USB gadget driver for device.
+	  This option instead enables support for i.MX chipidea support which
+	  acts as a toplevel driver for the i.MX USB support. The chipidea
+	  support also configures the usbmisc registers which traditionally
+	  are configured in the board file.
+	  This driver is recommended for new designs, but it needs board
+	  support to work.
+	  It's safe to say yes here. Also select EHCI support for USB host.

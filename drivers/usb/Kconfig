@@ -3,6 +3,8 @@ menuconfig USB
 
 if USB
 
+source drivers/usb/imx/Kconfig
+
 source drivers/usb/host/Kconfig
 
 source drivers/usb/otg/Kconfig

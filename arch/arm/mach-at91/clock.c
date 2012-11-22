@@ -44,7 +44,10 @@
  */
 #define cpu_has_utmi()		(  cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5())
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d3())
+
+#define cpu_has_1056M_plla()	(cpu_is_sama5d3())
 
 #define cpu_has_800M_plla()	(  cpu_is_at91sam9g20() \
 				|| cpu_is_at91sam9g45() \
@@ -65,7 +68,8 @@
 				|| cpu_is_at91sam9n12()))
 
 #define cpu_has_upll()		(cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5())
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d3())
 
 /* USB host HS & FS */
 #define cpu_has_uhp()		(!cpu_is_at91sam9rl())
@@ -73,18 +77,22 @@
 /* USB device FS only */
 #define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5()))
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d3()))
 
 #define cpu_has_plladiv2()	(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_at91sam9n12())
+				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d3())
 
 #define cpu_has_mdiv3()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_at91sam9n12())
+				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d3())
 
 #define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5() \
-				|| cpu_is_at91sam9n12())
+				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d3())
 
 static LIST_HEAD(clocks);
 
@@ -206,10 +214,26 @@ struct clk mck = {
 
 static void pmc_periph_mode(struct clk *clk, int is_on)
 {
-	if (is_on)
-		at91_pmc_write(AT91_PMC_PCER, clk->pmc_mask);
-	else
-		at91_pmc_write(AT91_PMC_PCDR, clk->pmc_mask);
+	u32 regval = 0;
+
+	/*
+	 * With sama5d3 chips, you have more than 32 peripherals so only one
+	 * register is not enough to manage their clocks. A peripheral
+	 * control register has been introduced to solve this issue.
+	 */
+	if (cpu_is_sama5d3()) {
+		regval |= AT91_PMC_PCR_CMD; /* write command */
+		regval |= clk->pid & AT91_PMC_PCR_PID; /* peripheral selection */
+		regval |= AT91_PMC_PCR_DIV(clk->div);
+		if (is_on)
+			regval |= AT91_PMC_PCR_EN; /* enable clock */
+		at91_pmc_write(AT91_PMC_PCR, regval);
+	} else {
+		if (is_on)
+			at91_pmc_write(AT91_PMC_PCER, clk->pmc_mask);
+		else
+			at91_pmc_write(AT91_PMC_PCDR, clk->pmc_mask);
+	}
 }
 
 static struct clk *at91_css_to_clk(unsigned long css)
@@ -431,6 +455,8 @@ int clk_register(struct clk *clk)
 	if (clk_is_peripheral(clk)) {
 		if (!clk->parent)
 			clk->parent = &mck;
+		if (cpu_is_sama5d3())
+			clk->rate_hz = DIV_ROUND_UP(clk->parent->rate_hz, 1 << clk->div);
 		clk->mode = pmc_periph_mode;
 	}
 	else if (clk_is_sys(clk)) {
@@ -456,7 +482,10 @@ static u32 at91_pll_rate(struct clk *pll, u32 freq, u32 reg)
 	unsigned mul, div;
 
 	div = reg & 0xff;
-	mul = (reg >> 16) & 0x7ff;
+	if (cpu_is_sama5d3())
+		mul = (reg >> 18) & 0x7ff;
+	else
+		mul = (reg >> 16) & 0x7ff;
 	if (div && mul) {
 		freq /= div;
 		freq *= mul + 1;
@@ -611,11 +640,17 @@ int at91_clock_init(unsigned long main_clock)
 
 	/* report if PLLA is more than mildly overclocked */
 	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_pmc_read(AT91_CKGR_PLLAR));
-	if (cpu_has_300M_plla()) {
+	if (cpu_has_1056M_plla()) {
+		if (plla.rate_hz > 1056000000)
+			pll_overclock = 1;
+	} else if (cpu_has_300M_plla()) {
 		if (plla.rate_hz > 300000000)
 			pll_overclock = 1;
 	} else if (cpu_has_800M_plla()) {
 		if (plla.rate_hz > 800000000)
+			pll_overclock = 1;
+	} else if (cpu_has_300M_plla()) {
+		if (plla.rate_hz > 300000000)
 			pll_overclock = 1;
 	} else if (cpu_has_240M_plla()) {
 		if (plla.rate_hz > 240000000)
@@ -736,6 +771,7 @@ postconsole_initcall(at91_clock_display);
 static int at91_clock_reset(void)
 {
 	unsigned long pcdr = 0;
+	unsigned long pcdr1 = 0;
 	unsigned long scdr = 0;
 	struct clk *clk;
 
@@ -743,8 +779,17 @@ static int at91_clock_reset(void)
 		if (clk->users > 0)
 			continue;
 
-		if (clk->mode == pmc_periph_mode)
-			pcdr |= clk->pmc_mask;
+		if (clk->mode == pmc_periph_mode) {
+			if (cpu_is_sama5d3()) {
+				u32 pmc_mask = 1 << (clk->pid % 32);
+
+				if (clk->pid > 31)
+					pcdr1 |= pmc_mask;
+				else
+					pcdr |= pmc_mask;
+			} else
+				pcdr |= clk->pmc_mask;
+		}
 
 		if (clk->mode == pmc_sys_mode)
 			scdr |= clk->pmc_mask;
@@ -753,6 +798,8 @@ static int at91_clock_reset(void)
 	}
 
 	at91_pmc_write(AT91_PMC_PCDR, pcdr);
+	if (cpu_is_sama5d3())
+		at91_pmc_write(AT91_PMC_PCDR1, pcdr1);
 	at91_pmc_write(AT91_PMC_SCDR, scdr);
 
 	return 0;
@@ -762,14 +809,18 @@ late_initcall(at91_clock_reset);
 #ifdef CONFIG_CMD_AT91CLK
 static int do_at91clk(int argc, char *argv[])
 {
-	u32		scsr, pcsr, uckr = 0, sr;
+	u32		scsr, pcsr, pcsr1 = 0, uckr = 0, sr;
 	struct clk	*clk;
 
 	scsr = at91_pmc_read(AT91_PMC_SCSR);
 	pcsr = at91_pmc_read(AT91_PMC_PCSR);
+	if (cpu_is_sama5d3())
+		pcsr1 = at91_pmc_read(AT91_PMC_PCSR1);
 	sr = at91_pmc_read(AT91_PMC_SR);
 	printf("SCSR = %8x\n", scsr);
 	printf("PCSR = %8x\n", pcsr);
+	if (cpu_is_sama5d3())
+		printf("PCSR1 = %8x\n", pcsr1);
 	printf("MOR  = %8x\n", at91_pmc_read(AT91_CKGR_MOR));
 	printf("MCFR = %8x\n", at91_pmc_read(AT91_CKGR_MCFR));
 	printf("PLLA = %8x\n", at91_pmc_read(AT91_CKGR_PLLAR));
@@ -788,22 +839,36 @@ static int do_at91clk(int argc, char *argv[])
 
 	list_for_each_entry(clk, &clocks, node) {
 		char	*state;
+		char	*mode = "";
 
-		if (clk->mode == pmc_sys_mode)
+		if (clk->mode == pmc_sys_mode) {
 			state = (scsr & clk->pmc_mask) ? "on" : "off";
-		else if (clk->mode == pmc_periph_mode)
-			state = (pcsr & clk->pmc_mask) ? "on" : "off";
-		else if (clk->mode == pmc_uckr_mode)
-			state = (uckr & clk->pmc_mask) ? "on" : "off";
-		else if (clk->pmc_mask)
-			state = (sr & clk->pmc_mask) ? "on" : "off";
-		else if (clk == &clk32k || clk == &main_clk)
-			state = "on";
-		else
-			state = "";
+			mode = "sys";
+		} else if (clk->mode == pmc_periph_mode) {
+			if (cpu_is_sama5d3()) {
+				u32 pmc_mask = 1 << (clk->pid % 32);
 
-		printf("%-10s users=%2d %-3s %10ld Hz %s\n",
-			clk->name, clk->users, state, clk_get_rate(clk),
+				if (clk->pid > 31)
+					state = (pcsr1 & pmc_mask) ? "on" : "off";
+				else
+					state = (pcsr & pmc_mask) ? "on" : "off";
+			} else {
+				state = (pcsr & clk->pmc_mask) ? "on" : "off";
+			}
+			mode = "periph";
+		} else if (clk->mode == pmc_uckr_mode) {
+			state = (uckr & clk->pmc_mask) ? "on" : "off";
+			mode = "uckr";
+		} else if (clk->pmc_mask) {
+			state = (sr & clk->pmc_mask) ? "on" : "off";
+		} else if (clk == &clk32k || clk == &main_clk) {
+			state = "on";
+		} else {
+			state = "";
+		}
+
+		printf("%-10s %-7s users=%2d %-3s %10lu Hz %s\n",
+			clk->name, mode, clk->users, state, clk_get_rate(clk),
 			clk->parent ? clk->parent->name : "");
 	}
 	return 0;

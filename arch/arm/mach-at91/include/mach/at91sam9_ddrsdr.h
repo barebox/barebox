@@ -218,6 +218,43 @@ static inline u32 at91sam9n12_get_ddram_size(void)
 }
 #endif
 
+#ifdef CONFIG_SOC_SAMA5
+static inline u32 at91sama5_get_ddram_size(void)
+{
+	u32 cr;
+	u32 mdr;
+	u32 size;
+	void * __iomem base = IOMEM(SAMA5D3_BASE_MPDDRC);
+
+	cr = __raw_readl(base + AT91_DDRSDRC_CR);
+	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
+
+	/* Formula:
+	 * size = bank << (col + row + 1);
+	 * if (bandwidth == 32 bits)
+	 *	size <<= 1;
+	 */
+	size = 1;
+	/* COL */
+	size += (cr & AT91_DDRSDRC_NC) + 9;
+	/* ROW */
+	size += ((cr & AT91_DDRSDRC_NR) >> 2) + 11;
+	/* BANK */
+	size = ((cr & AT91_DDRSDRC_NB) ? 8 : 4) << size;
+
+	/* bandwidth */
+	if (!(mdr & AT91_DDRSDRC_DBW))
+		size <<= 1;
+
+	return size;
+}
+#else
+static inline u32 at91sama5_get_ddram_size(void)
+{
+	return 0;
+}
+#endif
+
 #endif
 
 #endif

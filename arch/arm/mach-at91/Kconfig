@@ -18,6 +18,12 @@ config SOC_AT91SAM9
 	select AT91SAM9_SMC
 	select AT91SAM9_TIMER
 
+config SOC_SAMA5
+	bool
+	select CPU_V7
+	select AT91SAM9_SMC
+	select AT91SAM9_TIMER
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x73f00000 if ARCH_AT91SAM9G45
@@ -173,6 +179,13 @@ config ARCH_AT91SAM9N12
 	bool "AT91SAM9N12"
 	select SOC_AT91SAM9N12
 
+config ARCH_SAMA5D3
+	bool "SAMA5D3x"
+	select SOC_SAMA5
+	select HAVE_AT91_DBGU1
+	select HAS_MACB
+	select AT91SAM9G45_RESET
+
 endchoice
 
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
@@ -185,6 +198,7 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	default 0xF000 if ARCH_AT91SAM9G45
 	default 0x6000 if ARCH_AT91SAM9X5
 	default 0x6000 if ARCH_AT91SAM9N12
+	default 0x6000 if ARCH_SAMA5D3
 	default 0xffffffff
 
 config SUPPORT_CALAO_DAB_MMX

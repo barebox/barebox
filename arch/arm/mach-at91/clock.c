@@ -46,7 +46,8 @@
 
 #define cpu_has_800M_plla()	(  cpu_is_at91sam9g20() \
 				|| cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5())
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_at91sam9n12())
 
 #define cpu_has_300M_plla()	(cpu_is_at91sam9g10())
 
@@ -58,7 +59,8 @@
 
 #define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5()))
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_at91sam9n12()))
 
 #define cpu_has_upll()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5())
@@ -72,12 +74,15 @@
 				|| cpu_is_at91sam9x5()))
 
 #define cpu_has_plladiv2()	(cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5())
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_at91sam9n12())
 
 #define cpu_has_mdiv3()		(cpu_is_at91sam9g45() \
-				|| cpu_is_at91sam9x5())
+				|| cpu_is_at91sam9x5() \
+				|| cpu_is_at91sam9n12())
 
-#define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5())
+#define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5() \
+				|| cpu_is_at91sam9n12())
 
 static LIST_HEAD(clocks);
 

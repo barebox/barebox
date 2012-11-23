@@ -364,7 +364,7 @@ int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
 		clk_enable(data->clock);
 	}
 
-	cpu_has_pio3 = cpu_is_at91sam9x5();
+	cpu_has_pio3 = cpu_is_at91sam9x5() || cpu_is_at91sam9n12();
 
 	return 0;
 }

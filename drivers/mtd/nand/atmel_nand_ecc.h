@@ -146,6 +146,6 @@
 #define PMECC_LOOKUP_TABLE_SIZE_1024		0x4000
 
 /* Time out value for reading PMECC status register */
-#define PMECC_MAX_TIMEOUT_MS			100
+#define PMECC_MAX_TIMEOUT_MS			100 * MSECOND
 
 #endif

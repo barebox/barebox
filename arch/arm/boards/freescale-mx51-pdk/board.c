@@ -254,7 +254,7 @@ static int f3s_devices_init(void)
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
-		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry));
+		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry), 0);
 
 	return 0;
 }

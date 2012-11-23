@@ -9,32 +9,36 @@ struct imx_dcd_v2_entry;
 #ifdef CONFIG_BAREBOX_UPDATE
 
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *, int dcdsize);
+		unsigned long flags, struct imx_dcd_entry *, int dcdsize,
+		unsigned long app_dest);
 
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize);
+		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize,
+		unsigned long app_dest);
 
 int imx53_bbu_internal_nand_register_handler(const char *name,
 		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize,
-		int partition_size);
+		int partition_size, unsigned long app_dest);
 
 #else
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize)
+		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize,
+		unsigned long app_dest)
 {
 	return -ENOSYS;
 }
 
 static inline int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize)
+		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
+		unsigned long app_dest)
 {
 	return -ENOSYS;
 }
 
 static inline int imx53_bbu_internal_nand_register_handler(const char *name,
 		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		int partition_size)
+		int partition_size, unsigned long app_dest)
 {
 	return -ENOSYS;
 }

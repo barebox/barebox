@@ -453,7 +453,8 @@ static int __register_handler(struct imx_internal_bbu_handler *imx_handler)
  * Register a i.MX51 internal boot update handler for MMC/SD
  */
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize)
+		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize,
+		unsigned long app_dest)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
@@ -461,7 +462,12 @@ int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 	imx_handler->dcd = dcd;
 	imx_handler->dcdsize = dcdsize;
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-	imx_handler->app_dest = 0x90000000;
+
+	if (app_dest)
+		imx_handler->app_dest = app_dest;
+	else
+		imx_handler->app_dest = 0x90000000;
+
 	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = imx_bbu_internal_v1_update;
 
@@ -507,14 +513,20 @@ static int imx53_bbu_internal_init_dcd(struct imx_internal_bbu_handler *imx_hand
  * Register a i.MX53 internal boot update handler for MMC/SD
  */
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize)
+		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
+		unsigned long app_dest)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
 	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-	imx_handler->app_dest = 0x70000000;
+
+	if (app_dest)
+		imx_handler->app_dest = app_dest;
+	else
+		imx_handler->app_dest = 0x70000000;
+
 	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
 
@@ -526,14 +538,19 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  */
 int imx53_bbu_internal_nand_register_handler(const char *name,
 		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		int partition_size)
+		int partition_size, unsigned long app_dest)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, NULL, flags);
 	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
 	imx_handler->flash_header_offset = 0x400;
-	imx_handler->app_dest = 0x70000000;
+
+	if (app_dest)
+		imx_handler->app_dest = app_dest;
+	else
+		imx_handler->app_dest = 0x70000000;
+
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
 	imx_handler->flags = IMX_INTERNAL_FLAG_NAND;
 	imx_handler->handler.devicefile = "/dev/nand0";

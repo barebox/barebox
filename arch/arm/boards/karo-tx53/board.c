@@ -218,11 +218,12 @@ static int tx53_devices_init(void)
 
 	/* rev xx30 can boot from nand or USB */
 	imx53_bbu_internal_nand_register_handler("nand-xx30",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30, sizeof(dcd_entry_xx30), SZ_512K);
+		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30,
+		sizeof(dcd_entry_xx30), SZ_512K, 0);
 
 	/* rev 1011 can boot from MMC/SD, other bootsource currently unknown */
 	imx53_bbu_internal_mmc_register_handler("mmc-1011", "/dev/disk0",
-		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011));
+		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011), 0);
 
 	return 0;
 }

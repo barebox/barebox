@@ -50,6 +50,12 @@
 
 #define cpu_has_300M_plla()	(cpu_is_at91sam9g10())
 
+#define cpu_has_240M_plla()	(cpu_is_at91sam9261() \
+				|| cpu_is_at91sam9263() \
+				|| cpu_is_at91sam9rl())
+
+#define cpu_has_210M_plla()	(cpu_is_at91sam9260())
+
 #define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5()))
@@ -601,6 +607,12 @@ int at91_clock_init(unsigned long main_clock)
 			pll_overclock = 1;
 	} else if (cpu_has_800M_plla()) {
 		if (plla.rate_hz > 800000000)
+			pll_overclock = 1;
+	} else if (cpu_has_240M_plla()) {
+		if (plla.rate_hz > 240000000)
+			pll_overclock = 1;
+	} else if (cpu_has_210M_plla()) {
+		if (plla.rate_hz > 210000000)
 			pll_overclock = 1;
 	} else {
 		if (plla.rate_hz > 209000000)

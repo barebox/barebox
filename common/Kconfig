@@ -667,6 +667,8 @@ config DEBUG_LL
 	prompt "low level debug messages"
 	help
 	  Enable this to get low level debug messages during barebox initialization.
+	  This requires SoC specific support. Most SoCs require the debug UART to be
+	  initialized by a debugger or first stage bootloader.
 
 endmenu
 

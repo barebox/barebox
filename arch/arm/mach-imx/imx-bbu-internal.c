@@ -357,8 +357,9 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	flash_header->header.version = IVT_VERSION;
 
 	flash_header->entry = imx_handler->app_dest + imx_pre_image_size;
-	flash_header->dcd_ptr = imx_handler->app_dest + flash_header_offset +
-		offsetof(struct imx_flash_header_v2, dcd);
+	if (imx_handler->dcdsize)
+		flash_header->dcd_ptr = imx_handler->app_dest + flash_header_offset +
+			offsetof(struct imx_flash_header_v2, dcd);
 	flash_header->boot_data_ptr = imx_handler->app_dest +
 		flash_header_offset + offsetof(struct imx_flash_header_v2, boot_data);
 	flash_header->self = imx_handler->app_dest + flash_header_offset;
@@ -366,10 +367,12 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	flash_header->boot_data.start = imx_handler->app_dest;
 	flash_header->boot_data.size = ALIGN(imx_pre_image_size + data->len, 4096);;
 
-	flash_header->dcd.header.tag = DCD_HEADER_TAG;
-	flash_header->dcd.header.length = cpu_to_be16(sizeof(struct imx_dcd) +
-			imx_handler->dcdsize);
-	flash_header->dcd.header.version = DCD_VERSION;
+	if (imx_handler->dcdsize) {
+		flash_header->dcd.header.tag = DCD_HEADER_TAG;
+		flash_header->dcd.header.length = cpu_to_be16(sizeof(struct imx_dcd) +
+				imx_handler->dcdsize);
+		flash_header->dcd.header.version = DCD_VERSION;
+	}
 
 	/* Add dcd data */
 	memcpy((void *)flash_header + sizeof(*flash_header), imx_handler->dcd, imx_handler->dcdsize);
@@ -480,6 +483,13 @@ static int imx53_bbu_internal_init_dcd(struct imx_internal_bbu_handler *imx_hand
 		void *dcd, int dcdsize)
 {
 	uint32_t *dcd32 = dcd;
+
+	/*
+	 * For boards which do not have a dcd (i.e. they do their SDRAM
+	 * setup in C code)
+	 */
+	if (!dcd || !dcdsize)
+		return 0;
 
 	/*
 	 * The DCD data we have compiled in does not have a DCD_WR_CMD at

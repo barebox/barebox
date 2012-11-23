@@ -34,6 +34,7 @@
 #include <mach/at91_rstc.h>
 #include <mach/io.h>
 #include <io.h>
+#include <linux/clk.h>
 
 uint64_t at91sam9_clocksource_read(void)
 {
@@ -48,16 +49,20 @@ static struct clocksource cs = {
 
 static int clocksource_init (void)
 {
+	u32 pit_rate;
+
 	/*
 	 * Enable PITC Clock
 	 * The clock is already enabled for system controller in boot
 	 */
 	at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
 
+	pit_rate = clk_get_rate(clk_get(NULL, "mck")) / 16;
+
 	/* Enable PITC */
 	at91_sys_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
 
-	cs.mult = clocksource_hz2mult(1000000 * 6, cs.shift);
+	cs.mult = clocksource_hz2mult(pit_rate, cs.shift);
 
 	init_clock(&cs);
 

@@ -63,7 +63,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
 		void *mbr = xzalloc(512);
 
-		debug("%s: reading DOS partition table in order to keep it\n");
+		debug("%s: reading DOS partition table in order to keep it\n", __func__);
 
 		ret = read(fd, mbr, 512);
 		if (ret < 0) {
@@ -484,7 +484,7 @@ static int imx53_bbu_internal_init_dcd(struct imx_internal_bbu_handler *imx_hand
 	if ((*dcd32 & 0xff0000ff) != DCD_WR_CMD(0)) {
 		__be32 *buf;
 
-		debug("%s: dcd does not have a DCD_WR_CMD. Prepending one\n");
+		debug("%s: dcd does not have a DCD_WR_CMD. Prepending one\n", __func__);
 
 		buf = xmalloc(dcdsize + sizeof(__be32));
 
@@ -494,7 +494,7 @@ static int imx53_bbu_internal_init_dcd(struct imx_internal_bbu_handler *imx_hand
 		imx_handler->dcd = buf;
 		imx_handler->dcdsize = dcdsize + sizeof(__be32);
 	} else {
-		debug("%s: dcd already has a DCD_WR_CMD. Using original dcd data\n");
+		debug("%s: dcd already has a DCD_WR_CMD. Using original dcd data\n", __func__);
 
 		imx_handler->dcd = dcd;
 		imx_handler->dcdsize = dcdsize;

@@ -31,7 +31,7 @@
 #define lsr		(5 << DEBUG_LL_UART_RSHFT)
 #define LSR_THRE	0x20	/* Xmit holding register empty */
 
-static inline void putc(char ch)
+static inline void PUTC_LL(char ch)
 {
 	while (!(__raw_readb(DEBUG_LL_UART_ADDR + lsr) & LSR_THRE))
 		;

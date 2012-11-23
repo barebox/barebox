@@ -22,7 +22,6 @@
 #if defined (CONFIG_DEBUG_LL)
 # include <mach/debug_ll.h>
 
-#define PUTC_LL(x) putc(x)
 # define PUTHEX_LL(value)  ({ unsigned long v = (unsigned long) (value); \
 			     int i; unsigned char ch; \
 			     for (i = 8; i--; ) {\

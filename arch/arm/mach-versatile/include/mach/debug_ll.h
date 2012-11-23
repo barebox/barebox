@@ -19,7 +19,7 @@
 #include <linux/amba/serial.h>
 #include <io.h>
 
-static inline void putc(char c)
+static inline void PUTC_LL(char c)
 {
 	/* Wait until there is space in the FIFO */
 	while (readl(0x101F1000 + UART01x_FR) & UART01x_FR_TXFF);

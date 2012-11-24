@@ -28,8 +28,6 @@
 #include <rtc.h>
 #include <filetype.h>
 #include <memory.h>
-#include <linux/stat.h>
-#include <sizes.h>
 
 #ifdef CONFIG_UIMAGE_MULTI
 static inline int uimage_is_multi_image(struct uimage_handle *handle)
@@ -384,33 +382,11 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 	size_t ofs = 0;
 	size_t now;
 	int fd;
-	struct stat s;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
 		return NULL;
 
-	/* TODO: use fstat(fd, &s) when implemented and avoid reopening file */
-	if (stat(filename, &s) == 0 && s.st_size <= SZ_1G) {
-		/*
-		 * As the file size is known we can read it at once and improve
-		 * transfer speed.
-		 */
-		size = s.st_size;
-		res = request_sdram_region("image", adr, size);
-		if (!res) {
-			printf("unable to request SDRAM 0x%08lx-0x%08lx\n",
-				adr, adr + size - 1);
-			goto out;
-		}
-
-		now = read_full(fd, (void *)(res->start), size);
-		if (now < size) {
-			release_sdram_region(res);
-			res = NULL;
-		}
-		goto out;
-	}
 	while (1) {
 		res = request_sdram_region("image", adr, size);
 		if (!res) {

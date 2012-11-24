@@ -31,7 +31,7 @@
 #include <fs.h>
 #include <kfifo.h>
 #include <linux/byteorder/generic.h>
-
+#include <xymodem.h>
 
 #define xy_dbg(fmt, args...)
 

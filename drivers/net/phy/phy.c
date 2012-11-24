@@ -53,7 +53,7 @@ int phy_update_status(struct phy_device *dev)
 	return 0;
 }
 
-struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 {
 	struct phy_device *dev;
 

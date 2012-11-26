@@ -51,7 +51,7 @@ static char *DEVMEM = "/dev/mem";
  */
 #define DISP_LINE_LEN	16
 
-int memory_display(char *addr, loff_t offs, ulong nbytes, int size)
+int memory_display(char *addr, loff_t offs, ulong nbytes, int size, int swab)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -73,9 +73,17 @@ int memory_display(char *addr, loff_t offs, ulong nbytes, int size)
 
 		for (i = 0; i < linebytes; i += size) {
 			if (size == 4) {
-				count -= printf(" %08x", (*uip++ = *((uint *)addr)));
+				u32 res;
+				res = (*uip++ = *((uint *)addr));
+				if (swab)
+					res = __swab32(res);
+				count -= printf(" %08x", res);
 			} else if (size == 2) {
-				count -= printf(" %04x", (*usp++ = *((ushort *)addr)));
+				u16 res;
+				res = (*usp++ = *((ushort *)addr));
+				if (swab)
+					res = __swab16(res);
+				count -= printf(" %04x", res);
 			} else {
 				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
@@ -195,7 +203,8 @@ static int do_mem_md(int argc, char *argv[])
 		if (!r)
 			goto out;
 
-		if ((ret = memory_display(rw_buf, start, r, mode >> O_RWSIZE_SHIFT)))
+		if ((ret = memory_display(rw_buf, start, r,
+				mode >> O_RWSIZE_SHIFT, 0)))
 			goto out;
 
 		start += r;

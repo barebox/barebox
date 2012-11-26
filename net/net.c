@@ -511,7 +511,7 @@ static void net_bad_packet(unsigned char *pkt, int len)
 	 * We received a bad packet. for now just dump it.
 	 * We could add more sophisticated debugging here
 	 */
-	memory_display(pkt, 0, len, 1);
+	memory_display(pkt, 0, len, 1, 0);
 #endif
 }
 

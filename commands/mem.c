@@ -255,9 +255,10 @@ static int do_mem_mw(int argc, char *argv[])
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 	loff_t adr;
+	int swab = 0;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename,
-			NULL) < 0)
+	if (mem_parse_options(argc, argv, "bwld:x", &mode, NULL, &filename,
+			&swab) < 0)
 		return 1;
 
 	if (optind + 1 >= argc)
@@ -280,10 +281,14 @@ static int do_mem_mw(int argc, char *argv[])
 			break;
 		case O_RWSIZE_2:
 			val16 = simple_strtoul(argv[optind], NULL, 0);
+			if (swab)
+				val16 = __swab16(val16);
 			ret = write(fd, &val16, 2);
 			break;
 		case O_RWSIZE_4:
 			val32 = simple_strtoul(argv[optind], NULL, 0);
+			if (swab)
+				val32 = __swab32(val32);
 			ret = write(fd, &val32, 4);
 			break;
 		}

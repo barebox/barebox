@@ -136,7 +136,7 @@ static int open_and_lseek(const char *filename, int mode, loff_t pos)
 }
 
 static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
-		char **sourcefile, char **destfile)
+		char **sourcefile, char **destfile, int *swab)
 {
 	int opt;
 
@@ -157,6 +157,9 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		case 'd':
 			*destfile = optarg;
 			break;
+		case 'x':
+			*swab = 1;
+			break;
 		default:
 			return -1;
 		}
@@ -173,11 +176,13 @@ static int do_mem_md(int argc, char *argv[])
 	int fd;
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
+	int swab = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (mem_parse_options(argc, argv, "bwls:", &mode, &filename, NULL) < 0)
+	if (mem_parse_options(argc, argv, "bwls:x", &mode, &filename, NULL,
+			&swab) < 0)
 		return 1;
 
 	if (optind < argc) {
@@ -204,7 +209,7 @@ static int do_mem_md(int argc, char *argv[])
 			goto out;
 
 		if ((ret = memory_display(rw_buf, start, r,
-				mode >> O_RWSIZE_SHIFT, 0)))
+				mode >> O_RWSIZE_SHIFT, swab)))
 			goto out;
 
 		start += r;
@@ -225,6 +230,7 @@ static const __maybe_unused char cmd_md_help[] =
 "  -b          output in bytes\n"
 "  -w          output in halfwords (16bit)\n"
 "  -l          output in words (32bit)\n"
+"  -x          swap bytes at output\n"
 "\n"
 "Memory regions:\n"
 "Memory regions can be specified in two different forms: start+size\n"
@@ -250,7 +256,8 @@ static int do_mem_mw(int argc, char *argv[])
 	int mode = O_RWSIZE_4;
 	loff_t adr;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename) < 0)
+	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename,
+			NULL) < 0)
 		return 1;
 
 	if (optind + 1 >= argc)
@@ -318,7 +325,8 @@ static int do_mem_cmp(int argc, char *argv[])
 	int     offset = 0;
 	struct  stat statbuf;
 
-	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile,
+			&destfile, NULL) < 0)
 		return 1;
 
 	if (optind + 2 > argc)
@@ -425,7 +433,8 @@ static int do_mem_cp(int argc, char *argv[])
 	struct stat statbuf;
 	int ret = 0;
 
-	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile,
+			&destfile, NULL) < 0)
 		return 1;
 
 	if (optind + 2 > argc)
@@ -530,7 +539,8 @@ static int do_memset(int argc, char *argv[])
 	int     ret = 1;
 	char	*file = DEVMEM;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file) < 0)
+	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file,
+			NULL) < 0)
 		return 1;
 
 	if (optind + 3 > argc)

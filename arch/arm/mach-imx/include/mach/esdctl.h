@@ -1,3 +1,5 @@
+#ifndef __MACH_ESDCTL_V2_H
+#define __MACH_ESDCTL_V2_H
 
 /* SDRAM Controller registers */
 #define IMX_ESDCTL0 0x00 /* Enhanced SDRAM Control Register 0       */
@@ -124,3 +126,4 @@
 //#define ESDCFGx_tRC_14		0x0000000e	// 15 seems to not exist
 #define ESDCFGx_tRC_16			0x0000000f
 
+#endif /* __MACH_ESDCTL_V2_H */

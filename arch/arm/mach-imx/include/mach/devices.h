@@ -7,6 +7,7 @@
 #include <mach/imxfb.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/esdhc.h>
+#include <usb/chipidea-imx.h>
 
 struct device_d *imx_add_fec_imx27(void *base, struct fec_platform_data *pdata);
 struct device_d *imx_add_fec_imx6(void *base, struct fec_platform_data *pdata);
@@ -21,3 +22,4 @@ struct device_d *imx_add_mmc(void *base, int id, void *pdata);
 struct device_d *imx_add_esdhc(void *base, int id, struct esdhc_platform_data *pdata);
 struct device_d *imx_add_kpp(void *base, struct matrix_keymap_data *pdata);
 struct device_d *imx_add_pata(void *base);
+struct device_d *imx_add_usb(void *base, int id, struct imxusb_platformdata *pdata);

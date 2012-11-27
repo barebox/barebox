@@ -72,3 +72,8 @@ struct device_d *imx_add_pata(void *base)
 {
 	return imx_add_device("imx-pata", -1, base, 0x1000, NULL);
 }
+
+struct device_d *imx_add_usb(void *base, int id, struct imxusb_platformdata *pdata)
+{
+	return imx_add_device("imx-usb", id, base, 0x200, pdata);
+}

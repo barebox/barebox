@@ -141,7 +141,7 @@ struct imx_serial_devtype_data {
 	u32 onems;
 };
 
-struct imx_serial_devtype_data imx1_data = {
+static struct imx_serial_devtype_data imx1_data = {
 	.ucr1_val = UCR1_UARTCLKEN,
 	.ucr3_val = 0,
 	.ucr4_val = UCR4_CTSTL_32 | UCR4_REF16,
@@ -149,7 +149,7 @@ struct imx_serial_devtype_data imx1_data = {
 	.onems = 0,
 };
 
-struct imx_serial_devtype_data imx21_data = {
+static struct imx_serial_devtype_data imx21_data = {
 	.ucr1_val = 0,
 	.ucr3_val = 0x700 | UCR3_RXDMUXSEL,
 	.ucr4_val = UCR4_CTSTL_32,

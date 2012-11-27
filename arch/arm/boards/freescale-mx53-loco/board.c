@@ -133,15 +133,6 @@ static void set_board_rev(int rev)
 	loco_system_rev =  (loco_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
 }
 
-static int loco_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
-
-	return 0;
-}
-mem_initcall(loco_mem_init);
-
 #define LOCO_FEC_PHY_RST		IMX_GPIO_NR(7, 6)
 
 static void loco_fec_reset(void)

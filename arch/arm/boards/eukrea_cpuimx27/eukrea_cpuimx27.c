@@ -46,12 +46,6 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
-#if defined CONFIG_EUKREA_CPUIMX27_SDRAM_256MB
-#define SDRAM0	256
-#elif defined CONFIG_EUKREA_CPUIMX27_SDRAM_128MB
-#define SDRAM0	128
-#endif
-
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
 	.phy_addr = 1,
@@ -85,14 +79,6 @@ static struct i2c_board_info i2c_devices[] = {
 		I2C_BOARD_INFO("lp3972", 0x34),
 	},
 };
-
-static int eukrea_cpuimx27_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0xa0000000, SDRAM0 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(eukrea_cpuimx27_mem_init);
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
 static struct imx_fb_videomode imxfb_mode = {

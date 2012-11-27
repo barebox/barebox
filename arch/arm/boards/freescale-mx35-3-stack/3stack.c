@@ -128,15 +128,6 @@ static void set_board_rev(int rev)
 	imx35_3ds_system_rev =  (imx35_3ds_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
 }
 
-static int f3s_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX35_CSD0_BASE_ADDR, 128 * 1024 * 1024);
-	arm_add_mem_device("ram1", MX35_CSD1_BASE_ADDR, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(f3s_mem_init);
-
 static int f3s_devices_init(void)
 {
 	uint32_t reg;

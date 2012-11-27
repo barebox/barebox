@@ -97,14 +97,6 @@ static iomux_v3_cfg_t f3s_pads[] = {
 	MX51_PAD_GPIO1_5__GPIO1_5,
 };
 
-static int babbage_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x90000000, 512 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(babbage_mem_init);
-
 #define BABBAGE_ECSPI1_CS0	(3 * 32 + 24)
 static int spi_0_cs[] = {BABBAGE_ECSPI1_CS0};
 

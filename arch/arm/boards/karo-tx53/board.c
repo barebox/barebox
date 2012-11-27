@@ -99,17 +99,6 @@ static iomux_v3_cfg_t tx53_pads[] = {
 	MX53_PAD_CSI0_PIXCLK__IPU_CSI0_PIXCLK,
 };
 
-static int tx53_mem_init(void)
-{
-	if (IS_ENABLED(CONFIG_TX53_REV_1011))
-		arm_add_mem_device("ram0", 0x70000000, SZ_1G);
-	else
-		arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-
-	return 0;
-}
-mem_initcall(tx53_mem_init);
-
 #define TX53_SD1_CD			IMX_GPIO_NR(3, 24)
 
 static struct esdhc_platform_data tx53_sd1_data = {

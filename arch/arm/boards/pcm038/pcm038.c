@@ -180,16 +180,6 @@ static int pcm038_power_init(void)
 	return 0;
 }
 
-static int pcm038_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
-
-	add_mem_device("ram1", 0xc8000000, 512 * 1024, /* Can be up to 2MiB */
-				   IORESOURCE_MEM_WRITEABLE);
-	return 0;
-}
-mem_initcall(pcm038_mem_init);
-
 static int pcm038_devices_init(void)
 {
 	int i;
@@ -278,6 +268,10 @@ static int pcm038_devices_init(void)
 
 	/* configure SRAM on cs1 */
 	imx27_setup_weimcs(1, 0x0000d843, 0x22252521, 0x22220a00);
+
+	/* Can be up to 2MiB */
+	add_mem_device("ram1", 0xc8000000, 512 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)

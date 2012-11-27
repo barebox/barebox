@@ -117,14 +117,6 @@ static struct fsl_usb2_platform_data usb_pdata = {
 	.phy_mode	= FSL_USB2_PHY_UTMI,
 };
 
-static int eukrea_cpuimx25_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, 64 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(eukrea_cpuimx25_mem_init);
-
 static iomux_v3_cfg_t eukrea_cpuimx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,
 	MX25_PAD_FEC_MDIO__FEC_MDIO,

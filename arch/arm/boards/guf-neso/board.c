@@ -133,14 +133,6 @@ static void neso_usbh_init(void)
 }
 #endif
 
-static int neso_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(neso_mem_init);
-
 static int neso_devices_init(void)
 {
 	int i;

@@ -65,14 +65,6 @@ static int imx27ads_timing_init(void)
 
 core_initcall(imx27ads_timing_init);
 
-static int mx27ads_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(mx27ads_mem_init);
-
 static int mx27ads_devices_init(void)
 {
 	int i;

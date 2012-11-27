@@ -94,14 +94,6 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.enable		= cupid_fb_enable,
 };
 
-static int cupid_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX35_CSD0_BASE_ADDR, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(cupid_mem_init);
-
 static int cupid_mmu_init(void)
 {
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);

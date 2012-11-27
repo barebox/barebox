@@ -143,14 +143,6 @@ static void pca100_usb_register(void)
 }
 #endif
 
-static int pca100_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0xa0000000, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(pca100_mem_init);
-
 static void pca100_usb_init(void)
 {
 	u32 reg;

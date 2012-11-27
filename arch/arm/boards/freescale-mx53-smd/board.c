@@ -98,15 +98,6 @@ static iomux_v3_cfg_t smd_pads[] = {
 	MX53_PAD_PATA_RESET_B__ESDHC3_CMD,
 };
 
-static int smd_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
-
-	return 0;
-}
-mem_initcall(smd_mem_init);
-
 #define SMD_FEC_PHY_RST		IMX_GPIO_NR(7, 6)
 
 static void smd_fec_reset(void)

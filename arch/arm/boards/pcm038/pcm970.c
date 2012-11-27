@@ -21,33 +21,11 @@
 #include <mach/weim.h>
 #include <mach/gpio.h>
 #include <mach/devices-imx27.h>
-#include <usb/ulpi.h>
+#include <usb/chipidea-imx.h>
 
 #define GPIO_IDE_POWER	(GPIO_PORTE + 18)
 #define GPIO_IDE_PCOE	(GPIO_PORTF + 7)
 #define GPIO_IDE_RESET	(GPIO_PORTF + 10)
-
-#ifdef CONFIG_USB
-static void pcm970_usbh2_init(void)
-{
-	uint32_t temp;
-
-	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
-	temp &= ~((3 << 21) | 1);
-	temp |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 20);
-	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x600);
-
-	temp = readl(MX27_USB_OTG_BASE_ADDR + 0x584);
-	temp &= ~(3 << 30);
-	temp |= 2 << 30;
-	writel(temp, MX27_USB_OTG_BASE_ADDR + 0x584);
-
-	mdelay(10);
-
-	if (!ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1))
-		add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
-}
-#endif
 
 #ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 static struct resource pcm970_ide_resources[] = {
@@ -168,6 +146,11 @@ static void pcm970_mmc_init(void)
 	imx27_add_mmc1(NULL);
 }
 
+struct imxusb_platformdata pcm970_usbh2_pdata = {
+	.flags = MXC_EHCI_MODE_ULPI | MXC_EHCI_INTERFACE_DIFF_UNI,
+	.mode = IMX_USB_MODE_HOST,
+};
+
 static int pcm970_init(void)
 {
 	int i;
@@ -193,9 +176,8 @@ static int pcm970_init(void)
 	/* Configure SJA1000 on cs4 */
 	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
 
-#ifdef CONFIG_USB
-	pcm970_usbh2_init();
-#endif
+	if (IS_ENABLED(CONFIG_USB))
+		imx27_add_usbh2(&pcm970_usbh2_pdata);
 
 #ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 	pcm970_ide_init();

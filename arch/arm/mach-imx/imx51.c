@@ -94,13 +94,6 @@ postcore_initcall(imx51_init);
  * power up.
  */
 
-#define setup_pll_800(base)	imx5_setup_pll((base), 800,  (( 8 << 4) + ((1 - 1) << 0)), ( 3 - 1),  1)
-#define setup_pll_665(base)	imx5_setup_pll((base), 665,  (( 6 << 4) + ((1 - 1) << 0)), (96 - 1), 89)
-#define setup_pll_600(base)	imx5_setup_pll((base), 600,  (( 6 << 4) + ((1 - 1) << 0)), ( 4 - 1),  1)
-#define setup_pll_400(base)	imx5_setup_pll((base), 400,  (( 8 << 4) + ((2 - 1) << 0)), ( 3 - 1),  1)
-#define setup_pll_455(base)	imx5_setup_pll((base), 455,  (( 9 << 4) + ((2 - 1) << 0)), (48 - 1), 23)
-#define setup_pll_216(base)	imx5_setup_pll((base), 216,  (( 6 << 4) + ((3 - 1) << 0)), ( 4 - 1),  3)
-
 void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX51_CCM_BASE_ADDR;
@@ -137,27 +130,27 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 
 	switch (cpufreq_mhz) {
 	case 600:
-		setup_pll_600((void __iomem *)MX51_PLL1_BASE_ADDR);
+		imx5_setup_pll_600((void __iomem *)MX51_PLL1_BASE_ADDR);
 		break;
 	default:
 		/* Default maximum 800MHz */
-		setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
+		imx5_setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
 		break;
 	}
 
-	setup_pll_665((void __iomem *)MX51_PLL3_BASE_ADDR);
+	imx5_setup_pll_665((void __iomem *)MX51_PLL3_BASE_ADDR);
 
 	/* Switch peripheral to PLL 3 */
 	writel(0x000010C0, ccm + MX5_CCM_CBCMR);
 	writel(0x13239145, ccm + MX5_CCM_CBCDR);
 
-	setup_pll_665((void __iomem *)MX51_PLL2_BASE_ADDR);
+	imx5_setup_pll_665((void __iomem *)MX51_PLL2_BASE_ADDR);
 
 	/* Switch peripheral to PLL2 */
 	writel(0x19239145, ccm + MX5_CCM_CBCDR);
 	writel(0x000020C0, ccm + MX5_CCM_CBCMR);
 
-	setup_pll_216((void __iomem *)MX51_PLL3_BASE_ADDR);
+	imx51_setup_pll_216((void __iomem *)MX51_PLL3_BASE_ADDR);
 
 	/* Set the platform clock dividers */
 	writel(0x00000124, MX51_ARM_BASE_ADDR + 0x14);

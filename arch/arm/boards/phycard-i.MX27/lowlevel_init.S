@@ -7,6 +7,7 @@
 #include <config.h>
 #include <mach/imx27-regs.h>
 #include <mach/imx-pll.h>
+#include <mach/esdctl.h>
 #include <asm/barebox-arm-head.h>
 
 #define writel(val, reg) \

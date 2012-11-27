@@ -124,8 +124,6 @@
 #define MX27_WBCR	0x1C	/* Well Bias Control Register */
 #define MX27_DSCR(x)	(0x1C + ((x) << 2))	/* Driving Strength Control Register 1 - 13 */
 
-#include "esdctl.h"
-
 /* PLL registers (base: MX27_CCM_BASE_ADDR) */
 #define MX27_CSCR	0x00 /* Clock Source Control Register       */
 #define MX27_MPCTL0	0x04 /* MCU PLL Control Register 0          */

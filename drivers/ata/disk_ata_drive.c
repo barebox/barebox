@@ -540,14 +540,6 @@ static struct block_device_ops ata_ops = {
 #endif
 };
 
-/* until Barebox can handle 64 bit offsets */
-static int limit_disk_size(uint64_t val)
-{
-	if (val > (__INT_MAX__ / SECTOR_SIZE))
-		return (__INT_MAX__ / SECTOR_SIZE);
-	return (int)val;
-}
-
 /**
  * Register an ATA drive behind an IDE like interface
  * @param dev The interface device
@@ -584,7 +576,7 @@ int register_ata_drive(struct device_d *dev, struct ata_ioports *io)
 	if (rc == -1)
 		pr_err("Cannot find a free index for the disk node\n");
 
-	drive->blk.num_blocks = limit_disk_size(ata_id_n_sectors(drive->id));
+	drive->blk.num_blocks = ata_id_n_sectors(drive->id);
 	drive->blk.cdev.name = asprintf("disk%d", rc);
 	drive->blk.blockbits = SECTOR_SHIFT;
 

@@ -43,6 +43,9 @@ int clk_enable(struct clk *clk)
 {
 	int ret;
 
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
 	if (!clk->enable_count) {
 		ret = clk_parent_enable(clk);
 		if (ret)
@@ -64,6 +67,9 @@ int clk_enable(struct clk *clk)
 
 void clk_disable(struct clk *clk)
 {
+	if (IS_ERR(clk))
+		return;
+
 	if (!clk->enable_count)
 		return;
 
@@ -82,6 +88,9 @@ unsigned long clk_get_rate(struct clk *clk)
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 
+	if (IS_ERR(clk))
+		return 0;
+
 	parent = clk_get_parent(clk);
 	if (!IS_ERR_OR_NULL(parent))
 		parent_rate = clk_get_rate(parent);
@@ -94,6 +103,9 @@ unsigned long clk_get_rate(struct clk *clk)
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
+	if (IS_ERR(clk))
+		return 0;
+
 	return clk_get_rate(clk);
 }
 
@@ -101,6 +113,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	struct clk *parent;
 	unsigned long parent_rate = 0;
+
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
 
 	parent = clk_get_parent(clk);
 	if (parent)
@@ -131,6 +146,11 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
 {
 	int i;
 
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+	if (IS_ERR(parent))
+		return PTR_ERR(parent);
+
 	if (!clk->num_parents)
 		return -EINVAL;
 	if (!clk->ops->set_parent)
@@ -154,6 +174,9 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
 struct clk *clk_get_parent(struct clk *clk)
 {
 	int idx;
+
+	if (IS_ERR(clk))
+		return clk;
 
 	if (!clk->num_parents)
 		return ERR_PTR(-ENODEV);

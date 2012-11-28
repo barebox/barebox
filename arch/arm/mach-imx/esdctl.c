@@ -23,6 +23,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <mach/esdctl.h>
+#include <mach/esdctl-v4.h>
 #include <mach/imx1-regs.h>
 #include <mach/imx21-regs.h>
 #include <mach/imx25-regs.h>
@@ -112,34 +113,23 @@ static inline unsigned long imx_v3_sdram_size(void __iomem *esdctlbase, int num)
 	return size;
 }
 
-#define IMX_ESDCTL_V4_ESDCTL	0x0
-#define IMX_ESDCTL_V4_ESDMISC	0x18
-
-#define ESDCTL_V4_ESDCTL_DSIZ		(1 << 16)
-#define ESDCTL_V4_ESDMISC_DDR_4_BANK	(1 << 5)
-#define ESDCTL_V4_ESDMISC_ONECS		(1 << 20)
-
-#define ESDCTL_V4_ESDCTL_SDE_0		(1 << 31)
-#define ESDCTL_V4_ESDCTL_SDE_1		(1 << 30)
-#define ESDCTL_V4_ESDMISC_BI		(1 << 12)
-
 /*
  * v4 - found on i.MX53
  */
 static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 {
-	u32 ctlval = readl(esdctlbase + IMX_ESDCTL_V4_ESDCTL);
-	u32 esdmisc = readl(esdctlbase + IMX_ESDCTL_V4_ESDMISC);
+	u32 ctlval = readl(esdctlbase + ESDCTL_V4_ESDCTL0);
+	u32 esdmisc = readl(esdctlbase + ESDCTL_V4_ESDMISC);
 	unsigned long size;
 	int rows, cols, width = 2, banks = 8;
 
-	if (cs == 0 && !(ctlval & ESDCTL_V4_ESDCTL_SDE_0))
+	if (cs == 0 && !(ctlval & ESDCTL_V4_ESDCTLx_SDE0))
 		return 0;
-	if (cs == 1 && !(ctlval & ESDCTL_V4_ESDCTL_SDE_1))
+	if (cs == 1 && !(ctlval & ESDCTL_V4_ESDCTLx_SDE1))
 		return 0;
 
 	/* one 2GiB cs, memory is returned for cs0 only */
-	if (cs == 1 && (esdmisc & ESDCTL_V4_ESDMISC_ONECS))
+	if (cs == 1 && (esdmisc & ESDCTL_V4_ESDMISC_ONE_CS))
 		return 9;
 
 	rows = ((ctlval >> 24) & 0x7) + 11;
@@ -164,10 +154,10 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 		break;
 	}
 
-	if (ctlval & ESDCTL_V4_ESDCTL_DSIZ)
+	if (ctlval & ESDCTL_V4_ESDCTLx_DSIZ_32B)
 		width = 4;
 
-	if (esdmisc & ESDCTL_V4_ESDMISC_DDR_4_BANK)
+	if (esdmisc & ESDCTL_V4_ESDMISC_BANKS_4)
 		banks = 4;
 
 	size = (1 << cols) * (1 << rows) * banks * width;

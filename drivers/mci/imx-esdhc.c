@@ -279,7 +279,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	ret = wait_on_timeout(100 * MSECOND,
 			esdhc_read32(&regs->irqstat) & IRQSTAT_CC);
 	if (ret) {
-		dev_err(host->dev, "timeout 1\n");
+		dev_dbg(host->dev, "timeout 1\n");
 		return -ETIMEDOUT;
 	}
 

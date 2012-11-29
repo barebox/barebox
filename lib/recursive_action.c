@@ -130,7 +130,6 @@ int recursive_action(const char *fileName,
 		return 0;
 	return 1;
 done_nak_warn:
-	printf("%s", fileName);
 	return 0;
 }
 

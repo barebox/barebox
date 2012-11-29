@@ -19,17 +19,36 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <getopt.h>
 #include <errno.h>
 
 static int do_rm(int argc, char *argv[])
 {
-	int i = 1;
+	int i, opt, recursive = 0;
+
+	while ((opt = getopt(argc, argv, "r")) > 0) {
+		switch (opt) {
+		case 'r':
+			recursive = 1;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
+	i = optind;
+
 	while (i < argc) {
-		if (unlink(argv[i])) {
+		int ret;
+
+		if (recursive)
+			ret = unlink_recursive(argv[i], NULL);
+		else
+			ret = unlink(argv[i]);
+		if (ret) {
 			printf("could not remove %s: %s\n", argv[i], errno_str());
 			return 1;
 		}
@@ -40,8 +59,9 @@ static int do_rm(int argc, char *argv[])
 }
 
 static const __maybe_unused char cmd_rm_help[] =
-"Usage: rm [FILES]\n"
-"Remove files\n";
+"Usage: rm [OPTIONS] [FILES]\n"
+"Remove files\n"
+"-r  remove directories and their contents recursively\n";
 
 BAREBOX_CMD_START(rm)
 	.cmd		= do_rm,

@@ -3,6 +3,8 @@
 
 #define MX53_IROM_BASE_ADDR	0x0
 
+#define MX53_SATA_BASE_ADDR	0x10000000
+
 /*
  * SPBA global module enabled #0
  */

@@ -1397,9 +1397,13 @@ static int mci_card_probe(struct mci *mci)
 	mci->blk.dev = mci->mci_dev;
 	mci->blk.ops = &mci_ops;
 
-	disknum = cdev_find_free_index("disk");
+	if (host->devname) {
+		mci->blk.cdev.name = strdup(host->devname);
+	} else {
+		disknum = cdev_find_free_index("disk");
+		mci->blk.cdev.name = asprintf("disk%d", disknum);
+	}
 
-	mci->blk.cdev.name = asprintf("disk%d", disknum);
 	mci->blk.blockbits = SECTOR_SHIFT;
 	mci->blk.num_blocks = mci_calc_blk_cnt(mci->capacity, mci->blk.blockbits);
 
@@ -1409,7 +1413,7 @@ static int mci_card_probe(struct mci *mci)
 		goto on_error;
 	}
 
-	dev_info(mci->mci_dev, "registered disk%d\n", disknum);
+	dev_info(mci->mci_dev, "registered %s\n", mci->blk.cdev.name);
 
 	/* create partitions on demand */
 	rc = parse_partition_table(&mci->blk);

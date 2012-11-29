@@ -568,3 +568,17 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 
 	return __register_handler(imx_handler);
 }
+
+/*
+ * Register a i.MX6 internal boot update handler for MMC/SD
+ */
+int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
+		unsigned long app_dest)
+{
+	if (!app_dest)
+		app_dest = 0x10000000;
+
+	return imx53_bbu_internal_mmc_register_handler(name, devicefile,
+		flags, dcd, dcdsize, app_dest);
+}

@@ -206,7 +206,7 @@ EXPORT_SYMBOL(envfs_save);
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_load(char *filename, char *dir)
+int envfs_load(char *filename, char *dir, unsigned flags)
 {
 	struct envfs_super super;
 	void *buf = NULL, *buf_free = NULL;
@@ -316,6 +316,14 @@ int envfs_load(char *filename, char *dir)
 			}
 			free(str);
 		} else {
+			struct stat s;
+
+			if (flags & ENV_FLAG_NO_OVERWRITE &&
+					!stat(str, &s)) {
+				printf("skip %s\n", str);
+				goto skip;
+			}
+
 			fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			free(str);
 			if (fd < 0) {
@@ -333,7 +341,7 @@ int envfs_load(char *filename, char *dir)
 			}
 			close(fd);
 		}
-
+skip:
 		buf += PAD4(inode_size);
 		size -= headerlen_full + PAD4(inode_size) +
 				sizeof(struct envfs_inode);

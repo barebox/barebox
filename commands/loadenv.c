@@ -21,27 +21,68 @@
  */
 
 #include <common.h>
+#include <getopt.h>
 #include <command.h>
 #include <environment.h>
+#include <fs.h>
 
 static int do_loadenv(int argc, char *argv[])
 {
 	char *filename, *dirname;
+	unsigned flags = 0;
+	int opt;
+	int scrub = 0;
 
-	if (argc < 3)
+	while ((opt = getopt(argc, argv, "ns")) > 0) {
+		switch (opt) {
+		case 'n':
+			flags |= ENV_FLAG_NO_OVERWRITE;
+			break;
+		case 's':
+			scrub = 1;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
+
+	if (argc - optind < 2)
 		dirname = "/env";
 	else
-		dirname = argv[2];
-	if (argc < 2)
+		dirname = argv[optind + 1];
+
+	if (argc - optind < 1)
 		filename = default_environment_path;
 	else
-		filename = argv[1];
+		filename = argv[optind];
+
+	if (scrub) {
+		int ret;
+
+		ret = unlink_recursive(dirname, NULL);
+		if (ret) {
+			eprintf("cannot remove %s: %s\n", dirname,
+					strerror(-ret));
+			return 1;
+		}
+
+		ret = mkdir(dirname, 0);
+		if (ret) {
+			eprintf("cannot create %s: %s\n", dirname,
+					strerror(-ret));
+			return ret;
+		}
+	}
+
 	printf("loading environment from %s\n", filename);
-	return envfs_load(filename, dirname);
+
+	return envfs_load(filename, dirname, flags);
 }
 
 BAREBOX_CMD_HELP_START(loadenv)
-BAREBOX_CMD_HELP_USAGE("loadenv [ENVFS] [DIRECTORY]\n")
+BAREBOX_CMD_HELP_USAGE("loadenv OPTIONS [ENVFS] [DIRECTORY]\n")
+BAREBOX_CMD_HELP_OPT("-n", "do not overwrite existing files\n")
+BAREBOX_CMD_HELP_OPT("-s", "scrub old environment\n")
 BAREBOX_CMD_HELP_SHORT("Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).\n")
 BAREBOX_CMD_HELP_END
 

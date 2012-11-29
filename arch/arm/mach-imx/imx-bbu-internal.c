@@ -36,6 +36,7 @@
 
 #define IMX_INTERNAL_FLAG_NAND		(1 << 0)
 #define IMX_INTERNAL_FLAG_KEEP_DOSPART	(1 << 1)
+#define IMX_INTERNAL_FLAG_ERASE		(1 << 2)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
@@ -59,6 +60,17 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	fd = open(data->devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
 		return fd;
+
+	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
+		debug("%s: eraseing %s from 0 to 0x%08x\n", __func__,
+				data->devicefile, image_len);
+		ret = erase(fd, image_len, 0);
+		if (ret) {
+			printf("erasing %s failed with %s\n", data->devicefile,
+					strerror(-ret));
+			goto err_close;
+		}
+	}
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
 		void *mbr = xzalloc(512);
@@ -544,6 +556,32 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 }
 
 /*
+ * Register a i.MX53 internal boot update handler for i2c/spi
+ * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
+ * keep a partition table. We have to erase the device beforehand though.
+ */
+int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
+		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
+		unsigned long app_dest)
+{
+	struct imx_internal_bbu_handler *imx_handler;
+
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
+	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+
+	if (app_dest)
+		imx_handler->app_dest = app_dest;
+	else
+		imx_handler->app_dest = 0x70000000;
+
+	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
+	imx_handler->handler.handler = imx_bbu_internal_v2_update;
+
+	return __register_handler(imx_handler);
+}
+
+/*
  * Register a i.MX53 internal boot update handler for NAND
  */
 int imx53_bbu_internal_nand_register_handler(const char *name,
@@ -580,5 +618,21 @@ int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		app_dest = 0x10000000;
 
 	return imx53_bbu_internal_mmc_register_handler(name, devicefile,
+		flags, dcd, dcdsize, app_dest);
+}
+
+/*
+ * Register a i.MX53 internal boot update handler for i2c/spi
+ * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
+ * keep a partition table. We have to erase the device beforehand though.
+ */
+int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
+		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
+		unsigned long app_dest)
+{
+	if (!app_dest)
+		app_dest = 0x10000000;
+
+	return imx53_bbu_internal_spi_i2c_register_handler(name, devicefile,
 		flags, dcd, dcdsize, app_dest);
 }

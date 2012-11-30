@@ -20,4 +20,4 @@ struct device_d *imx_add_ipufb(void *base, struct imx_ipu_fb_platform_data *pdat
 struct device_d *imx_add_mmc(void *base, int id, void *pdata);
 struct device_d *imx_add_esdhc(void *base, int id, struct esdhc_platform_data *pdata);
 struct device_d *imx_add_kpp(void *base, struct matrix_keymap_data *pdata);
-
+struct device_d *imx_add_pata(void *base);

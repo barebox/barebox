@@ -219,6 +219,7 @@ int __init mx51_clocks_init(void __iomem *regs, unsigned long rate_ckil, unsigne
 	clkdev_add_physbase(clks[esdhc_b_podf], MX51_MMC_SDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[esdhc_c_s], MX51_MMC_SDHC3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[esdhc_d_s], MX51_MMC_SDHC4_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[ipg], MX51_ATA_BASE_ADDR, NULL);
 
 	return 0;
 }

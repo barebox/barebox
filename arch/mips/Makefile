@@ -88,13 +88,17 @@ else
 BOARD :=
 endif
 
+ifeq ($(KBUILD_SRC),)
+CPPFLAGS += -I$(BOARD)/include
+else
+CPPFLAGS += -I$(srctree)/$(BOARD)/include
+endif
+
 ifneq ($(machine-y),)
 MACH  := arch/mips/mach-$(machine-y)/
 else
 MACH  :=
 endif
-
-CPPFLAGS += -I$(BOARD)/include
 
 common-y += $(BOARD) $(MACH)
 common-y += arch/mips/lib/

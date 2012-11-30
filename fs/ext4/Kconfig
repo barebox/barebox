@@ -1,0 +1,3 @@
+config FS_EXT4
+	bool
+	prompt "ext4 filesystem support"

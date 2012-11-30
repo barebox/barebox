@@ -14,6 +14,8 @@ config FS_CRAMFS
 	select ZLIB
 	prompt "cramfs support"
 
+source fs/ext4/Kconfig
+
 config FS_RAMFS
 	bool
 	default y

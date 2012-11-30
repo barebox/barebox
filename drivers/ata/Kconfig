@@ -39,4 +39,11 @@ config DISK_INTF_PLATFORM_IDE
 	  Generic platform driver for simple IDE like interfaces to a connected
 	  ATA device.
 
+config DISK_PATA_IMX
+	bool "i.MX PATA driver"
+	depends on ARCH_IMX
+	select DISK_ATA
+	help
+	  select this to enable support for the i.MX PATA driver
+
 endif

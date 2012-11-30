@@ -72,7 +72,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		}
 
 		memcpy(buf + 0x1b8, mbr + 0x1b8, 0x48);
-		free(buf);
+		free(mbr);
 
 		ret = lseek(fd, 0, SEEK_SET);
 		if (ret)

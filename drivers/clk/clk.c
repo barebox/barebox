@@ -46,6 +46,9 @@ int clk_enable(struct clk *clk)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	if (clk->flags & CLK_ALWAYS_ENABLED)
+		return 0;
+
 	if (!clk->enable_count) {
 		ret = clk_parent_enable(clk);
 		if (ret)
@@ -68,6 +71,9 @@ int clk_enable(struct clk *clk)
 void clk_disable(struct clk *clk)
 {
 	if (IS_ERR(clk))
+		return;
+
+	if (clk->flags & CLK_ALWAYS_ENABLED)
 		return;
 
 	if (!clk->enable_count)
@@ -204,6 +210,10 @@ int clk_register(struct clk *clk)
 	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 
 	list_add_tail(&clk->list, &clks);
+
+	if (clk->flags & CLK_ALWAYS_ENABLED) {
+		clk->enable_count = 1;
+	}
 
 	return 0;
 }

@@ -179,7 +179,10 @@ struct clk {
 	int num_parents;
 
 	struct clk **parents;
+	unsigned long flags;
 };
+
+#define CLK_ALWAYS_ENABLED	(1 << 0)
 
 struct clk *clk_fixed(const char *name, int rate);
 struct clk *clk_divider(const char *name, const char *parent,

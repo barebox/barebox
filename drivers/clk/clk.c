@@ -221,9 +221,13 @@ int clk_register(struct clk *clk)
 static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	struct clk *c;
+	char *always = "";
 
-	printf("%*s%s (rate %ld, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
-			clk->enable_count ? "en" : "dis");
+	if (clk->flags & CLK_ALWAYS_ENABLED)
+		always = "always ";
+
+	printf("%*s%s (rate %ld, %s%sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
+			always, clk->enable_count ? "en" : "dis");
 	if (verbose) {
 
 		if (clk->num_parents > 1) {

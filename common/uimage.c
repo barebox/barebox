@@ -516,7 +516,7 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 	if (ret < 0)
 		return NULL;
 
-	ft = file_detect_type(ftbuf);
+	ft = file_detect_type(ftbuf, 128);
 	if ((int)ft < 0)
 		return NULL;
 

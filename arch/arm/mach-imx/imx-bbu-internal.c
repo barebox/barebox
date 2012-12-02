@@ -110,7 +110,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 	int ret, image_len;
 	void *buf;
 
-	if (file_detect_type(data->image) != filetype_arm_barebox) {
+	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
 		if (!bbu_force(data, "Not an ARM barebox image"))
 			return -EINVAL;
 	}
@@ -332,7 +332,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	int ret, image_len;
 	void *buf;
 
-	if (file_detect_type(data->image) != filetype_arm_barebox) {
+	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
 		if (!bbu_force(data, "Not an ARM barebox image"))
 			return -EINVAL;
 	}

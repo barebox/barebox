@@ -13,10 +13,10 @@
 
 static LIST_HEAD(image_renderers);
 
-static struct image_renderer *get_renderer(void* buf)
+static struct image_renderer *get_renderer(void* buf, size_t bufsize)
 {
 	struct image_renderer *ir;
-	enum filetype type = file_detect_type(buf);
+	enum filetype type = file_detect_type(buf, bufsize);
 
 	list_for_each_entry(ir, &image_renderers, list) {
 		if (ir->type == type)
@@ -40,7 +40,7 @@ struct image *image_renderer_open(const char* file)
 		return ERR_PTR(-ENOMEM);
 	}
 
-	ir = get_renderer(data);
+	ir = get_renderer(data, size);
 	if (!ir) {
 		ret = -ENOENT;
 		goto out;

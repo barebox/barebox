@@ -22,6 +22,7 @@ enum filetype {
 	filetype_mbr,
 	filetype_bmp,
 	filetype_png,
+	filetype_ext,
 	filetype_max,
 };
 

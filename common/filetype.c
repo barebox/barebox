@@ -47,6 +47,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_mbr] = { "MBR sector", "mbr" },
 	[filetype_bmp] = { "BMP image", "bmp" },
 	[filetype_png] = { "PNG image", "png" },
+	[filetype_ext] = { "ext filesystem", "ext" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -110,6 +111,7 @@ enum filetype file_detect_type(void *_buf, size_t bufsize)
 	u32 *buf = _buf;
 	u64 *buf64 = _buf;
 	u8 *buf8 = _buf;
+	u16 *buf16 = _buf;
 	enum filetype type;
 
 	if (bufsize < 9)
@@ -160,6 +162,12 @@ enum filetype file_detect_type(void *_buf, size_t bufsize)
 	type = is_fat_or_mbr(buf8, NULL);
 	if (type != filetype_unknown)
 		return type;
+
+	if (bufsize < 1536)
+		return filetype_unknown;
+
+	if (buf16[512 + 28] == le16_to_cpu(0xef53))
+		return filetype_ext;
 
 	return filetype_unknown;
 }

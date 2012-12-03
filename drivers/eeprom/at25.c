@@ -232,15 +232,10 @@ static ssize_t at25_ee_write(struct cdev *cdev,
 	return written ? written : status;
 }
 
-static loff_t at25_ee_lseek(struct cdev *cdev, loff_t off)
-{
-	return off;
-}
-
 static struct file_operations at25_fops = {
 	.read	= at25_ee_read,
 	.write	= at25_ee_write,
-	.lseek	= at25_ee_lseek,
+	.lseek	= dev_lseek_default,
 };
 
 static int at25_probe(struct device_d *dev)

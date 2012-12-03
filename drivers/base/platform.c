@@ -76,8 +76,8 @@ struct bus_type platform_bus = {
 	.remove = platform_remove,
 };
 
-static int plarform_init(void)
+static int platform_init(void)
 {
 	return bus_register(&platform_bus);
 }
-pure_initcall(plarform_init);
+pure_initcall(platform_init);

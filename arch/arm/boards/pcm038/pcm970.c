@@ -160,7 +160,7 @@ static int pcm970_init(void)
 		PA1_PF_USBH2_DIR,
 		PA2_PF_USBH2_DATA7,
 		PA3_PF_USBH2_NXT,
-		PA4_PF_USBH2_STP,
+		4 | GPIO_PORTA | GPIO_GPIO | GPIO_OUT,
 		PD19_AF_USBH2_DATA4,
 		PD20_AF_USBH2_DATA3,
 		PD21_AF_USBH2_DATA6,
@@ -176,8 +176,14 @@ static int pcm970_init(void)
 	/* Configure SJA1000 on cs4 */
 	imx27_setup_weimcs(4, 0x0000DCF6, 0x444A0301, 0x44443302);
 
-	if (IS_ENABLED(CONFIG_USB))
+	if (IS_ENABLED(CONFIG_USB)) {
+		/* Stop ULPI */
+		gpio_direction_output(4, 1);
+		mdelay(1);
+		imx_gpio_mode(PA4_PF_USBH2_STP);
+
 		imx27_add_usbh2(&pcm970_usbh2_pdata);
+	}
 
 #ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 	pcm970_ide_init();

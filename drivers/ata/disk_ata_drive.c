@@ -24,6 +24,7 @@
 #include <block.h>
 #include <ata_drive.h>
 #include <disks.h>
+#include <dma.h>
 
 #define ata_id_u32(id,n)        \
         (((uint32_t) (id)[(n) + 1] << 16) | ((uint32_t) (id)[(n)]))
@@ -266,7 +267,7 @@ int ata_port_register(struct ata_port *port)
 	struct ata_port_operations *ops = port->ops;
 	struct device_d *dev = port->dev;
 
-	port->id = xzalloc(SECTOR_SIZE);
+	port->id = dma_alloc(SECTOR_SIZE);
 
 	port->blk.dev = dev;
 	port->blk.ops = &ata_ops;

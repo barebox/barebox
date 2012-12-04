@@ -2,15 +2,12 @@
  * @file
  * @brief Mux Configuration Register defines for OMAP3
  *
- * FileName: include/asm-arm/arch-omap/omap3-mux.h
- *
  * This file defines the various Pin Mux registers
  * @see include/asm-arm/arch-omap/control.h
  * The @ref MUX_VAL macro uses the defines from this file
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Syed Mohammed Khasim <x0khasim@ti.com>
@@ -24,8 +21,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef _ASM_ARCH_OMAP3_MUX_H_
 #define _ASM_ARCH_OMAP3_MUX_H_
 

@@ -2,14 +2,11 @@
  * @file
  * @brief Provide OMAP independent utility APIs
  *
- * FileName: arch/arm/mach-omap/syslib.c
- *
  * Provide APIs which can be used from platform/architecture code
  * to operate on
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -23,7 +20,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #include <config.h>

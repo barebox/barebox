@@ -2,14 +2,10 @@
  * @file
  * @brief Provide @ref clocksource functionality for OMAP
  *
- * FileName: arch/arm/mach-omap/s32k_clksource.c
- *
  * @ref clocksource provides a neat architecture. all we do is
  * To loop in with Sync 32Khz clock ticking away at 32768hz on OMAP.
  * Sync 32Khz clock is an always ON clock.
  *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -23,7 +19,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #include <common.h>

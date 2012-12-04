@@ -4,15 +4,12 @@
  * the TI OMAP34XX. For more info on OMAP34XX,
  * See http://focus.ti.com/pdfs/wtbu/swpu114g.pdf
  *
- * FileName: include/asm-arm/arch-omap/omap3-silicon.h
- *
  * OMAP34XX base address defines go here.
  *
  * Originally from Linux kernel:
  * http://linux.omap.com/pub/kernel/3430zoom/linux-ldp-v1.0b.tar.gz
  * include/asm-arm/arch-omap/omap3-silicon.h
- */
-/*
+ *
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -29,7 +26,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef __ASM_ARCH_OMAP3_H

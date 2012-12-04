@@ -2,8 +2,6 @@
  * @file
  * @brief Provide Architecture level Initialization
  *
- * FileName: arch/arm/mach-omap/omap3_core.S
- *
  * This provides OMAP3 Architecture initialization. Among these,
  * @li OMAP ROM Code is located in SRAM, we can piggy back on
  * the same addresses
@@ -12,8 +10,6 @@
  * functions.
  * @li Call architecture initialization function a_init
  *
- */
-/*
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -27,7 +23,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #include <config.h>

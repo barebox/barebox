@@ -2,8 +2,6 @@
  * @file
  * @brief OMAP DPLL and various clock configuration
  *
- * FileName: arch/arm/mach-omap/omap3_clock.c
- *
  * @ref prcm_init This is the second level clock init for PRCM as defined in
  * clocks.h -- called from SRAM, or Flash (using temp SRAM stack).
  *
@@ -16,8 +14,7 @@
  * should be used, functions cannot use global variables/switch constructs.
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -31,7 +28,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #include <common.h>

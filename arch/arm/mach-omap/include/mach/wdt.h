@@ -2,10 +2,6 @@
  * @file
  * @brief This file contains the Watchdog timer specific register definitions
  *
- * FileName: include/asm-arm/arch-omap/wdt.h
- *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -19,8 +15,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef __ASM_ARCH_OMAP_WDT_H
 #define __ASM_ARCH_OMAP_WDT_H
 

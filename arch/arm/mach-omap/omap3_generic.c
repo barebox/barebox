@@ -2,8 +2,6 @@
  * @file
  * @brief Provide Generic implementations for OMAP3 architecture
  *
- * FileName: arch/arm/mach-omap/omap3_generic.c
- *
  * This file contains the generic implementations of various OMAP3
  * relevant functions
  * For more info on OMAP34XX, see http://focus.ti.com/pdfs/wtbu/swpu114g.pdf
@@ -12,8 +10,7 @@
  * The implemented functions are present in sys_info.h
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -28,8 +25,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #include <common.h>
 #include <init.h>
 #include <io.h>

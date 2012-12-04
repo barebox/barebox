@@ -2,14 +2,10 @@
  * @file
  * @brief This file contains exported structure for NAND
  *
- * FileName: include/asm-arm/arch-omap/gpmc_nand.h
- *
  * OMAP's General Purpose Memory Controller (GPMC) has a NAND controller
  * embedded. this file provides the platform data structure required to
  * hook on to it.
  *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>

@@ -66,11 +66,14 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 			case CTL_CH('h'):
 			case KEY_DEL7:
 			case KEY_DEL:
-				if (flags & STAR && pos > 0)
-					puts("\b \b");
-				*buf = '\0';
-				buf--;
-				pos--;
+				if (pos > 0) {
+					if (flags & STAR)
+						puts("\b \b");
+
+					*buf = '\0';
+					buf--;
+					pos--;
+				}
 				continue;
 			default:
 				if (pos < length - 1) {

@@ -159,7 +159,7 @@ static struct phy_driver ksphy_driver[] = {
 }, {
 	.phy_id		= PHY_ID_KSZ8873MLL,
 	.phy_id_mask	= 0x00fffff0,
-	.drv.name	= "Micrel KSZ8873MLL Swithch",
+	.drv.name	= "Micrel KSZ8873MLL Switch",
 	.features	= (SUPPORTED_Pause | SUPPORTED_Asym_Pause),
 	.config_init	= ksz8873mll_config_init,
 	.config_aneg	= ksz8873mll_config_aneg,

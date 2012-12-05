@@ -172,7 +172,7 @@ static int imx_pata_probe(struct device_d *dev)
 
 	pata_imx_set_bus_timing(base, clk_get_rate(clk), 4);
 
-	ret= register_ata_drive(dev, io);
+	ret= ide_port_register(dev, io);
 	if (ret) {
 		dev_err(dev, "Cannot register IDE interface: %s\n",
 				strerror(-ret));

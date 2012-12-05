@@ -9,6 +9,9 @@ menuconfig DISK
 
 if DISK
 
+config DISK_IDE_SFF
+	bool
+
 config DISK_WRITE
 	select BLOCK_WRITE
 	bool "support writing to disk drives"
@@ -35,6 +38,7 @@ comment "interface types"
 config DISK_INTF_PLATFORM_IDE
 	bool "Platform IDE"
 	select DISK_ATA
+	select DISK_IDE_SFF
 	help
 	  Generic platform driver for simple IDE like interfaces to a connected
 	  ATA device.
@@ -42,7 +46,7 @@ config DISK_INTF_PLATFORM_IDE
 config DISK_PATA_IMX
 	bool "i.MX PATA driver"
 	depends on ARCH_IMX
-	select DISK_ATA
+	depends on DISK_INTF_PLATFORM_IDE
 	help
 	  select this to enable support for the i.MX PATA driver
 

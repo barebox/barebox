@@ -181,7 +181,7 @@ static int ide_read_id(struct ata_port *port, void *buf)
 	writeb(0x00, ide->io->lbam_addr);
 	writeb(0x00, ide->io->lbah_addr);
 
-	rc = ata_wr_cmd(ide, ATA_CMD_ID_DEVICE);
+	rc = ata_wr_cmd(ide, ATA_CMD_ID_ATA);
 	if (rc != 0)
 		return rc;
 
@@ -264,7 +264,7 @@ static int ide_read(struct ata_port *port, void *buffer, unsigned int block,
 		rc = ata_set_lba_sector(ide, DISK_MASTER, sector);
 		if (rc != 0)
 			return rc;
-		rc = ata_wr_cmd(ide, ATA_CMD_RD);
+		rc = ata_wr_cmd(ide, ATA_CMD_READ);
 		if (rc != 0)
 			return rc;
 		rc = ata_wait_ready(ide, MAX_TIMEOUT);
@@ -303,7 +303,7 @@ static int __maybe_unused ide_write(struct ata_port *port,
 		rc = ata_set_lba_sector(ide, DISK_MASTER, sector);
 		if (rc != 0)
 			return rc;
-		rc = ata_wr_cmd(ide, ATA_CMD_WR);
+		rc = ata_wr_cmd(ide, ATA_CMD_WRITE);
 		if (rc != 0)
 			return rc;
 		ata_wr_sector(ide, buffer);

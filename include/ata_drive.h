@@ -35,10 +35,11 @@
 #define IDE_REG_DEV_CTL 0x00
 #define IDE_REG_DRV_ADDR 0x01
 
-#define ATA_CMD_ID_DEVICE 0xEC
-#define ATA_CMD_RD_CONF 0x40
-#define ATA_CMD_RD	0x20
-#define ATA_CMD_WR	0x30
+#define ATA_CMD_ID_ATA		0xEC
+#define ATA_CMD_READ		0x20
+#define ATA_CMD_READ_EXT	0x25
+#define ATA_CMD_WRITE		0x30
+#define ATA_CMD_WRITE_EXT	0x35
 
 /* drive's status flags */
 #define ATA_STATUS_BUSY		(1 << 7)

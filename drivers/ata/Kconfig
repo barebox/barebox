@@ -33,6 +33,11 @@ config DISK_ATA
 	help
 	  Support for native ATA/IDE drives
 
+config DISK_AHCI
+	bool "AHCI support"
+	select DISK_ATA
+	select DISK_DRIVE
+
 comment "interface types"
 
 config DISK_INTF_PLATFORM_IDE

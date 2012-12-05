@@ -121,8 +121,7 @@ unsigned imx_get_xtalclk(void)
 
 unsigned imx_get_fecclk(void)
 {
-	/* this PLL always runs at 50 MHz */
-	return 50000000;
+	return imx_get_hclk();
 }
 
 

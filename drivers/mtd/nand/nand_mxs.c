@@ -1128,6 +1128,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = (void *)MXS_GPMI_BASE;
+	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
 	int i = 0, ret;
 	u32 val;
 
@@ -1153,6 +1154,15 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	if (ret)
 		return ret;
 
+	val = readl(gpmi_regs + GPMI_VERSION);
+	info->version = val >> GPMI_VERSION_MINOR_OFFSET;
+
+	/* Reset BCH. Don't use SFTRST on MX23 due to Errata #2847 */
+	ret = mxs_reset_block(bch_regs + BCH_CTRL,
+				info->version == GPMI_VERSION_TYPE_MX23);
+	if (ret)
+		return ret;
+
 	/*
 	 * Choose NAND mode, set IRQ polarity, disable write protection and
 	 * select BCH ECC.
@@ -1162,9 +1172,6 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	val |= GPMI_CTRL1_ATA_IRQRDY_POLARITY | GPMI_CTRL1_DEV_RESET |
 		GPMI_CTRL1_BCH_MODE;
 	writel(val, gpmi_regs + GPMI_CTRL1);
-
-	val = readl(gpmi_regs + GPMI_VERSION);
-	info->version = val >> GPMI_VERSION_MINOR_OFFSET;
 
 	return 0;
 

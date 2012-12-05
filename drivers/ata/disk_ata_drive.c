@@ -572,12 +572,12 @@ int register_ata_drive(struct device_d *dev, struct ata_ioports *io)
 #ifdef DEBUG
 	ata_dump_id(drive->id);
 #endif
-	rc = cdev_find_free_index("disk");
+	rc = cdev_find_free_index("ata");
 	if (rc == -1)
 		pr_err("Cannot find a free index for the disk node\n");
 
 	drive->blk.num_blocks = ata_id_n_sectors(drive->id);
-	drive->blk.cdev.name = asprintf("disk%d", rc);
+	drive->blk.cdev.name = asprintf("ata%d", rc);
 	drive->blk.blockbits = SECTOR_SHIFT;
 
 	rc = blockdevice_register(&drive->blk);
@@ -585,6 +585,8 @@ int register_ata_drive(struct device_d *dev, struct ata_ioports *io)
 		dev_err(dev, "Failed to register blockdevice\n");
 		goto on_error;
 	}
+
+	dev_info(dev, "registered /dev/%s\n", drive->blk.cdev.name);
 
 	/* create partitions on demand */
 	rc = parse_partition_table(&drive->blk);

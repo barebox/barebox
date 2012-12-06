@@ -8,7 +8,7 @@ config ARCH_TEXT_BASE
 
 config BOARDINFO
 	default "Atmel at91rm9200-ek" if MACH_AT91RM9200EK
-	default "Atmel 91SAM9260-EK" if MACH_AT91SAM9260EK
+	default "Atmel at91sam9260-ek" if MACH_AT91SAM9260EK
 	default "Atmel at91sam9261-ek" if MACH_AT91SAM9261EK
 	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
 	default "Atmel at91sam9g10-ek" if MACH_AT91SAM9G10EK

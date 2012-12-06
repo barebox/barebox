@@ -46,7 +46,7 @@ static int clk_pllv3_enable(struct clk *clk)
 {
 	struct clk_pllv3 *pll = to_clk_pllv3(clk);
 	u32 val;
-	int ret;
+	int timeout = 10000;
 
 	val = readl(pll->base);
 	val &= ~BM_PLL_BYPASS;
@@ -57,9 +57,13 @@ static int clk_pllv3_enable(struct clk *clk)
 	writel(val, pll->base);
 
 	/* Wait for PLL to lock */
-	ret = wait_on_timeout(10 * MSECOND, !(readl(pll->base) & BM_PLL_LOCK));
-	if (ret)
-		return ret;
+	while (timeout--) {
+		if (readl(pll->base) & BM_PLL_LOCK)
+			break;
+	}
+
+	if (!timeout)
+		return -ETIMEDOUT;
 
 	val = readl(pll->base);
 	val |= pll->gate_mask;

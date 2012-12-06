@@ -35,7 +35,6 @@ struct clk_pllv3 {
 	struct clk	clk;
 	void __iomem	*base;
 	bool		powerup_set;
-	u32		gate_mask;
 	u32		div_mask;
 	const char	*parent;
 };
@@ -66,7 +65,7 @@ static int clk_pllv3_enable(struct clk *clk)
 		return -ETIMEDOUT;
 
 	val = readl(pll->base);
-	val |= pll->gate_mask;
+	val |= BM_PLL_ENABLE;
 	writel(val, pll->base);
 
 	return 0;
@@ -78,7 +77,7 @@ static void clk_pllv3_disable(struct clk *clk)
 	u32 val;
 
 	val = readl(pll->base);
-	val &= ~pll->gate_mask;
+	val &= ~BM_PLL_ENABLE;
 	writel(val, pll->base);
 
 	val |= BM_PLL_BYPASS;
@@ -281,7 +280,7 @@ static const struct clk_ops clk_pllv3_mlb_ops = {
 
 struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 			  const char *parent, void __iomem *base,
-			  u32 gate_mask, u32 div_mask)
+			  u32 div_mask)
 {
 	struct clk_pllv3 *pll;
 	const struct clk_ops *ops;
@@ -310,7 +309,6 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 		ops = &clk_pllv3_ops;
 	}
 	pll->base = base;
-	pll->gate_mask = gate_mask;
 	pll->div_mask = div_mask;
 	pll->parent = parent;
 	pll->clk.ops = ops;

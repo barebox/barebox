@@ -83,6 +83,7 @@ enum mx6q_clks {
 	usdhc4, vdo_axi, vpu_axi, cko1, pll1_sys, pll2_bus, pll3_usb_otg,
 	pll4_audio, pll5_video, pll8_mlb, pll7_usb_host, pll6_enet, ssi1_ipg,
 	ssi2_ipg, ssi3_ipg, rom, usbphy1, usbphy2, ldb_di0_div_3_5, ldb_di1_div_3_5,
+	sata_ref, pcie_ref, sata_ref_100m, pcie_ref_125m, enet_ref,
 	clk_max
 };
 
@@ -169,6 +170,14 @@ static const char *cko1_sels[] = {
 	"pll4_audio",
 };
 
+static struct clk_div_table clk_enet_ref_table[] = {
+	{ .val = 0, .div = 20, },
+	{ .val = 1, .div = 10, },
+	{ .val = 2, .div = 5, },
+	{ .val = 3, .div = 4, },
+	{ },
+};
+
 static int imx6_ccm_probe(struct device_d *dev)
 {
 	void __iomem *base, *anatop_base, *ccm_base;
@@ -195,6 +204,13 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[pll8_mlb]      = imx_clk_pllv3(IMX_PLLV3_MLB,	"pll8_mlb",	"osc", base + 0xd0, 0x0);
 	clks[pll7_usb_host] = imx_clk_pllv3(IMX_PLLV3_USB,	"pll7_usb_host","osc", base + 0x20, 0x3);
 	clks[pll6_enet]     = imx_clk_pllv3(IMX_PLLV3_ENET,	"pll6_enet",	"osc", base + 0xe0, 0x3);
+
+	clks[sata_ref] = imx_clk_fixed_factor("sata_ref", "pll6_enet", 1, 5);
+	clks[pcie_ref] = imx_clk_fixed_factor("pcie_ref", "pll6_enet", 1, 4);
+	clks[sata_ref_100m] = imx_clk_gate("sata_ref_100m", "sata_ref", base + 0xe0, 20);
+	clks[pcie_ref_125m] = imx_clk_gate("pcie_ref_125m", "pcie_ref", base + 0xe0, 19);
+
+	clks[enet_ref] = clk_divider_table("enet_ref", "pll6_enet", base + 0xe0, 0, 2, clk_enet_ref_table);
 
 	/*                                name               parent_name         reg          idx */
 	clks[pll2_pfd0_352m] = imx_clk_pfd("pll2_pfd0_352m", "pll2_bus",     base + 0x100, 0);
@@ -281,6 +297,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg_per], MX6_I2C1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg_per], MX6_I2C2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg_per], MX6_I2C3_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[ahb], MX6_SATA_BASE_ADDR, NULL);
 
 	writel(0xffffffff, ccm_base + CCGR0);
 	writel(0xffffffff, ccm_base + CCGR1);
@@ -290,6 +307,9 @@ static int imx6_ccm_probe(struct device_d *dev)
 	writel(0xffffffff, ccm_base + CCGR5);
 	writel(0xffffffff, ccm_base + CCGR6);
 	writel(0xffffffff, ccm_base + CCGR7);
+
+	clk_enable(clks[pll6_enet]);
+	clk_enable(clks[sata_ref_100m]);
 
 	return 0;
 }

@@ -180,7 +180,7 @@ static void ek_add_device_keyboard_buttons(void)
 		at91_set_deglitch(keys[i].gpio, 1);
 	}
 
-	add_gpio_keys_device(-1, &gk_pdata);
+	add_gpio_keys_device(DEVICE_ID_DYNAMIC, &gk_pdata);
 }
 #else
 static void ek_add_device_keyboard_buttons(void) {}

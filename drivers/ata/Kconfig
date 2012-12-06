@@ -38,6 +38,10 @@ config DISK_AHCI
 	select DISK_ATA
 	select DISK_DRIVE
 
+config DISK_AHCI_IMX
+	depends on DISK_AHCI
+	bool "i.MX AHCI support"
+
 comment "interface types"
 
 config DISK_INTF_PLATFORM_IDE

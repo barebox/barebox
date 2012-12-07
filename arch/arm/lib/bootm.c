@@ -143,7 +143,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 	if (ret < sizeof(*header))
 		return ret;
 
-	if (file_detect_type(header) != filetype_oftree)
+	if (file_detect_type(header, sizeof(*header)) != filetype_oftree)
 		return -ENXIO;
 
 	end = be32_to_cpu(header->totalsize);

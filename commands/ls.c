@@ -73,12 +73,13 @@ int ls(const char *path, ulong flags)
 
 	while ((d = readdir(dir))) {
 		sprintf(tmp, "%s/%s", path, d->d_name);
-		if (lstat(tmp, &s))
-			goto out;
-		if (flags & LS_COLUMN)
+		if (flags & LS_COLUMN) {
 			string_list_add_sorted(&sl, d->d_name);
-		else
+		} else {
+			if (lstat(tmp, &s))
+				goto out;
 			ls_one(d->d_name, tmp, &s);
+		}
 	}
 
 	closedir(dir);

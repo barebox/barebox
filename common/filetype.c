@@ -47,6 +47,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_mbr] = { "MBR sector", "mbr" },
 	[filetype_bmp] = { "BMP image", "bmp" },
 	[filetype_png] = { "PNG image", "png" },
+	[filetype_ext] = { "ext filesystem", "ext" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -105,19 +106,25 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	return filetype_mbr;
 }
 
-enum filetype file_detect_type(void *_buf)
+enum filetype file_detect_type(void *_buf, size_t bufsize)
 {
 	u32 *buf = _buf;
 	u64 *buf64 = _buf;
 	u8 *buf8 = _buf;
+	u16 *buf16 = _buf;
 	enum filetype type;
+
+	if (bufsize < 9)
+		return filetype_unknown;
 
 	if (strncmp(buf8, "#!/bin/sh", 9) == 0)
 		return filetype_sh;
-	if (is_barebox_arm_head(_buf))
-		return filetype_arm_barebox;
-	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
-		return filetype_arm_zimage;
+
+	if (bufsize < 32)
+		return filetype_unknown;
+
+	if (strncmp(buf8, "BM", 2) == 0)
+		return filetype_bmp;
 	if (buf8[0] == 0x89 && buf8[1] == 0x4c && buf8[2] == 0x5a &&
 			buf8[3] == 0x4f)
 		return filetype_lzo_compressed;
@@ -136,15 +143,31 @@ enum filetype file_detect_type(void *_buf)
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)
 		return filetype_aimage;
+	if (buf64[0] == le64_to_cpu(0x0a1a0a0d474e5089ull))
+		return filetype_png;
 	if (strncmp(buf8 + 0x10, "barebox", 7) == 0)
 		return filetype_mips_barebox;
+
+	if (bufsize < 64)
+		return filetype_unknown;
+
+	if (is_barebox_arm_head(_buf))
+		return filetype_arm_barebox;
+	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
+		return filetype_arm_zimage;
+
+	if (bufsize < 512)
+		return filetype_unknown;
+
 	type = is_fat_or_mbr(buf8, NULL);
 	if (type != filetype_unknown)
 		return type;
-	if (strncmp(buf8, "BM", 2) == 0)
-		return filetype_bmp;
-	if (buf64[0] == le64_to_cpu(0x0a1a0a0d474e5089ull))
-		return filetype_png;
+
+	if (bufsize < 1536)
+		return filetype_unknown;
+
+	if (buf16[512 + 28] == le16_to_cpu(0xef53))
+		return filetype_ext;
 
 	return filetype_unknown;
 }
@@ -160,13 +183,13 @@ enum filetype file_name_detect_type(const char *filename)
 	if (fd < 0)
 		return fd;
 
-	buf = xzalloc(512);
+	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 
-	ret = read(fd, buf, 512);
+	ret = read(fd, buf, FILE_TYPE_SAFE_BUFSIZE);
 	if (ret < 0)
 		goto err_out;
 
-	type = file_detect_type(buf);
+	type = file_detect_type(buf, ret);
 
 	if (type == filetype_mbr) {
 		/*

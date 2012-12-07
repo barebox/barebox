@@ -1,4 +1,5 @@
 obj-$(CONFIG_FS_CRAMFS)	+= cramfs/
+obj-$(CONFIG_FS_EXT4)	+= ext4/
 obj-$(CONFIG_FS_RAMFS)	+= ramfs.o
 obj-y			+= devfs-core.o
 obj-$(CONFIG_FS_DEVFS)	+= devfs.o

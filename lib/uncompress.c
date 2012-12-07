@@ -78,7 +78,7 @@ int uncompress(unsigned char *inbuf, int len,
 	char *err;
 
 	if (inbuf) {
-		ft = file_detect_type(inbuf);
+		ft = file_detect_type(inbuf, len);
 		uncompress_buf = NULL;
 		uncompress_size = 0;
 	} else {
@@ -93,7 +93,7 @@ int uncompress(unsigned char *inbuf, int len,
 		if (ret < 0)
 			goto err;
 
-		ft = file_detect_type(uncompress_buf);
+		ft = file_detect_type(uncompress_buf, 32);
 	}
 
 	switch (ft) {

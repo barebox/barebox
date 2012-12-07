@@ -1,1 +1,3 @@
-global.linux.bootargs.base="earlyprintk=serial console=ttyO1,1000000n8 keep_bootcon pm_disable initcall_debug ignore_loglevel no_console_suspend=1 root=/dev/ram0 init=/linuxrc"
+global.bootm.image="${TARGET_ROOT}/boot/zImage"
+global.bootm.initrd="${TARGET_ROOT}/boot/initrd"
+global.linux.bootargs.base="console=ttyO0,115200n8 root=/dev/ram0"

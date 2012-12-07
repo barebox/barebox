@@ -182,4 +182,6 @@ void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
+int unlink_recursive(const char *path, char **failedpath);
+
 #endif /* __FS_H */

@@ -75,9 +75,6 @@ int env_push_context(void);
 /* defaults to /dev/env0 */
 extern char *default_environment_path;
 
-int envfs_load(char *filename, char *dirname);
-int envfs_save(char *filename, char *dirname);
-
 int export(const char *);
 
 struct stat;
@@ -85,6 +82,10 @@ int file_size_action(const char *, struct stat *, void *, int);
 int file_save_action(const char *, struct stat *, void *, int);
 
 #endif /* __BAREBOX__ */
+
+#define ENV_FLAG_NO_OVERWRITE	(1 << 0)
+int envfs_load(char *filename, char *dirname, unsigned flags);
+int envfs_save(char *filename, char *dirname);
 
 /* This part is used for the host and the target */
 struct action_data {

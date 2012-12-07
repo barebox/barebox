@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 	if (load) {
 		if (verbose)
 			printf("loading env from file %s to %s\n", filename, dirname);
-		envfs_load(filename, dirname);
+		envfs_load(filename, dirname, 0);
 	}
 	if (save) {
 		if (verbose)

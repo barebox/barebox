@@ -181,8 +181,11 @@ int ulpi_set_vbus(void __iomem *view, int on)
 
 int ulpi_setup(void __iomem *view, int on)
 {
-	if (ulpi_probe(view))
-		return -1;
+	int ret;
+
+	ret = ulpi_probe(view);
+	if (ret)
+		return ret;
 
 	return ulpi_set_vbus(view, on);
 }

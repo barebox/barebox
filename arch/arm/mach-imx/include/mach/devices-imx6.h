@@ -64,3 +64,8 @@ static inline struct device_d *imx6_add_i2c2(struct i2c_platform_data *pdata)
 {
 	return imx_add_i2c((void *)MX6_I2C3_BASE_ADDR, 2, pdata);
 }
+
+static inline struct device_d *imx6_add_sata(void)
+{
+	return add_generic_device("imx6-sata", 0, NULL, MX6_SATA_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+}

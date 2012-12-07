@@ -131,7 +131,7 @@ static int stmpe_probe(struct device_d *dev)
 	i2c_ci->read_reg = stmpe_reg_read;
 	i2c_ci->write_reg = stmpe_reg_write;
 
-	if (pdata->blocks &= STMPE_BLOCK_GPIO)
+	if (pdata->blocks & STMPE_BLOCK_GPIO)
 		add_generic_device("stmpe-gpio", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM, i2c_ci);
 
 	devfs_create(&stmpe_dev->cdev);

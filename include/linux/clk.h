@@ -184,9 +184,17 @@ struct clk {
 
 #define CLK_ALWAYS_ENABLED	(1 << 0)
 
+struct clk_div_table {
+	unsigned int	val;
+	unsigned int	div;
+};
+
 struct clk *clk_fixed(const char *name, int rate);
 struct clk *clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width);
+struct clk *clk_divider_table(const char *name,
+		const char *parent, void __iomem *reg, u8 shift, u8 width,
+		const struct clk_div_table *table);
 struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div);
 struct clk *clk_mux(const char *name, void __iomem *reg,

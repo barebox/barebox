@@ -35,11 +35,12 @@ static const uint32_t tx28_pad_setup[] = {
 	GPMI_D6 | VE_3_3V | PULLUP(1),
 	GPMI_D7 | VE_3_3V | PULLUP(1),
 	GPMI_READY0 | VE_3_3V | PULLUP(0),	/* external PU */
+	GPMI_CE0N | VE_3_3V | PULLUP(1),
 	GPMI_RDN | VE_3_3V | PULLUP(1),
 	GPMI_WRN | VE_3_3V | BITKEEPER(1),
 	GPMI_ALE | VE_3_3V | PULLUP(1),
 	GPMI_CLE | VE_3_3V | PULLUP(1),
-	GPMI_RESETN_GPIO | VE_3_3V | GPIO_IN,	/* act as WP, external PU */
+	GPMI_RESETN | VE_3_3V | PULLUP(0),	/* external PU */
 
 	/* Network interface */
 
@@ -90,6 +91,9 @@ static int tx28_devices_init(void)
 	armlinux_set_architecture(MACH_TYPE_TX28);
 
 	base_board_init();
+
+	add_generic_device("mxs_nand", 0, NULL, MXS_GPMI_BASE, 0x2000,
+			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

@@ -2,8 +2,6 @@
  * @file
  * @brief Board Initialization routines for OMAP3EVM.
  *
- * FileName: arch/arm/boards/omap/board-omap3evm.c
- *
  * This board is based on OMAP3530.
  * More on OMAP3530 (including documentation can be found here):
  * http://focus.ti.com/docs/prod/folders/print/omap3530.html

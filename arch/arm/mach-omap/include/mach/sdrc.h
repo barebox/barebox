@@ -2,11 +2,8 @@
  * @file
  * @brief This file contains the SDRC specific register definitions
  *
- * FileName: include/asm-arm/arch-omap/sdrc.h
- *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  *
@@ -22,8 +19,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- *
  */
 
 #ifndef _ASM_ARCH_SDRC_H

@@ -2,10 +2,6 @@
  * @file
  * @brief GPMC specific NAND devices
  *
- * FileName: arch/arm/boards/omap/devices-gpmc-nand.c
- *
- */
-/*
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -19,8 +15,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #include <common.h>
 #include <console.h>
 #include <init.h>

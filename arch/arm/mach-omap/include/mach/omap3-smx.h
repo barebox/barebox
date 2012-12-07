@@ -2,13 +2,10 @@
  * @file
  * @brief This file contains the SMX specific register definitions
  *
- * FileName: include/asm-arm/arch-omap/omap3-smx.h
- *
  * Originally from Linux kernel:
  * http://linux.omap.com/pub/kernel/3430zoom/linux-ldp-v1.0b.tar.gz
  * include/asm-arm/arch-omap/omap34xx.h
- */
-/*
+ *
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -25,7 +22,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef __ASM_ARCH_OMAP_SMX_H

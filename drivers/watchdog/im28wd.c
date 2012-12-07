@@ -82,6 +82,17 @@ static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
 	if (reg & MXS_RTC_PERSISTENT0_EXT_RST) {
 		writel(MXS_RTC_PERSISTENT0_EXT_RST,
 			p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
+		/*
+		 * if the RTC has woken up the SoC, additionally the ALARM_WAKE
+		 * bit is set. This bit should have precedence, because it
+		 * reports the real event, why we are here.
+		 */
+		if (reg & MXS_RTC_PERSISTENT0_ALARM_WAKE) {
+			writel(MXS_RTC_PERSISTENT0_ALARM_WAKE,
+				p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
+			set_reset_source(RESET_WKE);
+			return;
+		}
 		set_reset_source(RESET_POR);
 		return;
 	}

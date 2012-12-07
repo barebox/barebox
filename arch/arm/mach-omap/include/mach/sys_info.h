@@ -3,13 +3,10 @@
  * @brief This file defines the macros apis which are useful for most OMAP
  * platforms.
  *
- * FileName: include/asm-arm/arch-omap/sys_info.h
- *
  * These are implemented by the System specific code in omapX-generic.c
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -23,7 +20,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef __ASM_ARCH_SYS_INFO_H_

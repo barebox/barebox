@@ -7,8 +7,6 @@
  * Originally from Linux kernel:
  * http://linux.omap.com/pub/kernel/3430zoom/linux-ldp-v1.0b.tar.gz
  *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -25,8 +23,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef __ASM_ARCH_GPT_H
 #define __ASM_ARCH_GPT_H
 

@@ -2,15 +2,11 @@
  * @file
  * @brief This file contains the GPMC's generic definitions
  *
- * FileName: include/asm-arm/arch-omap/gpmc.h
- *
  * OMAP's General Purpose Memory Controller(GPMC) provides features
  * allowing us to communicate with memory devices such as NOR, NAND,
  * OneNAND, SRAM etc.. This file defines certain generic parameters
  * allowing us to configure the same painlessly.
  *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -31,7 +27,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef __ASM_ARCH_OMAP_GPMC_H

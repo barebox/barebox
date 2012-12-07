@@ -2,13 +2,10 @@
  * @file
  * @brief These Apis are OMAP independent support functions
  *
- * FileName: include/asm-arm/arch-omap/syslib.h
- *
  * Implemented by arch/arm/mach-omap/syslib.c
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2004-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -22,8 +19,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef __ASM_ARCH_OMAP_SYSLIB_H_
 #define __ASM_ARCH_OMAP_SYSLIB_H_
 #include <io.h>

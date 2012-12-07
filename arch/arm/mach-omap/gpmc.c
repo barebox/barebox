@@ -2,12 +2,8 @@
  * @file
  * @brief Provide Generic GPMC configuration option
  *
- * FileName: arch/arm/mach-omap/gpmc.c
- *
  * This file contains the generic GPMC implementation
  *
- */
-/*
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
@@ -21,8 +17,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #include <common.h>
 #include <clock.h>
 #include <init.h>

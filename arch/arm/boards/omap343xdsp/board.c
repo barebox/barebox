@@ -23,8 +23,6 @@
 /**
  * @page ti_SDP3430 Texas Instruments SDP3430
  *
- * FileName: arch/arm/boards/omap/board-sdp343x.c
- *
  * SDP3430 from Texas Instruments as described here:
  * http://www.ti.com/omap3430_devplatform
  * This file provides initialization in two stages:

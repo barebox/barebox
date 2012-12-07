@@ -2,13 +2,10 @@
  * @file
  * @brief Generic Clock wrapper header.
  *
- * FileName: include/asm-arm/arch-omap/clocks.h
- *
  * This includes each of the architecture Clock definitions under it.
  *
  * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-/*
+ *
  * (C) Copyright 2006-2008
  * Texas Instruments, <www.ti.com>
  * Richard Woodruff <r-woodruff2@ti.com>
@@ -22,8 +19,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef __OMAP_CLOCKS_H_
 #define __OMAP_CLOCKS_H_
 

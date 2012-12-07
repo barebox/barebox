@@ -23,8 +23,6 @@
 /**
  * @page ti_beagle Texas Instruments Beagle Board
  *
- * FileName: arch/arm/boards/omap/board-beagle.c
- *
  * Beagle Board from Texas Instruments as described here:
  * http://www.beagleboard.org
  *

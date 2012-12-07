@@ -2,13 +2,10 @@
  * @file
  * @brief This file contains exported structure for OMAP hsmmc
  *
- * FileName: include/asm-arm/arch-omap/omap_hsmmc.h
- *
  * OMAP3 and OMAP4 has a MMC/SD controller embedded.
  * This file provides the platform data structure required to
  * addapt to platform specialities.
- */
-/*
+ *
  * (C) Copyright 2011
  * Phytec Messtechnik GmbH, <www.phytec.de>
  * Juergen Kilb <j.kilb@phytec.de>

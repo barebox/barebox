@@ -2,8 +2,6 @@
  * @file
  * @brief Board Initialization routines for the phyCARD-A-L1
  *
- * FileName: arch/arm/boards/phycard-a-l1/pca-a-l1.c
- *
  * This board is based on OMAP3530.
  * More on OMAP3530 (including documentation can be found here):
  * http://focus.ti.com/docs/prod/folders/print/omap3530.html
@@ -22,9 +20,7 @@
  * @li serial @ref serial_ns16550.c driver device definition
  *
  * Originally from arch/arm/boards/omap/board-beagle.c
- */
-
-/*
+ *
  * Copyright (C) 2011 Phytec Messtechnik GmbH - http://www.phytec.de/
  * Juergen Kilb <j.kilb@phytec.de>
  *
@@ -40,7 +36,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
  */
 
 #include <common.h>

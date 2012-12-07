@@ -75,7 +75,7 @@ config OMAP_BUILD_SPI
 	bool
 	help
 	  Say Y here if you want to build an barebox.spi image as used
-	  on the AM35xx chips when booting form SPI NOR flash.
+	  on the AM35xx chips when booting from SPI NOR flash.
 
 config ARCH_TEXT_BASE
 	hex
@@ -89,7 +89,7 @@ config OMAP4_USBBOOT
 	help
 	  Say Y here if you want to be able to boot an OMAP4 cpu from USB.
 	  You need the utility program omap4_usbboot to boot from USB.
-	  Please read oamp4_usb_booting.txt for more information.
+	  Please read omap4_usb_booting.txt for more information.
 
 config BOARDINFO
 	default "Archos G9" if MACH_ARCHOSG9
@@ -115,14 +115,14 @@ config MACH_BEAGLE
 	select HAVE_NOSHELL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using Beagle Board
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using OMAP3EVM
 
 config MACH_PANDA
@@ -155,7 +155,7 @@ config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
 
 config MACH_PCAAXL2

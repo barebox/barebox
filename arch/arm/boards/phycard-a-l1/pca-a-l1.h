@@ -2,11 +2,8 @@
  * @file
  * @brief exported generic APIs which various board files implement
  *
- * FileName: arch/arm/boards/phycard-a-l1/board.h
- *
  * This file will not contain any board specific implementations.
- */
-/*
+ *
  * (C) Copyright 2008
  * Texas Instruments, <www.ti.com>
  * Raghavendra KH <r-khandenahally@ti.com>
@@ -20,8 +17,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
+
 #ifndef __BOARD_OMAP_H_
 #define __BOARD_OMAP_H_
 

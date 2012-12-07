@@ -54,6 +54,7 @@ struct atmel_nand_data {
 	u8		bus_width_16;	/* buswidth is 16 bit */
 	u8		ecc_mode;	/* NAND_ECC_* */
 	u8		on_flash_bbt;	/* Use flash based bbt */
+	u8		bus_on_d0;
 
 	u8		pmecc_corr_cap;
 	u16		pmecc_sector_size;

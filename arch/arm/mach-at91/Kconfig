@@ -14,6 +14,7 @@ config BOARDINFO
 	default "Atmel at91sam9g10-ek" if MACH_AT91SAM9G10EK
 	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
 	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
+	default "Atmel at91sam9n12-ek" if MACH_AT91SAM9N12EK
 	default "Atmel at91sam9x5-ek" if MACH_AT91SAM9X5EK
 	default "Bucyrus MMC-CPU" if MACH_MMCCPU
 	default "Calao USB-A9260" if MACH_USB_A9260
@@ -92,6 +93,11 @@ config ARCH_AT91SAM9X5
 	select HAS_MACB
 	select AT91SAM9G45_RESET
 
+config ARCH_AT91SAM9N12
+	bool "AT91SAM9N12"
+	select CPU_ARM926T
+	select AT91SAM9G45_RESET
+
 endchoice
 
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
@@ -103,6 +109,7 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	default 0x3000 if ARCH_AT91SAM9G10
 	default 0xF000 if ARCH_AT91SAM9G45
 	default 0x6000 if ARCH_AT91SAM9X5
+	default 0x6000 if ARCH_AT91SAM9N12
 	default 0xffffffff
 
 config SUPPORT_CALAO_DAB_MMX
@@ -329,6 +336,22 @@ config MACH_AT91SAM9X5EK
 	help
 	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
 	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_AT91SAM9N12
+
+choice
+	prompt "AT91SAM9N12 Board Type"
+
+config MACH_AT91SAM9N12EK
+	bool "Atmel AT91SAM9N12 Evaluation Kit"
+	help
+	  Select this if you are using Atmel's AT91SAM9N12-EK Evaluation Kit.
 
 endchoice
 

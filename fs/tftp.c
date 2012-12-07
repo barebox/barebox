@@ -227,7 +227,7 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 
 	debug("got OACK\n");
 #ifdef DEBUG
-	memory_display(pkt, 0, len, 1);
+	memory_display(pkt, 0, len, 1, 0);
 #endif
 
 	s = pkt;

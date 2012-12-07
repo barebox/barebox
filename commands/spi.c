@@ -101,12 +101,12 @@ static int do_spi(int argc, char *argv[])
 		printf("\n");
 
 		printf("wrote %i bytes\n", count);
-		memory_display(tx_buf, 0, count, byte_per_word);
+		memory_display(tx_buf, 0, count, byte_per_word, 0);
 
 		printf("read %i bytes\n", read);
 	}
 
-	memory_display(rx_buf, 0, read, byte_per_word);
+	memory_display(rx_buf, 0, read, byte_per_word, 0);
 
 out:
 	free(rx_buf);

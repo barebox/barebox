@@ -51,7 +51,7 @@ static char *DEVMEM = "/dev/mem";
  */
 #define DISP_LINE_LEN	16
 
-int memory_display(char *addr, loff_t offs, ulong nbytes, int size)
+int memory_display(char *addr, loff_t offs, ulong nbytes, int size, int swab)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -73,9 +73,17 @@ int memory_display(char *addr, loff_t offs, ulong nbytes, int size)
 
 		for (i = 0; i < linebytes; i += size) {
 			if (size == 4) {
-				count -= printf(" %08x", (*uip++ = *((uint *)addr)));
+				u32 res;
+				res = (*uip++ = *((uint *)addr));
+				if (swab)
+					res = __swab32(res);
+				count -= printf(" %08x", res);
 			} else if (size == 2) {
-				count -= printf(" %04x", (*usp++ = *((ushort *)addr)));
+				u16 res;
+				res = (*usp++ = *((ushort *)addr));
+				if (swab)
+					res = __swab16(res);
+				count -= printf(" %04x", res);
 			} else {
 				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
@@ -128,7 +136,7 @@ static int open_and_lseek(const char *filename, int mode, loff_t pos)
 }
 
 static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
-		char **sourcefile, char **destfile)
+		char **sourcefile, char **destfile, int *swab)
 {
 	int opt;
 
@@ -149,6 +157,9 @@ static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		case 'd':
 			*destfile = optarg;
 			break;
+		case 'x':
+			*swab = 1;
+			break;
 		default:
 			return -1;
 		}
@@ -165,11 +176,13 @@ static int do_mem_md(int argc, char *argv[])
 	int fd;
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
+	int swab = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (mem_parse_options(argc, argv, "bwls:", &mode, &filename, NULL) < 0)
+	if (mem_parse_options(argc, argv, "bwls:x", &mode, &filename, NULL,
+			&swab) < 0)
 		return 1;
 
 	if (optind < argc) {
@@ -195,7 +208,8 @@ static int do_mem_md(int argc, char *argv[])
 		if (!r)
 			goto out;
 
-		if ((ret = memory_display(rw_buf, start, r, mode >> O_RWSIZE_SHIFT)))
+		if ((ret = memory_display(rw_buf, start, r,
+				mode >> O_RWSIZE_SHIFT, swab)))
 			goto out;
 
 		start += r;
@@ -216,6 +230,7 @@ static const __maybe_unused char cmd_md_help[] =
 "  -b          output in bytes\n"
 "  -w          output in halfwords (16bit)\n"
 "  -l          output in words (32bit)\n"
+"  -x          swap bytes at output\n"
 "\n"
 "Memory regions:\n"
 "Memory regions can be specified in two different forms: start+size\n"
@@ -240,8 +255,10 @@ static int do_mem_mw(int argc, char *argv[])
 	char *filename = DEVMEM;
 	int mode = O_RWSIZE_4;
 	loff_t adr;
+	int swab = 0;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename) < 0)
+	if (mem_parse_options(argc, argv, "bwld:x", &mode, NULL, &filename,
+			&swab) < 0)
 		return 1;
 
 	if (optind + 1 >= argc)
@@ -264,10 +281,14 @@ static int do_mem_mw(int argc, char *argv[])
 			break;
 		case O_RWSIZE_2:
 			val16 = simple_strtoul(argv[optind], NULL, 0);
+			if (swab)
+				val16 = __swab16(val16);
 			ret = write(fd, &val16, 2);
 			break;
 		case O_RWSIZE_4:
 			val32 = simple_strtoul(argv[optind], NULL, 0);
+			if (swab)
+				val32 = __swab32(val32);
 			ret = write(fd, &val32, 4);
 			break;
 		}
@@ -309,7 +330,8 @@ static int do_mem_cmp(int argc, char *argv[])
 	int     offset = 0;
 	struct  stat statbuf;
 
-	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile,
+			&destfile, NULL) < 0)
 		return 1;
 
 	if (optind + 2 > argc)
@@ -416,7 +438,8 @@ static int do_mem_cp(int argc, char *argv[])
 	struct stat statbuf;
 	int ret = 0;
 
-	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile, &destfile) < 0)
+	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile,
+			&destfile, NULL) < 0)
 		return 1;
 
 	if (optind + 2 > argc)
@@ -521,7 +544,8 @@ static int do_memset(int argc, char *argv[])
 	int     ret = 1;
 	char	*file = DEVMEM;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file) < 0)
+	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file,
+			NULL) < 0)
 		return 1;
 
 	if (optind + 3 > argc)

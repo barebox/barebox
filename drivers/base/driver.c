@@ -125,6 +125,11 @@ int register_device(struct device_d *new_device)
 	if (!new_device->bus)
 		return 0;
 
+	if (!new_device->parent) {
+		new_device->parent = &new_device->bus->dev;
+		dev_add_child(new_device->parent, new_device);
+	}
+
 	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 
 	bus_for_each_driver(new_device->bus, drv) {

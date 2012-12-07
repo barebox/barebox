@@ -611,17 +611,17 @@ const struct gpmc_config omap4_nand_cfg = {
 
 static int omap4_gpio_init(void)
 {
-	add_generic_device("omap-gpio", 0, NULL, 0x4a310100,
+	add_generic_device("omap-gpio", 0, NULL, OMAP44XX_GPIO1_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 1, NULL, 0x48055100,
+	add_generic_device("omap-gpio", 1, NULL, OMAP44XX_GPIO2_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 2, NULL, 0x48057100,
+	add_generic_device("omap-gpio", 2, NULL, OMAP44XX_GPIO3_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 3, NULL, 0x48059100,
+	add_generic_device("omap-gpio", 3, NULL, OMAP44XX_GPIO4_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 4, NULL, 0x4805b100,
+	add_generic_device("omap-gpio", 4, NULL, OMAP44XX_GPIO5_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 5, NULL, 0x4805d100,
+	add_generic_device("omap-gpio", 5, NULL, OMAP44XX_GPIO6_BASE,
 				0xf00, IORESOURCE_MEM, NULL);
 
 	return 0;

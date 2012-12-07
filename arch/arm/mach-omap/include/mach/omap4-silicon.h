@@ -101,6 +101,21 @@
 #define OMAP44XX_MMC4_BASE		(OMAP44XX_L4_PER_BASE + 0x0D1100)
 #define OMAP44XX_MMC5_BASE		(OMAP44XX_L4_PER_BASE + 0x0D5100)
 
+/* GPIO
+ *
+ *  Note that, while the GPIO controller is the same as on an OMAP3,
+ * the base address has an additional offset of 0x100, which you can
+ * see being added here so that the OMAP_GPIO_* macros you see in
+ * mach-omap/gpio.c don't need to be adjusted based on the platform.
+ */
+
+#define OMAP44XX_GPIO1_BASE		(OMAP44XX_L4_WKUP_BASE + 0x10100)
+#define OMAP44XX_GPIO2_BASE		(OMAP44XX_L4_PER_BASE  + 0x55100)
+#define OMAP44XX_GPIO3_BASE		(OMAP44XX_L4_PER_BASE  + 0x57100)
+#define OMAP44XX_GPIO4_BASE		(OMAP44XX_L4_PER_BASE  + 0x59100)
+#define OMAP44XX_GPIO5_BASE		(OMAP44XX_L4_PER_BASE  + 0x5B100)
+#define OMAP44XX_GPIO6_BASE		(OMAP44XX_L4_PER_BASE  + 0x5D100)
+
 /* GPMC */
 #define OMAP_GPMC_BASE		0x50000000
 

@@ -30,7 +30,7 @@ struct pad_conf_entry {
 
 	u16 val;
 
-} __attribute__ ((packed));
+};
 
 #define WAKEUP_EN       (1 << 14)
 #ifdef CONFIG_OFF_PADCONF

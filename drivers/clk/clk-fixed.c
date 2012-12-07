@@ -44,6 +44,7 @@ struct clk *clk_fixed(const char *name, int rate)
 	fix->rate = rate;
 	fix->clk.ops = &clk_fixed_ops;
 	fix->clk.name = name;
+	fix->clk.flags = CLK_ALWAYS_ENABLED;
 
 	ret = clk_register(&fix->clk);
 	if (ret) {

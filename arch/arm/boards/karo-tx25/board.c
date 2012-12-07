@@ -50,17 +50,6 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt = 1,
 };
 
-static int tx25_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, 32 * 1024 * 1024);
-	arm_add_mem_device("ram0", MX25_CSD1_BASE_ADDR, 32 * 1024 * 1024);
-	add_mem_device("ram0", 0x78000000, 128 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-
-	return 0;
-}
-mem_initcall(tx25_mem_init);
-
 static iomux_v3_cfg_t karo_tx25_padsd_fec[] = {
 	MX25_PAD_D11__GPIO_4_9,		/* FEC PHY power on pin */
 	MX25_PAD_D13__GPIO_4_7,		/* FEC reset */
@@ -118,6 +107,9 @@ static int tx25_devices_init(void)
 
 	devfs_add_partition("nand0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	add_mem_device("sram0", 0x78000000, 128 * 1024,
+				   IORESOURCE_MEM_WRITEABLE);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_TX25);

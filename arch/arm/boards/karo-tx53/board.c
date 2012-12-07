@@ -99,17 +99,6 @@ static iomux_v3_cfg_t tx53_pads[] = {
 	MX53_PAD_CSI0_PIXCLK__IPU_CSI0_PIXCLK,
 };
 
-static int tx53_mem_init(void)
-{
-	if (IS_ENABLED(CONFIG_TX53_REV_1011))
-		arm_add_mem_device("ram0", 0x70000000, SZ_1G);
-	else
-		arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-
-	return 0;
-}
-mem_initcall(tx53_mem_init);
-
 #define TX53_SD1_CD			IMX_GPIO_NR(3, 24)
 
 static struct esdhc_platform_data tx53_sd1_data = {
@@ -229,11 +218,12 @@ static int tx53_devices_init(void)
 
 	/* rev xx30 can boot from nand or USB */
 	imx53_bbu_internal_nand_register_handler("nand-xx30",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30, sizeof(dcd_entry_xx30), SZ_512K);
+		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30,
+		sizeof(dcd_entry_xx30), SZ_512K, 0);
 
 	/* rev 1011 can boot from MMC/SD, other bootsource currently unknown */
 	imx53_bbu_internal_mmc_register_handler("mmc-1011", "/dev/disk0",
-		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011));
+		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011), 0);
 
 	return 0;
 }

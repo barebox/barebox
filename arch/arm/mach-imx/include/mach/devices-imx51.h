@@ -93,3 +93,8 @@ static inline struct device_d *imx51_add_kpp(struct matrix_keymap_data *pdata)
 {
 	return imx_add_kpp((void *)MX51_KPP_BASE_ADDR, pdata);
 }
+
+static inline struct device_d *imx51_add_pata(void)
+{
+	return imx_add_pata((void *)MX51_ATA_BASE_ADDR);
+}

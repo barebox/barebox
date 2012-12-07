@@ -20,6 +20,7 @@ int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type);
 void imx_27_boot_save_loc(void __iomem *sysctrl_base);
 int imx51_boot_save_loc(void __iomem *src_base);
 int imx53_boot_save_loc(void __iomem *src_base);
+int imx6_boot_save_loc(void __iomem *src_base);
 
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */

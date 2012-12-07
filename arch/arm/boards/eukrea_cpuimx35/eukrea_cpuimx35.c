@@ -122,14 +122,6 @@ static struct fsl_usb2_platform_data usb_pdata = {
 };
 #endif
 
-static int eukrea_cpuimx35_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX35_CSD0_BASE_ADDR, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(eukrea_cpuimx35_mem_init);
-
 static int eukrea_cpuimx35_mmu_init(void)
 {
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);

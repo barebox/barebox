@@ -207,17 +207,6 @@ static iomux_v3_cfg_t tqma53_pads[] = {
 
 #define GPIO_FEC_NRESET	IMX_GPIO_NR(7, 6)
 
-static int tqma53_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x70000000, SZ_512M);
-#ifdef CONFIG_MACH_TQMA53_1GB_RAM
-	arm_add_mem_device("ram1", 0xb0000000, SZ_512M);
-#endif
-
-	return 0;
-}
-mem_initcall(tqma53_mem_init);
-
 #define GPIO_SD2_CD			IMX_GPIO_NR(1, 4)
 #define GPIO_SD2_WP			IMX_GPIO_NR(1, 2)
 

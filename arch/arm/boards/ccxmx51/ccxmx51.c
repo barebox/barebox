@@ -197,15 +197,6 @@ static const struct spi_board_info ccxmx51_spi_board_info[] = {
 	},
 };
 
-static int ccxmx51_mem_init(void)
-{
-	/* Add minimal SDRAM first */
-	arm_add_mem_device("ram0", MX51_CSD0_BASE_ADDR, SZ_128M);
-
-	return 0;
-}
-mem_initcall(ccxmx51_mem_init);
-
 static void ccxmx51_otghost_init(void)
 {
 #define MX51_USBOTHER_REGS_OFFSET		0x800

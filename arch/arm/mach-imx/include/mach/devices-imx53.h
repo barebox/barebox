@@ -83,6 +83,11 @@ static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pda
 	return dev;
 }
 
+static inline struct device_d *imx53_add_kpp(struct matrix_keymap_data *pdata)
+{
+	return imx_add_kpp((void *)MX53_KPP_BASE_ADDR, pdata);
+}
+
 static inline struct device_d *imx53_add_sata(void)
 {
 	return add_generic_device("imx53-sata", 0, NULL, MX53_SATA_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);

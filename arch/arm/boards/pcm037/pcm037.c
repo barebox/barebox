@@ -145,17 +145,6 @@ static void pcm037_usb_init(void)
 }
 #endif
 
-static int pcm037_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX31_CSD0_BASE_ADDR, SDRAM0 * 1024 * 1024);
-#ifndef CONFIG_PCM037_SDRAM_BANK1_NONE
-	arm_add_mem_device("ram1", MX31_CSD1_BASE_ADDR, SDRAM1 * 1024 * 1024);
-#endif
-
-	return 0;
-}
-mem_initcall(pcm037_mem_init);
-
 static int pcm037_mmu_init(void)
 {
 	l2x0_init((void __iomem *)0x30000000, 0x00030024, 0x00000000);

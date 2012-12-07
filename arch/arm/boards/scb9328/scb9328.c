@@ -48,14 +48,6 @@ struct gpio_led leds[] = {
 	},
 };
 
-static int scb9328_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x08000000, 16 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(scb9328_mem_init);
-
 static int scb9328_devices_init(void)
 {
 	int i;

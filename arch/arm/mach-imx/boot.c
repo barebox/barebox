@@ -218,3 +218,63 @@ int imx53_boot_save_loc(void __iomem *src_base)
 
 	return 0;
 }
+
+#define IMX6_SRC_SBMR1	0x04
+#define IMX6_SRC_SBMR2	0x1c
+
+int imx6_boot_save_loc(void __iomem *src_base)
+{
+	enum imx_bootsource src = bootsource_unknown;
+	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2) >> 24;
+	uint32_t cfg1 = readl(src_base + IMX6_SRC_SBMR1) & 0xff;
+	uint32_t boot_cfg_4_2_0;
+	int boot_mode;
+
+	boot_mode = (sbmr2 >> 24) & 0x3;
+
+	switch (boot_mode) {
+	case 0: /* Fuses, fall through */
+	case 2: /* internal boot */
+		goto internal_boot;
+	case 1: /* Serial Downloader */
+		src = bootsource_serial;
+		break;
+	case 3: /* reserved */
+		break;
+	};
+
+	imx_set_bootsource(src);
+
+	return 0;
+
+internal_boot:
+
+	switch (cfg1 >> 4) {
+	case 2:
+		src = bootsource_hd;
+		break;
+	case 3:
+		boot_cfg_4_2_0 = (cfg1 >> 16) & 0x7;
+
+		if (boot_cfg_4_2_0 > 4)
+			src = bootsource_i2c;
+		else
+			src = bootsource_spi;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		src = bootsource_mmc;
+		break;
+	default:
+		break;
+	}
+
+	if (cfg1 & (1 << 7))
+		src = bootsource_nand;
+
+	imx_set_bootsource(src);
+
+	return 0;
+}

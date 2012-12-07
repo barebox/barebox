@@ -69,16 +69,11 @@ static int imx53_init(void)
 	add_generic_device("imx31-gpio", 5, NULL, MX53_GPIO6_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpio", 6, NULL, MX53_GPIO7_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx21-wdt", 0, NULL, MX53_WDOG1_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx53-esdctl", 0, NULL, MX53_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
 postcore_initcall(imx53_init);
-
-#define setup_pll_1000(base)	imx5_setup_pll((base), 1000, ((10 << 4) + ((1 - 1) << 0)), (12 - 1), 5)
-#define setup_pll_800(base)	imx5_setup_pll((base), 800, ((8 << 4) + ((1 - 1) << 0)), (3 - 1), 1)
-#define setup_pll_400(base)	imx5_setup_pll((base), 400, ((8 << 4) + ((2 - 1)  << 0)), (3 - 1), 1)
-#define setup_pll_455(base)	imx5_setup_pll((base), 455, ((9 << 4) + ((2 - 1)  << 0)), (48 - 1), 23)
-#define setup_pll_216(base)	imx5_setup_pll((base), 216, ((8 << 4) + ((2 - 1)  << 0)), (1 - 1), 1)
 
 void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 {
@@ -112,11 +107,11 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0x4, ccm + MX5_CCM_CCSR);
 
 	if (cpufreq_mhz == 1000)
-		setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
+		imx5_setup_pll_1000((void __iomem *)MX53_PLL1_BASE_ADDR);
 	else
-		setup_pll_800((void __iomem *)MX53_PLL1_BASE_ADDR);
+		imx5_setup_pll_800((void __iomem *)MX53_PLL1_BASE_ADDR);
 
-	setup_pll_400((void __iomem *)MX53_PLL3_BASE_ADDR);
+	imx5_setup_pll_400((void __iomem *)MX53_PLL3_BASE_ADDR);
 
         /* Switch peripheral to PLL3 */
 	writel(0x00015154, ccm + MX5_CCM_CBCMR);
@@ -125,7 +120,7 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	/* make sure change is effective */
 	while (readl(ccm + MX5_CCM_CDHIPR));
 
-	setup_pll_400((void __iomem *)MX53_PLL2_BASE_ADDR);
+	imx5_setup_pll_400((void __iomem *)MX53_PLL2_BASE_ADDR);
 
 	/* Switch peripheral to PLL2 */
 	r = 0x00808145 |
@@ -151,8 +146,8 @@ void imx53_init_lowlevel(unsigned int cpufreq_mhz)
 	/* make sure change is effective */
 	while (readl(ccm + MX5_CCM_CDHIPR));
 
-	setup_pll_216((void __iomem *)MX53_PLL3_BASE_ADDR);
-	setup_pll_455((void __iomem *)MX53_PLL4_BASE_ADDR);
+	imx53_setup_pll_216((void __iomem *)MX53_PLL3_BASE_ADDR);
+	imx5_setup_pll_455((void __iomem *)MX53_PLL4_BASE_ADDR);
 
 	/* Set the platform clock dividers */
 	writel(0x00000124, MX53_ARM_BASE_ADDR + 0x14);

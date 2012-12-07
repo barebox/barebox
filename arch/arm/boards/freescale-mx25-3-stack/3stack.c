@@ -186,22 +186,6 @@ static int imx25_3ds_fec_init(void)
 }
 late_initcall(imx25_3ds_fec_init);
 
-static int imx25_mem_init(void)
-{
-#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-#define SDRAM_SIZE	64 * 1024 * 1024
-#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-#define SDRAM_SIZE	128 * 1024 * 1024
-#else
-#error "Unsupported SDRAM type"
-#endif
-	arm_add_mem_device("ram0", MX25_CSD0_BASE_ADDR, SDRAM_SIZE);
-	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
-
-	return 0;
-}
-mem_initcall(imx25_mem_init);
-
 static int imx25_devices_init(void)
 {
 #ifdef CONFIG_USB
@@ -214,6 +198,8 @@ static int imx25_devices_init(void)
 
 	imx25_iim_register_fec_ethaddr();
 	imx25_add_fec(&fec_info);
+
+	add_mem_device("sram0", 0x78000000, 128 * 1024, IORESOURCE_MEM_WRITEABLE);
 
 	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
 		nand_info.width = 2;

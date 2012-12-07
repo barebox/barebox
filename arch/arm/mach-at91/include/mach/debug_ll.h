@@ -25,7 +25,7 @@
  *
  * This does not append a newline
  */
-static void putc(int c)
+static inline void PUTC_LL(char c)
 {
 	while (!(__raw_readl(UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXRDY))
 		barrier();

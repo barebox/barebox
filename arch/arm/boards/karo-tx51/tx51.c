@@ -112,14 +112,6 @@ static iomux_v3_cfg_t tx51_pads[] = {
 	MX51_PAD_GPIO1_0__GPIO1_0,
 };
 
-static int tx51_mem_init(void)
-{
-	arm_add_mem_device("ram0", MX51_CSD0_BASE_ADDR, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(tx51_mem_init);
-
 static int spi_0_cs[] = {
 	IMX_GPIO_NR(4, 24),
 	IMX_GPIO_NR(4, 25),

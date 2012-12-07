@@ -28,6 +28,7 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_CCMX51
 	default 0x4fc00000 if MACH_SABRELITE
 	default 0x8fe00000 if MACH_TX53
+	default 0x7fc00000 if MACH_GUF_VINCELL
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -55,6 +56,7 @@ config BOARDINFO
 	default "ConnectCore i.MX51" if MACH_CCMX51
 	default "Sabre Lite" if MACH_SABRELITE
 	default "Ka-Ro tx53" if MACH_TX53
+	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
 
 choice
 	prompt "Select boot mode"
@@ -446,6 +448,7 @@ choice
 	prompt "i.MX53 Board Type"
 
 config MACH_FREESCALE_MX53_LOCO
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	bool "Freescale i.MX53 LOCO"
 
 config MACH_FREESCALE_MX53_SMD
@@ -468,6 +471,11 @@ config MACH_TX53
 	help
 	  Say Y here if you are using the Ka-Ro tx53 board
 
+config MACH_GUF_VINCELL
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select MACH_HAS_LOWLEVEL_INIT
+	bool "Garz-Fricke Vincell"
+
 endchoice
 
 if MACH_TX53
@@ -477,7 +485,9 @@ config TX53_REV_1011
 	bool "1011"
 config TX53_REV_XX30
 	bool "8030 / 1030"
+
 endchoice
+
 endif
 
 endif

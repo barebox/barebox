@@ -39,7 +39,7 @@
 #define LSR		(5 << 2)
 #define THR		(0 << 2)
 
-static inline void putc(char c)
+static inline void PUTC_LL(char c)
 {
 	/* Wait until there is space in the FIFO */
 	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);

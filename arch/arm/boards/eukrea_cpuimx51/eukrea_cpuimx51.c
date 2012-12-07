@@ -103,14 +103,6 @@ static iomux_v3_cfg_t eukrea_cpuimx51_pads[] = {
 #define GPIO_LAN8700_RESET	(1 * 32 + 31)
 #define GPIO_LCD_BL		(2 * 32 + 4)
 
-static int eukrea_cpuimx51_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x90000000, 256 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(eukrea_cpuimx51_mem_init);
-
 static int eukrea_cpuimx51_devices_init(void)
 {
 	imx51_add_fec(&fec_info);

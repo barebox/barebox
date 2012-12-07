@@ -15,6 +15,7 @@
 #include <common.h>
 #include <io.h>
 #include <sizes.h>
+#include <mach/generic.h>
 #include <mach/imx6-regs.h>
 
 void imx6_init_lowlevel(void)
@@ -54,6 +55,8 @@ void imx6_init_lowlevel(void)
 
 static int imx6_init(void)
 {
+	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
+
 	add_generic_device("imx-iomuxv3", 0, NULL, MX6_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx6-ccm", 0, NULL, MX6_CCM_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, 0x02098000, 0x1000, IORESOURCE_MEM, NULL);

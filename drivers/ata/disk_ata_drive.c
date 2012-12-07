@@ -24,28 +24,7 @@
 #include <block.h>
 #include <ata_drive.h>
 #include <disks.h>
-
-#define ATA_CMD_ID_DEVICE 0xEC
-#define ATA_CMD_RD_CONF 0x40
-#define ATA_CMD_RD	0x20
-#define ATA_CMD_WR	0x30
-
-#define DISK_MASTER 0
-#define DISK_SLAVE 1
-
-/* max timeout for a rotating disk in [ms] */
-#define MAX_TIMEOUT 5000
-
-/**
- * Collection of data we need to know about this drive
- */
-struct ata_drive_access {
-	struct block_device blk; /**< the main device */
-	struct ata_ioports *io;	/**< register file */
-	uint16_t id[(SECTOR_SIZE / sizeof(uint16_t))];
-};
-
-#define to_ata_drive_access(x) container_of((x), struct ata_drive_access, blk)
+#include <dma.h>
 
 #define ata_id_u32(id,n)        \
         (((uint32_t) (id)[(n) + 1] << 16) | ((uint32_t) (id)[(n)]))
@@ -56,18 +35,6 @@ struct ata_drive_access {
           ((uint64_t) (id)[(n) + 0]) )
 
 #define ata_id_has_lba(id)               ((id)[49] & (1 << 9))
-
-/* drive's status flags */
-#define ATA_STATUS_BUSY (1 << 7)
-#define ATA_STATUS_READY (1 << 6)
-#define ATA_STATUS_WR_FLT (1 << 5)
-#define ATA_STATUS_DRQ (1 << 4)
-#define ATA_STATUS_CORR (1 << 3)
-#define ATA_STATUS_ERROR (1 << 1)
-/* command flags */
-#define LBA_FLAG (1 << 6)
-#define ATA_DEVCTL_SOFT_RESET (1 << 2)
-#define ATA_DEVCTL_INTR_DISABLE (1 << 1)
 
 enum {
 	ATA_ID_SERNO		= 10,
@@ -240,225 +207,6 @@ static void ata_fix_endianess(uint16_t *buf, unsigned wds)
 }
 
 /**
- * Read the status register of the ATA drive
- * @param io Register file
- * @return Register's content
- */
-static uint8_t ata_rd_status(struct ata_ioports *io)
-{
-	return readb(io->status_addr);
-}
-
-/**
- * Wait until the disk is busy or time out
- * @param io Register file
- * @param timeout Timeout in [ms]
- * @return 0 on success, -ETIMEDOUT else
- */
-static int ata_wait_busy(struct ata_ioports *io, unsigned timeout)
-{
-	uint8_t status;
-	uint64_t start = get_time_ns();
-	uint64_t toffs = timeout * 1000 * 1000;
-
-	do {
-		status = ata_rd_status(io);
-		if (status & ATA_STATUS_BUSY)
-			return 0;
-	} while (!is_timeout(start, toffs));
-
-	return -ETIMEDOUT;
-}
-
-/**
- * Wait until the disk is ready again or time out
- * @param io Register file
- * @param timeout Timeout in [ms]
- * @return 0 on success, -ETIMEDOUT else
- *
- * This function is useful to check if the disk has accepted a command.
- */
-static int ata_wait_ready(struct ata_ioports *io, unsigned timeout)
-{
-	uint8_t status;
-	uint64_t start = get_time_ns();
-	uint64_t toffs = timeout * 1000 * 1000;
-
-	do {
-		status = ata_rd_status(io);
-		if (!(status & ATA_STATUS_BUSY)) {
-			if (status & ATA_STATUS_READY)
-				return 0;
-		}
-	} while (!is_timeout(start, toffs));
-
-	return -ETIMEDOUT;
-}
-
-/**
- * Setup the sector number in LBA notation (LBA28)
- * @param io Register file
- * @param drive 0 master drive, 1 slave drive
- * @param num Sector number
- *
- * @todo LBA48 support
- */
-static int ata_set_lba_sector(struct ata_ioports *io, unsigned drive, uint64_t num)
-{
-	if (num > 0x0FFFFFFF || drive > 1)
-		return -EINVAL;
-
-	writeb(0xA0 | LBA_FLAG | drive << 4 | num >> 24, io->device_addr);
-	writeb(0x00, io->error_addr);
-	writeb(0x01, io->nsect_addr);
-	writeb(num, io->lbal_addr);	/* 0 ... 7 */
-	writeb(num >> 8, io->lbam_addr); /* 8 ... 15 */
-	writeb(num >> 16, io->lbah_addr); /* 16 ... 23 */
-
-	return 0;
-}
-
-/**
- * Write an ATA command into the disk
- * @param io Register file
- * @param cmd Command to write
- * @return 0 on success
- */
-static int ata_wr_cmd(struct ata_ioports *io, uint8_t cmd)
-{
-	int rc;
-
-	rc = ata_wait_ready(io, MAX_TIMEOUT);
-	if (rc != 0)
-		return rc;
-
-	writeb(cmd, io->command_addr);
-	return 0;
-}
-
-/**
- * Write a new value into the "device control register"
- * @param io Register file
- * @param val Value to write
- */
-static void ata_wr_dev_ctrl(struct ata_ioports *io, uint8_t val)
-{
-	writeb(val, io->ctl_addr);
-}
-
-/**
- * Read one sector from the drive (always SECTOR_SIZE bytes at once)
- * @param io Register file
- * @param buf Buffer to read the data into
- */
-static void ata_rd_sector(struct ata_ioports *io, void *buf)
-{
-	unsigned u = SECTOR_SIZE / sizeof(uint16_t);
-	uint16_t *b = buf;
-
-	if (io->dataif_be) {
-		for (; u > 0; u--)
-			*b++ = be16_to_cpu(readw(io->data_addr));
-	} else {
-		for (; u > 0; u--)
-			*b++ = le16_to_cpu(readw(io->data_addr));
-	}
-}
-
-/**
- * Write one sector into the drive
- * @param io Register file
- * @param buf Buffer to read the data from
- */
-static void ata_wr_sector(struct ata_ioports *io, const void *buf)
-{
-	unsigned u = SECTOR_SIZE / sizeof(uint16_t);
-	const uint16_t *b = buf;
-
-	if (io->dataif_be) {
-		for (; u > 0; u--)
-			writew(cpu_to_be16(*b++), io->data_addr);
-	} else {
-		for (; u > 0; u--)
-			writew(cpu_to_le16(*b++), io->data_addr);
-	}
-}
-
-/**
- * Read the ATA disk's description info
- * @param d All we need to know about the disk
- * @return 0 on success
- */
-static int ata_get_id(struct ata_drive_access *d)
-{
-	int rc;
-
-	writeb(0xA0, d->io->device_addr);	/* FIXME drive */
-	writeb(0x00, d->io->lbal_addr);
-	writeb(0x00, d->io->lbam_addr);
-	writeb(0x00, d->io->lbah_addr);
-
-	rc = ata_wr_cmd(d->io, ATA_CMD_ID_DEVICE);
-	if (rc != 0)
-		return rc;
-
-	rc = ata_wait_ready(d->io, MAX_TIMEOUT);
-	if (rc != 0)
-		return rc;
-
-	ata_rd_sector(d->io, &d->id);
-
-	ata_fix_endianess(d->id, SECTOR_SIZE / sizeof(uint16_t));
-
-	return ata_id_is_valid(d->id);
-}
-
-static int ata_reset(struct ata_ioports *io)
-{
-	int rc;
-	uint8_t reg;
-
-	/* try a hard reset first (if available) */
-	if (io->reset != NULL) {
-		pr_debug("%s: Resetting drive...\n", __func__);
-		io->reset(1);
-		rc = ata_wait_busy(io, 500);
-		io->reset(0);
-		if (rc == 0) {
-			rc = ata_wait_ready(io, MAX_TIMEOUT);
-			if (rc != 0)
-				return rc;
-		} else {
-			pr_debug("%s: Drive does not respond to RESET line. Ignored\n",
-					__func__);
-		}
-	}
-
-	/* try a soft reset */
-	ata_wr_dev_ctrl(io, ATA_DEVCTL_SOFT_RESET | ATA_DEVCTL_INTR_DISABLE);
-	rc = ata_wait_busy(io, MAX_TIMEOUT);	/* does the drive accept the command? */
-	if (rc != 0) {
-		pr_debug("%s: Drive fails on soft reset\n", __func__);
-		return rc;
-	}
-	ata_wr_dev_ctrl(io, ATA_DEVCTL_INTR_DISABLE);
-	rc = ata_wait_ready(io, MAX_TIMEOUT);
-	if (rc != 0) {
-		pr_debug("%s: Drive fails after soft reset\n", __func__);
-		return rc;
-	}
-
-	reg = ata_rd_status(io) & 0xf;
-
-	if (reg == 0xf) {
-		pr_debug("%s: Seems no drive connected!\n", __func__);
-		return -ENODEV;
-	}
-
-	return 0;
-}
-
-/**
  * Read a chunk of sectors from the drive
  * @param blk All info about the block device we need
  * @param buffer Buffer to read into
@@ -474,27 +222,9 @@ static int ata_reset(struct ata_ioports *io)
 static int ata_read(struct block_device *blk, void *buffer, int block,
 				int num_blocks)
 {
-	int rc;
-	uint64_t sector = block;
-	struct ata_drive_access *drv = to_ata_drive_access(blk);
+	struct ata_port *port = container_of(blk, struct ata_port, blk);
 
-	while (num_blocks) {
-		rc = ata_set_lba_sector(drv->io, DISK_MASTER, sector);
-		if (rc != 0)
-			return rc;
-		rc = ata_wr_cmd(drv->io, ATA_CMD_RD);
-		if (rc != 0)
-			return rc;
-		rc = ata_wait_ready(drv->io, MAX_TIMEOUT);
-		if (rc != 0)
-			return rc;
-		ata_rd_sector(drv->io, buffer);
-		num_blocks--;
-		sector++;
-		buffer += SECTOR_SIZE;
-	}
-
-	return 0;
+	return port->ops->read(port, buffer, block, num_blocks);
 }
 
 /**
@@ -513,24 +243,9 @@ static int ata_read(struct block_device *blk, void *buffer, int block,
 static int __maybe_unused ata_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
-	int rc;
-	uint64_t sector = block;
-	struct ata_drive_access *drv = to_ata_drive_access(blk);
+	struct ata_port *port = container_of(blk, struct ata_port, blk);
 
-	while (num_blocks) {
-		rc = ata_set_lba_sector(drv->io, DISK_MASTER, sector);
-		if (rc != 0)
-			return rc;
-		rc = ata_wr_cmd(drv->io, ATA_CMD_WR);
-		if (rc != 0)
-			return rc;
-		ata_wr_sector(drv->io, buffer);
-		num_blocks--;
-		sector++;
-		buffer += SECTOR_SIZE;
-	}
-
-	return 0;
+	return port->ops->write(port, buffer, block, num_blocks);
 }
 
 static struct block_device_ops ata_ops = {
@@ -546,55 +261,67 @@ static struct block_device_ops ata_ops = {
  * @param io ATA register file description
  * @return 0 on success
  */
-int register_ata_drive(struct device_d *dev, struct ata_ioports *io)
+int ata_port_register(struct ata_port *port)
 {
 	int rc;
-	struct ata_drive_access *drive;
+	struct ata_port_operations *ops = port->ops;
+	struct device_d *dev = port->dev;
 
-	drive = xzalloc(sizeof(struct ata_drive_access));
+	port->id = dma_alloc(SECTOR_SIZE);
 
-	drive->io = io;
-	drive->blk.dev = dev;
-	drive->blk.ops = &ata_ops;
+	port->blk.dev = dev;
+	port->blk.ops = &ata_ops;
 
-	rc = ata_reset(io);
-	if (rc) {
-		dev_dbg(dev, "Resetting failed\n");
-		goto on_error;
+	if (ops->reset) {
+		rc = ops->reset(port);
+		if (rc) {
+			dev_dbg(dev, "Resetting failed\n");
+			goto on_error;
+		}
 	}
 
-	rc = ata_get_id(drive);
+	rc = ops->read_id(port, port->id);
 	if (rc != 0) {
 		dev_dbg(dev, "Reading ID failed\n");
 		goto on_error;
 	}
 
+	ata_fix_endianess(port->id, SECTOR_SIZE / sizeof(uint16_t));
+
+	rc = ata_id_is_valid(port->id);
+	if (rc) {
+		dev_err(dev, "ata id invalid\n");
+		free(port->id);
+		return rc;
+	}
+
 #ifdef DEBUG
-	ata_dump_id(drive->id);
+	ata_dump_id(port->id);
 #endif
-	rc = cdev_find_free_index("disk");
+	rc = cdev_find_free_index("ata");
 	if (rc == -1)
 		pr_err("Cannot find a free index for the disk node\n");
 
-	drive->blk.num_blocks = ata_id_n_sectors(drive->id);
-	drive->blk.cdev.name = asprintf("disk%d", rc);
-	drive->blk.blockbits = SECTOR_SHIFT;
+	port->blk.num_blocks = ata_id_n_sectors(port->id);
+	port->blk.cdev.name = asprintf("ata%d", rc);
+	port->blk.blockbits = SECTOR_SHIFT;
 
-	rc = blockdevice_register(&drive->blk);
+	rc = blockdevice_register(&port->blk);
 	if (rc != 0) {
 		dev_err(dev, "Failed to register blockdevice\n");
 		goto on_error;
 	}
 
+	dev_info(dev, "registered /dev/%s\n", port->blk.cdev.name);
+
 	/* create partitions on demand */
-	rc = parse_partition_table(&drive->blk);
+	rc = parse_partition_table(&port->blk);
 	if (rc != 0)
 		dev_warn(dev, "No partition table found\n");
 
 	return 0;
 
 on_error:
-	free(drive);
 	return rc;
 }
 

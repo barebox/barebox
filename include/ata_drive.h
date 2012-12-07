@@ -16,6 +16,8 @@
 #ifndef ATA_DISK_H
 # define ATA_DISK
 
+#include <block.h>
+
 /* IDE register file */
 #define IDE_REG_DATA 0x00
 #define IDE_REG_ERR 0x01
@@ -32,6 +34,26 @@
 #define IDE_REG_ALT_STATUS 0x00
 #define IDE_REG_DEV_CTL 0x00
 #define IDE_REG_DRV_ADDR 0x01
+
+#define ATA_CMD_ID_ATA		0xEC
+#define ATA_CMD_READ		0x20
+#define ATA_CMD_READ_EXT	0x25
+#define ATA_CMD_WRITE		0x30
+#define ATA_CMD_WRITE_EXT	0x35
+
+/* drive's status flags */
+#define ATA_STATUS_BUSY		(1 << 7)
+#define ATA_STATUS_READY	(1 << 6)
+#define ATA_STATUS_WR_FLT	(1 << 5)
+#define ATA_STATUS_DSC		(1 << 4)
+#define ATA_STATUS_DRQ		(1 << 3)
+#define ATA_STATUS_CORR		(1 << 2)
+#define ATA_STATUS_IDX		(1 << 1)
+#define ATA_STATUS_ERROR	(1 << 0)
+/* command flags */
+#define LBA_FLAG		(1 << 6)
+#define ATA_DEVCTL_SOFT_RESET	(1 << 2)
+#define ATA_DEVCTL_INTR_DISABLE	(1 << 1)
 
 /** addresses of each individual IDE drive register */
 struct ata_ioports {
@@ -55,8 +77,27 @@ struct ata_ioports {
 	int dataif_be;	/* true if 16 bit data register is big endian */
 };
 
+struct ata_port;
+
+struct ata_port_operations {
+	int (*read)(struct ata_port *port, void *buf, unsigned int block, int num_blocks);
+	int (*write)(struct ata_port *port, const void *buf, unsigned int block, int num_blocks);
+	int (*read_id)(struct ata_port *port, void *buf);
+	int (*reset)(struct ata_port *port);
+};
+
+struct ata_port {
+	struct ata_port_operations *ops;
+	struct device_d *dev;
+	void *drvdata;
+	struct block_device blk;
+	uint16_t *id;
+};
+
+int ide_port_register(struct device_d *, struct ata_ioports *);
+int ata_port_register(struct ata_port *port);
+
 struct device_d;
-extern int register_ata_drive(struct device_d*, struct ata_ioports*);
 
 /**
  * @file

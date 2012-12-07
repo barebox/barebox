@@ -52,6 +52,53 @@ void led_gpio_unregister(struct gpio_led *led)
 	led_unregister(&led->led);
 }
 
+#ifdef CONFIG_LED_GPIO_BICOLOR
+static void led_gpio_bicolor_set(struct led *led, unsigned int value)
+{
+	struct gpio_bicolor_led *bi = container_of(led, struct gpio_bicolor_led, led);
+	int al = bi->active_low;
+
+	switch (value) {
+	case 0:
+		gpio_direction_output(bi->gpio_c0, al);
+		gpio_direction_output(bi->gpio_c1, al);
+		break;
+	case 1:
+		gpio_direction_output(bi->gpio_c0, !al);
+		gpio_direction_output(bi->gpio_c1, al);
+		break;
+	case 2:
+		gpio_direction_output(bi->gpio_c0, al);
+		gpio_direction_output(bi->gpio_c1, !al);
+		break;
+	}
+}
+
+/**
+ * led_gpio_bicolor_register - register three gpios as a bicolor LED
+ * @param led	The gpio bicolor LED
+ *
+ * This function registers three gpios as a bicolor LED. led->gpio[rg]
+ * should be initialized to the gpios to control.
+ */
+int led_gpio_bicolor_register(struct gpio_bicolor_led *led)
+{
+	led->led.set = led_gpio_bicolor_set;
+	led->led.max_value = 2;
+
+	return led_register(&led->led);
+}
+
+/**
+ * led_gpio_bicolor_unregister - remove a gpio controlled bicolor LED from the framework
+ * @param led	The gpio LED
+ */
+void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led)
+{
+	led_unregister(&led->led);
+}
+#endif
+
 #ifdef CONFIG_LED_GPIO_RGB
 
 static void led_gpio_rgb_set(struct led *led, unsigned int value)

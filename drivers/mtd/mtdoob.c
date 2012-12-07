@@ -73,6 +73,9 @@ static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
 {
 	struct mtdoob *mtdoob;
 
+	if (mtd->oobsize == 0)
+		return 0;
+
 	mtdoob = xzalloc(sizeof(*mtdoob));
 	mtdoob->cdev.ops = &mtd_ops_oob;
 	mtdoob->cdev.size = (mtd->size / mtd->writesize) * mtd->oobsize;

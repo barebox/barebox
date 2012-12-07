@@ -62,65 +62,15 @@ static 	ssize_t mtd_read(struct cdev *cdev, void* buf, size_t count,
 #define MTDPGALG(x) ((x) & ~(mtd->writesize - 1))
 
 #ifdef CONFIG_MTD_WRITE
-static int all_ff(const void *buf, int len)
-{
-	int i;
-	const uint8_t *p = buf;
-
-	for (i = 0; i < len; i++)
-		if (p[i] != 0xFF)
-			return 0;
-	return 1;
-}
-
 static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 			  loff_t _offset, ulong flags)
 {
 	struct mtd_info *mtd = cdev->priv;
-	size_t retlen, now;
-	int ret = 0;
-	void *wrbuf = NULL;
-	size_t count = _count;
-	unsigned long offset = _offset;
+	size_t retlen;
+	int ret;
 
-	if (NOTALIGNED(offset)) {
-		printf("offset 0x%0lx not page aligned\n", offset);
-		return -EINVAL;
-	}
+	ret = mtd->write(mtd, _offset, _count, &retlen, buf);
 
-	dev_dbg(cdev->dev, "write: offset: 0x%08lx count: 0x%zx\n", offset, count);
-	while (count) {
-		now = count > mtd->writesize ? mtd->writesize : count;
-
-		if (NOTALIGNED(now)) {
-			dev_dbg(cdev->dev, "not aligned: %d %ld\n",
-				mtd->writesize,
-				(offset % mtd->writesize));
-			wrbuf = xmalloc(mtd->writesize);
-			memset(wrbuf, 0xff, mtd->writesize);
-			memcpy(wrbuf + (offset % mtd->writesize), buf, now);
-			if (!all_ff(wrbuf, mtd->writesize))
-				ret = mtd->write(mtd, MTDPGALG(offset),
-						  mtd->writesize, &retlen,
-						  wrbuf);
-			free(wrbuf);
-		} else {
-			if (!all_ff(buf, mtd->writesize))
-				ret = mtd->write(mtd, offset, now, &retlen,
-						  buf);
-			dev_dbg(cdev->dev,
-				"offset: 0x%08lx now: 0x%zx retlen: 0x%zx\n",
-				offset, now, retlen);
-		}
-		if (ret)
-			goto out;
-
-		offset += now;
-		count -= now;
-		buf += now;
-	}
-
-out:
 	return ret ? ret : _count;
 }
 #endif

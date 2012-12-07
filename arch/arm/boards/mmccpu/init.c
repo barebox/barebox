@@ -34,7 +34,7 @@
 #include <mach/io.h>
 
 static struct at91_ether_platform_data macb_pdata = {
-	.flags		= AT91SAM_ETHER_MII | AT91SAM_ETHER_FORCE_LINK,
+	.phy_flags	= PHYLIB_FORCE_LINK,
 	.phy_addr	= 4,
 };
 

@@ -153,6 +153,7 @@ static int mdio_bus_probe(struct device_d *_dev)
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
 
+	int ret;
 	char str[16];
 
 	dev->attached_dev->phydev = dev;
@@ -160,19 +161,18 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev_add_child(dev->dev.parent, _dev);
 
 	if (drv->probe) {
-		int ret;
-
 		ret = drv->probe(dev);
-		if (ret) {
-			dev->attached_dev->phydev = NULL;
-			dev->attached_dev = NULL;
-			return ret;
-		}
+		if (ret)
+			goto err;
 	}
 
 	if (dev->dev_flags) {
 		if (dev->dev_flags & PHYLIB_FORCE_10) {
 			dev->speed = SPEED_10;
+			dev->duplex = DUPLEX_FULL;
+			dev->autoneg = !AUTONEG_ENABLE;
+		} else if (dev->dev_flags & PHYLIB_FORCE_100) {
+			dev->speed = SPEED_100;
 			dev->duplex = DUPLEX_FULL;
 			dev->autoneg = !AUTONEG_ENABLE;
 		}
@@ -184,7 +184,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev->supported = drv->features;
 	dev->advertising = drv->features;
 
-	drv->config_init(dev);
+	ret = phy_init_hw(dev);
+	if (ret)
+		goto err;
 
 	/* Sanitize settings based on PHY capabilities */
 	if ((dev->supported & SUPPORTED_Autoneg) == 0)
@@ -192,6 +194,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 
 	sprintf(str, "%d", dev->addr);
 	dev_add_param_fixed(&dev->dev, "phy_addr", str);
+
+	sprintf(str, "0x%08x", dev->phy_id);
+	dev_add_param_fixed(&dev->dev, "phy_id", str);
 
 	dev->cdev.name = asprintf("phy%d", _dev->id);
 	dev->cdev.size = 64;
@@ -201,6 +206,11 @@ static int mdio_bus_probe(struct device_d *_dev)
 	devfs_create(&dev->cdev);
 
 	return 0;
+
+err:
+	dev->attached_dev->phydev = NULL;
+	dev->attached_dev = NULL;
+	return ret;
 }
 
 static void mdio_bus_remove(struct device_d *_dev)

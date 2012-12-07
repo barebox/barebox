@@ -79,7 +79,7 @@ static void qil_a9260_add_device_mci(void) {}
 
 #ifdef CONFIG_CALAO_MB_QIL_A9260
 static struct at91_ether_platform_data macb_pdata = {
-	.flags		= AT91SAM_ETHER_RMII,
+	.is_rmii	= 1,
 	.phy_addr	= -1,
 };
 

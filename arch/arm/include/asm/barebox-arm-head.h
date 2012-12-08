@@ -22,6 +22,7 @@ static inline void common_reset(void)
 
 #if __LINUX_ARM_ARCH__ >= 6
 	r |= CR_U;
+	r &= CR_A;
 #else
 	r |= CR_A;
 #endif
@@ -91,6 +92,7 @@ static inline void barebox_arm_head(void)
 
 #if __LINUX_ARM_ARCH__ >= 6
 	orr	\scratch, \scratch, #CR_U
+	bic	\scratch, \scratch, #CR_A
 #else
 	orr	\scratch, \scratch, #CR_A
 #endif

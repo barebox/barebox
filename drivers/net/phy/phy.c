@@ -443,6 +443,9 @@ int genphy_restart_aneg(struct phy_device *phydev)
 	/* Don't isolate the PHY if we're negotiating */
 	ctl &= ~(BMCR_ISOLATE);
 
+	/* Clear powerdown bit which eventually is set on some phys */
+	ctl &= ~BMCR_PDOWN;
+
 	ctl = phy_write(phydev, MII_BMCR, ctl);
 
 	if (ctl < 0)

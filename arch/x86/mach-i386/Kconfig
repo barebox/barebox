@@ -10,7 +10,6 @@ config X86_GENERIC_HAS_ISA
 
 config X86_GENERIC_HAS_PCI
 	bool "PCI support"
-	select HAS_PCI
 	help
 	  Say Y here if the target supports a PCI bus
 

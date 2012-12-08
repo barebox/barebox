@@ -26,7 +26,6 @@ config DISK_BIOS
 
 config DISK_ATA
 	bool "ATA type drives"
-	select DISK_DRIVE
 	help
 	  Support for native ATA/IDE drives
 

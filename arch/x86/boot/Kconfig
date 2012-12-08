@@ -1,6 +1,6 @@
 if X86_BIOS_BRINGUP
 
-menu "BIOS boot source              "
+menu "BIOS boot source"
 
 config X86_HDBOOT
 	bool "HD boot"

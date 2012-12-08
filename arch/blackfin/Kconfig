@@ -29,7 +29,7 @@ config MACH_IPE337
 
 endchoice
 
-choice 
+choice
 	prompt "Select your board options"
 	depends on MACH_IPE337
 	default MACH_IPE337_V2

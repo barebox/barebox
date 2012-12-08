@@ -1,5 +1,5 @@
 menuconfig USB
-	bool "USB support                   "
+	bool "USB support"
 
 if USB
 

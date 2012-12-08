@@ -1,4 +1,4 @@
-menu "Library gui routines           "
+menu "Library gui routines"
 
 config IMAGE_RENDERER
 	bool

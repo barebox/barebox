@@ -1,4 +1,4 @@
-menu "SPI drivers                   "
+menu "SPI drivers"
 
 config SPI
 	bool "Enable SPI driver support"

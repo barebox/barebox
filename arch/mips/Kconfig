@@ -62,10 +62,11 @@ source arch/mips/mach-xburst/Kconfig
 endmenu
 
 #
-# Endianess selection.  Sufficiently obscure so many users don't know what to
-# answer,so we try hard to limit the available choices.  Also the use of a
+# Endianess selection. Sufficiently obscure so many users don't know what to
+# answer,so we try hard to limit the available choices. Also the use of a
 # choice statement should be more obvious to the user.
 #
+
 choice
 	prompt "Endianess selection"
 	help
@@ -98,8 +99,8 @@ config CPU_MIPS32_R1
 	select CPU_SUPPORTS_32BIT_KERNEL
 	help
 	  Choose this option to build a barebox for release 1 or later of the
-	  MIPS32 architecture.  Most modern embedded systems with a 32-bit
-	  MIPS processor are based on a MIPS32 processor.  If you know the
+	  MIPS32 architecture. Most modern embedded systems with a 32-bit
+	  MIPS processor are based on a MIPS32 processor. If you know the
 	  specific type of processor in your system, choose those that one
 	  otherwise CPU_MIPS32_R1 is a safe bet for any MIPS32 system.
 	  Release 2 of the MIPS32 architecture is available since several
@@ -113,8 +114,8 @@ config CPU_MIPS32_R2
 	select CPU_SUPPORTS_32BIT_KERNEL
 	help
 	  Choose this option to build a barebox for release 2 or later of the
-	  MIPS32 architecture.  Most modern embedded systems with a 32-bit
-	  MIPS processor are based on a MIPS32 processor.  If you know the
+	  MIPS32 architecture. Most modern embedded systems with a 32-bit
+	  MIPS processor are based on a MIPS32 processor. If you know the
 	  specific type of processor in your system, choose those that one
 	  otherwise CPU_MIPS32_R1 is a safe bet for any MIPS32 system.
 
@@ -125,8 +126,8 @@ config CPU_MIPS64_R1
 	select CPU_SUPPORTS_64BIT_KERNEL
 	help
 	  Choose this option to build a barebox for release 1 or later of the
-	  MIPS64 architecture.  Many modern embedded systems with a 64-bit
-	  MIPS processor are based on a MIPS64 processor.  If you know the
+	  MIPS64 architecture. Many modern embedded systems with a 64-bit
+	  MIPS processor are based on a MIPS64 processor. If you know the
 	  specific type of processor in your system, choose those that one
 	  otherwise CPU_MIPS64_R1 is a safe bet for any MIPS64 system.
 	  Release 2 of the MIPS64 architecture is available since several
@@ -141,13 +142,12 @@ config CPU_MIPS64_R2
 	select CPU_SUPPORTS_64BIT_KERNEL
 	help
 	  Choose this option to build a barebox for release 2 or later of the
-	  MIPS64 architecture.  Many modern embedded systems with a 64-bit
-	  MIPS processor are based on a MIPS64 processor.  If you know the
+	  MIPS64 architecture. Many modern embedded systems with a 64-bit
+	  MIPS processor are based on a MIPS64 processor. If you know the
 	  specific type of processor in your system, choose those that one
 	  otherwise CPU_MIPS64_R1 is a safe bet for any MIPS64 system.
 
 endchoice
-
 
 config SYS_HAS_CPU_MIPS32_R1
 	bool
@@ -199,7 +199,7 @@ choice
 	help
 	  You should only select this option if you have a workload that
 	  actually benefits from 64-bit processing or if your machine has
-	  large memory.  You will only be presented a single option in this
+	  large memory. You will only be presented a single option in this
 	  menu if your system does not support both 32-bit and 64-bit modes.
 
 config 32BIT
@@ -216,7 +216,7 @@ config 64BIT
 
 endchoice
 
-menu "MIPS specific settings        "
+menu "MIPS specific settings"
 
 config CMD_MIPS_CPUINFO
 	bool "cpuinfo command"

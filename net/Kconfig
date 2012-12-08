@@ -1,5 +1,5 @@
 menuconfig NET
-	bool "Networking Support            "
+	bool "Networking Support"
 
 if NET
 

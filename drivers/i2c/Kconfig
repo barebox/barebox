@@ -1,5 +1,5 @@
 menuconfig I2C
-	bool "I2C drivers                   "
+	bool "I2C drivers"
 
 if I2C
 

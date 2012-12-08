@@ -17,9 +17,10 @@ choice
 config P2020RDB
 	bool "P2020RDB"
 	help
-	Say Y here if you are using the Freescale P2020RDB
+	  Say Y here if you are using the Freescale P2020RDB
 
 endchoice
+
 endif
 
 if P2020RDB

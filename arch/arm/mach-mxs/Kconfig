@@ -84,7 +84,7 @@ endchoice
 
 endif
 
-menu "i.MX specific settings        "
+menu "i.MX specific settings"
 
 config MXS_OCOTP
 	tristate "OCOTP device"
@@ -105,7 +105,7 @@ config MXS_OCOTP_WRITABLE
 
 	  Before being actually able to blow the bits, you need to explicitely
 	  enable writing:
-		 ocotp0.permanent_write_enable=1
+	    ocotp0.permanent_write_enable=1
 
 config MXS_CMD_BCB
 	depends on NAND_MXS
@@ -117,7 +117,7 @@ config MXS_CMD_BCB
 
 endmenu
 
-menu "Board specific settings       "
+menu "Board specific settings"
 
 if MACH_TX28
 

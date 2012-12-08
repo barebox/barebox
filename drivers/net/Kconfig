@@ -22,7 +22,7 @@ config ARCH_HAS_FEC_IMX
 config PHYLIB
 	bool
 
-menu "Network drivers               "
+menu "Network drivers"
 	depends on NET
 
 source "drivers/net/phy/Kconfig"

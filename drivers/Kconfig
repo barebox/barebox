@@ -1,4 +1,4 @@
-menu "Drivers                       "
+menu "Drivers"
 
 source "drivers/serial/Kconfig"
 source "drivers/net/Kconfig"

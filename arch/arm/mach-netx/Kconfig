@@ -40,7 +40,6 @@ config NETX_COOKIE
 	default 16 if MACH_NXHX
 
 choice
-
 	prompt "Netx Board Type"
 
 config MACH_NXDB500

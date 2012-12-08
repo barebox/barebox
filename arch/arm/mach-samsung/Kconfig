@@ -13,12 +13,12 @@ config ARCH_TEXT_BASE
 	default 0x23e00000 if MACH_TINY210
 
 config BOARDINFO
-	default "Mini 2440"    if MACH_MINI2440
-	default "Mini 6410"    if MACH_MINI6410
-	default "Tiny 6410"    if MACH_TINY6410
+	default "Mini 2440" if MACH_MINI2440
+	default "Mini 6410" if MACH_MINI6410
+	default "Tiny 6410" if MACH_TINY6410
 	default "Digi A9M2440" if MACH_A9M2440
 	default "Digi A9M2410" if MACH_A9M2410
-	default "Tiny 210"     if MACH_TINY210
+	default "Tiny 210" if MACH_TINY210
 
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	hex
@@ -35,7 +35,6 @@ config CPU_S3C2440
 	bool
 
 choice
-
 	prompt "S3C24xx Board Type"
 
 config MACH_A9M2410
@@ -71,7 +70,7 @@ config MACH_MINI2440
 
 endchoice
 
-menu "Board specific settings       "
+menu "Board specific settings"
 
 choice
 	prompt "A9M2440 baseboard"
@@ -98,7 +97,6 @@ config CPU_S3C6410
 	bool
 
 choice
-
 	prompt "S3C64xx Board Type"
 
 config MACH_MINI6410
@@ -118,7 +116,7 @@ config MACH_TINY6410
 
 endchoice
 
-menu "Board specific settings       "
+menu "Board specific settings"
 
 source arch/arm/boards/friendlyarm-tiny6410/Kconfig
 
@@ -135,7 +133,6 @@ config CPU_S5PV210
 	bool
 
 choice
-
 	prompt "S5PCxx board type"
 
 config MACH_TINY210
@@ -149,8 +146,7 @@ endchoice
 
 endif
 
-
-menu "S3C Features              "
+menu "S3C Features"
 
 config S3C_LOWLEVEL_INIT
 	bool

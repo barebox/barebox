@@ -4,7 +4,7 @@ config GPIOLIB
 
 if GPIOLIB
 
-menu "GPIO                          "
+menu "GPIO"
 
 config GPIO_BCM2835
 	bool "GPIO support for BCM2835"

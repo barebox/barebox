@@ -8,7 +8,7 @@ config CRC7
 	bool
 
 menuconfig DIGEST
-	bool "Digest                        "
+	bool "Digest"
 
 if DIGEST
 

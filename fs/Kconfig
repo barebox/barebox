@@ -1,5 +1,5 @@
 
-menu "Filesystem support            "
+menu "Filesystem support"
 
 config FS
 	bool

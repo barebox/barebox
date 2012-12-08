@@ -16,7 +16,7 @@ choice
 	prompt "Select your board"
 
 config GENERIC
-	bool "Generic   "
+	bool "Generic"
 	select OPENRISC
 
 endchoice

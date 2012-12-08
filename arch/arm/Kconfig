@@ -19,7 +19,7 @@ config ARM_LINUX
 config HAVE_MACH_ARM_HEAD
 	bool
 
-menu "System Type                   "
+menu "System Type"
 
 choice
 	prompt "ARM system type"
@@ -71,7 +71,7 @@ config ARCH_NOMADIK
 	select CPU_ARM926T
 	select CLOCKSOURCE_NOMADIK
 	help
-	 Support for the Nomadik platform by ST-Ericsson
+	  Support for the Nomadik platform by ST-Ericsson
 
 config ARCH_OMAP
 	bool "TI OMAP"
@@ -153,7 +153,7 @@ config THUMB2_BAREBOX
 
 endmenu
 
-menu "Arm specific settings         "
+menu "Arm specific settings"
 
 config CMD_ARM_CPUINFO
 	bool "cpuinfo command"

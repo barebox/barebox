@@ -12,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 
@@ -59,7 +59,7 @@ config OMAP3_CLOCK_CONFIG
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
-	depends on  (ARCH_OMAP2 || ARCH_OMAP3 || ARCH_OMAP4)
+	depends on (ARCH_OMAP2 || ARCH_OMAP3 || ARCH_OMAP4)
 	default y
 	help
 	  Enable this if you use Texas Instrument's General purpose Memory
@@ -115,14 +115,14 @@ config MACH_BEAGLE
 	select HAVE_NOSHELL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using Beagle Board
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using OMAP3EVM
 
 config MACH_PANDA
@@ -155,7 +155,7 @@ config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
 	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
-	  help
+	help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
 
 config MACH_PCAAXL2
@@ -169,7 +169,8 @@ config MACH_PCAAXL2
 endchoice
 
 if MACH_OMAP3EVM
-	choice
+
+choice
 	prompt "Select UART"
 
 	config OMAP3EVM_UART1
@@ -183,7 +184,9 @@ if MACH_OMAP3EVM
 		depends on MACH_OMAP3EVM
 		help
 		  Say Y here if you would like to use UART3 as console.
-	endchoice
+
+endchoice
+
 endif
 
 config MACH_OMAP_ADVANCED_MUX

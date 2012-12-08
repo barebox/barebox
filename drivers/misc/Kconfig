@@ -3,7 +3,7 @@
 #
 
 menuconfig MISC_DEVICES
-	bool "Misc devices                  "
+	bool "Misc devices"
 	help
 	  Add support for misc strange devices
 

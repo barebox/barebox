@@ -1,5 +1,5 @@
 
-menu "Board specific settings       "
+menu "Board specific settings"
 
 if X86_BOOTLOADER
 

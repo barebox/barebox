@@ -1,5 +1,5 @@
 menuconfig MCI
-	bool "MCI drivers                   "
+	bool "MCI drivers"
 	select DISK
 	help
 	  Add support for MCI drivers, used to handle MMC and SD cards
@@ -92,7 +92,7 @@ config MCI_SPI
 	depends on SPI
 	help
 	  Some systems access MMC/SD/SDIO cards using a SPI controller
-	  instead of using a "native" MMC/SD/SDIO controller.  This has a
+	  instead of using a "native" MMC/SD/SDIO controller. This has a
 	  disadvantage of being relatively high overhead, but a compensating
 	  advantage of working on many systems without dedicated MMC/SD/SDIO
 	  controllers.

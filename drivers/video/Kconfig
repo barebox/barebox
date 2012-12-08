@@ -1,5 +1,5 @@
 menuconfig VIDEO
-	bool "Video drivers                 "
+	bool "Video drivers"
 	help
 	  Add support for framebuffer and splash screens
 

@@ -17,7 +17,6 @@ choice
 
 config MACH_PHYCORE_MPC5200B_TINY
 	bool "Phycore mpc5200b tiny"
-	select HAS_CFI
 	help
 	  Say Y here if you are using the Phytec Phycore MPC5200B Tiny
 	  board aka pcm030.

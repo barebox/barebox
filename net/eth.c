@@ -138,7 +138,8 @@ static int eth_carrier_check(int force)
 	if (!eth_current->phydev)
 		return 0;
 
-	if (force || is_timeout(last_link_check, 5 * SECOND)) {
+	if (force || is_timeout(last_link_check, 5 * SECOND) ||
+			!eth_current->phydev->link) {
 		ret = phy_update_status(eth_current->phydev);
 		if (ret)
 			return ret;

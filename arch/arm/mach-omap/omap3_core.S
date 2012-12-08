@@ -83,6 +83,7 @@ finished_inval:
 	mcr	p15, 2, r10, c0, c0, 0	/* select current cache level in cssr */
 	isb
 #endif /* CONFIG_CPU_V7_DCACHE_SKIP */
+	common_reset r0
 	/* back to arch calling code */
 	b board_init_lowlevel_return
 ENDPROC(reset)

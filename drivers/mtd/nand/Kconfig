@@ -104,7 +104,6 @@ config MTD_NAND_ECC_SMC
 
 config MTD_NAND_MUSEUM_IDS
 	bool "Enable chip ids for obsolete ancient NAND devices"
-	depends on MTD_NAND
 	default n
 	help
 	  Enable this option only when your board has first generation

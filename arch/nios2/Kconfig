@@ -16,13 +16,12 @@ choice
 	prompt "Select your board"
 
 config GENERIC
-	bool "Generic   "
+	bool "Generic"
 	select NIOS2
-
 
 endchoice
 
-menu "Board configuration           "
+menu "Board configuration"
 
 config EARLY_PRINTF
 	default n

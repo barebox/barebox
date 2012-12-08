@@ -199,7 +199,6 @@ endchoice
 if ARCH_IMX1
 
 choice
-
 	prompt "i.MX1 Board Type"
 
 config MACH_SCB9328
@@ -218,7 +217,6 @@ endif
 if ARCH_IMX21
 
 choice
-
 	prompt "i.MX21 Board Type"
 
 config MACH_IMX21ADS
@@ -238,7 +236,6 @@ endif
 if ARCH_IMX25
 
 choice
-
 	prompt "i.MX25 Board Type"
 
 config MACH_EUKREA_CPUIMX25
@@ -272,7 +269,6 @@ endif
 if ARCH_IMX27
 
 choice
-
 	prompt "i.MX27 Board Type"
 
 config MACH_EUKREA_CPUIMX27
@@ -331,7 +327,6 @@ endif
 if ARCH_IMX31
 
 choice
-
 	prompt "i.MX31 Board Type"
 
 config MACH_PCM037
@@ -352,7 +347,6 @@ endif
 if ARCH_IMX35
 
 choice
-
 	prompt "i.MX35 Board Type"
 
 config MACH_EUKREA_CPUIMX35
@@ -399,7 +393,6 @@ endif
 if ARCH_IMX51
 
 choice
-
 	prompt "i.MX51 Board Type"
 
 config MACH_FREESCALE_MX51_PDK
@@ -444,7 +437,6 @@ endif
 if ARCH_IMX53
 
 choice
-
 	prompt "i.MX53 Board Type"
 
 config MACH_FREESCALE_MX53_LOCO
@@ -479,6 +471,7 @@ config MACH_GUF_VINCELL
 endchoice
 
 if MACH_TX53
+
 choice
 	prompt "TX53 board revision"
 config TX53_REV_1011
@@ -495,7 +488,6 @@ endif
 if ARCH_IMX6
 
 choice
-
 	prompt "i.MX6 Board Type"
 
 config MACH_MX6Q_ARM2
@@ -510,9 +502,10 @@ endif
 
 # ----------------------------------------------------------
 
-menu "Board specific settings       "
+menu "Board specific settings"
 
 if MACH_PCM037
+
 choice
 	prompt "SDRAM Bank0"
 config PCM037_SDRAM_BANK0_128MB
@@ -530,9 +523,11 @@ config PCM037_SDRAM_BANK1_128MB
 config PCM037_SDRAM_BANK1_256MB
 	bool "256MB"
 endchoice
+
 endif
 
 if MACH_EUKREA_CPUIMX27
+
 choice
 	prompt "SDRAM Size"
 config EUKREA_CPUIMX27_SDRAM_128MB
@@ -540,6 +535,7 @@ config EUKREA_CPUIMX27_SDRAM_128MB
 config EUKREA_CPUIMX27_SDRAM_256MB
 	bool "256 MB"
 endchoice
+
 choice
 	prompt "NOR Flash Size"
 config EUKREA_CPUIMX27_NOR_32MB
@@ -547,6 +543,7 @@ config EUKREA_CPUIMX27_NOR_32MB
 config EUKREA_CPUIMX27_NOR_64MB
 	bool "> 32 MB"
 endchoice
+
 choice
 	prompt "Quad UART Port"
 	depends on DRIVER_SERIAL_NS16550
@@ -559,8 +556,11 @@ config EUKREA_CPUIMX27_QUART3
 config EUKREA_CPUIMX27_QUART4
 	bool "Q4"
 endchoice
+
 endif
+
 if MACH_FREESCALE_MX25_3STACK
+
 choice
 	prompt "SDRAM Type"
 config FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
@@ -568,16 +568,18 @@ config FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
 config FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
 	bool "128 MB (mDDR)"
 endchoice
+
 endif
+
 endmenu
 
-menu "i.MX specific settings        "
+menu "i.MX specific settings"
 
 config IMX_IIM
 	tristate "IIM fusebox device"
 	depends on !ARCH_IMX21 && !ARCH_IMX21
 	help
-	  Device driver for the IC Identification Module (IIM) fusebox. Use the 
+	  Device driver for the IC Identification Module (IIM) fusebox. Use the
 	  regular md/mw commands to program and read the fusebox.
 
 	  Fuses are grouped in "rows", 8 bits per row. When using md/mw commands,
@@ -598,7 +600,7 @@ config IMX_IIM_FUSE_BLOW
 
 	  Before being actually able to blow the fuses, you need to explicitely
 	  enable it:
-	  	 imx_iim0.permanent_write_enable=1
+	    imx_iim0.permanent_write_enable=1
 
 endmenu
 

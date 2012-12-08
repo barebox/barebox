@@ -1,5 +1,5 @@
 menuconfig NAND
-	bool "NAND support              "
+	bool "NAND support"
 	select MTD_NAND_IDS
 	help
 	  This enables support for accessing all type of NAND flash
@@ -63,8 +63,8 @@ config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"
 	depends on OMAP_GPMC
 	help
-	 Support for NAND flash using GPMC. GPMC is a common memory
-	 interface found on Texas Instrument's OMAP platforms
+	  Support for NAND flash using GPMC. GPMC is a common memory
+	  interface found on Texas Instrument's OMAP platforms
 
 config NAND_ATMEL
 	bool
@@ -77,7 +77,7 @@ config NAND_ATMEL_PMECC
 	depends on NAND_ATMEL
 	select NAND_ECC_HW
 	help
-	 Support for PMECC present on the SoC sam9x5 and sam9n12
+	  Support for PMECC present on the SoC sam9x5 and sam9n12
 
 config NAND_S3C24XX
 	bool
@@ -104,7 +104,6 @@ config MTD_NAND_ECC_SMC
 
 config MTD_NAND_MUSEUM_IDS
 	bool "Enable chip ids for obsolete ancient NAND devices"
-	depends on MTD_NAND
 	default n
 	help
 	  Enable this option only when your board has first generation

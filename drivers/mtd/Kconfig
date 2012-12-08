@@ -1,5 +1,5 @@
 menuconfig MTD
-        bool "Memory Technology Device (MTD) support"
+	bool "Memory Technology Device (MTD) support"
 
 if MTD
 

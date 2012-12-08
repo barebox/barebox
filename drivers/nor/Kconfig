@@ -1,7 +1,7 @@
-menu "flash drivers                 "
+menu "flash drivers"
 
 menuconfig DRIVER_CFI
-	bool "CFI            "
+	bool "CFI"
 	help
 	  If you have NOR Flash devices connected to your system and wish
 	  to use them say yes here.
@@ -19,7 +19,7 @@ config DRIVER_CFI_AMD
 	bool "support AMD flash chips"
 
 config DRIVER_CFI_BANK_WIDTH_1
-	bool "Support  8-bit buswidth"
+	bool "Support 8-bit buswidth"
 	depends on DRIVER_CFI
 	default y
 	help

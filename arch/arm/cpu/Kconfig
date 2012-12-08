@@ -4,7 +4,7 @@ config CPU_32
 	bool
 	default y
 
-# Select CPU types depending on the architecture selected.  This selects
+# Select CPU types depending on the architecture selected. This selects
 # which CPUs we support in the kernel image, and the compiler instruction
 # optimiser behaviour.
 
@@ -27,14 +27,13 @@ config CPU_ARM920T
 	  Say Y if you want support for the ARM920T processor.
 	  Otherwise, say N.
 
-
 # ARM926T
 config CPU_ARM926T
 	bool
 	select CPU_32v5
 	help
-	  This is a variant of the ARM920.  It has slightly different
-	  instruction sequences for cache and TLB operations.  Curiously,
+	  This is a variant of the ARM920. It has slightly different
+	  instruction sequences for cache and TLB operations. Curiously,
 	  there is no documentation on it at the ARM corporate website.
 
 	  Say Y if you want support for the ARM926T processor.

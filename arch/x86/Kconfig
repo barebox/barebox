@@ -40,19 +40,18 @@ choice
 	prompt "Bring up type"
 
 	config X86_BIOS_BRINGUP
-		prompt "16 bit BIOS"
-		bool
+		bool "16 bit BIOS"
 		help
-		   Barebox will act as a BIOS based bootloader. This includes
-		   some 16 bit real mode code and some restrictions everyone knows
-		   from BIOS based systems.
+		  Barebox will act as a BIOS based bootloader. This includes
+		  some 16 bit real mode code and some restrictions everyone knows
+		  from BIOS based systems.
 
 	config X86_NATIVE_BRINGUP
 		bool "native"
 		help
-		   Barebox will act as a native bootloader. This includes all the
-		   required initialization needed to bring up a piece of hardware.
-		   Note: Not implemented yet
+		  Barebox will act as a native bootloader. This includes all the
+		  required initialization needed to bring up a piece of hardware.
+		  Note: Not implemented yet
 
 endchoice
 

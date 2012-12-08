@@ -123,13 +123,12 @@ config SUPPORT_CALAO_MOB_TNY_MD2
 if ARCH_AT91RM9200
 
 choice
-
 	prompt "AT91RM9200 Board Type"
 
 config MACH_AT91RM9200EK
 	bool "Atmel AT91RM9200-EK Evaluation Kit"
-	help
 	select HAVE_AT91_DATAFLASH_CARD
+	help
 	  Select this if you are using Atmel's AT91RM9200-EK Evaluation Kit.
 	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3507>
 
@@ -142,7 +141,6 @@ endif
 if ARCH_AT91SAM9260
 
 choice
-
 	prompt "AT91SAM9260 Board Type"
 
 config MACH_AT91SAM9260EK
@@ -225,7 +223,6 @@ endif
 if ARCH_AT91SAM9G20
 
 choice
-
 	prompt "AT91SAM9G20 Board Type"
 
 config MACH_AT91SAM9G20EK
@@ -413,7 +410,7 @@ config CALAO_MOB_TNY_MD2
 	depends on SUPPORT_CALAO_MOB_TNY_MD2
 
 config CALAO_MB_QIL_A9260
-	bool "MB-QIL A9260  Motherboard Board support"
+	bool "MB-QIL A9260 Motherboard Board support"
 	depends on MACH_QIL_A9260
 
 endif

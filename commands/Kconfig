@@ -12,9 +12,9 @@ config HAS_POWEROFF
 
 if COMMAND_SUPPORT
 
-menu "commands                      "
+menu "commands"
 
-menu "scripting                     "
+menu "scripting"
 
 config CMD_EDIT
 	tristate
@@ -107,7 +107,7 @@ endif
 
 config CMD_TIME
 	bool "time"
-	  help
+	help
 	  Just like the unix time command this command allows to measure the
 	  execution time of a command. Note: barebox does not use interrupts,
 	  so the system timer can overrun during the execution of the command
@@ -130,7 +130,7 @@ config CMD_GLOBAL
 
 endmenu
 
-menu "file commands                 "
+menu "file commands"
 
 config CMD_LS
 	tristate
@@ -237,7 +237,7 @@ config CMD_FILETYPE
 
 endmenu
 
-menu "console                       "
+menu "console"
 
 config CMD_CLEAR
 	tristate
@@ -257,7 +257,7 @@ config CMD_ECHO_E
 
 endmenu
 
-menu "memory                        "
+menu "memory"
 
 config CMD_LOADB
 	select CRC16
@@ -306,8 +306,8 @@ config CMD_CRC_CMP
 	prompt "compare 2 files crc"
 
 config CMD_DIGEST
-       tristate
-       select DIGEST
+	tristate
+	select DIGEST
 
 config CMD_MD5SUM
 	tristate
@@ -335,7 +335,7 @@ config CMD_SHA224SUM
 
 endmenu
 
-menu "flash                         "
+menu "flash"
 
 config CMD_FLASH
 	tristate
@@ -349,8 +349,7 @@ config CMD_UBI
 
 endmenu
 
-
-menu "booting                       "
+menu "booting"
 
 config CMD_BOOTM
 	tristate
@@ -424,8 +423,8 @@ config CMD_BOOTU
 	depends on ARM
 	prompt "bootu"
 	help
-	   compile in the 'bootu' command to start raw (uncompressed)
-	   Linux images
+	  compile in the 'bootu' command to start raw (uncompressed)
+	  Linux images
 
 config FLEXIBLE_BOOTARGS
 	bool
@@ -479,7 +478,7 @@ config CMD_OFTREE_PROBE
 
 endmenu
 
-menu "testing                       "
+menu "testing"
 
 config CMD_NANDTEST
 	tristate
@@ -500,7 +499,7 @@ config CMD_MTEST_ALTERNATIVE
 
 endmenu
 
-menu "video command                  "
+menu "video command"
 
 if VIDEO
 
@@ -659,7 +658,7 @@ config CMD_CLK
 menuconfig CMD_WD
 	bool
 	depends on WATCHDOG
-	prompt "wd command                    "
+	prompt "wd command"
 	help
 	  The 'wd' command which allows to start, stop and trigger the onboard
 	  watchdog.

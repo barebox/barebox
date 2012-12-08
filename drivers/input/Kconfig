@@ -13,7 +13,7 @@ config KEYBOARD_GPIO
 	  to GPIO pins of various CPUs (and some other chips).
 
 	  Say Y here if your device has buttons connected
-	  directly to such GPIO pins.  Your board-specific
+	  directly to such GPIO pins. Your board-specific
 	  setup logic must also provide a platform device,
 	  with configuration data saying which GPIOs are used.
 
@@ -26,7 +26,7 @@ config KEYBOARD_IMX_KEYPAD
 	  to the IMX keypad matrix.
 
 	  Say Y here if your device has buttons connected
-	  to the IMX keypad matrix.  Your board-specific
+	  to the IMX keypad matrix. Your board-specific
 	  setup logic must also provide a 'matrix_keymap_data' structure,
 	  defining the used keys.
 

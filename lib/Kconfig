@@ -1,4 +1,4 @@
-menu "Library routines              "
+menu "Library routines"
 config PARAMETER
 	bool
 
@@ -30,10 +30,10 @@ config OFTREE
 	bool
 
 config BCH
-       bool
+	bool
 
 config BITREV
-       bool
+	bool
 
 config QSORT
 	bool

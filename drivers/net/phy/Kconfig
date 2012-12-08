@@ -2,7 +2,7 @@
 # PHY Layer Configuration
 #
 
-menu "phylib                       "
+menu "phylib"
 
 if PHYLIB
 

@@ -40,13 +40,11 @@ config NETX_COOKIE
 	default 16 if MACH_NXHX
 
 choice
-
 	prompt "Netx Board Type"
 
 config MACH_NXDB500
 	bool "Hilscher Netx nxdb500"
 	select HAS_NETX_ETHER
-	select HAS_CFI
 	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using the Hilscher Netx nxdb500 board

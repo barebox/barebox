@@ -1,5 +1,5 @@
 config UBI
-	bool "UBI support               "
+	bool "UBI support"
 	select PARTITION_NEED_MTD
 	select CRC32
 	help

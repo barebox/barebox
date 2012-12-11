@@ -47,6 +47,8 @@ reset:
 
 	common_reset r0
 
+	writel(1 << 6, MX31_IPU_CTRL_BASE_ADDR)
+
 	writel(0x074B0BF5, MX31_CCM_BASE_ADDR + MX31_CCM_CCMR)
 
 	DELAY 0x40000

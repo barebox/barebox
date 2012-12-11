@@ -39,18 +39,6 @@
 #include <mach/imx-nand.h>
 #include <mach/devices-imx31.h>
 
-#if defined CONFIG_PCM037_SDRAM_BANK0_128MB
-#define SDRAM0	128
-#elif defined CONFIG_PCM037_SDRAM_BANK0_256MB
-#define SDRAM0	256
-#endif
-
-#if defined CONFIG_PCM037_SDRAM_BANK1_128MB
-#define SDRAM1	128
-#elif defined CONFIG_PCM037_SDRAM_BANK1_256MB
-#define SDRAM1	256
-#endif
-
 struct imx_nand_platform_data nand_info = {
 	.width = 1,
 	.hw_ecc = 1,

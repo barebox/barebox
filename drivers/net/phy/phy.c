@@ -400,10 +400,13 @@ int genphy_setup_forced(struct phy_device *phydev)
 	return err;
 }
 
-static int phy_aneg_done(struct phy_device *phydev)
+int phy_wait_aneg_done(struct phy_device *phydev)
 {
 	uint64_t start = get_time_ns();
 	int ctl;
+
+	if (phydev->autoneg == AUTONEG_DISABLE)
+		return 0;
 
 	while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
 		ctl = phy_read(phydev, MII_BMSR);
@@ -451,7 +454,7 @@ int genphy_restart_aneg(struct phy_device *phydev)
 	if (ctl < 0)
 		return ctl;
 
-	return phy_aneg_done(phydev);
+	return 0;
 }
 
 /**

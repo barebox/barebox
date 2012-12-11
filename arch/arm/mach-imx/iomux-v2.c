@@ -88,7 +88,7 @@ EXPORT_SYMBOL(mxc_iomux_set_pad);
  * This function enables/disables the general purpose function for a particular
  * signal.
  */
-void imx_iomux_set_gpr(enum iomux_gp_func gp, int en)
+void imx_iomux_set_gpr(enum iomux_gp_func gp, bool en)
 {
 	u32 l;
 
@@ -104,6 +104,16 @@ void imx_iomux_set_gpr(enum iomux_gp_func gp, int en)
 	writel(l, base + IOMUXGPR);
 }
 EXPORT_SYMBOL(mxc_iomux_set_gpr);
+
+int imx_iomux_setup_multiple_pins(const unsigned int *pin_list, unsigned count)
+{
+	int i;
+
+	for (i = 0; i < count; i++)
+		imx_iomux_mode(pin_list[i]);
+
+	return 0;
+}
 
 static int imx_iomux_probe(struct device_d *dev)
 {

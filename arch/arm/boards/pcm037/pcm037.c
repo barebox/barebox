@@ -163,6 +163,8 @@ static int imx31_devices_init(void)
 	 */
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, MX31_CS0_BASE_ADDR, 32 * 1024 * 1024, 0);
 
+	imx31_add_mmc0(NULL);
+
 	/*
 	 * Create partitions that should be
 	 * not touched by any regular user

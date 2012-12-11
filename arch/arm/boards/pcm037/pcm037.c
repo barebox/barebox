@@ -31,6 +31,7 @@
 #include <mach/gpio.h>
 #include <mach/weim.h>
 #include <io.h>
+#include <smc911x.h>
 #include <asm/mmu.h>
 #include <partition.h>
 #include <generated/mach-types.h>
@@ -153,6 +154,10 @@ static int pcm037_mmu_init(void)
 }
 postmmu_initcall(pcm037_mmu_init);
 
+static struct smc911x_plat smsc9217_pdata = {
+	.flags = SMC911X_FORCE_INTERNAL_PHY,
+};
+
 static int imx31_devices_init(void)
 {
 	/* CS0: Nor Flash */
@@ -193,7 +198,7 @@ static int imx31_devices_init(void)
 	 * GPIO3, data width is 16 bit
 	 */
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL,	MX31_CS1_BASE_ADDR,
-			MX31_CS1_SIZE, IORESOURCE_MEM, NULL);
+			MX31_CS1_SIZE, IORESOURCE_MEM, &smsc9217_pdata);
 
 #ifdef CONFIG_USB
 	pcm037_usb_init();

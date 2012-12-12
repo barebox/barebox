@@ -1557,7 +1557,7 @@ int mci_register(struct mci_host *host)
 	mci_dev->id = DEVICE_ID_DYNAMIC;
 	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = host;
-	dev_add_child(host->hw_dev, mci_dev);
+	mci_dev->parent = host->hw_dev;
 
 	return platform_device_register(mci_dev);
 }

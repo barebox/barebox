@@ -1227,7 +1227,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 		fsdev->cdev = cdev_by_name(device + 5);
 
 	if (fsdev->cdev) {
-		dev_add_child(fsdev->cdev->dev, &fsdev->dev);
+		fsdev->dev.parent = fsdev->cdev->dev;
 		fsdev->parent_device = fsdev->cdev->dev;
 	}
 

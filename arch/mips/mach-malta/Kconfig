@@ -9,6 +9,8 @@ choice
 
 config BOARD_QEMU_MALTA
 	bool "qemu malta"
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
 
 endchoice
 

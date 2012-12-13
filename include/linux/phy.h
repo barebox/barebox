@@ -267,6 +267,7 @@ int phy_device_connect(struct eth_device *dev, struct mii_bus *bus, int addr,
 		       u32 flags, phy_interface_t interface);
 
 int phy_update_status(struct phy_device *phydev);
+int phy_wait_aneg_done(struct phy_device *phydev);
 
 /* Generic PHY support and helper functions */
 int genphy_restart_aneg(struct phy_device *phydev);

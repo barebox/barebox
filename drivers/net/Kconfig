@@ -31,6 +31,10 @@ config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
 	depends on HAS_CS8900
 
+config DRIVER_NET_CPSW
+	bool "CPSW ethernet driver"
+	select PHYLIB
+
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
 	select PHYLIB

@@ -51,3 +51,18 @@ static inline struct device_d *imx31_add_fb(struct imx_ipu_fb_platform_data *pda
 {
 	return imx_add_ipufb((void *)MX31_IPU_CTRL_BASE_ADDR, pdata);
 }
+
+static inline struct device_d *imx31_add_usbotg(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx31_add_usbh1(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR + 0x200, 1, pdata);
+}
+
+static inline struct device_d *imx31_add_usbh2(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR + 0x400, 2, pdata);
+}

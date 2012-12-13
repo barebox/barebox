@@ -258,7 +258,6 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->addr = chip->addr;
 
 	client->dev.parent = &adapter->dev;
-	dev_add_child(client->dev.parent, &client->dev);
 
 	status = register_device(&client->dev);
 
@@ -402,9 +401,6 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 
 	adapter->dev.id = adapter->nr;
 	strcpy(adapter->dev.name, "i2c");
-
-	if (adapter->dev.parent)
-		dev_add_child(adapter->dev.parent, &adapter->dev);
 
 	ret = register_device(&adapter->dev);
 	if (ret)

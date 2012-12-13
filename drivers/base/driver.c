@@ -133,20 +133,20 @@ int register_device(struct device_d *new_device)
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
 
-	if (!new_device->bus)
-		return 0;
+	if (new_device->bus) {
+		if (!new_device->parent)
+			new_device->parent = &new_device->bus->dev;
 
-	if (!new_device->parent) {
-		new_device->parent = &new_device->bus->dev;
-		dev_add_child(new_device->parent, new_device);
+		list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
+
+		bus_for_each_driver(new_device->bus, drv) {
+			if (!match(drv, new_device))
+				break;
+		}
 	}
 
-	list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
-
-	bus_for_each_driver(new_device->bus, drv) {
-		if (!match(drv, new_device))
-			break;
-	}
+	if (new_device->parent)
+		list_add_tail(&new_device->sibling, &new_device->parent->children);
 
 	return 0;
 }
@@ -185,16 +185,6 @@ int unregister_device(struct device_d *old_dev)
 	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
-
-int dev_add_child(struct device_d *dev, struct device_d *child)
-{
-	child->parent = dev;
-
-	list_add_tail(&child->sibling, &dev->children);
-
-	return 0;
-}
-EXPORT_SYMBOL(dev_add_child);
 
 struct driver_d *get_driver_by_name(const char *name)
 {

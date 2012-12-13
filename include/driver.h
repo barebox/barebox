@@ -158,11 +158,6 @@ int device_probe(struct device_d *dev);
  */
 int unregister_device(struct device_d *);
 
-/* Organize devices in a tree. These functions do _not_ register or
- * unregister a device. Only registered devices are allowed here.
- */
-int dev_add_child(struct device_d *dev, struct device_d *child);
-
 /* Iterate over a devices children
  */
 #define device_for_each_child(dev, child) \

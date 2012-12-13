@@ -260,7 +260,7 @@ int eth_register(struct eth_device *edev)
 	edev->dev.id = DEVICE_ID_DYNAMIC;
 
 	if (edev->parent)
-		dev_add_child(edev->parent, &edev->dev);
+		edev->dev.parent = edev->parent;
 
 	register_device(&edev->dev);
 

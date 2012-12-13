@@ -157,7 +157,6 @@ static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int p
 	dev->phy_id = phy_id;
 
 	dev->bus = bus;
-	dev->dev.parent = bus->parent;
 	dev->dev.bus = &mdio_bus_type;
 
 	strcpy(dev->dev.name, "phy");
@@ -228,6 +227,8 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 static int phy_register_device(struct phy_device* dev)
 {
 	int ret;
+
+	dev->dev.parent = &dev->attached_dev->dev;
 
 	ret = register_device(&dev->dev);
 	if (ret)

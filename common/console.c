@@ -151,7 +151,7 @@ int console_register(struct console_device *newcdev)
 	dev->id = DEVICE_ID_DYNAMIC;
 	strcpy(dev->name, "cs");
 	if (newcdev->dev)
-		dev_add_child(newcdev->dev, dev);
+		dev->parent = newcdev->dev;
 	platform_device_register(dev);
 
 	if (newcdev->setbrg) {

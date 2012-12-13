@@ -42,6 +42,8 @@
 
 #include <generated/mach-types.h>
 
+#include "hwdetect.h"
+
 /* setup the CPU card internal signals */
 static const uint32_t cfa10036_pads[] = {
 	/* duart */
@@ -119,6 +121,8 @@ static int cfa10036_devices_init(void)
 
 	i2c_register_board_info(0, cfa10036_i2c_devices, ARRAY_SIZE(cfa10036_i2c_devices));
 	add_generic_device_res("i2c-gpio", 0, NULL, 0, &i2c_gpio_pdata);
+
+	cfa10036_detect_hw();
 
 	return 0;
 }

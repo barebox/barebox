@@ -26,6 +26,10 @@
 #include <net.h>
 #include <sizes.h>
 
+#include <i2c/i2c.h>
+#include <i2c/i2c-gpio.h>
+#include <i2c/at24.h>
+
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-imx28.h>
@@ -58,6 +62,10 @@ static const uint32_t cfa10036_pads[] = {
 	SSP0_SCK | VE_3_3V | BITKEEPER(0),
 	/* MCI slot power control 1 = off */
 	PWM3_GPIO | VE_3_3V | GPIO_OUT | GPIO_VALUE(0),
+
+	/* i2c0 */
+	AUART0_TX_GPIO | VE_3_3V | PULLUP(1),
+	AUART0_RX_GPIO | VE_3_3V | PULLUP(1),
 };
 
 static struct mxs_mci_platform_data mci_pdata = {
@@ -65,6 +73,18 @@ static struct mxs_mci_platform_data mci_pdata = {
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 	.f_min = 400 * 1000,
 	.f_max = 25000000,
+};
+
+static struct i2c_board_info cfa10036_i2c_devices[] = {
+	{
+		I2C_BOARD_INFO("24c02", 0x50)
+	},
+};
+
+static struct i2c_gpio_platform_data i2c_gpio_pdata = {
+	.sda_pin		= 3 * 32 + 1,
+	.scl_pin		= 3 * 32 + 0,
+	.udelay			= 5,		/* ~100 kHz */
 };
 
 static int cfa10036_mem_init(void)
@@ -96,6 +116,9 @@ static int cfa10036_devices_init(void)
 
 	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, SZ_8K,
 			   IORESOURCE_MEM, NULL);
+
+	i2c_register_board_info(0, cfa10036_i2c_devices, ARRAY_SIZE(cfa10036_i2c_devices));
+	add_generic_device_res("i2c-gpio", 0, NULL, 0, &i2c_gpio_pdata);
 
 	return 0;
 }

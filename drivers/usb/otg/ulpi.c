@@ -111,6 +111,23 @@ int ulpi_clear(u8 bits, int reg, void __iomem *view)
 }
 EXPORT_SYMBOL(ulpi_clear);
 
+int ulpi_write(u8 bits, int reg, void __iomem *view)
+{
+	int ret;
+
+	writel((ULPIVW_RUN | ULPIVW_WRITE |
+		      (reg << ULPIVW_ADDR_SHIFT) |
+		      ((bits & ULPIVW_WDATA_MASK) << ULPIVW_WDATA_SHIFT)),
+		     view);
+
+	/* wait for completion */
+	ret = ulpi_poll(view, ULPIVW_RUN);
+	if (ret < 0)
+		return ret;
+	return 0;
+}
+EXPORT_SYMBOL(ulpi_write);
+
 struct ulpi_info {
 	uint32_t	id;
 	char		*name;

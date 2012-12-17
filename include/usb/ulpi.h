@@ -1,6 +1,7 @@
 #ifndef __MACH_ULPI_H
 #define __MACH_ULPI_H
 
+int ulpi_write(u8 bits, int reg, void __iomem *view);
 int ulpi_set(u8 bits, int reg, void __iomem *view);
 int ulpi_clear(u8 bits, int reg, void __iomem *view);
 int ulpi_read(int reg, void __iomem *view);

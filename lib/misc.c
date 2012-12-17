@@ -47,8 +47,11 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 		break;
 	}
 
+	if (strncmp(end, "iB", 2) == 0)
+		end += 2;
+
 	if (endp)
-		*endp = (char *)end;
+		*endp = end;
 
 	return val;
 }

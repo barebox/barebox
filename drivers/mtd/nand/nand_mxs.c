@@ -1217,7 +1217,6 @@ static int mxs_nand_probe(struct device_d *dev)
 	mtd->parent = dev;
 
 	nand->priv = nand_info;
-	nand->options |= NAND_NO_SUBPAGE_WRITE;
 
 	nand->cmd_ctrl		= mxs_nand_cmd_ctrl;
 
@@ -1241,8 +1240,15 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.bytes		= 9;
 	nand->ecc.size		= 512;
 
-	/* Scan to find existence of the device */
-	err = nand_scan(mtd, 1);
+	/* first scan to find the device and get the page size */
+	err = nand_scan_ident(mtd, 1);
+	if (err)
+		goto err2;
+
+	nand->options |= NAND_NO_SUBPAGE_WRITE;
+
+	/* second phase scan */
+	err = nand_scan_tail(mtd);
 	if (err)
 		goto err2;
 

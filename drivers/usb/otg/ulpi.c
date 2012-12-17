@@ -178,18 +178,18 @@ int ulpi_set_vbus(void __iomem *view, int on)
 	int ret;
 
 	if (on) {
-		ret = ulpi_set(DRV_VBUS_EXT |		/* enable external Vbus */
-				DRV_VBUS |		/* enable internal Vbus */
-				USE_EXT_VBUS_IND |	/* use external indicator */
-				CHRG_VBUS,		/* charge Vbus */
+		ret = ulpi_set(ULPI_OTG_DRV_VBUS_EXT |		/* enable external Vbus */
+				ULPI_OTG_DRV_VBUS |		/* enable internal Vbus */
+				ULPI_OTG_USE_EXT_VBUS_IND |	/* use external indicator */
+				ULPI_OTG_CHRG_VBUS,		/* charge Vbus */
 				ULPI_OTGCTL, view);
 	} else {
-		ret = ulpi_clear(DRV_VBUS_EXT |		/* disable external Vbus */
-				DRV_VBUS,		/* disable internal Vbus */
+		ret = ulpi_clear(ULPI_OTG_DRV_VBUS_EXT |		/* disable external Vbus */
+				ULPI_OTG_DRV_VBUS,		/* disable internal Vbus */
 				ULPI_OTGCTL, view);
 
-		ret |= ulpi_set(USE_EXT_VBUS_IND |	/* use external indicator */
-				DISCHRG_VBUS,		/* discharge Vbus */
+		ret |= ulpi_set(ULPI_OTG_USE_EXT_VBUS_IND |	/* use external indicator */
+				ULPI_OTG_DISCHRG_VBUS,		/* discharge Vbus */
 				ULPI_OTGCTL, view);
 	}
 

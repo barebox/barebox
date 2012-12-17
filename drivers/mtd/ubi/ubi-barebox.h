@@ -25,6 +25,7 @@
 #include <linux/string.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/ubi.h>
+#include <linux/log2.h>
 
 #define crc32(seed, data, length)  crc32_no_comp(seed, (unsigned char const *)data, length)
 
@@ -53,10 +54,6 @@ do {									\
 #define put_device(...)
 #define ubi_sysfs_init(...)		0
 #define ubi_sysfs_close(...)		do { } while (0)
-static inline int is_power_of_2(unsigned long n)
-{
-	return (n != 0 && ((n & (n - 1)) == 0));
-}
 
 /* FIXME */
 #define MKDEV(...)			0

@@ -44,6 +44,9 @@ config XYMODEM
 config LIBSCAN
 	bool
 
+config LIBUBIGEN
+	bool
+
 source lib/gui/Kconfig
 
 endmenu

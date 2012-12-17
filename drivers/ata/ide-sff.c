@@ -333,6 +333,7 @@ int ide_port_register(struct device_d *dev, struct ata_ioports *io)
 
 	ide->io = io;
 	ide->port.ops = &ide_ops;
+	ide->port.dev = dev;
 
 	ret = ata_port_register(&ide->port);
 

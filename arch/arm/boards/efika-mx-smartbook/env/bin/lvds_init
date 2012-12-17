@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Initialize lvds and backlight in case your Kernel does not handle this...
+
+GPIO_BACKLIGHT_POWER=108
+GPIO_BACKLIGHT_PWM=2
+GPIO_LVDS_POWER=71
+GPIO_LVDS_RESET=69
+GPIO_LVDS_ENABLE=76
+GPIO_LCD_ENABLE=77
+
+gpio_direction_output $GPIO_BACKLIGHT_PWM 0
+gpio_direction_output $GPIO_LVDS_RESET 1
+gpio_direction_output $GPIO_LVDS_POWER 1
+msleep 5
+gpio_direction_output $GPIO_LVDS_RESET 0
+msleep 5
+gpio_direction_output $GPIO_LVDS_ENABLE 1
+gpio_direction_output $GPIO_BACKLIGHT_POWER 0
+gpio_direction_output $GPIO_LCD_ENABLE 1
+msleep 300
+gpio_direction_output $GPIO_BACKLIGHT_PWM 1

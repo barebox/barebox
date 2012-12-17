@@ -552,6 +552,9 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	else
 		mci->host_caps = MMC_MODE_4BIT;
 
+	if (pdata && pdata->devname)
+		mci->devname = pdata->devname;
+
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
 		mci->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 

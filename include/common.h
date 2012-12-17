@@ -105,7 +105,7 @@ void reginfo(void);
 void __noreturn hang (void);
 void __noreturn panic(const char *fmt, ...);
 
-char *size_human_readable(ulong size);
+char *size_human_readable(unsigned long long size);
 
 /* common/main.c */
 int	run_command	(const char *cmd, int flag);

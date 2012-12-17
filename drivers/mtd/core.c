@@ -73,7 +73,37 @@ static ssize_t mtd_write(struct cdev* cdev, const void *buf, size_t _count,
 
 	return ret ? ret : _count;
 }
-#endif
+
+static int mtd_erase(struct cdev *cdev, size_t count, loff_t offset)
+{
+	struct mtd_info *mtd = cdev->priv;
+	struct erase_info erase;
+	int ret;
+
+	memset(&erase, 0, sizeof(erase));
+	erase.mtd = mtd;
+	erase.addr = offset;
+	erase.len = mtd->erasesize;
+
+	while (count > 0) {
+		dev_dbg(cdev->dev, "erase %d %d\n", erase.addr, erase.len);
+
+		ret = mtd_block_isbad(mtd, erase.addr);
+		if (ret > 0) {
+			printf("Skipping bad block at 0x%08x\n", erase.addr);
+		} else {
+			ret = mtd->erase(mtd, &erase);
+			if (ret)
+				return ret;
+		}
+
+		erase.addr += mtd->erasesize;
+		count -= count > mtd->erasesize ? mtd->erasesize : count;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_MTD_WRITE */
 
 int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 {
@@ -84,6 +114,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	struct mtd_ecc_stats *ecc = buf;
 #endif
 	struct region_info_user *reg = buf;
+	struct erase_info_user *ei = buf;
 	loff_t *offset = buf;
 
 	switch (request) {
@@ -95,6 +126,9 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	case MEMSETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08llx\n", *offset);
 		ret = mtd->block_markbad(mtd, *offset);
+		break;
+	case MEMERASE:
+		ret = mtd_erase(cdev, ei->length, ei->start + cdev->offset);
 		break;
 #endif
 	case MEMGETINFO:
@@ -132,38 +166,6 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 
 	return ret;
 }
-
-#ifdef CONFIG_MTD_WRITE
-static int mtd_erase(struct cdev *cdev, size_t count, loff_t offset)
-{
-	struct mtd_info *mtd = cdev->priv;
-	struct erase_info erase;
-	int ret;
-
-	memset(&erase, 0, sizeof(erase));
-	erase.mtd = mtd;
-	erase.addr = offset;
-	erase.len = mtd->erasesize;
-
-	while (count > 0) {
-		dev_dbg(cdev->dev, "erase %d %d\n", erase.addr, erase.len);
-
-		ret = mtd_block_isbad(mtd, erase.addr);
-		if (ret > 0) {
-			printf("Skipping bad block at 0x%08x\n", erase.addr);
-		} else {
-			ret = mtd->erase(mtd, &erase);
-			if (ret)
-				return ret;
-		}
-
-		erase.addr += mtd->erasesize;
-		count -= count > mtd->erasesize ? mtd->erasesize : count;
-	}
-
-	return 0;
-}
-#endif
 
 static struct file_operations mtd_ops = {
 	.read   = mtd_read,

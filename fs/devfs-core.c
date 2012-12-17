@@ -152,13 +152,14 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 		break;
 #if (defined(CONFIG_NAND_ECC_HW) || defined(CONFIG_NAND_ECC_SOFT))
 	case ECCGETSTATS:
+#endif
+	case MEMERASE:
 		if (!cdev->ops->ioctl) {
 			ret = -EINVAL;
 			break;
 		}
 		ret = cdev->ops->ioctl(cdev, request, buf);
 		break;
-#endif
 #ifdef CONFIG_PARTITION
 	case MEMGETREGIONINFO:
 		if (cdev->mtd) {

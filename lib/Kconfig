@@ -47,6 +47,9 @@ config LIBSCAN
 config LIBUBIGEN
 	bool
 
+config LIBMTD
+	bool
+
 source lib/gui/Kconfig
 
 endmenu

@@ -1107,11 +1107,6 @@ static int fs_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	if (fsdev->cdev) {
-		dev_add_child(fsdev->cdev->dev, &fsdev->dev);
-		fsdev->parent_device = fsdev->cdev->dev;
-	}
-
 	fsdev->driver = fsdrv;
 
 	list_add_tail(&fsdev->list, &fs_device_list);
@@ -1230,6 +1225,11 @@ int mount(const char *device, const char *fsname, const char *_path)
 
 	if (!strncmp(device, "/dev/", 5))
 		fsdev->cdev = cdev_by_name(device + 5);
+
+	if (fsdev->cdev) {
+		fsdev->dev.parent = fsdev->cdev->dev;
+		fsdev->parent_device = fsdev->cdev->dev;
+	}
 
 	ret = register_device(&fsdev->dev);
 	if (ret)

@@ -81,7 +81,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->dev.id = DEVICE_ID_DYNAMIC;
 	proxy->dev.type_data = proxy;
 	proxy->dev.device_node = chip->device_node;
-	dev_add_child(master->dev, &proxy->dev);
+	proxy->dev.parent = master->dev;
 
 	/* drivers may modify this initial i/o setup */
 	status = master->setup(proxy);

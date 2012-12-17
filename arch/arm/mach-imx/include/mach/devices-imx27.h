@@ -70,3 +70,18 @@ static inline struct device_d *imx27_add_mmc2(void *pdata)
 {
 	return imx_add_mmc((void *)MX27_SDHC3_BASE_ADDR, 2, pdata);
 }
+
+static inline struct device_d *imx27_add_usbotg(void *pdata)
+{
+	return imx_add_usb((void *)MX27_USB_OTG_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx27_add_usbh1(void *pdata)
+{
+	return imx_add_usb((void *)MX27_USB_OTG_BASE_ADDR + 0x200, 1, pdata);
+}
+
+static inline struct device_d *imx27_add_usbh2(void *pdata)
+{
+	return imx_add_usb((void *)MX27_USB_OTG_BASE_ADDR + 0x400, 2, pdata);
+}

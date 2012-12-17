@@ -47,8 +47,6 @@ int mdiobus_register(struct mii_bus *bus)
 	bus->dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(bus->dev.name, "miibus");
 	bus->dev.parent = bus->parent;
-	if (bus->parent)
-		dev_add_child(bus->parent, &bus->dev);
 
 	err = register_device(&bus->dev);
 	if (err) {
@@ -157,8 +155,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 	char str[16];
 
 	dev->attached_dev->phydev = dev;
-	dev->dev.parent = &dev->attached_dev->dev;
-	dev_add_child(dev->dev.parent, _dev);
 
 	if (drv->probe) {
 		ret = drv->probe(dev);

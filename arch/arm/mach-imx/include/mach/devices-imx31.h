@@ -61,3 +61,18 @@ static inline struct device_d *imx31_add_mmc1(void *pdata)
 {
 	return imx_add_mmc((void *)MX31_SDHC2_BASE_ADDR, 1, pdata);
 }
+
+static inline struct device_d *imx31_add_usbotg(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx31_add_usbh1(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR + 0x200, 1, pdata);
+}
+
+static inline struct device_d *imx31_add_usbh2(void *pdata)
+{
+	return imx_add_usb((void *)MX31_USB_OTG_BASE_ADDR + 0x400, 2, pdata);
+}

@@ -807,32 +807,18 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return -1;
 }
 
-static int ehci_probe(struct device_d *dev)
+int ehci_register(struct device_d *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
 	struct ehci_priv *ehci;
 	uint32_t reg;
-	struct ehci_platform_data *pdata = dev->platform_data;
 
 	ehci = xzalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
 	dev->priv = ehci;
-
-	/* default to EHCI_HAS_TT to not change behaviour of boards
-	 * without platform_data
-	 */
-	if (pdata)
-		ehci->flags = pdata->flags;
-	else
-		ehci->flags = EHCI_HAS_TT;
-
-	if (dev->num_resources < 2) {
-		printf("echi: need 2 resources base and data");
-		return -ENODEV;
-	}
-
-	ehci->hccr = dev_request_mem_region(dev, 0);
-	ehci->hcor = dev_request_mem_region(dev, 1);
+	ehci->flags = data->flags;
+	ehci->hccr = data->hccr;
+	ehci->hcor = data->hcor;
 
 	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
 	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
@@ -852,6 +838,30 @@ static int ehci_probe(struct device_d *dev)
 	dev_info(dev, "USB EHCI %x.%02x\n", reg >> 8, reg & 0xff);
 
 	return 0;
+}
+
+static int ehci_probe(struct device_d *dev)
+{
+	struct ehci_data data;
+	struct ehci_platform_data *pdata = dev->platform_data;
+
+	/* default to EHCI_HAS_TT to not change behaviour of boards
+	 * without platform_data
+	 */
+	if (pdata)
+		data.flags = pdata->flags;
+	else
+		data.flags = EHCI_HAS_TT;
+
+	if (dev->num_resources < 2) {
+		printf("echi: need 2 resources base and data");
+		return -ENODEV;
+	}
+
+	data.hccr = dev_request_mem_region(dev, 0);
+	data.hcor = dev_request_mem_region(dev, 1);
+
+	return ehci_register(dev, &data);
 }
 
 static void ehci_remove(struct device_d *dev)

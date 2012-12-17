@@ -413,7 +413,6 @@ static int w1_device_register(struct w1_bus *bus, struct w1_device *dev)
 	dev->bus = bus;
 
 	dev->dev.parent = &bus->dev;
-	dev_add_child(dev->dev.parent, &dev->dev);
 
 	ret = register_device(&dev->dev);
 	if (ret)
@@ -600,10 +599,7 @@ int w1_bus_register(struct w1_bus *bus)
 
 	strcpy(bus->dev.name, "w1_bus");
 	bus->dev.id = DEVICE_ID_DYNAMIC;
-
 	bus->dev.parent = bus->parent;
-	if (bus->parent)
-		dev_add_child(bus->parent, &bus->dev);
 
 	ret = register_device(&bus->dev);
 	if (ret)

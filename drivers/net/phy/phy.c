@@ -157,7 +157,6 @@ static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int p
 	dev->phy_id = phy_id;
 
 	dev->bus = bus;
-	dev->dev.parent = bus->parent;
 	dev->dev.bus = &mdio_bus_type;
 
 	strcpy(dev->dev.name, "phy");
@@ -228,6 +227,8 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 static int phy_register_device(struct phy_device* dev)
 {
 	int ret;
+
+	dev->dev.parent = &dev->attached_dev->dev;
 
 	ret = register_device(&dev->dev);
 	if (ret)
@@ -400,10 +401,13 @@ int genphy_setup_forced(struct phy_device *phydev)
 	return err;
 }
 
-static int phy_aneg_done(struct phy_device *phydev)
+int phy_wait_aneg_done(struct phy_device *phydev)
 {
 	uint64_t start = get_time_ns();
 	int ctl;
+
+	if (phydev->autoneg == AUTONEG_DISABLE)
+		return 0;
 
 	while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
 		ctl = phy_read(phydev, MII_BMSR);
@@ -451,7 +455,7 @@ int genphy_restart_aneg(struct phy_device *phydev)
 	if (ctl < 0)
 		return ctl;
 
-	return phy_aneg_done(phydev);
+	return 0;
 }
 
 /**

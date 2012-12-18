@@ -37,18 +37,12 @@
 #include <mach/gpmc_nand.h>
 #include <mach/xload.h>
 #include <mach/omap_hsmmc.h>
+#include <mach/omap4-devices.h>
 #include <i2c/i2c.h>
-
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.shift = 2,
-};
 
 static int pcaaxl2_console_init(void)
 {
-	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP44XX_UART3_BASE, 1024,
-		IORESOURCE_MEM_8BIT, &serial_plat);
+	omap44xx_add_uart3();
 
 	return 0;
 }
@@ -111,16 +105,14 @@ static int pcaaxl2_devices_init(void)
 	u32 value;
 
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", DEVICE_ID_DYNAMIC, NULL, 0x48070000, 0x1000,
-				IORESOURCE_MEM, NULL);
+	omap44xx_add_i2c1(NULL);
 
 	value = readl(OMAP4_CONTROL_PBIASLITE);
 	value &= ~OMAP4_MMC1_PBIASLITE_VMODE;
 	value |= (OMAP4_MMC1_PBIASLITE_PWRDNZ |	OMAP4_MMC1_PWRDNZ);
 	writel(value, OMAP4_CONTROL_PBIASLITE);
 
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, 0x4809C100, SZ_4K,
-			   IORESOURCE_MEM, &mmc_device);
+	omap44xx_add_mmc1(&mmc_device);
 
 	gpmc_generic_init(0x10);
 

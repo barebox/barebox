@@ -39,7 +39,7 @@
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 
-#define S32K_CR			(OMAP_32KTIMER_BASE + 0x10)
+#define S32K_CR			(OMAP3_32KTIMER_BASE + 0x10)
 
 /* Following functions are exported from omap3_clock_core.S */
 /* Helper functions */

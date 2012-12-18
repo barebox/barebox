@@ -103,6 +103,7 @@ board-$(CONFIG_MACH_NOMADIK_8815NHK)		:= nhk8815
 board-$(CONFIG_MACH_NXDB500)			:= netx
 board-$(CONFIG_MACH_OMAP343xSDP)		:= omap343xdsp
 board-$(CONFIG_MACH_BEAGLE)			:= beagle
+board-$(CONFIG_MACH_BEAGLEBONE)			:= beaglebone
 board-$(CONFIG_MACH_OMAP3EVM)			:= omap3evm
 board-$(CONFIG_MACH_PANDA)			:= panda
 board-$(CONFIG_MACH_ARCHOSG9)			:= archosg9

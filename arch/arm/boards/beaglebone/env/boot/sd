@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "kernel & rootfs on SD card"
+	exit
+fi
+
+global.bootm.image=/boot/uImage
+global.bootm.oftree=/boot/oftree
+#global.bootm.initrd=<path to initrd>
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext4 rootwait"

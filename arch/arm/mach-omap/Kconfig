@@ -109,7 +109,8 @@ config OMAP4_USBBOOT
 config BOARDINFO
 	default "Archos G9" if MACH_ARCHOSG9
 	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
-	default "Texas Instrument's Beagle" if MACH_BEAGLE
+	default "Texas Instrument's Beagle Board" if MACH_BEAGLE
+	default "Texas Instrument's Beagle Bone" if MACH_BEAGLEBONE
 	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
 	default "Texas Instrument's Panda" if MACH_PANDA
 	default "Phytec phyCORE pcm049" if MACH_PCM049
@@ -132,6 +133,14 @@ config MACH_BEAGLE
 	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using Beagle Board
+
+config MACH_BEAGLEBONE
+	bool "Texas Instrument's Beagle Bone"
+	select OMAP_CLOCK_ALL
+	select HAVE_NOSHELL
+	depends on ARCH_AM33XX
+	  help
+	  Say Y here if you are using Beagle Bone
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"

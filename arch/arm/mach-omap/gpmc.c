@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap4-silicon.h>
+#include <mach/am33xx-silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -38,6 +39,8 @@ static int gpmc_init(void)
 	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
 #elif defined(CONFIG_ARCH_OMAP4)
 	omap_gpmc_base = (void *)OMAP44XX_GPMC_BASE;
+#elif defined(CONFIG_ARCH_AM33XX)
+	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
 #else
 #error "Unknown ARCH"
 #endif

@@ -103,16 +103,16 @@ struct sdrc_config {
 void init_sdram_ddr(void)
 {
 	/* reset sdrc controller */
-	writel(SOFTRESET, SDRC_REG(SYSCONFIG));
-	wait_on_value(1<<0, 1<<0, SDRC_REG(STATUS), 12000000);
-	writel(0, SDRC_REG(SYSCONFIG));
+	writel(SOFTRESET, OMAP3_SDRC_REG(SYSCONFIG));
+	wait_on_value(1<<0, 1<<0, OMAP3_SDRC_REG(STATUS), 12000000);
+	writel(0, OMAP3_SDRC_REG(SYSCONFIG));
 
 	/* setup sdrc to ball mux */
-	writel(SDP_SDRC_SHARING, SDRC_REG(SHARING));
-	writel(SDP_SDRC_POWER_POP, SDRC_REG(POWER));
+	writel(SDP_SDRC_SHARING, OMAP3_SDRC_REG(SHARING));
+	writel(SDP_SDRC_POWER_POP, OMAP3_SDRC_REG(POWER));
 
 	/* set up dll */
-	writel(SDP_SDRC_DLLAB_CTRL, SDRC_REG(DLLA_CTRL));
+	writel(SDP_SDRC_DLLAB_CTRL, OMAP3_SDRC_REG(DLLA_CTRL));
 	sdelay(0x2000);	/* give time to lock */
 
 }
@@ -122,21 +122,21 @@ void init_sdram_ddr(void)
 void config_sdram_ddr(u8 cs, u8 cfg)
 {
 
-	writel(sdrc_config[cfg].mcfg, SDRC_REG(MCFG_0) + (0x30 * cs));
-	writel(sdrc_config[cfg].actim_ctrla, SDRC_REG(ACTIM_CTRLA_0) + (0x28 * cs));
-	writel(sdrc_config[cfg].actim_ctrlb, SDRC_REG(ACTIM_CTRLB_0) + (0x28 * cs));
-	writel(sdrc_config[cfg].rfr_ctrl, SDRC_REG(RFR_CTRL_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].mcfg, OMAP3_SDRC_REG(MCFG_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].actim_ctrla, OMAP3_SDRC_REG(ACTIM_CTRLA_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].actim_ctrlb, OMAP3_SDRC_REG(ACTIM_CTRLB_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].rfr_ctrl, OMAP3_SDRC_REG(RFR_CTRL_0) + (0x30 * cs));
 
-	writel(CMD_NOP, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_NOP, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
 
 	sdelay(5000);
 
-	writel(CMD_PRECHARGE, SDRC_REG(MANUAL_0) + (0x30 * cs));
-	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
-	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_PRECHARGE, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
 
 	/* set mr0 */
-	writel(sdrc_config[cfg].mr, SDRC_REG(MR_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].mr, OMAP3_SDRC_REG(MR_0) + (0x30 * cs));
 
 	sdelay(2000);
 }
@@ -171,7 +171,7 @@ static void pcaal1_sdrc_init(void)
 
 	if (test1 == 0) {
 		init_sdram_ddr();
-		writel((sdrc_config[(uchar) cfg].mcfg & 0xfffc00ff), SDRC_REG(MCFG_1));
+		writel((sdrc_config[(uchar) cfg].mcfg & 0xfffc00ff), OMAP3_SDRC_REG(MCFG_1));
 
 		/* 1 x 256MByte */
 		if (test0 == SZ_256M)
@@ -179,7 +179,7 @@ static void pcaal1_sdrc_init(void)
 
 		if (cfg != -1) {
 			config_sdram_ddr(0, cfg);
-			writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+			writel(sdrc_config[(uchar) cfg].cs_cfg, OMAP3_SDRC_REG(CS_CFG));
 		}
 		return;
 	}
@@ -194,7 +194,7 @@ static void pcaal1_sdrc_init(void)
 
 	if (cfg != -1) {
 		init_sdram_ddr();
-		writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+		writel(sdrc_config[(uchar) cfg].cs_cfg, OMAP3_SDRC_REG(CS_CFG));
 		config_sdram_ddr(0, cfg);
 		config_sdram_ddr(1, cfg);
 	}
@@ -358,7 +358,7 @@ static int pcaal1_mem_init(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-	add_mem_device("sram0", OMAP_SRAM_BASE, 60 * SZ_1K,
+	add_mem_device("sram0", OMAP3_SRAM_BASE, 60 * SZ_1K,
 				   IORESOURCE_MEM_WRITEABLE);
 
 	arm_add_mem_device("ram0", OMAP_SDRC_CS0, get_sdr_cs_size(SDRC_CS0_OSET));

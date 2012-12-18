@@ -94,54 +94,54 @@ pure_initcall(sdp343x_board_init);
 static void sdrc_init(void)
 {
 	/* Issue SDRC Soft reset  */
-	writel(0x12, SDRC_REG(SYSCONFIG));
+	writel(0x12, OMAP3_SDRC_REG(SYSCONFIG));
     /* Wait until Reset complete */
-    while ((readl(SDRC_REG(STATUS)) & 0x1) == 0);
+    while ((readl(OMAP3_SDRC_REG(STATUS)) & 0x1) == 0);
     /* SDRC to normal mode */
-	writel(0x10, SDRC_REG(SYSCONFIG));
+	writel(0x10, OMAP3_SDRC_REG(SYSCONFIG));
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, OMAP3_SDRC_REG(SHARING));
 
 	/* ----- SDRC_REG(CS0 Configuration --------- */
 	/* SDRC_REG(MCFG0 register */
-	writel(0x02584019, SDRC_REG(MCFG_0));
+	writel(0x02584019, OMAP3_SDRC_REG(MCFG_0));
 
 	/* SDRC_REG(RFR_CTRL0 register */
-	writel(0x0003DE01, SDRC_REG(RFR_CTRL_0));
+	writel(0x0003DE01, OMAP3_SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_REG(ACTIM_CTRLA0 register */
-	writel(0X5A9A4486, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0X5A9A4486, OMAP3_SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_REG(ACTIM_CTRLB0 register */
-	writel(0x00000010, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x00000010, OMAP3_SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE cuz of 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, OMAP3_SDRC_REG(POWER));
 
 	/* SDRC_REG(Manual command register */
 	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, OMAP3_SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register */
 	/* CAS latency = 3 */
 	/* Write Burst = Read Burst */
 	/* Serial Mode */
-	writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
+	writel(0x00000032, OMAP3_SDRC_REG(MR_0));	/* Burst length =4 */
 
     /* SDRC DLLA control register */
 	/* Enable DLL A */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, OMAP3_SDRC_REG(DLLA_CTRL));
 
     /* wait until DLL is locked  */
-    while ((readl(SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
+    while ((readl(OMAP3_SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
 	return;
 }
 

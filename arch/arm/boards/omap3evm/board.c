@@ -71,47 +71,47 @@ static void sdrc_init(void)
 {
 	/* SDRAM software reset */
 	/* No idle ack and RESET enable */
-	writel(0x1A, SDRC_REG(SYSCONFIG));
+	writel(0x1A, OMAP3_SDRC_REG(SYSCONFIG));
 	sdelay(100);
 	/* No idle ack and RESET disable */
-	writel(0x18, SDRC_REG(SYSCONFIG));
+	writel(0x18, OMAP3_SDRC_REG(SYSCONFIG));
 
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, OMAP3_SDRC_REG(SHARING));
 
 	/* ----- SDRC Registers Configuration --------- */
 	/* SDRC_MCFG0 register */
-	writel(0x02584099, SDRC_REG(MCFG_0));
+	writel(0x02584099, OMAP3_SDRC_REG(MCFG_0));
 
 	/* SDRC_RFR_CTRL0 register */
-	writel(0x54601, SDRC_REG(RFR_CTRL_0));
+	writel(0x54601, OMAP3_SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_ACTIM_CTRLA0 register */
-	writel(0xA29DB4C6, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0xA29DB4C6, OMAP3_SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_ACTIM_CTRLB0 register */
-	writel(0x12214, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x12214, OMAP3_SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE due to 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, OMAP3_SDRC_REG(POWER));
 
 	/* SDRC_MANUAL command register */
 	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, OMAP3_SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register Burst length=4 */
-	writel(0x00000032, SDRC_REG(MR_0));
+	writel(0x00000032, OMAP3_SDRC_REG(MR_0));
 
 	/* SDRC DLLA control register */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, OMAP3_SDRC_REG(DLLA_CTRL));
 
 	return;
 }

@@ -52,7 +52,7 @@
  */
 void __noreturn reset_cpu(unsigned long addr)
 {
-	writel(PRM_RSTCTRL_RESET, PRM_REG(RSTCTRL));
+	writel(OMAP3_PRM_RSTCTRL_RESET, PRM_REG(RSTCTRL));
 
 	while (1);
 }

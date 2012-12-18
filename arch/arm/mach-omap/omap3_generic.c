@@ -204,25 +204,6 @@ inline u32 get_sysboot_value(void)
 }
 
 /**
- * @brief Return the current CS0 base address
- *
- * Return current address hardware will be
- * fetching from. The below effectively gives what is correct, its a bit
- * mis-leading compared to the TRM.  For the most general case the mask
- * needs to be also taken into account this does work in practice.
- *
- * @return  base address
- */
-u32 get_gpmc0_base(void)
-{
-	u32 b;
-	b = readl(GPMC_REG(CONFIG7_0));
-	b &= 0x1F;		/* keep base [5:0] */
-	b = b << 24;		/* ret 0x0b000000 */
-	return b;
-}
-
-/**
  * @brief Get the upper address of current execution
  *
  * we can use this to figure out if we are running in SRAM /

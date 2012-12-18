@@ -29,6 +29,16 @@
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 
+void __iomem *omap_gpmc_base;
+
+static int gpmc_init(void)
+{
+	omap_gpmc_base = (void *)OMAP_GPMC_BASE;
+
+	return 0;
+}
+pure_initcall(gpmc_init);
+
 /**
  * @brief Do a Generic initialization of GPMC. if you choose otherwise,
  * Use gpmc registers to modify the values. The defaults configured are:
@@ -43,7 +53,7 @@
 void gpmc_generic_init(unsigned int cfg)
 {
 	uint64_t start;
-	unsigned int reg = GPMC_REG(CONFIG7_0);
+	void __iomem *reg = GPMC_REG(CONFIG7_0);
 	char x = 0;
 
 	debug("gpmccfg=0x%x\n", cfg);
@@ -89,7 +99,7 @@ EXPORT_SYMBOL(gpmc_generic_init);
  */
 void gpmc_cs_config(char cs, struct gpmc_config *config)
 {
-	unsigned int reg = GPMC_REG(CONFIG1_0) + (cs * GPMC_CONFIG_CS_SIZE);
+	void __iomem *reg = GPMC_REG(CONFIG1_0) + (cs * GPMC_CONFIG_CS_SIZE);
 	unsigned char x = 0;
 	debug("gpmccs=0x%x cfg=0x%p\n", cs, config);
 

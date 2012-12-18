@@ -46,7 +46,7 @@ int omap_add_gpmc_nand_device(struct gpmc_nand_platform_data *pdata)
 	/* Configure GPMC CS before register */
 	gpmc_cs_config(pdata->cs, pdata->nand_cfg);
 
-	add_generic_device("gpmc_nand", DEVICE_ID_DYNAMIC, NULL, OMAP_GPMC_BASE,
+	add_generic_device("gpmc_nand", DEVICE_ID_DYNAMIC, NULL, (resource_size_t)omap_gpmc_base,
 			1024 * 4, IORESOURCE_MEM, pdata);
 
 	return 0;

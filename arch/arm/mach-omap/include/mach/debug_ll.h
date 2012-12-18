@@ -35,6 +35,11 @@
 #define UART_BASE	OMAP44XX_UART3_BASE
 #endif
 
+#ifdef CONFIG_ARCH_AM33XX
+#include <mach/am33xx-silicon.h>
+#define UART_BASE	AM33XX_UART0_BASE
+#endif
+
 #define LSR_THRE	0x20	/* Xmit holding register empty */
 #define LSR		(5 << 2)
 #define THR		(0 << 2)

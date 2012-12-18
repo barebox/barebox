@@ -15,7 +15,7 @@
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/silicon.h>
+#include <mach/omap4-silicon.h>
 #include <sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>

@@ -58,7 +58,7 @@
 #include <mach/xload.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 

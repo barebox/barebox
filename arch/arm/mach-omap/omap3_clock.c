@@ -32,7 +32,7 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/clocks.h>
 #include <mach/omap3-clock.h>
 #include <mach/timers.h>

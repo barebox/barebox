@@ -8,7 +8,7 @@
 #include <asm/armlinux.h>
 #include <linux/stat.h>
 #include <generated/mach-types.h>
-#include <mach/silicon.h>
+#include <mach/omap4-silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>

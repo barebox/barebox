@@ -2,7 +2,7 @@
 #include <init.h>
 #include <io.h>
 #include <mach/omap4-clock.h>
-#include <mach/silicon.h>
+#include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>

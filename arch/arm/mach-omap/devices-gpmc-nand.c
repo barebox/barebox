@@ -24,7 +24,6 @@
 #include <clock.h>
 #include <io.h>
 
-#include <mach/silicon.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 

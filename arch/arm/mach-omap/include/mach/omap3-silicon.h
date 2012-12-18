@@ -130,4 +130,9 @@
 /* PRM */
 #define OMAP3_PRM_RSTCTRL_RESET	0x04
 
+/* If Architecture specific init functions are present */
+#ifndef __ASSEMBLY__
+void omap3_core_init(void);
+#endif /* __ASSEMBLY__ */
+
 #endif /* __ASM_ARCH_OMAP3_H */

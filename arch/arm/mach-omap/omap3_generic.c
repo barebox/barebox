@@ -30,12 +30,13 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sdrc.h>
 #include <mach/control.h>
 #include <mach/omap3-smx.h>
 #include <mach/clocks.h>
+#include <mach/omap3-clock.h>
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>

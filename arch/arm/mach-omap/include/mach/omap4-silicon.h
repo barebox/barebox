@@ -153,15 +153,6 @@
 #define PRM_RSTCTRL		PRM_DEVICE_BASE
 #define PRM_RSTCTRL_RESET	0x01
 
-#ifndef __ASSEMBLY__
-
-struct s32ktimer {
-	unsigned char res[0x10];
-	unsigned int s32k_cr;	/* 0x10 */
-};
-
-#endif /* __ASSEMBLY__ */
-
 /*
  * Non-secure SRAM Addresses
  * Non-secure RAM starts at 0x40300000 for GP devices. But we keep SRAM_BASE

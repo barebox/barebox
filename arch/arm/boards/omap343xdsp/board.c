@@ -49,6 +49,7 @@
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <mach/omap3-silicon.h>
+#include <mach/omap3-devices.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -602,12 +603,6 @@ static void mux_config(void)
 /*-----------------------CONSOLE  Devices -----------------------------------*/
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,	/* 48MHz (APLL96/2) */
-	.shift = 2,
-};
-
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in arch
  *
@@ -615,9 +610,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int sdp3430_console_init(void)
 {
-	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }

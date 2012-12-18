@@ -55,6 +55,7 @@
 #include <mach/gpmc.h>
 #include <errno.h>
 #include <generated/mach-types.h>
+#include <mach/omap3-devices.h>
 
 
 /*
@@ -212,11 +213,6 @@ pure_initcall(omap3_evm_board_init);
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
-static struct NS16550_plat serial_plat = {
-	.clock		= 48000000,      /* 48MHz (APLL96/2) */
-	.shift		= 2,
-};
-
 /**
  * @brief Initialize the serial port to be used as console.
  *
@@ -224,13 +220,10 @@ static struct NS16550_plat serial_plat = {
  */
 static int omap3evm_init_console(void)
 {
-	add_ns16550_device(DEVICE_ID_DYNAMIC,
-#if defined(CONFIG_OMAP3EVM_UART1)
-			OMAP_UART1_BASE,
-#elif defined(CONFIG_OMAP3EVM_UART3)
-			OMAP_UART3_BASE,
-#endif
-			1024, IORESOURCE_MEM_8BIT, &serial_plat);
+	if (IS_ENABLED(CONFIG_OMAP3EVM_UART1))
+		omap3_add_uart1();
+	if (IS_ENABLED(CONFIG_OMAP3EVM_UART3))
+		omap3_add_uart3();
 
 	return 0;
 }
@@ -253,10 +246,8 @@ static int omap3evm_init_devices(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-#ifdef CONFIG_MCI_OMAP_HSMMC
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-				IORESOURCE_MEM, NULL);
-#endif
+	omap3_add_mmc1(NULL);
+
         armlinux_set_bootparams((void *)0x80000100);
         armlinux_set_architecture(MACH_TYPE_OMAP3EVM);
 

@@ -61,6 +61,7 @@
 #include <mach/omap3-silicon.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/omap3-devices.h>
 
 #define SMC911X_BASE 0x2c000000
 
@@ -307,10 +308,6 @@ pure_initcall(pcaal1_board_init);
 /*
  * Run-time initialization(s)
  */
-static struct NS16550_plat serial_plat = {
-	.clock	= 48000000,      /* 48MHz (APLL96/2) */
-	.shift	= 2,
-};
 
 /**
  * @brief Initialize the serial port to be used as console.
@@ -319,8 +316,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int pcaal1_init_console(void)
 {
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }
@@ -377,11 +373,9 @@ static int pcaal1_mem_init(void)
 }
 mem_initcall(pcaal1_mem_init);
 
-#ifdef CONFIG_MCI_OMAP_HSMMC
 struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 	.f_max = 26000000,
 };
-#endif
 
 static struct gpmc_nand_platform_data nand_plat = {
 	.device_width = 16,
@@ -393,10 +387,7 @@ static int pcaal1_init_devices(void)
 {
 	omap_add_gpmc_nand_device(&nand_plat);
 
-#ifdef CONFIG_MCI_OMAP_HSMMC
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);
-#endif
+	omap3_add_mmc1(&pcaal1_hsmmc_plat);
 
 #ifdef CONFIG_DRIVER_NET_SMC911X
 	pcaal1_setup_net_chip();

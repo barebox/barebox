@@ -64,6 +64,7 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <mach/ehci.h>
+#include <mach/omap3-devices.h>
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>
@@ -234,11 +235,6 @@ pure_initcall(beagle_board_init);
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.shift = 2,
-};
-
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in
  * arch
@@ -247,9 +243,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int beagle_console_init(void)
 {
-	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }
@@ -295,8 +289,7 @@ mem_initcall(beagle_mem_init);
 static int beagle_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", DEVICE_ID_DYNAMIC, NULL, OMAP_I2C1_BASE, SZ_4K,
-			   IORESOURCE_MEM, NULL);
+	omap3_add_i2c1(NULL);
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
@@ -309,8 +302,7 @@ static int beagle_devices_init(void)
 #endif
 	omap_add_gpmc_nand_device(&nand_plat);
 
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-			   IORESOURCE_MEM, NULL);
+	omap3_add_mmc1(NULL);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);

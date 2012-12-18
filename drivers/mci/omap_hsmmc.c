@@ -175,6 +175,7 @@ struct omap_hsmmc {
 	struct mci_host		mci;
 	struct device_d		*dev;
 	struct hsmmc		*base;
+	void __iomem		*iobase;
 };
 
 #define to_hsmmc(mci)	container_of(mci, struct omap_hsmmc, mci)
@@ -575,7 +576,8 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
 	hsmmc->mci.hw_dev = dev;
 
-	hsmmc->base = dev_request_mem_region(dev, 0);
+	hsmmc->iobase = dev_request_mem_region(dev, 0);
+	hsmmc->base = hsmmc->iobase + 0x100;
 
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

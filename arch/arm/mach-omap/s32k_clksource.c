@@ -31,6 +31,12 @@
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 
+/** Sync 32Khz Timer registers */
+#define S32K_CR			0x10
+#define S32K_FREQUENCY		32768
+
+static void __iomem *timerbase;
+
 /**
  * @brief Provide a simple clock read
  *
@@ -41,7 +47,7 @@
  */
 static uint64_t s32k_clocksource_read(void)
 {
-	return readl(S32K_CR);
+	return readl(timerbase + S32K_CR);
 }
 
 /* A bit obvious isn't it? */
@@ -62,6 +68,8 @@ static struct clocksource s32k_cs = {
  */
 static int s32k_clocksource_init(void)
 {
+	timerbase = (void *)OMAP_32KTIMER_BASE;
+
 	s32k_cs.mult = clocksource_hz2mult(S32K_FREQUENCY, s32k_cs.shift);
 
 	return init_clock(&s32k_cs);

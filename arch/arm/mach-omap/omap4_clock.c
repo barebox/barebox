@@ -3,6 +3,7 @@
 #include <mach/syslib.h>
 #include <mach/silicon.h>
 #include <mach/clocks.h>
+#include <mach/omap4-clock.h>
 
 #define LDELAY	12000000
 

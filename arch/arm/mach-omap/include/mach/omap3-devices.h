@@ -1,7 +1,12 @@
+#ifndef __MACH_OMAP3_DEVICES_H
+#define __MACH_OMAP3_DEVICES_H
+
 #include <driver.h>
 #include <sizes.h>
-
+#include <mach/omap3-silicon.h>
+#include <mach/devices.h>
 #include <mach/mcspi.h>
+#include <mach/omap_hsmmc.h>
 
 /* the device numbering is the same as in the device tree */
 
@@ -30,3 +35,50 @@ static inline struct device_d *omap3_add_spi4(void)
 {
 	return omap3_add_spi(4, OMAP3_MCSPI4_BASE);
 }
+
+static inline struct device_d *omap3_add_uart1(void)
+{
+	return omap_add_uart(0, OMAP_UART1_BASE);
+}
+
+static inline struct device_d *omap3_add_uart2(void)
+{
+	return omap_add_uart(1, OMAP_UART2_BASE);
+}
+
+static inline struct device_d *omap3_add_uart3(void)
+{
+	return omap_add_uart(2, OMAP_UART3_BASE);
+}
+
+static inline struct device_d *omap3_add_mmc1(struct omap_hsmmc_platform_data *pdata)
+{
+	return omap_add_mmc(0, OMAP_MMC1_BASE + 0x100, pdata);
+}
+
+static inline struct device_d *omap3_add_mmc2(struct omap_hsmmc_platform_data *pdata)
+{
+	return omap_add_mmc(1, OMAP_MMC2_BASE + 0x100, pdata);
+}
+
+static inline struct device_d *omap3_add_mmc3(struct omap_hsmmc_platform_data *pdata)
+{
+	return omap_add_mmc(2, OMAP_MMC3_BASE + 0x100, pdata);
+}
+
+static inline struct device_d *omap3_add_i2c1(void *pdata)
+{
+	return omap_add_i2c(0, OMAP_I2C1_BASE, pdata);
+}
+
+static inline struct device_d *omap3_add_i2c2(void *pdata)
+{
+	return omap_add_i2c(1, OMAP_I2C2_BASE, pdata);
+}
+
+static inline struct device_d *omap3_add_i2c3(void *pdata)
+{
+	return omap_add_i2c(2, OMAP_I2C3_BASE, pdata);
+}
+
+#endif /* __MACH_OMAP3_DEVICES_H */

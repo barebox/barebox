@@ -67,8 +67,12 @@ config OMAP_GPMC
 	  NAND, OneNAND etc.
 
 config OMAP_BUILD_IFT
-	prompt "build ift binary"
+	prompt "build ift binary (MLO)"
 	bool
+	help
+	  Say Y here if you want to build an MLO binary. On TI SoCs, this
+	  binary is loaded to SRAM. It is responsible for initializing
+	  the SDRAM and possibly chainloading a full-featured barebox.
 
 config OMAP_BUILD_SPI
 	prompt "build SPI binary"

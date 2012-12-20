@@ -73,4 +73,10 @@ static inline struct device_d *omap44xx_add_i2c4(void *pdata)
 	return omap_add_i2c(3, OMAP44XX_I2C4_BASE, pdata);
 }
 
+static inline struct device_d *omap44xx_add_ehci(void *pdata)
+{
+	return add_usb_ehci_device(DEVICE_ID_DYNAMIC, OMAP44XX_EHCI_BASE,
+				OMAP44XX_EHCI_BASE + 0x10, pdata);
+}
+
 #endif /* __MACH_OMAP4_DEVICES_H */

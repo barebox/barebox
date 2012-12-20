@@ -87,4 +87,10 @@ static inline struct device_d *omap3_add_i2c3(void *pdata)
 	return omap_add_i2c(2, OMAP3_I2C3_BASE, pdata);
 }
 
+static inline struct device_d *omap3_add_ehci(void *pdata)
+{
+	return add_usb_ehci_device(DEVICE_ID_DYNAMIC, OMAP3_EHCI_BASE,
+					OMAP3_EHCI_BASE + 0x10, pdata);
+}
+
 #endif /* __MACH_OMAP3_DEVICES_H */

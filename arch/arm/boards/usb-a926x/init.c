@@ -55,7 +55,7 @@ static void usb_a9260_set_board_type(void)
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-/*	.det_pin	= ... not connected */
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
 	.on_flash_bbt	= 1,
@@ -208,6 +208,7 @@ static void usb_a9260_add_device_mci(void) {}
 
 static struct at91_usbh_data ek_usbh_data = {
 	.ports		= 2,
+	.vbus_pin	= { -EINVAL, -EINVAL },
 };
 
 /*

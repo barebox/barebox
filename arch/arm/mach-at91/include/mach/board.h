@@ -28,7 +28,7 @@
  /* USB Host */
 struct at91_usbh_data {
 	u8		ports;		/* number of ports on root hub */
-	u8		vbus_pin[2];	/* port power-control pin */
+	int		vbus_pin[2];	/* port power-control pin */
 };
 extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
 
@@ -46,9 +46,9 @@ extern void __init at91_add_device_udc(struct at91_udc_data *data);
 
  /* NAND / SmartMedia */
 struct atmel_nand_data {
-	u8		enable_pin;	/* chip enable */
-	u8		det_pin;	/* card detect */
-	u8		rdy_pin;	/* ready/busy */
+	int		enable_pin;	/* chip enable */
+	int		det_pin;	/* card detect */
+	int		rdy_pin;	/* ready/busy */
 	u8		ale;		/* address line number connected to ALE */
 	u8		cle;		/* address line number connected to CLE */
 	u8		bus_width_16;	/* buswidth is 16 bit */
@@ -148,8 +148,8 @@ struct atmel_mci_platform_data {
 	unsigned slot_b;
 	unsigned bus_width;
 	unsigned host_caps; /* MCI_MODE_* from mci.h */
-	unsigned detect_pin;
-	unsigned wp_pin;
+	int detect_pin;
+	int wp_pin;
 };
 
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);

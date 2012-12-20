@@ -46,7 +46,7 @@ struct w1_gpio_platform_data w1_pdata = {
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-/*	.det_pin	= ... not connected */
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PD3,
 	.enable_pin	= AT91_PIN_PC14,
 	.bus_width_16	= 0,
@@ -102,7 +102,7 @@ static void pm9g45_add_device_mci(void) {}
 #ifdef CONFIG_USB_OHCI_AT91
 static struct at91_usbh_data  __initdata usbh_data = {
 	.ports		= 2,
-	.vbus_pin	= { AT91_PIN_PD0,  0x0 },
+	.vbus_pin	= { AT91_PIN_PD0,  -EINVAL },
 };
 
 static void __init pm9g45_add_device_usbh(void)

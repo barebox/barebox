@@ -38,7 +38,7 @@
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-/*	.det_pin	= ... not connected */
+	.det_pin	= -EINVAL,
 	.ecc_mode	= NAND_ECC_HW,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
@@ -117,6 +117,7 @@ static struct atmel_mci_platform_data dss11_mci_data = {
 
 static struct at91_usbh_data dss11_usbh_data = {
 	.ports		= 2,
+	.vbus_pin	= { -EINVAL, -EINVAL },
 };
 
 static int dss11_mem_init(void)

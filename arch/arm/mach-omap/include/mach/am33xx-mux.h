@@ -18,5 +18,6 @@ extern void enable_i2c0_pin_mux(void);
 extern void enable_i2c1_pin_mux(void);
 extern void enable_i2c2_pin_mux(void);
 extern void enable_uart0_pin_mux(void);
+extern void enable_mmc0_pin_mux(void);
 
 #endif /*__AM33XX_MUX_H__ */

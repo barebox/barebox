@@ -115,6 +115,7 @@ board-$(CONFIG_MACH_PCM027)			:= pcm027
 board-$(CONFIG_MACH_PCM037)			:= pcm037
 board-$(CONFIG_MACH_PCM038)			:= pcm038
 board-$(CONFIG_MACH_PCM043)			:= pcm043
+board-$(CONFIG_MACH_PCM051)			:= pcm051
 board-$(CONFIG_MACH_PM9261)			:= pm9261
 board-$(CONFIG_MACH_PM9263)			:= pm9263
 board-$(CONFIG_MACH_PM9G45)			:= pm9g45

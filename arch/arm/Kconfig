@@ -26,7 +26,7 @@ choice
 
 config ARCH_AT91
 	bool "Atmel AT91"
-	select GENERIC_GPIO
+	select GPIOLIB
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
 	select HAVE_MACH_ARM_HEAD

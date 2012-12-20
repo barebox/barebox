@@ -126,7 +126,7 @@ static void pm9g45_phy_init(void)
 	 * 0 - disable
 	 */
 	at91_set_gpio_output(AT91_PIN_PD2, 1);
-	at91_set_gpio_value(AT91_PIN_PD2, 1);
+	gpio_set_value(AT91_PIN_PD2, 1);
 }
 
 static void pm9g45_add_device_eth(void)

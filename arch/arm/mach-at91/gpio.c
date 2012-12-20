@@ -38,10 +38,12 @@ static int gpio_banks = 0;
  * Functionnality can change with newer chips
  */
 struct at91_gpio_chip {
-	struct device_d		*dev;
+	struct gpio_chip	chip;
 	void __iomem		*regbase;	/* PIO bank virtual address */
 	struct at91_pinctrl_mux_ops *ops;	/* ops */
 };
+
+#define to_at91_gpio_chip(c) container_of(c, struct at91_gpio_chip, chip)
 
 static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
@@ -221,7 +223,7 @@ int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = pin_to_mask(pin);
 	int bank = pin_to_bank(pin);
-	struct device_d *dev = at91_gpio->dev;
+	struct device_d *dev = at91_gpio->chip.dev;
 
 	if (!at91_gpio)
 		return -EINVAL;
@@ -287,7 +289,7 @@ int at91_set_gpio_input(unsigned pin, int use_pullup)
 	if (ret)
 		return ret;
 
-	dev_dbg(at91_gpio->dev, "pio%c%d configured as input\n",
+	dev_dbg(at91_gpio->chip.dev, "pio%c%d configured as input\n",
 		pin_to_bank(pin) + 'A', pin_to_bank_offset(pin));
 
 	at91_mux_gpio_input(pio, mask, true);
@@ -310,7 +312,7 @@ int at91_set_gpio_output(unsigned pin, int value)
 	if (ret)
 		return ret;
 
-	dev_dbg(at91_gpio->dev, "pio%c%d configured as output val = %d\n",
+	dev_dbg(at91_gpio->chip.dev, "pio%c%d configured as output val = %d\n",
 		pin_to_bank(pin) + 'A', pin_to_bank_offset(pin), value);
 
 	at91_mux_gpio_input(pio, mask, false);
@@ -408,67 +410,79 @@ int at91_disable_schmitt_trig(unsigned pin)
 }
 EXPORT_SYMBOL(at91_disable_schmitt_trig);
 
-/*
- * assuming the pin is muxed as a gpio output, set its value.
- */
-int at91_set_gpio_value(unsigned pin, int value)
+/*--------------------------------------------------------------------------*/
+
+static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
-	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
-	void __iomem	*pio = at91_gpio->regbase;
-	unsigned	mask = pin_to_mask(pin);
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
+	u32 pdsr;
 
-	if (!pio)
-		return -EINVAL;
-	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
-	return 0;
-}
-EXPORT_SYMBOL(at91_set_gpio_value);
-
-/*
- * read the pin's value (works even if it's not muxed as a gpio).
- */
-int at91_get_gpio_value(unsigned pin)
-{
-	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
-	void __iomem	*pio = at91_gpio->regbase;
-	unsigned	mask = pin_to_mask(pin);
-	u32		pdsr;
-
-	if (!pio)
-		return -EINVAL;
 	pdsr = __raw_readl(pio + PIO_PDSR);
 	return (pdsr & mask) != 0;
 }
-EXPORT_SYMBOL(at91_get_gpio_value);
 
-int gpio_direction_input(unsigned pin)
+static void at91_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
-	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
-	void __iomem	*pio = at91_gpio->regbase;
-	unsigned	mask = pin_to_mask(pin);
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
 
-	if (!pio || !(__raw_readl(pio + PIO_PSR) & mask))
-		return -EINVAL;
-	at91_mux_gpio_input(pio, mask, true);
-	return 0;
-}
-EXPORT_SYMBOL(gpio_direction_input);
-
-int gpio_direction_output(unsigned pin, int value)
-{
-	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
-	void __iomem	*pio = at91_gpio->regbase;
-	unsigned	mask = pin_to_mask(pin);
-
-	if (!pio || !(__raw_readl(pio + PIO_PSR) & mask))
-		return -EINVAL;
 	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
-	at91_mux_gpio_input(pio, mask, false);
+}
+
+static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
+		int value)
+{
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
+
+	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	__raw_writel(mask, pio + PIO_OER);
+
 	return 0;
 }
-EXPORT_SYMBOL(gpio_direction_output);
 
-/*--------------------------------------------------------------------------*/
+static int at91_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
+{
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
+
+	__raw_writel(mask, pio + PIO_ODR);
+
+	return 0;
+}
+
+static int at91_gpio_request(struct gpio_chip *chip, unsigned offset)
+{
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
+
+	dev_dbg(chip->dev, "%s:%d pio%c%d(%d)\n", __func__, __LINE__,
+		 'A' + pin_to_bank(chip->base), offset, chip->base + offset);
+	at91_mux_gpio_enable(pio, mask);
+
+	return 0;
+}
+
+static void at91_gpio_free(struct gpio_chip *chip, unsigned offset)
+{
+	dev_dbg(chip->dev, "%s:%d pio%c%d(%d)\n", __func__, __LINE__,
+		 'A' + pin_to_bank(chip->base), offset, chip->base + offset);
+}
+
+static struct gpio_ops at91_gpio_ops = {
+	.request = at91_gpio_request,
+	.free = at91_gpio_free,
+	.direction_input = at91_gpio_direction_input,
+	.direction_output = at91_gpio_direction_output,
+	.get = at91_gpio_get,
+	.set = at91_gpio_set,
+};
 
 static int at91_gpio_probe(struct device_d *dev)
 {
@@ -500,9 +514,19 @@ static int at91_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
-	at91_gpio->dev = dev;
 	gpio_banks = max(gpio_banks, dev->id + 1);
 	at91_gpio->regbase = dev_request_mem_region(dev, 0);
+
+	at91_gpio->chip.ops = &at91_gpio_ops;
+	at91_gpio->chip.ngpio = MAX_NB_GPIO_PER_BANK;
+	at91_gpio->chip.dev = dev;
+	at91_gpio->chip.base = dev->id * MAX_NB_GPIO_PER_BANK;
+
+	ret = gpiochip_add(&at91_gpio->chip);
+	if (ret) {
+		dev_err(dev, "couldn't add gpiochip, ret = %d\n", ret);
+		return ret;
+	}
 
 	return 0;
 }

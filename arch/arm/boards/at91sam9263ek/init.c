@@ -176,7 +176,7 @@ static int at91sam9263ek_devices_init(void)
 	 * 0 - disable
 	 */
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
-	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
+	gpio_set_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
 	ek_add_device_nand();
 	at91_add_device_eth(0, &macb_pdata);

@@ -17,17 +17,9 @@
 #include <asm-generic/errno.h>
 #include <mach/at91_pio.h>
 #include <mach/hardware.h>
+#include <asm-generic/gpio.h>
 
 #define ARCH_NR_GPIOS 256
-
-static inline int gpio_is_valid(int gpio)
-{
-	if (gpio < 0)
-		return 0;
-	if (gpio < ARCH_NR_GPIOS)
-		return 1;
-	return 0;
-}
 
 #define	AT91_PIN_PA0	(0x00 + 0)
 #define	AT91_PIN_PA1	(0x00 + 1)
@@ -270,23 +262,8 @@ int at91_set_deglitch(unsigned pin, int is_on);
  */
 int at91_set_multi_drive(unsigned pin, int is_on);
 
-/*
- * assuming the pin is muxed as a gpio output, set its value.
- */
-int at91_set_gpio_value(unsigned pin, int value);
-
 extern int at91_set_debounce(unsigned pin, int is_on, int div);
 extern int at91_set_pulldown(unsigned pin, int is_on);
 extern int at91_disable_schmitt_trig(unsigned pin);
-
-/*
- * read the pin's value (works even if it's not muxed as a gpio).
- */
-int at91_get_gpio_value(unsigned pin);
-
-extern int gpio_direction_input(unsigned gpio);
-extern int gpio_direction_output(unsigned gpio, int value);
-#define gpio_get_value at91_get_gpio_value
-#define gpio_set_value at91_set_gpio_value
 
 #endif /* __ASM_ARCH_AT91SAM9_GPIO_H */

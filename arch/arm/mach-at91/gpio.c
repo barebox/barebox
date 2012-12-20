@@ -38,7 +38,6 @@ static struct at91_gpio_bank *gpio;
 
 static inline void __iomem *pin_to_controller(unsigned pin)
 {
-	pin -= PIN_BASE;
 	pin /= 32;
 	if (likely(pin < gpio_banks))
 		return gpio[pin].regbase;
@@ -48,7 +47,6 @@ static inline void __iomem *pin_to_controller(unsigned pin)
 
 static inline unsigned pin_to_mask(unsigned pin)
 {
-	pin -= PIN_BASE;
 	return 1 << (pin % 32);
 }
 

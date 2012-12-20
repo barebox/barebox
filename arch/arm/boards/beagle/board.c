@@ -293,8 +293,7 @@ static int beagle_devices_init(void)
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
-		add_usb_ehci_device(DEVICE_ID_DYNAMIC, OMAP3_EHCI_BASE,
-				    OMAP3_EHCI_BASE + 0x10, &ehci_pdata);
+		omap3_add_ehci(&ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_OMAP_GPMC
 	/* WP is made high and WAIT1 active Low */

@@ -86,8 +86,7 @@ static void panda_ehci_init(void)
 	/* enable power to hub */
 	gpio_set_value(GPIO_HUB_POWER, 1);
 
-	add_usb_ehci_device(DEVICE_ID_DYNAMIC, 0x4a064c00,
-			    0x4a064c00 + 0x10, &ehci_pdata);
+	omap44xx_add_ehci(&ehci_pdata);
 }
 #else
 static void panda_ehci_init(void)

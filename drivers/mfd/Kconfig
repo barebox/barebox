@@ -8,8 +8,8 @@ config I2C_MC34704
 	depends on I2C
 	bool "MC34704 PMIC driver"
 
-config I2C_MC34708
-	depends on I2C
+config MFD_MC34708
+	depends on I2C || SPI
 	bool "MC34708 PMIC driver"
 
 config I2C_MC9SDZ60

@@ -8,6 +8,11 @@
 #include <mach/mcspi.h>
 #include <mach/omap_hsmmc.h>
 
+static inline void omap44xx_add_sram0(void)
+{
+	return omap_add_sram0(OMAP44XX_SRAM_BASE, 48 * SZ_1K);
+}
+
 static inline struct device_d *omap44xx_add_uart1(void)
 {
 	return omap_add_uart(0, OMAP44XX_UART1_BASE);

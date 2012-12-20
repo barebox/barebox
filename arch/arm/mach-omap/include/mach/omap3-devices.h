@@ -8,6 +8,12 @@
 #include <mach/mcspi.h>
 #include <mach/omap_hsmmc.h>
 
+
+static inline void omap3_add_sram0(void)
+{
+	return omap_add_sram0(OMAP3_SRAM_BASE, 64 * SZ_1K);
+}
+
 /* the device numbering is the same as in the device tree */
 
 static inline struct device_d *omap3_add_spi(int id, resource_size_t start)

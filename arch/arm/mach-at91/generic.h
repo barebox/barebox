@@ -10,3 +10,15 @@
 
  /* Clocks */
 extern int __init at91_clock_init(unsigned long main_clock);
+
+static inline struct device_d *at91_add_rm9200_gpio(int id, resource_size_t start)
+{
+	return add_generic_device("at91rm9200-gpio", id, NULL, start, 512,
+				  IORESOURCE_MEM, NULL);
+}
+
+static inline struct device_d *at91_add_sam9x5_gpio(int id, resource_size_t start)
+{
+	return add_generic_device("at91sam9x5-gpio", id, NULL, start, 512,
+				  IORESOURCE_MEM, NULL);
+}

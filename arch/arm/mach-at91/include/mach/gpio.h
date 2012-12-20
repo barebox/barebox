@@ -248,13 +248,6 @@ extern int at91_disable_schmitt_trig(unsigned pin);
  */
 int at91_get_gpio_value(unsigned pin);
 
-struct at91_gpio_bank {
-	void __iomem *regbase;		/* base of register bank */
-	struct clk *clock;
-};
-
-extern int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks);
-
 extern int gpio_direction_input(unsigned gpio);
 extern int gpio_direction_output(unsigned gpio, int value);
 #define gpio_get_value at91_get_gpio_value

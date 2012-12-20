@@ -19,28 +19,37 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <errno.h>
 #include <io.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/cpu.h>
 #include <gpio.h>
+#include <init.h>
+#include <driver.h>
+
+#define AT91_PIO3	1
+#define MAX_GPIO_BANKS	5
 
 static int gpio_banks;
 static int cpu_has_pio3;
-static struct at91_gpio_bank *gpio;
 
 /*
  * Functionnality can change with newer chips
  */
 
+struct at91_gpio_chip {
+	void __iomem		*regbase;	/* PIO bank virtual address */
+};
 
+static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
 static inline void __iomem *pin_to_controller(unsigned pin)
 {
 	pin /= 32;
 	if (likely(pin < gpio_banks))
-		return gpio[pin].regbase;
+		return gpio_chip[pin].regbase;
 
 	return NULL;
 }
@@ -350,19 +359,60 @@ EXPORT_SYMBOL(gpio_direction_output);
 
 /*--------------------------------------------------------------------------*/
 
-int at91_gpio_init(struct at91_gpio_bank *data, int nr_banks)
+static int at91_gpio_probe(struct device_d *dev)
 {
-	unsigned i;
+	struct at91_gpio_chip *at91_gpio = &gpio_chip[dev->id];
+	struct clk *clk;
+	int ret;
 
-	gpio = data;
-	gpio_banks = nr_banks;
+	BUG_ON(dev->id > MAX_GPIO_BANKS);
 
-	for (i = 0; i < nr_banks; i++, data++) {
-		/* enable PIO controller's clock */
-		clk_enable(data->clock);
+	ret = dev_get_drvdata(dev, (unsigned long *)&cpu_has_pio3);
+	if (ret) {
+		dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
+		return ret;
 	}
 
-	cpu_has_pio3 = cpu_is_at91sam9x5() || cpu_is_at91sam9n12();
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk)) {
+		ret = PTR_ERR(clk);
+		dev_err(dev, "clock not found: %d\n", ret);
+		return ret;
+	}
+
+	ret = clk_enable(clk);
+	if (ret < 0) {
+		dev_err(dev, "clock failed to enable: %d\n", ret);
+		clk_put(clk);
+		return ret;
+	}
+
+	gpio_banks = max(gpio_banks, dev->id + 1);
+	at91_gpio->regbase = dev_request_mem_region(dev, 0);
 
 	return 0;
 }
+
+static struct platform_device_id at91_gpio_ids[] = {
+	{
+		.name = "at91rm9200-gpio",
+		.driver_data = (unsigned long)0,
+	}, {
+		.name = "at91sam9x5-gpio",
+		.driver_data = (unsigned long)AT91_PIO3,
+	}, {
+		/* sentinel */
+	},
+};
+
+static struct driver_d at91_gpio_driver = {
+	.name = "at91-gpio",
+	.probe = at91_gpio_probe,
+	.id_table = at91_gpio_ids,
+};
+
+static int at91_gpio_init(void)
+{
+	return platform_driver_register(&at91_gpio_driver);
+}
+postcore_initcall(at91_gpio_init);

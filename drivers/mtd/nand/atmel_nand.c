@@ -1114,7 +1114,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	nand_chip->IO_ADDR_W = host->io_base;
 	nand_chip->cmd_ctrl = atmel_nand_cmd_ctrl;
 
-	if (host->board->rdy_pin)
+	if (gpio_is_valid(host->board->rdy_pin))
 		nand_chip->dev_ready = atmel_nand_device_ready;
 
 	nand_chip->ecc.mode = NAND_ECC_SOFT;
@@ -1137,7 +1137,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	atmel_nand_enable(host);
 
-	if (host->board->det_pin) {
+	if (gpio_is_valid(host->board->det_pin)) {
 		if (gpio_get_value(host->board->det_pin)) {
 			printk("No SmartMedia card inserted.\n");
 			res = ENXIO;

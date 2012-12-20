@@ -43,7 +43,7 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 
 	/* Enable VBus control for UHP ports */
 	for (i = 0; i < data->ports; i++) {
-		if (data->vbus_pin[i])
+		if (gpio_is_valid(data->vbus_pin[i]))
 			at91_set_gpio_output(data->vbus_pin[i], 0);
 	}
 
@@ -115,15 +115,15 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_SMARTMEDIA);
 
 	/* enable pin */
-	if (data->enable_pin)
+	if (gpio_is_valid(data->enable_pin))
 		at91_set_gpio_output(data->enable_pin, 1);
 
 	/* ready/busy pin */
-	if (data->rdy_pin)
+	if (gpio_is_valid(data->rdy_pin))
 		at91_set_gpio_input(data->rdy_pin, 1);
 
 	/* card detect pin */
-	if (data->det_pin)
+	if (gpio_is_valid(data->det_pin))
 		at91_set_gpio_input(data->det_pin, 1);
 
 	add_generic_device_res("atmel_nand", DEVICE_ID_DYNAMIC, nand_resources,
@@ -256,12 +256,12 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 		return;
 
 	/* input/irq */
-	if (data->detect_pin) {
+	if (gpio_is_valid(data->detect_pin)) {
 		at91_set_gpio_input(data->detect_pin, 1);
 		at91_set_deglitch(data->detect_pin, 1);
 	}
 
-	if (data->wp_pin)
+	if (gpio_is_valid(data->wp_pin))
 		at91_set_gpio_input(data->wp_pin, 1);
 
 	if (mmc_id == 0) {		/* MCI0 */
@@ -348,7 +348,7 @@ void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 		cs_pin = pdata->chipselect[i];
 
 		/* enable chip-select pin */
-		if (cs_pin > 0)
+		if (gpio_is_valid(cs_pin))
 			at91_set_gpio_output(cs_pin, 1);
 	}
 

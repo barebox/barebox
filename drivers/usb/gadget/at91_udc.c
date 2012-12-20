@@ -1496,7 +1496,7 @@ static int __init at91udc_probe(struct device_d *dev)
 	at91_udp_write(udc, AT91_UDP_ICR, 0xffffffff);
 	clk_disable(udc->iclk);
 
-	if (udc->board.vbus_pin > 0) {
+	if (gpio_is_valid(udc->board.vbus_pin)) {
 		/*
 		 * Get the initial state of VBUS - we cannot expect
 		 * a pending interrupt.

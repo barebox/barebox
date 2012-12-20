@@ -194,21 +194,59 @@ static inline int gpio_is_valid(int gpio)
 #define	AT91_PIN_PE30	(0x80 + 30)
 #define	AT91_PIN_PE31	(0x80 + 31)
 
+enum at91_mux {
+	AT91_MUX_GPIO = 0,
+	AT91_MUX_PERIPH_A = 1,
+	AT91_MUX_PERIPH_B = 2,
+	AT91_MUX_PERIPH_C = 3,
+	AT91_MUX_PERIPH_D = 4,
+};
+
+/*
+ * mux the pin
+ */
+int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup);
+
 /*
  * mux the pin to the "GPIO" peripheral role.
  */
-int at91_set_GPIO_periph(unsigned pin, int use_pullup);
-
+static inline int at91_set_GPIO_periph(unsigned pin, int use_pullup)
+{
+	return at91_mux_pin(pin, AT91_MUX_GPIO, use_pullup);
+}
 
 /*
  * mux the pin to the "A" internal peripheral role.
  */
-int at91_set_A_periph(unsigned pin, int use_pullup);
+static inline int at91_set_A_periph(unsigned pin, int use_pullup)
+{
+	return at91_mux_pin(pin, AT91_MUX_PERIPH_A, use_pullup);
+}
 
 /*
  * mux the pin to the "B" internal peripheral role.
  */
-int at91_set_B_periph(unsigned pin, int use_pullup);
+static inline int at91_set_B_periph(unsigned pin, int use_pullup)
+{
+	return at91_mux_pin(pin, AT91_MUX_PERIPH_B, use_pullup);
+}
+
+/*
+ * mux the pin to the "C" internal peripheral role.
+ */
+static inline int at91_set_C_periph(unsigned pin, int use_pullup)
+{
+	return at91_mux_pin(pin, AT91_MUX_PERIPH_C, use_pullup);
+}
+
+/*
+ * mux the pin to the "C" internal peripheral role.
+ */
+static inline int at91_set_D_periph(unsigned pin, int use_pullup)
+{
+	return at91_mux_pin(pin, AT91_MUX_PERIPH_D, use_pullup);
+}
+
 /*
  * mux the pin to the gpio controller (instead of "A" or "B" peripheral), and
  * configure it for an input.
@@ -237,8 +275,6 @@ int at91_set_multi_drive(unsigned pin, int is_on);
  */
 int at91_set_gpio_value(unsigned pin, int value);
 
-extern int at91_set_C_periph(unsigned pin, int use_pullup);
-extern int at91_set_D_periph(unsigned pin, int use_pullup);
 extern int at91_set_debounce(unsigned pin, int is_on, int div);
 extern int at91_set_pulldown(unsigned pin, int is_on);
 extern int at91_disable_schmitt_trig(unsigned pin);

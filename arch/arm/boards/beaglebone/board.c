@@ -307,7 +307,7 @@ console_initcall(beaglebone_console_init);
 
 static int beaglebone_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 256 * 1024 * 1024);
+	omap_add_ram0(256 * 1024 * 1024);
 
 	return 0;
 }

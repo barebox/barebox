@@ -232,7 +232,7 @@ console_initcall(omap3evm_init_console);
 
 static int omap3evm_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(SZ_128M);
 
 	return 0;
 }

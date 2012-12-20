@@ -44,7 +44,7 @@ console_initcall(panda_console_init);
 
 static int panda_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
+	omap_add_ram0(SZ_1G);
 
 	return 0;
 }

@@ -620,7 +620,7 @@ console_initcall(sdp3430_console_init);
 
 static int sdp3430_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(128 * 1024 * 1024);
 
 	return 0;
 }

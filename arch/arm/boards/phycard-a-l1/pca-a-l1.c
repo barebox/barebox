@@ -358,10 +358,10 @@ static int pcaal1_mem_init(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-	add_mem_device("sram0", OMAP3_SRAM_BASE, 60 * SZ_1K,
-				   IORESOURCE_MEM_WRITEABLE);
+	omap3_add_sram0();
 
-	arm_add_mem_device("ram0", OMAP_SDRC_CS0, get_sdr_cs_size(SDRC_CS0_OSET));
+
+	omap_add_ram0(get_sdr_cs_size(SDRC_CS0_OSET));
 	printf("found %s at SDCS0\n", size_human_readable(get_sdr_cs_size(SDRC_CS0_OSET)));
 
 	if ((get_sdr_cs_size(SDRC_CS1_OSET) != 0) && (get_sdr_cs1_base() != OMAP_SDRC_CS0)) {

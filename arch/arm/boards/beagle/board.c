@@ -280,7 +280,7 @@ static struct gpmc_nand_platform_data nand_plat = {
 
 static int beagle_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(SZ_128M);
 
 	return 0;
 }

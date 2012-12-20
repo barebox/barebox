@@ -49,10 +49,9 @@ console_initcall(pcm049_console_init);
 
 static int pcm049_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, SZ_512M);
+	omap_add_ram0(SZ_512M);
 
-	add_mem_device("sram0", 0x40300000, 48 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
+	omap44xx_add_sram0();
 	return 0;
 }
 mem_initcall(pcm049_mem_init);

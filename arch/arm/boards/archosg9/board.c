@@ -35,7 +35,7 @@ static int archosg9_console_init(void){
 console_initcall(archosg9_console_init);
 
 static int archosg9_mem_init(void){
-	arm_add_mem_device("ram0", 0x80000000, SZ_1G);
+	omap_add_ram0(SZ_1G);
 	return 0;
 }
 mem_initcall(archosg9_mem_init);

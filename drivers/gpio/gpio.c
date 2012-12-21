@@ -1,4 +1,6 @@
 #include <common.h>
+#include <command.h>
+#include <complete.h>
 #include <gpio.h>
 #include <errno.h>
 #include <malloc.h>
@@ -198,3 +200,38 @@ int gpio_get_num(struct device_d *dev, int gpio)
 
 	return -ENODEV;
 }
+
+#ifdef CONFIG_CMD_GPIO
+static int do_gpiolib(int argc, char *argv[])
+{
+	int i;
+
+	printf("gpiolib: gpio lists\n");
+	printf("%*crequested  label\n", 11, ' ');
+
+	for (i = 0; i < ARCH_NR_GPIOS; i++) {
+		struct gpio_info *gi = &gpio_desc[i];
+
+		if (!gi->chip)
+			continue;
+
+		printf("gpio %*d: %*s  %s\n", 4,
+			i, 9, gi->requested ? "true" : "false",
+			gi->label ? gi->label : "");
+	}
+
+	return 0;
+}
+
+BAREBOX_CMD_HELP_START(gpiolib)
+BAREBOX_CMD_HELP_USAGE("gpiolib\n")
+BAREBOX_CMD_HELP_SHORT("dump current registered gpio\n");
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(gpiolib)
+	.cmd		= do_gpiolib,
+	.usage		= "dump current registered gpio",
+	BAREBOX_CMD_HELP(cmd_gpiolib_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
+BAREBOX_CMD_END
+#endif

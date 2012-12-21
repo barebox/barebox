@@ -1,18 +1,78 @@
 #include <common.h>
 #include <gpio.h>
 #include <errno.h>
+#include <malloc.h>
 
 static LIST_HEAD(chip_list);
 
-static struct gpio_chip *gpio_desc[ARCH_NR_GPIOS];
+struct gpio_info {
+	struct gpio_chip *chip;
+	bool requested;
+	char *label;
+};
 
-void gpio_set_value(unsigned gpio, int value)
+static struct gpio_info gpio_desc[ARCH_NR_GPIOS];
+
+static int gpio_ensure_requested(struct gpio_info *gi, int gpio)
 {
-	struct gpio_chip *chip = gpio_desc[gpio];
+	if (gi->requested)
+		return 0;
+
+	return gpio_request(gpio, "gpio");
+}
+
+int gpio_request(unsigned gpio, const char *label)
+{
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
+	int ret;
+
+	if (!gpio_is_valid(gpio))
+		return -EINVAL;
+	if (!chip)
+		return -EINVAL;
+	if (gi->requested)
+		return -EBUSY;
+	if (chip->ops->request) {
+		ret = chip->ops->request(chip, gpio - chip->base);
+		if (ret)
+			return ret;
+	}
+
+	gi->requested = true;
+	gi->label = xstrdup(label);
+
+	return 0;
+}
+
+void gpio_free(unsigned gpio)
+{
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
 
 	if (!gpio_is_valid(gpio))
 		return;
 	if (!chip)
+		return;
+	if (!gi->requested)
+		return;
+	if (chip->ops->free)
+		chip->ops->free(chip, gpio - chip->base);
+
+	gi->requested = false;
+	free(gi->label);
+}
+
+void gpio_set_value(unsigned gpio, int value)
+{
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
+
+	if (!gpio_is_valid(gpio))
+		return;
+	if (!chip)
+		return;
+	if (gpio_ensure_requested(gi, gpio))
 		return;
 	if (!chip->ops->set)
 		return;
@@ -22,12 +82,17 @@ EXPORT_SYMBOL(gpio_set_value);
 
 int gpio_get_value(unsigned gpio)
 {
-	struct gpio_chip *chip = gpio_desc[gpio];
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
+	int ret;
 
 	if (!gpio_is_valid(gpio))
 		return -EINVAL;
 	if (!chip)
 		return -ENODEV;
+	ret = gpio_ensure_requested(gi, gpio);
+	if (ret)
+		return ret;
 	if (!chip->ops->get)
 		return -ENOSYS;
 	return chip->ops->get(chip, gpio - chip->base);
@@ -36,12 +101,17 @@ EXPORT_SYMBOL(gpio_get_value);
 
 int gpio_direction_output(unsigned gpio, int value)
 {
-	struct gpio_chip *chip = gpio_desc[gpio];
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
+	int ret;
 
 	if (!gpio_is_valid(gpio))
 		return -EINVAL;
 	if (!chip)
 		return -ENODEV;
+	ret = gpio_ensure_requested(gi, gpio);
+	if (ret)
+		return ret;
 	if (!chip->ops->direction_output)
 		return -ENOSYS;
 	return chip->ops->direction_output(chip, gpio - chip->base, value);
@@ -50,12 +120,17 @@ EXPORT_SYMBOL(gpio_direction_output);
 
 int gpio_direction_input(unsigned gpio)
 {
-	struct gpio_chip *chip = gpio_desc[gpio];
+	struct gpio_info *gi = &gpio_desc[gpio];
+	struct gpio_chip *chip = gi->chip;
+	int ret;
 
 	if (!gpio_is_valid(gpio))
 		return -EINVAL;
 	if (!chip)
 		return -ENODEV;
+	ret = gpio_ensure_requested(gi, gpio);
+	if (ret)
+		return ret;
 	if (!chip->ops->direction_input)
 		return -ENOSYS;
 	return chip->ops->direction_input(chip, gpio - chip->base);
@@ -72,7 +147,7 @@ static int gpiochip_find_base(int start, int ngpio)
 		start = 0;
 
 	for (i = start; i < ARCH_NR_GPIOS; i++) {
-		struct gpio_chip *chip = gpio_desc[i];
+		struct gpio_chip *chip = gpio_desc[i].chip;
 
 		if (!chip) {
 			spare++;
@@ -107,7 +182,7 @@ int gpiochip_add(struct gpio_chip *chip)
 	list_add_tail(&chip->list, &chip_list);
 
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
-		gpio_desc[i] = chip;
+		gpio_desc[i].chip = chip;
 
 	return 0;
 }

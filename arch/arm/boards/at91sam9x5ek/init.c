@@ -223,7 +223,7 @@ static void __init ek_add_led(void)
 		at91_set_gpio_output(leds[i].gpio, leds[i].active_low);
 		led_gpio_register(&leds[i]);
 	}
-	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[0].led);
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[1].led);
 }
 
 static int at91sam9x5ek_mem_init(void)

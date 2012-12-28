@@ -35,7 +35,6 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
@@ -78,7 +77,7 @@ static void ek_add_device_nand(void)
 		ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &ek_nand_smc_config);
+	sam9_smc_configure(0, 3, &ek_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }

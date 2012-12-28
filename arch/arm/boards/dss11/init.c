@@ -29,7 +29,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_rstc.h>
@@ -69,7 +68,7 @@ static void dss11_add_device_nand(void)
 	dss11_nand_smc_config.mode |= AT91_SMC_DBW_16;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &dss11_nand_smc_config);
+	sam9_smc_configure(0, 3, &dss11_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }

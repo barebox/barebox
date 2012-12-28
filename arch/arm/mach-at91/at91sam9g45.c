@@ -259,6 +259,7 @@ static void at91sam9g45_initialize(void)
 	at91_add_rm9200_gpio(4, AT91_BASE_PIOE);
 
 	at91_add_pit(AT91SAM9G45_BASE_PIT);
+	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9G45_BASE_SMC, 0x200);
 }
 
 AT91_SOC_START(sam9g45)

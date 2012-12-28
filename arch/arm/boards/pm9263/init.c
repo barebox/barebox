@@ -35,7 +35,6 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <linux/w1-gpio.h>
 #include <w1_mac_address.h>
 
@@ -84,7 +83,7 @@ static void pm_add_device_nand(void)
 		pm_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &pm_nand_smc_config);
+	sam9_smc_configure(0, 3, &pm_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }

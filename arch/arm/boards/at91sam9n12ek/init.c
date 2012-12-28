@@ -31,7 +31,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -77,7 +76,7 @@ static void ek_add_device_nand(void)
 	ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &ek_nand_smc_config);
+	sam9_smc_configure(0, 3, &ek_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }
@@ -112,7 +111,7 @@ static struct sam9_smc_config __initdata ks8851_smc_config = {
 static void __init ek_add_device_ks8851(void)
 {
 	/* Configure chip-select 2 (KS8851) */
-	sam9_smc_configure(2, &ks8851_smc_config);
+	sam9_smc_configure(0, 2, &ks8851_smc_config);
 	/* Configure NCS signal */
 	at91_set_B_periph(AT91_PIN_PD19, 0);
 	/* Configure Interrupt pin as input, no pull-up */

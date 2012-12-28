@@ -247,6 +247,8 @@ static void at91sam9263_initialize(void)
 	at91_add_rm9200_gpio(4, AT91_BASE_PIOE);
 
 	at91_add_pit(AT91SAM9263_BASE_PIT);
+	at91_add_sam9_smc(0, AT91SAM9263_BASE_SMC0, 0x200);
+	at91_add_sam9_smc(1, AT91SAM9263_BASE_SMC1, 0x200);
 }
 
 AT91_SOC_START(sam9263)

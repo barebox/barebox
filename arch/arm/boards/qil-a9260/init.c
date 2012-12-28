@@ -22,7 +22,6 @@
 #include <linux/clk.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <led.h>
 #include <mach/io.h>
@@ -59,7 +58,7 @@ static struct sam9_smc_config nand_smc_config = {
 static void qil_a9260_add_device_nand(void)
 {
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &nand_smc_config);
+	sam9_smc_configure(0, 3, &nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }

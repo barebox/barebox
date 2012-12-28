@@ -28,3 +28,10 @@ static inline struct device_d *at91_add_pit(resource_size_t start)
 	return add_generic_device("at91-pit", DEVICE_ID_SINGLE, NULL, start, 16,
 				  IORESOURCE_MEM, NULL);
 }
+
+static inline struct device_d *at91_add_sam9_smc(int id, resource_size_t start,
+						 resource_size_t size)
+{
+	return add_generic_device("at91sam9-smc", id, NULL, start, size,
+				  IORESOURCE_MEM, NULL);
+}

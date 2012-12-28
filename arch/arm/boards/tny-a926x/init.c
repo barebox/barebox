@@ -32,7 +32,6 @@
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/at91sam9_sdramc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -100,9 +99,9 @@ static void tny_a9260_add_device_nand(void)
 {
 	/* configure chip-select 3 (NAND) */
 	if (machine_is_tny_a9g20())
-		sam9_smc_configure(3, &tny_a9g20_nand_smc_config);
+		sam9_smc_configure(0, 3, &tny_a9g20_nand_smc_config);
 	else
-		sam9_smc_configure(3, &tny_a9260_nand_smc_config);
+		sam9_smc_configure(0, 3, &tny_a9260_nand_smc_config);
 
 	if (machine_is_tny_a9263()) {
 		nand_pdata.rdy_pin	= AT91_PIN_PA22;

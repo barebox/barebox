@@ -31,7 +31,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -92,7 +91,7 @@ static void ek_add_device_nand(void)
 		cm_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &cm_nand_smc_config);
+	sam9_smc_configure(0, 3, &cm_nand_smc_config);
 
 	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT)) {
 		unsigned long csa;

@@ -11,7 +11,11 @@
 #include <asm/io.h>
 #include <mach/hardware.h>
 
-#define UART_BASE	(AT91_BASE_SYS + AT91_DBGU)
+#ifdef COFNIG_HAVE_AT91_DBGU0
+#define UART_BASE	AT91_BASE_DBGU0
+#else
+#define UART_BASE	AT91_BASE_DBGU1
+#endif
 
 #define ATMEL_US_CSR		0x0014
 #define ATMEL_US_THR		0x001c

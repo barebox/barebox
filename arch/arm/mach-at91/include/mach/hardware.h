@@ -20,6 +20,8 @@
 /* 9263, 9g45 */
 #define AT91_BASE_DBGU1	0xffffee00
 
+#define AT91_PMC	(0xfffffc00 - AT91_BASE_SYS)
+
 #if defined(CONFIG_ARCH_AT91RM9200)
 #include <mach/at91rm9200.h>
 #elif defined(CONFIG_ARCH_AT91SAM9260) || defined(CONFIG_ARCH_AT91SAM9G20)

@@ -1497,6 +1497,13 @@ static int __init at91udc_probe(struct device_d *dev)
 	clk_disable(udc->iclk);
 
 	if (gpio_is_valid(udc->board.vbus_pin)) {
+		retval = gpio_request(udc->board.vbus_pin, "udc_vbus");
+		if (retval < 0) {
+			dev_err(dev, "request vbus pin failed\n");
+			goto fail0a;
+		}
+		gpio_direction_input(udc->board.vbus_pin);
+
 		/*
 		 * Get the initial state of VBUS - we cannot expect
 		 * a pending interrupt.

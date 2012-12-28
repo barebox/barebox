@@ -4,6 +4,7 @@
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 
+#include "soc.h"
 #include "clock.h"
 #include "generic.h"
 
@@ -222,27 +223,21 @@ static void __init at91rm9200_register_clocks(void)
 /* --------------------------------------------------------------------
  *  AT91RM9200 processor initialization
  * -------------------------------------------------------------------- */
-static int __init at91rm9200_initialize(void)
+static void __init at91rm9200_initialize(void)
 {
-
 	/* Init clock subsystem */
 	at91_clock_init(AT91_MAIN_CLOCK);
 
 	/* Register the processor-specific clocks */
 	at91rm9200_register_clocks();
 
-	return 0;
-}
-core_initcall(at91rm9200_initialize);
-
-static int at91rm9200_gpio_init(void)
-{
 	/* Register GPIO subsystem */
 	at91_add_rm9200_gpio(0, AT91_BASE_PIOA);
 	at91_add_rm9200_gpio(1, AT91_BASE_PIOB);
 	at91_add_rm9200_gpio(2, AT91_BASE_PIOC);
 	at91_add_rm9200_gpio(3, AT91_BASE_PIOD);
-
-	return 0;
 }
-postcore_initcall(at91rm9200_gpio_init);
+
+AT91_SOC_START(rm9200)
+	.init = at91rm9200_initialize,
+AT91_SOC_END

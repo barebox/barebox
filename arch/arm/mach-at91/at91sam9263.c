@@ -4,6 +4,7 @@
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 
+#include "soc.h"
 #include "clock.h"
 #include "generic.h"
 
@@ -230,7 +231,7 @@ static void __init at91sam9263_register_clocks(void)
 	clk_register(&pck3);
 }
 
-static int at91sam9263_initialize(void)
+static void at91sam9263_initialize(void)
 {
 	/* Init clock subsystem */
 	at91_clock_init(AT91_MAIN_CLOCK);
@@ -238,20 +239,16 @@ static int at91sam9263_initialize(void)
 	/* Register the processor-specific clocks */
 	at91sam9263_register_clocks();
 
-	return 0;
-}
-core_initcall(at91sam9263_initialize);
-
-static int at91sam9263_gpio_init(void)
-{
 	/* Register GPIO subsystem */
 	at91_add_rm9200_gpio(0, AT91_BASE_PIOA);
 	at91_add_rm9200_gpio(1, AT91_BASE_PIOB);
 	at91_add_rm9200_gpio(2, AT91_BASE_PIOC);
 	at91_add_rm9200_gpio(3, AT91_BASE_PIOD);
 	at91_add_rm9200_gpio(4, AT91_BASE_PIOE);
-	at91_add_pit(AT91SAM9263_BASE_PIT);
 
-	return 0;
+	at91_add_pit(AT91SAM9263_BASE_PIT);
 }
-postcore_initcall(at91sam9263_gpio_init);
+
+AT91_SOC_START(sam9263)
+	.init = at91sam9263_initialize,
+AT91_SOC_END

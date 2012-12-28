@@ -49,69 +49,108 @@ config AT91SAM9G45_RESET
 
 comment "Atmel AT91 System-on-Chip"
 
+config SOC_AT91RM9200
+	bool
+	select CPU_ARM920T
+	select HAVE_AT91_DBGU0
+	select HAS_AT91_ETHER
+	select MACH_HAS_LOWLEVEL_INIT
+
+config SOC_AT91SAM9260
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU0
+	select HAS_MACB
+	select AT91SAM9_RESET
+	help
+	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
+	  or AT91SAM9G20 SoC.
+
+config SOC_AT91SAM9261
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU0
+	select AT91SAM9_RESET
+	help
+	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
+
+config SOC_AT91SAM9263
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU1
+	select HAS_MACB
+	select AT91SAM9_RESET
+
+config SOC_AT91SAM9G45
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU1
+	select HAS_MACB
+	select AT91SAM9G45_RESET
+	help
+	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
+	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
+
+config SOC_AT91SAM9X5
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU0
+	select HAS_MACB
+	select AT91SAM9G45_RESET
+	help
+	  Select this if you are using one of Atmel's AT91SAM9x5 family SoC.
+	  This means that your SAM9 name finishes with a '5' (except if it is
+	  AT91SAM9G45!).
+	  This support covers AT91SAM9G15, AT91SAM9G25, AT91SAM9X25, AT91SAM9G35
+	  and AT91SAM9X35.
+
+config SOC_AT91SAM9N12
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_DBGU0
+	select AT91SAM9G45_RESET
+	help
+	  Select this if you are using Atmel's AT91SAM9N12 SoC.
+
 choice
 	prompt "Atmel AT91 Processor"
 
 config ARCH_AT91RM9200
 	bool "AT91RM9200"
-	select CPU_ARM920T
-	select HAVE_AT91_DBGU0
-	select HAS_AT91_ETHER
-	select MACH_HAS_LOWLEVEL_INIT
 	select MACH_DO_LOWLEVEL_INIT
+	select SOC_AT91RM9200
 
 config ARCH_AT91SAM9260
 	bool "AT91SAM9260"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select HAS_MACB
-	select AT91SAM9_RESET
+	select SOC_AT91SAM9260
 
 config ARCH_AT91SAM9261
 	bool "AT91SAM9261"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select AT91SAM9_RESET
+	select SOC_AT91SAM9261
 
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU1
-	select HAS_MACB
-	select AT91SAM9_RESET
+	select SOC_AT91SAM9263
 
 config ARCH_AT91SAM9G10
 	bool "AT91SAM9G10"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select AT91SAM9_RESET
+	select SOC_AT91SAM9261
 
 config ARCH_AT91SAM9G20
 	bool "AT91SAM9G20"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select HAS_MACB
-	select AT91SAM9_RESET
+	select SOC_AT91SAM9260
 
 config ARCH_AT91SAM9G45
 	bool "AT91SAM9G45 or AT91SAM9M10"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU1
-	select HAS_MACB
-	select AT91SAM9G45_RESET
+	select SOC_AT91SAM9G45
 
 config ARCH_AT91SAM9X5
 	bool "AT91SAM9X5"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select HAS_MACB
-	select AT91SAM9G45_RESET
+	select SOC_AT91SAM9X5
 
 config ARCH_AT91SAM9N12
 	bool "AT91SAM9N12"
-	select CPU_ARM926T
-	select HAVE_AT91_DBGU0
-	select AT91SAM9G45_RESET
+	select SOC_AT91SAM9N12
 
 endchoice
 

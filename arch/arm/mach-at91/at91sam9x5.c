@@ -6,6 +6,7 @@
 #include <mach/io.h>
 #include <mach/cpu.h>
 
+#include "soc.h"
 #include "generic.h"
 #include "clock.h"
 
@@ -288,7 +289,7 @@ static void __init at91sam9x5_register_clocks(void)
  *  AT91SAM9x5 processor initialization
  * -------------------------------------------------------------------- */
 
-static int at91sam9x5_initialize(void)
+static void at91sam9x5_initialize(void)
 {
 	/* Init clock subsystem */
 	at91_clock_init(AT91_MAIN_CLOCK);
@@ -296,19 +297,15 @@ static int at91sam9x5_initialize(void)
 	/* Register the processor-specific clocks */
 	at91sam9x5_register_clocks();
 
-	return 0;
-}
-core_initcall(at91sam9x5_initialize);
-
-static int at91sam9x5_gpio_init(void)
-{
 	/* Register GPIO subsystem */
 	at91_add_sam9x5_gpio(0, AT91_BASE_PIOA);
 	at91_add_sam9x5_gpio(1, AT91_BASE_PIOB);
 	at91_add_sam9x5_gpio(2, AT91_BASE_PIOC);
 	at91_add_sam9x5_gpio(3, AT91_BASE_PIOD);
-	at91_add_pit(AT91SAM9X5_BASE_PIT);
 
-	return 0;
+	at91_add_pit(AT91SAM9X5_BASE_PIT);
 }
-postcore_initcall(at91sam9x5_gpio_init);
+
+AT91_SOC_START(sam9x5)
+	.init = at91sam9x5_initialize,
+AT91_SOC_END

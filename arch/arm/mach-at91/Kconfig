@@ -6,6 +6,18 @@ config HAVE_AT91_DBGU0
 config HAVE_AT91_DBGU1
 	bool
 
+config AT91SAM9_SMC
+	bool
+
+config AT91SAM9_TIMER
+	bool
+
+config SOC_AT91SAM9
+	bool
+	select CPU_ARM926T
+	select AT91SAM9_SMC
+	select AT91SAM9_TIMER
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x73f00000 if ARCH_AT91SAM9G45
@@ -58,7 +70,7 @@ config SOC_AT91RM9200
 
 config SOC_AT91SAM9260
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select AT91SAM9_RESET
@@ -68,7 +80,7 @@ config SOC_AT91SAM9260
 
 config SOC_AT91SAM9261
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select AT91SAM9_RESET
 	help
@@ -76,14 +88,14 @@ config SOC_AT91SAM9261
 
 config SOC_AT91SAM9263
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select AT91SAM9_RESET
 
 config SOC_AT91SAM9G45
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select AT91SAM9G45_RESET
@@ -93,7 +105,7 @@ config SOC_AT91SAM9G45
 
 config SOC_AT91SAM9X5
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select AT91SAM9G45_RESET
@@ -106,7 +118,7 @@ config SOC_AT91SAM9X5
 
 config SOC_AT91SAM9N12
 	bool
-	select CPU_ARM926T
+	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select AT91SAM9G45_RESET
 	help

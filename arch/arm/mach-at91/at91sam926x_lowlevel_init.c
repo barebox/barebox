@@ -43,7 +43,7 @@ void __naked __bare_init reset(void)
 
 	common_reset();
 
-	at91_sys_write(AT91_WDT_MR, CONFIG_SYS_WDTC_WDMR_VAL);
+	__raw_writel(CONFIG_SYS_WDTC_WDMR_VAL, AT91_BASE_WDT + AT91_WDT_MR);
 
 	/* configure PIOx as EBI0 D[16-31] */
 #ifdef CONFIG_ARCH_AT91SAM9263

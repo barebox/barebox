@@ -250,6 +250,7 @@ static int at91sam9263_gpio_init(void)
 	at91_add_rm9200_gpio(2, AT91_BASE_PIOC);
 	at91_add_rm9200_gpio(3, AT91_BASE_PIOD);
 	at91_add_rm9200_gpio(4, AT91_BASE_PIOE);
+	at91_add_pit(AT91SAM9263_BASE_PIT);
 
 	return 0;
 }

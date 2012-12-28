@@ -22,3 +22,9 @@ static inline struct device_d *at91_add_sam9x5_gpio(int id, resource_size_t star
 	return add_generic_device("at91sam9x5-gpio", id, NULL, start, 512,
 				  IORESOURCE_MEM, NULL);
 }
+
+static inline struct device_d *at91_add_pit(resource_size_t start)
+{
+	return add_generic_device("at91-pit", DEVICE_ID_SINGLE, NULL, start, 16,
+				  IORESOURCE_MEM, NULL);
+}

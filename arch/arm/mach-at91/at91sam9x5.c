@@ -307,6 +307,7 @@ static int at91sam9x5_gpio_init(void)
 	at91_add_sam9x5_gpio(1, AT91_BASE_PIOB);
 	at91_add_sam9x5_gpio(2, AT91_BASE_PIOC);
 	at91_add_sam9x5_gpio(3, AT91_BASE_PIOD);
+	at91_add_pit(AT91SAM9X5_BASE_PIT);
 
 	return 0;
 }

@@ -123,7 +123,6 @@
 #define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
 #define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
 #define AT91_SHDWC	(0xfffffe10 - AT91_BASE_SYS)
-#define AT91_PIT	(0xfffffe30 - AT91_BASE_SYS)
 #define AT91_WDT	(0xfffffe40 - AT91_BASE_SYS)
 
 #define AT91_BASE_PIOA	AT91SAM9X5_BASE_PIOA

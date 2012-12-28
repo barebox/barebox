@@ -232,10 +232,10 @@ static void __init at91rm9200_initialize(void)
 	at91rm9200_register_clocks();
 
 	/* Register GPIO subsystem */
-	at91_add_rm9200_gpio(0, AT91_BASE_PIOA);
-	at91_add_rm9200_gpio(1, AT91_BASE_PIOB);
-	at91_add_rm9200_gpio(2, AT91_BASE_PIOC);
-	at91_add_rm9200_gpio(3, AT91_BASE_PIOD);
+	at91_add_rm9200_gpio(0, AT91RM9200_BASE_PIOA);
+	at91_add_rm9200_gpio(1, AT91RM9200_BASE_PIOB);
+	at91_add_rm9200_gpio(2, AT91RM9200_BASE_PIOC);
+	at91_add_rm9200_gpio(3, AT91RM9200_BASE_PIOD);
 }
 
 AT91_SOC_START(rm9200)

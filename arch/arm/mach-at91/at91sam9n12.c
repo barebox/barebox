@@ -213,10 +213,10 @@ static void at91sam9n12_initialize(void)
 	at91sam9n12_register_clocks();
 
 	/* Register GPIO subsystem */
-	at91_add_sam9x5_gpio(0, AT91_BASE_PIOA);
-	at91_add_sam9x5_gpio(1, AT91_BASE_PIOB);
-	at91_add_sam9x5_gpio(2, AT91_BASE_PIOC);
-	at91_add_sam9x5_gpio(3, AT91_BASE_PIOD);
+	at91_add_sam9x5_gpio(0, AT91SAM9N12_BASE_PIOA);
+	at91_add_sam9x5_gpio(1, AT91SAM9N12_BASE_PIOB);
+	at91_add_sam9x5_gpio(2, AT91SAM9N12_BASE_PIOC);
+	at91_add_sam9x5_gpio(3, AT91SAM9N12_BASE_PIOD);
 
 	at91_add_pit(AT91SAM9N12_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9N12_BASE_SMC, 0x200);

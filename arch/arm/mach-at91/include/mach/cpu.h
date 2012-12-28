@@ -86,7 +86,7 @@ static inline unsigned long at91_arch_identify(void)
 
 static inline unsigned long at91cap9_rev_identify(void)
 {
-	return (at91_sys_read(AT91_PMC_VER));
+	return (at91_pmc_read(AT91_PMC_VER));
 }
 #endif
 

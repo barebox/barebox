@@ -126,11 +126,11 @@ static void pllb_mode(struct clk *clk, int is_on)
 		value = 0;
 
 	// REVISIT: Add work-around for AT91RM9200 Errata #26 ?
-	at91_sys_write(AT91_CKGR_PLLBR, value);
+	at91_pmc_write(AT91_CKGR_PLLBR, value);
 
 	do {
 		barrier();
-	} while ((at91_sys_read(AT91_PMC_SR) & AT91_PMC_LOCKB) != is_on);
+	} while ((at91_pmc_read(AT91_PMC_SR) & AT91_PMC_LOCKB) != is_on);
 }
 
 static struct clk pllb = {
@@ -145,14 +145,14 @@ static struct clk pllb = {
 static void pmc_sys_mode(struct clk *clk, int is_on)
 {
 	if (is_on)
-		at91_sys_write(AT91_PMC_SCER, clk->pmc_mask);
+		at91_pmc_write(AT91_PMC_SCER, clk->pmc_mask);
 	else
-		at91_sys_write(AT91_PMC_SCDR, clk->pmc_mask);
+		at91_pmc_write(AT91_PMC_SCDR, clk->pmc_mask);
 }
 
 static void pmc_uckr_mode(struct clk *clk, int is_on)
 {
-	unsigned int uckr = at91_sys_read(AT91_CKGR_UCKR);
+	unsigned int uckr = at91_pmc_read(AT91_CKGR_UCKR);
 
 	if (cpu_is_at91sam9g45()) {
 		if (is_on)
@@ -163,13 +163,13 @@ static void pmc_uckr_mode(struct clk *clk, int is_on)
 
 	if (is_on) {
 		is_on = AT91_PMC_LOCKU;
-		at91_sys_write(AT91_CKGR_UCKR, uckr | clk->pmc_mask);
+		at91_pmc_write(AT91_CKGR_UCKR, uckr | clk->pmc_mask);
 	} else
-		at91_sys_write(AT91_CKGR_UCKR, uckr & ~(clk->pmc_mask));
+		at91_pmc_write(AT91_CKGR_UCKR, uckr & ~(clk->pmc_mask));
 
 	do {
 		barrier();
-	} while ((at91_sys_read(AT91_PMC_SR) & AT91_PMC_LOCKU) != is_on);
+	} while ((at91_pmc_read(AT91_PMC_SR) & AT91_PMC_LOCKU) != is_on);
 }
 
 /* USB function clocks (PLLB must be 48 MHz) */
@@ -205,9 +205,9 @@ struct clk mck = {
 static void pmc_periph_mode(struct clk *clk, int is_on)
 {
 	if (is_on)
-		at91_sys_write(AT91_PMC_PCER, clk->pmc_mask);
+		at91_pmc_write(AT91_PMC_PCER, clk->pmc_mask);
 	else
-		at91_sys_write(AT91_PMC_PCDR, clk->pmc_mask);
+		at91_pmc_write(AT91_PMC_PCDR, clk->pmc_mask);
 }
 
 static struct clk *at91_css_to_clk(unsigned long css)
@@ -352,10 +352,10 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		if (actual && actual <= rate) {
 			u32	pckr;
 
-			pckr = at91_sys_read(AT91_PMC_PCKR(clk->id));
+			pckr = at91_pmc_read(AT91_PMC_PCKR(clk->id));
 			pckr &= css_mask;	/* keep clock selection */
 			pckr |= prescale << prescale_offset;
-			at91_sys_write(AT91_PMC_PCKR(clk->id), pckr);
+			at91_pmc_write(AT91_PMC_PCKR(clk->id), pckr);
 			clk->rate_hz = actual;
 			break;
 		}
@@ -386,7 +386,7 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
 
 	clk->rate_hz = parent->rate_hz;
 	clk->parent = parent;
-	at91_sys_write(AT91_PMC_PCKR(clk->id), parent->id);
+	at91_pmc_write(AT91_PMC_PCKR(clk->id), parent->id);
 
 	return 0;
 }
@@ -404,7 +404,7 @@ static void init_programmable_clock(struct clk *clk)
 	else
 		css_mask = AT91_PMC_CSS;
 
-	pckr = at91_sys_read(AT91_PMC_PCKR(clk->id));
+	pckr = at91_pmc_read(AT91_PMC_PCKR(clk->id));
 	parent = at91_css_to_clk(pckr & css_mask);
 	clk->parent = parent;
 	clk->rate_hz = parent->rate_hz / pmc_prescaler_divider(pckr);
@@ -550,14 +550,14 @@ static void at91_pllb_usbfs_clock_init(unsigned long main_clock)
 	if (cpu_is_at91rm9200()) {
 		uhpck.pmc_mask = AT91RM9200_PMC_UHP;
 		udpck.pmc_mask = AT91RM9200_PMC_UDP;
-		at91_sys_write(AT91_PMC_SCER, AT91RM9200_PMC_MCKUDP);
+		at91_pmc_write(AT91_PMC_SCER, AT91RM9200_PMC_MCKUDP);
 	} else if (cpu_is_at91sam9260() || cpu_is_at91sam9261() ||
 		   cpu_is_at91sam9263() || cpu_is_at91sam9g20() ||
 		   cpu_is_at91sam9g10()) {
 		uhpck.pmc_mask = AT91SAM926x_PMC_UHP;
 		udpck.pmc_mask = AT91SAM926x_PMC_UDP;
 	}
-	at91_sys_write(AT91_CKGR_PLLBR, 0);
+	at91_pmc_write(AT91_CKGR_PLLBR, 0);
 
 	udpck.rate_hz = at91_usb_rate(&pllb, pllb.rate_hz, at91_pllb_usb_init);
 	uhpck.rate_hz = at91_usb_rate(&pllb, pllb.rate_hz, at91_pllb_usb_init);
@@ -574,13 +574,13 @@ static void at91_upll_usbfs_clock_init(unsigned long main_clock)
 	/* Setup divider by 10 to reach 48 MHz */
 	usbr |= ((10 - 1) << 8) & AT91_PMC_OHCIUSBDIV;
 
-	at91_sys_write(AT91_PMC_USB, usbr);
+	at91_pmc_write(AT91_PMC_USB, usbr);
 
 	/* Now set uhpck values */
 	uhpck.parent = &utmi_clk;
 	uhpck.pmc_mask = AT91SAM926x_PMC_UHP;
 	uhpck.rate_hz = utmi_clk.rate_hz;
-	uhpck.rate_hz /= 1 + ((at91_sys_read(AT91_PMC_USB) & AT91_PMC_OHCIUSBDIV) >> 8);
+	uhpck.rate_hz /= 1 + ((at91_pmc_read(AT91_PMC_USB) & AT91_PMC_OHCIUSBDIV) >> 8);
 }
 
 static int pll_overclock = 0;
@@ -591,6 +591,8 @@ int at91_clock_init(unsigned long main_clock)
 	unsigned tmp, freq, mckr;
 	int i;
 
+
+
 	/*
 	 * When the bootloader initialized the main oscillator correctly,
 	 * there's no problem using the cycle counter.  But if it didn't,
@@ -599,14 +601,14 @@ int at91_clock_init(unsigned long main_clock)
 	 */
 	if (!main_clock) {
 		do {
-			tmp = at91_sys_read(AT91_CKGR_MCFR);
+			tmp = at91_pmc_read(AT91_CKGR_MCFR);
 		} while (!(tmp & AT91_PMC_MAINRDY));
 		main_clock = (tmp & AT91_PMC_MAINF) * (AT91_SLOW_CLOCK / 16);
 	}
 	main_clk.rate_hz = main_clock;
 
 	/* report if PLLA is more than mildly overclocked */
-	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_sys_read(AT91_CKGR_PLLAR));
+	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_pmc_read(AT91_CKGR_PLLAR));
 	if (cpu_has_300M_plla()) {
 		if (plla.rate_hz > 300000000)
 			pll_overclock = 1;
@@ -625,7 +627,7 @@ int at91_clock_init(unsigned long main_clock)
 	}
 
 	if (cpu_has_plladiv2()) {
-		mckr = at91_sys_read(AT91_PMC_MCKR);
+		mckr = at91_pmc_read(AT91_PMC_MCKR);
 		plla.rate_hz /= (1 << ((mckr & AT91_PMC_PLLADIV2) >> 12));	/* plla divisor by 2 */
 	}
 
@@ -664,7 +666,7 @@ int at91_clock_init(unsigned long main_clock)
 	 * MCK and CPU derive from one of those primary clocks.
 	 * For now, assume this parentage won't change.
 	 */
-	mckr = at91_sys_read(AT91_PMC_MCKR);
+	mckr = at91_pmc_read(AT91_PMC_MCKR);
 	mck.parent = at91_css_to_clk(mckr & AT91_PMC_CSS);
 	freq = mck.parent->rate_hz;
 	freq /= pmc_prescaler_divider(mckr);					/* prescale */
@@ -748,8 +750,8 @@ static int at91_clock_reset(void)
 		pr_debug("Clocks: disable unused %s\n", clk->name);
 	}
 
-	at91_sys_write(AT91_PMC_PCDR, pcdr);
-	at91_sys_write(AT91_PMC_SCDR, scdr);
+	at91_pmc_write(AT91_PMC_PCDR, pcdr);
+	at91_pmc_write(AT91_PMC_SCDR, scdr);
 
 	return 0;
 }

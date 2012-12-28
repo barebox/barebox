@@ -30,11 +30,11 @@
 #include <clock.h>
 #include <asm/hardware.h>
 #include <mach/at91_pit.h>
-#include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 #include <mach/io.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 
 uint64_t at91sam9_clocksource_read(void)
 {
@@ -49,15 +49,25 @@ static struct clocksource cs = {
 
 static int clocksource_init (void)
 {
+	struct clk *clk;
 	u32 pit_rate;
+	int ret;
 
-	/*
-	 * Enable PITC Clock
-	 * The clock is already enabled for system controller in boot
-	 */
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
+	clk = clk_get(NULL, "mck");
+	if (IS_ERR(clk)) {
+		ret = PTR_ERR(clk);
+		pr_err("clock not found: %d\n", ret);
+		return ret;
+	}
 
-	pit_rate = clk_get_rate(clk_get(NULL, "mck")) / 16;
+	ret = clk_enable(clk);
+	if (ret < 0) {
+		pr_err("clock failed to enable: %d\n", ret);
+		clk_put(clk);
+		return ret;
+	}
+
+	pit_rate = clk_get_rate(clk) / 16;
 
 	/* Enable PITC */
 	at91_sys_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);

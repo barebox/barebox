@@ -595,15 +595,14 @@ static int omap_mmc_probe(struct device_d *dev)
 }
 
 static struct driver_d omap_mmc_driver = {
-        .name  = "omap-hsmmc",
-        .probe = omap_mmc_probe,
+	.name  = "omap-hsmmc",
+	.probe = omap_mmc_probe,
 };
 
 static int omap_mmc_init_driver(void)
 {
-        platform_driver_register(&omap_mmc_driver);
-        return 0;
+	platform_driver_register(&omap_mmc_driver);
+	return 0;
 }
 
 device_initcall(omap_mmc_init_driver);
-

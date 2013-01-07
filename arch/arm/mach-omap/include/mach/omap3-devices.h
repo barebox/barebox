@@ -59,17 +59,20 @@ static inline struct device_d *omap3_add_uart3(void)
 
 static inline struct device_d *omap3_add_mmc1(struct omap_hsmmc_platform_data *pdata)
 {
-	return omap_add_mmc(0, OMAP3_MMC1_BASE, pdata);
+	return add_generic_device("omap3-hsmmc", 0, NULL,
+			OMAP3_MMC1_BASE, SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap3_add_mmc2(struct omap_hsmmc_platform_data *pdata)
 {
-	return omap_add_mmc(1, OMAP3_MMC2_BASE, pdata);
+	return add_generic_device("omap3-hsmmc", 1, NULL,
+			OMAP3_MMC2_BASE, SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap3_add_mmc3(struct omap_hsmmc_platform_data *pdata)
 {
-	return omap_add_mmc(2, OMAP3_MMC3_BASE, pdata);
+	return add_generic_device("omap3-hsmmc", 2, NULL,
+			OMAP3_MMC3_BASE, SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap3_add_i2c1(void *pdata)

@@ -26,7 +26,8 @@ static inline struct device_d *am33xx_add_uart2(void)
 
 static inline struct device_d *am33xx_add_mmc0(struct omap_hsmmc_platform_data *pdata)
 {
-	return omap_add_mmc(0, AM33XX_MMCHS0_BASE, pdata);
+	return add_generic_device("omap3-hsmmc", 0, NULL,
+			AM33XX_MMCHS0_BASE, SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 #endif /* __MACH_OMAP3_DEVICES_H */

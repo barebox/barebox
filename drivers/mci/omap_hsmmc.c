@@ -59,6 +59,18 @@ struct hsmmc {
 	unsigned int capa;		/* 0x140 */
 };
 
+struct omap_mmc_driver_data {
+	unsigned long reg_ofs;
+};
+
+static struct omap_mmc_driver_data omap3_data = {
+	.reg_ofs = 0,
+};
+
+static struct omap_mmc_driver_data omap4_data = {
+	.reg_ofs = 0x100,
+};
+
 /*
  * OMAP HS MMC Bit definitions
  */
@@ -566,6 +578,13 @@ static int omap_mmc_probe(struct device_d *dev)
 {
 	struct omap_hsmmc *hsmmc;
 	struct omap_hsmmc_platform_data *pdata;
+	struct omap_mmc_driver_data *drvdata;
+	unsigned long reg_ofs = 0;
+	int ret;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	if (!ret)
+		reg_ofs = drvdata->reg_ofs;
 
 	hsmmc = xzalloc(sizeof(*hsmmc));
 
@@ -577,7 +596,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.hw_dev = dev;
 
 	hsmmc->iobase = dev_request_mem_region(dev, 0);
-	hsmmc->base = hsmmc->iobase + 0x100;
+	hsmmc->base = hsmmc->iobase + reg_ofs;
 
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
@@ -594,9 +613,22 @@ static int omap_mmc_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct platform_device_id omap_mmc_ids[] = {
+	{
+		.name = "omap3-hsmmc",
+		.driver_data = (unsigned long)&omap3_data,
+	}, {
+		.name = "omap4-hsmmc",
+		.driver_data = (unsigned long)&omap4_data,
+	}, {
+		/* sentinel */
+	},
+};
+
 static struct driver_d omap_mmc_driver = {
 	.name  = "omap-hsmmc",
 	.probe = omap_mmc_probe,
+	.id_table = omap_mmc_ids,
 };
 
 static int omap_mmc_init_driver(void)

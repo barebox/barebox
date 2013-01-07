@@ -25,13 +25,6 @@ struct device_d *omap_add_uart(int id, unsigned long base)
 			IORESOURCE_MEM_8BIT, &serial_plat);
 }
 
-struct device_d *omap_add_mmc(int id, unsigned long base,
-		struct omap_hsmmc_platform_data *pdata)
-{
-	return add_generic_device("omap-hsmmc", id, NULL,
-			base, SZ_4K, IORESOURCE_MEM, pdata);
-}
-
 struct device_d *omap_add_i2c(int id, unsigned long base, void *pdata)
 {
 	return add_generic_device("i2c-omap", id, NULL, base, SZ_4K,

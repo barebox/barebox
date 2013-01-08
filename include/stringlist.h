@@ -1,5 +1,5 @@
-#ifndef __STRING_H
-#define __STRING_H
+#ifndef __STRINGLIST_H
+#define __STRINGLIST_H
 
 #include <linux/list.h>
 
@@ -29,4 +29,4 @@ static inline void string_list_free(struct string_list *sl)
 	}
 }
 
-#endif /* __STRING_H */
+#endif /* __STRINGLIST_H */

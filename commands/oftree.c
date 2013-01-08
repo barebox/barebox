@@ -108,7 +108,7 @@ static int do_oftree(int argc, char *argv[])
 			return 1;
 		}
 
-		ret = of_parse_dtb(fdt);
+		ret = of_unflatten_dtb(fdt);
 		if (ret) {
 			printf("parse oftree: %s\n", strerror(-ret));
 			return 1;

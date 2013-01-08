@@ -833,7 +833,7 @@ int of_probe(void)
  * Parse a flat device tree binary blob and store it in the barebox
  * internal tree format,
  */
-int of_parse_dtb(struct fdt_header *fdt)
+int of_unflatten_dtb(struct fdt_header *fdt)
 {
 	const void *nodep;	/* property node pointer */
 	int  nodeoffset;	/* node offset from libfdt */

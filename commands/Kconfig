@@ -477,6 +477,15 @@ config CMD_OFTREE
 	  The oftree command has support for dumping devicetrees and, if
 	  enabled, to probe devices from the devicetree
 
+config CMD_OF_PROPERTY
+	tristate
+	select OFTREE
+	select OFDEVICE
+	prompt "of_property"
+	help
+	  The of_property command allows setting and deleting of properties in
+	  the currently loaded devicetree.
+
 endmenu
 
 menu "testing"

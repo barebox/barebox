@@ -19,7 +19,7 @@
  */
 #include <common.h>
 #include <led.h>
-#include <asm/gpio.h>
+#include <gpio.h>
 
 static void led_gpio_set(struct led *led, unsigned int value)
 {
@@ -37,10 +37,21 @@ static void led_gpio_set(struct led *led, unsigned int value)
  */
 int led_gpio_register(struct gpio_led *led)
 {
+	int ret;
+	char *name = led->led.name;
+
+	ret = gpio_request(led->gpio, name ? name : "led");
+	if (ret)
+		return ret;
+
 	led->led.set = led_gpio_set;
 	led->led.max_value = 1;
 
-	return led_register(&led->led);
+	ret = led_register(&led->led);
+	if (ret)
+		gpio_free(led->gpio);
+
+	return ret;
 }
 
 /**
@@ -83,10 +94,31 @@ static void led_gpio_bicolor_set(struct led *led, unsigned int value)
  */
 int led_gpio_bicolor_register(struct gpio_bicolor_led *led)
 {
+	int ret;
+	char *name = led->led.name;
+
+	ret = gpio_request(led->gpio_c0, name ? name : "led_c0");
+	if (ret)
+		return ret;
+
+	ret = gpio_request(led->gpio_c1, name ? name : "led_c1");
+	if (ret)
+		goto err_gpio_c0;
+
 	led->led.set = led_gpio_bicolor_set;
 	led->led.max_value = 2;
 
-	return led_register(&led->led);
+	ret = led_register(&led->led);
+	if (ret)
+		goto err_gpio_c1;
+
+	return 0;
+
+err_gpio_c1:
+	gpio_free(led->gpio_c1);
+err_gpio_c0:
+	gpio_free(led->gpio_c0);
+	return ret;
 }
 
 /**
@@ -120,10 +152,37 @@ static void led_gpio_rgb_set(struct led *led, unsigned int value)
  */
 int led_gpio_rgb_register(struct gpio_rgb_led *led)
 {
+	int ret;
+	char *name = led->led.name;
+
+	ret = gpio_request(led->gpio_r, name ? name : "led_r");
+	if (ret)
+		return ret;
+
+	ret = gpio_request(led->gpio_g, name ? name : "led_g");
+	if (ret)
+		goto err_gpio_r;
+
+	ret = gpio_request(led->gpio_b, name ? name : "led_b");
+	if (ret)
+		goto err_gpio_g;
+
 	led->led.set = led_gpio_rgb_set;
 	led->led.max_value = 7;
 
-	return led_register(&led->led);
+	ret = led_register(&led->led);
+	if (ret)
+		goto err_gpio_b;
+
+	return 0;
+
+err_gpio_b:
+	gpio_free(led->gpio_b);
+err_gpio_g:
+	gpio_free(led->gpio_g);
+err_gpio_r:
+	gpio_free(led->gpio_r);
+	return ret;
 }
 
 /**

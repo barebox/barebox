@@ -45,7 +45,8 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/ubi.h>
 
-#include "ubi-media.h"
+#include <mtd/ubi-media.h>
+
 #include "scan.h"
 #include "debug.h"
 

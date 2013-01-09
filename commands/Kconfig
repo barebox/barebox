@@ -347,6 +347,14 @@ config CMD_UBI
 	depends on UBI
 	prompt "ubimkvol, ubirmvol, ubiattach"
 
+config CMD_UBIFORMAT
+	tristate
+	depends on UBI
+	select LIBMTD
+	select LIBSCAN
+	select LIBUBIGEN
+	prompt "ubiformat"
+
 endmenu
 
 menu "booting"

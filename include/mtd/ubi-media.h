@@ -11,7 +11,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU General Public License for more details.
  *
- *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Thomas Gleixner
  *          Frank Haverkamp
@@ -26,8 +25,6 @@
 
 #ifndef __UBI_MEDIA_H__
 #define __UBI_MEDIA_H__
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <asm/byteorder.h>
 
@@ -128,6 +125,7 @@ enum {
  * @ec: the erase counter
  * @vid_hdr_offset: where the VID header starts
  * @data_offset: where the user data start
+ * @image_seq: image sequence number
  * @padding2: reserved for future, zeroes
  * @hdr_crc: erase counter header CRC checksum
  *
@@ -143,6 +141,14 @@ enum {
  * volume identifier header and user data, relative to the beginning of the
  * physical eraseblock. These values have to be the same for all physical
  * eraseblocks.
+ *
+ * The @image_seq field is used to validate a UBI image that has been prepared
+ * for a UBI device. The @image_seq value can be any value, but it must be the
+ * same on all eraseblocks. UBI will ensure that all new erase counter headers
+ * also contain this value, and will check the value when scanning at start-up.
+ * One way to make use of @image_seq is to increase its value by one every time
+ * an image is flashed over an existing image, then, if the flashing does not
+ * complete, UBI will detect the error when scanning.
  */
 struct ubi_ec_hdr {
 	__be32  magic;
@@ -151,7 +157,8 @@ struct ubi_ec_hdr {
 	__be64  ec; /* Warning: the current limit is 31-bit anyway! */
 	__be32  vid_hdr_offset;
 	__be32  data_offset;
-	__u8    padding2[36];
+	__be32  image_seq;
+	__u8    padding2[32];
 	__be32  hdr_crc;
 } __attribute__ ((packed));
 
@@ -364,7 +371,4 @@ struct ubi_vtbl_record {
 	__be32  crc;
 } __attribute__ ((packed));
 
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 #endif /* !__UBI_MEDIA_H__ */
-

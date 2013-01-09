@@ -21,35 +21,50 @@
 
 /*
  * return a pointer to a string containing the size
- * as "xxx kB", "xxx.y kB", "xxx MB" or "xxx.y MB" as needed;
+ *"as xxx KiB", "xxx.y KiB", "xxx MiB", "xxx.y MiB",
+ * xxx GiB, xxx.y GiB, etc as needed;
  */
-char *size_human_readable(ulong size)
+char *size_human_readable(unsigned long long size)
 {
 	static char buf[20];
-	ulong m, n;
-	ulong d = 1 << 20;		/* 1 MB */
-	char  c = 'M';
+	unsigned long m = 0, n;
+	unsigned long long f;
+	static const char names[] = {'E', 'P', 'T', 'G', 'M', 'K'};
+	unsigned long d = 10 * ARRAY_SIZE(names);
+	char c = 0;
+	unsigned int i;
 	char *ptr = buf;
 
-	if (size < d) {			/* print in kB */
-		c = 'k';
-		d = 1 << 10;
+	for (i = 0; i < ARRAY_SIZE(names); i++, d -= 10) {
+		if (size >> d) {
+			c = names[i];
+			break;
+		}
 	}
 
-	n = size / d;
-
-	m = (10 * (size - (n * d)) + (d / 2) ) / d;
-
-	if (m >= 10) {
-		m -= 10;
-		n += 1;
+	if (!c) {
+		sprintf(buf, "%llu Bytes", size);
+		return buf;
 	}
 
-	ptr += sprintf(buf, "%2ld", n);
+	n = size >> d;
+	f = size & ((1ULL << d) - 1);
+
+	/* If there's a remainder, deal with it */
+	if (f) {
+		m = (10ULL * f + (1ULL << (d - 1))) >> d;
+
+		if (m >= 10) {
+			m -= 10;
+			n += 1;
+		}
+	}
+
+	ptr += sprintf(buf, "%lu", n);
 	if (m) {
-		ptr += sprintf (ptr,".%ld", m);
+		ptr += sprintf(ptr, ".%ld", m);
 	}
-	sprintf(ptr, " %cB", c);
+	sprintf(ptr, " %ciB", c);
 
 	return buf;
 }

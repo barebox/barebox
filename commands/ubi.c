@@ -9,7 +9,7 @@
 #include <linux/kernel.h>
 #include <linux/mtd/mtd-abi.h>
 #include <mtd/ubi-user.h>
-#include <ubi-media.h>
+#include <mtd/ubi-media.h>
 
 static int do_ubimkvol(int argc, char *argv[])
 {

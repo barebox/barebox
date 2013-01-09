@@ -41,6 +41,15 @@ config QSORT
 config XYMODEM
 	bool
 
+config LIBSCAN
+	bool
+
+config LIBUBIGEN
+	bool
+
+config LIBMTD
+	bool
+
 source lib/gui/Kconfig
 
 endmenu

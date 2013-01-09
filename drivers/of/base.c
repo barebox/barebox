@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>
+#include <sizes.h>
 #include <linux/ctype.h>
 
 /**
@@ -907,6 +908,71 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 	}
 
 	return 0;
+}
+
+static int __of_flatten_dtb(void *fdt, struct device_node *node)
+{
+	struct property *p;
+	struct device_node *n;
+	int ret;
+
+	ret = fdt_begin_node(fdt, node->name);
+	if (ret)
+		return ret;
+
+	list_for_each_entry(p, &node->properties, list) {
+		ret = fdt_property(fdt, p->name, p->value, p->length);
+		if (ret)
+			return ret;
+	}
+
+	list_for_each_entry(n, &node->children, parent_list) {
+		ret = __of_flatten_dtb(fdt, n);
+		if (ret)
+			return ret;
+	}
+
+	ret = fdt_end_node(fdt);
+
+	return ret;
+}
+
+#define DTB_SIZE	SZ_128K
+
+void *of_flatten_dtb(void)
+{
+	void *fdt;
+	int ret;
+
+	if (!root_node)
+		return NULL;
+
+	fdt = malloc(DTB_SIZE);
+	if (!fdt)
+		return NULL;
+
+	memset(fdt, 0, DTB_SIZE);
+
+	ret = fdt_create(fdt, DTB_SIZE);
+	if (ret)
+		goto out_free;
+
+	ret = fdt_finish_reservemap(fdt);
+	if (ret)
+		goto out_free;
+
+	ret = __of_flatten_dtb(fdt, root_node);
+	if (ret)
+		goto out_free;
+
+	fdt_finish(fdt);
+
+	return fdt;
+
+out_free:
+	free(fdt);
+
+	return NULL;
 }
 
 int of_device_is_stdout_path(struct device_d *dev)

@@ -121,6 +121,7 @@ struct device_node *of_get_root_node(void);
 int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
+void *of_flatten_dtb(void);
 #else
 static inline int of_parse_partitions(const char *cdevname,
 					  struct device_node *node)
@@ -144,6 +145,11 @@ static inline int of_device_is_stdout_path(struct device_d *dev)
 }
 
 static inline const char *of_get_model(void)
+{
+	return NULL;
+}
+
+static inline void *of_flatten_dtb(void)
 {
 	return NULL;
 }

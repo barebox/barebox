@@ -585,17 +585,32 @@ void of_print_nodes(struct device_node *node, int indent)
 	printf("};\n");
 }
 
-static struct device_node *new_device_node(struct device_node *parent)
+struct device_node *of_new_node(struct device_node *parent, const char *name)
 {
 	struct device_node *node;
+
+	if (!parent && root_node)
+		return NULL;
 
 	node = xzalloc(sizeof(*node));
 	node->parent = parent;
 	if (parent)
 		list_add_tail(&node->parent_list, &parent->children);
+	else
+		root_node = node;
 
 	INIT_LIST_HEAD(&node->children);
 	INIT_LIST_HEAD(&node->properties);
+
+	if (parent) {
+		node->name = xstrdup(name);
+		node->full_name = asprintf("%s/%s", node->parent->full_name, name);
+	} else {
+		node->name = xstrdup("");
+		node->full_name = xstrdup("");
+	}
+
+	list_add_tail(&node->list, &allnodes);
 
 	return node;
 }
@@ -886,12 +901,7 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 			if (n) {
 				node = n;
 			} else {
-				node = new_device_node(node);
-				if (!node->parent)
-					root_node = node;
-				node->full_name = xstrdup(buf);
-				node->name = xstrdup(pathp);
-				list_add_tail(&node->list, &allnodes);
+				node = of_new_node(node, pathp);
 			}
 			break;
 		case FDT_END_NODE:

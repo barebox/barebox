@@ -107,6 +107,9 @@ int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
 void of_free(struct device_node *node);
 int of_unflatten_dtb(struct fdt_header *fdt);
+struct property *of_new_property(struct device_node *node, const char *name,
+		const void *data, int len);
+void of_delete_property(struct property *pp);
 
 int of_property_read_string(struct device_node *np, const char *propname,
 				const char **out_string);

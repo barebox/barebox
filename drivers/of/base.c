@@ -600,7 +600,7 @@ static struct device_node *new_device_node(struct device_node *parent)
 	return node;
 }
 
-static struct property *new_property(struct device_node *node, const char *name,
+struct property *of_new_property(struct device_node *node, const char *name,
 		const void *data, int len)
 {
 	struct property *prop;
@@ -615,6 +615,15 @@ static struct property *new_property(struct device_node *node, const char *name,
 	list_add_tail(&prop->list, &node->properties);
 
 	return prop;
+}
+
+void of_delete_property(struct property *pp)
+{
+	list_del(&pp->list);
+
+	free(pp->name);
+	free(pp->value);
+	free(pp);
 }
 
 static struct device_d *add_of_device(struct device_node *node)
@@ -902,7 +911,7 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 				p->value = xzalloc(len);
 				memcpy(p->value, nodep, len);
 			} else {
-				new_property(node, pathp, nodep, len);
+				of_new_property(node, pathp, nodep, len);
 			}
 			break;
 		case FDT_NOP:

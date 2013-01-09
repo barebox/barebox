@@ -486,6 +486,14 @@ config CMD_OF_PROPERTY
 	  The of_property command allows setting and deleting of properties in
 	  the currently loaded devicetree.
 
+config CMD_OF_NODE
+	tristate
+	select OFTREE
+	select OFDEVICE
+	prompt "of_node"
+	help
+	  The of_property command allows adding and removing devicetree nodes.
+
 endmenu
 
 menu "testing"

@@ -59,7 +59,6 @@ config OMAP3_CLOCK_CONFIG
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
-	depends on (ARCH_OMAP2 || ARCH_OMAP3 || ARCH_OMAP4)
 	default y
 	help
 	  Enable this if you use Texas Instrument's General purpose Memory

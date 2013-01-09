@@ -25,6 +25,9 @@ config X86
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	default y
 
+config X86_BOOTLOADER
+	bool
+
 choice
 	prompt "Select your board"
 

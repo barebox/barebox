@@ -325,11 +325,14 @@ int of_fix_tree(struct fdt_header *fdt)
 struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt)
 {
 	int ret;
-	void *fixfdt;
+	void *fixfdt, *internalfdt = NULL;
 	int size, align;
 
-	if (!fdt)
-		return NULL;
+	if (!fdt) {
+		fdt = internalfdt = of_flatten_dtb();
+		if (!fdt)
+			return NULL;
+	}
 
 	size = fdt_totalsize(fdt);
 
@@ -342,6 +345,8 @@ struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt)
 
 	fixfdt = xmemalign(align, size + OFTREE_SIZE_INCREASE);
 	ret = fdt_open_into(fdt, fixfdt, size + OFTREE_SIZE_INCREASE);
+
+	free(internalfdt);
 
 	if (ret)
 		goto out_free;

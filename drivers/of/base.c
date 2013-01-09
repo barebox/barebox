@@ -761,6 +761,8 @@ void of_free(struct device_node *node)
 	if (!node)
 		return;
 
+	list_del(&node->list);
+
 	list_for_each_entry_safe(p, pt, &node->properties, list) {
 		list_del(&p->list);
 		free(p->name);

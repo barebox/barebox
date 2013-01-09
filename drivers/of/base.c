@@ -138,6 +138,12 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 void of_alias_scan(void)
 {
 	struct property *pp;
+	struct alias_prop *app, *tmp;
+
+	list_for_each_entry_safe(app, tmp, &aliases_lookup, link)
+		free(app);
+
+	INIT_LIST_HEAD(&aliases_lookup);
 
 	of_aliases = of_find_node_by_path("/aliases");
 	if (!of_aliases)
@@ -777,6 +783,11 @@ void of_free(struct device_node *node)
 	free(node->name);
 	free(node->full_name);
 	free(node);
+
+	if (node == root_node)
+		root_node = NULL;
+
+	of_alias_scan();
 }
 
 static void __of_probe(struct device_node *node)

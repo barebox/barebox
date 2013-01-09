@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# change network settings in /env/network/eth0
+# change mtd partition settings and automountpoints in /env/init/*
+
+#global.hostname=
+
+# set to false if you do not want to have colors
+global.allow_color=true
+
+# user (used for network filenames)
+global.user=none
+
+# timeout in seconds before the default boot entry is started
+global.autoboot_timeout=1
+
+# default boot entry (one of /env/boot/*)
+# (if not overwritten here, the bootdevice barebox comes from
+# is used)
+#global.boot.default=net
+
+# base bootargs
+global.linux.bootargs.base="console=ttymxc0,115200 console=tty1"
+
+# suitable for 800MHz
+global linux.bootargs.lpj="lpj=3997696"
+
+# speed up booting by being more quiet
+global linux.bootargs.quiet="quiet"

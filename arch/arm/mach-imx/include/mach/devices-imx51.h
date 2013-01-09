@@ -98,3 +98,18 @@ static inline struct device_d *imx51_add_pata(void)
 {
 	return imx_add_pata((void *)MX51_ATA_BASE_ADDR);
 }
+
+static inline struct device_d *imx51_add_usbotg(void *pdata)
+{
+	return imx_add_usb((void *)MX51_OTG_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx51_add_usbh1(void *pdata)
+{
+	return imx_add_usb((void *)MX51_OTG_BASE_ADDR + 0x200, 1, pdata);
+}
+
+static inline struct device_d *imx51_add_usbh2(void *pdata)
+{
+	return imx_add_usb((void *)MX51_OTG_BASE_ADDR + 0x400, 2, pdata);
+}

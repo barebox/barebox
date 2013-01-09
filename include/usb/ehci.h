@@ -5,8 +5,21 @@
 
 struct ehci_platform_data {
 	unsigned long flags;
-	unsigned long hccr_offset;
-	unsigned long hcor_offset;
 };
+
+struct ehci_data {
+	void __iomem *hccr;
+	void __iomem *hcor;
+	unsigned long flags;
+};
+
+#ifdef CONFIG_USB_EHCI
+int ehci_register(struct device_d *dev, struct ehci_data *data);
+#else
+static inline int ehci_register(struct device_d *dev, struct ehci_data *data)
+{
+	return -ENOSYS;
+}
+#endif
 
 #endif  /* __USB_EHCI_H */

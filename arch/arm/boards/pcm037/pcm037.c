@@ -163,6 +163,8 @@ static int imx31_devices_init(void)
 	 */
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, MX31_CS0_BASE_ADDR, 32 * 1024 * 1024, 0);
 
+	imx31_add_mmc0(NULL);
+
 	/*
 	 * Create partitions that should be
 	 * not touched by any regular user
@@ -202,13 +204,49 @@ static int imx31_devices_init(void)
 
 device_initcall(imx31_devices_init);
 
+static unsigned int pcm037_iomux[] = {
+	/* UART1 */
+	MX31_PIN_RXD1__RXD1,
+	MX31_PIN_TXD1__TXD1,
+	MX31_PIN_CTS1__CTS1,
+	MX31_PIN_RTS1__RTS1,
+	/* I2C */
+	MX31_PIN_CSPI2_MOSI__SCL,
+	MX31_PIN_CSPI2_MISO__SDA,
+	MX31_PIN_CSPI2_SS2__I2C3_SDA,
+	MX31_PIN_CSPI2_SCLK__I2C3_SCL,
+	/* SDHC1 */
+	MX31_PIN_SD1_DATA3__SD1_DATA3,
+	MX31_PIN_SD1_DATA2__SD1_DATA2,
+	MX31_PIN_SD1_DATA1__SD1_DATA1,
+	MX31_PIN_SD1_DATA0__SD1_DATA0,
+	MX31_PIN_SD1_CLK__SD1_CLK,
+	MX31_PIN_SD1_CMD__SD1_CMD,
+	IOMUX_MODE(MX31_PIN_SCK6, IOMUX_CONFIG_GPIO), /* card detect */
+	IOMUX_MODE(MX31_PIN_SFS6, IOMUX_CONFIG_GPIO), /* write protect */
+	/* SPI1 */
+	MX31_PIN_CSPI1_MOSI__MOSI,
+	MX31_PIN_CSPI1_MISO__MISO,
+	MX31_PIN_CSPI1_SCLK__SCLK,
+	MX31_PIN_CSPI1_SPI_RDY__SPI_RDY,
+	MX31_PIN_CSPI1_SS0__SS0,
+	MX31_PIN_CSPI1_SS1__SS1,
+	MX31_PIN_CSPI1_SS2__SS2,
+	/* UART2 */
+	MX31_PIN_TXD2__TXD2,
+	MX31_PIN_RXD2__RXD2,
+	MX31_PIN_CTS2__CTS2,
+	MX31_PIN_RTS2__RTS2,
+	/* UART3 */
+	MX31_PIN_CSPI3_MOSI__RXD3,
+	MX31_PIN_CSPI3_MISO__TXD3,
+	MX31_PIN_CSPI3_SCLK__RTS3,
+	MX31_PIN_CSPI3_SPI_RDY__CTS3,
+};
+
 static int imx31_console_init(void)
 {
-	/* init gpios for serial port */
-	imx_iomux_mode(MX31_PIN_RXD1__RXD1);
-	imx_iomux_mode(MX31_PIN_TXD1__TXD1);
-	imx_iomux_mode(MX31_PIN_CTS1__CTS1);
-	imx_iomux_mode(MX31_PIN_RTS1__RTS1);
+	imx_iomux_setup_multiple_pins(pcm037_iomux, ARRAY_SIZE(pcm037_iomux));
 
 	imx31_add_uart0();
 	return 0;

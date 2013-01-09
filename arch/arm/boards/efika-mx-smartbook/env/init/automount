@@ -1,0 +1,29 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "Automountpoints"
+	exit
+fi
+
+# automount tftp server based on $eth0.serverip
+
+mkdir -p /mnt/tftp
+automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
+
+# automount nfs server example
+
+# internal harddisk /boot partition
+mkdir -p /mnt/internal-hd0.0
+automount -d /mnt/internal-hd0.0 'mount /dev/ata0.0 /mnt/internal-hd0.0'
+
+# internal harddisk rootfs
+mkdir -p /mnt/internal-hd0.1
+automount -d /mnt/internal-hd0.1 'mount /dev/ata0.1 /mnt/internal-hd0.1'
+
+# left SD card slot, first partition
+mkdir -p /mnt/mmc-left.0
+automount -d /mnt/mmc-left.0 'mount /dev/mmc_left.0 /mnt/mmc-left.0'
+
+# back SD card slot, first partition
+mkdir -p /mnt/mmc-back.0
+automount -d /mnt/mmc-back.0 'mount /dev/mmc_back.0 /mnt/mmc-back.0'

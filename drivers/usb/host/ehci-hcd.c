@@ -34,6 +34,7 @@
 
 struct ehci_priv {
 	int rootdev;
+	struct device_d *dev;
 	struct ehci_hccr *hccr;
 	struct ehci_hcor *hcor;
 	struct usb_host host;
@@ -425,6 +426,27 @@ static inline int min3(int a, int b, int c)
 	return a;
 }
 
+#ifdef CONFIG_MACH_EFIKA_MX_SMARTBOOK
+#include <usb/ulpi.h>
+/*
+ * Add support for setting CHRGVBUS to workaround a hardware bug on efika mx/sb
+ * boards.
+ * See http://lists.infradead.org/pipermail/linux-arm-kernel/2011-January/037341.html
+ */
+void ehci_powerup_fixup(struct ehci_priv *ehci)
+{
+	void *viewport = (void *)ehci->hcor + 0x30;
+
+	if (ehci->dev->id > 0)
+		ulpi_write(ULPI_OTG_CHRG_VBUS, ULPI_OTGCTL + ULPI_REG_SET,
+				viewport);
+}
+#else
+static inline void ehci_powerup_fixup(struct ehci_priv *ehci)
+{
+}
+#endif
+
 static int
 ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		 int length, struct devrequest *req)
@@ -610,6 +632,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 * usb 2.0 specification say 50 ms resets on
 				 * root
 				 */
+				ehci_powerup_fixup(ehci);
 				wait_ms(50);
 				ehci->portreset |= 1 << le16_to_cpu(req->index);
 				/* terminate the reset */
@@ -807,32 +830,19 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return -1;
 }
 
-static int ehci_probe(struct device_d *dev)
+int ehci_register(struct device_d *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
 	struct ehci_priv *ehci;
 	uint32_t reg;
-	struct ehci_platform_data *pdata = dev->platform_data;
 
 	ehci = xzalloc(sizeof(struct ehci_priv));
 	host = &ehci->host;
 	dev->priv = ehci;
-
-	/* default to EHCI_HAS_TT to not change behaviour of boards
-	 * without platform_data
-	 */
-	if (pdata)
-		ehci->flags = pdata->flags;
-	else
-		ehci->flags = EHCI_HAS_TT;
-
-	if (dev->num_resources < 2) {
-		printf("echi: need 2 resources base and data");
-		return -ENODEV;
-	}
-
-	ehci->hccr = dev_request_mem_region(dev, 0);
-	ehci->hcor = dev_request_mem_region(dev, 1);
+	ehci->flags = data->flags;
+	ehci->hccr = data->hccr;
+	ehci->hcor = data->hcor;
+	ehci->dev = dev;
 
 	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
 	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
@@ -852,6 +862,30 @@ static int ehci_probe(struct device_d *dev)
 	dev_info(dev, "USB EHCI %x.%02x\n", reg >> 8, reg & 0xff);
 
 	return 0;
+}
+
+static int ehci_probe(struct device_d *dev)
+{
+	struct ehci_data data;
+	struct ehci_platform_data *pdata = dev->platform_data;
+
+	/* default to EHCI_HAS_TT to not change behaviour of boards
+	 * without platform_data
+	 */
+	if (pdata)
+		data.flags = pdata->flags;
+	else
+		data.flags = EHCI_HAS_TT;
+
+	if (dev->num_resources < 2) {
+		printf("echi: need 2 resources base and data");
+		return -ENODEV;
+	}
+
+	data.hccr = dev_request_mem_region(dev, 0);
+	data.hcor = dev_request_mem_region(dev, 1);
+
+	return ehci_register(dev, &data);
 }
 
 static void ehci_remove(struct device_d *dev)

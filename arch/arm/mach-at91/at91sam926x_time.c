@@ -30,15 +30,20 @@
 #include <clock.h>
 #include <asm/hardware.h>
 #include <mach/at91_pit.h>
-#include <mach/at91_pmc.h>
-#include <mach/at91_rstc.h>
 #include <mach/io.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/err.h>
+
+#define PIT_CPIV(x)	((x) & AT91_PIT_CPIV)
+#define pit_write(reg, val)	__raw_writel(val, pit_base + reg)
+#define pit_read(reg)		__raw_readl(pit_base + reg)
+
+static __iomem void *pit_base;
 
 uint64_t at91sam9_clocksource_read(void)
 {
-	return at91_sys_read(AT91_PIT_PIIR);
+	return pit_read(AT91_PIT_PIIR);
 }
 
 static struct clocksource cs = {
@@ -47,20 +52,48 @@ static struct clocksource cs = {
 	.shift	= 10,
 };
 
-static int clocksource_init (void)
+static void at91_pit_stop(void)
 {
+	/* Disable timer and irqs */
+	pit_write(AT91_PIT_MR, 0);
+
+	/* Clear any pending interrupts, wait for PIT to stop counting */
+	while (PIT_CPIV(pit_read(AT91_PIT_PIVR)) != 0);
+}
+
+static void at91sam926x_pit_reset(void)
+{
+	at91_pit_stop();
+
+	/* Start PIT but don't enable IRQ */
+	pit_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
+}
+
+static int at91_pit_probe(struct device_d *dev)
+{
+	struct clk *clk;
 	u32 pit_rate;
+	int ret;
 
-	/*
-	 * Enable PITC Clock
-	 * The clock is already enabled for system controller in boot
-	 */
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91_ID_SYS);
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk)) {
+		ret = PTR_ERR(clk);
+		dev_err(dev, "clock not found: %d\n", ret);
+		return ret;
+	}
 
-	pit_rate = clk_get_rate(clk_get(NULL, "mck")) / 16;
+	ret = clk_enable(clk);
+	if (ret < 0) {
+		dev_err(dev, "clock failed to enable: %d\n", ret);
+		clk_put(clk);
+		return ret;
+	}
 
-	/* Enable PITC */
-	at91_sys_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
+	pit_base = dev_request_mem_region(dev, 0);
+
+	pit_rate = clk_get_rate(clk) / 16;
+
+	at91sam926x_pit_reset();
 
 	cs.mult = clocksource_hz2mult(pit_rate, cs.shift);
 
@@ -69,4 +102,13 @@ static int clocksource_init (void)
 	return 0;
 }
 
-core_initcall(clocksource_init);
+static struct driver_d at91_pit_driver = {
+	.name = "at91-pit",
+	.probe = at91_pit_probe,
+};
+
+static int at91_pit_init(void)
+{
+	return platform_driver_register(&at91_pit_driver);
+}
+postcore_initcall(at91_pit_init);

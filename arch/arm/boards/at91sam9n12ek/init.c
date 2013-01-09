@@ -31,7 +31,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -44,7 +43,7 @@
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-	.det_pin	= 0,
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PD5,
 	.enable_pin	= AT91_PIN_PD4,
 	.ecc_mode	= NAND_ECC_HW,
@@ -77,7 +76,7 @@ static void ek_add_device_nand(void)
 	ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &ek_nand_smc_config);
+	sam9_smc_configure(0, 3, &ek_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }
@@ -112,7 +111,7 @@ static struct sam9_smc_config __initdata ks8851_smc_config = {
 static void __init ek_add_device_ks8851(void)
 {
 	/* Configure chip-select 2 (KS8851) */
-	sam9_smc_configure(2, &ks8851_smc_config);
+	sam9_smc_configure(0, 2, &ks8851_smc_config);
 	/* Configure NCS signal */
 	at91_set_B_periph(AT91_PIN_PD19, 0);
 	/* Configure Interrupt pin as input, no pull-up */
@@ -186,7 +185,7 @@ static void ek_add_device_spi(void)
  */
 static struct at91_udc_data __initdata ek_udc_data = {
 	.vbus_pin	= AT91_PIN_PB16,
-	.pullup_pin	= 0,		/* pull-up driven by UDC */
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
 };
 
 struct gpio_led leds[] = {

@@ -89,29 +89,46 @@
 #define AT91_BASE_SYS			0xffffc000
 
 /*
+ * System Peripherals
+ */
+#define AT91SAM9X5_BASE_MATRIX		0xffffde00
+#define AT9SAM9X5_BASE1_PMECC		0xffffe000
+#define AT91SAM9X5_BASE_PMERRLOC	0xffffe600
+#define AT91SAM9X5_BASE_DDRSDRC0	0xffffe800
+#define AT91SAM9X5_BASE_SMC		0xffffea00
+#define AT91SAM9X5_BASE_DMA0		0xffffec00
+#define AT91SAM9X5_BASE_DMA1		0xffffee00
+#define AT91SAM9X5_BASE_AIC		0xfffff000
+#define AT91SAM9X5_BASE_DBGU		0xfffff200
+#define AT91SAM9X5_BASE_PIOA		0xfffff400
+#define AT91SAM9X5_BASE_PIOB		0xfffff600
+#define AT91SAM9X5_BASE_PIOC		0xfffff800
+#define AT91SAM9X5_BASE_PIOD		0xfffffa00
+#define AT91SAM9X5_BASE_PMC		0xfffffc00
+#define AT91SAM9X5_BASE_RSTC		0xfffffe00
+#define AT91SAM9X5_BASE_SHDWC		0xfffffe10
+#define AT91SAM9X5_BASE_PIT		0xfffffe30
+#define AT91SAM9X5_BASE_WDT		0xfffffe40
+#define AT91SAM9X5_BASE_GPBR		0xfffffe60
+#define AT91SAM9X5_BASE_RTC		0xfffffeb0
+
+/*
  * System Peripherals (offset from AT91_BASE_SYS)
  */
 #define AT91_MATRIX	(0xffffde00 - AT91_BASE_SYS)
 #define AT91_PMECC	(0xffffe000 - AT91_BASE_SYS)
 #define AT91_PMERRLOC	(0xffffe600 - AT91_BASE_SYS)
 #define AT91_DDRSDRC0	(0xffffe800 - AT91_BASE_SYS)
-#define AT91_SMC	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_DMA0	(0xffffec00 - AT91_BASE_SYS)
-#define AT91_DMA1	(0xffffee00 - AT91_BASE_SYS)
-#define AT91_AIC	(0xfffff000 - AT91_BASE_SYS)
 #define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
-#define AT91_PMC	(0xfffffc00 - AT91_BASE_SYS)
 #define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
 #define AT91_SHDWC	(0xfffffe10 - AT91_BASE_SYS)
-#define AT91_PIT	(0xfffffe30 - AT91_BASE_SYS)
-#define AT91_WDT	(0xfffffe40 - AT91_BASE_SYS)
-#define AT91_GPBR	(0xfffffe60 - AT91_BASE_SYS)
-#define AT91_RTC	(0xfffffeb0 - AT91_BASE_SYS)
 
-#define AT91_BASE_PIOA	0xfffff400
-#define AT91_BASE_PIOB	0xfffff600
-#define AT91_BASE_PIOC	0xfffff800
-#define AT91_BASE_PIOD	0xfffffa00
+#define AT91_BASE_WDT	AT91SAM9X5_BASE_WDT
+#define AT91_BASE_SMC	AT91SAM9X5_BASE_SMC
+#define AT91_BASE_PIOA	AT91SAM9X5_BASE_PIOA
+#define AT91_BASE_PIOB	AT91SAM9X5_BASE_PIOB
+#define AT91_BASE_PIOC	AT91SAM9X5_BASE_PIOC
+#define AT91_BASE_PIOD	AT91SAM9X5_BASE_PIOD
 
 #define AT91_USART0	AT91SAM9X5_BASE_US0
 #define AT91_USART1	AT91SAM9X5_BASE_US1

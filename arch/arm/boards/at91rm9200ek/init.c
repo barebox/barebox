@@ -47,6 +47,7 @@ mem_initcall(at91rm9200ek_mem_init);
 
 static struct at91_usbh_data ek_usbh_data = {
 	.ports		= 2,
+	.vbus_pin	= { -EINVAL, -EINVAL },
 };
 
 #ifdef CONFIG_LED_GPIO

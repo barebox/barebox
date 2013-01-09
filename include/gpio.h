@@ -3,6 +3,7 @@
 
 #include <asm/gpio.h>
 
+#ifndef CONFIG_GPIOLIB
 static inline int gpio_request(unsigned gpio, const char *label)
 {
        return 0;
@@ -11,10 +12,16 @@ static inline int gpio_request(unsigned gpio, const char *label)
 static inline void gpio_free(unsigned gpio)
 {
 }
+#else
+int gpio_request(unsigned gpio, const char *label);
+void gpio_free(unsigned gpio);
+#endif
 
 struct gpio_chip;
 
 struct gpio_ops {
+	int (*request)(struct gpio_chip *chip, unsigned offset);
+	void (*free)(struct gpio_chip *chip, unsigned offset);
 	int (*direction_input)(struct gpio_chip *chip, unsigned offset);
 	int (*direction_output)(struct gpio_chip *chip, unsigned offset, int value);
 	int (*get)(struct gpio_chip *chip, unsigned offset);

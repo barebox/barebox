@@ -35,12 +35,11 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-/*	.det_pin	= ... not connected */
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PA22,
 	.enable_pin	= AT91_PIN_PD15,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
@@ -78,7 +77,7 @@ static void ek_add_device_nand(void)
 		ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, &ek_nand_smc_config);
+	sam9_smc_configure(0, 3, &ek_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }
@@ -176,7 +175,7 @@ static int at91sam9263ek_devices_init(void)
 	 * 0 - disable
 	 */
 	at91_set_gpio_output(AT91_PIN_PB27, 1);
-	at91_set_gpio_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
+	gpio_set_value(AT91_PIN_PB27, 1); /* 1- enable, 0 - disable */
 
 	ek_add_device_nand();
 	at91_add_device_eth(0, &macb_pdata);

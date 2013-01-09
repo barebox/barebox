@@ -4,6 +4,7 @@
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 
+#include "soc.h"
 #include "clock.h"
 #include "generic.h"
 
@@ -157,6 +158,13 @@ static struct clk *periph_clocks[] __initdata = {
 	// irq0 .. irq6
 };
 
+static struct clk_lookup periph_clocks_lookups[] = {
+	CLKDEV_DEV_ID("at91rm9200-gpio0", &pioA_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio1", &pioB_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio2", &pioC_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio3", &pioD_clk),
+};
+
 static struct clk_lookup usart_clocks_lookups[] = {
 	CLKDEV_CON_DEV_ID("usart", "atmel_usart0", &mck),
 	CLKDEV_CON_DEV_ID("usart", "atmel_usart1", &usart0_clk),
@@ -201,6 +209,8 @@ static void __init at91rm9200_register_clocks(void)
 	for (i = 0; i < ARRAY_SIZE(periph_clocks); i++)
 		clk_register(periph_clocks[i]);
 
+	clkdev_add_table(periph_clocks_lookups,
+			 ARRAY_SIZE(periph_clocks_lookups));
 	clkdev_add_table(usart_clocks_lookups,
 			 ARRAY_SIZE(usart_clocks_lookups));
 
@@ -211,42 +221,23 @@ static void __init at91rm9200_register_clocks(void)
 }
 
 /* --------------------------------------------------------------------
- *  GPIO
- * -------------------------------------------------------------------- */
-
-static struct at91_gpio_bank at91rm9200_gpio[] = {
-	{
-		.regbase	= IOMEM(AT91_BASE_PIOA),
-		.clock		= &pioA_clk,
-	}, {
-		.regbase	= IOMEM(AT91_BASE_PIOB),
-		.clock		= &pioB_clk,
-	}, {
-		.regbase	= IOMEM(AT91_BASE_PIOC),
-		.clock		= &pioC_clk,
-	}, {
-		.regbase	= IOMEM(AT91_BASE_PIOD),
-		.clock		= &pioD_clk,
-	}
-};
-
-
-/* --------------------------------------------------------------------
  *  AT91RM9200 processor initialization
  * -------------------------------------------------------------------- */
-static int __init at91rm9200_initialize(void)
+static void __init at91rm9200_initialize(void)
 {
-
 	/* Init clock subsystem */
 	at91_clock_init(AT91_MAIN_CLOCK);
 
 	/* Register the processor-specific clocks */
 	at91rm9200_register_clocks();
 
-	/* Initialize GPIO subsystem */
-	at91_gpio_init(at91rm9200_gpio, ARRAY_SIZE(at91rm9200_gpio));
-
-	return 0;
+	/* Register GPIO subsystem */
+	at91_add_rm9200_gpio(0, AT91RM9200_BASE_PIOA);
+	at91_add_rm9200_gpio(1, AT91RM9200_BASE_PIOB);
+	at91_add_rm9200_gpio(2, AT91RM9200_BASE_PIOC);
+	at91_add_rm9200_gpio(3, AT91RM9200_BASE_PIOD);
 }
 
-core_initcall(at91rm9200_initialize);
+AT91_SOC_START(rm9200)
+	.init = at91rm9200_initialize,
+AT91_SOC_END

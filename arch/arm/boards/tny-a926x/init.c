@@ -32,7 +32,6 @@
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/at91sam9_sdramc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -52,7 +51,7 @@ static void tny_a9260_set_board_type(void)
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-	.det_pin	= 0,
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
 	.on_flash_bbt	= 1,
@@ -100,9 +99,9 @@ static void tny_a9260_add_device_nand(void)
 {
 	/* configure chip-select 3 (NAND) */
 	if (machine_is_tny_a9g20())
-		sam9_smc_configure(3, &tny_a9g20_nand_smc_config);
+		sam9_smc_configure(0, 3, &tny_a9g20_nand_smc_config);
 	else
-		sam9_smc_configure(3, &tny_a9260_nand_smc_config);
+		sam9_smc_configure(0, 3, &tny_a9260_nand_smc_config);
 
 	if (machine_is_tny_a9263()) {
 		nand_pdata.rdy_pin	= AT91_PIN_PA22;
@@ -132,7 +131,7 @@ static void __init ek_add_device_macb(void) {}
  */
 static struct at91_udc_data __initdata ek_udc_data = {
 	.vbus_pin	= AT91_PIN_PB30,
-	.pullup_pin	= 0,		/* pull-up driven by UDC */
+	.pullup_pin	= -EINVAL,		/* pull-up driven by UDC */
 };
 
 static struct spi_eeprom eeprom = {

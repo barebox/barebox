@@ -78,21 +78,31 @@
 #define AT91RM9200_BASE_SPI	0xfffe0000
 #define AT91_BASE_SYS		0xfffff000
 
+/*
+ * System Peripherals
+ */
+#define AT91RM9200_BASE_DBGU	AT91_BASE_DBGU0	/* Debug Unit */
+#define AT91RM9200_BASE_PIOA	0xfffff400	/* PIO Controller A */
+#define AT91RM9200_BASE_PIOB	0xfffff600	/* PIO Controller B */
+#define AT91RM9200_BASE_PIOC	0xfffff800	/* PIO Controller C */
+#define AT91RM9200_BASE_PIOD	0xfffffa00	/* PIO Controller D */
+#define AT91RM9200_BASE_ST	0xfffffd00	/* System Timer */
+#define AT91RM9200_BASE_RTC	0xfffffe00	/* Real-Time Clock */
+#define AT91RM9200_BASE_MC	0xffffff00	/* Memory Controllers */
+
 
 /*
  * System Peripherals (offset from AT91_BASE_SYS)
  */
-#define AT91_AIC	(0xfffff000 - AT91_BASE_SYS)	/* Advanced Interrupt Controller */
 #define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)	/* Debug Unit */
-#define AT91_PMC	(0xfffffc00 - AT91_BASE_SYS)	/* Power Management Controller */
 #define AT91_ST		(0xfffffd00 - AT91_BASE_SYS)	/* System Timer */
 #define AT91_RTC	(0xfffffe00 - AT91_BASE_SYS)	/* Real-Time Clock */
 #define AT91_MC		(0xffffff00 - AT91_BASE_SYS)	/* Memory Controllers */
 
-#define AT91_BASE_PIOA	0xfffff400	/* PIO Controller A */
-#define AT91_BASE_PIOB	0xfffff600	/* PIO Controller B */
-#define AT91_BASE_PIOC	0xfffff800	/* PIO Controller C */
-#define AT91_BASE_PIOD	0xfffffa00	/* PIO Controller D */
+#define AT91_BASE_PIOA	AT91RM9200_BASE_PIOA	/* PIO Controller A */
+#define AT91_BASE_PIOB	AT91RM9200_BASE_PIOB	/* PIO Controller B */
+#define AT91_BASE_PIOC	AT91RM9200_BASE_PIOC	/* PIO Controller C */
+#define AT91_BASE_PIOD	AT91RM9200_BASE_PIOD	/* PIO Controller D */
 
 #define AT91_USART0	AT91RM9200_BASE_US0
 #define AT91_USART1	AT91RM9200_BASE_US1

@@ -31,7 +31,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
-#include <mach/sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91_pmc.h>
@@ -59,7 +58,7 @@ static void ek_set_board_type(void)
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
-/*	.det_pin	= ... not connected */
+	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
@@ -122,7 +121,7 @@ static void ek_add_device_nand(void)
 		smc->mode |= AT91_SMC_DBW_8;
 
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(3, smc);
+	sam9_smc_configure(0, 3, smc);
 
 	at91_add_device_nand(&nand_pdata);
 }
@@ -135,7 +134,7 @@ static struct at91_ether_platform_data macb_pdata = {
 static void at91sam9260ek_phy_reset(void)
 {
 	unsigned long rstc;
-	at91_sys_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_EMAC);
+	at91_pmc_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_EMAC);
 
 	at91_set_gpio_input(AT91_PIN_PA14, 0);
 	at91_set_gpio_input(AT91_PIN_PA15, 0);
@@ -187,6 +186,7 @@ static void ek_usb_add_device_mci(void) {}
  */
 static struct at91_usbh_data __initdata ek_usbh_data = {
 	.ports		= 2,
+	.vbus_pin	= { -EINVAL, -EINVAL },
 };
 
 /*

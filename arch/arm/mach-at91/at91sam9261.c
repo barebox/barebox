@@ -4,6 +4,7 @@
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 
+#include "soc.h"
 #include "generic.h"
 #include "clock.h"
 
@@ -136,6 +137,10 @@ static struct clk *periph_clocks[] = {
 static struct clk_lookup periph_clocks_lookups[] = {
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi0", &spi0_clk),
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi1", &spi1_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio0", &pioA_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio1", &pioB_clk),
+	CLKDEV_DEV_ID("at91rm9200-gpio2", &pioC_clk),
+	CLKDEV_DEV_ID("at91-pit", &mck),
 };
 
 static struct clk_lookup usart_clocks_lookups[] = {
@@ -209,26 +214,7 @@ static void at91sam9261_register_clocks(void)
 	clk_register(&hck1);
 }
 
-
-/* --------------------------------------------------------------------
- *  GPIO
- * -------------------------------------------------------------------- */
-
-static struct at91_gpio_bank at91sam9261_gpio[] = {
-	{
-		.regbase	= IOMEM(AT91_BASE_PIOA),
-		.clock		= &pioA_clk,
-	}, {
-		.regbase	= IOMEM(AT91_BASE_PIOB),
-		.clock		= &pioB_clk,
-	}, {
-		.regbase	= IOMEM(AT91_BASE_PIOC),
-		.clock		= &pioC_clk,
-	}
-};
-
-
-static int at91sam9261_initialize(void)
+static void at91sam9261_initialize(void)
 {
 	/* Init clock subsystem */
 	at91_clock_init(AT91_MAIN_CLOCK);
@@ -237,8 +223,14 @@ static int at91sam9261_initialize(void)
 	at91sam9261_register_clocks();
 
 	/* Register GPIO subsystem */
-	at91_gpio_init(at91sam9261_gpio, 3);
-	return 0;
+	at91_add_rm9200_gpio(0, AT91SAM9261_BASE_PIOA);
+	at91_add_rm9200_gpio(1, AT91SAM9261_BASE_PIOB);
+	at91_add_rm9200_gpio(2, AT91SAM9261_BASE_PIOC);
+
+	at91_add_pit(AT91SAM9261_BASE_PIT);
+	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9261_BASE_SMC, 0x200);
 }
 
-core_initcall(at91sam9261_initialize);
+AT91_SOC_START(sam9261)
+	.init = at91sam9261_initialize,
+AT91_SOC_END

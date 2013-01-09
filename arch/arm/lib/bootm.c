@@ -138,6 +138,9 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 	u32 end;
 
+	if (data->oftree)
+		return -ENXIO;
+
 	header = &__header;
 	ret = read(fd, header, sizeof(*header));
 	if (ret < sizeof(*header))

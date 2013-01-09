@@ -487,9 +487,10 @@ struct device_node *of_find_node_by_path(const char *path)
 
 	list_for_each_entry(np, &allnodes, list) {
 		if (np->full_name && (strcmp(np->full_name, path) == 0))
-			break;
+			return np;
 	}
-	return np;
+
+	return NULL;
 }
 EXPORT_SYMBOL(of_find_node_by_path);
 

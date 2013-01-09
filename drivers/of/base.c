@@ -491,6 +491,9 @@ struct device_node *of_find_node_by_path(const char *path)
 {
 	struct device_node *np;
 
+	if (!strcmp(path, "/"))
+		return root_node;
+
 	list_for_each_entry(np, &allnodes, list) {
 		if (np->full_name && (strcmp(np->full_name, path) == 0))
 			return np;

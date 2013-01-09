@@ -28,7 +28,7 @@
 #include <config.h>
 #include <linux/linkage.h>
 #include <asm/assembler.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/wdt.h>
 #include <mach/clocks.h>
 #include <asm/barebox-arm-head.h>

@@ -1,4 +1,7 @@
-  /* PRCM */
+#ifndef __MACH_OMAP4_CLOCK_H
+#define __MACH_OMAP4_CLOCK_H
+
+/* PRCM */
 #define CM_SYS_CLKSEL				0x4a306110
 
 #define CM_SYS_CLKSEL_19M2		0x4
@@ -337,3 +340,4 @@ void omap4_enable_gpio_clocks(void);
 void omap4_enable_all_clocks(void);
 void omap4_do_scale_tps62361(u32 reg, u32 volt_mv);
 
+#endif /* __MACH_OMAP4_CLOCK_H */

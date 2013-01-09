@@ -24,10 +24,30 @@
 #include <init.h>
 #include <io.h>
 #include <errno.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
+#include <mach/omap4-silicon.h>
+#include <mach/am33xx-silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+
+void __iomem *omap_gpmc_base;
+
+static int gpmc_init(void)
+{
+#if defined(CONFIG_ARCH_OMAP3)
+	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
+#elif defined(CONFIG_ARCH_OMAP4)
+	omap_gpmc_base = (void *)OMAP44XX_GPMC_BASE;
+#elif defined(CONFIG_ARCH_AM33XX)
+	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
+#else
+#error "Unknown ARCH"
+#endif
+
+	return 0;
+}
+pure_initcall(gpmc_init);
 
 /**
  * @brief Do a Generic initialization of GPMC. if you choose otherwise,
@@ -43,7 +63,7 @@
 void gpmc_generic_init(unsigned int cfg)
 {
 	uint64_t start;
-	unsigned int reg = GPMC_REG(CONFIG7_0);
+	void __iomem *reg = GPMC_REG(CONFIG7_0);
 	char x = 0;
 
 	debug("gpmccfg=0x%x\n", cfg);
@@ -89,7 +109,7 @@ EXPORT_SYMBOL(gpmc_generic_init);
  */
 void gpmc_cs_config(char cs, struct gpmc_config *config)
 {
-	unsigned int reg = GPMC_REG(CONFIG1_0) + (cs * GPMC_CONFIG_CS_SIZE);
+	void __iomem *reg = GPMC_REG(CONFIG1_0) + (cs * GPMC_CONFIG_CS_SIZE);
 	unsigned char x = 0;
 	debug("gpmccs=0x%x cfg=0x%p\n", cs, config);
 

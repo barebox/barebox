@@ -48,7 +48,8 @@
 #include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
+#include <mach/omap3-devices.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -93,54 +94,54 @@ pure_initcall(sdp343x_board_init);
 static void sdrc_init(void)
 {
 	/* Issue SDRC Soft reset  */
-	writel(0x12, SDRC_REG(SYSCONFIG));
+	writel(0x12, OMAP3_SDRC_REG(SYSCONFIG));
     /* Wait until Reset complete */
-    while ((readl(SDRC_REG(STATUS)) & 0x1) == 0);
+    while ((readl(OMAP3_SDRC_REG(STATUS)) & 0x1) == 0);
     /* SDRC to normal mode */
-	writel(0x10, SDRC_REG(SYSCONFIG));
+	writel(0x10, OMAP3_SDRC_REG(SYSCONFIG));
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, OMAP3_SDRC_REG(SHARING));
 
 	/* ----- SDRC_REG(CS0 Configuration --------- */
 	/* SDRC_REG(MCFG0 register */
-	writel(0x02584019, SDRC_REG(MCFG_0));
+	writel(0x02584019, OMAP3_SDRC_REG(MCFG_0));
 
 	/* SDRC_REG(RFR_CTRL0 register */
-	writel(0x0003DE01, SDRC_REG(RFR_CTRL_0));
+	writel(0x0003DE01, OMAP3_SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_REG(ACTIM_CTRLA0 register */
-	writel(0X5A9A4486, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0X5A9A4486, OMAP3_SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_REG(ACTIM_CTRLB0 register */
-	writel(0x00000010, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x00000010, OMAP3_SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE cuz of 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, OMAP3_SDRC_REG(POWER));
 
 	/* SDRC_REG(Manual command register */
 	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, OMAP3_SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register */
 	/* CAS latency = 3 */
 	/* Write Burst = Read Burst */
 	/* Serial Mode */
-	writel(0x00000032, SDRC_REG(MR_0));	/* Burst length =4 */
+	writel(0x00000032, OMAP3_SDRC_REG(MR_0));	/* Burst length =4 */
 
     /* SDRC DLLA control register */
 	/* Enable DLL A */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, OMAP3_SDRC_REG(DLLA_CTRL));
 
     /* wait until DLL is locked  */
-    while ((readl(SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
+    while ((readl(OMAP3_SDRC_REG(DLLA_STATUS)) & 0x4) == 0);
 	return;
 }
 
@@ -602,12 +603,6 @@ static void mux_config(void)
 /*-----------------------CONSOLE  Devices -----------------------------------*/
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
-
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,	/* 48MHz (APLL96/2) */
-	.shift = 2,
-};
-
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in arch
  *
@@ -615,9 +610,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int sdp3430_console_init(void)
 {
-	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }
@@ -627,7 +620,7 @@ console_initcall(sdp3430_console_init);
 
 static int sdp3430_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(128 * 1024 * 1024);
 
 	return 0;
 }

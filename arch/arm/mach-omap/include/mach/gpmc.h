@@ -32,8 +32,10 @@
 #ifndef __ASM_ARCH_OMAP_GPMC_H
 #define __ASM_ARCH_OMAP_GPMC_H
 
+extern void __iomem *omap_gpmc_base;
+
 /** GPMC Reg Wrapper */
-#define GPMC_REG(REGNAME)	(OMAP_GPMC_BASE + GPMC_##REGNAME)
+#define GPMC_REG(REGNAME)	(omap_gpmc_base + GPMC_##REGNAME)
 
 #define GPMC_SYS_CONFIG		(0x10)
 #define GPMC_SYS_STATUS		(0x14)

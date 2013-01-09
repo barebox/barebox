@@ -58,9 +58,10 @@
 #include <mach/xload.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/omap3-devices.h>
 
 #define SMC911X_BASE 0x2c000000
 
@@ -102,16 +103,16 @@ struct sdrc_config {
 void init_sdram_ddr(void)
 {
 	/* reset sdrc controller */
-	writel(SOFTRESET, SDRC_REG(SYSCONFIG));
-	wait_on_value(1<<0, 1<<0, SDRC_REG(STATUS), 12000000);
-	writel(0, SDRC_REG(SYSCONFIG));
+	writel(SOFTRESET, OMAP3_SDRC_REG(SYSCONFIG));
+	wait_on_value(1<<0, 1<<0, OMAP3_SDRC_REG(STATUS), 12000000);
+	writel(0, OMAP3_SDRC_REG(SYSCONFIG));
 
 	/* setup sdrc to ball mux */
-	writel(SDP_SDRC_SHARING, SDRC_REG(SHARING));
-	writel(SDP_SDRC_POWER_POP, SDRC_REG(POWER));
+	writel(SDP_SDRC_SHARING, OMAP3_SDRC_REG(SHARING));
+	writel(SDP_SDRC_POWER_POP, OMAP3_SDRC_REG(POWER));
 
 	/* set up dll */
-	writel(SDP_SDRC_DLLAB_CTRL, SDRC_REG(DLLA_CTRL));
+	writel(SDP_SDRC_DLLAB_CTRL, OMAP3_SDRC_REG(DLLA_CTRL));
 	sdelay(0x2000);	/* give time to lock */
 
 }
@@ -121,21 +122,21 @@ void init_sdram_ddr(void)
 void config_sdram_ddr(u8 cs, u8 cfg)
 {
 
-	writel(sdrc_config[cfg].mcfg, SDRC_REG(MCFG_0) + (0x30 * cs));
-	writel(sdrc_config[cfg].actim_ctrla, SDRC_REG(ACTIM_CTRLA_0) + (0x28 * cs));
-	writel(sdrc_config[cfg].actim_ctrlb, SDRC_REG(ACTIM_CTRLB_0) + (0x28 * cs));
-	writel(sdrc_config[cfg].rfr_ctrl, SDRC_REG(RFR_CTRL_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].mcfg, OMAP3_SDRC_REG(MCFG_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].actim_ctrla, OMAP3_SDRC_REG(ACTIM_CTRLA_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].actim_ctrlb, OMAP3_SDRC_REG(ACTIM_CTRLB_0) + (0x28 * cs));
+	writel(sdrc_config[cfg].rfr_ctrl, OMAP3_SDRC_REG(RFR_CTRL_0) + (0x30 * cs));
 
-	writel(CMD_NOP, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_NOP, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
 
 	sdelay(5000);
 
-	writel(CMD_PRECHARGE, SDRC_REG(MANUAL_0) + (0x30 * cs));
-	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
-	writel(CMD_AUTOREFRESH, SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_PRECHARGE, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
+	writel(CMD_AUTOREFRESH, OMAP3_SDRC_REG(MANUAL_0) + (0x30 * cs));
 
 	/* set mr0 */
-	writel(sdrc_config[cfg].mr, SDRC_REG(MR_0) + (0x30 * cs));
+	writel(sdrc_config[cfg].mr, OMAP3_SDRC_REG(MR_0) + (0x30 * cs));
 
 	sdelay(2000);
 }
@@ -170,7 +171,7 @@ static void pcaal1_sdrc_init(void)
 
 	if (test1 == 0) {
 		init_sdram_ddr();
-		writel((sdrc_config[(uchar) cfg].mcfg & 0xfffc00ff), SDRC_REG(MCFG_1));
+		writel((sdrc_config[(uchar) cfg].mcfg & 0xfffc00ff), OMAP3_SDRC_REG(MCFG_1));
 
 		/* 1 x 256MByte */
 		if (test0 == SZ_256M)
@@ -178,7 +179,7 @@ static void pcaal1_sdrc_init(void)
 
 		if (cfg != -1) {
 			config_sdram_ddr(0, cfg);
-			writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+			writel(sdrc_config[(uchar) cfg].cs_cfg, OMAP3_SDRC_REG(CS_CFG));
 		}
 		return;
 	}
@@ -193,7 +194,7 @@ static void pcaal1_sdrc_init(void)
 
 	if (cfg != -1) {
 		init_sdram_ddr();
-		writel(sdrc_config[(uchar) cfg].cs_cfg, SDRC_REG(CS_CFG));
+		writel(sdrc_config[(uchar) cfg].cs_cfg, OMAP3_SDRC_REG(CS_CFG));
 		config_sdram_ddr(0, cfg);
 		config_sdram_ddr(1, cfg);
 	}
@@ -307,10 +308,6 @@ pure_initcall(pcaal1_board_init);
 /*
  * Run-time initialization(s)
  */
-static struct NS16550_plat serial_plat = {
-	.clock	= 48000000,      /* 48MHz (APLL96/2) */
-	.shift	= 2,
-};
 
 /**
  * @brief Initialize the serial port to be used as console.
@@ -319,8 +316,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int pcaal1_init_console(void)
 {
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }
@@ -362,10 +358,10 @@ static int pcaal1_mem_init(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-	add_mem_device("sram0", OMAP_SRAM_BASE, 60 * SZ_1K,
-				   IORESOURCE_MEM_WRITEABLE);
+	omap3_add_sram0();
 
-	arm_add_mem_device("ram0", OMAP_SDRC_CS0, get_sdr_cs_size(SDRC_CS0_OSET));
+
+	omap_add_ram0(get_sdr_cs_size(SDRC_CS0_OSET));
 	printf("found %s at SDCS0\n", size_human_readable(get_sdr_cs_size(SDRC_CS0_OSET)));
 
 	if ((get_sdr_cs_size(SDRC_CS1_OSET) != 0) && (get_sdr_cs1_base() != OMAP_SDRC_CS0)) {
@@ -377,11 +373,9 @@ static int pcaal1_mem_init(void)
 }
 mem_initcall(pcaal1_mem_init);
 
-#ifdef CONFIG_MCI_OMAP_HSMMC
 struct omap_hsmmc_platform_data pcaal1_hsmmc_plat = {
 	.f_max = 26000000,
 };
-#endif
 
 static struct gpmc_nand_platform_data nand_plat = {
 	.device_width = 16,
@@ -393,10 +387,7 @@ static int pcaal1_init_devices(void)
 {
 	omap_add_gpmc_nand_device(&nand_plat);
 
-#ifdef CONFIG_MCI_OMAP_HSMMC
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-			   IORESOURCE_MEM, &pcaal1_hsmmc_plat);
-#endif
+	omap3_add_mmc1(&pcaal1_hsmmc_plat);
 
 #ifdef CONFIG_DRIVER_NET_SMC911X
 	pcaal1_setup_net_chip();

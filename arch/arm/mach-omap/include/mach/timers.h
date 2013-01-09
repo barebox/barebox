@@ -47,8 +47,4 @@
 /* Enable sys_clk NO-prescale /1 */
 #define GPT_EN			((0 << 2) | (0x1 << 1) | (0x1 << 0))
 
-/** Sync 32Khz Timer registers */
-#define S32K_CR			(OMAP_32KTIMER_BASE + 0x10)
-#define S32K_FREQUENCY		32768
-
 #endif /*__ASM_ARCH_GPT_H */

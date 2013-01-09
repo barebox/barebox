@@ -163,6 +163,8 @@ enum omap_boot_src omap_bootsrc(void)
 	return omap3_bootsrc();
 #elif defined(CONFIG_ARCH_OMAP4)
 	return omap4_bootsrc();
+#elif defined(CONFIG_ARCH_AM33XX)
+	return am33xx_bootsrc();
 #endif
 }
 

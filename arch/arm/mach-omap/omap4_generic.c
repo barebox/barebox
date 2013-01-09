@@ -1,8 +1,8 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/clocks.h>
-#include <mach/silicon.h>
+#include <mach/omap4-clock.h>
+#include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 #include <mach/syslib.h>
 #include <mach/xload.h>
@@ -36,7 +36,7 @@
 
 void __noreturn reset_cpu(unsigned long addr)
 {
-	writel(PRM_RSTCTRL_RESET, PRM_RSTCTRL);
+	writel(OMAP44XX_PRM_RSTCTRL_RESET, OMAP44XX_PRM_RSTCTRL);
 
 	while (1);
 }

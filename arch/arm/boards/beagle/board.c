@@ -55,7 +55,7 @@
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -64,6 +64,7 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <mach/ehci.h>
+#include <mach/omap3-devices.h>
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>
@@ -80,47 +81,47 @@ static void sdrc_init(void)
 {
 	/* SDRAM software reset */
 	/* No idle ack and RESET enable */
-	writel(0x1A, SDRC_REG(SYSCONFIG));
+	writel(0x1A, OMAP3_SDRC_REG(SYSCONFIG));
 	sdelay(100);
 	/* No idle ack and RESET disable */
-	writel(0x18, SDRC_REG(SYSCONFIG));
+	writel(0x18, OMAP3_SDRC_REG(SYSCONFIG));
 
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, OMAP3_SDRC_REG(SHARING));
 
 	/* ----- SDRC Registers Configuration --------- */
 	/* SDRC_MCFG0 register */
-	writel(0x02584099, SDRC_REG(MCFG_0));
+	writel(0x02584099, OMAP3_SDRC_REG(MCFG_0));
 
 	/* SDRC_RFR_CTRL0 register */
-	writel(0x54601, SDRC_REG(RFR_CTRL_0));
+	writel(0x54601, OMAP3_SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_ACTIM_CTRLA0 register */
-	writel(0xA29DB4C6, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0xA29DB4C6, OMAP3_SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_ACTIM_CTRLB0 register */
-	writel(0x12214, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x12214, OMAP3_SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE due to 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, OMAP3_SDRC_REG(POWER));
 
 	/* SDRC_MANUAL command register */
 	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, OMAP3_SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register Burst length=4 */
-	writel(0x00000032, SDRC_REG(MR_0));
+	writel(0x00000032, OMAP3_SDRC_REG(MR_0));
 
 	/* SDRC DLLA control register */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, OMAP3_SDRC_REG(DLLA_CTRL));
 
 	return;
 }
@@ -234,11 +235,6 @@ pure_initcall(beagle_board_init);
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.shift = 2,
-};
-
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in
  * arch
@@ -247,9 +243,7 @@ static struct NS16550_plat serial_plat = {
  */
 static int beagle_console_init(void)
 {
-	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OMAP_UART3_BASE, 1024, IORESOURCE_MEM_8BIT,
-			   &serial_plat);
+	omap3_add_uart3();
 
 	return 0;
 }
@@ -286,7 +280,7 @@ static struct gpmc_nand_platform_data nand_plat = {
 
 static int beagle_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(SZ_128M);
 
 	return 0;
 }
@@ -295,13 +289,11 @@ mem_initcall(beagle_mem_init);
 static int beagle_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-	add_generic_device("i2c-omap", DEVICE_ID_DYNAMIC, NULL, OMAP_I2C1_BASE, SZ_4K,
-			   IORESOURCE_MEM, NULL);
+	omap3_add_i2c1(NULL);
 
 #ifdef CONFIG_USB_EHCI_OMAP
 	if (ehci_omap_init(&omap_ehci_pdata) >= 0)
-		add_usb_ehci_device(DEVICE_ID_DYNAMIC, OMAP_EHCI_BASE,
-				    OMAP_EHCI_BASE + 0x10, &ehci_pdata);
+		omap3_add_ehci(&ehci_pdata);
 #endif /* CONFIG_USB_EHCI_OMAP */
 #ifdef CONFIG_OMAP_GPMC
 	/* WP is made high and WAIT1 active Low */
@@ -309,8 +301,7 @@ static int beagle_devices_init(void)
 #endif
 	omap_add_gpmc_nand_device(&nand_plat);
 
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-			   IORESOURCE_MEM, NULL);
+	omap3_add_mmc1(NULL);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);

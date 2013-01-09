@@ -9,6 +9,7 @@ enum omap_boot_src {
 	OMAP_BOOTSRC_USB1,
 };
 
+enum omap_boot_src am33xx_bootsrc(void);
 enum omap_boot_src omap3_bootsrc(void);
 enum omap_boot_src omap4_bootsrc(void);
 

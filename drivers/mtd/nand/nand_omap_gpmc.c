@@ -68,7 +68,6 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/nand_ecc.h>
 #include <io.h>
-#include <mach/silicon.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 

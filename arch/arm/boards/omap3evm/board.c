@@ -46,7 +46,7 @@
 #include <sizes.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -55,6 +55,7 @@
 #include <mach/gpmc.h>
 #include <errno.h>
 #include <generated/mach-types.h>
+#include <mach/omap3-devices.h>
 
 
 /*
@@ -70,47 +71,47 @@ static void sdrc_init(void)
 {
 	/* SDRAM software reset */
 	/* No idle ack and RESET enable */
-	writel(0x1A, SDRC_REG(SYSCONFIG));
+	writel(0x1A, OMAP3_SDRC_REG(SYSCONFIG));
 	sdelay(100);
 	/* No idle ack and RESET disable */
-	writel(0x18, SDRC_REG(SYSCONFIG));
+	writel(0x18, OMAP3_SDRC_REG(SYSCONFIG));
 
 	/* SDRC Sharing register */
 	/* 32-bit SDRAM on data lane [31:0] - CS0 */
 	/* pin tri-stated = 1 */
-	writel(0x00000100, SDRC_REG(SHARING));
+	writel(0x00000100, OMAP3_SDRC_REG(SHARING));
 
 	/* ----- SDRC Registers Configuration --------- */
 	/* SDRC_MCFG0 register */
-	writel(0x02584099, SDRC_REG(MCFG_0));
+	writel(0x02584099, OMAP3_SDRC_REG(MCFG_0));
 
 	/* SDRC_RFR_CTRL0 register */
-	writel(0x54601, SDRC_REG(RFR_CTRL_0));
+	writel(0x54601, OMAP3_SDRC_REG(RFR_CTRL_0));
 
 	/* SDRC_ACTIM_CTRLA0 register */
-	writel(0xA29DB4C6, SDRC_REG(ACTIM_CTRLA_0));
+	writel(0xA29DB4C6, OMAP3_SDRC_REG(ACTIM_CTRLA_0));
 
 	/* SDRC_ACTIM_CTRLB0 register */
-	writel(0x12214, SDRC_REG(ACTIM_CTRLB_0));
+	writel(0x12214, OMAP3_SDRC_REG(ACTIM_CTRLB_0));
 
 	/* Disble Power Down of CKE due to 1 CKE on combo part */
-	writel(0x00000081, SDRC_REG(POWER));
+	writel(0x00000081, OMAP3_SDRC_REG(POWER));
 
 	/* SDRC_MANUAL command register */
 	/* NOP command */
-	writel(0x00000000, SDRC_REG(MANUAL_0));
+	writel(0x00000000, OMAP3_SDRC_REG(MANUAL_0));
 	/* Precharge command */
-	writel(0x00000001, SDRC_REG(MANUAL_0));
+	writel(0x00000001, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 	/* Auto-refresh command */
-	writel(0x00000002, SDRC_REG(MANUAL_0));
+	writel(0x00000002, OMAP3_SDRC_REG(MANUAL_0));
 
 	/* SDRC MR0 register Burst length=4 */
-	writel(0x00000032, SDRC_REG(MR_0));
+	writel(0x00000032, OMAP3_SDRC_REG(MR_0));
 
 	/* SDRC DLLA control register */
-	writel(0x0000000A, SDRC_REG(DLLA_CTRL));
+	writel(0x0000000A, OMAP3_SDRC_REG(DLLA_CTRL));
 
 	return;
 }
@@ -212,11 +213,6 @@ pure_initcall(omap3_evm_board_init);
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
-static struct NS16550_plat serial_plat = {
-	.clock		= 48000000,      /* 48MHz (APLL96/2) */
-	.shift		= 2,
-};
-
 /**
  * @brief Initialize the serial port to be used as console.
  *
@@ -224,13 +220,10 @@ static struct NS16550_plat serial_plat = {
  */
 static int omap3evm_init_console(void)
 {
-	add_ns16550_device(DEVICE_ID_DYNAMIC,
-#if defined(CONFIG_OMAP3EVM_UART1)
-			OMAP_UART1_BASE,
-#elif defined(CONFIG_OMAP3EVM_UART3)
-			OMAP_UART3_BASE,
-#endif
-			1024, IORESOURCE_MEM_8BIT, &serial_plat);
+	if (IS_ENABLED(CONFIG_OMAP3EVM_UART1))
+		omap3_add_uart1();
+	if (IS_ENABLED(CONFIG_OMAP3EVM_UART3))
+		omap3_add_uart3();
 
 	return 0;
 }
@@ -239,7 +232,7 @@ console_initcall(omap3evm_init_console);
 
 static int omap3evm_mem_init(void)
 {
-	arm_add_mem_device("ram0", 0x80000000, 128 * 1024 * 1024);
+	omap_add_ram0(SZ_128M);
 
 	return 0;
 }
@@ -253,10 +246,8 @@ static int omap3evm_init_devices(void)
 	 */
 	gpmc_generic_init(0x10);
 #endif
-#ifdef CONFIG_MCI_OMAP_HSMMC
-	add_generic_device("omap-hsmmc", DEVICE_ID_DYNAMIC, NULL, OMAP_MMC1_BASE, SZ_4K,
-				IORESOURCE_MEM, NULL);
-#endif
+	omap3_add_mmc1(NULL);
+
         armlinux_set_bootparams((void *)0x80000100);
         armlinux_set_architecture(MACH_TYPE_OMAP3EVM);
 

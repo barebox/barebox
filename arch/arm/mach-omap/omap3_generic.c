@@ -30,12 +30,13 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/silicon.h>
+#include <mach/omap3-silicon.h>
 #include <mach/gpmc.h>
 #include <mach/sdrc.h>
 #include <mach/control.h>
 #include <mach/omap3-smx.h>
 #include <mach/clocks.h>
+#include <mach/omap3-clock.h>
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -52,7 +53,7 @@
  */
 void __noreturn reset_cpu(unsigned long addr)
 {
-	writel(PRM_RSTCTRL_RESET, PRM_REG(RSTCTRL));
+	writel(OMAP3_PRM_RSTCTRL_RESET, OMAP3_PRM_REG(RSTCTRL));
 
 	while (1);
 }
@@ -68,7 +69,7 @@ u32 get_cpu_type(void)
 	u32 idcode_val;
 	u16 hawkeye;
 
-	idcode_val = readl(IDCODE_REG);
+	idcode_val = readl(OMAP3_IDCODE_REG);
 
 	hawkeye = get_hawkeye(idcode_val);
 
@@ -97,7 +98,7 @@ u32 get_cpu_rev(void)
 	u32 idcode_val;
 	u32 version, retval;
 
-	idcode_val = readl(IDCODE_REG);
+	idcode_val = readl(OMAP3_IDCODE_REG);
 
 	version = get_version(idcode_val);
 
@@ -166,7 +167,7 @@ u32 get_sdr_cs_size(u32 offset)
 {
 	u32 size;
 	/* get ram size field */
-	size = readl(SDRC_REG(MCFG_0) + offset) >> 8;
+	size = readl(OMAP3_SDRC_REG(MCFG_0) + offset) >> 8;
 	size &= 0x3FF;		/* remove unwanted bits */
 	size *= 2 * (1024 * 1024);	/* find size in MB */
 	return size;
@@ -182,7 +183,7 @@ u32 get_sdr_cs1_base(void)
 	u32 base;
 	u32 cs_cfg;
 
-	cs_cfg = readl(SDRC_REG(CS_CFG));
+	cs_cfg = readl(OMAP3_SDRC_REG(CS_CFG));
 	/* get ram size field */
 	base = (cs_cfg & 0x0000000F) << 2; /* get CS1STARTHIGH */
 	base = base | ((cs_cfg & 0x00000300) >> 8); /* get CS1STARTLOW */
@@ -200,26 +201,7 @@ EXPORT_SYMBOL(get_sdr_cs1_base);
  */
 inline u32 get_sysboot_value(void)
 {
-	return (0x0000003F & readl(CONTROL_REG(STATUS)));
-}
-
-/**
- * @brief Return the current CS0 base address
- *
- * Return current address hardware will be
- * fetching from. The below effectively gives what is correct, its a bit
- * mis-leading compared to the TRM.  For the most general case the mask
- * needs to be also taken into account this does work in practice.
- *
- * @return  base address
- */
-u32 get_gpmc0_base(void)
-{
-	u32 b;
-	b = readl(GPMC_REG(CONFIG7_0));
-	b &= 0x1F;		/* keep base [5:0] */
-	b = b << 24;		/* ret 0x0b000000 */
-	return b;
+	return (0x0000003F & readl(OMAP3_CONTROL_REG(STATUS)));
 }
 
 /**
@@ -308,7 +290,7 @@ u32 get_boot_type(void)
 u32 get_device_type(void)
 {
 	int mode;
-	mode = readl(CONTROL_REG(STATUS)) & (DEVICE_MASK);
+	mode = readl(OMAP3_CONTROL_REG(STATUS)) & (DEVICE_MASK);
 	return (mode >>= 8);
 }
 
@@ -393,17 +375,17 @@ static void watchdog_init(void)
 {
 	int pending = 1;
 
-	sr32(CM_REG(FCLKEN_WKUP), 5, 1, 1);
-	sr32(CM_REG(ICLKEN_WKUP), 5, 1, 1);
-	wait_on_value((0x1 << 5), 0x20, CM_REG(IDLEST_WKUP), 5);
+	sr32(OMAP3_CM_REG(FCLKEN_WKUP), 5, 1, 1);
+	sr32(OMAP3_CM_REG(ICLKEN_WKUP), 5, 1, 1);
+	wait_on_value((0x1 << 5), 0x20, OMAP3_CM_REG(IDLEST_WKUP), 5);
 
-	writel(WDT_DISABLE_CODE1, WDT_REG(WSPR));
+	writel(WDT_DISABLE_CODE1, OMAP3_WDT_REG(WSPR));
 
 	do {
-		pending = readl(WDT_REG(WWPS));
+		pending = readl(OMAP3_WDT_REG(WWPS));
 	} while (pending);
 
-	writel(WDT_DISABLE_CODE2, WDT_REG(WSPR));
+	writel(WDT_DISABLE_CODE2, OMAP3_WDT_REG(WSPR));
 }
 
 /**
@@ -512,17 +494,17 @@ const struct gpmc_config omap3_nand_cfg = {
 #ifndef __PBL__
 static int omap3_gpio_init(void)
 {
-	add_generic_device("omap-gpio", 0, NULL, OMAP_GPIO1_BASE,
+	add_generic_device("omap-gpio", 0, NULL, OMAP3_GPIO1_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 1, NULL, OMAP_GPIO2_BASE,
+	add_generic_device("omap-gpio", 1, NULL, OMAP3_GPIO2_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 2, NULL, OMAP_GPIO3_BASE,
+	add_generic_device("omap-gpio", 2, NULL, OMAP3_GPIO3_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 3, NULL, OMAP_GPIO4_BASE,
+	add_generic_device("omap-gpio", 3, NULL, OMAP3_GPIO4_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 4, NULL, OMAP_GPIO5_BASE,
+	add_generic_device("omap-gpio", 4, NULL, OMAP3_GPIO5_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
-	add_generic_device("omap-gpio", 5, NULL, OMAP_GPIO6_BASE,
+	add_generic_device("omap-gpio", 5, NULL, OMAP3_GPIO6_BASE,
 					0xf00, IORESOURCE_MEM, NULL);
 
 	return 0;

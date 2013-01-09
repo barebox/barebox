@@ -31,7 +31,7 @@
  * Control register defintion which unwraps to the real register
  * offset + base address
  */
-#define CONTROL_REG(REGNAME)		(OMAP_CTRL_BASE + CONTROL_##REGNAME)
+#define OMAP3_CONTROL_REG(REGNAME)	(OMAP3_CTRL_BASE + CONTROL_##REGNAME)
 
 #define CONTROL_SCALABLE_OMAP_STATUS    (0x44C)
 #define CONTROL_SCALABLE_OMAP_OCP       (0x534)
@@ -79,7 +79,7 @@
 
 /** Provide the Regoffset, Value */
 #define	MUX_VAL(OFFSET,VALUE)\
-	writew((VALUE), OMAP_CTRL_BASE + (OFFSET))
+	writew((VALUE), OMAP3_CTRL_BASE + (OFFSET))
 
 /**
  * macro for Padconfig Registers @see

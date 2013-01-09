@@ -58,6 +58,15 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += -static --gc-sections
 endif
 
+ifdef CONFIG_IMAGE_COMPRESSION
+KBUILD_BINARY := arch/mips/pbl/zbarebox.bin
+KBUILD_TARGET := zbarebox.bin
+$(KBUILD_BINARY): $(KBUILD_TARGET)
+else
+KBUILD_BINARY := barebox.bin
+KBUILD_TARGET := barebox.bin
+endif
+
 LDFLAGS_barebox += -nostdlib
 
 machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
@@ -110,3 +119,12 @@ CFLAGS += $(cflags-y)
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/mips/lib/barebox.lds
 
 CLEAN_FILES    += arch/mips/lib/barebox.lds barebox.map barebox.S
+
+pbl := arch/mips/pbl
+zbarebox.S zbarebox.bin zbarebox: barebox.bin
+	$(Q)$(MAKE) $(build)=$(pbl) $(pbl)/$@
+
+archclean:
+	$(MAKE) $(clean)=$(pbl)
+
+KBUILD_IMAGE ?= $(KBUILD_BINARY)

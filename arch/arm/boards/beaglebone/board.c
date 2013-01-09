@@ -31,6 +31,7 @@
 #include <sizes.h>
 #include <io.h>
 #include <ns16550.h>
+#include <net.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/am33xx-silicon.h>
@@ -42,11 +43,14 @@
 #include <mach/ehci.h>
 #include <i2c/i2c.h>
 #include <linux/err.h>
+#include <linux/phy.h>
 #include <usb/ehci.h>
 #include <mach/xload.h>
 #include <mach/am33xx-devices.h>
 #include <mach/am33xx-mux.h>
 #include <mach/wdt.h>
+#include <mach/am33xx-generic.h>
+#include <mach/cpsw.h>
 
 /* UART Defines */
 #define UART_SYSCFG_OFFSET  (0x54)
@@ -313,11 +317,35 @@ static int beaglebone_mem_init(void)
 }
 mem_initcall(beaglebone_mem_init);
 
+static struct cpsw_slave_data cpsw_slaves[] = {
+	{
+		.phy_id		= 0,
+		.phy_if		= PHY_INTERFACE_MODE_MII,
+	},
+};
+
+static struct cpsw_platform_data cpsw_data = {
+	.slave_data		= cpsw_slaves,
+	.num_slaves		= ARRAY_SIZE(cpsw_slaves),
+};
+
+static void beaglebone_eth_init(void)
+{
+	am33xx_register_ethaddr(0, 0);
+
+	writel(0, AM33XX_MAC_MII_SEL);
+
+	enable_mii1_pin_mux();
+
+	am33xx_add_cpsw(&cpsw_data);
+}
+
 static int beaglebone_devices_init(void)
 {
 	am33xx_add_mmc0(NULL);
 
 	enable_i2c0_pin_mux();
+	beaglebone_eth_init();
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);

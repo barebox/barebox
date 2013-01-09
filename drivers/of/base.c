@@ -845,12 +845,10 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 	const struct fdt_property *fdt_prop;
 	const char *pathp;
 	int depth = 10000;
-	struct device_node *node = NULL;
+	struct device_node *node = NULL, *n;
+	struct property *p;
 	char buf[1024];
 	int ret;
-
-	if (root_node)
-		return -EBUSY;
 
 	nodeoffset = fdt_path_offset(fdt, "/");
 	if (nodeoffset < 0) {
@@ -875,12 +873,17 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 			if (ret)
 				return -EINVAL;
 
-			node = new_device_node(node);
-			if (!node->parent)
-				root_node = node;
-			node->full_name = xstrdup(buf);
-			node->name = xstrdup(pathp);
-			list_add_tail(&node->list, &allnodes);
+			n = of_find_node_by_path(buf);
+			if (n) {
+				node = n;
+			} else {
+				node = new_device_node(node);
+				if (!node->parent)
+					root_node = node;
+				node->full_name = xstrdup(buf);
+				node->name = xstrdup(pathp);
+				list_add_tail(&node->list, &allnodes);
+			}
 			break;
 		case FDT_END_NODE:
 			node = node->parent;
@@ -892,7 +895,15 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 					fdt32_to_cpu(fdt_prop->nameoff));
 			len      = fdt32_to_cpu(fdt_prop->len);
 			nodep    = fdt_prop->data;
-			new_property(node, pathp, nodep, len);
+
+			p = of_find_property(node, pathp);
+			if (p) {
+				free(p->value);
+				p->value = xzalloc(len);
+				memcpy(p->value, nodep, len);
+			} else {
+				new_property(node, pathp, nodep, len);
+			}
 			break;
 		case FDT_NOP:
 			break;

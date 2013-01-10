@@ -246,8 +246,6 @@ int fdt_get_path_or_create(struct fdt_header *fdt, const char *path)
 	return nodeoffset;
 }
 
-struct fdt_header *barebox_fdt;
-
 static int of_fixup_bootargs(struct fdt_header *fdt)
 {
 	int nodeoffset;

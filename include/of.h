@@ -5,8 +5,6 @@
 #include <errno.h>
 #include <asm/byteorder.h>
 
-extern struct fdt_header *barebox_fdt;
-
 int fdt_print(struct fdt_header *working_fdt, const char *pathp);
 
 struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt);

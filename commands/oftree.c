@@ -62,8 +62,6 @@ static int do_oftree(int argc, char *argv[])
 			}
 			break;
 		case 'f':
-			free(barebox_fdt);
-			barebox_fdt = NULL;
 			return 0;
 		case 'n':
 			node = optarg;
@@ -88,12 +86,7 @@ static int do_oftree(int argc, char *argv[])
 			fdt_print(fdt, node);
 			free(fdt);
 		} else {
-			if (barebox_fdt) {
-				fdt_print(barebox_fdt, node);
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 		return 0;
 	}

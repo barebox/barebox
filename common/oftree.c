@@ -294,6 +294,10 @@ int of_register_fixup(int (*fixup)(struct fdt_header *))
 	return 0;
 }
 
+/*
+ * Apply registered fixups for the given fdt. The fdt must have
+ * enough free space to apply the fixups.
+ */
 int of_fix_tree(struct fdt_header *fdt)
 {
 	struct of_fixup *of_fixup;
@@ -308,14 +312,50 @@ int of_fix_tree(struct fdt_header *fdt)
 	return 0;
 }
 
-struct fdt_header *of_get_fixed_tree(void)
+/*
+ * The size by which we increase the dtb to have space for additional
+ * fixups. Ideally this would be done by libfdt automatically
+ */
+#define OFTREE_SIZE_INCREASE 0x8000
+
+/*
+ * Get the fixed fdt. This function uses the fdt input pointer
+ * if provided or the barebox internal devicetree if not.
+ * It increases the size of the tree and applies the registered
+ * fixups.
+ */
+struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt)
 {
 	int ret;
+	void *fixfdt;
+	int size, align;
 
-	if (!barebox_fdt)
+	if (!fdt)
 		return NULL;
-	ret = of_fix_tree(barebox_fdt);
+
+	size = fdt_totalsize(fdt);
+
+	/*
+	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
+	 * for mapping the devicetree, so we are not allowed to cross
+	 * 1MiB boundaries.
+	 */
+	align = 1 << fls(size + OFTREE_SIZE_INCREASE - 1);
+
+	fixfdt = xmemalign(align, size + OFTREE_SIZE_INCREASE);
+	ret = fdt_open_into(fdt, fixfdt, size + OFTREE_SIZE_INCREASE);
+
 	if (ret)
-		return NULL;
-	return barebox_fdt;
+		goto out_free;
+
+	ret = of_fix_tree(fixfdt);
+	if (ret)
+		goto out_free;
+
+	return fixfdt;
+
+out_free:
+	free(fixfdt);
+
+	return NULL;
 }

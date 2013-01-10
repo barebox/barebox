@@ -23,7 +23,7 @@ static int do_bootu(int argc, char *argv[])
 		kernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
 #ifdef CONFIG_OFTREE
-	oftree = of_get_fixed_tree();
+	oftree = of_get_fixed_tree(NULL);
 #endif
 
 	start_linux(kernel, 0, 0, 0, oftree);

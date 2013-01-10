@@ -139,9 +139,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 {
 	enum filetype ft;
 	struct fdt_header *fdt, *fixfdt;
-	int ret;
 	size_t size;
-	unsigned int align;
 
 	if (bootm_verbose(data))
 		printf("Loading oftree from '%s'\n", oftree);
@@ -190,36 +188,18 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 				file_type_to_string(ft));
 	}
 
-	/*
-	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
-	 * for mapping the devicetree, so we are not allowed to cross
-	 * 1MiB boundaries.
-	 */
-	align = 1 << fls(size + OFTREE_SIZE_INCREASE - 1);
-
-	fixfdt = xmemalign(align, size + OFTREE_SIZE_INCREASE);
-	memcpy(fixfdt, fdt, size);
-
-
-	ret = fdt_open_into(fdt, fixfdt, size + OFTREE_SIZE_INCREASE);
+	fixfdt = of_get_fixed_tree(fdt);
+	if (!fixfdt)
+		return -EINVAL;
 
 	free(fdt);
-
-	if (ret) {
-		printf("unable to parse %s\n", oftree);
-		return -ENODEV;
-	}
-
-	ret = of_fix_tree(fixfdt);
-	if (ret)
-		return ret;
 
 	if (bootm_verbose(data) > 1)
 		fdt_print(fixfdt, "/");
 
 	data->oftree = fixfdt;
 
-	return ret;
+	return 0;
 }
 #endif
 
@@ -420,6 +400,10 @@ static int do_bootm(int argc, char *argv[])
 		ret = bootm_open_oftree(&data, oftree, oftree_num);
 		if (ret)
 			goto err_out;
+	} else {
+		data.oftree = of_get_fixed_tree(NULL);
+		if (bootm_verbose(&data) && data.oftree)
+			printf("using internal devicetree\n");
 	}
 #endif
 	if (data.os_address == UIMAGE_SOME_ADDRESS)

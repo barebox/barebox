@@ -854,6 +854,27 @@ int of_probe(void)
 	return 0;
 }
 
+static struct device_node *of_find_child(struct device_node *node, const char *name)
+{
+	struct device_node *_n;
+
+	if (!root_node)
+		return NULL;
+
+	if (!node && !*name)
+		return root_node;
+
+	if (!node)
+		node = root_node;
+
+	list_for_each_entry(_n, &node->children, parent_list) {
+		if (!strcmp(_n->name, name))
+			return _n;
+	}
+
+	return NULL;
+}
+
 /*
  * Parse a flat device tree binary blob and store it in the barebox
  * internal tree format,
@@ -871,8 +892,6 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 	int depth = 10000;
 	struct device_node *node = NULL, *n;
 	struct property *p;
-	char buf[1024];
-	int ret;
 
 	nodeoffset = fdt_path_offset(fdt, "/");
 	if (nodeoffset < 0) {
@@ -893,11 +912,7 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 			if (pathp == NULL)
 				pathp = "/* NULL pointer error */";
 
-			ret = fdt_get_path(fdt, nodeoffset, buf, 1024);
-			if (ret)
-				return -EINVAL;
-
-			n = of_find_node_by_path(buf);
+			n = of_find_child(node, pathp);
 			if (n) {
 				node = n;
 			} else {

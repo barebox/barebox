@@ -167,6 +167,11 @@ char *mkmodestr(unsigned long mode, char *str);
 void *read_file(const char *filename, size_t *size);
 
 /*
+ * Write a buffer to a file. This file is newly created.
+ */
+int write_file(const char *filename, void *buf, size_t size);
+
+/*
  * This function turns 'path' into an absolute path and removes all occurrences
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */

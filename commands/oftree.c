@@ -36,6 +36,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <init.h>
+#include <fcntl.h>
 
 static int do_oftree(int argc, char *argv[])
 {
@@ -48,10 +49,11 @@ static int do_oftree(int argc, char *argv[])
 	int dump = 0;
 	int probe = 0;
 	int load = 0;
+	int save = 0;
 	int free_of = 0;
 	int ret;
 
-	while ((opt = getopt(argc, argv, "dpfn:l")) > 0) {
+	while ((opt = getopt(argc, argv, "dpfn:ls")) > 0) {
 		switch (opt) {
 		case 'l':
 			load = 1;
@@ -73,6 +75,9 @@ static int do_oftree(int argc, char *argv[])
 		case 'n':
 			node = optarg;
 			break;
+		case 's':
+			save = 1;
+			break;
 		}
 	}
 
@@ -88,8 +93,29 @@ static int do_oftree(int argc, char *argv[])
 	if (optind < argc)
 		file = argv[optind];
 
-	if (!dump && !probe && !load)
+	if (!dump && !probe && !load && !save)
 		return COMMAND_ERROR_USAGE;
+
+	if (save) {
+		if (!file) {
+			printf("no file given\n");
+			ret = -ENOENT;
+
+			goto out;
+		}
+
+		fdt = of_get_fixed_tree(NULL);
+		if (!fdt) {
+			printf("no devicetree available\n");
+			ret = -EINVAL;
+
+			goto out;
+		}
+
+		ret = write_file(file, fdt, fdt_totalsize(fdt));
+
+		goto out;
+	}
 
 	if (file) {
 		fdt = read_file(file, &size);

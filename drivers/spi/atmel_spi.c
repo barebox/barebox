@@ -400,7 +400,7 @@ static int atmel_spi_probe(struct device_d *dev)
 	as->cs_pins = pdata->chipselect;
 	as->regs = dev_request_mem_region(dev, 0);
 
-	for (i = 0; i <= master->num_chipselect; i++) {
+	for (i = 0; i < master->num_chipselect; i++) {
 		ret = gpio_request(as->cs_pins[i], dev_name(dev));
 		if (ret)
 			goto out_gpio;

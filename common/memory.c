@@ -74,11 +74,11 @@ static int mem_malloc_resource(void)
 	request_sdram_region("barebox",
 			(unsigned long)&_stext,
 			(unsigned long)&_etext -
-			(unsigned long)&_stext + 1);
+			(unsigned long)&_stext);
 	request_sdram_region("bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
-			(unsigned long)&__bss_start + 1);
+			(unsigned long)&__bss_start);
 #ifdef STACK_BASE
 	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
 #endif

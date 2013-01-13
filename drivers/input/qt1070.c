@@ -244,6 +244,8 @@ static int qt1070_probe(struct device_d *dev)
 	sprintf(buf, "0x%x", chip_id);
 	dev_add_param_fixed(dev, "chip_ip", buf);
 
+	memcpy(data->code, default_code, sizeof(int) * ARRAY_SIZE(default_code));
+
 	ret = qt1070_pdata_init(dev, data);
 	if (ret) {
 		dev_err(dev, "can not get pdata (%d)\n", ret);
@@ -258,7 +260,6 @@ static int qt1070_probe(struct device_d *dev)
 	}
 	data->start = get_time_ns();
 
-	memcpy(data->code, default_code, sizeof(int) * ARRAY_SIZE(default_code));
 
 	data->fifo_size = 50;
 	data->recv_fifo = kfifo_alloc(data->fifo_size);

@@ -119,7 +119,6 @@ struct gpio_led panda_leds[] = {
 
 static void panda_led_init(void)
 {
-	gpio_direction_output(7, 0);
 	led_gpio_register(&panda_leds[0]);
 	led_set_trigger(LED_TRIGGER_HEARTBEAT, &panda_leds[0].led);
 }

@@ -153,6 +153,7 @@ SECTIONS
 	} > barebox
 	BAREBOX_BARE_INIT_SIZE
 
+	_sdata = .;
 	.data : AT ( LOADADDR(.text) + SIZEOF(.text) ) {
 		*(.data*)
 		. = ALIGN(4);
@@ -191,6 +192,7 @@ SECTIONS
 		. = ALIGN(4);
 	} > barebox
 
+	_edata = .;
 	.bss : {
 		__bss_start = .;
 		*(.bss*);

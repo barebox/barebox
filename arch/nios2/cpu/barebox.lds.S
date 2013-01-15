@@ -74,6 +74,7 @@ SECTIONS
 	 * adjacent to simplify the startup code -- and provide
 	 * the global pointer for gp-relative access.
 	 */
+	_sdata = .;
 	_data = .;
 	.data :
 	{

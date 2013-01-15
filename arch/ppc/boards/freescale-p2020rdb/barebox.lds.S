@@ -41,6 +41,7 @@ SECTIONS
 
   _etext = .;
   PROVIDE (etext = .);
+  _sdata = .;
 
   .rodata    :
   {

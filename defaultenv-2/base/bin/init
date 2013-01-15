@@ -27,8 +27,9 @@ else
 	echo -e -n "\nHit any key to stop autoboot: "
 fi
 
-timeout -a $global.autoboot_timeout -v key
-autoboot="$?"
+# allow to stop the boot before execute the /env/init/*
+# but without waiting
+timeout -s -a -v key 0
 
 if [ "${key}" = "q" ]; then
 	exit
@@ -37,6 +38,13 @@ fi
 for i in /env/init/*; do
 	. $i
 done
+
+timeout -a $global.autoboot_timeout -v key
+autoboot="$?"
+
+if [ "${key}" = "q" ]; then
+	exit
+fi
 
 if [ "$autoboot" = 0 ]; then
 	boot

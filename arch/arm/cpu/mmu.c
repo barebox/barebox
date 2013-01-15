@@ -308,8 +308,6 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-#define PAGE_ALIGN(s) (((s) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
-
 void *dma_alloc_coherent(size_t size)
 {
 	void *ret;

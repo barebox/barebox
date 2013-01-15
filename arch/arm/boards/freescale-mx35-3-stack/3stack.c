@@ -427,15 +427,3 @@ static int f3s_pmic_init(void)
 }
 
 late_initcall(f3s_pmic_init);
-
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	/*
-	 * The driver is able to detect NAND's pagesize by CPU internal
-	 * fuses or external pull ups. But not the blocksize...
-	 */
-	imx_nand_load_image(_text, barebox_image_size);
-	board_init_lowlevel_return();
-}
-#endif

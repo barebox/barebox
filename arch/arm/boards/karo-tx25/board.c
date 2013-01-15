@@ -154,13 +154,6 @@ static int tx25_console_init(void)
 
 console_initcall(tx25_console_init);
 
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	imx_nand_load_image(_text, barebox_image_size);
-}
-#endif
-
 static iomux_v3_cfg_t tx25_lcdc_gpios[] = {
 	MX25_PAD_A18__GPIO_2_4,		/* LCD Reset (active LOW) */
 	MX25_PAD_PWM__GPIO_1_26,	/* LCD Backlight brightness 0: full 1: off */

@@ -52,10 +52,24 @@ extern int arm_architecture;
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
 
+/*
+ * PTE flags to set cached and uncached areas.
+ * This will be determined at runtime.
+ */
 static uint32_t PTE_FLAGS_CACHED;
 static uint32_t PTE_FLAGS_UNCACHED;
 
 #define PTE_MASK ((1 << 12) - 1)
+
+uint32_t mmu_get_pte_cached_flags()
+{
+	return PTE_FLAGS_CACHED;
+}
+
+uint32_t mmu_get_pte_uncached_flags()
+{
+	return PTE_FLAGS_UNCACHED;
+}
 
 /*
  * Create a second level translation table for the given virtual address.
@@ -93,7 +107,7 @@ static u32 *find_pte(unsigned long adr)
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
-static void remap_range(void *_start, size_t size, uint32_t flags)
+void remap_range(void *_start, size_t size, uint32_t flags)
 {
 	unsigned long start = (unsigned long)_start;
 	u32 *p;

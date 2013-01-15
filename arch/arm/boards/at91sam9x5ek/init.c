@@ -46,6 +46,7 @@
 
 struct w1_gpio_platform_data w1_pdata = {
 	.pin = AT91_PIN_PB18,
+	.ext_pullup_enable_pin = -EINVAL,
 	.is_open_drain = 0,
 };
 

@@ -15,6 +15,8 @@
 #include <init.h>
 #include <io.h>
 #include <linux/mtd/nand.h>
+#include <asm/sections.h>
+#include <asm/barebox-arm.h>
 #include <mach/imx-nand.h>
 #include <mach/generic.h>
 #include <mach/imx21-regs.h>
@@ -254,6 +256,79 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 		}
 		block++;
 	}
+}
+
+/*
+ * We are now running at the address we are linked at. Now load the image from
+ * NAND to SDRAM and continue booting.
+ */
+static void __bare_init __naked insdram(void)
+{
+	imx_nand_load_image((void *)_text, barebox_image_size);
+
+	board_init_lowlevel_return();
+}
+
+/*
+ * Load and start barebox from NAND. This function also checks if we are really
+ * running inside the NFC address space. If not, barebox is started from the
+ * currently running address without loading anything from NAND.
+ */
+void __bare_init __noreturn imx_barebox_boot_nand_external(unsigned long nfc_base)
+{
+	u32 r;
+	u32 *src, *trg;
+	int i;
+
+	/* skip NAND boot if not running from NFC space */
+	r = get_pc();
+	if (r < nfc_base || r > nfc_base + 0x800)
+		board_init_lowlevel_return();
+
+	src = (unsigned int *)nfc_base;
+	trg = (unsigned int *)_text;
+
+	/* Move ourselves out of NFC SRAM */
+	for (i = 0; i < 0x800 / sizeof(int); i++)
+		*trg++ = *src++;
+
+	/* Jump to SDRAM */
+	r = (unsigned int)&insdram;
+	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+
+	/* not reached */
+	while (1);
+}
+
+/*
+ * SoC specific entries for booting in external NAND mode. To be called from
+ * the board specific entry code. This is safe to call even if not booting from
+ * NAND. In this case the booting is continued without loading an image from
+ * NAND. This function needs a stack to be set up.
+ */
+void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
+{
+	imx_barebox_boot_nand_external(MX21_NFC_BASE_ADDR);
+}
+
+void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
+{
+	imx_barebox_boot_nand_external(MX25_NFC_BASE_ADDR);
+}
+
+void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
+{
+	imx_barebox_boot_nand_external(MX27_NFC_BASE_ADDR);
+}
+
+void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
+{
+	imx_barebox_boot_nand_external(MX31_NFC_BASE_ADDR);
+}
+
+void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
+{
+	imx_barebox_boot_nand_external(MX35_NFC_BASE_ADDR);
 }
 
 #define CONFIG_NAND_IMX_BOOT_DEBUG

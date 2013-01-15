@@ -67,7 +67,8 @@ void __bare_init barebox_arm_reset_vector(void)
 
 	s5p_init_dram_bank_ddr2(S5P_DMC0_BASE, 0x20E00323, 0, 0);
 
-	if (! s5p_irom_load_mmc((void*)TEXT_BASE - 16, 1, (barebox_image_size + 16 + 511) / 512))
+	if (! s5p_irom_load_mmc((void*)TEXT_BASE - 16, 1,
+				(ld_var(_barebox_image_size) + 16 + 511) / 512))
 		while (1) { } /* hang */
 
 	/* Jump to SDRAM */

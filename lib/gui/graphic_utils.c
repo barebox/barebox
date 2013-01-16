@@ -219,7 +219,7 @@ int fb_open(const char * fbdev, struct screen *sc, bool offscreen)
 	sc->s.y = 0;
 	sc->s.width = sc->info.xres;
 	sc->s.height = sc->info.yres;
-	sc->fbsize = sc->s.x * sc->s.x * (sc->info.bits_per_pixel >> 3);
+	sc->fbsize = sc->s.width * sc->s.height * (sc->info.bits_per_pixel >> 3);
 
 	if (offscreen) {
 		/* Don't fail if malloc fails, just continue rendering directly

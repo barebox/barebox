@@ -114,7 +114,9 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	struct mtd_ecc_stats *ecc = buf;
 #endif
 	struct region_info_user *reg = buf;
+#ifdef CONFIG_MTD_WRITE
 	struct erase_info_user *ei = buf;
+#endif
 	loff_t *offset = buf;
 
 	switch (request) {

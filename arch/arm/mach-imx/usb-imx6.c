@@ -94,18 +94,18 @@ int imx6_usb_phy2_enable(void)
 	while (readl(MX6_USBOH3_USB_BASE_ADDR + USB_UH1_USBCMD) & USB_CMD_RESET);
 
 	/* reset usbphy */
-	writel(USBPHY_CTRL_SFTRST, MX6_USBPHY1_BASE_ADDR + USBPHY_CTRL + SET);
+	writel(USBPHY_CTRL_SFTRST, MX6_USBPHY2_BASE_ADDR + USBPHY_CTRL + SET);
 	udelay(10);
 	/* clr reset and clkgate */
-	writel(USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE, MX6_USBPHY1_BASE_ADDR + USBPHY_CTRL + CLR);
+	writel(USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE, MX6_USBPHY2_BASE_ADDR + USBPHY_CTRL + CLR);
 
 	/* clr all pwd bits => power up phy */
-	writel(0xffffffff, MX6_USBPHY1_BASE_ADDR + CLR);
+	writel(0xffffffff, MX6_USBPHY2_BASE_ADDR + CLR);
 
 	/* set utmilvl2/3 */
-	val = readl(MX6_USBPHY1_BASE_ADDR + USBPHY_CTRL);
+	val = readl(MX6_USBPHY2_BASE_ADDR + USBPHY_CTRL);
 	val |= USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2;
-	writel(val, MX6_USBPHY1_BASE_ADDR + USBPHY_CTRL + SET);
+	writel(val, MX6_USBPHY2_BASE_ADDR + USBPHY_CTRL + SET);
 
 	return 0;
 }

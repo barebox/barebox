@@ -89,7 +89,8 @@
 
 enum imx21_clks {
 	ckil, ckih, fpm, mpll_sel, spll_sel, mpll, spll, fclk, hclk, ipg, per1,
-	per2, per3, per4, usb_div, nfc_div, lcdc_per_gate, clk_max
+	per2, per3, per4, usb_div, nfc_div, lcdc_per_gate, lcdc_ahb_gate,
+	lcdc_ipg_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -116,7 +117,7 @@ static int imx21_ccm_probe(struct device_d *dev)
 			PCCR0_CSPI1_EN | PCCR0_CSPI2_EN | PCCR0_SDHC1_EN |
 			PCCR0_SDHC2_EN | PCCR0_GPIO_EN | PCCR0_I2C_EN | PCCR0_DMA_EN |
 			PCCR0_USBOTG_EN | PCCR0_NFC_EN | PCCR0_PERCLK4_EN |
-			PCCR0_HCLK_USBOTG_EN | PCCR0_HCLK_LCDC_EN | PCCR0_HCLK_DMA_EN,
+			PCCR0_HCLK_USBOTG_EN | PCCR0_HCLK_DMA_EN,
 			base + CCM_PCCR0);
 
 	writel(PCCR1_CSPI3_EN | PCCR1_WDT_EN | PCCR1_GPT1_EN | PCCR1_GPT2_EN |
@@ -143,6 +144,12 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clks[usb_div] = imx_clk_divider("usb_div", "spll", base + CCM_CSCR, 26, 3);
 	clks[nfc_div] = imx_clk_divider("nfc_div", "ipg", base + CCM_PCDR0, 12, 4);
 	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3", base + CCM_PCCR0, 18);
+	clks[lcdc_ahb_gate] = imx_clk_gate("lcdc_ahb_gate", "ahb", base + CCM_PCCR0, 26);
+	/*
+	 * i.MX21 doesn't have an IPG clock for the LCD. To avoid even more conditionals
+	 * in the framebuffer code, provide a dummy clock.
+	 */
+	clks[lcdc_ipg_gate] = clk_fixed("dummy", 0);
 
 	clkdev_add_physbase(clks[per1], MX21_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1], MX21_GPT2_BASE_ADDR, NULL);
@@ -158,6 +165,8 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg], MX21_SDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[lcdc_per_gate], MX21_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_ahb_gate], MX21_LCDC_BASE_ADDR, "ahb");
+	clkdev_add_physbase(clks[lcdc_ipg_gate], MX21_LCDC_BASE_ADDR, "ipg");
 
 	return 0;
 }

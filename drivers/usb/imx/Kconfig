@@ -13,3 +13,8 @@ config USB_IMX_CHIPIDEA
 	  This driver is recommended for new designs, but it needs board
 	  support to work.
 	  It's safe to say yes here. Also select EHCI support for USB host.
+
+config USB_IMX_PHY
+	bool
+	depends on ARCH_IMX
+	default y if ARCH_IMX6

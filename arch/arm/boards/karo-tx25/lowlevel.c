@@ -130,7 +130,7 @@ void __bare_init __naked reset(void)
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
-	if (r > 0x80000000 && r < 0x90000000)
+	if (r > 0x80000000 && r < 0xa0000000)
 		board_init_lowlevel_return();
 
 	/* set to 3.3v SDRAM */

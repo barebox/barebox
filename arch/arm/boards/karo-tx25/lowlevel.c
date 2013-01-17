@@ -31,8 +31,6 @@
 #ifdef CONFIG_NAND_IMX_BOOT
 static void __bare_init __naked insdram(void)
 {
-	uint32_t r;
-
 	/* setup a stack to be able to call imx_nand_load_image() */
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
@@ -71,6 +69,7 @@ void __bare_init __naked reset(void)
 	uint32_t r;
 #ifdef CONFIG_NAND_IMX_BOOT
 	unsigned int *trg, *src;
+	int i;
 #endif
 
 	common_reset();

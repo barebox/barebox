@@ -143,8 +143,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 	size_t size;
 	unsigned int align;
 
-	if (bootm_verbose(data))
-		printf("Loading oftree from '%s'\n", oftree);
+	printf("Loading devicetree from '%s'\n", oftree);
 
 	ft = file_name_detect_type(oftree);
 	if ((int)ft < 0) {
@@ -380,13 +379,14 @@ static int do_bootm(int argc, char *argv[])
 		}
 	}
 
+	printf("\nLoading OS %s '%s'", file_type_to_string(os_type),
+			data.os_file);
+	if (os_type == filetype_uimage &&
+			data.os->header.ih_type == IH_TYPE_MULTI)
+		printf(", multifile image %d", data.os_num);
+	printf("\n");
+
 	if (bootm_verbose(&data)) {
-		printf("\nLoading OS %s '%s'", file_type_to_string(os_type),
-				data.os_file);
-		if (os_type == filetype_uimage &&
-				data.os->header.ih_type == IH_TYPE_MULTI)
-			printf(", multifile image %d", data.os_num);
-		printf("\n");
 		if (data.os_res)
 			printf("OS image is at 0x%08x-0x%08x\n",
 					data.os_res->start,

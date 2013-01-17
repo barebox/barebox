@@ -324,6 +324,12 @@ static __maybe_unused int mx5_initialize_usb_hw(void __iomem *base, int port,
 	return 0;
 }
 
+static __maybe_unused int mx6_initialize_usb_hw(void __iomem *base, int port,
+		unsigned int flags)
+{
+	return 0;
+}
+
 static struct platform_device_id imx_usbmisc_ids[] = {
 #ifdef CONFIG_ARCH_IMX25
 	{
@@ -359,6 +365,12 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 	{
 		.name = "imx53-usb-misc",
 		.driver_data = (unsigned long)&mx5_initialize_usb_hw,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX6
+	{
+		.name = "imx6-usb-misc",
+		.driver_data = (unsigned long)&mx6_initialize_usb_hw,
 	},
 #endif
 	{

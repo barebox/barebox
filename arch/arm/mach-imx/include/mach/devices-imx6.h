@@ -69,3 +69,29 @@ static inline struct device_d *imx6_add_sata(void)
 {
 	return add_generic_device("imx6-sata", 0, NULL, MX6_SATA_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 }
+
+static inline struct device_d *imx6_add_usbotg(void *pdata)
+{
+	add_generic_device("imx-usb-phy", 0, NULL, MX6_USBPHY1_BASE_ADDR, 0x1000,
+			IORESOURCE_MEM, NULL);
+
+	return imx_add_usb((void *)MX6_USBOH3_USB_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx6_add_usbh1(void *pdata)
+{
+	add_generic_device("imx-usb-phy", 1, NULL, MX6_USBPHY2_BASE_ADDR, 0x1000,
+			IORESOURCE_MEM, NULL);
+
+	return imx_add_usb((void *)MX6_USBOH3_USB_BASE_ADDR + 0x200, 1, pdata);
+}
+
+static inline struct device_d *imx6_add_usbh2(void *pdata)
+{
+	return imx_add_usb((void *)MX6_USBOH3_USB_BASE_ADDR + 0x400, 2, pdata);
+}
+
+static inline struct device_d *imx6_add_usbh3(void *pdata)
+{
+	return imx_add_usb((void *)MX6_USBOH3_USB_BASE_ADDR + 0x600, 2, pdata);
+}

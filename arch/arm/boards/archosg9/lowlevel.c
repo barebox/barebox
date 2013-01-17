@@ -39,12 +39,19 @@ static const struct ddr_regs ddr_regs_400_mhz_2cs = {
 static noinline void archosg9_init_lowlevel(void)
 {
 	struct dpll_param core = OMAP4_CORE_DPLL_PARAM_19M2_DDR400;
-	struct dpll_param mpu = OMAP4_MPU_DPLL_PARAM_19M2_MPU600;
+	struct dpll_param mpu = OMAP4_MPU_DPLL_PARAM_19M2_MPU1200;
 	struct dpll_param iva = OMAP4_IVA_DPLL_PARAM_19M2;
 	struct dpll_param per = OMAP4_PER_DPLL_PARAM_19M2;
 	struct dpll_param abe = OMAP4_ABE_DPLL_PARAM_19M2;
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_19M2;
 
+	set_muxconf_regs();
+
+	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
+	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
+
+	/* Enable all clocks */
+	omap4_enable_all_clocks();
 	writel(CM_SYS_CLKSEL_19M2, CM_SYS_CLKSEL);
 
 	/* Configure all DPLL's at 100% OPP */
@@ -54,15 +61,8 @@ static noinline void archosg9_init_lowlevel(void)
 	omap4_configure_abe_dpll(&abe);
 	omap4_configure_usb_dpll(&usb);
 
-	/* Enable all clocks */
-	omap4_enable_all_clocks();
-
-	set_muxconf_regs();
-
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 
-	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
 	board_init_lowlevel_return();
 }
 

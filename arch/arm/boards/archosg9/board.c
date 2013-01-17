@@ -58,6 +58,7 @@ static int archosg9_devices_init(void){
 	 * So here there is the hardcoded value
 	 */
 	armlinux_set_architecture(5032);
+	armlinux_set_revision(5);
 
 	return 0;
 }

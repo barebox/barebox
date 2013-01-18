@@ -1499,34 +1499,18 @@ static int mci_probe(struct device_d *mci_dev)
 
 	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
-#ifdef CONFIG_MCI_STARTUP
-	/* if enabled, probe the attached card immediately */
-	rc = mci_card_probe(mci);
-	if (rc) {
-		/*
-		 * If it fails, add the 'probe' parameter to give the user
-		 * a chance to insert a card and try again. Note: This may fail
-		 * systems that rely on the MCI card for startup (for the
-		 * persistant environment for example)
-		 */
-		rc = add_mci_parameter(mci_dev);
-		if (rc != 0) {
-			dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
-			goto on_error;
-		}
-	}
-#endif
-
-#ifndef CONFIG_MCI_STARTUP
-	/* add params on demand */
 	rc = add_mci_parameter(mci_dev);
 	if (rc != 0) {
 		dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto on_error;
 	}
+
+#ifdef CONFIG_MCI_STARTUP
+	/* if enabled, probe the attached card immediately */
+	mci_card_probe(mci);
 #endif
 
-	return rc;
+	return 0;
 
 on_error:
 	free(mci);

@@ -331,18 +331,26 @@ static int atmel_start_cmd(struct atmel_mci_host *host, struct mci_cmd *cmd,
 	return 0;
 }
 
+
+static int mci_card_present(struct mci_host *mci)
+{
+	struct atmel_mci_host *host = to_mci_host(mci);
+	struct atmel_mci_platform_data *pd = host->hw_dev->platform_data;
+	int ret;
+
+	/* No gpio, assume card is present */
+	if (!gpio_is_valid(pd->detect_pin))
+		return 1;
+
+	ret = gpio_get_value(pd->detect_pin);
+
+	return ret == 0 ? 1 : 0;
+}
+
 /** init the host interface */
 static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 {
-	int ret;
 	struct atmel_mci_host *host = to_mci_host(mci);
-	struct atmel_mci_platform_data *pd = host->hw_dev->platform_data;
-
-	ret = gpio_get_value(pd->detect_pin);
-	dev_dbg(host->hw_dev, "card %sdetected\n", ret != 0 ? "not " : "");
-
-	if (pd->detect_pin && ret == 1)
-		return -ENODEV;
 
 	clk_enable(host->clk);
 	atmel_mci_reset(host);
@@ -454,6 +462,7 @@ static int mci_probe(struct device_d *hw_dev)
 	host->mci.send_cmd = mci_request;
 	host->mci.set_ios = mci_set_ios;
 	host->mci.init = mci_reset;
+	host->mci.card_present = mci_card_present;
 	host->mci.hw_dev = hw_dev;
 
 	host->mci.host_caps = pd->host_caps;

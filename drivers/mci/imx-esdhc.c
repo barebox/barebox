@@ -421,8 +421,9 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 }
 
-static int esdhc_card_detect(struct fsl_esdhc_host *host)
+static int esdhc_card_present(struct mci_host *mci)
 {
+	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	struct fsl_esdhc __iomem *regs = host->regs;
 	struct esdhc_platform_data *pdata = host->dev->platform_data;
 	int ret;
@@ -452,16 +453,6 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	struct fsl_esdhc __iomem *regs = host->regs;
 	int timeout = 1000;
 	int ret = 0;
-
-	ret = esdhc_card_detect(host);
-
-	if (ret == 0)
-		return -ENODEV;
-
-	if (ret < 0)
-		return ret;
-
-	ret = 0;
 
 	/* Enable cache snooping */
 	if (host && !host->no_snoop)
@@ -561,6 +552,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.send_cmd = esdhc_send_cmd;
 	host->mci.set_ios = esdhc_set_ios;
 	host->mci.init = esdhc_init;
+	host->mci.card_present = esdhc_card_present;
 	host->mci.hw_dev = dev;
 
 	rate = clk_get_rate(host->clk);

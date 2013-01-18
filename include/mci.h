@@ -300,6 +300,8 @@ struct mci_host {
 	void (*set_ios)(struct mci_host*, struct mci_ios *);
 	/** handle a command */
 	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
+	/** check if a card is inserted */
+	int (*card_present)(struct mci_host *);
 };
 
 /** MMC/SD and interface instance information */

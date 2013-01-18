@@ -1352,6 +1352,11 @@ static int mci_card_probe(struct mci *mci)
 	struct mci_host *host = mci->host;
 	int rc, disknum;
 
+	if (host->card_present && !host->card_present(host)) {
+		dev_err(mci->mci_dev, "no card inserted\n");
+		return -ENODEV;
+	}
+
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci->mci_dev);
 	if (rc) {

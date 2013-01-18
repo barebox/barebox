@@ -1448,7 +1448,7 @@ static int mci_set_probe(struct device_d *mci_dev, struct param_d *param,
 
 	rc = mci_check_if_already_initialized(mci);
 	if (rc != 0)
-		return rc;
+		return 0;
 
 	probe = simple_strtoul(val, NULL, 0);
 	if (probe != 0) {

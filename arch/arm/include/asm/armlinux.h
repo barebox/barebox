@@ -2,6 +2,7 @@
 #define __ARCH_ARMLINUX_H
 
 #include <asm/memory.h>
+#include <asm/setup.h>
 
 #if defined CONFIG_ARM_LINUX
 void armlinux_set_bootparams(void *params);
@@ -22,6 +23,14 @@ static inline void armlinux_set_revision(unsigned int rev)
 }
 
 static inline void armlinux_set_serial(u64 serial)
+{
+}
+#endif
+
+#if defined CONFIG_ARM_BOARD_APPEND_ATAG
+void armlinux_set_atag_appender(struct tag *(*)(struct tag *));
+#else
+static inline void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
 {
 }
 #endif

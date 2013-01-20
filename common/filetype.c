@@ -106,12 +106,12 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	return filetype_mbr;
 }
 
-enum filetype file_detect_type(void *_buf, size_t bufsize)
+enum filetype file_detect_type(const void *_buf, size_t bufsize)
 {
-	u32 *buf = _buf;
-	u64 *buf64 = _buf;
-	u8 *buf8 = _buf;
-	u16 *buf16 = _buf;
+	const u32 *buf = _buf;
+	const u64 *buf64 = _buf;
+	const u8 *buf8 = _buf;
+	const u16 *buf16 = _buf;
 	enum filetype type;
 
 	if (bufsize < 9)

@@ -110,16 +110,18 @@ void start_barebox (void)
 
 	debug("initcalls done\n");
 
-#ifdef CONFIG_ENV_HANDLING
-	if (envfs_load(default_environment_path, "/env", 0)) {
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-		printf("no valid environment found on %s. "
-			"Using default environment\n",
-			default_environment_path);
-		envfs_load("/dev/defaultenv", "/env", 0);
-#endif
+	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+		int ret;
+
+		ret = envfs_load(default_environment_path, "/env", 0);
+
+		if (ret && IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT)) {
+			printf("no valid environment found on %s. "
+				"Using default environment\n",
+				default_environment_path);
+			envfs_load("/dev/defaultenv", "/env", 0);
+		}
 	}
-#endif
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
 		printf("running /env/bin/init...\n");

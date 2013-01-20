@@ -87,14 +87,6 @@ int file_save_action(const char *, struct stat *, void *, int);
 int envfs_load(char *filename, char *dirname, unsigned flags);
 int envfs_save(char *filename, char *dirname);
 
-/* This part is used for the host and the target */
-struct action_data {
-	int fd;
-	const char *base;
-	void *writep;
-};
-#define PAD4(x) ((x + 3) & ~3)
-
 #endif	/* _ENVIRONMENT_H_ */
 
 /**

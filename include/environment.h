@@ -20,8 +20,6 @@
 #ifndef _ENVIRONMENT_H_
 #define _ENVIRONMENT_H_
 
-
-#ifdef __BAREBOX__
 /**
  * Managment of a environment variable
  */
@@ -73,8 +71,6 @@ int env_pop_context(void);
 int env_push_context(void);
 
 int export(const char *);
-
-#endif /* __BAREBOX__ */
 
 #endif	/* _ENVIRONMENT_H_ */
 

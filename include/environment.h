@@ -77,10 +77,6 @@ extern char *default_environment_path;
 
 int export(const char *);
 
-struct stat;
-int file_size_action(const char *, struct stat *, void *, int);
-int file_save_action(const char *, struct stat *, void *, int);
-
 #endif /* __BAREBOX__ */
 
 #define ENV_FLAG_NO_OVERWRITE	(1 << 0)

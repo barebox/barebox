@@ -50,7 +50,7 @@ struct action_data {
 
 char *default_environment_path = "/dev/env0";
 
-int file_size_action(const char *filename, struct stat *statbuf,
+static int file_size_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
 {
 	struct action_data *data = userdata;
@@ -75,7 +75,7 @@ int file_size_action(const char *filename, struct stat *statbuf,
 	return 1;
 }
 
-int file_save_action(const char *filename, struct stat *statbuf,
+static int file_save_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
 {
 	struct action_data *data = userdata;

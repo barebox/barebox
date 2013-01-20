@@ -46,7 +46,7 @@
 #define USBPHY1_PLL_480_CTRL_EN_USB_CLK	(1 <<  6)
 #define USBPHY1_PLL_480_CTRL_BYPASS	(1 << 16)
 
-int imx6_usb_phy1_disable_oc(void)
+int imx6_usb_phy2_disable_oc(void)
 {
 	int val;
 
@@ -64,7 +64,7 @@ int imx6_usb_phy1_disable_oc(void)
 	return 0;
 }
 
-int imx6_usb_phy1_enable(void)
+int imx6_usb_phy2_enable(void)
 {
 	int val;
 

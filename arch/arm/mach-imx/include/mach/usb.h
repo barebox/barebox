@@ -11,7 +11,7 @@
 #define MX35_H1_USBTE_BIT	(1 << 4)
 #define MXC_EHCI_INTERFACE_SINGLE_UNI	(2 << 0)
 
-int imx6_usb_phy1_disable_oc(void);
-int imx6_usb_phy1_enable(void);
+int imx6_usb_phy2_disable_oc(void);
+int imx6_usb_phy2_enable(void);
 
 #endif /* __MACH_USB_H_*/

@@ -231,8 +231,8 @@ static struct esdhc_platform_data sabrelite_sd4_data = {
 
 static void sabrelite_ehci_init(void)
 {
-	imx6_usb_phy1_disable_oc();
-	imx6_usb_phy1_enable();
+	imx6_usb_phy2_disable_oc();
+	imx6_usb_phy2_enable();
 
 	/* hub reset */
 	gpio_direction_output(204, 0);

@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <environment.h>
+#include <envfs.h>
 
 static int do_saveenv(int argc, char *argv[])
 {

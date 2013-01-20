@@ -19,7 +19,7 @@
 #include <sizes.h>
 #include <asm/mmu.h>
 #include <mach/gpio.h>
-#include <environment.h>
+#include <envfs.h>
 #include <mach/xload.h>
 #include <i2c/i2c.h>
 #include <gpio.h>

@@ -23,7 +23,7 @@
 #include <common.h>
 #include <getopt.h>
 #include <command.h>
-#include <environment.h>
+#include <envfs.h>
 #include <fs.h>
 
 static int do_loadenv(int argc, char *argv[])

@@ -32,7 +32,7 @@
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>
-#include <environment.h>
+#include <envfs.h>
 #include <asm/sections.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],

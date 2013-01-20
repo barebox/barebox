@@ -27,7 +27,7 @@
 #include <driver.h>
 #include <fs.h>
 #include <linux/stat.h>
-#include <environment.h>
+#include <envfs.h>
 #include <sizes.h>
 #include <io.h>
 #include <ns16550.h>

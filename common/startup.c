@@ -90,7 +90,7 @@ fs_initcall(mount_root);
 
 int (*barebox_main)(void);
 
-void start_barebox (void)
+void __noreturn start_barebox(void)
 {
 	initcall_t *initcall;
 	int result;
@@ -162,4 +162,3 @@ void shutdown_barebox(void)
 	arch_shutdown();
 #endif
 }
-

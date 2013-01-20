@@ -14,6 +14,8 @@ void __noreturn panic(const char *fmt, ...)
 	while(1);
 }
 
-void start_barebox(void)
+void __noreturn start_barebox(void)
 {
+	/* Should never be here in the pbl */
+	hang();
 }

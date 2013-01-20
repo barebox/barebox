@@ -94,9 +94,7 @@ void start_barebox (void)
 {
 	initcall_t *initcall;
 	int result;
-#ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
-#endif
 
 	if (!IS_ENABLED(CONFIG_SHELL_NONE))
 		barebox_main = run_shell;
@@ -122,15 +120,16 @@ void start_barebox (void)
 #endif
 	}
 #endif
-#ifdef CONFIG_COMMAND_SUPPORT
-	printf("running /env/bin/init...\n");
 
-	if (!stat("/env/bin/init", &s)) {
-		run_command("source /env/bin/init", 0);
-	} else {
-		printf("not found\n");
+	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
+		printf("running /env/bin/init...\n");
+
+		if (!stat("/env/bin/init", &s)) {
+			run_command("source /env/bin/init", 0);
+		} else {
+			printf("not found\n");
+		}
 	}
-#endif
 
 	if (!barebox_main) {
 		printf("No main function! aborting.\n");

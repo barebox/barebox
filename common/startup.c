@@ -34,6 +34,7 @@
 #include <linux/stat.h>
 #include <envfs.h>
 #include <asm/sections.h>
+#include <uncompress.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -41,32 +42,35 @@ extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include "barebox_default_env.h"
 
-#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
-#include <uncompress.h>
-void *defaultenv;
-#else
-#define defaultenv default_environment
-#endif
-
 static int register_default_env(void)
 {
-#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
 	int ret;
-	void *tmp;
+	void *defaultenv;
 
-	tmp = xzalloc(default_environment_size);
-	memcpy(tmp, default_environment, default_environment_size);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED)) {
+		void *tmp = malloc(default_environment_size);
 
-	defaultenv = xzalloc(default_environment_uncompress_size);
+		if (!tmp)
+			return -ENOMEM;
 
-	ret = uncompress(tmp, default_environment_size, NULL, NULL,
-			 defaultenv, NULL, uncompress_err_stdout);
+		memcpy(tmp, default_environment, default_environment_size);
 
-	free(tmp);
+		defaultenv = xzalloc(default_environment_uncompress_size);
 
-	if (ret)
-		return ret;
-#endif
+		ret = uncompress(tmp, default_environment_size,
+				NULL, NULL,
+				defaultenv, NULL, uncompress_err_stdout);
+
+		free(tmp);
+
+		if (ret) {
+			free(defaultenv);
+			return ret;
+		}
+	} else {
+		defaultenv = (void *)default_environment;
+	}
+
 
 	add_mem_device("defaultenv", (unsigned long)defaultenv,
 		       default_environment_uncompress_size,

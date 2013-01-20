@@ -88,6 +88,8 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
+int (*barebox_main)(void);
+
 void start_barebox (void)
 {
 	initcall_t *initcall;
@@ -95,6 +97,9 @@ void start_barebox (void)
 #ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
 #endif
+
+	if (!IS_ENABLED(CONFIG_SHELL_NONE))
+		barebox_main = run_shell;
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {
@@ -126,9 +131,15 @@ void start_barebox (void)
 		printf("not found\n");
 	}
 #endif
+
+	if (!barebox_main) {
+		printf("No main function! aborting.\n");
+		hang();
+	}
+
 	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;)
-		run_shell();
+		barebox_main();
 
 	/* NOTREACHED - no way out of command loop except booting */
 }

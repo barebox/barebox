@@ -128,7 +128,6 @@ config MACH_OMAP343xSDP
 
 config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
-	select HAVE_NOSHELL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP3
 	help
@@ -137,21 +136,18 @@ config MACH_BEAGLE
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select OMAP_CLOCK_ALL
-	select HAVE_NOSHELL
 	depends on ARCH_AM33XX
 	  help
 	  Say Y here if you are using Beagle Bone
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
-	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using OMAP3EVM
 
 config MACH_PANDA
 	bool "Texas Instrument's Panda Board"
-	select HAVE_NOSHELL
 	select MACH_HAS_LOWLEVEL_INIT
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP4
@@ -160,7 +156,6 @@ config MACH_PANDA
 
 config MACH_ARCHOSG9
 	bool "Archos G9 tablets"
-	select HAVE_NOSHELL
 	select MACH_HAS_LOWLEVEL_INIT
 	depends on ARCH_OMAP4
 	help
@@ -168,7 +163,6 @@ config MACH_ARCHOSG9
 
 config MACH_PCM049
 	bool "Phytec phyCORE pcm049"
-	select HAVE_NOSHELL
 	depends on ARCH_OMAP4
 	select MACH_HAS_LOWLEVEL_INIT
 	help
@@ -177,14 +171,12 @@ config MACH_PCM049
 
 config MACH_PCAAL1
 	bool "Phytec phyCARD-A-L1"
-	select HAVE_NOSHELL
 	depends on ARCH_OMAP3
 	help
 	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
 
 config MACH_PCAAXL2
 	bool "Phytec phyCARD XL2"
-	select HAVE_NOSHELL
 	select MACH_HAS_LOWLEVEL_INIT
 	depends on ARCH_OMAP4
 	help
@@ -193,7 +185,6 @@ config MACH_PCAAXL2
 config MACH_PCM051
 	bool "Phytec phyCORE pcm051"
 	select OMAP_CLOCK_ALL
-	select HAVE_NOSHELL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_AM33XX
 	help

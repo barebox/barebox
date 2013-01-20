@@ -10,8 +10,6 @@
 #include <init.h>
 #include "../w1.h"
 
-#define W1_EEPROM_SIZE		512
-#define W1_PAGE_COUNT		16
 #define W1_PAGE_SIZE		32
 #define W1_PAGE_BITS		5
 #define W1_PAGE_MASK		0x1F
@@ -23,9 +21,8 @@
 #define W1_F23_READ_SCRATCH	0xAA
 #define W1_F23_COPY_SCRATCH	0x55
 
-#define DRIVERNAME	"ds2433"
-
 static int ds2433_count = 0;
+static int ds28ec20_count = 0;
 
 /**
  * Check the file size bounds and adjusts count as needed.
@@ -49,7 +46,7 @@ static ssize_t ds2433_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	struct w1_bus *bus = dev->bus;
 	u8 wrbuf[3];
 
-	if ((count = ds2433_fix_count(off, count, W1_EEPROM_SIZE)) == 0)
+	if ((count = ds2433_fix_count(off, count, cdev->size)) == 0)
 		return 0;
 
 	/* read directly from the EEPROM */
@@ -134,7 +131,7 @@ static ssize_t ds2433_cdev_write(struct cdev *cdev, const void *buf, size_t coun
 	int addr, len, idx;
 	const u8 *buf8 = buf;
 
-	if ((count = ds2433_fix_count(off, count, W1_EEPROM_SIZE)) == 0)
+	if ((count = ds2433_fix_count(off, count, cdev->size)) == 0)
 		return 0;
 
 	/* Can only write data to one page at a time */
@@ -165,7 +162,7 @@ static struct file_operations ds2433_ops = {
 	.lseek	= dev_lseek_default,
 };
 
-static int ds2433_probe(struct w1_device *dev)
+static int ds2433_cdev_create(struct w1_device *dev, int size, int id)
 {
 	struct cdev *cdev;
 
@@ -173,24 +170,48 @@ static int ds2433_probe(struct w1_device *dev)
 	cdev->dev	= &dev->dev;
 	cdev->priv	= dev;
 	cdev->ops	= &ds2433_ops;
-	cdev->size	= W1_EEPROM_SIZE;
-	cdev->name	= asprintf(DRIVERNAME"%d", ds2433_count++);
+	cdev->size	= size;
+	cdev->name	= asprintf("%s%d", dev->dev.driver->name, id);
 	if (cdev->name == NULL)
 		return -ENOMEM;
 
 	return devfs_create(cdev);
 }
 
+static int ds2433_probe(struct w1_device *dev)
+{
+	return ds2433_cdev_create(dev, 512, ds2433_count++);
+}
+
+static int ds28ec20_probe(struct w1_device *dev)
+{
+	return ds2433_cdev_create(dev, 2560, ds28ec20_count++);
+}
+
 struct w1_driver ds2433_driver = {
 	.drv = {
-		.name = DRIVERNAME,
+		.name = "ds2433",
 	},
 	.probe		= ds2433_probe,
 	.fid		= 0x23,
 };
 
+struct w1_driver ds28ec20_driver = {
+	.drv = {
+		.name = "ds28ec20",
+	},
+	.probe		= ds28ec20_probe,
+	.fid		= 0x43,
+};
+
 static int w1_ds2433_init(void)
 {
-	return w1_driver_register(&ds2433_driver);
+	int ret;
+
+	ret = w1_driver_register(&ds2433_driver);
+	if (ret)
+		return ret;
+
+	return w1_driver_register(&ds28ec20_driver);
 }
 device_initcall(w1_ds2433_init);

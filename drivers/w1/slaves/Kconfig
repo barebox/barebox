@@ -15,10 +15,10 @@ config W1_SLAVE_DS2431_WRITE
 	depends on W1_SLAVE_DS2431
 
 config W1_SLAVE_DS2433
-	bool "4kb EEPROM family support (DS2433)"
+	bool "EEPROM family support (DS2433 4Kb or DS28EC20 20kb)"
 	help
 	  Say Y here if you want to use a 1-wire
-	  4kb EEPROM family device (DS2433).
+	  EEPROM family device (DS2433 4Kb or DS28EC20 20kb).
 
 config W1_SLAVE_DS2433_WRITE
 	bool "write support"

@@ -209,6 +209,25 @@ static void ek_device_add_keyboard(void)
 static void ek_device_add_keyboard(void) {}
 #endif
 
+#if defined(CONFIG_USB_OHCI) || defined(CONFIG_USB_EHCI)
+/*
+ * USB HS Host port (common to OHCI & EHCI)
+ */
+static struct at91_usbh_data ek_usbh_hs_data = {
+	.ports			= 2,
+	.vbus_pin		= {AT91_PIN_PD1, AT91_PIN_PD3},
+	.vbus_pin_active_low	= {1, 1},
+};
+
+static void ek_add_device_usb(void)
+{
+	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
+	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
+}
+#else
+static void ek_add_device_usb(void) {}
+#endif
+
 static int at91sam9m10g45ek_mem_init(void)
 {
 	at91_add_device_sdram(128 * 1024 * 1024);
@@ -222,6 +241,7 @@ static int at91sam9m10g45ek_devices_init(void)
 	ek_add_device_nand();
 	at91_add_device_eth(0, &macb_pdata);
 	ek_add_device_mci();
+	ek_add_device_usb();
 	ek_device_add_leds();
 	ek_device_add_keyboard();
 

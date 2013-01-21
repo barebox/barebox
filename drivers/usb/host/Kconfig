@@ -6,6 +6,11 @@ config USB_EHCI_OMAP
 	depends on USB_TWL4030
 	bool "OMAP EHCI driver"
 
+config USB_EHCI_ATMEL
+	depends on ARCH_AT91
+	depends on USB_EHCI
+	bool "Atmel EHCI driver"
+
 config USB_OHCI
 	bool "OHCI driver"
 	depends on !MMU

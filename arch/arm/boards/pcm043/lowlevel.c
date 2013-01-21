@@ -40,36 +40,13 @@
 #define CCM_PDR0_399	0x00011000
 #define CCM_PDR0_532	0x00001000
 
-#ifdef CONFIG_NAND_IMX_BOOT
-static void __bare_init __naked insdram(void)
-{
-	uint32_t r;
-
-	/* Speed up NAND controller by adjusting the NFC divider */
-	r = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-	r &= ~(0xf << 28);
-	r |= 0x1 << 28;
-	writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-
-	/* setup a stack to be able to call imx_nand_load_image() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
-
-	imx_nand_load_image(_text, barebox_image_size);
-
-	board_init_lowlevel_return();
-}
-#endif
-
 void __bare_init __naked reset(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
 	unsigned long iomuxc_base = MX35_IOMUXC_BASE_ADDR;
 	unsigned long esdctl_base = MX35_ESDCTL_BASE_ADDR;
-#ifdef CONFIG_NAND_IMX_BOOT
-	unsigned int *trg, *src;
-	int i;
-#endif
+
 	common_reset();
 
 	r = get_cr();
@@ -206,23 +183,17 @@ void __bare_init __naked reset(void)
 	writel(0x00002000, esdctl_base + IMX_ESDCTL1);
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	/* skip NAND boot if not running from NFC space */
-	r = get_pc();
-	if (r < MX35_NFC_BASE_ADDR || r > MX35_NFC_BASE_ADDR + 0x800)
-		board_init_lowlevel_return();
+	/* Speed up NAND controller by adjusting the NFC divider */
+	r = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
+	r &= ~(0xf << 28);
+	r |= 0x1 << 28;
+	writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
-	src = (unsigned int *)MX35_NFC_BASE_ADDR;
-	trg = (unsigned int *)_text;
+	/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
-	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x800 / sizeof(int); i++)
-		*trg++ = *src++;
-
-	/* Jump to SDRAM */
-	r = (unsigned int)&insdram;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+	imx35_barebox_boot_nand_external();
 #else
 	board_init_lowlevel_return();
 #endif
 }
-

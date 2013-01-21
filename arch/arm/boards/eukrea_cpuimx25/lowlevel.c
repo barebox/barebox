@@ -30,27 +30,9 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-#ifdef CONFIG_NAND_IMX_BOOT
-static void __bare_init __naked insdram(void)
-{
-	uint32_t r;
-
-	/* setup a stack to be able to call imx_nand_load_image() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
-
-	imx_nand_load_image(_text, barebox_image_size);
-
-	board_init_lowlevel_return();
-}
-#endif
-
 void __bare_init __naked reset(void)
 {
 	uint32_t r;
-#ifdef CONFIG_NAND_IMX_BOOT
-	unsigned int *trg, *src;
-	int i;
-#endif
 	register uint32_t loops = 0x20000;
 
 	common_reset();
@@ -146,21 +128,10 @@ void __bare_init __naked reset(void)
 	writel(0x82216080, MX25_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	/* skip NAND boot if not running from NFC space */
-	r = get_pc();
-	if (r < MX25_NFC_BASE_ADDR || r > MX25_NFC_BASE_ADDR + 0x800)
-		board_init_lowlevel_return();
+	/* setup a stack to be able to call imx25_barebox_boot_nand_external() */
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
-	src = (unsigned int *)MX25_NFC_BASE_ADDR;
-	trg = (unsigned int *)_text;
-
-	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x800 / sizeof(int); i++)
-		*trg++ = *src++;
-
-	/* Jump to SDRAM */
-	r = (unsigned int)&insdram;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
+	imx25_barebox_boot_nand_external();
 #else
 	board_init_lowlevel_return();
 #endif

@@ -192,13 +192,23 @@ static void ek_add_device_spi(void)
 	at91_add_device_spi(0, &spi_pdata);
 }
 
+#if defined(CONFIG_USB_OHCI) || defined(CONFIG_USB_EHCI)
 /*
- * USB Host port
+ * USB HS Host port (common to OHCI & EHCI)
  */
-static struct at91_usbh_data __initdata ek_usbh_data = {
-	.ports		= 2,
-	.vbus_pin	= {AT91_PIN_PD20, AT91_PIN_PD19},
+static struct at91_usbh_data ek_usbh_hs_data = {
+	.ports			= 2,
+	.vbus_pin		= {AT91_PIN_PD19, AT91_PIN_PD20},
 };
+
+static void ek_add_device_usb(void)
+{
+	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
+	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
+}
+#else
+static void ek_add_device_usb(void) {}
+#endif
 
 struct gpio_led leds[] = {
 	{
@@ -250,7 +260,7 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_eth();
 	ek_add_device_spi();
 	ek_add_device_mci();
-	at91_add_device_usbh_ohci(&ek_usbh_data);
+	ek_add_device_usb();
 	ek_add_led();
 	ek_add_device_i2c();
 

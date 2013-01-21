@@ -843,8 +843,13 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 	dev->priv = ehci;
 	ehci->flags = data->flags;
 	ehci->hccr = data->hccr;
-	ehci->hcor = data->hcor;
 	ehci->dev = dev;
+
+	if (data->hcor)
+		ehci->hcor = data->hcor;
+	else
+		ehci->hcor = (void __iomem *)ehci->hccr +
+			HC_LENGTH(ehci_readl(&ehci->hccr->cr_capbase));
 
 	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
 	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
@@ -879,13 +884,16 @@ static int ehci_probe(struct device_d *dev)
 	else
 		data.flags = EHCI_HAS_TT;
 
-	if (dev->num_resources < 2) {
-		printf("echi: need 2 resources base and data");
+	if (dev->num_resources < 1) {
+		printf("echi: need 1 resources base and data");
 		return -ENODEV;
 	}
 
 	data.hccr = dev_request_mem_region(dev, 0);
-	data.hcor = dev_request_mem_region(dev, 1);
+	if (dev->num_resources > 1)
+		data.hcor = dev_request_mem_region(dev, 1);
+	else
+		data.hcor = NULL;
 
 	return ehci_register(dev, &data);
 }

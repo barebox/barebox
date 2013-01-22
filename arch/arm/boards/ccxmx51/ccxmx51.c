@@ -433,8 +433,8 @@ static int ccxmx51_devices_init(void)
 
 #ifdef CONFIG_DRIVER_NET_FEC_IMX
 	if (ccxmx51_id->eth0 && !pwr) {
-		imx51_add_fec(&fec_info);
 		eth_register_ethaddr(0, hwid);
+		imx51_add_fec(&fec_info);
 	}
 #endif
 

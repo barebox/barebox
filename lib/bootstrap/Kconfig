@@ -1,0 +1,13 @@
+menuconfig BOOTSTRAP
+	bool "Library bootstrap routines           "
+	depends on SHELL_NONE
+
+if BOOTSTRAP
+
+config BOOTSTRAP_DEVFS
+	bool "devfs support"
+
+config BOOTSTRAP_DISK
+	bool "disk support"
+
+endif

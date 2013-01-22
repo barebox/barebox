@@ -52,4 +52,6 @@ config LIBMTD
 
 source lib/gui/Kconfig
 
+source lib/bootstrap/Kconfig
+
 endmenu

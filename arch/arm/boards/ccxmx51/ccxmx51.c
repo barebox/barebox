@@ -50,26 +50,26 @@
 #include "ccxmx51.h"
 
 static struct ccxmx51_ident ccxmx51_ids[] = {
-/* 0x00 */	{ "Unknown",						0,       0, 0, 0, 0 },
-/* 0x01 */	{ "Not supported",					0,       0, 0, 0, 0 },
-/* 0x02 */	{ "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1 },
-/* 0x03 */	{ "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0 },
-/* 0x04 */	{ "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1 },
-/* 0x05 */	{ "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0 },
-/* 0x06 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1 },
-/* 0x07 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0 },
-/* 0x08 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1 },
-/* 0x09 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_256M, 0, 1, 0, 0 },
-/* 0x0a */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1 },
-/* 0x0b */	{ "i.MX515@600MHz, PHY, Accel",				SZ_256M, 1, 1, 0, 0 },
-/* 0x0c */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1 },
-/* 0x0d */	{ "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0 },
-/* 0x0e */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1 },
-/* 0x0f */	{ "i.MX515@600MHz, PHY, Accel",				SZ_128M, 1, 1, 0, 0 },
-/* 0x10 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1 },
-/* 0x11 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_128M, 0, 1, 0, 0 },
-/* 0x12 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1 },
-/* 0x13 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0 },
+/* 0x00 */	{ "Unknown",						0, 0, 0, 0 },
+/* 0x01 */	{ "Not supported",					0, 0, 0, 0 },
+/* 0x02 */	{ "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	0, 1, 1, 1 },
+/* 0x03 */	{ "i.MX515@800MHz, PHY, Ext. Eth, Accel",		0, 1, 1, 0 },
+/* 0x04 */	{ "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	1, 1, 1, 1 },
+/* 0x05 */	{ "i.MX515@600MHz, PHY, Ext. Eth, Accel",		1, 1, 1, 0 },
+/* 0x06 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		0, 1, 0, 1 },
+/* 0x07 */	{ "i.MX515@800MHz, PHY, Accel",				0, 1, 0, 0 },
+/* 0x08 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		0, 1, 0, 1 },
+/* 0x09 */	{ "i.MX515@800MHz, PHY, Accel",				0, 1, 0, 0 },
+/* 0x0a */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		1, 1, 0, 1 },
+/* 0x0b */	{ "i.MX515@600MHz, PHY, Accel",				1, 1, 0, 0 },
+/* 0x0c */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		0, 1, 0, 1 },
+/* 0x0d */	{ "i.MX512@800MHz",					0, 0, 0, 0 },
+/* 0x0e */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		0, 1, 0, 1 },
+/* 0x0f */	{ "i.MX515@600MHz, PHY, Accel",				1, 1, 0, 0 },
+/* 0x10 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		1, 1, 0, 1 },
+/* 0x11 */	{ "i.MX515@800MHz, PHY, Accel",				0, 1, 0, 0 },
+/* 0x12 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		1, 1, 0, 1 },
+/* 0x13 */	{ "i.MX515@800MHz, PHY, Accel",				0, 1, 0, 0 },
 };
 
 struct ccxmx51_ident *ccxmx51_id;
@@ -408,8 +408,6 @@ static int ccxmx51_devices_init(void)
 			break;
 		}
 		printf("Module Serial : %c%d\n", manloc, ((hwid[2] & 0x3f) << 24) | (hwid[3] << 16) | (hwid[4] << 8) | hwid[5]);
-		if ((ccxmx51_id->mem_sz - SZ_128M) > 0)
-			arm_add_mem_device("ram1", MX51_CSD0_BASE_ADDR + SZ_128M, ccxmx51_id->mem_sz - SZ_128M);
 	}
 
 	imx51_add_uart1();

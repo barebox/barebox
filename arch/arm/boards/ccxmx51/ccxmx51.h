@@ -23,7 +23,6 @@ struct ccxmx51_hwid {
 
 struct ccxmx51_ident {
 	const char	*id_string;
-	const int	mem_sz;
 	const char	industrial;
 	const char	eth0;
 	const char	eth1;

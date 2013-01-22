@@ -37,6 +37,7 @@
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <led.h>
+#include <spi/spi.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 22,
@@ -309,6 +310,46 @@ static void ek_device_add_leds(void)
 static void ek_device_add_leds(void) {}
 #endif
 
+/*
+ * SPI related devices
+ */
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+/*
+ * SPI devices
+ */
+static struct spi_board_info ek_spi_devices[] = {
+	{	/* DataFlash chip */
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	},
+#if defined(CONFIG_MTD_AT91_DATAFLASH_CARD)
+	{	/* DataFlash card - jumper (J12) configurable to CS3 or CS0 */
+		.name		= "mtd_dataflash",
+		.chip_select	= 1,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	},
+#endif
+};
+
+static unsigned spi0_standard_cs[] = { AT91_PIN_PA3, AT91_PIN_PA6};
+static struct at91_spi_platform_data spi_pdata = {
+	.chipselect = spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static void ek_add_device_spi(void)
+{
+	spi_register_board_info(ek_spi_devices,
+				ARRAY_SIZE(ek_spi_devices));
+	at91_add_device_spi(0, &spi_pdata);
+}
+#else
+static void ek_add_device_spi(void) {}
+#endif
+
 static int at91sam9261ek_mem_init(void)
 {
 	at91_add_device_sdram(0);
@@ -326,6 +367,7 @@ static int at91sam9261ek_devices_init(void)
 	ek_add_device_buttons();
 	ek_device_add_leds();
 	ek_add_device_lcdc();
+	ek_add_device_spi();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	devfs_add_partition("nand0", SZ_128K, SZ_256K, DEVFS_PARTITION_FIXED, "self_raw");

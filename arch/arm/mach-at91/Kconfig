@@ -494,4 +494,9 @@ config CMD_AT91_BOOT_TEST
 
 endif
 
+config AT91_BOOTSTRAP
+	bool "at91 bootstrap"
+	depends on MACH_HAS_LOWLEVEL_INIT
+	select BOOTSTRAP
+
 endif

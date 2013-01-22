@@ -70,6 +70,9 @@ config AT91SAM9_RESET
 config AT91SAM9G45_RESET
 	bool
 
+config HAVE_AT91_LOAD_BAREBOX_SRAM
+	bool
+
 config AT91SAM9_LOWLEVEL_INIT
 	bool
 
@@ -109,6 +112,7 @@ config SOC_AT91SAM9263
 	select HAS_MACB
 	select AT91SAM9_RESET
 	select AT91SAM9_LOWLEVEL_INIT
+	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config SOC_AT91SAM9G45
 	bool
@@ -156,6 +160,7 @@ config ARCH_AT91SAM9260
 config ARCH_AT91SAM9261
 	bool "AT91SAM9261"
 	select SOC_AT91SAM9261
+	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
@@ -559,5 +564,11 @@ config AT91_BOOTSTRAP
 	bool "at91 bootstrap"
 	depends on MACH_HAS_LOWLEVEL_INIT
 	select BOOTSTRAP
+
+config AT91_LOAD_BAREBOX_SRAM
+	bool "at91 laad barebox in sram"
+	depends on MACH_HAS_LOWLEVEL_INIT
+	depends on SHELL_NONE || HAVE_AT91_LOAD_BAREBOX_SRAM
+	default y if SHELL_NONE
 
 endif

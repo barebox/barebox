@@ -66,4 +66,9 @@ static inline int is_barebox_mips_head(const char *head)
 }
 #endif
 
+static inline int is_barebox_head(const char *head)
+{
+	return is_barebox_arm_head(head) || is_barebox_mips_head(head);
+}
+
 #endif /* __FILE_TYPE_H */

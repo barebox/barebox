@@ -479,8 +479,12 @@ config CALAO_MB_QIL_A9260
 	bool "MB-QIL A9260 Motherboard Board support"
 	depends on MACH_QIL_A9260
 
+if COMMAND_SUPPORT
+
 config CMD_AT91MUX
 	bool "at91mux dump command"
 	default y
+
+endif
 
 endif

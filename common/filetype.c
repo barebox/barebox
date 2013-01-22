@@ -145,7 +145,7 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_aimage;
 	if (buf64[0] == le64_to_cpu(0x0a1a0a0d474e5089ull))
 		return filetype_png;
-	if (strncmp(buf8 + 0x10, "barebox", 7) == 0)
+	if (is_barebox_mips_head(_buf))
 		return filetype_mips_barebox;
 
 	if (bufsize < 64)

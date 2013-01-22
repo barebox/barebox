@@ -363,12 +363,12 @@ static int ccxmx51_power_init(void)
 	/* De-assert reset of external devices on GP01, GPO2, GPO3 and GPO4 */
 	mc13xxx_reg_read(mc13xxx_dev, MC13892_REG_POWER_MISC, &val);
 	/* GPO1 - External */
-	/* GP02 - LAN9221  */
-	/* GP03 - FEC      */
-	/* GP04 - Wireless */
-	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth0)
+	/* GP02 - LAN9221 Power */
+	/* GP03 - FEC Reset */
+	/* GP04 - Wireless Power */
+	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth1)
 		val |= (1 << 8);
-	if (IS_ENABLED(CONFIG_DRIVER_NET_FEC_IMX) && ccxmx51_id->eth1)
+	if (IS_ENABLED(CONFIG_DRIVER_NET_FEC_IMX) && ccxmx51_id->eth0)
 		val |= (1 << 10);
 	if (ccxmx51_id->wless)
 		val |= (1 << 12);

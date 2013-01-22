@@ -8,6 +8,7 @@ config USB_EHCI_OMAP
 
 config USB_OHCI
 	bool "OHCI driver"
+	depends on !MMU
 
 config USB_OHCI_AT91
 	depends on ARCH_AT91

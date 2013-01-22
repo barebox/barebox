@@ -36,10 +36,19 @@ static void inline pmc_check_mckrdy(void)
 	} while (!(r & AT91_PMC_MCKRDY));
 }
 
+static int inline running_in_sram(void)
+{
+	u32 addr = get_pc();
+
+	addr >>= 28;
+	return addr == 0;
+}
+
 void __naked __bare_init reset(void)
 {
 	u32 r;
 	int i;
+	int in_sram = running_in_sram();
 
 	common_reset();
 
@@ -74,7 +83,7 @@ void __naked __bare_init reset(void)
 	 * PMC Check if the PLL is already initialized
 	 */
 	r = at91_pmc_read(AT91_PMC_MCKR);
-	if (r & AT91_PMC_CSS)
+	if (r & AT91_PMC_CSS && !in_sram)
 		goto end;
 
 	/*
@@ -117,7 +126,7 @@ void __naked __bare_init reset(void)
 	 * SDRAMC Check if Refresh Timer Counter is already initialized
 	 */
 	r = at91_sys_read(AT91_SDRAMC_TR);
-	if (r)
+	if (r && !in_sram)
 		goto end;
 
 	/* SDRAMC_MR : Normal Mode */
@@ -170,6 +179,13 @@ void __naked __bare_init reset(void)
 	/* MATRIX_MCFG - REMAP all masters */
 	at91_sys_write(AT91_MATRIX_MCFG0, 0x1FF);
 #endif
+	/*
+	 * When boot from external boot
+	 * we need to enable mck and ohter clock
+	 * so enable all of them
+	 * We will shutdown what we don't need later
+	 */
+	at91_pmc_write(AT91_PMC_PCER, 0xffffffff);
 
 end:
 	board_init_lowlevel_return();

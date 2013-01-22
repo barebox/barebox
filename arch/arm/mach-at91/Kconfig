@@ -485,6 +485,12 @@ config CMD_AT91MUX
 	bool "at91mux dump command"
 	default y
 
+config CMD_AT91_BOOT_TEST
+	bool "at91_boot_test"
+	help
+	  allow to upload a boot binary to sram and execute it
+	  useful to test bootstrap or barebox lowlevel init
+
 endif
 
 endif

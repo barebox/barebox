@@ -1,4 +1,5 @@
 obj-y += setup.o clock.o gpio.o
+obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 
 lowlevel_init-y = at91sam926x_lowlevel_init.o
 lowlevel_init-$(CONFIG_ARCH_AT91RM9200) = at91rm9200_lowlevel_init.o

@@ -44,7 +44,7 @@ config USB_GADGET_DFU
 
 config USB_GADGET_SERIAL
 	bool
-	depends on EXPERIMENTAL
+	depends on EXPERIMENTAL && !CONSOLE_NONE
 	prompt "Serial Gadget"
 
 endif

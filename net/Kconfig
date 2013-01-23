@@ -17,6 +17,7 @@ config NET_PING
 
 config NET_NETCONSOLE
 	bool
+	depends on !CONSOLE_NONE
 	prompt "network console support"
 	help
 	  This option adds support for a simple udp based network console.

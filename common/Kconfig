@@ -484,6 +484,10 @@ config CONSOLE_SIMPLE
 	bool
 	prompt "simple"
 
+config CONSOLE_NONE
+	bool
+	prompt "none"
+
 endchoice
 
 choice

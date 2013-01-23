@@ -351,6 +351,7 @@ config MACH_PM9263
 config MACH_TNY_A9263
 	bool "CALAO TNY-A9263"
 	select SUPPORT_CALAO_MOB_TNY_MD2
+	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Select this if you are using a Calao Systems TNY-A9263.
 	  <http://www.calao-systems.com>

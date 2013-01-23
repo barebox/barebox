@@ -34,6 +34,7 @@ ENDPROC(v7_mmu_cache_on)
 
 .section .text.v7_mmu_cache_off
 ENTRY(v7_mmu_cache_off)
+		stmfd	sp!, {r0-r7, r9-r11}
 		mrc	p15, 0, r0, c1, c0
 #ifdef CONFIG_MMU
 		bic	r0, r0, #0x000d
@@ -50,6 +51,7 @@ ENTRY(v7_mmu_cache_off)
 		mcr	p15, 0, r0, c7, c5, 6	@ invalidate BTC
 		mcr	p15, 0, r0, c7, c10, 4	@ DSB
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+		ldmfd	sp!, {r0-r7, r9-r11}
 		mov	pc, r12
 ENDPROC(v7_mmu_cache_off)
 

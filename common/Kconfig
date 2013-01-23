@@ -465,10 +465,13 @@ config TIMESTAMP
 	  commands like bootm or iminfo. This option is
 	  automatically enabled when you select CFG_CMD_DATE .
 
+choice
+	prompt "console support"
+	default CONSOLE_FULL
+
 config CONSOLE_FULL
 	bool
-	default y
-	prompt "Enable full console support"
+	prompt "full"
 	help
 	  This option enables full console support capable of
 	  handling multiple consoles. Also the full console support
@@ -476,6 +479,12 @@ config CONSOLE_FULL
 	  is registered in a circular buffer which will be printed
 	  once the first console is registered. Recommended for most
 	  usecases.
+
+config CONSOLE_SIMPLE
+	bool
+	prompt "simple"
+
+endchoice
 
 choice
 	prompt "Console activation strategy"
@@ -508,11 +517,6 @@ config CONSOLE_ACTIVATE_NONE
 	  barebox, you just won't see anything.
 
 endchoice
-
-config CONSOLE_SIMPLE
-	bool
-	default y
-	depends on !CONSOLE_FULL
 
 config PARTITION
 	bool

@@ -31,6 +31,7 @@ config BOARDINFO
 	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
 	default "Atmel at91sam9g10-ek" if MACH_AT91SAM9G10EK
 	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
+	default "Atmel at91sam9m10ihd" if MACH_AT91SAM9M10IHD
 	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
 	default "Atmel at91sam9n12-ek" if MACH_AT91SAM9N12EK
 	default "Atmel at91sam9x5-ek" if MACH_AT91SAM9X5EK
@@ -371,6 +372,11 @@ if ARCH_AT91SAM9G45
 
 choice
 	prompt "AT91SAM9G45 or AT91SAM9M10 Board Type"
+
+config MACH_AT91SAM9M10IHD
+	bool "Atmel AT91SAM9M10IDH Tablet"
+	help
+	  Select this if you are using Atmel's AT91SAM9M10IHD Tablet
 
 config MACH_AT91SAM9M10G45EK
 	bool "Atmel AT91SAM9M10G45-EK Evaluation Kit"

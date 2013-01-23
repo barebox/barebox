@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.hostname=at91sam9m10ihd
+global.linux.bootargs.base="console=ttyS0,115200"
+global.boot.default=android

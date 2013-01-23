@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "network (tftp, nfs) (usb ethernet)"
+	exit
+fi
+
+usb -f
+ethact eth1
+
+if [ $? -ne 0 ]; then
+	echo "ERROR: usb ethernet not found"
+	exit 1
+fi
+
+path="/mnt/tftp"
+
+global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
+#global.bootm.oftree="${path}/${global.user}-oftree-${global.hostname}"
+nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
+bootargs-ip
+global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"

@@ -118,9 +118,9 @@ static void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-static void barebox_uncompress(void *compressed_start, unsigned int len)
+static void __noreturn barebox_uncompress(void *compressed_start, unsigned int len)
 {
-	void (*barebox)(void);
+	void __noreturn (*barebox)(void);
 	/*
 	 * remap_cached currently does not work rendering the feature
 	 * of enabling the MMU in the PBL useless. disable for now.
@@ -155,7 +155,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this function directly.
  */
-void __naked board_init_lowlevel_return(void)
+void __naked __noreturn board_init_lowlevel_return(void)
 {
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;

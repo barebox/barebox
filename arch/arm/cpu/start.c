@@ -55,7 +55,7 @@ void __naked __bare_init reset(void)
  * Board code can jump here by either returning from board_init_lowlevel
  * or by calling this function directly.
  */
-void __naked board_init_lowlevel_return(void)
+void __naked __noreturn board_init_lowlevel_return(void)
 {
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
 

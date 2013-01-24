@@ -73,7 +73,7 @@ console_initcall(sdp3430_console_init);
 
 static int sdp3430_mem_init(void)
 {
-	omap_add_ram0(128 * 1024 * 1024);
+	omap_add_ram0(SZ_128M);
 
 	return 0;
 }

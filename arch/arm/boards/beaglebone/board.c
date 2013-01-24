@@ -71,7 +71,7 @@ console_initcall(beaglebone_console_init);
 
 static int beaglebone_mem_init(void)
 {
-	omap_add_ram0(256 * 1024 * 1024);
+	omap_add_ram0(SZ_256M);
 
 	return 0;
 }

@@ -22,6 +22,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x73f00000 if ARCH_AT91SAM9G45
 	default 0x26f00000 if ARCH_AT91SAM9X5
+	default 0x21f00000 if MACH_ANIMEO_IP
 	default 0x23f00000
 
 config BOARDINFO
@@ -47,6 +48,7 @@ config BOARDINFO
 	default "Calao TNY-A9263" if MACH_TNY_A9263
 	default "Calao TNY-A9G20" if MACH_TNY_A9G20
 	default "Calao QIL-A9260" if MACH_QIL_A9260
+	default "Somfy Animeo IP" if MACH_ANIMEO_IP
 
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
@@ -209,6 +211,9 @@ if ARCH_AT91SAM9260
 
 choice
 	prompt "AT91SAM9260 Board Type"
+
+config MACH_ANIMEO_IP
+	bool "Somfy Animeo IP"
 
 config MACH_AT91SAM9260EK
 	bool "Atmel AT91SAM9260-EK"

@@ -70,7 +70,6 @@ The responsibility of arch_init_lowlevel and related calls is to setup OMAP. No 
 Once this is past, the code returns back to arm common code (cpu/start-arm.S). Here Instruction and Data caches are disabled. The execution proceeds to normal board initialization.
 
 @section board_boot The board boot path
-If the proper CONFIG_MACH_DO_LOWLEVEL_INIT flag is setup, board_init_lowlevel is called. This again would call a common file arch/arm/boards/omap/platform.S which setups a temporary SRAM stack and bumps the control to board_init.
 Every Board in OMAP platform can potentially define a board_init and enable defconfig in arch/arm/configs directory. The responsibility here is to setup OMAP for board configurations - this includes SDRAM configuration and pin muxing configuration.
 
 Once this is complete, @a barebox boot process proceeds by calling init functions and finally entering shell prompt

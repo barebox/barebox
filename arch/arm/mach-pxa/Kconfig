@@ -42,7 +42,6 @@ config MACH_MIOA701
 
 config MACH_PCM027
 	bool "Phytec phyCORE-PXA270"
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using a Phytec phyCORE PXA270
 	  board

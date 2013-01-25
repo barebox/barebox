@@ -32,7 +32,7 @@
 #include <asm/pgtable.h>
 #include <asm/cache.h>
 
-#include "mmu.h"
+#include "mmu-early.h"
 
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
@@ -82,6 +82,12 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	}
 
 	setup_c();
+
+	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
+		endmem &= ~0x3fff;
+		endmem -= SZ_16K; /* ttb */
+		mmu_early_enable(membase, memsize, endmem);
+	}
 
 	endmem -= SZ_128K; /* early malloc */
 	free_mem_ptr = endmem;

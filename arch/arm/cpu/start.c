@@ -19,12 +19,15 @@
 
 #include <common.h>
 #include <init.h>
+#include <sizes.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <memory.h>
+
+#include "mmu-early.h"
 
 unsigned long arm_stack_top;
 
@@ -37,6 +40,15 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 
 	arm_stack_top = endmem;
 	endmem -= STACK_SIZE; /* Stack */
+
+	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
+
+		endmem &= ~0x3fff;
+		endmem -= SZ_16K; /* ttb */
+
+		if (!IS_ENABLED(CONFIG_PBL_IMAGE))
+			mmu_early_enable(membase, memsize, endmem);
+	}
 
 	start_barebox();
 }

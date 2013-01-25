@@ -174,8 +174,6 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
  * be preserved and can be accessed later with barebox_arm_boarddata().
  *
  * -> membase + memsize
- *   ARM_RESERVE_MEM_SIZE    - reserved for board usage. Will not be touched
- *                             by barebox
  *   STACK_SIZE              - stack
  *   16KiB, aligned to 16KiB - First level page table if early MMU support
  *                             is enabled
@@ -188,7 +186,7 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
 {
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+	arm_setup_stack(membase + memsize - 16);
 
 	__barebox_arm_entry(membase, memsize, boarddata);
 }

@@ -25,6 +25,8 @@
 #ifndef _BAREBOX_ARM_H_
 #define _BAREBOX_ARM_H_
 
+#include <sizes.h>
+
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);
 

@@ -26,10 +26,17 @@
 #include <asm/cache.h>
 #include <memory.h>
 
+unsigned long arm_stack_top;
+
 static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
 {
+	unsigned long endmem = membase + memsize;
+
 	setup_c();
+
+	arm_stack_top = endmem;
+	endmem -= STACK_SIZE; /* Stack */
 
 	start_barebox();
 }
@@ -47,11 +54,20 @@ void __naked __section(.text_entry) start(void)
  * full SDRAM. The currently running binary can be inside or outside of this
  * region. TEXT_BASE can be inside or outside of this region. boarddata will
  * be preserved and can be accessed later with barebox_arm_boarddata().
+ *
+ * -> membase + memsize
+ *   STACK_SIZE              - stack
+ *   16KiB, aligned to 16KiB - First level page table if early MMU support
+ *                             is enabled
+ * -> maximum end of barebox binary
+ *
+ * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
+ * be fine.
  */
 void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
                 uint32_t boarddata)
 {
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+	arm_setup_stack(membase + memsize - 16);
 
 	__start(membase, memsize, boarddata);
 }

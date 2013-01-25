@@ -37,6 +37,7 @@ struct atmel_mci {
 	struct mci_cmd		*cmd;
 	struct mci_data		*data;
 	unsigned		slot_b;
+	int			version;
 };
 
 #define to_mci_host(mci)	container_of(mci, struct atmel_mci, mci)
@@ -426,6 +427,34 @@ static void atmci_info(struct device_d *mci_dev)
 
 }
 #endif /* CONFIG_MCI_INFO */
+/*
+ * HSMCI (High Speed MCI) module is not fully compatible with MCI module.
+ * HSMCI provides DMA support and a new config register but no more supports
+ * PDC.
+ */
+static void atmci_get_cap(struct atmel_mci *host)
+{
+	unsigned int version;
+
+	version = atmci_readl(host, ATMCI_VERSION) & 0x00000fff;
+	host->version = version;
+
+	dev_info(host->hw_dev, "version: 0x%x\n", version);
+
+	switch (version & 0xf00) {
+	case 0x500:
+	case 0x400:
+	case 0x300:
+	case 0x200:
+	case 0x100:
+	case 0x0:
+		break;
+	default:
+		dev_warn(host->hw_dev,
+				"Unmanaged mci version, set minimum capabilities\n");
+		break;
+	}
+}
 
 static int atmci_probe(struct device_d *hw_dev)
 {
@@ -437,6 +466,7 @@ static int atmci_probe(struct device_d *hw_dev)
 		dev_err(hw_dev, "missing platform data\n");
 		return -EINVAL;
 	}
+
 
 	host = xzalloc(sizeof(*host));
 	host->mci.send_cmd = atmci_request;
@@ -466,6 +496,8 @@ static int atmci_probe(struct device_d *hw_dev)
 
 	host->mci.f_min = clk_rate >> 9;
 	host->mci.f_max = clk_rate >> 1;
+
+	atmci_get_cap(host);
 
 	mci_register(&host->mci);
 

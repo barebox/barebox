@@ -139,17 +139,11 @@ static void __noreturn barebox_uncompress(void *compressed_start, unsigned int l
 	barebox();
 }
 
-/*
- * Board code can jump here by either returning from board_init_lowlevel
- * or by calling this function directly.
- */
-void __naked __noreturn board_init_lowlevel_return(void)
+static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
+		uint32_t memsize, uint32_t boarddata)
 {
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
-
-	/* Setup the stack */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
@@ -194,5 +188,7 @@ void __naked __noreturn board_init_lowlevel_return(void)
 void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
 {
-	board_init_lowlevel_return();
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+
+	__barebox_arm_entry(membase, memsize, boarddata);
 }

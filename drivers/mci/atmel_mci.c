@@ -48,6 +48,7 @@ struct atmel_mci {
 
 	unsigned long		bus_hz;
 	u32			mode_reg;
+	bool			need_reset;
 };
 
 #define to_mci_host(mci)	container_of(mci, struct atmel_mci, mci)
@@ -118,6 +119,7 @@ static int atmci_poll_status(struct atmel_mci *host, u32 mask)
 			return stat;
 		if (is_timeout(start, SECOND)) {
 			dev_err(host->hw_dev, "timeout\n");
+			host->need_reset = true;
 			return ATMCI_RTOE | stat;
 		}
 		if (stat & mask)
@@ -412,10 +414,11 @@ static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 	u32 stat, cmdat = 0;
 	int ret;
 
-	if (host->caps.need_reset_after_xfer) {
+	if (host->need_reset || host->caps.need_reset_after_xfer) {
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
 		atmci_writel(host, ATMCI_MR, host->mode_reg);
+		host->need_reset = false;
 	}
 
 	if (cmd->resp_type != MMC_RSP_NONE)

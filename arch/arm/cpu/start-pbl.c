@@ -106,9 +106,8 @@ static void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-static void __noreturn barebox_uncompress(void *compressed_start, unsigned int len)
+static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
-	void __noreturn (*barebox)(void);
 	/*
 	 * remap_cached currently does not work rendering the feature
 	 * of enabling the MMU in the PBL useless. disable for now.
@@ -124,19 +123,12 @@ static void __noreturn barebox_uncompress(void *compressed_start, unsigned int l
 	if (use_mmu)
 		mmu_enable((unsigned long)compressed_start, len);
 
-	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
-		barebox = (void *)(TEXT_BASE + 1);
-	else
-		barebox = (void *)TEXT_BASE;
-
 	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 
 	if (use_mmu)
 		mmu_disable();
 
 	flush_icache();
-
-	barebox();
 }
 
 static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
@@ -144,6 +136,7 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 {
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
+	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
@@ -164,6 +157,13 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	setup_c();
 
 	barebox_uncompress((void *)pg_start, pg_len);
+
+	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
+		barebox = (void *)(TEXT_BASE + 1);
+	else
+		barebox = (void *)TEXT_BASE;
+
+	barebox(membase, memsize, boarddata);
 }
 
 /*

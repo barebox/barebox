@@ -30,6 +30,7 @@
 struct atmel_mci_caps {
 	bool    has_rwproof;
 	bool	has_odd_clk_div;
+	bool	need_reset_after_xfer;
 };
 
 struct atmel_mci {
@@ -411,6 +412,12 @@ static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 	u32 stat, cmdat = 0;
 	int ret;
 
+	if (host->caps.need_reset_after_xfer) {
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
+		atmci_writel(host, ATMCI_MR, host->mode_reg);
+	}
+
 	if (cmd->resp_type != MMC_RSP_NONE)
 		cmdat |= ATMCI_CMDR_MAXLAT_64CYC;
 
@@ -471,6 +478,8 @@ static void atmci_get_cap(struct atmel_mci *host)
 
 	dev_info(host->hw_dev, "version: 0x%x\n", version);
 
+	host->caps.need_reset_after_xfer = 1;
+
 	switch (version & 0xf00) {
 	case 0x500:
 		host->caps.has_odd_clk_div = 1;
@@ -479,6 +488,7 @@ static void atmci_get_cap(struct atmel_mci *host)
 	case 0x200:
 		host->caps.has_rwproof = 1;
 	case 0x100:
+		host->caps.need_reset_after_xfer = 0;
 	case 0x0:
 		break;
 	default:

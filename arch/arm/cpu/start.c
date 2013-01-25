@@ -26,30 +26,19 @@
 #include <asm/cache.h>
 #include <memory.h>
 
-/*
- * First function in the uncompressed image. We get here from
- * the pbl.
- */
-void __naked __section(.text_entry) start(void)
+static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
+		uint32_t boarddata)
 {
-#ifdef CONFIG_PBL_IMAGE
-	board_init_lowlevel_return();
-#else
-	barebox_arm_head();
-#endif
-}
-
-/*
- * Board code can jump here by either returning from board_init_lowlevel
- * or by calling this function directly.
- */
-void __naked __noreturn board_init_lowlevel_return(void)
-{
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
-
 	setup_c();
 
 	start_barebox();
+}
+
+#ifndef CONFIG_PBL_IMAGE
+
+void __naked __section(.text_entry) start(void)
+{
+	barebox_arm_head();
 }
 
 /*
@@ -62,5 +51,18 @@ void __naked __noreturn board_init_lowlevel_return(void)
 void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
                 uint32_t boarddata)
 {
-	board_init_lowlevel_return();
+	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+
+	__start(membase, memsize, boarddata);
 }
+#else
+/*
+ * First function in the uncompressed image. We get here from
+ * the pbl. The stack already has been set up by the pbl.
+ */
+void __naked __section(.text_entry) start(uint32_t membase, uint32_t memsize,
+                uint32_t boarddata)
+{
+	__start(membase, memsize, boarddata);
+}
+#endif

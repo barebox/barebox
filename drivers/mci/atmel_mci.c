@@ -28,6 +28,7 @@
 #include "atmel-mci-regs.h"
 
 struct atmel_mci_caps {
+	bool    has_rwproof;
 	bool	has_odd_clk_div;
 };
 
@@ -94,7 +95,13 @@ static void atmci_set_clk_rate(struct atmel_mci *host,
 	dev_dbg(host->hw_dev, "atmel_set_clk_rate: clkIn=%ld clkIos=%d divider=%d\n",
 		host->bus_hz, clock_min, clkdiv);
 
-	host->mode_reg |= ATMCI_MR_RDPROOF | ATMCI_MR_WRPROOF;
+	/*
+	 * WRPROOF and RDPROOF prevent overruns/underruns by
+	 * stopping the clock when the FIFO is full/empty.
+	 * This state is not expected to last for long.
+	 */
+	if (host->caps.has_rwproof)
+		host->mode_reg |= ATMCI_MR_RDPROOF | ATMCI_MR_WRPROOF;
 
 	atmci_writel(host, ATMCI_MR, host->mode_reg);
 }
@@ -470,6 +477,7 @@ static void atmci_get_cap(struct atmel_mci *host)
 	case 0x400:
 	case 0x300:
 	case 0x200:
+		host->caps.has_rwproof = 1;
 	case 0x100:
 	case 0x0:
 		break;

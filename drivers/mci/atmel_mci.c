@@ -28,6 +28,8 @@
 #include "atmel-mci-regs.h"
 
 struct atmel_mci_caps {
+	bool	has_cfg_reg;
+	bool	has_highspeed;
 	bool    has_rwproof;
 	bool	has_odd_clk_div;
 	bool	need_reset_after_xfer;
@@ -48,6 +50,7 @@ struct atmel_mci {
 
 	unsigned long		bus_hz;
 	u32			mode_reg;
+	u32			cfg_reg;
 	bool			need_reset;
 };
 
@@ -71,6 +74,8 @@ static void atmci_set_clk_rate(struct atmel_mci *host,
 	if (!host->mode_reg) {
 		clk_enable(host->clk);
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
+		if (host->caps.has_cfg_reg)
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
 	}
 
 	if (host->caps.has_odd_clk_div) {
@@ -395,6 +400,16 @@ static void atmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	if (ios->clock) {
 		atmci_set_clk_rate(host, ios->clock);
+
+		if (host->caps.has_cfg_reg) {
+			/* setup High Speed mode in relation with card capacity */
+			if (ios->timing == MMC_TIMING_SD_HS)
+				host->cfg_reg |= ATMCI_CFG_HSMODE;
+			else
+				host->cfg_reg &= ~ATMCI_CFG_HSMODE;
+
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
+		}
 	} else {
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIDIS);
 		if (host->mode_reg) {
@@ -418,6 +433,8 @@ static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
 		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
 		atmci_writel(host, ATMCI_MR, host->mode_reg);
+		if (host->caps.has_cfg_reg)
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
 		host->need_reset = false;
 	}
 
@@ -481,6 +498,8 @@ static void atmci_get_cap(struct atmel_mci *host)
 
 	dev_info(host->hw_dev, "version: 0x%x\n", version);
 
+	host->caps.has_cfg_reg = 0;
+	host->caps.has_highspeed = 0;
 	host->caps.need_reset_after_xfer = 1;
 
 	switch (version & 0xf00) {
@@ -488,6 +507,8 @@ static void atmci_get_cap(struct atmel_mci *host)
 		host->caps.has_odd_clk_div = 1;
 	case 0x400:
 	case 0x300:
+		host->caps.has_cfg_reg = 1;
+		host->caps.has_highspeed = 1;
 	case 0x200:
 		host->caps.has_rwproof = 1;
 	case 0x100:
@@ -546,6 +567,9 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->mci.f_max = host->bus_hz >> 1;
 
 	atmci_get_cap(host);
+
+	if (host->caps.has_highspeed)
+		host->mci.host_caps |= MMC_MODE_HS;
 
 	mci_register(&host->mci);
 

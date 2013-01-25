@@ -31,4 +31,6 @@ void __naked __bare_init reset(void)
 
 	at91sam926x_lowlevel_init(IOMEM(AT91SAM9263_BASE_PIOD), true,
 				  AT91_MATRIX_EBI0CSA);
+
+	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(), 0);
 }

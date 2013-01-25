@@ -6,6 +6,9 @@ config HAVE_AT91_DBGU0
 config HAVE_AT91_DBGU1
 	bool
 
+config HAVE_AT91_LOWLEVEL_INIT
+	bool
+
 config AT91SAM9_SMC
 	bool
 
@@ -76,6 +79,8 @@ config HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config AT91SAM9_LOWLEVEL_INIT
 	bool
+	select MACH_HAS_LOWLEVEL_INIT
+	select MACH_DO_LOWLEVEL_INIT
 
 comment "Atmel AT91 System-on-Chip"
 
@@ -293,6 +298,7 @@ config MACH_AT91SAM9261EK
 	select HAVE_AT91_DATAFLASH_CARD
 	select MACH_HAS_LOWLEVEL_INIT
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	select HAVE_AT91_LOWLEVEL_INIT
 	help
 	  Select this if you are using Atmel's AT91SAM9261-EK Evaluation Kit.
 	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3820>
@@ -300,7 +306,7 @@ config MACH_AT91SAM9261EK
 config MACH_PM9261
 	bool "Ronetix PM9261"
 	select HAS_DM9000
-	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_AT91_LOWLEVEL_INIT
 	help
 	  Say y here if you are using the Ronetix PM9261 Board
 
@@ -375,7 +381,7 @@ choice
 
 config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
-	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_AT91_LOWLEVEL_INIT
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
@@ -387,7 +393,7 @@ config MACH_MMCCPU
 
 config MACH_PM9263
 	bool "Ronetix PM9263"
-	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_AT91_LOWLEVEL_INIT
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
 
@@ -401,7 +407,7 @@ config MACH_TNY_A9263
 
 config MACH_USB_A9263
 	bool "CALAO USB-A9263"
-	select MACH_HAS_LOWLEVEL_INIT
+	select HAVE_AT91_LOWLEVEL_INIT
 	help
 	  Select this if you are using a Calao Systems USB-A9263.
 	  <http://www.calao-systems.com>
@@ -565,7 +571,7 @@ endif
 
 config AT91_BOOTSTRAP
 	bool "at91 bootstrap"
-	depends on MACH_HAS_LOWLEVEL_INIT
+	depends on HAVE_AT91_LOWLEVEL_INIT
 	select BOOTSTRAP
 
 config AT91_LOAD_BAREBOX_SRAM

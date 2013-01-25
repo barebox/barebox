@@ -60,13 +60,6 @@ struct atmel_mci {
 				| ATMCI_OVRE  \
 				| ATMCI_UNRE)
 
-static void atmci_ip_reset(struct atmel_mci *host)
-{
-	atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST | ATMCI_CR_MCIDIS);
-	atmci_writel(host, ATMCI_DTOR, 0x7f);
-	atmci_writel(host, ATMCI_IDR, ~0UL);
-}
-
 static void atmci_set_clk_rate(struct atmel_mci *host,
 			       unsigned int clock_min)
 {
@@ -360,7 +353,8 @@ static int atmci_reset(struct mci_host *mci, struct device_d *mci_dev)
 		return -ENODEV;
 
 	clk_enable(host->clk);
-	atmci_ip_reset(host);
+	atmci_writel(host, ATMCI_DTOR, 0x7f);
+	clk_disable(host->clk);
 
 	return 0;
 }
@@ -519,7 +513,11 @@ static int atmci_probe(struct device_d *hw_dev)
 		return PTR_ERR(host->clk);
 	}
 
+	clk_enable(host->clk);
+	atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
+	atmci_writel(host, ATMCI_IDR, ~0UL);
 	host->bus_hz = clk_get_rate(host->clk);
+	clk_disable(host->clk);
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

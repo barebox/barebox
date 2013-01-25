@@ -83,7 +83,7 @@ void __bare_init at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_c
 #endif
 
 	cfg->pmc_mor =
-		AT91_PMC_MSCEN |
+		AT91_PMC_MOSCEN |
 		(255 << 8);		/* Main Oscillator Start-up Time */
 	cfg->pmc_pllar =
 		AT91_PMC_PLLA_WR_ERRATA | /* Bit 29 must be 1 when prog */

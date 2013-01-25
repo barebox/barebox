@@ -147,7 +147,6 @@ static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
 struct atmel_mci_platform_data {
 	unsigned slot_b;
 	unsigned bus_width;
-	unsigned host_caps; /* MCI_MODE_* from mci.h */
 	int detect_pin;
 	int wp_pin;
 };

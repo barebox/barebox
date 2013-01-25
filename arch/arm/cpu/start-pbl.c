@@ -114,10 +114,6 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	 */
 	int use_mmu = 0;
 
-	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
-	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;
-	free_mem_end_ptr = free_mem_ptr + SZ_128K;
-
 	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
 
 	if (use_mmu)
@@ -137,6 +133,9 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
 	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
+	uint32_t endmem = membase + memsize;
+
+	endmem -= STACK_SIZE; /* stack */
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
@@ -155,6 +154,10 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	}
 
 	setup_c();
+
+	endmem -= SZ_128K; /* early malloc */
+	free_mem_ptr = endmem;
+	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
 	barebox_uncompress((void *)pg_start, pg_len);
 

@@ -481,7 +481,7 @@ static void atmci_info(struct device_d *mci_dev)
 		printf("- %u Hz upper limit", host->mci.f_max);
 
 	printf("\n  Card detection support: %s\n",
-		pd->detect_pin != 0 ? "yes" : "no");
+		gpio_is_valid(pd->detect_pin) ? "yes" : "no");
 
 }
 #endif /* CONFIG_MCI_INFO */
@@ -527,12 +527,28 @@ static int atmci_probe(struct device_d *hw_dev)
 {
 	struct atmel_mci *host;
 	struct atmel_mci_platform_data *pd = hw_dev->platform_data;
+	int ret;
 
 	if (!pd) {
 		dev_err(hw_dev, "missing platform data\n");
 		return -EINVAL;
 	}
 
+	if (gpio_is_valid(pd->detect_pin)) {
+		ret = gpio_request(pd->detect_pin, "mci_cd");
+		if (ret) {
+			dev_err(hw_dev, "Impossible to request CD gpio %d (%d)\n",
+				ret, pd->detect_pin);
+			return ret;
+		}
+
+		ret = gpio_direction_input(pd->detect_pin);
+		if (ret) {
+			dev_err(hw_dev, "Impossible to configure CD gpio %d as input (%d)\n",
+				ret, pd->detect_pin);
+			goto err_gpio_cd_request;
+		}
+	}
 
 	host = xzalloc(sizeof(*host));
 	host->mci.send_cmd = atmci_request;
@@ -552,7 +568,8 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->clk = clk_get(hw_dev, "mci_clk");
 	if (IS_ERR(host->clk)) {
 		dev_err(hw_dev, "no mci_clk\n");
-		return PTR_ERR(host->clk);
+		ret = PTR_ERR(host->clk);
+		goto err_gpio_cd_request;
 	}
 
 	clk_enable(host->clk);
@@ -579,6 +596,12 @@ static int atmci_probe(struct device_d *hw_dev)
 	mci_register(&host->mci);
 
 	return 0;
+
+err_gpio_cd_request:
+	if (gpio_is_valid(pd->detect_pin))
+		gpio_free(pd->detect_pin);
+
+	return ret;
 }
 
 static struct driver_d atmci_driver = {

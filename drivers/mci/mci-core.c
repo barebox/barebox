@@ -1111,7 +1111,13 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
 	struct mci *mci = container_of(blk, struct mci, blk);
+	struct mci_host *host = mci->host;
 	int rc;
+
+	if (host->card_write_protected && host->card_write_protected(host)) {
+		dev_err(mci->mci_dev, "card write protected\n");
+		return -EPERM;
+	}
 
 	dev_dbg(mci->mci_dev, "%s: Write %d block(s), starting at %d\n",
 		__func__, num_blocks, block);

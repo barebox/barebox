@@ -51,6 +51,7 @@ struct atmel_mci {
 	unsigned long		bus_hz;
 	u32			mode_reg;
 	u32			cfg_reg;
+	u32			sdc_reg;
 	bool			need_reset;
 };
 
@@ -382,21 +383,20 @@ static void atmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	dev_dbg(host->hw_dev, "atmel_mci_set_ios: bus_width=%d clk=%d\n",
 		ios->bus_width, ios->clock);
 
+	host->sdc_reg &= ~ATMCI_SDCBUS_MASK;
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_4:
-		atmci_writel(host, ATMCI_SDCR, ATMCI_SDCBUS_4BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_4BIT;
 		break;
 	case MMC_BUS_WIDTH_8:
-		atmci_writel(host, ATMCI_SDCR, ATMCI_SDCBUS_8BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_8BIT;
 		break;
 	case MMC_BUS_WIDTH_1:
-		atmci_writel(host, ATMCI_SDCR, ATMCI_SDCBUS_1BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_1BIT;
 		break;
 	default:
 		return;
 	}
-	atmci_writel(host, ATMCI_SDCR, atmci_readl(host, ATMCI_SDCR)
-		| host->slot_b);
 
 	if (ios->clock) {
 		atmci_set_clk_rate(host, ios->clock);
@@ -437,6 +437,7 @@ static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
 		host->need_reset = false;
 	}
+	atmci_writel(host, ATMCI_SDCR, host->sdc_reg);
 
 	if (cmd->resp_type != MMC_RSP_NONE)
 		cmdat |= ATMCI_CMDR_MAXLAT_64CYC;
@@ -570,6 +571,11 @@ static int atmci_probe(struct device_d *hw_dev)
 
 	if (host->caps.has_highspeed)
 		host->mci.host_caps |= MMC_MODE_HS;
+
+	if (host->slot_b)
+		host->sdc_reg = ATMCI_SDCSEL_SLOT_B;
+	else
+		host->sdc_reg = ATMCI_SDCSEL_SLOT_A;
 
 	mci_register(&host->mci);
 

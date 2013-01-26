@@ -265,7 +265,7 @@ int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 #define MTD_DEBUG(n, args...)				\
 	do {						\
 		if (n <= CONFIG_MTD_DEBUG_VERBOSE)	\
-			printk(KERN_INFO args);		\
+			pr_info( args);		\
 	} while(0)
 #else /* CONFIG_MTD_DEBUG */
 #define MTD_DEBUG(n, args...) do { } while(0)

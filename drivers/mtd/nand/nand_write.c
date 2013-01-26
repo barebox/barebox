@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "nand: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <clock.h>
@@ -624,7 +626,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 		 */
 		if (nand_block_checkbad(mtd, ((loff_t) page) <<
 					chip->page_shift, 0, allowbbt)) {
-			printk(KERN_WARNING "nand_erase: attempt to erase a "
+			pr_warn("nand_erase: attempt to erase a "
 			       "bad block at page 0x%08x\n", page);
 			instr->state = MTD_ERASE_FAILED;
 			goto erase_exit;

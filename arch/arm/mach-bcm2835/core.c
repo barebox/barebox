@@ -97,5 +97,7 @@ void __noreturn reset_cpu (unsigned long addr)
 	rstc |= PM_RSTC_WRCFG_FULL_RESET;
 	writel(PM_PASSWORD | RESET_TIMEOUT, PM_WDOG);
 	writel(PM_PASSWORD | rstc, PM_RSTC);
+
+	while (1);
 }
 EXPORT_SYMBOL(reset_cpu);

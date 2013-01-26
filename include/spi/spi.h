@@ -342,6 +342,8 @@ spi_transfer_del(struct spi_transfer *t)
 
 int spi_sync(struct spi_device *spi, struct spi_message *message);
 
+struct spi_device *spi_new_device(struct spi_master *master,
+				  struct spi_board_info *chip);
 int spi_register_master(struct spi_master *master);
 
 #ifdef CONFIG_SPI

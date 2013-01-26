@@ -55,14 +55,18 @@ int dev_printf(const struct device_d *dev, const char *format, ...)
 		ret;					\
 	 })
 
-#define pr_emerg(fmt, arg...)	__pr_printk(0, fmt, ##arg)
-#define pr_alert(fmt, arg...)	__pr_printk(1, fmt, ##arg)
-#define pr_crit(fmt, arg...)	__pr_printk(2, fmt, ##arg)
-#define pr_warning(fmt, arg...)	__pr_printk(3, fmt, ##arg)
-#define pr_err(fmt, arg...)	__pr_printk(4, fmt, ##arg)
-#define pr_notice(fmt, arg...)	__pr_printk(5, fmt, ##arg)
-#define pr_info(fmt, arg...)	__pr_printk(6, fmt, ##arg)
-#define pr_debug(fmt, arg...)	__pr_printk(7, fmt, ##arg)
-#define debug(fmt, arg...)	__pr_printk(7, fmt, ##arg)
+#ifndef pr_fmt
+#define pr_fmt(fmt) fmt
+#endif
+
+#define pr_emerg(fmt, arg...)	__pr_printk(0, pr_fmt(fmt), ##arg)
+#define pr_alert(fmt, arg...)	__pr_printk(1, pr_fmt(fmt), ##arg)
+#define pr_crit(fmt, arg...)	__pr_printk(2, pr_fmt(fmt), ##arg)
+#define pr_warning(fmt, arg...)	__pr_printk(3, pr_fmt(fmt), ##arg)
+#define pr_err(fmt, arg...)	__pr_printk(4, pr_fmt(fmt), ##arg)
+#define pr_notice(fmt, arg...)	__pr_printk(5, pr_fmt(fmt), ##arg)
+#define pr_info(fmt, arg...)	__pr_printk(6, pr_fmt(fmt), ##arg)
+#define pr_debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
+#define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 
 #endif

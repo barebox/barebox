@@ -35,6 +35,7 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
 {
 	unsigned long endmem = membase + memsize;
+	unsigned long malloc_start, malloc_end;
 
 	setup_c();
 
@@ -49,6 +50,33 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		if (!IS_ENABLED(CONFIG_PBL_IMAGE))
 			mmu_early_enable(membase, memsize, endmem);
 	}
+
+	if ((unsigned long)_text > membase + memsize ||
+			(unsigned long)_text < membase)
+		/*
+		 * barebox is either outside SDRAM or in another
+		 * memory bank, so we can use the whole bank for
+		 * malloc.
+		 */
+		malloc_end = endmem;
+	else
+		malloc_end = (unsigned long)_text;
+
+	/*
+	 * Maximum malloc space is the Kconfig value if given
+	 * or 64MB.
+	 */
+	if (MALLOC_SIZE > 0) {
+		malloc_start = malloc_end - MALLOC_SIZE;
+		if (malloc_start < membase)
+			malloc_start = membase;
+	} else {
+		malloc_start = malloc_end - (malloc_end - membase) / 2;
+		if (malloc_end - malloc_start > SZ_64M)
+			malloc_start = malloc_end - SZ_64M;
+	}
+
+	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 
 	start_barebox();
 }

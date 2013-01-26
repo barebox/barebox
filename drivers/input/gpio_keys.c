@@ -79,7 +79,7 @@ static int __init gpio_keys_probe(struct device_d *dev)
 	pdata->recv_fifo = kfifo_alloc(pdata->fifo_size);
 
 	for (i = 0; i < pdata->nbuttons; i++) {
-		gpio = pdata->buttons->gpio;
+		gpio = pdata->buttons[i].gpio;
 		ret = gpio_request(gpio, "gpio_keys");
 		if (ret) {
 			pr_err("gpio_keys: (%d) can not be requested\n", gpio);

@@ -1,3 +1,24 @@
+/*
+ * start-pbl.c
+ *
+ * Copyright (c) 2009-2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
+
+#define pr_fmt(fmt)	"mmu: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <asm/mmu.h>
@@ -138,7 +159,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	int i, pte;
 	u32 *ptes;
 
-	debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
+	pr_debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
 			phys, bank->size);
 
 	/*
@@ -150,7 +171,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 
 	ptes = xmemalign(PAGE_SIZE, num_ptes * sizeof(u32));
 
-	debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
+	pr_debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
 			ptes, ttb_start, ttb_end);
 
 	for (i = 0; i < num_ptes; i++) {
@@ -242,7 +263,7 @@ static int mmu_init(void)
 
 	ttb = memalign(0x10000, 0x4000);
 
-	debug("ttb: 0x%p\n", ttb);
+	pr_debug("ttb: 0x%p\n", ttb);
 
 	/* Set the ttb register */
 	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);

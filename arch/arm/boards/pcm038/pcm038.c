@@ -13,6 +13,7 @@
  *
  *
  */
+#define pr_fmt(fmt) "pcm038: " fmt
 
 #include <common.h>
 #include <net.h>
@@ -170,7 +171,7 @@ static int pcm038_power_init(void)
 			/* Clocks have changed. Notify clients */
 			clock_notifier_call_chain();
 		} else {
-			printf("Failed to initialize PMIC. Will continue with low CPU speed\n");
+			pr_err("Failed to initialize PMIC. Will continue with low CPU speed\n");
 		}
 	}
 
@@ -315,7 +316,7 @@ static int pcm038_devices_init(void)
 		envdev = "NOR";
 	}
 
-	printf("Using environment in %s Flash\n", envdev);
+	pr_notice("Using environment in %s Flash\n", envdev);
 
 	if (imx_iim_read(1, 1, &uid, 6) == 6)
 		armlinux_set_serial(uid);

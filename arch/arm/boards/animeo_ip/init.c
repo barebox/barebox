@@ -29,28 +29,56 @@
 static bool animeo_ip_is_buco;
 static bool animeo_ip_is_io;
 
+static int animeo_ip_get_pio_revision(int gpio, char *name)
+{
+	int ret;
+
+	ret = gpio_request(gpio, name);
+	if (ret) {
+		pr_err("animeo_ip: can not request gpio %d as %s (%d)\n",
+			gpio, name, ret);
+		return ret;
+	}
+
+	ret = gpio_direction_input(gpio);
+
+	if (ret) {
+		pr_err("animeo_ip: can configure gpio %d (%s) as input (%d)\n",
+			gpio, name, ret);
+		return ret;
+	}
+
+	return gpio_get_value(gpio);
+}
+
 static void animeo_ip_detect_version(void)
 {
 	struct device_d *dev = NULL;
 	char *model, *version;
+	int val;
 
-	at91_set_gpio_input(AT91_PIN_PC20, 0);
-	at91_set_gpio_input(AT91_PIN_PC21, 0);
-
-	animeo_ip_is_buco = !!gpio_get_value(AT91_PIN_PC20);
-	animeo_ip_is_io = !!gpio_get_value(AT91_PIN_PC21);
+	animeo_ip_is_io = false;
+	animeo_ip_is_buco = false;
+	model = "SubCo";
+	version = "SDN";
 
 	dev = add_generic_device_res("animeo_ip", DEVICE_ID_SINGLE, NULL, 0, NULL);
 
-	if (animeo_ip_is_buco)
-		model = "BuCo";
-	else
+	val = animeo_ip_get_pio_revision(AT91_PIN_PC20, "is_buco");
+	if (val < 0) {
+		pr_warn("Can not detect model use %s by default\n", model);
+	} else if (val) {
+		animeo_ip_is_buco = true;
 		model = "SubCo";
+	}
 
-	if (animeo_ip_is_io)
+	val = animeo_ip_get_pio_revision(AT91_PIN_PC21, "is_io");
+	if (val < 0) {
+		pr_warn("Can not detect version use %s by default\n", model);
+	} else if (val) {
+		animeo_ip_is_io = true;
 		version = "IO";
-	else
-		version = "SDN";
+	}
 
 	dev_add_param_fixed(dev, "model", model);
 	dev_add_param_fixed(dev, "version", version);

@@ -29,12 +29,16 @@ typedef unsigned long flash_sect_t;
 
 #if   defined(CONFIG_DRIVER_CFI_BANK_WIDTH_8)
 typedef u64 cfiword_t;
+#define CFI_WORD_FMT	"0x%016llx"
 #elif defined(CONFIG_DRIVER_CFI_BANK_WIDTH_4)
 typedef u32 cfiword_t;
+#define CFI_WORD_FMT	"0x%08x"
 #elif defined(CONFIG_DRIVER_CFI_BANK_WIDTH_2)
 typedef u16 cfiword_t;
+#define CFI_WORD_FMT	"0x%04x"
 #else
 typedef u8 cfiword_t;
+#define CFI_WORD_FMT	"0x%02x"
 #endif
 
 struct cfi_cmd_set;

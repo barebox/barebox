@@ -104,7 +104,7 @@ static int simplify_symbols(Elf32_Shdr *sechdrs,
 			sym[i].st_value
 			  = resolve_symbol(sechdrs,
 					   strtab + sym[i].st_name);
-			debug("undef  : %20s 0x%08x 0x%08lx\n", strtab + sym[i].st_name, sym[i].st_value);
+			debug("undef  : %20s 0x%08x\n", strtab + sym[i].st_name, sym[i].st_value);
 
 			/* Ok if resolved.  */
 			if (sym[i].st_value != 0)

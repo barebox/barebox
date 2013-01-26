@@ -461,7 +461,7 @@ static int __cfi_erase(struct cdev *cdev, size_t count, loff_t offset,
         unsigned long start, end;
         int i, ret = 0;
 
-	debug("%s: erase 0x%08lx (size %d)\n", __func__, offset, count);
+	debug("%s: erase 0x%08llx (size %zu)\n", __func__, offset, count);
 
         start = find_sector(finfo, (unsigned long)finfo->base + offset);
         end   = find_sector(finfo, (unsigned long)finfo->base + offset +
@@ -633,7 +633,7 @@ static int cfi_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 	int i, ret = 0;
 	const char *action = (prot? "protect" : "unprotect");
 
-	printf("%s: %s 0x%p (size %d)\n", __func__,
+	printf("%s: %s 0x%p (size %zu)\n", __func__,
 	       action, finfo->base + offset, count);
 
 	start = find_sector(finfo, (unsigned long)finfo->base + offset);
@@ -654,7 +654,8 @@ static ssize_t cfi_write(struct cdev *cdev, const void *buf, size_t count, loff_
         struct flash_info *finfo = (struct flash_info *)cdev->priv;
         int ret;
 
-	debug("cfi_write: buf=0x%p addr=0x%08lx count=0x%08x\n",buf, finfo->base + offset, count);
+	debug("cfi_write: buf=0x%p addr=0x%p count=0x%08zx\n",
+			buf, finfo->base + offset, count);
 
 	ret = write_buff(finfo, buf, (unsigned long)finfo->base + offset, count);
 	return ret == 0 ? count : -1;
@@ -840,7 +841,10 @@ void flash_write_cmd(struct flash_info *info, flash_sect_t sect,
 
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
-	debug("%s: %p %lX %X => %p %llX\n", __FUNCTION__, info, sect, offset, addr, cword);
+
+	debug("%s: %p %lX %X => %p " CFI_WORD_FMT "\n", __func__,
+			info, sect, offset, addr, cword);
+
 	flash_write_word(info, cword, addr);
 }
 
@@ -862,7 +866,7 @@ int flash_isequal(struct flash_info *info, flash_sect_t sect,
 		debug ("is= %4.4x %4.4x\n", flash_read16(addr), (u16)cword);
 		retval = (flash_read16(addr) == cword);
 	} else if (bankwidth_is_4(info)) {
-		debug ("is= %8.8lx %8.8lx\n", flash_read32(addr), (u32)cword);
+		debug ("is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
 		retval = (flash_read32(addr) == cword);
 	} else if (bankwidth_is_8(info)) {
 #ifdef DEBUG

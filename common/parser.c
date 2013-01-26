@@ -58,9 +58,7 @@ static void process_macros (const char *input, char *output)
 	/* 1 = waiting for '(' or '{' */
 	/* 2 = waiting for ')' or '}' */
 	/* 3 = waiting for '''  */
-#ifdef DEBUG
-	char *output_start = output;
-#endif
+	char __maybe_unused *output_start = output;
 
 	pr_debug("[PROCESS_MACROS] INPUT len %d: \"%s\"\n", strlen (input),
 		input);

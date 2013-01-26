@@ -52,8 +52,8 @@ void board_init_r (ulong end_of_ram)
 	 */
 	malloc_end = (_text_base - (128 << 10)) & ~(4095);
 
-	debug("malloc_end: 0x%08x\n", malloc_end);
-	debug("TEXT_BASE after relocation: 0x%08x\n", _text_base);
+	debug("malloc_end: 0x%08lx\n", malloc_end);
+	debug("TEXT_BASE after relocation: 0x%08lx\n", _text_base);
 
 	mem_malloc_init((void *)(malloc_end - MALLOC_SIZE), (void *)(malloc_end - 1));
 

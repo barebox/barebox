@@ -168,8 +168,8 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 static void add_mem(unsigned long base0, unsigned long size0,
 		unsigned long base1, unsigned long size1)
 {
-	debug("%s: cs0 base: 0x%08x cs0 size: 0x%08x\n", __func__, base0, size0);
-	debug("%s: cs1 base: 0x%08x cs1 size: 0x%08x\n", __func__, base1, size1);
+	debug("%s: cs0 base: 0x%08lx cs0 size: 0x%08lx\n", __func__, base0, size0);
+	debug("%s: cs1 base: 0x%08lx cs1 size: 0x%08lx\n", __func__, base1, size1);
 
 	if (base0 + size0 == base1 && size1 > 0) {
 		/*

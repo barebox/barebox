@@ -29,5 +29,6 @@ struct at91sam926x_lowlevel_cfg {
 };
 
 void at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_cfg *cfg);
+void at91sam926x_lowlevel_init(void *pio, bool is_pio_asr, u32 matrix_csa);
 
 #endif /* __AT91_LOWLEVEL_INIT_H__ */

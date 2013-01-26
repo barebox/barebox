@@ -46,7 +46,8 @@ static int inline running_in_sram(void)
 	return addr == 0;
 }
 
-void __bare_init at91sam926x_lowlevel_init(void)
+void __bare_init at91sam926x_lowlevel_init(void *pio, bool is_pio_asr,
+					   u32 matrix_csa)
 {
 	u32 r;
 	int i;
@@ -58,20 +59,12 @@ void __bare_init at91sam926x_lowlevel_init(void)
 	__raw_writel(cfg.wdt_mr, AT91_BASE_WDT + AT91_WDT_MR);
 
 	/* configure PIOx as EBI0 D[16-31] */
-#ifdef CONFIG_ARCH_AT91SAM9263
-	__raw_writel(cfg.ebi_pio_pdr, AT91_BASE_PIOD + PIO_PDR);
-	__raw_writel(cfg.ebi_pio_ppudr, AT91_BASE_PIOD + PIO_PUDR);
-	__raw_writel(cfg.ebi_pio_ppudr, AT91_BASE_PIOD + PIO_ASR);
-#else
-	__raw_writel(cfg.ebi_pio_pdr, AT91_BASE_PIOC + PIO_PDR);
-	__raw_writel(cfg.ebi_pio_ppudr, AT91_BASE_PIOC + PIO_PUDR);
-#endif
+	__raw_writel(cfg.ebi_pio_pdr, pio + PIO_PDR);
+	__raw_writel(cfg.ebi_pio_ppudr, pio + PIO_PUDR);
+	if (is_pio_asr)
+		__raw_writel(cfg.ebi_pio_ppudr, pio + PIO_ASR);
 
-#if defined(AT91_MATRIX_EBI0CSA)
-	at91_sys_write(AT91_MATRIX_EBI0CSA, cfg.ebi_csa);
-#else /* AT91_MATRIX_EBICSA */
-	at91_sys_write(AT91_MATRIX_EBICSA, cfg.ebi_csa);
-#endif
+	at91_sys_write(matrix_csa, cfg.ebi_csa);
 
 	/* flash */
 	at91_smc_write(cfg.smc_cs, AT91_SMC_MODE, cfg.smc_mode);
@@ -192,19 +185,4 @@ void __bare_init at91sam926x_lowlevel_init(void)
 
 end:
 	board_init_lowlevel_return();
-}
-
-void __naked __bare_init reset(void)
-{
-	common_reset();
-
-#ifdef CONFIG_ARCH_AT91SAM9263
-	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE - 16);
-#elif defined(CONFIG_ARCH_AT91SAM9261) || defined(CONFIG_ARCH_AT91SAM9G10)
-	arm_setup_stack(AT91SAM9261_SRAM_BASE + AT91SAM9261_SRAM_SIZE - 16);
-#elif defined(CONFIG_ARCH_AT91SAM9260) || defined(CONFIG_ARCH_AT91SAM9G20)
-	arm_setup_stack(AT91SAM9260_SRAM_BASE + AT91SAM9260_SRAM_SIZE - 16);
-#endif
-
-	at91sam926x_lowlevel_init();
 }

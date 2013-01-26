@@ -62,6 +62,9 @@ config AT91SAM9_RESET
 config AT91SAM9G45_RESET
 	bool
 
+config AT91SAM9_LOWLEVEL_INIT
+	bool
+
 comment "Atmel AT91 System-on-Chip"
 
 config SOC_AT91RM9200
@@ -77,6 +80,7 @@ config SOC_AT91SAM9260
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select AT91SAM9_RESET
+	select AT91SAM9_LOWLEVEL_INIT
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -86,6 +90,7 @@ config SOC_AT91SAM9261
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select AT91SAM9_RESET
+	select AT91SAM9_LOWLEVEL_INIT
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -95,6 +100,7 @@ config SOC_AT91SAM9263
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select AT91SAM9_RESET
+	select AT91SAM9_LOWLEVEL_INIT
 
 config SOC_AT91SAM9G45
 	bool

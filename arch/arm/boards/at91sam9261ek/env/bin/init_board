@@ -1,5 +1,12 @@
 #!/bin/sh
 
+splash=/env/splash.png
+
+if [ -f ${splash} -a -e /dev/fb0 ]; then
+	splash -o ${splash}
+	fb0.enable=1
+fi
+
 button_name="dfu_bp"
 button_wait=5
 

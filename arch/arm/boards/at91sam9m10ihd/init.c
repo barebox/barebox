@@ -167,7 +167,7 @@ static void ek_add_device_usb(void)
 
 static int at91sam9m10g45ek_mem_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }

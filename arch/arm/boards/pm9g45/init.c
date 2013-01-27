@@ -137,7 +137,7 @@ static void pm9g45_add_device_eth(void)
 
 static int pm9g45_mem_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }

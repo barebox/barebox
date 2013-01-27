@@ -48,13 +48,6 @@ void __naked __section(.text_head_entry) pbl_start(void)
 extern void *input_data;
 extern void *input_data_end;
 
-static void barebox_uncompress(void *compressed_start, unsigned int len)
-{
-	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
-
-	flush_icache();
-}
-
 static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 		uint32_t memsize, uint32_t boarddata)
 {
@@ -93,7 +86,9 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 	free_mem_ptr = endmem;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
-	barebox_uncompress((void *)pg_start, pg_len);
+	pbl_barebox_uncompress((void*)TEXT_BASE, (void *)pg_start, pg_len);
+
+	flush_icache();
 
 	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
 		barebox = (void *)(TEXT_BASE + 1);

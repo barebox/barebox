@@ -16,6 +16,7 @@
 #include <mach/board.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9x5_matrix.h>
+#include <mach/at91sam9_ddrsdr.h>
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/cpu.h>
@@ -25,6 +26,9 @@
 
 void at91_add_device_sdram(u32 size)
 {
+	if (!size)
+		size = at91sam9x5_get_ddram_size();
+
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 	add_mem_device("sram0", AT91SAM9X5_SRAM_BASE,
 			AT91SAM9X5_SRAM_SIZE, IORESOURCE_MEM_WRITEABLE);

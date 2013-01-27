@@ -24,6 +24,8 @@
 #include <i2c/i2c.h>
 #include <spi/spi.h>
 #include <linux/mtd/mtd.h>
+#include <fb.h>
+#include <video/atmel_lcdc.h>
 
  /* USB Host */
 struct at91_usbh_data {
@@ -163,4 +165,6 @@ struct at91_spi_platform_data {
 };
 
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata);
+
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data);
 #endif

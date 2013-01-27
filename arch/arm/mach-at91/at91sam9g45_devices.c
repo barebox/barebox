@@ -401,3 +401,52 @@ void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 #else
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
 #endif
+
+/* --------------------------------------------------------------------
+ *  LCD Controller
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL)
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data)
+{
+	BUG_ON(!data);
+
+	at91_set_A_periph(AT91_PIN_PE0, 0);	/* LCDDPWR */
+
+	at91_set_A_periph(AT91_PIN_PE2, 0);	/* LCDCC */
+	at91_set_A_periph(AT91_PIN_PE3, 0);	/* LCDVSYNC */
+	at91_set_A_periph(AT91_PIN_PE4, 0);	/* LCDHSYNC */
+	at91_set_A_periph(AT91_PIN_PE5, 0);	/* LCDDOTCK */
+	at91_set_A_periph(AT91_PIN_PE6, 0);	/* LCDDEN */
+	at91_set_A_periph(AT91_PIN_PE7, 0);	/* LCDD0 */
+	at91_set_A_periph(AT91_PIN_PE8, 0);	/* LCDD1 */
+	at91_set_A_periph(AT91_PIN_PE9, 0);	/* LCDD2 */
+	at91_set_A_periph(AT91_PIN_PE10, 0);	/* LCDD3 */
+	at91_set_A_periph(AT91_PIN_PE11, 0);	/* LCDD4 */
+	at91_set_A_periph(AT91_PIN_PE12, 0);	/* LCDD5 */
+	at91_set_A_periph(AT91_PIN_PE13, 0);	/* LCDD6 */
+	at91_set_A_periph(AT91_PIN_PE14, 0);	/* LCDD7 */
+	at91_set_A_periph(AT91_PIN_PE15, 0);	/* LCDD8 */
+	at91_set_A_periph(AT91_PIN_PE16, 0);	/* LCDD9 */
+	at91_set_A_periph(AT91_PIN_PE17, 0);	/* LCDD10 */
+	at91_set_A_periph(AT91_PIN_PE18, 0);	/* LCDD11 */
+	at91_set_A_periph(AT91_PIN_PE19, 0);	/* LCDD12 */
+	at91_set_A_periph(AT91_PIN_PE20, 0);	/* LCDD13 */
+	at91_set_A_periph(AT91_PIN_PE21, 0);	/* LCDD14 */
+	at91_set_A_periph(AT91_PIN_PE22, 0);	/* LCDD15 */
+	at91_set_A_periph(AT91_PIN_PE23, 0);	/* LCDD16 */
+	at91_set_A_periph(AT91_PIN_PE24, 0);	/* LCDD17 */
+	at91_set_A_periph(AT91_PIN_PE25, 0);	/* LCDD18 */
+	at91_set_A_periph(AT91_PIN_PE26, 0);	/* LCDD19 */
+	at91_set_A_periph(AT91_PIN_PE27, 0);	/* LCDD20 */
+	at91_set_A_periph(AT91_PIN_PE28, 0);	/* LCDD21 */
+	at91_set_A_periph(AT91_PIN_PE29, 0);	/* LCDD22 */
+	at91_set_A_periph(AT91_PIN_PE30, 0);	/* LCDD23 */
+
+	add_generic_device("atmel_lcdfb", DEVICE_ID_SINGLE, NULL, AT91SAM9G45_LCDC_BASE, SZ_4K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data) {}
+#endif
+

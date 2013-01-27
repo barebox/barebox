@@ -131,7 +131,7 @@ static void __init ek_add_device_ks8851(void) {}
 static struct atmel_mci_platform_data mci0_data = {
 	.bus_width	= 4,
 	.detect_pin	= AT91_PIN_PA7,
-	.wp_pin		= 0,
+	.wp_pin		= -EINVAL,
 };
 
 static void ek_add_device_mci(void)

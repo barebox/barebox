@@ -37,7 +37,7 @@
 	({unsigned short val;\
 	 asm volatile("ldhio %0, 0(%1)" : "=r"(val) : "r" (addr)); val; })
 #define readl(addr)\
-	({unsigned long val;\
+	({unsigned int val;\
 	 asm volatile("ldwio %0, 0(%1)" : "=r"(val) : "r" (addr)); val; })
 
 #define writeb(val, addr)\

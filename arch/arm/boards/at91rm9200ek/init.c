@@ -39,7 +39,7 @@ static struct at91_ether_platform_data ether_pdata = {
 
 static int at91rm9200ek_mem_init(void)
 {
-	at91_add_device_sdram(64 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }

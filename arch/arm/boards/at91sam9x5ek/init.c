@@ -125,13 +125,13 @@ static void ek_add_device_eth(void)
 static struct atmel_mci_platform_data mci0_data = {
 	.bus_width	= 4,
 	.detect_pin	= AT91_PIN_PD15,
-	.wp_pin		= 0,
+	.wp_pin		= -EINVAL,
 };
 
 static void ek_add_device_mci(void)
 {
 	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
-		mci0_data.detect_pin = 0;
+		mci0_data.detect_pin = -EINVAL;
 
 	/* MMC0 */
 	at91_add_device_mci(0, &mci0_data);

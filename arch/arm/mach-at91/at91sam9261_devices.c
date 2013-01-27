@@ -208,6 +208,59 @@ void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata)
 void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata) {}
 #endif
 
+/* --------------------------------------------------------------------
+ *  LCD Controller
+ * -------------------------------------------------------------------- */
+
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL)
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data)
+{
+	BUG_ON(!data);
+
+	data->have_intensity_bit = true;
+
+#if defined(CONFIG_FB_ATMEL_STN)
+	at91_set_A_periph(AT91_PIN_PB0, 0);	/* LCDVSYNC */
+	at91_set_A_periph(AT91_PIN_PB1, 0);	/* LCDHSYNC */
+	at91_set_A_periph(AT91_PIN_PB2, 0);	/* LCDDOTCK */
+	at91_set_A_periph(AT91_PIN_PB3, 0);	/* LCDDEN */
+	at91_set_A_periph(AT91_PIN_PB4, 0);	/* LCDCC */
+	at91_set_A_periph(AT91_PIN_PB5, 0);	/* LCDD0 */
+	at91_set_A_periph(AT91_PIN_PB6, 0);	/* LCDD1 */
+	at91_set_A_periph(AT91_PIN_PB7, 0);	/* LCDD2 */
+	at91_set_A_periph(AT91_PIN_PB8, 0);	/* LCDD3 */
+#else
+	at91_set_A_periph(AT91_PIN_PB1, 0);	/* LCDHSYNC */
+	at91_set_A_periph(AT91_PIN_PB2, 0);	/* LCDDOTCK */
+	at91_set_A_periph(AT91_PIN_PB3, 0);	/* LCDDEN */
+	at91_set_A_periph(AT91_PIN_PB4, 0);	/* LCDCC */
+	at91_set_A_periph(AT91_PIN_PB7, 0);	/* LCDD2 */
+	at91_set_A_periph(AT91_PIN_PB8, 0);	/* LCDD3 */
+	at91_set_A_periph(AT91_PIN_PB9, 0);	/* LCDD4 */
+	at91_set_A_periph(AT91_PIN_PB10, 0);	/* LCDD5 */
+	at91_set_A_periph(AT91_PIN_PB11, 0);	/* LCDD6 */
+	at91_set_A_periph(AT91_PIN_PB12, 0);	/* LCDD7 */
+	at91_set_A_periph(AT91_PIN_PB15, 0);	/* LCDD10 */
+	at91_set_A_periph(AT91_PIN_PB16, 0);	/* LCDD11 */
+	at91_set_A_periph(AT91_PIN_PB17, 0);	/* LCDD12 */
+	at91_set_A_periph(AT91_PIN_PB18, 0);	/* LCDD13 */
+	at91_set_A_periph(AT91_PIN_PB19, 0);	/* LCDD14 */
+	at91_set_A_periph(AT91_PIN_PB20, 0);	/* LCDD15 */
+	at91_set_B_periph(AT91_PIN_PB23, 0);	/* LCDD18 */
+	at91_set_B_periph(AT91_PIN_PB24, 0);	/* LCDD19 */
+	at91_set_B_periph(AT91_PIN_PB25, 0);	/* LCDD20 */
+	at91_set_B_periph(AT91_PIN_PB26, 0);	/* LCDD21 */
+	at91_set_B_periph(AT91_PIN_PB27, 0);	/* LCDD22 */
+	at91_set_B_periph(AT91_PIN_PB28, 0);	/* LCDD23 */
+#endif
+
+	add_generic_device("atmel_lcdfb", DEVICE_ID_SINGLE, NULL, AT91SAM9261_LCDC_BASE, SZ_4K,
+			   IORESOURCE_MEM, data);
+}
+#else
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data) {}
+#endif
+
 resource_size_t __init at91_configure_dbgu(void)
 {
 	at91_set_A_periph(AT91_PIN_PA9, 0);		/* DRXD */

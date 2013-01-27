@@ -236,6 +236,48 @@ static int at91sam9m10g45ek_mem_init(void)
 }
 mem_initcall(at91sam9m10g45ek_mem_init);
 
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL)
+static struct fb_videomode at91_tft_vga_modes[] = {
+	{
+		.name		= "LG",
+		.refresh	= 60,
+		.xres		= 480,		.yres		= 272,
+		.pixclock	= KHZ2PICOS(9000),
+
+		.left_margin	= 1,		.right_margin	= 1,
+		.upper_margin	= 40,		.lower_margin	= 1,
+		.hsync_len	= 45,		.vsync_len	= 1,
+
+		.sync		= 0,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+};
+
+#define AT91SAM9G45_DEFAULT_LCDCON2	(ATMEL_LCDC_MEMOR_LITTLE \
+					| ATMEL_LCDC_DISTYPE_TFT \
+					| ATMEL_LCDC_CLKMOD_ALWAYSACTIVE)
+
+/* Driver datas */
+static struct atmel_lcdfb_platform_data ek_lcdc_data = {
+	.lcdcon_is_backlight		= true,
+	.default_bpp			= 32,
+	.default_dmacon			= ATMEL_LCDC_DMAEN,
+	.default_lcdcon2		= AT91SAM9G45_DEFAULT_LCDCON2,
+	.guard_time			= 9,
+	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
+	.mode_list			= at91_tft_vga_modes,
+	.num_modes			= ARRAY_SIZE(at91_tft_vga_modes),
+};
+static void ek_add_device_lcdc(void)
+{
+	at91_add_device_lcdc(&ek_lcdc_data);
+}
+
+#else
+static void ek_add_device_lcdc(void) {}
+#endif
+
+
 static int at91sam9m10g45ek_devices_init(void)
 {
 	ek_add_device_nand();
@@ -244,6 +286,7 @@ static int at91sam9m10g45ek_devices_init(void)
 	ek_add_device_usb();
 	ek_device_add_leds();
 	ek_device_add_keyboard();
+	ek_add_device_lcdc();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");

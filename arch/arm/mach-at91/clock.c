@@ -11,6 +11,8 @@
  */
 
 #include <common.h>
+#include <command.h>
+#include <complete.h>
 #include <linux/list.h>
 #include <errno.h>
 #include <linux/err.h>
@@ -756,3 +758,66 @@ static int at91_clock_reset(void)
 	return 0;
 }
 late_initcall(at91_clock_reset);
+
+#ifdef CONFIG_CMD_AT91CLK
+static int do_at91clk(int argc, char *argv[])
+{
+	u32		scsr, pcsr, uckr = 0, sr;
+	struct clk	*clk;
+
+	scsr = at91_pmc_read(AT91_PMC_SCSR);
+	pcsr = at91_pmc_read(AT91_PMC_PCSR);
+	sr = at91_pmc_read(AT91_PMC_SR);
+	printf("SCSR = %8x\n", scsr);
+	printf("PCSR = %8x\n", pcsr);
+	printf("MOR  = %8x\n", at91_pmc_read(AT91_CKGR_MOR));
+	printf("MCFR = %8x\n", at91_pmc_read(AT91_CKGR_MCFR));
+	printf("PLLA = %8x\n", at91_pmc_read(AT91_CKGR_PLLAR));
+	if (cpu_has_pllb())
+		printf("PLLB = %8x\n", at91_pmc_read(AT91_CKGR_PLLBR));
+	if (cpu_has_utmi()) {
+		uckr = at91_pmc_read(AT91_CKGR_UCKR);
+		printf("UCKR = %8x\n", uckr);
+	}
+	printf("MCKR = %8x\n", at91_pmc_read(AT91_PMC_MCKR));
+	if (cpu_has_upll())
+		printf("USB  = %8x\n", at91_pmc_read(AT91_PMC_USB));
+	printf("SR   = %8x\n", sr);
+
+	printf("\n");
+
+	list_for_each_entry(clk, &clocks, node) {
+		char	*state;
+
+		if (clk->mode == pmc_sys_mode)
+			state = (scsr & clk->pmc_mask) ? "on" : "off";
+		else if (clk->mode == pmc_periph_mode)
+			state = (pcsr & clk->pmc_mask) ? "on" : "off";
+		else if (clk->mode == pmc_uckr_mode)
+			state = (uckr & clk->pmc_mask) ? "on" : "off";
+		else if (clk->pmc_mask)
+			state = (sr & clk->pmc_mask) ? "on" : "off";
+		else if (clk == &clk32k || clk == &main_clk)
+			state = "on";
+		else
+			state = "";
+
+		printf("%-10s users=%2d %-3s %10ld Hz %s\n",
+			clk->name, clk->users, state, clk_get_rate(clk),
+			clk->parent ? clk->parent->name : "");
+	}
+	return 0;
+}
+
+BAREBOX_CMD_HELP_START(at91clk)
+BAREBOX_CMD_HELP_USAGE("at91clk\n")
+BAREBOX_CMD_HELP_SHORT("dump current clock configuration\n");
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(at91clk)
+	.cmd		= do_at91clk,
+	.usage		= "dump current clock configuration",
+	BAREBOX_CMD_HELP(cmd_at91clk_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
+BAREBOX_CMD_END
+#endif

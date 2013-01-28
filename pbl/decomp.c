@@ -18,6 +18,18 @@
 #include "../../../lib/decompress_inflate.c"
 #endif
 
+#ifdef CONFIG_IMAGE_COMPRESSION_NONE
+STATIC int decompress(u8 *input, int in_len,
+				int (*fill) (void *, unsigned int),
+				int (*flush) (void *, unsigned int),
+				u8 *output, int *posp,
+				void (*error) (char *x))
+{
+	memcpy(output, input, in_len);
+	return 0;
+}
+#endif
+
 static void noinline errorfn(char *error)
 {
 	while (1);

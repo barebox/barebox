@@ -11,4 +11,9 @@ if W1
 source drivers/w1/masters/Kconfig
 source drivers/w1/slaves/Kconfig
 
+config W1_DUAL_SEARCH
+	bool "dual search"
+	---help---
+	  Some device need to be searched twice to be detected
+
 endif # W1

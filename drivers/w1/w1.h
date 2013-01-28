@@ -133,6 +133,8 @@ struct w1_bus
 
 	int		max_slave_count, slave_count;
 
+	bool		is_searched;
+
 	void		*data;
 	struct list_head list;
 };

@@ -198,7 +198,7 @@ static int efikamx_mem_init(void)
 {
 	arm_add_mem_device("ram0", 0x90000000, SZ_512M);
 
-        return 0;
+	return 0;
 }
 mem_initcall(efikamx_mem_init);
 
@@ -220,7 +220,7 @@ static const struct spi_board_info efikamx_spi_board_info[] = {
 		.chip_select = 1,
 		.max_speed_hz = 20 * 1000 * 1000,
 		.bus_num = 0,
-        },
+	},
 };
 
 static void efikamx_power_init(void)
@@ -294,11 +294,11 @@ static void efikamx_power_init(void)
 	/* Set VDIG to 1.8V, VGEN3 to 1.8V, VCAM to 2.6V */
 	mc13xxx_reg_read(mc, MC13892_REG_SETTING_0, &val);
 	val &= ~(MC13892_SETTING_0_VCAM_MASK |
-                        MC13892_SETTING_0_VGEN3_MASK |
-                        MC13892_SETTING_0_VDIG_MASK);
+		MC13892_SETTING_0_VGEN3_MASK |
+		MC13892_SETTING_0_VDIG_MASK);
 	val |= MC13892_SETTING_0_VDIG_1_8 |
-                MC13892_SETTING_0_VGEN3_1_8 |
-                MC13892_SETTING_0_VCAM_2_6;
+		MC13892_SETTING_0_VGEN3_1_8 |
+		MC13892_SETTING_0_VCAM_2_6;
 	mc13xxx_reg_write(mc, MC13892_REG_SETTING_0, val);
 
 	/* Set VVIDEO to 2.775V, VAUDIO to 3V, VSD to 3.15V */
@@ -455,7 +455,7 @@ static int efikamx_devices_init(void)
 	imx51_add_mmc1(&efikasb_sd2_data);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
-                led_gpio_register(&leds[i]);
+		led_gpio_register(&leds[i]);
 
 	imx51_add_i2c1(NULL);
 

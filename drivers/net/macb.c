@@ -436,10 +436,10 @@ static int macb_probe(struct device_d *dev)
 	macb->miibus.priv = macb;
 	macb->miibus.parent = dev;
 
-	if (pdata->is_rmii)
-		macb->interface = PHY_INTERFACE_MODE_RMII;
-	else
+	if (pdata->phy_interface == PHY_INTERFACE_MODE_NA)
 		macb->interface = PHY_INTERFACE_MODE_MII;
+	else
+		macb->interface = pdata->phy_interface;
 
 	macb->phy_flags = pdata->phy_flags;
 

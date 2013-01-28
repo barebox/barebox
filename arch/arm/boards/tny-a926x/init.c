@@ -113,7 +113,7 @@ static void tny_a9260_add_device_nand(void)
 
 #ifdef CONFIG_DRIVER_NET_MACB
 static struct at91_ether_platform_data macb_pdata = {
-	.is_rmii	= 1,
+	.phy_interface	= PHY_INTERFACE_MODE_RMII,
 	.phy_addr	= -1,
 };
 

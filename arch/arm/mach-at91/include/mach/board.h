@@ -26,6 +26,7 @@
 #include <linux/mtd/mtd.h>
 #include <fb.h>
 #include <video/atmel_lcdc.h>
+#include <linux/phy.h>
 
  /* USB Host */
 struct at91_usbh_data {
@@ -74,7 +75,7 @@ struct at91_ether_platform_data {
 	unsigned int phy_flags;
 	unsigned int flags;
 	int phy_addr;
-	int is_rmii;
+	phy_interface_t phy_interface;
 	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 

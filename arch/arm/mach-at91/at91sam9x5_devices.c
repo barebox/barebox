@@ -111,7 +111,7 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 		at91_set_A_periph(AT91_PIN_PB5,  0);	/* EMDIO */
 		at91_set_A_periph(AT91_PIN_PB6,  0);	/* EMDC */
 
-		if (!data->is_rmii) {
+		if (data->phy_interface != PHY_INTERFACE_MODE_RMII) {
 			at91_set_A_periph(AT91_PIN_PB16, 0);	/* ECRS */
 			at91_set_A_periph(AT91_PIN_PB17, 0);	/* ECOL */
 			at91_set_A_periph(AT91_PIN_PB13, 0);	/* ERX2 */
@@ -124,7 +124,7 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 		break;
 	case 1:
 		start = AT91SAM9X5_BASE_EMAC1;
-		if (!data->is_rmii)
+		if (data->phy_interface != PHY_INTERFACE_MODE_RMII)
 			pr_warn("AT91: Only RMII available on interface macb%d.\n", id);
 
 		/* Pins used for RMII */

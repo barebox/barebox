@@ -99,7 +99,7 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 	at91_set_A_periph(AT91_PIN_PA19, 0);	/* EMDIO */
 	at91_set_A_periph(AT91_PIN_PA18, 0);	/* EMDC */
 
-	if (!data->is_rmii) {
+	if (data->phy_interface != PHY_INTERFACE_MODE_RMII) {
 		at91_set_B_periph(AT91_PIN_PA29, 0);	/* ECRS */
 		at91_set_B_periph(AT91_PIN_PA30, 0);	/* ECOL */
 		at91_set_B_periph(AT91_PIN_PA8,  0);	/* ERX2 */

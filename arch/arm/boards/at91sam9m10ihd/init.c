@@ -223,6 +223,7 @@ static struct atmel_lcdfb_platform_data ek_lcdc_data = {
 	.default_lcdcon2		= AT91SAM9G45_DEFAULT_LCDCON2,
 	.guard_time			= 9,
 	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
+	.atmel_lcdfb_power_control	= at91_lcdc_power_control,
 	.mode_list			= at91fb_default_monspecs,
 	.num_modes			= ARRAY_SIZE(at91fb_default_monspecs),
 };

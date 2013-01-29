@@ -106,6 +106,9 @@ int led_set(struct led *led, unsigned int value)
 	if (value > led->max_value)
 		value = led->max_value;
 
+	if (!led->set)
+		return -ENODEV;
+
 	led->set(led, value);
 
 	return 0;

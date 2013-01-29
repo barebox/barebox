@@ -5,6 +5,7 @@
  */
 
 #include <linux/types.h>
+#include <linux/string.h>
 
 void *memcpy(void *__dest, __const void *__src, size_t __n)
 {
@@ -103,7 +104,7 @@ void *memchr(const void *s, int c, size_t count)
 	return NULL;
 }
 
-char *strchr(const char *s, int c)
+char *_strchr(const char *s, int c)
 {
 	while (*s != (char)c)
 		if (*s++ == '\0')
@@ -111,17 +112,10 @@ char *strchr(const char *s, int c)
 	return (char *)s;
 }
 
-#undef memset
-
 void *memset(void *s, int c, size_t count)
 {
 	char *xs = s;
 	while (count--)
 		*xs++ = c;
 	return s;
-}
-
-void __memzero(void *s, size_t count)
-{
-	memset(s, 0, count);
 }

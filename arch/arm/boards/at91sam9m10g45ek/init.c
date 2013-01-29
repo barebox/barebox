@@ -113,7 +113,6 @@ static struct at91_ether_platform_data macb_pdata = {
 #if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data ek_mci_data = {
 	.bus_width	= 4,
-	.host_caps	= MMC_MODE_HS,
 	.detect_pin	= AT91_PIN_PD10,
 };
 

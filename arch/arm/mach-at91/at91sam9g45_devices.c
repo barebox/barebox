@@ -155,15 +155,15 @@ static struct i2c_gpio_platform_data pdata_i2c1 = {
 
 void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices)
 {
-	struct i2c_gpio_platform_data *pdata = &pdata_i2c;
+	struct i2c_gpio_platform_data *pdata;
 
 	i2c_register_board_info(i2c_id, devices, nr_devices);
 
 	switch (i2c_id) {
-	case 0;
+	case 0:
 		pdata = &pdata_i2c0;
 		break;
-	case 1;
+	case 1:
 		pdata = &pdata_i2c1;
 		break;
 	default:

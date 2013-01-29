@@ -1,5 +1,5 @@
 /*
- * Atmel AT91 MCI driver
+ * Atmel MCI driver
  *
  * Copyright (C) 2011 Hubert Feurstein <h.feurstein@gmail.com>
  *
@@ -25,11 +25,19 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include "at91_mci.h"
+#include "atmel-mci-regs.h"
 
-struct atmel_mci_host {
+struct atmel_mci_caps {
+	bool	has_cfg_reg;
+	bool	has_highspeed;
+	bool    has_rwproof;
+	bool	has_odd_clk_div;
+	bool	need_reset_after_xfer;
+};
+
+struct atmel_mci {
 	struct mci_host		mci;
-	void  __iomem		*base;
+	void  __iomem		*regs;
 	struct device_d		*hw_dev;
 	struct clk		*clk;
 
@@ -37,89 +45,105 @@ struct atmel_mci_host {
 	struct mci_cmd		*cmd;
 	struct mci_data		*data;
 	unsigned		slot_b;
+	int			version;
+	struct atmel_mci_caps	caps;
+
+	unsigned long		bus_hz;
+	u32			mode_reg;
+	u32			cfg_reg;
+	u32			sdc_reg;
+	bool			need_reset;
 };
 
-#define to_mci_host(mci)	container_of(mci, struct atmel_mci_host, mci)
+#define to_mci_host(mci)	container_of(mci, struct atmel_mci, mci)
 
-#define STATUS_ERROR_MASK	(AT91_MCI_RINDE  \
-				| AT91_MCI_RDIRE \
-				| AT91_MCI_RCRCE \
-				| AT91_MCI_RENDE \
-				| AT91_MCI_RTOE  \
-				| AT91_MCI_DCRCE \
-				| AT91_MCI_DTOE  \
-				| AT91_MCI_OVRE  \
-				| AT91_MCI_UNRE)
+#define STATUS_ERROR_MASK	(ATMCI_RINDE  \
+				| ATMCI_RDIRE \
+				| ATMCI_RCRCE \
+				| ATMCI_RENDE \
+				| ATMCI_RTOE  \
+				| ATMCI_DCRCE \
+				| ATMCI_DTOE  \
+				| ATMCI_OVRE  \
+				| ATMCI_UNRE)
 
-static inline u32 atmel_mci_readl(struct atmel_mci_host *host, u32 offset)
+static void atmci_set_clk_rate(struct atmel_mci *host,
+			       unsigned int clock_min)
 {
-	return readl(host->base + offset);
-}
+	unsigned int clkdiv;
 
-static inline void atmel_mci_writel(struct atmel_mci_host *host, u32 offset,
-				    u32 value)
-{
-	writel(value, host->base + offset);
-}
-
-static void atmel_mci_reset(struct atmel_mci_host *host)
-{
-	atmel_mci_writel(host, AT91_MCI_CR, AT91_MCI_SWRST | AT91_MCI_MCIDIS);
-	atmel_mci_writel(host, AT91_MCI_DTOR, 0x7f);
-	atmel_mci_writel(host, AT91_MCI_IDR, ~0UL);
-}
-
-static void atmel_set_clk_rate(struct atmel_mci_host *host,
-			       unsigned int clk_ios)
-{
-	unsigned int divider;
-	unsigned int clk_in = clk_get_rate(host->clk);
-
-	if (clk_ios > 0) {
-		divider = (clk_in / clk_ios) / 2;
-		if (divider > 0)
-			divider -= 1;
+	if (!host->mode_reg) {
+		clk_enable(host->clk);
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
+		if (host->caps.has_cfg_reg)
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
 	}
 
-	if (clk_ios == 0 || divider > 255)
-		divider = 255;
+	if (host->caps.has_odd_clk_div) {
+		clkdiv = DIV_ROUND_UP(host->bus_hz, clock_min) - 2;
+		if (clkdiv > 511) {
+			dev_dbg(host->hw_dev,
+			         "clock %u too slow; using %lu\n",
+			         clock_min, host->bus_hz / (511 + 2));
+			clkdiv = 511;
+		}
+		host->mode_reg = ATMCI_MR_CLKDIV(clkdiv >> 1)
+				 | ATMCI_MR_CLKODD(clkdiv & 1);
+	} else {
+		clkdiv = DIV_ROUND_UP(host->bus_hz, 2 * clock_min) - 1;
+		if (clkdiv > 255) {
+			dev_dbg(host->hw_dev,
+				 "clock %u too slow; using %lu\n",
+				 clock_min, host->bus_hz / (2 * 256));
+			clkdiv = 255;
+		}
+		host->mode_reg = ATMCI_MR_CLKDIV(clkdiv);
+	}
 
-	dev_dbg(host->hw_dev, "atmel_set_clk_rate: clkIn=%d clkIos=%d divider=%d\n",
-		clk_in, clk_ios, divider);
+	dev_dbg(host->hw_dev, "atmel_set_clk_rate: clkIn=%ld clkIos=%d divider=%d\n",
+		host->bus_hz, clock_min, clkdiv);
 
-	atmel_mci_writel(host, AT91_MCI_MR, (AT91_MCI_CLKDIV & divider)
-		| AT91_MCI_RDPROOF | AT91_MCI_WRPROOF);
+	/*
+	 * WRPROOF and RDPROOF prevent overruns/underruns by
+	 * stopping the clock when the FIFO is full/empty.
+	 * This state is not expected to last for long.
+	 */
+	if (host->caps.has_rwproof)
+		host->mode_reg |= ATMCI_MR_RDPROOF | ATMCI_MR_WRPROOF;
+
+	atmci_writel(host, ATMCI_MR, host->mode_reg);
 }
 
-static int atmel_poll_status(struct atmel_mci_host *host, u32 mask)
+static int atmci_poll_status(struct atmel_mci *host, u32 mask)
 {
 	u32 stat;
 	uint64_t start = get_time_ns();
 
 	do {
-		stat = atmel_mci_readl(host, AT91_MCI_SR);
+		stat = atmci_readl(host, ATMCI_SR);
 		if (stat & STATUS_ERROR_MASK)
 			return stat;
 		if (is_timeout(start, SECOND)) {
 			dev_err(host->hw_dev, "timeout\n");
-			return AT91_MCI_RTOE | stat;
+			host->need_reset = true;
+			return ATMCI_RTOE | stat;
 		}
 		if (stat & mask)
 			return 0;
 	} while (1);
 }
 
-static int atmel_pull(struct atmel_mci_host *host, void *_buf, int bytes)
+static int atmci_pull(struct atmel_mci *host, void *_buf, int bytes)
 {
 	unsigned int stat;
 	u32 *buf = _buf;
 
 	while (bytes > 3) {
-		stat = atmel_poll_status(host, AT91_MCI_RXRDY);
+		stat = atmci_poll_status(host, ATMCI_RXRDY);
 		if (stat)
 			return stat;
 
-		*buf++ = atmel_mci_readl(host, AT91_MCI_RDR);
+		*buf++ = atmci_readl(host, ATMCI_RDR);
 		bytes -= 4;
 	}
 
@@ -130,21 +154,21 @@ static int atmel_pull(struct atmel_mci_host *host, void *_buf, int bytes)
 }
 
 #ifdef CONFIG_MCI_WRITE
-static int atmel_push(struct atmel_mci_host *host, const void *_buf, int bytes)
+static int atmci_push(struct atmel_mci *host, const void *_buf, int bytes)
 {
 	unsigned int stat;
 	const u32 *buf = _buf;
 
 	while (bytes > 3) {
-		stat = atmel_poll_status(host, AT91_MCI_TXRDY);
+		stat = atmci_poll_status(host, ATMCI_TXRDY);
 		if (stat)
 			return stat;
 
-		atmel_mci_writel(host, AT91_MCI_TDR, *buf++);
+		atmci_writel(host, ATMCI_TDR, *buf++);
 		bytes -= 4;
 	}
 
-	stat = atmel_poll_status(host, AT91_MCI_TXRDY);
+	stat = atmci_poll_status(host, ATMCI_TXRDY);
 	if (stat)
 		return stat;
 
@@ -155,7 +179,7 @@ static int atmel_push(struct atmel_mci_host *host, const void *_buf, int bytes)
 }
 #endif /* CONFIG_MCI_WRITE */
 
-static int atmel_transfer_data(struct atmel_mci_host *host)
+static int atmci_transfer_data(struct atmel_mci *host)
 {
 	struct mci_data *data = host->data;
 	int stat;
@@ -165,23 +189,23 @@ static int atmel_transfer_data(struct atmel_mci_host *host)
 	host->datasize = 0;
 
 	if (data->flags & MMC_DATA_READ) {
-		stat = atmel_pull(host, data->dest, length);
+		stat = atmci_pull(host, data->dest, length);
 		if (stat)
 			return stat;
 
-		stat = atmel_poll_status(host, AT91_MCI_NOTBUSY);
+		stat = atmci_poll_status(host, ATMCI_NOTBUSY);
 		if (stat)
 			return stat;
 
 		host->datasize += length;
 	} else {
 #ifdef CONFIG_MCI_WRITE
-		stat = atmel_push(host, (const void *)(data->src), length);
+		stat = atmci_push(host, (const void *)(data->src), length);
 		if (stat)
 			return stat;
 
 		host->datasize += length;
-		stat = atmel_poll_status(host, AT91_MCI_NOTBUSY);
+		stat = atmci_poll_status(host, ATMCI_NOTBUSY);
 		if (stat)
 			return stat;
 #endif /* CONFIG_MCI_WRITE */
@@ -189,21 +213,21 @@ static int atmel_transfer_data(struct atmel_mci_host *host)
 	return 0;
 }
 
-static void atmel_finish_request(struct atmel_mci_host *host)
+static void atmci_finish_request(struct atmel_mci *host)
 {
 	host->cmd = NULL;
 	host->data = NULL;
 }
 
-static int atmel_finish_data(struct atmel_mci_host *host, unsigned int stat)
+static int atmci_finish_data(struct atmel_mci *host, unsigned int stat)
 {
 	int data_error = 0;
 
 	if (stat & STATUS_ERROR_MASK) {
 		dev_err(host->hw_dev, "request failed (status=0x%08x)\n", stat);
-		if (stat & AT91_MCI_DCRCE)
+		if (stat & ATMCI_DCRCE)
 			data_error = -EILSEQ;
-		else if (stat & (AT91_MCI_RTOE | AT91_MCI_DTOE))
+		else if (stat & (ATMCI_RTOE | ATMCI_DTOE))
 			data_error = -ETIMEDOUT;
 		else
 			data_error = -EIO;
@@ -214,7 +238,7 @@ static int atmel_finish_data(struct atmel_mci_host *host, unsigned int stat)
 	return data_error;
 }
 
-static void atmel_setup_data(struct atmel_mci_host *host, struct mci_data *data)
+static void atmci_setup_data(struct atmel_mci *host, struct mci_data *data)
 {
 	unsigned int nob = data->blocks;
 	unsigned int blksz = data->blocksize;
@@ -228,13 +252,13 @@ static void atmel_setup_data(struct atmel_mci_host *host, struct mci_data *data)
 	dev_dbg(host->hw_dev, "atmel_setup_data: nob=%d blksz=%d\n",
 		nob, blksz);
 
-	atmel_mci_writel(host, AT91_MCI_BLKR, AT91_MCI_BLKR_BCNT(nob)
-		| AT91_MCI_BLKR_BLKLEN(blksz));
+	atmci_writel(host, ATMCI_BLKR, ATMCI_BCNT(nob)
+		| ATMCI_BLKLEN(blksz));
 
 	host->datasize = datasize;
 }
 
-static int atmel_read_response(struct atmel_mci_host *host, unsigned int stat)
+static int atmci_read_response(struct atmel_mci *host, unsigned int stat)
 {
 	struct mci_cmd *cmd = host->cmd;
 	int i;
@@ -243,10 +267,10 @@ static int atmel_read_response(struct atmel_mci_host *host, unsigned int stat)
 	if (!cmd)
 		return 0;
 
-	if (stat & (AT91_MCI_RTOE | AT91_MCI_DTOE)) {
+	if (stat & (ATMCI_RTOE | ATMCI_DTOE)) {
 		dev_err(host->hw_dev, "command/data timeout\n");
 		return -ETIMEDOUT;
-	} else if ((stat & AT91_MCI_RCRCE) && (cmd->resp_type & MMC_RSP_CRC)) {
+	} else if ((stat & ATMCI_RCRCE) && (cmd->resp_type & MMC_RSP_CRC)) {
 		dev_err(host->hw_dev, "cmd crc error\n");
 		return -EILSEQ;
 	}
@@ -254,39 +278,39 @@ static int atmel_read_response(struct atmel_mci_host *host, unsigned int stat)
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
 		if (cmd->resp_type & MMC_RSP_136) {
 			for (i = 0; i < 4; i++)
-				resp[i] = atmel_mci_readl(host, AT91_MCI_RSPR(0));
+				resp[i] = atmci_readl(host, ATMCI_RSPR);
 		} else {
-			resp[0] = atmel_mci_readl(host, AT91_MCI_RSPR(0));
+			resp[0] = atmci_readl(host, ATMCI_RSPR);
 		}
 	}
 
 	return 0;
 }
 
-static int atmel_cmd_done(struct atmel_mci_host *host, unsigned int stat)
+static int atmci_cmd_done(struct atmel_mci *host, unsigned int stat)
 {
 	int datastat;
 	int ret;
 
-	ret = atmel_read_response(host, stat);
+	ret = atmci_read_response(host, stat);
 
 	if (ret) {
-		atmel_finish_request(host);
+		atmci_finish_request(host);
 		return ret;
 	}
 
 	if (!host->data) {
-		atmel_finish_request(host);
+		atmci_finish_request(host);
 		return 0;
 	}
 
-	datastat = atmel_transfer_data(host);
-	ret = atmel_finish_data(host, datastat);
-	atmel_finish_request(host);
+	datastat = atmci_transfer_data(host);
+	ret = atmci_finish_data(host, datastat);
+	atmci_finish_request(host);
 	return ret;
 }
 
-static int atmel_start_cmd(struct atmel_mci_host *host, struct mci_cmd *cmd,
+static int atmci_start_cmd(struct atmel_mci *host, struct mci_cmd *cmd,
 			   unsigned int cmdat)
 {
 	unsigned flags = 0;
@@ -295,47 +319,47 @@ static int atmel_start_cmd(struct atmel_mci_host *host, struct mci_cmd *cmd,
 	if (host->cmd != NULL)
 		dev_err(host->hw_dev, "error!\n");
 
-	if ((atmel_mci_readl(host, AT91_MCI_SR) & AT91_MCI_CMDRDY) == 0) {
+	if ((atmci_readl(host, ATMCI_SR) & ATMCI_CMDRDY) == 0) {
 		dev_err(host->hw_dev, "mci not ready!\n");
 		return -EBUSY;
 	}
 
 	host->cmd = cmd;
-	cmdval = AT91_MCI_CMDNB & cmd->cmdidx;
+	cmdval = ATMCI_CMDR_CMDNB_MASK & cmd->cmdidx;
 
 	switch (cmd->resp_type) {
 	case MMC_RSP_R1: /* short CRC, OPCODE */
 	case MMC_RSP_R1b:/* short CRC, OPCODE, BUSY */
-		flags |= AT91_MCI_RSPTYP_48;
+		flags |= ATMCI_CMDR_RSPTYP_48BIT;
 		break;
 	case MMC_RSP_R2: /* long 136 bit + CRC */
-		flags |= AT91_MCI_RSPTYP_136;
+		flags |= ATMCI_CMDR_RSPTYP_136BIT;
 		break;
 	case MMC_RSP_R3: /* short */
-		flags |= AT91_MCI_RSPTYP_48;
+		flags |= ATMCI_CMDR_RSPTYP_48BIT;
 		break;
 	case MMC_RSP_NONE:
-		flags |= AT91_MCI_RSPTYP_NONE;
+		flags |= ATMCI_CMDR_RSPTYP_NONE;
 		break;
 	default:
 		dev_err(host->hw_dev, "unhandled response type 0x%x\n",
 				cmd->resp_type);
 		return -EINVAL;
 	}
-	cmdval |= AT91_MCI_RSPTYP & flags;
-	cmdval |= cmdat & ~(AT91_MCI_CMDNB | AT91_MCI_RSPTYP);
+	cmdval |= ATMCI_CMDR_RSPTYP & flags;
+	cmdval |= cmdat & ~(ATMCI_CMDR_CMDNB_MASK | ATMCI_CMDR_RSPTYP);
 
-	atmel_mci_writel(host, AT91_MCI_ARGR, cmd->cmdarg);
-	atmel_mci_writel(host, AT91_MCI_CMDR, cmdval);
+	atmci_writel(host, ATMCI_ARGR, cmd->cmdarg);
+	atmci_writel(host, ATMCI_CMDR, cmdval);
 
 	return 0;
 }
 
 /** init the host interface */
-static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
+static int atmci_reset(struct mci_host *mci, struct device_d *mci_dev)
 {
 	int ret;
-	struct atmel_mci_host *host = to_mci_host(mci);
+	struct atmel_mci *host = to_mci_host(mci);
 	struct atmel_mci_platform_data *pd = host->hw_dev->platform_data;
 
 	ret = gpio_get_value(pd->detect_pin);
@@ -345,79 +369,102 @@ static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 		return -ENODEV;
 
 	clk_enable(host->clk);
-	atmel_mci_reset(host);
+	atmci_writel(host, ATMCI_DTOR, 0x7f);
+	clk_disable(host->clk);
 
 	return 0;
 }
 
 /** change host interface settings */
-static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
+static void atmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
-	struct atmel_mci_host *host = to_mci_host(mci);
+	struct atmel_mci *host = to_mci_host(mci);
 
 	dev_dbg(host->hw_dev, "atmel_mci_set_ios: bus_width=%d clk=%d\n",
 		ios->bus_width, ios->clock);
 
+	host->sdc_reg &= ~ATMCI_SDCBUS_MASK;
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_4:
-		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_4BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_4BIT;
 		break;
 	case MMC_BUS_WIDTH_8:
-		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_8BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_8BIT;
 		break;
 	case MMC_BUS_WIDTH_1:
-		atmel_mci_writel(host, AT91_MCI_SDCR, AT91_MCI_SDCBUS_1BIT);
+		host->sdc_reg |= ATMCI_SDCBUS_1BIT;
 		break;
 	default:
 		return;
 	}
-	atmel_mci_writel(host, AT91_MCI_SDCR, atmel_mci_readl(host, AT91_MCI_SDCR)
-		| host->slot_b);
 
 	if (ios->clock) {
-		atmel_set_clk_rate(host, ios->clock);
-		atmel_mci_writel(host, AT91_MCI_CR, AT91_MCI_MCIEN
-		);
+		atmci_set_clk_rate(host, ios->clock);
+
+		if (host->caps.has_cfg_reg) {
+			/* setup High Speed mode in relation with card capacity */
+			if (ios->timing == MMC_TIMING_SD_HS)
+				host->cfg_reg |= ATMCI_CFG_HSMODE;
+			else
+				host->cfg_reg &= ~ATMCI_CFG_HSMODE;
+
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
+		}
 	} else {
-		atmel_mci_writel(host, AT91_MCI_CR, AT91_MCI_MCIDIS);
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIDIS);
+		if (host->mode_reg) {
+			atmci_readl(host, ATMCI_MR);
+			clk_disable(host->clk);
+		}
+		host->mode_reg = 0;
 	}
 
 	return;
 }
 
 /** handle a command */
-static int mci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 {
-	struct atmel_mci_host *host = to_mci_host(mci);
+	struct atmel_mci *host = to_mci_host(mci);
 	u32 stat, cmdat = 0;
 	int ret;
 
+	if (host->need_reset || host->caps.need_reset_after_xfer) {
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
+		atmci_writel(host, ATMCI_CR, ATMCI_CR_MCIEN);
+		atmci_writel(host, ATMCI_MR, host->mode_reg);
+		if (host->caps.has_cfg_reg)
+			atmci_writel(host, ATMCI_CFG, host->cfg_reg);
+		host->need_reset = false;
+	}
+	atmci_writel(host, ATMCI_SDCR, host->sdc_reg);
+
 	if (cmd->resp_type != MMC_RSP_NONE)
-		cmdat |= AT91_MCI_MAXLAT;
+		cmdat |= ATMCI_CMDR_MAXLAT_64CYC;
 
 	if (data) {
-		atmel_setup_data(host, data);
+		atmci_setup_data(host, data);
 
-		cmdat |= AT91_MCI_TRCMD_START | AT91_MCI_TRTYP_MULTIPLE;
+		cmdat |= ATMCI_CMDR_START_XFER | ATMCI_CMDR_MULTI_BLOCK;
 
 		if (data->flags & MMC_DATA_READ)
-			cmdat |= AT91_MCI_TRDIR_RX;
+			cmdat |= ATMCI_CMDR_TRDIR_READ;
 	}
 
-	ret = atmel_start_cmd(host, cmd, cmdat);
+	ret = atmci_start_cmd(host, cmd, cmdat);
 	if (ret) {
-		atmel_finish_request(host);
+		atmci_finish_request(host);
 		return ret;
 	}
 
-	stat = atmel_poll_status(host, AT91_MCI_CMDRDY);
-	return atmel_cmd_done(host, stat);
+	stat = atmci_poll_status(host, ATMCI_CMDRDY);
+	return atmci_cmd_done(host, stat);
 }
 
 #ifdef CONFIG_MCI_INFO
-static void mci_info(struct device_d *mci_dev)
+static void atmci_info(struct device_d *mci_dev)
 {
-	struct atmel_mci_host *host = mci_dev->priv;
+	struct atmel_mci *host = mci_dev->priv;
 	struct atmel_mci_platform_data *pd = host->hw_dev->platform_data;
 
 	printf("  Bus data width: %d bit\n", host->mci.bus_width);
@@ -434,68 +481,140 @@ static void mci_info(struct device_d *mci_dev)
 		printf("- %u Hz upper limit", host->mci.f_max);
 
 	printf("\n  Card detection support: %s\n",
-		pd->detect_pin != 0 ? "yes" : "no");
+		gpio_is_valid(pd->detect_pin) ? "yes" : "no");
 
 }
 #endif /* CONFIG_MCI_INFO */
-
-static int mci_probe(struct device_d *hw_dev)
+/*
+ * HSMCI (High Speed MCI) module is not fully compatible with MCI module.
+ * HSMCI provides DMA support and a new config register but no more supports
+ * PDC.
+ */
+static void atmci_get_cap(struct atmel_mci *host)
 {
-	unsigned long clk_rate;
-	struct atmel_mci_host *host;
+	unsigned int version;
+
+	version = atmci_readl(host, ATMCI_VERSION) & 0x00000fff;
+	host->version = version;
+
+	dev_info(host->hw_dev, "version: 0x%x\n", version);
+
+	host->caps.has_cfg_reg = 0;
+	host->caps.has_highspeed = 0;
+	host->caps.need_reset_after_xfer = 1;
+
+	switch (version & 0xf00) {
+	case 0x500:
+		host->caps.has_odd_clk_div = 1;
+	case 0x400:
+	case 0x300:
+		host->caps.has_cfg_reg = 1;
+		host->caps.has_highspeed = 1;
+	case 0x200:
+		host->caps.has_rwproof = 1;
+	case 0x100:
+		host->caps.need_reset_after_xfer = 0;
+	case 0x0:
+		break;
+	default:
+		dev_warn(host->hw_dev,
+				"Unmanaged mci version, set minimum capabilities\n");
+		break;
+	}
+}
+
+static int atmci_probe(struct device_d *hw_dev)
+{
+	struct atmel_mci *host;
 	struct atmel_mci_platform_data *pd = hw_dev->platform_data;
+	int ret;
 
 	if (!pd) {
 		dev_err(hw_dev, "missing platform data\n");
 		return -EINVAL;
 	}
 
+	if (gpio_is_valid(pd->detect_pin)) {
+		ret = gpio_request(pd->detect_pin, "mci_cd");
+		if (ret) {
+			dev_err(hw_dev, "Impossible to request CD gpio %d (%d)\n",
+				ret, pd->detect_pin);
+			return ret;
+		}
+
+		ret = gpio_direction_input(pd->detect_pin);
+		if (ret) {
+			dev_err(hw_dev, "Impossible to configure CD gpio %d as input (%d)\n",
+				ret, pd->detect_pin);
+			goto err_gpio_cd_request;
+		}
+	}
+
 	host = xzalloc(sizeof(*host));
-	host->mci.send_cmd = mci_request;
-	host->mci.set_ios = mci_set_ios;
-	host->mci.init = mci_reset;
+	host->mci.send_cmd = atmci_request;
+	host->mci.set_ios = atmci_set_ios;
+	host->mci.init = atmci_reset;
 	host->mci.hw_dev = hw_dev;
 
-	host->mci.host_caps = pd->host_caps;
 	if (pd->bus_width >= 4)
 		host->mci.host_caps |= MMC_MODE_4BIT;
 	if (pd->bus_width == 8)
 		host->mci.host_caps |= MMC_MODE_8BIT;
 	host->slot_b = pd->slot_b;
 
-	host->base = dev_request_mem_region(hw_dev, 0);
+	host->regs = dev_request_mem_region(hw_dev, 0);
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");
 	if (IS_ERR(host->clk)) {
 		dev_err(hw_dev, "no mci_clk\n");
-		return PTR_ERR(host->clk);
+		ret = PTR_ERR(host->clk);
+		goto err_gpio_cd_request;
 	}
 
-	clk_rate = clk_get_rate(host->clk);
+	clk_enable(host->clk);
+	atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
+	atmci_writel(host, ATMCI_IDR, ~0UL);
+	host->bus_hz = clk_get_rate(host->clk);
+	clk_disable(host->clk);
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	host->mci.f_min = clk_rate >> 9;
-	host->mci.f_max = clk_rate >> 1;
+	host->mci.f_min = DIV_ROUND_UP(host->bus_hz, 512);
+	host->mci.f_max = host->bus_hz >> 1;
+
+	atmci_get_cap(host);
+
+	if (host->caps.has_highspeed)
+		host->mci.host_caps |= MMC_MODE_HS;
+
+	if (host->slot_b)
+		host->sdc_reg = ATMCI_SDCSEL_SLOT_B;
+	else
+		host->sdc_reg = ATMCI_SDCSEL_SLOT_A;
 
 	mci_register(&host->mci);
 
 	return 0;
+
+err_gpio_cd_request:
+	if (gpio_is_valid(pd->detect_pin))
+		gpio_free(pd->detect_pin);
+
+	return ret;
 }
 
-static struct driver_d atmel_mci_driver = {
+static struct driver_d atmci_driver = {
 	.name	= "atmel_mci",
-	.probe	= mci_probe,
+	.probe	= atmci_probe,
 #ifdef CONFIG_MCI_INFO
-	.info	= mci_info,
+	.info	= atmci_info,
 #endif
 };
 
-static int atmel_mci_init_driver(void)
+static int atmci_init_driver(void)
 {
-	platform_driver_register(&atmel_mci_driver);
+	platform_driver_register(&atmci_driver);
 	return 0;
 }
-
-device_initcall(atmel_mci_init_driver);
+device_initcall(atmci_init_driver);

@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Connect PC31 to GND to enable DFU
+gpio_dfu=95
+gpio_name="PC31"
+gpio_wait=5
+
+product_id=0x1234
+vendor_id=0x4321
+
+dfu_config="/dev/nand0.bootstrap.bb(bootstrap)sr,/dev/nand0.barebox.bb(barebox)sr,/dev/nand0.kernel.bb(kernel)r,/dev/nand0.rootfs.bb(rootfs)r"
+
+echo
+
+if [ $at91_udc0.vbus != 1 ]; then
+	echo "No USB Device cable plugged, normal boot"
+	exit
+fi
+
+gpio_get_value ${gpio_dfu}
+if [ $? = 0 ]; then
+	echo "${gpio_name} low value detected wait ${gpio_wait}s"
+	timeout -s -a ${gpio_wait}
+
+	if [ $at91_udc0.vbus != 1 ]; then
+		echo "No USB Device cable plugged, normal boot"
+		exit
+	fi
+
+	gpio_get_value ${gpio_dfu}
+	if [ $? = 0 ]; then
+		echo "Start DFU Mode"
+		dfu ${dfu_config} -P ${product_id} -V ${vendor_id}
+		exit
+	fi
+fi
+
+global.autoboot_timeout=16
+echo "enable tty over USB Device, increase the boot delay to ${global.autoboot_timeout}s"
+usbserial

@@ -17,6 +17,8 @@
 #include <init.h>
 #include <io.h>
 #include <usb/chipidea-imx.h>
+#include <mach/imx6-regs.h>
+#include <mach/iomux-mx6.h>
 
 #define MX25_OTG_SIC_SHIFT	29
 #define MX25_OTG_SIC_MASK	(0x3 << MX25_OTG_SIC_SHIFT)
@@ -345,14 +347,72 @@ static __maybe_unused struct imx_usb_misc_data mx5_data = {
 	.init = mx5_initialize_usb_hw,
 };
 
+static void mx6_hsic_pullup(unsigned long reg, int on)
+{
+	u32 val;
+
+	val = readl(MX6_IOMUXC_BASE_ADDR + reg);
+
+	if (on)
+		val |= MX6_PAD_CTL_PUS_47K_UP;
+	else
+		val &= ~MX6_PAD_CTL_PUS_47K_UP;
+
+	writel(val, MX6_IOMUXC_BASE_ADDR + reg);
+}
+
 static __maybe_unused int mx6_initialize_usb_hw(void __iomem *base, int port,
 		unsigned int flags)
 {
+	switch (port) {
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2: /* HSIC port */
+		mx6_hsic_pullup(0x388, 0);
+
+		writel(0x00003000, base + 0x8);
+		writel(0x80001842, base + 0x10);
+
+		break;
+	case 3: /* HSIC port */
+		writel(0x00003000, base + 0xc);
+		writel(0x80001842, base + 0x14);
+
+		mx6_hsic_pullup(0x398, 0);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static __maybe_unused int mx6_post_init(void __iomem *base, int port,
+		unsigned int flags)
+{
+	switch (port) {
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2: /* HSIC port */
+		mx6_hsic_pullup(0x388, 1);
+		break;
+	case 3: /* HSIC port */
+		mx6_hsic_pullup(0x398, 1);
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
 static __maybe_unused struct imx_usb_misc_data mx6_data = {
 	.init = mx6_initialize_usb_hw,
+	.post_init = mx6_post_init,
 };
 
 static struct platform_device_id imx_usbmisc_ids[] = {

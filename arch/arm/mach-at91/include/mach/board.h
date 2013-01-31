@@ -26,6 +26,7 @@
 #include <linux/mtd/mtd.h>
 #include <fb.h>
 #include <video/atmel_lcdc.h>
+#include <mach/atmel_hlcdc.h>
 #include <linux/phy.h>
 
  /* USB Host */

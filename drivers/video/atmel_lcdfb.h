@@ -11,7 +11,6 @@ struct atmel_lcdfb_devdata {
 	void (*setup_core)(struct fb_info *info);
 	void (*init_contrast)(struct atmel_lcdfb_info *sinfo);
 	void (*limit_screeninfo)(struct fb_videomode *mode);
-	int fbinfo_flags;
 	int dma_desc_size;
 };
 
@@ -27,6 +26,7 @@ struct atmel_lcdfb_info {
 
 	struct atmel_lcdfb_platform_data *pdata;
 	struct atmel_lcdfb_devdata *dev_data;
+	void			*dma_desc;
 };
 
 #define lcdc_readl(sinfo, reg)		__raw_readl((sinfo)->mmio+(reg))

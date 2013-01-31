@@ -290,6 +290,9 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 
 	atmel_lcdfb_start_clock(sinfo);
 
+	if (data->dma_desc_size)
+		sinfo->dma_desc = dma_alloc_coherent(data->dma_desc_size);
+
 	ret = register_framebuffer(info);
 	if (ret != 0) {
 		dev_err(dev, "Failed to register framebuffer\n");
@@ -299,6 +302,8 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	return ret;
 
 stop_clk:
+	if (sinfo->dma_desc)
+		free(sinfo->dma_desc);
 	atmel_lcdfb_stop_clock(sinfo);
 	clk_put(sinfo->lcdc_clk);
 put_bus_clk:

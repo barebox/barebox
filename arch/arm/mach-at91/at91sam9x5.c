@@ -216,6 +216,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
 	CLKDEV_DEV_ID("at91sam9x5-gpio2", &pioCD_clk),
 	CLKDEV_DEV_ID("at91sam9x5-gpio3", &pioCD_clk),
 	CLKDEV_DEV_ID("at91-pit", &mck),
+	CLKDEV_CON_DEV_ID("hck1", "atmel_hlcdfb", &lcdc_clk),
 };
 
 static struct clk_lookup usart_clocks_lookups[] = {

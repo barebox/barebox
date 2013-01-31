@@ -11,6 +11,11 @@ struct ehci_data {
 	void __iomem *hccr;
 	void __iomem *hcor;
 	unsigned long flags;
+
+	/* platform specific init functions */
+	int (*init)(void *drvdata);
+	int (*post_init)(void *drvdata);
+	void *drvdata;
 };
 
 #ifdef CONFIG_USB_EHCI

@@ -40,8 +40,10 @@ enum imx_usb_mode {
 struct imxusb_platformdata {
 	unsigned long flags;
 	enum imx_usb_mode mode;
+	int (*init)(int port);
 };
 
 int imx_usbmisc_port_init(int port, unsigned flags);
+int imx_usbmisc_port_post_init(int port, unsigned flags);
 
 #endif /* __USB_CHIPIDEA_IMX_H */

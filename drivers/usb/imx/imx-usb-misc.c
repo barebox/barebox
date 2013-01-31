@@ -34,6 +34,11 @@
 #define MX25_H1_USBTE_BIT	(1 << 4)
 #define MX25_H1_OCPOL_BIT	(1 << 2)
 
+struct imx_usb_misc_data {
+	int (*init)(void __iomem *base, int port, unsigned int flags);
+	int (*post_init)(void __iomem *base, int port, unsigned int flags);
+};
+
 static __maybe_unused int mx25_initialize_usb_hw(void __iomem *base, int port, unsigned int flags)
 {
 	unsigned int v;
@@ -93,6 +98,10 @@ static __maybe_unused int mx25_initialize_usb_hw(void __iomem *base, int port, u
 	return 0;
 }
 
+static __maybe_unused struct imx_usb_misc_data mx25_data = {
+	.init = mx25_initialize_usb_hw,
+};
+
 #define MX27_OTG_SIC_SHIFT	29
 #define MX27_OTG_SIC_MASK	(0x3 << MX27_OTG_SIC_SHIFT)
 #define MX27_OTG_PM_BIT		(1 << 24)
@@ -151,6 +160,10 @@ static __maybe_unused int mx27_mx31_initialize_usb_hw(void __iomem *base, int po
 
 	return 0;
 }
+
+static __maybe_unused struct imx_usb_misc_data mx27_mx31_data = {
+	.init = mx27_mx31_initialize_usb_hw,
+};
 
 #define USBCTRL_OTGBASE_OFFSET	0x600
 
@@ -228,6 +241,10 @@ static __maybe_unused int mx35_initialize_usb_hw(void __iomem *base, int port, u
 
 	return 0;
 }
+
+static __maybe_unused struct imx_usb_misc_data mx35_data = {
+	.init = mx35_initialize_usb_hw,
+};
 
 /* USB_CTRL */
 #define MX5_OTG_UCTRL_OWIE_BIT		(1 << 27)	/* OTG wakeup intr enable */
@@ -324,53 +341,61 @@ static __maybe_unused int mx5_initialize_usb_hw(void __iomem *base, int port,
 	return 0;
 }
 
+static __maybe_unused struct imx_usb_misc_data mx5_data = {
+	.init = mx5_initialize_usb_hw,
+};
+
 static __maybe_unused int mx6_initialize_usb_hw(void __iomem *base, int port,
 		unsigned int flags)
 {
 	return 0;
 }
 
+static __maybe_unused struct imx_usb_misc_data mx6_data = {
+	.init = mx6_initialize_usb_hw,
+};
+
 static struct platform_device_id imx_usbmisc_ids[] = {
 #ifdef CONFIG_ARCH_IMX25
 	{
 		.name = "imx25-usb-misc",
-		.driver_data = (unsigned long)&mx25_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx25_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX27
 	{
 		.name = "imx27-usb-misc",
-		.driver_data = (unsigned long)&mx27_mx31_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx27_mx31_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX31
 	{
 		.name = "imx31-usb-misc",
-		.driver_data = (unsigned long)&mx27_mx31_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx27_mx31_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX35
 	{
 		.name = "imx35-usb-misc",
-		.driver_data = (unsigned long)&mx35_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx35_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX51
 	{
 		.name = "imx51-usb-misc",
-		.driver_data = (unsigned long)&mx5_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx5_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX53
 	{
 		.name = "imx53-usb-misc",
-		.driver_data = (unsigned long)&mx5_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx5_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX6
 	{
 		.name = "imx6-usb-misc",
-		.driver_data = (unsigned long)&mx6_initialize_usb_hw,
+		.driver_data = (unsigned long)&mx6_data,
 	},
 #endif
 	{
@@ -378,20 +403,34 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 	},
 };
 
-static int (*__imx_usbmisc_port_init)(void __iomem *base, int port, unsigned flags);
+static struct imx_usb_misc_data *imxusbmisc_data;
 static void __iomem *usbmisc_base;
 
 int imx_usbmisc_port_init(int port, unsigned flags)
 {
-	if (!__imx_usbmisc_port_init)
+	if (!imxusbmisc_data)
 		return -ENODEV;
 
-	return __imx_usbmisc_port_init(usbmisc_base, port, flags);
+	if (!imxusbmisc_data->init)
+		return 0;
+
+	return imxusbmisc_data->init(usbmisc_base, port, flags);
+}
+
+int imx_usbmisc_port_post_init(int port, unsigned flags)
+{
+	if (!imxusbmisc_data)
+		return -ENODEV;
+
+	if (!imxusbmisc_data->post_init)
+		return 0;
+
+	return imxusbmisc_data->post_init(usbmisc_base, port, flags);
 }
 
 static int imx_usbmisc_probe(struct device_d *dev)
 {
-	struct imx_serial_devtype_data *devtype;
+	struct imx_usb_misc_data *devtype;
 	int ret;
 
 	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
@@ -402,7 +441,7 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	if (!usbmisc_base)
 		return -ENOMEM;
 
-	__imx_usbmisc_port_init = (void *)devtype;
+	imxusbmisc_data = devtype;
 
 	return 0;
 }

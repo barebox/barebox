@@ -22,12 +22,41 @@
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
+static int imx_chipidea_port_init(void *drvdata)
+{
+	struct device_d *dev = drvdata;
+	struct imxusb_platformdata *pdata = dev->platform_data;
+	int ret;
+
+	ret = imx_usbmisc_port_init(dev->id, pdata->flags);
+	if (ret)
+		dev_err(dev, "misc init failed: %s\n", strerror(-ret));
+
+	if (pdata->init)
+		pdata->init(dev->id);
+
+	return ret;
+}
+
+static int imx_chipidea_port_post_init(void *drvdata)
+{
+	struct device_d *dev = drvdata;
+	struct imxusb_platformdata *pdata = dev->platform_data;
+	int ret;
+
+	ret = imx_usbmisc_port_post_init(dev->id, pdata->flags);
+	if (ret)
+		dev_err(dev, "post misc init failed: %s\n", strerror(-ret));
+
+	return ret;
+}
+
 static int imx_chipidea_probe(struct device_d *dev)
 {
 	struct imxusb_platformdata *pdata = dev->platform_data;
 	int ret;
 	void __iomem *base;
-	struct ehci_data data;
+	struct ehci_data data = {};
 	uint32_t portsc;
 
 	if (!pdata) {
@@ -39,16 +68,16 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (!base)
 		return -ENODEV;
 
+	data.init = imx_chipidea_port_init;
+	data.post_init = imx_chipidea_port_post_init;
+	data.drvdata = dev;
+
+	imx_chipidea_port_init(dev);
+
 	portsc = readl(base + 0x184);
 	portsc &= ~MXC_EHCI_PORTSC_MASK;
 	portsc |= pdata->flags & MXC_EHCI_PORTSC_MASK;
 	writel(portsc, base + 0x184);
-
-	ret = imx_usbmisc_port_init(dev->id, pdata->flags);
-	if (ret) {
-		dev_err(dev, "failed to init misc regs: %s\n", strerror(-ret));
-		return ret;
-	}
 
 	if ((pdata->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
 		dev_dbg(dev, "using ULPI phy\n");

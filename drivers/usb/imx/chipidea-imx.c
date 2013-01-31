@@ -20,7 +20,7 @@
 #include <usb/chipidea-imx.h>
 #include <usb/ulpi.h>
 
-#define MXC_EHCI_PORTSC_MASK (0xf << 28)
+#define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
 static int imx_chipidea_probe(struct device_d *dev)
 {

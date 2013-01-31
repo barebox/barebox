@@ -9,6 +9,7 @@
 #define MXC_EHCI_MODE_UTMI_16_BIT	((0 << 30) | (1 << 28))
 #define MXC_EHCI_MODE_PHILIPS		(1 << 30)
 #define MXC_EHCI_MODE_ULPI		(2 << 30)
+#define MXC_EHCI_MODE_HSIC		(1 << 25)
 #define MXC_EHCI_MODE_SERIAL		(3 << 30)
 
 /*

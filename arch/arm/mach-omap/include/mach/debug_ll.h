@@ -23,9 +23,9 @@
 #include <mach/omap3-silicon.h>
 
 #ifdef CONFIG_OMAP3EVM_UART1
-#define UART_BASE	OMAP_UART1_BASE
+#define UART_BASE	OMAP3_UART1_BASE
 #else
-#define UART_BASE	OMAP_UART3_BASE
+#define UART_BASE	OMAP3_UART3_BASE
 #endif
 
 #endif

@@ -296,10 +296,6 @@ int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 	    (chip->pagebuf << chip->page_shift) < (to + ops->len))
 		chip->pagebuf = -1;
 
-	/* Initialize to all 0xFF, to avoid the possibility of
-	   left over OOB data from a previous OOB read. */
-	memset(chip->oob_poi, 0xff, mtd->oobsize);
-
 	while(1) {
 		int bytes = mtd->writesize;
 		int cached = writelen > bytes && page != blockmask;
@@ -315,8 +311,12 @@ int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 			wbuf = chip->buffers->databuf;
 		}
 
-		if (unlikely(oob))
+		if (unlikely(oob)) {
 			oob = nand_fill_oob(chip, oob, ops);
+		} else {
+			/* We still need to erase leftover OOB data */
+			memset(chip->oob_poi, 0xff, mtd->oobsize);
+		}
 
 		ret = chip->write_page(mtd, chip, wbuf, page, cached,
 				       (ops->mode == MTD_OOB_RAW));

@@ -13,6 +13,7 @@ global linux.bootargs.dyn.ip
 global linux.bootargs.dyn.root
 global editcmd=sedit
 
+/env/config-board
 /env/config
 
 if [ -e /env/menu ]; then

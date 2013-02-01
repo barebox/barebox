@@ -63,7 +63,7 @@ static struct atmel_nand_data nand_pdata = {
 	.enable_pin	= -EINVAL,
 	.ecc_mode	= NAND_ECC_HW,
 	.pmecc_sector_size = 512,
-	.pmecc_corr_cap = 2,
+	.pmecc_corr_cap = 4,
 #if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
 	.bus_width_16	= 1,
 #endif

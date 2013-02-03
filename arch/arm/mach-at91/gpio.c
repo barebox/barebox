@@ -32,8 +32,9 @@
 #include <driver.h>
 #include <getopt.h>
 
+#include "gpio.h"
+
 #define MAX_GPIO_BANKS		5
-#define MAX_NB_GPIO_PER_BANK	32
 
 static int gpio_banks = 0;
 
@@ -50,16 +51,6 @@ struct at91_gpio_chip {
 
 static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
-static inline unsigned pin_to_bank(unsigned pin)
-{
-	return pin / MAX_NB_GPIO_PER_BANK;
-}
-
-static inline unsigned pin_to_bank_offset(unsigned pin)
-{
-	return pin % MAX_NB_GPIO_PER_BANK;
-}
-
 static inline struct at91_gpio_chip *pin_to_controller(unsigned pin)
 {
 	pin /= MAX_NB_GPIO_PER_BANK;
@@ -67,11 +58,6 @@ static inline struct at91_gpio_chip *pin_to_controller(unsigned pin)
 		return &gpio_chip[pin];
 
 	return NULL;
-}
-
-static inline unsigned pin_to_mask(unsigned pin)
-{
-	return 1 << pin_to_bank_offset(pin);
 }
 
 /**
@@ -105,94 +91,6 @@ struct at91_pinctrl_mux_ops {
 	bool (*get_schmitt_trig)(void __iomem *pio, unsigned pin);
 	void (*disable_schmitt_trig)(void __iomem *pio, unsigned mask);
 };
-
-static void at91_mux_disable_interrupt(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(mask, pio + PIO_IDR);
-}
-
-static void at91_mux_set_pullup(void __iomem *pio, unsigned mask, bool on)
-{
-	__raw_writel(mask, pio + (on ? PIO_PUER : PIO_PUDR));
-}
-
-static void at91_mux_set_multidrive(void __iomem *pio, unsigned mask, bool on)
-{
-	__raw_writel(mask, pio + (on ? PIO_MDER : PIO_MDDR));
-}
-
-static void at91_mux_set_A_periph(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(mask, pio + PIO_ASR);
-}
-
-static void at91_mux_set_B_periph(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(mask, pio + PIO_BSR);
-}
-
-static void at91_mux_pio3_set_A_periph(void __iomem *pio, unsigned mask)
-{
-
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) & ~mask,
-						pio + PIO_ABCDSR1);
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) & ~mask,
-						pio + PIO_ABCDSR2);
-}
-
-static void at91_mux_pio3_set_B_periph(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) | mask,
-						pio + PIO_ABCDSR1);
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) & ~mask,
-						pio + PIO_ABCDSR2);
-}
-
-static void at91_mux_pio3_set_C_periph(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) & ~mask, pio + PIO_ABCDSR1);
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) | mask, pio + PIO_ABCDSR2);
-}
-
-static void at91_mux_pio3_set_D_periph(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR1) | mask, pio + PIO_ABCDSR1);
-	__raw_writel(__raw_readl(pio + PIO_ABCDSR2) | mask, pio + PIO_ABCDSR2);
-}
-
-static void at91_mux_set_deglitch(void __iomem *pio, unsigned mask, bool is_on)
-{
-	__raw_writel(mask, pio + (is_on ? PIO_IFER : PIO_IFDR));
-}
-
-static void at91_mux_pio3_set_deglitch(void __iomem *pio, unsigned mask, bool is_on)
-{
-	if (is_on)
-		__raw_writel(mask, pio + PIO_IFSCDR);
-	at91_mux_set_deglitch(pio, mask, is_on);
-}
-
-static void at91_mux_pio3_set_debounce(void __iomem *pio, unsigned mask,
-				bool is_on, u32 div)
-{
-	if (is_on) {
-		__raw_writel(mask, pio + PIO_IFSCER);
-		__raw_writel(div & PIO_SCDR_DIV, pio + PIO_SCDR);
-		__raw_writel(mask, pio + PIO_IFER);
-	} else {
-		__raw_writel(mask, pio + PIO_IFDR);
-	}
-}
-
-static void at91_mux_pio3_set_pulldown(void __iomem *pio, unsigned mask, bool is_on)
-{
-	__raw_writel(mask, pio + (is_on ? PIO_PPDER : PIO_PPDDR));
-}
-
-static void at91_mux_pio3_disable_schmitt_trig(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(__raw_readl(pio + PIO_SCHMITT) | mask, pio + PIO_SCHMITT);
-}
 
 #ifdef CONFIG_CMD_AT91MUX
 static unsigned at91_mux_get_pullup(void __iomem *pio, unsigned pin)
@@ -283,21 +181,6 @@ static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
 	.get_schmitt_trig = at91_mux_pio3_get_schmitt_trig,
 	.disable_schmitt_trig = at91_mux_pio3_disable_schmitt_trig,
 };
-
-static void at91_mux_gpio_disable(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(mask, pio + PIO_PDR);
-}
-
-static void at91_mux_gpio_enable(void __iomem *pio, unsigned mask)
-{
-	__raw_writel(mask, pio + PIO_PER);
-}
-
-static void at91_mux_gpio_input(void __iomem *pio, unsigned mask, bool input)
-{
-	__raw_writel(mask, pio + (input ? PIO_ODR : PIO_OER));
-}
 
 int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 {
@@ -398,7 +281,7 @@ int at91_set_gpio_output(unsigned pin, int value)
 		pin_to_bank(pin) + 'A', pin_to_bank_offset(pin), value);
 
 	at91_mux_gpio_input(pio, mask, false);
-	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	at91_mux_gpio_set(pio, mask, value);
 	return 0;
 }
 EXPORT_SYMBOL(at91_set_gpio_output);
@@ -643,10 +526,8 @@ static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = 1 << offset;
-	u32 pdsr;
 
-	pdsr = __raw_readl(pio + PIO_PDSR);
-	return (pdsr & mask) != 0;
+	return at91_mux_gpio_get(pio, mask);
 }
 
 static void at91_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
@@ -655,7 +536,7 @@ static void at91_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = 1 << offset;
 
-	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	at91_mux_gpio_set(pio, mask, value);
 }
 
 static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
@@ -665,7 +546,7 @@ static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = 1 << offset;
 
-	__raw_writel(mask, pio + (value ? PIO_SODR : PIO_CODR));
+	at91_mux_gpio_set(pio, mask, value);
 	__raw_writel(mask, pio + PIO_OER);
 
 	return 0;

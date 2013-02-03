@@ -30,6 +30,7 @@
 #include <mach/cpu.h>
 #include <errno.h>
 #include <asm/mmu.h>
+#include <linux/clk.h>
 
 #include "atmel_lcdfb.h"
 

@@ -49,10 +49,72 @@ static int inline running_in_sram(void)
 	return addr == 0;
 }
 
-void __bare_init at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg)
+#define at91_sdramc_read(field) \
+	__raw_readl(cfg->sdramc + field)
+
+#define at91_sdramc_write(field, value) \
+	__raw_writel(value, cfg->sdramc + field)
+
+void __bare_init at91sam926x_sdramc_init(struct at91sam926x_lowlevel_cfg *cfg)
 {
 	u32 r;
 	int i;
+	int in_sram = running_in_sram();
+
+	/*
+	 * SDRAMC Check if Refresh Timer Counter is already initialized
+	 */
+	r = at91_sdramc_read(AT91_SDRAMC_TR);
+	if (r && !in_sram)
+		return;
+
+	/* SDRAMC_MR : Normal Mode */
+	at91_sdramc_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
+
+	/* SDRAMC_TR - Refresh Timer register */
+	at91_sdramc_write(AT91_SDRAMC_TR, cfg->sdrc_tr1);
+
+	/* SDRAMC_CR - Configuration register*/
+	at91_sdramc_write(AT91_SDRAMC_CR, cfg->sdrc_cr);
+
+	/* Memory Device Type */
+	at91_sdramc_write(AT91_SDRAMC_MDR, cfg->sdrc_mdr);
+
+	/* SDRAMC_MR : Precharge All */
+	at91_sdramc_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_PRECHARGE);
+
+	/* access SDRAM */
+	access_sdram();
+
+	/* SDRAMC_MR : refresh */
+	at91_sdramc_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_REFRESH);
+
+	/* access SDRAM 8 times */
+	for (i = 0; i < 8; i++)
+		access_sdram();
+
+	/* SDRAMC_MR : Load Mode Register */
+	at91_sdramc_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_LMR);
+
+	/* access SDRAM */
+	access_sdram();
+
+	/* SDRAMC_MR : Normal Mode */
+	at91_sdramc_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
+
+	/* access SDRAM */
+	access_sdram();
+
+	/* SDRAMC_TR : Refresh Timer Counter */
+	at91_sdramc_write(AT91_SDRAMC_TR, cfg->sdrc_tr2);
+
+	/* access SDRAM */
+	access_sdram();
+}
+
+void __bare_init at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg)
+{
+	u32 r;
 	int in_sram = running_in_sram();
 
 	at91sam926x_lowlevel_board_config(cfg);
@@ -118,56 +180,7 @@ void __bare_init at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg)
 	/*
 	 * Init SDRAM
 	 */
-
-	/*
-	 * SDRAMC Check if Refresh Timer Counter is already initialized
-	 */
-	r = at91_sys_read(AT91_SDRAMC_TR);
-	if (r && !in_sram)
-		return;
-
-	/* SDRAMC_MR : Normal Mode */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
-
-	/* SDRAMC_TR - Refresh Timer register */
-	at91_sys_write(AT91_SDRAMC_TR, cfg->sdrc_tr1);
-
-	/* SDRAMC_CR - Configuration register*/
-	at91_sys_write(AT91_SDRAMC_CR, cfg->sdrc_cr);
-
-	/* Memory Device Type */
-	at91_sys_write(AT91_SDRAMC_MDR, cfg->sdrc_mdr);
-
-	/* SDRAMC_MR : Precharge All */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_PRECHARGE);
-
-	/* access SDRAM */
-	access_sdram();
-
-	/* SDRAMC_MR : refresh */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_REFRESH);
-
-	/* access SDRAM 8 times */
-	for (i = 0; i < 8; i++)
-		access_sdram();
-
-	/* SDRAMC_MR : Load Mode Register */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_LMR);
-
-	/* access SDRAM */
-	access_sdram();
-
-	/* SDRAMC_MR : Normal Mode */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
-
-	/* access SDRAM */
-	access_sdram();
-
-	/* SDRAMC_TR : Refresh Timer Counter */
-	at91_sys_write(AT91_SDRAMC_TR, cfg->sdrc_tr2);
-
-	/* access SDRAM */
-	access_sdram();
+	at91sam926x_sdramc_init(cfg);
 
 	/* User reset enable*/
 	at91_sys_write(AT91_RSTC_MR, cfg->rstc_rmr);

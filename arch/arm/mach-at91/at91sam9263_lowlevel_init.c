@@ -28,12 +28,13 @@ void __bare_init at91sam9263_lowlevel_init(void)
 	struct at91sam926x_lowlevel_cfg cfg;
 
 	cfg.pio = IOMEM(AT91SAM9263_BASE_PIOD);
+	cfg.sdramc = IOMEM(AT91SAM9263_BASE_SDRAMC0);
 	cfg.ebi_pio_is_peripha = true;
 	cfg.matrix_csa = AT91_MATRIX_EBI0CSA;
 
 	at91sam926x_lowlevel_init(&cfg);
 
-	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(), 0);
+	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc), 0);
 }
 
 void __naked __bare_init reset(void)

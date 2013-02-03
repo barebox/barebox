@@ -10,6 +10,7 @@
 struct at91sam926x_lowlevel_cfg {
 	/* SoC specific */
 	void __iomem *pio;
+	void __iomem *sdramc;
 	u32 ebi_pio_is_peripha;
 	u32 matrix_csa;
 

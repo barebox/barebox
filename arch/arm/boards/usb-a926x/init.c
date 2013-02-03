@@ -200,7 +200,7 @@ static void usb_a9260_add_spi(void)
 		spi_register_board_info(usb_a9263_spi_devices,
 				ARRAY_SIZE(usb_a9263_spi_devices));
 		at91_add_device_spi(0, &spi_a9263_pdata);
-	} else if (machine_is_usb_a9g20() && at91_is_low_power_sdram()) {
+	} else if (machine_is_usb_a9g20() && at91sam9260_is_low_power_sdram()) {
 		spi_register_board_info(usb_a9g20_spi_devices,
 				ARRAY_SIZE(usb_a9g20_spi_devices));
 		at91_add_device_spi(1, &spi_a9g20_pdata);

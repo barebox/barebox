@@ -26,7 +26,7 @@
 void at91_add_device_sdram(u32 size)
 {
 	if (!size)
-		size = at91_get_sdram_size();
+		size = at91sam9263_get_sdram_size(0);
 
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 	add_mem_device("sram0", AT91SAM9263_SRAM0_BASE,

@@ -18,7 +18,7 @@
 #define AT91SAM9_SDRAMC_H
 
 /* SDRAM Controller (SDRAMC) registers */
-#define AT91_SDRAMC_MR		(AT91_SDRAMC + 0x00)	/* SDRAM Controller Mode Register */
+#define AT91_SDRAMC_MR		0x00	/* SDRAM Controller Mode Register */
 #define		AT91_SDRAMC_MODE	(0xf << 0)		/* Command Mode */
 #define			AT91_SDRAMC_MODE_NORMAL		0
 #define			AT91_SDRAMC_MODE_NOP		1
@@ -28,10 +28,10 @@
 #define			AT91_SDRAMC_MODE_EXT_LMR	5
 #define			AT91_SDRAMC_MODE_DEEP		6
 
-#define AT91_SDRAMC_TR		(AT91_SDRAMC + 0x04)	/* SDRAM Controller Refresh Timer Register */
+#define AT91_SDRAMC_TR		0x04	/* SDRAM Controller Refresh Timer Register */
 #define		AT91_SDRAMC_COUNT	(0xfff << 0)		/* Refresh Timer Counter */
 
-#define AT91_SDRAMC_CR		(AT91_SDRAMC + 0x08)	/* SDRAM Controller Configuration Register */
+#define AT91_SDRAMC_CR		0x08	/* SDRAM Controller Configuration Register */
 #define		AT91_SDRAMC_NC		(3 << 0)		/* Number of Column Bits */
 #define			AT91_SDRAMC_NC_8	(0 << 0)
 #define			AT91_SDRAMC_NC_9	(1 << 0)
@@ -58,7 +58,7 @@
 #define		AT91_SDRAMC_TRAS	(0xf << 24)		/* Active to Precharge Delay */
 #define		AT91_SDRAMC_TXSR	(0xf << 28)		/* Exit Self Refresh to Active Delay */
 
-#define AT91_SDRAMC_LPR		(AT91_SDRAMC + 0x10)	/* SDRAM Controller Low Power Register */
+#define AT91_SDRAMC_LPR		0x10	/* SDRAM Controller Low Power Register */
 #define		AT91_SDRAMC_LPCB		(3 << 0)	/* Low-power Configurations */
 #define			AT91_SDRAMC_LPCB_DISABLE		0
 #define			AT91_SDRAMC_LPCB_SELF_REFRESH		1
@@ -72,25 +72,25 @@
 #define			AT91_SDRAMC_TIMEOUT_64_CLK_CYCLES	(1 << 12)
 #define			AT91_SDRAMC_TIMEOUT_128_CLK_CYCLES	(2 << 12)
 
-#define AT91_SDRAMC_IER		(AT91_SDRAMC + 0x14)	/* SDRAM Controller Interrupt Enable Register */
-#define AT91_SDRAMC_IDR		(AT91_SDRAMC + 0x18)	/* SDRAM Controller Interrupt Disable Register */
-#define AT91_SDRAMC_IMR		(AT91_SDRAMC + 0x1C)	/* SDRAM Controller Interrupt Mask Register */
-#define AT91_SDRAMC_ISR		(AT91_SDRAMC + 0x20)	/* SDRAM Controller Interrupt Status Register */
+#define AT91_SDRAMC_IER		0x14	/* SDRAM Controller Interrupt Enable Register */
+#define AT91_SDRAMC_IDR		0x18	/* SDRAM Controller Interrupt Disable Register */
+#define AT91_SDRAMC_IMR		0x1C	/* SDRAM Controller Interrupt Mask Register */
+#define AT91_SDRAMC_ISR		0x20	/* SDRAM Controller Interrupt Status Register */
 #define		AT91_SDRAMC_RES		(1 << 0)		/* Refresh Error Status */
 
-#define AT91_SDRAMC_MDR		(AT91_SDRAMC + 0x24)	/* SDRAM Memory Device Register */
+#define AT91_SDRAMC_MDR		0x24	/* SDRAM Memory Device Register */
 #define		AT91_SDRAMC_MD		(3 << 0)		/* Memory Device Type */
 #define			AT91_SDRAMC_MD_SDRAM		0
 #define			AT91_SDRAMC_MD_LOW_POWER_SDRAM	1
 
 #ifndef __ASSEMBLY__
 #include <mach/io.h>
-static inline u32 at91_get_sdram_size(void)
+static inline u32 at91_get_sdram_size(void *base)
 {
 	u32 val;
 	u32 size;
 
-	val = at91_sys_read(AT91_SDRAMC_CR);
+	val = __raw_readl(base + AT91_SDRAMC_CR);
 
 	/* Formula:
 	 * size = bank << (col + row + 1);
@@ -111,10 +111,92 @@ static inline u32 at91_get_sdram_size(void)
 	return size;
 }
 
-static inline bool at91_is_low_power_sdram(void)
+
+static inline bool at91_is_low_power_sdram(void *base)
 {
-	return at91_sys_read(AT91_SDRAMC_MDR) & AT91_SDRAMC_MD_LOW_POWER_SDRAM;
+	return __raw_readl(base + AT91_SDRAMC_MDR) & AT91_SDRAMC_MD_LOW_POWER_SDRAM;
 }
+
+#ifdef CONFIG_SOC_AT91SAM9260
+static inline u32 at91sam9260_get_sdram_size(void)
+{
+	return at91_get_sdram_size(IOMEM(AT91SAM9260_BASE_SDRAMC));
+}
+
+static inline bool at91sam9260_is_low_power_sdram(void)
+{
+	return at91_is_low_power_sdram(IOMEM(AT91SAM9260_BASE_SDRAMC));
+}
+#else
+static inline u32 at91sam9260_get_sdram_size(void)
+{
+	return 0;
+}
+
+static inline bool at91sam9260_is_low_power_sdram(void)
+{
+	return false;
+}
+#endif
+
+#ifdef CONFIG_SOC_AT91SAM9261
+static inline u32 at91sam9261_get_sdram_size(void)
+{
+	return at91_get_sdram_size(IOMEM(AT91SAM9261_BASE_SDRAMC));
+}
+
+static inline bool at91sam9261_is_low_power_sdram(void)
+{
+	return at91_is_low_power_sdram(IOMEM(AT91SAM9261_BASE_SDRAMC));
+}
+#else
+static inline u32 at91sam9261_get_sdram_size(void)
+{
+	return 0;
+}
+
+static inline bool at91sam9261_is_low_power_sdram(void)
+{
+	return false;
+}
+#endif
+
+#ifdef CONFIG_SOC_AT91SAM9263
+static inline u32 at91sam9263_get_sdram_size(int bank)
+{
+	switch (bank) {
+	case 0:
+		return at91_get_sdram_size(IOMEM(AT91SAM9263_BASE_SDRAMC0));
+	case 1:
+		return at91_get_sdram_size(IOMEM(AT91SAM9263_BASE_SDRAMC1));
+	default:
+		return 0;
+	}
+}
+
+static inline bool at91sam9263_is_low_power_sdram(int bank)
+{
+	switch (bank) {
+	case 0:
+		return at91_is_low_power_sdram(IOMEM(AT91SAM9263_BASE_SDRAMC0));
+	case 1:
+		return at91_is_low_power_sdram(IOMEM(AT91SAM9263_BASE_SDRAMC1));
+	default:
+		return false;
+	}
+}
+#else
+static inline u32 at91sam9263_get_sdram_size(int bank)
+{
+	return 0;
+}
+
+static inline bool at91sam9263_is_low_power_sdram(void)
+{
+	return false;
+}
+#endif
+
 #endif
 
 #endif

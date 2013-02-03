@@ -202,7 +202,7 @@ static void __init ek_add_device_spi(void)
 			ARRAY_SIZE(tny_a9263_spi_devices));
 		at91_add_device_spi(0, &tny_a9263_spi0_pdata);
 
-	} else if (machine_is_tny_a9g20() && at91_is_low_power_sdram()) {
+	} else if (machine_is_tny_a9g20() && at91sam9260_is_low_power_sdram()) {
 		spi_register_board_info(tny_a9g20_lpw_spi_devices,
 			ARRAY_SIZE(tny_a9g20_lpw_spi_devices));
 		at91_add_device_spi(1, &tny_a9g20_spi1_pdata);

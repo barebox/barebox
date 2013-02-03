@@ -27,7 +27,7 @@
 void at91_add_device_sdram(u32 size)
 {
 	if (!size)
-		size = at91_get_sdram_size();
+		size = at91sam9260_get_sdram_size();
 
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 	if (cpu_is_at91sam9g20()) {

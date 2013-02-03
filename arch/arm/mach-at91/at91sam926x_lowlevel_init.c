@@ -24,6 +24,9 @@
 #include <init.h>
 #include <sizes.h>
 
+#define __gpio_init inline
+#include "gpio.h"
+
 static void inline access_sdram(void)
 {
 	writel(0x00000000, AT91_SDRAM_BASE);
@@ -59,10 +62,10 @@ void __bare_init at91sam926x_lowlevel_init(void *pio, bool is_pio_asr,
 	__raw_writel(cfg.wdt_mr, AT91_BASE_WDT + AT91_WDT_MR);
 
 	/* configure PIOx as EBI0 D[16-31] */
-	__raw_writel(cfg.ebi_pio_pdr, pio + PIO_PDR);
-	__raw_writel(cfg.ebi_pio_ppudr, pio + PIO_PUDR);
+	at91_mux_gpio_disable(pio, cfg.ebi_pio_pdr);
+	at91_mux_set_pullup(pio, cfg.ebi_pio_ppudr, true);
 	if (is_pio_asr)
-		__raw_writel(cfg.ebi_pio_ppudr, pio + PIO_ASR);
+		at91_mux_set_A_periph(pio, cfg.ebi_pio_ppudr);
 
 	at91_sys_write(matrix_csa, cfg.ebi_csa);
 

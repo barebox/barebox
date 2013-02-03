@@ -8,6 +8,12 @@
 #define __AT91_LOWLEVEL_INIT_H__
 
 struct at91sam926x_lowlevel_cfg {
+	/* SoC specific */
+	void __iomem *pio;
+	u32 ebi_pio_is_peripha;
+	u32 matrix_csa;
+
+	/* board specific */
 	u32 wdt_mr;
 	u32 ebi_pio_pdr;
 	u32 ebi_pio_ppudr;
@@ -30,10 +36,10 @@ struct at91sam926x_lowlevel_cfg {
 
 #ifdef CONFIG_HAVE_AT91_LOWLEVEL_INIT
 void at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_cfg *cfg);
-void at91sam926x_lowlevel_init(void *pio, bool is_pio_asr, u32 matrix_csa);
+void at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg);
 #else
 static inline void at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_cfg *cfg) {}
-static inline void at91sam926x_lowlevel_init(void *pio, bool is_pio_asr, u32 matrix_csa) {}
+static inline void at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg) {}
 #endif
 
 #endif /* __AT91_LOWLEVEL_INIT_H__ */

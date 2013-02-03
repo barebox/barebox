@@ -146,7 +146,7 @@ static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
 	bool is_sdram;
 
 	cr = __raw_readl(base + AT91_DDRSDRC_CR);
-	mdr = __raw_readl(base + AT91_DDRSDRC_CR);
+	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
 
 	is_sdram = (mdr & AT91_DDRSDRC_MD) <= AT91_DDRSDRC_MD_LOW_POWER_SDR;
 
@@ -158,7 +158,7 @@ static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
 	size = 1;
 	/* COL */
 	size += (cr & AT91_DDRSDRC_NC) + 8;
-	if (is_sdram)
+	if (!is_sdram)
 		size ++;
 	/* ROW */
 	size += ((cr & AT91_DDRSDRC_NR) >> 2) + 11;

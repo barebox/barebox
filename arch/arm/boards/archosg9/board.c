@@ -20,6 +20,7 @@
 #include <sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
+#include "archos_features.h"
 
 static int archosg9_console_init(void){
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT))
@@ -58,6 +59,8 @@ static int archosg9_devices_init(void){
 	 * So here there is the hardcoded value
 	 */
 	armlinux_set_architecture(5032);
+	armlinux_set_revision(5);
+	armlinux_set_atag_appender(archos_append_atags);
 
 	return 0;
 }

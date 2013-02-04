@@ -106,6 +106,14 @@ u64 armlinux_get_serial(void)
 #endif
 }
 
+#ifdef CONFIG_ARM_BOARD_APPEND_ATAG
+static struct tag *(*atag_appender)(struct tag *);
+void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
+{
+	atag_appender = func;
+}
+#endif
+
 static void setup_start_tag(void)
 {
 	params = (struct tag *)armlinux_bootparams;
@@ -233,6 +241,10 @@ static void setup_tags(unsigned long initrd_address,
 
 	setup_revision_tag();
 	setup_serial_tag();
+#ifdef CONFIG_ARM_BOARD_APPEND_ATAG
+	if (atag_appender != NULL)
+		params = atag_appender(params);
+#endif
 	setup_end_tag();
 
 	printf("commandline: %s\n"

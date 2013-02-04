@@ -47,7 +47,7 @@
 
 #include "usb.h"
 
-#define MAX_RETRIES 5
+#define MAX_RETRIES 2
 
 #ifdef TRACE_USB
 #define DBG1(x...) fprintf(stderr, x)
@@ -350,7 +350,7 @@ int usb_read(struct usb_handle *h, void *_data, int len)
 				n, errno, strerror(errno));
 				if (++retry > MAX_RETRIES)
 					return -1;
-				sleep(1);
+				usleep(10000);
 			}
 		} while (n < 0);
 

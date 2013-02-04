@@ -152,6 +152,13 @@ config THUMB2_BAREBOX
 	  your board lowlevel init code may break in thumb-2 mode. You have been
 	  warned.
 
+config ARM_BOARD_APPEND_ATAG
+	bool "Let board specific code to add ATAGs to be passed to the kernel"
+	depends on ARM_LINUX
+	help
+	  This option is purely to start some vendor provided kernels.
+	  ** DO NOT USE FOR YOUR OWN DESIGNS! **
+
 endmenu
 
 menu "Arm specific settings"

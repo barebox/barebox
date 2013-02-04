@@ -20,7 +20,7 @@
 #include <types.h>
 #include <driver.h>
 #include <init.h>
-#include <memory.h>
+#include <asm/memory.h>
 #include <ns16550.h>
 #include <mach/hardware.h>
 #include <io.h>
@@ -30,7 +30,7 @@
 
 static int malta_mem_init(void)
 {
-	barebox_add_memory_bank("ram0", 0xa0000000, SZ_256M);
+	mips_add_ram0(SZ_256M);
 
 	return 0;
 }

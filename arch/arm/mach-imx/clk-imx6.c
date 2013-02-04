@@ -205,6 +205,9 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[pll7_usb_host] = imx_clk_pllv3(IMX_PLLV3_USB,	"pll7_usb_host","osc", base + 0x20, 0x3);
 	clks[pll6_enet]     = imx_clk_pllv3(IMX_PLLV3_ENET,	"pll6_enet",	"osc", base + 0xe0, 0x3);
 
+	clks[usbphy1] = imx_clk_gate("usbphy1", "pll3_usb_otg", base + 0x10, 6);
+	clks[usbphy2] = imx_clk_gate("usbphy2", "pll7_usb_host", base + 0x20, 6);
+
 	clks[sata_ref] = imx_clk_fixed_factor("sata_ref", "pll6_enet", 1, 5);
 	clks[pcie_ref] = imx_clk_fixed_factor("pcie_ref", "pll6_enet", 1, 4);
 	clks[sata_ref_100m] = imx_clk_gate("sata_ref_100m", "sata_ref", base + 0xe0, 20);
@@ -298,6 +301,8 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg_per], MX6_I2C2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg_per], MX6_I2C3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ahb], MX6_SATA_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[usbphy1], MX6_USBPHY1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[usbphy2], MX6_USBPHY2_BASE_ADDR, NULL);
 
 	writel(0xffffffff, ccm_base + CCGR0);
 	writel(0xffffffff, ccm_base + CCGR1);

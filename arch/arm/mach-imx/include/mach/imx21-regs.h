@@ -129,12 +129,6 @@
 #define MX21_MPCTL1_BRMO	(1 << 6)
 #define MX21_MPCTL1_LF		(1 << 15)
 
-#define MX21_PCCR0_PERCLK3_EN	(1 << 18)
-#define MX21_PCCR0_NFC_EN	(1 << 19)
-#define MX21_PCCR0_HCLK_LCDC_EN	(1 << 26)
-
-#define MX21_PCCR1_GPT1_EN	(1 << 25)
-
 #define MX21_CCSR_32K_SR	(1 << 15)
 
 #endif /* _IMX21_REGS_H */

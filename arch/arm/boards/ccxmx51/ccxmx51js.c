@@ -59,6 +59,7 @@ static iomux_v3_cfg_t ccxmx51js_pads[] = {
 	MX51_PAD_USBH1_DATA5__USBH1_DATA5,
 	MX51_PAD_USBH1_DATA6__USBH1_DATA6,
 	MX51_PAD_USBH1_DATA7__USBH1_DATA7,
+	MX51_PAD_DISPB2_SER_RS__GPIO3_8,	/* Reset */
 };
 
 static struct esdhc_platform_data sdhc1_pdata = {

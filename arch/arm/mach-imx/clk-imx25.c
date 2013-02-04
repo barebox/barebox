@@ -150,6 +150,8 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[per3], MX25_ESDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per4], MX25_ESDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[lcdc_per_gate], MX25_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[dummy], MX25_LCDC_BASE_ADDR, "ipg");
+	clkdev_add_physbase(clks[dummy], MX25_LCDC_BASE_ADDR, "ahb");
 
 	return 0;
 }

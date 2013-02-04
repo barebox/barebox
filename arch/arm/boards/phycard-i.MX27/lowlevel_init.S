@@ -111,31 +111,7 @@ reset:
 #ifdef CONFIG_NAND_IMX_BOOT
 	ldr	sp, =0xa0f00000		/* Setup a temporary stack in SDRAM */
 
-	ldr	r0, =MX27_NFC_BASE_ADDR		/* start of NFC SRAM                */
-	ldr	r2, =MX27_NFC_BASE_ADDR + 0x1000	/* end of NFC SRAM                  */
-
-	/* skip NAND boot if not running from NFC space */
-	cmp	pc, r0
-	bls	ret
-	cmp	pc, r2
-	bhi	ret
-
-	/* Move ourselves out of NFC SRAM */
-	ldr	r1, =_text
-
-copy_loop:
-	ldmia	r0!, {r3-r9}		/* copy from source address [r0]    */
-	stmia	r1!, {r3-r9}		/* copy to   target address [r1]    */
-	cmp	r0, r2			/* until source end address [r2]    */
-	ble	copy_loop
-
-	ldr	pc, =1f			/* Jump to SDRAM                    */
-1:
-	ldr	r0,=_text
-	ldr	r1,=_barebox_image_size
-	bl	imx_nand_load_image
-	b	board_init_lowlevel_return
-
+	b	imx27_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:

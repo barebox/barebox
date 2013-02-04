@@ -274,14 +274,6 @@ static int imx25_console_init(void)
 
 console_initcall(imx25_console_init);
 
-#ifdef CONFIG_NAND_IMX_BOOT
-void __bare_init nand_boot(void)
-{
-	imx_nand_load_image(_text, barebox_image_size);
-	board_init_lowlevel_return();
-}
-#endif
-
 static int imx25_core_setup(void)
 {
 	writel(0x01010103, MX25_CCM_BASE_ADDR + MX25_CCM_PCDR2);
@@ -289,4 +281,3 @@ static int imx25_core_setup(void)
 
 }
 core_initcall(imx25_core_setup);
-

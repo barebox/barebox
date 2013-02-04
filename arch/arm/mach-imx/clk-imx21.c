@@ -45,9 +45,52 @@
 #define CCM_PMCOUNT		0x30
 #define CCM_WKGDCTL		0x34
 
+#define PCCR0_UART1_EN		(1 << 0)
+#define PCCR0_UART2_EN		(1 << 1)
+#define PCCR0_UART3_EN		(1 << 2)
+#define PCCR0_UART4_EN		(1 << 3)
+#define PCCR0_CSPI1_EN		(1 << 4)
+#define PCCR0_CSPI2_EN		(1 << 5)
+#define PCCR0_SSI1_EN		(1 << 6)
+#define PCCR0_SSI2_EN		(1 << 7)
+#define PCCR0_FIRI_EN		(1 << 8)
+#define PCCR0_SDHC1_EN		(1 << 9)
+#define PCCR0_SDHC2_EN		(1 << 10)
+#define PCCR0_GPIO_EN		(1 << 11)
+#define PCCR0_I2C_EN		(1 << 12)
+#define PCCR0_DMA_EN		(1 << 13)
+#define PCCR0_USBOTG_EN		(1 << 14)
+#define PCCR0_EMMA_EN		(1 << 15)
+#define PCCR0_SSI2_BAUD_EN	(1 << 16)
+#define PCCR0_SSI1_BAUD_EN	(1 << 17)
+#define PCCR0_PERCLK3_EN	(1 << 18)
+#define PCCR0_NFC_EN		(1 << 19)
+#define PCCR0_FRI_BAUD_EN	(1 << 20)
+#define PCCR0_SLDC_EN		(1 << 21)
+#define PCCR0_PERCLK4_EN	(1 << 22)
+#define PCCR0_HCLK_BMI_EN	(1 << 23)
+#define PCCR0_HCLK_USBOTG_EN	(1 << 24)
+#define PCCR0_HCLK_SLCDC_EN	(1 << 25)
+#define PCCR0_HCLK_LCDC_EN	(1 << 26)
+#define PCCR0_HCLK_EMMA_EN	(1 << 27)
+#define PCCR0_HCLK_BROM_EN	(1 << 28)
+#define PCCR0_HCLK_DMA_EN	(1 << 30)
+#define PCCR0_HCLK_CSI_EN	(1 << 31)
+
+#define PCCR1_CSPI3_EN	(1 << 23)
+#define PCCR1_WDT_EN	(1 << 24)
+#define PCCR1_GPT1_EN	(1 << 25)
+#define PCCR1_GPT2_EN	(1 << 26)
+#define PCCR1_GPT3_EN	(1 << 27)
+#define PCCR1_PWM_EN	(1 << 28)
+#define PCCR1_RTC_EN	(1 << 29)
+#define PCCR1_KPP_EN	(1 << 30)
+#define PCCR1_OWIRE_EN	(1 << 31)
+
 enum imx21_clks {
 	ckil, ckih, fpm, mpll_sel, spll_sel, mpll, spll, fclk, hclk, ipg, per1,
-	per2, per3, per4, usb_div, nfc_div, lcdc_per_gate, clk_max
+	per2, per3, per4, usb_div, nfc_div, lcdc_per_gate, lcdc_ahb_gate,
+	lcdc_ipg_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -70,14 +113,16 @@ static int imx21_ccm_probe(struct device_d *dev)
 
 	base = dev_request_mem_region(dev, 0);
 
-	writel((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) |
-			(1 << 9) | (1 << 10) | (1 << 11) | (1 << 12) |
-			(1 << 13) | (1 << 14) | (1 << 19) | (1 << 22) |
-			(1 << 24) | (1 << 26) |	(1 << 30),
+	writel(PCCR0_UART1_EN | PCCR0_UART2_EN | PCCR0_UART3_EN | PCCR0_UART4_EN |
+			PCCR0_CSPI1_EN | PCCR0_CSPI2_EN | PCCR0_SDHC1_EN |
+			PCCR0_SDHC2_EN | PCCR0_GPIO_EN | PCCR0_I2C_EN | PCCR0_DMA_EN |
+			PCCR0_USBOTG_EN | PCCR0_NFC_EN | PCCR0_PERCLK4_EN |
+			PCCR0_HCLK_USBOTG_EN | PCCR0_HCLK_DMA_EN,
 			base + CCM_PCCR0);
 
-	writel((1 << 23) | (1 << 24) | (1 << 25) | (1 << 26) | (1 << 27) |
-			(1 << 28) | (1 << 29) | (1 << 30) | (1 << 31),
+	writel(PCCR1_CSPI3_EN | PCCR1_WDT_EN | PCCR1_GPT1_EN | PCCR1_GPT2_EN |
+			PCCR1_GPT3_EN | PCCR1_PWM_EN | PCCR1_RTC_EN | PCCR1_KPP_EN |
+			PCCR1_OWIRE_EN,
 			base + CCM_PCCR1);
 
 	clks[ckil] = clk_fixed("ckil", lref);
@@ -99,6 +144,12 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clks[usb_div] = imx_clk_divider("usb_div", "spll", base + CCM_CSCR, 26, 3);
 	clks[nfc_div] = imx_clk_divider("nfc_div", "ipg", base + CCM_PCDR0, 12, 4);
 	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3", base + CCM_PCCR0, 18);
+	clks[lcdc_ahb_gate] = imx_clk_gate("lcdc_ahb_gate", "ahb", base + CCM_PCCR0, 26);
+	/*
+	 * i.MX21 doesn't have an IPG clock for the LCD. To avoid even more conditionals
+	 * in the framebuffer code, provide a dummy clock.
+	 */
+	clks[lcdc_ipg_gate] = clk_fixed("dummy", 0);
 
 	clkdev_add_physbase(clks[per1], MX21_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1], MX21_GPT2_BASE_ADDR, NULL);
@@ -114,6 +165,8 @@ static int imx21_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg], MX21_SDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX21_SDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[lcdc_per_gate], MX21_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_ahb_gate], MX21_LCDC_BASE_ADDR, "ahb");
+	clkdev_add_physbase(clks[lcdc_ipg_gate], MX21_LCDC_BASE_ADDR, "ipg");
 
 	return 0;
 }

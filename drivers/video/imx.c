@@ -138,7 +138,10 @@ struct imxfb_rgb {
 
 struct imxfb_info {
 	void __iomem		*regs;
-	struct clk		*clk;
+
+	struct clk		*ahb_clk;
+	struct clk		*ipg_clk;
+	struct clk		*per_clk;
 
 	u_int			pcr;
 	u_int			pwmr;
@@ -252,7 +255,9 @@ static void imxfb_enable_controller(struct fb_info *info)
 
 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
 
-	clk_enable(fbi->clk);
+	clk_enable(fbi->ahb_clk);
+	clk_enable(fbi->ipg_clk);
+	clk_enable(fbi->per_clk);
 
 	if (fbi->enable)
 		fbi->enable(1);
@@ -267,7 +272,9 @@ static void imxfb_disable_controller(struct fb_info *info)
 
 	writel(0, fbi->regs + LCDC_RMCR);
 
-	clk_disable(fbi->clk);
+	clk_disable(fbi->per_clk);
+	clk_disable(fbi->ipg_clk);
+	clk_disable(fbi->ahb_clk);
 }
 
 /*
@@ -321,7 +328,7 @@ static int imxfb_activate_var(struct fb_info *info)
 	writel(readl(fbi->regs + LCDC_CPOS) & ~(CPOS_CC0 | CPOS_CC1),
 		fbi->regs + LCDC_CPOS);
 
-	lcd_clk = clk_get_rate(fbi->clk);
+	lcd_clk = clk_get_rate(fbi->per_clk);
 
 	tmp = mode->pixclock * (unsigned long long)lcd_clk;
 
@@ -531,9 +538,17 @@ static int imxfb_probe(struct device_d *dev)
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
 
-	fbi->clk = clk_get(dev, NULL);
-	if (IS_ERR(fbi->clk))
-		return PTR_ERR(fbi->clk);
+	fbi->per_clk = clk_get(dev, NULL);
+	if (IS_ERR(fbi->per_clk))
+		return PTR_ERR(fbi->per_clk);
+
+	fbi->ahb_clk = clk_get(dev, "ahb");
+	if (IS_ERR(fbi->ahb_clk))
+		return PTR_ERR(fbi->ahb_clk);
+
+	fbi->ipg_clk = clk_get(dev, "ipg");
+	if (IS_ERR(fbi->ipg_clk))
+		return PTR_ERR(fbi->ipg_clk);
 
 	fbi->mode = pdata->mode;
 	fbi->regs = dev_request_mem_region(dev, 0);

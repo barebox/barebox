@@ -93,7 +93,7 @@
 enum mx27_clks {
 	dummy, ckih, ckil, mpll, spll, mpll_main2, ahb, ipg, nfc_div, per1_div,
 	per2_div, per3_div, per4_div, usb_div, cpu_sel,	clko_sel, cpu_div, clko_div,
-	clko_en, lcdc_per_gate, clk_max
+	clko_en, lcdc_per_gate, lcdc_ahb_gate, lcdc_ipg_gate, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -136,7 +136,7 @@ static int imx27_ccm_probe(struct device_d *dev)
 	base = dev_request_mem_region(dev, 0);
 
 	writel(PCCR0_SDHC3_EN | PCCR0_SDHC2_EN | PCCR0_SDHC1_EN |
-			PCCR0_PWM_EN | PCCR0_KPP_EN | PCCR0_LCDC_EN | PCCR0_IIM_EN |
+			PCCR0_PWM_EN | PCCR0_KPP_EN | PCCR0_IIM_EN |
 			PCCR0_I2C2_EN | PCCR0_I2C1_EN | PCCR0_GPT6_EN | PCCR0_GPT5_EN |
 			PCCR0_GPT4_EN | PCCR0_GPT3_EN | PCCR0_GPT2_EN | PCCR0_GPT1_EN |
 			PCCR0_GPIO_EN | PCCR0_FEC_EN | PCCR0_CSPI3_EN | PCCR0_CSPI2_EN |
@@ -144,9 +144,9 @@ static int imx27_ccm_probe(struct device_d *dev)
 			base + CCM_PCCR0);
 
 	writel(PCCR1_NFC_BAUDEN | PCCR1_PERCLK4_EN | PCCR1_PERCLK2_EN | PCCR1_PERCLK1_EN |
-			PCCR1_HCLK_USB | PCCR1_HCLK_LCDC | PCCR1_HCLK_FEC | PCCR1_HCLK_EMI |
-			PCCR1_WDT_EN | PCCR1_USB_EN | PCCR1_UART6_EN | PCCR1_UART5_EN |
-			PCCR1_UART4_EN | PCCR1_UART3_EN | PCCR1_UART2_EN | PCCR1_UART1_EN,
+			PCCR1_HCLK_USB | PCCR1_HCLK_FEC | PCCR1_HCLK_EMI | PCCR1_WDT_EN |
+			PCCR1_USB_EN | PCCR1_UART6_EN | PCCR1_UART5_EN | PCCR1_UART4_EN |
+			PCCR1_UART3_EN | PCCR1_UART2_EN | PCCR1_UART1_EN,
 			base + CCM_PCCR1);
 
 	clks[dummy] = clk_fixed("dummy", 0);
@@ -179,7 +179,9 @@ static int imx27_ccm_probe(struct device_d *dev)
 	else
 		clks[cpu_div] = imx_clk_divider("cpu_div", "cpu_sel", base + CCM_CSCR, 13, 3);
 	clks[clko_div] = imx_clk_divider("clko_div", "clko_sel", base + CCM_PCDR0, 22, 3);
-	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3_div", base + CCM_PCCR1, 7);
+	clks[lcdc_per_gate] = imx_clk_gate("lcdc_per_gate", "per3_div", base + CCM_PCCR1, 8);
+	clks[lcdc_ahb_gate] = imx_clk_gate("lcdc_ahb_gate", "ahb", base + CCM_PCCR1, 15);
+	clks[lcdc_ipg_gate] = imx_clk_gate("lcdc_ipg_gate", "ipg", base + CCM_PCCR0, 14);
 
 	clkdev_add_physbase(clks[per1_div], MX27_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1_div], MX27_GPT2_BASE_ADDR, NULL);
@@ -202,6 +204,8 @@ static int imx27_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[per2_div], MX27_SDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per2_div], MX27_SDHC3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[lcdc_per_gate], MX27_LCDC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[lcdc_ahb_gate], MX27_LCDC_BASE_ADDR, "ahb");
+	clkdev_add_physbase(clks[lcdc_ipg_gate], MX27_LCDC_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[ipg], MX27_FEC_BASE_ADDR, NULL);
 
 	return 0;

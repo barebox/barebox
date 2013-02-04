@@ -24,13 +24,19 @@
 #include <i2c/i2c.h>
 #include <spi/spi.h>
 #include <linux/mtd/mtd.h>
+#include <fb.h>
+#include <video/atmel_lcdc.h>
+#include <mach/atmel_hlcdc.h>
+#include <linux/phy.h>
 
  /* USB Host */
 struct at91_usbh_data {
 	u8		ports;		/* number of ports on root hub */
 	int		vbus_pin[2];	/* port power-control pin */
+	u8	vbus_pin_active_low[2];	/* vbus polarity */
 };
 extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
+extern void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data);
 
 void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
 
@@ -70,7 +76,7 @@ struct at91_ether_platform_data {
 	unsigned int phy_flags;
 	unsigned int flags;
 	int phy_addr;
-	int is_rmii;
+	phy_interface_t phy_interface;
 	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
 };
 
@@ -160,4 +166,6 @@ struct at91_spi_platform_data {
 };
 
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata);
+
+void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data);
 #endif

@@ -163,13 +163,19 @@
 #define		AT91_PMC_WPVS		(0x1  <<  0)		/* Write Protect Violation Status */
 #define		AT91_PMC_WPVSRC		(0xffff  <<  8)		/* Write Protect Violation Source */
 
-#define AT91_PMC_VER		(AT91_PMC + 0xfc)	/* PMC Module Version [AT91CAP9 only] */
+#define AT91_PMC_VER		0xfc			/* PMC Module Version [AT91CAP9 only] */
 
-#define AT91_PMC_PCR		(AT91_PMC + 0x10c)	/* Peripheral Control Register [some SAM9] */
+#define AT91_PMC_PCR		0x10c			/* Peripheral Control Register [some SAM9] */
 #define		AT91_PMC_PCR_PID	(0x3f  <<  0)		/* Peripheral ID */
 #define		AT91_PMC_PCR_CMD	(0x1  <<  12)		/* Command */
-#define		AT91_PMC_PCR_DIV	(0x3  <<  16)		/* Divisor Value */
-#define		AT91_PMC_PCRDIV(n)	(((n) <<  16) & AT91_PMC_PCR_DIV)
+#define		AT91_PMC_PCR_DIV(n)	((n) <<  16)	/* Divisor value */
+#define			AT91_PMC_PCR_DIV0	0x0		/* Peripheral clock is MCK */
+#define			AT91_PMC_PCR_DIV2	0x1		/* Peripheral clock is MCK/2 */
+#define			AT91_PMC_PCR_DIV4	0x2		/* Peripheral clock is MCK/4 */
+#define			AT91_PMC_PCR_DIV8	0x3		/* Peripheral clock is MCK/8 */
 #define		AT91_PMC_PCR_EN		(0x1  <<  28)		/* Enable */
 
+#define	AT91_PMC_PCER1		0x100			/* Peripheral Clock Enable Register 1 */
+#define	AT91_PMC_PCDR1		0x104			/* Peripheral Clock Disable Register 1 */
+#define	AT91_PMC_PCSR1		0x108			/* Peripheral Clock Status Register 1 */
 #endif

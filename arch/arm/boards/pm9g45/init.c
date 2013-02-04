@@ -113,7 +113,7 @@ static void __init pm9g45_add_device_usbh(void) {}
 #endif
 
 static struct at91_ether_platform_data macb_pdata = {
-	.is_rmii = 1,
+	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };
 
@@ -137,7 +137,7 @@ static void pm9g45_add_device_eth(void)
 
 static int pm9g45_mem_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }

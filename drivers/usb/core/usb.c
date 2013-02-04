@@ -300,6 +300,7 @@ static int usb_new_device(struct usb_device *dev)
 	int port = -1;
 	struct usb_device *parent = dev->parent;
 	unsigned short portstatus;
+	char str[16];
 
 	buf = dma_alloc(USB_BUFSIZ);
 
@@ -438,6 +439,19 @@ static int usb_new_device(struct usb_device *dev)
 	print_usb_device(dev);
 
 	register_device(&dev->dev);
+	sprintf(str, "%d", dev->descriptor->iManufacturer);
+	dev_add_param_fixed(&dev->dev, "iManufacturer", str);
+	sprintf(str, "%d", dev->descriptor->iProduct);
+	dev_add_param_fixed(&dev->dev, "iProduct", str);
+	sprintf(str, "%d", dev->descriptor->iSerialNumber);
+	dev_add_param_fixed(&dev->dev, "iSerialNumber", str);
+	dev_add_param_fixed(&dev->dev, "Manufacturer", dev->mf);
+	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
+	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);
+	sprintf(str, "%04x", le16_to_cpu(dev->descriptor->idVendor));
+	dev_add_param_fixed(&dev->dev, "idVendor", str);
+	sprintf(str, "%04x", le16_to_cpu(dev->descriptor->idProduct));
+	dev_add_param_fixed(&dev->dev, "idProduct", str);
 	list_add_tail(&dev->list, &usb_device_list);
 
 	err = 0;

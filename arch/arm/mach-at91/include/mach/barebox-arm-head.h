@@ -1,7 +1,7 @@
 #ifndef __MACH_ARM_HEAD_H
 #define __MACH_ARM_HEAD_H
 
-#ifdef CONFIG_SHELL_NONE
+#ifdef CONFIG_AT91_LOAD_BAREBOX_SRAM
 #define AT91_EXV6	".word _barebox_image_size\n"
 #else
 #define AT91_EXV6	".word _barebox_bare_init_size\n"

@@ -159,7 +159,13 @@ int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
 unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 
-void start_barebox(void);
+/*
+ * Function pointer to the main barebox function. Defaults
+ * to run_shell() when a shell is enabled.
+ */
+extern int (*barebox_main)(void);
+
+void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
 /*

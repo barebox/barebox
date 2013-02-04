@@ -20,8 +20,6 @@
 #ifndef _ENVIRONMENT_H_
 #define _ENVIRONMENT_H_
 
-
-#ifdef __BAREBOX__
 /**
  * Managment of a environment variable
  */
@@ -72,28 +70,7 @@ static inline int export(const char *var)
 int env_pop_context(void);
 int env_push_context(void);
 
-/* defaults to /dev/env0 */
-extern char *default_environment_path;
-
 int export(const char *);
-
-struct stat;
-int file_size_action(const char *, struct stat *, void *, int);
-int file_save_action(const char *, struct stat *, void *, int);
-
-#endif /* __BAREBOX__ */
-
-#define ENV_FLAG_NO_OVERWRITE	(1 << 0)
-int envfs_load(char *filename, char *dirname, unsigned flags);
-int envfs_save(char *filename, char *dirname);
-
-/* This part is used for the host and the target */
-struct action_data {
-	int fd;
-	const char *base;
-	void *writep;
-};
-#define PAD4(x) ((x + 3) & ~3)
 
 #endif	/* _ENVIRONMENT_H_ */
 

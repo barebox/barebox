@@ -262,4 +262,10 @@
 		    << MACB_##name##_OFFSET))		\
 	 | MACB_BF(name,value))
 
+/* Register access macros */
+#define macb_readl(port,reg)				\
+	__raw_readl((port)->regs + MACB_##reg)
+#define macb_writel(port,reg,value)			\
+	__raw_writel((value), (port)->regs + MACB_##reg)
+
 #endif /* __DRIVERS_MACB_H__ */

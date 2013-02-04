@@ -342,7 +342,7 @@ static int at91_ether_probe(struct device_d *dev)
 
 	mac_cfg |= AT91_EMAC_CLK_DIV32 | AT91_EMAC_BIG;
 
-	if (pdata->is_rmii) {
+	if (pdata->phy_interface == PHY_INTERFACE_MODE_RMII) {
 		ether_dev->interface = PHY_INTERFACE_MODE_RGMII;
 		mac_cfg |= AT91_EMAC_RMII;
 	} else {

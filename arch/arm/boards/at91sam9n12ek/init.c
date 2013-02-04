@@ -124,6 +124,75 @@ static void __init ek_add_device_ks8851(void)
 static void __init ek_add_device_ks8851(void) {}
 #endif /* CONFIG_DRIVER_NET_KS8851_MLL */
 
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL_HLCD)
+static int ek_gpio_request_output(int gpio, const char *name)
+{
+	int ret;
+
+	ret = gpio_request(gpio, name);
+	if (ret) {
+		pr_err("%s: can not request gpio %d (%d)\n", name, gpio, ret);
+		return ret;
+	}
+
+	ret = gpio_direction_output(gpio, 1);
+	if (ret)
+		pr_err("%s: can not configure gpio %d as output (%d)\n", name, gpio, ret);
+	return ret;
+}
+
+
+/*
+ * LCD Controller
+ */
+static struct fb_videomode at91_tft_vga_modes[] = {
+	{
+		.name		= "QD",
+		.refresh	= 60,
+		.xres		= 480,		.yres	= 272,
+		.pixclock	= KHZ2PICOS(9000),
+
+		.left_margin	= 8,		.right_margin	= 43,
+		.upper_margin	= 4,		.lower_margin	= 12,
+		.hsync_len	= 5,		.vsync_len	= 10,
+
+		.sync		= 0,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+};
+
+/* Default output mode is TFT 24 bit */
+#define BPP_OUT_DEFAULT_LCDCFG5	(LCDC_LCDCFG5_MODE_OUTPUT_24BPP)
+
+static void at91_lcdc_power_control(int on)
+{
+	gpio_set_value(AT91_PIN_PC25, !on);
+}
+
+/* Driver datas */
+static struct atmel_lcdfb_platform_data ek_lcdc_data = {
+	.lcdcon_is_backlight		= true,
+	.default_bpp			= 16,
+	.default_dmacon			= ATMEL_LCDC_DMAEN,
+	.default_lcdcon2		= BPP_OUT_DEFAULT_LCDCFG5,
+	.guard_time			= 9,
+	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
+	.atmel_lcdfb_power_control	= at91_lcdc_power_control,
+	.mode_list			= at91_tft_vga_modes,
+	.num_modes			= ARRAY_SIZE(at91_tft_vga_modes),
+};
+
+static void ek_add_device_lcdc(void)
+{
+	if (ek_gpio_request_output(AT91_PIN_PC25, "lcdc_power"))
+		return;
+
+	at91_add_device_lcdc(&ek_lcdc_data);
+}
+#else
+static void ek_add_device_lcdc(void) {}
+#endif
+
 /*
  * MCI (SD/MMC)
  */
@@ -228,7 +297,7 @@ static void __init ek_add_device_buttons(void)
 
 static int at91sam9n12ek_mem_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }
@@ -244,6 +313,7 @@ static int at91sam9n12ek_devices_init(void)
 	ek_add_device_i2c();
 	ek_add_device_ks8851();
 	ek_add_device_buttons();
+	ek_add_device_lcdc();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9N12EK);

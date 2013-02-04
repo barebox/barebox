@@ -106,7 +106,7 @@ static void ek_add_device_nand(void)
 }
 
 static struct at91_ether_platform_data macb_pdata = {
-	.is_rmii = 1,
+	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };
 
@@ -117,6 +117,49 @@ static void ek_add_device_eth(void)
 
 	at91_add_device_eth(0, &macb_pdata);
 }
+
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL_HLCD)
+/*
+ * LCD Controller
+ */
+static struct fb_videomode at91_tft_vga_modes[] = {
+	{
+		.name		= "LG",
+		.refresh	= 60,
+		.xres		= 800,		.yres		= 480,
+		.pixclock	= KHZ2PICOS(33260),
+
+		.left_margin	= 88,		.right_margin	= 168,
+		.upper_margin	= 8,		.lower_margin	= 37,
+		.hsync_len	= 128,		.vsync_len	= 2,
+
+		.sync		= 0,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+};
+
+/* Default output mode is TFT 24 bit */
+#define AT91SAM9X5_DEFAULT_LCDCFG5	(LCDC_LCDCFG5_MODE_OUTPUT_24BPP)
+
+/* Driver datas */
+static struct atmel_lcdfb_platform_data ek_lcdc_data = {
+	.lcdcon_is_backlight		= true,
+	.default_bpp			= 16,
+	.default_lcdcon2		= AT91SAM9X5_DEFAULT_LCDCFG5,
+	.guard_time			= 9,
+	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
+	.mode_list			= at91_tft_vga_modes,
+	.num_modes			= ARRAY_SIZE(at91_tft_vga_modes),
+};
+
+static void ek_add_device_lcdc(void)
+{
+	at91_add_device_lcdc(&ek_lcdc_data);
+}
+
+#else
+static void ek_add_device_lcdc(void) {}
+#endif
 
 /*
  * MCI (SD/MMC)
@@ -192,13 +235,23 @@ static void ek_add_device_spi(void)
 	at91_add_device_spi(0, &spi_pdata);
 }
 
+#if defined(CONFIG_USB_OHCI) || defined(CONFIG_USB_EHCI)
 /*
- * USB Host port
+ * USB HS Host port (common to OHCI & EHCI)
  */
-static struct at91_usbh_data __initdata ek_usbh_data = {
-	.ports		= 2,
-	.vbus_pin	= {AT91_PIN_PD20, AT91_PIN_PD19},
+static struct at91_usbh_data ek_usbh_hs_data = {
+	.ports			= 2,
+	.vbus_pin		= {AT91_PIN_PD19, AT91_PIN_PD20},
 };
+
+static void ek_add_device_usb(void)
+{
+	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
+	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
+}
+#else
+static void ek_add_device_usb(void) {}
+#endif
 
 struct gpio_led leds[] = {
 	{
@@ -228,7 +281,7 @@ static void __init ek_add_led(void)
 
 static int at91sam9x5ek_mem_init(void)
 {
-	at91_add_device_sdram(128 * 1024 * 1024);
+	at91_add_device_sdram(0);
 
 	return 0;
 }
@@ -250,9 +303,10 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_eth();
 	ek_add_device_spi();
 	ek_add_device_mci();
-	at91_add_device_usbh_ohci(&ek_usbh_data);
+	ek_add_device_usb();
 	ek_add_led();
 	ek_add_device_i2c();
+	ek_add_device_lcdc();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

@@ -89,5 +89,11 @@ struct envfs_super {
 #error "__BYTE_ORDER must be __LITTLE_ENDIAN or __BIG_ENDIAN"
 #endif
 
-#endif /* _ENVFS_H */
+#define ENV_FLAG_NO_OVERWRITE	(1 << 0)
+int envfs_load(char *filename, char *dirname, unsigned flags);
+int envfs_save(char *filename, char *dirname);
 
+/* defaults to /dev/env0 */
+extern char *default_environment_path;
+
+#endif /* _ENVFS_H */

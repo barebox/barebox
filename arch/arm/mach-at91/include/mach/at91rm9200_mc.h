@@ -157,4 +157,34 @@
 #define		AT91_BFC_MUXEN		(1   << 18)		/* Multiplexed Bus Enable */
 #define		AT91_BFC_RDYEN		(1   << 19)		/* Ready Enable Mode */
 
+#ifndef __ASSEMBLY__
+#include <mach/io.h>
+static inline u32 at91rm9200_get_sdram_size(void)
+{
+	u32 cr, mr;
+	u32 size;
+
+	cr = at91_sys_read(AT91_SDRAMC_CR);
+	mr = at91_sys_read(AT91_SDRAMC_MR);
+
+	/* Formula:
+	 * size = bank << (col + row + 1);
+	 * if (bandwidth == 32 bits)
+	 *	size <<= 1;
+	 */
+	size = 1;
+	/* COL */
+	size += (cr & AT91_SDRAMC_NC) + 8;
+	/* ROW */
+	size += ((cr & AT91_SDRAMC_NR) >> 2) + 11;
+	/* BANK */
+	size = ((cr & AT91_SDRAMC_NB) ? 4 : 2) << size;
+	/* bandwidth */
+	if (!(mr & AT91_SDRAMC_DBW))
+		size <<= 1;
+
+	return size;
+}
+#endif
+
 #endif

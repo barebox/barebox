@@ -32,8 +32,9 @@
 #include <debug_ll.h>
 #include <fs.h>
 #include <linux/stat.h>
-#include <environment.h>
+#include <envfs.h>
 #include <asm/sections.h>
+#include <uncompress.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -41,32 +42,35 @@ extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 #include "barebox_default_env.h"
 
-#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
-#include <uncompress.h>
-void *defaultenv;
-#else
-#define defaultenv default_environment
-#endif
-
 static int register_default_env(void)
 {
-#ifdef CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED
 	int ret;
-	void *tmp;
+	void *defaultenv;
 
-	tmp = xzalloc(default_environment_size);
-	memcpy(tmp, default_environment, default_environment_size);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED)) {
+		void *tmp = malloc(default_environment_size);
 
-	defaultenv = xzalloc(default_environment_uncompress_size);
+		if (!tmp)
+			return -ENOMEM;
 
-	ret = uncompress(tmp, default_environment_size, NULL, NULL,
-			 defaultenv, NULL, uncompress_err_stdout);
+		memcpy(tmp, default_environment, default_environment_size);
 
-	free(tmp);
+		defaultenv = xzalloc(default_environment_uncompress_size);
 
-	if (ret)
-		return ret;
-#endif
+		ret = uncompress(tmp, default_environment_size,
+				NULL, NULL,
+				defaultenv, NULL, uncompress_err_stdout);
+
+		free(tmp);
+
+		if (ret) {
+			free(defaultenv);
+			return ret;
+		}
+	} else {
+		defaultenv = (void *)default_environment;
+	}
+
 
 	add_mem_device("defaultenv", (unsigned long)defaultenv,
 		       default_environment_uncompress_size,
@@ -88,13 +92,16 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
-void start_barebox (void)
+int (*barebox_main)(void);
+
+void __noreturn start_barebox(void)
 {
 	initcall_t *initcall;
 	int result;
-#ifdef CONFIG_COMMAND_SUPPORT
 	struct stat s;
-#endif
+
+	if (!IS_ENABLED(CONFIG_SHELL_NONE))
+		barebox_main = run_shell;
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {
@@ -107,28 +114,37 @@ void start_barebox (void)
 
 	debug("initcalls done\n");
 
-#ifdef CONFIG_ENV_HANDLING
-	if (envfs_load(default_environment_path, "/env", 0)) {
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-		printf("no valid environment found on %s. "
-			"Using default environment\n",
-			default_environment_path);
-		envfs_load("/dev/defaultenv", "/env", 0);
-#endif
-	}
-#endif
-#ifdef CONFIG_COMMAND_SUPPORT
-	printf("running /env/bin/init...\n");
+	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+		int ret;
 
-	if (!stat("/env/bin/init", &s)) {
-		run_command("source /env/bin/init", 0);
-	} else {
-		printf("not found\n");
+		ret = envfs_load(default_environment_path, "/env", 0);
+
+		if (ret && IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT)) {
+			printf("no valid environment found on %s. "
+				"Using default environment\n",
+				default_environment_path);
+			envfs_load("/dev/defaultenv", "/env", 0);
+		}
 	}
-#endif
+
+	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
+		printf("running /env/bin/init...\n");
+
+		if (!stat("/env/bin/init", &s)) {
+			run_command("source /env/bin/init", 0);
+		} else {
+			printf("not found\n");
+		}
+	}
+
+	if (!barebox_main) {
+		printf("No main function! aborting.\n");
+		hang();
+	}
+
 	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;)
-		run_shell();
+		barebox_main();
 
 	/* NOTREACHED - no way out of command loop except booting */
 }
@@ -150,4 +166,3 @@ void shutdown_barebox(void)
 	arch_shutdown();
 #endif
 }
-

@@ -113,7 +113,7 @@ static void tny_a9260_add_device_nand(void)
 
 #ifdef CONFIG_DRIVER_NET_MACB
 static struct at91_ether_platform_data macb_pdata = {
-	.is_rmii	= 1,
+	.phy_interface	= PHY_INTERFACE_MODE_RMII,
 	.phy_addr	= -1,
 };
 
@@ -160,16 +160,31 @@ static struct spi_board_info tny_a9g20_lpw_spi_devices[] = {
 	},
 };
 
-static int spi0_standard_cs[] = { AT91_PIN_PC11 };
-struct at91_spi_platform_data spi0_pdata = {
-	.chipselect = spi0_standard_cs,
-	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+static struct spi_board_info tny_a9263_spi_devices[] = {
+	{
+		.name = "mtd_dataflash",
+		.max_speed_hz = 15 * 1000 * 1000,
+		.bus_num = 0,
+		.chip_select = 0,
+	},
 };
 
-static int spi1_standard_cs[] = { AT91_PIN_PC3 };
-struct at91_spi_platform_data spi1_pdata = {
-	.chipselect = spi1_standard_cs,
-	.num_chipselect = ARRAY_SIZE(spi1_standard_cs),
+static int tny_a9263_spi0_standard_cs[] = { AT91_PIN_PA5 };
+struct at91_spi_platform_data tny_a9263_spi0_pdata = {
+	.chipselect = tny_a9263_spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(tny_a9263_spi0_standard_cs),
+};
+
+static int tny_a9g20_spi0_standard_cs[] = { AT91_PIN_PC11 };
+struct at91_spi_platform_data tny_a9g20_spi0_pdata = {
+	.chipselect = tny_a9g20_spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(tny_a9g20_spi0_standard_cs),
+};
+
+static int tny_a9g20_spi1_standard_cs[] = { AT91_PIN_PC3 };
+struct at91_spi_platform_data tny_a9g20_spi1_pdata = {
+	.chipselect = tny_a9g20_spi1_standard_cs,
+	.num_chipselect = ARRAY_SIZE(tny_a9g20_spi1_standard_cs),
 };
 
 static void __init ek_add_device_udc(void)
@@ -182,17 +197,19 @@ static void __init ek_add_device_udc(void)
 
 static void __init ek_add_device_spi(void)
 {
-	if (machine_is_tny_a9263())
-		return;
+	if (machine_is_tny_a9263()) {
+		spi_register_board_info(tny_a9263_spi_devices,
+			ARRAY_SIZE(tny_a9263_spi_devices));
+		at91_add_device_spi(0, &tny_a9263_spi0_pdata);
 
-	if (machine_is_tny_a9g20() && at91_is_low_power_sdram()) {
+	} else if (machine_is_tny_a9g20() && at91_is_low_power_sdram()) {
 		spi_register_board_info(tny_a9g20_lpw_spi_devices,
 			ARRAY_SIZE(tny_a9g20_lpw_spi_devices));
-		at91_add_device_spi(1, &spi1_pdata);
+		at91_add_device_spi(1, &tny_a9g20_spi1_pdata);
 	} else {
 		spi_register_board_info(tny_a9g20_spi_devices,
 			ARRAY_SIZE(tny_a9g20_spi_devices));
-		at91_add_device_spi(0, &spi0_pdata);
+		at91_add_device_spi(0, &tny_a9g20_spi0_pdata);
 	}
 }
 

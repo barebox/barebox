@@ -38,6 +38,8 @@
 #include <mach/at91sam9n12.h>
 #elif defined(CONFIG_ARCH_AT91SAM9X5)
 #include <mach/at91sam9x5.h>
+#elif defined(CONFIG_ARCH_SAMA5D3)
+#include <mach/sama5d3.h>
 #elif defined(CONFIG_ARCH_AT91CAP9)
 #include <mach/at91cap9.h>
 #elif defined(CONFIG_ARCH_AT91X40)
@@ -55,6 +57,12 @@
 #define AT91_CHIPSELECT_5	0x60000000
 #define AT91_CHIPSELECT_6	0x70000000
 #define AT91_CHIPSELECT_7	0x80000000
+
+#define SAMA5_CHIPSELECT_0	0x10000000
+#define SAMA5_DDRCS		0x20000000
+#define SAMA5_CHIPSELECT_1	0x40000000
+#define SAMA5_CHIPSELECT_2	0x50000000
+#define SAMA5_CHIPSELECT_3	0x60000000
 
 /* SDRAM */
 #ifdef CONFIG_DRAM_BASE

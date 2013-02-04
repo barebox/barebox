@@ -1,3 +1,4 @@
+obj-$(CONFIG_BOOTSTRAP)	+= bootstrap/
 obj-y			+= ctype.o
 obj-y			+= rbtree.o
 obj-y			+= display_options.o

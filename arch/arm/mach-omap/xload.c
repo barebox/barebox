@@ -1,6 +1,7 @@
 #include <common.h>
 #include <partition.h>
 #include <nand.h>
+#include <init.h>
 #include <driver.h>
 #include <linux/mtd/mtd.h>
 #include <fs.h>
@@ -171,7 +172,7 @@ enum omap_boot_src omap_bootsrc(void)
 /*
  * Replaces the default shell in xload configuration
  */
-int run_shell(void)
+static __noreturn int omap_xload(void)
 {
 	int (*func)(void) = NULL;
 
@@ -211,3 +212,11 @@ int run_shell(void)
 
 	while (1);
 }
+
+static int omap_set_xload(void)
+{
+	barebox_main = omap_xload;
+
+	return 0;
+}
+late_initcall(omap_set_xload);

@@ -5,6 +5,13 @@ export PATH
 
 . /env/config
 
+splash=/env/splash.png
+
+if [ -f ${splash} -a -e /dev/fb0 ]; then
+	splash -o ${splash}
+	fb0.enable=1
+fi
+
 menu -r -m boot
 menu -a -m boot -d "\e[1;36mWelcome on Barebox Boot Sequence\e[0m"
 menu -e -a -m boot -c 'menu_boot'			-d "boot (default)             "

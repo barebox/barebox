@@ -50,6 +50,10 @@
 #define		AT91_DDRSDRC_OCD	(1 << 12)		/* Off-Chip Driver [SAM9 Only] */
 #define		AT91_DDRSDRC_DQMS	(1 << 16)		/* Mask Data is Shared [SAM9 Only] */
 #define		AT91_DDRSDRC_ACTBST	(1 << 18)		/* Active Bank X to Burst Stop Read Access Bank Y [SAM9 Only] */
+#define		AT91_DDRSDRC_NB		(1 << 20)		/* Number of
+Banks [not SAM9G45] */
+#define			AT91_SDRAMC_NB_4	(0 << 20)
+#define			AT91_SDRAMC_NB_8	(1 << 20)
 
 #define AT91_DDRSDRC_T0PR	0x0C	/* Timing 0 Register */
 #define		AT91_DDRSDRC_TRAS	(0xf <<  0)		/* Active to Precharge delay */
@@ -130,5 +134,127 @@
 #define AT91_DDRSDRC_WPSR	0xE8	/* Write Protect Status Register [SAM9 Only] */
 #define		AT91_DDRSDRC_WPVS	(1 << 0)		/* Write protect violation status */
 #define		AT91_DDRSDRC_WPVSRC	(0xffff << 8)		/* Write protect violation source */
+
+#ifndef __ASSEMBLY__
+#include <mach/io.h>
+
+static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
+{
+	u32 cr;
+	u32 mdr;
+	u32 size;
+	bool is_sdram;
+
+	cr = __raw_readl(base + AT91_DDRSDRC_CR);
+	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
+
+	is_sdram = (mdr & AT91_DDRSDRC_MD) <= AT91_DDRSDRC_MD_LOW_POWER_SDR;
+
+	/* Formula:
+	 * size = bank << (col + row + 1);
+	 * if (bandwidth == 32 bits)
+	 *	size <<= 1;
+	 */
+	size = 1;
+	/* COL */
+	size += (cr & AT91_DDRSDRC_NC) + 8;
+	if (!is_sdram)
+		size ++;
+	/* ROW */
+	size += ((cr & AT91_DDRSDRC_NR) >> 2) + 11;
+	/* BANK */
+	if (is_nb)
+		size = ((cr & AT91_DDRSDRC_NB) ? 8 : 4) << size;
+	else
+		size = 4 << size;
+
+	/* bandwidth */
+	if (!(mdr & AT91_DDRSDRC_DBW))
+		size <<= 1;
+
+	return size;
+}
+
+#ifdef CONFIG_SOC_AT91SAM9G45
+static inline u32 at91sam9g45_get_ddram_size(int bank)
+{
+	switch (bank) {
+	case 0:
+		return at91_get_ddram_size(IOMEM(AT91SAM9G45_BASE_DDRSDRC0), false);
+	case 1:
+		return at91_get_ddram_size(IOMEM(AT91SAM9G45_BASE_DDRSDRC1), false);
+	default:
+		return 0;
+	}
+}
+#else
+static inline u32 at91sam9g45_get_ddram_size(int bank)
+{
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_SOC_AT91SAM9X5
+static inline u32 at91sam9x5_get_ddram_size(void)
+{
+	return at91_get_ddram_size(IOMEM(AT91SAM9X5_BASE_DDRSDRC0), true);
+}
+#else
+static inline u32 at91sam9x5_get_ddram_size(void)
+{
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_SOC_AT91SAM9N12
+static inline u32 at91sam9n12_get_ddram_size(void)
+{
+	return at91_get_ddram_size(IOMEM(AT91SAM9N12_BASE_DDRSDRC0), true);
+}
+#else
+static inline u32 at91sam9n12_get_ddram_size(void)
+{
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_SOC_SAMA5
+static inline u32 at91sama5_get_ddram_size(void)
+{
+	u32 cr;
+	u32 mdr;
+	u32 size;
+	void * __iomem base = IOMEM(SAMA5D3_BASE_MPDDRC);
+
+	cr = __raw_readl(base + AT91_DDRSDRC_CR);
+	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
+
+	/* Formula:
+	 * size = bank << (col + row + 1);
+	 * if (bandwidth == 32 bits)
+	 *	size <<= 1;
+	 */
+	size = 1;
+	/* COL */
+	size += (cr & AT91_DDRSDRC_NC) + 9;
+	/* ROW */
+	size += ((cr & AT91_DDRSDRC_NR) >> 2) + 11;
+	/* BANK */
+	size = ((cr & AT91_DDRSDRC_NB) ? 8 : 4) << size;
+
+	/* bandwidth */
+	if (!(mdr & AT91_DDRSDRC_DBW))
+		size <<= 1;
+
+	return size;
+}
+#else
+static inline u32 at91sama5_get_ddram_size(void)
+{
+	return 0;
+}
+#endif
+
+#endif
 
 #endif

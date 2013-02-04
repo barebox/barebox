@@ -37,9 +37,6 @@ config BLOCK
 config BLOCK_WRITE
 	bool
 
-config HAVE_NOSHELL
-	bool
-
 config FILETYPE
 	bool
 
@@ -352,12 +349,11 @@ choice
 		  simple shell. No if/then, no return values from commands, no loops
 
 	config SHELL_NONE
-		depends on HAVE_NOSHELL
 		bool "no shell (noninteractive build)"
 		help
 		  No shell at all. This means no shell is started and your board has
-		  to provide a run_shell() function which is started at the end of
-		  the barebox startup process.
+		  to overwrite the barebox_main function pointer which is then called
+		  at the end of the barebox startup process.
 endchoice
 
 config GLOB
@@ -407,7 +403,6 @@ config AUTO_COMPLETE
 config MENU
 	bool
 	prompt "Menu Framework"
-	depends on PROCESS_ESCAPE_SEQUENCE
 	help
 	  a menu framework that allow us to create list menu to simplify
 	  barebox and make it more user-frendly

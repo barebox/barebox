@@ -25,6 +25,9 @@
 
 void at91_add_device_sdram(u32 size)
 {
+	if (!size)
+		size = at91rm9200_get_sdram_size();
+
 	arm_add_mem_device("ram0", AT91_CHIPSELECT_1, size);
 	add_mem_device("sram0", AT91RM9200_SRAM_BASE, AT91RM9200_SRAM_SIZE,
 			IORESOURCE_MEM_WRITEABLE);
@@ -37,8 +40,17 @@ void at91_add_device_sdram(u32 size)
 #if defined(CONFIG_USB_OHCI)
 void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
 {
+	int i;
+
 	if (!data)
 		return;
+
+	/* Enable VBus control for UHP ports */
+	for (i = 0; i < data->ports; i++) {
+		if (gpio_is_valid(data->vbus_pin[i]))
+			at91_set_gpio_output(data->vbus_pin[i],
+					     data->vbus_pin_active_low[i]);
+	}
 
 	add_generic_device("at91_ohci", DEVICE_ID_DYNAMIC, NULL, AT91RM9200_UHP_BASE,
 			1024 * 1024, IORESOURCE_MEM, data);
@@ -91,7 +103,7 @@ void __init at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 	at91_set_A_periph(AT91_PIN_PA8, 0);	/* ETXEN */
 	at91_set_A_periph(AT91_PIN_PA7, 0);	/* ETXCK_EREFCK */
 
-	if (!data->is_rmii) {
+	if (data->phy_interface != PHY_INTERFACE_MODE_RMII) {
 		at91_set_B_periph(AT91_PIN_PB19, 0);	/* ERXCK */
 		at91_set_B_periph(AT91_PIN_PB18, 0);	/* ECOL */
 		at91_set_B_periph(AT91_PIN_PB17, 0);	/* ERXDV */

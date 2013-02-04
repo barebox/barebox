@@ -30,13 +30,14 @@
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <dm9000.h>
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <led.h>
+#include <spi/spi.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 22,
@@ -149,6 +150,86 @@ static void ek_add_device_udc(void)
 static void ek_add_device_udc(void) {}
 #endif
 
+/*
+ * LCD Controller
+ */
+#if defined(CONFIG_DRIVER_VIDEO_ATMEL)
+static int ek_gpio_request_output(int gpio, const char *name)
+{
+	int ret;
+
+	ret = gpio_request(gpio, name);
+	if (ret) {
+		pr_err("%s: can not request gpio %d (%d)\n", name, gpio, ret);
+		return ret;
+	}
+
+	ret = gpio_direction_output(gpio, 1);
+	if (ret)
+		pr_err("%s: can not configure gpio %d as output (%d)\n", name, gpio, ret);
+	return ret;
+}
+
+/* TFT */
+static struct fb_videomode at91_tft_vga_modes[] = {
+	{
+	        .name           = "TX09D50VM1CCA @ 60",
+		.refresh	= 60,
+		.xres		= 240,		.yres		= 320,
+		.pixclock	= KHZ2PICOS(4965),
+
+		.left_margin	= 1,		.right_margin	= 33,
+		.upper_margin	= 1,		.lower_margin	= 0,
+		.hsync_len	= 5,		.vsync_len	= 1,
+
+		.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+};
+
+#define AT91SAM9261_DEFAULT_TFT_LCDCON2	(ATMEL_LCDC_MEMOR_LITTLE \
+					| ATMEL_LCDC_DISTYPE_TFT    \
+					| ATMEL_LCDC_CLKMOD_ALWAYSACTIVE)
+
+static void at91_lcdc_tft_power_control(int on)
+{
+	if (on)
+		gpio_set_value(AT91_PIN_PA12, 0);	/* power up */
+	else
+		gpio_set_value(AT91_PIN_PA12, 1);	/* power down */
+}
+
+static struct atmel_lcdfb_platform_data ek_lcdc_data = {
+	.lcdcon_is_backlight		= true,
+	.default_bpp			= 16,
+	.default_dmacon			= ATMEL_LCDC_DMAEN,
+	.default_lcdcon2		= AT91SAM9261_DEFAULT_TFT_LCDCON2,
+	.guard_time			= 1,
+	.atmel_lcdfb_power_control	= at91_lcdc_tft_power_control,
+	.mode_list			= at91_tft_vga_modes,
+	.num_modes			= ARRAY_SIZE(at91_tft_vga_modes),
+};
+
+static int at91_lcdc_gpio(void)
+{
+	return ek_gpio_request_output(AT91_PIN_PA12, "lcdc_tft_power");
+}
+
+static void ek_add_device_lcdc(void)
+{
+	if (at91_lcdc_gpio())
+		return;
+
+	if (machine_is_at91sam9g10ek())
+		ek_lcdc_data.lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB;
+
+	at91_add_device_lcdc(&ek_lcdc_data);
+}
+
+#else
+static void ek_add_device_lcdc(void) {}
+#endif
+
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
@@ -229,6 +310,46 @@ static void ek_device_add_leds(void)
 static void ek_device_add_leds(void) {}
 #endif
 
+/*
+ * SPI related devices
+ */
+#if defined(CONFIG_DRIVER_SPI_ATMEL)
+/*
+ * SPI devices
+ */
+static struct spi_board_info ek_spi_devices[] = {
+	{	/* DataFlash chip */
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	},
+#if defined(CONFIG_MTD_AT91_DATAFLASH_CARD)
+	{	/* DataFlash card - jumper (J12) configurable to CS3 or CS0 */
+		.name		= "mtd_dataflash",
+		.chip_select	= 1,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	},
+#endif
+};
+
+static unsigned spi0_standard_cs[] = { AT91_PIN_PA3, AT91_PIN_PA6};
+static struct at91_spi_platform_data spi_pdata = {
+	.chipselect = spi0_standard_cs,
+	.num_chipselect = ARRAY_SIZE(spi0_standard_cs),
+};
+
+static void ek_add_device_spi(void)
+{
+	spi_register_board_info(ek_spi_devices,
+				ARRAY_SIZE(ek_spi_devices));
+	at91_add_device_spi(0, &spi_pdata);
+}
+#else
+static void ek_add_device_spi(void) {}
+#endif
+
 static int at91sam9261ek_mem_init(void)
 {
 	at91_add_device_sdram(0);
@@ -239,15 +360,28 @@ mem_initcall(at91sam9261ek_mem_init);
 
 static int at91sam9261ek_devices_init(void)
 {
+	u32 barebox_part_start;
+	u32 barebox_part_size;
 
 	ek_add_device_nand();
 	ek_add_device_dm9000();
 	ek_add_device_udc();
 	ek_add_device_buttons();
 	ek_device_add_leds();
+	ek_add_device_lcdc();
+	ek_add_device_spi();
 
-	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
-	devfs_add_partition("nand0", SZ_128K, SZ_256K, DEVFS_PARTITION_FIXED, "self_raw");
+	if (IS_ENABLED(CONFIG_AT91_LOAD_BAREBOX_SRAM)) {
+		barebox_part_start = 0;
+		barebox_part_size = SZ_256K + SZ_128K;
+		export_env_ull("borebox_first_stage", 1);
+	} else {
+		devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
+		barebox_part_start = SZ_128K;
+		barebox_part_size = SZ_256K;
+	}
+	devfs_add_partition("nand0", barebox_part_start, barebox_part_size,
+			    DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", SZ_256K + SZ_128K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");

@@ -1111,7 +1111,13 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
 	struct mci *mci = container_of(blk, struct mci, blk);
+	struct mci_host *host = mci->host;
 	int rc;
+
+	if (host->card_write_protected && host->card_write_protected(host)) {
+		dev_err(mci->mci_dev, "card write protected\n");
+		return -EPERM;
+	}
 
 	dev_dbg(mci->mci_dev, "%s: Write %d block(s), starting at %d\n",
 		__func__, num_blocks, block);
@@ -1352,6 +1358,11 @@ static int mci_card_probe(struct mci *mci)
 	struct mci_host *host = mci->host;
 	int rc, disknum;
 
+	if (host->card_present && !host->card_present(host)) {
+		dev_err(mci->mci_dev, "no card inserted\n");
+		return -ENODEV;
+	}
+
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci->mci_dev);
 	if (rc) {
@@ -1448,7 +1459,7 @@ static int mci_set_probe(struct device_d *mci_dev, struct param_d *param,
 
 	rc = mci_check_if_already_initialized(mci);
 	if (rc != 0)
-		return rc;
+		return 0;
 
 	probe = simple_strtoul(val, NULL, 0);
 	if (probe != 0) {
@@ -1499,34 +1510,18 @@ static int mci_probe(struct device_d *mci_dev)
 
 	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
-#ifdef CONFIG_MCI_STARTUP
-	/* if enabled, probe the attached card immediately */
-	rc = mci_card_probe(mci);
-	if (rc) {
-		/*
-		 * If it fails, add the 'probe' parameter to give the user
-		 * a chance to insert a card and try again. Note: This may fail
-		 * systems that rely on the MCI card for startup (for the
-		 * persistant environment for example)
-		 */
-		rc = add_mci_parameter(mci_dev);
-		if (rc != 0) {
-			dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
-			goto on_error;
-		}
-	}
-#endif
-
-#ifndef CONFIG_MCI_STARTUP
-	/* add params on demand */
 	rc = add_mci_parameter(mci_dev);
 	if (rc != 0) {
 		dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto on_error;
 	}
+
+#ifdef CONFIG_MCI_STARTUP
+	/* if enabled, probe the attached card immediately */
+	mci_card_probe(mci);
 #endif
 
-	return rc;
+	return 0;
 
 on_error:
 	free(mci);

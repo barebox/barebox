@@ -17,6 +17,7 @@
  */
 
 #include <common.h>
+#include <pbl.h>
 #include <init.h>
 #include <sizes.h>
 #include <string.h>
@@ -30,27 +31,9 @@ extern void *input_data_end;
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-#define STATIC static
-
-#ifdef CONFIG_IMAGE_COMPRESSION_LZO
-#include "../../../lib/decompress_unlzo.c"
-#endif
-
-#ifdef CONFIG_IMAGE_COMPRESSION_GZIP
-#include "../../../lib/decompress_inflate.c"
-#endif
-
 void pbl_main_entry(void);
 
 static unsigned long *ttb;
-
-static noinline void errorfn(char *error)
-{
-	PUTS_LL(error);
-	PUTC_LL('\n');
-
-	unreachable();
-}
 
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
@@ -60,10 +43,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 
 	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
 
-	decompress((void *)compressed_start,
-			len,
-			NULL, NULL,
-			(void *)TEXT_BASE, NULL, errorfn);
+	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 }
 
 void __section(.text_entry) pbl_main_entry(void)

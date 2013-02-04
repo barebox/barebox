@@ -24,6 +24,7 @@
 #include <common.h>
 #include <init.h>
 #include <sizes.h>
+#include <pbl.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
@@ -58,16 +59,6 @@ void __naked __bare_init reset(void)
 
 extern void *input_data;
 extern void *input_data_end;
-
-#define STATIC static
-
-#ifdef CONFIG_IMAGE_COMPRESSION_LZO
-#include "../../../lib/decompress_unlzo.c"
-#endif
-
-#ifdef CONFIG_IMAGE_COMPRESSION_GZIP
-#include "../../../lib/decompress_inflate.c"
-#endif
 
 static unsigned long *ttb;
 
@@ -127,11 +118,6 @@ static void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-static void noinline errorfn(char *error)
-{
-	while (1);
-}
-
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	void (*barebox)(void);
@@ -155,10 +141,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	else
 		barebox = (void *)TEXT_BASE;
 
-	decompress((void *)compressed_start,
-			len,
-			NULL, NULL,
-			(void *)TEXT_BASE, NULL, errorfn);
+	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 
 	if (use_mmu)
 		mmu_disable();

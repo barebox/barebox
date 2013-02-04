@@ -26,14 +26,16 @@
  */
 
 #include <common.h>
-#include <malloc.h>
 #include <linux/types.h>
 #include <errno.h>
 #include <fs.h>
 #include <xfuncs.h>
 
 #ifdef STATIC
+#include <linux/decompress/mm.h>
 #include "lzo/lzo1x_decompress.c"
+#else
+#include <malloc.h>
 #endif
 
 #include <lzo.h>

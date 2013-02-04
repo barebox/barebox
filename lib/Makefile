@@ -16,6 +16,7 @@ obj-y			+= libgen.o
 obj-y			+= stringlist.o
 obj-y			+= recursive_action.o
 obj-y			+= make_directory.o
+obj-y			+= math.o
 obj-$(CONFIG_BZLIB)	+= decompress_bunzip2.o
 obj-$(CONFIG_ZLIB)	+= decompress_inflate.o zlib_inflate/
 obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o

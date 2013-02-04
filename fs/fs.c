@@ -67,6 +67,25 @@ err_out:
 
 EXPORT_SYMBOL(read_file);
 
+int write_file(const char *filename, void *buf, size_t size)
+{
+	int fd, ret;
+
+	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT);
+	if (fd < 0)
+		return fd;
+
+	ret = write_full(fd, buf, size);
+
+	close(fd);
+
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+EXPORT_SYMBOL(write_file);
+
 char *mkmodestr(unsigned long mode, char *str)
 {
 	static const char *l = "xwr";

@@ -36,20 +36,28 @@
 #include <errno.h>
 #include <getopt.h>
 #include <init.h>
+#include <fcntl.h>
 
 static int do_oftree(int argc, char *argv[])
 {
-	struct fdt_header *fdt;
+	struct fdt_header *fdt = NULL;
+	void *fdt_free = NULL;
 	int size;
 	int opt;
 	char *file = NULL;
 	const char *node = "/";
 	int dump = 0;
 	int probe = 0;
+	int load = 0;
+	int save = 0;
+	int free_of = 0;
 	int ret;
 
-	while ((opt = getopt(argc, argv, "dpfn:")) > 0) {
+	while ((opt = getopt(argc, argv, "dpfn:ls")) > 0) {
 		switch (opt) {
+		case 'l':
+			load = 1;
+			break;
 		case 'd':
 			dump = 1;
 			break;
@@ -62,73 +70,121 @@ static int do_oftree(int argc, char *argv[])
 			}
 			break;
 		case 'f':
-			free(barebox_fdt);
-			barebox_fdt = NULL;
-			return 0;
+			free_of = 1;
+			break;
 		case 'n':
 			node = optarg;
 			break;
+		case 's':
+			save = 1;
+			break;
 		}
+	}
+
+	if (free_of) {
+		struct device_node *root = of_get_root_node();
+
+		if (root)
+			of_free(root);
+
+		return 0;
 	}
 
 	if (optind < argc)
 		file = argv[optind];
 
-	if (!dump && !probe)
+	if (!dump && !probe && !load && !save)
 		return COMMAND_ERROR_USAGE;
 
+	if (save) {
+		if (!file) {
+			printf("no file given\n");
+			ret = -ENOENT;
+
+			goto out;
+		}
+
+		fdt = of_get_fixed_tree(NULL);
+		if (!fdt) {
+			printf("no devicetree available\n");
+			ret = -EINVAL;
+
+			goto out;
+		}
+
+		ret = write_file(file, fdt, fdt_totalsize(fdt));
+
+		goto out;
+	}
+
+	if (file) {
+		fdt = read_file(file, &size);
+		if (!fdt) {
+			printf("unable to read %s\n", file);
+			return 1;
+		}
+
+		fdt_free = fdt;
+	}
+
+	if (load) {
+		if (!fdt) {
+			printf("no fdt given\n");
+			ret = -ENOENT;
+
+			goto out;
+		}
+
+		ret = of_unflatten_dtb(fdt);
+		if (ret) {
+			printf("parse oftree: %s\n", strerror(-ret));
+			goto out;
+		}
+	}
+
 	if (dump) {
-		if (file) {
-			fdt = read_file(file, &size);
-			if (!fdt) {
-				printf("unable to read %s\n", file);
-				return 1;
+		if (fdt) {
+			ret = fdt_print(fdt, node);
+		} else {
+			struct device_node *n = of_find_node_by_path(node);
+
+			if (!n) {
+				ret = -ENOENT;
+				goto out;
 			}
 
-			fdt_print(fdt, node);
-			free(fdt);
-		} else {
-			if (barebox_fdt) {
-				fdt_print(barebox_fdt, node);
-				return 0;
-			} else {
-				return 1;
-			}
+			of_print_nodes(n, 0);
+
+			ret = 0;
 		}
-		return 0;
+
+		goto out;
 	}
 
 	if (probe) {
-		if (!file)
-			return COMMAND_ERROR_USAGE;
-
-		fdt = read_file(file, &size);
-		if (!fdt) {
-			perror("open");
-			return 1;
-		}
-
-		ret = of_parse_dtb(fdt);
-		if (ret) {
-			printf("parse oftree: %s\n", strerror(-ret));
-			return 1;
-		}
-
-		of_probe();
+		ret = of_probe();
+		if (ret)
+			goto out;
 	}
 
-	return 0;
+	ret = 0;
+out:
+	free(fdt_free);
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(oftree)
-BAREBOX_CMD_HELP_USAGE("oftree [OPTIONS]\n")
-BAREBOX_CMD_HELP_OPT  ("-p <FILE>",  "probe devices in oftree from <file>\n")
-BAREBOX_CMD_HELP_OPT  ("-d [FILE]",  "dump oftree from [FILE] or the parsed tree if no file is given\n")
-BAREBOX_CMD_HELP_OPT  ("-f",  "free stored oftree\n")
+BAREBOX_CMD_HELP_USAGE("oftree [OPTIONS] [DTB]\n")
+BAREBOX_CMD_HELP_OPT  ("-l",  "Load [DTB] to internal devicetree\n")
+BAREBOX_CMD_HELP_OPT  ("-p",  "probe devices from stored devicetree\n")
+BAREBOX_CMD_HELP_OPT  ("-d",  "dump oftree from [DTB] or the parsed tree if no dtb is given\n")
+BAREBOX_CMD_HELP_OPT  ("-f",  "free stored devicetree\n")
+BAREBOX_CMD_HELP_OPT  ("-n <node>",  "specify root devicenode to dump for -d\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
-	.usage		= "handle oftrees",
+	.usage		= "handle devicetrees",
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

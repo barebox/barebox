@@ -138,6 +138,9 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 	u32 end;
 
+	if (data->oftree)
+		return -ENXIO;
+
 	header = &__header;
 	ret = read(fd, header, sizeof(*header));
 	if (ret < sizeof(*header))
@@ -401,12 +404,6 @@ static int do_bootm_aimage(struct image_data *data)
 
 	if (!getenv("aimage_noverwrite_tags"))
 		armlinux_set_bootparams((void*)header->tags_addr);
-
-	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree) {
-		ret = of_fix_tree(data->oftree);
-		if (ret)
-			goto err_out;
-	}
 
 	cmp = &header->second_stage;
 	if (cmp->size) {

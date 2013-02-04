@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>
+#include <sizes.h>
 #include <linux/ctype.h>
 
 /**
@@ -138,6 +139,12 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 void of_alias_scan(void)
 {
 	struct property *pp;
+	struct alias_prop *app, *tmp;
+
+	list_for_each_entry_safe(app, tmp, &aliases_lookup, link)
+		free(app);
+
+	INIT_LIST_HEAD(&aliases_lookup);
 
 	of_aliases = of_find_node_by_path("/aliases");
 	if (!of_aliases)
@@ -485,10 +492,14 @@ struct device_node *of_find_node_by_path(const char *path)
 {
 	struct device_node *np;
 
+	if (!strcmp(path, "/"))
+		return root_node;
+
 	list_for_each_entry(np, &allnodes, list) {
 		if (np->full_name && (strcmp(np->full_name, path) == 0))
 			return np;
 	}
+
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_node_by_path);
@@ -574,22 +585,37 @@ void of_print_nodes(struct device_node *node, int indent)
 	printf("};\n");
 }
 
-static struct device_node *new_device_node(struct device_node *parent)
+struct device_node *of_new_node(struct device_node *parent, const char *name)
 {
 	struct device_node *node;
+
+	if (!parent && root_node)
+		return NULL;
 
 	node = xzalloc(sizeof(*node));
 	node->parent = parent;
 	if (parent)
 		list_add_tail(&node->parent_list, &parent->children);
+	else
+		root_node = node;
 
 	INIT_LIST_HEAD(&node->children);
 	INIT_LIST_HEAD(&node->properties);
 
+	if (parent) {
+		node->name = xstrdup(name);
+		node->full_name = asprintf("%s/%s", node->parent->full_name, name);
+	} else {
+		node->name = xstrdup("");
+		node->full_name = xstrdup("");
+	}
+
+	list_add_tail(&node->list, &allnodes);
+
 	return node;
 }
 
-static struct property *new_property(struct device_node *node, const char *name,
+struct property *of_new_property(struct device_node *node, const char *name,
 		const void *data, int len)
 {
 	struct property *prop;
@@ -604,6 +630,15 @@ static struct property *new_property(struct device_node *node, const char *name,
 	list_add_tail(&prop->list, &node->properties);
 
 	return prop;
+}
+
+void of_delete_property(struct property *pp)
+{
+	list_del(&pp->list);
+
+	free(pp->name);
+	free(pp->value);
+	free(pp);
 }
 
 static struct device_d *add_of_device(struct device_node *node)
@@ -754,6 +789,8 @@ void of_free(struct device_node *node)
 	if (!node)
 		return;
 
+	list_del(&node->list);
+
 	list_for_each_entry_safe(p, pt, &node->properties, list) {
 		list_del(&p->list);
 		free(p->name);
@@ -776,6 +813,11 @@ void of_free(struct device_node *node)
 	free(node->name);
 	free(node->full_name);
 	free(node);
+
+	if (node == root_node)
+		root_node = NULL;
+
+	of_alias_scan();
 }
 
 static void __of_probe(struct device_node *node)
@@ -812,11 +854,32 @@ int of_probe(void)
 	return 0;
 }
 
+static struct device_node *of_find_child(struct device_node *node, const char *name)
+{
+	struct device_node *_n;
+
+	if (!root_node)
+		return NULL;
+
+	if (!node && !*name)
+		return root_node;
+
+	if (!node)
+		node = root_node;
+
+	list_for_each_entry(_n, &node->children, parent_list) {
+		if (!strcmp(_n->name, name))
+			return _n;
+	}
+
+	return NULL;
+}
+
 /*
  * Parse a flat device tree binary blob and store it in the barebox
  * internal tree format,
  */
-int of_parse_dtb(struct fdt_header *fdt)
+int of_unflatten_dtb(struct fdt_header *fdt)
 {
 	const void *nodep;	/* property node pointer */
 	int  nodeoffset;	/* node offset from libfdt */
@@ -827,12 +890,8 @@ int of_parse_dtb(struct fdt_header *fdt)
 	const struct fdt_property *fdt_prop;
 	const char *pathp;
 	int depth = 10000;
-	struct device_node *node = NULL;
-	char buf[1024];
-	int ret;
-
-	if (root_node)
-		return -EBUSY;
+	struct device_node *node = NULL, *n;
+	struct property *p;
 
 	nodeoffset = fdt_path_offset(fdt, "/");
 	if (nodeoffset < 0) {
@@ -853,16 +912,12 @@ int of_parse_dtb(struct fdt_header *fdt)
 			if (pathp == NULL)
 				pathp = "/* NULL pointer error */";
 
-			ret = fdt_get_path(fdt, nodeoffset, buf, 1024);
-			if (ret)
-				return -EINVAL;
-
-			node = new_device_node(node);
-			if (!node->parent)
-				root_node = node;
-			node->full_name = xstrdup(buf);
-			node->name = xstrdup(pathp);
-			list_add_tail(&node->list, &allnodes);
+			n = of_find_child(node, pathp);
+			if (n) {
+				node = n;
+			} else {
+				node = of_new_node(node, pathp);
+			}
 			break;
 		case FDT_END_NODE:
 			node = node->parent;
@@ -874,7 +929,15 @@ int of_parse_dtb(struct fdt_header *fdt)
 					fdt32_to_cpu(fdt_prop->nameoff));
 			len      = fdt32_to_cpu(fdt_prop->len);
 			nodep    = fdt_prop->data;
-			new_property(node, pathp, nodep, len);
+
+			p = of_find_property(node, pathp);
+			if (p) {
+				free(p->value);
+				p->value = xzalloc(len);
+				memcpy(p->value, nodep, len);
+			} else {
+				of_new_property(node, pathp, nodep, len);
+			}
 			break;
 		case FDT_NOP:
 			break;
@@ -890,6 +953,71 @@ int of_parse_dtb(struct fdt_header *fdt)
 	}
 
 	return 0;
+}
+
+static int __of_flatten_dtb(void *fdt, struct device_node *node)
+{
+	struct property *p;
+	struct device_node *n;
+	int ret;
+
+	ret = fdt_begin_node(fdt, node->name);
+	if (ret)
+		return ret;
+
+	list_for_each_entry(p, &node->properties, list) {
+		ret = fdt_property(fdt, p->name, p->value, p->length);
+		if (ret)
+			return ret;
+	}
+
+	list_for_each_entry(n, &node->children, parent_list) {
+		ret = __of_flatten_dtb(fdt, n);
+		if (ret)
+			return ret;
+	}
+
+	ret = fdt_end_node(fdt);
+
+	return ret;
+}
+
+#define DTB_SIZE	SZ_128K
+
+void *of_flatten_dtb(void)
+{
+	void *fdt;
+	int ret;
+
+	if (!root_node)
+		return NULL;
+
+	fdt = malloc(DTB_SIZE);
+	if (!fdt)
+		return NULL;
+
+	memset(fdt, 0, DTB_SIZE);
+
+	ret = fdt_create(fdt, DTB_SIZE);
+	if (ret)
+		goto out_free;
+
+	ret = fdt_finish_reservemap(fdt);
+	if (ret)
+		goto out_free;
+
+	ret = __of_flatten_dtb(fdt, root_node);
+	if (ret)
+		goto out_free;
+
+	fdt_finish(fdt);
+
+	return fdt;
+
+out_free:
+	free(fdt);
+
+	return NULL;
 }
 
 int of_device_is_stdout_path(struct device_d *dev)

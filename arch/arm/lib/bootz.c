@@ -109,7 +109,7 @@ static int do_bootz(int argc, char *argv[])
 
 	printf("loaded zImage from %s with size %d\n", argv[1], end);
 #ifdef CONFIG_OFTREE
-	oftree = of_get_fixed_tree();
+	oftree = of_get_fixed_tree(NULL);
 #endif
 
 	start_linux(zimage, swap, 0, 0, oftree);

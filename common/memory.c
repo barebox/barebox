@@ -75,6 +75,10 @@ static int mem_malloc_resource(void)
 			(unsigned long)&_stext,
 			(unsigned long)&_etext -
 			(unsigned long)&_stext);
+	request_sdram_region("barebox data",
+			(unsigned long)&_sdata,
+			(unsigned long)&_edata -
+			(unsigned long)&_sdata);
 	request_sdram_region("bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -

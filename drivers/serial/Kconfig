@@ -1,4 +1,5 @@
 menu "serial drivers"
+	depends on !CONSOLE_NONE
 
 config DRIVER_SERIAL_ARM_DCC
 	depends on ARM

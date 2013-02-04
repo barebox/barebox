@@ -15,20 +15,15 @@ global editcmd=sedit
 
 /env/config
 
-if [ ${global.allow_color} = "true" ]; then
-        export PS1="\e[1;32mbarebox@\e[1;36m\h:\w\e[0m "
-else
-        export PS1="barebox@\h:\w "
-fi
-
 if [ -e /env/menu ]; then
 	echo -e -n "\nHit m for menu or any other key to stop autoboot: "
 else
 	echo -e -n "\nHit any key to stop autoboot: "
 fi
 
-timeout -a $global.autoboot_timeout -v key
-autoboot="$?"
+# allow to stop the boot before execute the /env/init/*
+# but without waiting
+timeout -s -a -v key 0
 
 if [ "${key}" = "q" ]; then
 	exit
@@ -37,6 +32,13 @@ fi
 for i in /env/init/*; do
 	. $i
 done
+
+timeout -a $global.autoboot_timeout -v key
+autoboot="$?"
+
+if [ "${key}" = "q" ]; then
+	exit
+fi
 
 if [ "$autoboot" = 0 ]; then
 	boot

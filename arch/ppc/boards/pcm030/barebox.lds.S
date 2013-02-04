@@ -69,6 +69,7 @@ SECTIONS
   . = (. + 0x0FFF) & 0xFFFFF000;
   _etext = .;
   PROVIDE (erotext = .);
+  _sdata = .;
   .reloc   :
   {
     *(.got)

@@ -3,6 +3,7 @@
 
 extern char _text[], _stext[], _etext[];
 extern char __bss_start[], __bss_stop[];
+extern char _sdata[], _edata[];
 extern char __bare_init_start[], __bare_init_end[];
 extern char _end[];
 extern void *_barebox_image_size;

@@ -267,6 +267,7 @@ endmenu
 menu "memory"
 
 config CMD_LOADB
+	depends on !CONSOLE_NONE
 	select CRC16
 	tristate
 	prompt "loadb"
@@ -274,10 +275,12 @@ config CMD_LOADB
 config CMD_LOADY
 	select CRC16
 	select XYMODEM
+	depends on !CONSOLE_NONE
 	tristate
 	prompt "loady"
 
 config CMD_LOADS
+	depends on !CONSOLE_NONE
 	tristate
 	prompt "loads"
 

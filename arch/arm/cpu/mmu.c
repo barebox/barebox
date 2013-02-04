@@ -73,10 +73,24 @@ extern int arm_architecture;
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
 
-static uint32_t PTE_FLAGS_CACHED;
-static uint32_t PTE_FLAGS_UNCACHED;
+/*
+ * PTE flags to set cached and uncached areas.
+ * This will be determined at runtime.
+ */
+static uint32_t pte_flags_cached;
+static uint32_t pte_flags_uncached;
 
 #define PTE_MASK ((1 << 12) - 1)
+
+uint32_t mmu_get_pte_cached_flags()
+{
+	return pte_flags_cached;
+}
+
+uint32_t mmu_get_pte_uncached_flags()
+{
+	return pte_flags_uncached;
+}
 
 /*
  * Create a second level translation table for the given virtual address.
@@ -93,7 +107,7 @@ static u32 *arm_create_pte(unsigned long virt)
 	ttb[virt >> 20] = (unsigned long)table | PMD_TYPE_TABLE;
 
 	for (i = 0; i < 256; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | PTE_FLAGS_UNCACHED;
+		table[i] = virt | PTE_TYPE_SMALL | pte_flags_uncached;
 		virt += PAGE_SIZE;
 	}
 
@@ -114,7 +128,7 @@ static u32 *find_pte(unsigned long adr)
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
-static void remap_range(void *_start, size_t size, uint32_t flags)
+void remap_range(void *_start, size_t size, uint32_t flags)
 {
 	unsigned long start = (unsigned long)_start;
 	u32 *p;
@@ -176,7 +190,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 
 	for (i = 0; i < num_ptes; i++) {
 		ptes[i] = (phys + i * 4096) | PTE_TYPE_SMALL |
-			PTE_FLAGS_CACHED;
+			pte_flags_cached;
 	}
 
 	pte = 0;
@@ -238,9 +252,10 @@ static void vectors_init(void)
 	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
 
 	if (cr & CR_V)
-		exc[256 - 16] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
+		exc[256 - 16] = (u32)vectors | PTE_TYPE_SMALL |
+			pte_flags_cached;
 	else
-		exc[0] = (u32)vectors | PTE_TYPE_SMALL | PTE_FLAGS_CACHED;
+		exc[0] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
 }
 
 /*
@@ -254,11 +269,11 @@ static int mmu_init(void)
 	arm_set_cache_functions();
 
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-		PTE_FLAGS_CACHED = PTE_FLAGS_CACHED_V7;
-		PTE_FLAGS_UNCACHED = PTE_FLAGS_UNCACHED_V7;
+		pte_flags_cached = PTE_FLAGS_CACHED_V7;
+		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
 	} else {
-		PTE_FLAGS_CACHED = PTE_FLAGS_CACHED_V4;
-		PTE_FLAGS_UNCACHED = PTE_FLAGS_UNCACHED_V4;
+		pte_flags_cached = PTE_FLAGS_CACHED_V4;
+		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
 	ttb = memalign(0x10000, 0x4000);
@@ -315,8 +330,6 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-#define PAGE_ALIGN(s) (((s) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
-
 void *dma_alloc_coherent(size_t size)
 {
 	void *ret;
@@ -326,7 +339,7 @@ void *dma_alloc_coherent(size_t size)
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
-	remap_range(ret, size, PTE_FLAGS_UNCACHED);
+	remap_range(ret, size, pte_flags_uncached);
 
 	return ret;
 }
@@ -343,7 +356,7 @@ void *phys_to_virt(unsigned long phys)
 
 void dma_free_coherent(void *mem, size_t size)
 {
-	remap_range(mem, size, PTE_FLAGS_CACHED);
+	remap_range(mem, size, pte_flags_cached);
 
 	free(mem);
 }

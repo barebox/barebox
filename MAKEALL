@@ -56,6 +56,7 @@ usage() {
 	echo "JOBS      -j      jobs"
 	echo "BUILDDIR  -O      build dir"
 	echo "LOGDIR    -l      log dir"
+	echo "REGEX     -e      regex"
 	echo ""
 }
 
@@ -152,8 +153,9 @@ do_build_target() {
 
 do_build() {
 	local arch=$1
+	local regex=$2
 
-	for i in arch/${arch}/configs/*_defconfig
+	find arch/${arch}/configs -name "${regex}_defconfig" | while read i
 	do
 		local target=$(basename $i)
 
@@ -178,7 +180,7 @@ do_build_all() {
 	return $build_target
 }
 
-while getopts "hc:j:O:l:a:" Option
+while getopts "hc:j:O:l:a:e:" Option
 do
 case $Option in
 	a )
@@ -195,6 +197,9 @@ case $Option in
 		;;
 	O )
 		BUILDDIR=${OPTARG}
+		;;
+	e )
+		REGEX=${OPTARG}
 		;;
 	h )
 		usage
@@ -241,6 +246,11 @@ fi
 
 [ -d "${LOGDIR}" ] || mkdir ${LOGDIR} || exit 1
 
+if [ ! "${REGEX}" ]
+then
+	REGEX="*"
+fi
+
 if [ ! "${CONFIG}" ] && [ ! "${CROSS_COMPILE+set}" ]
 then
 	echo "You need to specify a CONFIG or a CROSS_COMPILE"
@@ -262,7 +272,7 @@ fi
 
 if [ $# -eq 0 ]
 then
-	do_build ${ARCH}
+	do_build ${ARCH} "${REGEX}"
 else
 	do_build_target ${ARCH} $1
 fi

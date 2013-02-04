@@ -41,7 +41,10 @@ void dma_flush_range(unsigned long, unsigned long);
 void dma_inv_range(unsigned long, unsigned long);
 unsigned long virt_to_phys(void *virt);
 void *phys_to_virt(unsigned long phys);
+void remap_range(void *_start, size_t size, uint32_t flags);
 void *map_io_sections(unsigned long physaddr, void *start, size_t size);
+uint32_t mmu_get_pte_cached_flags(void);
+uint32_t mmu_get_pte_uncached_flags(void);
 
 #else
 static inline void *dma_alloc_coherent(size_t size)
@@ -76,9 +79,23 @@ static inline void dma_inv_range(unsigned long s, unsigned long e)
 {
 }
 
+static inline void remap_range(void *_start, size_t size, uint32_t flags)
+{
+}
+
 static inline void *map_io_sections(unsigned long phys, void *start, size_t size)
 {
 	return (void *)phys;
+}
+
+static inline uint32_t mmu_get_pte_cached_flags(void)
+{
+	return 0;
+}
+
+static inline uint32_t mmu_get_pte_uncached_flags(void)
+{
+	return 0;
 }
 
 #endif

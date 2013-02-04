@@ -44,6 +44,7 @@ SECTIONS
 	.rodata : { *(.rodata*) }
 
 	_etext = .;			/* End of text and rodata section */
+	_sdata = .;
 
 	. = ALIGN(4);
 	.data : { *(.data*) }
@@ -68,6 +69,7 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS }
 	__usymtab_end = .;
 
+	_edata = .;
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }

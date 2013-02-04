@@ -84,7 +84,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
-		board_init_lowlevel_return();
+		imx31_barebox_entry(0);
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define ROWS0	ESDCTL0_ROW13
@@ -127,10 +127,10 @@ void __bare_init __naked reset(void)
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* setup a stack to be able to call imx31_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
 
 	imx31_barebox_boot_nand_external();
 #else
-	board_init_lowlevel_return();
+	imx31_barebox_entry(0);
 #endif
 }

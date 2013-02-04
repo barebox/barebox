@@ -276,7 +276,14 @@ static int mmu_init(void)
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
-	ttb = memalign(0x10000, 0x4000);
+	if (get_cr() & CR_M) {
+		asm volatile ("mrc  p15,0,%0,c2,c0,0" : "=r"(ttb));
+
+		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
+			pr_err("Error: Can't request SDRAM region for ttb\n");
+	} else {
+		ttb = memalign(0x10000, 0x4000);
+	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
 

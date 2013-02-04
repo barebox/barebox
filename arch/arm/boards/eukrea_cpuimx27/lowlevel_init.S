@@ -119,15 +119,16 @@ reset:
 	cmp	pc, #0xc0000000
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	imx27_barebox_entry
 1:
 	sdram_init
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	ldr	sp, =STACK_BASE + STACK_SIZE - 12	/* Setup a temporary stack in SDRAM */
+	/* Setup a temporary stack in SDRAM */
+	ldr	sp, =MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 4;
 
 	b	imx27_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	b	board_init_lowlevel_return
+	b	imx27_barebox_entry

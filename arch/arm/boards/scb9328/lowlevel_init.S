@@ -151,7 +151,7 @@ reset:
 	cmp	pc, #0x09000000
 	bhi	1f
 
-	b board_init_lowlevel_return
+	b imx1_barebox_entry
 
 1:
 
@@ -181,4 +181,4 @@ reset:
 	/* Set to Normal Mode CAS 2 */
 	writel(0x810a8200, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
 
-	b board_init_lowlevel_return
+	b imx1_barebox_entry

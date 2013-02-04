@@ -77,7 +77,7 @@ reset:
 	cmp	pc, #0x90000000
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	imx25_barebox_entry
 
 1:
 	ldr r0, ESDCTL_BASE_W
@@ -98,13 +98,14 @@ reset:
 	str r3, [r0, #0x30]
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	ldr	sp, =STACK_BASE + STACK_SIZE - 12 /* Setup a temporary stack in SDRAM */
+	/* Setup a temporary stack in SRAM */
+	ldr	sp, =MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 4
 
 	b	imx25_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	b	board_init_lowlevel_return
+	b	imx25_barebox_entry
 
 /*
  * r0: control base, r1: ram bank base

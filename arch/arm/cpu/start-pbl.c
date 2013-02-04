@@ -32,7 +32,7 @@
 #include <asm/pgtable.h>
 #include <asm/cache.h>
 
-#include "mmu.h"
+#include "mmu-early.h"
 
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
@@ -45,123 +45,18 @@ void __naked __section(.text_head_entry) pbl_start(void)
 	barebox_arm_head();
 }
 
-/*
- * The actual reset vector. This code is position independent and usually
- * does not run at the address it's linked at.
- */
-#ifndef CONFIG_MACH_DO_LOWLEVEL_INIT
-void __naked __bare_init reset(void)
-{
-	common_reset();
-	board_init_lowlevel_return();
-}
-#endif
-
 extern void *input_data;
 extern void *input_data_end;
 
-static unsigned long *ttb;
-
-static void create_sections(unsigned long addr, int size_m, unsigned int flags)
-{
-	int i;
-
-	addr >>= 20;
-
-	for (i = size_m; i > 0; i--, addr++)
-		ttb[addr] = (addr << 20) | flags;
-}
-
-static void map_cachable(unsigned long start, unsigned long size)
-{
-	start &= ~(SZ_1M - 1);
-	size = (size + (SZ_1M - 1)) & ~(SZ_1M - 1);
-
-	create_sections(start, size >> 20, PMD_SECT_AP_WRITE |
-			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);
-}
-
-static void mmu_enable(unsigned long compressed_start, unsigned int len)
-{
-	int i;
-
-	/* Set the ttb register */
-	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
-
-	/* Set the Domain Access Control Register */
-	i = 0x3;
-	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
-
-	create_sections(0, 4096, PMD_SECT_AP_WRITE |
-			PMD_SECT_AP_READ | PMD_TYPE_SECT);
-	/*
-	 * Setup all regions we need cacheable, namely:
-	 * - the stack
-	 * - the decompressor code
-	 * - the compressed image
-	 * - the uncompressed image
-	 * - the early malloc space
-	 */
-	map_cachable(STACK_BASE, STACK_SIZE);
-	map_cachable((unsigned long)&_text,
-			(unsigned long)&_end - (unsigned long)&_text);
-	map_cachable((unsigned long)compressed_start, len);
-	map_cachable(TEXT_BASE, len * 4);
-	map_cachable(free_mem_ptr, free_mem_end_ptr - free_mem_ptr);
-
-	__mmu_cache_on();
-}
-
-static void mmu_disable(void)
-{
-	__mmu_cache_flush();
-	__mmu_cache_off();
-}
-
-static void barebox_uncompress(void *compressed_start, unsigned int len)
-{
-	void (*barebox)(void);
-	/*
-	 * remap_cached currently does not work rendering the feature
-	 * of enabling the MMU in the PBL useless. disable for now.
-	 */
-	int use_mmu = 0;
-
-	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
-	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;
-	free_mem_end_ptr = free_mem_ptr + SZ_128K;
-
-	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
-
-	if (use_mmu)
-		mmu_enable((unsigned long)compressed_start, len);
-
-	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
-		barebox = (void *)(TEXT_BASE + 1);
-	else
-		barebox = (void *)TEXT_BASE;
-
-	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
-
-	if (use_mmu)
-		mmu_disable();
-
-	flush_icache();
-
-	barebox();
-}
-
-/*
- * Board code can jump here by either returning from board_init_lowlevel
- * or by calling this function directly.
- */
-void __naked board_init_lowlevel_return(void)
+static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
+		uint32_t memsize, uint32_t boarddata)
 {
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
+	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
+	uint32_t endmem = membase + memsize;
 
-	/* Setup the stack */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+	endmem -= STACK_SIZE; /* stack */
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
@@ -181,5 +76,49 @@ void __naked board_init_lowlevel_return(void)
 
 	setup_c();
 
-	barebox_uncompress((void *)pg_start, pg_len);
+	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
+		endmem &= ~0x3fff;
+		endmem -= SZ_16K; /* ttb */
+		mmu_early_enable(membase, memsize, endmem);
+	}
+
+	endmem -= SZ_128K; /* early malloc */
+	free_mem_ptr = endmem;
+	free_mem_end_ptr = free_mem_ptr + SZ_128K;
+
+	pbl_barebox_uncompress((void*)TEXT_BASE, (void *)pg_start, pg_len);
+
+	flush_icache();
+
+	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
+		barebox = (void *)(TEXT_BASE + 1);
+	else
+		barebox = (void *)TEXT_BASE;
+
+	barebox(membase, memsize, boarddata);
+}
+
+/*
+ * Main ARM entry point in the compressed image. Call this with the memory
+ * region you can spare for barebox. This doesn't necessarily have to be the
+ * full SDRAM. The currently running binary can be inside or outside of this
+ * region. TEXT_BASE can be inside or outside of this region. boarddata will
+ * be preserved and can be accessed later with barebox_arm_boarddata().
+ *
+ * -> membase + memsize
+ *   STACK_SIZE              - stack
+ *   16KiB, aligned to 16KiB - First level page table if early MMU support
+ *                             is enabled
+ *   128KiB                  - early memory space
+ * -> maximum end of barebox binary
+ *
+ * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
+ * be fine.
+ */
+void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
+		uint32_t boarddata)
+{
+	arm_setup_stack(membase + memsize - 16);
+
+	__barebox_arm_entry(membase, memsize, boarddata);
 }

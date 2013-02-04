@@ -1,5 +1,7 @@
 #include <io.h>
-#include <init.h>
+#include <sizes.h>
+#include <asm/barebox-arm-head.h>
+#include <asm/barebox-arm.h>
 #include <mach/control.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap3-mux.h>
@@ -164,4 +166,14 @@ static int beagle_board_init(void)
 
 	return 0;
 }
-pure_initcall(beagle_board_init);
+
+void __naked reset(void)
+{
+	omap3_invalidate_dcache();
+
+	common_reset();
+
+	beagle_board_init();
+
+	barebox_arm_entry(0x80000000, SZ_128M, 0);
+}

@@ -18,6 +18,7 @@
  */
 #include <common.h>
 #include <io.h>
+#include <sizes.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
@@ -80,8 +81,6 @@ static void noinline pcm049_init_lowlevel(void)
 	sr32(0x4A30a31C, 16, 4, 0x0); /* set divisor to 1 */
 	sr32(0x4A30a110, 0, 1, 0x1);  /* set the clock source to active */
 	sr32(0x4A30a110, 2, 2, 0x3);  /* enable clocks */
-
-	board_init_lowlevel_return();
 }
 
 void reset(void)
@@ -89,9 +88,11 @@ void reset(void)
 	common_reset();
 
 	if (get_pc() > 0x80000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	arm_setup_stack(0x4030d000);
 
 	pcm049_init_lowlevel();
+out:
+	barebox_arm_entry(0x80000000, SZ_512M, 0);
 }

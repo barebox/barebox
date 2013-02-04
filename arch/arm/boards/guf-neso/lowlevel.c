@@ -48,7 +48,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0xa0000000 && r < 0xb0000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	/*
 	 * DDR on CSD0
@@ -88,10 +88,10 @@ void __bare_init __naked reset(void)
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* setup a stack to be able to call imx27_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
 
 	imx27_barebox_boot_nand_external();
-#else
-	board_init_lowlevel_return();
 #endif
+out:
+	imx27_barebox_entry(0);
 }

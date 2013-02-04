@@ -3,7 +3,6 @@
 
 #include <linux/mtd/mtd.h>
 
-void imx_nand_load_image(void *dest, int size);
 void imx21_barebox_boot_nand_external(void);
 void imx25_barebox_boot_nand_external(void);
 void imx27_barebox_boot_nand_external(void);

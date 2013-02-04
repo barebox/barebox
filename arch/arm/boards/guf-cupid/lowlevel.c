@@ -234,7 +234,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r0 = get_pc();
 	if (r0 > 0x80000000 && r0 < 0x90000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	/* Configure drive strength */
 
@@ -314,10 +314,10 @@ void __bare_init __naked reset(void)
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
 	/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
 
 	imx35_barebox_boot_nand_external();
-#else
-	board_init_lowlevel_return();
 #endif
+out:
+	imx35_barebox_entry(0);
 }

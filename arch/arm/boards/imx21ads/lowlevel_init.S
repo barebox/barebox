@@ -14,6 +14,7 @@
  */
 
 #include <config.h>
+#include <sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx21-regs.h>
 #include <asm/barebox-arm-head.h>
@@ -75,7 +76,7 @@ reset:
 	cmp	pc, #0xc8000000
 	bhi	1f
 
-	b	board_init_lowlevel_return
+	b	ret
 1:
 
 	/* Precharge */
@@ -118,13 +119,17 @@ reset:
 	str	r1, [r0]
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	ldr	sp, =STACK_BASE + STACK_SIZE - 12	/* Setup a temporary stack in SDRAM */
+	/* Setup a temporary stack in SRAM */
+	ldr	sp, =MX21_IRAM_BASE_ADDR + MX21_IRAM_SIZE - 4
 
 	b	imx21_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 
 ret:
-	b	board_init_lowlevel_return
+	mov	r0, #0xc0000000
+	mov	r1, #SZ_64M
+	mov	r2, #0
+	b	barebox_arm_entry
 
 /*
  *  spin for a while.  we need to wait at least 200 usecs.

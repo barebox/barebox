@@ -28,6 +28,7 @@
 #include <asm/mmu.h>
 #include <asm/system.h>
 #include <asm/memory.h>
+#include <asm-generic/memory_layout.h>
 #include <asm/system_info.h>
 #include <asm/cputype.h>
 #include <asm/cache.h>
@@ -90,6 +91,17 @@ void arch_shutdown(void)
 	r |= PSR_I_BIT;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 }
+
+extern unsigned long arm_stack_top;
+
+static int arm_request_stack(void)
+{
+	if (!request_sdram_region("stack", arm_stack_top - STACK_SIZE, STACK_SIZE))
+		pr_err("Error: Cannot request SDRAM region for stack\n");
+
+	return 0;
+}
+coredevice_initcall(arm_request_stack);
 
 #ifdef CONFIG_THUMB2_BAREBOX
 static void thumb2_execute(void *func, int argc, char *argv[])

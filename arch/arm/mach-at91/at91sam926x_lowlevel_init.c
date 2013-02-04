@@ -80,7 +80,7 @@ void __bare_init at91sam926x_lowlevel_init(void *pio, bool is_pio_asr,
 	 */
 	r = at91_pmc_read(AT91_PMC_MCKR);
 	if (r & AT91_PMC_CSS && !in_sram)
-		goto end;
+		return;
 
 	/*
 	 * Enable the Main Oscillator
@@ -123,7 +123,7 @@ void __bare_init at91sam926x_lowlevel_init(void *pio, bool is_pio_asr,
 	 */
 	r = at91_sys_read(AT91_SDRAMC_TR);
 	if (r && !in_sram)
-		goto end;
+		return;
 
 	/* SDRAMC_MR : Normal Mode */
 	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
@@ -182,7 +182,4 @@ void __bare_init at91sam926x_lowlevel_init(void *pio, bool is_pio_asr,
 	 * We will shutdown what we don't need later
 	 */
 	at91_pmc_write(AT91_PMC_PCER, 0xffffffff);
-
-end:
-	board_init_lowlevel_return();
 }

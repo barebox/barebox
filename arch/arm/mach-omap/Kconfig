@@ -29,7 +29,6 @@ config ARCH_OMAP3
 	bool "OMAP3"
 	select CPU_V7
 	select GENERIC_GPIO
-	select MACH_HAS_LOWLEVEL_INIT
 	select OMAP_CLOCK_SOURCE_S32K
 	help
 	  Say Y here if you are using Texas Instrument's OMAP343x based platform
@@ -148,7 +147,6 @@ config MACH_OMAP3EVM
 
 config MACH_PANDA
 	bool "Texas Instrument's Panda Board"
-	select MACH_HAS_LOWLEVEL_INIT
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_OMAP4
 	help
@@ -156,7 +154,6 @@ config MACH_PANDA
 
 config MACH_ARCHOSG9
 	bool "Archos G9 tablets"
-	select MACH_HAS_LOWLEVEL_INIT
 	depends on ARCH_OMAP4
 	help
 	  Say Y here if you are using OMAP4-based Archos G9 tablet
@@ -164,7 +161,6 @@ config MACH_ARCHOSG9
 config MACH_PCM049
 	bool "Phytec phyCORE pcm049"
 	depends on ARCH_OMAP4
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say Y here if you are using Phytecs phyCORE pcm049 board
 	  based on OMAP4
@@ -177,7 +173,6 @@ config MACH_PCAAL1
 
 config MACH_PCAAXL2
 	bool "Phytec phyCARD XL2"
-	select MACH_HAS_LOWLEVEL_INIT
 	depends on ARCH_OMAP4
 	help
 	  Say Y here if you are using a phyCARD-A-XL1 PCA-A-XL1

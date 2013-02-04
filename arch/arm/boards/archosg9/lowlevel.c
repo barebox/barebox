@@ -13,6 +13,7 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
+#include <sizes.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
@@ -63,7 +64,7 @@ static noinline void archosg9_init_lowlevel(void)
 
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 
-	board_init_lowlevel_return();
+	barebox_arm_entry(0x80000000, SZ_1G, 0);
 }
 
 void __naked __bare_init reset(void)

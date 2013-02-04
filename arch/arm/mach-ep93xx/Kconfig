@@ -38,7 +38,6 @@ choice
 config MACH_EDB9301
 	bool "Cirrus Logic EDB9301"
 	select EP93XX_SDCE3_SYNC_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9301 Evaluation board
 
@@ -103,14 +102,12 @@ choice
 config MACH_EDB9302
 	bool "Cirrus Logic EDB9302"
 	select EP93XX_SDCE3_SYNC_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9302 Evaluation board
 
 config MACH_EDB9302A
 	bool "Cirrus Logic EDB9302A"
 	select EP93XX_SDCE0_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9302A Evaluation board
 
@@ -222,14 +219,12 @@ choice
 config MACH_EDB9307
 	bool "Cirrus Logic EDB9307"
 	select EP93XX_SDCE3_SYNC_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9307 Evaluation board
 
 config MACH_EDB9307A
 	bool "Cirrus Logic EDB9307A"
 	select EP93XX_SDCE0_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9307A Evaluation board
 
@@ -309,7 +304,6 @@ choice
 config MACH_EDB9312
 	bool "Cirrus Logic EDB9312"
 	select EP93XX_SDCE3_SYNC_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9312 Evaluation board
 
@@ -358,14 +352,12 @@ choice
 config MACH_EDB9315
 	bool "Cirrus Logic EDB9315"
 	select EP93XX_SDCE3_SYNC_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9315 Evaluation board
 
 config MACH_EDB9315A
 	bool "Cirrus Logic EDB9315A"
 	select EP93XX_SDCE0_PHYS_OFFSET
-	select MACH_HAS_LOWLEVEL_INIT
 	help
 	  Say y here if you are using Cirrus Logic's EDB9315A Evaluation board
 

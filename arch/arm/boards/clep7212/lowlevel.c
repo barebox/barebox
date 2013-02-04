@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <sizes.h>
 
 #include <asm/io.h>
 #include <asm/barebox-arm.h>
@@ -52,5 +53,5 @@ void __naked __bare_init reset(void)
 	writel(SDCONF_CASLAT_3 | SDCONF_SIZE_256 | SDCONF_WIDTH_16 |
 	       SDCONF_CLKCTL | SDCONF_ACTIVE, SDCONF);
 
-	board_init_lowlevel_return();
+	barebox_arm_entry(SDRAM0_BASE, SZ_32M, 0);
 }

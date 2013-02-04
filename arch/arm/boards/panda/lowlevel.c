@@ -18,6 +18,7 @@
  */
 #include <common.h>
 #include <io.h>
+#include <sizes.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
@@ -70,8 +71,6 @@ static void noinline panda_init_lowlevel(void)
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
 	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
-
-	board_init_lowlevel_return();
 }
 
 void reset(void)
@@ -79,9 +78,11 @@ void reset(void)
 	common_reset();
 
 	if (get_pc() > 0x80000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	arm_setup_stack(0x4030d000);
 
 	panda_init_lowlevel();
+out:
+	barebox_arm_entry(0x80000000, SZ_1G, 0);
 }

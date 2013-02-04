@@ -21,7 +21,9 @@
 #include <mach/imx25-regs.h>
 #include <mach/esdctl.h>
 #include <io.h>
+#include <sizes.h>
 #include <mach/imx-nand.h>
+#include <mach/esdctl.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/system.h>
@@ -114,7 +116,7 @@ void __bare_init __naked reset(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
-		board_init_lowlevel_return();
+		goto out;
 
 	/* set to 3.3v SDRAM */
 	writel(0x800, MX25_IOMUXC_BASE_ADDR + 0x454);
@@ -134,10 +136,10 @@ void __bare_init __naked reset(void)
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* setup a stack to be able to call imx25_barebox_boot_nand_external() */
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
+	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 8);
 
 	imx25_barebox_boot_nand_external();
-#else
-	board_init_lowlevel_return();
 #endif
+out:
+	imx25_barebox_entry(0);
 }

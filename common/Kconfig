@@ -114,6 +114,15 @@ config MMU
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt
 	  for further information.
 
+config MMU_EARLY
+	bool "Enable MMU early"
+	depends on ARM
+	depends on MMU
+	default y
+	help
+	  This enables the MMU during early startup. This speeds up things during startup
+	  of barebox, but may lead to harder to debug code. If unsure say yes here.
+
 config HAVE_CONFIGURABLE_TEXT_BASE
 	bool
 
@@ -243,18 +252,6 @@ config RELOCATABLE
 	  instead barebox can determine this address at runtime and thus
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
-
-config MACH_HAS_LOWLEVEL_INIT
-	bool
-
-config MACH_DO_LOWLEVEL_INIT
-	bool "run machine low-level init"
-	depends on MACH_HAS_LOWLEVEL_INIT
-	default y
-	help
-	  This entry enables SDRAM and other board low level initialization
-	  on many platforms. Disabling this option allows configurations to use
-	  barebox as a second stage boot loader.
 
 config PROMPT
 	string

@@ -30,6 +30,7 @@
 #include <init.h>
 #include <nand.h>
 #include <net.h>
+#include <sizes.h>
 #include <partition.h>
 
 #include <asm/armlinux.h>

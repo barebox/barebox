@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <sizes.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
@@ -26,40 +27,98 @@
 #include <asm/cache.h>
 #include <memory.h>
 
-/*
- * First function in the uncompressed image. We get here from
- * the pbl.
- */
-void __naked __section(.text_entry) start(void)
-{
-#ifdef CONFIG_PBL_IMAGE
-	board_init_lowlevel_return();
-#else
-	barebox_arm_head();
-#endif
-}
+#include "mmu-early.h"
 
-/*
- * The actual reset vector. This code is position independent and usually
- * does not run at the address it's linked at.
- */
-#ifndef CONFIG_MACH_DO_LOWLEVEL_INIT
-void __naked __bare_init reset(void)
-{
-	common_reset();
-	board_init_lowlevel_return();
-}
-#endif
+unsigned long arm_stack_top;
 
-/*
- * Board code can jump here by either returning from board_init_lowlevel
- * or by calling this function directly.
- */
-void __naked board_init_lowlevel_return(void)
+static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
+		uint32_t boarddata)
 {
-	arm_setup_stack(STACK_BASE + STACK_SIZE - 16);
+	unsigned long endmem = membase + memsize;
+	unsigned long malloc_start, malloc_end;
 
 	setup_c();
 
+	arm_stack_top = endmem;
+	endmem -= STACK_SIZE; /* Stack */
+
+	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
+
+		endmem &= ~0x3fff;
+		endmem -= SZ_16K; /* ttb */
+
+		if (!IS_ENABLED(CONFIG_PBL_IMAGE))
+			mmu_early_enable(membase, memsize, endmem);
+	}
+
+	if ((unsigned long)_text > membase + memsize ||
+			(unsigned long)_text < membase)
+		/*
+		 * barebox is either outside SDRAM or in another
+		 * memory bank, so we can use the whole bank for
+		 * malloc.
+		 */
+		malloc_end = endmem;
+	else
+		malloc_end = (unsigned long)_text;
+
+	/*
+	 * Maximum malloc space is the Kconfig value if given
+	 * or 64MB.
+	 */
+	if (MALLOC_SIZE > 0) {
+		malloc_start = malloc_end - MALLOC_SIZE;
+		if (malloc_start < membase)
+			malloc_start = membase;
+	} else {
+		malloc_start = malloc_end - (malloc_end - membase) / 2;
+		if (malloc_end - malloc_start > SZ_64M)
+			malloc_start = malloc_end - SZ_64M;
+	}
+
+	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
+
 	start_barebox();
 }
+
+#ifndef CONFIG_PBL_IMAGE
+
+void __naked __section(.text_entry) start(void)
+{
+	barebox_arm_head();
+}
+
+/*
+ * Main ARM entry point in the uncompressed image. Call this with the memory
+ * region you can spare for barebox. This doesn't necessarily have to be the
+ * full SDRAM. The currently running binary can be inside or outside of this
+ * region. TEXT_BASE can be inside or outside of this region. boarddata will
+ * be preserved and can be accessed later with barebox_arm_boarddata().
+ *
+ * -> membase + memsize
+ *   STACK_SIZE              - stack
+ *   16KiB, aligned to 16KiB - First level page table if early MMU support
+ *                             is enabled
+ * -> maximum end of barebox binary
+ *
+ * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
+ * be fine.
+ */
+void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
+                uint32_t boarddata)
+{
+	arm_setup_stack(membase + memsize - 16);
+
+	__start(membase, memsize, boarddata);
+}
+#else
+/*
+ * First function in the uncompressed image. We get here from
+ * the pbl. The stack already has been set up by the pbl.
+ */
+void __naked __section(.text_entry) start(uint32_t membase, uint32_t memsize,
+                uint32_t boarddata)
+{
+	__start(membase, memsize, boarddata);
+}
+#endif

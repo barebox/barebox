@@ -402,6 +402,21 @@ struct bus_type w1_bustype= {
 	.remove = w1_bus_remove,
 };
 
+static bool w1_is_registered(struct w1_bus *bus, u64 rn)
+{
+	struct device_d *dev = NULL;
+	struct w1_device *w1_dev;
+
+	bus_for_each_device(&w1_bustype, dev) {
+		w1_dev = to_w1_device(dev);
+
+		if (w1_dev->bus == bus && w1_dev->reg_num == rn)
+			return true;
+	}
+
+	return false;
+}
+
 static int w1_device_register(struct w1_bus *bus, struct w1_device *dev)
 {
 	char str[18];
@@ -442,8 +457,14 @@ int w1_driver_register(struct w1_driver *drv)
 
 void w1_found(struct w1_bus *bus, u64 rn)
 {
-	struct w1_device *dev = xzalloc(sizeof(*dev));
+	struct w1_device *dev;
 	u64 tmp = be64_to_cpu(rn);
+
+	if (IS_ENABLED(CONFIG_W1_DUAL_SEARCH)
+	 && bus->is_searched && w1_is_registered(bus, rn))
+		return;
+
+	dev = xzalloc(sizeof(*dev));
 
 	dev->reg_num = rn;
 	dev->fid = tmp >> 56;
@@ -605,7 +626,11 @@ int w1_bus_register(struct w1_bus *bus)
 	if (ret)
 		return ret;
 
+	bus->is_searched = false;
 	w1_search(bus, W1_SEARCH);
+	bus->is_searched = true;
+	if (IS_ENABLED(CONFIG_W1_DUAL_SEARCH))
+		w1_search(bus, W1_SEARCH);
 
 	return 0;
 }

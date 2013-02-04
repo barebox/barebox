@@ -1,6 +1,6 @@
-	.section .piggydata,#alloc
-	.globl  input_data
-input_data:
-	.incbin "arch/mips/pbl/piggy.shipped"
-	.globl  input_data_end
-input_data_end:
+#include <asm/asm.h>
+
+	.section .data
+EXPORT(input_data)
+	.incbin	"arch/mips/pbl/piggy.shipped"
+EXPORT(input_data_end)

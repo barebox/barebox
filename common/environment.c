@@ -113,11 +113,13 @@ static int file_save_action(const char *filename, struct stat *statbuf,
 		memcpy(data->writep, path, len);
 		inode->size = ENVFS_32(len);
 		data->writep += PAD4(len);
-		debug("handling symlink %s size %ld namelen %d headerlen %d\n", filename + strlen(data->base),
-			len, namelen, ENVFS_32(inode->headerlen));
+		debug("handling symlink %s size %d namelen %d headerlen %d\n",
+				filename + strlen(data->base),
+				len, namelen, ENVFS_32(inode->headerlen));
 	} else {
-		debug("handling file %s size %ld namelen %d headerlen %d\n", filename + strlen(data->base),
-			statbuf->st_size, namelen, ENVFS_32(inode->headerlen));
+		debug("handling file %s size %lld namelen %d headerlen %d\n",
+				filename + strlen(data->base),
+				statbuf->st_size, namelen, ENVFS_32(inode->headerlen));
 
 		inode->size = ENVFS_32(statbuf->st_size);
 		fd = open(filename, O_RDONLY);

@@ -24,7 +24,7 @@ struct image *bmp_open(char *inbuf, int insize)
 	img->bits_per_pixel = le16_to_cpu(bmp->header.bit_count);
 
 	pr_debug("bmp: %d x %d  x %d data@0x%p\n", img->width, img->height,
-		 img->bit_per_pixel, img->data);
+		 img->bits_per_pixel, img->data);
 
 	return img;
 }

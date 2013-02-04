@@ -31,6 +31,9 @@
  * published by the Free Software Foundation.
  *
  */
+
+#define pr_fmt(fmt) "nand: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <clock.h>
@@ -1074,19 +1077,19 @@ static int nand_flash_detect_onfi(struct mtd_info *mtd, struct nand_chip *chip,
 		chip->read_byte(mtd) != 'F' || chip->read_byte(mtd) != 'I')
 		return 0;
 
-	printk(KERN_INFO "ONFI flash detected ... ");
+	pr_info("ONFI flash detected ... ");
 	chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
 	for (i = 0; i < 3; i++) {
 		chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
 		if (onfi_crc16(ONFI_CRC_BASE, (uint8_t *)p, 254) ==
 				le16_to_cpu(p->crc)) {
-			printk(KERN_INFO "ONFI param page %d valid\n", i);
+			pr_info("ONFI param page %d valid\n", i);
 			break;
 		}
 	}
 
 	if (i == 3) {
-		printk(KERN_INFO "no valid ONFI param page found\n");
+		pr_info("no valid ONFI param page found\n");
 		return 0;
 	}
 
@@ -1106,7 +1109,7 @@ static int nand_flash_detect_onfi(struct mtd_info *mtd, struct nand_chip *chip,
 		chip->onfi_version = 0;
 
 	if (!chip->onfi_version) {
-		printk(KERN_INFO "unsupported ONFI version: %d\n", val);
+		pr_info("unsupported ONFI version: %d\n", val);
 		return 0;
 	}
 
@@ -1170,7 +1173,7 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	id_data[1] = chip->read_byte(mtd);
 
 	if (id_data[0] != *maf_id || id_data[1] != dev_id) {
-		printk(KERN_ERR "%s: second ID read did not match "
+		pr_err("%s: second ID read did not match "
 		       "%02x,%02x against %02x,%02x\n", __func__,
 		       *maf_id, dev_id, id_data[0], id_data[1]);
 		return ERR_PTR(-ENODEV);
@@ -1191,7 +1194,7 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 		if (ret)
 			goto ident_done;
 		else {
-			printk(KERN_ERR "NAND type unknown: %02x,%02x\n", *maf_id, dev_id);
+			pr_err("NAND type unknown: %02x,%02x\n", *maf_id, dev_id);
 			return ERR_PTR(-ENODEV);
 		}
 	}
@@ -1329,10 +1332,10 @@ ident_done:
 	 * chip correct !
 	 */
 	if (busw != (chip->options & NAND_BUSWIDTH_16)) {
-		printk(KERN_INFO "NAND device: Manufacturer ID:"
+		pr_info("NAND device: Manufacturer ID:"
 			" 0x%02x, Chip ID: 0x%02x (%s %s)\n", *maf_id,
 			dev_id, nand_manuf_ids[maf_idx].name, mtd->name);
-		printk(KERN_WARNING "NAND bus width %d instead %d bit\n",
+		pr_warning("NAND bus width %d instead %d bit\n",
 			(chip->options & NAND_BUSWIDTH_16) ? 16 : 8,
 			busw ? 16 : 8);
 		return ERR_PTR(-EINVAL);
@@ -1367,7 +1370,7 @@ ident_done:
 	if (mtd->writesize > 512 && chip->cmdfunc == nand_command)
 		chip->cmdfunc = nand_command_lp;
 
-	printk("NAND device: Manufacturer ID: 0x%02x, Chip ID: 0x%02x (%s %s),"
+	pr_notice("Manufacturer ID: 0x%02x, Chip ID: 0x%02x (%s %s),"
 		" page size: %d, OOB size: %d\n",
 		*maf_id, dev_id, nand_manuf_ids[maf_idx].name,
 		chip->onfi_version ? chip->onfi_params.model : type->name,
@@ -1393,7 +1396,7 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 	struct nand_flash_dev *type;
 
 	if (chip->options & NAND_BUSWIDTH_AUTO && !chip->set_buswidth) {
-		printk(KERN_ERR "buswidth detection but no buswidth callback\n");
+		pr_err("buswidth detection but no buswidth callback\n");
 		return -EINVAL;
 	}
 
@@ -1406,7 +1409,7 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 	type = nand_get_flash_type(mtd, chip, busw, &nand_maf_id);
 
 	if (IS_ERR(type)) {
-		printk(KERN_WARNING "No NAND device found (%ld)!\n", PTR_ERR(type));
+		pr_warning("No NAND device found (%ld)!\n", PTR_ERR(type));
 		chip->select_chip(mtd, -1);
 		return PTR_ERR(type);
 	}
@@ -1422,7 +1425,7 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips)
 			break;
 	}
 	if (i > 1)
-		printk(KERN_INFO "%d NAND chips detected\n", i);
+		pr_info("%d NAND chips detected\n", i);
 
 	/* Store the number of chips and calc total size for mtd */
 	chip->numchips = i;
@@ -1436,13 +1439,13 @@ static void __maybe_unused nand_check_hwecc(struct mtd_info *mtd, struct nand_ch
 	if ((!chip->ecc.calculate || !chip->ecc.correct ||
 	     !chip->ecc.hwctl) &&
 	    (!chip->ecc.read_page || !chip->ecc.write_page)) {
-		printk(KERN_WARNING "No ECC functions supplied, "
+		pr_warning("No ECC functions supplied, "
 		       "Hardware ECC not possible\n");
 		BUG();
 	}
 
 	if (mtd->writesize < chip->ecc.size) {
-		printk(KERN_WARNING "%d byte HW ECC not possible on "
+		pr_warning("%d byte HW ECC not possible on "
 		       "%d byte page size\n",
 			chip->ecc.size, mtd->writesize);
 		BUG();
@@ -1486,7 +1489,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 			chip->ecc.layout = &nand_oob_64;
 			break;
 		default:
-			printk(KERN_WARNING "No oob scheme defined for "
+			pr_warning("No oob scheme defined for "
 			       "oobsize %d\n", mtd->oobsize);
 			BUG();
 		}
@@ -1527,7 +1530,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 #endif
 #ifdef CONFIG_NAND_ECC_NONE
 	case NAND_ECC_NONE:
-		printk(KERN_WARNING "NAND_ECC_NONE selected by board driver. "
+		pr_warning("NAND_ECC_NONE selected by board driver. "
 		       "This is not recommended !!\n");
 		chip->ecc.read_page = nand_read_page_raw;
 #ifdef CONFIG_MTD_WRITE
@@ -1540,7 +1543,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		break;
 #endif
 	default:
-		printk(KERN_WARNING "Invalid NAND_ECC_MODE %d\n",
+		pr_warning("Invalid NAND_ECC_MODE %d\n",
 		       chip->ecc.mode);
 		BUG();
 	}
@@ -1561,7 +1564,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	 */
 	chip->ecc.steps = mtd->writesize / chip->ecc.size;
 	if(chip->ecc.steps * chip->ecc.size != mtd->writesize) {
-		printk(KERN_WARNING "Invalid ecc parameters\n");
+		pr_warning("Invalid ecc parameters\n");
 		BUG();
 	}
 	chip->ecc.total = chip->ecc.steps * chip->ecc.bytes;

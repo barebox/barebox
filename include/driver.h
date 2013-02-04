@@ -358,35 +358,6 @@ static inline int dev_close_default(struct device_d *dev, struct filep *f)
 	return 0;
 }
 
-/* debugging and troubleshooting/diagnostic helpers. */
-
-int dev_printf(const struct device_d *dev, const char *format, ...)
-	__attribute__ ((format(__printf__, 2, 3)));
-
-
-#define dev_emerg(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#define dev_alert(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#define dev_crit(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#define dev_err(dev, format, arg...)		\
-	dev_printf(dev , format , ## arg)
-#define dev_warn(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#define dev_notice(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#define dev_info(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-
-#if defined(DEBUG)
-#define dev_dbg(dev, format, arg...)		\
-	dev_printf((dev) , format , ## arg)
-#else
-#define dev_dbg(dev, format, arg...)		\
-	({ if (0) dev_printf((dev), format, ##arg); 0; })
-#endif
-
 struct bus_type {
 	char *name;
 	int (*match)(struct device_d *dev, struct driver_d *drv);

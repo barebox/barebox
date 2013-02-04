@@ -89,7 +89,7 @@ void gpmc_generic_init(unsigned int cfg)
 	 * But NEVER run me in XIP mode! I will Die!
 	 */
 	while (x < GPMC_NUM_CS) {
-		debug("gpmccs=%d Reg:0x%x <-0x0\n", x, reg);
+		debug("gpmccs=%d Reg:0x%p <-0x0\n", x, reg);
 		writel(0x0, reg);
 		reg += GPMC_CONFIG_CS_SIZE;
 		x++;
@@ -119,14 +119,14 @@ void gpmc_cs_config(char cs, struct gpmc_config *config)
 
 	/* Write the CFG1-6 regs */
 	while (x < 6) {
-		debug("gpmccfg%d Reg:0x%x <-0x%08x\n",
+		debug("gpmccfg%d Reg:0x%p <-0x%08x\n",
 				x, reg, config->cfg[x]);
 		writel(config->cfg[x], reg);
 		reg += GPMC_CONFIG_REG_OFF;
 		x++;
 	}
 	/* reg now points to CFG7 */
-	debug("gpmccfg%d Reg:0x%x <-0x%08x\n",
+	debug("gpmccfg%d Reg:0x%p <-0x%08x\n",
 			x, reg, (0x1 << 6) |		/* CS enable */
 		     ((config->size & 0xF) << 8) |	/* Size */
 		     ((config->base >> 24) & 0x3F));

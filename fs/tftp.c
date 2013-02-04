@@ -512,7 +512,7 @@ static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
 	size_t size, now;
 	int ret;
 
-	debug("%s: %d\n", __func__, insize);
+	debug("%s: %zu\n", __func__, insize);
 
 	size = insize;
 
@@ -547,7 +547,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 	size_t outsize = 0, now;
 	int ret;
 
-	debug("%s %d\n", __func__, insize);
+	debug("%s %zu\n", __func__, insize);
 
 	tftp_timer_reset(priv);
 

@@ -937,14 +937,12 @@ static int run_list_real(struct p_context *ctx, struct pipe *pi)
 	return rcode;
 }
 
-#ifdef DEBUG
 /* broken, of course, but OK for testing */
-static char *indenter(int i)
+static __maybe_unused char *indenter(int i)
 {
 	static char blanks[] = "                                    ";
 	return &blanks[sizeof(blanks) - i - 1];
 }
-#endif
 
 /* return code is the exit status of the pipe */
 static int free_pipe(struct pipe *pi, int indent)

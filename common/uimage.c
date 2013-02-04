@@ -440,8 +440,9 @@ struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 	uimage_resource = request_sdram_region("uimage",
 				start, size);
 	if (!uimage_resource) {
-		printf("unable to request SDRAM 0x%08x-0x%08x\n",
-			start, start + size - 1);
+		printf("unable to request SDRAM 0x%08llx-0x%08llx\n",
+			(unsigned long long)start,
+			(unsigned long long)start + size - 1);
 		return NULL;
 	}
 

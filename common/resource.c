@@ -43,15 +43,21 @@ struct resource *request_region(struct resource *parent,
 	struct resource *r, *new;
 
 	if (end < start) {
-		debug("%s: request region 0x%08x:0x%08x: end < start\n",
-				__func__, start, end);
+		debug("%s: request region 0x%08llx:0x%08llx: end < start\n",
+				__func__,
+				(unsigned long long)start,
+				(unsigned long long)end);
 		return NULL;
 	}
 
 	/* outside parent resource? */
 	if (start < parent->start || end > parent->end) {
-		debug("%s: 0x%08x:0x%08x outside parent resource 0x%08x:0x%08x\n",
-				__func__, start, end, parent->start, parent->end);
+		debug("%s: 0x%08llx:0x%08llx outside parent resource 0x%08llx:0x%08llx\n",
+				__func__,
+				(unsigned long long)start,
+				(unsigned long long)end,
+				(unsigned long long)parent->start,
+				(unsigned long long)parent->end);
 		return NULL;
 	}
 
@@ -64,13 +70,19 @@ struct resource *request_region(struct resource *parent,
 			goto ok;
 		if (start > r->end)
 			continue;
-		debug("%s: 0x%08x:0x%08x conflicts with 0x%08x:0x%08x\n",
-				__func__, start, end, r->start, r->end);
+		debug("%s: 0x%08llx:0x%08llx conflicts with 0x%08llx:0x%08llx\n",
+				__func__,
+				(unsigned long long)start,
+				(unsigned long long)end,
+				(unsigned long long)r->start,
+				(unsigned long long)r->end);
 		return NULL;
 	}
 
 ok:
-	debug("%s ok: 0x%08x:0x%08x\n", __func__, start, end);
+	debug("%s ok: 0x%08llx:0x%08llx\n", __func__,
+			(unsigned long long)start,
+			(unsigned long long)end);
 
 	new = xzalloc(sizeof(*new));
 	init_resource(new, name);

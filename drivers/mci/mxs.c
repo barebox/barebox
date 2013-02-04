@@ -724,7 +724,7 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 		mxs_mci->index = 3;
 		break;
 	default:
-		pr_debug("Unknown SSP unit at address 0x%08x\n", mxs_mci->regs);
+		pr_debug("Unknown SSP unit at address 0x%p\n", mxs_mci->regs);
 		return 0;
 	}
 #endif

@@ -19,6 +19,7 @@
 #include <usb/ehci.h>
 #include <usb/chipidea-imx.h>
 #include <usb/ulpi.h>
+#include <usb/fsl_usb2.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
@@ -96,13 +97,13 @@ static int imx_chipidea_probe(struct device_d *dev)
 	data.hcor = base + 0x140;
 	data.flags = EHCI_HAS_TT;
 
-	if (pdata->mode == IMX_USB_MODE_HOST) {
+	if (pdata->mode == IMX_USB_MODE_HOST && IS_ENABLED(CONFIG_USB_EHCI)) {
 		ret = ehci_register(dev, &data);
+	} else if (pdata->mode == IMX_USB_MODE_DEVICE && IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC)) {
+		ret = ci_udc_register(dev, base);
 	} else {
-		/*
-		 * Not yet implemented. Register USB gadget driver here.
-		 */
-		ret = -ENOSYS;
+		dev_err(dev, "No supported role\n");
+		ret = -ENODEV;
 	}
 
 	return ret;

@@ -1,3 +1,6 @@
+#ifndef __USB_FSL_USB2_H
+#define __USB_FSL_USB2_H
+
 enum fsl_usb2_operating_modes {
 	FSL_USB2_MPH_HOST,
 	FSL_USB2_DR_HOST,
@@ -20,3 +23,6 @@ struct fsl_usb2_platform_data {
 	unsigned int			port_enables;
 };
 
+int ci_udc_register(struct device_d *dev, void __iomem *regs);
+
+#endif /* __USB_FSL_USB2_H */

@@ -2257,7 +2257,7 @@ static struct poller_struct poller = {
 	.func		= fsl_udc_poller
 };
 
-static int fsl_udc_probe(struct device_d *dev)
+int ci_udc_register(struct device_d *dev, void __iomem *regs)
 {
 	int ret, i;
 	u32 dccparams;
@@ -2265,7 +2265,7 @@ static int fsl_udc_probe(struct device_d *dev)
 	udc_controller = xzalloc(sizeof(*udc_controller));
 	udc_controller->stopped = 1;
 
-	dr_regs = dev_request_mem_region(dev, 0);
+	dr_regs = regs;
 
 	/* Read Device Controller Capability Parameters register */
 	dccparams = readl(&dr_regs->dccparams);
@@ -2324,6 +2324,13 @@ static int fsl_udc_probe(struct device_d *dev)
 	return 0;
 err_out:
 	return ret;
+}
+
+static int fsl_udc_probe(struct device_d *dev)
+{
+	void __iomem *regs = dev_request_mem_region(dev, 0);
+
+	return ci_udc_register(dev, regs);
 }
 
 static struct driver_d fsl_udc_driver = {

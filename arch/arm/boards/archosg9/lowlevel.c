@@ -67,9 +67,9 @@ static noinline void archosg9_init_lowlevel(void)
 	barebox_arm_entry(0x80000000, SZ_1G, 0);
 }
 
-void __naked __bare_init reset(void)
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x4030d000);
 

@@ -138,7 +138,7 @@ fiq:
 	bl 	do_fiq
 
 .section .text_exceptions
-1:	b 1b				/* reset */
+1:	b 1b				/* barebox_arm_reset_vector */
 #ifdef CONFIG_ARM_EXCEPTIONS
 	ldr pc, =undefined_instruction	/* undefined instruction */
 	ldr pc, =software_interrupt	/* software interrupt (SWI) */

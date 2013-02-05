@@ -8,7 +8,7 @@
 #include <mach/s3c24xx-gpio.h>
 #include <asm/barebox-arm-head.h>
 
-	.section ".text_bare_init.reset","ax"
+	.section ".text_bare_init.barebox_arm_reset_vector","ax"
 
 /*
  * To be able to setup the SDRAM interface correctly, we need some
@@ -213,10 +213,10 @@ SDRAMDATA:
 
 /* ------------------------------------------------------------------------ */
 
-.globl reset
-reset:
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
 
-	common_reset r0
+	arm_cpu_lowlevel_init r0
 
 	bl s3c24x0_disable_wd
 

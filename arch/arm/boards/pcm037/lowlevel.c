@@ -32,12 +32,12 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r;
 	volatile int v;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	writel(1 << 6, MX31_IPU_CTRL_BASE_ADDR);
 

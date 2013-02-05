@@ -32,12 +32,12 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r;
 	int i;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0);

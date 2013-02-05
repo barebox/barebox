@@ -54,11 +54,11 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 	writel(esdctl, esdctlreg);
 }
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/* AIPS setup - Only setup MPROTx registers. The PACR default values are good.
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,

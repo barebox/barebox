@@ -71,10 +71,10 @@
 
 	.section ".text_bare_init","ax"
 
-.globl reset
-reset:
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
 
-	common_reset r0
+	arm_cpu_lowlevel_init r0
 
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0)

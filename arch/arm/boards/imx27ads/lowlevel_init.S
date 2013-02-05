@@ -112,10 +112,10 @@ NORMAL_MODE		.long 0x00000000 // system/external device dependent data (SMODE=00
 	writel(0x0000000c, 0xD8001010)
 .endm
 
-.globl reset
-reset:
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
 
-	common_reset r0
+	arm_cpu_lowlevel_init r0
 
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0)

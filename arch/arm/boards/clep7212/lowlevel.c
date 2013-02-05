@@ -24,11 +24,11 @@
 #define PLL_VALUE		(((CPU_SPEED * 2) / MAIN_CLOCK) << 24)
 #define SDRAM_REFRESH_RATE	(64 * (BUS_SPEED / (8192 * 1000)))
 
-void __naked __bare_init reset(void)
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	u32 tmp;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/* Setup base clock */
 	writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);

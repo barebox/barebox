@@ -5,7 +5,7 @@
 
 #ifndef __ASSEMBLY__
 
-static inline void common_reset(void)
+static inline void arm_cpu_lowlevel_init(void)
 {
 	uint32_t r;
 
@@ -45,12 +45,12 @@ static inline void barebox_arm_head(void)
 		"bx r9\n"
 		".thumb\n"
 		"1:\n"
-		"bl reset\n"
+		"bl barebox_arm_reset_vector\n"
 		".rept 10\n"
 		"1: b 1b\n"
 		".endr\n"
 #else
-		"b reset\n"
+		"b barebox_arm_reset_vector\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
@@ -70,7 +70,7 @@ static inline void barebox_arm_head(void)
 
 #else
 
-.macro  common_reset, scratch
+.macro  arm_cpu_lowlevel_init, scratch
 
 	/* set the cpu to SVC32 mode */
 	mrs	\scratch, cpsr

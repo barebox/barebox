@@ -30,12 +30,12 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r;
 	register uint32_t loops = 0x20000;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/* restart the MPLL and wait until it's stable */
 	writel(readl(MX25_CCM_BASE_ADDR + MX25_CCM_CCTL) | (1 << 27),

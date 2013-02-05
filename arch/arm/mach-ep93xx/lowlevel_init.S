@@ -24,9 +24,9 @@
 #include <mach/ep93xx-regs.h>
 #include <asm/barebox-arm-head.h>
 
-.globl reset
-reset:
-	common_reset r0
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
+	arm_cpu_lowlevel_init r0
 
 	/* Turn on both LEDs */
 	bl red_LED_on

@@ -40,14 +40,14 @@
 #define CCM_PDR0_399	0x00011000
 #define CCM_PDR0_532	0x00001000
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
 	unsigned long iomuxc_base = MX35_IOMUXC_BASE_ADDR;
 	unsigned long esdctl_base = MX35_ESDCTL_BASE_ADDR;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */

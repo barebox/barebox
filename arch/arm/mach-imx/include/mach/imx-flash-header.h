@@ -162,9 +162,9 @@ static inline void barebox_arm_imx_fcb_head(void)
 		"	bx r9\n"
 		".thumb\n"
 		"1:\n"
-		"bl	reset\n"
+		"bl	barebox_arm_reset_vector\n"
 #else
-		"1:	b reset\n"
+		"1:	b barebox_arm_reset_vector\n"
 		".word 0x0\n"
 		".word 0x0\n"
 #endif

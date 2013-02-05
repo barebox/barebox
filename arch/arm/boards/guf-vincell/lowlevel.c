@@ -123,11 +123,11 @@ void disable_watchdog(void)
 
 void sdram_init(void);
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	u32 r;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();

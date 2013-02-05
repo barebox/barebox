@@ -51,11 +51,11 @@ int __bare_init s5p_irom_load_mmc(void *dest, uint32_t start_block, uint16_t blo
 }
 
 
-void __bare_init reset(void)
+void __bare_init barebox_arm_reset_vector(void)
 {
 	uint32_t r;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 #ifdef CONFIG_S3C_PLL_INIT
 	s5p_init_pll();

@@ -52,9 +52,9 @@
 /*
  *	Memory setup
  */
-.globl reset
-reset:
-	common_reset r0
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
+	arm_cpu_lowlevel_init r0
 
 		@ Preserve r8/r7 i.e. kernel entry values
 

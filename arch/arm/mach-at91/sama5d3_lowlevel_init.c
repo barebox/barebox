@@ -15,9 +15,9 @@
 #include <mach/hardware.h>
 #include <mach/at91sam9_ddrsdr.h>
 
-void __naked __bare_init reset(void)
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE - 16);
 

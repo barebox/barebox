@@ -248,9 +248,9 @@ static int beaglebone_board_init(void)
 	return 0;
 }
 
-void __naked reset(void)
+void __naked barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	beaglebone_board_init();
 

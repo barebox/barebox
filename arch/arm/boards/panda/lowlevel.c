@@ -73,9 +73,9 @@ static void noinline panda_init_lowlevel(void)
 	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
 }
 
-void reset(void)
+void barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	if (get_pc() > 0x80000000)
 		goto out;

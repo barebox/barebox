@@ -37,9 +37,9 @@ void __bare_init at91sam9263_lowlevel_init(void)
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc), 0);
 }
 
-void __naked __bare_init reset(void)
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE - 16);
 

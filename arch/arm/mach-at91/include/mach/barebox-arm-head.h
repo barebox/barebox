@@ -13,7 +13,7 @@ static inline void barebox_arm_head(void)
 #ifdef CONFIG_THUMB2_BAREBOX
 #error Thumb2 is not supported
 #else
-		"b reset\n"
+		"b barebox_arm_reset_vector\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
 		"1: b 1b\n"

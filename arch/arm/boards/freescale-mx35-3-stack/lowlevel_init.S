@@ -56,9 +56,9 @@ MPCTL_PARAM_532_W:	.word	MPCTL_PARAM_532
 PPCTL_PARAM_W:		.word	PPCTL_PARAM_300
 CCM_BASE_ADDR_W:	.word	MX35_CCM_BASE_ADDR
 
-.globl reset
-reset:
-	common_reset r0
+.globl barebox_arm_reset_vector
+barebox_arm_reset_vector:
+	arm_cpu_lowlevel_init r0
 
 	mrc	15, 0, r1, c1, c0, 0
 

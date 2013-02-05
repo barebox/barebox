@@ -163,13 +163,13 @@ static void __bare_init noinline setup_sdram(u32 memsize, u32 mode, u32 sdram_ad
 #define UNALIGNED_ACCESS_ENABLE
 #define LOW_INT_LATENCY_ENABLE
 
-void __bare_init __naked reset(void)
+void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	u32 r0, r1;
 	void *iomuxc_base = (void *)MX35_IOMUXC_BASE_ADDR;
 	int i;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x10000000 + 128 * 1024 - 16);
 

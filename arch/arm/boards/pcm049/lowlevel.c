@@ -83,9 +83,9 @@ static void noinline pcm049_init_lowlevel(void)
 	sr32(0x4A30a110, 2, 2, 0x3);  /* enable clocks */
 }
 
-void reset(void)
+void barebox_arm_reset_vector(void)
 {
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	if (get_pc() > 0x80000000)
 		goto out;

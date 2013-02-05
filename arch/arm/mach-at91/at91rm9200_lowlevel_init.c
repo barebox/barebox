@@ -23,12 +23,12 @@ void static inline access_sdram(void)
 	writel(0x00000000, AT91_SDRAM_BASE);
 }
 
-void __naked __bare_init reset(void)
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	u32 r;
 	int i;
 
-	common_reset();
+	arm_cpu_lowlevel_init();
 
 	/*
 	 * PMC Check if the PLL is already initialized

@@ -863,29 +863,29 @@ static int run_list_real(struct p_context *ctx, struct pipe *pi)
 		if ((rpipe->r_mode == RES_IN ||
 		    rpipe->r_mode == RES_FOR) &&
 		    (rpipe->next == NULL)) {
-				syntax();
-				return 1;
+			syntax();
+			return 1;
 		}
 		if ((rpipe->r_mode == RES_IN &&
-			(rpipe->next->r_mode == RES_IN &&
-			rpipe->next->progs->argv != NULL))||
-			(rpipe->r_mode == RES_FOR &&
-			rpipe->next->r_mode != RES_IN)) {
-				syntax();
-				return 1;
+				(rpipe->next->r_mode == RES_IN &&
+				rpipe->next->progs->argv != NULL))||
+				(rpipe->r_mode == RES_FOR &&
+				rpipe->next->r_mode != RES_IN)) {
+			syntax();
+			return 1;
 		}
 	}
 	for (; pi; pi = (flag_restore != 0) ? rpipe : pi->next) {
 		if (pi->r_mode == RES_WHILE || pi->r_mode == RES_UNTIL ||
-			pi->r_mode == RES_FOR) {
-				/* check Ctrl-C */
-				if (ctrlc())
-					return 1;
-				flag_restore = 0;
-				if (!rpipe) {
-					flag_rep = 0;
-					rpipe = pi;
-				}
+				pi->r_mode == RES_FOR) {
+			/* check Ctrl-C */
+			if (ctrlc())
+				return 1;
+			flag_restore = 0;
+			if (!rpipe) {
+				flag_rep = 0;
+				rpipe = pi;
+			}
 		}
 		rmode = pi->r_mode;
 		debug("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n",

@@ -33,6 +33,11 @@ config DRIVER_SPI_IMX_2_3
 	depends on ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
 	default y
 
+config DRIVER_SPI_MXS
+	bool "i.MX (23,28) SPI Master driver"
+	depends on ARCH_IMX23 || ARCH_IMX28
+	depends on SPI
+
 config DRIVER_SPI_OMAP3
 	bool "OMAP3 McSPI Master driver"
 	depends on ARCH_OMAP3

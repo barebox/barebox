@@ -64,6 +64,7 @@
 #define SSP_CTRL0_BUS_WIDTH(x)		(((x) & 0x3) << 22)
 #define SSP_CTRL0_WAIT_FOR_IRQ		(1 << 21)
 #define SSP_CTRL0_WAIT_FOR_CMD		(1 << 20)
+#define SSP_CTRL0_SSP_ASSERT_OUT(x)	(((x) & 0x3) << 20)
 #define SSP_CTRL0_LONG_RESP		(1 << 19)
 #define SSP_CTRL0_GET_RESP		(1 << 17)
 #define SSP_CTRL0_ENABLE		(1 << 16)
@@ -92,6 +93,7 @@
 /* bit definition for register HW_SSP_CTRL1 */
 #define SSP_CTRL1_POLARITY		(1 << 9)
 #define SSP_CTRL1_PHASE			(1 << 10)
+#define SSP_CTRL1_DMA_ENABLE		(1 << 13)
 #define SSP_CTRL1_WORD_LENGTH(x)	(((x) & 0xf) << 4)
 #define SSP_CTRL1_SSP_MODE(x)		((x) & 0xf)
 

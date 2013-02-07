@@ -33,6 +33,7 @@ config DRIVER_NET_CS8900
 
 config DRIVER_NET_CPSW
 	bool "CPSW ethernet driver"
+	depends on ARCH_OMAP
 	select PHYLIB
 
 config DRIVER_NET_SMC911X

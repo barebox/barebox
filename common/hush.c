@@ -782,7 +782,8 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
 
-	if (!strcmp(globbuf.gl_pathv[0], "getopt")) {
+	if (!strcmp(globbuf.gl_pathv[0], "getopt") &&
+			IS_ENABLED(CONFIG_HUSH_GETOPT)) {
 		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
 	} else if (!strcmp(globbuf.gl_pathv[0], "exit")) {
 		ret = builtin_exit(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);

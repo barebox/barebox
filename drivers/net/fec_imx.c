@@ -361,12 +361,18 @@ static int fec_init(struct eth_device *dev)
 static void fec_update_linkspeed(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
+	int speed = edev->phydev->speed;
+	u32 rcntl = readl(fec->regs + FEC_R_CNTRL) & ~FEC_R_CNTRL_RMII_10T;
+	u32 ecntl = readl(fec->regs + FEC_ECNTRL) & ~FEC_ECNTRL_SPEED;
 
-	if (edev->phydev->speed == SPEED_10) {
-		u32 rcntl = readl(fec->regs + FEC_R_CNTRL);
+	if (speed == SPEED_10)
 		rcntl |= FEC_R_CNTRL_RMII_10T;
-		writel(rcntl, fec->regs + FEC_R_CNTRL);
-	}
+
+	if (speed == SPEED_1000)
+		ecntl |= FEC_ECNTRL_SPEED;
+
+	writel(rcntl, fec->regs + FEC_R_CNTRL);
+	writel(ecntl, fec->regs + FEC_ECNTRL);
 }
 
 /**

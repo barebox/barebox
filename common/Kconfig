@@ -607,11 +607,27 @@ endmenu
 menu "Debugging"
 
 config COMPILE_LOGLEVEL
-	int "loglevel"
+	int "compile loglevel"
 	default 6
 	help
 	  This defines the maximum loglevel compiled into the binary. Less important
 	  messages will be compiled away resulting in a smaller binary.
+
+	  0    system is unusable (emerg)
+	  1    action must be taken immediately (alert)
+	  2    critical conditions (crit)
+	  3    error conditions (err)
+	  4    warning conditions (warn)
+	  5    normal but significant condition (notice)
+	  6    informational (info)
+	  7    debug-level messages (debug)
+
+config DEFAULT_LOGLEVEL
+	int "default loglevel"
+	default 7
+	help
+	  This defines the default runtime loglevel. It can be changed using the
+	  global.loglevel variable. Available logelevels are:
 
 	  0    system is unusable (emerg)
 	  1    action must be taken immediately (alert)

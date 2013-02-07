@@ -57,6 +57,33 @@ void console_allow_input(bool val)
 	console_input_allow = val;
 }
 
+int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;
+
+int pr_print(int level, const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+	char printbuffer[CFG_PBSIZE];
+
+	if (level > barebox_loglevel)
+		return 0;
+
+	va_start(args, fmt);
+	i = vsprintf(printbuffer, fmt, args);
+	va_end(args);
+
+	/* Print the string */
+	puts(printbuffer);
+
+	return i;
+}
+
+static int loglevel_init(void)
+{
+	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
+}
+device_initcall(loglevel_init);
+
 int printf(const char *fmt, ...)
 {
 	va_list args;

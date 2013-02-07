@@ -18,12 +18,15 @@
 
 /* debugging and troubleshooting/diagnostic helpers. */
 
-int dev_printf(const struct device_d *dev, const char *format, ...)
+int pr_print(int level, const char *format, ...)
 	__attribute__ ((format(__printf__, 2, 3)));
+
+int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+	__attribute__ ((format(__printf__, 3, 4)));
 
 #define __dev_printf(level, dev, format, args...) \
 	({	\
-		(level) <= LOGLEVEL ? dev_printf((dev), (format), ##args) : 0; \
+		(level) <= LOGLEVEL ? dev_printf((level), (dev), (format), ##args) : 0; \
 	 })
 
 
@@ -46,7 +49,7 @@ int dev_printf(const struct device_d *dev, const char *format, ...)
 
 #define __pr_printk(level, format, args...) \
 	({	\
-		(level) <= LOGLEVEL ? printk((format), ##args) : 0; \
+		(level) <= LOGLEVEL ? pr_print((level), (format), ##args) : 0; \
 	 })
 
 #ifndef pr_fmt

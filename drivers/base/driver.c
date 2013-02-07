@@ -26,6 +26,7 @@
 #include <command.h>
 #include <driver.h>
 #include <malloc.h>
+#include <console.h>
 #include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
@@ -370,10 +371,13 @@ const char *dev_id(const struct device_d *dev)
 	return buf;
 }
 
-int dev_printf(const struct device_d *dev, const char *format, ...)
+int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 {
 	va_list args;
 	int ret = 0;
+
+	if (level > barebox_loglevel)
+		return 0;
 
 	if (dev->driver && dev->driver->name)
 		ret += printf("%s ", dev->driver->name);

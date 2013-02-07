@@ -57,4 +57,6 @@ extern struct list_head console_list;
 bool console_is_input_allow(void);
 void console_allow_input(bool val);
 
+extern int barebox_loglevel;
+
 #endif

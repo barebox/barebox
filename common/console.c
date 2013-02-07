@@ -305,24 +305,6 @@ void console_putc(unsigned int ch, char c)
 }
 EXPORT_SYMBOL(console_putc);
 
-int fputc(int fd, char c)
-{
-	if(list_empty(&console_list)) {
-		if(!fd)
-			console_putc(0, c);
-		return 0;
-	}
-
-	if (fd == 1)
-		putchar(c);
-	else if (fd == 2)
-		eputc(c);
-	else
-		return write(fd, &c, 1);
-	return 0;
-}
-EXPORT_SYMBOL(fputc);
-
 int console_puts(unsigned int ch, const char *str)
 {
 	const char *s = str;
@@ -341,17 +323,6 @@ int console_puts(unsigned int ch, const char *str)
 }
 EXPORT_SYMBOL(console_puts);
 
-int fputs(int fd, const char *s)
-{
-	if (fd == 1)
-		return puts(s);
-	else if (fd == 2)
-		return eputs(s);
-	else
-		return write(fd, s, strlen(s));
-}
-EXPORT_SYMBOL(fputs);
-
 void console_flush(void)
 {
 	struct console_device *cdev;
@@ -362,62 +333,6 @@ void console_flush(void)
 	}
 }
 EXPORT_SYMBOL(console_flush);
-
-int fprintf(int file, const char *fmt, ...)
-{
-	va_list args;
-	char printbuffer[CFG_PBSIZE];
-
-	va_start (args, fmt);
-
-	/* For this to work, printbuffer must be larger than
-	 * anything we ever want to print.
-	 */
-	vsprintf (printbuffer, fmt, args);
-	va_end (args);
-
-	/* Print the string */
-	return fputs(file, printbuffer);
-}
-EXPORT_SYMBOL(fprintf);
-
-int printf (const char *fmt, ...)
-{
-	va_list args;
-	uint i;
-	char printbuffer[CFG_PBSIZE];
-
-	va_start (args, fmt);
-
-	/* For this to work, printbuffer must be larger than
-	 * anything we ever want to print.
-	 */
-	i = vsprintf (printbuffer, fmt, args);
-	va_end (args);
-
-	/* Print the string */
-	puts (printbuffer);
-
-	return i;
-}
-EXPORT_SYMBOL(printf);
-
-int vprintf (const char *fmt, va_list args)
-{
-	uint i;
-	char printbuffer[CFG_PBSIZE];
-
-	/* For this to work, printbuffer must be larger than
-	 * anything we ever want to print.
-	 */
-	i = vsprintf (printbuffer, fmt, args);
-
-	/* Print the string */
-	puts (printbuffer);
-
-	return i;
-}
-EXPORT_SYMBOL(vprintf);
 
 #ifndef ARCH_HAS_CTRLC
 /* test if ctrl-c was pressed */

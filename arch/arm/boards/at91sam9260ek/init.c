@@ -23,8 +23,8 @@
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>
 #include <mach/io.h>
-#include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
+#include <linux/clk.h>
 
 /*
  * board revision encoding
@@ -126,7 +126,9 @@ static struct at91_ether_platform_data macb_pdata = {
 static void at91sam9260ek_phy_reset(void)
 {
 	unsigned long rstc;
-	at91_pmc_write(AT91_PMC_PCER, 1 << AT91SAM9260_ID_EMAC);
+	struct clk *clk = clk_get(NULL, "macb_clk");
+
+	clk_enable(clk);
 
 	at91_set_gpio_input(AT91_PIN_PA14, 0);
 	at91_set_gpio_input(AT91_PIN_PA15, 0);

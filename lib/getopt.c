@@ -56,10 +56,10 @@ void getopt_context_restore(struct getopt_context *gc)
 }
 EXPORT_SYMBOL(getopt_context_restore);
 
-int getopt(int argc, char *argv[], char *optstring)
+int getopt(int argc, char *argv[], const char *optstring)
 {
 	char curopt;   /* current option character */
-	char *curoptp; /* pointer to the current option in optstring */
+	const char *curoptp; /* pointer to the current option in optstring */
 
 	while(1) {
 		debug("optindex: %d nonopts: %d optind: %d\n", optindex, nonopts, optind);

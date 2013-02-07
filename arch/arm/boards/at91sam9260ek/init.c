@@ -10,25 +10,15 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- *
  */
 
 #include <common.h>
-#include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <fec.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <partition.h>
-#include <fs.h>
-#include <fcntl.h>
-#include <io.h>
-#include <asm/hardware.h>
 #include <nand.h>
 #include <sizes.h>
-#include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>
@@ -83,7 +73,8 @@ static struct sam9_smc_config ek_9260_nand_smc_config = {
 	.read_cycle		= 5,
 	.write_cycle		= 5,
 
-	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE | AT91_SMC_EXNWMODE_DISABLE,
+	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE |
+				  AT91_SMC_EXNWMODE_DISABLE,
 	.tdf_cycles		= 2,
 };
 
@@ -101,7 +92,8 @@ static struct sam9_smc_config ek_9g20_nand_smc_config = {
 	.read_cycle		= 7,
 	.write_cycle		= 7,
 
-	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE | AT91_SMC_EXNWMODE_DISABLE,
+	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE |
+				  AT91_SMC_EXNWMODE_DISABLE,
 	.tdf_cycles		= 3,
 };
 
@@ -153,12 +145,11 @@ static void at91sam9260ek_phy_reset(void)
 	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
 
 	/* Wait for end hardware reset */
-	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL));
+	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL))
+		;
 
 	/* Restore NRST value */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (rstc) |
-				     AT91_RSTC_URSTEN);
+	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY | (rstc) | AT91_RSTC_URSTEN);
 }
 
 /*
@@ -271,7 +262,6 @@ static int at91sam9260ek_devices_init(void)
 
 	return 0;
 }
-
 device_initcall(at91sam9260ek_devices_init);
 
 static int at91sam9260ek_console_init(void)
@@ -279,5 +269,4 @@ static int at91sam9260ek_console_init(void)
 	at91_register_uart(0, 0);
 	return 0;
 }
-
 console_initcall(at91sam9260ek_console_init);

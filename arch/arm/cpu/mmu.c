@@ -279,6 +279,9 @@ static int mmu_init(void)
 	if (get_cr() & CR_M) {
 		asm volatile ("mrc  p15,0,%0,c2,c0,0" : "=r"(ttb));
 
+		/* Clear unpredictable bits [13:0] */
+		ttb = (unsigned long *)((unsigned long)ttb & ~0x3fff);
+
 		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 			pr_err("Error: Can't request SDRAM region for ttb\n");
 	} else {

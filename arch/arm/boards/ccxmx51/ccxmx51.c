@@ -80,12 +80,10 @@ struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-#ifdef CONFIG_DRIVER_NET_FEC_IMX
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
 	.phy_addr	= 7,
 };
-#endif
 
 static iomux_v3_cfg_t ccxmx51_pads[] = {
 	/* UART1 */
@@ -431,15 +429,12 @@ static int ccxmx51_devices_init(void)
 	devfs_add_partition("nand0", 0x80000, 0x40000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-#ifdef CONFIG_DRIVER_NET_FEC_IMX
-	if (ccxmx51_id->eth0 && !pwr) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_FEC_IMX) && ccxmx51_id->eth0 && !pwr) {
 		eth_register_ethaddr(0, hwid);
 		imx51_add_fec(&fec_info);
 	}
-#endif
 
-#ifdef CONFIG_DRIVER_NET_SMC911X
-	if (ccxmx51_id->eth1 && !pwr) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth1 && !pwr) {
 		/* Configure the WEIM CS5 timming, bus width, etc */
 		/* 16 bit on DATA[31..16], not multiplexed, async */
 		writel(0x00420081, MX51_WEIM_BASE_ADDR + WEIM_CSxGCR1(5));
@@ -455,7 +450,6 @@ static int ccxmx51_devices_init(void)
 		/* LAN9221 network controller */
 		add_generic_device("smc911x", 1, NULL, MX51_CS5_BASE_ADDR, SZ_4K, IORESOURCE_MEM, NULL);
 	}
-#endif
 
 	ccxmx51_otghost_init();
 

@@ -241,9 +241,8 @@ static int macb_open(struct eth_device *edev)
 			       macb->interface);
 }
 
-static int macb_init(struct eth_device *edev)
+static void macb_init(struct macb_device *macb)
 {
-	struct macb_device *macb = edev->priv;
 	unsigned long paddr, val = 0;
 	int i;
 
@@ -284,8 +283,6 @@ static int macb_init(struct eth_device *edev)
 
 	/* Enable TX and RX */
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE));
-
-	return 0;
 }
 
 static void macb_halt(struct eth_device *edev)
@@ -423,7 +420,6 @@ static int macb_probe(struct device_d *dev)
 
 	macb->dev = dev;
 
-	edev->init = macb_init;
 	edev->open = macb_open;
 	edev->send = macb_send;
 	edev->recv = macb_recv;
@@ -473,6 +469,8 @@ static int macb_probe(struct device_d *dev)
 		ncfgr = MACB_BF(CLK, MACB_CLK_DIV64);
 
 	macb_writel(macb, NCFGR, ncfgr);
+
+	macb_init(macb);
 
 	mdiobus_register(&macb->miibus);
 	eth_register(edev);

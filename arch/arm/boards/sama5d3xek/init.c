@@ -110,6 +110,11 @@ static void ek_add_device_nand(void) {}
 #endif
 
 #if defined(CONFIG_DRIVER_NET_MACB)
+static struct at91_ether_platform_data gmac_pdata = {
+	.phy_interface = PHY_INTERFACE_MODE_RGMII,
+	.phy_addr = 7,
+};
+
 static struct at91_ether_platform_data macb_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
@@ -138,6 +143,28 @@ static int ek_register_mac_address_43(int id)
 	return w1_local_mac_address_register(id, "tml", "w1-43-0");
 }
 
+static int ksz9021rn_phy_fixup(struct phy_device *phy)
+{
+	int value;
+
+#define GMII_RCCPSR	260
+#define GMII_RRDPSR	261
+#define GMII_ERCR	11
+#define GMII_ERDWR	12
+
+	/* Set delay values */
+	value = GMII_RCCPSR | 0x8000;
+	phy_write(phy, GMII_ERCR, value);
+	value = 0xF2F4;
+	phy_write(phy, GMII_ERDWR, value);
+	value = GMII_RRDPSR | 0x8000;
+	phy_write(phy, GMII_ERCR, value);
+	value = 0x2222;
+	phy_write(phy, GMII_ERDWR, value);
+
+	return 0;
+}
+
 static void ek_add_device_eth(void)
 {
 	if (w1_local_mac_address_register(0, "tml", "w1-2d-0"))
@@ -147,6 +174,10 @@ static void ek_add_device_eth(void)
 	if (ek_register_mac_address_23(1))
 		ek_register_mac_address_43(1);
 
+	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
+					   ksz9021rn_phy_fixup);
+
+	at91_add_device_eth(0, &gmac_pdata);
 	at91_add_device_eth(1, &macb_pdata);
 }
 #else

@@ -214,6 +214,9 @@ static int macb_open(struct eth_device *edev)
 
 	dev_dbg(macb->dev, "%s\n", __func__);
 
+	/* Enable TX and RX */
+	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE));
+
 	/* Obtain the PHY's address/id */
 	return phy_device_connect(edev, &macb->miibus, macb->phy_addr,
 			       macb_adjust_link, macb->phy_flags,
@@ -259,8 +262,6 @@ static void macb_init(struct macb_device *macb)
 #endif
 	macb_writel(macb, USRIO, val);
 
-	/* Enable TX and RX */
-	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE));
 }
 
 static void macb_halt(struct eth_device *edev)

@@ -51,10 +51,12 @@
 
 #include "macb.h"
 
-#define CFG_MACB_RX_BUFFER_SIZE		4096
-#define CFG_MACB_RX_RING_SIZE		(CFG_MACB_RX_BUFFER_SIZE / 128)
-#define CFG_MACB_TX_TIMEOUT		1000
-#define CFG_MACB_AUTONEG_TIMEOUT	5000000
+#define MACB_RX_BUFFER_SIZE	128
+#define RX_BUFFER_MULTIPLE	64  /* bytes */
+#define RX_RING_SIZE		32 /* must be power of 2 */
+#define RX_RING_BYTES		(sizeof(struct macb_dma_desc) * RX_RING_SIZE)
+
+#define TX_RING_BYTES		(sizeof(struct macb_dma_desc))
 
 struct macb_device {
 	void			__iomem *regs;
@@ -123,7 +125,7 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 	while (i > new_tail) {
 		macb->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
 		i++;
-		if (i > CFG_MACB_RX_RING_SIZE)
+		if (i > RX_RING_SIZE)
 			i = 0;
 	}
 
@@ -159,12 +161,12 @@ static int macb_recv(struct eth_device *edev)
 		}
 
 		if (status & MACB_BIT(RX_EOF)) {
-			buffer = macb->rx_buffer + 128 * macb->rx_tail;
+			buffer = macb->rx_buffer + MACB_RX_BUFFER_SIZE * macb->rx_tail;
 			length = MACB_BFEXT(RX_FRMLEN, status);
 			if (wrapped) {
 				unsigned int headlen, taillen;
 
-				headlen = 128 * (CFG_MACB_RX_RING_SIZE
+				headlen = MACB_RX_BUFFER_SIZE * (RX_RING_SIZE
 						 - macb->rx_tail);
 				taillen = length - headlen;
 				memcpy((void *)NetRxPackets[0],
@@ -175,11 +177,11 @@ static int macb_recv(struct eth_device *edev)
 			}
 
 			net_receive(buffer, length);
-			if (++rx_tail >= CFG_MACB_RX_RING_SIZE)
+			if (++rx_tail >= RX_RING_SIZE)
 				rx_tail = 0;
 			reclaim_rx_buffers(macb, rx_tail);
 		} else {
-			if (++rx_tail >= CFG_MACB_RX_RING_SIZE) {
+			if (++rx_tail >= RX_RING_SIZE) {
 				wrapped = 1;
 				rx_tail = 0;
 			}
@@ -232,13 +234,12 @@ static void macb_init(struct macb_device *macb)
 
 	/* initialize DMA descriptors */
 	paddr = (ulong)macb->rx_buffer;
-	for (i = 0; i < CFG_MACB_RX_RING_SIZE; i++) {
-		if (i == (CFG_MACB_RX_RING_SIZE - 1))
-			paddr |= MACB_BIT(RX_WRAP);
+	for (i = 0; i < RX_RING_SIZE; i++) {
 		macb->rx_ring[i].addr = paddr;
 		macb->rx_ring[i].ctrl = 0;
-		paddr += 128;
+		paddr += MACB_RX_BUFFER_SIZE;
 	}
+	macb->rx_ring[RX_RING_SIZE - 1].addr |= MACB_BIT(RX_WRAP);
 
 	macb->tx_ring[0].addr = 0;
 	macb->tx_ring[0].ctrl = MACB_BIT(TX_USED) | MACB_BIT(TX_WRAP);
@@ -414,9 +415,9 @@ static int macb_probe(struct device_d *dev)
 
 	macb->phy_flags = pdata->phy_flags;
 
-	macb->rx_buffer = dma_alloc_coherent(CFG_MACB_RX_BUFFER_SIZE);
-	macb->rx_ring = dma_alloc_coherent(CFG_MACB_RX_RING_SIZE * sizeof(struct macb_dma_desc));
-	macb->tx_ring = dma_alloc_coherent(sizeof(struct macb_dma_desc));
+	macb->rx_buffer = dma_alloc_coherent(MACB_RX_BUFFER_SIZE * RX_RING_SIZE);
+	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES);
+	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES);
 
 	macb->regs = dev_request_mem_region(dev, 0);
 

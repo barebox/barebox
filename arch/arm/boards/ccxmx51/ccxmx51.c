@@ -392,7 +392,7 @@ static int ccxmx51_devices_init(void)
 	printf("Module Variant: %s (0x%02x)\n", ccxmx51_id->id_string, hwid[0]);
 
 	if (hwid[0]) {
-		printf("Module HW Rev : %02x\n", hwid[1]);
+		printf("Module HW Rev : %02x\n", hwid[1] + 1);
 		switch (hwid[2] & 0xc0) {
 		case 0x00:
 			manloc = 'B';

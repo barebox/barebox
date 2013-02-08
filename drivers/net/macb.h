@@ -268,4 +268,74 @@
 #define macb_writel(port,reg,value)			\
 	__raw_writel((value), (port)->regs + MACB_##reg)
 
+/**
+ * struct macb_dma_desc - Hardware DMA descriptor
+ * @addr: DMA address of data buffer
+ * @ctrl: Control and status bits
+ */
+struct macb_dma_desc {
+	u32	addr;
+	u32	ctrl;
+};
+
+/* DMA descriptor bitfields */
+#define MACB_RX_USED_OFFSET			0
+#define MACB_RX_USED_SIZE			1
+#define MACB_RX_WRAP_OFFSET			1
+#define MACB_RX_WRAP_SIZE			1
+#define MACB_RX_WADDR_OFFSET			2
+#define MACB_RX_WADDR_SIZE			30
+
+#define MACB_RX_FRMLEN_OFFSET			0
+#define MACB_RX_FRMLEN_SIZE			12
+#define MACB_RX_OFFSET_OFFSET			12
+#define MACB_RX_OFFSET_SIZE			2
+#define MACB_RX_SOF_OFFSET			14
+#define MACB_RX_SOF_SIZE			1
+#define MACB_RX_EOF_OFFSET			15
+#define MACB_RX_EOF_SIZE			1
+#define MACB_RX_CFI_OFFSET			16
+#define MACB_RX_CFI_SIZE			1
+#define MACB_RX_VLAN_PRI_OFFSET			17
+#define MACB_RX_VLAN_PRI_SIZE			3
+#define MACB_RX_PRI_TAG_OFFSET			20
+#define MACB_RX_PRI_TAG_SIZE			1
+#define MACB_RX_VLAN_TAG_OFFSET			21
+#define MACB_RX_VLAN_TAG_SIZE			1
+#define MACB_RX_TYPEID_MATCH_OFFSET		22
+#define MACB_RX_TYPEID_MATCH_SIZE		1
+#define MACB_RX_SA4_MATCH_OFFSET		23
+#define MACB_RX_SA4_MATCH_SIZE			1
+#define MACB_RX_SA3_MATCH_OFFSET		24
+#define MACB_RX_SA3_MATCH_SIZE			1
+#define MACB_RX_SA2_MATCH_OFFSET		25
+#define MACB_RX_SA2_MATCH_SIZE			1
+#define MACB_RX_SA1_MATCH_OFFSET		26
+#define MACB_RX_SA1_MATCH_SIZE			1
+#define MACB_RX_EXT_MATCH_OFFSET		28
+#define MACB_RX_EXT_MATCH_SIZE			1
+#define MACB_RX_UHASH_MATCH_OFFSET		29
+#define MACB_RX_UHASH_MATCH_SIZE		1
+#define MACB_RX_MHASH_MATCH_OFFSET		30
+#define MACB_RX_MHASH_MATCH_SIZE		1
+#define MACB_RX_BROADCAST_OFFSET		31
+#define MACB_RX_BROADCAST_SIZE			1
+
+#define MACB_TX_FRMLEN_OFFSET			0
+#define MACB_TX_FRMLEN_SIZE			11
+#define MACB_TX_LAST_OFFSET			15
+#define MACB_TX_LAST_SIZE			1
+#define MACB_TX_NOCRC_OFFSET			16
+#define MACB_TX_NOCRC_SIZE			1
+#define MACB_TX_BUF_EXHAUSTED_OFFSET		27
+#define MACB_TX_BUF_EXHAUSTED_SIZE		1
+#define MACB_TX_UNDERRUN_OFFSET			28
+#define MACB_TX_UNDERRUN_SIZE			1
+#define MACB_TX_ERROR_OFFSET			29
+#define MACB_TX_ERROR_SIZE			1
+#define MACB_TX_WRAP_OFFSET			30
+#define MACB_TX_WRAP_SIZE			1
+#define MACB_TX_USED_OFFSET			31
+#define MACB_TX_USED_SIZE			1
+
 #endif /* __DRIVERS_MACB_H__ */

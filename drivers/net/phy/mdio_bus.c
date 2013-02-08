@@ -25,6 +25,8 @@
 #include <linux/phy.h>
 #include <linux/err.h>
 
+LIST_HEAD(mii_bus_list);
+
 /**
  * mdiobus_register - bring up all the PHYs on a given bus and attach them to bus
  * @bus: target mii_bus
@@ -57,6 +59,8 @@ int mdiobus_register(struct mii_bus *bus)
 	if (bus->reset)
 		bus->reset(bus);
 
+	list_add_tail(&bus->list, &mii_bus_list);
+
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 	return 0;
 }
@@ -71,6 +75,8 @@ void mdiobus_unregister(struct mii_bus *bus)
 			unregister_device(&bus->phy_map[i]->dev);
 		bus->phy_map[i] = NULL;
 	}
+
+	list_del(&bus->list);
 }
 EXPORT_SYMBOL(mdiobus_unregister);
 

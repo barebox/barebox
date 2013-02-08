@@ -364,8 +364,10 @@ static int ccxmx51_power_init(void)
 	/* GP02 - LAN9221 Power */
 	/* GP03 - FEC Reset */
 	/* GP04 - Wireless Power */
-	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth1)
+	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth1) {
 		val |= (1 << 8);
+		mdelay(50);
+	}
 	if (IS_ENABLED(CONFIG_DRIVER_NET_FEC_IMX) && ccxmx51_id->eth0)
 		val |= (1 << 10);
 	if (ccxmx51_id->wless)

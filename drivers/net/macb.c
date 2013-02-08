@@ -374,6 +374,23 @@ static int macb_set_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return 0;
 }
 
+static void macb_reset_hw(struct macb_device *bp)
+{
+	/* Disable RX and TX forcefully */
+	macb_writel(bp, NCR, 0);
+
+	/* Clear the stats registers (XXX: Update stats first?) */
+	macb_writel(bp, NCR, MACB_BIT(CLRSTAT));
+
+	/* Clear all status flags */
+	macb_writel(bp, TSR, -1);
+	macb_writel(bp, RSR, -1);
+
+	/* Disable all interrupts */
+	macb_writel(bp, IDR, -1);
+	macb_readl(bp, ISR);
+}
+
 static int macb_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
@@ -433,6 +450,9 @@ static int macb_probe(struct device_d *dev)
 	}
 
 	clk_enable(pclk);
+
+	macb_reset_hw(macb);
+
 	macb_hz = clk_get_rate(pclk);
 	if (macb_hz < 20000000)
 		ncfgr = MACB_BF(CLK, MACB_CLK_DIV8);
@@ -443,6 +463,9 @@ static int macb_probe(struct device_d *dev)
 	else
 		ncfgr = MACB_BF(CLK, MACB_CLK_DIV64);
 
+
+	ncfgr |= MACB_BIT(PAE);		/* PAuse Enable */
+	ncfgr |= MACB_BIT(DRFCS);	/* Discard Rx FCS */
 	macb_writel(macb, NCFGR, ncfgr);
 
 	macb_init(macb);

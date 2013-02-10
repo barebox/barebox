@@ -24,6 +24,8 @@
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
+#include <usb/fsl_usb2.h>
+#include <mach/usb.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
@@ -41,6 +43,13 @@ static const uint32_t pad_setup[] = {
 	SSP1_CMD | PULLUP(1),
 	SSP1_DETECT | PULLUP(1),
 };
+
+#ifdef CONFIG_USB_GADGET_DRIVER_ARC
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+#endif
 
 static int mx23_evk_mem_init(void)
 {
@@ -111,6 +120,12 @@ static int mx23_evk_devices_init(void)
 		printf("Cannot create the 'env0' persistant "
 			 "environment storage (%d)\n", rc);
 
+#ifdef CONFIG_USB_GADGET_DRIVER_ARC
+	imx23_usb_phy_enable();
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_USB_BASE, NULL);
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_USB_BASE,
+			   0x200, IORESOURCE_MEM, &usb_pdata);
+#endif
 	return 0;
 }
 

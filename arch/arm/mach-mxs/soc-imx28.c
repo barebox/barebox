@@ -21,6 +21,7 @@
 
 #define HW_CLKCTRL_RESET 0x1e0
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)
+#define HW_CLKCTRL_WDOG_POR_DISABLE (1 << 5)
 
 /* Reset the full i.MX28 SoC via a chipset feature */
 void __noreturn reset_cpu(unsigned long addr)
@@ -35,3 +36,14 @@ void __noreturn reset_cpu(unsigned long addr)
 	/*NOTREACHED*/
 }
 EXPORT_SYMBOL(reset_cpu);
+
+static int imx28_init(void)
+{
+	/*
+	 * The default setting for the WDT is to do a POR. If the SoC is only
+	 * powered via battery, then a WDT reset powers the chip down instead
+	 * of resetting it. Use a software reset only.
+	 */
+	writel(HW_CLKCTRL_WDOG_POR_DISABLE, IMX_CCM_BASE + HW_CLKCTRL_RESET);
+}
+postcore_initcall(imx28_init);

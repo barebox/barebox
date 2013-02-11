@@ -105,6 +105,15 @@ config ARCH_VERSATILE
 	select CPU_ARM926T
 	select GPIOLIB
 
+config ARCH_VEXPRESS
+	bool "ARM Vexpres boards"
+	select HAS_DEBUG_LL
+	select CPU_V7
+	select ARM_AMBA
+	select AMBA_SP804
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+
 config ARCH_TEGRA
 	bool "Nvidia Tegra-based boards"
 	select CPU_ARM926T
@@ -125,6 +134,7 @@ source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-versatile/Kconfig
+source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig
 
 config ARM_ASM_UNIFIED

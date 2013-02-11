@@ -34,6 +34,8 @@
 #include <asm/cache.h>
 #include <asm/ptrace.h>
 
+#include "mmu.h"
+
 /**
  * Enable processor's instruction cache
  */
@@ -67,6 +69,24 @@ int icache_status(void)
 	return (get_cr () & CR_I) != 0;
 }
 
+/*
+ * SoC like the ux500 have the l2x0 always enable
+ * with or without MMU enable
+ */
+struct outer_cache_fns outer_cache;
+
+/*
+ * Clean and invalide caches, disable MMU
+ */
+void mmu_disable(void)
+{
+	if (outer_cache.disable)
+		outer_cache.disable();
+
+	__mmu_cache_flush();
+	__mmu_cache_off();
+}
+
 /**
  * Disable MMU and D-cache, flush caches
  * @return 0 (always)
@@ -78,9 +98,7 @@ void arch_shutdown(void)
 {
 	uint32_t r;
 
-#ifdef CONFIG_MMU
 	mmu_disable();
-#endif
 	flush_icache();
 	/*
 	 * barebox normally does not use interrupts, but some functionalities

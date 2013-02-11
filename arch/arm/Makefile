@@ -157,6 +157,7 @@ board-$(CONFIG_MACH_SABRELITE)			:= freescale-mx6-sabrelite
 board-$(CONFIG_MACH_TX53)			:= karo-tx53
 board-$(CONFIG_MACH_GUF_VINCELL)		:= guf-vincell
 board-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK)		:= efika-mx-smartbook
+board-$(CONFIG_MACH_SABRESD)			:= freescale-mx6-sabresd
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

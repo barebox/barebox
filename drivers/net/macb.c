@@ -54,14 +54,16 @@
 #define MACB_RX_BUFFER_SIZE	128
 #define RX_BUFFER_MULTIPLE	64  /* bytes */
 #define RX_RING_SIZE		32 /* must be power of 2 */
-#define RX_RING_BYTES		(sizeof(struct macb_dma_desc) * RX_RING_SIZE)
+#define TX_RING_SIZE		2 /* must be power of 2 */
 
-#define TX_RING_BYTES		(sizeof(struct macb_dma_desc))
+#define RX_RING_BYTES		(sizeof(struct macb_dma_desc) * RX_RING_SIZE)
+#define TX_RING_BYTES		(sizeof(struct macb_dma_desc) * TX_RING_SIZE)
 
 struct macb_device {
 	void			__iomem *regs;
 
 	unsigned int		rx_tail;
+	unsigned int		tx_head;
 	unsigned int		tx_tail;
 
 	void			*rx_buffer;
@@ -86,23 +88,36 @@ static int macb_send(struct eth_device *edev, void *packet,
 {
 	struct macb_device *macb = edev->priv;
 	unsigned long ctrl;
-	int ret;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
+	int ret = 0;
+	uint64_t start;
+	unsigned int tx_head = macb->tx_head;
 
 	ctrl = MACB_BF(TX_FRMLEN, length);
-	ctrl |= MACB_BIT(TX_LAST) | MACB_BIT(TX_WRAP);
+	ctrl |= MACB_BIT(TX_LAST);
 
-	macb->tx_ring[0].ctrl = ctrl;
-	macb->tx_ring[0].addr = (ulong)packet;
+	if (tx_head == (TX_RING_SIZE - 1)) {
+		ctrl |= MACB_BIT(TX_WRAP);
+		macb->tx_head = 0;
+	} else {
+		macb->tx_head++;
+	}
+
+	macb->tx_ring[tx_head].ctrl = ctrl;
+	macb->tx_ring[tx_head].addr = (ulong)packet;
 	barrier();
 	dma_flush_range((ulong) packet, (ulong)packet + length);
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
-	ret = wait_on_timeout(100 * MSECOND,
-		!(macb->tx_ring[0].ctrl & MACB_BIT(TX_USED)));
-
-	ctrl = macb->tx_ring[0].ctrl;
+	start = get_time_ns();
+	ret = -ETIMEDOUT;
+	do {
+		barrier();
+		ctrl = macb->tx_ring[0].ctrl;
+		if (ctrl & MACB_BIT(TX_USED)) {
+			ret = 0;
+			break;
+		}
+	} while (!is_timeout(start, 100 * MSECOND));
 
 	if (ctrl & MACB_BIT(TX_UNDERRUN))
 		dev_err(macb->dev, "TX underrun\n");
@@ -244,10 +259,13 @@ static void macb_init(struct macb_device *macb)
 	}
 	macb->rx_ring[RX_RING_SIZE - 1].addr |= MACB_BIT(RX_WRAP);
 
-	macb->tx_ring[0].addr = 0;
-	macb->tx_ring[0].ctrl = MACB_BIT(TX_USED) | MACB_BIT(TX_WRAP);
+	for (i = 0; i < TX_RING_SIZE; i++) {
+		macb->tx_ring[i].addr = 0;
+		macb->tx_ring[i].ctrl = MACB_BIT(TX_USED);
+	}
+	macb->tx_ring[TX_RING_SIZE - 1].addr |= MACB_BIT(TX_WRAP);
 
-	macb->rx_tail = macb->tx_tail = 0;
+	macb->rx_tail = macb->tx_head = macb->tx_tail = 0;
 
 	macb_writel(macb, RBQP, (ulong)macb->rx_ring);
 	macb_writel(macb, TBQP, (ulong)macb->tx_ring);

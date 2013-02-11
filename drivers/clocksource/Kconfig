@@ -1,3 +1,7 @@
+config AMBA_SP804
+	bool
+	depends on ARM_AMBA
+
 config ARM_SMP_TWD
 	bool
 	depends on ARM && CPU_V7

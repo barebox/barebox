@@ -385,10 +385,17 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ahci_port_info(ahci_port, "Spinning up device...\n");
 
 	ret = wait_on_timeout(WAIT_SPINUP,
-			(readl(port_mmio + PORT_TFDATA) &
-			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0);
+			((readl(port_mmio + PORT_TFDATA) &
+			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0)
+			|| !((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1));
 	if (ret) {
 		ahci_port_info(ahci_port, "timeout.\n");
+		ret = -ENODEV;
+		goto err_init;
+	}
+
+	if ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1) {
+		ahci_port_info(ahci_port, "down.\n");
 		ret = -ENODEV;
 		goto err_init;
 	}

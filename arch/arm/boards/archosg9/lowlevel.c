@@ -63,15 +63,18 @@ static noinline void archosg9_init_lowlevel(void)
 	omap4_configure_usb_dpll(&usb);
 
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
-
-	barebox_arm_entry(0x80000000, SZ_1G, 0);
 }
 
 void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
 
+	if (get_pc() > 0x80000000)
+		goto out;
+
 	arm_setup_stack(0x4030d000);
 
 	archosg9_init_lowlevel();
+out:
+	barebox_arm_entry(0x80000000, SZ_1G, 0);
 }

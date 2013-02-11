@@ -487,6 +487,13 @@ config CMD_OFTREE
 	  The oftree command has support for dumping devicetrees and, if
 	  enabled, to probe devices from the devicetree
 
+config CMD_OFTREE_PROBE
+	bool
+	depends on CMD_OFTREE
+	prompt "oftree probe support"
+	help
+	  This enables the -p option to probe devices from the devicetree
+
 config CMD_OF_PROPERTY
 	tristate
 	select OFTREE

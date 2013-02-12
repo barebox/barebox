@@ -9,7 +9,7 @@
 #include <io.h>
 #include <driver.h>
 #include <errno.h>
-#include <linux/amba/bus.h>
+#include <linux/amba/sp804.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -73,8 +73,8 @@ static int sp804_probe(struct amba_device *dev, const struct amba_id *id)
 
 static struct amba_id sp804_ids[] = {
 	{
-		.id	= 0x00141804,
-		.mask	= 0x00ffffff,
+		.id	= AMBA_ARM_SP804_ID,
+		.mask	= AMBA_ARM_SP804_ID_MASK,
 	},
 	{ 0, 0 },
 };

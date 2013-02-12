@@ -26,6 +26,7 @@
 #include <memory.h>
 #include <sizes.h>
 #include <linux/ctype.h>
+#include <linux/amba/bus.h>
 
 /**
  * struct alias_prop - Alias property in 'aliases' node
@@ -641,18 +642,44 @@ void of_delete_property(struct property *pp)
 	free(pp);
 }
 
-static struct device_d *add_of_device(struct device_node *node)
+static struct device_d *add_of_amba_device(struct device_node *node)
+{
+	struct amba_device *dev;
+	char *name, *at;
+
+	dev = xzalloc(sizeof(*dev));
+
+	name = xstrdup(node->name);
+	at = strchr(name, '@');
+	if (at) {
+		*at = 0;
+		snprintf(dev->dev.name, MAX_DRIVER_NAME, "%s.%s", at + 1, name);
+	} else {
+		strncpy(dev->dev.name, node->name, MAX_DRIVER_NAME);
+	}
+
+	dev->dev.id = DEVICE_ID_SINGLE;
+	memcpy(&dev->res, &node->resource[0], sizeof(struct resource));
+	dev->dev.resource = node->resource;
+	dev->dev.num_resources = 1;
+	dev->dev.device_node = node;
+	node->device = &dev->dev;
+
+	of_property_read_u32(node, "arm,primecell-periphid", &dev->periphid);
+
+	debug("register device 0x%08x\n", node->resource[0].start);
+
+	amba_device_add(dev);
+
+	free(name);
+
+	return &dev->dev;
+}
+
+static struct device_d *add_of_platform_device(struct device_node *node)
 {
 	struct device_d *dev;
 	char *name, *at;
-	const struct property *cp;
-
-	if (of_node_disabled(node))
-		return NULL;
-
-	cp = of_get_property(node, "compatible", NULL);
-	if (!cp)
-		return NULL;
 
 	dev = xzalloc(sizeof(*dev));
 
@@ -678,6 +705,24 @@ static struct device_d *add_of_device(struct device_node *node)
 	free(name);
 
 	return dev;
+}
+
+static struct device_d *add_of_device(struct device_node *node)
+{
+	const struct property *cp;
+
+	if (of_node_disabled(node))
+		return NULL;
+
+	cp = of_get_property(node, "compatible", NULL);
+	if (!cp)
+		return NULL;
+
+	if (IS_ENABLED(CONFIG_ARM_AMBA) &&
+	    of_device_is_compatible(node, "arm,primecell") == 1)
+		return add_of_amba_device(node);
+	else
+		return add_of_platform_device(node);
 }
 EXPORT_SYMBOL(add_of_device);
 

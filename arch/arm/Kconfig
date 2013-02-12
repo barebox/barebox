@@ -7,9 +7,6 @@ config ARM
 	select HAVE_IMAGE_COMPRESSION
 	default y
 
-config ARM_AMBA
-	bool
-
 config ARM_LINUX
 	bool
 	default y

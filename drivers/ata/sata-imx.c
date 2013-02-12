@@ -146,10 +146,4 @@ static struct driver_d imx_sata_driver = {
 	.info	= ahci_info,
 	.id_table = imx_sata_ids,
 };
-
-static int ahci_init(void)
-{
-	return platform_driver_register(&imx_sata_driver);
-}
-
-device_initcall(ahci_init);
+device_platform_driver(imx_sata_driver);

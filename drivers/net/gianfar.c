@@ -528,11 +528,4 @@ static struct driver_d gfar_eth_driver = {
 	.name  = "gfar",
 	.probe = gfar_probe,
 };
-
-static int gfar_eth_init(void)
-{
-	platform_driver_register(&gfar_eth_driver);
-	return 0;
-}
-
-device_initcall(gfar_eth_init);
+device_platform_driver(gfar_eth_driver);

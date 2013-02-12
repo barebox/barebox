@@ -194,10 +194,4 @@ static struct driver_d imx_pata_driver = {
 	.name   = "imx-pata",
 	.probe  = imx_pata_probe,
 };
-
-static int imx_pata_init(void)
-{
-	return platform_driver_register(&imx_pata_driver);
-}
-
-device_initcall(imx_pata_init);
+device_platform_driver(imx_pata_driver);

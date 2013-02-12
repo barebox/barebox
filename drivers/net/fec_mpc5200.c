@@ -717,12 +717,4 @@ static struct driver_d mpc5xxx_driver = {
         .probe = mpc5xxx_fec_probe,
 	.remove = mpc5xxx_fec_remove,
 };
-
-static int mpc5xxx_fec_register(void)
-{
-        platform_driver_register(&mpc5xxx_driver);
-        return 0;
-}
-
-device_initcall(mpc5xxx_fec_register);
-
+device_platform_driver(mpc5xxx_driver);

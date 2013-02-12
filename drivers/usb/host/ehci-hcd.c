@@ -909,12 +909,4 @@ static struct driver_d ehci_driver = {
 	.probe = ehci_probe,
 	.remove = ehci_remove,
 };
-
-static int ehcil_init(void)
-{
-	platform_driver_register(&ehci_driver);
-	return 0;
-}
-
-device_initcall(ehcil_init);
-
+device_platform_driver(ehci_driver);

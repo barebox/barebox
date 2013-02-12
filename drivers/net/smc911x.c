@@ -638,12 +638,4 @@ static struct driver_d smc911x_driver = {
         .name  = "smc911x",
         .probe = smc911x_probe,
 };
-
-static int smc911x_init(void)
-{
-        platform_driver_register(&smc911x_driver);
-        return 0;
-}
-
-device_initcall(smc911x_init);
-
+device_platform_driver(smc911x_driver);

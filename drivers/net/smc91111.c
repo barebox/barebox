@@ -1319,11 +1319,4 @@ static struct driver_d smc91c111_driver = {
         .name  = "smc91c111",
         .probe = smc91c111_probe,
 };
-
-static int smc91c111_init(void)
-{
-        platform_driver_register(&smc91c111_driver);
-        return 0;
-}
-
-device_initcall(smc91c111_init);
+device_platform_driver(smc91c111_driver);

@@ -87,10 +87,4 @@ static struct driver_d atmel_ehci_driver = {
 	.probe = atmel_ehci_probe,
 	.remove = atmel_ehci_remove,
 };
-
-static int atmel_ehci_init(void)
-{
-	platform_driver_register(&atmel_ehci_driver);
-	return 0;
-}
-device_initcall(atmel_ehci_init);
+device_platform_driver(atmel_ehci_driver);

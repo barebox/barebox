@@ -1512,11 +1512,4 @@ static struct driver_d udc_driver = {
 	.name		= "pxa27x-udc",
 	.probe		= pxa_udc_probe,
 };
-
-static int __init pxa27x_udc_init(void)
-{
-	platform_driver_register(&udc_driver);
-	return 0;
-}
-
-device_initcall(pxa27x_udc_init);
+device_platform_driver(udc_driver);

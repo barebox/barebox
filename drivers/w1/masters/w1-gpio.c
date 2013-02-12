@@ -108,9 +108,4 @@ static struct driver_d w1_gpio_driver = {
 	.name	= "w1-gpio",
 	.probe	= w1_gpio_probe,
 };
-
-static int __init w1_gpio_init(void)
-{
-	return platform_driver_register(&w1_gpio_driver);
-}
-device_initcall(w1_gpio_init);
+device_platform_driver(w1_gpio_driver);

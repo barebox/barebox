@@ -630,11 +630,4 @@ static struct driver_d omap_mmc_driver = {
 	.probe = omap_mmc_probe,
 	.id_table = omap_mmc_ids,
 };
-
-static int omap_mmc_init_driver(void)
-{
-	platform_driver_register(&omap_mmc_driver);
-	return 0;
-}
-
-device_initcall(omap_mmc_init_driver);
+device_platform_driver(omap_mmc_driver);

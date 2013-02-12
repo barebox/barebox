@@ -768,14 +768,7 @@ static struct driver_d fec_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_fec_dt_ids),
 	.id_table = imx_fec_ids,
 };
-
-static int fec_register(void)
-{
-	platform_driver_register(&fec_driver);
-	return 0;
-}
-
-device_initcall(fec_register);
+device_platform_driver(fec_driver);
 
 /**
  * @file

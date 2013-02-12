@@ -597,11 +597,4 @@ static struct driver_d imxfb_driver = {
 	.probe		= imxfb_probe,
 	.remove		= imxfb_remove,
 };
-
-static int imxfb_init(void)
-{
-	return platform_driver_register(&imxfb_driver);
-}
-
-device_initcall(imxfb_init);
-
+device_platform_driver(imxfb_driver);

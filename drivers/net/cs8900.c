@@ -468,11 +468,4 @@ static struct driver_d cs8900_driver = {
 	.probe = cs8900_probe,
 	.info = cs8900_info,
 };
-
-static int cs8900_init(void)
-{
-	platform_driver_register(&cs8900_driver);
-	return 0;
-}
-
-device_initcall(cs8900_init);
+device_platform_driver(cs8900_driver);

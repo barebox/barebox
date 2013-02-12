@@ -1242,13 +1242,7 @@ static struct driver_d atmel_nand_driver = {
 	.name	= "atmel_nand",
 	.probe	= atmel_nand_probe,
 };
-
-static int __init atmel_nand_init(void)
-{
-	return platform_driver_register(&atmel_nand_driver);
-}
-
-device_initcall(atmel_nand_init);
+device_platform_driver(atmel_nand_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Rick Bronson");

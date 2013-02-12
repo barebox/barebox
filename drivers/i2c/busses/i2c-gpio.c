@@ -169,9 +169,4 @@ static struct driver_d i2c_gpio_driver = {
 	.name	= "i2c-gpio",
 	.probe	= i2c_gpio_probe,
 };
-
-static int __init i2c_gpio_init(void)
-{
-	return platform_driver_register(&i2c_gpio_driver);
-}
-device_initcall(i2c_gpio_init);
+device_platform_driver(i2c_gpio_driver);

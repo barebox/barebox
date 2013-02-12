@@ -234,14 +234,7 @@ static struct driver_d nomadik_nand_driver = {
 	.probe = nomadik_nand_probe,
 	.name = "nomadik_nand",
 };
-
-static int __init nand_nomadik_init(void)
-{
-	pr_info("Nomadik NAND driver\n");
-	return platform_driver_register(&nomadik_nand_driver);
-}
-
-device_initcall(nand_nomadik_init);
+device_platform_driver(nomadik_nand_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("ST Microelectronics (sachin.verma@st.com)");

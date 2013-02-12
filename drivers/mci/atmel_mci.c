@@ -619,10 +619,4 @@ static struct driver_d atmci_driver = {
 	.info	= atmci_info,
 #endif
 };
-
-static int atmci_init_driver(void)
-{
-	platform_driver_register(&atmci_driver);
-	return 0;
-}
-device_initcall(atmci_init_driver);
+device_platform_driver(atmci_driver);

@@ -1537,10 +1537,4 @@ static struct driver_d at91_udc_driver = {
 	.name	= driver_name,
 	.probe	= at91udc_probe,
 };
-
-static int at91_udc_init(void)
-{
-	platform_driver_register(&at91_udc_driver);
-	return 0;
-}
-device_initcall(at91_udc_init);
+device_platform_driver(at91_udc_driver);

@@ -545,10 +545,4 @@ static struct driver_d pxafb_driver = {
 	.probe	= pxafb_probe,
 	.remove	= pxafb_remove,
 };
-
-static int pxafb_init(void)
-{
-	return platform_driver_register(&pxafb_driver);
-}
-
-device_initcall(pxafb_init);
+device_platform_driver(pxafb_driver);

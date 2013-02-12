@@ -406,13 +406,7 @@ static struct driver_d s3cfb_driver = {
 	.info	= s3cfb_info,
 #endif
 };
-
-static int s3cfb_init(void)
-{
-	return platform_driver_register(&s3cfb_driver);
-}
-
-device_initcall(s3cfb_init);
+device_platform_driver(s3cfb_driver);
 
 /**
  * The S3C244x LCD controller supports passive (CSTN/STN) and active (TFT) LC displays

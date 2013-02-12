@@ -255,9 +255,4 @@ static struct driver_d atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",
 	.probe	= atmel_lcdc_probe,
 };
-
-static int atmel_lcdc_init(void)
-{
-	return platform_driver_register(&atmel_lcdc_driver);
-}
-device_initcall(atmel_lcdc_init);
+device_platform_driver(atmel_lcdc_driver);

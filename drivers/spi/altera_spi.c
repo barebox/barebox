@@ -239,10 +239,4 @@ static struct driver_d altera_spi_driver = {
 	.name  = "altera_spi",
 	.probe = altera_spi_probe,
 };
-
-static int altera_spi_driver_init(void)
-{
-	return platform_driver_register(&altera_spi_driver);
-}
-
-device_initcall(altera_spi_driver_init);
+device_platform_driver(altera_spi_driver);

@@ -1035,10 +1035,4 @@ static struct driver_d cfi_driver = {
 	.info    = cfi_info,
 	.of_compatible = DRV_OF_COMPAT(cfi_dt_ids),
 };
-
-static int cfi_init(void)
-{
-	return platform_driver_register(&cfi_driver);
-}
-
-device_initcall(cfi_init);
+device_platform_driver(cfi_driver);

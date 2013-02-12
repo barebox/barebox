@@ -376,13 +376,7 @@ static struct driver_d jtag_driver = {
 	.remove = jtag_remove,
 	.info = jtag_info,
 };
-
-static int jtag_module_init(void)
-{
-	return platform_driver_register(&jtag_driver);
-}
-
-device_initcall(jtag_module_init);
+device_platform_driver(jtag_driver);
 
 MODULE_AUTHOR("Davide Rizzo <elpa.rizzo@gmail.com>");
 MODULE_AUTHOR("Wjatscheslaw Stoljarski <wjatscheslaw.stoljarski@kiwigrid.com>");

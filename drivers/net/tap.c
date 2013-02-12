@@ -109,11 +109,4 @@ static struct driver_d tap_driver = {
         .name  = "tap",
         .probe = tap_probe,
 };
-
-static int tap_init(void)
-{
-        platform_driver_register(&tap_driver);
-        return 0;
-}
-
-device_initcall(tap_init);
+device_platform_driver(tap_driver);

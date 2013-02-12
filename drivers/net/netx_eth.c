@@ -276,12 +276,4 @@ static struct driver_d netx_eth_driver = {
         .name  = "netx-eth",
         .probe = netx_eth_probe,
 };
-
-static int netx_eth_init(void)
-{
-        platform_driver_register(&netx_eth_driver);
-        return 0;
-}
-
-device_initcall(netx_eth_init);
-
+device_platform_driver(netx_eth_driver);

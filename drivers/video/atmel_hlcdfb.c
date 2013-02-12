@@ -289,9 +289,4 @@ static struct driver_d atmel_hlcdc_driver = {
 	.name	= "atmel_hlcdfb",
 	.probe	= atmel_hlcdc_probe,
 };
-
-static int atmel_hlcdc_init(void)
-{
-	return platform_driver_register(&atmel_hlcdc_driver);
-}
-device_initcall(atmel_hlcdc_init);
+device_platform_driver(atmel_hlcdc_driver);

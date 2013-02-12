@@ -666,11 +666,4 @@ static struct driver_d macb_driver = {
 	.name  = "macb",
 	.probe = macb_probe,
 };
-
-static int macb_driver_init(void)
-{
-	debug("%s\n", __func__);
-	platform_driver_register(&macb_driver);
-	return 0;
-}
-device_initcall(macb_driver_init);
+device_platform_driver(macb_driver);

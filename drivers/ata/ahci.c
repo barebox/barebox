@@ -669,10 +669,4 @@ static struct driver_d ahci_driver = {
 	.probe  = ahci_probe,
 	.info	= ahci_info,
 };
-
-static int ahci_init(void)
-{
-	return platform_driver_register(&ahci_driver);
-}
-
-device_initcall(ahci_init);
+device_platform_driver(ahci_driver);

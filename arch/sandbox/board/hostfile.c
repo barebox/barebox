@@ -89,13 +89,7 @@ static struct driver_d hf_drv = {
 	.probe = hf_probe,
 	.info  = hf_info,
 };
-
-static int hf_init(void)
-{
-	return platform_driver_register(&hf_drv);
-}
-
-device_initcall(hf_init);
+device_platform_driver(hf_drv);
 
 int barebox_register_filedev(struct hf_platform_data *hf)
 {

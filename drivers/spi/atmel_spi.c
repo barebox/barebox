@@ -437,11 +437,4 @@ static struct driver_d atmel_spi_driver = {
 	.name  = "atmel_spi",
 	.probe = atmel_spi_probe,
 };
-
-static int atmel_spi_init(void)
-{
-	platform_driver_register(&atmel_spi_driver);
-	return 0;
-}
-
-device_initcall(atmel_spi_init);
+device_platform_driver(atmel_spi_driver);

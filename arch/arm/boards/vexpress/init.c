@@ -15,6 +15,7 @@
 #include <sizes.h>
 #include <io.h>
 #include <globalvar.h>
+#include <linux/amba/sp804.h>
 
 struct vexpress_init {
 	void (*core_init)(void);
@@ -57,12 +58,12 @@ struct vexpress_init vexpress_init_ax = {
 	.devices_init = vexpress_ax_devices_init,
 };
 
-static void vexpress_a9_mem_init(void)
+static void vexpress_a9_legacy_mem_init(void)
 {
-	vexpress_a9_add_ddram(SZ_512M, SZ_512M);
+	vexpress_a9_legacy_add_ddram(SZ_512M, SZ_512M);
 }
 
-static void vexpress_a9_devices_init(void)
+static void vexpress_a9_legacy_devices_init(void)
 {
 	add_cfi_flash_device(0, 0x40000000, SZ_64M, 0);
 	add_cfi_flash_device(1, 0x44000000, SZ_64M, 0);
@@ -73,20 +74,20 @@ static void vexpress_a9_devices_init(void)
 	armlinux_set_bootparams((void *)(0x60000100));
 }
 
-static void vexpress_a9_console_init(void)
+static void vexpress_a9_legacy_console_init(void)
 {
-	vexpress_a9_register_uart(0);
-	vexpress_a9_register_uart(1);
-	vexpress_a9_register_uart(2);
-	vexpress_a9_register_uart(3);
+	vexpress_a9_legacy_register_uart(0);
+	vexpress_a9_legacy_register_uart(1);
+	vexpress_a9_legacy_register_uart(2);
+	vexpress_a9_legacy_register_uart(3);
 }
 
-struct vexpress_init vexpress_init_a9 = {
-	.core_init = vexpress_a9_init,
-	.mem_init = vexpress_a9_mem_init,
-	.console_init = vexpress_a9_console_init,
-	.devices_init = vexpress_a9_devices_init,
-	.hostname = "vexpress-a9",
+struct vexpress_init vexpress_init_a9_legacy = {
+	.core_init = vexpress_a9_legacy_init,
+	.mem_init = vexpress_a9_legacy_mem_init,
+	.console_init = vexpress_a9_legacy_console_init,
+	.devices_init = vexpress_a9_legacy_devices_init,
+	.hostname = "vexpress-a9-legacy",
 };
 
 static int vexpress_mem_init(void)
@@ -123,14 +124,16 @@ console_initcall(vexpress_console_init);
 
 static int vexpress_core_init(void)
 {
-	if (cpu_is_cortex_a9()) {
-		v2m_init = &vexpress_init_a9;
+	if (amba_is_arm_sp804(IOMEM(0x10011000))) {
+		v2m_init = &vexpress_init_a9_legacy;
 	} else {
 		v2m_init = &vexpress_init_ax;
 		if (cpu_is_cortex_a5())
 			v2m_init->hostname = "vexpress-a5";
 		else if (cpu_is_cortex_a7())
 			v2m_init->hostname = "vexpress-a7";
+		else if (cpu_is_cortex_a9())
+			v2m_init->hostname = "vexpress-a9";
 		else if (cpu_is_cortex_a15())
 			v2m_init->hostname = "vexpress-a15";
 	}

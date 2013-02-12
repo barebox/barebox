@@ -12,7 +12,7 @@
 
 #include <mach/devices.h>
 
-void vexpress_a9_add_ddram(u32 ddr0_size, u32 ddr1_size)
+void vexpress_a9_legacy_add_ddram(u32 ddr0_size, u32 ddr1_size)
 {
 	arm_add_mem_device("ram0", 0x60000000, ddr0_size);
 
@@ -21,7 +21,7 @@ void vexpress_a9_add_ddram(u32 ddr0_size, u32 ddr1_size)
 }
 
 
-void vexpress_a9_register_uart(unsigned id)
+void vexpress_a9_legacy_register_uart(unsigned id)
 {
 	resource_size_t start;
 

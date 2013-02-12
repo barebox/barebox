@@ -64,7 +64,7 @@ static void __init v2m_sp804_init(void __iomem *base)
 	amba_apb_device_add(NULL, "sp804", DEVICE_ID_SINGLE, (resource_size_t)base, 4096, NULL, 0);
 }
 
-void vexpress_a9_init(void)
+void vexpress_a9_legacy_init(void)
 {
 	v2m_wdt_base = IOMEM(0x1000f000);
 	v2m_sysreg_base = IOMEM(0x10001000);

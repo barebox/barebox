@@ -693,12 +693,15 @@ int of_add_memory(struct device_node *node, bool dump)
 {
 	int na, nc;
 	const __be32 *reg, *endp;
-	int len, r = 0;
+	int len, r = 0, ret;
 	static char str[6];
-	struct property *type;
+	const char *device_type;
 
-	type = of_find_property(node, "device_type");
-	if (!type)
+	ret = of_property_read_string(node, "device_type", &device_type);
+	if (ret)
+		return -ENXIO;
+
+	if (strcmp(device_type, "memory"))
 		return -ENXIO;
 
 	of_bus_count_cells(node, &na, &nc);

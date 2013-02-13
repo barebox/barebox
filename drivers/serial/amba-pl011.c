@@ -175,7 +175,7 @@ int pl011_init_port (struct console_device *cdev)
 	/*
 	 ** Finally, enable the UART
 	 */
-	writel((UART01x_CR_UARTEN | UART011_CR_TXE | UART011_CR_RXE),
+	writel((UART01x_CR_UARTEN | UART011_CR_TXE | UART011_CR_RXE | UART011_CR_RTS),
 	       uart->base + UART011_CR);
 
 	return 0;

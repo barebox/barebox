@@ -1,0 +1,20 @@
+/*
+ * Copyright (C) 2013 Jean-Christophe PLAGNIOL-VILLARD <plagnio@jcrosoft.com>
+ *
+ * GPLv2 only
+ */
+
+#include <common.h>
+#include <io.h>
+
+#include <mach/devices.h>
+
+#include "sysregs.h"
+
+void __noreturn reset_cpu(ulong addr)
+{
+	hingbank_set_pwr_hard_reset();
+	asm("	wfi");
+
+	while(1);
+}

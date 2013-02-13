@@ -49,6 +49,16 @@ config ARCH_EP93XX
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
+config ARCH_HIGHBANK
+	bool "Calxeda Highbank"
+	select HAS_DEBUG_LL
+	select CPU_V7
+	select ARM_AMBA
+	select AMBA_SP804
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select GPIOLIB
+
 config ARCH_IMX
 	bool "Freescale iMX-based"
 	select GENERIC_GPIO
@@ -117,6 +127,7 @@ source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-bcm2835/Kconfig
 source arch/arm/mach-clps711x/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
+source arch/arm/mach-highbank/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-mxs/Kconfig
 source arch/arm/mach-netx/Kconfig

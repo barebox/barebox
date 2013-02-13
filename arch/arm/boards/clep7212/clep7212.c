@@ -20,16 +20,6 @@
 #include <mach/clps711x.h>
 #include <mach/devices.h>
 
-static int clps711x_mem_init(void)
-{
-	ulong memsize = get_ram_size((ulong *)SDRAM0_BASE, SZ_32M);
-
-	arm_add_mem_device("ram0", SDRAM0_BASE, memsize);
-
-	return 0;
-}
-mem_initcall(clps711x_mem_init);
-
 static int clps711x_devices_init(void)
 {
 	u32 serial_h = 0, serial_l = readl(UNIQID);

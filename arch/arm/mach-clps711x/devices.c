@@ -14,7 +14,7 @@
 
 #include <mach/clps711x.h>
 
-inline void _clps711x_setup_memcfg(int bank, u32 addr, u32 val)
+inline static void _clps711x_setup_memcfg(int bank, u32 addr, u32 val)
 {
 	u32 tmp = readl(addr);
 

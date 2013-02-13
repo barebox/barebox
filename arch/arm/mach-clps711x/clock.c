@@ -15,13 +15,11 @@
 
 #include <mach/clps711x.h>
 
-struct clk {
+static struct clk {
 	unsigned long	rate;
-};
+} uart_clk, bus_clk;
 
-static struct clk uart_clk, bus_clk;
-
-uint64_t clocksource_read(void)
+static uint64_t clocksource_read(void)
 {
 	return ~readw(TC2D);
 }

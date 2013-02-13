@@ -17,41 +17,52 @@
 
 #include <mach/clps711x.h>
 
-#define MAIN_CLOCK		3686400
-#define CPU_SPEED		92160000
-#define BUS_SPEED		(CPU_SPEED / 2)
-
-#define PLL_VALUE		(((CPU_SPEED * 2) / MAIN_CLOCK) << 24)
-#define SDRAM_REFRESH_RATE	(64 * (BUS_SPEED / (8192 * 1000)))
-
 void __naked __bare_init barebox_arm_reset_vector(void)
 {
-	u32 tmp;
+	const u32 pllmult = 50;
+	u32 cpu, bus;
 
 	arm_cpu_lowlevel_init();
 
-	/* Setup base clock */
+	/* Setup base clocking, Enable SDQM pins  */
 	writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
 	asm("nop");
 
-	/* Setup PLL */
-	writel(PLL_VALUE, PLLW);
-	asm("nop");
+	/* Check if we running from external 13 MHz clock */
+	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
+		/* Setup PLL */
+		writel(pllmult << 24, PLLW);
+		asm("nop");
+
+		/* Check for old CPUs without PLL */
+		if ((readl(PLLR) >> 24) != pllmult)
+			cpu = 73728000;
+		else
+			cpu = pllmult * 3686400;
+
+		if (cpu >= 36864000)
+			bus = cpu /2;
+		else
+			bus = 36864000 / 2;
+	} else
+		bus = 13000000;
 
 	/* CLKEN select, SDRAM width=32 */
 	writel(SYSCON2_CLKENSL, SYSCON2);
 
-	/* Enable SDQM pins */
-	tmp = readl(SYSCON3);
-	tmp &= ~SYSCON3_ENPD67;
-	writel(tmp, SYSCON3);
-
-	/* Setup Refresh Rate (64ms 8K Blocks) */
-	writel(SDRAM_REFRESH_RATE, SDRFPR);
-
-	/* Setup SDRAM (32MB, 16Bit*2, CAS=3) */
+	/* Setup SDRAM params (64MB, 16Bit*2, CAS=3) */
 	writel(SDCONF_CASLAT_3 | SDCONF_SIZE_256 | SDCONF_WIDTH_16 |
 	       SDCONF_CLKCTL | SDCONF_ACTIVE, SDCONF);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_32M, 0);
+	/* Setup Refresh Rate (64ms 8K Blocks) */
+	writel((64 * bus) / (8192 * 1000), SDRFPR);
+
+	/* Disable UART, IrDa, LCD */
+	writel(0, SYSCON1);
+	/* Disable PWM */
+	writew(0, PMPCON);
+	/* Disable LED flasher */
+	writew(0, LEDFLSH);
+
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, 0);
 }

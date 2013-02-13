@@ -17,9 +17,8 @@
 
 #include <mach/clps711x.h>
 
-void __naked __bare_init clps711x_barebox_entry(void)
+void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
 {
-	const u32 pllmult = 50;
 	u32 cpu, bus;
 
 	/* Setup base clocking, Enable SDQM pins  */
@@ -28,6 +27,10 @@ void __naked __bare_init clps711x_barebox_entry(void)
 
 	/* Check if we running from external 13 MHz clock */
 	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
+		/* Check valid multiplier, default to 74 MHz */
+		if ((pllmult < 20) || (pllmult > 50))
+			pllmult = 40;
+
 		/* Setup PLL */
 		writel(pllmult << 24, PLLW);
 		asm("nop");

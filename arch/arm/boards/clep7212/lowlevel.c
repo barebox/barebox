@@ -14,9 +14,13 @@
 
 #include <mach/clps711x.h>
 
+#if (CONFIG_CLPS711X_CPU_PLL_MULT < 20) || (CONFIG_CLPS711X_CPU_PLL_MULT > 50)
+# error "CPU PLL multiplier out of range"
+#endif
+
 void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
 
-	clps711x_barebox_entry();
+	clps711x_barebox_entry(CONFIG_CLPS711X_CPU_PLL_MULT);
 }

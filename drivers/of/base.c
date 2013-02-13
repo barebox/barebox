@@ -689,18 +689,23 @@ u64 dt_mem_next_cell(int s, const __be32 **cellp)
 	return of_read_number(p, s);
 }
 
-static int of_add_memory(struct device_node *node)
+int of_add_memory(struct device_node *node, bool dump)
 {
 	int na, nc;
 	const __be32 *reg, *endp;
 	int len, r = 0;
 	static char str[6];
+	struct property *type;
+
+	type = of_find_property(node, "device_type");
+	if (!type)
+		return -ENXIO;
 
 	of_bus_count_cells(node, &na, &nc);
 
 	reg = of_get_property(node, "reg", &len);
 	if (!reg)
-		return 0;
+		return -EINVAL;
 
 	endp = reg + (len / sizeof(__be32));
 
@@ -717,6 +722,9 @@ static int of_add_memory(struct device_node *node)
 
                 barebox_add_memory_bank(str, base, size);
 
+		if (dump)
+			pr_info("%s: %s: 0x%llx@0x%llx\n", node->name, str, size, base);
+
 		r++;
         }
 
@@ -725,7 +733,7 @@ static int of_add_memory(struct device_node *node)
 
 static int add_of_device_resource(struct device_node *node)
 {
-	struct property *reg, *type;
+	struct property *reg;
 	u64 address, size;
 	struct resource *res;
 	struct device_d *dev;
@@ -738,9 +746,9 @@ static int add_of_device_resource(struct device_node *node)
 		list_add_tail(&node->phandles, &phandle_list);
 	}
 
-	type = of_find_property(node, "device_type");
-	if (type)
-		return of_add_memory(node);
+	ret = of_add_memory(node, false);
+	if (ret != -ENXIO)
+		return ret;
 
 	reg = of_find_property(node, "reg");
 	if (!reg)

@@ -33,6 +33,9 @@
  * Check memory range for valid RAM. A simple memory test determines
  * the actually available RAM size between addresses `base' and
  * `base + maxsize'.
+ *
+ * This function modifies the RAM. Do not use it if you're running from
+ * the RAM you are going to detect!
  */
 long get_ram_size(volatile long *base, long maxsize)
 {

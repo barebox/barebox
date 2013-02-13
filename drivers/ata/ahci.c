@@ -671,10 +671,19 @@ static int ahci_probe(struct device_d *dev)
 	return ret;
 }
 
+static __maybe_unused struct of_device_id ahci_dt_ids[] = {
+	{
+		.compatible = "calxeda,hb-ahci",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d ahci_driver = {
 	.name   = "ahci",
 	.probe  = ahci_probe,
 	.info	= ahci_info,
+	.of_compatible = DRV_OF_COMPAT(ahci_dt_ids),
 };
 
 static int ahci_init(void)

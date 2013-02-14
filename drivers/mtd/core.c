@@ -30,15 +30,6 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
-int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
-{
-	if (!mtd->block_isbad)
-		return 0;
-	if (ofs < 0 || ofs > mtd->size)
-		return -EINVAL;
-	return mtd->block_isbad(mtd, ofs);
-}
-
 static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 			  loff_t _offset, ulong flags)
 {
@@ -168,6 +159,46 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	}
 
 	return ret;
+}
+
+int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
+{
+	if (!mtd->block_isbad)
+		return 0;
+
+	if (ofs < 0 || ofs > mtd->size)
+		return -EINVAL;
+
+	return mtd->block_isbad(mtd, ofs);
+}
+
+int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+
+	if (mtd->block_markbad)
+		ret = mtd->block_markbad(mtd, ofs);
+	else
+		ret = -ENOSYS;
+
+	return ret;
+}
+
+int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
+		u_char *buf)
+{
+	return mtd->read(mtd, from, len, retlen, buf);
+}
+
+int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
+		const u_char *buf)
+{
+	return mtd->write(mtd, to, len, retlen, buf);
+}
+
+int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+{
+	return mtd->erase(mtd, instr);
 }
 
 static struct file_operations mtd_ops = {

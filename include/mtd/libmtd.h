@@ -69,7 +69,7 @@ struct mtd_dev_info
 int mtd_get_dev_info(const char *node, struct mtd_dev_info *mtd);
 
 /**
- * mtd_erase - erase an eraseblock.
+ * libmtd_erase - erase an eraseblock.
  * @desc: MTD library descriptor
  * @mtd: MTD device description object
  * @fd: MTD device node file descriptor
@@ -78,7 +78,7 @@ int mtd_get_dev_info(const char *node, struct mtd_dev_info *mtd);
  * This function erases eraseblock @eb of MTD device described by @fd. Returns
  * %0 in case of success and %-1 in case of failure.
  */
-int mtd_erase(const struct mtd_dev_info *mtd, int fd, int eb);
+int libmtd_erase(const struct mtd_dev_info *mtd, int fd, int eb);
 
 /**
  * mtd_torture - torture an eraseblock.
@@ -127,7 +127,7 @@ int mtd_mark_bad(const struct mtd_dev_info *mtd, int fd, int eb);
  * of the MTD device defined by @mtd and stores the read data at buffer @buf.
  * Returns %0 in case of success and %-1 in case of failure.
  */
-int mtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
+int libmtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	     void *buf, int len);
 
 /**
@@ -143,7 +143,7 @@ int mtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
  * of the MTD device defined by @mtd. Returns %0 in case of success and %-1 in
  * case of failure.
  */
-int mtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
+int libmtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	      void *buf, int len);
 
 #endif /* __LIBMTD_H__ */

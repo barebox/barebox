@@ -41,7 +41,7 @@ static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08x\n",
 			offset, count);
 
-	ret = mtd->read(mtd, offset, count, &retlen, buf);
+	ret = mtd_read(mtd, offset, count, &retlen, buf);
 
 	if(ret) {
 		printf("err %d\n", ret);
@@ -61,7 +61,7 @@ static ssize_t mtd_op_write(struct cdev* cdev, const void *buf, size_t _count,
 	size_t retlen;
 	int ret;
 
-	ret = mtd->write(mtd, _offset, _count, &retlen, buf);
+	ret = mtd_write(mtd, _offset, _count, &retlen, buf);
 
 	return ret ? ret : _count;
 }
@@ -84,7 +84,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 		if (ret > 0) {
 			printf("Skipping bad block at 0x%08x\n", erase.addr);
 		} else {
-			ret = mtd->erase(mtd, &erase);
+			ret = mtd_erase(mtd, &erase);
 			if (ret)
 				return ret;
 		}
@@ -119,7 +119,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 #ifdef CONFIG_MTD_WRITE
 	case MEMSETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08llx\n", *offset);
-		ret = mtd->block_markbad(mtd, *offset);
+		ret = mtd_block_markbad(mtd, *offset);
 		break;
 	case MEMERASE:
 		ret = mtd_op_erase(cdev, ei->length, ei->start + cdev->offset);

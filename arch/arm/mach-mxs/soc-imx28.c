@@ -45,5 +45,7 @@ static int imx28_init(void)
 	 * of resetting it. Use a software reset only.
 	 */
 	writel(HW_CLKCTRL_WDOG_POR_DISABLE, IMX_CCM_BASE + HW_CLKCTRL_RESET);
+
+	return 0;
 }
 postcore_initcall(imx28_init);

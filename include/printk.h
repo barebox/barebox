@@ -46,10 +46,7 @@ int dev_printf(const struct device_d *dev, const char *format, ...)
 
 #define __pr_printk(level, format, args...) \
 	({	\
-		int ret = 0;	\
-		if (level <= LOGLEVEL) \
-			ret = printk(format, ##args);	\
-		ret;					\
+		(level) <= LOGLEVEL ? printk((format), ##args) : 0; \
 	 })
 
 #ifndef pr_fmt

@@ -37,9 +37,8 @@ static void ek_set_board_type(void)
 {
 	if (machine_is_at91sam9g20ek()) {
 		armlinux_set_architecture(MACH_TYPE_AT91SAM9G20EK);
-#ifdef CONFIG_AT91_HAVE_2MMC
-		armlinux_set_revision(HAVE_2MMC);
-#endif
+		if (IS_ENABLED(CONFIG_AT91_HAVE_2MMC))
+			armlinux_set_revision(HAVE_2MMC);
 	} else {
 		armlinux_set_architecture(MACH_TYPE_AT91SAM9260EK);
 	}
@@ -51,11 +50,6 @@ static struct atmel_nand_data nand_pdata = {
 	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
-#if defined(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)
-	.bus_width_16	= 1,
-#else
-	.bus_width_16	= 0,
-#endif
 	.on_flash_bbt	= 1,
 };
 
@@ -107,10 +101,12 @@ static void ek_add_device_nand(void)
 		smc = &ek_9260_nand_smc_config;
 
 	/* setup bus-width (8 or 16) */
-	if (nand_pdata.bus_width_16)
+	if (IS_ENABLED(CONFIG_MTD_NAND_ATMEL_BUSWIDTH_16)) {
+		nand_pdata.bus_width_16 = 1;
 		smc->mode |= AT91_SMC_DBW_16;
-	else
+	} else {
 		smc->mode |= AT91_SMC_DBW_8;
+	}
 
 	/* configure chip-select 3 (NAND) */
 	sam9_smc_configure(0, 3, smc);
@@ -157,7 +153,6 @@ static void at91sam9260ek_phy_reset(void)
 /*
  * MCI (SD/MMC)
  */
-#if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data __initdata ek_mci_data = {
 	.bus_width	= 4,
 	.slot_b		= 1,
@@ -165,14 +160,14 @@ static struct atmel_mci_platform_data __initdata ek_mci_data = {
 
 static void ek_usb_add_device_mci(void)
 {
+	if (!IS_ENABLED(CONFIG_MCI_ATMEL))
+		return;
+
 	if (machine_is_at91sam9g20ek())
 		ek_mci_data.detect_pin = AT91_PIN_PC9;
 
 	at91_add_device_mci(0, &ek_mci_data);
 }
-#else
-static void ek_usb_add_device_mci(void) {}
-#endif
 
 /*
  * USB Host port
@@ -209,10 +204,10 @@ static void __init ek_add_led(void)
 {
 	int i;
 
-#ifdef CONFIG_AT91_HAVE_2MMC
-	leds[0].gpio = AT91_PIN_PB8;
-	leds[1].gpio = AT91_PIN_PB9;
-#endif
+	if (IS_ENABLED(CONFIG_AT91_HAVE_2MMC)) {
+		leds[0].gpio = AT91_PIN_PB8;
+		leds[1].gpio = AT91_PIN_PB9;
+	}
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++) {
 		at91_set_gpio_output(leds[i].gpio, leds[i].active_low);

@@ -1,3 +1,4 @@
+#include <common.h>
 #include <io.h>
 #include <init.h>
 #include <sizes.h>

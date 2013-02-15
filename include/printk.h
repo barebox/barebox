@@ -23,10 +23,7 @@ int dev_printf(const struct device_d *dev, const char *format, ...)
 
 #define __dev_printf(level, dev, format, args...) \
 	({	\
-		int ret = 0; \
-		if (level <= LOGLEVEL) \
-			ret = dev_printf(dev, format, ##args);	\
-		ret;						\
+		(level) <= LOGLEVEL ? dev_printf((dev), (format), ##args) : 0; \
 	 })
 
 

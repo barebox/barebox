@@ -23,6 +23,11 @@ extern void __iomem *sregs_base;
 #define HB_SREG_A9_PWR_REQ		0xf00
 #define HB_SREG_A9_BOOT_STAT		0xf04
 #define HB_SREG_A9_BOOT_DATA		0xf08
+#define HB_SREG_A9_PWRDOM_DATA		0xf20
+
+#define HB_PWRDOM_STAT_SATA	0x80000000
+#define HB_PWRDOM_STAT_PCI	0x40000000
+#define HB_PWRDOM_STAT_EMMC	0x20000000
 
 #define HB_PWR_SUSPEND			0
 #define HB_PWR_SOFT_RESET		1

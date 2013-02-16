@@ -7,7 +7,7 @@ obj-$(CONFIG_ENV_HANDLING)	+= environment.o
 obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o
 obj-$(CONFIG_POLLER)		+= poller.o
 obj-$(CONFIG_BLOCK)		+= block.o
-obj-$(CONFIG_PARTITION_DISK)	+= partitions.o
+obj-$(CONFIG_PARTITION_DISK)	+= partitions.o partitions/
 
 obj-$(CONFIG_CMD_LOADS)		+= s_record.o
 obj-$(CONFIG_OFTREE)		+= oftree.o

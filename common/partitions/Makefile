@@ -1,0 +1,1 @@
+obj-$(CONFIG_PARTITION_DISK_DOS)	+= dos.o

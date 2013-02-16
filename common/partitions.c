@@ -27,92 +27,12 @@
 #include <block.h>
 #include <asm/unaligned.h>
 #include <disks.h>
-#include <dma.h>
 #include <filetype.h>
+#include <dma.h>
 
-struct partition {
-	uint64_t first_sec;
-	uint64_t size;
-};
+#include "partitions/parser.h"
 
-struct partition_desc {
-	int used_entries;
-	struct partition parts[8];
-};
-
-/**
- * Guess the size of the disk, based on the partition table entries
- * @param dev device to create partitions for
- * @param table partition table
- * @return sector count
- */
-static int disk_guess_size(struct device_d *dev, struct partition_entry *table)
-{
-	uint64_t size = 0;
-	int i;
-
-	for (i = 0; i < 4; i++) {
-		if (table[i].partition_start != 0) {
-			size += get_unaligned_le32(&table[i].partition_start) - size;
-			size += get_unaligned_le32(&table[i].partition_size);
-		}
-	}
-
-	return (int)size;
-}
-
-/**
- * Check if a DOS like partition describes this block device
- * @param blk Block device to register to
- * @param pd Where to store the partition information
- *
- * It seems at least on ARM this routine canot use temp. stack space for the
- * sector. So, keep the malloc/free.
- */
-static void __maybe_unused try_dos_partition(struct block_device *blk,
-						struct partition_desc *pd)
-{
-	uint8_t *buffer;
-	struct partition_entry *table;
-	struct partition pentry;
-	int i, rc;
-
-	buffer = dma_alloc(SECTOR_SIZE);
-
-	/* read in the MBR to get the partition table */
-	rc = blk->ops->read(blk, buffer, 0, 1);
-	if (rc != 0) {
-		dev_err(blk->dev, "Cannot read MBR/partition table\n");
-		goto on_error;
-	}
-
-	if (is_fat_or_mbr(buffer, NULL) != filetype_mbr) {
-		dev_info(blk->dev, "No partition table found\n");
-		goto on_error;
-	}
-
-	table = (struct partition_entry *)&buffer[446];
-
-	/* valid for x86 BIOS based disks only */
-	if (IS_ENABLED(CONFIG_DISK_BIOS) && blk->num_blocks == 0)
-		blk->num_blocks = disk_guess_size(blk->dev, table);
-
-	for (i = 0; i < 4; i++) {
-		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);
-		pentry.size = get_unaligned_le32(&table[i].partition_size);
-
-		if (pentry.first_sec != 0) {
-			pd->parts[pd->used_entries].first_sec = pentry.first_sec;
-			pd->parts[pd->used_entries].size = pentry.size;
-			pd->used_entries++;
-		} else {
-			dev_dbg(blk->dev, "Skipping empty partition %d\n", i);
-		}
-	}
-
-on_error:
-	dma_free(buffer);
-}
+static LIST_HEAD(partition_parser_list);
 
 /**
  * Register one partition on the given block device
@@ -135,6 +55,33 @@ static int register_one_partition(struct block_device *blk,
 				0, partition_name);
 }
 
+static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
+{
+	enum filetype type;
+	struct partition_parser *parser;
+
+	/* first new partition table as EFI GPT */
+	type = file_detect_type(buf, SECTOR_SIZE * 2);
+
+	list_for_each_entry(parser, &partition_parser_list, list) {
+		if (parser->type == type)
+			return parser;
+	}
+
+	/* if not parser found search for old one
+	 * so if EFI GPT not enable take it as MBR
+	 * useful for compatibility
+	 */
+	type = file_detect_type(buf, SECTOR_SIZE);
+
+	list_for_each_entry(parser, &partition_parser_list, list) {
+		if (parser->type == type)
+			return parser;
+	}
+
+	return NULL;
+}
+
 /**
  * Try to collect partition information on the given block device
  * @param blk Block device to examine
@@ -147,10 +94,23 @@ int parse_partition_table(struct block_device *blk)
 	struct partition_desc pdesc = { .used_entries = 0, };
 	int i;
 	int rc = 0;
+	struct partition_parser *parser;
+	uint8_t *buf;
 
-#ifdef CONFIG_PARTITION_DISK_DOS
-	try_dos_partition(blk, &pdesc);
-#endif
+	buf = dma_alloc(SECTOR_SIZE * 2);
+
+	rc = blk->ops->read(blk, buf, 0, 2);
+	if (rc != 0) {
+		dev_err(blk->dev, "Cannot read MBR/partition table\n");
+		goto on_error;
+	}
+
+	parser = partition_parser_get_by_filetype(buf);
+	if (!parser)
+		goto on_error;
+
+	parser->parse(buf, blk, &pdesc);
+
 	if (!pdesc.used_entries)
 		return 0;
 
@@ -165,5 +125,14 @@ int parse_partition_table(struct block_device *blk)
 			rc = 0;
 	}
 
+on_error:
+	dma_free(buf);
 	return rc;
+}
+
+int partition_parser_register(struct partition_parser *p)
+{
+	list_add_tail(&p->list, &partition_parser_list);
+
+	return 0;
 }

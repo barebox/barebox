@@ -17,6 +17,12 @@ void do_fixup_by_path(struct fdt_header *fdt, const char *path, const char *prop
 		      const void *val, int len, int create);
 void do_fixup_by_path_u32(struct fdt_header *fdt, const char *path, const char *prop,
 			  u32 val, int create);
+void do_fixup_by_compatible(struct fdt_header *fdt, const char *compatible,
+			const char *prop, const void *val, int len, int create);
+void do_fixup_by_compatible_u32(struct fdt_header *fdt, const char *compatible,
+				const char *prop, u32 val, int create);
+void do_fixup_by_compatible_string(struct fdt_header *fdt, const char *compatible,
+				const char *prop, const char *val, int create);
 int fdt_get_path_or_create(struct fdt_header *fdt, const char *path);
 
 #define OF_BAD_ADDR      ((u64)-1)

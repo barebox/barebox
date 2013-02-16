@@ -52,6 +52,7 @@ config ARCH_EP93XX
 config ARCH_HIGHBANK
 	bool "Calxeda Highbank"
 	select HAS_DEBUG_LL
+	select HAS_POWEROFF
 	select ARCH_HAS_L2X0
 	select CPU_V7
 	select ARM_AMBA

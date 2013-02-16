@@ -18,3 +18,11 @@ void __noreturn reset_cpu(ulong addr)
 
 	while(1);
 }
+
+void __noreturn poweroff()
+{
+	shutdown_barebox();
+
+	hingbank_set_pwr_shutdown();
+	while(1);
+}

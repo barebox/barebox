@@ -12,8 +12,10 @@
 #include <linux/list.h>
 
 #define MAX_PARTITION		8
+#define MAX_PARTITION_NAME	38
 
 struct partition {
+	char name[MAX_PARTITION_NAME];
 	uint64_t first_sec;
 	uint64_t size;
 };

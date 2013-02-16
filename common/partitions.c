@@ -44,15 +44,43 @@ static LIST_HEAD(partition_parser_list);
 static int register_one_partition(struct block_device *blk,
 					struct partition *part, int no)
 {
-	char partition_name[19];
+	char *partition_name;
+	int ret;
+	uint64_t start = part->first_sec * SECTOR_SIZE;
+	uint64_t size = part->size * SECTOR_SIZE;
 
-	sprintf(partition_name, "%s.%d", blk->cdev.name, no);
+	partition_name = asprintf("%s.%d", blk->cdev.name, no);
+	if (!partition_name)
+		return -ENOMEM;
 	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
 				partition_name, blk->cdev.name);
-	return devfs_add_partition(blk->cdev.name,
-				part->first_sec * SECTOR_SIZE,
-				part->size * SECTOR_SIZE,
-				0, partition_name);
+	ret = devfs_add_partition(blk->cdev.name,
+				start, size, 0, partition_name);
+	if (ret)
+		goto out;
+
+	free(partition_name);
+
+	if (!part->name[0])
+		return 0;
+
+	partition_name = asprintf("%s.%s", blk->cdev.name, part->name);
+	if (!partition_name)
+		return -ENOMEM;
+
+	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
+				partition_name, blk->cdev.name);
+	ret = devfs_add_partition(blk->cdev.name,
+				start, size, 0, partition_name);
+
+	if (ret)
+		dev_warn(blk->dev, "Registering partition %s on drive %s failed\n",
+				partition_name, blk->cdev.name);
+
+	ret = 0;
+out:
+	free(partition_name);
+	return 0;
 }
 
 static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
@@ -91,12 +119,13 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
  */
 int parse_partition_table(struct block_device *blk)
 {
-	struct partition_desc pdesc = { .used_entries = 0, };
+	struct partition_desc *pdesc;
 	int i;
 	int rc = 0;
 	struct partition_parser *parser;
 	uint8_t *buf;
 
+	pdesc = xzalloc(sizeof(*pdesc));
 	buf = dma_alloc(SECTOR_SIZE * 2);
 
 	rc = blk->ops->read(blk, buf, 0, 2);
@@ -109,14 +138,14 @@ int parse_partition_table(struct block_device *blk)
 	if (!parser)
 		goto on_error;
 
-	parser->parse(buf, blk, &pdesc);
+	parser->parse(buf, blk, pdesc);
 
-	if (!pdesc.used_entries)
-		return 0;
+	if (!pdesc->used_entries)
+		goto on_error;
 
 	/* at least one partition description found */
-	for (i = 0; i < pdesc.used_entries; i++) {
-		rc = register_one_partition(blk, &pdesc.parts[i], i);
+	for (i = 0; i < pdesc->used_entries; i++) {
+		rc = register_one_partition(blk, &pdesc->parts[i], i);
 		if (rc != 0)
 			dev_err(blk->dev,
 				"Failed to register partition %d on %s (%d)\n",
@@ -127,6 +156,7 @@ int parse_partition_table(struct block_device *blk)
 
 on_error:
 	dma_free(buf);
+	free(pdesc);
 	return rc;
 }
 

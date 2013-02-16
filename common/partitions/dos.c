@@ -76,7 +76,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	}
 }
 
-struct partition_parser dos = {
+static struct partition_parser dos = {
 	.parse = dos_partition,
 	.type = filetype_mbr,
 };

@@ -193,6 +193,10 @@ static inline const char *dev_name(const struct device_d *dev)
 }
 
 /*
+ * get resource 'num' for a device
+ */
+struct resource *dev_get_resource(struct device_d *dev, int num);
+/*
  * get resource base 'name' for a device
  */
 struct resource *dev_get_resource_by_name(struct device_d *dev,

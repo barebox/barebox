@@ -8,8 +8,7 @@
 #include <io.h>
 
 #include <mach/devices.h>
-
-#include "sysregs.h"
+#include <mach/sysregs.h>
 
 void __noreturn reset_cpu(ulong addr)
 {

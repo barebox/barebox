@@ -15,11 +15,10 @@
 #include <asm/hardware/arm_timer.h>
 
 #include <mach/devices.h>
+#include <mach/hardware.h>
+#include <mach/sysregs.h>
 
-#include "sysregs.h"
-
-void __iomem *sregs_base = IOMEM(0xfff3c00);
-
+void __iomem *sregs_base = IOMEM(HB_SREG_A9_BASE);
 
 static void highbank_clk_init(void)
 {

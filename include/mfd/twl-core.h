@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __I2C_TWLCORE_H__
-#define __I2C_TWLCORE_H__
+#ifndef __MFD_TWLCORE_H__
+#define __MFD_TWLCORE_H__
 
 #include <common.h>
 #include <i2c/i2c.h>
@@ -27,4 +27,4 @@ extern int twlcore_reg_read(struct twlcore *twlcore, u16 reg, u8 *val);
 extern int twlcore_reg_write(struct twlcore *twlcore, u16 reg, u8 val);
 extern int twlcore_set_bits(struct twlcore *twlcore, u16 reg, u8 mask, u8 val);
 
-#endif /* __I2C_TWLCORE_H__ */
+#endif /* __MFD_TWLCORE_H__ */

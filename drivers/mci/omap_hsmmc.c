@@ -29,7 +29,7 @@
 
 #include <mach/omap_hsmmc.h>
 
-#if defined(CONFIG_I2C_TWL6030) && \
+#if defined(CONFIG_MFD_TWL6030) && \
 	defined(CONFIG_MCI_OMAP_HSMMC) && \
 	defined(CONFIG_ARCH_OMAP4)
 #include <mach/omap4_twl6030_mmc.h>
@@ -235,7 +235,7 @@ static int mmc_init_setup(struct mci_host *mci, struct device_d *dev)
  * It's necessary to do this here, because
  * you need to set up this at probetime.
  */
-#if defined(CONFIG_I2C_TWL6030) && \
+#if defined(CONFIG_MFD_TWL6030) && \
 	defined(CONFIG_MCI_OMAP_HSMMC) && \
 	defined(CONFIG_ARCH_OMAP4)
 	set_up_mmc_voltage_omap4();

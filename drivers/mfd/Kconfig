@@ -1,10 +1,14 @@
 menu MFD
 
+config MFD_LP3972
+	depends on I2C
+	bool "LP3972 driver"
+
 config MFD_MC13XXX
 	depends on I2C || SPI
 	bool "MC13XXX a.k.a. PMIC driver (MC13783, MC13892)"
 
-config I2C_MC34704
+config MFD_MC34704
 	depends on I2C
 	bool "MC34704 PMIC driver"
 
@@ -12,29 +16,25 @@ config MFD_MC34708
 	depends on I2C || SPI
 	bool "MC34708 PMIC driver"
 
-config I2C_MC9SDZ60
+config MFD_MC9SDZ60
 	depends on I2C
 	bool "MC9SDZ60 driver"
 
-config I2C_LP3972
-	depends on I2C
-	bool "LP3972 driver"
-
-config I2C_TWLCORE
-	bool
-
-config I2C_TWL4030
-	depends on I2C
-	select I2C_TWLCORE
-	bool "TWL4030 driver"
-
-config I2C_TWL6030
-	depends on I2C
-	select I2C_TWLCORE
-	bool "TWL6030 driver"
-
-config I2C_STMPE
+config MFD_STMPE
 	depends on I2C
 	bool "STMPE-i2c driver"
+
+config MFD_TWLCORE
+	bool
+
+config MFD_TWL4030
+	depends on I2C
+	select MFD_TWLCORE
+	bool "TWL4030 driver"
+
+config MFD_TWL6030
+	depends on I2C
+	select MFD_TWLCORE
+	bool "TWL6030 driver"
 
 endmenu

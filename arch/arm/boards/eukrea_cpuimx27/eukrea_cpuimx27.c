@@ -230,14 +230,14 @@ console_initcall(eukrea_cpuimx27_console_init);
 
 static int eukrea_cpuimx27_late_init(void)
 {
-#ifdef CONFIG_I2C_LP3972
+#ifdef CONFIG_MFD_LP3972
 	struct i2c_client *client;
 	u8 reg[1];
 #endif
 	console_flush();
 	imx27_add_fec(&fec_info);
 
-#ifdef CONFIG_I2C_LP3972
+#ifdef CONFIG_MFD_LP3972
 	client = lp3972_get_client();
 	if (!client)
 		return -ENODEV;

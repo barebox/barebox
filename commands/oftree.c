@@ -156,7 +156,14 @@ static int do_oftree(int argc, char *argv[])
 
 	if (dump) {
 		if (fdt) {
-			ret = fdt_print(fdt, node);
+			root = of_unflatten_dtb(NULL, fdt);
+			if (IS_ERR(root)) {
+				printf("parse oftree: %s\n", strerror(-PTR_ERR(root)));
+				ret = 1;
+				goto out;
+			}
+			of_print_nodes(root, 0);
+			of_free(root);
 		} else {
 			struct device_node *root, *n;
 
@@ -174,9 +181,9 @@ static int do_oftree(int argc, char *argv[])
 			}
 
 			of_print_nodes(n, 0);
-
-			ret = 0;
 		}
+
+		ret = 0;
 
 		goto out;
 	}

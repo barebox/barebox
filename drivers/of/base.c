@@ -932,10 +932,8 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 	int  nextoffset;	/* next node offset from libfdt */
 	uint32_t tag;		/* tag */
 	int  len;		/* length of the property */
-	int  level = 0;		/* keep track of nesting level */
 	const struct fdt_property *fdt_prop;
 	const char *pathp;
-	int depth = 10000;
 	struct device_node *node = NULL, *n, *root = NULL;
 	struct property *p;
 
@@ -998,8 +996,7 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 			of_alias_scan();
 			return 0;
 		default:
-			if (level <= depth)
-				printf("Unknown tag 0x%08X\n", tag);
+			printf("Unknown tag 0x%08X\n", tag);
 			return -EINVAL;
 		}
 		nodeoffset = nextoffset;

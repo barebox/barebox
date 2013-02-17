@@ -910,23 +910,13 @@ int of_probe(void)
 	return 0;
 }
 
-static struct device_node *of_find_child(struct device_node *node, const char *name)
+struct device_node *of_find_child_by_name(struct device_node *node, const char *name)
 {
 	struct device_node *_n;
 
-	if (!root_node)
-		return NULL;
-
-	if (!node && !*name)
-		return root_node;
-
-	if (!node)
-		node = root_node;
-
-	list_for_each_entry(_n, &node->children, parent_list) {
+	device_node_for_nach_child(node, _n)
 		if (!strcmp(_n->name, name))
 			return _n;
-	}
 
 	return NULL;
 }
@@ -975,7 +965,7 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 			if (!node) {
 				node = root;
 			} else {
-				if ((n = of_find_child(node, pathp))) {
+				if ((n = of_find_child_by_name(node, pathp))) {
 					node = n;
 				} else {
 					node = of_new_node(node, pathp);

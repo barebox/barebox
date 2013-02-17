@@ -72,6 +72,8 @@ struct property *of_find_property(const struct device_node *node, const char *na
 
 struct device_node *of_find_node_by_path(const char *path);
 
+struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
+
 struct fdt_header *fdt_get_tree(void);
 
 #define device_node_for_nach_child(node, child) \

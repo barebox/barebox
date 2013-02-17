@@ -181,13 +181,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 	}
 
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
-		fdt_open_into(oftree, oftree, end + 0x8000);
-
-		ret = of_fix_tree(oftree);
-		if (ret)
-			return ret;
-
-		data->oftree = oftree;
+		data->oftree = of_get_fixed_tree(oftree);
 	}
 
 	pr_info("zImage: concatenated oftree detected\n");

@@ -3,13 +3,12 @@
 
 #include <linux/types.h>
 #include <string.h>
+#include <asm/byteorder.h>
 
 #define _B(n)	((unsigned long long)((uint8_t *)&x)[n])
-static inline uint32_t fdt32_to_cpu(uint32_t x)
-{
-	return (_B(0) << 24) | (_B(1) << 16) | (_B(2) << 8) | _B(3);
-}
-#define cpu_to_fdt32(x) fdt32_to_cpu(x)
+
+#define fdt32_to_cpu(x)	be32_to_cpu(x)
+#define cpu_to_fdt32(x) cpu_to_be32(x)
 
 static inline uint64_t fdt64_to_cpu(uint64_t x)
 {

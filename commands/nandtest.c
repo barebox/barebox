@@ -43,41 +43,17 @@ static unsigned int ecc_stats_over;
 static unsigned int ecc_failed_cnt;
 
 /*
- * Implementation of pread with lseek and read.
- */
-static ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
-{
-	int ret;
-
-	/* Seek to offset */
-	ret = lseek(fd, offset, SEEK_SET);
-	if (ret < 0)
-		perror("lseek");
-
-	/* Read from flash and put it into buf  */
-	ret = read(fd, buf, count);
-	if (ret < 0)
-		perror("read");
-
-	return 0;
-}
-
-/*
  * Implementation of pwrite with lseek and write.
  */
-static ssize_t pwrite(int fd, const void *buf,
+static ssize_t __pwrite(int fd, const void *buf,
 		size_t count, loff_t offset, loff_t length)
 {
-	int ret;
-
-	ret = lseek(fd, offset, SEEK_SET);
-	if (ret < 0)
-		perror("lseek");
+	ssize_t ret;
 
 	/* Write buf to flash */
-	ret = write(fd, buf, count);
+	ret = pwrite(fd, buf, count, offset);
 	if (ret < 0) {
-		perror("write");
+		perror("pwrite");
 		if (markbad) {
 			printf("\nMark block bad at 0x%08llx\n",
 					offset + memregion.offset);
@@ -88,7 +64,7 @@ static ssize_t pwrite(int fd, const void *buf,
 	}
 
 	flush(fd);
-	return 0;
+	return ret;
 }
 
 /*
@@ -119,7 +95,7 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 	for (i = 0; i < meminfo.erasesize;
 			i += meminfo.writesize) {
 		/* Write data to given offset */
-		pwrite(fd, data + i, meminfo.writesize,
+		__pwrite(fd, data + i, meminfo.writesize,
 				ofs + i, length);
 
 		/* Read data from offset */

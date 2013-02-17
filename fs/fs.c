@@ -754,17 +754,12 @@ int ioctl(int fd, int request, void *buf)
 	return ret;
 }
 
-ssize_t read(int fd, void *buf, size_t count)
+static ssize_t __read(FILE *f, void *buf, size_t count)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
-	FILE *f;
 	int ret;
 
-	if (check_fd(fd))
-		return -errno;
-
-	f = &files[fd];
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -777,18 +772,14 @@ ssize_t read(int fd, void *buf, size_t count)
 
 	ret = fsdrv->read(dev, f, buf, count);
 
-	if (ret > 0)
-		f->pos += ret;
 	if (ret < 0)
 		errno = -ret;
 	return ret;
 }
-EXPORT_SYMBOL(read);
 
-ssize_t write(int fd, const void *buf, size_t count)
+ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 {
-	struct device_d *dev;
-	struct fs_driver_d *fsdrv;
+	loff_t pos;
 	FILE *f;
 	int ret;
 
@@ -796,6 +787,40 @@ ssize_t write(int fd, const void *buf, size_t count)
 		return -errno;
 
 	f = &files[fd];
+
+	pos = f->pos;
+	f->pos = offset;
+	ret = __read(f, buf, count);
+	f->pos = pos;
+
+	return ret;
+}
+EXPORT_SYMBOL(pread);
+
+ssize_t read(int fd, void *buf, size_t count)
+{
+	FILE *f;
+	int ret;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	ret = __read(f, buf, count);
+
+	if (ret > 0)
+		f->pos += ret;
+	return ret;
+}
+EXPORT_SYMBOL(read);
+
+static ssize_t __write(FILE *f, const void *buf, size_t count)
+{
+	struct device_d *dev;
+	struct fs_driver_d *fsdrv;
+	int ret;
+
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
@@ -812,11 +837,46 @@ ssize_t write(int fd, const void *buf, size_t count)
 		}
 	}
 	ret = fsdrv->write(dev, f, buf, count);
-	if (ret > 0)
-		f->pos += ret;
 out:
 	if (ret < 0)
 		errno = -ret;
+	return ret;
+}
+
+ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
+{
+	loff_t pos;
+	FILE *f;
+	int ret;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	pos = f->pos;
+	f->pos = offset;
+	ret = __write(f, buf, count);
+	f->pos = pos;
+
+	return ret;
+}
+EXPORT_SYMBOL(pwrite);
+
+ssize_t write(int fd, const void *buf, size_t count)
+{
+	FILE *f;
+	int ret;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	ret = __write(f, buf, count);
+
+	if (ret > 0)
+		f->pos += ret;
 	return ret;
 }
 EXPORT_SYMBOL(write);

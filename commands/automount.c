@@ -60,6 +60,7 @@ BAREBOX_CMD_HELP_START(automount)
 BAREBOX_CMD_HELP_USAGE("automount [OPTIONS] <PATH> <cmd>\n")
 BAREBOX_CMD_HELP_SHORT("execute <cmd> when <PATH> is first accessed\n")
 BAREBOX_CMD_HELP_OPT("-l", "List currently registered automountpoints\n")
+BAREBOX_CMD_HELP_OPT("-d", "Create the mount path\n")
 BAREBOX_CMD_HELP_OPT("-r <PATH>", "remove an automountpoint\n")
 BAREBOX_CMD_HELP_END
 

@@ -64,6 +64,8 @@ struct of_device_id {
 	unsigned long data;
 };
 
+#define OF_MAX_RESERVE_MAP	16
+
 struct driver_d;
 
 int of_match(struct device_d *dev, struct driver_d *drv);
@@ -168,7 +170,7 @@ int of_set_root_node(struct device_node *);
 int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
-void *of_flatten_dtb(void);
+void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
 #else
 static inline int of_parse_partitions(const char *cdevname,
@@ -197,7 +199,7 @@ static inline const char *of_get_model(void)
 	return NULL;
 }
 
-static inline void *of_flatten_dtb(void)
+static inline void *of_flatten_dtb(struct device_node *node)
 {
 	return NULL;
 }

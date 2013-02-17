@@ -1210,20 +1210,139 @@ err:
 	return ERR_PTR(ret);
 }
 
-static int __of_flatten_dtb(void *fdt, struct device_node *node)
+struct fdt {
+	void *dt;
+	uint32_t dt_nextofs;
+	uint32_t dt_size;
+	char *strings;
+	uint32_t str_nextofs;
+	uint32_t str_size;
+};
+
+static inline uint32_t dt_next_ofs(uint32_t curofs, uint32_t len)
+{
+	return ALIGN(curofs + len, 4);
+}
+
+static int lstrcpy(char *dest, const char *src)
+{
+	int len = 0;
+	int maxlen = 1023;
+
+	while (*src) {
+		*dest++ = *src++;
+		len++;
+		if (!maxlen)
+			return -ENOSPC;
+		maxlen--;
+	}
+
+	return len;
+}
+
+static void *memalign_realloc(void *orig, size_t oldsize, size_t newsize)
+{
+	int align;
+	void *newbuf;
+
+	/*
+	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
+	 * for mapping the devicetree, so we are not allowed to cross
+	 * 1MiB boundaries. This got fixed in the Kernel since v3.8-rc5
+	 */
+	align = 1 << fls(newsize - 1);
+
+	if (!orig)
+		return memalign(align, newsize);
+
+	newbuf = memalign(align, newsize);
+	if (!newbuf) {
+		free(orig);
+		return NULL;
+	}
+
+	memcpy(newbuf, orig, oldsize);
+	free(orig);
+	memset(newbuf + oldsize, 0, newsize - oldsize);
+
+	return newbuf;
+}
+
+static int fdt_ensure_space(struct fdt *fdt, int dtsize)
+{
+	/*
+	 * We assume strings and names have a maximum length of 1024
+	 * whereas properties can be longer. We allocate new memory
+	 * if we have less than 1024 bytes (+ the property size left.
+	 */
+	if (fdt->str_size - fdt->str_nextofs < 1024) {
+		fdt->strings = realloc(fdt->strings, fdt->str_size * 2);
+		if (!fdt->strings)
+			return -ENOMEM;
+		fdt->str_size *= 2;
+	}
+
+	if (fdt->dt_size - fdt->dt_nextofs < 1024 + dtsize) {
+		fdt->dt = memalign_realloc(fdt->dt, fdt->dt_size,
+				fdt->dt_size * 2);
+		if (!fdt->dt)
+			return -ENOMEM;
+		fdt->dt_size *= 2;
+	}
+
+	return 0;
+}
+
+static inline int dt_add_string(struct fdt *fdt, const char *str)
+{
+	uint32_t ret;
+	int len;
+
+	if (fdt_ensure_space(fdt, 0) < 0)
+		return -ENOMEM;
+
+	len = lstrcpy(fdt->strings + fdt->str_nextofs, str);
+	if (len < 0)
+		return -ENOSPC;
+
+	ret = fdt->str_nextofs;
+
+	fdt->str_nextofs += len + 1;
+
+	return ret;
+}
+
+static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node)
 {
 	struct property *p;
 	struct device_node *n;
 	int ret;
+	unsigned int len;
+	struct fdt_node_header *nh;
 
-	ret = fdt_begin_node(fdt, node->name);
-	if (ret)
-		return ret;
+	if (fdt_ensure_space(fdt, 0) < 0)
+		return -ENOMEM;
+
+	nh = fdt->dt + fdt->dt_nextofs;
+
+	nh->tag = cpu_to_fdt32(FDT_BEGIN_NODE);
+	len = lstrcpy(nh->name, node->name);
+	fdt->dt_nextofs = dt_next_ofs(fdt->dt_nextofs, 4 + len + 1);
 
 	list_for_each_entry(p, &node->properties, list) {
-		ret = fdt_property(fdt, p->name, p->value, p->length);
-		if (ret)
-			return ret;
+		struct fdt_property *fp;
+
+		if (fdt_ensure_space(fdt, p->length) < 0)
+			return -ENOMEM;
+
+		fp = fdt->dt + fdt->dt_nextofs;
+
+		fp->tag = cpu_to_fdt32(FDT_PROP);
+		fp->len = cpu_to_fdt32(p->length);
+		fp->nameoff = cpu_to_fdt32(dt_add_string(fdt, p->name));
+		memcpy(fp->data, p->value, p->length);
+		fdt->dt_nextofs = dt_next_ofs(fdt->dt_nextofs,
+				sizeof(struct fdt_property) + p->length);
 	}
 
 	list_for_each_entry(n, &node->children, parent_list) {
@@ -1232,45 +1351,82 @@ static int __of_flatten_dtb(void *fdt, struct device_node *node)
 			return ret;
 	}
 
-	ret = fdt_end_node(fdt);
+	nh = fdt->dt + fdt->dt_nextofs;
+	nh->tag = cpu_to_fdt32(FDT_END_NODE);
+	fdt->dt_nextofs = dt_next_ofs(fdt->dt_nextofs,
+			sizeof(struct fdt_node_header));
 
-	return ret;
+	if (fdt_ensure_space(fdt, 0) < 0)
+		return -ENOMEM;
+
+	return 0;
 }
 
-#define DTB_SIZE	SZ_128K
-
-void *of_flatten_dtb(void)
+/**
+ * of_flatten_dtb - flatten a barebox internal devicetree to a dtb
+ * @node - the root node of the tree to be unflattened
+ */
+void *of_flatten_dtb(struct device_node *node)
 {
-	void *fdt;
 	int ret;
+	struct fdt_header header = {};
+	struct fdt fdt = {};
+	uint32_t ofs;
+	struct fdt_node_header *nh;
 
-	if (!root_node)
-		return NULL;
+	header.magic = cpu_to_fdt32(FDT_MAGIC);
+	header.version = cpu_to_fdt32(0x11);
+	header.last_comp_version = cpu_to_fdt32(0x10);
 
-	fdt = malloc(DTB_SIZE);
-	if (!fdt)
-		return NULL;
+	fdt.dt = xmemalign(SZ_64K, SZ_64K);
+	fdt.dt_size = SZ_64K;
 
-	memset(fdt, 0, DTB_SIZE);
+	fdt.strings = xzalloc(SZ_64K);
+	fdt.str_size = SZ_64K;
 
-	ret = fdt_create(fdt, DTB_SIZE);
+	memset(fdt.dt, 0, SZ_64K);
+
+	ofs = sizeof(struct fdt_header);
+
+	header.off_mem_rsvmap = cpu_to_fdt32(ofs);
+	ofs += sizeof(struct fdt_reserve_entry) * OF_MAX_RESERVE_MAP;
+
+	fdt.dt_nextofs = ofs;
+
+	ret = __of_flatten_dtb(&fdt, node);
 	if (ret)
 		goto out_free;
+	nh = fdt.dt + fdt.dt_nextofs;
+	nh->tag = cpu_to_fdt32(FDT_END);
+	fdt.dt_nextofs = dt_next_ofs(fdt.dt_nextofs, sizeof(struct fdt_node_header));
 
-	ret = fdt_finish_reservemap(fdt);
-	if (ret)
-		goto out_free;
+	header.size_dt_strings = cpu_to_fdt32(fdt.str_nextofs);
+	header.size_dt_struct = cpu_to_fdt32(fdt.dt_nextofs);
 
-	ret = __of_flatten_dtb(fdt, root_node);
-	if (ret)
-		goto out_free;
+	header.off_dt_struct = cpu_to_fdt32(ofs);
 
-	fdt_finish(fdt);
+	header.off_dt_strings = cpu_to_fdt32(fdt.dt_nextofs);
 
-	return fdt;
+	if (fdt.dt_size - fdt.dt_nextofs < fdt.str_nextofs) {
+		fdt.dt = memalign_realloc(fdt.dt, fdt.dt_size,
+				fdt.dt_nextofs + fdt.str_nextofs);
+		if (!fdt.dt)
+			goto out_free;
+	}
+
+	memcpy(fdt.dt + fdt.dt_nextofs, fdt.strings, fdt.str_nextofs);
+
+	header.totalsize = cpu_to_fdt32(fdt.dt_nextofs + fdt.str_nextofs);
+
+	memcpy(fdt.dt, &header, sizeof(header));
+
+	free(fdt.strings);
+
+	return fdt.dt;
 
 out_free:
-	free(fdt);
+	free(fdt.strings);
+	free(fdt.dt);
 
 	return NULL;
 }

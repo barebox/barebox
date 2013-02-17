@@ -422,7 +422,13 @@ struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt)
 	int size, align;
 
 	if (!fdt) {
-		fdt = internalfdt = of_flatten_dtb();
+		struct device_node *root_node;
+
+		root_node = of_get_root_node();
+		if (!root_node)
+			return NULL;
+
+		fdt = internalfdt = of_flatten_dtb(root_node);
 		if (!fdt)
 			return NULL;
 	}

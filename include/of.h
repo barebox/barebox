@@ -138,6 +138,9 @@ void of_delete_property(struct property *pp);
 
 int of_property_read_string(struct device_node *np, const char *propname,
 				const char **out_string);
+int of_set_property(struct device_node *node, const char *p, const void *val, int len,
+		int create);
+struct device_node *of_create_node(struct device_node *root, const char *path);
 
 #ifdef CONFIG_OFDEVICE
 int of_parse_partitions(const char *cdevname,

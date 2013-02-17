@@ -663,6 +663,41 @@ void of_delete_property(struct property *pp)
 	free(pp);
 }
 
+/**
+ * of_set_property - create a property for a given node
+ * @node - the node
+ * @name - the name of the property
+ * @val - the value for the property
+ * @len - the length of the properties value
+ * @create - if true, the property is created if not existing already
+ */
+int of_set_property(struct device_node *np, const char *name, const void *val, int len,
+		int create)
+{
+	struct property *pp;
+
+	if (!np)
+		return -ENOENT;
+
+	pp = of_find_property(np, name);
+	if (pp) {
+		void *data;
+
+		free(pp->value);
+		data = xzalloc(len);
+		memcpy(data, val, len);
+		pp->value = data;
+		pp->length = len;
+	} else {
+		if (!create)
+			return -ENOENT;
+
+		pp = of_new_property(np, name, val, len);
+	}
+
+	return 0;
+}
+
 static struct device_d *add_of_amba_device(struct device_node *node)
 {
 	struct amba_device *dev;
@@ -940,6 +975,50 @@ struct device_node *of_find_child_by_name(struct device_node *node, const char *
 			return _n;
 
 	return NULL;
+}
+
+/**
+ * of_create_node - create a new node including its parents
+ * @path - the nodepath to create
+ */
+struct device_node *of_create_node(struct device_node *root, const char *path)
+{
+	char *slash, *p, *freep;
+	struct device_node *tmp, *dn = root;
+
+	if (*path != '/')
+		return NULL;
+
+	path++;
+
+	p = freep = xstrdup(path);
+
+	while (1) {
+		if (!*p)
+			goto out;
+
+		slash = strchr(p, '/');
+		if (slash)
+			*slash = 0;
+
+		tmp = of_find_child_by_name(dn, p);
+		if (tmp)
+			dn = tmp;
+		else
+			dn = of_new_node(dn, p);
+
+		if (!dn)
+			goto out;
+
+		if (!slash)
+			goto out;
+
+		p = slash + 1;
+	}
+out:
+	free(freep);
+
+	return dn;
 }
 
 /*

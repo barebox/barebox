@@ -754,7 +754,7 @@ int ioctl(int fd, int request, void *buf)
 	return ret;
 }
 
-int read(int fd, void *buf, size_t count)
+ssize_t read(int fd, void *buf, size_t count)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# The real boot script, to be called from _boot_list which is called
+# from boot
+
+. /env/data/ansi-colors
+
+# clear linux.bootargs.dyn.* and bootm.*
+global -r linux.bootargs.dyn.
+global -r bootm.
+
+file="$1"
+
+scr=/env/boot/$file
+if [ ! -f "$scr" ]; then
+	scr="$file"
+fi
+
+if [ ! -f "$scr" ]; then
+	echo -e "${RED}/env/boot/${file}${NC} or ${RED}${file}${NC} do not exist"
+	_boot_help
+	exit 2
+fi
+
+if [ -L $scr ]; then
+	readlink -f $scr boot
+	basename $boot link
+	basename $scr boot
+	echo -e "${GREEN}boot${NC} ${YELLOW}${boot}${NC} -> ${CYAN}${link}${NC}"
+else
+	echo -e "${GREEN}booting ${YELLOW}$file${NC}..."
+fi
+
+$scr
+
+if [ -n "$BOOT_DRYRUN" ]; then
+	echo "dryrun. exiting now"
+	exit 0
+fi
+
+${global.bootm.image} $BOOT_BOOTM_OPTS
+bootm $BOOT_BOOTM_OPTS
+
+echo -e "${GREEN}booting ${YELLOW}$file${NC} ${RED}failed${NC}"

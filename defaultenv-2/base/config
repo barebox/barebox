@@ -14,7 +14,11 @@
 # timeout in seconds before the default boot entry is started
 #global.autoboot_timeout=3
 
-# default boot entry (one of /env/boot/*)
+# list of boot entries. These are executed in order until one
+# succeeds. An entry can be:
+# - a filename in /env/boot/
+# - a full path to a directory. All files in this directory are
+#   treated as boot files and executed in alphabetical order
 #global.boot.default=net
 
 # base bootargs

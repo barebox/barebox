@@ -1,0 +1,20 @@
+#!/bin/sh
+
+for i in /env/boot/*; do
+	basename $i s
+	sources="$sources$s "
+done
+
+if [ -d /env/boot.d ]; then
+	seq_sources="boot sequence:"
+	for i in /env/boot.d/*; do
+		readlink -f $i s
+		basename $s link
+		basename $i s
+		seq_sources="$seq_sources\n ${YELLOW}${s}${NC} -> ${CYAN}${link}${NC}"
+	done
+else
+	seq_sources="boot sequence:\n${GREEN}none${NC}"
+fi
+
+echo -e "boot sources:\n$sources\n\n$seq_sources"

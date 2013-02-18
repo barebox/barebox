@@ -1,7 +1,10 @@
 #!/bin/sh
 
-verbose=
-dryrun=
+BOOT_BOOTM_OPTS=
+BOOT_DRYRUN=
+BOOT_VERBOSE=
+list=
+bootsrc=${global.boot.default}
 
 usage="
 $0 [OPTIONS] [source]\n
@@ -10,49 +13,53 @@ $0 [OPTIONS] [source]\n
  -l  list boot sources\n
  -h  help"
 
-for i in /env/boot/*; do
-	basename $i s
-	sources="$sources$s "
-done
+. /env/data/ansi-colors
 
 while getopt "vdhl" opt; do
 	if [ ${opt} = v ]; then
-		if [ -n "$verbose" ]; then
-			verbose="-v -v"
-		else
-			verbose="-v"
-		fi
+		BOOT_BOOTMOPTS="$BOOT_BOOTMOPTS -v"
+		BOOT_VERBOSE=1
 	elif [ ${opt} = d ]; then
-		dryrun=1
+		BOOT_DRYRUN=1
 	elif [ ${opt} = l ]; then
-		echo -e "boot sources:\n$sources"
-		exit 0
+		list=1
 	elif [ ${opt} = h ]; then
 		echo -e "$usage"
 		exit 0
 	fi
 done
 
-# clear linux.bootargs.dyn.* and bootm.*
-global -r linux.bootargs.dyn.
-global -r bootm.
-
-if [ $# = 0 ]; then
-	scr="$global.boot.default"
-else
-	scr="$1"
-fi
-
-if [ -n "$scr" ]; then
-	if [ ! -f /env/boot/$scr ]; then
-		echo -e "/env/boot/$scr does not exist. Valid choices:\n$sources"
-		exit
-	fi
-	/env/boot/$scr
-fi
-
-if [ -n "$dryrun" ]; then
+if [ -n "$list" ]; then
+	echo "boot sources:"
+	for i in /env/boot/*; do
+		basename $i s
+		echo $s
+	done
 	exit 0
 fi
 
-bootm $verbose
+if [ -n "$1" ]; then
+	bootsrc="$*"
+fi
+
+export BOOT_BOOTM_OPTS
+export BOOT_DRYRUN
+export BOOT_VERBOSE
+
+for src in $bootsrc; do
+	if [ -d ${src} ]; then
+		realsrc="$realsrc $src/*"
+	else
+		realsrc="$realsrc $src"
+	fi
+done
+
+if [ -n "$BOOT_VERBOSE" ]; then
+	echo -e "\nboot sequence:${YELLOW}$realsrc${NC}\n"
+fi
+
+for s in $realsrc; do
+	_boot_list $s
+done
+
+exit $ret

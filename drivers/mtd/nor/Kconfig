@@ -8,17 +8,14 @@ if DRIVER_CFI
 
 config DRIVER_CFI_INTEL
 	default y
-	depends on DRIVER_CFI
 	bool "Support Intel flash chips"
 
 config DRIVER_CFI_AMD
 	default y
-	depends on DRIVER_CFI
 	bool "support AMD flash chips"
 
 config DRIVER_CFI_BANK_WIDTH_1
 	bool "Support 8-bit buswidth"
-	depends on DRIVER_CFI
 	default y
 	help
 	  If you wish to support CFI devices on a physical bus which is
@@ -26,7 +23,6 @@ config DRIVER_CFI_BANK_WIDTH_1
 
 config DRIVER_CFI_BANK_WIDTH_2
 	bool "Support 16-bit buswidth"
-	depends on DRIVER_CFI
 	default y
 	help
 	  If you wish to support CFI devices on a physical bus which is
@@ -34,7 +30,6 @@ config DRIVER_CFI_BANK_WIDTH_2
 
 config DRIVER_CFI_BANK_WIDTH_4
 	bool "Support 32-bit buswidth"
-	depends on DRIVER_CFI
 	default y
 	help
 	  If you wish to support CFI devices on a physical bus which is
@@ -42,14 +37,11 @@ config DRIVER_CFI_BANK_WIDTH_4
 
 config DRIVER_CFI_BANK_WIDTH_8
 	bool "Support 64-bit buswidth"
-	depends on DRIVER_CFI
-	default n
 	help
 	  If you wish to support CFI devices on a physical bus which is
 	  64 bits wide, say 'Y'.
 
 config CFI_BUFFER_WRITE
 	bool "use cfi driver with buffer write"
-	depends on DRIVER_CFI || DRIVER_CFI
 
 endif

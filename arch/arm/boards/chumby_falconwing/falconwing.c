@@ -16,6 +16,7 @@
 #include <init.h>
 #include <gpio.h>
 #include <environment.h>
+#include <envfs.h>
 #include <errno.h>
 #include <mci.h>
 #include <sizes.h>
@@ -265,42 +266,6 @@ static int falconwing_mem_init(void)
 }
 mem_initcall(falconwing_mem_init);
 
-/**
- * Try to register an environment storage on the attached MCI card
- * @return 0 on success
- *
- * We rely on the existence of a usable SD card, already attached to
- * our system, to get something like a persistent memory for our environment.
- * If this SD card is also the boot media, we can use the second partition
- * for our environment purpose (if present!).
- */
-static int register_persistant_environment(void)
-{
-	struct cdev *cdev;
-
-	/*
-	 * The chumby one only has one MCI card socket.
-	 * So, we expect its name as "disk0".
-	 */
-	cdev = cdev_by_name("disk0");
-	if (cdev == NULL) {
-		pr_err("No MCI card preset\n");
-		return -ENODEV;
-	}
-
-	/* MCI card is present, also a useable partition on it? */
-	cdev = cdev_by_name("disk0.1");
-	if (cdev == NULL) {
-		pr_err("No second partition available\n");
-		pr_info("Please create at least a second partition with"
-			" 256 kiB...512 kiB in size (your choice)\n");
-		return -ENODEV;
-	}
-
-	/* use the full partition as our persistent environment storage */
-	return devfs_add_partition("disk0.1", 0, cdev->size, DEVFS_PARTITION_FIXED, "env0");
-}
-
 #define GPIO_USB_HUB_RESET	29
 #define GPIO_USB_HUB_POWER	26
 
@@ -338,9 +303,9 @@ static int falconwing_devices_init(void)
 	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
-	rc = register_persistant_environment();
+	rc = envfs_register_partition("disk0", 1);
 	if (rc != 0)
-		printf("Cannot create the 'env0' persistant environment storage (%d)\n", rc);
+		printf("Cannot create the 'env0' persistent environment storage (%d)\n", rc);
 
 	return 0;
 }

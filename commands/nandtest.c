@@ -112,7 +112,7 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 					newstats.corrected - oldstats.corrected,
 					ofs + memregion.offset + i);
 			init_progression_bar(length);
-			show_progress(ofs);
+			show_progress(ofs + i);
 			if ((newstats.corrected-oldstats.corrected) >=
 					MAX_ECC_BITS) {
 				/* Increment ECC stats that
@@ -130,7 +130,7 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 			printf("\nECC failed at page 0x%08llx\n",
 					ofs + memregion.offset + i);
 			init_progression_bar(length);
-			show_progress(ofs);
+			show_progress(ofs + i);
 			oldstats.failed = newstats.failed;
 			ecc_failed_cnt++;
 		}
@@ -292,8 +292,8 @@ static int do_nandtest(int argc, char *argv[])
 
 	for (iter = 0; iter < nr_iterations; iter++) {
 		init_progression_bar(length);
-		for (test_ofs = flash_offset;
-				test_ofs < flash_offset + length;
+		for (test_ofs = 0;
+				test_ofs < length;
 				test_ofs += meminfo.erasesize) {
 			show_progress(test_ofs);
 			srand(seed);

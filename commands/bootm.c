@@ -140,6 +140,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 	enum filetype ft;
 	struct fdt_header *fdt, *fixfdt;
 	size_t size;
+	struct device_node *node;
 
 	printf("Loading devicetree from '%s'\n", oftree);
 
@@ -187,7 +188,13 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 				file_type_to_string(ft));
 	}
 
-	fixfdt = of_get_fixed_tree(fdt);
+	node = of_unflatten_dtb(NULL, fdt);
+	if (!node) {
+		pr_err("unable to unflatten devicetree\n");
+		return -EINVAL;
+	}
+
+	fixfdt = of_get_fixed_tree(node);
 	if (!fixfdt)
 		return -EINVAL;
 

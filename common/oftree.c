@@ -415,23 +415,22 @@ int of_fix_tree(struct fdt_header *fdt)
  * It increases the size of the tree and applies the registered
  * fixups.
  */
-struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt)
+struct fdt_header *of_get_fixed_tree(struct device_node *node)
 {
 	int ret;
 	void *fixfdt, *internalfdt = NULL;
 	int size, align;
+	struct fdt_header *fdt;
 
-	if (!fdt) {
-		struct device_node *root_node;
-
-		root_node = of_get_root_node();
-		if (!root_node)
-			return NULL;
-
-		fdt = internalfdt = of_flatten_dtb(root_node);
-		if (!fdt)
+	if (!node) {
+		node = of_get_root_node();
+		if (!node)
 			return NULL;
 	}
+
+	fdt = internalfdt = of_flatten_dtb(node);
+	if (!fdt)
+		return NULL;
 
 	size = fdt_totalsize(fdt);
 

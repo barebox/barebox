@@ -181,7 +181,15 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 	}
 
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
-		data->oftree = of_get_fixed_tree(oftree);
+		struct device_node *node;
+
+		node = of_unflatten_dtb(NULL, oftree);
+		if (!node) {
+			pr_err("unable to unflatten devicetree\n");
+			return -EINVAL;
+		}
+
+		data->oftree = of_get_fixed_tree(node);
 	}
 
 	pr_info("zImage: concatenated oftree detected\n");

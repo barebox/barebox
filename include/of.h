@@ -7,7 +7,6 @@
 
 int fdt_print(struct fdt_header *working_fdt, const char *pathp);
 
-struct fdt_header *of_get_fixed_tree(struct fdt_header *fdt);
 int of_fix_tree(struct fdt_header *fdt);
 int of_register_fixup(int (*fixup)(struct fdt_header *));
 
@@ -80,6 +79,8 @@ struct device_node *of_find_node_by_path(struct device_node *root, const char *p
 struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
 
 struct fdt_header *fdt_get_tree(void);
+
+struct fdt_header *of_get_fixed_tree(struct device_node *node);
 
 #define device_node_for_nach_child(node, child) \
 	list_for_each_entry(child, &node->children, parent_list)

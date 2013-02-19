@@ -66,6 +66,8 @@ static void qil_a9260_add_device_nand(void)
 #if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data __initdata qil_a9260_mci_data = {
 	.bus_width	= 4,
+	.detect_pin     = -EINVAL,
+	.wp_pin         = -EINVAL,
 };
 
 static void qil_a9260_add_device_mci(void)

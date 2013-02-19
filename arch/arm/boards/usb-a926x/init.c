@@ -213,6 +213,8 @@ static void usb_a9260_add_spi(void) {}
 #if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data __initdata usb_a9260_mci_data = {
 	.bus_width	= 4,
+	.detect_pin     = -EINVAL,
+	.wp_pin		= -EINVAL,
 };
 
 static void usb_a9260_add_device_mci(void)

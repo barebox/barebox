@@ -113,6 +113,8 @@ static void dss11_phy_reset(void)
 static struct atmel_mci_platform_data dss11_mci_data = {
 	.slot_b		= 1,
 	.bus_width	= 4,
+	.detect_pin     = -EINVAL,
+	.wp_pin		= -EINVAL,
 };
 
 static struct at91_usbh_data dss11_usbh_data = {

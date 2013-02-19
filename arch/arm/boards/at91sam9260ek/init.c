@@ -168,6 +168,8 @@ static void at91sam9260ek_phy_reset(void)
 static struct atmel_mci_platform_data __initdata ek_mci_data = {
 	.bus_width	= 4,
 	.slot_b		= 1,
+	.detect_pin	= -EINVAL,
+	.wp_pin		= -EINVAL,
 };
 
 static void ek_usb_add_device_mci(void)

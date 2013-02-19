@@ -83,8 +83,8 @@ static void pm_add_device_nand(void)
 #if defined(CONFIG_MCI_ATMEL)
 static struct atmel_mci_platform_data __initdata mci_data = {
 	.bus_width	= 4,
-	.wp_pin		= 0,
 	.detect_pin	= AT91_PIN_PD6,
+	.wp_pin		= -EINVAL,
 };
 
 static void pm9g45_add_device_mci(void)

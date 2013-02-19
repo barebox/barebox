@@ -96,6 +96,7 @@ static void ek_add_device_eth(void)
 static struct atmel_mci_platform_data ek_mci0_data = {
 	.bus_width	= 4,
 	.detect_pin	= AT91_PIN_PC25,
+	.wp_pin         = -EINVAL,
 };
 
 static void ek_add_device_mci(void)

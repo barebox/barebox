@@ -27,6 +27,7 @@
 #include <sizes.h>
 #include <linux/ctype.h>
 #include <linux/amba/bus.h>
+#include <linux/err.h>
 
 /**
  * struct alias_prop - Alias property in 'aliases' node
@@ -561,6 +562,18 @@ struct device_node *of_get_root_node(void)
 	return root_node;
 }
 
+int of_set_root_node(struct device_node *node)
+{
+	if (node && root_node)
+		return -EBUSY;
+
+	root_node = node;
+
+	of_alias_scan();
+
+	return 0;
+}
+
 static int of_node_disabled(struct device_node *node)
 {
 	struct property *p;
@@ -611,15 +624,10 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 {
 	struct device_node *node;
 
-	if (!parent && root_node)
-		return NULL;
-
 	node = xzalloc(sizeof(*node));
 	node->parent = parent;
 	if (parent)
 		list_add_tail(&node->parent_list, &parent->children);
-	else
-		root_node = node;
 
 	INIT_LIST_HEAD(&node->children);
 	INIT_LIST_HEAD(&node->properties);
@@ -927,9 +935,7 @@ void of_free(struct device_node *node)
 	free(node);
 
 	if (node == root_node)
-		root_node = NULL;
-
-	of_alias_scan();
+		of_set_root_node(NULL);
 }
 
 static void __of_probe(struct device_node *node)
@@ -1021,11 +1027,15 @@ out:
 	return dn;
 }
 
-/*
- * Parse a flat device tree binary blob and store it in the barebox
- * internal tree format,
+/**
+ * of_unflatten_dtb - unflatten a fdt blob
+ * @root - node in which the fdt blob should be merged into or NULL
+ * @fdt - the fdt blob to unflatten
+ *
+ * Parse a flat device tree binary blob and return a pointer to the
+ * unflattened tree.
  */
-int of_unflatten_dtb(struct fdt_header *fdt)
+struct device_node *of_unflatten_dtb(struct device_node *root, struct fdt_header *fdt)
 {
 	const void *nodep;	/* property node pointer */
 	int  nodeoffset;	/* node offset from libfdt */
@@ -1034,8 +1044,9 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 	int  len;		/* length of the property */
 	const struct fdt_property *fdt_prop;
 	const char *pathp;
-	struct device_node *node = NULL, *n, *root = NULL;
+	struct device_node *node = NULL, *n;
 	struct property *p;
+	int ret;
 
 	nodeoffset = fdt_path_offset(fdt, "/");
 	if (nodeoffset < 0) {
@@ -1044,12 +1055,14 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 		 */
 		printf ("libfdt fdt_path_offset() returned %s\n",
 			fdt_strerror(nodeoffset));
-		return -EINVAL;
+		return ERR_PTR(-EINVAL);
 	}
 
-	root = of_new_node(NULL, NULL);
-	if (!root)
-		return -ENOMEM;
+	if (!root) {
+		root = of_new_node(NULL, NULL);
+		if (!root)
+			return ERR_PTR(-ENOMEM);
+	}
 
 	while (1) {
 		tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
@@ -1093,16 +1106,18 @@ int of_unflatten_dtb(struct fdt_header *fdt)
 		case FDT_NOP:
 			break;
 		case FDT_END:
-			of_alias_scan();
-			return 0;
+			return root;
 		default:
 			printf("Unknown tag 0x%08X\n", tag);
-			return -EINVAL;
+			ret = -EINVAL;
+			goto err;
 		}
 		nodeoffset = nextoffset;
 	}
+err:
+	of_free(root);
 
-	return 0;
+	return ERR_PTR(ret);
 }
 
 static int __of_flatten_dtb(void *fdt, struct device_node *node)

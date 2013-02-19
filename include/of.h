@@ -133,7 +133,7 @@ void of_print_nodes(struct device_node *node, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
 void of_free(struct device_node *node);
-int of_unflatten_dtb(struct fdt_header *fdt);
+struct device_node *of_unflatten_dtb(struct device_node *root, struct fdt_header *fdt);
 struct device_node *of_new_node(struct device_node *parent, const char *name);
 struct property *of_new_property(struct device_node *node, const char *name,
 		const void *data, int len);
@@ -150,6 +150,7 @@ int of_parse_partitions(const char *cdevname,
 			    struct device_node *node);
 
 struct device_node *of_get_root_node(void);
+int of_set_root_node(struct device_node *);
 int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);

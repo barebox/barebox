@@ -32,6 +32,7 @@
 #include <malloc.h>
 #include <libfdt.h>
 #include <linux/ctype.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <getopt.h>
@@ -52,6 +53,7 @@ static int do_oftree(int argc, char *argv[])
 	int save = 0;
 	int free_of = 0;
 	int ret;
+	struct device_node *n, *root;
 
 	while ((opt = getopt(argc, argv, "dpfn:ls")) > 0) {
 		switch (opt) {
@@ -135,7 +137,17 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		ret = of_unflatten_dtb(fdt);
+		n = of_get_root_node();
+
+		root = of_unflatten_dtb(n, fdt);
+		if (IS_ERR(root))
+			ret = PTR_ERR(root);
+		else
+			ret = 0;
+
+		if (!n)
+			ret = of_set_root_node(root);
+
 		if (ret) {
 			printf("parse oftree: %s\n", strerror(-ret));
 			goto out;

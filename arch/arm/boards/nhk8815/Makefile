@@ -1,3 +1,2 @@
 obj-y += setup.o
-obj-y += lowlevel.o
-pbl-y += lowlevel.o
+lwl-y += lowlevel.o

@@ -1,3 +1,2 @@
-obj-y += lowlevel.o
-pbl-y += lowlevel.o
+lwl-y += lowlevel.o
 obj-y += board.o

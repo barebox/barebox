@@ -1,2 +1,2 @@
-obj-y += lowlevel.o clep7212.o
-pbl-y += lowlevel.o
+obj-y += clep7212.o
+lwl-y += lowlevel.o

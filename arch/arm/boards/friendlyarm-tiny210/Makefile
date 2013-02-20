@@ -1,2 +1,2 @@
-obj-y += tiny210.o lowlevel.o
-pbl-y += lowlevel.o
+obj-y += tiny210.o
+lwl-y += lowlevel.o

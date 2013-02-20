@@ -677,8 +677,10 @@ struct property *of_new_property(struct device_node *node, const char *name,
 
 	prop->name = strdup(name);
 	prop->length = len;
-	prop->value = xzalloc(len);
-	memcpy(prop->value, data, len);
+	if (len) {
+		prop->value = xzalloc(len);
+		memcpy(prop->value, data, len);
+	}
 
 	list_add_tail(&prop->list, &node->properties);
 

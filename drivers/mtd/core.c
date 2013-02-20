@@ -30,6 +30,38 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
+int mtd_all_ff(const void *buf, unsigned int len)
+{
+	while ((unsigned long)buf & 0x3) {
+		if (*(const uint8_t *)buf != 0xff)
+			return 0;
+		len--;
+		if (!len)
+			return 1;
+		buf++;
+	}
+
+	while (len > 0x3) {
+		if (*(const uint32_t *)buf != 0xffffffff)
+			return 0;
+
+		len -= sizeof(uint32_t);
+		if (!len)
+			return 1;
+
+		buf += sizeof(uint32_t);
+	}
+
+	while (len) {
+		if (*(const uint8_t *)buf != 0xff)
+			return 0;
+		len--;
+		buf++;
+	}
+
+	return 1;
+}
+
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
 	if (!mtd->block_isbad)

@@ -233,7 +233,7 @@ static int open_file(off_t *sz)
 		return sys_errmsg("cannot open \"%s\"", args.image);
 
 	*sz = st.st_size;
-	fd  = open(args.image, O_RDWR);
+	fd  = open(args.image, O_RDONLY);
 	if (fd < 0)
 		return sys_errmsg("cannot open \"%s\"", args.image);
 

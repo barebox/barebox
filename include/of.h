@@ -7,9 +7,6 @@
 
 int fdt_print(struct fdt_header *working_fdt, const char *pathp);
 
-int of_fix_tree(struct fdt_header *fdt);
-int of_register_fixup(int (*fixup)(struct fdt_header *));
-
 int fdt_find_and_setprop(struct fdt_header *fdt, const char *node, const char *prop,
 			 const void *val, int len, int create);
 void do_fixup_by_path(struct fdt_header *fdt, const char *path, const char *prop,
@@ -66,6 +63,9 @@ struct of_device_id {
 #define OF_MAX_RESERVE_MAP	16
 
 struct driver_d;
+
+int of_fix_tree(struct device_node *);
+int of_register_fixup(int (*fixup)(struct device_node *));
 
 int of_match(struct device_d *dev, struct driver_d *drv);
 

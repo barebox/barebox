@@ -339,26 +339,24 @@ int fdt_initrd(void *fdt, ulong initrd_start, ulong initrd_end, int force)
 	return 0;
 }
 
-static int of_fixup_bootargs(struct fdt_header *fdt)
+static int of_fixup_bootargs(struct device_node *root)
 {
-	int nodeoffset;
+	struct device_node *node;
 	const char *str;
 	int err;
 
-	nodeoffset = fdt_get_path_or_create(fdt, "/chosen");
-	if (nodeoffset < 0)
-		return nodeoffset;
-
 	str = linux_bootargs_get();
-	if (str) {
-		err = fdt_setprop(fdt, nodeoffset,
-				"bootargs", str, strlen(str)+1);
-		if (err < 0)
-			printf("WARNING: could not set bootargs %s.\n",
-					fdt_strerror(err));
-        }
+	if (!str)
+		return 0;
 
-	return 0;
+	node = of_create_node(root, "/chosen");
+	if (!node)
+		return -ENOMEM;
+
+
+	err = of_set_property(node, "bootargs", str, strlen(str) + 1, 1);
+
+	return err;
 }
 
 static int of_register_bootargs_fixup(void)
@@ -368,13 +366,13 @@ static int of_register_bootargs_fixup(void)
 late_initcall(of_register_bootargs_fixup);
 
 struct of_fixup {
-	int (*fixup)(struct fdt_header *);
+	int (*fixup)(struct device_node *);
 	struct list_head list;
 };
 
 static LIST_HEAD(of_fixup_list);
 
-int of_register_fixup(int (*fixup)(struct fdt_header *))
+int of_register_fixup(int (*fixup)(struct device_node *))
 {
 	struct of_fixup *of_fixup = xzalloc(sizeof(*of_fixup));
 
@@ -389,13 +387,13 @@ int of_register_fixup(int (*fixup)(struct fdt_header *))
  * Apply registered fixups for the given fdt. The fdt must have
  * enough free space to apply the fixups.
  */
-int of_fix_tree(struct fdt_header *fdt)
+int of_fix_tree(struct device_node *node)
 {
 	struct of_fixup *of_fixup;
 	int ret;
 
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
-		ret = of_fixup->fixup(fdt);
+		ret = of_fixup->fixup(node);
 		if (ret)
 			return ret;
 	}
@@ -418,8 +416,6 @@ int of_fix_tree(struct fdt_header *fdt)
 struct fdt_header *of_get_fixed_tree(struct device_node *node)
 {
 	int ret;
-	void *fixfdt, *internalfdt = NULL;
-	int size, align;
 	struct fdt_header *fdt;
 
 	if (!node) {
@@ -428,35 +424,13 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 			return NULL;
 	}
 
-	fdt = internalfdt = of_flatten_dtb(node);
+	ret = of_fix_tree(node);
+	if (ret)
+		return NULL;
+
+	fdt = of_flatten_dtb(node);
 	if (!fdt)
 		return NULL;
 
-	size = fdt_totalsize(fdt);
-
-	/*
-	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
-	 * for mapping the devicetree, so we are not allowed to cross
-	 * 1MiB boundaries.
-	 */
-	align = 1 << fls(size + OFTREE_SIZE_INCREASE - 1);
-
-	fixfdt = xmemalign(align, size + OFTREE_SIZE_INCREASE);
-	ret = fdt_open_into(fdt, fixfdt, size + OFTREE_SIZE_INCREASE);
-
-	free(internalfdt);
-
-	if (ret)
-		goto out_free;
-
-	ret = of_fix_tree(fixfdt);
-	if (ret)
-		goto out_free;
-
-	return fixfdt;
-
-out_free:
-	free(fixfdt);
-
-	return NULL;
+	return fdt;
 }

@@ -25,8 +25,9 @@
 
 struct fdt_header *fdt = NULL;
 
-static int hb_fixup(struct fdt_header *fdt)
+static int hb_fixup(struct device_node *root)
 {
+	struct device_node *node;
 	u32 reg = readl(sregs_base + HB_SREG_A9_PWRDOM_DATA);
 	u32 *opp_table = (u32 *)HB_SYSRAM_OPP_TABLE_BASE;
 	u32 dtb_table[2*10];
@@ -34,15 +35,27 @@ static int hb_fixup(struct fdt_header *fdt)
 	u32 num_opps;
 	__be32 latency;
 
-	if (!(reg & HB_PWRDOM_STAT_SATA))
-		do_fixup_by_compatible_string(fdt, "calxeda,hb-ahci", "status",
-					           "disabled", 1);
+	if (!(reg & HB_PWRDOM_STAT_SATA)) {
+		of_tree_for_each_node(node, root) {
+			if (of_device_is_compatible(node, "calxeda,hb-ahci"))
+				of_set_property(node, "status", "disabled",
+						sizeof("disabled"), 1);
+		}
+	}
 
-	if (!(reg & HB_PWRDOM_STAT_EMMC))
-		do_fixup_by_compatible_string(fdt, "calxeda,hb-sdhci", "status",
-					           "disabled", 1);
+	if (!(reg & HB_PWRDOM_STAT_EMMC)) {
+		of_tree_for_each_node(node, root) {
+			if (of_device_is_compatible(node, "calxeda,hb-sdhci"))
+				of_set_property(node, "status", "disabled",
+						sizeof("disabled"), 1);
+		}
+	}
 
 	if ((opp_table[0] >> 16) != HB_OPP_VERSION)
+		return 0;
+
+	node = of_find_node_by_path(root, "/cpus/cpu@0");
+	if (!node)
 		return 0;
 
 	num_opps = opp_table[0] & 0xff;
@@ -54,10 +67,8 @@ static int hb_fixup(struct fdt_header *fdt)
 
 	latency = cpu_to_be32(opp_table[1]);
 
-	fdt_find_and_setprop(fdt, "/cpus/cpu@0", "transition-latency",
-				  &latency, 4, 1);
-	fdt_find_and_setprop(fdt, "/cpus/cpu@0", "operating-points",
-				  dtb_table, 8 * num_opps, 1);
+	of_set_property(node, "transition-latency", &latency, 4, 1);
+	of_set_property(node, "operating-points", dtb_table, 8 * num_opps, 1);
 
 	return 0;
 }

@@ -77,17 +77,27 @@ void __noreturn reset_cpu (unsigned long addr)
 /* ------------------------------------------------------------------------- */
 
 #ifdef CONFIG_OFTREE
-static int of_mpc5200_fixup(struct fdt_header *fdt)
+static int of_mpc5200_fixup(struct device_node *root)
 {
-	char *cpu_path = "/cpus/PowerPC,5200@0";
+	struct device_node *node;
+
 	int div = in_8((void*)CFG_MBAR + 0x204) & 0x0020 ? 8 : 4;
 
-	do_fixup_by_path_u32(fdt, cpu_path, "timebase-frequency", get_timebase_clock(), 1);
-	do_fixup_by_path_u32(fdt, cpu_path, "bus-frequency", get_bus_clock(), 1);
-	do_fixup_by_path_u32(fdt, cpu_path, "clock-frequency", get_cpu_clock(), 1);
-	do_fixup_by_path_u32(fdt, "/soc5200@f0000000", "bus-frequency", get_ipb_clock(), 1);
-	do_fixup_by_path_u32(fdt, "/soc5200@f0000000", "system-frequency",
-				get_bus_clock() * div, 1);
+	node = of_find_node_by_path(root, "/cpus/PowerPC,5200@0");
+	if (!node)
+		return -EINVAL;
+
+	of_property_write_u32(node, "timebase-frequency", get_timebase_clock());
+	of_property_write_u32(node, "bus-frequency", get_bus_clock());
+	of_property_write_u32(node, "clock-frequency", get_cpu_clock());
+
+	node = of_find_node_by_path(root, "/soc5200@f0000000");
+	if (!node)
+		return -EINVAL;
+
+	of_property_write_u32(node, "bus-frequency", get_ipb_clock());
+	of_property_write_u32(node, "system-frequency", get_bus_clock() * div);
+
 	return 0;
 }
 

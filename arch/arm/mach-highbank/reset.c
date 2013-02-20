@@ -24,5 +24,7 @@ void __noreturn poweroff()
 	shutdown_barebox();
 
 	hingbank_set_pwr_shutdown();
+	asm("	wfi");
+
 	while(1);
 }

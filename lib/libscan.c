@@ -33,17 +33,6 @@
 #include <mtd/ubi-media.h>
 #include <asm-generic/div64.h>
 
-static int all_ff(const void *buf, int len)
-{
-	int i;
-	const uint8_t *p = buf;
-
-	for (i = 0; i < len; i++)
-		if (p[i] != 0xFF)
-			return 0;
-	return 1;
-}
-
 int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **info,
 	     int verbose)
 {
@@ -95,7 +84,7 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 			goto out_ec;
 
 		if (be32_to_cpu(ech.magic) != UBI_EC_HDR_MAGIC) {
-			if (all_ff(&ech, sizeof(struct ubi_ec_hdr))) {
+			if (mtd_all_ff(&ech, sizeof(struct ubi_ec_hdr))) {
 				si->empty_cnt += 1;
 				si->ec[eb] = EB_EMPTY;
 				if (v)

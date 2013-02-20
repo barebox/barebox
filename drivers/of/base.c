@@ -350,6 +350,31 @@ int of_property_read_u32_array(const struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(of_property_read_u32_array);
 
+int of_property_write_u32_array(struct device_node *np,
+				const char *propname, const u32 *values,
+				size_t sz)
+{
+	struct property *prop = of_find_property(np, propname);
+	__be32 *val;
+
+	if (!prop)
+		prop = of_new_property(np, propname, NULL, 0);
+	if (!prop)
+		return -ENOMEM;
+
+	free(prop->value);
+
+	prop->value = malloc(sizeof(__be32) * sz);
+	if (!prop->value)
+		return -ENOMEM;
+
+	val = prop->value;
+
+	while (sz--)
+		*val++ = cpu_to_be32(*values++);
+	return 0;
+}
+
 /**
  * of_parse_phandles_with_args - Find a node pointed by phandle in a list
  * @np:		pointer to a device tree node containing a list

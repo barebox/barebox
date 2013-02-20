@@ -124,6 +124,17 @@ static inline int of_property_read_u32(const struct device_node *np,
 	return of_property_read_u32_array(np, propname, out_value, 1);
 }
 
+int of_property_write_u32_array(struct device_node *np,
+				const char *propname, const u32 *values,
+				size_t sz);
+
+static inline int of_property_write_u32(struct device_node *np,
+					const char *propname,
+					u32 value)
+{
+	return of_property_write_u32_array(np, propname, &value, 1);
+}
+
 const void *of_get_property(const struct device_node *np, const char *name,
 			 int *lenp);
 

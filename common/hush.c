@@ -335,6 +335,19 @@ static int b_addchr(o_string *o, int ch)
 	return 0;
 }
 
+static int b_addstr(o_string *o, const char *str)
+{
+	int ret;
+
+	while (*str) {
+		ret = b_addchr(o, *str++);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static void b_reset(o_string *o)
 {
 	o->length = 0;
@@ -1406,6 +1419,14 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 				return 1;
 			}
 			b_addchr(dest, SPECIAL_VAR_SYMBOL);
+			break;
+		case '*':
+			for (i = 1; i < ctx->global_argc; i++) {
+				b_addstr(dest, ctx->global_argv[i]);
+				b_addchr(dest, ' ');
+			}
+
+			advance = 1;
 			break;
 		default:
 			b_addchr(dest, '$');

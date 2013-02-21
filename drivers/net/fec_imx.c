@@ -431,15 +431,20 @@ static int fec_open(struct eth_device *edev)
 static void fec_halt(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
-	int counter = 0xffff;
+	uint64_t tmo;
 
 	/* issue graceful stop command to the FEC transmitter if necessary */
 	writel(readl(fec->regs + FEC_X_CNTRL) | FEC_ECNTRL_RESET,
 			fec->regs + FEC_X_CNTRL);
 
 	/* wait for graceful stop to register */
-	while ((counter--) && (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_GRA)))
-		;	/* FIXME ensure time */
+	tmo = get_time_ns();
+	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_GRA)) {
+		if (is_timeout(tmo, 1 * SECOND)) {
+			dev_err(&dev->dev, "graceful stop timeout\n");
+			break;
+		}
+	}
 
 	/* Disable SmartDMA tasks */
 	fec_tx_task_disable(fec);

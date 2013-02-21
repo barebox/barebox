@@ -86,7 +86,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	start = get_time_ns();
 	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
-			printf("Read MDIO failed...\n");
+			dev_err(&fec->edev.dev, "Read MDIO failed...\n");
 			return -1;
 		}
 	}
@@ -126,7 +126,7 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 	start = get_time_ns();
 	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
 		if (is_timeout(start, MSECOND)) {
-			printf("Write MDIO failed...\n");
+			dev_err(&fec->edev.dev, "Write MDIO failed...\n");
 			return -1;
 		}
 	}
@@ -474,12 +474,12 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 
 	/* Check for valid length of data. */
 	if ((data_length > 1500) || (data_length <= 0)) {
-		printf("Payload (%d) to large!\n", data_length);
+		dev_err(&dev->dev, "Payload (%d) to large!\n", data_length);
 		return -1;
 	}
 
 	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1))
-		printf("%s: Warning: Transmit data not aligned: %p!\n", __FUNCTION__, eth_data);
+		dev_warn(&dev->dev, "Transmit data not aligned: %p!\n", eth_data);
 
 	/*
 	 * Setup the transmit buffer
@@ -512,7 +512,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	tmo = get_time_ns();
 	while (readw(&fec->tbd_base[fec->tbd_index].status) & FEC_TBD_READY) {
 		if (is_timeout(tmo, 1 * SECOND)) {
-			printf("transmission timeout\n");
+			dev_err(&dev->dev, "transmission timeout\n");
 			break;
 		}
 	}
@@ -550,7 +550,7 @@ static int fec_recv(struct eth_device *dev)
 		/* BABT, Rx/Tx FIFO errors */
 		fec_halt(dev);
 		fec_init(dev);
-		printf("some error: 0x%08x\n", ievent);
+		dev_err(&dev->dev, "some error: 0x%08x\n", ievent);
 		return 0;
 	}
 	if (!fec_is_imx28(fec)) {
@@ -593,7 +593,7 @@ static int fec_recv(struct eth_device *dev)
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {
-				printf("error frame: 0x%p 0x%08x\n", rbd, bd_status);
+				dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n", rbd, bd_status);
 			}
 		}
 		/*

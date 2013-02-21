@@ -309,7 +309,7 @@ static int fec_init(struct eth_device *dev)
 	}
 
 	if (fec->xcv_type == RMII) {
-		if (fec_is_imx28(fec)) {
+		if (fec_is_imx28(fec) || fec_is_imx6(fec)) {
 			rcntl |= FEC_R_CNTRL_RMII_MODE | FEC_R_CNTRL_FCE |
 				FEC_R_CNTRL_NO_LGTH_CHECK;
 		} else {

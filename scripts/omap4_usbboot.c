@@ -98,7 +98,7 @@ int read_asic_id(struct usb_handle *usb)
 			sprintf(line+4+j*3, "%02X ", id[i+j]);
 		line[4+j*3+0] = '\n';
 		line[4+j*3+1] = 0;
-		printf(line);
+		puts(line);
 	}
 	ret = 0;
 	for (i = 1, j = 0; i < sizeof(id) && j < id[0]; i += 2+id[i+1], j++) {

@@ -291,6 +291,7 @@ config MACH_PCA100
 
 config MACH_PCM038
 	bool "phyCORE-i.MX27"
+	select IMX_IIM
 	select SPI
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX

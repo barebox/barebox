@@ -27,7 +27,6 @@
 #define GPIO_IDE_PCOE	(GPIO_PORTF + 7)
 #define GPIO_IDE_RESET	(GPIO_PORTF + 10)
 
-#ifdef CONFIG_DISK_INTF_PLATFORM_IDE
 static struct resource pcm970_ide_resources[] = {
 	{
 		.start	= MX27_PCMCIA_MEM_BASE_ADDR,
@@ -125,7 +124,6 @@ static void pcm970_ide_init(void)
 
 	platform_device_register(&pcm970_ide_device);
 }
-#endif
 
 static void pcm970_mmc_init(void)
 {
@@ -185,9 +183,8 @@ static int pcm970_init(void)
 		imx27_add_usbh2(&pcm970_usbh2_pdata);
 	}
 
-#ifdef CONFIG_DISK_INTF_PLATFORM_IDE
-	pcm970_ide_init();
-#endif
+	if (IS_ENABLED(CONFIG_DISK_INTF_PLATFORM_IDE))
+		pcm970_ide_init();
 
 	if (IS_ENABLED(CONFIG_MCI_IMX))
 		pcm970_mmc_init();

@@ -935,7 +935,7 @@ static int smc91c111_eth_send(struct eth_device *edev, void *packet,
 
 	if (numPages > 7) {
 		printf ("%s: Far too big packet error. \n", SMC_DEV_NAME);
-		return 0;
+		return -EOVERFLOW;
 	}
 
 	/* now, try to allocate the memory */
@@ -965,7 +965,7 @@ again:
 		if (try < SMC_ALLOC_MAX_TRY)
 			goto again;
 		else
-			return 0;
+			return -ETIMEDOUT;
 	}
 
 	PRINTK2 ("%s: memory allocation, try %d succeeded ...\n",
@@ -980,7 +980,7 @@ again:
 	if (packet_no & AR_FAILED) {
 		/* or isn't there?  BAD CHIP! */
 		printf ("%s: Memory allocation failed. \n", SMC_DEV_NAME);
-		return 0;
+		return -ENOMEM;
 	}
 
 	/* we have a packet address, so tell the card to use it */
@@ -1046,7 +1046,7 @@ again:
 	SMC_outb(priv, saved_pnr, PN_REG );
 	SMC_outw(priv, saved_ptr, PTR_REG );
 
-	return length;
+	return 0;
 }
 
 static void smc91c111_eth_halt(struct eth_device *edev)
@@ -1152,10 +1152,10 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 	if (!is_error) {
 		/* Pass the packet up to the protocol layers. */
 		net_receive(NetRxPackets[0], packet_length);
-		return packet_length;
+		return 0;
 	}
 
-	return 0;
+	return -EINVAL;
 }
 
 static int smc91c111_get_ethaddr(struct eth_device *edev, unsigned char *m)

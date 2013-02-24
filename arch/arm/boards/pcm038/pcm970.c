@@ -120,8 +120,8 @@ static void pcm970_ide_init(void)
 	writel(0x0000001f, MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_PGSR);
 
 	/* Make PCMCIA bank0 valid */
-	writel(readl(MX27_PCMCIA_POR(0)) | (1 << 29),
-			MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(0));
+	i = readl(MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(0));
+	writel(i | (1 << 29), MX27_PCMCIA_CTL_BASE_ADDR + MX27_PCMCIA_POR(0));
 
 	platform_device_register(&pcm970_ide_device);
 }

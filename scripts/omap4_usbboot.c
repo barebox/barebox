@@ -78,7 +78,7 @@ int read_asic_id(struct usb_handle *usb)
 	const uint32_t msg_getid = 0xF0030003;
 	int i, j, k, ret;
 	uint8_t id[81];
-	char line[LINEWIDTH*3+8];
+	char line[LINEWIDTH*3+5];
 
 	printf("reading ASIC ID\n");
 	memset(id , 0xee, sizeof(id));
@@ -96,8 +96,7 @@ int read_asic_id(struct usb_handle *usb)
 		sprintf(line, "%02X: ", i);
 		for (j = 0; j < LINEWIDTH && j < sizeof(id)-i; j++)
 			sprintf(line+4+j*3, "%02X ", id[i+j]);
-		line[4+j*3+0] = '\n';
-		line[4+j*3+1] = 0;
+		line[4+j*3] = 0;
 		puts(line);
 	}
 	ret = 0;

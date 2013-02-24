@@ -318,7 +318,7 @@ static int pcm038_devices_init(void)
 
 	pr_notice("Using environment in %s Flash\n", envdev);
 
-	if (imx_iim_read(1, 1, &uid, 6) == 6)
+	if (imx_iim_read(1, 0, &uid, 6) == 6)
 		armlinux_set_serial(uid);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);

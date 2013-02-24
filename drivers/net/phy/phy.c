@@ -549,6 +549,10 @@ int genphy_read_status(struct phy_device *phydev)
 	int lpa;
 	int lpagb = 0;
 
+	/* if force the status and link are set */
+	if (phydev->force)
+		return 0;
+
 	/* Update the link, but return if there
 	 * was an error */
 	err = genphy_update_link(phydev);

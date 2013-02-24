@@ -158,6 +158,7 @@ struct phy_device {
 	u32 advertising;
 
 	int autoneg;
+	int force;
 
 
 	/* private data pointer */

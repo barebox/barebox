@@ -58,6 +58,9 @@ static int do_nand(int argc, char *argv[])
 		}
 	}
 
+	if (optind >= argc)
+		return COMMAND_ERROR_USAGE;
+
 	if (command == NAND_ADD) {
 		while (optind < argc) {
 			if (dev_add_bb_dev(basename(argv[optind]), NULL))
@@ -75,25 +78,23 @@ static int do_nand(int argc, char *argv[])
 	}
 
 	if (command == NAND_MARKBAD) {
-		if (optind < argc) {
-			int ret = 0, fd;
+		int ret = 0, fd;
 
-			printf("marking block at 0x%08llx on %s as bad\n",
-					badblock, argv[optind]);
+		printf("marking block at 0x%08llx on %s as bad\n",
+				badblock, argv[optind]);
 
-			fd = open(argv[optind], O_RDWR);
-			if (fd < 0) {
-				perror("open");
-				return 1;
-			}
-
-			ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
-			if (ret)
-				perror("ioctl");
-
-			close(fd);
-			return ret;
+		fd = open(argv[optind], O_RDWR);
+		if (fd < 0) {
+			perror("open");
+			return 1;
 		}
+
+		ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
+		if (ret)
+			perror("ioctl");
+
+		close(fd);
+		return ret;
 	}
 
 	return 0;

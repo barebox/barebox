@@ -491,17 +491,40 @@ EXPORT_SYMBOL(of_machine_is_compatible);
  */
 struct device_node *of_find_node_by_path(const char *path)
 {
-	struct device_node *np;
+	char *slash, *p, *freep;
+	struct device_node *dn = root_node;
 
-	if (!strcmp(path, "/"))
-		return root_node;
+	if (!root_node)
+		return NULL;
 
-	list_for_each_entry(np, &allnodes, list) {
-		if (np->full_name && (strcmp(np->full_name, path) == 0))
-			return np;
+	if (*path != '/')
+		return NULL;
+
+	path++;
+
+	freep = p = xstrdup(path);
+
+	while (1) {
+		if (!*p)
+			goto out;
+
+		slash = strchr(p, '/');
+		if (slash)
+			*slash = 0;
+
+		dn = of_find_child_by_name(dn, p);
+		if (!dn)
+			goto out;
+
+		if (!slash)
+			goto out;
+
+		p = slash + 1;
 	}
+out:
+	free(freep);
 
-	return NULL;
+	return dn;
 }
 EXPORT_SYMBOL(of_find_node_by_path);
 

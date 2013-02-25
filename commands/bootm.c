@@ -194,14 +194,14 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 		return -EINVAL;
 	}
 
+	if (bootm_verbose(data) > 1)
+		of_print_nodes(node, 0);
+
 	fixfdt = of_get_fixed_tree(node);
 	if (!fixfdt)
 		return -EINVAL;
 
 	free(fdt);
-
-	if (bootm_verbose(data) > 1)
-		fdt_print(fixfdt, "/");
 
 	data->oftree = fixfdt;
 

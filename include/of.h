@@ -121,6 +121,9 @@ int of_get_named_gpio(struct device_node *np,
 struct device_node *of_find_node_by_phandle(phandle phandle);
 void of_print_property(const void *data, int len);
 
+int of_device_is_compatible(const struct device_node *device,
+		const char *compat);
+
 int of_machine_is_compatible(const char *compat);
 
 #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1

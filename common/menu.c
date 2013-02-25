@@ -274,7 +274,7 @@ int menu_show(struct menu *m)
 			printf("Auto Select in");
 		} else {
 			auto_display_len = strlen(m->auto_display);
-			puts(m->auto_display);
+			printf("%s", m->auto_display);
 		}
 		printf(" %2d", countdown--);
 	}

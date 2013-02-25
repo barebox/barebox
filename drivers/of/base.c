@@ -51,8 +51,6 @@ static LIST_HEAD(aliases_lookup);
 
 static LIST_HEAD(phandle_list);
 
-static LIST_HEAD(allnodes);
-
 struct device_node *root_node;
 
 struct device_node *of_aliases;
@@ -629,12 +627,12 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 	if (parent) {
 		node->name = xstrdup(name);
 		node->full_name = asprintf("%s/%s", node->parent->full_name, name);
+		list_add(&node->list, &parent->list);
 	} else {
 		node->name = xstrdup("");
 		node->full_name = xstrdup("");
+		INIT_LIST_HEAD(&node->list);
 	}
-
-	list_add_tail(&node->list, &allnodes);
 
 	return node;
 }
@@ -868,8 +866,6 @@ void of_free(struct device_node *node)
 	if (!node)
 		return;
 
-	list_del(&node->list);
-
 	list_for_each_entry_safe(p, pt, &node->properties, list) {
 		list_del(&p->list);
 		free(p->name);
@@ -881,8 +877,10 @@ void of_free(struct device_node *node)
 		of_free(n);
 	}
 
-	if (node->parent)
+	if (node->parent) {
 		list_del(&node->parent_list);
+		list_del(&node->list);
+	}
 
 	if (node->device)
 		node->device->device_node = NULL;

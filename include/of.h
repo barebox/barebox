@@ -70,7 +70,7 @@ int of_match(struct device_d *dev, struct driver_d *drv);
 
 struct property *of_find_property(const struct device_node *node, const char *name);
 
-struct device_node *of_find_node_by_path(const char *path);
+struct device_node *of_find_node_by_path(struct device_node *root, const char *path);
 
 struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
 

@@ -158,7 +158,15 @@ static int do_oftree(int argc, char *argv[])
 		if (fdt) {
 			ret = fdt_print(fdt, node);
 		} else {
-			struct device_node *n = of_find_node_by_path(node);
+			struct device_node *root, *n;
+
+			root = of_get_root_node();
+			if (!root) {
+				ret = -ENOENT;
+				goto out;
+			}
+
+			n = of_find_node_by_path(root, node);
 
 			if (!n) {
 				ret = -ENOENT;

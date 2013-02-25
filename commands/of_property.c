@@ -176,7 +176,7 @@ static int do_of_property(int argc, char *argv[])
 	int set = 0;
 	int ret;
 	char *path = NULL, *propname = NULL;
-	struct device_node *node = NULL;
+	struct device_node *root, *node = NULL;
 	struct property *pp = NULL;
 
 	while ((opt = getopt(argc, argv, "ds")) > 0) {
@@ -192,9 +192,15 @@ static int do_of_property(int argc, char *argv[])
 		}
 	}
 
+	root = of_get_root_node();
+	if (!root) {
+		printf("root node not set\n");
+		return -ENOENT;
+	}
+
 	if (optind < argc) {
 		path = argv[optind];
-		node = of_find_node_by_path(path);
+		node = of_find_node_by_path(root, path);
 		if (!node) {
 			printf("Cannot find nodepath %s\n", path);
 			return -ENOENT;

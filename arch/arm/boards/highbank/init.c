@@ -79,7 +79,7 @@ static int highbank_mem_init(void)
 
 	of_set_root_node(root);
 
-	np = of_find_node_by_path("/memory");
+	np = of_find_node_by_path(root, "/memory");
 	if (!np) {
 		pr_warn("no memory node use default configuration\n");
 		goto not_found;

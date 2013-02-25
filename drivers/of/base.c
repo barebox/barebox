@@ -146,7 +146,7 @@ void of_alias_scan(void)
 
 	INIT_LIST_HEAD(&aliases_lookup);
 
-	of_aliases = of_find_node_by_path("/aliases");
+	of_aliases = of_find_node_by_path(root_node, "/aliases");
 	if (!of_aliases)
 		return;
 
@@ -163,7 +163,7 @@ void of_alias_scan(void)
 		    !strcmp(pp->name, "linux,phandle"))
 			continue;
 
-		np = of_find_node_by_path(pp->value);
+		np = of_find_node_by_path(root_node, pp->value);
 		if (!np)
 			continue;
 
@@ -483,18 +483,16 @@ EXPORT_SYMBOL(of_machine_is_compatible);
 
 /**
  *	of_find_node_by_path - Find a node matching a full OF path
+ *	@root:	The root node of this tree
  *	@path:	The full path to match
  *
  *	Returns a node pointer with refcount incremented, use
  *	of_node_put() on it when done.
  */
-struct device_node *of_find_node_by_path(const char *path)
+struct device_node *of_find_node_by_path(struct device_node *root, const char *path)
 {
 	char *slash, *p, *freep;
-	struct device_node *dn = root_node;
-
-	if (!root_node)
-		return NULL;
+	struct device_node *dn = root;
 
 	if (*path != '/')
 		return NULL;
@@ -964,7 +962,7 @@ int of_probe(void)
 	if(!root_node)
 		return -ENODEV;
 
-	of_chosen = of_find_node_by_path("/chosen");
+	of_chosen = of_find_node_by_path(root_node, "/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
 	__of_probe(root_node);
@@ -1193,7 +1191,7 @@ int of_device_is_stdout_path(struct device_d *dev)
 	name = of_get_property(of_chosen, "linux,stdout-path", NULL);
 	if (name == NULL)
 		return 0;
-	dn = of_find_node_by_path(name);
+	dn = of_find_node_by_path(root_node, name);
 
 	if (!dn)
 		return 0;

@@ -79,7 +79,7 @@ static int do_of_node(int argc, char *argv[])
 		if (!path)
 			return COMMAND_ERROR_USAGE;
 
-		node = of_find_node_by_path(path);
+		node = of_find_node_by_path(root, path);
 		if (!node) {
 			printf("Cannot find nodepath %s\n", path);
 			return -ENOENT;

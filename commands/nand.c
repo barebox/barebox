@@ -29,9 +29,9 @@
 #include <fcntl.h>
 #include <libgen.h>
 
-#define NAND_ADD (1 << 0)
-#define NAND_DEL (1 << 1)
-#define NAND_MARKBAD (1 << 2)
+#define NAND_ADD	1
+#define NAND_DEL	2
+#define NAND_MARKBAD	3
 
 static int do_nand(int argc, char *argv[])
 {
@@ -58,7 +58,7 @@ static int do_nand(int argc, char *argv[])
 		}
 	}
 
-	if (command & NAND_ADD) {
+	if (command == NAND_ADD) {
 		while (optind < argc) {
 			if (dev_add_bb_dev(basename(argv[optind]), NULL))
 				return 1;
@@ -67,14 +67,14 @@ static int do_nand(int argc, char *argv[])
 		}
 	}
 
-	if (command & NAND_DEL) {
+	if (command == NAND_DEL) {
 		while (optind < argc) {
 			dev_remove_bb_dev(basename(argv[optind]));
 			optind++;
 		}
 	}
 
-	if (command & NAND_MARKBAD) {
+	if (command == NAND_MARKBAD) {
 		if (optind < argc) {
 			int ret = 0, fd;
 

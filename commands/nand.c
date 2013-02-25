@@ -36,7 +36,8 @@
 static int do_nand(int argc, char *argv[])
 {
 	int opt;
-	int command = 0, badblock = 0;
+	int command = 0;
+	loff_t badblock = 0;
 
 	while((opt = getopt(argc, argv, "adb:")) > 0) {
 		if (command) {
@@ -53,7 +54,7 @@ static int do_nand(int argc, char *argv[])
 			break;
 		case 'b':
 			command = NAND_MARKBAD;
-			badblock = simple_strtoul(optarg, NULL, 0);
+			badblock = strtoull_suffix(optarg, NULL, 0);
 		}
 	}
 
@@ -76,9 +77,9 @@ static int do_nand(int argc, char *argv[])
 	if (command & NAND_MARKBAD) {
 		if (optind < argc) {
 			int ret = 0, fd;
-			loff_t __badblock = badblock;
 
-			printf("marking block at 0x%08x on %s as bad\n", badblock, argv[optind]);
+			printf("marking block at 0x%08llx on %s as bad\n",
+					badblock, argv[optind]);
 
 			fd = open(argv[optind], O_RDWR);
 			if (fd < 0) {
@@ -86,7 +87,7 @@ static int do_nand(int argc, char *argv[])
 				return 1;
 			}
 
-			ret = ioctl(fd, MEMSETBADBLOCK, &__badblock);
+			ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
 			if (ret)
 				perror("ioctl");
 

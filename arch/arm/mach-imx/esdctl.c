@@ -355,7 +355,7 @@ void __naked __noreturn imx1_barebox_entry(uint32_t boarddata)
 	unsigned long base;
 	unsigned long size;
 
-	base = 0x08000000;
+	base = MX1_CSD0_BASE_ADDR;
 
 	size = imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 0);
 	if (size == SZ_64M)

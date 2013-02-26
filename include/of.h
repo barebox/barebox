@@ -5,30 +5,6 @@
 #include <errno.h>
 #include <asm/byteorder.h>
 
-int fdt_print(struct fdt_header *working_fdt, const char *pathp);
-
-int fdt_find_and_setprop(struct fdt_header *fdt, const char *node, const char *prop,
-			 const void *val, int len, int create);
-void do_fixup_by_path(struct fdt_header *fdt, const char *path, const char *prop,
-		      const void *val, int len, int create);
-void do_fixup_by_path_u32(struct fdt_header *fdt, const char *path, const char *prop,
-			  u32 val, int create);
-void do_fixup_by_compatible(struct fdt_header *fdt, const char *compatible,
-			const char *prop, const void *val, int len, int create);
-void do_fixup_by_compatible_u32(struct fdt_header *fdt, const char *compatible,
-				const char *prop, u32 val, int create);
-void do_fixup_by_compatible_string(struct fdt_header *fdt, const char *compatible,
-				const char *prop, const char *val, int create);
-int fdt_get_path_or_create(struct fdt_header *fdt, const char *path);
-#ifdef CONFIG_FDT
-int fdt_initrd(void *fdt, ulong initrd_start, ulong initrd_end, int force);
-#else
-static inline int fdt_initrd(void *fdt, ulong start, ulong end, int force)
-{
-	return 0;
-}
-#endif
-
 #define OF_BAD_ADDR      ((u64)-1)
 
 typedef u32 phandle;

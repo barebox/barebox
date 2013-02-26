@@ -34,7 +34,6 @@
 #include <errno.h>
 #include <boot.h>
 #include <of.h>
-#include <libfdt.h>
 #include <rtc.h>
 #include <init.h>
 #include <of.h>

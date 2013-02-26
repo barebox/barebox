@@ -14,7 +14,6 @@
 #include <sizes.h>
 #include <libbb.h>
 #include <magicvar.h>
-#include <libfdt.h>
 #include <binfmt.h>
 
 #include <asm/byteorder.h>

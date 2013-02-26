@@ -30,7 +30,6 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
-#include <libfdt.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 #include <asm/byteorder.h>
@@ -114,7 +113,7 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		ret = write_file(file, fdt, fdt_totalsize(fdt));
+		ret = write_file(file, fdt, fdt32_to_cpu(fdt->totalsize));
 
 		goto out;
 	}

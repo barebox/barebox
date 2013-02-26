@@ -24,7 +24,6 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
-#include <libfdt.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 #include <errno.h>

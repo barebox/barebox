@@ -16,7 +16,6 @@
 #include <partition.h>
 #include <sizes.h>
 #include <io.h>
-#include <libfdt.h>
 #include <of.h>
 
 #define FIRMWARE_DTB_BASE	0x1000
@@ -124,7 +123,7 @@ static int highbank_devices_init(void)
 		highbank_register_xgmac(1);
 	} else {
 		fdt = of_get_fixed_tree(NULL);
-		add_mem_device("dtb", (unsigned long)fdt, fdt_totalsize(fdt),
+		add_mem_device("dtb", (unsigned long)fdt, be32_to_cpu(fdt->totalsize),
 		       IORESOURCE_MEM_WRITEABLE);
 		devfs_add_partition("ram0", FIRMWARE_DTB_BASE, SZ_64K, DEVFS_PARTITION_FIXED, "firmware-dtb");
 	}

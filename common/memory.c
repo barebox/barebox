@@ -21,7 +21,6 @@
 #include <memory.h>
 #include <of.h>
 #include <init.h>
-#include <libfdt.h>
 #include <linux/ioport.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>

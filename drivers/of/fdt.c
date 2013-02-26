@@ -20,7 +20,6 @@
 #include <common.h>
 #include <of.h>
 #include <errno.h>
-#include <libfdt.h>
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>

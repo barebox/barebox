@@ -20,7 +20,6 @@
 #include <libbb.h>
 #include <asm/armlinux.h>
 #include <of.h>
-#include <libfdt.h>
 
 #include "hw_version.h"
 

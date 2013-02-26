@@ -54,6 +54,9 @@ static int do_of_node(int argc, char *argv[])
 		}
 	}
 
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
+
 	if (optind < argc) {
 		path = argv[optind];
 	}

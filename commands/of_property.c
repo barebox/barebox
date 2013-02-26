@@ -192,6 +192,9 @@ static int do_of_property(int argc, char *argv[])
 		}
 	}
 
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
+
 	root = of_get_root_node();
 	if (!root) {
 		printf("root node not set\n");

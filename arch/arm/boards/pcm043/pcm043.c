@@ -43,6 +43,7 @@
 #include <mach/imx-pll.h>
 #include <mach/iomux-mx35.h>
 #include <mach/devices-imx35.h>
+#include <mach/generic.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = MII100,
@@ -113,6 +114,7 @@ struct gpio_led led0 = {
 static int imx35_devices_init(void)
 {
 	uint32_t reg;
+	char *envstr;
 
 	/* CS0: Nor Flash */
 	imx35_setup_weimcs(5, 0x22C0CF00, 0x75000D01, 0x00000900);
@@ -137,23 +139,24 @@ static int imx35_devices_init(void)
 	 */
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, MX35_CS0_BASE_ADDR, 32 * 1024 * 1024, 0);
 
-	if ((reg & 0xc00) == 0x800) {   /* reset mode: external boot */
-		switch ( (reg >> 25) & 0x3) {
-		case 0x01:              /* NAND is the source */
-			devfs_add_partition("nand0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");
-			dev_add_bb_dev("self_raw", "self0");
-			devfs_add_partition("nand0", SZ_512K, SZ_256K, DEVFS_PARTITION_FIXED, "env_raw");
-			dev_add_bb_dev("env_raw", "env0");
-			break;
-
-		case 0x00:              /* NOR is the source */
-			devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0"); /* ourself */
-			devfs_add_partition("nor0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env0");  /* environment */
-			protect_file("/dev/env0", 1);
-			break;
-		}
+	switch (imx_bootsource()) {
+	case bootsource_nand:
+		devfs_add_partition("nand0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");
+		dev_add_bb_dev("self_raw", "self0");
+		devfs_add_partition("nand0", SZ_512K, SZ_256K, DEVFS_PARTITION_FIXED, "env_raw");
+		dev_add_bb_dev("env_raw", "env0");
+		envstr = "NAND";
+		break;
+	case bootsource_nor:
+	default:
+		devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0"); /* ourself */
+		devfs_add_partition("nor0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env0");  /* environment */
+		protect_file("/dev/env0", 1);
+		envstr = "NOR";
+		break;
 	}
 
+	pr_info("using environment from %s flash\n", envstr);
 
 	imx35_add_fb(&ipu_fb_data);
 

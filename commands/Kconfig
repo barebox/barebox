@@ -481,7 +481,6 @@ config CMD_GO
 config CMD_OFTREE
 	tristate
 	select OFTREE
-	select OFDEVICE
 	prompt "oftree"
 	help
 	  The oftree command has support for dumping devicetrees and, if
@@ -497,7 +496,6 @@ config CMD_OFTREE_PROBE
 config CMD_OF_PROPERTY
 	tristate
 	select OFTREE
-	select OFDEVICE
 	prompt "of_property"
 	help
 	  The of_property command allows setting and deleting of properties in
@@ -506,7 +504,6 @@ config CMD_OF_PROPERTY
 config CMD_OF_NODE
 	tristate
 	select OFTREE
-	select OFDEVICE
 	prompt "of_node"
 	help
 	  The of_property command allows adding and removing devicetree nodes.

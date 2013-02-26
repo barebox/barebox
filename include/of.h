@@ -161,12 +161,13 @@ int of_set_property(struct device_node *node, const char *p, const void *val, in
 		int create);
 struct device_node *of_create_node(struct device_node *root, const char *path);
 
-#ifdef CONFIG_OFDEVICE
+struct device_node *of_get_root_node(void);
+int of_set_root_node(struct device_node *);
+
+#ifdef CONFIG_OFTREE
 int of_parse_partitions(const char *cdevname,
 			    struct device_node *node);
 
-struct device_node *of_get_root_node(void);
-int of_set_root_node(struct device_node *);
 int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
@@ -177,11 +178,6 @@ static inline int of_parse_partitions(const char *cdevname,
 					  struct device_node *node)
 {
 	return -EINVAL;
-}
-
-static inline struct device_node *of_get_root_node(void)
-{
-	return NULL;
 }
 
 static inline int of_alias_get_id(struct device_node *np, const char *stem)

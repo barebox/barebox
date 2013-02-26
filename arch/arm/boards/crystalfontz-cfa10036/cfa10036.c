@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <environment.h>
+#include <envfs.h>
 #include <errno.h>
 #include <fec.h>
 #include <gpio.h>
@@ -99,7 +100,7 @@ mem_initcall(cfa10036_mem_init);
 
 static int cfa10036_devices_init(void)
 {
-	int i;
+	int i, ret;
 
 	/* initizalize muxing */
 	for (i = 0; i < ARRAY_SIZE(cfa10036_pads); i++)
@@ -123,6 +124,11 @@ static int cfa10036_devices_init(void)
 	add_generic_device_res("i2c-gpio", 0, NULL, 0, &i2c_gpio_pdata);
 
 	cfa10036_detect_hw();
+
+	ret = envfs_register_partition("disk0", 1);
+	if (ret != 0)
+		printf("Cannot create the 'env0' persistent "
+			 "environment storage (%d)\n", ret);
 
 	return 0;
 }

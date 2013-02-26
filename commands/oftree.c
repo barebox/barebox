@@ -64,7 +64,7 @@ static int do_oftree(int argc, char *argv[])
 			dump = 1;
 			break;
 		case 'p':
-			if (IS_ENABLED(CONFIG_CMD_OFTREE_PROBE)) {
+			if (IS_ENABLED(CONFIG_OFDEVICE)) {
 				probe = 1;
 			} else {
 				printf("oftree device probe support disabled\n");

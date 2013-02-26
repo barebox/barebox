@@ -5,6 +5,6 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-global.bootm.image="/mnt/disk0.1/zImage-${global.hostname}"
-global.bootm.oftree="/mnt/disk0.1/oftree-${global.board.variant}"
-global.linux.bootargs.dyn.root="root=/dev/mmcblk0p3 rootfstype=ext3 rootwait"
+global.bootm.image="/mnt/disk0.2/zImage-${global.hostname}"
+global.bootm.oftree="/mnt/disk0.2/oftree-${global.board.variant}"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p4 rootfstype=ext3 rootwait"

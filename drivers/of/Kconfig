@@ -1,2 +1,6 @@
+config OFTREE
+	select FDT
+	bool
+
 config OFDEVICE
 	bool

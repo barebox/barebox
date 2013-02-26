@@ -280,7 +280,7 @@ static __bare_init __naked void jump_sdram(unsigned long offset)
  * running inside the NFC address space. If not, barebox is started from the
  * currently running address without loading anything from NAND.
  */
-void __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
+int __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 {
 	u32 r;
 	u32 *src, *trg;
@@ -289,7 +289,7 @@ void __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 	/* skip NAND boot if not running from NFC space */
 	r = get_pc();
 	if (r < nfc_base || r > nfc_base + 0x800)
-		return;
+		return 0;
 
 	src = (unsigned int *)nfc_base;
 	trg = (unsigned int *)_text;
@@ -297,6 +297,8 @@ void __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 	/* Move ourselves out of NFC SRAM */
 	for (i = 0; i < 0x800 / sizeof(int); i++)
 		*trg++ = *src++;
+
+	return 1;
 }
 
 /*
@@ -310,9 +312,11 @@ void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
 {
 	unsigned long nfc_base = MX21_NFC_BASE_ADDR;
 
-	imx_barebox_boot_nand_external(nfc_base);
-	jump_sdram(nfc_base - (unsigned long)_text);
-	imx_nand_load_image((void *)_text, barebox_image_size);
+	if (imx_barebox_boot_nand_external(nfc_base)) {
+		jump_sdram(nfc_base - (unsigned long)_text);
+		imx_nand_load_image((void *)_text, barebox_image_size);
+	}
+
 	imx21_barebox_entry(0);
 }
 #endif
@@ -322,9 +326,11 @@ void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
 {
 	unsigned long nfc_base = MX25_NFC_BASE_ADDR;
 
-	imx_barebox_boot_nand_external(nfc_base);
-	jump_sdram(nfc_base - (unsigned long)_text);
-	imx_nand_load_image((void *)_text, barebox_image_size);
+	if (imx_barebox_boot_nand_external(nfc_base)) {
+		jump_sdram(nfc_base - (unsigned long)_text);
+		imx_nand_load_image((void *)_text, barebox_image_size);
+	}
+
 	imx25_barebox_entry(0);
 }
 #endif
@@ -334,9 +340,11 @@ void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
 {
 	unsigned long nfc_base = MX27_NFC_BASE_ADDR;
 
-	imx_barebox_boot_nand_external(nfc_base);
-	jump_sdram(nfc_base - (unsigned long)_text);
-	imx_nand_load_image((void *)_text, barebox_image_size);
+	if (imx_barebox_boot_nand_external(nfc_base)) {
+		jump_sdram(nfc_base - (unsigned long)_text);
+		imx_nand_load_image((void *)_text, barebox_image_size);
+	}
+
 	imx27_barebox_entry(0);
 }
 #endif
@@ -346,9 +354,11 @@ void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
 {
 	unsigned long nfc_base = MX31_NFC_BASE_ADDR;
 
-	imx_barebox_boot_nand_external(nfc_base);
-	jump_sdram(nfc_base - (unsigned long)_text);
-	imx_nand_load_image((void *)_text, barebox_image_size);
+	if (imx_barebox_boot_nand_external(nfc_base)) {
+		jump_sdram(nfc_base - (unsigned long)_text);
+		imx_nand_load_image((void *)_text, barebox_image_size);
+	}
+
 	imx31_barebox_entry(0);
 }
 #endif
@@ -358,9 +368,11 @@ void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
 {
 	unsigned long nfc_base = MX35_NFC_BASE_ADDR;
 
-	imx_barebox_boot_nand_external(nfc_base);
-	jump_sdram(nfc_base - (unsigned long)_text);
-	imx_nand_load_image((void *)_text, barebox_image_size);
+	if (imx_barebox_boot_nand_external(nfc_base)) {
+		jump_sdram(nfc_base - (unsigned long)_text);
+		imx_nand_load_image((void *)_text, barebox_image_size);
+	}
+
 	imx35_barebox_entry(0);
 }
 #endif

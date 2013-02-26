@@ -365,6 +365,7 @@ config MACH_FREESCALE_MX35_3STACK
 config MACH_PCM043
 	bool "phyCORE-i.MX35"
 	select ARCH_HAS_L2X0
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX35 (pcm043) equipped
 	  with a Freescale i.MX35 Processor

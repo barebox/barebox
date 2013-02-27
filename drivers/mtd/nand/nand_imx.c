@@ -1227,7 +1227,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->bbt_td = &bbt_main_descr;
 		this->bbt_md = &bbt_mirror_descr;
 		/* update flash based bbt */
-		this->options |= NAND_USE_FLASH_BBT;
+		this->bbt_options |= NAND_BBT_USE_FLASH;
 	}
 
 	/* first scan to find the device and get the page size */

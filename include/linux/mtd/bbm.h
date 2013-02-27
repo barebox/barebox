@@ -80,6 +80,12 @@ struct nand_bbt_descr {
 /* Search good / bad pattern on the first and the second page */
 #define NAND_BBT_SCAN2NDPAGE	0x00004000
 
+/*
+ * Use a flash based bad block table. By default, OOB identifier is saved in
+ * OOB area. This option is passed to the default bad block table function.
+ */
+#define NAND_BBT_USE_FLASH      0x00020000
+
 /* The maximum number of blocks to scan for a bbt */
 #define NAND_BBT_SCAN_MAXBLOCKS	4
 

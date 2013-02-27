@@ -469,7 +469,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 
 	if (pdata->flash_bbt) {
 		/* use a flash based bbt */
-		chip->options |= NAND_USE_FLASH_BBT;
+		chip->bbt_options |= NAND_BBT_USE_FLASH;
 	}
 
 	ret = s3c24x0_nand_inithw(host);

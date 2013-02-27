@@ -189,9 +189,6 @@ typedef enum {
 #define NAND_CHIPOPTIONS_MSK	(0x0000ffff & ~NAND_NO_AUTOINCR)
 
 /* Non chip related options */
-/* Use a flash based bad block table. This option is passed to the
- * default bad block table function. */
-#define NAND_USE_FLASH_BBT	0x00010000
 /* This option skips the bbt scan during initialization. */
 #define NAND_SKIP_BBTSCAN	0x00020000
 /* This option is defined if the board driver allocates its own buffers
@@ -409,6 +406,9 @@ struct nand_buffers {
  * @data_poi:		[INTERN] pointer to a data buffer
  * @options:		[BOARDSPECIFIC] various chip options. They can partly be set to inform nand_scan about
  *			special functionality. See the defines for further explanation
+ * @bbt_options:	[INTERN] bad block specific options. All options used
+ *			here must come from bbm.h. By default, these options
+ *			will be copied to the appropriate nand_bbt_descr's.
  * @badblockpos:	[INTERN] position of the bad block marker in the oob area
  * @cellinfo:		[INTERN] MLC/multichip data from chip ident
  * @numchips:		[INTERN] number of physical chips
@@ -459,6 +459,7 @@ struct nand_chip {
 
 	int		chip_delay;
 	unsigned int	options;
+	unsigned int	bbt_options;
 
 	int		page_shift;
 	int		phys_erase_shift;

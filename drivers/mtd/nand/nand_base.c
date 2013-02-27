@@ -1672,6 +1672,22 @@ EXPORT_SYMBOL(nand_scan_ident);
 EXPORT_SYMBOL(nand_scan_tail);
 EXPORT_SYMBOL(nand_release);
 
+static int mtd_set_erasebad(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	int erasebad;
+
+	erasebad = simple_strtoul(val, NULL, 0);
+
+	if (erasebad && !mtd->allow_erasebad)
+		dev_warn(dev, "Allowing to erase bad blocks. This may be dangerous!\n");
+
+	mtd->allow_erasebad = erasebad ? true : false;
+
+	return 0;
+}
+
 int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 {
 	int ret;
@@ -1679,6 +1695,10 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 	ret = add_mtd_device(mtd, devname);
 	if (ret)
 		return ret;
+
+	if (IS_ENABLED(CONFIG_NAND_ALLOW_ERASE_BAD))
+		dev_add_param(&mtd->class_dev, "erasebad", mtd_set_erasebad,
+				NULL, 0);
 
 	return ret;
 }

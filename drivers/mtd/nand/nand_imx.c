@@ -1192,13 +1192,6 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->write_buf = imx_nand_write_buf;
 	this->read_buf = imx_nand_read_buf;
 	this->verify_buf = imx_nand_verify_buf;
-#if 0
-	host->clk = clk_get(&pdev->dev, "nfc_clk");
-	if (IS_ERR(host->clk))
-		goto eclk;
-
-	clk_enable(host->clk);
-#endif
 
 	if (pdata->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;

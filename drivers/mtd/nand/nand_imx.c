@@ -1260,7 +1260,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		goto escan;
 	}
 
-	add_mtd_device(mtd, "nand");
+	add_mtd_nand_device(mtd, "nand");
 
 	dev->priv = host;
 

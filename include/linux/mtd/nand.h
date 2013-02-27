@@ -618,7 +618,7 @@ extern int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 			   int allowbbt);
 extern int nand_do_read(struct mtd_info *mtd, loff_t from, size_t len,
 			size_t * retlen, uint8_t * buf);
-
+extern int add_mtd_nand_device(struct mtd_info *mtd, char *devname);
 /*
 * Constants for oob configuration
 */

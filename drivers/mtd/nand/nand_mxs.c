@@ -1252,7 +1252,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	if (err)
 		goto err2;
 
-	return add_mtd_device(mtd, "nand");
+	return add_mtd_nand_device(mtd, "nand");
 err2:
 	free(nand_info->data_buf);
 	free(nand_info->cmd_buf);

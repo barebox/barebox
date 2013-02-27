@@ -1672,4 +1672,15 @@ EXPORT_SYMBOL(nand_scan_ident);
 EXPORT_SYMBOL(nand_scan_tail);
 EXPORT_SYMBOL(nand_release);
 
+int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
+{
+	int ret;
+
+	ret = add_mtd_device(mtd, devname);
+	if (ret)
+		return ret;
+
+	return ret;
+}
+
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

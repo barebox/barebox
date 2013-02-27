@@ -483,7 +483,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		goto on_error;
 	}
 
-	return add_mtd_device(mtd, "nand");
+	return add_mtd_nand_device(mtd, "nand");
 
 on_error:
 	free(host);

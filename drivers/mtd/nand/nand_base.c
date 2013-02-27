@@ -1688,6 +1688,23 @@ static int mtd_set_erasebad(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
+static const char *mtd_get_bbt_type(struct device_d *dev, struct param_d *p)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct nand_chip *chip = mtd->priv;
+	const char *str;
+
+	if (!chip->bbt)
+		str = "none";
+	else if ((chip->bbt_td && chip->bbt_td->pages[0] != -1) ||
+				(chip->bbt_md && chip->bbt_md->pages[0] != -1))
+		str = "flashbased";
+	else
+		str = "memorybased";
+
+	return str;
+}
+
 int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 {
 	int ret;
@@ -1699,6 +1716,8 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 	if (IS_ENABLED(CONFIG_NAND_ALLOW_ERASE_BAD))
 		dev_add_param(&mtd->class_dev, "erasebad", mtd_set_erasebad,
 				NULL, 0);
+
+	dev_add_param(&mtd->class_dev, "bbt", NULL, mtd_get_bbt_type, 0);
 
 	return ret;
 }

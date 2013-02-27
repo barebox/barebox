@@ -99,7 +99,7 @@ static int imx35_ccm_probe(struct device_d *dev)
 
 	writel(0xffffffff, base + CCM_CGR0);
 	writel(0xffffffff, base + CCM_CGR1);
-	writel(0xffffffff, base + CCM_CGR2);
+	writel(0xfbffffff, base + CCM_CGR2);
 	writel(0xffffffff, base + CCM_CGR3);
 
 	pdr0 = __raw_readl(base + CCM_PDR0);

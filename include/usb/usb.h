@@ -270,7 +270,7 @@ void usb_rescan(void);
 #ifdef __LITTLE_ENDIAN
 # define swap_16(x) (x)
 # define swap_32(x) (x)
-#elif defined BIG_ENDIAN
+#elif defined __BIG_ENDIAN
 # define swap_16(x) __swap_16(x)
 # define swap_32(x) __swap_32(x)
 #else

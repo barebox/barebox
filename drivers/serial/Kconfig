@@ -22,7 +22,7 @@ config DRIVER_SERIAL_IMX
 config DRIVER_SERIAL_STM378X
 	depends on ARCH_MXS
 	default y
-	bool "i.MX23/i.MX28 serial driver"
+	bool "i.MX23/i.MX28 debug UART serial driver"
 
 config DRIVER_SERIAL_NETX
 	depends on ARCH_NETX

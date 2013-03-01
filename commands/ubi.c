@@ -92,6 +92,32 @@ BAREBOX_CMD_START(ubiattach)
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
 BAREBOX_CMD_END
 
+static int do_ubidetach(int argc, char *argv[])
+{
+	int ubi_num, ret;
+
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
+
+	ubi_num = simple_strtoul(argv[1], NULL, 0);
+	ret = ubi_detach_mtd_dev(ubi_num, 1);
+
+	if (ret)
+		printf("failed to detach: %s\n", strerror(-ret));
+
+	return ret;
+}
+
+static const __maybe_unused char cmd_ubidetach_help[] =
+"Usage: ubidetach <ubinum>\n"
+"Detach <ubinum> from ubi\n";
+
+BAREBOX_CMD_START(ubidetach)
+	.cmd		= do_ubidetach,
+	.usage		= "detach an ubi dev",
+	BAREBOX_CMD_HELP(cmd_ubidetach_help)
+BAREBOX_CMD_END
+
 static int do_ubirmvol(int argc, char *argv[])
 {
 	struct ubi_mkvol_req req;

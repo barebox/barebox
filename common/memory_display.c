@@ -2,7 +2,7 @@
 
 #define DISP_LINE_LEN	16
 
-int memory_display(char *addr, loff_t offs, unsigned nbytes, int size, int swab)
+int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab)
 {
 	ulong linebytes, i;
 	u_char	*cp;

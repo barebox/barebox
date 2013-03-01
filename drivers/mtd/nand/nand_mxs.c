@@ -831,7 +831,7 @@ static int mxs_nand_hook_read_oob(struct mtd_info *mtd, loff_t from,
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ret;
 
-	if (ops->mode == MTD_OOB_RAW)
+	if (ops->mode == MTD_OPS_RAW)
 		nand_info->raw_oob_mode = 1;
 	else
 		nand_info->raw_oob_mode = 0;
@@ -856,7 +856,7 @@ static int mxs_nand_hook_write_oob(struct mtd_info *mtd, loff_t to,
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ret;
 
-	if (ops->mode == MTD_OOB_RAW)
+	if (ops->mode == MTD_OPS_RAW)
 		nand_info->raw_oob_mode = 1;
 	else
 		nand_info->raw_oob_mode = 0;

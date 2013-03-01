@@ -468,7 +468,7 @@ static int doc_read_oob(struct mtd_info *mtd, loff_t from,
 	else
 		ooblen = 0;
 
-	if (oobbuf && ops->mode == MTD_OOB_PLACE)
+	if (oobbuf && ops->mode == MTD_OPS_PLACE_OOB)
 		oobbuf += ops->ooboffs;
 
 	doc_dbg("doc_read_oob(from=%lld, mode=%d, data=(%p:%zu), oob=(%p:%zu))\n",
@@ -537,7 +537,7 @@ static int doc_read_oob(struct mtd_info *mtd, loff_t from,
 		if ((block0 >= DOC_LAYOUT_BLOCK_FIRST_DATA) &&
 		    (eccconf1 & DOC_ECCCONF1_BCH_SYNDROM_ERR) &&
 		    (eccconf1 & DOC_ECCCONF1_PAGE_IS_WRITTEN) &&
-		    (ops->mode != MTD_OOB_RAW) &&
+		    (ops->mode != MTD_OPS_RAW) &&
 		    (nbdata == DOC_LAYOUT_PAGE_SIZE)) {
 			ret = doc_ecc_bch_fix_data(docg3, buf, hwecc);
 			if (ret < 0) {
@@ -577,7 +577,7 @@ static int doc_read(struct mtd_info *mtd, loff_t from, size_t len,
 	memset(&ops, 0, sizeof(ops));
 	ops.datbuf = buf;
 	ops.len = len;
-	ops.mode = MTD_OOB_AUTO;
+	ops.mode = MTD_OPS_AUTO_OOB;
 
 	ret = doc_read_oob(mtd, from, &ops);
 	*retlen = ops.retlen;
@@ -631,11 +631,11 @@ static int doc_guess_autoecc(struct mtd_oob_ops *ops)
 	int autoecc;
 
 	switch (ops->mode) {
-	case MTD_OOB_PLACE:
-	case MTD_OOB_AUTO:
+	case MTD_OPS_PLACE_OOB:
+	case MTD_OPS_AUTO_OOB:
 		autoecc = 1;
 		break;
-	case MTD_OOB_RAW:
+	case MTD_OPS_RAW:
 		autoecc = 0;
 		break;
 	default:
@@ -663,7 +663,7 @@ static int doc_backup_oob(struct docg3 *docg3, loff_t to,
 
 	docg3->oob_write_ofs = to;
 	docg3->oob_autoecc = autoecc;
-	if (ops->mode == MTD_OOB_AUTO) {
+	if (ops->mode == MTD_OPS_AUTO_OOB) {
 		doc_fill_autooob(docg3->oob_write_buf, ops->oobbuf);
 		ops->oobretlen = 8;
 	} else {
@@ -960,17 +960,17 @@ static int doc_write_oob(struct mtd_info *mtd, loff_t ofs,
 	else
 		ooblen = 0;
 
-	if (oobbuf && ops->mode == MTD_OOB_PLACE)
+	if (oobbuf && ops->mode == MTD_OPS_PLACE_OOB)
 		oobbuf += ops->ooboffs;
 
 	doc_dbg("doc_write_oob(from=%lld, mode=%d, data=(%p:%zu), oob=(%p:%zu))\n",
 		ofs, ops->mode, buf, len, oobbuf, ooblen);
 	switch (ops->mode) {
-	case MTD_OOB_PLACE:
-	case MTD_OOB_RAW:
+	case MTD_OPS_PLACE_OOB:
+	case MTD_OPS_RAW:
 		oobdelta = mtd->oobsize;
 		break;
-	case MTD_OOB_AUTO:
+	case MTD_OPS_AUTO_OOB:
 		oobdelta = mtd->ecclayout->oobavail;
 		break;
 	default:
@@ -1005,7 +1005,7 @@ static int doc_write_oob(struct mtd_info *mtd, loff_t ofs,
 		memset(oob, 0, sizeof(oob));
 		if (ofs == docg3->oob_write_ofs)
 			memcpy(oob, docg3->oob_write_buf, DOC_LAYOUT_OOB_SIZE);
-		else if (ooblen > 0 && ops->mode == MTD_OOB_AUTO)
+		else if (ooblen > 0 && ops->mode == MTD_OPS_AUTO_OOB)
 			doc_fill_autooob(oob, oobbuf);
 		else if (ooblen > 0)
 			memcpy(oob, oobbuf, DOC_LAYOUT_OOB_SIZE);
@@ -1036,7 +1036,7 @@ static int doc_write(struct mtd_info *mtd, loff_t to, size_t len,
 	doc_dbg("doc_write(to=%lld, len=%zu)\n", to, len);
 	ops.datbuf = (char *)buf;
 	ops.len = len;
-	ops.mode = MTD_OOB_PLACE;
+	ops.mode = MTD_OPS_PLACE_OOB;
 	ops.oobbuf = NULL;
 	ops.ooblen = 0;
 	ops.ooboffs = 0;

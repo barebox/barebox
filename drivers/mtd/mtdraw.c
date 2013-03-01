@@ -97,7 +97,7 @@ static ssize_t mtdraw_read_unaligned(struct mtd_info *mtd, void *dst,
 		tmp = malloc(mtd->writesize + mtd->oobsize);
 	if (!tmp)
 		return -ENOMEM;
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.datbuf = tmp;
 	ops.len = mtd->writesize;
@@ -152,7 +152,7 @@ static ssize_t mtdraw_blkwrite(struct mtd_info *mtd, const void *buf,
 	struct mtd_oob_ops ops;
 	int ret;
 
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.datbuf = (void *)buf;
 	ops.len = mtd->writesize;

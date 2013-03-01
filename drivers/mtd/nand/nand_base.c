@@ -610,12 +610,12 @@ static uint8_t *nand_transfer_oob(struct nand_chip *chip, uint8_t *oob,
 {
 	switch(ops->mode) {
 
-	case MTD_OOB_PLACE:
-	case MTD_OOB_RAW:
+	case MTD_OPS_PLACE_OOB:
+	case MTD_OPS_RAW:
 		memcpy(oob, chip->oob_poi + ops->ooboffs, len);
 		return oob + len;
 
-	case MTD_OOB_AUTO: {
+	case MTD_OPS_AUTO_OOB: {
 		struct nand_oobfree *free = chip->ecc.layout->oobfree;
 		uint32_t boffs = 0, roffs = ops->ooboffs;
 		size_t bytes = 0;
@@ -696,7 +696,7 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 			}
 
 			/* Now read the page into the buffer */
-			if (unlikely(ops->mode == MTD_OOB_RAW))
+			if (unlikely(ops->mode == MTD_OPS_RAW))
 				ret = chip->ecc.read_page_raw(mtd, chip, bufpoi);
 			else
 				ret = chip->ecc.read_page(mtd, chip, bufpoi);
@@ -714,7 +714,7 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 #ifdef CONFIG_NAND_READ_OOB
 			if (unlikely(oob)) {
 				/* Raw mode does data:oob:data:oob */
-				if (ops->mode != MTD_OOB_RAW) {
+				if (ops->mode != MTD_OPS_RAW) {
 					int toread = min(oobreadlen,
 						chip->ecc.layout->oobavail);
 					if (toread) {
@@ -856,7 +856,7 @@ static int nand_do_read_oob(struct mtd_info *mtd, loff_t from,
 	MTD_DEBUG(MTD_DEBUG_LEVEL3, "nand_read_oob: from = 0x%08Lx, len = %i\n",
 	      (unsigned long long)from, readlen);
 
-	if (ops->mode == MTD_OOB_AUTO)
+	if (ops->mode == MTD_OPS_AUTO_OOB)
 		len = chip->ecc.layout->oobavail;
 	else
 		len = mtd->oobsize;
@@ -951,9 +951,9 @@ static int nand_read_oob(struct mtd_info *mtd, loff_t from,
 	}
 
 	switch(ops->mode) {
-	case MTD_OOB_PLACE:
-	case MTD_OOB_AUTO:
-	case MTD_OOB_RAW:
+	case MTD_OPS_PLACE_OOB:
+	case MTD_OPS_AUTO_OOB:
+	case MTD_OPS_RAW:
 		break;
 
 	default:

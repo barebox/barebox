@@ -48,7 +48,7 @@ static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
 	if (count < mtd->oobsize)
 		return -EINVAL;
 
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.ooblen = mtd->oobsize;
 	ops.oobbuf = buf;

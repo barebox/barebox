@@ -131,8 +131,6 @@ struct zimage_header {
 static int do_bootz_linux_fdt(int fd, struct image_data *data)
 {
 	struct fdt_header __header, *header;
-	struct resource *r = data->os_res;
-	struct resource *of_res = data->os_res;
 	void *oftree;
 	int ret;
 
@@ -151,21 +149,10 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 	end = be32_to_cpu(header->totalsize);
 
-	if (IS_BUILTIN(CONFIG_OFTREE)) {
-		oftree = malloc(end + 0x8000);
-		if (!oftree) {
-			perror("zImage: oftree malloc");
-			return -ENOMEM;
-		}
-	} else {
-
-		of_res = request_sdram_region("oftree", r->start + resource_size(r), end);
-		if (!of_res) {
-			perror("zImage: oftree request_sdram_region");
-			return -ENOMEM;
-		}
-
-		oftree = (void*)of_res->start;
+	oftree = malloc(end + 0x8000);
+	if (!oftree) {
+		perror("zImage: oftree malloc");
+		return -ENOMEM;
 	}
 
 	memcpy(oftree, header, sizeof(*header));
@@ -174,10 +161,11 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 	ret = read_full(fd, oftree + sizeof(*header), end);
 	if (ret < 0)
-		return ret;
+		goto err_free;
 	if (ret < end) {
 		printf("premature end of image\n");
-		return -EIO;
+		ret = -EIO;
+		goto err_free;
 	}
 
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
@@ -186,15 +174,23 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 		node = of_unflatten_dtb(NULL, oftree);
 		if (!node) {
 			pr_err("unable to unflatten devicetree\n");
-			return -EINVAL;
+			ret = -EINVAL;
+			goto err_free;
 		}
 
 		data->oftree = of_get_fixed_tree(node);
+	} else {
+		data->oftree = oftree;
 	}
 
 	pr_info("zImage: concatenated oftree detected\n");
 
 	return 0;
+
+err_free:
+	free(oftree);
+
+	return ret;
 }
 
 static int do_bootz_linux(struct image_data *data)

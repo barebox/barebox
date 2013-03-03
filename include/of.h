@@ -61,6 +61,16 @@ struct of_device_id {
 };
 
 #define OF_MAX_RESERVE_MAP	16
+struct of_reserve_map {
+	uint64_t start[OF_MAX_RESERVE_MAP];
+	uint64_t end[OF_MAX_RESERVE_MAP];
+	int num_entries;
+};
+
+int of_add_reserve_entry(resource_size_t start, resource_size_t end);
+struct of_reserve_map *of_get_reserve_map(void);
+void of_clean_reserve_map(void);
+void fdt_add_reserve_map(void *fdt);
 
 struct driver_d;
 

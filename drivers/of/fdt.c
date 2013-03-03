@@ -432,3 +432,68 @@ out_free:
 
 	return NULL;
 }
+
+/*
+ * The last entry is the zeroed sentinel, the one before is
+ * reserved for the reservemap entry for the dtb itself.
+ */
+#define OF_MAX_FREE_RESERVE_MAP	(OF_MAX_RESERVE_MAP - 2)
+
+static struct of_reserve_map of_reserve_map;
+
+int of_add_reserve_entry(resource_size_t start, resource_size_t end)
+{
+	int e = of_reserve_map.num_entries;
+
+	if (e >= OF_MAX_FREE_RESERVE_MAP)
+		return -ENOSPC;
+
+	of_reserve_map.start[e] = start;
+	of_reserve_map.end[e] = end;
+	of_reserve_map.num_entries++;
+
+	return 0;
+}
+
+struct of_reserve_map *of_get_reserve_map(void)
+{
+	return &of_reserve_map;
+}
+
+void of_clean_reserve_map(void)
+{
+	of_reserve_map.num_entries = 0;
+}
+
+/**
+ * fdt_add_reserve_map - Add reserve map entries to a devicetree binary
+ * @__fdt: The devicetree blob
+ *
+ * This adds the reservemap entries previously colllected in
+ * of_add_reserve_entry() to a devicetree binary blob. This also
+ * adds the devicetree itself to the reserved list, so after calling
+ * this function the tree should not be relocated anymore.
+ */
+void fdt_add_reserve_map(void *__fdt)
+{
+	struct fdt_header *fdt = __fdt;
+	struct of_reserve_map *res = &of_reserve_map;
+	struct fdt_reserve_entry *fdt_res =
+		__fdt + be32_to_cpu(fdt->off_mem_rsvmap);
+	int i;
+
+	for (i = 0; i < res->num_entries; i++) {
+		of_write_number(&fdt_res->address, res->start[i], 2);
+		of_write_number(&fdt_res->size, res->end[i] - res->start[i] + 1,
+				2);
+		fdt_res++;
+	}
+
+	of_write_number(&fdt_res->address, (unsigned long)__fdt, 2);
+	of_write_number(&fdt_res->size, (unsigned long)__fdt +
+			be32_to_cpu(fdt->totalsize), 2);
+	fdt_res++;
+
+	of_write_number(&fdt_res->address, 0, 2);
+	of_write_number(&fdt_res->size, 0, 2);
+}

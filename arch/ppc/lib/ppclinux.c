@@ -18,6 +18,14 @@ static int do_bootm_linux(struct image_data *data)
 	if (!data->os_res)
 		return -EINVAL;
 
+	data->oftree = of_get_fixed_tree(data->of_root_node);
+	if (!data->oftree) {
+		pr_err("bootm: No devicetree given.\n");
+		return -EINVAL;
+	}
+
+	fdt_add_reserve_map(data->oftree);
+
 	kernel = (void *)(data->os_address + data->os_entry);
 
 	/*

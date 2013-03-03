@@ -41,6 +41,7 @@ struct image_data {
 
 	unsigned long initrd_address;
 
+	struct device_node *of_root_node;
 	struct fdt_header *oftree;
 
 	int verify;

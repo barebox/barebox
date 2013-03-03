@@ -169,16 +169,12 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 	}
 
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
-		struct device_node *node;
-
-		node = of_unflatten_dtb(NULL, oftree);
-		if (!node) {
+		data->of_root_node = of_unflatten_dtb(NULL, oftree);
+		if (!data->of_root_node) {
 			pr_err("unable to unflatten devicetree\n");
 			ret = -EINVAL;
 			goto err_free;
 		}
-
-		data->oftree = of_get_fixed_tree(node);
 	} else {
 		data->oftree = oftree;
 	}

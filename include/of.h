@@ -68,6 +68,9 @@ struct driver_d;
 
 int of_match(struct device_d *dev, struct driver_d *drv);
 
+int of_add_initrd(struct device_node *root, resource_size_t start,
+		resource_size_t end);
+
 struct property *of_find_property(const struct device_node *node, const char *name);
 
 struct device_node *of_find_node_by_path(struct device_node *root, const char *path);

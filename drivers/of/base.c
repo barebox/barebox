@@ -1201,3 +1201,42 @@ int of_device_is_stdout_path(struct device_d *dev)
 
 	return 0;
 }
+
+/**
+ * of_add_initrd - add initrd properties to the devicetree
+ * @root - the root node of the tree
+ * @start - physical start address of the initrd image
+ * @end - physical end address of the initrd image
+ *
+ * Add initrd properties to the devicetree, or, if end is 0,
+ * delete them.
+ */
+int of_add_initrd(struct device_node *root, resource_size_t start,
+		resource_size_t end)
+{
+	struct device_node *chosen;
+	__be32 buf[2];
+
+	chosen = of_find_node_by_path(root, "/chosen");
+	if (!chosen)
+		return -EINVAL;
+
+	if (end) {
+		of_write_number(buf, start, 2);
+		of_set_property(chosen, "linux,initrd-start", buf, 8, 1);
+		of_write_number(buf, end, 2);
+		of_set_property(chosen, "linux,initrd-end", buf, 8, 1);
+	} else {
+		struct property *pp;
+
+		pp = of_find_property(chosen, "linux,initrd-start");
+		if (pp)
+			of_delete_property(pp);
+
+		pp = of_find_property(chosen, "linux,initrd-end");
+		if (pp)
+			of_delete_property(pp);
+	}
+
+	return 0;
+}

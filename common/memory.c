@@ -164,19 +164,6 @@ int release_sdram_region(struct resource *res)
 
 #ifdef CONFIG_OFTREE
 
-/*
- * Write a 4 or 8 byte big endian cell
- */
-static void write_cell(u8 *addr, u64 val, int size)
-{
-	int shift = (size - 1) * 8;
-
-	while (size-- > 0) {
-		*addr++ = (val >> shift) & 0xff;
-		shift -= 8;
-	}
-}
-
 static int of_memory_fixup(struct device_node *node)
 {
 	struct memory_bank *bank;
@@ -193,14 +180,14 @@ static int of_memory_fixup(struct device_node *node)
 	if (err)
 		return err;
 
-	addr_cell_len = of_n_addr_cells(memnode) * 4;
-	size_cell_len = of_n_size_cells(memnode) * 4;
+	addr_cell_len = of_n_addr_cells(memnode);
+	size_cell_len = of_n_size_cells(memnode);
 
 	for_each_memory_bank(bank) {
-		write_cell(tmp + len, bank->start, addr_cell_len);
-		len += addr_cell_len;
-		write_cell(tmp + len, bank->size, size_cell_len);
-		len += size_cell_len;
+		of_write_number(tmp + len, bank->start, addr_cell_len);
+		len += addr_cell_len * 4;
+		of_write_number(tmp + len, bank->size, size_cell_len);
+		len += size_cell_len * 4;
 	}
 
 	err = of_set_property(memnode, "reg", tmp, len, 1);

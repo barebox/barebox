@@ -26,7 +26,7 @@
 static int __do_bootm_linux(struct image_data *data, int swap)
 {
 	unsigned long kernel;
-	unsigned long initrd_start = 0, initrd_size = 0;
+	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
 	struct memory_bank *bank;
 	unsigned long load_address;
 
@@ -82,7 +82,16 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;
+		initrd_end = data->initrd_res->end;
 		initrd_size = resource_size(data->initrd_res);
+	}
+
+	if (IS_ENABLED(CONFIG_OFTREE) && data->of_root_node) {
+		of_add_initrd(data->of_root_node, initrd_start, initrd_end);
+		if (initrd_end)
+			of_add_reserve_entry(initrd_start, initrd_end);
+		data->oftree = of_get_fixed_tree(data->of_root_node);
+		fdt_add_reserve_map(data->oftree);
 	}
 
 	if (bootm_verbose(data)) {

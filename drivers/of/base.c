@@ -96,7 +96,7 @@ static void of_bus_default_count_cells(struct device_node *dev,
 		*sizec = of_n_size_cells(dev);
 }
 
-void of_bus_count_cells(struct device_node *dev,
+static void of_bus_count_cells(struct device_node *dev,
 			int *addrc, int *sizec)
 {
 	of_bus_default_count_cells(dev, addrc, sizec);
@@ -135,7 +135,7 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
  * the global lookup table with the properties.  It returns the
  * number of alias_prop found, or error code in error case.
  */
-void of_alias_scan(void)
+static void of_alias_scan(void)
 {
 	struct property *pp;
 	struct alias_prop *app, *tmp;
@@ -814,7 +814,7 @@ static struct device_d *add_of_device(struct device_node *node)
 }
 EXPORT_SYMBOL(add_of_device);
 
-u64 dt_mem_next_cell(int s, const __be32 **cellp)
+static u64 dt_mem_next_cell(int s, const __be32 **cellp)
 {
 	const __be32 *p = *cellp;
 

@@ -143,6 +143,8 @@ int of_device_is_compatible(const struct device_node *device,
 
 int of_machine_is_compatible(const char *compat);
 
+u64 of_translate_address(struct device_node *node, const __be32 *in_addr);
+
 #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
 #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
 

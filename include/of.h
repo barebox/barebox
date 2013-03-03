@@ -96,6 +96,17 @@ static inline u64 of_read_number(const __be32 *cell, int size)
 	return r;
 }
 
+/* Helper to write a big number; size is in cells (not bytes) */
+static inline void of_write_number(void *__cell, u64 val, int size)
+{
+	__be32 *cell = __cell;
+
+	while (size--) {
+		cell[size] = cpu_to_be32(val);
+		val >>= 32;
+	}
+}
+
 int of_property_read_u32_array(const struct device_node *np,
 			       const char *propname, u32 *out_values,
 			       size_t sz);

@@ -892,7 +892,7 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 
 static int ehci_probe(struct device_d *dev)
 {
-	struct ehci_data data;
+	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
 
 	/* default to EHCI_HAS_TT to not change behaviour of boards

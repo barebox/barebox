@@ -14,24 +14,16 @@
 #include <io.h>
 #include <sizes.h>
 #include <asm/armlinux.h>
+#include <asm/mmu.h>
 #include <generated/mach-types.h>
 
 #include <mach/clps711x.h>
 #include <mach/devices.h>
 
-static int clps711x_mem_init(void)
-{
-	ulong memsize = get_ram_size((ulong *)SDRAM0_BASE, SZ_32M);
-
-	arm_add_mem_device("ram0", SDRAM0_BASE, memsize);
-
-	return 0;
-}
-mem_initcall(clps711x_mem_init);
-
 static int clps711x_devices_init(void)
 {
 	u32 serial_h = 0, serial_l = readl(UNIQID);
+	void *cfi_io;
 
 	/* Setup Chipselects */
 	clps711x_setup_memcfg(0, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_16);
@@ -40,7 +32,9 @@ static int clps711x_devices_init(void)
 			      MEMCFG_CLKENB);
 	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_32);
 
-	add_cfi_flash_device(0, CS0_BASE, SZ_32M, 0);
+	cfi_io = map_io_sections(CS0_BASE, (void *)0x90000000, SZ_32M);
+	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,
+			     IORESOURCE_MEM);
 
 	devfs_add_partition("nor0", 0x00000, SZ_256K, DEVFS_PARTITION_FIXED,
 			    "self0");

@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ "$1" = menu ]; then
-	init-menu-add-entry "$0" "Base bootargs"
-	exit
-fi
-
-global.linux.bootargs.base="earlyprintk console=ttyCL0,57600n8"

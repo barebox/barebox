@@ -9,8 +9,6 @@
 
 #include <common.h>
 
-extern void start(void);
-
 void __noreturn reset_cpu(unsigned long addr)
 {
 	arch_shutdown();

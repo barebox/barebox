@@ -1,1 +1,2 @@
-obj-y += clock.o devices.o reset.o
+obj-y += clock.o devices.o lowlevel.o reset.o
+pbl-y += lowlevel.o

@@ -281,4 +281,6 @@
 #define MEMCFG_WAITSTATE_2_0	(14 << 2)
 #define MEMCFG_WAITSTATE_1_0	(15 << 2)
 
+void clps711x_barebox_entry(u32);
+
 #endif

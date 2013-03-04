@@ -10,6 +10,19 @@ config MACH_CLEP7212
 
 endchoice
 
+menu "CLPS711X specific settings"
+
+config CLPS711X_CPU_PLL_MULT
+	int "CPU PLL multiplier (20-50)"
+	range 20 50
+	default "40"
+	help
+	  Define CPU PLL multiplier. PLL is calculated by formula:
+	    PLL Frequency = (PLL Multiplier / 2) * 3686400 Hz
+	  Default value is 40, for achieve 73 MHz.
+
+endmenu
+
 config BOARDINFO
 	default "Cirrus Logic CLEP7212" if MACH_CLEP7212
 

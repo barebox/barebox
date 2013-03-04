@@ -547,8 +547,6 @@ static int sdp343x_board_init(void)
 
 void __naked barebox_arm_reset_vector(void)
 {
-	omap3_invalidate_dcache();
-
 	arm_cpu_lowlevel_init();
 
 	sdp343x_board_init();

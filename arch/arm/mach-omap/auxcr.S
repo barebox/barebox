@@ -31,3 +31,15 @@ ENTRY(setup_auxcr)
 	.word 0xE1600070		@ SMC
 	bx	lr
 ENDPROC(setup_auxcr)
+
+.arm
+ENTRY(omap3_gp_romcode_call)
+	push	{r4-r12, lr}		@ Save all registers from ROM code!
+	mov	r12, r0			@ Copy the Service ID in R12
+	mov	r0, r1			@ Copy parameter to R0
+	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+	mcr     p15, 0, r0, c7, c10, 5	@ DMB
+	.word	0xe1600070		@ SMC #0 to enter monitor - hand assembled
+					@ because we use -march=armv5
+	pop	{r4-r12, pc}
+ENDPROC(omap3_gp_romcode_call)

@@ -212,6 +212,7 @@ struct amba_device *amba_device_alloc(const char *name, int id, resource_size_t 
 	dev->res.start = base;
 	dev->res.end = base + size - 1;
 	dev->res.flags = IORESOURCE_MEM;
+	dev->dev.resource = &dev->res;
 
 	return dev;
 }

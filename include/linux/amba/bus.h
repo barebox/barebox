@@ -150,4 +150,32 @@ struct amba_device name##_device = {				\
 	.periphid = id,						\
 }
 
+#include <io.h>
+/*
+ * Read pid and cid based on size of resource
+ * they are located at end of region
+ */
+static inline u32 amba_device_get_pid(void *base, u32 size)
+{
+	int i;
+	u32 pid;
+
+	for (pid = 0, i = 0; i < 4; i++)
+		pid |= (readl(base + size - 0x20 + 4 * i) & 255) <<
+			(i * 8);
+
+	return pid;
+}
+
+static inline u32 amba_device_get_cid(void *base, u32 size)
+{
+	int i;
+	u32 cid;
+
+	for (cid = 0, i = 0; i < 4; i++)
+		cid |= (readl(base + size - 0x10 + 4 * i) & 255) <<
+			(i * 8);
+
+	return cid;
+}
 #endif

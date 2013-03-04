@@ -42,6 +42,10 @@ struct ehci_priv {
 	struct qTD *td;
 	int portreset;
 	unsigned long flags;
+
+	int (*init)(void *drvdata);
+	int (*post_init)(void *drvdata);
+	void *drvdata;
 };
 
 #define to_ehci(ptr) container_of(ptr, struct ehci_priv, host)
@@ -748,6 +752,9 @@ static int ehci_init(struct usb_host *host)
 	if (ehci_reset(ehci) != 0)
 		return -1;
 
+	if (ehci->init)
+		ehci->init(ehci->drvdata);
+
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));
 	ehci->qh_list->qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
@@ -787,6 +794,9 @@ static int ehci_init(struct usb_host *host)
 	wait_ms(5);
 
 	ehci->rootdev = 0;
+
+	if (ehci->post_init)
+		ehci->post_init(ehci->drvdata);
 
 	return 0;
 }
@@ -855,6 +865,10 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 	else
 		ehci->hcor = (void __iomem *)ehci->hccr +
 			HC_LENGTH(ehci_readl(&ehci->hccr->cr_capbase));
+
+	ehci->drvdata = data->drvdata;
+	ehci->init = data->init;
+	ehci->post_init = data->post_init;
 
 	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
 	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);

@@ -90,7 +90,7 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 			continue;
 		}
 
-		ret = mtd_read(mtd, fd, eb, 0, &ech, sizeof(struct ubi_ec_hdr));
+		ret = libmtd_read(mtd, fd, eb, 0, &ech, sizeof(struct ubi_ec_hdr));
 		if (ret < 0)
 			goto out_ec;
 

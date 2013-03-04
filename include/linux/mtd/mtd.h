@@ -207,6 +207,12 @@ struct mtd_info {
 	char *size_str;
 };
 
+int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);
+int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
+	     u_char *buf);
+int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
+	      const u_char *buf);
+
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	do_div(sz, mtd->erasesize);
@@ -251,7 +257,10 @@ static inline void mtd_erase_callback(struct erase_info *instr)
 }
 #endif
 
+int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
+int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
+int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs);
 
 int mtd_all_ff(const void *buf, unsigned int len);
 

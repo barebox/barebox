@@ -56,7 +56,7 @@ static int mtd_valid_erase_block(const struct mtd_dev_info *mtd, int eb)
 	return 0;
 }
 
-int mtd_erase(const struct mtd_dev_info *mtd, int fd, int eb)
+int libmtd_erase(const struct mtd_dev_info *mtd, int fd, int eb)
 {
 	int ret;
 	struct erase_info_user ei;
@@ -107,12 +107,12 @@ int mtd_torture(const struct mtd_dev_info *mtd, int fd, int eb)
 	buf = xmalloc(mtd->eb_size);
 
 	for (i = 0; i < patt_count; i++) {
-		err = mtd_erase(mtd, fd, eb);
+		err = libmtd_erase(mtd, fd, eb);
 		if (err)
 			goto out;
 
 		/* Make sure the PEB contains only 0xFF bytes */
-		err = mtd_read(mtd, fd, eb, 0, buf, mtd->eb_size);
+		err = libmtd_read(mtd, fd, eb, 0, buf, mtd->eb_size);
 		if (err)
 			goto out;
 
@@ -125,12 +125,12 @@ int mtd_torture(const struct mtd_dev_info *mtd, int fd, int eb)
 
 		/* Write a pattern and check it */
 		memset(buf, patterns[i], mtd->eb_size);
-		err = mtd_write(mtd, fd, eb, 0, buf, mtd->eb_size);
+		err = libmtd_write(mtd, fd, eb, 0, buf, mtd->eb_size);
 		if (err)
 			goto out;
 
 		memset(buf, ~patterns[i], mtd->eb_size);
-		err = mtd_read(mtd, fd, eb, 0, buf, mtd->eb_size);
+		err = libmtd_read(mtd, fd, eb, 0, buf, mtd->eb_size);
 		if (err)
 			goto out;
 
@@ -191,7 +191,7 @@ int mtd_mark_bad(const struct mtd_dev_info *mtd, int fd, int eb)
 	return 0;
 }
 
-int mtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
+int libmtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	     void *buf, int len)
 {
 	int ret, rd = 0;
@@ -225,7 +225,7 @@ int mtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	return 0;
 }
 
-int mtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
+int libmtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	      void *buf, int len)
 {
 	int ret;

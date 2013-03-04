@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+# use 'none' if you want to skip kernel ip autoconfiguration
+ip=dhcp
+global.dhcp.vendor_id=barebox-highbank
+
+# or set your networking parameters here
+#eth0.ipaddr=a.b.c.d
+#eth0.netmask=a.b.c.d
+#eth0.gateway=a.b.c.d
+#eth0.serverip=a.b.c.d
+
+# can be either 'nfs', 'tftp' or 'nor'
+kernel_loc=tftp
+# can be either 'net', 'nor' or 'initrd'
+rootfs_loc=initrd
+
+# can be either 'jffs2' or 'ubifs'
+rootfs_type=ubifs
+rootfsimage=root.$rootfs_type
+
+kernelimage=zImage
+#kernelimage=uImage
+#kernelimage=Image
+#kernelimage=Image.lzo
+
+autoboot_timeout=3
+
+bootargs="console=ttyAMA0,115200n8 CONSOLE=/dev/ttyAMA0"
+
+# set a fancy prompt (if support is compiled in)
+PS1="\e[1;31m[barebox@\h]:\w\e[0m\n# "

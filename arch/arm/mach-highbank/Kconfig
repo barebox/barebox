@@ -1,0 +1,18 @@
+if ARCH_HIGHBANK
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x03f00000
+
+config BOARDINFO
+	default "Calxeda Highbank" if MACH_HIGHBANK
+
+choice
+	prompt "Calxeda Board type"
+
+config MACH_HIGHBANK
+	bool "Calxeda Highbank"
+
+endchoice
+
+endif

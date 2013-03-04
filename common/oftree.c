@@ -229,6 +229,33 @@ void do_fixup_by_path_u32(struct fdt_header *fdt, const char *path,
 	do_fixup_by_path(fdt, path, prop, &val, sizeof(val), create);
 }
 
+void do_fixup_by_compatible(struct fdt_header *fdt, const char *compatible,
+			const char *prop, const void *val, int len, int create)
+{
+	int off = -1;
+
+	off = fdt_node_offset_by_compatible(fdt, -1, compatible);
+	while (off != -FDT_ERR_NOTFOUND) {
+		if (create || (fdt_get_property(fdt, off, prop, 0) != NULL))
+			fdt_setprop(fdt, off, prop, val, len);
+		off = fdt_node_offset_by_compatible(fdt, off, compatible);
+	}
+}
+
+void do_fixup_by_compatible_u32(struct fdt_header *fdt, const char *compatible,
+				const char *prop, u32 val, int create)
+{
+	val = cpu_to_fdt32(val);
+	do_fixup_by_compatible(fdt, compatible, prop, &val, 4, create);
+}
+
+void do_fixup_by_compatible_string(struct fdt_header *fdt, const char *compatible,
+				const char *prop, const char *val, int create)
+{
+	do_fixup_by_compatible(fdt, compatible, prop, val, strlen(val) + 1,
+				create);
+}
+
 int fdt_get_path_or_create(struct fdt_header *fdt, const char *path)
 {
 	int nodeoffset;

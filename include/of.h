@@ -17,6 +17,12 @@ void do_fixup_by_path(struct fdt_header *fdt, const char *path, const char *prop
 		      const void *val, int len, int create);
 void do_fixup_by_path_u32(struct fdt_header *fdt, const char *path, const char *prop,
 			  u32 val, int create);
+void do_fixup_by_compatible(struct fdt_header *fdt, const char *compatible,
+			const char *prop, const void *val, int len, int create);
+void do_fixup_by_compatible_u32(struct fdt_header *fdt, const char *compatible,
+				const char *prop, u32 val, int create);
+void do_fixup_by_compatible_string(struct fdt_header *fdt, const char *compatible,
+				const char *prop, const char *val, int create);
 int fdt_get_path_or_create(struct fdt_header *fdt, const char *path);
 #ifdef CONFIG_FDT
 int fdt_initrd(void *fdt, ulong initrd_start, ulong initrd_end, int force);
@@ -132,6 +138,7 @@ int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(void);
+int of_add_memory(struct device_node *node, bool dump);
 #else
 static inline int of_parse_partitions(const char *cdevname,
 					  struct device_node *node)
@@ -162,6 +169,11 @@ static inline const char *of_get_model(void)
 static inline void *of_flatten_dtb(void)
 {
 	return NULL;
+}
+
+static inline int of_add_memory(struct device_node *node, bool dump)
+{
+	return -EINVAL;
 }
 #endif
 

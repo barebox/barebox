@@ -272,6 +272,7 @@ int __init mx53_clocks_init(void __iomem *regs, unsigned long rate_ckil, unsigne
 	clkdev_add_physbase(clks[uart_root], MX53_UART3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per_root], MX53_I2C1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per_root], MX53_I2C2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per_root], MX53_I2C3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per_root], MX53_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX53_CSPI_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ecspi_podf], MX53_ECSPI1_BASE_ADDR, NULL);

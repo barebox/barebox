@@ -21,6 +21,7 @@
 #include <environment.h>
 #include <mach/imx27-regs.h>
 #include <fec.h>
+#include <sizes.h>
 #include <notifier.h>
 #include <mach/gpio.h>
 #include <asm/armlinux.h>
@@ -186,6 +187,7 @@ static int pcm038_devices_init(void)
 	int i;
 	u64 uid = 0;
 	char *envdev;
+	long sram_size;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -270,9 +272,11 @@ static int pcm038_devices_init(void)
 	/* configure SRAM on cs1 */
 	imx27_setup_weimcs(1, 0x0000d843, 0x22252521, 0x22220a00);
 
-	/* Can be up to 2MiB */
-	add_mem_device("ram1", 0xc8000000, 512 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
+	/* SRAM can be up to 2MiB */
+	sram_size = get_ram_size((ulong *)MX27_CS1_BASE_ADDR, SZ_2M);
+	if (sram_size)
+		add_mem_device("ram1", MX27_CS1_BASE_ADDR, sram_size,
+			       IORESOURCE_MEM_WRITEABLE);
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
@@ -318,7 +322,7 @@ static int pcm038_devices_init(void)
 
 	pr_notice("Using environment in %s Flash\n", envdev);
 
-	if (imx_iim_read(1, 1, &uid, 6) == 6)
+	if (imx_iim_read(1, 0, &uid, 6) == 6)
 		armlinux_set_serial(uid);
 	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM038);

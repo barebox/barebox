@@ -30,6 +30,7 @@ config ARCH_TEXT_BASE
 	default 0x8fe00000 if MACH_TX53
 	default 0x7fc00000 if MACH_GUF_VINCELL
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
+	default 0x17800000 if MACH_SABRESD
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -59,6 +60,7 @@ config BOARDINFO
 	default "Sabre Lite" if MACH_SABRELITE
 	default "Ka-Ro tx53" if MACH_TX53
 	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
+	default "SabreSD" if MACH_SABRESD
 
 choice
 	prompt "Select boot mode"
@@ -289,6 +291,7 @@ config MACH_PCA100
 
 config MACH_PCM038
 	bool "phyCORE-i.MX27"
+	select IMX_IIM
 	select SPI
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
@@ -362,6 +365,7 @@ config MACH_FREESCALE_MX35_3STACK
 config MACH_PCM043
 	bool "phyCORE-i.MX35"
 	select ARCH_HAS_L2X0
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX35 (pcm043) equipped
 	  with a Freescale i.MX35 Processor
@@ -488,6 +492,9 @@ config MACH_MX6Q_ARM2
 
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
+
+config MACH_SABRESD
+	bool "Freescale i.MX6 SabreSD"
 
 endchoice
 

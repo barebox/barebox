@@ -92,6 +92,7 @@
 
 #define FEC_ECNTRL_RESET                0x00000001	/**< reset the FEC */
 #define FEC_ECNTRL_ETHER_EN             0x00000002	/**< enable the FEC */
+#define FEC_ECNTRL_SPEED                0x00000020	/**< i.MX6: enable 1000Mbps mode */
 
 /**
  * @brief Descriptor buffer alignment

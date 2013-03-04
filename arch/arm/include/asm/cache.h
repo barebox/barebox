@@ -8,4 +8,12 @@ static inline void flush_icache(void)
 
 int arm_set_cache_functions(void);
 
+#ifdef CONFIG_MMU
+void arm_early_mmu_cache_flush(void);
+#else
+static inline void arm_early_mmu_cache_flush(void)
+{
+}
+#endif
+
 #endif

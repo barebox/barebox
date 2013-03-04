@@ -26,6 +26,9 @@ ENTRY(setup_c)
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
 	bl	memset			/* clear bss */
+#ifdef CONFIG_MMU
+	bl	arm_early_mmu_cache_flush
+#endif
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
 	add	lr, r5, r4		/* adjust return address to new location */

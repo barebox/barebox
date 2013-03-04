@@ -48,6 +48,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_bmp] = { "BMP image", "bmp" },
 	[filetype_png] = { "PNG image", "png" },
 	[filetype_ext] = { "ext filesystem", "ext" },
+	[filetype_gpt] = { "GUID Partition Table", "gpt" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -69,8 +70,52 @@ const char *file_type_to_short_string(enum filetype f)
 #define MBR_StartSector		8	/* MBR: Offset of Starting Sector in Partition Table Entry */
 #define BS_55AA			510	/* Boot sector signature (2) */
 #define MBR_Table		446	/* MBR: Partition table offset (2) */
+#define MBR_partition_size	16	/* MBR: Partition table offset (2) */
 #define BS_FilSysType32		82	/* File system type (1) */
 #define BS_FilSysType		54	/* File system type (1) */
+
+#define MBR_PART_sys_ind	4
+#define MBR_PART_start_sect	8
+#define MBR_OSTYPE_EFI_GPT	0xee
+
+static inline int pmbr_part_valid(const uint8_t *buf)
+{
+	if (buf[MBR_PART_sys_ind] == MBR_OSTYPE_EFI_GPT &&
+		get_unaligned_le32(&buf[MBR_PART_start_sect]) == 1UL) {
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
+ * is_gpt_valid(): test Protective MBR for validity and EFI PART
+ * @mbr: pointer to a legacy mbr structure
+ *
+ * Description: Returns 1 if PMBR is valid and EFI PART, 0 otherwise.
+ * Validity depends on three things:
+ *  1) MSDOS signature is in the last two bytes of the MBR
+ *  2) One partition of type 0xEE is found
+ *  3) EFI GPT signature is at offset 512
+ */
+static int is_gpt_valid(const uint8_t *buf)
+{
+	int i;
+
+	if (get_unaligned_le16(&buf[BS_55AA]) != 0xAA55)
+		return 0;
+
+	if (strncmp(&buf[512], "EFI PART", 8))
+		return 0;
+
+	buf += MBR_Table;
+
+	for (i = 0; i < 4; i++, buf += MBR_partition_size) {
+		if (pmbr_part_valid(buf))
+			return 1;
+	}
+	return 0;
+}
 
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 {
@@ -158,6 +203,13 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (bufsize < 512)
 		return filetype_unknown;
+
+	/*
+	 * EFI GPT need to be detected before MBR otherwise
+	 * we will detect a MBR
+	 */
+	if (bufsize >= 520 && is_gpt_valid(buf8))
+		return filetype_gpt;
 
 	type = is_fat_or_mbr(buf8, NULL);
 	if (type != filetype_unknown)

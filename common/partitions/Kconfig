@@ -1,0 +1,32 @@
+config PARTITION_DISK
+	depends on PARTITION
+	bool "DISK partition support"
+	help
+	  Add support for handling common partition tables on all kind of disk
+	  like devices (harddisks, CF cards, SD cards and so on)
+
+config PARTITION_DISK_DOS
+	depends on PARTITION_DISK
+	default y
+	bool "DOS partition support"
+	help
+	  Add support to handle partitions in DOS style.
+
+config PARTITION_DISK_EFI
+	depends on PARTITION_DISK
+	select CRC32
+	bool "EFI: GPT partition support"
+	help
+	  Add support to handle partitions in GUID Partition Table style.
+
+config PARTITION_DISK_EFI_GPT_NO_FORCE
+	depends on PARTITION_DISK_EFI
+	default y
+	bool "EFI: GPT: force test Protective MBR for validity"
+	help
+	  This will be added to the EFI Spec. per Intel after v1.02
+
+config PARTITION_DISK_EFI_GPT_COMPARE
+	depends on PARTITION_DISK_EFI
+	default y
+	bool "EFI: GPT: compare primary and Alternate GPT header for validity"

@@ -87,6 +87,17 @@ static void mux_config(void)
 	MUX_VAL(CP(ETK_D14_ES2),	(IEN  | PTU | DIS | M3));
 	MUX_VAL(CP(ETK_D15_ES2),	(IEN  | PTU | DIS | M3));
 	MUX_VAL(CP(UART2_RX),		(IEN  | PTD | DIS | M4)) /*GPIO_147*/;
+	/* Expansion card */
+	MUX_VAL(CP(MMC1_CLK),		(IDIS | PTU | EN  | M0)); /* MMC1_CLK */
+	MUX_VAL(CP(MMC1_CMD),		(IEN  | PTU | EN  | M0)); /* MMC1_CMD */
+	MUX_VAL(CP(MMC1_DAT0),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT0 */
+	MUX_VAL(CP(MMC1_DAT1),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT1 */
+	MUX_VAL(CP(MMC1_DAT2),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT2 */
+	MUX_VAL(CP(MMC1_DAT3),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT3 */
+	MUX_VAL(CP(MMC1_DAT4),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT4 */
+	MUX_VAL(CP(MMC1_DAT5),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT5 */
+	MUX_VAL(CP(MMC1_DAT6),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT6 */
+	MUX_VAL(CP(MMC1_DAT7),		(IEN  | PTU | EN  | M0)); /* MMC1_DAT7 */
 }
 
 /**

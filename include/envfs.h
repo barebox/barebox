@@ -96,4 +96,6 @@ int envfs_save(char *filename, char *dirname);
 /* defaults to /dev/env0 */
 extern char *default_environment_path;
 
+int envfs_register_partition(const char *devname, unsigned int partnr);
+
 #endif /* _ENVFS_H */

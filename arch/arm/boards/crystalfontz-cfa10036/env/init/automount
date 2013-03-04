@@ -5,5 +5,5 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-mkdir -p /mnt/disk0.1
-automount -d /mnt/disk0.1 '[ -e /dev/disk0.1 ] && mount /dev/disk0.1 /mnt/disk0.1'
+mkdir -p /mnt/disk0.2
+automount -d /mnt/disk0.2 '[ -e /dev/disk0.2 ] && mount /dev/disk0.2 /mnt/disk0.2'

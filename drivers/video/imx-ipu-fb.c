@@ -1039,13 +1039,7 @@ static struct driver_d imx3fb_driver = {
 	.probe = imxfb_probe,
 	.remove = imxfb_remove,
 };
-
-static int imx3fb_init(void)
-{
-	return platform_driver_register(&imx3fb_driver);
-}
-
-device_initcall(imx3fb_init);
+device_platform_driver(imx3fb_driver);
 
 /**
  * @file

@@ -1,4 +1,3 @@
-obj-y += clocksource.o gpio.o led.o header.o
+obj-y += clocksource.o gpio.o header.o
 
-obj-y += lowlevel_init.o
-pbl-y += lowlevel_init.o led.o
+lwl-y += lowlevel_init.o led.o

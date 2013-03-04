@@ -494,6 +494,7 @@ static struct driver_d s3c24x0_nand_driver = {
 	.name  = "s3c24x0_nand",
 	.probe = s3c24x0_nand_probe,
 };
+device_platform_driver(s3c24x0_nand_driver);
 
 #ifdef CONFIG_S3C_NAND_BOOT
 
@@ -645,17 +646,6 @@ BAREBOX_CMD_END
 #endif
 
 #endif /* CONFIG_S3C_NAND_BOOT */
-
-/*
- * Main initialization routine
- * @return 0 if successful; non-zero otherwise
- */
-static int __init s3c24x0_nand_init(void)
-{
-	return platform_driver_register(&s3c24x0_nand_driver);
-}
-
-device_initcall(s3c24x0_nand_init);
 
 /**
  * @file

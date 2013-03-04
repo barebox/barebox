@@ -760,11 +760,4 @@ static struct driver_d mxs_mci_driver = {
 	.info = mxs_mci_info,
 #endif
 };
-
-static int mxs_mci_init_driver(void)
-{
-        platform_driver_register(&mxs_mci_driver);
-        return 0;
-}
-
-device_initcall(mxs_mci_init_driver);
+device_platform_driver(mxs_mci_driver);

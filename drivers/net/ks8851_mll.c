@@ -873,11 +873,4 @@ static struct driver_d ks8851_driver = {
 	.name  = "ks8851_mll",
 	.probe = ks8851_probe,
 };
-
-static int ks8851_init(void)
-{
-	platform_driver_register(&ks8851_driver);
-	return 0;
-}
-
-device_initcall(ks8851_init);
+device_platform_driver(ks8851_driver);

@@ -93,9 +93,4 @@ static struct driver_d sdlfb_driver = {
 	.probe	= sdlfb_probe,
 	.remove	= sdlfb_remove,
 };
-
-static int sdlfb_init(void)
-{
-	return platform_driver_register(&sdlfb_driver);
-}
-device_initcall(sdlfb_init);
+device_platform_driver(sdlfb_driver);

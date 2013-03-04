@@ -85,10 +85,4 @@ static struct driver_d at91_ohci_driver = {
 	.probe = at91_ohci_probe,
 	.remove = at91_ohci_remove,
 };
-
-static int at91_ohci_init(void)
-{
-	platform_driver_register(&at91_ohci_driver);
-	return 0;
-}
-device_initcall(at91_ohci_init);
+device_platform_driver(at91_ohci_driver);

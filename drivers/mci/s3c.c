@@ -767,11 +767,4 @@ static struct driver_d s3c_mci_driver = {
 	.info = s3c_info,
 #endif
 };
-
-static int s3c_mci_init_driver(void)
-{
-        platform_driver_register(&s3c_mci_driver);
-        return 0;
-}
-
-device_initcall(s3c_mci_init_driver);
+device_platform_driver(s3c_mci_driver);

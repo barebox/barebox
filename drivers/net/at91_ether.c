@@ -366,10 +366,4 @@ static struct driver_d at91_ether_driver = {
 	.probe = at91_ether_probe,
 	.remove = at91_ether_remove,
 };
-
-static int at91_ether_driver_init(void)
-{
-	platform_driver_register(&at91_ether_driver);
-	return 0;
-}
-device_initcall(at91_ether_driver_init);
+device_platform_driver(at91_ether_driver);

@@ -1,3 +1,2 @@
 obj-y += board.o
-obj-y += lowlevel.o mux.o
-pbl-y += lowlevel.o mux.o
+lwl-y += lowlevel.o mux.o

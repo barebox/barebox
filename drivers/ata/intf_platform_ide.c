@@ -108,13 +108,7 @@ static struct driver_d platform_ide_driver = {
 	.name   = "ide_intf",
 	.probe  = platform_ide_probe,
 };
-
-static int platform_ide_init(void)
-{
-	return platform_driver_register(&platform_ide_driver);
-}
-
-device_initcall(platform_ide_init);
+device_platform_driver(platform_ide_driver);
 
 /**
  * @file

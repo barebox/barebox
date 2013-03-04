@@ -780,11 +780,4 @@ static struct driver_d dm9k_driver = {
 	.name  = "dm9000",
 	.probe = dm9k_probe,
 };
-
-static int dm9k_init(void)
-{
-	platform_driver_register(&dm9k_driver);
-	return 0;
-}
-
-device_initcall(dm9k_init);
+device_platform_driver(dm9k_driver);

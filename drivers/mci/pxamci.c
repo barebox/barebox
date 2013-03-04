@@ -378,11 +378,4 @@ static struct driver_d pxamci_driver = {
 	.name  = DRIVER_NAME,
 	.probe = pxamci_probe,
 };
-
-static int __init pxamci_init_driver(void)
-{
-	platform_driver_register(&pxamci_driver);
-	return 0;
-}
-
-device_initcall(pxamci_init_driver);
+device_platform_driver(pxamci_driver);

@@ -1199,10 +1199,4 @@ static struct driver_d  g3_driver = {
 	.name	= "docg3",
 	.probe	= docg3_probe,
 };
-
-static int __init docg3_init(void)
-{
-	return platform_driver_register(&g3_driver);
-}
-
-device_initcall(docg3_init);
+device_platform_driver(g3_driver);

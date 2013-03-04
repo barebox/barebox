@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __I2C_TWL4030_H__
-#define __I2C_TWL4030_H__
+#ifndef __MFD_TWL4030_H__
+#define __MFD_TWL4030_H__
 
 #include <mfd/twl-core.h>
 
@@ -469,4 +469,4 @@ static inline int twl4030_set_bits(struct twl4030 *twl4030,
 	return twlcore_set_bits(&(twl4030->core), reg, mask, val);
 }
 
-#endif /* __I2C_TWL4030_H__ */
+#endif /* __MFD_TWL4030_H__ */

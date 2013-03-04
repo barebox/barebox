@@ -454,10 +454,4 @@ static struct driver_d imx_keypad_driver = {
 	.name   = "imx-kpp",
 	.probe  = imx_keypad_probe,
 };
-
-static int imx_keypad_init(void)
-{
-	platform_driver_register(&imx_keypad_driver);
-	return 0;
-}
-device_initcall(imx_keypad_init);
+device_platform_driver(imx_keypad_driver);

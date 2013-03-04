@@ -103,10 +103,4 @@ static struct driver_d i2c_versatile_driver = {
 	.name	= "versatile-i2c",
 	.probe	= i2c_versatile_probe,
 };
-
-static int __init i2c_versatile_init(void)
-{
-	return platform_driver_register(&i2c_versatile_driver);
-}
-
-device_initcall(i2c_versatile_init);
+device_platform_driver(i2c_versatile_driver);

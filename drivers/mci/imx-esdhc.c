@@ -583,11 +583,4 @@ static struct driver_d fsl_esdhc_driver = {
 	.probe = fsl_esdhc_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_esdhc_compatible),
 };
-
-static int fsl_esdhc_init_driver(void)
-{
-	platform_driver_register(&fsl_esdhc_driver);
-	return 0;
-}
-
-device_initcall(fsl_esdhc_init_driver);
+device_platform_driver(fsl_esdhc_driver);

@@ -4,5 +4,5 @@ config USB_ULPI
 	  Support for transceivers that conforms ULPI specification.
 
 config USB_TWL4030
-	depends on I2C_TWL4030
+	depends on MFD_TWL4030
 	bool "TWL4030 Transceiver support"

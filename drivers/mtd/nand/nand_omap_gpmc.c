@@ -1081,10 +1081,4 @@ static struct driver_d gpmc_nand_driver = {
 	.name = "gpmc_nand",
 	.probe = gpmc_nand_probe,
 };
-
-static int gpmc_nand_init(void)
-{
-	return platform_driver_register(&gpmc_nand_driver);
-}
-
-device_initcall(gpmc_nand_init);
+device_platform_driver(gpmc_nand_driver);

@@ -390,10 +390,4 @@ static struct driver_d omap3_spi_driver = {
 	.name = "omap3_spi",
 	.probe = omap3_spi_probe,
 };
-
-static int omap3_spi_init(void)
-{
-	return platform_driver_register(&omap3_spi_driver);
-}
-
-device_initcall(omap3_spi_init);
+device_platform_driver(omap3_spi_driver);

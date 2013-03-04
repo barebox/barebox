@@ -663,11 +663,4 @@ static struct driver_d ep93xx_eth_driver = {
 	.name  = "ep93xx_eth",
 	.probe = ep93xx_eth_probe,
 };
-
-static int ep93xx_eth_init(void)
-{
-	platform_driver_register(&ep93xx_eth_driver);
-	return 0;
-}
-
-device_initcall(ep93xx_eth_init);
+device_platform_driver(ep93xx_eth_driver);

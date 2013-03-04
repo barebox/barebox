@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef __I2C_TWL6030_H__
-#define __I2C_TWL6030_H__
+#ifndef __MFD_TWL6030_H__
+#define __MFD_TWL6030_H__
 
 #include <mfd/twl-core.h>
 
@@ -424,4 +424,4 @@ static inline int twl6030_set_bits(struct twl6030 *twl6030,
 	return twlcore_set_bits(&twl6030->core, reg, mask, val);
 }
 
-#endif /* __I2C_TWL6030_H__ */
+#endif /* __MFD_TWL6030_H__ */

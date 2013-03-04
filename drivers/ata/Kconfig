@@ -38,6 +38,7 @@ config DISK_AHCI
 	select DISK_DRIVE
 
 config DISK_AHCI_IMX
+	depends on ARCH_IMX
 	depends on DISK_AHCI
 	bool "i.MX AHCI support"
 

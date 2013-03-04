@@ -226,10 +226,4 @@ static struct driver_d imx_wd_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_wdt_dt_ids),
 	.id_table = imx_wdt_ids,
 };
-
-static int imx_wd_init(void)
-{
-	return platform_driver_register(&imx_wd_driver);
-}
-
-device_initcall(imx_wd_init);
+device_platform_driver(imx_wd_driver);

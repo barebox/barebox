@@ -608,11 +608,4 @@ static struct driver_d davinci_emac_driver = {
 	.probe  = davinci_emac_probe,
 	.remove = davinci_emac_remove,
 };
-
-static int davinci_emac_register(void)
-{
-	platform_driver_register(&davinci_emac_driver);
-	return 0;
-}
-
-device_initcall(davinci_emac_register);
+device_platform_driver(davinci_emac_driver);

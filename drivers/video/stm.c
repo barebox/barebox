@@ -516,13 +516,7 @@ static struct driver_d stmfb_driver = {
 	.probe	= stmfb_probe,
 	.info	= stmfb_info,
 };
-
-static int stmfb_init(void)
-{
-	return platform_driver_register(&stmfb_driver);
-}
-
-device_initcall(stmfb_init);
+device_platform_driver(stmfb_driver);
 
 /**
  * @file

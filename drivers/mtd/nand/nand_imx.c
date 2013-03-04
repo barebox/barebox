@@ -1277,17 +1277,7 @@ static struct driver_d imx_nand_driver = {
 	.name  = "imx_nand",
 	.probe = imxnd_probe,
 };
-
-/*
- * Main initialization routine
- * @return  0 if successful; non-zero otherwise
- */
-static int __init imx_nand_init(void)
-{
-	return platform_driver_register(&imx_nand_driver);
-}
-
-device_initcall(imx_nand_init);
+device_platform_driver(imx_nand_driver);
 
 MODULE_AUTHOR("Freescale Semiconductor, Inc.");
 MODULE_DESCRIPTION("MXC NAND MTD driver");

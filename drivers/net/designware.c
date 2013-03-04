@@ -455,10 +455,4 @@ static struct driver_d dwc_ether_driver = {
 	.probe = dwc_ether_probe,
 	.remove = dwc_ether_remove,
 };
-
-static int dwc_ether_driver_init(void)
-{
-	platform_driver_register(&dwc_ether_driver);
-	return 0;
-}
-device_initcall(dwc_ether_driver_init);
+device_platform_driver(dwc_ether_driver);

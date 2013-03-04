@@ -1819,12 +1819,4 @@ static struct driver_d ohci_driver = {
 	.name  = "ohci",
 	.probe = ohci_probe,
 };
-
-static int ohcil_init(void)
-{
-	platform_driver_register(&ohci_driver);
-	return 0;
-}
-
-device_initcall(ohcil_init);
-
+device_platform_driver(ohci_driver);

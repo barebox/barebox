@@ -21,6 +21,14 @@ lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 # o if we encounter foo/ in $(obj-m), remove it from $(obj-m)
 #   and add the directory to the list of dirs to descend into: $(subdir-m)
 
+# lowlevel is present in the PBL if enabled
+# otherwise in barebox
+ifeq ($(CONFIG_PBL_IMAGE), y)
+pbl-y		+= $(lwl-y)
+else
+obj-y		+= $(lwl-y)
+endif
+
 # for non dirs add pbl- prefix to the target
 # so we recompile the source with custom flags and custom quiet
 __pbl-y		:= $(notdir $(pbl-y))

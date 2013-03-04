@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef __I2C_MC34704_H
-#define __I2C_MC34704_H
+#ifndef __MFD_MC34704_H
+#define __MFD_MC34704_H
 
 struct mc34704 {
 	struct cdev		cdev;
@@ -23,4 +23,4 @@ extern struct mc34704 *mc34704_get(void);
 extern int mc34704_reg_read(struct mc34704 *mc34704, u8 reg, u8 *val);
 extern int mc34704_reg_write(struct mc34704 *mc34704, u8 reg, u8 val);
 
-#endif /* __I2C_MC34704_H */
+#endif /* __MFD_MC34704_H */

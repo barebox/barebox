@@ -557,12 +557,4 @@ static struct driver_d altera_tse_driver = {
 	.name = "altera_tse",
 	.probe = tse_probe,
 };
-
-static int tse_init(void)
-{
-	platform_driver_register(&altera_tse_driver);
-	return 0;
-}
-
-device_initcall(tse_init);
-
+device_platform_driver(altera_tse_driver);

@@ -17,7 +17,7 @@ config GPIO_PL061
 	  Say yes here to support the PrimeCell PL061 GPIO device
 
 config GPIO_STMPE
-	depends on I2C_STMPE
+	depends on MFD_STMPE
 	bool "STMPE GPIO Expander"
 endmenu
 

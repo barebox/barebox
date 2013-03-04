@@ -35,7 +35,7 @@ extern char *optarg;
  * - options can be mixed with nonoptions (like ls /bin -R)
  */
 
-int getopt(int argc, char *argv[], char *optstring);
+int getopt(int argc, char *argv[], const char *optstring);
 
 struct getopt_context {
 	int opterr;

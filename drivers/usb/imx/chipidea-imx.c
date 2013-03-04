@@ -83,9 +83,4 @@ static struct driver_d imx_chipidea_driver = {
 	.name   = "imx-usb",
 	.probe  = imx_chipidea_probe,
 };
-
-static int imx_chipidea_init(void)
-{
-	return platform_driver_register(&imx_chipidea_driver);
-}
-device_initcall(imx_chipidea_init);
+device_platform_driver(imx_chipidea_driver);

@@ -13,5 +13,5 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-obj-y += pca-a-xl2.o mux.o lowlevel.o
-pbl-y += mux.o lowlevel.o
+obj-y += pca-a-xl2.o
+lwl-y += mux.o lowlevel.o

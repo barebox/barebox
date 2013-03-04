@@ -150,11 +150,4 @@ static struct driver_d imx28_wd_driver = {
 	.probe  = imx28_wd_probe,
 	.remove = imx28_wd_remove,
 };
-
-static int imx28_wd_init(void)
-{
-	platform_driver_register(&imx28_wd_driver);
-	return 0;
-}
-
-device_initcall(imx28_wd_init);
+device_platform_driver(imx28_wd_driver);

@@ -2330,11 +2330,4 @@ static struct driver_d fsl_udc_driver = {
         .name   = "fsl-udc",
         .probe  = fsl_udc_probe,
 };
-
-static int fsl_udc_init(void)
-{
-	platform_driver_register(&fsl_udc_driver);
-	return 0;
-}
-
-device_initcall(fsl_udc_init);
+device_platform_driver(fsl_udc_driver);

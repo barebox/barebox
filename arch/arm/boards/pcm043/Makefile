@@ -16,6 +16,5 @@
 #
 #
 
-obj-y += lowlevel.o
-pbl-y += lowlevel.o
+lwl-y += lowlevel.o
 obj-y += pcm043.o

@@ -576,9 +576,4 @@ static struct driver_d i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,
 	.name	= DRIVER_NAME,
 };
-
-static int __init i2c_adap_fsl_init(void)
-{
-	return platform_driver_register(&i2c_fsl_driver);
-}
-device_initcall(i2c_adap_fsl_init);
+device_platform_driver(i2c_fsl_driver);

@@ -1061,10 +1061,4 @@ static struct driver_d cpsw_driver = {
 	.name   = "cpsw",
 	.probe  = cpsw_probe,
 };
-
-static int cpsw_register(void)
-{
-	return platform_driver_register(&cpsw_driver);
-}
-
-device_initcall(cpsw_register);
+device_platform_driver(cpsw_driver);

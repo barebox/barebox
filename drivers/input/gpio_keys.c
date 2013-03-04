@@ -106,10 +106,4 @@ static struct driver_d gpio_keys_driver = {
 	.name	= "gpio_keys",
 	.probe	= gpio_keys_probe,
 };
-
-static int gpio_keys_init(void)
-{
-	platform_driver_register(&gpio_keys_driver);
-	return 0;
-}
-device_initcall(gpio_keys_init);
+device_platform_driver(gpio_keys_driver);

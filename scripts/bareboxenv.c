@@ -137,7 +137,7 @@ void usage(char *prgname)
 int main(int argc, char *argv[])
 {
 	int opt;
-	int save = 0, load = 0, pad = 0, fd;
+	int save = 0, load = 0, pad = 0, err = 0, fd;
 	char *filename = NULL, *dirname = NULL;
 	int verbose = 0;
 
@@ -190,12 +190,20 @@ int main(int argc, char *argv[])
 	if (load) {
 		if (verbose)
 			printf("loading env from file %s to %s\n", filename, dirname);
-		envfs_load(filename, dirname, 0);
+
+		err = envfs_load(filename, dirname, 0);
+
+		if (verbose && err)
+			printf("loading env failed: %d\n", err);
 	}
 	if (save) {
 		if (verbose)
 			printf("saving contents of %s to file %s\n", dirname, filename);
-		envfs_save(filename, dirname);
+
+		err = envfs_save(filename, dirname);
+
+		if (verbose && err)
+			printf("saving env failed: %d\n", err);
 	}
-	exit(0);
+	exit(err ? 1 : 0);
 }

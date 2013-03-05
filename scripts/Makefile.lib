@@ -141,6 +141,11 @@ cpp_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(__cpp_flags)
 
 ld_flags       = $(LDFLAGS) $(EXTRA_LDFLAGS)
 
+dtc_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc		\
+      -I$(srctree)/arch/$(SRCARCH)/dts			\
+      -I$(srctree)/arch/$(SRCARCH)/include/dts		\
+      -undef -D__DTS__
+
 # Finds the multi-part object the current object will be linked into
 modname-multi = $(sort $(foreach m,$(multi-used),\
 		$(if $(filter $(subst $(obj)/,,$*.o), $($(m:.o=-objs)) $($(m:.o=-y))),$(m:.o=))))
@@ -184,6 +189,42 @@ cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
 quiet_cmd_gzip = GZIP    $@
 cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@) || \
 	(rm -f $@ ; false)
+
+# DTC
+# ---------------------------------------------------------------------------
+
+# Generate an assembly file to wrap the output of the device tree compiler
+quiet_cmd_dt_S_dtb= DTB    $@
+cmd_dt_S_dtb=							\
+(								\
+	echo '\#include <asm-generic/barebox.lds.h>';		\
+	echo '.section .dtb.rodata.$(subst -,_,$(*F)),"a"';	\
+	echo '.balign STRUCT_ALIGNMENT';			\
+	echo '.global __dtb_$(subst -,_,$(*F))_start';		\
+	echo '__dtb_$(subst -,_,$(*F))_start:';			\
+	echo '.incbin "$<" ';					\
+	echo '__dtb_$(subst -,_,$(*F))_end:';			\
+	echo '.global __dtb_$(subst -,_,$(*F))_end';		\
+	echo '.balign STRUCT_ALIGNMENT';			\
+) > $@
+
+$(obj)/%.dtb.S: $(obj)/%.dtb
+	$(call cmd,dt_S_dtb)
+
+quiet_cmd_dtc = DTC     $@
+cmd_dtc = $(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 $(DTC_FLAGS) -d $(depfile) $<
+
+$(obj)/%.dtb: $(src)/%.dts FORCE
+	$(call if_changed_dep,dtc)
+
+dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
+
+quiet_cmd_dtc_cpp = DTC+CPP $@
+cmd_dtc_cpp = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
+	$(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 $(DTC_FLAGS) $(dtc-tmp)
+
+$(obj)/%.dtb: $(src)/%.dtsp FORCE
+	$(call if_changed_dep,dtc_cpp)
 
 # Bzip2
 # ---------------------------------------------------------------------------

@@ -269,7 +269,7 @@ int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 	uint32_t writelen = ops->len;
 	uint8_t *oob = ops->oobbuf;
 	uint8_t *buf = ops->datbuf;
-	int ret, subpage;
+	int ret = 0, subpage;
 
 	ops->retlen = 0;
 	if (!writelen)

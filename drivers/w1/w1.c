@@ -468,7 +468,7 @@ void w1_found(struct w1_bus *bus, u64 rn)
 
 	dev->reg_num = rn;
 	dev->fid = tmp >> 56;
-	dev->id = (tmp >> 8) & 0xffffffffffff;
+	dev->id = (tmp >> 8) & 0xffffffffffffULL;
 	dev->crc = tmp & 0xff;
 
 	dev_dbg(&bus->dev, "%s:  familly = 0x%x, id = 0x%llx, crc = 0x%x\n",

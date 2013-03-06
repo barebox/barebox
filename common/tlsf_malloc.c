@@ -17,10 +17,8 @@
  *
  */
 
-#include <config.h>
 #include <malloc.h>
 #include <string.h>
-#include <malloc.h>
 
 #include <stdio.h>
 #include <module.h>

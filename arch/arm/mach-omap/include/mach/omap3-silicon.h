@@ -130,10 +130,16 @@
 /* PRM */
 #define OMAP3_PRM_RSTCTRL_RESET	0x04
 
+/*
+ * ROM code API related flags
+ */
+#define OMAP3_GP_ROMCODE_API_L2_INVAL		1
+#define OMAP3_GP_ROMCODE_API_WRITE_ACR		3
+
 /* If Architecture specific init functions are present */
 #ifndef __ASSEMBLY__
 void omap3_core_init(void);
-void omap3_invalidate_dcache(void);
+void omap3_gp_romcode_call(u32 service_id, u32 parameter);
 #endif /* __ASSEMBLY__ */
 
 #endif /* __ASM_ARCH_OMAP3_H */

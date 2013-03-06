@@ -451,8 +451,10 @@ void omap3_core_init(void)
 	/* Currently SMI in Kernel on ES2 devices seems to have an isse
 	 * Once that is resolved, we can postpone this config to kernel
 	 */
-	if (get_device_type() == GP_DEVICE)
+	if (get_device_type() == GP_DEVICE) {
 		setup_auxcr();
+		omap3_gp_romcode_call(OMAP3_GP_ROMCODE_API_L2_INVAL, 0);
+	}
 
 	sdelay(100);
 

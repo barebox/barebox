@@ -21,6 +21,7 @@
  * @brief Memory management
  */
 
+#include <common.h>
 #include <init.h>
 #include <stdio.h>
 #include <memory.h>
@@ -36,7 +37,7 @@
  * - memory above 0x100000
  */
 
-static int x86_mem_malloc_init(void)
+int x86_start_barebox(void)
 {
 #ifdef CONFIG_MEMORY_LAYOUT_DEFAULT
 	unsigned long memory_size;
@@ -57,7 +58,5 @@ static int x86_mem_malloc_init(void)
 	mem_malloc_init((void *)MALLOC_BASE,
 			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
 #endif
-	return 0;
+	start_barebox();
 }
-
-core_initcall(x86_mem_malloc_init);

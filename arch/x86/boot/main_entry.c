@@ -22,7 +22,7 @@
 #include <string.h>
 #include <asm/sections.h>
 
-extern void start_barebox(void);
+extern void x86_start_barebox(void);
 
 /**
  * Called plainly from assembler that switches from real to flat mode
@@ -33,5 +33,5 @@ void uboot_entry(void)
 {
 	/* clear the BSS first */
 	memset(__bss_start, 0x00, __bss_stop - __bss_start);
-	start_barebox();
+	x86_start_barebox();
 }

@@ -27,7 +27,6 @@
  * Supported phy types on this platform
  */
 typedef enum {
-	SEVENWIRE,
 	MII10,
 	MII100,
 	RMII,

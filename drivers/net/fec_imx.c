@@ -298,15 +298,14 @@ static int fec_init(struct eth_device *dev)
 	 * Set FEC-Lite receive control register(R_CNTRL):
 	 */
 	rcntl = FEC_R_CNTRL_MAX_FL(1518);
-	if (fec->xcv_type != SEVENWIRE) {
-		rcntl |= FEC_R_CNTRL_MII_MODE;
-		/*
-		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
-		 * and do not drop the Preamble.
-		 */
-		writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
-				fec->regs + FEC_MII_SPEED);
-	}
+
+	rcntl |= FEC_R_CNTRL_MII_MODE;
+	/*
+	 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
+	 * and do not drop the Preamble.
+	 */
+	writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
+			fec->regs + FEC_MII_SPEED);
 
 	if (fec->xcv_type == RMII) {
 		if (fec_is_imx28(fec) || fec_is_imx6(fec)) {
@@ -385,16 +384,14 @@ static int fec_open(struct eth_device *edev)
 	int ret;
 	u32 ecr;
 
-	if (fec->xcv_type != SEVENWIRE) {
-		ret = phy_device_connect(edev, &fec->miibus, fec->phy_addr,
-					 fec_update_linkspeed, fec->phy_flags,
-					 fec->interface);
-		if (ret)
-			return ret;
+	ret = phy_device_connect(edev, &fec->miibus, fec->phy_addr,
+				 fec_update_linkspeed, fec->phy_flags,
+				 fec->interface);
+	if (ret)
+		return ret;
 
-		if (fec->phy_init)
-			fec->phy_init(edev->phydev);
-	}
+	if (fec->phy_init)
+		fec->phy_init(edev->phydev);
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -699,30 +696,26 @@ static int fec_probe(struct device_d *dev)
 
 	fec_init(edev);
 
-	if (fec->xcv_type != SEVENWIRE) {
-		fec->miibus.read = fec_miibus_read;
-		fec->miibus.write = fec_miibus_write;
-		switch (fec->xcv_type) {
-		case RMII:
-			fec->interface = PHY_INTERFACE_MODE_RMII;
-			break;
-		case RGMII:
-			fec->interface = PHY_INTERFACE_MODE_RGMII;
-			break;
-		case MII10:
-			fec->phy_flags = PHYLIB_FORCE_10;
-		case MII100:
-			fec->interface = PHY_INTERFACE_MODE_MII;
-			break;
-		case SEVENWIRE:
-			fec->interface = PHY_INTERFACE_MODE_NA;
-			break;
-		}
-		fec->miibus.priv = fec;
-		fec->miibus.parent = dev;
-
-		mdiobus_register(&fec->miibus);
+	fec->miibus.read = fec_miibus_read;
+	fec->miibus.write = fec_miibus_write;
+	switch (fec->xcv_type) {
+	case RMII:
+		fec->interface = PHY_INTERFACE_MODE_RMII;
+		break;
+	case RGMII:
+		fec->interface = PHY_INTERFACE_MODE_RGMII;
+		break;
+	case MII10:
+		fec->phy_flags = PHYLIB_FORCE_10;
+	case MII100:
+		fec->interface = PHY_INTERFACE_MODE_MII;
+		break;
 	}
+
+	fec->miibus.priv = fec;
+	fec->miibus.parent = dev;
+
+	mdiobus_register(&fec->miibus);
 
 	eth_register(edev);
 	return 0;

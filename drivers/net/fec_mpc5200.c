@@ -294,25 +294,17 @@ static int mpc5xxx_fec_init(struct eth_device *dev)
 	/*
 	 * Set FEC-Lite receive control register(R_CNTRL):
 	 */
-	if (fec->xcv_type == SEVENWIRE) {
-		/*
-		 * Frame length=1518; 7-wire mode
-		 */
-		fec->eth->r_cntrl = 0x05ee0020;	/*0x05ee0000;FIXME */
-	} else {
-		/*
-		 * Frame length=1518; MII mode;
-		 */
-		fec->eth->r_cntrl = 0x05ee0024;	/*0x05ee0004;FIXME */
-	}
 
-	if (fec->xcv_type != SEVENWIRE) {
-		/*
-		 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
-		 * and do not drop the Preamble.
-		 */
-		fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
-	}
+	/*
+	 * Frame length=1518; MII mode;
+	 */
+	fec->eth->r_cntrl = 0x05ee0024;	/*0x05ee0004;FIXME */
+
+	/*
+	 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
+	 * and do not drop the Preamble.
+	 */
+	fec->eth->mii_speed = (((get_ipb_clock() >> 20) / 5) << 1);	/* No MII for 7-wire mode */
 
 	/*
 	 * Set Opcode/Pause Duration Register
@@ -406,12 +398,8 @@ static int mpc5xxx_fec_open(struct eth_device *edev)
 	 */
 	SDMA_TASK_ENABLE(FEC_RECV_TASK_NO);
 
-	if (fec->xcv_type != SEVENWIRE) {
-		return phy_device_connect(edev, &fec->miibus, CONFIG_PHY_ADDR,
-				 NULL, fec->phy_flags, fec->interface);
-	}
-
-	return 0;
+	return phy_device_connect(edev, &fec->miibus, CONFIG_PHY_ADDR,
+			 NULL, fec->phy_flags, fec->interface);
 }
 
 static void mpc5xxx_fec_halt(struct eth_device *dev)
@@ -511,6 +499,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	 */
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	volatile FEC_TBD *pTbd;
+	uint16_t phyStatus;
 
 #ifdef DEBUG_FIFO
 	debug_fifo("tbd status: 0x%04x\n", fec->tbdBase[0].status);
@@ -548,10 +537,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	/*
 	 * Kick the MII i/f
 	 */
-	if (fec->xcv_type != SEVENWIRE) {
-		uint16_t phyStatus;
-		phyStatus = fec5xxx_miibus_read(&fec->miibus, 0, 0x1);
-	}
+	phyStatus = fec5xxx_miibus_read(&fec->miibus, 0, 0x1);
 
 	/*
 	 * Enable SmartDMA transmit task
@@ -676,30 +662,26 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 
 	loadtask(0, 2);
 
-	if (fec->xcv_type != SEVENWIRE) {
-		fec->miibus.read = fec5xxx_miibus_read;
-		fec->miibus.write = fec5xxx_miibus_write;
-		switch (pdata->xcv_type) {
-		case RMII:
-			fec->interface = PHY_INTERFACE_MODE_RMII;
-			break;
-		case RGMII:
-			fec->interface = PHY_INTERFACE_MODE_RGMII;
-			break;
-		case MII10:
-			fec->phy_flags = PHYLIB_FORCE_10;
-		case MII100:
-			fec->interface = PHY_INTERFACE_MODE_MII;
-			break;
-		case SEVENWIRE:
-			fec->interface = PHY_INTERFACE_MODE_NA;
-			break;
-		}
-		fec->miibus.priv = fec;
-		fec->miibus.parent = dev;
-
-		mdiobus_register(&fec->miibus);
+	fec->miibus.read = fec5xxx_miibus_read;
+	fec->miibus.write = fec5xxx_miibus_write;
+	switch (pdata->xcv_type) {
+	case RMII:
+		fec->interface = PHY_INTERFACE_MODE_RMII;
+		break;
+	case RGMII:
+		fec->interface = PHY_INTERFACE_MODE_RGMII;
+		break;
+	case MII10:
+		fec->phy_flags = PHYLIB_FORCE_10;
+	case MII100:
+		fec->interface = PHY_INTERFACE_MODE_MII;
+		break;
 	}
+
+	fec->miibus.priv = fec;
+	fec->miibus.parent = dev;
+
+	mdiobus_register(&fec->miibus);
 
 	eth_register(edev);
 	return 0;

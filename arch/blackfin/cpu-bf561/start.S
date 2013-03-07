@@ -329,8 +329,8 @@ _clear_bss_skip:
         [p0] = r0;
 #endif
 
-	p0.l = _start_barebox;
-	p0.h = _start_barebox;
+	p0.l = _blackfin_start_barebox;
+	p0.h = _blackfin_start_barebox;
 	jump (p0);
 
 reset_start:

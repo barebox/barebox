@@ -30,6 +30,15 @@
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
+static unsigned long barebox_boarddata;
+
+/*
+ * return the boarddata variable passed to barebox_arm_entry
+ */
+unsigned long barebox_arm_boarddata(void)
+{
+	return barebox_boarddata;
+}
 
 static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
@@ -39,6 +48,7 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 
 	setup_c();
 
+	barebox_boarddata = boarddata;
 	arm_stack_top = endmem;
 	endmem -= STACK_SIZE; /* Stack */
 

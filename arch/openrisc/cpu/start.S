@@ -245,7 +245,7 @@ _start:
 	l.andi	r30, r0, 0
 	l.andi	r31, r0, 0
 
-	l.j	start_barebox
+	l.j	openrisc_start_barebox
 	 l.nop
 
 	.size	_start, .-_start

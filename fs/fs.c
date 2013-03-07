@@ -119,14 +119,19 @@ EXPORT_SYMBOL(mkmodestr);
 
 static char *cwd;
 
-static int init_cwd(void)
+static FILE *files;
+
+static int init_fs(void)
 {
 	cwd = xzalloc(PATH_MAX);
 	*cwd = '/';
+
+	files = xzalloc(sizeof(FILE) * MAX_FILES);
+
 	return 0;
 }
 
-postcore_initcall(init_cwd);
+postcore_initcall(init_fs);
 
 char *normalise_link(const char *pathname, const char *symlink)
 {
@@ -267,8 +272,6 @@ char *get_mounted_path(const char *path)
 
 	return fdev->path;
 }
-
-static FILE files[MAX_FILES];
 
 static FILE *get_file(void)
 {

@@ -60,7 +60,7 @@
 #define MX35PDK_BOARD_REV_2		1
 
 static struct fec_platform_data fec_info = {
-	.xcv_type	= MII100,
+	.xcv_type	= PHY_INTERFACE_MODE_MII,
 	.phy_addr	= 0x1F,
 };
 

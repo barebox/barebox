@@ -159,7 +159,7 @@ static int ar8031_phy_fixup(struct phy_device *dev)
 }
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = RGMII,
+	.xcv_type = PHY_INTERFACE_MODE_RGMII,
 	.phy_addr = 1,
 };
 

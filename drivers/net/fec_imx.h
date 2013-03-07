@@ -135,7 +135,6 @@ enum fec_type {
 struct fec_priv {
 	struct eth_device edev;
 	void __iomem *regs;
-	xceiver_type xcv_type;			/* transceiver type          */
 	struct buffer_descriptor __iomem *rbd_base;	/* RBD ring                  */
 	int rbd_index;				/* next receive BD to read   */
 	struct buffer_descriptor __iomem *tbd_base;	/* TBD ring                  */

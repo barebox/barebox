@@ -47,7 +47,7 @@
 #include <asm/barebox-arm-head.h>
 
 static struct fec_platform_data fec_info = {
-	.xcv_type	= RMII,
+	.xcv_type	= PHY_INTERFACE_MODE_RMII,
 	.phy_addr	= 0,
 };
 

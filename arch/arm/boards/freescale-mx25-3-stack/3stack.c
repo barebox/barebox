@@ -104,7 +104,7 @@ struct imx_flash_header __flash_header_section flash_header = {
 unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
 
 static struct fec_platform_data fec_info = {
-	.xcv_type	= RMII,
+	.xcv_type	= PHY_INTERFACE_MODE_RMII,
 	.phy_addr	= 1,
 };
 

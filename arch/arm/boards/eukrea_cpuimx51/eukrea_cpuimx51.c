@@ -39,7 +39,7 @@
 #include <mach/devices-imx51.h>
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
+	.xcv_type = PHY_INTERFACE_MODE_MII,
 };
 
 struct imx_nand_platform_data nand_info = {

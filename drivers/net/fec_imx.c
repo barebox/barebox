@@ -307,7 +307,7 @@ static int fec_init(struct eth_device *dev)
 	writel(((fec_clk_get_rate(fec) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 
-	if (fec->xcv_type == RMII) {
+	if (fec->interface == PHY_INTERFACE_MODE_RMII) {
 		if (fec_is_imx28(fec) || fec_is_imx6(fec)) {
 			rcntl |= FEC_R_CNTRL_RMII_MODE | FEC_R_CNTRL_FCE |
 				FEC_R_CNTRL_NO_LGTH_CHECK;
@@ -325,7 +325,7 @@ static int fec_init(struct eth_device *dev)
 		}
 	}
 
-	if (fec->xcv_type == RGMII)
+	if (fec->interface == PHY_INTERFACE_MODE_RGMII)
 		rcntl |= 1 << 6;
 
 	writel(rcntl, fec->regs + FEC_R_CNTRL);
@@ -686,11 +686,11 @@ static int fec_probe(struct device_d *dev)
 	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
 	if (pdata) {
-		fec->xcv_type = pdata->xcv_type;
+		fec->interface = pdata->xcv_type;
 		fec->phy_init = pdata->phy_init;
 		fec->phy_addr = pdata->phy_addr;
 	} else {
-		fec->xcv_type = MII100;
+		fec->interface = PHY_INTERFACE_MODE_MII;
 		fec->phy_addr = -1;
 	}
 
@@ -698,19 +698,6 @@ static int fec_probe(struct device_d *dev)
 
 	fec->miibus.read = fec_miibus_read;
 	fec->miibus.write = fec_miibus_write;
-	switch (fec->xcv_type) {
-	case RMII:
-		fec->interface = PHY_INTERFACE_MODE_RMII;
-		break;
-	case RGMII:
-		fec->interface = PHY_INTERFACE_MODE_RGMII;
-		break;
-	case MII10:
-		fec->phy_flags = PHYLIB_FORCE_10;
-	case MII100:
-		fec->interface = PHY_INTERFACE_MODE_MII;
-		break;
-	}
 
 	fec->miibus.priv = fec;
 	fec->miibus.parent = dev;

@@ -172,7 +172,7 @@ static void __init mx28_evk_fec_reset(void)
 
 /* PhyAD[0..2]=0, RMIISEL=1 */
 static struct fec_platform_data fec_info = {
-	.xcv_type = RMII,
+	.xcv_type = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };
 

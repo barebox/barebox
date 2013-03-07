@@ -658,25 +658,12 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 
-	fec->xcv_type = pdata->xcv_type;
+	fec->interface = pdata->xcv_type;
 
 	loadtask(0, 2);
 
 	fec->miibus.read = fec5xxx_miibus_read;
 	fec->miibus.write = fec5xxx_miibus_write;
-	switch (pdata->xcv_type) {
-	case RMII:
-		fec->interface = PHY_INTERFACE_MODE_RMII;
-		break;
-	case RGMII:
-		fec->interface = PHY_INTERFACE_MODE_RGMII;
-		break;
-	case MII10:
-		fec->phy_flags = PHYLIB_FORCE_10;
-	case MII100:
-		fec->interface = PHY_INTERFACE_MODE_MII;
-		break;
-	}
 
 	fec->miibus.priv = fec;
 	fec->miibus.parent = dev;

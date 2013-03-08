@@ -275,12 +275,6 @@ static int ahci_write(struct ata_port *ata, const void *buf, unsigned int block,
 	return ahci_rw(ata, NULL, buf, block, num_blocks);
 }
 
-static struct ata_port_operations ahci_ops = {
-	.read_id = ahci_read_id,
-	.read = ahci_read,
-	.write = ahci_write,
-};
-
 static int ahci_init_port(struct ahci_port *ahci_port)
 {
 	void __iomem *port_mmio;
@@ -421,8 +415,6 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port_debug(ahci_port, "status: 0x%08x\n", val);
 
-	ahci_port->ata.ops = &ahci_ops;
-
 	if ((val & 0xf) == 0x03)
 		return 0;
 
@@ -437,6 +429,33 @@ err_alloc1:
 err_alloc:
 	return ret;
 }
+
+static int ahci_port_start(struct ata_port *ata_port)
+{
+	struct ahci_port *ahci_port = container_of(ata_port, struct ahci_port, ata);
+	int ret;
+
+	ret = ahci_init_port(ahci_port);
+	if (ret)
+		return ret;
+
+	if (!ahci_link_ok(ahci_port, 1))
+		return -EIO;
+
+	ahci_port_write_f(ahci_port, PORT_CMD,
+			PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX |
+			PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
+			PORT_CMD_START);
+
+	return 0;
+}
+
+static struct ata_port_operations ahci_ops = {
+	.init = ahci_port_start,
+	.read_id = ahci_read_id,
+	.read = ahci_read,
+	.write = ahci_write,
+};
 
 static int ahci_host_init(struct ahci_device *ahci)
 {
@@ -483,9 +502,8 @@ static int ahci_host_init(struct ahci_device *ahci)
 		ahci_port->ahci = ahci;
 		ahci_port->ata.dev = ahci->dev;
 		ahci_port->port_mmio = ahci_port_base(mmio, i);
-		ret = ahci_init_port(ahci_port);
-		if (!ret)
-			ahci->link_port_map |= 1 << i;
+		ahci_port->ata.ops = &ahci_ops;
+		ata_port_register(&ahci_port->ata);
 	}
 
 	tmp = ahci_ioread(ahci, HOST_CTL);
@@ -495,25 +513,9 @@ static int ahci_host_init(struct ahci_device *ahci)
 	return 0;
 }
 
-static int ahci_port_start(struct ahci_port *ahci_port, u8 port)
-{
-	if (!ahci_link_ok(ahci_port, 1))
-		return -EIO;
-
-	ahci_port_write_f(ahci_port, PORT_CMD,
-			PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX |
-			PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
-			PORT_CMD_START);
-
-	ata_port_register(&ahci_port->ata);
-
-	return 0;
-}
-
 static int __ahci_host_init(struct ahci_device *ahci)
 {
-	int i, rc = 0;
-	u32 linkmap;
+	int rc = 0;
 
 	ahci->host_flags = ATA_FLAG_SATA
 				| ATA_FLAG_NO_LEGACY
@@ -528,16 +530,6 @@ static int __ahci_host_init(struct ahci_device *ahci)
 	if (rc)
 		goto err_out;
 
-	linkmap = ahci->link_port_map;
-
-	for (i = 0; i < 32; i++) {
-		if (((linkmap >> i) & 0x01)) {
-			if (ahci_port_start(&ahci->ports[i], i)) {
-				printf("Can not start port %d\n", i);
-				continue;
-			}
-		}
-	}
 err_out:
 	return rc;
 }

@@ -89,9 +89,11 @@ struct ata_port_operations {
 struct ata_port {
 	struct ata_port_operations *ops;
 	struct device_d *dev;
+	struct device_d class_dev;
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
+	int initialized;
 };
 
 int ide_port_register(struct device_d *, struct ata_ioports *);

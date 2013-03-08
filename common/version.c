@@ -16,6 +16,6 @@ void barebox_banner (void)
 	if (!board)
 		board = CONFIG_BOARDINFO;
 
-	printf("\n\n%s\n\n", version_string);
-	printf("Board: %s\n", board);
+	pr_info("\n\n%s\n\n", version_string);
+	pr_info("Board: %s\n", board);
 }

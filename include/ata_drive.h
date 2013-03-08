@@ -80,6 +80,7 @@ struct ata_ioports {
 struct ata_port;
 
 struct ata_port_operations {
+	int (*init)(struct ata_port *port);
 	int (*read)(struct ata_port *port, void *buf, unsigned int block, int num_blocks);
 	int (*write)(struct ata_port *port, const void *buf, unsigned int block, int num_blocks);
 	int (*read_id)(struct ata_port *port, void *buf);

@@ -261,6 +261,12 @@ static int ata_port_init(struct ata_port *port)
 	struct ata_port_operations *ops = port->ops;
 	struct device_d *dev = &port->class_dev;
 
+	if (ops->init) {
+		rc = ops->init(port);
+		if (rc)
+			return rc;
+	}
+
 	port->id = dma_alloc(SECTOR_SIZE);
 
 	port->blk.dev = dev;

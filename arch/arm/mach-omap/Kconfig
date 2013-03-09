@@ -187,20 +187,21 @@ config MACH_PCM051
 
 endchoice
 
-if MACH_OMAP3EVM
+if ARCH_OMAP
 
 choice
 	prompt "Select UART"
+	default OMAP_UART3
 
-	config OMAP3EVM_UART1
+	config OMAP_UART1
 		bool "Use UART1"
-		depends on MACH_OMAP3EVM
+		depends on ARCH_OMAP
 		help
 		  Say Y here if you would like to use UART1 as console.
 
-	config OMAP3EVM_UART3
+	config OMAP_UART3
 		bool "Use UART3"
-		depends on MACH_OMAP3EVM
+		depends on ARCH_OMAP
 		help
 		  Say Y here if you would like to use UART3 as console.
 

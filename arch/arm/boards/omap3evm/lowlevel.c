@@ -122,12 +122,12 @@ static void mux_config(void)
 	/*
 	 * Serial Interface
 	 */
-#if defined(CONFIG_OMAP3EVM_UART1)
+#if defined(CONFIG_OMAP_UART1)
 	MUX_VAL(CP(UART1_TX),		(IDIS | PTD | DIS | M0));
 	MUX_VAL(CP(UART1_RTS),		(IDIS | PTD | DIS | M0));
 	MUX_VAL(CP(UART1_CTS),		(IEN  | PTU | DIS | M0));
 	MUX_VAL(CP(UART1_RX),		(IEN  | PTD | DIS | M0));
-#elif defined(CONFIG_OMAP3EVM_UART3)
+#elif defined(CONFIG_OMAP_UART3)
 	MUX_VAL(CP(UART3_CTS_RCTX),	(IEN  | PTD | EN  | M0));
 	MUX_VAL(CP(UART3_RTS_SD),	(IDIS | PTD | DIS | M0));
 	MUX_VAL(CP(UART3_RX_IRRX),	(IEN  | PTD | DIS | M0));

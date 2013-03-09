@@ -62,9 +62,9 @@
  */
 static int omap3evm_init_console(void)
 {
-	if (IS_ENABLED(CONFIG_OMAP3EVM_UART1))
+	if (IS_ENABLED(CONFIG_OMAP_UART1))
 		omap3_add_uart1();
-	if (IS_ENABLED(CONFIG_OMAP3EVM_UART3))
+	if (IS_ENABLED(CONFIG_OMAP_UART3))
 		omap3_add_uart3();
 
 	return 0;

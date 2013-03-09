@@ -22,7 +22,7 @@
 #ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-silicon.h>
 
-#ifdef CONFIG_OMAP3EVM_UART1
+#ifdef CONFIG_OMAP_UART1
 #define UART_BASE	OMAP3_UART1_BASE
 #else
 #define UART_BASE	OMAP3_UART3_BASE
@@ -32,7 +32,11 @@
 
 #ifdef CONFIG_ARCH_OMAP4
 #include <mach/omap4-silicon.h>
+#ifdef CONFIG_OMAP_UART1
+#define UART_BASE	OMAP44XX_UART1_BASE
+#else
 #define UART_BASE	OMAP44XX_UART3_BASE
+#endif
 #endif
 
 #ifdef CONFIG_ARCH_AM33XX

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "Automountpoints"
+	exit
+fi
+
+# automount tftp server based on $eth0.serverip
+
+mkdir -p /mnt/tftp
+automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
+
+# automount nfs server example
+
+#nfshost=somehost
+#mkdir -p /mnt/${nfshost}
+#automount /mnt/$nfshost "ifup eth0 && mount -t nfs ${nfshost}:/tftpboot /mnt/${nfshost}"
+
+# FAT on usb disk example
+
+#mkdir -p /mnt/fat
+#automount -d /mnt/fat 'usb && [ -e /dev/disk0.0 ] && mount /dev/disk0.0 /mnt/fat'
+
+mkdir -p /mnt/sd
+automount -d /mnt/sd 'mount /dev/disk0.0 /mnt/sd'
+
+mkdir -p /mnt/usb
+automount -d /mnt/usb 'mount -t omap4_usbbootfs omap4_usbboot /mnt/usb'

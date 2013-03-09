@@ -52,7 +52,6 @@ static int archosg9_devices_init(void){
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	omap44xx_add_i2c1(NULL);
 	omap44xx_add_mmc1(NULL);
-	omap44xx_add_mmc2(NULL);
 
 	armlinux_set_bootparams((void *)0x80000100);
 	/*

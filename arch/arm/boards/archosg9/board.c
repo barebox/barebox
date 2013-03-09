@@ -17,15 +17,18 @@
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
+#include <mach/omap4_rom_usb.h>
 #include <sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
 #include "archos_features.h"
 
 static int archosg9_console_init(void){
-	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT))
+	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT) &&
+			omap4_usbboot_ready()) {
 		add_generic_device("serial_omap4_usbboot", DEVICE_ID_DYNAMIC
 			, NULL, 0, 0, 0, NULL);
+	}
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_NS16550)) {
 		gpio_direction_output(41, 0); /* gps_disable */
 		gpio_direction_output(34, 1); /* 1v8_pwron */

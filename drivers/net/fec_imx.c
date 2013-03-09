@@ -26,6 +26,7 @@
 #include <linux/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <of_net.h>
 
 #include <asm/mmu.h>
 
@@ -628,6 +629,25 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	return 0;
 }
 
+#ifdef CONFIG_OFDEVICE
+static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+{
+	int ret;
+
+	ret = of_get_phy_mode(dev->device_node);
+	if (ret < 0)
+		fec->interface = PHY_INTERFACE_MODE_MII;
+	else
+		fec->interface = ret;
+
+	return 0;
+}
+#else
+static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+{
+	return -ENODEV;
+}
+#endif
 static int fec_probe(struct device_d *dev)
 {
         struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
@@ -685,7 +705,9 @@ static int fec_probe(struct device_d *dev)
 
 	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 
-	if (pdata) {
+	if (dev->device_node) {
+		ret = fec_probe_dt(dev, fec);
+	} else if (pdata) {
 		fec->interface = pdata->xcv_type;
 		fec->phy_init = pdata->phy_init;
 		fec->phy_addr = pdata->phy_addr;
@@ -693,6 +715,9 @@ static int fec_probe(struct device_d *dev)
 		fec->interface = PHY_INTERFACE_MODE_MII;
 		fec->phy_addr = -1;
 	}
+
+	if (ret)
+		goto err_free;
 
 	fec_init(edev);
 

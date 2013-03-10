@@ -99,7 +99,7 @@ static struct driver_d lp_driver = {
 
 static int lp_init(void)
 {
-	i2c_register_driver(&lp_driver);
+	i2c_driver_register(&lp_driver);
 	return 0;
 }
 

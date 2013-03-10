@@ -275,7 +275,7 @@ static struct driver_d mc_i2c_driver = {
 
 static int mc_i2c_init(void)
 {
-	return i2c_register_driver(&mc_i2c_driver);
+	return i2c_driver_register(&mc_i2c_driver);
 }
 
 device_initcall(mc_i2c_init);

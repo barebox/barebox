@@ -454,7 +454,7 @@ static struct driver_d at24_driver = {
 
 static int at24_init(void)
 {
-	i2c_register_driver(&at24_driver);
+	i2c_driver_register(&at24_driver);
 	return 0;
 }
 device_initcall(at24_init);

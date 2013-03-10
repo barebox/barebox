@@ -185,7 +185,7 @@ static struct driver_d micrel_switch_driver = {
 
 static int micrel_switch_init(void)
 {
-	spi_register_driver(&micrel_switch_driver);
+	spi_driver_register(&micrel_switch_driver);
 	return 0;
 }
 device_initcall(micrel_switch_init);

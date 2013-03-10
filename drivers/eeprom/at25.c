@@ -307,7 +307,7 @@ static struct driver_d at25_driver = {
 
 static int at25_init(void)
 {
-	spi_register_driver(&at25_driver);
+	spi_driver_register(&at25_driver);
 	return 0;
 }
 

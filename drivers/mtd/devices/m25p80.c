@@ -954,7 +954,7 @@ static struct driver_d m25p80_driver = {
 
 static int m25p80_init(void)
 {
-	return spi_register_driver(&m25p80_driver);
+	return spi_driver_register(&m25p80_driver);
 }
 device_initcall(m25p80_init);
 

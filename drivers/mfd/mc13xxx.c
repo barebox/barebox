@@ -375,7 +375,7 @@ static struct driver_d mc_spi_driver = {
 
 static int mc_spi_init(void)
 {
-	return spi_register_driver(&mc_spi_driver);
+	return spi_driver_register(&mc_spi_driver);
 }
 
 device_initcall(mc_spi_init);

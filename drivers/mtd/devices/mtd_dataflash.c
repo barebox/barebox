@@ -878,7 +878,7 @@ static struct driver_d dataflash_driver = {
 
 static int dataflash_init(void)
 {
-	spi_register_driver(&dataflash_driver);
+	spi_driver_register(&dataflash_driver);
 	return 0;
 }
 device_initcall(dataflash_init);

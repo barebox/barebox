@@ -442,6 +442,9 @@ static inline int spi_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
+#define device_spi_driver(drv)	\
+	register_driver_macro(device,spi,drv)
+
 void spi_of_register_slaves(struct spi_master *master, struct device_node *node);
 
 #endif /* __INCLUDE_SPI_H */

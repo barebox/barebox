@@ -291,11 +291,5 @@ static struct driver_d mc_spi_driver = {
 	.name  = "mc34708-spi",
 	.probe = mc_spi_probe,
 };
-
-static int mc_spi_init(void)
-{
-	return spi_driver_register(&mc_spi_driver);
-}
-
-device_initcall(mc_spi_init);
+device_spi_driver(mc_spi_driver);
 #endif

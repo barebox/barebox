@@ -304,11 +304,4 @@ static struct driver_d at25_driver = {
 	.name  = DRIVERNAME,
 	.probe = at25_probe,
 };
-
-static int at25_init(void)
-{
-	spi_driver_register(&at25_driver);
-	return 0;
-}
-
-device_initcall(at25_init);
+device_spi_driver(at25_driver);

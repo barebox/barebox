@@ -106,10 +106,4 @@ static struct driver_d altera_serial_jtag_driver = {
 	.name = "altera_serial_jtag",
 	.probe = altera_serial_jtag_probe,
 };
-
-static int altera_serial_jtag_init(void)
-{
-	return platform_driver_register(&altera_serial_jtag_driver);
-}
-
-console_initcall(altera_serial_jtag_init);
+console_platform_driver(altera_serial_jtag_driver);

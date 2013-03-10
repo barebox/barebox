@@ -78,11 +78,4 @@ static struct driver_d linux_console_driver = {
         .name  = "console",
         .probe = linux_console_probe,
 };
-
-static int console_init(void)
-{
-	return platform_driver_register(&linux_console_driver);
-}
-
-console_initcall(console_init);
-
+console_platform_driver(linux_console_driver);

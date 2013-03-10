@@ -149,9 +149,4 @@ static struct driver_d clps711x_driver = {
 	.probe	= clps711x_probe,
 	.remove	= clps711x_remove,
 };
-
-static int clps711x_init(void)
-{
-	return platform_driver_register(&clps711x_driver);
-}
-console_initcall(clps711x_init);
+console_platform_driver(clps711x_driver);

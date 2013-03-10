@@ -397,11 +397,4 @@ static struct driver_d imx_serial_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_serial_dt_ids),
 	.id_table = imx_serial_ids,
 };
-
-static int imx_serial_init(void)
-{
-	platform_driver_register(&imx_serial_driver);
-	return 0;
-}
-
-console_initcall(imx_serial_init);
+console_platform_driver(imx_serial_driver);

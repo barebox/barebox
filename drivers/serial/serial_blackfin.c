@@ -130,12 +130,4 @@ static struct driver_d blackfin_serial_driver = {
         .name  = "blackfin_serial",
         .probe = blackfin_serial_probe,
 };
-
-static int blackfin_serial_init(void)
-{
-	platform_driver_register(&blackfin_serial_driver);
-	return 0;
-}
-
-console_initcall(blackfin_serial_init);
-
+console_platform_driver(blackfin_serial_driver);

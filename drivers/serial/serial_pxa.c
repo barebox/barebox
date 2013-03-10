@@ -195,10 +195,4 @@ static struct driver_d pxa_serial_driver = {
 	.probe = pxa_serial_probe,
 	.remove = pxa_serial_remove,
 };
-
-static int pxa_serial_init(void)
-{
-	return platform_driver_register(&pxa_serial_driver);
-}
-
-console_initcall(pxa_serial_init);
+console_platform_driver(pxa_serial_driver);

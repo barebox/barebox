@@ -149,6 +149,7 @@ static struct driver_d arm_dcc_driver = {
 	.name	= "arm_dcc",
 	.probe	= arm_dcc_probe,
 };
+console_platform_driver(arm_dcc_driver);
 
 static struct device_d arm_dcc_device = {
 	.id	= DEVICE_ID_DYNAMIC,
@@ -157,9 +158,6 @@ static struct device_d arm_dcc_device = {
 
 static int arm_dcc_init(void)
 {
-	platform_device_register(&arm_dcc_device);
-	platform_driver_register(&arm_dcc_driver);
-	return 0;
+	return platform_device_register(&arm_dcc_device);
 }
-
 console_initcall(arm_dcc_init);

@@ -408,6 +408,8 @@ int platform_driver_register(struct driver_d *drv);
 
 #define device_platform_driver(drv)	\
 	register_driver_macro(device,platform,drv)
+#define console_platform_driver(drv)	\
+	register_driver_macro(console,platform,drv)
 
 int platform_device_register(struct device_d *new_device);
 

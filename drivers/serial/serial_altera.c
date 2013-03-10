@@ -101,11 +101,4 @@ static struct driver_d altera_serial_driver = {
 	.name = "altera_serial",
 	.probe = altera_serial_probe,
 };
-
-static int altera_serial_init(void)
-{
-	return platform_driver_register(&altera_serial_driver);
-}
-
-console_initcall(altera_serial_init);
-
+console_platform_driver(altera_serial_driver);

@@ -187,11 +187,4 @@ static struct driver_d stm_serial_driver = {
         .probe  = stm_serial_probe,
 	.remove = stm_serial_remove,
 };
-
-static int stm_serial_init(void)
-{
-	platform_driver_register(&stm_serial_driver);
-	return 0;
-}
-
-console_initcall(stm_serial_init);
+console_platform_driver(stm_serial_driver);

@@ -155,12 +155,4 @@ static struct driver_d netx_serial_driver = {
         .name  = "netx_serial",
         .probe = netx_serial_probe,
 };
-
-static int netx_serial_init(void)
-{
-	platform_driver_register(&netx_serial_driver);
-	return 0;
-}
-
-console_initcall(netx_serial_init);
-
+console_platform_driver(netx_serial_driver);

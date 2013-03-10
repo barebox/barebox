@@ -88,6 +88,8 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS }
 	__usymtab_end = .;
 
+	.dtb : { BAREBOX_DTB() }
+
 	_edata = .;
 	. = ALIGN(4);
 	__bss_start = .;

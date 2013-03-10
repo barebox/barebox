@@ -481,7 +481,7 @@ export KBUILD_BINARY ?= barebox.bin
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
 	$(call if_changed,ln)
 
-all: barebox-flash-image
+all: barebox-flash-image $(KBUILD_DTBS)
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
 

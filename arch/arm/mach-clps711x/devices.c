@@ -111,3 +111,85 @@ void clps711x_add_uart(unsigned int id)
 		break;
 	}
 }
+
+static struct resource gpio0_resources[] = {
+	{
+		.start	= PADR,
+		.end	= PADR,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= PADDR,
+		.end	= PADDR,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+static struct resource gpio1_resources[] = {
+	{
+		.start	= PBDR,
+		.end	= PBDR,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= PBDDR,
+		.end	= PBDDR,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+static struct resource gpio2_resources[] = {
+	{
+		.start	= PCDR,
+		.end	= PCDR,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= PCDDR,
+		.end	= PCDDR,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+static struct resource gpio3_resources[] = {
+	{
+		.start	= PDDR,
+		.end	= PDDR,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= PDDDR,
+		.end	= PDDDR,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+static struct resource gpio4_resources[] = {
+	{
+		.start	= PEDR,
+		.end	= PEDR,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= PEDDR,
+		.end	= PEDDR,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+static __init int clps711x_gpio_init(void)
+{
+	add_generic_device_res("clps711x-gpio", 0, gpio0_resources,
+			       ARRAY_SIZE(gpio0_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 1, gpio1_resources,
+			       ARRAY_SIZE(gpio1_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 2, gpio2_resources,
+			       ARRAY_SIZE(gpio2_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 3, gpio3_resources,
+			       ARRAY_SIZE(gpio3_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 4, gpio4_resources,
+			       ARRAY_SIZE(gpio4_resources), NULL);
+
+	return 0;
+}
+coredevice_initcall(clps711x_gpio_init);

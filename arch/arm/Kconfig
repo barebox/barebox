@@ -42,6 +42,7 @@ config ARCH_CLPS711X
 	select CLOCKSOURCE_CLPS711X
 	select COMMON_CLK
 	select CPU_32v4T
+	select GPIOLIB
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

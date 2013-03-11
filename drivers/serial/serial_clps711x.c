@@ -15,17 +15,20 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <mfd/syscon.h>
 
 #include <mach/clps711x.h>
 
 struct clps711x_uart {
 	void __iomem		*UBRLCR;
-	void __iomem		*SYSCON;
-	void __iomem		*SYSFLG;
 	void __iomem		*UARTDR;
+	void __iomem		*syscon;
 	struct clk		*uart_clk;
 	struct console_device	cdev;
 };
+
+#define SYSCON(x)	((x)->syscon + 0x00)
+#define SYSFLG(x)	((x)->syscon + 0x40)
 
 static int clps711x_setbaudrate(struct console_device *cdev, int baudrate)
 {
@@ -48,7 +51,7 @@ static void clps711x_init_port(struct console_device *cdev)
 	u32 tmp;
 
 	/* Disable the UART */
-	writel(readl(s->SYSCON) & ~SYSCON_UARTEN, s->SYSCON);
+	writel(readl(SYSCON(s)) & ~SYSCON_UARTEN, SYSCON(s));
 
 	/* Setup Line Control Register */
 	tmp = readl(s->UBRLCR) & UBRLCR_BAUD_MASK;
@@ -59,7 +62,7 @@ static void clps711x_init_port(struct console_device *cdev)
 	clps711x_setbaudrate(cdev, CONFIG_BAUDRATE);
 
 	/* Enable the UART */
-	writel(readl(s->SYSCON) | SYSCON_UARTEN, s->SYSCON);
+	writel(readl(SYSCON(s)) | SYSCON_UARTEN, SYSCON(s));
 }
 
 static void clps711x_putc(struct console_device *cdev, char c)
@@ -67,7 +70,7 @@ static void clps711x_putc(struct console_device *cdev, char c)
 	struct clps711x_uart *s = cdev->dev->priv;
 
 	/* Wait until there is space in the FIFO */
-	while (readl(s->SYSFLG) & SYSFLG_UTXFF)
+	while (readl(SYSFLG(s)) & SYSFLG_UTXFF)
 		barrier();
 
 	/* Send the character */
@@ -80,7 +83,7 @@ static int clps711x_getc(struct console_device *cdev)
 	u16 data;
 
 	/* Wait until there is data in the FIFO */
-	while (readl(s->SYSFLG) & SYSFLG_URXFE)
+	while (readl(SYSFLG(s)) & SYSFLG_URXFE)
 		barrier();
 
 	data = readw(s->UARTDR);
@@ -96,31 +99,35 @@ static int clps711x_tstc(struct console_device *cdev)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
 
-	return !(readl(s->SYSFLG) & SYSFLG_URXFE);
+	return !(readl(SYSFLG(s)) & SYSFLG_URXFE);
 }
 
 static void clps711x_flush(struct console_device *cdev)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
 
-	while (readl(s->SYSFLG) & SYSFLG_UBUSY)
+	while (readl(SYSFLG(s)) & SYSFLG_UBUSY)
 		barrier();
 }
 
 static int clps711x_probe(struct device_d *dev)
 {
 	struct clps711x_uart *s;
+	char syscon_dev[18];
 
-	BUG_ON(dev->num_resources != 4);
+	BUG_ON(dev->num_resources != 2);
+	BUG_ON((dev->id != 0) && (dev->id != 1));
 
 	s = xzalloc(sizeof(struct clps711x_uart));
 	s->uart_clk = clk_get(dev, NULL);
 	BUG_ON(IS_ERR(s->uart_clk));
 
 	s->UBRLCR = dev_get_mem_region(dev, 0);
-	s->SYSCON = dev_get_mem_region(dev, 1);
-	s->SYSFLG = dev_get_mem_region(dev, 2);
-	s->UARTDR = dev_get_mem_region(dev, 3);
+	s->UARTDR = dev_get_mem_region(dev, 1);
+
+	sprintf(syscon_dev, "clps711x-syscon%i", dev->id + 1);
+	s->syscon = syscon_base_lookup_by_pdevname(syscon_dev);
+	BUG_ON(IS_ERR(s->syscon));
 
 	dev->priv	= s;
 	s->cdev.dev	= dev;

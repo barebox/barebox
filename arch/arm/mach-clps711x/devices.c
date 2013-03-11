@@ -52,15 +52,11 @@ void clps711x_setup_memcfg(int bank, u32 val)
 
 static struct resource uart0_resources[] = {
 	DEFINE_RES_MEM(UBRLCR1, SZ_4),
-	DEFINE_RES_MEM(SYSCON1, SZ_4),
-	DEFINE_RES_MEM(SYSFLG1, SZ_4),
 	DEFINE_RES_MEM(UARTDR1, SZ_4),
 };
 
 static struct resource uart1_resources[] = {
 	DEFINE_RES_MEM(UBRLCR2, SZ_4),
-	DEFINE_RES_MEM(SYSCON2, SZ_4),
-	DEFINE_RES_MEM(SYSFLG2, SZ_4),
 	DEFINE_RES_MEM(UARTDR2, SZ_4),
 };
 

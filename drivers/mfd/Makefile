@@ -4,6 +4,7 @@ obj-$(CONFIG_MFD_MC34704)	+= mc34704.o
 obj-$(CONFIG_MFD_MC34708)	+= mc34708.o
 obj-$(CONFIG_MFD_MC9SDZ60)	+= mc9sdz60.o
 obj-$(CONFIG_MFD_STMPE)		+= stmpe-i2c.o
+obj-$(CONFIG_MFD_SYSCON)	+= syscon.o
 obj-$(CONFIG_MFD_TWLCORE)	+= twl-core.o
 obj-$(CONFIG_MFD_TWL4030)	+= twl4030.o
 obj-$(CONFIG_MFD_TWL6030)	+= twl6030.o

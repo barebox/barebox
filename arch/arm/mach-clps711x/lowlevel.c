@@ -21,12 +21,12 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
 {
 	u32 cpu, bus;
 
-	/* Setup base clocking, Enable SDQM pins  */
-	writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
-	asm("nop");
-
 	/* Check if we running from external 13 MHz clock */
 	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
+		/* Setup bus wait state scaling factor to 2  */
+		writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
+		asm("nop");
+
 		/* Check valid multiplier, default to 74 MHz */
 		if ((pllmult < 20) || (pllmult > 50))
 			pllmult = 40;
@@ -42,11 +42,15 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
 			cpu = pllmult * 3686400;
 
 		if (cpu >= 36864000)
-			bus = cpu /2;
+			bus = cpu / 2;
 		else
 			bus = 36864000 / 2;
-	} else
+	} else {
 		bus = 13000000;
+		/* Setup bus wait state scaling factor to 1  */
+		writel(0, SYSCON3);
+		asm("nop");
+	}
 
 	/* CLKEN select, SDRAM width=32 */
 	writel(SYSCON2_CLKENSL, SYSCON2);

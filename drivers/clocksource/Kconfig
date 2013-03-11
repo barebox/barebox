@@ -10,6 +10,10 @@ config CLOCKSOURCE_BCM2835
 	bool
 	depends on ARCH_BCM2835
 
+config CLOCKSOURCE_CLPS711X
+	bool
+	depends on ARCH_CLPS711X
+
 config CLOCKSOURCE_NOMADIK
 	bool
 	depends on ARM

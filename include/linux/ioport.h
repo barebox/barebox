@@ -111,10 +111,25 @@ struct resource {
 /* PCI control bits.  Shares IORESOURCE_BITS with above PCI ROM.  */
 #define IORESOURCE_PCI_FIXED		(1<<4)	/* Do not move resource */
 
+/* Helpers to define resources */
+#define DEFINE_RES_NAMED(_start, _size, _name, _flags)	\
+	{						\
+		.start	= (_start),			\
+		.end	= (_start) + (_size) - 1,	\
+		.name	= (_name),			\
+		.flags	= (_flags),			\
+	}
+
+#define DEFINE_RES_MEM_NAMED(_start, _size, _name)	\
+	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_MEM)
+#define DEFINE_RES_MEM(_start, _size)			\
+	DEFINE_RES_MEM_NAMED((_start), (_size), NULL)
+
 static inline resource_size_t resource_size(const struct resource *res)
 {
 	return res->end - res->start + 1;
 }
+
 static inline unsigned long resource_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_TYPE_BITS;

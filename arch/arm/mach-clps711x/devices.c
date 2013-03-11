@@ -14,6 +14,8 @@
 #include <asm/io.h>
 #include <asm/memory.h>
 
+#include <linux/clk.h>
+
 #include <mach/clps711x.h>
 
 static int clps711x_mem_init(void)
@@ -98,10 +100,12 @@ void clps711x_add_uart(unsigned int id)
 {
 	switch (id) {
 	case 0:
+		clk_add_alias(NULL, "clps711x_serial0", "uart", NULL);
 		add_generic_device_res("clps711x_serial", 0, uart0_resources,
 				       ARRAY_SIZE(uart0_resources), NULL);
 		break;
 	case 1:
+		clk_add_alias(NULL, "clps711x_serial1", "uart", NULL);
 		add_generic_device_res("clps711x_serial", 1, uart1_resources,
 				       ARRAY_SIZE(uart1_resources), NULL);
 		break;

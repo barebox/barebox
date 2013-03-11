@@ -12,14 +12,13 @@ endchoice
 
 menu "CLPS711X specific settings"
 
-config CLPS711X_CPU_PLL_MULT
-	int "CPU PLL multiplier (20-50)"
-	range 20 50
-	default "40"
+config CLPS711X_RAISE_CPUFREQ
+	bool "Raise CPU frequency to 90 MHz"
+	depends on MACH_CLEP7212
 	help
-	  Define CPU PLL multiplier. PLL is calculated by formula:
-	    PLL Frequency = (PLL Multiplier / 2) * 3686400 Hz
-	  Default value is 40, for achieve 73 MHz.
+	  Raise CPU frequency to 90 MHz. This operation can be performed
+	  only for devices which allow to operate at 90 MHz.
+	  If option is not selected, CPU frequency will set to default 73 MHz.
 
 endmenu
 

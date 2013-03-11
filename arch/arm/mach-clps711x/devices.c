@@ -44,7 +44,7 @@ void clps711x_setup_memcfg(int bank, u32 val)
 	case 0 ... 3:
 		_clps711x_setup_memcfg(bank, MEMCFG1, val);
 		break;
-	case 4 ... 7:
+	case 4 ... 5:
 		_clps711x_setup_memcfg(bank - 4, MEMCFG2, val);
 		break;
 	}

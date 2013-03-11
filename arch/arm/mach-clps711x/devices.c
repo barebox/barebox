@@ -51,49 +51,17 @@ void clps711x_setup_memcfg(int bank, u32 val)
 }
 
 static struct resource uart0_resources[] = {
-	{
-		.start	= UBRLCR1,
-		.end	= UBRLCR1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSCON1,
-		.end	= SYSCON1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSFLG1,
-		.end	= SYSFLG1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= UARTDR1,
-		.end	= UARTDR1,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(UBRLCR1, SZ_4),
+	DEFINE_RES_MEM(SYSCON1, SZ_4),
+	DEFINE_RES_MEM(SYSFLG1, SZ_4),
+	DEFINE_RES_MEM(UARTDR1, SZ_4),
 };
 
 static struct resource uart1_resources[] = {
-	{
-		.start	= UBRLCR2,
-		.end	= UBRLCR2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSCON2,
-		.end	= SYSCON2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSFLG2,
-		.end	= SYSFLG2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= UARTDR2,
-		.end	= UARTDR2,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(UBRLCR2, SZ_4),
+	DEFINE_RES_MEM(SYSCON2, SZ_4),
+	DEFINE_RES_MEM(SYSFLG2, SZ_4),
+	DEFINE_RES_MEM(UARTDR2, SZ_4),
 };
 
 void clps711x_add_uart(unsigned int id)
@@ -113,68 +81,28 @@ void clps711x_add_uart(unsigned int id)
 }
 
 static struct resource gpio0_resources[] = {
-	{
-		.start	= PADR,
-		.end	= PADR,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= PADDR,
-		.end	= PADDR,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(PADR, SZ_1),
+	DEFINE_RES_MEM(PADDR, SZ_1),
 };
 
 static struct resource gpio1_resources[] = {
-	{
-		.start	= PBDR,
-		.end	= PBDR,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= PBDDR,
-		.end	= PBDDR,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(PBDR, SZ_1),
+	DEFINE_RES_MEM(PBDDR, SZ_1),
 };
 
 static struct resource gpio2_resources[] = {
-	{
-		.start	= PCDR,
-		.end	= PCDR,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= PCDDR,
-		.end	= PCDDR,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(PCDR, SZ_1),
+	DEFINE_RES_MEM(PCDDR, SZ_1),
 };
 
 static struct resource gpio3_resources[] = {
-	{
-		.start	= PDDR,
-		.end	= PDDR,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= PDDDR,
-		.end	= PDDDR,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(PDDR, SZ_1),
+	DEFINE_RES_MEM(PDDDR, SZ_1),
 };
 
 static struct resource gpio4_resources[] = {
-	{
-		.start	= PEDR,
-		.end	= PEDR,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= PEDDR,
-		.end	= PEDDR,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(PEDR, SZ_1),
+	DEFINE_RES_MEM(PEDDR, SZ_1),
 };
 
 static __init int clps711x_gpio_init(void)

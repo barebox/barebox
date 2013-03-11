@@ -149,6 +149,12 @@ config NAND_IMX_BOOT_512_2K
 
 endchoice
 
+config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
+	bool
+	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
+	depends on BAREBOX_UPDATE
+	default y
+
 comment "Freescale i.MX System-on-Chip"
 
 choice

@@ -70,4 +70,10 @@ struct imx_nand_platform_data {
 #define NFC_ID				(1 << 4)
 #define NFC_STATUS			(1 << 5)
 
+/*
+ * For external NAND boot this defines the magic value for the bad block table
+ * This is found at offset ARM_HEAD_SPARE_OFS in the image on NAND.
+ */
+#define IMX_NAND_BBT_MAGIC 0xbadb10c0
+
 #endif /* __ASM_ARCH_NAND_H */

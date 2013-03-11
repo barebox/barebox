@@ -78,6 +78,17 @@ static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, c
 
 #endif
 
+#if defined(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND)
+int imx_bbu_external_nand_register_handler(const char *name, char *devicefile,
+		unsigned long flags);
+#else
+static inline int imx_bbu_external_nand_register_handler(const char *name, char *devicefile,
+		unsigned long flags)
+{
+	return -ENOSYS;
+}
+#endif
+
 struct dcd_table {
 	void *data;
 	unsigned int size;

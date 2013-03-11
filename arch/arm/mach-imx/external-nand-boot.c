@@ -17,6 +17,7 @@
 #include <linux/mtd/nand.h>
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/imx-nand.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
@@ -164,8 +165,8 @@ static noinline void __bare_init imx_nandboot_get_page(void *regs,
 
 void __bare_init imx_nand_load_image(void *dest, int size)
 {
-	u32 tmp, page, block, blocksize, pagesize;
-	int pagesize_2k = 1;
+	u32 tmp, page, block, blocksize, pagesize, badblocks;
+	int pagesize_2k = 1, bbt = 0;
 	void *regs, *base, *spare0;
 
 #if defined(CONFIG_NAND_IMX_BOOT_512)
@@ -231,6 +232,16 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 			writew(NFC_V2_SPAS_SPARESIZE(16), regs + NFC_V2_SPAS);
 	}
 
+	/*
+	 * Check if this image has a bad block table embedded. See
+	 * imx_bbu_external_nand_register_handler for more information
+	 */
+	badblocks = *(uint32_t *)(base + ARM_HEAD_SPARE_OFS);
+	if (badblocks == IMX_NAND_BBT_MAGIC) {
+		bbt = 1;
+		badblocks = *(uint32_t *)(base + ARM_HEAD_SPARE_OFS + 4);
+	}
+
 	block = page = 0;
 
 	while (1) {
@@ -239,7 +250,12 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 		imx_nandboot_get_page(regs, block * blocksize +
 				page * pagesize, pagesize_2k);
 
-		if (pagesize_2k) {
+		if (bbt) {
+			if (badblocks & (1 << block)) {
+				block++;
+				continue;
+			}
+		} else if (pagesize_2k) {
 			if ((readw(spare0) & 0xff) != 0xff) {
 				block++;
 				continue;

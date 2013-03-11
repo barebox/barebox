@@ -154,6 +154,14 @@ static int __maybe_unused is_pagesize_2k(void)
 #endif
 }
 
+static noinline void __bare_init imx_nandboot_get_page(void *regs,
+		u32 offs, int pagesize_2k)
+{
+	imx_nandboot_send_cmd(regs, NAND_CMD_READ0);
+	imx_nandboot_nfc_addr(regs, offs, pagesize_2k);
+	imx_nandboot_send_page(regs, NFC_OUTPUT, pagesize_2k);
+}
+
 void __bare_init imx_nand_load_image(void *dest, int size)
 {
 	u32 tmp, page, block, blocksize, pagesize;
@@ -227,26 +235,33 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 
 	while (1) {
 		page = 0;
+
+		imx_nandboot_get_page(regs, block * blocksize +
+				page * pagesize, pagesize_2k);
+
+		if (pagesize_2k) {
+			if ((readw(spare0) & 0xff) != 0xff) {
+				block++;
+				continue;
+			}
+		} else {
+			if ((readw(spare0 + 4) & 0xff00) != 0xff00) {
+				block++;
+				continue;
+			}
+		}
+
 		while (page * pagesize < blocksize) {
 			debug("page: %d block: %d dest: %p src "
 					"0x%08x\n",
 					page, block, dest,
 					block * blocksize +
 					page * pagesize);
-
-			imx_nandboot_send_cmd(regs, NAND_CMD_READ0);
-			imx_nandboot_nfc_addr(regs, block * blocksize +
+			if (page)
+				imx_nandboot_get_page(regs, block * blocksize +
 					page * pagesize, pagesize_2k);
-			imx_nandboot_send_page(regs, NFC_OUTPUT, pagesize_2k);
-			page++;
 
-			if (pagesize_2k) {
-				if ((readw(spare0) & 0xff) != 0xff)
-					continue;
-			} else {
-				if ((readw(spare0 + 4) & 0xff00) != 0xff00)
-					continue;
-			}
+			page++;
 
 			__memcpy32(dest, base, pagesize);
 			dest += pagesize;

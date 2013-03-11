@@ -121,3 +121,19 @@ static __init int clps711x_gpio_init(void)
 	return 0;
 }
 coredevice_initcall(clps711x_gpio_init);
+
+static __init int clps711x_syscon_init(void)
+{
+	/* SYSCON1, SYSFLG1 */
+	add_generic_device("clps711x-syscon", 1, NULL, SYSCON1, SZ_128,
+			   IORESOURCE_MEM, NULL);
+	/* SYSCON2, SYSFLG2 */
+	add_generic_device("clps711x-syscon", 2, NULL, SYSCON2, SZ_128,
+			   IORESOURCE_MEM, NULL);
+	/* SYSCON3 */
+	add_generic_device("clps711x-syscon", 3, NULL, SYSCON3, SZ_64,
+			   IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+postcore_initcall(clps711x_syscon_init);

@@ -40,6 +40,7 @@ struct gpio_chip {
 };
 
 int gpiochip_add(struct gpio_chip *chip);
+void gpiochip_remove(struct gpio_chip *chip);
 
 int gpio_get_num(struct device_d *dev, int gpio);
 

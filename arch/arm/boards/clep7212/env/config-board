@@ -1,0 +1,14 @@
+#!/bin/sh
+
+global.hostname=clps711x
+
+# Timeout in seconds before the default boot entry is started
+global.autoboot_timeout=2
+
+# Default boot entry (one of /env/boot/*)
+if [ -e /dev/nor0 ]; then
+	global.boot.default=nor
+fi
+
+# Board bootargs
+global.linux.bootargs.base="earlyprintk console=ttyCL0,57600n8"

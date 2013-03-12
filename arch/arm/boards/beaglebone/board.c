@@ -95,7 +95,7 @@ static void beaglebone_eth_init(void)
 
 	writel(0, AM33XX_MAC_MII_SEL);
 
-	enable_mii1_pin_mux();
+	am33xx_enable_mii1_pin_mux();
 
 	am33xx_add_cpsw(&cpsw_data);
 }
@@ -104,7 +104,7 @@ static int beaglebone_devices_init(void)
 {
 	am33xx_add_mmc0(NULL);
 
-	enable_i2c0_pin_mux();
+	am33xx_enable_i2c0_pin_mux();
 	beaglebone_eth_init();
 
 	armlinux_set_bootparams((void *)0x80000100);

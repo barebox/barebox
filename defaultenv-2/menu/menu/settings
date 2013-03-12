@@ -1,0 +1,21 @@
+#!/bin/sh
+
+export menu_exit=false
+
+while true; do
+	menu -a -m settings -d "${CYAN}Settings${NC}"
+
+	menu -e -a -R -m settings -c "$global.editcmd /env/network/eth0" -d "Network settings"
+	menu -e -a -R -m settings -c "$global.editcmd /env/config" -d "Config settings"
+	menu -e -a -m settings -c "settings-entries-edit" -d "Edit settings entries"
+	menu -e -a -m settings -c "init-entries-edit" -d "Edit init entries"
+	menu -e -a -R -m settings -c "saveenv || echo \"failed to save environment\" && sleep 2" -d "Save settings"
+	menu -e -a -m settings -c "menu_exit=true" -d "back"
+
+	menu -s -m settings
+	menu -r -m settings
+
+	if [ $menu_exit = true ]; then
+		exit
+	fi
+done

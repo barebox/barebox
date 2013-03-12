@@ -13,7 +13,6 @@ static int do_splash(int argc, char *argv[])
 	struct screen sc;
 	int ret, opt, fd;
 	char *fbdev = "/dev/fb0";
-	struct fb_info info;
 	char *image_file;
 	int offscreen = 0;
 	u32 bg_color = 0x00000000;
@@ -21,7 +20,6 @@ static int do_splash(int argc, char *argv[])
 
 	memset(&s, 0, sizeof(s));
 	memset(&sc, 0, sizeof(sc));
-	memset(&info, 0, sizeof(info));
 
 	s.x = -1;
 	s.y = -1;
@@ -61,12 +59,12 @@ static int do_splash(int argc, char *argv[])
 
 	if (sc.offscreenbuf) {
 		if (do_bg)
-			memset_pixel(&info, sc.offscreenbuf, bg_color,
+			memset_pixel(&sc.info, sc.offscreenbuf, bg_color,
 					sc.s.width * sc.s.height);
 		else
 			memcpy(sc.offscreenbuf, sc.fb, sc.fbsize);
 	} else if (do_bg) {
-		memset_pixel(&info, sc.fb, bg_color, sc.s.width * sc.s.height);
+		memset_pixel(&sc.info, sc.fb, bg_color, sc.s.width * sc.s.height);
 	}
 
 	if (image_renderer_file(&sc, &s, image_file) < 0)

@@ -256,6 +256,15 @@ ifeq ($(machine-y),zynq)
 KBUILD_IMAGE := barebox.zynq
 endif
 
+CFG_barebox.imx := $(src)/arch/arm/boards/$(board-y)/flash-header.imxcfg
+barebox.imx: $(KBUILD_BINARY) FORCE
+	$(call if_changed,imx_image)
+
+ifeq ($(CONFIG_ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE),y)
+KBUILD_TARGET := barebox.imx
+KBUILD_IMAGE := barebox.imx
+endif
+
 pbl := arch/arm/pbl
 $(pbl)/zbarebox.S $(pbl)/zbarebox.bin $(pbl)/zbarebox: barebox.bin
 	$(Q)$(MAKE) $(build)=$(pbl) $@

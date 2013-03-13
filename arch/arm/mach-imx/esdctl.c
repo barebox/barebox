@@ -173,6 +173,26 @@ static void add_mem(unsigned long base0, unsigned long size0,
 		arm_add_mem_device(size0 ? "ram1" : "ram0", base1, size1);
 }
 
+/*
+ * On i.MX27, i.MX31 and i.MX35 the second chipselect is enabled by reset default.
+ * This setting makes it impossible to detect the correct SDRAM size on
+ * these SoCs. We disable the chipselect if this reset default setting is
+ * found. This of course leads to incorrect SDRAM detection on boards which
+ * really have this reset default as a valid setting. If you have such a
+ * board drop a mail to search for a solution.
+ */
+#define ESDCTL1_RESET_DEFAULT 0x81120080
+
+static inline void imx_esdctl_v2_disable_default(void *esdctlbase)
+{
+	u32 ctlval = readl(esdctlbase + IMX_ESDCTL1);
+
+	if (ctlval == ESDCTL1_RESET_DEFAULT) {
+		ctlval &= ~(1 << 31);
+		writel(ctlval, esdctlbase + IMX_ESDCTL1);
+	}
+}
+
 static void imx_esdctl_v1_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
 	add_mem(data->base0, imx_v1_sdram_size(esdctlbase, 0),
@@ -185,22 +205,9 @@ static void imx_esdctl_v2_add_mem(void *esdctlbase, struct imx_esdctl_data *data
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
 }
 
-/*
- * On i.MX27 and i.MX31 the second chipselect is enabled by reset default.
- * This setting makes it impossible to detect the correct SDRAM size on
- * these SoCs. We disable the chipselect if this reset default setting is
- * found. This of course leads to incorrect SDRAM detection on boards which
- * really have this reset default as a valid setting. If you have such a
- * board drop a mail to search for a solution.
- */
-#define ESDCTL1_RESET_DEFAULT 0x81120080
-
 static void imx_esdctl_v2_bug_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
-	u32 ctlval = readl(esdctlbase + IMX_ESDCTL1);
-
-	if (ctlval == ESDCTL1_RESET_DEFAULT)
-		writel(0x0, esdctlbase + IMX_ESDCTL1);
+	imx_esdctl_v2_disable_default(esdctlbase);
 
 	add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
@@ -264,7 +271,7 @@ static __maybe_unused struct imx_esdctl_data imx31_data = {
 static __maybe_unused struct imx_esdctl_data imx35_data = {
 	.base0 = MX35_CSD0_BASE_ADDR,
 	.base1 = MX35_CSD1_BASE_ADDR,
-	.add_mem = imx_esdctl_v2_add_mem,
+	.add_mem = imx_esdctl_v2_bug_add_mem,
 };
 
 static __maybe_unused struct imx_esdctl_data imx51_data = {
@@ -383,6 +390,8 @@ void __naked __noreturn imx27_barebox_entry(uint32_t boarddata)
 	unsigned long base;
 	unsigned long size;
 
+	imx_esdctl_v2_disable_default((void *)MX27_ESDCTL_BASE_ADDR);
+
 	base = MX27_CSD0_BASE_ADDR;
 
 	size = imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 0);
@@ -397,6 +406,8 @@ void __naked __noreturn imx31_barebox_entry(uint32_t boarddata)
 	unsigned long base;
 	unsigned long size;
 
+	imx_esdctl_v2_disable_default((void *)MX31_ESDCTL_BASE_ADDR);
+
 	base = MX31_CSD0_BASE_ADDR;
 
 	size = imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 0);
@@ -410,6 +421,8 @@ void __naked __noreturn imx35_barebox_entry(uint32_t boarddata)
 {
 	unsigned long base;
 	unsigned long size;
+
+	imx_esdctl_v2_disable_default((void *)MX35_ESDCTL_BASE_ADDR);
 
 	base = MX35_CSD0_BASE_ADDR;
 

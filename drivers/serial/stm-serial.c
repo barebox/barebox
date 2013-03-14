@@ -34,6 +34,7 @@
 
 #define UARTDBGDR 0x00
 #define UARTDBGFR 0x18
+# define TXFE (1 << 7)
 # define TXFF (1 << 5)
 # define RXFE (1 << 4)
 #define UARTDBGIBRD 0x24
@@ -92,7 +93,7 @@ static void stm_serial_flush(struct console_device *cdev)
 	struct stm_priv *priv = container_of(cdev, struct stm_priv, cdev);
 
 	/* Wait for TX FIFO empty */
-	while (readl(priv->base + UARTDBGFR) & TXFF)
+	while (!(readl(priv->base + UARTDBGFR) & TXFE))
 		;
 }
 

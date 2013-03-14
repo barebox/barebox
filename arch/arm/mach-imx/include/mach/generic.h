@@ -17,7 +17,7 @@ enum imx_bootsource imx_bootsource(void);
 void imx_set_bootsource(enum imx_bootsource src);
 
 void imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type);
-void imx_27_boot_save_loc(void __iomem *sysctrl_base);
+void imx27_boot_save_loc(void __iomem *sysctrl_base);
 void imx51_boot_save_loc(void __iomem *src_base);
 void imx53_boot_save_loc(void __iomem *src_base);
 void imx6_boot_save_loc(void __iomem *src_base);

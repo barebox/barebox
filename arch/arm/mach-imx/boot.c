@@ -114,7 +114,7 @@ void imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 #define IMX27_GPCR_BOOT_32BIT_CS0		6
 #define IMX27_GPCR_BOOT_8BIT_NAND_512		7
 
-void imx_27_boot_save_loc(void __iomem *sysctrl_base)
+void imx27_boot_save_loc(void __iomem *sysctrl_base)
 {
 	enum imx_bootsource src;
 	uint32_t val;

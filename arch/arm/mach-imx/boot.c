@@ -94,7 +94,7 @@ static const enum imx_bootsource locations[4][4] = {
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
+void imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 {
 	const char *bareboxloc = NULL;
 	enum imx_bootsource src;
@@ -106,8 +106,6 @@ int imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 		setenv("barebox_loc", bareboxloc);
 		export("barebox_loc");
 	}
-
-	return 0;
 }
 
 #define IMX27_SYSCTRL_GPCR	0x18
@@ -153,7 +151,7 @@ void imx_27_boot_save_loc(void __iomem *sysctrl_base)
 #define IMX51_SBMR_BT_MEM_CTL_SHIFT	0
 #define IMX51_SBMR_BMOD_SHIFT		14
 
-int imx51_boot_save_loc(void __iomem *src_base)
+void imx51_boot_save_loc(void __iomem *src_base)
 {
 	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t reg;
@@ -181,12 +179,10 @@ int imx51_boot_save_loc(void __iomem *src_base)
 	}
 
 	imx_set_bootsource(src);
-
-	return 0;
 }
 
 #define IMX53_SRC_SBMR	0x4
-int imx53_boot_save_loc(void __iomem *src_base)
+void imx53_boot_save_loc(void __iomem *src_base)
 {
 	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR) & 0xff;
@@ -215,14 +211,12 @@ int imx53_boot_save_loc(void __iomem *src_base)
 		src = BOOTSOURCE_NAND;
 
 	imx_set_bootsource(src);
-
-	return 0;
 }
 
 #define IMX6_SRC_SBMR1	0x04
 #define IMX6_SRC_SBMR2	0x1c
 
-int imx6_boot_save_loc(void __iomem *src_base)
+void imx6_boot_save_loc(void __iomem *src_base)
 {
 	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2) >> 24;
@@ -245,7 +239,7 @@ int imx6_boot_save_loc(void __iomem *src_base)
 
 	imx_set_bootsource(src);
 
-	return 0;
+	return;
 
 internal_boot:
 
@@ -276,5 +270,5 @@ internal_boot:
 
 	imx_set_bootsource(src);
 
-	return 0;
+	return;
 }

@@ -18,6 +18,8 @@
 
 #include <io.h>
 #include <mach/generic.h>
+#include <mach/imx25-regs.h>
+#include <mach/imx35-regs.h>
 
 static const char *bootsource_str[] = {
 	[BOOTSOURCE_UNKNOWN] = "unknown",
@@ -94,13 +96,31 @@ static const enum imx_bootsource locations[4][4] = {
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-void imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
+static void imx25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 {
 	enum imx_bootsource src;
 
 	src = locations[ctrl][type];
 
 	imx_set_bootsource(src);
+}
+
+void imx25_boot_save_loc(void __iomem *ccm_base)
+{
+	uint32_t val;
+
+	val = readl(ccm_base + MX25_CCM_RCSR);
+	imx25_35_boot_save_loc((val >> MX25_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+			       (val >> MX25_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+}
+
+void imx35_boot_save_loc(void __iomem *ccm_base)
+{
+	uint32_t val;
+
+	val = readl(ccm_base + MX35_CCM_RCSR);
+	imx25_35_boot_save_loc((val >> MX35_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+			       (val >> MX35_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
 }
 
 #define IMX27_SYSCTRL_GPCR	0x18

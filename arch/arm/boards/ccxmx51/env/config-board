@@ -1,0 +1,12 @@
+#!/bin/sh
+
+global.hostname=ccmx51
+
+# Timeout in seconds before the default boot entry is started
+global.autoboot_timeout=2
+
+# Default boot entry (one of /env/boot/*)
+global.boot.default=nand
+
+# Board bootargs
+global.linux.bootargs.base="earlyprintk console=ttymxc0,115200n8"

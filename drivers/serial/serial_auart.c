@@ -129,7 +129,7 @@ static void auart_serial_flush(struct console_device *cdev)
 	struct auart_priv *priv = container_of(cdev, struct auart_priv, cdev);
 
 	/* Wait for TX FIFO empty */
-	while (readl(priv->base + HW_UARTAPP_STAT) & BM_UARTAPP_STAT_TXFE)
+	while (!(readl(priv->base + HW_UARTAPP_STAT) & BM_UARTAPP_STAT_TXFE))
 		;
 }
 

@@ -96,16 +96,11 @@ static const enum imx_bootsource locations[4][4] = {
  */
 void imx_25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 {
-	const char *bareboxloc = NULL;
 	enum imx_bootsource src;
 
 	src = locations[ctrl][type];
 
 	imx_set_bootsource(src);
-	if (bareboxloc) {
-		setenv("barebox_loc", bareboxloc);
-		export("barebox_loc");
-	}
 }
 
 #define IMX27_SYSCTRL_GPCR	0x18

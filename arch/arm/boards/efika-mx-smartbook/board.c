@@ -479,7 +479,7 @@ device_initcall(efikamx_devices_init);
 
 static int efikamx_part_init(void)
 {
-	if (imx_bootsource() == bootsource_mmc) {
+	if (imx_bootsource() == BOOTSOURCE_MMC) {
 		devfs_add_partition("mmc_left", 0x00000, 0x80000,
 				DEVFS_PARTITION_FIXED, "self0");
 		devfs_add_partition("mmc_left", 0x80000, 0x80000,

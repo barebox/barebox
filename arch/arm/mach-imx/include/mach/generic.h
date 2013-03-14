@@ -2,15 +2,15 @@
 u64 imx_uid(void);
 
 enum imx_bootsource {
-	bootsource_unknown,
-	bootsource_nand,
-	bootsource_nor,
-	bootsource_mmc,
-	bootsource_i2c,
-	bootsource_spi,
-	bootsource_serial,
-	bootsource_onenand,
-	bootsource_hd,
+	BOOTSOURCE_UNKNOWN,
+	BOOTSOURCE_NAND,
+	BOOTSOURCE_NOR,
+	BOOTSOURCE_MMC,
+	BOOTSOURCE_I2C,
+	BOOTSOURCE_SPI,
+	BOOTSOURCE_SERIAL,
+	BOOTSOURCE_ONENAND,
+	BOOTSOURCE_HD,
 };
 
 enum imx_bootsource imx_bootsource(void);

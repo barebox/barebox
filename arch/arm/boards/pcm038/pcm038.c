@@ -300,7 +300,7 @@ static int pcm038_devices_init(void)
 	imx27_add_fec(&fec_info);
 
 	switch (imx_bootsource()) {
-	case bootsource_nand:
+	case BOOTSOURCE_NAND:
 		devfs_add_partition("nand0", 0x00000, 0x80000,
 					DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");

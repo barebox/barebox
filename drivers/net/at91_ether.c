@@ -298,7 +298,7 @@ static int at91_ether_probe(struct device_d *dev)
 	struct mii_bus *miibus;
 	unsigned long ether_hz;
 	struct clk *pclk;
-	struct at91_ether_platform_data *pdata;
+	struct macb_platform_data *pdata;
 
 	if (!dev->platform_data) {
 		printf("at91_ether: no platform_data\n");

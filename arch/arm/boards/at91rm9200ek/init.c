@@ -32,7 +32,7 @@
 #include <mach/io.h>
 #include <spi/spi.h>
 
-static struct at91_ether_platform_data ether_pdata = {
+static struct macb_platform_data ether_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };

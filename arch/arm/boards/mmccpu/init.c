@@ -33,7 +33,7 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 
-static struct at91_ether_platform_data macb_pdata = {
+static struct macb_platform_data macb_pdata = {
 	.phy_flags	= PHYLIB_FORCE_LINK,
 	.phy_addr	= 4,
 };

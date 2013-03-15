@@ -86,7 +86,7 @@ void __init at91_add_device_udc(struct at91_udc_data *data) {}
  * -------------------------------------------------------------------- */
 
 #if defined(CONFIG_DRIVER_NET_AT91_ETHER)
-void __init at91_add_device_eth(int id, struct at91_ether_platform_data *data)
+void __init at91_add_device_eth(int id, struct macb_platform_data *data)
 {
 	if (!data)
 		return;
@@ -118,7 +118,7 @@ void __init at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 			   IORESOURCE_MEM, data);
 }
 #else
-void __init at91_add_device_eth(int id, struct at91_ether_platform_data *data) {}
+void __init at91_add_device_eth(int id, struct macb_platform_data *data) {}
 #endif
 
 /* --------------------------------------------------------------------

@@ -21,6 +21,9 @@
 #include <sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
+#include <gpio_keys.h>
+#include <twl6030_pwrbtn.h>
+#include <readkey.h>
 #include "archos_features.h"
 
 static int archosg9_console_init(void){
@@ -47,11 +50,30 @@ mem_initcall(archosg9_mem_init);
 static struct i2c_board_info i2c_devices[] = {
 	{ I2C_BOARD_INFO("twl6030", 0x48), },
 };
+#if defined(CONFIG_KEYBOARD_TWL6030) && defined(CONFIG_KEYBOARD_GPIO)
+static struct twl6030_pwrbtn_platform_data pwrbtn_data = {
+	.code = KEY_ENTER
+};
+static struct gpio_keys_button keys[] = {
+	{ .code = KEY_UP  , .gpio = 43, .active_low = 1 },
+	{ .code = KEY_DOWN, .gpio = 44, .active_low = 1 },
+};
+static struct gpio_keys_platform_data gk_data = {
+	.buttons = keys,
+	.nbuttons = ARRAY_SIZE(keys),
+	.fifo_size = ARRAY_SIZE(keys)*sizeof(int)
+};
+#endif
 
 static int archosg9_devices_init(void){
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	omap44xx_add_i2c1(NULL);
 	omap44xx_add_mmc1(NULL);
+#if defined(CONFIG_KEYBOARD_TWL6030) && defined(CONFIG_KEYBOARD_GPIO)
+	add_generic_device_res("twl6030_pwrbtn", DEVICE_ID_DYNAMIC, 0, 0,
+		&pwrbtn_data);
+	add_gpio_keys_device(DEVICE_ID_DYNAMIC, &gk_data);
+#endif
 
 	armlinux_set_bootparams((void *)0x80000100);
 	/*

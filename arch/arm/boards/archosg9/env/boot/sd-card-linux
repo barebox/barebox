@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "Linux from SD card" "$2"
+	boot-menu-add-entry "$0" "Linux from SD card"
 	exit
 fi
 

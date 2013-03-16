@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export PATH=/env/bin
+
+global hostname=generic
+global user=none
+global boot.default=net
+global allow_color=true
+global linux.bootargs.base
+#linux.bootargs.dyn.* will be cleared at the beginning of boot
+global linux.bootargs.dyn.ip
+global linux.bootargs.dyn.root
+global editcmd=sedit
+
+/env/config
+
+timeout -s -a 0
+autoboot="$?"
+
+for i in /env/init/*; do
+	. $i
+done
+
+if [ "$autoboot" = 0 ]; then
+	boot
+fi
+
+/env/menu/mainmenu

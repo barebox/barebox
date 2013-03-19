@@ -58,7 +58,7 @@ static inline struct param_d *get_param_by_name(struct device_d *dev,
 
 static inline int dev_add_param(struct device_d *dev, char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		char *(*get)(struct device_d *, struct param_d *p),
+		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags)
 {
 	return 0;

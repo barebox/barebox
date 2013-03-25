@@ -296,12 +296,19 @@ static int mark_bad(const struct mtd_dev_info *mtd, struct ubi_scan_info *si, in
 static int flash_image(const struct mtd_dev_info *mtd,
 		       const struct ubigen_info *ui, struct ubi_scan_info *si)
 {
-	int fd, img_ebs, eb, written_ebs = 0, divisor;
+	int fd, img_ebs, eb, written_ebs = 0, divisor, ret = -1;
 	off_t st_size;
+	char *buf = NULL;
 
 	fd = open_file(&st_size);
 	if (fd < 0)
 		return fd;
+
+	buf = malloc(mtd->eb_size);
+	if (!buf) {
+		sys_errmsg("cannot allocate %d bytes of memory", mtd->eb_size);
+		goto out_close;
+	}
 
 	img_ebs = st_size / mtd->eb_size;
 
@@ -312,8 +319,9 @@ static int flash_image(const struct mtd_dev_info *mtd,
 	}
 
 	if (st_size % mtd->eb_size) {
-		return sys_errmsg("file \"%s\" (size %lld bytes) is not multiple of ""eraseblock size (%d bytes)",
-				  args.image, (long long)st_size, mtd->eb_size);
+		sys_errmsg("file \"%s\" (size %lld bytes) is not multiple of "
+			   "eraseblock size (%d bytes)",
+			   args.image, (long long)st_size, mtd->eb_size);
 		goto out_close;
 	}
 
@@ -321,7 +329,6 @@ static int flash_image(const struct mtd_dev_info *mtd,
 	divisor = img_ebs;
 	for (eb = 0; eb < mtd->eb_cnt; eb++) {
 		int err, new_len;
-		char buf[mtd->eb_size];
 		long long ec;
 
 		if (!args.quiet && !args.verbose) {
@@ -404,12 +411,13 @@ static int flash_image(const struct mtd_dev_info *mtd,
 
 	if (!args.quiet && !args.verbose)
 		printf("\n");
-	close(fd);
-	return eb + 1;
+
+	ret = eb + 1;
 
 out_close:
+	free(buf);
 	close(fd);
-	return -1;
+	return ret;
 }
 
 static int format(const struct mtd_dev_info *mtd,

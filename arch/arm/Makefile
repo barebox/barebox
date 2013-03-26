@@ -249,6 +249,14 @@ KBUILD_TARGET := barebox.spi
 KBUILD_IMAGE := barebox.spi
 endif
 
+barebox.zynq: $(KBUILD_BINARY)
+	$(Q)scripts/zynq_mkimage $< $@
+
+ifeq ($(machine-y),zynq)
+KBUILD_TARGET := barebox.zynq
+KBUILD_IMAGE := barebox.zynq
+endif
+
 pbl := arch/arm/pbl
 zbarebox.S zbarebox.bin zbarebox: barebox.bin
 	$(Q)$(MAKE) $(build)=$(pbl) $(pbl)/$@

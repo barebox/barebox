@@ -66,6 +66,7 @@ machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
 machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
 machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		:= tegra
+machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 
 # Board directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
@@ -162,6 +163,7 @@ board-$(CONFIG_MACH_TX53)			:= karo-tx53
 board-$(CONFIG_MACH_GUF_VINCELL)		:= guf-vincell
 board-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK)		:= efika-mx-smartbook
 board-$(CONFIG_MACH_SABRESD)			:= freescale-mx6-sabresd
+board-$(CONFIG_MACH_ZEDBOARD)			:= avnet-zedboard
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

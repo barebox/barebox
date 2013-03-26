@@ -128,6 +128,10 @@ config ARCH_TEGRA
 	select CPU_ARM926T
 	select HAS_DEBUG_LL
 
+config ARCH_ZYNQ
+	bool "Xilinx Zynq-based boards"
+	select HAS_DEBUG_LL
+
 endchoice
 
 source arch/arm/cpu/Kconfig
@@ -146,6 +150,7 @@ source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-versatile/Kconfig
 source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig
+source arch/arm/mach-zynq/Kconfig
 
 config ARM_ASM_UNIFIED
 	bool

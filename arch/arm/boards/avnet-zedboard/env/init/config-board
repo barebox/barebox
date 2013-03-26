@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.hostname=ZedBoard
+global.linux.bootargs.base="console=ttyPS1,115200"

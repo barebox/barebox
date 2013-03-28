@@ -86,7 +86,7 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 	if (!ret) {
 		dev->resource[0].start = (resource_size_t)info->screen_base;
 		info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
-		dev->resource[0].end = info->cdev.size - 1;
+		dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
 		dev_param_set_generic(dev, param, val);
 	} else
 		info->cdev.size = 0;
@@ -116,7 +116,7 @@ int register_framebuffer(struct fb_info *info)
 	info->cdev.priv = info;
 	dev->resource = xzalloc(sizeof(struct resource));
 	dev->resource[0].start = (resource_size_t)info->screen_base;
-	dev->resource[0].end = info->cdev.size - 1;
+	dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
 	dev->resource[0].flags = IORESOURCE_MEM;
 	dev->num_resources = 1;
 

@@ -1,12 +1,10 @@
 #include <common.h>
 #include <console.h>
 #include <init.h>
-#include <fs.h>
 #include <driver.h>
 #include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
-#include <linux/stat.h>
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
@@ -20,7 +18,6 @@
 #include <asm/mmu.h>
 #include <mach/gpio.h>
 #include <envfs.h>
-#include <mach/generic.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
 #include <led.h>
@@ -164,30 +161,3 @@ static int panda_devices_init(void)
 	return 0;
 }
 device_initcall(panda_devices_init);
-
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-static int panda_env_init(void)
-{
-	struct stat s;
-	char *diskdev = "/dev/disk0.0";
-	int ret;
-
-	ret = stat(diskdev, &s);
-	if (ret) {
-		printf("no %s. using default env\n", diskdev);
-		return 0;
-	}
-
-	mkdir ("/boot", 0666);
-	ret = mount(diskdev, "fat", "/boot");
-	if (ret) {
-		printf("failed to mount %s\n", diskdev);
-		return 0;
-	}
-
-	default_environment_path = "/boot/bareboxenv";
-
-	return 0;
-}
-late_initcall(panda_env_init);
-#endif

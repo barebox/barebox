@@ -30,3 +30,36 @@ enum omap_boot_src omap_bootsrc(void)
 	return am33xx_bootsrc();
 #endif
 }
+
+#if defined(CONFIG_DEFAULT_ENVIRONMENT) && defined(CONFIG_MCI_STARTUP)
+static int omap_env_init(void)
+{
+	struct stat s;
+	char *diskdev = "/dev/disk0.0";
+	int ret;
+
+	if (omap_bootsrc() != OMAP_BOOTSRC_MMC1)
+		return 0;
+
+	ret = stat(diskdev, &s);
+	if (ret) {
+		printf("no %s. using default env\n", diskdev);
+		return 0;
+	}
+
+	mkdir("/boot", 0666);
+	ret = mount(diskdev, "fat", "/boot");
+	if (ret) {
+		printf("failed to mount %s\n", diskdev);
+		return 0;
+	}
+
+	if (IS_ENABLED(CONFIG_OMAP_BUILD_IFT))
+		default_environment_path = "/dev/defaultenv";
+	else
+		default_environment_path = "/boot/barebox.env";
+
+	return 0;
+}
+late_initcall(omap_env_init);
+#endif

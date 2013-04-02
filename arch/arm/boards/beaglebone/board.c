@@ -25,8 +25,6 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
-#include <fs.h>
-#include <linux/stat.h>
 #include <envfs.h>
 #include <sizes.h>
 #include <io.h>
@@ -112,33 +110,3 @@ static int beaglebone_devices_init(void)
 	return 0;
 }
 device_initcall(beaglebone_devices_init);
-
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-static int beaglebone_env_init(void)
-{
-	struct stat s;
-	char *diskdev = "/dev/disk0.0";
-	int ret;
-
-	ret = stat(diskdev, &s);
-	if (ret) {
-		printf("device %s not found. Using default environment\n", diskdev);
-		return 0;
-	}
-
-	mkdir ("/boot", 0666);
-	ret = mount(diskdev, "fat", "/boot");
-	if (ret) {
-		printf("failed to mount %s\n", diskdev);
-		return 0;
-	}
-
-	if (IS_ENABLED(CONFIG_OMAP_BUILD_IFT))
-		default_environment_path = "/dev/defaultenv";
-	else
-		default_environment_path = "/boot/barebox.env";
-
-	return 0;
-}
-late_initcall(beaglebone_env_init);
-#endif

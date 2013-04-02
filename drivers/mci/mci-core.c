@@ -894,8 +894,9 @@ static int mci_startup_mmc(struct mci *mci)
 			mci_set_clock(mci, 52000000);
 		else
 			mci_set_clock(mci, 26000000);
-	} else
+	} else {
 		mci_set_clock(mci, 20000000);
+	}
 
 	/*
 	 * Unlike SD, MMC cards dont have a configuration register to notify

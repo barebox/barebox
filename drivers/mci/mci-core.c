@@ -430,8 +430,10 @@ static int mmc_change_freq(struct mci *mci)
 	}
 
 	/* No high-speed support */
-	if (!mci->ext_csd[EXT_CSD_HS_TIMING])
+	if (!mci->ext_csd[EXT_CSD_HS_TIMING]) {
+		dev_dbg(mci->mci_dev, "No high-speed support\n");
 		return 0;
+	}
 
 	/* High Speed is set, there are two types: 52MHz and 26MHz */
 	if (cardtype & EXT_CSD_CARD_TYPE_52)
@@ -669,7 +671,8 @@ static void mci_detect_version_from_csd(struct mci *mci)
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
-		printf("detected card version %s\n", vstr);
+
+		dev_info(mci->mci_dev, "detected card version %s\n", vstr);
 	}
 }
 
@@ -1169,7 +1172,7 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 	}
 
 	if (block > MAX_BUFFER_NUMBER) {
-		pr_err("Cannot handle block number %d. Too large!\n", block);
+		dev_err(mci->mci_dev, "Cannot handle block number %d. Too large!\n", block);
 		return -EINVAL;
 	}
 
@@ -1366,7 +1369,7 @@ static int mci_card_probe(struct mci *mci)
 	/* start with a host interface reset */
 	rc = (host->init)(host, mci->mci_dev);
 	if (rc) {
-		pr_err("Cannot reset the SD/MMC interface\n");
+		dev_err(mci->mci_dev, "Cannot reset the SD/MMC interface\n");
 		return rc;
 	}
 
@@ -1376,7 +1379,7 @@ static int mci_card_probe(struct mci *mci)
 	/* reset the card */
 	rc = mci_go_idle(mci);
 	if (rc) {
-		pr_warning("Cannot reset the SD/MMC card\n");
+		dev_warn(mci->mci_dev, "Cannot reset the SD/MMC card\n");
 		goto on_error;
 	}
 

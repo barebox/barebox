@@ -45,7 +45,6 @@
 #include <linux/err.h>
 #include <linux/phy.h>
 #include <usb/ehci.h>
-#include <mach/xload.h>
 #include <mach/am33xx-devices.h>
 #include <mach/am33xx-mux.h>
 #include <mach/wdt.h>

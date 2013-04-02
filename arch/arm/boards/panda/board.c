@@ -20,7 +20,7 @@
 #include <asm/mmu.h>
 #include <mach/gpio.h>
 #include <envfs.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
 #include <led.h>

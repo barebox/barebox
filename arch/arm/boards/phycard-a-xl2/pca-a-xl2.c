@@ -35,7 +35,6 @@
 #include <mach/gpio.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
-#include <mach/xload.h>
 #include <mach/omap_hsmmc.h>
 #include <mach/omap4-devices.h>
 #include <i2c/i2c.h>

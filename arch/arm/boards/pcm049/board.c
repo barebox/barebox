@@ -36,7 +36,6 @@
 #include <mach/gpio.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
-#include <mach/xload.h>
 #include <i2c/i2c.h>
 
 static int pcm049_console_init(void)

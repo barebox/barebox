@@ -5,7 +5,7 @@
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 #include <mach/syslib.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <mach/gpmc.h>
 #include <mach/gpio.h>
 #include <mach/omap4_rom_usb.h>

@@ -54,7 +54,6 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <mach/omap_hsmmc.h>
-#include <mach/xload.h>
 #include <mach/sdrc.h>
 #include <mach/omap3-silicon.h>
 #include <mach/sys_info.h>

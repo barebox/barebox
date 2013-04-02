@@ -33,7 +33,7 @@
 #include <common.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4_rom_usb.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <init.h>
 
 static struct omap4_usbboot omap4_usbboot_data;

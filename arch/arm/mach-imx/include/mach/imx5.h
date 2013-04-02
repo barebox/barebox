@@ -13,7 +13,6 @@ void imx5_setup_pll(void __iomem *base, int freq, u32 op, u32 mfd, u32 mfn);
 #define imx5_setup_pll_600(base)	imx5_setup_pll((base),  600, (( 6 << 4) + ((1 - 1) << 0)), ( 4 - 1),  1)
 #define imx5_setup_pll_455(base)	imx5_setup_pll((base),  455, (( 9 << 4) + ((2 - 1) << 0)), (48 - 1), 23)
 #define imx5_setup_pll_400(base)	imx5_setup_pll((base),  400, (( 8 << 4) + ((2 - 1) << 0)), (3 - 1), 1)
-#define imx53_setup_pll_216(base)	imx5_setup_pll((base),  216, (( 8 << 4) + ((2 - 1) << 0)), (1 - 1), 1)
-#define imx51_setup_pll_216(base)	imx5_setup_pll((base),  216, (( 6 << 4) + ((3 - 1) << 0)), (4 - 1), 3)
+#define imx5_setup_pll_216(base)	imx5_setup_pll((base),  216, (( 6 << 4) + ((3 - 1) << 0)), (4 - 1), 3)
 
 #endif /* __MACH_MX53_H */

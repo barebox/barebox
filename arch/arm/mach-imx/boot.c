@@ -42,8 +42,8 @@ void imx_set_bootsource(enum imx_bootsource src)
 
 	bootsource = src;
 
-	setenv("barebox_loc", bootsource_str[src]);
-	export("barebox_loc");
+	setenv("bootsource", bootsource_str[src]);
+	export("bootsource");
 }
 
 enum imx_bootsource imx_bootsource(void)
@@ -51,7 +51,7 @@ enum imx_bootsource imx_bootsource(void)
 	return bootsource;
 }
 
-BAREBOX_MAGICVAR(barebox_loc, "The source barebox has been booted from");
+BAREBOX_MAGICVAR(bootsource, "The source barebox has been booted from");
 
 /* [CTRL][TYPE] */
 static const enum imx_bootsource locations[4][4] = {
@@ -79,7 +79,7 @@ static const enum imx_bootsource locations[4][4] = {
 };
 
 /*
- * Saves the boot source media into the $barebox_loc environment variable
+ * Saves the boot source media into the $bootsource environment variable
  *
  * This information is useful for barebox init scripts as we can then easily
  * use a kernel image stored on the same media that we launch barebox with

@@ -27,10 +27,14 @@ static const char *bootsource_str[] = {
 	[BOOTSOURCE_NOR] = "nor",
 	[BOOTSOURCE_MMC] = "mmc",
 	[BOOTSOURCE_I2C] = "i2c",
+	[BOOTSOURCE_I2C_EEPROM] = "i2c-eeprom",
 	[BOOTSOURCE_SPI] = "spi",
+	[BOOTSOURCE_SPI_EEPROM] = "spi-eeprom",
+	[BOOTSOURCE_SPI_NOR] = "spi-nor",
 	[BOOTSOURCE_SERIAL] = "serial",
 	[BOOTSOURCE_ONENAND] = "onenand",
 	[BOOTSOURCE_HD] = "harddisk",
+	[BOOTSOURCE_USB] = "usb",
 };
 
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;

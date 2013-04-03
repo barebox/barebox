@@ -13,7 +13,11 @@ enum bootsource {
 	BOOTSOURCE_HD,
 };
 
+#define BOOTSOURCE_INSTANCE_UNKNOWN	-1
+
 enum bootsource bootsource_get(void);
+int bootsource_get_instance(void);
 void bootsource_set(enum bootsource src);
+void bootsource_set_instance(int instance);
 
 #endif	/* __BOOTSOURCE_H__ */

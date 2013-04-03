@@ -34,6 +34,7 @@ static const char *bootsource_str[] = {
 };
 
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
+static int bootsource_instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 
 void bootsource_set(enum bootsource src)
 {
@@ -45,6 +46,20 @@ void bootsource_set(enum bootsource src)
 	setenv("bootsource", bootsource_str[src]);
 }
 
+void bootsource_set_instance(int instance)
+{
+	char buf[32];
+
+	bootsource_instance = instance;
+
+	if (instance < 0)
+		sprintf(buf, "unknown");
+	else
+		snprintf(buf, sizeof(buf), "%d", instance);
+
+	setenv("bootsource_instance", buf);
+}
+
 enum bootsource bootsource_get(void)
 {
 	return bootsource;
@@ -52,10 +67,19 @@ enum bootsource bootsource_get(void)
 
 BAREBOX_MAGICVAR(bootsource, "The source barebox has been booted from");
 
+int bootsource_get_instance(void)
+{
+	return bootsource_instance;
+}
+
+BAREBOX_MAGICVAR(bootsource_instance, "The instance of the source barebox has been booted from");
+
 static int bootsource_init(void)
 {
 	bootsource_set(bootsource);
+	bootsource_set_instance(bootsource_instance);
 	export("bootsource");
+	export("bootsource_instance");
 
 	return 0;
 }

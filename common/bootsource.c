@@ -19,6 +19,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <magicvar.h>
+#include <init.h>
 
 static const char *bootsource_str[] = {
 	[BOOTSOURCE_UNKNOWN] = "unknown",
@@ -42,7 +43,6 @@ void bootsource_set(enum bootsource src)
 	bootsource = src;
 
 	setenv("bootsource", bootsource_str[src]);
-	export("bootsource");
 }
 
 enum bootsource bootsource_get(void)
@@ -51,3 +51,12 @@ enum bootsource bootsource_get(void)
 }
 
 BAREBOX_MAGICVAR(bootsource, "The source barebox has been booted from");
+
+static int bootsource_init(void)
+{
+	bootsource_set(bootsource);
+	export("bootsource");
+
+	return 0;
+}
+coredevice_initcall(bootsource_init);

@@ -233,14 +233,23 @@ void __naked barebox_arm_reset_vector(void)
 	/* poor mans clkctrl */
 	writel(0x00001403, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_UART_CLK_CTRL);
 
+	/* GEM0 */
 	writel(0x00000001, 0xf8000138);
-	writel(0x00100801, 0xf8000140);
+	writel(0x00500801, 0xf8000140);
 	writel(0x00000302, 0xf8000740);
 	writel(0x00000302, 0xf8000744);
 	writel(0x00000302, 0xf8000748);
 	writel(0x00000302, 0xf800074C);
 	writel(0x00000302, 0xf8000750);
 	writel(0x00000302, 0xf8000754);
+	writel(0x00001303, 0xf8000758);
+	writel(0x00001303, 0xf800075C);
+	writel(0x00001303, 0xf8000760);
+	writel(0x00001303, 0xf8000764);
+	writel(0x00001303, 0xf8000768);
+	writel(0x00001303, 0xf800076C);
+	writel(0x00001280, 0xf80007D0);
+	writel(0x00001280, 0xf80007D4);
 
 	writel(0x00000001, 0xf8000B00);
 

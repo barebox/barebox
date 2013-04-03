@@ -29,6 +29,19 @@ static int zedboard_mem_init(void)
 }
 mem_initcall(zedboard_mem_init);
 
+static struct macb_platform_data macb_pdata = {
+	.phy_interface = PHY_INTERFACE_MODE_RGMII,
+	.phy_addr = 0x0,
+};
+
+static int zedboard_device_init(void)
+{
+	zynq_add_eth0(&macb_pdata);
+
+	return 0;
+}
+device_initcall(zedboard_device_init);
+
 static int zedboard_console_init(void)
 {
 	zynq_add_uart1();

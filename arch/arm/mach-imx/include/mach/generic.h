@@ -1,21 +1,6 @@
 
 u64 imx_uid(void);
 
-enum imx_bootsource {
-	BOOTSOURCE_UNKNOWN,
-	BOOTSOURCE_NAND,
-	BOOTSOURCE_NOR,
-	BOOTSOURCE_MMC,
-	BOOTSOURCE_I2C,
-	BOOTSOURCE_SPI,
-	BOOTSOURCE_SERIAL,
-	BOOTSOURCE_ONENAND,
-	BOOTSOURCE_HD,
-};
-
-enum imx_bootsource imx_bootsource(void);
-void imx_set_bootsource(enum imx_bootsource src);
-
 void imx25_boot_save_loc(void __iomem *ccm_base);
 void imx35_boot_save_loc(void __iomem *ccm_base);
 void imx27_boot_save_loc(void __iomem *sysctrl_base);

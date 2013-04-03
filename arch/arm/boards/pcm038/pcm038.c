@@ -16,6 +16,7 @@
 #define pr_fmt(fmt) "pcm038: " fmt
 
 #include <common.h>
+#include <bootsource.h>
 #include <net.h>
 #include <init.h>
 #include <environment.h>
@@ -299,7 +300,7 @@ static int pcm038_devices_init(void)
 	 */
 	imx27_add_fec(&fec_info);
 
-	switch (imx_bootsource()) {
+	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:
 		devfs_add_partition("nand0", 0x00000, 0x80000,
 					DEVFS_PARTITION_FIXED, "self_raw");

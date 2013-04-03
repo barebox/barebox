@@ -37,6 +37,7 @@
 #include <fec.h>
 #include <fb.h>
 #include <led.h>
+#include <bootsource.h>
 #include <asm/mmu.h>
 #include <mach/weim.h>
 #include <mach/imx-ipu-fb.h>
@@ -139,7 +140,7 @@ static int imx35_devices_init(void)
 	 */
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, MX35_CS0_BASE_ADDR, 32 * 1024 * 1024, 0);
 
-	switch (imx_bootsource()) {
+	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:
 		devfs_add_partition("nand0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");

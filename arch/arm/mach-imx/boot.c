@@ -12,6 +12,7 @@
  */
 
 #include <common.h>
+#include <bootsource.h>
 #include <environment.h>
 #include <init.h>
 #include <magicvar.h>
@@ -21,40 +22,8 @@
 #include <mach/imx25-regs.h>
 #include <mach/imx35-regs.h>
 
-static const char *bootsource_str[] = {
-	[BOOTSOURCE_UNKNOWN] = "unknown",
-	[BOOTSOURCE_NAND] = "nand",
-	[BOOTSOURCE_NOR] = "nor",
-	[BOOTSOURCE_MMC] = "mmc",
-	[BOOTSOURCE_I2C] = "i2c",
-	[BOOTSOURCE_SPI] = "spi",
-	[BOOTSOURCE_SERIAL] = "serial",
-	[BOOTSOURCE_ONENAND] = "onenand",
-	[BOOTSOURCE_HD] = "harddisk",
-};
-
-static enum imx_bootsource bootsource;
-
-void imx_set_bootsource(enum imx_bootsource src)
-{
-	if (src >= ARRAY_SIZE(bootsource_str))
-		src = BOOTSOURCE_UNKNOWN;
-
-	bootsource = src;
-
-	setenv("bootsource", bootsource_str[src]);
-	export("bootsource");
-}
-
-enum imx_bootsource imx_bootsource(void)
-{
-	return bootsource;
-}
-
-BAREBOX_MAGICVAR(bootsource, "The source barebox has been booted from");
-
 /* [CTRL][TYPE] */
-static const enum imx_bootsource locations[4][4] = {
+static const enum bootsource locations[4][4] = {
 	{ /* CTRL = WEIM */
 		BOOTSOURCE_NOR,
 		BOOTSOURCE_UNKNOWN,
@@ -98,11 +67,11 @@ static const enum imx_bootsource locations[4][4] = {
  */
 static void imx25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 {
-	enum imx_bootsource src;
+	enum bootsource src;
 
 	src = locations[ctrl][type];
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 }
 
 void imx25_boot_save_loc(void __iomem *ccm_base)
@@ -136,7 +105,7 @@ void imx35_boot_save_loc(void __iomem *ccm_base)
 
 void imx27_boot_save_loc(void __iomem *sysctrl_base)
 {
-	enum imx_bootsource src;
+	enum bootsource src;
 	uint32_t val;
 
 	val = readl(sysctrl_base + IMX27_SYSCTRL_GPCR);
@@ -158,7 +127,7 @@ void imx27_boot_save_loc(void __iomem *sysctrl_base)
 		break;
 	}
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 }
 
 #define IMX51_SRC_SBMR			0x4
@@ -168,7 +137,7 @@ void imx27_boot_save_loc(void __iomem *sysctrl_base)
 
 void imx51_boot_save_loc(void __iomem *src_base)
 {
-	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t reg;
 	unsigned int ctrl, type;
 
@@ -193,13 +162,13 @@ void imx51_boot_save_loc(void __iomem *src_base)
 
 	}
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 }
 
 #define IMX53_SRC_SBMR	0x4
 void imx53_boot_save_loc(void __iomem *src_base)
 {
-	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR) & 0xff;
 
 	switch (cfg1 >> 4) {
@@ -225,7 +194,7 @@ void imx53_boot_save_loc(void __iomem *src_base)
 	if (cfg1 & (1 << 7))
 		src = BOOTSOURCE_NAND;
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 }
 
 #define IMX6_SRC_SBMR1	0x04
@@ -233,7 +202,7 @@ void imx53_boot_save_loc(void __iomem *src_base)
 
 void imx6_boot_save_loc(void __iomem *src_base)
 {
-	enum imx_bootsource src = BOOTSOURCE_UNKNOWN;
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2) >> 24;
 	uint32_t cfg1 = readl(src_base + IMX6_SRC_SBMR1) & 0xff;
 	uint32_t boot_cfg_4_2_0;
@@ -252,7 +221,7 @@ void imx6_boot_save_loc(void __iomem *src_base)
 		break;
 	};
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 
 	return;
 
@@ -283,7 +252,7 @@ internal_boot:
 	if (cfg1 & (1 << 7))
 		src = BOOTSOURCE_NAND;
 
-	imx_set_bootsource(src);
+	bootsource_set(src);
 
 	return;
 }

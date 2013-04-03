@@ -31,7 +31,8 @@
 
 enum zynq_clks {
 	dummy, ps_clk, arm_pll, ddr_pll, io_pll, uart_clk, uart0, uart1,
-	cpu_clk, cpu_6x4x, cpu_3x2x, cpu_2x, cpu_1x, clks_max
+	cpu_clk, cpu_6x4x, cpu_3x2x, cpu_2x, cpu_1x,
+	gem_clk, gem0, gem1, clks_max
 };
 
 enum zynq_pll_type {
@@ -376,6 +377,9 @@ static int zynq_clock_probe(struct device_d *dev)
 	clks[uart0] = clk_gate("uart0", "uart_clk", slcr_base + 0x154, 0);
 	clks[uart1] = clk_gate("uart1", "uart_clk", slcr_base + 0x154, 1);
 
+	clks[gem0] = clk_gate("gem0", "io_pll", slcr_base + 0x140, 0);
+	clks[gem1] = clk_gate("gem1", "io_pll", slcr_base + 0x144, 1);
+
 	clks[cpu_clk] = zynq_cpu_clk("cpu_clk", slcr_base + 0x120);
 
 	clks[cpu_6x4x] = zynq_cpu_subclk("cpu_6x4x", CPU_SUBCLK_6X4X,
@@ -390,9 +394,12 @@ static int zynq_clock_probe(struct device_d *dev)
 	clk_register_clkdev(clks[cpu_3x2x], NULL, "arm_smp_twd");
 	clk_register_clkdev(clks[uart0], NULL, "zynq_serial0");
 	clk_register_clkdev(clks[uart1], NULL, "zynq_serial1");
+	clk_register_clkdev(clks[gem0], NULL, "macb0");
+	clk_register_clkdev(clks[gem1], NULL, "macb1");
 
 	clkdev_add_physbase(clks[cpu_3x2x], CORTEXA9_SCU_TIMER_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[uart1], ZYNQ_UART1_BASE_ADDR, NULL);
+
 	return 0;
 }
 

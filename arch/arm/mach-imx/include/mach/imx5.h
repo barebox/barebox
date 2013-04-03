@@ -3,6 +3,7 @@
 
 void imx51_init_lowlevel(unsigned int cpufreq_mhz);
 void imx53_init_lowlevel(unsigned int cpufreq_mhz);
+void imx53_init_lowlevel_early(unsigned int cpufreq_mhz);
 void imx5_init_lowlevel(void);
 
 void imx5_setup_pll(void __iomem *base, int freq, u32 op, u32 mfd, u32 mfn);

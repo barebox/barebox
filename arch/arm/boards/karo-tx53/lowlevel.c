@@ -14,7 +14,7 @@ void __naked barebox_arm_reset_vector(void)
 	 * so do the PLL setup here.
 	 */
 	if (IS_ENABLED(CONFIG_TX53_REV_XX30))
-		imx53_init_lowlevel(800);
+		imx53_init_lowlevel_early(800);
 
 	imx53_barebox_entry(0);
 }

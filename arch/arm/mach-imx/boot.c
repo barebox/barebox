@@ -169,9 +169,10 @@ void imx51_boot_save_loc(void __iomem *src_base)
 void imx53_boot_save_loc(void __iomem *src_base)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR) & 0xff;
+	int instance;
+	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR);
 
-	switch (cfg1 >> 4) {
+	switch ((cfg1 & 0xff) >> 4) {
 	case 2:
 		src = BOOTSOURCE_HD;
 		break;
@@ -194,7 +195,20 @@ void imx53_boot_save_loc(void __iomem *src_base)
 	if (cfg1 & (1 << 7))
 		src = BOOTSOURCE_NAND;
 
+
+	switch (src) {
+	case BOOTSOURCE_MMC:
+	case BOOTSOURCE_SPI:
+	case BOOTSOURCE_I2C:
+		instance = (cfg1 >> 21) & 0x3;
+		break;
+	default:
+		instance = 0;
+		break;
+	}
+
 	bootsource_set(src);
+	bootsource_set_instance(instance);
 }
 
 #define IMX6_SRC_SBMR1	0x04

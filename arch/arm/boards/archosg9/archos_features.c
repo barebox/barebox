@@ -27,9 +27,9 @@ static void setup_feature_core(void)
 	features->hdr.tag = FTAG_CORE;
 	features->hdr.size = feature_tag_size(feature_tag_core);
 
+	memset(&features->u.core, 0, sizeof(features->u.core));
 	features->u.core.magic = FEATURE_LIST_MAGIC;
 	features->u.core.list_revision = FEATURE_LIST_REV;
-	features->u.core.flags = 0;
 
 	features = feature_tag_next(features);
 }
@@ -38,8 +38,7 @@ static void setup_feature_product_name(void)
 	features->hdr.tag = FTAG_PRODUCT_NAME;
 	features->hdr.size = feature_tag_size(feature_tag_product_name);
 
-	memset(features->u.product_name.name, 0,
-		sizeof(features->u.product_name.name));
+	memset(&features->u.product_name, 0, sizeof(features->u.product_name));
 	sprintf(features->u.product_name.name, "A80S");
 	features->u.product_name.id = 0x13A8;
 
@@ -50,10 +49,8 @@ static void setup_feature_product_serial_number(void)
 	features->hdr.tag = FTAG_PRODUCT_SERIAL_NUMBER;
 	features->hdr.size = feature_tag_size(feature_tag_product_serial);
 
-	features->u.product_serial.serial[0] = 0;
-	features->u.product_serial.serial[1] = 0;
-	features->u.product_serial.serial[2] = 0;
-	features->u.product_serial.serial[3] = 0;
+	memset(&features->u.product_serial, 0,
+		sizeof(features->u.product_serial));
 
 	features = feature_tag_next(features);
 }
@@ -62,14 +59,7 @@ static void setup_feature_product_mac_address(void)
 	features->hdr.tag = FTAG_PRODUCT_MAC_ADDRESS;
 	features->hdr.size = feature_tag_size(feature_tag_product_mac_address);
 
-	features->u.mac_address.addr[0] = 0;
-	features->u.mac_address.addr[1] = 0;
-	features->u.mac_address.addr[2] = 0;
-	features->u.mac_address.addr[3] = 0;
-	features->u.mac_address.addr[4] = 0;
-	features->u.mac_address.addr[5] = 0;
-	features->u.mac_address.reserved1 = 0;
-	features->u.mac_address.reserved2 = 0;
+	memset(&features->u.mac_address, 0, sizeof(features->u.mac_address));
 
 	features = feature_tag_next(features);
 }
@@ -78,6 +68,8 @@ static void setup_feature_board_pcb_revision(void)
 	features->hdr.tag = FTAG_BOARD_PCB_REVISION;
 	features->hdr.size = feature_tag_size(feature_tag_board_revision);
 
+	memset(&features->u.board_revision, 0,
+		sizeof(features->u.board_revision));
 	features->u.board_revision.revision = 5;
 
 	features = feature_tag_next(features);
@@ -87,23 +79,10 @@ static void setup_feature_sdram(void)
 	features->hdr.tag = FTAG_SDRAM;
 	features->hdr.size = feature_tag_size(feature_tag_sdram);
 
-	memset(features->u.sdram.vendor, 0, sizeof(features->u.sdram.vendor));
-	memset(features->u.sdram.product, 0,
-		sizeof(features->u.sdram.product));
+	memset(&features->u.sdram, 0, sizeof(features->u.sdram));
 	sprintf(features->u.sdram.vendor , "elpida");
-	sprintf(features->u.sdram.product, "EDB8064B1PB"/*"EDB4064B2PB"*/);
-	features->u.sdram.type     = 0;
-	features->u.sdram.revision = 0;
-	features->u.sdram.flags    = 0;
-	features->u.sdram.clock    = 400;
-	features->u.sdram.param_0  = 0;
-	features->u.sdram.param_1  = 0;
-	features->u.sdram.param_2  = 0;
-	features->u.sdram.param_3  = 0;
-	features->u.sdram.param_4  = 0;
-	features->u.sdram.param_5  = 0;
-	features->u.sdram.param_6  = 0;
-	features->u.sdram.param_7  = 0;
+	sprintf(features->u.sdram.product, "EDB8064B1PB");
+	features->u.sdram.clock = 400;
 
 	features = feature_tag_next(features);
 }
@@ -112,6 +91,7 @@ static void setup_feature_pmic(void)
 	features->hdr.tag = FTAG_PMIC;
 	features->hdr.size = feature_tag_size(feature_tag_pmic);
 
+	memset(&features->u.pmic, 0, sizeof(features->u.pmic));
 	features->u.pmic.flags = FTAG_PMIC_TPS62361;
 
 	features = feature_tag_next(features);
@@ -121,6 +101,7 @@ static void setup_feature_serial_port(void)
 	features->hdr.tag = FTAG_SERIAL_PORT;
 	features->hdr.size = feature_tag_size(feature_tag_serial_port);
 
+	memset(&features->u.serial_port, 0, sizeof(features->u.serial_port));
 	features->u.serial_port.uart_id = 1;
 	features->u.serial_port.speed = 115200;
 
@@ -131,9 +112,10 @@ static void setup_feature_has_gpio_volume_keys(void)
 	features->hdr.tag = FTAG_HAS_GPIO_VOLUME_KEYS;
 	features->hdr.size = feature_tag_size(feature_tag_gpio_volume_keys);
 
+	memset(&features->u.gpio_volume_keys, 0,
+		sizeof(features->u.gpio_volume_keys));
 	features->u.gpio_volume_keys.gpio_vol_up   = 0x2B;
 	features->u.gpio_volume_keys.gpio_vol_down = 0x2C;
-	features->u.gpio_volume_keys.flags = 0;
 
 	features = feature_tag_next(features);
 }
@@ -142,18 +124,9 @@ static void setup_feature_screen(void)
 	features->hdr.tag = FTAG_SCREEN;
 	features->hdr.size = feature_tag_size(feature_tag_screen);
 
-	memset(features->u.screen.vendor, 0,
-		sizeof(features->u.screen.vendor));
+	memset(&features->u.screen, 0, sizeof(features->u.screen));
 	sprintf(features->u.screen.vendor, "CMI");
-	features->u.screen.type = 0;
-	features->u.screen.revision = 0;
-	features->u.screen.vcom = 0;
 	features->u.screen.backlight = 0xC8;
-	features->u.screen.reserved[0] = 0;
-	features->u.screen.reserved[1] = 0;
-	features->u.screen.reserved[2] = 0;
-	features->u.screen.reserved[3] = 0;
-	features->u.screen.reserved[4] = 0;
 
 	features = feature_tag_next(features);
 }
@@ -162,6 +135,7 @@ static void setup_feature_turbo(void)
 	features->hdr.tag = FTAG_TURBO;
 	features->hdr.size = feature_tag_size(feature_tag_turbo);
 
+	memset(&features->u.turbo, 0, sizeof(features->u.turbo));
 	features->u.turbo.flag = 1;
 
 	features = feature_tag_next(features);

@@ -40,7 +40,7 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 
 /**
  * @brief Reset the CPU

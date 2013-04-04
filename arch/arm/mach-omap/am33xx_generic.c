@@ -24,7 +24,7 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
 #include <mach/sys_info.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <mach/am33xx-generic.h>
 
 void __noreturn reset_cpu(unsigned long addr)

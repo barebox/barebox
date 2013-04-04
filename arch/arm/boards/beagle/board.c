@@ -62,7 +62,6 @@
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>
-#include <mach/xload.h>
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 

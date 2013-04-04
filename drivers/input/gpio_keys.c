@@ -86,6 +86,8 @@ static int __init gpio_keys_probe(struct device_d *dev)
 			return ret;
 		}
 		gpio_direction_input(gpio);
+		pdata->buttons[i].previous_state =
+			pdata->buttons[i].active_low;
 	}
 
 	pdata->poller.func = gpio_key_poller;

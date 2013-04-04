@@ -27,6 +27,8 @@
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-silicon.h>
 
+#include "mux.h"
+
 /**
  * @brief UART serial port initialization
  * arch
@@ -52,7 +54,7 @@ mem_initcall(pcm051_mem_init);
 
 static int pcm051_devices_init(void)
 {
-	enable_mmc0_pin_mux();
+	pcm051_enable_mmc0_pin_mux();
 
 	am33xx_add_mmc0(NULL);
 

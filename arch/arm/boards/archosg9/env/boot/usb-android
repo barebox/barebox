@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "Android over usb"
+	exit
+fi
+
+path=/mnt/usb
+global.bootm.image=${path}/android
+global.bootm.initrd=${path}/initramfs.cpio.lzo
+global.linux.bootargs.base="mem=512M init=/linuxrc debug omapdss.debug=0 omapfb.debug=0 mem=512M@0xa0000000"

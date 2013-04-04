@@ -1,3 +1,5 @@
+#ifndef _MACH_GENERIC_H
+#define _MACH_GENERIC_H
 
 /* I2C controller revisions */
 #define OMAP_I2C_REV_2			0x20
@@ -23,4 +25,19 @@
 #define cpu_is_omap4xxx()	(1)
 #else
 #define cpu_is_omap4xxx()	(0)
+#endif
+
+enum omap_boot_src {
+	OMAP_BOOTSRC_UNKNOWN,
+	OMAP_BOOTSRC_MMC1,
+	OMAP_BOOTSRC_NAND,
+	OMAP_BOOTSRC_SPI1,
+	OMAP_BOOTSRC_USB1,
+};
+
+enum omap_boot_src omap_bootsrc(void);
+enum omap_boot_src am33xx_bootsrc(void);
+enum omap_boot_src omap3_bootsrc(void);
+enum omap_boot_src omap4_bootsrc(void);
+
 #endif

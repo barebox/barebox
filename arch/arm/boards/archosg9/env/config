@@ -1,3 +1,0 @@
-global.bootm.image="${TARGET_ROOT}/boot/zImage"
-global.bootm.initrd="${TARGET_ROOT}/boot/initrd"
-global.linux.bootargs.base="console=ttyO0,115200n8 root=/dev/ram0"

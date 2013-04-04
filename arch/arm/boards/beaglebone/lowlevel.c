@@ -243,7 +243,7 @@ static int beaglebone_board_init(void)
 		beaglebone_sram_init();
 
 	/* Enable pin mux */
-	enable_uart0_pin_mux();
+	am33xx_enable_uart0_pin_mux();
 
 	return 0;
 }

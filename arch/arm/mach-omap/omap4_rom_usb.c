@@ -33,12 +33,12 @@
 #include <common.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4_rom_usb.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <init.h>
 
-static struct omap4_usbboot omap4_usbboot_pdata;
+static struct omap4_usbboot omap4_usbboot_data;
 
-static int omap4_usbboot_open(void)
+int omap4_usbboot_open(void)
 {
 	int (*rom_get_per_driver)(struct per_driver **io, u32 device_type);
 	int (*rom_get_per_device)(struct per_handle **rh);
@@ -60,94 +60,103 @@ static int omap4_usbboot_open(void)
 
 	if ((boot->device_type != DEVICE_USB) &&
 	    (boot->device_type != DEVICE_USBEXT))
-		return -1;
+		return 0;
 
-	memset(&omap4_usbboot_pdata, 0, sizeof(omap4_usbboot_pdata));
-	n = rom_get_per_driver(&omap4_usbboot_pdata.io, boot->device_type);
+	memset(&omap4_usbboot_data, 0, sizeof(omap4_usbboot_data));
+	n = rom_get_per_driver(&omap4_usbboot_data.io, boot->device_type);
 	if (n)
 		return n;
 
-	omap4_usbboot_pdata.dread.status = -1;
-	omap4_usbboot_pdata.dread.xfer_mode = boot->xfer_mode;
-	omap4_usbboot_pdata.dread.options = boot->options;
-	omap4_usbboot_pdata.dread.device_type = boot->device_type;
+	omap4_usbboot_data.dread.status = -1;
+	omap4_usbboot_data.dread.xfer_mode = boot->xfer_mode;
+	omap4_usbboot_data.dread.options = boot->options;
+	omap4_usbboot_data.dread.device_type = boot->device_type;
 
-	omap4_usbboot_pdata.dwrite.status = -1;
-	omap4_usbboot_pdata.dwrite.xfer_mode = boot->xfer_mode;
-	omap4_usbboot_pdata.dwrite.options = boot->options;
-	omap4_usbboot_pdata.dwrite.device_type = boot->device_type;
+	omap4_usbboot_data.dwrite.status = -1;
+	omap4_usbboot_data.dwrite.xfer_mode = boot->xfer_mode;
+	omap4_usbboot_data.dwrite.options = boot->options;
+	omap4_usbboot_data.dwrite.device_type = boot->device_type;
 	__asm__ __volatile__ ("cpsie i\n");
+	omap4_usbboot_data.ready = 1;
+
+	omap4_usbboot_puts("USB communications initialized\n");
 	return 0;
 }
+core_initcall(omap4_usbboot_open);
 
+int omap4_usbboot_ready(void){
+	return omap4_usbboot_data.ready;
+}
 
 static void rom_read_callback(struct per_handle *rh)
 {
-	omap4_usbboot_pdata.dread.status = rh->status;
+	omap4_usbboot_data.dread.status = rh->status;
 	return;
 }
 
 void omap4_usbboot_queue_read(void *data, unsigned len)
 {
 	int n;
-	omap4_usbboot_pdata.dread.data = data;
-	omap4_usbboot_pdata.dread.length = len;
-	omap4_usbboot_pdata.dread.status = STATUS_WAITING;
-	omap4_usbboot_pdata.dread.xfer_mode = 1;
-	omap4_usbboot_pdata.dread.callback = rom_read_callback;
-	n = omap4_usbboot_pdata.io->read(&omap4_usbboot_pdata.dread);
+	omap4_usbboot_data.dread.data = data;
+	omap4_usbboot_data.dread.length = len;
+	omap4_usbboot_data.dread.status = STATUS_WAITING;
+	omap4_usbboot_data.dread.xfer_mode = 1;
+	omap4_usbboot_data.dread.callback = rom_read_callback;
+	n = omap4_usbboot_data.io->read(&omap4_usbboot_data.dread);
 	if (n)
-		omap4_usbboot_pdata.dread.status = n;
+		omap4_usbboot_data.dread.status = n;
 }
 
 int omap4_usbboot_wait_read(void)
 {
 	int ret;
-	while (omap4_usbboot_pdata.dread.status == STATUS_WAITING)
+	while (omap4_usbboot_data.dread.status == STATUS_WAITING)
 		/* cpu_relax(); */
 		barrier();
-	ret = omap4_usbboot_pdata.dread.status;
-	omap4_usbboot_pdata.dread.status = -1;
+	ret = omap4_usbboot_data.dread.status;
+	omap4_usbboot_data.dread.status = -1;
 	return ret;
 }
+
 int omap4_usbboot_is_read_waiting(void)
 {
 	barrier();
-	return omap4_usbboot_pdata.dread.status == STATUS_WAITING;
+	return omap4_usbboot_data.dread.status == STATUS_WAITING;
 }
+
 int omap4_usbboot_is_read_ok(void)
 {
 	barrier();
-	return omap4_usbboot_pdata.dread.status == STATUS_OKAY;
+	return omap4_usbboot_data.dread.status == STATUS_OKAY;
 }
 
 static void rom_write_callback(struct per_handle *rh)
 {
-	omap4_usbboot_pdata.dwrite.status = rh->status;
+	omap4_usbboot_data.dwrite.status = rh->status;
 	return;
 }
 
 void omap4_usbboot_queue_write(void *data, unsigned len)
 {
 	int n;
-	omap4_usbboot_pdata.dwrite.data = data;
-	omap4_usbboot_pdata.dwrite.length = len;
-	omap4_usbboot_pdata.dwrite.status = STATUS_WAITING;
-	omap4_usbboot_pdata.dwrite.xfer_mode = 1;
-	omap4_usbboot_pdata.dwrite.callback = rom_write_callback;
-	n = omap4_usbboot_pdata.io->write(&omap4_usbboot_pdata.dwrite);
+	omap4_usbboot_data.dwrite.data = data;
+	omap4_usbboot_data.dwrite.length = len;
+	omap4_usbboot_data.dwrite.status = STATUS_WAITING;
+	omap4_usbboot_data.dwrite.xfer_mode = 1;
+	omap4_usbboot_data.dwrite.callback = rom_write_callback;
+	n = omap4_usbboot_data.io->write(&omap4_usbboot_data.dwrite);
 	if (n)
-		omap4_usbboot_pdata.dwrite.status = n;
+		omap4_usbboot_data.dwrite.status = n;
 }
 
 int omap4_usbboot_wait_write(void)
 {
 	int ret;
-	while (omap4_usbboot_pdata.dwrite.status == STATUS_WAITING)
+	while (omap4_usbboot_data.dwrite.status == STATUS_WAITING)
 		/* cpu_relax(); */
 		barrier();
-	ret = omap4_usbboot_pdata.dwrite.status;
-	omap4_usbboot_pdata.dwrite.status = -1;
+	ret = omap4_usbboot_data.dwrite.status;
+	omap4_usbboot_data.dwrite.status = -1;
 	return ret;
 }
 
@@ -177,7 +186,7 @@ int omap4_usbboot_write(void *data, unsigned len)
 
 void omap4_usbboot_close(void)
 {
-	omap4_usbboot_pdata.io->close(&omap4_usbboot_pdata.dread);
+	omap4_usbboot_data.io->close(&omap4_usbboot_data.dread);
 }
 
 void omap4_usbboot_puts(const char *s)
@@ -186,13 +195,3 @@ void omap4_usbboot_puts(const char *s)
 	while ((c = *s++))
 		omap4_usbboot_write(&c, 4);
 }
-
-static int omap4_usbboot_init(void)
-{
-	if (omap4_bootsrc() == OMAP_BOOTSRC_USB1) {
-		omap4_usbboot_open();
-		omap4_usbboot_puts("USB communications initialized\n");
-	}
-	return 0;
-}
-core_initcall(omap4_usbboot_init);

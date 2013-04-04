@@ -6,7 +6,7 @@
 #include <linux/mtd/mtd.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <mach/xload.h>
+#include <mach/generic.h>
 #include <sizes.h>
 #include <filetype.h>
 
@@ -156,17 +156,6 @@ static void *omap4_xload_boot_usb(void){
 		printf("could not read barebox.bin from omap4_usbbootfs\n");
 
 	return buf;
-}
-
-enum omap_boot_src omap_bootsrc(void)
-{
-#if defined(CONFIG_ARCH_OMAP3)
-	return omap3_bootsrc();
-#elif defined(CONFIG_ARCH_OMAP4)
-	return omap4_bootsrc();
-#elif defined(CONFIG_ARCH_AM33XX)
-	return am33xx_bootsrc();
-#endif
 }
 
 /*

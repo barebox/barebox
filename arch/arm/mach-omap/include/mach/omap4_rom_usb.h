@@ -122,8 +122,11 @@ struct omap4_usbboot {
 	struct per_handle dread;
 	struct per_handle dwrite;
 	struct per_driver *io;
+	int ready;
 };
 
+int omap4_usbboot_open(void);
+int omap4_usbboot_ready(void);
 void omap4_usbboot_close(void);
 
 void omap4_usbboot_queue_read(void *data, unsigned len);

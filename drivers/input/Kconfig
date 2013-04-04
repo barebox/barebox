@@ -38,4 +38,11 @@ config KEYBOARD_QT1070
 	  Say Y here if you want to use Atmel AT42QT1070 QTouch
 	  Sensor chip as input device.
 
+config KEYBOARD_TWL6030
+	tristate "TWL6030 power button"
+	depends on MFD_TWL6030
+	select POLLER
+	help
+	  Say Y here if you want to use TWL6030 power button as a key.
+
 endmenu

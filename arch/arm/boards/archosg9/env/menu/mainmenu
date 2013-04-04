@@ -1,0 +1,25 @@
+#!/bin/sh
+
+savepath=$PATH
+export menupath=$PATH:/env/menu
+
+. /env/data/ansi-colors
+
+while true; do
+	export PATH=${menupath}
+
+	echo $PATH
+
+	menu -a -m boot -d "${CYAN}Welcome to Barebox${NC}"
+
+	boot-entries-collect
+
+	menu -e -a -m boot -c "settings" -d "Settings"
+	menu -e -a -m boot -c 'PATH=$savepath; echo "enter exit to return to menu"; sh' -d "${DARK_YELLOW}Shell${NC}"
+	menu -e -a -m boot -c 'boot_order mmc2_1 && reset' -d "${RED}Reboot into internal flash${NC}"
+	menu -e -a -m boot -c 'boot_order mmc1 && reset' -d "${RED}Reboot into SD card${NC}"
+	menu -e -a -m boot -c 'boot_order usb_1 && reset' -d "${RED}Reboot over usb${NC}"
+
+	menu -s -m boot
+	menu -r -m boot
+done

@@ -25,8 +25,6 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
-#include <fs.h>
-#include <linux/stat.h>
 #include <envfs.h>
 #include <sizes.h>
 #include <io.h>
@@ -45,7 +43,6 @@
 #include <linux/err.h>
 #include <linux/phy.h>
 #include <usb/ehci.h>
-#include <mach/xload.h>
 #include <mach/am33xx-devices.h>
 #include <mach/am33xx-mux.h>
 #include <mach/wdt.h>
@@ -95,7 +92,7 @@ static void beaglebone_eth_init(void)
 
 	writel(0, AM33XX_MAC_MII_SEL);
 
-	enable_mii1_pin_mux();
+	am33xx_enable_mii1_pin_mux();
 
 	am33xx_add_cpsw(&cpsw_data);
 }
@@ -104,7 +101,7 @@ static int beaglebone_devices_init(void)
 {
 	am33xx_add_mmc0(NULL);
 
-	enable_i2c0_pin_mux();
+	am33xx_enable_i2c0_pin_mux();
 	beaglebone_eth_init();
 
 	armlinux_set_bootparams((void *)0x80000100);
@@ -113,33 +110,3 @@ static int beaglebone_devices_init(void)
 	return 0;
 }
 device_initcall(beaglebone_devices_init);
-
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-static int beaglebone_env_init(void)
-{
-	struct stat s;
-	char *diskdev = "/dev/disk0.0";
-	int ret;
-
-	ret = stat(diskdev, &s);
-	if (ret) {
-		printf("device %s not found. Using default environment\n", diskdev);
-		return 0;
-	}
-
-	mkdir ("/boot", 0666);
-	ret = mount(diskdev, "fat", "/boot");
-	if (ret) {
-		printf("failed to mount %s\n", diskdev);
-		return 0;
-	}
-
-	if (IS_ENABLED(CONFIG_OMAP_BUILD_IFT))
-		default_environment_path = "/dev/defaultenv";
-	else
-		default_environment_path = "/boot/barebox.env";
-
-	return 0;
-}
-late_initcall(beaglebone_env_init);
-#endif

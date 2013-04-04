@@ -1,6 +1,0 @@
-TARGET_ROOT="/mnt/usb"
-mkdir ${TARGET_ROOT}
-mount -t omap4_usbbootfs omap4_usbboot ${TARGET_ROOT}
-. /env/config
-. ${TARGET_ROOT}/boot/config
-bootm

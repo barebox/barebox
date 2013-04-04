@@ -22,7 +22,7 @@
 #ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-silicon.h>
 
-#ifdef CONFIG_OMAP3EVM_UART1
+#ifdef CONFIG_OMAP_UART1
 #define UART_BASE	OMAP3_UART1_BASE
 #else
 #define UART_BASE	OMAP3_UART3_BASE
@@ -32,7 +32,11 @@
 
 #ifdef CONFIG_ARCH_OMAP4
 #include <mach/omap4-silicon.h>
+#ifdef CONFIG_OMAP_UART1
+#define UART_BASE	OMAP44XX_UART1_BASE
+#else
 #define UART_BASE	OMAP44XX_UART3_BASE
+#endif
 #endif
 
 #ifdef CONFIG_ARCH_AM33XX
@@ -41,9 +45,30 @@
 #endif
 
 #define LSR_THRE	0x20	/* Xmit holding register empty */
+#define LCR_BKSE	0x80	/* Bank select enable */
 #define LSR		(5 << 2)
 #define THR		(0 << 2)
+#define DLL		(0 << 2)
+#define IER		(1 << 2)
+#define DLM		(1 << 2)
+#define FCR		(2 << 2)
+#define LCR		(3 << 2)
+#define MCR		(4 << 2)
+#define MDR		(8 << 2)
 
+static inline void INIT_LL(void)
+{
+	writeb(0x00, UART_BASE + LCR);
+	writeb(0x00, UART_BASE + IER);
+	writeb(0x07, UART_BASE + MDR);
+	writeb(LCR_BKSE, UART_BASE + LCR);
+	writeb(26, UART_BASE + DLL); /* 115200 */
+	writeb(0, UART_BASE + DLM);
+	writeb(0x03, UART_BASE + LCR);
+	writeb(0x03, UART_BASE + MCR);
+	writeb(0x07, UART_BASE + FCR);
+	writeb(0x00, UART_BASE + MDR);
+}
 static inline void PUTC_LL(char c)
 {
 	/* Wait until there is space in the FIFO */

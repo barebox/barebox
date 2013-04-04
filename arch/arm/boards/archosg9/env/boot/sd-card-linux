@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "Linux from SD card"
+	exit
+fi
+
+path=/mnt/sd
+global.bootm.image=${path}/zImage
+initrd=${path}/initrd
+
+if [ -f ${initrd} ]; then
+	global.bootm.initrd=${initrd}
+	global.linux.bootargs.base="console=ttyO0,115200n8 root=/dev/ram0"
+else
+	global.linux.bootargs.base="console=ttyO0,115200n8 rootwait root=/dev/mmcblk0p2"
+fi

@@ -41,7 +41,7 @@
 #include <asm/mmu.h>
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = RMII,
+	.xcv_type = PHY_INTERFACE_MODE_RMII,
 };
 
 static iomux_v3_cfg_t smd_pads[] = {

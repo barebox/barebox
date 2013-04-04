@@ -24,22 +24,11 @@
 #include <linux/phy.h>
 
 /*
- * Supported phy types on this platform
- */
-typedef enum {
-	SEVENWIRE,
-	MII10,
-	MII100,
-	RMII,
-	RGMII,
-} xceiver_type;
-
-/*
  * Define the phy connected externally for FEC drivers
  * (like MPC52xx and i.MX27)
  */
 struct fec_platform_data {
-        xceiver_type	xcv_type;
+	phy_interface_t	xcv_type;
 	int		phy_addr;
 	void 		(*phy_init)(struct phy_device *dev);
 };

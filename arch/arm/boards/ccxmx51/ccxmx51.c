@@ -81,7 +81,7 @@ struct imx_nand_platform_data nand_info = {
 };
 
 static struct fec_platform_data fec_info = {
-	.xcv_type	= MII100,
+	.xcv_type	= PHY_INTERFACE_MODE_MII,
 	.phy_addr	= 7,
 };
 

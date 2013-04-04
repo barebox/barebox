@@ -122,7 +122,7 @@ static void mx6_rgmii_rework(struct phy_device *dev)
 }
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = RGMII,
+	.xcv_type = PHY_INTERFACE_MODE_RGMII,
 	.phy_init = mx6_rgmii_rework,
 	.phy_addr = 0,
 };

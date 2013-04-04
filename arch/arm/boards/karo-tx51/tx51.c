@@ -46,7 +46,7 @@
     IOMUX_PAD(0x6c0, 0x2c0, 4, 0x098c, 1, 0)
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
+	.xcv_type = PHY_INTERFACE_MODE_MII,
 };
 
 struct imx_nand_platform_data nand_info = {

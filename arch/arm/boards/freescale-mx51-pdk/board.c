@@ -43,7 +43,7 @@
 #include <mach/imx-flash-header.h>
 
 static struct fec_platform_data fec_info = {
-	.xcv_type = MII100,
+	.xcv_type = PHY_INTERFACE_MODE_MII,
 };
 
 static iomux_v3_cfg_t f3s_pads[] = {

@@ -252,7 +252,6 @@ typedef struct {
 
 typedef struct {
 	ethernet_regs *eth;
-	xceiver_type xcv_type;		/* transceiver type */
 	FEC_RBD *rbdBase;		/* RBD ring */
 	FEC_TBD *tbdBase;		/* TBD ring */
 	uint16_t rbdIndex;		/* next receive BD to read */

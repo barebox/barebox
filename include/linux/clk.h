@@ -182,8 +182,6 @@ struct clk {
 	unsigned long flags;
 };
 
-#define CLK_ALWAYS_ENABLED	(1 << 0)
-
 struct clk_div_table {
 	unsigned int	val;
 	unsigned int	div;
@@ -201,6 +199,8 @@ struct clk *clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents);
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 		u8 shift);
+
+int clk_is_enabled_always(struct clk *clk);
 
 int clk_register(struct clk *clk);
 

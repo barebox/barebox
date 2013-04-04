@@ -34,6 +34,7 @@ static unsigned long clk_fixed_recalc_rate(struct clk *clk,
 
 struct clk_ops clk_fixed_ops = {
 	.recalc_rate = clk_fixed_recalc_rate,
+	.is_enabled = clk_is_enabled_always,
 };
 
 struct clk *clk_fixed(const char *name, int rate)
@@ -44,7 +45,6 @@ struct clk *clk_fixed(const char *name, int rate)
 	fix->rate = rate;
 	fix->clk.ops = &clk_fixed_ops;
 	fix->clk.name = name;
-	fix->clk.flags = CLK_ALWAYS_ENABLED;
 
 	ret = clk_register(&fix->clk);
 	if (ret) {

@@ -46,9 +46,6 @@ int clk_enable(struct clk *clk)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	if (clk->flags & CLK_ALWAYS_ENABLED)
-		return 0;
-
 	if (!clk->enable_count) {
 		ret = clk_parent_enable(clk);
 		if (ret)
@@ -71,9 +68,6 @@ int clk_enable(struct clk *clk)
 void clk_disable(struct clk *clk)
 {
 	if (IS_ERR(clk))
-		return;
-
-	if (clk->flags & CLK_ALWAYS_ENABLED)
 		return;
 
 	if (!clk->enable_count)
@@ -211,23 +205,60 @@ int clk_register(struct clk *clk)
 
 	list_add_tail(&clk->list, &clks);
 
-	if (clk->flags & CLK_ALWAYS_ENABLED) {
-		clk->enable_count = 1;
+	return 0;
+}
+
+int clk_is_enabled(struct clk *clk)
+{
+	int enabled;
+
+	if (IS_ERR(clk))
+		return 0;
+
+	if (clk->ops->is_enabled) {
+		/*
+		 * If we can ask a clk, do it
+		 */
+		enabled = clk->ops->is_enabled(clk);
+	} else {
+		if (clk->ops->enable) {
+			/*
+			 * If we can't ask a clk, but it can be enabled,
+			 * depend on the enable_count.
+			 */
+			enabled = clk->enable_count;
+		} else {
+			/*
+			 * We can't ask a clk, it has no enable op,
+			 * so assume it's enabled and go on and ask
+			 * the parent.
+			 */
+			enabled = 1;
+		}
 	}
 
-	return 0;
+	if (!enabled)
+		return 0;
+
+	clk = clk_get_parent(clk);
+
+	if (IS_ERR(clk))
+		return 1;
+
+	return clk_is_enabled(clk);
+}
+
+int clk_is_enabled_always(struct clk *clk)
+{
+	return 1;
 }
 
 static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	struct clk *c;
-	char *always = "";
 
-	if (clk->flags & CLK_ALWAYS_ENABLED)
-		always = "always ";
-
-	printf("%*s%s (rate %ld, %s%sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
-			always, clk->enable_count ? "en" : "dis");
+	printf("%*s%s (rate %ld, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
+			clk_is_enabled(clk) ? "en" : "dis");
 	if (verbose) {
 
 		if (clk->num_parents > 1) {

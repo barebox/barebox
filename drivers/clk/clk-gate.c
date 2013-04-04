@@ -49,9 +49,23 @@ static void clk_gate_disable(struct clk *clk)
 	writel(val, g->reg);
 }
 
+static int clk_gate_is_enabled(struct clk *clk)
+{
+	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
+	u32 val;
+
+	val = readl(g->reg);
+
+	if (val & (1 << g->shift))
+		return 1;
+	else
+		return 0;
+}
+
 struct clk_ops clk_gate_ops = {
 	.enable = clk_gate_enable,
 	.disable = clk_gate_disable,
+	.is_enabled = clk_gate_is_enabled,
 };
 
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,

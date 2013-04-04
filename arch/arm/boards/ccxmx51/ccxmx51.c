@@ -195,51 +195,10 @@ static const struct spi_board_info ccxmx51_spi_board_info[] = {
 	},
 };
 
-static void ccxmx51_otghost_init(void)
-{
-#define MX51_USBOTHER_REGS_OFFSET		0x800
-#define MX51_USBCTRL_OFFSET			0x0
-#define MX51_USB_PHY_CTR_FUNC_OFFSET		0x8
-#define MX51_USB_PHY_CTR_FUNC2_OFFSET		0xc
-#define MX51_USB_UTMI_PHYCTRL1_PLLDIV_MASK	0x3
-#define MX51_USB_PLL_DIV_19_2_MHZ		0x00
-#define MX51_USB_PLL_DIV_24_MHZ			0x01
-#define MX51_USB_PLL_DIV_26_MHZ			0x02
-#define MX51_USB_PLL_DIV_27_MHZ			0x03
-#define MX51_OTG_PHYCTRL_OC_DIS_BIT		(1 << 8)
-#define MX51_OTG_UCTRL_OWIE_BIT			(1 << 27)
-#define MX51_OTG_UCTRL_OPM_BIT			(1 << 24)
-
-#define USBOTHER_BASE				(MX51_OTG_BASE_ADDR + MX51_USBOTHER_REGS_OFFSET)
-
-	u32 reg;
-
-	/* Set sysclock to 24 MHz */
-	reg = readl(USBOTHER_BASE + MX51_USB_PHY_CTR_FUNC2_OFFSET);
-	reg &= ~MX51_USB_UTMI_PHYCTRL1_PLLDIV_MASK;
-	reg |= MX51_USB_PLL_DIV_24_MHZ;
-	writel(reg, USBOTHER_BASE + MX51_USB_PHY_CTR_FUNC2_OFFSET);
-
-	/* OC is not used */
-	reg = readl(USBOTHER_BASE + MX51_USB_PHY_CTR_FUNC_OFFSET);
-	reg |= MX51_OTG_PHYCTRL_OC_DIS_BIT;
-	writel(reg, USBOTHER_BASE + MX51_USB_PHY_CTR_FUNC_OFFSET);
-
-	/* Power pins enable */
-	reg = readl(USBOTHER_BASE + MX51_USBCTRL_OFFSET);
-	reg |= MX51_OTG_UCTRL_OWIE_BIT | MX51_OTG_UCTRL_OPM_BIT;
-	writel(reg, USBOTHER_BASE + MX51_USBCTRL_OFFSET);
-
-	/* Setup PORTSC */
-	reg = readl(MX51_OTG_BASE_ADDR + 0x184);
-	reg &= ~(3 << 30);
-	reg |= 1 << 28;
-	writel(reg, MX51_OTG_BASE_ADDR + 0x184);
-
-	mdelay(10);
-
-	add_generic_usb_ehci_device(0, MX51_OTG_BASE_ADDR, NULL);
-}
+static struct imxusb_platformdata ccxmx51_otg_pdata = {
+	.flags	= MXC_EHCI_MODE_UTMI_16_BIT | MXC_EHCI_POWER_PINS_ENABLED,
+	.mode	= IMX_USB_MODE_HOST,
+};
 
 static int ccxmx51_power_init(void)
 {
@@ -453,7 +412,7 @@ static int ccxmx51_devices_init(void)
 		add_generic_device("smc911x", 1, NULL, MX51_CS5_BASE_ADDR, SZ_4K, IORESOURCE_MEM, NULL);
 	}
 
-	ccxmx51_otghost_init();
+	imx51_add_usbotg(&ccxmx51_otg_pdata);
 
 	armlinux_set_bootparams((void *)(MX51_CSD0_BASE_ADDR + 0x100));
 

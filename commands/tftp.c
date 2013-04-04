@@ -76,7 +76,7 @@ static int do_tftpb(int argc, char *argv[])
 	if (ret)
 		goto err_rmdir;
 
-	printk("%s: %s -> %s\n", __func__, source, dest);
+	debug("%s: %s -> %s\n", __func__, source, dest);
 
 	ret = copy_file(source, dest, 1);
 

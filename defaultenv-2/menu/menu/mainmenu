@@ -14,11 +14,7 @@ while true; do
 
 	boot-entries-collect
 
-	menu -e -a -R -m boot -c "$global.editcmd /env/network/eth0" -d "Network settings"
-	menu -e -a -R -m boot -c "$global.editcmd /env/config" -d "Config settings"
-	menu -e -a -m boot -c "boot-entries-edit" -d "Edit boot entries"
-	menu -e -a -m boot -c "init-entries-edit" -d "Edit init entries"
-	menu -e -a -R -m boot -c "saveenv || echo \"failed to save environment\" && sleep 2" -d "Save settings"
+	menu -e -a -m boot -c "settings" -d "Settings"
 	menu -e -a -m boot -c 'PATH=$savepath; echo "enter exit to return to menu"; sh' -d "${DARK_YELLOW}Shell${NC}"
 	menu -e -a -m boot -c reset -d "${RED}Reset${NC}"
 

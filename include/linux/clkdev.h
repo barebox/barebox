@@ -12,8 +12,6 @@
 #ifndef __CLKDEV_H
 #define __CLKDEV_H
 
-#include <asm/clkdev.h>
-
 struct clk;
 struct device_d;
 

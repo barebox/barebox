@@ -14,6 +14,9 @@
 #define CPU_ARCH_ARMv6		8
 #define CPU_ARCH_ARMv7		9
 
+#define CPU_IS_ARM720		0x41007200
+#define CPU_IS_ARM720_MASK	0xff00fff0
+
 #define CPU_IS_ARM920		0x41009200
 #define CPU_IS_ARM920_MASK	0xff00fff0
 
@@ -55,11 +58,13 @@
 #else
 #define ARM_ARCH CPU_ARCH_ARMv4T
 #endif
+#define cpu_is_arm720()	cpu_is_arm(ARM720)
 #define cpu_is_arm920()	cpu_is_arm(ARM920)
 #define cpu_is_pxa250() cpu_is_arm(PXA250)
 #define cpu_is_pxa255() cpu_is_arm(PXA255)
 #define cpu_is_pxa270() cpu_is_arm(PXA270)
 #else
+#define cpu_is_arm720() (0)
 #define cpu_is_arm920() (0)
 #define cpu_is_pxa250() (0)
 #define cpu_is_pxa255() (0)

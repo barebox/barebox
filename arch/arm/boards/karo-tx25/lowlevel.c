@@ -27,7 +27,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/system.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <asm-generic/memory_layout.h>
 
 static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,

@@ -602,7 +602,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 	disable_nand_controller(host);
 }
 
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 
 void __nand_boot_init nand_boot(void)
 {

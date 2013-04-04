@@ -24,7 +24,7 @@
 #include <environment.h>
 #include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <mach/gpio.h>
 #include <io.h>

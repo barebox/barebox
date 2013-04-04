@@ -41,5 +41,6 @@ uint32_t get_runtime_offset(void);
 
 void setup_c(void);
 void __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize, uint32_t boarddata);
+unsigned long barebox_arm_boarddata(void);
 
 #endif	/* _BAREBOX_ARM_H_ */

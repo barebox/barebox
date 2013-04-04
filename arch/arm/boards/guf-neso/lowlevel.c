@@ -27,7 +27,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/system.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <asm-generic/memory_layout.h>
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)

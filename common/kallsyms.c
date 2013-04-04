@@ -1,7 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <kallsyms.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

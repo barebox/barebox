@@ -1,3 +1,5 @@
+#ifndef __MACH_GENERIC_H
+#define __MACH_GENERIC_H
 
 u64 imx_uid(void);
 
@@ -68,3 +70,5 @@ void imx6_boot_save_loc(void __iomem *src_base);
 
 #define cpu_is_mx23()	(0)
 #define cpu_is_mx28()	(0)
+
+#endif /* __MACH_GENERIC_H */

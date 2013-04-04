@@ -2,7 +2,7 @@
 #include <init.h>
 #include <asm/stacktrace.h>
 #include <asm/unwind.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 
 /* Dummy functions to avoid linker complaints */
 void __aeabi_unwind_cpp_pr0(void)

@@ -80,6 +80,7 @@ struct ata_ioports {
 struct ata_port;
 
 struct ata_port_operations {
+	int (*init)(struct ata_port *port);
 	int (*read)(struct ata_port *port, void *buf, unsigned int block, int num_blocks);
 	int (*write)(struct ata_port *port, const void *buf, unsigned int block, int num_blocks);
 	int (*read_id)(struct ata_port *port, void *buf);
@@ -89,9 +90,11 @@ struct ata_port_operations {
 struct ata_port {
 	struct ata_port_operations *ops;
 	struct device_d *dev;
+	struct device_d class_dev;
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
+	int initialized;
 };
 
 int ide_port_register(struct device_d *, struct ata_ioports *);

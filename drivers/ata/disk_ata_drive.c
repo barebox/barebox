@@ -255,17 +255,17 @@ static struct block_device_ops ata_ops = {
 #endif
 };
 
-/**
- * Register an ATA drive behind an IDE like interface
- * @param dev The interface device
- * @param io ATA register file description
- * @return 0 on success
- */
-int ata_port_register(struct ata_port *port)
+static int ata_port_init(struct ata_port *port)
 {
 	int rc;
 	struct ata_port_operations *ops = port->ops;
-	struct device_d *dev = port->dev;
+	struct device_d *dev = &port->class_dev;
+
+	if (ops->init) {
+		rc = ops->init(port);
+		if (rc)
+			return rc;
+	}
 
 	port->id = dma_alloc(SECTOR_SIZE);
 
@@ -323,6 +323,53 @@ int ata_port_register(struct ata_port *port)
 
 on_error:
 	return rc;
+}
+
+static int ata_set_probe(struct device_d *class_dev, struct param_d *param,
+				const char *val)
+{
+	struct ata_port *port = container_of(class_dev, struct ata_port, class_dev);
+	int ret, probe;
+
+	if (port->initialized) {
+		dev_info(class_dev, "already initialized\n");
+		return 0;
+	}
+
+	probe = !!simple_strtoul(val, NULL, 0);
+	if (!probe)
+		return 0;
+
+	ret = ata_port_init(port);
+	if (ret)
+		return ret;
+
+	port->initialized = 1;
+
+	return dev_param_set_generic(class_dev, param, "1");
+}
+
+/**
+ * Register an ATA drive behind an IDE like interface
+ * @param dev The interface device
+ * @param io ATA register file description
+ * @return 0 on success
+ */
+int ata_port_register(struct ata_port *port)
+{
+	int ret;
+
+	port->class_dev.id = DEVICE_ID_DYNAMIC;
+	strcpy(port->class_dev.name, "ata");
+	port->class_dev.parent = port->dev;
+
+	ret = register_device(&port->class_dev);
+	if (ret)
+		return ret;
+
+	dev_add_param(&port->class_dev, "probe", ata_set_probe, NULL, 0);
+
+	return ret;
 }
 
 /**

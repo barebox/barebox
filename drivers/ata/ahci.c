@@ -275,12 +275,6 @@ static int ahci_write(struct ata_port *ata, const void *buf, unsigned int block,
 	return ahci_rw(ata, NULL, buf, block, num_blocks);
 }
 
-static struct ata_port_operations ahci_ops = {
-	.read_id = ahci_read_id,
-	.read = ahci_read,
-	.write = ahci_write,
-};
-
 static int ahci_init_port(struct ahci_port *ahci_port)
 {
 	void __iomem *port_mmio;
@@ -387,7 +381,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = wait_on_timeout(WAIT_SPINUP,
 			((readl(port_mmio + PORT_TFDATA) &
 			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0)
-			|| !((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1));
+			|| ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1));
 	if (ret) {
 		ahci_port_info(ahci_port, "timeout.\n");
 		ret = -ENODEV;
@@ -421,8 +415,6 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port_debug(ahci_port, "status: 0x%08x\n", val);
 
-	ahci_port->ata.ops = &ahci_ops;
-
 	if ((val & 0xf) == 0x03)
 		return 0;
 
@@ -438,65 +430,15 @@ err_alloc:
 	return ret;
 }
 
-static int ahci_host_init(struct ahci_device *ahci)
+static int ahci_port_start(struct ata_port *ata_port)
 {
-	u8 *mmio = (u8 *)ahci->mmio_base;
-	u32 tmp, cap_save;
-	int i, ret;
+	struct ahci_port *ahci_port = container_of(ata_port, struct ahci_port, ata);
+	int ret;
 
-	ahci_debug(ahci, "ahci_host_init: start\n");
+	ret = ahci_init_port(ahci_port);
+	if (ret)
+		return ret;
 
-	cap_save = readl(mmio + HOST_CAP);
-	cap_save &= ((1 << 28) | (1 << 17));
-	cap_save |= (1 << 27);  /* Staggered Spin-up. Not needed. */
-
-	/* global controller reset */
-	tmp = ahci_ioread(ahci, HOST_CTL);
-	if ((tmp & HOST_RESET) == 0)
-		ahci_iowrite_f(ahci, HOST_CTL, tmp | HOST_RESET);
-
-	/*
-	 * reset must complete within 1 second, or
-	 * the hardware should be considered fried.
-	 */
-	ret = wait_on_timeout(SECOND, (readl(mmio + HOST_CTL) & HOST_RESET) == 0);
-	if (ret) {
-		ahci_debug(ahci,"controller reset failed (0x%x)\n", tmp);
-		return -ENODEV;
-	}
-
-	ahci_iowrite_f(ahci, HOST_CTL, HOST_AHCI_EN);
-	ahci_iowrite(ahci, HOST_CAP, cap_save);
-	ahci_iowrite_f(ahci, HOST_PORTS_IMPL, 0xf);
-
-	ahci->cap = ahci_ioread(ahci, HOST_CAP);
-	ahci->port_map = ahci_ioread(ahci, HOST_PORTS_IMPL);
-	ahci->n_ports = (ahci->cap & 0x1f) + 1;
-
-	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
-	      ahci->cap, ahci->port_map, ahci->n_ports);
-
-	for (i = 0; i < ahci->n_ports; i++) {
-		struct ahci_port *ahci_port = &ahci->ports[i];
-
-		ahci_port->num = i;
-		ahci_port->ahci = ahci;
-		ahci_port->ata.dev = ahci->dev;
-		ahci_port->port_mmio = ahci_port_base(mmio, i);
-		ret = ahci_init_port(ahci_port);
-		if (!ret)
-			ahci->link_port_map |= 1 << i;
-	}
-
-	tmp = ahci_ioread(ahci, HOST_CTL);
-	ahci_iowrite(ahci, HOST_CTL, tmp | HOST_IRQ_EN);
-	tmp = ahci_ioread(ahci, HOST_CTL);
-
-	return 0;
-}
-
-static int ahci_port_start(struct ahci_port *ahci_port, u8 port)
-{
 	if (!ahci_link_ok(ahci_port, 1))
 		return -EIO;
 
@@ -505,42 +447,15 @@ static int ahci_port_start(struct ahci_port *ahci_port, u8 port)
 			PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
 			PORT_CMD_START);
 
-	ata_port_register(&ahci_port->ata);
-
 	return 0;
 }
 
-static int __ahci_host_init(struct ahci_device *ahci)
-{
-	int i, rc = 0;
-	u32 linkmap;
-
-	ahci->host_flags = ATA_FLAG_SATA
-				| ATA_FLAG_NO_LEGACY
-				| ATA_FLAG_MMIO
-				| ATA_FLAG_PIO_DMA
-				| ATA_FLAG_NO_ATAPI;
-	ahci->pio_mask = 0x1f;
-	ahci->udma_mask = 0x7f;	/* FIXME: assume to support UDMA6 */
-
-	/* initialize adapter */
-	rc = ahci_host_init(ahci);
-	if (rc)
-		goto err_out;
-
-	linkmap = ahci->link_port_map;
-
-	for (i = 0; i < 32; i++) {
-		if (((linkmap >> i) & 0x01)) {
-			if (ahci_port_start(&ahci->ports[i], i)) {
-				printf("Can not start port %d\n", i);
-				continue;
-			}
-		}
-	}
-err_out:
-	return rc;
-}
+static struct ata_port_operations ahci_ops = {
+	.init = ahci_port_start,
+	.read_id = ahci_read_id,
+	.read = ahci_read,
+	.write = ahci_write,
+};
 
 #if 0
 /*
@@ -645,7 +560,64 @@ void ahci_info(struct device_d *dev)
 
 int ahci_add_host(struct ahci_device *ahci)
 {
-	__ahci_host_init(ahci);
+	u8 *mmio = (u8 *)ahci->mmio_base;
+	u32 tmp, cap_save;
+	int i, ret;
+
+	ahci->host_flags = ATA_FLAG_SATA
+				| ATA_FLAG_NO_LEGACY
+				| ATA_FLAG_MMIO
+				| ATA_FLAG_PIO_DMA
+				| ATA_FLAG_NO_ATAPI;
+	ahci->pio_mask = 0x1f;
+	ahci->udma_mask = 0x7f;	/* FIXME: assume to support UDMA6 */
+
+	ahci_debug(ahci, "ahci_host_init: start\n");
+
+	cap_save = readl(mmio + HOST_CAP);
+	cap_save &= ((1 << 28) | (1 << 17));
+	cap_save |= (1 << 27);  /* Staggered Spin-up. Not needed. */
+
+	/* global controller reset */
+	tmp = ahci_ioread(ahci, HOST_CTL);
+	if ((tmp & HOST_RESET) == 0)
+		ahci_iowrite_f(ahci, HOST_CTL, tmp | HOST_RESET);
+
+	/*
+	 * reset must complete within 1 second, or
+	 * the hardware should be considered fried.
+	 */
+	ret = wait_on_timeout(SECOND, (readl(mmio + HOST_CTL) & HOST_RESET) == 0);
+	if (ret) {
+		ahci_debug(ahci,"controller reset failed (0x%x)\n", tmp);
+		return -ENODEV;
+	}
+
+	ahci_iowrite_f(ahci, HOST_CTL, HOST_AHCI_EN);
+	ahci_iowrite(ahci, HOST_CAP, cap_save);
+	ahci_iowrite_f(ahci, HOST_PORTS_IMPL, 0xf);
+
+	ahci->cap = ahci_ioread(ahci, HOST_CAP);
+	ahci->port_map = ahci_ioread(ahci, HOST_PORTS_IMPL);
+	ahci->n_ports = (ahci->cap & 0x1f) + 1;
+
+	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
+	      ahci->cap, ahci->port_map, ahci->n_ports);
+
+	for (i = 0; i < ahci->n_ports; i++) {
+		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		ahci_port->num = i;
+		ahci_port->ahci = ahci;
+		ahci_port->ata.dev = ahci->dev;
+		ahci_port->port_mmio = ahci_port_base(mmio, i);
+		ahci_port->ata.ops = &ahci_ops;
+		ata_port_register(&ahci_port->ata);
+	}
+
+	tmp = ahci_ioread(ahci, HOST_CTL);
+	ahci_iowrite(ahci, HOST_CTL, tmp | HOST_IRQ_EN);
+	tmp = ahci_ioread(ahci, HOST_CTL);
 
 	return 0;
 }

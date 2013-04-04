@@ -22,16 +22,13 @@
 #include <memory.h>
 #include <asm-generic/memory_layout.h>
 
-int openrisc_mem_malloc_init(void)
+void __noreturn openrisc_start_barebox(void)
 {
-
 	mem_malloc_init((void *)(OPENRISC_SOPC_TEXT_BASE - MALLOC_SIZE),
 			(void *)(OPENRISC_SOPC_TEXT_BASE - 1));
 
-	return 0;
+	start_barebox();
 }
-
-core_initcall(openrisc_mem_malloc_init);
 
 void arch_shutdown(void)
 {

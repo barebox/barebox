@@ -3,7 +3,6 @@ obj-$(CONFIG_CSRC_R4K_LIB) += csrc-r4k.o
 obj-y += lshrdi3.o
 obj-y += ashldi3.o
 obj-y += ashrdi3.o
-obj-y += memory.o
 obj-y += cpu-probe.o
 obj-y += traps.o
 obj-y += genex.o

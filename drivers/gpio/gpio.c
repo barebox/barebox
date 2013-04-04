@@ -1,3 +1,4 @@
+#include <init.h>
 #include <common.h>
 #include <command.h>
 #include <complete.h>
@@ -13,7 +14,15 @@ struct gpio_info {
 	char *label;
 };
 
-static struct gpio_info gpio_desc[ARCH_NR_GPIOS];
+static struct gpio_info *gpio_desc;
+
+static int gpio_desc_alloc(void)
+{
+	gpio_desc = xzalloc(sizeof(struct gpio_info) * ARCH_NR_GPIOS);
+
+	return 0;
+}
+pure_initcall(gpio_desc_alloc);
 
 static int gpio_ensure_requested(struct gpio_info *gi, int gpio)
 {

@@ -18,6 +18,8 @@
 
 #include <common.h>
 #include <string.h>
+#include <memory.h>
+#include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/cpu-features.h>
 #include <asm/mipsregs.h>
@@ -89,6 +91,9 @@ void main_entry(void)
 	}
 
 	trap_init();
+
+	mem_malloc_init((void *)MALLOC_BASE,
+			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
 
 	start_barebox();
 }

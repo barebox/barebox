@@ -150,8 +150,8 @@ _reloc:
 	/*
 	 * Call board_init -- never returns
 	 */
-	movhi   r4, %hi(start_barebox@h)
-	ori     r4, r4, %lo(start_barebox@h)
+	movhi   r4, %hi(nios_start_barebox@h)
+	ori     r4, r4, %lo(nios_start_barebox@h)
 	callr   r4
 
 	/* NEVER RETURNS -- but branch to the _start just

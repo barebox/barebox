@@ -182,10 +182,4 @@ static struct driver_d micrel_switch_driver = {
 	.name  = "ksz8864rmn",
 	.probe = micrel_switch_probe,
 };
-
-static int micrel_switch_init(void)
-{
-	spi_register_driver(&micrel_switch_driver);
-	return 0;
-}
-device_initcall(micrel_switch_init);
+device_spi_driver(micrel_switch_driver);

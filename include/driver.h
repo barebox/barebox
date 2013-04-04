@@ -395,16 +395,21 @@ extern struct bus_type platform_bus;
 
 int platform_driver_register(struct driver_d *drv);
 
-/* device_platform_driver() - Helper macro for drivers that don't do
+/* register_driver_macro() - Helper macro for drivers that don't do
  * anything special in module registration. This eliminates a lot of
  * boilerplate. Each module may only use this macro once.
  */
-#define device_platform_driver(drv)			\
-	static int __init drv ## _register(void)	\
+#define register_driver_macro(level,bus,drv)		\
+	static int __init drv##_register(void)		\
 	{						\
-		return platform_driver_register(&drv);	\
+		return bus##_driver_register(&drv);	\
 	}						\
-	device_initcall(drv ## _register)
+	level##_initcall(drv##_register)
+
+#define device_platform_driver(drv)	\
+	register_driver_macro(device,platform,drv)
+#define console_platform_driver(drv)	\
+	register_driver_macro(console,platform,drv)
 
 int platform_device_register(struct device_d *new_device);
 

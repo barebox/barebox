@@ -875,13 +875,7 @@ static struct driver_d dataflash_driver = {
 	.name  = "mtd_dataflash",
 	.probe = dataflash_probe,
 };
-
-static int dataflash_init(void)
-{
-	spi_register_driver(&dataflash_driver);
-	return 0;
-}
-device_initcall(dataflash_init);
+device_spi_driver(dataflash_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Andrew Victor, David Brownell");

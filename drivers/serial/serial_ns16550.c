@@ -262,15 +262,4 @@ static struct driver_d ns16550_serial_driver = {
 	.name = "ns16550_serial",
 	.probe = ns16550_probe,
 };
-
-/**
- * @brief driver initialization function
- *
- * @return result of platform_driver_register
- */
-static int ns16550_serial_init(void)
-{
-	return platform_driver_register(&ns16550_serial_driver);
-}
-
-console_initcall(ns16550_serial_init);
+console_platform_driver(ns16550_serial_driver);

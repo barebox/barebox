@@ -356,7 +356,7 @@ static struct driver_d mc_i2c_driver = {
 
 static int mc_i2c_init(void)
 {
-	return i2c_register_driver(&mc_i2c_driver);
+	return i2c_driver_register(&mc_i2c_driver);
 }
 device_initcall(mc_i2c_init);
 #endif
@@ -372,11 +372,5 @@ static struct driver_d mc_spi_driver = {
 	.probe = mc_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(mc13892_dt_ids),
 };
-
-static int mc_spi_init(void)
-{
-	return spi_register_driver(&mc_spi_driver);
-}
-
-device_initcall(mc_spi_init);
+device_spi_driver(mc_spi_driver);
 #endif

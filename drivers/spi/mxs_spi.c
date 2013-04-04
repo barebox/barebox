@@ -276,13 +276,7 @@ static struct driver_d mxs_spi_driver = {
 	.name  = "mxs_spi",
 	.probe = mxs_spi_probe,
 };
-
-static int __init mxs_spi_init(void)
-{
-	return platform_driver_register(&mxs_spi_driver);
-}
-
-device_initcall(mxs_spi_init);
+device_platform_driver(mxs_spi_driver);
 
 MODULE_AUTHOR("Denx Software Engeneering and Michael Grzeschik");
 MODULE_DESCRIPTION("MXS SPI driver");

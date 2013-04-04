@@ -418,11 +418,4 @@ static struct driver_d atmel_serial_driver = {
         .name  = "atmel_usart",
         .probe = atmel_serial_probe,
 };
-
-static int atmel_serial_init(void)
-{
-	platform_driver_register(&atmel_serial_driver);
-	return 0;
-}
-
-console_initcall(atmel_serial_init);
+console_platform_driver(atmel_serial_driver);

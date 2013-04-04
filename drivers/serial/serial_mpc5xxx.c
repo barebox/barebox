@@ -166,11 +166,4 @@ static struct driver_d mpc5xxx_serial_driver = {
         .name  = "mpc5xxx_serial",
         .probe = mpc5xxx_serial_probe,
 };
-
-static int mpc5xxx_serial_register(void)
-{
-	platform_driver_register(&mpc5xxx_serial_driver);
-	return 0;
-}
-
-console_initcall(mpc5xxx_serial_register);
+console_platform_driver(mpc5xxx_serial_driver);

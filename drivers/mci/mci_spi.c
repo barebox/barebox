@@ -443,11 +443,4 @@ static struct driver_d spi_mci_driver = {
 	.name	= "spi_mci",
 	.probe	= spi_mci_probe,
 };
-
-static int spi_mci_init_driver(void)
-{
-	spi_register_driver(&spi_mci_driver);
-	return 0;
-}
-
-device_initcall(spi_mci_init_driver);
+device_spi_driver(spi_mci_driver);

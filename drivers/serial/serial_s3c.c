@@ -213,11 +213,4 @@ static struct driver_d s3c_serial_driver = {
 	.probe  = s3c_serial_probe,
 	.remove = s3c_serial_remove,
 };
-
-static int s3c_serial_init(void)
-{
-	platform_driver_register(&s3c_serial_driver);
-	return 0;
-}
-
-console_initcall(s3c_serial_init);
+console_platform_driver(s3c_serial_driver);

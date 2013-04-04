@@ -75,9 +75,4 @@ static struct driver_d serial_omap4_usbboot_driver = {
 	.name = "serial_omap4_usbboot",
 	.probe = serial_omap4_usbboot_probe,
 };
-
-static int serial_omap4_usbboot_init(void)
-{
-	return platform_driver_register(&serial_omap4_usbboot_driver);
-}
-console_initcall(serial_omap4_usbboot_init);
+console_platform_driver(serial_omap4_usbboot_driver);

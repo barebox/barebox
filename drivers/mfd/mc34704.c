@@ -130,7 +130,7 @@ static struct driver_d mc34704_driver = {
 
 static int mc34704_init(void)
 {
-	i2c_register_driver(&mc34704_driver);
+	i2c_driver_register(&mc34704_driver);
 	return 0;
 }
 device_initcall(mc34704_init);

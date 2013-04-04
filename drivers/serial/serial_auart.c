@@ -228,11 +228,4 @@ static struct driver_d auart_serial_driver = {
 	.probe = auart_serial_probe,
 	.remove = auart_serial_remove,
 };
-
-static int auart_serial_init(void)
-{
-	platform_driver_register(&auart_serial_driver);
-	return 0;
-}
-
-console_initcall(auart_serial_init);
+console_platform_driver(auart_serial_driver);

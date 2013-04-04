@@ -731,10 +731,4 @@ static struct driver_d hb_xgmac_driver = {
 	.probe = hb_xgmac_probe,
 	.of_compatible = DRV_OF_COMPAT(xgmac_dt_ids),
 };
-
-static int hb_xgmac_driver_init(void)
-{
-	debug("%s\n", __func__);
-	return platform_driver_register(&hb_xgmac_driver);
-}
-device_initcall(hb_xgmac_driver_init);
+device_platform_driver(hb_xgmac_driver);

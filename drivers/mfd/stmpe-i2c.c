@@ -147,7 +147,7 @@ static struct driver_d stmpe_driver = {
 
 static int stmpe_init(void)
 {
-        i2c_register_driver(&stmpe_driver);
+        i2c_driver_register(&stmpe_driver);
         return 0;
 }
 

@@ -436,11 +436,14 @@ extern struct bus_type spi_bus;
 
 struct spi_master *spi_get_master(int bus);
 
-static inline int spi_register_driver(struct driver_d *drv)
+static inline int spi_driver_register(struct driver_d *drv)
 {
 	drv->bus = &spi_bus;
 	return register_driver(drv);
 }
+
+#define device_spi_driver(drv)	\
+	register_driver_macro(device,spi,drv)
 
 void spi_of_register_slaves(struct spi_master *master, struct device_node *node);
 

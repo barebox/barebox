@@ -951,12 +951,7 @@ static struct driver_d m25p80_driver = {
 	.name	= "m25p80",
 	.probe	= m25p_probe,
 };
-
-static int m25p80_init(void)
-{
-	return spi_register_driver(&m25p80_driver);
-}
-device_initcall(m25p80_init);
+device_spi_driver(m25p80_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Mike Lavender");

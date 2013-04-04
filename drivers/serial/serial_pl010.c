@@ -157,12 +157,4 @@ static struct driver_d pl010_driver = {
 	.name  = "pl010_serial",
 	.probe = pl010_probe,
 };
-
-static int pl010_init(void)
-{
-	platform_driver_register(&pl010_driver);
-
-	return 0;
-}
-
-console_initcall(pl010_init);
+console_platform_driver(pl010_driver);

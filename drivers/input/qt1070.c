@@ -291,7 +291,7 @@ static struct driver_d qt1070_driver = {
 
 static int qt1070_init(void)
 {
-	i2c_register_driver(&qt1070_driver);
+	i2c_driver_register(&qt1070_driver);
 	return 0;
 }
 device_initcall(qt1070_init);

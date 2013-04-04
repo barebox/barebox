@@ -9,6 +9,7 @@ obj-$(CONFIG_ARCH_IMX51) += imx51.o iomux-v3.o imx5.o clk-imx5.o
 obj-$(CONFIG_ARCH_IMX53) += imx53.o iomux-v3.o imx5.o clk-imx5.o esdctl-v4.o
 pbl-$(CONFIG_ARCH_IMX53) += imx53.o imx5.o esdctl-v4.o
 obj-$(CONFIG_ARCH_IMX6) += imx6.o iomux-v3.o usb-imx6.o clk-imx6.o
+lwl-$(CONFIG_ARCH_IMX6) += imx6-mmdc.o
 obj-$(CONFIG_IMX_IIM)	+= iim.o
 obj-$(CONFIG_NAND_IMX) += nand.o
 lwl-$(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND) += external-nand-boot.o

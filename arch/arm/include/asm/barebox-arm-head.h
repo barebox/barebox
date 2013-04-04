@@ -33,6 +33,13 @@ static inline void arm_cpu_lowlevel_init(void)
 	set_cr(r);
 }
 
+/*
+ * 32 bytes at this offset is reserved in the barebox head for board/SoC
+ * usage
+ */
+#define ARM_HEAD_SPARE_OFS	0x30
+#define ARM_HEAD_SPARE_MARKER	0x55555555
+
 #ifdef CONFIG_HAVE_MACH_ARM_HEAD
 #include <mach/barebox-arm-head.h>
 #else
@@ -64,6 +71,9 @@ static inline void barebox_arm_head(void)
 							 * barebox can skip relocation
 							 */
 		".word _barebox_image_size\n"		/* image size to copy */
+		".rept 8\n"
+		".word 0x55555555\n"
+		".endr\n"
 	);
 }
 #endif

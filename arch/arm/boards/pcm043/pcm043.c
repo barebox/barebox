@@ -45,6 +45,7 @@
 #include <mach/iomux-mx35.h>
 #include <mach/devices-imx35.h>
 #include <mach/generic.h>
+#include <mach/bbu.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
@@ -116,6 +117,7 @@ static int imx35_devices_init(void)
 {
 	uint32_t reg;
 	char *envstr;
+	unsigned long bbu_nand_flags = 0;
 
 	/* CS0: Nor Flash */
 	imx35_setup_weimcs(5, 0x22C0CF00, 0x75000D01, 0x00000900);
@@ -147,6 +149,7 @@ static int imx35_devices_init(void)
 		devfs_add_partition("nand0", SZ_512K, SZ_256K, DEVFS_PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
 		envstr = "NAND";
+		bbu_nand_flags = BBU_HANDLER_FLAG_DEFAULT;
 		break;
 	case BOOTSOURCE_NOR:
 	default:
@@ -163,6 +166,9 @@ static int imx35_devices_init(void)
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM043);
+
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.barebox",
+			bbu_nand_flags);
 
 	return 0;
 }

@@ -29,14 +29,15 @@
 #include <fcntl.h>
 #include <libgen.h>
 
-#define NAND_ADD (1 << 0)
-#define NAND_DEL (1 << 1)
-#define NAND_MARKBAD (1 << 2)
+#define NAND_ADD	1
+#define NAND_DEL	2
+#define NAND_MARKBAD	3
 
 static int do_nand(int argc, char *argv[])
 {
 	int opt;
-	int command = 0, badblock = 0;
+	int command = 0;
+	loff_t badblock = 0;
 
 	while((opt = getopt(argc, argv, "adb:")) > 0) {
 		if (command) {
@@ -53,11 +54,14 @@ static int do_nand(int argc, char *argv[])
 			break;
 		case 'b':
 			command = NAND_MARKBAD;
-			badblock = simple_strtoul(optarg, NULL, 0);
+			badblock = strtoull_suffix(optarg, NULL, 0);
 		}
 	}
 
-	if (command & NAND_ADD) {
+	if (optind >= argc)
+		return COMMAND_ERROR_USAGE;
+
+	if (command == NAND_ADD) {
 		while (optind < argc) {
 			if (dev_add_bb_dev(basename(argv[optind]), NULL))
 				return 1;
@@ -66,33 +70,31 @@ static int do_nand(int argc, char *argv[])
 		}
 	}
 
-	if (command & NAND_DEL) {
+	if (command == NAND_DEL) {
 		while (optind < argc) {
 			dev_remove_bb_dev(basename(argv[optind]));
 			optind++;
 		}
 	}
 
-	if (command & NAND_MARKBAD) {
-		if (optind < argc) {
-			int ret = 0, fd;
-			loff_t __badblock = badblock;
+	if (command == NAND_MARKBAD) {
+		int ret = 0, fd;
 
-			printf("marking block at 0x%08x on %s as bad\n", badblock, argv[optind]);
+		printf("marking block at 0x%08llx on %s as bad\n",
+				badblock, argv[optind]);
 
-			fd = open(argv[optind], O_RDWR);
-			if (fd < 0) {
-				perror("open");
-				return 1;
-			}
-
-			ret = ioctl(fd, MEMSETBADBLOCK, &__badblock);
-			if (ret)
-				perror("ioctl");
-
-			close(fd);
-			return ret;
+		fd = open(argv[optind], O_RDWR);
+		if (fd < 0) {
+			perror("open");
+			return 1;
 		}
+
+		ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
+		if (ret)
+			perror("ioctl");
+
+		close(fd);
+		return ret;
 	}
 
 	return 0;

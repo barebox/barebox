@@ -48,10 +48,24 @@ config NAND_BBT
 	  Say y here to include support for bad block tables. This speeds
 	  up the process of checking for bad blocks
 
+config NAND_ALLOW_ERASE_BAD
+	bool
+	depends on MTD_WRITE
+	prompt "Add device parameter to allow erasing bad blocks"
+	help
+	  This adds a 'erasebad' device parameter to nand devices. When set
+	  to '1' it will be allowed to erase bad blocks. This is a potientially
+	  dangerous operation, so if unsure say no to this option.
+
 config NAND_IMX
 	bool
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX
+
+config NAND_IMX_BBM
+	bool
+	prompt "i.MX NAND flash bbt creation command"
+	depends on NAND_IMX
 
 config NAND_MXS
 	bool

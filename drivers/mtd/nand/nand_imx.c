@@ -1068,7 +1068,7 @@ static uint8_t bbt_pattern[] = { 'B', 'b', 't', '0' };
 static uint8_t mirror_pattern[] = { '1', 't', 'b', 'B' };
 
 static struct nand_bbt_descr bbt_main_descr = {
-	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+	.options = NAND_BBT_LASTBLOCK
 		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
 	.offs = 0,
 	.len = 4,
@@ -1078,7 +1078,7 @@ static struct nand_bbt_descr bbt_main_descr = {
 };
 
 static struct nand_bbt_descr bbt_mirror_descr = {
-	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+	.options = NAND_BBT_LASTBLOCK
 		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
 	.offs = 0,
 	.len = 4,
@@ -1179,6 +1179,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	mtd = &host->mtd;
 	mtd->priv = this;
 	mtd->parent = dev;
+	mtd->name = "imx_nand";
 
 	/* 50 us command delay time */
 	this->chip_delay = 5;
@@ -1192,13 +1193,6 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->write_buf = imx_nand_write_buf;
 	this->read_buf = imx_nand_read_buf;
 	this->verify_buf = imx_nand_verify_buf;
-#if 0
-	host->clk = clk_get(&pdev->dev, "nfc_clk");
-	if (IS_ERR(host->clk))
-		goto eclk;
-
-	clk_enable(host->clk);
-#endif
 
 	if (pdata->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
@@ -1227,7 +1221,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->bbt_td = &bbt_main_descr;
 		this->bbt_md = &bbt_mirror_descr;
 		/* update flash based bbt */
-		this->options |= NAND_USE_FLASH_BBT;
+		this->bbt_options |= NAND_BBT_USE_FLASH;
 	}
 
 	/* first scan to find the device and get the page size */
@@ -1242,6 +1236,10 @@ static int __init imxnd_probe(struct device_d *dev)
 	imx_nand_set_layout(mtd->writesize, pdata->width == 2 ? 16 : 8);
 
 	if (mtd->writesize >= 2048) {
+		if (!pdata->flash_bbt)
+			dev_warn(dev, "2k or 4k flash detected without flash_bbt. "
+					"You will loose factory bad block markers!\n");
+
 		if (mtd->writesize == 2048)
 			this->ecc.layout = oob_largepage;
 		else
@@ -1250,6 +1248,9 @@ static int __init imxnd_probe(struct device_d *dev)
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(64), host->regs + NFC_V2_SPAS);
 	} else {
+		bbt_main_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+		bbt_mirror_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(16), host->regs + NFC_V2_SPAS);
 	}
@@ -1260,7 +1261,14 @@ static int __init imxnd_probe(struct device_d *dev)
 		goto escan;
 	}
 
-	add_mtd_device(mtd, "nand");
+	if (pdata->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
+		dev_warn(dev, "no BBT found. create one using the imx_nand_bbm command\n");
+	} else {
+		bbt_main_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+		bbt_mirror_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+	}
+
+	add_mtd_nand_device(mtd, "nand");
 
 	dev->priv = host;
 

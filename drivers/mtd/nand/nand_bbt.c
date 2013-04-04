@@ -1176,12 +1176,12 @@ int nand_default_bbt(struct mtd_info *mtd)
 			this->bbt_td = &bbt_main_descr;
 			this->bbt_md = &bbt_mirror_descr;
 		}
-		this->options |= NAND_USE_FLASH_BBT;
+		this->bbt_options |= NAND_BBT_USE_FLASH;
 		return nand_scan_bbt(mtd, &agand_flashbased);
 	}
 
 	/* Is a flash based bad block table requested ? */
-	if (this->options & NAND_USE_FLASH_BBT) {
+	if (this->bbt_options & NAND_BBT_USE_FLASH) {
 		/* Use the default pattern descriptors */
 		if (!this->bbt_td) {
 			this->bbt_td = &bbt_main_descr;

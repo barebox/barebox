@@ -205,6 +205,9 @@ struct mtd_info {
 
 	struct param_d param_size;
 	char *size_str;
+
+	/* If true erasing bad blocks is allowed, this is set via a device parameter */
+	bool allow_erasebad;
 };
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);

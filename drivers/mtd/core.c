@@ -112,7 +112,11 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	while (count > 0) {
 		dev_dbg(cdev->dev, "erase %d %d\n", erase.addr, erase.len);
 
-		ret = mtd_block_isbad(mtd, erase.addr);
+		if (!mtd->allow_erasebad)
+			ret = mtd_block_isbad(mtd, erase.addr);
+		else
+			ret = 0;
+
 		if (ret > 0) {
 			printf("Skipping bad block at 0x%08x\n", erase.addr);
 		} else {

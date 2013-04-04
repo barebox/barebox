@@ -1672,4 +1672,54 @@ EXPORT_SYMBOL(nand_scan_ident);
 EXPORT_SYMBOL(nand_scan_tail);
 EXPORT_SYMBOL(nand_release);
 
+static int mtd_set_erasebad(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	int erasebad;
+
+	erasebad = simple_strtoul(val, NULL, 0);
+
+	if (erasebad && !mtd->allow_erasebad)
+		dev_warn(dev, "Allowing to erase bad blocks. This may be dangerous!\n");
+
+	mtd->allow_erasebad = erasebad ? true : false;
+
+	return 0;
+}
+
+static const char *mtd_get_bbt_type(struct device_d *dev, struct param_d *p)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct nand_chip *chip = mtd->priv;
+	const char *str;
+
+	if (!chip->bbt)
+		str = "none";
+	else if ((chip->bbt_td && chip->bbt_td->pages[0] != -1) ||
+				(chip->bbt_md && chip->bbt_md->pages[0] != -1))
+		str = "flashbased";
+	else
+		str = "memorybased";
+
+	return str;
+}
+
+int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
+{
+	int ret;
+
+	ret = add_mtd_device(mtd, devname);
+	if (ret)
+		return ret;
+
+	if (IS_ENABLED(CONFIG_NAND_ALLOW_ERASE_BAD))
+		dev_add_param(&mtd->class_dev, "erasebad", mtd_set_erasebad,
+				NULL, 0);
+
+	dev_add_param(&mtd->class_dev, "bbt", NULL, mtd_get_bbt_type, 0);
+
+	return ret;
+}
+
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

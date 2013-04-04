@@ -1196,7 +1196,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	if (host->board->on_flash_bbt) {
 		printk(KERN_INFO "atmel_nand: Use On Flash BBT\n");
-		nand_chip->options |= NAND_USE_FLASH_BBT;
+		nand_chip->bbt_options |= NAND_BBT_USE_FLASH;
 	}
 
 
@@ -1223,7 +1223,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		goto err_scan_tail;
 	}
 
-	add_mtd_device(mtd, "nand");
+	add_mtd_nand_device(mtd, "nand");
 
 	if (!res)
 		return res;

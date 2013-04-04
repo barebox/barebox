@@ -16,7 +16,7 @@
 #include <partition.h>
 #include <sizes.h>
 #include <io.h>
-#include <libfdt.h>
+#include <of.h>
 
 #define FIRMWARE_DTB_BASE	0x1000
 
@@ -24,8 +24,9 @@
 
 struct fdt_header *fdt = NULL;
 
-static int hb_fixup(struct fdt_header *fdt)
+static int hb_fixup(struct device_node *root)
 {
+	struct device_node *node;
 	u32 reg = readl(sregs_base + HB_SREG_A9_PWRDOM_DATA);
 	u32 *opp_table = (u32 *)HB_SYSRAM_OPP_TABLE_BASE;
 	u32 dtb_table[2*10];
@@ -33,15 +34,27 @@ static int hb_fixup(struct fdt_header *fdt)
 	u32 num_opps;
 	__be32 latency;
 
-	if (!(reg & HB_PWRDOM_STAT_SATA))
-		do_fixup_by_compatible_string(fdt, "calxeda,hb-ahci", "status",
-					           "disabled", 1);
+	if (!(reg & HB_PWRDOM_STAT_SATA)) {
+		of_tree_for_each_node(node, root) {
+			if (of_device_is_compatible(node, "calxeda,hb-ahci"))
+				of_set_property(node, "status", "disabled",
+						sizeof("disabled"), 1);
+		}
+	}
 
-	if (!(reg & HB_PWRDOM_STAT_EMMC))
-		do_fixup_by_compatible_string(fdt, "calxeda,hb-sdhci", "status",
-					           "disabled", 1);
+	if (!(reg & HB_PWRDOM_STAT_EMMC)) {
+		of_tree_for_each_node(node, root) {
+			if (of_device_is_compatible(node, "calxeda,hb-sdhci"))
+				of_set_property(node, "status", "disabled",
+						sizeof("disabled"), 1);
+		}
+	}
 
 	if ((opp_table[0] >> 16) != HB_OPP_VERSION)
+		return 0;
+
+	node = of_find_node_by_path(root, "/cpus/cpu@0");
+	if (!node)
 		return 0;
 
 	num_opps = opp_table[0] & 0xff;
@@ -53,30 +66,30 @@ static int hb_fixup(struct fdt_header *fdt)
 
 	latency = cpu_to_be32(opp_table[1]);
 
-	fdt_find_and_setprop(fdt, "/cpus/cpu@0", "transition-latency",
-				  &latency, 4, 1);
-	fdt_find_and_setprop(fdt, "/cpus/cpu@0", "operating-points",
-				  dtb_table, 8 * num_opps, 1);
+	of_set_property(node, "transition-latency", &latency, 4, 1);
+	of_set_property(node, "operating-points", dtb_table, 8 * num_opps, 1);
 
 	return 0;
 }
 
 static int highbank_mem_init(void)
 {
-	struct device_node *np;
+	struct device_node *root, *np;
 	int ret;
 
 	/* load by the firmware at 0x1000 */
 	fdt = IOMEM(FIRMWARE_DTB_BASE);
 
-	ret = of_unflatten_dtb(fdt);
-	if (ret) {
+	root = of_unflatten_dtb(NULL, fdt);
+	if (!root) {
 		pr_warn("no dtb found at 0x1000 use default configuration\n");
 		fdt = NULL;
 		goto not_found;
 	}
 
-	np = of_find_node_by_path("/memory");
+	of_set_root_node(root);
+
+	np = of_find_node_by_path(root, "/memory");
 	if (!np) {
 		pr_warn("no memory node use default configuration\n");
 		goto not_found;
@@ -109,8 +122,8 @@ static int highbank_devices_init(void)
 		highbank_register_xgmac(0);
 		highbank_register_xgmac(1);
 	} else {
-		fdt = of_get_fixed_tree(fdt);
-		add_mem_device("dtb", (unsigned long)fdt, fdt_totalsize(fdt),
+		fdt = of_get_fixed_tree(NULL);
+		add_mem_device("dtb", (unsigned long)fdt, be32_to_cpu(fdt->totalsize),
 		       IORESOURCE_MEM_WRITEABLE);
 		devfs_add_partition("ram0", FIRMWARE_DTB_BASE, SZ_64K, DEVFS_PARTITION_FIXED, "firmware-dtb");
 	}

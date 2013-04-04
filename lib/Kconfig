@@ -22,13 +22,6 @@ config PROCESS_ESCAPE_SEQUENCE
 
 source lib/lzo/Kconfig
 
-config FDT
-	bool
-
-config OFTREE
-	select FDT
-	bool
-
 config BCH
 	bool
 

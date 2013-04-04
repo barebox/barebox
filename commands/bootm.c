@@ -34,7 +34,6 @@
 #include <errno.h>
 #include <boot.h>
 #include <of.h>
-#include <libfdt.h>
 #include <rtc.h>
 #include <init.h>
 #include <of.h>
@@ -138,7 +137,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 static int bootm_open_oftree(struct image_data *data, const char *oftree, int num)
 {
 	enum filetype ft;
-	struct fdt_header *fdt, *fixfdt;
+	struct fdt_header *fdt;
 	size_t size;
 
 	printf("Loading devicetree from '%s'\n", oftree);
@@ -187,16 +186,13 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 				file_type_to_string(ft));
 	}
 
-	fixfdt = of_get_fixed_tree(fdt);
-	if (!fixfdt)
+	data->of_root_node = of_unflatten_dtb(NULL, fdt);
+	if (!data->of_root_node) {
+		pr_err("unable to unflatten devicetree\n");
 		return -EINVAL;
+	}
 
 	free(fdt);
-
-	if (bootm_verbose(data) > 1)
-		fdt_print(fixfdt, "/");
-
-	data->oftree = fixfdt;
 
 	return 0;
 }
@@ -401,10 +397,14 @@ static int do_bootm(int argc, char *argv[])
 		if (ret)
 			goto err_out;
 	} else {
-		data.oftree = of_get_fixed_tree(NULL);
-		if (bootm_verbose(&data) && data.oftree)
+		data.of_root_node = of_get_root_node();
+		if (bootm_verbose(&data) && data.of_root_node)
 			printf("using internal devicetree\n");
 	}
+
+
+	if (bootm_verbose(&data) > 1 && data.of_root_node)
+		of_print_nodes(data.of_root_node, 0);
 #endif
 	if (data.os_address == UIMAGE_SOME_ADDRESS)
 		data.os_address = UIMAGE_INVALID_ADDRESS;

@@ -24,7 +24,6 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
-#include <libfdt.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -39,6 +38,7 @@ static int do_of_node(int argc, char *argv[])
 	int create = 0;
 	char *path = NULL;
 	struct device_node *node = NULL;
+	struct device_node *root;
 
 	while ((opt = getopt(argc, argv, "cd")) > 0) {
 		switch (opt) {
@@ -53,31 +53,26 @@ static int do_of_node(int argc, char *argv[])
 		}
 	}
 
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
+
 	if (optind < argc) {
 		path = argv[optind];
 	}
 
-	if (create) {
-		char *name;
+	root = of_get_root_node();
+	if (!root) {
+		printf("root node not set\n");
+		return -ENOENT;
+	}
 
+	if (create) {
 		if (!path)
 			return COMMAND_ERROR_USAGE;
 
-		name = xstrdup(basename(path));
-		path = dirname(path);
-
-		node = of_find_node_by_path(path);
-		if (!node) {
-			printf("Cannot find nodepath %s\n", path);
-			free(name);
-			return -ENOENT;
-		}
-
-		debug("create node \"%s\" \"%s\"\n", path, name);
-
-		of_new_node(node, name);
-
-		free(name);
+		node = of_create_node(root, path);
+		if (!node)
+			return -EINVAL;
 
 		return 0;
 	}
@@ -86,7 +81,7 @@ static int do_of_node(int argc, char *argv[])
 		if (!path)
 			return COMMAND_ERROR_USAGE;
 
-		node = of_find_node_by_path(path);
+		node = of_find_node_by_path(root, path);
 		if (!node) {
 			printf("Cannot find nodepath %s\n", path);
 			return -ENOENT;

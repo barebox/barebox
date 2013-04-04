@@ -30,8 +30,8 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
-#include <libfdt.h>
 #include <linux/ctype.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <getopt.h>
@@ -52,6 +52,7 @@ static int do_oftree(int argc, char *argv[])
 	int save = 0;
 	int free_of = 0;
 	int ret;
+	struct device_node *n, *root;
 
 	while ((opt = getopt(argc, argv, "dpfn:ls")) > 0) {
 		switch (opt) {
@@ -62,7 +63,7 @@ static int do_oftree(int argc, char *argv[])
 			dump = 1;
 			break;
 		case 'p':
-			if (IS_ENABLED(CONFIG_CMD_OFTREE_PROBE)) {
+			if (IS_ENABLED(CONFIG_OFDEVICE)) {
 				probe = 1;
 			} else {
 				printf("oftree device probe support disabled\n");
@@ -112,7 +113,7 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		ret = write_file(file, fdt, fdt_totalsize(fdt));
+		ret = write_file(file, fdt, fdt32_to_cpu(fdt->totalsize));
 
 		goto out;
 	}
@@ -135,7 +136,17 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		ret = of_unflatten_dtb(fdt);
+		n = of_get_root_node();
+
+		root = of_unflatten_dtb(n, fdt);
+		if (IS_ERR(root))
+			ret = PTR_ERR(root);
+		else
+			ret = 0;
+
+		if (!n)
+			ret = of_set_root_node(root);
+
 		if (ret) {
 			printf("parse oftree: %s\n", strerror(-ret));
 			goto out;
@@ -144,9 +155,24 @@ static int do_oftree(int argc, char *argv[])
 
 	if (dump) {
 		if (fdt) {
-			ret = fdt_print(fdt, node);
+			root = of_unflatten_dtb(NULL, fdt);
+			if (IS_ERR(root)) {
+				printf("parse oftree: %s\n", strerror(-PTR_ERR(root)));
+				ret = 1;
+				goto out;
+			}
+			of_print_nodes(root, 0);
+			of_free(root);
 		} else {
-			struct device_node *n = of_find_node_by_path(node);
+			struct device_node *root, *n;
+
+			root = of_get_root_node();
+			if (!root) {
+				ret = -ENOENT;
+				goto out;
+			}
+
+			n = of_find_node_by_path(root, node);
 
 			if (!n) {
 				ret = -ENOENT;
@@ -154,9 +180,9 @@ static int do_oftree(int argc, char *argv[])
 			}
 
 			of_print_nodes(n, 0);
-
-			ret = 0;
 		}
+
+		ret = 0;
 
 		goto out;
 	}

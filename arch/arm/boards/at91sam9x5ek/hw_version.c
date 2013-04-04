@@ -20,7 +20,6 @@
 #include <libbb.h>
 #include <asm/armlinux.h>
 #include <of.h>
-#include <libfdt.h>
 
 #include "hw_version.h"
 
@@ -232,26 +231,25 @@ static void at91sam9x5ek_devices_detect_one(const char *name)
 
 #define NODE_NAME_LEN  128
 
-static int cm_cogent_fixup(struct fdt_header *fdt)
+static int cm_cogent_fixup(struct device_node *root)
 {
-	int off, ret;
-	char node_name[NODE_NAME_LEN];
+	int ret;
+	struct device_node *node;
 
-	off = fdt_node_offset_by_compatible(fdt, -1, "atmel,hsmci");
+	of_tree_for_each_node(node, root) {
+		struct device_node *slotnode;
 
-	while (off != -FDT_ERR_NOTFOUND) {
-		off = fdt_subnode_offset(fdt, off, "slot");
-		fdt_get_path(fdt, off, node_name, NODE_NAME_LEN);
-		ret = fdt_setprop(fdt, off, "broken-cd", NULL, 0);
-		if (ret < 0) {
+		if (!of_device_is_compatible(node, "atmel,hsmci"))
+			continue;
+
+		slotnode = of_find_child_by_name(node, "slot");
+		if (!slotnode)
+			continue;
+
+		ret = of_set_property(slotnode, "broken-cd", NULL, 0, 1);
+		if (ret)
 			pr_err("error %d while adding broken-cd property to node %s\n",
-				ret, node_name);
-			return ret;
-		} else {
-			pr_debug("add broken-cd property to node %s\n", node_name);
-		}
-
-		off = fdt_node_offset_by_compatible(fdt, off, "atmel,hsmci");
+				ret, slotnode->name);
 	}
 
 	return 0;

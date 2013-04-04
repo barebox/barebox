@@ -33,3 +33,5 @@ obj-$(CONFIG_BAREBOXENV_TARGET)	+= bareboxenv-target
 
 scripts/bareboxenv-target: scripts/bareboxenv.c FORCE
 	$(call if_changed_dep,csingle)
+
+subdir-$(CONFIG_DTC)         += dtc

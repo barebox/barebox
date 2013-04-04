@@ -24,7 +24,6 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
-#include <libfdt.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -176,7 +175,7 @@ static int do_of_property(int argc, char *argv[])
 	int set = 0;
 	int ret;
 	char *path = NULL, *propname = NULL;
-	struct device_node *node = NULL;
+	struct device_node *root, *node = NULL;
 	struct property *pp = NULL;
 
 	while ((opt = getopt(argc, argv, "ds")) > 0) {
@@ -192,9 +191,18 @@ static int do_of_property(int argc, char *argv[])
 		}
 	}
 
+	if (optind == argc)
+		return COMMAND_ERROR_USAGE;
+
+	root = of_get_root_node();
+	if (!root) {
+		printf("root node not set\n");
+		return -ENOENT;
+	}
+
 	if (optind < argc) {
 		path = argv[optind];
-		node = of_find_node_by_path(path);
+		node = of_find_node_by_path(root, path);
 		if (!node) {
 			printf("Cannot find nodepath %s\n", path);
 			return -ENOENT;
@@ -246,9 +254,15 @@ static int do_of_property(int argc, char *argv[])
 
 		if (pp) {
 			free(pp->value);
+
 			/* limit property data to the actual size */
-			data = xrealloc(data, len);
-			pp->value = data;
+			if (len) {
+				pp->value = xrealloc(data, len);
+			} else {
+				pp->value = NULL;
+				free(data);
+			}
+
 			pp->length = len;
 		} else {
 			pp = of_new_property(node, propname, data, len);

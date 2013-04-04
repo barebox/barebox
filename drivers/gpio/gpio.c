@@ -189,6 +189,11 @@ int gpiochip_add(struct gpio_chip *chip)
 	return 0;
 }
 
+void gpiochip_remove(struct gpio_chip *chip)
+{
+	list_del(&chip->list);
+}
+
 int gpio_get_num(struct device_d *dev, int gpio)
 {
 	struct gpio_chip *chip;

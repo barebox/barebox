@@ -24,6 +24,11 @@ config MFD_STMPE
 	depends on I2C
 	bool "STMPE-i2c driver"
 
+config MFD_SYSCON
+	bool "System Controller Register"
+	help
+	  Select this option to enable accessing system control registers
+
 config MFD_TWLCORE
 	bool
 

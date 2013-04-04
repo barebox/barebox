@@ -9,103 +9,119 @@
 
 #include <common.h>
 #include <init.h>
-#include <clock.h>
+#include <sizes.h>
 #include <asm/io.h>
+#include <linux/clk.h>
 #include <linux/clkdev.h>
 
 #include <mach/clps711x.h>
 
-static struct clk {
-	unsigned long	rate;
-} uart_clk, bus_clk;
+#define CLPS711X_OSC_FREQ	3686400
+#define CLPS711X_EXT_FREQ	13000000
 
-static uint64_t clocksource_read(void)
-{
-	return ~readw(TC2D);
-}
-
-static struct clocksource cs = {
-	.read	= clocksource_read,
-	.mask	= CLOCKSOURCE_MASK(16),
+enum clps711x_clks {
+	dummy, cpu, bus, uart, timer_hf, timer_lf, tc1, tc2, clk_max
 };
 
-unsigned long clk_get_rate(struct clk *clk)
-{
-	return clk->rate;
-}
-EXPORT_SYMBOL(clk_get_rate);
+static struct {
+	const char	*name;
+	struct clk	*clk;
+} clks[clk_max] = {
+	{ "dummy", },
+	{ "cpu", },
+	{ "bus", },
+	{ "uart", },
+	{ "timer_hf", },
+	{ "timer_lf", },
+	{ "tc1", },
+	{ "tc2", },
+};
 
-int clk_enable(struct clk *clk)
-{
-	/* Do nothing */
-	return 0;
-}
-EXPORT_SYMBOL(clk_enable);
+static const char *tc_sel_clks[] = {
+	"timer_lf",
+	"timer_hf",
+};
 
-void clk_disable(struct clk *clk)
+static __init void clps711x_clk_register(enum clps711x_clks id)
 {
-	/* Do nothing */
+	clk_register_clkdev(clks[id].clk, clks[id].name, NULL);
 }
-EXPORT_SYMBOL(clk_disable);
 
-static int clocks_init(void)
+static __init int clps711x_clk_init(void)
 {
-	int osc, ext, pll, cpu, timer;
+	unsigned int f_cpu, f_bus, f_uart, f_timer_hf, f_timer_lf, pll;
 	u32 tmp;
-
-	osc = 3686400;
-	ext = 13000000;
 
 	tmp = readl(PLLR) >> 24;
 	if (tmp)
-		pll = (osc * tmp) / 2;
+		pll = (CLPS711X_OSC_FREQ * tmp) / 2;
 	else
 		pll = 73728000; /* Default value for old CPUs */
 
 	tmp = readl(SYSFLG2);
 	if (tmp & SYSFLG2_CKMODE) {
-		cpu = ext;
-		bus_clk.rate = cpu;
+		f_cpu = CLPS711X_EXT_FREQ;
+		f_bus = CLPS711X_EXT_FREQ;
 	} else {
-		cpu = pll;
-		if (cpu >= 36864000)
-			bus_clk.rate = cpu / 2;
+		f_cpu = pll;
+		if (f_cpu >= 36864000)
+			f_bus = f_cpu / 2;
 		else
-			bus_clk.rate = 36864000 / 2;
+			f_bus = 36864000 / 2;
 	}
 
-	uart_clk.rate = bus_clk.rate / 10;
+	f_uart = f_bus / 10;
 
 	if (tmp & SYSFLG2_CKMODE) {
 		tmp = readw(SYSCON2);
 		if (tmp & SYSCON2_OSTB)
-			timer = ext / 26;
+			f_timer_hf = DIV_ROUND_CLOSEST(CLPS711X_EXT_FREQ, 26);
 		else
-			timer = 541440;
+			f_timer_hf = DIV_ROUND_CLOSEST(CLPS711X_EXT_FREQ, 24);
 	} else
-		timer = cpu / 144;
+		f_timer_hf = DIV_ROUND_CLOSEST(f_cpu, 144);
 
+	f_timer_lf = DIV_ROUND_CLOSEST(f_timer_hf, 256);
+
+	/* Turn timers in free running mode */
 	tmp = readl(SYSCON1);
-	tmp &= ~SYSCON1_TC2M;	/* Free running mode */
-	tmp |= SYSCON1_TC2S;	/* High frequency source */
+	tmp &= ~(SYSCON1_TC1M | SYSCON1_TC2M);
 	writel(tmp, SYSCON1);
 
-	clocks_calc_mult_shift(&cs.mult, &cs.shift, timer, NSEC_PER_SEC, 10);
+	clks[dummy].clk = clk_fixed(clks[dummy].name, 0);
+	clks[cpu].clk = clk_fixed(clks[cpu].name, f_cpu);
+	clks[bus].clk = clk_fixed(clks[bus].name, f_bus);
+	clks[uart].clk = clk_fixed(clks[uart].name, f_uart);
+	clks[timer_hf].clk = clk_fixed(clks[timer_hf].name, f_timer_hf);
+	clks[timer_lf].clk = clk_fixed(clks[timer_lf].name, f_timer_lf);
+	clks[tc1].clk = clk_mux(clks[tc1].name, IOMEM(SYSCON1), 5, 1,
+				tc_sel_clks, ARRAY_SIZE(tc_sel_clks));
+	clks[tc2].clk = clk_mux(clks[tc2].name, IOMEM(SYSCON1), 7, 1,
+				tc_sel_clks, ARRAY_SIZE(tc_sel_clks));
 
-	return init_clock(&cs);
-}
-core_initcall(clocks_init);
-
-static struct clk_lookup clocks_lookups[] = {
-	CLKDEV_CON_ID("bus", &bus_clk),
-	CLKDEV_DEV_ID("clps711x_serial0", &uart_clk),
-	CLKDEV_DEV_ID("clps711x_serial1", &uart_clk),
-};
-
-static int clkdev_init(void)
-{
-	clkdev_add_table(clocks_lookups, ARRAY_SIZE(clocks_lookups));
+	clps711x_clk_register(dummy);
+	clps711x_clk_register(cpu);
+	clps711x_clk_register(bus);
+	clps711x_clk_register(uart);
+	clps711x_clk_register(timer_hf);
+	clps711x_clk_register(timer_lf);
+	clps711x_clk_register(tc1);
+	clps711x_clk_register(tc2);
 
 	return 0;
 }
-postcore_initcall(clkdev_init);
+postcore_initcall(clps711x_clk_init);
+
+static const char *clps711x_clocksrc_name = "clps711x-cs";
+
+static __init int clps711x_core_init(void)
+{
+	/* Using TC2 in low frequency mode as clocksource */
+	clk_set_parent(clks[tc2].clk, clks[timer_lf].clk);
+	clk_add_alias(NULL, clps711x_clocksrc_name, "tc2", NULL);
+	add_generic_device(clps711x_clocksrc_name, DEVICE_ID_SINGLE, NULL,
+			   TC2D, SZ_2, IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+coredevice_initcall(clps711x_core_init);

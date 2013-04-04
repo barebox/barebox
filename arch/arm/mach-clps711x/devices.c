@@ -14,6 +14,8 @@
 #include <asm/io.h>
 #include <asm/memory.h>
 
+#include <linux/clk.h>
+
 #include <mach/clps711x.h>
 
 static int clps711x_mem_init(void)
@@ -42,68 +44,92 @@ void clps711x_setup_memcfg(int bank, u32 val)
 	case 0 ... 3:
 		_clps711x_setup_memcfg(bank, MEMCFG1, val);
 		break;
-	case 4 ... 7:
+	case 4 ... 5:
 		_clps711x_setup_memcfg(bank - 4, MEMCFG2, val);
 		break;
 	}
 }
 
 static struct resource uart0_resources[] = {
-	{
-		.start	= UBRLCR1,
-		.end	= UBRLCR1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSCON1,
-		.end	= SYSCON1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSFLG1,
-		.end	= SYSFLG1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= UARTDR1,
-		.end	= UARTDR1,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(UBRLCR1, SZ_4),
+	DEFINE_RES_MEM(UARTDR1, SZ_4),
 };
 
 static struct resource uart1_resources[] = {
-	{
-		.start	= UBRLCR2,
-		.end	= UBRLCR2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSCON2,
-		.end	= SYSCON2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= SYSFLG2,
-		.end	= SYSFLG2,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= UARTDR2,
-		.end	= UARTDR2,
-		.flags	= IORESOURCE_MEM,
-	},
+	DEFINE_RES_MEM(UBRLCR2, SZ_4),
+	DEFINE_RES_MEM(UARTDR2, SZ_4),
 };
 
 void clps711x_add_uart(unsigned int id)
 {
 	switch (id) {
 	case 0:
+		clk_add_alias(NULL, "clps711x_serial0", "uart", NULL);
 		add_generic_device_res("clps711x_serial", 0, uart0_resources,
 				       ARRAY_SIZE(uart0_resources), NULL);
 		break;
 	case 1:
+		clk_add_alias(NULL, "clps711x_serial1", "uart", NULL);
 		add_generic_device_res("clps711x_serial", 1, uart1_resources,
 				       ARRAY_SIZE(uart1_resources), NULL);
 		break;
 	}
 }
+
+static struct resource gpio0_resources[] = {
+	DEFINE_RES_MEM(PADR, SZ_1),
+	DEFINE_RES_MEM(PADDR, SZ_1),
+};
+
+static struct resource gpio1_resources[] = {
+	DEFINE_RES_MEM(PBDR, SZ_1),
+	DEFINE_RES_MEM(PBDDR, SZ_1),
+};
+
+static struct resource gpio2_resources[] = {
+	DEFINE_RES_MEM(PCDR, SZ_1),
+	DEFINE_RES_MEM(PCDDR, SZ_1),
+};
+
+static struct resource gpio3_resources[] = {
+	DEFINE_RES_MEM(PDDR, SZ_1),
+	DEFINE_RES_MEM(PDDDR, SZ_1),
+};
+
+static struct resource gpio4_resources[] = {
+	DEFINE_RES_MEM(PEDR, SZ_1),
+	DEFINE_RES_MEM(PEDDR, SZ_1),
+};
+
+static __init int clps711x_gpio_init(void)
+{
+	add_generic_device_res("clps711x-gpio", 0, gpio0_resources,
+			       ARRAY_SIZE(gpio0_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 1, gpio1_resources,
+			       ARRAY_SIZE(gpio1_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 2, gpio2_resources,
+			       ARRAY_SIZE(gpio2_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 3, gpio3_resources,
+			       ARRAY_SIZE(gpio3_resources), NULL);
+	add_generic_device_res("clps711x-gpio", 4, gpio4_resources,
+			       ARRAY_SIZE(gpio4_resources), NULL);
+
+	return 0;
+}
+coredevice_initcall(clps711x_gpio_init);
+
+static __init int clps711x_syscon_init(void)
+{
+	/* SYSCON1, SYSFLG1 */
+	add_generic_device("clps711x-syscon", 1, NULL, SYSCON1, SZ_128,
+			   IORESOURCE_MEM, NULL);
+	/* SYSCON2, SYSFLG2 */
+	add_generic_device("clps711x-syscon", 2, NULL, SYSCON2, SZ_128,
+			   IORESOURCE_MEM, NULL);
+	/* SYSCON3 */
+	add_generic_device("clps711x-syscon", 3, NULL, SYSCON3, SZ_64,
+			   IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+postcore_initcall(clps711x_syscon_init);

@@ -39,7 +39,11 @@ config ARCH_BCM2835
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
 	select CLKDEV_LOOKUP
+	select CLOCKSOURCE_CLPS711X
+	select COMMON_CLK
 	select CPU_32v4T
+	select GPIOLIB
+	select MFD_SYSCON
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

@@ -6,9 +6,26 @@ if GPIOLIB
 
 menu "GPIO"
 
+config GPIO_GENERIC
+	bool
+
 config GPIO_BCM2835
 	bool "GPIO support for BCM2835"
 	depends on ARCH_BCM2835
+
+config GPIO_CLPS711X
+	bool "GPIO support for CLPS711X"
+	depends on ARCH_CLPS711X
+	select GPIO_GENERIC
+	help
+	  Say yes here to enable the GPIO driver for the CLPS711X CPUs
+
+config GPIO_GENERIC_PLATFORM
+	bool "Generic memory-mapped GPIO controller support"
+	select GPIO_GENERIC
+	help
+	  Say yes here to support basic platform memory-mapped
+	  GPIO controllers
 
 config GPIO_PL061
 	bool "PrimeCell PL061 GPIO support"

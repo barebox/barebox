@@ -105,7 +105,7 @@ static void ek_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
-static struct at91_ether_platform_data macb_pdata = {
+static struct macb_platform_data macb_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };

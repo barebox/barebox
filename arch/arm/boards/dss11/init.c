@@ -73,7 +73,7 @@ static void dss11_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
-static struct at91_ether_platform_data macb_pdata = {
+static struct macb_platform_data macb_pdata = {
 	.phy_addr = 0,
 	.flags = AT91SAM_ETX2_ETX3_ALTERNATIVE,
 };

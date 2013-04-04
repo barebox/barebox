@@ -43,7 +43,7 @@
 #include <init.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/board.h>
+#include <platform_data/macb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/mmu.h>
@@ -307,6 +307,7 @@ static void macb_configure_dma(struct macb_device *bp)
 		dmacfg |= GEM_BF(FBLDO, 16);
 		dmacfg |= GEM_BIT(TXPBMS) | GEM_BF(RXBMS, -1L);
 		dmacfg |= GEM_BIT(DDRP);
+		dmacfg &= ~GEM_BIT(ENDIA);
 		gem_writel(bp, DMACFG, dmacfg);
 	}
 }
@@ -584,7 +585,7 @@ static int macb_probe(struct device_d *dev)
 	struct eth_device *edev;
 	struct macb_device *macb;
 	u32 ncfgr;
-	struct at91_ether_platform_data *pdata;
+	struct macb_platform_data *pdata;
 
 	if (!dev->platform_data) {
 		dev_err(dev, "macb: no platform_data\n");

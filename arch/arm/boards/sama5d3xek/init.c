@@ -110,12 +110,12 @@ static void ek_add_device_nand(void) {}
 #endif
 
 #if defined(CONFIG_DRIVER_NET_MACB)
-static struct at91_ether_platform_data gmac_pdata = {
+static struct macb_platform_data gmac_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RGMII,
 	.phy_addr = 7,
 };
 
-static struct at91_ether_platform_data macb_pdata = {
+static struct macb_platform_data macb_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RMII,
 	.phy_addr = 0,
 };

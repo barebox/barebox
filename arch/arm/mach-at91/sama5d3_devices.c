@@ -104,7 +104,7 @@ void __init at91_add_device_nand(struct atmel_nand_data *data) {}
 #endif
 
 #if defined(CONFIG_DRIVER_NET_MACB)
-void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
+void at91_add_device_eth(int id, struct macb_platform_data *data)
 {
 	if (!data)
 		return;
@@ -204,7 +204,7 @@ void at91_add_device_eth(int id, struct at91_ether_platform_data *data)
 
 }
 #else
-void at91_add_device_eth(int id, struct at91_ether_platform_data *data) {}
+void at91_add_device_eth(int id, struct macb_platform_data *data) {}
 #endif
 
 #if defined(CONFIG_MCI_ATMEL)

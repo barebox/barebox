@@ -117,4 +117,9 @@ config DRIVER_SERIAL_OMAP4_USBBOOT
 	help
 	  Enable this to get console support over the usb bus used to boot an OMAP4
 
+config DRIVER_SERIAL_CADENCE
+	bool "Cadence UART driver"
+	help
+	  Say Y here if you have a Cadence serial IP core.
+
 endmenu

@@ -120,7 +120,7 @@ static void animeo_ip_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
-static struct at91_ether_platform_data macb_pdata = {
+static struct macb_platform_data macb_pdata = {
 	.phy_addr = 0,
 };
 

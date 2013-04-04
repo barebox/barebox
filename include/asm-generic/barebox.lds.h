@@ -12,7 +12,8 @@
 	defined CONFIG_ARCH_IMX53 || \
 	defined CONFIG_ARCH_IMX6 || \
 	defined CONFIG_X86 || \
-	defined CONFIG_ARCH_EP93XX
+	defined CONFIG_ARCH_EP93XX || \
+	defined CONFIG_ARCH_ZYNQ
 #include <mach/barebox.lds.h>
 #endif
 

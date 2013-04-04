@@ -28,6 +28,7 @@
 #include <video/atmel_lcdc.h>
 #include <mach/atmel_hlcdc.h>
 #include <linux/phy.h>
+#include <platform_data/macb.h>
 
  /* USB Host */
 struct at91_usbh_data {
@@ -72,15 +73,7 @@ void at91_add_device_nand(struct atmel_nand_data *data);
  /* Ethernet (EMAC & MACB) */
 #define AT91SAM_ETX2_ETX3_ALTERNATIVE	(1 << 0)
 
-struct at91_ether_platform_data {
-	unsigned int phy_flags;
-	unsigned int flags;
-	int phy_addr;
-	phy_interface_t phy_interface;
-	int (*get_ethaddr)(struct eth_device*, unsigned char *adr);
-};
-
-void at91_add_device_eth(int id, struct at91_ether_platform_data *data);
+void at91_add_device_eth(int id, struct macb_platform_data *data);
 
 void at91_add_device_i2c(short i2c_id, struct i2c_board_info *devices, int nr_devices);
 

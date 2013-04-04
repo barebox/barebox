@@ -36,6 +36,7 @@ barebox.netx
 barebox.s5p
 barebox.spi
 barebox.ubl
+barebox.zynq
 barebox.uimage
 barebox.map
 barebox-flash-image

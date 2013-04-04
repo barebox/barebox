@@ -13,6 +13,7 @@
  *
  */
 #include <common.h>
+#include <bootsource.h>
 #include <environment.h>
 #include <fcntl.h>
 #include <fec.h>
@@ -234,13 +235,13 @@ static int tx53_part_init(void)
 {
 	const char *envdev;
 
-	switch (imx_bootsource()) {
-	case bootsource_mmc:
+	switch (bootsource_get()) {
+	case BOOTSOURCE_MMC:
 		devfs_add_partition("disk0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
 		devfs_add_partition("disk0", SZ_512K, SZ_1M, DEVFS_PARTITION_FIXED, "env0");
 		envdev = "MMC";
 		break;
-	case bootsource_nand:
+	case BOOTSOURCE_NAND:
 	default:
 		devfs_add_partition("nand0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");

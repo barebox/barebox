@@ -59,13 +59,9 @@ core_initcall(imx35_l2_fix);
 
 static int imx35_init(void)
 {
-	uint32_t val;
-
 	imx35_silicon_revision();
 
-	val = readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR);
-	imx_25_35_boot_save_loc((val >> MX35_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
-			(val >> MX35_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+	imx35_boot_save_loc((void *)MX35_CCM_BASE_ADDR);
 
 	add_generic_device("imx_iim", 0, NULL, MX35_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);

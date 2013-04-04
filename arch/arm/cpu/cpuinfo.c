@@ -155,7 +155,7 @@ static int do_cpuinfo(int argc, char *argv[])
 			implementer, architecture);
 
 	if (cache & (1 << 24)) {
-		/* seperate I/D cache */
+		/* separate I/D cache */
 		printf("I-cache: ");
 		decode_cache(cache & 0xfff);
 		printf("D-cache: ");

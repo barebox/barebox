@@ -128,7 +128,7 @@ int parse_partition_table(struct block_device *blk)
 	pdesc = xzalloc(sizeof(*pdesc));
 	buf = dma_alloc(SECTOR_SIZE * 2);
 
-	rc = blk->ops->read(blk, buf, 0, 2);
+	rc = block_read(blk, buf, 0, 2);
 	if (rc != 0) {
 		dev_err(blk->dev, "Cannot read MBR/partition table\n");
 		goto on_error;

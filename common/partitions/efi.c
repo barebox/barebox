@@ -86,7 +86,7 @@ static gpt_entry *alloc_read_gpt_entries(struct block_device *blk,
 
 	from = le64_to_cpu(pgpt_head->partition_entry_lba);
 	size = count / GPT_BLOCK_SIZE;
-	ret = blk->ops->read(blk, pte, from, size);
+	ret = block_read(blk, pte, from, size);
 	if (ret) {
 		kfree(pte);
 		pte=NULL;
@@ -121,7 +121,7 @@ static gpt_header *alloc_read_gpt_header(struct block_device *blk,
 	if (!gpt)
 		return NULL;
 
-	ret = blk->ops->read(blk, gpt, lba, 1);
+	ret = block_read(blk, gpt, lba, 1);
 	if (ret) {
 		kfree(gpt);
 		gpt=NULL;

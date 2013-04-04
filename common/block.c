@@ -387,3 +387,25 @@ int blockdevice_unregister(struct block_device *blk)
 
 	return 0;
 }
+
+int block_read(struct block_device *blk, void *buf, int block, int num_blocks)
+{
+	int ret;
+
+	ret = cdev_read(&blk->cdev, buf,
+			num_blocks << blk->blockbits,
+			(loff_t)block << blk->blockbits, 0);
+
+	return ret < 0 ? ret : 0;
+}
+
+int block_write(struct block_device *blk, void *buf, int block, int num_blocks)
+{
+	int ret;
+
+	ret = cdev_write(&blk->cdev, buf,
+			num_blocks << blk->blockbits,
+			(loff_t)block << blk->blockbits, 0);
+
+	return ret < 0 ? ret : 0;
+}

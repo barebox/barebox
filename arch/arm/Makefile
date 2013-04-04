@@ -182,6 +182,10 @@ CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += -static --gc-sections
 endif
 
+ifdef CONFIG_RELOCATABLE
+LDFLAGS_barebox += -pie
+endif
+
 ifdef CONFIG_IMAGE_COMPRESSION
 KBUILD_BINARY := arch/arm/pbl/zbarebox.bin
 KBUILD_TARGET := zbarebox.bin

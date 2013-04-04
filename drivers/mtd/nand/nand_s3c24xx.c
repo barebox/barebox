@@ -32,6 +32,7 @@
 #include <mach/s3c24xx-nand.h>
 #include <io.h>
 #include <asm-generic/errno.h>
+#include <asm/sections.h>
 
 #ifdef CONFIG_S3C_NAND_BOOT
 # define __nand_boot_init __bare_init
@@ -607,7 +608,7 @@ void __nand_boot_init s3c24x0_nand_load_image(void *dest, int size, int page)
 void __nand_boot_init nand_boot(void)
 {
 	void *dest = _text;
-	int size = barebox_image_size;
+	int size = ld_var(_barebox_image_size);
 	int page = 0;
 
 	s3c24x0_nand_load_image(dest, size, page);

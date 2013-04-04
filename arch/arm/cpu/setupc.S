@@ -1,4 +1,5 @@
 #include <linux/linkage.h>
+#include <asm/sections.h>
 
 .section .text.setupc
 
@@ -26,9 +27,70 @@ ENTRY(setup_c)
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
 	bl	memset			/* clear bss */
+#ifdef CONFIG_MMU
+	bl	arm_early_mmu_cache_flush
+#endif
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
 	add	lr, r5, r4		/* adjust return address to new location */
 	pop	{r4, r5}
 	mov	pc, lr
 ENDPROC(setup_c)
+
+#ifdef CONFIG_RELOCATABLE
+/*
+ * void relocate_to_adr(unsigned long targetadr)
+ *
+ * Copy binary to targetadr, relocate code, clear bss and continue
+ * executing at new address.
+ */
+.section .text.relocate_to_adr
+ENTRY(relocate_to_adr)
+					/* r0: target address */
+	push	{r3, r4, r5, r6, r7, r8}
+	mov	r7, lr
+
+	mov	r6, r0
+
+	bl	get_runtime_offset
+
+	mov	r5, r0
+
+	ld_var	_text, r0, r4
+	mov	r8, r0
+
+	sub	r1, r0, r5		/* r1: from address */
+
+	cmp	r1, r6			/* already at correct address? */
+	beq	1f			/* yes, skip copy to new address */
+
+	ld_var	__bss_start, r2, r4
+
+	sub	r2, r2, r0		/* r2: size */
+	mov	r0, r6			/* r0: target */
+
+	add	r7, r7, r0		/* adjust return address */
+	sub	r7, r7, r1		/* lr += offset */
+
+	bl	memcpy			/* copy binary */
+
+#ifdef CONFIG_MMU
+	bl	arm_early_mmu_cache_flush
+#endif
+	mov	r0,#0
+	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
+
+	ldr	r0,=1f
+	sub	r0, r0, r8
+	add	r0, r0, r6
+	mov	pc, r0			/* jump to relocated address */
+1:
+	bl	relocate_to_current_adr	/* relocate binary */
+
+	mov	lr, r7
+
+	pop	{r3, r4, r5, r6, r7, r8}
+	mov	pc, lr
+
+ENDPROC(relocate_to_adr)
+#endif

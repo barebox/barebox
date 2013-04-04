@@ -101,3 +101,36 @@ int arm_set_cache_functions(void)
 
 	return 0;
 }
+
+/*
+ * Early function to flush the caches. This is for use when the
+ * C environment is not yet fully initialized.
+ */
+void arm_early_mmu_cache_flush(void)
+{
+	switch (arm_early_get_cpu_architecture()) {
+#ifdef CONFIG_CPU_32v4T
+	case CPU_ARCH_ARMv4T:
+		v4_mmu_cache_flush();
+		return;
+#endif
+#ifdef CONFIG_CPU_32v5
+	case CPU_ARCH_ARMv5:
+	case CPU_ARCH_ARMv5T:
+	case CPU_ARCH_ARMv5TE:
+	case CPU_ARCH_ARMv5TEJ:
+		v5_mmu_cache_flush();
+		return;
+#endif
+#ifdef CONFIG_CPU_32v6
+	case CPU_ARCH_ARMv6:
+		v6_mmu_cache_flush();
+		return;
+#endif
+#ifdef CONFIG_CPU_32v7
+	case CPU_ARCH_ARMv7:
+		v7_mmu_cache_flush();
+		return;
+#endif
+	}
+}

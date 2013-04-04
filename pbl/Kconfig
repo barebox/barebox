@@ -18,6 +18,16 @@ config PBL_FORCE_PIGGYDATA_COPY
 
 if PBL_IMAGE
 
+config PBL_RELOCATABLE
+	depends on ARM
+	bool "relocatable pbl image"
+	help
+	  Generate a pbl binary which can relocate itself during startup to run
+	  on different addresses. This is useful if your memory layout is not
+	  known during compile time.
+	  This option only inflluences the PBL image. See RELOCATABLE to also make
+	  the real image relocatable.
+
 config IMAGE_COMPRESSION
 	bool
 	depends on HAVE_IMAGE_COMPRESSION

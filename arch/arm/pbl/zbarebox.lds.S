@@ -29,7 +29,11 @@ OUTPUT_ARCH(arm)
 ENTRY(pbl_start)
 SECTIONS
 {
+#ifdef CONFIG_PBL_RELOCATABLE
+	. = 0x0;
+#else
 	. = TEXT_BASE - SZ_2M;
+#endif
 
 	PRE_IMAGE
 
@@ -57,6 +61,18 @@ SECTIONS
 
 	. = ALIGN(4);
 	.data : { *(.data*) }
+
+	.rel.dyn : {
+		__rel_dyn_start = .;
+		*(.rel*)
+		__rel_dyn_end = .;
+	}
+
+	.dynsym : {
+		__dynsym_start = .;
+		*(.dynsym)
+		__dynsym_end = .;
+	}
 
 	. = ALIGN(4);
 	__bss_start = .;

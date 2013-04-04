@@ -122,4 +122,3 @@ void __dma_flush_range(unsigned long, unsigned long);
 void __dma_inv_range(unsigned long, unsigned long);
 
 #endif /* __ASM_MMU_H */
-

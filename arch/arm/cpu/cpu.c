@@ -148,45 +148,13 @@ postcore_initcall(execute_init);
 #endif
 
 #ifdef ARM_MULTIARCH
-static int __get_cpu_architecture(void)
-{
-	int cpu_arch;
-
-	if ((read_cpuid_id() & 0x0008f000) == 0) {
-		cpu_arch = CPU_ARCH_UNKNOWN;
-	} else if ((read_cpuid_id() & 0x0008f000) == 0x00007000) {
-		cpu_arch = (read_cpuid_id() & (1 << 23)) ? CPU_ARCH_ARMv4T : CPU_ARCH_ARMv3;
-	} else if ((read_cpuid_id() & 0x00080000) == 0x00000000) {
-		cpu_arch = (read_cpuid_id() >> 16) & 7;
-		if (cpu_arch)
-			cpu_arch += CPU_ARCH_ARMv3;
-	} else if ((read_cpuid_id() & 0x000f0000) == 0x000f0000) {
-		unsigned int mmfr0;
-
-		/* Revised CPUID format. Read the Memory Model Feature
-		 * Register 0 and check for VMSAv7 or PMSAv7 */
-		asm("mrc	p15, 0, %0, c0, c1, 4"
-		    : "=r" (mmfr0));
-		if ((mmfr0 & 0x0000000f) >= 0x00000003 ||
-		    (mmfr0 & 0x000000f0) >= 0x00000030)
-			cpu_arch = CPU_ARCH_ARMv7;
-		else if ((mmfr0 & 0x0000000f) == 0x00000002 ||
-			 (mmfr0 & 0x000000f0) == 0x00000020)
-			cpu_arch = CPU_ARCH_ARMv6;
-		else
-			cpu_arch = CPU_ARCH_UNKNOWN;
-	} else
-		cpu_arch = CPU_ARCH_UNKNOWN;
-
-	return cpu_arch;
-}
 
 int __cpu_architecture;
 
 int __pure cpu_architecture(void)
 {
 	if(__cpu_architecture == CPU_ARCH_UNKNOWN)
-		__cpu_architecture = __get_cpu_architecture();
+		__cpu_architecture = arm_early_get_cpu_architecture();
 
 	return __cpu_architecture;
 }

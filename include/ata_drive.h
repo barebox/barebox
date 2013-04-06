@@ -95,6 +95,7 @@ struct ata_port {
 	struct block_device blk;
 	uint16_t *id;
 	int initialized;
+	int probe;
 };
 
 int ide_port_register(struct device_d *, struct ata_ioports *);

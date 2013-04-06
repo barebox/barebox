@@ -102,6 +102,7 @@ struct fb_info {
 	struct fb_bitfield transp;	/* transparency			*/
 
 	int enabled;
+	int p_enable;
 };
 
 int register_framebuffer(struct fb_info *info);

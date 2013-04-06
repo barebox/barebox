@@ -57,10 +57,6 @@ void dev_remove_parameters(struct device_d *dev);
 int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		const char *val);
 
-/* Convenience functions to handle a parameter as an ip address */
-int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip);
-IPaddr_t dev_get_param_ip(struct device_d *dev, char *name);
-
 #else
 static inline const char *dev_get_param(struct device_d *dev, const char *name)
 {
@@ -129,17 +125,6 @@ static inline int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 {
 	return 0;
 }
-
-/* Convenience functions to handle a parameter as an ip address */
-static inline int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
-{
-	return 0;
-}
-static inline IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
-{
-	return 0;
-}
 #endif
 
 #endif /* PARAM_H */
-

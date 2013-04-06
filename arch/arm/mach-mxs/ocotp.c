@@ -44,6 +44,7 @@
 struct ocotp_priv {
 	struct cdev cdev;
 	void __iomem *base;
+	unsigned int write_enable;
 };
 
 static int mxs_ocotp_wait_busy(struct ocotp_priv *priv)
@@ -103,18 +104,12 @@ static ssize_t mxs_ocotp_cdev_write(struct cdev *cdev, const void *buf, size_t c
 {
 	struct ocotp_priv *priv = cdev->priv;
 	void __iomem *base = priv->base;
-	const char *write_param;
-	unsigned int write_enabled = 0;
 	unsigned long old_hclk, aligned_offset;
 	int old_vddio, num_words, num_bytes, i, ret = 0;
 	u8 *work_buf;
 	u32 reg;
 
-	write_param = dev_get_param(cdev->dev, "permanent_write_enable");
-	if (write_param)
-		write_enabled = simple_strtoul(write_param, NULL, 0);
-
-	if (!write_param || !write_enabled)
+	if (!priv->write_enable)
 		return -EPERM;
 
 	/* we can only work on u32, so calc some helpers */
@@ -179,21 +174,6 @@ static struct file_operations mxs_ocotp_ops = {
 	.lseek	= dev_lseek_default,
 };
 
-static int mxs_ocotp_write_enable_set(struct device_d *dev, struct param_d *param,
-		const char *val)
-{
-	unsigned long write_enable;
-
-	if (!val)
-		return -EINVAL;
-
-	write_enable = simple_strtoul(val, NULL, 0);
-	if (write_enable > 1)
-		return -EINVAL;
-
-	return dev_param_set_generic(dev, param, write_enable ? "1" : "0");
-}
-
 static int mxs_ocotp_probe(struct device_d *dev)
 {
 	int err;
@@ -212,14 +192,8 @@ static int mxs_ocotp_probe(struct device_d *dev)
 
 	if (IS_ENABLED(CONFIG_MXS_OCOTP_WRITABLE)) {
 		mxs_ocotp_ops.write = mxs_ocotp_cdev_write;
-
-		err = dev_add_param(dev, "permanent_write_enable",
-				mxs_ocotp_write_enable_set, NULL, 0);
-		if (err < 0)
-			return err;
-		err = dev_set_param(dev, "permanent_write_enable", "0");
-		if (err < 0)
-			return err;
+		dev_add_param_bool(dev, "permanent_write_enable",
+			NULL, NULL, &priv->write_enable, NULL);
 	}
 
 	return 0;

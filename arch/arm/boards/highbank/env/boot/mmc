@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "MMC slot"
+	exit
+fi
+
+path="/mnt/mmc"
+
+global.bootm.image="${path}/zimage"
+
+. /env/data/oftree
+
+oftree=${path}/oftree
+if [ -f $oftree ]; then
+	global.bootm.oftree="$oftree"
+fi
+
+# The rootdevice may actually be mmcblk1p2 if a card
+# is inserted to the back MMC slot
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2"

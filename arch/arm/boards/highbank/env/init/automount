@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "Automountpoints"
+	exit
+fi
+
+# automount tftp server based on $eth0.serverip
+
+mkdir -p /mnt/tftp
+automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
+
+# SD card slot, boot partition
+mkdir -p /mnt/mmc-boot
+automount -d /mnt/mmc 'mount /dev/disk0.boot /mnt/mmc-boot'
+
+# SD card slot, first partition
+mkdir -p /mnt/mmc
+automount -d /mnt/mmc 'mount /dev/disk0.0 /mnt/mmc'
+
+# AHCI, boot partition
+mkdir -p /mnt/ahci-boot
+automount -d /mnt/ahci 'mount /dev/ata0.boot /mnt/ahci-boot'
+
+# AHCI, first partition
+mkdir -p /mnt/ahci
+automount -d /mnt/ahci 'mount /dev/ata0.0 /mnt/ahci'

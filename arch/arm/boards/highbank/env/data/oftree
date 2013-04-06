@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#device tree provided by the firmware
+global.bootm.oftree="/dev/dtb"

@@ -16,6 +16,7 @@ struct param_d {
 	char *name;
 	char *value;
 	struct device_d *dev;
+	void *driver_priv;
 	struct list_head list;
 };
 
@@ -29,6 +30,19 @@ int dev_add_param(struct device_d *dev, const char *name,
 		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags);
 
+struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char *format, void *priv);
+
+struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv);
+
+struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
+		int value, const char *format);
+
 int dev_add_param_fixed(struct device_d *dev, char *name, char *value);
 
 void dev_remove_param(struct device_d *dev, char *name);
@@ -41,6 +55,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 /* Convenience functions to handle a parameter as an ip address */
 int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip);
 IPaddr_t dev_get_param_ip(struct device_d *dev, char *name);
+
 #else
 static inline const char *dev_get_param(struct device_d *dev, const char *name)
 {
@@ -63,6 +78,28 @@ static inline int dev_add_param(struct device_d *dev, char *name,
 		unsigned long flags)
 {
 	return 0;
+}
+
+static inline struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char *format, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
+		int value, const char *format)
+{
+	return NULL;
 }
 
 static inline int dev_add_param_fixed(struct device_d *dev, char *name, char *value)

@@ -27,6 +27,7 @@
 #include <net.h>
 #include <malloc.h>
 #include <driver.h>
+#include <linux/err.h>
 
 struct param_d *get_param_by_name(struct device_d *dev, const char *name)
 {
@@ -216,6 +217,166 @@ int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
 	param->value = strdup(value);
 
 	return 0;
+}
+
+struct param_int {
+	struct param_d param;
+	int *value;
+	const char *format;
+#define PARAM_INT_FLAG_BOOL (1 << 0)
+	unsigned flags;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_int *to_param_int(struct param_d *p)
+{
+	return container_of(p, struct param_int, param);
+}
+
+static int param_int_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_int *pi = to_param_int(p);
+	int value_save = *pi->value;
+	int ret;
+
+	if (!val)
+		return -EINVAL;
+
+	*pi->value = simple_strtol(val, NULL, 0);
+	if (pi->flags & PARAM_INT_FLAG_BOOL)
+		*pi->value = !!*pi->value;
+
+	if (pi->set) {
+		ret = pi->set(p, p->driver_priv);
+		if (ret) {
+			*pi->value = value_save;
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+static const char *param_int_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_int *pi = to_param_int(p);
+	int ret;
+
+	if (pi->get) {
+		ret = pi->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	free(p->value);
+	p->value = asprintf(pi->format, *pi->value);
+
+	return p->value;
+}
+
+/**
+ * dev_add_param_int - add an integer parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param set	set function
+ * @param get	get function
+ * @param value	pointer to the integer containing the value of the parameter
+ * @param format the printf format used to print the value
+ * @param priv	user private data, will be passed to get/set
+ *
+ * The get function can be used as a notifier when the variable is about
+ * to be read.
+ * The set function can be used as a notifer when the variable is about
+ * to be written. Can also be used to limit the value.
+ */
+struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char *format, void *priv)
+{
+	struct param_int *pi;
+	struct param_d *p;
+	int ret;
+
+	pi = xzalloc(sizeof(*pi));
+	pi->value = value;
+	pi->format = format;
+	pi->set = set;
+	pi->get = get;
+	p = &pi->param;
+	p->driver_priv = priv;
+
+	ret = __dev_add_param(p, dev, name, param_int_set, param_int_get, 0);
+	if (ret) {
+		free(pi);
+		return ERR_PTR(ret);
+	}
+
+	return &pi->param;
+}
+
+/**
+ * dev_add_param_bool - add an boolean parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param set	set function
+ * @param get	get function
+ * @param value	pointer to the integer containing the value of the parameter
+ * @param priv	user private data, will be passed to get/set
+ *
+ * The get function can be used as a notifier when the variable is about
+ * to be read.
+ * The set function can be used as a notifer when the variable is about
+ * to be written. Can also be used to limit the value.
+ */
+struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv)
+{
+	struct param_int *pi;
+	struct param_d *p;
+
+	p = dev_add_param_int(dev, name, set, get, value, "%d", priv);
+	if (IS_ERR(p))
+		return p;
+
+	pi = to_param_int(p);
+	pi->flags |= PARAM_INT_FLAG_BOOL;
+
+	return p;
+}
+
+struct param_int_ro {
+	struct param_d param;
+	char *value;
+};
+
+/**
+ * dev_add_param_int_ro - add a read only integer parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param value	The value of the parameter
+ * @param format the printf format used to print the value
+ */
+struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
+		int value, const char *format)
+{
+	struct param_int *piro;
+	int ret;
+
+	piro = xzalloc(sizeof(*piro));
+
+	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, 0);
+	if (ret) {
+		free(piro);
+		return ERR_PTR(ret);
+	}
+
+	piro->param.value = asprintf(format, value);
+
+	return &piro->param;
 }
 
 /**

@@ -36,28 +36,8 @@
 #include <linux/ctype.h>
 #include <linux/err.h>
 
-static IPaddr_t	net_netmask;		/* Our subnet mask (0=unknown)	*/
-static IPaddr_t	net_gateway;		/* Our gateways IP address	*/
-
-static unsigned char net_ether[6];	/* Our ethernet address		*/
-static IPaddr_t	net_ip;			/* Our IP addr (0 = unknown)	*/
-static IPaddr_t	net_serverip;		/* Our IP addr (0 = unknown)	*/
-
 unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
-
-void net_update_env(void)
-{
-	struct eth_device *edev = eth_get_current();
-
-	net_ip = dev_get_param_ip(&edev->dev, "ipaddr");
-	net_serverip = dev_get_param_ip(&edev->dev, "serverip");
-	net_gateway = dev_get_param_ip(&edev->dev, "gateway");
-	net_netmask = dev_get_param_ip(&edev->dev, "netmask");
-
-	string_to_ethaddr(dev_get_param(&edev->dev, "ethaddr"),
-			net_ether);
-}
 
 int net_checksum_ok(unsigned char *ptr, int len)
 {
@@ -210,6 +190,7 @@ static void arp_handler(struct arprequest *arp)
 
 static int arp_request(IPaddr_t dest, unsigned char *ether)
 {
+	struct eth_device *edev = eth_get_current();
 	char *pkt;
 	struct arprequest *arp;
 	uint64_t arp_start;
@@ -232,7 +213,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	pr_debug("ARP broadcast\n");
 
 	memset(et->et_dest, 0xff, 6);
-	memcpy(et->et_src, net_ether, 6);
+	memcpy(et->et_src, edev->ethaddr, 6);
 	et->et_protlen = htons(PROT_ARP);
 
 	arp = (struct arprequest *)(pkt + ETHER_HDR_SIZE);
@@ -243,15 +224,15 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	arp->ar_pln = 4;
 	arp->ar_op = htons(ARPOP_REQUEST);
 
-	memcpy(arp->ar_data, net_ether, 6);	/* source ET addr	*/
-	net_write_ip(arp->ar_data + 6, net_ip);	/* source IP addr	*/
+	memcpy(arp->ar_data, edev->ethaddr, 6);	/* source ET addr	*/
+	net_write_ip(arp->ar_data + 6, edev->ipaddr);	/* source IP addr	*/
 	memset(arp->ar_data + 10, 0, 6);	/* dest ET addr = 0     */
 
-	if ((dest & net_netmask) != (net_ip & net_netmask)) {
-		if (!net_gateway)
+	if ((dest & edev->netmask) != (edev->ipaddr & edev->netmask)) {
+		if (!edev->gateway)
 			arp_wait_ip = dest;
 		else
-			arp_wait_ip = net_gateway;
+			arp_wait_ip = edev->gateway;
 	} else {
 		arp_wait_ip = dest;
 	}
@@ -310,44 +291,44 @@ static uint16_t net_udp_new_localport(void)
 
 IPaddr_t net_get_serverip(void)
 {
-	return net_serverip;
+	struct eth_device *edev = eth_get_current();
+
+	return edev->serverip;
 }
 
 void net_set_serverip(IPaddr_t ip)
 {
 	struct eth_device *edev = eth_get_current();
 
-	net_serverip = ip;
-	dev_set_param_ip(&edev->dev, "serverip", net_serverip);
+	edev->serverip = ip;
 }
 
 void net_set_ip(IPaddr_t ip)
 {
 	struct eth_device *edev = eth_get_current();
 
-	net_ip = ip;
-	dev_set_param_ip(&edev->dev, "ipaddr", net_ip);
+	edev->ipaddr = ip;
 }
 
 IPaddr_t net_get_ip(void)
 {
-	return net_ip;
+	struct eth_device *edev = eth_get_current();
+
+	return edev->ipaddr;
 }
 
 void net_set_netmask(IPaddr_t nm)
 {
 	struct eth_device *edev = eth_get_current();
 
-	net_netmask = nm;
-	dev_set_param_ip(&edev->dev, "netmask", net_netmask);
+	edev->netmask = nm;
 }
 
 void net_set_gateway(IPaddr_t gw)
 {
 	struct eth_device *edev = eth_get_current();
 
-	net_gateway = gw;
-	dev_set_param_ip(&edev->dev, "gateway", net_gateway);
+	edev->gateway = gw;
 }
 
 static LIST_HEAD(connection_list);
@@ -362,16 +343,16 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	if (!edev)
 		return ERR_PTR(-ENETDOWN);
 
-	if (!is_valid_ether_addr(net_ether)) {
+	if (!is_valid_ether_addr(edev->ethaddr)) {
 		char str[sizeof("xx:xx:xx:xx:xx:xx")];
-		random_ether_addr(net_ether);
-		ethaddr_to_string(net_ether, str);
+		random_ether_addr(edev->ethaddr);
+		ethaddr_to_string(edev->ethaddr, str);
 		printf("warning: No MAC address set. Using random address %s\n", str);
 		dev_set_param(&edev->dev, "ethaddr", str);
 	}
 
 	/* If we don't have an ip only broadcast is allowed */
-	if (!net_ip && dest != 0xffffffff)
+	if (!edev->ipaddr && dest != 0xffffffff)
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
@@ -394,14 +375,14 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	}
 
 	con->et->et_protlen = htons(PROT_IP);
-	memcpy(con->et->et_src, net_ether, 6);
+	memcpy(con->et->et_src, edev->ethaddr, 6);
 
 	con->ip->hl_v = 0x45;
 	con->ip->tos = 0;
 	con->ip->frag_off = htons(0x4000);	/* No fragmentation */;
 	con->ip->ttl = 255;
 	net_copy_ip(&con->ip->daddr, &dest);
-	net_copy_ip(&con->ip->saddr, &net_ip);
+	net_copy_ip(&con->ip->saddr, &edev->ipaddr);
 
 	list_add_tail(&con->list, &connection_list);
 
@@ -479,20 +460,21 @@ static int net_answer_arp(unsigned char *pkt, int len)
 {
 	struct arprequest *arp = (struct arprequest *)(pkt + ETHER_HDR_SIZE);
 	struct ethernet *et = (struct ethernet *)pkt;
+	struct eth_device *edev = eth_get_current();
 	unsigned char *packet;
 	int ret;
 
 	debug("%s\n", __func__);
 
 	memcpy (et->et_dest, et->et_src, 6);
-	memcpy (et->et_src, net_ether, 6);
+	memcpy (et->et_src, edev->ethaddr, 6);
 
 	et->et_protlen = htons(PROT_ARP);
 	arp->ar_op = htons(ARPOP_REPLY);
 	memcpy(&arp->ar_data[10], &arp->ar_data[0], 6);
 	net_copy_ip(&arp->ar_data[16], &arp->ar_data[6]);
-	memcpy(&arp->ar_data[0], net_ether, 6);
-	net_copy_ip(&arp->ar_data[6], &net_ip);
+	memcpy(&arp->ar_data[0], edev->ethaddr, 6);
+	net_copy_ip(&arp->ar_data[6], &edev->ipaddr);
 
 	packet = net_alloc_packet();
 	if (!packet)
@@ -517,6 +499,7 @@ static void net_bad_packet(unsigned char *pkt, int len)
 
 static int net_handle_arp(unsigned char *pkt, int len)
 {
+	struct eth_device *edev = eth_get_current();
 	struct arprequest *arp;
 
 	debug("%s: got arp\n", __func__);
@@ -541,9 +524,9 @@ static int net_handle_arp(unsigned char *pkt, int len)
 		goto bad;
 	if (arp->ar_pln != 4)
 		goto bad;
-	if (net_ip == 0)
+	if (edev->ipaddr == 0)
 		return 0;
-	if (net_read_ip(&arp->ar_data[16]) != net_ip)
+	if (net_read_ip(&arp->ar_data[16]) != edev->ipaddr)
 		return 0;
 
 	switch (ntohs(arp->ar_op)) {
@@ -600,6 +583,7 @@ static int net_handle_icmp(unsigned char *pkt, int len)
 static int net_handle_ip(unsigned char *pkt, int len)
 {
 	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
+	struct eth_device *edev = eth_get_current();
 	IPaddr_t tmp;
 
 	debug("%s\n", __func__);
@@ -619,7 +603,7 @@ static int net_handle_ip(unsigned char *pkt, int len)
 		goto bad;
 
 	tmp = net_read_ip(&ip->daddr);
-	if (net_ip && tmp != net_ip && tmp != 0xffffffff)
+	if (edev->ipaddr && tmp != edev->ipaddr && tmp != 0xffffffff)
 		return 0;
 
 	switch (ip->protocol) {

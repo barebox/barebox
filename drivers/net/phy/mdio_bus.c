@@ -152,7 +152,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
 
 	int ret;
-	char str[16];
 
 	dev->attached_dev->phydev = dev;
 
@@ -192,11 +191,8 @@ static int mdio_bus_probe(struct device_d *_dev)
 	if ((dev->supported & SUPPORTED_Autoneg) == 0)
 		dev->autoneg = AUTONEG_DISABLE;
 
-	sprintf(str, "%d", dev->addr);
-	dev_add_param_fixed(&dev->dev, "phy_addr", str);
-
-	sprintf(str, "0x%08x", dev->phy_id);
-	dev_add_param_fixed(&dev->dev, "phy_id", str);
+	dev_add_param_int_ro(&dev->dev, "phy_addr", dev->addr, "%d");
+	dev_add_param_int_ro(&dev->dev, "phy_id", dev->phy_id, "0x%08x");
 
 	dev->cdev.name = asprintf("phy%d", _dev->id);
 	dev->cdev.size = 64;

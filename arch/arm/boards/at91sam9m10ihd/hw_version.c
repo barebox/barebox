@@ -194,10 +194,8 @@ static void at91sam9m10ihd_devices_detect_one(const char *name)
 	dev_add_param_fixed(dev, "board", info.board_name);
 	sprintf(str, "%.2s", info.vendor_country);
 	dev_add_param_fixed(dev, "country", str);
-	sprintf(str, "%d", info.year);
-	dev_add_param_fixed(dev, "year", str);
-	sprintf(str, "%d", info.week);
-	dev_add_param_fixed(dev, "week", str);
+	dev_add_param_int_ro(dev, "year", info.year, "%d");
+	dev_add_param_int_ro(dev, "week", info.week, "%d");
 	sprintf(str, "%c", info.revision_code);
 	dev_add_param_fixed(dev, "revision_code", str);
 	sprintf(str, "%c", info.revision_id);

@@ -39,6 +39,8 @@ struct ipu_fb_info {
 	struct fb_info		info;
 	struct fb_info		overlay;
 	struct device_d		*dev;
+
+	unsigned int		alpha;
 };
 
 /* IPU DMA Controller channel definitions. */
@@ -914,27 +916,17 @@ static struct fb_ops ipu_fb_overlay_ops = {
 	.fb_disable	= ipu_fb_overlay_disable_controller,
 };
 
-static int sdc_alpha_set(struct device_d *dev, struct param_d *param,
-			const char *val)
+static int sdc_alpha_set(struct param_d *param, void *priv)
 {
-	struct fb_info *info = dev->priv;
+	struct fb_info *info = priv;
 	struct ipu_fb_info *fbi = info->priv;
-	int alpha;
-	char alphastr[16];
 	unsigned int tmp;
 
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	alpha = simple_strtoul(val, NULL, 0);
-	alpha &= 0xff;
+	if (fbi->alpha > 0xff)
+		fbi->alpha = 0xff;
 
 	tmp = reg_read(fbi, SDC_GW_CTRL) & 0x00FFFFFFL;
-	reg_write(fbi, tmp | ((u32) alpha << 24), SDC_GW_CTRL);
-
-	sprintf(alphastr, "%d", alpha);
-
-	dev_param_set_generic(dev, param, alphastr);
+	reg_write(fbi, tmp | ((u32) fbi->alpha << 24), SDC_GW_CTRL);
 
 	return 0;
 }
@@ -968,8 +960,9 @@ static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
 		return ret;
 	}
 
-	dev_add_param(&overlay->dev, "alpha", sdc_alpha_set, NULL, 0);
-	dev_set_param(&overlay->dev, "alpha", "0");
+	dev_add_param_int(&overlay->dev, "alpha", sdc_alpha_set,
+			NULL, &fbi->alpha, "%u", overlay);
+
 	return 0;
 }
 

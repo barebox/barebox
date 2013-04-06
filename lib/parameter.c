@@ -444,19 +444,14 @@ struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
 /**
  * dev_remove_param - remove a parameter from a device and free its
  * memory
- * @param dev	The device
- * @param name	The name of the parameter
+ * @param p	The parameter
  */
-void dev_remove_param(struct device_d *dev, char *name)
+void dev_remove_param(struct param_d *p)
 {
-	struct param_d *p = get_param_by_name(dev, name);
-
-	if (p) {
-		p->set(dev, p, NULL);
-		list_del(&p->list);
-		free(p->name);
-		free(p);
-	}
+	p->set(p->dev, p, NULL);
+	list_del(&p->list);
+	free(p->name);
+	free(p);
 }
 
 /**

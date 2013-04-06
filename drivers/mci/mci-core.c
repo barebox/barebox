@@ -1461,15 +1461,16 @@ static int mci_set_probe(struct param_d *param, void *priv)
 	struct mci *mci = priv;
 	int rc;
 
+	if (!mci->probe)
+		return 0;
+
 	rc = mci_check_if_already_initialized(mci);
 	if (rc != 0)
 		return 0;
 
-	if (mci->probe) {
-		rc = mci_card_probe(mci);
-		if (rc != 0)
-			return rc;
-	}
+	rc = mci_card_probe(mci);
+	if (rc != 0)
+		return rc;
 
 	return 0;
 }
@@ -1494,8 +1495,8 @@ static int mci_probe(struct device_d *mci_dev)
 
 	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
-	mci->param_probe = dev_add_param_int(mci_dev, "probe",
-			mci_set_probe, NULL, &mci->probe, "%d", mci);
+	mci->param_probe = dev_add_param_bool(mci_dev, "probe",
+			mci_set_probe, NULL, &mci->probe, mci);
 
 	if (IS_ERR(mci->param_probe)) {
 		dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");

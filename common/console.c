@@ -99,33 +99,22 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	return 0;
 }
 
-static int console_baudrate_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int console_baudrate_set(struct param_d *param, void *priv)
 {
-	struct console_device *cdev = to_console_dev(dev);
-	int baudrate;
-	char baudstr[16];
+	struct console_device *cdev = priv;
 	unsigned char c;
-
-	if (!val)
-		dev_param_set_generic(dev, param, NULL);
-
-	baudrate = simple_strtoul(val, NULL, 10);
 
 	if (cdev->f_active) {
 		printf("## Switch baudrate to %d bps and press ENTER ...\n",
-			baudrate);
+			cdev->baudrate);
 		mdelay(50);
-		cdev->setbrg(cdev, baudrate);
+		cdev->setbrg(cdev, cdev->baudrate);
 		mdelay(50);
 		do {
 			c = getc();
 		} while (c != '\r' && c != '\n');
 	} else
-		cdev->setbrg(cdev, baudrate);
-
-	sprintf(baudstr, "%d", baudrate);
-	dev_param_set_generic(dev, param, baudstr);
+		cdev->setbrg(cdev, cdev->baudrate);
 
 	return 0;
 }
@@ -155,8 +144,9 @@ int console_register(struct console_device *newcdev)
 	platform_device_register(dev);
 
 	if (newcdev->setbrg) {
-		dev_add_param(dev, "baudrate", console_baudrate_set, NULL, 0);
-		dev_set_param(dev, "baudrate", __stringify(CONFIG_BAUDRATE));
+		newcdev->baudrate = CONFIG_BAUDRATE;
+		dev_add_param_int(dev, "baudrate", console_baudrate_set,
+			NULL, &newcdev->baudrate, "%u", newcdev);
 	}
 
 	dev_add_param(dev, "active", console_std_set, NULL, 0);

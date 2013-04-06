@@ -244,18 +244,18 @@ static int param_int_set(struct device_d *dev, struct param_d *p, const char *va
 		return -EINVAL;
 
 	*pi->value = simple_strtol(val, NULL, 0);
+
 	if (pi->flags & PARAM_INT_FLAG_BOOL)
 		*pi->value = !!*pi->value;
 
-	if (pi->set) {
-		ret = pi->set(p, p->driver_priv);
-		if (ret) {
-			*pi->value = value_save;
-			return ret;
-		}
-	}
+	if (!pi->set)
+		return 0;
 
-	return 0;
+	ret = pi->set(p, p->driver_priv);
+	if (ret)
+		*pi->value = value_save;
+
+	return ret;
 }
 
 static const char *param_int_get(struct device_d *dev, struct param_d *p)
@@ -378,6 +378,85 @@ struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 
 	return &piro->param;
 }
+
+#ifdef CONFIG_NET
+struct param_ip {
+	struct param_d param;
+	IPaddr_t *ip;
+	const char *format;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_ip *to_param_ip(struct param_d *p)
+{
+	return container_of(p, struct param_ip, param);
+}
+
+static int param_ip_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_ip *pi = to_param_ip(p);
+	IPaddr_t ip_save = *pi->ip;
+	int ret;
+
+	if (!val)
+		return -EINVAL;
+
+	ret = string_to_ip(val, pi->ip);
+	if (ret)
+		return ret;
+
+	if (!pi->set)
+		return 0;
+
+	ret = pi->set(p, p->driver_priv);
+	if (ret)
+		*pi->ip = ip_save;
+
+	return ret;
+}
+
+static const char *param_ip_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_ip *pi = to_param_ip(p);
+	int ret;
+
+	if (pi->get) {
+		ret = pi->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	free(p->value);
+	p->value = xstrdup(ip_to_string(*pi->ip));
+
+	return p->value;
+}
+
+struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		IPaddr_t *ip, void *priv)
+{
+	struct param_ip *pi;
+	int ret;
+
+	pi = xzalloc(sizeof(*pi));
+	pi->ip = ip;
+	pi->set = set;
+	pi->get = get;
+	pi->param.driver_priv = priv;
+
+	ret = __dev_add_param(&pi->param, dev, name,
+			param_ip_set, param_ip_get, 0);
+	if (ret) {
+		free(pi);
+		return ERR_PTR(ret);
+	}
+
+	return &pi->param;
+}
+#endif
 
 /**
  * dev_remove_param - remove a parameter from a device and free its

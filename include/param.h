@@ -43,6 +43,11 @@ struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format);
 
+struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		IPaddr_t *ip, void *priv);
+
 int dev_add_param_fixed(struct device_d *dev, char *name, char *value);
 
 void dev_remove_param(struct device_d *dev, char *name);
@@ -98,6 +103,14 @@ static inline struct param_d *dev_add_param_bool(struct device_d *dev, const cha
 
 static inline struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		IPaddr_t *ip, void *priv)
 {
 	return NULL;
 }

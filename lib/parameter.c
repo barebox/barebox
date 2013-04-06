@@ -139,14 +139,13 @@ static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 	return p->value ? p->value : "";
 }
 
-static struct param_d *__dev_add_param(struct device_d *dev, const char *name,
+static int __dev_add_param(struct param_d *param, struct device_d *dev, const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
 		const char *(*get)(struct device_d *dev, struct param_d *p),
 		unsigned long flags)
 {
-	struct param_d *param;
-
-	param = xzalloc(sizeof(*param));
+	if (get_param_by_name(dev, name))
+		return -EEXIST;
 
 	if (set)
 		param->set = set;
@@ -162,7 +161,7 @@ static struct param_d *__dev_add_param(struct device_d *dev, const char *name,
 	param->dev = dev;
 	list_add_tail(&param->list, &dev->parameters);
 
-	return param;
+	return 0;
 }
 
 /**
@@ -184,14 +183,15 @@ int dev_add_param(struct device_d *dev, const char *name,
 		unsigned long flags)
 {
 	struct param_d *param;
+	int ret;
 
-	param = get_param_by_name(dev, name);
-	if (param)
-		return -EEXIST;
+	param = xzalloc(sizeof(*param));
 
-	param = __dev_add_param(dev, name, set, get, flags);
+	ret = __dev_add_param(param, dev, name, set, get, flags);
+	if (ret)
+		free(param);
 
-	return param ? 0 : -EINVAL;
+	return ret;
 }
 
 /**
@@ -203,10 +203,15 @@ int dev_add_param(struct device_d *dev, const char *name,
 int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
 {
 	struct param_d *param;
+	int ret;
 
-	param = __dev_add_param(dev, name, NULL, NULL, PARAM_FLAG_RO);
-	if (!param)
-		return -EINVAL;
+	param = xzalloc(sizeof(*param));
+
+	ret = __dev_add_param(param, dev, name, NULL, NULL, PARAM_FLAG_RO);
+	if (ret) {
+		free(param);
+		return ret;
+	}
 
 	param->value = strdup(value);
 

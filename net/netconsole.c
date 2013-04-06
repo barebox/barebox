@@ -43,7 +43,7 @@ struct nc_priv {
 	int busy;
 	struct net_connection *con;
 
-	uint16_t port;
+	unsigned int port;
 	IPaddr_t ip;
 };
 
@@ -123,48 +123,9 @@ static void nc_putc(struct console_device *cdev, char c)
 	priv->busy = 0;
 }
 
-static int nc_port_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int nc_port_set(struct param_d *p, void *_priv)
 {
-	struct nc_priv *priv = g_priv;
-	char portstr[16];
-	int port;
-
-	if (!val)
-		dev_param_set_generic(dev, param, NULL);
-
-	port = simple_strtoul(val, NULL, 10);
-	if (port > 65535)
-		return -EINVAL;
-
-	priv->port = port;
 	nc_init();
-
-	sprintf(portstr, "%d", port);
-	dev_param_set_generic(dev, param, portstr);
-
-	return 0;
-}
-
-static int nc_remoteip_set(struct device_d *dev, struct param_d *param,
-		const char *val)
-{
-	struct nc_priv *priv = g_priv;
-	IPaddr_t ip;
-	int ret;
-
-	if (!val)
-		dev_param_set_generic(dev, param, NULL);
-
-	if (string_to_ip(val, &ip))
-		return -EINVAL;
-
-	priv->ip = ip;
-	ret = nc_init();
-	if (ret)
-		return ret;
-
-	dev_param_set_generic(dev, param, val);
 
 	return 0;
 }
@@ -192,9 +153,10 @@ static int netconsole_init(void)
 		return ret;
 	}
 
-	dev_add_param(&cdev->class_dev, "ip", nc_remoteip_set, NULL, 0);
-	dev_add_param(&cdev->class_dev, "port", nc_port_set, NULL, 0);
-	dev_set_param(&cdev->class_dev, "port", "6666");
+	priv->port = 6666;
+
+	dev_add_param_ip(&cdev->class_dev, "ip", NULL, NULL, &priv->ip, NULL);
+	dev_add_param_int(&cdev->class_dev, "port", nc_port_set, NULL, &priv->port, "%u", NULL);
 
 	pr_info("registered as %s%d\n", cdev->class_dev.name, cdev->class_dev.id);
 

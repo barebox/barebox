@@ -15,6 +15,7 @@ struct param_d {
 	unsigned int flags;
 	char *name;
 	char *value;
+	struct device_d *dev;
 	struct list_head list;
 };
 

@@ -159,6 +159,7 @@ static struct param_d *__dev_add_param(struct device_d *dev, const char *name,
 
 	param->name = strdup(name);
 	param->flags = flags;
+	param->dev = dev;
 	list_add_tail(&param->list, &dev->parameters);
 
 	return param;

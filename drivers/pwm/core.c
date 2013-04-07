@@ -177,6 +177,13 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 {
 	pwm->chip->duty_ns = duty_ns;
 	pwm->chip->period_ns = period_ns;
+
+	if (period_ns == 0)
+		return -EINVAL;
+
+	if (duty_ns > period_ns)
+		return -EINVAL;
+
 	return pwm->chip->ops->config(pwm->chip, duty_ns, period_ns);
 }
 EXPORT_SYMBOL_GPL(pwm_config);

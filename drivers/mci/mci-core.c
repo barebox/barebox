@@ -1465,6 +1465,9 @@ static int mci_set_probe(struct device_d *mci_dev, struct param_d *param,
 	if (rc != 0)
 		return 0;
 
+	if (!val)
+		return -EINVAL;
+
 	probe = simple_strtoul(val, NULL, 0);
 	if (probe != 0) {
 		rc = mci_card_probe(mci);

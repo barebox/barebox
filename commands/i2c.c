@@ -45,7 +45,7 @@ static int do_i2c_probe(int argc, char *argv[])
 	if (stopaddr > 0x7F)
 		stopaddr = 0x7F;
 
-	printf("probing i2c range 0X%02x - 0x%02x :\n", startaddr, stopaddr);
+	printf("probing i2c range 0x%02x - 0x%02x :\n", startaddr, stopaddr);
 	for (addr = startaddr; addr <= stopaddr; addr++) {
 		client.addr = addr;
 		ret = i2c_write_reg(&client, 0x00, &reg, 0);

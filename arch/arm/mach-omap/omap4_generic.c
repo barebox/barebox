@@ -41,6 +41,26 @@ void __noreturn reset_cpu(unsigned long addr)
 	while (1);
 }
 
+void omap4_set_warmboot_order(u32 *device_list)
+{
+	const u32 CH[] = {
+		0xCF00AA01,
+		0x0000000C,
+		(device_list[0] << 16) | 0x0000,
+		(device_list[2] << 16) | device_list[1],
+		0x0000 | device_list[3],
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000
+	};
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(CH); i++)
+		writel(CH[i], OMAP44XX_SAR_CH_START + i*sizeof(CH[0]));
+	writel(OMAP44XX_SAR_CH_START, OMAP44XX_SAR_CH_ADDRESS);
+}
+
 #define WATCHDOG_WSPR	0x48
 #define WATCHDOG_WWPS	0x34
 

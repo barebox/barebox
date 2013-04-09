@@ -30,4 +30,5 @@ obj-$(CONFIG_OMAP_GPMC) += gpmc.o devices-gpmc-nand.o
 obj-$(CONFIG_SHELL_NONE) += xload.o
 obj-$(CONFIG_MFD_TWL6030) += omap4_twl6030_mmc.o
 obj-$(CONFIG_OMAP4_USBBOOT) += omap4_rom_usb.o
+obj-$(CONFIG_CMD_BOOT_ORDER) += boot_order.o
 obj-y += gpio.o

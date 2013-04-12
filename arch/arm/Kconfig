@@ -142,6 +142,8 @@ config ARCH_TEGRA
 	select BUILTIN_DTB
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
+	select GPIOLIB
+	select GPIO_TEGRA
 	select OFDEVICE
 	select OFTREE
 

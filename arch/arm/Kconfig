@@ -140,6 +140,8 @@ config ARCH_TEGRA
 	select CPU_V7
 	select HAS_DEBUG_LL
 	select BUILTIN_DTB
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
 	select OFDEVICE
 	select OFTREE
 

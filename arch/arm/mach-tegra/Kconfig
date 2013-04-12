@@ -14,7 +14,7 @@ if ARCH_TEGRA_2x_SOC
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x31fc0000
+	default 0x00108000
 
 choice
 	prompt "Tegra 20 Board Type"

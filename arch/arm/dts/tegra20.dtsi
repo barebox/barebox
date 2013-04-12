@@ -3,6 +3,15 @@
 / {
 	compatible = "nvidia,tegra20";
 
+	timer@60005000 {
+		compatible = "nvidia,tegra20-timer";
+		reg = <0x60005000 0x60>;
+		interrupts = <0 0 0x04
+			      0 1 0x04
+			      0 41 0x04
+			      0 42 0x04>;
+	};
+
 	tegra_car: clock {
 		compatible = "nvidia,tegra20-car";
 		reg = <0x60006000 0x1000>;

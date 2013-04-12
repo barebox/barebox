@@ -23,6 +23,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <linux/err.h>
 #include <mach/iomap.h>
 
@@ -91,6 +92,9 @@ static int tegra20_car_probe(struct device_d *dev)
 	/* derived clocks */
 	/* timer is a gate, but as it's enabled by BOOTROM we needn't worry */
 	clks[timer] = clk_fixed_factor("timer", "clk_m", 1, 1);
+
+	/* device to clock links */
+	clkdev_add_physbase(clks[timer], TEGRA_TMR1_BASE, NULL);
 
 	return 0;
 }

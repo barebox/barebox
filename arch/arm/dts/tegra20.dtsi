@@ -17,4 +17,9 @@
 		reg = <0x60006000 0x1000>;
 		#clock-cells = <1>;
 	};
+
+	pmc {
+		compatible = "nvidia,tegra20-pmc";
+		reg = <0x7000e400 0x400>;
+	};
 };

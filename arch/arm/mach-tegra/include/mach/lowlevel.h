@@ -35,6 +35,10 @@
 
 #define T20_ODMDATA_RAMSIZE_SHIFT	28
 #define T20_ODMDATA_RAMSIZE_MASK	(3 << T20_ODMDATA_RAMSIZE_SHIFT)
+#define T20_ODMDATA_UARTTYPE_SHIFT	18
+#define T20_ODMDATA_UARTTYPE_MASK	(3 << T20_ODMDATA_UARTTYPE_SHIFT)
+#define T20_ODMDATA_UARTID_SHIFT	15
+#define T20_ODMDATA_UARTID_MASK		(7 << T20_ODMDATA_UARTID_SHIFT)
 
 static inline u32 tegra_get_odmdata(void)
 {
@@ -106,6 +110,36 @@ static inline uint32_t tegra20_get_ramsize(void)
 	case 3:
 		return SZ_1G;
 	}
+}
+
+static long uart_id_to_base[] = {
+	TEGRA_UARTA_BASE,
+	TEGRA_UARTB_BASE,
+	TEGRA_UARTC_BASE,
+	TEGRA_UARTD_BASE,
+	TEGRA_UARTE_BASE,
+};
+
+static inline long tegra20_get_debuguart_base(void)
+{
+	u32 odmdata;
+	int id;
+
+	odmdata = tegra_get_odmdata();
+
+	/*
+	 * Get type, we accept both "2" and "3", as they both demark a UART,
+	 * depending on the board type.
+	 */
+	if (!(((odmdata & T20_ODMDATA_UARTTYPE_MASK) >>
+	      T20_ODMDATA_UARTTYPE_SHIFT) & 0x2))
+		return 0;
+
+	id = (odmdata & T20_ODMDATA_UARTID_MASK) >> T20_ODMDATA_UARTID_SHIFT;
+	if (id > ARRAY_SIZE(uart_id_to_base))
+		return 0;
+
+	return uart_id_to_base[id];
 }
 
 /* reset vector for the main CPU complex */

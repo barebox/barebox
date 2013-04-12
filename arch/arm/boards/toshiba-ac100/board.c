@@ -23,14 +23,6 @@
 #include <usb/ehci.h>
 #include <mach/iomap.h>
 
-static int ac100_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x0, SZ_512M);
-
-	return 0;
-}
-mem_initcall(ac100_mem_init);
-
 static struct ehci_platform_data ehci_pdata = {
 	.flags = EHCI_HAS_TT,
 };

@@ -17,6 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <ns16550.h>
+#include <asm/memory.h>
 #include <mach/iomap.h>
 #include <mach/lowlevel.h>
 
@@ -54,3 +55,11 @@ static int tegra20_add_debug_console(void)
 	return 0;
 }
 console_initcall(tegra20_add_debug_console);
+
+static int tegra20_mem_init(void)
+{
+	arm_add_mem_device("ram0", 0x0, tegra20_get_ramsize());
+
+	return 0;
+}
+mem_initcall(tegra20_mem_init);

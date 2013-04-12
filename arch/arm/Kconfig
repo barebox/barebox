@@ -137,7 +137,7 @@ config ARCH_VEXPRESS
 
 config ARCH_TEGRA
 	bool "Nvidia Tegra-based boards"
-	select CPU_ARM926T
+	select CPU_V7
 	select HAS_DEBUG_LL
 
 config ARCH_ZYNQ

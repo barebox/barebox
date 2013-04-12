@@ -139,6 +139,9 @@ config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CPU_V7
 	select HAS_DEBUG_LL
+	select BUILTIN_DTB
+	select OFDEVICE
+	select OFTREE
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

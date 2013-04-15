@@ -171,8 +171,12 @@ int console_register(struct console_device *newcdev)
 
 	list_add_tail(&newcdev->list, &console_list);
 
-	if (activate)
-		dev_set_param(dev, "active", "ioe");
+	if (activate) {
+		if (IS_ENABLED(CONFIG_PARAMETER))
+			dev_set_param(dev, "active", "ioe");
+		else
+			console_std_set(dev, NULL, "ioe");
+	}
 
 	return 0;
 }

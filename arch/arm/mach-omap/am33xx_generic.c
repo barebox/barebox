@@ -19,12 +19,13 @@
  */
 
 #include <common.h>
+#include <bootsource.h>
+#include <init.h>
 #include <io.h>
 #include <net.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
 #include <mach/sys_info.h>
-#include <mach/generic.h>
 #include <mach/am33xx-generic.h>
 
 void __noreturn reset_cpu(unsigned long addr)
@@ -94,10 +95,13 @@ u32 running_in_sdram(void)
 	return 0;		/* running in SRAM or FLASH */
 }
 
-enum omap_boot_src am33xx_bootsrc(void)
+static int am33xx_bootsource(void)
 {
-	return OMAP_BOOTSRC_MMC1; /* only MMC for now */
+	bootsource_set(BOOTSOURCE_MMC); /* only MMC for now */
+	bootsource_set_instance(0);
+	return 0;
 }
+postcore_initcall(am33xx_bootsource);
 
 int am33xx_register_ethaddr(int eth_id, int mac_id)
 {

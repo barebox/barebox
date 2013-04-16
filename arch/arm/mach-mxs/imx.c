@@ -45,22 +45,6 @@ static int imx_reset_usb_bootstrap(void)
 }
 device_initcall(imx_reset_usb_bootstrap);
 
-extern void imx_dump_clocks(void);
-
-static int do_clocks(int argc, char *argv[])
-{
-	imx_dump_clocks();
-
-	return 0;
-}
-
-BAREBOX_CMD_START(dump_clocks)
-	.cmd		= do_clocks,
-	.usage		= "show clock frequencies",
-	BAREBOX_CMD_COMPLETE(empty_complete)
-BAREBOX_CMD_END
-
-
 static int __silicon_revision = SILICON_REVISION_UNKNOWN;
 
 int silicon_revision_get(void)

@@ -216,6 +216,7 @@ struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 		u8 shift);
 struct clk *clk_gate_inverted(const char *name, const char *parent, void __iomem *reg,
 		u8 shift);
+int clk_is_enabled(struct clk *clk);
 
 int clk_is_enabled_always(struct clk *clk);
 

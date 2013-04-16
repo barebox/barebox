@@ -35,3 +35,12 @@ void __noreturn reset_cpu(unsigned long addr)
 	/*NOTREACHED*/
 }
 EXPORT_SYMBOL(reset_cpu);
+
+static int imx23_devices_init(void)
+{
+
+	add_generic_device("imx23-clkctrl", 0, NULL, IMX_CCM_BASE, 0x100, IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+postcore_initcall(imx23_devices_init);

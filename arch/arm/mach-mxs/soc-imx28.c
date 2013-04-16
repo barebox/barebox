@@ -53,3 +53,12 @@ static int imx28_init(void)
 	return 0;
 }
 postcore_initcall(imx28_init);
+
+static int imx28_devices_init(void)
+{
+
+	add_generic_device("imx28-clkctrl", 0, NULL, IMX_CCM_BASE, 0x100, IORESOURCE_MEM, NULL);
+
+	return 0;
+}
+postcore_initcall(imx28_devices_init);

@@ -24,8 +24,9 @@
 #include <errno.h>
 #include <xfuncs.h>
 #include <io.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <mach/fb.h>
 
 #define HW_LCDIF_CTRL 0x00
@@ -144,6 +145,7 @@ struct imxfb_info {
 	struct fb_info info;
 	struct device_d *hw_dev;
 	struct imx_fb_platformdata *pdata;
+	struct clk *clk;
 };
 
 /* the RGB565 true colour mode */
@@ -327,7 +329,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 
 	/** @todo ensure HCLK is active at this point of time! */
 
-	size = imx_set_lcdifclk(PICOS2KHZ(mode->pixclock) * 1000);
+	size = clk_set_rate(fbi->clk, PICOS2KHZ(mode->pixclock) * 1000);
 	if (size == 0) {
 		dev_dbg(fbi->hw_dev, "Unable to set a valid pixel clock\n");
 		return -EINVAL;
@@ -490,6 +492,9 @@ static int stmfb_probe(struct device_d *hw_dev)
 	fbi.hw_dev = hw_dev;
 	fbi.base = dev_request_mem_region(hw_dev, 0);
 	fbi.pdata = pdata;
+	fbi.clk = clk_get(hw_dev, NULL);
+	if (IS_ERR(fbi.clk))
+		return PTR_ERR(fbi.clk);
 
 	/* add runtime video info */
 	fbi.info.mode_list = pdata->mode_list;

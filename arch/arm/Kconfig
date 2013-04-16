@@ -88,6 +88,8 @@ config ARCH_MVEBU
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"
 	select GENERIC_GPIO
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
 
 config ARCH_NETX
 	bool "Hilscher NetX based"

@@ -42,6 +42,8 @@
 #include <io.h>
 #include <malloc.h>
 #include <notifier.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 #include <mach/clock.h>
 #include <mach/mxs.h>
@@ -92,6 +94,7 @@ struct auart_priv {
 	int baudrate;
 	struct notifier_block notify;
 	void __iomem *base;
+	struct clk *clk;
 };
 
 static void auart_serial_putc(struct console_device *cdev, char c)
@@ -143,7 +146,7 @@ static int auart_serial_setbaudrate(struct console_device *cdev, int new_baudrat
 	writel(0x0, priv->base + HW_UARTAPP_CTRL2);
 
 	/* Calculate and set baudrate */
-	quot = (imx_get_xclk() * 32) / new_baudrate;
+	quot = (clk_get_rate(priv->clk) * 32) / new_baudrate;
 	reg = BF_UARTAPP_LINECTRL_BAUD_DIVFRAC(quot & 0x3F) |
 		BF_UARTAPP_LINECTRL_BAUD_DIVINT(quot >> 6) |
 		BF_UARTAPP_LINECTRL_WLEN(3) |
@@ -194,6 +197,9 @@ static int auart_serial_probe(struct device_d *dev)
 
 	dev->priv = priv;
 	priv->base = dev_request_mem_region(dev, 0);
+	priv->clk = clk_get(dev, NULL);
+	if (IS_ERR(priv->clk))
+		return PTR_ERR(priv->clk);
 
 	auart_serial_init_port(priv);
 	auart_serial_setbaudrate(cdev, CONFIG_BAUDRATE);

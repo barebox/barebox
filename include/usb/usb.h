@@ -196,7 +196,6 @@ struct usb_driver {
 extern struct bus_type usb_bus_type;
 
 int usb_driver_register(struct usb_driver *);
-int usb_driver_unregister(struct usb_driver *);
 
 struct usb_host {
 	int (*init)(struct usb_host *);

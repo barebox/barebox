@@ -266,7 +266,6 @@ static int mx28_evk_devices_init(void)
 			IORESOURCE_MEM, NULL);
 	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
-	imx_enable_enetclk();
 	mx28_evk_fec_reset();
 	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);

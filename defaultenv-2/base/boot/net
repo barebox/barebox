@@ -8,7 +8,12 @@ fi
 path="/mnt/tftp"
 
 global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
-#global.bootm.oftree="${path}/${global.user}-oftree-${global.hostname}"
+
+oftree="${path}/${global.user}-oftree-${global.hostname}"
+if [ -f "${oftree}" ]; then
+	global.bootm.oftree="$oftree"
+fi
+
 nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
 bootargs-ip
 global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"

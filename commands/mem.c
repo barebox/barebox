@@ -112,7 +112,7 @@ int memory_display(char *addr, loff_t offs, ulong nbytes, int size, int swab)
 	return 0;
 }
 
-static int open_and_lseek(const char *filename, int mode, loff_t pos)
+int open_and_lseek(const char *filename, int mode, loff_t pos)
 {
 	int fd, ret;
 
@@ -135,7 +135,11 @@ static int open_and_lseek(const char *filename, int mode, loff_t pos)
 	return fd;
 }
 
-static int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
+/*
+ * Common function for parsing options for the 'md', 'mw', 'memcpy', 'memcmp'
+ * commands.
+ */
+int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab)
 {
 	int opt;

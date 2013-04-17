@@ -221,6 +221,10 @@ int run_shell(void);
 
 int memory_display(char *addr, loff_t offs, ulong nbytes, int size, int swab);
 
+int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
+		char **sourcefile, char **destfile, int *swab);
+int open_and_lseek(const char *filename, int mode, loff_t pos);
+
 extern const char version_string[];
 #ifdef CONFIG_BANNER
 void barebox_banner(void);

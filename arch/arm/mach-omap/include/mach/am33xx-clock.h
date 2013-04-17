@@ -139,7 +139,9 @@
 #define CM_PER_CPGMAC0_CLKCTRL          (CM_PER + 0x14) /* Ethernet */
 #define CM_PER_CPSW_CLKSTCTRL           (CM_PER + 0x144)/* Ethernet */
 #define CM_PER_OCMCRAM_CLKCTRL          (CM_PER + 0x2C) /* OCMC RAM */
+#define CM_PER_GPIO1_CLKCTRL            (CM_PER + 0xAC) /* GPIO1 */
 #define CM_PER_GPIO2_CLKCTRL            (CM_PER + 0xB0) /* GPIO2 */
+#define CM_PER_GPIO3_CLKCTRL            (CM_PER + 0xB4) /* GPIO3 */
 #define CM_PER_UART3_CLKCTRL            (CM_PER + 0x74) /* UART3 */
 #define CM_PER_I2C1_CLKCTRL             (CM_PER + 0x48) /* I2C1 */
 #define CM_PER_I2C2_CLKCTRL             (CM_PER + 0x44) /* I2C2 */

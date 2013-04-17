@@ -303,7 +303,47 @@ config CMD_IOMEM
 config CMD_MEMORY
 	bool
 	default y
-	prompt "md and mw"
+
+config CMD_MD
+	tristate
+	default y
+	select CMD_MEMORY
+	prompt "md"
+	help
+	  the md command allows to display (hexdump) memory locations and files.
+
+config CMD_MW
+	tristate
+	default y
+	select CMD_MEMORY
+	prompt "mw"
+	help
+	  the mw command allows to write to memory locations and files.
+
+config CMD_MEMCMP
+	tristate
+	default y
+	select CMD_MEMORY
+	prompt "memcmp"
+	help
+	  the memcmp command allows to compare memory and file regions.
+
+config CMD_MEMCPY
+	tristate
+	default y
+	select CMD_MEMORY
+	prompt "memcpy"
+	help
+	  the memcpy command allows to copy memory and file regions.
+
+config CMD_MEMSET
+	tristate
+	default y
+	select CMD_MEMORY
+	prompt "memset"
+	help
+	  the memset command allows to set regions of memory and files to
+	  a specific value.
 
 config CMD_CRC
 	tristate

@@ -8,6 +8,7 @@ obj-$(CONFIG_CMD_LOADS)		+= loads.o
 obj-$(CONFIG_CMD_ECHO)		+= echo.o
 obj-$(CONFIG_CMD_MEMORY)	+= mem.o
 obj-$(CONFIG_CMD_MD)		+= md.o
+obj-$(CONFIG_CMD_MM)		+= mm.o
 obj-$(CONFIG_CMD_MW)		+= mw.o
 obj-$(CONFIG_CMD_MEMCMP)	+= memcmp.o
 obj-$(CONFIG_CMD_MEMCPY)	+= memcpy.o

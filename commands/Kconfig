@@ -320,6 +320,14 @@ config CMD_MW
 	help
 	  the mw command allows to write to memory locations and files.
 
+config CMD_MM
+	tristate
+	select CMD_MEMORY
+	prompt "memory modify (mm)"
+	help
+	  the mm command allows to read-modify-write registers by doing:
+	  reg = (reg & ~mask) | (val & mask)
+
 config CMD_MEMCMP
 	tristate
 	default y

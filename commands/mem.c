@@ -567,15 +567,10 @@ static struct driver_d mem_drv = {
 static int mem_init(void)
 {
 	rw_buf = malloc(RW_BUF_SIZE);
-	if(!rw_buf) {
-		printf("%s: Out of memory\n", __FUNCTION__);
-		return -1;
-	}
+	if(!rw_buf)
+		return -ENOMEM;
 
 	add_mem_device("mem", 0, ~0, IORESOURCE_MEM_WRITEABLE);
-	platform_driver_register(&mem_drv);
-
-	return 0;
+	return platform_driver_register(&mem_drv);
 }
-
 device_initcall(mem_init);

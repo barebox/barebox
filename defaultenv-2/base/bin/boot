@@ -17,7 +17,7 @@ $0 [OPTIONS] [source]\n
 
 while getopt "vdhl" opt; do
 	if [ ${opt} = v ]; then
-		BOOT_BOOTMOPTS="$BOOT_BOOTMOPTS -v"
+		BOOT_BOOTM_OPTS="$BOOT_BOOTM_OPTS -v"
 		BOOT_VERBOSE=1
 	elif [ ${opt} = d ]; then
 		BOOT_DRYRUN=1

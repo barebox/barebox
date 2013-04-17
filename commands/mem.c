@@ -39,7 +39,7 @@
 #define PRINTF(fmt,args...)
 #endif
 
-static char *rw_buf;
+char *mem_rw_buf;
 
 static char *DEVMEM = "/dev/mem";
 
@@ -135,7 +135,7 @@ static int do_mem_md(int argc, char *argv[])
 
 	do {
 		now = min(size, (loff_t)RW_BUF_SIZE);
-		r = read(fd, rw_buf, now);
+		r = read(fd, mem_rw_buf, now);
 		if (r < 0) {
 			perror("read");
 			goto out;
@@ -143,7 +143,7 @@ static int do_mem_md(int argc, char *argv[])
 		if (!r)
 			goto out;
 
-		if ((ret = memory_display(rw_buf, start, r,
+		if ((ret = memory_display(mem_rw_buf, start, r,
 				mode >> O_RWSIZE_SHIFT, swab)))
 			goto out;
 
@@ -306,7 +306,7 @@ static int do_mem_cmp(int argc, char *argv[])
 
 		now = min((loff_t)RW_BUF_SIZE, count);
 
-		r1 = read(sourcefd, rw_buf,  now);
+		r1 = read(sourcefd, mem_rw_buf,  now);
 		if (r1 < 0) {
 			perror("read");
 			goto out;
@@ -324,7 +324,7 @@ static int do_mem_cmp(int argc, char *argv[])
 		}
 
 		for (i = 0; i < now; i++) {
-			if (rw_buf[i] != rw_buf1[i]) {
+			if (mem_rw_buf[i] != rw_buf1[i]) {
 				printf("files differ at offset %d\n", offset);
 				goto out;
 			}
@@ -412,7 +412,7 @@ static int do_mem_cp(int argc, char *argv[])
 
 		now = min((loff_t)RW_BUF_SIZE, count);
 
-		r = read(sourcefd, rw_buf, now);
+		r = read(sourcefd, mem_rw_buf, now);
 		if (r < 0) {
 			perror("read");
 			goto out;
@@ -424,7 +424,7 @@ static int do_mem_cp(int argc, char *argv[])
 		tmp = 0;
 		now = r;
 		while (now) {
-			w = write(destfd, rw_buf + tmp, now);
+			w = write(destfd, mem_rw_buf + tmp, now);
 			if (w < 0) {
 				perror("write");
 				goto out;
@@ -566,8 +566,8 @@ static struct driver_d mem_drv = {
 
 static int mem_init(void)
 {
-	rw_buf = malloc(RW_BUF_SIZE);
-	if(!rw_buf)
+	mem_rw_buf = malloc(RW_BUF_SIZE);
+	if(!mem_rw_buf)
 		return -ENOMEM;
 
 	add_mem_device("mem", 0, ~0, IORESOURCE_MEM_WRITEABLE);

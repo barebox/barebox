@@ -39,7 +39,6 @@
 #define PRINTF(fmt,args...)
 #endif
 
-#define RW_BUF_SIZE	4096
 static char *rw_buf;
 
 static char *DEVMEM = "/dev/mem";

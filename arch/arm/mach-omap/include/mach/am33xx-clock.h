@@ -51,15 +51,9 @@
 #define PERPLL_N	(OSC - 1)
 #define PERPLL_M2	5
 
-/* DDR Freq is 166 MHZ for now*/
+/* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
-//#if	(CONFIG_AM335X_EVM_IS_13x13 == 1)
-#if 0
-#define DDRPLL_M	166	/* M/N + 1 = 25/3 */
-#else
 #define DDRPLL_M	266
-#endif
-
 #define DDRPLL_N	(OSC - 1)
 #define DDRPLL_M2	1
 

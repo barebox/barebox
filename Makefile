@@ -667,9 +667,6 @@ define rule_barebox-modpost
 	$(Q)echo 'cmd_$@ := $(cmd_barebox-modpost)' > $(dot-target).cmd
 endef
 
-quiet_cmd_objcopy = OBJCOPY $@
-      cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
-
 OBJCOPYFLAGS_barebox.bin = -O binary
 
 barebox.bin: barebox FORCE

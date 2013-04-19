@@ -31,6 +31,7 @@ enum filetype {
 
 const char *file_type_to_string(enum filetype f);
 const char *file_type_to_short_string(enum filetype f);
+enum filetype file_detect_partition_table(const void *_buf, size_t bufsize);
 enum filetype file_detect_type(const void *_buf, size_t bufsize);
 enum filetype file_name_detect_type(const char *filename);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);

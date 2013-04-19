@@ -151,6 +151,28 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	return filetype_mbr;
 }
 
+enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
+{
+	const u8 *buf8 = _buf;
+	enum filetype type;
+
+	if (bufsize < 512)
+		return filetype_unknown;
+
+	/*
+	 * EFI GPT need to be detected before MBR otherwise
+	 * we will detect a MBR
+	 */
+	if (bufsize >= 520 && is_gpt_valid(buf8))
+		return filetype_gpt;
+
+	type = is_fat_or_mbr(buf8, NULL);
+	if (type != filetype_unknown)
+		return type;
+
+	return filetype_unknown;
+}
+
 enum filetype file_detect_type(const void *_buf, size_t bufsize)
 {
 	const u32 *buf = _buf;
@@ -204,21 +226,11 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (bufsize < 512)
 		return filetype_unknown;
 
-	/*
-	 * EFI GPT need to be detected before MBR otherwise
-	 * we will detect a MBR
-	 */
-	if (bufsize >= 520 && is_gpt_valid(buf8))
-		return filetype_gpt;
-
-	type = is_fat_or_mbr(buf8, NULL);
+	type = file_detect_partition_table(_buf, bufsize);
 	if (type != filetype_unknown)
 		return type;
 
-	if (bufsize < 1536)
-		return filetype_unknown;
-
-	if (buf16[512 + 28] == le16_to_cpu(0xef53))
+	if (bufsize >= 1536 && buf16[512 + 28] == le16_to_cpu(0xef53))
 		return filetype_ext;
 
 	return filetype_unknown;

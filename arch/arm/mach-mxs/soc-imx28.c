@@ -39,12 +39,16 @@ EXPORT_SYMBOL(reset_cpu);
 
 static int imx28_init(void)
 {
+	u32 reg;
+
 	/*
 	 * The default setting for the WDT is to do a POR. If the SoC is only
 	 * powered via battery, then a WDT reset powers the chip down instead
 	 * of resetting it. Use a software reset only.
 	 */
-	writel(HW_CLKCTRL_WDOG_POR_DISABLE, IMX_CCM_BASE + HW_CLKCTRL_RESET);
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_RESET) |
+		HW_CLKCTRL_WDOG_POR_DISABLE;
+	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_RESET);
 
 	return 0;
 }

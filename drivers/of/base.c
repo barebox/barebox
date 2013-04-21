@@ -873,14 +873,7 @@ static int add_of_device_resource(struct device_node *node)
 	u64 address, size;
 	struct resource *res;
 	struct device_d *dev;
-	phandle phandle;
 	int ret;
-
-	ret = of_property_read_u32(node, "phandle", &phandle);
-	if (!ret) {
-		node->phandle = phandle;
-		list_add_tail(&node->phandles, &phandle_list);
-	}
 
 	ret = of_add_memory(node, false);
 	if (ret != -ENXIO)
@@ -975,6 +968,22 @@ static void __of_probe(struct device_node *node)
 		__of_probe(n);
 }
 
+static void __of_parse_phandles(struct device_node *node)
+{
+	struct device_node *n;
+	phandle phandle;
+	int ret;
+
+	ret = of_property_read_u32(node, "phandle", &phandle);
+	if (!ret) {
+		node->phandle = phandle;
+		list_add_tail(&node->phandles, &phandle_list);
+	}
+
+	list_for_each_entry(n, &node->children, parent_list)
+		__of_parse_phandles(n);
+}
+
 struct device_node *of_chosen;
 const char *of_model;
 
@@ -991,6 +1000,7 @@ int of_probe(void)
 	of_chosen = of_find_node_by_path(root_node, "/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
+	__of_parse_phandles(root_node);
 	__of_probe(root_node);
 
 	return 0;

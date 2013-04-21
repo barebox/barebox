@@ -9,4 +9,10 @@ config PINCTRL
 	  from the devicetree. Legacy drivers here may not need this core
 	  support but instead provide their own SoC specific APIs
 
+config PINCTRL_IMX_IOMUX_V3
+	select PINCTRL if OFDEVICE
+	bool "i.MX iomux v3"
+	help
+	  This iomux controller is found on i.MX25,35,51,53,6.
+
 endmenu

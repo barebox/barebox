@@ -174,6 +174,7 @@ config ARCH_IMX25
 	bool "i.MX25"
 	select CPU_ARM926T
 	select ARCH_HAS_FEC_IMX
+	select PINCTRL_IMX_IOMUX_V3
 
 config ARCH_IMX27
 	bool "i.MX27"
@@ -188,21 +189,25 @@ config ARCH_IMX35
 	bool "i.MX35"
 	select CPU_V6
 	select ARCH_HAS_FEC_IMX
+	select PINCTRL_IMX_IOMUX_V3
 
 config ARCH_IMX51
 	bool "i.MX51"
 	select CPU_V7
 	select ARCH_HAS_FEC_IMX
+	select PINCTRL_IMX_IOMUX_V3
 
 config ARCH_IMX53
 	bool "i.MX53"
 	select CPU_V7
 	select ARCH_HAS_FEC_IMX
+	select PINCTRL_IMX_IOMUX_V3
 
 config ARCH_IMX6
 	bool "i.MX6"
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
+	select PINCTRL_IMX_IOMUX_V3
 
 endchoice
 

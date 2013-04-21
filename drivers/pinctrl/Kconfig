@@ -1,0 +1,12 @@
+menu "Pin controllers"
+
+config PINCTRL
+	bool "Pin controller core support"
+	depends on OFDEVICE
+	help
+	  Pincontrollers allow to setup the iomux unit of SoCs. The pin
+	  controller core is needed when pin muxing shall be configured
+	  from the devicetree. Legacy drivers here may not need this core
+	  support but instead provide their own SoC specific APIs
+
+endmenu

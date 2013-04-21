@@ -31,6 +31,7 @@
 #include <fs.h>
 #include <linux/list.h>
 #include <complete.h>
+#include <pinctrl.h>
 
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);
@@ -78,6 +79,8 @@ int get_free_deviceid(const char *name_template)
 int device_probe(struct device_d *dev)
 {
 	int ret;
+
+	pinctrl_select_state_default(dev);
 
 	ret = dev->bus->probe(dev);
 	if (ret) {

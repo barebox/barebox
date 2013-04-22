@@ -22,8 +22,7 @@
 #include <malloc.h>
 #include <linux/mtd/mtd.h>
 
-int of_parse_partitions(const char *cdevname,
-				   struct device_node *node)
+int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 {
 	struct device_node *n;
 	const char *partname;
@@ -48,14 +47,14 @@ int of_parse_partitions(const char *cdevname,
 			partname = of_get_property(n, "name", &len);
 		name = (char *)partname;
 
-		debug("add partition: %s.%s 0x%08lx 0x%08lx\n", cdevname, partname, offset, size);
+		debug("add partition: %s.%s 0x%08lx 0x%08lx\n", cdev->name, partname, offset, size);
 
 		if (of_get_property(n, "read-only", &len))
 			flags = DEVFS_PARTITION_READONLY;
 
-		filename = asprintf("%s.%s", cdevname, partname);
+		filename = asprintf("%s.%s", cdev->name, partname);
 
-		devfs_add_partition(cdevname, offset, size, flags, filename);
+		devfs_add_partition(cdev->name, offset, size, flags, filename);
 
 		free(filename);
 	}

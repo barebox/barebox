@@ -21,6 +21,7 @@
 #include <of.h>
 #include <malloc.h>
 #include <linux/mtd/mtd.h>
+#include <nand.h>
 
 int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 {
@@ -55,6 +56,9 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 		filename = asprintf("%s.%s", cdev->name, partname);
 
 		devfs_add_partition(cdev->name, offset, size, flags, filename);
+
+		if (cdev->mtd && cdev->mtd->type == MTD_NANDFLASH)
+			dev_add_bb_dev(filename, NULL);
 
 		free(filename);
 	}

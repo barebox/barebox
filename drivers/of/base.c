@@ -828,7 +828,7 @@ static struct device_d *add_of_platform_device(struct device_node *node)
 
 	dev->id = DEVICE_ID_SINGLE;
 	dev->resource = node->resource;
-	dev->num_resources = 1;
+	dev->num_resources = node->num_resource;
 	dev->device_node = node;
 	node->device = dev;
 
@@ -915,25 +915,44 @@ int of_add_memory(struct device_node *node, bool dump)
 
 static int add_of_device_resource(struct device_node *node)
 {
-	struct property *reg;
-	u64 address, size;
-	struct resource *res;
+	u64 address = 0, size;
+	struct resource *res, *resp;
 	struct device_d *dev;
-	int ret;
+	const __be32 *endp, *reg;
+	int na, nc, n_resources;
+	int ret, len;
 
 	ret = of_add_memory(node, false);
 	if (ret != -ENXIO)
 		return ret;
 
-	reg = of_find_property(node, "reg");
+	reg = of_get_property(node, "reg", &len);
 	if (!reg)
-		return -ENODEV;
-
-	address = of_translate_address(node, reg->value);
-	if (address == OF_BAD_ADDR)
 		return -EINVAL;
 
-	size = be32_to_cpu(((u32 *)reg->value)[1]);
+	of_bus_count_cells(node, &na, &nc);
+
+	n_resources = (len / sizeof(__be32)) / (na + nc);
+
+	res = resp = xzalloc(sizeof(*res) * n_resources);
+
+	endp = reg + (len / sizeof(__be32));
+
+	while ((endp - reg) >= (na + nc)) {
+		address = of_translate_address(node, reg);
+		if (address == OF_BAD_ADDR) {
+			ret =  -EINVAL;
+			goto err_free;
+		}
+
+		reg += na;
+		size = dt_mem_next_cell(nc, &reg);
+
+		resp->start = address;
+		resp->end = address + size - 1;
+		resp->flags = IORESOURCE_MEM;
+		resp++;
+        }
 
 	/*
 	 * A device may already be registered as platform_device.
@@ -948,20 +967,22 @@ static int add_of_device_resource(struct device_node *node)
 			node->device = dev;
 			dev->device_node = node;
 			node->resource = dev->resource;
-			return 0;
+			ret = 0;
+			goto err_free;
 		}
 	}
 
-	res = xzalloc(sizeof(*res));
-	res->start = address;
-	res->end = address + size - 1;
-	res->flags = IORESOURCE_MEM;
-
 	node->resource = res;
+	node->num_resource = n_resources;
 
 	add_of_device(node);
 
 	return 0;
+
+err_free:
+	free(res);
+
+	return ret;
 }
 
 void of_free(struct device_node *node)

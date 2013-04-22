@@ -919,8 +919,9 @@ static int add_of_device_resource(struct device_node *node)
 	struct resource *res, *resp;
 	struct device_d *dev;
 	const __be32 *endp, *reg;
+	const char *resname;
 	int na, nc, n_resources;
-	int ret, len;
+	int ret, len, index;
 
 	ret = of_add_memory(node, false);
 	if (ret != -ENXIO)
@@ -938,6 +939,8 @@ static int add_of_device_resource(struct device_node *node)
 
 	endp = reg + (len / sizeof(__be32));
 
+	index = 0;
+
 	while ((endp - reg) >= (na + nc)) {
 		address = of_translate_address(node, reg);
 		if (address == OF_BAD_ADDR) {
@@ -950,8 +953,13 @@ static int add_of_device_resource(struct device_node *node)
 
 		resp->start = address;
 		resp->end = address + size - 1;
+		resname = NULL;
+		of_property_read_string_index(node, "reg-names", index, &resname);
+		if (resname)
+			resp->name = xstrdup(resname);
 		resp->flags = IORESOURCE_MEM;
 		resp++;
+		index++;
         }
 
 	/*

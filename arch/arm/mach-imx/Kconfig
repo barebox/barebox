@@ -184,6 +184,7 @@ config ARCH_IMX27
 config ARCH_IMX31
 	select CPU_V6
 	bool "i.MX31"
+	select PINCTRL_IMX_IOMUX_V2
 
 config ARCH_IMX35
 	bool "i.MX35"

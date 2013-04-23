@@ -293,7 +293,7 @@ static int falconwing_devices_init(void)
 	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
 	/* run the SSP unit clock at 100,000 kHz */
 	imx_set_sspclk(0, 100000000, 1);
-	add_generic_device("mxs_mci", 0, NULL, IMX_SSP1_BASE, 0,
+	add_generic_device("mxs_mci", 0, NULL, IMX_SSP1_BASE, 0x2000,
 			   IORESOURCE_MEM, &mci_pdata);
 	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 4096,
 			   IORESOURCE_MEM, &fb_mode);

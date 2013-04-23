@@ -37,6 +37,7 @@
 #include <clock.h>
 #include <io.h>
 #include <asm/bitops.h>
+#include <mach/mxs.h>
 #include <mach/imx-regs.h>
 #include <mach/mci.h>
 #include <mach/clock.h>
@@ -446,19 +447,6 @@ static unsigned mxs_mci_setup_clock_speed(struct mxs_mci_host *mxs_mci, unsigned
 	return ssp / div / rate;
 }
 
-/**
- * Reset the MCI engine (the hard way)
- * @param hw_dev Host interface instance
- *
- * This will reset everything in all registers of this unit! (FIXME)
- */
-static void mxs_mci_reset(struct mxs_mci_host *mxs_mci)
-{
-	writel(SSP_CTRL0_SFTRST, mxs_mci->regs + HW_SSP_CTRL0 + 8);
-	while (readl(mxs_mci->regs + HW_SSP_CTRL0) & SSP_CTRL0_SFTRST)
-		;
-}
-
 /* ------------------------- MCI API -------------------------------------- */
 
 /**
@@ -475,7 +463,7 @@ static int mxs_mci_initialize(struct mci_host *host, struct device_d *mci_dev)
 	writel(SSP_CTRL0_CLKGATE, mxs_mci->regs + HW_SSP_CTRL0 + 8);
 
 	/* reset the unit */
-	mxs_mci_reset(mxs_mci);
+	mxs_reset_block(mxs_mci->regs + HW_SSP_CTRL0, 0);
 
 	/* restore the last settings */
 	mxs_mci_setup_timeout(mxs_mci, 0xffff);

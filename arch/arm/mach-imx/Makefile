@@ -1,8 +1,8 @@
 obj-y += clocksource.o gpio.o
-obj-$(CONFIG_ARCH_IMX1)  += imx1.o  iomux-v1.o clk-imx1.o
+obj-$(CONFIG_ARCH_IMX1)  += imx1.o  clk-imx1.o
 obj-$(CONFIG_ARCH_IMX25) += imx25.o clk-imx25.o
-obj-$(CONFIG_ARCH_IMX21) += imx21.o iomux-v1.o clk-imx21.o
-obj-$(CONFIG_ARCH_IMX27) += imx27.o iomux-v1.o clk-imx27.o
+obj-$(CONFIG_ARCH_IMX21) += imx21.o clk-imx21.o
+obj-$(CONFIG_ARCH_IMX27) += imx27.o clk-imx27.o
 obj-$(CONFIG_ARCH_IMX31) += imx31.o clk-imx31.o
 obj-$(CONFIG_ARCH_IMX35) += imx35.o clk-imx35.o
 obj-$(CONFIG_ARCH_IMX51) += imx51.o imx5.o clk-imx5.o

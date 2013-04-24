@@ -61,14 +61,11 @@ struct fsl_esdhc {
 	u32	fevt;
 	char	reserved2[168];
 	u32	hostver;
-	char	reserved3[780];
-	u32	scr;
 };
 
 struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct fsl_esdhc __iomem	*regs;
-	u32			no_snoop;
 	unsigned long		cur_clock;
 	struct device_d		*dev;
 	struct clk		*clk;
@@ -453,10 +450,6 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	struct fsl_esdhc __iomem *regs = host->regs;
 	int timeout = 1000;
 	int ret = 0;
-
-	/* Enable cache snooping */
-	if (host && !host->no_snoop)
-		esdhc_write32(&regs->scr, 0x00000040);
 
 	/* Reset the entire host controller */
 	esdhc_write32(&regs->sysctl, SYSCTL_RSTA);

@@ -1078,6 +1078,10 @@ int of_device_is_stdout_path(struct device_d *dev)
  *
  * Add initrd properties to the devicetree, or, if end is 0,
  * delete them.
+ *
+ * Note that Linux interprets end differently than barebox. For Linux end points
+ * to the first address after the memory occupied by the image while barebox
+ * lets end pointing to the last occupied byte.
  */
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end)
@@ -1092,7 +1096,7 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 	if (end) {
 		of_write_number(buf, start, 2);
 		of_set_property(chosen, "linux,initrd-start", buf, 8, 1);
-		of_write_number(buf, end, 2);
+		of_write_number(buf, end + 1, 2);
 		of_set_property(chosen, "linux,initrd-end", buf, 8, 1);
 	} else {
 		struct property *pp;

@@ -25,4 +25,3 @@ int of_get_named_gpio(struct device_node *np,
 
 	return ret;
 }
-

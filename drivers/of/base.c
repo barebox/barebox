@@ -856,13 +856,13 @@ int of_add_memory(struct device_node *node, bool dump)
 
 		sprintf(str, "ram%d", r);
 
-                barebox_add_memory_bank(str, base, size);
+		barebox_add_memory_bank(str, base, size);
 
 		if (dump)
 			pr_info("%s: %s: 0x%llx@0x%llx\n", node->name, str, size, base);
 
 		r++;
-        }
+	}
 
 	return 0;
 }

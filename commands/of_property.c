@@ -62,7 +62,7 @@ static int of_parse_prop_cells(char * const *newval, int count, char *data, int 
 
 		/* If the ptr didn't advance, something went wrong */
 		if ((newp - cp) <= 0) {
-			printf("cannot not convert \"%s\"\n", cp);
+			printf("cannot convert \"%s\"\n", cp);
 			return -EINVAL;
 		}
 
@@ -105,7 +105,7 @@ static int of_parse_prop_stream(char * const *newval, int count, char *data, int
 
 		/* If the ptr didn't advance, something went wrong */
 		if ((newp - cp) <= 0) {
-			printf("cannot not convert \"%s\"\n", cp);
+			printf("cannot convert \"%s\"\n", cp);
 			return -EINVAL;
 		}
 	}

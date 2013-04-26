@@ -136,6 +136,7 @@ void __naked __noreturn imx35_barebox_entry(uint32_t boarddata);
 void __naked __noreturn imx51_barebox_entry(uint32_t boarddata);
 void __naked __noreturn imx53_barebox_entry(uint32_t boarddata);
 void __naked __noreturn imx6_barebox_entry(uint32_t boarddata);
+void imx_esdctl_disable(void);
 #endif
 
 #endif /* __MACH_ESDCTL_V2_H */

@@ -39,6 +39,17 @@ struct imx_esdctl_data {
 	void (*add_mem)(void *esdctlbase, struct imx_esdctl_data *);
 };
 
+static int imx_esdctl_disabled;
+
+/*
+ * Boards can disable SDRAM detection if it doesn't work for them. In
+ * this case arm_add_mem_device has to be called by board code.
+ */
+void imx_esdctl_disable(void)
+{
+	imx_esdctl_disabled = 1;
+}
+
 /*
  * v1 - found on i.MX1
  */
@@ -238,6 +249,9 @@ static int imx_esdctl_probe(struct device_d *dev)
 	base = dev_request_mem_region(dev, 0);
 	if (!base)
 		return -ENOMEM;
+
+	if (imx_esdctl_disabled)
+		return 0;
 
 	data->add_mem(base, data);
 

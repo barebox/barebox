@@ -1375,7 +1375,8 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	mci_set_bus_width(mci, MMC_BUS_WIDTH_1);
-	mci_set_clock(mci, 1);	/* set the lowest available clock */
+	/* according to the SD card spec the detection can happen at 400 kHz */
+	mci_set_clock(mci, 400000);
 
 	/* reset the card */
 	rc = mci_go_idle(mci);

@@ -120,12 +120,12 @@ void sam9_smc_read(int id, int cs, struct sam9_smc_config *config)
 
 static int at91sam9_smc_probe(struct device_d *dev)
 {
-	int id;
+	int id = dev->id;
 
-	if (dev->id < 0) {
+	if (id < 0) {
 		id = 0;
-	} else if (dev->id > 1) {
-		dev_warn(dev, ": id > 2\n");
+	} else if (id > 1) {
+		dev_warn(dev, "id > 1\n");
 		return -EIO;
 	}
 

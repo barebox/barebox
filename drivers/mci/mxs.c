@@ -185,7 +185,7 @@ static int mxs_mci_read_data(struct mxs_mci_host *mxs_mci, void *buffer, unsigne
 	if (length == 0)
 		return 0;
 
-	return -EINVAL;
+	return -EIO;
 }
 
 
@@ -222,7 +222,7 @@ static int mxs_mci_write_data(struct mxs_mci_host *mxs_mci, const void *buffer, 
 	if (length == 0)
 		return 0;
 
-	return -EINVAL;
+	return -EIO;
 }
 
 /**

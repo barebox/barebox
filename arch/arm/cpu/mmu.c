@@ -189,7 +189,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 			ptes, ttb_start, ttb_end);
 
 	for (i = 0; i < num_ptes; i++) {
-		ptes[i] = (phys + i * 4096) | PTE_TYPE_SMALL |
+		ptes[i] = (phys + i * PAGE_SIZE) | PTE_TYPE_SMALL |
 			pte_flags_cached;
 	}
 
@@ -300,7 +300,7 @@ static int mmu_init(void)
 	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
 
 	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0, 4096, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
+	create_sections(0, 0, PAGE_SIZE, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
 			PMD_TYPE_SECT);
 
 	vectors_init();
@@ -332,7 +332,7 @@ void *dma_alloc_coherent(size_t size)
 	void *ret;
 
 	size = PAGE_ALIGN(size);
-	ret = xmemalign(4096, size);
+	ret = xmemalign(PAGE_SIZE, size);
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
@@ -353,6 +353,7 @@ void *phys_to_virt(unsigned long phys)
 
 void dma_free_coherent(void *mem, size_t size)
 {
+	size = PAGE_ALIGN(size);
 	remap_range(mem, size, pte_flags_cached);
 
 	free(mem);

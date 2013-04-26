@@ -225,11 +225,12 @@ static int mxcmci_read_response(struct mxcmci_host *host, unsigned int stat)
 {
 	struct mci_cmd *cmd = host->cmd;
 	int i;
-	u32 a, b, c;
-	u32 *resp = (u32 *)cmd->response;
+	u32 a, b, c, *resp;
 
 	if (!cmd)
 		return 0;
+
+	resp = (u32 *)cmd->response;
 
 	if (stat & STATUS_TIME_OUT_RESP) {
 		printf("CMD TIMEOUT\n");

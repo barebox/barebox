@@ -527,23 +527,23 @@ static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_8:
 		mxs_mci->bus_width = 2;
-		host->bus_width = 8;	/* 8 bit is possible */
+		pr_debug("IO settings: changing bus width to 8 bits\n");
 		break;
 	case MMC_BUS_WIDTH_4:
 		mxs_mci->bus_width = 1;
-		host->bus_width = 4;	/* 4 bit is possible */
+		pr_debug("IO settings: changing bus width to 4 bits\n");
 		break;
 	case MMC_BUS_WIDTH_1:
 		mxs_mci->bus_width = 0;
-		host->bus_width = 1;	/* 1 bit is possible */
+		pr_debug("IO settings: changing bus width to 1 bit\n");
 		break;
 	default:
+		pr_debug("IO settings: unsupported bus width!\n");
 		return;
 	}
 
 	mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, ios->clock);
-	pr_debug("IO settings: bus width=%d, frequency=%u Hz\n", host->bus_width,
-			mxs_mci->clock);
+	pr_debug("IO settings: frequency=%u Hz\n", mxs_mci->clock);
 }
 
 /* ----------------------------------------------------------------------- */

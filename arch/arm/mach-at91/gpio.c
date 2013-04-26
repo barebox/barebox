@@ -185,10 +185,10 @@ static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
 int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 {
 	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
-	void __iomem *pio = at91_gpio->regbase;
+	void __iomem *pio;
+	struct device_d *dev;
 	unsigned mask = pin_to_mask(pin);
 	int bank = pin_to_bank(pin);
-	struct device_d *dev = at91_gpio->chip.dev;
 
 	if (!at91_gpio)
 		return -EINVAL;
@@ -197,6 +197,7 @@ int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 	if (!pio)
 		return -EINVAL;
 
+	dev = at91_gpio->chip.dev;
 	at91_mux_disable_interrupt(pio, mask);
 
 	pin %= MAX_NB_GPIO_PER_BANK;

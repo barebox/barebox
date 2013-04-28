@@ -652,12 +652,6 @@ void prcm_init(void)
 /**
  * @brief Enable the clks & power for perifs
  *
- * GPT2 Sysclk, ICLK,FCLK, 32k Sync is enabled by default
- * Uses CONFIG_OMAP_CLOCK_UART to enable UART clocks
- * Uses CONFIG_OMAP_CLOCK_I2C to enable I2C clocks
- * Uses CONFIG_OMAP_CLOCK_ALL to enable All Clocks!
- *    - Not a wise idea in most cases
- *
  * @return void
  */
 static void per_clocks_enable(void)

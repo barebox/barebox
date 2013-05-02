@@ -127,7 +127,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 		data->initrd = data->os;
 	}
 
-	if (data->initrd_address == UIMAGE_SOME_ADDRESS)
+	if (data->initrd_address == UIMAGE_INVALID_ADDRESS)
 		data->initrd_address = data->initrd->header.ih_load;
 
 	return 0;
@@ -256,7 +256,7 @@ static int do_bootm(int argc, char *argv[])
 
 	memset(&data, 0, sizeof(struct image_data));
 
-	data.initrd_address = UIMAGE_SOME_ADDRESS;
+	data.initrd_address = UIMAGE_INVALID_ADDRESS;
 	data.os_address = UIMAGE_SOME_ADDRESS;
 	data.verify = 0;
 	data.verbose = 0;
@@ -408,8 +408,6 @@ static int do_bootm(int argc, char *argv[])
 #endif
 	if (data.os_address == UIMAGE_SOME_ADDRESS)
 		data.os_address = UIMAGE_INVALID_ADDRESS;
-	if (data.initrd_address == UIMAGE_SOME_ADDRESS)
-		data.initrd_address = UIMAGE_INVALID_ADDRESS;
 
 	handler = bootm_find_handler(os_type, &data);
 	if (!handler) {

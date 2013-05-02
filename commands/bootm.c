@@ -127,9 +127,6 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 		data->initrd = data->os;
 	}
 
-	if (data->initrd_address == UIMAGE_INVALID_ADDRESS)
-		data->initrd_address = data->initrd->header.ih_load;
-
 	return 0;
 }
 

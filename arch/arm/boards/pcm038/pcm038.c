@@ -191,6 +191,7 @@ static int pcm038_devices_init(void)
 	long sram_size;
 
 	unsigned int mode[] = {
+		/* FEC */
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
 		PD2_AIN_FEC_TXD2,
@@ -209,16 +210,18 @@ static int pcm038_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
+		/* UART1 */
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
+		/* CSPI1 */
 		PD25_PF_CSPI1_RDY,
 		GPIO_PORTD | 28 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
-		/* display */
+		/* Display */
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
 		PA7_PF_LD1,

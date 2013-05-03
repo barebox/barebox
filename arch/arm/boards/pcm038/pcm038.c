@@ -46,6 +46,7 @@
 
 #include "pll.h"
 
+#define PCM038_GPIO_FEC_RST	(GPIO_PORTC + 30)
 #define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
 
 static struct fec_platform_data fec_info = {
@@ -212,6 +213,7 @@ static int pcm038_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
+		PCM038_GPIO_FEC_RST | GPIO_GPIO | GPIO_OUT,
 		/* UART1 */
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
@@ -303,6 +305,7 @@ static int pcm038_devices_init(void)
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock
 	 */
+	gpio_set_value(PCM038_GPIO_FEC_RST, 1);
 	imx27_add_fec(&fec_info);
 
 	switch (bootsource_get()) {

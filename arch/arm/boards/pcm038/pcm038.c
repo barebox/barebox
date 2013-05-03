@@ -46,12 +46,14 @@
 
 #include "pll.h"
 
+#define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
+
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
 	.phy_addr = 1,
 };
 
-static int pcm038_spi_cs[] = {GPIO_PORTD + 28};
+static int pcm038_spi_cs[] = { PCM038_GPIO_SPI_CS0 };
 
 static struct spi_imx_master pcm038_spi_0_data = {
 	.chipselect = pcm038_spi_cs,
@@ -217,7 +219,7 @@ static int pcm038_devices_init(void)
 		PE15_PF_UART1_RTS,
 		/* CSPI1 */
 		PD25_PF_CSPI1_RDY,
-		GPIO_PORTD | 28 | GPIO_GPIO | GPIO_OUT,
+		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,

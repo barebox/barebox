@@ -182,7 +182,7 @@ int clk_register_clkdev(struct clk *clk, const char *con_id,
 	va_list ap;
 
 	if (IS_ERR(clk))
-                return PTR_ERR(clk);
+		return PTR_ERR(clk);
 
 	va_start(ap, dev_fmt);
 	cl = clkdev_alloc(clk, con_id, dev_fmt, ap);

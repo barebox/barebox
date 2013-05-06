@@ -13,23 +13,12 @@
  *
  */
 #include <common.h>
+#include <bootsource.h>
 #include <envfs.h>
 #include <init.h>
 #include <io.h>
 #include <fs.h>
 #include <linux/stat.h>
-#include <mach/generic.h>
-
-enum omap_boot_src omap_bootsrc(void)
-{
-#if defined(CONFIG_ARCH_OMAP3)
-	return omap3_bootsrc();
-#elif defined(CONFIG_ARCH_OMAP4)
-	return omap4_bootsrc();
-#elif defined(CONFIG_ARCH_AM33XX)
-	return am33xx_bootsrc();
-#endif
-}
 
 #if defined(CONFIG_DEFAULT_ENVIRONMENT) && defined(CONFIG_MCI_STARTUP)
 static int omap_env_init(void)
@@ -38,7 +27,7 @@ static int omap_env_init(void)
 	char *diskdev = "/dev/disk0.0";
 	int ret;
 
-	if (omap_bootsrc() != OMAP_BOOTSRC_MMC1)
+	if (bootsource_get() != BOOTSOURCE_MMC)
 		return 0;
 
 	ret = stat(diskdev, &s);

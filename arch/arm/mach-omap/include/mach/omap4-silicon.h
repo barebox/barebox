@@ -161,6 +161,25 @@
 #define OMAP44XX_PRM_RSTCTRL_RESET	0x01
 
 /*
+ * SAR (Save & Rescue) memory region
+ */
+#define OMAP44XX_SAR_RAM_BASE      0x4a326000
+#define OMAP44XX_SAR_CH_ADDRESS    (OMAP44XX_SAR_RAM_BASE + 0xA00)
+#define OMAP44XX_SAR_CH_START      (OMAP44XX_SAR_RAM_BASE + 0xA0C)
+#define OMAP44XX_SAR_BOOT_VOID     0x00
+#define OMAP44XX_SAR_BOOT_XIP      0x01
+#define OMAP44XX_SAR_BOOT_XIPWAIT  0x02
+#define OMAP44XX_SAR_BOOT_NAND     0x03
+#define OMAP44XX_SAR_BOOT_ONENAND  0x04
+#define OMAP44XX_SAR_BOOT_MMC1     0x05
+#define OMAP44XX_SAR_BOOT_MMC2_1   0x06
+#define OMAP44XX_SAR_BOOT_MMC2_2   0x07
+#define OMAP44XX_SAR_BOOT_UART     0x43
+#define OMAP44XX_SAR_BOOT_USB_1    0x45
+#define OMAP44XX_SAR_BOOT_USB_ULPI 0x46
+#define OMAP44XX_SAR_BOOT_USB_2    0x47
+
+/*
  * Non-secure SRAM Addresses
  * Non-secure RAM starts at 0x40300000 for GP devices. But we keep SRAM_BASE
  * at 0x40304000(EMU base) so that our code works for both EMU and GP
@@ -212,6 +231,7 @@ void omap4_ddr_init(const struct ddr_regs *, const struct dpll_param *);
 void omap4_power_i2c_send(u32);
 unsigned int omap4_revision(void);
 noinline int omap4_scale_vcores(unsigned vsel0_pin);
+void omap4_set_warmboot_order(u32 *device_list);
 
 #endif
 

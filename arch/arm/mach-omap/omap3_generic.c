@@ -28,6 +28,7 @@
  */
 
 #include <common.h>
+#include <bootsource.h>
 #include <init.h>
 #include <io.h>
 #include <mach/omap3-silicon.h>
@@ -40,7 +41,6 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
-#include <mach/generic.h>
 
 /**
  * @brief Reset the CPU
@@ -461,21 +461,25 @@ void omap3_core_init(void)
 #ifdef CONFIG_OMAP3_CLOCK_CONFIG
 	prcm_init();
 #endif
-
 }
 
 #define OMAP3_TRACING_VECTOR1 0x4020ffb4
 
-enum omap_boot_src omap3_bootsrc(void)
+static int omap3_bootsource(void)
 {
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	u32 bootsrc = readl(OMAP3_TRACING_VECTOR1);
 
 	if (bootsrc & (1 << 2))
-		return OMAP_BOOTSRC_NAND;
+		src = BOOTSOURCE_NAND;
 	if (bootsrc & (1 << 6))
-		return OMAP_BOOTSRC_MMC1;
-	return OMAP_BOOTSRC_UNKNOWN;
+		src = BOOTSOURCE_MMC;
+	bootsource_set(src);
+	bootsource_set_instance(0);
+
+	return 0;
 }
+postcore_initcall(omap3_bootsource);
 
 /* GPMC timing for OMAP3 nand device */
 const struct gpmc_config omap3_nand_cfg = {

@@ -1,4 +1,5 @@
 #include <common.h>
+#include <bootsource.h>
 #include <partition.h>
 #include <nand.h>
 #include <init.h>
@@ -6,7 +7,6 @@
 #include <linux/mtd/mtd.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <mach/generic.h>
 #include <sizes.h>
 #include <filetype.h>
 
@@ -165,29 +165,31 @@ static __noreturn int omap_xload(void)
 {
 	int (*func)(void) = NULL;
 
-	switch (omap_bootsrc())
+	switch (bootsource_get())
 	{
-	case OMAP_BOOTSRC_MMC1:
-		printf("booting from MMC1\n");
+	case BOOTSOURCE_MMC:
+		printf("booting from MMC\n");
 		func = omap_xload_boot_mmc();
 		break;
-	case OMAP_BOOTSRC_USB1:
+	case BOOTSOURCE_USB:
 		if (IS_ENABLED(CONFIG_FS_OMAP4_USBBOOT)) {
-			printf("booting from USB1\n");
+			printf("booting from USB\n");
 			func = omap4_xload_boot_usb();
 			break;
 		} else {
-			printf("booting from usb1 not enabled\n");
+			printf("booting from USB not enabled\n");
 		}
-	case OMAP_BOOTSRC_UNKNOWN:
-		printf("unknown boot source. Fall back to nand\n");
-	case OMAP_BOOTSRC_NAND:
+	case BOOTSOURCE_NAND:
 		printf("booting from NAND\n");
 		func = omap_xload_boot_nand(SZ_128K);
 		break;
-	case OMAP_BOOTSRC_SPI1:
-		printf("booting from SPI1\n");
+	case BOOTSOURCE_SPI:
+		printf("booting from SPI\n");
 		func = omap_xload_boot_spi(SZ_128K);
+		break;
+	default:
+		printf("unknown boot source. Fall back to nand\n");
+		func = omap_xload_boot_nand(SZ_128K);
 		break;
 	}
 

@@ -1,11 +1,11 @@
 #include <common.h>
+#include <bootsource.h>
 #include <init.h>
 #include <io.h>
 #include <mach/omap4-clock.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 #include <mach/syslib.h>
-#include <mach/generic.h>
 #include <mach/gpmc.h>
 #include <mach/gpio.h>
 #include <mach/omap4_rom_usb.h>
@@ -39,6 +39,26 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(OMAP44XX_PRM_RSTCTRL_RESET, OMAP44XX_PRM_RSTCTRL);
 
 	while (1);
+}
+
+void omap4_set_warmboot_order(u32 *device_list)
+{
+	const u32 CH[] = {
+		0xCF00AA01,
+		0x0000000C,
+		(device_list[0] << 16) | 0x0000,
+		(device_list[2] << 16) | device_list[1],
+		0x0000 | device_list[3],
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000
+	};
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(CH); i++)
+		writel(CH[i], OMAP44XX_SAR_CH_START + i*sizeof(CH[0]));
+	writel(OMAP44XX_SAR_CH_START, OMAP44XX_SAR_CH_ADDRESS);
 }
 
 #define WATCHDOG_WSPR	0x48
@@ -339,7 +359,7 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	/* PHY control values */
 
 	sr32(CM_MEMIF_EMIF_1_CLKCTRL, 0, 32, 0x1);
-        sr32(CM_MEMIF_EMIF_2_CLKCTRL, 0, 32, 0x1);
+	sr32(CM_MEMIF_EMIF_2_CLKCTRL, 0, 32, 0x1);
 
 	/* Put the Core Subsystem PD to ON State */
 
@@ -466,7 +486,7 @@ static int omap_vector_init(void)
 	 * The ROM code uses interrupts for the transfers, so do not modify the
 	 * interrupt vectors in this case.
 	 */
-	if (omap4_bootsrc() != OMAP_BOOTSRC_USB1) {
+	if (bootsource_get() != BOOTSOURCE_USB) {
 		__asm__ __volatile__ (
 			"mov    r0, #0;"
 			"mcr    p15, #0, r0, c12, c0, #0;"
@@ -478,22 +498,28 @@ static int omap_vector_init(void)
 
 	return 0;
 }
-core_initcall(omap_vector_init);
 
 #define OMAP4_TRACING_VECTOR3 0x4030d048
 
-enum omap_boot_src omap4_bootsrc(void)
+static int omap4_bootsource(void)
 {
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	u32 bootsrc = readl(OMAP4_TRACING_VECTOR3);
 
 	if (bootsrc & (1 << 5))
-		return OMAP_BOOTSRC_MMC1;
+		src = BOOTSOURCE_MMC;
 	if (bootsrc & (1 << 3))
-		return OMAP_BOOTSRC_NAND;
+		src = BOOTSOURCE_NAND;
 	if (bootsrc & (1<<20))
-		return OMAP_BOOTSRC_USB1;
-	return OMAP_BOOTSRC_UNKNOWN;
+		src = BOOTSOURCE_USB;
+	bootsource_set(src);
+	bootsource_set_instance(0);
+
+	omap_vector_init();
+
+	return 0;
 }
+core_initcall(omap4_bootsource);
 
 #define GPIO_MASK 0x1f
 

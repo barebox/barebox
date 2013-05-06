@@ -31,12 +31,12 @@
 #define MPUPLL_M_600	600	/* 125 * n */
 #define MPUPLL_M_720	720	/* 125 * n */
 
-#define MPUPLL_N	23	/* (n -1 ) */
+#define MPUPLL_N	(OSC - 1)
 #define MPUPLL_M2	1
 
 /* Core PLL Fdll = 1 GHZ, */
 #define COREPLL_M	1000	/* 125 * n */
-#define COREPLL_N	23	/* (n -1 ) */
+#define COREPLL_N	(OSC - 1)
 
 #define COREPLL_M4	10	/* CORE_CLKOUTM4 = 200 MHZ */
 #define COREPLL_M5	8	/* CORE_CLKOUTM5 = 250 MHZ */
@@ -48,19 +48,13 @@
  * For clkout = 192 MHZ, Fdll = 960 MHZ, divider values are given below
  */
 #define PERPLL_M	960
-#define PERPLL_N	23
+#define PERPLL_N	(OSC - 1)
 #define PERPLL_M2	5
 
-/* DDR Freq is 166 MHZ for now*/
+/* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
-//#if	(CONFIG_AM335X_EVM_IS_13x13 == 1)
-#if 0
-#define DDRPLL_M	166	/* M/N + 1 = 25/3 */
-#else
 #define DDRPLL_M	266
-#endif
-
-#define DDRPLL_N	23
+#define DDRPLL_N	(OSC - 1)
 #define DDRPLL_M2	1
 
 /* PRCM */
@@ -139,7 +133,9 @@
 #define CM_PER_CPGMAC0_CLKCTRL          (CM_PER + 0x14) /* Ethernet */
 #define CM_PER_CPSW_CLKSTCTRL           (CM_PER + 0x144)/* Ethernet */
 #define CM_PER_OCMCRAM_CLKCTRL          (CM_PER + 0x2C) /* OCMC RAM */
+#define CM_PER_GPIO1_CLKCTRL            (CM_PER + 0xAC) /* GPIO1 */
 #define CM_PER_GPIO2_CLKCTRL            (CM_PER + 0xB0) /* GPIO2 */
+#define CM_PER_GPIO3_CLKCTRL            (CM_PER + 0xB4) /* GPIO3 */
 #define CM_PER_UART3_CLKCTRL            (CM_PER + 0x74) /* UART3 */
 #define CM_PER_I2C1_CLKCTRL             (CM_PER + 0x48) /* I2C1 */
 #define CM_PER_I2C2_CLKCTRL             (CM_PER + 0x44) /* I2C2 */

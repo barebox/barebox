@@ -55,7 +55,7 @@
 
 static void beaglebone_data_macro_config(int dataMacroNum)
 {
-	u32 BaseAddrOffset = 0x00;;
+	u32 BaseAddrOffset = 0x00;
 
 	if (dataMacroNum == 1)
 		BaseAddrOffset = 0xA4;

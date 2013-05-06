@@ -838,13 +838,19 @@ include/asm:
 	$(Q)$(check-symlink)
 	$(Q)$(create-symlink)
 
+define symlink-config-h
+	if [ -f $(srctree)/$(BOARD)/config.h ]; then		\
+		$(kecho) '  SYMLINK $@ -> $(BOARD)/config.h';	\
+		ln -fsn $(srctree)/$(BOARD)/config.h $@;	\
+	else							\
+		[ -h $@ ] && rm -f $@;				\
+		$(kecho) '  CREATE  $@';			\
+		touch -a $@;					\
+	fi
+endef
+
 include/config.h: include/config/auto.conf
-	$(Q)$(kecho) '  SYMLINK $@ -> $(BOARD)/config.h'
-ifneq ($(KBUILD_SRC),)
-	$(Q)ln -fsn $(srctree)/$(BOARD)/config.h $@
-else
-	$(Q)ln -fsn ../$(BOARD)/config.h $@
-endif
+	$(Q)$(symlink-config-h)
 
 # Generate some files
 # ---------------------------------------------------------------------------

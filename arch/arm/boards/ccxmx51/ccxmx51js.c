@@ -20,12 +20,16 @@
 #include <init.h>
 #include <mci.h>
 #include <asm/armlinux.h>
+#include <mach/gpio.h>
+#include <mach/generic.h>
 #include <mach/imx51-regs.h>
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 #include <generated/mach-types.h>
 
 #include "ccxmx51.h"
+
+#define CCXMX51JS_USBHOST1_RESET	IMX_GPIO_NR(3, 8)
 
 static iomux_v3_cfg_t ccxmx51js_pads[] = {
 	/* SD1 */
@@ -74,6 +78,11 @@ static struct esdhc_platform_data sdhc3_pdata = {
 	.caps		= MMC_MODE_4BIT | MMC_MODE_8BIT,
 };
 
+static struct imxusb_platformdata ccxmx51js_usbhost1_pdata = {
+	.flags	= MXC_EHCI_MODE_ULPI | MXC_EHCI_ITC_NO_THRESHOLD,
+	.mode	= IMX_USB_MODE_HOST,
+};
+
 static int ccxmx51js_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(ccxmx51js_pads, ARRAY_SIZE(ccxmx51js_pads));
@@ -82,6 +91,12 @@ static int ccxmx51js_init(void)
 		imx51_add_mmc0(&sdhc1_pdata);
 		imx51_add_mmc2(&sdhc3_pdata);
 	}
+
+	gpio_direction_output(CCXMX51JS_USBHOST1_RESET, 0);
+	mdelay(10);
+	gpio_set_value(CCXMX51JS_USBHOST1_RESET, 1);
+	mdelay(10);
+	imx51_add_usbh1(&ccxmx51js_usbhost1_pdata);
 
 	armlinux_set_architecture(ccxmx51_id->wless ? MACH_TYPE_CCWMX51JS : MACH_TYPE_CCMX51JS);
 

@@ -162,9 +162,9 @@
 #define MX31_PDR0_MAX_PODF(x)	(((x) & 0x7) << 3)
 #define MX31_PDR0_MCU_PODF(x)	((x) & 0x7)
 
-#define MX31_IOMUXC_GPR	(IOMUXC_BASE + 0x8)
-#define MX31_IOMUXC_SW_MUX_CTL(x)	(IOMUXC_BASE + 0xc + (x) * 4)
-#define MX31_IOMUXC_SW_PAD_CTL(x)	(IOMUXC_BASE + 0x154 + (x) * 4)
+#define MX31_IOMUXC_GPR	(MX31_IOMUXC_BASE_ADDR + 0x8)
+#define MX31_IOMUXC_SW_MUX_CTL(x)	(MX31_IOMUXC_BASE_ADDR + 0xc + (x) * 4)
+#define MX31_IOMUXC_SW_PAD_CTL(x)	(MX31_IOMUXC_BASE_ADDR + 0x154 + (x) * 4)
 
 /*
  * Signal Multiplexing (IOMUX)

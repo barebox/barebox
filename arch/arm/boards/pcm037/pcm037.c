@@ -83,9 +83,9 @@ static void pcm037_usb_init(void)
 	ulpi_setup((void *)(MX31_USB_OTG_BASE_ADDR + 0x170), 1);
 
 	/* Host 2 */
-	tmp = readl(MX31_USB_OTG_BASE_ADDR + 0x8);
-	tmp |= 1 << 11;
-	writel(tmp, MX31_IOMUXC_BASE_ADDR + 0x8);
+	tmp = readl(MX31_IOMUXC_GPR);
+	tmp |= 1 << 11;	/* IOMUX GPR: enable USBH2 signals */
+	writel(tmp, MX31_IOMUXC_GPR);
 
 	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_CLK, IOMUX_CONFIG_FUNC));
 	imx_iomux_mode(IOMUX_MODE(MX31_PIN_USBH2_DIR, IOMUX_CONFIG_FUNC));

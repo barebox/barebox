@@ -607,12 +607,16 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
 {
 	struct mci_host *host = mci->host;
 
-	/* check against any given limits */
+	/* check against any given limits at the host's side */
 	if (clock > host->f_max)
 		clock = host->f_max;
 
 	if (clock < host->f_min)
 		clock = host->f_min;
+
+	/* check against the limit at the card's side */
+	if (mci->tran_speed != 0 && clock > mci->tran_speed)
+		clock = mci->tran_speed;
 
 	host->clock = clock;	/* the new target frequency */
 	mci_set_ios(mci);
@@ -1375,7 +1379,8 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	mci_set_bus_width(mci, MMC_BUS_WIDTH_1);
-	mci_set_clock(mci, 1);	/* set the lowest available clock */
+	/* according to the SD card spec the detection can happen at 400 kHz */
+	mci_set_clock(mci, 400000);
 
 	/* reset the card */
 	rc = mci_go_idle(mci);

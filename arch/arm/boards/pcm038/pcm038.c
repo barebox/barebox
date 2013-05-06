@@ -46,12 +46,15 @@
 
 #include "pll.h"
 
+#define PCM038_GPIO_FEC_RST	(GPIO_PORTC + 30)
+#define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
+
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
 	.phy_addr = 1,
 };
 
-static int pcm038_spi_cs[] = {GPIO_PORTD + 28};
+static int pcm038_spi_cs[] = { PCM038_GPIO_SPI_CS0 };
 
 static struct spi_imx_master pcm038_spi_0_data = {
 	.chipselect = pcm038_spi_cs,
@@ -191,6 +194,7 @@ static int pcm038_devices_init(void)
 	long sram_size;
 
 	unsigned int mode[] = {
+		/* FEC */
 		PD0_AIN_FEC_TXD0,
 		PD1_AIN_FEC_TXD1,
 		PD2_AIN_FEC_TXD2,
@@ -209,16 +213,19 @@ static int pcm038_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
+		PCM038_GPIO_FEC_RST | GPIO_GPIO | GPIO_OUT,
+		/* UART1 */
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
 		PE14_PF_UART1_CTS,
 		PE15_PF_UART1_RTS,
+		/* CSPI1 */
 		PD25_PF_CSPI1_RDY,
-		GPIO_PORTD | 28 | GPIO_GPIO | GPIO_OUT,
+		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
-		/* display */
+		/* Display */
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
 		PA7_PF_LD1,
@@ -298,6 +305,7 @@ static int pcm038_devices_init(void)
 	/* Register the fec device after the PLL re-initialisation
 	 * as the fec depends on the (now higher) ipg clock
 	 */
+	gpio_set_value(PCM038_GPIO_FEC_RST, 1);
 	imx27_add_fec(&fec_info);
 
 	switch (bootsource_get()) {

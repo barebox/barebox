@@ -136,9 +136,16 @@ config ARCH_VEXPRESS
 	select COMMON_CLK
 
 config ARCH_TEGRA
-	bool "Nvidia Tegra-based boards"
-	select CPU_ARM926T
+	bool "NVIDIA Tegra"
+	select CPU_V7
 	select HAS_DEBUG_LL
+	select BUILTIN_DTB
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select GPIOLIB
+	select GPIO_TEGRA
+	select OFDEVICE
+	select OFTREE
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

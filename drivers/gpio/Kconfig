@@ -39,6 +39,13 @@ config GPIO_PL061
 config GPIO_STMPE
 	depends on MFD_STMPE
 	bool "STMPE GPIO Expander"
+
+config GPIO_TEGRA
+	bool "GPIO support for the Tegra SoCs"
+	depends on ARCH_TEGRA
+	help
+	  Say yes here to include the driver for the GPIO controller found on the
+	  Tegra line of SoCs.
 endmenu
 
 endif

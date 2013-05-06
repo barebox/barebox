@@ -219,7 +219,12 @@ int run_shell(void);
 #define PAGE_ALIGN(s) (((s) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
 #define PAGE_ALIGN_DOWN(x) ((x) & ~(PAGE_SIZE - 1))
 
-int memory_display(char *addr, loff_t offs, ulong nbytes, int size, int swab);
+int memory_display(char *addr, loff_t offs, unsigned nbytes, int size, int swab);
+
+int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
+		char **sourcefile, char **destfile, int *swab);
+int open_and_lseek(const char *filename, int mode, loff_t pos);
+#define RW_BUF_SIZE	(unsigned)4096
 
 extern const char version_string[];
 #ifdef CONFIG_BANNER

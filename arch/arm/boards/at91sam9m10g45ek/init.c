@@ -38,6 +38,7 @@
 #include <mach/at91sam9_smc.h>
 #include <gpio_keys.h>
 #include <readkey.h>
+#include <spi/spi.h>
 
 /*
  * board revision encoding
@@ -124,6 +125,22 @@ static void ek_add_device_mci(void)
 #else
 static void ek_add_device_mci(void) {}
 #endif
+
+static const struct spi_board_info ek_spi_devices[] = {
+	{
+		.name		= "mtd_dataflash",
+		.chip_select	= 0,
+		.max_speed_hz	= 15 * 1000 * 1000,
+		.bus_num	= 0,
+	}
+};
+
+static void ek_add_device_spi(void)
+{
+	spi_register_board_info(ek_spi_devices,
+			ARRAY_SIZE(ek_spi_devices));
+	at91_add_device_spi(0, NULL);
+}
 
 #ifdef CONFIG_LED_GPIO
 struct gpio_led ek_leds[] = {
@@ -281,6 +298,7 @@ static void ek_add_device_lcdc(void) {}
 static int at91sam9m10g45ek_devices_init(void)
 {
 	ek_add_device_nand();
+	ek_add_device_spi();
 	at91_add_device_eth(0, &macb_pdata);
 	ek_add_device_mci();
 	ek_add_device_usb();

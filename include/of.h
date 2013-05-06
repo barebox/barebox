@@ -26,6 +26,7 @@ struct device_node {
 	struct list_head parent_list;
 	struct list_head list;
 	struct resource *resource;
+	int num_resource;
 	struct device_d *device;
 	struct list_head phandles;
 	phandle phandle;
@@ -160,6 +161,8 @@ void of_delete_property(struct property *pp);
 
 int of_property_read_string(struct device_node *np, const char *propname,
 				const char **out_string);
+int of_property_read_string_index(struct device_node *np, const char *propname,
+				  int index, const char **output);
 int of_set_property(struct device_node *node, const char *p, const void *val, int len,
 		int create);
 struct device_node *of_create_node(struct device_node *root, const char *path);
@@ -167,9 +170,10 @@ struct device_node *of_create_node(struct device_node *root, const char *path);
 struct device_node *of_get_root_node(void);
 int of_set_root_node(struct device_node *);
 
+struct cdev;
+
 #ifdef CONFIG_OFTREE
-int of_parse_partitions(const char *cdevname,
-			    struct device_node *node);
+int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 
 int of_alias_get_id(struct device_node *np, const char *stem);
 int of_device_is_stdout_path(struct device_d *dev);
@@ -177,7 +181,7 @@ const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
 #else
-static inline int of_parse_partitions(const char *cdevname,
+static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
 	return -EINVAL;

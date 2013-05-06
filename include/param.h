@@ -15,6 +15,8 @@ struct param_d {
 	unsigned int flags;
 	char *name;
 	char *value;
+	struct device_d *dev;
+	void *driver_priv;
 	struct list_head list;
 };
 
@@ -28,18 +30,33 @@ int dev_add_param(struct device_d *dev, const char *name,
 		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags);
 
+struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char *format, void *priv);
+
+struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv);
+
+struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
+		int value, const char *format);
+
+struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		IPaddr_t *ip, void *priv);
+
 int dev_add_param_fixed(struct device_d *dev, char *name, char *value);
 
-void dev_remove_param(struct device_d *dev, char *name);
+void dev_remove_param(struct param_d *p);
 
 void dev_remove_parameters(struct device_d *dev);
 
 int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		const char *val);
 
-/* Convenience functions to handle a parameter as an ip address */
-int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip);
-IPaddr_t dev_get_param_ip(struct device_d *dev, char *name);
 #else
 static inline const char *dev_get_param(struct device_d *dev, const char *name)
 {
@@ -64,12 +81,42 @@ static inline int dev_add_param(struct device_d *dev, char *name,
 	return 0;
 }
 
+static inline struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char *format, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
+		int value, const char *format)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		IPaddr_t *ip, void *priv)
+{
+	return NULL;
+}
+
 static inline int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
 {
 	return 0;
 }
 
-static inline void dev_remove_param(struct device_d *dev, char *name) {}
+static inline void dev_remove_param(struct param_d *p) {}
 
 static inline void dev_remove_parameters(struct device_d *dev) {}
 
@@ -78,17 +125,6 @@ static inline int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 {
 	return 0;
 }
-
-/* Convenience functions to handle a parameter as an ip address */
-static inline int dev_set_param_ip(struct device_d *dev, char *name, IPaddr_t ip)
-{
-	return 0;
-}
-static inline IPaddr_t dev_get_param_ip(struct device_d *dev, char *name)
-{
-	return 0;
-}
 #endif
 
 #endif /* PARAM_H */
-

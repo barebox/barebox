@@ -325,20 +325,18 @@ on_error:
 	return rc;
 }
 
-static int ata_set_probe(struct device_d *class_dev, struct param_d *param,
-				const char *val)
+static int ata_set_probe(struct param_d *param, void *priv)
 {
-	struct ata_port *port = container_of(class_dev, struct ata_port, class_dev);
-	int ret, probe;
+	struct ata_port *port = priv;
+	int ret;
+
+	if (!port->probe)
+		return 0;
 
 	if (port->initialized) {
-		dev_info(class_dev, "already initialized\n");
+		dev_info(&port->class_dev, "already initialized\n");
 		return 0;
 	}
-
-	probe = !!simple_strtoul(val, NULL, 0);
-	if (!probe)
-		return 0;
 
 	ret = ata_port_init(port);
 	if (ret)
@@ -346,7 +344,7 @@ static int ata_set_probe(struct device_d *class_dev, struct param_d *param,
 
 	port->initialized = 1;
 
-	return dev_param_set_generic(class_dev, param, "1");
+	return 0;
 }
 
 /**
@@ -367,7 +365,8 @@ int ata_port_register(struct ata_port *port)
 	if (ret)
 		return ret;
 
-	dev_add_param(&port->class_dev, "probe", ata_set_probe, NULL, 0);
+	dev_add_param_bool(&port->class_dev, "probe", ata_set_probe,
+			NULL, &port->probe, port);
 
 	return ret;
 }

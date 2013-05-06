@@ -49,6 +49,7 @@
 struct micrel_switch_priv {
 	struct cdev             cdev;
 	struct spi_device       *spi;
+	unsigned int		p_enable;
 };
 
 static int micrel_switch_read_reg(struct spi_device *spi, uint8_t reg)
@@ -78,27 +79,15 @@ static void micrel_switch_write_reg(struct spi_device *spi, uint8_t reg, uint8_t
 	spi_write_then_read(spi, tx, 3, NULL, 0);
 }
 
-static int micrel_switch_enable_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int micrel_switch_enable_set(struct param_d *param, void *_priv)
 {
-	struct spi_device *spi = (struct spi_device *)dev->type_data;
-	int enable;
-	char *new;
+	struct micrel_switch_priv *priv = _priv;
+	struct spi_device *spi = priv->spi;
 
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	enable = simple_strtoul(val, NULL, 0);
-
-	if (enable) {
+	if (priv->p_enable)
 		micrel_switch_write_reg(spi, REG_ID1, 1);
-		new = "1";
-	} else {
+	else
 		micrel_switch_write_reg(spi, REG_ID1, 0);
-		new = "0";
-	}
-
-	dev_param_set_generic(dev, param, new);
 
 	return 0;
 }
@@ -172,8 +161,11 @@ static int micrel_switch_probe(struct device_d *dev)
 	priv->cdev.dev = dev;
 	devfs_create(&priv->cdev);
 
-	dev_add_param(dev, "enable", micrel_switch_enable_set, NULL, 0);
-	dev_set_param(dev, "enable", "1");
+	dev_add_param_bool(dev, "enable", micrel_switch_enable_set,
+			NULL, &priv->p_enable, priv);
+
+	priv->p_enable = 1;
+	micrel_switch_write_reg(priv->spi, REG_ID1, 1);
 
 	return 0;
 }

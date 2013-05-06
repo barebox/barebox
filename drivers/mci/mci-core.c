@@ -34,6 +34,7 @@
 #include <asm/byteorder.h>
 #include <block.h>
 #include <disks.h>
+#include <linux/err.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -1460,46 +1461,23 @@ on_error:
  * @param val "0" does nothing, a "1" will probe for a MCI card
  * @return 0 on success
  */
-static int mci_set_probe(struct device_d *mci_dev, struct param_d *param,
-				const char *val)
+static int mci_set_probe(struct param_d *param, void *priv)
 {
-	struct mci *mci = mci_dev->priv;
-	int rc, probe;
+	struct mci *mci = priv;
+	int rc;
+
+	if (!mci->probe)
+		return 0;
 
 	rc = mci_check_if_already_initialized(mci);
 	if (rc != 0)
 		return 0;
 
-	if (!val)
-		return -EINVAL;
-
-	probe = simple_strtoul(val, NULL, 0);
-	if (probe != 0) {
-		rc = mci_card_probe(mci);
-		if (rc != 0)
-			return rc;
-	}
-
-	return dev_param_set_generic(mci_dev, param, val);
-}
-
-/**
- * Add parameter to the MCI device on demand
- * @param mci_dev MCI device instance
- * @return 0 on success
- *
- * This parameter is only available (or usefull) if MCI card probing is delayed
- */
-static int add_mci_parameter(struct device_d *mci_dev)
-{
-	int rc;
-
-	/* provide a 'probing right now' parameter for the user */
-	rc = dev_add_param(mci_dev, "probe", mci_set_probe, NULL, 0);
+	rc = mci_card_probe(mci);
 	if (rc != 0)
 		return rc;
 
-	return dev_set_param(mci_dev, "probe", "0");
+	return 0;
 }
 
 /**
@@ -1522,8 +1500,10 @@ static int mci_probe(struct device_d *mci_dev)
 
 	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(mci_dev));
 
-	rc = add_mci_parameter(mci_dev);
-	if (rc != 0) {
+	mci->param_probe = dev_add_param_bool(mci_dev, "probe",
+			mci_set_probe, NULL, &mci->probe, mci);
+
+	if (IS_ERR(mci->param_probe)) {
 		dev_dbg(mci->mci_dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto on_error;
 	}

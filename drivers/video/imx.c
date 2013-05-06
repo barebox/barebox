@@ -158,6 +158,8 @@ struct imxfb_info {
 
 	void			(*enable)(int enable);
 
+	unsigned int		alpha;
+
 	struct fb_info		overlay;
 };
 
@@ -421,29 +423,19 @@ static struct fb_ops imxfb_overlay_ops = {
 	.fb_disable	= imxfb_overlay_disable_controller,
 };
 
-static int imxfb_alpha_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int imxfb_alpha_set(struct param_d *param, void *priv)
 {
-	struct fb_info *overlay = dev->priv;
+	struct fb_info *overlay = priv;
 	struct imxfb_info *fbi = overlay->priv;
-	int alpha;
-	char alphastr[16];
 	unsigned int tmp;
 
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	alpha = simple_strtoul(val, NULL, 0);
-	alpha &= 0xff;
+	if (fbi->alpha > 0xff)
+		fbi->alpha = 0xff;
 
 	tmp = readl(fbi->regs + LCDC_LGWCR);
 	tmp &= ~LGWCR_GWAV(0xff);
-	tmp |= LGWCR_GWAV(alpha);
+	tmp |= LGWCR_GWAV(fbi->alpha);
 	writel(tmp , fbi->regs + LCDC_LGWCR);
-
-	sprintf(alphastr, "%d", alpha);
-
-	dev_param_set_generic(dev, param, alphastr);
 
 	return 0;
 }
@@ -508,8 +500,8 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 		return ret;
 	}
 
-	dev_add_param(&overlay->dev, "alpha", imxfb_alpha_set, NULL, 0);
-	dev_set_param(&overlay->dev, "alpha", "0");
+	dev_add_param_int(&overlay->dev, "alpha", imxfb_alpha_set,
+			NULL, &fbi->alpha, "%u", overlay);
 
 	return 0;
 }

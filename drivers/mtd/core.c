@@ -286,7 +286,6 @@ static struct file_operations mtd_ops = {
 
 int add_mtd_device(struct mtd_info *mtd, char *devname)
 {
-	char str[16];
 	struct mtddev_hook *hook;
 
 	if (!devname)
@@ -305,14 +304,10 @@ int add_mtd_device(struct mtd_info *mtd, char *devname)
 	mtd->cdev.mtd = mtd;
 
 	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		sprintf(str, "%u", mtd->size);
-		dev_add_param_fixed(&mtd->class_dev, "size", str);
-		sprintf(str, "%u", mtd->erasesize);
-		dev_add_param_fixed(&mtd->class_dev, "erasesize", str);
-		sprintf(str, "%u", mtd->writesize);
-		dev_add_param_fixed(&mtd->class_dev, "writesize", str);
-		sprintf(str, "%u", mtd->oobsize);
-		dev_add_param_fixed(&mtd->class_dev, "oobsize", str);
+		dev_add_param_int_ro(&mtd->class_dev, "size", mtd->size, "%u");
+		dev_add_param_int_ro(&mtd->class_dev, "erasesize", mtd->erasesize, "%u");
+		dev_add_param_int_ro(&mtd->class_dev, "writesize", mtd->oobsize, "%u");
+		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");
 	}
 
 	devfs_create(&mtd->cdev);

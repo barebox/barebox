@@ -42,6 +42,8 @@ struct console_device {
 
 	unsigned char f_caps;
 	unsigned char f_active;
+
+	unsigned int baudrate;
 };
 
 int console_register(struct console_device *cdev);

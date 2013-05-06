@@ -86,7 +86,6 @@ void eth_set_current(struct eth_device *eth)
 	}
 
 	eth_current = eth;
-	net_update_env();
 }
 
 struct eth_device * eth_get_current(void)
@@ -210,39 +209,16 @@ int eth_rx(void)
 static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
 {
 	struct eth_device *edev = dev_to_edev(dev);
-	u8 ethaddr[6];
 
 	if (!val)
 		return dev_param_set_generic(dev, param, NULL);
 
-	if (string_to_ethaddr(val, ethaddr) < 0)
+	if (string_to_ethaddr(val, edev->ethaddr) < 0)
 		return -EINVAL;
 
 	dev_param_set_generic(dev, param, val);
 
-	edev->set_ethaddr(edev, ethaddr);
-
-	if (edev == eth_current)
-		net_update_env();
-
-	return 0;
-}
-
-static int eth_set_ipaddr(struct device_d *dev, struct param_d *param, const char *val)
-{
-	struct eth_device *edev = dev_to_edev(dev);
-	IPaddr_t ip;
-
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	if (string_to_ip(val, &ip))
-		return -EINVAL;
-
-	dev_param_set_generic(dev, param, val);
-
-	if (edev == eth_current)
-		net_update_env();
+	edev->set_ethaddr(edev, edev->ethaddr);
 
 	return 0;
 }
@@ -267,11 +243,11 @@ int eth_register(struct eth_device *edev)
 
 	register_device(&edev->dev);
 
-	dev_add_param(dev, "ipaddr", eth_set_ipaddr, NULL, 0);
+	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
+	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
+	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
+	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
 	dev_add_param(dev, "ethaddr", eth_set_ethaddr, NULL, 0);
-	dev_add_param(dev, "gateway", eth_set_ipaddr, NULL, 0);
-	dev_add_param(dev, "netmask", eth_set_ipaddr, NULL, 0);
-	dev_add_param(dev, "serverip", eth_set_ipaddr, NULL, 0);
 
 	if (edev->init)
 		edev->init(edev);
@@ -296,10 +272,8 @@ int eth_register(struct eth_device *edev)
 		}
 	}
 
-	if (!eth_current) {
+	if (!eth_current)
 		eth_current = edev;
-		net_update_env();
-	}
 
 	return 0;
 }

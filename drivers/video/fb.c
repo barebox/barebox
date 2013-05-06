@@ -28,31 +28,22 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 	return 0;
 }
 
-static int fb_enable_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int fb_enable_set(struct param_d *param, void *priv)
 {
-	struct fb_info *info = dev->priv;
+	struct fb_info *info = priv;
 	int enable;
-	char *new;
 
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
+	enable = info->p_enable;
 
-	enable = simple_strtoul(val, NULL, 0);
+	if (enable == info->enabled)
+		return 0;
 
-	if (enable) {
-		if (!info->enabled)
-			info->fbops->fb_enable(info);
-		new = "1";
-	} else {
-		if (info->enabled)
-			info->fbops->fb_disable(info);
-		new = "0";
-	}
+	if (enable)
+		info->fbops->fb_enable(info);
+	else
+		info->fbops->fb_disable(info);
 
-	dev_param_set_generic(dev, param, new);
-
-	info->enabled = !!enable;
+	info->enabled = enable;
 
 	return 0;
 }
@@ -165,8 +156,8 @@ static int fb_probe(struct device_d *dev)
 {
 	struct fb_info *info = dev->priv;
 
-	dev_add_param(dev, "enable", fb_enable_set, NULL, 0);
-	dev_set_param(dev, "enable", "0");
+	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
+			&info->p_enable, info);
 
 	if (info->num_modes && (info->mode_list != NULL) &&
 			(info->fbops->fb_activate_var != NULL)) {

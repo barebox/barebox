@@ -262,10 +262,12 @@ static int atmci_read_response(struct atmel_mci *host, unsigned int stat)
 {
 	struct mci_cmd *cmd = host->cmd;
 	int i;
-	u32 *resp = (u32 *)cmd->response;
+	u32 *resp;
 
 	if (!cmd)
 		return 0;
+
+	resp = (u32 *)cmd->response;
 
 	if (stat & (ATMCI_RTOE | ATMCI_DTOE)) {
 		dev_err(host->hw_dev, "command/data timeout\n");

@@ -35,7 +35,6 @@ config DISK_ATA
 config DISK_AHCI
 	bool "AHCI support"
 	select DISK_ATA
-	select DISK_DRIVE
 
 config DISK_AHCI_IMX
 	depends on ARCH_IMX

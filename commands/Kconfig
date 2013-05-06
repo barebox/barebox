@@ -356,12 +356,12 @@ config CMD_MEMSET
 config CMD_CRC
 	tristate
 	select CRC32
-	prompt "crc"
+	prompt "crc32"
 
 config CMD_CRC_CMP
 	tristate
 	depends on CMD_CRC
-	prompt "compare 2 files crc"
+	prompt "compare 2 files using crc32"
 
 config CMD_DIGEST
 	tristate

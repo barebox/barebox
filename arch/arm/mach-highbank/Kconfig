@@ -12,6 +12,7 @@ choice
 
 config MACH_HIGHBANK
 	bool "Calxeda Highbank"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

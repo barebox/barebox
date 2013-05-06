@@ -9,35 +9,19 @@ config BOARDINFO
 
 config NETX_SDRAM_CTRL
 	hex
-	default 0x010D0001 if MACH_NXDKN
 	default 0x010D0121 if MACH_NXDB500
-	default 0x030D0111 if MACH_NXHMIBB
-	default 0x010D0111 if MACH_NXEB500HMI
-	default 0x030D0001 if MACH_NXHX
 
 config NETX_SDRAM_TIMING_CTRL
 	hex
-	default 0x03C12151 if MACH_NXDKN
 	default 0x03C13261 if MACH_NXDB500
-	default 0x03C13251 if MACH_NXHMIBB
-	default 0x03C13251 if MACH_NXEB500HMI
-	default 0x03C23251 if MACH_NXHX
 
 config NETX_MEM_CTRL
 	hex
-	default 0x0103030F if MACH_NXDKN
 	default 0x0203030F if MACH_NXDB500
-	default 0x0103030F if MACH_NXHMIBB
-	default 0x0103030F if MACH_NXEB500HMI
-	default 0x0103030F if MACH_NXHX
 
 config NETX_COOKIE
 	hex
-	default 16 if MACH_NXDKN
 	default 32 if MACH_NXDB500
-	default 16 if MACH_NXHMIBB
-	default 16 if MACH_NXEB500HMI
-	default 16 if MACH_NXHX
 
 choice
 	prompt "Netx Board Type"

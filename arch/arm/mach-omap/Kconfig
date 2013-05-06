@@ -134,7 +134,6 @@ config MACH_BEAGLE
 
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
-	select OMAP_CLOCK_ALL
 	depends on ARCH_AM33XX
 	  help
 	  Say Y here if you are using Beagle Bone
@@ -179,7 +178,6 @@ config MACH_PCAAXL2
 
 config MACH_PCM051
 	bool "Phytec phyCORE pcm051"
-	select OMAP_CLOCK_ALL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on ARCH_AM33XX
 	help

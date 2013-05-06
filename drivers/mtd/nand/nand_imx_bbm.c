@@ -91,7 +91,7 @@ static void *create_bbt(struct mtd_info *mtd)
 	buf = malloc(mtd->writesize);
 	if (!buf) {
 		ret = -ENOMEM;
-		goto out;
+		goto out2;
 	}
 
 	numblocks = mtd->size >> (chip->bbt_erase_shift - 1);
@@ -99,7 +99,7 @@ static void *create_bbt(struct mtd_info *mtd)
 	for (i = 0; i < numblocks;) {
 		ret = checkbad(mtd, from, buf);
 		if (ret < 0)
-			goto out;
+			goto out1;
 
 		if (ret) {
 			bbt[i >> 3] |= 0x03 << (i & 0x6);
@@ -112,8 +112,11 @@ static void *create_bbt(struct mtd_info *mtd)
 	}
 
 	return bbt;
-out:
+
+out1:
 	free(buf);
+out2:
+	free(bbt);
 
 	return ERR_PTR(ret);
 }

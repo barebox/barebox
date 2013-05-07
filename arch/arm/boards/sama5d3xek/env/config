@@ -32,7 +32,7 @@ kernelimage=zImage
 
 nand_device=atmel_nand
 nand_parts="256k(at91bootstrap),384k(barebox)ro,256k@768k(bareboxenv),256k(bareboxenv2),128k@1536k(oftree),5M@2M(kernel),-@8M(rootfs)"
-rootfs_mtdblock_nand=7
+rootfs_mtdblock_nand=6
 
 m25p80_parts="64k(bootstrap),384k(barebox),256k(bareboxenv),256k(bareboxenv2),128k(oftree),-(updater)"
 

@@ -41,8 +41,6 @@
 
 char *mem_rw_buf;
 
-static char *DEVMEM = "/dev/mem";
-
 int open_and_lseek(const char *filename, int mode, loff_t pos)
 {
 	int fd, ret;

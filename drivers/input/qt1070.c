@@ -215,7 +215,6 @@ static int qt1070_probe(struct device_d *dev)
 	struct qt1070_data *data;
 	u8 fw_version, chip_id;
 	int ret;
-	char buf[6];
 
 	data = xzalloc(sizeof(*data));
 	data->client = to_i2c_client(dev);

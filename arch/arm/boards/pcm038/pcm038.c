@@ -48,13 +48,19 @@
 
 #define PCM038_GPIO_FEC_RST	(GPIO_PORTC + 30)
 #define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
+#define PCM970_GPIO_SPI_CS1	(GPIO_PORTD + 27)
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
 	.phy_addr = 1,
 };
 
-static int pcm038_spi_cs[] = { PCM038_GPIO_SPI_CS0 };
+static int pcm038_spi_cs[] = {
+	PCM038_GPIO_SPI_CS0,
+#ifdef CONFIG_MACH_PCM970_BASEBOARD
+	PCM970_GPIO_SPI_CS1,
+#endif
+};
 
 static struct spi_imx_master pcm038_spi_0_data = {
 	.chipselect = pcm038_spi_cs,
@@ -221,10 +227,13 @@ static int pcm038_devices_init(void)
 		PE15_PF_UART1_RTS,
 		/* CSPI1 */
 		PD25_PF_CSPI1_RDY,
-		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
+		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
+#ifdef CONFIG_MACH_PCM970_BASEBOARD
+		PCM970_GPIO_SPI_CS1 | GPIO_GPIO | GPIO_OUT,
+#endif
 		/* Display */
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,

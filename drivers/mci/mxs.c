@@ -55,7 +55,7 @@ struct mxs_mci_host {
 	unsigned	f_min;
 	unsigned	f_max;
 #endif
-	int		bus_width:2; /* 0 = 1 bit, 1 = 4 bit, 2 = 8 bit */
+	unsigned	bus_width:2; /* 0 = 1 bit, 1 = 4 bit, 2 = 8 bit */
 };
 
 #define to_mxs_mci(mxs) container_of(mxs, struct mxs_mci_host, host)

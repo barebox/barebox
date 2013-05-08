@@ -101,6 +101,7 @@ static void mxs_silicon_revision(void)
 		case 0x3: revision = SILICON_REVISION_1_3; break;
 		case 0x4: revision = SILICON_REVISION_1_4; break;
 		}
+		break;
 	case HW_DIGCTL_CHIPID_MX28:
 		product = "i.MX28";
 		switch (rev) {

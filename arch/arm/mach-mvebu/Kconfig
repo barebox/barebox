@@ -3,9 +3,11 @@ if ARCH_MVEBU
 config ARCH_TEXT_BASE
 	hex
 	default 0x2000000 if MACH_PLATHOME_OPENBLOCKS_AX3
+	default 0x2000000 if MACH_GLOBALSCALE_MIRABOX
 
 config BOARDINFO
 	default "PlatHome OpenBlocks AX3" if MACH_PLATHOME_OPENBLOCKS_AX3
+	default "Globalscale Mirabox" if MACH_GLOBALSCALE_MIRABOX
 
 choice
 	prompt "Marvell EBU Processor"
@@ -22,10 +24,13 @@ endchoice
 
 if ARCH_ARMADA_370
 
-#choice
-#	prompt "Armada 370 Board Type"
-#
-#endchoice
+choice
+	prompt "Armada 370 Board Type"
+
+config MACH_GLOBALSCALE_MIRABOX
+	bool "Globalscale Mirabox"
+
+endchoice
 
 endif # ARCH_ARMADA_370
 

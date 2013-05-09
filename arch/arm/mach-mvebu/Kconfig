@@ -2,9 +2,10 @@ if ARCH_MVEBU
 
 config ARCH_TEXT_BASE
 	hex
+	default 0x2000000 if MACH_PLATHOME_OPENBLOCKS_AX3
 
-#config BOARDINFO
-#	default
+config BOARDINFO
+	default "PlatHome OpenBlocks AX3" if MACH_PLATHOME_OPENBLOCKS_AX3
 
 choice
 	prompt "Marvell EBU Processor"
@@ -30,10 +31,13 @@ endif # ARCH_ARMADA_370
 
 if ARCH_ARMADA_XP
 
-#choice
-#	prompt "Armada XP Board Type"
-#
-#endchoice
+choice
+	prompt "Armada XP Board Type"
+
+config MACH_PLATHOME_OPENBLOCKS_AX3
+	bool "PlatHome OpenBlocks AX3"
+
+endchoice
 
 endif # ARCH_ARMADA_XP
 

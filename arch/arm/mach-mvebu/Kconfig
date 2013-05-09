@@ -1,0 +1,40 @@
+if ARCH_MVEBU
+
+config ARCH_TEXT_BASE
+	hex
+
+#config BOARDINFO
+#	default
+
+choice
+	prompt "Marvell EBU Processor"
+
+config ARCH_ARMADA_370
+	bool "Armada 370"
+	select CPU_V7
+
+config ARCH_ARMADA_XP
+	bool "Armada XP"
+	select CPU_V7
+
+endchoice
+
+if ARCH_ARMADA_370
+
+#choice
+#	prompt "Armada 370 Board Type"
+#
+#endchoice
+
+endif # ARCH_ARMADA_370
+
+if ARCH_ARMADA_XP
+
+#choice
+#	prompt "Armada XP Board Type"
+#
+#endchoice
+
+endif # ARCH_ARMADA_XP
+
+endif # ARCH_MVEBU

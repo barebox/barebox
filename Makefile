@@ -970,7 +970,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
 		.tmp_kallsyms* common/barebox_default_env* barebox.ldr \
 		scripts/bareboxenv-target barebox-flash-image \
 		Doxyfile.version barebox.srec barebox.s5p barebox.ubl \
-		barebox.uimage barebox.spi
+		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

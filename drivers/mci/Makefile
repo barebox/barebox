@@ -8,3 +8,4 @@ obj-$(CONFIG_MFD_TWL6030) += twl6030.o
 obj-$(CONFIG_MCI_PXA) += pxamci.o
 obj-$(CONFIG_MCI_ATMEL) += atmel_mci.o
 obj-$(CONFIG_MCI_SPI) += mci_spi.o
+obj-$(CONFIG_MCI_BCM2835)	+= mci-bcm2835.o

@@ -5,6 +5,7 @@ choice
 
 config ARCH_TEGRA_2x_SOC
 	bool "Tegra 20"
+	select PINCTRL_TEGRA20
 
 endchoice
 

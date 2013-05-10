@@ -53,12 +53,24 @@ config ARCH_TEXT_BASE
 choice
 	prompt "Tegra 20 Board Type"
 
+config MACH_TEGRA20_GENERIC
+	bool "Generic DT based board"
+	help
+	  Say Y here if you are building for a generic DT based board.
+
 config MACH_TOSHIBA_AC100
 	bool "Toshiba AC100"
 	help
 	  Say Y here if you are using Toshiba AC100 smartbook.
 
 endchoice
+
+if MACH_TEGRA20_GENERIC
+
+config BOARDINFO
+	default "Generic Tegra20 board"
+
+endif #MACH_TEGRA20_GENERIC
 
 source arch/arm/boards/toshiba-ac100/Kconfig
 

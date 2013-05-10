@@ -22,7 +22,7 @@ static inline void arm_cpu_lowlevel_init(void)
 
 #if __LINUX_ARM_ARCH__ >= 6
 	r |= CR_U;
-	r &= CR_A;
+	r &= ~CR_A;
 #else
 	r |= CR_A;
 #endif

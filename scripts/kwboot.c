@@ -1,5 +1,6 @@
 /*
- * Boot a Marvell Kirkwood SoC, with Xmodem over UART0.
+ * Boot a Marvell SoC, with Xmodem over UART0.
+ *  supports Kirkwood, Dove, Armada 370, Armada XP
  *
  * (c) 2012 Daniel Stodden <daniel.stodden@gmail.com>
  *
@@ -180,6 +181,9 @@ kwboot_tty_send(int fd, const void *buf, size_t len)
 	int rc;
 	ssize_t n;
 
+	if (!buf)
+		return 0;
+
 	rc = -1;
 
 	do {
@@ -264,7 +268,10 @@ kwboot_bootmsg(int tty, void *msg)
 	int rc;
 	char c;
 
-	kwboot_printv("Sending boot message. Please reboot the target...");
+	if (msg == NULL)
+		kwboot_printv("Please reboot the target into UART boot mode...");
+	else
+		kwboot_printv("Sending boot message. Please reboot the target...");
 
 	do {
 		rc = tcflush(tty, TCIOFLUSH);
@@ -580,10 +587,13 @@ static void
 kwboot_usage(FILE *stream, char *progname)
 {
 	fprintf(stream,
-		"Usage: %s [-d | -b <image>] [ -p ] [ -t ] "
-		"[-B <baud> ] <TTY>\n", progname);
+		"Usage: %s [-d | -b <image> | -D <image> ] [ -t ] [-B <baud> ] <TTY>\n",
+		progname);
 	fprintf(stream, "\n");
-	fprintf(stream, "  -b <image>: boot <image>\n");
+	fprintf(stream,
+		"  -b <image>: boot <image> with preamble (Kirkwood, Armada 370/XP)\n");
+	fprintf(stream,
+		"  -D <image>: boot <image> without preamble (Dove)\n");
 	fprintf(stream, "  -d: enter debug mode\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "  -t: mini terminal\n");
@@ -616,13 +626,18 @@ main(int argc, char **argv)
 	kwboot_verbose = isatty(STDOUT_FILENO);
 
 	do {
-		int c = getopt(argc, argv, "hb:dptB:");
+		int c = getopt(argc, argv, "hb:dtB:D:");
 		if (c < 0)
 			break;
 
 		switch (c) {
 		case 'b':
 			bootmsg = kwboot_msg_boot;
+			imgpath = optarg;
+			break;
+
+		case 'D':
+			bootmsg = NULL;
 			imgpath = optarg;
 			break;
 
@@ -675,9 +690,7 @@ main(int argc, char **argv)
 			perror("debugmsg");
 			goto out;
 		}
-	}
-
-	if (bootmsg) {
+	} else {
 		rc = kwboot_bootmsg(tty, bootmsg);
 		if (rc) {
 			perror("bootmsg");

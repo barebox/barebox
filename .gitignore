@@ -39,6 +39,8 @@ barebox.ubl
 barebox.zynq
 barebox.uimage
 barebox.map
+barebox.kwb
+barebox.kwbuart
 barebox-flash-image
 System.map
 Module.symvers

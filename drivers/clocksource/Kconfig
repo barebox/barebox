@@ -21,3 +21,7 @@ config CLOCKSOURCE_MVEBU
 config CLOCKSOURCE_NOMADIK
 	bool
 	depends on ARM
+
+config CLOCKSOURCE_ORION
+	bool
+	depends on ARCH_MVEBU

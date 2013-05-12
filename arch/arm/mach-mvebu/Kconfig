@@ -17,10 +17,17 @@ choice
 config ARCH_ARMADA_370
 	bool "Armada 370"
 	select CPU_V7
+	select CLOCKSOURCE_MVEBU
 
 config ARCH_ARMADA_XP
 	bool "Armada XP"
 	select CPU_V7
+	select CLOCKSOURCE_MVEBU
+
+config ARCH_DOVE
+	bool "Dove 88AP510"
+	select CPU_V7
+	select CLOCKSOURCE_ORION
 
 endchoice
 
@@ -50,5 +57,14 @@ config MACH_MARVELL_ARMADA_XP_GP
 endchoice
 
 endif # ARCH_ARMADA_XP
+
+if ARCH_DOVE
+
+choice
+	prompt "Dove 88AP510 Board Type"
+
+endchoice
+
+endif # ARCH_DOVE
 
 endif # ARCH_MVEBU

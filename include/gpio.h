@@ -6,7 +6,7 @@
 #ifndef CONFIG_GPIOLIB
 static inline int gpio_request(unsigned gpio, const char *label)
 {
-       return 0;
+	return 0;
 }
 
 static inline void gpio_free(unsigned gpio)

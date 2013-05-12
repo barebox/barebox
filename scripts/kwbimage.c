@@ -1,5 +1,6 @@
 /*
- * Image manipulator for Kirkwood, Armada 370 and Armada XP platforms.
+ * Image manipulator for Marvell SoCs
+ *  supports Kirkwood, Dove, Armada 370, and Armada XP
  *
  * (C) Copyright 2013 Thomas Petazzoni
  * <thomas.petazzoni@free-electrons.com>
@@ -15,9 +16,9 @@
  * GNU General Public License for more details.
  *
  * This tool allows to extract and create bootable images for Marvell
- * Kirkwood, Marvell Armada 370 and Armada XP SoCs. It supports two
+ * Kirkwood, Dove, Armada 370, and Armada XP SoCs. It supports two
  * versions of the bootable image format: version 0 (used on Marvell
- * Kirkwood) and version 1 (used on Marvell Armada 370/XP).
+ * Kirkwood and Dove) and version 1 (used on Marvell Armada 370/XP).
  *
  * To extract an image, run:
  *  ./scripts/kwbimage -x -i <image-file> -o <some-directory>
@@ -53,7 +54,7 @@
 
 #define ALIGN_SUP(x, a) (((x) + (a - 1)) & ~(a - 1))
 
-/* Structure of the main header, version 0 (Kirkwood) */
+/* Structure of the main header, version 0 (Kirkwood, Dove) */
 struct main_hdr_v0 {
 	uint8_t  blockid;		/*0     */
 	uint8_t  nandeccmode;		/*1     */

@@ -489,8 +489,7 @@ void fdt_add_reserve_map(void *__fdt)
 	}
 
 	of_write_number(&fdt_res->address, (unsigned long)__fdt, 2);
-	of_write_number(&fdt_res->size, (unsigned long)__fdt +
-			be32_to_cpu(fdt->totalsize), 2);
+	of_write_number(&fdt_res->size, be32_to_cpu(fdt->totalsize), 2);
 	fdt_res++;
 
 	of_write_number(&fdt_res->address, 0, 2);

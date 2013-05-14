@@ -527,9 +527,6 @@ static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
 
 		popt += oplen + 2;	/* Process next option */
 	}
-
-	if (dhcp_tftpname[0] != 0)
-		net_set_serverip(resolv(dhcp_tftpname));
 }
 
 static int dhcp_message_type(unsigned char *popt)
@@ -785,6 +782,12 @@ static int do_dhcp(int argc, char *argv[])
 			if (ret)
 				goto out1;
 		}
+	}
+
+	if (dhcp_tftpname[0] != 0) {
+		IPaddr_t tftpserver = resolv(dhcp_tftpname);
+		if (tftpserver)
+			net_set_serverip(tftpserver);
 	}
 
 out1:

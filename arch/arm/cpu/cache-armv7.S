@@ -56,8 +56,18 @@ ENTRY(v7_mmu_cache_off)
 		ldmfd	sp!, {r4-r12, pc}
 ENDPROC(v7_mmu_cache_off)
 
-.section .text.v7_mmu_cache_flush
+.section .text.v7_mmu_cache_flush_invalidate
+ENTRY(v7_mmu_cache_invalidate)
+		mov	r0, #1
+		b	__v7_mmu_cache_flush_invalidate
+ENDPROC(v7_mmu_cache_invalidate)
+
 ENTRY(v7_mmu_cache_flush)
+		mov	r0, #0
+		b	__v7_mmu_cache_flush_invalidate
+ENDPROC(v7_mmu_cache_flush)
+
+ENTRY(__v7_mmu_cache_flush_invalidate)
 		mrc	p15, 0, r12, c0, c1, 5	@ read ID_MMFR1
 		tst	r12, #0xf << 16		@ hierarchical cache (ARMv7)
 		mov	r12, #0
@@ -65,7 +75,8 @@ ENTRY(v7_mmu_cache_flush)
 		mcr	p15, 0, r12, c7, c14, 0	@ clean+invalidate D
 		b	iflush
 hierarchical:
-		stmfd	sp!, {r4-r7, r9-r11}
+		stmfd	sp!, {r4-r11}
+		mov	r8, r0
 		mcr	p15, 0, r12, c7, c10, 5	@ DMB
 		mrc	p15, 1, r0, c0, c0, 1	@ read clidr
 		ands	r3, r0, #0x7000000	@ extract loc from clidr
@@ -97,7 +108,10 @@ THUMB(		lsl	r6, r9, r5		)
 THUMB(		orr	r11, r12, r6		) @ factor way and cache number into r11
 THUMB(		lsl	r6, r7, r2		)
 THUMB(		orr	r11, r11, r6		) @ factor index number into r11
-		mcr	p15, 0, r11, c7, c14, 2	@ clean & invalidate by set/way
+		cmp	r8, #0
+THUMB(		ite	eq			)
+		mcreq	p15, 0, r11, c7, c14, 2	@ clean & invalidate by set/way
+		mcrne	p15, 0, r11, c7, c6, 2	@ invalidate by set/way
 		subs	r9, r9, #1		@ decrement the way
 		bge	loop3
 		subs	r7, r7, #1		@ decrement the index
@@ -107,7 +121,7 @@ skip:
 		cmp	r3, r12
 		bgt	loop1
 finished:
-		ldmfd	sp!, {r4-r7, r9-r11}
+		ldmfd	sp!, {r4-r11}
 		mov	r12, #0			@ switch back to cache level 0
 		mcr	p15, 2, r12, c0, c0, 0	@ select current cache level in cssr
 iflush:
@@ -116,7 +130,7 @@ iflush:
 		mcr	p15, 0, r12, c7, c10, 4	@ DSB
 		mcr	p15, 0, r12, c7, c5, 4	@ ISB
 		mov	pc, lr
-ENDPROC(v7_mmu_cache_flush)
+ENDPROC(__v7_mmu_cache_flush_invalidate)
 
 /*
  * cache_line_size - get the cache line size from the CSIDR register

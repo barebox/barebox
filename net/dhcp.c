@@ -767,8 +767,10 @@ static int do_dhcp(int argc, char *argv[])
 		goto out1;
 
 	while (dhcp_state != BOUND) {
-		if (ctrlc())
-			break;
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out1;
+		}
 		if (!retries) {
 			ret = -ETIMEDOUT;
 			goto out1;

@@ -124,6 +124,8 @@ void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
 {
 	arm_setup_stack(membase + memsize - 16);
 
+	arm_early_mmu_cache_invalidate();
+
 	__start(membase, memsize, boarddata);
 }
 #else

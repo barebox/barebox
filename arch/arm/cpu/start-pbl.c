@@ -59,6 +59,8 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
 
 	endmem -= STACK_SIZE; /* stack */
 
+	arm_early_mmu_cache_invalidate();
+
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
 		relocate_to_current_adr();
 

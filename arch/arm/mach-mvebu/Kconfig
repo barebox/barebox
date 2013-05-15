@@ -4,12 +4,14 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x2000000 if MACH_PLATHOME_OPENBLOCKS_AX3
 	default 0x2000000 if MACH_GLOBALSCALE_MIRABOX
+	default 0x2000000 if MACH_GLOBALSCALE_GURUPLUG
 	default 0x2000000 if MACH_MARVELL_ARMADA_XP_GP
 	default 0x2000000 if MACH_SOLIDRUN_CUBOX
 
 config BOARDINFO
 	default "PlatHome OpenBlocks AX3" if MACH_PLATHOME_OPENBLOCKS_AX3
 	default "Globalscale Mirabox" if MACH_GLOBALSCALE_MIRABOX
+	default "Globalscale Guruplug" if MACH_GLOBALSCALE_GURUPLUG
 	default "Marvell Armada XP GP" if MACH_MARVELL_ARMADA_XP_GP
 	default "SolidRun CuBox" if MACH_SOLIDRUN_CUBOX
 
@@ -81,6 +83,9 @@ if ARCH_KIRKWOOD
 
 choice
 	prompt "Kirkwood Board Type"
+
+config MACH_GLOBALSCALE_GURUPLUG
+	bool "Guruplug"
 
 endchoice
 

@@ -103,6 +103,7 @@ board-$(CONFIG_MACH_FREESCALE_MX25_3STACK)	:= freescale-mx25-3-stack
 board-$(CONFIG_MACH_FREESCALE_MX35_3STACK)	:= freescale-mx35-3-stack
 board-$(CONFIG_MACH_GE863)			:= telit-evk-pro3
 board-$(CONFIG_MACH_GLOBALSCALE_MIRABOX)        := globalscale-mirabox
+board-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG)       := globalscale-guruplug
 board-$(CONFIG_MACH_HIGHBANK)			:= highbank
 board-$(CONFIG_MACH_IMX21ADS)			:= imx21ads
 board-$(CONFIG_MACH_IMX27ADS)			:= imx27ads

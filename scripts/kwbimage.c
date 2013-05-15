@@ -712,10 +712,14 @@ static void *image_create_v0(struct image_cfg_element *image_cfg,
 	headersz  = sizeof(struct main_hdr_v0);
 	payloadsz = 0;
 
-	e = image_find_option(image_cfg, cfgn, IMAGE_CFG_DATA);
-	if (e) {
+	if (image_count_options(image_cfg, cfgn, IMAGE_CFG_DATA) > 0) {
 		has_ext = 1;
 		headersz += sizeof(struct ext_hdr_v0);
+	}
+
+	if (image_count_options(image_cfg, cfgn, IMAGE_CFG_PAYLOAD) > 1) {
+		fprintf(stderr, "More than one payload, not possible\n");
+		return NULL;
 	}
 
 	payloade = image_find_option(image_cfg, cfgn, IMAGE_CFG_PAYLOAD);
@@ -817,6 +821,16 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 	 * payload */
 	headersz = sizeof(struct main_hdr_v1);
 	payloadsz = 0;
+
+	if (image_count_options(image_cfg, cfgn, IMAGE_CFG_BINARY) > 1) {
+		fprintf(stderr, "More than one binary blob, not supported\n");
+		return NULL;
+	}
+
+	if (image_count_options(image_cfg, cfgn, IMAGE_CFG_PAYLOAD) > 1) {
+		fprintf(stderr, "More than one payload, not possible\n");
+		return NULL;
+	}
 
 	e = image_find_option(image_cfg, cfgn, IMAGE_CFG_BINARY);
 	if (e) {

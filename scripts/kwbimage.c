@@ -177,6 +177,8 @@ struct image_cfg_element {
 		IMAGE_CFG_EXEC_ADDR,
 		IMAGE_CFG_NAND_BLKSZ,
 		IMAGE_CFG_NAND_BADBLK_LOCATION,
+		IMAGE_CFG_NAND_ECC_MODE,
+		IMAGE_CFG_NAND_PAGESZ,
 		IMAGE_CFG_BINARY,
 		IMAGE_CFG_PAYLOAD,
 		IMAGE_CFG_DATA,
@@ -194,6 +196,8 @@ struct image_cfg_element {
 		unsigned int execaddr;
 		unsigned int nandblksz;
 		unsigned int nandbadblklocation;
+		unsigned int nandeccmode;
+		unsigned int nandpagesz;
 		struct ext_hdr_v0_reg regdata;
 	};
 };
@@ -243,6 +247,15 @@ static const char *image_nand_ecc_mode_name(unsigned int id)
 		if (nand_ecc_modes[i].id == id)
 			return nand_ecc_modes[i].name;
 	return NULL;
+}
+
+int image_nand_ecc_mode_id(const char *nand_ecc_mode_name)
+{
+	int i;
+	for (i = 0; nand_ecc_modes[i].name; i++)
+		if (!strcmp(nand_ecc_modes[i].name, nand_ecc_mode_name))
+			return nand_ecc_modes[i].id;
+	return -1;
 }
 
 static struct image_cfg_element *
@@ -409,9 +422,9 @@ static int image_extract_v0(void *fdimap, const char *output, FILE *focfg)
 	if (!strcmp(boot_mode_name, "nand")) {
 		const char *nand_ecc_mode =
 			image_nand_ecc_mode_name(main_hdr->nandeccmode);
-		fprintf(focfg, "NAND_ECC_MODE %s\n",
+		fprintf(focfg, "NAND_ECCMODE %s\n",
 			nand_ecc_mode);
-		fprintf(focfg, "NAND_PAGE_SIZE %08x\n",
+		fprintf(focfg, "NAND_PAGESZ %08x\n",
 			main_hdr->nandpagesize);
 	}
 
@@ -763,6 +776,12 @@ static void *image_create_v0(struct image_cfg_element *image_cfg,
 	e = image_find_option(image_cfg, cfgn, IMAGE_CFG_EXEC_ADDR);
 	if (e)
 		main_hdr->execaddr = e->execaddr;
+	e = image_find_option(image_cfg, cfgn, IMAGE_CFG_NAND_ECC_MODE);
+	if (e)
+		main_hdr->nandeccmode = e->nandeccmode;
+	e = image_find_option(image_cfg, cfgn, IMAGE_CFG_NAND_PAGESZ);
+	if (e)
+		main_hdr->nandpagesize = e->nandpagesz;
 	main_hdr->checksum = image_checksum8(image,
 					     sizeof(struct main_hdr_v0));
 
@@ -1009,6 +1028,19 @@ static int image_create_config_parse_oneline(char *line,
 		el->type = IMAGE_CFG_NAND_BADBLK_LOCATION;
 		el->nandbadblklocation =
 			strtol(value, NULL, 16);
+	} else if (!strcmp(keyword, "NAND_ECCMODE")) {
+		char *value = strtok_r(NULL, " ", &saveptr);
+		el->type = IMAGE_CFG_NAND_ECC_MODE;
+		el->nandeccmode = image_nand_ecc_mode_id(value);
+		if (el->nandeccmode < 0) {
+			fprintf(stderr,
+				"Invalid NAND ECC mode '%s'\n", value);
+			return -1;
+		}
+	} else if (!strcmp(keyword, "NAND_PAGESZ")) {
+		char *value = strtok_r(NULL, " ", &saveptr);
+		el->type = IMAGE_CFG_NAND_PAGESZ;
+		el->nandpagesz = strtol(value, NULL, 16);
 	} else if (!strcmp(keyword, "BINARY")) {
 		char *value = strtok_r(NULL, " ", &saveptr);
 		int argi = 0;
@@ -1240,6 +1272,12 @@ static void image_dump_config(struct image_cfg_element *image_cfg,
 			break;
 		case IMAGE_CFG_NAND_BADBLK_LOCATION:
 			printf("NANDBADBLK 0x%x\n", e->nandbadblklocation);
+			break;
+		case IMAGE_CFG_NAND_ECC_MODE:
+			printf("NAND_ECCMODE 0x%x\n", e->nandeccmode);
+			break;
+		case IMAGE_CFG_NAND_PAGESZ:
+			printf("NAND_PAGESZ 0x%x\n", e->nandpagesz);
 			break;
 		case IMAGE_CFG_BINARY:
 			printf("BINARY %s (%d args)\n", e->binary.file,

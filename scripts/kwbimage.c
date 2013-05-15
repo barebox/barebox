@@ -259,6 +259,20 @@ image_find_option(struct image_cfg_element *image_cfg,
 	return NULL;
 }
 
+static unsigned int
+image_count_options(struct image_cfg_element *image_cfg,
+		    int cfgn, unsigned int optiontype)
+{
+	int i;
+	unsigned int count = 0;
+
+	for (i = 0; i < cfgn; i++)
+		if (image_cfg[i].type == optiontype)
+			count++;
+
+	return count;
+}
+
 /*
  * Compute a 8-bit checksum of a memory area. This algorithm follows
  * the requirements of the Marvell SoC BootROM specifications.

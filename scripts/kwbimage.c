@@ -226,14 +226,14 @@ static const char *image_boot_mode_name(unsigned int id)
 	return NULL;
 }
 
-unsigned int image_boot_mode_id(const char *boot_mode_name)
+int image_boot_mode_id(const char *boot_mode_name)
 {
 	int i;
 	for (i = 0; boot_modes[i].name; i++)
 		if (!strcmp(boot_modes[i].name, boot_mode_name))
 			return boot_modes[i].id;
 
-	return 0;
+	return -1;
 }
 
 static const char *image_nand_ecc_mode_name(unsigned int id)
@@ -987,7 +987,7 @@ static int image_create_config_parse_oneline(char *line,
 		char *value = strtok_r(NULL, " ", &saveptr);
 		el->type = IMAGE_CFG_BOOT_FROM;
 		el->bootfrom = image_boot_mode_id(value);
-		if (!el->bootfrom) {
+		if (el->bootfrom < 0) {
 			fprintf(stderr,
 				"Invalid boot media '%s'\n", value);
 			return -1;

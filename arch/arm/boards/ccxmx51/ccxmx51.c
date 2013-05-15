@@ -344,13 +344,21 @@ static int ccxmx51_power_init(void)
  * On this board the SDRAM is always configured for 512Mib. The real
  * size is determined by the board id read from the IIM module.
  */
-static int ccxm51_sdram_fixup(void)
+static int ccxmx51_sdram_fixup(void)
 {
 	imx_esdctl_disable();
 
 	return 0;
 }
-postcore_initcall(ccxm51_sdram_fixup);
+postcore_initcall(ccxmx51_sdram_fixup);
+
+static int ccxmx51_memory_init(void)
+{
+	arm_add_mem_device("ram0", MX51_CSD0_BASE_ADDR, SZ_128M);
+
+	return 0;
+}
+mem_initcall(ccxmx51_memory_init);
 
 static int ccxmx51_devices_init(void)
 {

@@ -1,3 +1,4 @@
+dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb
 
 BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
 obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o

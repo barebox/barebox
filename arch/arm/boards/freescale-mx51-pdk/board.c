@@ -39,79 +39,7 @@
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 #include <mach/revision.h>
-#include <mach/iim.h>
 #include <mach/imx-flash-header.h>
-
-static struct fec_platform_data fec_info = {
-	.xcv_type = PHY_INTERFACE_MODE_MII,
-};
-
-static iomux_v3_cfg_t f3s_pads[] = {
-	/* UART1 */
-	MX51_PAD_UART1_RXD__UART1_RXD,
-	MX51_PAD_UART1_TXD__UART1_TXD,
-	MX51_PAD_UART1_RTS__UART1_RTS,
-	MX51_PAD_UART1_CTS__UART1_CTS,
-	/* FEC */
-	MX51_PAD_EIM_EB2__FEC_MDIO,
-	MX51_PAD_EIM_EB3__FEC_RDATA1,
-	MX51_PAD_EIM_CS2__FEC_RDATA2,
-	MX51_PAD_EIM_CS3__FEC_RDATA3,
-	MX51_PAD_EIM_CS4__FEC_RX_ER,
-	MX51_PAD_EIM_CS5__FEC_CRS,
-	MX51_PAD_NANDF_RB2__FEC_COL,
-	MX51_PAD_NANDF_RB3__FEC_RX_CLK,
-	MX51_PAD_NANDF_CS2__FEC_TX_ER,
-	MX51_PAD_NANDF_CS3__FEC_MDC,
-	MX51_PAD_NANDF_CS4__FEC_TDATA1,
-	MX51_PAD_NANDF_CS5__FEC_TDATA2,
-	MX51_PAD_NANDF_CS6__FEC_TDATA3,
-	MX51_PAD_NANDF_CS7__FEC_TX_EN,
-	MX51_PAD_NANDF_RDY_INT__FEC_TX_CLK,
-	MX51_PAD_NANDF_D11__FEC_RX_DV,
-	MX51_PAD_NANDF_D9__FEC_RDATA0,
-	MX51_PAD_NANDF_D8__FEC_TDATA0,
-	MX51_PAD_CSPI1_SS0__ECSPI1_SS0,
-	MX51_PAD_CSPI1_MOSI__ECSPI1_MOSI,
-	MX51_PAD_CSPI1_MISO__ECSPI1_MISO,
-	MX51_PAD_CSPI1_RDY__ECSPI1_RDY,
-	MX51_PAD_CSPI1_SCLK__ECSPI1_SCLK,
-	MX51_PAD_EIM_A20__GPIO2_14, /* LAN8700 reset pin */
-	IOMUX_PAD(0x60C, 0x21C, 3, 0x0, 0, 0x85), /* FIXME: needed? */
-	/* SD 1 */
-	MX51_PAD_SD1_CMD__SD1_CMD,
-	MX51_PAD_SD1_CLK__SD1_CLK,
-	MX51_PAD_SD1_DATA0__SD1_DATA0,
-	MX51_PAD_SD1_DATA1__SD1_DATA1,
-	MX51_PAD_SD1_DATA2__SD1_DATA2,
-	MX51_PAD_SD1_DATA3__SD1_DATA3,
-	/* SD 2 */
-	MX51_PAD_SD2_CMD__SD2_CMD,
-	MX51_PAD_SD2_CLK__SD2_CLK,
-	MX51_PAD_SD2_DATA0__SD2_DATA0,
-	MX51_PAD_SD2_DATA1__SD2_DATA1,
-	MX51_PAD_SD2_DATA2__SD2_DATA2,
-	MX51_PAD_SD2_DATA3__SD2_DATA3,
-	/* CD/WP gpio */
-	MX51_PAD_GPIO1_6__GPIO1_6,
-	MX51_PAD_GPIO1_5__GPIO1_5,
-};
-
-#define BABBAGE_ECSPI1_CS0	(3 * 32 + 24)
-static int spi_0_cs[] = {BABBAGE_ECSPI1_CS0};
-
-static struct spi_imx_master spi_0_data = {
-	.chipselect = spi_0_cs,
-	.num_chipselect = ARRAY_SIZE(spi_0_cs),
-};
-
-static const struct spi_board_info mx51_babbage_spi_board_info[] = {
-	{
-		.name = "mc13xxx-spi",
-		.bus_num = 0,
-		.chip_select = 0,
-	},
-};
 
 #define MX51_CCM_CACRR 0x10
 
@@ -235,20 +163,11 @@ static void babbage_power_init(void)
 
 static int f3s_devices_init(void)
 {
-	spi_register_board_info(mx51_babbage_spi_board_info,
-			ARRAY_SIZE(mx51_babbage_spi_board_info));
-	imx51_add_spi0(&spi_0_data);
-
 	babbage_power_init();
 
 	console_flush();
 	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
-
-	imx51_iim_register_fec_ethaddr();
-	imx51_add_fec(&fec_info);
-	imx51_add_mmc0(NULL);
-	imx51_add_mmc1(NULL);
 
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
@@ -269,15 +188,3 @@ static int f3s_part_init(void)
 	return 0;
 }
 late_initcall(f3s_part_init);
-
-static int f3s_console_init(void)
-{
-	mxc_iomux_v3_setup_multiple_pads(f3s_pads, ARRAY_SIZE(f3s_pads));
-
-	imx51_add_uart0();
-
-	return 0;
-}
-
-console_initcall(f3s_console_init);
-

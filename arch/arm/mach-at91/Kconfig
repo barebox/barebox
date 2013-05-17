@@ -59,6 +59,7 @@ config BOARDINFO
 	default "Calao TNY-A9263" if MACH_TNY_A9263
 	default "Calao TNY-A9G20" if MACH_TNY_A9G20
 	default "Calao QIL-A9260" if MACH_QIL_A9260
+	default "Calao QIL-A9G20" if MACH_QIL_A9G20
 	default "Somfy Animeo IP" if MACH_ANIMEO_IP
 	default "Telit EVK-PRO3" if MACH_GE863
 
@@ -363,6 +364,13 @@ config MACH_DSS11
 	  Select this if you are using aizo dSS11
 	  that embeds only one SD/MMC slot.
 
+config MACH_QIL_A9G20
+	bool "CALAO QIL-A9G20 board"
+	help
+	  Select this if you are using a Calao Systems QIL-A9G20 Board.
+	  <http://www.calao-systems.com>
+
+
 endchoice
 
 endif
@@ -513,7 +521,7 @@ config AT91_HAVE_2MMC
 
 config AT91_HAVE_SRAM_128M
 	bool "Have 128 of ram"
-	depends on MACH_USB_A9G20 || MACH_USB_A9263 || MACH_QIL_A9260
+	depends on MACH_USB_A9G20 || MACH_USB_A9263 || MACH_QIL_A9260 || MACH_QIL_A9G20
 	help
 	  Select this if you board have 128 MiB of Ram (as USB_A9G20 C11)
 
@@ -543,7 +551,7 @@ config CALAO_MOB_TNY_MD2
 
 config CALAO_MB_QIL_A9260
 	bool "MB-QIL A9260 Motherboard Board support"
-	depends on MACH_QIL_A9260
+	depends on MACH_QIL_A9260 || MACH_QIL_A9G20
 
 if COMMAND_SUPPORT
 

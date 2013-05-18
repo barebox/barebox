@@ -31,8 +31,6 @@
 
 #define DRIVERNAME	"imx_iim"
 
-static unsigned long mac_addr_base;
-
 static int iim_write_enable;
 static int iim_sense_enable;
 
@@ -227,14 +225,10 @@ static int imx_iim_add_bank(struct device_d *dev, void __iomem *base, int num)
 
 static int imx_iim_probe(struct device_d *dev)
 {
-	struct imx_iim_platform_data *pdata = dev->platform_data;
 	int i;
 	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
-
-	if (pdata)
-		mac_addr_base = pdata->mac_addr_base;
 
 	for (i = 0; i < 8; i++) {
 		imx_iim_add_bank(dev, base, i);

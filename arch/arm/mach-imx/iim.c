@@ -223,6 +223,54 @@ static int imx_iim_add_bank(struct device_d *dev, void __iomem *base, int num)
 	return devfs_create(cdev);
 }
 
+#if IS_ENABLED(CONFIG_OFDEVICE)
+
+/*
+ * a single MAC address reference has the form
+ * <&phandle iim-bank-no offset>, so three cells
+ */
+#define MAC_ADDRESS_PROPLEN	(3 * sizeof(__be32))
+
+static void imx_iim_init_dt(struct device_d *dev)
+{
+	char mac[6];
+	const __be32 *prop;
+	struct device_node *node = dev->device_node;
+	int len, ret;
+
+	if (!node)
+		return;
+
+	prop = of_get_property(node, "barebox,provide-mac-address", &len);
+	if (!prop)
+		return;
+
+	while (len >= MAC_ADDRESS_PROPLEN) {
+		struct device_node *rnode;
+		uint32_t phandle, bank, offset;
+
+		phandle = be32_to_cpup(prop++);
+
+		rnode = of_find_node_by_phandle(phandle);
+		bank = be32_to_cpup(prop++);
+		offset = be32_to_cpup(prop++);
+
+		ret = imx_iim_read(bank, offset, mac, 6);
+		if (ret == 6) {
+			of_eth_register_ethaddr(rnode, mac);
+		} else {
+			dev_err(dev, "cannot read: %s\n", strerror(-ret));
+		}
+
+		len -= MAC_ADDRESS_PROPLEN;
+	}
+}
+#else
+static inline void imx_iim_init_dt(struct device_d *dev)
+{
+}
+#endif
+
 static int imx_iim_probe(struct device_d *dev)
 {
 	int i;
@@ -234,6 +282,7 @@ static int imx_iim_probe(struct device_d *dev)
 		imx_iim_add_bank(dev, base, i);
 	}
 
+	imx_iim_init_dt(dev);
 
 	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW))
 		dev_add_param_bool(dev, "permanent_write_enable",
@@ -245,9 +294,18 @@ static int imx_iim_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
+	{
+		.compatible = "fsl,imx-iim",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx_iim_driver = {
 	.name	= DRIVERNAME,
 	.probe	= imx_iim_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_iim_dt_ids),
 };
 
 static int imx_iim_init(void)

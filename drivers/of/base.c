@@ -923,10 +923,6 @@ static int add_of_device_resource(struct device_node *node)
 	int na, nc, n_resources;
 	int ret, len, index;
 
-	ret = of_add_memory(node, false);
-	if (ret != -ENXIO)
-		return ret;
-
 	reg = of_get_property(node, "reg", &len);
 	if (!reg)
 		return -EINVAL;
@@ -1070,6 +1066,8 @@ const char *of_get_model(void)
 
 int of_probe(void)
 {
+	struct device_node *memory;
+
 	if(!root_node)
 		return -ENODEV;
 
@@ -1078,6 +1076,10 @@ int of_probe(void)
 
 	__of_parse_phandles(root_node);
 	__of_probe(root_node);
+
+	memory = of_find_node_by_path(root_node, "/memory");
+	if (memory)
+		of_add_memory(memory, false);
 
 	return 0;
 }

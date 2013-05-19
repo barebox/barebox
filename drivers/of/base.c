@@ -295,21 +295,36 @@ int of_device_is_compatible(const struct device_node *device,
 }
 EXPORT_SYMBOL(of_device_is_compatible);
 
-int of_match(struct device_d *dev, struct driver_d *drv)
+/**
+ * of_match_node - Tell if an device_node has a matching of_match structure
+ *      @matches:       array of of device match structures to search in
+ *      @node:          the of device structure to match against
+ *
+ *      Low level utility function used by device matching.
+ */
+const struct of_device_id *of_match_node(const struct of_device_id *matches,
+					 const struct device_node *node)
 {
-	struct of_device_id *id;
-
-	id = drv->of_compatible;
-
-	while (id->compatible) {
-		if (of_device_is_compatible(dev->device_node, id->compatible) == 1) {
-			dev->of_id_entry = id;
-			return 0;
-		}
-		id++;
+	while (matches->compatible) {
+		if (of_device_is_compatible(node, matches->compatible) == 1)
+			return matches;
+		matches++;
 	}
 
-	return 1;
+	return NULL;
+}
+
+int of_match(struct device_d *dev, struct driver_d *drv)
+{
+	const struct of_device_id *id;
+
+	id = of_match_node(drv->of_compatible, dev->device_node);
+	if (!id)
+		return 1;
+
+	dev->of_id_entry = id;
+
+	return 0;
 }
 EXPORT_SYMBOL(of_match);
 

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ * Copyright (C) 2013
+ *  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,23 +19,25 @@
 
 #include <io.h>
 
-#define UART_BASE 0xd0012000
-#define UART_THR  0x0
-#define UART_LSR  0x14
-#define   UART_LSR_THRE   (1 << 5)
+#define UART_BASE	0xf1012000
+#define UARTn_BASE(n)	(UART_BASE + ((n) * 0x100))
+#define UART_THR	0x00
+#define UART_LSR	0x14
+#define   LSR_THRE	BIT(5)
+
+#define EARLY_UART	UARTn_BASE(CONFIG_MVEBU_CONSOLE_UART)
 
 static inline void PUTC_LL(char c)
 {
 	/* Wait until there is space in the FIFO */
-	while (!(readl(UART_BASE + UART_LSR) & UART_LSR_THRE))
+	while (!(readl(EARLY_UART + UART_LSR) & LSR_THRE))
 		;
 
 	/* Send the character */
-	writel(c, UART_BASE + UART_THR)
-		;
+	writel(c, EARLY_UART + UART_THR);
 
-	/* Wait to make sure it hits the line, in case we die too soon. */
-	while (!(readl(UART_BASE + UART_LSR) & UART_LSR_THRE))
+	/* Wait to make sure it hits the line */
+	while (!(readl(EARLY_UART + UART_LSR) & LSR_THRE))
 		;
 }
 #endif

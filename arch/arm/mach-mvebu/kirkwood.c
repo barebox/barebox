@@ -16,30 +16,30 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <ns16550.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <ns16550.h>
-#include <mach/kirkwood-regs.h>
 #include <asm/memory.h>
-#include <asm/barebox-arm.h>
+#include <mach/kirkwood-regs.h>
+
+#define CONSOLE_UART_BASE	KIRKWOOD_UARTn_BASE(CONFIG_MVEBU_CONSOLE_UART)
 
 static struct clk *tclk;
 
 static inline void kirkwood_memory_find(unsigned long *phys_base,
-				     unsigned long *phys_size)
+					unsigned long *phys_size)
 {
-	void __iomem *sdram_win = IOMEM(KIRKWOOD_SDRAM_WIN_BASE);
 	int cs;
 
 	*phys_base = ~0;
 	*phys_size = 0;
 
 	for (cs = 0; cs < 4; cs++) {
-		uint32_t base = readl(sdram_win + DDR_BASE_CS_OFF(cs));
-		uint32_t ctrl = readl(sdram_win + DDR_SIZE_CS_OFF(cs));
+		u32 base = readl(KIRKWOOD_SDRAM_BASE + DDR_BASE_CSn(cs));
+		u32 ctrl = readl(KIRKWOOD_SDRAM_BASE + DDR_SIZE_CSn(cs));
 
 		/* Skip non-enabled CS */
-		if (! (ctrl & DDR_SIZE_ENABLED))
+		if ((ctrl & DDR_SIZE_ENABLED) != DDR_SIZE_ENABLED)
 			continue;
 
 		base &= DDR_BASE_CS_LOW_MASK;
@@ -49,34 +49,30 @@ static inline void kirkwood_memory_find(unsigned long *phys_base,
 	}
 }
 
-void __naked __noreturn kirkwood_barebox_entry(void)
-{
-	unsigned long phys_base, phys_size;
-	kirkwood_memory_find(&phys_base, &phys_size);
-	writel('E', 0xD0012000);
-	barebox_arm_entry(phys_base, phys_size, 0);
-}
-
 static struct NS16550_plat uart_plat = {
 	.shift = 2,
 };
 
-int kirkwood_add_uart0(void)
+static int kirkwood_add_uart(void)
 {
 	uart_plat.clock = clk_get_rate(tclk);
 	if (!add_ns16550_device(DEVICE_ID_DYNAMIC,
-				(unsigned int)KIRKWOOD_UART_BASE,
-				32, IORESOURCE_MEM_32BIT, &uart_plat))
+				(unsigned int)CONSOLE_UART_BASE, 32,
+				IORESOURCE_MEM_32BIT, &uart_plat))
 		return -ENODEV;
 	return 0;
 }
 
 static int kirkwood_init_clocks(void)
 {
-	uint32_t sar = readl(KIRKWOOD_SAR_BASE);
+	u32 val = readl(KIRKWOOD_SAR_BASE);
 	unsigned int rate;
 
-	if (sar & (1 << KIRKWOOD_TCLK_BIT))
+	/*
+	 * On Kirkwood, the TCLK frequency can be either
+	 * 166 Mhz or 200 Mhz
+	 */
+	if ((val & SAR_TCLK_FREQ) == SAR_TCLK_FREQ)
 		rate = 166666667;
 	else
 		rate = 200000000;
@@ -95,16 +91,16 @@ static int kirkwood_init_soc(void)
 			   IORESOURCE_MEM, NULL);
 	kirkwood_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);
+	kirkwood_add_uart();
 
 	return 0;
 }
-
 postcore_initcall(kirkwood_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {
-	writel(0x4, KIRKWOOD_CPUCTRL_BASE + 0x8);
-	writel(0x1, KIRKWOOD_CPUCTRL_BASE + 0xC);
+	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
+	writel(SOFT_RESET_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
 	for(;;)
 		;
 }

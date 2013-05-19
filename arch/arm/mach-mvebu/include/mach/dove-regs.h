@@ -17,15 +17,18 @@
 #ifndef __MACH_MVEBU_DOVE_REGS_H
 #define __MACH_MVEBU_DOVE_REGS_H
 
-/* At Boot-up register base is at 0xd000000 */
-#define DOVE_INT_REGS_BOOTUP	0xd0000000
-#define DOVE_MC_REGS_BOOTUP	0xd0800000
-/* Linux wants it remapped to 0xf1000000 */
-#define DOVE_INT_REGS_REMAP	0xf1000000
-#define DOVE_MC_REGS_REMAP	0xf1800000
+#include <mach/common.h>
 
-#define DOVE_INT_REGS_BASE	IOMEM(DOVE_INT_REGS_BOOTUP)
-#define DOVE_MC_REGS_BASE	IOMEM(DOVE_MC_REGS_BOOTUP)
+/*
+ * Even after MVEBU SoC internal register base remap. Dove MC
+ * registers are still at 0xd0800000. We remap it right after
+ * internal registers to 0xf1800000.
+*/
+#define DOVE_BOOTUP_MC_REGS	0xd0800000
+#define DOVE_REMAP_MC_REGS	0xf1800000
+
+#define DOVE_INT_REGS_BASE	IOMEM(MVEBU_REMAP_INT_REG_BASE)
+#define DOVE_MC_REGS_BASE	IOMEM(DOVE_REMAP_MC_REGS)
 
 #define DOVE_UART_BASE		(DOVE_INT_REGS_BASE + 0x12000)
 #define DOVE_UARTn_BASE(n)	(DOVE_UART_BASE + ((n) * 0x100))

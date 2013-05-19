@@ -17,38 +17,35 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <ns16550.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <ns16550.h>
-#include <mach/dove-regs.h>
 #include <asm/memory.h>
-#include <asm/barebox-arm.h>
+#include <mach/dove-regs.h>
+
+#define CONSOLE_UART_BASE	DOVE_UARTn_BASE(CONFIG_MVEBU_CONSOLE_UART)
 
 static struct clk *tclk;
 
-static inline void dove_remap_reg_base(uint32_t intbase,
-				       uint32_t mcbase)
+static inline void dove_remap_mc_regs(void)
 {
+	void __iomem *mcboot = IOMEM(DOVE_BOOTUP_MC_REGS);
 	uint32_t val;
 
 	/* remap ahb slave base */
 	val  = readl(DOVE_CPU_CTRL) & 0xffff0000;
-	val |= (mcbase & 0xffff0000) >> 16;
+	val |= (DOVE_REMAP_MC_REGS & 0xffff0000) >> 16;
 	writel(val, DOVE_CPU_CTRL);
 
 	/* remap axi bridge address */
 	val  = readl(DOVE_AXI_CTRL) & 0x007fffff;
-	val |= mcbase & 0xff800000;
+	val |= DOVE_REMAP_MC_REGS & 0xff800000;
 	writel(val, DOVE_AXI_CTRL);
 
 	/* remap memory controller base address */
-	val = readl(DOVE_SDRAM_BASE + SDRAM_REGS_BASE_DECODE) & 0x0000ffff;
-	val |= mcbase & 0xffff0000;
-	writel(val, DOVE_SDRAM_BASE + SDRAM_REGS_BASE_DECODE);
-
-	/* remap internal register */
-	val = intbase & 0xfff00000;
-	writel(val, DOVE_BRIDGE_BASE + INT_REGS_BASE_MAP);
+	val = readl(mcboot + SDRAM_REGS_BASE_DECODE) & 0x0000ffff;
+	val |= DOVE_REMAP_MC_REGS & 0xffff0000;
+	writel(val, mcboot + SDRAM_REGS_BASE_DECODE);
 }
 
 static inline void dove_memory_find(unsigned long *phys_base,
@@ -77,32 +74,16 @@ static inline void dove_memory_find(unsigned long *phys_base,
 	}
 }
 
-void __naked __noreturn dove_barebox_entry(void)
-{
-	unsigned long phys_base, phys_size;
-	dove_memory_find(&phys_base, &phys_size);
-	barebox_arm_entry(phys_base, phys_size, 0);
-}
-
-static struct NS16550_plat uart_plat[] = {
-	[0] = { .shift = 2, },
-	[1] = { .shift = 2, },
-	[2] = { .shift = 2, },
-	[3] = { .shift = 2, },
+static struct NS16550_plat uart_plat = {
+	.shift = 2,
 };
 
-int dove_add_uart(int num)
+static int dove_add_uart(void)
 {
-	struct NS16550_plat *plat;
-
-	if (num < 0 || num > 4)
-		return -EINVAL;
-
-	plat = &uart_plat[num];
-	plat->clock = clk_get_rate(tclk);
+	uart_plat.clock = clk_get_rate(tclk);
 	if (!add_ns16550_device(DEVICE_ID_DYNAMIC,
-				(unsigned int)DOVE_UARTn_BASE(num),
-				32, IORESOURCE_MEM_32BIT, plat))
+				(unsigned int)CONSOLE_UART_BASE, 32,
+				IORESOURCE_MEM_32BIT, &uart_plat))
 		return -ENODEV;
 	return 0;
 }
@@ -140,12 +121,15 @@ static int dove_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
 
+	dove_remap_mc_regs();
 	dove_init_clocks();
 	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)DOVE_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);
 	dove_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);
+	dove_add_uart();
+
 	return 0;
 }
 postcore_initcall(dove_init_soc);

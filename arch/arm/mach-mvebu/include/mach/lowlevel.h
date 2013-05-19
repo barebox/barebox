@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ * Copyright (C) 2013
+ *  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ *  Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -13,14 +15,9 @@
  *
  */
 
-#include <common.h>
-#include <init.h>
-#include <sizes.h>
-#include <mach/kirkwood.h>
+#ifndef __MACH_LOWLEVEL_H__
+#define __MACH_LOWLEVEL_H__
 
-static int globalscale_guruplug_console_init(void)
-{
-	return kirkwood_add_uart0();
-}
+void mvebu_barebox_entry(void);
 
-console_initcall(globalscale_guruplug_console_init);
+#endif

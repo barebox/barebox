@@ -1,6 +1,6 @@
 /*
  * Copyright
- * (C) 2013 Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ * (C) 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -14,13 +14,4 @@
  *
  */
 
-#include <common.h>
-#include <mach/dove.h>
-#include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
-
-void __naked barebox_arm_reset_vector(void)
-{
-	arm_cpu_lowlevel_init();
-	dove_barebox_entry();
-}
+/* empty */

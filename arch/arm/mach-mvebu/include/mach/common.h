@@ -1,6 +1,7 @@
 /*
- * Copyright
- * (C) 2013 Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ * Copyright (C) 2013
+ *  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ *  Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -14,12 +15,9 @@
  *
  */
 
-#include <common.h>
-#include <init.h>
-#include <mach/dove.h>
+#ifndef __MACH_COMMON_H__
+#define __MACH_COMMON_H__
 
-static int solidrun_cubox_console_init(void)
-{
-	return dove_add_uart(0);
-}
-console_initcall(solidrun_cubox_console_init);
+#define MVEBU_REMAP_INT_REG_BASE	0xf1000000
+
+#endif

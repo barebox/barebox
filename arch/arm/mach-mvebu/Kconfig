@@ -107,4 +107,18 @@ endchoice
 
 endif # ARCH_KIRKWOOD
 
+#
+# Common options
+#
+
+config MVEBU_CONSOLE_UART
+	int "UART number for console"
+	default 0
+	range 0 1 if ARCH_ARMADA_370
+	range 0 1 if ARCH_ARMADA_XP
+	range 0 3 if ARCH_DOVE
+	range 0 1 if ARCH_KIRKWOOD
+	help
+	 Select the UART number the barebox console will sit on.
+
 endif # ARCH_MVEBU

@@ -40,6 +40,10 @@ config ARCH_KIRKWOOD
 
 endchoice
 
+#
+# Armada 370 SoC boards
+#
+
 if ARCH_ARMADA_370
 
 choice
@@ -51,6 +55,10 @@ config MACH_GLOBALSCALE_MIRABOX
 endchoice
 
 endif # ARCH_ARMADA_370
+
+#
+# Armada XP SoC boards
+#
 
 if ARCH_ARMADA_XP
 
@@ -67,6 +75,10 @@ endchoice
 
 endif # ARCH_ARMADA_XP
 
+#
+# Dove 88AP510 SoC boards
+#
+
 if ARCH_DOVE
 
 choice
@@ -78,6 +90,10 @@ config MACH_SOLIDRUN_CUBOX
 endchoice
 
 endif # ARCH_DOVE
+
+#
+# Kirkwood SoC boards
+#
 
 if ARCH_KIRKWOOD
 

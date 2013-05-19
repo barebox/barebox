@@ -970,7 +970,8 @@ static int add_of_device_resource(struct device_node *node)
 	for_each_device(dev) {
 		if (!dev->resource)
 			continue;
-		if (dev->resource->start == address) {
+		if (dev->resource->start == res->start &&
+				dev->resource->end == res->end) {
 			debug("connecting %s to %s\n", node->name, dev_name(dev));
 			node->device = dev;
 			dev->device_node = node;

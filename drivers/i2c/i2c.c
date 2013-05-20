@@ -260,6 +260,10 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->dev.parent = &adapter->dev;
 
 	status = register_device(&client->dev);
+	if (status) {
+		free(client);
+		return NULL;
+	}
 
 #if 0
 	/* drivers may modify this initial i/o setup */

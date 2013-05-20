@@ -265,23 +265,7 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 		return NULL;
 	}
 
-#if 0
-	/* drivers may modify this initial i/o setup */
-	status = master->setup(client);
-	if (status < 0) {
-		printf("can't setup %s, status %d\n",
-		       client->dev.name, status);
-		goto fail;
-	}
-#endif
-
 	return client;
-
-#if 0
- fail:
-	free(proxy);
-	return NULL;
-#endif
 }
 EXPORT_SYMBOL(i2c_new_device);
 

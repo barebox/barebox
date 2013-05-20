@@ -102,6 +102,7 @@ struct i2c_board_info {
 	char		type[I2C_NAME_SIZE];	/**< name of device */
 	unsigned short	addr;			/**< stored in i2c_client.addr */
 	void		*platform_data;		/**< platform data for device */
+	struct device_node *of_node;
 };
 
 /**

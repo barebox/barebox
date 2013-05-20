@@ -384,8 +384,17 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
 	int ret;
 
-	if (i2c_get_adapter(adapter->nr))
-		return -EBUSY;
+	if (adapter->nr < 0) {
+		int nr;
+
+		for (nr = 0;; nr++)
+			if (!i2c_get_adapter(nr))
+				break;
+		adapter->nr = nr;
+	} else {
+		if (i2c_get_adapter(adapter->nr))
+			return -EBUSY;
+	}
 
 	adapter->dev.id = adapter->nr;
 	strcpy(adapter->dev.name, "i2c");

@@ -112,6 +112,48 @@ static void mxs_silicon_revision(void)
 	silicon_revision_set(product, revision);
 }
 
+#define HW_PINCTRL_MUXSEL2 0x120
+#define HW_PINCTRL_MUXSEL3 0x130
+#define HW_PINCTRL_DOE1 0x710
+#define HW_PINCTRL_DIN1 0x610
+
+/*
+ * we are interested in the setting of:
+ * - GPIO BANK1/19: 1 = the ROM has used the following pins for boot source selection
+ * - GPIO BANK1/5: ETM enable
+ * - GPIO BANK1/3: BM3
+ * - GPIO BANK1/2: BM2
+ * - GPIO BANK1/1: BM1
+ * - GPIO BANK1/0: BM0
+ */
+static uint32_t mx23_detect_bootsource(void)
+{
+	uint32_t mux2, mux3, dir, mode;
+
+	mux3 = readl(IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL3);
+	mux2 = readl(IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL2);
+	dir = readl(IMX_IOMUXC_BASE + HW_PINCTRL_DOE1);
+
+	/* force the GPIO lines of interest to input */
+	writel(0x0008002f, IMX_IOMUXC_BASE + HW_PINCTRL_DOE1 + 8);
+	/* force the GPIO lines of interest to act as GPIO */
+	writel(0x00000cff, IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL2 + 4);
+	writel(0x000000c0, IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL3 + 4);
+
+	/* read the bootstrapping */
+	mode = readl(IMX_IOMUXC_BASE + HW_PINCTRL_DIN1) & 0x8002f;
+
+	/* restore previous settings */
+	writel(mux3, IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL3);
+	writel(mux2, IMX_IOMUXC_BASE + HW_PINCTRL_MUXSEL2);
+	writel(dir, IMX_IOMUXC_BASE + HW_PINCTRL_DOE1);
+
+	if (!(mode & (1 << 19)))
+		return 0xff; /* invalid marker */
+
+	return (mode & 0xf) | ((mode & 0x20) >> 1);
+}
+
 #define MX28_REV_1_0_MODE	(0x0001a7f0)
 #define MX28_REV_1_2_MODE	(0x00019bf0)
 
@@ -122,7 +164,7 @@ static void mxs_boot_save_loc(void)
 	uint32_t mode = 0xff;
 
 	if (cpu_is_mx23()) {
-		/* not implemented yet */
+		mode = mx23_detect_bootsource();
 	} else if (cpu_is_mx28()) {
 		enum silicon_revision rev = silicon_revision_get();
 

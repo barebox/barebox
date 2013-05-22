@@ -240,10 +240,10 @@ static void flash_read_cfi (struct flash_info *info, void *buf,
 		p[i] = flash_read_uchar(info, start + i);
 }
 
-static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
+static int flash_detect_width (struct flash_info *info, struct cfi_qry *qry)
 {
 	int cfi_offset;
-	debug ("flash detect cfi\n");
+
 
 	for (info->portwidth = CFG_FLASH_CFI_WIDTH;
 	     info->portwidth <= FLASH_CFI_64BIT; info->portwidth <<= 1) {
@@ -264,8 +264,8 @@ static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
 					info->cfi_offset=flash_offset_cfi[cfi_offset];
 					debug ("device interface is %d\n",
 						info->interface);
-					debug ("found port %d chip %d ",
-						info->portwidth, info->chipwidth);
+					debug ("found port %d chip %d chip_lsb %d ",
+						info->portwidth, info->chipwidth, info->chip_lsb);
 					debug ("port %d bits chip %d bits\n",
 						info->portwidth << CFI_FLASH_SHIFT_WIDTH,
 						info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
@@ -276,6 +276,21 @@ static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
 	}
 	debug ("not found\n");
 	return 0;
+}
+
+static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
+{
+	int ret;
+
+	debug ("flash detect cfi\n");
+
+	info->chip_lsb = 0;
+	ret = flash_detect_width (info, qry);
+	if (!ret) {
+		info->chip_lsb = 1;
+		ret = flash_detect_width (info, qry);
+	}
+	return ret;
 }
 
 /*

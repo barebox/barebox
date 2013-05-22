@@ -29,6 +29,9 @@ config MCI_WRITE
 	default y
 	select DISK_WRITE
 
+config MCI_MMC_BOOT_PARTITIONS
+	bool "support MMC boot partitions"
+
 comment "--- MCI host drivers ---"
 
 config MCI_MXS

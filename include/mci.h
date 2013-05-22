@@ -185,6 +185,8 @@
 /*
  * EXT_CSD field definitions
  */
+#define EXT_CSD_PART_CONFIG_ACC_MASK	(0x7)
+#define EXT_CSD_PART_CONFIG_ACC_BOOT0	(0x1)
 
 #define EXT_CSD_CMD_SET_NORMAL		(1<<0)
 #define EXT_CSD_CMD_SET_SECURE		(1<<1)
@@ -306,10 +308,28 @@ struct mci_host {
 	int (*card_write_protected)(struct mci_host *);
 };
 
+struct mci;
+
+#define MMC_NUM_BOOT_PARTITION	2
+#define MMC_NUM_GP_PARTITION	4
+#define MMC_NUM_PHY_PARTITION	6
+
+struct mci_part {
+	struct block_device	blk;		/**< the blockdevice for the card */
+	struct mci		*mci;
+	uint64_t		size;		/* partition size (in bytes) */
+	unsigned int		part_cfg;	/* partition type */
+	char			*name;
+	unsigned int		area_type;
+#define MMC_BLK_DATA_AREA_MAIN	(1<<0)
+#define MMC_BLK_DATA_AREA_BOOT	(1<<1)
+#define MMC_BLK_DATA_AREA_GP	(1<<2)
+#define MMC_BLK_DATA_AREA_RPMB	(1<<3)
+};
+
 /** MMC/SD and interface instance information */
 struct mci {
 	struct mci_host *host;		/**< the host for this card */
-	struct block_device blk;	/**< the blockdevice for the card */
 	struct device_d *mci_dev;	/**< the device for our disk (mcix) */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
@@ -330,6 +350,15 @@ struct mci {
 	char *ext_csd;
 	int probe;
 	struct param_d *param_probe;
+	struct param_d *param_boot;
+	int bootpart;
+
+	struct mci_part part[MMC_NUM_PHY_PARTITION];
+	int nr_parts;
+	char *cdevname;
+
+	struct mci_part *part_curr;
+	u8 ext_csd_part_config;
 };
 
 int mci_register(struct mci_host*);

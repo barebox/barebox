@@ -371,7 +371,8 @@ static ulong flash_get_size (struct flash_info *info)
 		size_ratio = info->portwidth / info->chipwidth;
 		/* if the chip is x8/x16 reduce the ratio by half */
 		if ((info->interface == FLASH_CFI_X8X16)
-		    && (info->chipwidth == FLASH_CFI_BY8)) {
+		    && (info->chipwidth == FLASH_CFI_BY8)
+		    && (size_ratio != 1)) {
 			size_ratio >>= 1;
 		}
 		debug ("size_ratio %d port %d bits chip %d bits\n",

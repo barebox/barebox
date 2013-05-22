@@ -44,7 +44,6 @@
 struct fsl_esdhc_host {
 	struct mci_host		mci;
 	void __iomem		*regs;
-	unsigned long		cur_clock;
 	struct device_d		*dev;
 	struct clk		*clk;
 };
@@ -333,29 +332,37 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 	void __iomem *regs = host->regs;
 	int sdhc_clk = clk_get_rate(host->clk);
 	u32 clk;
+	unsigned long  cur_clock;
 
-	if (clock < mci->f_min)
-		clock = mci->f_min;
+	/*
+	 * With eMMC and imx53 (sdhc_clk=200MHz) a pre_div of 1 results in
+	 *	pre_div=1,div=4 (=50MHz)
+	 * which is valid and should work, but somehow doesn't.
+	 * Starting with pre_div=2 gives
+	 *	pre_div=2, div=2 (=50MHz)
+	 * and works fine.
+	 */
+	pre_div = 2;
 
-	pre_div = 0;
+	if (sdhc_clk == clock)
+		pre_div = 1;
+	else if (sdhc_clk / 16 > clock)
+		for (; pre_div < 256; pre_div *= 2)
+			if ((sdhc_clk / pre_div) <= (clock * 16))
+				break;
 
-	for (pre_div = 1; pre_div < 256; pre_div <<= 1) {
-		if (sdhc_clk / pre_div < clock * 16)
+	for (div = 1; div <= 16; div++)
+		if ((sdhc_clk / (div * pre_div)) <= clock)
 			break;
-	};
 
-	div = sdhc_clk / pre_div / clock;
+	cur_clock = sdhc_clk / pre_div / div;
 
-	if (sdhc_clk / pre_div / div > clock)
-		div++;
+	dev_dbg(host->dev, "set clock: wanted: %d got: %ld\n", clock, cur_clock);
+	dev_dbg(host->dev, "pre_div: %d div: %d\n", pre_div, div);
 
-	host->cur_clock = sdhc_clk / pre_div / div;
-
+	/* the register values start with 0 */
 	div -= 1;
 	pre_div >>= 1;
-
-	dev_dbg(host->dev, "set clock: wanted: %d got: %ld\n", clock, host->cur_clock);
-	dev_dbg(host->dev, "pre_div: %d div: %d\n", pre_div, div);
 
 	clk = (pre_div << 8) | (div << 4);
 
@@ -365,7 +372,8 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 	esdhc_clrsetbits32(regs + SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_CLOCK_MASK, clk);
 
-	udelay(10000);
+	wait_on_timeout(10 * MSECOND,
+			!(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_SDSTB));
 
 	clk = SYSCTL_PEREN | SYSCTL_CKEN;
 

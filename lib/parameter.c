@@ -299,6 +299,110 @@ struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
 	return &pi->param;
 }
 
+struct param_enum {
+	struct param_d param;
+	int *value;
+	const char **names;
+	int num_names;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_enum *to_param_enum(struct param_d *p)
+{
+	return container_of(p, struct param_enum, param);
+}
+
+static int param_enum_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_enum *pe = to_param_enum(p);
+	int value_save = *pe->value;
+	int i, ret;
+
+	if (!val)
+		return -EINVAL;
+
+	for (i = 0; i < pe->num_names; i++)
+		if (pe->names[i] && !strcmp(val, pe->names[i]))
+			break;
+
+	if (i == pe->num_names)
+		return -EINVAL;
+
+	*pe->value = i;
+
+	if (!pe->set)
+		return 0;
+
+	ret = pe->set(p, p->driver_priv);
+	if (ret)
+		*pe->value = value_save;
+
+	return ret;
+}
+
+static const char *param_enum_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_enum *pe = to_param_enum(p);
+	int ret;
+
+	if (pe->get) {
+		ret = pe->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	free(p->value);
+	p->value = strdup(pe->names[*pe->value]);
+
+	return p->value;
+}
+
+static void param_enum_info(struct param_d *p)
+{
+	struct param_enum *pe = to_param_enum(p);
+	int i;
+
+	printf(" (");
+
+	for (i = 0; i < pe->num_names; i++) {
+		if (!pe->names[i] || !*pe->names[i])
+			continue;
+		printf("\"%s\"%s", pe->names[i],
+				i ==  pe->num_names - 1 ? ")" : ", ");
+	}
+}
+
+struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char **names, int num_names, void *priv)
+{
+	struct param_enum *pe;
+	struct param_d *p;
+	int ret;
+
+	pe = xzalloc(sizeof(*pe));
+
+	pe->value = value;
+	pe->set = set;
+	pe->get = get;
+	pe->names = names;
+	pe->num_names = num_names;
+	p = &pe->param;
+	p->driver_priv = priv;
+
+	ret = __dev_add_param(p, dev, name, param_enum_set, param_enum_get, 0);
+	if (ret) {
+		free(pe);
+		return ERR_PTR(ret);
+	}
+
+	p->info = param_enum_info;
+
+	return &pe->param;
+}
+
 /**
  * dev_add_param_bool - add an boolean parameter to a device
  * @param dev	The device

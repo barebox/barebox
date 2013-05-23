@@ -41,6 +41,11 @@ struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
 		int (*get)(struct param_d *p, void *priv),
 		int *value, void *priv);
 
+struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char **names, int max, void *priv);
+
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format);
 
@@ -86,6 +91,15 @@ static inline struct param_d *dev_add_param_int(struct device_d *dev, const char
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		int *value, const char *format, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char **names, int max, void *priv)
+
 {
 	return NULL;
 }

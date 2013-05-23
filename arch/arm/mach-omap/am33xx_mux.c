@@ -148,6 +148,20 @@ static const __maybe_unused struct module_pin_mux rmii1_pin_mux[] = {
 	{-1},
 };
 
+static const __maybe_unused struct module_pin_mux rmii2_pin_mux[] = {
+	{OFFSET(gpmc_a0), MODE(3)},           /* RMII2_TXEN */
+	{OFFSET(gpmc_a4), MODE(3)},           /* RMII2_TXD1 */
+	{OFFSET(gpmc_a5), MODE(3)},           /* RMII2_TXD0 */
+	{OFFSET(gpmc_a10), MODE(3) | RXACTIVE},    /* RMII2_RXD1 */
+	{OFFSET(gpmc_a11), MODE(3) | RXACTIVE},    /* RMII2_RXD0 */
+	{OFFSET(gpmc_wait0), MODE(3) | RXACTIVE},     /* RMII2_CRS */
+	{OFFSET(gpmc_wpn), MODE(3) | RXACTIVE},   /* RMII2_RXERR */
+	{OFFSET(mdio_data), MODE(0) | RXACTIVE | PULLUP_EN}, /* MDIO_DATA */
+	{OFFSET(mdio_clk), MODE(0) | PULLUP_EN},    /* MDIO_CLK */
+	{OFFSET(mii1_col), MODE(1) | RXACTIVE}, /* RMII2_REFCLK */
+	{-1},
+};
+
 #ifdef CONFIG_NOR
 static const __maybe_unused struct module_pin_mux nor_pin_mux[] = {
 	{OFFSET(lcd_data0), MODE(1) | PULLUDEN},	/* NOR_A0 */
@@ -259,6 +273,16 @@ void configure_module_pin_mux(const struct module_pin_mux *mod_pin_mux)
 void am33xx_enable_mii1_pin_mux(void)
 {
 	configure_module_pin_mux(mii1_pin_mux);
+}
+
+void am33xx_enable_rmii1_pin_mux(void)
+{
+	configure_module_pin_mux(rmii1_pin_mux);
+}
+
+void am33xx_enable_rmii2_pin_mux(void)
+{
+	configure_module_pin_mux(rmii2_pin_mux);
 }
 
 void am33xx_enable_i2c0_pin_mux(void)

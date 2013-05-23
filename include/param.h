@@ -12,6 +12,7 @@ typedef unsigned long          IPaddr_t;
 struct param_d {
 	const char* (*get)(struct device_d *, struct param_d *param);
 	int (*set)(struct device_d *, struct param_d *param, const char *val);
+	void (*info)(struct param_d *param);
 	unsigned int flags;
 	char *name;
 	char *value;

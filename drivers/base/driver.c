@@ -495,8 +495,12 @@ static int do_devinfo(int argc, char *argv[])
 		printf("%s\n", list_empty(&dev->parameters) ?
 				"no parameters available" : "Parameters:");
 
-		list_for_each_entry(param, &dev->parameters, list)
-			printf("%16s = %s\n", param->name, dev_get_param(dev, param->name));
+		list_for_each_entry(param, &dev->parameters, list) {
+			printf("%16s = %s", param->name, dev_get_param(dev, param->name));
+			if (param->info)
+				param->info(param);
+			printf("\n");
+		}
 #ifdef CONFIG_OFDEVICE
 		if (dev->device_node) {
 			printf("\ndevice node: %s\n", dev->device_node->full_name);

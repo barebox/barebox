@@ -167,7 +167,6 @@ int of_set_property(struct device_node *node, const char *p, const void *val, in
 		int create);
 struct device_node *of_create_node(struct device_node *root, const char *path);
 
-struct device_node *of_get_root_node(void);
 int of_set_root_node(struct device_node *);
 
 const struct of_device_id *of_match_node(const struct of_device_id *matches,
@@ -183,6 +182,7 @@ int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
+struct device_node *of_get_root_node(void);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
@@ -213,6 +213,11 @@ static inline void *of_flatten_dtb(struct device_node *node)
 static inline int of_add_memory(struct device_node *node, bool dump)
 {
 	return -EINVAL;
+}
+
+static inline struct device_node *of_get_root_node(void)
+{
+	return NULL;
 }
 #endif
 

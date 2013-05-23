@@ -89,6 +89,14 @@ static void per_clocks_enable(void)
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_UART0_CLKCTRL);
 	while (__raw_readl(CM_WKUP_UART0_CLKCTRL) != PRCM_MOD_EN);
 
+	/* UART1 */
+	__raw_writel(PRCM_MOD_EN, CM_PER_UART1_CLKCTRL);
+	while (__raw_readl(CM_PER_UART1_CLKCTRL) != PRCM_MOD_EN);
+
+	/* UART2 */
+	__raw_writel(PRCM_MOD_EN, CM_PER_UART2_CLKCTRL);
+	while (__raw_readl(CM_PER_UART2_CLKCTRL) != PRCM_MOD_EN);
+
 	/* UART3 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_UART3_CLKCTRL);
 	while (__raw_readl(CM_PER_UART3_CLKCTRL) != PRCM_MOD_EN);

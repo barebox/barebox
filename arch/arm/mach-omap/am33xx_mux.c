@@ -27,6 +27,12 @@ static const __maybe_unused struct module_pin_mux uart0_pin_mux[] = {
 	{-1},
 };
 
+static const __maybe_unused struct module_pin_mux uart2_pin_mux[] = {
+	{OFFSET(mii1_txclk), (MODE(1) | PULLUDEN | RXACTIVE)},	/* UART2_RXD */
+	{OFFSET(mii1_rxclk), (MODE(1) | PULLUDEN)},		/* UART2_TXD */
+	{-1},
+};
+
 static const __maybe_unused struct module_pin_mux uart3_pin_mux[] = {
 	{OFFSET(spi0_cs1), (MODE(1) | PULLUDEN | RXACTIVE)},	/* UART3_RXD */
 	{OFFSET(ecap0_in_pwm0_out), (MODE(1) | PULLUDEN)},	/* UART3_TXD */
@@ -273,6 +279,11 @@ void am33xx_enable_i2c2_pin_mux(void)
 void am33xx_enable_uart0_pin_mux(void)
 {
 	configure_module_pin_mux(uart0_pin_mux);
+}
+
+void am33xx_enable_uart2_pin_mux(void)
+{
+	configure_module_pin_mux(uart2_pin_mux);
 }
 
 void am33xx_enable_mmc0_pin_mux(void)

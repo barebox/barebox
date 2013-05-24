@@ -495,6 +495,13 @@ static int esdhc_reset(void __iomem *regs)
 	return 0;
 }
 
+static int fsl_esdhc_detect(struct device_d *dev)
+{
+	struct fsl_esdhc_host *host = dev->priv;
+
+	return mci_detect_card(&host->mci);
+}
+
 static int fsl_esdhc_probe(struct device_d *dev)
 {
 	struct fsl_esdhc_host *host;
@@ -552,15 +559,17 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.card_present = esdhc_card_present;
 	host->mci.hw_dev = dev;
 
+	dev->detect = fsl_esdhc_detect,
+
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;
 	host->mci.f_max = rate;
 
-	mci_register(&host->mci);
+	dev->priv = host;
 
-	return 0;
+	return mci_register(&host->mci);
 }
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {

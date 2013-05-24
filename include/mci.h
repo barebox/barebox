@@ -285,9 +285,12 @@ struct mci_ios {
 #define MMC_1_8V_SDR_MODE	4
 };
 
+struct mci;
+
 /** host information */
 struct mci_host {
 	struct device_d *hw_dev;	/**< the host MCI hardware device */
+	struct mci *mci;
 	char *devname;			/**< the devicename for the card, defaults to disk%d */
 	unsigned voltages;
 	unsigned host_caps;	/**< Host's interface capabilities, refer MMC_VDD_* */
@@ -307,8 +310,6 @@ struct mci_host {
 	/** check if a card is write protected */
 	int (*card_write_protected)(struct mci_host *);
 };
-
-struct mci;
 
 #define MMC_NUM_BOOT_PARTITION	2
 #define MMC_NUM_GP_PARTITION	4
@@ -362,5 +363,6 @@ struct mci {
 };
 
 int mci_register(struct mci_host*);
+int mci_detect_card(struct mci_host *);
 
 #endif /* _MCI_H_ */

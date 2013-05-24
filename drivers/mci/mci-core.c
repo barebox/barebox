@@ -1596,6 +1596,24 @@ static int mci_init(void)
 
 device_initcall(mci_init);
 
+int mci_detect_card(struct mci_host *host)
+{
+	int rc;
+
+	rc = mci_check_if_already_initialized(host->mci);
+	if (rc != 0)
+		return 0;
+
+	return mci_card_probe(host->mci);
+}
+
+static int mci_detect(struct device_d *dev)
+{
+	struct mci *mci = container_of(dev, struct mci, dev);
+
+	return mci_detect_card(mci->host);
+}
+
 /**
  * Create a new mci device (for convenience)
  * @param host mci_host for this MCI device
@@ -1619,6 +1637,9 @@ int mci_register(struct mci_host *host)
 
 	mci->dev.platform_data = host;
 	mci->dev.parent = host->hw_dev;
+	mci->host = host;
+	host->mci = mci;
+	mci->dev.detect = mci_detect;
 
 	ret = register_device(&mci->dev);
 	if (ret)

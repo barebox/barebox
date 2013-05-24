@@ -190,11 +190,8 @@ endif
 
 ifdef CONFIG_IMAGE_COMPRESSION
 KBUILD_BINARY := arch/arm/pbl/zbarebox.bin
-KBUILD_TARGET := zbarebox.bin
-$(KBUILD_BINARY): $(KBUILD_TARGET)
 else
 KBUILD_BINARY := barebox.bin
-KBUILD_TARGET := barebox.bin
 endif
 
 barebox.netx: $(KBUILD_BINARY)
@@ -206,7 +203,6 @@ barebox.netx: $(KBUILD_BINARY)
 		--cookie=$(CONFIG_NETX_COOKIE);
 
 ifeq ($(machine-y),netx)
-KBUILD_TARGET := barebox.netx
 KBUILD_IMAGE := barebox.netx
 endif
 
@@ -214,7 +210,6 @@ barebox.s5p: $(KBUILD_BINARY)
 	$(Q)scripts/s5p_cksum $< barebox.s5p
 
 ifeq ($(CONFIG_ARCH_S5PCxx),y)
-KBUILD_TARGET := barebox.s5p
 KBUILD_IMAGE := barebox.s5p
 endif
 
@@ -226,7 +221,6 @@ MLO: $(KBUILD_BINARY)
 	$(call if_changed,mlo)
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_TARGET := MLO
 KBUILD_IMAGE := MLO
 endif
 
@@ -239,7 +233,6 @@ barebox.ubl: $(KBUILD_BINARY) FORCE
 	$(call if_changed,davinci_ubl_image)
 
 ifeq ($(CONFIG_ARCH_DAVINCI),y)
-KBUILD_TARGET := barebox.ubl
 KBUILD_IMAGE := barebox.ubl
 endif
 
@@ -250,7 +243,6 @@ barebox.spi: $(KBUILD_BINARY) FORCE
 	$(call if_changed,am35xx_spi_image)
 
 ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
-KBUILD_TARGET := barebox.spi
 KBUILD_IMAGE := barebox.spi
 endif
 
@@ -258,13 +250,12 @@ barebox.zynq: $(KBUILD_BINARY)
 	$(Q)scripts/zynq_mkimage $< $@
 
 ifeq ($(machine-y),zynq)
-KBUILD_TARGET := barebox.zynq
 KBUILD_IMAGE := barebox.zynq
 endif
 
 pbl := arch/arm/pbl
-zbarebox.S zbarebox.bin zbarebox: barebox.bin
-	$(Q)$(MAKE) $(build)=$(pbl) $(pbl)/$@
+$(pbl)/zbarebox.S $(pbl)/zbarebox.bin $(pbl)/zbarebox: barebox.bin
+	$(Q)$(MAKE) $(build)=$(pbl) $@
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)

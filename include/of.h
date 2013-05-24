@@ -221,6 +221,7 @@ extern int of_platform_populate(struct device_node *root,
 				struct device_d *parent);
 extern struct device_d *of_find_device_by_node(struct device_node *np);
 
+struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);

@@ -469,7 +469,7 @@ int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 #define DEVFS_IS_PARTITION		(1 << 2)
 #define DEVFS_IS_CHARACTER_DEV		(1 << 3)
 
-int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
+struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name);
 int devfs_del_partition(const char *name);
 

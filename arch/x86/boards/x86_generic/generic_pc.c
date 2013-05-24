@@ -25,6 +25,7 @@
 #include <init.h>
 #include <asm/syslib.h>
 #include <ns16550.h>
+#include <linux/err.h>
 
 /*
  * These datas are from the MBR, created by the linker and filled by the
@@ -43,6 +44,7 @@ extern uint8_t pers_env_drive;
 static int devices_init(void)
 {
 	int rc;
+	struct cdev *cdev;
 
 	/* extended memory only */
 	add_mem_device("ram0", 0x0, bios_get_memsize() << 10,
@@ -51,11 +53,11 @@ static int devices_init(void)
 			NULL);
 
 	if (pers_env_size != PATCH_AREA_PERS_SIZE_UNUSED) {
-		rc = devfs_add_partition("biosdisk0",
+		cdev = devfs_add_partition("biosdisk0",
 				pers_env_storage * 512,
 				(unsigned)pers_env_size * 512,
 				DEVFS_PARTITION_FIXED, "env0");
-		printf("Partition: %d\n", rc);
+		printf("Partition: %d\n", IS_ERR(cdev) ? PTR_ERR(cdev) : 0);
 	} else
 		printf("No persistent storage defined\n");
 

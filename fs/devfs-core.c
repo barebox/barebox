@@ -226,21 +226,21 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
-int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
+struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name)
 {
 	struct cdev *cdev, *new;
 
 	cdev = cdev_by_name(name);
 	if (cdev)
-		return -EEXIST;
+		return ERR_PTR(-EEXIST);
 
 	cdev = cdev_by_name(devname);
 	if (!cdev)
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 
 	if (offset + size > cdev->size)
-		return -EINVAL;
+		return ERR_PTR(-EINVAL);
 
 	new = xzalloc(sizeof (*new));
 	new->name = strdup(name);
@@ -257,14 +257,14 @@ int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		if (IS_ERR(new->mtd)) {
 			int ret = PTR_ERR(new->mtd);
 			free(new);
-			return ret;
+			return ERR_PTR(ret);
 		}
 	}
 #endif
 
 	devfs_create(new);
 
-	return 0;
+	return new;
 }
 
 int devfs_del_partition(const char *name)

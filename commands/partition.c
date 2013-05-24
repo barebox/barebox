@@ -35,6 +35,7 @@
 #include <linux/stat.h>
 #include <libgen.h>
 #include <getopt.h>
+#include <linux/err.h>
 
 #define SIZE_REMAINING ((ulong)-1)
 
@@ -48,7 +49,8 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 	char *end;
 	char buf[PATH_MAX] = {};
 	unsigned long flags = 0;
-	int ret;
+	int ret = 0;
+	struct cdev *cdev;
 
 	memset(buf, 0, PATH_MAX);
 
@@ -99,9 +101,12 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 
 	*retsize = size;
 
-	ret = devfs_add_partition(devname, *offset, size, flags, buf);
-	if (ret)
+	cdev = devfs_add_partition(devname, *offset, size, flags, buf);
+	if (IS_ERR(cdev)) {
+		ret = PTR_ERR(cdev);
 		printf("cannot create %s: %s\n", buf, strerror(-ret));
+	}
+
 	return ret;
 }
 

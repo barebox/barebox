@@ -101,6 +101,8 @@ $(obj)/barebox_default_env.bz2: $(obj)/barebox_default_env FORCE
 $(obj)/barebox_default_env.lzo: $(obj)/barebox_default_env FORCE
 	$(call if_changed,lzo)
 
+targets += barebox_default_env.lzo barebox_default_env.bz2 barebox_default_env.gz
+
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c default_environment) > $@; \
 	echo "const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@

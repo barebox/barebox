@@ -93,6 +93,13 @@ int device_probe(struct device_d *dev)
 	return 0;
 }
 
+int device_detect(struct device_d *dev)
+{
+	if (!dev->detect)
+		return -ENOSYS;
+	return dev->detect(dev);
+}
+
 static int match(struct driver_d *drv, struct device_d *dev)
 {
 	int ret;

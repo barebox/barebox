@@ -728,6 +728,15 @@ config CMD_CLK
 	  Say yes here to get clk_set_rate, clk_set_parent and clk_dump
 	  commands to manipulate clocks on your system.
 
+config CMD_DETECT
+	tristate
+	prompt "detect"
+	help
+	  say yes here to get the 'detect' command. Some devices take longer
+	  time to probe, like slow disks or SD/MMC cards. These can defer the
+	  actual probe of the client devices until they are needed. Use the
+	  'detect' command on the physical device to trigger probing.
+
 menuconfig CMD_WD
 	bool
 	depends on WATCHDOG

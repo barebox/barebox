@@ -246,8 +246,11 @@ ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
 KBUILD_IMAGE := barebox.spi
 endif
 
-barebox.zynq: $(KBUILD_BINARY)
-	$(Q)scripts/zynq_mkimage $< $@
+quiet_cmd_zynq_image = ZYNQ-IMG $@
+      cmd_zynq_image = scripts/zynq_mkimage $< $@
+
+barebox.zynq: $(KBUILD_BINARY) FORCE
+	$(call if_changed,zynq_image)
 
 ifeq ($(machine-y),zynq)
 KBUILD_IMAGE := barebox.zynq

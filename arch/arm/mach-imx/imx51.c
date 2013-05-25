@@ -95,15 +95,63 @@ postcore_initcall(imx51_init);
  * power up.
  */
 
+#define DP_MFN_800_DIT 60 /* PL Dither mode */
+
+/*
+ * Workaround for i.MX51 PLL errata. This is needed by all boards using the
+ * i.MX51 silicon version up until (including) 3.0 running at 800MHz.
+ * The PLL's in the i.MX51 processor can go out of lock due to a metastable
+ * condition in an analog flip-flop when used at high frequencies.
+ * This workaround implements an undocumented feature in the PLL (dither
+ * mode), which causes the effect of this failure to be much lower (in terms
+ * of frequency deviation), avoiding system failure, or at least decreasing
+ * the likelihood of system failure.
+ */
+static void imx51_setup_pll800_bug(void)
+{
+	void __iomem *base = (void *)MX51_PLL1_BASE_ADDR;
+	u32 dp_config;
+	volatile int i;
+
+	imx5_setup_pll_864(base);
+
+	dp_config = readl(base + MX5_PLL_DP_CONFIG);
+	dp_config &= ~MX5_PLL_DP_CONFIG_AREN;
+	writel(dp_config, base + MX5_PLL_DP_CONFIG);
+
+	/* Restart PLL with PLM = 1 */
+	writel(0x00001236, base + MX5_PLL_DP_CTL);
+
+	/* Wait for lock */
+	while (!(readl(base + MX5_PLL_DP_CTL) & 1));
+
+	/* Modify MFN value */
+	writel(DP_MFN_800_DIT, base + MX5_PLL_DP_MFN);
+	writel(DP_MFN_800_DIT, base + MX5_PLL_DP_HFS_MFN);
+
+	/* Reload MFN value */
+	writel(0x1, base + MX5_PLL_DP_CONFIG);
+
+	while (readl(base + MX5_PLL_DP_CONFIG) & 1);
+
+	/* Wait at least 4 us */
+	for (i = 0; i < 100; i++);
+
+	/* Enable auto-restart AREN bit */
+	dp_config |= MX5_PLL_DP_CONFIG_AREN;
+	writel(dp_config, base + MX5_PLL_DP_CONFIG);
+}
+
 void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX51_CCM_BASE_ADDR;
 	u32 r;
+	int rev = imx_silicon_revision();
 
 	imx5_init_lowlevel();
 
 	/* disable write combine for TO 2 and lower revs */
-	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
+	if (rev < IMX_CHIP_REV_3_0) {
 		__asm__ __volatile__("mrc 15, 1, %0, c9, c0, 1":"=r"(r));
 		r |= (1 << 25);
 		__asm__ __volatile__("mcr 15, 1, %0, c9, c0, 1" : : "r"(r));
@@ -135,7 +183,10 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 		break;
 	default:
 		/* Default maximum 800MHz */
-		imx5_setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
+		if (rev <= IMX_CHIP_REV_3_0)
+			imx51_setup_pll800_bug();
+		else
+			imx5_setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
 		break;
 	}
 

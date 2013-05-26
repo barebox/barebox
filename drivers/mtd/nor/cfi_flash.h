@@ -48,7 +48,6 @@ struct cfi_cmd_set;
  */
 
 struct flash_info {
-	struct driver_d driver;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/

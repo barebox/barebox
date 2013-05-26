@@ -281,13 +281,9 @@ on_error:
 	return rc;
 }
 
-static int ata_set_probe(struct param_d *param, void *priv)
+int ata_port_detect(struct ata_port *port)
 {
-	struct ata_port *port = priv;
 	int ret;
-
-	if (!port->probe)
-		return 0;
 
 	if (port->initialized) {
 		dev_info(&port->class_dev, "already initialized\n");
@@ -303,6 +299,23 @@ static int ata_set_probe(struct param_d *param, void *priv)
 	return 0;
 }
 
+static int ata_set_probe(struct param_d *param, void *priv)
+{
+	struct ata_port *port = priv;
+
+	if (!port->probe)
+		return 0;
+
+	return ata_port_detect(port);
+}
+
+static int ata_detect(struct device_d *dev)
+{
+	struct ata_port *port = container_of(dev, struct ata_port, class_dev);
+
+	return ata_port_detect(port);
+}
+
 /**
  * Register an ATA drive behind an IDE like interface
  * @param dev The interface device
@@ -316,6 +329,7 @@ int ata_port_register(struct ata_port *port)
 	port->class_dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(port->class_dev.name, "ata");
 	port->class_dev.parent = port->dev;
+	port->class_dev.detect = ata_detect;
 
 	ret = register_device(&port->class_dev);
 	if (ret)

@@ -144,6 +144,7 @@ struct ata_port {
 
 int ide_port_register(struct device_d *, struct ata_ioports *);
 int ata_port_register(struct ata_port *port);
+int ata_port_detect(struct ata_port *port);
 
 struct device_d;
 

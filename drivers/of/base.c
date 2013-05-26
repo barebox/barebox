@@ -212,6 +212,19 @@ int of_alias_get_id(struct device_node *np, const char *stem)
 }
 EXPORT_SYMBOL_GPL(of_alias_get_id);
 
+const char *of_alias_get(struct device_node *np)
+{
+	struct property *pp;
+
+	list_for_each_entry(pp, &of_aliases->properties, list) {
+		if (!strcmp(np->full_name, pp->value))
+			return pp->name;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(of_alias_get);
+
 u64 of_translate_address(struct device_node *node, const __be32 *in_addr)
 {
 	struct property *p;

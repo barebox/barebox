@@ -176,6 +176,7 @@ struct cdev;
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 
 int of_alias_get_id(struct device_node *np, const char *stem);
+const char *of_alias_get(struct device_node *np);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
@@ -190,6 +191,11 @@ static inline int of_parse_partitions(struct cdev *cdev,
 static inline int of_alias_get_id(struct device_node *np, const char *stem)
 {
 	return -ENOENT;
+}
+
+static inline const char *of_alias_get(struct device_node *np)
+{
+	return NULL;
 }
 
 static inline int of_device_is_stdout_path(struct device_d *dev)

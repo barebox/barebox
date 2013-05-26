@@ -61,6 +61,8 @@ config MACH_MIPS_XBURST
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select DRIVER_SERIAL_NS16550
 	select HAS_DEBUG_LL
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
 endchoice
 
 source arch/mips/mach-malta/Kconfig

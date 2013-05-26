@@ -1609,8 +1609,14 @@ int mci_register(struct mci_host *host)
 	mci = xzalloc(sizeof(*mci));
 	mci->host = host;
 
-	strcpy(mci->dev.name, "mci");
-	mci->dev.id = DEVICE_ID_DYNAMIC;
+	if (host->devname) {
+		strcpy(mci->dev.name, host->devname);
+		mci->dev.id = DEVICE_ID_SINGLE;
+	} else {
+		strcpy(mci->dev.name, "mci");
+		mci->dev.id = DEVICE_ID_DYNAMIC;
+	}
+
 	mci->dev.platform_data = host;
 	mci->dev.parent = host->hw_dev;
 

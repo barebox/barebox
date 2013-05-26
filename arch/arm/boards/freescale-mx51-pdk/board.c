@@ -172,7 +172,7 @@ static int f3s_devices_init(void)
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
-	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
+	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
 		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry), 0);
 
 	return 0;
@@ -182,8 +182,8 @@ device_initcall(f3s_devices_init);
 
 static int f3s_part_init(void)
 {
-	devfs_add_partition("disk0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+	devfs_add_partition("mmc0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
+	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;
 }

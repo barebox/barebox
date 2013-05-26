@@ -700,7 +700,6 @@ static void mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 
 /* ----------------------------------------------------------------------- */
 
-#ifdef CONFIG_MCI_INFO
 static void s3c_info(struct device_d *hw_dev)
 {
 	struct s3c_mci_host *host = hw_dev->priv;
@@ -720,7 +719,6 @@ static void s3c_info(struct device_d *hw_dev)
 	printf("\n  Card detection support: %s\n",
 		pd->gpio_detect != 0 ? "yes" : "no");
 }
-#endif
 
 static int s3c_mci_probe(struct device_d *hw_dev)
 {
@@ -751,6 +749,9 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 	s3c_host->host.f_min = pd->f_min == 0 ? s3c_get_pclk() / 256 : pd->f_min;
 	s3c_host->host.f_max = pd->f_max == 0 ? s3c_get_pclk() / 2 : pd->f_max;
 
+	if (IS_ENABLED(iCONFIG_MCI_INFO))
+		hw_dev->info = s3c_info;
+
 	/*
 	 * Start the clock to let the engine and the card finishes its startup
 	 */
@@ -763,8 +764,5 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 static struct driver_d s3c_mci_driver = {
         .name  = "s3c_mci",
         .probe = s3c_mci_probe,
-#ifdef CONFIG_MCI_INFO
-	.info = s3c_info,
-#endif
 };
 device_platform_driver(s3c_mci_driver);

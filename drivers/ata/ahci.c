@@ -635,6 +635,7 @@ static int ahci_probe(struct device_d *dev)
 	ahci->dev = dev;
 	ahci->mmio_base = regs;
 	dev->priv = ahci;
+	dev->info = ahci_info;
 
 	ret = ahci_add_host(ahci);
 	if (ret)
@@ -654,7 +655,6 @@ static __maybe_unused struct of_device_id ahci_dt_ids[] = {
 static struct driver_d ahci_driver = {
 	.name   = "ahci",
 	.probe  = ahci_probe,
-	.info	= ahci_info,
 	.of_compatible = DRV_OF_COMPAT(ahci_dt_ids),
 };
 device_platform_driver(ahci_driver);

@@ -201,15 +201,6 @@ struct driver_d *get_driver_by_name(const char *name)
 	return NULL;
 }
 
-static void noinfo(struct device_d *dev)
-{
-	printf("no info available for %s\n", dev_name(dev));
-}
-
-static void noshortinfo(struct device_d *dev)
-{
-}
-
 int register_driver(struct driver_d *drv)
 {
 	struct device_d *dev = NULL;
@@ -220,11 +211,6 @@ int register_driver(struct driver_d *drv)
 
 	list_add_tail(&drv->list, &driver_list);
 	list_add_tail(&drv->bus_list, &drv->bus->driver_list);
-
-	if (!drv->info)
-		drv->info = noinfo;
-	if (!drv->shortinfo)
-		drv->shortinfo = noshortinfo;
 
 	bus_for_each_device(drv->bus, dev)
 		match(drv, dev);
@@ -489,8 +475,8 @@ static int do_devinfo(int argc, char *argv[])
 		printf("bus: %s\n\n", dev->bus ?
 				dev->bus->name : "none");
 
-		if (dev->driver)
-			dev->driver->info(dev);
+		if (dev->info)
+			dev->info(dev);
 
 		printf("%s\n", list_empty(&dev->parameters) ?
 				"no parameters available" : "Parameters:");

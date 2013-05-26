@@ -269,6 +269,25 @@ static struct file_operations jtag_operations = {
 	.ioctl = jtag_ioctl,
 };
 
+static void jtag_info(struct device_d *pdev)
+{
+	int dn, ret;
+	struct jtag_rd_id jid;
+	struct jtag_info *info = pdev->priv;
+
+	printf(" JTAG:\n");
+	printf("  Devices found: %d\n", info->devices);
+	for (dn = 0; dn < info->devices; dn++) {
+		jid.device = dn;
+		ret = jtag_ioctl(&info->cdev, JTAG_GET_ID, &jid);
+		printf("  Device number: %d\n", dn);
+		if (ret == -1)
+			printf("   JTAG_GET_ID failed: %s\n", strerror(errno));
+		else
+			printf("   ID: 0x%lX\n", jid.id);
+	}
+}
+
 static int jtag_probe(struct device_d *pdev)
 {
 	int i, ret;
@@ -323,6 +342,7 @@ static int jtag_probe(struct device_d *pdev)
 	info->devices = i;
 	info->pdata = pdata;
 	pdev->priv = info;
+	pdev->info = jtag_info;
 
 	info->cdev.name = JTAG_NAME;
 	info->cdev.dev = pdev;
@@ -341,25 +361,6 @@ fail_devfs_create:
 	return ret;
 }
 
-static void jtag_info(struct device_d *pdev)
-{
-	int dn, ret;
-	struct jtag_rd_id jid;
-	struct jtag_info *info = pdev->priv;
-
-	printf(" JTAG:\n");
-	printf("  Devices found: %d\n", info->devices);
-	for (dn = 0; dn < info->devices; dn++) {
-		jid.device = dn;
-		ret = jtag_ioctl(&info->cdev, JTAG_GET_ID, &jid);
-		printf("  Device number: %d\n", dn);
-		if (ret == -1)
-			printf("   JTAG_GET_ID failed: %s\n", strerror(errno));
-		else
-			printf("   ID: 0x%lX\n", jid.id);
-	}
-}
-
 static void jtag_remove(struct device_d *pdev)
 {
 	struct jtag_info *info = (struct jtag_info *) pdev->priv;
@@ -374,7 +375,6 @@ static struct driver_d jtag_driver = {
 	.name = JTAG_NAME,
 	.probe = jtag_probe,
 	.remove = jtag_remove,
-	.info = jtag_info,
 };
 device_platform_driver(jtag_driver);
 

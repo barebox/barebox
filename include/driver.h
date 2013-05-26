@@ -107,6 +107,8 @@ struct device_d {
 	struct device_node *device_node;
 
 	struct of_device_id *of_id_entry;
+
+	void    (*info) (struct device_d *);
 };
 
 /** @brief Describes a driver present in the system */
@@ -123,9 +125,6 @@ struct driver_d {
 
 	/*! Called if an instance of a device is gone. */
 	void     (*remove)(struct device_d *);
-
-	void    (*info) (struct device_d *);
-	void    (*shortinfo) (struct device_d *);
 
 	struct bus_type *bus;
 

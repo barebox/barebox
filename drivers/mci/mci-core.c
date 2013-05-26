@@ -1282,7 +1282,6 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 
 /* ------------------ attach to the device API --------------------------- */
 
-#ifdef CONFIG_MCI_INFO
 /**
  * Extract the Manufacturer ID from the CID
  * @param mci Instance data
@@ -1408,7 +1407,6 @@ static void mci_info(struct device_d *mci_dev)
 	printf("  Manufacturing date: %u.%u\n", extract_mtd_month(mci),
 		extract_mtd_year(mci));
 }
-#endif
 
 /**
  * Check if the MCI card is already probed
@@ -1617,6 +1615,9 @@ static int mci_probe(struct device_d *mci_dev)
 		goto on_error;
 	}
 
+	if (IS_ENABLED(CONFIG_MCI_INFO))
+		mci_dev->info = mci_info;
+
 #ifdef CONFIG_MCI_STARTUP
 	/* if enabled, probe the attached card immediately */
 	mci_card_probe(mci);
@@ -1632,9 +1633,6 @@ on_error:
 static struct driver_d mci_driver = {
 	.name	= "mci",
 	.probe	= mci_probe,
-#ifdef CONFIG_MCI_INFO
-	.info	= mci_info,
-#endif
 };
 
 static int mci_init(void)

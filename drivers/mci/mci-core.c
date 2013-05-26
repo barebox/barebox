@@ -1630,15 +1630,11 @@ on_error:
 	return rc;
 }
 
-static struct driver_d mci_driver = {
-	.name	= "mci",
-	.probe	= mci_probe,
-};
-
 static int mci_init(void)
 {
 	sector_buf = xmemalign(32, 512);
-	return platform_driver_register(&mci_driver);
+
+	return 0;
 }
 
 device_initcall(mci_init);
@@ -1650,12 +1646,28 @@ device_initcall(mci_init);
  */
 int mci_register(struct mci_host *host)
 {
+	int ret;
 	struct device_d *mci_dev = xzalloc(sizeof(struct device_d));
 
+	strcpy(mci_dev->name, "mci");
 	mci_dev->id = DEVICE_ID_DYNAMIC;
-	strcpy(mci_dev->name, mci_driver.name);
 	mci_dev->platform_data = host;
 	mci_dev->parent = host->hw_dev;
 
-	return platform_device_register(mci_dev);
+	ret = register_device(mci_dev);
+	if (ret)
+		goto err_free;
+
+	ret = mci_probe(mci_dev);
+	if (ret)
+		goto err_unregister;
+
+	return 0;
+
+err_unregister:
+	unregister_device(mci_dev);
+err_free:
+	free(mci_dev);
+
+	return ret;
 }

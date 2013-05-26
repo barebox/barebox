@@ -963,6 +963,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->numeraseregions = info->numeraseregions;
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->type = MTD_NORFLASH;
+	mtd->parent = info->dev;
 
 	add_mtd_device(mtd, "nor");
 }

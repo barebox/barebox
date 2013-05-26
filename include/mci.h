@@ -330,7 +330,7 @@ struct mci_part {
 /** MMC/SD and interface instance information */
 struct mci {
 	struct mci_host *host;		/**< the host for this card */
-	struct device_d *mci_dev;	/**< the device for our disk (mcix) */
+	struct device_d dev;		/**< the device for our disk (mcix) */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;

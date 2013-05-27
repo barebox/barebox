@@ -4,4 +4,4 @@
 # instead
 
 global.hostname=tqma53
-global.linux.bootargs.base="console=ttymxc0,115200"
+global.linux.bootargs.base="console=ttymxc1,115200"

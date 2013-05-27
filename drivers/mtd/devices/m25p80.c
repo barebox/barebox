@@ -947,9 +947,18 @@ static int m25p_probe(struct device_d *dev)
 	return add_mtd_device(&flash->mtd, flash->mtd.name);
 }
 
+static __maybe_unused struct of_device_id m25p80_dt_ids[] = {
+	{
+		.compatible = "m25p80",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d m25p80_driver = {
 	.name	= "m25p80",
 	.probe	= m25p_probe,
+	.of_compatible = DRV_OF_COMPAT(m25p80_dt_ids),
 };
 device_spi_driver(m25p80_driver);
 

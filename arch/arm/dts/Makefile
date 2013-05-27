@@ -1,5 +1,6 @@
 dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb
-dtb-$(CONFIG_ARCH_IMX6) += imx6q-sabrelite.dtb
+dtb-$(CONFIG_ARCH_IMX6) += imx6q-sabrelite.dtb \
+	imx6q-sabresd.dtb
 
 BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
 obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o

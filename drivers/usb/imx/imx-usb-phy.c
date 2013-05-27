@@ -93,13 +93,22 @@ err_free:
 	return ret;
 };
 
+static __maybe_unused struct of_device_id imx_usbphy_dt_ids[] = {
+	{
+		.compatible = "fsl,imx23-usbphy",
+	}, {
+		/* sentinel */
+	},
+};
+
 static struct driver_d imx_usbphy_driver = {
 	.name   = "imx-usb-phy",
 	.probe  = imx_usbphy_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_usbphy_dt_ids),
 };
 
 static int imx_usbphy_init(void)
 {
 	return platform_driver_register(&imx_usbphy_driver);
 }
-coredevice_initcall(imx_usbphy_init);
+fs_initcall(imx_usbphy_init);

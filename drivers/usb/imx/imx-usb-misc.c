@@ -463,6 +463,54 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 	},
 };
 
+static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
+#ifdef CONFIG_ARCH_IMX25
+	{
+		.compatible = "fsl,imx25-usbmisc",
+		.data = (unsigned long)&mx25_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX27
+	{
+		.compatible = "fsl,imx27-usbmisc",
+		.data = (unsigned long)&mx27_mx31_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX31
+	{
+		.compatible = "fsl,imx31-usbmisc",
+		.data = (unsigned long)&mx27_mx31_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX35
+	{
+		.compatible = "fsl,imx35-usbmisc",
+		.data = (unsigned long)&mx35_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX51
+	{
+		.compatible = "fsl,imx51-usbmisc",
+		.data = (unsigned long)&mx5_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX53
+	{
+		.compatible = "fsl,imx53-usbmisc",
+		.data = (unsigned long)&mx5_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX6
+	{
+		.compatible = "fsl,imx6q-usbmisc",
+		.data = (unsigned long)&mx6_data,
+	},
+#endif
+	{
+		/* sentinel */
+	},
+};
+
 static struct imx_usb_misc_data *imxusbmisc_data;
 static void __iomem *usbmisc_base;
 
@@ -510,6 +558,7 @@ static struct driver_d imx_usbmisc_driver = {
 	.name   = "imx-usbmisc",
 	.probe  = imx_usbmisc_probe,
 	.id_table = imx_usbmisc_ids,
+	.of_compatible = DRV_OF_COMPAT(imx_usbmisc_dt_ids),
 };
 
 static int imx_usbmisc_init(void)

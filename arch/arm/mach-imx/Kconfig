@@ -508,6 +508,7 @@ config MACH_MX6Q_ARM2
 	bool "Freescale i.MX6q Armadillo2"
 
 config MACH_SABRELITE
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	bool "Freescale i.MX6 Sabre Lite"
 
 config MACH_SABRESD

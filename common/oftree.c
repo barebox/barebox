@@ -161,12 +161,6 @@ int of_fix_tree(struct device_node *node)
 }
 
 /*
- * The size by which we increase the dtb to have space for additional
- * fixups. Ideally this would be done by libfdt automatically
- */
-#define OFTREE_SIZE_INCREASE 0x8000
-
-/*
  * Get the fixed fdt. This function uses the fdt input pointer
  * if provided or the barebox internal devicetree if not.
  * It increases the size of the tree and applies the registered

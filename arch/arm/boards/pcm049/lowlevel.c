@@ -30,6 +30,7 @@
 
 void set_muxconf_regs(void);
 
+/* 512MB */
 static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 	.tim1		= 0x0EEB0662,
 	.tim2		= 0x20370DD2,
@@ -39,6 +40,20 @@ static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 	.config_init	= 0x80001AB1,
 	.config_final	= 0x80001AB1,
 	.zq_config	= 0xd0093215,
+	.mr1		= 0x83,
+	.mr2		= 0x4
+};
+
+/* 1GB */
+static const struct ddr_regs ddr_regs_mt42L128M64_25_400_mhz = {
+	.tim1		= 0x0EEB0663,
+	.tim2		= 0x205715D2,
+	.tim3		= 0x00BFC53F,
+	.phy_ctrl_1	= 0x849FF408,
+	.ref_ctrl	= 0x00000618,
+	.config_init	= 0x80001AB9,
+	.config_final	= 0x80001AB9,
+	.zq_config	= 0x50093215,
 	.mr1		= 0x83,
 	.mr2		= 0x4
 };
@@ -55,7 +70,11 @@ static void noinline pcm049_init_lowlevel(void)
 
 	set_muxconf_regs();
 
-	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+#ifdef CONFIG_1024MB_DDR2RAM
+		omap4_ddr_init(&ddr_regs_mt42L128M64_25_400_mhz, &core);
+#else
+		omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+#endif
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
 	omap4_scale_vcores(TPS62361_VSEL0_GPIO);

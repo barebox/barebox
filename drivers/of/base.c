@@ -681,9 +681,6 @@ void of_print_nodes(struct device_node *node, int indent)
 	if (!node)
 		return;
 
-	if (of_node_disabled(node))
-		return;
-
 	for (i = 0; i < indent; i++)
 		printf("\t");
 

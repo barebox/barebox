@@ -43,6 +43,7 @@ void set_up_mmc_voltage_omap4(void)
 	writel(value, OMAP4_CONTROL_PBIASLITE);
 
 	twl6030_mci_write(TWL6030_PMCS_VMMC_CFG_VOLTAGE,
+			  TWL6030_VMMC_WR_S |
 			  TWL6030_VMMC_VSEL_0 | TWL6030_VMMC_VSEL_2 |
 			  TWL6030_VMMC_VSEL_4);
 	twl6030_mci_write(TWL6030_PMCS_VMMC_CFG_STATE,

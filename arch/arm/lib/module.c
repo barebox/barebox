@@ -34,7 +34,7 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 
 		offset = ELF32_R_SYM(rel->r_info);
 		if (offset < 0 || offset > (symsec->sh_size / sizeof(Elf32_Sym))) {
-			printf("%s: bad relocation, section %d reloc %d\n",
+			printf("%s: bad relocation, section %u reloc %u\n",
 				module->name, relindex, i);
 			return -ENOEXEC;
 		}
@@ -43,7 +43,7 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 
 		if (rel->r_offset < 0 || rel->r_offset > dstsec->sh_size - sizeof(u32)) {
 			printf("%s: out of bounds relocation, "
-				"section %d reloc %d offset %d size %d\n",
+				"section %u reloc %u offset %d size %d\n",
 				module->name, relindex, i, rel->r_offset,
 				dstsec->sh_size);
 			return -ENOEXEC;
@@ -68,7 +68,7 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 			    offset <= (s32)0xfe000000 ||
 			    offset >= (s32)0x02000000) {
 				printf("%s: relocation out of range, section "
-				       "%d reloc %d sym '%s'\n", module->name,
+				       "%u reloc %u sym '%s'\n", module->name,
 				       relindex, i, strtab + sym->st_name);
 				return -ENOEXEC;
 			}

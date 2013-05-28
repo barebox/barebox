@@ -95,11 +95,11 @@ static void noinline pcm049_init_lowlevel(void)
 	/* Enable all clocks */
 	omap4_enable_all_clocks();
 
-	sr32(0x4A30a31C, 8, 1, 0x1);  /* enable software ioreq */
-	sr32(0x4A30a31C, 1, 2, 0x0);  /* set for sys_clk (19.2MHz) */
-	sr32(0x4A30a31C, 16, 4, 0x0); /* set divisor to 1 */
-	sr32(0x4A30a110, 0, 1, 0x1);  /* set the clock source to active */
-	sr32(0x4A30a110, 2, 2, 0x3);  /* enable clocks */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 8, 1, 0x1);  /* enable software ioreq */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 1, 2, 0x0);  /* set for sys_clk (19.2MHz) */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 16, 4, 0x0); /* set divisor to 1 */
+	sr32(OMAP44XX_SCRM_ALTCLKSRC, 0, 1, 0x1);  /* activate clock source */
+	sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);  /* enable clocks */
 }
 
 void barebox_arm_reset_vector(void)

@@ -98,6 +98,21 @@ void of_print_property(const void *data, int len)
 	}
 }
 
+void of_print_cmdline(struct device_node *root)
+{
+	struct device_node *node = of_find_node_by_path(root, "/chosen");
+	const char *cmdline;
+
+	if (!node) {
+		printf("commandline: no /chosen node\n");
+		return;
+	}
+
+	cmdline = of_get_property(node, "bootargs", NULL);
+
+	printf("commandline: %s\n", cmdline);
+}
+
 static int of_fixup_bootargs(struct device_node *root)
 {
 	struct device_node *node;

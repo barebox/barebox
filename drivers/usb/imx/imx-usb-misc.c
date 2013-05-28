@@ -347,6 +347,9 @@ static __maybe_unused struct imx_usb_misc_data mx5_data = {
 	.init = mx5_initialize_usb_hw,
 };
 
+#define MX6_USB_CTRL(n)			((n) * 4)
+#define MX6_USB_CTRL_OVER_CUR_DIS	(1 << 7)
+
 static void mx6_hsic_pullup(unsigned long reg, int on)
 {
 	u32 val;
@@ -364,10 +367,15 @@ static void mx6_hsic_pullup(unsigned long reg, int on)
 static __maybe_unused int mx6_initialize_usb_hw(void __iomem *base, int port,
 		unsigned int flags)
 {
+	u32 val;
+
 	switch (port) {
 	case 0:
-		break;
 	case 1:
+		val = readl(base + MX6_USB_CTRL(port));
+		if (flags & MXC_EHCI_DISABLE_OVERCURRENT)
+			val |= MX6_USB_CTRL_OVER_CUR_DIS;
+		writel(val, base + MX6_USB_CTRL(port));
 		break;
 	case 2: /* HSIC port */
 		mx6_hsic_pullup(0x388, 0);

@@ -32,6 +32,8 @@
 #define MXC_EHCI_WAKEUP_ENABLED		(1 << 12)
 #define MXC_EHCI_ITC_NO_THRESHOLD	(1 << 13)
 
+#define MXC_EHCI_DISABLE_OVERCURRENT	(1 << 14)
+
 enum imx_usb_mode {
 	IMX_USB_MODE_HOST,
 	IMX_USB_MODE_DEVICE,

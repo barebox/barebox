@@ -1,0 +1,7 @@
+if MACH_MIPS_AR231X
+
+config ARCH_TEXT_BASE
+	hex
+	default 0xa0800000
+
+endif

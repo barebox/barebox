@@ -1671,3 +1671,41 @@ err_free:
 
 	return ret;
 }
+
+void mci_of_parse(struct mci_host *host)
+{
+	struct device_node *np;
+	u32 bus_width;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	if (!host->hw_dev || !host->hw_dev->device_node)
+		return;
+
+	np = host->hw_dev->device_node;
+
+	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
+	if (of_property_read_u32(np, "bus-width", &bus_width) < 0) {
+		dev_dbg(host->hw_dev,
+			"\"bus-width\" property is missing, assuming 1 bit.\n");
+		bus_width = 1;
+	}
+
+	switch (bus_width) {
+	case 8:
+		host->host_caps |= MMC_MODE_8BIT;
+		/* Hosts capable of 8-bit transfers can also do 4 bits */
+	case 4:
+		host->host_caps |= MMC_MODE_4BIT;
+		break;
+	case 1:
+		break;
+	default:
+		dev_err(host->hw_dev,
+			"Invalid \"bus-width\" value %ud!\n", bus_width);
+	}
+
+	/* f_max is obtained from the optional "max-frequency" property */
+	of_property_read_u32(np, "max-frequency", &host->f_max);
+}

@@ -567,6 +567,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		host->mci.f_min = 200000;
 	host->mci.f_max = rate;
 
+	mci_of_parse(&host->mci);
+
 	dev->priv = host;
 
 	return mci_register(&host->mci);

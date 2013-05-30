@@ -1,6 +1,8 @@
 #ifndef __MACH_WEIM_H
 #define __MACH_WEIM_H
 
+#include <linux/types.h>
+
 void imx27_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 		unsigned additional);
 

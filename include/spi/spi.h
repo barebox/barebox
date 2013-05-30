@@ -4,6 +4,7 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <driver.h>
+#include <linux/string.h>
 
 struct spi_board_info {
 	char	*name;

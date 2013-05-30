@@ -1,7 +1,7 @@
 #ifndef __PARTITION_H
 #define __PARTITION_H
 
-struct device_d;
+#include <driver.h>
 
 struct partition {
         int num;
@@ -18,4 +18,3 @@ struct partition {
 };
 
 #endif /* __PARTITION_H */
-

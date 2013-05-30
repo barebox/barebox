@@ -1,6 +1,8 @@
 #ifndef __FILE_TYPE_H
 #define __FILE_TYPE_H
 
+#include <linux/string.h>
+
 /*
  * List of file types we know
  */

@@ -1,5 +1,6 @@
 
 #include <mach/devices.h>
+#include <mach/imx21-regs.h>
 
 static inline struct device_d *imx21_add_uart0(void)
 {

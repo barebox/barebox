@@ -1,6 +1,8 @@
 #ifndef __NOTIFIER_H
 #define __NOTIFIER_H
 
+#include <linux/list.h>
+
 /*
  * Notifer chains loosely based on the according Linux framework
  */

@@ -1,4 +1,5 @@
 #include <mach/devices.h>
+#include <mach/imx1-regs.h>
 
 static inline struct device_d *imx1_add_uart0(void)
 {

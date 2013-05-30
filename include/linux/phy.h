@@ -15,6 +15,7 @@
 #ifndef __PHY_H
 #define __PHY_H
 
+#include <driver.h>
 #include <linux/list.h>
 #include <linux/ethtool.h>
 #include <linux/mii.h>

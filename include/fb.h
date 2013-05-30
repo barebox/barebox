@@ -3,6 +3,7 @@
 
 #include <ioctl.h>
 #include <param.h>
+#include <driver.h>
 
 #define FB_VISUAL_TRUECOLOR		2	/* True color	*/
 #define FB_VISUAL_PSEUDOCOLOR		3	/* Pseudo color (like atari) */

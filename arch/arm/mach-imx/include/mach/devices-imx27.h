@@ -1,5 +1,6 @@
 
 #include <mach/devices.h>
+#include <mach/imx27-regs.h>
 
 static inline struct device_d *imx27_add_spi0(struct spi_imx_master *pdata)
 {

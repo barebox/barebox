@@ -27,6 +27,13 @@ menu "Network drivers"
 
 source "drivers/net/phy/Kconfig"
 
+config DRIVER_NET_AR231X
+	bool "AR231X Ethernet support"
+	depends on MACH_MIPS_AR231X
+	select PHYLIB
+	help
+	  Support for the AR231x/531x ethernet controller
+
 config DRIVER_NET_CALXEDA_XGMAC
 	bool "Calxeda xgmac"
 

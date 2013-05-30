@@ -145,6 +145,9 @@ static void of_alias_scan(void)
 
 	INIT_LIST_HEAD(&aliases_lookup);
 
+	if (!root_node)
+		return;
+
 	of_aliases = of_find_node_by_path(root_node, "/aliases");
 	if (!of_aliases)
 		return;

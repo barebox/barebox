@@ -72,6 +72,8 @@ struct fdt_header *fdt_get_tree(void);
 
 struct fdt_header *of_get_fixed_tree(struct device_node *node);
 
+int of_modalias_node(struct device_node *node, char *modalias, int len);
+
 #define device_node_for_nach_child(node, child) \
 	list_for_each_entry(child, &node->children, parent_list)
 

@@ -89,7 +89,7 @@
 #define IH_ARCH IH_ARCH_PPC
 #elif defined(__ARM__)
 #define IH_ARCH IH_ARCH_ARM
-#elif defined(__I386__) || defined(__x86_64__)
+#elif defined(__I386__) || defined(__x86_64__) || defined(__i386__)
 #define IH_ARCH IH_ARCH_I386
 #elif defined(__mips__)
 #define IH_ARCH IH_ARCH_MIPS

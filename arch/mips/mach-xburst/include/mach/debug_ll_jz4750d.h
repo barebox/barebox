@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,9 +15,23 @@
  *
  */
 
-#ifndef __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
-#define __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
+#ifndef __INCLUDE_DEBUG_LL_JZ4750D_H__
+#define __INCLUDE_DEBUG_LL_JZ4750D_H__
 
-#include <mach/debug_ll_jz4750d.h>
+#include <mach/jz4750d_regs.h>
 
-#endif  /* __INCLUDE_RZX50_BOARD_DEBUG_LL_H__ */
+#ifdef CONFIG_JZ4750D_DEBUG_LL_UART0
+#define DEBUG_LL_UART_ADDR	UART0_BASE
+#endif
+
+#ifdef CONFIG_JZ4750D_DEBUG_LL_UART1
+#define DEBUG_LL_UART_ADDR	UART1_BASE
+#endif
+
+#ifdef CONFIG_JZ4750D_DEBUG_LL_UART2
+#define DEBUG_LL_UART_ADDR	UART2_BASE
+#endif
+
+#define DEBUG_LL_UART_SHIFT	2
+
+#endif /* __INCLUDE_DEBUG_LL_JZ4750D_H__ */

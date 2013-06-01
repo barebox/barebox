@@ -17,6 +17,24 @@ config BOARD_RZX50
 
 endchoice
 
+if DEBUG_LL
+if CPU_JZ4755
+choice
+	prompt "DEBUG_LL port"
+
+config JZ4750D_DEBUG_LL_UART0
+	bool "UART0"
+
+config JZ4750D_DEBUG_LL_UART1
+	bool "UART1"
+
+config JZ4750D_DEBUG_LL_UART2
+	bool "UART2"
+
+endchoice
+endif # CPU_JZ4755
+endif # DEBUG_LL
+
 source arch/mips/boards/rzx50/Kconfig
 
 endif

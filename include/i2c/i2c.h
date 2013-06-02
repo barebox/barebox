@@ -16,6 +16,9 @@
 #ifndef I2C_I2C_H
 #define I2C_I2C_H
 
+#include <driver.h>
+#include <linux/types.h>
+
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 /*

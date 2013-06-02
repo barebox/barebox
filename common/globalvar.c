@@ -22,7 +22,7 @@ int globalvar_add(const char *name,
  * get a concatenated string of all globalvars beginning with 'match'.
  * This adds whitespaces between the different globalvars
  */
-char *globalvar_get_match(const char *match, const char *seperator)
+char *globalvar_get_match(const char *match, const char *separator)
 {
 	char *val = NULL;
 	struct param_d *param;
@@ -31,7 +31,7 @@ char *globalvar_get_match(const char *match, const char *seperator)
 		if (!strncmp(match, param->name, strlen(match))) {
 			const char *p = dev_get_param(&global_device, param->name);
 			if (val) {
-				char *new = asprintf("%s%s%s", val, seperator, p);
+				char *new = asprintf("%s%s%s", val, separator, p);
 				free(val);
 				val = new;
 			} else {

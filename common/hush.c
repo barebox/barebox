@@ -1959,7 +1959,7 @@ BAREBOX_CMD_START(getopt)
 BAREBOX_CMD_END
 #endif
 
-BAREBOX_MAGICVAR(PATH, "colon seperated list of pathes to search for executables");
+BAREBOX_MAGICVAR(PATH, "colon separated list of pathes to search for executables");
 #ifdef CONFIG_HUSH_FANCY_PROMPT
 BAREBOX_MAGICVAR(PS1, "hush prompt");
 #endif

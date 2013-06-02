@@ -1,6 +1,8 @@
 #ifndef __MACH_IOMUX_V1_H__
 #define __MACH_IOMUX_V1_H__
 
+#include <linux/compiler.h>
+
 #define GPIO_PIN_MASK 0x1f
 
 #define GPIO_PORT_SHIFT 5

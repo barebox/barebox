@@ -12,6 +12,8 @@
 #ifndef __MFD_MC13XXX_H
 #define __MFD_MC13XXX_H
 
+#include <linux/types.h>
+
 #define MC13XXX_REG_IDENTIFICATION	0x07
 
 #define MC13783_REG_INT_STATUS0		0x00

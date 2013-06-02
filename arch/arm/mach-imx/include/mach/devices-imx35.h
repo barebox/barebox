@@ -1,5 +1,6 @@
 
 #include <mach/devices.h>
+#include <mach/imx35-regs.h>
 
 static inline struct device_d *imx35_add_i2c0(struct i2c_platform_data *pdata)
 {

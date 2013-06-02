@@ -707,6 +707,7 @@ static int fec_probe(struct device_d *dev)
 
 	if (dev->device_node) {
 		ret = fec_probe_dt(dev, fec);
+		fec->phy_addr = -1;
 	} else if (pdata) {
 		fec->interface = pdata->xcv_type;
 		fec->phy_init = pdata->phy_init;

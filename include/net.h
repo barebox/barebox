@@ -19,7 +19,9 @@
 #include <stdlib.h>
 #include <clock.h>
 #include <led.h>
+#include <xfuncs.h>
 #include <linux/phy.h>
+#include <linux/string.h>	/* memcpy */
 #include <asm/byteorder.h>	/* for nton* / ntoh* stuff */
 
 /* How often do we retry to send packages */

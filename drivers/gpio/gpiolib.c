@@ -1,3 +1,5 @@
+#define pr_fmt(fmt)	"gpiolib: " fmt
+
 #include <init.h>
 #include <common.h>
 #include <command.h>
@@ -32,20 +34,30 @@ static int gpio_ensure_requested(struct gpio_info *gi, int gpio)
 	return gpio_request(gpio, "gpio");
 }
 
+static struct gpio_info *gpio_to_desc(unsigned gpio)
+{
+	if (gpio_is_valid(gpio))
+		if (gpio_desc[gpio].chip)
+			return &gpio_desc[gpio];
+
+	pr_warning("invalid GPIO %d\n", gpio);
+
+	return NULL;
+}
+
 int gpio_request(unsigned gpio, const char *label)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 	int ret;
 
-	if (!gpio_is_valid(gpio))
-		return -EINVAL;
-	if (!chip)
-		return -EINVAL;
+	if (!gi)
+		return -ENODEV;
+
 	if (gi->requested)
 		return -EBUSY;
-	if (chip->ops->request) {
-		ret = chip->ops->request(chip, gpio - chip->base);
+
+	if (gi->chip->ops->request) {
+		ret = gi->chip->ops->request(gi->chip, gpio - gi->chip->base);
 		if (ret)
 			return ret;
 	}
@@ -58,17 +70,16 @@ int gpio_request(unsigned gpio, const char *label)
 
 void gpio_free(unsigned gpio)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 
-	if (!gpio_is_valid(gpio))
+	if (!gi)
 		return;
-	if (!chip)
-		return;
+
 	if (!gi->requested)
 		return;
-	if (chip->ops->free)
-		chip->ops->free(chip, gpio - chip->base);
+
+	if (gi->chip->ops->free)
+		gi->chip->ops->free(gi->chip, gpio - gi->chip->base);
 
 	gi->requested = false;
 	free(gi->label);
@@ -76,75 +87,71 @@ void gpio_free(unsigned gpio)
 
 void gpio_set_value(unsigned gpio, int value)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 
-	if (!gpio_is_valid(gpio))
+	if (!gi)
 		return;
-	if (!chip)
-		return;
+
 	if (gpio_ensure_requested(gi, gpio))
 		return;
-	if (!chip->ops->set)
-		return;
-	chip->ops->set(chip, gpio - chip->base, value);
+
+	if (gi->chip->ops->set)
+		gi->chip->ops->set(gi->chip, gpio - gi->chip->base, value);
 }
 EXPORT_SYMBOL(gpio_set_value);
 
 int gpio_get_value(unsigned gpio)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 	int ret;
 
-	if (!gpio_is_valid(gpio))
-		return -EINVAL;
-	if (!chip)
+	if (!gi)
 		return -ENODEV;
+
 	ret = gpio_ensure_requested(gi, gpio);
 	if (ret)
 		return ret;
-	if (!chip->ops->get)
+
+	if (!gi->chip->ops->get)
 		return -ENOSYS;
-	return chip->ops->get(chip, gpio - chip->base);
+	return gi->chip->ops->get(gi->chip, gpio - gi->chip->base);
 }
 EXPORT_SYMBOL(gpio_get_value);
 
 int gpio_direction_output(unsigned gpio, int value)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 	int ret;
 
-	if (!gpio_is_valid(gpio))
-		return -EINVAL;
-	if (!chip)
+	if (!gi)
 		return -ENODEV;
+
 	ret = gpio_ensure_requested(gi, gpio);
 	if (ret)
 		return ret;
-	if (!chip->ops->direction_output)
+
+	if (!gi->chip->ops->direction_output)
 		return -ENOSYS;
-	return chip->ops->direction_output(chip, gpio - chip->base, value);
+	return gi->chip->ops->direction_output(gi->chip, gpio - gi->chip->base,
+					       value);
 }
 EXPORT_SYMBOL(gpio_direction_output);
 
 int gpio_direction_input(unsigned gpio)
 {
-	struct gpio_info *gi = &gpio_desc[gpio];
-	struct gpio_chip *chip = gi->chip;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 	int ret;
 
-	if (!gpio_is_valid(gpio))
-		return -EINVAL;
-	if (!chip)
+	if (!gi)
 		return -ENODEV;
+
 	ret = gpio_ensure_requested(gi, gpio);
 	if (ret)
 		return ret;
-	if (!chip->ops->direction_input)
+
+	if (!gi->chip->ops->direction_input)
 		return -ENOSYS;
-	return chip->ops->direction_input(chip, gpio - chip->base);
+	return gi->chip->ops->direction_input(gi->chip, gpio - gi->chip->base);
 }
 EXPORT_SYMBOL(gpio_direction_input);
 

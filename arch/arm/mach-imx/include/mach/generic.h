@@ -1,6 +1,9 @@
 #ifndef __MACH_GENERIC_H
 #define __MACH_GENERIC_H
 
+#include <linux/compiler.h>
+#include <linux/types.h>
+
 u64 imx_uid(void);
 
 void imx25_boot_save_loc(void __iomem *ccm_base);

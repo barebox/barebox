@@ -34,6 +34,14 @@
 		interrupt-controller;
 	};
 
+	pinmux: pinmux {
+	compatible = "nvidia,tegra20-pinmux";
+	reg = <0x70000014 0x10   /* Tri-state registers */
+	       0x70000080 0x20   /* Mux registers */
+	       0x700000a0 0x14   /* Pull-up/down registers */
+	       0x70000868 0xa8>; /* Pad control registers */
+	};
+
 	pmc {
 		compatible = "nvidia,tegra20-pmc";
 		reg = <0x7000e400 0x400>;

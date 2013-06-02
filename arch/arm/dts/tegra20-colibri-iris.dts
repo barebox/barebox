@@ -1,0 +1,32 @@
+/dts-v1/;
+
+/include/ "tegra20-colibri.dtsi"
+
+/ {
+	model = "Toradex Colibri T20 on Iris";
+	compatible = "toradex,iris", "toradex,colibri-t20", "nvidia,tegra20";
+
+	pinmux {
+		state_default: pinmux {
+			hdint {
+				nvidia,tristate = <0>;
+			};
+
+			i2cddc {
+				nvidia,tristate = <0>;
+			};
+
+			sdio4 {
+				nvidia,tristate = <0>;
+			};
+
+			uarta {
+				nvidia,tristate = <0>;
+			};
+
+			uartd {
+				nvidia,tristate = <0>;
+			};
+		};
+	};
+};

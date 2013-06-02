@@ -1,0 +1,89 @@
+imx-usb-loader Tools
+
+The Freescale i.MX SoCs support bootstrapping from USB. These are host
+side utilities handling this bootstrap process.
+
+The imx-usb-loader tool is used to upload and start i.MX images. These
+are images containing a DCD (Device Configuration Data) table. To generate
+these images from raw binaries use the imx-image tool.
+
+imx-image
+---------
+
+The imx-image tool can be used to generate imximages from raw binaries.
+It requires an configuration file describing how to setup the SDRAM on
+a particular board. This mainly consists of a poke table. The recognized
+options in this file are:
+
+soc <soctype>      soctype can be one of imx35, imx51, imx53, imx6
+loadaddr <adr>     The address the binary is uploaded to
+dcdofs <ofs>       The offset of the image header in the image. This should be:
+                   0x400  - MMC/SD, NAND, serial ROM, PATA, SATA
+                   0x1000 - NOR Flash
+                   0x100  - OneNAND
+wm 8 <adr> <value>                    do a byte memory write
+wm 16 <adr> <value>                   do a short memory write
+wm 32 <adr> <value>                   do a word memory write
+check <width> <cond> <addr> <mask>    Poll until condition becomes true.
+                                      with <cond> being one of:
+                                      while_all_bits_clear,
+                                      while_all_bits_set,
+                                      while_any_bit_clear,
+                                      while_any_bit_set
+
+the i.MX SoCs support a wide range of fancy things doing with the flash header.
+We limit ourselves to a very simple case, that is the flash header has a fixed
+size of 0x1000 bytes. The application is expected right thereafter, so if you
+specify a loadaddr of 0x80000000 in the config file, the first 0x1000 bytes
+are occupied by the flash header. The raw image inside the imximage will then
+end up at 0x80001000 from where it is then executed.
+
+Example config file, suitable for an Eukra cpuimx35:
+
+soc imx35
+dcdofs 0x400
+loadaddr 0x80000000
+wm 32 0x53F80004 0x00821000
+wm 32 0x53F80004 0x00821000
+wm 32 0xb8001010 0x00000004
+wm 32 0xB8001010 0x0000000C
+wm 32 0xb8001004 0x0009572B
+wm 32 0xb8001000 0x92220000
+wm 8  0x80000400 0xda
+wm 32 0xb8001000 0xa2220000
+wm 32 0x80000000 0x12344321
+wm 32 0x80000000 0x12344321
+wm 32 0xb8001000 0xb2220000
+wm 8  0x80000033 0xda
+wm 8  0x82000000 0xda
+wm 32 0xb8001000 0x82224080
+wm 32 0xb8001010 0x00000004
+
+example call:
+
+imx-image -c cpuimx35.cfg -f raw.bin -o imximage.bin
+
+imx-usb-loader
+--------------
+
+This utility is used to upload an imximage to a board. Some bootloaders directly
+generate this file format, with others you can generate such an image with the
+imx-image tool. The only required argument is the image file to upload. imx-usb-loader
+will then look for a supported device, upload the file and execute it.
+
+example usage:
+
+imx-usb-loader imximage.bin
+
+Some technical notes: The i.MX SoCs USB ROM boot mode supports doing register writes
+and file uploads. The files are usually uploaded to SDRAM. For this to work the SDRAM
+has to be initialized first. The information necessary to do this is contained in the
+imximage itself, more exactly in the DCD table. The imx-usb-loader parses this table
+and translates the DCD into register writes, basically it resembles what the i.MX would
+do in ROM code when the same image would be loaded from another bootsource like SD/MMC
+cards. Still the i.MX needs the DCD table to be uploaded. The i.MX would execute the DCD
+data again, which would result in corrupting the just configured SDRAM. The imx-usb-loader
+prevents this by setting the DCD length to 0x0 before uploading the image.
+The i.MX Boot ROM supports different types of images to upload. The imx-usb-loader currently
+only handles the simple case of uploading a single image which is executed right after
+downloading.

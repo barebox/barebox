@@ -66,6 +66,7 @@ config BOARDINFO
 
 choice
 	prompt "Select boot mode"
+	depends on !ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
 	help
 	  i.MX processors support two different boot modes. With the internal
 	  boot mode the boot medium contains a header describing the image to
@@ -92,6 +93,21 @@ config ARCH_IMX_EXTERNAL_BOOT
 	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
 
 endchoice
+
+config ARCH_IMX_IMXIMAGE
+	bool
+	help
+	  if enabled the imx-image tool is compiled
+
+config ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
+	select ARCH_IMX_IMXIMAGE
+	bool
+	help
+	  Traditionally the i.MX specific format for internal bootmode
+	  was generated using C structs inside the binary. Now there is
+	  a tool available to generate the imx-image format. Boards using
+	  this tool must select this option. This is recommended for new
+	  boards.
 
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT
@@ -407,6 +423,7 @@ choice
 
 config MACH_FREESCALE_MX51_PDK
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
 	bool "Freescale i.MX51 PDK"
 
 config MACH_EUKREA_CPUIMX51SD
@@ -595,6 +612,13 @@ endif
 endmenu
 
 menu "i.MX specific settings"
+
+config ARCH_IMX_USBLOADER
+	bool "compile imx-usb-loader"
+	help
+	  imx-usb-loader is a tool to upload and start imximages to an i.MX SoC
+	  in ROM boot mode. It requires libusb, so make sure you have the libusb
+	  devel package installed on your machine.
 
 config IMX_IIM
 	tristate "IIM fusebox device"

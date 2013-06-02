@@ -48,13 +48,20 @@
 
 #define PCM038_GPIO_FEC_RST	(GPIO_PORTC + 30)
 #define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
+#define PCM970_GPIO_SPI_CS1	(GPIO_PORTD + 27)
+#define PCM038_GPIO_OTG_STP	(GPIO_PORTE + 1)
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
 	.phy_addr = 1,
 };
 
-static int pcm038_spi_cs[] = { PCM038_GPIO_SPI_CS0 };
+static int pcm038_spi_cs[] = {
+	PCM038_GPIO_SPI_CS0,
+#ifdef CONFIG_MACH_PCM970_BASEBOARD
+	PCM970_GPIO_SPI_CS1,
+#endif
+};
 
 static struct spi_imx_master pcm038_spi_0_data = {
 	.chipselect = pcm038_spi_cs,
@@ -186,6 +193,11 @@ static int pcm038_power_init(void)
 	return 0;
 }
 
+struct imxusb_platformdata pcm038_otg_pdata = {
+	.mode	= IMX_USB_MODE_DEVICE,
+	.flags	= MXC_EHCI_MODE_ULPI | MXC_EHCI_INTERFACE_DIFF_UNI,
+};
+
 static int pcm038_devices_init(void)
 {
 	int i;
@@ -221,10 +233,13 @@ static int pcm038_devices_init(void)
 		PE15_PF_UART1_RTS,
 		/* CSPI1 */
 		PD25_PF_CSPI1_RDY,
-		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
+		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
+#ifdef CONFIG_MACH_PCM970_BASEBOARD
+		PCM970_GPIO_SPI_CS1 | GPIO_GPIO | GPIO_OUT,
+#endif
 		/* Display */
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
@@ -253,7 +268,7 @@ static int pcm038_devices_init(void)
 		PA29_PF_VSYNC,
 		PA30_PF_CONTRAST,
 		PA31_PF_OE_ACD,
-		/* OTG host */
+		/* USB OTG */
 		PC7_PF_USBOTG_DATA5,
 		PC8_PF_USBOTG_DATA6,
 		PC9_PF_USBOTG_DATA0,
@@ -262,7 +277,7 @@ static int pcm038_devices_init(void)
 		PC12_PF_USBOTG_DATA4,
 		PC13_PF_USBOTG_DATA3,
 		PE0_PF_USBOTG_NXT,
-		PE1_PF_USBOTG_STP,
+		PCM038_GPIO_OTG_STP | GPIO_GPIO | GPIO_OUT,
 		PE2_PF_USBOTG_DIR,
 		PE24_PF_USBOTG_CLK,
 		PE25_PF_USBOTG_DATA7,
@@ -307,6 +322,13 @@ static int pcm038_devices_init(void)
 	 */
 	gpio_set_value(PCM038_GPIO_FEC_RST, 1);
 	imx27_add_fec(&fec_info);
+
+	/* Apply delay for STP line to stop ULPI */
+	gpio_direction_output(PCM038_GPIO_OTG_STP, 1);
+	mdelay(1);
+	imx_gpio_mode(PE1_PF_USBOTG_STP);
+
+	imx27_add_usbotg(&pcm038_otg_pdata);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:

@@ -308,3 +308,28 @@ quiet_cmd_check_file_size = CHKSIZE $@
 		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\
 		exit 1 ;						\
 	fi;
+
+quiet_cmd_imximage__S_dcd= DCD_S   $@
+cmd_imximage_S_dcd=						\
+(								\
+	echo '\#include <asm-generic/barebox.lds.h>';		\
+	echo '.balign STRUCT_ALIGNMENT';			\
+	echo '.global $(subst -,_,$(*F))_start';		\
+	echo '$(subst -,_,$(*F))_start:';			\
+	echo '.incbin "$<" ';					\
+	echo '$(subst -,_,$(*F))_end:';				\
+	echo '.global $(subst -,_,$(*F))_end';			\
+	echo '.balign STRUCT_ALIGNMENT';			\
+) > $@
+
+quiet_cmd_dcd = DCD     $@
+      cmd_dcd = $(objtree)/scripts/imx/imx-image -d -o $@ -c $<
+
+$(obj)/%.dcd: $(obj)/%.imxcfg FORCE
+	$(call if_changed,dcd)
+
+$(obj)/%.S: $(obj)/%.dcd
+	$(call cmd,imximage_S_dcd)
+
+quiet_cmd_imx_image = IMX-IMG $@
+      cmd_imx_image = $(obj)/scripts/imx/imx-image -b -c $(CFG_$(@F)) -f $< -o $@

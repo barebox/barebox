@@ -58,6 +58,9 @@ static int imx51_init(void)
 	imx51_silicon_revision();
 	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
 
+	if (of_get_root_node())
+		return 0;
+
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 

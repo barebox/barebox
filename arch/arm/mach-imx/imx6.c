@@ -57,6 +57,9 @@ static int imx6_init(void)
 {
 	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
 
+	if (of_get_root_node())
+		return 0;
+
 	add_generic_device("imx-iomuxv3", 0, NULL, MX6_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx6-ccm", 0, NULL, MX6_CCM_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, MX6_GPT_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);

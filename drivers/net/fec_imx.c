@@ -747,6 +747,9 @@ static void fec_remove(struct device_d *dev)
 
 static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 	{
+		.compatible = "fsl,imx25-fec",
+		.data = FEC_TYPE_IMX27,
+	}, {
 		.compatible = "fsl,imx27-fec",
 		.data = FEC_TYPE_IMX27,
 	}, {

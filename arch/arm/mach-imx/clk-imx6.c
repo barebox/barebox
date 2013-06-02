@@ -321,7 +321,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 static __maybe_unused struct of_device_id imx6_ccm_dt_ids[] = {
 	{
-		.compatible = "fsl,imx6-ccm",
+		.compatible = "fsl,imx6q-ccm",
 	}, {
 		/* sentinel */
 	}

@@ -78,8 +78,13 @@ int eth_rx(void);			/* Check for received packets	*/
 static inline void eth_register_ethaddr(int ethid, const char *ethaddr)
 {
 }
+static inline void of_eth_register_ethaddr(struct device_node *node,
+		const char *ethaddr)
+{
+}
 #else
 void eth_register_ethaddr(int ethid, const char *ethaddr);
+void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr);
 #endif
 /*
  *	Ethernet header

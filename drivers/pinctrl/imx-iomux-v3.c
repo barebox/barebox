@@ -177,7 +177,7 @@ static int imx_iomux_v3_probe(struct device_d *dev)
 	iomuxv3_base = dev_request_mem_region(dev, 0);
 	iomuxv3_dev = dev;
 
-	if (IS_ENABLED(CONFIG_PINCTRL))
+	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
 		ret = imx_pinctrl_dt(dev, iomuxv3_base);
 
 	return ret;

@@ -53,16 +53,12 @@ u64 imx_uid(void)
 	return uid;
 }
 
-static struct imx_iim_platform_data imx25_iim_pdata = {
-	.mac_addr_base	= IIM_MAC_ADDR,
-};
-
 static int imx25_init(void)
 {
 	imx25_boot_save_loc((void *)MX25_CCM_BASE_ADDR);
 
 	add_generic_device("imx_iim", 0, NULL, MX25_IIM_BASE_ADDR, SZ_4K,
-			IORESOURCE_MEM, &imx25_iim_pdata);
+			IORESOURCE_MEM, NULL);
 
 	add_generic_device("imx-iomuxv3", 0, NULL, MX25_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx25-ccm", 0, NULL, MX25_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);

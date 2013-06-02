@@ -36,16 +36,34 @@ struct eth_ethaddr {
 	struct list_head list;
 	u8 ethaddr[6];
 	int ethid;
+	struct device_node *node;
 };
 
 static LIST_HEAD(ethaddr_list);
 
-static int eth_get_registered_ethaddr(int ethid, void *buf)
+static void register_preset_mac_address(struct eth_device *edev, const char *ethaddr)
+{
+	unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
+
+	ethaddr_to_string(ethaddr, ethaddr_str);
+
+	if (is_valid_ether_addr(ethaddr)) {
+		dev_info(&edev->dev, "got preset MAC address: %s\n", ethaddr_str);
+		dev_set_param(&edev->dev, "ethaddr", ethaddr_str);
+	}
+}
+
+static int eth_get_registered_ethaddr(struct eth_device *edev, void *buf)
 {
 	struct eth_ethaddr *addr;
+	struct device_node *node = NULL;
+
+	if (edev->parent)
+		node = edev->parent->device_node;
 
 	list_for_each_entry(addr, &ethaddr_list, list) {
-		if (addr->ethid == ethid) {
+		if ((node && node == addr->node) ||
+				addr->ethid == edev->dev.id) {
 			memcpy(buf, addr->ethaddr, 6);
 			return 0;
 		}
@@ -74,6 +92,38 @@ void eth_register_ethaddr(int ethid, const char *ethaddr)
 
 	addr = xzalloc(sizeof(*addr));
 	addr->ethid = ethid;
+	memcpy(addr->ethaddr, ethaddr, 6);
+	list_add_tail(&addr->list, &ethaddr_list);
+}
+
+static struct eth_device *eth_get_by_node(struct device_node *node)
+{
+	struct eth_device *edev;
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (!edev->parent)
+			continue;
+		if (!edev->parent->device_node)
+			continue;
+		if (edev->parent->device_node == node)
+			return edev;
+	}
+	return NULL;
+}
+
+void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
+{
+	struct eth_ethaddr *addr;
+	struct eth_device *edev;
+
+	edev = eth_get_by_node(node);
+	if (edev) {
+		register_preset_mac_address(edev, ethaddr);
+		return;
+	}
+
+	addr = xzalloc(sizeof(*addr));
+	addr->node = node;
 	memcpy(addr->ethaddr, ethaddr, 6);
 	list_add_tail(&addr->list, &ethaddr_list);
 }
@@ -225,8 +275,7 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 
 int eth_register(struct eth_device *edev)
 {
-        struct device_d *dev = &edev->dev;
-	unsigned char ethaddr_str[20];
+	struct device_d *dev = &edev->dev;
 	unsigned char ethaddr[6];
 	int ret, found = 0;
 
@@ -254,7 +303,7 @@ int eth_register(struct eth_device *edev)
 
 	list_add_tail(&edev->list, &netdev_list);
 
-	ret = eth_get_registered_ethaddr(dev->id, ethaddr);
+	ret = eth_get_registered_ethaddr(edev, ethaddr);
 	if (!ret)
 		found = 1;
 
@@ -264,13 +313,8 @@ int eth_register(struct eth_device *edev)
 			found = 1;
 	}
 
-	if (found) {
-		ethaddr_to_string(ethaddr, ethaddr_str);
-		if (is_valid_ether_addr(ethaddr)) {
-			dev_info(dev, "got preset MAC address: %s\n", ethaddr_str);
-			dev_set_param(dev, "ethaddr", ethaddr_str);
-		}
-	}
+	if (found)
+		register_preset_mac_address(edev, ethaddr);
 
 	if (!eth_current)
 		eth_current = edev;

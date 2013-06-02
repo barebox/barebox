@@ -106,7 +106,7 @@ struct device_d {
 	struct platform_device_id *id_entry;
 	struct device_node *device_node;
 
-	struct of_device_id *of_id_entry;
+	const struct of_device_id *of_id_entry;
 };
 
 /** @brief Describes a driver present in the system */

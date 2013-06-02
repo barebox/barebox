@@ -108,9 +108,20 @@ void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
 	struct property *reg;
 
 	device_node_for_nach_child(node, n) {
-		chip.name = n->name;
+		memset(&chip, 0, sizeof(chip));
+		chip.name = xstrdup(n->name);
 		chip.bus_num = master->bus_num;
-		chip.max_speed_hz = 300000; /* FIXME */
+		/* Mode (clock phase/polarity/etc.) */
+		if (of_find_property(n, "spi-cpha"))
+			chip.mode |= SPI_CPHA;
+		if (of_find_property(n, "spi-cpol"))
+			chip.mode |= SPI_CPOL;
+		if (of_find_property(n, "spi-cs-high"))
+			chip.mode |= SPI_CS_HIGH;
+		if (of_find_property(n, "spi-3wire"))
+			chip.mode |= SPI_3WIRE;
+		of_property_read_u32(n, "spi-max-frequency",
+				&chip.max_speed_hz);
 		reg = of_find_property(n, "reg");
 		if (!reg)
 			continue;

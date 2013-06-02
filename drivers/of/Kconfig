@@ -1,6 +1,11 @@
 config OFTREE
 	bool
 
+config OFTREE_MEM_GENERIC
+	depends on OFTREE
+	depends on PPC || ARM
+	def_bool y
+
 config DTC
 	bool
 

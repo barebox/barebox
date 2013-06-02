@@ -183,6 +183,8 @@ int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
+void of_add_memory_bank(struct device_node *node, bool dump, int r,
+		u64 base, u64 size);
 struct device_node *of_get_root_node(void);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,

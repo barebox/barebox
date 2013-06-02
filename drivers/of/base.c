@@ -905,7 +905,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	int na, nc;
 	const __be32 *reg, *endp;
 	int len, r = 0, ret;
-	static char str[6];
 	const char *device_type;
 
 	ret = of_property_read_string(node, "device_type", &device_type);
@@ -932,12 +931,7 @@ int of_add_memory(struct device_node *node, bool dump)
 		if (size == 0)
 			continue;
 
-		sprintf(str, "ram%d", r);
-
-		barebox_add_memory_bank(str, base, size);
-
-		if (dump)
-			pr_info("%s: %s: 0x%llx@0x%llx\n", node->name, str, size, base);
+		of_add_memory_bank(node, dump, r, base, size);
 
 		r++;
 	}

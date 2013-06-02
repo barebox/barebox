@@ -1,0 +1,12 @@
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+
+/ {
+	model = "qemu malta";
+	compatible = "qemu,malta";
+
+	memory {
+		reg = <0x00000000 0x10000000>;
+	};
+};

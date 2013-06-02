@@ -23,6 +23,14 @@ config GENERIC_LINKER_SCRIPT
 
 menu "Machine selection"
 
+config BUILTIN_DTB
+	bool "link a DTB into the barebox image"
+	depends on OFTREE
+
+config BUILTIN_DTB_NAME
+	string "DTB to build into the barebox image"
+	depends on BUILTIN_DTB
+
 choice
 	prompt "System type"
 	default MACH_MIPS_MALTA
@@ -36,6 +44,14 @@ config MACH_MIPS_MALTA
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select HAS_DEBUG_LL
+
+config MACH_MIPS_AR231X
+	bool "Atheros ar231x-based boards"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select CSRC_R4K_LIB
+	select DRIVER_SERIAL_NS16550
 
 config MACH_MIPS_BCM47XX
 	bool "Broadcom BCM47xx-based boards"
@@ -53,9 +69,12 @@ config MACH_MIPS_XBURST
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select DRIVER_SERIAL_NS16550
 	select HAS_DEBUG_LL
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
 endchoice
 
 source arch/mips/mach-malta/Kconfig
+source arch/mips/mach-ar231x/Kconfig
 source arch/mips/mach-bcm47xx/Kconfig
 source arch/mips/mach-xburst/Kconfig
 

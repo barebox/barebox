@@ -18,9 +18,6 @@
 #ifndef __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
 #define __INCLUDE_RZX50_BOARD_DEBUG_LL_H__
 
-#include <mach/jz4750d_regs.h>
-
-#define DEBUG_LL_UART_ADDR	UART1_BASE
-#define DEBUG_LL_UART_SHIFT	2
+#include <mach/debug_ll_jz4750d.h>
 
 #endif  /* __INCLUDE_RZX50_BOARD_DEBUG_LL_H__ */

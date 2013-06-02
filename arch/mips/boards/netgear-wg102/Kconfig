@@ -1,0 +1,6 @@
+if BOARD_NETGEAR_WG102
+
+config BOARDINFO
+	default "Netgear WG102"
+
+endif

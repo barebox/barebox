@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2012 Antony Pavlov <antonynpavlov@gmail.com>
+ * Startup Code for Ritmix RZX-50 board
+ *
+ * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -10,21 +12,23 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  */
 
-#include <common.h>
-#include <init.h>
-#include <mach/devices.h>
-#include <mach/jz4750d_regs.h>
+#include <asm/pbl_macros.h>
 
-static int rzx50_console_init(void)
-{
-	/* Register the serial port */
-	jz_add_uart(DEVICE_ID_DYNAMIC, UART1_BASE, 12000000);
+	.macro	board_pbl_start
+	.set	push
+	.set	noreorder
 
-	return 0;
-}
-console_initcall(rzx50_console_init);
+	mips_disable_interrupts
+
+	/* CPU/SoC specific setup ... */
+	/* ... absent */
+
+	copy_to_link_location	pbl_start
+
+	.set	pop
+	.endm

@@ -673,19 +673,11 @@ do {									\
 #define write_c0_compare3(val)	__write_32bit_c0_register($11, 7, val)
 
 #define read_c0_status()	__read_32bit_c0_register($12, 0)
-#ifdef CONFIG_MIPS_MT_SMTC
-#define write_c0_status(val)						\
-do {									\
-	__write_32bit_c0_register($12, 0, val);				\
-	__ehb();							\
-} while (0)
-#else
 /*
  * Legacy non-SMTC code, which may be hazardous
  * but which might not support EHB
  */
 #define write_c0_status(val)	__write_32bit_c0_register($12, 0, val)
-#endif /* CONFIG_MIPS_MT_SMTC */
 
 #define read_c0_cause()		__read_32bit_c0_register($13, 0)
 #define write_c0_cause(val)	__write_32bit_c0_register($13, 0, val)

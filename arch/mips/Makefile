@@ -72,6 +72,9 @@ LDFLAGS_barebox += -nostdlib
 machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
 board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 
+machine-$(CONFIG_MACH_MIPS_AR231X)	:= ar231x
+board-$(CONFIG_BOARD_NETGEAR_WG102)	:= netgear-wg102
+
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
 board-$(CONFIG_BOARD_DLINK_DIR320)	:= dlink-dir-320
 
@@ -113,6 +116,8 @@ common-y += $(BOARD) $(MACH)
 common-y += arch/mips/lib/
 common-y += arch/mips/boot/
 
+common-$(CONFIG_BUILTIN_DTB) += arch/mips/dts/
+
 CPPFLAGS += $(cflags-y)
 CFLAGS += $(cflags-y)
 
@@ -126,5 +131,15 @@ zbarebox.S zbarebox.bin zbarebox: barebox.bin
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)
+
+dts := arch/mips/dts
+
+%.dtb: scripts
+	$(Q)$(MAKE) $(build)=$(dts) $(dts)/$@
+
+dtbs: scripts
+	$(Q)$(MAKE) $(build)=$(dts) dtbs
+
+KBUILD_DTBS := dtbs
 
 KBUILD_IMAGE ?= $(KBUILD_BINARY)

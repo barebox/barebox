@@ -326,7 +326,7 @@ static int aimage_load_resource(int fd, struct resource *r, void* buf, int ps)
 
 	ret = read_full(fd, buf, to_read);
 	if (ret < 0)
-		printf("could not read dummy %d\n", to_read);
+		printf("could not read dummy %u\n", to_read);
 
 	return ret;
 }

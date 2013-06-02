@@ -136,7 +136,10 @@
 #define CM_PER_GPIO1_CLKCTRL            (CM_PER + 0xAC) /* GPIO1 */
 #define CM_PER_GPIO2_CLKCTRL            (CM_PER + 0xB0) /* GPIO2 */
 #define CM_PER_GPIO3_CLKCTRL            (CM_PER + 0xB4) /* GPIO3 */
+#define CM_PER_UART1_CLKCTRL            (CM_PER + 0x6C) /* UART1 */
+#define CM_PER_UART2_CLKCTRL            (CM_PER + 0x70) /* UART2 */
 #define CM_PER_UART3_CLKCTRL            (CM_PER + 0x74) /* UART3 */
+#define CM_PER_UART4_CLKCTRL            (CM_PER + 0x78) /* UART4 */
 #define CM_PER_I2C1_CLKCTRL             (CM_PER + 0x48) /* I2C1 */
 #define CM_PER_I2C2_CLKCTRL             (CM_PER + 0x44) /* I2C2 */
 #define CM_WKUP_GPIO0_CLKCTRL           (CM_WKUP + 0x8) /* GPIO0 */

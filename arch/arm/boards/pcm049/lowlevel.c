@@ -30,6 +30,7 @@
 
 void set_muxconf_regs(void);
 
+/* 512MB */
 static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 	.tim1		= 0x0EEB0662,
 	.tim2		= 0x20370DD2,
@@ -39,6 +40,20 @@ static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 	.config_init	= 0x80001AB1,
 	.config_final	= 0x80001AB1,
 	.zq_config	= 0xd0093215,
+	.mr1		= 0x83,
+	.mr2		= 0x4
+};
+
+/* 1GB */
+static const struct ddr_regs ddr_regs_mt42L128M64_25_400_mhz = {
+	.tim1		= 0x0EEB0663,
+	.tim2		= 0x205715D2,
+	.tim3		= 0x00BFC53F,
+	.phy_ctrl_1	= 0x849FF408,
+	.ref_ctrl	= 0x00000618,
+	.config_init	= 0x80001AB9,
+	.config_final	= 0x80001AB9,
+	.zq_config	= 0x50093215,
 	.mr1		= 0x83,
 	.mr2		= 0x4
 };
@@ -55,7 +70,11 @@ static void noinline pcm049_init_lowlevel(void)
 
 	set_muxconf_regs();
 
-	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+#ifdef CONFIG_1024MB_DDR2RAM
+		omap4_ddr_init(&ddr_regs_mt42L128M64_25_400_mhz, &core);
+#else
+		omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+#endif
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
 	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
@@ -76,11 +95,11 @@ static void noinline pcm049_init_lowlevel(void)
 	/* Enable all clocks */
 	omap4_enable_all_clocks();
 
-	sr32(0x4A30a31C, 8, 1, 0x1);  /* enable software ioreq */
-	sr32(0x4A30a31C, 1, 2, 0x0);  /* set for sys_clk (19.2MHz) */
-	sr32(0x4A30a31C, 16, 4, 0x0); /* set divisor to 1 */
-	sr32(0x4A30a110, 0, 1, 0x1);  /* set the clock source to active */
-	sr32(0x4A30a110, 2, 2, 0x3);  /* enable clocks */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 8, 1, 0x1);  /* enable software ioreq */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 1, 2, 0x0);  /* set for sys_clk (19.2MHz) */
+	sr32(OMAP44XX_SCRM_AUXCLK3, 16, 4, 0x0); /* set divisor to 1 */
+	sr32(OMAP44XX_SCRM_ALTCLKSRC, 0, 1, 0x1);  /* activate clock source */
+	sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);  /* enable clocks */
 }
 
 void barebox_arm_reset_vector(void)

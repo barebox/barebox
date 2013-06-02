@@ -48,7 +48,11 @@ console_initcall(pcm049_console_init);
 
 static int pcm049_mem_init(void)
 {
+#ifdef CONFIG_1024MB_DDR2RAM
+	omap_add_ram0(SZ_1G);
+#else
 	omap_add_ram0(SZ_512M);
+#endif
 
 	omap44xx_add_sram0();
 	return 0;

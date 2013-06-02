@@ -248,10 +248,13 @@ extern void configure_module_pin_mux(const struct module_pin_mux *mod_pin_mux);
 
 /* Standard mux settings */
 extern void am33xx_enable_mii1_pin_mux(void);
+extern void am33xx_enable_rmii1_pin_mux(void);
+extern void am33xx_enable_rmii2_pin_mux(void);
 extern void am33xx_enable_i2c0_pin_mux(void);
 extern void am33xx_enable_i2c1_pin_mux(void);
 extern void am33xx_enable_i2c2_pin_mux(void);
 extern void am33xx_enable_uart0_pin_mux(void);
+extern void am33xx_enable_uart2_pin_mux(void);
 extern void am33xx_enable_mmc0_pin_mux(void);
 
 #endif /*__AM33XX_MUX_H__ */

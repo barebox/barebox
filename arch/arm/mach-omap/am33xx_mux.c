@@ -27,6 +27,12 @@ static const __maybe_unused struct module_pin_mux uart0_pin_mux[] = {
 	{-1},
 };
 
+static const __maybe_unused struct module_pin_mux uart2_pin_mux[] = {
+	{OFFSET(mii1_txclk), (MODE(1) | PULLUDEN | RXACTIVE)},	/* UART2_RXD */
+	{OFFSET(mii1_rxclk), (MODE(1) | PULLUDEN)},		/* UART2_TXD */
+	{-1},
+};
+
 static const __maybe_unused struct module_pin_mux uart3_pin_mux[] = {
 	{OFFSET(spi0_cs1), (MODE(1) | PULLUDEN | RXACTIVE)},	/* UART3_RXD */
 	{OFFSET(ecap0_in_pwm0_out), (MODE(1) | PULLUDEN)},	/* UART3_TXD */
@@ -139,6 +145,20 @@ static const __maybe_unused struct module_pin_mux rmii1_pin_mux[] = {
 	{OFFSET(mdio_data), MODE(0) | RXACTIVE | PULLUP_EN}, /* MDIO_DATA */
 	{OFFSET(mdio_clk), MODE(0) | PULLUP_EN},    /* MDIO_CLK */
 	{OFFSET(rmii1_refclk), MODE(0) | RXACTIVE}, /* RMII1_REFCLK */
+	{-1},
+};
+
+static const __maybe_unused struct module_pin_mux rmii2_pin_mux[] = {
+	{OFFSET(gpmc_a0), MODE(3)},           /* RMII2_TXEN */
+	{OFFSET(gpmc_a4), MODE(3)},           /* RMII2_TXD1 */
+	{OFFSET(gpmc_a5), MODE(3)},           /* RMII2_TXD0 */
+	{OFFSET(gpmc_a10), MODE(3) | RXACTIVE},    /* RMII2_RXD1 */
+	{OFFSET(gpmc_a11), MODE(3) | RXACTIVE},    /* RMII2_RXD0 */
+	{OFFSET(gpmc_wait0), MODE(3) | RXACTIVE},     /* RMII2_CRS */
+	{OFFSET(gpmc_wpn), MODE(3) | RXACTIVE},   /* RMII2_RXERR */
+	{OFFSET(mdio_data), MODE(0) | RXACTIVE | PULLUP_EN}, /* MDIO_DATA */
+	{OFFSET(mdio_clk), MODE(0) | PULLUP_EN},    /* MDIO_CLK */
+	{OFFSET(mii1_col), MODE(1) | RXACTIVE}, /* RMII2_REFCLK */
 	{-1},
 };
 
@@ -255,6 +275,16 @@ void am33xx_enable_mii1_pin_mux(void)
 	configure_module_pin_mux(mii1_pin_mux);
 }
 
+void am33xx_enable_rmii1_pin_mux(void)
+{
+	configure_module_pin_mux(rmii1_pin_mux);
+}
+
+void am33xx_enable_rmii2_pin_mux(void)
+{
+	configure_module_pin_mux(rmii2_pin_mux);
+}
+
 void am33xx_enable_i2c0_pin_mux(void)
 {
 	configure_module_pin_mux(i2c0_pin_mux);
@@ -273,6 +303,11 @@ void am33xx_enable_i2c2_pin_mux(void)
 void am33xx_enable_uart0_pin_mux(void)
 {
 	configure_module_pin_mux(uart0_pin_mux);
+}
+
+void am33xx_enable_uart2_pin_mux(void)
+{
+	configure_module_pin_mux(uart2_pin_mux);
 }
 
 void am33xx_enable_mmc0_pin_mux(void)

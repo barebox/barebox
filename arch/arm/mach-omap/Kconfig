@@ -214,6 +214,18 @@ endchoice
 
 endif
 
+if MACH_PCM049
+	choice
+	prompt "Select DDR2-RAM Size"
+
+	config 512MB_DDR2RAM
+		bool "512MB"
+	config 1024MB_DDR2RAM
+		bool "1024MB"
+
+	endchoice
+endif
+
 config MACH_OMAP_ADVANCED_MUX
 	bool "Enable advanced pin muxing"
 	depends on MACH_OMAP343xSDP

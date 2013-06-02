@@ -98,6 +98,21 @@ void of_print_property(const void *data, int len)
 	}
 }
 
+void of_print_cmdline(struct device_node *root)
+{
+	struct device_node *node = of_find_node_by_path(root, "/chosen");
+	const char *cmdline;
+
+	if (!node) {
+		printf("commandline: no /chosen node\n");
+		return;
+	}
+
+	cmdline = of_get_property(node, "bootargs", NULL);
+
+	printf("commandline: %s\n", cmdline);
+}
+
 static int of_fixup_bootargs(struct device_node *root)
 {
 	struct device_node *node;
@@ -159,12 +174,6 @@ int of_fix_tree(struct device_node *node)
 
 	return 0;
 }
-
-/*
- * The size by which we increase the dtb to have space for additional
- * fixups. Ideally this would be done by libfdt automatically
- */
-#define OFTREE_SIZE_INCREASE 0x8000
 
 /*
  * Get the fixed fdt. This function uses the fdt input pointer

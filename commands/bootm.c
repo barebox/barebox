@@ -395,13 +395,9 @@ static int do_bootm(int argc, char *argv[])
 			goto err_out;
 	} else {
 		data.of_root_node = of_get_root_node();
-		if (bootm_verbose(&data) && data.of_root_node)
+		if (data.of_root_node)
 			printf("using internal devicetree\n");
 	}
-
-
-	if (bootm_verbose(&data) > 1 && data.of_root_node)
-		of_print_nodes(data.of_root_node, 0);
 #endif
 	if (data.os_address == UIMAGE_SOME_ADDRESS)
 		data.os_address = UIMAGE_INVALID_ADDRESS;

@@ -58,6 +58,7 @@ machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
 machine-$(CONFIG_ARCH_HIGHBANK)		:= highbank
 machine-$(CONFIG_ARCH_IMX)		:= imx
 machine-$(CONFIG_ARCH_MXS)		:= mxs
+machine-$(CONFIG_ARCH_MVEBU)		:= mvebu
 machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
 machine-$(CONFIG_ARCH_NETX)		:= netx
 machine-$(CONFIG_ARCH_OMAP)		:= omap
@@ -70,6 +71,7 @@ machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 
 # Board directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
+
 board-$(CONFIG_MACH_A9M2410)			+= a9m2410
 board-$(CONFIG_MACH_A9M2440)			+= a9m2440
 board-$(CONFIG_MACH_ANIMEO_IP)			+= animeo_ip
@@ -110,12 +112,15 @@ board-$(CONFIG_MACH_FREESCALE_MX51_PDK)		+= freescale-mx51-pdk
 board-$(CONFIG_MACH_FREESCALE_MX53_LOCO)	+= freescale-mx53-loco
 board-$(CONFIG_MACH_FREESCALE_MX53_SMD)		+= freescale-mx53-smd
 board-$(CONFIG_MACH_GE863)			+= telit-evk-pro3
+board-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG)       += globalscale-guruplug
+board-$(CONFIG_MACH_GLOBALSCALE_MIRABOX)        += globalscale-mirabox
 board-$(CONFIG_MACH_GUF_CUPID)			+= guf-cupid
 board-$(CONFIG_MACH_GUF_VINCELL)		+= guf-vincell
 board-$(CONFIG_MACH_HIGHBANK)			+= highbank
 board-$(CONFIG_MACH_IMX21ADS)			+= imx21ads
 board-$(CONFIG_MACH_IMX233_OLINUXINO)		+= imx233-olinuxino
 board-$(CONFIG_MACH_IMX27ADS)			+= imx27ads
+board-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP)	+= marvell-armada-xp-gp
 board-$(CONFIG_MACH_MINI2440)			+= friendlyarm-mini2440
 board-$(CONFIG_MACH_MINI6410)			+= friendlyarm-mini6410
 board-$(CONFIG_MACH_MIOA701)			+= mioa701
@@ -138,6 +143,7 @@ board-$(CONFIG_MACH_PCM038)			+= pcm038
 board-$(CONFIG_MACH_PCM043)			+= pcm043
 board-$(CONFIG_MACH_PCM049)			+= pcm049
 board-$(CONFIG_MACH_PCM051)			+= pcm051
+board-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3)	+= plathome-openblocks-ax3
 board-$(CONFIG_MACH_PM9261)			+= pm9261
 board-$(CONFIG_MACH_PM9263)			+= pm9263
 board-$(CONFIG_MACH_PM9G45)			+= pm9g45
@@ -149,6 +155,7 @@ board-$(CONFIG_MACH_SABRELITE)			+= freescale-mx6-sabrelite
 board-$(CONFIG_MACH_SABRESD)			+= freescale-mx6-sabresd
 board-$(CONFIG_MACH_SAMA5D3XEK)			+= sama5d3xek
 board-$(CONFIG_MACH_SCB9328)			+= scb9328
+board-$(CONFIG_MACH_SOLIDRUN_CUBOX)		+= solidrun-cubox
 board-$(CONFIG_MACH_TINY210)			+= friendlyarm-tiny210
 board-$(CONFIG_MACH_TINY6410)			+= friendlyarm-tiny6410
 board-$(CONFIG_MACH_TNY_A9260)			+= tny-a926x
@@ -263,6 +270,27 @@ barebox.imx: $(KBUILD_BINARY) FORCE
 
 ifeq ($(CONFIG_ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE),y)
 KBUILD_IMAGE := barebox.imx
+endif
+
+KWBIMAGE_OPTS = \
+	-c -i $(srctree)/$(BOARD)/kwbimage.cfg -d $(TEXT_BASE) -e $(TEXT_BASE)
+
+quiet_cmd_kwbimage = KWB     $@
+      cmd_kwbimage = scripts/kwbimage -p $< $(KWBIMAGE_OPTS) -o $@ || \
+	echo "WARNING: Couldn't create KWB image due to previous errors."
+
+quiet_cmd_kwbimage_uart = KWBUART $@
+      cmd_kwbimage_uart = scripts/kwbimage -m uart -p $< $(KWBIMAGE_OPTS) -o $@ || \
+	echo "WARNING Couldn't create KWB image due to previous errors."
+
+barebox.kwb: $(KBUILD_BINARY) FORCE
+	$(call if_changed,kwbimage)
+
+barebox.kwbuart: $(KBUILD_BINARY) FORCE
+	$(call if_changed,kwbimage_uart)
+
+ifeq ($(CONFIG_ARCH_MVEBU),y)
+KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
 endif
 
 pbl := arch/arm/pbl

@@ -1,0 +1,124 @@
+if ARCH_MVEBU
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x2000000 if MACH_PLATHOME_OPENBLOCKS_AX3
+	default 0x2000000 if MACH_GLOBALSCALE_MIRABOX
+	default 0x2000000 if MACH_GLOBALSCALE_GURUPLUG
+	default 0x2000000 if MACH_MARVELL_ARMADA_XP_GP
+	default 0x2000000 if MACH_SOLIDRUN_CUBOX
+
+config BOARDINFO
+	default "PlatHome OpenBlocks AX3" if MACH_PLATHOME_OPENBLOCKS_AX3
+	default "Globalscale Mirabox" if MACH_GLOBALSCALE_MIRABOX
+	default "Globalscale Guruplug" if MACH_GLOBALSCALE_GURUPLUG
+	default "Marvell Armada XP GP" if MACH_MARVELL_ARMADA_XP_GP
+	default "SolidRun CuBox" if MACH_SOLIDRUN_CUBOX
+
+choice
+	prompt "Marvell EBU Processor"
+
+config ARCH_ARMADA_370
+	bool "Armada 370"
+	select CPU_V7
+	select CLOCKSOURCE_MVEBU
+
+config ARCH_ARMADA_XP
+	bool "Armada XP"
+	select CPU_V7
+	select CLOCKSOURCE_MVEBU
+
+config ARCH_DOVE
+	bool "Dove 88AP510"
+	select CPU_V7
+	select CLOCKSOURCE_ORION
+
+config ARCH_KIRKWOOD
+	bool "Kirkwood"
+	select CPU_FEROCEON
+	select CLOCKSOURCE_ORION
+
+endchoice
+
+#
+# Armada 370 SoC boards
+#
+
+if ARCH_ARMADA_370
+
+choice
+	prompt "Armada 370 Board Type"
+
+config MACH_GLOBALSCALE_MIRABOX
+	bool "Globalscale Mirabox"
+
+endchoice
+
+endif # ARCH_ARMADA_370
+
+#
+# Armada XP SoC boards
+#
+
+if ARCH_ARMADA_XP
+
+choice
+	prompt "Armada XP Board Type"
+
+config MACH_PLATHOME_OPENBLOCKS_AX3
+	bool "PlatHome OpenBlocks AX3"
+
+config MACH_MARVELL_ARMADA_XP_GP
+	bool "Marvell Armada XP GP"
+
+endchoice
+
+endif # ARCH_ARMADA_XP
+
+#
+# Dove 88AP510 SoC boards
+#
+
+if ARCH_DOVE
+
+choice
+	prompt "Dove 88AP510 Board Type"
+
+config MACH_SOLIDRUN_CUBOX
+	bool "SolidRun CuBox"
+
+endchoice
+
+endif # ARCH_DOVE
+
+#
+# Kirkwood SoC boards
+#
+
+if ARCH_KIRKWOOD
+
+choice
+	prompt "Kirkwood Board Type"
+
+config MACH_GLOBALSCALE_GURUPLUG
+	bool "Guruplug"
+
+endchoice
+
+endif # ARCH_KIRKWOOD
+
+#
+# Common options
+#
+
+config MVEBU_CONSOLE_UART
+	int "UART number for console"
+	default 0
+	range 0 1 if ARCH_ARMADA_370
+	range 0 1 if ARCH_ARMADA_XP
+	range 0 3 if ARCH_DOVE
+	range 0 1 if ARCH_KIRKWOOD
+	help
+	 Select the UART number the barebox console will sit on.
+
+endif # ARCH_MVEBU

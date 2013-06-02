@@ -2,6 +2,8 @@ bareboxenv
 bin2c
 gen_netx_image
 kallsyms
+kwbimage
+kwboot
 mk-am35xx-spi-image
 mkimage
 mkublheader

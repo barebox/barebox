@@ -39,6 +39,14 @@ config CPU_ARM926T
 	  Say Y if you want support for the ARM926T processor.
 	  Otherwise, say N.
 
+# Feroceon
+config CPU_FEROCEON
+	bool
+	select CPU_32v5
+	help
+	  This is a Marvell implementation of an ARMv5TE compatible
+	  ARM core, used in the Marvell Kirkwood SoC family.
+
 # ARMv6
 config CPU_V6
 	bool

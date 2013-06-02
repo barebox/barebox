@@ -79,6 +79,12 @@ config ARCH_IMX
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
 
+config ARCH_MVEBU
+	bool "Marvell EBU platforms"
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select HAS_DEBUG_LL
+
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"
 	select GENERIC_GPIO
@@ -161,6 +167,7 @@ source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-highbank/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-mxs/Kconfig
+source arch/arm/mach-mvebu/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig

@@ -28,7 +28,7 @@
 .globl barebox_arm_reset_vector
 barebox_arm_reset_vector:
 
-	arm_cpu_lowlevel_init r0
+	bl arm_cpu_lowlevel_init
 
 	/* Change PERCLK1DIV to 14 ie 14+1 */
 	writel(CFG_PCDR_VAL, MX1_CCM_BASE_ADDR + MX1_PCDR)

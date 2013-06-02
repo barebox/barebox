@@ -24,7 +24,7 @@
 .globl barebox_arm_reset_vector
 barebox_arm_reset_vector:
 
-	arm_cpu_lowlevel_init r0
+	bl	arm_cpu_lowlevel_init
 
 /*
  * Initialize the AHB-Lite IP Interface (AIPI) module (to enable access to

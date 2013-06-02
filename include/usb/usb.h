@@ -519,4 +519,25 @@ struct usb_device_id {
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+enum usb_dr_mode of_usb_get_dr_mode(struct device_node *np,
+		const char *propname);
+
+enum usb_dr_mode {
+	USB_DR_MODE_UNKNOWN,
+	USB_DR_MODE_HOST,
+	USB_DR_MODE_PERIPHERAL,
+	USB_DR_MODE_OTG,
+};
+
+enum usb_phy_interface of_usb_get_phy_mode(struct device_node *np,
+		const char *propname);
+
+enum usb_phy_interface {
+	USBPHY_INTERFACE_MODE_UNKNOWN,
+	USBPHY_INTERFACE_MODE_UTMI,
+	USBPHY_INTERFACE_MODE_UTMIW,
+	USBPHY_INTERFACE_MODE_ULPI,
+	USBPHY_INTERFACE_MODE_SERIAL,
+	USBPHY_INTERFACE_MODE_HSIC,
+};
 #endif /*_USB_H_ */

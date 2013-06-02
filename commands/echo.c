@@ -55,7 +55,6 @@ static int do_echo(int argc, char *argv[])
 			break;
 		case 'o':
 			oflags |= O_TRUNC;
-			file = argv[optind + 1];
 			if (optind + 1 < argc)
 				file = argv[optind + 1];
 			else

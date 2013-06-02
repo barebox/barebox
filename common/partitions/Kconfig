@@ -1,5 +1,6 @@
 config PARTITION_DISK
 	depends on PARTITION
+	depends on BLOCK
 	bool "DISK partition support"
 	help
 	  Add support for handling common partition tables on all kind of disk

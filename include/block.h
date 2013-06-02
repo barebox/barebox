@@ -8,8 +8,6 @@ struct block_device;
 struct block_device_ops {
 	int (*read)(struct block_device *, void *buf, int block, int num_blocks);
 	int (*write)(struct block_device *, const void *buf, int block, int num_blocks);
-	int (*read_start)(struct block_device *, void *buf, int block, int num_blocks);
-	int (*read_done)(struct block_device *);
 };
 
 struct chunk;
@@ -30,5 +28,13 @@ struct block_device {
 
 int blockdevice_register(struct block_device *blk);
 int blockdevice_unregister(struct block_device *blk);
+
+int block_read(struct block_device *blk, void *buf, int block, int num_blocks);
+int block_write(struct block_device *blk, void *buf, int block, int num_blocks);
+
+static inline int block_flush(struct block_device *blk)
+{
+	return cdev_flush(&blk->cdev);
+}
 
 #endif /* __BLOCK_H */

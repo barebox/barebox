@@ -176,7 +176,7 @@ static void *block_get(struct block_device *blk, int block)
 	return outdata;
 }
 
-static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
+static ssize_t block_op_read(struct cdev *cdev, void *buf, size_t count,
 		loff_t offset, unsigned long flags)
 {
 	struct block_device *blk = cdev->priv;
@@ -253,7 +253,7 @@ static int block_put(struct block_device *blk, const void *buf, int block)
 	return 0;
 }
 
-static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
+static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 		loff_t offset, ulong flags)
 {
 	struct block_device *blk = cdev->priv;
@@ -310,14 +310,14 @@ static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
 }
 #endif
 
-static int block_close(struct cdev *cdev)
+static int block_op_close(struct cdev *cdev)
 {
 	struct block_device *blk = cdev->priv;
 
 	return writebuffer_flush(blk);
 }
 
-static int block_flush(struct cdev *cdev)
+static int block_op_flush(struct cdev *cdev)
 {
 	struct block_device *blk = cdev->priv;
 
@@ -325,12 +325,12 @@ static int block_flush(struct cdev *cdev)
 }
 
 static struct file_operations block_ops = {
-	.read	= block_read,
+	.read	= block_op_read,
 #ifdef CONFIG_BLOCK_WRITE
-	.write	= block_write,
+	.write	= block_op_write,
 #endif
-	.close	= block_close,
-	.flush	= block_flush,
+	.close	= block_op_close,
+	.flush	= block_op_flush,
 	.lseek	= dev_lseek_default,
 };
 
@@ -386,4 +386,26 @@ int blockdevice_unregister(struct block_device *blk)
 	devfs_remove(&blk->cdev);
 
 	return 0;
+}
+
+int block_read(struct block_device *blk, void *buf, int block, int num_blocks)
+{
+	int ret;
+
+	ret = cdev_read(&blk->cdev, buf,
+			num_blocks << blk->blockbits,
+			(loff_t)block << blk->blockbits, 0);
+
+	return ret < 0 ? ret : 0;
+}
+
+int block_write(struct block_device *blk, void *buf, int block, int num_blocks)
+{
+	int ret;
+
+	ret = cdev_write(&blk->cdev, buf,
+			num_blocks << blk->blockbits,
+			(loff_t)block << blk->blockbits, 0);
+
+	return ret < 0 ? ret : 0;
 }

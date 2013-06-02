@@ -12,6 +12,7 @@ typedef unsigned long          IPaddr_t;
 struct param_d {
 	const char* (*get)(struct device_d *, struct param_d *param);
 	int (*set)(struct device_d *, struct param_d *param, const char *val);
+	void (*info)(struct param_d *param);
 	unsigned int flags;
 	char *name;
 	char *value;
@@ -39,6 +40,11 @@ struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		int *value, void *priv);
+
+struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char **names, int max, void *priv);
 
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format);
@@ -85,6 +91,15 @@ static inline struct param_d *dev_add_param_int(struct device_d *dev, const char
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		int *value, const char *format, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, const char **names, int max, void *priv)
+
 {
 	return NULL;
 }

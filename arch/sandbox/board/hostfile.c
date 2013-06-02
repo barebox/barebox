@@ -77,6 +77,9 @@ static int hf_probe(struct device_d *dev)
 	priv->cdev.size = hf->size;
 	priv->cdev.ops = &hf_fops;
 	priv->cdev.priv = hf;
+
+	dev->info = hf_info;
+
 #ifdef CONFIG_FS_DEVFS
 	devfs_create(&priv->cdev);
 #endif
@@ -87,7 +90,6 @@ static int hf_probe(struct device_d *dev)
 static struct driver_d hf_drv = {
 	.name  = "hostfile",
 	.probe = hf_probe,
-	.info  = hf_info,
 };
 device_platform_driver(hf_drv);
 
@@ -111,4 +113,3 @@ int barebox_register_filedev(struct hf_platform_data *hf)
 
 	return sandbox_add_device(dev);
 }
-

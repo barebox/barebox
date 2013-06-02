@@ -321,7 +321,6 @@ static int s3cfb_activate_var(struct fb_info *fb_info)
  * Print some information about the current hardware state
  * @param hw_dev S3C video device
  */
-#ifdef CONFIG_DRIVER_VIDEO_S3C_VERBOSE
 static void s3cfb_info(struct device_d *hw_dev)
 {
 	uint32_t con1, addr1, addr2, addr3;
@@ -340,7 +339,6 @@ static void s3cfb_info(struct device_d *hw_dev)
 	printf("  Virtual screen offset size: %u half words\n", GET_OFFSIZE(addr3));
 	printf("  Virtual screen page width: %u half words\n", GET_PAGE_WIDTH(addr3));
 }
-#endif
 
 /*
  * There is only one video hardware instance available.
@@ -390,6 +388,9 @@ static int s3cfb_probe(struct device_d *hw_dev)
 	fbi.passive_display = pdata->passive_display;
 	fbi.enable = pdata->enable;
 
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_S3C_VERBOSE))
+		hw_dev->info = s3cfb_info;
+
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {
 		dev_err(hw_dev, "Failed to register framebuffer\n");
@@ -402,9 +403,6 @@ static int s3cfb_probe(struct device_d *hw_dev)
 static struct driver_d s3cfb_driver = {
 	.name	= "s3c_fb",
 	.probe	= s3cfb_probe,
-#ifdef CONFIG_DRIVER_VIDEO_S3C_VERBOSE
-	.info	= s3cfb_info,
-#endif
 };
 device_platform_driver(s3cfb_driver);
 

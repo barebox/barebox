@@ -502,6 +502,8 @@ static int stmfb_probe(struct device_d *hw_dev)
 	else
 		fbi.info.bits_per_pixel = 16;
 
+	hw_dev->info = stmfb_info;
+
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {
 		dev_err(hw_dev, "Failed to register framebuffer\n");
@@ -514,7 +516,6 @@ static int stmfb_probe(struct device_d *hw_dev)
 static struct driver_d stmfb_driver = {
 	.name	= "stmfb",
 	.probe	= stmfb_probe,
-	.info	= stmfb_info,
 };
 device_platform_driver(stmfb_driver);
 

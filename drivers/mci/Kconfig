@@ -29,6 +29,9 @@ config MCI_WRITE
 	default y
 	select DISK_WRITE
 
+config MCI_MMC_BOOT_PARTITIONS
+	bool "support MMC boot partitions"
+
 comment "--- MCI host drivers ---"
 
 config MCI_MXS
@@ -44,6 +47,10 @@ config MCI_S3C
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  Samsung S3C24xx based system.
+
+config MCI_BCM2835
+	bool "MCI support for BCM2835"
+	depends on ARCH_BCM2835
 
 config MCI_IMX
 	bool "i.MX"

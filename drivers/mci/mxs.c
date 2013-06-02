@@ -536,7 +536,6 @@ static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 
 /* ----------------------------------------------------------------------- */
 
-#ifdef CONFIG_MCI_INFO
 const unsigned char bus_width[3] = { 1, 4, 8 };
 
 static void mxs_mci_info(struct device_d *hw_dev)
@@ -550,7 +549,6 @@ static void mxs_mci_info(struct device_d *hw_dev)
 	printf("  Bus width: %u bit\n", bus_width[mxs_mci->bus_width]);
 	printf("\n");
 }
-#endif
 
 static int mxs_mci_probe(struct device_d *hw_dev)
 {
@@ -617,10 +615,11 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 			host->f_max, mxs_mci_get_unit_clock(mxs_mci) / 2 / 1);
 	}
 
-#ifdef CONFIG_MCI_INFO
-	mxs_mci->f_min = host->f_min;
-	mxs_mci->f_max = host->f_max;
-#endif
+	if (IS_ENABLED(CONFIG_MCI_INFO)) {
+		mxs_mci->f_min = host->f_min;
+		mxs_mci->f_max = host->f_max;
+		hw_dev->info = mxs_mci_info;
+	}
 
 	return mci_register(host);
 }
@@ -628,8 +627,5 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 static struct driver_d mxs_mci_driver = {
         .name  = "mxs_mci",
         .probe = mxs_mci_probe,
-#ifdef CONFIG_MCI_INFO
-	.info = mxs_mci_info,
-#endif
 };
 device_platform_driver(mxs_mci_driver);

@@ -107,6 +107,7 @@ static int imx_sata_probe(struct device_d *dev)
 
 	imx_ahci->ahci.dev = dev;
 	dev->priv = &imx_ahci->ahci;
+	dev->info = ahci_info,
 
 	ret = ahci_add_host(&imx_ahci->ahci);
 	if (ret)
@@ -143,7 +144,6 @@ static struct platform_device_id imx_sata_ids[] = {
 static struct driver_d imx_sata_driver = {
 	.name   = "imx-sata",
 	.probe  = imx_sata_probe,
-	.info	= ahci_info,
 	.id_table = imx_sata_ids,
 };
 device_platform_driver(imx_sata_driver);

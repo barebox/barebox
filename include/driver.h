@@ -107,6 +107,13 @@ struct device_d {
 	struct device_node *device_node;
 
 	const struct of_device_id *of_id_entry;
+
+	void    (*info) (struct device_d *);
+	/*
+	 * For devices which take longer to probe this is called
+	 * when the driver should actually detect client devices
+	 */
+	int     (*detect) (struct device_d *);
 };
 
 /** @brief Describes a driver present in the system */
@@ -123,9 +130,6 @@ struct driver_d {
 
 	/*! Called if an instance of a device is gone. */
 	void     (*remove)(struct device_d *);
-
-	void    (*info) (struct device_d *);
-	void    (*shortinfo) (struct device_d *);
 
 	struct bus_type *bus;
 
@@ -152,6 +156,9 @@ int register_device(struct device_d *);
  * the driver need to be specified
  */
 int device_probe(struct device_d *dev);
+
+/* detect devices attached to this device (cards, disks,...) */
+int device_detect(struct device_d *dev);
 
 /* Unregister a device. This function can fail, e.g. when the device
  * has children.

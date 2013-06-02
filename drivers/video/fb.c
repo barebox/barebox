@@ -144,7 +144,6 @@ static void fb_info(struct device_d *dev)
 
 static struct driver_d fb_driver = {
 	.name  = "fb",
-	.info = fb_info,
 };
 
 static int fb_match(struct device_d *dev, struct driver_d *drv)
@@ -164,6 +163,8 @@ static int fb_probe(struct device_d *dev)
 		dev_add_param(dev, "mode_name", fb_setup_mode, NULL, 0);
 		dev_set_param(dev, "mode_name", info->mode_list[0].name);
 	}
+
+	dev->info = fb_info;
 
 	return devfs_create(&info->cdev);
 }

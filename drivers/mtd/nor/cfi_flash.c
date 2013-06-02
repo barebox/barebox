@@ -990,6 +990,8 @@ static int cfi_probe (struct device_d *dev)
 	dev_info(dev, "found cfi flash at %p, size %ld\n",
 			info->base, info->size);
 
+	dev->info = cfi_info;
+
 	cfi_init_mtd(info);
 
 	return 0;
@@ -1006,7 +1008,6 @@ static __maybe_unused struct of_device_id cfi_dt_ids[] = {
 static struct driver_d cfi_driver = {
 	.name    = "cfi_flash",
 	.probe   = cfi_probe,
-	.info    = cfi_info,
 	.of_compatible = DRV_OF_COMPAT(cfi_dt_ids),
 };
 device_platform_driver(cfi_driver);

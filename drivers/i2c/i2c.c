@@ -254,32 +254,60 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->dev.platform_data = chip->platform_data;
 	client->dev.id = DEVICE_ID_DYNAMIC;
 	client->dev.bus = &i2c_bus;
+	client->dev.device_node = chip->of_node;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
 	client->dev.parent = &adapter->dev;
 
 	status = register_device(&client->dev);
-
-#if 0
-	/* drivers may modify this initial i/o setup */
-	status = master->setup(client);
-	if (status < 0) {
-		printf("can't setup %s, status %d\n",
-		       client->dev.name, status);
-		goto fail;
+	if (status) {
+		free(client);
+		return NULL;
 	}
-#endif
 
 	return client;
-
-#if 0
- fail:
-	free(proxy);
-	return NULL;
-#endif
 }
 EXPORT_SYMBOL(i2c_new_device);
+
+void of_i2c_register_devices(struct i2c_adapter *adap)
+{
+	struct device_node *n;
+
+	/* Only register child devices if the adapter has a node pointer set */
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.device_node)
+		return;
+
+	device_node_for_nach_child(adap->dev.device_node, n) {
+		struct i2c_board_info info = {};
+		struct i2c_client *result;
+		const __be32 *addr;
+		int len;
+
+		of_modalias_node(n, info.type, I2C_NAME_SIZE);
+
+		info.of_node = n;
+
+		addr = of_get_property(n, "reg", &len);
+		if (!addr || (len < sizeof(int))) {
+			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
+				n->full_name);
+			continue;
+		}
+
+		info.addr = be32_to_cpup(addr);
+		if (info.addr > (1 << 10) - 1) {
+			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
+				info.addr, n->full_name);
+			continue;
+		}
+
+		result = i2c_new_device(adap, &info);
+		if (!result)
+			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
+			        n->full_name);
+	}
+}
 
 /**
  * i2c_new_dummy - return a new i2c device bound to a dummy driver
@@ -396,8 +424,17 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
 	int ret;
 
-	if (i2c_get_adapter(adapter->nr))
-		return -EBUSY;
+	if (adapter->nr < 0) {
+		int nr;
+
+		for (nr = 0;; nr++)
+			if (!i2c_get_adapter(nr))
+				break;
+		adapter->nr = nr;
+	} else {
+		if (i2c_get_adapter(adapter->nr))
+			return -EBUSY;
+	}
 
 	adapter->dev.id = adapter->nr;
 	strcpy(adapter->dev.name, "i2c");
@@ -410,6 +447,8 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);
+
+	of_i2c_register_devices(adapter);
 
 	return 0;
 }

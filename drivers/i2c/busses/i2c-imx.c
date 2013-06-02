@@ -545,6 +545,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
 	i2c_fsl->adapter.nr = pdev->id;
 	i2c_fsl->adapter.dev.parent = pdev;
+	i2c_fsl->adapter.dev.device_node = pdev->device_node;
 	i2c_fsl->base = dev_request_mem_region(pdev, 0);
 	i2c_fsl->dfsrr = -1;
 
@@ -572,8 +573,17 @@ fail:
 	return ret;
 }
 
+static __maybe_unused struct of_device_id imx_i2c_dt_ids[] = {
+	{
+		.compatible = "fsl,imx21-i2c",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,
 	.name	= DRIVER_NAME,
+	.of_compatible = DRV_OF_COMPAT(imx_i2c_dt_ids),
 };
 device_platform_driver(i2c_fsl_driver);

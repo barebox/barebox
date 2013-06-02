@@ -3,7 +3,8 @@
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp-barebox
-global.dhcp.vendor_id=barebox-qil-a9260
+[ x$armlinux_architecture = x1711 ] && global.dhcp.vendor_id=barebox-qil-a9260
+[ x$armlinux_architecture = x1844 ] && global.dhcp.vendor_id=barebox-qil-a9g20
 
 # or set your networking parameters here
 #eth0.ipaddr=a.b.c.d

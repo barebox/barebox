@@ -28,6 +28,14 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 
+static void qil_a9260_set_board_type(void)
+{
+	if (machine_is_qil_a9g20())
+		armlinux_set_architecture(MACH_TYPE_QIL_A9G20);
+	else
+		armlinux_set_architecture(MACH_TYPE_QIL_A9260);
+}
+
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,
 	.cle		= 22,
@@ -37,7 +45,7 @@ static struct atmel_nand_data nand_pdata = {
 	.on_flash_bbt	= 1,
 };
 
-static struct sam9_smc_config nand_smc_config = {
+static struct sam9_smc_config qil_a9260_nand_smc_config = {
 	.ncs_read_setup		= 0,
 	.nrd_setup		= 1,
 	.ncs_write_setup	= 0,
@@ -55,10 +63,31 @@ static struct sam9_smc_config nand_smc_config = {
 	.tdf_cycles		= 2,
 };
 
+static struct sam9_smc_config qil_a9g20_nand_smc_config = {
+	.ncs_read_setup		= 0,
+	.nrd_setup		= 2,
+	.ncs_write_setup	= 0,
+	.nwe_setup		= 2,
+
+	.ncs_read_pulse		= 4,
+	.nrd_pulse		= 4,
+	.ncs_write_pulse	= 4,
+	.nwe_pulse		= 4,
+
+	.read_cycle		= 7,
+	.write_cycle		= 7,
+
+	.mode			= AT91_SMC_READMODE | AT91_SMC_WRITEMODE | AT91_SMC_EXNWMODE_DISABLE | AT91_SMC_DBW_8,
+	.tdf_cycles		= 3,
+};
+
 static void qil_a9260_add_device_nand(void)
 {
 	/* configure chip-select 3 (NAND) */
-	sam9_smc_configure(0, 3, &nand_smc_config);
+	if (machine_is_qil_a9g20())
+		sam9_smc_configure(0, 3, &qil_a9g20_nand_smc_config);
+	else
+		sam9_smc_configure(0, 3, &qil_a9260_nand_smc_config);
 
 	at91_add_device_nand(&nand_pdata);
 }
@@ -174,7 +203,7 @@ static int qil_a9260_devices_init(void)
 	qil_a9260_add_device_mb();
 
 	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
-	armlinux_set_architecture(MACH_TYPE_QIL_A9260);
+	qil_a9260_set_board_type();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");

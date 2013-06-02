@@ -48,7 +48,7 @@ struct cfi_cmd_set;
  */
 
 struct flash_info {
-	struct driver_d driver;
+	struct device_d *dev;
 	ulong	size;			/* total bank size in bytes		*/
 	ushort	sector_count;		/* number of erase units		*/
 	ulong	flash_id;		/* combined device & manufacturer code	*/
@@ -57,6 +57,8 @@ struct flash_info {
 
 	uchar	portwidth;		/* the width of the port		*/
 	uchar	chipwidth;		/* the width of the chip		*/
+	uchar	chip_lsb;		/* extra Least Significant Bit in the	*/
+					/*   address of chip.			*/
 	ushort	buffer_size;		/* # of bytes in write buffer		*/
 	ulong	erase_blk_tout;		/* maximum block erase timeout		*/
 	ulong	write_tout;		/* maximum write timeout		*/
@@ -298,7 +300,7 @@ static inline u64 flash_read64(void *addr)
  */
 static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect, uint offset)
 {
-	return ((uchar *) (info->start[sect] + (offset * info->portwidth)));
+	return ((uchar *) (info->start[sect] + ((offset * info->portwidth) << info->chip_lsb)));
 }
 
 uchar flash_read_uchar (struct flash_info *info, uint offset);

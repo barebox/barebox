@@ -107,6 +107,12 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	memset(&erase, 0, sizeof(erase));
 	erase.mtd = mtd;
 	erase.addr = offset;
+
+	if (!mtd->block_isbad) {
+		erase.len = count;
+		return mtd_erase(mtd, &erase);
+	}
+
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {

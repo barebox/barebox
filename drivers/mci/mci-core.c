@@ -667,10 +667,6 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
 	if (clock < host->f_min)
 		clock = host->f_min;
 
-	/* check against the limit at the card's side */
-	if (mci->tran_speed != 0 && clock > mci->tran_speed)
-		clock = mci->tran_speed;
-
 	host->clock = clock;	/* the new target frequency */
 	mci_set_ios(mci);
 }
@@ -922,11 +918,8 @@ static int mci_startup_sd(struct mci *mci)
 		}
 		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
 	}
-	/* if possible, speed up the transfer */
-	if (mci_caps(mci) & MMC_CAP_SD_HIGHSPEED)
-		mci_set_clock(mci, 50000000);
-	else
-		mci_set_clock(mci, 25000000);
+
+	mci_set_clock(mci, mci->tran_speed);
 
 	return 0;
 }
@@ -948,12 +941,12 @@ static int mci_startup_mmc(struct mci *mci)
 	/* if possible, speed up the transfer */
 	if (mci_caps(mci) & MMC_CAP_MMC_HIGHSPEED) {
 		if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED_52MHZ)
-			mci_set_clock(mci, 52000000);
+			mci->tran_speed = 52000000;
 		else
-			mci_set_clock(mci, 26000000);
-	} else {
-		mci_set_clock(mci, 20000000);
+			mci->tran_speed = 26000000;
 	}
+
+	mci_set_clock(mci, mci->tran_speed);
 
 	/*
 	 * Unlike SD, MMC cards dont have a configuration register to notify

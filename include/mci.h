@@ -336,7 +336,7 @@ struct mci {
 	unsigned csd[4];	/**< card's "card specific data register" */
 	unsigned cid[4];	/**< card's "card identification register" */
 	unsigned short rca;	/* FIXME */
-	unsigned tran_speed;	/**< not yet used */
+	unsigned tran_speed;	/**< Maximum transfer speed */
 	/** currently used data block length for read accesses */
 	unsigned read_bl_len;
 	/** currently used data block length for write accesses */

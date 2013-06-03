@@ -205,6 +205,16 @@ ifeq ($(CONFIG_ARCH_MVEBU),y)
 KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
 endif
 
+barebox.imximg: $(KBUILD_BINARY) FORCE
+	$(call if_changed,imx_image)
+
+boarddir = $(srctree)/arch/arm/boards
+imxcfg-$(CONFIG_MACH_FREESCALE_MX53_SMD) += $(boarddir)/freescale-mx53-smd/flash-header.imxcfg
+ifneq ($(imxcfg-y),)
+CFG_barebox.imximg := $(imxcfg-y)
+KBUILD_IMAGE  := barebox.imximg
+endif
+
 pbl := arch/arm/pbl
 $(pbl)/zbarebox.S $(pbl)/zbarebox.bin $(pbl)/zbarebox: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=$(pbl) $@

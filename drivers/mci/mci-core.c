@@ -66,6 +66,11 @@
  * - Transcend SDHC, 8 GiB (Class 6)
  */
 
+static inline unsigned mci_caps(struct mci *mci)
+{
+	return mci->card_caps & mci->host->host_caps;
+}
+
 /**
  * Call the MMC/SD instance driver to run the command on the MMC/SD card
  * @param mci MCI instance
@@ -898,7 +903,7 @@ static int mci_startup_sd(struct mci *mci)
 	struct mci_cmd cmd;
 	int err;
 
-	if (mci->card_caps & MMC_CAP_4_BIT_DATA) {
+	if (mci_caps(mci) & MMC_CAP_4_BIT_DATA) {
 		dev_dbg(&mci->dev, "Prepare for bus width change\n");
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
@@ -918,7 +923,7 @@ static int mci_startup_sd(struct mci *mci)
 		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
 	}
 	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_CAP_SD_HIGHSPEED)
+	if (mci_caps(mci) & MMC_CAP_SD_HIGHSPEED)
 		mci_set_clock(mci, 50000000);
 	else
 		mci_set_clock(mci, 25000000);
@@ -941,7 +946,7 @@ static int mci_startup_mmc(struct mci *mci)
 	};
 
 	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED) {
+	if (mci_caps(mci) & MMC_CAP_MMC_HIGHSPEED) {
 		if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED_52MHZ)
 			mci_set_clock(mci, 52000000);
 		else
@@ -995,8 +1000,7 @@ static int mci_startup(struct mci *mci)
 	struct mci_cmd cmd;
 	int err;
 
-#ifdef CONFIG_MMC_SPI_CRC_ON
-	if (mmc_host_is_spi(host)) { /* enable CRC check for spi */
+	if (IS_ENABLED(CONFIG_MMC_SPI_CRC_ON) && mmc_host_is_spi(host)) { /* enable CRC check for spi */
 
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_CRC_ON_OFF, 1, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
@@ -1006,7 +1010,6 @@ static int mci_startup(struct mci *mci)
 			return err;
 		}
 	}
-#endif
 
 	dev_dbg(&mci->dev, "Put the Card in Identify Mode\n");
 
@@ -1095,9 +1098,6 @@ static int mci_startup(struct mci *mci)
 		return err;
 
 	mci_extract_card_capacity_from_csd(mci);
-
-	/* Restrict card's capabilities by what the host can do */
-	mci->card_caps &= host->host_caps;
 
 	if (IS_SD(mci))
 		err = mci_startup_sd(mci);

@@ -20,6 +20,7 @@
 
 #define DEBUG_LL_UART_ADDR	0xb00003f8
 #define DEBUG_LL_UART_SHIFT	0
+#define DEBUG_LL_UART_DIVISOR	1	/* no matter for emulated port */
 
 /*
  * Reset register.

@@ -22,6 +22,6 @@
  *  This File contains declaration for early output support
  */
 #include <board/debug_ll.h>
-#include <debug_ll_ns16550.h>
+#include <asm/debug_ll_ns16550.h>
 
 #endif  /* __MACH_XBURST_DEBUG_LL__ */

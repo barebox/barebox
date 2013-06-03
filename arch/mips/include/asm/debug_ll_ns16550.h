@@ -48,6 +48,20 @@
 
 #define UART_LSR_THRE	0x20	/* Xmit holding register empty */
 
+#ifndef __ASSEMBLY__
+/*
+ * C macros
+ */
+
+#include <asm/io.h>
+
+static __inline__ void PUTC_LL(char ch)
+{
+	while (!(__raw_readb((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))
+		;
+	__raw_writeb(ch, (u8 *)DEBUG_LL_UART_ADDR + UART_THR);
+}
+#else /* __ASSEMBLY__ */
 /*
  * Macros for use in assembly language code
  */
@@ -96,5 +110,6 @@
 	debug_ll_ns16550_outc '\n'
 #endif /* CONFIG_DEBUG_LL */
 .endm
+#endif /* __ASSEMBLY__ */
 
 #endif /* __INCLUDE_MIPS_ASM_DEBUG_LL_NS16550_H__ */

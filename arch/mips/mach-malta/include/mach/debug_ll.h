@@ -23,6 +23,6 @@
 
 #include <mach/hardware.h>
 
-#include <debug_ll_ns16550.h>
+#include <asm/debug_ll_ns16550.h>
 
 #endif  /* __INCLUDE_ARCH_DEBUG_LL_H__ */

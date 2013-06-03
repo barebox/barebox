@@ -561,15 +561,6 @@ config CMD_NANDTEST
 	select PARTITION_NEED_MTD
 	prompt "nandtest"
 
-config CMD_MTEST
-	tristate
-	prompt "mtest"
-
-config CMD_MTEST_ALTERNATIVE
-	bool
-	depends on CMD_MTEST
-	prompt "alternative mtest implementation"
-
 endmenu
 
 menu "video command"

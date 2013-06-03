@@ -540,7 +540,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (pdata && pdata->caps)
 		mci->host_caps = pdata->caps;
 	else
-		mci->host_caps = MMC_MODE_4BIT;
+		mci->host_caps = MMC_CAP_4_BIT_DATA;
 
 	if (pdata && pdata->devname) {
 		mci->devname = pdata->devname;
@@ -551,7 +551,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	}
 
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
-		mci->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
 
 	host->mci.send_cmd = esdhc_send_cmd;
 	host->mci.set_ios = esdhc_set_ios;

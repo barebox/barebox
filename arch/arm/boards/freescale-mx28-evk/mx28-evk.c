@@ -136,7 +136,7 @@ static const uint32_t mx28evk_pads[] = {
 };
 
 static struct mxs_mci_platform_data mci_pdata = {
-	.caps = MMC_MODE_8BIT,
+	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 	.f_min = 400 * 1000,
 	.f_max = 25000000,

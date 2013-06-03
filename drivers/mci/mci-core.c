@@ -434,7 +434,7 @@ static int mmc_change_freq(struct mci *mci)
 	if (mci->version < MMC_VERSION_4)
 		return 0;
 
-	mci->card_caps |= MMC_MODE_4BIT;
+	mci->card_caps |= MMC_CAP_4_BIT_DATA;
 
 	err = mci_send_ext_csd(mci, mci->ext_csd);
 	if (err) {
@@ -467,9 +467,9 @@ static int mmc_change_freq(struct mci *mci)
 
 	/* High Speed is set, there are two types: 52MHz and 26MHz */
 	if (cardtype & EXT_CSD_CARD_TYPE_52)
-		mci->card_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ | MMC_CAP_MMC_HIGHSPEED;
 	else
-		mci->card_caps |= MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED;
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
 			mci->ext_csd[EXT_CSD_REV] >= 3 && mci->ext_csd[EXT_CSD_BOOT_MULT]) {
@@ -615,7 +615,7 @@ retry_scr:
 	}
 
 	if (mci->scr[0] & SD_DATA_4BIT)
-		mci->card_caps |= MMC_MODE_4BIT;
+		mci->card_caps |= MMC_CAP_4_BIT_DATA;
 
 	/* If high-speed isn't supported, we return */
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
@@ -628,7 +628,7 @@ retry_scr:
 	}
 
 	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000)
-		mci->card_caps |= MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_SD_HIGHSPEED;
 
 	return 0;
 }
@@ -900,7 +900,7 @@ static int mci_startup_sd(struct mci *mci)
 	struct mci_cmd cmd;
 	int err;
 
-	if (mci->card_caps & MMC_MODE_4BIT) {
+	if (mci->card_caps & MMC_CAP_4_BIT_DATA) {
 		dev_dbg(&mci->dev, "Prepare for bus width change\n");
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
@@ -920,7 +920,7 @@ static int mci_startup_sd(struct mci *mci)
 		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
 	}
 	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_MODE_HS)
+	if (mci->card_caps & MMC_CAP_SD_HIGHSPEED)
 		mci_set_clock(mci, 50000000);
 	else
 		mci_set_clock(mci, 25000000);
@@ -943,8 +943,8 @@ static int mci_startup_mmc(struct mci *mci)
 	};
 
 	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_MODE_HS) {
-		if (mci->card_caps & MMC_MODE_HS_52MHz)
+	if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED) {
+		if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED_52MHZ)
 			mci_set_clock(mci, 52000000);
 		else
 			mci_set_clock(mci, 26000000);
@@ -958,7 +958,7 @@ static int mci_startup_mmc(struct mci *mci)
 	 * the supported bus width or compare the ext csd values of current
 	 * bus width and ext csd values of 1 bit mode read earlier.
 	 */
-	if (host->host_caps & MMC_MODE_8BIT)
+	if (host->host_caps & MMC_CAP_8_BIT_DATA)
 		idx = 1;
 
 	for (; idx >= 0; idx--) {
@@ -1694,10 +1694,10 @@ void mci_of_parse(struct mci_host *host)
 
 	switch (bus_width) {
 	case 8:
-		host->host_caps |= MMC_MODE_8BIT;
+		host->host_caps |= MMC_CAP_8_BIT_DATA;
 		/* Hosts capable of 8-bit transfers can also do 4 bits */
 	case 4:
-		host->host_caps |= MMC_MODE_4BIT;
+		host->host_caps |= MMC_CAP_4_BIT_DATA;
 		break;
 	case 1:
 		break;

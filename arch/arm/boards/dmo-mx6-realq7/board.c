@@ -312,7 +312,7 @@ static const struct spi_board_info realq7_spi_board_info[] = {
 
 static struct esdhc_platform_data realq7_emmc_data = {
 	.cd_type = ESDHC_CD_PERMANENT,
-	.caps = MMC_MODE_8BIT,
+	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
 	.devname = "emmc",
 };
 

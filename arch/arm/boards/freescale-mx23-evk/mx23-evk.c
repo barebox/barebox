@@ -28,7 +28,7 @@
 #include <mach/usb.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
-	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
+	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 	.f_min = 400000,
 };

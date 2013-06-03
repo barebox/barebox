@@ -592,7 +592,8 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.send_cmd = mmc_send_cmd;
 	hsmmc->mci.set_ios = mmc_set_ios;
 	hsmmc->mci.init = mmc_init_setup;
-	hsmmc->mci.host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+	hsmmc->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |
+		MMC_CAP_MMC_HIGHSPEED;
 	hsmmc->mci.hw_dev = dev;
 
 	hsmmc->iobase = dev_request_mem_region(dev, 0);

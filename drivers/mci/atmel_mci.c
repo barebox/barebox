@@ -565,9 +565,9 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->mci.hw_dev = hw_dev;
 
 	if (pd->bus_width >= 4)
-		host->mci.host_caps |= MMC_MODE_4BIT;
+		host->mci.host_caps |= MMC_CAP_4_BIT_DATA;
 	if (pd->bus_width == 8)
-		host->mci.host_caps |= MMC_MODE_8BIT;
+		host->mci.host_caps |= MMC_CAP_8_BIT_DATA;
 	host->slot_b = pd->slot_b;
 
 	host->regs = dev_request_mem_region(hw_dev, 0);
@@ -594,7 +594,7 @@ static int atmci_probe(struct device_d *hw_dev)
 	atmci_get_cap(host);
 
 	if (host->caps.has_highspeed)
-		host->mci.host_caps |= MMC_MODE_HS;
+		host->mci.host_caps |= MMC_CAP_SD_HIGHSPEED;
 
 	if (host->slot_b)
 		host->sdc_reg = ATMCI_SDCSEL_SLOT_B;

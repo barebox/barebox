@@ -18,6 +18,7 @@
  */
 
 #include <asm/pbl_macros.h>
+#include <mach/debug_ll.h>
 
 	.macro	board_pbl_start
 	.set	push
@@ -27,6 +28,11 @@
 
 	/* CPU/SoC specific setup ... */
 	/* ... absent */
+
+	debug_ll_ns16550_init
+
+	debug_ll_ns16550_outc '.'
+	debug_ll_ns16550_outnl
 
 	copy_to_link_location	pbl_start
 

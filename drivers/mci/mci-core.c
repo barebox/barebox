@@ -1366,6 +1366,16 @@ static unsigned extract_mtd_year(struct mci *mci)
 		return UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
 }
 
+static void mci_print_caps(unsigned caps)
+{
+	printf("  capabilities: %s%s%s%s%s\n",
+		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
+		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
+		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
+		caps & MMC_CAP_MMC_HIGHSPEED ? "mmc-hs " : "",
+		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "");
+}
+
 /**
  * Output some valuable information when the user runs 'devinfo' on an MCI device
  * @param mci MCI device instance
@@ -1373,13 +1383,28 @@ static unsigned extract_mtd_year(struct mci *mci)
 static void mci_info(struct device_d *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
+	struct mci_host *host = mci->host;
+	int bw;
 
 	if (mci->ready_for_use == 0) {
 		printf(" No information available:\n  MCI card not probed yet\n");
 		return;
 	}
 
-	printf(" Card:\n");
+	printf("Host information:\n");
+	printf("  current clock: %d\n", host->clock);
+
+	if (host->bus_width == MMC_BUS_WIDTH_8)
+		bw = 8;
+	else if (host->bus_width == MMC_BUS_WIDTH_4)
+		bw = 4;
+	else
+		bw = 1;
+
+	printf("  current buswidth: %d\n", bw);
+	mci_print_caps(host->host_caps);
+
+	printf("Card information:\n");
 	if (mci->version < SD_VERSION_SD) {
 		printf("  Attached is a MultiMediaCard (Version: %u.%u)\n",
 			(mci->version >> 4) & 0xf, mci->version & 0xf);
@@ -1396,6 +1421,7 @@ static void mci_info(struct device_d *dev)
 	printf("   CSD: %08X-%08X-%08X-%08X\n", mci->csd[0], mci->csd[1],
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
+	mci_print_caps(mci->card_caps);
 	printf("  Manufacturer ID: %02X\n", extract_mid(mci));
 	printf("  OEM/Application ID: %04X\n", extract_oid(mci));
 	printf("  Product name: '%c%c%c%c%c'\n", mci->cid[0] & 0xff,

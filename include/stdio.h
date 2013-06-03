@@ -70,7 +70,7 @@ static inline int ctrlc (void)
 {
 	return 0;
 }
-#endif /* ARCH_HAS_CTRC */
+#endif /* ARCH_HAS_CTRLC */
 
 #endif
 

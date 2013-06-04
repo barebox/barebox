@@ -75,9 +75,7 @@ static void loco_fec_reset(void)
 
 #define MX53_LOCO_USB_PWREN		IMX_GPIO_NR(7, 8)
 
-#define DCD_NAME static struct imx_dcd_v2_entry dcd_entry
-
-#include "dcd-data.h"
+extern char flash_header_start[], flash_header_end[];
 
 static int loco_late_init(void)
 {
@@ -116,8 +114,8 @@ static int loco_late_init(void)
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
 
 	imx53_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
-		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry), 0);
-
+		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_start,
+		flash_header_end - flash_header_start, 0);
 
 	return 0;
 }

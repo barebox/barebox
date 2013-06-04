@@ -16,7 +16,10 @@
 #include <io.h>
 #include <sizes.h>
 #include <mach/generic.h>
+#include <mach/revision.h>
 #include <mach/imx6-regs.h>
+
+#define SI_REV 0x260
 
 void imx6_init_lowlevel(void)
 {
@@ -55,7 +58,30 @@ void imx6_init_lowlevel(void)
 
 static int imx6_init(void)
 {
+	u32 rev;
+	u32 mx6_silicon_revision;
+
 	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
+
+	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
+	switch (rev & 0xff) {
+	case 0x00:
+		mx6_silicon_revision = IMX_CHIP_REV_1_0;
+		break;
+
+	case 0x01:
+		mx6_silicon_revision = IMX_CHIP_REV_1_1;
+		break;
+
+	case 0x02:
+		mx6_silicon_revision = IMX_CHIP_REV_1_2;
+		break;
+
+	default:
+		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
+	}
+
+	imx_set_silicon_revision("i.MX6", mx6_silicon_revision);
 
 	if (of_get_root_node())
 		return 0;

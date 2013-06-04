@@ -273,6 +273,52 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 	return 0;
 }
 
+#ifdef CONFIG_OFDEVICE
+static int eth_of_fixup(struct device_node *root)
+{
+	struct eth_device *edev;
+	struct device_node *node;
+	int ret;
+
+	/*
+	 * Add the mac-address property for each network device we
+	 * find a nodepath for and which has a valid mac address.
+	 */
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (!edev->nodepath) {
+			dev_dbg(&edev->dev, "%s: no node to fixup\n", __func__);
+			continue;
+		}
+
+		if (!is_valid_ether_addr(edev->ethaddr)) {
+			dev_dbg(&edev->dev, "%s: no valid mac address, cannot fixup\n",
+					__func__);
+			continue;
+		}
+
+		node = of_find_node_by_path(root, edev->nodepath);
+		if (!node) {
+			dev_dbg(&edev->dev, "%s: fixup node %s not found\n",
+					__func__, edev->nodepath);
+			continue;
+		}
+
+		ret = of_set_property(node, "mac-address", edev->ethaddr, 6, 1);
+		if (ret)
+			pr_err("Setting mac-address property of %s failed with: %s\n",
+					node->full_name, strerror(-ret));
+	}
+
+	return 0;
+}
+
+static int eth_register_of_fixup(void)
+{
+	return of_register_fixup(eth_of_fixup);
+}
+late_initcall(eth_register_of_fixup);
+#endif
+
 int eth_register(struct eth_device *edev)
 {
 	struct device_d *dev = &edev->dev;
@@ -316,6 +362,10 @@ int eth_register(struct eth_device *edev)
 	if (found)
 		register_preset_mac_address(edev, ethaddr);
 
+	if (IS_ENABLED(CONFIG_OFDEVICE) && edev->parent &&
+			edev->parent->device_node)
+		edev->nodepath = xstrdup(edev->parent->device_node->full_name);
+
 	if (!eth_current)
 		eth_current = edev;
 
@@ -328,6 +378,10 @@ void eth_unregister(struct eth_device *edev)
 		eth_current = NULL;
 
 	dev_remove_parameters(&edev->dev);
+
+	if (IS_ENABLED(CONFIG_OFDEVICE) && edev->nodepath)
+		free(edev->nodepath);
+
 	unregister_device(&edev->dev);
 	list_del(&edev->list);
 }

@@ -148,12 +148,12 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->data.post_init = imx_chipidea_port_post_init;
 	ci->data.drvdata = ci;
 
+	imx_chipidea_port_init(ci);
+
 	portsc = readl(base + 0x184);
 	portsc &= ~MXC_EHCI_PORTSC_MASK;
 	portsc |= ci->flags & MXC_EHCI_PORTSC_MASK;
 	writel(portsc, base + 0x184);
-
-	imx_chipidea_port_init(ci);
 
 	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
 		dev_dbg(dev, "using ULPI phy\n");

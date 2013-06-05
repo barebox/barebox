@@ -208,7 +208,7 @@ int clk_register(struct clk *clk)
 	return 0;
 }
 
-int clk_is_enabled(struct clk *clk)
+static int clk_is_enabled(struct clk *clk)
 {
 	int enabled;
 

@@ -217,11 +217,13 @@ void imx53_boot_save_loc(void __iomem *src_base)
 void imx6_boot_save_loc(void __iomem *src_base)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2) >> 24;
-	uint32_t cfg1 = readl(src_base + IMX6_SRC_SBMR1) & 0xff;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
+	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
 	uint32_t boot_cfg_4_2_0;
 	int boot_mode;
 
+	/* BMOD[1:0] */
 	boot_mode = (sbmr2 >> 24) & 0x3;
 
 	switch (boot_mode) {
@@ -241,32 +243,42 @@ void imx6_boot_save_loc(void __iomem *src_base)
 
 internal_boot:
 
-	switch (cfg1 >> 4) {
+	/* BOOT_CFG1[7:4] */
+	switch ((sbmr1 >> 4) & 0xf) {
 	case 2:
 		src = BOOTSOURCE_HD;
 		break;
 	case 3:
-		boot_cfg_4_2_0 = (cfg1 >> 16) & 0x7;
+		/* BOOT_CFG4[2:0] */
+		boot_cfg_4_2_0 = (sbmr1 >> 24) & 0x7;
 
-		if (boot_cfg_4_2_0 > 4)
+		if (boot_cfg_4_2_0 > 4) {
 			src = BOOTSOURCE_I2C;
-		else
+			instance = boot_cfg_4_2_0 - 5;
+		} else {
 			src = BOOTSOURCE_SPI;
+			instance = boot_cfg_4_2_0;
+		}
 		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
 		src = BOOTSOURCE_MMC;
+
+		/* BOOT_CFG2[4:3] */
+		instance = (sbmr1 >> 11) & 0x3;
 		break;
 	default:
 		break;
 	}
 
-	if (cfg1 & (1 << 7))
+	/* BOOT_CFG1[7:0] */
+	if (sbmr1 & (1 << 7))
 		src = BOOTSOURCE_NAND;
 
 	bootsource_set(src);
+	bootsource_set_instance(instance);
 
 	return;
 }

@@ -146,9 +146,9 @@ static struct ulpi_info ulpi_ids[] = {
 	ULPI_INFO(ULPI_ID(0x0424, 0x0006), "SMSC USB331x"),
 };
 
-int ulpi_probe(void __iomem *view)
+static int ulpi_read_id(void __iomem *view, int *vid, int *pid)
 {
-	int i, vid, pid, ret;
+	int i, ret;
 	uint32_t ulpi_id = 0;
 
 	for (i = 0; i < 4; i++) {
@@ -157,20 +157,34 @@ int ulpi_probe(void __iomem *view)
 			return ret;
 		ulpi_id = (ulpi_id << 8) | ret;
 	}
-	vid = ulpi_id & 0xffff;
-	pid = ulpi_id >> 16;
 
-	for (i = 0; i < ARRAY_SIZE(ulpi_ids); i++) {
-		if (ulpi_ids[i].id == ULPI_ID(vid, pid)) {
-			pr_info("Found %s ULPI transceiver (0x%04x:0x%04x).\n",
-			ulpi_ids[i].name, vid, pid);
-			return 0;
+	*vid = ulpi_id & 0xffff;
+	*pid = (ulpi_id >> 16) & 0xffff;
+
+	return 0;
+}
+
+int ulpi_probe(void __iomem *view)
+{
+	int i, j, vid, pid, ret;
+
+	for (i = 0; i < 4; i++) {
+		ret = ulpi_read_id(view, &vid, &pid);
+		if (ret)
+			return ret;
+
+		for (j = 0; j < ARRAY_SIZE(ulpi_ids); j++) {
+			if (ulpi_ids[j].id == ULPI_ID(vid, pid)) {
+				pr_info("Found %s ULPI transceiver (0x%04x:0x%04x).\n",
+				ulpi_ids[j].name, vid, pid);
+				return 0;
+			}
 		}
 	}
 
-	pr_err("No ULPI found.\n");
+	pr_err("No ULPI found. vid: 0x%04x pid: 0x%04x\n", vid, pid);
 
-	return -1;
+	return -ENODEV;
 }
 
 int ulpi_set_vbus(void __iomem *view, int on)

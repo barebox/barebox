@@ -224,13 +224,19 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
 	u8 fis[20];
 	int ret;
+	int lba48 = ata_id_has_lba48(ata->id);
 
 	memset(fis, 0, sizeof(fis));
 
 	/* Construct the FIS */
 	fis[0] = 0x27;			/* Host to device FIS. */
 	fis[1] = 1 << 7;		/* Command FIS. */
-	fis[2] = wbuf ? ATA_CMD_WRITE_EXT : ATA_CMD_READ_EXT;	/* Command byte. */
+
+	/* Command byte. */
+	if (lba48)
+		fis[2] = wbuf ? ATA_CMD_WRITE_EXT : ATA_CMD_READ_EXT;
+	else
+		fis[2] = wbuf ? ATA_CMD_WRITE : ATA_CMD_READ;
 
 	while (num_blocks) {
 		int now;
@@ -240,9 +246,14 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 		fis[4] = (block >> 0) & 0xff;
 		fis[5] = (block >> 8) & 0xff;
 		fis[6] = (block >> 16) & 0xff;
-		fis[7] = 1 << 6; /* device reg: set LBA mode */
-		fis[8] = ((block >> 24) & 0xff);
-		fis[3] = 0xe0; /* features */
+
+		if (lba48) {
+			fis[7] = 1 << 6; /* device reg: set LBA mode */
+			fis[8] = ((block >> 24) & 0xff);
+			fis[3] = 0xe0; /* features */
+		} else {
+			fis[7] = ((block >> 24) & 0xf) | 0xe0;
+		}
 
 		/* Block (sector) count */
 		fis[12] = (now >> 0) & 0xff;

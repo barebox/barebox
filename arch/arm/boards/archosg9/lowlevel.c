@@ -48,8 +48,7 @@ static noinline void archosg9_init_lowlevel(void)
 
 	set_muxconf_regs();
 
-	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
+	omap4460_scale_vcores(TPS62361_VSEL0_GPIO, 1380);
 
 	/* Enable all clocks */
 	omap4_enable_all_clocks();

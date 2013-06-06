@@ -52,18 +52,21 @@ static noinline void pcaaxl2_init_lowlevel(void)
 	struct dpll_param per = OMAP4_PER_DPLL_PARAM_19M2;
 	struct dpll_param abe = OMAP4_ABE_DPLL_PARAM_19M2;
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_19M2;
+	unsigned int rev = omap4_revision();
 
 	set_muxconf_regs();
 
 	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
 
-	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
+	if (rev < OMAP4460_ES1_0)
+		omap4430_scale_vcores();
+	else
+		omap4460_scale_vcores(TPS62361_VSEL0_GPIO, 1320);
 
 	writel(CM_SYS_CLKSEL_19M2, CM_SYS_CLKSEL);
 
 	/* Configure all DPLL's at 100% OPP */
-	if (omap4_revision() < OMAP4460_ES1_0)
+	if (rev < OMAP4460_ES1_0)
 		omap4_configure_mpu_dpll(&mpu44xx);
 	else
 		omap4_configure_mpu_dpll(&mpu4460);

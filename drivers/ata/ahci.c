@@ -569,6 +569,20 @@ void ahci_info(struct device_d *dev)
 	ahci_print_info(ahci);
 }
 
+static int ahci_detect(struct device_d *dev)
+{
+	struct ahci_device *ahci = dev->priv;
+	int i;
+
+	for (i = 0; i < ahci->n_ports; i++) {
+		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		ata_port_detect(&ahci_port->ata);
+	}
+
+	return 0;
+}
+
 int ahci_add_host(struct ahci_device *ahci)
 {
 	u8 *mmio = (u8 *)ahci->mmio_base;
@@ -629,6 +643,8 @@ int ahci_add_host(struct ahci_device *ahci)
 	tmp = ahci_ioread(ahci, HOST_CTL);
 	ahci_iowrite(ahci, HOST_CTL, tmp | HOST_IRQ_EN);
 	tmp = ahci_ioread(ahci, HOST_CTL);
+
+	ahci->dev->detect = ahci_detect;
 
 	return 0;
 }

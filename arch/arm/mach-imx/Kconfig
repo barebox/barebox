@@ -533,6 +533,7 @@ config MACH_SABRESD
 
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"
+	select ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice

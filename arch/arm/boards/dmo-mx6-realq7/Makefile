@@ -1,2 +1,2 @@
-obj-y += board.o flash_header.o lowlevel.o
-pbl-y += flash_header.o lowlevel.o
+obj-y += board.o lowlevel.o
+pbl-y += lowlevel.o

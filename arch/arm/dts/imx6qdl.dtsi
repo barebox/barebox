@@ -827,6 +827,16 @@
 			};
 		};
 
+		sata: sata@02200000 {
+			compatible = "fsl,imx6q-ahci";
+			reg = <0x02200000 0x4000>;
+			interrupts = <0 39 0x04>;
+			clocks = <&clks 154 &clks 105 &clks 187>;
+			clock-names = "ipg", "ahb", "per";
+			gprreg = <&gpr>;
+			status = "disabled";
+		};
+
 		ipu1: ipu@02400000 {
 			#crtc-cells = <1>;
 			compatible = "fsl,imx6q-ipu";

@@ -54,7 +54,7 @@ config BOARDINFO
 	default "Efika MX smartbook" if MACH_EFIKA_MX_SMARTBOOK
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
 	default "Ka-Ro tx25" if MACH_TX25
-	default "TQ tqma53" if MACH_TQMA53
+	default "TQ TQMa53" if MACH_TQMA53
 	default "Ka-Ro tx51" if MACH_TX51
 	default "Freescale i.MX6q armadillo2" if MACH_MX6Q_ARM2
 	default "ConnectCore i.MX51" if MACH_CCMX51
@@ -481,7 +481,7 @@ config MACH_FREESCALE_MX53_SMD
 
 config MACH_TQMA53
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	bool "TQ i.MX53 TQMA53"
+	bool "TQ i.MX53 TQMa53"
 
 config MACH_TQMA53_1GB_RAM
 	bool "Use 1GiB of SDRAM"

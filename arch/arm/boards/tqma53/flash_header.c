@@ -56,7 +56,8 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	{ .addr = cpu_to_be32(0x63fd9080), .val = cpu_to_be32(0x013b013c), },
 	{ .addr = cpu_to_be32(0x63fd90f8), .val = cpu_to_be32(0x00000800), },
 #ifdef CONFIG_MACH_TQMA53_1GB_RAM
-	{ .addr = cpu_to_be32(0x63fd9018), .val = cpu_to_be32(0x00001740), },
+	/* sync with u-boot: add WALAT for 4 chip variant */
+	{ .addr = cpu_to_be32(0x63fd9018), .val = cpu_to_be32(0x00011740), },
 	{ .addr = cpu_to_be32(0x63fd9000), .val = cpu_to_be32(0xc3190000), },
 #else
 	{ .addr = cpu_to_be32(0x63fd9018), .val = cpu_to_be32(0x00101740), },
@@ -66,7 +67,8 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	{ .addr = cpu_to_be32(0x63fd9010), .val = cpu_to_be32(0xb68e8a63), },
 	{ .addr = cpu_to_be32(0x63fd9014), .val = cpu_to_be32(0x01ff00db), },
 	{ .addr = cpu_to_be32(0x63fd902c), .val = cpu_to_be32(0x000026d2), },
-	{ .addr = cpu_to_be32(0x63fd9030), .val = cpu_to_be32(0x009f0e21), },
+	/* Engcm12377 / errata sheet 03/2013 */
+	{ .addr = cpu_to_be32(0x63fd9030), .val = cpu_to_be32(0x009f0e23), },
 	{ .addr = cpu_to_be32(0x63fd9008), .val = cpu_to_be32(0x12273030), },
 	{ .addr = cpu_to_be32(0x63fd9004), .val = cpu_to_be32(0x0002002d), },
 	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x00008032), },
@@ -80,7 +82,8 @@ struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
 	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x05208138), },
 	{ .addr = cpu_to_be32(0x63fd901c), .val = cpu_to_be32(0x04008048), },
 	{ .addr = cpu_to_be32(0x63fd9020), .val = cpu_to_be32(0x00005800), },
-	{ .addr = cpu_to_be32(0x63fd9040), .val = cpu_to_be32(0x04b80003), },
+	/* prevent reserved value, use default TZQ_CS */
+	{ .addr = cpu_to_be32(0x63fd9040), .val = cpu_to_be32(0x05380003), },
 	{ .addr = cpu_to_be32(0x63fd9058), .val = cpu_to_be32(0x00022227), },
 	{ .addr = cpu_to_be32(0x63fd901C), .val = cpu_to_be32(0x00000000), },
 };

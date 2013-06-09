@@ -328,7 +328,8 @@ static int pcm038_devices_init(void)
 	mdelay(1);
 	imx_gpio_mode(PE1_PF_USBOTG_STP);
 
-	imx27_add_usbotg(&pcm038_otg_pdata);
+	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
+		imx27_add_usbotg(&pcm038_otg_pdata);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:

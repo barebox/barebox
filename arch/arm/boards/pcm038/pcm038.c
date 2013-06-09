@@ -332,22 +332,20 @@ static int pcm038_devices_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:
-		devfs_add_partition("nand0", 0x00000, 0x80000,
-					DEVFS_PARTITION_FIXED, "self_raw");
+		devfs_add_partition("nand0", 0, SZ_512K,
+				    DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
-
-		devfs_add_partition("nand0", 0x80000, 0x100000,
-					DEVFS_PARTITION_FIXED, "env_raw");
+		devfs_add_partition("nand0", SZ_512K, SZ_128K,
+				    DEVFS_PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
 		envdev = "NAND";
 		break;
 	default:
-		devfs_add_partition("nor0", 0x00000, 0x80000,
-					DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", 0x80000, 0x100000,
-					DEVFS_PARTITION_FIXED, "env0");
+		devfs_add_partition("nor0", 0, SZ_512K,
+				    DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("nor0", SZ_512K, SZ_128K,
+				    DEVFS_PARTITION_FIXED, "env0");
 		protect_file("/dev/env0", 1);
-
 		envdev = "NOR";
 	}
 

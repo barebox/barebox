@@ -141,6 +141,12 @@ static int am33xx_bootsource(void)
 	case 0x0b:
 		src = BOOTSOURCE_SPI;
 		break;
+	case 0x41:
+		src = BOOTSOURCE_SERIAL;
+		break;
+	case 0x44:
+		src = BOOTSOURCE_USB;
+		break;
 	default:
 		src = BOOTSOURCE_UNKNOWN;
 	}

@@ -415,7 +415,8 @@ static int ccxmx51_devices_init(void)
 		printf("Module Serial : %c%d\n", manloc, ((hwid[2] & 0x3f) << 24) | (hwid[3] << 16) | (hwid[4] << 8) | hwid[5]);
 		if ((ccxmx51_id->mem_sz - SZ_128M) > 0)
 			arm_add_mem_device("ram1", MX51_CSD0_BASE_ADDR + SZ_128M, ccxmx51_id->mem_sz - SZ_128M);
-	}
+	} else
+		return -ENOSYS;
 
 	imx51_add_uart1();
 	imx51_add_uart2();

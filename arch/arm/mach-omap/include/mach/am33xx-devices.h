@@ -37,4 +37,20 @@ static inline struct device_d *am33xx_add_cpsw(struct cpsw_platform_data *cpsw_d
 			AM335X_CPSW_BASE, SZ_32K, IORESOURCE_MEM, cpsw_data);
 }
 
+static inline struct device_d *am33xx_add_spi(int id, resource_size_t start)
+{
+	return add_generic_device("omap3_spi", id, NULL, start + 0x100, SZ_4K - 0x100,
+				   IORESOURCE_MEM, NULL);
+}
+
+static inline struct device_d *am33xx_add_spi0(void)
+{
+	return am33xx_add_spi(0, AM33XX_MCSPI0_BASE);
+}
+
+static inline struct device_d *am33xx_add_spi1(void)
+{
+	return am33xx_add_spi(1, AM33XX_MCSPI1_BASE);
+}
+
 #endif /* __MACH_OMAP3_DEVICES_H */

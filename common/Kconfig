@@ -31,6 +31,9 @@ config ENV_HANDLING
 config GENERIC_GPIO
 	bool
 
+config BOOTM
+	bool
+
 config BLOCK
 	bool
 

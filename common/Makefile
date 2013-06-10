@@ -42,6 +42,7 @@ obj-$(CONFIG_MODULES) += module.o
 obj-$(CONFIG_FLEXIBLE_BOOTARGS) += bootargs.o
 obj-$(CONFIG_BAREBOX_UPDATE) += bbu.o
 obj-y += bootsource.o
+obj-$(CONFIG_BOOTM) += bootm.o
 extra-$(CONFIG_MODULES) += module.lds
 extra-y += barebox_default_env barebox_default_env.h
 

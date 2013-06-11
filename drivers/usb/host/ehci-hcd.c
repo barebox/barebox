@@ -27,6 +27,7 @@
 #include <xfuncs.h>
 #include <clock.h>
 #include <errno.h>
+#include <of.h>
 #include <usb/ehci.h>
 #include <asm/mmu.h>
 
@@ -439,9 +440,12 @@ static inline int min3(int a, int b, int c)
  * boards.
  * See http://lists.infradead.org/pipermail/linux-arm-kernel/2011-January/037341.html
  */
-void ehci_powerup_fixup(struct ehci_priv *ehci)
+static void ehci_powerup_fixup(struct ehci_priv *ehci)
 {
 	void *viewport = (void *)ehci->hcor + 0x30;
+
+	if (!of_machine_is_compatible("genesi,imx51-sb"))
+		return;
 
 	ulpi_write(ULPI_OTG_CHRG_VBUS, ULPI_OTGCTL + ULPI_REG_SET,
 			viewport);

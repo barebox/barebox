@@ -324,7 +324,7 @@ static struct ata_port_operations ide_ops = {
 	.reset = ide_reset,
 };
 
-int ide_port_register(struct device_d *dev, struct ata_ioports *io)
+int ide_port_register(struct device_d *dev, struct ata_ioports *io, const char *devname)
 {
 	struct ide_port *ide;
 	int ret;
@@ -334,6 +334,7 @@ int ide_port_register(struct device_d *dev, struct ata_ioports *io)
 	ide->io = io;
 	ide->port.ops = &ide_ops;
 	ide->port.dev = dev;
+	ide->port.devname = devname;
 
 	ret = ata_port_register(&ide->port);
 

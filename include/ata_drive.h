@@ -135,6 +135,7 @@ struct ata_port {
 	struct ata_port_operations *ops;
 	struct device_d *dev;
 	struct device_d class_dev;
+	const char *devname;
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
@@ -142,7 +143,7 @@ struct ata_port {
 	int probe;
 };
 
-int ide_port_register(struct device_d *, struct ata_ioports *);
+int ide_port_register(struct device_d *, struct ata_ioports *, const char *);
 int ata_port_register(struct ata_port *port);
 int ata_port_detect(struct ata_port *port);
 

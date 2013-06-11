@@ -95,7 +95,7 @@ static int platform_ide_probe(struct device_d *dev)
 	io->reset = pdata->reset;
 	io->dataif_be = pdata->dataif_be;
 
-	rc = ide_port_register(dev, io);
+	rc = ide_port_register(dev, io, NULL);
 	if (rc != 0) {
 		dev_err(dev, "Cannot register IDE interface\n");
 		free(io);

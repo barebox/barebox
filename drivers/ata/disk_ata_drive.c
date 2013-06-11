@@ -254,12 +254,16 @@ static int ata_port_init(struct ata_port *port)
 #ifdef DEBUG
 	ata_dump_id(port->id);
 #endif
-	rc = cdev_find_free_index("ata");
-	if (rc == -1)
-		pr_err("Cannot find a free index for the disk node\n");
+	if (port->devname) {
+		port->blk.cdev.name = xstrdup(port->devname);
+	} else {
+		rc = cdev_find_free_index("ata");
+		if (rc == -1)
+			pr_err("Cannot find a free index for the disk node\n");
+		port->blk.cdev.name = asprintf("ata%d", rc);
+	}
 
 	port->blk.num_blocks = ata_id_n_sectors(port->id);
-	port->blk.cdev.name = asprintf("ata%d", rc);
 	port->blk.blockbits = SECTOR_SHIFT;
 
 	rc = blockdevice_register(&port->blk);
@@ -326,8 +330,14 @@ int ata_port_register(struct ata_port *port)
 {
 	int ret;
 
-	port->class_dev.id = DEVICE_ID_DYNAMIC;
-	strcpy(port->class_dev.name, "ata");
+	if (port->devname) {
+		strcpy(port->class_dev.name, port->devname);
+		port->class_dev.id = DEVICE_ID_SINGLE;
+	} else {
+		strcpy(port->class_dev.name, "ata");
+		port->class_dev.id = DEVICE_ID_DYNAMIC;
+	}
+
 	port->class_dev.parent = port->dev;
 	port->class_dev.detect = ata_detect;
 

@@ -26,6 +26,7 @@
 		mmc1 = &esdhc2;
 		mmc2 = &esdhc3;
 		mmc3 = &esdhc4;
+		pata0 = &pata;
 	};
 
 	tzic: tz-interrupt-controller@e0000000 {

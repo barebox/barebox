@@ -152,6 +152,7 @@ static int imx_pata_probe(struct device_d *dev)
 	struct clk *clk;
 	void __iomem *base;
 	int ret;
+	const char *devname = NULL;
 
 	io = xzalloc(sizeof(struct ata_ioports));
 	base = dev_request_mem_region(dev, 0);
@@ -172,7 +173,13 @@ static int imx_pata_probe(struct device_d *dev)
 
 	pata_imx_set_bus_timing(base, clk_get_rate(clk), 4);
 
-	ret = ide_port_register(dev, io, NULL);
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		devname = of_alias_get(dev->device_node);
+		if (devname)
+			devname = xstrdup(devname);
+	}
+
+	ret = ide_port_register(dev, io, devname);
 	if (ret) {
 		dev_err(dev, "Cannot register IDE interface: %s\n",
 				strerror(-ret));
@@ -190,8 +197,15 @@ out_free:
 	return ret;
 }
 
+static __maybe_unused struct of_device_id imx_pata_dt_ids[] = {
+	{
+		.compatible = "fsl,imx27-pata",
+	},
+};
+
 static struct driver_d imx_pata_driver = {
 	.name   = "imx-pata",
 	.probe  = imx_pata_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_pata_dt_ids),
 };
 device_platform_driver(imx_pata_driver);

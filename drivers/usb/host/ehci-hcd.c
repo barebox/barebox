@@ -443,9 +443,8 @@ void ehci_powerup_fixup(struct ehci_priv *ehci)
 {
 	void *viewport = (void *)ehci->hcor + 0x30;
 
-	if (ehci->dev->id > 0)
-		ulpi_write(ULPI_OTG_CHRG_VBUS, ULPI_OTGCTL + ULPI_REG_SET,
-				viewport);
+	ulpi_write(ULPI_OTG_CHRG_VBUS, ULPI_OTGCTL + ULPI_REG_SET,
+			viewport);
 }
 #else
 static inline void ehci_powerup_fixup(struct ehci_priv *ehci)

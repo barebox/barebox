@@ -26,6 +26,7 @@
 
 struct imx_chipidea {
 	struct device_d *dev;
+	void __iomem *base;
 	struct ehci_data data;
 	unsigned long flags;
 	enum imx_usb_mode mode;
@@ -37,6 +38,19 @@ static int imx_chipidea_port_init(void *drvdata)
 {
 	struct imx_chipidea *ci = drvdata;
 	int ret;
+
+	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
+		dev_dbg(ci->dev, "using ULPI phy\n");
+		if (IS_ENABLED(CONFIG_USB_ULPI)) {
+			ret = ulpi_setup(ci->base + 0x170, 1);
+		} else {
+			dev_err(ci->dev, "no ULPI support available\n");
+			ret = -ENODEV;
+		}
+
+		if (ret)
+			return ret;
+	}
 
 	ret = imx_usbmisc_port_init(ci->portno, ci->flags);
 	if (ret)
@@ -144,6 +158,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (!base)
 		return -ENODEV;
 
+	ci->base = base;
+
 	ci->data.init = imx_chipidea_port_init;
 	ci->data.post_init = imx_chipidea_port_post_init;
 	ci->data.drvdata = ci;
@@ -152,21 +168,6 @@ static int imx_chipidea_probe(struct device_d *dev)
 	portsc &= ~MXC_EHCI_PORTSC_MASK;
 	portsc |= ci->flags & MXC_EHCI_PORTSC_MASK;
 	writel(portsc, base + 0x184);
-
-	imx_chipidea_port_init(ci);
-
-	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
-		dev_dbg(dev, "using ULPI phy\n");
-		if (IS_ENABLED(CONFIG_USB_ULPI)) {
-			ret = ulpi_setup(base + 0x170, 1);
-		} else {
-			dev_err(dev, "no ULPI support available\n");
-			ret = -ENODEV;
-		}
-
-		if (ret)
-			return ret;
-	}
 
 	ci->data.hccr = base + 0x100;
 	ci->data.hcor = base + 0x140;

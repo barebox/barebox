@@ -204,4 +204,4 @@ static int imx_gpio_add(void)
 	platform_driver_register(&imx_gpio_driver);
 	return 0;
 }
-coredevice_initcall(imx_gpio_add);
+core_initcall(imx_gpio_add);

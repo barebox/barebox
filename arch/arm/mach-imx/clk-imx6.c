@@ -337,4 +337,4 @@ static int imx6_ccm_init(void)
 {
 	return platform_driver_register(&imx6_ccm_driver);
 }
-postcore_initcall(imx6_ccm_init);
+core_initcall(imx6_ccm_init);

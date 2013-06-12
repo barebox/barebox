@@ -270,11 +270,6 @@ static void efikamx_power_init(void)
 	mc13xxx_reg_write(mc, MC13892_REG_SW_2, val);
 	udelay(50);
 
-	/* Raise the core frequency to 800MHz */
-	console_flush();
-	imx51_init_lowlevel(800);
-	clock_notifier_call_chain();
-
 	/* Set switchers in Auto in NORMAL mode & STANDBY mode */
 	/* Setup the switcher mode for SW1 & SW2*/
 	mc13xxx_reg_read(mc, MC13892_REG_SW_4, &val);

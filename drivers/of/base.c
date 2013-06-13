@@ -389,6 +389,43 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
 	return NULL;
 }
 
+/**
+ *	of_find_matching_node_and_match - Find a node based on an of_device_id
+ *					  match table.
+ *	@from:		The node to start searching from or NULL, the node
+ *			you pass will not be searched, only the next one
+ *			will; typically, you pass what the previous call
+ *			returned.
+ *	@matches:	array of of device match structures to search in
+ *	@match		Updated to point at the matches entry which matched
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_matching_node_and_match(struct device_node *from,
+					const struct of_device_id *matches,
+					const struct of_device_id **match)
+{
+	struct device_node *np;
+
+	if (match)
+		*match = NULL;
+
+	if (!from)
+		from = root_node;
+
+	of_tree_for_each_node(np, from) {
+		const struct of_device_id *m = of_match_node(matches, np);
+		if (m) {
+			if (match)
+				*match = m;
+			return np;
+		}
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_matching_node_and_match);
+
 int of_match(struct device_d *dev, struct driver_d *drv)
 {
 	const struct of_device_id *id;

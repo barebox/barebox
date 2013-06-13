@@ -189,6 +189,10 @@ extern struct device_node *of_find_node_by_path_from(struct device_node *from,
 extern struct device_node *of_find_node_by_path(const char *path);
 extern struct device_node *of_find_compatible_node(struct device_node *from,
 	const char *type, const char *compat);
+extern struct device_node *of_find_matching_node_and_match(
+	struct device_node *from,
+	const struct of_device_id *matches,
+	const struct of_device_id **match);
 extern int of_device_is_available(const struct device_node *device);
 
 extern void of_alias_scan(void);
@@ -267,6 +271,14 @@ static inline struct device_node *of_find_compatible_node(
 	return NULL;
 }
 
+static inline struct device_node *of_find_matching_node_and_match(
+					struct device_node *from,
+					const struct of_device_id *matches,
+					const struct of_device_id **match)
+{
+	return NULL;
+}
+
 static inline int of_device_is_available(const struct device_node *device)
 {
 	return 0;
@@ -293,5 +305,17 @@ static inline const char *of_alias_get(struct device_node *np)
 #define for_each_compatible_node(dn, type, compatible) \
 	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
 	     dn = of_find_compatible_node(dn, type, compatible))
+static inline struct device_node *of_find_matching_node(
+	struct device_node *from,
+	const struct of_device_id *matches)
+{
+	return of_find_matching_node_and_match(from, matches, NULL);
+}
+#define for_each_matching_node(dn, matches) \
+	for (dn = of_find_matching_node(NULL, matches); dn; \
+	     dn = of_find_matching_node(dn, matches))
+#define for_each_matching_node_and_match(dn, matches, match) \
+	for (dn = of_find_matching_node_and_match(NULL, matches, match); \
+	     dn; dn = of_find_matching_node_and_match(dn, matches, match))
 
 #endif /* __OF_H */

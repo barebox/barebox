@@ -312,6 +312,32 @@ int of_device_is_compatible(const struct device_node *device,
 EXPORT_SYMBOL(of_device_is_compatible);
 
 /**
+ *	of_find_node_by_name - Find a node by its "name" property
+ *	@from:	The node to start searching from or NULL, the node
+ *		you pass will not be searched, only the next one
+ *		will; typically, you pass what the previous call
+ *		returned.
+ *	@name:	The name string to match against
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_node_by_name(struct device_node *from,
+	const char *name)
+{
+	struct device_node *np;
+
+	if (!from)
+		from = root_node;
+
+	of_tree_for_each_node(np, from)
+		if (np->name && !of_node_cmp(np->name, name))
+			return np;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_name);
+
+/**
  * of_match_node - Tell if an device_node has a matching of_match structure
  *      @matches:       array of of device match structures to search in
  *      @node:          the of device structure to match against

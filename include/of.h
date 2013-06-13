@@ -182,6 +182,8 @@ struct cdev;
 extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
 
+extern struct device_node *of_find_node_by_name(struct device_node *from,
+	const char *name);
 extern struct device_node *of_find_node_by_path_from(struct device_node *from,
 						const char *path);
 extern struct device_node *of_find_node_by_path(const char *path);
@@ -249,6 +251,12 @@ static inline struct device_node *of_find_node_by_path(const char *path)
 	return NULL;
 }
 
+static inline struct device_node *of_find_node_by_name(struct device_node *from,
+	const char *name)
+{
+	return NULL;
+}
+
 static inline int of_device_is_available(const struct device_node *device)
 {
 	return 0;
@@ -268,5 +276,9 @@ static inline const char *of_alias_get(struct device_node *np)
 	return NULL;
 }
 #endif
+
+#define for_each_node_by_name(dn, name) \
+	for (dn = of_find_node_by_name(NULL, name); dn; \
+	     dn = of_find_node_by_name(dn, name))
 
 #endif /* __OF_H */

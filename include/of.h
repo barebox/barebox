@@ -193,6 +193,8 @@ extern struct device_node *of_find_matching_node_and_match(
 	struct device_node *from,
 	const struct of_device_id *matches,
 	const struct of_device_id **match);
+extern struct device_node *of_find_node_with_property(
+	struct device_node *from, const char *prop_name);
 extern int of_device_is_available(const struct device_node *device);
 
 extern void of_alias_scan(void);
@@ -279,6 +281,12 @@ static inline struct device_node *of_find_matching_node_and_match(
 	return NULL;
 }
 
+static inline struct device_node *of_find_node_with_property(
+			struct device_node *from, const char *prop_name)
+{
+	return NULL;
+}
+
 static inline int of_device_is_available(const struct device_node *device)
 {
 	return 0;
@@ -317,5 +325,8 @@ static inline struct device_node *of_find_matching_node(
 #define for_each_matching_node_and_match(dn, matches, match) \
 	for (dn = of_find_matching_node_and_match(NULL, matches, match); \
 	     dn; dn = of_find_matching_node_and_match(dn, matches, match))
+#define for_each_node_with_property(dn, prop_name) \
+	for (dn = of_find_node_with_property(NULL, prop_name); dn; \
+	     dn = of_find_node_with_property(dn, prop_name))
 
 #endif /* __OF_H */

@@ -338,6 +338,36 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 EXPORT_SYMBOL(of_find_node_by_name);
 
 /**
+ *	of_find_compatible_node - Find a node based on type and one of the
+ *                                tokens in its "compatible" property
+ *	@from:		The node to start searching from or NULL, the node
+ *			you pass will not be searched, only the next one
+ *			will; typically, you pass what the previous call
+ *			returned.
+ *	@type:		The type string to match "device_type" or NULL to ignore
+ *                      (currently always ignored in barebox)
+ *	@compatible:	The string to match to one of the tokens in the device
+ *			"compatible" list.
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_compatible_node(struct device_node *from,
+	const char *type, const char *compatible)
+{
+	struct device_node *np;
+
+	if (!from)
+		from = root_node;
+
+	of_tree_for_each_node(np, from)
+		if (of_device_is_compatible(np, compatible))
+			return np;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_compatible_node);
+
+/**
  * of_match_node - Tell if an device_node has a matching of_match structure
  *      @matches:       array of of device match structures to search in
  *      @node:          the of device structure to match against

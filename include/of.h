@@ -197,6 +197,14 @@ extern struct device_node *of_find_node_with_property(
 	struct device_node *from, const char *prop_name);
 extern int of_device_is_available(const struct device_node *device);
 
+extern struct device_node *of_get_parent(const struct device_node *node);
+extern struct device_node *of_get_next_available_child(
+	const struct device_node *node, struct device_node *prev);
+extern int of_get_child_count(const struct device_node *parent);
+extern int of_get_available_child_count(const struct device_node *parent);
+extern struct device_node *of_get_child_by_name(const struct device_node *node,
+					const char *name);
+
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
 extern const char *of_alias_get(struct device_node *np);
@@ -237,6 +245,33 @@ static inline int of_add_memory(struct device_node *node, bool dump)
 }
 
 static inline struct device_node *of_get_root_node(void)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_get_parent(const struct device_node *node)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_get_next_available_child(
+		const struct device_node *node, struct device_node *prev)
+{
+	return NULL;
+}
+
+static inline int of_get_child_count(const struct device_node *parent)
+{
+	return -ENOSYS;
+}
+
+static inline int of_get_available_child_count(const struct device_node *parent)
+{
+	return -ENOSYS;
+}
+
+static inline struct device_node *of_get_child_by_name(
+			const struct device_node *node, const char *name)
 {
 	return NULL;
 }
@@ -328,5 +363,11 @@ static inline struct device_node *of_find_matching_node(
 #define for_each_node_with_property(dn, prop_name) \
 	for (dn = of_find_node_with_property(NULL, prop_name); dn; \
 	     dn = of_find_node_with_property(dn, prop_name))
+
+#define for_each_child_of_node(parent, child) \
+	list_for_each_entry(child, &parent->children, parent_list)
+#define for_each_available_child_of_node(parent, child) \
+	for (child = of_get_next_available_child(parent, NULL); child != NULL; \
+	     child = of_get_next_available_child(parent, child))
 
 #endif /* __OF_H */

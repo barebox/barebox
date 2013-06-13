@@ -250,13 +250,13 @@ static int ccxmx51_power_init(void)
 	val = 0x238033;
 	mc13xxx_reg_write(mc13xxx_dev, MC13892_REG_CHARGE, val);
 
-	/* Set core voltage (SW1) to 1.1V */
-	mc13xxx_reg_read(mc13xxx_dev, MC13892_REG_SW_0, &val);
-	val &= ~0x00001f;
-	val |=  0x000014;
-	mc13xxx_reg_write(mc13xxx_dev, MC13892_REG_SW_0, val);
-
 	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
+		/* Set core voltage (SW1) to 1.1V */
+		mc13xxx_reg_read(mc13xxx_dev, MC13892_REG_SW_0, &val);
+		val &= ~0x00001f;
+		val |=  0x000014;
+		mc13xxx_reg_write(mc13xxx_dev, MC13892_REG_SW_0, val);
+
 		/* Setup VCC (SW2) to 1.25 */
 		mc13xxx_reg_read(mc13xxx_dev, MC13892_REG_SW_1, &val);
 		val &= ~0x00001f;

@@ -28,6 +28,14 @@
 #include <linux/amba/bus.h>
 #include <linux/err.h>
 
+/*
+ * Iterate over all nodes of a tree. As a devicetree does not
+ * have a dedicated list head, the start node (usually the root
+ * node) will not be iterated over.
+ */
+#define of_tree_for_each_node(node, root) \
+	list_for_each_entry(node, &root->list, list)
+
 /**
  * struct alias_prop - Alias property in 'aliases' node
  * @link:	List node to link the structure in aliases_lookup list

@@ -85,14 +85,6 @@ int of_modalias_node(struct device_node *node, char *modalias, int len);
 #define device_node_for_nach_child(node, child) \
 	list_for_each_entry(child, &node->children, parent_list)
 
-/*
- * Iterate over all nodes of a tree. As a devicetree does not
- * have a dedicated list head, the start node (usually the root
- * node) will not be iterated over.
- */
-#define of_tree_for_each_node(node, root) \
-	list_for_each_entry(node, &root->list, list)
-
 /* Helper to read a big number; size is in cells (not bytes) */
 static inline u64 of_read_number(const __be32 *cell, int size)
 {

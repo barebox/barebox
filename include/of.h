@@ -67,8 +67,6 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 int of_n_addr_cells(struct device_node *np);
 int of_n_size_cells(struct device_node *np);
 
-struct device_node *of_find_node_by_path(struct device_node *root, const char *path);
-
 struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
 
 struct fdt_header *fdt_get_tree(void);
@@ -184,6 +182,10 @@ struct cdev;
 extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
 
+extern struct device_node *of_find_node_by_path_from(struct device_node *from,
+						const char *path);
+extern struct device_node *of_find_node_by_path(const char *path);
+
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
 extern const char *of_alias_get(struct device_node *np);
@@ -231,6 +233,17 @@ static inline struct device_node *of_get_root_node(void)
 static inline struct property *of_find_property(const struct device_node *np,
 						const char *name,
 						int *lenp)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_find_node_by_path_from(
+	struct device_node *from, const char *path)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_find_node_by_path(const char *path)
 {
 	return NULL;
 }

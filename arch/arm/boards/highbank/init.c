@@ -53,7 +53,7 @@ static int hb_fixup(struct device_node *root)
 	if ((opp_table[0] >> 16) != HB_OPP_VERSION)
 		return 0;
 
-	node = of_find_node_by_path(root, "/cpus/cpu@0");
+	node = of_find_node_by_path("/cpus/cpu@0");
 	if (!node)
 		return 0;
 
@@ -89,7 +89,7 @@ static int highbank_mem_init(void)
 
 	of_set_root_node(root);
 
-	np = of_find_node_by_path(root, "/memory");
+	np = of_find_node_by_path("/memory");
 	if (!np) {
 		pr_warn("no memory node use default configuration\n");
 		goto not_found;

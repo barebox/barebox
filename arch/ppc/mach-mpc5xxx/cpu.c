@@ -83,7 +83,7 @@ static int of_mpc5200_fixup(struct device_node *root)
 
 	int div = in_8((void*)CFG_MBAR + 0x204) & 0x0020 ? 8 : 4;
 
-	node = of_find_node_by_path(root, "/cpus/PowerPC,5200@0");
+	node = of_find_node_by_path("/cpus/PowerPC,5200@0");
 	if (!node)
 		return -EINVAL;
 
@@ -91,7 +91,7 @@ static int of_mpc5200_fixup(struct device_node *root)
 	of_property_write_u32(node, "bus-frequency", get_bus_clock());
 	of_property_write_u32(node, "clock-frequency", get_cpu_clock());
 
-	node = of_find_node_by_path(root, "/soc5200@f0000000");
+	node = of_find_node_by_path("/soc5200@f0000000");
 	if (!node)
 		return -EINVAL;
 

@@ -730,17 +730,31 @@ int of_set_root_node(struct device_node *node)
 	return 0;
 }
 
-static int of_node_disabled(struct device_node *node)
+/**
+ *  of_device_is_available - check if a device is available for use
+ *
+ *  @device: Node to check for availability
+ *
+ *  Returns 1 if the status property is absent or set to "okay" or "ok",
+ *  0 otherwise
+ */
+int of_device_is_available(const struct device_node *device)
 {
-	struct property *p;
+	const char *status;
+	int statlen;
 
-	p = of_find_property(node, "status", NULL);
-	if (p) {
-		if (!strcmp("disabled", p->value))
+	status = of_get_property(device, "status", &statlen);
+	if (status == NULL)
+		return 1;
+
+	if (statlen > 0) {
+		if (!strcmp(status, "okay") || !strcmp(status, "ok"))
 			return 1;
 	}
+
 	return 0;
 }
+EXPORT_SYMBOL(of_device_is_available);
 
 void of_print_nodes(struct device_node *node, int indent)
 {
@@ -934,7 +948,7 @@ static struct device_d *add_of_device(struct device_node *node,
 {
 	const struct property *cp;
 
-	if (of_node_disabled(node))
+	if (!of_device_is_available(node))
 		return NULL;
 
 	cp = of_get_property(node, "compatible", NULL);

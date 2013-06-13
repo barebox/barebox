@@ -321,6 +321,9 @@ EXPORT_SYMBOL(of_device_is_compatible);
 const struct of_device_id *of_match_node(const struct of_device_id *matches,
 					 const struct device_node *node)
 {
+	if (!matches || !node)
+		return NULL;
+
 	while (matches->compatible) {
 		if (of_device_is_compatible(node, matches->compatible) == 1)
 			return matches;
